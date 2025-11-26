@@ -1,0 +1,11 @@
+{
+  "id": "FS-069",
+  "type": "feature",
+  "archivedAt": "2025-11-26T23:17:56.152Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-069",
+  "linkedIncrements": [
+    "0069-multi-project-spec-generation"
+  ]
+}

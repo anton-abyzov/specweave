@@ -15,20 +15,21 @@ import { DeletionOptions } from '../../core/feature-deleter/types.js';
  * T-035: Validate feature ID format (FS-XXX)
  */
 function validateFeatureId(featureId: string): void {
-  const pattern = /^FS-\d{3}$/;
+  const pattern = /^FS-\d{3,}$/;
 
   if (!pattern.test(featureId)) {
     console.error(`❌ Invalid feature ID format: "${featureId}"`);
-    console.error('   Expected: FS-XXX (e.g., FS-052)');
+    console.error('   Expected: FS-XXX (e.g., FS-052, FS-1000)');
     console.error('   - Must start with "FS-"');
-    console.error('   - Must have exactly 3 digits');
+    console.error('   - Must have 3 or more digits');
     console.error('');
     console.error('Examples:');
     console.error('  ✓ FS-001');
     console.error('  ✓ FS-052');
     console.error('  ✓ FS-999');
+    console.error('  ✓ FS-1000');
+    console.error('  ✓ FS-9999');
     console.error('  ✗ FS-52 (2 digits)');
-    console.error('  ✗ FS-0520 (4 digits)');
     console.error('  ✗ feature-052 (wrong prefix)');
 
     process.exit(1);

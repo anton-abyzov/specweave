@@ -117,15 +117,15 @@ export class ThreeFileValidator {
     const content = fs.readFileSync(specPath, 'utf-8');
     const lines = content.split('\n');
 
-    // Rule 1: spec.md should NOT contain task IDs (T-001, T-002, etc.)
+    // Rule 1: spec.md should NOT contain task IDs (T-001, T-002, T-1000, etc.)
     lines.forEach((line, index) => {
-      if (/T-\d{3}/.test(line)) {
+      if (/T-\d{3,}/.test(line)) {
         issues.push({
           code: ValidationErrorCode.SPEC_CONTAINS_TASK_IDS,
           severity: ValidationSeverity.ERROR,
           file: 'spec.md',
           line: index + 1,
-          message: `spec.md contains task ID (${line.match(/T-\d{3}/)?.[0]}). Task IDs belong in tasks.md only.`,
+          message: `spec.md contains task ID (${line.match(/T-\d{3,}/)?.[0]}). Task IDs belong in tasks.md only.`,
           fix: 'Remove task references from spec.md. Link tasks to ACs instead.'
         });
       }
@@ -259,10 +259,10 @@ export class ThreeFileValidator {
       });
     }
 
-    // Rule 2: Each task should have "Implementation" section
+    // Rule 2: Each task should have "Implementation" section (T-001, T-1000, etc.)
     const taskHeaders = lines
       .map((line, index) => ({ line, index }))
-      .filter(({ line }) => /^###\s+T-\d{3}/.test(line));
+      .filter(({ line }) => /^###\s+T-\d{3,}/.test(line));
 
     taskHeaders.forEach(({ line: taskLine, index: taskIndex }) => {
       // Find next task or end of file
@@ -278,7 +278,7 @@ export class ThreeFileValidator {
           severity: ValidationSeverity.WARNING,
           file: 'tasks.md',
           line: taskIndex + 1,
-          message: `Task ${taskLine.match(/T-\d{3}/)?.[0]} missing "**Implementation**:" section`,
+          message: `Task ${taskLine.match(/T-\d{3,}/)?.[0]} missing "**Implementation**:" section`,
           fix: 'Add "**Implementation**:" section with checkable technical steps'
         });
       }
@@ -290,7 +290,7 @@ export class ThreeFileValidator {
           severity: ValidationSeverity.WARNING,
           file: 'tasks.md',
           line: taskIndex + 1,
-          message: `Task ${taskLine.match(/T-\d{3}/)?.[0]} missing embedded test plan (BDD format)`,
+          message: `Task ${taskLine.match(/T-\d{3,}/)?.[0]} missing embedded test plan (BDD format)`,
           fix: 'Add "**Test Plan** (BDD):" with Given-When-Then scenarios'
         });
       }
@@ -302,7 +302,7 @@ export class ThreeFileValidator {
           severity: ValidationSeverity.INFO,
           file: 'tasks.md',
           line: taskIndex + 1,
-          message: `Task ${taskLine.match(/T-\d{3}/)?.[0]} should reference which ACs it satisfies`,
+          message: `Task ${taskLine.match(/T-\d{3,}/)?.[0]} should reference which ACs it satisfies`,
           fix: 'Add "**AC-IDs**: AC-US7-01, AC-US7-02" to link task to business requirements'
         });
       }

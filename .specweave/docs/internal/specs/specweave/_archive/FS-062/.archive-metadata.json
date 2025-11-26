@@ -1,0 +1,11 @@
+{
+  "id": "FS-062",
+  "type": "feature",
+  "archivedAt": "2025-11-26T23:17:54.438Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-062",
+  "linkedIncrements": [
+    "0062-umbrella-multi-repo-support"
+  ]
+}

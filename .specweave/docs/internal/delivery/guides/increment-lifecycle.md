@@ -9,14 +9,15 @@ This guide covers the complete lifecycle of SpecWeave increments, from creation 
 ## Table of Contents
 
 1. [Lifecycle Overview](#lifecycle-overview)
-2. [Status Progression](#status-progression)
-3. [WIP Limits](#wip-limits)
-4. [Task vs Increment Decision](#task-vs-increment-decision)
-5. [Adding Tasks to Current Increment](#adding-tasks-to-current-increment)
-6. [Closing Increments with Leftover Transfer](#closing-increments-with-leftover-transfer)
-7. [Increment Lifecycle Commands](#increment-lifecycle-commands)
-8. [Frontmatter Schema](#frontmatter-schema)
-9. [Example Workflows](#example-workflows)
+2. [Increment Sizing: Keep It Small](#increment-sizing-keep-it-small)
+3. [Status Progression](#status-progression)
+4. [WIP Limits](#wip-limits)
+5. [Task vs Increment Decision](#task-vs-increment-decision)
+6. [Adding Tasks to Current Increment](#adding-tasks-to-current-increment)
+7. [Closing Increments with Leftover Transfer](#closing-increments-with-leftover-transfer)
+8. [Increment Lifecycle Commands](#increment-lifecycle-commands)
+9. [Frontmatter Schema](#frontmatter-schema)
+10. [Example Workflows](#example-workflows)
 
 ---
 
@@ -77,6 +78,61 @@ This guide covers the complete lifecycle of SpecWeave increments, from creation 
     ├── security.md                  # Security review
     └── retrospective.md             # What went well, what to improve
 ```
+
+### Increment Sizing: Keep It Small
+
+**CRITICAL**: Small increments = maximum productivity for both humans AND AI.
+
+#### Recommended Size
+
+| Metric | Target Range | Why |
+|--------|--------------|-----|
+| **Tasks** | 5-15 tasks | Trackable, completable in reasonable time |
+| **User Stories** | 1-3 stories | Focused scope, clear goals |
+| **Duration** | 1-3 days | Fast feedback loops, quick wins |
+| **Spec lines** | < 250 lines | Fits in AI context window efficiently |
+
+#### Benefits for Humans
+
+- ✅ **Easier progress tracking**: "12 of 15 tasks done" feels achievable
+- ✅ **Faster feedback loops**: Ship something every few days
+- ✅ **Less overwhelming**: Always know exactly what to do next
+- ✅ **Reduced context-switching**: Complete one thing before starting another
+
+#### Benefits for AI Tools
+
+- ✅ **Better context retention**: Smaller specs fit better in context windows
+- ✅ **Higher accuracy per task**: Fewer competing requirements to track
+- ✅ **Cleaner validation**: Easier to verify acceptance criteria
+- ✅ **Reduced hallucination risk**: Less chance of "forgetting" requirements
+
+#### Anti-Pattern: The Mega-Increment
+
+```
+❌ BAD: 50-task increment running for 3 weeks
+   - You lose mental context after week 1
+   - AI tools struggle with sprawling specs
+   - Progress feels slow (10% done after 3 days?)
+   - Scope creep inevitable
+   - Higher risk of incomplete delivery
+```
+
+#### Best Practice: Quick Iterations
+
+```
+✅ GOOD: 10-task increment completed in 2 days
+   - Clear start and end
+   - Visible progress (30% after a few hours!)
+   - Ship → feedback → iterate
+   - Each increment COMPLETE before the next
+   - Clean living docs sync
+```
+
+#### Rule of Thumb
+
+**If your increment has more than 15 tasks, split it.** Extract logical chunks into separate increments. You'll ship faster and maintain higher quality.
+
+---
 
 ### Key Files Explained
 

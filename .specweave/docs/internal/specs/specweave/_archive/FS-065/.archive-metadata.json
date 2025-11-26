@@ -1,0 +1,11 @@
+{
+  "id": "FS-065",
+  "type": "feature",
+  "archivedAt": "2025-11-26T23:17:55.315Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-065",
+  "linkedIncrements": [
+    "0065-background-jobs"
+  ]
+}

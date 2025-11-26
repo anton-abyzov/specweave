@@ -227,8 +227,8 @@ export class FSIdAllocator {
 
       const entryPath = path.join(this.specsPath, entry.name);
 
-      // Check if this is an FS-XXX folder (root-level feature)
-      if (/^FS-\d{3}E?$/.test(entry.name)) {
+      // Check if this is an FS-XXX folder (root-level feature, 3+ digits)
+      if (/^FS-\d{3,}E?$/.test(entry.name)) {
         const metadata = await this.parseFeatureMetadata(entryPath, entry.name);
         if (metadata) {
           this.existingFeatures.set(entry.name, metadata);
@@ -304,8 +304,8 @@ export class FSIdAllocator {
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
 
-      // Match FS-XXX or FS-XXXE pattern
-      const match = entry.name.match(/^(FS-\d{3}E?)$/);
+      // Match FS-XXX or FS-XXXE pattern (3+ digits)
+      const match = entry.name.match(/^(FS-\d{3,}E?)$/);
       if (!match) continue;
 
       const fsId = match[1];

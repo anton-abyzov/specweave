@@ -406,6 +406,30 @@ Contains:
 
 > It's not magic. It's structure. And structure is what makes AI productive."
 
+#### Pro Tip: Keep Increments Small
+
+**[VISUAL: Small vs large increment comparison]**
+
+> "Quick tip that will save you HOURS: keep your increments small.
+>
+> 5-15 tasks. 1-3 user stories. Something you can finish in 1-3 days.
+>
+> Why?
+>
+> **For YOU**:
+> - Easier to track progress (12 of 15 tasks done feels great!)
+> - Faster feedback loops (ship something every few days)
+> - Less overwhelming (know exactly what to do next)
+>
+> **For AI**:
+> - Claude maintains better context with smaller specs
+> - Fewer tasks = higher accuracy per task
+> - Easier to validate acceptance criteria
+>
+> **Anti-pattern**: 50-task mega-increment that runs for weeks. You lose context. AI loses context. Nothing ships.
+>
+> **Good pattern**: Small increments, quick wins, fast iterations. Each one COMPLETE before the next."
+
 #### Universal Hierarchy Mapping (External Tools)
 
 **[VISUAL: Side-by-side comparison table]**

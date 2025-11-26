@@ -207,13 +207,19 @@ export class DuplicateDetector {
    * Normalize external ID for consistent comparison
    *
    * Examples:
-   * - "GH-#638" → "gh-638"
-   * - "GITHUB-638" → "gh-638"
+   * - "github#owner/repo#638" → "gh:owner/repo#638" (v0.29+ format with repo)
+   * - "GH-#638" → "gh-638" (legacy)
+   * - "GITHUB-638" → "gh-638" (legacy)
    * - "JIRA-PROJ-123" → "jira-proj-123"
+   *
+   * CRITICAL: v0.29+ format includes repo name to prevent cross-repo collisions
    */
   private normalizeExternalId(externalId: string): string {
     return externalId
       .toLowerCase()
+      // v0.29+ format: github#owner/repo#123 → gh:owner/repo#123
+      .replace(/^github#([^#]+)#(\d+)$/i, 'gh:$1#$2')
+      // Legacy formats
       .replace(/^github-/i, 'gh-')
       .replace(/^gh-#/, 'gh-')
       .replace(/^jira-/i, 'jira-')

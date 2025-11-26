@@ -218,3 +218,14 @@
   fill: var(--mermaid-secondary-color) !important;
   stroke: var(--mermaid-primary-border-color) !important;
 }
+
+/* Hide category index info icons in sidebar */
+.theme-doc-sidebar-item-link-level-2 svg,
+.menu__link--sublist-caret svg.categoryItemsIcon {
+  display: none;
+}
+
+/* Hide the info circle icon that appears next to category items */
+.menu__link svg[class*="categoryLinkIcon"] {
+  display: none !important;
+}

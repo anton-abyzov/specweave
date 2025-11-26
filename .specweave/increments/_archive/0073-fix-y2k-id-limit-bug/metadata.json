@@ -1,0 +1,13 @@
+{
+  "id": "0073-fix-y2k-id-limit-bug",
+  "status": "completed",
+  "type": "bug",
+  "priority": "P1",
+  "created": "2025-11-26T12:00:00Z",
+  "lastActivity": "2025-11-26T12:00:00Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

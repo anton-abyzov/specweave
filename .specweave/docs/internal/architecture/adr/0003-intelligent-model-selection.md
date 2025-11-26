@@ -1,3 +1,9 @@
+---
+id: adr-0003-intelligent-model-selection
+title: "ADR-0003: Intelligent Model Selection Architecture"
+sidebar_label: "0003: Model Selection"
+---
+
 # ADR-0003-007: Intelligent Model Selection Architecture
 
 **Status**: Accepted

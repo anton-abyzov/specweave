@@ -213,7 +213,8 @@ function extractUserStories(lines: string[]): UserStory[] {
   let inACSection = false;
 
   // Regex patterns (T-029: Support E suffix for external IDs)
-  const usHeaderRegex = /^###?\s+(US-\d{3}E?):\s*(.+)$/;  // ### US-001E: Title or ## US-001: Title
+  // Updated: Support 3+ digits for US-XXX (Y2K fix)
+  const usHeaderRegex = /^###?\s+(US-\d{3,}E?):\s*(.+)$/;  // ### US-001E: Title or ## US-1000: Title
   const acRegex = /^-\s*\[[x ]\]\s*\*\*(AC-US\d+E?-\d{2})\*\*/;  // - [ ] **AC-US1E-01**
   const priorityRegex = /\*\*Priority\*\*:\s*(P[0-3])/;
 
@@ -327,8 +328,8 @@ export function validateACBelongsToUS(acId: string, usId: string): boolean {
 
   const acUSNumber = parseInt(acMatch[1], 10);
 
-  // Extract US number from US-ID: US-001 → 1
-  const usMatch = usId.match(/^US-(\d{3})$/);
+  // Extract US number from US-ID: US-001 → 1, US-1000 → 1000
+  const usMatch = usId.match(/^US-(\d{3,})$/);
   if (!usMatch) return false;
 
   const usNumber = parseInt(usMatch[1], 10);

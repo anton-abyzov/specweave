@@ -88,8 +88,9 @@ export function parseTasksWithUSLinks(tasksPath: string): TasksByUserStory {
     const lines = content.split('\n');
 
     // Regex patterns for task parsing (T-029: Support E suffix for external IDs)
-    const taskHeaderRegex = /^###\s+(T-\d{3}E?):\s*(.+)$/;
-    const userStoryRegex = /^\*\*User Story\*\*:\s*(US-\d{3}E?)/;
+    // Updated: Support 3+ digits for T-XXX and US-XXX (Y2K fix)
+    const taskHeaderRegex = /^###\s+(T-\d{3,}E?):\s*(.+)$/;
+    const userStoryRegex = /^\*\*User Story\*\*:\s*(US-\d{3,}E?)/;
     const satisfiesACsRegex = /^\*\*Satisfies ACs\*\*:\s*(AC-US\d+E?-\d{2}(?:,\s*AC-US\d+E?-\d{2})*)/;
     const statusRegex = /^\*\*Status\*\*:\s*\[([x ])\]\s*(\w+)/;
     const priorityRegex = /^\*\*Priority\*\*:\s*(.+)/;
@@ -177,11 +178,11 @@ export function parseTasksWithUSLinks(tasksPath: string): TasksByUserStory {
 
       const dependenciesMatch = line.match(dependenciesRegex);
       if (dependenciesMatch) {
-        // Parse dependencies (T-001, T-002, etc.)
+        // Parse dependencies (T-001, T-002, T-1000, etc.)
         currentTask.dependencies = dependenciesMatch[1]
           .split(',')
           .map(dep => dep.trim())
-          .filter(dep => dep.match(/^T-\d{3}$/));
+          .filter(dep => dep.match(/^T-\d{3,}$/));
         continue;
       }
 
@@ -264,14 +265,14 @@ export function validateTaskLinkage(
 
   // Validate userStory field
   if (task.userStory) {
-    // Check format (US-XXX)
-    if (!task.userStory.match(/^US-\d{3}$/)) {
+    // Check format (US-XXX, 3+ digits)
+    if (!task.userStory.match(/^US-\d{3,}$/)) {
       errors.push({
         taskId: task.id,
         field: 'userStory',
         value: task.userStory,
-        message: `Invalid US-ID format: "${task.userStory}" (expected format: US-001)`,
-        suggestedFix: 'Use format: US-XXX where XXX is a 3-digit number'
+        message: `Invalid US-ID format: "${task.userStory}" (expected format: US-001 or US-1000)`,
+        suggestedFix: 'Use format: US-XXX where XXX is 3 or more digits'
       });
     }
     // Check if US exists in spec.md
@@ -343,10 +344,10 @@ function extractUSNumberFromACId(acId: string): number {
 }
 
 /**
- * Extract US number from US-ID (US-001 → 1)
+ * Extract US number from US-ID (US-001 → 1, US-1000 → 1000)
  */
 function extractUSNumber(usId: string): number {
-  const match = usId.match(/^US-(\d{3})$/);
+  const match = usId.match(/^US-(\d{3,})$/);
   return match ? parseInt(match[1], 10) : -1;
 }
 

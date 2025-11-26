@@ -65,7 +65,7 @@ Implement a **Three-Tier Progressive Enhancement** approach to hook performance:
 3. **`/specweave:check-hooks` command:** Debug tool for hook issues
 
 **Impact:**
-- Fallback rate: ~100% → <1%
+- Fallback rate: ~100% → `<1%`
 - Hook only runs on actual spec.md/tasks.md edits
 - Better observability
 
@@ -250,7 +250,7 @@ disown 2>/dev/null || true
 - [ ] Create hook health dashboard
 
 **Decision Gate:**
-- If Tier 1 reduces fallback rate to <5%, skip Tier 2
+- If Tier 1 reduces fallback rate to `<5%`, skip Tier 2
 - If fallback rate >10%, implement Tier 2
 
 **ETA:** 1 week (after 1 week of Tier 1 data)
@@ -269,7 +269,7 @@ disown 2>/dev/null || true
 - [ ] Migrate to event-driven status updates
 
 **Decision Gate:**
-- If Tier 2 achieves <1% fallback rate, evaluate if Tier 3 is needed
+- If Tier 2 achieves `<1%` fallback rate, evaluate if Tier 3 is needed
 - If ongoing maintenance burden is high, implement Tier 3
 
 **ETA:** 3 days (after Tier 2 validation)
@@ -319,7 +319,7 @@ for i in {1..100}; do
   sleep 0.1  # Simulate typing
 done
 
-# Expected: <10 status line updates (debouncing works)
+# Expected: `<10` status line updates (debouncing works)
 # Expected: No crashes
 ```
 

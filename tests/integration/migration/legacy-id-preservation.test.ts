@@ -57,9 +57,9 @@ describe('Legacy ID Preservation (T-031)', () => {
     it('should not add suffix to existing internal IDs', () => {
       const existingInternalIds = generateUsIdRange(1, 50, 'internal');
 
-      // All IDs should remain without suffix
+      // All IDs should remain without suffix (3+ digits supported)
       existingInternalIds.forEach((id) => {
-        expect(id).toMatch(/^US-\d{3}$/);
+        expect(id).toMatch(/^US-\d{3,}$/);
         expect(id).not.toMatch(/E$/);
       });
     });

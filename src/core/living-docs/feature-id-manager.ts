@@ -12,6 +12,7 @@ import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import yaml from 'yaml';
 import { FSIdAllocator } from '../../living-docs/fs-id-allocator.js';
+import { checkFeatureIdCollision } from '../../utils/feature-id-collision.js';
 
 export interface FeatureInfo {
   originalId: string;           // Original ID like FS-25-11-12-external-tool-sync
@@ -249,8 +250,8 @@ export class FeatureIDManager {
     let nextId = 1;
 
     for (const feature of features) {
-      // Check if this is a greenfield feature (FS-XXX format)
-      const isGreenfield = /^FS-\d{3}$/.test(feature.originalId);
+      // Check if this is a greenfield feature (FS-XXX format, 3+ digits)
+      const isGreenfield = /^FS-\d{3,}$/.test(feature.originalId);
 
       if (isGreenfield) {
         // Greenfield: Use the increment number as-is
@@ -269,6 +270,8 @@ export class FeatureIDManager {
 
   /**
    * Get assigned ID for a feature
+   *
+   * CRITICAL FIX (2025-11-26): Check for FS-XXXE collision before assigning FS-XXX
    */
   public getAssignedId(originalId: string): string {
     const normalized = this.normalizeFeatureId(originalId);
@@ -278,9 +281,42 @@ export class FeatureIDManager {
       return feature.assignedId;
     }
 
-    // Feature not in registry - assign new ID
+    // Feature not in registry - assign new ID with collision check
     console.log(`  📝 Assigning new ID for feature: ${originalId}`);
-    const assignedId = `FS-${String(this.registry.nextId).padStart(3, '0')}`;
+
+    // CRITICAL FIX (2025-11-26): Find next ID that doesn't collide with FS-XXXE in ANY project
+    let safeId = this.registry.nextId;
+    const projectFolders = this.getProjectFolders();
+
+    // Check each candidate number until we find one without collision
+    let iterations = 0;
+    const maxIterations = 1000;
+
+    while (iterations < maxIterations) {
+      let hasCollision = false;
+
+      // Check collision in ALL project folders
+      for (const projectId of projectFolders) {
+        const collision = checkFeatureIdCollision(safeId, this.specsBaseDir, projectId);
+        if (collision.hasCollision) {
+          hasCollision = true;
+          break;
+        }
+      }
+
+      if (!hasCollision) {
+        break;
+      }
+
+      safeId++;
+      iterations++;
+    }
+
+    const assignedId = `FS-${String(safeId).padStart(3, '0')}`;
+
+    if (safeId !== this.registry.nextId) {
+      console.log(`   ⚠️ Collision detected: skipped to ${assignedId} (FS-${String(this.registry.nextId).padStart(3, '0')}E exists)`);
+    }
 
     this.registry.features.set(normalized, {
       originalId: normalized,
@@ -290,8 +326,28 @@ export class FeatureIDManager {
       projects: ['default']
     });
 
-    this.registry.nextId++;
+    this.registry.nextId = safeId + 1;
     return assignedId;
+  }
+
+  /**
+   * Get list of project folder names
+   */
+  private getProjectFolders(): string[] {
+    if (!fs.existsSync(this.specsBaseDir)) {
+      return ['default'];
+    }
+
+    try {
+      const entries = fs.readdirSync(this.specsBaseDir, { withFileTypes: true });
+      const projectFolders = entries
+        .filter(e => e.isDirectory() && !e.name.startsWith('_'))
+        .map(e => e.name);
+
+      return projectFolders.length > 0 ? projectFolders : ['default'];
+    } catch {
+      return ['default'];
+    }
   }
 
   /**
@@ -319,11 +375,11 @@ export class FeatureIDManager {
     // Remove any leading/trailing whitespace
     id = id.trim();
 
-    // KEEP numeric IDs as-is for greenfield (FS-001, FS-030, FS-031, etc.)
+    // KEEP numeric IDs as-is for greenfield (FS-001, FS-030, FS-1000, etc.)
     // These come directly from increment numbers and should NOT be converted
-    const simpleNumMatch = id.match(/^FS-(\d{3})$/);
+    const simpleNumMatch = id.match(/^FS-(\d{3,})$/);
     if (simpleNumMatch) {
-      return id; // Return as-is: FS-030, FS-031, etc.
+      return id; // Return as-is: FS-030, FS-031, FS-1000, etc.
     }
 
     // If it's already in date format (FS-YY-MM-DD-*), keep as-is

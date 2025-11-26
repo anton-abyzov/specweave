@@ -28,6 +28,7 @@ import { ConfigManager } from '../config-manager.js';
 import { SpecweaveConfig, MultiProjectConfig, ProjectConfig } from '../types/config.js';
 import { EpicMapping, FeatureMapping, ProjectContext } from './types.js';
 import { FeatureIDManager } from './feature-id-manager.js';
+import { findNextAvailableInternalIdSync } from '../../utils/feature-id-collision.js';
 
 /**
  * Hierarchy Configuration
@@ -416,17 +417,21 @@ export class HierarchyMapper {
         // Check if this is a brownfield project (imported from external tool)
         const isBrownfield = frontmatter.source === 'external' || frontmatter.imported === true;
 
+        // Detect projects FIRST for collision checking
+        const projects = await this.detectProjects(incrementId);
+
         if (!isBrownfield) {
           // Greenfield: ALWAYS use increment number, ignore frontmatter's date-based ID
           const numMatch = incrementId.match(/^(\d{4})-/);
           if (numMatch) {
-            const num = parseInt(numMatch[1], 10);
-            featureId = `FS-${String(num).padStart(3, '0')}`;
+            const baseNum = parseInt(numMatch[1], 10);
+            // CRITICAL FIX (2025-11-26): Check for FS-XXXE collision before using FS-XXX
+            const primaryProject = projects[0] || 'default';
+            const safeNum = findNextAvailableInternalIdSync(baseNum, this.config.specsBaseDir, primaryProject);
+            featureId = `FS-${String(safeNum).padStart(3, '0')}`;
           }
         }
         // For brownfield, keep the date-based ID from frontmatter
-
-        const projects = await this.detectProjects(incrementId);
         const epic = frontmatter.epic || undefined;
 
         return this.buildFeatureMapping(featureId, projects, epic, 100, 'frontmatter');
@@ -451,13 +456,17 @@ export class HierarchyMapper {
     const numMatch = incrementId.match(/^(\d{4})-/);
     if (!numMatch) return null;
 
-    const num = parseInt(numMatch[1], 10);
+    const baseNum = parseInt(numMatch[1], 10);
 
-    // Build feature ID: FS-XXX (using last 3 digits, zero-padded)
-    const featureId = `FS-${String(num).padStart(3, '0')}`;
-
-    // Detect projects
+    // Detect projects FIRST for collision checking
     const projects = await this.detectProjects(incrementId);
+
+    // CRITICAL FIX (2025-11-26): Check for FS-XXXE collision before using FS-XXX
+    const primaryProject = projects[0] || 'default';
+    const safeNum = findNextAvailableInternalIdSync(baseNum, this.config.specsBaseDir, primaryProject);
+
+    // Build feature ID: FS-XXX (using safe number that doesn't collide with FS-XXXE)
+    const featureId = `FS-${String(safeNum).padStart(3, '0')}`;
 
     // Check if feature folder already exists
     const existingFeature = await this.findExistingFeatureFolder(featureId);
@@ -495,13 +504,17 @@ export class HierarchyMapper {
       throw new Error(`Invalid increment ID format: ${incrementId}`);
     }
 
-    const num = parseInt(numMatch[1], 10);
+    const baseNum = parseInt(numMatch[1], 10);
 
-    // Build feature ID: FS-XXX (using last 3 digits, zero-padded)
-    const featureId = `FS-${String(num).padStart(3, '0')}`;
-
-    // Detect projects
+    // Detect projects FIRST for collision checking
     const projects = await this.detectProjects(incrementId);
+
+    // CRITICAL FIX (2025-11-26): Check for FS-XXXE collision before using FS-XXX
+    const primaryProject = projects[0] || 'default';
+    const safeNum = findNextAvailableInternalIdSync(baseNum, this.config.specsBaseDir, primaryProject);
+
+    // Build feature ID: FS-XXX (using safe number that doesn't collide with FS-XXXE)
+    const featureId = `FS-${String(safeNum).padStart(3, '0')}`;
 
     console.log(`   📁 Creating new feature: ${featureId}`);
 
@@ -521,8 +534,8 @@ export class HierarchyMapper {
     confidence: number,
     detectionMethod: 'frontmatter' | 'increment-name' | 'config' | 'fallback'
   ): FeatureMapping {
-    // Check if this is greenfield (FS-XXX) or brownfield (FS-YY-MM-DD-name)
-    const isGreenfield = /^FS-\d{3}$/.test(featureId);
+    // Check if this is greenfield (FS-XXX, 3+ digits) or brownfield (FS-YY-MM-DD-name)
+    const isGreenfield = /^FS-\d{3,}$/.test(featureId);
 
     // For greenfield, use the feature ID directly (no registry lookup)
     // For brownfield, get assigned ID from registry (for deduplication)
@@ -714,8 +727,8 @@ export class HierarchyMapper {
         }
 
         // Fuzzy match ONLY for brownfield (date-based) IDs
-        // Greenfield IDs (FS-XXX) should NEVER fuzzy match
-        const isGreenfield = /^FS-\d{3}E?$/.test(featureId);
+        // Greenfield IDs (FS-XXX, 3+ digits) should NEVER fuzzy match
+        const isGreenfield = /^FS-\d{3,}E?$/.test(featureId);
         if (isGreenfield) {
           continue; // No fuzzy match for greenfield
         }
@@ -768,8 +781,8 @@ export class HierarchyMapper {
             continue;
           }
 
-          // Match FS-XXX or FS-XXXE pattern
-          if (!/^FS-\d{3}E?$/.test(folder)) {
+          // Match FS-XXX or FS-XXXE pattern (3+ digits)
+          if (!/^FS-\d{3,}E?$/.test(folder)) {
             continue;
           }
 

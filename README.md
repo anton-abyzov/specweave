@@ -1,8 +1,8 @@
 # SpecWeave
 
-**15 AI Agents. One Terminal. Zero Tab-Switching.**
+**Finally. A Framework That Works on Legacy, Startup, AND Enterprise.**
 
-*The first spec-driven framework where PM, Architect, Tech Lead, QA, Security, and DevOps agents orchestrate themselves — automatically.*
+*Drop it into a 10-year-old codebase — it understands everything. Use it on your weekend MVP — specs write themselves. Scale it to 50 teams — JIRA, GitHub, Azure DevOps sync automatically.*
 
 [![NPM Version](https://img.shields.io/npm/v/specweave?color=blue)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -33,14 +33,14 @@ This isn't just a framework we made — it's the framework we use every day. Our
 
 | Pain Point | BMAD | SpecKit | SpecWeave |
 |------------|------|---------|-----------|
-| **Window switching** | 5-10 persona tabs | Single tool | **15 agents in ONE terminal** |
-| **Orchestration** | Manual (you're the router) | Manual | **Automatic (agents call each other)** |
+| **Legacy codebases** | Greenfield only | Greenfield only | **Any codebase, any age** |
 | **External sync** | None | None | **Bidirectional (JIRA/GitHub/ADO)** |
 | **Living docs** | Copy-paste | Templates only | **Auto-update after every task** |
 | **Enterprise hierarchy** | No mapping | No mapping | **Universal mapping (Epic→Story→Task)** |
+| **AI tool lock-in** | Claude-specific prompts | Claude-specific | **ANY AI: Claude, GPT, Gemini, Copilot** |
 | **Quality gates** | None | None | **3-gate validation (tasks/tests/docs)** |
 
-> **Stop being the human router between AI personas.** SpecWeave agents orchestrate themselves.
+> **One framework. Any project. Any scale. Any AI.**
 
 ---
 
@@ -93,13 +93,13 @@ Then in Claude Code:
 
 ## Key Strengths
 
-- **Brownfield + Greenfield** — Works with existing codebases, not just new projects
-- **70%+ Token Reduction** — Progressive loading, context optimizer, sub-agent isolation
-- **Multi-Project Mode** — Manage multiple repos with shared specs and cross-project sync
-- **External Tool Sync** — Push specs to GitHub/JIRA/ADO, read status back automatically
-- **3-Gate Quality Validation** — Tasks, tests (60%+), and docs verified before closing
-- **15+ Specialized Agents** — PM, Architect, Tech Lead, QA, Security, DevOps work autonomously
-- **Living Documentation** — Specs auto-update after every task via hooks
+- **Legacy to Enterprise** — 10-year-old monolith? Startup MVP? 50-team enterprise? Works on all.
+- **Any AI, Your Choice** — Claude, GPT, Gemini, Copilot — your team uses whatever they prefer
+- **Real Bidirectional Sync** — JIRA/GitHub/ADO update when you work. You update when they change.
+- **Living Documentation** — Specs auto-update after every task. Never stale. Never manual.
+- **Multi-Project Mode** — Multiple repos, multiple teams, one source of truth
+- **3-Gate Quality Validation** — Nothing ships without passing tasks, tests (60%+), and docs
+- **70%+ Token Reduction** — Progressive loading means your AI stays fast and focused
 
 ---
 
@@ -174,18 +174,21 @@ As a user, I want to toggle dark mode so that I can reduce eye strain at night.
 
 ## Key Features
 
-### Autonomous Multi-Agent Orchestration
+### Works With ANY AI Tool
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/anton-abyzov/specweave/develop/docs-site/static/img/agents-diagram.svg" alt="SpecWeave Multi-Agent Orchestration: PM → Architect → Tech Lead → QA → Security → DevOps" width="850"/>
+  <img src="https://raw.githubusercontent.com/anton-abyzov/specweave/develop/docs-site/static/img/agents-diagram.svg" alt="SpecWeave works with Claude, GPT, Gemini, Copilot and more" width="850"/>
 </p>
 
-- **PM Agent**: User stories, acceptance criteria, market analysis
-- **Architect Agent**: System design, ADRs, tech stack decisions
-- **Tech Lead Agent**: Implementation, code review, best practices
-- **QA Lead Agent**: Test strategy, E2E tests, coverage validation
-- **Security Agent**: Threat modeling, OWASP, vulnerability assessment
-- **DevOps Agent**: IaC, Kubernetes, CI/CD pipelines
+SpecWeave's power isn't in Claude magic. It's in **structure**.
+
+- `spec.md` is just markdown — any AI can read it
+- `tasks.md` is just markdown — any AI can update it
+- Acceptance criteria are just checkboxes — universal
+
+**Team with mixed AI tools?** Sarah uses Claude. Mike uses GPT-4. Alex uses Copilot. Everyone works on the same specs. Same tasks. Same acceptance criteria. The sync still works.
+
+**Claude Code** gets the best experience (slash commands, hooks, skills). But any AI can participate.
 
 ### Living Documentation
 
@@ -250,17 +253,27 @@ Three gates before any increment closes:
 
 ---
 
-## Brownfield & Greenfield
+## Legacy, Startup, or Enterprise — It Just Works
 
-**New Projects**: Start spec-driven from day one.
-
-**Existing Projects**:
+**10-Year-Old Legacy Codebase?**
 ```bash
-specweave init .
-/specweave:import-docs ~/exports/notion --source=notion
+specweave init . --brownfield
+# Analyzes existing code, imports from JIRA/GitHub, creates specs from reality
 ```
 
-Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically and creates retroactive specifications.
+**Fresh Startup MVP?**
+```bash
+specweave init .
+/specweave:increment "Build user auth"  # Full spec in 60 seconds
+```
+
+**50-Team Enterprise?**
+```bash
+specweave init . --multiproject
+# Maps to JIRA projects, ADO area paths, GitHub repos automatically
+```
+
+Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically.
 
 ---
 
@@ -300,7 +313,7 @@ MIT - [github.com/anton-abyzov/specweave](https://github.com/anton-abyzov/specwe
 
 ---
 
-**Stop being the human router. Let 15 AI agents build your product.**
+**Legacy. Startup. Enterprise. One framework that actually works everywhere.**
 
 ```bash
 npm install -g specweave
@@ -308,4 +321,4 @@ npm install -g specweave
 
 ---
 
-*Built for Fortune 500 complexity. Free for everyone.*
+*Fortune 500 companies pay millions for systems like this. This? Free. Open source.*

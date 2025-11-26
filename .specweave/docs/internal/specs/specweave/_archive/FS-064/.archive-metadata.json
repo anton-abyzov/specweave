@@ -1,0 +1,11 @@
+{
+  "id": "FS-064",
+  "type": "feature",
+  "archivedAt": "2025-11-26T23:17:55.029Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-064",
+  "linkedIncrements": [
+    "0064-fix-external-sync-tags-status-types"
+  ]
+}
