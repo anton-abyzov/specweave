@@ -4,6 +4,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.33] - 2025-11-26
+
+### ✨ Features
+- Add GitHub status reconciliation command (`/specweave-github:reconcile`)
+- Add automatic issue reopen on increment resume
+- Add automatic issue close on increment abandon
+- Add optional auto-reconcile on session start hook
+
+### 🔧 Improvements
+- Add session-start reconcile hook for GitHub sync
+- Add close/reopen GitHub issues hooks
+
+---
+
 ## [0.28.32] - 2025-11-26
 
 ### 🐛 Bug Fixes
