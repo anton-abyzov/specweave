@@ -323,5 +323,22 @@ export async function createSpecWeaveStructure(
 
       console.log(chalk.gray(`   [OK] Created project structure: ${repo.path}`));
     }
+
+    // CRITICAL: Also create folder for parent repo (was missing before!)
+    if (config.architecture === 'parent' && config.parentRepo) {
+      const parentSpecPath = path.join(
+        specweavePath,
+        'docs',
+        'internal',
+        'specs',
+        config.parentRepo.name
+      );
+
+      if (!existsSync(parentSpecPath)) {
+        mkdirSync(parentSpecPath, { recursive: true });
+      }
+
+      console.log(chalk.gray(`   [OK] Created project structure: ${config.parentRepo.name} (parent)`));
+    }
   }
 }

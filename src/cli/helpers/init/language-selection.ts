@@ -30,10 +30,10 @@ export interface LanguageSelectionResult {
 function getLanguageChoices(): Array<{ name: string; value: SupportedLanguage }> {
   return [
     { name: '🇬🇧 English', value: 'en' },
-    { name: '🇷🇺 Русский (Russian)', value: 'ru' },
     { name: '🇪🇸 Español (Spanish)', value: 'es' },
     { name: '🇨🇳 中文 (Chinese)', value: 'zh' },
     { name: '🇩🇪 Deutsch (German)', value: 'de' },
+    { name: '🇷🇺 Русский (Russian)', value: 'ru' },
     { name: '🇫🇷 Français (French)', value: 'fr' },
     { name: '🇯🇵 日本語 (Japanese)', value: 'ja' },
     { name: '🇰🇷 한국어 (Korean)', value: 'ko' },
