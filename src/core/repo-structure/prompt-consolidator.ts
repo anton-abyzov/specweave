@@ -76,43 +76,13 @@ my-project-backend/        ← Separate GitHub repo
  */
 export function getParentRepoBenefits(): string {
   return `
-**Why use a parent folder?**
+**Why a parent folder?**
+One central .specweave/ for all repos = single source of truth for specs & docs.
 
-✅ **Central .specweave/ for all specs/docs**
-   - One source of truth for entire system
-   - No duplication or fragmentation
-   - Easy to search and navigate
-
-✅ **Cross-cutting features naturally supported**
-   - Authentication spans frontend + backend
-   - All specs in one place, not scattered
-
-✅ **System-wide architecture decisions**
-   - ADRs apply to entire system
-   - Technology stack decisions documented centrally
-
-✅ **Simplified onboarding**
-   - New developers read one set of docs
-   - Complete system overview in one location
-
-✅ **Local-only approach**
-   - Parent folder stays on your machine
-   - .specweave/ is gitignored (not synced to GitHub)
-   - Implementation repos still on GitHub
-   - Lighter setup, no parent repo overhead
-
-**Example Structure:**
-
-my-parent-folder/          ← Local folder (NOT a GitHub repo)
-├── .specweave/            ← Gitignored (local only)
-│   ├── increments/
-│   ├── docs/
-│   └── logs/
-├── .env                   ← Config
-├── frontend/              ← Cloned from GitHub (or init new)
-└── backend/               ← Cloned from GitHub (or init new)
-
-**Note:** .specweave/ is NOT synced to GitHub - it's local only.
+my-parent/                 ← Local folder
+├── .specweave/            ← All specs/docs here (local only)
+├── frontend/              ← GitHub repo
+└── backend/               ← GitHub repo
   `.trim();
 }
 

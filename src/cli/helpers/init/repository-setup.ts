@@ -251,7 +251,7 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
         value: 'other' as const
       }
     ],
-    default: gitHubRemote ? 'github' : 'local'
+    default: 'github'  // GitHub is recommended
   });
 
   // Combine structure + provider

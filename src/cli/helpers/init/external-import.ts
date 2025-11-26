@@ -401,7 +401,9 @@ export async function promptAndRunExternalImport(
   };
 
   // Add GitHub config - prefer multi-repo if selected
-  if (github && hasGitHubToken) {
+  // CRITICAL FIX: Check (github || hasGitHubProfiles) to match line 359 condition
+  // In umbrella mode, github=null but profiles exist - we still need to import!
+  if ((github || (hasGitHubProfiles && repoSelectionConfig)) && hasGitHubToken) {
     if (repoSelectionConfig && repoSelectionConfig.repositories.length > 0) {
       // Multi-repo mode: import from all selected repositories
       coordinatorConfig.githubRepositories = repoSelectionConfig.repositories.map(fullRepo => {
@@ -409,8 +411,8 @@ export async function promptAndRunExternalImport(
         return { owner, repo };
       });
       coordinatorConfig.githubToken = githubAuth.token;
-    } else {
-      // Single repo mode (backwards compatible)
+    } else if (github) {
+      // Single repo mode (backwards compatible) - only if github detected
       coordinatorConfig.github = {
         owner: github.owner,
         repo: github.repo,
@@ -771,11 +773,12 @@ async function runImport(
 
     return result;
   } catch (error) {
-    spinner.fail('Import failed');
+    // Show actual error message (was generic "Import failed" before)
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    spinner.fail(`Import failed: ${errorMsg}`);
 
     // Mark background job as failed
     if (jobManager && jobId) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
       jobManager.completeJob(jobId, errorMsg);
     }
 

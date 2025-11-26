@@ -361,7 +361,8 @@ export async function initCommand(
               { name: 'Claude Code (Recommended - Full automation)', value: 'claude' },
               { name: 'Cursor (Partial - AGENTS.md compilation)', value: 'cursor' },
               { name: 'Other (Copilot, ChatGPT - Limited)', value: 'generic' }
-            ]
+            ],
+            default: 'claude'
           });
         } else {
           toolName = detectedTool;
@@ -454,8 +455,11 @@ export async function initCommand(
           if (importResult.totalCount > 0) {
             console.log(chalk.green('\n✅ Imported ' + importResult.totalCount + ' items from ' + importResult.platforms.join(', ')));
           }
-        } catch {
-          console.log(chalk.yellow('\n⚠️  External tool import skipped (can run later)'));
+        } catch (importError) {
+          // Show actual error (was swallowed before) - helps debugging
+          const errorMsg = importError instanceof Error ? importError.message : String(importError);
+          console.log(chalk.yellow(`\n⚠️  External tool import failed: ${errorMsg}`));
+          console.log(chalk.gray('   → You can run /specweave-github:sync later to retry'));
         }
       }
     }
