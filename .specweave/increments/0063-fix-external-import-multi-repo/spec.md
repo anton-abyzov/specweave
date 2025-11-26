@@ -27,10 +27,10 @@ External work item import is broken for multi-repo/umbrella setups:
 **So that** I can see work items from frontend, backend, and shared repos in my living docs.
 
 **Acceptance Criteria:**
-- [ ] **AC-US1-01**: When multi-repo selection is made during init, items are imported from each selected repository
-- [ ] **AC-US1-02**: Items from different repos are tagged with their source repository
+- [x] **AC-US1-01**: When multi-repo selection is made during init, items are imported from each selected repository
+- [x] **AC-US1-02**: Items from different repos are tagged with their source repository
 - [ ] **AC-US1-03**: Progress shows which repo is being imported and item count
-- [ ] **AC-US1-04**: Duplicate detection works across all repos (same GitHub issue = same US-XXXE ID)
+- [x] **AC-US1-04**: Duplicate detection works across all repos (same GitHub issue = same US-XXXE ID)
 
 ### US-002: Feature Folder Structure for Imports
 **As a** SpecWeave user,
@@ -38,10 +38,10 @@ External work item import is broken for multi-repo/umbrella setups:
 **So that** my living docs are organized consistently with internal items.
 
 **Acceptance Criteria:**
-- [ ] **AC-US2-01**: When feature allocation is enabled, items go to `specs/FS-XXX/` folders
-- [ ] **AC-US2-02**: Feature folders have proper FEATURE.md with external origin metadata
-- [ ] **AC-US2-03**: User stories are placed inside feature folders with correct naming
-- [ ] **AC-US2-04**: FSIdAllocator is used for chronological feature ID placement
+- [x] **AC-US2-01**: When feature allocation is enabled, items go to `specs/FS-XXX/` folders
+- [x] **AC-US2-02**: Feature folders have proper FEATURE.md with external origin metadata
+- [x] **AC-US2-03**: User stories are placed inside feature folders with correct naming
+- [x] **AC-US2-04**: FSIdAllocator is used for chronological feature ID placement
 
 ### US-003: Large Import Progress Tracking
 **As a** user importing from large projects (1000+ items),
@@ -49,10 +49,10 @@ External work item import is broken for multi-repo/umbrella setups:
 **So that** I know how long the import will take and can track progress.
 
 **Acceptance Criteria:**
-- [ ] **AC-US3-01**: Progress shows current/total count with percentage
-- [ ] **AC-US3-02**: Progress shows estimated time remaining
-- [ ] **AC-US3-03**: Progress shows items per second rate
-- [ ] **AC-US3-04**: Each repository import shows its own progress when multi-repo
+- [x] **AC-US3-01**: Progress shows current/total count with percentage
+- [x] **AC-US3-02**: Progress shows estimated time remaining
+- [x] **AC-US3-03**: Progress shows items per second rate
+- [x] **AC-US3-04**: Each repository import shows its own progress when multi-repo
 
 ### US-004: External ID Flow Through Increment Lifecycle
 **As a** SpecWeave user,

@@ -202,9 +202,9 @@
 ### T-017: Add unit tests for multi-repo import
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01, AC-US1-02, AC-US1-04
-**Status**: [ ] pending
+**Status**: [x] completed
 
-**Description**: Add tests for ImportCoordinator multi-repo handling.
+**Description**: Add tests for ImportCoordinator multi-repo handling. Created comprehensive test suite with 14 tests covering multi-repo configuration, source repo tagging, progress tracking, and error handling.
 
 **File**: `tests/unit/importers/import-coordinator.test.ts`
 
@@ -213,9 +213,9 @@
 ### T-018: Add unit tests for feature folder creation
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03
-**Status**: [ ] pending
+**Status**: [x] completed
 
-**Description**: Add tests for ItemConverter feature allocation flow.
+**Description**: Add tests for ItemConverter feature allocation flow. Added 11 new test cases covering feature folder organization, FEATURE.md creation with external metadata, file path structure, FSIdAllocator integration, auto-archive, and sourceRepo tracking.
 
 **File**: `tests/unit/importers/item-converter.test.ts`
 
@@ -234,8 +234,8 @@
 
 ## Progress Summary
 
-**Completed**: 17/22 tasks
-**Pending**: 5 tasks (T-014, T-015, T-016, T-017, T-018, T-019 - verification and testing)
+**Completed**: 17/20 tasks
+**Pending**: 3 tasks (T-014, T-015, T-016, T-019 - manual verification tasks requiring external project)
 
 ### Key Implementations:
 1. Multi-repo GitHub import support (T-001 to T-004)

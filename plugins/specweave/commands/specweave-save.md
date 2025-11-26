@@ -1,37 +1,55 @@
 ---
 name: specweave:save
-description: Save and push changes across all repositories in an umbrella setup. Detects repos with changes, sets up remotes if missing, auto-generates or accepts user commit message, and pushes to origin. Works for single repos and multi-repo umbrella setups.
+description: SMART save - auto-generates commit messages, handles git pull/merge/rebase automatically, resolves divergent branches, stashes dirty work. Works for single repos and umbrella multi-repo setups. Just run /specweave:save with no args for fully automatic save!
 ---
 
-# /specweave:save - Save Changes Across Repositories
+# /specweave:save - Smart Save with Auto-Sync
 
-Save and push changes across all repositories in your project. Works for both single repos and umbrella multi-repo setups.
+**SMART SAVE** - Handles everything automatically: commit message generation, remote sync (pull/rebase), branch setup, and push. Just run `/specweave:save` and it figures out what to do!
 
-## What This Command Does
+## TL;DR - Just Works!
 
-1. **Detects repositories** - Finds all repos (umbrella childRepos or current repo)
-2. **Checks for changes** - Identifies repos with uncommitted changes
-3. **Sets up remotes** - Prompts for remote URL if missing
-4. **Auto-generates or accepts commit message** - Smart message generation from changes
-5. **Pushes to remote** - Pushes commits to origin
+```bash
+/specweave:save           # FULLY AUTOMATIC - generates message, syncs, pushes (NO prompts!)
+/specweave:save "msg"     # Your message, auto-sync
+/specweave:save -i        # Interactive - asks before each step
+```
+
+**What it handles automatically:**
+- ✅ No commit message? → Generates from changes
+- ✅ Remote has new commits? → Auto-pulls (rebase by default)
+- ✅ Uncommitted changes during pull? → Auto-stash/unstash
+- ✅ Branch not tracking? → Auto-setup with `-u`
+- ✅ Multi-repo umbrella? → Syncs all repos
+- ⛔ **NEVER force pushes** - Always merges with remote safely
+
+## What This Command Does (In Order)
+
+1. **Detect repos** - Current repo OR all umbrella child repos
+2. **Pre-flight check** - Check remote status BEFORE anything else
+3. **Smart sync** - Auto-pull/rebase if behind remote (with stash if needed)
+4. **Auto-commit message** - Generate from changes if not provided
+5. **Push** - Push to remote with auto-retry on recoverable errors
+6. **Report** - Show what was done
 
 ## Usage
 
 ```bash
-# Auto-generate commit message from changes (NEW!)
+# FULLY AUTOMATIC - zero prompts! (DEFAULT)
 /specweave:save
 
-# With explicit commit message
-/specweave:save "feat: Add menu builder feature"
+# With your own commit message
+/specweave:save "feat: Add menu builder"
 
-# Dry run (show what would happen, don't execute)
+# Interactive mode - asks before each action
+/specweave:save -i
+/specweave:save --interactive
+
+# Dry run - preview without executing
 /specweave:save --dry-run
 
-# Save specific repos only (umbrella mode)
-/specweave:save "fix: Bug fixes" --repos frontend,backend
-
-# Skip repos without remote (don't prompt)
-/specweave:save "chore: Updates" --skip-no-remote
+# Force push (careful! requires "FORCE" confirmation)
+/specweave:save --force
 ```
 
 ## Auto-Generated Commit Messages (IMPORTANT!)
@@ -176,7 +194,19 @@ chore(deps): update package dependencies
 | update | >5 | `update [scope/category]` |
 | remove | any | `remove [thing(s)]` |
 
-#### 8. Present for Confirmation
+#### 8. Execute (Default) or Confirm (Interactive Mode)
+
+**DEFAULT BEHAVIOR (no `-i` flag):** Just use the generated message and proceed:
+
+```markdown
+📊 Analyzing changes...
+
+🤖 Auto-generated: `docs(docs-site): add academy section and update learning journey`
+
+✅ Committing and pushing...
+```
+
+**INTERACTIVE MODE (`-i` flag):** Ask for confirmation:
 
 ```markdown
 📊 **Analyzing changes...**
@@ -316,128 +346,348 @@ For umbrella setups, generate per-repo messages:
   3️⃣  Edit each message
 ```
 
-## Workflow
+## SMART SYNC ALGORITHM (The Magic!)
+
+### Pre-Flight Check - BEFORE Any Commit
+
+**ALWAYS check remote status first.** Don't wait for push to fail!
+
+```bash
+# Step 1: Fetch without merge (safe, just gets info)
+git fetch origin
+
+# Step 2: Check relationship between local and remote
+LOCAL=$(git rev-parse HEAD)
+REMOTE=$(git rev-parse @{u} 2>/dev/null || echo "no-upstream")
+BASE=$(git merge-base HEAD @{u} 2>/dev/null || echo "no-base")
+
+# Step 3: Determine sync state
+if [ "$REMOTE" = "no-upstream" ]; then
+  STATE="no-tracking"
+elif [ "$LOCAL" = "$REMOTE" ]; then
+  STATE="up-to-date"
+elif [ "$LOCAL" = "$BASE" ]; then
+  STATE="behind"           # Remote has commits we don't have
+elif [ "$REMOTE" = "$BASE" ]; then
+  STATE="ahead"            # We have commits remote doesn't have
+else
+  STATE="diverged"         # Both have unique commits
+fi
+```
+
+### Smart Sync Decision Tree
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     PRE-FLIGHT CHECK                            │
+├─────────────────────────────────────────────────────────────────┤
+│  git fetch origin (safe - just gets metadata)                   │
+│  Compare LOCAL vs REMOTE vs BASE                                │
+└──────────────────────────┬──────────────────────────────────────┘
+                           │
+           ┌───────────────┼───────────────┐
+           ▼               ▼               ▼
+    ┌──────────┐    ┌──────────┐    ┌──────────┐
+    │ UP-TO-   │    │ AHEAD    │    │ BEHIND   │
+    │ DATE     │    │ (local   │    │ (remote  │
+    │          │    │ has new) │    │ has new) │
+    └────┬─────┘    └────┬─────┘    └────┬─────┘
+         │               │               │
+    Just commit     Just commit     ┌────┴────┐
+    and push        and push        │ STASH   │
+                                    │ PULL    │
+                                    │ UNSTASH │
+                                    └────┬────┘
+                                         │
+                                    Then commit
+                                    and push
+
+           ┌───────────────┴───────────────┐
+           ▼                               ▼
+    ┌──────────────┐                ┌──────────────┐
+    │ DIVERGED     │                │ NO TRACKING  │
+    │ (both have   │                │ (new branch) │
+    │ unique)      │                │              │
+    └──────┬───────┘                └──────┬───────┘
+           │                               │
+    ┌──────┴──────┐                   Auto setup:
+    │   STASH     │                   git push -u
+    │   PULL      │                   origin HEAD
+    │   --rebase  │
+    │   UNSTASH   │
+    └──────┬──────┘
+           │
+      Then commit
+      and push
+```
+
+### Stash Handling (Auto-Magic!)
+
+**Problem**: Can't pull/rebase with uncommitted changes.
+**Solution**: Auto-stash, sync, unstash.
+
+```bash
+# Check if working tree is dirty
+DIRTY=$(git status --porcelain)
+
+if [ -n "$DIRTY" ] && [ "$STATE" != "up-to-date" ] && [ "$STATE" != "ahead" ]; then
+  echo "📦 Stashing uncommitted changes..."
+  git stash push -m "specweave-save-autostash"
+  STASHED=true
+fi
+
+# Do the sync (pull/rebase)
+git pull --rebase origin $(git branch --show-current)
+
+# Restore stash if we stashed
+if [ "$STASHED" = true ]; then
+  echo "📦 Restoring stashed changes..."
+  git stash pop
+fi
+```
+
+### Conflict Handling
+
+**If rebase/merge has conflicts:**
+
+```markdown
+⚠️  **Merge conflict detected!**
+
+Conflicting files:
+  - src/services/auth.ts
+  - package.json
+
+Options:
+  1. 🔧 Resolve conflicts manually (I'll wait)
+  2. ⏮️  Abort rebase, keep local state
+  3. 🔀 Try merge instead of rebase
+
+? Choose:
+```
+
+**Smart Auto-Resolution** (no user input needed for these):
+
+| File Type | Resolution | Reason |
+|-----------|------------|--------|
+| `package-lock.json` | Delete, run `npm install` | Auto-regenerates correctly |
+| `yarn.lock` | Delete, run `yarn` | Auto-regenerates correctly |
+| `.specweave/increments/*/metadata.json` | Keep LOCAL | Your work takes precedence |
+| `.specweave/increments/*/tasks.md` | Keep LOCAL | Your progress |
+| `*.md` in `.specweave/` | Keep LOCAL | Your documentation |
+| `dist/`, `build/`, `node_modules/` | Keep REMOTE | Will rebuild anyway |
+
+**Files that ALWAYS need manual resolution:**
+- Source code (`*.ts`, `*.js`, `*.tsx`)
+- Configuration (`*.config.*`, `tsconfig.json`)
+- Environment (`.env*`)
+
+### Smart File Importance Detection
+
+When conflicts occur, automatically categorize:
+
+```markdown
+🔍 Analyzing conflict importance...
+
+MUST INCLUDE (your work):
+  ✓ src/services/auth.ts (modified by you)
+  ✓ tests/auth.test.ts (new file)
+  ✓ .specweave/increments/0042/ (your increment)
+
+CAN AUTO-RESOLVE:
+  ✓ package-lock.json → npm install
+  ✓ dist/bundle.js → rebuild
+
+NEEDS DECISION:
+  ⚠️ package.json (both modified version)
+     LOCAL:  "version": "1.2.0"
+     REMOTE: "version": "1.1.5"
+     → Keep LOCAL (your version bump)? [Y/n]
+```
+
+### NEVER Force Push (Safety First!)
+
+**Force push is DISABLED by default.** Even with `--force` flag:
+
+```markdown
+User: /specweave:save --force
+
+Claude:
+⚠️  Force push requested!
+
+This will OVERWRITE remote history. Are you SURE?
+  - Remote has 3 commits that will be LOST
+  - Other team members may lose work
+
+? Type "FORCE" to confirm (or anything else to cancel):
+```
+
+**The `--force` flag requires explicit confirmation** because:
+- It destroys remote history
+- Team members lose commits
+- Usually indicates a workflow problem
+
+**Better alternatives:**
+- Let auto-sync handle it (rebase/merge)
+- Create a new branch: `/specweave:save --branch fix-conflict`
+- Ask team to pull before you push
+
+### Full Smart Workflow
+
+```markdown
+/specweave:save
+
+📡 Scanning repositories...
+   Mode: Single repo (my-project)
+
+🔍 Pre-flight check...
+   Remote: origin/develop
+   Local:  3 commits ahead, 2 commits behind
+   State:  DIVERGED
+
+📦 Stashing uncommitted changes... (5 files)
+   Created: stash@{0} "specweave-save-autostash"
+
+🔄 Syncing with remote...
+   git pull --rebase origin develop
+   ✓ Rebased 3 commits onto latest remote
+
+📦 Restoring stashed changes...
+   ✓ Applied stash@{0}
+
+📊 Analyzing changes...
+   Detected: 5 modified files in src/
+   Active increment: 0042-menu-builder
+
+🤖 Auto-generated message:
+   feat(menu): implement drag-drop menu builder
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+? Action: [1] Use message  [2] Edit  [3] Custom
+> 1
+
+💾 Committing...
+   git add -A
+   git commit -m "feat(menu): implement drag-drop menu builder"
+
+🚀 Pushing...
+   git push origin develop
+   ✓ Pushed to origin/develop
+
+✅ DONE!
+   Synced:    2 commits from remote
+   Committed: 1 new commit
+   Pushed:    4 commits total
+```
+
+### Workflow
 
 ### Step 1: Detect Repositories
 
 ```markdown
-Scanning for repositories...
+📡 Scanning for repositories...
 
 Mode: Umbrella (3 child repos)
 
-Repositories found:
+Repositories:
   1. sw-qr-menu-fe (./sw-qr-menu-fe)
   2. sw-qr-menu-be (./sw-qr-menu-be)
   3. sw-qr-menu-shared (./sw-qr-menu-shared)
 ```
 
-**For single repo:**
-```markdown
-Scanning for repositories...
-
-Mode: Single repository
-
-Repository: my-project (.)
-```
-
-### Step 2: Check Git Status
+### Step 2: Pre-Flight Check (NEW!)
 
 ```markdown
-Checking git status...
+🔍 Pre-flight check...
 
 sw-qr-menu-fe:
-  Status: 3 files changed
-  - src/components/MenuBuilder.tsx (modified)
-  - src/hooks/useMenu.ts (new)
-  - package.json (modified)
-  Remote: origin -> github.com/user/sw-qr-menu-fe
+  Branch: develop
+  Remote: origin/develop
+  State:  ✓ UP-TO-DATE
 
 sw-qr-menu-be:
-  Status: 5 files changed
-  - src/routes/menu.ts (modified)
-  - src/models/MenuItem.ts (new)
-  - src/services/MenuService.ts (modified)
-  - tests/menu.test.ts (new)
-  - package.json (modified)
-  Remote: origin -> github.com/user/sw-qr-menu-be
+  Branch: develop
+  Remote: origin/develop
+  State:  ⚠️ BEHIND (2 commits)
+  Action: Will pull --rebase before push
 
 sw-qr-menu-shared:
-  Status: No changes
-  Skipping (nothing to commit)
+  Branch: develop
+  Remote: origin/develop
+  State:  ✓ AHEAD (1 commit, ready to push)
 ```
 
-### Step 3: Handle Missing Remotes
+### Step 3: Smart Sync (Auto-Pull/Rebase)
 
 ```markdown
-sw-qr-menu-fe:
-  No remote configured.
-
-Options:
-  1. Enter remote URL manually
-  2. Use GitHub convention (github.com/[user]/sw-qr-menu-fe)
-  3. Skip this repo
-
-? Choice: [1/2/3]
-
-> 2
-
-Using: https://github.com/user/sw-qr-menu-fe
-git remote add origin https://github.com/user/sw-qr-menu-fe
-```
-
-### Step 4: Get or Generate Commit Message
-
-**If message was provided in command:**
-```markdown
-Commit message: "feat: Add menu builder with drag-drop support"
-```
-
-**If NO message provided (auto-generate):**
-```markdown
-📊 Analyzing changes...
-
-Detected:
-  📄 3 modified source files (src/components/)
-  📄 2 new test files
-  📁 1 new increment folder
-
-🤖 Auto-generated commit message:
-
-  feat(components): add menu builder with drag-drop support
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-? Choose action:
-  1. ✅ Use this message
-  2. ✏️  Edit message
-  3. 📝 Enter custom message
-
-> 1
-
-Using: "feat(components): add menu builder with drag-drop support"
-```
-
-### Step 5: Execute Save
-
-```markdown
-Saving changes...
-
-sw-qr-menu-fe:
-  Staging: git add -A
-  Committing: feat: Add menu builder with drag-drop support
-  Pushing: origin/main
-  Done
+🔄 Syncing repositories...
 
 sw-qr-menu-be:
-  Staging: git add -A
-  Committing: feat: Add menu builder with drag-drop support
-  Pushing: origin/main
-  Done
+  📦 Stashing 3 uncommitted files...
+  🔄 git pull --rebase origin develop
+     Applied: 2 commits from remote
+  📦 Restoring stashed files...
+  ✓ Synced!
 
-Summary:
-  Saved: 2/3 repositories
-  Skipped: 1 (no changes)
-  Commit: feat: Add menu builder with drag-drop support
+sw-qr-menu-fe:
+  ✓ Already up-to-date
+
+sw-qr-menu-shared:
+  ✓ Already ahead, ready to push
+```
+
+### Step 4: Generate/Confirm Message
+
+```markdown
+📊 Analyzing changes across repos...
+
+sw-qr-menu-fe (4 files):
+  🤖 Auto: feat(components): add menu builder UI
+
+sw-qr-menu-be (2 files):
+  🤖 Auto: feat(api): add menu endpoints
+
+sw-qr-menu-shared (0 files):
+  ⏭️  Skip (no changes)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+? Use per-repo messages or same for all?
+  [1] Per-repo (auto-generated)
+  [2] Same message (enter custom)
+  [3] Edit each
+
+> 1
+```
+
+### Step 5: Commit & Push
+
+```markdown
+💾 Saving changes...
+
+sw-qr-menu-fe:
+  git add -A
+  git commit -m "feat(components): add menu builder UI"
+  git push origin develop
+  ✓ Done!
+
+sw-qr-menu-be:
+  git add -A
+  git commit -m "feat(api): add menu endpoints"
+  git push origin develop
+  ✓ Done!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ SUMMARY
+
+  Synced:    1 repo (pulled 2 commits)
+  Saved:     2/3 repos
+  Skipped:   1 (no changes)
+
+  Commits:
+    sw-qr-menu-fe: feat(components): add menu builder UI
+    sw-qr-menu-be: feat(api): add menu endpoints
 ```
 
 ## Remote Setup Options
@@ -499,46 +749,75 @@ Skipping sw-qr-menu-fe (no remote, user chose to skip)
 
 ```markdown
 sw-qr-menu-fe:
-  Pushing failed!
+  ❌ Push failed: Permission denied (publickey)
 
-  Error: Permission denied (publickey)
+  Quick fixes:
+  1. Test SSH: ssh -T git@github.com
+  2. Switch to HTTPS: git remote set-url origin https://github.com/...
+  3. Check token scope (needs 'repo')
 
-  Troubleshooting:
-  1. Check SSH key is added: ssh -T git@github.com
-  2. Use HTTPS instead: git remote set-url origin https://...
-  3. Check GitHub token has 'repo' scope
-
-? Continue with other repos? [Yes / No]
+? [R]etry / [S]kip repo / [A]bort all
 ```
 
-### Push Failure (Divergent History)
+### Divergent History (NOW HANDLED AUTOMATICALLY!)
+
+**Old behavior**: Wait for push to fail, then ask.
+**New behavior**: Detect BEFORE push, auto-sync!
 
 ```markdown
-sw-qr-menu-be:
-  Pushing failed!
+🔍 Pre-flight detected: DIVERGED (3 ahead, 2 behind)
 
-  Error: Updates were rejected (remote contains work not in local)
+🔄 Auto-syncing...
+   git stash push -m "autostash"
+   git pull --rebase origin develop
+   git stash pop
+   ✓ Synced!
 
-  Options:
-  1. Pull and merge: git pull --rebase origin main
-  2. Force push (DANGEROUS): git push --force
-  3. Skip this repo
-
-? Choice: [1/2/3]
+Now ready to commit and push.
 ```
 
-### Branch Not Tracking
+**If auto-sync fails** (rare, only on complex conflicts):
 
 ```markdown
-sw-qr-menu-shared:
-  Current branch 'feature-x' has no upstream.
+⚠️  Rebase conflict in: src/services/auth.ts
 
-  Options:
-  1. Push with tracking: git push -u origin feature-x
-  2. Push to main: git push origin HEAD:main
-  3. Skip this repo
+Options:
+  1. 🔧 Open editor to resolve (I'll wait)
+  2. 🔀 Try merge instead of rebase
+  3. ⏮️  Abort and keep local state (no push)
+  4. 💪 Force push (overwrites remote - DANGEROUS)
 
-? Choice: [1/2/3]
+? Choice:
+```
+
+### Branch Not Tracking (NOW AUTO-SETUP!)
+
+**Old behavior**: Ask user what to do.
+**New behavior**: Auto-setup tracking!
+
+```markdown
+🔍 Pre-flight: Branch 'feature-x' has no upstream
+
+🔧 Auto-fixing...
+   git push -u origin feature-x
+   ✓ Branch now tracks origin/feature-x
+```
+
+### Stash Conflicts (Rare)
+
+```markdown
+⚠️  Stash pop conflict!
+
+Your stashed changes conflict with pulled changes.
+Conflicting files:
+  - package.json
+
+Options:
+  1. 🔧 Resolve manually (stash is in stash@{0})
+  2. 🗑️  Drop stash, keep pulled version
+  3. ⏮️  Restore original state (abort everything)
+
+? Choice:
 ```
 
 ## Integration with Umbrella Config
@@ -620,133 +899,191 @@ Summary:
 
 | Flag | Description |
 |------|-------------|
-| `--dry-run` | Show what would happen, don't execute |
+| `--interactive` / `-i` | **Interactive mode** - Ask for confirmation before each step |
+| `--dry-run` | Preview mode - show what would happen |
+| `--sync=rebase` | (default) Pull --rebase before push |
+| `--sync=merge` | Pull --merge instead of rebase |
+| `--sync=none` | Skip auto-sync (old behavior) |
+| `--no-stash` | Don't auto-stash (fail if dirty + needs sync) |
 | `--repos <list>` | Only save specific repos (comma-separated) |
 | `--skip-no-remote` | Skip repos without remotes (don't prompt) |
 | `--all` | Include repos outside umbrella config |
 | `--no-push` | Commit but don't push |
-| `--force` | Force push (use with caution!) |
-| `--yes` or `-y` | Accept auto-generated message without confirmation |
+| `--force` | Force push (REQUIRES typing "FORCE" to confirm!) |
+| `--branch <name>` | Create new branch instead of force pushing |
+| `--yes` / `-y` | (Deprecated) No-op, default is already automatic |
+
+### Quick Reference
+
+```bash
+# Most common - fully automatic (DEFAULT!)
+/specweave:save
+
+# Preview what will happen
+/specweave:save --dry-run
+
+# Custom message, automatic sync
+/specweave:save "feat: new feature"
+
+# Interactive - asks before each step
+/specweave:save -i
+
+# Merge instead of rebase
+/specweave:save --sync=merge
+
+# Create branch if conflicts (safest!)
+/specweave:save --branch my-changes
+
+# Old behavior (fail if behind)
+/specweave:save --sync=none
+```
+
+### Conflict Resolution Strategy
+
+**Default priority: YOUR WORK WINS**
+
+When merging with remote, the command follows this priority:
+1. **Your code changes** - Always preserved
+2. **Your increment files** - Always preserved
+3. **Lock files** - Regenerated (npm/yarn)
+4. **Build artifacts** - Use remote (will rebuild)
+5. **Config conflicts** - Ask user
+
+This ensures you never lose work while still syncing with team.
 
 ## Best Practices
 
-1. **Use descriptive commit messages** - Same message applies to all repos
-2. **Review changes first** - Use `--dry-run` to see what will happen
-3. **Configure githubUrl** - Set in umbrella config for seamless remote setup
-4. **Handle failures** - Don't ignore push failures, resolve before continuing
+1. **Just run `/specweave:save`** - Zero prompts, fully automatic! Let it figure things out
+2. **Use `-i` for control** - Interactive mode when you want to review/edit the message
+3. **Preview with `--dry-run`** - See what will happen before committing
+4. **Configure `githubUrl` in umbrella config** - Enables auto-remote setup
+5. **Trust the auto-message** - It analyzes changes intelligently
 
 ## Example Interactions
 
-### Quick Save
-
-```
-User: /specweave:save "feat: Complete user registration flow"
-
-Claude:
-Scanning for repositories...
-Mode: Umbrella (3 child repos)
-
-Checking git status...
-
-frontend:
-  Status: 4 files changed
-  Remote: origin -> github.com/user/frontend
-
-backend:
-  Status: 2 files changed
-  Remote: origin -> github.com/user/backend
-
-shared:
-  Status: No changes (skipping)
-
-Saving changes...
-
-frontend:
-  git add -A
-  git commit -m "feat: Complete user registration flow"
-  git push origin main
-
-backend:
-  git add -A
-  git commit -m "feat: Complete user registration flow"
-  git push origin main
-
-Summary:
-  Saved: 2/3 repositories
-  Skipped: 1 (no changes)
-```
-
-### Auto-Generated Message (No Args)
+### Zero-Args Fully Automatic (The Power Move!)
 
 ```
 User: /specweave:save
 
 Claude:
-Scanning for repositories...
-Mode: Single repository
-Repository: my-app (.)
+📡 Scanning... Single repo (specweave)
 
-Checking git status...
+🔍 Pre-flight check...
+   Branch: develop → origin/develop
+   State:  DIVERGED (2 ahead, 3 behind)
 
-my-app:
-  Status: 7 files changed
-  Remote: origin -> github.com/user/my-app
+📦 Stashing 5 uncommitted files...
+🔄 Syncing: git pull --rebase origin develop
+   ✓ Rebased 2 commits onto 3 new remote commits
+📦 Restoring stashed files...
 
 📊 Analyzing changes...
+   🤖 Auto: feat(save): add smart sync with auto-pull
 
-Detected:
-  📄 5 modified documentation files
-  📁 1 new docs section (academy/)
-  📁 1 new increment folder
+💾 Saving...
+   git add -A
+   git commit -m "feat(save): add smart sync with auto-pull"
+   git push origin develop
 
-🤖 Auto-generated commit message:
+✅ DONE! (synced 3 + pushed 3 commits)
+```
 
-  docs(docs-site): add academy section and update documentation
+**That's it!** One command, zero prompts, handles everything.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+### With Commit Message (Still Smart!)
 
-? Choose action:
-  1. ✅ Use this message
-  2. ✏️  Edit message
-  3. 📝 Enter custom message
+```
+User: /specweave:save "feat: Complete user registration"
+
+Claude:
+📡 Scanning... Umbrella (3 repos)
+
+🔍 Pre-flight check...
+   frontend:  ✓ UP-TO-DATE
+   backend:   ⚠️ BEHIND (2 commits)
+   shared:    ✓ No changes
+
+🔄 Syncing backend...
+   git pull --rebase origin develop
+   ✓ Applied 2 remote commits
+
+💾 Saving...
+
+frontend:
+  git add -A && commit && push ✓
+
+backend:
+  git add -A && commit && push ✓
+
+✅ Saved 2/3 repos with: feat: Complete user registration
+```
+
+### Interactive Mode (With `-i` flag)
+
+```
+User: /specweave:save -i
+
+Claude:
+📡 Scanning... Single repo
+
+🔍 Pre-flight: ✓ UP-TO-DATE (no sync needed)
+
+📊 Analyzing changes...
+   5 modified docs, 1 new folder
+
+🤖 Auto-generated:
+   docs(docs-site): add academy section
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+? [1] Use  [2] Edit  [3] Custom
 
 User: 1
 
-Saving changes...
-
-my-app:
-  git add -A
-  git commit -m "docs(docs-site): add academy section and update documentation"
-  git push origin develop
-
-Summary:
-  ✅ Saved: 1/1 repository
-  📝 Message: docs(docs-site): add academy section and update documentation
+💾 Committing & pushing...
+✅ Done!
 ```
 
-### Quick Auto-Save (--yes flag)
+### Handling Merge Conflicts (Rare but Covered!)
 
 ```
-User: /specweave:save --yes
+User: /specweave:save
 
 Claude:
-Scanning for repositories...
-Mode: Single repository
+📡 Scanning... Single repo
 
-📊 Auto-analyzing changes...
+🔍 Pre-flight: DIVERGED
 
-Detected: 3 modified source files in src/cli/
+📦 Stashing...
+🔄 Syncing: git pull --rebase
+   ⚠️ CONFLICT in src/config.ts
 
-🤖 Auto-generated: refactor(cli): update command handlers
+Conflict preview:
+   <<<<<<< HEAD
+   maxRetries: 5
+   =======
+   maxRetries: 3
+   >>>>>>> upstream
 
-Saving changes (auto-confirmed)...
+? Options:
+  [1] 🔧 Resolve manually (I'll wait)
+  [2] 🔀 Try merge instead
+  [3] ⏮️ Abort (keep local)
+  [4] 💪 Force push (DANGEROUS)
 
-my-app:
-  git add -A
-  git commit -m "refactor(cli): update command handlers"
-  git push origin develop
+User: 1
 
-✅ Done! Saved with auto-generated message.
+Waiting for conflict resolution...
+Run: git rebase --continue
+Then say: continue
+
+User: continue
+
+🔄 Continuing...
+📦 Restoring stash...
+💾 Saving...
+✅ Done!
 ```
 
 ### First-Time Remote Setup

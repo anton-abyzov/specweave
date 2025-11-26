@@ -452,4 +452,431 @@ describe('ItemConverter', () => {
       expect(converted[0].id).toBe('US-010E');
     });
   });
+
+  describe('AC-US2-01: Feature Folder Organization', () => {
+    it('should place items in feature folders when enableFeatureAllocation is true', async () => {
+      // Setup: Create _features directory for FSIdAllocator
+      const featuresDir = path.join(testDir, '.specweave', 'docs', 'internal', 'specs', '_features');
+      fs.mkdirSync(featuresDir, { recursive: true });
+
+      const converterWithFeatures = new ItemConverter({
+        specsDir,
+        projectRoot: testDir,
+        enableFeatureAllocation: true,
+        autoArchiveAfterDays: 0, // Disable auto-archive for this test
+      });
+
+      const items: ExternalItem[] = [
+        {
+          id: 'GITHUB-100',
+          type: 'user-story',
+          title: 'Feature Item',
+          description: 'Item with feature allocation',
+          status: 'open',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          url: 'https://github.com/owner/repo/issues/100',
+          labels: [],
+          platform: 'github',
+          sourceRepo: 'org/frontend'
+        }
+      ];
+
+      const converted = await converterWithFeatures.convertItems(items);
+
+      expect(converted).toHaveLength(1);
+      // Should have a featureId assigned
+      expect(converted[0].featureId).toBeDefined();
+      expect(converted[0].featureId).toMatch(/^FS-\d{3}E?$/); // May have 'E' suffix for external
+      // File path should contain feature folder
+      expect(converted[0].filePath).toContain(converted[0].featureId);
+    });
+
+    it('should group items by sourceRepo into same feature folder', async () => {
+      const featuresDir = path.join(testDir, '.specweave', 'docs', 'internal', 'specs', '_features');
+      fs.mkdirSync(featuresDir, { recursive: true });
+
+      const converterWithFeatures = new ItemConverter({
+        specsDir,
+        projectRoot: testDir,
+        enableFeatureAllocation: true,
+        autoArchiveAfterDays: 0,
+      });
+
+      const items: ExternalItem[] = [
+        {
+          id: 'GITHUB-1',
+          type: 'user-story',
+          title: 'First Item',
+          description: 'First',
+          status: 'open',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          url: 'https://github.com/org/frontend/issues/1',
+          labels: [],
+          platform: 'github',
+          sourceRepo: 'org/frontend'
+        },
+        {
+          id: 'GITHUB-2',
+          type: 'user-story',
+          title: 'Second Item',
+          description: 'Second',
+          status: 'open',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          url: 'https://github.com/org/frontend/issues/2',
+          labels: [],
+          platform: 'github',
+          sourceRepo: 'org/frontend'
+        }
+      ];
+
+      const converted = await converterWithFeatures.convertItems(items);
+
+      expect(converted).toHaveLength(2);
+      // Both items should have the same featureId (grouped by sourceRepo)
+      expect(converted[0].featureId).toBe(converted[1].featureId);
+    });
+  });
+
+  describe('AC-US2-02: FEATURE.md with External Origin Metadata', () => {
+    it('should create FEATURE.md with external origin metadata', async () => {
+      const featuresDir = path.join(testDir, '.specweave', 'docs', 'internal', 'specs', '_features');
+      fs.mkdirSync(featuresDir, { recursive: true });
+
+      let createdFeaturePath = '';
+      const converterWithFeatures = new ItemConverter({
+        specsDir,
+        projectRoot: testDir,
+        enableFeatureAllocation: true,
+        autoArchiveAfterDays: 0,
+        onFeatureCreated: (featureId, featurePath) => {
+          createdFeaturePath = featurePath;
+        }
+      });
+
+      const items: ExternalItem[] = [
+        {
+          id: 'GITHUB-500',
+          type: 'user-story',
+          title: 'Test Story',
+          description: 'Test',
+          status: 'open',
+          createdAt: new Date('2024-06-01'),
+          updatedAt: new Date('2024-06-15'),
+          url: 'https://github.com/myorg/myrepo/issues/500',
+          labels: ['feature'],
+          platform: 'github',
+          sourceRepo: 'myorg/myrepo'
+        }
+      ];
+
+      await converterWithFeatures.convertItems(items);
+
+      // Check FEATURE.md was created
+      const featureFilePath = path.join(createdFeaturePath, 'FEATURE.md');
+      expect(fs.existsSync(featureFilePath)).toBe(true);
+
+      // Read and verify content
+      const featureContent = fs.readFileSync(featureFilePath, 'utf-8');
+
+      // Check YAML frontmatter
+      expect(featureContent).toContain('origin: external');
+      expect(featureContent).toContain('source: github');
+      expect(featureContent).toContain('source_repo: myorg/myrepo');
+
+      // Check content body
+      expect(featureContent).toContain('Imported from github');
+      expect(featureContent).toContain('myorg/myrepo');
+    });
+  });
+
+  describe('AC-US2-03: File Path Structure', () => {
+    it('should use correct file path pattern: specs/{featureId}/us-xxxe-title.md', async () => {
+      const featuresDir = path.join(testDir, '.specweave', 'docs', 'internal', 'specs', '_features');
+      fs.mkdirSync(featuresDir, { recursive: true });
+
+      const converterWithFeatures = new ItemConverter({
+        specsDir,
+        projectRoot: testDir,
+        enableFeatureAllocation: true,
+        autoArchiveAfterDays: 0,
+      });
+
+      const items: ExternalItem[] = [
+        {
+          id: 'GITHUB-42',
+          type: 'user-story',
+          title: 'User Can Login',
+          description: 'Login functionality',
+          status: 'open',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          url: 'https://github.com/owner/repo/issues/42',
+          labels: [],
+          platform: 'github',
+          sourceRepo: 'owner/repo'
+        }
+      ];
+
+      const converted = await converterWithFeatures.convertItems(items);
+
+      // File path should follow pattern: {specsDir}/{featureId}/us-001e-*.md
+      const expectedPattern = new RegExp(
+        `${specsDir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/FS-\\d{3}E?/us-001e-user-can-login\\.md$`
+      );
+      expect(converted[0].filePath).toMatch(expectedPattern);
+
+      // File should exist
+      expect(fs.existsSync(converted[0].filePath)).toBe(true);
+    });
+
+    it('should support multi-project mode with projectId', async () => {
+      const projectId = 'frontend';
+      const projectSpecsDir = path.join(specsDir, projectId);
+      const featuresDir = path.join(projectSpecsDir, '_features');
+      fs.mkdirSync(featuresDir, { recursive: true });
+
+      const converterWithProject = new ItemConverter({
+        specsDir,
+        projectRoot: testDir,
+        projectId,
+        enableFeatureAllocation: true,
+        autoArchiveAfterDays: 0,
+      });
+
+      const items: ExternalItem[] = [
+        {
+          id: 'GITHUB-99',
+          type: 'user-story',
+          title: 'Project Item',
+          description: 'Item in project subfolder',
+          status: 'open',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          url: 'https://github.com/owner/repo/issues/99',
+          labels: [],
+          platform: 'github',
+          sourceRepo: 'owner/repo'
+        }
+      ];
+
+      const converted = await converterWithProject.convertItems(items);
+
+      // Path should include projectId: specs/{projectId}/{featureId}/us-xxxe.md
+      expect(converted[0].filePath).toContain(`/${projectId}/`);
+      expect(converted[0].filePath).toContain('/FS-');
+    });
+  });
+
+  describe('AC-US2-04: FSIdAllocator Integration', () => {
+    it('should allocate chronological FS-IDs for features', async () => {
+      const featuresDir = path.join(testDir, '.specweave', 'docs', 'internal', 'specs', '_features');
+      fs.mkdirSync(featuresDir, { recursive: true });
+
+      // Create an existing feature to ensure new IDs are allocated correctly
+      const existingFeatureDir = path.join(featuresDir, 'FS-001');
+      fs.mkdirSync(existingFeatureDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(existingFeatureDir, 'FEATURE.md'),
+        '---\nid: FS-001\ntitle: Existing Feature\n---\n'
+      );
+
+      const converterWithFeatures = new ItemConverter({
+        specsDir,
+        projectRoot: testDir,
+        enableFeatureAllocation: true,
+        autoArchiveAfterDays: 0,
+      });
+
+      const items: ExternalItem[] = [
+        {
+          id: 'GITHUB-NEW',
+          type: 'user-story',
+          title: 'New Feature Item',
+          description: 'Should get new FS-ID',
+          status: 'open',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          url: 'https://github.com/owner/repo/issues/new',
+          labels: [],
+          platform: 'github',
+          sourceRepo: 'owner/new-repo'
+        }
+      ];
+
+      const converted = await converterWithFeatures.convertItems(items);
+
+      // Should allocate next FS-ID (FS-002 or FS-002E for external)
+      // FSIdAllocator may append 'E' for external work items
+      expect(converted[0].featureId).toMatch(/^FS-\d{3}E?$/);
+      // Should be allocated after existing FS-001
+      const allocatedNumber = parseInt(converted[0].featureId!.match(/\d+/)![0]);
+      expect(allocatedNumber).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should call onFeatureCreated callback when feature is allocated', async () => {
+      const featuresDir = path.join(testDir, '.specweave', 'docs', 'internal', 'specs', '_features');
+      fs.mkdirSync(featuresDir, { recursive: true });
+
+      const featureCallbacks: Array<{ featureId: string; featurePath: string }> = [];
+
+      const converterWithCallback = new ItemConverter({
+        specsDir,
+        projectRoot: testDir,
+        enableFeatureAllocation: true,
+        autoArchiveAfterDays: 0,
+        onFeatureCreated: (featureId, featurePath) => {
+          featureCallbacks.push({ featureId, featurePath });
+        }
+      });
+
+      const items: ExternalItem[] = [
+        {
+          id: 'GITHUB-CB1',
+          type: 'user-story',
+          title: 'Callback Test',
+          description: 'Test callback',
+          status: 'open',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          url: 'https://github.com/owner/repo/issues/cb1',
+          labels: [],
+          platform: 'github',
+          sourceRepo: 'owner/callback-test'
+        }
+      ];
+
+      await converterWithCallback.convertItems(items);
+
+      expect(featureCallbacks).toHaveLength(1);
+      expect(featureCallbacks[0].featureId).toMatch(/^FS-\d{3}E?$/); // May have 'E' suffix for external
+      expect(featureCallbacks[0].featurePath).toContain(featureCallbacks[0].featureId);
+    });
+  });
+
+  describe('Auto-Archive Feature', () => {
+    it('should archive items older than threshold', async () => {
+      const converterWithArchive = new ItemConverter({
+        specsDir,
+        autoArchiveAfterDays: 30, // Archive items older than 30 days
+      });
+
+      // Create item that's 60 days old
+      const oldDate = new Date();
+      oldDate.setDate(oldDate.getDate() - 60);
+
+      const items: ExternalItem[] = [
+        {
+          id: 'GITHUB-OLD',
+          type: 'user-story',
+          title: 'Old Item',
+          description: 'Should be archived',
+          status: 'closed',
+          createdAt: oldDate,
+          updatedAt: oldDate,
+          url: 'https://github.com/owner/repo/issues/old',
+          labels: [],
+          platform: 'github'
+        }
+      ];
+
+      const converted = await converterWithArchive.convertItems(items);
+
+      // File path should contain _archive
+      expect(converted[0].filePath).toContain('_archive');
+    });
+
+    it('should not archive recent items', async () => {
+      const converterWithArchive = new ItemConverter({
+        specsDir,
+        autoArchiveAfterDays: 30,
+      });
+
+      // Create item that's 5 days old
+      const recentDate = new Date();
+      recentDate.setDate(recentDate.getDate() - 5);
+
+      const items: ExternalItem[] = [
+        {
+          id: 'GITHUB-NEW',
+          type: 'user-story',
+          title: 'Recent Item',
+          description: 'Should not be archived',
+          status: 'open',
+          createdAt: recentDate,
+          updatedAt: recentDate,
+          url: 'https://github.com/owner/repo/issues/new',
+          labels: [],
+          platform: 'github'
+        }
+      ];
+
+      const converted = await converterWithArchive.convertItems(items);
+
+      // File path should NOT contain _archive
+      expect(converted[0].filePath).not.toContain('_archive');
+    });
+
+    it('should call onItemArchived callback when item is archived', async () => {
+      const archivedItems: Array<{ usId: string; reason: string }> = [];
+
+      const converterWithCallback = new ItemConverter({
+        specsDir,
+        autoArchiveAfterDays: 30,
+        onItemArchived: (usId, reason) => {
+          archivedItems.push({ usId, reason });
+        }
+      });
+
+      // Create item that's 45 days old
+      const oldDate = new Date();
+      oldDate.setDate(oldDate.getDate() - 45);
+
+      const items: ExternalItem[] = [
+        {
+          id: 'GITHUB-ARCHIVE',
+          type: 'user-story',
+          title: 'Archive Test',
+          description: 'Test archive callback',
+          status: 'closed',
+          createdAt: oldDate,
+          updatedAt: oldDate,
+          url: 'https://github.com/owner/repo/issues/archive',
+          labels: [],
+          platform: 'github'
+        }
+      ];
+
+      await converterWithCallback.convertItems(items);
+
+      expect(archivedItems).toHaveLength(1);
+      expect(archivedItems[0].usId).toBe('US-001E');
+      expect(archivedItems[0].reason).toContain('45 days old');
+    });
+  });
+
+  describe('Source Repository Tracking', () => {
+    it('should include sourceRepo in metadata', () => {
+      const item: ExternalItem = {
+        id: 'GITHUB-SRC',
+        type: 'user-story',
+        title: 'Source Repo Test',
+        description: 'Test sourceRepo tracking',
+        status: 'open',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        url: 'https://github.com/myorg/myrepo/issues/src',
+        labels: [],
+        platform: 'github',
+        sourceRepo: 'myorg/myrepo'
+      };
+
+      const converted = converter.convertItem(item, 1);
+
+      expect(converted.metadata.sourceRepo).toBe('myorg/myrepo');
+      expect(converted.markdown).toContain('**Source Repository**: myorg/myrepo');
+    });
+  });
 });
