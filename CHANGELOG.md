@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.19] - 2025-11-26
+
+### 🐛 Bug Fixes
+- Complete external import multi-repo fix (increment 0063)
+- Fixed external ID lifecycle with E suffix parsing
+- Verified GitHub sync on increment closure
+
+---
+
+
+
 ## [0.28.17] - 2025-11-26
 
 ### ✨ Features
