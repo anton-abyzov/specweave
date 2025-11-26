@@ -4,6 +4,13 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.34] - 2025-11-26
+
+### 🔧 Improvements
+- Cleanup null folder specs and update living-docs sync
+
+---
+
 ## [0.28.33] - 2025-11-26
 
 ### ✨ Features
