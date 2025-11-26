@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.23] - 2025-11-26
+
+### 🔧 Improvements
+- Fix duplicate increment numbering (0062 → 0069)
+- Fix spec.md YAML frontmatter validation
+- Multi-repo import fixes (FS-068)
+- Multi-project spec generation (FS-069)
+
+---
+
 ## [0.28.22] - 2025-11-26
 
 ### 🔧 Improvements
