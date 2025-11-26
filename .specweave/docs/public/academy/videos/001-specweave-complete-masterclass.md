@@ -1,4 +1,4 @@
-# Video 001: Build Products 10x Faster: SpecWeave AI Framework [Complete Masterclass]
+# Video 001: Finally: A Framework That Works on Legacy, Startup, AND Enterprise
 
 ## The Complete SpecWeave Masterclass - From Zero to Production
 
@@ -41,43 +41,43 @@
 
 ### HOOK (0:00 - 1:30)
 
-**[VISUAL: Split screen showing 10 browser tabs labeled "PM Persona", "Architect Persona", "Dev Persona", "QA Persona" — chaotic]**
+**[VISUAL: Three project types appearing - "Legacy Codebase 💀", "Startup MVP 🚀", "Enterprise Platform 🏢"]**
 
-> "I was drowning in browser tabs. PM persona here. Architect there. Dev in another. Copy-pasting between BMAD windows like a HUMAN ROUTER."
+> "I've worked on legacy codebases where nobody knows how anything works. I've built startup MVPs at 2am with zero documentation. I've navigated enterprise platforms with 50 microservices and JIRA boards from hell.
 
-**[VISUAL: Close all tabs dramatically. Open single terminal.]**
+> Every time, I thought: there HAS to be a framework that works on ALL of these.
 
-> "Then I found SpecWeave."
+> There wasn't. So I built one."
 
-**[VISUAL: Terminal showing 4 Claude sessions, agents activating]**
+**[VISUAL: SpecWeave logo appearing]**
 
-> "ONE terminal. FIFTEEN AI agents working in parallel. PM. Architect. Tech Lead. QA. Security. DevOps.
+> "SpecWeave."
 
-> They don't wait for me. They orchestrate THEMSELVES.
+**[VISUAL: Quick montage - dropping into different project types]**
 
-> The PM agent writes the spec. The Architect picks it up AUTOMATICALLY. Tech Lead implements. QA validates. All while I drink coffee."
+> "Drop it into a 10-year-old legacy codebase — it understands everything and documents it. Use it on your weekend startup — specs write themselves. Scale it to enterprise with 50 teams — JIRA, GitHub, Azure DevOps all sync automatically.
+
+> ONE framework. ANY project. ANY scale."
 
 **[VISUAL: Side-by-side - spec.md updating, JIRA syncing, GitHub issue updating]**
 
-> "My specs update after every task. JIRA syncs in real-time. GitHub issues track themselves.
+> "Living documentation that never goes stale. External tools that sync in real-time. And here's the crazy part — it works with ANY AI. Claude, GPT, Gemini, Copilot. Your team uses whatever they want.
 
-> And here's the crazy part — it works with ANY AI. Claude. GPT. Gemini. Copilot. Your team can use whatever they want. SpecWeave doesn't care.
+> Need translations? One command. Russian, Spanish, German — done.
 
-> Need translations? One command. Russian, Spanish, German — your specs go multilingual instantly.
-
-> Fortune 500 companies pay MILLIONS for teams that work this smoothly.
+> Fortune 500 companies pay MILLIONS for systems like this.
 
 > This? Free. Open source. And I'm going to show you EVERYTHING."
 
-**[VISUAL: Title card - "Build Products 10x Faster: SpecWeave AI Framework"]**
+**[VISUAL: Title card - "Finally: A Framework That Works on Legacy, Startup, AND Enterprise"]**
 
-> "Installation. 6 real demos. Greenfield. Brownfield. JIRA. GitHub. Azure DevOps. Translation. Multi-AI support.
+> "Finally. A framework that actually works everywhere.
 
-> This is the FIRST AI framework built for how enterprises ACTUALLY work.
+> Installation. 6 real demos. Legacy brownfield. Fresh greenfield. JIRA. GitHub. Azure DevOps.
 
-> If this helps you, do me a favor — smash that like button and STAR THE GITHUB REPO. Stars help other developers find this. Let's build a community.
+> If this helps you — star the GitHub repo. That's how other devs find this.
 
-> Alright, let's go."
+> Let's go."
 
 ---
 
@@ -1566,41 +1566,41 @@ EOF
 ## YOUTUBE DESCRIPTION
 
 ```
-I was drowning in 10 browser tabs. PM persona here. Architect there. Copy-pasting between BMAD windows like a human router.
+Finally. A framework that works on legacy codebases, startup MVPs, AND enterprise platforms.
 
-Then I found SpecWeave.
+I've worked on 10-year-old legacy code where nobody knows how anything works. I've built startup MVPs at 2am with zero documentation. I've navigated enterprise platforms with 50 microservices.
 
-ONE terminal. 15 AI agents working in parallel. PM writes specs. Architect designs. Tech Lead implements. QA validates. All AUTOMATICALLY.
+Every time, I thought: there HAS to be a framework that works on ALL of these.
 
-This is the FIRST framework built for how Fortune 500 companies ACTUALLY work.
+There wasn't. So I built one. SpecWeave.
 
-In 75 minutes I show you EVERYTHING:
+IN THIS VIDEO (~61 min):
 
-THE FOUNDATION:
-• Why BMAD/SpecKit fail (you're the human router)
-• 15 agents that orchestrate THEMSELVES
-• Enterprise engineering (Epic → Feature → User Story → Task)
-• Universal hierarchy mapping (JIRA ↔ ADO ↔ GitHub)
-• Plugins, skills, and hooks explained
+THE PROBLEM:
+• Why BMAD/SpecKit fail on real projects
+• Documentation that always goes stale
+• Tools that don't sync
 
-THE SETUP:
-• Installation (Mac + Windows)
-• VS Code 4-terminal productivity layout
-• The skip-permissions trick
+THE SOLUTION:
+• Drop SpecWeave into ANY codebase — it understands everything
+• Living docs that update themselves after every task
+• Universal sync: JIRA ↔ GitHub ↔ Azure DevOps
+• Works with ANY AI: Claude, GPT, Gemini, Copilot
 
 6 REAL DEMOS:
-• Greenfield: Task API from scratch
-• Translation: Multi-language in one command
-• Brownfield: Real production code (EasyChamp)
-• GitHub: Bidirectional issue sync
-• JIRA: Enterprise epic/story integration
-• Azure DevOps: Work items + area paths
+• 🆕 Greenfield: Build from scratch
+• 🌍 Translation: Multi-language in one command
+• 🏚️ Brownfield: Real legacy code (10+ years old)
+• 🐙 GitHub: Bidirectional issue sync
+• 📋 JIRA: Enterprise epic/story integration
+• 🔷 Azure DevOps: Work items + area paths
 
 BONUS:
-• AGENT.md: Use SpecWeave with GPT/Gemini/Copilot
-• Academy: Free learning resources (this script included!)
+• Works with GPT/Gemini/Copilot (not just Claude!)
+• Full script in the academy (free)
 
-Everything FREE. Everything OPEN SOURCE. All demos in public repos.
+⭐ STAR THE REPO: https://github.com/anthropics/specweave
+Stars help other developers find this!
 
 LINKS:
 • SpecWeave: https://github.com/anthropics/specweave
@@ -1608,39 +1608,41 @@ LINKS:
 • Academy: .specweave/docs/public/academy/
 
 TIMESTAMPS:
-0:00 - Hook (Stop being the human router)
-1:30 - The Problem (BMAD, SpecKit, 10 browser tabs)
-6:30 - What is SpecWeave? (15 agents, 5 commands)
-10:30 - Enterprise Engineering 101 (work hierarchy)
-14:00 - Universal Hierarchy Mapping (JIRA/ADO/GitHub)
-16:30 - Plugins & Skills System
-21:30 - Installation (Mac + Windows)
-27:30 - VS Code 4-Terminal Setup
-31:30 - DEMO: Greenfield Project
-43:30 - DEMO: Translation
-48:30 - DEMO: Brownfield (EasyChamp)
-56:30 - DEMO: GitHub Sync
-61:30 - DEMO: JIRA Sync
-65:30 - DEMO: Azure DevOps Sync
-69:30 - AGENT.md (any AI tool)
-72:30 - Academy Resources
-74:30 - Outro
+0:00 - Finally: Legacy, Startup, AND Enterprise
+1:30 - The Problem (Why nothing else works)
+6:30 - What is SpecWeave?
+10:30 - How work hierarchy maps everywhere
+16:30 - Project-aware sync & /next flow
+20:30 - Plugins & Skills
+24:30 - Installation (Mac + Windows)
+29:30 - VS Code Setup
+32:30 - DEMO: Greenfield
+36:30 - DEMO: Translation
+39:30 - DEMO: Brownfield (DEEP DIVE)
+47:30 - DEMO: GitHub Sync
+50:30 - DEMO: JIRA Sync
+53:30 - DEMO: Azure DevOps
+56:30 - Works with ANY AI (not just Claude)
+58:30 - Academy & Resources
+60:00 - This was HUGE (Outro)
 
-Built for Fortune 500 complexity. Free for everyone.
+Free. Open Source. No catch.
 
-#SpecWeave #ClaudeAI #Opus45 #AIAgents #DeveloperTools #JIRA #GitHub #AzureDevOps #OpenSource #SpecDrivenDevelopment #LivingDocs #ProductivityHacks #SoftwareEngineering #BMAD #EnterpriseAI
+#SpecWeave #LegacyCode #Startup #Enterprise #AIFramework #JIRA #GitHub #AzureDevOps #OpenSource #LivingDocs #Documentation #DevTools #BMAD #SoftwareEngineering
 ```
 
 ---
 
 ## THUMBNAIL IDEAS
 
-1. **Split face**: Half human, half AI terminal reflection
-2. **4 screens**: Quadrant showing 4 Claude sessions
-3. **Before/After**: Messy docs → Clean SpecWeave structure
-4. **Text overlay**: "4 AI SESSIONS" with shocked expression
+1. **Three icons + text**: 💀 Legacy → 🚀 Startup → 🏢 Enterprise + "FINALLY"
+2. **Before/After split**: Chaotic tabs → Clean terminal
+3. **Bold text overlay**: "Works on ANY Project" with surprised face
+4. **Project montage**: Three project screenshots merging into one
 
-**Colors**: Blue (Claude brand), dark background, high contrast text
+**Text on thumbnail**: "FINALLY" or "Legacy + Startup + Enterprise"
+**Colors**: Dark background, bright text (yellow/white), project icons
+**Expression**: Relief/excitement (matches "Finally" emotion)
 
 ---
 
@@ -1675,6 +1677,76 @@ Add to settings.json:
 function claude() {
     command claude --dangerously-skip-permissions "$@"
 }
+```
+
+---
+
+## PUBLISHING STRATEGY (Thanksgiving Nov 27, 2025)
+
+### Timing Options
+
+| Option | Time | Why |
+|--------|------|-----|
+| **BEST: Morning** | 10:00 AM EST | Before family activities, devs scrolling with coffee |
+| Good: Evening | 8:00 PM EST | After dinner, people relaxing, catching up on content |
+| Alternative: Friday | Nov 28, 10 AM | Black Friday - people recovering, doing side projects |
+| Alternative: Saturday | Nov 29, 10 AM | Weekend warriors, back to coding |
+
+### Recommendation: **Publish at 10:00 AM EST on Nov 27**
+
+Why Thanksgiving morning works:
+- 🦃 People have time off but aren't with family YET
+- ☕ Morning coffee + scrolling time
+- 📱 Devs checking feeds before holiday chaos
+- 🌍 Non-US audience unaffected (normal Thursday)
+- 📈 Less competition (others avoid holidays)
+
+### Pre-Publish Checklist
+
+```
+[ ] Thumbnail uploaded (high contrast, "Legacy → Startup → Enterprise")
+[ ] Description copied from this script
+[ ] Tags added
+[ ] End screen configured (subscribe + related video)
+[ ] Cards added at key moments
+[ ] Pinned comment ready (Quick Reference Card)
+[ ] Schedule set: Nov 27, 2025, 10:00 AM EST
+```
+
+### First 24 Hours
+
+1. **Immediately**: Pin the Quick Reference Card comment
+2. **1 hour after**: Share to Twitter/X with hook quote
+3. **2 hours after**: Share to LinkedIn (enterprise angle)
+4. **4 hours after**: Share to relevant Discord servers
+5. **Same day**: Reddit r/programming, r/webdev (follow rules!)
+
+### Social Posts (Copy-Paste Ready)
+
+**Twitter/X:**
+```
+Finally. A framework that works on legacy codebases, startup MVPs, AND enterprise platforms.
+
+I've been building this for months. Free. Open source.
+
+Full masterclass (61 min): [LINK]
+
+⭐ Star if useful: github.com/anthropics/specweave
+```
+
+**LinkedIn:**
+```
+I've worked on 10-year-old legacy code. Built startup MVPs at 2am. Navigated enterprise platforms with 50 microservices.
+
+Every time, I thought: there HAS to be a framework that works on ALL of these.
+
+There wasn't. So I built one.
+
+SpecWeave: spec-driven development that actually scales.
+
+Free. Open source. Full masterclass linked below.
+
+#SoftwareEngineering #OpenSource #DevTools #AI
 ```
 
 ---

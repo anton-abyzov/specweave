@@ -12,6 +12,18 @@ Welcome to SpecWeave Academy — a hands-on learning path that takes you from co
 
 ---
 
+## Video Tutorials
+
+Prefer watching? Start with the Complete Masterclass:
+
+| Video | Duration | What's Covered |
+|-------|----------|----------------|
+| 🎬 **[Complete Masterclass](./00-complete-masterclass)** | 61 min | Full journey: concepts, 6 live demos, GitHub/JIRA/ADO sync |
+
+More videos coming soon: Your First Increment, Daily Workflow, Integration Deep Dives.
+
+---
+
 ## How This Works
 
 Each lesson builds on the previous one. You'll learn by doing, with simple examples that grow in complexity.

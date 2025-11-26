@@ -506,6 +506,9 @@ export async function promptAndRunExternalImport(
 /**
  * Get existing sync profiles from config.json
  * Returns array of "owner/repo" strings if profiles exist
+ *
+ * CRITICAL FIX (2025-11-26): Also includes parent repo from umbrella config
+ * Bug: Parent repo was NOT being imported in umbrella mode - only child repos were processed
  */
 function getExistingSyncProfiles(targetDir: string): string[] | null {
   try {
@@ -515,11 +518,11 @@ function getExistingSyncProfiles(targetDir: string): string[] | null {
     }
 
     const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    const repos: string[] = [];
 
-    // Check for sync.profiles structure (umbrella repo setup)
+    // Check for sync.profiles structure (umbrella repo setup - child repos)
     if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
       const profiles = config.sync.profiles;
-      const repos: string[] = [];
 
       for (const [profileId, profile] of Object.entries(profiles)) {
         const p = profile as { config?: { owner?: string; repo?: string } };
@@ -527,15 +530,74 @@ function getExistingSyncProfiles(targetDir: string): string[] | null {
           repos.push(`${p.config.owner}/${p.config.repo}`);
         }
       }
-
-      return repos.length > 0 ? repos : null;
     }
 
-    return null;
+    // CRITICAL FIX: Also include parent repo from umbrella config
+    // Parent repo may have issues/items that need to be imported too!
+    if (config.umbrella?.enabled && config.umbrella?.parentRepo) {
+      // parentRepo can be "owner/repo" or just "repo" (same owner as git remote)
+      let parentRepoFullName = config.umbrella.parentRepo;
+
+      // If parentRepo is just the repo name, try to get owner from git remote or first child repo
+      if (!parentRepoFullName.includes('/')) {
+        // Try to find owner from sync profiles (same owner as child repos)
+        const firstProfile = Object.values(config.sync?.profiles || {})[0] as { config?: { owner?: string } } | undefined;
+        const owner = firstProfile?.config?.owner;
+        if (owner) {
+          parentRepoFullName = `${owner}/${parentRepoFullName}`;
+        }
+      }
+
+      // Add parent repo if not already in the list
+      if (parentRepoFullName.includes('/') && !repos.includes(parentRepoFullName)) {
+        repos.push(parentRepoFullName);
+      }
+    }
+
+    return repos.length > 0 ? repos : null;
   } catch (error) {
     // Log warning for debugging - config parsing errors shouldn't be silent
     console.warn(chalk.yellow(`   ⚠️  Failed to read sync profiles: ${error instanceof Error ? error.message : String(error)}`));
     return null;
+  }
+}
+
+/**
+ * Check if umbrella mode is enabled from config.json
+ * Returns true if sync.profiles exist OR umbrella.enabled is true
+ *
+ * CRITICAL: Used to force global collision detection even for single-group batches
+ */
+function isUmbrellaModeFromConfig(targetDir: string): boolean {
+  try {
+    const configPath = path.join(targetDir, '.specweave', 'config.json');
+    if (!fs.existsSync(configPath)) {
+      return false;
+    }
+
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+    // Check 1: umbrella.enabled is explicitly true
+    if (config.umbrella?.enabled === true) {
+      return true;
+    }
+
+    // Check 2: sync.profiles has multiple entries (umbrella repo setup)
+    if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
+      const profileCount = Object.keys(config.sync.profiles).length;
+      if (profileCount >= 2) {
+        return true;
+      }
+    }
+
+    // Check 3: multiProject.enabled is true
+    if (config.multiProject?.enabled === true) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return false;
   }
 }
 
@@ -814,8 +876,11 @@ async function convertToLivingDocs(
     const containerGroups = groupItemsByExternalContainer(result.allItems);
     const groupCount = containerGroups.length;
 
-    // Enable global collision detection when multiple groups exist (umbrella mode)
-    const isUmbrellaMode = groupCount > 1;
+    // CRITICAL FIX (2025-11-26): Detect umbrella mode from config, NOT just current batch
+    // Bug: FS-001 and FS-001E collision when sync.profiles exist but only one group in batch
+    // Root cause: isUmbrellaMode was false for single-group batches in umbrella setups
+    const isUmbrellaFromConfig = isUmbrellaModeFromConfig(targetDir);
+    const isUmbrellaMode = groupCount > 1 || isUmbrellaFromConfig;
 
     // Track which container types we're using for logging
     const containerTypesUsed = new Set(containerGroups.map(g => g.containerType || 'github'));
@@ -880,9 +945,10 @@ async function convertToLivingDocs(
     }
     if (groupCount > 1) {
       console.log(chalk.gray(`   → Organized into ${groupCount} project folders`));
+    }
+    // Log umbrella mode status (can be from config or from multiple groups)
+    if (isUmbrellaMode) {
       console.log(chalk.gray(`   → Global collision detection enabled (umbrella mode)`));
-    } else {
-      console.log(chalk.gray(`   → Organized into single project folder`));
     }
     if (uniqueFeatures.size > 0) {
       console.log(chalk.gray(`   → Organized into ${uniqueFeatures.size} feature folder(s)`));

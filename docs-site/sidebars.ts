@@ -346,6 +346,36 @@ const sidebars: SidebarsConfig = {
           id: 'guides/lessons/advanced-patterns',
           label: 'Lesson 10: Advanced Patterns',
         },
+        {
+          type: 'doc',
+          id: 'guides/lessons/vibe-coding-problem',
+          label: 'Lesson 11: The Vibe Coding Problem',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/init-deep-dive',
+          label: 'Lesson 12: Init Deep Dive',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/increment-lifecycle',
+          label: 'Lesson 13: Increment Lifecycle',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/github-integration',
+          label: 'Lesson 14: GitHub Integration',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/jira-integration',
+          label: 'Lesson 15: JIRA Integration',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/ado-integration',
+          label: 'Lesson 16: Azure DevOps Integration',
+        },
       ],
     },
     {
