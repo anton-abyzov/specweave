@@ -207,6 +207,17 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
           isDefault: index === 0  // First repo is default
         }));
 
+        // Add parent repo profile if exists (umbrella-level issue tracking)
+        if (config.parentRepo) {
+          profiles.unshift({
+            id: config.parentRepo.name,
+            displayName: `${config.parentRepo.name} (umbrella)`,
+            owner: config.parentRepo.owner,
+            repo: config.parentRepo.name,
+            isDefault: false  // Implementation repos remain default
+          });
+        }
+
         // Map to setup type
         const setupType: GitHubSetupType =
           config.architecture === 'single' ? 'single' :
