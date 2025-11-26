@@ -192,6 +192,21 @@ export class LivingDocsSync {
         featureId = await this.getFeatureIdForIncrement(incrementId);
         this.logger.log(`🔄 Auto-generated feature ID: ${featureId}`);
       }
+      // CRITICAL FIX (2025-11-26): Validate featureId to prevent "null" folder bug
+      // If featureId is invalid (null, "null", empty, or not FS-XXX format), auto-generate
+      if (!featureId || featureId === 'null' || !/^FS-\d{3,}E?$/.test(featureId)) {
+        const invalidValue = featureId;
+        // Extract increment number for auto-generation
+        const match = incrementId.match(/^(\d{4})-/);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          featureId = `FS-${String(num).padStart(3, '0')}`;
+          this.logger.warn(`⚠️ Invalid feature ID "${invalidValue}" replaced with auto-generated: ${featureId}`);
+        } else {
+          throw new Error(`Cannot sync increment ${incrementId}: invalid feature ID "${invalidValue}" and unable to auto-generate`);
+        }
+      }
+
       result.featureId = featureId;
 
       // CRITICAL FIX (2025-11-24): Write feature_id back to metadata.json
