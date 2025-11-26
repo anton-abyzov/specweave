@@ -4,6 +4,18 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.22] - 2025-11-26
+
+### 🔧 Improvements
+- Add `--push` flag to `/specweave-release:npm --only` for complete local release
+- Auto-commit uncommitted changes before version bump (with smart message generation)
+- Reorganize internal docs to 6-pillar enterprise structure
+- Fix ADR numbering (41 duplicate numbers resolved)
+
+---
+
+
+
 ## [0.28.20] - 2025-11-26
 
 ### ✨ Features
