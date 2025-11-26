@@ -4,7 +4,7 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
-## [0.28.23] - 2025-11-26
+## [0.28.24] - 2025-11-26
 
 ### 🔧 Improvements
 - Fix duplicate increment numbering (0062 → 0069)
