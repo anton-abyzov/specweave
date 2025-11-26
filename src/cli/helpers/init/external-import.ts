@@ -390,11 +390,18 @@ export async function promptAndRunExternalImport(
     default: defaultTimeRange
   });
 
+  // CRITICAL FIX (2025-11-26): Prompt for including closed issues
+  // Bug: includeClosed was hardcoded to false, missing closed issues during import
+  const includeClosed = await confirm({
+    message: 'Include closed/resolved issues?',
+    default: true  // Default to YES to ensure complete import
+  });
+
   // Build coordinator configuration
   const coordinatorConfig: CoordinatorConfig = {
     importConfig: {
       timeRangeMonths: timeRange,
-      includeClosed: false,
+      includeClosed: includeClosed,
       pageSize: importConfig.pageSize
     },
     parallel: true,
@@ -806,8 +813,41 @@ async function runImport(
       jobManager.completeJob(jobId);
     }
 
-    // Show breakdown by platform
-    if (result.results.length > 0) {
+    // ENHANCED (2025-11-26): Show per-repo breakdown with open/closed counts
+    if (result.allItems.length > 0) {
+      console.log('');
+      console.log(chalk.cyan('   Import Summary:'));
+
+      // Group items by sourceRepo (or platform if no sourceRepo)
+      const repoGroups = new Map<string, { open: number; closed: number }>();
+
+      for (const item of result.allItems) {
+        const repoKey = item.sourceRepo || item.platform;
+        const existing = repoGroups.get(repoKey) || { open: 0, closed: 0 };
+
+        if (item.status === 'open' || item.status === 'in-progress') {
+          existing.open++;
+        } else {
+          existing.closed++;
+        }
+        repoGroups.set(repoKey, existing);
+      }
+
+      // Display per-repo summary
+      const repoEntries = Array.from(repoGroups.entries());
+      repoEntries.forEach(([repo, counts], index) => {
+        const isLast = index === repoEntries.length - 1;
+        const prefix = isLast ? '└─' : '├─';
+        const total = counts.open + counts.closed;
+        const details = counts.closed > 0
+          ? `(${counts.open} open, ${counts.closed} closed)`
+          : `(${counts.open} open)`;
+        console.log(chalk.gray(`   ${prefix} ${repo}: ${total} issues ${details}`));
+      });
+
+      console.log(chalk.gray(`   Total: ${result.totalCount} issues imported`));
+    } else if (result.results.length > 0) {
+      // Fallback to platform-level summary
       console.log('');
       result.results.forEach(platformResult => {
         console.log(chalk.gray(`   ✓ ${platformResult.platform}: ${platformResult.count} items`));
@@ -902,8 +942,12 @@ async function convertToLivingDocs(
         projectRoot: targetDir,
         enableFeatureAllocation: true,
         projectId: projectId,
-        // CRITICAL: Enable global collision detection in umbrella mode
-        enableGlobalCollisionDetection: isUmbrellaMode,
+        // CRITICAL FIX (2025-11-26): Per-project sequences, NOT global
+        // Each project gets its own FS-XXX sequence starting from 001
+        // Within each project, FS-001 and FS-001E cannot coexist (unified within project)
+        // Bug: Global collision detection forced global sequence (FS-001, FS-002E, FS-003E globally)
+        // Fix: Disable global detection - each project is independent
+        enableGlobalCollisionDetection: false,
         autoArchiveAfterDays: 30,
         // NEW: Pass external container for 2-level directory structure
         externalContainer: externalContainer,
@@ -946,9 +990,9 @@ async function convertToLivingDocs(
     if (groupCount > 1) {
       console.log(chalk.gray(`   → Organized into ${groupCount} project folders`));
     }
-    // Log umbrella mode status (can be from config or from multiple groups)
+    // Log per-project sequence info
     if (isUmbrellaMode) {
-      console.log(chalk.gray(`   → Global collision detection enabled (umbrella mode)`));
+      console.log(chalk.gray(`   → Per-project sequences (each project starts from FS-001)`));
     }
     if (uniqueFeatures.size > 0) {
       console.log(chalk.gray(`   → Organized into ${uniqueFeatures.size} feature folder(s)`));

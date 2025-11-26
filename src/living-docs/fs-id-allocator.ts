@@ -370,6 +370,10 @@ export class FSIdAllocator {
    * 4. If gap exists, allocate next ID in gap (e.g., FS-011E between FS-010 and FS-020)
    * 5. If no gap, append to end (max ID + 1 with E suffix)
    *
+   * CRITICAL (2025-11-26): Unified numeric sequence - FS-XXX and FS-XXXE never share same index
+   * - If FS-001 exists (internal), external must use FS-002E
+   * - If FS-001E exists (external), internal must use FS-002
+   *
    * @param workItem - External work item to allocate ID for
    * @returns Allocation result with ID and strategy
    */
@@ -548,6 +552,51 @@ export class FSIdAllocator {
       external: features.filter(f => f.origin === 'external').length,
       maxId: this.getMaxId()
     };
+  }
+
+  /**
+   * Find first available numeric index for external feature (unified sequence)
+   *
+   * CRITICAL: Ensures FS-XXX and FS-XXXE never share the same numeric index
+   * - Scans from 1 upward to find first unused numeric index
+   * - Checks both FS-XXX (internal) and FS-XXXE (external) for each index
+   *
+   * @returns Allocation result if gap found, null if should use append strategy
+   */
+  private findFirstAvailableIndex(): AllocationResult | null {
+    // Get all used numeric indices (from both internal and external features)
+    const usedIndices = new Set<number>();
+    for (const id of this.existingFeatures.keys()) {
+      usedIndices.add(this.extractNumber(id));
+    }
+
+    // Find first gap starting from 1
+    for (let index = 1; index <= usedIndices.size + 1; index++) {
+      if (!usedIndices.has(index)) {
+        const nextId = `FS-${String(index).padStart(3, '0')}E`;
+        return {
+          id: nextId,
+          strategy: 'chronological-insert',
+          reason: `Allocated first available numeric index (unified sequence, index ${index} was free)`,
+          number: index
+        };
+      }
+    }
+
+    // No gap found in sequence - will use append strategy
+    return null;
+  }
+
+  /**
+   * Check if a numeric index is used by ANY feature (internal or external)
+   *
+   * @param index - Numeric index to check
+   * @returns True if either FS-XXX or FS-XXXE exists for this index
+   */
+  isNumericIndexUsed(index: number): boolean {
+    const internalId = `FS-${String(index).padStart(3, '0')}`;
+    const externalId = `FS-${String(index).padStart(3, '0')}E`;
+    return this.existingFeatures.has(internalId) || this.existingFeatures.has(externalId);
   }
 
   /**
