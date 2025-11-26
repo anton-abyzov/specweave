@@ -4,6 +4,23 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.20] - 2025-11-26
+
+### ✨ Features
+- Add background jobs for long-running operations (FS-065)
+  - BackgroundJobManager for tracking clone-repos and import-issues jobs
+  - `/specweave:jobs` command for monitoring job status
+  - Rate limit auto-pause and resume functionality
+  - Persistent job state across Claude sessions
+- Multi-project JIRA/ADO import during init (FS-066)
+- Fix external sync tags and status types (FS-064)
+
+### 🔧 Improvements
+- Refactor repo-structure-manager into smaller modules
+- Improve GitHub/JIRA/ADO sync handling
+
+---
+
 ## [0.28.19] - 2025-11-26
 
 ### 🐛 Bug Fixes
