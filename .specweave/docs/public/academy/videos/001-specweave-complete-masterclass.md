@@ -1710,6 +1710,13 @@ LINKS:
 • Claude Code: https://github.com/anthropics/claude-code
 • Academy: .specweave/docs/public/academy/
 
+💬 I WANT YOUR FEEDBACK:
+Open a GitHub issue or drop a comment! Tell me:
+• What problems are you running into?
+• What features would help YOU?
+• What should I build next? Mobile app? CI/CD? More integrations?
+Your ideas shape what gets built. I read everything!
+
 TIMESTAMPS:
 0:00 - Finally: Legacy, Startup, AND Enterprise
 1:30 - The Problem (Why nothing else works)
