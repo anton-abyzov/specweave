@@ -186,15 +186,17 @@ export class GitHubImporter implements Importer {
     }
 
     // Pattern 2: "Acceptance Criteria" section
-    const sectionPattern = /(?:^|\n)##?\s*Acceptance Criteria\s*\n([\s\S]*?)(?=\n##|\n---|\z)/i;
+    const sectionPattern = /(?:^|\n)##?\s*Acceptance Criteria\s*\n([\s\S]*?)(?=\n##|\n---|$)/i;
     const sectionMatch = body.match(sectionPattern);
     if (sectionMatch) {
       const section = sectionMatch[1];
-      const itemPattern = /^[\s-]*[•*-]\s*(.+)$/gm;
+      // Match bullet points, optionally with checkboxes
+      const itemPattern = /^[\s-]*[•*-]\s*(?:\[[ x]\]\s*)?(.+)$/gim;
       const itemMatches = section.matchAll(itemPattern);
       for (const match of itemMatches) {
         const item = match[1].trim();
-        if (!criteria.some((c) => c.includes(item))) {
+        // Skip if already captured by Pattern 1 (AC checkbox list)
+        if (!criteria.some((c) => c.includes(item) || item.includes(c))) {
           criteria.push(item);
         }
       }

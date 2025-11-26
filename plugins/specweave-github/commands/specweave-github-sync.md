@@ -5,6 +5,63 @@ description: Synchronize SpecWeave increment with GitHub issue (Multi-Project Su
 
 # Sync Increment with GitHub Issue (Multi-Project)
 
+## ⚠️ CRITICAL: Sync Routing (Read First!)
+
+**Before executing ANY sync, you MUST determine the correct sync path:**
+
+### Step 0: Detect Project Structure
+
+```bash
+# Check for living docs structure
+if [ -d ".specweave/docs/internal/specs" ] && [ -n "$(ls -A .specweave/docs/internal/specs/*/FEATURE.md 2>/dev/null)" ]; then
+    echo "✅ Living docs found → Use Feature Sync"
+else
+    echo "⚠️ No living docs → Use Increment Sync (brownfield)"
+fi
+```
+
+### Sync Path Decision:
+
+| Structure | Command | Issue Format |
+|-----------|---------|--------------|
+| **Living docs exist** (`.specweave/docs/internal/specs/FS-XXX/`) | Use `github-feature-sync-cli.ts` | `[FS-XXX][US-YYY] Title` |
+| **Increment only** (brownfield, no living docs) | Use `github-increment-sync-cli.ts` | `[FS-XXX] Title` with ACs |
+
+### For Brownfield Projects (No Living Docs):
+
+Use the Increment Sync CLI directly:
+
+```bash
+# Set token
+export GITHUB_TOKEN=$(grep GITHUB_TOKEN .env | cut -d'=' -f2)
+
+# Run increment sync
+node dist/plugins/specweave-github/lib/github-increment-sync-cli.js <increment-id>
+
+# Example
+node dist/plugins/specweave-github/lib/github-increment-sync-cli.js 0002
+```
+
+This creates issues with:
+- ✅ Proper format: `[FS-002] Increment Title`
+- ✅ User Stories listed with checkbox headers
+- ✅ All ACs as checkable items
+- ✅ Links to increment files
+
+### For Projects with Living Docs:
+
+Use the Feature Sync CLI:
+
+```bash
+# Run feature sync
+node dist/plugins/specweave-github/lib/github-feature-sync-cli.js <feature-id>
+
+# Example
+node dist/plugins/specweave-github/lib/github-feature-sync-cli.js FS-062
+```
+
+---
+
 Synchronize the current state of a SpecWeave increment with its GitHub issue across multiple repositories. Supports multi-profile management, time range filtering, and rate limit protection.
 
 ## Usage

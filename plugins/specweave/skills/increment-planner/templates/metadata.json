@@ -1,0 +1,13 @@
+{
+  "id": "{{INCREMENT_ID}}",
+  "status": "planned",
+  "type": "{{TYPE}}",
+  "priority": "{{PRIORITY}}",
+  "created": "{{ISO_DATE}}",
+  "lastActivity": "{{ISO_DATE}}",
+  "testMode": "{{TEST_MODE}}",
+  "coverageTarget": {{COVERAGE_TARGET}},
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

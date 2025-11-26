@@ -5,131 +5,19 @@ description: Multi-framework UI testing expert - Cypress, Testing Library, compo
 
 # UI Testing Skill
 
-Expert in UI and end-to-end (E2E) testing using modern frameworks like Playwright Test, Cypress, and Testing Library. Specializes in writing reliable, maintainable tests that catch bugs before production.
+Expert in UI testing with **Cypress** and **Testing Library**. For deep Playwright expertise, see the `e2e-playwright` skill.
 
-## Core Testing Frameworks
+## Framework Selection Guide
 
-### 1. Playwright Test (Recommended for E2E)
+| Framework | Best For | Key Strength |
+|-----------|----------|--------------|
+| **Playwright** | E2E, cross-browser | Auto-wait, multi-browser → Use `e2e-playwright` skill |
+| **Cypress** | E2E, developer experience | Time-travel debugging, real-time reload |
+| **Testing Library** | Component tests | User-centric queries, accessibility-first |
 
-**Why Playwright?**
-- Multi-browser support (Chromium, Firefox, WebKit)
-- Auto-wait (no manual `waitFor` needed)
-- Fast parallel execution
-- Built-in assertions and fixtures
-- Network interception and mocking
+---
 
-#### Basic Test Structure
-
-```typescript
-import { test, expect } from '@playwright/test';
-
-test.describe('User Authentication', () => {
-  test('should login with valid credentials', async ({ page }) => {
-    // Navigate
-    await page.goto('https://example.com/login');
-
-    // Interact
-    await page.fill('input[name="email"]', 'user@example.com');
-    await page.fill('input[name="password"]', 'SecurePass123!');
-    await page.click('button[type="submit"]');
-
-    // Assert
-    await expect(page).toHaveURL('https://example.com/dashboard');
-    await expect(page.locator('h1')).toHaveText('Welcome, User');
-  });
-
-  test('should show error with invalid credentials', async ({ page }) => {
-    await page.goto('https://example.com/login');
-
-    await page.fill('input[name="email"]', 'wrong@example.com');
-    await page.fill('input[name="password"]', 'WrongPass');
-    await page.click('button[type="submit"]');
-
-    // Wait for error message
-    const errorMessage = page.locator('.error-message');
-    await expect(errorMessage).toBeVisible();
-    await expect(errorMessage).toHaveText('Invalid credentials');
-  });
-});
-```
-
-#### Fixtures (Reusable Setup)
-
-```typescript
-// fixtures.ts
-import { test as base } from '@playwright/test';
-
-type Fixtures = {
-  authenticatedPage: Page;
-};
-
-export const test = base.extend<Fixtures>({
-  authenticatedPage: async ({ page }, use) => {
-    // Login before each test
-    await page.goto('https://example.com/login');
-    await page.fill('input[name="email"]', 'user@example.com');
-    await page.fill('input[name="password"]', 'SecurePass123!');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('**/dashboard');
-
-    // Use the authenticated page
-    await use(page);
-
-    // Cleanup (logout)
-    await page.click('[data-testid="logout"]');
-  },
-});
-
-// tests/dashboard.spec.ts
-import { test, expect } from './fixtures';
-
-test('should display user dashboard', async ({ authenticatedPage }) => {
-  // Already logged in via fixture
-  await expect(authenticatedPage.locator('h1')).toHaveText('Dashboard');
-});
-```
-
-#### Page Object Model (POM)
-
-```typescript
-// pages/LoginPage.ts
-export class LoginPage {
-  constructor(private page: Page) {}
-
-  async goto() {
-    await this.page.goto('https://example.com/login');
-  }
-
-  async login(email: string, password: string) {
-    await this.page.fill('input[name="email"]', email);
-    await this.page.fill('input[name="password"]', password);
-    await this.page.click('button[type="submit"]');
-  }
-
-  async getErrorMessage() {
-    const errorElement = this.page.locator('.error-message');
-    return errorElement.textContent();
-  }
-
-  async isLoginButtonDisabled() {
-    return this.page.locator('button[type="submit"]').isDisabled();
-  }
-}
-
-// tests/login.spec.ts
-import { LoginPage } from '../pages/LoginPage';
-
-test('login with POM', async ({ page }) => {
-  const loginPage = new LoginPage(page);
-
-  await loginPage.goto();
-  await loginPage.login('user@example.com', 'SecurePass123!');
-
-  await expect(page).toHaveURL('**/dashboard');
-});
-```
-
-### 2. Cypress (Alternative for E2E)
+## 1. Cypress (E2E Testing)
 
 **Why Cypress?**
 - Developer-friendly API

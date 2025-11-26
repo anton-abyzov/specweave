@@ -1,6 +1,7 @@
 ---
 name: code-quality
 description: Expert code quality engineering covering clean code principles, SOLID, DRY, KISS, YAGNI, code smells, refactoring patterns, static analysis, linting, code coverage, mutation testing, and software craftsmanship. Activates for code quality, clean code, SOLID principles, code smells, refactoring, technical debt, code review, linting, eslint, prettier, static analysis, code coverage.
+allowed-tools: Read, Grep, Glob
 ---
 
 # Code Quality Expert

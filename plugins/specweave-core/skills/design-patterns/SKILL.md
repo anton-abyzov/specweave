@@ -1,6 +1,7 @@
 ---
 name: design-patterns
 description: Expert knowledge of Gang of Four (GoF) design patterns including creational (Singleton, Factory, Builder, Prototype), structural (Adapter, Decorator, Proxy, Facade), and behavioral (Strategy, Observer, Command, Template Method, Chain of Responsibility). Modern TypeScript/JavaScript implementations with real-world use cases. Activates for design patterns, factory pattern, singleton, strategy pattern, observer pattern, decorator pattern, adapter pattern, builder pattern, proxy pattern, facade pattern, template method.
+allowed-tools: Read, Grep, Glob
 ---
 
 # Design Patterns Expert

@@ -1,6 +1,7 @@
 ---
 name: bmad-method
 description: BMAD (Best, Most Appropriate, Design) technology decision framework expert. Helps evaluate technology alternatives, analyze tradeoffs, calculate TCO, assess vendor lock-in, and make data-driven architecture decisions. Activates for technology choices, stack decisions, database selection, cloud provider comparison, framework evaluation, architecture decisions, BMAD, best practices, most appropriate, design decisions, technology tradeoffs.
+allowed-tools: Read, Grep, Glob
 ---
 
 # BMAD Method Expert Skill
