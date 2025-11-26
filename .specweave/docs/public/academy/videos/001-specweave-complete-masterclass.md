@@ -1490,25 +1490,37 @@ EOF
 
 ---
 
-### OUTRO (74:00 - 75:00)
+### OUTRO (60:00 - 61:00)
 
 **[VISUAL: Split screen - all 4 terminals + final code]**
 
-> "That's SpecWeave.
+> "Okay. That was A LOT.
 
-> Four Claude sessions running in parallel. Opus 4.5 power. Specs that stay alive. GitHub, JIRA, Azure DevOps — all in sync.
+> I'm not gonna lie — building SpecWeave was MASSIVE. Months of work. 60+ increments. Thousands of lines of code. And honestly? It was exhausting. But SO worth it."
 
-> No more documentation graveyards. No more status meetings about status. No more 'where's that spec?'
+**[VISUAL: Quick montage of features shown]**
 
-> Everything is free. Everything is open source. Star the repo. Clone it. Build with it.
+> "Let me recap what you just saw:
 
-> If this saved you time, subscribe. I've got 140 subscribers and I'm building real content for real developers.
+> 15 AI agents that orchestrate themselves. Enterprise hierarchy mapping. Bidirectional sync with JIRA, GitHub, Azure DevOps. Multi-language translation. Support for ANY AI tool. Not just Claude — GPT, Gemini, Copilot.
 
-> Drop a comment — what do you want to see next? What tool integrations? What workflows?
+> This is the framework I wished existed when I started. Now it does. And it's FREE. Open source. No catch."
 
-> Links in the description. See you in the next one."
+**[VISUAL: GitHub repo star animation]**
 
-**[VISUAL: Subscribe button + end card with links]**
+> "If this helped you — even a little — I need you to do TWO things:
+
+> ONE: Star the GitHub repo. Seriously. Stars are how developers find tools. Every star helps someone else discover SpecWeave.
+
+> TWO: Subscribe and hit the bell. I'm at 140 subscribers. Help me get to 1,000 so I can keep making content like this.
+
+> Drop a comment — tell me what demo was most useful. What should I cover next? Multi-repo? Advanced JIRA? Custom agents?
+
+> Links in the description. This script is in the repo. Everything is documented.
+
+> This was huge. Thanks for watching. See you in the next one."
+
+**[VISUAL: Subscribe button + Star repo animation + end card with links]**
 
 ---
 
