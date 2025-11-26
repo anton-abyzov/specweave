@@ -43,7 +43,7 @@ Claude Code does not support command routing. Each command must be invoked direc
 | Command | Description | Example |
 |---------|-------------|---------|
 | `/specweave-github:create-issue` | Create GitHub issue | `/specweave-github:create-issue 0031` |
-| `/specweave-github:sync` | Bidirectional sync | `/specweave-github:sync 0031` |
+| `/specweave-github:sync` | Two-way sync | `/specweave-github:sync 0031` |
 | `/specweave-github:sync-tasks` | Sync tasks as sub-issues | `/specweave-github:sync-tasks 0031` |
 | `/specweave-github:close-issue` | Close GitHub issue | `/specweave-github:close-issue 0031` |
 | `/specweave-github:status` | Show sync status | `/specweave-github:status` |

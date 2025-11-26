@@ -1,4 +1,4 @@
-# ADR-0032: Increment Number Gap Prevention Strategy
+# ADR-0165: Increment Number Gap Prevention Strategy
 
 **Date**: 2025-11-14
 **Status**: Accepted

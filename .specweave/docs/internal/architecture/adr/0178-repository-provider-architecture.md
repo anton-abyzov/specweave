@@ -1,4 +1,4 @@
-# ADR-0048: Repository Provider Architecture
+# ADR-0178: Repository Provider Architecture
 
 **Status**: Accepted
 **Date**: 2025-11-20

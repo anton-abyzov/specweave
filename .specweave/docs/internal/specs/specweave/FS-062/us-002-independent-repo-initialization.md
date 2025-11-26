@@ -1,43 +1,33 @@
 ---
 id: US-002
 feature: FS-062
-title: Independent Repo Initialization
-status: not_started
+title: "Project-Scoped User Story Generation"
+status: in_progress
 priority: P1
-created: 2025-11-25
-external_tools:
-  github:
-    number: 757
-    url: https://github.com/anton-abyzov/specweave/issues/757
-    created_at: 2025-11-25T08:14:29.097Z
+created: 2025-11-26
 ---
 
-# US-002: Independent Repo Initialization
+# US-002: Project-Scoped User Story Generation
 
-**Feature**: [FS-062](../../_features/FS-062/FEATURE.md)
+**Feature**: [FS-062](./FEATURE.md)
 
-**As a** developer with multiple repos
-**I want** each repo to have its own SpecWeave configuration
-**So that** each repo is independent and syncs to its own external tools
+**As a** PM planning an increment for multi-project setup
+**I want** generated user stories to have project prefixes
+**So that** each repo gets only its relevant user stories
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] **AC-US2-01**: Each cloned/created repo gets its own `.specweave/` folder
-- [ ] **AC-US2-02**: Each repo gets its own `config.json` with its GitHub/JIRA/ADO settings
-- [ ] **AC-US2-03**: Parent/umbrella repo (optional) only coordinates, no implementation specs
-- [ ] **AC-US2-04**: Running `specweave init` in child repo detects it's part of umbrella setup
+- [x] **AC-US2-01**: Multi-project specs generate `US-FE-001`, `US-BE-001` format
+- [x] **AC-US2-02**: Multi-project specs generate `AC-FE-US1-01` format ACs
+- [x] **AC-US2-03**: Single-project specs generate `US-001`, `AC-US1-01` format
+- [x] **AC-US2-04**: Frontmatter includes `multi_project: true` and `projects:` array
 
 ---
 
 ## Implementation
 
-**Increment**: [0062-umbrella-multi-repo-support](../../../../increments/0062-umbrella-multi-repo-support/spec.md)
+**Increment**: [0062-multi-project-spec-generation](../../../../increments/0062-multi-project-spec-generation/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
-
-
-## Tasks
-
-_No tasks defined for this user story_

@@ -1,4 +1,4 @@
-# ADR-0026: GitHub Validation Strategy
+# ADR-0159: GitHub Validation Strategy
 
 **Status**: Accepted
 **Date**: 2025-11-11

@@ -1,4 +1,4 @@
-# ADR-0024: Root-Level Repository Structure
+# ADR-0157: Root-Level Repository Structure
 
 **Status**: Accepted
 **Date**: 2025-11-11

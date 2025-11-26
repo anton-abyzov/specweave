@@ -1,4 +1,4 @@
-# ADR-0007: Test-Aware Planning Strategy (v0.7.0+)
+# ADR-0149: Test-Aware Planning Strategy (v0.7.0+)
 
 **Status**: Accepted (Updated v0.7.0)
 **Date**: 2025-01-21 (Updated: 2025-11-04)

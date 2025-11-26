@@ -1,0 +1,10 @@
+{
+  "id": "0069-multi-project-spec-generation",
+  "type": "feature",
+  "status": "completed",
+  "created": "2025-11-26",
+  "completed": "2025-11-26",
+  "lastActivity": "2025-11-26",
+  "testMode": "test-after",
+  "coverageTarget": 80
+}

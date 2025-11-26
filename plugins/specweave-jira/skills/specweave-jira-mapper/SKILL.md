@@ -328,7 +328,7 @@ JIRA Epic: PROJ-123
    ```yaml
    jira:
      last_sync: "2025-10-26T16:30:00Z"
-     sync_direction: "bidirectional"
+     sync_direction: "two-way"
      conflicts_resolved: 2
    ```
 
@@ -336,7 +336,7 @@ JIRA Epic: PROJ-123
 ```
 ✅ Synced with JIRA!
 
-Direction: Bidirectional
+Direction: Two-way
 Changes Applied:
   - SpecWeave → JIRA: 3 updates
   - JIRA → SpecWeave: 5 updates

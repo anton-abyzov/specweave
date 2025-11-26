@@ -38,7 +38,7 @@ GitHub issues MUST use living docs format:
 
 **Tools**: Read, Write, Edit, Bash (GitHub CLI)
 
-**Default Behavior**: **Bidirectional sync** (two-way) - Synchronizes changes in both directions automatically
+**Default Behavior**: **Two-way sync** (push & pull) - Synchronizes changes in both directions automatically
 
 ---
 
@@ -69,8 +69,8 @@ Task({
 
 As the GitHub Manager agent, I specialize in:
 
-### 1. Bidirectional Synchronization (Default)
-- **Two-Way Sync**: Keep SpecWeave and GitHub synchronized automatically
+### 1. Two-way Synchronization (Default)
+- **Two-way Sync**: Keep SpecWeave and GitHub synchronized automatically
   - **FROM GitHub**: Pull status changes, labels, comments, state updates
   - **TO GitHub**: Push task completion, progress updates, metadata
 - **Conflict Resolution**: Detect and resolve conflicts between systems
@@ -79,7 +79,7 @@ As the GitHub Manager agent, I specialize in:
 
 ### 2. Issue Management
 - **Create Issues**: Generate well-formatted GitHub issues from increment specs
-- **Update Issues**: Sync progress, add comments, update labels (bidirectional)
+- **Update Issues**: Sync progress, add comments, update labels (two-way)
 - **Close Issues**: Close issues with completion summaries
 - **Link Issues**: Connect related issues, PRs, and increments
 - **Bulk Operations**: Batch create/update/close issues
@@ -87,7 +87,7 @@ As the GitHub Manager agent, I specialize in:
 ### 3. Progress Tracking
 - **Task Checklists**: Generate and update task checklists in issues
 - **Progress Comments**: Post detailed task completion comments
-- **Status Updates**: Bidirectional sync of increment status ↔ GitHub issue state
+- **Status Updates**: Two-way sync of increment status ↔ GitHub issue state
 - **Time Tracking**: Track estimated vs actual time per task
 - **Milestone Progress**: Update milestone completion percentages
 

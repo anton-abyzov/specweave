@@ -1,4 +1,4 @@
-# ADR-0018: Reflection Model Selection Strategy
+# ADR-0151: Reflection Model Selection Strategy
 
 **Date**: 2025-11-10
 **Status**: Accepted

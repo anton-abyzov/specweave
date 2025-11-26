@@ -1,4 +1,4 @@
-# ADR-0042-04: Naming Convention (.test.ts Only)
+# ADR-0172-04: Naming Convention (.test.ts Only)
 
 **Date**: 2025-11-18
 **Status**: Accepted

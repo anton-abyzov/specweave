@@ -1,4 +1,4 @@
-# ADR-0031-002: Conflict Resolution Approach
+# ADR-0162-002: Conflict Resolution Approach
 
 **Status**: Accepted
 **Date**: 2025-11-12

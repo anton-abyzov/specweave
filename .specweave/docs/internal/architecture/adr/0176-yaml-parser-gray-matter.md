@@ -1,4 +1,4 @@
-# ADR-0044: YAML Parser Selection - gray-matter for Frontmatter Updates
+# ADR-0176: YAML Parser Selection - gray-matter for Frontmatter Updates
 
 **Date**: 2025-11-18
 **Status**: Accepted

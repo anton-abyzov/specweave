@@ -1,4 +1,4 @@
-# ADR-0042: Agent Enhancement Pattern (Serverless Knowledge Injection)
+# ADR-0173: Agent Enhancement Pattern (Serverless Knowledge Injection)
 
 **Date**: 2025-11-16
 **Status**: Accepted

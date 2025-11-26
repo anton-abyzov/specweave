@@ -1,4 +1,4 @@
-# ADR-0042-02: Test Isolation Enforcement (Eliminate process.cwd())
+# ADR-0170-02: Test Isolation Enforcement (Eliminate process.cwd())
 
 **Date**: 2025-11-18
 **Status**: Accepted

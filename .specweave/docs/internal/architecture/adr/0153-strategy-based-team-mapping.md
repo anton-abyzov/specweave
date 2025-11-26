@@ -1,4 +1,4 @@
-# ADR-0018: Strategy-Based Team Mapping for Issue Trackers
+# ADR-0153: Strategy-Based Team Mapping for Issue Trackers
 
 **Status**: ✅ Accepted
 **Date**: 2025-11-07

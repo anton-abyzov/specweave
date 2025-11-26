@@ -1,4 +1,4 @@
-# ADR-0031-003: Bidirectional Sync Implementation
+# ADR-0163-003: Bidirectional Sync Implementation
 
 **Status**: Accepted
 **Date**: 2025-11-12

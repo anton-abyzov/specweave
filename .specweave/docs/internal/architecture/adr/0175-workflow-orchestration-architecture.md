@@ -1,4 +1,4 @@
-# ADR-0043: Workflow Orchestration Architecture
+# ADR-0175: Workflow Orchestration Architecture
 
 **Date**: 2025-11-16
 **Status**: Accepted

@@ -491,6 +491,26 @@ export class ImportCoordinator {
    * Import from a specific platform only
    */
   async importFrom(platform: 'github' | 'jira' | 'ado'): Promise<ImportResult> {
+    // Handle multi-repo GitHub case
+    if (platform === 'github' && this.githubRepoImporters.size > 0) {
+      const results: ImportResult[] = [];
+
+      for (const [key, importer] of this.githubRepoImporters.entries()) {
+        const sourceRepo = key.replace('github:', '');
+        const result = await this.importFromGitHubRepo(importer, sourceRepo);
+        results.push(result);
+      }
+
+      // Aggregate all results into single ImportResult
+      return {
+        count: results.reduce((sum, r) => sum + r.count, 0),
+        items: results.flatMap(r => r.items),
+        errors: results.flatMap(r => r.errors),
+        platform: 'github',
+      };
+    }
+
+    // Single-repo fallback
     const importer = this.importers.get(platform);
 
     if (!importer) {
