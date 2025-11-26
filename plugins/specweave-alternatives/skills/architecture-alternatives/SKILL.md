@@ -1,6 +1,7 @@
 ---
 name: architecture-alternatives
 description: Software architecture patterns and alternatives expert. Covers monolith vs microservices, serverless, event-driven, CQRS, hexagonal architecture, clean architecture, DDD, and architecture decision frameworks. Activates for architecture patterns, monolith, microservices, serverless, event-driven, CQRS, hexagonal architecture, clean architecture, DDD, architecture decisions, system design, scalability patterns.
+allowed-tools: Read, Grep, Glob
 ---
 
 # Architecture Alternatives Expert Skill

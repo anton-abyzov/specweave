@@ -1,18 +1,13 @@
 /**
  * GitHub Feature Sync - Universal Hierarchy Implementation
  *
- * Architecture (CORRECT):
- * - Feature (FS-033) → GitHub Milestone (Container)
- * - User Story (US-001, US-002, etc.) → GitHub Issue (Trackable item)
- * - Tasks (T-001, T-002, etc.) → Checkboxes in User Story issue body
+ * Architecture:
+ * - Feature (FS-XXX) → GitHub Milestone (Container)
+ * - User Story (US-XXX) → GitHub Issue with format [FS-XXX][US-YYY] Title
+ * - Tasks (T-XXX) → Checkboxes in User Story issue body
  *
- * This implements the TRUE Universal Hierarchy architecture for GitHub.
- *
- * Key Differences from old github-epic-sync.ts:
- * - ❌ OLD: Feature/Increment → GitHub Issue (WRONG!)
- * - ✅ NEW: User Story → GitHub Issue (CORRECT!)
- * - ✅ Creates ONE issue PER user story file (not one per increment)
- * - ✅ Reads us-*.md files from specs/{project}/FS-XXX/
+ * This implements the Universal Hierarchy architecture for GitHub sync.
+ * Creates ONE issue PER user story file from specs/{project}/FS-XXX/us-*.md
  */
 
 import { readdir, readFile, writeFile } from 'fs/promises';

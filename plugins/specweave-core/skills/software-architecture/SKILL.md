@@ -1,6 +1,7 @@
 ---
 name: software-architecture
 description: Expert software architecture covering architectural patterns (microservices, monolith, event-driven, CQRS), scalability, distributed systems, CAP theorem, database architecture, API design, system design, domain-driven design (DDD), hexagonal architecture, and architecture decision records (ADRs). Activates for software architecture, system design, microservices, monolith, event-driven, CQRS, scalability, distributed systems, CAP theorem, DDD, hexagonal architecture, ADR.
+allowed-tools: Read, Grep, Glob
 ---
 
 # Software Architecture Expert

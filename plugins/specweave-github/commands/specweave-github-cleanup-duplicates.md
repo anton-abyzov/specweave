@@ -1,6 +1,6 @@
 ---
 name: specweave-github:cleanup-duplicates
-description: Clean up duplicate GitHub issues for an Epic. Finds issues with duplicate titles and closes all except the first created issue.
+description: Clean up duplicate GitHub issues for a Feature. Finds issues with duplicate titles and closes all except the first created issue.
 justification: |
   CRITICAL INCIDENT RESPONSE TOOL - DO NOT DELETE!
 
@@ -193,33 +193,37 @@ The original issue (#250) contains the same content and should be used for track
 
 ## Related Commands
 
-- `/specweave-github:sync-epic` - Sync Epic (now with duplicate detection!)
+- `/specweave-github:sync` - Sync Feature to GitHub (with duplicate detection)
 - `/specweave:validate` - Validate increment completeness
 - `gh issue list` - View all issues (GitHub CLI)
 
 ## Implementation
 
-**File**: `plugins/specweave-github/lib/github-epic-sync.ts`
+**File**: `plugins/specweave-github/lib/duplicate-detector.ts`
 
-**Method**: `cleanupDuplicates(epicId: string, dryRun: boolean)`
+**Class**: `DuplicateDetector`
 
-**Algorithm**:
-1. Search GitHub for all issues with Epic ID
+**Algorithm** (3-phase protection):
+1. **Detection**: Search GitHub for existing issues matching pattern
+2. **Verification**: Count check to detect duplicates after creation
+3. **Reflection**: Auto-close duplicates automatically
+
+For manual cleanup:
+1. Search GitHub for all issues with Feature ID
 2. Group by title (Map<string, number[]>)
 3. Filter groups with >1 issue (duplicates)
 4. For each duplicate group:
    - Keep first issue (lowest number)
    - Close others with gh CLI
-5. Update Epic README frontmatter
 
 ## Next Steps
 
 After cleanup:
 
 1. **Verify cleanup**: `gh issue list --search "[FS-031]"`
-2. **Check Epic README**: Verify frontmatter has correct issue numbers
-3. **Re-run sync**: `/specweave-github:sync-epic FS-031` (should show no duplicates)
-4. **Enable duplicate detection**: Already enabled in v0.18.0+
+2. **Check Feature FEATURE.md**: Verify frontmatter has correct issue numbers
+3. **Re-run sync**: `/specweave-github:sync` (should show no duplicates)
+4. **Duplicate detection**: Automatically enabled via DuplicateDetector
 
 ---
 

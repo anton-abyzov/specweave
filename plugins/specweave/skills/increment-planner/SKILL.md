@@ -218,155 +218,15 @@ Create `.specweave/increments/0021-feature-name/spec.md`:
 
 #### 4A: Single-Project Template (umbrella.enabled: false)
 
-```markdown
----
-increment: 0021-feature-name
-title: "Feature Name"
-type: feature
-priority: P1
-status: planned
-created: 2025-11-24
-structure: user-stories
-test_mode: <VALUE FROM config.testing.defaultTestMode OR 'TDD'>
-coverage_target: <VALUE FROM config.testing.defaultCoverageTarget OR 95>
----
+**Template File**: `templates/spec-single-project.md`
 
-# Feature: [Title]
-
-## Overview
-
-[High-level description - WHAT this feature does and WHY it's needed]
-
-## User Stories
-
-### US-001: [Story Title] (P1)
-
-**As a** [user type]
-**I want** [goal]
-**So that** [benefit]
-
-**Acceptance Criteria**:
-- [ ] **AC-US1-01**: [Specific, testable criterion]
-- [ ] **AC-US1-02**: [Another criterion]
-
-### US-002: [Story Title] (P2)
-
-[Repeat structure]
-
-## Functional Requirements
-
-### FR-001: [Requirement]
-[Detailed description]
-
-## Success Criteria
-
-[Measurable outcomes - metrics, KPIs]
-
-## Out of Scope
-
-[What this explicitly does NOT include]
-
-## Dependencies
-
-[Other features or systems this depends on]
-```
+Replace placeholders: `{{INCREMENT_ID}}`, `{{FEATURE_TITLE}}`, `{{TYPE}}`, `{{PRIORITY}}`, `{{DATE}}`, `{{TEST_MODE}}`, `{{COVERAGE_TARGET}}`
 
 #### 4B: Multi-Project Template (umbrella.enabled: true) - USE THIS!
 
-```markdown
----
-increment: 0021-feature-name
-title: "Feature Name"
-type: feature
-priority: P1
-status: planned
-created: 2025-11-24
-structure: user-stories
-test_mode: <VALUE FROM config.testing.defaultTestMode OR 'TDD'>
-coverage_target: <VALUE FROM config.testing.defaultCoverageTarget OR 95>
-multi_project: true
-projects:
-  - id: sw-app-fe
-    prefix: FE
-  - id: sw-app-be
-    prefix: BE
-  - id: sw-app-shared
-    prefix: SHARED
----
+**Template File**: `templates/spec-multi-project.md`
 
-# Feature: [Title]
-
-## Overview
-
-[High-level description - WHAT this feature does and WHY it's needed]
-
-## User Stories by Project
-
-### Frontend ([repo-name-fe])
-
-#### US-FE-001: [Story Title] (P1)
-**Related Repo**: [repo-name-fe]
-**As a** [user type]
-**I want** [goal]
-**So that** [benefit]
-
-**Acceptance Criteria**:
-- [ ] **AC-FE-US1-01**: [Specific, testable criterion]
-- [ ] **AC-FE-US1-02**: [Another criterion]
-
-#### US-FE-002: [Story Title] (P2)
-[Repeat structure with FE prefix]
-
----
-
-### Backend ([repo-name-be])
-
-#### US-BE-001: [Story Title] (P1)
-**Related Repo**: [repo-name-be]
-**As a** [system/frontend application]
-**I want** [API endpoint/service goal]
-**So that** [benefit]
-
-**Acceptance Criteria**:
-- [ ] **AC-BE-US1-01**: [API endpoint specification]
-- [ ] **AC-BE-US1-02**: [Data validation rule]
-
-#### US-BE-002: [Story Title] (P2)
-[Repeat structure with BE prefix]
-
----
-
-### Shared Library ([repo-name-shared])
-
-#### US-SHARED-001: [Story Title] (P1)
-**Related Repo**: [repo-name-shared]
-**As a** developer in FE or BE repos
-**I want** [shared types/utilities/validators]
-**So that** [consistency across projects]
-
-**Acceptance Criteria**:
-- [ ] **AC-SHARED-US1-01**: [Type definition]
-- [ ] **AC-SHARED-US1-02**: [Validator/utility function]
-
----
-
-## Functional Requirements
-
-### FR-001: [Requirement]
-[Detailed description]
-
-## Success Criteria
-
-[Measurable outcomes - metrics, KPIs]
-
-## Out of Scope
-
-[What this explicitly does NOT include]
-
-## Dependencies
-
-[Other features or systems this depends on]
-```
+Replace placeholders: `{{INCREMENT_ID}}`, `{{FEATURE_TITLE}}`, `{{PROJECT_FE_ID}}`, `{{PROJECT_BE_ID}}`, `{{PROJECT_SHARED_ID}}`, etc.
 
 **Key Rules for Multi-Project spec.md:**
 1. **User stories MUST be grouped by project** (Frontend, Backend, Shared, etc.)
@@ -379,58 +239,9 @@ projects:
 
 Create `.specweave/increments/0021-feature-name/plan.md`:
 
-```markdown
-# Implementation Plan: [Feature Title]
+**Template File**: `templates/plan.md`
 
-## Overview
-
-[Technical summary of implementation approach]
-
-## Architecture
-
-### Components
-- [Component 1]: [Purpose]
-- [Component 2]: [Purpose]
-
-### Data Model
-- [Entity 1]: [Fields, relationships]
-- [Entity 2]: [Fields, relationships]
-
-### API Contracts
-- `POST /api/resource`: [Purpose, request/response]
-- `GET /api/resource/:id`: [Purpose, request/response]
-
-## Technology Stack
-
-- **Language/Framework**: [Choice]
-- **Libraries**: [List]
-- **Tools**: [List]
-
-**Architecture Decisions**:
-- [Decision 1]: [Why this choice? Alternatives considered?]
-- [Decision 2]: [Rationale]
-
-## Implementation Phases
-
-### Phase 1: Foundation
-- [Setup, infrastructure, base components]
-
-### Phase 2: Core Functionality
-- [Primary features from P1 user stories]
-
-### Phase 3: Enhancement
-- [P2 features and optimizations]
-
-## Testing Strategy
-
-[High-level testing approach - details in tasks.md]
-
-## Technical Challenges
-
-### Challenge 1: [Description]
-**Solution**: [Approach]
-**Risk**: [Mitigation]
-```
+Replace `{{FEATURE_TITLE}}` placeholder. plan.md is OPTIONAL - create only for complex features with architecture decisions.
 
 ### STEP 6: Create tasks.md Template
 
@@ -440,151 +251,15 @@ Create `.specweave/increments/0021-feature-name/tasks.md`:
 
 #### 6A: Single-Project Template
 
-```markdown
-# Tasks: [Feature Title]
+**Template File**: `templates/tasks-single-project.md`
 
-## Task Notation
-
-- `[T###]`: Task ID
-- `[P]`: Parallelizable
-- `[ ]`: Not started
-- `[x]`: Completed
-- Model hints: ⚡ haiku, 🧠 sonnet, 💎 opus
-
-## Phase 1: Setup
-
-- [ ] [T001] [P] ⚡ haiku - Initialize project structure
-- [ ] [T002] ⚡ haiku - Setup testing framework
-
-## Phase 2: Core Implementation
-
-### US-001: [User Story Title] (P1)
-
-#### T-003: Implement [component]
-
-**Description**: [What needs to be done]
-
-**References**: AC-US1-01, AC-US1-02
-
-**Implementation Details**:
-- [Step 1]
-- [Step 2]
-
-**Test Plan**:
-- **File**: `tests/unit/component.test.ts`
-- **Tests**:
-  - **TC-001**: [Test name]
-    - Given [precondition]
-    - When [action]
-    - Then [expected result]
-  - **TC-002**: [Test name]
-    - Given [precondition]
-    - When [action]
-    - Then [expected result]
-
-**Dependencies**: None
-**Status**: [ ] Not Started
-
-## Phase 3: Testing
-
-- [ ] [T050] Run integration tests
-- [ ] [T051] Verify all acceptance criteria
-```
+Replace `{{FEATURE_TITLE}}` placeholder.
 
 #### 6B: Multi-Project Template (umbrella.enabled: true) - USE THIS!
 
-```markdown
-# Tasks: [Feature Title]
+**Template File**: `templates/tasks-multi-project.md`
 
-## Task Notation
-
-- `[T###]`: Task ID
-- `[P]`: Parallelizable
-- `[ ]`: Not started
-- `[x]`: Completed
-- Model hints: ⚡ haiku, 🧠 sonnet, 💎 opus
-
-## Phase 1: Foundation & Setup
-
-### T-001: Initialize Shared Library (sw-app-shared)
-**User Story**: US-SHARED-001
-**Satisfies ACs**: AC-SHARED-US1-01, AC-SHARED-US1-02
-**Status**: [ ] Not Started
-
-**Description**: Set up shared TypeScript types and validators
-
-**Implementation**:
-- Create shared types package
-- Export common interfaces and types
-- Add validation schemas
-
-**Test Plan**:
-- **File**: `sw-app-shared/tests/types.test.ts`
-- **Tests**:
-  - **TC-001**: Type exports compile correctly
-
----
-
-## Phase 2: Backend Implementation (sw-app-be)
-
-### T-002: Database Schema & Models
-**User Story**: US-BE-001
-**Satisfies ACs**: AC-BE-US1-01, AC-BE-US1-02
-**Status**: [ ] Not Started
-
-**Description**: Create database schema for backend service
-
-**Implementation**:
-- Define Prisma/TypeORM models
-- Run migrations
-- Seed initial data
-
-**Test Plan**:
-- **File**: `sw-app-be/tests/models.test.ts`
-- **Tests**:
-  - **TC-002**: Models create correctly
-  - **TC-003**: Relationships work
-
-### T-003: API Endpoints
-**User Story**: US-BE-001, US-BE-002
-**Satisfies ACs**: AC-BE-US1-01, AC-BE-US2-01
-**Status**: [ ] Not Started
-
-**Description**: Implement REST API endpoints
-
----
-
-## Phase 3: Frontend Implementation (sw-app-fe)
-
-### T-004: UI Components
-**User Story**: US-FE-001
-**Satisfies ACs**: AC-FE-US1-01, AC-FE-US1-02
-**Status**: [ ] Not Started
-
-**Description**: Build frontend components
-
-**Implementation**:
-- Create upload component
-- Add comparison view
-- Wire up to backend API
-
-**Test Plan**:
-- **File**: `sw-app-fe/tests/components.test.tsx`
-- **Tests**:
-  - **TC-004**: Component renders correctly
-  - **TC-005**: Upload triggers validation
-
----
-
-## Phase 4: Integration & Testing
-
-### T-005: End-to-End Tests
-**User Story**: US-FE-001, US-BE-001
-**Satisfies ACs**: (all FE and BE ACs)
-**Status**: [ ] Not Started
-
-**Description**: E2E tests across all projects
-```
+Replace placeholders: `{{FEATURE_TITLE}}`, `{{PROJECT_FE_ID}}`, `{{PROJECT_BE_ID}}`, `{{PROJECT_SHARED_ID}}`
 
 **Key Rules for Multi-Project tasks.md:**
 1. **Tasks MUST reference project-scoped user stories**: `US-FE-001`, `US-BE-001`
