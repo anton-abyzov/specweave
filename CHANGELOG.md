@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.36] - 2025-11-26
+
+### 🗂️ Maintenance
+- Archive completed increments (0057-0073)
+- Fix feature-id collision detection and prevention
+
+---
+
+
+
 ## [0.28.34] - 2025-11-26
 
 ### 🔧 Improvements
