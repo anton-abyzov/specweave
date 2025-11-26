@@ -1,4 +1,4 @@
-# ADR-0003: Agents vs Skills Architecture
+# ADR-0148: Agents vs Skills Architecture
 
 **Status**: Accepted  
 **Date**: 2025-01-17  

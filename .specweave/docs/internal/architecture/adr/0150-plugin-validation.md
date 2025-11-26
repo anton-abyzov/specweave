@@ -1,4 +1,4 @@
-# ADR-0018: Proactive Plugin Validation System
+# ADR-0150: Proactive Plugin Validation System
 
 **Status**: Accepted
 **Date**: 2025-11-09

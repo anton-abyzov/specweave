@@ -1,4 +1,4 @@
-# ADR-0032: Universal Hierarchy Mapping (Jira ↔ ADO ↔ SpecWeave ↔ GitHub)
+# ADR-0166: Universal Hierarchy Mapping (Jira ↔ ADO ↔ SpecWeave ↔ GitHub)
 
 **Status**: Accepted
 **Date**: 2025-11-14

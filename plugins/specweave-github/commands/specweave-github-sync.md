@@ -83,7 +83,7 @@ Synchronize the current state of a SpecWeave increment with its GitHub issue acr
 - `--comment`: Post progress comment (default)
 - `--labels`: Update issue labels based on status
 - `--force`: Force sync even if up-to-date
-- `--direction`: Sync direction (`to-github`, `from-github`, `bidirectional` - **default: bidirectional**)
+- `--direction`: Sync direction (`to-github`, `from-github`, `two-way` - **default: two-way**)
 - `--all`: Sync all active increments
 
 ### Safety Options
@@ -92,17 +92,17 @@ Synchronize the current state of a SpecWeave increment with its GitHub issue acr
 
 ## Sync Direction
 
-**Default: Bidirectional** (two-way sync)
+**Default: Two-way** (both directions)
 
 SpecWeave syncs changes in **both directions** by default:
 
 | Direction | What It Does | Use When |
 |-----------|-------------|----------|
-| **`bidirectional`** (default) | SpecWeave ↔ GitHub<br>• Pull changes FROM GitHub (status, labels, comments)<br>• Push changes TO GitHub (tasks, progress, metadata) | **Always** (recommended for keeping both systems in sync) |
+| **`two-way`** (default) | SpecWeave ↔ GitHub<br>• Pull changes FROM GitHub (status, labels, comments)<br>• Push changes TO GitHub (tasks, progress, metadata) | **Always** (recommended for keeping both systems in sync) |
 | `to-github` | SpecWeave → GitHub only<br>• Push increment progress to GitHub<br>• Don't pull GitHub changes back | Read-only GitHub usage, or when GitHub is downstream |
 | `from-github` | GitHub → SpecWeave only<br>• Pull GitHub issue updates<br>• Don't push SpecWeave changes | Importing GitHub issues, or when SpecWeave is downstream |
 
-**Why Bidirectional?**
+**Why Two-way?**
 - ✅ Keep both systems synchronized automatically
 - ✅ GitHub status changes update SpecWeave (closed issue → completed increment)
 - ✅ SpecWeave task completion updates GitHub (task done → checklist updated)
@@ -121,16 +121,16 @@ SpecWeave syncs changes in **both directions** by default:
 ## Examples
 
 ```bash
-# Interactive bidirectional sync (default - two-way)
+# Interactive two-way sync (default - both directions)
 /specweave-github:sync 0004
 
-# Use specific profile (still bidirectional by default)
+# Use specific profile (still two-way by default)
 /specweave-github:sync 0004 --profile specweave-dev
 
-# Specify time range (bidirectional)
+# Specify time range (two-way)
 /specweave-github:sync 0004 --time-range 1M
 
-# Full bidirectional sync with all options
+# Full two-way sync with all options
 /specweave-github:sync 0004 --profile main --time-range 1M --tasks --labels
 
 # One-way sync examples (override default)
@@ -140,7 +140,7 @@ SpecWeave syncs changes in **both directions** by default:
 # Dry run to preview changes
 /specweave-github:sync 0004 --dry-run
 
-# Force sync all increments (bidirectional)
+# Force sync all increments (two-way)
 /specweave-github:sync --all --force
 ```
 
@@ -240,12 +240,12 @@ Continue with sync? [Y/n]:
 If confirmed, sync proceeds with progress updates:
 
 ```
-🔄 Bidirectional sync for increment 0004...
+🔄 Two-way sync for increment 0004...
 
 ✓ Profile loaded: specweave-dev
 ✓ GitHub repository: anton-abyzov/specweave
 ✓ Rate limit check: PASSED (4,850/5,000 remaining)
-✓ Sync direction: bidirectional (two-way)
+✓ Sync direction: Two-way (push & pull)
 
 Fetching increment state...
 ✓ Increment loaded: 0004-plugin-architecture
@@ -277,7 +277,7 @@ Syncing FROM GitHub...
 
 Rate limit after sync: 4,570/5,000 (91% available)
 
-✅ Bidirectional Sync Complete!
+✅ Two-way Sync Complete!
 
    SpecWeave ↔ GitHub synchronized
    • Pushed: 3 task updates, progress comment

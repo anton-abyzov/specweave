@@ -1,4 +1,4 @@
-# ADR-0025: Setup State Persistence Design
+# ADR-0158: Setup State Persistence Design
 
 **Date**: 2025-11-11
 **Status**: Accepted

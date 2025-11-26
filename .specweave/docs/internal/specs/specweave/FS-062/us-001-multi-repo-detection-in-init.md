@@ -1,43 +1,34 @@
 ---
 id: US-001
 feature: FS-062
-title: Multi-Repo Detection in Init
-status: not_started
+title: "Multi-Project Detection"
+status: completed
 priority: P1
-created: 2025-11-25
-external_tools:
-  github:
-    number: 756
-    url: https://github.com/anton-abyzov/specweave/issues/756
-    created_at: 2025-11-25T08:14:26.848Z
+created: 2025-11-26
 ---
 
-# US-001: Multi-Repo Detection in Init
+# US-001: Multi-Project Detection
 
-**Feature**: [FS-062](../../_features/FS-062/FEATURE.md)
+**Feature**: [FS-062](./FEATURE.md)
 
-**As a** developer starting a multi-repo project
-**I want** SpecWeave to detect when I describe multiple repos
-**So that** it can set up appropriate project structure
+**As a** developer working with multiple projects (FE/BE/Shared)
+**I want** SpecWeave to automatically detect my multi-project setup
+**So that** generated specs use project-scoped user story IDs
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] **AC-US1-01**: Init detects keywords like "3 repos", "frontend repo", "backend repo", "monorepo with services"
-- [ ] **AC-US1-02**: Prompts "I detected a multi-repo architecture. How would you like to set it up?"
-- [ ] **AC-US1-03**: Offers options: "Clone from GitHub", "Create new repos", "Initialize each folder"
-- [ ] **AC-US1-04**: For "Clone from GitHub", accepts comma-separated URLs or interactive entry
+- [x] **AC-US1-01**: Detect `umbrella.enabled` with 2+ `childRepos`
+- [x] **AC-US1-02**: Detect `multiProject.enabled` with 2+ projects
+- [x] **AC-US1-03**: Detect sync profiles with board/area path mapping
+- [x] **AC-US1-04**: Detect multiple folders in specs/ directory
+- [x] **AC-US1-05**: Single project (like SpecWeave) returns `isMultiProject: false`
 
 ---
 
 ## Implementation
 
-**Increment**: [0062-umbrella-multi-repo-support](../../../../increments/0062-umbrella-multi-repo-support/spec.md)
+**Increment**: [0062-multi-project-spec-generation](../../../../increments/0062-multi-project-spec-generation/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
-
-
-## Tasks
-
-_No tasks defined for this user story_

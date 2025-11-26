@@ -1,4 +1,4 @@
-# ADR-0049: Jira Auto-Discovery and Universal Hierarchy Mapping
+# ADR-0179: Jira Auto-Discovery and Universal Hierarchy Mapping
 
 **Status**: Accepted
 **Date**: 2025-11-20

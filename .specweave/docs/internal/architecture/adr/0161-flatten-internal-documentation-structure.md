@@ -1,4 +1,4 @@
-# ADR-0028: Internal Documentation Structure (Flattened)
+# ADR-0161: Internal Documentation Structure (Flattened)
 
 **Status**: Accepted
 **Date**: 2025-11-11

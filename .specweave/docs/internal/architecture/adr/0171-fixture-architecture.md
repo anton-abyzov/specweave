@@ -1,4 +1,4 @@
-# ADR-0042-03: Fixture Architecture (Shared Test Data)
+# ADR-0171-03: Fixture Architecture (Shared Test Data)
 
 **Date**: 2025-11-18
 **Status**: Accepted

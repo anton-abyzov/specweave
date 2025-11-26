@@ -347,7 +347,7 @@ No tasks defined.
 - **NO automatic increment creation**: Imported items live in living docs ONLY
   - User must manually create increment when ready to work on external item
 - **Read-only snapshot**: External items are imported as static snapshots
-  - No bidirectional sync (external tool → SpecWeave only)
+  - No two-way sync (external tool → SpecWeave only)
 - **Pagination**: Large imports (500+ items) may take several minutes
 - **API quota**: Uses GitHub/JIRA/ADO API quota
   - GitHub: 5000 requests/hour (authenticated)

@@ -378,4 +378,84 @@ describe('ImportCoordinator Multi-Repo Support', () => {
       expect(typeof result.errors).toBe('object');
     });
   });
+
+  describe('importFrom() Multi-Repo Support', () => {
+    it('should aggregate results from all repos when using importFrom(github) with multi-repo config', async () => {
+      const config: CoordinatorConfig = {
+        githubRepositories: [
+          { owner: 'org', repo: 'frontend' },
+          { owner: 'org', repo: 'backend' },
+          { owner: 'org', repo: 'shared' },
+        ],
+        githubToken: 'token',
+        projectRoot: testDir,
+        enableSyncMetadata: false,
+      };
+
+      const coordinator = new ImportCoordinator(config);
+      const result = await coordinator.importFrom('github');
+
+      // Should have items from all 3 repos (2 items per repo)
+      expect(result.count).toBe(6);
+      expect(result.items).toHaveLength(6);
+      expect(result.platform).toBe('github');
+
+      // Verify items are tagged with correct sourceRepo
+      const frontendItems = result.items.filter(item => item.sourceRepo === 'org/frontend');
+      const backendItems = result.items.filter(item => item.sourceRepo === 'org/backend');
+      const sharedItems = result.items.filter(item => item.sourceRepo === 'org/shared');
+
+      expect(frontendItems).toHaveLength(2);
+      expect(backendItems).toHaveLength(2);
+      expect(sharedItems).toHaveLength(2);
+    });
+
+    it('should aggregate errors from all repos in importFrom()', async () => {
+      const config: CoordinatorConfig = {
+        githubRepositories: [
+          { owner: 'org', repo: 'repo1' },
+          { owner: 'org', repo: 'repo2' },
+        ],
+        githubToken: 'token',
+        projectRoot: testDir,
+        enableSyncMetadata: false,
+      };
+
+      const coordinator = new ImportCoordinator(config);
+      const result = await coordinator.importFrom('github');
+
+      // Errors array should exist and be aggregated
+      expect(result.errors).toBeDefined();
+      expect(Array.isArray(result.errors)).toBe(true);
+    });
+
+    it('should fall back to single-repo importer when no multi-repo configured', async () => {
+      const config: CoordinatorConfig = {
+        github: { owner: 'single', repo: 'repo', token: 'token' },
+        projectRoot: testDir,
+        enableSyncMetadata: false,
+      };
+
+      const coordinator = new ImportCoordinator(config);
+      const result = await coordinator.importFrom('github');
+
+      // Should use single-repo importer
+      expect(result.count).toBe(2); // 2 items from single repo
+      expect(result.platform).toBe('github');
+    });
+
+    it('should throw error when platform not configured', async () => {
+      const config: CoordinatorConfig = {
+        githubRepositories: [{ owner: 'org', repo: 'repo' }],
+        githubToken: 'token',
+        projectRoot: testDir,
+        enableSyncMetadata: false,
+      };
+
+      const coordinator = new ImportCoordinator(config);
+
+      // JIRA is not configured
+      await expect(coordinator.importFrom('jira')).rejects.toThrow('jira importer not configured');
+    });
+  });
 });

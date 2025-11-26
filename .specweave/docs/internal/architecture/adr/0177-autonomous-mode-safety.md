@@ -1,4 +1,4 @@
-# ADR-0045: Autonomous Mode Safety
+# ADR-0177: Autonomous Mode Safety
 
 **Date**: 2025-11-16
 **Status**: Accepted

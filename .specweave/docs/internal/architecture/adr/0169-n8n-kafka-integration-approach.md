@@ -1,4 +1,4 @@
-# ADR-0039: n8n Kafka Integration Approach
+# ADR-0169: n8n Kafka Integration Approach
 
 **Date**: 2025-11-15
 **Status**: Accepted

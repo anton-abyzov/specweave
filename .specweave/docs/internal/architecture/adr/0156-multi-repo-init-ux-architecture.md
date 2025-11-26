@@ -1,4 +1,4 @@
-# ADR-0023: Multi-Repository Initialization UX Architecture
+# ADR-0156: Multi-Repository Initialization UX Architecture
 
 **Date**: 2025-11-11
 **Status**: Accepted

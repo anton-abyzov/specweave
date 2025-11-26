@@ -1,0 +1,10 @@
+{
+  "id": "0068-fix-multi-repo-import-from",
+  "title": "Fix Multi-Repo ImportFrom Missing Items",
+  "status": "completed",
+  "type": "bug",
+  "priority": "high",
+  "createdAt": "2025-11-26T14:00:00Z",
+  "updatedAt": "2025-11-26T14:30:00Z",
+  "feature_id": "FS-068"
+}

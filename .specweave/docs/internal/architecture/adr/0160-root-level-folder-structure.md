@@ -1,4 +1,4 @@
-# ADR-0027: Root-Level vs services/ Folder Structure
+# ADR-0160: Root-Level vs services/ Folder Structure
 
 **Date**: 2025-11-11
 **Status**: Accepted

@@ -1,29 +1,29 @@
 ---
 name: specweave-ado:sync
-description: Bidirectional sync between SpecWeave increment and Azure DevOps work item (two-way sync by default)
+description: Two-way sync between SpecWeave increment and Azure DevOps work item (push & pull by default)
 ---
 
 # Sync ADO Work Item Command
 
 **Usage**: `/specweave-ado:sync <increment-id> [options]`
 
-**Purpose**: Bidirectional synchronization between SpecWeave increment and Azure DevOps work item
+**Purpose**: Two-way synchronization between SpecWeave increment and Azure DevOps work item
 
-**Default**: Two-way sync (bidirectional)
+**Default**: Two-way sync (push & pull)
 
 ---
 
 ## Options
 
-- `--direction <mode>`: Sync direction (default: `bidirectional`)
-  - `bidirectional`: SpecWeave ↔ ADO (default - recommended)
+- `--direction <mode>`: Sync direction (default: `two-way`)
+  - `two-way`: SpecWeave ↔ ADO (default - recommended)
   - `to-ado`: SpecWeave → ADO only (push progress)
   - `from-ado`: ADO → SpecWeave only (pull updates)
 
 ## Examples
 
 ```bash
-# Bidirectional sync (default - two-way)
+# Two-way sync (default - both directions)
 /specweave-ado:sync 0005
 
 # Push only (one-way to ADO)
@@ -37,7 +37,7 @@ description: Bidirectional sync between SpecWeave increment and Azure DevOps wor
 
 ## Command Behavior
 
-When user runs this command, invoke `ado-manager` agent to perform bidirectional sync:
+When user runs this command, invoke `ado-manager` agent to perform two-way sync:
 
 ### Phase 1: Pull FROM ADO (default behavior)
 1. Fetch work item state from ADO API
@@ -66,7 +66,7 @@ When user runs this command, invoke `ado-manager` agent to perform bidirectional
 ```
 Use Task tool with subagent_type: "specweave-ado:ado-manager:ado-manager"
 
-Prompt: "Bidirectional sync for increment 0005-payment-integration with ADO.
+Prompt: "Two-way sync for increment 0005-payment-integration with ADO.
 
 Phase 1 - Pull FROM ADO:
 1. Fetch work item #12345 from ADO API
@@ -83,20 +83,20 @@ Phase 2 - Push TO ADO:
 6. POST comment to ADO API
 7. Update work item state/fields
 
-Display: Bidirectional sync summary"
+Display: Two-way sync summary"
 ```
 
 ---
 
 ## Example Output
 
-### Bidirectional Sync (Default)
+### Two-way Sync (Default)
 
 ```
-🔄 Bidirectional sync for increment 0005...
+🔄 Two-way sync for increment 0005...
 
 ✓ Azure DevOps work item: #12345
-✓ Sync direction: bidirectional (two-way)
+✓ Sync direction: Two-way (push & pull)
 
 Detecting changes (both directions)...
 

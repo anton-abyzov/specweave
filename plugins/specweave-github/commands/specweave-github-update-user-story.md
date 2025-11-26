@@ -111,7 +111,7 @@ Progress: 3/6 tasks complete (50%)
 **Related Commands**:
 - `/specweave-github:sync-epic FS-031` - Sync entire epic (all user stories)
 - `/specweave-github:create-issue 0031` - Create issue for increment
-- `/specweave-github:sync 0031` - Bidirectional sync for increment
+- `/specweave-github:sync 0031` - Two-way sync for increment
 
 ---
 

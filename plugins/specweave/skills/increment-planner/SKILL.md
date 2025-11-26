@@ -134,20 +134,13 @@ Every increment MUST have `metadata.json` or:
 
 **⚠️ CRITICAL: Before creating ANY user stories, detect if this is a multi-project (umbrella) setup!**
 
-```bash
-# 1. Check config.json for umbrella mode
-UMBRELLA_ENABLED=$(cat .specweave/config.json 2>/dev/null | jq -r '.umbrella.enabled // false')
+**Automated Detection**: `src/utils/multi-project-detector.ts` provides `detectMultiProjectMode(projectRoot)` which checks ALL config formats and returns `{ isMultiProject, projects, detectionReason }`.
 
-# 2. Check for childRepos
-CHILD_REPOS=$(cat .specweave/config.json 2>/dev/null | jq -r '.umbrella.childRepos[]?.id // empty' | tr '\n' ',')
-
-# 3. Check for project folders in specs/
-PROJECT_FOLDERS=$(ls -1 .specweave/docs/internal/specs/ 2>/dev/null | grep -v "^_" | head -5)
-
-echo "Multi-project mode: $UMBRELLA_ENABLED"
-echo "Child repos: $CHILD_REPOS"
-echo "Project folders: $PROJECT_FOLDERS"
-```
+**Manual check (for agents)**: Read `.specweave/config.json` and check:
+- `umbrella.enabled: true` with `childRepos[]`
+- `multiProject.enabled: true` with `projects{}`
+- `sync.profiles[].config.boardMapping` exists
+- Multiple folders in `.specweave/docs/internal/specs/`
 
 **If multi-project detected (`umbrella.enabled: true` OR multiple project folders exist):**
 - ✅ **MUST** generate project-scoped user stories: `US-FE-001`, `US-BE-001`, `US-SHARED-001`

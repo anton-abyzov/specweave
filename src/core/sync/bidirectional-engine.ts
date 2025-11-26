@@ -513,7 +513,9 @@ export class BidirectionalSyncEngine {
    */
   private printSyncSummary(result: SyncResult): void {
     console.log('📊 Sync Summary:\n');
-    console.log(`   Direction: ${result.direction}`);
+    // Display user-friendly direction label
+    const directionLabel = result.direction === 'bidirectional' ? 'Two-way' : result.direction;
+    console.log(`   Direction: ${directionLabel}`);
     console.log(`   Changes to external: ${result.changes.toExternal.length}`);
     console.log(`   Changes from external: ${result.changes.fromExternal.length}`);
     console.log(`   Conflicts detected: ${result.changes.conflicts.length}`);

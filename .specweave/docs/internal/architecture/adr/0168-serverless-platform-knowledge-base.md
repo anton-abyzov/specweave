@@ -1,4 +1,4 @@
-# ADR-0038: Serverless Platform Knowledge Base Structure
+# ADR-0168: Serverless Platform Knowledge Base Structure
 
 **Date**: 2025-11-16
 **Status**: Accepted

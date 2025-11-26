@@ -1,4 +1,4 @@
-# ADR-0002: Context Loading Approach
+# ADR-0145: Context Loading Approach
 
 **Status**: Accepted
 **Date**: 2025-01-16 (Updated: 2025-10-28)

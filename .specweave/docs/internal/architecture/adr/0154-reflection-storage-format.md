@@ -1,4 +1,4 @@
-# ADR-0019: Reflection Storage Format
+# ADR-0154: Reflection Storage Format
 
 **Date**: 2025-11-10
 **Status**: Accepted

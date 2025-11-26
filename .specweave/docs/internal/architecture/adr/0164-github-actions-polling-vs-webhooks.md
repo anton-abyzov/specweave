@@ -1,4 +1,4 @@
-# ADR-0031: GitHub Actions API Polling vs Webhooks
+# ADR-0164: GitHub Actions API Polling vs Webhooks
 
 **Date**: 2025-11-12
 **Status**: Accepted

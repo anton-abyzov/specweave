@@ -1,4 +1,4 @@
-# ADR-0002-002: Skills as Coordinators for Tool Agents
+# ADR-0144-002: Skills as Coordinators for Tool Agents
 
 **Status**: Accepted
 **Date**: 2025-10-26

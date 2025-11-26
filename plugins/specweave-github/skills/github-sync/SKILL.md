@@ -1,13 +1,13 @@
 ---
 name: github-sync
-description: Bidirectional synchronization between SpecWeave specs and GitHub Projects (two-way sync by default). Activates ONLY when user asks questions about GitHub integration or needs help configuring GitHub sync. Does NOT activate for slash commands. For syncing, use /specweave-github:sync-spec command instead.
+description: Two-way synchronization between SpecWeave specs and GitHub Projects (push & pull by default). Activates ONLY when user asks questions about GitHub integration or needs help configuring GitHub sync. Does NOT activate for slash commands. For syncing, use /specweave-github:sync-spec command instead.
 ---
 
-# GitHub Sync - Bidirectional Spec ↔ Project Synchronization
+# GitHub Sync - Two-way Spec ↔ Project Synchronization
 
 **Purpose**: Seamlessly synchronize SpecWeave specs with GitHub Projects for team visibility and project management.
 
-**Default Behavior**: **Bidirectional (two-way) sync** - Changes in either system are automatically synchronized
+**Default Behavior**: **Two-way sync** (push & pull) - Changes in either system are automatically synchronized
 
 **⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about GitHub sync. For actual syncing, users should use the `/specweave-github:sync-spec` command directly. This skill should NOT auto-activate when the command is being invoked.
 
@@ -203,7 +203,7 @@ Configure GitHub sync in `.specweave/config.json`:
       "specweave-github": {
         "repo": "owner/repo",
         "autoSyncSpecs": true,
-        "syncDirection": "bidirectional",
+        "syncDirection": "two-way",
         "defaultLabels": ["specweave", "spec"],
         "syncFrequency": "on-change"
       }

@@ -445,24 +445,44 @@ graph TD
 
 **YOU MUST CHECK THIS BEFORE WRITING ANY USER STORIES:**
 
+**Detection Utility** (`src/utils/multi-project-detector.ts`): SpecWeave has automated multi-project detection. When generating specs programmatically, use `detectMultiProjectMode(projectRoot)`. For manual checks, run these commands:
+
 ```bash
-# 1. Check config.json for umbrella mode
-cat .specweave/config.json | jq '.umbrella.enabled'
+# Quick check: Is multi-project mode enabled?
+Read .specweave/config.json and check for:
+# - umbrella.enabled: true
+# - multiProject.enabled: true
+# - umbrella.childRepos[] (array of repos)
+# - sync.profiles[].config.boardMapping or areaPathMapping
 
-# 2. Check for childRepos
-cat .specweave/config.json | jq '.umbrella.childRepos[]'
-
-# 3. Check for project folders
-ls -la .specweave/docs/internal/specs/
+# Alternative: Check for multiple project folders
+Glob ".specweave/docs/internal/specs/*/" and count directories
+# If > 1 directory (excluding 'default') → multi-project mode
 ```
 
 **Decision Flow:**
 ```
-Is umbrella.enabled: true?
-  → YES → MUST use project-scoped user stories (US-FE-001, US-BE-001)
-  → NO → Check for multiple project folders in specs/
-          → YES → MUST use project-scoped user stories
-          → NO → Use standard user stories (US-001, US-002)
+Step 1: Read .specweave/config.json
+Step 2: Check THESE conditions (ANY = multi-project):
+  ├─ umbrella.enabled === true AND childRepos.length > 0?
+  │   → YES → Use project prefixes from childRepos[].prefix
+  ├─ multiProject.enabled === true AND projects object has keys?
+  │   → YES → Use project prefixes from projects object
+  ├─ sync.profiles[].config.boardMapping exists?
+  │   → YES → Use project IDs from boardMapping values
+  ├─ Multiple folders in .specweave/docs/internal/specs/?
+  │   → YES → Use folder names as project IDs
+  └─ User prompt mentions "frontend", "backend", "3 repos"?
+      → YES → Ask user to confirm project prefixes
+
+Step 3: If multi-project detected:
+  → MUST use project-scoped user stories (US-FE-001, US-BE-001)
+  → MUST use project-scoped ACs (AC-FE-US1-01, AC-BE-US1-01)
+  → Include 'projects:' array in spec.md frontmatter
+
+Step 4: If NO multi-project config:
+  → Use standard user stories (US-001, US-002)
+  → Use standard ACs (AC-US1-01, AC-US2-01)
 ```
 
 **If multi-project detected, NEVER generate:**
@@ -472,6 +492,7 @@ Is umbrella.enabled: true?
 **ALWAYS generate:**
 - ✅ `US-FE-001`, `US-BE-001`, `US-SHARED-001` (project-scoped)
 - ✅ `AC-FE-US1-01`, `AC-BE-US1-01` (project-scoped ACs)
+- ✅ Frontmatter with `multi_project: true` and `projects:` array
 
 ---
 

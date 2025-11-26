@@ -1,6 +1,6 @@
 ---
 name: specweave-jira:sync
-description: Sync SpecWeave increments with JIRA epics/stories. Supports import, export, bidirectional sync, and granular item operations
+description: Sync SpecWeave increments with JIRA epics/stories. Supports import, export, two-way sync, and granular item operations
 ---
 
 # Sync Jira Command
@@ -11,10 +11,10 @@ You are a Jira synchronization expert. Help the user sync between Jira and SpecW
 
 ### Epic-Level Operations
 
-**1. Bidirectional Sync (Default - Recommended)**
+**1. Two-way Sync (Default - Recommended)**
 ```
 /specweave-jira:sync 0003                    # Two-way sync (default)
-/specweave-jira:sync 0003 --direction bidirectional  # Explicit
+/specweave-jira:sync 0003 --direction two-way  # Explicit
 ```
 
 **2. Import Jira Epic as SpecWeave Increment**
@@ -31,9 +31,9 @@ You are a Jira synchronization expert. Help the user sync between Jira and SpecW
 
 ### Sync Direction Options
 
-**Default: `bidirectional`** (two-way sync - recommended)
+**Default: `two-way`** (both directions - recommended)
 
-- `--direction bidirectional`: SpecWeave ↔ Jira (default)
+- `--direction two-way`: SpecWeave ↔ Jira (default)
   - Pull changes FROM Jira (status, priority, comments)
   - Push changes TO Jira (tasks, progress, metadata)
 
@@ -175,7 +175,7 @@ When the user runs this command:
   | Task  | SCRUM-7  | Setup provider  |
   ```
 
-### Example 5: Bidirectional Sync (Default)
+### Example 5: Two-way Sync (Default)
 **User**: `/specweave-jira:sync 0003`
 **You**:
 - Read increment 0003
@@ -186,9 +186,9 @@ When the user runs this command:
 - FROM Jira: Status changes, priority updates, comments
 - FROM SpecWeave: Task completion, progress updates
 
-**Show bidirectional sync summary**:
+**Show two-way sync summary**:
 ```
-✅ Bidirectional Sync Complete: 0003 ↔ Jira
+✅ Two-way Sync Complete: 0003 ↔ Jira
 
 FROM Jira:
   • SCRUM-1: Status changed to In Progress
@@ -204,7 +204,7 @@ Conflicts: None
 **Handle conflicts if any**:
 - Show both versions (Jira vs SpecWeave)
 - Ask user which to keep or how to merge
-- Apply resolution bidirectionally
+- Apply resolution in both directions
 
 ### Example 6: Status Overview
 **User**: `/specweave-jira:sync status`
@@ -229,12 +229,12 @@ Conflicts: None
 
 ## Related Commands
 
-- `/specweave-github:sync` - Sync to GitHub issues (also bidirectional by default)
+- `/specweave-github:sync` - Sync to GitHub issues (also two-way by default)
 - `/specweave:increment` - Create new increment
 - `/specweave:validate` - Validate increment quality
 
 ---
 
-**Bidirectional by Default**: All sync operations are two-way unless you explicitly specify `--direction to-jira` or `--direction from-jira`. This keeps both systems synchronized automatically.
+**Two-way by Default**: All sync operations are two-way unless you explicitly specify `--direction to-jira` or `--direction from-jira`. This keeps both systems synchronized automatically.
 
 **Granular Control**: Unlike simple epic import/export, this command supports cherry-picking individual stories, bugs, and tasks for maximum flexibility.

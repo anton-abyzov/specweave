@@ -1,4 +1,4 @@
-# ADR-0043: spec.md as Single Source of Truth for Increment Metadata
+# ADR-0174: spec.md as Single Source of Truth for Increment Metadata
 
 **Date**: 2025-11-18
 **Status**: Accepted

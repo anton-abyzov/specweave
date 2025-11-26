@@ -11,6 +11,11 @@ import * as fs from '../../../utils/fs-native.js';
 import path from 'path';
 import { IncrementStatus, IncrementType, IncrementMetadata } from '../../../core/types/increment-metadata.js';
 import { MetadataManager } from '../../../core/increment/metadata-manager.js';
+import {
+  detectMultiProjectMode,
+  type MultiProjectDetectionResult,
+  type DetectedProject
+} from '../../../utils/multi-project-detector.js';
 
 export interface InitialIncrementOptions {
   projectPath: string;
@@ -50,11 +55,14 @@ export async function generateInitialIncrement(options: InitialIncrementOptions)
     }
   }
 
+  // Detect multi-project mode
+  const multiProjectDetection = detectMultiProjectMode(projectPath);
+
   // Create increment directory
   fs.ensureDirSync(incrementPath);
 
-  // Generate spec.md (pass testMode and coverageTarget)
-  const specContent = generateSpecMd(projectName, techStack, testMode, coverageTarget);
+  // Generate spec.md (pass testMode, coverageTarget, and multi-project detection)
+  const specContent = generateSpecMd(projectName, techStack, testMode, coverageTarget, multiProjectDetection);
   fs.writeFileSync(path.join(incrementPath, 'spec.md'), specContent, 'utf-8');
 
   // Generate plan.md
@@ -89,23 +97,25 @@ function generateSpecMd(
   projectName: string,
   techStack: string | undefined,
   testMode: 'TDD' | 'test-after' | 'manual',
-  coverageTarget: number
+  coverageTarget: number,
+  multiProjectDetection?: MultiProjectDetectionResult
 ): string {
   const techStackSection = techStack
     ? `**Tech Stack**: ${techStack}\n`
     : '';
 
-  return `---
-increment: 0001-project-setup
-title: "Project Setup"
-type: feature
-priority: P0
-status: active
-created: ${new Date().toISOString().split('T')[0]}
-epic: SETUP-001
-test_mode: ${testMode}
-coverage_target: ${coverageTarget}
----
+  const isMultiProject = multiProjectDetection?.isMultiProject ?? false;
+  const projects = multiProjectDetection?.projects ?? [];
+
+  // Generate frontmatter based on multi-project mode
+  const frontmatter = generateFrontmatter(testMode, coverageTarget, isMultiProject, projects);
+
+  // Generate user stories based on multi-project mode
+  const userStoriesSection = isMultiProject && projects.length > 0
+    ? generateMultiProjectUserStories(projects)
+    : generateSingleProjectUserStories();
+
+  return `${frontmatter}
 
 # Feature: Project Setup
 
@@ -118,33 +128,17 @@ ${techStackSection}
 
 ---
 
-## User Stories
-
-### US-001: Development Environment
-
-**As a** developer
-**I want** a properly configured development environment
-**So that** I can start building features immediately
-
-**Acceptance Criteria**:
-- [ ] **AC-US1-01**: Project structure created with .specweave/ folder
-  - **Priority**: P0 (Critical)
-  - **Testable**: Yes
-
-- [ ] **AC-US1-02**: Documentation framework initialized
-  - **Priority**: P0 (Critical)
-  - **Testable**: Yes
-
-- [ ] **AC-US1-03**: SpecWeave commands available (/specweave:increment, /specweave:do, etc.)
-  - **Priority**: P0 (Critical)
-  - **Testable**: Yes
+${userStoriesSection}
 
 ---
 
 ## Notes
 
 **IMPORTANT**: This is your initial increment created by \`specweave init\`.
-
+${isMultiProject ? `
+**Multi-Project Mode Detected**: ${multiProjectDetection?.detectionReason}
+**Projects**: ${projects.map(p => `${p.prefix} (${p.id})`).join(', ')}
+` : ''}
 **Next steps**:
 1. Review this spec and customize it for your project
 2. Run \`/specweave:plan\` to generate implementation tasks
@@ -166,6 +160,127 @@ You can also delete this increment if you prefer to start fresh:
 - Delete \`.specweave/increments/0001-project-setup/\`
 - Create your first real increment with \`/specweave:increment "my-feature"\`
 `;
+}
+
+/**
+ * Generate YAML frontmatter for spec.md
+ */
+function generateFrontmatter(
+  testMode: 'TDD' | 'test-after' | 'manual',
+  coverageTarget: number,
+  isMultiProject: boolean,
+  projects: DetectedProject[]
+): string {
+  const date = new Date().toISOString().split('T')[0];
+
+  let yaml = `---
+increment: 0001-project-setup
+title: "Project Setup"
+type: feature
+priority: P0
+status: active
+created: ${date}
+epic: SETUP-001
+test_mode: ${testMode}
+coverage_target: ${coverageTarget}`;
+
+  if (isMultiProject && projects.length > 0) {
+    yaml += `
+multi_project: true
+projects:`;
+    for (const project of projects) {
+      yaml += `
+  - id: ${project.id}
+    prefix: ${project.prefix}`;
+    }
+  }
+
+  yaml += `
+---`;
+
+  return yaml;
+}
+
+/**
+ * Generate user stories for single-project mode
+ */
+function generateSingleProjectUserStories(): string {
+  return `## User Stories
+
+### US-001: Development Environment
+
+**As a** developer
+**I want** a properly configured development environment
+**So that** I can start building features immediately
+
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: Project structure created with .specweave/ folder
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes
+
+- [ ] **AC-US1-02**: Documentation framework initialized
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes
+
+- [ ] **AC-US1-03**: SpecWeave commands available (/specweave:increment, /specweave:do, etc.)
+  - **Priority**: P0 (Critical)
+  - **Testable**: Yes`;
+}
+
+/**
+ * Generate user stories for multi-project mode
+ */
+function generateMultiProjectUserStories(projects: DetectedProject[]): string {
+  let content = `## User Stories by Project
+
+**Projects Involved**:
+| Project | Scope | Keywords |
+|---------|-------|----------|`;
+
+  for (const project of projects) {
+    content += `
+| ${project.prefix} (${project.name}) | Project setup and configuration | setup, config, structure |`;
+  }
+
+  content += `
+
+**Cross-Project Dependencies**:
+- All projects share the common .specweave/ structure
+- Living docs synchronized across all projects
+
+---`;
+
+  // Generate user stories for each project
+  let storyNum = 1;
+  for (const project of projects) {
+    const prefix = project.prefix.toUpperCase();
+    const paddedNum = String(storyNum).padStart(3, '0');
+
+    content += `
+
+### ${project.name} (${project.id})
+
+#### US-${prefix}-${paddedNum}: ${project.name} Environment Setup (P0)
+**Related Repo**: ${project.id}
+**As a** developer working on ${project.name.toLowerCase()}
+**I want** the ${project.name.toLowerCase()} project properly configured
+**So that** I can start building ${project.name.toLowerCase()} features immediately
+
+**Acceptance Criteria**:
+- [ ] **AC-${prefix}-US${storyNum}-01**: Project structure initialized
+  - Priority: P0 (Critical)
+  - Testable: Yes
+- [ ] **AC-${prefix}-US${storyNum}-02**: Dependencies installed and configured
+  - Priority: P0 (Critical)
+  - Testable: Yes
+- [ ] **AC-${prefix}-US${storyNum}-03**: Development tooling ready
+  - Priority: P0 (Critical)
+  - Testable: Yes`;
+
+    storyNum++;
+  }
+
+  return content;
 }
 
 /**

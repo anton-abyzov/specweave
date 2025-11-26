@@ -1,4 +1,4 @@
-# ADR-0019: Test Infrastructure Architecture
+# ADR-0155: Test Infrastructure Architecture
 
 **Date**: 2025-11-05
 **Status**: Accepted

@@ -1,4 +1,4 @@
-# ADR-0033: Smart Reopen Functionality
+# ADR-0167: Smart Reopen Functionality
 
 **Status**: ✅ ACCEPTED
 **Date**: 2025-11-14

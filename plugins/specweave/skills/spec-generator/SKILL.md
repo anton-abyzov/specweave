@@ -360,18 +360,13 @@ spec_generator:
 
 ### Detection (MANDATORY FIRST STEP)
 
-**Before generating spec.md, ALWAYS check for multi-project mode:**
+**Automated Detection**: Use `detectMultiProjectMode(projectRoot)` from `src/utils/multi-project-detector.ts`. This utility checks ALL config formats automatically.
 
-```bash
-# 1. Check config.json for umbrella mode
-cat .specweave/config.json | jq '.umbrella.enabled'
-
-# 2. Check for childRepos configuration
-cat .specweave/config.json | jq '.umbrella.childRepos[]'
-
-# 3. Check for project folders in specs/
-ls -la .specweave/docs/internal/specs/
-```
+**Manual check (for agents)**: Read `.specweave/config.json` and check:
+- `umbrella.enabled` + `childRepos[]`
+- `multiProject.enabled` + `projects{}`
+- `sync.profiles[].config.boardMapping`
+- Multiple folders in `.specweave/docs/internal/specs/`
 
 **If ANY of these conditions are TRUE → Multi-project mode ACTIVE:**
 - `umbrella.enabled: true` in config.json
