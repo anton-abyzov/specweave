@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.28] - 2025-11-26
+
+### 🔧 Improvements
+- Improve init helpers (external-import, testing-config)
+- Enhance GitHub multi-repo sync profile handling
+- Add complete masterclass guide to academy docs
+- Add FS-070 spec for parent repo sync profile fix
+
+---
+
 ## [0.28.27] - 2025-11-26
 
 ### 🔧 Improvements
