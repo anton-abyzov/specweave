@@ -4,6 +4,14 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.26] - 2025-11-26
+
+### 🔧 Improvements
+- Update internal docs and code improvements
+- Add academy video content structure
+
+---
+
 ## [0.28.25] - 2025-11-26
 
 ### ✨ Features
