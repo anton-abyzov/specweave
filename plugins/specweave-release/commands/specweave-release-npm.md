@@ -1,6 +1,6 @@
 ---
 name: specweave-release:npm
-description: Bump patch version, create git tag, and trigger npm publish via GitHub Actions. Automates the complete release workflow with pre-flight checks, version bumping, tag creation, and GitHub Actions triggering. Use --only flag for quick local release (bumps version, builds, publishes to npm directly - NO git push, NO pipeline). Add --push to --only for complete local release with git sync.
+description: Bump patch version, create git tag, and trigger npm publish via GitHub Actions. Automates the complete release workflow with pre-flight checks, version bumping, tag creation, and GitHub Actions triggering. Use --only flag for quick local release (bumps version, builds, publishes to npm directly - NO git push, NO pipeline). Add --push to --only for complete local release with git sync. Use --only --local for FASTEST local-only version bump (no npm publish, no git, just version increment for local testing).
 ---
 
 # /specweave-release:npm - NPM Release Automation
@@ -14,22 +14,27 @@ You are the NPM Release Assistant. Your job is to automate the patch version rel
 | `/specweave-release:npm` | Bump → Push → **CI publishes** | Standard release (CI handles npm) |
 | `/specweave-release:npm --only` | Bump → Build → **Publish locally** → NO push | Quick local release, push later |
 | `/specweave-release:npm --only --push` | Bump → Build → **Publish locally** → Push | Complete local release + git sync |
+| `/specweave-release:npm --only --local` | **Bump ONLY** → NO build, NO publish, NO git | FASTEST: Local testing only |
 
 ## Detecting Mode
 
 Check flags in the command invocation:
 
 ```
---only         → Direct publish to npm (bypass CI)
+--only --local → Version bump ONLY (no build, no publish, no git) - FASTEST
 --only --push  → Direct publish + push to git after
+--only         → Direct publish to npm (bypass CI)
 (no flags)     → Default: push to git, CI publishes
 ```
 
 **Flag Detection Order:**
 1. Check for `--only` flag
-2. If `--only` present, check for `--push` flag
-3. Route to appropriate workflow section
+2. If `--only` present, check for `--local` flag → LOCAL MODE (fastest)
+3. If `--only` present, check for `--push` flag → DIRECT MODE + PUSH
+4. If `--only` only → DIRECT MODE
+5. No flags → DEFAULT MODE
 
+**If `--only --local`**: Use LOCAL MODE (section "Local Mode Workflow") - FASTEST!
 **If `--only --push`**: Use DIRECT MODE WITH PUSH (section "Direct Mode + Push Workflow")
 **If `--only` only**: Use DIRECT MODE (section "Direct Mode Workflow")
 **If no flags**: Use DEFAULT MODE (continue with steps below)
@@ -400,6 +405,9 @@ Show the user:
 
 # Complete local release (publish + push)
 /specweave-release:npm --only --push
+
+# FASTEST: Version bump only (no publish, no git, no build)
+/specweave-release:npm --only --local
 ```
 
 | Scenario | Command | NPM Published By | Git Pushed |
@@ -407,3 +415,85 @@ Show the user:
 | Normal release | (no flags) | GitHub Actions | ✅ Yes |
 | Quick local, push later | `--only` | You (local) | ❌ No |
 | Complete local release | `--only --push` | You (local) | ✅ Yes |
+| **FASTEST local test** | `--only --local` | ❌ None | ❌ No |
+
+---
+
+## LOCAL MODE WORKFLOW (--only --local flags) - FASTEST!
+
+Use this workflow when BOTH `--only` AND `--local` flags are detected. This is the **fastest possible** version bump - NO npm publish, NO git operations, NO build. Just increment the version number for local testing.
+
+**Use case**: You need to quickly test a new version locally without publishing anywhere. Perfect for:
+- Testing version-dependent features
+- Local development iterations
+- Quick version bumps before a real release
+
+### 1. Minimal Pre-flight Check
+
+```bash
+# Just verify current version (no git checks needed!)
+node -p "require('./package.json').version"
+```
+
+**NO git checks** - we're not committing or pushing anything!
+
+### 2. Bump Version (NO git commit, NO tag)
+
+```bash
+# Bump version WITHOUT creating git commit or tag
+npm version patch --no-git-tag-version
+```
+
+**What this does**:
+- Updates `package.json` version ONLY
+- Updates `package-lock.json` version ONLY
+- NO git commit created
+- NO git tag created
+- INSTANT (< 1 second)
+
+### 3. Report Results (Local Mode)
+
+Show the user:
+```markdown
+⚡ **FAST local version bump!**
+
+📦 **Version**: X.Y.Z → X.Y.(Z+1)
+
+**What happened**:
+- ✅ package.json version bumped
+- ✅ package-lock.json updated
+- ⏭️ NO git commit (use `git add . && git commit` later)
+- ⏭️ NO git tag (use `git tag vX.Y.Z` later)
+- ⏭️ NO npm publish (use `npm publish` later)
+- ⏭️ NO build (use `npm run rebuild` later)
+
+**Next steps when ready to release**:
+1. Build: `npm run rebuild`
+2. Test: `npm test`
+3. Commit: `git add . && git commit -m "chore: bump version to X.Y.Z"`
+4. Tag: `git tag vX.Y.Z`
+5. Publish: `npm publish`
+6. Push: `git push origin develop --follow-tags`
+
+**Or use**: `/specweave-release:npm --only --push` for full release
+```
+
+## Local Mode Safety Rules
+
+- ✅ FASTEST possible - single npm command
+- ✅ NO network operations (no npm publish, no git push)
+- ✅ NO disk-heavy operations (no build)
+- ✅ Safe to run multiple times (just increments version)
+- ⚠️ Remember: version is NOT published or committed!
+- ⚠️ Run `npm run rebuild` before testing locally
+
+## Success Criteria (Local Mode)
+
+✅ Version bumped in package.json
+✅ Version bumped in package-lock.json
+⏭️ NO git commit
+⏭️ NO git tag
+⏭️ NO npm publish
+⏭️ NO build
+
+**Time**: < 1 second
