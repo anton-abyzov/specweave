@@ -16,6 +16,7 @@ import { loadImportConfig } from '../../../config/import-config.js';
 import { selectRepositories, type RepoSelectionConfig } from '../github-repo-selector.js';
 import { detectAllConfigs } from './config-detection.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
+import { getGitHubAuth } from '../../../utils/auth-helpers.js';
 
 /**
  * Get translated strings for external import
@@ -311,7 +312,11 @@ export async function promptAndRunExternalImport(
   // Handle multi-repo selection for GitHub
   let repoSelectionConfig: RepoSelectionConfig | null = null;
 
-  if (github && process.env.GITHUB_TOKEN) {
+  // Get GitHub token from all available sources (env vars, gh CLI, gh config file)
+  const githubAuth = getGitHubAuth();
+  const hasGitHubToken = githubAuth.source !== 'none';
+
+  if (github && hasGitHubToken) {
     // First check if sync profiles already exist (from umbrella repo setup)
     const existingProfiles = getExistingSyncProfiles(targetDir);
     if (existingProfiles && existingProfiles.length > 0) {
@@ -357,20 +362,20 @@ export async function promptAndRunExternalImport(
   };
 
   // Add GitHub config - prefer multi-repo if selected
-  if (github) {
+  if (github && hasGitHubToken) {
     if (repoSelectionConfig && repoSelectionConfig.repositories.length > 0) {
       // Multi-repo mode: import from all selected repositories
       coordinatorConfig.githubRepositories = repoSelectionConfig.repositories.map(fullRepo => {
         const [owner, repo] = fullRepo.split('/');
         return { owner, repo };
       });
-      coordinatorConfig.githubToken = process.env.GITHUB_TOKEN;
+      coordinatorConfig.githubToken = githubAuth.token;
     } else {
       // Single repo mode (backwards compatible)
       coordinatorConfig.github = {
         owner: github.owner,
         repo: github.repo,
-        token: process.env.GITHUB_TOKEN
+        token: githubAuth.token
       };
     }
   }
@@ -447,8 +452,15 @@ async function promptMultiRepoSelection(targetDir: string): Promise<RepoSelectio
       return null;
     }
 
-    const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
-    const repoSelectionConfig = await selectRepositories(octokit, process.env.GITHUB_TOKEN!);
+    // Use auth helper to get token from all available sources
+    const auth = getGitHubAuth();
+    if (auth.source === 'none') {
+      console.log(chalk.yellow('   ⚠️  No GitHub token found. Skipping multi-repo selection.'));
+      return null;
+    }
+
+    const octokit = new Octokit({ auth: auth.token });
+    const repoSelectionConfig = await selectRepositories(octokit, auth.token);
 
     if (repoSelectionConfig) {
       // Save to config

@@ -4,6 +4,14 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.15] - 2025-11-26
+
+### 🐛 Bug Fixes
+- Fix multi-repo external import to use auth helper for GitHub token discovery (supports gh CLI auth)
+- Refactor QA judge agent to skill pattern
+
+---
+
 ## [0.28.14] - 2025-11-25
 
 ### ✨ Features

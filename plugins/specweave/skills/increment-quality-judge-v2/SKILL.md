@@ -10,6 +10,24 @@ Risk Assessment + Quality Gate Decisions
 
 AI-powered quality assessment with BMAD-pattern risk scoring and formal quality gate decisions (PASS/CONCERNS/FAIL).
 
+## IMPORTANT: This is a SKILL (Not an Agent)
+
+**DO NOT try to spawn this as an agent via Task tool.**
+
+This is a **skill** that auto-activates when you discuss quality assessment. To run quality assessment:
+
+```bash
+# Use the CLI command directly
+specweave qa 0001 --pre
+
+# Or use the slash command
+/specweave:qa 0001
+```
+
+The skill provides guidance and documentation. The CLI handles execution.
+
+**Why no agent?** Having both a skill and agent with the same name (`increment-quality-judge-v2`) caused Claude to incorrectly construct agent type names. The skill-only approach eliminates this confusion.
+
 ## What's New in v2.0
 
 1. **Risk Assessment Dimension** - Probability × Impact scoring (0-10 scale, BMAD pattern)
