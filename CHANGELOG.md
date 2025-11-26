@@ -4,7 +4,7 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
-## [0.28.28] - 2025-11-26
+## [0.28.29] - 2025-11-26
 
 ### 🔧 Improvements
 - Improve init helpers (external-import, testing-config)
