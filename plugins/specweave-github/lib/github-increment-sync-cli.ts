@@ -3,29 +3,42 @@
  * GitHub Increment Sync CLI
  *
  * For brownfield projects without living docs structure.
- * Creates GitHub issues directly from increment spec.md with proper format.
+ * Creates GitHub issues directly from increment spec.md with CORRECT format.
  *
- * CORRECT FORMAT:
- *   - Single issue per increment: [FS-XXX] Increment Title
- *   - With User Stories and ACs as sections
+ * CORRECT FORMAT (SpecWeave Universal Hierarchy):
+ *   - Feature (FS-XXX) → GitHub Milestone
+ *   - User Story (US-XXX) → GitHub Issue with [FS-XXX][US-YYY] Title
+ *   - Tasks (T-XXX) → Checkboxes in User Story issue
+ *   - ACs → Checkboxes in User Story issue
  *
  * Usage:
  *   node github-increment-sync-cli.js <increment-id>
- *   node github-increment-sync-cli.js 0063-fix-external-import
+ *   node github-increment-sync-cli.js 0002-thumbnail-optimizer-mvp
  *
- * @see ADR-0143 (GitHub Issue Format)
+ * @see CLAUDE.md (GitHub Issue Format rules)
  */
 
 import { existsSync, readFileSync } from 'fs';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { IncrementIssueBuilder } from './increment-issue-builder.js';
+import { IncrementIssueBuilder, UserStory, Task, IncrementData } from './increment-issue-builder.js';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
 
 interface GitHubConfig {
   owner: string;
   repo: string;
   token: string;
+}
+
+interface SyncResult {
+  milestoneNumber: number;
+  milestoneUrl: string;
+  issues: Array<{
+    userStoryId: string;
+    issueNumber: number;
+    issueUrl: string;
+    title: string;
+  }>;
 }
 
 async function loadGitHubConfig(): Promise<GitHubConfig | null> {
@@ -131,143 +144,37 @@ async function findIncrementFolder(incrementId: string): Promise<string | null> 
 }
 
 /**
- * Check if GitHub issue already exists for this increment
+ * Load existing GitHub links from metadata.json
  */
-async function findExistingIssue(
-  owner: string,
-  repo: string,
-  featureId: string
-): Promise<number | null> {
-  // Search for issues with this feature ID in title
-  const result = await execFileNoThrow('gh', [
-    'search', 'issues',
-    `repo:${owner}/${repo}`,
-    `"[${featureId}]" in:title`,
-    'is:open',
-    '--json', 'number,title',
-    '--limit', '5'
-  ]);
-
-  if (result.exitCode !== 0 || !result.stdout.trim()) {
-    return null;
-  }
-
-  try {
-    const issues = JSON.parse(result.stdout);
-    if (issues.length > 0) {
-      return issues[0].number;
-    }
-  } catch {
-    // Parse error, no existing issue
-  }
-
-  return null;
-}
-
-/**
- * Create GitHub issue via gh CLI
- */
-async function createGitHubIssue(
-  owner: string,
-  repo: string,
-  title: string,
-  body: string,
-  labels: string[]
-): Promise<{ number: number; url: string }> {
-  const args = [
-    'issue', 'create',
-    '--repo', `${owner}/${repo}`,
-    '--title', title,
-    '--body', body
-  ];
-
-  // Add labels
-  if (labels.length > 0) {
-    args.push('--label', labels.join(','));
-  }
-
-  const result = await execFileNoThrow('gh', args);
-
-  if (result.exitCode !== 0) {
-    throw new Error(`Failed to create issue: ${result.stderr || result.stdout}`);
-  }
-
-  // Parse issue URL from output
-  const urlMatch = result.stdout.match(/https:\/\/github\.com\/[^\s]+\/issues\/(\d+)/);
-  if (!urlMatch) {
-    throw new Error('Could not parse issue URL from gh output');
-  }
-
-  return {
-    number: parseInt(urlMatch[1], 10),
-    url: urlMatch[0]
-  };
-}
-
-/**
- * Update existing GitHub issue
- */
-async function updateGitHubIssue(
-  owner: string,
-  repo: string,
-  issueNumber: number,
-  body: string
-): Promise<void> {
-  const result = await execFileNoThrow('gh', [
-    'issue', 'edit',
-    String(issueNumber),
-    '--repo', `${owner}/${repo}`,
-    '--body', body
-  ]);
-
-  if (result.exitCode !== 0) {
-    throw new Error(`Failed to update issue: ${result.stderr || result.stdout}`);
-  }
-}
-
-/**
- * Load existing GitHub issue link from metadata.json
- * This is the PRIMARY source for existing issue detection
- */
-function loadExistingGitHubLink(incrementPath: string): { issue: number; url?: string } | null {
+function loadExistingGitHubLinks(incrementPath: string): {
+  milestone?: number;
+  userStoryIssues: Record<string, number>;
+} {
   const metadataPath = path.join(incrementPath, 'metadata.json');
 
   if (!existsSync(metadataPath)) {
-    return null;
+    return { userStoryIssues: {} };
   }
 
   try {
     const metadata = JSON.parse(readFileSync(metadataPath, 'utf-8'));
 
-    // Check for github.issue (new format)
-    if (metadata.github?.issue) {
-      return {
-        issue: metadata.github.issue,
-        url: metadata.github.url
-      };
-    }
-
-    // Check for sync.issueNumber (alternative format)
-    if (metadata.sync?.issueNumber) {
-      return {
-        issue: metadata.sync.issueNumber,
-        url: metadata.sync.issueUrl
-      };
-    }
-
-    return null;
+    return {
+      milestone: metadata.github?.milestone,
+      userStoryIssues: metadata.github?.userStoryIssues || {}
+    };
   } catch {
-    return null;
+    return { userStoryIssues: {} };
   }
 }
 
 /**
- * Update increment metadata with GitHub issue link
+ * Update increment metadata with GitHub links
  */
 async function updateIncrementMetadata(
   incrementPath: string,
-  issueNumber: number,
-  issueUrl: string
+  milestoneNumber: number,
+  userStoryIssues: Record<string, number>
 ): Promise<void> {
   const metadataPath = path.join(incrementPath, 'metadata.json');
 
@@ -283,12 +190,226 @@ async function updateIncrementMetadata(
 
   // Update github section
   metadata.github = {
-    issue: issueNumber,
-    url: issueUrl,
+    milestone: milestoneNumber,
+    userStoryIssues,
     lastSync: new Date().toISOString()
   };
 
   await fs.writeFile(metadataPath, JSON.stringify(metadata, null, 2) + '\n');
+}
+
+/**
+ * Create or get GitHub milestone for the feature
+ */
+async function createOrGetMilestone(
+  owner: string,
+  repo: string,
+  featureId: string,
+  title: string,
+  existingMilestone?: number
+): Promise<{ number: number; url: string }> {
+  // If we have an existing milestone, verify it exists
+  if (existingMilestone) {
+    const verifyResult = await execFileNoThrow('gh', [
+      'api', `repos/${owner}/${repo}/milestones/${existingMilestone}`,
+      '--jq', '.number'
+    ]);
+    if (verifyResult.exitCode === 0) {
+      return {
+        number: existingMilestone,
+        url: `https://github.com/${owner}/${repo}/milestone/${existingMilestone}`
+      };
+    }
+  }
+
+  // Search for existing milestone by title
+  const searchResult = await execFileNoThrow('gh', [
+    'api', `repos/${owner}/${repo}/milestones`,
+    '--jq', `.[] | select(.title | contains("${featureId}")) | .number`
+  ]);
+
+  if (searchResult.exitCode === 0 && searchResult.stdout.trim()) {
+    const milestoneNumber = parseInt(searchResult.stdout.trim().split('\n')[0], 10);
+    return {
+      number: milestoneNumber,
+      url: `https://github.com/${owner}/${repo}/milestone/${milestoneNumber}`
+    };
+  }
+
+  // Create new milestone
+  const milestoneTitle = `[${featureId}] ${title}`;
+  const createResult = await execFileNoThrow('gh', [
+    'api', `repos/${owner}/${repo}/milestones`,
+    '-X', 'POST',
+    '-f', `title=${milestoneTitle}`,
+    '-f', `description=Feature milestone for ${featureId}`,
+    '--jq', '.number'
+  ]);
+
+  if (createResult.exitCode !== 0) {
+    throw new Error(`Failed to create milestone: ${createResult.stderr || createResult.stdout}`);
+  }
+
+  const milestoneNumber = parseInt(createResult.stdout.trim(), 10);
+  return {
+    number: milestoneNumber,
+    url: `https://github.com/${owner}/${repo}/milestone/${milestoneNumber}`
+  };
+}
+
+/**
+ * Build issue body for a single user story
+ */
+function buildUserStoryIssueBody(
+  story: UserStory,
+  tasks: Task[],
+  incrementData: IncrementData,
+  githubRepo: string
+): string {
+  const incrementId = incrementData.frontmatter.increment;
+  let body = '';
+
+  // Header with metadata
+  body += `**Feature**: ${incrementData.frontmatter.feature_id || 'N/A'}\n`;
+  body += `**Status**: ${story.acceptanceCriteria.every(ac => ac.completed) ? 'complete' : 'in-progress'}\n`;
+  body += `**Priority**: ${story.priority || incrementData.frontmatter.priority || 'P2'}\n`;
+
+  body += `\n---\n\n`;
+
+  // User Story description
+  body += `## User Story\n\n`;
+  if (story.asA && story.iWant && story.soThat) {
+    body += `**As a** ${story.asA}\n`;
+    body += `**I want** ${story.iWant}\n`;
+    body += `**So that** ${story.soThat}\n\n`;
+  } else {
+    body += `${story.title}\n\n`;
+  }
+
+  body += `---\n\n`;
+
+  // Acceptance Criteria
+  body += `## Acceptance Criteria\n\n`;
+  if (story.acceptanceCriteria.length > 0) {
+    const completed = story.acceptanceCriteria.filter(ac => ac.completed).length;
+    const total = story.acceptanceCriteria.length;
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+    body += `Progress: ${completed}/${total} criteria met (${percentage}%)\n\n`;
+
+    for (const ac of story.acceptanceCriteria) {
+      const checkbox = ac.completed ? '[x]' : '[ ]';
+      body += `- ${checkbox} **${ac.id}**: ${ac.description}\n`;
+    }
+    body += '\n';
+  } else {
+    body += `*No acceptance criteria defined*\n\n`;
+  }
+
+  body += `---\n\n`;
+
+  // Tasks for this user story
+  const storyTasks = tasks.filter(t =>
+    t.userStories.includes(story.id) ||
+    t.userStories.some(us => us.includes(story.id.replace('US-', '')))
+  );
+
+  if (storyTasks.length > 0) {
+    body += `## Implementation Tasks\n\n`;
+    const completedTasks = storyTasks.filter(t => t.completed).length;
+    const totalTasks = storyTasks.length;
+    const taskPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    body += `Progress: ${completedTasks}/${totalTasks} tasks (${taskPercentage}%)\n\n`;
+
+    for (const task of storyTasks) {
+      const checkbox = task.completed ? '[x]' : '[ ]';
+      body += `- ${checkbox} **${task.id}**: ${task.title}\n`;
+    }
+    body += '\n';
+
+    body += `---\n\n`;
+  }
+
+  // Link to increment
+  body += `## SpecWeave Increment\n\n`;
+  body += `**Increment**: [${incrementId}](https://github.com/${githubRepo}/tree/develop/.specweave/increments/${incrementId})\n\n`;
+
+  body += `---\n\n`;
+  body += `🤖 Auto-synced by SpecWeave`;
+
+  return body;
+}
+
+/**
+ * Create or update GitHub issue for a user story
+ */
+async function syncUserStoryIssue(
+  owner: string,
+  repo: string,
+  featureId: string,
+  story: UserStory,
+  tasks: Task[],
+  incrementData: IncrementData,
+  milestoneNumber: number,
+  existingIssueNumber?: number
+): Promise<{ number: number; url: string }> {
+  // CORRECT FORMAT: [FS-XXX][US-YYY] User Story Title
+  const title = `[${featureId}][${story.id}] ${story.title}`;
+  const body = buildUserStoryIssueBody(story, tasks, incrementData, `${owner}/${repo}`);
+
+  // Labels
+  const labels = ['specweave', 'user-story'];
+  const priority = story.priority?.toLowerCase() || incrementData.frontmatter.priority?.toLowerCase() || 'p2';
+  labels.push(priority);
+
+  if (existingIssueNumber) {
+    // Update existing issue
+    const updateResult = await execFileNoThrow('gh', [
+      'issue', 'edit',
+      String(existingIssueNumber),
+      '--repo', `${owner}/${repo}`,
+      '--title', title,
+      '--body', body
+    ]);
+
+    if (updateResult.exitCode !== 0) {
+      throw new Error(`Failed to update issue #${existingIssueNumber}: ${updateResult.stderr}`);
+    }
+
+    return {
+      number: existingIssueNumber,
+      url: `https://github.com/${owner}/${repo}/issues/${existingIssueNumber}`
+    };
+  }
+
+  // Create new issue
+  const createArgs = [
+    'issue', 'create',
+    '--repo', `${owner}/${repo}`,
+    '--title', title,
+    '--body', body,
+    '--milestone', String(milestoneNumber)
+  ];
+
+  if (labels.length > 0) {
+    createArgs.push('--label', labels.join(','));
+  }
+
+  const createResult = await execFileNoThrow('gh', createArgs);
+
+  if (createResult.exitCode !== 0) {
+    throw new Error(`Failed to create issue: ${createResult.stderr || createResult.stdout}`);
+  }
+
+  // Parse issue URL from output
+  const urlMatch = createResult.stdout.match(/https:\/\/github\.com\/[^\s]+\/issues\/(\d+)/);
+  if (!urlMatch) {
+    throw new Error('Could not parse issue URL from gh output');
+  }
+
+  return {
+    number: parseInt(urlMatch[1], 10),
+    url: urlMatch[0]
+  };
 }
 
 async function main() {
@@ -297,26 +418,28 @@ async function main() {
   if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
     console.log('Usage: node github-increment-sync-cli.js <increment-id> [options]');
     console.log('');
+    console.log('Creates GitHub issues with CORRECT format:');
+    console.log('  - Milestone: [FS-XXX] Feature Title');
+    console.log('  - Issues: [FS-XXX][US-YYY] User Story Title  (one per US)');
+    console.log('');
     console.log('Arguments:');
-    console.log('  increment-id   Increment ID (e.g., 0063 or 0063-fix-external-import)');
+    console.log('  increment-id   Increment ID (e.g., 0002 or 0002-thumbnail-mvp)');
     console.log('');
     console.log('Options:');
-    console.log('  --force        Force create even if issue exists');
-    console.log('  --dry-run      Preview issue without creating');
+    console.log('  --dry-run      Preview issues without creating');
     console.log('');
     console.log('Environment:');
     console.log('  GITHUB_TOKEN   Required - GitHub personal access token');
     console.log('');
     console.log('Example:');
-    console.log('  GITHUB_TOKEN=ghp_xxx node github-increment-sync-cli.js 0063');
+    console.log('  GITHUB_TOKEN=ghp_xxx node github-increment-sync-cli.js 0002');
     process.exit(args.length === 0 ? 1 : 0);
   }
 
   const incrementId = args[0];
-  const force = args.includes('--force');
   const dryRun = args.includes('--dry-run');
 
-  console.log(`\n🐙 GitHub Increment Sync CLI`);
+  console.log(`\n🐙 GitHub Increment Sync CLI (Per-User-Story Mode)`);
   console.log(`   Increment: ${incrementId}`);
 
   // Find increment folder
@@ -339,7 +462,6 @@ async function main() {
     }
     console.log(`   Repository: ${config.owner}/${config.repo}`);
   } else {
-    // Try to detect repo for dry-run preview (non-fatal)
     config = await loadGitHubConfig().catch((): null => null);
     if (config) {
       console.log(`   Repository: ${config.owner}/${config.repo}`);
@@ -348,7 +470,7 @@ async function main() {
     }
   }
 
-  // Parse increment and build issue
+  // Parse increment
   const projectRoot = process.cwd();
   const builder = new IncrementIssueBuilder(incrementPath, projectRoot);
 
@@ -356,6 +478,10 @@ async function main() {
     console.log(`\n🔄 Parsing increment spec.md...`);
     const incrementData = await builder.parse();
 
+    const featureId = incrementData.frontmatter.feature_id ||
+      `FS-${fullIncrementId.match(/^(\d+)/)?.[1]?.padStart(3, '0') || 'UNKNOWN'}`;
+
+    console.log(`   📦 Feature: ${featureId}`);
     console.log(`   📦 Title: ${incrementData.title}`);
     console.log(`   📝 User Stories: ${incrementData.userStories.length}`);
 
@@ -363,19 +489,36 @@ async function main() {
       (sum, us) => sum + us.acceptanceCriteria.length, 0
     );
     console.log(`   ✓ Acceptance Criteria: ${totalACs}`);
+    console.log(`   🔧 Tasks: ${incrementData.tasks.length}`);
 
-    // Build issue content
-    const githubRepo = config ? `${config.owner}/${config.repo}` : undefined;
-    const issue = builder.buildIncrementIssue(incrementData, githubRepo);
+    if (incrementData.userStories.length === 0) {
+      console.error(`\n❌ No user stories found in spec.md`);
+      console.error('   Ensure spec.md has ### US-XXX: Title sections');
+      process.exit(1);
+    }
 
-    console.log(`\n📋 Issue Preview:`);
-    console.log(`   Title: ${issue.title}`);
-    console.log(`   Labels: ${issue.labels.join(', ')}`);
+    // Preview issues
+    console.log(`\n📋 Issues to Create/Update:`);
+    console.log(`   🎯 Milestone: [${featureId}] ${incrementData.title}`);
+    for (const story of incrementData.userStories) {
+      const storyTasks = incrementData.tasks.filter(t =>
+        t.userStories.includes(story.id) ||
+        t.userStories.some(us => us.includes(story.id.replace('US-', '')))
+      );
+      console.log(`   📝 [${featureId}][${story.id}] ${story.title}`);
+      console.log(`      └─ ${story.acceptanceCriteria.length} ACs, ${storyTasks.length} tasks`);
+    }
 
     if (dryRun) {
-      console.log(`\n📄 Issue Body Preview:\n`);
-      console.log(issue.body);
-      console.log(`\n✅ Dry run complete (no issue created)`);
+      console.log(`\n📄 Sample Issue Body (${incrementData.userStories[0].id}):\n`);
+      const sampleBody = buildUserStoryIssueBody(
+        incrementData.userStories[0],
+        incrementData.tasks,
+        incrementData,
+        config ? `${config.owner}/${config.repo}` : 'owner/repo'
+      );
+      console.log(sampleBody);
+      console.log(`\n✅ Dry run complete (no issues created)`);
       process.exit(0);
     }
 
@@ -385,90 +528,51 @@ async function main() {
       process.exit(1);
     }
 
-    // STEP 1: Check metadata.json for existing issue link (PRIMARY detection)
-    const metadataLink = loadExistingGitHubLink(incrementPath);
+    // Load existing links
+    const existingLinks = loadExistingGitHubLinks(incrementPath);
 
-    if (metadataLink) {
-      console.log(`\n📎 Found existing issue link in metadata: #${metadataLink.issue}`);
-
-      // Update existing issue with new format
-      console.log(`🔄 Updating issue #${metadataLink.issue} with new format...`);
-
-      // Update body
-      await updateGitHubIssue(config.owner, config.repo, metadataLink.issue, issue.body);
-      console.log(`   ✅ Body updated with User Stories and ACs`);
-
-      // Update title to new format (fix the [0002] → [FS-XXX] issue)
-      const updateTitleResult = await execFileNoThrow('gh', [
-        'issue', 'edit',
-        String(metadataLink.issue),
-        '--repo', `${config.owner}/${config.repo}`,
-        '--title', issue.title
-      ]);
-
-      if (updateTitleResult.exitCode === 0) {
-        console.log(`   ✅ Title updated to: ${issue.title}`);
-      } else {
-        console.log(`   ⚠️  Could not update title (may need permissions)`);
-      }
-
-      // Update metadata with lastSync
-      await updateIncrementMetadata(
-        incrementPath,
-        metadataLink.issue,
-        `https://github.com/${config.owner}/${config.repo}/issues/${metadataLink.issue}`
-      );
-
-      console.log(`\n✅ Sync complete!`);
-      console.log(`   🔗 https://github.com/${config.owner}/${config.repo}/issues/${metadataLink.issue}`);
-      process.exit(0);
-    }
-
-    // STEP 2: Search GitHub by feature ID (fallback)
-    const featureId = incrementData.frontmatter.feature_id ||
-      `FS-${fullIncrementId.match(/^(\d+)/)?.[1]?.padStart(3, '0') || 'UNKNOWN'}`;
-
-    console.log(`\n🔍 Searching GitHub for existing issue [${featureId}]...`);
-    const existingIssue = await findExistingIssue(config.owner, config.repo, featureId);
-
-    if (existingIssue) {
-      console.log(`   Found existing issue: #${existingIssue}`);
-
-      // Update existing issue
-      console.log(`🔄 Updating issue #${existingIssue}...`);
-      await updateGitHubIssue(config.owner, config.repo, existingIssue, issue.body);
-      console.log(`   ✅ Issue #${existingIssue} updated`);
-
-      await updateIncrementMetadata(
-        incrementPath,
-        existingIssue,
-        `https://github.com/${config.owner}/${config.repo}/issues/${existingIssue}`
-      );
-
-      console.log(`\n✅ Sync complete!`);
-      console.log(`   🔗 https://github.com/${config.owner}/${config.repo}/issues/${existingIssue}`);
-      process.exit(0);
-    }
-
-    // STEP 3: Create new issue (no existing found)
-    console.log(`   No existing issue found`);
-    console.log(`\n🚀 Creating GitHub issue...`);
-    const created = await createGitHubIssue(
+    // Create or get milestone
+    console.log(`\n🎯 Creating/updating milestone...`);
+    const milestone = await createOrGetMilestone(
       config.owner,
       config.repo,
-      issue.title,
-      issue.body,
-      issue.labels
+      featureId,
+      incrementData.title,
+      existingLinks.milestone
     );
+    console.log(`   ✅ Milestone #${milestone.number}: [${featureId}] ${incrementData.title}`);
 
-    console.log(`   ✅ Issue #${created.number} created`);
+    // Create/update issues for each user story
+    console.log(`\n📝 Creating/updating user story issues...`);
+    const userStoryIssues: Record<string, number> = {};
+
+    for (const story of incrementData.userStories) {
+      const existingIssue = existingLinks.userStoryIssues[story.id];
+
+      const issue = await syncUserStoryIssue(
+        config.owner,
+        config.repo,
+        featureId,
+        story,
+        incrementData.tasks,
+        incrementData,
+        milestone.number,
+        existingIssue
+      );
+
+      userStoryIssues[story.id] = issue.number;
+
+      const action = existingIssue ? '♻️  Updated' : '✅ Created';
+      console.log(`   ${action} #${issue.number}: [${featureId}][${story.id}] ${story.title}`);
+    }
 
     // Update metadata
-    await updateIncrementMetadata(incrementPath, created.number, created.url);
-    console.log(`   📝 Metadata updated`);
+    await updateIncrementMetadata(incrementPath, milestone.number, userStoryIssues);
+    console.log(`\n📝 Metadata updated`);
 
     console.log(`\n✅ Sync complete!`);
-    console.log(`   🔗 ${created.url}`);
+    console.log(`   🎯 Milestone: ${milestone.url}`);
+    console.log(`   📝 Issues: ${Object.keys(userStoryIssues).length} user stories synced`);
 
     process.exit(0);
   } catch (error) {

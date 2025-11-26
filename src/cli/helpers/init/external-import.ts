@@ -7,7 +7,7 @@ import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
-import { select, confirm } from '@inquirer/prompts';
+import { select, confirm, checkbox } from '@inquirer/prompts';
 import { Octokit } from '@octokit/rest';
 import { ImportCoordinator, CoordinatorConfig, CoordinatorResult, ProgressInfo } from '../../../importers/import-coordinator.js';
 import { ItemConverter, ConvertedUserStory } from '../../../importers/item-converter.js';
@@ -18,6 +18,18 @@ import { selectRepositories, type RepoSelectionConfig } from '../github-repo-sel
 import { detectAllConfigs } from './config-detection.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import { getGitHubAuth } from '../../../utils/auth-helpers.js';
+import {
+  detectJiraStructure,
+  confirmJiraMapping,
+  detectAdoStructure,
+  confirmAdoMapping,
+  buildJiraCoordinatorConfig,
+  buildAdoCoordinatorConfig,
+  type JiraMappingResult,
+  type AdoMappingResult,
+} from './jira-ado-auto-detect.js';
+import { getJobManager } from '../../../core/background/index.js';
+import type { ImportJobConfig } from '../../../core/background/types.js';
 
 /**
  * Get translated strings for external import
@@ -282,7 +294,32 @@ export async function promptAndRunExternalImport(
   }
 
   // Detect available external tools
-  const { github, jira, ado, availableTools } = detectAllConfigs(targetDir);
+  let { github, jira, ado, availableTools } = detectAllConfigs(targetDir);
+
+  // CRITICAL FIX: Also check for existing sync profiles (from umbrella repo setup)
+  // In multi-repo mode, sync profiles are written BEFORE this function is called,
+  // but detectAllConfigs may not find GitHub remote in .git/config yet
+  const existingSyncProfiles = getExistingSyncProfiles(targetDir);
+  let hasGitHubProfiles = false;
+
+  if (existingSyncProfiles && existingSyncProfiles.length > 0) {
+    hasGitHubProfiles = true;
+    // Add GitHub to available tools if not already detected
+    if (!availableTools.includes('GitHub')) {
+      availableTools = [...availableTools, 'GitHub'];
+    }
+  }
+
+  // Also check for JIRA/ADO sync profiles in config.json
+  const syncProfileProviders = getSyncProfileProviders(targetDir);
+  for (const provider of syncProfileProviders) {
+    if (provider === 'jira' && !availableTools.includes('JIRA')) {
+      availableTools = [...availableTools, 'JIRA'];
+    }
+    if (provider === 'ado' && !availableTools.includes('Azure DevOps')) {
+      availableTools = [...availableTools, 'Azure DevOps'];
+    }
+  }
 
   // If no tools detected, skip import
   if (availableTools.length === 0) {
@@ -317,13 +354,14 @@ export async function promptAndRunExternalImport(
   const githubAuth = getGitHubAuth();
   const hasGitHubToken = githubAuth.source !== 'none';
 
-  if (github && hasGitHubToken) {
-    // First check if sync profiles already exist (from umbrella repo setup)
-    const existingProfiles = getExistingSyncProfiles(targetDir);
-    if (existingProfiles && existingProfiles.length > 0) {
-      console.log(chalk.gray(`   Using existing sync profiles: ${existingProfiles.length} repositories`));
+  // CRITICAL FIX: Use profiles OR git remote detection for GitHub
+  // In umbrella mode, hasGitHubProfiles is true even when github is null
+  if ((github || hasGitHubProfiles) && hasGitHubToken) {
+    // Use existing sync profiles (already fetched earlier for tool detection)
+    if (existingSyncProfiles && existingSyncProfiles.length > 0) {
+      console.log(chalk.gray(`   Using existing sync profiles: ${existingSyncProfiles.length} repositories`));
       repoSelectionConfig = {
-        repositories: existingProfiles,
+        repositories: existingSyncProfiles,
         selectionStrategy: 'explicit'
       };
     } else {
@@ -381,22 +419,81 @@ export async function promptAndRunExternalImport(
     }
   }
 
-  // Add JIRA config if available
+  // Add JIRA config with auto-detection
   if (jira) {
-    coordinatorConfig.jira = {
-      host: jira.host,
-      email: jira.email,
-      apiToken: jira.apiToken
-    };
+    // Auto-detect JIRA structure (projects + boards)
+    const jiraStructure = await detectJiraStructure();
+    if (jiraStructure) {
+      const jiraMapping = await confirmJiraMapping(jiraStructure);
+      if (jiraMapping) {
+        const jiraConfig = buildJiraCoordinatorConfig(jira, jiraMapping);
+        coordinatorConfig.jira = jiraConfig;
+      } else {
+        // User declined - use simple mode
+        coordinatorConfig.jira = {
+          host: jira.host,
+          email: jira.email,
+          apiToken: jira.apiToken,
+          mode: 'simple' as const,
+          projectMappings: [],
+        };
+      }
+    } else {
+      // Auto-detect failed - use simple mode
+      coordinatorConfig.jira = {
+        host: jira.host,
+        email: jira.email,
+        apiToken: jira.apiToken,
+        mode: 'simple' as const,
+        projectMappings: [],
+      };
+    }
   }
 
-  // Add ADO config if available
+  // Add ADO config with auto-detection
   if (ado) {
-    coordinatorConfig.ado = {
-      orgUrl: ado.orgUrl,
-      project: ado.project,
-      pat: ado.pat
-    };
+    // Extract organization from URL
+    const orgMatch = ado.orgUrl.match(/dev\.azure\.com\/([^/]+)/);
+    const organization = orgMatch ? orgMatch[1] : '';
+
+    if (organization && ado.pat) {
+      // Auto-detect ADO structure (projects + area paths)
+      const adoStructure = await detectAdoStructure(organization, ado.pat);
+      if (adoStructure) {
+        const adoMapping = await confirmAdoMapping(adoStructure);
+        if (adoMapping) {
+          const adoConfig = buildAdoCoordinatorConfig(ado, adoMapping);
+          coordinatorConfig.ado = adoConfig;
+        } else {
+          // User declined - use simple mode
+          coordinatorConfig.ado = {
+            orgUrl: ado.orgUrl,
+            project: ado.project,
+            pat: ado.pat,
+            mode: 'simple' as const,
+            projectMappings: [],
+          };
+        }
+      } else {
+        // Auto-detect failed - use simple mode
+        coordinatorConfig.ado = {
+          orgUrl: ado.orgUrl,
+          project: ado.project,
+          pat: ado.pat,
+          mode: 'simple' as const,
+          projectMappings: [],
+        };
+      }
+    } else {
+      // No org/PAT - use simple mode
+      coordinatorConfig.ado = {
+        orgUrl: ado.orgUrl,
+        project: ado.project,
+        pat: ado.pat,
+        mode: 'simple' as const,
+        projectMappings: [],
+      };
+    }
   }
 
   // Run import with progress tracking
@@ -436,6 +533,41 @@ function getExistingSyncProfiles(targetDir: string): string[] | null {
     // Log warning for debugging - config parsing errors shouldn't be silent
     console.warn(chalk.yellow(`   ⚠️  Failed to read sync profiles: ${error instanceof Error ? error.message : String(error)}`));
     return null;
+  }
+}
+
+/**
+ * Get sync profile providers from config.json
+ * Returns array of provider names ('github', 'jira', 'ado') from sync profiles
+ */
+function getSyncProfileProviders(targetDir: string): string[] {
+  try {
+    const configPath = path.join(targetDir, '.specweave', 'config.json');
+    if (!fs.existsSync(configPath)) {
+      return [];
+    }
+
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    const providers = new Set<string>();
+
+    // Check sync.profiles structure
+    if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
+      for (const profile of Object.values(config.sync.profiles)) {
+        const p = profile as { provider?: string };
+        if (p.provider) {
+          providers.add(p.provider.toLowerCase());
+        }
+      }
+    }
+
+    // Also check top-level sync.provider
+    if (config.sync?.provider) {
+      providers.add(config.sync.provider.toLowerCase());
+    }
+
+    return Array.from(providers);
+  } catch {
+    return [];
   }
 }
 
@@ -509,6 +641,30 @@ async function runImport(
   const spinner = ora('Importing items...').start();
   let lastRepo = '';
 
+  // Create background job for tracking
+  let jobManager: ReturnType<typeof getJobManager> | null = null;
+  let jobId: string | null = null;
+
+  try {
+    jobManager = getJobManager(targetDir);
+    const provider = coordinatorConfig.github ? 'github' :
+                     coordinatorConfig.jira ? 'jira' :
+                     coordinatorConfig.ado ? 'ado' : 'github';
+    const jobConfig: ImportJobConfig = {
+      type: 'import-issues',
+      provider,
+      repositories: coordinatorConfig.githubRepositories?.map(r => `${r.owner}/${r.repo}`),
+      timeRangeMonths: coordinatorConfig.importConfig?.timeRangeMonths || 3,
+      projectPath: targetDir
+    };
+    // Estimate total - will be updated when we know actual count
+    const job = jobManager.createJob('import-issues', jobConfig, 100);
+    jobId = job.id;
+    jobManager.startJob(jobId);
+  } catch {
+    // Job tracking is optional
+  }
+
   // Enhanced progress callback with percentage and ETA
   coordinatorConfig.onProgressEnhanced = (info: ProgressInfo) => {
     const parts: string[] = [];
@@ -544,6 +700,12 @@ async function runImport(
     }
 
     spinner.text = `Importing from ${info.platform}${repoLabel}... ${parts.join(' | ')}`;
+
+    // Update background job progress
+    if (jobManager && jobId && info.current !== undefined) {
+      const itemId = info.sourceRepo || info.platform;
+      jobManager.updateProgress(jobId, info.current, itemId);
+    }
   };
 
   // Legacy progress callback (fallback)
@@ -554,11 +716,29 @@ async function runImport(
     }
   };
 
+  // Rate limit callbacks - pause job when rate limited
+  coordinatorConfig.onRateLimitWarning = (platform: string, rateLimitInfo) => {
+    spinner.text = `⚠️  ${platform} rate limit warning: ${rateLimitInfo.remaining} requests remaining`;
+  };
+
+  coordinatorConfig.onRateLimitPause = (platform: string, seconds: number) => {
+    spinner.text = `⏸️  ${platform} rate limited - waiting ${seconds}s...`;
+    // Pause background job
+    if (jobManager && jobId) {
+      jobManager.pauseJob(jobId);
+    }
+  };
+
   try {
     const coordinator = new ImportCoordinator(coordinatorConfig);
     const result = await coordinator.importAll();
 
     spinner.succeed(`Imported ${result.totalCount} items`);
+
+    // Complete background job
+    if (jobManager && jobId) {
+      jobManager.completeJob(jobId);
+    }
 
     // Show breakdown by platform
     if (result.results.length > 0) {
@@ -592,6 +772,13 @@ async function runImport(
     return result;
   } catch (error) {
     spinner.fail('Import failed');
+
+    // Mark background job as failed
+    if (jobManager && jobId) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      jobManager.completeJob(jobId, errorMsg);
+    }
+
     throw error;
   }
 }

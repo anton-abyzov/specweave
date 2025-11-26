@@ -134,6 +134,7 @@ class AdoSpecSync {
     const featureTitle = `[${spec.metadata.id.toUpperCase()}] ${spec.metadata.title}`;
     const featureDescription = this.generateFeatureDescription(spec);
     const tags = [`spec:${spec.metadata.id}`, `priority:${spec.metadata.priority}`].join("; ");
+    const workItemType = this.mapTypeToAdo(spec.metadata.type, "Feature");
     const payload = [
       {
         op: "add",
@@ -148,12 +149,18 @@ class AdoSpecSync {
       {
         op: "add",
         path: "/fields/System.WorkItemType",
-        value: "Feature"
+        value: workItemType
       },
       {
         op: "add",
         path: "/fields/System.Tags",
         value: tags
+      },
+      {
+        // Set native ADO Priority field (P0→1, P1→2, P2→3, P3→4)
+        op: "add",
+        path: "/fields/Microsoft.VSTS.Common.Priority",
+        value: this.mapPriorityToAdo(spec.metadata.priority)
       }
     ];
     const response = await this.client.post("/wit/workitems/$Feature?api-version=7.0", payload);
@@ -224,7 +231,8 @@ class AdoSpecSync {
           title: storyTitle,
           description: storyDescription,
           parentId: featureId,
-          tags: [`user-story`, `spec:${spec.metadata.id}`, `priority:${us.priority}`].join("; ")
+          tags: [`user-story`, `spec:${spec.metadata.id}`, `priority:${us.priority}`].join("; "),
+          priority: us.priority
         });
         created.push(us.id);
         console.log(`   \u2705 Created ${us.id} \u2192 User Story #${newStory.id}`);
@@ -362,6 +370,7 @@ ${acList}
    * Create ADO User Story
    */
   async createStory(story) {
+    const workItemType = this.mapTypeToAdo(story.type, "User Story");
     const payload = [
       {
         op: "add",
@@ -376,12 +385,18 @@ ${acList}
       {
         op: "add",
         path: "/fields/System.WorkItemType",
-        value: "User Story"
+        value: workItemType
       },
       {
         op: "add",
         path: "/fields/System.Tags",
         value: story.tags
+      },
+      {
+        // Set native ADO Priority field
+        op: "add",
+        path: "/fields/Microsoft.VSTS.Common.Priority",
+        value: this.mapPriorityToAdo(story.priority)
       },
       {
         op: "add",
@@ -430,6 +445,47 @@ ${acList}
       });
     }
     await this.client.patch(`/wit/workitems/${storyId}?api-version=7.0`, payload);
+  }
+  /**
+   * Map SpecWeave priority to ADO priority value
+   *
+   * ADO Priority field uses 1-4 scale:
+   * - 1 = Highest (P0)
+   * - 2 = High (P1)
+   * - 3 = Medium (P2)
+   * - 4 = Low (P3)
+   */
+  mapPriorityToAdo(priority) {
+    if (!priority) return 3;
+    const map = {
+      P0: 1,
+      P1: 2,
+      P2: 3,
+      P3: 4,
+      p0: 1,
+      p1: 2,
+      p2: 3,
+      p3: 4
+    };
+    return map[priority] || 3;
+  }
+  /**
+   * Map SpecWeave type to ADO work item type
+   *
+   * Supports: Feature, User Story, Bug, Task
+   */
+  mapTypeToAdo(type, defaultType = "Feature") {
+    if (!type) return defaultType;
+    const normalizedType = type.toLowerCase();
+    const map = {
+      bug: "Bug",
+      feature: "Feature",
+      epic: "Feature",
+      story: "User Story",
+      task: "Task",
+      enhancement: "Feature"
+    };
+    return map[normalizedType] || defaultType;
   }
 }
 export {

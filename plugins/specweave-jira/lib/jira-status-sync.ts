@@ -85,24 +85,31 @@ export class JiraStatusSync {
    * JIRA requires using transitions to change status.
    * Cannot directly set status field.
    *
+   * Handles missing transitions gracefully by logging a warning
+   * instead of throwing an error.
+   *
    * @param issueKey - JIRA issue key (e.g., PROJ-123)
    * @param status - Desired status
+   * @returns true if transition succeeded, false if not available
    */
-  async updateStatus(issueKey: string, status: ExternalStatus): Promise<void> {
+  async updateStatus(issueKey: string, status: ExternalStatus): Promise<boolean> {
     // 1. Get available transitions for this issue
     const transitionsResponse = await this.client.get(`/issue/${issueKey}/transitions`);
     const transitions: JiraTransition[] = transitionsResponse.data.transitions;
 
-    // 2. Find transition that leads to desired status
+    // 2. Find transition that leads to desired status (case-insensitive)
     const targetTransition = transitions.find(
-      (t) => t.to.name === status.state
+      (t) => t.to.name.toLowerCase() === status.state.toLowerCase()
     );
 
     if (!targetTransition) {
-      throw new Error(
-        `Transition to ${status.state} not available for ${issueKey}. ` +
-        `Available transitions: ${transitions.map(t => t.to.name).join(', ')}`
+      // Log warning instead of throwing - workflow may not support this transition
+      console.warn(
+        `⚠️  Cannot transition ${issueKey} to "${status.state}". ` +
+        `Available transitions: ${transitions.map(t => t.to.name).join(', ')}. ` +
+        `This may be expected if your JIRA workflow doesn't support this status.`
       );
+      return false;
     }
 
     // 3. Execute transition
@@ -111,6 +118,8 @@ export class JiraStatusSync {
         id: targetTransition.id
       }
     });
+
+    return true;
   }
 
   /**

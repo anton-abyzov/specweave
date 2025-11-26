@@ -1,0 +1,42 @@
+{
+  "increment": "0066-multi-project-jira-ado-init",
+  "feature_id": "FS-066",
+  "type": "feature",
+  "status": "completed",
+  "created": "2025-11-26T14:00:00Z",
+  "completed": "2025-11-26T15:30:00Z",
+  "tasks": {
+    "total": 10,
+    "completed": 10,
+    "in_progress": 0
+  },
+  "user_stories": [
+    "US-001",
+    "US-002",
+    "US-003"
+  ],
+  "lastActivity": "2025-11-26T15:30:00Z",
+  "github": {
+    "issues": [
+      {
+        "userStory": "US-001",
+        "number": 769,
+        "url": "https://github.com/anton-abyzov/specweave/issues/769",
+        "createdAt": "2025-11-26T17:43:56.298Z"
+      },
+      {
+        "userStory": "US-002",
+        "number": 770,
+        "url": "https://github.com/anton-abyzov/specweave/issues/770",
+        "createdAt": "2025-11-26T17:43:58.615Z"
+      },
+      {
+        "userStory": "US-003",
+        "number": 771,
+        "url": "https://github.com/anton-abyzov/specweave/issues/771",
+        "createdAt": "2025-11-26T17:44:00.922Z"
+      }
+    ],
+    "lastSync": "2025-11-26T17:44:00.922Z"
+  }
+}

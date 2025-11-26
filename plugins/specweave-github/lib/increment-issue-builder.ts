@@ -22,6 +22,7 @@ export interface IncrementFrontmatter {
   type?: string;
   status?: string;
   created?: string;
+  priority?: string;
 }
 
 export interface AcceptanceCriterion {
@@ -37,6 +38,7 @@ export interface UserStory {
   iWant: string;
   soThat: string;
   acceptanceCriteria: AcceptanceCriterion[];
+  priority?: string;
 }
 
 export interface Task {
@@ -322,6 +324,24 @@ export class IncrementIssueBuilder {
 
     body += `---\n\n`;
 
+    // Tasks for this user story
+    const storyTasks = incrementData.tasks.filter(t =>
+      t.userStories.includes(story.id) ||
+      t.userStories.some(us => us.toUpperCase() === story.id.toUpperCase())
+    );
+
+    if (storyTasks.length > 0) {
+      body += `## Tasks\n\n`;
+      const completedTasks = storyTasks.filter(t => t.completed).length;
+      body += `Progress: ${completedTasks}/${storyTasks.length} tasks\n\n`;
+
+      for (const task of storyTasks) {
+        const checkbox = task.completed ? '[x]' : '[ ]';
+        body += `- ${checkbox} **${task.id}**: ${task.title}\n`;
+      }
+      body += '\n---\n\n';
+    }
+
     // Link to increment
     body += `## Implementation\n\n`;
     if (githubRepo) {
@@ -335,9 +355,15 @@ export class IncrementIssueBuilder {
 
     // Labels
     const labels = ['specweave', 'user-story'];
+
+    // Add type label if available
     if (incrementData.frontmatter.type) {
-      labels.push(incrementData.frontmatter.type);
+      labels.push(incrementData.frontmatter.type.toLowerCase());
     }
+
+    // Add priority label (from story or default to p2)
+    const priority = story.priority?.toLowerCase() || incrementData.frontmatter.priority?.toLowerCase() || 'p2';
+    labels.push(priority);
 
     return { title, body, labels };
   }
@@ -438,10 +464,15 @@ export class IncrementIssueBuilder {
     body += `🤖 Auto-synced by SpecWeave Increment Sync`;
 
     // Labels
-    const labels = ['specweave', 'increment', 'enhancement'];
-    if (incrementData.frontmatter.type) {
-      labels.push(incrementData.frontmatter.type);
-    }
+    const labels = ['specweave', 'increment'];
+
+    // Add type label (default to 'enhancement' if not specified)
+    const typeLabel = incrementData.frontmatter.type?.toLowerCase() || 'enhancement';
+    labels.push(typeLabel);
+
+    // Add priority label (default to 'p2' if not specified)
+    const priority = incrementData.frontmatter.priority?.toLowerCase() || 'p2';
+    labels.push(priority);
 
     return { title, body, labels };
   }
