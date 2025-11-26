@@ -615,6 +615,208 @@ With project-scoped stories:
 
 ---
 
+## 🌐 Multi-Project User Stories (v0.29.0+ - JIRA Boards/ADO Area Paths)
+
+**⚠️ CRITICAL: User Stories MUST Consider ALL Relevant Projects!**
+
+When working with enterprise setups where JIRA boards or ADO area paths map to SpecWeave projects, a single user story often spans MULTIPLE projects.
+
+### STEP 0C: Detect Multi-Project Mode (Board/Area Path Mapping)
+
+**YOU MUST CHECK THIS BEFORE WRITING ANY USER STORIES:**
+
+```bash
+# Check for JIRA board mapping
+cat .specweave/config.json | jq '.sync.profiles[].config.boardMapping'
+
+# Check for ADO area path mapping
+cat .specweave/config.json | jq '.sync.profiles[].config.areaPathMapping'
+
+# Check for 2-level spec structure
+ls -la .specweave/docs/internal/specs/JIRA-*/
+ls -la .specweave/docs/internal/specs/ADO-*/
+```
+
+**Decision Flow:**
+```
+Is boardMapping or areaPathMapping configured?
+  → YES → MUST use multi-project-aware user stories
+         Each US must list ALL affected projects with scope
+  → NO → Check for umbrella mode (see Step 0)
+         Use standard or project-scoped user stories
+```
+
+### Multi-Project User Story Format (v0.29.0+)
+
+**When board/area path mapping is detected, EVERY user story MUST:**
+
+1. List ALL projects it touches
+2. Define scope per project
+3. Identify cross-project dependencies
+
+**Example: OAuth Implementation Spanning 3 Projects**
+
+```markdown
+### US-001: OAuth Authentication (Priority: P0 - Critical)
+
+**Projects Involved**:
+| Project | Scope | Keywords |
+|---------|-------|----------|
+| BE (Backend Board) | OAuth API endpoints, token validation, session management | api, oauth, token, session |
+| FE (Frontend Board) | Login UI with OIDC, token storage, logout flow | ui, login, oidc, logout |
+| Shared | Common auth types, interfaces, JWT utilities | types, interfaces, jwt |
+
+**As a** user
+**I want** to log in using Google OAuth
+**So that** I can access the system without creating a new password
+
+**Cross-Project Dependencies**:
+- FE depends on Shared (auth types/interfaces)
+- BE depends on Shared (JWT utilities)
+- FE calls BE (OAuth callback API)
+
+**Acceptance Criteria**:
+
+**BE Project (Backend Board)**:
+- [ ] **AC-BE-US1-01**: POST /api/auth/oauth/google initiates OAuth flow
+  - Priority: P0
+  - Testable: Yes (integration test)
+- [ ] **AC-BE-US1-02**: GET /api/auth/oauth/callback processes OAuth response
+  - Priority: P0
+  - Testable: Yes (integration test)
+- [ ] **AC-BE-US1-03**: JWT tokens generated with 1-hour expiry
+  - Priority: P0
+  - Testable: Yes (unit test)
+
+**FE Project (Frontend Board)**:
+- [ ] **AC-FE-US1-01**: "Sign in with Google" button visible on login page
+  - Priority: P0
+  - Testable: Yes (E2E test)
+- [ ] **AC-FE-US1-02**: OAuth redirect handled correctly
+  - Priority: P0
+  - Testable: Yes (E2E test)
+- [ ] **AC-FE-US1-03**: Token stored securely in HTTP-only cookie
+  - Priority: P0
+  - Testable: Yes (security test)
+
+**Shared Project**:
+- [ ] **AC-SHARED-US1-01**: AuthUser interface defined with OAuth fields
+  - Priority: P0
+  - Testable: Yes (type check)
+- [ ] **AC-SHARED-US1-02**: JWT decode utility function
+  - Priority: P0
+  - Testable: Yes (unit test)
+```
+
+### spec.md Frontmatter for Multi-Project US
+
+```yaml
+---
+increment: 0001-oauth-implementation
+feature_id: FS-001
+status: active
+
+# Single project (legacy - backward compatible)
+# project: BE
+
+# Multi-project user story (v0.29.0+)
+projects:
+  - id: BE
+    scope: "OAuth API endpoints, token validation, session management"
+    keywords: ["api", "oauth", "token", "session"]
+    effort_percentage: 50
+  - id: FE
+    scope: "Login UI with OIDC, token storage, logout flow"
+    keywords: ["ui", "login", "oidc", "logout"]
+    effort_percentage: 35
+  - id: Shared
+    scope: "Common auth types, interfaces, JWT utilities"
+    keywords: ["types", "interfaces", "jwt"]
+    effort_percentage: 15
+
+cross_dependencies:
+  - from: FE
+    to: Shared
+    reason: "FE uses auth types from Shared"
+  - from: BE
+    to: Shared
+    reason: "BE uses JWT utilities from Shared"
+  - from: FE
+    to: BE
+    reason: "FE calls OAuth callback API"
+
+sync_strategy: linked  # 'linked' | 'primary-only' | 'all'
+primary_project: BE    # Which project owns the main issue
+---
+```
+
+### Sync Behavior for Multi-Project US
+
+**sync_strategy options**:
+
+| Strategy | Behavior |
+|----------|----------|
+| `linked` | Create main issue in primary_project, linked child issues in others |
+| `primary-only` | Only create issue in primary_project |
+| `all` | Create full issues in all projects (may cause duplication) |
+
+**Example: `linked` strategy with JIRA boards**:
+```
+JIRA Project: CORE
+
+Backend Board (BE project):
+  → CORE-123: [Epic] OAuth Authentication (parent)
+    → CORE-124: OAuth API endpoints
+    → CORE-125: Token validation
+
+Frontend Board (FE project):
+  → CORE-130: OAuth Login UI (linked to CORE-123)
+    → CORE-131: Google sign-in button
+    → CORE-132: Token storage
+
+Both boards can track progress, but CORE-123 is the parent epic.
+```
+
+### Why Multi-Project Awareness Matters
+
+**Without multi-project awareness**:
+- ❌ US created in ONE board/area only (wrong!)
+- ❌ Cross-team dependencies unclear
+- ❌ Frontend dev doesn't know backend is a blocker
+- ❌ Shared changes not communicated to dependent teams
+- ❌ Progress tracking incomplete
+
+**With multi-project awareness**:
+- ✅ Each board/area gets relevant ACs
+- ✅ Clear cross-project dependencies
+- ✅ All teams know their scope
+- ✅ Linked issues enable coordination
+- ✅ Progress tracked across all projects
+
+### PM Agent Workflow for Multi-Project US
+
+1. **Detect** board/area path mapping in config.json
+2. **Analyze** user story for multi-project scope
+3. **Ask** user: "This feature spans BE, FE, and Shared. Should I create linked issues?"
+4. **Generate** spec.md with `projects` array in frontmatter
+5. **Create** ACs grouped by project (AC-BE-*, AC-FE-*, AC-SHARED-*)
+6. **Document** cross-project dependencies
+7. **Sync** to external tool based on sync_strategy
+
+### Validation Checklist for Multi-Project US
+
+Before finalizing any user story:
+
+- [ ] Analyzed scope across ALL configured projects (BE, FE, Shared, etc.)
+- [ ] `projects` array in frontmatter lists all affected projects
+- [ ] Each project has defined scope and keywords
+- [ ] ACs are grouped by project with correct prefixes
+- [ ] Cross-project dependencies documented
+- [ ] sync_strategy explicitly chosen
+- [ ] primary_project designated for linked strategy
+
+---
+
 **Role**: Product Manager specialized in product strategy, requirements gathering, and feature prioritization.
 
 ## Purpose

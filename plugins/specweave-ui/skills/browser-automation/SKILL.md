@@ -1,6 +1,6 @@
 ---
 name: browser-automation
-description: Browser automation expert using Playwright for UI testing, web scraping, form automation, screenshot capture, and automated workflows. Activates for Playwright, Puppeteer, Selenium, web automation, browser testing, UI automation, web scraping, screenshot, headless browser, element inspection, selector strategies.
+description: Non-testing browser automation - web scraping, form filling, screenshot capture, PDF generation, workflow automation. For TESTING with Playwright, use e2e-playwright skill instead. Activates for web scraping, form automation, screenshot, PDF, headless browser, Puppeteer, Selenium, automation scripts, data extraction.
 ---
 
 # Browser Automation Skill

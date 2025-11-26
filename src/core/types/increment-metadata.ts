@@ -284,3 +284,105 @@ export function validateTransition(from: IncrementStatus, to: IncrementStatus): 
     );
   }
 }
+
+// ============================================================================
+// Multi-Project User Story Types (v0.29.0+)
+// ============================================================================
+
+/**
+ * Project scope for a multi-project user story
+ * Defines what portion of the work belongs to each project
+ */
+export interface MultiProjectScope {
+  /** SpecWeave project ID (e.g., "FE", "BE", "Shared") */
+  id: string;
+
+  /** Description of work scope for this project */
+  scope: string;
+
+  /** Keywords for this project's portion (for auto-classification) */
+  keywords?: string[];
+
+  /** Estimated effort percentage (0-100) */
+  effortPercentage?: number;
+}
+
+/**
+ * Cross-project dependency
+ * Defines dependencies between projects within a user story
+ */
+export interface CrossProjectDependency {
+  /** Project that depends on another */
+  from: string;
+
+  /** Project being depended upon */
+  to: string;
+
+  /** Description of the dependency */
+  reason: string;
+
+  /** Type of dependency */
+  type?: 'blocking' | 'soft' | 'interface';
+}
+
+/**
+ * Multi-project user story configuration
+ * Used when a single user story spans multiple SpecWeave projects
+ */
+export interface MultiProjectUserStory {
+  /** List of projects this user story touches */
+  projects: MultiProjectScope[];
+
+  /** Dependencies between projects (optional) */
+  dependencies?: CrossProjectDependency[];
+
+  /** Primary project (receives the main spec, others get derived specs) */
+  primaryProject?: string;
+
+  /** How to handle sync - create linked issues in each project's external tool */
+  syncStrategy?: 'linked' | 'primary-only' | 'all';
+}
+
+/**
+ * External container context for 2-level directory structure
+ * Used for JIRA boards / ADO area paths mapping
+ */
+export interface ExternalContainerContext {
+  /** Container type (e.g., "jira-project", "ado-project") */
+  type: 'jira-project' | 'ado-project' | 'github-org';
+
+  /** External container ID (e.g., "CORE" for JIRA, "MyProduct" for ADO) */
+  containerId: string;
+
+  /** Display name */
+  containerName: string;
+
+  /** Board ID (JIRA only) */
+  boardId?: number;
+
+  /** Board name (JIRA only) */
+  boardName?: string;
+
+  /** Area path (ADO only) */
+  areaPath?: string;
+}
+
+/**
+ * Extended increment metadata with multi-project support (v0.29.0+)
+ */
+export interface IncrementMetadataV2 extends IncrementMetadata {
+  /** Single project ID (backward compatible) */
+  projectId?: string;
+
+  /** Multi-project configuration (v0.29.0+, overrides projectId if set) */
+  multiProject?: MultiProjectUserStory;
+
+  /** External container context for 2-level directory structure */
+  externalContainer?: ExternalContainerContext;
+
+  /** Feature ID this increment belongs to */
+  featureId?: string;
+
+  /** Epic ID if part of an epic */
+  epicId?: string;
+}

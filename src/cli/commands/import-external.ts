@@ -395,15 +395,17 @@ export async function importExternal(projectRoot: string, args: ImportExternalAr
         const repoCount = itemsByRepo.size;
         const allConverted: ConvertedUserStory[] = [];
 
+        // Enable global collision detection when multiple repos exist (umbrella mode)
+        const isUmbrellaMode = repoCount > 1;
+
         for (const [repoKey, items] of itemsByRepo.entries()) {
           // Determine project ID:
           // - For multi-repo: use repo name (e.g., "sw-thumbnail-ab-be")
-          // - For single-repo/no sourceRepo: undefined (items go directly to specs/)
-          const projectId = repoKey === '_default' ? undefined : repoKey;
+          // - For single-repo/no sourceRepo: use 'parent' (consistent structure)
+          // NOTE: We ALWAYS use a project folder now, never direct to specs/
+          const projectId = repoKey === '_default' ? 'parent' : repoKey;
 
-          conversionSpinner.text = projectId
-            ? `Converting items from ${projectId}...`
-            : 'Converting items to living docs...';
+          conversionSpinner.text = `Converting items from ${projectId}...`;
 
           // Create converter for this project/repo
           const converter = new ItemConverter({
@@ -411,7 +413,11 @@ export async function importExternal(projectRoot: string, args: ImportExternalAr
             projectRoot,
             enableFeatureAllocation: true,
             enableDuplicateDetection: true,
+            // Always use project folder - 'parent' for single-repo, repo name for multi-repo
             projectId,
+            // CRITICAL: Enable global collision detection in umbrella mode
+            // This prevents FS-001 in project-a colliding with FS-001E in project-b
+            enableGlobalCollisionDetection: isUmbrellaMode,
             onDuplicateSkipped: (externalId, existingUsId) => {
               console.log(chalk.dim(`  ⏭️  Skipped duplicate: ${externalId} (already imported as ${existingUsId})`));
             },
@@ -425,9 +431,9 @@ export async function importExternal(projectRoot: string, args: ImportExternalAr
         skippedCount = allItems.length - convertedCount;
 
         if (repoCount > 1) {
-          conversionSpinner.succeed(`Converted ${convertedCount} items to living docs (${repoCount} project folders)`);
+          conversionSpinner.succeed(`Converted ${convertedCount} items to living docs (${repoCount} project folders, global collision detection enabled)`);
         } else {
-          conversionSpinner.succeed(`Converted ${convertedCount} items to living docs`);
+          conversionSpinner.succeed(`Converted ${convertedCount} items to living docs (specs/parent/)`);
         }
       } catch (error: any) {
         conversionSpinner.fail(`Conversion failed: ${error.message}`);

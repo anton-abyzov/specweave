@@ -6,13 +6,17 @@ sidebar_label: specweave:sync-docs
 
 # /specweave:sync-docs Command
 
-The **`/specweave:sync-docs`** command provides [bidirectional synchronization](/docs/glossary/terms/bidirectional-sync) between strategic [living documentation](/docs/glossary/terms/living-docs) and implementation.
+The **`/specweave:sync-docs`** command provides **phase-based** synchronization between strategic [living documentation](/docs/glossary/terms/living-docs) and implementation.
+
+> **Note**: This is NOT bidirectional sync. It's two separate one-way operations at different phases:
+> - **Review mode** = Pull context (docs → you)
+> - **Update mode** = Push learnings (you → docs)
 
 ## What It Does
 
 **Key actions:**
-- **Review mode**: Pull strategic docs before implementation
-- **Update mode**: Push learnings after implementation
+- **Review mode**: Pull strategic docs before implementation (pre-work context)
+- **Update mode**: Push learnings after implementation (export findings)
 - Sync [ADRs](/docs/glossary/terms/adr) (Proposed -> Accepted)
 - Update architecture diagrams
 - Sync [API](/docs/glossary/terms/api) documentation
@@ -89,7 +93,7 @@ $ /specweave:sync-docs update
 ## Related
 
 - [Living Docs](/docs/glossary/terms/living-docs) - Documentation system
-- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Sync pattern
+- [External Tool Sync](/docs/glossary/terms/split-source-sync) - Split-source sync pattern (content vs status)
 - [ADR](/docs/glossary/terms/adr) - Architecture decisions
 - [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Sync feature
 - [/specweave:done](/docs/glossary/terms/specweave-done) - Close increment

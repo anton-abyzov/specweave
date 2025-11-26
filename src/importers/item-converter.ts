@@ -12,6 +12,8 @@ import { FSIdAllocator, type ExternalWorkItem } from '../living-docs/fs-id-alloc
 import { IDRegistry } from '../living-docs/id-registry.js';
 import { createExternalMetadata } from '../core/types/origin-metadata.js';
 import { DuplicateDetector } from './duplicate-detector.js';
+import type { ExternalContainerContext } from '../core/types/increment-metadata.js';
+import { getTwoLevelProjectPath, normalizeToProjectId } from '../utils/project-id-generator.js';
 
 export interface ConvertedUserStory {
   /** User Story ID with E suffix (e.g., US-001E) */
@@ -70,6 +72,16 @@ export interface ItemConverterOptions {
   /** Project ID for multi-project mode (default: 'default') */
   projectId?: string;
 
+  /**
+   * Enable global FS-ID collision detection across ALL projects (umbrella mode)
+   *
+   * CRITICAL: Set this to true in umbrella/multi-repo setups to prevent ID
+   * collisions like FS-001 in project-a and FS-001E in project-b.
+   *
+   * Default: false (for backwards compatibility)
+   */
+  enableGlobalCollisionDetection?: boolean;
+
   /** Enable duplicate detection (default: true) */
   enableDuplicateDetection?: boolean;
 
@@ -84,6 +96,42 @@ export interface ItemConverterOptions {
 
   /** Callback for archived items */
   onItemArchived?: (usId: string, reason: string) => void;
+
+  // ============================================================================
+  // External Container Context (v0.29.0+ - 2-Level Directory Structure Support)
+  // ============================================================================
+
+  /**
+   * External container context for 2-level directory structure
+   *
+   * When provided, creates 2-level structure:
+   * - JIRA: specs/JIRA-{containerId}/{projectId}/FS-XXX/
+   * - ADO: specs/ADO-{containerId}/{projectId}/FS-XXX/
+   *
+   * When NOT provided (default), creates 1-level structure:
+   * - GitHub: specs/{projectId}/FS-XXX/
+   *
+   * @example
+   * ```typescript
+   * // JIRA board-based setup
+   * externalContainer: {
+   *   type: 'jira-project',
+   *   containerId: 'CORE',
+   *   containerName: 'Core Project',
+   *   boardId: 123,
+   *   boardName: 'Frontend Board'
+   * }
+   *
+   * // ADO area path setup
+   * externalContainer: {
+   *   type: 'ado-project',
+   *   containerId: 'MyProduct',
+   *   containerName: 'My Product',
+   *   areaPath: 'MyProduct\\Frontend'
+   * }
+   * ```
+   */
+  externalContainer?: ExternalContainerContext;
 }
 
 /**
@@ -105,7 +153,9 @@ export class ItemConverter {
       // NOTE: projectId is intentionally NOT defaulted to 'default'
       // - undefined means items go directly to specs/ (no project subfolder)
       // - a string value means items go to specs/{projectId}/
+      // For umbrella repos, set enableGlobalCollisionDetection: true
       autoArchiveAfterDays: 30,  // Default: archive items older than 1 month
+      enableGlobalCollisionDetection: false, // Default: false for backwards compatibility
       ...options,
     };
 
@@ -119,9 +169,11 @@ export class ItemConverter {
     // Initialize FS-ID allocator if feature allocation is enabled
     if (this.options.enableFeatureAllocation && this.options.projectRoot) {
       // Use projectId if provided, otherwise undefined (direct to specs/)
+      // Enable global collision detection for umbrella/multi-repo setups
       this.fsIdAllocator = new FSIdAllocator(
         this.options.projectRoot,
-        this.options.projectId
+        this.options.projectId,
+        { globalCollisionDetection: this.options.enableGlobalCollisionDetection }
       );
     }
   }
@@ -176,20 +228,20 @@ export class ItemConverter {
 
     if (featureId && this.options.enableFeatureAllocation) {
       // Feature folder structure:
-      // - With projectId: specs/{projectId}/{featureId}/us-xxxe-title.md
-      // - Without projectId: specs/{featureId}/us-xxxe-title.md (direct to specs)
-      const baseDir = this.options.projectId
-        ? path.join(this.options.specsDir, this.options.projectId)
-        : this.options.specsDir;
+      // - 2-level (JIRA/ADO): specs/{CONTAINER-type}/{projectId}/{featureId}/us-xxxe-title.md
+      // - 1-level (GitHub): specs/{projectId}/{featureId}/us-xxxe-title.md
+      // - No project: specs/{featureId}/us-xxxe-title.md (legacy)
+      const baseDir = this.getBaseDirectory();
       const targetDir = shouldArchive
         ? path.join(baseDir, '_archive', featureId)
         : path.join(baseDir, featureId);
       filePath = path.join(targetDir, fileName);
     } else {
       // Legacy: direct in specs or archive folder
+      const baseDir = this.getBaseDirectory();
       const targetDir = shouldArchive
-        ? path.join(this.options.specsDir, '_archive')
-        : this.options.specsDir;
+        ? path.join(baseDir, '_archive')
+        : baseDir;
       filePath = path.join(targetDir, fileName);
     }
 
@@ -351,13 +403,45 @@ export class ItemConverter {
   }
 
   /**
+   * Get base directory for specs, handling both 1-level and 2-level structures
+   *
+   * Structure patterns:
+   * - 2-level (JIRA): specs/JIRA-{containerId}/{projectId}/
+   * - 2-level (ADO): specs/ADO-{containerId}/{projectId}/
+   * - 1-level (GitHub): specs/{projectId}/
+   * - Legacy: specs/ (no projectId)
+   */
+  private getBaseDirectory(): string {
+    const container = this.options.externalContainer;
+
+    if (container) {
+      // 2-level structure for JIRA/ADO
+      const containerType = container.type === 'jira-project' ? 'jira' : 'ado';
+      const containerDirName = `${containerType.toUpperCase()}-${normalizeToProjectId(container.containerId)}`;
+      const projectId = this.options.projectId || 'default';
+
+      return path.join(
+        this.options.specsDir,
+        containerDirName,
+        projectId
+      );
+    }
+
+    // 1-level structure for GitHub or single-project mode
+    if (this.options.projectId) {
+      return path.join(this.options.specsDir, this.options.projectId);
+    }
+
+    // Legacy: direct to specs/
+    return this.options.specsDir;
+  }
+
+  /**
    * Create feature folder with FEATURE.md
    */
   private async createFeatureFolder(featureId: string, firstItem: ExternalItem, groupKey: string): Promise<string> {
-    // Use projectId subfolder if provided, otherwise direct to specs/
-    const baseDir = this.options.projectId
-      ? path.join(this.options.specsDir, this.options.projectId)
-      : this.options.specsDir;
+    // Use 2-level or 1-level structure based on externalContainer
+    const baseDir = this.getBaseDirectory();
     const featurePath = path.join(baseDir, featureId);
 
     // Create directory

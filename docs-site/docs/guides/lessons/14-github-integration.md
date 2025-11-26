@@ -703,7 +703,7 @@ gh issue list --limit 5
 
 ## Glossary Terms Used
 
-- **[Bidirectional Sync](/docs/glossary/terms/bidirectional-sync)** — Two-way synchronization
+- **[Split-Source Sync](/docs/glossary/terms/split-source-sync)** — Content out, status in (not true bidirectional)
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work
 - **[Quality Gate](/docs/glossary/terms/quality-gate)** — Validation checkpoint
 

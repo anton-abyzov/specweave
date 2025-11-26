@@ -747,7 +747,7 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxx
 
 ## Related Terms
 
-- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Two-way synchronization
+- [Split-Source Sync](/docs/glossary/terms/split-source-sync) - Content out, status in
 - [GitHub Actions](/docs/glossary/terms/github-actions) - CI/CD automation
 - [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Content classification
 - [Source of Truth](/docs/glossary/terms/source-of-truth) - Single source of truth

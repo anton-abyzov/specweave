@@ -1,0 +1,319 @@
+/**
+ * Native Node.js fs API Helpers
+ *
+ * Drop-in replacements for fs-extra methods using only Node.js stdlib.
+ * All methods use native Node.js 20+ APIs with no external dependencies.
+ *
+ * Migration from fs-extra: // legacy fs-extra (documentation only)
+ * - import fs from 'fs-extra' → import * as fs from './utils/fs-native.js' // legacy fs-extra
+ * - All fs-extra methods work as drop-in replacements
+ *
+ * Benefits:
+ * - Zero bundle overhead (no npm packages)
+ * - Works in marketplace (no node_modules needed)
+ * - Faster startup (native APIs)
+ * - Better debugging (native stack traces)
+ */
+import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync } from 'fs';
+import path from 'path';
+/**
+ * Ensures that a directory exists. If the directory does not exist, it is created.
+ * @param dirPath - The directory path to ensure
+ */
+export async function ensureDir(dirPath) {
+    if (!existsSync(dirPath)) {
+        await fsPromises.mkdir(dirPath, { recursive: true });
+    }
+}
+/**
+ * Synchronous version of ensureDir
+ */
+export function ensureDirSync(dirPath) {
+    if (!existsSync(dirPath)) {
+        mkdirSync(dirPath, { recursive: true });
+    }
+}
+/**
+ * Alias for ensureDirSync (fs-extra compatibility)
+ */
+export function mkdirpSync(dirPath) {
+    ensureDirSync(dirPath);
+}
+/**
+ * Check if a path exists
+ * @param filePath - The path to check
+ */
+export async function pathExists(filePath) {
+    return existsSync(filePath);
+}
+/**
+ * Synchronous version of pathExists
+ */
+export { existsSync };
+/**
+ * Read a JSON file and parse it
+ * @param filePath - The JSON file path
+ */
+export async function readJson(filePath) {
+    const content = await fsPromises.readFile(filePath, 'utf-8');
+    return JSON.parse(content);
+}
+/**
+ * Synchronous version of readJson
+ */
+export function readJsonSync(filePath) {
+    const content = readFileSync(filePath, 'utf-8');
+    return JSON.parse(content);
+}
+/**
+ * Write a JSON file with formatting
+ * @param filePath - The JSON file path
+ * @param data - The data to write
+ * @param options - Options (spaces for indentation)
+ */
+export async function writeJson(filePath, data, options) {
+    const spaces = options?.spaces ?? 2;
+    const content = JSON.stringify(data, null, spaces);
+    await fsPromises.writeFile(filePath, content, 'utf-8');
+}
+/**
+ * Synchronous version of writeJson
+ */
+export function writeJsonSync(filePath, data, options) {
+    const spaces = options?.spaces ?? 2;
+    const content = JSON.stringify(data, null, spaces);
+    writeFileSync(filePath, content, 'utf-8');
+}
+/**
+ * fs-extra compatibility: readJSON (uppercase J)
+ * Alias for readJson
+ */
+export const readJSON = readJson;
+/**
+ * fs-extra compatibility: readJSONSync (uppercase J)
+ * Alias for readJsonSync
+ */
+export const readJSONSync = readJsonSync;
+/**
+ * fs-extra compatibility: writeJSON (uppercase J)
+ * Alias for writeJson
+ */
+export const writeJSON = writeJson;
+/**
+ * fs-extra compatibility: writeJSONSync (uppercase J)
+ * Alias for writeJsonSync
+ */
+export const writeJSONSync = writeJsonSync;
+/**
+ * Remove a file or directory (recursively)
+ * @param targetPath - The path to remove
+ */
+export async function remove(targetPath) {
+    if (existsSync(targetPath)) {
+        await fsPromises.rm(targetPath, { recursive: true, force: true });
+    }
+}
+/**
+ * Synchronous version of remove
+ */
+export function removeSync(targetPath) {
+    if (existsSync(targetPath)) {
+        rmSync(targetPath, { recursive: true, force: true });
+    }
+}
+/**
+ * Copy a file or directory
+ * @param src - Source path
+ * @param dest - Destination path
+ * @param options - Copy options
+ */
+export async function copy(src, dest, options) {
+    const srcStat = await fsPromises.stat(src);
+    if (srcStat.isFile()) {
+        // Copy single file
+        await fsPromises.mkdir(path.dirname(dest), { recursive: true });
+        await fsPromises.copyFile(src, dest);
+    }
+    else if (srcStat.isDirectory()) {
+        // Copy directory recursively
+        await fsPromises.mkdir(dest, { recursive: true });
+        const entries = await fsPromises.readdir(src, { withFileTypes: true });
+        for (const entry of entries) {
+            const srcPath = path.join(src, entry.name);
+            const destPath = path.join(dest, entry.name);
+            // Apply filter if provided
+            if (options?.filter && !options.filter(srcPath)) {
+                continue;
+            }
+            if (entry.isDirectory()) {
+                await copy(srcPath, destPath, options);
+            }
+            else {
+                await fsPromises.copyFile(srcPath, destPath);
+            }
+        }
+    }
+}
+/**
+ * Synchronous version of copy
+ */
+export function copySync(src, dest, options) {
+    const srcStat = statSync(src);
+    if (srcStat.isFile()) {
+        // Copy single file
+        mkdirSync(path.dirname(dest), { recursive: true });
+        copyFileSync(src, dest);
+    }
+    else if (srcStat.isDirectory()) {
+        // Copy directory recursively
+        mkdirSync(dest, { recursive: true });
+        const entries = readdirSync(src, { withFileTypes: true });
+        for (const entry of entries) {
+            const srcPath = path.join(src, entry.name);
+            const destPath = path.join(dest, entry.name);
+            // Apply filter if provided
+            if (options?.filter && !options.filter(srcPath)) {
+                continue;
+            }
+            if (entry.isDirectory()) {
+                copySync(srcPath, destPath, options);
+            }
+            else {
+                copyFileSync(srcPath, destPath);
+            }
+        }
+    }
+}
+/**
+ * Ensure a file exists (create if it doesn't)
+ * @param filePath - The file path
+ */
+export async function ensureFile(filePath) {
+    if (!existsSync(filePath)) {
+        await fsPromises.mkdir(path.dirname(filePath), { recursive: true });
+        await fsPromises.writeFile(filePath, '', 'utf-8');
+    }
+}
+/**
+ * Synchronous version of ensureFile
+ */
+export function ensureFileSync(filePath) {
+    if (!existsSync(filePath)) {
+        mkdirSync(path.dirname(filePath), { recursive: true });
+        writeFileSync(filePath, '', 'utf-8');
+    }
+}
+/**
+ * Move a file or directory
+ * @param src - Source path
+ * @param dest - Destination path
+ * @param options - Move options
+ */
+export async function move(src, dest, options) {
+    // Ensure destination directory exists
+    await fsPromises.mkdir(path.dirname(dest), { recursive: true });
+    // Check if destination exists
+    if (existsSync(dest)) {
+        if (options?.overwrite) {
+            await remove(dest);
+        }
+        else {
+            throw new Error(`Destination already exists: ${dest}`);
+        }
+    }
+    // Try rename first (faster if same filesystem)
+    try {
+        await fsPromises.rename(src, dest);
+    }
+    catch (err) {
+        // If rename fails (different filesystems), copy then delete
+        if (err.code === 'EXDEV') {
+            await copy(src, dest);
+            await remove(src);
+        }
+        else {
+            throw err;
+        }
+    }
+}
+/**
+ * Synchronous version of move
+ */
+export function moveSync(src, dest, options) {
+    // Ensure destination directory exists
+    mkdirSync(path.dirname(dest), { recursive: true });
+    // Check if destination exists
+    if (existsSync(dest)) {
+        if (options?.overwrite) {
+            removeSync(dest);
+        }
+        else {
+            throw new Error(`Destination already exists: ${dest}`);
+        }
+    }
+    // Try rename first (faster if same filesystem)
+    try {
+        fsRenameSync(src, dest);
+    }
+    catch (err) {
+        // If rename fails (different filesystems), copy then delete
+        if (err.code === 'EXDEV') {
+            copySync(src, dest);
+            removeSync(src);
+        }
+        else {
+            throw err;
+        }
+    }
+}
+// Re-export common fs/promises methods for convenience
+export const { readFile, writeFile, appendFile, stat, readdir, access, unlink, rmdir, rename, chmod, copyFile, } = fsPromises;
+// Create renameSync alias for fs-extra compatibility
+export const renameSync = fsRenameSync;
+// Re-export common synchronous methods
+export { readFileSync, writeFileSync, statSync, readdirSync, unlinkSync, mkdirSync, rmSync, copyFileSync, };
+// Default export for convenience
+export default {
+    // Async methods
+    ensureDir,
+    pathExists,
+    readJson,
+    writeJson,
+    readJSON, // fs-extra compat
+    writeJSON, // fs-extra compat
+    remove,
+    copy,
+    move,
+    ensureFile,
+    readFile,
+    writeFile,
+    appendFile,
+    stat,
+    readdir,
+    access,
+    unlink,
+    rename,
+    copyFile,
+    // Sync methods
+    ensureDirSync,
+    mkdirpSync,
+    existsSync,
+    readJsonSync,
+    writeJsonSync,
+    readJSONSync, // fs-extra compat
+    writeJSONSync, // fs-extra compat
+    removeSync,
+    copySync,
+    moveSync,
+    ensureFileSync,
+    readFileSync,
+    writeFileSync,
+    statSync,
+    readdirSync,
+    unlinkSync,
+    mkdirSync,
+    rmSync,
+    copyFileSync,
+    renameSync,
+};
+//# sourceMappingURL=fs-native.js.map

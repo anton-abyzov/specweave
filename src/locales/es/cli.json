@@ -12,6 +12,20 @@
       "invalidName": "El nombre del proyecto debe contener solo letras minúsculas, números y guiones",
       "alreadyExists": "El directorio .specweave ya existe",
       "cancelled": "❌ Inicialización cancelada"
+    },
+    "toolDetection": {
+      "header": "Detección de herramienta de IA",
+      "detected": "Detectado: {{tool}}",
+      "confirmPrompt": "¿Usar {{tool}} para este proyecto?",
+      "ciAutoConfirm": "Entorno CI detectado - confirmando automáticamente {{tool}}",
+      "selectPrompt": "¿Qué herramienta de IA usarás?",
+      "recommended": "Recomendado - Automatización completa",
+      "tools": {
+        "claude": "Claude Code",
+        "cursor": "Cursor",
+        "copilot": "GitHub Copilot",
+        "generic": "Otro (ChatGPT, Gemini, etc.)"
+      }
     }
   },
   "increment": {

@@ -215,7 +215,7 @@ Active: 0007-user-authentication
 
 ### `/specweave:sync-docs` - Synchronize Living Documentation
 
-**[Bidirectional sync](/docs/glossary/terms/bidirectional-sync)** - Keep strategic docs and implementation in sync.
+**[Strategic docs sync](/docs/glossary/terms/split-source-sync)** - Review before implementation, export learnings after.
 
 ```bash
 /specweave:sync-docs review          # Before implementation (review strategic docs)

@@ -204,4 +204,4 @@ rm -f .specweave/state/.hook-*
 
 - [Living Docs](/docs/glossary/terms/living-docs)
 - [Increments](/docs/glossary/terms/increments)
-- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync)
+- [Split-Source Sync](/docs/glossary/terms/split-source-sync)

@@ -242,7 +242,11 @@ All systems in sync!
 
 Configure in `.specweave/config.json`:
 
-### Bidirectional (Default)
+### Split-Source Sync (Default)
+
+> **Note**: Previously called "bidirectional" but renamed for clarity. This is NOT true bidirectional where the same data can be edited in both places. Instead:
+> - **Content** (specs, tasks) flows **SpecWeave → External** (one way)
+> - **Status** (checkboxes, closed) flows **External → SpecWeave** (one way)
 
 ```json
 {
@@ -253,7 +257,7 @@ Configure in `.specweave/config.json`:
 }
 ```
 
-Changes flow both ways. External tool wins on conflict.
+Different data types flow in different directions. External tool wins on status conflicts.
 
 ### Export Only
 
@@ -479,7 +483,7 @@ During `specweave init`, you'll be asked:
 - **[JIRA](/docs/glossary/terms/jira)** — Atlassian project tracking
 - **[Azure DevOps](/docs/glossary/terms/azure-devops)** — Microsoft DevOps platform
 - **[Epic](/docs/glossary/terms/epic)** — Large story spanning sprints
-- **[Bidirectional Sync](/docs/glossary/terms/bidirectional-sync)** — Two-way synchronization
+- **[Split-Source Sync](/docs/glossary/terms/split-source-sync)** — Content flows one way, status flows other way
 
 ---
 

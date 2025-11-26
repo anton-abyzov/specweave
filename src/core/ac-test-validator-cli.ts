@@ -18,7 +18,11 @@ import path from 'path';
 import * as fs from '../utils/fs-native.js';
 import { createACTestValidator, ACTestValidationResult } from './ac-test-validator.js';
 import { parseTasksWithUSLinks, getAllTasks } from '../generators/spec/task-parser.js';
-import chalk from 'chalk';
+import chalkFallback, { getChalk } from '../utils/chalk-fallback.js';
+
+// Use chalk if available, otherwise fallback to ANSI codes
+let chalk = chalkFallback;
+getChalk().then(c => { chalk = c; }).catch(() => {});
 
 async function main() {
   // Parse arguments
