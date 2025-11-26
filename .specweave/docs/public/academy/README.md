@@ -2,6 +2,8 @@
 
 **Learn SpecWeave through video tutorials with full scripts and resources.**
 
+⭐ **If this helps you, [star the GitHub repo](https://github.com/anthropics/specweave)** — stars help other developers discover SpecWeave!
+
 All demos (except proprietary EasyChamp repositories) are available in public repos on GitHub.
 
 You can always see exactly how everything is done - no magic, no hidden steps.
@@ -12,7 +14,7 @@ You can always see exactly how everything is done - no magic, no hidden steps.
 
 | # | Title | Duration | Topics |
 |---|-------|----------|--------|
-| 001 | [Build Products 10x Faster: SpecWeave AI Framework](./videos/001-opus-4.5-developer-setup.md) | ~75 min | Enterprise engineering 101, plugins & skills, installation (Mac/Win), 6 demos, AGENT.md for non-Claude AI |
+| 001 | [Build Products 10x Faster: SpecWeave AI Framework](./videos/001-specweave-complete-masterclass.md) | ~61 min | 15 AI agents, enterprise hierarchy, project-aware sync, /next flow, 6 demos, translation, multi-AI support |
 | 002 | [Your First Increment](./videos/002-first-increment.md) | TBD | Planning, specs, tasks |
 | 003 | [Daily Workflow](./videos/003-daily-workflow.md) | TBD | /do, /progress, /done |
 | ... | More coming soon | | |
