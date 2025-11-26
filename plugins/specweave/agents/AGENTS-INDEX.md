@@ -68,15 +68,6 @@ Task({
 
 ### Code Quality & Standards Agents
 
-#### Code Reviewer
-```typescript
-Task({
-  subagent_type: "specweave:code-reviewer",
-  prompt: "Review recent changes for security and performance issues"
-});
-```
-**Use for**: Modern AI-powered code analysis, security scanning, performance optimization
-
 #### Code Standards Detective
 ```typescript
 Task({

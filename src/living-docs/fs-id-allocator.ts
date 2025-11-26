@@ -80,12 +80,15 @@ export class FSIdAllocator {
   private projectRoot: string;
   private specsPath: string;
   private archivePath: string;
-  private projectId: string;
+  private projectId: string | undefined;
   private existingFeatures: Map<string, FeatureMetadata> = new Map();
   private scanned: boolean = false;
 
-  constructor(projectRoot: string, projectId: string = 'default') {
+  constructor(projectRoot: string, projectId?: string) {
     this.projectRoot = projectRoot;
+    // projectId can be:
+    // - undefined: items go directly to specs/ (no project subfolder)
+    // - string: items go to specs/{projectId}/
     this.projectId = projectId;
     this.specsPath = path.join(projectRoot, '.specweave/docs/internal/specs');
     this.archivePath = path.join(projectRoot, '.specweave/docs/_archive/specs');
@@ -96,19 +99,23 @@ export class FSIdAllocator {
    *
    * CRITICAL: Archives are scanned to prevent ID reuse
    *
-   * Structure: specs/{projectId}/FS-XXX/ (FEATURE.md + user stories)
-   * Archive: specs/{projectId}/_archive/FS-XXX/
+   * Structure:
+   * - With projectId: specs/{projectId}/FS-XXX/
+   * - Without projectId: specs/FS-XXX/
    */
   async scanExistingIds(): Promise<void> {
     this.existingFeatures.clear();
 
-    // Scan project-specific folder: specs/{projectId}/FS-XXX/
-    const projectSpecsPath = path.join(this.specsPath, this.projectId);
+    // Determine scan path based on projectId
+    const projectSpecsPath = this.projectId
+      ? path.join(this.specsPath, this.projectId)
+      : this.specsPath;
+
     if (await fs.pathExists(projectSpecsPath)) {
       await this.scanDirectory(projectSpecsPath, 'active');
     }
 
-    // Scan project archive: specs/{projectId}/_archive/FS-XXX/
+    // Scan archive: {specsPath}/_archive/FS-XXX/
     const projectArchivePath = path.join(projectSpecsPath, '_archive');
     if (await fs.pathExists(projectArchivePath)) {
       await this.scanDirectory(projectArchivePath, 'archived');

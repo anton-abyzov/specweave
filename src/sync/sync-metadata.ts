@@ -69,6 +69,36 @@ export function loadSyncMetadata(projectRoot: string): SyncMetadata {
 }
 
 /**
+ * Validate that projectRoot is a valid SpecWeave project
+ * CRITICAL: Prevents creating .specweave/ in wrong directories
+ *
+ * @param projectRoot - Directory to validate
+ * @throws Error if not a valid SpecWeave project
+ */
+function validateProjectRoot(projectRoot: string): void {
+  const specweavePath = path.join(projectRoot, '.specweave');
+
+  // .specweave/ must already exist - we should NEVER create it from sync code
+  if (!fs.existsSync(specweavePath)) {
+    throw new Error(
+      `SAFETY CHECK FAILED: Cannot write sync metadata to ${projectRoot}\n` +
+        `.specweave/ folder does not exist. This is likely a bug - sync code ` +
+        `received wrong projectRoot (possibly process.cwd() from wrong directory).\n` +
+        `Expected: A directory with existing .specweave/ folder.\n` +
+        `Got: ${projectRoot}`
+    );
+  }
+
+  // Additional check: must be a directory, not a file
+  const stats = fs.statSync(specweavePath);
+  if (!stats.isDirectory()) {
+    throw new Error(
+      `SAFETY CHECK FAILED: ${specweavePath} exists but is not a directory`
+    );
+  }
+}
+
+/**
  * Update sync metadata for a platform
  *
  * @param projectRoot - Project root directory
@@ -80,6 +110,9 @@ export function updateSyncMetadata(
   platform: 'github' | 'jira' | 'ado',
   metadata: PlatformSyncMetadata
 ): void {
+  // CRITICAL: Validate projectRoot before writing anything
+  validateProjectRoot(projectRoot);
+
   const metadataPath = path.join(projectRoot, SYNC_METADATA_FILE);
 
   // Load existing metadata
@@ -92,9 +125,11 @@ export function updateSyncMetadata(
     lastUpdated: new Date().toISOString(),
   };
 
-  // Ensure directory exists
+  // Directory already validated to exist, but ensure subdirectory exists
   const metadataDir = path.dirname(metadataPath);
-  fs.mkdirSync(metadataDir, { recursive: true });
+  if (!fs.existsSync(metadataDir)) {
+    fs.mkdirSync(metadataDir, { recursive: true });
+  }
 
   // Write updated metadata
   try {
@@ -144,6 +179,9 @@ export function clearPlatformMetadata(
   projectRoot: string,
   platform: 'github' | 'jira' | 'ado'
 ): void {
+  // CRITICAL: Validate projectRoot before writing anything
+  validateProjectRoot(projectRoot);
+
   const metadataPath = path.join(projectRoot, SYNC_METADATA_FILE);
   const existingMetadata = loadSyncMetadata(projectRoot);
 

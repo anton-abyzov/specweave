@@ -27,9 +27,10 @@ describe('Sync Metadata Management', () => {
   let metadataPath: string;
 
   beforeEach(() => {
-    // Create isolated test directory
+    // Create isolated test directory with .specweave/ folder
+    // CRITICAL: .specweave/ must exist for updateSyncMetadata safety checks
     testDir = path.join(os.tmpdir(), `sync-metadata-test-${Date.now()}`);
-    fs.mkdirSync(testDir, { recursive: true });
+    fs.mkdirSync(path.join(testDir, '.specweave'), { recursive: true });
     metadataPath = path.join(testDir, SYNC_METADATA_FILE);
   });
 
@@ -156,9 +157,24 @@ describe('Sync Metadata Management', () => {
       expect(loadedMetadata.ado?.lastImportCount).toBe(15);
     });
 
-    it('should create directory if it does not exist', () => {
-      // Arrange
+    it('should fail if .specweave/ does not exist (safety check)', () => {
+      // Arrange - create directory WITHOUT .specweave/ folder
       const deepTestDir = path.join(testDir, 'nested', 'deep', 'path');
+      fs.mkdirSync(deepTestDir, { recursive: true });
+      const platformMetadata: PlatformSyncMetadata = {
+        lastImport: '2025-11-19T10:30:00Z',
+        lastImportCount: 5,
+      };
+
+      // Act & Assert - should fail because .specweave/ doesn't exist
+      expect(() => updateSyncMetadata(deepTestDir, 'github', platformMetadata))
+        .toThrow('SAFETY CHECK FAILED');
+    });
+
+    it('should succeed when .specweave/ exists in nested path', () => {
+      // Arrange - create directory WITH .specweave/ folder
+      const deepTestDir = path.join(testDir, 'nested', 'deep', 'path');
+      fs.mkdirSync(path.join(deepTestDir, '.specweave'), { recursive: true });
       const platformMetadata: PlatformSyncMetadata = {
         lastImport: '2025-11-19T10:30:00Z',
         lastImportCount: 5,
@@ -290,7 +306,7 @@ describe('Sync Metadata Management', () => {
   });
 
   describe('Error handling', () => {
-    it('should handle write errors gracefully', () => {
+    it('should reject when .specweave is a file not a directory', () => {
       // Arrange
       const readOnlyDir = path.join(testDir, 'readonly');
       fs.mkdirSync(readOnlyDir, { recursive: true });
@@ -299,13 +315,27 @@ describe('Sync Metadata Management', () => {
       const conflictPath = path.join(readOnlyDir, '.specweave');
       fs.writeFileSync(conflictPath, 'conflict', 'utf-8');
 
-      // Act & Assert
+      // Act & Assert - should fail validation because .specweave is a file
       expect(() => {
         updateSyncMetadata(readOnlyDir, 'github', {
           lastImport: '2025-11-19T10:30:00Z',
           lastImportCount: 1,
         });
-      }).toThrow(); // Verify it throws (error message format may vary)
+      }).toThrow('exists but is not a directory');
+    });
+
+    it('should reject when .specweave folder does not exist', () => {
+      // Arrange
+      const noSpecweaveDir = path.join(testDir, 'no-specweave');
+      fs.mkdirSync(noSpecweaveDir, { recursive: true });
+
+      // Act & Assert - should fail validation
+      expect(() => {
+        updateSyncMetadata(noSpecweaveDir, 'github', {
+          lastImport: '2025-11-19T10:30:00Z',
+          lastImportCount: 1,
+        });
+      }).toThrow('SAFETY CHECK FAILED');
     });
   });
 });

@@ -102,7 +102,9 @@ export class ItemConverter {
   constructor(options: ItemConverterOptions) {
     this.options = {
       enableDuplicateDetection: true,
-      projectId: 'default',
+      // NOTE: projectId is intentionally NOT defaulted to 'default'
+      // - undefined means items go directly to specs/ (no project subfolder)
+      // - a string value means items go to specs/{projectId}/
       autoArchiveAfterDays: 30,  // Default: archive items older than 1 month
       ...options,
     };
@@ -116,9 +118,10 @@ export class ItemConverter {
 
     // Initialize FS-ID allocator if feature allocation is enabled
     if (this.options.enableFeatureAllocation && this.options.projectRoot) {
+      // Use projectId if provided, otherwise undefined (direct to specs/)
       this.fsIdAllocator = new FSIdAllocator(
         this.options.projectRoot,
-        this.options.projectId || 'default'
+        this.options.projectId
       );
     }
   }
@@ -172,12 +175,15 @@ export class ItemConverter {
     const shouldArchive = this.shouldAutoArchive(item.createdAt);
 
     if (featureId && this.options.enableFeatureAllocation) {
-      // Feature folder structure: specs/{projectId}/{featureId}/us-xxxe-title.md
-      // Or archive: specs/{projectId}/_archive/{featureId}/us-xxxe-title.md
-      const projectDir = path.join(this.options.specsDir, this.options.projectId || 'default');
+      // Feature folder structure:
+      // - With projectId: specs/{projectId}/{featureId}/us-xxxe-title.md
+      // - Without projectId: specs/{featureId}/us-xxxe-title.md (direct to specs)
+      const baseDir = this.options.projectId
+        ? path.join(this.options.specsDir, this.options.projectId)
+        : this.options.specsDir;
       const targetDir = shouldArchive
-        ? path.join(projectDir, '_archive', featureId)
-        : path.join(projectDir, featureId);
+        ? path.join(baseDir, '_archive', featureId)
+        : path.join(baseDir, featureId);
       filePath = path.join(targetDir, fileName);
     } else {
       // Legacy: direct in specs or archive folder
@@ -348,8 +354,11 @@ export class ItemConverter {
    * Create feature folder with FEATURE.md
    */
   private async createFeatureFolder(featureId: string, firstItem: ExternalItem, groupKey: string): Promise<string> {
-    const projectDir = path.join(this.options.specsDir, this.options.projectId || 'default');
-    const featurePath = path.join(projectDir, featureId);
+    // Use projectId subfolder if provided, otherwise direct to specs/
+    const baseDir = this.options.projectId
+      ? path.join(this.options.specsDir, this.options.projectId)
+      : this.options.specsDir;
+    const featurePath = path.join(baseDir, featureId);
 
     // Create directory
     fs.mkdirSync(featurePath, { recursive: true });

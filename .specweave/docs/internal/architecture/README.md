@@ -301,13 +301,15 @@ cp src/templates/docs/spec-template.md .specweave/docs/internal/specs/spec-0001-
 ## Index of Architecture Documents
 
 ### HLDs (C4 Levels 1-2)
-- (None yet - create your first HLD!)
+- [Diagram Generation](hld/hld-diagram-generation.md) - Architecture for generating diagrams
+- [External Tool Status Sync](hld/hld-external-tool-status-sync.md) - Integration with external tools
+- [Intelligent Model Selection](hld/hld-intelligent-model-selection.md) - AI model selection strategy
 
 ### LLDs (C4 Level 3)
-- (None yet - create your first LLD!)
+- (None yet - LLDs are created when services need detailed component documentation)
 
 ### ADRs
-- (None yet - create your first ADR!)
+See [ADR Index](adr/README.md) for the full list of 100+ architecture decision records.
 
 ### Specs
 **Note**: Specs are in `../specs/` folder
