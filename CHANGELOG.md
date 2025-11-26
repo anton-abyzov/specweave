@@ -4,6 +4,13 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.28.25] - 2025-11-26
+
+### ✨ Features
+- Add `--only --local` flag to `/specweave-release:npm` for fastest version bump (no publish, no git, no build)
+
+---
+
 ## [0.28.24] - 2025-11-26
 
 ### 🔧 Improvements
