@@ -9,5 +9,44 @@
     "completed": 17,
     "in_progress": 0
   },
-  "user_stories": ["US-001", "US-002", "US-003", "US-004"]
+  "user_stories": [
+    "US-001",
+    "US-002",
+    "US-003",
+    "US-004"
+  ],
+  "acSyncEvents": [
+    {
+      "timestamp": "2025-11-26T06:50:56.335Z",
+      "updated": [
+        "AC-US1-02",
+        "AC-US1-01",
+        "AC-US1-04",
+        "AC-US2-01",
+        "AC-US2-02",
+        "AC-US2-03"
+      ],
+      "conflicts": [],
+      "warnings": [
+        "AC-US1-03: has no tasks mapped"
+      ],
+      "changesCount": 6
+    },
+    {
+      "timestamp": "2025-11-26T06:40:03.282Z",
+      "updated": [
+        "AC-US2-04",
+        "AC-US3-01",
+        "AC-US3-02",
+        "AC-US3-03",
+        "AC-US3-04"
+      ],
+      "conflicts": [],
+      "warnings": [
+        "AC-US1-03: has no tasks mapped"
+      ],
+      "changesCount": 5
+    }
+  ],
+  "lastActivity": "2025-11-26T06:50:56.335Z"
 }
