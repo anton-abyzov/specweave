@@ -31,16 +31,16 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0074-fix-internal-feature-collision-and-import](../../../../increments/0074-fix-internal-feature-collision-and-import/spec.md)
+**Increment**: `0074-fix-internal-feature-collision-and-import`
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0074-fix-internal-feature-collision-and-import/tasks.md#T-001): Audit all internal ID generation code paths
-- [x] [T-003](../../../../increments/0074-fix-internal-feature-collision-and-import/tasks.md#T-003): Create unified collision check utility
-- [x] [T-004](../../../../increments/0074-fix-internal-feature-collision-and-import/tasks.md#T-004): Fix living-docs-sync.ts collision
-- [x] [T-005](../../../../increments/0074-fix-internal-feature-collision-and-import/tasks.md#T-005): Fix hierarchy-mapper.ts collision
-- [x] [T-006](../../../../increments/0074-fix-internal-feature-collision-and-import/tasks.md#T-006): Fix feature-id-manager.ts collision
-- [x] [T-009](../../../../increments/0074-fix-internal-feature-collision-and-import/tasks.md#T-009): Add collision prevention tests
+- [x] T-001: Audit all internal ID generation code paths
+- [x] T-003: Create unified collision check utility
+- [x] T-004: Fix living-docs-sync.ts collision
+- [x] T-005: Fix hierarchy-mapper.ts collision
+- [x] T-006: Fix feature-id-manager.ts collision
+- [x] T-009: Add collision prevention tests

@@ -31,13 +31,13 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0072-github-status-reconciliation](../../../../increments/0072-github-status-reconciliation/spec.md)
+**Increment**: `0072-github-status-reconciliation`
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-004](../../../../increments/0072-github-status-reconciliation/tasks.md#T-004): Add reopen logic to post-increment-status-change.sh
-- [x] [T-005](../../../../increments/0072-github-status-reconciliation/tasks.md#T-005): Create reopen-github-issues.ts script
-- [x] [T-006](../../../../increments/0072-github-status-reconciliation/tasks.md#T-006): Integrate reopen script into hook
+- [x] T-004: Add reopen logic to post-increment-status-change.sh
+- [x] T-005: Create reopen-github-issues.ts script
+- [x] T-006: Integrate reopen script into hook

@@ -31,15 +31,15 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0074-fix-internal-feature-collision-and-import](../../../../increments/0074-fix-internal-feature-collision-and-import/spec.md)
+**Increment**: `0074-fix-internal-feature-collision-and-import`
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-002](../../../../increments/0074-fix-internal-feature-collision-and-import/tasks.md#T-002): Reproduce and document the 1-issue-per-repo bug
-- [x] [T-007](../../../../increments/0074-fix-internal-feature-collision-and-import/tasks.md#T-007): Add verbose import logging
-- [x] [T-008](../../../../increments/0074-fix-internal-feature-collision-and-import/tasks.md#T-008): Improve import troubleshooting
-- [x] [T-011](../../../../increments/0074-fix-internal-feature-collision-and-import/tasks.md#T-011): Fix cross-repo duplicate detection collision
-- [x] [T-010](../../../../increments/0074-fix-internal-feature-collision-and-import/tasks.md#T-010): Add import logging tests
+- [x] T-002: Reproduce and document the 1-issue-per-repo bug
+- [x] T-007: Add verbose import logging
+- [x] T-008: Improve import troubleshooting
+- [x] T-011: Fix cross-repo duplicate detection collision
+- [x] T-010: Add import logging tests

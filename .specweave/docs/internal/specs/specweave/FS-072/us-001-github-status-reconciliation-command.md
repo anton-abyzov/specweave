@@ -34,13 +34,13 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0072-github-status-reconciliation](../../../../increments/0072-github-status-reconciliation/spec.md)
+**Increment**: `0072-github-status-reconciliation`
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0072-github-status-reconciliation/tasks.md#T-001): Create GitHubReconciler class
-- [x] [T-002](../../../../increments/0072-github-status-reconciliation/tasks.md#T-002): Create reconcile command markdown
-- [x] [T-003](../../../../increments/0072-github-status-reconciliation/tasks.md#T-003): Implement reconcile report output
+- [x] T-001: Create GitHubReconciler class
+- [x] T-002: Create reconcile command markdown
+- [x] T-003: Implement reconcile report output

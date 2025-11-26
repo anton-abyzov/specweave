@@ -31,12 +31,12 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0070-fix-parent-repo-sync-profile](../../../../increments/0070-fix-parent-repo-sync-profile/spec.md)
+**Increment**: `0070-fix-parent-repo-sync-profile`
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0070-fix-parent-repo-sync-profile/tasks.md#T-001): Add parent repo to sync profiles in github-multi-repo.ts
-- [x] [T-002](../../../../increments/0070-fix-parent-repo-sync-profile/tasks.md#T-002): Verify build succeeds and test manually
+- [x] T-001: Add parent repo to sync profiles in github-multi-repo.ts
+- [x] T-002: Verify build succeeds and test manually
