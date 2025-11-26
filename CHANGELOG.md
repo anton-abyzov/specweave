@@ -4,7 +4,7 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
-## [0.28.30] - 2025-11-26
+## [0.28.32] - 2025-11-26
 
 ### 🐛 Bug Fixes
 - Fix feature ID collision: FS-XXX and FS-XXXE no longer share same numeric index within a project
