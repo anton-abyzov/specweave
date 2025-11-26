@@ -52,6 +52,16 @@ export interface CoordinatorConfig {
     host: string;
     email?: string;
     apiToken?: string;
+    /** Organization mode (auto-detected or user-chosen) */
+    mode?: 'simple' | 'by-project' | 'by-board' | 'hybrid';
+    /** Project → Board mappings for 2-level folder structure */
+    projectMappings?: Array<{
+      projectKey: string;
+      boardMappings: Array<{
+        boardName: string;
+        specweaveFolder: string;
+      }>;
+    }>;
   };
 
   /** Import from Azure DevOps */
@@ -59,6 +69,16 @@ export interface CoordinatorConfig {
     orgUrl: string;
     project: string;
     pat?: string;
+    /** Organization mode (auto-detected or user-chosen) */
+    mode?: 'simple' | 'by-project' | 'by-area';
+    /** Project → Area Path mappings for 2-level folder structure */
+    projectMappings?: Array<{
+      projectName: string;
+      areaMappings: Array<{
+        areaPath: string;
+        specweaveFolder: string;
+      }>;
+    }>;
   };
 
   /** Common import configuration */

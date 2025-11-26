@@ -1,0 +1,9 @@
+{
+  "id": "0064-fix-external-sync-tags-status-types",
+  "status": "completed",
+  "type": "bug",
+  "created": "2024-11-26T00:00:00.000Z",
+  "updated": "2024-11-26T00:00:00.000Z",
+  "completedAt": "2024-11-26T00:00:00.000Z",
+  "feature_id": "FS-064"
+}

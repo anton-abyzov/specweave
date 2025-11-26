@@ -2,10 +2,10 @@
 increment: 0056-auto-github-sync-on-increment-creation
 title: Fix Automatic GitHub Sync on Increment Creation
 priority: P0
-status: planned
+status: completed
 type: enhancement
 created: 2025-11-24T00:00:00.000Z
-completed: 2025-11-24T00:00:00.000Z
+completed: 2025-11-24T23:00:00.000Z
 epic: FS-056
 test_mode: TDD
 coverage_target: 95
@@ -15,6 +15,10 @@ implementation_notes: |
   but actual user configs use config.sync.github (60%), profiles (25%),
   multiProject (5%), or legacy (10%). Enhanced detection to support
   all 4 patterns + environment variable fallback (ADR-0137).
+
+  Implementation location: src/core/living-docs/living-docs-sync.ts
+  Function: detectExternalTools() (lines 972-1068)
+  All 4 detection methods implemented and working.
 ---
 
 # Increment 0056: Fix Automatic GitHub Sync on Increment Creation

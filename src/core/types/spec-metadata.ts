@@ -221,6 +221,9 @@ export interface SpecMetadata {
   /** Priority level */
   priority: 'P0' | 'P1' | 'P2' | 'P3';
 
+  /** Spec type (feature, bug, enhancement, etc.) */
+  type?: 'feature' | 'bug' | 'enhancement' | 'task' | string;
+
   /** Creation date */
   created?: string;
 

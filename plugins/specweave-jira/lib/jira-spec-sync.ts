@@ -223,7 +223,19 @@ export class JiraSpecSync {
     const epicSummary = `[${spec.metadata.id.toUpperCase()}] ${spec.metadata.title}`;
     const epicDescription = this.generateEpicDescription(spec);
 
-    const payload = {
+    // Determine issue type based on spec type (supports Bug for bug-type specs)
+    const issueType = this.mapTypeToJira(spec.metadata.type, 'Epic');
+
+    const payload: {
+      fields: {
+        project: { key: string };
+        summary: string;
+        description: string;
+        issuetype: { name: string };
+        labels: string[];
+        priority?: { name: string };
+      };
+    } = {
       fields: {
         project: {
           key: this.config.projectKey
@@ -231,9 +243,13 @@ export class JiraSpecSync {
         summary: epicSummary,
         description: epicDescription,
         issuetype: {
-          name: 'Epic'
+          name: issueType
         },
-        labels: [`spec:${spec.metadata.id}`, `priority:${spec.metadata.priority}`]
+        labels: [`spec:${spec.metadata.id}`, `priority:${spec.metadata.priority}`],
+        // Set native JIRA priority field (P0→Highest, P1→High, P2→Medium, P3→Low)
+        priority: {
+          name: this.mapPriorityToJira(spec.metadata.priority)
+        }
       }
     };
 
@@ -329,7 +345,8 @@ export class JiraSpecSync {
           summary: storySummary,
           description: storyDescription,
           epicLink: epicKey,
-          labels: [`user-story`, `spec:${spec.metadata.id}`, `priority:${us.priority}`]
+          labels: [`user-story`, `spec:${spec.metadata.id}`, `priority:${us.priority}`],
+          priority: us.priority
         });
 
         created.push(us.id);
@@ -497,8 +514,23 @@ ${acList}
     description: string;
     epicLink: string;
     labels: string[];
+    priority?: string;
+    type?: string;
   }): Promise<JiraStory> {
-    const payload = {
+    // Determine issue type (supports Bug for bug-type stories)
+    const issueType = this.mapTypeToJira(story.type, 'Story');
+
+    const payload: {
+      fields: {
+        project: { key: string };
+        summary: string;
+        description: string;
+        issuetype: { name: string };
+        labels: string[];
+        customfield_10014: string;
+        priority?: { name: string };
+      };
+    } = {
       fields: {
         project: {
           key: this.config.projectKey
@@ -506,11 +538,15 @@ ${acList}
         summary: story.summary,
         description: story.description,
         issuetype: {
-          name: 'Story'
+          name: issueType
         },
         labels: story.labels,
         // Link to epic (field name may vary by Jira configuration)
-        customfield_10014: story.epicLink // Epic Link field (adjust if needed)
+        customfield_10014: story.epicLink, // Epic Link field (adjust if needed)
+        // Set native JIRA priority field
+        priority: {
+          name: this.mapPriorityToJira(story.priority)
+        }
       }
     };
 
@@ -578,5 +614,49 @@ ${acList}
         id: transition.id
       }
     });
+  }
+
+  /**
+   * Map SpecWeave priority to JIRA priority name
+   *
+   * JIRA standard priority names: Highest, High, Medium, Low, Lowest
+   */
+  private mapPriorityToJira(priority?: string): string {
+    if (!priority) return 'Medium';
+
+    const map: Record<string, string> = {
+      P0: 'Highest',
+      P1: 'High',
+      P2: 'Medium',
+      P3: 'Low',
+      p0: 'Highest',
+      p1: 'High',
+      p2: 'Medium',
+      p3: 'Low'
+    };
+
+    return map[priority] || 'Medium';
+  }
+
+  /**
+   * Map SpecWeave type to JIRA issue type
+   *
+   * Supports: Epic, Story, Bug, Task
+   */
+  private mapTypeToJira(type?: string, defaultType: string = 'Story'): string {
+    if (!type) return defaultType;
+
+    const normalizedType = type.toLowerCase();
+
+    const map: Record<string, string> = {
+      bug: 'Bug',
+      feature: 'Epic',
+      epic: 'Epic',
+      story: 'Story',
+      task: 'Task',
+      enhancement: 'Story'
+    };
+
+    return map[normalizedType] || defaultType;
   }
 }

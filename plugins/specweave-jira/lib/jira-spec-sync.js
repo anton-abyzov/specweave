@@ -132,6 +132,7 @@ class JiraSpecSync {
   async createJiraEpic(spec) {
     const epicSummary = `[${spec.metadata.id.toUpperCase()}] ${spec.metadata.title}`;
     const epicDescription = this.generateEpicDescription(spec);
+    const issueType = this.mapTypeToJira(spec.metadata.type, "Epic");
     const payload = {
       fields: {
         project: {
@@ -140,9 +141,13 @@ class JiraSpecSync {
         summary: epicSummary,
         description: epicDescription,
         issuetype: {
-          name: "Epic"
+          name: issueType
         },
-        labels: [`spec:${spec.metadata.id}`, `priority:${spec.metadata.priority}`]
+        labels: [`spec:${spec.metadata.id}`, `priority:${spec.metadata.priority}`],
+        // Set native JIRA priority field (P0→Highest, P1→High, P2→Medium, P3→Low)
+        priority: {
+          name: this.mapPriorityToJira(spec.metadata.priority)
+        }
       }
     };
     const response = await this.client.post("/issue", payload);
@@ -213,7 +218,8 @@ class JiraSpecSync {
           summary: storySummary,
           description: storyDescription,
           epicLink: epicKey,
-          labels: [`user-story`, `spec:${spec.metadata.id}`, `priority:${us.priority}`]
+          labels: [`user-story`, `spec:${spec.metadata.id}`, `priority:${us.priority}`],
+          priority: us.priority
         });
         created.push(us.id);
         console.log(`   \u2705 Created ${us.id} \u2192 Story ${newStory.key}`);
@@ -347,6 +353,7 @@ ${acList}
    * Create Jira Story
    */
   async createStory(story) {
+    const issueType = this.mapTypeToJira(story.type, "Story");
     const payload = {
       fields: {
         project: {
@@ -355,12 +362,16 @@ ${acList}
         summary: story.summary,
         description: story.description,
         issuetype: {
-          name: "Story"
+          name: issueType
         },
         labels: story.labels,
         // Link to epic (field name may vary by Jira configuration)
-        customfield_10014: story.epicLink
+        customfield_10014: story.epicLink,
         // Epic Link field (adjust if needed)
+        // Set native JIRA priority field
+        priority: {
+          name: this.mapPriorityToJira(story.priority)
+        }
       }
     };
     const response = await this.client.post("/issue", payload);
@@ -410,6 +421,43 @@ ${acList}
         id: transition.id
       }
     });
+  }
+  /**
+   * Map SpecWeave priority to JIRA priority name
+   *
+   * JIRA standard priority names: Highest, High, Medium, Low, Lowest
+   */
+  mapPriorityToJira(priority) {
+    if (!priority) return "Medium";
+    const map = {
+      P0: "Highest",
+      P1: "High",
+      P2: "Medium",
+      P3: "Low",
+      p0: "Highest",
+      p1: "High",
+      p2: "Medium",
+      p3: "Low"
+    };
+    return map[priority] || "Medium";
+  }
+  /**
+   * Map SpecWeave type to JIRA issue type
+   *
+   * Supports: Epic, Story, Bug, Task
+   */
+  mapTypeToJira(type, defaultType = "Story") {
+    if (!type) return defaultType;
+    const normalizedType = type.toLowerCase();
+    const map = {
+      bug: "Bug",
+      feature: "Epic",
+      epic: "Epic",
+      story: "Story",
+      task: "Task",
+      enhancement: "Story"
+    };
+    return map[normalizedType] || defaultType;
   }
 }
 export {

@@ -53,6 +53,9 @@ export class GitHubStatusSync {
   /**
    * Update GitHub issue status
    *
+   * Preserves existing labels that are not status-related.
+   * Only replaces labels that start with "status:" prefix.
+   *
    * @param issueNumber - GitHub issue number
    * @param status - New status (state and labels)
    */
@@ -60,19 +63,72 @@ export class GitHubStatusSync {
     issueNumber: number,
     status: ExternalStatus
   ): Promise<void> {
-    const updateData: any = {
+    const updateData: {
+      owner: string;
+      repo: string;
+      issue_number: number;
+      state: 'open' | 'closed';
+      labels?: string[];
+    } = {
       owner: this.owner,
       repo: this.repo,
       issue_number: issueNumber,
-      state: status.state
+      state: status.state as 'open' | 'closed'
     };
 
-    // Add labels if provided
+    // Merge labels - preserve non-status labels, replace status labels
     if (status.labels && status.labels.length > 0) {
-      updateData.labels = status.labels;
+      // Fetch current labels to preserve non-status ones
+      const currentLabels = await this.getCurrentLabels(issueNumber);
+
+      // Filter out status-related labels (start with "status:")
+      const preservedLabels = currentLabels.filter(
+        label => !label.startsWith('status:')
+      );
+
+      // Get new status labels from the provided status
+      const newStatusLabels = status.labels.filter(
+        label => label.startsWith('status:')
+      );
+
+      // Get non-status labels from the provided status (e.g., priority, type)
+      const newOtherLabels = status.labels.filter(
+        label => !label.startsWith('status:')
+      );
+
+      // Combine: preserved non-status + new status + new other labels
+      const mergedLabels = [...new Set([
+        ...preservedLabels,
+        ...newStatusLabels,
+        ...newOtherLabels
+      ])];
+
+      updateData.labels = mergedLabels;
     }
 
     await this.octokit.rest.issues.update(updateData);
+  }
+
+  /**
+   * Get current labels from GitHub issue
+   *
+   * @param issueNumber - GitHub issue number
+   * @returns Array of current label names
+   */
+  private async getCurrentLabels(issueNumber: number): Promise<string[]> {
+    try {
+      const response = await this.octokit.rest.issues.get({
+        owner: this.owner,
+        repo: this.repo,
+        issue_number: issueNumber
+      });
+
+      return response.data.labels
+        .map((label: any) => (typeof label === 'string' ? label : label.name))
+        .filter(Boolean) as string[];
+    } catch {
+      return [];
+    }
   }
 
   /**

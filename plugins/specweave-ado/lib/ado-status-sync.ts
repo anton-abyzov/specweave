@@ -18,6 +18,7 @@ import axios, { AxiosInstance } from 'axios';
  */
 export interface ExternalStatus {
   state: string; // e.g., "New", "Active", "Closed"
+  tags?: string[]; // Status tags from config (e.g., ["Planning"], ["In Progress"])
 }
 
 /**
@@ -69,16 +70,17 @@ export class AdoStatusSync {
   }
 
   /**
-   * Update ADO work item state
+   * Update ADO work item state and tags
    *
-   * Uses JSON Patch format to update System.State field.
+   * Uses JSON Patch format to update System.State and System.Tags fields.
+   * Tags are appended to existing tags, not replaced.
    *
    * @param workItemId - ADO work item ID (e.g., 123)
-   * @param status - Desired status
+   * @param status - Desired status with state and optional tags
    */
   async updateStatus(workItemId: number, status: ExternalStatus): Promise<void> {
     // ADO uses JSON Patch format for updates
-    const patch = [
+    const patch: Array<{ op: string; path: string; value: string }> = [
       {
         op: 'add',
         path: '/fields/System.State',
@@ -86,10 +88,52 @@ export class AdoStatusSync {
       }
     ];
 
+    // Add status tags if provided
+    if (status.tags && status.tags.length > 0) {
+      // Fetch current tags to preserve them
+      const currentTags = await this.getCurrentTags(workItemId);
+
+      // Remove old status tags (tags that match known status patterns)
+      const statusTagPatterns = ['Planning', 'In Progress', 'Paused', 'Completed', 'Abandoned', 'On Hold'];
+      const preservedTags = currentTags.filter(
+        tag => !statusTagPatterns.some(pattern => tag.toLowerCase() === pattern.toLowerCase())
+      );
+
+      // Combine preserved tags with new status tags
+      const allTags = [...new Set([...preservedTags, ...status.tags])];
+
+      patch.push({
+        op: 'add',
+        path: '/fields/System.Tags',
+        value: allTags.join('; ')
+      });
+    }
+
     await this.client.patch(
       `/wit/workitems/${workItemId}?api-version=7.0`,
       patch
     );
+  }
+
+  /**
+   * Get current tags from ADO work item
+   *
+   * @param workItemId - ADO work item ID
+   * @returns Array of current tags
+   */
+  private async getCurrentTags(workItemId: number): Promise<string[]> {
+    try {
+      const response = await this.client.get(
+        `/wit/workitems/${workItemId}?api-version=7.0&$select=System.Tags`
+      );
+
+      const tagsString = response.data.fields?.['System.Tags'] || '';
+      if (!tagsString) return [];
+
+      return tagsString.split(';').map((tag: string) => tag.trim()).filter(Boolean);
+    } catch {
+      return [];
+    }
   }
 
   /**

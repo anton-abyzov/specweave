@@ -1,15 +1,23 @@
 ---
 id: US-001
 feature: FS-056
-title: "Automatic Living Docs Sync on Increment Creation (P0)"
+title: Automatic Living Docs Sync on Increment Creation (P0)
 status: not_started
 priority: P0
 created: 2025-11-24T00:00:00.000Z
+external_tools:
+  github:
+    number: 765
+    url: https://github.com/anton-abyzov/specweave/issues/765
+    created_at: 2025-11-26T17:38:07.961Z
 ---
+
+**Origin**: 🏠 **Internal**
+
 
 # US-001: Automatic Living Docs Sync on Increment Creation (P0)
 
-**Feature**: [FS-056](../../_features/FS-056/FEATURE.md)
+**Feature**: [FS-056](./FEATURE.md)
 
 **As a** developer
 **I want** increment specs to automatically sync to living docs after creation
@@ -35,8 +43,8 @@ created: 2025-11-24T00:00:00.000Z
 
 ## Tasks
 
-- [ ] **T-001**: Enhance detectExternalTools() to Check config.json
-- [ ] **T-002**: Add Enhanced Logging to detectExternalTools()
-- [ ] **T-003**: Create sync-living-docs.js Hook Script
-- [ ] **T-004**: Create post-increment-planning.sh Hook
-- [ ] **T-005**: Verify LivingDocsSync.syncIncrement() Calls External Tool Sync
+- [ ] [T-001](../../../../increments/0056-auto-github-sync-on-increment-creation/tasks.md#T-001): Enhance detectExternalTools() to Check config.json
+- [ ] [T-002](../../../../increments/0056-auto-github-sync-on-increment-creation/tasks.md#T-002): Add Enhanced Logging to detectExternalTools()
+- [ ] [T-003](../../../../increments/0056-auto-github-sync-on-increment-creation/tasks.md#T-003): Create sync-living-docs.js Hook Script
+- [ ] [T-004](../../../../increments/0056-auto-github-sync-on-increment-creation/tasks.md#T-004): Create post-increment-planning.sh Hook
+- [ ] [T-005](../../../../increments/0056-auto-github-sync-on-increment-creation/tasks.md#T-005): Verify LivingDocsSync.syncIncrement() Calls External Tool Sync
