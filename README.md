@@ -1,6 +1,8 @@
 # SpecWeave
 
-**The AI Development Framework That Doesn't Lose Your Work**
+**15 AI Agents. One Terminal. Zero Tab-Switching.**
+
+*The first spec-driven framework where PM, Architect, Tech Lead, QA, Security, and DevOps agents orchestrate themselves — automatically.*
 
 [![NPM Version](https://img.shields.io/npm/v/specweave?color=blue)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -24,6 +26,21 @@ This isn't just a framework we made — it's the framework we use every day. Our
 [![MTTR](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.mttr.value&label=MTTR&suffix=min&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
 
 **[→ Live Dashboard](https://spec-weave.com/docs/metrics)** | **[→ Detailed Report](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/metrics/dora-report.md)** | **[→ Browse Our Increments](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)**
+
+---
+
+## Why Not BMAD or SpecKit?
+
+| Pain Point | BMAD | SpecKit | SpecWeave |
+|------------|------|---------|-----------|
+| **Window switching** | 5-10 persona tabs | Single tool | **15 agents in ONE terminal** |
+| **Orchestration** | Manual (you're the router) | Manual | **Automatic (agents call each other)** |
+| **External sync** | None | None | **Bidirectional (JIRA/GitHub/ADO)** |
+| **Living docs** | Copy-paste | Templates only | **Auto-update after every task** |
+| **Enterprise hierarchy** | No mapping | No mapping | **Universal mapping (Epic→Story→Task)** |
+| **Quality gates** | None | None | **3-gate validation (tasks/tests/docs)** |
+
+> **Stop being the human router between AI personas.** SpecWeave agents orchestrate themselves.
 
 ---
 
@@ -283,8 +300,12 @@ MIT - [github.com/anton-abyzov/specweave](https://github.com/anton-abyzov/specwe
 
 ---
 
-**Stop losing your AI work. Start building permanent knowledge.**
+**Stop being the human router. Let 15 AI agents build your product.**
 
 ```bash
 npm install -g specweave
 ```
+
+---
+
+*Built for Fortune 500 complexity. Free for everyone.*

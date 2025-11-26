@@ -188,7 +188,13 @@ export async function loadEnvConfig(projectRoot: string): Promise<EnvConfig | nu
     const key = trimmed.slice(0, eqIndex).trim();
     const value = trimmed.slice(eqIndex + 1).trim();
 
+    // CRITICAL FIX (2025-11-26): Check both GITHUB_TOKEN and GH_TOKEN
+    // Init flow saves as GH_TOKEN, but some code looks for GITHUB_TOKEN
+    // Priority: GITHUB_TOKEN > GH_TOKEN (for backwards compatibility)
     if (key === 'GITHUB_TOKEN') {
+      config.githubToken = value;
+    } else if (key === 'GH_TOKEN' && !config.githubToken) {
+      // Only use GH_TOKEN if GITHUB_TOKEN not already set
       config.githubToken = value;
     }
   }

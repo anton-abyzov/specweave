@@ -1,20 +1,15 @@
 ---
 id: US-004
 feature: FS-062
-title: Per-Repo External Tool Sync
+title: "Per-Repo External Tool Sync (DEFERRED)"
 status: not_started
 priority: P1
 created: 2025-11-25
-external_tools:
-  github:
-    number: 759
-    url: https://github.com/anton-abyzov/specweave/issues/759
-    created_at: 2025-11-25T08:14:34.073Z
 ---
 
-# US-004: Per-Repo External Tool Sync
+# US-004: Per-Repo External Tool Sync (DEFERRED)
 
-**Feature**: [FS-062](../../_features/FS-062/FEATURE.md)
+**Feature**: [FS-062](./FEATURE.md)
 
 **As a** developer with multiple repos
 **I want** each repo to sync to its own GitHub issues
@@ -36,8 +31,3 @@ external_tools:
 **Increment**: [0062-umbrella-multi-repo-support](../../../../increments/0062-umbrella-multi-repo-support/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
-
-
-## Tasks
-
-_No tasks defined for this user story_

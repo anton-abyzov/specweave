@@ -17,7 +17,7 @@ import { loadImportConfig } from '../../../config/import-config.js';
 import { selectRepositories, type RepoSelectionConfig } from '../github-repo-selector.js';
 import { detectAllConfigs } from './config-detection.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
-import { getGitHubAuth } from '../../../utils/auth-helpers.js';
+import { getGitHubAuthFromProject } from '../../../utils/auth-helpers.js';
 import {
   detectJiraStructure,
   confirmJiraMapping,
@@ -350,8 +350,9 @@ export async function promptAndRunExternalImport(
   // Handle multi-repo selection for GitHub
   let repoSelectionConfig: RepoSelectionConfig | null = null;
 
-  // Get GitHub token from all available sources (env vars, gh CLI, gh config file)
-  const githubAuth = getGitHubAuth();
+  // CRITICAL FIX (2025-11-26): Use getGitHubAuthFromProject to load from .env file
+  // Bug: getGitHubAuth() uses process.env which is empty unless dotenv is loaded
+  const githubAuth = getGitHubAuthFromProject(targetDir);
   const hasGitHubToken = githubAuth.source !== 'none';
 
   // CRITICAL FIX: Use profiles OR git remote detection for GitHub
@@ -587,8 +588,9 @@ async function promptMultiRepoSelection(targetDir: string): Promise<RepoSelectio
       return null;
     }
 
-    // Use auth helper to get token from all available sources
-    const auth = getGitHubAuth();
+    // CRITICAL FIX (2025-11-26): Use getGitHubAuthFromProject to load from .env file
+    // Bug: getGitHubAuth() uses process.env which is empty unless dotenv is loaded
+    const auth = getGitHubAuthFromProject(targetDir);
     if (auth.source === 'none') {
       console.log(chalk.yellow('   ⚠️  No GitHub token found. Skipping multi-repo selection.'));
       return null;

@@ -7,9 +7,6 @@ priority: P1
 created: 2024-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-002: Native Priority Fields Set
 
 **Feature**: [FS-064](./FEATURE.md)
@@ -37,6 +34,6 @@ created: 2024-11-26
 
 ## Tasks
 
-- [x] [T-002](../../../../increments/0064-fix-external-sync-tags-status-types/tasks.md#T-002): Add JIRA Native Priority Field
-- [x] [T-003](../../../../increments/0064-fix-external-sync-tags-status-types/tasks.md#T-003): Add ADO Native Priority Field
-- [x] [T-009](../../../../increments/0064-fix-external-sync-tags-status-types/tasks.md#T-009): Add Graceful JIRA Transition Handling
+- [x] **T-002**: Add JIRA Native Priority Field
+- [x] **T-003**: Add ADO Native Priority Field
+- [x] **T-009**: Add Graceful JIRA Transition Handling

@@ -4,12 +4,12 @@ feature: FS-060
 title: "Clean Migration"
 status: completed
 priority: critical
-created: 2025-11-25
+created: 2025-11-26
 ---
 
 # US-002: Clean Migration
 
-**Feature**: [FS-060](../../_features/FS-060/FEATURE.md)
+**Feature**: [FS-060](./FEATURE.md)
 
 **As a** developer
 **I want** consistent use of the modular inquirer API

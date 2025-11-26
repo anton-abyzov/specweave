@@ -1,20 +1,15 @@
 ---
 id: US-001
 feature: FS-063
-title: Multi-Repo External Import
-status: not_started
+title: "Multi-Repo External Import"
+status: completed
 priority: P1
 created: 2025-11-25T11:40:00Z
-external_tools:
-  github:
-    number: 761
-    url: https://github.com/anton-abyzov/specweave/issues/761
-    created_at: 2025-11-25T18:04:51.752Z
 ---
 
 # US-001: Multi-Repo External Import
 
-**Feature**: [FS-063](../../_features/FS-063/FEATURE.md)
+**Feature**: [FS-063](./FEATURE.md)
 
 **As a** user with an umbrella/multi-repo setup,
 **I want** external items imported from ALL configured repositories,
@@ -24,10 +19,10 @@ external_tools:
 
 ## Acceptance Criteria
 
-- [ ] **AC-US1-01**: When multi-repo selection is made during init, items are imported from each selected repository
-- [ ] **AC-US1-02**: Items from different repos are tagged with their source repository
-- [ ] **AC-US1-03**: Progress shows which repo is being imported and item count
-- [ ] **AC-US1-04**: Duplicate detection works across all repos (same GitHub issue = same US-XXXE ID)
+- [x] **AC-US1-01**: When multi-repo selection is made during init, items are imported from each selected repository
+- [x] **AC-US1-02**: Items from different repos are tagged with their source repository
+- [x] **AC-US1-03**: Progress shows which repo is being imported and item count
+- [x] **AC-US1-04**: Duplicate detection works across all repos (same GitHub issue = same US-XXXE ID)
 
 ---
 
@@ -40,4 +35,10 @@ external_tools:
 
 ## Tasks
 
-_No tasks defined for this user story_
+- [x] **T-001**: Add sourceRepo field to ExternalItem interface
+- [x] **T-002**: Extend CoordinatorConfig for multi-repo
+- [x] **T-003**: Tag items with source repo in GitHubImporter
+- [x] **T-004**: Wire repoSelectionConfig to coordinatorConfig
+- [x] **T-005**: Add cross-repo duplicate detection
+- [x] **T-017**: Add unit tests for multi-repo import
+- [ ] **T-019**: Manual integration test with sw-thumbnail-ab

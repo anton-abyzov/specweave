@@ -7,9 +7,6 @@ priority: P1
 created: 2024-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-003: Bug Work Item Type Support
 
 **Feature**: [FS-064](./FEATURE.md)
@@ -38,6 +35,6 @@ created: 2024-11-26
 
 ## Tasks
 
-- [x] [T-004](../../../../increments/0064-fix-external-sync-tags-status-types/tasks.md#T-004): Add Bug Type Support to JIRA
-- [x] [T-005](../../../../increments/0064-fix-external-sync-tags-status-types/tasks.md#T-005): Add Bug Type Support to ADO
-- [x] [T-006](../../../../increments/0064-fix-external-sync-tags-status-types/tasks.md#T-006): Add Bug Label to GitHub
+- [x] **T-004**: Add Bug Type Support to JIRA
+- [x] **T-005**: Add Bug Type Support to ADO
+- [x] **T-006**: Add Bug Label to GitHub

@@ -2,10 +2,10 @@
 id: FS-063
 title: "Fix External Import for Multi-Repo Setup"
 type: feature
-status: planning
+status: completed
 priority: P1
 created: 2025-11-25T11:40:00Z
-lastUpdated: 2025-11-25
+lastUpdated: 2025-11-26
 ---
 
 # Fix External Import for Multi-Repo Setup
@@ -18,7 +18,7 @@ External work item import is broken for multi-repo/umbrella setups:
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0063-fix-external-import-multi-repo](../../../../increments/0063-fix-external-import-multi-repo/spec.md) | ⏳ planning | 2025-11-25T11:40:00Z |
+| [0063-fix-external-import-multi-repo](../../../../increments/0063-fix-external-import-multi-repo/spec.md) | ✅ completed | 2025-11-25T11:40:00Z |
 
 ## User Stories
 

@@ -1,19 +1,15 @@
 ---
 id: US-001
 feature: FS-061
-title: Bulk Discovery Without Count
+title: "Bulk Discovery Without Count"
 status: completed
 priority: P1
 created: 2025-11-24
-external:
-  github:
-    issue: 750
-    url: https://github.com/anton-abyzov/specweave/issues/750
 ---
 
 # US-001: Bulk Discovery Without Count
 
-**Feature**: [FS-061](../../_features/FS-061/FEATURE.md)
+**Feature**: [FS-061](./FEATURE.md)
 
 **As a** user setting up multi-repo architecture
 **I want** to discover repositories by pattern without specifying a count

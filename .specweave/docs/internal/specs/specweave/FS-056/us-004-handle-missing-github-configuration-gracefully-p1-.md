@@ -1,15 +1,10 @@
 ---
 id: US-004
 feature: FS-056
-title: Handle Missing GitHub Configuration Gracefully (P1)
+title: "Handle Missing GitHub Configuration Gracefully (P1)"
 status: not_started
 priority: P0
 created: 2025-11-24T00:00:00.000Z
-external_tools:
-  github:
-    number: 768
-    url: https://github.com/anton-abyzov/specweave/issues/768
-    created_at: 2025-11-26T17:38:14.796Z
 ---
 
 # US-004: Handle Missing GitHub Configuration Gracefully (P1)

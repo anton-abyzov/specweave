@@ -7,9 +7,6 @@ priority: P1
 created: 2024-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-001: ADO Status Tags Applied
 
 **Feature**: [FS-064](./FEATURE.md)
@@ -37,4 +34,4 @@ created: 2024-11-26
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0064-fix-external-sync-tags-status-types/tasks.md#T-001): Fix ADO Status Tags Application
+- [x] **T-001**: Fix ADO Status Tags Application

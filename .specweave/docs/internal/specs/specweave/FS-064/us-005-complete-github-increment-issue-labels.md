@@ -7,9 +7,6 @@ priority: P1
 created: 2024-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-005: Complete GitHub Increment Issue Labels
 
 **Feature**: [FS-064](./FEATURE.md)
@@ -37,4 +34,4 @@ created: 2024-11-26
 
 ## Tasks
 
-- [x] [T-008](../../../../increments/0064-fix-external-sync-tags-status-types/tasks.md#T-008): Add Priority to GitHub Increment Issues
+- [x] **T-008**: Add Priority to GitHub Increment Issues

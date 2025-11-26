@@ -9,7 +9,7 @@ created: 2025-11-24
 
 # US-003: Clear Messaging
 
-**Feature**: [FS-061](../../_features/FS-061/FEATURE.md)
+**Feature**: [FS-061](./FEATURE.md)
 
 **As a** user
 **I want** clear, accurate messages about what's happening

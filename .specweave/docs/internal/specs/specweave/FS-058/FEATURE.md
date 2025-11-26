@@ -1,16 +1,11 @@
 ---
 id: FS-058
-title: Fix Status Sync Desync Bug + Auto GitHub Sync on Status Change
+title: "Fix Status Sync Desync Bug + Auto GitHub Sync on Status Change"
 type: feature
-status: active
+status: completed
 priority: P0
 created: 2025-11-24T00:00:00.000Z
-lastUpdated: 2025-11-24
-external_tools:
-  github:
-    type: milestone
-    id: 17
-    url: https://github.com/anton-abyzov/specweave/milestone/17
+lastUpdated: 2025-11-26
 ---
 
 # Fix Status Sync Desync Bug + Auto GitHub Sync on Status Change
@@ -23,7 +18,7 @@ external_tools:
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0058-fix-status-sync-and-auto-github-update](../../../../increments/0058-fix-status-sync-and-auto-github-update/spec.md) | ⏳ active | 2025-11-24T00:00:00.000Z |
+| [0058-fix-status-sync-and-auto-github-update](../../../../increments/0058-fix-status-sync-and-auto-github-update/spec.md) | ✅ completed | 2025-11-24T00:00:00.000Z |
 
 ## User Stories
 

@@ -9,7 +9,7 @@ created: 2025-11-24T00:00:00.000Z
 
 # US-003: Verify No Desync on Completion (P0)
 
-**Feature**: [FS-057](../../_features/FS-057/FEATURE.md)
+**Feature**: [FS-057](./FEATURE.md)
 
 **As a** : Developer
 **I want** : spec.md and metadata.json to stay in sync when increment is completed

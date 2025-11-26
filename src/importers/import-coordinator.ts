@@ -11,6 +11,7 @@ import { JiraImporter } from './jira-importer.js';
 import { ADOImporter } from './ado-importer.js';
 import { updateSyncMetadata, type PlatformSyncMetadata } from '../sync/sync-metadata.js';
 import { RateLimiter, type RateLimitInfo } from './rate-limiter.js';
+import { getGitHubAuthFromProject } from '../utils/auth-helpers.js';
 
 /**
  * Repository configuration for multi-repo imports
@@ -164,7 +165,10 @@ export class ImportCoordinator {
   private initializeImporters(): void {
     // Multi-repo GitHub support (preferred over single repo)
     if (this.config.githubRepositories && this.config.githubRepositories.length > 0) {
-      const token = this.config.githubToken || this.config.github?.token || process.env.GITHUB_TOKEN;
+      // CRITICAL FIX (2025-11-26): Use getGitHubAuthFromProject to load from .env file
+      // Bug: process.env.GITHUB_TOKEN is empty unless dotenv is explicitly loaded
+      const auth = getGitHubAuthFromProject(this.projectRoot);
+      const token = this.config.githubToken || this.config.github?.token || auth.token;
 
       for (const repo of this.config.githubRepositories) {
         try {

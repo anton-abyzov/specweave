@@ -31,8 +31,78 @@ export interface JiraAuth {
 }
 
 /**
+ * Parse a simple .env file and return key-value pairs
+ * (Inline implementation to avoid circular dependencies)
+ */
+function parseEnvFileSimple(content: string): Record<string, string> {
+  const result: Record<string, string> = {};
+  const lines = content.split('\n');
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+
+    const eqIndex = trimmed.indexOf('=');
+    if (eqIndex === -1) continue;
+
+    const key = trimmed.slice(0, eqIndex).trim();
+    let value = trimmed.slice(eqIndex + 1).trim();
+
+    // Remove surrounding quotes if present
+    if ((value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    }
+
+    result[key] = value;
+  }
+
+  return result;
+}
+
+/**
+ * Get GitHub authentication token from project .env file
+ * Priority: .env GITHUB_TOKEN > .env GH_TOKEN > process.env > gh CLI
+ *
+ * CRITICAL (2025-11-26): This function MUST be used when projectRoot is available
+ * to properly load tokens from .env file. The original getGitHubAuth() only
+ * reads process.env which is empty unless dotenv is explicitly loaded.
+ *
+ * @param projectRoot - Path to project root containing .env file
+ * @returns GitHub authentication with source information
+ */
+export function getGitHubAuthFromProject(projectRoot: string): GitHubAuth {
+  // 1. First, try to read from project .env file
+  try {
+    const envPath = path.join(projectRoot, '.env');
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf-8');
+      const envVars = parseEnvFileSimple(content);
+
+      // Check GITHUB_TOKEN first (standard)
+      if (envVars.GITHUB_TOKEN) {
+        return { token: envVars.GITHUB_TOKEN, source: 'GITHUB_TOKEN' };
+      }
+
+      // Check GH_TOKEN (alternative)
+      if (envVars.GH_TOKEN) {
+        return { token: envVars.GH_TOKEN, source: 'GH_TOKEN' };
+      }
+    }
+  } catch {
+    // Silently fail - .env file is optional
+  }
+
+  // 2. Fall back to existing getGitHubAuth() for process.env and gh CLI
+  return getGitHubAuth();
+}
+
+/**
  * Get GitHub authentication token
  * Priority: GITHUB_TOKEN (CI) > GH_TOKEN (custom) > gh CLI config (local)
+ *
+ * WARNING: This function only reads from process.env, NOT from .env files!
+ * If you have access to projectRoot, use getGitHubAuthFromProject() instead.
  */
 export function getGitHubAuth(): GitHubAuth {
   // 1. Check GITHUB_TOKEN (auto-provided in GitHub Actions)
@@ -128,6 +198,18 @@ export function shouldRunIntegrationTests(): boolean {
  */
 export function hasGitHubCredentials(): boolean {
   const auth = getGitHubAuth();
+  return auth.source !== 'none';
+}
+
+/**
+ * Check if GitHub credentials are available (project-aware)
+ * Uses getGitHubAuthFromProject() to also check .env file
+ *
+ * @param projectRoot - Path to project root containing .env file
+ * @returns True if credentials are available
+ */
+export function hasGitHubCredentialsFromProject(projectRoot: string): boolean {
+  const auth = getGitHubAuthFromProject(projectRoot);
   return auth.source !== 'none';
 }
 

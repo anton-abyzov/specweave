@@ -4,12 +4,12 @@ feature: FS-059
 title: "Hook Optimization"
 status: completed
 priority: P0
-created: 2025-11-24
+created: 2025-11-26
 ---
 
 # US-003: Hook Optimization
 
-**Feature**: [FS-059](../../_features/FS-059/FEATURE.md)
+**Feature**: [FS-059](./FEATURE.md)
 
 **As a** Claude Code user
 **I want** hooks to use caching and skip unnecessary work

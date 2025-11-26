@@ -9,7 +9,7 @@ created: 2025-11-24T00:00:00.000Z
 
 # US-001: Verify Status Line Updates on Creation (P0)
 
-**Feature**: [FS-057](../../_features/FS-057/FEATURE.md)
+**Feature**: [FS-057](./FEATURE.md)
 
 **As a** : Developer
 **I want** : The status line to update when a new increment is created

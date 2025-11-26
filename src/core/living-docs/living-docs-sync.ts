@@ -24,6 +24,7 @@ import { TaskProjectSpecificGenerator } from './task-project-specific-generator.
 import { FeatureConsistencyValidator } from './feature-consistency-validator.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { autoDetectProjectIdSync } from '../../utils/project-detection.js';
+import { getGitHubAuthFromProject } from '../../utils/auth-helpers.js';
 
 // Helper functions for fs-extra compatibility
 async function pathExists(filePath: string): Promise<boolean> {
@@ -1116,7 +1117,12 @@ export class LivingDocsSync {
       const configPath = path.join(this.projectRoot, '.specweave/config.json');
       let owner = process.env.GITHUB_OWNER || '';
       let repo = process.env.GITHUB_REPO || '';
-      const token = process.env.GITHUB_TOKEN || '';
+
+      // CRITICAL FIX (2025-11-26): Use getGitHubAuthFromProject for full fallback chain
+      // Priority: .env GITHUB_TOKEN → .env GH_TOKEN → process.env → gh auth token → gh config
+      // This ensures sync works even if user only has gh CLI authenticated (no .env)
+      const auth = getGitHubAuthFromProject(this.projectRoot);
+      const token = auth.token;
 
       if (existsSync(configPath)) {
         try {

@@ -1,15 +1,10 @@
 ---
 id: US-003
 feature: FS-066
-title: Smart Defaults Based on Structure
+title: "Smart Defaults Based on Structure"
 status: completed
 priority: P1
 created: 2025-11-26T14:00:00Z
-external_tools:
-  github:
-    number: 771
-    url: https://github.com/anton-abyzov/specweave/issues/771
-    created_at: 2025-11-26T17:44:00.923Z
 ---
 
 # US-003: Smart Defaults Based on Structure

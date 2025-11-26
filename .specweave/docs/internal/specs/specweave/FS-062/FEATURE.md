@@ -1,26 +1,29 @@
 ---
 id: FS-062
-title: "Multi-Project Spec Generation"
+title: "Umbrella Multi-Repo Support"
 type: feature
-status: planning
+status: completed
 priority: P1
-created: 2025-11-26
+created: 2025-11-25
 lastUpdated: 2025-11-26
 ---
 
-# Multi-Project Spec Generation
+# Umbrella Multi-Repo Support
 
 ## Overview
 
-When generating `spec.md` for increments, SpecWeave must detect multi-project configurations and generate project-scoped user stories (US-FE-001, US-BE-001) instead of generic ones (US-001).
+When users describe multi-repo architectures (e.g., "3 repos: Frontend, Backend, Shared"), SpecWeave currently:
 
 ## Implementation History
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0062-multi-project-spec-generation](../../../../increments/0062-multi-project-spec-generation/spec.md) | ⏳ planning | 2025-11-26 |
+| [0062-umbrella-multi-repo-support](../../../../increments/0062-umbrella-multi-repo-support/spec.md) | ✅ completed | 2025-11-25 |
 
 ## User Stories
 
-- [US-001: Multi-Project Detection](../../specweave/FS-062/us-001-multi-project-detection.md)
-- [US-002: Project-Scoped User Story Generation](../../specweave/FS-062/us-002-project-scoped-user-story-generation.md)
+- [US-001: Multi-Repo Detection in Init](../../specweave/FS-062/us-001-multi-repo-detection-in-init.md)
+- [US-002: Independent Repo Initialization](../../specweave/FS-062/us-002-independent-repo-initialization.md)
+- [US-003: Project-Scoped User Stories](../../specweave/FS-062/us-003-project-scoped-user-stories.md)
+- [US-004: Per-Repo External Tool Sync (DEFERRED)](../../specweave/FS-062/us-004-per-repo-external-tool-sync-deferred-.md)
+- [US-005: Spec Distribution to Child Repos (DEFERRED)](../../specweave/FS-062/us-005-spec-distribution-to-child-repos-deferred-.md)
