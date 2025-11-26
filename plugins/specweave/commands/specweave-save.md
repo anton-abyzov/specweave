@@ -16,11 +16,13 @@ description: SMART save - auto-generates commit messages, handles git pull/merge
 ```
 
 **What it handles automatically:**
+- ✅ All files included (`git add -A`) - trust your `.gitignore`
 - ✅ No commit message? → Generates from changes
 - ✅ Remote has new commits? → Auto-pulls (rebase by default)
 - ✅ Uncommitted changes during pull? → Auto-stash/unstash
 - ✅ Branch not tracking? → Auto-setup with `-u`
 - ✅ Multi-repo umbrella? → Syncs all repos
+- ⚠️ Warns (but doesn't block) if secrets/huge files detected
 - ⛔ **NEVER force pushes** - Always merges with remote safely
 
 ## What This Command Does (In Order)
@@ -911,7 +913,6 @@ Summary:
 | `--no-push` | Commit but don't push |
 | `--force` | Force push (REQUIRES typing "FORCE" to confirm!) |
 | `--branch <name>` | Create new branch instead of force pushing |
-| `--yes` / `-y` | (Deprecated) No-op, default is already automatic |
 
 ### Quick Reference
 
