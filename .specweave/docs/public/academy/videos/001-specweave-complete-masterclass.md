@@ -1601,11 +1601,21 @@ EOF
 
 **[VISUAL: GitHub repo star animation]**
 
-> "If this helped you — even a little — I need you to do TWO things:
+> "If this helped you — even a little — I need you to do a few things:
 
 > ONE: Star the GitHub repo. Seriously. Stars are how developers find tools. Every star helps someone else discover SpecWeave.
 
 > TWO: Subscribe and hit the bell. I'm at 140 subscribers. Help me get to 1,000 so I can keep making content like this.
+
+> THREE: I want to hear from YOU. This is the most important one.
+
+> Open an issue on GitHub. Drop a comment below. Tell me what problems you're running into. What features would make your life easier? What should I build next?
+
+> Mobile app support? Better CI/CD integration? More AI tool integrations? Something I haven't even thought of?
+
+> Your feedback literally shapes what I build next. I read every single issue. Every comment. This is open source — it's built FOR you, WITH your input.
+
+> Got ideas? Got frustrations? Got a use case I didn't cover? I want to hear ALL of it.
 
 > Drop a comment — tell me what demo was most useful. What should I cover next? Multi-repo? Advanced JIRA? Custom agents?
 
