@@ -18,6 +18,7 @@ import matter from 'gray-matter';
 import { formatOrigin, type ExternalItemMetadata } from '../core/types/origin-metadata.js';
 import type { ExternalContainerContext } from '../core/types/increment-metadata.js';
 import { normalizeToProjectId } from '../utils/project-id-generator.js';
+import { Logger, consoleLogger } from '../utils/logger.js';
 
 /**
  * Feature metadata extracted from living docs
@@ -94,6 +95,9 @@ export interface FSIdAllocatorOptions {
    * globalCollisionDetection is enabled.
    */
   externalContainer?: ExternalContainerContext;
+
+  /** Logger instance (defaults to consoleLogger) */
+  logger?: Logger;
 }
 
 /**
@@ -113,6 +117,7 @@ export class FSIdAllocator {
   private scanned: boolean = false;
   private globalCollisionDetection: boolean;
   private externalContainer: ExternalContainerContext | undefined;
+  private logger: Logger;
 
   constructor(projectRoot: string, projectId?: string, options?: FSIdAllocatorOptions) {
     this.projectRoot = projectRoot;
@@ -125,6 +130,7 @@ export class FSIdAllocator {
     this.archivePath = path.join(projectRoot, '.specweave/docs/_archive/specs');
     this.globalCollisionDetection = options?.globalCollisionDetection ?? false;
     this.externalContainer = options?.externalContainer;
+    this.logger = options?.logger ?? consoleLogger;
   }
 
   /**
@@ -444,6 +450,12 @@ export class FSIdAllocator {
             reason: `Inserted chronologically between ${beforeFeature.id} (${beforeFeature.createdAt}) and ${afterFeature.id} (${afterFeature.createdAt})`,
             number: nextNumber
           };
+        } else {
+          // Log collision prevention - find what ID would have collided
+          const collidingId = this.findCollidingId(nextNumber);
+          this.logger.warn(
+            `⚠️ Numeric collision prevented: ${collidingId} exists, skipping index ${nextNumber} for external feature`
+          );
         }
       }
     }
@@ -597,6 +609,25 @@ export class FSIdAllocator {
     const internalId = `FS-${String(index).padStart(3, '0')}`;
     const externalId = `FS-${String(index).padStart(3, '0')}E`;
     return this.existingFeatures.has(internalId) || this.existingFeatures.has(externalId);
+  }
+
+  /**
+   * Find which feature ID is using a numeric index
+   *
+   * @param index - Numeric index to look up
+   * @returns The existing feature ID using this index (e.g., "FS-001" or "FS-001E"), or "unknown" if not found
+   */
+  private findCollidingId(index: number): string {
+    const internalId = `FS-${String(index).padStart(3, '0')}`;
+    const externalId = `FS-${String(index).padStart(3, '0')}E`;
+
+    if (this.existingFeatures.has(internalId)) {
+      return internalId;
+    }
+    if (this.existingFeatures.has(externalId)) {
+      return externalId;
+    }
+    return `index ${index}`;
   }
 
   /**

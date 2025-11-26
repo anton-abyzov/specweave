@@ -133,12 +133,12 @@ function DogfoodingBanner(): ReactNode {
           <Heading as="h2">SpecWeave is Built With SpecWeave</Heading>
           <p>
             This isn't just a framework we made — it's the framework we use every day.
-            <strong> 60+ completed increments</strong>, full specs, living docs, and real DORA metrics.
+            <strong> 70+ completed increments</strong>, full specs, living docs, and real DORA metrics.
             Every feature you see was built spec-first.
           </p>
           <div className={styles.dogfoodingStats}>
             <Link to="https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments" className={styles.dogfoodingStat}>
-              <span className={styles.dogfoodingNumber}>60+</span>
+              <span className={styles.dogfoodingNumber}>70+</span>
               <span className={styles.dogfoodingLabel}>Increments</span>
             </Link>
             <Link to="https://spec-weave.com/docs/metrics" className={styles.dogfoodingStat}>

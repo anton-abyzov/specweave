@@ -32,6 +32,7 @@ export interface ProgressInfo {
   rate?: number;  // items per second
   eta?: number;   // seconds remaining
   sourceRepo?: string;
+  page?: number;  // current page number for pagination
 }
 
 export interface CoordinatorConfig {
@@ -311,10 +312,13 @@ export class ImportCoordinator {
     const errors: string[] = [];
     const items: ExternalItem[] = [];
     let totalEstimate: number | undefined;
+    let pageNumber = 0;
 
     try {
       // Use pagination for progress tracking
       for await (const page of importer.paginate(this.config.importConfig)) {
+        pageNumber++;
+
         // Tag each item with source repo
         for (const item of page) {
           item.sourceRepo = sourceRepo;
@@ -336,6 +340,7 @@ export class ImportCoordinator {
             rate: Math.round(rate * 10) / 10,
             eta: eta ? Math.round(eta) : undefined,
             sourceRepo,
+            page: pageNumber,
           });
         }
 
