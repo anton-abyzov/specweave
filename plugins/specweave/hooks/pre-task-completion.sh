@@ -38,20 +38,31 @@ if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
   exit 0
 fi
 
-# Find project root
-find_project_root() {
-  local dir="$1"
-  while [ "$dir" != "/" ]; do
-    if [ -d "$dir/.specweave" ]; then
-      echo "$dir"
-      return 0
-    fi
-    dir="$(dirname "$dir")"
-  done
-  pwd
-}
+# Capture stdin FIRST to extract cwd from Claude's JSON input
+_EARLY_STDIN=$(mktemp)
+cat > "$_EARLY_STDIN"
 
-PROJECT_ROOT="$(find_project_root "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
+# Extract cwd from JSON (Claude always provides this)
+if command -v jq >/dev/null 2>&1; then
+  PROJECT_ROOT=$(jq -r '.cwd // empty' "$_EARLY_STDIN" 2>/dev/null)
+fi
+
+# Fallback: find project root by walking up from script location
+if [ -z "$PROJECT_ROOT" ] || [ ! -d "$PROJECT_ROOT/.specweave" ]; then
+  find_project_root() {
+    local dir="$1"
+    while [ "$dir" != "/" ]; do
+      if [ -d "$dir/.specweave" ]; then
+        echo "$dir"
+        return 0
+      fi
+      dir="$(dirname "$dir")"
+    done
+    pwd
+  }
+  PROJECT_ROOT="$(find_project_root "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
+fi
+
 cd "$PROJECT_ROOT" 2>/dev/null || true
 
 # ============================================================================
@@ -129,8 +140,8 @@ echo "[$(date)] 🔒 Pre-task-completion hook fired" >> "$DEBUG_LOG" 2>/dev/null
 # CAPTURE INPUT
 # ============================================================================
 
-STDIN_DATA=$(mktemp)
-cat > "$STDIN_DATA"
+# Reuse the early stdin capture
+STDIN_DATA="$_EARLY_STDIN"
 
 echo "[$(date)] Input JSON:" >> "$DEBUG_LOG" 2>/dev/null || true
 cat "$STDIN_DATA" >> "$DEBUG_LOG" 2>/dev/null || true
