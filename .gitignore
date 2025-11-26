@@ -32,6 +32,7 @@ __pycache__/
 # Documentation build output
 site/
 docs-site/build/
+docs-site/build-internal/
 docs-site/.docusaurus/
 
 # Environment variables and secrets (CRITICAL - NEVER COMMIT!)
