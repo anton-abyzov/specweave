@@ -135,12 +135,50 @@ export interface GitHubConfig {
 }
 
 /**
+ * JIRA Board → SpecWeave Project Mapping (v0.29.0+)
+ * Maps a JIRA board to a SpecWeave project for team-based organization
+ */
+export interface JiraBoardMapping {
+  /** JIRA board ID (numeric) */
+  boardId: number;
+
+  /** Board display name (e.g., "Frontend Board") */
+  boardName: string;
+
+  /** SpecWeave project ID this board maps to (e.g., "FE") */
+  specweaveProject: string;
+
+  /** Keywords for auto-classification of user stories to this board/project */
+  keywords?: string[];
+
+  /** Board type (for display purposes) */
+  boardType?: 'scrum' | 'kanban' | 'simple';
+}
+
+/**
+ * JIRA Board-Based Team Mapping Configuration (v0.29.0+)
+ * Single JIRA project with multiple boards, each mapping to a SpecWeave project
+ */
+export interface JiraBoardMappingConfig {
+  /** JIRA project key (e.g., "CORE") */
+  projectKey: string;
+
+  /** Board → SpecWeave project mappings */
+  boards: JiraBoardMapping[];
+
+  /** Auto-create boards if they don't exist (default: false) */
+  autoCreateBoards?: boolean;
+}
+
+/**
  * Jira Configuration (v0.13.0+ - Simplified Multi-Project Architecture)
+ * ENHANCED in v0.29.0 with board-based team mapping
  *
- * Supports three patterns:
+ * Supports four patterns:
  * 1. Single project (backward compatible): domain + projectKey
  * 2. Multiple projects (intelligent mapping): domain + projects[]
  * 3. Custom query (power users): domain + customQuery (raw JQL)
+ * 4. NEW: Board-based teams (v0.29.0+): domain + boardMapping
  *
  * REMOVED in v0.13.0:
  * - strategy (JiraStrategy): Deprecated → Use intelligent mapping instead
@@ -161,6 +199,38 @@ export interface JiraConfig {
   // User stories auto-classified and synced to respective projects
   projects?: string[];  // ['FE', 'BE', 'MOBILE']
 
+  // Pattern 3: Custom query (power users)
+  customQuery?: string;  // Raw JQL: "project IN (FE, BE) AND labels IN (sprint-42)"
+
+  // ============================================================================
+  // NEW in v0.29.0: Board-Based Team Mapping
+  // ============================================================================
+
+  /**
+   * Pattern 4: Board-based teams (v0.29.0+)
+   *
+   * Single JIRA project with multiple boards, each board maps to a SpecWeave project.
+   * Ideal for enterprise setups where teams share a JIRA project but have separate boards.
+   *
+   * Example:
+   * ```json
+   * {
+   *   "boardMapping": {
+   *     "projectKey": "CORE",
+   *     "boards": [
+   *       { "boardId": 123, "boardName": "Frontend Board", "specweaveProject": "FE" },
+   *       { "boardId": 456, "boardName": "Backend Board", "specweaveProject": "BE" }
+   *     ]
+   *   }
+   * }
+   * ```
+   */
+  boardMapping?: JiraBoardMappingConfig;
+
+  // ============================================================================
+  // Intelligent Mapping Settings (Patterns 2 & 4)
+  // ============================================================================
+
   // Settings for intelligent mapping
   intelligentMapping?: boolean;  // Default: true (auto-classify user stories)
   autoCreateEpics?: boolean;  // Default: true (create epic per project)
@@ -173,19 +243,51 @@ export interface JiraConfig {
     task: string;    // Default: 'Task'
     subtask: string; // Default: 'Sub-task'
   };
+}
 
-  // Pattern 3: Custom query (power users)
-  customQuery?: string;  // Raw JQL: "project IN (FE, BE) AND labels IN (sprint-42)"
+/**
+ * ADO Area Path → SpecWeave Project Mapping (v0.29.0+)
+ * Maps an ADO area path to a SpecWeave project for team-based organization
+ */
+export interface AdoAreaPathMapping {
+  /** Full area path (e.g., "MyProduct\\Frontend" or "MyProduct\\Backend\\API") */
+  areaPath: string;
+
+  /** SpecWeave project ID this area path maps to (e.g., "FE") */
+  specweaveProject: string;
+
+  /** Keywords for auto-classification of user stories to this area/project */
+  keywords?: string[];
+
+  /** Include child area paths (default: true) */
+  includeChildren?: boolean;
+}
+
+/**
+ * ADO Area Path-Based Team Mapping Configuration (v0.29.0+)
+ * Single ADO project with area paths mapping to SpecWeave projects
+ */
+export interface AdoAreaPathMappingConfig {
+  /** ADO project name (e.g., "MyProduct") */
+  project: string;
+
+  /** Area path → SpecWeave project mappings */
+  mappings: AdoAreaPathMapping[];
+
+  /** Auto-create area paths if they don't exist (default: false) */
+  autoCreateAreaPaths?: boolean;
 }
 
 /**
  * Azure DevOps Configuration (v0.13.0+ - Simplified Multi-Project Architecture)
+ * ENHANCED in v0.29.0 with area path → SpecWeave project mapping
  *
- * Supports four patterns:
+ * Supports five patterns:
  * 1. Single project (backward compatible): organization + project
  * 2. Multiple projects (intelligent mapping): organization + projects[]
- * 3. Single project + area paths (advanced): organization + project + areaPaths[]
+ * 3. Single project + area paths list (simple): organization + project + areaPaths[]
  * 4. Custom query (power users): organization + customQuery (raw WIQL)
+ * 5. NEW: Area path mapping (v0.29.0+): organization + areaPathMapping
  *
  * REMOVED in v0.13.0:
  * - teams: Too granular → Use projects[] or areaPaths[]
@@ -208,9 +310,41 @@ export interface AdoConfig {
   // User stories auto-classified and synced to respective projects
   projects?: string[];  // ['FE-Project', 'BE-Project', 'MOBILE-Project']
 
-  // Pattern 3: Area paths (advanced - single project with team-based area paths)
+  // Pattern 3: Area paths list (simple - single project with team-based area paths)
   // Used when project is set (not projects[])
   areaPaths?: string[];  // ['FE', 'BE', 'MOBILE']
+
+  // Pattern 4: Custom query (power users)
+  customQuery?: string;  // Raw WIQL query
+
+  // ============================================================================
+  // NEW in v0.29.0: Area Path → SpecWeave Project Mapping
+  // ============================================================================
+
+  /**
+   * Pattern 5: Area path mapping (v0.29.0+)
+   *
+   * Single ADO project with area paths, each area path maps to a SpecWeave project.
+   * Ideal for enterprise setups where teams share an ADO project but use area paths.
+   *
+   * Example:
+   * ```json
+   * {
+   *   "areaPathMapping": {
+   *     "project": "MyProduct",
+   *     "mappings": [
+   *       { "areaPath": "MyProduct\\Frontend", "specweaveProject": "FE" },
+   *       { "areaPath": "MyProduct\\Backend", "specweaveProject": "BE" }
+   *     ]
+   *   }
+   * }
+   * ```
+   */
+  areaPathMapping?: AdoAreaPathMappingConfig;
+
+  // ============================================================================
+  // Intelligent Mapping Settings (Patterns 2, 3 & 5)
+  // ============================================================================
 
   // Settings for intelligent mapping
   intelligentMapping?: boolean;  // Default: true (auto-classify user stories)
@@ -224,9 +358,6 @@ export interface AdoConfig {
     story: string;   // Default: 'User Story'
     task: string;    // Default: 'Task'
   };
-
-  // Pattern 4: Custom query (power users)
-  customQuery?: string;  // Raw WIQL query
 }
 
 export type ProviderConfig = GitHubConfig | JiraConfig | AdoConfig;
@@ -570,6 +701,88 @@ export function hasMultipleAdoProjects(config: AdoConfig): boolean {
  */
 export function hasAdoAreaPaths(config: AdoConfig): boolean {
   return !!(config.project && config.areaPaths && config.areaPaths.length > 0);
+}
+
+// ============================================================================
+// NEW Type Guards (v0.29.0+ - Board/Area Path Mapping)
+// ============================================================================
+
+/**
+ * Check if Jira config uses board-based team mapping (v0.29.0+)
+ * Single JIRA project with multiple boards → SpecWeave projects
+ */
+export function hasJiraBoardMapping(config: JiraConfig): boolean {
+  return !!(
+    config.boardMapping &&
+    config.boardMapping.projectKey &&
+    config.boardMapping.boards &&
+    config.boardMapping.boards.length > 0
+  );
+}
+
+/**
+ * Check if ADO config uses area path mapping (v0.29.0+)
+ * Single ADO project with area paths → SpecWeave projects
+ */
+export function hasAdoAreaPathMapping(config: AdoConfig): boolean {
+  return !!(
+    config.areaPathMapping &&
+    config.areaPathMapping.project &&
+    config.areaPathMapping.mappings &&
+    config.areaPathMapping.mappings.length > 0
+  );
+}
+
+/**
+ * Get JIRA board mapping for a SpecWeave project (v0.29.0+)
+ *
+ * @param config JiraConfig with boardMapping
+ * @param specweaveProjectId SpecWeave project ID (e.g., "FE")
+ * @returns Board mapping or undefined
+ */
+export function getJiraBoardForProject(
+  config: JiraConfig,
+  specweaveProjectId: string
+): JiraBoardMapping | undefined {
+  if (!hasJiraBoardMapping(config)) return undefined;
+
+  return config.boardMapping!.boards.find(
+    (b) => b.specweaveProject.toLowerCase() === specweaveProjectId.toLowerCase()
+  );
+}
+
+/**
+ * Get ADO area path mapping for a SpecWeave project (v0.29.0+)
+ *
+ * @param config AdoConfig with areaPathMapping
+ * @param specweaveProjectId SpecWeave project ID (e.g., "FE")
+ * @returns Area path mapping or undefined
+ */
+export function getAdoAreaPathForProject(
+  config: AdoConfig,
+  specweaveProjectId: string
+): AdoAreaPathMapping | undefined {
+  if (!hasAdoAreaPathMapping(config)) return undefined;
+
+  return config.areaPathMapping!.mappings.find(
+    (m) => m.specweaveProject.toLowerCase() === specweaveProjectId.toLowerCase()
+  );
+}
+
+/**
+ * Get all SpecWeave project IDs from JIRA board mapping (v0.29.0+)
+ */
+export function getJiraMappedProjects(config: JiraConfig): string[] {
+  if (!hasJiraBoardMapping(config)) return [];
+  return config.boardMapping!.boards.map((b) => b.specweaveProject);
+}
+
+/**
+ * Get all SpecWeave project IDs from ADO area path mapping (v0.29.0+)
+ */
+export function getAdoMappedProjects(config: AdoConfig): string[] {
+  if (!hasAdoAreaPathMapping(config)) return [];
+  return config.areaPathMapping!.mappings.map((m) => m.specweaveProject);
 }
 
 /**

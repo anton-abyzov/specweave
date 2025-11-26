@@ -1,24 +1,27 @@
 ---
-name: ml-pipeline-workflow
-description: Build end-to-end MLOps pipelines from data preparation through model training, validation, and production deployment. Use when creating ML pipelines, implementing MLOps practices, or automating model training and deployment workflows.
+name: mlops-dag-builder
+description: Design DAG-based MLOps pipeline architectures with Airflow, Dagster, Kubeflow, or Prefect. Activates for DAG orchestration, workflow automation, pipeline design patterns, CI/CD for ML. Use for platform-agnostic MLOps infrastructure - NOT for SpecWeave increment-based ML (use ml-pipeline-orchestrator instead).
 ---
 
-# ML Pipeline Workflow
+# MLOps DAG Builder
 
-Complete end-to-end MLOps pipeline orchestration from data preparation through model deployment.
+Design and implement DAG-based ML pipeline architectures using production orchestration tools.
 
 ## Overview
 
-This skill provides comprehensive guidance for building production ML pipelines that handle the full lifecycle: data ingestion → preparation → training → validation → deployment → monitoring.
+This skill provides guidance for building **platform-agnostic MLOps pipelines** using DAG orchestrators (Airflow, Dagster, Kubeflow, Prefect). It focuses on workflow architecture, not SpecWeave integration.
+
+**When to use this skill vs ml-pipeline-orchestrator:**
+- **Use this skill**: General MLOps architecture, Airflow/Dagster DAGs, cloud ML platforms
+- **Use ml-pipeline-orchestrator**: SpecWeave increment-based ML development with experiment tracking
 
 ## When to Use This Skill
 
-- Building new ML pipelines from scratch
-- Designing workflow orchestration for ML systems
-- Implementing data → model → deployment automation
-- Setting up reproducible training workflows
-- Creating DAG-based ML orchestration
-- Integrating ML components into production systems
+- Designing DAG-based workflow orchestration (Airflow, Dagster, Kubeflow)
+- Implementing platform-agnostic ML pipeline patterns
+- Setting up CI/CD automation for ML training jobs
+- Creating reusable pipeline templates for teams
+- Integrating with cloud ML services (SageMaker, Vertex AI, Azure ML)
 
 ## What This Skill Provides
 
@@ -240,6 +243,7 @@ After setting up your pipeline:
 
 ## Related Skills
 
-- **experiment-tracking-setup**: MLflow and Weights & Biases integration
-- **hyperparameter-tuning**: Automated hyperparameter optimization
-- **model-deployment-patterns**: Advanced deployment strategies
+- **ml-pipeline-orchestrator**: SpecWeave-integrated ML development (use for increment-based ML)
+- **experiment-tracker**: MLflow and Weights & Biases experiment tracking
+- **automl-optimizer**: Automated hyperparameter optimization with Optuna/Hyperopt
+- **ml-deployment-helper**: Model serving and deployment patterns

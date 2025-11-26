@@ -32,9 +32,9 @@ graph LR
 
 ---
 
-## Bidirectional Sync: The Solution
+## Split-Source Sync: The Solution
 
-**Two-way synchronization** keeps both systems in sync:
+**Split-source synchronization** keeps both systems in sync (different data flows each way):
 
 ```mermaid
 graph LR
@@ -113,9 +113,9 @@ graph TB
 
 SpecWeave supports **three sync directions**:
 
-### 1. Bidirectional (Default)
+### 1. Split-Source (Default)
 
-**Both ways**: Local ↔ External
+**Content and status flow different directions**: Local ↔ External
 
 ```mermaid
 sequenceDiagram
@@ -242,7 +242,7 @@ graph LR
 
 ---
 
-## Sync Flow (Bidirectional)
+## Sync Flow (Split-Source)
 
 ### Complete Lifecycle
 
@@ -429,7 +429,7 @@ graph TB
 
 ## Automatic Sync (Hook-Based)
 
-Bidirectional sync happens **automatically** via hooks:
+Split-source sync happens **automatically** via hooks:
 
 ### Post-Task-Completion Hook
 
@@ -502,10 +502,10 @@ For advanced scenarios, manual sync commands are available:
 # ✅ metadata.json updated
 ```
 
-### Sync (Bidirectional)
+### Sync (Split-Source)
 
 ```bash
-# Sync increment to external tracker
+# Sync increment to external tracker (content out, status in)
 /specweave-github:sync 0008
 
 # Prompts:
@@ -667,7 +667,7 @@ Links:
 
 ---
 
-## Benefits of Bidirectional Sync
+## Benefits of Split-Source Sync
 
 ### 1. Zero Manual Work
 
@@ -765,8 +765,8 @@ Links:
 # Team adds comments → Local never sees them
 # Result: Out of sync, confusion
 
-# ✅ Good: Bidirectional with team collaboration
-"syncDirection": "bidirectional"
+# ✅ Good: Split-source sync with team collaboration
+"syncDirection": "bidirectional"  // Config value kept for compatibility
 # Team changes flow back to local automatically
 # Result: Always in sync
 ```
@@ -802,14 +802,14 @@ Links:
 
 ## Summary
 
-**Bidirectional Sync** keeps SpecWeave and external tools synchronized automatically:
+**Split-Source Sync** keeps SpecWeave and external tools synchronized automatically:
 
 **Source of Truth Architecture**:
-- **Content** (user stories, AC, tasks) → SpecWeave wins
-- **Status** (checkboxes, labels, issue state) → External wins
+- **Content** (user stories, AC, tasks) → SpecWeave wins (flows OUT)
+- **Status** (checkboxes, labels, issue state) → External wins (flows IN)
 
 **Sync Directions**:
-- **Bidirectional** (default) - Both ways, automatic
+- **Split-Source** (default) - Content out, status in, automatic
 - **Export** - Local → External only
 - **Import** - External → Local only
 
@@ -819,8 +819,8 @@ Links:
 - Conflict resolution built-in
 
 **Manual Commands**:
-- `/specweave-github:sync` - Bidirectional sync
+- `/specweave-github:sync` - Split-source sync (content out, status in)
 - `/specweave-github:sync-from` - Import only
 - `/specweave-github:status` - Check sync status
 
-**Result**: Work in either system, changes flow automatically, always in sync.
+**Result**: Content authored in SpecWeave, status tracked in external tool, always in sync.

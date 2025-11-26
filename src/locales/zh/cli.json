@@ -40,6 +40,20 @@
       "overwriteDirectory": "Directory {{projectName}} already exists. Overwrite?",
       "enablePlugins": "Enable suggested plugins now?"
     },
+    "toolDetection": {
+      "header": "AI工具检测",
+      "detected": "检测到: {{tool}}",
+      "confirmPrompt": "使用 {{tool}} 来开发此项目？",
+      "ciAutoConfirm": "检测到CI环境 - 自动确认 {{tool}}",
+      "selectPrompt": "您将使用哪个AI工具？",
+      "recommended": "推荐 - 全自动化",
+      "tools": {
+        "claude": "Claude Code",
+        "cursor": "Cursor",
+        "copilot": "GitHub Copilot",
+        "generic": "其他 (ChatGPT, Gemini 等)"
+      }
+    },
     "info": {
       "nestedEnforcement": "SpecWeave enforces a single source of truth:",
       "nestedBullet1": "• Use the parent folder for all increments",

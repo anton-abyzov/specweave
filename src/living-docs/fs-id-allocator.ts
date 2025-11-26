@@ -16,6 +16,8 @@ import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import matter from 'gray-matter';
 import { formatOrigin, type ExternalItemMetadata } from '../core/types/origin-metadata.js';
+import type { ExternalContainerContext } from '../core/types/increment-metadata.js';
+import { normalizeToProjectId } from '../utils/project-id-generator.js';
 
 /**
  * Feature metadata extracted from living docs
@@ -72,9 +74,35 @@ export interface AllocationResult {
 }
 
 /**
+ * FS-ID Allocator Options
+ */
+export interface FSIdAllocatorOptions {
+  /** Enable global collision detection across ALL projects (umbrella mode) */
+  globalCollisionDetection?: boolean;
+
+  /**
+   * External container context for 2-level directory structure (v0.29.0+)
+   *
+   * When provided, creates features in 2-level structure:
+   * - JIRA: specs/JIRA-{containerId}/{projectId}/FS-XXX/
+   * - ADO: specs/ADO-{containerId}/{projectId}/FS-XXX/
+   *
+   * When NOT provided (default), creates in 1-level structure:
+   * - GitHub: specs/{projectId}/FS-XXX/
+   *
+   * Collision detection scans both 1-level and 2-level structures when
+   * globalCollisionDetection is enabled.
+   */
+  externalContainer?: ExternalContainerContext;
+}
+
+/**
  * FS-ID Allocator
  *
- * Intelligently allocates Feature IDs with chronological placement
+ * Intelligently allocates Feature IDs with chronological placement.
+ *
+ * CRITICAL: In umbrella/multi-repo setups, enable globalCollisionDetection
+ * to prevent ID collisions like FS-001 in project-a and FS-001E in project-b.
  */
 export class FSIdAllocator {
   private projectRoot: string;
@@ -83,15 +111,52 @@ export class FSIdAllocator {
   private projectId: string | undefined;
   private existingFeatures: Map<string, FeatureMetadata> = new Map();
   private scanned: boolean = false;
+  private globalCollisionDetection: boolean;
+  private externalContainer: ExternalContainerContext | undefined;
 
-  constructor(projectRoot: string, projectId?: string) {
+  constructor(projectRoot: string, projectId?: string, options?: FSIdAllocatorOptions) {
     this.projectRoot = projectRoot;
     // projectId can be:
-    // - undefined: items go directly to specs/ (no project subfolder)
+    // - undefined: items go directly to specs/ (no project subfolder) - DEPRECATED for umbrella
+    // - 'parent': parent project items go to specs/parent/
     // - string: items go to specs/{projectId}/
     this.projectId = projectId;
     this.specsPath = path.join(projectRoot, '.specweave/docs/internal/specs');
     this.archivePath = path.join(projectRoot, '.specweave/docs/_archive/specs');
+    this.globalCollisionDetection = options?.globalCollisionDetection ?? false;
+    this.externalContainer = options?.externalContainer;
+  }
+
+  /**
+   * Get base directory for features, handling both 1-level and 2-level structures
+   *
+   * Structure patterns:
+   * - 2-level (JIRA): specs/JIRA-{containerId}/{projectId}/
+   * - 2-level (ADO): specs/ADO-{containerId}/{projectId}/
+   * - 1-level (GitHub): specs/{projectId}/
+   * - Legacy: specs/ (no projectId)
+   */
+  private getBaseDirectory(): string {
+    if (this.externalContainer) {
+      // 2-level structure for JIRA/ADO
+      const containerType = this.externalContainer.type === 'jira-project' ? 'jira' : 'ado';
+      const containerDirName = `${containerType.toUpperCase()}-${normalizeToProjectId(this.externalContainer.containerId)}`;
+      const projectId = this.projectId || 'default';
+
+      return path.join(
+        this.specsPath,
+        containerDirName,
+        projectId
+      );
+    }
+
+    // 1-level structure for GitHub or single-project mode
+    if (this.projectId) {
+      return path.join(this.specsPath, this.projectId);
+    }
+
+    // Legacy: direct to specs/
+    return this.specsPath;
   }
 
   /**
@@ -102,26 +167,126 @@ export class FSIdAllocator {
    * Structure:
    * - With projectId: specs/{projectId}/FS-XXX/
    * - Without projectId: specs/FS-XXX/
+   *
+   * When globalCollisionDetection is enabled (umbrella mode):
+   * - Scans ALL project folders under specs/
+   * - Prevents ID collisions like FS-001 in project-a and FS-001E in project-b
    */
   async scanExistingIds(): Promise<void> {
     this.existingFeatures.clear();
 
-    // Determine scan path based on projectId
-    const projectSpecsPath = this.projectId
-      ? path.join(this.specsPath, this.projectId)
-      : this.specsPath;
+    if (this.globalCollisionDetection) {
+      // GLOBAL MODE: Scan ALL projects under specs/ to prevent cross-project collisions
+      await this.scanAllProjects();
+    } else {
+      // LEGACY MODE: Scan only the specified projectId folder
+      const projectSpecsPath = this.projectId
+        ? path.join(this.specsPath, this.projectId)
+        : this.specsPath;
 
-    if (await fs.pathExists(projectSpecsPath)) {
-      await this.scanDirectory(projectSpecsPath, 'active');
-    }
+      if (await fs.pathExists(projectSpecsPath)) {
+        await this.scanDirectory(projectSpecsPath, 'active');
+      }
 
-    // Scan archive: {specsPath}/_archive/FS-XXX/
-    const projectArchivePath = path.join(projectSpecsPath, '_archive');
-    if (await fs.pathExists(projectArchivePath)) {
-      await this.scanDirectory(projectArchivePath, 'archived');
+      // Scan archive: {specsPath}/_archive/FS-XXX/
+      const projectArchivePath = path.join(projectSpecsPath, '_archive');
+      if (await fs.pathExists(projectArchivePath)) {
+        await this.scanDirectory(projectArchivePath, 'archived');
+      }
     }
 
     this.scanned = true;
+  }
+
+  /**
+   * Scan ALL projects under specs/ for global collision detection
+   *
+   * This scans both 1-level and 2-level structures:
+   * - specs/FS-XXX/ (root-level features, legacy)
+   * - specs/{project}/FS-XXX/ (1-level: all project folders)
+   * - specs/{project}/_archive/FS-XXX/ (1-level archived)
+   * - specs/JIRA-{container}/{project}/FS-XXX/ (2-level JIRA)
+   * - specs/ADO-{container}/{project}/FS-XXX/ (2-level ADO)
+   * - specs/JIRA-{container}/{project}/_archive/FS-XXX/ (2-level archived)
+   */
+  private async scanAllProjects(): Promise<void> {
+    if (!await fs.pathExists(this.specsPath)) {
+      return;
+    }
+
+    const entries = await fs.readdir(this.specsPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+
+      const entryPath = path.join(this.specsPath, entry.name);
+
+      // Check if this is an FS-XXX folder (root-level feature)
+      if (/^FS-\d{3}E?$/.test(entry.name)) {
+        const metadata = await this.parseFeatureMetadata(entryPath, entry.name);
+        if (metadata) {
+          this.existingFeatures.set(entry.name, metadata);
+        }
+        continue;
+      }
+
+      // Skip _archive at root (handled per-project)
+      if (entry.name === '_archive') continue;
+
+      // Check if this is a 2-level container folder (JIRA-* or ADO-*)
+      if (/^(JIRA|ADO)-/.test(entry.name)) {
+        // 2-level structure: scan project folders INSIDE the container
+        await this.scanContainerFolder(entryPath);
+        continue;
+      }
+
+      // This is a 1-level project folder - scan it for FS-XXX folders
+      await this.scanDirectory(entryPath, 'active');
+
+      // Also scan project's archive
+      const projectArchivePath = path.join(entryPath, '_archive');
+      if (await fs.pathExists(projectArchivePath)) {
+        await this.scanDirectory(projectArchivePath, 'archived');
+      }
+    }
+
+    // Also scan root-level _archive
+    const rootArchivePath = path.join(this.specsPath, '_archive');
+    if (await fs.pathExists(rootArchivePath)) {
+      await this.scanDirectory(rootArchivePath, 'archived');
+    }
+  }
+
+  /**
+   * Scan a 2-level container folder (JIRA-* or ADO-*)
+   *
+   * Container structure:
+   * - specs/JIRA-CORE/
+   * -   fe/
+   * -     FS-001/
+   * -     _archive/
+   * -   be/
+   * -     FS-002/
+   */
+  private async scanContainerFolder(containerPath: string): Promise<void> {
+    const projectEntries = await fs.readdir(containerPath, { withFileTypes: true });
+
+    for (const projectEntry of projectEntries) {
+      if (!projectEntry.isDirectory()) continue;
+
+      // Skip _archive at container level (shouldn't exist, but just in case)
+      if (projectEntry.name === '_archive') continue;
+
+      // This is a project folder inside the container
+      const projectPath = path.join(containerPath, projectEntry.name);
+      await this.scanDirectory(projectPath, 'active');
+
+      // Also scan project's archive
+      const projectArchivePath = path.join(projectPath, '_archive');
+      if (await fs.pathExists(projectArchivePath)) {
+        await this.scanDirectory(projectArchivePath, 'archived');
+      }
+    }
   }
 
   /**
@@ -388,7 +553,11 @@ export class FSIdAllocator {
   /**
    * Create feature folder with FEATURE.md and metadata
    *
-   * Structure: specs/{projectId}/FS-XXX/FEATURE.md
+   * Structure patterns:
+   * - 2-level (JIRA): specs/JIRA-{containerId}/{projectId}/FS-XXX/FEATURE.md
+   * - 2-level (ADO): specs/ADO-{containerId}/{projectId}/FS-XXX/FEATURE.md
+   * - 1-level (GitHub): specs/{projectId}/FS-XXX/FEATURE.md
+   * - Legacy: specs/FS-XXX/FEATURE.md (not recommended for umbrella)
    *
    * @param fsId - Feature ID (e.g., "FS-042E")
    * @param workItem - External work item metadata
@@ -400,8 +569,9 @@ export class FSIdAllocator {
     workItem: ExternalWorkItem,
     metadata: ExternalItemMetadata
   ): Promise<string> {
-    // Create folder path under project: specs/{projectId}/FS-XXX/
-    const featurePath = path.join(this.specsPath, this.projectId, fsId);
+    // Create folder path using 2-level or 1-level structure based on externalContainer
+    const baseDir = this.getBaseDirectory();
+    const featurePath = path.join(baseDir, fsId);
     await fs.ensureDir(featurePath);
 
     // Generate README.md with frontmatter

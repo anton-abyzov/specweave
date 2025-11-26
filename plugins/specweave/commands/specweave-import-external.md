@@ -1,11 +1,13 @@
 ---
 name: specweave:import-external
-description: Manually pull external work items from GitHub, JIRA, or Azure DevOps into living docs. Supports time range filtering, platform selection, and dry-run mode for ongoing imports after initial setup.
+description: Pull external work items from GitHub, JIRA, or Azure DevOps into living docs as READ-ONLY REFERENCES (not increments). To implement imported items, manually create an increment. Supports time range filtering and dry-run mode.
 ---
 
-# Import External Work Items
+# Import External Work Items (Reference Import)
 
-Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azure DevOps (work items) into SpecWeave living docs.
+Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azure DevOps (work items) into SpecWeave living docs **as read-only references**.
+
+> **Important**: This command creates a **reference catalog**, NOT increments. Imported items have E-suffix IDs (US-001E, FS-042E). To implement an imported item, you must **manually create an increment** that references it.
 
 ## What This Does
 

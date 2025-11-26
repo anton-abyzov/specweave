@@ -1,11 +1,15 @@
 ---
 name: specweave:sync-docs
-description: Bidirectional documentation sync - review strategic docs before implementation OR update living docs from completed increments with conflict resolution
+description: Strategic documentation sync - review docs before implementation (pull context) OR export learnings after implementation (push to living docs). NOT bidirectional - two separate one-way operations at different phases.
 ---
 
 # Sync Documentation
 
-You are executing the SpecWeave documentation sync command. This handles bidirectional documentation synchronization between increments and living docs.
+You are executing the SpecWeave strategic documentation sync command. This handles phase-based documentation synchronization:
+- **Review mode**: Pull strategic docs for pre-implementation context
+- **Update mode**: Push implementation learnings to living docs
+
+**Note**: This is NOT bidirectional sync (simultaneous two-way). It's two separate one-way operations at different project phases.
 
 ---
 

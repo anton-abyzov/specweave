@@ -12,6 +12,7 @@ import { Octokit } from '@octokit/rest';
 import { ImportCoordinator, CoordinatorConfig, CoordinatorResult, ProgressInfo } from '../../../importers/import-coordinator.js';
 import { ItemConverter, ConvertedUserStory } from '../../../importers/item-converter.js';
 import type { ExternalItem } from '../../../importers/external-importer.js';
+import type { ExternalContainerContext } from '../../../core/types/increment-metadata.js';
 import { loadImportConfig } from '../../../config/import-config.js';
 import { selectRepositories, type RepoSelectionConfig } from '../github-repo-selector.js';
 import { detectAllConfigs } from './config-detection.js';
@@ -613,31 +614,46 @@ async function convertToLivingDocs(
     let totalConverted = 0;
     const allConvertedStories: ConvertedUserStory[] = [];
 
-    // Group items by sourceRepo for proper multi-repo folder allocation
-    const itemsByRepo = groupItemsBySourceRepo(result.allItems);
-    const repoCount = itemsByRepo.size;
+    // Group items by external container (JIRA project/board, ADO project/area, or GitHub repo)
+    // This supports:
+    // - 2-level structure for JIRA: specs/JIRA-{projectKey}/{boardName}/FS-XXX/
+    // - 2-level structure for ADO: specs/ADO-{projectName}/{areaPath}/FS-XXX/
+    // - 1-level structure for GitHub: specs/{repoName}/FS-XXX/
+    const containerGroups = groupItemsByExternalContainer(result.allItems);
+    const groupCount = containerGroups.length;
 
-    for (const [repoKey, items] of itemsByRepo.entries()) {
-      // Determine project ID:
-      // - For multi-repo: use repo name (e.g., "sw-thumbnail-ab-be")
-      // - For single-repo/no sourceRepo: null (items go directly to specs/)
-      const projectId = repoKey === '_default' ? null : repoKey;
+    // Enable global collision detection when multiple groups exist (umbrella mode)
+    const isUmbrellaMode = groupCount > 1;
 
-      spinner.text = projectId
-        ? `Converting items from ${projectId}...`
-        : 'Converting items to living docs...';
+    // Track which container types we're using for logging
+    const containerTypesUsed = new Set(containerGroups.map(g => g.containerType || 'github'));
+
+    for (const group of containerGroups) {
+      const { projectId, items, externalContainer, containerType, containerId } = group;
+
+      // Build display label for spinner
+      const displayLabel = containerType
+        ? `${containerType.toUpperCase()}-${containerId}/${projectId}`
+        : projectId;
+
+      spinner.text = `Converting items from ${displayLabel}...`;
 
       // Create converter for this project/repo
+      // Pass externalContainer for 2-level directory structure (JIRA/ADO)
       const converter = new ItemConverter({
         specsDir,
         projectRoot: targetDir,
         enableFeatureAllocation: true,
-        // For multi-repo: use repo name as project folder
-        // For single-repo: undefined means direct to specs/ (no project subfolder)
-        projectId: projectId || undefined,
+        projectId: projectId,
+        // CRITICAL: Enable global collision detection in umbrella mode
+        enableGlobalCollisionDetection: isUmbrellaMode,
         autoArchiveAfterDays: 30,
+        // NEW: Pass external container for 2-level directory structure
+        externalContainer: externalContainer,
         onFeatureCreated: (featureId, featurePath) => {
-          const label = projectId ? `${projectId}/${featureId}` : featureId;
+          const label = externalContainer
+            ? `${containerType?.toUpperCase()}-${containerId}/${projectId}/${featureId}`
+            : `${projectId}/${featureId}`;
           spinner.text = `Created feature folder: ${label}`;
         },
         onItemArchived: (usId, reason) => {
@@ -656,8 +672,25 @@ async function convertToLivingDocs(
 
     spinner.succeed(`Converted ${totalConverted} User Stories to living docs`);
     console.log(chalk.gray('   → Living docs created with E suffix (US-001E, US-002E, ...)'));
-    if (repoCount > 1) {
-      console.log(chalk.gray(`   → Organized into ${repoCount} project folders`));
+
+    // Log directory structure info
+    if (containerTypesUsed.has('jira') || containerTypesUsed.has('ado')) {
+      console.log(chalk.gray(`   → Using 2-level directory structure for JIRA/ADO`));
+      if (containerTypesUsed.has('jira')) {
+        console.log(chalk.gray(`   → JIRA: specs/JIRA-{project}/{board}/FS-XXX/`));
+      }
+      if (containerTypesUsed.has('ado')) {
+        console.log(chalk.gray(`   → ADO: specs/ADO-{project}/{areaPath}/FS-XXX/`));
+      }
+    }
+    if (containerTypesUsed.has('github') || containerTypesUsed.has(null)) {
+      console.log(chalk.gray(`   → GitHub: specs/{repo}/FS-XXX/ (1-level)`));
+    }
+    if (groupCount > 1) {
+      console.log(chalk.gray(`   → Organized into ${groupCount} project folders`));
+      console.log(chalk.gray(`   → Global collision detection enabled (umbrella mode)`));
+    } else {
+      console.log(chalk.gray(`   → Organized into single project folder`));
     }
     if (uniqueFeatures.size > 0) {
       console.log(chalk.gray(`   → Organized into ${uniqueFeatures.size} feature folder(s)`));
@@ -726,6 +759,104 @@ function groupItemsBySourceRepo(items: ExternalItem[]): Map<string, ExternalItem
   }
 
   return groups;
+}
+
+/**
+ * Group items by external container (JIRA project/board, ADO project/area path)
+ * Returns groups with container context for 2-level directory structure
+ */
+interface ContainerGroup {
+  containerId: string;          // JIRA project key or ADO project name
+  containerType: 'jira' | 'ado' | null;  // null for GitHub
+  projectId: string;            // Board-based or area-path-based project ID
+  items: ExternalItem[];
+  externalContainer: ExternalContainerContext | undefined;
+}
+
+function groupItemsByExternalContainer(items: ExternalItem[]): ContainerGroup[] {
+  const groups = new Map<string, ContainerGroup>();
+
+  for (const item of items) {
+    let groupKey: string;
+    let containerType: 'jira' | 'ado' | null = null;
+    let containerId: string | undefined;
+    let projectId: string;
+    let externalContainer: ExternalContainerContext | undefined;
+
+    // Check for JIRA container context
+    if (item.jiraProjectKey) {
+      containerType = 'jira';
+      containerId = item.jiraProjectKey;
+
+      // Project ID from board name (if available) or default
+      projectId = item.jiraBoardName
+        ? item.jiraBoardName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'default'
+        : 'default';
+
+      groupKey = `jira:${containerId}:${projectId}`;
+
+      externalContainer = {
+        type: 'jira-project',
+        containerId: containerId,
+        containerName: containerId,
+        boardId: item.jiraBoardId,
+        boardName: item.jiraBoardName
+      };
+    }
+    // Check for ADO container context
+    else if (item.adoProjectName) {
+      containerType = 'ado';
+      containerId = item.adoProjectName;
+
+      // Project ID from area path (extract last segment) or default
+      if (item.adoAreaPath) {
+        const areaSegments = item.adoAreaPath.split('\\');
+        const lastSegment = areaSegments[areaSegments.length - 1];
+        projectId = lastSegment.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'default';
+      } else {
+        projectId = 'default';
+      }
+
+      groupKey = `ado:${containerId}:${projectId}`;
+
+      externalContainer = {
+        type: 'ado-project',
+        containerId: containerId,
+        containerName: containerId,
+        areaPath: item.adoAreaPath
+      };
+    }
+    // GitHub or default (1-level structure)
+    else {
+      // Use sourceRepo if available, otherwise '_default'
+      if (item.sourceRepo) {
+        const parts = item.sourceRepo.split('/');
+        const rawRepoName = parts.length > 1 ? parts[1] : item.sourceRepo;
+        projectId = rawRepoName
+          .replace(/[^a-zA-Z0-9-_]/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 100) || 'parent';
+      } else {
+        projectId = 'parent';
+      }
+
+      groupKey = `gh:${projectId}`;
+      // No externalContainer for GitHub (1-level structure)
+    }
+
+    if (!groups.has(groupKey)) {
+      groups.set(groupKey, {
+        containerId: containerId || projectId,
+        containerType,
+        projectId,
+        items: [],
+        externalContainer
+      });
+    }
+    groups.get(groupKey)!.items.push(item);
+  }
+
+  return Array.from(groups.values());
 }
 
 /**

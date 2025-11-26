@@ -52,7 +52,13 @@ const PLUGIN_DEPENDENCIES = {
     'dist/src/core/types/increment-metadata.js',
     'dist/src/generators/spec/task-parser.js',
     'dist/src/utils/logger.js',
-    'dist/src/utils/translation.js'
+    'dist/src/utils/translation.js',
+    // AC Test Validator - validates acceptance criteria have passing tests before task completion
+    // Used by pre-task-completion.sh hook for marketplace plugin users
+    'dist/src/core/ac-test-validator.js',
+    'dist/src/core/ac-test-validator-cli.js',
+    'dist/src/utils/fs-native.js',
+    'dist/src/utils/chalk-fallback.js'
   ]
 };
 

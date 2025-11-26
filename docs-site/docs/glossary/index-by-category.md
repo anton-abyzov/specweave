@@ -211,9 +211,10 @@ SpecWeave-specific concepts and features.
 - [AC-ID](/docs/glossary/terms/ac-id) - Acceptance criteria identifiers (AC-US1-01)
 
 ### Sync & Integration
+- [Data Flow Architecture](/docs/glossary/terms/data-flow-architecture) - Two one-way flows: Publish (out) and Import (in as reference)
 - [Three-Permission Architecture](/docs/glossary/terms/three-permission-architecture) - Granular sync control (v0.24.0+)
 - [Profile-Based Sync](/docs/glossary/terms/profile-based-sync) - Multi-repo sync configuration
-- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Two-way synchronization (*deprecated, see Three-Permission*)
+- [Split-Source Sync](/docs/glossary/terms/split-source-sync) - Content flows out, status flows in (not true bidirectional)
 
 ### Automation
 - [Hooks](/docs/glossary/terms/hooks) - Automated scripts at lifecycle events

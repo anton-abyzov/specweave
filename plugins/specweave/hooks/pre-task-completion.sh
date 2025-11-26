@@ -201,13 +201,20 @@ fi
 echo "[$(date)] 🧪 Running AC test validation for $CURRENT_INCREMENT" >> "$DEBUG_LOG" 2>/dev/null || true
 
 # Determine which validation script to use
+# Priority order:
+# 1. SpecWeave development (dist/src/core/) - for contributors
+# 2. npm package installation (node_modules/specweave/dist/)
+# 3. Marketplace plugin (lib/vendor/core/) - for end users
 VALIDATOR_SCRIPT=""
 if [ -f "$PROJECT_ROOT/dist/src/core/ac-test-validator-cli.js" ]; then
+  # SpecWeave development repo
   VALIDATOR_SCRIPT="$PROJECT_ROOT/dist/src/core/ac-test-validator-cli.js"
 elif [ -f "$PROJECT_ROOT/node_modules/specweave/dist/src/core/ac-test-validator-cli.js" ]; then
+  # npm package installation
   VALIDATOR_SCRIPT="$PROJECT_ROOT/node_modules/specweave/dist/src/core/ac-test-validator-cli.js"
-elif [ -n "${CLAUDE_PLUGIN_ROOT}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/dist/src/core/ac-test-validator-cli.js" ]; then
-  VALIDATOR_SCRIPT="${CLAUDE_PLUGIN_ROOT}/dist/src/core/ac-test-validator-cli.js"
+elif [ -n "${CLAUDE_PLUGIN_ROOT}" ] && [ -f "${CLAUDE_PLUGIN_ROOT}/lib/vendor/core/ac-test-validator-cli.js" ]; then
+  # Marketplace plugin (bundled in lib/vendor/)
+  VALIDATOR_SCRIPT="${CLAUDE_PLUGIN_ROOT}/lib/vendor/core/ac-test-validator-cli.js"
 fi
 
 if [ -z "$VALIDATOR_SCRIPT" ] || ! command -v node &> /dev/null; then

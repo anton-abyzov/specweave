@@ -158,6 +158,6 @@ Migration happens automatically on upgrade.
 
 ## Related Terms
 
-- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync)
+- [Split-Source Sync](/docs/glossary/terms/split-source-sync)
 - [Profile-Based Sync](/docs/glossary/terms/profile-based-sync)
 - [Hooks](/docs/glossary/terms/hooks)

@@ -92,5 +92,5 @@ Circuit breaker thresholds can be configured:
 ## Related Terms
 
 - [Hooks](/docs/glossary/terms/hooks) - Protected by circuit breakers
-- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Uses circuit breakers for external APIs
+- [Split-Source Sync](/docs/glossary/terms/split-source-sync) - Uses circuit breakers for external APIs
 - [Context Explosion](/docs/glossary/terms/context-explosion) - Different failure mode

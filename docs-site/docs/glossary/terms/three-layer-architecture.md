@@ -1,7 +1,7 @@
 # Three-Layer Architecture
 
 **Category**: Architecture
-**Related Terms**: [Bidirectional Sync](bidirectional-sync.md), [Living Docs](living-docs.md), [Source of Truth](source-of-truth.md), [GitHub Integration](../../guides/github-integration.md)
+**Related Terms**: [Split-Source Sync](split-source-sync.md), [Living Docs](living-docs.md), [Source of Truth](source-of-truth.md), [GitHub Integration](../../guides/github-integration.md)
 
 ---
 
@@ -365,7 +365,7 @@ class ThreeLayerSyncManager {
 
 ## Related Concepts
 
-- **[Bidirectional Sync](bidirectional-sync.md)**: How data flows in both directions
+- **[Split-Source Sync](split-source-sync.md)**: Content flows out, status flows in
 - **[Living Docs](living-docs.md)**: Middle layer documentation
 - **[Source of Truth](source-of-truth.md)**: Increment as definitive status
 - **[COPIED ACs and Tasks](copied-acs-and-tasks.md)**: How content is copied, not referenced

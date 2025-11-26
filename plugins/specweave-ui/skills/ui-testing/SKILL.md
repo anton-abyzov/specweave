@@ -1,6 +1,6 @@
 ---
 name: ui-testing
-description: UI and end-to-end testing expert using Playwright Test, Cypress, Testing Library, and component testing frameworks. Covers test strategies, page object models, accessibility testing, CI integration, and test flakiness mitigation. Activates for UI testing, E2E testing, Playwright Test, Cypress, Testing Library, component tests, integration tests, accessibility testing, test flakiness, page object model, CI testing.
+description: Multi-framework UI testing expert - Cypress, Testing Library, component tests. Use for framework comparison, Cypress-specific testing, or React Testing Library. For DEEP Playwright expertise, use e2e-playwright skill instead. Activates for Cypress, Testing Library, component tests, React testing, Vue testing, framework comparison, which testing tool, Cypress vs Playwright.
 ---
 
 # UI Testing Skill

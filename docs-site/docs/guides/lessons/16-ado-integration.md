@@ -847,7 +847,7 @@ specweave init . --reconfigure
 
 - **[Azure DevOps](/docs/glossary/terms/azure-devops)** — Microsoft DevOps platform
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work in SpecWeave
-- **[Bidirectional Sync](/docs/glossary/terms/bidirectional-sync)** — Two-way synchronization
+- **[Split-Source Sync](/docs/glossary/terms/split-source-sync)** — Content out, status in (not true bidirectional)
 - **[Sprint](/docs/glossary/terms/sprint)** — Time-boxed iteration
 
 ---

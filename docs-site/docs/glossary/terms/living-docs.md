@@ -611,7 +611,7 @@ GitHub issue closed → Hook updates living docs → Link removed
 
 - [Specs](/docs/glossary/terms/specs) - Specifications (permanent knowledge base)
 - [Increments](/docs/glossary/terms/increments) - Temporary implementation tracker
-- [Bidirectional Sync](/docs/glossary/terms/bidirectional-sync) - Two-way synchronization
+- [Split-Source Sync](/docs/glossary/terms/split-source-sync) - Content out, status in
 - [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Content classification
 - [Source of Truth](/docs/glossary/terms/source-of-truth) - Single source of truth principle
 - [User Stories](/docs/glossary/terms/user-stories) - User story format

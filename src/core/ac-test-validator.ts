@@ -21,7 +21,11 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import * as fs from '../utils/fs-native.js';
-import chalk from 'chalk';
+import chalkFallback, { getChalk } from '../utils/chalk-fallback.js';
+
+// Use chalk if available, otherwise fallback to ANSI codes
+let chalk = chalkFallback;
+getChalk().then(c => { chalk = c; }).catch(() => {});
 
 const execAsync = promisify(exec);
 

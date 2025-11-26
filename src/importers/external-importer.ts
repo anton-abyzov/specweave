@@ -58,6 +58,40 @@ export interface ExternalItem {
 
   /** Source repository (owner/repo format for multi-repo imports) */
   sourceRepo?: string;
+
+  // ============================================================================
+  // External Container Context (v0.29.0+ - 2-Level Directory Structure Support)
+  // ============================================================================
+
+  /**
+   * JIRA project key (e.g., "CORE")
+   * Used for 2-level directory: specs/JIRA-{projectKey}/{boardMapping}/
+   */
+  jiraProjectKey?: string;
+
+  /**
+   * JIRA board ID (numeric)
+   * Maps to SpecWeave project via boardMapping configuration
+   */
+  jiraBoardId?: number;
+
+  /**
+   * JIRA board name (e.g., "Frontend Board")
+   * Human-readable name for display purposes
+   */
+  jiraBoardName?: string;
+
+  /**
+   * ADO project name (e.g., "MyProduct")
+   * Used for 2-level directory: specs/ADO-{projectName}/{areaPathMapping}/
+   */
+  adoProjectName?: string;
+
+  /**
+   * ADO area path (e.g., "MyProduct\\Frontend")
+   * Maps to SpecWeave project via areaPathMapping configuration
+   */
+  adoAreaPath?: string;
 }
 
 /**

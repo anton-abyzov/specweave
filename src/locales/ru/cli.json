@@ -61,6 +61,20 @@
       "overwriteDirectory": "Директория {{projectName}} уже существует. Перезаписать?",
       "enablePlugins": "Включить предложенные плагины сейчас?"
     },
+    "toolDetection": {
+      "header": "Определение AI-инструмента",
+      "detected": "Обнаружен: {{tool}}",
+      "confirmPrompt": "Использовать {{tool}} для этого проекта?",
+      "ciAutoConfirm": "Обнаружена CI среда - автоматическое подтверждение {{tool}}",
+      "selectPrompt": "Какой AI-инструмент вы будете использовать?",
+      "recommended": "Рекомендуется - Полная автоматизация",
+      "tools": {
+        "claude": "Claude Code",
+        "cursor": "Cursor",
+        "copilot": "GitHub Copilot",
+        "generic": "Другой (ChatGPT, Gemini и т.д.)"
+      }
+    },
     "info": {
       "nestedEnforcement": "SpecWeave требует единого источника истины:",
       "nestedBullet1": "• Используйте родительскую папку для всех инкрементов",
