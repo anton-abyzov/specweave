@@ -1,22 +1,15 @@
 ---
 id: US-003
 feature: FS-058
-title: Safety Guards Against Crashes (P0)
+title: "Safety Guards Against Crashes (P0)"
 status: completed
 priority: P0
 created: 2025-11-24T00:00:00.000Z
-external:
-  github:
-    issue: 744
-    url: https://github.com/anton-abyzov/specweave/issues/744
 ---
-
-**Origin**: 🏠 **Internal**
-
 
 # US-003: Safety Guards Against Crashes (P0)
 
-**Feature**: [FS-058](../../_features/FS-058/FEATURE.md)
+**Feature**: [FS-058](./FEATURE.md)
 
 **As a** : Developer
 **I want** : Sync failures to be isolated and not crash Claude Code
@@ -44,8 +37,8 @@ external:
 
 ## Tasks
 
-- [x] [T-005](../../../../increments/0058-fix-status-sync-and-auto-github-update/tasks.md#T-005): Create SyncCircuitBreaker class
-- [x] [T-007](../../../../increments/0058-fix-status-sync-and-auto-github-update/tasks.md#T-007): Add error handling and logging
-- [x] [T-008](../../../../increments/0058-fix-status-sync-and-auto-github-update/tasks.md#T-008): Add diagnostics command
-- [x] [T-009](../../../../increments/0058-fix-status-sync-and-auto-github-update/tasks.md#T-009): Unit tests for circuit breaker
-- [x] [T-012](../../../../increments/0058-fix-status-sync-and-auto-github-update/tasks.md#T-012): Crash resistance test
+- [x] **T-005**: Create SyncCircuitBreaker class
+- [x] **T-007**: Add error handling and logging
+- [x] **T-008**: Add diagnostics command
+- [x] **T-009**: Unit tests for circuit breaker
+- [x] **T-012**: Crash resistance test

@@ -7,9 +7,6 @@ priority: P1
 created: 2024-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-002: Background Issue Import
 
 **Feature**: [FS-065](./FEATURE.md)
@@ -38,5 +35,6 @@ created: 2024-11-26
 
 ## Tasks
 
-- [x] [T-007](../../../../increments/0065-background-jobs/tasks.md#T-007): Integrate job manager with external import
-- [x] [T-008](../../../../increments/0065-background-jobs/tasks.md#T-008): Add rate limit detection and auto-pause
+- [x] **T-007**: Integrate job manager with external import
+- [x] **T-008**: Add rate limit detection and auto-pause
+- [x] **T-009**: Test integration end-to-end

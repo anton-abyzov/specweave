@@ -4,18 +4,12 @@ feature: FS-059
 title: "Lazy Skill Loading"
 status: completed
 priority: P0
-created: 2025-11-24
-completed: 2025-11-24
-external:
-  github:
-    issue: 746
-    url: https://github.com/anton-abyzov/specweave/issues/746
-    state: closed
+created: 2025-11-26
 ---
 
 # US-002: Lazy Skill Loading
 
-**Feature**: [FS-059](../../_features/FS-059/FEATURE.md)
+**Feature**: [FS-059](./FEATURE.md)
 
 **As a** Claude Code user
 **I want** skills loaded only when their keywords are detected

@@ -9,7 +9,7 @@ created: 2025-11-24T00:00:00.000Z
 
 # US-002: Verify Status Line Updates on Task Completion (P0)
 
-**Feature**: [FS-057](../../_features/FS-057/FEATURE.md)
+**Feature**: [FS-057](./FEATURE.md)
 
 **As a** : Developer
 **I want** : The status line to update when tasks are completed

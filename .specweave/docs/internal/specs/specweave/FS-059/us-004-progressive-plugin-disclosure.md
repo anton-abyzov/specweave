@@ -4,18 +4,12 @@ feature: FS-059
 title: "Progressive Plugin Disclosure"
 status: completed
 priority: P0
-created: 2025-11-24
-completed: 2025-11-24
-external:
-  github:
-    issue: 748
-    url: https://github.com/anton-abyzov/specweave/issues/748
-    state: closed
+created: 2025-11-26
 ---
 
 # US-004: Progressive Plugin Disclosure
 
-**Feature**: [FS-059](../../_features/FS-059/FEATURE.md)
+**Feature**: [FS-059](./FEATURE.md)
 
 **As a** SpecWeave developer
 **I want** plugins to load metadata only, full content on-demand

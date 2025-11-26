@@ -7,9 +7,6 @@ priority: P1
 created: 2024-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-004: GitHub Label Preservation
 
 **Feature**: [FS-064](./FEATURE.md)
@@ -37,4 +34,4 @@ created: 2024-11-26
 
 ## Tasks
 
-- [x] [T-007](../../../../increments/0064-fix-external-sync-tags-status-types/tasks.md#T-007): Fix GitHub Label Preservation
+- [x] **T-007**: Fix GitHub Label Preservation

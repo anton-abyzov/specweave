@@ -1,15 +1,10 @@
 ---
 id: US-002
 feature: FS-056
-title: Automatic GitHub Issue Creation on Increment Creation (P0)
+title: "Automatic GitHub Issue Creation on Increment Creation (P0)"
 status: not_started
 priority: P0
 created: 2025-11-24T00:00:00.000Z
-external_tools:
-  github:
-    number: 766
-    url: https://github.com/anton-abyzov/specweave/issues/766
-    created_at: 2025-11-26T17:38:10.115Z
 ---
 
 # US-002: Automatic GitHub Issue Creation on Increment Creation (P0)

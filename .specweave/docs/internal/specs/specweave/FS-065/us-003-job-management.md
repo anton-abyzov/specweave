@@ -7,9 +7,6 @@ priority: P1
 created: 2024-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-003: Job Management
 
 **Feature**: [FS-065](./FEATURE.md)
@@ -38,8 +35,9 @@ created: 2024-11-26
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0065-background-jobs/tasks.md#T-001): Create background job types
-- [x] [T-002](../../../../increments/0065-background-jobs/tasks.md#T-002): Create job manager service
-- [x] [T-003](../../../../increments/0065-background-jobs/tasks.md#T-003): Create /specweave:jobs slash command
-- [x] [T-004](../../../../increments/0065-background-jobs/tasks.md#T-004): Write internal documentation
-- [x] [T-005](../../../../increments/0065-background-jobs/tasks.md#T-005): Write public documentation
+- [x] **T-001**: Create background job types
+- [x] **T-002**: Create job manager service
+- [x] **T-003**: Create /specweave:jobs slash command
+- [x] **T-004**: Write internal documentation
+- [x] **T-005**: Write public documentation
+- [x] **T-009**: Test integration end-to-end

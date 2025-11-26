@@ -4,12 +4,12 @@ feature: FS-060
 title: "Fix Interactive Prompts"
 status: completed
 priority: critical
-created: 2025-11-25
+created: 2025-11-26
 ---
 
 # US-001: Fix Interactive Prompts
 
-**Feature**: [FS-060](../../_features/FS-060/FEATURE.md)
+**Feature**: [FS-060](./FEATURE.md)
 
 **As a** SpecWeave user
 **I want** interactive selection prompts to work correctly

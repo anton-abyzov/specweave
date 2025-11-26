@@ -1,20 +1,15 @@
 ---
 id: US-003
 feature: FS-063
-title: Large Import Progress Tracking
-status: not_started
+title: "Large Import Progress Tracking"
+status: completed
 priority: P1
 created: 2025-11-25T11:40:00Z
-external_tools:
-  github:
-    number: 763
-    url: https://github.com/anton-abyzov/specweave/issues/763
-    created_at: 2025-11-25T18:04:56.374Z
 ---
 
 # US-003: Large Import Progress Tracking
 
-**Feature**: [FS-063](../../_features/FS-063/FEATURE.md)
+**Feature**: [FS-063](./FEATURE.md)
 
 **As a** user importing from large projects (1000+ items),
 **I want** real-time progress tracking with ETA,
@@ -24,10 +19,10 @@ external_tools:
 
 ## Acceptance Criteria
 
-- [ ] **AC-US3-01**: Progress shows current/total count with percentage
-- [ ] **AC-US3-02**: Progress shows estimated time remaining
-- [ ] **AC-US3-03**: Progress shows items per second rate
-- [ ] **AC-US3-04**: Each repository import shows its own progress when multi-repo
+- [x] **AC-US3-01**: Progress shows current/total count with percentage
+- [x] **AC-US3-02**: Progress shows estimated time remaining
+- [x] **AC-US3-03**: Progress shows items per second rate
+- [x] **AC-US3-04**: Each repository import shows its own progress when multi-repo
 
 ---
 
@@ -40,4 +35,8 @@ external_tools:
 
 ## Tasks
 
-_No tasks defined for this user story_
+- [x] **T-010**: Add totalEstimate to ImportResult
+- [x] **T-011**: Enhance onProgress callback with percentage and ETA
+- [x] **T-012**: Update spinner display for rich progress
+- [x] **T-013**: Show per-repo progress in multi-repo imports
+- [ ] **T-019**: Manual integration test with sw-thumbnail-ab

@@ -10,5 +10,12 @@
   "deferredTasks": 1,
   "totalTasks": 7,
   "scope": "foundation",
-  "tags": ["multi-repo", "umbrella", "pm-agent", "init", "phase-1"]
+  "tags": [
+    "multi-repo",
+    "umbrella",
+    "pm-agent",
+    "init",
+    "phase-1"
+  ],
+  "feature_id": "FS-062"
 }

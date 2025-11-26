@@ -1,15 +1,10 @@
 ---
 id: US-002
 feature: FS-066
-title: Multi-Area ADO Import
+title: "Multi-Area ADO Import"
 status: completed
 priority: P1
 created: 2025-11-26T14:00:00Z
-external_tools:
-  github:
-    number: 770
-    url: https://github.com/anton-abyzov/specweave/issues/770
-    created_at: 2025-11-26T17:43:58.616Z
 ---
 
 # US-002: Multi-Area ADO Import

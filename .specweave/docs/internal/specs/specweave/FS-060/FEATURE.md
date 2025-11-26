@@ -4,8 +4,8 @@ title: "Migrate Inquirer to Modular API"
 type: feature
 status: completed
 priority: critical
-created: 2025-11-25
-lastUpdated: 2025-11-25
+created: 2025-11-26
+lastUpdated: 2025-11-26
 ---
 
 # Migrate Inquirer to Modular API
@@ -18,7 +18,7 @@ The v0.26.14 "fix" for inquirer prompts broke all interactive selection prompts.
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0060-migrate-inquirer-to-modular-api](../../../../increments/0060-migrate-inquirer-to-modular-api/spec.md) | ✅ completed | 2025-11-25 |
+| [0060-migrate-inquirer-to-modular-api](../../../../increments/0060-migrate-inquirer-to-modular-api/spec.md) | ✅ completed | 2025-11-26 |
 
 ## User Stories
 

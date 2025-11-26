@@ -292,8 +292,10 @@ export async function validateGitHubConnection(
  * @returns Array of key-value pairs for .env
  */
 export function getGitHubEnvVars(credentials: GitHubCredentials): Array<{ key: string; value: string }> {
+  // CRITICAL FIX (2025-11-26): Use GITHUB_TOKEN as the standard variable name
+  // Previously used GH_TOKEN, but loadEnvConfig() and other code expect GITHUB_TOKEN
   const vars = [
-    { key: 'GH_TOKEN', value: credentials.token }
+    { key: 'GITHUB_TOKEN', value: credentials.token }
   ];
 
   // Add Enterprise-specific variables

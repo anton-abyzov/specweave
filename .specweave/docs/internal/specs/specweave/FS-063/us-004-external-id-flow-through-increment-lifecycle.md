@@ -1,20 +1,15 @@
 ---
 id: US-004
 feature: FS-063
-title: External ID Flow Through Increment Lifecycle
-status: not_started
+title: "External ID Flow Through Increment Lifecycle"
+status: completed
 priority: P1
 created: 2025-11-25T11:40:00Z
-external_tools:
-  github:
-    number: 764
-    url: https://github.com/anton-abyzov/specweave/issues/764
-    created_at: 2025-11-25T18:04:58.662Z
 ---
 
 # US-004: External ID Flow Through Increment Lifecycle
 
-**Feature**: [FS-063](../../_features/FS-063/FEATURE.md)
+**Feature**: [FS-063](./FEATURE.md)
 
 **As a** SpecWeave user,
 **I want** external item IDs (E suffix) to flow properly through increment creation and closure,
@@ -24,10 +19,10 @@ external_tools:
 
 ## Acceptance Criteria
 
-- [ ] **AC-US4-01**: Creating increment from external US preserves E suffix and external metadata
-- [ ] **AC-US4-02**: Increment spec.md contains external origin link
-- [ ] **AC-US4-03**: On /specweave:done, progress syncs back to external tool
-- [ ] **AC-US4-04**: External tool shows task completion status from SpecWeave
+- [x] **AC-US4-01**: Creating increment from external US preserves E suffix and external metadata
+- [x] **AC-US4-02**: Increment spec.md contains external origin link
+- [x] **AC-US4-03**: On /specweave:done, progress syncs back to external tool
+- [x] **AC-US4-04**: External tool shows task completion status from SpecWeave
 
 ---
 
@@ -40,4 +35,7 @@ external_tools:
 
 ## Tasks
 
-_No tasks defined for this user story_
+- [x] **T-014**: Verify increment creation from external US
+- [x] **T-015**: Test /specweave:done syncs to external tool
+- [x] **T-016**: Verify external tool shows task completion
+- [ ] **T-019**: Manual integration test with sw-thumbnail-ab

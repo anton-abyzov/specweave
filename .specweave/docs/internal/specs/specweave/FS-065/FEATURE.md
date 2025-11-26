@@ -2,7 +2,7 @@
 id: FS-065
 title: "Background Jobs for Long-Running Operations"
 type: feature
-status: planning
+status: completed
 priority: P1
 created: 2024-11-26
 lastUpdated: 2025-11-26
@@ -18,7 +18,7 @@ Enable long-running operations (repo cloning, 10K+ issue imports) to run in back
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0065-background-jobs](../../../../increments/0065-background-jobs/spec.md) | ⏳ planning | 2024-11-26 |
+| [0065-background-jobs](../../../../increments/0065-background-jobs/spec.md) | ✅ completed | 2024-11-26 |
 
 ## User Stories
 

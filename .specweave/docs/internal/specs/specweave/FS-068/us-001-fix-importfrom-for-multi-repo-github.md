@@ -7,9 +7,6 @@ priority: P1
 created: 2025-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-001: Fix importFrom for Multi-Repo GitHub
 
 **Feature**: [FS-068](./FEATURE.md)
@@ -39,6 +36,6 @@ created: 2025-11-26
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0068-fix-multi-repo-import-from/tasks.md#T-001): Fix importFrom() to Handle Multi-Repo
-- [x] [T-002](../../../../increments/0068-fix-multi-repo-import-from/tasks.md#T-002): Add Unit Tests for Multi-Repo Import
-- [x] [T-003](../../../../increments/0068-fix-multi-repo-import-from/tasks.md#T-003): Verify Fix with Manual Testing
+- [x] **T-001**: Fix importFrom() to Handle Multi-Repo
+- [x] **T-002**: Add Unit Tests for Multi-Repo Import
+- [x] **T-003**: Verify Fix with Manual Testing

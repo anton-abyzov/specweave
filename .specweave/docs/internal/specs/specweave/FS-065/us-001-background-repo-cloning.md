@@ -7,9 +7,6 @@ priority: P1
 created: 2024-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-001: Background Repo Cloning
 
 **Feature**: [FS-065](./FEATURE.md)
@@ -38,5 +35,5 @@ created: 2024-11-26
 
 ## Tasks
 
-- [x] [T-006](../../../../increments/0065-background-jobs/tasks.md#T-006): Integrate job manager with repo cloning
-- [x] [T-009](../../../../increments/0065-background-jobs/tasks.md#T-009): Test integration end-to-end
+- [x] **T-006**: Integrate job manager with repo cloning
+- [x] **T-009**: Test integration end-to-end

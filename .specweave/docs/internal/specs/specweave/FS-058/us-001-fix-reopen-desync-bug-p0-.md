@@ -1,22 +1,15 @@
 ---
 id: US-001
 feature: FS-058
-title: Fix Reopen Desync Bug (P0)
+title: "Fix Reopen Desync Bug (P0)"
 status: completed
 priority: P0
 created: 2025-11-24T00:00:00.000Z
-external:
-  github:
-    issue: 742
-    url: https://github.com/anton-abyzov/specweave/issues/742
 ---
-
-**Origin**: 🏠 **Internal**
-
 
 # US-001: Fix Reopen Desync Bug (P0)
 
-**Feature**: [FS-058](../../_features/FS-058/FEATURE.md)
+**Feature**: [FS-058](./FEATURE.md)
 
 **As a** : Developer
 **I want** : Increment reopen to keep spec.md and metadata.json in sync
@@ -42,6 +35,6 @@ external:
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0058-fix-status-sync-and-auto-github-update/tasks.md#T-001): Fix increment-reopener to use updateStatus()
-- [x] [T-002](../../../../increments/0058-fix-status-sync-and-auto-github-update/tasks.md#T-002): Add reopen desync test
-- [x] [T-003](../../../../increments/0058-fix-status-sync-and-auto-github-update/tasks.md#T-003): Update increment-reopener documentation
+- [x] **T-001**: Fix increment-reopener to use updateStatus()
+- [x] **T-002**: Add reopen desync test
+- [x] **T-003**: Update increment-reopener documentation

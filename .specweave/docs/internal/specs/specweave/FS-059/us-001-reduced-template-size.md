@@ -2,20 +2,14 @@
 id: US-001
 feature: FS-059
 title: "Reduced Template Size"
-status: complete
+status: completed
 priority: P0
-created: 2025-11-24
-completed: 2025-11-24
-external:
-  github:
-    issue: 745
-    url: https://github.com/anton-abyzov/specweave/issues/745
-    state: closed
+created: 2025-11-26
 ---
 
 # US-001: Reduced Template Size
 
-**Feature**: [FS-059](../../_features/FS-059/FEATURE.md)
+**Feature**: [FS-059](./FEATURE.md)
 
 **As a** SpecWeave user in non-Claude environments (Cursor, Copilot)
 **I want** a concise AGENTS.md.template (~400 lines)
