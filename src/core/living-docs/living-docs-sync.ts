@@ -26,77 +26,32 @@ import { Logger, consoleLogger } from '../../utils/logger.js';
 import { autoDetectProjectIdSync } from '../../utils/project-detection.js';
 import { getGitHubAuthFromProject } from '../../utils/auth-helpers.js';
 import { findNextAvailableInternalIdSync } from '../../utils/feature-id-collision.js';
+// Import types from centralized location
+import type {
+  SyncOptions,
+  SyncResult,
+  ParsedSpec,
+  UserStoryData,
+  AcceptanceCriterionData,
+} from './types.js';
+// Import extracted helpers
+import {
+  calculateUSStatus,
+  extractUserStories,
+  extractAcceptanceCriteria,
+  generateFeatureFile,
+  generateReadmeFile,
+  generateUserStoryFile,
+  pathExists,
+  readJson,
+  ensureDir,
+  findExistingUserStoryFile,
+  cleanupDuplicateFiles,
+  cleanupTempFiles,
+} from './sync-helpers/index.js';
 
-// Helper functions for fs-extra compatibility
-async function pathExists(filePath: string): Promise<boolean> {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function readJson(filePath: string): Promise<any> {
-  const content = await fs.readFile(filePath, 'utf-8');
-  return JSON.parse(content);
-}
-
-async function ensureDir(dirPath: string): Promise<void> {
-  await fs.mkdir(dirPath, { recursive: true });
-}
-
-export interface SyncOptions {
-  dryRun?: boolean;
-  force?: boolean;
-  /** Explicit feature ID from spec.md epic field (v0.23.0+) */
-  explicitFeatureId?: string;
-}
-
-export interface SyncResult {
-  success: boolean;
-  featureId: string;
-  incrementId: string;
-  filesCreated: string[];
-  filesUpdated: string[];
-  errors: string[];
-}
-
-export interface ParsedSpec {
-  title: string;
-  overview: string;
-  status: string;
-  priority: string;
-  created: string;
-  userStories: UserStoryData[];
-  acceptanceCriteria: AcceptanceCriterionData[];
-  frontmatter: Record<string, any>;
-}
-
-export interface UserStoryData {
-  id: string;
-  title: string;
-  description: string;
-  acceptanceCriteria: string[];
-  phase?: string;
-  status?: string;  // US-level status: "not_started" | "in_progress" | "completed"
-  // Format preservation metadata (T-034A)
-  format_preservation?: boolean;
-  external_title?: string;
-  external_source?: 'github' | 'jira' | 'ado';
-  external_id?: string;
-  external_url?: string;
-  imported_at?: string;
-  origin?: 'internal' | 'external';
-}
-
-export interface AcceptanceCriterionData {
-  id: string;
-  userStoryId: string;
-  description: string;
-  completed: boolean;
-  priority?: string;
-}
+// Re-export types for backward compatibility
+export type { SyncOptions, SyncResult, ParsedSpec, UserStoryData, AcceptanceCriterionData };
 
 export class LivingDocsSync {
   private projectRoot: string;
@@ -235,7 +190,7 @@ export class LivingDocsSync {
 
       if (!options.dryRun) {
         await ensureDir(projectPath);
-        const featureContent = this.generateFeatureFile(featureId, parsed, incrementId);
+        const featureContent = generateFeatureFile(featureId, parsed, incrementId);
         await fs.writeFile(featureFile, featureContent, 'utf-8');
         result.filesCreated.push(featureFile);
       } else {
@@ -245,7 +200,7 @@ export class LivingDocsSync {
       // Create user story files
       for (const story of parsed.userStories) {
         // CRITICAL: Find existing file by US-ID first to prevent duplicates
-        const existingFile = await this.findExistingUserStoryFile(projectPath, story.id);
+        const existingFile = await findExistingUserStoryFile(projectPath, story.id, this.logger);
 
         let storyFile: string;
         if (existingFile) {
@@ -259,7 +214,7 @@ export class LivingDocsSync {
         }
 
         if (!options.dryRun) {
-          const storyContent = this.generateUserStoryFile(story, featureId, incrementId, parsed);
+          const storyContent = generateUserStoryFile(story, featureId, incrementId, parsed);
           await fs.writeFile(storyFile, storyContent, 'utf-8');
           result.filesCreated.push(storyFile);
         } else {
@@ -269,8 +224,8 @@ export class LivingDocsSync {
 
       // Step 5: Clean up duplicates and temp files BEFORE syncing tasks
       if (!options.dryRun) {
-        await this.cleanupDuplicateFiles(featureId, projectPath);
-        await this.cleanupTempFiles(projectPath);
+        await cleanupDuplicateFiles(projectPath, this.logger);
+        await cleanupTempFiles(projectPath, this.logger);
       }
 
       // Step 6: Sync tasks from increment to user stories
@@ -295,7 +250,7 @@ export class LivingDocsSync {
 
       // Step 8: Final cleanup (remove any temp files created during sync)
       if (!options.dryRun) {
-        await this.cleanupTempFiles(projectPath);
+        await cleanupTempFiles(projectPath, this.logger);
       }
 
       // Step 9: Validate consistency (auto-repair if needed)
@@ -500,10 +455,10 @@ export class LivingDocsSync {
     }
 
     // Extract user stories
-    const userStories = this.extractUserStories(bodyContent);
+    const userStories = extractUserStories(bodyContent);
 
     // Extract acceptance criteria
-    const acceptanceCriteria = this.extractAcceptanceCriteria(bodyContent);
+    const acceptanceCriteria = extractAcceptanceCriteria(bodyContent);
 
     // Calculate status for each user story based on AC completion
     for (const story of userStories) {
@@ -519,7 +474,7 @@ export class LivingDocsSync {
       );
       const completedACs = completedACIds.size;
 
-      story.status = this.calculateUSStatus(totalACs, completedACs);
+      story.status = calculateUSStatus(totalACs, completedACs);
     }
 
     return {
@@ -534,313 +489,17 @@ export class LivingDocsSync {
     };
   }
 
-  /**
-   * Calculate user story status based on AC completion
-   *
-   * Status mapping (Universal 5-level hierarchy - Level 2):
-   * - 0% complete → "not_started"
-   * - 1-99% complete → "in_progress"
-   * - 100% complete → "completed"
-   *
-   * @param totalACs - Total number of ACs for this US
-   * @param completedACs - Number of completed ACs
-   * @returns User story status
-   */
-  private calculateUSStatus(totalACs: number, completedACs: number): string {
-    if (totalACs === 0) {
-      return 'not_started'; // No ACs defined yet
-    }
+  // NOTE: calculateUSStatus, extractUserStories, extractAcceptanceCriteria,
+  // generateFeatureFile, generateReadmeFile, generateUserStoryFile
+  // have been moved to ./sync-helpers/ for maintainability
 
-    const percentage = (completedACs / totalACs) * 100;
+  // extractUserStories, extractAcceptanceCriteria moved to ./sync-helpers/parsers.ts
 
-    if (percentage === 0) {
-      return 'not_started';
-    } else if (percentage === 100) {
-      return 'completed';
-    } else {
-      return 'in_progress';
-    }
-  }
+  // generateFeatureFile moved to ./sync-helpers/generators.ts
 
-  /**
-   * Extract user stories from spec content
-   */
-  private extractUserStories(content: string): UserStoryData[] {
-    const stories: UserStoryData[] = [];
-    const lines = content.split('\n');
+  // generateReadmeFile moved to ./sync-helpers/generators.ts
 
-    for (let i = 0; i < lines.length; i++) {
-      const headingMatch = lines[i].match(/^###+\s+(US-\d+):\s+(.+)/);
-      if (!headingMatch) continue;
-
-      const id = headingMatch[1];
-      const title = headingMatch[2];
-
-      // Collect all lines until next US heading or end
-      const storyLines: string[] = [];
-      for (let j = i + 1; j < lines.length; j++) {
-        if (lines[j].match(/^###+\s+US-\d+:/)) {
-          break; // Found next US heading
-        }
-        storyLines.push(lines[j]);
-      }
-
-      const storyContent = storyLines.join('\n');
-
-      // Extract description
-      let description = '';
-      const descMatch = storyContent.match(/\*\*As a\*\*\s*([^\n]+)\s*\n\*\*I want\*\*\s*([^\n]+)\s*\n\*\*So that\*\*\s*([^\n]+)/i);
-      if (descMatch) {
-        description = `**As a** ${descMatch[1].trim()}\n**I want** ${descMatch[2].trim()}\n**So that** ${descMatch[3].trim()}`;
-      }
-
-      // Extract acceptance criteria IDs
-      const acIds: string[] = [];
-      const acPattern = /AC-US\d+-\d+/g;
-      let acMatch;
-      while ((acMatch = acPattern.exec(storyContent)) !== null) {
-        if (!acIds.includes(acMatch[0])) {
-          acIds.push(acMatch[0]);
-        }
-      }
-
-      stories.push({
-        id,
-        title,
-        description,
-        acceptanceCriteria: acIds,
-        // Status will be calculated after we have all ACs extracted
-        status: undefined
-      });
-    }
-
-    return stories;
-  }
-
-  /**
-   * Extract acceptance criteria from spec content
-   */
-  private extractAcceptanceCriteria(content: string): AcceptanceCriterionData[] {
-    const criteria: AcceptanceCriterionData[] = [];
-
-    // Pattern: - [x] AC-US1-01: Description
-    // Supports both plain text and bold formatting: AC-US1-01 or **AC-US1-01**
-    const acPattern = /^[-*]\s+\[([ x])\]\s+\*{0,2}(AC-US\d+-\d+)\*{0,2}:\s+(.+?)$/gm;
-
-    let match;
-    while ((match = acPattern.exec(content)) !== null) {
-      const completed = match[1] === 'x';
-      const id = match[2];
-      const description = match[3];
-
-      // Extract user story ID (AC-US1-01 → US-001)
-      const usMatch = id.match(/AC-US(\d+)-\d+/);
-      const userStoryId = usMatch ? `US-${usMatch[1].padStart(3, '0')}` : '';
-
-      criteria.push({
-        id,
-        userStoryId,
-        description,
-        completed
-      });
-    }
-
-    return criteria;
-  }
-
-  /**
-   * Generate FEATURE.md content
-   */
-  private generateFeatureFile(
-    featureId: string,
-    parsed: ParsedSpec,
-    incrementId: string
-  ): string {
-    const lines: string[] = [];
-
-    // Frontmatter
-    lines.push('---');
-    lines.push(`id: ${featureId}`);
-    lines.push(`title: "${parsed.title}"`);
-    lines.push(`type: feature`);
-    lines.push(`status: ${parsed.status}`);
-    lines.push(`priority: ${parsed.priority}`);
-    lines.push(`created: ${parsed.created}`);
-    lines.push(`lastUpdated: ${new Date().toISOString().split('T')[0]}`);
-    lines.push('---');
-    lines.push('');
-
-    // Title
-    lines.push(`# ${parsed.title}`);
-    lines.push('');
-
-    // Overview
-    if (parsed.overview) {
-      lines.push('## Overview');
-      lines.push('');
-      lines.push(parsed.overview);
-      lines.push('');
-    }
-
-    // Implementation History
-    lines.push('## Implementation History');
-    lines.push('');
-    lines.push('| Increment | Status | Completion Date |');
-    lines.push('|-----------|--------|----------------|');
-    const statusEmoji = parsed.status === 'completed' ? '✅' : '⏳';
-    lines.push(`| [${incrementId}](../../../../increments/${incrementId}/spec.md) | ${statusEmoji} ${parsed.status} | ${parsed.created} |`);
-    lines.push('');
-
-    // User Stories
-    if (parsed.userStories.length > 0) {
-      lines.push('## User Stories');
-      lines.push('');
-      for (const story of parsed.userStories) {
-        const storySlug = story.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        const storyFile = `../../specweave/${featureId}/${story.id.toLowerCase()}-${storySlug}.md`;
-        lines.push(`- [${story.id}: ${story.title}](${storyFile})`);
-      }
-      lines.push('');
-    }
-
-    return lines.join('\n');
-  }
-
-  /**
-   * Generate README.md content
-   */
-  private generateReadmeFile(
-    featureId: string,
-    parsed: ParsedSpec,
-    incrementId: string
-  ): string {
-    const lines: string[] = [];
-
-    lines.push('---');
-    lines.push(`id: ${featureId}-specweave`);
-    lines.push(`title: "${parsed.title} - SpecWeave Implementation"`);
-    lines.push(`feature: ${featureId}`);
-    lines.push(`project: specweave`);
-    lines.push(`type: feature-context`);
-    lines.push(`status: ${parsed.status}`);
-    lines.push('---');
-    lines.push('');
-
-    lines.push(`# ${parsed.title}`);
-    lines.push('');
-    lines.push(`**Feature**: [${featureId}](./FEATURE.md)`);
-    lines.push('');
-
-    if (parsed.overview) {
-      lines.push('## Overview');
-      lines.push('');
-      lines.push(parsed.overview);
-      lines.push('');
-    }
-
-    lines.push('## User Stories');
-    lines.push('');
-    lines.push('See user story files in this directory.');
-    lines.push('');
-
-    return lines.join('\n');
-  }
-
-  /**
-   * Generate user story file content
-   */
-  private generateUserStoryFile(
-    story: UserStoryData,
-    featureId: string,
-    incrementId: string,
-    parsed: ParsedSpec
-  ): string {
-    const lines: string[] = [];
-
-    // Frontmatter
-    lines.push('---');
-    lines.push(`id: ${story.id}`);
-    lines.push(`feature: ${featureId}`);
-    lines.push(`title: "${story.title}"`);
-    // Use US-level status (based on AC completion), not increment status
-    lines.push(`status: ${story.status || parsed.status}`);
-    lines.push(`priority: ${parsed.priority}`);
-    lines.push(`created: ${parsed.created}`);
-
-    // Format preservation metadata (T-034A)
-    if (story.format_preservation !== undefined) {
-      lines.push(`format_preservation: ${story.format_preservation}`);
-    }
-    if (story.external_title) {
-      lines.push(`external_title: "${story.external_title}"`);
-    }
-    if (story.external_source) {
-      lines.push(`external_source: ${story.external_source}`);
-    }
-    if (story.external_id) {
-      lines.push(`external_id: "${story.external_id}"`);
-    }
-    if (story.external_url) {
-      lines.push(`external_url: "${story.external_url}"`);
-    }
-    if (story.imported_at) {
-      lines.push(`imported_at: "${story.imported_at}"`);
-    }
-    if (story.origin) {
-      lines.push(`origin: ${story.origin}`);
-    }
-
-    lines.push('---');
-    lines.push('');
-
-    // Title
-    lines.push(`# ${story.id}: ${story.title}`);
-    lines.push('');
-
-    // Feature link
-    lines.push(`**Feature**: [${featureId}](./FEATURE.md)`);
-    lines.push('');
-
-    // Description
-    if (story.description) {
-      lines.push(story.description);
-      lines.push('');
-    }
-
-    lines.push('---');
-    lines.push('');
-
-    // Acceptance Criteria
-    lines.push('## Acceptance Criteria');
-    lines.push('');
-
-    const storyCriteria = parsed.acceptanceCriteria.filter(
-      ac => ac.userStoryId === story.id
-    );
-
-    if (storyCriteria.length > 0) {
-      for (const ac of storyCriteria) {
-        const checkbox = ac.completed ? '[x]' : '[ ]';
-        lines.push(`- ${checkbox} **${ac.id}**: ${ac.description}`);
-      }
-    } else {
-      lines.push('No acceptance criteria defined.');
-    }
-    lines.push('');
-
-    lines.push('---');
-    lines.push('');
-
-    // Implementation
-    lines.push('## Implementation');
-    lines.push('');
-    lines.push(`**Increment**: [${incrementId}](../../../../increments/${incrementId}/spec.md)`);
-    lines.push('');
-    lines.push('**Tasks**: See increment tasks.md for implementation details.');
-    lines.push('');
-
-    return lines.join('\n');
-  }
+  // generateUserStoryFile moved to ./sync-helpers/generators.ts
 
   /**
    * Sync tasks from increment to user story files
@@ -1230,136 +889,6 @@ export class LivingDocsSync {
   private async syncToADO(featureId: string, projectPath: string): Promise<void> {
     this.logger.log(`   ⚠️  ADO sync not yet implemented - skipping`);
     // TODO: Implement ADO sync when specweave-ado plugin is available
-  }
-
-  /**
-   * Find existing user story file by US-ID
-   *
-   * Searches for any file matching pattern: us-{id}-*.md
-   * Example: US-001 matches us-001-status-line.md or us-001-status-line-priority-p1.md
-   *
-   * @param projectPath - Path to feature folder (e.g., .specweave/docs/internal/specs/specweave/FS-043)
-   * @param userStoryId - User story ID (e.g., "US-001")
-   * @returns Filename if found, null otherwise
-   */
-  private async findExistingUserStoryFile(
-    projectPath: string,
-    userStoryId: string
-  ): Promise<string | null> {
-    try {
-      const files = await fs.readdir(projectPath);
-
-      // Look for file matching: us-001-*.md (case insensitive)
-      const usIdLower = userStoryId.toLowerCase(); // us-001
-      const matchingFiles = files.filter(f => {
-        const match = f.match(/^(us-\d+)-/);
-        return match && match[1] === usIdLower;
-      });
-
-      if (matchingFiles.length === 0) {
-        return null; // No existing file found
-      }
-
-      if (matchingFiles.length === 1) {
-        return matchingFiles[0]; // Exactly one file found ✅
-      }
-
-      // Multiple files found - return most recent
-      this.logger.warn(`   ⚠️  Found ${matchingFiles.length} files for ${userStoryId}, using most recent`);
-      const fileTimes = await Promise.all(
-        matchingFiles.map(async (f) => ({
-          file: f,
-          mtime: (await fs.stat(path.join(projectPath, f))).mtime.getTime()
-        }))
-      );
-      fileTimes.sort((a, b) => b.mtime - a.mtime); // Newest first
-      return fileTimes[0].file;
-
-    } catch (error) {
-      // Directory doesn't exist yet (first sync)
-      return null;
-    }
-  }
-
-  /**
-   * Clean up duplicate user story files
-   *
-   * Strategy:
-   * 1. List all user story files in feature folder
-   * 2. Group by user story ID (US-001, US-002, etc.)
-   * 3. If multiple files found for same US:
-   *    - Keep the file WITH most recent modification time
-   *    - Delete older files
-   *    - Log warning
-   */
-  private async cleanupDuplicateFiles(
-    featureId: string,
-    projectPath: string
-  ): Promise<void> {
-    const files = await fs.readdir(projectPath);
-
-    // Group files by user story ID
-    const filesByStory = new Map<string, string[]>();
-
-    for (const file of files) {
-      // Match pattern: us-001-*, us-002-*, etc.
-      const match = file.match(/^(us-\d+)-/);
-      if (match) {
-        const storyId = match[1].toUpperCase(); // US-001
-        if (!filesByStory.has(storyId)) {
-          filesByStory.set(storyId, []);
-        }
-        filesByStory.get(storyId)!.push(file);
-      }
-    }
-
-    // Check for duplicates
-    for (const [storyId, storyFiles] of filesByStory.entries()) {
-      if (storyFiles.length > 1) {
-        this.logger.warn(`   ⚠️  Found ${storyFiles.length} duplicate files for ${storyId}`);
-
-        // Find the most recent file
-        const fileTimes = await Promise.all(
-          storyFiles.map(async (f) => ({
-            file: f,
-            mtime: (await fs.stat(path.join(projectPath, f))).mtime.getTime()
-          }))
-        );
-
-        fileTimes.sort((a, b) => b.mtime - a.mtime); // Newest first
-        const keepFile = fileTimes[0].file;
-        const deleteFiles = fileTimes.slice(1).map(f => f.file);
-
-        this.logger.warn(`      → Keeping: ${keepFile} (most recent)`);
-
-        // Delete older files
-        for (const file of deleteFiles) {
-          const filePath = path.join(projectPath, file);
-          await fs.rm(filePath, { force: true, recursive: true });
-          this.logger.warn(`      ✅ Deleted: ${file}`);
-        }
-      }
-    }
-  }
-
-  /**
-   * Clean up temporary files left behind by sync operations
-   *
-   * Removes:
-   * - .tmp files (temporary update files)
-   * - .backup files (backup files from updates)
-   * - Any other temporary files
-   */
-  private async cleanupTempFiles(projectPath: string): Promise<void> {
-    const files = await fs.readdir(projectPath);
-
-    for (const file of files) {
-      if (file.endsWith('.tmp') || file.endsWith('.backup')) {
-        const filePath = path.join(projectPath, file);
-        await fs.rm(filePath, { force: true });
-        this.logger.log(`   🧹 Cleaned up: ${file}`);
-      }
-    }
   }
 
   /**

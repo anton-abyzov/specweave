@@ -338,7 +338,7 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
     cleanupIntervalMs: 60000,      // Cleanup every minute
   },
   archiving: {
-    keepLast: 10,                  // Keep last 10 increments in main folder
+    keepLast: 5,                   // Keep last 5 increments in main folder
     autoArchive: false,            // Manual archiving by default
     archiveAfterDays: 60,          // Archive after 60 days of inactivity
     preserveActive: true,          // Never archive active/paused increments
