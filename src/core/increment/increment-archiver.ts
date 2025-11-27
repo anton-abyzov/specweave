@@ -29,6 +29,7 @@ class ArchiverLogger implements Logger {
 
 export interface ArchiveOptions {
   keepLast?: number;           // Keep last N increments (default: 10)
+  strictLast?: number;         // STRICT: Keep exactly last N by number, ignore ALL protections
   olderThanDays?: number;       // Archive increments older than N days
   archiveCompleted?: boolean;  // Archive all completed increments
   preserveActive?: boolean;    // Never archive active/paused increments (default: true)
@@ -96,6 +97,11 @@ export class IncrementArchiver {
     // Handle specific increments mode (explicit list)
     if (options.increments && options.increments.length > 0) {
       return this.archiveSpecificIncrements(options.increments, options, result);
+    }
+
+    // STRICT MODE: --last N ignores ALL protections, keeps exactly N newest
+    if (options.strictLast !== undefined) {
+      return this.archiveStrictLast(allIncrements, options.strictLast, options, result);
     }
 
     // Handle pattern mode
@@ -276,6 +282,70 @@ export class IncrementArchiver {
     if (finalRemaining !== keepLast && result.skipped.length > 0) {
       this.logger.info(`Note: ${finalRemaining} increments remain (requested ${keepLast})`);
       this.logger.info(`${result.skipped.length} increments have active external sync and cannot be archived`);
+    }
+
+    if (!options.dryRun) {
+      result.totalSize = await this.calculateSize(result.archived);
+    }
+
+    return result;
+  }
+
+  /**
+   * STRICT archive: Keep exactly last N increments, ignoring ALL protections
+   *
+   * This mode:
+   * - Ignores external sync status (GitHub issues, JIRA tickets, ADO work items)
+   * - Ignores active/paused status
+   * - Ignores uncommitted changes
+   * - Archives EVERYTHING except the last N by increment number
+   *
+   * Use when you want a clean folder with exactly N increments, no exceptions.
+   */
+  private async archiveStrictLast(
+    allIncrements: string[],
+    lastN: number,
+    options: ArchiveOptions,
+    result: ArchiveResult
+  ): Promise<ArchiveResult> {
+    const total = allIncrements.length;
+
+    if (total <= lastN) {
+      this.logger.info(`Only ${total} increments exist, nothing to archive (keeping ${lastN})`);
+      return result;
+    }
+
+    // Calculate exactly which increments to keep (the last N by number)
+    const toKeep = allIncrements.slice(-lastN);
+    const toArchive = allIncrements.slice(0, -lastN);
+
+    this.logger.info(`STRICT MODE: Archiving ${toArchive.length} increments, keeping last ${lastN}`);
+    this.logger.warn(`⚠️  This ignores ALL protections (external sync, active status, etc.)`);
+    this.logger.info(`Keeping: ${toKeep.map(i => i.split('-')[0]).join(', ')}`);
+
+    // Archive all increments that are not in the keep list
+    for (const increment of toArchive) {
+      try {
+        // Check if already archived (the only check we do)
+        const archivePath = path.join(this.archiveDir, increment);
+        if (await fs.pathExists(archivePath)) {
+          this.logger.debug(`${increment} already in archive, skipping`);
+          result.skipped.push(increment);
+          continue;
+        }
+
+        if (options.dryRun) {
+          this.logger.info(`[DRY RUN] Would archive: ${increment}`);
+          result.archived.push(increment);
+        } else {
+          await this.archiveIncrement(increment);
+          result.archived.push(increment);
+          this.logger.success(`Archived: ${increment}`);
+        }
+      } catch (error) {
+        result.errors.push(increment);
+        this.logger.error(`Failed to archive ${increment}: ${error}`);
+      }
     }
 
     if (!options.dryRun) {

@@ -701,7 +701,7 @@ specweave verify
 
 ## Related Documentation
 
-- [Project Roadmap](./roadmap.md) - Development roadmap and milestones
+- [Project Roadmap](./roadmap) - Development roadmap and milestones
 - **SpecWeave Increments** - Completed increments and features (see `.specweave/increments/` in repository)
 - **Brownfield Analyzer Skill** - Auto-detects existing project structure (see `plugins/specweave/skills/brownfield-analyzer/SKILL.md` in repository)
 - **JIRA Sync Plugin** - JIRA integration (*planned*, see `plugins/specweave-jira/` in repository)

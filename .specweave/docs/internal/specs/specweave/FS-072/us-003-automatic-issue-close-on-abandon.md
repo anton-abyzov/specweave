@@ -12,7 +12,7 @@ created: 2025-11-26
 
 # US-003: Automatic Issue Close on Abandon
 
-**Feature**: [FS-072](./FEATURE.md)
+**Feature**: [FS-072](./FEATURE)
 
 **As a** developer abandoning an increment
 **I want** GitHub issues to automatically close

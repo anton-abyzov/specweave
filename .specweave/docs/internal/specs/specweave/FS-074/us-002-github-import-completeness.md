@@ -9,7 +9,7 @@ created: 2025-11-26
 
 # US-002: GitHub Import Completeness
 
-**Feature**: [FS-074](./FEATURE.md)
+**Feature**: [FS-074](./FEATURE)
 
 **As a** user running `specweave init` with GitHub integration
 **I want** ALL issues from configured repos to be imported

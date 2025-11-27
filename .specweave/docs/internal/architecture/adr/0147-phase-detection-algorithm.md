@@ -3,7 +3,7 @@
 ---
 **⚠️ SUPERSEDED**: This ADR has been superseded.
 
-**See instead**: [ADR-0013: Phase Detection](./0013-phase-detection.md)
+**See instead**: [ADR-0013: Phase Detection](./0013-phase-detection)
 
 **Date Superseded**: 2025-11-26
 **Reason**: Consolidated into ADR-0013 which serves as the canonical phase detection decision. Algorithm details have been merged.
@@ -21,12 +21,12 @@ Accurate phase detection is critical for intelligent model selection quality.
 
 ## Decision
 
-See [ADR-0013](./0013-phase-detection.md) for the consolidated phase detection decision covering:
+See [ADR-0013](./0013-phase-detection) for the consolidated phase detection decision covering:
 - Signal weights (Keywords 40%, Commands 30%, Context 20%, Hints 10%)
 - Phase keyword mappings
 - Detection algorithm implementation
 
 ## Related
 
-- **Canonical ADR**: [ADR-0013: Phase Detection](./0013-phase-detection.md)
-- **Also Superseded**: [ADR-0044: Phase Detection Enhancement](./0044-phase-detection-enhancement.md)
+- **Canonical ADR**: [ADR-0013: Phase Detection](./0013-phase-detection)
+- **Also Superseded**: [ADR-0044: Phase Detection Enhancement](./0044-phase-detection-enhancement)

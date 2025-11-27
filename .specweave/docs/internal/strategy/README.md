@@ -76,8 +76,8 @@ cp templates/docs/prd-template.md .specweave/docs/internal/strategy/prd-{feature
 **Vision docs define long-term product direction** (3-12 months)
 
 **Current Vision Docs:**
-- [Product Vision](./product-vision.md) - SpecWeave's mission and core value proposition
-- [Core Features](./core-features.md) - Feature set and differentiation
+- [Product Vision](./product-vision) - SpecWeave's mission and core value proposition
+- [Core Features](./core-features) - Feature set and differentiation
 
 ### OKRs
 
@@ -92,6 +92,6 @@ cp templates/docs/prd-template.md .specweave/docs/internal/strategy/prd-{feature
 
 ## Related Documentation
 
-- [Architecture Documentation](../architecture/README.md) - Links PRDs to HLD/ADR/Spec
-- [Delivery Documentation](../delivery/README.md) - Links PRDs to roadmap
+- [Architecture Documentation](../architecture/README) - Links PRDs to HLD/ADR/Spec
+- [Delivery Documentation](../delivery/README) - Links PRDs to roadmap
 - **PRD Template** - Template for creating PRDs (see `src/templates/docs/prd-template.md` in repository)

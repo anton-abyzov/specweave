@@ -1,0 +1,11 @@
+{
+  "id": "FS-066",
+  "type": "feature",
+  "archivedAt": "2025-11-27T01:16:06.791Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-066",
+  "linkedIncrements": [
+    "0066-multi-project-jira-ado-init"
+  ]
+}

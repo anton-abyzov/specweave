@@ -1,0 +1,11 @@
+{
+  "id": "FS-056",
+  "type": "feature",
+  "archivedAt": "2025-11-27T01:16:05.134Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-056",
+  "linkedIncrements": [
+    "0056-auto-github-sync-on-increment-creation"
+  ]
+}

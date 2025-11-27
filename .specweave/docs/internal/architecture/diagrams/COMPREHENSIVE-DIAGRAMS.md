@@ -670,7 +670,7 @@ graph TD
 - [ADR-001: OAuth vs JWT](../../architecture/adr/0001-oauth-vs-jwt.md)
 
 ### Related To
-- [US-002: Session Management](./us-002-session-management.md)
+- [US-002: Session Management](./us-002-session-management)
 
 ---
 

@@ -3,7 +3,7 @@ increment: 0073-fix-y2k-id-limit-bug
 title: "Fix Y2K-Style 3-Digit ID Limit Bug"
 type: bug
 priority: P1
-status: planned
+status: completed
 created: 2025-11-26
 dependencies: []
 structure: user-stories

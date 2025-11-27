@@ -27,7 +27,7 @@
 
 **When to Use**: When defining the business case for a new product, feature, or initiative
 
-**See**: [strategy/README.md](strategy/README.md)
+**See**: [strategy/README](strategy/README)
 
 ---
 
@@ -52,7 +52,7 @@
 
 **Terminology Note**: Renamed to "Specs" in v0.8.0 to align with SpecWeave brand and industry standard.
 
-**See**: [specs/README.md](specs/README.md)
+**See**: [specs/README](specs/README)
 
 ---
 
@@ -89,7 +89,7 @@
 - **LLD**: Service has complex internal structure, needs design before implementation
 - **Not needed**: Simple CRUD services, thin API wrappers
 
-**See**: [architecture/README.md](architecture/README.md)
+**See**: [architecture/README](architecture/README)
 
 ---
 
@@ -118,7 +118,7 @@
 
 **When to Use**: When planning releases, defining workflows, or tracking engineering performance
 
-**See**: [delivery/README.md](delivery/README.md)
+**See**: [delivery/README](delivery/README)
 
 ---
 
@@ -146,7 +146,7 @@
 
 **When to Use**: When operating production systems, responding to incidents, or planning capacity
 
-**See**: [operations/README.md](operations/README.md)
+**See**: [operations/README](operations/README)
 
 ---
 
@@ -176,7 +176,7 @@
 
 **When to Use**: When defining security policies, ensuring compliance, or establishing coding standards
 
-**See**: [governance/README.md](governance/README.md)
+**See**: [governance/README](governance/README)
 
 ## Document Lifecycle
 
@@ -276,7 +276,7 @@ Why  → What →    How   →     Build  →   Run
 ```markdown
 ## Architecture
 
-See [ADR-0012: Use OAuth2](../architecture/adr/0012-use-oauth2.md) for authentication method decision.
+See [ADR-0012: Use OAuth2](../architecture/adr/0012-use-oauth2) for authentication method decision.
 
 ![Auth Flow](../architecture/diagrams/auth-flow.sequence.svg)
 ```
@@ -285,9 +285,9 @@ See [ADR-0012: Use OAuth2](../architecture/adr/0012-use-oauth2.md) for authentic
 
 ## Related Documentation
 
-- [Strategy README](strategy/README.md) - Business case documentation
-- [Specs README](specs/README.md) - Feature specifications
-- [Architecture README](architecture/README.md) - Technical design
-- [Delivery README](delivery/README.md) - Build & release processes
-- [Operations README](operations/README.md) - Production operations
-- [Governance README](governance/README.md) - Policies and standards
+- [Strategy README](strategy/README) - Business case documentation
+- [Specs README](specs/README) - Feature specifications
+- [Architecture README](architecture/README) - Technical design
+- [Delivery README](delivery/README) - Build & release processes
+- [Operations README](operations/README) - Production operations
+- [Governance README](governance/README) - Policies and standards

@@ -563,4 +563,4 @@ All components work together to transform AI-assisted coding into spec-driven, d
 
 - [Glossary](/docs/glossary/)
 - [ADRs](./adr/)
-- [Comprehensive Diagrams](./diagrams/COMPREHENSIVE-DIAGRAMS.md)
+- [Comprehensive Diagrams](./diagrams/COMPREHENSIVE-DIAGRAMS)

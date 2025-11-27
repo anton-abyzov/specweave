@@ -378,6 +378,6 @@ You understand this correctly if:
 
 **Architecture Decision Record**: ADR-0023-increment-spec-lifecycle-separation
 **Related Documentation**:
-- [Living Docs Sync Architecture](./living-docs-sync-architecture.md)
+- [Living Docs Sync Architecture](./living-docs-sync-architecture)
 - [Conflict Resolution Guide](../guides/conflict-resolution.md)
 **Implementation**: See `conflict-resolver.ts` and `post-living-docs-update.sh`

@@ -315,10 +315,10 @@ Reviewer: "I have concerns about scalability. Can we discuss this synchronously 
 
 ## Related Documentation
 
-- [Branching Strategy](./branch-strategy.md) - Git workflow
-- [Coding Standards](../governance/coding-standards.md) - Style guide
-- [Testing Strategy](./guides/testing-strategy.md) - Test coverage expectations
-- [DORA Metrics](./dora-metrics.md) - Lead time for changes
+- [Branching Strategy](./branch-strategy) - Git workflow
+- [Coding Standards](../governance/coding-standards) - Style guide
+- [Testing Strategy](./guides/testing-strategy) - Test coverage expectations
+- [DORA Metrics](./dora-metrics) - Lead time for changes
 
 ---
 

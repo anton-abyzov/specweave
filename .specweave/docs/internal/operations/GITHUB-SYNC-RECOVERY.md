@@ -257,4 +257,4 @@ If sync causes major issues, you can disable it:
 
 ---
 
-**Next**: See [GITHUB-SYNC-TROUBLESHOOTING.md](./GITHUB-SYNC-TROUBLESHOOTING.md) for detailed error diagnosis.
+**Next**: See [GITHUB-SYNC-TROUBLESHOOTING](./GITHUB-SYNC-TROUBLESHOOTING) for detailed error diagnosis.

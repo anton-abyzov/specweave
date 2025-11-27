@@ -12,7 +12,7 @@ created: 2025-11-26
 
 # US-001: GitHub Status Reconciliation Command
 
-**Feature**: [FS-072](./FEATURE.md)
+**Feature**: [FS-072](./FEATURE)
 
 **As a** developer using SpecWeave
 **I want** a command to reconcile GitHub issue states with increment statuses
