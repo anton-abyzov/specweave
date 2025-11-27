@@ -52,6 +52,7 @@ import {
   promptAzureDevOpsCredentials,
   validateAzureDevOpsConnection,
   getAzureDevOpsEnvVars,
+  createAdoProjectFolders,
   showAzureDevOpsSetupComplete,
   showAzureDevOpsSetupSkipped
 } from './ado.js';
@@ -213,9 +214,14 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
         // Step 5.2: Write sync config to .specweave/config.json
         await writeSyncConfig(projectPath, tracker, credentials, syncSettings, syncPermissions, repositoryProfiles, monorepoProjects);
 
-        // Step 5.5: Validate resources (Jira only - auto-create missing projects/boards)
-        if (tracker === 'jira') {
+        // Step 5.5: Validate resources (Jira/ADO - auto-create missing projects/boards/teams)
+        if (tracker === 'jira' || tracker === 'ado') {
           await validateResources(tracker, credentials, projectPath);
+        }
+
+        // Step 5.6: Create ADO folder structure (ADO only)
+        if (tracker === 'ado') {
+          createAdoProjectFolders(projectPath, credentials as any);
         }
 
         // Show setup complete message (plugins managed via marketplace)
@@ -334,6 +340,11 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
   // Step 5.5: Validate resources (Jira/ADO - auto-create missing projects/boards/teams)
   if (tracker === 'jira' || tracker === 'ado') {
     await validateResources(tracker, credentials, projectPath);
+  }
+
+  // Step 5.6: Create ADO folder structure (ADO only)
+  if (tracker === 'ado') {
+    createAdoProjectFolders(projectPath, credentials as any);
   }
 
   // Step 6: Show success message (plugins managed via marketplace)
@@ -792,12 +803,18 @@ async function writeSyncConfig(
       profiles
     };
   } else if (tracker === 'ado') {
+    const adoCreds = credentials as any;
     profiles[`${tracker}-default`] = {
       provider: 'ado',
       displayName: 'Azure DevOps Default',
       config: {
         organization,
-        project
+        project,
+        // Include full ADO config (teams, areas, strategy) - NOT secrets!
+        ...(adoCreds.team ? { team: adoCreds.team } : {}),
+        ...(adoCreds.teams?.length ? { teams: adoCreds.teams } : {}),
+        ...(adoCreds.areaPaths?.length ? { areaPaths: adoCreds.areaPaths } : {}),
+        ...(adoCreds.strategy ? { strategy: adoCreds.strategy } : {})
       },
       timeRange: {
         default: '1M',

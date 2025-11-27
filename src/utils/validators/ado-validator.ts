@@ -27,14 +27,30 @@ export type { AzureDevOpsProject, AzureDevOpsTeam, AzureDevOpsAreaPath, AzureDev
 export class AzureDevOpsResourceValidator {
   private pat: string;
   private organization: string;
+  private project: string;
+  private strategy: string;
+  private teams: string[];
+  private areaPaths: string[];
   private envPath: string;
+  private configPath: string;
 
   constructor(envPath: string = '.env') {
     this.envPath = envPath;
-    // Load from .env
+    // Derive config.json path from .env path
+    const envDir = envPath.replace(/\.env$/, '');
+    this.configPath = envDir ? `${envDir}.specweave/config.json` : '.specweave/config.json';
+
+    // Load PAT from .env (secret)
     const env = this.loadEnv();
-    this.pat = env.AZURE_DEVOPS_PAT || '';
-    this.organization = env.AZURE_DEVOPS_ORG || '';
+    this.pat = env.AZURE_DEVOPS_PAT || env.ADO_PAT || '';
+
+    // Load config from config.json (non-secrets)
+    const config = this.loadConfig();
+    this.organization = config.organization || env.AZURE_DEVOPS_ORG || '';
+    this.project = config.project || '';
+    this.strategy = config.strategy || 'area-path-based';
+    this.teams = config.teams || [];
+    this.areaPaths = config.areaPaths || [];
   }
 
   /**
@@ -59,6 +75,40 @@ export class AzureDevOpsResourceValidator {
       });
 
       return env;
+    } catch (error) {
+      return {};
+    }
+  }
+
+  /**
+   * Load config from .specweave/config.json
+   */
+  private loadConfig(): { organization?: string; project?: string; strategy?: string; teams?: string[]; areaPaths?: string[] } {
+    try {
+      if (!fs.existsSync(this.configPath)) {
+        return {};
+      }
+
+      const content = fs.readFileSync(this.configPath, 'utf-8');
+      const config = JSON.parse(content);
+
+      // Find ADO profile in sync.profiles
+      const profiles = config.sync?.profiles || {};
+      const adoProfile = Object.values(profiles).find(
+        (p: any) => p.provider === 'ado'
+      ) as any;
+
+      if (adoProfile?.config) {
+        return {
+          organization: adoProfile.config.organization,
+          project: adoProfile.config.project,
+          strategy: adoProfile.config.strategy,
+          teams: adoProfile.config.teams,
+          areaPaths: adoProfile.config.areaPaths
+        };
+      }
+
+      return {};
     } catch (error) {
       return {};
     }
@@ -298,8 +348,8 @@ export class AzureDevOpsResourceValidator {
   async validate(): Promise<AzureDevOpsValidationResult> {
     console.log(chalk.blue('\n🔍 Validating Azure DevOps configuration...\n'));
 
-    const env = this.loadEnv();
-    const strategy = (env.AZURE_DEVOPS_STRATEGY || 'project-per-team') as any;
+    // Use class properties loaded from config.json (constructor already loaded them)
+    const strategy = this.strategy as any;
 
     const result: AzureDevOpsValidationResult = {
       valid: true,
@@ -310,49 +360,47 @@ export class AzureDevOpsResourceValidator {
       envUpdated: false,
     };
 
-    // Determine project names based on strategy
+    // Validate PAT is present (only secret in .env)
+    if (!this.pat) {
+      console.log(chalk.red('❌ AZURE_DEVOPS_PAT not found in .env'));
+      result.valid = false;
+      return result;
+    }
+
+    // Validate organization is present (from config.json)
+    if (!this.organization) {
+      console.log(chalk.red('❌ Azure DevOps organization not found in config.json'));
+      console.log(chalk.gray('   Expected in: .specweave/config.json → sync.profiles.*.config.organization'));
+      result.valid = false;
+      return result;
+    }
+
+    // Determine project names based on strategy (from config.json)
     let projectNames: string[] = [];
 
     if (strategy === 'project-per-team') {
-      // Multiple projects
-      const projectsEnv = env.AZURE_DEVOPS_PROJECTS || '';
-      if (!projectsEnv) {
-        console.log(chalk.red('❌ AZURE_DEVOPS_PROJECTS not found in .env'));
+      // Multiple projects - NOT YET SUPPORTED in config.json
+      // For now, fall back to single project
+      if (!this.project) {
+        console.log(chalk.red('❌ Azure DevOps project not found in config.json'));
+        console.log(chalk.gray('   Expected in: .specweave/config.json → sync.profiles.*.config.project'));
         result.valid = false;
         return result;
       }
-      projectNames = projectsEnv.split(',').map(p => p.trim()).filter(p => p);
+      projectNames = [this.project];
     } else {
       // Single project (area-path-based or team-based)
-      const projectName = env.AZURE_DEVOPS_PROJECT;
-      if (!projectName) {
-        console.log(chalk.red('❌ AZURE_DEVOPS_PROJECT not found in .env'));
+      if (!this.project) {
+        console.log(chalk.red('❌ Azure DevOps project not found in config.json'));
+        console.log(chalk.gray('   Expected in: .specweave/config.json → sync.profiles.*.config.project'));
         result.valid = false;
         return result;
       }
-      projectNames = [projectName];
+      projectNames = [this.project];
     }
 
     console.log(chalk.gray(`Strategy: ${strategy}`));
     console.log(chalk.gray(`Checking project(s): ${projectNames.join(', ')}...\n`));
-
-    // NEW: Validate per-project var naming (detect orphaned configs)
-    const perProjectVars = Object.keys(env).filter(
-      key => key.startsWith('AZURE_DEVOPS_AREA_PATHS_') || key.startsWith('AZURE_DEVOPS_TEAMS_')
-    );
-
-    for (const varName of perProjectVars) {
-      const projectFromVar = varName.includes('_AREA_PATHS_')
-        ? varName.split('_AREA_PATHS_')[1]
-        : varName.split('_TEAMS_')[1];
-
-      if (!projectNames.includes(projectFromVar)) {
-        console.log(chalk.yellow(`⚠️  Configuration warning: ${varName}`));
-        console.log(chalk.gray(`    Project "${projectFromVar}" not found in AZURE_DEVOPS_PROJECTS`));
-        console.log(chalk.gray(`    Expected projects: ${projectNames.join(', ')}`));
-        console.log(chalk.gray(`    This configuration will be ignored.\n`));
-      }
-    }
 
     // 1. Validate projects
     for (const projectName of projectNames) {
@@ -456,183 +504,59 @@ export class AzureDevOpsResourceValidator {
 
     console.log(); // Empty line after project validation
 
-    // 2. Validate area paths (per-project OR legacy area-path-based strategy)
+    // 2. Validate area paths (from config.json)
     result.areaPaths = [];
 
-    // NEW: Check for per-project area paths (AZURE_DEVOPS_AREA_PATHS_{ProjectName})
-    let hasPerProjectAreaPaths = false;
-    for (const projectName of projectNames) {
-      const perProjectKey = `AZURE_DEVOPS_AREA_PATHS_${projectName}`;
-      if (env[perProjectKey]) {
-        hasPerProjectAreaPaths = true;
-        break;
-      }
-    }
+    if (this.areaPaths.length > 0) {
+      console.log(chalk.gray(`Checking area paths from config.json...`));
 
-    if (hasPerProjectAreaPaths) {
-      // Per-project area paths (NEW!)
-      console.log(chalk.gray(`Checking per-project area paths...\n`));
+      const projectName = projectNames[0]; // Single project for now
 
-      for (const projectName of projectNames) {
-        const perProjectKey = `AZURE_DEVOPS_AREA_PATHS_${projectName}`;
-        const areaPathsConfig = env[perProjectKey];
-
-        if (areaPathsConfig) {
-          const areaNames = areaPathsConfig.split(',').map(a => a.trim()).filter(a => a);
-
-          if (areaNames.length > 0) {
-            console.log(chalk.gray(`  Project: ${projectName} (${areaNames.length} area paths)`));
-
-            for (const areaName of areaNames) {
-              try {
-                await this.createAreaPath(projectName, areaName);
-                result.areaPaths.push({
-                  name: areaName,
-                  project: projectName,
-                  exists: false,
-                  created: true
-                });
-              } catch (error: any) {
-                if (error.message.includes('already exists')) {
-                  console.log(chalk.green(`    ✅ Area path exists: ${projectName}\\${areaName}`));
-                  result.areaPaths.push({
-                    name: areaName,
-                    project: projectName,
-                    exists: true,
-                    created: false
-                  });
-                } else {
-                  console.log(chalk.red(`    ❌ Failed to create/validate area path: ${areaName}`));
-                  result.valid = false;
-                }
-              }
-            }
+      for (const areaName of this.areaPaths) {
+        try {
+          await this.createAreaPath(projectName, areaName);
+          result.areaPaths.push({ name: areaName, exists: false, created: true });
+        } catch (error: any) {
+          if (error.message.includes('already exists')) {
+            console.log(chalk.green(`  ✅ Area path exists: ${projectName}\\${areaName}`));
+            result.areaPaths.push({ name: areaName, exists: true, created: false });
+          } else {
+            console.log(chalk.red(`  ❌ Failed to create/validate area path: ${areaName}`));
+            result.valid = false;
           }
         }
       }
 
       console.log();
-    } else if (strategy === 'area-path-based') {
-      // Legacy: Global area paths (backward compatibility)
-      const areaPathsConfig = env.AZURE_DEVOPS_AREA_PATHS || '';
-      if (areaPathsConfig) {
-        console.log(chalk.gray(`Checking area paths...`));
-
-        const projectName = projectNames[0]; // Single project for area-path-based
-        const areaNames = areaPathsConfig.split(',').map(a => a.trim());
-
-        for (const areaName of areaNames) {
-          // Check if area path exists (simplified - would need proper API call)
-          // For now, we'll create them if they don't exist
-          try {
-            await this.createAreaPath(projectName, areaName);
-            result.areaPaths.push({ name: areaName, exists: false, created: true });
-          } catch (error: any) {
-            if (error.message.includes('already exists')) {
-              console.log(chalk.green(`  ✅ Area path exists: ${projectName}\\${areaName}`));
-              result.areaPaths.push({ name: areaName, exists: true, created: false });
-            } else {
-              console.log(chalk.red(`  ❌ Failed to create/validate area path: ${areaName}`));
-              result.valid = false;
-            }
-          }
-        }
-
-        console.log();
-      }
     }
 
-    // 3. Validate teams (per-project OR legacy team-based strategy)
+    // 3. Validate teams (from config.json)
     result.teams = [];
 
-    // NEW: Check for per-project teams (AZURE_DEVOPS_TEAMS_{ProjectName})
-    let hasPerProjectTeams = false;
-    for (const projectName of projectNames) {
-      const perProjectKey = `AZURE_DEVOPS_TEAMS_${projectName}`;
-      if (env[perProjectKey]) {
-        hasPerProjectTeams = true;
-        break;
-      }
-    }
+    if (this.teams.length > 0) {
+      console.log(chalk.gray(`Checking teams from config.json...`));
 
-    if (hasPerProjectTeams) {
-      // Per-project teams (NEW!)
-      console.log(chalk.gray(`Checking per-project teams...\n`));
+      const projectName = projectNames[0]; // Single project for now
+      const existingTeams = await this.fetchTeams(projectName);
 
-      for (const projectName of projectNames) {
-        const perProjectKey = `AZURE_DEVOPS_TEAMS_${projectName}`;
-        const teamsConfig = env[perProjectKey];
+      for (const teamName of this.teams) {
+        const team = existingTeams.find(t => t.name === teamName);
 
-        if (teamsConfig) {
-          const teamNames = teamsConfig.split(',').map(t => t.trim()).filter(t => t);
-
-          if (teamNames.length > 0) {
-            console.log(chalk.gray(`  Project: ${projectName} (${teamNames.length} teams)`));
-
-            const existingTeams = await this.fetchTeams(projectName);
-
-            for (const teamName of teamNames) {
-              const team = existingTeams.find(t => t.name === teamName);
-
-              if (team) {
-                console.log(chalk.green(`    ✅ Team exists: ${teamName}`));
-                result.teams.push({
-                  name: teamName,
-                  id: team.id,
-                  project: projectName,
-                  exists: true,
-                  created: false
-                });
-              } else {
-                try {
-                  const newTeam = await this.createTeam(projectName, teamName);
-                  result.teams.push({
-                    name: teamName,
-                    id: newTeam.id,
-                    project: projectName,
-                    exists: false,
-                    created: true
-                  });
-                } catch (error: any) {
-                  console.log(chalk.red(`    ❌ Failed to create team: ${teamName}`));
-                  result.valid = false;
-                }
-              }
-            }
+        if (team) {
+          console.log(chalk.green(`  ✅ Team exists: ${teamName}`));
+          result.teams.push({ name: teamName, id: team.id, exists: true, created: false });
+        } else {
+          try {
+            const newTeam = await this.createTeam(projectName, teamName);
+            result.teams.push({ name: teamName, id: newTeam.id, exists: false, created: true });
+          } catch (error: any) {
+            console.log(chalk.red(`  ❌ Failed to create team: ${teamName}`));
+            result.valid = false;
           }
         }
       }
 
       console.log();
-    } else if (strategy === 'team-based') {
-      // Legacy: Global teams (backward compatibility)
-      const teamsConfig = env.AZURE_DEVOPS_TEAMS || '';
-      if (teamsConfig) {
-        console.log(chalk.gray(`Checking teams...`));
-
-        const projectName = projectNames[0]; // Single project for team-based
-        const teamNames = teamsConfig.split(',').map(t => t.trim());
-        const existingTeams = await this.fetchTeams(projectName);
-
-        for (const teamName of teamNames) {
-          const team = existingTeams.find(t => t.name === teamName);
-
-          if (team) {
-            console.log(chalk.green(`  ✅ Team exists: ${teamName}`));
-            result.teams.push({ name: teamName, id: team.id, exists: true, created: false });
-          } else {
-            try {
-              const newTeam = await this.createTeam(projectName, teamName);
-              result.teams.push({ name: teamName, id: newTeam.id, exists: false, created: true });
-            } catch (error: any) {
-              console.log(chalk.red(`  ❌ Failed to create team: ${teamName}`));
-              result.valid = false;
-            }
-          }
-        }
-
-        console.log();
-      }
     }
 
     // Summary

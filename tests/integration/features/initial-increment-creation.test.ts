@@ -18,8 +18,13 @@ import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
 
 describe('Initial Increment Creation', () => {
   let testDir: string;
+  // ✅ FIX: Save original cwd to restore after tests (prevents Claude Code crashes)
+  let originalCwd: string;
 
   beforeEach(async () => {
+    // Save original cwd BEFORE changing directory
+    originalCwd = process.cwd();
+
     // Create isolated test directory
     testDir = path.join(os.tmpdir(), `specweave-test-${Date.now()}`);
     await fs.ensureDir(testDir);
@@ -32,6 +37,11 @@ describe('Initial Increment Creation', () => {
   });
 
   afterEach(async () => {
+    // ✅ FIX: Restore original cwd BEFORE cleanup (critical!)
+    if (originalCwd) {
+      process.chdir(originalCwd);
+    }
+
     // Clean up test directory
     if (testDir && fs.existsSync(testDir)) {
       await fs.remove(testDir);

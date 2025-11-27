@@ -87,39 +87,61 @@ if [[ ! -d "$INCREMENTS_DIR" ]]; then
 fi
 
 # ============================================================================
-# ACQUIRE LOCK
+# ACQUIRE LOCK (ATOMIC - mkdir pattern prevents TOCTOU race!)
 # ============================================================================
 mkdir -p "$STATE_DIR"
-echo $$ > "$LOCK_FILE"
-trap 'rm -f "$LOCK_FILE"' EXIT
+LOCK_DIR="$STATE_DIR/.status-update.lockdir"
+if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+  # Lock exists - check if stale (>30s)
+  if [[ "$(uname)" == "Darwin" ]]; then
+    LOCK_AGE=$(( $(date +%s) - $(stat -f %m "$LOCK_DIR" 2>/dev/null || echo 0) ))
+  else
+    LOCK_AGE=$(( $(date +%s) - $(stat -c %Y "$LOCK_DIR" 2>/dev/null || echo 0) ))
+  fi
+  if [[ $LOCK_AGE -lt 30 ]]; then
+    exit 0  # Another process holds lock
+  fi
+  # Stale lock - remove and retry
+  rm -rf "$LOCK_DIR"
+  mkdir "$LOCK_DIR" 2>/dev/null || exit 0
+fi
+echo $$ > "$LOCK_DIR/pid"
+trap 'rm -rf "$LOCK_DIR"' EXIT
 
 # ============================================================================
-# FIND ACTIVE INCREMENTS (single find, no xargs)
+# FIND ACTIVE INCREMENTS (uses metadata.json - SOURCE OF TRUTH!)
 # ============================================================================
 ACTIVE_FILES=""
 OPEN_COUNT=0
 OLDEST_DATE="9999-99-99"
 CURRENT_INCREMENT=""
 
-while IFS= read -r spec_file; do
-  [[ -z "$spec_file" ]] && continue
+while IFS= read -r metadata_file; do
+  [[ -z "$metadata_file" ]] && continue
 
-  # Quick status check with head + grep (faster than full file grep)
-  if head -20 "$spec_file" 2>/dev/null | grep -qE '^status:\s*(active|planning|in-progress)'; then
+  # Extract status from metadata.json (jq if available, grep fallback)
+  if command -v jq >/dev/null 2>&1; then
+    status=$(jq -r '.status // "unknown"' "$metadata_file" 2>/dev/null || echo "unknown")
+    created=$(jq -r '.created // "9999-99-99"' "$metadata_file" 2>/dev/null || echo "9999-99-99")
+  else
+    status=$(grep -oP '"status"\s*:\s*"\K[^"]*' "$metadata_file" 2>/dev/null || echo "unknown")
+    created=$(grep -oP '"created"\s*:\s*"\K[^"]*' "$metadata_file" 2>/dev/null || echo "9999-99-99")
+  fi
+
+  # Check if active
+  if [[ "$status" == "active" || "$status" == "planning" || "$status" == "in-progress" ]]; then
     OPEN_COUNT=$((OPEN_COUNT + 1))
-    increment_id=$(basename "$(dirname "$spec_file")")
-
-    # Get created date (first 30 lines only)
-    created=$(head -30 "$spec_file" 2>/dev/null | grep -m1 "^created:" | cut -d: -f2- | tr -d ' "' || echo "9999-99-99")
+    increment_id=$(basename "$(dirname "$metadata_file")")
 
     if [[ "$created" < "$OLDEST_DATE" ]]; then
       OLDEST_DATE="$created"
       CURRENT_INCREMENT="$increment_id"
     fi
 
+    spec_file="$(dirname "$metadata_file")/spec.md"
     ACTIVE_FILES="$ACTIVE_FILES $spec_file"
   fi
-done < <(find "$INCREMENTS_DIR" -maxdepth 2 -name "spec.md" -not -path "*/_archive/*" 2>/dev/null)
+done < <(find "$INCREMENTS_DIR" -maxdepth 2 -name "metadata.json" -not -path "*/_archive/*" 2>/dev/null)
 
 # No active increments?
 if [[ -z "$CURRENT_INCREMENT" ]]; then
@@ -186,10 +208,12 @@ COMPLETED_ACS=${COMPLETED_ACS:-0}
 OPEN_COUNT=${OPEN_COUNT:-0}
 PERCENTAGE=${PERCENTAGE:-0}
 
-# Generate JSON directly (avoids jq subprocess entirely!)
-cat > "$CACHE_FILE" << EOF
+# Generate JSON directly (ATOMIC: write temp then mv to prevent partial reads!)
+TEMP_CACHE="$CACHE_FILE.tmp.$$"
+cat > "$TEMP_CACHE" << EOF
 {"current":{"id":"$CURRENT_INCREMENT","name":"$CURRENT_INCREMENT","completed":$COMPLETED_TASKS,"total":$TOTAL_TASKS,"percentage":$PERCENTAGE,"acsCompleted":$COMPLETED_ACS,"acsTotal":$TOTAL_ACS},"openCount":$OPEN_COUNT,"lastUpdate":"$(date -u +%Y-%m-%dT%H:%M:%SZ)"}
 EOF
+mv "$TEMP_CACHE" "$CACHE_FILE"
 
 # Update mtime marker
 touch "$MTIME_FILE"

@@ -76,27 +76,46 @@ if [[ -d "$SPECWEAVE_DIR/increments" ]]; then
 fi
 
 # ==============================================================================
-# DISCIPLINE VALIDATION: Block /specweave:increment if incomplete increments exist
+# DISCIPLINE VALIDATION: Warn about WIP limits (configurable, not hard block!)
 # ==============================================================================
 
 if echo "$PROMPT" | grep -q "/specweave:increment"; then
-  # Hard cap: never >2 active
-  if [[ "$ACTIVE_COUNT" -ge 2 ]]; then
+  # Read limits from config.json (respect user's settings!)
+  CONFIG_FILE="$SPECWEAVE_DIR/config.json"
+  SOFT_LIMIT=1
+  HARD_CAP=3
+
+  if [[ -f "$CONFIG_FILE" ]]; then
+    if command -v jq >/dev/null 2>&1; then
+      SOFT_LIMIT=$(jq -r '.limits.maxActiveIncrements // 1' "$CONFIG_FILE" 2>/dev/null || echo "1")
+      HARD_CAP=$(jq -r '.limits.hardCap // 3' "$CONFIG_FILE" 2>/dev/null || echo "3")
+    else
+      SOFT_LIMIT=$(grep -oP '"maxActiveIncrements"\s*:\s*\K[0-9]+' "$CONFIG_FILE" 2>/dev/null || echo "1")
+      HARD_CAP=$(grep -oP '"hardCap"\s*:\s*\K[0-9]+' "$CONFIG_FILE" 2>/dev/null || echo "3")
+    fi
+  fi
+
+  # Ensure valid numbers
+  [[ ! "$SOFT_LIMIT" =~ ^[0-9]+$ ]] && SOFT_LIMIT=1
+  [[ ! "$HARD_CAP" =~ ^[0-9]+$ ]] && HARD_CAP=3
+
+  # Above hard cap: strong warning but NOT a block (user decides!)
+  if [[ "$ACTIVE_COUNT" -ge "$HARD_CAP" ]]; then
     cat <<EOF
 {
-  "decision": "block",
-  "reason": "❌ HARD CAP REACHED\n\nYou have $ACTIVE_COUNT active increments (absolute maximum: 2)\n\nActive increments:\n$ACTIVE_LIST\n\n💡 You MUST complete or pause existing work first:\n\n1️⃣  Complete an increment:\n   /specweave:done <id>\n\n2️⃣  Pause an increment:\n   /specweave:pause <id> --reason=\"...\"\n\n3️⃣  Check status:\n   /specweave:status\n\n📝 Multiple hotfixes? Combine them into ONE increment!\n   Example: 0009-security-fixes (SQL + XSS + CSRF)\n\n⛔ This limit is enforced for your productivity.\nResearch: 3+ concurrent tasks = 40% slower + more bugs"
+  "decision": "approve",
+  "systemMessage": "⚠️  WIP LIMIT EXCEEDED (${ACTIVE_COUNT}/${HARD_CAP})\n\nYou have $ACTIVE_COUNT active increments (configured maximum: $HARD_CAP)\n\nActive increments:\n$ACTIVE_LIST\n\n🧠 Research shows 3+ concurrent tasks = 40% slower + more bugs\n\n💡 Options:\n  1️⃣  Complete an increment: /specweave:done <id>\n  2️⃣  Pause an increment: /specweave:pause <id>\n  3️⃣  Increase limit: Edit .specweave/config.json limits.hardCap\n  4️⃣  Continue anyway (not recommended)\n\n📝 To proceed anyway, just confirm your intent."
 }
 EOF
     exit 0
   fi
 
-  # Soft warning: 1 active (recommended limit)
-  if [[ "$ACTIVE_COUNT" -ge 1 ]]; then
+  # At soft limit: mild warning, approve
+  if [[ "$ACTIVE_COUNT" -ge "$SOFT_LIMIT" ]]; then
     cat <<EOF
 {
   "decision": "approve",
-  "systemMessage": "⚠️  WIP LIMIT REACHED\n\nYou have $ACTIVE_COUNT active increment (recommended limit: 1)\n\nActive increments:\n$ACTIVE_LIST\n\n🧠 Focus Principle: ONE active increment = maximum productivity\nStarting a 2nd increment reduces focus and velocity.\n\n💡 Consider:\n  1️⃣  Complete current work (recommended)\n  2️⃣  Pause current work (/specweave:pause)\n  3️⃣  Continue anyway (accept 20% productivity cost)\n\n⚠️  Emergency hotfix/bug? Use --type=hotfix or --type=bug to bypass this warning."
+  "systemMessage": "⚠️  WIP LIMIT REACHED (${ACTIVE_COUNT}/${SOFT_LIMIT})\n\nYou have $ACTIVE_COUNT active increment(s) (recommended limit: $SOFT_LIMIT)\n\nActive increments:\n$ACTIVE_LIST\n\n🧠 Focus Principle: Fewer active increments = maximum productivity\n\n💡 Consider:\n  1️⃣  Complete current work (recommended)\n  2️⃣  Pause current work (/specweave:pause)\n  3️⃣  Continue anyway\n\n⚠️  Emergency hotfix/bug? Use --type=hotfix or --type=bug"
 }
 EOF
     exit 0

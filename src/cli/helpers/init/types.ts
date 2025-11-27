@@ -70,6 +70,9 @@ export interface ADOConfig {
   orgUrl: string;
   project: string;
   pat?: string;
+  teams?: string[];
+  areaPaths?: string[];
+  strategy?: string;
 }
 
 /**

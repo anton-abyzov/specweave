@@ -9,6 +9,8 @@
 import chalk from 'chalk';
 import { confirm, input, password, checkbox } from '@inquirer/prompts';
 import ora from 'ora';
+import * as fs from '../../../utils/fs-native.js';
+import * as path from 'path';
 import { getAzureDevOpsAuth } from '../../../utils/auth-helpers.js';
 import {
   parseEnvFile,
@@ -26,6 +28,7 @@ import {
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import { getLocaleManager } from '../../../core/i18n/locale-manager.js';
 import { RateLimitError } from './types.js';
+import { selectAreaPaths, toAreaPathObjects } from '../ado-area-selector.js';
 
 /**
  * Check for existing Azure DevOps credentials
@@ -215,18 +218,13 @@ export async function promptAzureDevOpsCredentials(
     spinner.warn('Could not auto-fetch teams/areas - using manual input');
   }
 
-  // Step 3: Let user select area paths (if any found)
+  // Step 3: Let user select area paths (if any found) using pattern-based selector
   if (fetchedAreas.length > 0) {
-    const areaChoices = fetchedAreas.map(a => ({
-      name: a.path,
-      value: a.path,
-      checked: false
-    }));
-
-    areaPaths = await checkbox({
-      message: 'Select area paths to sync (space to select, enter to confirm):',
-      choices: areaChoices
-    });
+    const areaPathObjects = toAreaPathObjects(fetchedAreas.map(a => a.path));
+    const selectionResult = await selectAreaPaths(areaPathObjects, project);
+    if (selectionResult) {
+      areaPaths = selectionResult.areaPaths;
+    }
   }
 
   // Step 4: Let user select teams (if any found)
@@ -346,26 +344,68 @@ export async function validateAzureDevOpsConnection(
 /**
  * Get Azure DevOps environment variables for .env file
  *
+ * IMPORTANT: Only PAT goes in .env (secret). Non-secrets go to config.json.
+ * See writeSyncConfig() for config.json structure.
+ *
  * @param credentials - Azure DevOps credentials
  * @returns Array of key-value pairs for .env
  */
 export function getAzureDevOpsEnvVars(
   credentials: AzureDevOpsCredentials
 ): Array<{ key: string; value: string }> {
+  // Only store PAT in .env (secrets only!)
+  // Non-secrets (org, project, teams, areas) go to config.json
   const envVars = [
-    { key: 'AZURE_DEVOPS_PAT', value: credentials.pat },
-    { key: 'AZURE_DEVOPS_ORG', value: credentials.org },
-    { key: 'AZURE_DEVOPS_PROJECT', value: credentials.project }  // Always singular (one project)
+    { key: 'AZURE_DEVOPS_PAT', value: credentials.pat }
   ];
 
-  // Write teams as comma-separated if multiple, otherwise single
-  if (credentials.teams && credentials.teams.length > 1) {
-    envVars.push({ key: 'AZURE_DEVOPS_TEAMS', value: credentials.teams.join(',') });
-  } else if (credentials.team) {
-    envVars.push({ key: 'AZURE_DEVOPS_TEAM', value: credentials.team });
+  return envVars;
+}
+
+/**
+ * Create ADO project folder structure in .specweave/docs/internal/specs/
+ *
+ * @param projectPath - Path to project root
+ * @param credentials - ADO credentials with org, project, teams, areaPaths
+ */
+export function createAdoProjectFolders(
+  projectPath: string,
+  credentials: AzureDevOpsCredentials
+): void {
+  const specsDir = path.join(projectPath, '.specweave', 'docs', 'internal', 'specs');
+
+  if (!fs.existsSync(specsDir)) {
+    fs.mkdirSync(specsDir, { recursive: true });
   }
 
-  return envVars;
+  const projectName = credentials.project;
+  if (!projectName) {
+    console.log(chalk.yellow('⚠️  No project specified, skipping folder creation'));
+    return;
+  }
+
+  const adoProjectDir = path.join(specsDir, `ADO-${projectName}`);
+  fs.mkdirSync(adoProjectDir, { recursive: true });
+  console.log(chalk.green(`✓ Created ${adoProjectDir}`));
+
+  const strategy = credentials.strategy || 'area-path-based';
+
+  if (strategy === 'area-path-based' && credentials.areaPaths?.length) {
+    for (const areaPath of credentials.areaPaths) {
+      const areaName = areaPath.split('\\').pop() || areaPath;
+      const areaDir = path.join(adoProjectDir, areaName);
+      fs.mkdirSync(areaDir, { recursive: true });
+      console.log(chalk.gray(`  ✓ Created area folder: ${areaName}`));
+    }
+  } else if (strategy === 'team-based' && credentials.teams?.length) {
+    for (const team of credentials.teams) {
+      const teamDir = path.join(adoProjectDir, team);
+      fs.mkdirSync(teamDir, { recursive: true });
+      console.log(chalk.gray(`  ✓ Created team folder: ${team}`));
+    }
+  }
+
+  console.log(chalk.green(`✓ ADO folder structure created`));
 }
 
 /**

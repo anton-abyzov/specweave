@@ -17,8 +17,13 @@ const __dirname = path.dirname(__filename);
 
 test.describe('Increment Discipline Enforcement (E2E)', () => {
   let testDir: string;
+  // ✅ FIX: Save original cwd to restore after tests (prevents Claude Code crashes)
+  let originalCwd: string;
 
   test.beforeEach(async () => {
+    // Save original cwd BEFORE changing directory
+    originalCwd = process.cwd();
+
     // Create temp directory for each test
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'specweave-discipline-'));
 
@@ -52,6 +57,11 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
   });
 
   test.afterEach(async () => {
+    // ✅ FIX: Restore original cwd BEFORE cleanup (critical!)
+    if (originalCwd) {
+      process.chdir(originalCwd);
+    }
+
     // Clean up
     if (await fs.pathExists(testDir)) {
       await fs.remove(testDir);

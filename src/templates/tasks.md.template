@@ -11,6 +11,8 @@ coverage_target: {{COVERAGE_TARGET}}
 
 # Tasks: {{INCREMENT_TITLE}}
 
+> ⚠️ **MAX 8 TASKS** - More = crash risk. Split into `feature-part1`, `feature-part2`. See CLAUDE.md rule 1b.
+
 **Increment**: {{INCREMENT_ID}}
 **Status**: Planning
 **Created**: {{CREATED_DATE}}
