@@ -564,70 +564,102 @@ export class FeatureArchiver {
   private async getLinkedIncrements(featureId: string): Promise<string[]> {
     const increments: string[] = [];
 
-    // Check active increments
-    const activePattern = path.join(this.rootDir, '.specweave', 'increments', '[0-9]*-*', 'spec.md');
-    const activeFiles = await glob(activePattern);
+    // Check active increments - use metadata.json as primary source
+    const activeMetadataPattern = path.join(this.rootDir, '.specweave', 'increments', '[0-9]*-*', 'metadata.json');
+    const activeMetadataFiles = await glob(activeMetadataPattern);
 
-    for (const file of activeFiles) {
-      const content = await fs.readFile(file, 'utf-8');
+    for (const file of activeMetadataFiles) {
       const incrementDir = path.basename(path.dirname(file));
 
-      // 1. Check explicit linkage (feature_id or epic in frontmatter)
-      const featureIdMatch = content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
-      const epicMatch = content.match(/^epic:\s*["']?([^"'\n]+)["']?$/m);
-
-      const explicitLinkage = featureIdMatch ? featureIdMatch[1].trim() :
-                             epicMatch ? epicMatch[1].trim() : null;
-
-      if (explicitLinkage === featureId) {
-        increments.push(incrementDir);
-        continue; // Found explicit match, continue to next increment
+      // 1. Check metadata.json for feature_id (PRIMARY SOURCE - v0.28.37)
+      try {
+        const metadataContent = await fs.readFile(file, 'utf-8');
+        const metadata = JSON.parse(metadataContent);
+        if (metadata.feature_id === featureId) {
+          increments.push(incrementDir);
+          continue;
+        }
+        // If metadata has feature_id but doesn't match, skip auto-inference
+        if (metadata.feature_id) {
+          continue;
+        }
+      } catch {
+        // metadata.json doesn't exist or invalid, fall back to spec.md
       }
 
-      // BUGFIX (v0.26.12): If explicit linkage EXISTS to a DIFFERENT feature, skip auto-inference
-      // This prevents dual-linkage where increment 0051 with feature_id: FS-049
-      // would also be incorrectly linked to FS-051 via auto-inference
-      if (explicitLinkage !== null) {
-        continue; // Explicit linkage exists but doesn't match - skip this increment entirely
+      // 2. Fall back to spec.md for backward compatibility
+      const specPath = path.join(path.dirname(file), 'spec.md');
+      try {
+        const content = await fs.readFile(specPath, 'utf-8');
+        const featureIdMatch = content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
+        const epicMatch = content.match(/^epic:\s*["']?([^"'\n]+)["']?$/m);
+
+        const explicitLinkage = featureIdMatch ? featureIdMatch[1].trim() :
+                               epicMatch ? epicMatch[1].trim() : null;
+
+        if (explicitLinkage === featureId) {
+          increments.push(incrementDir);
+          continue;
+        }
+        if (explicitLinkage !== null) {
+          continue;
+        }
+      } catch {
+        // spec.md doesn't exist
       }
 
-      // 2. Check auto-inferred linkage ONLY if no explicit linkage exists
-      // Example: increment "0041-living-docs" → FS-041
+      // 3. Check auto-inferred linkage ONLY if no explicit linkage exists
       const inferredFeatureId = this.inferFeatureIdFromIncrement(incrementDir);
-
       if (inferredFeatureId === featureId) {
         increments.push(incrementDir);
       }
     }
 
-    // Check archived increments
-    const archivedPattern = path.join(this.rootDir, '.specweave', 'increments', '_archive', '[0-9]*-*', 'spec.md');
-    const archivedFiles = await glob(archivedPattern);
+    // Check archived increments - use metadata.json as primary source
+    const archivedMetadataPattern = path.join(this.rootDir, '.specweave', 'increments', '_archive', '[0-9]*-*', 'metadata.json');
+    const archivedMetadataFiles = await glob(archivedMetadataPattern);
 
-    for (const file of archivedFiles) {
-      const content = await fs.readFile(file, 'utf-8');
+    for (const file of archivedMetadataFiles) {
       const incrementDir = path.basename(path.dirname(file));
 
-      // 1. Check explicit linkage
-      const featureIdMatch = content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
-      const epicMatch = content.match(/^epic:\s*["']?([^"'\n]+)["']?$/m);
-
-      const explicitLinkage = featureIdMatch ? featureIdMatch[1].trim() :
-                             epicMatch ? epicMatch[1].trim() : null;
-
-      if (explicitLinkage === featureId) {
-        increments.push(incrementDir);
-        continue;
+      // 1. Check metadata.json for feature_id (PRIMARY SOURCE - v0.28.37)
+      try {
+        const metadataContent = await fs.readFile(file, 'utf-8');
+        const metadata = JSON.parse(metadataContent);
+        if (metadata.feature_id === featureId) {
+          increments.push(incrementDir);
+          continue;
+        }
+        if (metadata.feature_id) {
+          continue;
+        }
+      } catch {
+        // Fall back to spec.md
       }
 
-      // BUGFIX (v0.26.12): Skip auto-inference if explicit linkage exists to different feature
-      if (explicitLinkage !== null) {
-        continue;
+      // 2. Fall back to spec.md
+      const specPath = path.join(path.dirname(file), 'spec.md');
+      try {
+        const content = await fs.readFile(specPath, 'utf-8');
+        const featureIdMatch = content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
+        const epicMatch = content.match(/^epic:\s*["']?([^"'\n]+)["']?$/m);
+
+        const explicitLinkage = featureIdMatch ? featureIdMatch[1].trim() :
+                               epicMatch ? epicMatch[1].trim() : null;
+
+        if (explicitLinkage === featureId) {
+          increments.push(incrementDir);
+          continue;
+        }
+        if (explicitLinkage !== null) {
+          continue;
+        }
+      } catch {
+        // spec.md doesn't exist
       }
 
-      // 2. Check auto-inferred linkage ONLY if no explicit linkage exists
+      // 3. Check auto-inferred linkage ONLY if no explicit linkage exists
       const inferredFeatureId = this.inferFeatureIdFromIncrement(incrementDir);
-
       if (inferredFeatureId === featureId) {
         increments.push(incrementDir);
       }

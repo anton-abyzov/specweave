@@ -28,7 +28,7 @@ class ArchiverLogger implements Logger {
 }
 
 export interface ArchiveOptions {
-  keepLast?: number;           // Keep last N increments (default: 10)
+  keepLast?: number;           // Keep last N increments (default: 5)
   strictLast?: number;         // STRICT: Keep exactly last N by number, ignore ALL protections
   olderThanDays?: number;       // Archive increments older than N days
   archiveCompleted?: boolean;  // Archive all completed increments
@@ -115,11 +115,11 @@ export class IncrementArchiver {
     }
 
     // Handle keepLast mode (default behavior)
-    // CRITICAL SAFETY: Default to 3 if no criteria provided
-    const effectiveKeepLast = options.keepLast ?? 3;
+    // CRITICAL SAFETY: Default to 5 if no criteria provided
+    const effectiveKeepLast = options.keepLast ?? 5;
 
     if (options.keepLast === undefined) {
-      this.logger.warn(`No filtering criteria provided - defaulting to --keep-last 3 for safety`);
+      this.logger.warn(`No filtering criteria provided - defaulting to --keep-last 5 for safety`);
       this.logger.info(`Use --keep-last N to explicitly set how many increments to keep`);
     }
 

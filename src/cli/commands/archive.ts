@@ -18,7 +18,7 @@ export async function archiveCommand(incrementIds: string[], options: any): Prom
     // Parse options
     const archiveOptions = {
       increments: incrementIds.length > 0 ? incrementIds : undefined,
-      keepLast: options.keepLast ? parseInt(options.keepLast) : 10,
+      keepLast: options.keepLast ? parseInt(options.keepLast) : 5,
       strictLast: options.last ? parseInt(options.last) : undefined,
       olderThanDays: options.olderThan ? parseInt(options.olderThan) : undefined,
       pattern: options.pattern,
