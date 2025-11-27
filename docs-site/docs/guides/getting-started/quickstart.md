@@ -107,8 +107,15 @@ SpecWeave applies this insight:
 
 ## Example: Build an Event Management SaaS
 
-:::tip Keep Increments Small
-**Best practice**: Split large projects into 5-15 task increments. This works better for both humans (easier tracking) and AI (better context retention).
+:::tip Keep Increments Small — 2-3x Faster with Opus 4.5!
+**Best practice**: Split large projects into 5-15 task increments. With **Claude Opus 4.5**, development speed increases **2-3x** (some report **5-10x**!). Small increments + Opus 4.5 = almost **no manual interaction** needed. Just define requirements, run `/specweave:do`, and review what's done.
+:::
+
+:::caution Prevent Claude Code Crashes
+**Keep files small**: Target **600-800 lines max** per file. Files over 1,000 lines significantly increase crash risk. If a file grows large:
+- Split into modules/helpers before adding code
+- Use the pattern: `feature.ts` → `feature/index.ts` + `feature/helpers.ts`
+- Large edits on big files + active increment context = crash recipe
 :::
 
 ```bash

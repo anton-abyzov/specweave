@@ -283,6 +283,10 @@ Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically.
 - Claude Code with **Claude Opus 4.5** (recommended) — [released Nov 2025](https://www.anthropic.com/news/claude-opus-4-5)
 - Git repository
 
+### Why Opus 4.5? 2-3x Faster Development!
+
+With **Claude Opus 4.5**, development speed increases **2-3x** (some report **5-10x**!). The key: formulate small, well-defined increments (5-15 tasks), and Opus completes them almost **without manual interaction**. Just define requirements, run `/specweave:do`, and review what's done.
+
 ---
 
 ## Community

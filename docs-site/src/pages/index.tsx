@@ -40,8 +40,8 @@ function HomepageHeader() {
               <div className={styles.statLabel}>AI Agents</div>
             </div>
             <div className={styles.stat}>
-              <div className={styles.statNumber}>100%</div>
-              <div className={styles.statLabel}>Reliable Activation</div>
+              <div className={styles.statNumber}>2-3x</div>
+              <div className={styles.statLabel}>Faster with Opus 4.5</div>
             </div>
           </div>
           <div className={styles.buttons}>
