@@ -90,5 +90,5 @@ User projects:
 
 ## Related
 
-- [ADR-0008: Brownfield Support](../architecture/adr/0008-brownfield-support.md) - Security considerations for brownfield projects
-- [Compliance Guide](./compliance.md) - Regulatory compliance requirements
+- [ADR-0008: Brownfield Support](../architecture/adr/0008-brownfield-support) - Security considerations for brownfield projects
+- [Compliance Guide](./compliance) - Regulatory compliance requirements

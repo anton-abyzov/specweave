@@ -1112,8 +1112,8 @@ priority: high
 ## Related Documentation
 
 - **CLAUDE.md** - Quick reference guide (see repository root)
-- [Increment Validation](./increment-validation.md) - Validation workflow
-- [Testing Strategy](./testing-strategy.md) - Test strategy and coverage
+- [Increment Validation](./increment-validation) - Validation workflow
+- [Testing Strategy](./testing-strategy) - Test strategy and coverage
 - [Branch Strategy](../branch-strategy.md) - Git workflow and branching
 - [Context Loading](../../architecture/concepts/context-loading.md) - Context manifests
 

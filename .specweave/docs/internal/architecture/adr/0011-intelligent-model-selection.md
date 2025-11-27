@@ -9,7 +9,7 @@ sidebar_label: "0011: Model Selection (Superseded)"
 ---
 **⚠️ SUPERSEDED**: This ADR has been superseded.
 
-**See instead**: [ADR-0003: Intelligent Model Selection Architecture](./0003-intelligent-model-selection.md)
+**See instead**: [ADR-0003: Intelligent Model Selection Architecture](./0003-intelligent-model-selection)
 
 **Date Superseded**: 2025-11-13 (Updated: 2025-11-26)
 **Reason**: Consolidated into ADR-0003 which is the canonical intelligent model selection decision.
@@ -32,7 +32,7 @@ Using Sonnet 4.5 ($3/$15 per 1M tokens) for all work wastes ~60-70% of budget on
 
 ## Decision
 
-See [ADR-0003](./0003-intelligent-model-selection.md) for the canonical decision covering:
+See [ADR-0003](./0003-intelligent-model-selection) for the canonical decision covering:
 - 3-layer intelligent model selection system
 - Agent preferences
 - Phase detection
@@ -40,5 +40,5 @@ See [ADR-0003](./0003-intelligent-model-selection.md) for the canonical decision
 
 ## Related
 
-- **Canonical ADR**: [ADR-0003: Intelligent Model Selection Architecture](./0003-intelligent-model-selection.md)
-- **Specific Use Case**: [ADR-0151: Reflection Model Selection](./0151-reflection-model-selection.md) (for self-reflection system specifically)
+- **Canonical ADR**: [ADR-0003: Intelligent Model Selection Architecture](./0003-intelligent-model-selection)
+- **Specific Use Case**: [ADR-0151: Reflection Model Selection](./0151-reflection-model-selection) (for self-reflection system specifically)

@@ -9,7 +9,7 @@ created: 2025-11-26
 
 # US-001: Internal Feature ID Collision Prevention
 
-**Feature**: [FS-074](./FEATURE.md)
+**Feature**: [FS-074](./FEATURE)
 
 **As a** developer using SpecWeave with external imports
 **I want** internal feature IDs to never collide with external feature IDs

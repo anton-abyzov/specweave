@@ -12,7 +12,7 @@ created: 2025-11-26
 
 # US-002: Automatic Issue Reopen on Resume
 
-**Feature**: [FS-072](./FEATURE.md)
+**Feature**: [FS-072](./FEATURE)
 
 **As a** developer resuming a paused/completed increment
 **I want** GitHub issues to automatically reopen

@@ -9,7 +9,7 @@ created: 2025-11-26
 
 # US-003: Background Job Support for Large Imports
 
-**Feature**: [FS-074](./FEATURE.md)
+**Feature**: [FS-074](./FEATURE)
 
 **As a** user importing from repos with many issues (100+)
 **I want** imports to run in background

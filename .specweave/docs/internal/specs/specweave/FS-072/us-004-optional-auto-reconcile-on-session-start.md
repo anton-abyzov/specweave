@@ -12,7 +12,7 @@ created: 2025-11-26
 
 # US-004: Optional Auto-Reconcile on Session Start
 
-**Feature**: [FS-072](./FEATURE.md)
+**Feature**: [FS-072](./FEATURE)
 
 **As a** team lead
 **I want** automatic reconciliation on session start

@@ -84,5 +84,5 @@ SpecWeave provides:
 
 ## Related
 
-- [Security Policy](./security-policy.md) - Security requirements and best practices
-- [Governance Overview](./README.md) - Complete governance documentation
+- [Security Policy](./security-policy) - Security requirements and best practices
+- [Governance Overview](./README) - Complete governance documentation

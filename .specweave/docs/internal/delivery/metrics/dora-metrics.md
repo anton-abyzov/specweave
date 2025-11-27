@@ -183,11 +183,11 @@ WHERE detected_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)
 
 ## Related Documentation
 
-- [Release Process](./release-process.md) - Links to deployment frequency
-- [Testing Strategy](./guides/testing-strategy.md) - Links to change failure rate
+- [Release Process](./release-process) - Links to deployment frequency
+- [Testing Strategy](./guides/testing-strategy) - Links to change failure rate
 - **Incident Response** - *Coming soon* - Performance incident handling and MTTR tracking
 - **CI/CD Pipeline** - *Coming soon* - Automated deployment and lead time tracking
-- [Branching Strategy](./branch-strategy.md) - Links to lead time
+- [Branching Strategy](./branch-strategy) - Links to lead time
 
 ---
 

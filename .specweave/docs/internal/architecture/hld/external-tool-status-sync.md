@@ -136,7 +136,7 @@ class StatusMapper {
 }
 ```
 
-**Configuration** (see [ADR-0031-001](./adr/0031-001-status-mapping-strategy.md)):
+**Configuration** (see [ADR-0031-001](./adr/0031-001-status-mapping-strategy)):
 ```json
 {
   "sync": {
@@ -183,7 +183,7 @@ class ConflictResolver {
 }
 ```
 
-**Strategies** (see [ADR-0031-002](./adr/0031-002-conflict-resolution-approach.md)):
+**Strategies** (see [ADR-0031-002](./adr/0031-002-conflict-resolution-approach)):
 1. `prompt` - Ask user (default, safest)
 2. `last-write-wins` - Use most recent timestamp
 3. `specweave-wins` - Always prefer SpecWeave
@@ -676,9 +676,9 @@ specweave init
 ## References
 
 ### Architecture Decision Records
-- [ADR-0031-001: Status Mapping Strategy](./adr/0031-001-status-mapping-strategy.md)
-- [ADR-0031-002: Conflict Resolution Approach](./adr/0031-002-conflict-resolution-approach.md)
-- [ADR-0031-003: Bidirectional Sync Implementation](./adr/0031-003-bidirectional-sync-implementation.md)
+- [ADR-0031-001: Status Mapping Strategy](./adr/0031-001-status-mapping-strategy)
+- [ADR-0031-002: Conflict Resolution Approach](./adr/0031-002-conflict-resolution-approach)
+- [ADR-0031-003: Bidirectional Sync Implementation](./adr/0031-003-bidirectional-sync-implementation)
 
 ### User Documentation
 - [Status Sync Guide](../public/guides/status-sync-guide.md)

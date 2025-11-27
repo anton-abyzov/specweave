@@ -3,7 +3,7 @@
 ---
 **⚠️ SUPERSEDED**: This ADR has been superseded.
 
-**See instead**: [ADR-0003: Intelligent Model Selection Architecture](./0003-intelligent-model-selection.md) (includes AI cost tracking)
+**See instead**: [ADR-0003: Intelligent Model Selection Architecture](./0003-intelligent-model-selection) (includes AI cost tracking)
 
 **Date Superseded**: 2025-11-26
 **Reason**: AI cost tracking is covered within ADR-0003 (Intelligent Model Selection). Note: ADR-0041 covers serverless infrastructure costs (different topic).
@@ -21,7 +21,7 @@ Users need visibility into AI costs per increment.
 
 ## Decision
 
-See [ADR-0012](./0012-cost-tracking.md) for the consolidated cost tracking decision covering:
+See [ADR-0012](./0012-cost-tracking) for the consolidated cost tracking decision covering:
 - JSON-based cost tracking
 - Async logging
 - Per-increment reports
@@ -29,5 +29,5 @@ See [ADR-0012](./0012-cost-tracking.md) for the consolidated cost tracking decis
 
 ## Related
 
-- **Canonical ADR**: [ADR-0012: Cost Tracking](./0012-cost-tracking.md)
-- **Related**: [ADR-0041: Cost Estimation Algorithm](./0041-cost-estimation-algorithm.md) (estimation, not tracking)
+- **Canonical ADR**: [ADR-0012: Cost Tracking](./0012-cost-tracking)
+- **Related**: [ADR-0041: Cost Estimation Algorithm](./0041-cost-estimation-algorithm) (estimation, not tracking)

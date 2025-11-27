@@ -1,0 +1,11 @@
+{
+  "id": "FS-061",
+  "type": "feature",
+  "archivedAt": "2025-11-27T01:16:05.977Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-061",
+  "linkedIncrements": [
+    "0061-fix-multi-repo-init-ux"
+  ]
+}

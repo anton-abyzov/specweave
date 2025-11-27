@@ -543,7 +543,7 @@ Generated files:
 
 ## Related Documentation
 
-- [Diagram Conventions](./diagram-conventions.md) - SpecWeave diagram standards
+- [Diagram Conventions](./diagram-conventions) - SpecWeave diagram standards
 - [Architecture Documentation](../../architecture/README.md) - Where diagrams are used
 - [Mermaid Documentation](https://mermaid.js.org/) - Diagram syntax reference
 - [Docusaurus Markdown Features](https://docusaurus.io/docs/markdown-features) - How diagrams render
