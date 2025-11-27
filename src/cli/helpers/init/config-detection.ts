@@ -83,35 +83,73 @@ export function detectJiraConfig(targetDir: string): JiraConfig | null {
 }
 
 /**
- * Detect Azure DevOps configuration from environment or .env file
+ * Detect Azure DevOps configuration from config.json + .env
+ *
+ * NEW (v0.28.x): ADO config is split:
+ * - PAT (secret) → .env as AZURE_DEVOPS_PAT
+ * - org/project/teams/areas (non-secret) → config.json sync profiles
  *
  * @param targetDir - Project directory to check
  * @returns ADO config or null if not detected
  */
 export function detectADOConfig(targetDir: string): ADOConfig | null {
   try {
-    // Check environment variables first
-    const envOrgUrl = process.env.ADO_ORG_URL;
-    const envProject = process.env.ADO_PROJECT;
-    const envPat = process.env.ADO_PAT || process.env.AZURE_DEVOPS_PAT;
+    // 1. Get PAT from environment or .env (secret)
+    let pat = process.env.AZURE_DEVOPS_PAT || process.env.ADO_PAT;
 
-    if (envOrgUrl && envProject && envPat) {
-      return { orgUrl: envOrgUrl, project: envProject, pat: envPat };
+    if (!pat) {
+      const envPath = path.join(targetDir, '.env');
+      if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, 'utf-8');
+        const envVars = parseEnvFile(envContent);
+        pat = envVars.AZURE_DEVOPS_PAT || envVars.ADO_PAT;
+      }
     }
 
-    // Check .env file
-    const envPath = path.join(targetDir, '.env');
-    if (fs.existsSync(envPath)) {
-      const envContent = fs.readFileSync(envPath, 'utf-8');
-      const envVars = parseEnvFile(envContent);
+    if (!pat) {
+      return null; // No PAT = no ADO config
+    }
 
-      const fileOrgUrl = envVars.ADO_ORG_URL;
-      const fileProject = envVars.ADO_PROJECT;
-      const filePat = envVars.ADO_PAT || envVars.AZURE_DEVOPS_PAT;
+    // 2. Get org/project from config.json (non-secrets)
+    const configPath = path.join(targetDir, '.specweave', 'config.json');
+    if (fs.existsSync(configPath)) {
+      const configContent = fs.readFileSync(configPath, 'utf-8');
+      const config = JSON.parse(configContent);
 
-      if (fileOrgUrl && fileProject && filePat) {
-        return { orgUrl: fileOrgUrl, project: fileProject, pat: filePat };
+      // Look for ADO profile in sync.profiles
+      const profiles = config.sync?.profiles || {};
+      const adoProfile = Object.values(profiles).find(
+        (p: any) => p.provider === 'ado'
+      ) as any;
+
+      if (adoProfile?.config) {
+        const { organization, project, teams, areaPaths, strategy } = adoProfile.config;
+        if (organization && project) {
+          return {
+            orgUrl: `https://dev.azure.com/${organization}`,
+            project,
+            pat,
+            teams,
+            areaPaths,
+            strategy
+          };
+        }
       }
+    }
+
+    // 3. Fallback: Check env vars (AZURE_DEVOPS_* and ADO_* patterns)
+    const orgUrl = process.env.AZURE_DEVOPS_ORG_URL || process.env.ADO_ORG_URL || process.env.AZURE_DEVOPS_ORG;
+    const project = process.env.AZURE_DEVOPS_PROJECT || process.env.ADO_PROJECT;
+    const projects = process.env.AZURE_DEVOPS_PROJECTS || process.env.ADO_PROJECTS;
+
+    if (orgUrl && (project || projects)) {
+      // Parse org name from URL if needed (https://dev.azure.com/ORG -> ORG)
+      const normalizedOrgUrl = orgUrl.startsWith('https://') ? orgUrl : `https://dev.azure.com/${orgUrl}`;
+      return {
+        orgUrl: normalizedOrgUrl,
+        project: project || projects?.split(',')[0]?.trim() || '',
+        pat
+      };
     }
 
     return null;

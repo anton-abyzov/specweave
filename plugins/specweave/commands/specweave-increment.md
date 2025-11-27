@@ -149,11 +149,11 @@ import { MetadataManager } from '../core/metadata-manager';
 import { ConfigManager } from '../core/config-manager';
 import { IncrementType } from '../core/types';
 
-// 1. Load config (defaults: maxActiveIncrements=1, hardCap=2, allowEmergencyInterrupt=true)
+// 1. Load config (defaults: maxActiveIncrements=1, hardCap=3, allowEmergencyInterrupt=true)
 const config = ConfigManager.load();
 const limits = config.limits || {
   maxActiveIncrements: 1,
-  hardCap: 2,
+  hardCap: 3,
   allowEmergencyInterrupt: true,
   typeBehaviors: {
     canInterrupt: ['hotfix', 'bug']
@@ -167,32 +167,31 @@ const activeCount = active.length;
 // 3. Ask user for increment type (or detect from title)
 const incrementType = await promptForType(); // hotfix, feature, bug, change-request, refactor, experiment
 
-// 4. HARD CAP ENFORCEMENT (never >2 active)
+// 4. HARD CAP WARNING (negotiable - user decides!)
 if (activeCount >= limits.hardCap) {
-  console.log(chalk.red.bold('\n❌ HARD CAP REACHED\n'));
-  console.log(chalk.red(`You have ${activeCount} active increments (absolute maximum: ${limits.hardCap})\n`));
+  console.log(chalk.yellow.bold('\n⚠️  WIP LIMIT EXCEEDED\n'));
+  console.log(chalk.yellow(`You have ${activeCount} active increments (configured limit: ${limits.hardCap})\n`));
 
-  console.log(chalk.yellow('Active increments:'));
+  console.log(chalk.dim('Active increments:'));
   active.forEach(inc => {
     console.log(chalk.dim(`  • ${inc.id} [${inc.type}]`));
   });
 
-  console.log(chalk.blue('\n💡 You MUST complete or pause existing work first:\n'));
-  console.log(chalk.white('1️⃣  Complete an increment:'));
-  console.log(chalk.dim('   /specweave:done <id>\n'));
-  console.log(chalk.white('2️⃣  Pause an increment:'));
-  console.log(chalk.dim('   /specweave:pause <id> --reason="..."\n'));
-  console.log(chalk.white('3️⃣  Check status:'));
-  console.log(chalk.dim('   /specweave:status\n'));
+  console.log(chalk.blue('\n💡 Options:\n'));
+  console.log(chalk.white('1️⃣  Complete an increment: /specweave:done <id>'));
+  console.log(chalk.white('2️⃣  Pause an increment: /specweave:pause <id>'));
+  console.log(chalk.white('3️⃣  Increase limit: Edit .specweave/config.json limits.hardCap'));
+  console.log(chalk.white('4️⃣  Continue anyway (confirm below)\n'));
 
-  console.log(chalk.yellow('📝 Multiple hotfixes? Combine them into ONE increment!'));
-  console.log(chalk.dim('   Example: 0009-security-fixes (SQL + XSS + CSRF)\n'));
-
-  console.log(chalk.red.bold('⛔ This limit is enforced for your productivity.'));
   console.log(chalk.dim('Research: 3+ concurrent tasks = 40% slower + more bugs\n'));
 
-  // NO force override at hard cap - absolute maximum
-  process.exit(1);
+  // ASK user instead of blocking
+  const proceed = await promptConfirm('Continue with new increment anyway?');
+  if (!proceed) {
+    console.log(chalk.dim('Cancelled. Complete or pause existing work first.'));
+    process.exit(0);
+  }
+  console.log(chalk.green('✓ Proceeding with new increment...\n'));
 }
 
 // 5. SOFT ENFORCEMENT (activeCount >= maxActiveIncrements)

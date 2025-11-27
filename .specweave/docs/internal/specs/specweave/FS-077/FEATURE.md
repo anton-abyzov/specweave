@@ -1,0 +1,29 @@
+---
+id: FS-077
+title: "ADO Init Flow Critical Fixes"
+type: feature
+status: completed
+priority: P1
+created: 2025-11-27
+lastUpdated: 2025-11-27
+---
+
+# ADO Init Flow Critical Fixes
+
+## Overview
+
+The A
+
+## Implementation History
+
+| Increment | Status | Completion Date |
+|-----------|--------|----------------|
+| [0077-ado-init-flow-critical-fixes](../../../../increments/0077-ado-init-flow-critical-fixes/spec.md) | ✅ completed | 2025-11-27 |
+
+## User Stories
+
+- [US-001: Fix Env Var Name Consistency](../../specweave/FS-077/us-001-fix-env-var-name-consistency.md)
+- [US-002: Fix ADO Work Item Import](../../specweave/FS-077/us-002-fix-ado-work-item-import.md)
+- [US-003: Create ADO Project Folder Structure](../../specweave/FS-077/us-003-create-ado-project-folder-structure.md)
+- [US-004: Add Pattern-Based Work Item Selection](../../specweave/FS-077/us-004-add-pattern-based-work-item-selection.md)
+- [US-005: Move ADO Configuration to config.json](../../specweave/FS-077/us-005-move-ado-configuration-to-config-json.md)

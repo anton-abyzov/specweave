@@ -22,8 +22,13 @@ vi.mock('../../../../src/cli/commands/plan/plan-orchestrator.js');
 describe('PlanCommand - Initialization (T-001)', () => {
   let testDir: string;
   let incrementDir: string;
+  // ✅ FIX: Save original cwd to restore after tests (prevents Claude Code crashes)
+  let originalCwd: string;
 
   beforeEach(async () => {
+    // Save original cwd BEFORE changing directory
+    originalCwd = process.cwd();
+
     // Create isolated test directory
     testDir = path.join(os.tmpdir(), `plan-command-test-${Date.now()}`);
     await fs.ensureDir(testDir);
@@ -37,6 +42,11 @@ describe('PlanCommand - Initialization (T-001)', () => {
   });
 
   afterEach(async () => {
+    // ✅ FIX: Restore original cwd BEFORE cleanup (critical!)
+    if (originalCwd) {
+      process.chdir(originalCwd);
+    }
+
     // Cleanup test directory
     await fs.remove(testDir);
   });

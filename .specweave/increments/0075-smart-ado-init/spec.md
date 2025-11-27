@@ -39,10 +39,10 @@ Current ADO init flow has critical issues:
 **So that** SpecWeave can auto-fetch my teams and area paths
 
 **Acceptance Criteria:**
-- [ ] **AC-US1-01**: Ask org, project, then PAT (before teams)
-- [ ] **AC-US1-02**: Validate PAT immediately after entry
-- [ ] **AC-US1-03**: Show helpful error if PAT validation fails
-- [ ] **AC-US1-04**: Cache org/project for re-init (existing behavior)
+- [x] **AC-US1-01**: Ask org, project, then PAT (before teams)
+- [x] **AC-US1-02**: Validate PAT immediately after entry
+- [x] **AC-US1-03**: Show helpful error if PAT validation fails
+- [x] **AC-US1-04**: Cache org/project for re-init (existing behavior)
 
 ### US-002: Auto-Fetch Teams and Area Paths
 
@@ -51,11 +51,11 @@ Current ADO init flow has critical issues:
 **So that** I don't have to manually type team names
 
 **Acceptance Criteria:**
-- [ ] **AC-US2-01**: After PAT validation, fetch teams using `fetchTeamsForProject()`
-- [ ] **AC-US2-02**: Fetch area paths using `fetchAreaPathsForProject()`
-- [ ] **AC-US2-03**: Display fetched teams/areas in multi-select prompt
-- [ ] **AC-US2-04**: Allow selecting multiple area paths (primary use case)
-- [ ] **AC-US2-05**: Fallback to manual input if API fails
+- [x] **AC-US2-01**: After PAT validation, fetch teams using `fetchTeamsForProject()`
+- [x] **AC-US2-02**: Fetch area paths using `fetchAreaPathsForProject()`
+- [x] **AC-US2-03**: Display fetched teams/areas in multi-select prompt
+- [x] **AC-US2-04**: Allow selecting multiple area paths (primary use case)
+- [x] **AC-US2-05**: Fallback to manual input if API fails
 
 ### US-003: Smart Area Path Selection
 
@@ -64,10 +64,10 @@ Current ADO init flow has critical issues:
 **So that** only relevant work items are imported
 
 **Acceptance Criteria:**
-- [ ] **AC-US3-01**: Show hierarchical area paths (e.g., `Acme\Digital-Service-Operations`)
-- [ ] **AC-US3-02**: Default to root area path if none selected
-- [ ] **AC-US3-03**: Store selected area paths in config.json
-- [ ] **AC-US3-04**: Support area path filtering in import queries
+- [x] **AC-US3-01**: Show hierarchical area paths (e.g., `Acme\Digital-Service-Operations`)
+- [x] **AC-US3-02**: Default to root area path if none selected
+- [x] **AC-US3-03**: Store selected area paths in config.json
+- [x] **AC-US3-04**: Support area path filtering in import queries
 
 ### US-004: Fix Config Saving Bugs
 
@@ -76,10 +76,10 @@ Current ADO init flow has critical issues:
 **So that** import and sync work properly
 
 **Acceptance Criteria:**
-- [ ] **AC-US4-01**: Fix `writeSyncConfig()` to use `adoCreds.org` not `adoCreds.organization`
-- [ ] **AC-US4-02**: Save selected teams in config.json
-- [ ] **AC-US4-03**: Save selected area paths in config.json
-- [ ] **AC-US4-04**: Build orgUrl correctly: `https://dev.azure.com/{org}`
+- [x] **AC-US4-01**: Fix `writeSyncConfig()` to use `adoCreds.org` not `adoCreds.organization`
+- [x] **AC-US4-02**: Save selected teams in config.json
+- [x] **AC-US4-03**: Save selected area paths in config.json
+- [x] **AC-US4-04**: Build orgUrl correctly: `https://dev.azure.com/{org}`
 
 ### US-005: Fix External Import Detection
 
@@ -88,10 +88,10 @@ Current ADO init flow has critical issues:
 **So that** work items are imported during init
 
 **Acceptance Criteria:**
-- [ ] **AC-US5-01**: `detectAllConfigs()` properly detects ADO from config.json
-- [ ] **AC-US5-02**: Import coordinator builds valid ADO config
-- [ ] **AC-US5-03**: ADOImporter initializes with correct orgUrl and PAT
-- [ ] **AC-US5-04**: Import successfully fetches work items from selected area paths
+- [x] **AC-US5-01**: `detectAllConfigs()` properly detects ADO from config.json
+- [x] **AC-US5-02**: Import coordinator builds valid ADO config
+- [x] **AC-US5-03**: ADOImporter initializes with correct orgUrl and PAT
+- [x] **AC-US5-04**: Import successfully fetches work items from selected area paths
 
 ## Technical Design
 

@@ -16,6 +16,7 @@
 import { test, expect } from '@playwright/test';
 import * as fs from '../../src/utils/fs-native.js';
 import * as path from 'path';
+import * as os from 'os';
 import matter from 'gray-matter';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -26,8 +27,8 @@ test.describe('Increment Closure - E2E Tests', () => {
   let testProjectRoot: string;
 
   test.beforeEach(async () => {
-    // Create temporary project directory for E2E test
-    testProjectRoot = path.join(process.cwd(), '.test-e2e-closure-' + Date.now());
+    // ✅ FIX: Use os.tmpdir() instead of process.cwd() to prevent polluting project directory
+    testProjectRoot = path.join(os.tmpdir(), 'specweave-test-e2e-closure-' + Date.now());
     await fs.ensureDir(testProjectRoot);
 
     // Initialize .specweave structure
