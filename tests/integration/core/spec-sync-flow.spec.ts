@@ -19,7 +19,13 @@ import { execSync } from 'child_process';
 const TEST_PROJECT_DIR = path.join(os.tmpdir(), 'specweave-test-spec-sync-' + Date.now());
 
 test.describe('Spec Synchronization E2E Flow', () => {
+  // ✅ FIX: Save original cwd to restore after tests (prevents Claude Code crashes)
+  let originalCwd: string;
+
   test.beforeAll(() => {
+    // Save original cwd BEFORE changing directory
+    originalCwd = process.cwd();
+
     // Create test project directory
     if (fs.existsSync(TEST_PROJECT_DIR)) {
       fs.rmSync(TEST_PROJECT_DIR, { recursive: true, force: true });
@@ -32,6 +38,11 @@ test.describe('Spec Synchronization E2E Flow', () => {
   });
 
   test.afterAll(() => {
+    // ✅ FIX: Restore original cwd BEFORE cleanup (critical!)
+    if (originalCwd) {
+      process.chdir(originalCwd);
+    }
+
     // Clean up test directory
     if (fs.existsSync(TEST_PROJECT_DIR)) {
       fs.rmSync(TEST_PROJECT_DIR, { recursive: true, force: true });

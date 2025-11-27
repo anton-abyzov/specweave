@@ -29,13 +29,21 @@ import type { BudgetType } from '../../src/init/architecture/types.js';
 
 test.describe('Strategic Init Scenarios E2E (T-062)', () => {
   let testDir: string;
+  // ✅ FIX: Save original cwd to restore after tests (prevents Claude Code crashes)
+  let originalCwd: string;
 
   test.beforeEach(async () => {
+    // Save original cwd BEFORE changing directory
+    originalCwd = process.cwd();
     testDir = await mkdtemp(join(tmpdir(), 'specweave-init-e2e-'));
     process.chdir(testDir);
   });
 
   test.afterEach(async () => {
+    // ✅ FIX: Restore original cwd BEFORE cleanup (critical!)
+    if (originalCwd) {
+      process.chdir(originalCwd);
+    }
     await rm(testDir, { recursive: true, force: true });
   });
 

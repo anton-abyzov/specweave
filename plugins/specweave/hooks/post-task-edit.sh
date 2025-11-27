@@ -32,6 +32,16 @@ if [[ -d "$PROJECT_ROOT/.specweave" ]]; then
 
   # Update status line
   bash "$HOOK_DIR/lib/update-status-line.sh" 2>/dev/null || true
+
+  # CRASH PREVENTION: Check task count in active increments
+  for tasks_file in "$PROJECT_ROOT/.specweave/increments"/[0-9]*/tasks.md; do
+    [[ -f "$tasks_file" ]] || continue
+    task_count=$(grep -c "^### T-" "$tasks_file" 2>/dev/null || echo "0")
+    if [[ "$task_count" -gt 8 ]]; then
+      inc_name=$(basename "$(dirname "$tasks_file")")
+      echo "⚠️ CRASH RISK: $inc_name has $task_count tasks (max 8). Split increment!" >&2
+    fi
+  done
 fi
 
 exit 0

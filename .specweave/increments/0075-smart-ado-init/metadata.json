@@ -1,10 +1,13 @@
 {
   "id": "0075-smart-ado-init",
   "name": "Smart ADO Init - Auto-fetch Teams & Area Paths",
-  "status": "active",
+  "status": "completed",
   "type": "bug-fix",
   "priority": "P1",
   "createdAt": "2025-11-26T12:00:00Z",
+  "completedAt": "2025-11-27T12:00:00Z",
   "userStories": ["US-001", "US-002", "US-003", "US-004", "US-005"],
-  "feature_id": "FS-075"
+  "feature_id": "FS-075",
+  "totalACs": 21,
+  "completedACs": 21
 }

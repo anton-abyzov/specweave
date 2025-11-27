@@ -1,7 +1,8 @@
 {
   "increment": "0076-crash-prevention-refactor",
-  "status": "active",
+  "status": "completed",
   "created": "2025-11-26",
+  "completed": "2025-11-27",
   "type": "refactor",
   "priority": "high",
   "risk": "low",
