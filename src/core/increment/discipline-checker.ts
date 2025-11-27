@@ -50,7 +50,7 @@ export class DisciplineChecker {
   private getDefaultLimits(): DisciplineLimits {
     return {
       maxActiveIncrements: 1,
-      hardCap: 2,
+      hardCap: 3,
       allowEmergencyInterrupt: true,
       typeBehaviors: {
         canInterrupt: ['hotfix', 'bug'],

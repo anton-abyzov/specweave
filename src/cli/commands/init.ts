@@ -152,6 +152,45 @@ async function createMultiProjectFolders(targetDir: string): Promise<void> {
       console.log('');
     }
   }
+
+  // ADO Multi-Area Folder Creation (reads from config.json, not .env)
+  const syncConfig = config.sync as Record<string, unknown> | undefined;
+  const profiles = (syncConfig?.profiles || {}) as Record<string, { provider?: string; config?: { organization?: string; project?: string; areaPaths?: string[] } }>;
+
+  const adoProfile = Object.values(profiles).find(p => p.provider === 'ado');
+  if (adoProfile?.config) {
+    const { organization, project, areaPaths } = adoProfile.config;
+
+    if (organization && project) {
+      console.log(chalk.blue('\n📁 Creating Azure DevOps Folders'));
+      console.log(chalk.gray(`   Organization: ${organization}, Project: ${project}`));
+
+      const projectFolder = `ADO-${project.replace(/\s+/g, '-').toLowerCase()}`;
+
+      if (areaPaths?.length) {
+        // Create folder per area path
+        for (const areaPath of areaPaths) {
+          const areaName = areaPath.split('\\').pop() || areaPath;
+          const areaFolder = areaName.replace(/\s+/g, '-').toLowerCase();
+          const specsPath = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs', projectFolder, areaFolder);
+
+          if (!fs.existsSync(specsPath)) {
+            fs.mkdirSync(specsPath, { recursive: true });
+          }
+          console.log(chalk.green(`   ✓ Created: specs/${projectFolder}/${areaFolder}/`));
+        }
+      } else {
+        // Single project folder (no area paths)
+        const specsPath = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs', projectFolder);
+
+        if (!fs.existsSync(specsPath)) {
+          fs.mkdirSync(specsPath, { recursive: true });
+        }
+        console.log(chalk.green(`   ✓ Created: specs/${projectFolder}/`));
+      }
+      console.log('');
+    }
+  }
 }
 
 /**

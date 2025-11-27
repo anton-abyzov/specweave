@@ -19,6 +19,27 @@ For **contributors to SpecWeave itself** (not users).
 # OR close completed increments: /specweave:done XXXX
 ```
 
+### 1b. Max 8 Tasks Per Increment (HARD LIMIT!)
+
+**>8 tasks = context explosion = CRASH**
+
+```bash
+# Check task count before starting work:
+grep -c "^### T-" .specweave/increments/*/tasks.md
+
+# If >8 tasks: SPLIT the increment
+# Pattern: Feature → Increment-Part1 (T-001 to T-004) + Increment-Part2 (T-005 to T-008)
+```
+
+**Splitting large features:**
+```
+0045-auth-system/        → 0045-auth-system-core/ (T-001 to T-004)
+                         → 0046-auth-system-ui/   (T-005 to T-008)
+                         → 0047-auth-system-tests/ (T-009 to T-012)
+```
+
+**Token budget per increment**: ~50k tokens max (tasks + spec + plan + context)
+
 ### 2. Source of Truth
 
 **tasks.md + spec.md are SOURCE OF TRUTH** (not internal TODO)

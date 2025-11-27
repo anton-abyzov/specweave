@@ -19,7 +19,7 @@ export interface LimitsConfig {
   /** Maximum active increments at any time (default: 1 for focus) */
   maxActiveIncrements?: number;
 
-  /** Absolute maximum active increments, never exceeded (default: 2) */
+  /** Maximum active increments with warning (default: 3, negotiable) */
   hardCap?: number;
 
   /** Allow 2nd active increment for hotfix/bug emergencies (default: true) */
@@ -317,7 +317,7 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
   },
   limits: {
     maxActiveIncrements: 1,        // v0.7.0+: 1 active increment (maximum focus)
-    hardCap: 2,                    // Emergency ceiling (never >2)
+    hardCap: 3,                    // Soft ceiling with warning (negotiable)
     allowEmergencyInterrupt: true, // Allow hotfix/bug to interrupt
     typeBehaviors: {
       canInterrupt: [IncrementType.HOTFIX, IncrementType.BUG], // Only emergencies can interrupt

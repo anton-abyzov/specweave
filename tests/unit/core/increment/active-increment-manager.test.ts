@@ -17,8 +17,13 @@ import { IncrementStatus, IncrementType } from '../../../../src/core/types/incre
 describe('ActiveIncrementManager', () => {
   let tempDir: string;
   let manager: ActiveIncrementManager;
+  // ✅ FIX: Save original cwd to restore after tests (prevents Claude Code crashes)
+  let originalCwd: string;
 
   beforeEach(() => {
+    // Save original cwd BEFORE changing directory
+    originalCwd = process.cwd();
+
     // Create temp directory for testing
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'specweave-test-'));
     process.chdir(tempDir);
@@ -32,6 +37,11 @@ describe('ActiveIncrementManager', () => {
   });
 
   afterEach(() => {
+    // ✅ FIX: Restore original cwd BEFORE cleanup (critical!)
+    if (originalCwd) {
+      process.chdir(originalCwd);
+    }
+
     // Clean up temp directory
     if (fs.existsSync(tempDir)) {
       fs.removeSync(tempDir);
