@@ -1,27 +1,14 @@
----
-id: FS-075
-title: "Fix Internal Feature ID Collision and GitHub Import Issues"
-type: feature
-status: completed
-priority: P0
-created: 2025-11-26
-lastUpdated: 2025-11-26
----
+# FS-076: Smart ADO Init
 
-# Fix Internal Feature ID Collision and GitHub Import Issues
+**Status**: Active
+**Increment**: 0071-smart-ado-init
+**Priority**: P1
+**Type**: Bug Fix
 
-## Overview
+## Summary
 
-### Issue 1: FS-001 vs FS-001E Collision (CRITICAL)
-
-## Implementation History
-
-| Increment | Status | Completion Date |
-|-----------|--------|----------------|
-| [0074-fix-internal-feature-collision-and-import](../../../../increments/0074-fix-internal-feature-collision-and-import/spec.md) | ✅ completed | 2025-11-26 |
+Auto-fetch Teams & Area Paths during Azure DevOps initialization to improve UX.
 
 ## User Stories
 
-- [US-001: Internal Feature ID Collision Prevention](../../specweave/FS-075/us-001-internal-feature-id-collision-prevention.md)
-- [US-002: GitHub Import Completeness](../../specweave/FS-075/us-002-github-import-completeness.md)
-- [US-003: Background Job Support for Large Imports (DESCOPED)](../../specweave/FS-075/us-003-background-job-support-for-large-imports-descoped-.md)
+- US-001 to US-005: See increment spec for details

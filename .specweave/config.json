@@ -67,7 +67,7 @@
     "cleanupIntervalMs": 60000
   },
   "archiving": {
-    "keepLast": 10,
+    "keepLast": 5,
     "autoArchive": false,
     "archiveAfterDays": 60,
     "preserveActive": true,

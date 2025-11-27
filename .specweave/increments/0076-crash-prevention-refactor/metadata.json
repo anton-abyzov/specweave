@@ -1,0 +1,9 @@
+{
+  "increment": "0076-crash-prevention-refactor",
+  "status": "active",
+  "created": "2025-11-26",
+  "type": "refactor",
+  "priority": "high",
+  "risk": "low",
+  "feature_id": "FS-076"
+}

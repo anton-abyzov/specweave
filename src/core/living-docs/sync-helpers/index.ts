@@ -1,0 +1,28 @@
+/**
+ * Sync Helpers - Extracted utilities from LivingDocsSync
+ * @module core/living-docs/sync-helpers
+ */
+
+// Parsers
+export {
+  calculateUSStatus,
+  extractUserStories,
+  extractAcceptanceCriteria,
+} from './parsers.js';
+
+// Generators
+export {
+  generateFeatureFile,
+  generateReadmeFile,
+  generateUserStoryFile,
+} from './generators.js';
+
+// File utilities
+export {
+  pathExists,
+  readJson,
+  ensureDir,
+  findExistingUserStoryFile,
+  cleanupDuplicateFiles,
+  cleanupTempFiles,
+} from './file-utils.js';
