@@ -73,8 +73,12 @@ Then in Claude Code:
 
 **Pro tip**: Use `/specweave:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
 
-:::tip Keep Increments Small
-**5-15 tasks, 1-3 user stories, completable in 1-3 days.** Small increments are easier to track, ship faster, and work better with AI tools (better context retention, higher accuracy). If your increment has 20+ tasks, split it!
+:::tip Keep Increments Small — 2-3x Faster with Opus 4.5!
+**5-15 tasks, 1-3 user stories, completable in 1-3 days.** With **Claude Opus 4.5**, development speed increases **2-3x** (some report **5-10x**!). Small increments + Opus 4.5 = almost **no manual interaction**. Just define requirements, run `/specweave:do`, and review what's done.
+:::
+
+:::caution Prevent Claude Code Crashes
+**Keep files small**: Target **600-800 lines max**. Files over 1K lines = crash risk. Split large files into modules before adding code.
 :::
 
 **[Full Quickstart Guide](./guides/getting-started/quickstart)**
