@@ -7,7 +7,7 @@
  */
 
 import chalk from 'chalk';
-import { confirm, input, password } from '@inquirer/prompts';
+import { confirm, input, password, checkbox } from '@inquirer/prompts';
 import ora from 'ora';
 import { getAzureDevOpsAuth } from '../../../utils/auth-helpers.js';
 import {
@@ -155,16 +155,11 @@ export async function promptAzureDevOpsCredentials(
       }
     });
 
-    const teamsInput = await input({
-      message: 'Team name(s) (optional, comma-separated):',
-      default: ''
-    });
-    teams = teamsInput
-      ? teamsInput.split(',').map((t: string) => t.trim()).filter((t: string) => t.length > 0)
-      : [];
+    // Teams/areas will be auto-fetched after PAT validation
+    teams = [];
   }
 
-  // Always prompt for PAT (never cache secrets)
+  // Step 1: Prompt for PAT (before teams - so we can auto-fetch!)
   const pat = await password({
     message: 'Paste your Personal Access Token:',
     mask: '*',
@@ -180,6 +175,74 @@ export async function promptAzureDevOpsCredentials(
     }
   });
 
+  // Step 2: Validate PAT and auto-fetch teams/areas
+  const spinner = ora('Validating PAT and fetching teams/areas...').start();
+  let fetchedTeams: Array<{ name: string; id: string }> = [];
+  let fetchedAreas: Array<{ name: string; path: string }> = [];
+  let areaPaths: string[] = [];
+
+  try {
+    // Validate connection first
+    const projectEndpoint = `https://dev.azure.com/${org}/_apis/projects/${project}?api-version=7.0`;
+    const auth = Buffer.from(`:${pat}`).toString('base64');
+    const response = await fetch(projectEndpoint, {
+      headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' }
+    });
+
+    if (!response.ok) {
+      spinner.fail('PAT validation failed');
+      console.log(chalk.red(`   Error: ${response.status === 401 ? 'Invalid PAT' : 'Check org/project name'}`));
+      return null;
+    }
+
+    spinner.text = 'Fetching teams and area paths...';
+
+    // Fetch teams and areas in parallel
+    const { fetchTeamsForProject, fetchAreaPathsForProject } = await import(
+      '../../../../plugins/specweave-ado/lib/ado-board-resolver.js'
+    );
+
+    const [teamsResult, areasResult] = await Promise.all([
+      fetchTeamsForProject(org, project, pat).catch((): never[] => []),
+      fetchAreaPathsForProject(org, project, pat).catch((): never[] => [])
+    ]);
+
+    fetchedTeams = teamsResult.map((t: any) => ({ name: t.name, id: t.id }));
+    fetchedAreas = areasResult.map((a: any) => ({ name: a.name, path: a.path }));
+    spinner.succeed(`Found ${fetchedTeams.length} teams, ${fetchedAreas.length} area paths`);
+
+  } catch (error: any) {
+    spinner.warn('Could not auto-fetch teams/areas - using manual input');
+  }
+
+  // Step 3: Let user select area paths (if any found)
+  if (fetchedAreas.length > 0) {
+    const areaChoices = fetchedAreas.map(a => ({
+      name: a.path,
+      value: a.path,
+      checked: false
+    }));
+
+    areaPaths = await checkbox({
+      message: 'Select area paths to sync (space to select, enter to confirm):',
+      choices: areaChoices
+    });
+  }
+
+  // Step 4: Let user select teams (if any found)
+  if (fetchedTeams.length > 0) {
+    const teamChoices = fetchedTeams.map(t => ({
+      name: t.name,
+      value: t.name,
+      checked: false
+    }));
+
+    teams = await checkbox({
+      message: 'Select teams (optional, press enter to skip):',
+      choices: teamChoices
+    });
+  }
+
   // Cache the configuration (NOT the PAT) for future use
   if (projectRoot) {
     const { CacheManager } = await import('../../../core/cache/cache-manager.js');
@@ -187,16 +250,18 @@ export async function promptAzureDevOpsCredentials(
     await cacheManager.set('ado-config', {
       org,
       project,
-      teams: teams.length > 0 ? teams : undefined
+      teams: teams.length > 0 ? teams : undefined,
+      areaPaths: areaPaths.length > 0 ? areaPaths : undefined
     });
   }
 
   return {
     pat,
     org,
-    project,  // One project (ADO standard)
-    team: teams[0],  // Use first team for backward compatibility
-    teams: teams.length > 1 ? teams : undefined  // Multiple teams (optional)
+    project,
+    team: teams[0],
+    teams: teams.length > 0 ? teams : undefined,
+    areaPaths: areaPaths.length > 0 ? areaPaths : undefined  // NEW: Selected area paths
   };
 }
 

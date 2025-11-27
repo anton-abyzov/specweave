@@ -139,3 +139,57 @@ export interface FeatureMapping {
   projectPaths?: Record<string, string>;
   epic?: string;
 }
+
+// ============================================================================
+// Sync Types (extracted from living-docs-sync.ts)
+// ============================================================================
+
+export interface SyncOptions {
+  dryRun?: boolean;
+  force?: boolean;
+  explicitFeatureId?: string;
+}
+
+export interface SyncResult {
+  success: boolean;
+  featureId: string;
+  incrementId: string;
+  filesCreated: string[];
+  filesUpdated: string[];
+  errors: string[];
+}
+
+export interface ParsedSpec {
+  title: string;
+  overview: string;
+  status: string;
+  priority: string;
+  created: string;
+  userStories: UserStoryData[];
+  acceptanceCriteria: AcceptanceCriterionData[];
+  frontmatter: Record<string, any>;
+}
+
+export interface UserStoryData {
+  id: string;
+  title: string;
+  description: string;
+  acceptanceCriteria: string[];
+  phase?: string;
+  status?: string;
+  format_preservation?: boolean;
+  external_title?: string;
+  external_source?: 'github' | 'jira' | 'ado';
+  external_id?: string;
+  external_url?: string;
+  imported_at?: string;
+  origin?: 'internal' | 'external';
+}
+
+export interface AcceptanceCriterionData {
+  id: string;
+  userStoryId: string;
+  description: string;
+  completed: boolean;
+  priority?: string;
+}

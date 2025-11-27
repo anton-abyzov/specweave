@@ -96,6 +96,7 @@ export interface AzureDevOpsCredentials {
   project: string; // One project per organization (ADO standard)
   team?: string; // Single team (backward compatibility)
   teams?: string[]; // Multiple teams within project (optional)
+  areaPaths?: string[]; // Area paths for work item filtering (optional)
   strategy?: AzureDevOpsStrategy; // Team mapping strategy (optional)
 }
 

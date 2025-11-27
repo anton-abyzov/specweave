@@ -108,7 +108,7 @@ program
 program
   .command('archive [increments...]')
   .description('Archive completed increments and sync living docs (_features/ + project-specific)')
-  .option('--keep-last <n>', 'Keep last N increments, archive the rest', '10')
+  .option('--keep-last <n>', 'Keep last N increments, archive the rest', '5')
   .option('--last <n>', 'STRICT: Keep exactly last N increments by number, ignoring all protections')
   .option('--older-than <days>', 'Archive increments older than N days')
   .option('--pattern <pattern>', 'Archive increments matching pattern (regex)')

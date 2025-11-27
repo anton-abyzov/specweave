@@ -671,7 +671,7 @@ async function writeSyncConfig(
     }
   } else if (tracker === 'ado') {
     const adoCreds = credentials as any;
-    organization = adoCreds.organization || '';
+    organization = adoCreds.org || '';  // FIX: credentials return `org`, not `organization`
     project = adoCreds.project || '';
   }
 
