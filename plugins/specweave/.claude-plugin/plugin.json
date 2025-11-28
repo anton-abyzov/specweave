@@ -20,82 +20,27 @@
     "living-docs"
   ],
   "hooks": {
-    "PreToolUse": [
+    "SessionStart": [
       {
-        "matcher": "TodoWrite",
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-task-completion.sh",
-            "timeout": 2
-          }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-edit-write-consolidated.sh",
-            "timeout": 1,
-            "description": "Consolidated pre-hook for Edit (v0.25.0)"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-edit-write-consolidated.sh",
-            "timeout": 1,
-            "description": "Consolidated pre-hook for Write (v0.25.0)"
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/v2/dispatchers/session-start.sh",
+            "timeout": 2,
+            "description": "v2: Launch background event processor"
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "TodoWrite",
+        "matcher": "Edit|Write",
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-task-completion.sh",
-            "timeout": 10
-          }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-edit-write-consolidated.sh",
-            "timeout": 5,
-            "description": "Consolidated post-hook for Edit (v0.25.0)"
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-metadata-change.sh",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/v2/dispatchers/post-tool-use.sh",
             "timeout": 2,
-            "description": "Fast early-exit for non-metadata.json (v0.25.0)"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-edit-write-consolidated.sh",
-            "timeout": 5,
-            "description": "Consolidated post-hook for Write (v0.25.0)"
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-metadata-change.sh",
-            "timeout": 2,
-            "description": "Fast early-exit for non-metadata.json (v0.25.0)"
+            "description": "v2: Single dispatcher for all PostToolUse events (<50ms)"
           }
         ]
       }
