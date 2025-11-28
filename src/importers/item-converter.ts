@@ -425,8 +425,15 @@ export class ItemConverter {
 
     if (container) {
       // 2-level structure for JIRA/ADO
-      const containerType = container.type === 'jira-project' ? 'jira' : 'ado';
-      const containerDirName = `${containerType.toUpperCase()}-${normalizeToProjectId(container.containerId)}`;
+      // JIRA: specs/JIRA-{projectKey}/{boardName}/
+      // ADO: specs/{projectName}/{areaPath}/ (no ADO- prefix per user request)
+      let containerDirName: string;
+      if (container.type === 'jira-project') {
+        containerDirName = `JIRA-${normalizeToProjectId(container.containerId)}`;
+      } else {
+        // ADO: Use project name directly without prefix
+        containerDirName = normalizeToProjectId(container.containerId);
+      }
       const projectId = this.options.projectId || 'default';
 
       return path.join(

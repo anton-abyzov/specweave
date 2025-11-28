@@ -384,7 +384,8 @@ export function createAdoProjectFolders(
     return;
   }
 
-  const adoProjectDir = path.join(specsDir, `ADO-${projectName}`);
+  // FIX: Use project name directly without ADO- prefix
+  const adoProjectDir = path.join(specsDir, projectName);
   fs.mkdirSync(adoProjectDir, { recursive: true });
   console.log(chalk.green(`✓ Created ${adoProjectDir}`));
 
