@@ -31,16 +31,13 @@ This isn't just a framework we made — it's the framework we use every day. Our
 
 ## Why Not BMAD or SpecKit?
 
-| Pain Point | BMAD | SpecKit | SpecWeave |
-|------------|------|---------|-----------|
-| **Legacy codebases** | Greenfield only | Greenfield only | **Any codebase, any age** |
-| **External sync** | None | None | **Bidirectional (JIRA/GitHub/ADO)** |
-| **Living docs** | Copy-paste | Templates only | **Auto-update after every task** |
-| **Enterprise hierarchy** | No mapping | No mapping | **Universal mapping (Epic→Story→Task)** |
-| **AI tool lock-in** | Claude-specific prompts | Claude-specific | **ANY AI: Claude, GPT, Gemini, Copilot** |
-| **Quality gates** | None | None | **3-gate validation (tasks/tests/docs)** |
+Great tools for simple greenfield projects. But when things get real:
 
-> **One framework. Any project. Any scale. Any AI.**
+- **BMAD** — Constant role-switching (PM → Architect → Dev). Multi-step prompts for every action. Works until you have 5+ services or existing documentation.
+- **SpecKit** — Clean and minimal. Too minimal. No external sync, no multi-repo, no enterprise hierarchy support.
+- **Both** — Break down with legacy codebases, multi-repo setups, existing documentation sprawl, and enterprise compliance requirements.
+
+**SpecWeave** — Drop into any codebase. Sync with JIRA/GitHub/ADO. Handle 50 teams or solo MVPs. One workflow.
 
 ---
 
