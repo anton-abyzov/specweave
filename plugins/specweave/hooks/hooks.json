@@ -5,65 +5,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/session-start-reconcile.sh"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Edit",
-        "matcher_content": "\\.specweave/increments/[0-9]{4}-.+/tasks\\.md",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-task-completion-edit.sh"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/pre-command-deduplication.sh"
-          },
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/user-prompt-submit.sh"
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/v2/dispatchers/session-start.sh"
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "Write",
-        "matcher_content": "\\.specweave/increments/[0-9]{4}-.+/(spec|plan|tasks)\\.md",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-increment-planning.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit",
-        "matcher_content": "\\.specweave/increments/[0-9]{4}-.+/(tasks|spec)\\.md",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-task-edit.sh"
-          }
-        ]
-      },
-      {
         "matcher": "Edit|Write",
-        "matcher_content": "\\.specweave/increments/[0-9]{4}-.+/metadata\\.json",
+        "matcher_content": "\\.specweave/increments/",
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/post-metadata-change.sh"
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/v2/dispatchers/post-tool-use.sh"
           }
         ]
       }
