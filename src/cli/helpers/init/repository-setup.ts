@@ -182,6 +182,8 @@ function getRepoStrings(language: SupportedLanguage): {
 export interface RepositorySetupResult {
   hosting: RepositoryHosting;
   isMultiRepo: boolean;
+  /** ADO repo clone pattern for multi-repo (e.g., "sw-*") */
+  adoClonePattern?: string;
 }
 
 /**
