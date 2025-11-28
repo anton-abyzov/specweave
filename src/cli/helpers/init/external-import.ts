@@ -1015,7 +1015,7 @@ async function convertToLivingDocs(
         console.log(chalk.gray(`   → JIRA: specs/JIRA-{project}/{board}/FS-XXX/`));
       }
       if (containerTypesUsed.has('ado')) {
-        console.log(chalk.gray(`   → ADO: specs/ADO-{project}/{areaPath}/FS-XXX/`));
+        console.log(chalk.gray(`   → ADO: specs/{project}/{areaPath}/FS-XXX/`));
       }
     }
     if (containerTypesUsed.has('github') || containerTypesUsed.has(null)) {
