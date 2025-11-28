@@ -33,8 +33,10 @@ export class AzureDevOpsResourceValidator {
   private areaPaths: string[];
   private envPath: string;
   private configPath: string;
+  private readOnly: boolean;
 
-  constructor(envPath: string = '.env') {
+  constructor(envPath: string = '.env', options: { readOnly?: boolean } = {}) {
+    this.readOnly = options.readOnly ?? false;
     this.envPath = envPath;
     // Derive config.json path from .env path
     const envDir = envPath.replace(/\.env$/, '');
@@ -508,21 +510,30 @@ export class AzureDevOpsResourceValidator {
     result.areaPaths = [];
 
     if (this.areaPaths.length > 0) {
-      console.log(chalk.gray(`Checking area paths from config.json...`));
+      // CRITICAL FIX: When readOnly=true, skip ALL create operations
+      if (this.readOnly) {
+        console.log(chalk.gray(`Skipping area path validation (read-only mode)`));
+        // Mark all as "exists" without verification - we trust user's selection
+        for (const areaName of this.areaPaths) {
+          result.areaPaths.push({ name: areaName, exists: true, created: false });
+        }
+      } else {
+        console.log(chalk.gray(`Checking area paths from config.json...`));
 
-      const projectName = projectNames[0]; // Single project for now
+        const projectName = projectNames[0]; // Single project for now
 
-      for (const areaName of this.areaPaths) {
-        try {
-          await this.createAreaPath(projectName, areaName);
-          result.areaPaths.push({ name: areaName, exists: false, created: true });
-        } catch (error: any) {
-          if (error.message.includes('already exists')) {
-            console.log(chalk.green(`  ✅ Area path exists: ${projectName}\\${areaName}`));
-            result.areaPaths.push({ name: areaName, exists: true, created: false });
-          } else {
-            console.log(chalk.red(`  ❌ Failed to create/validate area path: ${areaName}`));
-            result.valid = false;
+        for (const areaName of this.areaPaths) {
+          try {
+            await this.createAreaPath(projectName, areaName);
+            result.areaPaths.push({ name: areaName, exists: false, created: true });
+          } catch (error: any) {
+            if (error.message.includes('already exists')) {
+              console.log(chalk.green(`  ✅ Area path exists: ${projectName}\\${areaName}`));
+              result.areaPaths.push({ name: areaName, exists: true, created: false });
+            } else {
+              console.log(chalk.red(`  ❌ Failed to create/validate area path: ${areaName}`));
+              result.valid = false;
+            }
           }
         }
       }
@@ -534,24 +545,32 @@ export class AzureDevOpsResourceValidator {
     result.teams = [];
 
     if (this.teams.length > 0) {
-      console.log(chalk.gray(`Checking teams from config.json...`));
+      // CRITICAL FIX: When readOnly=true, skip team create operations
+      if (this.readOnly) {
+        console.log(chalk.gray(`Skipping team validation (read-only mode)`));
+        for (const teamName of this.teams) {
+          result.teams.push({ name: teamName, exists: true, created: false });
+        }
+      } else {
+        console.log(chalk.gray(`Checking teams from config.json...`));
 
-      const projectName = projectNames[0]; // Single project for now
-      const existingTeams = await this.fetchTeams(projectName);
+        const projectName = projectNames[0]; // Single project for now
+        const existingTeams = await this.fetchTeams(projectName);
 
-      for (const teamName of this.teams) {
-        const team = existingTeams.find(t => t.name === teamName);
+        for (const teamName of this.teams) {
+          const team = existingTeams.find(t => t.name === teamName);
 
-        if (team) {
-          console.log(chalk.green(`  ✅ Team exists: ${teamName}`));
-          result.teams.push({ name: teamName, id: team.id, exists: true, created: false });
-        } else {
-          try {
-            const newTeam = await this.createTeam(projectName, teamName);
-            result.teams.push({ name: teamName, id: newTeam.id, exists: false, created: true });
-          } catch (error: any) {
-            console.log(chalk.red(`  ❌ Failed to create team: ${teamName}`));
-            result.valid = false;
+          if (team) {
+            console.log(chalk.green(`  ✅ Team exists: ${teamName}`));
+            result.teams.push({ name: teamName, id: team.id, exists: true, created: false });
+          } else {
+            try {
+              const newTeam = await this.createTeam(projectName, teamName);
+              result.teams.push({ name: teamName, id: newTeam.id, exists: false, created: true });
+            } catch (error: any) {
+              console.log(chalk.red(`  ❌ Failed to create team: ${teamName}`));
+              result.valid = false;
+            }
           }
         }
       }
@@ -584,10 +603,15 @@ export class AzureDevOpsResourceValidator {
 
 /**
  * Validate Azure DevOps resources
+ *
+ * @param envPath - Path to .env file
+ * @param options - Validation options
+ * @param options.readOnly - If true, skip all create operations (for read-only permissions)
  */
 export async function validateAzureDevOpsResources(
-  envPath: string = '.env'
+  envPath: string = '.env',
+  options?: { readOnly?: boolean }
 ): Promise<AzureDevOpsValidationResult> {
-  const validator = new AzureDevOpsResourceValidator(envPath);
+  const validator = new AzureDevOpsResourceValidator(envPath, options);
   return validator.validate();
 }

@@ -20,6 +20,7 @@ interface ADOWorkItem {
     'System.CreatedDate': string;
     'System.ChangedDate': string;
     'System.Tags'?: string; // Semicolon-separated
+    'System.AreaPath'?: string; // e.g., "OlySense\\Platform-Engineering"
     'Microsoft.VSTS.Common.Priority'?: number;
     'Microsoft.VSTS.Common.AcceptanceCriteria'?: string;
     'System.Parent'?: {
@@ -289,6 +290,8 @@ export class ADOImporter implements Importer {
         ? `ADO-${workItem.fields['System.Parent'].id}`
         : undefined,
       platform: 'ado',
+      adoProjectName: this.project,
+      adoAreaPath: workItem.fields['System.AreaPath'],
     };
   }
 

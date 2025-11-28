@@ -216,7 +216,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
 
         // Step 5.5: Validate resources (Jira/ADO - auto-create missing projects/boards/teams)
         if (tracker === 'jira' || tracker === 'ado') {
-          await validateResources(tracker, credentials, projectPath);
+          await validateResources(tracker, credentials, projectPath, syncPermissions);
         }
 
         // Step 5.6: Create ADO folder structure (ADO only)
@@ -339,7 +339,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
 
   // Step 5.5: Validate resources (Jira/ADO - auto-create missing projects/boards/teams)
   if (tracker === 'jira' || tracker === 'ado') {
-    await validateResources(tracker, credentials, projectPath);
+    await validateResources(tracker, credentials, projectPath, syncPermissions);
   }
 
   // Step 5.6: Create ADO folder structure (ADO only)
@@ -422,11 +422,13 @@ async function validateConnection(
  * @param tracker - Issue tracker type
  * @param credentials - Tracker credentials
  * @param projectPath - Path to project root
+ * @param syncPermissions - Sync permissions (if all false, use read-only mode)
  */
 async function validateResources(
   tracker: IssueTracker,
   credentials: TrackerCredentials,
-  projectPath: string
+  projectPath: string,
+  syncPermissions?: { canUpsertInternalItems: boolean; canUpdateExternalItems: boolean; canUpdateStatus: boolean }
 ): Promise<void> {
   if (tracker !== 'jira' && tracker !== 'ado') {
     return; // Only Jira and ADO need resource validation
@@ -450,8 +452,14 @@ async function validateResources(
       // Import the ADO validator (dynamic import for ESM)
       const { validateAzureDevOpsResources } = await import('../../../utils/external-resource-validator.js');
 
-      // Run validation
-      const result = await validateAzureDevOpsResources(`${projectPath}/.env`);
+      // CRITICAL FIX: If all sync permissions are disabled, use read-only mode
+      const isReadOnly = syncPermissions &&
+        !syncPermissions.canUpsertInternalItems &&
+        !syncPermissions.canUpdateExternalItems &&
+        !syncPermissions.canUpdateStatus;
+
+      // Run validation (read-only skips create operations)
+      const result = await validateAzureDevOpsResources(`${projectPath}/.env`, { readOnly: isReadOnly });
 
       if (!result.valid) {
         console.log(chalk.yellow('⚠️  Some Azure DevOps resources could not be validated'));

@@ -239,8 +239,13 @@ export class FSIdAllocator {
       // Skip _archive at root (handled per-project)
       if (entry.name === '_archive') continue;
 
-      // Check if this is a 2-level container folder (JIRA-* or ADO-*)
-      if (/^(JIRA|ADO)-/.test(entry.name)) {
+      // Check if this is a 2-level container folder:
+      // 1. JIRA-* or ADO-* prefix (legacy)
+      // 2. Any folder that has subfolders containing FS-XXX (new - no prefix required)
+      const hasLegacyPrefix = /^(JIRA|ADO)-/.test(entry.name);
+      const has2LevelStructure = hasLegacyPrefix || await this.is2LevelFolder(entryPath);
+
+      if (has2LevelStructure) {
         // 2-level structure: scan project folders INSIDE the container
         await this.scanContainerFolder(entryPath);
         continue;
@@ -260,6 +265,30 @@ export class FSIdAllocator {
     const rootArchivePath = path.join(this.specsPath, '_archive');
     if (await fs.pathExists(rootArchivePath)) {
       await this.scanDirectory(rootArchivePath, 'archived');
+    }
+  }
+
+  /**
+   * Check if folder has 2-level structure (subfolders with FS-XXX inside)
+   * Used for ADO folders without ADO- prefix
+   */
+  private async is2LevelFolder(folderPath: string): Promise<boolean> {
+    try {
+      const entries = await fs.readdir(folderPath, { withFileTypes: true });
+      for (const entry of entries) {
+        if (!entry.isDirectory() || entry.name === '_archive') continue;
+        // Check if this subfolder contains FS-XXX folders
+        const subPath = path.join(folderPath, entry.name);
+        const subEntries = await fs.readdir(subPath, { withFileTypes: true });
+        for (const subEntry of subEntries) {
+          if (subEntry.isDirectory() && /^FS-\d{3}/.test(subEntry.name)) {
+            return true; // Found FS-XXX inside a subfolder = 2-level structure
+          }
+        }
+      }
+      return false;
+    } catch {
+      return false;
     }
   }
 
