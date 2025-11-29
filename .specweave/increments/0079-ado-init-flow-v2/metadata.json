@@ -1,0 +1,14 @@
+{
+  "increment": "0079-ado-init-flow-v2",
+  "title": "ADO Init Flow V2 - Critical Fixes",
+  "status": "active",
+  "type": "bug",
+  "priority": "P0",
+  "created": "2025-11-29",
+  "tasks": {
+    "total": 6,
+    "completed": 5,
+    "deferred": 1,
+    "in_progress": 0
+  }
+}

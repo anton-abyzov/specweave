@@ -1171,9 +1171,9 @@ function groupItemsByExternalContainer(items: ExternalItem[]): ContainerGroup[] 
         projectId = rawRepoName
           .replace(/[^a-zA-Z0-9-_]/g, '-')
           .replace(/^-+|-+$/g, '')
-          .slice(0, 100) || 'parent';
+          .slice(0, 100) || '_default';
       } else {
-        projectId = 'parent';
+        projectId = '_default';
       }
 
       groupKey = `gh:${projectId}`;
