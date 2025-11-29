@@ -69,9 +69,61 @@ export async function checkExistingAzureDevOpsCredentials(
 }
 
 /**
+ * Fetch all accessible projects for an ADO organization
+ *
+ * @param org - Organization name
+ * @param pat - Personal Access Token
+ * @returns Array of project objects with name and id
+ */
+async function fetchAdoProjects(
+  org: string,
+  pat: string
+): Promise<Array<{ name: string; id: string }>> {
+  const auth = Buffer.from(`:${pat}`).toString('base64');
+  const endpoint = `https://dev.azure.com/${org}/_apis/projects?api-version=7.0`;
+
+  const response = await fetch(endpoint, {
+    headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch projects: ${response.status}`);
+  }
+
+  const data: any = await response.json();
+  return (data.value || []).map((p: any) => ({ name: p.name, id: p.id }));
+}
+
+/**
+ * Fetch area paths for a specific project
+ *
+ * @param org - Organization name
+ * @param project - Project name
+ * @param pat - Personal Access Token
+ * @returns Array of area path objects
+ */
+async function fetchProjectAreaPaths(
+  org: string,
+  project: string,
+  pat: string
+): Promise<Array<{ name: string; path: string }>> {
+  try {
+    const { fetchAreaPathsForProject } = await import(
+      '../../../../plugins/specweave-ado/lib/ado-board-resolver.js'
+    );
+
+    const areasResult = await fetchAreaPathsForProject(org, project, pat).catch((): never[] => []);
+    return areasResult.map((a: any) => ({ name: a.name, path: a.path }));
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Prompt user for Azure DevOps credentials with cache support
  *
  * NEW (v0.24.0): Caches last used organization/project for quick re-initialization
+ * NEW (v0.28.x): Multi-project selection for enterprise users (AC-US5-01 to AC-US5-05)
  *
  * @param language - User's language
  * @param projectRoot - Project root path (optional, for cache manager)
@@ -86,19 +138,35 @@ export async function promptAzureDevOpsCredentials(
   console.log(chalk.white('\n📋 Azure DevOps Integration Setup\n'));
   console.log(chalk.gray('SpecWeave will sync increments with Azure DevOps Work Items.\n'));
 
-  // Step 0: Check cache for previous configuration (NEW in v0.24.0)
-  let cachedConfig: { org: string; project: string; areaPaths?: string[] } | null = null;
+  // Step 0: Check cache for previous configuration
+  interface CachedAdoConfig {
+    org: string;
+    project?: string;
+    projects?: AzureDevOpsProjectConfig[];
+    areaPaths?: string[];
+  }
+  let cachedConfig: CachedAdoConfig | null = null;
   if (projectRoot) {
     const { CacheManager } = await import('../../../core/cache/cache-manager.js');
     const cacheManager = new CacheManager(projectRoot);
-    cachedConfig = await cacheManager.get<{ org: string; project: string; areaPaths?: string[] }>('ado-config');
+    cachedConfig = await cacheManager.get<CachedAdoConfig>('ado-config');
 
     if (cachedConfig) {
       console.log(chalk.cyan('✨ Found cached ADO configuration:\n'));
       console.log(chalk.gray(`   Organization: ${cachedConfig.org}`));
-      console.log(chalk.gray(`   Project: ${cachedConfig.project}`));
-      if (cachedConfig.areaPaths && cachedConfig.areaPaths.length > 0) {
-        console.log(chalk.gray(`   Area Paths: ${cachedConfig.areaPaths.join(', ')}`));
+
+      if (cachedConfig.projects && cachedConfig.projects.length > 0) {
+        console.log(chalk.gray(`   Projects: ${cachedConfig.projects.map(p => p.name).join(', ')}`));
+        for (const proj of cachedConfig.projects) {
+          if (proj.areaPaths && proj.areaPaths.length > 0) {
+            console.log(chalk.gray(`     ${proj.name} → ${proj.areaPaths.join(', ')}`));
+          }
+        }
+      } else if (cachedConfig.project) {
+        console.log(chalk.gray(`   Project: ${cachedConfig.project}`));
+        if (cachedConfig.areaPaths && cachedConfig.areaPaths.length > 0) {
+          console.log(chalk.gray(`   Area Paths: ${cachedConfig.areaPaths.join(', ')}`));
+        }
       }
       console.log('');
 
@@ -129,15 +197,12 @@ export async function promptAzureDevOpsCredentials(
     return null;
   }
 
-  // Collect credentials (use cached values as defaults if available)
-  let org: string, project: string;
-
+  // Step 1: Get organization name (use cached if available)
+  let org: string;
   if (cachedConfig) {
-    // Use cached configuration
     org = cachedConfig.org;
-    project = cachedConfig.project;
+    console.log(chalk.gray(`   Using cached organization: ${org}`));
   } else {
-    // Prompt for new configuration
     org = await input({
       message: 'Azure DevOps organization name:',
       validate: (value: string) => {
@@ -147,19 +212,9 @@ export async function promptAzureDevOpsCredentials(
         return true;
       }
     });
-
-    project = await input({
-      message: 'Project name:',
-      validate: (value: string) => {
-        if (!value || value.trim() === '') {
-          return 'Project cannot be empty';
-        }
-        return true;
-      }
-    });
   }
 
-  // Step 1: Prompt for PAT (before teams - so we can auto-fetch!)
+  // Step 2: Prompt for PAT
   const pat = await password({
     message: 'Paste your Personal Access Token:',
     mask: '*',
@@ -175,43 +230,80 @@ export async function promptAzureDevOpsCredentials(
     }
   });
 
-  // Step 2: Validate PAT and auto-fetch area paths
-  const spinner = ora('Validating PAT and fetching area paths...').start();
-  let fetchedAreas: Array<{ name: string; path: string }> = [];
-  let areaPaths: string[] = [];
+  // Step 3: Validate PAT and fetch all accessible projects
+  const spinner = ora('Validating PAT and fetching projects...').start();
+  let allProjects: Array<{ name: string; id: string }> = [];
 
   try {
-    // Validate connection first
-    const projectEndpoint = `https://dev.azure.com/${org}/_apis/projects/${project}?api-version=7.0`;
-    const auth = Buffer.from(`:${pat}`).toString('base64');
-    const response = await fetch(projectEndpoint, {
-      headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' }
-    });
+    // Validate PAT by fetching projects
+    allProjects = await fetchAdoProjects(org, pat);
 
-    if (!response.ok) {
-      spinner.fail('PAT validation failed');
-      console.log(chalk.red(`   Error: ${response.status === 401 ? 'Invalid PAT' : 'Check org/project name'}`));
+    if (allProjects.length === 0) {
+      spinner.fail('No accessible projects found');
+      console.log(chalk.red('   Error: Your PAT may not have Project (Read) scope'));
       return null;
     }
 
-    spinner.text = 'Fetching area paths...';
-
-    // Fetch area paths only (teams removed from init flow)
-    const { fetchAreaPathsForProject } = await import(
-      '../../../../plugins/specweave-ado/lib/ado-board-resolver.js'
-    );
-
-    const areasResult = await fetchAreaPathsForProject(org, project, pat).catch((): never[] => []);
-
-    fetchedAreas = areasResult.map((a: any) => ({ name: a.name, path: a.path }));
-    spinner.succeed(`Found ${fetchedAreas.length} area paths`);
+    spinner.succeed(`Found ${allProjects.length} accessible project${allProjects.length === 1 ? '' : 's'}`);
 
   } catch (error: any) {
-    spinner.warn('Could not auto-fetch area paths - using manual input');
+    spinner.fail('PAT validation failed');
+    console.log(chalk.red(`   Error: ${error.message.includes('401') ? 'Invalid PAT' : 'Check organization name'}`));
+    return null;
   }
 
-  // Step 3: Let user select area paths (if any found) using pattern-based selector
-  // NOTE: Team selection removed - 2-level hierarchy is Project -> Area Path only
+  // Step 4: Ask single vs multi-project
+  const projectMode = await select<'single' | 'multi'>({
+    message: 'How many projects do you want to configure?',
+    choices: [
+      {
+        name: `Single project (quick setup)`,
+        value: 'single' as const
+      },
+      {
+        name: `Multiple projects (enterprise setup - ${allProjects.length} available)`,
+        value: 'multi' as const
+      }
+    ],
+    default: allProjects.length > 1 ? 'multi' : 'single'
+  });
+
+  // Handle multi-project selection
+  if (projectMode === 'multi') {
+    return handleMultiProjectSelection(org, pat, allProjects, projectRoot);
+  }
+
+  // Single project flow (original behavior)
+  return handleSingleProjectSelection(org, pat, allProjects, projectRoot);
+}
+
+/**
+ * Handle single project selection (original flow)
+ */
+async function handleSingleProjectSelection(
+  org: string,
+  pat: string,
+  allProjects: Array<{ name: string; id: string }>,
+  projectRoot?: string
+): Promise<AzureDevOpsCredentials | null> {
+
+  // Select a single project
+  const project = await select<string>({
+    message: 'Select project:',
+    choices: allProjects.map(p => ({
+      name: p.name,
+      value: p.name
+    })),
+    default: allProjects[0]?.name
+  });
+
+  // Fetch area paths for selected project
+  const spinner = ora('Fetching area paths...').start();
+  const fetchedAreas = await fetchProjectAreaPaths(org, project, pat);
+  spinner.succeed(`Found ${fetchedAreas.length} area paths`);
+
+  // Let user select area paths
+  let areaPaths: string[] = [];
   if (fetchedAreas.length > 0) {
     const areaPathObjects = toAreaPathObjects(fetchedAreas.map(a => a.path));
     const selectionResult = await selectAreaPaths(areaPathObjects, project);
@@ -220,7 +312,7 @@ export async function promptAzureDevOpsCredentials(
     }
   }
 
-  // Cache the configuration (NOT the PAT) for future use
+  // Cache the configuration (NOT the PAT)
   if (projectRoot) {
     const { CacheManager } = await import('../../../core/cache/cache-manager.js');
     const cacheManager = new CacheManager(projectRoot);
@@ -240,10 +332,121 @@ export async function promptAzureDevOpsCredentials(
 }
 
 /**
+ * Handle multi-project selection (new in v0.28.x)
+ *
+ * Implements AC-US5-01 to AC-US5-05
+ */
+async function handleMultiProjectSelection(
+  org: string,
+  pat: string,
+  allProjects: Array<{ name: string; id: string }>,
+  projectRoot?: string
+): Promise<AzureDevOpsCredentials | null> {
+
+  console.log('');
+  console.log(chalk.cyan('📦 Multi-Project Selection'));
+  console.log(chalk.gray('   Select the projects you want to manage with SpecWeave.\n'));
+
+  // AC-US5-02: Multi-select checkbox for projects (default: first project selected)
+  const selectedProjectNames = await checkbox({
+    message: 'Select projects to configure:',
+    choices: allProjects.map((p, index) => ({
+      name: p.name,
+      value: p.name,
+      checked: index === 0 // Default: first project selected
+    })),
+    pageSize: 15,
+    validate: (selected) => {
+      if (selected.length === 0) {
+        return 'Please select at least one project';
+      }
+      return true;
+    }
+  });
+
+  if (selectedProjectNames.length === 0) {
+    console.log(chalk.yellow('\n⚠️  No projects selected'));
+    return null;
+  }
+
+  console.log(chalk.green(`\n✓ Selected ${selectedProjectNames.length} project${selectedProjectNames.length > 1 ? 's' : ''}`));
+
+  // AC-US5-03: For each project, prompt for area path selection
+  const projects: AzureDevOpsProjectConfig[] = [];
+
+  for (let i = 0; i < selectedProjectNames.length; i++) {
+    const projectName = selectedProjectNames[i];
+    console.log('');
+    console.log(chalk.cyan(`📁 Configuring: ${projectName} (${i + 1}/${selectedProjectNames.length})`));
+
+    // Fetch area paths for this project
+    const spinner = ora('Fetching area paths...').start();
+    const fetchedAreas = await fetchProjectAreaPaths(org, projectName, pat);
+    spinner.succeed(`Found ${fetchedAreas.length} area paths`);
+
+    let areaPaths: string[] = [];
+    if (fetchedAreas.length > 0) {
+      const areaPathObjects = toAreaPathObjects(fetchedAreas.map(a => a.path));
+      const selectionResult = await selectAreaPaths(areaPathObjects, projectName);
+      if (selectionResult) {
+        areaPaths = selectionResult.areaPaths;
+      }
+    }
+
+    projects.push({
+      name: projectName,
+      areaPaths: areaPaths.length > 0 ? areaPaths : undefined,
+      isDefault: i === 0 // First project is default
+    });
+  }
+
+  // Ask which project should be the default
+  if (projects.length > 1) {
+    const defaultProject = await select<string>({
+      message: 'Which project should be the default for sync?',
+      choices: projects.map(p => ({
+        name: p.name,
+        value: p.name
+      })),
+      default: projects[0].name
+    });
+
+    // Update isDefault flags
+    for (const proj of projects) {
+      proj.isDefault = proj.name === defaultProject;
+    }
+  }
+
+  // AC-US5-04: Cache the multi-project configuration (NOT the PAT)
+  if (projectRoot) {
+    const { CacheManager } = await import('../../../core/cache/cache-manager.js');
+    const cacheManager = new CacheManager(projectRoot);
+    await cacheManager.set('ado-config', {
+      org,
+      projects
+    });
+  }
+
+  console.log('');
+  console.log(chalk.green('✓ Multi-project configuration complete'));
+  console.log(chalk.gray(`   ${projects.length} project${projects.length > 1 ? 's' : ''} configured`));
+
+  return {
+    pat,
+    org,
+    projects
+  };
+}
+
+/**
  * Validate Azure DevOps connection
  *
  * Tests authentication and returns project information
  * Handles rate limiting with retry logic
+ *
+ * Supports both single-project and multi-project credentials:
+ * - Single: Uses `credentials.project`
+ * - Multi: Validates the default project from `credentials.projects`
  *
  * @param credentials - Azure DevOps credentials
  * @param maxRetries - Maximum retry attempts (default: 3)
@@ -255,11 +458,31 @@ export async function validateAzureDevOpsConnection(
 ): Promise<ValidationResult> {
   const spinner = ora('Testing connection...').start();
 
+  // Determine which project to validate
+  let projectToValidate: string | undefined;
+
+  if (credentials.projects && credentials.projects.length > 0) {
+    // Multi-project mode: validate the default project or first project
+    const defaultProject = credentials.projects.find(p => p.isDefault) || credentials.projects[0];
+    projectToValidate = defaultProject.name;
+  } else {
+    // Single project mode
+    projectToValidate = credentials.project;
+  }
+
+  if (!projectToValidate) {
+    spinner.fail('No project specified for validation');
+    return {
+      success: false,
+      error: 'No project specified'
+    };
+  }
+
   try {
     const result = await retryWithBackoff(async () => {
       // Test connection by fetching project details
       const projectEndpoint =
-        `https://dev.azure.com/${credentials.org}/_apis/projects/${credentials.project}?api-version=7.0`;
+        `https://dev.azure.com/${credentials.org}/_apis/projects/${projectToValidate}?api-version=7.0`;
 
       // Basic auth with PAT (username can be empty)
       const auth = Buffer.from(`:${credentials.pat}`).toString('base64');
@@ -301,7 +524,9 @@ export async function validateAzureDevOpsConnection(
       return project;
     }, maxRetries);
 
-    spinner.succeed(`Connected to Azure DevOps project: ${result.name}`);
+    const projectCount = credentials.projects?.length || 1;
+    const projectLabel = projectCount > 1 ? `${projectCount} projects` : result.name;
+    spinner.succeed(`Connected to Azure DevOps: ${projectLabel}`);
 
     return {
       success: true,
@@ -339,10 +564,50 @@ export function getAzureDevOpsEnvVars(
 }
 
 /**
+ * Create folder structure for a single ADO project
+ *
+ * @param specsDir - Base specs directory
+ * @param projectName - ADO project name
+ * @param areaPaths - Area paths for the project (optional)
+ * @param strategy - Team mapping strategy
+ * @param teams - Teams for team-based strategy (deprecated)
+ */
+function createSingleProjectFolders(
+  specsDir: string,
+  projectName: string,
+  areaPaths?: string[],
+  strategy?: string,
+  teams?: string[]
+): void {
+  const projectDir = path.join(specsDir, projectName);
+  fs.mkdirSync(projectDir, { recursive: true });
+  console.log(chalk.green(`✓ Created ${projectDir}`));
+
+  const effectiveStrategy = strategy || 'area-path-based';
+
+  if (effectiveStrategy === 'area-path-based' && areaPaths?.length) {
+    for (const areaPath of areaPaths) {
+      const areaName = areaPath.split('\\').pop() || areaPath;
+      const areaDir = path.join(projectDir, areaName);
+      fs.mkdirSync(areaDir, { recursive: true });
+      console.log(chalk.gray(`  ✓ Created area folder: ${areaName}`));
+    }
+  } else if (effectiveStrategy === 'team-based' && teams?.length) {
+    for (const team of teams) {
+      const teamDir = path.join(projectDir, team);
+      fs.mkdirSync(teamDir, { recursive: true });
+      console.log(chalk.gray(`  ✓ Created team folder: ${team}`));
+    }
+  }
+}
+
+/**
  * Create ADO project folder structure in .specweave/docs/internal/specs/
  *
+ * Supports both single-project and multi-project configurations (AC-US5-05)
+ *
  * @param projectPath - Path to project root
- * @param credentials - ADO credentials with org, project, teams, areaPaths
+ * @param credentials - ADO credentials with org, project(s), areaPaths
  */
 export function createAdoProjectFolders(
   projectPath: string,
@@ -354,33 +619,37 @@ export function createAdoProjectFolders(
     fs.mkdirSync(specsDir, { recursive: true });
   }
 
+  // Handle multi-project configuration (new in v0.28.x)
+  if (credentials.projects && credentials.projects.length > 0) {
+    console.log(chalk.cyan(`\n📁 Creating folder structure for ${credentials.projects.length} project(s)...`));
+
+    for (const project of credentials.projects) {
+      createSingleProjectFolders(
+        specsDir,
+        project.name,
+        project.areaPaths,
+        credentials.strategy
+      );
+    }
+
+    console.log(chalk.green(`✓ ADO folder structure created for ${credentials.projects.length} project(s)`));
+    return;
+  }
+
+  // Handle single-project configuration (backward compatibility)
   const projectName = credentials.project;
   if (!projectName) {
     console.log(chalk.yellow('⚠️  No project specified, skipping folder creation'));
     return;
   }
 
-  // FIX: Use project name directly without ADO- prefix
-  const adoProjectDir = path.join(specsDir, projectName);
-  fs.mkdirSync(adoProjectDir, { recursive: true });
-  console.log(chalk.green(`✓ Created ${adoProjectDir}`));
-
-  const strategy = credentials.strategy || 'area-path-based';
-
-  if (strategy === 'area-path-based' && credentials.areaPaths?.length) {
-    for (const areaPath of credentials.areaPaths) {
-      const areaName = areaPath.split('\\').pop() || areaPath;
-      const areaDir = path.join(adoProjectDir, areaName);
-      fs.mkdirSync(areaDir, { recursive: true });
-      console.log(chalk.gray(`  ✓ Created area folder: ${areaName}`));
-    }
-  } else if (strategy === 'team-based' && credentials.teams?.length) {
-    for (const team of credentials.teams) {
-      const teamDir = path.join(adoProjectDir, team);
-      fs.mkdirSync(teamDir, { recursive: true });
-      console.log(chalk.gray(`  ✓ Created team folder: ${team}`));
-    }
-  }
+  createSingleProjectFolders(
+    specsDir,
+    projectName,
+    credentials.areaPaths,
+    credentials.strategy,
+    credentials.teams
+  );
 
   console.log(chalk.green(`✓ ADO folder structure created`));
 }
