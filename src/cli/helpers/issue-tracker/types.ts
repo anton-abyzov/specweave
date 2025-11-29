@@ -88,16 +88,40 @@ export type AzureDevOpsStrategy =
   | 'team-based';                // One project with multiple teams
 
 /**
+ * Per-project configuration for Azure DevOps
+ *
+ * Used when selecting multiple ADO projects during init
+ */
+export interface AzureDevOpsProjectConfig {
+  name: string; // ADO project name
+  areaPaths?: string[]; // Area paths for this project (leaf names only)
+  isDefault?: boolean; // Mark as default profile for sync
+}
+
+/**
  * Azure DevOps credentials
+ *
+ * 2-level hierarchy: Project -> Area Path (teams deprecated)
+ *
+ * Supports both single project (backward compat) and multi-project modes:
+ * - Single: `project` is set
+ * - Multi: `projects` is set
  */
 export interface AzureDevOpsCredentials {
   pat: string;
   org: string;
-  project: string; // One project per organization (ADO standard)
-  team?: string; // Single team (backward compatibility)
-  teams?: string[]; // Multiple teams within project (optional)
-  areaPaths?: string[]; // Area paths for work item filtering (optional)
-  strategy?: AzureDevOpsStrategy; // Team mapping strategy (optional)
+  /** Single project name (backward compatibility) */
+  project?: string;
+  /** Multi-project configuration (new in v0.28.x) */
+  projects?: AzureDevOpsProjectConfig[];
+  /** Area paths for single-project mode (leaf names only, e.g., ["Platform-Engineering"]) */
+  areaPaths?: string[];
+  /** Team mapping strategy (optional, defaults to 'area-path-based') */
+  strategy?: AzureDevOpsStrategy;
+  /** @deprecated Teams are no longer part of init flow. Use areaPaths instead. */
+  team?: string;
+  /** @deprecated Teams are no longer part of init flow. Use areaPaths instead. */
+  teams?: string[];
 }
 
 /**

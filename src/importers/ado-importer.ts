@@ -180,6 +180,7 @@ export class ADOImporter implements Importer {
       'System.CreatedDate',
       'System.ChangedDate',
       'System.Tags',
+      'System.AreaPath', // CRITICAL: Required for organizing items by area path
       'Microsoft.VSTS.Common.Priority',
       'Microsoft.VSTS.Common.AcceptanceCriteria',
       'System.Parent',
