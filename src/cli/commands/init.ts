@@ -165,7 +165,7 @@ async function createMultiProjectFolders(targetDir: string): Promise<void> {
       console.log(chalk.blue('\n📁 Creating Azure DevOps Folders'));
       console.log(chalk.gray(`   Organization: ${organization}, Project: ${project}`));
 
-      const projectFolder = `ADO-${project.replace(/\s+/g, '-').toLowerCase()}`;
+      const projectFolder = project.replace(/\s+/g, '-').toLowerCase();
 
       if (areaPaths?.length) {
         // Create folder per area path
