@@ -5,8 +5,8 @@
  *
  * Provides functionality to:
  * - Detect user's GitHub organizations and personal repos
- * - Prompt for repository selection strategy (all org, all personal, pattern, explicit list)
- * - Filter repositories by pattern (glob)
+ * - Prompt for repository selection strategy (all org, all personal, pattern glob, pattern regex, explicit list)
+ * - Filter repositories by pattern (glob or regex)
  * - Validate repository access
  * - Save selection to config
  */
@@ -15,6 +15,7 @@ import { Octokit } from '@octokit/rest';
 import { select, input, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { minimatch } from 'minimatch';
+import { parsePatternShortcut, validateRegex } from './selection-strategy.js';
 
 export interface GitHubRepo {
   name: string;
@@ -30,8 +31,9 @@ export interface GitHubRepo {
 
 export interface RepoSelectionConfig {
   repositories: string[]; // Array of "owner/repo" strings
-  selectionStrategy: 'all-org' | 'all-personal' | 'pattern' | 'explicit';
-  pattern?: string; // For pattern strategy
+  selectionStrategy: 'all-org' | 'all-personal' | 'pattern-glob' | 'pattern-regex' | 'explicit';
+  pattern?: string; // For pattern strategies
+  isRegex?: boolean; // True if pattern is regex
   organizationName?: string; // For all-org strategy
 }
 
@@ -113,10 +115,28 @@ export async function fetchPersonalRepositories(octokit: Octokit): Promise<GitHu
  * Filter repositories by glob pattern
  */
 export function filterRepositoriesByPattern(repos: GitHubRepo[], pattern: string): GitHubRepo[] {
+  // Parse shortcuts (starts:, ends:, contains:)
+  const parsedPattern = parsePatternShortcut(pattern);
   return repos.filter(repo => {
     // Match against repo name only
-    return minimatch(repo.name, pattern);
+    return minimatch(repo.name, parsedPattern, { nocase: true });
   });
+}
+
+/**
+ * Filter repositories by regex pattern
+ */
+export function filterRepositoriesByRegex(repos: GitHubRepo[], pattern: string): { items: GitHubRepo[]; error?: string } {
+  try {
+    const regex = new RegExp(pattern, 'i'); // Case-insensitive
+    const matched = repos.filter(repo => regex.test(repo.name));
+    return { items: matched };
+  } catch (error) {
+    return {
+      items: [],
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
 }
 
 /**
@@ -173,23 +193,41 @@ export async function selectRepositories(
   // Step 1: Detect organizations
   const orgs = await fetchUserOrganizations(octokit);
 
-  // Step 2: Prompt for selection strategy
+  // Step 2: Prompt for selection strategy - unified with ADO/JIRA
   const strategyChoices: Array<{ name: string; value: RepoSelectionConfig['selectionStrategy']; disabled?: string | boolean }> = [
-    { name: 'All repositories from a specific organization', value: 'all-org', disabled: orgs.length === 0 ? 'No organizations found' : false },
-    { name: 'All repositories from your personal account', value: 'all-personal' },
-    { name: 'Pattern matching (e.g., "ec-*", "*-backend")', value: 'pattern' },
-    { name: 'Explicit list (comma-separated repo names)', value: 'explicit' }
+    {
+      name: `${chalk.green('✓')} All from organization ${chalk.gray('- Import all repos from an org')}`,
+      value: 'all-org',
+      disabled: orgs.length === 0 ? 'No organizations found' : false,
+    },
+    {
+      name: `All personal ${chalk.gray('- Import all your personal repos')}`,
+      value: 'all-personal',
+    },
+    {
+      name: `Pattern (glob) ${chalk.gray('- Match by pattern (e.g., "ec-*", "*-backend")')}`,
+      value: 'pattern-glob',
+    },
+    {
+      name: `Pattern (regex) ${chalk.gray('- Regular expression (e.g., "^ec-.*$")')}`,
+      value: 'pattern-regex',
+    },
+    {
+      name: `Manual entry ${chalk.gray('- Enter repo names directly')}`,
+      value: 'explicit',
+    },
   ];
 
   const strategy = await select({
     message: 'How do you want to select repositories?',
-    choices: strategyChoices
+    choices: strategyChoices,
+    default: orgs.length > 0 ? 'all-org' : 'all-personal',
   });
 
   let selectedRepos: GitHubRepo[] = [];
   let selectionConfig: RepoSelectionConfig = {
     repositories: [],
-    selectionStrategy: strategy
+    selectionStrategy: strategy,
   };
 
   // Step 3: Execute strategy
@@ -198,7 +236,7 @@ export async function selectRepositories(
       // Prompt to select organization
       const selectedOrg = await select({
         message: 'Select organization:',
-        choices: orgs.map(org => ({ name: org, value: org }))
+        choices: orgs.map(org => ({ name: org, value: org })),
       });
 
       console.log(chalk.gray(`\n⏳ Fetching repositories from ${selectedOrg}...\n`));
@@ -213,16 +251,16 @@ export async function selectRepositories(
       break;
     }
 
-    case 'pattern': {
+    case 'pattern-glob': {
       // First, get source (org or personal)
       const sourceChoices = [
         { name: 'Personal repositories', value: 'personal' },
-        ...orgs.map(org => ({ name: `Organization: ${org}`, value: `org:${org}` }))
+        ...orgs.map(org => ({ name: `Organization: ${org}`, value: `org:${org}` })),
       ];
 
       const source = await select({
         message: 'Select repository source:',
-        choices: sourceChoices
+        choices: sourceChoices,
       });
 
       let allRepos: GitHubRepo[] = [];
@@ -236,26 +274,107 @@ export async function selectRepositories(
         selectionConfig.organizationName = orgName;
       }
 
+      // Show pattern hints
+      console.log(chalk.gray('\n💡 Examples: "ec-*", "*-backend", "microservice-*"'));
+      console.log(chalk.gray('💡 Shortcuts: "starts: ec-", "ends: -api", "contains: core"\n'));
+
       // Prompt for pattern
       const pattern = await input({
-        message: 'Enter pattern (e.g., "ec-*", "*-backend", "microservice-*"):',
-        validate: (value: string) => value.trim() ? true : 'Pattern is required'
+        message: 'Enter pattern:',
+        validate: (value: string) => value.trim() ? true : 'Pattern is required',
       });
 
       selectedRepos = filterRepositoriesByPattern(allRepos, pattern.trim());
-      selectionConfig.pattern = pattern.trim();
+      selectionConfig.pattern = parsePatternShortcut(pattern.trim());
 
       if (selectedRepos.length === 0) {
         console.log(chalk.yellow(`\n⚠️  No repositories match pattern "${pattern}"\n`));
+
+        const retry = await confirm({
+          message: 'Try a different pattern?',
+          default: true,
+        });
+
+        if (retry) {
+          return selectRepositories(octokit, githubToken);
+        }
+        return null;
+      }
+      break;
+    }
+
+    case 'pattern-regex': {
+      // First, get source (org or personal)
+      const sourceChoices = [
+        { name: 'Personal repositories', value: 'personal' },
+        ...orgs.map(org => ({ name: `Organization: ${org}`, value: `org:${org}` })),
+      ];
+
+      const source = await select({
+        message: 'Select repository source:',
+        choices: sourceChoices,
+      });
+
+      let allRepos: GitHubRepo[] = [];
+      if (source === 'personal') {
+        console.log(chalk.gray('\n⏳ Fetching your personal repositories...\n'));
+        allRepos = await fetchPersonalRepositories(octokit);
+      } else {
+        const orgName = source.replace('org:', '');
+        console.log(chalk.gray(`\n⏳ Fetching repositories from ${orgName}...\n`));
+        allRepos = await fetchOrgRepositories(octokit, orgName);
+        selectionConfig.organizationName = orgName;
+      }
+
+      // Show regex hints
+      console.log(chalk.gray('\n💡 Examples: "^ec-", ".*-backend$", "^microservice-\\d+$"\n'));
+
+      // Prompt for regex pattern
+      const pattern = await input({
+        message: 'Enter regex pattern:',
+        validate: (value: string) => {
+          if (!value.trim()) return 'Pattern is required';
+          const validation = validateRegex(value.trim());
+          if (validation !== true) {
+            return `Invalid regular expression: ${validation}`;
+          }
+          return true;
+        },
+      });
+
+      const regexResult = filterRepositoriesByRegex(allRepos, pattern.trim());
+      if (regexResult.error) {
+        console.log(chalk.red(`\n❌ Invalid regex: ${regexResult.error}\n`));
+        return null;
+      }
+
+      selectedRepos = regexResult.items;
+      selectionConfig.pattern = pattern.trim();
+      selectionConfig.isRegex = true;
+
+      if (selectedRepos.length === 0) {
+        console.log(chalk.yellow(`\n⚠️  No repositories match regex "${pattern}"\n`));
+
+        const retry = await confirm({
+          message: 'Try a different pattern?',
+          default: true,
+        });
+
+        if (retry) {
+          return selectRepositories(octokit, githubToken);
+        }
         return null;
       }
       break;
     }
 
     case 'explicit': {
+      console.log(chalk.gray('\n💡 Enter repository names separated by commas'));
+      console.log(chalk.gray('💡 Example: "repo1, repo2, repo3"\n'));
+
       const repoList = await input({
-        message: 'Enter repository names (comma-separated, e.g., "repo1, repo2, repo3"):',
-        validate: (value: string) => value.trim() ? true : 'At least one repository is required'
+        message: 'Enter repository names (comma-separated):',
+        validate: (value: string) => value.trim() ? true : 'At least one repository is required',
       });
 
       const repoNames = repoList.split(',').map(s => s.trim()).filter(Boolean);
@@ -288,7 +407,7 @@ export async function selectRepositories(
 
   const confirmed = await confirm({
     message: `Connect these ${selectedRepos.length} repositories?`,
-    default: true
+    default: true,
   });
 
   if (!confirmed) {
