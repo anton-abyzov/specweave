@@ -466,14 +466,7 @@ export async function confirmJiraMapping(
     }
   }
 
-  const confirmed = await confirm({
-    message: 'Accept this organization?',
-    default: true,
-  });
-
-  if (!confirmed) {
-    return null;
-  }
+  // No confirmation needed - user already accepted by selecting projects/boards
 
   return { mode, mappings };
 }
@@ -689,14 +682,7 @@ export async function confirmAdoMapping(
     }
   }
 
-  const confirmed = await confirm({
-    message: 'Accept this organization?',
-    default: true,
-  });
-
-  if (!confirmed) {
-    return null;
-  }
+  // No confirmation needed - user already accepted by selecting projects/areas
 
   return { mode, mappings };
 }
