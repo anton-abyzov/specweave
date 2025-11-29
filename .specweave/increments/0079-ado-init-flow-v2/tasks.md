@@ -8,7 +8,7 @@
 | T-003 | Remove team selection from init | [x] completed | US-003 |
 | T-004 | Fix ADO import to populate adoAreaPath | [x] completed | US-004 |
 | T-005 | Change "parent" fallback to "_default" | [x] completed | US-004 |
-| T-006 | Add multi-project selection | [ ] deferred | US-005 |
+| T-006 | Add multi-project selection | [x] completed | US-005 |
 
 ---
 
@@ -133,21 +133,27 @@ Change default folder from "parent" to "_default" for items without area path.
 ### T-006: Add Multi-Project Selection
 **User Story**: US-005
 **Satisfies ACs**: AC-US5-01, AC-US5-02, AC-US5-03, AC-US5-04, AC-US5-05
-**Status**: [ ] deferred
+**Status**: [x] completed
 
 **Description**:
 Allow selecting multiple ADO projects during init.
 
-**Note**: Deferred to future increment. Critical bugs (T-001 through T-005) are fixed.
-Multi-project support requires significant type changes and could introduce regressions.
-Current single-project flow works correctly after bug fixes.
+**Implementation**:
+1. Added `AzureDevOpsProjectConfig` type in `types.ts` for per-project config
+2. Updated `promptAzureDevOpsCredentials()` with project fetch and mode selection
+3. Added `handleMultiProjectSelection()` for multi-select checkbox flow
+4. For each project, prompts for area paths using existing pattern selector
+5. Updated `writeSyncConfig()` to create profile per project
+6. Updated `createAdoProjectFolders()` to create folders for all projects
+7. Updated `validateAzureDevOpsConnection()` to handle multi-project credentials
 
 **Files**:
-- `src/cli/helpers/issue-tracker/ado.ts`
-- `src/cli/helpers/issue-tracker/index.ts`
+- `src/cli/helpers/issue-tracker/types.ts` - Added `AzureDevOpsProjectConfig` interface
+- `src/cli/helpers/issue-tracker/ado.ts` - Multi-project selection flow
+- `src/cli/helpers/issue-tracker/index.ts` - Multi-project profile creation
 
 **Tests**:
-- [ ] Multiple projects can be selected
-- [ ] Area paths prompted per project
-- [ ] Config has profile per project
-- [ ] Folders created for all projects
+- [x] Multiple projects can be selected
+- [x] Area paths prompted per project
+- [x] Config has profile per project
+- [x] Folders created for all projects

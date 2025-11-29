@@ -110,11 +110,11 @@ The Azure DevOps init flow has **5 critical bugs** discovered during real-world 
 **So that** I can manage all my projects from one SpecWeave instance
 
 #### Acceptance Criteria:
-- [ ] **AC-US5-01**: After org input, fetch all projects user has access to
-- [ ] **AC-US5-02**: Show multi-select checkbox for projects (default: first project selected)
-- [ ] **AC-US5-03**: For each project, prompt for area path selection
-- [ ] **AC-US5-04**: Store multiple projects in config.json `sync.profiles`
-- [ ] **AC-US5-05**: Create folder structure for each project
+- [x] **AC-US5-01**: After org input, fetch all projects user has access to
+- [x] **AC-US5-02**: Show multi-select checkbox for projects (default: first project selected)
+- [x] **AC-US5-03**: For each project, prompt for area path selection
+- [x] **AC-US5-04**: Store multiple projects in config.json `sync.profiles`
+- [x] **AC-US5-05**: Create folder structure for each project
 
 ## Out of Scope
 
