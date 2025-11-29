@@ -416,7 +416,7 @@ export class ItemConverter {
    *
    * Structure patterns:
    * - 2-level (JIRA): specs/JIRA-{containerId}/{projectId}/
-   * - 2-level (ADO): specs/ADO-{containerId}/{projectId}/
+   * - 2-level (ADO): specs/{containerId}/{projectId}/
    * - 1-level (GitHub): specs/{projectId}/
    * - Legacy: specs/ (no projectId)
    */
