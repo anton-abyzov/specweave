@@ -7,7 +7,7 @@
  */
 
 import chalk from 'chalk';
-import { confirm, input, password, checkbox } from '@inquirer/prompts';
+import { confirm, input, password, checkbox, select } from '@inquirer/prompts';
 import ora from 'ora';
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
@@ -18,6 +18,7 @@ import {
 } from '../../../utils/env-file.js';
 import type {
   AzureDevOpsCredentials,
+  AzureDevOpsProjectConfig,
   ExistingCredentials,
   ValidationResult
 } from './types.js';
@@ -86,18 +87,18 @@ export async function promptAzureDevOpsCredentials(
   console.log(chalk.gray('SpecWeave will sync increments with Azure DevOps Work Items.\n'));
 
   // Step 0: Check cache for previous configuration (NEW in v0.24.0)
-  let cachedConfig: { org: string; project: string; teams?: string[] } | null = null;
+  let cachedConfig: { org: string; project: string; areaPaths?: string[] } | null = null;
   if (projectRoot) {
     const { CacheManager } = await import('../../../core/cache/cache-manager.js');
     const cacheManager = new CacheManager(projectRoot);
-    cachedConfig = await cacheManager.get<{ org: string; project: string; teams?: string[] }>('ado-config');
+    cachedConfig = await cacheManager.get<{ org: string; project: string; areaPaths?: string[] }>('ado-config');
 
     if (cachedConfig) {
       console.log(chalk.cyan('✨ Found cached ADO configuration:\n'));
       console.log(chalk.gray(`   Organization: ${cachedConfig.org}`));
       console.log(chalk.gray(`   Project: ${cachedConfig.project}`));
-      if (cachedConfig.teams && cachedConfig.teams.length > 0) {
-        console.log(chalk.gray(`   Teams: ${cachedConfig.teams.join(', ')}`));
+      if (cachedConfig.areaPaths && cachedConfig.areaPaths.length > 0) {
+        console.log(chalk.gray(`   Area Paths: ${cachedConfig.areaPaths.join(', ')}`));
       }
       console.log('');
 
@@ -129,13 +130,12 @@ export async function promptAzureDevOpsCredentials(
   }
 
   // Collect credentials (use cached values as defaults if available)
-  let org: string, project: string, teams: string[];
+  let org: string, project: string;
 
   if (cachedConfig) {
     // Use cached configuration
     org = cachedConfig.org;
     project = cachedConfig.project;
-    teams = cachedConfig.teams || [];
   } else {
     // Prompt for new configuration
     org = await input({
@@ -157,9 +157,6 @@ export async function promptAzureDevOpsCredentials(
         return true;
       }
     });
-
-    // Teams/areas will be auto-fetched after PAT validation
-    teams = [];
   }
 
   // Step 1: Prompt for PAT (before teams - so we can auto-fetch!)
@@ -178,9 +175,8 @@ export async function promptAzureDevOpsCredentials(
     }
   });
 
-  // Step 2: Validate PAT and auto-fetch teams/areas
-  const spinner = ora('Validating PAT and fetching teams/areas...').start();
-  let fetchedTeams: Array<{ name: string; id: string }> = [];
+  // Step 2: Validate PAT and auto-fetch area paths
+  const spinner = ora('Validating PAT and fetching area paths...').start();
   let fetchedAreas: Array<{ name: string; path: string }> = [];
   let areaPaths: string[] = [];
 
@@ -198,47 +194,30 @@ export async function promptAzureDevOpsCredentials(
       return null;
     }
 
-    spinner.text = 'Fetching teams and area paths...';
+    spinner.text = 'Fetching area paths...';
 
-    // Fetch teams and areas in parallel
-    const { fetchTeamsForProject, fetchAreaPathsForProject } = await import(
+    // Fetch area paths only (teams removed from init flow)
+    const { fetchAreaPathsForProject } = await import(
       '../../../../plugins/specweave-ado/lib/ado-board-resolver.js'
     );
 
-    const [teamsResult, areasResult] = await Promise.all([
-      fetchTeamsForProject(org, project, pat).catch((): never[] => []),
-      fetchAreaPathsForProject(org, project, pat).catch((): never[] => [])
-    ]);
+    const areasResult = await fetchAreaPathsForProject(org, project, pat).catch((): never[] => []);
 
-    fetchedTeams = teamsResult.map((t: any) => ({ name: t.name, id: t.id }));
     fetchedAreas = areasResult.map((a: any) => ({ name: a.name, path: a.path }));
-    spinner.succeed(`Found ${fetchedTeams.length} teams, ${fetchedAreas.length} area paths`);
+    spinner.succeed(`Found ${fetchedAreas.length} area paths`);
 
   } catch (error: any) {
-    spinner.warn('Could not auto-fetch teams/areas - using manual input');
+    spinner.warn('Could not auto-fetch area paths - using manual input');
   }
 
   // Step 3: Let user select area paths (if any found) using pattern-based selector
+  // NOTE: Team selection removed - 2-level hierarchy is Project -> Area Path only
   if (fetchedAreas.length > 0) {
     const areaPathObjects = toAreaPathObjects(fetchedAreas.map(a => a.path));
     const selectionResult = await selectAreaPaths(areaPathObjects, project);
     if (selectionResult) {
       areaPaths = selectionResult.areaPaths;
     }
-  }
-
-  // Step 4: Let user select teams (if any found)
-  if (fetchedTeams.length > 0) {
-    const teamChoices = fetchedTeams.map(t => ({
-      name: t.name,
-      value: t.name,
-      checked: false
-    }));
-
-    teams = await checkbox({
-      message: 'Select teams (optional, press enter to skip):',
-      choices: teamChoices
-    });
   }
 
   // Cache the configuration (NOT the PAT) for future use
@@ -248,7 +227,6 @@ export async function promptAzureDevOpsCredentials(
     await cacheManager.set('ado-config', {
       org,
       project,
-      teams: teams.length > 0 ? teams : undefined,
       areaPaths: areaPaths.length > 0 ? areaPaths : undefined
     });
   }
@@ -257,9 +235,7 @@ export async function promptAzureDevOpsCredentials(
     pat,
     org,
     project,
-    team: teams[0],
-    teams: teams.length > 0 ? teams : undefined,
-    areaPaths: areaPaths.length > 0 ? areaPaths : undefined  // NEW: Selected area paths
+    areaPaths: areaPaths.length > 0 ? areaPaths : undefined
   };
 }
 
