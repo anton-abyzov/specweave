@@ -64,15 +64,25 @@ export interface JiraConfig {
 }
 
 /**
+ * Azure DevOps project configuration for multi-project mode
+ */
+export interface ADOProjectConfig {
+  name: string;
+  areaPaths?: string[];
+  isDefault?: boolean;
+}
+
+/**
  * Azure DevOps configuration detection result
  */
 export interface ADOConfig {
   orgUrl: string;
-  project: string;
+  project: string;  // Primary project (for backwards compatibility)
   pat?: string;
   teams?: string[];
   areaPaths?: string[];
   strategy?: string;
+  projects?: ADOProjectConfig[];  // Multi-project support
 }
 
 /**

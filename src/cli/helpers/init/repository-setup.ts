@@ -7,6 +7,7 @@ import chalk from 'chalk';
 import { select, input } from '@inquirer/prompts';
 import type { RepositoryHosting, GitHubRemote } from './types.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
+import { parsePatternShortcut, validateRegex } from '../selection-strategy.js';
 
 /**
  * Options for repository setup
