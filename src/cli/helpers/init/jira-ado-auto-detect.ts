@@ -254,7 +254,7 @@ function analyzeAdoStructureDeep(projects: AdoProjectInfo[]): StructureAnalysis 
   const suggestedMapping: string[] = [];
   for (const project of projects.slice(0, 2)) {
     for (const area of project.areaPaths.slice(0, 2)) {
-      const folder = `ADO-${normalizeToProjectId(project.name)}/${normalizeToProjectId(area.name)}`;
+      const folder = `${normalizeToProjectId(project.name)}/${normalizeToProjectId(area.name)}`;
       suggestedMapping.push(folder);
     }
   }

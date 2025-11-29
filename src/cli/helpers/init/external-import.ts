@@ -945,7 +945,7 @@ async function convertToLivingDocs(
     // Group items by external container (JIRA project/board, ADO project/area, or GitHub repo)
     // This supports:
     // - 2-level structure for JIRA: specs/JIRA-{projectKey}/{boardName}/FS-XXX/
-    // - 2-level structure for ADO: specs/ADO-{projectName}/{areaPath}/FS-XXX/
+    // - 2-level structure for ADO: specs/{projectName}/{areaPath}/FS-XXX/
     // - 1-level structure for GitHub: specs/{repoName}/FS-XXX/
     const containerGroups = groupItemsByExternalContainer(result.allItems);
     const groupCount = containerGroups.length;
