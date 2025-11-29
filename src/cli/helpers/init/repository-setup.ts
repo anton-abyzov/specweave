@@ -4,7 +4,7 @@
  */
 
 import chalk from 'chalk';
-import { select } from '@inquirer/prompts';
+import { select, input } from '@inquirer/prompts';
 import type { RepositoryHosting, GitHubRemote } from './types.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 
@@ -35,6 +35,8 @@ function getRepoStrings(language: SupportedLanguage): {
   ado: string;
   local: string;
   other: string;
+  adoCloneQuestion: string;
+  adoCloneSkip: string;
 } {
   const strings: Record<SupportedLanguage, ReturnType<typeof getRepoStrings>> = {
     en: {
@@ -51,6 +53,8 @@ function getRepoStrings(language: SupportedLanguage): {
       ado: 'Azure DevOps',
       local: 'Local (no remote)',
       other: 'Other (GitLab, etc - coming soon)',
+      adoCloneQuestion: 'Enter repo name pattern to clone (e.g., sw-* or leave empty to skip):',
+      adoCloneSkip: 'Skipping repo cloning - you can configure later',
     },
     ru: {
       header: '📦 Хостинг репозитория',
@@ -66,6 +70,8 @@ function getRepoStrings(language: SupportedLanguage): {
       ado: 'Azure DevOps',
       local: 'Локально (без remote)',
       other: 'Другой (GitLab и т.д. - скоро)',
+      adoCloneQuestion: 'Введите шаблон имени репо для клонирования (напр., sw-* или оставьте пустым):',
+      adoCloneSkip: 'Пропуск клонирования - можно настроить позже',
     },
     es: {
       header: '📦 Alojamiento del repositorio',
@@ -81,6 +87,8 @@ function getRepoStrings(language: SupportedLanguage): {
       ado: 'Azure DevOps',
       local: 'Local (sin remoto)',
       other: 'Otro (GitLab, etc - próximamente)',
+      adoCloneQuestion: 'Ingrese patrón de nombre de repo a clonar (ej., sw-* o deje vacío):',
+      adoCloneSkip: 'Omitiendo clonación - puede configurar después',
     },
     zh: {
       header: '📦 仓库托管',
@@ -96,6 +104,8 @@ function getRepoStrings(language: SupportedLanguage): {
       ado: 'Azure DevOps',
       local: '本地（无远程）',
       other: '其他（GitLab 等 - 即将推出）',
+      adoCloneQuestion: '输入要克隆的仓库名称模式（例如 sw-* 或留空跳过）：',
+      adoCloneSkip: '跳过克隆 - 稍后可以配置',
     },
     de: {
       header: '📦 Repository-Hosting',
@@ -111,6 +121,8 @@ function getRepoStrings(language: SupportedLanguage): {
       ado: 'Azure DevOps',
       local: 'Lokal (kein Remote)',
       other: 'Andere (GitLab, etc - kommt bald)',
+      adoCloneQuestion: 'Repo-Namensmuster zum Klonen eingeben (z.B. sw-* oder leer lassen):',
+      adoCloneSkip: 'Klonen übersprungen - später konfigurierbar',
     },
     fr: {
       header: '📦 Hébergement du dépôt',
@@ -126,6 +138,8 @@ function getRepoStrings(language: SupportedLanguage): {
       ado: 'Azure DevOps',
       local: 'Local (pas de remote)',
       other: 'Autre (GitLab, etc - bientôt)',
+      adoCloneQuestion: 'Entrez le modèle de nom de repo à cloner (ex. sw-* ou laissez vide):',
+      adoCloneSkip: 'Clonage ignoré - configurable plus tard',
     },
     ja: {
       header: '📦 リポジトリホスティング',
@@ -141,6 +155,8 @@ function getRepoStrings(language: SupportedLanguage): {
       ado: 'Azure DevOps',
       local: 'ローカル（リモートなし）',
       other: 'その他（GitLabなど - 近日公開）',
+      adoCloneQuestion: 'クローンするリポ名パターンを入力（例: sw-* または空白でスキップ）:',
+      adoCloneSkip: 'クローンをスキップ - 後で設定可能',
     },
     ko: {
       header: '📦 저장소 호스팅',
@@ -156,6 +172,8 @@ function getRepoStrings(language: SupportedLanguage): {
       ado: 'Azure DevOps',
       local: '로컬 (원격 없음)',
       other: '기타 (GitLab 등 - 곧 출시)',
+      adoCloneQuestion: '복제할 저장소 이름 패턴 입력 (예: sw-* 또는 비워두기):',
+      adoCloneSkip: '복제 건너뜀 - 나중에 설정 가능',
     },
     pt: {
       header: '📦 Hospedagem do repositório',
@@ -171,6 +189,8 @@ function getRepoStrings(language: SupportedLanguage): {
       ado: 'Azure DevOps',
       local: 'Local (sem remoto)',
       other: 'Outro (GitLab, etc - em breve)',
+      adoCloneQuestion: 'Digite padrão de nome de repo para clonar (ex. sw-* ou deixe vazio):',
+      adoCloneSkip: 'Clonagem ignorada - configurável depois',
     },
   };
   return strings[language] || strings.en;
@@ -263,5 +283,19 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
     repositoryHosting = `${provider}-${structure}` as RepositoryHosting;
   }
 
-  return { hosting: repositoryHosting, isMultiRepo };
+  // Step 3: For ADO multi-repo, prompt for clone pattern
+  let adoClonePattern: string | undefined;
+  if (provider === 'ado' && isMultiRepo) {
+    const pattern = await input({
+      message: strings.adoCloneQuestion,
+      default: ''
+    });
+    if (pattern.trim()) {
+      adoClonePattern = pattern.trim();
+    } else {
+      console.log(chalk.gray(`   → ${strings.adoCloneSkip}`));
+    }
+  }
+
+  return { hosting: repositoryHosting, isMultiRepo, adoClonePattern };
 }
