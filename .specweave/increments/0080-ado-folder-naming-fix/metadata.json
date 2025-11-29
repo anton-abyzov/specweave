@@ -1,0 +1,15 @@
+{
+  "increment": "0080-ado-folder-naming-fix",
+  "title": "ADO Folder Naming Fix - Remove ADO- Prefix",
+  "status": "completed",
+  "type": "bug",
+  "priority": "P0",
+  "created": "2025-11-29",
+  "completed": "2025-11-29",
+  "tasks": {
+    "total": 6,
+    "completed": 6,
+    "deferred": 0,
+    "in_progress": 0
+  }
+}

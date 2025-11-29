@@ -19,7 +19,7 @@ created: 2025-11-28
 
 ## Acceptance Criteria
 
-- [ ] **AC-US2-01**: Use project name directly without prefix: `OlySense` not `ADO-OlySense`
+- [ ] **AC-US2-01**: Use project name directly without prefix: `Acme` not `ADO-Acme`
 - [ ] **AC-US2-02**: OR make prefix configurable in config.json
 - [ ] **AC-US2-03**: Import and folder creation must use same naming convention
 - [ ] **AC-US2-04**: Document the naming convention in ADR

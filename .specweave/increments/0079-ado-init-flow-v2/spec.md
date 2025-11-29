@@ -2,9 +2,10 @@
 increment: 0079-ado-init-flow-v2
 title: "ADO Init Flow V2 - Critical Fixes"
 priority: P0
-status: active
+status: completed
 type: bug
 created: 2025-11-29
+completed: 2025-11-29
 dependencies: []
 structure: user-stories
 ---
@@ -13,18 +14,18 @@ structure: user-stories
 
 ## Problem Statement
 
-The Azure DevOps init flow has **5 critical bugs** discovered during real-world testing with `olympusnova/OlySense`:
+The Azure DevOps init flow has **5 critical bugs** discovered during real-world testing with `acme-org/Acme`:
 
 ### Bug 1: Area Path CREATION Instead of VALIDATION
-- User selects EXISTING area paths (`OlySense\Platform-Engineering`)
+- User selects EXISTING area paths (`Acme\Platform-Engineering`)
 - Validator TRIES TO CREATE them instead of just validating existence
-- Error: `Creating area path: OlySense\OlySense\Platform-Engineering` (double prefix!)
+- Error: `Creating area path: Acme\Acme\Platform-Engineering` (double prefix!)
 - **Root Cause**: `ado-validator.ts:527` calls `createAreaPath()` even when paths already exist
 
 ### Bug 2: Double Project Prefix in Area Path Validation
-- Area paths stored as full paths: `OlySense\Platform-Engineering`
+- Area paths stored as full paths: `Acme\Platform-Engineering`
 - `createAreaPath(projectName, areaName)` at line 276 outputs: `${projectName}\${areaName}`
-- Result: `OlySense\OlySense\Platform-Engineering` (projectName prepended to already-full path)
+- Result: `Acme\Acme\Platform-Engineering` (projectName prepended to already-full path)
 - **Root Cause**: Config stores FULL paths, but createAreaPath expects leaf names only
 
 ### Bug 3: Team Selection is Unnecessary
@@ -35,13 +36,13 @@ The Azure DevOps init flow has **5 critical bugs** discovered during real-world 
 
 ### Bug 4: Imported Work Items Go to "parent" Folder
 - All imported ADO items land in `specs/{project}/parent/` instead of area path folders
-- Expected: `specs/OlySense/Platform-Engineering/FS-XXX/`
-- Actual: `specs/OlySense/parent/FS-XXX/`
+- Expected: `specs/Acme/Platform-Engineering/FS-XXX/`
+- Actual: `specs/Acme/parent/FS-XXX/`
 - **Root Cause**: Items don't have `adoAreaPath` populated during import, falls back to `projectId = 'parent'`
 
 ### Bug 5: No Multi-Project Selection
 - User can only select 1 ADO project during init
-- Enterprise users have multiple projects (OlySense, OlySense-Mobile, etc.)
+- Enterprise users have multiple projects (Acme, Acme-Mobile, etc.)
 - **Root Cause**: Single project prompt, no multi-select option
 
 ## Root Cause Analysis

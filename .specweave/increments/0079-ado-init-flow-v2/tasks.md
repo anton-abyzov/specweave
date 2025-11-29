@@ -47,7 +47,7 @@ Fix area path storage to use leaf names only, preventing double prefix issues.
 
 **Implementation**:
 1. In `selectAreaPaths()`, extract and store leaf name only
-2. Update config.json writer to store `["Platform-Engineering"]` not `["OlySense\\Platform-Engineering"]`
+2. Update config.json writer to store `["Platform-Engineering"]` not `["Acme\\Platform-Engineering"]`
 3. Ensure folder creation matches validation naming
 
 **Files**:

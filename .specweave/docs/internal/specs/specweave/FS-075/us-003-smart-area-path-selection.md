@@ -19,7 +19,7 @@ created: 2025-11-27
 
 ## Acceptance Criteria
 
-- [x] **AC-US3-01**: Show hierarchical area paths (e.g., `OlySense\Digital-Service-Operations`)
+- [x] **AC-US3-01**: Show hierarchical area paths (e.g., `Acme\Digital-Service-Operations`)
 - [x] **AC-US3-02**: Default to root area path if none selected
 - [x] **AC-US3-03**: Store selected area paths in config.json
 - [x] **AC-US3-04**: Support area path filtering in import queries

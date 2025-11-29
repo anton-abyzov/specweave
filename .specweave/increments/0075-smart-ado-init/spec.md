@@ -64,7 +64,7 @@ Current ADO init flow has critical issues:
 **So that** only relevant work items are imported
 
 **Acceptance Criteria:**
-- [x] **AC-US3-01**: Show hierarchical area paths (e.g., `OlySense\Digital-Service-Operations`)
+- [x] **AC-US3-01**: Show hierarchical area paths (e.g., `Acme\Digital-Service-Operations`)
 - [x] **AC-US3-02**: Default to root area path if none selected
 - [x] **AC-US3-03**: Store selected area paths in config.json
 - [x] **AC-US3-04**: Support area path filtering in import queries
@@ -98,19 +98,19 @@ Current ADO init flow has critical issues:
 ### New Prompt Flow
 
 ```
-1. Azure DevOps organization name: olympusnova
-2. Project name: OlySense
+1. Azure DevOps organization name: acme-org
+2. Project name: Acme
 3. Paste your Personal Access Token: ****
-4. Testing connection... ✓ Connected to OlySense
+4. Testing connection... ✓ Connected to Acme
 
 🔍 Fetching teams and area paths...
 
 5. Select area paths to sync (use space to select):
-   ◉ OlySense\Digital-Service-Operations
-   ◯ OlySense\Dev-Sec-Ops
-   ◯ OlySense\Platform-Engineering
-   ◯ OlySense\AI-Platform
-   ◯ OlySense\Clinical-Data-Platform
+   ◉ Acme\Digital-Service-Operations
+   ◯ Acme\Dev-Sec-Ops
+   ◯ Acme\Platform-Engineering
+   ◯ Acme\AI-Platform
+   ◯ Acme\Clinical-Data-Platform
 
 6. Select teams (optional):
    ◯ Core-Operations
@@ -129,10 +129,10 @@ Current ADO init flow has critical issues:
       "ado-default": {
         "provider": "ado",
         "config": {
-          "organization": "olympusnova",
-          "project": "OlySense",
+          "organization": "acme-org",
+          "project": "Acme",
           "areaPaths": [
-            "OlySense\\Digital-Service-Operations"
+            "Acme\\Digital-Service-Operations"
           ],
           "teams": ["Core-Operations"]
         }
