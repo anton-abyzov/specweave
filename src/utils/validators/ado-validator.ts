@@ -272,11 +272,11 @@ export class AzureDevOpsResourceValidator {
    * Check if area path exists in project (GET-only, no create)
    *
    * @param projectName - Project name
-   * @param areaPath - Full area path (e.g., "Acme\\Platform-Engineering") or leaf name
+   * @param areaPath - Full area path (e.g., "MyProject\\Platform-Engineering") or leaf name
    * @returns Area path info if exists, null otherwise
    */
   async checkAreaPathExists(projectName: string, areaPath: string): Promise<AzureDevOpsAreaPath | null> {
-    // Extract leaf name if full path is provided (handles "Acme\Platform-Engineering" -> "Platform-Engineering")
+    // Extract leaf name if full path is provided (handles "MyProject\Platform-Engineering" -> "Platform-Engineering")
     const leafName = areaPath.includes('\\') ? areaPath.split('\\').pop()! : areaPath;
 
     try {
@@ -562,7 +562,7 @@ export class AzureDevOpsResourceValidator {
       const projectName = projectNames[0]; // Single project for now
 
       for (const areaPath of this.areaPaths) {
-        // Extract leaf name for display (handles full paths like "Acme\Platform-Engineering")
+        // Extract leaf name for display (handles full paths like "MyProject\Platform-Engineering")
         const leafName = areaPath.includes('\\') ? areaPath.split('\\').pop()! : areaPath;
 
         const existingArea = await this.checkAreaPathExists(projectName, areaPath);

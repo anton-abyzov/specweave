@@ -106,7 +106,7 @@ export interface ItemConverterOptions {
    *
    * When provided, creates 2-level structure:
    * - JIRA: specs/JIRA-{containerId}/{projectId}/FS-XXX/
-   * - ADO: specs/ADO-{containerId}/{projectId}/FS-XXX/
+   * - ADO: specs/{containerId}/{projectId}/FS-XXX/ (no ADO- prefix)
    *
    * When NOT provided (default), creates 1-level structure:
    * - GitHub: specs/{projectId}/FS-XXX/
