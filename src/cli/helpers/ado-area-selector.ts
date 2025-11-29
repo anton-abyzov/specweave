@@ -5,6 +5,7 @@
  *
  * Similar to github-repo-selector.ts, provides functionality to:
  * - Select area paths by pattern (glob)
+ * - Select area paths by regex
  * - Select all area paths from a project
  * - Select explicit list of area paths
  * - Preview selection before confirmation
@@ -13,6 +14,7 @@
 import { select, input, confirm, checkbox } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { minimatch } from 'minimatch';
+import { parsePatternShortcut, validateRegex } from './selection-strategy.js';
 
 export interface ADOAreaPath {
   name: string;      // Leaf name (e.g., "Platform")
@@ -22,8 +24,9 @@ export interface ADOAreaPath {
 
 export interface AreaSelectionConfig {
   areaPaths: string[];         // Array of full paths
-  selectionStrategy: 'all' | 'pattern' | 'explicit';
-  pattern?: string;            // For pattern strategy
+  selectionStrategy: 'all' | 'pattern-glob' | 'pattern-regex' | 'explicit' | 'manual-entry';
+  pattern?: string;            // For pattern strategies
+  isRegex?: boolean;           // True if pattern is regex
   projectName?: string;        // Source project
 }
 
@@ -32,10 +35,29 @@ export interface AreaSelectionConfig {
  * Matches against the leaf name (last segment of path)
  */
 export function filterAreaPathsByPattern(areas: ADOAreaPath[], pattern: string): ADOAreaPath[] {
+  // Parse shortcuts (starts:, ends:, contains:)
+  const parsedPattern = parsePatternShortcut(pattern);
   return areas.filter(area => {
     // Match against leaf name only
-    return minimatch(area.name, pattern);
+    return minimatch(area.name, parsedPattern, { nocase: true });
   });
+}
+
+/**
+ * Filter area paths by regex pattern
+ * Matches against the leaf name (last segment of path)
+ */
+export function filterAreaPathsByRegex(areas: ADOAreaPath[], pattern: string): { items: ADOAreaPath[]; error?: string } {
+  try {
+    const regex = new RegExp(pattern, 'i'); // Case-insensitive
+    const matched = areas.filter(area => regex.test(area.name));
+    return { items: matched };
+  } catch (error) {
+    return {
+      items: [],
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
 }
 
 /**
@@ -103,23 +125,41 @@ export async function selectAreaPaths(
     return null;
   }
 
-  // Prompt for selection strategy
+  // Prompt for selection strategy - unified with other platforms
   const strategyChoices: Array<{ name: string; value: AreaSelectionConfig['selectionStrategy'] }> = [
-    { name: `All ${allAreaPaths.length} area paths`, value: 'all' },
-    { name: 'Pattern matching (e.g., "*-Platform", "*-Service")', value: 'pattern' },
-    { name: 'Select specific area paths', value: 'explicit' }
+    {
+      name: `${chalk.green('✓')} All ${chalk.gray(`- Import all ${allAreaPaths.length} area paths`)}`,
+      value: 'all',
+    },
+    {
+      name: `Pattern (glob) ${chalk.gray('- Match by pattern (e.g., "*-Platform", "*-Service")')}`,
+      value: 'pattern-glob',
+    },
+    {
+      name: `Pattern (regex) ${chalk.gray('- Regular expression (e.g., "^Platform-.*$")')}`,
+      value: 'pattern-regex',
+    },
+    {
+      name: `Select specific ${chalk.gray('- Choose from list (checkbox)')}`,
+      value: 'explicit',
+    },
+    {
+      name: `Manual entry ${chalk.gray('- Enter names directly (comma-separated)')}`,
+      value: 'manual-entry',
+    },
   ];
 
   const strategy = await select({
     message: 'How do you want to select area paths?',
-    choices: strategyChoices
+    choices: strategyChoices,
+    default: 'all',
   });
 
   let selectedAreas: ADOAreaPath[] = [];
   let selectionConfig: AreaSelectionConfig = {
     areaPaths: [],
     selectionStrategy: strategy,
-    projectName
+    projectName,
   };
 
   switch (strategy) {
@@ -128,28 +168,71 @@ export async function selectAreaPaths(
       break;
     }
 
-    case 'pattern': {
+    case 'pattern-glob': {
       // Show examples based on actual area path names
       const exampleNames = allAreaPaths.slice(0, 3).map(a => a.name);
       const exampleHint = exampleNames.length > 0
-        ? ` (your areas: ${exampleNames.join(', ')}...)`
+        ? ` (examples: ${exampleNames.join(', ')}...)`
         : '';
+
+      console.log(chalk.gray('\n   💡 Examples: "*-Platform", "*-Service", "Team-*"'));
+      console.log(chalk.gray('   💡 Shortcuts: "starts: Team-", "ends: -Platform", "contains: Core"\n'));
 
       const pattern = await input({
         message: `Enter pattern${exampleHint}:`,
-        validate: (value: string) => value.trim() ? true : 'Pattern is required'
+        validate: (value: string) => value.trim() ? true : 'Pattern is required',
       });
 
       selectedAreas = filterAreaPathsByPattern(allAreaPaths, pattern.trim());
-      selectionConfig.pattern = pattern.trim();
+      selectionConfig.pattern = parsePatternShortcut(pattern.trim());
 
       if (selectedAreas.length === 0) {
         console.log(chalk.yellow(`\n⚠️  No area paths match pattern "${pattern}"\n`));
 
-        // Offer to try again or select manually
         const tryAgain = await confirm({
           message: 'Try a different pattern?',
-          default: true
+          default: true,
+        });
+
+        if (tryAgain) {
+          return selectAreaPaths(allAreaPaths, projectName);
+        }
+        return null;
+      }
+      break;
+    }
+
+    case 'pattern-regex': {
+      console.log(chalk.gray('\n   💡 Examples: "^Platform-", ".*-Service$", "^Team-\\d+$"\n'));
+
+      const pattern = await input({
+        message: 'Enter regex pattern:',
+        validate: (value: string) => {
+          if (!value.trim()) return 'Pattern is required';
+          const validation = validateRegex(value.trim());
+          if (validation !== true) {
+            return `Invalid regular expression: ${validation}`;
+          }
+          return true;
+        },
+      });
+
+      const regexResult = filterAreaPathsByRegex(allAreaPaths, pattern.trim());
+      if (regexResult.error) {
+        console.log(chalk.red(`\n❌ Invalid regex: ${regexResult.error}\n`));
+        return null;
+      }
+
+      selectedAreas = regexResult.items;
+      selectionConfig.pattern = pattern.trim();
+      selectionConfig.isRegex = true;
+
+      if (selectedAreas.length === 0) {
+        console.log(chalk.yellow(`\n⚠️  No area paths match regex "${pattern}"\n`));
+
+        const tryAgain = await confirm({
+          message: 'Try a different pattern?',
+          default: true,
         });
 
         if (tryAgain) {
@@ -163,20 +246,60 @@ export async function selectAreaPaths(
     case 'explicit': {
       // Use checkbox for explicit selection
       const areaChoices = allAreaPaths.map(a => ({
-        name: a.path,
+        name: `${a.name} ${chalk.gray(`(${a.path})`)}`,
         value: a,
-        checked: false
+        checked: false,
       }));
 
       selectedAreas = await checkbox({
-        message: 'Select area paths (space to select, enter to confirm):',
+        message: 'Select area paths (space to toggle, enter to confirm):',
         choices: areaChoices,
         pageSize: 15,
-        required: true
+        required: true,
       });
 
       if (selectedAreas.length === 0) {
         console.log(chalk.yellow('\n⚠️  No area paths selected.\n'));
+        return null;
+      }
+      break;
+    }
+
+    case 'manual-entry': {
+      console.log(chalk.gray('\n   💡 Enter area path names separated by commas'));
+      console.log(chalk.gray('   💡 Example: "Platform, Service, Database"\n'));
+
+      const entryInput = await input({
+        message: 'Enter area path names (comma-separated):',
+        validate: (value: string) => value.trim() ? true : 'At least one entry is required',
+      });
+
+      // Parse comma-separated entries
+      const entries = entryInput.split(',').map(s => s.trim()).filter(Boolean);
+      const entrySet = new Set(entries.map(e => e.toLowerCase()));
+
+      // Match against available area paths
+      selectedAreas = allAreaPaths.filter(area => entrySet.has(area.name.toLowerCase()));
+
+      // Report not found entries
+      const foundNames = new Set(selectedAreas.map(a => a.name.toLowerCase()));
+      const notFoundEntries = entries.filter(e => !foundNames.has(e.toLowerCase()));
+
+      if (notFoundEntries.length > 0) {
+        console.log(chalk.yellow(`\n⚠️  Not found: ${notFoundEntries.join(', ')}`));
+      }
+
+      if (selectedAreas.length === 0) {
+        console.log(chalk.yellow('\n⚠️  No matching area paths found.\n'));
+
+        const tryAgain = await confirm({
+          message: 'Try again?',
+          default: true,
+        });
+
+        if (tryAgain) {
+          return selectAreaPaths(allAreaPaths, projectName);
+        }
         return null;
       }
       break;
@@ -188,7 +311,7 @@ export async function selectAreaPaths(
 
   const confirmed = await confirm({
     message: `Use these ${selectedAreas.length} area paths?`,
-    default: true
+    default: true,
   });
 
   if (!confirmed) {
