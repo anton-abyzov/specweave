@@ -20,7 +20,7 @@ interface ADOWorkItem {
     'System.CreatedDate': string;
     'System.ChangedDate': string;
     'System.Tags'?: string; // Semicolon-separated
-    'System.AreaPath'?: string; // e.g., "OlySense\\Platform-Engineering"
+    'System.AreaPath'?: string; // e.g., "MyProject\\Platform-Engineering"
     'Microsoft.VSTS.Common.Priority'?: number;
     'Microsoft.VSTS.Common.AcceptanceCriteria'?: string;
     'System.Parent'?: {

@@ -14,10 +14,10 @@ structure: user-stories
 
 ## Problem Statement
 
-The Azure DevOps (ADO) initialization flow has **4 critical bugs** discovered during real-world testing with `olympusnova/OlySense`:
+The Azure DevOps (ADO) initialization flow has **4 critical bugs** discovered during real-world testing with `acme-org/Acme`:
 
 1. **Area path CREATION despite read-only permissions** - Validator attempts to CREATE area paths even when user said "No" to all sync permissions
-2. **Wrong project folder naming** - Creates `ADO-OlySense` instead of `OlySense`
+2. **Wrong project folder naming** - Creates `ADO-Acme` instead of `Acme`
 3. **Work items not sorted by area path** - All items go to parent folder, not organized into area-path subfolders
 4. **Missing repo cloning step** - For multi-repo setups, no step to configure repo cloning pattern (e.g., `sw-*`)
 
@@ -35,8 +35,8 @@ The Azure DevOps (ADO) initialization flow has **4 critical bugs** discovered du
 
 - **Location**: `src/cli/helpers/issue-tracker/ado.ts:387`
 - **Code**: `const adoProjectDir = path.join(specsDir, \`ADO-\${projectName}\`);`
-- **Expected**: User specified project name `OlySense`, folder should be `OlySense`
-- **Actual**: Creates `ADO-OlySense`
+- **Expected**: User specified project name `Acme`, folder should be `Acme`
+- **Actual**: Creates `ADO-Acme`
 - **Impact**: Mismatch between user expectation and folder naming
 
 ### Bug 3: Work Items Not Sorted by Area Path
@@ -77,7 +77,7 @@ The Azure DevOps (ADO) initialization flow has **4 critical bugs** discovered du
 **So that** folder names are intuitive and consistent
 
 #### Acceptance Criteria:
-- [x] **AC-US2-01**: Use project name directly without prefix: `OlySense` not `ADO-OlySense`
+- [x] **AC-US2-01**: Use project name directly without prefix: `Acme` not `ADO-Acme`
 - [~] **AC-US2-02**: OR make prefix configurable in config.json (SKIPPED - chose option 1)
 - [x] **AC-US2-03**: Import and folder creation must use same naming convention
 - [~] **AC-US2-04**: Document the naming convention in ADR (SKIPPED - trivial change)

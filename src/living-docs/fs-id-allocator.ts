@@ -86,7 +86,7 @@ export interface FSIdAllocatorOptions {
    *
    * When provided, creates features in 2-level structure:
    * - JIRA: specs/JIRA-{containerId}/{projectId}/FS-XXX/
-   * - ADO: specs/ADO-{containerId}/{projectId}/FS-XXX/
+   * - ADO: specs/{containerId}/{projectId}/FS-XXX/ (no ADO- prefix)
    *
    * When NOT provided (default), creates in 1-level structure:
    * - GitHub: specs/{projectId}/FS-XXX/
@@ -138,16 +138,19 @@ export class FSIdAllocator {
    *
    * Structure patterns:
    * - 2-level (JIRA): specs/JIRA-{containerId}/{projectId}/
-   * - 2-level (ADO): specs/ADO-{containerId}/{projectId}/
+   * - 2-level (ADO): specs/{containerId}/{projectId}/ (no ADO- prefix)
    * - 1-level (GitHub): specs/{projectId}/
    * - Legacy: specs/ (no projectId)
    */
   private getBaseDirectory(): string {
     if (this.externalContainer) {
       // 2-level structure for JIRA/ADO
-      const containerType = this.externalContainer.type === 'jira-project' ? 'jira' : 'ado';
-      const containerDirName = `${containerType.toUpperCase()}-${normalizeToProjectId(this.externalContainer.containerId)}`;
-      const projectId = this.projectId || 'default';
+      // JIRA keeps prefix for clarity, ADO uses clean project name
+      const isJira = this.externalContainer.type === 'jira-project';
+      const containerDirName = isJira
+        ? `JIRA-${normalizeToProjectId(this.externalContainer.containerId)}`
+        : normalizeToProjectId(this.externalContainer.containerId);
+      const projectId = this.projectId || '_default';
 
       return path.join(
         this.specsPath,
@@ -212,7 +215,7 @@ export class FSIdAllocator {
    * - specs/{project}/FS-XXX/ (1-level: all project folders)
    * - specs/{project}/_archive/FS-XXX/ (1-level archived)
    * - specs/JIRA-{container}/{project}/FS-XXX/ (2-level JIRA)
-   * - specs/ADO-{container}/{project}/FS-XXX/ (2-level ADO)
+   * - specs/{container}/{project}/FS-XXX/ (2-level ADO - no prefix)
    * - specs/JIRA-{container}/{project}/_archive/FS-XXX/ (2-level archived)
    */
   private async scanAllProjects(): Promise<void> {
@@ -664,7 +667,7 @@ export class FSIdAllocator {
    *
    * Structure patterns:
    * - 2-level (JIRA): specs/JIRA-{containerId}/{projectId}/FS-XXX/FEATURE.md
-   * - 2-level (ADO): specs/ADO-{containerId}/{projectId}/FS-XXX/FEATURE.md
+   * - 2-level (ADO): specs/{containerId}/{projectId}/FS-XXX/FEATURE.md (no prefix)
    * - 1-level (GitHub): specs/{projectId}/FS-XXX/FEATURE.md
    * - Legacy: specs/FS-XXX/FEATURE.md (not recommended for umbrella)
    *

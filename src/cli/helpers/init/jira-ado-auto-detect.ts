@@ -622,8 +622,8 @@ export async function confirmAdoMapping(
   console.log('');
   const modeDescriptions = {
     'simple': 'All items → specs/ado/',
-    'by-project': 'specs/ADO-{PROJECT}/',
-    'by-area': 'specs/ADO-{PROJECT}/{area}/ (2-level)',
+    'by-project': 'specs/{PROJECT}/',
+    'by-area': 'specs/{PROJECT}/{area}/ (2-level)',
   };
 
   console.log(chalk.green(`💡 Recommended: ${modeDescriptions[structure.recommendedMode]}`));
@@ -638,11 +638,11 @@ export async function confirmAdoMapping(
         value: 'simple',
       },
       {
-        name: `${structure.recommendedMode === 'by-project' ? '● ' : '○ '}By Project (specs/ADO-{PROJECT}/)`,
+        name: `${structure.recommendedMode === 'by-project' ? '● ' : '○ '}By Project (specs/{PROJECT}/)`,
         value: 'by-project',
       },
       {
-        name: `${structure.recommendedMode === 'by-area' ? '● ' : '○ '}By Area Path (specs/ADO-{PROJECT}/{area}/) [2-level]`,
+        name: `${structure.recommendedMode === 'by-area' ? '● ' : '○ '}By Area Path (specs/{PROJECT}/{area}/) [2-level]`,
         value: 'by-area',
       },
     ],
@@ -659,15 +659,15 @@ export async function confirmAdoMapping(
     if (mode === 'simple') {
       areaMappings.set('*', 'ado');
     } else if (mode === 'by-project') {
-      areaMappings.set('*', `ADO-${projectFolder}`);
+      areaMappings.set('*', projectFolder);
     } else {
       // by-area: each area path gets its own folder
       if (project.areaPaths.length === 0) {
-        areaMappings.set('*', `ADO-${projectFolder}/default`);
+        areaMappings.set('*', `${projectFolder}/_default`);
       } else {
         for (const area of project.areaPaths) {
           const areaFolder = normalizeToProjectId(area.name);
-          areaMappings.set(area.path, `ADO-${projectFolder}/${areaFolder}`);
+          areaMappings.set(area.path, `${projectFolder}/${areaFolder}`);
         }
       }
     }
