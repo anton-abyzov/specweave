@@ -812,38 +812,91 @@ async function writeSyncConfig(
     };
   } else if (tracker === 'ado') {
     const adoCreds = credentials as any;
-    profiles[`${tracker}-default`] = {
-      provider: 'ado',
-      displayName: 'Azure DevOps Default',
-      config: {
-        organization,
-        project,
-        // Include full ADO config (teams, areas, strategy) - NOT secrets!
-        ...(adoCreds.team ? { team: adoCreds.team } : {}),
-        ...(adoCreds.teams?.length ? { teams: adoCreds.teams } : {}),
-        ...(adoCreds.areaPaths?.length ? { areaPaths: adoCreds.areaPaths } : {}),
-        ...(adoCreds.strategy ? { strategy: adoCreds.strategy } : {})
-      },
-      timeRange: {
-        default: '1M',
-        max: '6M'
+
+    // Handle multi-project configuration (new in v0.28.x - AC-US5-04)
+    if (adoCreds.projects && adoCreds.projects.length > 0) {
+      let activeProfile = '';
+
+      // Create a profile for each project
+      for (const proj of adoCreds.projects) {
+        const profileId = `ado-${proj.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+
+        profiles[profileId] = {
+          provider: 'ado',
+          displayName: `Azure DevOps - ${proj.name}`,
+          config: {
+            organization,
+            project: proj.name,
+            ...(proj.areaPaths?.length ? { areaPaths: proj.areaPaths } : {}),
+            ...(adoCreds.strategy ? { strategy: adoCreds.strategy } : {})
+          },
+          timeRange: {
+            default: '1M',
+            max: '6M'
+          }
+        };
+
+        // Set default profile
+        if (proj.isDefault) {
+          activeProfile = profileId;
+        }
       }
-    };
-    config.sync = {
-      enabled: true,
-      direction: 'bidirectional' as const,
-      autoSync: false,
-      provider: tracker,                                    // NEW: Exclusive provider
-      includeStatus: syncSettings.includeStatus,            // NEW: Status sync toggle
-      autoApplyLabels: syncSettings.autoApplyLabels,        // NEW: Auto-labeling
-      activeProfile: `${tracker}-default`,
-      settings: {
-        canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
-        canUpdateExternalItems: syncPermissions.canUpdateExternalItems,
-        canUpdateStatus: syncPermissions.canUpdateStatus
-      },
-      profiles
-    };
+
+      // Fallback to first profile if no default set
+      if (!activeProfile) {
+        activeProfile = Object.keys(profiles)[0];
+      }
+
+      config.sync = {
+        enabled: true,
+        direction: 'bidirectional' as const,
+        autoSync: false,
+        provider: tracker,
+        includeStatus: syncSettings.includeStatus,
+        autoApplyLabels: syncSettings.autoApplyLabels,
+        activeProfile,
+        settings: {
+          canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
+          canUpdateExternalItems: syncPermissions.canUpdateExternalItems,
+          canUpdateStatus: syncPermissions.canUpdateStatus
+        },
+        profiles
+      };
+    } else {
+      // Single project configuration (backward compatibility)
+      profiles[`${tracker}-default`] = {
+        provider: 'ado',
+        displayName: 'Azure DevOps Default',
+        config: {
+          organization,
+          project,
+          // Include full ADO config (teams, areas, strategy) - NOT secrets!
+          ...(adoCreds.team ? { team: adoCreds.team } : {}),
+          ...(adoCreds.teams?.length ? { teams: adoCreds.teams } : {}),
+          ...(adoCreds.areaPaths?.length ? { areaPaths: adoCreds.areaPaths } : {}),
+          ...(adoCreds.strategy ? { strategy: adoCreds.strategy } : {})
+        },
+        timeRange: {
+          default: '1M',
+          max: '6M'
+        }
+      };
+      config.sync = {
+        enabled: true,
+        direction: 'bidirectional' as const,
+        autoSync: false,
+        provider: tracker,
+        includeStatus: syncSettings.includeStatus,
+        autoApplyLabels: syncSettings.autoApplyLabels,
+        activeProfile: `${tracker}-default`,
+        settings: {
+          canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
+          canUpdateExternalItems: syncPermissions.canUpdateExternalItems,
+          canUpdateStatus: syncPermissions.canUpdateStatus
+        },
+        profiles
+      };
+    }
   }
 
   // Write config using ConfigManager
