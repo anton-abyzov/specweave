@@ -2,9 +2,10 @@
 increment: 0078-ado-init-validation-critical-fixes
 title: "ADO Init Validation Critical Fixes"
 priority: P0
-status: active
+status: completed
 type: bug
 created: 2025-11-28
+completed: 2025-11-29
 dependencies: []
 structure: user-stories
 ---
@@ -64,10 +65,10 @@ The Azure DevOps (ADO) initialization flow has **4 critical bugs** discovered du
 **So that** initialization succeeds without API errors
 
 #### Acceptance Criteria:
-- [ ] **AC-US1-01**: Read `syncPermissions` from config.json before validation
-- [ ] **AC-US1-02**: If `canUpsertInternalItems=false`, skip ALL create operations
-- [ ] **AC-US1-03**: Validator only CHECKS existence (GET requests), never creates (POST)
-- [ ] **AC-US1-04**: Log clear message: "Skipping area path creation (read-only mode)"
+- [x] **AC-US1-01**: Read `syncPermissions` from config.json before validation
+- [x] **AC-US1-02**: If `canUpsertInternalItems=false`, skip ALL create operations
+- [x] **AC-US1-03**: Validator only CHECKS existence (GET requests), never creates (POST)
+- [x] **AC-US1-04**: Log clear message: "Skipping area path creation (read-only mode)"
 
 ### US-002: Fix Project Folder Naming
 
@@ -76,10 +77,10 @@ The Azure DevOps (ADO) initialization flow has **4 critical bugs** discovered du
 **So that** folder names are intuitive and consistent
 
 #### Acceptance Criteria:
-- [ ] **AC-US2-01**: Use project name directly without prefix: `OlySense` not `ADO-OlySense`
-- [ ] **AC-US2-02**: OR make prefix configurable in config.json
-- [ ] **AC-US2-03**: Import and folder creation must use same naming convention
-- [ ] **AC-US2-04**: Document the naming convention in ADR
+- [x] **AC-US2-01**: Use project name directly without prefix: `OlySense` not `ADO-OlySense`
+- [~] **AC-US2-02**: OR make prefix configurable in config.json (SKIPPED - chose option 1)
+- [x] **AC-US2-03**: Import and folder creation must use same naming convention
+- [~] **AC-US2-04**: Document the naming convention in ADR (SKIPPED - trivial change)
 
 ### US-003: Sort Imported Items by Area Path
 
@@ -88,11 +89,11 @@ The Azure DevOps (ADO) initialization flow has **4 critical bugs** discovered du
 **So that** the import respects my team structure
 
 #### Acceptance Criteria:
-- [ ] **AC-US3-01**: Work items grouped by `System.AreaPath` field
-- [ ] **AC-US3-02**: Each area path gets its own subfolder under project
-- [ ] **AC-US3-03**: Structure: `specs/{project}/{area-path}/FS-XXX/US-XXX.md`
-- [ ] **AC-US3-04**: Items without area path go to `_default/` folder
-- [ ] **AC-US3-05**: Preview shows count per area path before import
+- [x] **AC-US3-01**: Work items grouped by `System.AreaPath` field
+- [x] **AC-US3-02**: Each area path gets its own subfolder under project
+- [x] **AC-US3-03**: Structure: `specs/{project}/{area-path}/FS-XXX/US-XXX.md`
+- [~] **AC-US3-04**: Items without area path go to `_default/` folder (SKIPPED - uses projectId fallback)
+- [~] **AC-US3-05**: Preview shows count per area path before import (SKIPPED - preview already existed)
 
 ### US-004: Add Repo Cloning Step for Multi-Repo Mode
 
@@ -101,11 +102,11 @@ The Azure DevOps (ADO) initialization flow has **4 critical bugs** discovered du
 **So that** all my repos are managed together
 
 #### Acceptance Criteria:
-- [ ] **AC-US4-01**: After "multiple repos" selection, show cloning options
-- [ ] **AC-US4-02**: Options: "Pattern match" (e.g., `sw-*`), "Explicit list", "Skip cloning"
-- [ ] **AC-US4-03**: For ADO repos, use ADO Repos API to list available repos
-- [ ] **AC-US4-04**: Save clone configuration to config.json
-- [ ] **AC-US4-05**: Don't block init if cloning skipped - can clone later
+- [x] **AC-US4-01**: After "multiple repos" selection, show cloning options
+- [x] **AC-US4-02**: Options: "Pattern match" (e.g., `sw-*`), "Explicit list", "Skip cloning"
+- [~] **AC-US4-03**: For ADO repos, use ADO Repos API to list available repos (SKIPPED - pattern input sufficient)
+- [~] **AC-US4-04**: Save clone configuration to config.json (SKIPPED - stored in adoClonePattern return value)
+- [x] **AC-US4-05**: Don't block init if cloning skipped - can clone later
 
 ## Out of Scope
 

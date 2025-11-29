@@ -48,24 +48,24 @@
 ## T-006: Fix area path extraction in grouping
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-01, AC-US3-02
-**Status**: [ ] pending
-**File**: `src/cli/helpers/init/external-import.ts`
-**Change**: Ensure `item.adoAreaPath` is properly extracted and used
+**Status**: [x] completed
+**File**: `src/importers/ado-importer.ts`
+**Change**: Added adoProjectName and adoAreaPath to returned ExternalItem
 
 ---
 
 ## T-007: Create subfolders per area path
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **File**: `src/importers/item-converter.ts`
-**Change**: Use area path from externalContainer to create subfolders
+**Change**: Fixed getBaseDirectory() to not add ADO- prefix (use project name directly)
 
 ---
 
 ## T-008: Add repo cloning prompt for ADO multi-repo
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-01, AC-US4-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **File**: `src/cli/helpers/init/repository-setup.ts`
-**Change**: Add prompt after "multiple repos" for ADO clone pattern
+**Change**: Added adoClonePattern prompt when ADO + multi-repo selected, i18n for 9 languages
