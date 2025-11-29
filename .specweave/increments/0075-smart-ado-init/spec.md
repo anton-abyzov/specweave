@@ -98,7 +98,7 @@ Current ADO init flow has critical issues:
 ### New Prompt Flow
 
 ```
-1. Azure DevOps organization name: acmenova
+1. Azure DevOps organization name: acme-org
 2. Project name: Acme
 3. Paste your Personal Access Token: ****
 4. Testing connection... ✓ Connected to Acme
@@ -129,7 +129,7 @@ Current ADO init flow has critical issues:
       "ado-default": {
         "provider": "ado",
         "config": {
-          "organization": "acmenova",
+          "organization": "acme-org",
           "project": "Acme",
           "areaPaths": [
             "Acme\\Digital-Service-Operations"

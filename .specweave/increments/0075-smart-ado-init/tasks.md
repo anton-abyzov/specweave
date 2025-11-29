@@ -104,5 +104,5 @@
 **User Story**: All
 **Satisfies ACs**: All
 **Status**: [x] completed
-**Test**: Manual integration test with acmenova/Acme
+**Test**: Manual integration test with acme-org/Acme
 **Implementation**: Code reviewed and verified - all features implemented correctly

@@ -57,7 +57,7 @@ Fix 5 critical bugs in the ADO init flow to make it production-ready for enterpr
 
 ## Testing Strategy
 
-1. Manual test with acmenova/Acme
+1. Manual test with acme-org/Acme
 2. Verify no area path creation attempts (only GET requests)
 3. Verify items organized by area path folders
 4. Verify multi-project selection works

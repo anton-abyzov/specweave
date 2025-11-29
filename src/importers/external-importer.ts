@@ -83,7 +83,7 @@ export interface ExternalItem {
 
   /**
    * ADO project name (e.g., "MyProduct")
-   * Used for 2-level directory: specs/ADO-{projectName}/{areaPathMapping}/
+   * Used for 2-level directory: specs/{projectName}/{areaPathMapping}/
    */
   adoProjectName?: string;
 

@@ -2,9 +2,10 @@
 increment: 0079-ado-init-flow-v2
 title: "ADO Init Flow V2 - Critical Fixes"
 priority: P0
-status: active
+status: completed
 type: bug
 created: 2025-11-29
+completed: 2025-11-29
 dependencies: []
 structure: user-stories
 ---
@@ -13,7 +14,7 @@ structure: user-stories
 
 ## Problem Statement
 
-The Azure DevOps init flow has **5 critical bugs** discovered during real-world testing with `acmenova/Acme`:
+The Azure DevOps init flow has **5 critical bugs** discovered during real-world testing with `acme-org/Acme`:
 
 ### Bug 1: Area Path CREATION Instead of VALIDATION
 - User selects EXISTING area paths (`Acme\Platform-Engineering`)

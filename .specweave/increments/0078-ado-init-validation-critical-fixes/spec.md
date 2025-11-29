@@ -14,7 +14,7 @@ structure: user-stories
 
 ## Problem Statement
 
-The Azure DevOps (ADO) initialization flow has **4 critical bugs** discovered during real-world testing with `acmenova/Acme`:
+The Azure DevOps (ADO) initialization flow has **4 critical bugs** discovered during real-world testing with `acme-org/Acme`:
 
 1. **Area path CREATION despite read-only permissions** - Validator attempts to CREATE area paths even when user said "No" to all sync permissions
 2. **Wrong project folder naming** - Creates `ADO-Acme` instead of `Acme`

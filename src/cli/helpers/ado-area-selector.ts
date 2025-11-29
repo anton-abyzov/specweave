@@ -197,7 +197,7 @@ export async function selectAreaPaths(
   }
 
   // Build final configuration - store LEAF NAMES only to prevent double-prefix bugs
-  // Full paths like "Acme\Platform-Engineering" become just "Platform-Engineering"
+  // Full paths like "MyProject\Platform-Engineering" become just "Platform-Engineering"
   selectionConfig.areaPaths = selectedAreas.map(a => a.name);
 
   console.log(chalk.green(`\n✅ Selected ${selectionConfig.areaPaths.length} area paths\n`));
