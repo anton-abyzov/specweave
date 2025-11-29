@@ -123,15 +123,24 @@ export function detectADOConfig(targetDir: string): ADOConfig | null {
       ) as any;
 
       if (adoProfile?.config) {
-        const { organization, project, teams, areaPaths, strategy } = adoProfile.config;
-        if (organization && project) {
+        const { organization, project, projects, teams, areaPaths, strategy } = adoProfile.config;
+
+        // Handle both single-project (project) and multi-project (projects) modes
+        // For multi-project, use first project as the "primary" for backwards compatibility
+        const primaryProject = project || (Array.isArray(projects) && projects.length > 0
+          ? (projects[0]?.name || projects[0])
+          : null);
+
+        if (organization && primaryProject) {
           return {
             orgUrl: `https://dev.azure.com/${organization}`,
-            project,
+            project: primaryProject,
             pat,
             teams,
             areaPaths,
-            strategy
+            strategy,
+            // Pass the full projects array for multi-project support
+            projects: Array.isArray(projects) ? projects : undefined
           };
         }
       }
