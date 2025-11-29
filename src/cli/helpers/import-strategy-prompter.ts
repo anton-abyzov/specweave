@@ -2,8 +2,10 @@
  * Import Strategy Prompter
  *
  * Provides CLI-first UI for selecting import strategy with "Import all" as default.
- * Supports three strategies:
+ * Supports five strategies (unified with GitHub/ADO):
  * - import-all (default, recommended)
+ * - pattern-glob (glob pattern matching)
+ * - pattern-regex (regex pattern matching)
  * - select-specific (checkbox mode with all pre-checked)
  * - manual-entry (comma-separated project keys)
  *
@@ -13,11 +15,12 @@
 import { select, input, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { parsePatternShortcut, validateRegex } from './selection-strategy.js';
 
 /**
  * Import strategy options
  */
-export type ImportStrategy = 'import-all' | 'select-specific' | 'manual-entry';
+export type ImportStrategy = 'import-all' | 'pattern-glob' | 'pattern-regex' | 'select-specific' | 'manual-entry';
 
 /**
  * Strategy prompt result
@@ -25,6 +28,8 @@ export type ImportStrategy = 'import-all' | 'select-specific' | 'manual-entry';
 export interface StrategyPromptResult {
   strategy: ImportStrategy;
   projectKeys?: string[]; // For manual-entry strategy
+  pattern?: string; // For pattern strategies
+  isRegex?: boolean; // True if pattern is regex
   confirmed?: boolean; // For safety confirmation (large imports)
 }
 
@@ -43,6 +48,13 @@ export interface StrategyPrompterOptions {
  * Default: "Import all" (CLI-first approach)
  * Instructions: "All projects selected by default. Deselect unwanted projects if needed."
  *
+ * Unified options (same as GitHub/ADO):
+ * - All (import-all)
+ * - Pattern (glob)
+ * - Pattern (regex)
+ * - Select specific
+ * - Manual entry
+ *
  * @param options - Prompter options
  * @returns Strategy prompt result
  */
@@ -54,25 +66,43 @@ export async function promptImportStrategy(
   // Display project count
   logger.log(chalk.cyan(`\nFound ${totalCount} accessible ${provider.toUpperCase()} projects.`));
 
-  // Show strategy prompt
+  // Show strategy prompt - unified with GitHub/ADO
   const strategy = await select<ImportStrategy>({
-    message: 'How would you like to import projects?',
+    message: 'How would you like to select projects?',
     default: 'import-all', // CLI-first default
     choices: [
       {
-        name: chalk.green('✓ Import all projects (Recommended)') + chalk.gray(' - All selected by default'),
-        value: 'import-all' as ImportStrategy
+        name: `${chalk.green('✓')} All ${chalk.gray('- Import all projects (Recommended)')}`,
+        value: 'import-all' as ImportStrategy,
       },
       {
-        name: 'Select specific projects' + chalk.gray(' - Choose from checkbox list'),
-        value: 'select-specific' as ImportStrategy
+        name: `Pattern (glob) ${chalk.gray('- Match by pattern (e.g., "PROJ-*", "*-BACKEND")')}`,
+        value: 'pattern-glob' as ImportStrategy,
       },
       {
-        name: 'Manual entry' + chalk.gray(' - Enter project keys manually'),
-        value: 'manual-entry' as ImportStrategy
-      }
-    ]
+        name: `Pattern (regex) ${chalk.gray('- Regular expression (e.g., "^PROJ-.*$")')}`,
+        value: 'pattern-regex' as ImportStrategy,
+      },
+      {
+        name: `Select specific ${chalk.gray('- Choose from checkbox list')}`,
+        value: 'select-specific' as ImportStrategy,
+      },
+      {
+        name: `Manual entry ${chalk.gray('- Enter project keys directly')}`,
+        value: 'manual-entry' as ImportStrategy,
+      },
+    ],
   });
+
+  // Handle pattern-glob
+  if (strategy === 'pattern-glob') {
+    return await handlePatternGlob(logger);
+  }
+
+  // Handle pattern-regex
+  if (strategy === 'pattern-regex') {
+    return await handlePatternRegex(logger);
+  }
 
   // Handle manual entry
   if (strategy === 'manual-entry') {
@@ -91,6 +121,62 @@ export async function promptImportStrategy(
   }
 
   return { strategy };
+}
+
+/**
+ * Handle pattern (glob) workflow
+ *
+ * @param logger - Logger instance
+ * @returns Strategy result with pattern
+ */
+async function handlePatternGlob(logger: Logger): Promise<StrategyPromptResult> {
+  logger.log(chalk.gray('\n💡 Examples: "PROJ-*", "*-BACKEND", "TEAM-*-SERVICE"'));
+  logger.log(chalk.gray('💡 Shortcuts: "starts: PROJ-", "ends: -API", "contains: CORE"\n'));
+
+  const patternInput = await input({
+    message: 'Enter pattern:',
+    validate: (val: string) => {
+      if (!val.trim()) {
+        return chalk.red('Pattern is required');
+      }
+      return true;
+    },
+  });
+
+  // Parse shortcuts and return
+  const parsedPattern = parsePatternShortcut(patternInput.trim());
+
+  logger.log(chalk.green(`\n✓ Projects matching pattern "${parsedPattern}" will be imported`));
+
+  return { strategy: 'pattern-glob', pattern: parsedPattern };
+}
+
+/**
+ * Handle pattern (regex) workflow
+ *
+ * @param logger - Logger instance
+ * @returns Strategy result with pattern
+ */
+async function handlePatternRegex(logger: Logger): Promise<StrategyPromptResult> {
+  logger.log(chalk.gray('\n💡 Examples: "^PROJ-", ".*-BACKEND$", "^TEAM-\\d+-SERVICE$"\n'));
+
+  const patternInput = await input({
+    message: 'Enter regex pattern:',
+    validate: (val: string) => {
+      if (!val.trim()) {
+        return chalk.red('Pattern is required');
+      }
+      const validation = validateRegex(val.trim());
+      if (validation !== true) {
+        return chalk.red(`Invalid regular expression: ${validation}`);
+      }
+      return true;
+    },
+  });
+
+  logger.log(chalk.green(`\n✓ Projects matching regex "${patternInput.trim()}" will be imported`));
+
+  return { strategy: 'pattern-regex', pattern: patternInput.trim(), isRegex: true };
 }
 
 /**
