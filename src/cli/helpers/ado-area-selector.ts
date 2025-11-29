@@ -196,8 +196,9 @@ export async function selectAreaPaths(
     return null;
   }
 
-  // Build final configuration
-  selectionConfig.areaPaths = selectedAreas.map(a => a.path);
+  // Build final configuration - store LEAF NAMES only to prevent double-prefix bugs
+  // Full paths like "OlySense\Platform-Engineering" become just "Platform-Engineering"
+  selectionConfig.areaPaths = selectedAreas.map(a => a.name);
 
   console.log(chalk.green(`\n✅ Selected ${selectionConfig.areaPaths.length} area paths\n`));
 

@@ -33,10 +33,9 @@ export class AzureDevOpsResourceValidator {
   private areaPaths: string[];
   private envPath: string;
   private configPath: string;
-  private readOnly: boolean;
 
-  constructor(envPath: string = '.env', options: { readOnly?: boolean } = {}) {
-    this.readOnly = options.readOnly ?? false;
+  // NOTE: readOnly option removed - validation is ALWAYS read-only now (no create operations)
+  constructor(envPath: string = '.env', _options: { readOnly?: boolean } = {}) {
     this.envPath = envPath;
     // Derive config.json path from .env path
     const envDir = envPath.replace(/\.env$/, '');
@@ -270,7 +269,55 @@ export class AzureDevOpsResourceValidator {
   }
 
   /**
-   * Create area path in project
+   * Check if area path exists in project (GET-only, no create)
+   *
+   * @param projectName - Project name
+   * @param areaPath - Full area path (e.g., "OlySense\\Platform-Engineering") or leaf name
+   * @returns Area path info if exists, null otherwise
+   */
+  async checkAreaPathExists(projectName: string, areaPath: string): Promise<AzureDevOpsAreaPath | null> {
+    // Extract leaf name if full path is provided (handles "OlySense\Platform-Engineering" -> "Platform-Engineering")
+    const leafName = areaPath.includes('\\') ? areaPath.split('\\').pop()! : areaPath;
+
+    try {
+      // Fetch all area paths for the project
+      const response = await this.callAzureDevOpsApi(
+        `wit/classificationnodes/areas/${encodeURIComponent(projectName)}?$depth=10&api-version=7.0`
+      );
+
+      // Search for matching area path in the tree
+      const findAreaPath = (node: any, searchName: string): any => {
+        if (node.name === searchName) {
+          return node;
+        }
+        if (node.children) {
+          for (const child of node.children) {
+            const found = findAreaPath(child, searchName);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+
+      const found = findAreaPath(response, leafName);
+      if (found) {
+        return {
+          id: found.id,
+          name: found.name,
+          path: found.path,
+        };
+      }
+
+      return null;
+    } catch (error: any) {
+      // API error - treat as not found
+      return null;
+    }
+  }
+
+  /**
+   * Create area path in project (kept for backwards compatibility, but not used in validation)
+   * @deprecated Use checkAreaPathExists() for validation instead
    */
   async createAreaPath(projectName: string, areaName: string): Promise<AzureDevOpsAreaPath> {
     console.log(chalk.blue(`  📦 Creating area path: ${projectName}\\${areaName}...`));
@@ -506,72 +553,54 @@ export class AzureDevOpsResourceValidator {
 
     console.log(); // Empty line after project validation
 
-    // 2. Validate area paths (from config.json)
+    // 2. Validate area paths (from config.json) - ALWAYS read-only, never create
     result.areaPaths = [];
 
     if (this.areaPaths.length > 0) {
-      // CRITICAL FIX: When readOnly=true, skip ALL create operations
-      if (this.readOnly) {
-        console.log(chalk.gray(`Skipping area path validation (read-only mode)`));
-        // Mark all as "exists" without verification - we trust user's selection
-        for (const areaName of this.areaPaths) {
-          result.areaPaths.push({ name: areaName, exists: true, created: false });
-        }
-      } else {
-        console.log(chalk.gray(`Checking area paths from config.json...`));
+      console.log(chalk.gray(`Validating area paths...`));
 
-        const projectName = projectNames[0]; // Single project for now
+      const projectName = projectNames[0]; // Single project for now
 
-        for (const areaName of this.areaPaths) {
-          try {
-            await this.createAreaPath(projectName, areaName);
-            result.areaPaths.push({ name: areaName, exists: false, created: true });
-          } catch (error: any) {
-            if (error.message.includes('already exists')) {
-              console.log(chalk.green(`  ✅ Area path exists: ${projectName}\\${areaName}`));
-              result.areaPaths.push({ name: areaName, exists: true, created: false });
-            } else {
-              console.log(chalk.red(`  ❌ Failed to create/validate area path: ${areaName}`));
-              result.valid = false;
-            }
-          }
+      for (const areaPath of this.areaPaths) {
+        // Extract leaf name for display (handles full paths like "OlySense\Platform-Engineering")
+        const leafName = areaPath.includes('\\') ? areaPath.split('\\').pop()! : areaPath;
+
+        const existingArea = await this.checkAreaPathExists(projectName, areaPath);
+
+        if (existingArea) {
+          console.log(chalk.green(`  ✅ Area path exists: ${projectName}\\${leafName}`));
+          result.areaPaths.push({ name: leafName, exists: true, created: false });
+        } else {
+          console.log(chalk.yellow(`  ⚠️  Area path not found: ${projectName}\\${leafName}`));
+          console.log(chalk.gray(`      This area path was selected but doesn't exist in ADO.`));
+          console.log(chalk.gray(`      Items may be imported to _default folder instead.`));
+          // Don't mark as invalid - just warn. User may have selected incorrectly.
+          result.areaPaths.push({ name: leafName, exists: false, created: false });
         }
       }
 
       console.log();
     }
 
-    // 3. Validate teams (from config.json)
+    // 3. Validate teams (from config.json) - read-only validation only
+    // NOTE: Teams are being deprecated from init flow. This section kept for backwards compatibility.
     result.teams = [];
 
     if (this.teams.length > 0) {
-      // CRITICAL FIX: When readOnly=true, skip team create operations
-      if (this.readOnly) {
-        console.log(chalk.gray(`Skipping team validation (read-only mode)`));
-        for (const teamName of this.teams) {
-          result.teams.push({ name: teamName, exists: true, created: false });
-        }
-      } else {
-        console.log(chalk.gray(`Checking teams from config.json...`));
+      console.log(chalk.gray(`Validating teams...`));
 
-        const projectName = projectNames[0]; // Single project for now
-        const existingTeams = await this.fetchTeams(projectName);
+      const projectName = projectNames[0]; // Single project for now
+      const existingTeams = await this.fetchTeams(projectName);
 
-        for (const teamName of this.teams) {
-          const team = existingTeams.find(t => t.name === teamName);
+      for (const teamName of this.teams) {
+        const team = existingTeams.find(t => t.name === teamName);
 
-          if (team) {
-            console.log(chalk.green(`  ✅ Team exists: ${teamName}`));
-            result.teams.push({ name: teamName, id: team.id, exists: true, created: false });
-          } else {
-            try {
-              const newTeam = await this.createTeam(projectName, teamName);
-              result.teams.push({ name: teamName, id: newTeam.id, exists: false, created: true });
-            } catch (error: any) {
-              console.log(chalk.red(`  ❌ Failed to create team: ${teamName}`));
-              result.valid = false;
-            }
-          }
+        if (team) {
+          console.log(chalk.green(`  ✅ Team exists: ${teamName}`));
+          result.teams.push({ name: teamName, id: team.id, exists: true, created: false });
+        } else {
+          console.log(chalk.yellow(`  ⚠️  Team not found: ${teamName}`));
+          result.teams.push({ name: teamName, exists: false, created: false });
         }
       }
 
