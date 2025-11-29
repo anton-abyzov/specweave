@@ -28,6 +28,7 @@ export class AzureDevOpsResourceValidator {
   private pat: string;
   private organization: string;
   private project: string;
+  private projects: string[]; // Multi-project support
   private strategy: string;
   private teams: string[];
   private areaPaths: string[];
@@ -49,6 +50,7 @@ export class AzureDevOpsResourceValidator {
     const config = this.loadConfig();
     this.organization = config.organization || env.AZURE_DEVOPS_ORG || '';
     this.project = config.project || '';
+    this.projects = config.projects || []; // Multi-project support
     this.strategy = config.strategy || 'area-path-based';
     this.teams = config.teams || [];
     this.areaPaths = config.areaPaths || [];
@@ -84,7 +86,7 @@ export class AzureDevOpsResourceValidator {
   /**
    * Load config from .specweave/config.json
    */
-  private loadConfig(): { organization?: string; project?: string; strategy?: string; teams?: string[]; areaPaths?: string[] } {
+  private loadConfig(): { organization?: string; project?: string; projects?: string[]; strategy?: string; teams?: string[]; areaPaths?: string[] } {
     try {
       if (!fs.existsSync(this.configPath)) {
         return {};
@@ -103,6 +105,7 @@ export class AzureDevOpsResourceValidator {
         return {
           organization: adoProfile.config.organization,
           project: adoProfile.config.project,
+          projects: adoProfile.config.projects, // Multi-project support
           strategy: adoProfile.config.strategy,
           teams: adoProfile.config.teams,
           areaPaths: adoProfile.config.areaPaths
@@ -427,25 +430,17 @@ export class AzureDevOpsResourceValidator {
     // Determine project names based on strategy (from config.json)
     let projectNames: string[] = [];
 
-    if (strategy === 'project-per-team') {
-      // Multiple projects - NOT YET SUPPORTED in config.json
-      // For now, fall back to single project
-      if (!this.project) {
-        console.log(chalk.red('❌ Azure DevOps project not found in config.json'));
-        console.log(chalk.gray('   Expected in: .specweave/config.json → sync.profiles.*.config.project'));
-        result.valid = false;
-        return result;
-      }
+    // Multi-project support: use projects array if available
+    if (this.projects && this.projects.length > 0) {
+      projectNames = this.projects;
+    } else if (this.project) {
+      // Fallback to single project
       projectNames = [this.project];
     } else {
-      // Single project (area-path-based or team-based)
-      if (!this.project) {
-        console.log(chalk.red('❌ Azure DevOps project not found in config.json'));
-        console.log(chalk.gray('   Expected in: .specweave/config.json → sync.profiles.*.config.project'));
-        result.valid = false;
-        return result;
-      }
-      projectNames = [this.project];
+      console.log(chalk.red('❌ Azure DevOps project not found in config.json'));
+      console.log(chalk.gray('   Expected in: .specweave/config.json → sync.profiles.*.config.project or projects'));
+      result.valid = false;
+      return result;
     }
 
     console.log(chalk.gray(`Strategy: ${strategy}`));
@@ -559,23 +554,40 @@ export class AzureDevOpsResourceValidator {
     if (this.areaPaths.length > 0) {
       console.log(chalk.gray(`Validating area paths...`));
 
-      const projectName = projectNames[0]; // Single project for now
+      // For multi-project, validate area paths against their respective projects
+      for (const projectName of projectNames) {
+        for (const areaPath of this.areaPaths) {
+          // Extract leaf name for display (handles full paths like "MyProject\Platform-Engineering")
+          const leafName = areaPath.includes('\\') ? areaPath.split('\\').pop()! : areaPath;
 
-      for (const areaPath of this.areaPaths) {
-        // Extract leaf name for display (handles full paths like "MyProject\Platform-Engineering")
-        const leafName = areaPath.includes('\\') ? areaPath.split('\\').pop()! : areaPath;
+          // Skip area paths that don't belong to this project
+          // (full path starts with different project name)
+          if (areaPath.includes('\\') && !areaPath.startsWith(projectName)) {
+            continue;
+          }
 
-        const existingArea = await this.checkAreaPathExists(projectName, areaPath);
+          const existingArea = await this.checkAreaPathExists(projectName, areaPath);
 
-        if (existingArea) {
-          console.log(chalk.green(`  ✅ Area path exists: ${projectName}\\${leafName}`));
-          result.areaPaths.push({ name: leafName, exists: true, created: false });
-        } else {
-          console.log(chalk.yellow(`  ⚠️  Area path not found: ${projectName}\\${leafName}`));
-          console.log(chalk.gray(`      This area path was selected but doesn't exist in ADO.`));
-          console.log(chalk.gray(`      Items may be imported to _default folder instead.`));
-          // Don't mark as invalid - just warn. User may have selected incorrectly.
-          result.areaPaths.push({ name: leafName, exists: false, created: false });
+          // Display path: don't show "Project\Project" for root area paths
+          const displayPath = leafName === projectName ? projectName : `${projectName}\\${leafName}`;
+
+          if (existingArea) {
+            console.log(chalk.green(`  ✅ Area path exists: ${displayPath}`));
+            result.areaPaths.push({ name: leafName, exists: true, created: false });
+          } else {
+            // For root area paths (leafName === projectName), the root always exists
+            // This is a validation edge case - root area path = project name
+            if (leafName === projectName) {
+              console.log(chalk.green(`  ✅ Area path exists: ${displayPath} (root)`));
+              result.areaPaths.push({ name: leafName, exists: true, created: false });
+            } else {
+              console.log(chalk.yellow(`  ⚠️  Area path not found: ${displayPath}`));
+              console.log(chalk.gray(`      This area path was selected but doesn't exist in ADO.`));
+              console.log(chalk.gray(`      Items may be imported to _default folder instead.`));
+              // Don't mark as invalid - just warn. User may have selected incorrectly.
+              result.areaPaths.push({ name: leafName, exists: false, created: false });
+            }
+          }
         }
       }
 
