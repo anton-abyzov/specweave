@@ -828,7 +828,9 @@ async function writeSyncConfig(
             organization,
             project: proj.name,
             ...(proj.areaPaths?.length ? { areaPaths: proj.areaPaths } : {}),
-            ...(adoCreds.strategy ? { strategy: adoCreds.strategy } : {})
+            ...(adoCreds.strategy ? { strategy: adoCreds.strategy } : {}),
+            // Mark umbrella projects (folder structure only, no items imported)
+            ...(proj.isUmbrella ? { isUmbrella: true } : {})
           },
           timeRange: {
             default: '1M',
@@ -836,8 +838,8 @@ async function writeSyncConfig(
           }
         };
 
-        // Set default profile
-        if (proj.isDefault) {
+        // Set default profile (skip umbrella projects)
+        if (proj.isDefault && !proj.isUmbrella) {
           activeProfile = profileId;
         }
       }
