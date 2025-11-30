@@ -400,20 +400,56 @@ async function handleMultiProjectSelection(
     });
   }
 
-  // Ask which project should be the default
+  // Ask about umbrella/parent project (optional)
   if (projects.length > 1) {
-    const defaultProject = await select<string>({
-      message: 'Which project should be the default for sync?',
-      choices: projects.map(p => ({
-        name: p.name,
-        value: p.name
-      })),
-      default: projects[0].name
+    const NONE_OPTION = '__none__';
+
+    const umbrellaProject = await select<string>({
+      message: 'Umbrella/parent project? (folder structure only, no items imported):',
+      choices: [
+        {
+          name: 'None - all projects have work items',
+          value: NONE_OPTION
+        },
+        ...projects.map(p => ({
+          name: p.name,
+          value: p.name
+        }))
+      ],
+      default: NONE_OPTION
     });
 
-    // Update isDefault flags
+    // Mark umbrella project (if any)
     for (const proj of projects) {
-      proj.isDefault = proj.name === defaultProject;
+      proj.isUmbrella = umbrellaProject !== NONE_OPTION && proj.name === umbrellaProject;
+    }
+
+    // Ask which project should be primary for sync (from non-umbrella projects)
+    const syncableProjects = projects.filter(p => !p.isUmbrella);
+
+    if (syncableProjects.length > 1) {
+      const defaultProject = await select<string>({
+        message: 'Primary project for sync (auto-selected when no profile specified):',
+        choices: [
+          ...syncableProjects.map(p => ({
+            name: p.name,
+            value: p.name
+          })),
+          {
+            name: 'None - always ask me which project to sync',
+            value: NONE_OPTION
+          }
+        ],
+        default: syncableProjects[0].name
+      });
+
+      // Update isDefault flags (none selected = no default)
+      for (const proj of projects) {
+        proj.isDefault = !proj.isUmbrella && defaultProject !== NONE_OPTION && proj.name === defaultProject;
+      }
+    } else if (syncableProjects.length === 1) {
+      // Only one syncable project - make it default automatically
+      syncableProjects[0].isDefault = true;
     }
   }
 

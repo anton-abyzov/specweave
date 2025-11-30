@@ -4,10 +4,13 @@
  */
 
 import chalk from 'chalk';
-import { select, input } from '@inquirer/prompts';
+import { select, input, checkbox, password } from '@inquirer/prompts';
+import ora from 'ora';
 import type { RepositoryHosting, GitHubRemote } from './types.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import { parsePatternShortcut, validateRegex } from '../selection-strategy.js';
+import { getAzureDevOpsAuth } from '../../../utils/auth-helpers.js';
+import { parseEnvFile, readEnvFile } from '../../../utils/env-file.js';
 
 /**
  * Options for repository setup
@@ -72,6 +75,14 @@ function getRepoStrings(language: SupportedLanguage): {
   adoSelectedAll: string;
   adoSelectedPattern: string;
   adoSelectedRegex: string;
+  // ADO project selection strings
+  adoOrgPrompt: string;
+  adoPatPrompt: string;
+  adoProjectPrompt: string;
+  adoProjectsSelected: string;
+  adoFetchingProjects: string;
+  adoNoProjects: string;
+  adoConnectionFailed: string;
 } {
   const strings: Record<SupportedLanguage, ReturnType<typeof getRepoStrings>> = {
     en: {
@@ -110,6 +121,14 @@ function getRepoStrings(language: SupportedLanguage): {
       adoSelectedAll: 'All repositories will be cloned',
       adoSelectedPattern: 'Repositories matching pattern "{pattern}" will be cloned',
       adoSelectedRegex: 'Repositories matching regex "{pattern}" will be cloned',
+      // ADO project selection strings
+      adoOrgPrompt: 'Azure DevOps organization name:',
+      adoPatPrompt: 'Personal Access Token (PAT):',
+      adoProjectPrompt: 'Select project(s) to clone repositories from:',
+      adoProjectsSelected: '{count} project(s) selected',
+      adoFetchingProjects: 'Fetching projects...',
+      adoNoProjects: 'No projects found in this organization',
+      adoConnectionFailed: 'Failed to connect to Azure DevOps',
     },
     ru: {
       header: '📦 Хостинг репозитория',
@@ -147,6 +166,14 @@ function getRepoStrings(language: SupportedLanguage): {
       adoSelectedAll: 'Все репозитории будут клонированы',
       adoSelectedPattern: 'Репозитории, соответствующие шаблону "{pattern}", будут клонированы',
       adoSelectedRegex: 'Репозитории, соответствующие regex "{pattern}", будут клонированы',
+      // ADO project selection strings
+      adoOrgPrompt: 'Название организации Azure DevOps:',
+      adoPatPrompt: 'Персональный токен доступа (PAT):',
+      adoProjectPrompt: 'Выберите проект(ы) для клонирования репозиториев:',
+      adoProjectsSelected: 'Выбрано проектов: {count}',
+      adoFetchingProjects: 'Загрузка проектов...',
+      adoNoProjects: 'Проекты не найдены в этой организации',
+      adoConnectionFailed: 'Не удалось подключиться к Azure DevOps',
     },
     es: {
       header: '📦 Alojamiento del repositorio',
@@ -184,6 +211,14 @@ function getRepoStrings(language: SupportedLanguage): {
       adoSelectedAll: 'Todos los repositorios serán clonados',
       adoSelectedPattern: 'Repositorios que coincidan con "{pattern}" serán clonados',
       adoSelectedRegex: 'Repositorios que coincidan con regex "{pattern}" serán clonados',
+      // ADO project selection strings
+      adoOrgPrompt: 'Nombre de la organización Azure DevOps:',
+      adoPatPrompt: 'Token de Acceso Personal (PAT):',
+      adoProjectPrompt: 'Seleccione proyecto(s) para clonar repositorios:',
+      adoProjectsSelected: '{count} proyecto(s) seleccionado(s)',
+      adoFetchingProjects: 'Obteniendo proyectos...',
+      adoNoProjects: 'No se encontraron proyectos en esta organización',
+      adoConnectionFailed: 'Error al conectar con Azure DevOps',
     },
     zh: {
       header: '📦 仓库托管',
@@ -221,6 +256,14 @@ function getRepoStrings(language: SupportedLanguage): {
       adoSelectedAll: '将克隆所有仓库',
       adoSelectedPattern: '匹配模式 "{pattern}" 的仓库将被克隆',
       adoSelectedRegex: '匹配正则 "{pattern}" 的仓库将被克隆',
+      // ADO project selection strings
+      adoOrgPrompt: 'Azure DevOps 组织名称：',
+      adoPatPrompt: '个人访问令牌 (PAT)：',
+      adoProjectPrompt: '选择要克隆仓库的项目：',
+      adoProjectsSelected: '已选择 {count} 个项目',
+      adoFetchingProjects: '正在获取项目...',
+      adoNoProjects: '在此组织中未找到项目',
+      adoConnectionFailed: '无法连接到 Azure DevOps',
     },
     de: {
       header: '📦 Repository-Hosting',
@@ -258,6 +301,14 @@ function getRepoStrings(language: SupportedLanguage): {
       adoSelectedAll: 'Alle Repositories werden geklont',
       adoSelectedPattern: 'Repositories mit Muster "{pattern}" werden geklont',
       adoSelectedRegex: 'Repositories mit Regex "{pattern}" werden geklont',
+      // ADO project selection strings
+      adoOrgPrompt: 'Azure DevOps Organisationsname:',
+      adoPatPrompt: 'Personal Access Token (PAT):',
+      adoProjectPrompt: 'Projekt(e) zum Klonen von Repositories auswählen:',
+      adoProjectsSelected: '{count} Projekt(e) ausgewählt',
+      adoFetchingProjects: 'Projekte werden abgerufen...',
+      adoNoProjects: 'Keine Projekte in dieser Organisation gefunden',
+      adoConnectionFailed: 'Verbindung zu Azure DevOps fehlgeschlagen',
     },
     fr: {
       header: '📦 Hébergement du dépôt',
@@ -295,6 +346,14 @@ function getRepoStrings(language: SupportedLanguage): {
       adoSelectedAll: 'Tous les repos seront clonés',
       adoSelectedPattern: 'Les repos correspondant à "{pattern}" seront clonés',
       adoSelectedRegex: 'Les repos correspondant au regex "{pattern}" seront clonés',
+      // ADO project selection strings
+      adoOrgPrompt: 'Nom de l\'organisation Azure DevOps:',
+      adoPatPrompt: 'Jeton d\'accès personnel (PAT):',
+      adoProjectPrompt: 'Sélectionnez le(s) projet(s) pour cloner les repos:',
+      adoProjectsSelected: '{count} projet(s) sélectionné(s)',
+      adoFetchingProjects: 'Récupération des projets...',
+      adoNoProjects: 'Aucun projet trouvé dans cette organisation',
+      adoConnectionFailed: 'Échec de connexion à Azure DevOps',
     },
     ja: {
       header: '📦 リポジトリホスティング',
@@ -332,6 +391,14 @@ function getRepoStrings(language: SupportedLanguage): {
       adoSelectedAll: 'すべてのリポジトリがクローンされます',
       adoSelectedPattern: '"{pattern}" に一致するリポジトリがクローンされます',
       adoSelectedRegex: '正規表現 "{pattern}" に一致するリポジトリがクローンされます',
+      // ADO project selection strings
+      adoOrgPrompt: 'Azure DevOps 組織名:',
+      adoPatPrompt: '個人アクセストークン (PAT):',
+      adoProjectPrompt: 'リポジトリをクローンするプロジェクトを選択:',
+      adoProjectsSelected: '{count} 個のプロジェクトを選択',
+      adoFetchingProjects: 'プロジェクトを取得中...',
+      adoNoProjects: 'この組織にプロジェクトが見つかりません',
+      adoConnectionFailed: 'Azure DevOps への接続に失敗しました',
     },
     ko: {
       header: '📦 저장소 호스팅',
@@ -369,6 +436,14 @@ function getRepoStrings(language: SupportedLanguage): {
       adoSelectedAll: '모든 저장소가 복제됩니다',
       adoSelectedPattern: '"{pattern}" 패턴과 일치하는 저장소가 복제됩니다',
       adoSelectedRegex: '정규식 "{pattern}"과 일치하는 저장소가 복제됩니다',
+      // ADO project selection strings
+      adoOrgPrompt: 'Azure DevOps 조직 이름:',
+      adoPatPrompt: '개인용 액세스 토큰 (PAT):',
+      adoProjectPrompt: '저장소를 복제할 프로젝트 선택:',
+      adoProjectsSelected: '{count}개 프로젝트 선택됨',
+      adoFetchingProjects: '프로젝트 가져오는 중...',
+      adoNoProjects: '이 조직에서 프로젝트를 찾을 수 없습니다',
+      adoConnectionFailed: 'Azure DevOps 연결 실패',
     },
     pt: {
       header: '📦 Hospedagem do repositório',
@@ -406,9 +481,26 @@ function getRepoStrings(language: SupportedLanguage): {
       adoSelectedAll: 'Todos os repositórios serão clonados',
       adoSelectedPattern: 'Repositórios correspondendo a "{pattern}" serão clonados',
       adoSelectedRegex: 'Repositórios correspondendo a regex "{pattern}" serão clonados',
+      // ADO project selection strings
+      adoOrgPrompt: 'Nome da organização Azure DevOps:',
+      adoPatPrompt: 'Token de Acesso Pessoal (PAT):',
+      adoProjectPrompt: 'Selecione projeto(s) para clonar repositórios:',
+      adoProjectsSelected: '{count} projeto(s) selecionado(s)',
+      adoFetchingProjects: 'Buscando projetos...',
+      adoNoProjects: 'Nenhum projeto encontrado nesta organização',
+      adoConnectionFailed: 'Falha ao conectar ao Azure DevOps',
     },
   };
   return strings[language] || strings.en;
+}
+
+/**
+ * ADO project selection for repository cloning
+ */
+export interface AdoProjectSelection {
+  org: string;
+  pat: string;
+  projects: string[];
 }
 
 /**
@@ -421,6 +513,115 @@ export interface RepositorySetupResult {
   adoClonePattern?: string;
   /** ADO clone pattern details */
   adoClonePatternResult?: AdoClonePatternResult;
+  /** ADO project(s) to clone repositories from */
+  adoProjectSelection?: AdoProjectSelection;
+}
+
+/**
+ * Fetch all accessible projects for an ADO organization
+ */
+async function fetchAdoProjects(
+  org: string,
+  pat: string
+): Promise<Array<{ name: string; id: string }>> {
+  const auth = Buffer.from(`:${pat}`).toString('base64');
+  const endpoint = `https://dev.azure.com/${org}/_apis/projects?api-version=7.0`;
+
+  const response = await fetch(endpoint, {
+    headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch projects: ${response.status}`);
+  }
+
+  const data: { value?: Array<{ name: string; id: string }> } = await response.json() as { value?: Array<{ name: string; id: string }> };
+  return (data.value || []).map((p) => ({ name: p.name, id: p.id }));
+}
+
+/**
+ * Prompt user for ADO organization, credentials, and project selection
+ * For repository cloning in multi-repo setups
+ */
+async function promptAdoProjectSelection(
+  targetDir: string,
+  strings: { adoOrgPrompt: string; adoPatPrompt: string; adoProjectPrompt: string; adoProjectsSelected: string; adoFetchingProjects: string; adoNoProjects: string; adoConnectionFailed: string }
+): Promise<AdoProjectSelection | null> {
+  // Check for existing credentials in .env or environment
+  let existingOrg: string | undefined;
+  let existingPat: string | undefined;
+
+  const envContent = readEnvFile(targetDir);
+  if (envContent) {
+    const parsed = parseEnvFile(envContent);
+    existingOrg = parsed.AZURE_DEVOPS_ORG;
+    existingPat = parsed.AZURE_DEVOPS_PAT;
+  }
+
+  // Fall back to environment variables
+  if (!existingOrg || !existingPat) {
+    const auth = getAzureDevOpsAuth();
+    if (auth) {
+      existingOrg = existingOrg || auth.org;
+      existingPat = existingPat || auth.pat;
+    }
+  }
+
+  // Prompt for organization
+  const org = await input({
+    message: strings.adoOrgPrompt,
+    default: existingOrg,
+    validate: (value: string) => {
+      if (!value.trim()) return 'Organization name is required';
+      return true;
+    }
+  });
+
+  // Prompt for PAT
+  const pat = await password({
+    message: strings.adoPatPrompt,
+    validate: (value: string) => {
+      if (!value.trim()) return 'Personal Access Token is required';
+      return true;
+    }
+  });
+
+  // Fetch projects
+  const spinner = ora(strings.adoFetchingProjects).start();
+  let projects: Array<{ name: string; id: string }>;
+
+  try {
+    projects = await fetchAdoProjects(org, pat);
+    spinner.succeed();
+  } catch (error) {
+    spinner.fail(strings.adoConnectionFailed);
+    console.log(chalk.red(`   ${error instanceof Error ? error.message : 'Unknown error'}`));
+    return null;
+  }
+
+  if (projects.length === 0) {
+    console.log(chalk.yellow(`   ${strings.adoNoProjects}`));
+    return null;
+  }
+
+  // Let user select projects
+  const selectedProjects = await checkbox({
+    message: strings.adoProjectPrompt,
+    choices: projects.map((p, index) => ({
+      name: p.name,
+      value: p.name,
+      checked: index === 0 // First project selected by default
+    })),
+    required: true
+  });
+
+  console.log(chalk.green(`   ✓ ${strings.adoProjectsSelected.replace('{count}', String(selectedProjects.length))}`));
+
+  return {
+    org,
+    pat,
+    projects: selectedProjects
+  };
 }
 
 /**
@@ -500,12 +701,22 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
     repositoryHosting = `${provider}-${structure}` as RepositoryHosting;
   }
 
-  // Step 3: For ADO multi-repo, prompt for clone pattern with unified selection
+  // Step 3: For ADO multi-repo, prompt for project selection and clone pattern
   let adoClonePattern: string | undefined;
   let adoClonePatternResult: AdoClonePatternResult | undefined;
+  let adoProjectSelection: AdoProjectSelection | undefined;
 
   if (provider === 'ado' && isMultiRepo) {
-    // Show unified strategy selection
+    // Step 3a: Prompt for ADO organization and project selection
+    console.log(chalk.blue('\n📁 Azure DevOps Project Selection\n'));
+    console.log(chalk.gray('   Select which project(s) to clone repositories from.\n'));
+
+    const projectSelection = await promptAdoProjectSelection(options.targetDir, strings);
+    if (projectSelection) {
+      adoProjectSelection = projectSelection;
+    }
+
+    // Step 3b: Show unified strategy selection
     const strategyChoices: Array<{ name: string; value: AdoCloneStrategy }> = [
       {
         name: `${chalk.green('✓')} ${strings.adoAllRepos} ${chalk.gray(`- ${strings.adoAllReposDesc}`)}`,
@@ -593,5 +804,5 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
     }
   }
 
-  return { hosting: repositoryHosting, isMultiRepo, adoClonePattern, adoClonePatternResult };
+  return { hosting: repositoryHosting, isMultiRepo, adoClonePattern, adoClonePatternResult, adoProjectSelection };
 }

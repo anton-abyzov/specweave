@@ -16,7 +16,9 @@ import type { ExternalContainerContext } from '../../../core/types/increment-met
 import { loadImportConfig } from '../../../config/import-config.js';
 import { selectRepositories, type RepoSelectionConfig } from '../github-repo-selector.js';
 import { detectAllConfigs } from './config-detection.js';
+import type { ADOConfig } from './types.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
+import { parseEnvFile } from '../../../utils/env-file.js';
 import { getGitHubAuthFromProject } from '../../../utils/auth-helpers.js';
 import {
   detectJiraStructure,
@@ -321,6 +323,20 @@ export async function promptAndRunExternalImport(
     }
   }
 
+  // CRITICAL FIX (2025-11-29): Load ADO config from sync profile if detectAllConfigs() failed
+  // Bug: detectAllConfigs() might return ado:null even when sync profile exists with valid config
+  // This caused folders to be created but NO work items imported!
+  if (!ado && syncProfileProviders.includes('ado')) {
+    const adoConfigFromProfile = loadAdoConfigFromSyncProfile(targetDir);
+    if (adoConfigFromProfile) {
+      ado = adoConfigFromProfile;
+      // Ensure Azure DevOps is in availableTools
+      if (!availableTools.includes('Azure DevOps')) {
+        availableTools = [...availableTools, 'Azure DevOps'];
+      }
+    }
+  }
+
   // If no tools detected, skip import
   if (availableTools.length === 0) {
     return emptyResult();
@@ -469,6 +485,9 @@ export async function promptAndRunExternalImport(
     const orgMatch = ado.orgUrl.match(/dev\.azure\.com\/([^/]+)/);
     const organization = orgMatch ? orgMatch[1] : '';
 
+    // Get umbrella projects to exclude from import (folder structure only)
+    const umbrellaProjects = getUmbrellaProjects(targetDir);
+
     if (organization && ado.pat) {
       // Auto-detect ADO structure (projects + area paths)
       const adoStructure = await detectAdoStructure(organization, ado.pat);
@@ -476,6 +495,19 @@ export async function promptAndRunExternalImport(
         const adoMapping = await confirmAdoMapping(adoStructure);
         if (adoMapping) {
           const adoConfig = buildAdoCoordinatorConfig(ado, adoMapping);
+
+          // Filter out umbrella projects (no items imported for them)
+          if (umbrellaProjects.length > 0 && adoConfig.projectMappings) {
+            const originalCount = adoConfig.projectMappings.length;
+            adoConfig.projectMappings = adoConfig.projectMappings.filter(
+              pm => !umbrellaProjects.includes(pm.projectName)
+            );
+            const filteredCount = originalCount - adoConfig.projectMappings.length;
+            if (filteredCount > 0) {
+              console.log(chalk.gray(`   Skipping ${filteredCount} umbrella project(s) (folder structure only)`));
+            }
+          }
+
           coordinatorConfig.ado = adoConfig;
         } else {
           // User declined - use simple mode
@@ -641,6 +673,94 @@ function getSyncProfileProviders(targetDir: string): string[] {
     }
 
     return Array.from(providers);
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Load ADO config from sync profile when detectAllConfigs() fails
+ * This ensures work items are imported even when the main detection fails
+ *
+ * CRITICAL FIX (2025-11-29): This fixes the bug where ADO folders were created
+ * but no work items were imported because ado was null in the import flow.
+ */
+function loadAdoConfigFromSyncProfile(targetDir: string): ADOConfig | null {
+  try {
+    const configPath = path.join(targetDir, '.specweave', 'config.json');
+    if (!fs.existsSync(configPath)) {
+      return null;
+    }
+
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+    // Find ADO profile in sync.profiles
+    if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
+      for (const profile of Object.values(config.sync.profiles)) {
+        const p = profile as { provider?: string; config?: { organization?: string; project?: string; areaPaths?: string[]; strategy?: string } };
+        if (p.provider?.toLowerCase() === 'ado' && p.config) {
+          const { organization, project, areaPaths, strategy } = p.config;
+
+          if (organization && project) {
+            // Load PAT from .env file
+            let pat: string | undefined;
+            const envPath = path.join(targetDir, '.env');
+            if (fs.existsSync(envPath)) {
+              const envContent = fs.readFileSync(envPath, 'utf-8');
+              const envVars = parseEnvFile(envContent);
+              pat = envVars.AZURE_DEVOPS_PAT || envVars.ADO_PAT;
+            }
+
+            // Also check environment variables
+            if (!pat) {
+              pat = process.env.AZURE_DEVOPS_PAT || process.env.ADO_PAT;
+            }
+
+            if (pat) {
+              return {
+                orgUrl: `https://dev.azure.com/${organization}`,
+                project,
+                pat,
+                areaPaths,
+                strategy
+              };
+            }
+          }
+        }
+      }
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get umbrella project names from config.json
+ * Umbrella projects are folder-structure-only (no items imported)
+ */
+function getUmbrellaProjects(targetDir: string): string[] {
+  try {
+    const configPath = path.join(targetDir, '.specweave', 'config.json');
+    if (!fs.existsSync(configPath)) {
+      return [];
+    }
+
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    const umbrellaProjects: string[] = [];
+
+    // Check sync.profiles for ADO profiles with isUmbrella flag
+    if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
+      for (const profile of Object.values(config.sync.profiles)) {
+        const p = profile as { provider?: string; config?: { project?: string; isUmbrella?: boolean } };
+        if (p.provider === 'ado' && p.config?.isUmbrella && p.config?.project) {
+          umbrellaProjects.push(p.config.project);
+        }
+      }
+    }
+
+    return umbrellaProjects;
   } catch {
     return [];
   }
