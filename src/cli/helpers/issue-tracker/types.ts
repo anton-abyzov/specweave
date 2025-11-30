@@ -96,6 +96,7 @@ export interface AzureDevOpsProjectConfig {
   name: string; // ADO project name
   areaPaths?: string[]; // Area paths for this project (leaf names only)
   isDefault?: boolean; // Mark as default profile for sync
+  isUmbrella?: boolean; // Umbrella/parent project (folder structure only, no items imported)
 }
 
 /**

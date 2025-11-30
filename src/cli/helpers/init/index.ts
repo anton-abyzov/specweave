@@ -40,6 +40,7 @@ export {
   setupRepositoryHosting,
   type RepositorySetupOptions,
   type RepositorySetupResult,
+  type AdoProjectSelection,
 } from './repository-setup.js';
 
 // Testing configuration
