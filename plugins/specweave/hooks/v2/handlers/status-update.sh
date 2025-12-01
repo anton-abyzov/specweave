@@ -1,7 +1,14 @@
 #!/bin/bash
 # status-update.sh - Fast status line update (synchronous)
 # Goal: <20ms execution, pure bash, no external processes
+#
+# NOTE: This is the LEGACY handler. New EDA architecture uses
+# status-line-handler.sh which is EVENT-DRIVEN.
+#
+# IMPORTANT: Never crash Claude, always exit 0
 set +e
+
+[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
 
 INC_ID="${1:-}"
 

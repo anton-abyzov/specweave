@@ -103,7 +103,7 @@ Started: 2024-01-15 10:30:00
 Updated: 2024-01-15 10:32:15
 
 Progress: 2,500/10,000 (25%)
-Current: OlySense\Core-Operations
+Current: Acme\Core-Operations
 Rate: 15.2 items/sec
 ETA: ~8 minutes
 
@@ -122,10 +122,10 @@ Watch job progress in real-time (like `tail -f`):
 
 📦 Following job abc12345 (Ctrl+C to stop)
 
-[10:30:15] Progress: 2,500/10,000 (25%) - OlySense\Core-Operations
-[10:30:16] Progress: 2,520/10,000 (25%) - OlySense\Core-Operations
-[10:30:17] Progress: 2,545/10,000 (25%) - OlySense\AI-Platform
-[10:30:18] Progress: 2,570/10,000 (26%) - OlySense\AI-Platform
+[10:30:15] Progress: 2,500/10,000 (25%) - Acme\Core-Operations
+[10:30:16] Progress: 2,520/10,000 (25%) - Acme\Core-Operations
+[10:30:17] Progress: 2,545/10,000 (25%) - Acme\AI-Platform
+[10:30:18] Progress: 2,570/10,000 (26%) - Acme\AI-Platform
 ...
 ```
 
@@ -144,8 +144,8 @@ Show detailed worker output:
 [2024-01-15T10:30:00.456Z] Project path: /Users/dev/my-project
 [2024-01-15T10:30:00.789Z] PID: 45678
 [2024-01-15T10:30:01.234Z] Dependencies loaded, starting import...
-[2024-01-15T10:30:02.567Z] Progress: 100/10000 - ado OlySense\Core-Operations
-[2024-01-15T10:30:03.890Z] Progress: 200/10000 - ado OlySense\Core-Operations
+[2024-01-15T10:30:02.567Z] Progress: 100/10000 - ado Acme\Core-Operations
+[2024-01-15T10:30:03.890Z] Progress: 200/10000 - ado Acme\Core-Operations
 ...
 ```
 

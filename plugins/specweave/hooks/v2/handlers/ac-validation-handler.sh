@@ -2,7 +2,11 @@
 # ac-validation-handler.sh - Validate AC completion status
 # Checks that completed tasks have their ACs checked in spec.md
 # Non-blocking, logs warnings only
+#
+# IMPORTANT: Never crash Claude, always exit 0
 set +e
+
+[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
 
 INC_ID="${1:-}"
 [[ -z "$INC_ID" ]] && exit 0
