@@ -491,7 +491,14 @@ export async function initCommand(
       if (!continueExisting) {
         try {
           const importResult = await promptAndRunExternalImport(targetDir, isCI, language);
-          if (importResult.totalCount > 0) {
+
+          // Handle both sync and async import results
+          if ('isBackground' in importResult && importResult.isBackground) {
+            // Background import started - job will complete asynchronously
+            console.log(chalk.cyan('\n🚀 Import running in background'));
+            console.log(chalk.gray(`   Check progress: /specweave:jobs`));
+          } else if ('totalCount' in importResult && importResult.totalCount > 0) {
+            // Sync import completed
             console.log(chalk.green('\n✅ Imported ' + importResult.totalCount + ' items from ' + importResult.platforms.join(', ')));
           }
         } catch (importError) {
