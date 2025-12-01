@@ -16,6 +16,7 @@ import {
   parseEnvFile,
   readEnvFile
 } from '../../../utils/env-file.js';
+import { normalizeToProjectId } from '../../../utils/project-id-generator.js';
 import type {
   AzureDevOpsCredentials,
   AzureDevOpsProjectConfig,
@@ -611,7 +612,11 @@ function createSingleProjectFolders(
   strategy?: string,
   teams?: string[]
 ): void {
-  const projectDir = path.join(specsDir, projectName);
+  // CRITICAL FIX (2025-12-01): Use normalizeToProjectId() for consistent folder names
+  // Bug: Using raw project name created "Nova X Sandbox" folder while other code paths
+  // created "nova-x-sandbox", causing duplicate folders for the same ADO project
+  const normalizedProject = normalizeToProjectId(projectName);
+  const projectDir = path.join(specsDir, normalizedProject);
   fs.mkdirSync(projectDir, { recursive: true });
   console.log(chalk.green(`✓ Created ${projectDir}`));
 
@@ -620,15 +625,19 @@ function createSingleProjectFolders(
   if (effectiveStrategy === 'area-path-based' && areaPaths?.length) {
     for (const areaPath of areaPaths) {
       const areaName = areaPath.split('\\').pop() || areaPath;
-      const areaDir = path.join(projectDir, areaName);
+      // CRITICAL FIX: Normalize area path names too
+      const normalizedArea = normalizeToProjectId(areaName);
+      const areaDir = path.join(projectDir, normalizedArea);
       fs.mkdirSync(areaDir, { recursive: true });
-      console.log(chalk.gray(`  ✓ Created area folder: ${areaName}`));
+      console.log(chalk.gray(`  ✓ Created area folder: ${normalizedArea}`));
     }
   } else if (effectiveStrategy === 'team-based' && teams?.length) {
     for (const team of teams) {
-      const teamDir = path.join(projectDir, team);
+      // CRITICAL FIX: Normalize team names too
+      const normalizedTeam = normalizeToProjectId(team);
+      const teamDir = path.join(projectDir, normalizedTeam);
       fs.mkdirSync(teamDir, { recursive: true });
-      console.log(chalk.gray(`  ✓ Created team folder: ${team}`));
+      console.log(chalk.gray(`  ✓ Created team folder: ${normalizedTeam}`));
     }
   }
 }
