@@ -1,6 +1,6 @@
 ---
 name: specweave-release:npm
-description: Bump patch version, create git tag, and trigger npm publish via GitHub Actions. Use --quick for instant release (auto-commits dirty changes, publishes to npmjs.org, pushes to git). Use --only for local publish without git push. Use --only --local for version bump only.
+description: Bump patch version, create git tag, and trigger npm publish via GitHub Actions. Use --quick for instant release (auto-commits, PUSHES FIRST, then publishes to npmjs.org). Use --only for local publish without git push. Use --only --local for version bump only.
 ---
 
 # /specweave-release:npm - NPM Release Automation
@@ -12,9 +12,9 @@ You are the NPM Release Assistant. Your job is to automate the patch version rel
 | Command | Flow | Use Case |
 |---------|------|----------|
 | `/specweave-release:npm` | Bump → Push → **CI publishes** | Standard release (CI handles npm) |
-| `/specweave-release:npm --quick` | Auto-commit → Bump → Build → **Publish** → Push | **INSTANT RELEASE** (recommended!) |
+| `/specweave-release:npm --quick` | Auto-commit → **PUSH** → Bump → Build → **Publish** → Push tag | **INSTANT RELEASE** (recommended!) |
 | `/specweave-release:npm --only` | Bump → Build → **Publish locally** → NO push | Quick local release, push later |
-| `/specweave-release:npm --only --push` | Auto-commit → Bump → Build → **Publish** → Push | Same as --quick |
+| `/specweave-release:npm --only --push` | Auto-commit → **PUSH** → Bump → Build → **Publish** → Push tag | Same as --quick |
 | `/specweave-release:npm --only --local` | **Bump ONLY** → NO build, NO publish, NO git | FASTEST: Local testing only |
 
 ## Detecting Mode
@@ -22,7 +22,7 @@ You are the NPM Release Assistant. Your job is to automate the patch version rel
 Check flags in the command invocation:
 
 ```
---quick        → INSTANT RELEASE: auto-commit dirty, publish to npmjs.org, push git
+--quick        → INSTANT RELEASE: auto-commit, PUSH FIRST, then bump+build+publish+push tag
 --only --local → Version bump ONLY (no build, no publish, no git) - FASTEST
 --only --push  → Same as --quick (legacy alias)
 --only         → Direct publish to npm (bypass CI), no git push
@@ -47,9 +47,14 @@ Check flags in the command invocation:
 
 ## QUICK MODE WORKFLOW (--quick flag) - RECOMMENDED!
 
-Use this workflow when `--quick` flag is detected. This is the **instant release** mode - auto-commits any dirty changes, publishes directly to npmjs.org, and pushes to git. One command does everything!
+Use this workflow when `--quick` flag is detected. This is the **instant release** mode - auto-commits any dirty changes, syncs git FIRST, then publishes to npmjs.org. One command does everything!
 
 **Use case**: You made changes and want to release immediately. No manual steps needed.
+
+**CRITICAL ORDER**: Git sync FIRST, then release. This ensures:
+- Your code is safe on remote before any release operations
+- If npm publish fails, git is already synced (clean state)
+- No risk of local-only commits that could be lost
 
 ### 1. Pre-flight Check (Minimal)
 
@@ -62,8 +67,6 @@ node -p "require('./package.json').version"
 ```
 
 **STOP if**: Not on `develop` branch (ask user to switch)
-
-**If uncommitted changes exist → AUTO-COMMIT (Step 2)**
 
 ### 2. Auto-Commit Dirty Changes (if any)
 
@@ -86,32 +89,50 @@ git commit -m "[auto-generated message based on changed files]"
 - `*.md` changes → `docs: update documentation`
 - Mixed → `chore: update code and documentation`
 
-### 3. Bump Patch Version
+### 3. PUSH DIRTY COMMIT TO REMOTE FIRST! (CRITICAL!)
+
+**BEFORE any release operations, sync git:**
+
+```bash
+# Push dirty commit to remote FIRST - ensures code is safe before release
+git push origin develop
+```
+
+**Why this order?**
+- ✅ Your changes are safely on GitHub BEFORE release starts
+- ✅ If npm publish fails later, git is already synced
+- ✅ No risk of "released but not pushed" state
+- ✅ Clean recovery if anything fails mid-release
+
+### 4. Bump Patch Version
 
 ```bash
 npm version patch -m "chore: bump version to %s"
 ```
 
-### 4. Build Package
+This creates a NEW commit + tag locally.
+
+### 5. Build Package
 
 ```bash
 npm run rebuild
 ```
 
-### 5. Publish to NPM (with explicit registry!)
+### 6. Publish to NPM (with explicit registry!)
 
 ```bash
 # CRITICAL: Always specify registry to avoid ~/.npmrc redirecting to private feeds!
 npm publish --registry https://registry.npmjs.org
 ```
 
-### 6. Push to Git
+### 7. Push Version Commit + Tag
 
 ```bash
+# Push the version bump commit and tag
 git push origin develop --follow-tags
 ```
 
-### 7. Report Results
+### 8. Report Results
 
 ```markdown
 ✅ **Instant release complete!**
@@ -122,10 +143,11 @@ git push origin develop --follow-tags
 
 **What happened**:
 - ✅ Dirty changes auto-committed
+- ✅ Pushed to GitHub (code safe!)
 - ✅ Version bumped to X.Y.Z
 - ✅ Package built
 - ✅ Published to npmjs.org
-- ✅ Pushed to GitHub
+- ✅ Version tag pushed to GitHub
 
 **Verify**: `npm view specweave version --registry https://registry.npmjs.org`
 ```
@@ -133,11 +155,12 @@ git push origin develop --follow-tags
 ## Quick Mode Success Criteria
 
 ✅ Any dirty changes auto-committed
+✅ **Dirty commit pushed to remote FIRST**
 ✅ Version bumped in package.json
 ✅ Git commit and tag created
 ✅ Package rebuilt
 ✅ Published to npmjs.org (explicit registry!)
-✅ Pushed to GitHub
+✅ Version commit + tag pushed to GitHub
 
 ---
 
@@ -407,6 +430,20 @@ When `--only --push` is used, uncommitted changes should be committed automatica
 git add -A
 git commit -m "[generated message]"
 ```
+
+### 1c. PUSH DIRTY COMMIT TO REMOTE FIRST! (CRITICAL!)
+
+**BEFORE any release operations, sync git:**
+
+```bash
+# Push dirty commit to remote FIRST - ensures code is safe before release
+git push origin develop
+```
+
+**Why this order?**
+- ✅ Your changes are safely on GitHub BEFORE release starts
+- ✅ If npm publish fails later, git is already synced
+- ✅ No risk of "released but not pushed" state
 
 Then continue with version bump.
 

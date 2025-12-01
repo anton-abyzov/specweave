@@ -54,6 +54,7 @@ import {
   showNextSteps,
   generateInitialIncrement,
 } from '../helpers/init/index.js';
+import { triggerAdoRepoCloning } from '../helpers/init/ado-repo-cloning.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -479,6 +480,15 @@ export async function initCommand(
       // Repository hosting setup
       const gitHubRemote = detectGitHubRemote(targetDir);
       const repoResult = await setupRepositoryHosting({ targetDir, isCI, gitHubRemote, language });
+
+      // ADO Repository cloning (for multi-repo setups)
+      if (repoResult.adoProjectSelection && repoResult.adoClonePatternResult) {
+        await triggerAdoRepoCloning(
+          targetDir,
+          repoResult.adoProjectSelection,
+          repoResult.adoClonePatternResult
+        );
+      }
 
       // Issue tracker setup
       const isFrameworkRepo = await isSpecWeaveFrameworkRepo(targetDir);

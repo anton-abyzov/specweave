@@ -258,6 +258,74 @@ export class AzureDevOpsProvider extends BaseGitProvider {
   }
 
   /**
+   * List all repositories in an Azure DevOps project
+   *
+   * @param organization - ADO organization name
+   * @param project - ADO project name
+   * @param token - Personal Access Token
+   * @returns Array of repository info
+   */
+  async listRepositories(
+    organization: string,
+    project: string,
+    token: string
+  ): Promise<Array<{ id: string; name: string; remoteUrl: string; sshUrl: string; webUrl: string }>> {
+    const auth = Buffer.from(`:${token}`).toString('base64');
+    const headers: Record<string, string> = {
+      'Authorization': `Basic ${auth}`,
+      'Accept': 'application/json'
+    };
+
+    try {
+      const response = await fetch(
+        `${this.config.apiBaseUrl}/${organization}/${project}/_apis/git/repositories?api-version=7.0`,
+        { headers }
+      );
+
+      if (response.status === 401 || response.status === 403) {
+        const apiError: GitApiError = {
+          status: response.status,
+          message: 'Authentication failed',
+          platform: 'azure-devops',
+          operation: 'fetch_data',
+          resourceType: 'repository',
+          resourceName: `${organization}/${project}`
+        };
+        const actionable = getActionableError(apiError);
+        throw new Error(formatActionableError(actionable));
+      }
+
+      if (!response.ok) {
+        const apiError: GitApiError = {
+          status: response.status,
+          message: response.statusText,
+          platform: 'azure-devops',
+          operation: 'fetch_data',
+          resourceType: 'repository',
+          resourceName: `${organization}/${project}`
+        };
+        const actionable = getActionableError(apiError);
+        throw new Error(formatActionableError(actionable));
+      }
+
+      const data: { value?: Array<{ id: string; name: string; remoteUrl: string; sshUrl: string; webUrl: string }> } = await response.json();
+
+      return (data.value || []).map((repo) => ({
+        id: repo.id,
+        name: repo.name,
+        remoteUrl: repo.remoteUrl,
+        sshUrl: repo.sshUrl || this.getRemoteUrl(`${organization}/${project}`, repo.name, 'ssh'),
+        webUrl: repo.webUrl
+      }));
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Authentication')) {
+        throw error; // Re-throw actionable errors
+      }
+      throw new Error(`Failed to list repositories: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
    * Get token creation URL
    */
   getTokenUrl(): string {
