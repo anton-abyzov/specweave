@@ -1,11 +1,11 @@
 {
   "id": "0081-ado-repo-cloning",
   "title": "ADO Repository Cloning - Fix init flow to actually clone repositories",
-  "status": "completed",
+  "status": "ready_for_review",
   "type": "bug",
   "priority": "P0",
   "created": "2025-12-01",
-  "completed": "2025-12-01",
+  "readyForReviewAt": "2025-12-01T12:00:00.000Z",
   "tasks": {
     "total": 4,
     "completed": 4

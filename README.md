@@ -34,8 +34,30 @@ This isn't just a framework we made — it's the framework we use every day. Our
 Great tools for simple greenfield projects. But when things get real:
 
 - **BMAD** — Constant role-switching (PM → Architect → Dev). Multi-step prompts for every action. Works until you have 5+ services or existing documentation.
-- **SpecKit** — Clean and minimal. Too minimal. No external sync, no multi-repo, no enterprise hierarchy support.
+- **[SpecKit](https://github.com/github/spec-kit)** — GitHub's excellent open-source toolkit (28k+ stars, Sept 2025). Same 4-phase workflow (Specify → Plan → Tasks → Implement). Clean and minimal — perfect for single-project greenfield MVPs.
 - **Both** — Break down with legacy codebases, multi-repo setups, existing documentation sprawl, and enterprise compliance requirements.
+
+### SpecKit → SpecWeave: The Mathematical Relationship
+
+**SpecKit is a particular case of SpecWeave** — specifically, it's equivalent to creating ONE SpecWeave increment with no lifecycle management afterward:
+
+```
+SpecKit output    ≡  ONE SpecWeave increment (spec.md + plan.md + tasks.md)
+SpecWeave         =  N increments + lifecycle + external sync + living docs + hooks
+```
+
+In set theory terms: **SpecKit ⊂ SpecWeave** — every SpecKit capability exists in SpecWeave, but SpecWeave adds the enterprise layer:
+
+| Capability | SpecKit | SpecWeave |
+|------------|---------|-----------|
+| **Workflow** | Specify → Plan → Tasks → Implement | Same + living docs + hooks + quality gates |
+| **Projects** | Single project | Multi-project, multi-repo, umbrella setups |
+| **External Tools** | None | GitHub Issues, JIRA, Azure DevOps (bidirectional) |
+| **Documentation** | Snapshot (static specs) | Living docs (auto-update after every task) |
+| **Codebase Type** | Greenfield only | Greenfield + Brownfield (10-year legacy? Fine.) |
+| **Team Scale** | Solo/small team | Solo to 50+ teams |
+| **Quality Gates** | None | 3-gate validation (tasks, tests 60%+, docs) |
+| **Plugin Ecosystem** | Minimal | Hooks, skills, agents, multi-AI support |
 
 **SpecWeave** — Drop into any codebase. Sync with JIRA/GitHub/ADO. Handle 50 teams or solo MVPs. One workflow.
 
