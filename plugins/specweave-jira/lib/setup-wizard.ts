@@ -118,7 +118,7 @@ export async function setupJiraCredentials(): Promise<JiraCredentials> {
 
   const apiToken = await password({
     message: 'API token:',
-    mask: '*',
+    mask: true,
     validate: (value: string) => {
       if (!value) return 'API token is required';
       if (value.length < 10) return 'API token seems too short';

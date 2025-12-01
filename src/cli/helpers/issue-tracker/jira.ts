@@ -334,7 +334,7 @@ export async function promptJiraCredentials(
 
   const token = await password({
     message: 'Paste your Jira API token:',
-    mask: '*',
+    mask: true,
     validate: (val: string) => {
       if (!val || val.length === 0) {
         return 'Token cannot be empty';

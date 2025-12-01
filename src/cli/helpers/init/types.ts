@@ -70,6 +70,7 @@ export interface ADOProjectConfig {
   name: string;
   areaPaths?: string[];
   isDefault?: boolean;
+  isUmbrella?: boolean;  // Mark as umbrella project (folder structure only, no items imported)
 }
 
 /**

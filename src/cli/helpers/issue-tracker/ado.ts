@@ -217,7 +217,7 @@ export async function promptAzureDevOpsCredentials(
   // Step 2: Prompt for PAT
   const pat = await password({
     message: 'Paste your Personal Access Token:',
-    mask: '*',
+    mask: true,
     validate: (value: string) => {
       if (!value || value.length === 0) {
         return 'Token cannot be empty';
@@ -404,15 +404,20 @@ async function handleMultiProjectSelection(
   if (projects.length > 1) {
     const NONE_OPTION = '__none__';
 
+    console.log('');
+    console.log(chalk.gray('   Umbrella project: a parent project that may contain a few shared items'));
+    console.log(chalk.gray('   but work is primarily tracked in dedicated project area paths.'));
+    console.log(chalk.gray('   If selected, items from umbrella project import to a separate folder.\n'));
+
     const umbrellaProject = await select<string>({
-      message: 'Umbrella/parent project? (folder structure only, no items imported):',
+      message: 'Umbrella/parent project?',
       choices: [
         {
-          name: 'None - all projects have work items',
+          name: 'None - all work items are in dedicated project area paths',
           value: NONE_OPTION
         },
         ...projects.map(p => ({
-          name: p.name,
+          name: `${p.name} (folder structure + import shared items)`,
           value: p.name
         }))
       ],
@@ -424,31 +429,12 @@ async function handleMultiProjectSelection(
       proj.isUmbrella = umbrellaProject !== NONE_OPTION && proj.name === umbrellaProject;
     }
 
-    // Ask which project should be primary for sync (from non-umbrella projects)
+    // Set default for validation purposes (first non-umbrella project)
+    // NOTE: ALL projects will be synced and imported - this is just for connection validation
     const syncableProjects = projects.filter(p => !p.isUmbrella);
 
-    if (syncableProjects.length > 1) {
-      const defaultProject = await select<string>({
-        message: 'Primary project for sync (auto-selected when no profile specified):',
-        choices: [
-          ...syncableProjects.map(p => ({
-            name: p.name,
-            value: p.name
-          })),
-          {
-            name: 'None - always ask me which project to sync',
-            value: NONE_OPTION
-          }
-        ],
-        default: syncableProjects[0].name
-      });
-
-      // Update isDefault flags (none selected = no default)
-      for (const proj of projects) {
-        proj.isDefault = !proj.isUmbrella && defaultProject !== NONE_OPTION && proj.name === defaultProject;
-      }
-    } else if (syncableProjects.length === 1) {
-      // Only one syncable project - make it default automatically
+    if (syncableProjects.length > 0) {
+      // First syncable project is default (for validation and activeProfile)
       syncableProjects[0].isDefault = true;
     }
   }
@@ -466,6 +452,16 @@ async function handleMultiProjectSelection(
   console.log('');
   console.log(chalk.green('✓ Multi-project configuration complete'));
   console.log(chalk.gray(`   ${projects.length} project${projects.length > 1 ? 's' : ''} configured`));
+
+  // Show clear message about what will happen
+  const syncableCount = projects.filter(p => !p.isUmbrella).length;
+  const umbrellaCount = projects.filter(p => p.isUmbrella).length;
+  if (syncableCount > 0) {
+    console.log(chalk.cyan(`   → Work items will be imported from ALL ${syncableCount} project${syncableCount > 1 ? 's' : ''}`));
+  }
+  if (umbrellaCount > 0) {
+    console.log(chalk.gray(`   → ${umbrellaCount} umbrella project${umbrellaCount > 1 ? 's' : ''} (folder structure only)`));
+  }
 
   return {
     pat,
