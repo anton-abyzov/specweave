@@ -8,6 +8,7 @@
 import * as fs from '../../../src/utils/fs-native.js';
 import * as path from 'path';
 import { AzureDevOpsStrategy } from '../../../src/cli/helpers/issue-tracker/types';
+import { normalizeToProjectId } from '../../../src/utils/project-id-generator.js';
 
 // ============================================================================
 // Types
@@ -459,8 +460,12 @@ export async function createProjectFolders(
   switch (strategy) {
     case 'project-per-team':
       // Create folder for each project
+      // CRITICAL FIX (2025-12-01): Use normalizeToProjectId() for consistent folder names
+      // Bug: Using raw project name created "My Project" folder while external-import.ts
+      // created "my-project", causing duplicate folders for the same ADO project
       for (const project of projects) {
-        const projectPath = path.join(specsPath, project);
+        const normalizedName = normalizeToProjectId(project);
+        const projectPath = path.join(specsPath, normalizedName);
         await fs.ensureDir(projectPath);
         await createProjectReadme(projectPath, project);
       }
@@ -468,14 +473,17 @@ export async function createProjectFolders(
 
     case 'area-path-based':
       // Create folders for area paths
+      // CRITICAL FIX (2025-12-01): Use normalizeToProjectId() for consistent folder names
       const areaPaths = process.env.AZURE_DEVOPS_AREA_PATHS?.split(',').map(a => a.trim()) || [];
       const project = projects[0];
       if (project) {
-        const projectPath = path.join(specsPath, project);
+        const normalizedProject = normalizeToProjectId(project);
+        const projectPath = path.join(specsPath, normalizedProject);
         await fs.ensureDir(projectPath);
 
         for (const area of areaPaths) {
-          const areaPath = path.join(projectPath, area);
+          const normalizedArea = normalizeToProjectId(area);
+          const areaPath = path.join(projectPath, normalizedArea);
           await fs.ensureDir(areaPath);
         }
       }
@@ -483,14 +491,17 @@ export async function createProjectFolders(
 
     case 'team-based':
       // Create folders for teams
+      // CRITICAL FIX (2025-12-01): Use normalizeToProjectId() for consistent folder names
       const teams = process.env.AZURE_DEVOPS_TEAMS?.split(',').map(t => t.trim()) || [];
       const proj = projects[0];
       if (proj) {
-        const projectPath = path.join(specsPath, proj);
+        const normalizedProj = normalizeToProjectId(proj);
+        const projectPath = path.join(specsPath, normalizedProj);
         await fs.ensureDir(projectPath);
 
         for (const team of teams) {
-          const teamPath = path.join(projectPath, team);
+          const normalizedTeam = normalizeToProjectId(team);
+          const teamPath = path.join(projectPath, normalizedTeam);
           await fs.ensureDir(teamPath);
         }
       }
