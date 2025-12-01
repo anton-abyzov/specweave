@@ -12,9 +12,7 @@ import path from 'path';
 import { existsSync, mkdirSync } from 'fs';
 import { AzureDevOpsProvider } from '../../../core/repo-structure/providers/azure-devops-provider.js';
 import { filterRepositoriesByPattern, type ClonePatternResult } from '../selection-strategy.js';
-import { getJobManager } from '../../../core/background/index.js';
-import type { CloneJobConfig } from '../../../core/background/types.js';
-import { execFileNoThrowSync } from '../../../utils/execFileNoThrow.js';
+import { launchCloneJob } from '../../../core/background/job-launcher.js';
 
 /**
  * ADO project selection (from repository-setup.ts)
@@ -47,11 +45,16 @@ interface AdoRepository {
  * - https://org@dev.azure.com/org/project/_git/repo (with org as placeholder)
  *
  * We need to construct a proper URL with PAT authentication.
+ * IMPORTANT: URL-encode org, project, and repo names to handle spaces and special characters.
  */
 function buildAdoCloneUrl(org: string, project: string, repoName: string, pat: string): string {
   // Build clean URL with PAT authentication
   // Format: https://{PAT}@dev.azure.com/{org}/{project}/_git/{repo}
-  return `https://${pat}@dev.azure.com/${org}/${project}/_git/${repoName}`;
+  // URL-encode path segments to handle spaces (e.g., "Nova IoMT Platform")
+  const encodedOrg = encodeURIComponent(org);
+  const encodedProject = encodeURIComponent(project);
+  const encodedRepo = encodeURIComponent(repoName);
+  return `https://${pat}@dev.azure.com/${encodedOrg}/${encodedProject}/_git/${encodedRepo}`;
 }
 
 /**
@@ -123,7 +126,7 @@ export async function triggerAdoRepoCloning(
     return;
   }
 
-  console.log(chalk.blue(`\n🔄 Cloning ${filteredRepos.length} repositories in background...\n`));
+  console.log(chalk.blue(`\n🔄 Starting background clone for ${filteredRepos.length} repositories...\n`));
 
   // Create repos directory if needed
   const reposDir = path.join(projectPath, 'repos');
@@ -131,98 +134,31 @@ export async function triggerAdoRepoCloning(
     mkdirSync(reposDir, { recursive: true });
   }
 
-  // Create background job
-  const jobManager = getJobManager(projectPath);
-  const jobConfig: CloneJobConfig = {
-    type: 'clone-repos',
-    repositories: filteredRepos.map(r => ({
-      owner: `${org}/${r.project}`,
-      name: r.name,
-      path: path.join('repos', r.name)
-    })),
-    projectPath
-  };
+  // Prepare repositories with clone URLs
+  const reposWithUrls = filteredRepos.map(r => ({
+    owner: `${org}/${r.project}`,
+    name: r.name,
+    path: path.join('repos', r.name),
+    cloneUrl: buildAdoCloneUrl(org, r.project, r.name, pat)
+  }));
 
-  const job = jobManager.createJob('clone-repos', jobConfig, filteredRepos.length);
-  jobManager.startJob(job.id);
-
-  // Start cloning asynchronously (non-blocking)
-  // IMPORTANT: Pass PAT directly - don't rely on .env which may not exist yet
-  cloneRepositoriesAsync(projectPath, filteredRepos, org, pat, job.id).catch(error => {
-    console.error(chalk.red(`Clone error: ${error instanceof Error ? error.message : String(error)}`));
-    jobManager.completeJob(job.id, error instanceof Error ? error.message : String(error));
+  // Launch background clone job (truly async - spawns detached process)
+  const result = await launchCloneJob({
+    projectPath,
+    repositories: reposWithUrls
   });
 
   // Show progress info
   console.log(chalk.gray(`   Repositories will be cloned to: ${reposDir}/`));
-  console.log(chalk.gray(`   Job ID: ${job.id}`));
-  console.log(chalk.cyan('\n   Check progress: /specweave:jobs'));
-  console.log(chalk.cyan('   Resume if interrupted: /specweave:jobs --resume ' + job.id + '\n'));
-}
+  console.log(chalk.gray(`   Job ID: ${result.job.id}`));
 
-/**
- * Clone repositories asynchronously
- *
- * This runs in background and updates job progress as repos are cloned.
- *
- * @param projectPath - Target directory
- * @param repos - Repositories to clone
- * @param org - ADO organization name
- * @param pat - Personal Access Token (passed directly, not from .env)
- * @param jobId - Background job ID for progress tracking
- */
-async function cloneRepositoriesAsync(
-  projectPath: string,
-  repos: AdoRepository[],
-  org: string,
-  pat: string,
-  jobId: string
-): Promise<void> {
-  const jobManager = getJobManager(projectPath);
-  const reposDir = path.join(projectPath, 'repos');
-  let completed = 0;
-
-  for (const repo of repos) {
-    const repoPath = path.join(reposDir, repo.name);
-
-    // Skip if already exists
-    if (existsSync(path.join(repoPath, '.git'))) {
-      completed++;
-      jobManager.updateProgress(jobId, completed, repo.name, repo.name);
-      continue;
-    }
-
-    try {
-      // Build proper clone URL with PAT authentication
-      // Format: https://{PAT}@dev.azure.com/{org}/{project}/_git/{repo}
-      const cloneUrl = buildAdoCloneUrl(org, repo.project, repo.name, pat);
-
-      // Create parent directory if needed
-      if (!existsSync(reposDir)) {
-        mkdirSync(reposDir, { recursive: true });
-      }
-
-      // Clone the repository
-      const result = execFileNoThrowSync('git', ['clone', cloneUrl, repo.name], { cwd: reposDir });
-
-      if (result.exitCode === 0) {
-        completed++;
-        jobManager.updateProgress(jobId, completed, repo.name, repo.name);
-        console.log(chalk.green(`   ✓ Cloned ${repo.name}`));
-      } else {
-        // Clone failed - mark as failed but continue
-        jobManager.updateProgress(jobId, completed, repo.name, undefined, repo.name);
-        console.error(chalk.yellow(`   ✗ Failed to clone ${repo.name}: ${result.stderr || result.stdout}`));
-      }
-    } catch (error) {
-      // Mark repo as failed but continue with others
-      jobManager.updateProgress(jobId, completed, repo.name, undefined, repo.name);
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error(chalk.yellow(`   ✗ Error cloning ${repo.name}: ${errorMsg}`));
-    }
+  if (result.isBackground) {
+    console.log(chalk.green(`   ✓ Clone job started in background (PID: ${result.pid})`));
+    console.log(chalk.cyan('\n   Check progress: /specweave:jobs'));
+    console.log(chalk.cyan(`   Kill if needed: /specweave:jobs --kill ${result.job.id}`));
+    console.log(chalk.gray('\n   Init will continue - cloning runs independently.\n'));
+  } else {
+    console.log(chalk.yellow('   ⚠️ Running in foreground (clone worker not found)'));
+    console.log(chalk.gray('   Init will block until cloning completes.\n'));
   }
-
-  // Mark job as complete
-  jobManager.completeJob(jobId);
-  console.log(chalk.green(`\n✅ Clone job completed: ${completed}/${repos.length} repositories cloned`));
 }

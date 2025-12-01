@@ -9,6 +9,8 @@ description: Smart increment transition - auto-close current if ready, intellige
 
 You are helping the user complete their current increment and move to the next one with intelligent suggestions.
 
+**CRITICAL (v0.28.63+)**: This command now requires **EXPLICIT USER CONFIRMATION** before closing any increment! This prevents the auto-completion bug where increments were marked "completed" without user approval.
+
 ## Usage
 
 ```bash
@@ -24,9 +26,10 @@ You are helping the user complete their current increment and move to the next o
 The `/specweave:next` command is your **workflow continuation** command. It:
 
 1. **Validates current increment** - Checks if work is complete
-2. **Auto-closes if ready** - PM validates and closes automatically
-3. **Suggests next work** - Intelligent recommendations from backlog or prompt for new
-4. **Smooth transition** - No manual `/done` + `/inc` needed
+2. **Transitions to ready_for_review** - If all tasks done, auto-transitions to `ready_for_review`
+3. **ASKS USER FOR CONFIRMATION** - NEVER auto-closes! Always asks "Ready to close this increment?"
+4. **Closes on explicit approval** - Only marks `completed` if user confirms
+5. **Suggests next work** - Intelligent recommendations from backlog or prompt for new
 
 ---
 
@@ -131,7 +134,9 @@ Status: ✅ PASS
 
 **Based on PM validation results**:
 
-#### Scenario A: All Gates Pass ✅ (Auto-Close)
+#### Scenario A: All Gates Pass ✅ (ASK USER CONFIRMATION - v0.28.63+)
+
+**CRITICAL**: NEVER auto-close! Always ask for user confirmation to prevent the auto-completion bug.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -142,11 +147,43 @@ PM VALIDATION: ✅ READY TO CLOSE
 ✅ Gate 2: Tests (70/70 passing, 89% coverage)
 ✅ Gate 3: Docs (all current)
 
-Increment 0001-user-authentication is complete!
+Increment 0001-user-authentication is ready for closure!
 
-🎯 Auto-closing increment...
-  ✓ Updated status: in-progress → completed
+📋 Status: ready_for_review (awaiting your approval)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  CONFIRMATION REQUIRED (v0.28.63+)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This will permanently mark the increment as COMPLETED.
+
+Please confirm: Do you want to close this increment?
+
+A. Yes, close it - I've reviewed the work and it's complete
+B. No, keep it open - I need to review or make changes first
+```
+
+**🔥 CRITICAL**: Use the AskUserQuestion tool to get explicit confirmation:
+```
+AskUserQuestion({
+  questions: [{
+    header: "Close increment?",
+    question: "All PM gates passed. Ready to permanently close this increment?",
+    options: [
+      { label: "Yes, close it", description: "Mark as completed (irreversible)" },
+      { label: "No, keep open", description: "Stay at ready_for_review status" }
+    ],
+    multiSelect: false
+  }]
+})
+```
+
+**Only if user confirms "Yes"**:
+```
+🎯 Closing increment with your approval...
+  ✓ Updated status: ready_for_review → completed
   ✓ Set completion date: 2025-10-28
+  ✓ Set approvedAt timestamp
   ✓ Generated completion report
   ✓ Freed WIP slot (1/2 → 0/2)
 
@@ -412,8 +449,28 @@ Active: 0001-user-authentication
   ✅ Gate 2: All tests passing (70/70, 89% coverage)
   ✅ Gate 3: Documentation updated
 
-🎯 Auto-closing increment 0001...
-  ✓ Status: completed
+✅ All gates passed! Transitioning to ready_for_review...
+
+📋 Status: ready_for_review (awaiting your approval)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  CONFIRMATION REQUIRED (v0.28.63+)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This will permanently mark increment 0001 as COMPLETED.
+
+Please confirm: Do you want to close this increment?
+```
+
+**🔥 Claude uses AskUserQuestion tool here to get explicit confirmation**
+
+**User confirms: "Yes, close it"**
+
+**Output (after confirmation)**:
+```
+🎯 Closing increment with your approval...
+  ✓ Status: ready_for_review → completed
+  ✓ Set approvedAt: 2025-10-28
   ✓ Completion report generated
   ✓ WIP freed (1/2 → 0/2)
 
@@ -426,11 +483,6 @@ Active: 0001-user-authentication
 Running quality assessment...
 
 Overall Score: 87/100 (GOOD) ✓
-
-Dimension Scores:
-  Clarity:         92/100 ✓✓
-  Testability:     85/100 ✓
-  Risk Assessment: 75/100 ✓
 
 Quality Gate Decision: ✅ PASS
 

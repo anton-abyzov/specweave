@@ -11,7 +11,7 @@
 #
 # Self-terminates after 60s of idle
 #
-# IMPORTANT: This script uses flock for safe concurrent access
+# IMPORTANT: Uses cross-platform locking (mkdir is atomic on all POSIX systems)
 set +e
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
@@ -30,33 +30,100 @@ QUEUE_DIR="$PROJECT_ROOT/.specweave/state/event-queue"
 HANDLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../handlers" && pwd)"
 LOG_FILE="$PROJECT_ROOT/.specweave/logs/processor.log"
 PID_FILE="$PROJECT_ROOT/.specweave/state/.processor.pid"
-LOCK_FILE="$PROJECT_ROOT/.specweave/state/.processor.lock"
+LOCK_DIR="$PROJECT_ROOT/.specweave/state/.processor.lock.d"
 IDLE_TIMEOUT=60  # Increased from 30s to 60s
 IDLE_COUNT=0
 HANDLER_TIMEOUT=30  # Max time per handler call
+STALE_LOCK_SECONDS=300  # Consider lock stale after 5 minutes
 
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null
 mkdir -p "$QUEUE_DIR" 2>/dev/null
 
-# Acquire exclusive lock using flock
-exec 200>"$LOCK_FILE"
-if ! flock -n 200 2>/dev/null; then
-  # Another processor is running - exit silently
-  exit 0
+# Cross-platform atomic lock using mkdir
+# mkdir is atomic on all POSIX systems (Linux, macOS, BSD)
+acquire_lock() {
+  # Try to create lock directory (atomic operation)
+  if mkdir "$LOCK_DIR" 2>/dev/null; then
+    echo $$ > "$LOCK_DIR/pid"
+    return 0
+  fi
+
+  # Lock exists - check if stale
+  if [[ -f "$LOCK_DIR/pid" ]]; then
+    local lock_pid=$(cat "$LOCK_DIR/pid" 2>/dev/null)
+
+    # Check if process is still running
+    if [[ -n "$lock_pid" ]] && kill -0 "$lock_pid" 2>/dev/null; then
+      return 1  # Lock held by active process
+    fi
+
+    # Check if lock is stale (older than STALE_LOCK_SECONDS)
+    local lock_age=0
+    if [[ "$(uname)" == "Darwin" ]]; then
+      lock_age=$(($(date +%s) - $(stat -f %m "$LOCK_DIR/pid" 2>/dev/null || echo 0)))
+    else
+      lock_age=$(($(date +%s) - $(stat -c %Y "$LOCK_DIR/pid" 2>/dev/null || echo 0)))
+    fi
+
+    if [[ $lock_age -gt $STALE_LOCK_SECONDS ]]; then
+      # Stale lock - remove and retry
+      rm -rf "$LOCK_DIR" 2>/dev/null
+      if mkdir "$LOCK_DIR" 2>/dev/null; then
+        echo $$ > "$LOCK_DIR/pid"
+        return 0
+      fi
+    fi
+  fi
+
+  return 1  # Failed to acquire lock
+}
+
+release_lock() {
+  rm -rf "$LOCK_DIR" 2>/dev/null
+  rm -f "$PID_FILE" 2>/dev/null
+}
+
+# Try to acquire lock
+if ! acquire_lock; then
+  exit 0  # Another processor is running
 fi
 
-# Double-check PID file for extra safety
+# Double-check PID file for extra safety (legacy compatibility)
 if [[ -f "$PID_FILE" ]]; then
   OLD_PID=$(cat "$PID_FILE" 2>/dev/null)
   if [[ -n "$OLD_PID" ]] && kill -0 "$OLD_PID" 2>/dev/null; then
+    release_lock
     exit 0  # Already running
   fi
 fi
 echo $$ > "$PID_FILE"
-trap 'rm -f "$PID_FILE"; flock -u 200 2>/dev/null' EXIT
+trap 'release_lock' EXIT
 
 log() { echo "[$(date +%H:%M:%S)] $1" >> "$LOG_FILE" 2>/dev/null; }
 log "Processor started (PID: $$, IDLE_TIMEOUT: ${IDLE_TIMEOUT}s)"
+
+# Cross-platform timeout function
+# Uses GNU timeout, gtimeout (macOS with coreutils), or fallback to no timeout
+run_with_timeout() {
+  local timeout_secs="$1"
+  shift
+
+  # Try GNU timeout (Linux)
+  if command -v timeout >/dev/null 2>&1; then
+    timeout "$timeout_secs" "$@" 2>/dev/null || true
+    return
+  fi
+
+  # Try gtimeout (macOS with brew install coreutils)
+  if command -v gtimeout >/dev/null 2>&1; then
+    gtimeout "$timeout_secs" "$@" 2>/dev/null || true
+    return
+  fi
+
+  # Fallback: run without timeout (handlers should be fast anyway)
+  # This is safe because handlers have their own error handling
+  "$@" 2>/dev/null || true
+}
 
 # Run handler with timeout (prevents stuck handlers from blocking queue)
 run_handler() {
@@ -65,7 +132,7 @@ run_handler() {
   local event_data="$3"
 
   if [[ -x "$handler" ]]; then
-    timeout "$HANDLER_TIMEOUT" bash "$handler" "$event_type" "$event_data" 2>/dev/null || true
+    run_with_timeout "$HANDLER_TIMEOUT" bash "$handler" "$event_type" "$event_data"
   fi
 }
 

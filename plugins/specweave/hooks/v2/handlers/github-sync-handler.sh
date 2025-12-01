@@ -27,10 +27,27 @@ GITHUB_ENABLED=$(grep -o '"enabled"[[:space:]]*:[[:space:]]*true' "$CONFIG_FILE"
 # Throttle: max once per 5 minutes per increment
 THROTTLE_FILE="$PROJECT_ROOT/.specweave/state/.github-sync-$INC_ID"
 if [[ -f "$THROTTLE_FILE" ]]; then
-  AGE=$(($(date +%s) - $(stat -f %m "$THROTTLE_FILE" 2>/dev/null || echo 0)))
+  if [[ "$(uname)" == "Darwin" ]]; then
+    AGE=$(($(date +%s) - $(stat -f %m "$THROTTLE_FILE" 2>/dev/null || echo 0)))
+  else
+    AGE=$(($(date +%s) - $(stat -c %Y "$THROTTLE_FILE" 2>/dev/null || echo 0)))
+  fi
   [[ $AGE -lt 300 ]] && exit 0
 fi
 touch "$THROTTLE_FILE"
+
+# Cross-platform timeout wrapper
+run_with_timeout() {
+  local timeout_secs="$1"
+  shift
+  if command -v timeout >/dev/null 2>&1; then
+    timeout "$timeout_secs" "$@" 2>/dev/null || true
+  elif command -v gtimeout >/dev/null 2>&1; then
+    gtimeout "$timeout_secs" "$@" 2>/dev/null || true
+  else
+    "$@" 2>/dev/null || true
+  fi
+}
 
 # Load GitHub token
 GITHUB_TOKEN=""
@@ -54,5 +71,5 @@ FEATURE_ID=""
 
 # Run sync (timeout 60s)
 cd "$PROJECT_ROOT" || exit 0
-GITHUB_TOKEN="$GITHUB_TOKEN" timeout 60 node "$SYNC_SCRIPT" "$FEATURE_ID" >/dev/null 2>&1
+GITHUB_TOKEN="$GITHUB_TOKEN" run_with_timeout 60 node "$SYNC_SCRIPT" "$FEATURE_ID" >/dev/null 2>&1
 exit 0

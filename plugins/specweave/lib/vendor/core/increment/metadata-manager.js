@@ -270,6 +270,17 @@ export class MetadataManager {
             metadata.backlogAt = undefined;
             metadata.pausedReason = undefined;
             metadata.pausedAt = undefined;
+            // Clear ready_for_review field if reopening
+            metadata.readyForReviewAt = undefined;
+        }
+        else if (newStatus === IncrementStatus.READY_FOR_REVIEW) {
+            // v0.28.63+: All tasks completed, awaiting user approval
+            metadata.readyForReviewAt = new Date().toISOString();
+            this.logger.log(`📋 Increment ${incrementId} ready for review - run /specweave:done to close`);
+        }
+        else if (newStatus === IncrementStatus.COMPLETED) {
+            // v0.28.63+: User explicitly approved completion via /specweave:done
+            metadata.approvedAt = new Date().toISOString();
         }
         else if (newStatus === IncrementStatus.ABANDONED) {
             metadata.abandonedReason = reason || 'No reason provided';

@@ -11,6 +11,10 @@ You are acting as the Product Manager to validate increment completion before cl
 
 **NEW (v0.8.0+)**: Automatic GitHub issue reopening when validation fails. If PM gates fail and a GitHub issue exists for this increment, the system automatically reopens the issue with validation failure details. This ensures issues aren't prematurely closed when work is incomplete.
 
+**NEW (v0.28.63+)**: **EXPLICIT USER APPROVAL REQUIRED**. This command is the ONLY way to transition from `ready_for_review` → `completed`. This prevents the auto-completion bug where increments get marked "completed" without:
+1. All ACs being checked in spec.md
+2. User explicitly confirming the closure
+
 ## Usage
 
 ```bash
@@ -25,12 +29,37 @@ You are acting as the Product Manager to validate increment completion before cl
 
 ## Workflow
 
+### Step 0.5: Status Validation (NEW - v0.28.63+)
+
+**🔥 CRITICAL: Only `ready_for_review` or `active` increments can be closed!**
+
+1. **Check current status from metadata.json**:
+   - If status is `ready_for_review` → Proceed (all tasks already validated as complete)
+   - If status is `active` → Check if all tasks are done, then transition to `ready_for_review` first
+   - If status is `completed` → Already closed, warn user
+   - If status is `backlog`, `paused`, or `abandoned` → BLOCK with error
+
+2. **Require explicit user confirmation**:
+   ```
+   ✅ Increment ready for closure:
+      • Status: ready_for_review
+      • All 4 tasks completed
+      • All 12 ACs checked in spec.md
+
+   ⚠️  This will permanently mark the increment as COMPLETED.
+
+   Please confirm: Type "yes" to close this increment, or "no" to cancel.
+   ```
+
+**Why this matters**: Prevents the auto-completion bug from increment 0081 where
+status was set to "completed" without ACs being checked or user approval.
+
 ### Step 1: Load Increment Context
 
 1. **Find increment directory**:
    - Normalize ID to 4-digit format (e.g., "1" → "0001")
    - Find `.specweave/increments/0001-name/`
-   - Verify increment exists and is in-progress
+   - Verify increment exists and is `ready_for_review` or `active` (NOT already completed)
 
 2. **Load all documents**:
    - `spec.md` - Requirements and acceptance criteria
