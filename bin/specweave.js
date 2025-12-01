@@ -272,6 +272,38 @@ program
     await runJiraValidation(options);
   });
 
+// Jobs command - Monitor and manage background jobs (imports, cloning, sync)
+program
+  .command('jobs')
+  .description('Monitor and manage background jobs (imports, cloning, sync)')
+  .option('--all', 'Show all jobs (including completed)')
+  .option('--id <jobId>', 'Show details for specific job')
+  .option('--logs <jobId>', 'Show worker log output')
+  .option('--follow <jobId>', 'Follow job progress in real-time')
+  .option('--kill <jobId>', 'Kill running background job')
+  .option('--resume <jobId>', 'Resume paused job')
+  .action(async (options) => {
+    const { createJobsCommand } = await import('../dist/src/cli/commands/jobs.js');
+    const jobsCmd = createJobsCommand();
+    // Execute the action directly with options
+    const projectPath = process.cwd();
+    const path = await import('path');
+    const fs = await import('../dist/src/utils/fs-native.js');
+
+    // Check if SpecWeave is initialized
+    const specweavePath = path.join(projectPath, '.specweave');
+    if (!fs.existsSync(specweavePath)) {
+      console.log(chalk.yellow('No SpecWeave project found in current directory.'));
+      console.log(chalk.gray('Run `specweave init` to initialize a project.'));
+      return;
+    }
+
+    // Import and use the handlers
+    const jobsModule = await import('../dist/src/cli/commands/jobs.js');
+    // Re-run the action
+    await jobsCmd.parseAsync(['node', 'jobs', ...process.argv.slice(3)], { from: 'user' });
+  });
+
 // Help text
 program.on('--help', () => {
   console.log('');
@@ -297,6 +329,10 @@ program.on('--help', () => {
   console.log('  $ specweave validate-plugins --auto-install # Auto-install missing plugins');
   console.log('  $ specweave validate-plugins --dry-run      # Preview what would be installed');
   console.log('  $ specweave validate-jira                   # Validate Jira configuration');
+  console.log('  $ specweave jobs                            # Show active background jobs');
+  console.log('  $ specweave jobs --follow <jobId>           # Follow job progress live');
+  console.log('  $ specweave jobs --logs <jobId>             # View worker logs');
+  console.log('  $ specweave jobs --resume <jobId>           # Resume paused job');
   console.log('  $ specweave validate-jira --env .env.prod   # Validate with custom .env file');
   console.log('');
   console.log('Supported AI Tools:');
