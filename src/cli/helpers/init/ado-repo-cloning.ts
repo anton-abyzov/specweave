@@ -8,8 +8,6 @@
  */
 
 import chalk from 'chalk';
-import path from 'path';
-import { existsSync, mkdirSync } from 'fs';
 import { AzureDevOpsProvider } from '../../../core/repo-structure/providers/azure-devops-provider.js';
 import { filterRepositoriesByPattern, type ClonePatternResult } from '../selection-strategy.js';
 import { launchCloneJob } from '../../../core/background/job-launcher.js';
@@ -128,17 +126,11 @@ export async function triggerAdoRepoCloning(
 
   console.log(chalk.blue(`\n🔄 Starting background clone for ${filteredRepos.length} repositories...\n`));
 
-  // Create repos directory if needed
-  const reposDir = path.join(projectPath, 'repos');
-  if (!existsSync(reposDir)) {
-    mkdirSync(reposDir, { recursive: true });
-  }
-
-  // Prepare repositories with clone URLs
+  // Prepare repositories with clone URLs (clone directly into root folder)
   const reposWithUrls = filteredRepos.map(r => ({
     owner: `${org}/${r.project}`,
     name: r.name,
-    path: path.join('repos', r.name),
+    path: r.name, // Clone directly to root, not into repos/ subfolder
     cloneUrl: buildAdoCloneUrl(org, r.project, r.name, pat)
   }));
 
@@ -149,7 +141,7 @@ export async function triggerAdoRepoCloning(
   });
 
   // Show progress info
-  console.log(chalk.gray(`   Repositories will be cloned to: ${reposDir}/`));
+  console.log(chalk.gray(`   Repositories will be cloned to: ${projectPath}/`));
   console.log(chalk.gray(`   Job ID: ${result.job.id}`));
 
   if (result.isBackground) {
