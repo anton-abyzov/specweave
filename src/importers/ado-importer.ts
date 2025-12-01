@@ -23,9 +23,9 @@ interface ADOWorkItem {
     'System.AreaPath'?: string; // e.g., "MyProject\\Platform-Engineering"
     'Microsoft.VSTS.Common.Priority'?: number;
     'Microsoft.VSTS.Common.AcceptanceCriteria'?: string;
-    'System.Parent'?: {
-      id: number;
-    };
+    // CRITICAL FIX (2025-12-01): System.Parent is a number, not an object
+    // ADO returns the parent work item ID directly as an integer
+    'System.Parent'?: number;
   };
   _links: {
     html: {
@@ -76,12 +76,18 @@ export class ADOImporter implements Importer {
   }
 
   /**
-   * Paginate through work items using WIQL (200 per page)
+   * Paginate through work items using WIQL with date-based pagination for 100K+ items
    *
    * CRITICAL FIX (2025-12-01): Also fetch missing parent items (Epics/Capabilities)
    * Problem: If a parent Epic wasn't modified recently, it won't be in the WIQL results,
    * causing all its child User Stories to be grouped into one generic folder.
    * Solution: After fetching all items, identify missing parents and fetch them separately.
+   *
+   * ENHANCEMENT (2025-12-01): Date-based pagination to handle 100K+ items
+   * ADO WIQL has a 20K ID limit per query. For larger projects, we need to:
+   * 1. Run initial WIQL query (up to 20K IDs)
+   * 2. If we hit the limit, run another query with older date range
+   * 3. Keep paginating by date until we have all items or hit maxItems
    */
   async *paginate(config: ImportConfig = {}): AsyncGenerator<ExternalItem[], void, unknown> {
     const {
@@ -91,89 +97,138 @@ export class ADOImporter implements Importer {
       maxItems = Infinity,
     } = config;
 
-    // Build WIQL query
-    // CRITICAL FIX (2025-12-01): Use ChangedDate instead of CreatedDate
-    // This ensures recently updated items are imported even if they were created long ago
-    // Also filter by work item types to get the full hierarchy (Capability/Epic/Feature/User Story/Task)
-    const since = new Date();
-    since.setMonth(since.getMonth() - timeRangeMonths);
-    const sinceStr = since.toISOString().split('T')[0];
+    // Collect all items to find missing parents after pagination
+    const allFetchedItems: ExternalItem[] = [];
+    const fetchedIds = new Set<number>();
+    const top = 200; // ADO pagination size (max 200)
+    let totalFetched = 0;
 
-    const wiqlParts: string[] = [
-      `SELECT [System.Id], [System.Title], [System.WorkItemType], [System.State]`,
-      `FROM WorkItems`,
-      `WHERE [System.TeamProject] = '${this.project}'`,
-      // Use ChangedDate to include active items that were created earlier
-      `AND [System.ChangedDate] >= '${sinceStr}'`,
-      // Filter for relevant work item types (includes Capability for enterprise setups)
-      `AND [System.WorkItemType] IN ('Capability', 'Epic', 'Feature', 'User Story', 'Product Backlog Item', 'Bug', 'Task')`,
-    ];
-
-    // Status filter
-    if (!includeClosed) {
-      wiqlParts.push(`AND [System.State] <> 'Closed' AND [System.State] <> 'Removed'`);
-    }
-
-    // Tags filter (ADO uses semicolon-separated tags)
-    if (labels.length > 0) {
-      const tagsCondition = labels.map((tag) => `[System.Tags] CONTAINS '${tag}'`).join(' OR ');
-      wiqlParts.push(`AND (${tagsCondition})`);
-    }
-
-    wiqlParts.push(`ORDER BY [System.ChangedDate] DESC`);
-
-    const wiql = wiqlParts.join(' ');
+    // WIQL has a 20K limit per query - use date-based pagination for larger datasets
+    const WIQL_LIMIT = 20000;
+    let currentEndDate = new Date(); // Start from now
+    const sinceDate = new Date();
+    sinceDate.setMonth(sinceDate.getMonth() - timeRangeMonths);
 
     try {
-      // Step 1: Execute WIQL query to get all work item IDs
-      // CRITICAL: WIQL returns max 20,000 IDs by default. For larger projects, use $top parameter.
-      const queryResult = await this.makeADORequest<ADOQueryResult>(
-        `/_apis/wit/wiql?$top=50000&api-version=7.0`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ query: wiql }),
-        }
-      );
+      // Date-based pagination loop
+      let dateRangeIteration = 0;
+      let hasMoreItems = true;
 
-      const allWorkItemIds = queryResult.workItems.map((wi) => wi.id);
+      while (hasMoreItems && totalFetched < maxItems && currentEndDate > sinceDate) {
+        dateRangeIteration++;
 
-      // Collect all items to find missing parents after pagination
-      const allFetchedItems: ExternalItem[] = [];
-      const fetchedIds = new Set<number>();
+        // Build WIQL query for this date range
+        const sinceDateStr = sinceDate.toISOString().split('T')[0];
+        const untilDateStr = currentEndDate.toISOString().split('T')[0];
 
-      // Step 2: Paginate through work item IDs
-      let skip = 0;
-      const top = 200; // ADO pagination size (max 200)
-      let totalFetched = 0;
+        const wiqlParts: string[] = [
+          `SELECT [System.Id], [System.Title], [System.WorkItemType], [System.State], [System.ChangedDate]`,
+          `FROM WorkItems`,
+          `WHERE [System.TeamProject] = '${this.project}'`,
+          // Use ChangedDate range for pagination
+          `AND [System.ChangedDate] >= '${sinceDateStr}'`,
+        ];
 
-      while (skip < allWorkItemIds.length && totalFetched < maxItems) {
-        // Get IDs for this page
-        const ids = allWorkItemIds.slice(skip, skip + top);
-
-        if (ids.length === 0) {
-          break;
+        // For subsequent iterations, add upper bound to avoid duplicates
+        if (dateRangeIteration > 1) {
+          wiqlParts.push(`AND [System.ChangedDate] < '${untilDateStr}'`);
         }
 
-        // Fetch full work item details
-        const workItems = await this.getWorkItemsBatch(ids);
+        wiqlParts.push(
+          // Filter for relevant work item types (includes Capability for enterprise setups)
+          `AND [System.WorkItemType] IN ('Capability', 'Epic', 'Feature', 'User Story', 'Product Backlog Item', 'Bug', 'Task')`
+        );
 
-        // Track fetched IDs
-        for (const wi of workItems) {
-          fetchedIds.add(wi.fields['System.Id']);
+        // Status filter
+        if (!includeClosed) {
+          wiqlParts.push(`AND [System.State] <> 'Closed' AND [System.State] <> 'Removed'`);
         }
 
-        // Convert to ExternalItems
-        const items = workItems.map((wi) => this.convertToExternalItem(wi));
-        allFetchedItems.push(...items);
-
-        // Yield page
-        if (items.length > 0) {
-          yield items.slice(0, maxItems - totalFetched);
-          totalFetched += items.length;
+        // Tags filter (ADO uses semicolon-separated tags)
+        if (labels.length > 0) {
+          const tagsCondition = labels.map((tag) => `[System.Tags] CONTAINS '${tag}'`).join(' OR ');
+          wiqlParts.push(`AND (${tagsCondition})`);
         }
 
-        skip += top;
+        wiqlParts.push(`ORDER BY [System.ChangedDate] DESC`);
+
+        const wiql = wiqlParts.join(' ');
+
+        // Execute WIQL query - use high limit to maximize items per query
+        const queryResult = await this.makeADORequest<ADOQueryResult>(
+          `/_apis/wit/wiql?$top=20000&api-version=7.0`,
+          {
+            method: 'POST',
+            body: JSON.stringify({ query: wiql }),
+          }
+        );
+
+        const workItemIds = queryResult.workItems.map((wi) => wi.id);
+
+        // Filter out already fetched IDs (avoid duplicates across date ranges)
+        const newIds = workItemIds.filter(id => !fetchedIds.has(id));
+
+        console.log(`   📊 WIQL iteration ${dateRangeIteration}: ${workItemIds.length} IDs found (${newIds.length} new)`);
+
+        if (newIds.length === 0) {
+          // No new items - we're done or need to go further back in time
+          if (workItemIds.length >= WIQL_LIMIT) {
+            // Hit the limit but all were duplicates - shouldn't happen, but handle it
+            hasMoreItems = false;
+          } else {
+            hasMoreItems = false;
+          }
+          continue;
+        }
+
+        // Paginate through work item IDs
+        let skip = 0;
+        let oldestChangedDate: Date | null = null;
+
+        while (skip < newIds.length && totalFetched < maxItems) {
+          const ids = newIds.slice(skip, skip + top);
+
+          if (ids.length === 0) {
+            break;
+          }
+
+          // Fetch full work item details
+          const workItems = await this.getWorkItemsBatch(ids);
+
+          // Track fetched IDs and find oldest date for next iteration
+          for (const wi of workItems) {
+            fetchedIds.add(wi.fields['System.Id']);
+            const changedDate = new Date(wi.fields['System.ChangedDate']);
+            if (!oldestChangedDate || changedDate < oldestChangedDate) {
+              oldestChangedDate = changedDate;
+            }
+          }
+
+          // Convert to ExternalItems
+          const items = workItems.map((wi) => this.convertToExternalItem(wi));
+          allFetchedItems.push(...items);
+
+          // Yield page
+          if (items.length > 0) {
+            const itemsToYield = items.slice(0, maxItems - totalFetched);
+            yield itemsToYield;
+            totalFetched += itemsToYield.length;
+          }
+
+          skip += top;
+        }
+
+        // Check if we hit the WIQL limit and need another date range iteration
+        if (workItemIds.length >= WIQL_LIMIT && oldestChangedDate && totalFetched < maxItems) {
+          // Move date window back to continue fetching older items
+          currentEndDate = oldestChangedDate;
+          console.log(`   📅 Hit WIQL limit, continuing with items before ${currentEndDate.toISOString().split('T')[0]}...`);
+        } else {
+          hasMoreItems = false;
+        }
       }
+
+      console.log(`   ✅ Total items fetched: ${totalFetched}`);
 
       // Step 3: CRITICAL - Fetch missing parent items (Epics/Capabilities not in time range)
       // This ensures proper hierarchy grouping even for old parent items
@@ -354,8 +409,9 @@ export class ADOImporter implements Importer {
       url: workItem._links.html.href,
       labels: tags,
       acceptanceCriteria,
+      // CRITICAL FIX (2025-12-01): System.Parent is a number, not object
       parentId: workItem.fields['System.Parent']
-        ? `ADO-${workItem.fields['System.Parent'].id}`
+        ? `ADO-${workItem.fields['System.Parent']}`
         : undefined,
       platform: 'ado',
       adoProjectName: this.project,

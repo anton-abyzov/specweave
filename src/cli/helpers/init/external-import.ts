@@ -30,7 +30,8 @@ import {
   type JiraMappingResult,
   type AdoMappingResult,
 } from './jira-ado-auto-detect.js';
-import { getJobManager } from '../../../core/background/index.js';
+import { normalizeToProjectId } from '../../../utils/project-id-generator.js';
+import { getJobManager, launchImportJob, isJobRunning, getJobLog } from '../../../core/background/index.js';
 import type { ImportJobConfig } from '../../../core/background/types.js';
 
 /**
@@ -303,14 +304,18 @@ function buildAdoConfigFromProjects(
 
     if (importableProjects.length > 0) {
       const projectMappings = importableProjects.map(proj => {
-        const projectFolder = proj.name.toLowerCase().replace(/\s+/g, '-');
+        // CRITICAL FIX (2025-12-01): Use normalizeToProjectId() for consistent folder names
+        // Bug: .replace(/\s+/g, '-') was inconsistent with normalizeToProjectId() used elsewhere
+        // This caused duplicate folders like "Nova X Sandbox / Nova X Sandbox"
+        const projectFolder = normalizeToProjectId(proj.name);
 
         // Build area mappings with 2-level folder structure: {project}/{areaPath}
         const areaMappings = proj.areaPaths?.map(areaPath => {
           // Extract leaf segment from area path (e.g., "Project\Platform-Engineering" → "platform-engineering")
           const pathParts = areaPath.split('\\');
           const areaLeaf = pathParts[pathParts.length - 1];
-          const areaFolder = areaLeaf.toLowerCase().replace(/\s+/g, '-');
+          // CRITICAL FIX: Use normalizeToProjectId() for consistent normalization
+          const areaFolder = normalizeToProjectId(areaLeaf);
 
           return {
             areaPath,
@@ -360,11 +365,21 @@ function buildAdoConfigFromProjects(
  * @param language - Language for translations
  * @returns Import result
  */
+export interface ImportOptions {
+  /** Run import in background (non-blocking) */
+  background?: boolean;
+  /** Estimated total items for progress tracking */
+  estimatedTotal?: number;
+  /** Skip confirmation prompts */
+  skipPrompts?: boolean;
+}
+
 export async function promptAndRunExternalImport(
   targetDir: string,
   isCI: boolean,
-  language: SupportedLanguage = 'en'
-): Promise<CoordinatorResult> {
+  language: SupportedLanguage = 'en',
+  options: ImportOptions = {}
+): Promise<CoordinatorResult | BackgroundImportResult> {
   const strings = getExternalImportStrings(language);
 
   // Load import configuration
@@ -618,7 +633,14 @@ export async function promptAndRunExternalImport(
   }
 
   // Run import with progress tracking
-  return await runImport(targetDir, coordinatorConfig);
+  // Use background mode if requested or for large imports (> 1000 items estimated)
+  const useBackground = options.background ||
+    (options.estimatedTotal && options.estimatedTotal > 1000);
+
+  return await runImport(targetDir, coordinatorConfig, {
+    background: useBackground,
+    estimatedTotal: options.estimatedTotal
+  });
 }
 
 /**
@@ -935,12 +957,65 @@ async function promptMultiRepoSelection(targetDir: string): Promise<RepoSelectio
 }
 
 /**
+ * Background import result (when running async)
+ */
+export interface BackgroundImportResult {
+  jobId: string;
+  isBackground: true;
+  pid?: number;
+  message: string;
+}
+
+/**
  * Run the import with progress tracking
+ *
+ * @param targetDir Project directory
+ * @param coordinatorConfig Import configuration
+ * @param options.background If true, run in background process (non-blocking)
+ * @param options.estimatedTotal Estimated total items (for large imports)
  */
 async function runImport(
   targetDir: string,
-  coordinatorConfig: CoordinatorConfig
-): Promise<CoordinatorResult> {
+  coordinatorConfig: CoordinatorConfig,
+  options: { background?: boolean; estimatedTotal?: number } = {}
+): Promise<CoordinatorResult | BackgroundImportResult> {
+  const { background = false, estimatedTotal = 100 } = options;
+
+  // BACKGROUND MODE: Spawn detached worker process
+  if (background) {
+    console.log(chalk.cyan('\n   🚀 Starting background import...'));
+
+    try {
+      const result = await launchImportJob({
+        type: 'import-issues',
+        projectPath: targetDir,
+        coordinatorConfig,
+        estimatedTotal
+      });
+
+      if (result.isBackground) {
+        console.log(chalk.green(`   ✓ Background import started (Job ID: ${result.job.id})`));
+        console.log(chalk.gray(`   PID: ${result.pid}`));
+        console.log(chalk.gray(`   Check progress: /specweave:jobs`));
+        console.log(chalk.gray(`   View logs: /specweave:jobs --id ${result.job.id}`));
+        console.log('');
+
+        return {
+          jobId: result.job.id,
+          isBackground: true,
+          pid: result.pid,
+          message: `Background import started. Check progress with /specweave:jobs`
+        };
+      }
+      // Fallback to foreground if background launch failed
+      console.log(chalk.yellow('   ⚠ Background mode unavailable, running in foreground'));
+    } catch (error: any) {
+      console.log(chalk.yellow(`   ⚠ Could not start background: ${error.message}`));
+      console.log(chalk.gray('   Running in foreground instead...'));
+    }
+  }
+
+  // FOREGROUND MODE: Run import directly (original behavior)
   const spinner = ora('Importing items...').start();
   let lastRepo = '';
 
@@ -1352,8 +1427,9 @@ function groupItemsByExternalContainer(items: ExternalItem[]): ContainerGroup[] 
       containerId = item.jiraProjectKey;
 
       // Project ID from board name (if available) or default
+      // CRITICAL FIX (2025-12-01): Use normalizeToProjectId() for consistent folder names
       projectId = item.jiraBoardName
-        ? item.jiraBoardName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'default'
+        ? normalizeToProjectId(item.jiraBoardName) || 'default'
         : 'default';
 
       groupKey = `jira:${containerId}:${projectId}`;
@@ -1372,10 +1448,11 @@ function groupItemsByExternalContainer(items: ExternalItem[]): ContainerGroup[] 
       containerId = item.adoProjectName;
 
       // Project ID from area path (extract last segment) or default
+      // CRITICAL FIX (2025-12-01): Use normalizeToProjectId() for consistent folder names
       if (item.adoAreaPath) {
         const areaSegments = item.adoAreaPath.split('\\');
         const lastSegment = areaSegments[areaSegments.length - 1];
-        projectId = lastSegment.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/^-+|-+$/g, '').slice(0, 50) || 'default';
+        projectId = normalizeToProjectId(lastSegment) || 'default';
       } else {
         projectId = 'default';
       }
@@ -1392,13 +1469,11 @@ function groupItemsByExternalContainer(items: ExternalItem[]): ContainerGroup[] 
     // GitHub or default (1-level structure)
     else {
       // Use sourceRepo if available, otherwise '_default'
+      // CRITICAL FIX (2025-12-01): Use normalizeToProjectId() for consistent folder names
       if (item.sourceRepo) {
         const parts = item.sourceRepo.split('/');
         const rawRepoName = parts.length > 1 ? parts[1] : item.sourceRepo;
-        projectId = rawRepoName
-          .replace(/[^a-zA-Z0-9-_]/g, '-')
-          .replace(/^-+|-+$/g, '')
-          .slice(0, 100) || '_default';
+        projectId = normalizeToProjectId(rawRepoName) || '_default';
       } else {
         projectId = '_default';
       }
