@@ -48,10 +48,36 @@ async function main(): Promise<void> {
   const jobId = args[0];
   const projectPath = args[1];
 
-  // Write PID file for process management
+  // Write PID file for process management with EXCLUSIVE lock (P1 fix)
+  // Uses O_EXCL flag to prevent race condition when multiple resume attempts happen
   const pidFile = path.join(projectPath, '.specweave', 'state', 'jobs', jobId, 'worker.pid');
   fs.mkdirSync(path.dirname(pidFile), { recursive: true });
-  fs.writeFileSync(pidFile, process.pid.toString());
+
+  try {
+    // 'wx' = O_WRONLY | O_CREAT | O_EXCL - fails if file exists
+    const fd = fs.openSync(pidFile, 'wx');
+    fs.writeSync(fd, process.pid.toString());
+    fs.closeSync(fd);
+  } catch (err: any) {
+    if (err.code === 'EEXIST') {
+      // PID file already exists - another worker is running
+      // Check if the existing process is still alive
+      try {
+        const existingPid = parseInt(fs.readFileSync(pidFile, 'utf-8').trim(), 10);
+        process.kill(existingPid, 0); // Signal 0 = check if alive
+        // Process is alive - exit to avoid duplicate workers
+        console.error(`Worker already running for job ${jobId} (PID: ${existingPid})`);
+        process.exit(1);
+      } catch {
+        // Existing process is dead - safe to take over
+        // Remove stale PID file and write new one
+        fs.unlinkSync(pidFile);
+        fs.writeFileSync(pidFile, process.pid.toString());
+      }
+    } else {
+      throw err;
+    }
+  }
 
   // Setup cleanup on exit
   const cleanup = () => {
@@ -91,9 +117,14 @@ async function main(): Promise<void> {
       fs.appendFileSync(logPath, `[${timestamp}] ${msg}\n`);
     };
 
-    log(`Worker started for job ${jobId}`);
+    log(`════════════════════════════════════════════════════════════`);
+    log(`BACKGROUND IMPORT JOB STARTED`);
+    log(`════════════════════════════════════════════════════════════`);
+    log(`Job ID: ${jobId}`);
     log(`Project path: ${projectPath}`);
     log(`PID: ${process.pid}`);
+    log(`Started at: ${new Date().toISOString()}`);
+    log(``);
 
     // Dynamically import heavy dependencies
     const importCoordinatorModule = await import('../../importers/import-coordinator.js');
@@ -109,12 +140,54 @@ async function main(): Promise<void> {
     const jobManager = getJobManager(projectPath);
     jobManager.startJob(jobId);
 
-    log('Dependencies loaded, starting import...');
+    log('Dependencies loaded successfully');
+    log(``);
 
     // Setup progress tracking
     const coordinatorConfig = jobConfig.coordinatorConfig;
     let totalEstimate = 0;
     let currentCount = 0;
+    let lastLoggedPage = 0;
+
+    // Log import configuration
+    log(`────────────────────────────────────────────────────────────`);
+    log(`IMPORT CONFIGURATION:`);
+    log(`────────────────────────────────────────────────────────────`);
+    if (coordinatorConfig.importConfig) {
+      log(`Time range: ${coordinatorConfig.importConfig.timeRangeMonths} months`);
+      log(`Include closed: ${coordinatorConfig.importConfig.includeClosed}`);
+      log(`Page size: ${coordinatorConfig.importConfig.pageSize || 'default'}`);
+    }
+    if (coordinatorConfig.github) {
+      log(`GitHub: ${coordinatorConfig.github.owner}/${coordinatorConfig.github.repo}`);
+    }
+    if (coordinatorConfig.githubRepositories) {
+      log(`GitHub repos: ${coordinatorConfig.githubRepositories.length} repositories`);
+      for (const repo of coordinatorConfig.githubRepositories) {
+        log(`  → ${repo.owner}/${repo.repo}`);
+      }
+    }
+    if (coordinatorConfig.jira) {
+      log(`JIRA: ${coordinatorConfig.jira.host}`);
+      if (coordinatorConfig.jira.projectMappings?.length) {
+        log(`  Projects: ${coordinatorConfig.jira.projectMappings.length} configured`);
+      }
+    }
+    if (coordinatorConfig.ado) {
+      log(`Azure DevOps: ${coordinatorConfig.ado.orgUrl}`);
+      if (coordinatorConfig.ado.projectMappings?.length) {
+        log(`  Projects: ${coordinatorConfig.ado.projectMappings.length} configured`);
+        for (const pm of coordinatorConfig.ado.projectMappings) {
+          const areaCount = pm.areaMappings?.length || 0;
+          log(`    → ${pm.projectName} (${areaCount} area paths)`);
+        }
+      }
+    }
+    log(``);
+
+    log(`────────────────────────────────────────────────────────────`);
+    log(`STARTING IMPORT...`);
+    log(`────────────────────────────────────────────────────────────`);
 
     coordinatorConfig.onProgressEnhanced = (info: any) => {
       currentCount = info.current || currentCount;
@@ -122,24 +195,36 @@ async function main(): Promise<void> {
         totalEstimate = info.total;
       }
 
-      // Update job progress
+      // ATOMIC progress update - fixes race condition (P1 fix)
+      // Single call updates both current count AND total in one file write
       jobManager.updateProgress(
         jobId,
         currentCount,
         info.sourceRepo || info.platform,
-        undefined,
-        undefined
+        undefined,  // completed
+        undefined,  // failed
+        totalEstimate > 0 ? totalEstimate : undefined  // newTotal (atomic)
       );
 
-      // Update total estimate if we now know more
-      const job = jobManager.getJob(jobId);
-      if (job && totalEstimate > job.progress.total) {
-        job.progress.total = totalEstimate;
-        // Force save with new total
-        jobManager.updateProgress(jobId, currentCount, info.sourceRepo || info.platform);
-      }
+      // P3 FIX: Log every 100 items, on page changes, OR on final item
+      // The final item check prevents "stuck at 96%" UX where last log was at 1,200
+      // but job completes at 1,245 items
+      const isLastItem = totalEstimate > 0 && currentCount >= totalEstimate;
+      const shouldLog = isLastItem ||
+                        (info.page && info.page !== lastLoggedPage) ||
+                        (currentCount % 100 === 0) ||
+                        (info.percentage && info.percentage % 10 === 0);
 
-      log(`Progress: ${currentCount}/${totalEstimate} - ${info.platform} ${info.sourceRepo || ''}`);
+      if (shouldLog || info.page !== lastLoggedPage) {
+        lastLoggedPage = info.page || lastLoggedPage;
+        const parts: string[] = [];
+        if (info.page) parts.push(`page ${info.page}`);
+        parts.push(`${currentCount}/${totalEstimate || '?'} items`);
+        if (info.percentage) parts.push(`${info.percentage}%`);
+        if (info.rate) parts.push(`${info.rate}/s`);
+        if (isLastItem) parts.push('COMPLETE');
+        log(`[${info.platform}] ${info.sourceRepo || ''} - ${parts.join(' | ')}`);
+      }
     };
 
     // Rate limit handling
@@ -158,12 +243,47 @@ async function main(): Promise<void> {
     const coordinator = new ImportCoordinator(coordinatorConfig);
     const result = await coordinator.importAll();
 
-    log(`Import complete: ${result.totalCount} items fetched`);
+    log(``);
+    log(`────────────────────────────────────────────────────────────`);
+    log(`IMPORT PHASE COMPLETE`);
+    log(`────────────────────────────────────────────────────────────`);
+    log(`Total items fetched: ${result.totalCount}`);
+
+    // Log per-platform breakdown
+    if (result.results && result.results.length > 0) {
+      log(`Platform breakdown:`);
+      for (const platformResult of result.results) {
+        log(`  → ${platformResult.platform}: ${platformResult.count} items`);
+      }
+    }
+
+    // Log per-repo breakdown
+    if (result.allItems.length > 0) {
+      const repoCounts = new Map<string, { open: number; closed: number }>();
+      for (const item of result.allItems) {
+        const repo = item.sourceRepo || item.adoProjectName || item.jiraProjectKey || 'unknown';
+        const existing = repoCounts.get(repo) || { open: 0, closed: 0 };
+        if (item.status === 'open' || item.status === 'in-progress') {
+          existing.open++;
+        } else {
+          existing.closed++;
+        }
+        repoCounts.set(repo, existing);
+      }
+      log(`Per-source breakdown:`);
+      for (const [repo, counts] of repoCounts) {
+        const total = counts.open + counts.closed;
+        log(`  → ${repo}: ${total} items (${counts.open} open, ${counts.closed} closed)`);
+      }
+    }
 
     // CRITICAL: Convert imported items to living docs
     // Without this, items are fetched but NOT saved to specs folder!
     if (result.totalCount > 0 && result.allItems.length > 0) {
-      log('Converting items to living docs...');
+      log(``);
+      log(`────────────────────────────────────────────────────────────`);
+      log(`CONVERTING TO LIVING DOCS...`);
+      log(`────────────────────────────────────────────────────────────`);
 
       const specsDir = path.join(projectPath, '.specweave', 'docs', 'internal', 'specs');
 
@@ -200,6 +320,7 @@ async function main(): Promise<void> {
       }
 
       log(`Converted ${totalConverted} User Stories to living docs`);
+      log(`Location: .specweave/docs/internal/specs/`);
     }
 
     // Mark job as complete
@@ -207,14 +328,30 @@ async function main(): Promise<void> {
 
     // Write result summary
     const resultPath = path.join(projectPath, '.specweave', 'state', 'jobs', jobId, 'result.json');
-    fs.writeFileSync(resultPath, JSON.stringify({
+    const finalResult = {
       totalCount: result.totalCount,
       completedAt: new Date().toISOString(),
       platforms: result.platforms || [],
       errors: result.errors || {}
-    }, null, 2));
+    };
+    fs.writeFileSync(resultPath, JSON.stringify(finalResult, null, 2));
 
-    log('Worker finished successfully');
+    log(``);
+    log(`════════════════════════════════════════════════════════════`);
+    log(`JOB COMPLETED SUCCESSFULLY`);
+    log(`════════════════════════════════════════════════════════════`);
+    log(`Total items imported: ${result.totalCount}`);
+    log(`Completed at: ${new Date().toISOString()}`);
+    log(`Duration: ${Math.round((Date.now() - new Date(jobConfig.startedAt).getTime()) / 1000)}s`);
+    if (Object.keys(result.errors || {}).length > 0) {
+      log(`Errors: ${JSON.stringify(result.errors)}`);
+    }
+    log(``);
+    log(`Next steps:`);
+    log(`  → Review User Stories: .specweave/docs/internal/specs/`);
+    log(`  → Create increments: /specweave:increment "feature"`);
+    log(`════════════════════════════════════════════════════════════`);
+
     process.exit(0);
 
   } catch (error: any) {

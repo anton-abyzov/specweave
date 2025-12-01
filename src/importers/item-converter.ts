@@ -420,14 +420,23 @@ export class ItemConverter {
           }
 
           // If parent exists but not in our items, use parent ID as group
+          // This groups siblings with the same orphan parent together
           if (!groupKey) {
             groupKey = `feature:${item.parentId}`;
           }
         }
 
-        // Fallback to sourceRepo or default
+        // CRITICAL FIX (2025-12-01): For ADO orphan items (no parent or parent not found),
+        // create INDIVIDUAL FS-XXXE folders per item, NOT grouped together.
+        // This preserves the 1 US → 1 feature folder pattern for orphans.
         if (!groupKey) {
-          groupKey = item.sourceRepo || 'default';
+          if (item.platform === 'ado') {
+            // Each ADO orphan gets its own feature folder with unique group key
+            groupKey = `orphan:${item.id}`;
+          } else {
+            // Non-ADO items: fallback to sourceRepo or default
+            groupKey = item.sourceRepo || 'default';
+          }
         }
 
         if (!groups.has(groupKey)) {
@@ -554,6 +563,7 @@ export class ItemConverter {
 
     // Check if this is an ADO feature-level item (Capability/Epic/Feature)
     const isAdoFeatureGroup = groupKey.startsWith('feature:');
+    const isAdoOrphanGroup = groupKey.startsWith('orphan:');
     const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
     const adoWitType = firstItem.adoWorkItemType?.toLowerCase();
     const isAdoFeatureLevelItem = isAdoFeatureGroup &&
@@ -572,6 +582,16 @@ export class ItemConverter {
       featureTitle = `${witTypeLabel}: ${firstItem.title}`;
       description = firstItem.description || `This ${witTypeLabel.toLowerCase()} was imported from Azure DevOps.`;
       externalLink = `[${witTypeLabel} in Azure DevOps](${firstItem.url})`;
+    } else if (isAdoOrphanGroup && firstItem.platform === 'ado') {
+      // CRITICAL FIX (2025-12-01): For ADO orphan User Stories (no parent Epic),
+      // create feature with the User Story info. This happens when:
+      // - User Story has no parent in ADO
+      // - Parent Epic/Feature wasn't imported (outside time range)
+      witTypeLabel = firstItem.adoWorkItemType || 'User Story';
+      featureTitle = `${witTypeLabel}: ${firstItem.title}`;
+      description = firstItem.description ||
+        `This ${witTypeLabel.toLowerCase()} was imported from Azure DevOps without a parent Epic/Feature.`;
+      externalLink = `[${witTypeLabel} in Azure DevOps](${firstItem.url})`;
     } else if (firstItem.sourceRepo) {
       featureTitle = `Feature: ${firstItem.sourceRepo} External Items`;
       description = 'This feature folder contains User Stories imported from external tools.';
@@ -584,6 +604,9 @@ export class ItemConverter {
       witTypeLabel = 'Feature';
     }
 
+    // Include external metadata for both feature-level items and orphan ADO items
+    const includeAdoMetadata = isAdoFeatureLevelItem || isAdoOrphanGroup;
+
     const featureContent = `---
 id: ${featureId}
 title: ${featureTitle}
@@ -592,8 +615,9 @@ source: ${firstItem.platform}
 ${firstItem.sourceRepo ? `source_repo: ${firstItem.sourceRepo}` : ''}
 ${firstItem.adoProjectName ? `ado_project: ${firstItem.adoProjectName}` : ''}
 ${firstItem.adoAreaPath ? `ado_area_path: ${firstItem.adoAreaPath}` : ''}
-${isAdoFeatureLevelItem ? `ado_work_item_type: ${witTypeLabel}` : ''}
-${isAdoFeatureLevelItem ? `external_id: ${firstItem.id}` : ''}
+${includeAdoMetadata ? `ado_work_item_type: ${witTypeLabel}` : ''}
+${includeAdoMetadata ? `external_id: ${firstItem.id}` : ''}
+${isAdoOrphanGroup ? `orphan: true` : ''}
 created: ${new Date().toISOString()}
 ---
 
@@ -607,6 +631,7 @@ ${description}
 
 ${firstItem.sourceRepo ? `**Source Repository**: ${firstItem.sourceRepo}` : ''}
 ${firstItem.adoAreaPath ? `**Area Path**: ${firstItem.adoAreaPath}` : ''}
+${isAdoOrphanGroup ? `\n> **Note**: This feature was created from an orphan User Story (no parent Epic/Feature in ADO or parent not imported).` : ''}
 
 ## User Stories
 
@@ -616,7 +641,8 @@ User stories in this ${witTypeLabel.toLowerCase()} will be listed here.
 
 - **Created**: ${new Date().toISOString()}
 - **Source**: ${firstItem.platform}
-${isAdoFeatureLevelItem ? `- **External ID**: ${firstItem.id}` : ''}
+${includeAdoMetadata ? `- **External ID**: ${firstItem.id}` : ''}
+${isAdoOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
 `;
 
     // Write FEATURE.md

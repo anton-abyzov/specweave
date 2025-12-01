@@ -67,19 +67,35 @@ export class BackgroundJobManager {
 
   /**
    * Update job progress
+   *
+   * @param jobId Job ID
+   * @param current Current item count
+   * @param currentItem Current item being processed (for display)
+   * @param completed Item ID that completed (appended to list)
+   * @param failed Item ID that failed (appended to list)
+   * @param newTotal Optional: update total count (ATOMIC - prevents race condition)
    */
   updateProgress(
     jobId: string,
     current: number,
     currentItem?: string,
     completed?: string,
-    failed?: string
+    failed?: string,
+    newTotal?: number
   ): BackgroundJob | null {
     const job = this.getJob(jobId);
     if (!job) return null;
 
+    // ATOMIC: Update total if provided (fixes race condition)
+    // Previously required two separate calls which could lose updates
+    if (newTotal !== undefined && newTotal > job.progress.total) {
+      job.progress.total = newTotal;
+    }
+
     job.progress.current = current;
-    job.progress.percentage = Math.round((current / job.progress.total) * 100);
+    job.progress.percentage = job.progress.total > 0
+      ? Math.round((current / job.progress.total) * 100)
+      : 0;
     job.progress.currentItem = currentItem;
     job.updatedAt = new Date();
 
@@ -95,7 +111,9 @@ export class BackgroundJobManager {
     if (elapsed > 0 && current > 0) {
       job.progress.rate = Math.round((current / elapsed) * 10) / 10;
       const remaining = job.progress.total - current;
-      job.progress.eta = Math.round(remaining / job.progress.rate);
+      job.progress.eta = job.progress.rate > 0
+        ? Math.round(remaining / job.progress.rate)
+        : 0;
     }
 
     this.saveJob(job);
