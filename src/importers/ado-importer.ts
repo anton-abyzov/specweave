@@ -87,6 +87,9 @@ export class ADOImporter implements Importer {
     } = config;
 
     // Build WIQL query
+    // CRITICAL FIX (2025-12-01): Use ChangedDate instead of CreatedDate
+    // This ensures recently updated items are imported even if they were created long ago
+    // Also filter by work item types to get the full hierarchy (Capability/Epic/Feature/User Story/Task)
     const since = new Date();
     since.setMonth(since.getMonth() - timeRangeMonths);
     const sinceStr = since.toISOString().split('T')[0];
@@ -95,7 +98,10 @@ export class ADOImporter implements Importer {
       `SELECT [System.Id], [System.Title], [System.WorkItemType], [System.State]`,
       `FROM WorkItems`,
       `WHERE [System.TeamProject] = '${this.project}'`,
-      `AND [System.CreatedDate] >= '${sinceStr}'`,
+      // Use ChangedDate to include active items that were created earlier
+      `AND [System.ChangedDate] >= '${sinceStr}'`,
+      // Filter for relevant work item types (includes Capability for enterprise setups)
+      `AND [System.WorkItemType] IN ('Capability', 'Epic', 'Feature', 'User Story', 'Product Backlog Item', 'Bug', 'Task')`,
     ];
 
     // Status filter
@@ -109,7 +115,7 @@ export class ADOImporter implements Importer {
       wiqlParts.push(`AND (${tagsCondition})`);
     }
 
-    wiqlParts.push(`ORDER BY [System.CreatedDate] DESC`);
+    wiqlParts.push(`ORDER BY [System.ChangedDate] DESC`);
 
     const wiql = wiqlParts.join(' ');
 
@@ -231,12 +237,17 @@ export class ADOImporter implements Importer {
    */
   private convertToExternalItem(workItem: ADOWorkItem): ExternalItem {
     // Map ADO work item type to ExternalItem type
+    // CRITICAL FIX (2025-12-01): Added 'capability' mapping for enterprise ADO setups
+    // ADO hierarchy: Capability → Epic → Feature → User Story → Task
     let type: ExternalItem['type'] = 'task';
     const witType = workItem.fields['System.WorkItemType'].toLowerCase();
 
     if (witType === 'user story' || witType === 'product backlog item') {
       type = 'user-story';
     } else if (witType === 'epic') {
+      type = 'epic';
+    } else if (witType === 'capability') {
+      // Capability is above Epic in some ADO setups - treat as epic for feature organization
       type = 'epic';
     } else if (witType === 'bug') {
       type = 'bug';
@@ -293,6 +304,8 @@ export class ADOImporter implements Importer {
       platform: 'ado',
       adoProjectName: this.project,
       adoAreaPath: workItem.fields['System.AreaPath'],
+      // Store original work item type for hierarchy mapping
+      adoWorkItemType: workItem.fields['System.WorkItemType'],
     };
   }
 
