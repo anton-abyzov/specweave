@@ -6,7 +6,14 @@
 
 ## Overview
 
-SpecWeave positions itself as the **enterprise evolution** of spec-driven development tools. While tools like GitHub SpecKit pioneered snapshot-based specification generation, SpecWeave extends this foundation into a full product lifecycle management system.
+**SpecKit is a particular case of SpecWeave** — mathematically equivalent to ONE SpecWeave increment with no lifecycle management afterward.
+
+```
+SpecKit output    ≡  ONE SpecWeave increment (spec.md + plan.md + tasks.md)
+SpecWeave         =  N increments + lifecycle + external sync + living docs + hooks
+```
+
+In set theory: **SpecKit ⊂ SpecWeave**. SpecWeave is the superset that adds the enterprise layer managing what happens AFTER specification creation.
 
 ## The Spec-Driven Development Landscape
 
@@ -108,11 +115,11 @@ Both SpecWeave and SpecKit use this 4-phase workflow. SpecWeave intentionally ma
 
 ### Elevator Pitch
 
-> "SpecWeave is what happens when you need SpecKit for 50 teams with 10-year-old codebases and JIRA integration."
+> "SpecKit creates ONE spec. SpecWeave manages 60+ specs with JIRA sync, living docs, and quality gates. SpecKit ⊂ SpecWeave."
 
 ### Technical Positioning
 
-> "If SpecKit is a camera (snapshot), SpecWeave is a film studio (lifecycle)."
+> "SpecKit ≡ ONE SpecWeave increment. SpecWeave = N increments + lifecycle + sync + living docs."
 
 ### Value Proposition by Audience
 
@@ -128,9 +135,9 @@ Both SpecWeave and SpecKit use this 4-phase workflow. SpecWeave intentionally ma
 
 ### When Prospect Mentions SpecKit
 
-✅ **Affirm**: "SpecKit is excellent for greenfield MVPs"
-✅ **Bridge**: "Same workflow, extended for enterprise"
-✅ **Differentiate**: "Living docs, external sync, multi-project"
+✅ **Affirm**: "SpecKit is excellent — it's literally equivalent to ONE SpecWeave increment"
+✅ **Bridge**: "SpecWeave manages N increments with lifecycle + sync + living docs on top"
+✅ **Differentiate**: "SpecKit stops after spec creation. SpecWeave manages what happens next."
 
 ### When Prospect Mentions BMAD
 
