@@ -13,7 +13,7 @@ import ora from 'ora';
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
-import type { IssueTracker, TrackerCredentials, SetupOptions } from './types.js';
+import type { IssueTracker, TrackerCredentials, SetupOptions, AzureDevOpsCredentials } from './types.js';
 import { detectDefaultTracker, getTrackerDisplayName, installTrackerPlugin, isClaudeCliAvailable } from './utils.js';
 import {
   readEnvFile,
@@ -58,6 +58,260 @@ import {
 } from './ado.js';
 
 /**
+ * Setup ADO with credentials from repository setup
+ *
+ * When user selects ADO for both repos and issues, we reuse credentials
+ * to avoid duplicate prompts. Still need to:
+ * 1. Ask about sync permissions
+ * 2. Fetch and configure area paths for each project
+ * 3. Validate connection
+ * 4. Save credentials and config
+ */
+async function setupAdoWithExistingCredentials(
+  projectPath: string,
+  language: string,
+  adoCredentials: { org: string; pat: string; projects: string[] },
+  maxRetries: number,
+  options: SetupOptions
+): Promise<boolean> {
+  // Step 1: Ask about sync settings
+  console.log('');
+  console.log(chalk.cyan.bold('⚙️  External Tool Sync Permissions'));
+  console.log(chalk.gray('Control what SpecWeave can modify in Azure DevOps'));
+  console.log('');
+
+  const canUpsertInternalItems = await confirm({
+    message: 'Q1: Can SpecWeave CREATE and UPDATE work items it created? (UPSERT = CREATE initially + UPDATE on progress)',
+    default: false
+  });
+  const canUpdateExternalItems = await confirm({
+    message: 'Q2: Can SpecWeave UPDATE work items created externally? (Full content: title, description, ACs, tasks)',
+    default: false
+  });
+  const canUpdateStatus = await confirm({
+    message: 'Q3: Can SpecWeave UPDATE status of work items? (Both internal & external items)',
+    default: false
+  });
+  const syncPermissions = { canUpsertInternalItems, canUpdateExternalItems, canUpdateStatus };
+
+  const syncSettings = {
+    includeStatus: true,
+    autoApplyLabels: true
+  };
+
+  // Step 2: Build credentials with area path selection for each project
+  console.log('');
+  console.log(chalk.cyan.bold('📁 Area Path Configuration'));
+  console.log(chalk.gray('Configure area paths for each project'));
+  console.log('');
+
+  const { selectAreaPaths, toAreaPathObjects } = await import('../ado-area-selector.js');
+
+  // Dynamic import for area path fetching
+  const projects: Array<{ name: string; areaPaths?: string[]; isDefault?: boolean }> = [];
+
+  for (let i = 0; i < adoCredentials.projects.length; i++) {
+    const projectName = adoCredentials.projects[i];
+    console.log(chalk.cyan(`\n📁 Configuring: ${projectName} (${i + 1}/${adoCredentials.projects.length})`));
+
+    // Fetch area paths for this project
+    const spinner = ora('Fetching area paths...').start();
+    let fetchedAreas: Array<{ name: string; path: string }> = [];
+
+    try {
+      const { fetchAreaPathsForProject } = await import(
+        '../../../../plugins/specweave-ado/lib/ado-board-resolver.js'
+      );
+      const areasResult = await fetchAreaPathsForProject(
+        adoCredentials.org,
+        projectName,
+        adoCredentials.pat
+      ).catch((): never[] => []);
+      fetchedAreas = areasResult.map((a: { name: string; path: string }) => ({ name: a.name, path: a.path }));
+      spinner.succeed(`Found ${fetchedAreas.length} area paths`);
+    } catch {
+      spinner.succeed('No area paths found (will use project root)');
+    }
+
+    let areaPaths: string[] = [];
+    if (fetchedAreas.length > 0) {
+      const areaPathObjects = toAreaPathObjects(fetchedAreas.map(a => a.path));
+      const selectionResult = await selectAreaPaths(areaPathObjects, projectName);
+      if (selectionResult) {
+        areaPaths = selectionResult.areaPaths;
+      }
+    }
+
+    projects.push({
+      name: projectName,
+      areaPaths: areaPaths.length > 0 ? areaPaths : undefined,
+      isDefault: i === 0 // First project is default
+    });
+  }
+
+  // Build full ADO credentials
+  const credentials: AzureDevOpsCredentials = {
+    pat: adoCredentials.pat,
+    org: adoCredentials.org,
+    projects: projects.map(p => ({
+      name: p.name,
+      areaPaths: p.areaPaths,
+      isDefault: p.isDefault
+    }))
+  };
+
+  // Step 3: Validate connection
+  const validationResult = await validateAzureDevOpsConnection(credentials, maxRetries);
+
+  if (!validationResult.success) {
+    console.log(chalk.red(`\n❌ Connection validation failed: ${validationResult.error}`));
+    return false;
+  }
+
+  // Step 4: Save credentials to .env
+  await saveCredentialsHelper(projectPath, 'ado', credentials);
+
+  // Step 5: Write sync config
+  await writeSyncConfigHelper(projectPath, 'ado', credentials, syncSettings, syncPermissions);
+
+  // Step 6: Validate resources (read-only if all permissions disabled)
+  const isReadOnly = !syncPermissions.canUpsertInternalItems &&
+    !syncPermissions.canUpdateExternalItems &&
+    !syncPermissions.canUpdateStatus;
+
+  try {
+    const { validateAzureDevOpsResources } = await import('../../../utils/external-resource-validator.js');
+    await validateAzureDevOpsResources(`${projectPath}/.env`, { readOnly: isReadOnly });
+  } catch {
+    console.log(chalk.gray('   Resource validation skipped - can run "specweave validate-ado" later'));
+  }
+
+  // Step 7: Create ADO folder structure
+  createAdoProjectFolders(projectPath, credentials);
+
+  // Step 8: Show success message
+  showAzureDevOpsSetupComplete(language as any);
+
+  return true;
+}
+
+/**
+ * Helper to save credentials (extracted from main function)
+ */
+async function saveCredentialsHelper(
+  projectPath: string,
+  tracker: IssueTracker,
+  credentials: TrackerCredentials
+): Promise<void> {
+  let envContent = readEnvFile(projectPath);
+
+  if (!envContent) {
+    envContent = createEnvFromTemplate(projectPath);
+  }
+
+  const envVars = getAzureDevOpsEnvVars(credentials as AzureDevOpsCredentials);
+  const updatedContent = updateEnvVars(envContent, envVars);
+  writeEnvFile(projectPath, updatedContent);
+  ensureEnvGitignored(projectPath);
+
+  console.log(chalk.green('✓ Credentials saved to .env (gitignored)'));
+}
+
+/**
+ * Helper to write sync config (extracted from main function)
+ */
+async function writeSyncConfigHelper(
+  projectPath: string,
+  tracker: IssueTracker,
+  credentials: AzureDevOpsCredentials,
+  syncSettings: { includeStatus: boolean; autoApplyLabels: boolean },
+  syncPermissions: { canUpsertInternalItems: boolean; canUpdateExternalItems: boolean; canUpdateStatus: boolean }
+): Promise<void> {
+  const configManager = getConfigManager(projectPath);
+  const config = await configManager.read();
+
+  config.hooks = {
+    post_task_completion: {
+      sync_living_docs: true,
+      sync_tasks_md: true,
+      external_tracker_sync: true
+    },
+    post_increment_planning: {
+      auto_create_github_issue: false
+    }
+  };
+
+  const profiles: Record<string, {
+    provider: string;
+    displayName: string;
+    config: Record<string, unknown>;
+    timeRange: { default: string; max: string };
+  }> = {};
+  let activeProfile = '';
+
+  if (credentials.projects && credentials.projects.length > 0) {
+    for (const proj of credentials.projects) {
+      const profileId = `ado-${proj.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+
+      profiles[profileId] = {
+        provider: 'ado',
+        displayName: `Azure DevOps - ${proj.name}`,
+        config: {
+          organization: credentials.org,
+          project: proj.name,
+          ...(proj.areaPaths?.length ? { areaPaths: proj.areaPaths } : {})
+        },
+        timeRange: {
+          default: '1M',
+          max: '6M'
+        }
+      };
+
+      if (proj.isDefault) {
+        activeProfile = profileId;
+      }
+    }
+
+    if (!activeProfile) {
+      activeProfile = Object.keys(profiles)[0];
+    }
+  }
+
+  (config as any).sync = {
+    enabled: true,
+    direction: 'bidirectional' as const,
+    autoSync: false,
+    provider: tracker,
+    includeStatus: syncSettings.includeStatus,
+    autoApplyLabels: syncSettings.autoApplyLabels,
+    activeProfile,
+    settings: {
+      canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
+      canUpdateExternalItems: syncPermissions.canUpdateExternalItems,
+      canUpdateStatus: syncPermissions.canUpdateStatus
+    },
+    profiles
+  };
+
+  // CRITICAL FIX (2025-11-30): Set multiProject.enabled for ADO multi-project setups
+  // This prevents detectActiveProfileId() from using "ado-projectname" as folder name
+  // Instead, it will properly extract the project name from profile.config.project
+  if (credentials.projects && credentials.projects.length > 0) {
+    const defaultProject = credentials.projects.find(p => p.isDefault) || credentials.projects[0];
+    (config as any).multiProject = {
+      enabled: true,
+      activeProject: defaultProject.name.toLowerCase().replace(/\s+/g, '-')
+    };
+  }
+
+  await configManager.write(config);
+
+  console.log(chalk.green('✓ Sync config written to .specweave/config.json'));
+  console.log(chalk.gray(`   Provider: ado`));
+  console.log(chalk.gray(`   Auto-sync: enabled`));
+}
+
+/**
  * Setup issue tracker integration during init
  *
  * Main entry point called from init.ts
@@ -67,7 +321,7 @@ import {
  * @returns True if setup completed successfully
  */
 export async function setupIssueTracker(options: SetupOptions): Promise<boolean> {
-  const { projectPath, language, maxRetries = 3, repositoryHosting } = options;
+  const { projectPath, language, maxRetries = 3, repositoryHosting, adoCredentialsFromRepoSetup } = options;
   const locale = getLocaleManager(language);
 
   // Check if running in CI/non-interactive environment
@@ -132,6 +386,20 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
     console.log(chalk.gray('\n⏭️  Skipping issue tracker setup'));
     console.log(chalk.gray('   You can configure later via /plugin install\n'));
     return true;
+  }
+
+  // Smart credential reuse: If ADO was selected for repos AND for issues, reuse credentials
+  if (tracker === 'ado' && adoCredentialsFromRepoSetup) {
+    console.log(chalk.green('\n✓ Using Azure DevOps credentials from repository setup'));
+    console.log(chalk.gray(`   Organization: ${adoCredentialsFromRepoSetup.org}`));
+    console.log(chalk.gray(`   Projects: ${adoCredentialsFromRepoSetup.projects.join(', ')}`));
+    return await setupAdoWithExistingCredentials(
+      projectPath,
+      language,
+      adoCredentialsFromRepoSetup,
+      maxRetries,
+      options
+    );
   }
 
   // Step 1.5: Ask about sync settings (v0.24.0+: Three-Permission Architecture)
@@ -863,6 +1131,15 @@ async function writeSyncConfig(
           canUpdateStatus: syncPermissions.canUpdateStatus
         },
         profiles
+      };
+
+      // CRITICAL FIX (2025-11-30): Set multiProject.enabled for ADO multi-project setups
+      // This prevents detectActiveProfileId() from using "ado-projectname" as folder name
+      // Instead, it will properly extract the project name from profile.config.project
+      const defaultProject = adoCreds.projects.find((p: any) => p.isDefault && !p.isUmbrella) || adoCreds.projects[0];
+      (config as any).multiProject = {
+        enabled: true,
+        activeProject: defaultProject.name.toLowerCase().replace(/\s+/g, '-')
       };
     } else {
       // Single project configuration (backward compatibility)

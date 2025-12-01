@@ -494,14 +494,9 @@ function getRepoStrings(language: SupportedLanguage): {
   return strings[language] || strings.en;
 }
 
-/**
- * ADO project selection for repository cloning
- */
-export interface AdoProjectSelection {
-  org: string;
-  pat: string;
-  projects: string[];
-}
+// Import from types.ts (single source of truth) and re-export for backward compatibility
+import type { AdoProjectSelection } from '../issue-tracker/types.js';
+export type { AdoProjectSelection };
 
 /**
  * Result of repository setup

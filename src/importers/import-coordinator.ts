@@ -138,6 +138,8 @@ export class ImportCoordinator {
   private importers: Map<string, Importer> = new Map();
   /** Multi-repo importers keyed by "github:owner/repo" */
   private githubRepoImporters: Map<string, GitHubImporter> = new Map();
+  /** Multi-project ADO importers keyed by "ado:projectName" */
+  private adoProjectImporters: Map<string, ADOImporter> = new Map();
   private config: CoordinatorConfig;
   private rateLimiter: RateLimiter | null = null;
   private projectRoot: string;
@@ -214,21 +216,47 @@ export class ImportCoordinator {
       }
     }
 
-    // Azure DevOps importer
+    // Azure DevOps importer - supports multi-project mode (similar to GitHub multi-repo)
     if (this.config.ado) {
-      try {
-        const importer = new ADOImporter(
-          this.config.ado.orgUrl,
-          this.config.ado.project,
-          this.config.ado.pat
-        );
-        this.importers.set('ado', importer);
-      } catch (error: any) {
-        console.warn(`Failed to initialize ADO importer: ${error.message}`);
+      // Check for multi-project configuration (projectMappings with multiple projects)
+      const projectMappings = this.config.ado.projectMappings;
+
+      if (projectMappings && projectMappings.length > 0) {
+        // Multi-project mode: create one importer per project
+        for (const mapping of projectMappings) {
+          try {
+            const importer = new ADOImporter(
+              this.config.ado.orgUrl,
+              mapping.projectName,
+              this.config.ado.pat
+            );
+            const key = `ado:${mapping.projectName}`;
+            this.adoProjectImporters.set(key, importer);
+          } catch (error: any) {
+            console.warn(`Failed to initialize ADO importer for ${mapping.projectName}: ${error.message}`);
+          }
+        }
+
+        // If we have multi-project importers, don't create single project importer
+        if (this.adoProjectImporters.size > 0) {
+          // Multi-project mode active - will be handled in importAll()
+        }
+      } else {
+        // Single project mode (backwards compatible)
+        try {
+          const importer = new ADOImporter(
+            this.config.ado.orgUrl,
+            this.config.ado.project,
+            this.config.ado.pat
+          );
+          this.importers.set('ado', importer);
+        } catch (error: any) {
+          console.warn(`Failed to initialize ADO importer: ${error.message}`);
+        }
       }
     }
 
-    if (this.importers.size === 0 && this.githubRepoImporters.size === 0) {
+    if (this.importers.size === 0 && this.githubRepoImporters.size === 0 && this.adoProjectImporters.size === 0) {
       throw new Error('No importers configured. Provide at least one platform configuration.');
     }
   }
@@ -264,6 +292,12 @@ export class ImportCoordinator {
       promises.push(this.importFromGitHubRepo(importer, sourceRepo));
     }
 
+    // Add multi-project ADO importers
+    for (const [key, importer] of this.adoProjectImporters.entries()) {
+      const projectName = key.replace('ado:', '');
+      promises.push(this.importFromAdoProject(importer, projectName));
+    }
+
     const results = await Promise.allSettled(promises);
 
     return this.aggregateResults(results);
@@ -293,6 +327,20 @@ export class ImportCoordinator {
       const sourceRepo = key.replace('github:', '');
       try {
         const result = await this.importFromGitHubRepo(importer, sourceRepo);
+        results.push({ status: 'fulfilled', value: result });
+      } catch (error: any) {
+        results.push({
+          status: 'rejected',
+          reason: error,
+        });
+      }
+    }
+
+    // Multi-project ADO importers (sequentially to avoid rate limits)
+    for (const [key, importer] of this.adoProjectImporters.entries()) {
+      const projectName = key.replace('ado:', '');
+      try {
+        const result = await this.importFromAdoProject(importer, projectName);
         results.push({ status: 'fulfilled', value: result });
       } catch (error: any) {
         results.push({
@@ -389,6 +437,91 @@ export class ImportCoordinator {
       platform: 'github',
       totalEstimate,
       sourceRepo,
+    };
+  }
+
+  /**
+   * Import from a single ADO project with source tagging (multi-project support)
+   */
+  private async importFromAdoProject(importer: ADOImporter, projectName: string): Promise<ImportResult> {
+    const errors: string[] = [];
+    const items: ExternalItem[] = [];
+    let totalEstimate: number | undefined;
+    let pageNumber = 0;
+
+    try {
+      // Use pagination for progress tracking
+      for await (const page of importer.paginate(this.config.importConfig)) {
+        pageNumber++;
+
+        // Tag each item with source project (adoProjectName is already set by ADOImporter)
+        // Just push items - they already have adoProjectName from the importer
+        items.push(...page);
+
+        // Calculate progress info
+        const elapsed = (Date.now() - this.importStartTime) / 1000;
+        const rate = elapsed > 0 ? items.length / elapsed : 0;
+        const eta = totalEstimate && rate > 0 ? (totalEstimate - items.length) / rate : undefined;
+
+        // Report enhanced progress
+        if (this.config.onProgressEnhanced) {
+          this.config.onProgressEnhanced({
+            platform: 'ado',
+            current: items.length,
+            total: totalEstimate,
+            percentage: totalEstimate ? Math.round((items.length / totalEstimate) * 100) : undefined,
+            rate: Math.round(rate * 10) / 10,
+            eta: eta ? Math.round(eta) : undefined,
+            sourceRepo: projectName, // Use sourceRepo field for project name
+            page: pageNumber,
+          });
+        }
+
+        // Legacy progress callback
+        if (this.config.onProgress) {
+          this.config.onProgress(`ado (${projectName})`, items.length, totalEstimate);
+        }
+      }
+
+      // Update sync metadata if enabled
+      if (this.config.enableSyncMetadata && items.length > 0) {
+        const metadata: PlatformSyncMetadata = {
+          lastImport: new Date().toISOString(),
+          lastImportCount: items.length,
+          lastSyncResult: errors.length > 0 ? 'partial' : 'success',
+        };
+
+        try {
+          updateSyncMetadata(this.projectRoot, 'ado', metadata);
+        } catch (error: any) {
+          errors.push(`Failed to update sync metadata: ${error.message}`);
+        }
+      }
+    } catch (error: any) {
+      errors.push(error.message || String(error));
+
+      if (this.config.enableSyncMetadata) {
+        const metadata: PlatformSyncMetadata = {
+          lastImport: new Date().toISOString(),
+          lastImportCount: 0,
+          lastSyncResult: 'failed',
+        };
+
+        try {
+          updateSyncMetadata(this.projectRoot, 'ado', metadata);
+        } catch {
+          // Ignore
+        }
+      }
+    }
+
+    return {
+      count: items.length,
+      items,
+      errors,
+      platform: 'ado',
+      totalEstimate,
+      sourceRepo: projectName,
     };
   }
 
@@ -519,7 +652,26 @@ export class ImportCoordinator {
       };
     }
 
-    // Single-repo fallback
+    // Handle multi-project ADO case
+    if (platform === 'ado' && this.adoProjectImporters.size > 0) {
+      const results: ImportResult[] = [];
+
+      for (const [key, importer] of this.adoProjectImporters.entries()) {
+        const projectName = key.replace('ado:', '');
+        const result = await this.importFromAdoProject(importer, projectName);
+        results.push(result);
+      }
+
+      // Aggregate all results into single ImportResult
+      return {
+        count: results.reduce((sum, r) => sum + r.count, 0),
+        items: results.flatMap(r => r.items),
+        errors: results.flatMap(r => r.errors),
+        platform: 'ado',
+      };
+    }
+
+    // Single-repo/project fallback
     const importer = this.importers.get(platform);
 
     if (!importer) {
@@ -540,6 +692,11 @@ export class ImportCoordinator {
       platforms.push('github');
     }
 
+    // Add 'ado' if multi-project importers are configured
+    if (this.adoProjectImporters.size > 0 && !platforms.includes('ado')) {
+      platforms.push('ado');
+    }
+
     return platforms;
   }
 
@@ -550,6 +707,9 @@ export class ImportCoordinator {
     if (platform === 'github') {
       return this.importers.has(platform) || this.githubRepoImporters.size > 0;
     }
+    if (platform === 'ado') {
+      return this.importers.has(platform) || this.adoProjectImporters.size > 0;
+    }
     return this.importers.has(platform);
   }
 
@@ -558,5 +718,12 @@ export class ImportCoordinator {
    */
   getConfiguredGitHubRepos(): string[] {
     return Array.from(this.githubRepoImporters.keys()).map(key => key.replace('github:', ''));
+  }
+
+  /**
+   * Get list of configured ADO projects (for multi-project support)
+   */
+  getConfiguredAdoProjects(): string[] {
+    return Array.from(this.adoProjectImporters.keys()).map(key => key.replace('ado:', ''));
   }
 }
