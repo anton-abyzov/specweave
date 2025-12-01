@@ -89,6 +89,10 @@ export function detectJiraConfig(targetDir: string): JiraConfig | null {
  * - PAT (secret) → .env as AZURE_DEVOPS_PAT
  * - org/project/teams/areas (non-secret) → config.json sync profiles
  *
+ * CRITICAL FIX (2025-12-01): Aggregate ALL ADO profiles into projects array
+ * Bug: Only one profile was being read, causing multi-project selection to be ignored
+ * Fix: Find all ADO profiles and build projects array from each profile's config
+ *
  * @param targetDir - Project directory to check
  * @returns ADO config or null if not detected
  */
@@ -116,31 +120,61 @@ export function detectADOConfig(targetDir: string): ADOConfig | null {
       const configContent = fs.readFileSync(configPath, 'utf-8');
       const config = JSON.parse(configContent);
 
-      // Look for ADO profile in sync.profiles
+      // CRITICAL FIX: Find ALL ADO profiles and aggregate into projects array
+      // Each profile represents one ADO project with its area paths
       const profiles = config.sync?.profiles || {};
-      const adoProfile = Object.values(profiles).find(
-        (p: any) => p.provider === 'ado'
-      ) as any;
+      const adoProfiles = Object.entries(profiles).filter(
+        ([, p]: [string, any]) => p.provider === 'ado'
+      ) as Array<[string, any]>;
 
-      if (adoProfile?.config) {
-        const { organization, project, projects, teams, areaPaths, strategy } = adoProfile.config;
+      if (adoProfiles.length > 0) {
+        // Get organization from first profile (all profiles share the same org)
+        const firstProfile = adoProfiles[0][1];
+        const organization = firstProfile.config?.organization;
 
-        // Handle both single-project (project) and multi-project (projects) modes
-        // For multi-project, use first project as the "primary" for backwards compatibility
-        const primaryProject = project || (Array.isArray(projects) && projects.length > 0
-          ? (projects[0]?.name || projects[0])
-          : null);
+        if (!organization) {
+          return null;
+        }
 
-        if (organization && primaryProject) {
+        // Build projects array from ALL ADO profiles
+        const projectsFromProfiles: Array<{
+          name: string;
+          areaPaths?: string[];
+          isDefault?: boolean;
+          isUmbrella?: boolean;
+        }> = [];
+
+        for (const [profileId, profile] of adoProfiles) {
+          const profileConfig = profile.config || {};
+          const projectName = profileConfig.project;
+
+          if (projectName) {
+            projectsFromProfiles.push({
+              name: projectName,
+              areaPaths: profileConfig.areaPaths,
+              isDefault: profileId === config.sync?.activeProfile,
+              isUmbrella: profileConfig.isUmbrella
+            });
+          }
+        }
+
+        // Determine primary project for backwards compatibility
+        const defaultProject = projectsFromProfiles.find(p => p.isDefault) || projectsFromProfiles[0];
+        const primaryProject = defaultProject?.name;
+
+        if (primaryProject) {
+          // Get additional fields from first profile for backwards compat
+          const { teams, strategy } = firstProfile.config || {};
+
           return {
             orgUrl: `https://dev.azure.com/${organization}`,
             project: primaryProject,
             pat,
             teams,
-            areaPaths,
+            areaPaths: defaultProject?.areaPaths,
             strategy,
-            // Pass the full projects array for multi-project support
-            projects: Array.isArray(projects) ? projects : undefined
+            // Pass the aggregated projects array for multi-project import
+            projects: projectsFromProfiles.length > 0 ? projectsFromProfiles : undefined
           };
         }
       }
