@@ -609,13 +609,13 @@ describe('ItemConverter - Orphan ADO Items Should Get Individual FS-XXXE Folders
      *
      * When ItemConverter.groupItemsByFeature() processes ADO items:
      *
-     * 1. Items WITH parent Epic in dataset:
+     * 1. Items WITH parent Epic IN dataset:
      *    groupKey = `feature:${epicId}`
      *    → Grouped together under Epic's FS-XXXE folder
      *
-     * 2. Items WITH parentId but parent NOT in dataset:
-     *    groupKey = `feature:${parentId}`
-     *    → Siblings grouped together (same orphan parent)
+     * 2. Items WITH parentId but parent NOT in dataset (orphan with missing parent):
+     *    groupKey = `orphan:${itemId}`
+     *    → Each gets its own FS-XXXE folder (NOT grouped by parentId!)
      *
      * 3. Items WITHOUT parentId (true orphans):
      *    groupKey = `orphan:${itemId}`
@@ -624,21 +624,26 @@ describe('ItemConverter - Orphan ADO Items Should Get Individual FS-XXXE Folders
      * 4. Non-ADO items:
      *    groupKey = sourceRepo || 'default'
      *    → Original behavior preserved
+     *
+     * KEY INSIGHT: ALL orphan ADO items get individual FS-XXXE folders,
+     * regardless of whether they have parentId set or not. This ensures
+     * each User Story has its own feature folder with proper FEATURE.md.
      */
     expect(true).toBe(true);
   });
 
   it('should verify groupKey patterns for different item types', () => {
-    // Epic with children → grouped under feature:ADO-100
+    // Epic with children IN dataset → grouped under feature:ADO-100
     const epicGroupKey = 'feature:ADO-100';
     expect(epicGroupKey).toMatch(/^feature:ADO-\d+$/);
 
-    // Orphan with known parent (parent not imported) → grouped under feature:ADO-9999
-    const orphanWithParentGroupKey = 'feature:ADO-9999';
-    expect(orphanWithParentGroupKey).toMatch(/^feature:ADO-\d+$/);
+    // Orphan with parentId (parent NOT imported) → individual folder orphan:ADO-1001
+    // NOTE: We do NOT group by parentId anymore - each orphan gets its own folder
+    const orphanWithMissingParentGroupKey = 'orphan:ADO-1001';
+    expect(orphanWithMissingParentGroupKey).toMatch(/^orphan:ADO-\d+$/);
 
-    // True orphan (no parentId) → individual folder orphan:ADO-1001
-    const trueOrphanGroupKey = 'orphan:ADO-1001';
+    // True orphan (no parentId) → individual folder orphan:ADO-1002
+    const trueOrphanGroupKey = 'orphan:ADO-1002';
     expect(trueOrphanGroupKey).toMatch(/^orphan:ADO-\d+$/);
   });
 

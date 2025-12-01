@@ -1,5 +1,6 @@
 import * as fs from "../../../src/utils/fs-native.js";
 import * as path from "path";
+import { normalizeToProjectId } from "../../../src/utils/project-id-generator.js";
 const PROJECT_KEYWORDS = {
   "AuthService": [
     "authentication",
@@ -414,7 +415,8 @@ async function createProjectFolders(baseDir, strategy, projects) {
   switch (strategy) {
     case "project-per-team":
       for (const project2 of projects) {
-        const projectPath = path.join(specsPath, project2);
+        const normalizedName = normalizeToProjectId(project2);
+        const projectPath = path.join(specsPath, normalizedName);
         await fs.ensureDir(projectPath);
         await createProjectReadme(projectPath, project2);
       }
@@ -423,10 +425,12 @@ async function createProjectFolders(baseDir, strategy, projects) {
       const areaPaths = process.env.AZURE_DEVOPS_AREA_PATHS?.split(",").map((a) => a.trim()) || [];
       const project = projects[0];
       if (project) {
-        const projectPath = path.join(specsPath, project);
+        const normalizedProject = normalizeToProjectId(project);
+        const projectPath = path.join(specsPath, normalizedProject);
         await fs.ensureDir(projectPath);
         for (const area of areaPaths) {
-          const areaPath = path.join(projectPath, area);
+          const normalizedArea = normalizeToProjectId(area);
+          const areaPath = path.join(projectPath, normalizedArea);
           await fs.ensureDir(areaPath);
         }
       }
@@ -435,10 +439,12 @@ async function createProjectFolders(baseDir, strategy, projects) {
       const teams = process.env.AZURE_DEVOPS_TEAMS?.split(",").map((t) => t.trim()) || [];
       const proj = projects[0];
       if (proj) {
-        const projectPath = path.join(specsPath, proj);
+        const normalizedProj = normalizeToProjectId(proj);
+        const projectPath = path.join(specsPath, normalizedProj);
         await fs.ensureDir(projectPath);
         for (const team of teams) {
-          const teamPath = path.join(projectPath, team);
+          const normalizedTeam = normalizeToProjectId(team);
+          const teamPath = path.join(projectPath, normalizedTeam);
           await fs.ensureDir(teamPath);
         }
       }

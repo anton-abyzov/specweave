@@ -418,17 +418,15 @@ export class ItemConverter {
               current = current.parentId ? itemById.get(current.parentId) : undefined;
             }
           }
-
-          // If parent exists but not in our items, use parent ID as group
-          // This groups siblings with the same orphan parent together
-          if (!groupKey) {
-            groupKey = `feature:${item.parentId}`;
-          }
+          // NOTE: If parent NOT in dataset, fall through to orphan handling below
+          // DO NOT group by parentId - we want individual FS-XXXE folders per item
         }
 
-        // CRITICAL FIX (2025-12-01): For ADO orphan items (no parent or parent not found),
-        // create INDIVIDUAL FS-XXXE folders per item, NOT grouped together.
-        // This preserves the 1 US → 1 feature folder pattern for orphans.
+        // CRITICAL FIX (2025-12-01): For ADO orphan items, create INDIVIDUAL FS-XXXE
+        // folders per item. This applies when:
+        // - Item has no parentId (true orphan)
+        // - Item has parentId but parent NOT in dataset (orphan with missing parent)
+        // Each orphan gets its own feature folder with US title as FEATURE.md header
         if (!groupKey) {
           if (item.platform === 'ado') {
             // Each ADO orphan gets its own feature folder with unique group key
