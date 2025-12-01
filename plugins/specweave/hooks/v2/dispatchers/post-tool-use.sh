@@ -83,4 +83,20 @@ esac
 # - Updated on increment lifecycle events
 # - NOT updated on every file edit (reduces flickering, race conditions)
 
+# Ensure processor is running to handle queued events
+# (Processor may have timed out from idle after 60s)
+PROCESSOR="$HOOK_DIR/queue/processor.sh"
+PID_FILE="$PROJECT_ROOT/.specweave/state/.processor.pid"
+
+# Quick check: if PID file exists and process running, skip
+if [[ -f "$PID_FILE" ]]; then
+  PROC_PID=$(cat "$PID_FILE" 2>/dev/null)
+  if [[ -n "$PROC_PID" ]] && kill -0 "$PROC_PID" 2>/dev/null; then
+    exit 0  # Processor running, events will be processed
+  fi
+fi
+
+# Start processor in background (non-daemon mode for quick processing)
+[[ -f "$PROCESSOR" ]] && nohup bash "$PROCESSOR" > /dev/null 2>&1 &
+
 exit 0

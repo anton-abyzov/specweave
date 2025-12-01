@@ -9,7 +9,7 @@ import { spawn } from 'child_process';
 import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import { getJobManager } from './job-manager.js';
-import type { BackgroundJob, JobType, ImportJobConfig } from './types.js';
+import type { BackgroundJob, JobType, ImportJobConfig, CloneJobConfig } from './types.js';
 
 export interface LaunchOptions {
   /** Job type */
@@ -121,6 +121,105 @@ export async function launchImportJob(options: LaunchOptions): Promise<LaunchRes
   };
 }
 
+export interface CloneLaunchOptions {
+  /** Project path */
+  projectPath: string;
+  /** Repositories to clone with URLs */
+  repositories: Array<{
+    owner: string;
+    name: string;
+    path: string;
+    cloneUrl: string;
+  }>;
+  /** Run in foreground (blocking) instead of background */
+  foreground?: boolean;
+}
+
+/**
+ * Launch a clone job
+ *
+ * @param options Launch configuration
+ * @returns Job info and process details
+ */
+export async function launchCloneJob(options: CloneLaunchOptions): Promise<LaunchResult> {
+  const { projectPath, repositories, foreground = false } = options;
+
+  // Create job via job manager
+  const jobManager = getJobManager(projectPath);
+
+  const jobConfig: CloneJobConfig = {
+    type: 'clone-repos',
+    repositories: repositories.map(r => ({
+      owner: r.owner,
+      name: r.name,
+      path: r.path
+    })),
+    projectPath
+  };
+
+  const job = jobManager.createJob('clone-repos', jobConfig, repositories.length);
+
+  // Create job-specific directory for config and logs
+  const jobDir = path.join(projectPath, '.specweave', 'state', 'jobs', job.id);
+  fs.ensureDirSync(jobDir);
+
+  // Write worker config (includes clone URLs with auth)
+  const configPath = path.join(jobDir, 'config.json');
+  fs.writeFileSync(configPath, JSON.stringify({
+    jobId: job.id,
+    projectPath,
+    repositories,
+    startedAt: new Date().toISOString()
+  }, null, 2));
+
+  // If foreground mode, return job without spawning worker
+  if (foreground) {
+    return {
+      job,
+      isBackground: false
+    };
+  }
+
+  // Find clone worker script path
+  const workerPath = findCloneWorkerPath();
+
+  if (!workerPath) {
+    // Fallback to foreground if worker not found
+    console.warn('Clone worker not found, will run in foreground');
+    return {
+      job,
+      isBackground: false
+    };
+  }
+
+  // Spawn detached process
+  const child = spawn('node', [workerPath, job.id, projectPath], {
+    detached: true,
+    stdio: 'ignore',
+    cwd: projectPath,
+    env: {
+      ...process.env,
+      SPECWEAVE_BACKGROUND_JOB: '1'
+    }
+  });
+
+  // Unref to allow parent to exit independently
+  child.unref();
+
+  // Update job with PID
+  const updatedJob = jobManager.getJob(job.id);
+  if (updatedJob) {
+    (updatedJob as any).pid = child.pid;
+    (updatedJob as any).isBackground = true;
+  }
+
+  return {
+    job: updatedJob || job,
+    pid: child.pid,
+    isBackground: true
+  };
+}
+
 /**
  * Check if a background job is still running
  */
@@ -207,17 +306,31 @@ export function getJobResult(projectPath: string, jobId: string): any | null {
 }
 
 /**
- * Find the worker script path
+ * Find the import worker script path
  */
 function findWorkerPath(): string | null {
+  return findWorkerByName('import-worker.js');
+}
+
+/**
+ * Find the clone worker script path
+ */
+function findCloneWorkerPath(): string | null {
+  return findWorkerByName('clone-worker.js');
+}
+
+/**
+ * Find a worker script by name
+ */
+function findWorkerByName(workerName: string): string | null {
   // Try relative paths from different locations
   const possiblePaths = [
     // From dist/src/core/background (compiled)
-    path.join(__dirname, '../../cli/workers/import-worker.js'),
+    path.join(__dirname, '../../cli/workers', workerName),
     // From src/core/background (dev)
-    path.join(__dirname, '../../../dist/src/cli/workers/import-worker.js'),
+    path.join(__dirname, '../../../dist/src/cli/workers', workerName),
     // Global install
-    path.join(__dirname, '../../../../cli/workers/import-worker.js'),
+    path.join(__dirname, '../../../../cli/workers', workerName),
   ];
 
   for (const p of possiblePaths) {

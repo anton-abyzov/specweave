@@ -51,6 +51,29 @@ Edit("tasks.md", "**Status**: [ ] pending", "**Status**: [x] completed");
 Edit("spec.md", "- [ ] **AC-US1-01**", "- [x] **AC-US1-01**");
 ```
 
+### 2b. NEVER Edit metadata.json to "completed" Directly (v0.28.63+)
+
+**Direct status change to "completed" = BUG** (auto-completion without user approval)
+
+```
+❌ FORBIDDEN (Bug pattern from increment 0081):
+Edit("metadata.json", '"status": "active"', '"status": "completed"')
+→ Status becomes "completed" without ACs checked or user approval!
+
+✅ CORRECT workflow:
+1. All tasks completed → auto-transition to "ready_for_review"
+2. /specweave:done <id> → validates ACs + asks for user confirmation
+3. Only then → status becomes "completed" with approvedAt timestamp
+```
+
+**Pre-tool-use hook `completion-guard.sh` BLOCKS direct completion edits.**
+
+If you need to implement closure, use:
+```typescript
+MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
+// Only succeeds if current status is "ready_for_review"
+```
+
 ### 3. Protected Directories
 
 **NEVER delete**: `.specweave/docs/`, `.specweave/increments/`

@@ -64,6 +64,20 @@ get_feature_id() {
   [[ -f "$spec" ]] && grep -E "^(epic|feature_id):" "$spec" 2>/dev/null | head -1 | sed 's/.*:[[:space:]]*//' | tr -d '"'"'"
 }
 
+# Cross-platform timeout wrapper
+# Uses GNU timeout, gtimeout (macOS with coreutils), or fallback
+run_with_timeout() {
+  local timeout_secs="$1"
+  shift
+  if command -v timeout >/dev/null 2>&1; then
+    timeout "$timeout_secs" "$@" 2>/dev/null || true
+  elif command -v gtimeout >/dev/null 2>&1; then
+    gtimeout "$timeout_secs" "$@" 2>/dev/null || true
+  else
+    "$@" 2>/dev/null || true
+  fi
+}
+
 case "$EVENT" in
   increment.created)
     # Create spec entry in living docs via Node.js script
@@ -71,9 +85,9 @@ case "$EVENT" in
       FEATURE_ID=$(get_feature_id "$SPEC_FILE")
       cd "$PROJECT_ROOT" || exit 0
       if [[ -n "$FEATURE_ID" ]]; then
-        FEATURE_ID="$FEATURE_ID" timeout 30 node "$SYNC_SCRIPT" "$INC_ID" >/dev/null 2>&1 &
+        FEATURE_ID="$FEATURE_ID" run_with_timeout 30 node "$SYNC_SCRIPT" "$INC_ID" >/dev/null 2>&1 &
       else
-        timeout 30 node "$SYNC_SCRIPT" "$INC_ID" >/dev/null 2>&1 &
+        run_with_timeout 30 node "$SYNC_SCRIPT" "$INC_ID" >/dev/null 2>&1 &
       fi
     fi
     ;;
@@ -101,9 +115,9 @@ case "$EVENT" in
         fi
 
         # Also run full sync for completeness
-        FEATURE_ID="$FEATURE_ID" timeout 30 node "$SYNC_SCRIPT" "$INC_ID" >/dev/null 2>&1 &
+        FEATURE_ID="$FEATURE_ID" run_with_timeout 30 node "$SYNC_SCRIPT" "$INC_ID" >/dev/null 2>&1 &
       else
-        timeout 30 node "$SYNC_SCRIPT" "$INC_ID" >/dev/null 2>&1 &
+        run_with_timeout 30 node "$SYNC_SCRIPT" "$INC_ID" >/dev/null 2>&1 &
       fi
     fi
     ;;
@@ -170,7 +184,7 @@ case "$EVENT" in
 
         # Run full sync to restore any missing content
         cd "$PROJECT_ROOT" || exit 0
-        FEATURE_ID="$FEATURE_ID" timeout 30 node "$SYNC_SCRIPT" "$INC_ID" >/dev/null 2>&1 &
+        FEATURE_ID="$FEATURE_ID" run_with_timeout 30 node "$SYNC_SCRIPT" "$INC_ID" >/dev/null 2>&1 &
       fi
     fi
     ;;
