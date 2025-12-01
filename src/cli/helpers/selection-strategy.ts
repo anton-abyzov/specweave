@@ -880,3 +880,70 @@ export function toSelectableItemsFromObjects<T extends { name: string; [key: str
     metadata: item as unknown as Record<string, unknown>,
   }));
 }
+
+// ============================================================================
+// Repository Filtering (for ADO/GitHub clone operations)
+// ============================================================================
+
+/**
+ * Clone pattern result (from repository-setup.ts)
+ */
+export interface ClonePatternResult {
+  strategy: 'all' | 'pattern-glob' | 'pattern-regex' | 'skip';
+  pattern?: string;
+  isRegex?: boolean;
+}
+
+/**
+ * Filter repositories by clone pattern
+ *
+ * Used during init to filter ADO/GitHub repos before cloning.
+ *
+ * @param repos - Array of repositories with name field
+ * @param clonePattern - Clone pattern configuration
+ * @returns Filtered repositories
+ *
+ * @example
+ * ```typescript
+ * const repos = [{ name: 'sw-fe' }, { name: 'sw-be' }, { name: 'other' }];
+ * const pattern = { strategy: 'pattern-glob', pattern: 'sw-*' };
+ * const filtered = filterRepositoriesByPattern(repos, pattern);
+ * // Result: [{ name: 'sw-fe' }, { name: 'sw-be' }]
+ * ```
+ */
+export function filterRepositoriesByPattern<T extends { name: string }>(
+  repos: T[],
+  clonePattern: ClonePatternResult
+): T[] {
+  switch (clonePattern.strategy) {
+    case 'all':
+      return repos;
+
+    case 'skip':
+      return [];
+
+    case 'pattern-glob': {
+      if (!clonePattern.pattern) return repos;
+      const selectableItems = repos.map(r => ({ name: r.name, value: r.name }));
+      const matched = matchByGlob(selectableItems, clonePattern.pattern);
+      const matchedNames = new Set(matched.map(m => m.name));
+      return repos.filter(r => matchedNames.has(r.name));
+    }
+
+    case 'pattern-regex': {
+      if (!clonePattern.pattern) return repos;
+      const selectableItems = repos.map(r => ({ name: r.name, value: r.name }));
+      const result = matchByRegex(selectableItems, clonePattern.pattern);
+      if (result.error) {
+        // Log error but don't crash - return empty array
+        console.error(`Invalid regex pattern "${clonePattern.pattern}": ${result.error}`);
+        return [];
+      }
+      const matchedNames = new Set(result.items.map(m => m.name));
+      return repos.filter(r => matchedNames.has(r.name));
+    }
+
+    default:
+      return repos;
+  }
+}
