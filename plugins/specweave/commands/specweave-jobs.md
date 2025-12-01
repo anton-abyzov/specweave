@@ -1,7 +1,7 @@
 ---
 name: specweave:jobs
-description: Monitor background jobs (repo cloning, issue import). Shows progress, allows pause/resume.
-usage: /specweave:jobs [--active|--all|--id <job-id>] [--resume <job-id>]
+description: Monitor background jobs (repo cloning, issue import). Shows progress, allows pause/resume/kill.
+usage: /specweave:jobs [--active|--all|--id <job-id>] [--resume <job-id>] [--kill <job-id>] [--follow <job-id>] [--logs <job-id>]
 ---
 
 # Background Jobs Monitor
@@ -17,6 +17,25 @@ Monitor and manage long-running background operations:
 - **Issue import** (10K+ items from GitHub/JIRA/ADO)
 - **External sync** operations
 
+**ASYNC ARCHITECTURE (2025-12-01)**:
+- Jobs run as **detached processes** that survive terminal close
+- Progress tracked via filesystem (`.specweave/state/jobs/`)
+- Can check status anytime with `/specweave:jobs`
+
+---
+
+## Command Options
+
+| Option | Description |
+|--------|-------------|
+| (none) | Show active jobs |
+| `--all` | Show all jobs (including completed) |
+| `--id <jobId>` | Show details for specific job |
+| `--follow <jobId>` | Follow job progress in real-time |
+| `--logs <jobId>` | Show worker log output |
+| `--resume <jobId>` | Resume paused job |
+| `--kill <jobId>` | Kill running background job |
+
 ---
 
 ## Check Job Status
@@ -26,6 +45,12 @@ Read the background jobs state file and display status:
 ```bash
 # Find and read the state file
 STATE_FILE=".specweave/state/background-jobs.json"
+
+# Also check job-specific files:
+# .specweave/state/jobs/<jobId>/config.json  - Job configuration
+# .specweave/state/jobs/<jobId>/worker.pid   - Process ID (if running)
+# .specweave/state/jobs/<jobId>/worker.log   - Worker output log
+# .specweave/state/jobs/<jobId>/result.json  - Results (when complete)
 ```
 
 ### Display Format
@@ -34,25 +59,28 @@ STATE_FILE=".specweave/state/background-jobs.json"
 📋 Background Jobs
 
 🔄 Running (1):
-  [abc12345] clone-repos
-     Progress: 2/4 (50%) → sw-meeting-cost-be
-     Rate: 0.5/s | ETA: ~4s
-     Started: 2 mins ago
+  [abc12345] import-issues (ADO)
+     Progress: 2,500/10,000 (25%)
+     Rate: 15.2/s | ETA: ~8m 14s
+     PID: 45678 | Started: 2 mins ago
 
 ⏸️  Paused (1):
   [def67890] import-issues (GitHub)
      Progress: 1,234/10,000 (12%)
-     Reason: Rate limited
+     Reason: Rate limited (resumes in 45s)
      Resume: /specweave:jobs --resume def67890
 
 ✅ Completed (2):
-  [ghi11111] clone-repos - 4/4 repos - 5 mins ago
-  [jkl22222] import-issues - 500 items - 1 hour ago
+  [ghi11111] import-issues - 4,500 items - 5 mins ago
+  [jkl22222] clone-repos - 4/4 repos - 1 hour ago
 
 💡 Commands:
-   /specweave:jobs --id abc12345  → Details for specific job
-   /specweave:jobs --resume def67890  → Resume paused job
-   /specweave:jobs --all  → Show all jobs (including old)
+   /specweave:jobs --id abc12345     → Details for specific job
+   /specweave:jobs --follow abc12345 → Follow progress live
+   /specweave:jobs --logs abc12345   → View worker logs
+   /specweave:jobs --resume def67890 → Resume paused job
+   /specweave:jobs --kill abc12345   → Kill running job
+   /specweave:jobs --all             → Show all jobs (including old)
 ```
 
 ---
@@ -66,32 +94,92 @@ STATE_FILE=".specweave/state/background-jobs.json"
 
 📦 Job Details: abc12345
 
-Type: clone-repos
+Type: import-issues
 Status: running
+Provider: ADO
+PID: 45678
+
 Started: 2024-01-15 10:30:00
 Updated: 2024-01-15 10:32:15
 
-Progress: 2/4 (50%)
-Current: sw-meeting-cost-be
-Rate: 0.5 repos/sec
-ETA: ~4 seconds
+Progress: 2,500/10,000 (25%)
+Current: OlySense\Core-Operations
+Rate: 15.2 items/sec
+ETA: ~8 minutes
 
-Completed:
-  ✅ sw-meeting-cost-fe
-  ✅ sw-meeting-cost-shared
+Files:
+  Config: .specweave/state/jobs/abc12345/config.json
+  Logs: .specweave/state/jobs/abc12345/worker.log
+  PID: .specweave/state/jobs/abc12345/worker.pid
+```
 
-Remaining:
-  ⏳ sw-meeting-cost-be
-  ⏳ sw-meeting-cost
+### Follow Job Progress Live
 
-Config:
-  Project: /path/to/project
-  Repos: 4 total
+Watch job progress in real-time (like `tail -f`):
+
+```
+/specweave:jobs --follow abc12345
+
+📦 Following job abc12345 (Ctrl+C to stop)
+
+[10:30:15] Progress: 2,500/10,000 (25%) - OlySense\Core-Operations
+[10:30:16] Progress: 2,520/10,000 (25%) - OlySense\Core-Operations
+[10:30:17] Progress: 2,545/10,000 (25%) - OlySense\AI-Platform
+[10:30:18] Progress: 2,570/10,000 (26%) - OlySense\AI-Platform
+...
+```
+
+**Implementation**: Read `.specweave/state/jobs/<jobId>/worker.log` with tail-like behavior, or poll the job state file every second.
+
+### View Worker Logs
+
+Show detailed worker output:
+
+```
+/specweave:jobs --logs abc12345
+
+📋 Worker Logs for abc12345 (last 50 lines):
+
+[2024-01-15T10:30:00.123Z] Worker started for job abc12345
+[2024-01-15T10:30:00.456Z] Project path: /Users/dev/my-project
+[2024-01-15T10:30:00.789Z] PID: 45678
+[2024-01-15T10:30:01.234Z] Dependencies loaded, starting import...
+[2024-01-15T10:30:02.567Z] Progress: 100/10000 - ado OlySense\Core-Operations
+[2024-01-15T10:30:03.890Z] Progress: 200/10000 - ado OlySense\Core-Operations
+...
+```
+
+**Implementation**: Read `.specweave/state/jobs/<jobId>/worker.log`
+
+### Kill Running Job
+
+Stop a background job:
+
+```
+/specweave:jobs --kill abc12345
+
+⚠️  Killing job abc12345...
+   Type: import-issues
+   PID: 45678
+   Progress: 2,500/10,000 (25%)
+
+✅ Job killed. Status changed to 'paused'.
+   Resume later: /specweave:jobs --resume abc12345
+```
+
+**Implementation**:
+```typescript
+import { killJob } from '../../../src/core/background/job-launcher.js';
+
+const success = killJob(projectPath, jobId);
+if (success) {
+  console.log('Job killed successfully');
+}
 ```
 
 ### Resume Paused Job
 
-When a job is paused (rate limited, user requested), resume it:
+When a job is paused (rate limited, killed, or user requested), resume it:
 
 ```
 /specweave:jobs --resume def67890
@@ -101,8 +189,24 @@ When a job is paused (rate limited, user requested), resume it:
    Provider: GitHub
    Resuming from: item 1,234 of 10,000
 
-⏳ Import in progress...
-   [1,234/10,000] 12% → PROJ-1234
+⏳ Spawning background worker...
+   New PID: 45679
+
+✅ Job resumed in background.
+   Check progress: /specweave:jobs --follow def67890
+```
+
+**Implementation**:
+```typescript
+import { launchImportJob } from '../../../src/core/background/job-launcher.js';
+
+// Re-launch the worker with existing config
+const result = await launchImportJob({
+  type: 'import-issues',
+  projectPath,
+  coordinatorConfig: existingConfig,
+  estimatedTotal: job.progress.total
+});
 ```
 
 ---
