@@ -575,6 +575,7 @@ async function promptAdoProjectSelection(
   // Prompt for PAT
   const pat = await password({
     message: strings.adoPatPrompt,
+    mask: true,
     validate: (value: string) => {
       if (!value.trim()) return 'Personal Access Token is required';
       return true;

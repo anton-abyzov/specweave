@@ -92,6 +92,13 @@ export interface ExternalItem {
    * Maps to SpecWeave project via areaPathMapping configuration
    */
   adoAreaPath?: string;
+
+  /**
+   * Original ADO work item type (e.g., "Capability", "Epic", "User Story")
+   * Used for hierarchy mapping - Capability→Epic→Feature→User Story→Task
+   * @added 2025-12-01
+   */
+  adoWorkItemType?: string;
 }
 
 /**

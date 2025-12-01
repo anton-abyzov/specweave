@@ -353,14 +353,94 @@ export class ItemConverter {
   }
 
   /**
-   * Group items by feature (based on source repo or labels)
-   * Items without clear grouping go into a default group
+   * Group items by feature (based on source repo, parent hierarchy, or labels)
+   * CRITICAL FIX (2025-12-01): For ADO, group by parent Capability/Epic to preserve hierarchy
+   *
+   * ADO Hierarchy: Capability → Epic → Feature → User Story → Task
+   * - Capability/Epic items become the feature (group leader)
+   * - User Stories are grouped under their parent
+   * - Items without parent go into a default group
    */
   private groupItemsByFeature(items: ExternalItem[]): Map<string, ExternalItem[]> {
     const groups = new Map<string, ExternalItem[]>();
 
+    // For ADO items with hierarchy, use parent-based grouping
+    const hasAdoHierarchy = items.some(item =>
+      item.platform === 'ado' && (item.parentId || item.type === 'epic')
+    );
+
+    if (hasAdoHierarchy) {
+      // Build a map of all items by ID for lookup
+      const itemById = new Map<string, ExternalItem>();
+      for (const item of items) {
+        itemById.set(item.id, item);
+      }
+
+      // Find all "feature-level" items (Capability, Epic, Feature)
+      const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
+      const featureItems = items.filter(item => {
+        const witType = item.adoWorkItemType?.toLowerCase() || item.type;
+        return featureLevelTypes.has(witType);
+      });
+
+      // Create groups for each feature-level item
+      for (const featureItem of featureItems) {
+        const groupKey = `feature:${featureItem.id}`;
+        if (!groups.has(groupKey)) {
+          groups.set(groupKey, []);
+        }
+        // The feature item itself goes first (used to generate FEATURE.md)
+        groups.get(groupKey)!.push(featureItem);
+      }
+
+      // Assign child items (User Stories, Tasks, Bugs) to their parent groups
+      for (const item of items) {
+        const witType = item.adoWorkItemType?.toLowerCase() || item.type;
+        if (featureLevelTypes.has(witType)) {
+          continue; // Skip feature-level items, already added
+        }
+
+        // Find the parent group
+        let groupKey: string | undefined;
+
+        if (item.parentId) {
+          // Try to find parent in our items
+          const parent = itemById.get(item.parentId);
+          if (parent) {
+            // Find the feature-level ancestor
+            let current: ExternalItem | undefined = parent;
+            while (current) {
+              const currentType = current.adoWorkItemType?.toLowerCase() || current.type;
+              if (featureLevelTypes.has(currentType)) {
+                groupKey = `feature:${current.id}`;
+                break;
+              }
+              current = current.parentId ? itemById.get(current.parentId) : undefined;
+            }
+          }
+
+          // If parent exists but not in our items, use parent ID as group
+          if (!groupKey) {
+            groupKey = `feature:${item.parentId}`;
+          }
+        }
+
+        // Fallback to sourceRepo or default
+        if (!groupKey) {
+          groupKey = item.sourceRepo || 'default';
+        }
+
+        if (!groups.has(groupKey)) {
+          groups.set(groupKey, []);
+        }
+        groups.get(groupKey)!.push(item);
+      }
+
+      return groups;
+    }
+
+    // Non-ADO or no hierarchy: group by source repo (original behavior)
     for (const item of items) {
-      // Group by source repo if available
       const groupKey = item.sourceRepo || 'default';
 
       if (!groups.has(groupKey)) {
@@ -374,6 +454,7 @@ export class ItemConverter {
 
   /**
    * Allocate a feature ID for a group of items
+   * CRITICAL FIX (2025-12-01): Use feature-level item (Capability/Epic) info for FEATURE.md
    */
   private async allocateFeatureForGroup(firstItem: ExternalItem, groupKey: string): Promise<string> {
     // Check if we already created a feature for this group
@@ -385,10 +466,17 @@ export class ItemConverter {
       throw new Error('FSIdAllocator not initialized');
     }
 
+    // For ADO hierarchy groups (feature:ADO-XXX), the first item IS the feature-level item
+    const isAdoFeatureGroup = groupKey.startsWith('feature:');
+    const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
+    const isFeatureLevelItem = isAdoFeatureGroup &&
+      featureLevelTypes.has(firstItem.adoWorkItemType?.toLowerCase() || firstItem.type);
+
     // Create external work item for allocation
+    // For ADO feature groups, use the Capability/Epic's title as the feature name
     const workItem: ExternalWorkItem = {
       externalId: firstItem.id,
-      title: firstItem.sourceRepo || firstItem.title,
+      title: isFeatureLevelItem ? firstItem.title : (firstItem.sourceRepo || firstItem.title),
       createdAt: firstItem.createdAt.toISOString(),
       externalUrl: firstItem.url
     };
@@ -454,6 +542,7 @@ export class ItemConverter {
 
   /**
    * Create feature folder with FEATURE.md
+   * CRITICAL FIX (2025-12-01): Generate proper FEATURE.md for ADO Capability/Epic hierarchy
    */
   private async createFeatureFolder(featureId: string, firstItem: ExternalItem, groupKey: string): Promise<string> {
     // Use 2-level or 1-level structure based on externalContainer
@@ -463,38 +552,71 @@ export class ItemConverter {
     // Create directory
     fs.mkdirSync(featurePath, { recursive: true });
 
-    // Generate FEATURE.md content
-    const featureTitle = firstItem.sourceRepo
-      ? `Feature: ${firstItem.sourceRepo} External Items`
-      : `Feature: Imported from ${firstItem.platform}`;
+    // Check if this is an ADO feature-level item (Capability/Epic/Feature)
+    const isAdoFeatureGroup = groupKey.startsWith('feature:');
+    const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
+    const adoWitType = firstItem.adoWorkItemType?.toLowerCase();
+    const isAdoFeatureLevelItem = isAdoFeatureGroup &&
+      firstItem.platform === 'ado' &&
+      featureLevelTypes.has(adoWitType || firstItem.type);
+
+    // Generate FEATURE.md content based on item type
+    let featureTitle: string;
+    let description: string;
+    let externalLink: string;
+    let witTypeLabel: string;
+
+    if (isAdoFeatureLevelItem) {
+      // For ADO Capability/Epic/Feature, use the item's actual info
+      witTypeLabel = firstItem.adoWorkItemType || 'Feature';
+      featureTitle = `${witTypeLabel}: ${firstItem.title}`;
+      description = firstItem.description || `This ${witTypeLabel.toLowerCase()} was imported from Azure DevOps.`;
+      externalLink = `[${witTypeLabel} in Azure DevOps](${firstItem.url})`;
+    } else if (firstItem.sourceRepo) {
+      featureTitle = `Feature: ${firstItem.sourceRepo} External Items`;
+      description = 'This feature folder contains User Stories imported from external tools.';
+      externalLink = '';
+      witTypeLabel = 'Feature';
+    } else {
+      featureTitle = `Feature: Imported from ${firstItem.platform}`;
+      description = 'This feature folder contains User Stories imported from external tools.';
+      externalLink = '';
+      witTypeLabel = 'Feature';
+    }
 
     const featureContent = `---
 id: ${featureId}
 title: ${featureTitle}
 origin: external
 source: ${firstItem.platform}
-source_repo: ${firstItem.sourceRepo || 'unknown'}
+${firstItem.sourceRepo ? `source_repo: ${firstItem.sourceRepo}` : ''}
+${firstItem.adoProjectName ? `ado_project: ${firstItem.adoProjectName}` : ''}
+${firstItem.adoAreaPath ? `ado_area_path: ${firstItem.adoAreaPath}` : ''}
+${isAdoFeatureLevelItem ? `ado_work_item_type: ${witTypeLabel}` : ''}
+${isAdoFeatureLevelItem ? `external_id: ${firstItem.id}` : ''}
 created: ${new Date().toISOString()}
 ---
 
 # ${featureTitle}
 
-**Origin**: 🔗 Imported from ${firstItem.platform}
+**Origin**: 🔗 ${externalLink || `Imported from ${firstItem.platform}`}
 
 ## Description
 
-This feature folder contains User Stories imported from external tools.
+${description}
 
 ${firstItem.sourceRepo ? `**Source Repository**: ${firstItem.sourceRepo}` : ''}
+${firstItem.adoAreaPath ? `**Area Path**: ${firstItem.adoAreaPath}` : ''}
 
 ## User Stories
 
-User stories in this feature will be listed here.
+User stories in this ${witTypeLabel.toLowerCase()} will be listed here.
 
 ## Status
 
 - **Created**: ${new Date().toISOString()}
 - **Source**: ${firstItem.platform}
+${isAdoFeatureLevelItem ? `- **External ID**: ${firstItem.id}` : ''}
 `;
 
     // Write FEATURE.md
