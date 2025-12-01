@@ -25,7 +25,11 @@ mkdir -p "$STATE_DIR" 2>/dev/null
 
 # TTL check (10 seconds)
 if [[ -f "$CACHE_FILE" ]]; then
-  CACHE_AGE=$(($(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0)))
+  if [[ "$(uname)" == "Darwin" ]]; then
+    CACHE_AGE=$(($(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || echo 0)))
+  else
+    CACHE_AGE=$(($(date +%s) - $(stat -c %Y "$CACHE_FILE" 2>/dev/null || echo 0)))
+  fi
   [[ $CACHE_AGE -lt 10 ]] && exit 0
 fi
 

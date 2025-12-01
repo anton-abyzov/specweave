@@ -17,7 +17,20 @@ export declare enum IncrementStatus {
     BACKLOG = "backlog",
     /** Temporarily stopped (blocked by external dependency, deprioritized) */
     PAUSED = "paused",
-    /** All tasks complete, increment finished */
+    /**
+     * All tasks complete, awaiting user review (v0.28.63+)
+     *
+     * CRITICAL: This is a gating status that prevents auto-completion bugs.
+     * - Auto-transitions to READY_FOR_REVIEW when all tasks completed
+     * - User MUST explicitly run /specweave:done to move to COMPLETED
+     * - /specweave:next will prompt for confirmation before closure
+     *
+     * Prevents the bug where status becomes "completed" without:
+     * 1. ACs being checked in spec.md
+     * 2. User approval
+     */
+    READY_FOR_REVIEW = "ready_for_review",
+    /** All tasks complete AND user approved - increment finished */
     COMPLETED = "completed",
     /** Work abandoned (requirements changed, obsolete, etc.) */
     ABANDONED = "abandoned"
@@ -71,6 +84,18 @@ export interface IncrementMetadata {
     abandonedReason?: string;
     /** Timestamp when abandoned (ISO 8601) */
     abandonedAt?: string;
+    /**
+     * Timestamp when moved to ready_for_review (ISO 8601)
+     * Set automatically when all tasks are completed
+     * (v0.28.63+)
+     */
+    readyForReviewAt?: string;
+    /**
+     * Timestamp when user approved completion (ISO 8601)
+     * Set only via explicit /specweave:done command
+     * (v0.28.63+)
+     */
+    approvedAt?: string;
 }
 /**
  * Increment metadata with additional computed fields
@@ -91,6 +116,11 @@ export interface IncrementMetadataExtended extends IncrementMetadata {
 /**
  * Valid status transitions
  * Enforces increment lifecycle rules
+ *
+ * CRITICAL (v0.28.63+): ACTIVE cannot directly transition to COMPLETED!
+ * Must go through READY_FOR_REVIEW first, which requires explicit user approval.
+ * This prevents the auto-completion bug where increments are marked "completed"
+ * without ACs being checked or user confirmation.
  */
 export declare const VALID_TRANSITIONS: Record<IncrementStatus, IncrementStatus[]>;
 /**
@@ -137,11 +167,12 @@ export declare function shouldAutoAbandon(metadata: IncrementMetadata): boolean;
  *
  * ACTIVE: Currently executing tasks, consumes team capacity
  * PAUSED: Temporarily blocked but still holding resources/context
+ * READY_FOR_REVIEW: Tasks done, awaiting approval (still blocks capacity)
  *
  * Statuses that do NOT count:
  * - PLANNING: Lightweight spec/planning work, parallel-safe
  * - BACKLOG: Not started yet
- * - COMPLETED: Already done
+ * - COMPLETED: Already done (user approved)
  * - ABANDONED: Cancelled
  */
 export declare const WIP_COUNTED_STATUSES: IncrementStatus[];

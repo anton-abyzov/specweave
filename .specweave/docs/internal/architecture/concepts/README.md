@@ -20,6 +20,7 @@ Conceptual documentation explains foundational ideas and principles:
 |---------|-------|--------|---------|
 | [context-loading.md](context-loading.md) | Context Management via Progressive Disclosure | Active | 2025-01 |
 | [increment-vs-spec-lifecycle.md](increment-vs-spec-lifecycle.md) | Increment vs Spec Lifecycle | Active | 2025-11 |
+| [market-positioning.md](market-positioning.md) | SpecWeave vs SpecKit/BMAD Market Positioning | Active | 2025-12 |
 | [meta-capability.md](meta-capability.md) | SpecWeave as Meta-Capability | Active | 2025-01 |
 
 ## Creating New Concepts

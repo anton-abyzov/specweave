@@ -16,4 +16,5 @@
 
 export * from './types.js';
 export * from './job-manager.js';
-export * from './job-launcher.js';
+export { launchImportJob, launchCloneJob, isJobRunning, killJob, getJobLog, getJobResult, cleanupOldJobs } from './job-launcher.js';
+export type { LaunchOptions, LaunchResult, CloneLaunchOptions } from './job-launcher.js';

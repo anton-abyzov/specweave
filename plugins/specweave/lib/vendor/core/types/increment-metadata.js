@@ -18,7 +18,20 @@ export var IncrementStatus;
     IncrementStatus["BACKLOG"] = "backlog";
     /** Temporarily stopped (blocked by external dependency, deprioritized) */
     IncrementStatus["PAUSED"] = "paused";
-    /** All tasks complete, increment finished */
+    /**
+     * All tasks complete, awaiting user review (v0.28.63+)
+     *
+     * CRITICAL: This is a gating status that prevents auto-completion bugs.
+     * - Auto-transitions to READY_FOR_REVIEW when all tasks completed
+     * - User MUST explicitly run /specweave:done to move to COMPLETED
+     * - /specweave:next will prompt for confirmation before closure
+     *
+     * Prevents the bug where status becomes "completed" without:
+     * 1. ACs being checked in spec.md
+     * 2. User approval
+     */
+    IncrementStatus["READY_FOR_REVIEW"] = "ready_for_review";
+    /** All tasks complete AND user approved - increment finished */
     IncrementStatus["COMPLETED"] = "completed";
     /** Work abandoned (requirements changed, obsolete, etc.) */
     IncrementStatus["ABANDONED"] = "abandoned";
@@ -45,6 +58,11 @@ export var IncrementType;
 /**
  * Valid status transitions
  * Enforces increment lifecycle rules
+ *
+ * CRITICAL (v0.28.63+): ACTIVE cannot directly transition to COMPLETED!
+ * Must go through READY_FOR_REVIEW first, which requires explicit user approval.
+ * This prevents the auto-completion bug where increments are marked "completed"
+ * without ACs being checked or user confirmation.
  */
 export const VALID_TRANSITIONS = {
     [IncrementStatus.PLANNING]: [
@@ -55,8 +73,9 @@ export const VALID_TRANSITIONS = {
     [IncrementStatus.ACTIVE]: [
         IncrementStatus.BACKLOG,
         IncrementStatus.PAUSED,
-        IncrementStatus.COMPLETED,
+        IncrementStatus.READY_FOR_REVIEW, // All tasks done → awaiting review
         IncrementStatus.ABANDONED
+        // NOTE: COMPLETED intentionally NOT allowed! Must go through READY_FOR_REVIEW
     ],
     [IncrementStatus.BACKLOG]: [
         IncrementStatus.PLANNING, // Resume planning
@@ -65,10 +84,16 @@ export const VALID_TRANSITIONS = {
     ],
     [IncrementStatus.PAUSED]: [
         IncrementStatus.ACTIVE,
+        IncrementStatus.READY_FOR_REVIEW, // Can mark done while paused
         IncrementStatus.ABANDONED
     ],
+    [IncrementStatus.READY_FOR_REVIEW]: [
+        IncrementStatus.COMPLETED, // ONLY via explicit /specweave:done with user approval
+        IncrementStatus.ACTIVE, // Reopen if more work needed
+        IncrementStatus.ABANDONED // Cancel if requirements changed
+    ],
     [IncrementStatus.COMPLETED]: [
-        // NEW: Allow reopening completed increments when issues discovered
+        // Allow reopening completed increments when issues discovered
         IncrementStatus.ACTIVE, // Reopen for fixes
         IncrementStatus.ABANDONED // Mark as failed (rare)
     ],
@@ -160,16 +185,18 @@ export function shouldAutoAbandon(metadata) {
  *
  * ACTIVE: Currently executing tasks, consumes team capacity
  * PAUSED: Temporarily blocked but still holding resources/context
+ * READY_FOR_REVIEW: Tasks done, awaiting approval (still blocks capacity)
  *
  * Statuses that do NOT count:
  * - PLANNING: Lightweight spec/planning work, parallel-safe
  * - BACKLOG: Not started yet
- * - COMPLETED: Already done
+ * - COMPLETED: Already done (user approved)
  * - ABANDONED: Cancelled
  */
 export const WIP_COUNTED_STATUSES = [
     IncrementStatus.ACTIVE,
-    IncrementStatus.PAUSED // Paused work still blocks team capacity
+    IncrementStatus.PAUSED, // Paused work still blocks team capacity
+    IncrementStatus.READY_FOR_REVIEW // Awaiting user approval, still in progress
 ];
 /**
  * Check if increment status counts toward WIP (Work In Progress) limits
