@@ -34,6 +34,25 @@ interface AdoRepository {
 }
 
 /**
+ * Sanitize ADO project name for use as filesystem folder name
+ *
+ * ADO project names can contain:
+ * - Spaces: "My Enterprise Project"
+ * - Special characters that are invalid in paths
+ *
+ * This function creates a filesystem-safe folder name while preserving readability.
+ */
+function sanitizeProjectNameForPath(projectName: string): string {
+  return projectName
+    .toLowerCase()
+    .replace(/\s+/g, '-')           // Spaces → hyphens
+    .replace(/[<>:"|?*\\\/]/g, '')  // Remove filesystem-invalid chars
+    .replace(/&/g, '-and-')         // & → -and-
+    .replace(/-+/g, '-')            // Collapse multiple hyphens
+    .replace(/^-|-$/g, '');         // Trim leading/trailing hyphens
+}
+
+/**
  * Build proper ADO clone URL with PAT authentication
  *
  * ADO clone URL format: https://{PAT}@dev.azure.com/{org}/{project}/_git/{repo}
@@ -48,7 +67,7 @@ interface AdoRepository {
 function buildAdoCloneUrl(org: string, project: string, repoName: string, pat: string): string {
   // Build clean URL with PAT authentication
   // Format: https://{PAT}@dev.azure.com/{org}/{project}/_git/{repo}
-  // URL-encode path segments to handle spaces (e.g., "Nova IoMT Platform")
+  // URL-encode path segments to handle spaces (e.g., "My Enterprise Project")
   const encodedOrg = encodeURIComponent(org);
   const encodedProject = encodeURIComponent(project);
   const encodedRepo = encodeURIComponent(repoName);
@@ -124,15 +143,33 @@ export async function triggerAdoRepoCloning(
     return;
   }
 
+  // Group repos by project for display
+  const projectGroups = new Map<string, AdoRepository[]>();
+  for (const repo of filteredRepos) {
+    const group = projectGroups.get(repo.project) || [];
+    group.push(repo);
+    projectGroups.set(repo.project, group);
+  }
+
   console.log(chalk.blue(`\n🔄 Starting background clone for ${filteredRepos.length} repositories...\n`));
 
-  // Prepare repositories with clone URLs (clone directly into root folder)
-  const reposWithUrls = filteredRepos.map(r => ({
-    owner: `${org}/${r.project}`,
-    name: r.name,
-    path: r.name, // Clone directly to root, not into repos/ subfolder
-    cloneUrl: buildAdoCloneUrl(org, r.project, r.name, pat)
-  }));
+  // Show project structure
+  for (const [project, repos] of projectGroups) {
+    const sanitizedName = sanitizeProjectNameForPath(project);
+    console.log(chalk.gray(`   📁 ${sanitizedName}/ (${repos.length} repos from "${project}")`));
+  }
+  console.log('');
+
+  // Prepare repositories with clone URLs (organized by project folder)
+  const reposWithUrls = filteredRepos.map(r => {
+    const projectFolder = sanitizeProjectNameForPath(r.project);
+    return {
+      owner: `${org}/${r.project}`,
+      name: r.name,
+      path: `${projectFolder}/${r.name}`, // Clone into project subfolder
+      cloneUrl: buildAdoCloneUrl(org, r.project, r.name, pat)
+    };
+  });
 
   // Launch background clone job (truly async - spawns detached process)
   const result = await launchCloneJob({
