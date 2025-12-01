@@ -251,6 +251,246 @@ created: ${new Date().toISOString()}
   });
 });
 
+describe('ADO Hierarchy Grouping', () => {
+  let tempDir: string;
+
+  beforeEach(() => {
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'specweave-test-'));
+    fs.mkdirSync(path.join(tempDir, '.specweave', 'docs', 'internal', 'specs'), { recursive: true });
+  });
+
+  afterEach(() => {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  it('should group ADO User Stories by parent Epic/Capability', async () => {
+    const specsDir = path.join(tempDir, '.specweave', 'docs', 'internal', 'specs');
+
+    // Create items representing ADO hierarchy:
+    // Epic ADO-100 has children: User Story ADO-200, ADO-201
+    // Epic ADO-101 has children: User Story ADO-202
+    const items: ExternalItem[] = [
+      // Epic 1 (will become FS-001E folder)
+      {
+        id: 'ADO-100',
+        type: 'epic',
+        title: 'Authentication Epic',
+        description: 'Authentication feature epic',
+        status: 'open',
+        platform: 'ado',
+        url: 'https://dev.azure.com/org/project/_workitems/edit/100',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        labels: [],
+        adoProjectName: 'MyProject',
+        adoAreaPath: 'MyProject\\Platform',
+        adoWorkItemType: 'Epic',
+      },
+      // User Story under Epic 1
+      {
+        id: 'ADO-200',
+        type: 'user-story',
+        title: 'Login Page',
+        description: 'As a user I want to login',
+        status: 'open',
+        platform: 'ado',
+        url: 'https://dev.azure.com/org/project/_workitems/edit/200',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        labels: [],
+        parentId: 'ADO-100',
+        adoProjectName: 'MyProject',
+        adoAreaPath: 'MyProject\\Frontend', // Different area path!
+        adoWorkItemType: 'User Story',
+      },
+      // Another User Story under Epic 1
+      {
+        id: 'ADO-201',
+        type: 'user-story',
+        title: 'Logout Button',
+        description: 'As a user I want to logout',
+        status: 'open',
+        platform: 'ado',
+        url: 'https://dev.azure.com/org/project/_workitems/edit/201',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        labels: [],
+        parentId: 'ADO-100',
+        adoProjectName: 'MyProject',
+        adoAreaPath: 'MyProject\\Frontend',
+        adoWorkItemType: 'User Story',
+      },
+      // Epic 2 (will become FS-002E folder)
+      {
+        id: 'ADO-101',
+        type: 'epic',
+        title: 'Payment Epic',
+        description: 'Payment feature epic',
+        status: 'open',
+        platform: 'ado',
+        url: 'https://dev.azure.com/org/project/_workitems/edit/101',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        labels: [],
+        adoProjectName: 'MyProject',
+        adoAreaPath: 'MyProject\\Backend',
+        adoWorkItemType: 'Epic',
+      },
+      // User Story under Epic 2
+      {
+        id: 'ADO-202',
+        type: 'user-story',
+        title: 'Payment Processing',
+        description: 'As a user I want to pay',
+        status: 'open',
+        platform: 'ado',
+        url: 'https://dev.azure.com/org/project/_workitems/edit/202',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        labels: [],
+        parentId: 'ADO-101',
+        adoProjectName: 'MyProject',
+        adoAreaPath: 'MyProject\\Backend',
+        adoWorkItemType: 'User Story',
+      },
+    ];
+
+    // Process items - each Epic group should get its own converter
+    // This simulates what happens in external-import.ts groupItemsByExternalContainer
+
+    // Group 1: Epic ADO-100 and its children
+    const epic1Items = items.filter(i =>
+      i.id === 'ADO-100' || i.parentId === 'ADO-100'
+    );
+    const converter1 = new ItemConverter({
+      specsDir,
+      projectRoot: tempDir,
+      enableFeatureAllocation: true,
+      projectId: 'authentication-epic', // Derived from Epic title
+      externalContainer: {
+        type: 'ado-project',
+        containerId: 'MyProject',
+        containerName: 'MyProject',
+        areaPath: 'MyProject\\Platform',
+      },
+    });
+    const converted1 = await converter1.convertItems(epic1Items);
+
+    // Group 2: Epic ADO-101 and its children
+    const epic2Items = items.filter(i =>
+      i.id === 'ADO-101' || i.parentId === 'ADO-101'
+    );
+    const converter2 = new ItemConverter({
+      specsDir,
+      projectRoot: tempDir,
+      enableFeatureAllocation: true,
+      projectId: 'payment-epic', // Derived from Epic title
+      externalContainer: {
+        type: 'ado-project',
+        containerId: 'MyProject',
+        containerName: 'MyProject',
+        areaPath: 'MyProject\\Backend',
+      },
+    });
+    const converted2 = await converter2.convertItems(epic2Items);
+
+    // Verify results
+    // Epic 1 group: 3 items (1 Epic + 2 User Stories) → should be in authentication-epic folder
+    expect(converted1.length).toBe(3);
+
+    // Epic 2 group: 2 items (1 Epic + 1 User Story) → should be in payment-epic folder
+    expect(converted2.length).toBe(2);
+
+    // Verify separate project folders were created (containerId is normalized to lowercase)
+    // Structure: specs/{containerId}/{projectId}/FS-XXX/
+    const containerDir = path.join(specsDir, 'myproject'); // containerId normalized
+    expect(fs.existsSync(containerDir)).toBe(true);
+
+    const containerContents = fs.readdirSync(containerDir);
+    expect(containerContents).toContain('authentication-epic');
+    expect(containerContents).toContain('payment-epic');
+
+    // CRITICAL: Verify items with different area paths ended up together
+    // (ADO-100 has area MyProject\Platform but ADO-200/201 have MyProject\Frontend)
+    // They should still be in the same folder because they share the same parent Epic
+    const authEpicFolder = path.join(containerDir, 'authentication-epic');
+    const authEpicContents = fs.readdirSync(authEpicFolder);
+
+    // Should have at least one FS-XXX folder with FEATURE.md
+    const featureFolders = authEpicContents.filter(f => f.startsWith('FS-'));
+    expect(featureFolders.length).toBeGreaterThan(0);
+
+    const firstFeatureFolder = path.join(authEpicFolder, featureFolders[0]);
+    const featureContents = fs.readdirSync(firstFeatureFolder);
+    expect(featureContents.some(f => f.includes('FEATURE.md'))).toBe(true);
+  });
+
+  it('should create separate folders for orphan User Stories (parent not in dataset)', async () => {
+    const specsDir = path.join(tempDir, '.specweave', 'docs', 'internal', 'specs');
+
+    // User Stories without their parent Epic in the dataset
+    // They should still be grouped by their parentId
+    const items: ExternalItem[] = [
+      {
+        id: 'ADO-300',
+        type: 'user-story',
+        title: 'Orphan Story 1',
+        description: 'Story with missing parent',
+        status: 'open',
+        platform: 'ado',
+        url: 'https://dev.azure.com/org/project/_workitems/edit/300',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        labels: [],
+        parentId: 'ADO-999', // Parent not in dataset
+        adoProjectName: 'MyProject',
+        adoAreaPath: 'MyProject\\Frontend',
+        adoWorkItemType: 'User Story',
+      },
+      {
+        id: 'ADO-301',
+        type: 'user-story',
+        title: 'Orphan Story 2 Same Parent',
+        description: 'Another story with same missing parent',
+        status: 'open',
+        platform: 'ado',
+        url: 'https://dev.azure.com/org/project/_workitems/edit/301',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        labels: [],
+        parentId: 'ADO-999', // Same parent as ADO-300
+        adoProjectName: 'MyProject',
+        adoAreaPath: 'MyProject\\Frontend',
+        adoWorkItemType: 'User Story',
+      },
+    ];
+
+    // These should be grouped together because they share the same parentId
+    const converter = new ItemConverter({
+      specsDir,
+      projectRoot: tempDir,
+      enableFeatureAllocation: true,
+      projectId: 'orphan-999', // Derived from missing parent ID
+      externalContainer: {
+        type: 'ado-project',
+        containerId: 'MyProject',
+        containerName: 'MyProject',
+        areaPath: 'MyProject\\Frontend',
+      },
+    });
+
+    const converted = await converter.convertItems(items);
+
+    // Both orphan stories should be converted
+    expect(converted.length).toBe(2);
+
+    // They should be in the same folder
+    const folder1 = path.dirname(converted[0].filePath);
+    const folder2 = path.dirname(converted[1].filePath);
+    expect(folder1).toBe(folder2);
+  });
+});
+
 describe('getExistingSyncProfiles helper', () => {
   let tempDir: string;
 

@@ -309,13 +309,18 @@ Clone 16 repositories to current directory? (Y/n)
    Fetching from mycompany/Shared...
    ✓ Found 4 repositories in Shared
 
-🔄 Cloning 16 repositories in background...
+🔄 Starting background clone for 16 repositories...
 
-   Repositories will be cloned to: ./ (root folder)
+   📁 platform/ (12 repos from "Platform")
+   📁 shared/ (4 repos from "Shared")
+
+   Repositories will be cloned to: ./
    Job ID: abc12345
 
+   ✓ Clone job started in background (PID: 12345)
+
    Check progress: /specweave:jobs
-   Resume if interrupted: /specweave:jobs --resume abc12345
+   Kill if needed: /specweave:jobs --kill abc12345
 ```
 
 ### Example 2: Pattern Filter
@@ -359,7 +364,9 @@ Clone 8 repositories to current directory? (Y/n)
 - **Progress Tracking**: Check progress with `/specweave:jobs`
 - **Resumable**: Interrupted clones can resume with `/specweave:jobs --resume <id>`
 - **Auth via PAT**: Uses HTTPS clone URLs with PAT authentication
-- **Target Directory**: Repos are cloned directly to `./<repo-name>/` (root folder)
+- **Project-Based Folders**: Repos organized by ADO project: `./<project-name>/<repo-name>/`
+  - Project names sanitized for filesystem (lowercase, spaces→hyphens)
+  - Example: "My Enterprise Project" → `my-enterprise-project/`
 
 ## Related Commands
 

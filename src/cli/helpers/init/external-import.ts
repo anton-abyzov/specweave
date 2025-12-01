@@ -306,7 +306,7 @@ function buildAdoConfigFromProjects(
       const projectMappings = importableProjects.map(proj => {
         // CRITICAL FIX (2025-12-01): Use normalizeToProjectId() for consistent folder names
         // Bug: .replace(/\s+/g, '-') was inconsistent with normalizeToProjectId() used elsewhere
-        // This caused duplicate folders like "Nova X Sandbox / Nova X Sandbox"
+        // This caused duplicate folders like "My Project / My Project"
         const projectFolder = normalizeToProjectId(proj.name);
 
         // Build area mappings with 2-level folder structure: {project}/{areaPath}
@@ -421,10 +421,25 @@ export async function promptAndRunExternalImport(
   // CRITICAL FIX (2025-11-29): Load ADO config from sync profile if detectAllConfigs() failed
   // Bug: detectAllConfigs() might return ado:null even when sync profile exists with valid config
   // This caused folders to be created but NO work items imported!
-  if (!ado && syncProfileProviders.includes('ado')) {
+  //
+  // CRITICAL FIX (2025-12-01): Also handle case where ado exists but projects array is missing
+  // Bug: detectADOConfig() returns ado object but with projects:undefined, causing single-project fallback
+  // Fix: If ado exists but has no projects, try to load full config from sync profiles
+  const needsAdoProjectsFromProfile = syncProfileProviders.includes('ado') && (!ado || !ado.projects?.length);
+
+  if (needsAdoProjectsFromProfile) {
     const adoConfigFromProfile = loadAdoConfigFromSyncProfile(targetDir);
     if (adoConfigFromProfile) {
-      ado = adoConfigFromProfile;
+      // If we had partial ado config, merge. Otherwise replace entirely.
+      if (ado) {
+        // Merge: keep existing values but add projects from profile
+        ado = {
+          ...ado,
+          projects: adoConfigFromProfile.projects
+        };
+      } else {
+        ado = adoConfigFromProfile;
+      }
       // Ensure Azure DevOps is in availableTools
       if (!availableTools.includes('Azure DevOps')) {
         availableTools = [...availableTools, 'Azure DevOps'];
@@ -1402,6 +1417,14 @@ function groupItemsBySourceRepo(items: ExternalItem[]): Map<string, ExternalItem
 /**
  * Group items by external container (JIRA project/board, ADO project/area path)
  * Returns groups with container context for 2-level directory structure
+ *
+ * CRITICAL FIX (2025-12-01): For ADO items with hierarchy, group by parent Epic/Capability
+ * instead of by area path. This ensures each Epic becomes a separate FS-XXX folder.
+ *
+ * ADO Hierarchy: Capability → Epic → Feature → User Story → Task
+ * - Each top-level Epic/Capability becomes its own group (→ FS-XXX folder)
+ * - Child User Stories/Tasks are grouped under their parent Epic
+ * - Items without parents get their own individual groups
  */
 interface ContainerGroup {
   containerId: string;          // JIRA project key or ADO project name
@@ -1409,9 +1432,190 @@ interface ContainerGroup {
   projectId: string;            // Board-based or area-path-based project ID
   items: ExternalItem[];
   externalContainer: ExternalContainerContext | undefined;
+  /** The parent Epic/Capability item for this group (if ADO hierarchy) */
+  parentItem?: ExternalItem;
 }
 
 function groupItemsByExternalContainer(items: ExternalItem[]): ContainerGroup[] {
+  const groups = new Map<string, ContainerGroup>();
+
+  // Check if we have ADO items with hierarchy
+  const adoItems = items.filter(item => item.platform === 'ado' && item.adoProjectName);
+  const hasAdoHierarchy = adoItems.some(item => item.parentId || item.type === 'epic');
+
+  // For ADO with hierarchy, use parent-based grouping
+  if (hasAdoHierarchy && adoItems.length > 0) {
+    const adoGroups = groupAdoItemsByParentHierarchy(adoItems);
+    for (const group of adoGroups) {
+      groups.set(group.projectId, group);
+    }
+
+    // Also process non-ADO items normally
+    const nonAdoItems = items.filter(item => item.platform !== 'ado' || !item.adoProjectName);
+    if (nonAdoItems.length > 0) {
+      const nonAdoGroups = groupNonHierarchyItems(nonAdoItems);
+      for (const group of nonAdoGroups) {
+        // Avoid key collisions with ADO groups
+        const uniqueKey = `other:${group.projectId}`;
+        groups.set(uniqueKey, group);
+      }
+    }
+
+    return Array.from(groups.values());
+  }
+
+  // No ADO hierarchy - use original grouping logic for all items
+  return groupNonHierarchyItems(items);
+}
+
+/**
+ * Group ADO items by their parent Epic/Capability hierarchy
+ * Each top-level Epic/Capability becomes its own FS-XXX folder
+ */
+function groupAdoItemsByParentHierarchy(items: ExternalItem[]): ContainerGroup[] {
+  const groups = new Map<string, ContainerGroup>();
+
+  // Build item lookup map
+  const itemById = new Map<string, ExternalItem>();
+  for (const item of items) {
+    itemById.set(item.id, item);
+  }
+
+  // Find feature-level types (these become folder leaders)
+  const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
+
+  // Find ALL top-level parents (Epics/Capabilities that are NOT children of other items in our dataset)
+  const topLevelParents = new Map<string, ExternalItem>();
+
+  for (const item of items) {
+    const witType = item.adoWorkItemType?.toLowerCase() || item.type;
+    if (featureLevelTypes.has(witType)) {
+      // Check if this item's parent is NOT in our dataset (making it a top-level parent)
+      const hasParentInDataset = item.parentId && itemById.has(item.parentId);
+      if (!hasParentInDataset) {
+        topLevelParents.set(item.id, item);
+      }
+    }
+  }
+
+  // Function to find the top-level parent for an item
+  function findTopLevelParent(item: ExternalItem): ExternalItem | undefined {
+    // If this item IS a top-level parent, return it
+    if (topLevelParents.has(item.id)) {
+      return item;
+    }
+
+    // Walk up the parent chain
+    let current: ExternalItem | undefined = item;
+    const visited = new Set<string>();
+
+    while (current && current.parentId && !visited.has(current.id)) {
+      visited.add(current.id);
+
+      // Check if parent is a top-level parent
+      if (topLevelParents.has(current.parentId)) {
+        return topLevelParents.get(current.parentId);
+      }
+
+      // Move to parent
+      current = itemById.get(current.parentId);
+    }
+
+    // No top-level parent found
+    return undefined;
+  }
+
+  // Create groups for each top-level parent first
+  for (const [parentId, parentItem] of topLevelParents) {
+    const containerId = parentItem.adoProjectName || 'default';
+    const projectId = normalizeToProjectId(parentItem.title) || `ado-${parentId.replace('ADO-', '')}`;
+    const groupKey = `ado:parent:${parentId}`;
+
+    groups.set(groupKey, {
+      containerId,
+      containerType: 'ado',
+      projectId,
+      items: [parentItem], // Parent item goes first
+      externalContainer: {
+        type: 'ado-project',
+        containerId,
+        containerName: containerId,
+        areaPath: parentItem.adoAreaPath
+      },
+      parentItem
+    });
+  }
+
+  // Assign child items to their parent groups
+  for (const item of items) {
+    // Skip top-level parents (already added)
+    if (topLevelParents.has(item.id)) {
+      continue;
+    }
+
+    // Find the top-level parent
+    const topLevelParent = findTopLevelParent(item);
+
+    if (topLevelParent) {
+      // Add to parent's group
+      const groupKey = `ado:parent:${topLevelParent.id}`;
+      const group = groups.get(groupKey);
+      if (group) {
+        group.items.push(item);
+      }
+    } else {
+      // No parent found - create individual group for this item
+      // This handles orphan items (User Stories with parents outside our dataset)
+      const containerId = item.adoProjectName || 'default';
+
+      // For orphans with a parentId, use the parentId as group key so siblings stay together
+      let groupKey: string;
+      let projectId: string;
+
+      if (item.parentId) {
+        groupKey = `ado:orphan-parent:${item.parentId}`;
+        projectId = `orphan-${item.parentId.replace('ADO-', '')}`;
+      } else {
+        groupKey = `ado:individual:${item.id}`;
+        projectId = normalizeToProjectId(item.title) || `ado-${item.id.replace('ADO-', '')}`;
+      }
+
+      if (!groups.has(groupKey)) {
+        groups.set(groupKey, {
+          containerId,
+          containerType: 'ado',
+          projectId,
+          items: [],
+          externalContainer: {
+            type: 'ado-project',
+            containerId,
+            containerName: containerId,
+            areaPath: item.adoAreaPath
+          }
+        });
+      }
+      groups.get(groupKey)!.items.push(item);
+    }
+  }
+
+  // Log grouping results for diagnostics
+  console.log(chalk.cyan(`   📊 ADO Hierarchy Grouping:`));
+  console.log(chalk.gray(`      → ${topLevelParents.size} top-level Epics/Capabilities found`));
+  for (const [key, group] of groups) {
+    const parentInfo = group.parentItem
+      ? ` (parent: ${group.parentItem.adoWorkItemType || 'Epic'} "${group.parentItem.title.slice(0, 30)}...")`
+      : '';
+    console.log(chalk.gray(`      → ${group.projectId}: ${group.items.length} items${parentInfo}`));
+  }
+
+  return Array.from(groups.values());
+}
+
+/**
+ * Group non-hierarchy items (JIRA, GitHub, or ADO without hierarchy)
+ * Original grouping logic by project/board/repo
+ */
+function groupNonHierarchyItems(items: ExternalItem[]): ContainerGroup[] {
   const groups = new Map<string, ContainerGroup>();
 
   for (const item of items) {
@@ -1427,7 +1631,6 @@ function groupItemsByExternalContainer(items: ExternalItem[]): ContainerGroup[] 
       containerId = item.jiraProjectKey;
 
       // Project ID from board name (if available) or default
-      // CRITICAL FIX (2025-12-01): Use normalizeToProjectId() for consistent folder names
       projectId = item.jiraBoardName
         ? normalizeToProjectId(item.jiraBoardName) || 'default'
         : 'default';
@@ -1442,13 +1645,12 @@ function groupItemsByExternalContainer(items: ExternalItem[]): ContainerGroup[] 
         boardName: item.jiraBoardName
       };
     }
-    // Check for ADO container context
+    // Check for ADO container context (without hierarchy)
     else if (item.adoProjectName) {
       containerType = 'ado';
       containerId = item.adoProjectName;
 
       // Project ID from area path (extract last segment) or default
-      // CRITICAL FIX (2025-12-01): Use normalizeToProjectId() for consistent folder names
       if (item.adoAreaPath) {
         const areaSegments = item.adoAreaPath.split('\\');
         const lastSegment = areaSegments[areaSegments.length - 1];
@@ -1469,7 +1671,6 @@ function groupItemsByExternalContainer(items: ExternalItem[]): ContainerGroup[] 
     // GitHub or default (1-level structure)
     else {
       // Use sourceRepo if available, otherwise '_default'
-      // CRITICAL FIX (2025-12-01): Use normalizeToProjectId() for consistent folder names
       if (item.sourceRepo) {
         const parts = item.sourceRepo.split('/');
         const rawRepoName = parts.length > 1 ? parts[1] : item.sourceRepo;
