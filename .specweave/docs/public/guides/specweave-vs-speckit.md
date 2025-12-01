@@ -6,11 +6,22 @@ description: Understanding how SpecWeave extends the spec-driven development fou
 
 # SpecWeave vs GitHub SpecKit: Understanding the Ecosystem
 
+## The Core Insight: SpecKit is a Particular Case of SpecWeave
+
+**SpecKit is mathematically equivalent to ONE SpecWeave increment** — with no lifecycle management afterward.
+
+```
+SpecKit output    ≡  ONE SpecWeave increment (spec.md + plan.md + tasks.md)
+SpecWeave         =  N increments + lifecycle + external sync + living docs + hooks
+```
+
+In set theory: **SpecKit ⊂ SpecWeave**. Every SpecKit capability exists in SpecWeave. SpecWeave adds the enterprise layer that manages what happens AFTER specification creation.
+
 ## The Rise of Spec-Driven Development
 
 In September 2025, GitHub released [SpecKit](https://github.com/github/spec-kit) — an open-source toolkit that formalized **spec-driven development** for AI coding agents. With 28k+ stars and growing, SpecKit proved that structured specifications dramatically improve AI code generation quality.
 
-SpecWeave builds on this foundation, extending the single-project snapshot approach into a full **enterprise lifecycle management system**.
+SpecWeave extends this foundation from a **single-increment generator** into a **multi-increment lifecycle management system**.
 
 ## Quick Comparison
 
