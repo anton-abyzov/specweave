@@ -8,8 +8,13 @@
 import { spawn } from 'child_process';
 import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
 import { getJobManager } from './job-manager.js';
 import type { BackgroundJob, JobType, ImportJobConfig, CloneJobConfig } from './types.js';
+
+// ESM compatibility: create __dirname equivalent
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export interface LaunchOptions {
   /** Job type */
