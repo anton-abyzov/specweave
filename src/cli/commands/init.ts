@@ -482,7 +482,7 @@ export async function initCommand(
 
       // Issue tracker setup
       const isFrameworkRepo = await isSpecWeaveFrameworkRepo(targetDir);
-      await setupIssueTrackerWrapper(targetDir, language, isFrameworkRepo, repoResult.hosting, isCI);
+      await setupIssueTrackerWrapper(targetDir, language, isFrameworkRepo, repoResult.hosting, isCI, repoResult.adoProjectSelection);
 
       // Multi-project folders
       await createMultiProjectFolders(targetDir);
@@ -627,7 +627,8 @@ async function setupIssueTrackerWrapper(
   language: SupportedLanguage,
   isFrameworkRepo: boolean,
   repositoryHosting: RepositoryHosting,
-  isCI: boolean
+  isCI: boolean,
+  adoProjectSelection?: { org: string; pat: string; projects: string[] }
 ): Promise<void> {
   try {
     const { setupIssueTracker } = await import('../helpers/issue-tracker/index.js');
@@ -664,7 +665,8 @@ async function setupIssueTrackerWrapper(
       language,
       maxRetries: 3,
       isFrameworkRepo,
-      repositoryHosting
+      repositoryHosting,
+      adoCredentialsFromRepoSetup: adoProjectSelection
     });
   } catch {
     console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));

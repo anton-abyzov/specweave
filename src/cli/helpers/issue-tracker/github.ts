@@ -184,7 +184,7 @@ export async function promptGitHubCredentials(
   if (method === 'manual' || !token!) {
     const manualToken = await password({
       message: 'Paste your GitHub token:',
-      mask: '*',
+      mask: true,
       validate: (value: string) => {
         if (!value || value.length < 20) {
           return 'Invalid token format (should be at least 20 characters)';

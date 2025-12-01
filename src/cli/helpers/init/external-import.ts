@@ -272,6 +272,86 @@ function getExternalImportStrings(language: SupportedLanguage): {
 }
 
 /**
+ * Build ADO coordinator config from sync profile projects
+ *
+ * CRITICAL FIX (2025-11-30): Creates correct 2-level folder structure
+ * - specs/{project}/{areaPath}/FS-XXX/ for items with area paths
+ * - specs/{project}/_default/FS-XXX/ for items without area paths
+ *
+ * This ensures work items are imported from ALL configured projects
+ * into their correct area path folders.
+ */
+function buildAdoConfigFromProjects(
+  ado: ADOConfig,
+  umbrellaProjects: string[]
+): {
+  orgUrl: string;
+  project: string;
+  pat?: string;
+  mode: 'simple' | 'by-project' | 'by-area';
+  projectMappings: Array<{
+    projectName: string;
+    areaMappings: Array<{ areaPath: string; specweaveFolder: string }>;
+  }>;
+} {
+  // If ado.projects is available (from sync profiles), build projectMappings
+  if (ado.projects && ado.projects.length > 0) {
+    // Filter out umbrella projects
+    const importableProjects = ado.projects.filter(
+      p => !p.isUmbrella && !umbrellaProjects.includes(p.name)
+    );
+
+    if (importableProjects.length > 0) {
+      const projectMappings = importableProjects.map(proj => {
+        const projectFolder = proj.name.toLowerCase().replace(/\s+/g, '-');
+
+        // Build area mappings with 2-level folder structure: {project}/{areaPath}
+        const areaMappings = proj.areaPaths?.map(areaPath => {
+          // Extract leaf segment from area path (e.g., "Project\Platform-Engineering" → "platform-engineering")
+          const pathParts = areaPath.split('\\');
+          const areaLeaf = pathParts[pathParts.length - 1];
+          const areaFolder = areaLeaf.toLowerCase().replace(/\s+/g, '-');
+
+          return {
+            areaPath,
+            // 2-level: specs/{project}/{areaPath}/FS-XXX/
+            specweaveFolder: `${projectFolder}/${areaFolder}`
+          };
+        }) || [
+          // No area paths configured - use _default subfolder
+          { areaPath: '*', specweaveFolder: `${projectFolder}/_default` }
+        ];
+
+        return {
+          projectName: proj.name,
+          areaMappings
+        };
+      });
+
+      // Determine mode based on area paths presence
+      const hasAreaPaths = importableProjects.some(p => p.areaPaths && p.areaPaths.length > 0);
+
+      return {
+        orgUrl: ado.orgUrl,
+        project: ado.project,
+        pat: ado.pat,
+        mode: hasAreaPaths ? 'by-area' as const : 'by-project' as const,
+        projectMappings
+      };
+    }
+  }
+
+  // Fallback to simple mode with single project
+  return {
+    orgUrl: ado.orgUrl,
+    project: ado.project,
+    pat: ado.pat,
+    mode: 'simple' as const,
+    projectMappings: []
+  };
+}
+
+/**
  * Prompt user and run external tool import
  * Detects GitHub/JIRA/ADO configuration and imports work items
  *
@@ -479,7 +559,7 @@ export async function promptAndRunExternalImport(
     }
   }
 
-  // Add ADO config with auto-detection
+  // Add ADO config - prefer pre-configured projects over auto-detection
   if (ado) {
     // Extract organization from URL
     const orgMatch = ado.orgUrl.match(/dev\.azure\.com\/([^/]+)/);
@@ -488,8 +568,22 @@ export async function promptAndRunExternalImport(
     // Get umbrella projects to exclude from import (folder structure only)
     const umbrellaProjects = getUmbrellaProjects(targetDir);
 
-    if (organization && ado.pat) {
-      // Auto-detect ADO structure (projects + area paths)
+    // CRITICAL FIX (2025-11-30): Check if projects are already configured (multi-project mode)
+    // If yes, use them directly WITHOUT calling detectAdoStructure/confirmAdoMapping
+    // This ensures user's carefully selected projects and area paths are respected!
+    if (ado.projects && ado.projects.length > 0) {
+      // Multi-project mode: User already configured projects with area paths during init
+      const importableProjects = ado.projects.filter(p => !p.isUmbrella && !umbrellaProjects.includes(p.name));
+      console.log(chalk.cyan(`   📦 Using ${importableProjects.length} pre-configured ADO project(s)`));
+      for (const proj of importableProjects) {
+        const areaInfo = proj.areaPaths?.length ? ` (${proj.areaPaths.length} area paths)` : '';
+        console.log(chalk.gray(`      → ${proj.name}${areaInfo}`));
+      }
+
+      // Build coordinator config directly from configured projects
+      coordinatorConfig.ado = buildAdoConfigFromProjects(ado, umbrellaProjects);
+    } else if (organization && ado.pat) {
+      // Legacy single-project mode: Auto-detect ADO structure (projects + area paths)
       const adoStructure = await detectAdoStructure(organization, ado.pat);
       if (adoStructure) {
         const adoMapping = await confirmAdoMapping(adoStructure);
@@ -511,33 +605,15 @@ export async function promptAndRunExternalImport(
           coordinatorConfig.ado = adoConfig;
         } else {
           // User declined - use simple mode
-          coordinatorConfig.ado = {
-            orgUrl: ado.orgUrl,
-            project: ado.project,
-            pat: ado.pat,
-            mode: 'simple' as const,
-            projectMappings: [],
-          };
+          coordinatorConfig.ado = buildAdoConfigFromProjects(ado, umbrellaProjects);
         }
       } else {
         // Auto-detect failed - use simple mode
-        coordinatorConfig.ado = {
-          orgUrl: ado.orgUrl,
-          project: ado.project,
-          pat: ado.pat,
-          mode: 'simple' as const,
-          projectMappings: [],
-        };
+        coordinatorConfig.ado = buildAdoConfigFromProjects(ado, umbrellaProjects);
       }
     } else {
       // No org/PAT - use simple mode
-      coordinatorConfig.ado = {
-        orgUrl: ado.orgUrl,
-        project: ado.project,
-        pat: ado.pat,
-        mode: 'simple' as const,
-        projectMappings: [],
-      };
+      coordinatorConfig.ado = buildAdoConfigFromProjects(ado, umbrellaProjects);
     }
   }
 
@@ -684,6 +760,9 @@ function getSyncProfileProviders(targetDir: string): string[] {
  *
  * CRITICAL FIX (2025-11-29): This fixes the bug where ADO folders were created
  * but no work items were imported because ado was null in the import flow.
+ *
+ * ENHANCED (2025-11-30): Now supports multi-project ADO setups by collecting
+ * ALL ADO profiles and building the projects array for multi-project import.
  */
 function loadAdoConfigFromSyncProfile(targetDir: string): ADOConfig | null {
   try {
@@ -694,43 +773,71 @@ function loadAdoConfigFromSyncProfile(targetDir: string): ADOConfig | null {
 
     const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
 
-    // Find ADO profile in sync.profiles
+    // Load PAT from .env file (needed for all profiles)
+    let pat: string | undefined;
+    const envPath = path.join(targetDir, '.env');
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf-8');
+      const envVars = parseEnvFile(envContent);
+      pat = envVars.AZURE_DEVOPS_PAT || envVars.ADO_PAT;
+    }
+    // Also check environment variables
+    if (!pat) {
+      pat = process.env.AZURE_DEVOPS_PAT || process.env.ADO_PAT;
+    }
+
+    if (!pat) {
+      return null;
+    }
+
+    // Collect ALL ADO profiles for multi-project support
+    const adoProjects: Array<{ name: string; areaPaths?: string[]; isDefault?: boolean; isUmbrella?: boolean }> = [];
+    let organization: string | undefined;
+    let strategy: string | undefined;
+
     if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
-      for (const profile of Object.values(config.sync.profiles)) {
-        const p = profile as { provider?: string; config?: { organization?: string; project?: string; areaPaths?: string[]; strategy?: string } };
+      const activeProfileId = config.sync.activeProfile;
+
+      for (const [profileId, profile] of Object.entries(config.sync.profiles)) {
+        const p = profile as { provider?: string; config?: { organization?: string; project?: string; areaPaths?: string[]; strategy?: string; isUmbrella?: boolean } };
         if (p.provider?.toLowerCase() === 'ado' && p.config) {
-          const { organization, project, areaPaths, strategy } = p.config;
+          const profileConfig = p.config;
 
-          if (organization && project) {
-            // Load PAT from .env file
-            let pat: string | undefined;
-            const envPath = path.join(targetDir, '.env');
-            if (fs.existsSync(envPath)) {
-              const envContent = fs.readFileSync(envPath, 'utf-8');
-              const envVars = parseEnvFile(envContent);
-              pat = envVars.AZURE_DEVOPS_PAT || envVars.ADO_PAT;
+          if (profileConfig.organization && profileConfig.project) {
+            // Use first organization found (they should all be the same)
+            if (!organization) {
+              organization = profileConfig.organization;
+            }
+            // Use first strategy found
+            if (!strategy && profileConfig.strategy) {
+              strategy = profileConfig.strategy;
             }
 
-            // Also check environment variables
-            if (!pat) {
-              pat = process.env.AZURE_DEVOPS_PAT || process.env.ADO_PAT;
-            }
-
-            if (pat) {
-              return {
-                orgUrl: `https://dev.azure.com/${organization}`,
-                project,
-                pat,
-                areaPaths,
-                strategy
-              };
-            }
+            adoProjects.push({
+              name: profileConfig.project,
+              areaPaths: profileConfig.areaPaths,
+              isDefault: profileId === activeProfileId,
+              isUmbrella: profileConfig.isUmbrella
+            });
           }
         }
       }
     }
 
-    return null;
+    // Return null if no ADO projects found
+    if (adoProjects.length === 0 || !organization) {
+      return null;
+    }
+
+    // Return multi-project config
+    const defaultProject = adoProjects.find(p => p.isDefault) || adoProjects[0];
+    return {
+      orgUrl: `https://dev.azure.com/${organization}`,
+      project: defaultProject.name,  // Primary project for backwards compatibility
+      pat,
+      strategy,
+      projects: adoProjects  // Multi-project support
+    };
   } catch {
     return null;
   }
