@@ -77,6 +77,11 @@ export class ADOImporter implements Importer {
 
   /**
    * Paginate through work items using WIQL (200 per page)
+   *
+   * CRITICAL FIX (2025-12-01): Also fetch missing parent items (Epics/Capabilities)
+   * Problem: If a parent Epic wasn't modified recently, it won't be in the WIQL results,
+   * causing all its child User Stories to be grouped into one generic folder.
+   * Solution: After fetching all items, identify missing parents and fetch them separately.
    */
   async *paginate(config: ImportConfig = {}): AsyncGenerator<ExternalItem[], void, unknown> {
     const {
@@ -120,9 +125,10 @@ export class ADOImporter implements Importer {
     const wiql = wiqlParts.join(' ');
 
     try {
-      // Step 1: Execute WIQL query ONCE to get all work item IDs
+      // Step 1: Execute WIQL query to get all work item IDs
+      // CRITICAL: WIQL returns max 20,000 IDs by default. For larger projects, use $top parameter.
       const queryResult = await this.makeADORequest<ADOQueryResult>(
-        `/_apis/wit/wiql?api-version=7.0`,
+        `/_apis/wit/wiql?$top=50000&api-version=7.0`,
         {
           method: 'POST',
           body: JSON.stringify({ query: wiql }),
@@ -130,6 +136,10 @@ export class ADOImporter implements Importer {
       );
 
       const allWorkItemIds = queryResult.workItems.map((wi) => wi.id);
+
+      // Collect all items to find missing parents after pagination
+      const allFetchedItems: ExternalItem[] = [];
+      const fetchedIds = new Set<number>();
 
       // Step 2: Paginate through work item IDs
       let skip = 0;
@@ -147,8 +157,14 @@ export class ADOImporter implements Importer {
         // Fetch full work item details
         const workItems = await this.getWorkItemsBatch(ids);
 
+        // Track fetched IDs
+        for (const wi of workItems) {
+          fetchedIds.add(wi.fields['System.Id']);
+        }
+
         // Convert to ExternalItems
         const items = workItems.map((wi) => this.convertToExternalItem(wi));
+        allFetchedItems.push(...items);
 
         // Yield page
         if (items.length > 0) {
@@ -158,6 +174,26 @@ export class ADOImporter implements Importer {
 
         skip += top;
       }
+
+      // Step 3: CRITICAL - Fetch missing parent items (Epics/Capabilities not in time range)
+      // This ensures proper hierarchy grouping even for old parent items
+      const missingParentIds = this.findMissingParentIds(allFetchedItems, fetchedIds);
+
+      if (missingParentIds.length > 0) {
+        console.log(`   📥 Fetching ${missingParentIds.length} parent items (Epics/Capabilities) for hierarchy...`);
+
+        // Fetch missing parents in batches
+        for (let i = 0; i < missingParentIds.length; i += top) {
+          const batchIds = missingParentIds.slice(i, i + top);
+          const parentWorkItems = await this.getWorkItemsBatch(batchIds);
+          const parentItems = parentWorkItems.map((wi) => this.convertToExternalItem(wi));
+
+          // Yield parent items (they need to be processed for grouping)
+          if (parentItems.length > 0) {
+            yield parentItems;
+          }
+        }
+      }
     } catch (error: any) {
       if (error.status === 401) {
         throw new Error(`Azure DevOps authentication failed: ${error.message}`);
@@ -166,6 +202,26 @@ export class ADOImporter implements Importer {
       }
       throw error;
     }
+  }
+
+  /**
+   * Find parent IDs that are referenced but not in our fetched items
+   * These are typically Epics/Capabilities that weren't modified recently
+   */
+  private findMissingParentIds(items: ExternalItem[], fetchedIds: Set<number>): number[] {
+    const missingIds = new Set<number>();
+
+    for (const item of items) {
+      if (item.parentId) {
+        // Extract numeric ID from "ADO-123" format
+        const numericId = parseInt(item.parentId.replace('ADO-', ''), 10);
+        if (!isNaN(numericId) && !fetchedIds.has(numericId)) {
+          missingIds.add(numericId);
+        }
+      }
+    }
+
+    return Array.from(missingIds);
   }
 
   /**
