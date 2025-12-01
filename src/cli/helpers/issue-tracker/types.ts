@@ -171,6 +171,16 @@ export type RepositoryHosting =
   | 'other-multirepo';
 
 /**
+ * ADO project selection from repository setup
+ * Used to avoid duplicate prompts when ADO is selected for both repos and issues
+ */
+export interface AdoProjectSelection {
+  org: string;
+  pat: string;
+  projects: string[];
+}
+
+/**
  * Setup options
  */
 export interface SetupOptions {
@@ -180,6 +190,8 @@ export interface SetupOptions {
   setupRetryCount?: number; // Default: 0 (tracks full setup retry attempts to prevent infinite recursion)
   isFrameworkRepo?: boolean; // True if this is the SpecWeave framework repo itself
   repositoryHosting?: RepositoryHosting; // Repository hosting choice (informs issue tracker defaults)
+  /** ADO credentials from repository setup - reused when ADO is also selected for issue tracking */
+  adoCredentialsFromRepoSetup?: AdoProjectSelection;
 }
 
 /**
