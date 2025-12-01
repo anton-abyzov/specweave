@@ -228,7 +228,7 @@ if (args.dryRun) {
 const { confirm } = await import('@inquirer/prompts');
 
 const confirmed = await confirm({
-  message: `Clone ${filteredRepos.length} repositories to ./repos/?`,
+  message: `Clone ${filteredRepos.length} repositories to current directory?`,
   default: true
 });
 
@@ -300,7 +300,7 @@ How do you want to select repositories?
    • sw-shared-lib (Shared)
    ... and 13 more
 
-Clone 16 repositories to ./repos/? (Y/n)
+Clone 16 repositories to current directory? (Y/n)
 
 📦 Fetching ADO Repositories
 
@@ -311,7 +311,7 @@ Clone 16 repositories to ./repos/? (Y/n)
 
 🔄 Cloning 16 repositories in background...
 
-   Repositories will be cloned to: ./repos/
+   Repositories will be cloned to: ./ (root folder)
    Job ID: abc12345
 
    Check progress: /specweave:jobs
@@ -336,7 +336,7 @@ Clone 16 repositories to ./repos/? (Y/n)
    • sw-shared-lib (Shared)
    ...
 
-Clone 8 repositories to ./repos/? (Y/n)
+Clone 8 repositories to current directory? (Y/n)
 ```
 
 ### Example 3: Dry Run
@@ -359,7 +359,7 @@ Clone 8 repositories to ./repos/? (Y/n)
 - **Progress Tracking**: Check progress with `/specweave:jobs`
 - **Resumable**: Interrupted clones can resume with `/specweave:jobs --resume <id>`
 - **Auth via PAT**: Uses HTTPS clone URLs with PAT authentication
-- **Target Directory**: Repos are cloned to `./repos/<repo-name>/`
+- **Target Directory**: Repos are cloned directly to `./<repo-name>/` (root folder)
 
 ## Related Commands
 
