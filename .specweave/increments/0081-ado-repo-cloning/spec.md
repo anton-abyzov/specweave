@@ -25,9 +25,9 @@ In `src/cli/commands/init.ts`:
 **So that** I can clone them to my local workspace
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: System calls ADO REST API to list repositories
-- [ ] **AC-US1-02**: Repositories from all selected projects are fetched
-- [ ] **AC-US1-03**: API errors are handled gracefully with retry guidance
+- [x] **AC-US1-01**: System calls ADO REST API to list repositories
+- [x] **AC-US1-02**: Repositories from all selected projects are fetched
+- [x] **AC-US1-03**: API errors are handled gracefully with retry guidance
 
 ### US-002: Filter Repositories by Pattern
 **As a** user who selected a clone pattern
@@ -35,10 +35,10 @@ In `src/cli/commands/init.ts`:
 **So that** I only clone relevant repos
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Pattern `*` clones all repos
-- [ ] **AC-US2-02**: Glob patterns like `sw-*` filter correctly
-- [ ] **AC-US2-03**: Regex patterns with `regex:` prefix work
-- [ ] **AC-US2-04**: Skip pattern skips cloning entirely
+- [x] **AC-US2-01**: Pattern `*` clones all repos
+- [x] **AC-US2-02**: Glob patterns like `sw-*` filter correctly
+- [x] **AC-US2-03**: Regex patterns with `regex:` prefix work
+- [x] **AC-US2-04**: Skip pattern skips cloning entirely
 
 ### US-003: Background Cloning During Init
 **As a** user
@@ -46,10 +46,10 @@ In `src/cli/commands/init.ts`:
 **So that** init completes quickly and I can start working
 
 **Acceptance Criteria**:
-- [ ] **AC-US3-01**: Init doesn't block waiting for clones
-- [ ] **AC-US3-02**: Background job is created for tracking
-- [ ] **AC-US3-03**: User sees "Cloning X repos in background..."
-- [ ] **AC-US3-04**: Clone progress can be checked via `/specweave:jobs`
+- [x] **AC-US3-01**: Init doesn't block waiting for clones
+- [x] **AC-US3-02**: Background job is created for tracking
+- [x] **AC-US3-03**: User sees "Cloning X repos in background..."
+- [x] **AC-US3-04**: Clone progress can be checked via `/specweave:jobs`
 
 ### US-004: Post-Init Clone Command
 **As a** user who skipped cloning during init
@@ -57,10 +57,10 @@ In `src/cli/commands/init.ts`:
 **So that** I can add repos without re-running init
 
 **Acceptance Criteria**:
-- [ ] **AC-US4-01**: `/specweave-ado:clone-repos` command exists
-- [ ] **AC-US4-02**: Can specify project(s) and pattern
-- [ ] **AC-US4-03**: Uses same background job system
-- [ ] **AC-US4-04**: Shows progress and errors clearly
+- [x] **AC-US4-01**: `/specweave-ado:clone-repos` command exists
+- [x] **AC-US4-02**: Can specify project(s) and pattern
+- [x] **AC-US4-03**: Uses same background job system
+- [x] **AC-US4-04**: Shows progress and errors clearly
 
 ## Out of Scope
 - GitHub/Bitbucket multi-repo cloning (future increment)

@@ -178,12 +178,43 @@ specweave init .
 
 ## The Bigger Picture
 
-Think of the relationship like this:
+The relationship is precise:
 
-- **SpecKit** = Requirements snapshot tool (like a camera)
-- **SpecWeave** = Product lifecycle management (like a film studio)
+- **SpecKit** = Generates ONE increment's artifacts (`spec.md` + `plan.md` + `tasks.md`)
+- **SpecWeave** = Manages N increments through their full lifecycle
 
-SpecKit captures a moment. SpecWeave manages the entire journey from idea to production, keeping everything synchronized across tools, teams, and time.
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           SPECWEAVE                                      │
+│                                                                         │
+│   ┌─────────────┐   ┌─────────────┐   ┌─────────────┐                  │
+│   │ Increment 1 │   │ Increment 2 │   │ Increment N │   ...            │
+│   │ (SpecKit≡)  │   │ (SpecKit≡)  │   │ (SpecKit≡)  │                  │
+│   │ spec.md     │   │ spec.md     │   │ spec.md     │                  │
+│   │ plan.md     │   │ plan.md     │   │ plan.md     │                  │
+│   │ tasks.md    │   │ tasks.md    │   │ tasks.md    │                  │
+│   └─────────────┘   └─────────────┘   └─────────────┘                  │
+│         │                 │                 │                           │
+│         └────────────────┴────────────────┘                            │
+│                          │                                              │
+│                          ▼                                              │
+│   ┌─────────────────────────────────────────────────────────────────┐  │
+│   │  ENTERPRISE LAYER (SpecWeave only)                               │  │
+│   │  • Lifecycle management (active → review → completed → archived) │  │
+│   │  • External sync (GitHub Issues, JIRA, Azure DevOps)            │  │
+│   │  • Living documentation (auto-update after every task)           │  │
+│   │  • Hooks system (pre/post task automation)                       │  │
+│   │  • Quality gates (tasks + tests + docs)                          │  │
+│   │  • Multi-project coordination                                    │  │
+│   └─────────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**SpecKit solves**: "How do I create a good spec for this feature?"
+**SpecWeave solves**: "How do I manage 60+ features across 5 repos with JIRA sync and living docs?"
+
+SpecKit is the foundation. SpecWeave is the system built on top of it.
 
 ## Learn More
 
