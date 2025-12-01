@@ -38,6 +38,23 @@ interface AdoRepository {
 }
 
 /**
+ * Build proper ADO clone URL with PAT authentication
+ *
+ * ADO clone URL format: https://{PAT}@dev.azure.com/{org}/{project}/_git/{repo}
+ *
+ * The remoteUrl from ADO API may come in different formats:
+ * - https://dev.azure.com/org/project/_git/repo
+ * - https://org@dev.azure.com/org/project/_git/repo (with org as placeholder)
+ *
+ * We need to construct a proper URL with PAT authentication.
+ */
+function buildAdoCloneUrl(org: string, project: string, repoName: string, pat: string): string {
+  // Build clean URL with PAT authentication
+  // Format: https://{PAT}@dev.azure.com/{org}/{project}/_git/{repo}
+  return `https://${pat}@dev.azure.com/${org}/${project}/_git/${repoName}`;
+}
+
+/**
  * Trigger ADO repository cloning during init
  *
  * This function:
@@ -65,6 +82,11 @@ export async function triggerAdoRepoCloning(
 
   if (!projects || projects.length === 0) {
     console.log(chalk.yellow('\n   No ADO projects selected for cloning.\n'));
+    return;
+  }
+
+  if (!pat) {
+    console.log(chalk.yellow('\n   No PAT provided. Cannot clone repositories.\n'));
     return;
   }
 
@@ -125,7 +147,8 @@ export async function triggerAdoRepoCloning(
   jobManager.startJob(job.id);
 
   // Start cloning asynchronously (non-blocking)
-  cloneRepositoriesAsync(projectPath, filteredRepos, org, job.id).catch(error => {
+  // IMPORTANT: Pass PAT directly - don't rely on .env which may not exist yet
+  cloneRepositoriesAsync(projectPath, filteredRepos, org, pat, job.id).catch(error => {
     console.error(chalk.red(`Clone error: ${error instanceof Error ? error.message : String(error)}`));
     jobManager.completeJob(job.id, error instanceof Error ? error.message : String(error));
   });
@@ -141,11 +164,18 @@ export async function triggerAdoRepoCloning(
  * Clone repositories asynchronously
  *
  * This runs in background and updates job progress as repos are cloned.
+ *
+ * @param projectPath - Target directory
+ * @param repos - Repositories to clone
+ * @param org - ADO organization name
+ * @param pat - Personal Access Token (passed directly, not from .env)
+ * @param jobId - Background job ID for progress tracking
  */
 async function cloneRepositoriesAsync(
   projectPath: string,
   repos: AdoRepository[],
   org: string,
+  pat: string,
   jobId: string
 ): Promise<void> {
   const jobManager = getJobManager(projectPath);
@@ -163,11 +193,9 @@ async function cloneRepositoriesAsync(
     }
 
     try {
-      // Clone using HTTPS URL (PAT auth)
-      // For ADO: https://dev.azure.com/org/project/_git/repo becomes
-      // https://{pat}@dev.azure.com/org/project/_git/repo for auth
-      const pat = (await getPatFromJobConfig(projectPath, jobId)) || '';
-      const authUrl = repo.remoteUrl.replace('https://', `https://${pat}@`);
+      // Build proper clone URL with PAT authentication
+      // Format: https://{PAT}@dev.azure.com/{org}/{project}/_git/{repo}
+      const cloneUrl = buildAdoCloneUrl(org, repo.project, repo.name, pat);
 
       // Create parent directory if needed
       if (!existsSync(reposDir)) {
@@ -175,39 +203,26 @@ async function cloneRepositoriesAsync(
       }
 
       // Clone the repository
-      const result = execFileNoThrowSync('git', ['clone', authUrl, repo.name], { cwd: reposDir });
+      const result = execFileNoThrowSync('git', ['clone', cloneUrl, repo.name], { cwd: reposDir });
 
       if (result.exitCode === 0) {
         completed++;
         jobManager.updateProgress(jobId, completed, repo.name, repo.name);
+        console.log(chalk.green(`   ✓ Cloned ${repo.name}`));
       } else {
         // Clone failed - mark as failed but continue
         jobManager.updateProgress(jobId, completed, repo.name, undefined, repo.name);
-        console.error(chalk.yellow(`   Failed to clone ${repo.name}: ${result.stderr || result.stdout}`));
+        console.error(chalk.yellow(`   ✗ Failed to clone ${repo.name}: ${result.stderr || result.stdout}`));
       }
     } catch (error) {
       // Mark repo as failed but continue with others
       jobManager.updateProgress(jobId, completed, repo.name, undefined, repo.name);
       const errorMsg = error instanceof Error ? error.message : String(error);
-      console.error(chalk.yellow(`   Error cloning ${repo.name}: ${errorMsg}`));
+      console.error(chalk.yellow(`   ✗ Error cloning ${repo.name}: ${errorMsg}`));
     }
   }
 
   // Mark job as complete
   jobManager.completeJob(jobId);
-}
-
-/**
- * Get PAT from job config (stored in background-jobs.json)
- */
-async function getPatFromJobConfig(projectPath: string, jobId: string): Promise<string | null> {
-  // PAT is stored in .env, not in job config (security)
-  // Read from environment or .env file
-  const { readEnvFile, parseEnvFile } = await import('../../../utils/env-file.js');
-  const envContent = readEnvFile(projectPath);
-  if (envContent) {
-    const parsed = parseEnvFile(envContent);
-    return parsed.AZURE_DEVOPS_PAT || null;
-  }
-  return process.env.AZURE_DEVOPS_PAT || null;
+  console.log(chalk.green(`\n✅ Clone job completed: ${completed}/${repos.length} repositories cloned`));
 }

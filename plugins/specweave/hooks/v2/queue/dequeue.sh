@@ -2,7 +2,11 @@
 # dequeue.sh - Get and remove next event from queue
 # Usage: dequeue.sh [--peek]
 # Returns JSON event or empty if queue is empty
+#
+# IMPORTANT: Never crash Claude, always exit 0
 set +e
+
+[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
 
 PEEK=false
 [[ "$1" == "--peek" ]] && PEEK=true

@@ -1,7 +1,11 @@
 #!/bin/bash
 # github-sync-handler.sh - Sync increment status to GitHub issue
 # Called async by processor, non-blocking, error-tolerant
+#
+# IMPORTANT: Never crash Claude, always exit 0
 set +e
+
+[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
 
 INC_ID="${1:-}"
 [[ -z "$INC_ID" ]] && exit 0

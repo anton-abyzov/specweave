@@ -1,7 +1,20 @@
 #!/bin/bash
 # post-tool-use.sh - Single dispatcher for ALL PostToolUse events
 # Replaces: post-task-edit, post-metadata-change, post-increment-planning, etc.
-# Goal: <10ms execution, queue heavy work for async processing
+#
+# Architecture (EDA v2):
+# - Detectors run synchronously (fast, detect state transitions)
+# - Detectors emit events to queue
+# - Handlers process events asynchronously from queue
+#
+# Event flow:
+# 1. metadata.json change -> lifecycle-detector -> increment.* events
+# 2. tasks.md/spec.md change -> us-completion-detector -> user-story.* events
+# 3. Events queued -> processor routes to handlers
+#
+# Goal: <10ms execution, all heavy work through event queue
+#
+# IMPORTANT: Never crash Claude, always exit 0
 set +e
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
@@ -20,25 +33,54 @@ INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
 [[ -z "$FILE_PATH" ]] && exit 0
 
-# Detect event type based on file
-EVENT_TYPE=""
-case "$FILE_PATH" in
-  */.specweave/increments/*/tasks.md)   EVENT_TYPE="task.updated" ;;
-  */.specweave/increments/*/spec.md)    EVENT_TYPE="spec.updated" ;;
-  */.specweave/increments/*/metadata.json) EVENT_TYPE="metadata.changed" ;;
-  */.specweave/increments/*/plan.md)    EVENT_TYPE="plan.updated" ;;
-  *) exit 0 ;;  # Not a specweave file, ignore
-esac
-
-# Extract increment ID
+# Extract increment ID from path
 INC_ID=$(echo "$FILE_PATH" | grep -o '[0-9][0-9][0-9][0-9]-[^/]*' | head -1)
+[[ -z "$INC_ID" ]] && exit 0
 
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DETECTOR_DIR="$HOOK_DIR/detectors"
 
-# SYNCHRONOUS: Status update only (fast, always needed)
-bash "$HOOK_DIR/handlers/status-update.sh" "$INC_ID" 2>/dev/null &
+# ============================================================================
+# EDA DISPATCHER: Route to detectors based on file type
+# Detectors detect state transitions and emit events to queue
+# All heavy work is done by handlers processing the queue
+# ============================================================================
 
-# ASYNC: Queue heavy operations for background processing
-bash "$HOOK_DIR/queue/enqueue.sh" "$EVENT_TYPE" "$INC_ID" 2>/dev/null
+case "$FILE_PATH" in
+  */.specweave/increments/*/metadata.json)
+    # Metadata changed -> check for lifecycle transitions
+    # Events: increment.created, increment.done, increment.archived, increment.reopened
+    bash "$DETECTOR_DIR/lifecycle-detector.sh" "$INC_ID" 2>/dev/null &
+    ;;
+
+  */.specweave/increments/*/tasks.md|*/.specweave/increments/*/spec.md)
+    # Tasks or spec changed -> check for US completion
+    # Events: user-story.completed, user-story.reopened
+    bash "$DETECTOR_DIR/us-completion-detector.sh" "$INC_ID" 2>/dev/null &
+
+    # Also queue legacy event for backward compatibility
+    if [[ "$FILE_PATH" == *tasks.md ]]; then
+      bash "$HOOK_DIR/queue/enqueue.sh" "task.updated" "$INC_ID" 2>/dev/null &
+    else
+      bash "$HOOK_DIR/queue/enqueue.sh" "spec.updated" "$INC_ID" 2>/dev/null &
+    fi
+    ;;
+
+  */.specweave/increments/*/plan.md)
+    # Plan updated (for future use, currently no special handling)
+    bash "$HOOK_DIR/queue/enqueue.sh" "plan.updated" "$INC_ID" 2>/dev/null &
+    ;;
+
+  *)
+    # Not a specweave increment file, ignore
+    exit 0
+    ;;
+esac
+
+# NOTE: Removed synchronous status-update.sh call
+# Status line updates are now EVENT-DRIVEN:
+# - Updated on user-story.completed/reopened events
+# - Updated on increment lifecycle events
+# - NOT updated on every file edit (reduces flickering, race conditions)
 
 exit 0
