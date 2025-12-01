@@ -31,7 +31,7 @@ import {
   type AdoMappingResult,
 } from './jira-ado-auto-detect.js';
 import { normalizeToProjectId } from '../../../utils/project-id-generator.js';
-import { getJobManager, launchImportJob, isJobRunning, getJobLog } from '../../../core/background/index.js';
+import { getJobManager, launchImportJob, isJobRunning, getJobLog, detectOrphanedJobs, getActiveImportJob } from '../../../core/background/index.js';
 import type { ImportJobConfig } from '../../../core/background/types.js';
 
 /**
@@ -382,6 +382,32 @@ export async function promptAndRunExternalImport(
 ): Promise<CoordinatorResult | BackgroundImportResult> {
   const strings = getExternalImportStrings(language);
 
+  // P2 FIX: Detect and handle orphaned jobs before starting new import
+  // This catches jobs that crashed mid-import and marks them as failed
+  const orphanedJobs = detectOrphanedJobs(targetDir);
+  if (orphanedJobs.length > 0) {
+    console.log(chalk.yellow(`\n   ⚠️  Found ${orphanedJobs.length} orphaned import job(s) from previous session(s)`));
+    for (const job of orphanedJobs) {
+      console.log(chalk.gray(`      → Job ${job.id}: ${job.progress.current}/${job.progress.total} items processed`));
+    }
+    console.log(chalk.gray('      These jobs have been marked as failed. Use /specweave:jobs --resume <id> to restart.'));
+    console.log('');
+  }
+
+  // P2 FIX: Check for active import job (prevents concurrent conflicts)
+  const activeJob = getActiveImportJob(targetDir);
+  if (activeJob) {
+    console.log(chalk.cyan(`\n   📦 Import job already running (Job ID: ${activeJob.id})`));
+    console.log(chalk.gray(`      Progress: ${activeJob.progress.current}/${activeJob.progress.total} items`));
+    console.log(chalk.gray(`      Use '/specweave:jobs --follow ${activeJob.id}' to monitor progress`));
+    console.log('');
+    return {
+      jobId: activeJob.id,
+      isBackground: true,
+      message: `Existing import job in progress. Monitor with /specweave:jobs`
+    };
+  }
+
   // Load import configuration
   const importConfig = loadImportConfig(targetDir);
 
@@ -647,14 +673,16 @@ export async function promptAndRunExternalImport(
     }
   }
 
-  // Run import with progress tracking
-  // Use background mode if requested or for large imports (> 1000 items estimated)
-  const useBackground = options.background ||
-    (options.estimatedTotal && options.estimatedTotal > 1000);
+  // Run import in BACKGROUND by default (non-blocking)
+  // This prevents large imports from polluting the terminal and allows
+  // users to track progress via /specweave:jobs
+  //
+  // Only run in foreground if explicitly requested (options.background === false)
+  const useBackground = options.background !== false;
 
   return await runImport(targetDir, coordinatorConfig, {
     background: useBackground,
-    estimatedTotal: options.estimatedTotal
+    estimatedTotal: options.estimatedTotal || 100  // Default estimate for progress tracking
   });
 }
 
@@ -986,19 +1014,21 @@ export interface BackgroundImportResult {
  *
  * @param targetDir Project directory
  * @param coordinatorConfig Import configuration
- * @param options.background If true, run in background process (non-blocking)
- * @param options.estimatedTotal Estimated total items (for large imports)
+ * @param options.background If true (default), run in background process (non-blocking)
+ * @param options.estimatedTotal Estimated total items (for progress tracking)
  */
 async function runImport(
   targetDir: string,
   coordinatorConfig: CoordinatorConfig,
   options: { background?: boolean; estimatedTotal?: number } = {}
 ): Promise<CoordinatorResult | BackgroundImportResult> {
-  const { background = false, estimatedTotal = 100 } = options;
+  // Default to BACKGROUND mode - prevents terminal pollution with huge messages
+  const { background = true, estimatedTotal = 100 } = options;
 
-  // BACKGROUND MODE: Spawn detached worker process
+  // BACKGROUND MODE: Spawn detached worker process (DEFAULT)
   if (background) {
-    console.log(chalk.cyan('\n   🚀 Starting background import...'));
+    console.log(chalk.cyan('\n   🚀 Starting background import job...'));
+    console.log(chalk.gray('   Import will run in background - init continues immediately'));
 
     try {
       const result = await launchImportJob({
@@ -1009,10 +1039,15 @@ async function runImport(
       });
 
       if (result.isBackground) {
-        console.log(chalk.green(`   ✓ Background import started (Job ID: ${result.job.id})`));
+        const shortId = result.job.id.slice(0, 8);
+        console.log(chalk.green(`\n   ✓ Background import started`));
+        console.log(chalk.white(`   Job ID: ${shortId}`));
         console.log(chalk.gray(`   PID: ${result.pid}`));
-        console.log(chalk.gray(`   Check progress: /specweave:jobs`));
-        console.log(chalk.gray(`   View logs: /specweave:jobs --id ${result.job.id}`));
+        console.log('');
+        console.log(chalk.blue('   📊 Monitor import progress:'));
+        console.log(chalk.gray(`   → /specweave:jobs                  Show job status`));
+        console.log(chalk.gray(`   → /specweave:jobs --follow ${shortId}  Follow live progress`));
+        console.log(chalk.gray(`   → /specweave:jobs --logs ${shortId}    View full logs`));
         console.log('');
 
         return {
@@ -1023,10 +1058,10 @@ async function runImport(
         };
       }
       // Fallback to foreground if background launch failed
-      console.log(chalk.yellow('   ⚠ Background mode unavailable, running in foreground'));
+      console.log(chalk.yellow('   ⚠ Background mode unavailable, falling back to foreground'));
     } catch (error: any) {
-      console.log(chalk.yellow(`   ⚠ Could not start background: ${error.message}`));
-      console.log(chalk.gray('   Running in foreground instead...'));
+      console.log(chalk.yellow(`   ⚠ Could not start background job: ${error.message}`));
+      console.log(chalk.gray('   Falling back to foreground mode...'));
     }
   }
 
@@ -1564,21 +1599,24 @@ function groupAdoItemsByParentHierarchy(items: ExternalItem[]): ContainerGroup[]
         group.items.push(item);
       }
     } else {
-      // No parent found - create individual group for this item
+      // No parent found - group by area path (2-level structure: project/areaPath)
       // This handles orphan items (User Stories with parents outside our dataset)
+      // CRITICAL FIX (2025-12-01): Group by area path, NOT by User Story title
       const containerId = item.adoProjectName || 'default';
 
-      // For orphans with a parentId, use the parentId as group key so siblings stay together
-      let groupKey: string;
-      let projectId: string;
-
-      if (item.parentId) {
-        groupKey = `ado:orphan-parent:${item.parentId}`;
-        projectId = `orphan-${item.parentId.replace('ADO-', '')}`;
-      } else {
-        groupKey = `ado:individual:${item.id}`;
-        projectId = normalizeToProjectId(item.title) || `ado-${item.id.replace('ADO-', '')}`;
+      // Extract area path leaf segment for grouping (e.g., "Project\Platform-Engineering" → "platform-engineering")
+      let areaFolder = '_default';
+      if (item.adoAreaPath) {
+        const segments = item.adoAreaPath.split('\\');
+        // Use leaf segment, or second segment if only project name
+        const leafSegment = segments.length > 1 ? segments[segments.length - 1] : segments[0];
+        areaFolder = normalizeToProjectId(leafSegment) || '_default';
       }
+
+      // Group all items without parents by their area path
+      // This ensures siblings with same area path stay together
+      const groupKey = `ado:area:${containerId}:${areaFolder}`;
+      const projectId = areaFolder;
 
       if (!groups.has(groupKey)) {
         groups.set(groupKey, {
@@ -1710,3 +1748,14 @@ function emptyResult(): CoordinatorResult {
     platforms: []
   };
 }
+
+// ============================================================================
+// TEST EXPORTS - For unit testing internal functions
+// ============================================================================
+export const __test__ = {
+  groupAdoItemsByParentHierarchy,
+  groupItemsByExternalContainer,
+  groupNonHierarchyItems,
+};
+
+export type { ContainerGroup };

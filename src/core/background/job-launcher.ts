@@ -38,6 +38,29 @@ export interface LaunchResult {
 }
 
 /**
+ * Check if there's an active import job running
+ * P2 FIX: Prevents concurrent imports that could conflict
+ */
+export function getActiveImportJob(projectPath: string): BackgroundJob | null {
+  const jobManager = getJobManager(projectPath);
+  const activeJobs = jobManager.getActiveJobs();
+
+  // Find any running/pending import job
+  const activeImport = activeJobs.find(
+    j => j.type === 'import-issues' && (j.status === 'running' || j.status === 'pending')
+  );
+
+  if (activeImport) {
+    // Verify it's actually running (not orphaned)
+    if (isJobRunning(projectPath, activeImport.id)) {
+      return activeImport;
+    }
+  }
+
+  return null;
+}
+
+/**
  * Launch an import job
  *
  * @param options Launch configuration
@@ -45,6 +68,16 @@ export interface LaunchResult {
  */
 export async function launchImportJob(options: LaunchOptions): Promise<LaunchResult> {
   const { type, projectPath, coordinatorConfig, estimatedTotal = 100, foreground = false } = options;
+
+  // P2 FIX: Check for existing active import to prevent conflicts
+  const existingJob = getActiveImportJob(projectPath);
+  if (existingJob) {
+    throw new Error(
+      `An import job is already running (Job ID: ${existingJob.id}). ` +
+      `Use '/specweave:jobs --kill ${existingJob.id}' to stop it first, ` +
+      `or '/specweave:jobs --follow ${existingJob.id}' to monitor progress.`
+    );
+  }
 
   // Create job via job manager
   const jobManager = getJobManager(projectPath);
@@ -112,6 +145,10 @@ export async function launchImportJob(options: LaunchOptions): Promise<LaunchRes
   // Unref to allow parent to exit independently
   child.unref();
 
+  // P1 FIX: Validate worker actually started before reporting success
+  // Wait briefly and verify PID file exists + process is alive
+  await validateWorkerStarted(projectPath, job.id, child.pid);
+
   // Update job with PID
   const updatedJob = jobManager.getJob(job.id);
   if (updatedJob) {
@@ -124,6 +161,60 @@ export async function launchImportJob(options: LaunchOptions): Promise<LaunchRes
     pid: child.pid,
     isBackground: true
   };
+}
+
+/**
+ * Validate that a worker process started successfully
+ * Waits up to 2 seconds for PID file to appear and verifies process is alive
+ */
+async function validateWorkerStarted(
+  projectPath: string,
+  jobId: string,
+  expectedPid?: number
+): Promise<void> {
+  const pidFile = path.join(projectPath, '.specweave', 'state', 'jobs', jobId, 'worker.pid');
+  const maxWaitMs = 2000;
+  const checkIntervalMs = 100;
+  let elapsed = 0;
+
+  // Wait for PID file to appear (worker writes it on startup)
+  while (elapsed < maxWaitMs) {
+    if (fs.existsSync(pidFile)) {
+      // PID file exists - verify process is alive
+      try {
+        const pid = parseInt(fs.readFileSync(pidFile, 'utf-8').trim(), 10);
+
+        // Verify it matches expected PID (if provided)
+        if (expectedPid && pid !== expectedPid) {
+          throw new Error(`Worker PID mismatch: expected ${expectedPid}, got ${pid}`);
+        }
+
+        // Check process is alive (signal 0 = check without killing)
+        process.kill(pid, 0);
+        return; // Success - worker is running
+      } catch (err: any) {
+        if (err.code === 'ESRCH') {
+          // Process not found - worker died immediately
+          throw new Error('Worker process died immediately after startup. Check job logs.');
+        }
+        throw err;
+      }
+    }
+
+    // Wait and retry
+    await sleep(checkIntervalMs);
+    elapsed += checkIntervalMs;
+  }
+
+  // Timeout - PID file never appeared
+  throw new Error(`Worker failed to start within ${maxWaitMs}ms. Check job logs for errors.`);
+}
+
+/**
+ * Simple sleep helper
+ */
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export interface CloneLaunchOptions {
@@ -210,6 +301,9 @@ export async function launchCloneJob(options: CloneLaunchOptions): Promise<Launc
 
   // Unref to allow parent to exit independently
   child.unref();
+
+  // P1 FIX: Validate worker actually started before reporting success
+  await validateWorkerStarted(projectPath, job.id, child.pid);
 
   // Update job with PID
   const updatedJob = jobManager.getJob(job.id);
@@ -346,6 +440,65 @@ function findWorkerByName(workerName: string): string | null {
   }
 
   return null;
+}
+
+/**
+ * Detect and handle orphaned jobs
+ * P2 FIX: Jobs marked as "running" but worker is dead
+ *
+ * Returns list of orphaned jobs that were fixed
+ */
+export function detectOrphanedJobs(projectPath: string): BackgroundJob[] {
+  const jobManager = getJobManager(projectPath);
+  const activeJobs = jobManager.getActiveJobs();
+  const orphaned: BackgroundJob[] = [];
+
+  for (const job of activeJobs) {
+    if (job.status === 'running') {
+      // Check if worker is actually running
+      if (!isJobRunning(projectPath, job.id)) {
+        // Worker is dead but job is marked running - orphaned
+        orphaned.push(job);
+
+        // Mark job as failed with explanation
+        jobManager.completeJob(
+          job.id,
+          'Worker process died unexpectedly. Job was orphaned and needs manual restart.'
+        );
+
+        // Clean up stale PID file if exists
+        const pidFile = path.join(projectPath, '.specweave', 'state', 'jobs', job.id, 'worker.pid');
+        if (fs.existsSync(pidFile)) {
+          try {
+            fs.unlinkSync(pidFile);
+          } catch {
+            // Ignore cleanup errors
+          }
+        }
+      }
+    }
+  }
+
+  return orphaned;
+}
+
+/**
+ * Get orphaned jobs without modifying them (for display)
+ */
+export function getOrphanedJobs(projectPath: string): BackgroundJob[] {
+  const jobManager = getJobManager(projectPath);
+  const activeJobs = jobManager.getActiveJobs();
+  const orphaned: BackgroundJob[] = [];
+
+  for (const job of activeJobs) {
+    if (job.status === 'running') {
+      if (!isJobRunning(projectPath, job.id)) {
+        orphaned.push(job);
+      }
+    }
+  }
+
+  return orphaned;
 }
 
 /**
