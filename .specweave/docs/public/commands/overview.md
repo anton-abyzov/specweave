@@ -210,12 +210,44 @@ graph LR
 
 ---
 
+### `/specweave:jobs` - Background Jobs Monitor
+
+Monitor long-running operations that continue even after closing Claude.
+
+```bash
+/specweave:jobs                    # Show active jobs
+/specweave:jobs --follow ae362dfe  # Follow progress live
+/specweave:jobs --logs ae362dfe    # View worker logs
+/specweave:jobs --kill ae362dfe    # Stop running job
+/specweave:jobs --resume ae362dfe  # Resume paused job
+```
+
+**Job types**:
+- `clone-repos` - Multi-repo cloning (5-30 min)
+- `import-issues` - Large issue imports (10-60 min)
+- `sync-external` - Bidirectional sync (1-10 min)
+
+**Example output**:
+```
+Running (1):
+| Job ID   | Type        | Progress      | Current Item              | Rate  | ETA     |
+|----------|-------------|---------------|---------------------------|-------|---------|
+| ae362dfe | clone-repos | 154/245 (63%) | infrastructure-apo-platform | 0.1/s | ~15 min |
+
+Cloned: 154 repositories | Failed: 1 (infrastructure-adp)
+```
+
+**See**: [Full /specweave:jobs Documentation](/docs/commands/jobs) | [Background Jobs Concepts](/docs/guides/core-concepts/background-jobs)
+
+---
+
 ## All Available Commands
 
 ### Essential Workflow (Use These!)
 - `/specweave:increment` - Plan new increment ⭐ **START HERE**
 - `/specweave:do` - Execute tasks ⭐ **MAIN WORK**
 - `/specweave:progress` - Check status ⭐ **VISIBILITY**
+- `/specweave:jobs` - Monitor background jobs ⭐ **LONG OPERATIONS**
 - `/specweave:validate` - Quick validation ⭐ **PRE-CHECK**
 - `/specweave:qa` - Quality assessment ⭐ **QUALITY GATE**
 - `/specweave:check-tests` - Test coverage check ⭐ **TEST VALIDATION**

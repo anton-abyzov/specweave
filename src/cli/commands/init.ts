@@ -155,42 +155,51 @@ async function createMultiProjectFolders(targetDir: string): Promise<void> {
   }
 
   // ADO Multi-Area Folder Creation (reads from config.json, not .env)
+  // CRITICAL FIX (2025-12-01): Iterate ALL ADO profiles, not just the first one
+  // Bug: .find() only returned first profile, causing multi-project folders to be skipped
   const syncConfig = config.sync as Record<string, unknown> | undefined;
   const profiles = (syncConfig?.profiles || {}) as Record<string, { provider?: string; config?: { organization?: string; project?: string; areaPaths?: string[] } }>;
 
-  const adoProfile = Object.values(profiles).find(p => p.provider === 'ado');
-  if (adoProfile?.config) {
-    const { organization, project, areaPaths } = adoProfile.config;
+  // Filter ALL ADO profiles (not .find() which only returns first!)
+  const adoProfiles = Object.values(profiles).filter(p => p.provider === 'ado');
 
-    if (organization && project) {
-      console.log(chalk.blue('\n📁 Creating Azure DevOps Folders'));
-      console.log(chalk.gray(`   Organization: ${organization}, Project: ${project}`));
+  if (adoProfiles.length > 0) {
+    console.log(chalk.blue('\n📁 Creating Azure DevOps Folders'));
 
-      const projectFolder = project.replace(/\s+/g, '-').toLowerCase();
+    for (const adoProfile of adoProfiles) {
+      if (!adoProfile?.config) continue;
 
-      if (areaPaths?.length) {
-        // Create folder per area path
-        for (const areaPath of areaPaths) {
-          const areaName = areaPath.split('\\').pop() || areaPath;
-          const areaFolder = areaName.replace(/\s+/g, '-').toLowerCase();
-          const specsPath = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs', projectFolder, areaFolder);
+      const { organization, project, areaPaths } = adoProfile.config;
+
+      if (organization && project) {
+        console.log(chalk.gray(`   Project: ${project}`));
+
+        const projectFolder = project.replace(/\s+/g, '-').toLowerCase();
+
+        if (areaPaths?.length) {
+          // Create folder per area path
+          for (const areaPath of areaPaths) {
+            const areaName = areaPath.split('\\').pop() || areaPath;
+            const areaFolder = areaName.replace(/\s+/g, '-').toLowerCase();
+            const specsPath = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs', projectFolder, areaFolder);
+
+            if (!fs.existsSync(specsPath)) {
+              fs.mkdirSync(specsPath, { recursive: true });
+            }
+            console.log(chalk.green(`   ✓ Created: specs/${projectFolder}/${areaFolder}/`));
+          }
+        } else {
+          // Single project folder (no area paths)
+          const specsPath = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs', projectFolder);
 
           if (!fs.existsSync(specsPath)) {
             fs.mkdirSync(specsPath, { recursive: true });
           }
-          console.log(chalk.green(`   ✓ Created: specs/${projectFolder}/${areaFolder}/`));
+          console.log(chalk.green(`   ✓ Created: specs/${projectFolder}/`));
         }
-      } else {
-        // Single project folder (no area paths)
-        const specsPath = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs', projectFolder);
-
-        if (!fs.existsSync(specsPath)) {
-          fs.mkdirSync(specsPath, { recursive: true });
-        }
-        console.log(chalk.green(`   ✓ Created: specs/${projectFolder}/`));
       }
-      console.log('');
     }
+    console.log('');
   }
 }
 

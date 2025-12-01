@@ -470,6 +470,8 @@ cat .specweave/docs/internal/architecture/adr/0001-jwt-tokens.md
 ---
 
 **Learn More:**
+- [Living Docs Sync Strategy](/docs/guides/core-concepts/living-docs-sync-strategy) - When and how sync happens
 - [Documentation Structure](/docs/guides/core-concepts/documentation-structure)
 - [Increment vs Living Docs](/docs/guides/core-concepts/what-is-an-increment#increments-vs-living-documentation)
 - [Post-Task-Completion Hook](/docs/guides/advanced/hooks#post-task-completion-hook)
+- [Background Jobs](/docs/guides/core-concepts/background-jobs) - Long-running operations
