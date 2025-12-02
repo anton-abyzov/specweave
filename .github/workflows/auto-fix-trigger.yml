@@ -1,81 +1,33 @@
 name: Auto-Fix Trigger
 
-# Trigger when specific workflows complete
+# Trigger ONLY when Test & Validate completes
+# This is the primary quality gate - if it fails, we need to fix
+# Other workflow failures (Release, Docs) are handled separately
 on:
   workflow_run:
     workflows:
       - "Test & Validate"
-      - "Release & Publish"
-      - "Documentation Build"
-      - "Deploy Documentation to GitHub Pages"
-      - "SpecWeave E2E Smoke Test"
-      - "DORA Metrics"
     types: [completed]
+    branches: [develop, main]
+
+# Prevent multiple auto-fix runs from overlapping
+# Cancel in-progress runs when a new one starts for the same branch
+concurrency:
+  group: auto-fix-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
 
 jobs:
-  # Quick check job that succeeds immediately if no failure to handle
-  check-failure:
-    runs-on: ubuntu-latest
-    outputs:
-      should_run: ${{ steps.check.outputs.should_run }}
-    steps:
-      - name: Check if workflow failed
-        id: check
-        run: |
-          if [ "${{ github.event.workflow_run.conclusion }}" = "failure" ]; then
-            echo "should_run=true" >> $GITHUB_OUTPUT
-            echo "🔴 Triggering workflow failed - will create auto-fix issue"
-          else
-            echo "should_run=false" >> $GITHUB_OUTPUT
-            echo "✅ Triggering workflow succeeded - nothing to fix"
-          fi
-
-  trigger-autofix:
-    needs: check-failure
-    if: needs.check-failure.outputs.should_run == 'true'
+  auto-fix:
+    # Only run if the triggering workflow failed
+    if: github.event.workflow_run.conclusion == 'failure'
     runs-on: ubuntu-latest
 
     permissions:
       issues: write
-      pull-requests: write
+      contents: read
 
     steps:
-      - name: Ensure required labels exist
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const requiredLabels = [
-              { name: 'auto-fix', color: '0E8A16', description: 'Automated fix requested' },
-              { name: 'workflow-failure', color: 'D73A4A', description: 'CI/CD workflow failure' },
-              { name: 'bug', color: 'D73A4A', description: 'Something is not working' }
-            ];
-
-            for (const label of requiredLabels) {
-              try {
-                await github.rest.issues.getLabel({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  name: label.name
-                });
-                console.log(`✅ Label '${label.name}' exists`);
-              } catch (error) {
-                if (error.status === 404) {
-                  console.log(`Creating label '${label.name}'...`);
-                  await github.rest.issues.createLabel({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    name: label.name,
-                    color: label.color,
-                    description: label.description
-                  });
-                  console.log(`✅ Created label '${label.name}'`);
-                } else {
-                  throw error;
-                }
-              }
-            }
-
-      - name: Find or create issue for failed workflow
+      - name: Create auto-fix issue
         uses: actions/github-script@v7
         with:
           script: |
@@ -85,10 +37,8 @@ jobs:
             const commitSha = '${{ github.event.workflow_run.head_sha }}';
             const branch = '${{ github.event.workflow_run.head_branch }}';
 
-            // Check if issue already exists for this workflow run
-            const issueTitle = `[Auto-Fix] ${workflowName} failed (run #${runNumber})`;
-
-            // Search without label filter first (labels might not exist yet)
+            // Check if an auto-fix issue already exists for this commit
+            // (prevents duplicate issues if workflow is re-run)
             const { data: existingIssues } = await github.rest.issues.listForRepo({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -98,53 +48,67 @@ jobs:
 
             const existingIssue = existingIssues.find(issue =>
               issue.title.includes('[Auto-Fix]') &&
-              issue.title.includes(workflowName) &&
-              issue.title.includes(`run #${runNumber}`)
+              issue.body && issue.body.includes(commitSha)
             );
 
             if (existingIssue) {
-              console.log(`Issue already exists: #${existingIssue.number}`);
+              console.log(`✅ Auto-fix issue already exists for commit ${commitSha.slice(0,7)}: #${existingIssue.number}`);
+
+              // Add a comment about this specific run failure
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: `🔴 Additional failure detected:\n\n**Workflow**: ${workflowName}\n**Run**: #${runNumber}\n**URL**: ${runUrl}`
+              });
               return;
             }
 
-            // Create new issue with @claude mention
-            const issueBody = `@claude This workflow failed and needs fixing:
+            // Try to get existing labels (don't create new ones - they should exist)
+            const labelsToUse = [];
+            const possibleLabels = ['bug', 'auto-fix', 'ci-failure'];
 
-**Workflow**: ${workflowName}
-**Run**: #${runNumber}
-**Branch**: ${branch}
-**Commit**: ${commitSha}
-**URL**: ${runUrl}
+            for (const labelName of possibleLabels) {
+              try {
+                await github.rest.issues.getLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: labelName
+                });
+                labelsToUse.push(labelName);
+              } catch (e) {
+                // Label doesn't exist, skip it
+                console.log(`Label '${labelName}' not found, skipping`);
+              }
+            }
 
-Please:
-1. Analyze the failure logs from the workflow run
-2. Identify the root cause
-3. Create a PR with a fix
+            // Create the issue
+            const issueBody = `## CI Failure - Needs Investigation
 
-The logs are available at: ${runUrl}
+@claude Please analyze this CI failure and suggest a fix.
+
+### Details
+| Field | Value |
+|-------|-------|
+| **Workflow** | ${workflowName} |
+| **Run** | [#${runNumber}](${runUrl}) |
+| **Branch** | \`${branch}\` |
+| **Commit** | \`${commitSha}\` |
+
+### Instructions for @claude
+1. Click the run URL above to view the failure logs
+2. Identify the root cause of the failure
+3. Create a PR with a fix if possible
 
 ---
-*This issue was automatically created by the Auto-Fix Trigger workflow.*`;
+*Auto-generated by CI failure detection*`;
 
             const { data: issue } = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: issueTitle,
+              title: `[Auto-Fix] ${workflowName} failed on ${branch} (${commitSha.slice(0,7)})`,
               body: issueBody,
-              labels: ['auto-fix', 'workflow-failure', 'bug']
+              labels: labelsToUse.length > 0 ? labelsToUse : undefined
             });
 
-            console.log(`Created issue #${issue.number} to trigger auto-fix`);
-
-            // Also comment on the commit
-            try {
-              await github.rest.repos.createCommitComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                commit_sha: commitSha,
-                body: `🚨 Workflow \`${workflowName}\` failed. Auto-fix triggered in issue #${issue.number}`
-              });
-            } catch (error) {
-              // Commit comment might fail for merge commits, that's OK
-              console.log(`Note: Could not add commit comment: ${error.message}`);
-            }
+            console.log(`✅ Created auto-fix issue #${issue.number}`);
