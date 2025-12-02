@@ -32,7 +32,7 @@ jobs:
         node-version: [20.x]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
@@ -97,7 +97,7 @@ jobs:
   validate-skills:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -144,7 +144,7 @@ jobs:
   validate-structure:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Check required directories
         run: |
@@ -230,7 +230,7 @@ jobs:
     name: Verify Plugin Structure (CI/CD Only)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Create marketplace symlink (CI/CD testing only - NOT for local dev)
         run: |
@@ -261,7 +261,7 @@ jobs:
     name: Validate Test Structure
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Check for flat test structure
         run: |
@@ -377,7 +377,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
