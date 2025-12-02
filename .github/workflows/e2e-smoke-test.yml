@@ -1,29 +1,27 @@
 name: SpecWeave E2E Smoke Test
 
 on:
-  push:
-    branches: [main, develop, features/*]
-    paths-ignore:
-      - 'docs-site/**'
-      - '.specweave/docs/public/**'
-      - '**.md'
-      - '.github/workflows/deploy-docs.yml'
-  pull_request:
-    branches: [main, develop]
-    paths-ignore:
-      - 'docs-site/**'
-      - '.specweave/docs/public/**'
-      - '**.md'
-      - '.github/workflows/deploy-docs.yml'
+  # REMOVED: push and pull_request triggers
+  # Reason: test.yml already runs on push/PR with the same tests
+  # This prevents duplicate workflow runs on every commit
+
+  # Keep schedule for independent periodic testing (daily health check)
   schedule:
     # Run daily at 2 AM UTC
     - cron: '0 2 * * *'
+
+  # Keep workflow_dispatch for manual runs
   workflow_dispatch:
     inputs:
       timeout:
         description: 'Generation timeout (seconds)'
         required: false
         default: '120'
+
+# Prevent duplicate runs
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   smoke-test:
