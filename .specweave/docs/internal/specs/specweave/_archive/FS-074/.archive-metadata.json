@@ -1,0 +1,11 @@
+{
+  "id": "FS-074",
+  "type": "feature",
+  "archivedAt": "2025-12-02T03:17:02.133Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Documents/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-074",
+  "linkedIncrements": [
+    "0074-fix-internal-feature-collision-and-import"
+  ]
+}

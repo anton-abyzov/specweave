@@ -1,0 +1,11 @@
+{
+  "id": "FS-079",
+  "type": "feature",
+  "archivedAt": "2025-12-02T03:17:04.321Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Documents/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-079",
+  "linkedIncrements": [
+    "0079-ado-init-flow-v2"
+  ]
+}
