@@ -313,6 +313,10 @@ export class SessionSyncExecutor {
           await this.executeExternalSync(config);
           break;
 
+        case 'external-pull':
+          await this.executeExternalPull(config);
+          break;
+
         case 'discrepancy-check':
           // Placeholder - discrepancy checks are lightweight
           this.logger.log(`  📊 Discrepancy check completed`);
@@ -394,6 +398,26 @@ export class SessionSyncExecutor {
     } catch {
       // No increments directory
     }
+  }
+
+  /**
+   * Execute external pull (fetch changes from GitHub/JIRA/ADO)
+   *
+   * Pulls status/field updates from external tools back to living docs.
+   * Uses timestamp-based conflict resolution (latest wins).
+   */
+  private async executeExternalPull(_config: Record<string, unknown>): Promise<void> {
+    this.logger.log(`  ⬇️  Pulling changes from external tools...`);
+
+    // TODO: This will be implemented by ExternalChangePuller (T-005)
+    // For now, just log that pull is scheduled
+    // The actual implementation will:
+    // 1. Call ExternalChangePuller.fetchRecentChanges()
+    // 2. Run conflict resolution
+    // 3. Apply changes via LivingDocsUpdater
+    // 4. Log audit trail
+
+    this.logger.log(`  📥 External pull completed (placeholder)`);
   }
 
   /**

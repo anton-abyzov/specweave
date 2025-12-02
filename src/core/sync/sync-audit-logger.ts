@@ -66,6 +66,38 @@ export interface AuditLogEntry {
    * Additional context
    */
   context?: Record<string, unknown>;
+
+  // ===== Pull Sync Fields (Increment 0089) =====
+
+  /**
+   * Sync direction: push (to external) or pull (from external)
+   */
+  direction?: 'push' | 'pull';
+
+  /**
+   * Who made the change in the external tool (for pull)
+   */
+  externalChangedBy?: string;
+
+  /**
+   * When the change was made in the external tool (for pull)
+   */
+  externalChangedAt?: string;
+
+  /**
+   * Old value before the change
+   */
+  oldValue?: unknown;
+
+  /**
+   * New value after the change
+   */
+  newValue?: unknown;
+
+  /**
+   * How the conflict was resolved
+   */
+  conflictResolution?: 'local-wins' | 'external-wins' | 'no-conflict';
 }
 
 /**
@@ -223,6 +255,92 @@ export class SyncAuditLogger {
         stack: error.stack,
       },
     });
+  }
+
+  /**
+   * Log a pull sync operation (Increment 0089)
+   *
+   * @param platform - Source platform
+   * @param operation - Operation type
+   * @param itemId - Item ID
+   * @param pullData - Pull-specific data
+   */
+  async logPull(
+    platform: SyncPlatform,
+    operation: SyncOperation,
+    itemId: string,
+    pullData: {
+      externalChangedBy: string;
+      externalChangedAt: string;
+      oldValue?: unknown;
+      newValue?: unknown;
+      conflictResolution?: 'local-wins' | 'external-wins' | 'no-conflict';
+      durationMs?: number;
+    }
+  ): Promise<void> {
+    await this.log({
+      timestamp: new Date().toISOString(),
+      platform,
+      operation,
+      itemId,
+      result: 'success',
+      direction: 'pull',
+      externalChangedBy: pullData.externalChangedBy,
+      externalChangedAt: pullData.externalChangedAt,
+      oldValue: pullData.oldValue,
+      newValue: pullData.newValue,
+      conflictResolution: pullData.conflictResolution,
+      durationMs: pullData.durationMs,
+    });
+  }
+
+  /**
+   * Log a pull sync conflict resolution (Increment 0089)
+   *
+   * @param platform - Source platform
+   * @param itemId - Item ID
+   * @param resolution - How the conflict was resolved
+   * @param details - Additional conflict details
+   */
+  async logPullConflict(
+    platform: SyncPlatform,
+    itemId: string,
+    resolution: 'local-wins' | 'external-wins',
+    details: {
+      field: string;
+      localValue: unknown;
+      externalValue: unknown;
+      localTimestamp?: string;
+      externalTimestamp?: string;
+      reason: string;
+    }
+  ): Promise<void> {
+    await this.log({
+      timestamp: new Date().toISOString(),
+      platform,
+      operation: 'update-status', // Conflict resolution is typically status update
+      itemId,
+      result: 'success',
+      direction: 'pull',
+      conflictResolution: resolution,
+      oldValue: details.localValue,
+      newValue: details.externalValue,
+      context: {
+        field: details.field,
+        localTimestamp: details.localTimestamp,
+        externalTimestamp: details.externalTimestamp,
+        reason: details.reason,
+      },
+    });
+  }
+
+  /**
+   * Get pull sync entries (Increment 0089)
+   *
+   * @param limit - Maximum entries
+   */
+  async getPullEntries(limit: number = 50): Promise<AuditLogEntry[]> {
+    return this.getRecentEntries(limit, (e) => e.direction === 'pull');
   }
 
   /**

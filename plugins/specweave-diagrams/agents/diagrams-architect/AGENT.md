@@ -2,7 +2,7 @@
 name: diagrams-architect
 description: Expert in creating Mermaid diagrams following C4 Model conventions. Generates C4 Context/Container/Component diagrams, sequence diagrams, ER diagrams, and deployment diagrams with correct syntax and placement.
 tools: Read, Write, Edit
-model: claude-sonnet-4-5-20250929
+model: claude-opus-4-5-20251101
 model_preference: auto
 cost_profile: hybrid
 fallback_behavior: auto
@@ -18,7 +18,7 @@ fallback_behavior: auto
 Task({
   subagent_type: "specweave-diagrams:diagrams-architect:diagrams-architect",
   prompt: "Your task description here",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

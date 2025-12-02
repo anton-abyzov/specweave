@@ -5,7 +5,7 @@
  * that can run in background while user continues working.
  */
 
-export type JobType = 'clone-repos' | 'import-issues' | 'sync-external' | 'brownfield-analysis';
+export type JobType = 'clone-repos' | 'import-issues' | 'sync-external' | 'brownfield-analysis' | 'living-docs-builder';
 
 export type JobStatus = 'pending' | 'running' | 'paused' | 'completed' | 'failed';
 
@@ -32,6 +32,10 @@ export interface BackgroundJob {
   config: JobConfig;
   /** Job-specific result data (available after completion) */
   result?: Record<string, unknown>;
+  /** Job IDs this job depends on (must complete before this job starts) */
+  dependsOn?: string[];
+  /** Current dependency status */
+  dependencyStatus?: 'waiting' | 'ready' | 'partial';
 }
 
 export interface CloneJobConfig {
@@ -88,7 +92,84 @@ export interface BrownfieldJobConfig {
   };
 }
 
-export type JobConfig = CloneJobConfig | ImportJobConfig | SyncJobConfig | BrownfieldJobConfig;
+/**
+ * Living docs builder phases
+ */
+export type LivingDocsPhase =
+  | 'waiting'           // Waiting for dependencies
+  | 'discovery'         // File tree scan (no LLM)
+  | 'foundation'        // Generate overview docs
+  | 'integration'       // Match work items to modules
+  | 'deep-dive'         // Per-module analysis
+  | 'suggestions';      // Gap analysis and reporting
+
+/**
+ * User inputs collected before job launch
+ */
+export interface LivingDocsUserInputs {
+  /** Paths to additional doc sources (Notion export, Confluence, MD folders) */
+  additionalSources: string[];
+  /** Priority areas to focus on (e.g., "auth", "payments", "api") */
+  priorityAreas: string[];
+  /** Known documentation pain points */
+  knownPainPoints: string[];
+  /** Analysis depth affects time and thoroughness */
+  analysisDepth: 'quick' | 'standard' | 'deep';
+}
+
+/**
+ * Checkpoint for pause/resume support in living docs builder
+ */
+export interface LivingDocsCheckpoint {
+  phase: LivingDocsPhase;
+  phaseProgress: {
+    discovery?: {
+      dirsScanned: number;
+      totalDirs: number;
+      lastDir: string;
+    };
+    foundation?: {
+      docsGenerated: string[];
+      pendingDocs: string[];
+    };
+    integration?: {
+      itemsProcessed: number;
+      totalItems: number;
+    };
+    deepDive?: {
+      modulesCompleted: string[];
+      currentModule: string;
+      modulesRemaining: string[];
+      currentModuleProgress?: {
+        filesAnalyzed: number;
+        totalFiles: number;
+      };
+    };
+  };
+  intermediateOutputs: {
+    discoveryReport?: string;
+    codebaseMap?: string;
+    moduleWorkitemMap?: string;
+    priorityQueue?: string;
+  };
+  lastUpdated: string;
+}
+
+/**
+ * Living docs builder job configuration
+ */
+export interface LivingDocsJobConfig {
+  type: 'living-docs-builder';
+  projectPath: string;
+  /** Job IDs to wait for before starting */
+  dependsOn?: string[];
+  /** User inputs collected before job launch */
+  userInputs: LivingDocsUserInputs;
+  /** Checkpoint for pause/resume */
+  checkpoint?: LivingDocsCheckpoint;
+}
+
+export type JobConfig = CloneJobConfig | ImportJobConfig | SyncJobConfig | BrownfieldJobConfig | LivingDocsJobConfig;
 
 export interface JobState {
   jobs: BackgroundJob[];

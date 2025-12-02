@@ -1,0 +1,89 @@
+sequenceDiagram
+    actor User as User
+    participant Init as specweave init
+    participant Launcher as Job Launcher
+    participant Clone as Clone Worker
+    participant Import as Import Worker
+    participant Living as Living Docs<br/>Builder Worker
+    participant State as Job Manager<br/>(background-jobs.json)
+
+    Note over User,State: BROWNFIELD PROJECT INITIALIZATION
+
+    User->>Init: specweave init . (brownfield)
+    Init->>Init: Detect external tools (ADO/JIRA/GitHub)
+    Init->>Init: Collect user preferences
+
+    rect rgb(240, 248, 255)
+        Note over Init,Clone: Phase 1: Repository Cloning
+        Init->>Launcher: Launch clone-repos job
+        Launcher->>Clone: Spawn detached process
+        Clone->>State: Write PID file (exclusive lock)
+        Clone-->>Init: Job ID: clone-xxx
+        Note right of Clone: Cloning runs in background
+    end
+
+    rect rgb(255, 248, 240)
+        Note over Init,Import: Phase 2: Work Item Import
+        Init->>Launcher: Launch import-issues job
+        Launcher->>Import: Spawn detached process
+        Import->>State: Write PID file
+        Import-->>Init: Job ID: import-yyy
+        Note right of Import: Import runs in background
+    end
+
+    rect rgb(240, 255, 240)
+        Note over Init,Living: Phase 3: Living Docs Builder (with Dependencies)
+        Init->>Init: Collect pre-flight inputs<br/>(sources, priority areas, depth)
+        Init->>Launcher: Launch living-docs-builder<br/>(dependsOn: [clone-xxx, import-yyy])
+        Launcher->>Living: Spawn detached process
+        Living->>State: Write PID file
+        Living-->>Init: Job ID: living-docs-zzz
+    end
+
+    Init->>User: Init complete!<br/>Monitor: specweave jobs --follow
+
+    Note over Clone,State: BACKGROUND EXECUTION
+
+    par Clone Worker
+        Clone->>Clone: Clone repos sequentially
+        Clone->>State: Update progress (5/10 repos)
+        Clone->>Clone: Complete cloning
+        Clone->>State: Status: completed
+    and Import Worker
+        Import->>Import: Import work items
+        Import->>State: Update progress (150/300 items)
+        Import->>Import: Complete import
+        Import->>State: Status: completed
+    end
+
+    Note over Living,State: LIVING DOCS BUILDER (6 PHASES)
+
+    Living->>State: Check dependencies
+    State-->>Living: clone-xxx: completed, import-yyy: completed
+    Living->>Living: Dependencies ready!
+
+    Living->>Living: Phase 1: DISCOVERY<br/>(scan files, detect tech stack)
+    Living->>State: Progress: discovery 100%
+
+    Living->>Living: Phase 2: FOUNDATION<br/>(overview.md, tech-stack.md)
+    Living->>State: Progress: foundation 100%
+
+    Living->>Living: Phase 3: INTEGRATION<br/>(match work items to modules)
+    Living->>State: Progress: integration 100%
+
+    Living->>Living: Phase 4: DEEP DIVE<br/>(per-module analysis with checkpoints)
+    Living->>State: Save checkpoint after each module
+
+    Living->>Living: Phase 5: SUGGESTIONS<br/>(gap analysis, next steps)
+    Living->>State: Status: completed
+
+    Note over User,State: USER MONITORING
+
+    User->>State: specweave jobs
+    State-->>User: Job status table
+
+    User->>State: specweave jobs --follow living-docs-zzz
+    State-->>User: Real-time progress (1s updates)
+
+    User->>State: specweave jobs --logs living-docs-zzz
+    State-->>User: Worker log output (tail 50 lines)

@@ -9,7 +9,7 @@
  */
 
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
-import { GitHubIssue, GitHubMilestone } from './types';
+import { GitHubIssue, GitHubMilestone, GitHubExternalChange } from './types';
 import { SyncProfile, GitHubConfig, TimeRangePreset } from '../../../src/core/types/sync-profile';
 
 export class GitHubClientV2 {
@@ -811,5 +811,119 @@ export class GitHubClientV2 {
 
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  // ==========================================================================
+  // Pull Sync - External Change Detection (Increment 0089)
+  // ==========================================================================
+
+  /**
+   * Fetch recently changed issues for pull sync
+   *
+   * Uses GitHub Issues API with `since` parameter to find issues
+   * that have been updated since a given timestamp.
+   *
+   * @param since - Timestamp to query changes from
+   * @param linkedIssueNumbers - Optional list of issue numbers to filter (linked items only)
+   * @returns Array of external changes with changedAt, changedBy, and current values
+   */
+  async fetchRecentChanges(
+    since: Date,
+    linkedIssueNumbers?: number[]
+  ): Promise<GitHubExternalChange[]> {
+    // Build JQ filter for issues updated since timestamp
+    const sinceISO = since.toISOString();
+
+    // Query parameters - MUST use .[] to iterate array from GitHub API
+    const jqFilter = linkedIssueNumbers && linkedIssueNumbers.length > 0
+      ? `.[] | select(.number | IN(${linkedIssueNumbers.join(',')})) | {number, title, state, updated_at, user: .user.login, assignee: .assignee.login, labels: [.labels[].name]}`
+      : `.[] | {number, title, state, updated_at, user: .user.login, assignee: .assignee.login, labels: [.labels[].name]}`;
+
+    // Use GitHub API to fetch issues updated since timestamp
+    const result = await execFileNoThrow('gh', [
+      'api',
+      `repos/${this.fullRepo}/issues`,
+      '--method', 'GET',
+      '-f', `since=${sinceISO}`,
+      '-f', 'state=all',
+      '-f', 'sort=updated',
+      '-f', 'direction=desc',
+      '-f', 'per_page=100',
+      '--jq', jqFilter,
+    ]);
+
+    if (result.exitCode !== 0) {
+      throw new Error(
+        `Failed to fetch recent changes: ${result.stderr || result.stdout}`
+      );
+    }
+
+    // Parse NDJSON output (one JSON object per line)
+    const lines = result.stdout.trim().split('\n').filter(l => l.trim());
+    const issues: any[] = [];
+
+    for (const line of lines) {
+      try {
+        issues.push(JSON.parse(line));
+      } catch {
+        // Skip malformed lines
+      }
+    }
+
+    // Map to GitHubExternalChange format
+    const changes: GitHubExternalChange[] = issues.map(issue => ({
+      platform: 'github' as const,
+      externalId: `GH-${issue.number}`,
+      issueNumber: issue.number,
+      changedAt: issue.updated_at || new Date().toISOString(),
+      changedBy: issue.user || 'unknown',
+      changedFields: [] as Array<{ field: string; oldValue: unknown; newValue: unknown }>, // GitHub doesn't provide changelog in list API
+      currentState: {
+        status: issue.state as 'open' | 'closed',
+        labels: issue.labels || [],
+        assignee: issue.assignee || null,
+      },
+    }));
+
+    return changes;
+  }
+
+  /**
+   * Get issue events for detailed change tracking
+   *
+   * Use this for detailed changelog when needed.
+   * GET /repos/{owner}/{repo}/issues/{issue_number}/events
+   *
+   * @param issueNumber - Issue number
+   * @param perPage - Limit number of events
+   * @returns Array of events with action details
+   */
+  async getIssueEvents(issueNumber: number, perPage = 30): Promise<any[]> {
+    const result = await execFileNoThrow('gh', [
+      'api',
+      `repos/${this.fullRepo}/issues/${issueNumber}/events`,
+      '-f', `per_page=${perPage}`,
+      '--jq', '.[].{event, created_at, actor: .actor.login}',
+    ]);
+
+    if (result.exitCode !== 0) {
+      throw new Error(
+        `Failed to get issue events: ${result.stderr || result.stdout}`
+      );
+    }
+
+    // Parse NDJSON output
+    const lines = result.stdout.trim().split('\n').filter(l => l.trim());
+    const events: any[] = [];
+
+    for (const line of lines) {
+      try {
+        events.push(JSON.parse(line));
+      } catch {
+        // Skip malformed lines
+      }
+    }
+
+    return events;
   }
 }

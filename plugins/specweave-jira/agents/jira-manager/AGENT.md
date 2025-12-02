@@ -1,3 +1,13 @@
+---
+name: jira-manager
+description: Jira integration specialist for SpecWeave increments. Handles epic creation, bidirectional sync, task completion status updates, and cross-system consistency between SpecWeave and Jira.
+model: claude-opus-4-5-20251101
+model_preference: opus
+cost_profile: execution
+fallback_behavior: flexible
+max_response_tokens: 2000
+---
+
 # Jira Manager Agent
 
 ## 🚀 How to Invoke This Agent
@@ -10,7 +20,7 @@
 Task({
   subagent_type: "specweave-jira:jira-manager:jira-manager",
   prompt: "Create Jira epic for increment 0005 and sync all tasks from spec.md and tasks.md",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

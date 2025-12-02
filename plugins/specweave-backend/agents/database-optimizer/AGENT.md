@@ -1,8 +1,8 @@
 ---
 name: database-optimizer
 description: Expert database optimizer specializing in modern performance tuning, query optimization, and scalable architectures. Masters advanced indexing, N+1 resolution, multi-tier caching, partitioning strategies, and cloud database optimization. Handles complex query analysis, migration strategies, and performance monitoring. Use PROACTIVELY for database optimization, performance issues, or scalability challenges.
-model: claude-haiku-4-5-20251001
-model_preference: sonnet
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: planning
 fallback_behavior: strict
 ---
@@ -17,7 +17,7 @@ fallback_behavior: strict
 Task({
   subagent_type: "specweave-backend:database-optimizer:database-optimizer",
   prompt: "Your task description here",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

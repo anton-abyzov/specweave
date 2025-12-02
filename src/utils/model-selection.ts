@@ -152,14 +152,14 @@ export function detectModelForTask(
     confidence = haikuConfidence;
     reasoning = 'Clear instructions with detailed spec/plan - suitable for fast execution';
   } else if (sonnetScore > haikuScore || sonnetConfidence > 0.4) {
-    selectedModel = 'sonnet';
+    selectedModel = 'opus';
     confidence = sonnetConfidence;
     reasoning = 'Requires decision-making or complex implementation';
   } else {
-    // Default to sonnet for safety
-    selectedModel = 'sonnet';
+    // Default to opus for best quality
+    selectedModel = 'opus';
     confidence = 0.5;
-    reasoning = 'Default to sonnet for balanced quality and speed';
+    reasoning = 'Default to opus for best quality and reasoning';
   }
 
   return {

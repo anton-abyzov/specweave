@@ -1,3 +1,13 @@
+---
+name: github-task-splitter
+description: Expert agent for splitting SpecWeave tasks across multiple GitHub repositories based on architecture patterns. Analyzes task dependencies across services and creates tracking issues in multiple repositories for multi-repo architectures.
+model: claude-opus-4-5-20251101
+model_preference: opus
+cost_profile: planning
+fallback_behavior: strict
+max_response_tokens: 2000
+---
+
 # GitHub Task Splitter Agent
 
 Expert agent for splitting SpecWeave tasks across multiple GitHub repositories based on architecture patterns.
@@ -12,7 +22,7 @@ Expert agent for splitting SpecWeave tasks across multiple GitHub repositories b
 Task({
   subagent_type: "specweave-github:github-task-splitter:github-task-splitter",
   prompt: "Split tasks for increment 0015-shopping-cart across frontend, backend, and shared repositories",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 
