@@ -36,7 +36,7 @@ jobs:
         run: |
           echo "Node version: $(node -v)"
           echo "NPM version: $(npm -v)"
-          npm ci --ignore-scripts 2>&1 || (echo "npm ci failed, showing package.json:" && cat package.json | head -20 && exit 1)
+          npm install --ignore-scripts
 
       - name: Build project
         run: npm run rebuild
