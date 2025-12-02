@@ -15,7 +15,7 @@
  * - Better debugging (native stack traces)
  */
 
-import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync } from 'fs';
+import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync, mkdtempSync as fsMkdtempSync } from 'fs';
 import { execSync } from 'child_process';
 import path from 'path';
 
@@ -329,10 +329,14 @@ export const {
   rename,
   chmod,
   copyFile,
+  mkdtemp,
 } = fsPromises;
 
 // Create renameSync alias for fs-extra compatibility
 export const renameSync = fsRenameSync;
+
+// Create mkdtempSync alias
+export const mkdtempSync = fsMkdtempSync;
 
 // Re-export common synchronous methods
 export {
@@ -368,6 +372,7 @@ export default {
   unlink,
   rename,
   copyFile,
+  mkdtemp,
 
   // Sync methods
   ensureDirSync,
@@ -390,4 +395,5 @@ export default {
   rmSync,
   copyFileSync,
   renameSync,
+  mkdtempSync,
 };

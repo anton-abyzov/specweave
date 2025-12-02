@@ -16,11 +16,18 @@ import { Logger, consoleLogger } from '../utils/logger.js';
 import { FrontmatterUpdater } from './frontmatter-updater.js';
 import { autoDetectProjectIdSync } from '../utils/project-detection.js';
 import { UserStoryContentBuilder } from '../../plugins/specweave-github/lib/user-story-content-builder.js';
+import { AdoClient } from '../integrations/ado/ado-client.js';
+import { ResolvedAdoProfile } from '../integrations/ado/ado-client-factory.js';
 
 export interface SyncCoordinatorOptions {
   projectRoot: string;
   incrementId: string;
   logger?: Logger;
+  /**
+   * Resolved ADO profile for multi-project sync support
+   * If provided, used for ADO sync operations instead of global credentials
+   */
+  adoProfile?: ResolvedAdoProfile;
 }
 
 export interface SyncResult {
@@ -36,6 +43,7 @@ export class SyncCoordinator {
   private logger: Logger;
   private frontmatterUpdater: FrontmatterUpdater;
   private projectId: string;
+  private adoProfile?: ResolvedAdoProfile;
 
   constructor(options: SyncCoordinatorOptions) {
     this.projectRoot = options.projectRoot;
@@ -44,6 +52,8 @@ export class SyncCoordinator {
     this.frontmatterUpdater = new FrontmatterUpdater({ logger: this.logger });
     // Auto-detect project ID from git remote, sync config, or use "default"
     this.projectId = autoDetectProjectIdSync(this.projectRoot, { silent: true });
+    // Store resolved ADO profile for multi-project sync
+    this.adoProfile = options.adoProfile;
   }
 
   /**
@@ -848,9 +858,55 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
         return;
       }
 
-      // TODO: Implement ADO sync
-      this.logger.log('  ⚠️  Azure DevOps sync not yet fully implemented');
-      this.logger.log('  💡 Use /specweave-ado:sync for manual ADO sync');
+      // Multi-project ADO sync using resolved profile
+      if (!this.adoProfile) {
+        this.logger.log('  ⚠️  No ADO profile resolved for this increment');
+        this.logger.log('  💡 Set external_sync.ado.profile in increment metadata.json');
+        this.logger.log('  💡 Or run /specweave-ado:sync to select a profile');
+        return;
+      }
+
+      this.logger.log(
+        `  📊 ADO sync → ${this.adoProfile.organization}/${this.adoProfile.project} ` +
+        `(profile: ${this.adoProfile.profileName})`
+      );
+
+      try {
+        // Get PAT from environment (supports org-specific PATs)
+        const pat = this.getAdoPat(this.adoProfile.organization);
+
+        // Create client with resolved profile
+        const adoClient = new AdoClient({
+          pat,
+          organization: this.adoProfile.organization,
+          project: this.adoProfile.project,
+        });
+
+        // Get external ID from user story
+        const externalId = usFile.external_id;
+        if (!externalId) {
+          this.logger.log('  ⚠️  No external_id in user story - skipping ADO update');
+          return;
+        }
+
+        // Extract work item ID (e.g., "ADO-123" → 123)
+        const workItemIdMatch = externalId.match(/ADO-(\d+)/i) || externalId.match(/^(\d+)$/);
+        if (!workItemIdMatch) {
+          this.logger.log(`  ⚠️  Cannot parse work item ID from external_id: ${externalId}`);
+          return;
+        }
+
+        const workItemId = parseInt(workItemIdMatch[1], 10);
+
+        // Add completion comment to work item
+        const completionComment = this.formatAdoCompletionComment(usFile, completionData);
+        await adoClient.addComment(workItemId, completionComment);
+
+        this.logger.log(`  ✅ Added completion comment to ADO work item #${workItemId}`);
+      } catch (error) {
+        this.logger.error(`  ❌ ADO sync failed: ${error}`);
+        throw error;
+      }
     } else {
       this.logger.log(`  ⚠️  Unknown external source: ${externalSource}`);
     }
@@ -1041,5 +1097,74 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
     }
 
     return null;
+  }
+
+  /**
+   * Get PAT for ADO organization
+   * Supports organization-specific PATs via AZURE_DEVOPS_PAT_{ORG} env vars
+   */
+  private getAdoPat(organization: string): string {
+    // Try organization-specific PAT first (e.g., AZURE_DEVOPS_PAT_NOVA_SYSTEMS)
+    const orgEnvKey = `AZURE_DEVOPS_PAT_${organization.toUpperCase().replace(/-/g, '_')}`;
+    const orgPat = process.env[orgEnvKey];
+    if (orgPat) {
+      return orgPat;
+    }
+
+    // Fall back to default PAT
+    const defaultPat = process.env.AZURE_DEVOPS_PAT;
+    if (!defaultPat) {
+      throw new Error(
+        `Azure DevOps PAT not found. Set AZURE_DEVOPS_PAT in .env file ` +
+        `or ${orgEnvKey} for organization-specific PAT.`
+      );
+    }
+
+    return defaultPat;
+  }
+
+  /**
+   * Format completion comment for ADO work item
+   */
+  private formatAdoCompletionComment(
+    usFile: LivingDocsUSFile,
+    completionData: CompletionCommentData
+  ): string {
+    const lines: string[] = [];
+
+    lines.push(`## ✅ SpecWeave Progress Update`);
+    lines.push(``);
+    lines.push(`**User Story**: ${usFile.id} - ${usFile.title || 'N/A'}`);
+    lines.push(`**Increment**: ${this.incrementId}`);
+    lines.push(``);
+
+    // Progress
+    lines.push(`### Progress: ${completionData.progressPercentage}%`);
+    lines.push(``);
+
+    // Tasks
+    if (completionData.tasks.length > 0) {
+      lines.push(`### Tasks`);
+      for (const task of completionData.tasks) {
+        const status = task.completed ? '✅' : '⬜';
+        lines.push(`- ${status} ${task.taskId}: ${task.title}`);
+      }
+      lines.push(``);
+    }
+
+    // Acceptance Criteria
+    if (completionData.acceptanceCriteria.length > 0) {
+      lines.push(`### Acceptance Criteria`);
+      for (const ac of completionData.acceptanceCriteria) {
+        const status = ac.satisfied ? '✅' : '⬜';
+        lines.push(`- ${status} ${ac.acId}: ${ac.description}`);
+      }
+      lines.push(``);
+    }
+
+    lines.push(`---`);
+    lines.push(`🤖 Auto-synced by SpecWeave`);
+
+    return lines.join('\n');
   }
 }

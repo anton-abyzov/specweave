@@ -13,6 +13,19 @@
  */
 
 import { credentialsManager, AdoCredentials } from '../../core/credentials/credentials-manager.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+/**
+ * Module logger - can be replaced for testing
+ */
+let moduleLogger: Logger = consoleLogger;
+
+/**
+ * Set the logger for this module
+ */
+export function setAdoClientLogger(logger: Logger): void {
+  moduleLogger = logger;
+}
 
 export interface AdoWorkItem {
   id: number;
@@ -130,14 +143,43 @@ export interface AdoProcessTemplateInfo {
   };
 }
 
+/**
+ * Configuration for profile-aware ADO client
+ * Use this when creating client for specific increment's profile
+ */
+export interface AdoClientConfig {
+  pat: string;
+  organization: string;
+  project: string;
+}
+
 export class AdoClient {
   private credentials: AdoCredentials;
   private baseUrl: string;
   private apiVersion = '7.0';
   private useMcp = false; // Will be set based on MCP availability
 
-  constructor() {
-    this.credentials = credentialsManager.getAdoCredentials();
+  /**
+   * Create ADO client
+   *
+   * @param config - Optional profile-specific config. If not provided,
+   *                 falls back to credentials from .env (single-profile mode)
+   *
+   * For multi-project support, use createAdoClientForIncrement() factory
+   * which resolves the increment's profile automatically.
+   */
+  constructor(config?: AdoClientConfig) {
+    if (config) {
+      // Profile-aware mode: use provided config
+      this.credentials = {
+        pat: config.pat,
+        organization: config.organization,
+        project: config.project,
+      };
+    } else {
+      // Legacy mode: use global credentials from .env
+      this.credentials = credentialsManager.getAdoCredentials();
+    }
     this.baseUrl = `https://dev.azure.com/${this.credentials.organization}/${this.credentials.project}`;
 
     // TODO: Detect MCP server availability
@@ -159,7 +201,7 @@ export class AdoClient {
   public async listWorkItems(filter: AdoWorkItemFilter = {}): Promise<AdoWorkItem[]> {
     const wiql = this.buildWiqlQuery(filter);
 
-    console.log('🔍 Querying Azure DevOps with WIQL:', wiql);
+    moduleLogger.info('🔍 Querying Azure DevOps with WIQL:', wiql);
 
     // Execute WIQL query
     const queryUrl = `${this.baseUrl}/_apis/wit/wiql?api-version=${this.apiVersion}`;
@@ -181,7 +223,7 @@ export class AdoClient {
     const workItemIds = queryResult.workItems?.map((wi: any) => wi.id) || [];
 
     if (workItemIds.length === 0) {
-      console.log('✅ No work items found matching the filter');
+      moduleLogger.info('✅ No work items found matching the filter');
       return [];
     }
 
@@ -278,7 +320,7 @@ export class AdoClient {
       allWorkItems.push(...(data.value || []));
     }
 
-    console.log(`✅ Retrieved ${allWorkItems.length} work items from Azure DevOps`);
+    moduleLogger.info(`✅ Retrieved ${allWorkItems.length} work items from Azure DevOps`);
     return allWorkItems;
   }
 
@@ -286,7 +328,7 @@ export class AdoClient {
    * Create a new work item
    */
   public async createWorkItem(item: AdoWorkItemCreate): Promise<AdoWorkItem> {
-    console.log(`🔨 Creating ${item.workItemType}: ${item.title}`);
+    moduleLogger.info(`🔨 Creating ${item.workItemType}: ${item.title}`);
 
     const url = `${this.baseUrl}/_apis/wit/workitems/$${item.workItemType}?api-version=${this.apiVersion}`;
 
@@ -382,7 +424,7 @@ export class AdoClient {
 
     const workItem = await response.json() as AdoWorkItem;
 
-    console.log(`✅ Created ${item.workItemType} #${workItem.id}: ${item.title}`);
+    moduleLogger.info(`✅ Created ${item.workItemType} #${workItem.id}: ${item.title}`);
 
     // Link to parent if specified
     if (item.parentId) {
@@ -396,7 +438,7 @@ export class AdoClient {
    * Update an existing work item
    */
   public async updateWorkItem(update: AdoWorkItemUpdate): Promise<AdoWorkItem> {
-    console.log(`🔧 Updating work item #${update.id}`);
+    moduleLogger.info(`🔧 Updating work item #${update.id}`);
 
     const url = `${this.baseUrl}/_apis/wit/workitems/${update.id}?api-version=${this.apiVersion}`;
 
@@ -477,7 +519,7 @@ export class AdoClient {
     }
 
     const workItem = await response.json() as AdoWorkItem;
-    console.log(`✅ Updated work item #${update.id}`);
+    moduleLogger.info(`✅ Updated work item #${update.id}`);
 
     return workItem;
   }
@@ -486,7 +528,7 @@ export class AdoClient {
    * Link two work items (parent-child relationship)
    */
   private async linkWorkItems(childId: number, parentId: number, linkType: string): Promise<void> {
-    console.log(`🔗 Linking work item #${childId} to parent #${parentId}`);
+    moduleLogger.info(`🔗 Linking work item #${childId} to parent #${parentId}`);
 
     const url = `${this.baseUrl}/_apis/wit/workitems/${childId}?api-version=${this.apiVersion}`;
 
@@ -515,9 +557,9 @@ export class AdoClient {
 
     if (!response.ok) {
       const error = await response.text();
-      console.warn(`⚠️  Failed to link work items: ${error}`);
+      moduleLogger.warn(`⚠️  Failed to link work items: ${error}`);
     } else {
-      console.log(`✅ Linked work item #${childId} to parent #${parentId}`);
+      moduleLogger.info(`✅ Linked work item #${childId} to parent #${parentId}`);
     }
   }
 
@@ -543,7 +585,7 @@ export class AdoClient {
     const iterations = data.value || [];
 
     if (iterations.length === 0) {
-      console.log('⚠️  No current iteration found');
+      moduleLogger.warn('⚠️  No current iteration found');
       return null;
     }
 
@@ -830,7 +872,7 @@ export class AdoClient {
     // Build hierarchy mapping based on template
     const hierarchyMapping = this.buildHierarchyMapping(effectiveTemplate, hasCapability);
 
-    console.log(`🔍 Detected ADO Process Template: ${effectiveTemplate}${hasCapability ? ' (with Capability)' : ''}`);
+    moduleLogger.info(`🔍 Detected ADO Process Template: ${effectiveTemplate}${hasCapability ? ' (with Capability)' : ''}`);
 
     return {
       template: effectiveTemplate,
@@ -889,15 +931,15 @@ export class AdoClient {
       });
 
       if (response.ok) {
-        console.log('✅ Azure DevOps connection successful');
+        moduleLogger.info('✅ Azure DevOps connection successful');
         return true;
       } else {
         const error = await response.text();
-        console.error(`❌ Azure DevOps connection failed (${response.status}): ${error}`);
+        moduleLogger.error(`❌ Azure DevOps connection failed (${response.status}): ${error}`);
         return false;
       }
     } catch (error) {
-      console.error('❌ Azure DevOps connection failed:', error);
+      moduleLogger.error('❌ Azure DevOps connection failed:', error);
       return false;
     }
   }

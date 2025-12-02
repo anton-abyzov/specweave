@@ -10,7 +10,8 @@
  * Logs to console.log/error/warn
  */
 export const consoleLogger = {
-    log: (message) => console.log(message),
+    log: (message, ...args) => console.log(message, ...args),
+    info: (message, ...args) => console.log(message, ...args),
     error: (message, error) => {
         if (error) {
             console.error(message, error);
@@ -30,6 +31,7 @@ export const consoleLogger = {
  */
 export const silentLogger = {
     log: () => { },
+    info: () => { },
     error: () => { },
     warn: () => { },
     debug: () => { }
@@ -41,10 +43,11 @@ export const silentLogger = {
  * @returns Logger instance
  */
 export function createFilteredLogger(minLevel = 'log') {
-    const levels = { debug: 0, log: 1, warn: 2, error: 3 };
+    const levels = { debug: 0, log: 1, info: 1, warn: 2, error: 3 };
     const threshold = levels[minLevel];
     return {
-        log: (msg) => levels.log >= threshold && console.log(msg),
+        log: (msg, ...args) => levels.log >= threshold && console.log(msg, ...args),
+        info: (msg, ...args) => levels.info >= threshold && console.log(msg, ...args),
         error: (msg, err) => levels.error >= threshold && (err ? console.error(msg, err) : console.error(msg)),
         warn: (msg) => levels.warn >= threshold && console.warn(msg),
         debug: (msg) => levels.debug >= threshold && console.log(msg)

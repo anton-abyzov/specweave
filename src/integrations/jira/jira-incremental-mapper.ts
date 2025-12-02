@@ -13,6 +13,19 @@ import { FlexibleRFCGenerator, FlexibleWorkItem, FlexibleRFCContent } from '../.
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+/**
+ * Module logger - can be replaced for testing
+ */
+let moduleLogger: Logger = consoleLogger;
+
+/**
+ * Set the logger for this module
+ */
+export function setJiraIncrementalMapperLogger(logger: Logger): void {
+  moduleLogger = logger;
+}
 
 export interface WorkItem {
   type: 'story' | 'bug' | 'task' | 'epic';
@@ -107,7 +120,7 @@ export class JiraIncrementalMapper {
         workItem
       };
     } catch (error: any) {
-      console.error(`   ❌ Failed: ${error.message}`);
+      moduleLogger.error(`   ❌ Failed: ${error.message}`);
       return {
         success: false,
         message: `Failed to add ${jiraKey}: ${error.message}`
@@ -189,7 +202,7 @@ export class JiraIncrementalMapper {
         message: `Created increment ${incrementId} with ${issues.length} work items`
       };
     } catch (error: any) {
-      console.error(`   ❌ Failed: ${error.message}`);
+      moduleLogger.error(`   ❌ Failed: ${error.message}`);
       return {
         success: false,
         incrementId: '',

@@ -11,6 +11,7 @@ import chalk from 'chalk';
 import { execSync } from 'child_process';
 import * as path from 'path';
 import { getConfigManager } from '../../../core/config/index.js';
+import { Logger, consoleLogger } from '../../../utils/logger.js';
 import type { IssueTracker, TrackerCredentials, SyncSettings, SyncPermissions } from './types.js';
 
 /**
@@ -26,6 +27,7 @@ import type { IssueTracker, TrackerCredentials, SyncSettings, SyncPermissions } 
  * @param syncPermissions - Permission flags for sync operations
  * @param repositoryProfiles - Optional multi-repo profiles (GitHub only)
  * @param monorepoProjects - Optional monorepo projects (GitHub only)
+ * @param logger - Optional logger (defaults to consoleLogger)
  */
 export async function writeSyncConfig(
   projectPath: string,
@@ -34,7 +36,8 @@ export async function writeSyncConfig(
   syncSettings: SyncSettings,
   syncPermissions: SyncPermissions,
   repositoryProfiles?: any[],
-  monorepoProjects?: string[]
+  monorepoProjects?: string[],
+  logger: Logger = consoleLogger
 ): Promise<void> {
   const configManager = getConfigManager(projectPath);
 
@@ -92,12 +95,12 @@ export async function writeSyncConfig(
   // Write config using ConfigManager
   await configManager.write(config);
 
-  console.log(chalk.green(`✓ Sync config written to .specweave/config.json`));
-  console.log(chalk.gray(`   Provider: ${tracker}`));
-  console.log(chalk.gray(`   Auto-sync: enabled`));
-  console.log(chalk.gray(`   Status sync: ${syncSettings.includeStatus ? 'enabled' : 'disabled'}`));
-  console.log(chalk.gray(`   Auto-labeling: ${syncSettings.autoApplyLabels ? 'enabled' : 'disabled'}`));
-  console.log(chalk.gray(`   Hooks: post_task_completion, post_increment_planning`));
+  logger.log(chalk.green(`✓ Sync config written to .specweave/config.json`));
+  logger.log(chalk.gray(`   Provider: ${tracker}`));
+  logger.log(chalk.gray(`   Auto-sync: enabled`));
+  logger.log(chalk.gray(`   Status sync: ${syncSettings.includeStatus ? 'enabled' : 'disabled'}`));
+  logger.log(chalk.gray(`   Auto-labeling: ${syncSettings.autoApplyLabels ? 'enabled' : 'disabled'}`));
+  logger.log(chalk.gray(`   Hooks: post_task_completion, post_increment_planning`));
 }
 
 /**

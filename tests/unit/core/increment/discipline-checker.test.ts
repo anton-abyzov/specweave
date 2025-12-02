@@ -110,9 +110,10 @@ describe('DisciplineChecker', () => {
   });
 
   describe('validate() - hard cap violations', () => {
-    it('should detect hard cap exceeded (3 active, limit 2)', async () => {
-      // Create 3 incomplete increments with proper task format
-      for (let i = 1; i <= 3; i++) {
+    it('should detect hard cap exceeded (4 active, limit 3)', async () => {
+      // Create 4 incomplete increments with proper task format
+      // Hard cap is 3 by default, so 4 will trigger the violation
+      for (let i = 1; i <= 4; i++) {
         const incPath = path.join(testDir, '.specweave', 'increments', `000${i}-test`);
         await fs.ensureDir(incPath);
         await fs.writeFile(
@@ -138,7 +139,7 @@ describe('DisciplineChecker', () => {
         (v) => v.type === 'hard_cap_exceeded'
       );
       expect(hardCapViolation).toBeDefined();
-      expect(hardCapViolation?.message).toContain('3 active');
+      expect(hardCapViolation?.message).toContain('4 active');
       expect(hardCapViolation?.severity).toBe('error');
     });
   });
