@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Full history for changelog
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -55,8 +55,8 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Run tests
-        run: npm test
+      # Tests removed - they run separately in test.yml workflow
+      # Release only needs build to succeed
 
       - name: Bump version (manual workflow only)
         if: github.event_name == 'workflow_dispatch'
