@@ -17,20 +17,11 @@ jobs:
         with:
           node-version: '22.x'
 
-      - name: Try npm install with full output
-        run: |
-          echo "=== Environment ==="
-          node -v
-          npm -v
-          echo ""
-          echo "=== package.json head ==="
-          head -20 package.json
-          echo ""
-          echo "=== Attempting npm install ==="
-          npm install --ignore-scripts 2>&1
-          echo ""
-          echo "=== npm install exit code: $? ==="
-        continue-on-error: true
+      - name: Install dependencies
+        run: npm install --ignore-scripts
 
-      - name: Force success
-        run: echo "Workflow completed for debugging"
+      - name: Build project
+        run: npm run rebuild
+
+      - name: Run smoke tests
+        run: npm test
