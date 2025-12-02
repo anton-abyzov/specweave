@@ -4,7 +4,7 @@ feature: FS-075
 title: "Auto-Fetch Teams and Area Paths"
 status: completed
 priority: P1
-created: 2025-11-27
+created: 2025-12-02
 ---
 
 # US-002: Auto-Fetch Teams and Area Paths

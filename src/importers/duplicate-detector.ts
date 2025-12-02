@@ -12,6 +12,7 @@ import { glob } from 'glob';
 
 /**
  * External ID reference found in living docs
+ * CRITICAL (2025-12-01): Includes parent tracking for re-import hierarchy updates
  */
 export interface ExternalIdReference {
   /** User Story ID (e.g., US-001E) */
@@ -25,6 +26,19 @@ export interface ExternalIdReference {
 
   /** External platform (github, jira, ado) */
   platform?: string;
+
+  // Parent tracking (for re-import hierarchy updates)
+  /** Feature ID this item belongs to (e.g., FS-001E) */
+  featureId?: string;
+
+  /** Parent work item ID in external tool (e.g., ADO-123) */
+  parentId?: string;
+
+  /** Whether this item was imported as orphan (no parent) */
+  isOrphan?: boolean;
+
+  /** ADO work item type (e.g., User Story, Bug) */
+  adoWorkItemType?: string;
 }
 
 /**
@@ -144,10 +158,12 @@ export class DuplicateDetector {
   }
 
   /**
-   * Extract external_id from a User Story file
+   * Extract external_id and parent tracking info from a User Story file
+   *
+   * CRITICAL (2025-12-01): Also extracts parent info for re-import hierarchy updates
    *
    * @param filePath - Path to User Story markdown file
-   * @returns External ID reference if found, null otherwise
+   * @returns External ID reference with parent info if found, null otherwise
    */
   private async extractExternalIdFromFile(filePath: string): Promise<ExternalIdReference | null> {
     try {
@@ -163,16 +179,34 @@ export class DuplicateDetector {
           filePath,
           externalId: String(parsed.data.external_id),
           platform: parsed.data.external_platform,
+          // Parent tracking from frontmatter
+          featureId: parsed.data.feature_id,
+          parentId: parsed.data.parent_id,
+          isOrphan: parsed.data.is_orphan,
+          adoWorkItemType: parsed.data.ado_work_item_type,
         };
       }
 
       // Fallback: Parse external metadata section in content
       const externalIdMatch = content.match(/^-\s+\*\*External ID\*\*:\s+(.+)$/m);
       if (externalIdMatch) {
+        // Extract parent tracking info from content body
+        const featureIdMatch = content.match(/^-\s+\*\*Feature ID\*\*:\s+(.+)$/m);
+        const parentIdMatch = content.match(/^-\s+\*\*Parent ID\*\*:\s+(.+)$/m);
+        const orphanMatch = content.match(/^-\s+\*\*Orphan\*\*:\s+true/m);
+        const adoTypeMatch = content.match(/^-\s+\*\*ADO Work Item Type\*\*:\s+(.+)$/m);
+        const platformMatch = content.match(/^-\s+\*\*Platform\*\*:\s+(.+)$/m);
+
         return {
           usId: this.extractUsIdFromFile(filePath, content),
           filePath,
           externalId: externalIdMatch[1].trim(),
+          platform: platformMatch?.[1]?.trim()?.toLowerCase(),
+          // Parent tracking from content body
+          featureId: featureIdMatch?.[1]?.trim(),
+          parentId: parentIdMatch?.[1]?.trim(),
+          isOrphan: !!orphanMatch,
+          adoWorkItemType: adoTypeMatch?.[1]?.trim(),
         };
       }
 

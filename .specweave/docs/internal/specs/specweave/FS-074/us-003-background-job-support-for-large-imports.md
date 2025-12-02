@@ -1,15 +1,15 @@
 ---
 id: US-003
 feature: FS-074
-title: "Background Job Support for Large Imports"
+title: "Background Job Support for Large Imports (DESCOPED)"
 status: not_started
 priority: P0
 created: 2025-11-26
 ---
 
-# US-003: Background Job Support for Large Imports
+# US-003: Background Job Support for Large Imports (DESCOPED)
 
-**Feature**: [FS-074](./FEATURE)
+**Feature**: [FS-074](./FEATURE.md)
 
 **As a** user importing from repos with many issues (100+)
 **I want** imports to run in background
@@ -31,8 +31,3 @@ created: 2025-11-26
 **Increment**: [0074-fix-internal-feature-collision-and-import](../../../../increments/0074-fix-internal-feature-collision-and-import/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
-
-
-## Tasks
-
-_No tasks defined for this user story_

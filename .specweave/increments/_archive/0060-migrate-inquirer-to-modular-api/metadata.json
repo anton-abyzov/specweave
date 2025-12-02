@@ -5,7 +5,6 @@
   "status": "completed",
   "priority": "critical",
   "created": "2025-11-24T18:30:00Z",
-  "feature_id": "FS-060",
   "github_issue": 749,
   "description": "Fix broken interactive prompts by migrating from legacy inquirer.prompt() API to @inquirer/prompts modular API"
 }

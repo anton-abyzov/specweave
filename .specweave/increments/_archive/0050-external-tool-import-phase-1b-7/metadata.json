@@ -3,7 +3,6 @@
   "name": "Enhanced External Tool Import - Phase 1b-7",
   "status": "completed",
   "priority": "P1",
-  "feature_id": "FS-048",
   "completed_at": "2025-11-22T20:58:08Z",
   "user_stories": [
     "US-001",

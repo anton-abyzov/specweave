@@ -6,6 +6,5 @@
   "completed": "2025-11-26",
   "lastActivity": "2025-11-26",
   "testMode": "test-after",
-  "coverageTarget": 80,
-  "feature_id": "FS-069"
+  "coverageTarget": 80
 }

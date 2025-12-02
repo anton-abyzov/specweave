@@ -1,0 +1,43 @@
+{
+  "incrementId": "0084-discrepancy-detection",
+  "title": "Code-to-Spec Discrepancy Detection - Phase 3",
+  "status": "completed",
+  "priority": "P1",
+  "type": "feature",
+  "createdAt": "2025-12-01T18:50:00.000Z",
+  "updatedAt": "2025-12-01T19:48:00.000Z",
+  "completedAt": "2025-12-01T19:48:00.000Z",
+  "approvedAt": "2025-12-01T19:48:00.000Z",
+  "tags": [
+    "sync",
+    "discrepancy",
+    "code-analysis",
+    "phase-3"
+  ],
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "TypeScript Code Analyzer",
+      "status": "completed"
+    },
+    {
+      "id": "US-002",
+      "title": "API Route Analyzer",
+      "status": "completed"
+    },
+    {
+      "id": "US-003",
+      "title": "Spec-to-Code Comparator",
+      "status": "completed"
+    },
+    {
+      "id": "US-004",
+      "title": "Smart Update Recommender",
+      "status": "completed"
+    }
+  ],
+  "dependencies": [
+    "0082-unified-sync-orchestration",
+    "0083-sync-interceptor-pattern"
+  ]
+}

@@ -25,7 +25,9 @@ import { FeatureConsistencyValidator } from './feature-consistency-validator.js'
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { autoDetectProjectIdSync } from '../../utils/project-detection.js';
 import { getGitHubAuthFromProject } from '../../utils/auth-helpers.js';
-import { findNextAvailableInternalIdSync } from '../../utils/feature-id-collision.js';
+// NOTE (2025-12-01): findNextAvailableInternalIdSync removed - internal features don't need collision check
+// Collision detection is only for EXTERNAL features (FS-XXXE) imported from GitHub/JIRA/ADO
+import { deriveFeatureId } from '../../utils/feature-id-derivation.js';
 // Import types from centralized location
 import type {
   SyncOptions,
@@ -138,41 +140,23 @@ export class LivingDocsSync {
       // Step 1: Build feature registry (auto-generates IDs for greenfield)
       await this.featureIdManager.buildRegistry();
 
-      // Step 2: Get/assign feature ID
-      // NEW (v0.23.0): Use explicitFeatureId from spec.md epic field if provided
+      // Step 2: Get feature ID (derived from increment number)
+      // SIMPLIFIED (v0.29.0): Feature ID is now always derived, not stored in metadata
       let featureId: string;
-      if (options.explicitFeatureId) {
+      if (options.explicitFeatureId && /^FS-\d{3,}E?$/.test(options.explicitFeatureId)) {
+        // Allow explicit override for special cases (e.g., epic linking)
         featureId = options.explicitFeatureId;
-        this.logger.log(`📎 Using explicit feature ID from spec.md: ${featureId}`);
+        this.logger.log(`📎 Using explicit feature ID: ${featureId}`);
       } else {
+        // Derive from increment number (the normal case)
         featureId = await this.getFeatureIdForIncrement(incrementId);
-        this.logger.log(`🔄 Auto-generated feature ID: ${featureId}`);
-      }
-      // CRITICAL FIX (2025-11-26): Validate featureId to prevent "null" folder bug
-      // If featureId is invalid (null, "null", empty, or not FS-XXX format), auto-generate
-      if (!featureId || featureId === 'null' || !/^FS-\d{3,}E?$/.test(featureId)) {
-        const invalidValue = featureId;
-        // Extract increment number for auto-generation
-        const match = incrementId.match(/^(\d{4})-/);
-        if (match) {
-          const baseNum = parseInt(match[1], 10);
-          // CRITICAL FIX (2025-11-26): Check for FS-XXXE collision before using FS-XXX
-          const specsPath = path.join(this.projectRoot, '.specweave/docs/internal/specs');
-          const safeNum = findNextAvailableInternalIdSync(baseNum, specsPath, this.projectId, { logger: this.logger });
-          featureId = `FS-${String(safeNum).padStart(3, '0')}`;
-          this.logger.warn(`⚠️ Invalid feature ID "${invalidValue}" replaced with auto-generated: ${featureId}`);
-        } else {
-          throw new Error(`Cannot sync increment ${incrementId}: invalid feature ID "${invalidValue}" and unable to auto-generate`);
-        }
+        this.logger.log(`🔄 Derived feature ID: ${featureId}`);
       }
 
       result.featureId = featureId;
 
-      // CRITICAL FIX (2025-11-24): Write feature_id back to metadata.json
-      // This ensures the generated feature_id persists and is reused on subsequent syncs
-      if (!options.dryRun) {
-        await this.updateMetadataFeatureId(incrementId, featureId);
-      }
+      // NOTE (v0.29.0): No longer write feature_id to metadata.json
+      // Feature ID is derived from increment number - see ADR-0140
 
       this.logger.log(`📚 Syncing ${incrementId} → ${featureId}...`);
 
@@ -272,116 +256,31 @@ export class LivingDocsSync {
   }
 
   /**
-   * Get feature ID for increment (auto-generates for greenfield)
+   * Get feature ID for increment
    *
-   * CRITICAL: Validates feature ID format matches increment type (greenfield vs brownfield)
-   * - Greenfield (SpecWeave-native): FS-XXX (e.g., FS-031, FS-043)
-   * - Brownfield (imported): FS-YY-MM-DD-name (e.g., FS-25-11-14-jira-epic)
+   * SIMPLIFIED (v0.29.0): Feature ID is derived from increment number
+   * No longer reads from metadata.json - derivation is the single source of truth
+   *
+   * CRITICAL FIX (2025-12-01): Internal features are DETERMINISTIC - no collision check!
+   * - Increment 0060 → ALWAYS FS-060, never anything else
+   * - Increment 0072 → ALWAYS FS-072, never anything else
+   * - Sync is IDEMPOTENT: if FS-060 exists, UPDATE it (don't create FS-061)
+   *
+   * Collision detection is ONLY for EXTERNAL features (FS-XXXE) during imports,
+   * NOT for internal features derived from increment numbers.
+   *
+   * @see deriveFeatureId() in src/utils/feature-id-derivation.ts
+   * @see ADR-0140 for rationale
    */
   private async getFeatureIdForIncrement(incrementId: string): Promise<string> {
-    // Extract increment number (e.g., "0040-name" → 40)
-    const match = incrementId.match(/^(\d{4})-/);
-    if (!match) {
-      throw new Error(`Invalid increment ID format: ${incrementId}`);
-    }
-
-    const num = parseInt(match[1], 10);
-
-    // Check if increment has explicit feature ID
-    const metadataPath = path.join(
-      this.projectRoot,
-      '.specweave/increments',
-      incrementId,
-      'metadata.json'
-    );
-
-    if (await pathExists(metadataPath)) {
-      const metadata = await readJson(metadataPath);
-
-      // Check if brownfield (imported from external tool)
-      const isBrownfield = metadata.imported === true || metadata.source === 'external';
-
-      // CRITICAL (v0.26.2): Check for feature_id field (primary) or feature (legacy)
-      // Bug fix: metadata.json uses "feature_id" not "feature"
-      // See: Living docs sync bug report (2025-11-24)
-      const featureId = metadata.feature_id || metadata.feature;
-
-      if (featureId) {
-        // Validate format matches increment type
-        const isDateFormat = /^FS-\d{2}-\d{2}-\d{2}/.test(featureId);
-        const isIncrementFormat = /^FS-\d{3,}$/.test(featureId);
-
-        if (isBrownfield && isDateFormat) {
-          // ✅ Brownfield with correct date format
-          return featureId;
-        } else if (!isBrownfield && isIncrementFormat) {
-          // ✅ Greenfield with correct increment format (3+ digits)
-          return featureId;
-        } else {
-          // ⚠️ Format mismatch - log warning and auto-generate correct format
-          this.logger.warn(`⚠️ Feature ID format mismatch for ${incrementId}:`);
-          this.logger.warn(`   Found: ${featureId}`);
-          this.logger.warn(`   Expected: ${isBrownfield ? 'FS-YY-MM-DD-name (brownfield)' : 'FS-XXX (greenfield, 3+ digits)'}`);
-          this.logger.warn(`   Auto-generating correct format...`);
-
-          // Fall through to auto-generation
-        }
-      }
-    }
-
-    // Auto-generate for greenfield: FS-040, FS-041, etc.
-    // CRITICAL FIX (2025-11-26): Check for FS-XXXE collision before using FS-XXX
-    const specsPath = path.join(this.projectRoot, '.specweave/docs/internal/specs');
-    const safeNum = findNextAvailableInternalIdSync(num, specsPath, this.projectId, { logger: this.logger });
-    const autoGenId = `FS-${String(safeNum).padStart(3, '0')}`;
-    this.logger.log(`   📝 Generated feature ID: ${autoGenId}`);
-    return autoGenId;
+    // Derive feature ID directly from increment number (e.g., "0081-name" → "FS-081")
+    // NO collision checking - internal feature IDs are deterministic and unique by design
+    return deriveFeatureId(incrementId);
   }
 
-  /**
-   * Update metadata.json with feature_id
-   *
-   * CRITICAL FIX (2025-11-24): Write back generated feature_id to metadata.json
-   * This ensures:
-   * 1. feature_id persists across sessions
-   * 2. Subsequent syncs reuse the same feature_id
-   * 3. External tools (GitHub, JIRA, ADO) can find the feature
-   *
-   * @param incrementId - Increment ID
-   * @param featureId - Feature ID to write
-   */
-  private async updateMetadataFeatureId(incrementId: string, featureId: string): Promise<void> {
-    const metadataPath = path.join(
-      this.projectRoot,
-      '.specweave/increments',
-      incrementId,
-      'metadata.json'
-    );
-
-    try {
-      if (!await pathExists(metadataPath)) {
-        this.logger.warn(`   ⚠️  metadata.json not found for ${incrementId}, skipping feature_id update`);
-        return;
-      }
-
-      const metadata = await readJson(metadataPath);
-
-      // Only update if feature_id is null/undefined or different
-      if (metadata.feature_id !== featureId) {
-        metadata.feature_id = featureId;
-
-        // Atomic write: temp file → rename
-        const tempPath = `${metadataPath}.tmp`;
-        await fs.writeFile(tempPath, JSON.stringify(metadata, null, 2), 'utf-8');
-        await fs.rename(tempPath, metadataPath);
-
-        this.logger.log(`   ✅ Updated metadata.json with feature_id: ${featureId}`);
-      }
-    } catch (error) {
-      // Non-fatal - log warning but continue with sync
-      this.logger.warn(`   ⚠️  Failed to update metadata.json with feature_id: ${error}`);
-    }
-  }
+  // NOTE (v0.29.0): updateMetadataFeatureId() was REMOVED
+  // Feature ID is now derived from increment number, not stored in metadata
+  // See ADR-0140 for rationale
 
   /**
    * Parse increment spec.md

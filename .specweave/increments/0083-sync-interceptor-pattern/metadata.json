@@ -1,0 +1,43 @@
+{
+  "incrementId": "0083-sync-interceptor-pattern",
+  "title": "Sync Interceptor Pattern - Phase 2",
+  "status": "completed",
+  "startedAt": "2025-12-01T19:00:00.000Z",
+  "completedAt": "2025-12-01T19:10:00.000Z",
+  "approvedAt": "2025-12-01T19:10:00.000Z",
+  "priority": "P1",
+  "type": "feature",
+  "createdAt": "2025-12-01T18:45:00.000Z",
+  "updatedAt": "2025-12-01T21:30:00.000Z",
+  "tags": [
+    "sync",
+    "interceptor",
+    "permissions",
+    "phase-2"
+  ],
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Wrap GitHub Sync with Permission Checks",
+      "status": "completed"
+    },
+    {
+      "id": "US-002",
+      "title": "Wrap JIRA Sync with Permission Checks",
+      "status": "completed"
+    },
+    {
+      "id": "US-003",
+      "title": "Wrap ADO Sync with Permission Checks",
+      "status": "completed"
+    },
+    {
+      "id": "US-004",
+      "title": "Sync Audit Trail",
+      "status": "completed"
+    }
+  ],
+  "dependencies": [
+    "0082-unified-sync-orchestration"
+  ]
+}

@@ -7,12 +7,9 @@ priority: P1
 created: 2025-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-003: Automatic Issue Close on Abandon
 
-**Feature**: [FS-072](./FEATURE)
+**Feature**: [FS-072](./FEATURE.md)
 
 **As a** developer abandoning an increment
 **I want** GitHub issues to automatically close
@@ -30,12 +27,12 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: `0072-github-status-reconciliation`
+**Increment**: [0072-github-status-reconciliation](../../../../increments/0072-github-status-reconciliation/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] T-007: Add close logic to post-increment-status-change.sh
-- [x] T-008: Create close-github-issues-abandoned.ts script
+- [x] **T-007**: Add close logic to post-increment-status-change.sh
+- [x] **T-008**: Create close-github-issues-abandoned.ts script
