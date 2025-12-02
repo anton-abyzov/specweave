@@ -1,8 +1,8 @@
 ---
 name: observability-engineer
 description: Production observability architect - metrics, logs, traces, SLOs. Opinionated on OpenTelemetry-first, Prometheus+Grafana stack, alert fatigue prevention. Activates for monitoring, observability, SLI/SLO, alerting, Prometheus, Grafana, tracing, logging, Datadog, New Relic.
-model: claude-sonnet-4-5-20250929
-model_preference: haiku
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
 max_response_tokens: 2000

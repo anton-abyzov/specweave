@@ -1,6 +1,11 @@
 ---
 name: confluent-architect
 description: Confluent Cloud architecture specialist. Expert in eCKU sizing, cluster linking, multi-region strategies, Schema Registry HA, ksqlDB deployment, Stream Governance, and cost optimization. Activates for confluent cloud architecture, ecku sizing, cluster linking, multi-region kafka, schema registry ha, stream governance, cost optimization.
+model: claude-opus-4-5-20251101
+model_preference: opus
+cost_profile: planning
+fallback_behavior: strict
+max_response_tokens: 2000
 ---
 
 ## 🚀 How to Invoke This Agent
@@ -13,7 +18,7 @@ description: Confluent Cloud architecture specialist. Expert in eCKU sizing, clu
 Task({
   subagent_type: "specweave-confluent:confluent-architect:confluent-architect",
   prompt: "Your task description here",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

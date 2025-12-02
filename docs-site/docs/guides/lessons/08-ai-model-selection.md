@@ -153,7 +153,7 @@ In `.specweave/config.json`:
 ```json
 {
   "ai": {
-    "defaultModel": "sonnet",
+    "defaultModel": "opus",
     "planningModel": "opus",
     "explorationModel": "haiku"
   }

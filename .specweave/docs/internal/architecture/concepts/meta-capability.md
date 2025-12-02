@@ -103,7 +103,7 @@ Result: New agent available for all future Stripe work
 name: stripe-integration
 description: Expert in Stripe API integration, webhooks, subscriptions, PCI compliance
 tools: Read, Write, Edit, Bash
-model: sonnet
+model: claude-opus-4-5-20251101
 ---
 
 You are a Stripe integration expert with deep knowledge of:

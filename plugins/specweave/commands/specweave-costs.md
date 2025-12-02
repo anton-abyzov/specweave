@@ -169,7 +169,7 @@ COST BY AGENT
 RECENT SESSIONS
 ───────────────────────────────────────────────────────────────
   2025-10-31 14:32:15
-  Agent: pm                  Model: sonnet
+  Agent: pm                  Model: opus
   Cost: $ 0.0150    Savings: $ 0.0350
 
   2025-10-31 13:15:42

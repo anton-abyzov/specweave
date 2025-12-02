@@ -21,7 +21,7 @@ max_response_tokens: 2000
 Task({
   subagent_type: "specweave-infrastructure:devops:devops",
   prompt: "Deploy application to AWS ECS Fargate with Terraform and configure CI/CD pipeline with GitHub Actions",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

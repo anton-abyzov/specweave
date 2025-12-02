@@ -55,6 +55,12 @@ import {
   generateInitialIncrement,
 } from '../helpers/init/index.js';
 import { triggerAdoRepoCloning } from '../helpers/init/ado-repo-cloning.js';
+import {
+  collectLivingDocsInputs,
+  displayJobScheduled,
+  detectBrownfield,
+} from '../helpers/init/living-docs-preflight.js';
+import { launchLivingDocsJob } from '../../core/background/job-launcher.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -525,6 +531,37 @@ export async function initCommand(
           const errorMsg = importError instanceof Error ? importError.message : String(importError);
           console.log(chalk.yellow(`\n⚠️  External tool import failed: ${errorMsg}`));
           console.log(chalk.gray('   → You can run /specweave-github:sync later to retry'));
+        }
+      }
+
+      // Living Docs Builder - schedule if brownfield project
+      if (detectBrownfield(targetDir) && !options.noLivingDocs) {
+        try {
+          const preflightResult = await collectLivingDocsInputs({
+            projectPath: targetDir,
+            language,
+            isCi: isCI,
+            skipLivingDocs: options.noLivingDocs,
+          });
+
+          if (preflightResult?.shouldLaunch) {
+            // Collect dependency job IDs (clone and import jobs if any)
+            const dependsOn: string[] = [];
+            // Note: Import job ID would be collected from promptAndRunExternalImport result
+            // For now, living docs job will check for any running clone/import jobs
+
+            const launchResult = await launchLivingDocsJob({
+              projectPath: targetDir,
+              userInputs: preflightResult.userInputs,
+              dependsOn,
+            });
+
+            displayJobScheduled(launchResult.job.id, preflightResult.estimatedDuration, language);
+          }
+        } catch (livingDocsError) {
+          const errorMsg = livingDocsError instanceof Error ? livingDocsError.message : String(livingDocsError);
+          console.log(chalk.yellow(`\n⚠️  Living Docs setup failed: ${errorMsg}`));
+          console.log(chalk.gray('   → You can run /specweave:jobs later to check status'));
         }
       }
     }

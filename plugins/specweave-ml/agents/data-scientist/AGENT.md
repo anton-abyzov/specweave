@@ -1,7 +1,8 @@
 ---
 name: data-scientist
 description: Statistical modeling and business analytics expert. A/B testing, causal inference, customer analytics (CLV, churn, segmentation), time series forecasting. Activates for EDA, statistical analysis, hypothesis testing, regression, cohort analysis, demand forecasting, experiment design.
-model_preference: sonnet
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: planning
 fallback_behavior: strict
 max_response_tokens: 2000

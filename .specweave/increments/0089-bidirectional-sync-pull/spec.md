@@ -1,8 +1,10 @@
 ---
 increment: 0089-bidirectional-sync-pull
 type: feature
-status: planning
+status: completed
+started: 2025-12-01
 created: 2025-12-01
+completed: 2025-12-02
 feature_id: FS-089
 ---
 
@@ -86,34 +88,34 @@ Log every sync operation:
 ## Acceptance Criteria
 
 ### US-001: External Change Detection
-- [ ] **AC-US1-01**: ADO client can query work items changed in last N hours
-- [ ] **AC-US1-02**: JIRA client can query issues updated in last N hours
-- [ ] **AC-US1-03**: GitHub client can query issues updated since timestamp
-- [ ] **AC-US1-04**: Changed items include `ChangedDate` and `ChangedBy` fields
+- [x] **AC-US1-01**: ADO client can query work items changed in last N hours
+- [x] **AC-US1-02**: JIRA client can query issues updated in last N hours
+- [x] **AC-US1-03**: GitHub client can query issues updated since timestamp
+- [x] **AC-US1-04**: Changed items include `ChangedDate` and `ChangedBy` fields
 
 ### US-002: Pull Sync Execution
-- [ ] **AC-US2-01**: Status changes from external tools update living docs
-- [ ] **AC-US2-02**: Priority changes from external tools update living docs
-- [ ] **AC-US2-03**: Assignee changes from external tools update living docs
-- [ ] **AC-US2-04**: Format-preserved fields (title, description, ACs) are NOT modified
+- [x] **AC-US2-01**: Status changes from external tools update living docs
+- [x] **AC-US2-02**: Priority changes from external tools update living docs
+- [x] **AC-US2-03**: Assignee changes from external tools update living docs
+- [x] **AC-US2-04**: Format-preserved fields (title, description, ACs) are NOT modified
 
 ### US-003: Timestamp-Based Conflict Resolution
-- [ ] **AC-US3-01**: Compare local `lastModified` vs external `ChangedDate`
-- [ ] **AC-US3-02**: External wins if external timestamp is more recent
-- [ ] **AC-US3-03**: Local wins if local timestamp is more recent
-- [ ] **AC-US3-04**: Conflict resolution is logged with both timestamps
+- [x] **AC-US3-01**: Compare local `lastModified` vs external `ChangedDate`
+- [x] **AC-US3-02**: External wins if external timestamp is more recent
+- [x] **AC-US3-03**: Local wins if local timestamp is more recent
+- [x] **AC-US3-04**: Conflict resolution is logged with both timestamps
 
 ### US-004: Scheduled Pull Sync
-- [ ] **AC-US4-01**: New job type `external-pull` added to scheduler
-- [ ] **AC-US4-02**: Default interval is 1 hour (configurable)
-- [ ] **AC-US4-03**: Runs on session start (for overnight changes)
-- [ ] **AC-US4-04**: Can be triggered manually via `/specweave:sync-pull`
+- [x] **AC-US4-01**: New job type `external-pull` added to scheduler
+- [x] **AC-US4-02**: Default interval is 1 hour (configurable)
+- [x] **AC-US4-03**: Runs on session start (for overnight changes)
+- [x] **AC-US4-04**: Can be triggered manually via `/specweave:sync-pull`
 
 ### US-005: Enhanced Audit Logging
-- [ ] **AC-US5-01**: Pull operations logged with direction="pull"
-- [ ] **AC-US5-02**: Log includes externalChangedBy and externalChangedAt
-- [ ] **AC-US5-03**: Log includes old and new values for changed fields
-- [ ] **AC-US5-04**: `/specweave:sync-logs` shows pull operations
+- [x] **AC-US5-01**: Pull operations logged with direction="pull"
+- [x] **AC-US5-02**: Log includes externalChangedBy and externalChangedAt
+- [x] **AC-US5-03**: Log includes old and new values for changed fields
+- [x] **AC-US5-04**: `/specweave:sync-logs` shows pull operations
 
 ## Configuration
 

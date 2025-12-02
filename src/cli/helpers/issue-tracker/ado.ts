@@ -31,6 +31,7 @@ import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import { getLocaleManager } from '../../../core/i18n/locale-manager.js';
 import { RateLimitError } from './types.js';
 import { selectAreaPaths, toAreaPathObjects } from '../ado-area-selector.js';
+import type { AdoProcessTemplate } from './types.js';
 
 /**
  * Check for existing Azure DevOps credentials
@@ -117,6 +118,95 @@ async function fetchProjectAreaPaths(
     return areasResult.map((a: any) => ({ name: a.name, path: a.path }));
   } catch {
     return [];
+  }
+}
+
+/**
+ * Detect process template for an ADO project
+ *
+ * Determines if project uses SAFe (5-level hierarchy) by checking for Capability work item type.
+ * This is critical for proper hierarchy mapping during import:
+ * - SAFe: Capability → Epic → Feature → Story → Task (5 levels)
+ * - Others: Epic → Feature → Story → Task (4 levels or less)
+ *
+ * @param org - Organization name
+ * @param project - Project name
+ * @param pat - Personal Access Token
+ * @returns Process template info (template name and hasCapability flag)
+ */
+async function detectProjectProcessTemplate(
+  org: string,
+  project: string,
+  pat: string
+): Promise<{ template: AdoProcessTemplate; hasCapability: boolean }> {
+  try {
+    const auth = Buffer.from(`:${pat}`).toString('base64');
+    const apiVersion = '7.0';
+
+    // Step 1: Get project properties (includes process template)
+    const projectUrl = `https://dev.azure.com/${org}/_apis/projects/${project}?includeCapabilities=true&api-version=${apiVersion}`;
+    const projectResponse = await fetch(projectUrl, {
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!projectResponse.ok) {
+      return { template: 'unknown', hasCapability: false };
+    }
+
+    const projectData: any = await projectResponse.json();
+
+    // Extract template from capabilities.processTemplate.templateName
+    let detectedTemplate: AdoProcessTemplate = 'unknown';
+    const templateName = projectData.capabilities?.processTemplate?.templateName;
+    if (templateName) {
+      // Normalize template names
+      const normalized = templateName.toLowerCase();
+      if (normalized.includes('safe')) {
+        detectedTemplate = 'SAFe';
+      } else if (normalized.includes('agile')) {
+        detectedTemplate = 'Agile';
+      } else if (normalized.includes('scrum')) {
+        detectedTemplate = 'Scrum';
+      } else if (normalized.includes('cmmi')) {
+        detectedTemplate = 'CMMI';
+      } else if (normalized.includes('basic')) {
+        detectedTemplate = 'Basic';
+      }
+    }
+
+    // Step 2: Check for Capability work item type (indicates SAFe)
+    const witUrl = `https://dev.azure.com/${org}/${project}/_apis/wit/workitemtypes?api-version=${apiVersion}`;
+    const witResponse = await fetch(witUrl, {
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Accept': 'application/json'
+      }
+    });
+
+    let hasCapability = false;
+    if (witResponse.ok) {
+      const witData: any = await witResponse.json();
+      const workItemTypes = (witData.value || []).map((w: any) => w.name);
+      hasCapability = workItemTypes.some((t: string) =>
+        t.toLowerCase() === 'capability'
+      );
+
+      // If Capability exists but template wasn't detected as SAFe, upgrade it
+      if (hasCapability && detectedTemplate !== 'SAFe') {
+        detectedTemplate = 'SAFe';
+      }
+    }
+
+    return {
+      template: detectedTemplate,
+      hasCapability
+    };
+  } catch {
+    // If detection fails, return unknown (safe default)
+    return { template: 'unknown', hasCapability: false };
   }
 }
 
@@ -303,6 +393,15 @@ async function handleSingleProjectSelection(
   const fetchedAreas = await fetchProjectAreaPaths(org, project, pat);
   spinner.succeed(`Found ${fetchedAreas.length} area paths`);
 
+  // Detect process template (SAFe detection for 5-level hierarchy)
+  const templateSpinner = ora('Detecting process template...').start();
+  const templateInfo = await detectProjectProcessTemplate(org, project, pat);
+  if (templateInfo.hasCapability) {
+    templateSpinner.succeed(`Process template: ${templateInfo.template} (SAFe 5-level hierarchy detected)`);
+  } else {
+    templateSpinner.succeed(`Process template: ${templateInfo.template}`);
+  }
+
   // Let user select area paths
   let areaPaths: string[] = [];
   if (fetchedAreas.length > 0) {
@@ -320,15 +419,26 @@ async function handleSingleProjectSelection(
     await cacheManager.set('ado-config', {
       org,
       project,
-      areaPaths: areaPaths.length > 0 ? areaPaths : undefined
+      areaPaths: areaPaths.length > 0 ? areaPaths : undefined,
+      processTemplate: templateInfo.template,
+      hasCapability: templateInfo.hasCapability
     });
   }
 
+  // For single project, also build projects array for consistent handling
   return {
     pat,
     org,
     project,
-    areaPaths: areaPaths.length > 0 ? areaPaths : undefined
+    areaPaths: areaPaths.length > 0 ? areaPaths : undefined,
+    // Also provide projects array for consistent downstream processing
+    projects: [{
+      name: project,
+      areaPaths: areaPaths.length > 0 ? areaPaths : undefined,
+      isDefault: true,
+      processTemplate: templateInfo.template,
+      hasCapability: templateInfo.hasCapability
+    }]
   };
 }
 
@@ -385,6 +495,15 @@ async function handleMultiProjectSelection(
     const fetchedAreas = await fetchProjectAreaPaths(org, projectName, pat);
     spinner.succeed(`Found ${fetchedAreas.length} area paths`);
 
+    // Detect process template (SAFe detection for 5-level hierarchy)
+    const templateSpinner = ora('Detecting process template...').start();
+    const templateInfo = await detectProjectProcessTemplate(org, projectName, pat);
+    if (templateInfo.hasCapability) {
+      templateSpinner.succeed(`Process template: ${templateInfo.template} (SAFe 5-level hierarchy detected)`);
+    } else {
+      templateSpinner.succeed(`Process template: ${templateInfo.template}`);
+    }
+
     let areaPaths: string[] = [];
     if (fetchedAreas.length > 0) {
       const areaPathObjects = toAreaPathObjects(fetchedAreas.map(a => a.path));
@@ -397,7 +516,9 @@ async function handleMultiProjectSelection(
     projects.push({
       name: projectName,
       areaPaths: areaPaths.length > 0 ? areaPaths : undefined,
-      isDefault: i === 0 // First project is default
+      isDefault: i === 0, // First project is default
+      processTemplate: templateInfo.template,
+      hasCapability: templateInfo.hasCapability
     });
   }
 

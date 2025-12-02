@@ -1,6 +1,11 @@
 ---
 name: kafka-observability
 description: Kafka observability and monitoring specialist. Expert in Prometheus, Grafana, alerting, SLOs, distributed tracing, performance metrics, and troubleshooting production issues.
+model: claude-opus-4-5-20251101
+model_preference: opus
+cost_profile: execution
+fallback_behavior: flexible
+max_response_tokens: 2000
 ---
 
 # Kafka Observability Agent
@@ -15,7 +20,7 @@ description: Kafka observability and monitoring specialist. Expert in Prometheus
 Task({
   subagent_type: "specweave-kafka:kafka-observability:kafka-observability",
   prompt: "Set up Kafka monitoring with Prometheus JMX exporter and create Grafana dashboards with alerting rules",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

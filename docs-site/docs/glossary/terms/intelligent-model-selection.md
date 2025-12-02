@@ -6,7 +6,7 @@ sidebar_label: Intelligent Model Selection
 
 # Intelligent Model Selection
 
-**Intelligent Model Selection** is SpecWeave's automatic system for choosing the right AI model (Claude Haiku, Sonnet, or Opus) based on task complexity. This optimizes both cost and quality by using cheaper models for simple tasks and more capable models for complex ones.
+**Intelligent Model Selection** is SpecWeave's automatic system for choosing the right AI model. With Opus 4.5 as the default for maximum quality, SpecWeave uses Haiku for simple mechanical tasks to optimize costs while maintaining quality.
 
 ---
 
@@ -14,16 +14,12 @@ sidebar_label: Intelligent Model Selection
 
 ```mermaid
 flowchart TD
-    A[Task Request] --> B{Phase Detection}
-    B -->|Research/Exploration| C[Haiku]
-    B -->|Planning/Design| D[Sonnet]
-    B -->|Complex Implementation| E[Opus]
-    B -->|Code Review| D
-    B -->|Simple Edit| C
+    A[Task Request] --> B{Task Complexity}
+    B -->|Simple/Mechanical| C[Haiku]
+    B -->|Standard/Complex| D[Opus 4.5]
 
-    C --> F[Execute with Model]
-    D --> F
-    E --> F
+    C --> E[Execute with Model]
+    D --> E
 ```
 
 ---
@@ -32,9 +28,8 @@ flowchart TD
 
 | Model | Cost | Best For | Use Cases |
 |-------|------|----------|-----------|
-| **Haiku** | $ | Quick tasks | File search, simple questions, log parsing |
-| **Sonnet** | $$ | Standard work | Planning, code review, implementation |
-| **Opus** | $$$ | Complex tasks | Architecture, multi-file refactoring, novel problems |
+| **Haiku** | $ | Mechanical tasks | Simple file generation, log parsing, test data |
+| **Opus 4.5** | $$$ | All complex work (default) | Planning, architecture, implementation, code review |
 
 ---
 
@@ -45,12 +40,12 @@ SpecWeave detects the current phase to select the appropriate model:
 | Phase | Typical Model | Why |
 |-------|---------------|-----|
 | **Exploration** | Haiku | Fast file search, codebase navigation |
-| **Research** | Haiku/Sonnet | Reading docs, understanding context |
-| **Planning** | Sonnet | Generating specs, breaking down work |
-| **Architecture** | Sonnet/Opus | Design decisions, ADRs |
-| **Implementation** | Sonnet | Writing code, tests |
-| **Review** | Sonnet | Code review, validation |
-| **Debugging** | Sonnet/Opus | Complex problem solving |
+| **Research** | Opus | Reading docs, understanding context |
+| **Planning** | Opus | Generating specs, breaking down work |
+| **Architecture** | Opus | Design decisions, ADRs |
+| **Implementation** | Opus | Writing code, tests |
+| **Review** | Opus | Code review, validation |
+| **Debugging** | Opus | Complex problem solving |
 
 ---
 
@@ -79,7 +74,7 @@ Model selection is automatic but can be influenced:
 // .specweave/config.json
 {
   "ai": {
-    "default_model": "sonnet",
+    "default_model": "opus",
     "use_intelligent_selection": true,
     "prefer_cost_optimization": true
   }

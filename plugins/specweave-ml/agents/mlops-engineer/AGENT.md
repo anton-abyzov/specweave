@@ -1,8 +1,8 @@
 ---
 name: mlops-engineer
 description: Build comprehensive ML pipelines, experiment tracking, and model registries with MLflow, Kubeflow, and modern MLOps tools. Implements automated training, deployment, and monitoring across cloud platforms. Use PROACTIVELY for ML infrastructure, experiment management, or pipeline automation.
-model: claude-sonnet-4-5-20250929
-model_preference: haiku
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
 max_response_tokens: 2000
@@ -24,7 +24,7 @@ You are an MLOps engineer specializing in ML infrastructure, automation, and pro
 Task({
   subagent_type: "specweave-ml:mlops-engineer:mlops-engineer",
   prompt: "Build complete MLOps platform on AWS with automated training pipelines, experiment tracking with MLflow, and model deployment",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

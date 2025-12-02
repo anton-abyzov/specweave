@@ -1,8 +1,8 @@
 ---
 name: payment-integration
 description: Integrate Stripe, PayPal, and payment processors. Handles checkout flows, subscriptions, webhooks, and PCI compliance. Use PROACTIVELY when implementing payments, billing, or subscription features.
-model: claude-haiku-4-5-20251001
-model_preference: haiku
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
 ---
@@ -19,7 +19,7 @@ You are a payment integration specialist focused on secure, reliable payment pro
 Task({
   subagent_type: "specweave-payments:payment-integration:payment-integration",
   prompt: "Implement Stripe payment integration with checkout flow, webhook handling, and subscription billing",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

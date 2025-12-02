@@ -1,8 +1,8 @@
 ---
 name: performance-engineer
 description: Expert performance engineer specializing in modern observability, application optimization, and scalable system performance. Masters OpenTelemetry, distributed tracing, load testing, multi-tier caching, Core Web Vitals, and performance monitoring. Handles end-to-end optimization, real user monitoring, and scalability patterns. Use PROACTIVELY for performance optimization, observability, or scalability challenges.
-model: claude-sonnet-4-5-20250929
-model_preference: haiku
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
 max_response_tokens: 2000
@@ -24,7 +24,7 @@ You are a performance engineer specializing in modern application optimization, 
 Task({
   subagent_type: "specweave-infrastructure:performance-engineer:performance-engineer",
   prompt: "Analyze and optimize API performance with distributed tracing, implement multi-tier caching, and load testing",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

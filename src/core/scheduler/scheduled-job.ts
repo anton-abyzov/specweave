@@ -10,7 +10,8 @@
  * Job types supported by the scheduler
  */
 export type JobType =
-  | 'external-sync'         // Sync with GitHub/JIRA/ADO
+  | 'external-sync'         // Push sync to GitHub/JIRA/ADO
+  | 'external-pull'         // Pull changes from GitHub/JIRA/ADO
   | 'discrepancy-check'     // Code vs spec comparison
   | 'living-docs-sync'      // Sync living docs changes
   | 'notification-cleanup'; // Clean old notifications

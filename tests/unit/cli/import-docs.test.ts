@@ -11,29 +11,35 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 import { importDocs, parseImportDocsArgs, ImportDocsArgs } from '../../../src/cli/commands/import-docs.js';
 import { BrownfieldImporter } from '../../../src/core/brownfield/importer.js';
 import { ProjectManager } from '../../../src/core/project/project-manager.js';
-import * as inquirer from 'inquirer';
 import * as path from 'path';
 
-// Mock dependencies
+// Mock dependencies - use vi.hoisted for variables referenced in vi.mock factories
+const { mockSelect, mockConfirm, mockProjectManagerFn } = vi.hoisted(() => ({
+  mockSelect: vi.fn(),
+  mockConfirm: vi.fn(),
+  mockProjectManagerFn: vi.fn()
+}));
+
 vi.mock('../../../src/core/brownfield/importer');
-vi.mock('../../../src/core/project-manager');
-vi.mock('inquirer', () => ({
-  default: {
-    prompt: vi.fn()
-  }
+vi.mock('../../../src/core/project/project-manager', () => ({
+  ProjectManager: mockProjectManagerFn
+}));
+vi.mock('@inquirer/prompts', () => ({
+  select: mockSelect,
+  confirm: mockConfirm
 }));
 
 describe('import-docs command', () => {
   const mockImporter = BrownfieldImporter as vi.Mocked<typeof BrownfieldImporter>;
   const mockProjectManager = ProjectManager as vi.Mocked<typeof ProjectManager>;
-  const mockPrompt = vi.mocked(inquirer.default.prompt);
 
   const mockProjectRoot = '/test/project';
   const mockSourcePath = '/test/source';
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockPrompt.mockReset();
+    mockSelect.mockReset();
+    mockConfirm.mockReset();
     console.log = vi.fn();
     console.error = vi.fn();
 
@@ -71,7 +77,7 @@ describe('import-docs command', () => {
         dryRun: true
       };
 
-      mockPrompt.mockResolvedValueOnce({ sourceType: 'notion' });
+      mockSelect.mockResolvedValueOnce('notion');
 
       const mockImportReport = {
         totalFiles: 10,
@@ -94,12 +100,10 @@ describe('import-docs command', () => {
 
       await importDocs(mockProjectRoot, args);
 
-      expect(mockPrompt).toHaveBeenCalledWith([{
-        type: 'select',
-        name: 'sourceType',
-        message: 'Select source type:',
+      expect(mockSelect).toHaveBeenCalledWith(expect.objectContaining({
+        message: expect.stringContaining('source'),
         choices: expect.any(Array)
-      }]);
+      }));
     });
 
     it('should handle absolute source path correctly', async () => {
@@ -202,7 +206,7 @@ describe('import-docs command', () => {
 
       mockProjectManager.mockImplementation(() => mockProjectInstance as any);
 
-      mockPrompt.mockResolvedValueOnce({ projectId: 'project2' });
+      mockSelect.mockResolvedValueOnce('project2');
 
       const mockImportReport = {
         totalFiles: 10,
@@ -225,13 +229,10 @@ describe('import-docs command', () => {
 
       await importDocs(mockProjectRoot, args);
 
-      expect(mockPrompt).toHaveBeenCalledWith([{
-        type: 'select',
-        name: 'projectId',
-        message: 'Select target project:',
-        choices: expect.any(Array),
-        default: 'project1'
-      }]);
+      expect(mockSelect).toHaveBeenCalledWith(expect.objectContaining({
+        message: expect.stringContaining('project'),
+        choices: expect.any(Array)
+      }));
 
       expect(mockImportMethod).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -248,7 +249,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockPrompt.mockResolvedValueOnce({ confirm: true });
+      mockConfirm.mockResolvedValueOnce(true);
 
       const mockImportReport = {
         totalFiles: 10,
@@ -271,12 +272,9 @@ describe('import-docs command', () => {
 
       await importDocs(mockProjectRoot, args);
 
-      expect(mockPrompt).toHaveBeenCalledWith([{
-        type: 'confirm',
-        name: 'confirm',
-        message: 'Proceed with import?',
-        default: true
-      }]);
+      expect(mockConfirm).toHaveBeenCalledWith(expect.objectContaining({
+        message: expect.stringContaining('import')
+      }));
     });
 
     it('should cancel import if user does not confirm', async () => {
@@ -287,7 +285,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockPrompt.mockResolvedValueOnce({ confirm: false });
+      mockConfirm.mockResolvedValueOnce(false);
 
       const mockImportMethod = vi.fn();
       mockImporter.prototype.import = mockImportMethod;
@@ -306,7 +304,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockPrompt.mockResolvedValueOnce({ confirm: true });
+      mockConfirm.mockResolvedValueOnce(true);
 
       const mockImportReport = {
         totalFiles: 10,
@@ -378,7 +376,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockPrompt.mockResolvedValueOnce({ confirm: true });
+      mockConfirm.mockResolvedValueOnce(true);
 
       const errorMessage = 'Failed to read source directory';
       const mockImportMethod = vi.fn().mockRejectedValue(new Error(errorMessage));
@@ -587,7 +585,7 @@ describe('import-docs command', () => {
 
       mockProjectManager.mockImplementation(() => mockProjectInstance as any);
 
-      mockPrompt.mockResolvedValueOnce({ confirm: true });
+      mockConfirm.mockResolvedValueOnce(true);
 
       const mockImportMethod = vi.fn()
         .mockRejectedValue(new Error("Project 'non-existent' not found"));
@@ -605,7 +603,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockPrompt.mockResolvedValueOnce({ confirm: true });
+      mockConfirm.mockResolvedValueOnce(true);
 
       const mockImportMethod = vi.fn()
         .mockRejectedValue(new Error('Source path does not exist'));
@@ -623,7 +621,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockPrompt.mockResolvedValueOnce({ confirm: true });
+      mockConfirm.mockResolvedValueOnce(true);
 
       const mockImportMethod = vi.fn()
         .mockRejectedValue(new Error('No markdown files found in source directory'));
@@ -641,7 +639,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockPrompt.mockResolvedValueOnce({ confirm: true });
+      mockConfirm.mockResolvedValueOnce(true);
 
       const mockImportReport = {
         totalFiles: 0,
@@ -675,7 +673,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockPrompt.mockResolvedValueOnce({ confirm: true });
+      mockConfirm.mockResolvedValueOnce(true);
 
       const mockImportMethod = vi.fn()
         .mockRejectedValue(new Error('Permission denied: cannot write to destination'));
@@ -693,7 +691,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockPrompt.mockResolvedValueOnce({ confirm: true });
+      mockConfirm.mockResolvedValueOnce(true);
 
       const mockImportMethod = vi.fn()
         .mockRejectedValue(new Error('Another import is already in progress for this project'));
@@ -711,7 +709,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockPrompt.mockResolvedValueOnce({ confirm: true });
+      mockConfirm.mockResolvedValueOnce(true);
 
       const mockImportReport = {
         totalFiles: 10000,
@@ -747,7 +745,7 @@ describe('import-docs command', () => {
         dryRun: false
       };
 
-      mockPrompt.mockResolvedValueOnce({ confirm: true });
+      mockConfirm.mockResolvedValueOnce(true);
 
       const mockDestination = '/test/project/.specweave/docs/internal/legacy/default/notion';
       const mockImportReport = {

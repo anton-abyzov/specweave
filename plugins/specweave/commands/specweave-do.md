@@ -32,8 +32,8 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 
 - `--model <tier>`: Optional. Override model selection for all tasks
   - `haiku`: Fast, cheap execution (3x faster, 20x cheaper than Sonnet)
-  - `sonnet`: Balanced quality and speed (default for complex tasks)
-  - `opus`: Maximum quality (rare, use only for critical decisions)
+  - `sonnet`: Balanced quality and speed
+  - `opus`: Maximum quality (default for all tasks)
   - If omitted, uses model hints from tasks.md (recommended)
 
 ---
