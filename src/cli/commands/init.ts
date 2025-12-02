@@ -632,7 +632,7 @@ async function installNonClaudeAdapter(
   try {
     spinner.start('Installing SpecWeave core plugin...');
     const corePluginPath = findSourceDir('plugins/specweave', __dirname);
-    const { PluginLoader } = await import('../../core/plugin-loader.js');
+    const { PluginLoader } = await import('../../core/plugins/plugin-loader.js');
     const loader = new PluginLoader();
     const corePlugin = await loader.loadFromDirectory(corePluginPath);
 

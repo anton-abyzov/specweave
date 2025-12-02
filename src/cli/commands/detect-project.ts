@@ -7,7 +7,7 @@
  * based on keywords in the increment name or description.
  */
 
-import { detectProjectFromIncrement } from '../../core/spec-detector.js';
+import { detectProjectFromIncrement } from '../../core/specs/spec-detector.js';
 import { ConfigManager } from '../../core/config-manager.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 

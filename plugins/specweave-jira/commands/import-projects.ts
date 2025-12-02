@@ -26,7 +26,7 @@ import { FilterProcessor, type FilterOptions } from '../../../src/integrations/j
 import { AsyncProjectLoader } from '../../../src/cli/helpers/async-project-loader.js';
 import { mergeEnvList, getEnvValue } from '../../../src/utils/env-manager.js';
 import { consoleLogger, type Logger } from '../../../src/utils/logger.js';
-import { credentialsManager } from '../../../src/core/credentials-manager.js';
+import { credentialsManager } from '../../../src/core/credentials/credentials-manager.js';
 
 export interface ImportProjectsOptions {
   filter?: 'active' | 'archived' | 'all';

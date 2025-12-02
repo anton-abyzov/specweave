@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Tests for plugin loading, validation, and error handling
  */
 
-import { PluginLoader } from '../../../src/core/plugin-loader.js';
+import { PluginLoader } from '../../../src/core/plugins/plugin-loader.js';
 import { ManifestValidationError, PluginNotFoundError } from '../../../src/core/types/plugin.js';
 import path from 'path';
 import * as fs from '../../../src/utils/fs-native.js';

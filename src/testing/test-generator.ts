@@ -205,7 +205,7 @@ export class TestGenerator {
       if (credentials.includes('github')) {
         header += `// import { GitHubClient } from '../../src/integrations/github/github-client.js';\n`;
       }
-      header += `import { credentialsManager } from '../../src/core/credentials-manager.js';\n`;
+      header += `import { credentialsManager } from '../../src/core/credentials/credentials-manager.js';\n`;
     }
 
     header += `import * as fs from 'fs';\n`;

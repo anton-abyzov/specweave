@@ -19,7 +19,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import matter from 'gray-matter';
 import chalk from 'chalk';
-import { parseSpecContent, type SpecUserStory, type SpecAcceptanceCriterion } from '../dist/src/core/spec-content-sync.js';
+import { parseSpecContent, type SpecUserStory, type SpecAcceptanceCriterion } from '../dist/src/core/specs/spec-content-sync.js';
 import { parseTasksWithUSLinks, getAllTasks, type Task } from '../dist/src/generators/spec/task-parser.js';
 
 interface InferenceResult {

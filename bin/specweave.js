@@ -304,6 +304,20 @@ program
     await jobsCmd.parseAsync(['node', 'jobs', ...process.argv.slice(3)], { from: 'user' });
   });
 
+// Sync-scheduled command - Execute due scheduled sync jobs (for cron/CI)
+program
+  .command('sync-scheduled')
+  .description('Execute due scheduled sync jobs (for cron/CI use)')
+  .option('--dry-run', 'Show what would run without executing')
+  .option('--force', 'Run all sync jobs regardless of schedule')
+  .option('--json', 'Output as JSON')
+  .option('--silent', 'Suppress output (for cron)')
+  .action(async (options) => {
+    const { createSyncScheduledCommand } = await import('../dist/src/cli/commands/sync-scheduled.js');
+    const syncCmd = createSyncScheduledCommand();
+    await syncCmd.parseAsync(['node', 'sync-scheduled', ...process.argv.slice(3)], { from: 'user' });
+  });
+
 // Help text
 program.on('--help', () => {
   console.log('');
@@ -333,6 +347,8 @@ program.on('--help', () => {
   console.log('  $ specweave jobs --follow <jobId>           # Follow job progress live');
   console.log('  $ specweave jobs --logs <jobId>             # View worker logs');
   console.log('  $ specweave jobs --resume <jobId>           # Resume paused job');
+  console.log('  $ specweave sync-scheduled                  # Execute due sync jobs');
+  console.log('  $ specweave sync-scheduled --force          # Force sync all jobs');
   console.log('  $ specweave validate-jira --env .env.prod   # Validate with custom .env file');
   console.log('');
   console.log('Supported AI Tools:');
