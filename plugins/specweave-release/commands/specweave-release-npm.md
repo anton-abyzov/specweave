@@ -179,11 +179,19 @@ git status --porcelain
 
 # Verify current version
 node -p "require('./package.json').version"
+
+# Calculate next version and check CHANGELOG
+CURRENT=$(node -p "require('./package.json').version")
+NEXT=$(node -p "const v='$CURRENT'.split('.'); v[2]=+v[2]+1; v.join('.')")
+grep -q "## \[$NEXT\]" CHANGELOG.md && echo "CHANGELOG OK" || echo "CHANGELOG MISSING for $NEXT"
 ```
 
 **STOP if**:
 - Not on `develop` branch (ask user to switch)
 - Uncommitted changes exist (ask user to commit first)
+
+**WARN if**:
+- CHANGELOG entry missing for next version (suggest adding before release, but CI will auto-generate if forgotten)
 
 ### 2. Bump Patch Version
 
