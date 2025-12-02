@@ -4,6 +4,45 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.29.2] - 2025-12-01
+
+### 🔧 CI/CD Improvements
+- Replace flaky `auto-fix-trigger` workflow with integrated failure notifications
+- Add `notify-failure` job to Test & Validate workflow (creates `[CI-Fix]` issues)
+- Add `notify-failure` job to Release & Publish workflow (creates `[Release-Fix]` issues)
+- Delete problematic `workflow_run` based auto-fix-trigger.yml
+
+### 🗂️ Maintenance
+- Archive increments 0073-0084
+- Rename increment 0060 to 0088
+
+---
+
+## [0.29.1] - 2025-12-01
+
+### 🐛 Bug Fixes
+- Add `uuid` to dependencies (was missing runtime dependency)
+- Fix auto-fix-trigger reliability with concurrency control
+- Remove deprecated sync modules
+
+---
+
+## [0.29.0] - 2025-12-01
+
+### ✨ Features
+- **FS-082: Unified Sync Orchestration** - Complete rewrite of sync architecture
+  - New `UnifiedSyncOrchestrator` for coordinated GitHub/JIRA/ADO sync
+  - Intelligent conflict resolution with configurable strategies
+  - Rate limit handling with automatic backoff
+  - Progress tracking and detailed sync reports
+
+### 🔧 Improvements
+- Improve ADO project detection and folder naming convention
+- Enhance ADO hierarchy grouping and background job handling
+- Update ADO repo cloning command and helpers
+
+---
+
 ## [0.28.36] - 2025-11-26
 
 ### 🗂️ Maintenance
