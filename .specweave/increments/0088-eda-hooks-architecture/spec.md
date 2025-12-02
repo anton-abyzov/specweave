@@ -1,5 +1,5 @@
 ---
-increment: 0060-eda-hooks-architecture
+increment: 0088-eda-hooks-architecture
 type: refactor
 status: completed
 created: 2025-12-01
