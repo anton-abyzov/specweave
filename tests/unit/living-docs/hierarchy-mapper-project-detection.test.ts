@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 /**
  * Unit tests for HierarchyMapper Project Detection (Fix for default → repo name)
  *
@@ -6,17 +8,22 @@
  * with 1:1 mapping between project folder name and repository name.
  */
 
+// Mock dependencies BEFORE imports
+vi.mock('../../../src/utils/fs-native.js', () => ({
+  readFile: vi.fn(),
+  existsSync: vi.fn(),
+  ensureDir: vi.fn(),
+  writeFile: vi.fn(),
+  readdir: vi.fn(),
+}));
+
+vi.mock('../../../src/core/config-manager.js');
+vi.mock('../../../src/core/living-docs/feature-id-manager.js');
+
 import { HierarchyMapper } from '../../../src/core/living-docs/hierarchy-mapper.js';
 import { ConfigManager } from '../../../src/core/config-manager.js';
 import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
-
-// Mock dependencies
-vi.mock('fs-extra');
-vi.mock('../../../src/core/config-manager');
-vi.mock('../../../src/core/living-docs/feature-id-manager');
-
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 // Type-safe mocked functions
 const mockReadFile = vi.mocked(fs.readFile);

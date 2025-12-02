@@ -25,12 +25,15 @@ import {
   SpecValidationResult
 } from '../types/spec-metadata.js';
 import { ProjectManager } from '../project/project-manager.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
 
 export class SpecMetadataManager {
   private specsDir: string;
   private projectManager: ProjectManager;
+  private logger: Logger;
 
-  constructor(projectRoot: string = process.cwd(), projectId?: string) {
+  constructor(projectRoot: string = process.cwd(), projectId?: string, options: { logger?: Logger } = {}) {
+    this.logger = options.logger ?? consoleLogger;
     this.projectManager = new ProjectManager(projectRoot);
 
     // Use flattened structure via ProjectManager
@@ -86,7 +89,7 @@ export class SpecMetadataManager {
         filePath
       };
     } catch (error) {
-      console.error(`Error loading spec ${specId}:`, error);
+      this.logger.error(`Error loading spec ${specId}:`, error);
       return null;
     }
   }

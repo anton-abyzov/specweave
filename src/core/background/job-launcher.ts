@@ -10,7 +10,20 @@ import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { getJobManager } from './job-manager.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
 import type { BackgroundJob, JobType, ImportJobConfig, CloneJobConfig, LivingDocsJobConfig, LivingDocsUserInputs } from './types.js';
+
+/**
+ * Module logger - can be replaced for testing
+ */
+let moduleLogger: Logger = consoleLogger;
+
+/**
+ * Set the logger for this module
+ */
+export function setJobLauncherLogger(logger: Logger): void {
+  moduleLogger = logger;
+}
 
 // ESM compatibility: create __dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
@@ -123,7 +136,7 @@ export async function launchImportJob(options: LaunchOptions): Promise<LaunchRes
 
   if (!workerPath) {
     // Fallback to foreground if worker not found
-    console.warn('Background worker not found, running in foreground');
+    moduleLogger.warn('Background worker not found, running in foreground');
     return {
       job,
       isBackground: false
@@ -281,7 +294,7 @@ export async function launchCloneJob(options: CloneLaunchOptions): Promise<Launc
 
   if (!workerPath) {
     // Fallback to foreground if worker not found
-    console.warn('Clone worker not found, will run in foreground');
+    moduleLogger.warn('Clone worker not found, will run in foreground');
     return {
       job,
       isBackground: false
@@ -396,7 +409,7 @@ export async function launchLivingDocsJob(options: LivingDocsLaunchOptions): Pro
 
   if (!workerPath) {
     // Fallback to foreground if worker not found
-    console.warn('Living docs worker not found, will run in foreground');
+    moduleLogger.warn('Living docs worker not found, will run in foreground');
     return {
       job,
       isBackground: false

@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import * as fs from '../../../src/utils/fs-native.js';
 
 /**
  * Unit tests for DuplicateDetector
@@ -6,8 +7,6 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Tests duplicate detection logic, conflict resolution, and winner selection.
  * Part of increment 0033: Duplicate Increment Prevention System
  */
-
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   detectAllDuplicates,
   detectDuplicatesByNumber,
@@ -164,7 +163,7 @@ describe('DuplicateDetector', () => {
       // Create increment with corrupted metadata
       await createTestIncrement(testDir, 'active', '0008-corrupted');
       const corruptedPath = `${testDir}/.specweave/increments/0008-corrupted/metadata.json`;
-      await import('fs-extra').then(fs => fs.writeFile(corruptedPath, '{ invalid json }'));
+      await fs.writeFile(corruptedPath, '{ invalid json }');
 
       // Should not crash
       const result = await detectAllDuplicates(testDir);
@@ -174,8 +173,8 @@ describe('DuplicateDetector', () => {
 
     it('should ignore non-increment folders', async () => {
       // Create folders that don't match increment pattern
-      await import('fs-extra').then(fs => fs.ensureDir(`${testDir}/.specweave/increments/some-folder`));
-      await import('fs-extra').then(fs => fs.ensureDir(`${testDir}/.specweave/increments/.git`));
+      await fs.ensureDir(`${testDir}/.specweave/increments/some-folder`);
+      await fs.ensureDir(`${testDir}/.specweave/increments/.git`);
 
       const result = await detectAllDuplicates(testDir);
 
@@ -292,7 +291,7 @@ describe('DuplicateDetector', () => {
     it('should handle increments with missing metadata', async () => {
       // Create increment but delete metadata.json
       const incPath = await createTestIncrement(testDir, 'active', '0010-no-metadata');
-      await import('fs-extra').then(fs => fs.remove(`${incPath}/metadata.json`));
+      await fs.remove(`${incPath}/metadata.json`);
 
       // Should still detect the increment (using filesystem stats)
       const result = await detectAllDuplicates(testDir);
@@ -302,9 +301,7 @@ describe('DuplicateDetector', () => {
 
     it('should ignore nested .specweave folders', async () => {
       // Create nested .specweave folder (shouldn't happen, but prevent it)
-      await import('fs-extra').then(fs =>
-        fs.ensureDir(`${testDir}/.specweave/increments/.specweave/increments/0011-nested`)
-      );
+      await fs.ensureDir(`${testDir}/.specweave/increments/.specweave/increments/0011-nested`);
 
       const result = await detectAllDuplicates(testDir);
 

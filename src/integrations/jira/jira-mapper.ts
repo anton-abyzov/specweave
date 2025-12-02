@@ -16,6 +16,19 @@ import { JiraClient, JiraIssue } from './jira-client.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+/**
+ * Module logger - can be replaced for testing
+ */
+let moduleLogger: Logger = consoleLogger;
+
+/**
+ * Set the logger for this module
+ */
+export function setJiraMapperLogger(logger: Logger): void {
+  moduleLogger = logger;
+}
 
 export interface SpecWeaveIncrement {
   id: string;
@@ -171,7 +184,7 @@ export class JiraMapper {
         summary: `Successfully imported Epic ${epicKey} as Increment ${incrementId} with ${stories.length} stories and ${storyTasks.reduce((sum, st) => sum + st.subtasks.length, 0)} tasks`
       };
     } catch (error: any) {
-      console.error(`   ❌ Import failed:`, error.message);
+      moduleLogger.error(`   ❌ Import failed:`, error.message);
       return {
         success: false,
         operation: 'import',
@@ -277,7 +290,7 @@ export class JiraMapper {
         summary: `Successfully exported Increment ${incrementId} as Epic ${epic.key} with ${createdStories.length} stories`
       };
     } catch (error: any) {
-      console.error(`   ❌ Export failed:`, error.message);
+      moduleLogger.error(`   ❌ Export failed:`, error.message);
       return {
         success: false,
         operation: 'export',
@@ -383,7 +396,7 @@ export class JiraMapper {
         summary: `Synced Increment ${incrementId} with Epic ${epicKey}. ${conflicts.length} conflicts resolved.`
       };
     } catch (error: any) {
-      console.error(`   ❌ Sync failed:`, error.message);
+      moduleLogger.error(`   ❌ Sync failed:`, error.message);
       return {
         success: false,
         operation: 'sync',

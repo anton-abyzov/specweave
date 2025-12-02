@@ -1,0 +1,136 @@
+{
+  "id": "0094-unit-test-alignment",
+  "name": "unit-test-alignment",
+  "type": "hotfix",
+  "status": "active",
+  "created": "2025-12-02T00:30:00.000Z",
+  "lastActivity": "2025-12-02T14:52:59.035Z",
+  "featureId": null,
+  "userStories": [],
+  "tags": [
+    "testing",
+    "maintenance"
+  ],
+  "acSyncEvents": [
+    {
+      "timestamp": "2025-12-02T14:52:59.035Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-12-02T07:35:07.974Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: has no tasks mapped",
+        "AC-002: has no tasks mapped",
+        "AC-003: has no tasks mapped",
+        "AC-004: has no tasks mapped",
+        "AC-005: has no tasks mapped",
+        "AC-006: has no tasks mapped",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-12-02T07:34:09.415Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: has no tasks mapped",
+        "AC-002: has no tasks mapped",
+        "AC-003: has no tasks mapped",
+        "AC-004: has no tasks mapped",
+        "AC-005: has no tasks mapped",
+        "AC-006: has no tasks mapped",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-12-02T07:32:59.353Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: has no tasks mapped",
+        "AC-002: has no tasks mapped",
+        "AC-003: has no tasks mapped",
+        "AC-004: has no tasks mapped",
+        "AC-005: has no tasks mapped",
+        "AC-006: has no tasks mapped",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-12-02T07:31:10.703Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: has no tasks mapped",
+        "AC-002: has no tasks mapped",
+        "AC-003: has no tasks mapped",
+        "AC-004: has no tasks mapped",
+        "AC-005: has no tasks mapped",
+        "AC-006: has no tasks mapped",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-12-02T07:30:13.226Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: has no tasks mapped",
+        "AC-002: has no tasks mapped",
+        "AC-003: has no tasks mapped",
+        "AC-004: has no tasks mapped",
+        "AC-005: has no tasks mapped",
+        "AC-006: has no tasks mapped",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-12-02T07:27:51.114Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: has no tasks mapped",
+        "AC-002: has no tasks mapped",
+        "AC-003: has no tasks mapped",
+        "AC-004: has no tasks mapped",
+        "AC-005: has no tasks mapped",
+        "AC-006: has no tasks mapped",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-12-02T07:25:30.888Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: has no tasks mapped",
+        "AC-002: has no tasks mapped",
+        "AC-003: has no tasks mapped",
+        "AC-004: has no tasks mapped",
+        "AC-005: has no tasks mapped",
+        "AC-006: has no tasks mapped",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    }
+  ]
+}

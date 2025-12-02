@@ -12,7 +12,12 @@ export interface Logger {
   /**
    * Log informational message
    */
-  log(message: string): void;
+  log(message: string, ...args: any[]): void;
+
+  /**
+   * Log info message (alias for log)
+   */
+  info(message: string, ...args: any[]): void;
 
   /**
    * Log error message with optional error object
@@ -36,7 +41,8 @@ export interface Logger {
  * Logs to console.log/error/warn
  */
 export const consoleLogger: Logger = {
-  log: (message: string) => console.log(message),
+  log: (message: string, ...args: any[]) => console.log(message, ...args),
+  info: (message: string, ...args: any[]) => console.log(message, ...args),
   error: (message: string, error?: any) => {
     if (error) {
       console.error(message, error);
@@ -56,6 +62,7 @@ export const consoleLogger: Logger = {
  */
 export const silentLogger: Logger = {
   log: () => {},
+  info: () => {},
   error: () => {},
   warn: () => {},
   debug: () => {}
@@ -68,11 +75,12 @@ export const silentLogger: Logger = {
  * @returns Logger instance
  */
 export function createFilteredLogger(minLevel: 'debug' | 'log' | 'warn' | 'error' = 'log'): Logger {
-  const levels = { debug: 0, log: 1, warn: 2, error: 3 };
+  const levels = { debug: 0, log: 1, info: 1, warn: 2, error: 3 };
   const threshold = levels[minLevel];
 
   return {
-    log: (msg) => levels.log >= threshold && console.log(msg),
+    log: (msg, ...args) => levels.log >= threshold && console.log(msg, ...args),
+    info: (msg, ...args) => levels.info >= threshold && console.log(msg, ...args),
     error: (msg, err) => levels.error >= threshold && (err ? console.error(msg, err) : console.error(msg)),
     warn: (msg) => levels.warn >= threshold && console.warn(msg),
     debug: (msg) => levels.debug >= threshold && console.log(msg)
