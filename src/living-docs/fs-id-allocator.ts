@@ -422,12 +422,15 @@ export class FSIdAllocator {
 
     // Handle empty case (first feature)
     if (this.existingFeatures.size === 0) {
-      return {
+      const result: AllocationResult = {
         id: 'FS-001E',
         strategy: 'first',
         reason: 'First external feature in project',
         number: 1
       };
+      // CRITICAL FIX (2025-12-01): Track allocated IDs to prevent duplicates in same session
+      this.trackAllocatedId(result.id, workItem.createdAt);
+      return result;
     }
 
     // Sort features by creation date
@@ -452,12 +455,15 @@ export class FSIdAllocator {
         throw new Error(`ID collision: ${nextId} already exists`);
       }
 
-      return {
+      const result: AllocationResult = {
         id: nextId,
         strategy: 'append',
         reason: `Work item created after all existing features (${new Date(workItem.createdAt).toISOString()})`,
         number: nextNumber
       };
+      // CRITICAL FIX (2025-12-01): Track allocated IDs to prevent duplicates in same session
+      this.trackAllocatedId(result.id, workItem.createdAt);
+      return result;
     }
 
     // Try chronological insertion into gap
@@ -476,12 +482,15 @@ export class FSIdAllocator {
 
         // Check for collision
         if (!this.hasCollision(nextId)) {
-          return {
+          const result: AllocationResult = {
             id: nextId,
             strategy: 'chronological-insert',
             reason: `Inserted chronologically between ${beforeFeature.id} (${beforeFeature.createdAt}) and ${afterFeature.id} (${afterFeature.createdAt})`,
             number: nextNumber
           };
+          // CRITICAL FIX (2025-12-01): Track allocated IDs to prevent duplicates in same session
+          this.trackAllocatedId(result.id, workItem.createdAt);
+          return result;
         } else {
           // Log collision prevention - find what ID would have collided
           const collidingId = this.findCollidingId(nextNumber);
@@ -502,12 +511,30 @@ export class FSIdAllocator {
       throw new Error(`ID collision: ${nextId} already exists`);
     }
 
-    return {
+    const result: AllocationResult = {
       id: nextId,
       strategy: 'append',
       reason: 'Gap insertion not possible, appended to end',
       number: nextNumber
     };
+    // CRITICAL FIX (2025-12-01): Track allocated IDs to prevent duplicates in same session
+    this.trackAllocatedId(result.id, workItem.createdAt);
+    return result;
+  }
+
+  /**
+   * Track a newly allocated ID to prevent duplicates in the same session
+   * CRITICAL FIX (2025-12-01): Without this, multiple calls to allocateId()
+   * would all return the same ID (e.g., FS-001E) because existingFeatures
+   * wasn't updated after allocation.
+   */
+  private trackAllocatedId(id: string, createdAt: string): void {
+    this.existingFeatures.set(id, {
+      id,
+      createdAt,
+      origin: 'external',
+      path: '' // Path will be set when folder is actually created
+    });
   }
 
   /**

@@ -4,7 +4,7 @@ feature: FS-075
 title: "Smart Area Path Selection"
 status: completed
 priority: P1
-created: 2025-11-27
+created: 2025-12-02
 ---
 
 # US-003: Smart Area Path Selection

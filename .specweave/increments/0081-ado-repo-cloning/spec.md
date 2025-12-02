@@ -1,3 +1,9 @@
+---
+increment: 0081-ado-repo-cloning
+feature_id: FS-081
+status: completed
+---
+
 # 0081: ADO Repository Cloning
 
 ## Problem Statement

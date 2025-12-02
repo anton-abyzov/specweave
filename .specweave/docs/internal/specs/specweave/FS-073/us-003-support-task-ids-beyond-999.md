@@ -7,9 +7,6 @@ priority: P1
 created: 2025-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-003: Support Task IDs Beyond 999
 
 **Feature**: [FS-073](./FEATURE.md)
@@ -25,7 +22,7 @@ created: 2025-11-26
 - [ ] **AC-US3-01**: Task ID validation accepts T-001 through T-9999+
 - [ ] **AC-US3-02**: Task header parsing works for T-1000, T-1234
 - [ ] **AC-US3-03**: Task dependency parsing accepts T-1000+ references
-- [x] **AC-US3-04**: Three-file validator correctly identifies T-1000+ tasks
+- [ ] **AC-US3-04**: Three-file validator correctly identifies T-1000+ tasks
 
 ---
 
@@ -38,4 +35,5 @@ created: 2025-11-26
 
 ## Tasks
 
-- [x] [T-008](../../../../increments/0073-fix-y2k-id-limit-bug/tasks.md#T-008): Fix three-file-validator.ts patterns for T-XXX
+- [x] **T-006**: Fix task-parser.ts patterns for T-XXX and US-XXX
+- [x] **T-008**: Fix three-file-validator.ts patterns for T-XXX

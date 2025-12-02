@@ -2,10 +2,10 @@
 id: FS-078
 title: "ADO Init Validation Critical Fixes"
 type: feature
-status: planning
+status: completed
 priority: P0
 created: 2025-11-28
-lastUpdated: 2025-11-28
+lastUpdated: 2025-12-02
 ---
 
 # ADO Init Validation Critical Fixes
@@ -18,7 +18,7 @@ The A
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0078-ado-init-validation-critical-fixes](../../../../increments/0078-ado-init-validation-critical-fixes/spec.md) | ⏳ planning | 2025-11-28 |
+| [0078-ado-init-validation-critical-fixes](../../../../increments/0078-ado-init-validation-critical-fixes/spec.md) | ✅ completed | 2025-11-28 |
 
 ## User Stories
 

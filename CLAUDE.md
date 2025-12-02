@@ -212,9 +212,9 @@ src/cli/helpers/init/
 ```yaml
 ---
 increment: 0001-feature-name  # REQUIRED
-feature_id: FS-001            # OPTIONAL
 ---
 ```
+**NOTE**: `feature_id` is derived from increment number (0001 → FS-001), not stored
 
 ### ADR Naming
 **Format**: `XXXX-decision-title.md` (4-digit, NO `adr-` prefix)
@@ -231,7 +231,8 @@ feature_id: FS-001            # OPTIONAL
 ### Structured Data Matching
 ```typescript
 // ❌ WRONG: content.includes('FS-039')  // Matches "See FS-039"!
-// ✅ CORRECT: content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m)
+// ✅ CORRECT: Use deriveFeatureId() from src/utils/feature-id-derivation.ts
+//    or match folder patterns: /^FS-\d{3,}E?$/
 ```
 
 ### GitHub Duplicates

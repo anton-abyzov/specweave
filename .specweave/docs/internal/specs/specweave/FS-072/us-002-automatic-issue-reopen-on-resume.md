@@ -7,12 +7,9 @@ priority: P1
 created: 2025-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-002: Automatic Issue Reopen on Resume
 
-**Feature**: [FS-072](./FEATURE)
+**Feature**: [FS-072](./FEATURE.md)
 
 **As a** developer resuming a paused/completed increment
 **I want** GitHub issues to automatically reopen
@@ -31,13 +28,13 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: `0072-github-status-reconciliation`
+**Increment**: [0072-github-status-reconciliation](../../../../increments/0072-github-status-reconciliation/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] T-004: Add reopen logic to post-increment-status-change.sh
-- [x] T-005: Create reopen-github-issues.ts script
-- [x] T-006: Integrate reopen script into hook
+- [x] **T-004**: Add reopen logic to post-increment-status-change.sh
+- [x] **T-005**: Create reopen-github-issues.ts script
+- [x] **T-006**: Integrate reopen script into hook

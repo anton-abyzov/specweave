@@ -2,10 +2,10 @@
 id: FS-075
 title: "0071: Smart Azure DevOps Init Flow"
 type: feature
-status: active
+status: completed
 priority: P1
-created: 2025-11-27
-lastUpdated: 2025-11-27
+created: 2025-12-02
+lastUpdated: 2025-12-02
 ---
 
 # 0071: Smart Azure DevOps Init Flow
@@ -18,7 +18,7 @@ Fix and enhance the A
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0075-smart-ado-init](../../../../increments/0075-smart-ado-init/spec.md) | ✅ completed | 2025-11-27 |
+| [0075-smart-ado-init](../../../../increments/0075-smart-ado-init/spec.md) | ✅ completed | 2025-12-02 |
 
 ## User Stories
 

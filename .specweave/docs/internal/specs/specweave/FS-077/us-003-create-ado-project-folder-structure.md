@@ -7,9 +7,6 @@ priority: P1
 created: 2025-11-27
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-003: Create ADO Project Folder Structure
 
 **Feature**: [FS-077](./FEATURE.md)
@@ -25,7 +22,7 @@ created: 2025-11-27
 - [x] **AC-US3-01**: `specs/ADO-{project}/` folder created for by-project mode
 - [x] **AC-US3-02**: `specs/ADO-{project}/{area-path}/` folders created for by-area mode
 - [x] **AC-US3-03**: Folder creation happens during init, not just during import
-- [ ] **AC-US3-04**: Similar to JIRA's 2-level structure (`specs/JIRA-{project}/{board}/`)
+- [x] **AC-US3-04**: Similar to JIRA's 2-level structure (`specs/JIRA-{project}/{board}/`)
 
 ---
 
@@ -38,5 +35,5 @@ created: 2025-11-27
 
 ## Tasks
 
-- [x] [T-006](../../../../increments/0077-ado-init-flow-critical-fixes/tasks.md#T-006): Add createAdoProjectFolders function
-- [x] [T-007](../../../../increments/0077-ado-init-flow-critical-fixes/tasks.md#T-007): Call createAdoProjectFolders during init
+- [x] **T-006**: Add createAdoProjectFolders function
+- [x] **T-007**: Call createAdoProjectFolders during init

@@ -8,7 +8,6 @@
   "testMode": "TDD",
   "coverageTarget": 95,
   "project": "specweave",
-  "featureId": "FS-039",
   "featureTitle": "Ultra-Smart Next Command - Intelligent Workflow Orchestrator",
   "acSyncEvents": [
     {

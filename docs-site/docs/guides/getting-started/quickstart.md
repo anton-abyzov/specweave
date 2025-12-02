@@ -76,20 +76,11 @@ After `specweave init .`:
 
 | Component | Count | Purpose |
 |-----------|-------|---------|
-| **Skills** | 17 | Auto-activating capabilities (planning, TDD, quality) |
+| **Skills** | 17 | Auto-activating capabilities (planning, [TDD](/docs/glossary/terms/tdd), quality) |
 | **Agents** | 11 | Specialized roles (PM, Architect, Tech Lead, QA, Security) |
 | **Commands** | 22 | Slash commands for workflow control |
 | **Hooks** | 8 | Automation (doc updates, quality validation) |
 | **CLAUDE.md** | 1 | Your project reference guide |
-
-### Why This Architecture?
-
-Anthropic's engineering research shows [code execution beats direct MCP tool calls](https://www.anthropic.com/engineering/code-execution-with-mcp) — achieving **98% token reduction**.
-
-SpecWeave applies this insight:
-- **Skills load on-demand** (not all tools upfront)
-- **Code is deterministic** (no LLM in the middle of data flow)
-- **Sub-agents isolate context** (no bloat accumulation)
 
 ---
 
@@ -107,17 +98,6 @@ SpecWeave applies this insight:
 
 ## Example: Build an Event Management SaaS
 
-:::tip Keep Increments Small — 2-3x Faster with Opus 4.5!
-**Best practice**: Split large projects into 5-15 task increments. With **Claude Opus 4.5**, development speed increases **2-3x** (some report **5-10x**!). Small increments + Opus 4.5 = almost **no manual interaction** needed. Just define requirements, run `/specweave:do`, and review what's done.
-:::
-
-:::caution Prevent Claude Code Crashes
-**Keep files small**: Target **600-800 lines max** per file. Files over 1,000 lines significantly increase crash risk. If a file grows large:
-- Split into modules/helpers before adding code
-- Use the pattern: `feature.ts` → `feature/index.ts` + `feature/helpers.ts`
-- Large edits on big files + active increment context = crash recipe
-:::
-
 ```bash
 # Install
 npm install -g specweave
@@ -125,34 +105,48 @@ npm install -g specweave
 # Create project
 mkdir eventmgmt && cd eventmgmt
 specweave init .
+
+# Open Claude Code and describe:
+"Build an event management SaaS with Next.js 14, Prisma, NextAuth.js,
+Stripe payments, deployed on Hetzner Cloud"
+
+# SpecWeave autonomously creates:
+# - PRD with market research
+# - Architecture with C4 diagrams
+# - Database schema (Prisma)
+# - Auth system (NextAuth.js)
+# - Payment integration (Stripe)
+# - Infrastructure (Terraform for Hetzner)
+# - Deployment pipeline ([GitHub Actions](/docs/glossary/terms/github-actions))
+# - Tests ([Playwright](/docs/glossary/terms/playwright) [E2E](/docs/glossary/terms/e2e) + Jest)
+# - Living documentation (auto-updates)
+
+# Then say: "Implement the MVP"
+# SpecWeave builds the entire application!
 ```
 
-**Break it into focused increments:**
+---
+
+## Joining an Existing Project (Brownfield)
+
+If you're working with legacy code, SpecWeave can analyze your codebase for documentation gaps:
 
 ```bash
-# Increment 1: Project Foundation (1 day)
-/specweave:increment "Setup Next.js 14 with Prisma and basic layout"
-
-# Increment 2: Authentication (2 days)
-/specweave:increment "User auth with NextAuth.js"
-
-# Increment 3: Event CRUD (2 days)
-/specweave:increment "Create, read, update, delete events"
-
-# Increment 4: Payments (2 days)
-/specweave:increment "Stripe payment integration for tickets"
-
-# Increment 5: Deployment (1 day)
-/specweave:increment "Deploy to Hetzner with Terraform"
+specweave init .
+# During init, select "Run brownfield analysis"
 ```
 
-**Each increment completes with:**
-- ✅ Working code
-- ✅ Tests passing (60%+ coverage)
-- ✅ Documentation updated
-- ✅ Ready to ship
+After analysis completes:
+```bash
+/specweave:discrepancies                    # View all documentation gaps
+/specweave:discrepancies --module auth      # Filter by module
+/specweave:discrepancy-to-increment DISC-0001 DISC-0002  # Create increment
+```
 
-**Why split?** You ship working software after each increment. If priorities change after Increment 3, you have a deployable app!
+The background analysis runs while you continue working. Check progress with:
+```bash
+/specweave:jobs
+```
 
 ---
 
@@ -185,10 +179,10 @@ integrations:
 
 ## Requirements
 
-- **Node.js 20+** (`node --version`)
+- **[Node.js](/docs/glossary/terms/nodejs) 20+** (`node --version`)
 - **npm 9+** (`npm --version`)
 - **Claude Code** (recommended) or any AI tool
-- **Git** (for version control)
+- **[Git](/docs/glossary/terms/git)** (for version control)
 
 ---
 

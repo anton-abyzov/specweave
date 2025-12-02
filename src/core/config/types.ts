@@ -6,6 +6,8 @@
  * @module core/config/types
  */
 
+import type { SyncOrchestrationConfig } from '../types/sync-config.js';
+
 /**
  * Repository provider types
  */
@@ -192,6 +194,12 @@ export interface SyncConfiguration {
   github?: GitHubConfig;
   jira?: JiraConfig;
   ado?: AzureDevOpsConfig;
+
+  /**
+   * Orchestration configuration (scheduler, permissions, discrepancy, notifications)
+   * Added in v0.29.0 for Unified Sync Orchestration feature
+   */
+  orchestration?: SyncOrchestrationConfig;
 }
 
 /**

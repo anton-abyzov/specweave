@@ -2,7 +2,7 @@
 id: US-001
 feature: FS-078
 title: "Respect Sync Permissions in ADO Validator"
-status: not_started
+status: completed
 priority: P0
 created: 2025-11-28
 ---
@@ -19,10 +19,10 @@ created: 2025-11-28
 
 ## Acceptance Criteria
 
-- [ ] **AC-US1-01**: Read `syncPermissions` from config.json before validation
-- [ ] **AC-US1-02**: If `canUpsertInternalItems=false`, skip ALL create operations
-- [ ] **AC-US1-03**: Validator only CHECKS existence (GET requests), never creates (POST)
-- [ ] **AC-US1-04**: Log clear message: "Skipping area path creation (read-only mode)"
+- [x] **AC-US1-01**: Read `syncPermissions` from config.json before validation
+- [x] **AC-US1-02**: If `canUpsertInternalItems=false`, skip ALL create operations
+- [x] **AC-US1-03**: Validator only CHECKS existence (GET requests), never creates (POST)
+- [x] **AC-US1-04**: Log clear message: "Skipping area path creation (read-only mode)"
 
 ---
 
@@ -35,4 +35,6 @@ created: 2025-11-28
 
 ## Tasks
 
-_No tasks defined for this user story_
+- [x] **T-001**: Pass sync permissions to ADO validator
+- [x] **T-002**: Make validator read-only when permissions disabled
+- [x] **T-003**: Log message when skipping creates

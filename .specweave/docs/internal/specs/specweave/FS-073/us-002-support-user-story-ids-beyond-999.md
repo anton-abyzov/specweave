@@ -7,9 +7,6 @@ priority: P1
 created: 2025-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-002: Support User Story IDs Beyond 999
 
 **Feature**: [FS-073](./FEATURE.md)
@@ -22,11 +19,11 @@ created: 2025-11-26
 
 ## Acceptance Criteria
 
-- [x] **AC-US2-01**: User story ID validation accepts US-001 through US-9999+
-- [x] **AC-US2-02**: Task parser correctly parses US-1000, US-1234, US-9999
-- [x] **AC-US2-03**: Spec parser correctly parses US-XXX headers at 1000+
+- [ ] **AC-US2-01**: User story ID validation accepts US-001 through US-9999+
+- [ ] **AC-US2-02**: Task parser correctly parses US-1000, US-1234, US-9999
+- [ ] **AC-US2-03**: Spec parser correctly parses US-XXX headers at 1000+
 - [ ] **AC-US2-04**: GitHub issue title pattern accepts `[FS-XXX][US-1000]` format
-- [x] **AC-US2-05**: GitHub service can find issues with US-1000+ in title
+- [ ] **AC-US2-05**: GitHub service can find issues with US-1000+ in title
 
 ---
 
@@ -39,6 +36,7 @@ created: 2025-11-26
 
 ## Tasks
 
-- [x] [T-006](../../../../increments/0073-fix-y2k-id-limit-bug/tasks.md#T-006): Fix task-parser.ts patterns for T-XXX and US-XXX
-- [x] [T-007](../../../../increments/0073-fix-y2k-id-limit-bug/tasks.md#T-007): Fix spec-parser.ts patterns for US-XXX
-- [x] [T-009](../../../../increments/0073-fix-y2k-id-limit-bug/tasks.md#T-009): Fix github-service.ts US-XXX pattern
+- [x] **T-006**: Fix task-parser.ts patterns for T-XXX and US-XXX
+- [x] **T-007**: Fix spec-parser.ts patterns for US-XXX
+- [x] **T-009**: Fix github-service.ts US-XXX pattern
+- [x] **T-010**: Fix user-story-issue-builder.ts patterns
