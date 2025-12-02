@@ -14,7 +14,7 @@
  * - Faster startup (native APIs)
  * - Better debugging (native stack traces)
  */
-import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync } from 'fs';
+import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync, mkdtempSync as fsMkdtempSync } from 'fs';
 /**
  * Ensures that a directory exists. If the directory does not exist, it is created.
  * @param dirPath - The directory path to ensure
@@ -131,8 +131,9 @@ export declare function move(src: string, dest: string, options?: {
 export declare function moveSync(src: string, dest: string, options?: {
     overwrite?: boolean;
 }): void;
-export declare const readFile: typeof fsPromises.readFile, writeFile: typeof fsPromises.writeFile, appendFile: typeof fsPromises.appendFile, stat: typeof fsPromises.stat, readdir: typeof fsPromises.readdir, access: typeof fsPromises.access, unlink: typeof fsPromises.unlink, rmdir: typeof fsPromises.rmdir, rename: typeof fsPromises.rename, chmod: typeof fsPromises.chmod, copyFile: typeof fsPromises.copyFile;
+export declare const readFile: typeof fsPromises.readFile, writeFile: typeof fsPromises.writeFile, appendFile: typeof fsPromises.appendFile, stat: typeof fsPromises.stat, readdir: typeof fsPromises.readdir, access: typeof fsPromises.access, unlink: typeof fsPromises.unlink, rmdir: typeof fsPromises.rmdir, rename: typeof fsPromises.rename, chmod: typeof fsPromises.chmod, copyFile: typeof fsPromises.copyFile, mkdtemp: typeof fsPromises.mkdtemp;
 export declare const renameSync: typeof fsRenameSync;
+export declare const mkdtempSync: typeof fsMkdtempSync;
 export { readFileSync, writeFileSync, statSync, readdirSync, unlinkSync, mkdirSync, rmSync, copyFileSync, };
 declare const _default: {
     ensureDir: typeof ensureDir;
@@ -154,6 +155,7 @@ declare const _default: {
     unlink: typeof fsPromises.unlink;
     rename: typeof fsPromises.rename;
     copyFile: typeof fsPromises.copyFile;
+    mkdtemp: typeof fsPromises.mkdtemp;
     ensureDirSync: typeof ensureDirSync;
     mkdirpSync: typeof mkdirpSync;
     existsSync: typeof existsSync;
@@ -174,6 +176,7 @@ declare const _default: {
     rmSync: typeof rmSync;
     copyFileSync: typeof copyFileSync;
     renameSync: typeof fsRenameSync;
+    mkdtempSync: typeof fsMkdtempSync;
 };
 export default _default;
 //# sourceMappingURL=fs-native.d.ts.map

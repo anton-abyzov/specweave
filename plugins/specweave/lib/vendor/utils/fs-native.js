@@ -14,7 +14,7 @@
  * - Faster startup (native APIs)
  * - Better debugging (native stack traces)
  */
-import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync } from 'fs';
+import { promises as fsPromises, existsSync, mkdirSync, readFileSync, writeFileSync, statSync, readdirSync, rmSync, unlinkSync, copyFileSync, renameSync as fsRenameSync, mkdtempSync as fsMkdtempSync } from 'fs';
 import path from 'path';
 /**
  * Ensures that a directory exists. If the directory does not exist, it is created.
@@ -267,9 +267,11 @@ export function moveSync(src, dest, options) {
     }
 }
 // Re-export common fs/promises methods for convenience
-export const { readFile, writeFile, appendFile, stat, readdir, access, unlink, rmdir, rename, chmod, copyFile, } = fsPromises;
+export const { readFile, writeFile, appendFile, stat, readdir, access, unlink, rmdir, rename, chmod, copyFile, mkdtemp, } = fsPromises;
 // Create renameSync alias for fs-extra compatibility
 export const renameSync = fsRenameSync;
+// Create mkdtempSync alias
+export const mkdtempSync = fsMkdtempSync;
 // Re-export common synchronous methods
 export { readFileSync, writeFileSync, statSync, readdirSync, unlinkSync, mkdirSync, rmSync, copyFileSync, };
 // Default export for convenience
@@ -294,6 +296,7 @@ export default {
     unlink,
     rename,
     copyFile,
+    mkdtemp,
     // Sync methods
     ensureDirSync,
     mkdirpSync,
@@ -315,5 +318,6 @@ export default {
     rmSync,
     copyFileSync,
     renameSync,
+    mkdtempSync,
 };
 //# sourceMappingURL=fs-native.js.map

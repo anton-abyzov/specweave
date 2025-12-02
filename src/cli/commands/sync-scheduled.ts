@@ -208,6 +208,7 @@ function printResult(result: SessionSyncResult, dryRun?: boolean): void {
 function createSilentLogger(): Logger {
   return {
     log: () => {},
+    info: () => {},
     debug: () => {},
     warn: () => {},
     error: () => {},
