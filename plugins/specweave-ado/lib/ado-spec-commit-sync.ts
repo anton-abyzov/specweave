@@ -22,7 +22,7 @@ import {
   getCompletedUserStories,
   SpecTaskMapping,
   UserStory,
-} from '../../../src/core/spec-task-mapper.js';
+} from '../../../src/core/specs/spec-task-mapper.js';
 import {
   buildUserStoryComment,
   buildCommitBatchComment,

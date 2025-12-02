@@ -6,7 +6,7 @@
 
 import { confirm, input } from '@inquirer/prompts';
 import path from 'path';
-import { ProjectManager, ProjectContext } from '../../core/project-manager.js';
+import { ProjectManager, ProjectContext } from '../../core/project/project-manager.js';
 import { ConfigManager } from '../../core/config-manager.js';
 import { autoMigrateSingleToMulti } from './migrate-to-multiproject.js';
 import { autoDetectProjectIdSync, formatProjectName } from '../../utils/project-detection.js';

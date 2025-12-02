@@ -1,0 +1,11 @@
+{
+  "id": "0089-bidirectional-sync-pull",
+  "name": "Bidirectional Sync with Change Detection",
+  "type": "feature",
+  "status": "planning",
+  "priority": "P1",
+  "createdAt": "2025-12-01T23:30:00Z",
+  "featureId": "FS-089",
+  "tags": ["sync", "bidirectional", "ado", "jira", "github"],
+  "estimatedTasks": 12
+}

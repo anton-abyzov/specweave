@@ -174,7 +174,7 @@ describe('Spec Commit Sync Integration Tests', () => {
 
       await fs.writeFile(specPath, specContent);
 
-      const { parseSpec } = await import('../../../src/core/spec-task-mapper.js');
+      const { parseSpec } = await import('../../../src/core/specs/spec-task-mapper.js');
       const userStories = await parseSpec(specPath);
 
       expect(userStories.length).toBe(1);
@@ -194,7 +194,7 @@ describe('Spec Commit Sync Integration Tests', () => {
 
       await fs.writeFile(tasksPath, tasksContent);
 
-      const { parseTasks } = await import('../../../src/core/spec-task-mapper.js');
+      const { parseTasks } = await import('../../../src/core/specs/spec-task-mapper.js');
       const tasks = await parseTasks(tasksPath);
 
       expect(tasks.length).toBe(1);

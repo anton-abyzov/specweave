@@ -5,7 +5,7 @@
  * Checks WIP limits, incomplete work, and emergency interrupt rules
  */
 
-import { IncrementStatusDetector, IncrementStatus } from '../increment-status.js';
+import { IncrementStatusDetector, IncrementStatus } from './increment-status.js';
 import { ConfigManager } from '../config-manager.js';
 import {
   ValidationResult,

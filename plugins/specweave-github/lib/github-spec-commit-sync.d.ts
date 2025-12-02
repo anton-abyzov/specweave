@@ -5,7 +5,7 @@
  * This enables traceability from spec user stories to actual code changes.
  */
 import { GitCommit, GitRepository } from '../../../src/utils/git-utils.js';
-import { UserStory } from '../../../src/core/spec-task-mapper.js';
+import { UserStory } from '../../../src/core/specs/spec-task-mapper.js';
 export interface SyncOptions {
     incrementPath: string;
     dryRun?: boolean;

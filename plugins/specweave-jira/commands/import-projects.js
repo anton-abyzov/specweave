@@ -6,7 +6,7 @@ import { JiraClient } from "../../../src/integrations/jira/jira-client.js";
 import { FilterProcessor } from "../../../src/integrations/jira/filter-processor.js";
 import { mergeEnvList, getEnvValue } from "../../../src/utils/env-manager.js";
 import { consoleLogger } from "../../../src/utils/logger.js";
-import { credentialsManager } from "../../../src/core/credentials-manager.js";
+import { credentialsManager } from "../../../src/core/credentials/credentials-manager.js";
 async function importProjects(options = {}) {
   const logger = options.logger ?? consoleLogger;
   const projectRoot = process.cwd();

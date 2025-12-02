@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 
 import { importDocs, parseImportDocsArgs, ImportDocsArgs } from '../../../src/cli/commands/import-docs.js';
 import { BrownfieldImporter } from '../../../src/core/brownfield/importer.js';
-import { ProjectManager } from '../../../src/core/project-manager.js';
+import { ProjectManager } from '../../../src/core/project/project-manager.js';
 import * as inquirer from 'inquirer';
 import * as path from 'path';
 

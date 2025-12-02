@@ -16,9 +16,10 @@
 > **SpecWeave is 100% built using SpecWeave.** Every feature, every bug fix, every release — all spec-driven.
 
 This isn't just a framework we made — it's the framework we use every day. Our entire development workflow runs on SpecWeave:
-- **60+ completed increments** with full specs, plans, and tasks
-- **Living docs** that auto-update after every task
+- **88+ completed increments** with full specs, plans, and tasks
+- **Living docs** that auto-update via event-driven hooks
 - **DORA metrics** tracking real delivery performance
+- **Code-as-source-of-truth** discrepancy detection built-in
 
 [![Deploy Frequency](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.value&label=Deploy%20Frequency&suffix=/month&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
 [![Lead Time](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.leadTime.value&label=Lead%20Time&suffix=h&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
@@ -114,11 +115,13 @@ Then in Claude Code:
 
 - **Legacy to Enterprise** — 10-year-old monolith? Startup MVP? 50-team enterprise? Works on all.
 - **Any AI, Your Choice** — Claude, GPT, Gemini, Copilot — your team uses whatever they prefer
-- **Real Bidirectional Sync** — JIRA/GitHub/ADO update when you work. You update when they change.
-- **Living Documentation** — Specs auto-update after every task. Never stale. Never manual.
+- **Real Bidirectional Sync** — JIRA/GitHub/ADO sync on command with permission controls
+- **Code = Source of Truth** — Discrepancy detection catches when docs drift from reality
+- **Event-Driven Hooks** — Living docs update on lifecycle events (done, archived, reopened)
 - **Multi-Project Mode** — Multiple repos, multiple teams, one source of truth
 - **3-Gate Quality Validation** — Nothing ships without passing tasks, tests (60%+), and docs
 - **70%+ Token Reduction** — Progressive loading means your AI stays fast and focused
+- **Background Jobs** — Large imports and analysis run asynchronously while you work
 
 ---
 
@@ -137,6 +140,27 @@ SpecWeave keeps your project management tools in sync **automatically**:
 | **Azure DevOps** | Work items, area paths, status sync |
 | **Linear** | Coming Q1 2026 |
 
+### Sync Orchestration (NEW)
+
+SpecWeave includes **sync monitoring** to keep track of external tool state:
+
+```bash
+/specweave:sync-progress     # Push updates to GitHub/JIRA/ADO
+/specweave:sync-monitor      # Dashboard: sync status, notifications
+/specweave:notifications     # View/dismiss sync notifications
+```
+
+**Key principle: Code is the source of truth.** When your living docs describe one thing but code does another, SpecWeave detects the **discrepancy** and notifies you:
+
+```
+📋 DISCREPANCIES DETECTED
+
+DISC-0001   ⚠️ MAJOR   function-signature   getUserById params changed
+DISC-0002   ✅ MINOR   api-route            New endpoint added
+
+Use '/specweave:discrepancies accept DISC-0001' to update specs
+```
+
 ---
 
 ## What You Get
@@ -144,10 +168,12 @@ SpecWeave keeps your project management tools in sync **automatically**:
 | Before | After SpecWeave |
 |--------|-----------------|
 | Specs in chat history | **Permanent, searchable specs** |
-| Manual JIRA/GitHub updates | **Auto-sync on every task** |
+| Manual JIRA/GitHub updates | **Auto-sync on `/specweave:sync-progress`** |
 | Tests? Maybe later... | **Tests embedded in tasks (60%+ enforced)** |
 | Architecture in your head | **ADRs captured automatically** |
 | "Ask John, he knows" | **Living docs, always current** |
+| Docs drift from code | **Discrepancy detection alerts you** |
+| Large imports block work | **Background jobs run async** |
 | Onboarding: 2 weeks | **Onboarding: 1 day** |
 
 ---
@@ -209,13 +235,18 @@ SpecWeave's power isn't in Claude magic. It's in **structure**.
 
 **Claude Code** gets the best experience (slash commands, hooks, skills). But any AI can participate.
 
-### Living Documentation
+### Living Documentation (Event-Driven)
 
-Documentation updates **after every task** via hooks:
-- Strategic specs sync to `.specweave/docs/`
-- ADRs captured automatically
-- Runbooks and SLOs generated
-- No manual doc updates ever
+Documentation updates **on lifecycle events** via hooks — not on every edit, but when it matters:
+
+| Event | What Updates |
+|-------|--------------|
+| `increment.created` | New spec entry added to living docs |
+| `increment.done` | Marked complete, archived if configured |
+| `user-story.completed` | Status line refreshed, progress synced |
+| `increment.reopened` | Restored from archive |
+
+**No more stale docs.** The system detects when all tasks AND all ACs for a user story are complete, then fires the right hooks. Race conditions? Handled. Crashes? Graceful degradation.
 
 ### Quality Gates
 
@@ -258,20 +289,38 @@ Three gates before any increment closes:
 
 ## Commands Reference
 
+**Core Workflow** (daily use):
 | Command | Purpose |
 |---------|---------|
 | `/specweave:increment "feature"` | Plan new increment (PM → Architect → Tasks) |
 | `/specweave:do` | Execute all tasks autonomously |
 | `/specweave:done 0001` | Complete with quality gate validation |
+| `/specweave:next` | Auto-close + suggest next work (one-click flow) |
 | `/specweave:progress` | Show real-time status |
-| `/specweave:validate 0001` | Run quality checks |
-| `/specweave:sync-progress` | Sync to GitHub/JIRA/ADO |
-| `/specweave:tdd-cycle` | Full red-green-refactor workflow |
-| `/specweave:discrepancies` | View brownfield documentation gaps |
-| `/specweave:discrepancy-to-increment` | Convert gaps to actionable increments |
-| `/specweave:jobs` | Monitor background jobs (analysis, import) |
 
-**[Full Command Reference](https://spec-weave.com/docs/commands/overview)**
+**Sync & Monitoring** (stay in sync):
+| Command | Purpose |
+|---------|---------|
+| `/specweave:sync-progress` | Sync to GitHub/JIRA/ADO |
+| `/specweave:sync-monitor` | Dashboard: jobs, notifications, activity |
+| `/specweave:notifications` | View/dismiss sync alerts |
+| `/specweave:discrepancies` | Code-to-spec drift detection |
+
+**Brownfield** (legacy codebases):
+| Command | Purpose |
+|---------|---------|
+| `/specweave:discrepancy-to-increment` | Convert doc gaps to increments |
+| `/specweave:jobs` | Monitor background analysis/import |
+| `/specweave:import-external` | Import from GitHub/JIRA/ADO |
+
+**Quality** (ship with confidence):
+| Command | Purpose |
+|---------|---------|
+| `/specweave:validate 0001` | Run quality checks |
+| `/specweave:tdd-cycle` | Full red-green-refactor workflow |
+| `/specweave:check-tests` | Validate test coverage |
+
+**53 total commands** — [Full Command Reference](https://spec-weave.com/docs/commands/overview)
 
 ---
 

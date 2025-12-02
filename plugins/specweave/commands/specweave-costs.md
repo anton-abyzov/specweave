@@ -31,7 +31,7 @@ Display a comprehensive cost dashboard showing:
 ### 2. Load Cost Data
 
 ```typescript
-import { CostTracker } from '../core/cost-tracker';
+import { CostTracker } from '../core/cost/cost-tracker';
 import { CostReporter } from '../utils/cost-reporter';
 import fs from 'fs-extra';
 import path from 'path';

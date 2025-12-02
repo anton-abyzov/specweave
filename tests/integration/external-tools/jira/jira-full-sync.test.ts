@@ -15,7 +15,7 @@
 
 import { JiraClient } from '../../src/integrations/jira/jira-client.js';
 import { JiraMapper } from '../../src/integrations/jira/jira-mapper.js';
-import { credentialsManager } from '../../src/core/credentials-manager.js';
+import { credentialsManager } from '../../../../src/core/credentials/credentials-manager.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';

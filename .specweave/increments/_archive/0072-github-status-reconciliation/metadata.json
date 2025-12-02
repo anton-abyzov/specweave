@@ -1,0 +1,37 @@
+{
+  "id": "0072-github-status-reconciliation",
+  "status": "completed",
+  "priority": "P1",
+  "created": "2025-11-26T20:00:00Z",
+  "github": {
+    "issues": [
+      {
+        "userStory": "US-001",
+        "number": 772,
+        "url": "https://github.com/anton-abyzov/specweave/issues/772",
+        "createdAt": "2025-11-26T22:17:04.328Z"
+      },
+      {
+        "userStory": "US-002",
+        "number": 773,
+        "url": "https://github.com/anton-abyzov/specweave/issues/773",
+        "createdAt": "2025-11-26T22:17:04.761Z"
+      },
+      {
+        "userStory": "US-003",
+        "number": 774,
+        "url": "https://github.com/anton-abyzov/specweave/issues/774",
+        "createdAt": "2025-11-26T22:17:05.152Z"
+      },
+      {
+        "userStory": "US-004",
+        "number": 775,
+        "url": "https://github.com/anton-abyzov/specweave/issues/775",
+        "createdAt": "2025-11-26T22:17:05.564Z"
+      }
+    ],
+    "lastSync": "2025-11-26T22:17:05.564Z",
+    "closed": true,
+    "closedAt": "2025-12-01T23:00:00Z"
+  }
+}

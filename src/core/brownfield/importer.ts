@@ -8,7 +8,7 @@
 import path from 'path';
 import * as fs from '../../utils/fs-native.js';
 import { BrownfieldAnalyzer, FileClassification } from './analyzer.js';
-import { ProjectManager } from '../project-manager.js';
+import { ProjectManager } from '../project/project-manager.js';
 import { ConfigManager } from '../config-manager.js';
 
 export interface ImportOptions {

@@ -6,7 +6,7 @@
 
 import { describe, it, expect } from 'vitest';
 import type { Task } from '../../../src/generators/spec/task-parser.js';
-import type { SpecUserStory } from '../../../src/core/spec-content-sync.js';
+import type { SpecUserStory } from '../../../src/core/specs/spec-content-sync.js';
 
 // Note: These are mocked implementations for unit testing
 // The actual implementations use dynamic imports from dist/

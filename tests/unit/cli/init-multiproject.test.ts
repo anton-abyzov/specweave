@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 
 import { initMultiProject, listProjects } from '../../../src/cli/commands/init-multiproject.js';
 import { autoMigrateSingleToMulti } from '../../../src/cli/commands/migrate-to-multiproject.js';
-import { ProjectManager } from '../../../src/core/project-manager.js';
+import { ProjectManager } from '../../../src/core/project/project-manager.js';
 import { ConfigManager } from '../../../src/core/config-manager.js';
 import { autoDetectProjectIdSync, formatProjectName } from '../../../src/utils/project-detection.js';
 import * as inquirer from 'inquirer';
