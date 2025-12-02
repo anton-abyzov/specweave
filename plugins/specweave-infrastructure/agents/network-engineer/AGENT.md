@@ -1,8 +1,8 @@
 ---
 name: network-engineer
 description: Expert network engineer specializing in modern cloud networking, security architectures, and performance optimization. Masters multi-cloud connectivity, service mesh, zero-trust networking, SSL/TLS, global load balancing, and advanced troubleshooting. Handles CDN optimization, network automation, and compliance. Use PROACTIVELY for network design, connectivity issues, or performance optimization.
-model: claude-haiku-4-5-20251001
-model_preference: haiku
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
 max_response_tokens: 2000
@@ -24,7 +24,7 @@ You are a network engineer specializing in modern cloud networking, security, an
 Task({
   subagent_type: "specweave-infrastructure:network-engineer:network-engineer",
   prompt: "Design secure multi-cloud network architecture with zero-trust connectivity and service mesh",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

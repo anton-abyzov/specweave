@@ -75,12 +75,26 @@ export function createJobsCommand(): Command {
 }
 
 /**
- * Get provider from job config (type-safe)
+ * Get provider/description from job config (type-safe)
  */
 function getJobProvider(job: BackgroundJob): string {
   const config = job.config;
   if (config.type === 'import-issues' || config.type === 'sync-external') {
     return (config as ImportJobConfig | SyncJobConfig).provider || 'unknown';
+  }
+  if (config.type === 'clone-repos') {
+    return 'git';
+  }
+  if (config.type === 'living-docs-builder') {
+    // Show dependency status if waiting
+    const depStatus = (job as any).dependencyStatus;
+    if (depStatus === 'waiting') {
+      return 'waiting for deps';
+    }
+    return 'codebase analysis';
+  }
+  if (config.type === 'brownfield-analysis') {
+    return 'brownfield';
   }
   return 'unknown';
 }

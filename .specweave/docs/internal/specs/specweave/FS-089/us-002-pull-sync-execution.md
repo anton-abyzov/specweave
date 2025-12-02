@@ -2,10 +2,13 @@
 id: US-002
 feature: FS-089
 title: "Pull Sync Execution"
-status: not_started
+status: completed
 priority: P1
 created: 2025-12-01
 ---
+
+**Origin**: 🏠 **Internal**
+
 
 # US-002: Pull Sync Execution
 
@@ -15,10 +18,10 @@ created: 2025-12-01
 
 ## Acceptance Criteria
 
-- [ ] **AC-US2-01**: Status changes from external tools update living docs
-- [ ] **AC-US2-02**: Priority changes from external tools update living docs
-- [ ] **AC-US2-03**: Assignee changes from external tools update living docs
-- [ ] **AC-US2-04**: Format-preserved fields (title, description, ACs) are NOT modified
+- [x] **AC-US2-01**: Status changes from external tools update living docs
+- [x] **AC-US2-02**: Priority changes from external tools update living docs
+- [x] **AC-US2-03**: Assignee changes from external tools update living docs
+- [x] **AC-US2-04**: Format-preserved fields (title, description, ACs) are NOT modified
 
 ---
 
@@ -31,4 +34,5 @@ created: 2025-12-01
 
 ## Tasks
 
-_No tasks defined for this user story_
+- [x] [T-005](../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-005): Create ExternalChangePuller Class
+- [x] [T-007](../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-007): Create LivingDocsUpdater for Frontmatter Updates

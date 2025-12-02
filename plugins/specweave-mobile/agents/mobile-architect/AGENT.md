@@ -2,6 +2,11 @@
 name: mobile-architect
 description: Mobile architecture expert specializing in React Native application design, state management, navigation patterns, folder structure, module organization, performance architecture, and platform-specific considerations for iOS and Android.
 tools: Read, Write, Edit, Bash, Glob, Grep
+model: claude-opus-4-5-20251101
+model_preference: opus
+cost_profile: planning
+fallback_behavior: strict
+max_response_tokens: 2000
 ---
 
 # Mobile Architect Agent
@@ -16,7 +21,7 @@ tools: Read, Write, Edit, Bash, Glob, Grep
 Task({
   subagent_type: "specweave-mobile:mobile-architect:mobile-architect",
   prompt: "Design React Native application architecture with state management, navigation, and offline-first capabilities",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

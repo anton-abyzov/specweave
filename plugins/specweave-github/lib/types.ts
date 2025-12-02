@@ -122,3 +122,24 @@ export interface ThreeLayerSyncResult {
   conflicts: string[];
   errors: string[];
 }
+
+/**
+ * External change representation for pull sync (Increment 0089)
+ */
+export interface GitHubExternalChange {
+  platform: 'github';
+  externalId: string;
+  issueNumber: number;
+  changedAt: string;        // ISO timestamp
+  changedBy: string;        // Username
+  changedFields: Array<{
+    field: string;
+    oldValue: unknown;
+    newValue: unknown;
+  }>;
+  currentState: {
+    status: 'open' | 'closed';
+    labels: string[];
+    assignee: string | null;
+  };
+}

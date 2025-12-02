@@ -24,6 +24,17 @@ export interface ConflictResolution {
   timestamp: string;
 }
 
+/**
+ * Timestamp comparison result for pull sync (Increment 0089)
+ */
+export interface TimestampComparisonResult {
+  winner: 'local' | 'external' | 'none';
+  localTimestamp: string | null;
+  externalTimestamp: string;
+  timeDiffMs: number;
+  reason: string;
+}
+
 export interface SpecMetadata {
   id: string;
   title: string;
@@ -178,6 +189,119 @@ export class ConflictResolver {
     console.log(`   Local: ${localStatus}`);
     console.log(`   External: ${externalStatus.status} (${externalStatus.tool})`);
     console.log(`   ✅ Resolution: EXTERNAL WINS - ${externalStatus.mappedStatus}`);
+
+    this.resolutionLog.push(resolution);
+    return resolution;
+  }
+
+  /**
+   * Compare timestamps to determine winner (Increment 0089)
+   *
+   * For pull sync, we compare local lastModified vs external ChangedDate.
+   * The more recent timestamp wins.
+   *
+   * @param localTimestamp - Local file lastModified timestamp (ISO string or null)
+   * @param externalTimestamp - External tool ChangedDate (ISO string)
+   * @returns Comparison result with winner and reasoning
+   */
+  public compareTimestamps(
+    localTimestamp: string | null,
+    externalTimestamp: string
+  ): TimestampComparisonResult {
+    const externalDate = new Date(externalTimestamp);
+
+    // If no local timestamp, external wins by default
+    if (!localTimestamp) {
+      return {
+        winner: 'external',
+        localTimestamp: null,
+        externalTimestamp,
+        timeDiffMs: 0,
+        reason: 'No local timestamp available, external wins by default',
+      };
+    }
+
+    const localDate = new Date(localTimestamp);
+    const timeDiffMs = externalDate.getTime() - localDate.getTime();
+
+    // External is more recent → external wins
+    if (timeDiffMs > 0) {
+      console.log(`📊 Timestamp Comparison:`);
+      console.log(`   Local:    ${localTimestamp}`);
+      console.log(`   External: ${externalTimestamp}`);
+      console.log(`   ✅ Winner: EXTERNAL (${Math.round(timeDiffMs / 60000)}min newer)`);
+
+      return {
+        winner: 'external',
+        localTimestamp,
+        externalTimestamp,
+        timeDiffMs,
+        reason: `External is ${Math.round(timeDiffMs / 60000)} minutes newer`,
+      };
+    }
+
+    // Local is more recent → local wins (don't overwrite local changes)
+    if (timeDiffMs < 0) {
+      console.log(`📊 Timestamp Comparison:`);
+      console.log(`   Local:    ${localTimestamp}`);
+      console.log(`   External: ${externalTimestamp}`);
+      console.log(`   ✅ Winner: LOCAL (${Math.round(Math.abs(timeDiffMs) / 60000)}min newer)`);
+
+      return {
+        winner: 'local',
+        localTimestamp,
+        externalTimestamp,
+        timeDiffMs,
+        reason: `Local is ${Math.round(Math.abs(timeDiffMs) / 60000)} minutes newer`,
+      };
+    }
+
+    // Same timestamp → no conflict
+    return {
+      winner: 'none',
+      localTimestamp,
+      externalTimestamp,
+      timeDiffMs: 0,
+      reason: 'Timestamps are identical, no conflict',
+    };
+  }
+
+  /**
+   * Resolve conflict using timestamp comparison (Increment 0089)
+   *
+   * Combines timestamp comparison with status conflict resolution.
+   * Used by ExternalChangePuller for pull sync.
+   *
+   * @param field - The field being compared (e.g., 'status')
+   * @param localValue - Current local value
+   * @param externalValue - Value from external tool
+   * @param localTimestamp - Local lastModified timestamp
+   * @param externalTimestamp - External ChangedDate
+   * @returns Conflict resolution result
+   */
+  public resolveWithTimestamp(
+    field: string,
+    localValue: any,
+    externalValue: any,
+    localTimestamp: string | null,
+    externalTimestamp: string
+  ): ConflictResolution {
+    const comparison = this.compareTimestamps(localTimestamp, externalTimestamp);
+
+    const resolution: ConflictResolution = {
+      field,
+      localValue,
+      externalValue,
+      resolution: comparison.winner === 'local' ? 'local' : 'external',
+      resolvedValue: comparison.winner === 'local' ? localValue : externalValue,
+      reason: comparison.reason,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Log the resolution
+    console.log(`📊 Conflict Resolved (${field}):`);
+    console.log(`   Winner: ${comparison.winner.toUpperCase()}`);
+    console.log(`   Reason: ${comparison.reason}`);
 
     this.resolutionLog.push(resolution);
     return resolution;

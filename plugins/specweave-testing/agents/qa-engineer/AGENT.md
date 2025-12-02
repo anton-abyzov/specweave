@@ -8,6 +8,11 @@ tools:
   - Bash
   - Glob
   - Grep
+model: claude-opus-4-5-20251101
+model_preference: opus
+cost_profile: execution
+fallback_behavior: flexible
+max_response_tokens: 2000
 ---
 
 # QA Engineer Agent

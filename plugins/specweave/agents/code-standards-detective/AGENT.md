@@ -2,8 +2,8 @@
 name: code-standards-detective
 description: Coding standards discovery agent. Performs deep analysis of codebase to detect naming conventions, import patterns, function characteristics, type usage, error handling, and anti-patterns. Generates evidence-based coding standards documentation with statistical confidence levels and real code examples. Parses ESLint, Prettier, TypeScript configs. Detects security issues and maintainability concerns.
 tools: Read, Grep, Glob, Bash, Write
-model: claude-sonnet-4-5-20250929
-model_preference: sonnet
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: research
 fallback_behavior: strict
 max_response_tokens: 2000
@@ -75,7 +75,7 @@ Task({
 
 **Purpose**: Autonomously discover and document coding standards from existing codebases using statistical analysis and pattern detection.
 
-**Model**: Sonnet 4.5 (research profile - deep analysis required)
+**Model**: Opus 4.5 (research profile - deep analysis required)
 
 **Autonomy Level**: High (can explore codebase independently)
 

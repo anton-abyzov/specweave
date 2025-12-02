@@ -7,10 +7,10 @@
 ## Overview
 
 SpecWeave automatically optimizes your AI costs by intelligently routing work to the most cost-effective model:
-- **Sonnet 4.5** ($3/$15 per 1M tokens) for planning and strategic work
-- **Haiku 4.5** ($1/$5 per 1M tokens) for execution and implementation
+- **Opus 4.5** ($15/$75 per 1M tokens) for planning, architecture, and complex reasoning (default)
+- **Haiku 4.5** ($1/$5 per 1M tokens) for mechanical execution and simple implementation
 
-**Result**: 60-70% cost savings vs using Sonnet for everything, with zero quality degradation.
+**Result**: Maximum quality with Opus 4.5 as default, with Haiku optimization for routine tasks.
 
 ---
 
@@ -39,18 +39,17 @@ Savings: $0.12 (67%)
 
 **Layer 1: Agent Preferences**
 Each agent knows its optimal model:
-- **Planning agents** → Sonnet (PM, Architect, Security, QA Lead)
-- **Execution agents** → Haiku (Tech Lead, Docs Writer, Translator)
-- **Hybrid agents** → Auto-detect (Test-Aware Planner, TDD Orchestrator)
+- **All agents** → Opus 4.5 (PM, Architect, Security, QA Lead, Tech Lead, etc.)
+- **Simple tasks** → Haiku (when task has detailed spec + clear instructions)
 
 **Layer 2: Phase Detection**
 Analyzes your prompt to detect:
-- **Planning**: "design", "analyze", "strategy" → Sonnet
-- **Execution**: "implement", "build", "create" → Haiku
-- **Review**: "validate", "test", "audit" → Sonnet
+- **Planning/Design**: "design", "analyze", "strategy" → Opus
+- **Complex Implementation**: architecture decisions, trade-offs → Opus
+- **Mechanical Execution**: clear spec, simple "implement X" → Haiku
 
 **Layer 3: Safe Defaults**
-When uncertain, defaults to Sonnet (quality over cost).
+When uncertain, defaults to Opus 4.5 (maximum quality and reasoning).
 
 ### 3. Real-Time Cost Tracking
 
@@ -139,7 +138,7 @@ COST BY AGENT
 RECENT SESSIONS
 ───────────────────────────────────────────────────────────────
   2025-10-31 14:32:15
-  Agent: pm                  Model: sonnet
+  Agent: pm                  Model: opus
   Cost: $ 0.0150    Savings: $ 0.0350
 
   2025-10-31 13:15:42
@@ -401,7 +400,7 @@ Since we store NO personal data:
 
 ### Q: How accurate is phase detection?
 
-**A**: >95% accuracy on typical prompts. When uncertain, defaults to Sonnet (quality over cost).
+**A**: >95% accuracy on typical prompts. When uncertain, defaults to Opus (maximum quality).
 
 ### Q: Does this work with Opus?
 

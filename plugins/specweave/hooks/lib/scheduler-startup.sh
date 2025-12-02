@@ -6,7 +6,9 @@
 # - No background daemon required
 # - Sync runs at Claude Code session boundaries
 # - Respects permission gates (canUpdateExternalItems, etc.)
-set -e
+#
+# CRITICAL (v0.28.70): NEVER use 'set -e' in hooks - causes Claude Code crashes
+set +e
 
 # Skip if hooks disabled
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0

@@ -1,7 +1,8 @@
 ---
 name: ml-engineer
 description: End-to-end ML system builder with SpecWeave integration. Enforces best practices - baseline comparison, cross-validation, experiment tracking, explainability (SHAP/LIME). Activates for ML features, model training, hyperparameter tuning, production ML. Works within increment-based workflow.
-model_preference: sonnet
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: execution
 max_response_tokens: 2000
 ---

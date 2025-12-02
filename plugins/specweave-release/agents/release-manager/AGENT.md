@@ -8,6 +8,11 @@ tools:
   - Bash
   - Glob
   - Grep
+model: claude-opus-4-5-20251101
+model_preference: opus
+cost_profile: planning
+fallback_behavior: strict
+max_response_tokens: 2000
 ---
 
 # Release Manager Agent
@@ -22,7 +27,7 @@ tools:
 Task({
   subagent_type: "specweave-release:release-manager:release-manager",
   prompt: "Coordinate Product v4.0.0 release across 5 microservices with RC workflow and gradual rollout strategy",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

@@ -52,7 +52,7 @@ GitHub issues MUST use living docs format:
 Task({
   subagent_type: "specweave-github:github-manager:SpecWeave Sync",
   prompt: "Your task description here",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

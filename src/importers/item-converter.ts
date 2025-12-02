@@ -9,11 +9,13 @@ import type { ExternalItem } from './external-importer.js';
 import * as fs from '../utils/fs-native.js';
 import path from 'path';
 import { FSIdAllocator, type ExternalWorkItem } from '../living-docs/fs-id-allocator.js';
+import { EpicIdAllocator, type ExternalEpicItem } from '../living-docs/epic-id-allocator.js';
 import { IDRegistry } from '../living-docs/id-registry.js';
 import { createExternalMetadata } from '../core/types/origin-metadata.js';
 import { DuplicateDetector } from './duplicate-detector.js';
 import type { ExternalContainerContext } from '../core/types/increment-metadata.js';
 import { getTwoLevelProjectPath, normalizeToProjectId } from '../utils/project-id-generator.js';
+import { MarkdownGenerator } from './markdown-generator.js';
 
 export interface ConvertedUserStory {
   /** User Story ID with E suffix (e.g., US-001E) */
@@ -147,8 +149,13 @@ export class ItemConverter {
   private options: ItemConverterOptions;
   private duplicateDetector: DuplicateDetector | null = null;
   private fsIdAllocator: FSIdAllocator | null = null;
+  private epicIdAllocator: EpicIdAllocator | null = null;
   /** Cache of created feature folders to avoid duplicates */
   private createdFeatures: Map<string, string> = new Map();
+  /** Cache of created epic folders to avoid duplicates */
+  private createdEpics: Map<string, string> = new Map();
+  /** Markdown generator for living docs content */
+  private markdownGen: MarkdownGenerator = new MarkdownGenerator();
 
   constructor(options: ItemConverterOptions) {
     this.options = {
@@ -178,6 +185,14 @@ export class ItemConverter {
         this.options.projectId,
         { globalCollisionDetection: this.options.enableGlobalCollisionDetection }
       );
+
+      // Initialize Epic ID allocator for ADO Capabilities (v0.29.3+)
+      // Capabilities are the top-level items in ADO SAFe/Enterprise setups
+      // They go to _epics/EP-XXXE/ instead of FS-XXXE/
+      this.epicIdAllocator = new EpicIdAllocator(
+        this.options.projectRoot,
+        { globalCollisionDetection: this.options.enableGlobalCollisionDetection }
+      );
     }
   }
 
@@ -193,17 +208,17 @@ export class ItemConverter {
     const id = `US-${String(usId).padStart(3, '0')}E`;
 
     // Map external status to SpecWeave status
-    const status = this.mapStatus(item.status);
+    const status = this.markdownGen.mapStatus(item.status);
 
     // Extract acceptance criteria
     const acceptanceCriteria = item.acceptanceCriteria || [];
 
     // Generate origin badge
-    const originBadge = this.generateOriginBadge(item);
+    const originBadge = this.markdownGen.generateOriginBadge(item);
 
     // Generate markdown content for living docs
     // CRITICAL (2025-12-01): Include parent info for future re-import parent change detection
-    const markdown = this.generateMarkdown({
+    const markdown = this.markdownGen.generateUserStoryMarkdown({
       id,
       title: item.title,
       description: item.description,
@@ -230,7 +245,7 @@ export class ItemConverter {
     });
 
     // Generate file path (with feature folder if allocated)
-    const fileName = this.generateFileName(id, item.title);
+    const fileName = this.markdownGen.generateFileName(id, item.title);
     let filePath: string;
 
     // Check if item should be auto-archived (older than threshold)
@@ -322,7 +337,9 @@ export class ItemConverter {
 
       if (this.fsIdAllocator && this.options.enableFeatureAllocation && groupItems.length > 0) {
         const firstItem = groupItems[0];
-        featureId = await this.allocateFeatureForGroup(firstItem, groupKey);
+        // CRITICAL FIX (2025-12-01): Pass ALL group items to check if entire group should be archived
+        // This prevents duplicate folders when all items are old
+        featureId = await this.allocateFeatureForGroup(firstItem, groupKey, groupItems);
       }
 
       // Convert each item in the group
@@ -375,26 +392,31 @@ export class ItemConverter {
 
   /**
    * Group items by feature (based on source repo, parent hierarchy, or labels)
-   * CRITICAL FIX (2025-12-01): For ADO, group by parent Capability/Epic to preserve hierarchy
-   * CRITICAL FIX (2025-12-01): ADO orphans (no parent) get INDIVIDUAL folders, not 'default' group
    *
-   * ADO Hierarchy: Capability → Epic → Feature → User Story → Task
-   * - Capability/Epic items become the feature (group leader)
-   * - User Stories are grouped under their parent Epic/Capability
-   * - Items without parent (true orphans) get INDIVIDUAL FS-XXXE folders
+   * CRITICAL FIX (2025-12-02): Intelligent ADO Hierarchy Mapping for SAFe/Enterprise
+   *
+   * ADO Hierarchy (5-level SAFe): Capability → Epic → Feature → User Story → Task
+   *
+   * SpecWeave Mapping:
+   * - Capability (ADO 5th level) → SpecWeave Epic (_epics/EP-XXXE/)
+   * - Epic (ADO 4th level, child of Capability) → SpecWeave Feature (FS-XXXE/) with parent ref
+   * - Epic (ADO 4th level, standalone) → SpecWeave Epic (_epics/EP-XXXE/)
+   * - Feature (ADO 3rd level) → SpecWeave Feature (FS-XXXE/)
+   * - User Story → us-xxxe.md in parent Feature folder
+   *
+   * Group Key Prefixes:
+   * - "epic:" → Item goes to _epics/EP-XXXE/ (Capability or standalone Epic)
+   * - "feature:" → Item goes to FS-XXXE/ (Epic under Capability, or Feature)
+   * - "orphan:" → Individual FS-XXXE/ folder (no parent)
+   * - "missing-parent:" → Grouped by missing parent ID
    */
   private groupItemsByFeature(items: ExternalItem[]): Map<string, ExternalItem[]> {
     const groups = new Map<string, ExternalItem[]>();
 
-    // CRITICAL FIX (2025-12-01): Detect ADO items even without hierarchy info
-    // ADO items have adoProjectName set by the importer
-    // Previous bug: Orphan ADO items (no parentId, not epics) fell through to 'default' group
+    // Detect ADO items
     const hasAdoItems = items.some(item => item.platform === 'ado' && item.adoProjectName);
-    const hasAdoHierarchy = items.some(item =>
-      item.platform === 'ado' && (item.parentId || item.type === 'epic')
-    );
 
-    // Process ADO items: with hierarchy (group by parent) OR orphans (individual folders)
+    // Process ADO items with intelligent hierarchy mapping
     if (hasAdoItems) {
       // Build a map of all items by ID for lookup
       const itemById = new Map<string, ExternalItem>();
@@ -402,24 +424,66 @@ export class ItemConverter {
         itemById.set(item.id, item);
       }
 
-      // Find all "feature-level" items (Capability, Epic, Feature)
-      const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
-      const featureItems = items.filter(item => {
-        const witType = item.adoWorkItemType?.toLowerCase() || item.type;
-        return featureLevelTypes.has(witType);
-      });
+      // CRITICAL: Separate Capability (top-level) from other feature-level items
+      // Capabilities go to _epics/, everything else goes to FS-XXXE/
+      const capabilityItems = items.filter(item =>
+        item.adoWorkItemType?.toLowerCase() === 'capability'
+      );
 
-      // Create groups for each feature-level item
+      // Epics and Features are "feature-level" items
+      // But Epics with Capability parents become Features (FS-XXXE)
+      // Epics without Capability parents become Epics (_epics/EP-XXXE)
+      const epicItems = items.filter(item =>
+        item.adoWorkItemType?.toLowerCase() === 'epic'
+      );
+
+      const featureItems = items.filter(item =>
+        item.adoWorkItemType?.toLowerCase() === 'feature'
+      );
+
+      // Create groups for Capabilities → _epics/EP-XXXE/
+      for (const capItem of capabilityItems) {
+        const groupKey = `epic:${capItem.id}`;
+        if (!groups.has(groupKey)) {
+          groups.set(groupKey, []);
+        }
+        groups.get(groupKey)!.push(capItem);
+      }
+
+      // Process Epics: determine if they're children of Capabilities or standalone
+      for (const epicItem of epicItems) {
+        let groupKey: string;
+
+        // Check if Epic has a Capability parent
+        const hasCapabilityParent = epicItem.parentId &&
+          capabilityItems.some(cap => cap.id === epicItem.parentId);
+
+        if (hasCapabilityParent) {
+          // Epic with Capability parent → FS-XXXE/ (Feature level)
+          // The Epic becomes a Feature folder, with reference to parent Epic
+          groupKey = `feature:${epicItem.id}`;
+        } else {
+          // Standalone Epic (no Capability parent) → _epics/EP-XXXE/
+          groupKey = `epic:${epicItem.id}`;
+        }
+
+        if (!groups.has(groupKey)) {
+          groups.set(groupKey, []);
+        }
+        groups.get(groupKey)!.push(epicItem);
+      }
+
+      // Create groups for Features → FS-XXXE/
       for (const featureItem of featureItems) {
         const groupKey = `feature:${featureItem.id}`;
         if (!groups.has(groupKey)) {
           groups.set(groupKey, []);
         }
-        // The feature item itself goes first (used to generate FEATURE.md)
         groups.get(groupKey)!.push(featureItem);
       }
 
       // Assign child items (User Stories, Tasks, Bugs) to their parent groups
+      const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
       for (const item of items) {
         const witType = item.adoWorkItemType?.toLowerCase() || item.type;
         if (featureLevelTypes.has(witType)) {
@@ -433,30 +497,45 @@ export class ItemConverter {
           // Try to find parent in our items
           const parent = itemById.get(item.parentId);
           if (parent) {
-            // Find the feature-level ancestor
+            // Find the appropriate ancestor group
             let current: ExternalItem | undefined = parent;
             while (current) {
               const currentType = current.adoWorkItemType?.toLowerCase() || current.type;
-              if (featureLevelTypes.has(currentType)) {
+
+              // Check if this ancestor is a Capability (→ epic group)
+              if (currentType === 'capability') {
+                groupKey = `epic:${current.id}`;
+                break;
+              }
+
+              // Check if this ancestor is an Epic
+              if (currentType === 'epic') {
+                // Check if Epic has Capability parent (→ feature group)
+                const epicHasCapParent = current.parentId &&
+                  capabilityItems.some(cap => cap.id === current!.parentId);
+
+                groupKey = epicHasCapParent
+                  ? `feature:${current.id}`
+                  : `epic:${current.id}`;
+                break;
+              }
+
+              // Check if this ancestor is a Feature (→ feature group)
+              if (currentType === 'feature') {
                 groupKey = `feature:${current.id}`;
                 break;
               }
+
               current = current.parentId ? itemById.get(current.parentId) : undefined;
             }
+          } else {
+            // Parent NOT in dataset - group by parentId so siblings stay together
+            groupKey = `missing-parent:${item.parentId}`;
           }
-          // NOTE: If parent NOT in dataset, fall through to orphan handling below
-          // DO NOT group by parentId - we want individual FS-XXXE folders per item
         }
 
-        // CRITICAL FIX (2025-12-01): For orphan items, create INDIVIDUAL FS-XXXE
-        // folders per item. This applies when:
-        // - Item has no parentId (true orphan)
-        // - Item has parentId but parent NOT in dataset (orphan with missing parent)
-        // Each orphan gets its own feature folder with US title as FEATURE.md header
-        // UNIVERSAL: Applies to ALL platforms (ADO, JIRA, GitHub) for consistent handling
+        // For TRUE orphan items (no parentId at all), create INDIVIDUAL folders
         if (!groupKey) {
-          // Each orphan gets its own feature folder with unique group key
-          // This ensures consistent behavior across all platforms
           groupKey = `orphan:${item.id}`;
         }
 
@@ -484,26 +563,94 @@ export class ItemConverter {
 
   /**
    * Allocate a feature ID for a group of items
-   * CRITICAL FIX (2025-12-01): Use feature-level item (Capability/Epic) info for FEATURE.md
+   *
+   * CRITICAL FIX (2025-12-02): Handle "epic:" groups using EpicIdAllocator
+   *
+   * Group Key Handling:
+   * - "epic:..." → Use EpicIdAllocator, create in _epics/EP-XXXE/
+   * - "feature:..." → Use FSIdAllocator, create in FS-XXXE/
+   * - "orphan:..." → Use FSIdAllocator, create in FS-XXXE/
+   * - Other → Use FSIdAllocator
+   *
+   * @returns Feature ID (FS-XXXE) or Epic ID (EP-XXXE)
    */
-  private async allocateFeatureForGroup(firstItem: ExternalItem, groupKey: string): Promise<string> {
-    // Check if we already created a feature for this group
-    if (this.createdFeatures.has(groupKey)) {
-      return this.createdFeatures.get(groupKey)!;
+  private async allocateFeatureForGroup(
+    firstItem: ExternalItem,
+    groupKey: string,
+    allGroupItems?: ExternalItem[]
+  ): Promise<string> {
+    // CRITICAL: Detect if this is an "epic:" group (Capability or standalone Epic)
+    const isEpicGroup = groupKey.startsWith('epic:');
+
+    // Check cache based on group type
+    if (isEpicGroup) {
+      if (this.createdEpics.has(groupKey)) {
+        return this.createdEpics.get(groupKey)!;
+      }
+    } else {
+      if (this.createdFeatures.has(groupKey)) {
+        return this.createdFeatures.get(groupKey)!;
+      }
     }
 
+    // For "epic:" groups, use EpicIdAllocator
+    if (isEpicGroup) {
+      if (!this.epicIdAllocator) {
+        throw new Error('EpicIdAllocator not initialized');
+      }
+
+      // Create external epic item for allocation
+      const epicItem: ExternalEpicItem = {
+        externalId: firstItem.id,
+        title: firstItem.title,
+        createdAt: firstItem.createdAt.toISOString(),
+        externalUrl: firstItem.url,
+        workItemType: firstItem.adoWorkItemType || 'Capability'
+      };
+
+      // Allocate Epic ID
+      const allocation = await this.epicIdAllocator.allocateId(epicItem);
+      const epicId = allocation.id;
+
+      // Create Epic folder in _epics/
+      const metadata = createExternalMetadata({
+        id: epicId,
+        source: firstItem.platform,
+        externalId: firstItem.id,
+        externalUrl: firstItem.url,
+        externalTitle: firstItem.title
+      });
+      await this.epicIdAllocator.createEpicFolder(epicId, epicItem, metadata);
+
+      // Cache for reuse
+      this.createdEpics.set(groupKey, epicId);
+
+      // Notify callback
+      if (this.options.onFeatureCreated) {
+        this.options.onFeatureCreated(epicId, path.join(this.options.specsDir, '_epics', epicId));
+      }
+
+      return epicId;
+    }
+
+    // For "feature:" and other groups, use FSIdAllocator
     if (!this.fsIdAllocator) {
       throw new Error('FSIdAllocator not initialized');
     }
 
-    // For ADO hierarchy groups (feature:ADO-XXX), the first item IS the feature-level item
+    // For ADO feature groups, check if it's an Epic with Capability parent
+    // If so, include parent reference in the feature folder
     const isAdoFeatureGroup = groupKey.startsWith('feature:');
     const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
     const isFeatureLevelItem = isAdoFeatureGroup &&
       featureLevelTypes.has(firstItem.adoWorkItemType?.toLowerCase() || firstItem.type);
 
+    // Check if this Epic has a Capability parent
+    const isEpicWithCapParent = firstItem.adoWorkItemType?.toLowerCase() === 'epic' &&
+      firstItem.parentId &&
+      this.createdEpics.has(`epic:${firstItem.parentId}`);
+
     // Create external work item for allocation
-    // For ADO feature groups, use the Capability/Epic's title as the feature name
     const workItem: ExternalWorkItem = {
       externalId: firstItem.id,
       title: isFeatureLevelItem ? firstItem.title : (firstItem.sourceRepo || firstItem.title),
@@ -515,8 +662,22 @@ export class ItemConverter {
     const allocation = await this.fsIdAllocator.allocateId(workItem);
     const featureId = allocation.id;
 
+    // Check if ALL items in the group should be archived
+    const shouldArchiveFeature = this.shouldArchiveEntireGroup(allGroupItems || [firstItem]);
+
     // Create feature folder with FEATURE.md
-    const featurePath = await this.createFeatureFolder(featureId, firstItem, groupKey);
+    // If Epic with Capability parent, include parent reference
+    const parentEpicId = isEpicWithCapParent
+      ? this.createdEpics.get(`epic:${firstItem.parentId}`)
+      : undefined;
+
+    const featurePath = await this.createFeatureFolder(
+      featureId,
+      firstItem,
+      groupKey,
+      shouldArchiveFeature,
+      parentEpicId // Pass parent Epic ID for reference
+    );
 
     // Cache for reuse
     this.createdFeatures.set(groupKey, featureId);
@@ -527,6 +688,32 @@ export class ItemConverter {
     }
 
     return featureId;
+  }
+
+  /**
+   * Check if ALL items in a group should be archived
+   * CRITICAL FIX (2025-12-01): Prevents duplicate folder creation
+   *
+   * If ALL items are old (should be archived), the feature folder itself
+   * should be created in _archive/ to avoid having an empty FS-XXX/ folder
+   * in the main location while all content is in _archive/FS-XXX/
+   *
+   * @param items - All items in the feature group
+   * @returns True if ALL items should be archived
+   */
+  private shouldArchiveEntireGroup(items: ExternalItem[]): boolean {
+    if (items.length === 0) {
+      return false;
+    }
+
+    // Check if auto-archiving is disabled
+    const threshold = this.options.autoArchiveAfterDays;
+    if (!threshold || threshold <= 0) {
+      return false;
+    }
+
+    // ALL items must be old enough to archive the entire group
+    return items.every(item => this.shouldAutoArchive(item.createdAt));
   }
 
   /**
@@ -572,12 +759,29 @@ export class ItemConverter {
 
   /**
    * Create feature folder with FEATURE.md
-   * CRITICAL FIX (2025-12-01): Generate proper FEATURE.md for ADO Capability/Epic hierarchy
+   *
+   * CRITICAL FIX (2025-12-02): Support parent Epic reference for ADO Epic→Feature mapping
+   *
+   * @param featureId - Feature ID (e.g., "FS-001E")
+   * @param firstItem - First item in the group (used for metadata)
+   * @param groupKey - Group key for caching
+   * @param shouldArchive - If true, create feature folder in _archive/ directory
+   * @param parentEpicId - Optional parent Epic ID (EP-XXXE) for hierarchy reference
    */
-  private async createFeatureFolder(featureId: string, firstItem: ExternalItem, groupKey: string): Promise<string> {
+  private async createFeatureFolder(
+    featureId: string,
+    firstItem: ExternalItem,
+    groupKey: string,
+    shouldArchive: boolean = false,
+    parentEpicId?: string
+  ): Promise<string> {
     // Use 2-level or 1-level structure based on externalContainer
     const baseDir = this.getBaseDirectory();
-    const featurePath = path.join(baseDir, featureId);
+    // CRITICAL FIX (2025-12-01): Create in _archive if all items in group are old
+    // This prevents duplicate folders: FS-XXX/ (empty) + _archive/FS-XXX/ (with content)
+    const featurePath = shouldArchive
+      ? path.join(baseDir, '_archive', featureId)
+      : path.join(baseDir, featureId);
 
     // Create directory
     fs.mkdirSync(featurePath, { recursive: true });
@@ -645,6 +849,12 @@ export class ItemConverter {
     // Include external metadata for feature-level items and all orphans
     const includeExternalMetadata = isAdoFeatureLevelItem || isOrphanGroup;
 
+    // Build parent Epic reference if available (for ADO Epic → Feature mapping)
+    const hasParentEpic = parentEpicId !== undefined;
+    const parentEpicLink = hasParentEpic
+      ? `[${parentEpicId}](../_epics/${parentEpicId}/EPIC.md)`
+      : '';
+
     const featureContent = `---
 id: ${featureId}
 title: ${featureTitle}
@@ -655,6 +865,7 @@ ${firstItem.adoProjectName ? `ado_project: ${firstItem.adoProjectName}` : ''}
 ${firstItem.adoAreaPath ? `ado_area_path: ${firstItem.adoAreaPath}` : ''}
 ${includeExternalMetadata ? `work_item_type: ${witTypeLabel}` : ''}
 ${includeExternalMetadata ? `external_id: ${firstItem.id}` : ''}
+${hasParentEpic ? `parent_epic: ${parentEpicId}` : ''}
 ${isOrphanGroup ? `orphan: true` : ''}
 created: ${new Date().toISOString()}
 ---
@@ -662,6 +873,7 @@ created: ${new Date().toISOString()}
 # ${featureTitle}
 
 **Origin**: 🔗 ${externalLink || `Imported from ${platformLabel}`}
+${hasParentEpic ? `\n**Parent Epic**: ${parentEpicLink}` : ''}
 
 ## Description
 
@@ -669,6 +881,7 @@ ${description}
 
 ${firstItem.sourceRepo ? `**Source Repository**: ${firstItem.sourceRepo}` : ''}
 ${firstItem.adoAreaPath ? `**Area Path**: ${firstItem.adoAreaPath}` : ''}
+${hasParentEpic ? `\n> **Hierarchy**: This feature belongs to Epic ${parentEpicId} (Capability in Azure DevOps).` : ''}
 ${isOrphanGroup ? `\n> **Note**: This feature was created from an orphan item (no parent Epic/Feature in ${platformLabel} or parent not imported).` : ''}
 
 ## User Stories
@@ -680,6 +893,7 @@ User stories in this ${witTypeLabel.toLowerCase()} will be listed here.
 - **Created**: ${new Date().toISOString()}
 - **Source**: ${platformLabel}
 ${includeExternalMetadata ? `- **External ID**: ${firstItem.id}` : ''}
+${hasParentEpic ? `- **Parent Epic**: ${parentEpicId}` : ''}
 ${isOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
 `;
 
@@ -690,19 +904,7 @@ ${isOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
     return featurePath;
   }
 
-  /**
-   * Map external status to SpecWeave status
-   */
-  private mapStatus(externalStatus: ExternalItem['status']): string {
-    const statusMap: Record<string, string> = {
-      'open': 'Open',
-      'in-progress': 'In Progress',
-      'completed': 'Completed',
-      'closed': 'Completed'
-    };
-
-    return statusMap[externalStatus] || 'Open';
-  }
+  // mapStatus moved to MarkdownGenerator
 
   /**
    * Check if an item should be auto-archived based on creation date
@@ -904,165 +1106,11 @@ ${isOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
     }
   }
 
-  /**
-   * Generate origin badge for living docs
-   */
-  private generateOriginBadge(item: ExternalItem): string {
-    const platformEmoji: Record<string, string> = {
-      'github': '🔗',
-      'jira': '🔗',
-      'ado': '🔗'
-    };
+  // generateOriginBadge moved to MarkdownGenerator
 
-    const platformName: Record<string, string> = {
-      'github': 'GitHub',
-      'jira': 'JIRA',
-      'ado': 'Azure DevOps'
-    };
+  // generateMarkdown moved to MarkdownGenerator
 
-    const emoji = platformEmoji[item.platform] || '🔗';
-    const name = platformName[item.platform] || item.platform;
-
-    // Extract issue/ticket number from external ID
-    // v0.29+ format: github#owner/repo#123 → extract "123"
-    // Legacy format: github#123 → extract "123"
-    let issueNumber = item.id;
-    const newFormatMatch = item.id.match(/#(\d+)$/);
-    if (newFormatMatch) {
-      issueNumber = newFormatMatch[1];
-    } else {
-      issueNumber = item.id.replace(/^(GITHUB|JIRA|ADO)-/, '');
-    }
-
-    return `${emoji} [${name} #${issueNumber}](${item.url})`;
-  }
-
-  /**
-   * Generate markdown content for living docs User Story
-   * CRITICAL (2025-12-01): Includes parent tracking info for re-import hierarchy updates
-   */
-  private generateMarkdown(data: {
-    id: string;
-    title: string;
-    description: string;
-    acceptanceCriteria: string[];
-    priority?: string;
-    status: string;
-    originBadge: string;
-    metadata: {
-      externalId: string;
-      externalUrl: string;
-      externalPlatform: string;
-      importedAt: string;
-      createdAt: string;
-      updatedAt: string;
-      labels: string[];
-      sourceRepo?: string;
-      // Parent tracking (for re-import hierarchy updates)
-      parentId?: string;
-      featureId?: string;
-      isOrphan?: boolean;
-      adoWorkItemType?: string;
-      adoAreaPath?: string;
-    };
-  }): string {
-    const parts: string[] = [];
-
-    // Title
-    parts.push(`# ${data.id}: ${data.title}`);
-    parts.push('');
-
-    // Origin badge
-    parts.push(`**Origin**: ${data.originBadge}`);
-    parts.push('');
-
-    // Status and Priority
-    parts.push(`**Status**: ${data.status}`);
-    if (data.priority) {
-      parts.push(`**Priority**: ${data.priority}`);
-    }
-    parts.push('');
-
-    // Description
-    parts.push('## Description');
-    parts.push('');
-    parts.push(data.description || 'No description provided.');
-    parts.push('');
-
-    // Acceptance Criteria
-    if (data.acceptanceCriteria.length > 0) {
-      parts.push('## Acceptance Criteria');
-      parts.push('');
-      data.acceptanceCriteria.forEach((ac, index) => {
-        const acId = `AC-${data.id.replace('E', '')}-${String(index + 1).padStart(2, '0')}`;
-        parts.push(`- [ ] **${acId}**: ${ac}`);
-      });
-      parts.push('');
-    }
-
-    // Tasks
-    parts.push('## Tasks');
-    parts.push('');
-    parts.push('> **Note**: This User Story was imported from an external tool.');
-    parts.push('> Create tasks manually when ready to implement.');
-    parts.push('');
-
-    // Metadata (frontmatter-style at bottom)
-    parts.push('---');
-    parts.push('');
-    parts.push('## External Metadata');
-    parts.push('');
-    parts.push(`- **External ID**: ${data.metadata.externalId}`);
-    parts.push(`- **External URL**: ${data.metadata.externalUrl}`);
-    parts.push(`- **Platform**: ${data.metadata.externalPlatform}`);
-    parts.push(`- **Imported At**: ${data.metadata.importedAt}`);
-    parts.push(`- **Created At**: ${data.metadata.createdAt}`);
-    parts.push(`- **Updated At**: ${data.metadata.updatedAt}`);
-    if (data.metadata.labels.length > 0) {
-      parts.push(`- **Labels**: ${data.metadata.labels.join(', ')}`);
-    }
-    if (data.metadata.sourceRepo) {
-      parts.push(`- **Source Repository**: ${data.metadata.sourceRepo}`);
-    }
-    // Parent tracking for re-import hierarchy updates (CRITICAL for parent change detection)
-    if (data.metadata.featureId) {
-      parts.push(`- **Feature ID**: ${data.metadata.featureId}`);
-    }
-    if (data.metadata.parentId) {
-      parts.push(`- **Parent ID**: ${data.metadata.parentId}`);
-    }
-    if (data.metadata.isOrphan) {
-      parts.push(`- **Orphan**: true (no parent in external tool)`);
-    }
-    if (data.metadata.adoWorkItemType) {
-      parts.push(`- **ADO Work Item Type**: ${data.metadata.adoWorkItemType}`);
-    }
-    if (data.metadata.adoAreaPath) {
-      parts.push(`- **ADO Area Path**: ${data.metadata.adoAreaPath}`);
-    }
-
-    return parts.join('\n');
-  }
-
-  /**
-   * Generate file name for living docs User Story
-   *
-   * Format: us-001e-title-here.md
-   */
-  private generateFileName(usId: string, title: string): string {
-    // Convert US-001E to us-001e
-    const idPart = usId.toLowerCase();
-
-    // Convert title to kebab-case
-    const titlePart = title
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
-      .replace(/\s+/g, '-')          // Replace spaces with hyphens
-      .replace(/-+/g, '-')           // Remove duplicate hyphens
-      .slice(0, 50);                 // Limit to 50 chars
-
-    return `${idPart}-${titlePart}.md`;
-  }
+  // generateFileName moved to MarkdownGenerator
 
   /**
    * Validate that no increments were created

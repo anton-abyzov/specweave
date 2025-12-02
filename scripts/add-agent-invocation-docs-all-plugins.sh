@@ -72,7 +72,7 @@ for plugin_dir in "$PLUGINS_BASE"/*; do
 Task({
   subagent_type: "${subagent_type}",
   prompt: "Your task description here",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 \`\`\`
 

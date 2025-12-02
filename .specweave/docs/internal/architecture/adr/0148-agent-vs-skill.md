@@ -38,7 +38,7 @@ Question: When to use which?
 name: pm
 description: Product Manager for requirements...
 tools: Read, Grep, Glob
-model: sonnet
+model: claude-opus-4-5-20251101
 ---
 You are an expert Product Manager...
 ```

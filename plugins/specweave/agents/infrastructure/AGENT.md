@@ -8,6 +8,10 @@ capabilities:
   - Environment configuration (dev/staging/prod)
   - Deployment workflow guidance
   - Security best practices integration
+model: claude-opus-4-5-20251101
+model_preference: opus
+cost_profile: planning
+fallback_behavior: strict
 max_response_tokens: 2000
 ---
 
