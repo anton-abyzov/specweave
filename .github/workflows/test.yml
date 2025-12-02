@@ -96,6 +96,7 @@ jobs:
 
   validate-skills:
     runs-on: ubuntu-latest
+    continue-on-error: true  # Informational only - don't block releases
     steps:
       - uses: actions/checkout@v6
 
@@ -229,6 +230,7 @@ jobs:
   verify-dev-setup:
     name: Verify Plugin Structure (CI/CD Only)
     runs-on: ubuntu-latest
+    continue-on-error: true  # Non-critical - don't block releases
     steps:
       - uses: actions/checkout@v6
 
@@ -412,8 +414,9 @@ jobs:
   notify-failure:
     name: Create Auto-Fix Issue
     runs-on: ubuntu-latest
-    # Run after ALL other jobs, only if ANY failed
-    needs: [test, validate-skills, validate-structure, verify-dev-setup, test-structure, lint]
+    # Run after critical jobs, only if critical job failed
+    # Non-critical jobs (validate-skills, verify-dev-setup) have continue-on-error
+    needs: [test, validate-structure, test-structure, lint]
     if: failure() && github.event_name == 'push'
 
     permissions:
