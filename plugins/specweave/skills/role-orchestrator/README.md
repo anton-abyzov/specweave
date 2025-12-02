@@ -2,7 +2,7 @@
 
 **Status**: To be developed
 **Priority**: CRITICAL (Highest priority)
-**Claude Model**: Sonnet (reasoning + efficiency)
+**Claude Model**: Opus 4.5 (best reasoning + quality)
 
 ## Purpose
 

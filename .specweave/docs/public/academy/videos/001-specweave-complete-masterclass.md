@@ -24,15 +24,16 @@
 | 32:30 | VS Code + 4-Terminal Setup | 4 min |
 | 36:30 | DEMO 1: Greenfield Project | 4 min |
 | 40:30 | DEMO 2: Translation Feature | 3 min |
-| 43:30 | DEMO 3: Brownfield (EasyChamp) — DEEP DIVE | 8 min |
-| 51:30 | DEMO 4: GitHub Sync | 3 min |
-| 54:30 | DEMO 5: JIRA Sync | 3 min |
-| 57:30 | DEMO 6: Azure DevOps Sync | 3 min |
-| 60:30 | AGENT.md for Non-Claude Tools | 2 min |
-| 62:30 | Academy + Resources | 1.5 min |
-| 64:00 | Outro (This was HUGE work!) | 1 min |
+| 43:30 | DEMO 3: Brownfield with Living Docs Builder (NEW!) | 10 min |
+| 53:30 | DEMO 4: GitHub Sync with Bidirectional Pull (NEW!) | 4 min |
+| 57:30 | DEMO 5: JIRA Sync | 3 min |
+| 60:30 | DEMO 6: Azure DevOps with Hierarchy Intelligence (NEW!) | 4 min |
+| 64:30 | Background Jobs Monitoring (NEW!) | 2 min |
+| 66:30 | AGENT.md for Non-Claude Tools | 2 min |
+| 68:30 | Academy + Resources | 1.5 min |
+| 70:00 | Outro (This was HUGE work!) | 1 min |
 
-**Total: ~65 minutes** (demos shortened, fast-forward during waits)
+**Total: ~71 minutes** (extended for new features)
 
 ---
 
@@ -56,13 +57,13 @@
 
 **[VISUAL: Quick montage - dropping into different project types]**
 
-> "Drop it into a 10-year-old legacy codebase — it understands everything and documents it. Use it on your weekend startup — specs write themselves. Scale it to enterprise with 50 teams — JIRA, GitHub, Azure DevOps all sync automatically.
+> "Drop it into a 10-year-old legacy codebase — it GENERATES documentation automatically in the background. Use it on your weekend startup — specs write themselves. Scale it to enterprise with 50 teams — JIRA, GitHub, Azure DevOps all sync BIDIRECTIONALLY.
 
 > ONE framework. ANY project. ANY scale."
 
 **[VISUAL: Side-by-side - spec.md updating, JIRA syncing, GitHub issue updating]**
 
-> "Living documentation that never goes stale. External tools that sync in real-time. And here's the crazy part — it works with ANY AI. Claude, GPT, Gemini, Copilot. Your team uses whatever they want.
+> "Living documentation that never goes stale. BIDIRECTIONAL sync — changes flow BOTH ways. Background jobs that clone repos, import work items, and build docs while you work. And here's the crazy part — it works with ANY AI. Claude, GPT, Gemini, Copilot. Your team uses whatever they want.
 
 > Need translations? One command. Russian, Spanish, German — done.
 
@@ -189,12 +190,16 @@
 |---------|--------------|
 | Increments | Atomic units of work with specs, plans, tasks |
 | Living Docs | Specs that update when code changes |
-| External Sync | Bidirectional with GitHub, JIRA, ADO |
+| **Living Docs Builder (NEW!)** | Auto-generates docs for brownfield projects |
+| External Sync | **Bidirectional** with GitHub, JIRA, ADO |
+| **Pull Sync (NEW!)** | External changes flow back to SpecWeave |
+| **Background Jobs (NEW!)** | Clone, import, build docs — all in background |
 | AI-Native | Claude reads specs, writes code, updates tasks |
 | Multi-Repo | Enterprise monorepo and multi-repo support |
+| **ADO Intelligence (NEW!)** | Auto-detect process templates (SAFe, Agile, Scrum) |
 | Free & Open | MIT license, no vendor lock-in |
 
-> "All of this — free. Open source. On my GitHub right now. But first — let me teach you the foundation."
+> "All of this — free. Open source. On my GitHub right now. And these new features? Game changers. Let me teach you the foundation."
 
 #### Documentation Architecture: Internal vs Public
 
@@ -1158,96 +1163,195 @@ Pending:
 
 ---
 
-### DEMO 3: BROWNFIELD PROJECT - EASYCHAMP (48:00 - 56:00)
+### DEMO 3: BROWNFIELD WITH LIVING DOCS BUILDER (43:30 - 53:30) — NEW!
 
 **[VISUAL: EasyChamp codebase opening]**
 
-> "Now the real test. A brownfield project. Existing code. Existing mess. This is EasyChamp — my company's product. Real production code."
+> "Now the real test. A brownfield project. Existing code. Existing mess. This is EasyChamp — my company's product. Real production code.
+
+> And here's what's BRAND NEW in v0.28 — the Living Docs Builder. This is a game-changer. Watch."
 
 **[NOTE TO VIEWERS]**
 > "EasyChamp is proprietary — you can't access this repo. But the technique works on any project. Let me show you."
 
-#### Step 1: Analyze Existing Structure
+#### Step 1: Initialize with Pre-Flight Questions (NEW!)
 
-**[VISUAL: Running brownfield analyzer]**
-
-```bash
-# SpecWeave skill auto-activates
-"Analyze this existing project for SpecWeave integration"
-```
-
-> "SpecWeave scans:
-> - Existing documentation
-> - Folder structure
-> - Git history
-> - External tool connections
-
-> It builds a map of what you have."
-
-**[VISUAL: Analysis output]**
-
-```
-Brownfield Analysis: EasyChamp
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Documentation Found:
-- README.md (outdated - 6 months old)
-- /docs/api.md (partial)
-- JIRA project detected: EASY
-- GitHub repo: easychamp/core
-
-Recommended Actions:
-1. Import JIRA epics as features
-2. Create initial increment for sync setup
-3. Generate missing specs from code
-```
-
-#### Step 2: Initialize SpecWeave
+**[VISUAL: Running init with smart prompts]**
 
 ```bash
-npx specweave init . --brownfield
+npx specweave init .
 ```
 
-> "The `--brownfield` flag preserves existing structure. Nothing deleted. Only enhanced."
+> "Watch — SpecWeave detects this is a brownfield project and asks smart questions UPFRONT before any analysis starts."
 
-**[VISUAL: Init with brownfield flag]**
+**[VISUAL: Pre-flight prompts appearing]**
 
-#### Step 3: Import Existing Work
+```
+🔍 Brownfield Project Detected!
+
+Additional documentation sources? (Notion export, Confluence, MD folders)
+> /docs/legacy, ./wiki
+
+Priority areas to analyze first? (comma-separated)
+> auth, payments, api
+
+Known pain points? (describe what's confusing)
+> Authentication is a mess, nobody understands the payment flow
+
+Analysis depth? [quick/standard/deep]
+> standard (estimated: 2-4 hours)
+```
+
+> "These inputs guide the ENTIRE analysis. Priority areas get analyzed first. Pain points get special attention. You tell SpecWeave what matters — it focuses there."
+
+#### Step 2: Background Jobs Launch Automatically (NEW!)
+
+**[VISUAL: Terminal showing job launches]**
+
+```
+Launching background jobs...
+
+✓ clone-repos (job-id: abc123)
+  → Cloning 3 repositories in background
+
+✓ import-issues (job-id: def456)
+  → Importing from JIRA project EASY (2,847 items)
+
+✓ living-docs-builder (job-id: ghi789)
+  → WAITING for clone and import jobs
+  → Then: discovery → foundation → integration → deep-dive → suggestions
+
+Init complete! Monitor with: specweave jobs --follow ghi789
+```
+
+> "THREE background jobs. All running while you work. Clone repos. Import work items. And the star of the show — Living Docs Builder.
+
+> See 'WAITING for clone and import'? That's the job DEPENDENCY system. Living Docs Builder won't analyze until it has all the data. Smart."
+
+#### Step 3: Monitor Jobs (Real-Time Progress)
+
+**[VISUAL: Split screen - terminal running specweave jobs]**
 
 ```bash
-/specweave:specweave-import-external --source jira --project EASY
+specweave jobs --follow ghi789
 ```
 
-> "Watch — it pulls JIRA epics and stories into SpecWeave's living docs. Bidirectional link established."
+```
+Living Docs Builder: ghi789
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Phase: discovery (2/6)
+Progress: ████████░░░░░░░░ 47%
 
-**[VISUAL: JIRA items appearing in .specweave/docs]**
+Scanning: src/payments/
+Files analyzed: 1,247 / 2,650
+Tech stack: TypeScript, React, Node.js, PostgreSQL
+Modules discovered: 12
 
-#### Step 4: Create First Increment on Brownfield
+Rate: 23 files/sec
+ETA: 19 minutes
+```
+
+> "Real-time progress. Phase markers. File counts. ETA. I can go grab coffee and come back to GENERATED documentation."
+
+#### Step 4: What Gets Generated (The Magic)
+
+**[VISUAL: Generated files appearing in tree view]**
+
+> "After 1-2 hours, you get THIS:"
+
+```
+Generated Documentation:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+.specweave/docs/internal/architecture/
+├── overview.md           # Project summary, main components
+├── tech-stack.md         # All technologies + versions
+└── modules-skeleton.md   # Every module with description
+
+.specweave/docs/internal/strategy/modules/
+├── auth.md               # Deep dive: authentication
+├── payments.md           # Deep dive: payments (priority!)
+└── api.md                # Deep dive: API layer
+
+.specweave/docs/internal/
+└── SUGGESTIONS.md        # Gap analysis + next steps ⭐
+```
+
+> "That SUGGESTIONS.md is pure gold. Let me show you what's inside."
+
+**[VISUAL: Opening SUGGESTIONS.md]**
+
+```markdown
+# Living Docs Builder: Suggestions
+
+## Priority Zones (by work item density)
+1. **payments/** - 47 linked JIRA items (HIGH)
+2. **auth/** - 32 linked JIRA items (HIGH)
+3. **api/** - 18 linked JIRA items (MEDIUM)
+
+## Documentation Gaps
+- [ ] No API docs for /api/v2/*
+- [ ] payments/refund.ts - complex, no comments
+- [ ] auth/oauth.ts - uses deprecated library
+
+## Recommended Next Steps
+1. Create increment: "Document payment refund flow"
+2. Review deprecated oauth library (security risk)
+3. Add API v2 endpoint documentation
+
+## Sampling Notes
+- test/ excluded (default)
+- 847 files in low-priority modules (sampled 3/dir)
+- Full analysis available with: --depth deep
+```
+
+> "ACTIONABLE suggestions. It tells you exactly what to document next. Where the gaps are. What's risky. This is WEEKS of manual analysis — done in hours."
+
+#### Step 5: Work Item Matching (Killer Feature)
+
+**[VISUAL: Module-workitem mapping visualization]**
+
+> "Here's the killer feature — it matched your imported JIRA items to discovered modules."
+
+```
+Module-Work Item Mapping:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+payments/     → EASY-142, EASY-187, EASY-203... (47 items)
+auth/         → EASY-089, EASY-124, EASY-156... (32 items)
+api/          → EASY-067, EASY-098, EASY-112... (18 items)
+utils/        → EASY-012                        (1 item)
+```
+
+> "Now I KNOW: payments has 47 work items. That's where the action is. That's where I should focus first. Data-driven prioritization."
+
+#### Step 6: Continue with Enhanced Context
 
 ```bash
-/specweave:increment "Refactor authentication module"
+/specweave:increment "Refactor payment refund flow"
 ```
 
-> "Claude reads the EXISTING code. Understands the current state. Generates a spec that respects what's already there."
+> "When Claude generates the spec, it reads the GENERATED docs. It understands your codebase from the analysis. It knows about the 47 JIRA items. It saw the gaps."
 
-**[VISUAL: Spec being generated with awareness of existing code]**
+**[VISUAL: Spec being generated with rich context]**
 
-> "See? It references existing files. Existing patterns. It's not starting from scratch — it's building on your foundation."
+> "See? References to payments.md. References to discovered modules. Pain points we identified. It's not guessing — it KNOWS your codebase."
 
-#### Step 5: Execute with Existing Tests
+#### Pause and Resume (For Long Analyses)
 
 ```bash
-/specweave:do
+# Pause the job (saves checkpoint)
+specweave jobs --kill ghi789
+
+# Later: resume from checkpoint
+specweave jobs --resume ghi789
 ```
 
-> "It runs your existing test suite. Respects your CI. Doesn't break what works."
+> "Multi-day analyses? No problem. Kill it, go home, resume tomorrow. Checkpoints save after every module. Zero data loss."
 
-**[VISUAL: Tests passing, changes being made]**
-
-> "Brownfield done right. Enhance without destroying."
+> "This is brownfield done RIGHT. Analyze first. Understand everything. THEN build with full context."
 
 ---
 
-### DEMO 4: GITHUB SYNC (56:00 - 61:00)
+### DEMO 4: GITHUB SYNC WITH BIDIRECTIONAL PULL (53:30 - 57:30) — NEW!
 
 **[VISUAL: GitHub issues page]**
 
@@ -1288,38 +1392,86 @@ npx specweave init .
 
 > All from one command."
 
-#### Bidirectional Sync
+#### Push Sync (Local → GitHub)
 
-**[VISUAL: Checking a checkbox in GitHub]**
+**[VISUAL: Completing task locally, GitHub updating]**
 
-> "Here's the magic. I check a box in GitHub..."
+> "When you complete tasks locally, SpecWeave pushes to GitHub automatically."
 
 ```bash
-/specweave:github-sync --increment 0003
+/specweave:do
+# Task completed...
+# Hook fires automatically...
+# GitHub issue checkbox updates!
 ```
 
-**[VISUAL: tasks.md updating]**
+> "No manual sync needed. The EDA hooks detect task completion and push."
 
-> "...and tasks.md updates locally. It works BOTH ways.
+#### Pull Sync (GitHub → Local) — NEW in v0.28!
 
-> Your PM updates GitHub? You see it in your terminal.
-> You complete work locally? GitHub updates automatically."
+**[VISUAL: PM updating GitHub, showing terminal pulling changes]**
 
-#### Progress Sync
+> "Here's the NEW part. Your PM updates GitHub directly. What happens locally?"
+
+```bash
+# PM closes an issue in GitHub at 3am...
+# You start work next morning:
+/specweave:sync-pull
+
+# Or it runs automatically on session start!
+```
+
+**[VISUAL: Living docs updating from external change]**
+
+```
+Pull Sync: GitHub → SpecWeave
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Issue #42: Status changed
+  → External: closed
+  → Local: active
+  → Resolution: External wins (timestamp newer)
+  → Updated: living docs + spec.md
+
+Audit logged: pull-sync-2025-12-02.json
+```
+
+> "External changes flow BACK. Status updates. Priority changes. Assignee changes. All pulled automatically with full audit trail."
+
+#### Conflict Resolution
+
+**[VISUAL: Conflict resolution diagram]**
+
+> "What if both sides changed? Timestamp-based resolution."
+
+```
+Conflict Resolution (latest wins):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Local modified:    2025-12-02 10:30:00
+External modified: 2025-12-02 11:45:00
+                   ↑ Newer
+→ External wins. Local updated.
+
+All logged for compliance.
+```
+
+> "No guessing. No conflicts. Timestamps decide. Everything logged."
+
+#### Full Sync Command
 
 ```bash
 /specweave:sync-progress
 ```
 
-> "One command syncs everything:
-> - tasks.md → spec.md → GitHub issue
-> - All acceptance criteria checked
-> - All status updated
-> - All timestamps recorded"
+> "One command syncs EVERYTHING:
+> - Pull external changes first
+> - Push local changes
+> - Update tasks.md → spec.md → GitHub
+> - All timestamps recorded
+> - Full audit trail"
 
 ---
 
-### DEMO 5: JIRA SYNC (61:00 - 65:00)
+### DEMO 5: JIRA SYNC (57:30 - 60:30)
 
 **[VISUAL: JIRA board]**
 
@@ -1392,13 +1544,33 @@ JIRA_PROJECT_KEY=PROJ
 
 ---
 
-### DEMO 6: AZURE DEVOPS SYNC (65:00 - 69:00)
+### DEMO 6: AZURE DEVOPS WITH HIERARCHY INTELLIGENCE (60:30 - 64:30) — NEW!
 
-**[VISUAL: Azure DevOps board]**
+**[VISUAL: Azure DevOps board with SAFe hierarchy]**
 
-> "Microsoft shops — Azure DevOps works the same way."
+> "Microsoft shops — Azure DevOps works the same way. BUT — here's what's NEW in v0.28: Intelligent Hierarchy Mapping."
 
-#### Setup
+#### The Problem (Before v0.28)
+
+> "ADO has different process templates. Agile. Scrum. CMMI. SAFe. Each has DIFFERENT hierarchy levels."
+
+**[VISUAL: ADO hierarchy comparison table]**
+
+```
+Process Templates:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Agile:  Epic → Feature → User Story → Task     (4 levels)
+Scrum:  Epic → Feature → PBI → Task            (4 levels)
+CMMI:   Epic → Feature → Requirement → Task    (4 levels)
+SAFe:   Capability → Epic → Feature → US → Task (5 levels!)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+> "Before v0.28, SAFe was BROKEN. Capabilities ended up in Feature folders. Epics got lost. Total mess."
+
+#### Auto-Detection (NEW!)
+
+**[VISUAL: Init detecting process template]**
 
 ```bash
 npx specweave init .
@@ -1406,47 +1578,157 @@ npx specweave init .
 # → Enter organization, project, PAT
 ```
 
-**[VISUAL: ADO config]**
-
-```env
-ADO_ORGANIZATION=your-org
-ADO_PROJECT=your-project
-ADO_PAT=your-personal-access-token
 ```
+🔍 Detecting ADO Process Template...
+
+Project: MyEnterprise
+Organization: contoso
+Process Template: SAFe (5 levels detected)
+
+Hierarchy Mapping:
+  ADO Capability  → SpecWeave Epic   (_epics/EP-XXXE/)
+  ADO Epic        → SpecWeave Feature (FS-XXXE/)
+  ADO Feature     → SpecWeave Feature (nested under Epic)
+  ADO User Story  → SpecWeave US     (us-xxxe.md)
+  ADO Task        → SpecWeave Task   (tasks.md)
+
+Proceed with import? [Y/n]
+```
+
+> "It DETECTS your process template automatically. SAFe? It maps 5 levels to SpecWeave's 4-level structure intelligently."
+
+#### Intelligent Mapping
+
+**[VISUAL: Before/after folder structure comparison]**
+
+> "Here's what happens with SAFe projects now:"
+
+```
+BEFORE v0.28 (Broken):
+━━━━━━━━━━━━━━━━━━━━━━━━
+.specweave/docs/internal/specs/
+├── FS-001E/           # ADO Capability (WRONG LEVEL!)
+│   └── FEATURE.md
+├── FS-002E/           # ADO Epic (WRONG LEVEL!)
+│   └── FEATURE.md
+└── FS-003E/           # Actual Feature
+    └── FEATURE.md
+
+AFTER v0.28 (Intelligent):
+━━━━━━━━━━━━━━━━━━━━━━━━
+.specweave/docs/internal/
+├── _epics/
+│   └── EP-001E/       # ADO Capability → SpecWeave Epic
+│       └── EPIC.md
+└── specs/
+    └── FS-001E/       # ADO Epic → SpecWeave Feature
+        ├── FEATURE.md # Links to parent EP-001E
+        └── us-001e.md # ADO User Story
+```
+
+> "Capabilities go to `_epics/`. Epics become Features WITH parent references. Nothing lost. Hierarchy preserved."
+
+#### Parent References
+
+**[VISUAL: Opening FEATURE.md with parent link]**
+
+```markdown
+# FS-001E: Payment Processing System
+
+**Parent Epic**: [EP-001E: 2025 Q4 Platform Initiative](../../_epics/EP-001E/EPIC.md)
+**ADO Work Item**: #12345
+
+## Overview
+...
+```
+
+> "Every feature knows its parent. Full traceability. Click to navigate the hierarchy."
 
 #### Sync Commands
 
 ```bash
-# Import from ADO
+# Import with auto-detection
 /specweave:ado-sync --mode import
 
-# Export to ADO
+# Export preserving hierarchy
 /specweave:ado-sync --mode export --increment 0005
 
-# Bidirectional sync
+# Bidirectional with pull
 /specweave:ado-sync --mode bidirectional
 ```
-
-**[VISUAL: Work items syncing]**
-
-> "Features become Features. User Stories become User Stories. Tasks become Tasks. The hierarchy maps exactly."
 
 #### Area Path Support
 
 > "ADO uses area paths for team organization. SpecWeave maps them:"
 
-**[VISUAL: Area path mapping]**
-
 ```
-ADO: /Project/Team-Backend/API
+ADO: /MyProject/Team-Backend/API
 → SpecWeave: projects/backend/api/
+
+ADO: /MyProject/Team-Frontend/Mobile
+→ SpecWeave: projects/frontend/mobile/
 ```
 
-> "Your team structure preserved. Your work items synced. No manual copying."
+> "Your team structure preserved. Your hierarchy intact. Enterprise-grade."
 
 ---
 
-### AGENT.MD — NON-CLAUDE AI TOOLS (69:00 - 72:00)
+### BACKGROUND JOBS MONITORING (64:30 - 66:30) — NEW!
+
+**[VISUAL: Terminal with specweave jobs output]**
+
+> "Quick section on monitoring all those background jobs we've been launching."
+
+#### The Jobs Command
+
+```bash
+specweave jobs
+```
+
+```
+Background Jobs
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ID         TYPE               STATUS     PROGRESS   ETA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+abc123     clone-repos        completed  10/10      -
+def456     import-issues      running    1847/2847  12min
+ghi789     living-docs-builder waiting    -          -
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+> "At a glance: what's running, what's waiting, what's done."
+
+#### Real-Time Follow
+
+```bash
+specweave jobs --follow def456
+```
+
+> "Streams progress updates every second. Great for long-running imports."
+
+#### Logs and Debugging
+
+```bash
+specweave jobs --logs def456
+```
+
+> "Last 50 lines of worker output. Essential for debugging failures."
+
+#### Pause and Resume
+
+```bash
+# Pause (saves checkpoint)
+specweave jobs --kill def456
+
+# Resume from checkpoint
+specweave jobs --resume def456
+```
+
+> "Long-running job? Pause it. Go home. Resume tomorrow. Checkpoint-based — zero data loss."
+
+---
+
+### AGENT.MD — NON-CLAUDE AI TOOLS (66:30 - 68:30)
 
 **[VISUAL: Multiple AI logos - GPT, Gemini, Copilot, etc.]**
 
@@ -1577,7 +1859,7 @@ EOF
 
 ---
 
-### SPECWEAVE ACADEMY (72:00 - 74:00)
+### SPECWEAVE ACADEMY (68:30 - 70:00)
 
 **[VISUAL: Academy page / docs structure]**
 
@@ -1620,19 +1902,19 @@ EOF
 
 ---
 
-### OUTRO (60:00 - 61:00)
+### OUTRO (70:00 - 71:00)
 
 **[VISUAL: Split screen - all 4 terminals + final code]**
 
 > "Okay. That was A LOT.
 
-> I'm not gonna lie — building SpecWeave was MASSIVE. Months of work. 60+ increments. Thousands of lines of code. And honestly? It was exhausting. But SO worth it."
+> I'm not gonna lie — building SpecWeave was MASSIVE. 90+ increments now. Thousands of lines of code. And honestly? It was exhausting. But SO worth it."
 
 **[VISUAL: Quick montage of features shown]**
 
 > "Let me recap what you just saw:
 
-> 15 AI agents that orchestrate themselves. Enterprise hierarchy mapping. Bidirectional sync with JIRA, GitHub, Azure DevOps. Multi-language translation. Support for ANY AI tool. Not just Claude — GPT, Gemini, Copilot.
+> 15+ AI agents that orchestrate themselves. Enterprise hierarchy mapping — even SAFe with 5 levels. BIDIRECTIONAL sync that pulls changes back from JIRA, GitHub, Azure DevOps. Background jobs that clone repos, import items, and BUILD DOCUMENTATION automatically. Multi-language translation. Support for ANY AI tool. Not just Claude — GPT, Gemini, Copilot.
 
 > This is the framework I wished existed when I started. Now it does. And it's FREE. Open source. No catch."
 
@@ -1676,15 +1958,22 @@ EOF
 | 16:00 | VS Code settings.json |
 | 20:00 | Full greenfield demo |
 | 32:00 | Translation commands |
-| 38:00 | EasyChamp brownfield |
-| 46:00 | GitHub issues sync |
-| 51:00 | JIRA board sync |
-| 55:00 | Azure DevOps sync |
+| 38:00 | EasyChamp brownfield with Living Docs Builder (NEW!) |
+| 43:00 | specweave jobs --follow output (NEW!) |
+| 48:00 | SUGGESTIONS.md generated output (NEW!) |
+| 53:00 | GitHub sync with pull sync demo (NEW!) |
+| 57:00 | JIRA board sync |
+| 60:00 | Azure DevOps with SAFe hierarchy detection (NEW!) |
+| 64:00 | specweave jobs command (NEW!) |
 
 ### Graphics Needed
 
 - SpecWeave logo intro
 - Comparison table: BMAD vs SpecKit vs SpecWeave
+- Background jobs workflow diagram (NEW!)
+- Living Docs Builder 6-phase diagram (NEW!)
+- ADO process template comparison table (NEW!)
+- Bidirectional sync flow diagram (NEW!)
 - Sync flow diagram (JIRA ↔ SpecWeave ↔ Code)
 - 4-terminal layout diagram
 - Feature cards animation
@@ -1708,32 +1997,41 @@ EOF
 ```
 Finally. A framework that works on legacy codebases, startup MVPs, AND enterprise platforms.
 
-I've worked on 10-year-old legacy code where nobody knows how anything works. I've built startup MVPs at 2am with zero documentation. I've navigated enterprise platforms with 50 microservices.
+I've worked on 10-year-old legacy code where nobody knows how anything works. I've built startup MVPs at 2am with zero documentation. I've navigated enterprise platforms with 50 microservices and SAFe hierarchies.
 
 Every time, I thought: there HAS to be a framework that works on ALL of these.
 
 There wasn't. So I built one. SpecWeave.
 
-IN THIS VIDEO (~61 min):
+IN THIS VIDEO (~71 min):
 
 THE PROBLEM:
 • Why BMAD/SpecKit fail on real projects
 • Documentation that always goes stale
-• Tools that don't sync
+• Tools that don't sync BIDIRECTIONALLY
 
 THE SOLUTION:
-• Drop SpecWeave into ANY codebase — it understands everything
+• Drop SpecWeave into ANY codebase — it GENERATES documentation automatically
 • Living docs that update themselves after every task
-• Universal sync: JIRA ↔ GitHub ↔ Azure DevOps
+• BIDIRECTIONAL sync: JIRA ↔ GitHub ↔ Azure DevOps (pull AND push!)
+• Background jobs: clone, import, analyze while you work
 • Works with ANY AI: Claude, GPT, Gemini, Copilot
 
-6 REAL DEMOS:
+🆕 NEW IN v0.28:
+• 🔄 BIDIRECTIONAL SYNC: External changes flow back to SpecWeave
+• 📚 LIVING DOCS BUILDER: Auto-generate docs for brownfield projects
+• 🔧 BACKGROUND JOBS: Clone, import, analyze in background
+• 🏢 ADO HIERARCHY INTELLIGENCE: Auto-detect SAFe, Agile, Scrum, CMMI
+• ⏸️ PAUSE/RESUME: Long-running jobs with checkpoints
+
+7 REAL DEMOS:
 • 🆕 Greenfield: Build from scratch
 • 🌍 Translation: Multi-language in one command
-• 🏚️ Brownfield: Real legacy code (10+ years old)
-• 🐙 GitHub: Bidirectional issue sync
+• 🏚️ Brownfield: Living Docs Builder (auto-generate docs!)
+• 🐙 GitHub: Bidirectional sync with pull
 • 📋 JIRA: Enterprise epic/story integration
-• 🔷 Azure DevOps: Work items + area paths
+• 🔷 Azure DevOps: SAFe hierarchy detection
+• 📊 Background Jobs: Monitor, pause, resume
 
 BONUS:
 • Works with GPT/Gemini/Copilot (not just Claude!)
@@ -1758,24 +2056,26 @@ TIMESTAMPS:
 0:00 - Finally: Legacy, Startup, AND Enterprise
 1:30 - The Problem (Why nothing else works)
 6:30 - What is SpecWeave?
-10:30 - How work hierarchy maps everywhere
-16:30 - Project-aware sync & /next flow
-20:30 - Plugins & Skills
-24:30 - Installation (Mac + Windows)
-29:30 - VS Code Setup
-32:30 - DEMO: Greenfield
-36:30 - DEMO: Translation
-39:30 - DEMO: Brownfield (DEEP DIVE)
-47:30 - DEMO: GitHub Sync
-50:30 - DEMO: JIRA Sync
-53:30 - DEMO: Azure DevOps
-56:30 - Works with ANY AI (not just Claude)
-58:30 - Academy & Resources
-60:00 - This was HUGE (Outro)
+10:30 - Docs Architecture: Internal vs Public
+13:30 - Enterprise Engineering + Hierarchy Mapping
+19:30 - Project-aware sync & /next flow
+23:30 - Plugins & Skills
+27:30 - Installation (Mac + Windows)
+32:30 - VS Code Setup
+36:30 - DEMO: Greenfield
+40:30 - DEMO: Translation
+43:30 - DEMO: Brownfield with Living Docs Builder (NEW!)
+53:30 - DEMO: GitHub Sync with Bidirectional Pull (NEW!)
+57:30 - DEMO: JIRA Sync
+60:30 - DEMO: Azure DevOps with Hierarchy Intelligence (NEW!)
+64:30 - Background Jobs Monitoring (NEW!)
+66:30 - Works with ANY AI (AGENT.md)
+68:30 - Academy & Resources
+70:00 - This was HUGE (Outro)
 
 Free. Open Source. No catch.
 
-#SpecWeave #LegacyCode #Startup #Enterprise #AIFramework #JIRA #GitHub #AzureDevOps #OpenSource #LivingDocs #Documentation #DevTools #BMAD #SoftwareEngineering
+#SpecWeave #LegacyCode #Startup #Enterprise #AIFramework #JIRA #GitHub #AzureDevOps #OpenSource #LivingDocs #Documentation #DevTools #BMAD #SoftwareEngineering #BackgroundJobs #BidirectionalSync #SAFe
 ```
 
 ---
@@ -1806,8 +2106,18 @@ npx specweave init .
 /specweave:increment "feature"   # Plan work
 /specweave:do                    # Execute
 /specweave:progress              # Check status
-/specweave:sync-progress         # Sync all tools
+/specweave:sync-progress         # Sync all tools (bidirectional!)
 /specweave:done 0001             # Close increment
+
+# NEW in v0.28: Background Jobs
+specweave jobs                   # List all jobs
+specweave jobs --follow <id>     # Real-time progress
+specweave jobs --logs <id>       # View job logs
+specweave jobs --kill <id>       # Pause job
+specweave jobs --resume <id>     # Resume from checkpoint
+
+# NEW in v0.28: Pull Sync
+/specweave:sync-pull             # Pull external changes
 
 # External Sync
 /specweave:github-sync

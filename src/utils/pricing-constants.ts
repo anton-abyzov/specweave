@@ -4,9 +4,9 @@
  * Pricing as of 2025-10-31 (verified against https://www.anthropic.com/pricing)
  *
  * Model Tier Mapping:
+ * - opus → claude-opus-4-5-20251101 (latest Opus 4.5 - DEFAULT)
  * - sonnet → claude-sonnet-4-5-20250929 (latest Sonnet 4.5)
- * - haiku → claude-4-5-haiku-20250110 (latest Haiku 4.5)
- * - opus → claude-opus-4-0-... (when released)
+ * - haiku → claude-haiku-4-5-20251001 (latest Haiku 4.5)
  *
  * Note: This file should be updated when Anthropic releases new models.
  */

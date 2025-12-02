@@ -1,0 +1,67 @@
+flowchart TD
+    subgraph ADO["Azure DevOps (5-6 Level Hierarchies)"]
+        subgraph SAFe["SAFe/Enterprise Template (5 Levels)"]
+            SAFE_CAP[Capability]
+            SAFE_EPIC[Epic]
+            SAFE_FEAT[Feature]
+            SAFE_US[User Story]
+            SAFE_TASK[Task]
+            SAFE_CAP --> SAFE_EPIC --> SAFE_FEAT --> SAFE_US --> SAFE_TASK
+        end
+
+        subgraph Agile["Agile Template (4 Levels)"]
+            AG_EPIC[Epic]
+            AG_FEAT[Feature]
+            AG_US[User Story]
+            AG_TASK[Task]
+            AG_EPIC --> AG_FEAT --> AG_US --> AG_TASK
+        end
+
+        subgraph Scrum["Scrum Template (4 Levels)"]
+            SC_EPIC[Epic]
+            SC_FEAT[Feature]
+            SC_PBI[Product Backlog Item]
+            SC_TASK[Task]
+            SC_EPIC --> SC_FEAT --> SC_PBI --> SC_TASK
+        end
+
+        subgraph CMMI["CMMI Template (4 Levels)"]
+            CM_EPIC[Epic]
+            CM_FEAT[Feature]
+            CM_REQ[Requirement]
+            CM_TASK[Task]
+            CM_EPIC --> CM_FEAT --> CM_REQ --> CM_TASK
+        end
+    end
+
+    subgraph Detection["Process Template Detection"]
+        API["ADO API Call"]
+        DETECT{"Detect Template"}
+        API --> DETECT
+        DETECT -->|processTemplate| TEMPLATE["Agile/Scrum/CMMI/Basic"]
+        DETECT -->|Has Capability?| SAFE_CHECK["SAFe/Enterprise"]
+    end
+
+    subgraph SpecWeave["SpecWeave (4 Level Structure)"]
+        SW_EPIC["_epics/EP-XXXE/<br/>EPIC.md"]
+        SW_FEAT["FS-XXXE/<br/>FEATURE.md"]
+        SW_US["us-xxxe.md<br/>(User Story)"]
+        SW_TASK["tasks.md<br/>(Tasks)"]
+        SW_EPIC --> SW_FEAT --> SW_US --> SW_TASK
+    end
+
+    subgraph Mapping["Intelligent Mapping Rules"]
+        SAFE_CAP -.->|"Capability → Epic"| SW_EPIC
+        SAFE_EPIC -.->|"Epic → Feature<br/>(parent ref in FEATURE.md)"| SW_FEAT
+
+        AG_EPIC -.->|"Epic → Epic"| SW_EPIC
+        AG_FEAT -.->|"Feature → Feature"| SW_FEAT
+
+        SC_PBI -.->|"PBI → User Story"| SW_US
+        CM_REQ -.->|"Requirement → User Story"| SW_US
+    end
+
+    style SAFE_CAP fill:#ff9999
+    style SW_EPIC fill:#99ff99
+    style SW_FEAT fill:#99ccff
+    style Detection fill:#ffffcc

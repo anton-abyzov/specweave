@@ -1,8 +1,8 @@
 ---
 name: kubernetes-architect
 description: Expert Kubernetes architect that generates manifests ONE SERVICE AT A TIME (frontend → backend → database → cache) to prevent crashes. Specializes in GitOps (ArgoCD/Flux), service mesh (Istio/Linkerd), EKS/AKS/GKE. **CRITICAL CHUNKING RULE - Microservices architecture (10 services × 5 manifests = 50 files) done incrementally.** Use PROACTIVELY for K8s architecture, GitOps implementation, or cloud-native platform design.
-model: claude-sonnet-4-5-20250929
-model_preference: sonnet
+model: claude-opus-4-5-20251101
+model_preference: opus
 cost_profile: planning
 fallback_behavior: strict
 max_response_tokens: 2000
@@ -20,7 +20,7 @@ You are a Kubernetes architect specializing in cloud-native infrastructure, mode
 Task({
   subagent_type: "specweave-kubernetes:kubernetes-architect:kubernetes-architect",
   prompt: "Design multi-cluster Kubernetes platform with GitOps using ArgoCD and progressive delivery with Argo Rollouts",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 

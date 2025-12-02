@@ -88,6 +88,15 @@ export type AzureDevOpsStrategy =
   | 'team-based';                // One project with multiple teams
 
 /**
+ * ADO Process Template types
+ *
+ * Detected automatically via ADO API to determine hierarchy mapping.
+ * SAFe has 5 levels (Capability→Epic→Feature→Story→Task)
+ * Others have 4 levels or less.
+ */
+export type AdoProcessTemplate = 'Agile' | 'Scrum' | 'CMMI' | 'Basic' | 'SAFe' | 'unknown';
+
+/**
  * Per-project configuration for Azure DevOps
  *
  * Used when selecting multiple ADO projects during init
@@ -97,6 +106,10 @@ export interface AzureDevOpsProjectConfig {
   areaPaths?: string[]; // Area paths for this project (leaf names only)
   isDefault?: boolean; // Mark as default profile for sync
   isUmbrella?: boolean; // Umbrella/parent project (folder structure only, no items imported)
+  /** Auto-detected process template (Agile, Scrum, CMMI, SAFe, etc.) */
+  processTemplate?: AdoProcessTemplate;
+  /** True if project has Capability work item type (indicates SAFe 5-level hierarchy) */
+  hasCapability?: boolean;
 }
 
 /**
@@ -192,6 +205,23 @@ export interface SetupOptions {
   repositoryHosting?: RepositoryHosting; // Repository hosting choice (informs issue tracker defaults)
   /** ADO credentials from repository setup - reused when ADO is also selected for issue tracking */
   adoCredentialsFromRepoSetup?: AdoProjectSelection;
+}
+
+/**
+ * Sync settings for external tool integration
+ */
+export interface SyncSettings {
+  includeStatus: boolean;
+  autoApplyLabels: boolean;
+}
+
+/**
+ * Sync permissions for external tool operations
+ */
+export interface SyncPermissions {
+  canUpsertInternalItems: boolean;
+  canUpdateExternalItems: boolean;
+  canUpdateStatus: boolean;
 }
 
 /**

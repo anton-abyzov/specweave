@@ -77,6 +77,44 @@
 
 **CRITICAL**: Claude Code has automatic hooks. Other tools DO NOT.
 
+### Latest Features (v0.28+)
+
+SpecWeave v0.28+ introduces powerful automation that **works differently** in non-Claude tools:
+
+| Feature | Claude Code | Non-Claude Tools |
+|---------|-------------|------------------|
+| **Living Docs Builder** | Auto-runs after init | Use `specweave jobs --follow` to monitor |
+| **Bidirectional Sync** | Pull sync on session start | Run `/specweave:sync-pull` manually |
+| **Background Jobs** | Automatic with hooks | Monitor with `specweave jobs` CLI |
+| **EDA Hooks** | Auto-detect task completion | Manually update tasks.md + spec.md |
+
+### Background Jobs Workflow (NEW in v0.28)
+
+SpecWeave now runs heavy operations as **background jobs**:
+
+```bash
+# Monitor all jobs
+specweave jobs
+
+# Follow a specific job
+specweave jobs --follow <job-id>
+
+# View job logs
+specweave jobs --logs <job-id>
+
+# Pause/resume long-running jobs
+specweave jobs --kill <job-id>    # Pauses gracefully
+specweave jobs --resume <job-id>  # Resumes from checkpoint
+```
+
+**Job Types**:
+- `clone-repos` - Clone multiple repositories (ADO/GitHub)
+- `import-issues` - Import work items from external tools
+- `living-docs-builder` - Generate documentation from codebase (NEW!)
+- `sync-external` - Bidirectional sync with external tools
+
+**Job Dependencies**: The `living-docs-builder` waits for `clone-repos` and `import-issues` to complete before starting. This is automatic - just monitor with `specweave jobs`.
+
 ### Code-First Approach (MANDATORY for Non-Claude Tools)
 
 > **Engineering insight**: [Anthropic research](https://www.anthropic.com/engineering/code-execution-with-mcp) shows code execution achieves **98% token reduction** vs MCP tool calls.
@@ -189,6 +227,52 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 /specweave-github:sync <increment-id>
 ```
 
+#### 5. Bidirectional Sync - PULL from External Tools (NEW in v0.28)
+```bash
+# Claude hook: SessionStart (runs automatically)
+# For non-Claude tools, run manually to catch external changes:
+
+# Pull changes from external tools (status, priority, assignee)
+/specweave:sync-pull
+
+# This does:
+# 1. Query ADO/JIRA/GitHub for items changed since last sync
+# 2. Pull status/priority/assignee updates to living docs
+# 3. Use timestamp-based conflict resolution (latest wins)
+# 4. Log all changes with full audit trail
+
+# When to run:
+# - Start of each work session (catch overnight changes)
+# - Before starting work on a linked increment
+# - After PM updates status in external tool
+```
+
+#### 6. After Init on Brownfield Project (NEW in v0.28)
+```bash
+# SpecWeave automatically launches living-docs-builder job after init
+# For non-Claude tools, monitor it manually:
+
+# Check job status
+specweave jobs
+
+# Follow the living-docs-builder progress
+specweave jobs --follow <job-id>
+
+# The job runs in 6 phases:
+# 1. waiting - Waits for clone/import jobs to complete
+# 2. discovery - Scans codebase structure (no LLM, fast)
+# 3. foundation - Generates overview.md, tech-stack.md (1-2 hours)
+# 4. integration - Matches work items to discovered modules
+# 5. deep-dive - Analyzes modules one at a time with checkpoints
+# 6. suggestions - Generates SUGGESTIONS.md with next steps
+
+# Output locations:
+# - .specweave/docs/internal/architecture/overview.md
+# - .specweave/docs/internal/architecture/tech-stack.md
+# - .specweave/docs/internal/strategy/modules-skeleton.md
+# - .specweave/docs/internal/SUGGESTIONS.md
+```
+
 ### How to Check if External Tools Configured
 
 ```bash
@@ -222,6 +306,19 @@ cat plugins/specweave/commands/specweave-increment.md
 │ 3. Run: /specweave:sync-tasks                               │
 │ 4. Run: /specweave-github:sync <id>  (if GitHub configured) │
 │ 5. If all ACs for US done: /specweave:sync-docs update      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Quick Reference: Session Start Routine (NEW in v0.28)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ START OF EVERY SESSION (FOR NON-CLAUDE TOOLS)               │
+├─────────────────────────────────────────────────────────────┤
+│ 1. Pull external changes: /specweave:sync-pull              │
+│ 2. Check job status:      specweave jobs                    │
+│ 3. Check progress:        /specweave:progress               │
+│ 4. Continue work:         /specweave:do                     │
 └─────────────────────────────────────────────────────────────┘
 ```
 

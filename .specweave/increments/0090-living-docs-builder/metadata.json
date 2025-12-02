@@ -1,0 +1,17 @@
+{
+  "id": "0090-living-docs-builder",
+  "status": "completed",
+  "type": "feature",
+  "title": "Living Docs Builder - Smart Background Job for Brownfield Projects",
+  "priority": "P1",
+  "created": "2025-12-02T14:30:00Z",
+  "lastActivity": "2025-12-02T18:00:00Z",
+  "completedAt": "2025-12-02T19:30:00Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "totalACs": 61,
+  "completedACs": 61,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

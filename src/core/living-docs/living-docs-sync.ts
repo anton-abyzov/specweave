@@ -165,11 +165,14 @@ export class LivingDocsSync {
 
       // Step 4: Create living docs structure
       // Structure: specs/{project}/FS-XXX/FEATURE.md (+ user stories)
+      // CRITICAL FIX (2025-12-02): Use smart project path resolution for brownfield setups
+      // This handles hierarchical paths like "acme/digital-operations-services"
       const basePath = path.join(this.projectRoot, '.specweave/docs/internal/specs');
+      const resolvedProjectPath = await this.resolveProjectPath(incrementId);
 
       // Create {project}/FS-XXX/FEATURE.md
-      const projectPath = path.join(basePath, this.projectId, featureId);
-      this.logger.log(`   📁 Feature folder: ${this.projectId}/${featureId}/`);
+      const projectPath = path.join(basePath, resolvedProjectPath, featureId);
+      this.logger.log(`   📁 Feature folder: ${resolvedProjectPath}/${featureId}/`);
       const featureFile = path.join(projectPath, 'FEATURE.md');
 
       if (!options.dryRun) {
@@ -239,7 +242,7 @@ export class LivingDocsSync {
 
       // Step 9: Validate consistency (auto-repair if needed)
       if (!options.dryRun) {
-        await this.validateAndRepairConsistency(featureId);
+        await this.validateAndRepairConsistency(featureId, resolvedProjectPath);
       }
 
       result.success = true;
@@ -276,6 +279,230 @@ export class LivingDocsSync {
     // Derive feature ID directly from increment number (e.g., "0081-name" → "FS-081")
     // NO collision checking - internal feature IDs are deterministic and unique by design
     return deriveFeatureId(incrementId);
+  }
+
+  /**
+   * Extract project name from increment spec.md
+   *
+   * Looks for the **Project**: field in spec.md (e.g., "**Project**: digital-operation-services")
+   *
+   * SECURITY: Validates both incrementId and extracted project name to prevent path traversal
+   *
+   * @param incrementId - Increment ID (e.g., "0002-test-anton-monitor")
+   * @returns Project name or null if not specified or invalid
+   */
+  private async extractProjectFromSpec(incrementId: string): Promise<string | null> {
+    // SECURITY FIX (2025-12-02): Validate incrementId format FIRST
+    // Prevents path traversal via malicious increment IDs like "../../../etc"
+    if (!incrementId || !/^\d{4}-[a-z0-9-]+$/i.test(incrementId)) {
+      this.logger.warn(`   ⚠️  Invalid increment ID format: ${incrementId}`);
+      return null;
+    }
+
+    const specPath = path.join(
+      this.projectRoot,
+      '.specweave/increments',
+      incrementId,
+      'spec.md'
+    );
+
+    if (!existsSync(specPath)) {
+      return null;
+    }
+
+    try {
+      const content = await fs.readFile(specPath, 'utf-8');
+      // Match **Project**: value or **Project:** value (with or without space after colon)
+      const projectMatch = content.match(/\*\*Project\*\*:\s*(.+?)(?:\n|$)/i);
+      if (projectMatch && projectMatch[1]) {
+        // Strip markdown formatting before normalization
+        const rawProjectName = projectMatch[1]
+          .trim()
+          .replace(/\*\*/g, '')    // Remove bold markers
+          .replace(/__/g, '')      // Remove italic markers
+          .replace(/`/g, '');      // Remove code markers
+
+        const projectName = rawProjectName.toLowerCase().replace(/\s+/g, '-');
+
+        // SECURITY: Minimum length check to prevent empty names after stripping
+        if (!projectName || projectName.length < 2) {
+          this.logger.warn(`   ⚠️  Project name too short: ${projectName}`);
+          return null;
+        }
+
+        // CRITICAL SECURITY: Block path traversal attempts
+        // Reject names containing: .., /, \, or null bytes
+        if (projectName.includes('..') ||
+            projectName.includes('/') ||
+            projectName.includes('\\') ||
+            projectName.includes('\0')) {
+          this.logger.warn(`   ⚠️  Invalid project name (potential path traversal): ${projectName}`);
+          return null;
+        }
+
+        // Validate: only allow alphanumeric, hyphens, underscores
+        if (!/^[a-z0-9_-]+$/.test(projectName)) {
+          this.logger.warn(`   ⚠️  Invalid project name (invalid characters): ${projectName}`);
+          return null;
+        }
+
+        return projectName;
+      }
+    } catch {
+      // Ignore errors, return null
+    }
+
+    return null;
+  }
+
+  /**
+   * Resolve the project path for an increment (SMART BROWNFIELD MATCHING)
+   *
+   * For brownfield projects imported from ADO/JIRA, the specs folder may have
+   * hierarchical organization like: acme/digital-operations-services
+   *
+   * This method:
+   * 1. Extracts the project name from increment spec.md
+   * 2. Scans existing specs folder for matching hierarchical paths
+   * 3. Returns the FULL path if found (e.g., "acme/digital-operations-services")
+   * 4. Falls back to flat path if no match (e.g., "digital-operation-services")
+   *
+   * @param incrementId - Increment ID (e.g., "0002-test-anton-monitor")
+   * @returns Project path (may be hierarchical like "org/project")
+   */
+  private async resolveProjectPath(incrementId: string): Promise<string> {
+    // 1. Extract project name from spec.md
+    const specProject = await this.extractProjectFromSpec(incrementId);
+
+    if (!specProject) {
+      // No project in spec.md, use default detection
+      return this.projectId;
+    }
+
+    // 2. Normalize the project name for comparison
+    const normalizedProject = specProject.toLowerCase().replace(/\s+/g, '-');
+
+    // 3. Scan existing specs folder for hierarchical matches
+    const specsBase = path.join(this.projectRoot, '.specweave/docs/internal/specs');
+
+    if (!existsSync(specsBase)) {
+      return normalizedProject;
+    }
+
+    // Search for matching paths at all levels (org/project, project)
+    const foundPath = await this.findBestProjectMatch(specsBase, normalizedProject);
+
+    if (foundPath) {
+      this.logger.log(`   🔍 Found existing project path: ${foundPath}`);
+      return foundPath;
+    }
+
+    // No match found, use flat project name
+    return normalizedProject;
+  }
+
+  /**
+   * Find the best matching project path in existing specs structure
+   *
+   * Searches for:
+   * 1. Direct match: specs/{project}/
+   * 2. Hierarchical match: specs/{org}/{project}/
+   * 3. Fuzzy match: specs/{org}/{similar-project}/ (handles typos like "operation" vs "operations")
+   *
+   * @param specsBase - Base specs folder path
+   * @param projectName - Project name to search for
+   * @returns Full relative path (e.g., "acme/digital-operations-services") or null
+   */
+  private async findBestProjectMatch(specsBase: string, projectName: string): Promise<string | null> {
+    try {
+      const entries = await fs.readdir(specsBase, { withFileTypes: true });
+
+      // 1. Check for direct match at root level
+      for (const entry of entries) {
+        if (entry.isDirectory() && !entry.name.startsWith('_')) {
+          if (this.projectNamesMatch(entry.name, projectName)) {
+            return entry.name;
+          }
+        }
+      }
+
+      // 2. Check for hierarchical match (org/project)
+      for (const entry of entries) {
+        if (entry.isDirectory() && !entry.name.startsWith('_') && !entry.name.startsWith('FS-')) {
+          // This could be an organization folder, check inside
+          const orgPath = path.join(specsBase, entry.name);
+          try {
+            const orgEntries = await fs.readdir(orgPath, { withFileTypes: true });
+
+            for (const subEntry of orgEntries) {
+              if (subEntry.isDirectory() && !subEntry.name.startsWith('_') && !subEntry.name.startsWith('FS-')) {
+                if (this.projectNamesMatch(subEntry.name, projectName)) {
+                  return `${entry.name}/${subEntry.name}`;
+                }
+              }
+            }
+          } catch {
+            // Not a directory or can't read, skip
+          }
+        }
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Compare project names with fuzzy matching
+   *
+   * Handles common variations:
+   * - "operation" vs "operations"
+   * - "service" vs "services"
+   * - Different separators (hyphen vs underscore)
+   *
+   * SECURITY: Requires minimum length to prevent false positive matches
+   * NOTE: Uses standardization (singular form) instead of abbreviation to prevent
+   *       false matches (e.g., "optical" should NOT match "operations")
+   *
+   * @param existing - Existing folder name
+   * @param target - Target project name to match
+   * @returns true if names match (exact or fuzzy)
+   */
+  private projectNamesMatch(existing: string, target: string): boolean {
+    // Normalize both names - standardize to singular form (NOT abbreviate)
+    // This prevents false positives: "optical" won't match "operations"
+    const normalizeForComparison = (name: string): string => {
+      return name
+        .toLowerCase()
+        .replace(/[-_\s]+/g, '-')                 // Normalize separators
+        .replace(/\boperations\b/g, 'operation')  // Standardize to singular
+        .replace(/\bservices\b/g, 'service');     // Standardize to singular
+    };
+
+    const normalizedExisting = normalizeForComparison(existing);
+    const normalizedTarget = normalizeForComparison(target);
+
+    // Exact match after normalization
+    if (normalizedExisting === normalizedTarget) {
+      return true;
+    }
+
+    // SECURITY: Minimum length check to prevent false positive matches
+    // Short strings like "api" should not fuzzy-match "api-gateway-service"
+    const minLength = Math.min(normalizedExisting.length, normalizedTarget.length);
+    if (minLength < 5) {
+      return false; // Too short to reliably fuzzy match
+    }
+
+    // Check if one contains the other (for partial matches)
+    if (normalizedExisting.includes(normalizedTarget) || normalizedTarget.includes(normalizedExisting)) {
+      // Only match if they're reasonably similar in length (avoid false positives)
+      const lengthRatio = minLength / Math.max(normalizedExisting.length, normalizedTarget.length);
+      return lengthRatio > 0.7;
+    }
+
+    return false;
   }
 
   // NOTE (v0.29.0): updateMetadataFeatureId() was REMOVED
@@ -798,20 +1025,21 @@ export class LivingDocsSync {
    * - Logs warning if missing
    *
    * @param featureId - Feature ID that was just synced (e.g., "FS-062")
+   * @param resolvedProjectPath - Resolved project path (may be hierarchical like "org/project")
    */
-  private async validateAndRepairConsistency(featureId: string): Promise<void> {
+  private async validateAndRepairConsistency(featureId: string, resolvedProjectPath: string): Promise<void> {
     try {
-      const projectPath = path.join(
+      const featureFolderPath = path.join(
         this.projectRoot,
         '.specweave/docs/internal/specs',
-        this.projectId,
+        resolvedProjectPath,
         featureId
       );
-      const featureFile = path.join(projectPath, 'FEATURE.md');
+      const featureFile = path.join(featureFolderPath, 'FEATURE.md');
 
       // Verify FEATURE.md exists
       if (!existsSync(featureFile)) {
-        this.logger.warn(`   ⚠️  FEATURE.md missing in ${this.projectId}/${featureId}/`);
+        this.logger.warn(`   ⚠️  FEATURE.md missing in ${resolvedProjectPath}/${featureId}/`);
       }
     } catch (error) {
       // Non-fatal - log warning but continue

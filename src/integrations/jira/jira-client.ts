@@ -70,6 +70,29 @@ export interface JiraIssueFilter {
   project?: string;         // Project key
   jql?: string;             // Custom JQL query
   maxResults?: number;      // Limit results (default: 50)
+  updatedSince?: Date;      // Filter by updated date (for pull sync)
+  issueKeys?: string[];     // Filter by specific issue keys (for linked items)
+}
+
+/**
+ * External change representation for pull sync
+ */
+export interface JiraExternalChange {
+  platform: 'jira';
+  externalId: string;
+  issueKey: string;
+  changedAt: string;        // ISO timestamp
+  changedBy: string;        // Email/username
+  changedFields: Array<{
+    field: string;
+    oldValue: unknown;
+    newValue: unknown;
+  }>;
+  currentState: {
+    status: string;
+    priority: string | null;
+    assignee: string | null;
+  };
 }
 
 export interface JiraIssueCreate {
@@ -195,6 +218,19 @@ export class JiraClient {
       filter.labels.forEach(label => {
         conditions.push(`labels = "${label}"`);
       });
+    }
+
+    // Pull sync filter: updated since timestamp
+    if (filter.updatedSince) {
+      // JIRA JQL uses relative date format: "2025-12-01 10:00" or "-1h"
+      const hoursSince = Math.ceil((Date.now() - filter.updatedSince.getTime()) / 3600000);
+      conditions.push(`updated >= -${hoursSince}h`);
+    }
+
+    // Pull sync filter: specific issue keys
+    if (filter.issueKeys && filter.issueKeys.length > 0) {
+      const keys = filter.issueKeys.map(k => `"${k}"`).join(', ');
+      conditions.push(`key IN (${keys})`);
     }
 
     if (conditions.length === 0) {
@@ -633,6 +669,130 @@ export class JiraClient {
     }
 
     return response.json() as Promise<any[]>;
+  }
+
+  /**
+   * Fetch recently changed issues for pull sync (Increment 0089)
+   *
+   * Queries JIRA for issues that have changed since a given timestamp.
+   * Uses JQL `updated >=` filter and optionally requests changelog expansion.
+   *
+   * @param since - Timestamp to query changes from
+   * @param linkedIssueKeys - Optional list of issue keys to filter (linked items only)
+   * @returns Array of external changes with changedAt, changedBy, and current values
+   */
+  public async fetchRecentChanges(
+    since: Date,
+    linkedIssueKeys?: string[]
+  ): Promise<JiraExternalChange[]> {
+    // Build filter for recently changed items
+    const filter: JiraIssueFilter = {
+      updatedSince: since,
+      maxResults: 100, // Limit to prevent overwhelming results
+    };
+
+    // If specific keys provided, only query those
+    if (linkedIssueKeys && linkedIssueKeys.length > 0) {
+      filter.issueKeys = linkedIssueKeys;
+    }
+
+    // Query issues with expanded changelog
+    const jql = this.buildJqlQuery(filter);
+    const url = `${this.baseUrl}/rest/api/${this.apiVersion}/search/jql`;
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        jql,
+        maxResults: filter.maxResults,
+        fields: ['summary', 'status', 'priority', 'assignee', 'updated', 'creator'],
+        expand: ['changelog']  // Request changelog for field-level changes
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Jira API Error (${response.status}): ${error}`);
+    }
+
+    const data = await response.json() as any;
+    const issues: JiraIssue[] = data.issues || [];
+
+    // Map to ExternalChange format
+    const changes: JiraExternalChange[] = issues.map((issue: any) => {
+      // Extract changelog items if available
+      const changedFields: Array<{ field: string; oldValue: unknown; newValue: unknown }> = [];
+
+      if (issue.changelog?.histories) {
+        // Get the most recent history entries since 'since' timestamp
+        for (const history of issue.changelog.histories) {
+          const historyDate = new Date(history.created);
+          if (historyDate >= since) {
+            for (const item of history.items || []) {
+              changedFields.push({
+                field: item.field,
+                oldValue: item.fromString ?? item.from,
+                newValue: item.toString ?? item.to,
+              });
+            }
+          }
+        }
+      }
+
+      return {
+        platform: 'jira' as const,
+        externalId: issue.key,
+        issueKey: issue.key,
+        changedAt: issue.fields?.updated || new Date().toISOString(),
+        changedBy: issue.changelog?.histories?.[0]?.author?.displayName ||
+                   issue.changelog?.histories?.[0]?.author?.emailAddress ||
+                   issue.fields?.creator?.displayName ||
+                   'unknown',
+        changedFields,
+        currentState: {
+          status: issue.fields?.status?.name || 'Unknown',
+          priority: issue.fields?.priority?.name || null,
+          assignee: issue.fields?.assignee?.displayName ||
+                    issue.fields?.assignee?.emailAddress ||
+                    null,
+        },
+      };
+    });
+
+    return changes;
+  }
+
+  /**
+   * Get issue changelog for detailed change tracking
+   *
+   * Use this for detailed changelog when needed.
+   * GET /rest/api/3/issue/{issueKey}/changelog
+   *
+   * @param issueKey - Issue key
+   * @param maxResults - Limit number of changelog entries
+   * @returns Array of changelog entries with field changes
+   */
+  public async getIssueChangelog(issueKey: string, maxResults = 10): Promise<any[]> {
+    const url = `${this.baseUrl}/rest/api/${this.apiVersion}/issue/${issueKey}/changelog?maxResults=${maxResults}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Jira API Error (${response.status}): ${error}`);
+    }
+
+    const data = await response.json() as any;
+    return data.values || [];
   }
 
   /**

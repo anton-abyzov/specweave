@@ -33,6 +33,21 @@ import {
 import { normalizeToProjectId } from '../../../utils/project-id-generator.js';
 import { getJobManager, launchImportJob, isJobRunning, getJobLog, detectOrphanedJobs, getActiveImportJob } from '../../../core/background/index.js';
 import type { ImportJobConfig } from '../../../core/background/types.js';
+// Extracted helpers for better maintainability
+import {
+  getExistingSyncProfiles,
+  isUmbrellaModeFromConfig,
+  getSyncProfileProviders,
+  loadAdoConfigFromSyncProfile,
+  getUmbrellaProjects,
+} from './sync-profile-helpers.js';
+import {
+  groupItemsByExternalContainer,
+  groupItemsBySourceRepo,
+  groupAdoItemsByParentHierarchy,
+  groupNonHierarchyItems,
+  type ContainerGroup,
+} from './external-import-grouping.js';
 
 /**
  * Get translated strings for external import
@@ -686,257 +701,15 @@ export async function promptAndRunExternalImport(
   });
 }
 
-/**
- * Get existing sync profiles from config.json
- * Returns array of "owner/repo" strings if profiles exist
- *
- * CRITICAL FIX (2025-11-26): Also includes parent repo from umbrella config
- * Bug: Parent repo was NOT being imported in umbrella mode - only child repos were processed
- */
-function getExistingSyncProfiles(targetDir: string): string[] | null {
-  try {
-    const configPath = path.join(targetDir, '.specweave', 'config.json');
-    if (!fs.existsSync(configPath)) {
-      return null;
-    }
+// getExistingSyncProfiles moved to ./sync-profile-helpers.ts
 
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    const repos: string[] = [];
+// isUmbrellaModeFromConfig moved to ./sync-profile-helpers.ts
 
-    // Check for sync.profiles structure (umbrella repo setup - child repos)
-    if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
-      const profiles = config.sync.profiles;
+// getSyncProfileProviders moved to ./sync-profile-helpers.ts
 
-      for (const [profileId, profile] of Object.entries(profiles)) {
-        const p = profile as { config?: { owner?: string; repo?: string } };
-        if (p.config?.owner && p.config?.repo) {
-          repos.push(`${p.config.owner}/${p.config.repo}`);
-        }
-      }
-    }
+// loadAdoConfigFromSyncProfile moved to ./sync-profile-helpers.ts
 
-    // CRITICAL FIX: Also include parent repo from umbrella config
-    // Parent repo may have issues/items that need to be imported too!
-    if (config.umbrella?.enabled && config.umbrella?.parentRepo) {
-      // parentRepo can be "owner/repo" or just "repo" (same owner as git remote)
-      let parentRepoFullName = config.umbrella.parentRepo;
-
-      // If parentRepo is just the repo name, try to get owner from git remote or first child repo
-      if (!parentRepoFullName.includes('/')) {
-        // Try to find owner from sync profiles (same owner as child repos)
-        const firstProfile = Object.values(config.sync?.profiles || {})[0] as { config?: { owner?: string } } | undefined;
-        const owner = firstProfile?.config?.owner;
-        if (owner) {
-          parentRepoFullName = `${owner}/${parentRepoFullName}`;
-        }
-      }
-
-      // Add parent repo if not already in the list
-      if (parentRepoFullName.includes('/') && !repos.includes(parentRepoFullName)) {
-        repos.push(parentRepoFullName);
-      }
-    }
-
-    return repos.length > 0 ? repos : null;
-  } catch (error) {
-    // Log warning for debugging - config parsing errors shouldn't be silent
-    console.warn(chalk.yellow(`   ⚠️  Failed to read sync profiles: ${error instanceof Error ? error.message : String(error)}`));
-    return null;
-  }
-}
-
-/**
- * Check if umbrella mode is enabled from config.json
- * Returns true if sync.profiles exist OR umbrella.enabled is true
- *
- * CRITICAL: Used to force global collision detection even for single-group batches
- */
-function isUmbrellaModeFromConfig(targetDir: string): boolean {
-  try {
-    const configPath = path.join(targetDir, '.specweave', 'config.json');
-    if (!fs.existsSync(configPath)) {
-      return false;
-    }
-
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-
-    // Check 1: umbrella.enabled is explicitly true
-    if (config.umbrella?.enabled === true) {
-      return true;
-    }
-
-    // Check 2: sync.profiles has multiple entries (umbrella repo setup)
-    if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
-      const profileCount = Object.keys(config.sync.profiles).length;
-      if (profileCount >= 2) {
-        return true;
-      }
-    }
-
-    // Check 3: multiProject.enabled is true
-    if (config.multiProject?.enabled === true) {
-      return true;
-    }
-
-    return false;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Get sync profile providers from config.json
- * Returns array of provider names ('github', 'jira', 'ado') from sync profiles
- */
-function getSyncProfileProviders(targetDir: string): string[] {
-  try {
-    const configPath = path.join(targetDir, '.specweave', 'config.json');
-    if (!fs.existsSync(configPath)) {
-      return [];
-    }
-
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    const providers = new Set<string>();
-
-    // Check sync.profiles structure
-    if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
-      for (const profile of Object.values(config.sync.profiles)) {
-        const p = profile as { provider?: string };
-        if (p.provider) {
-          providers.add(p.provider.toLowerCase());
-        }
-      }
-    }
-
-    // Also check top-level sync.provider
-    if (config.sync?.provider) {
-      providers.add(config.sync.provider.toLowerCase());
-    }
-
-    return Array.from(providers);
-  } catch {
-    return [];
-  }
-}
-
-/**
- * Load ADO config from sync profile when detectAllConfigs() fails
- * This ensures work items are imported even when the main detection fails
- *
- * CRITICAL FIX (2025-11-29): This fixes the bug where ADO folders were created
- * but no work items were imported because ado was null in the import flow.
- *
- * ENHANCED (2025-11-30): Now supports multi-project ADO setups by collecting
- * ALL ADO profiles and building the projects array for multi-project import.
- */
-function loadAdoConfigFromSyncProfile(targetDir: string): ADOConfig | null {
-  try {
-    const configPath = path.join(targetDir, '.specweave', 'config.json');
-    if (!fs.existsSync(configPath)) {
-      return null;
-    }
-
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-
-    // Load PAT from .env file (needed for all profiles)
-    let pat: string | undefined;
-    const envPath = path.join(targetDir, '.env');
-    if (fs.existsSync(envPath)) {
-      const envContent = fs.readFileSync(envPath, 'utf-8');
-      const envVars = parseEnvFile(envContent);
-      pat = envVars.AZURE_DEVOPS_PAT || envVars.ADO_PAT;
-    }
-    // Also check environment variables
-    if (!pat) {
-      pat = process.env.AZURE_DEVOPS_PAT || process.env.ADO_PAT;
-    }
-
-    if (!pat) {
-      return null;
-    }
-
-    // Collect ALL ADO profiles for multi-project support
-    const adoProjects: Array<{ name: string; areaPaths?: string[]; isDefault?: boolean; isUmbrella?: boolean }> = [];
-    let organization: string | undefined;
-    let strategy: string | undefined;
-
-    if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
-      const activeProfileId = config.sync.activeProfile;
-
-      for (const [profileId, profile] of Object.entries(config.sync.profiles)) {
-        const p = profile as { provider?: string; config?: { organization?: string; project?: string; areaPaths?: string[]; strategy?: string; isUmbrella?: boolean } };
-        if (p.provider?.toLowerCase() === 'ado' && p.config) {
-          const profileConfig = p.config;
-
-          if (profileConfig.organization && profileConfig.project) {
-            // Use first organization found (they should all be the same)
-            if (!organization) {
-              organization = profileConfig.organization;
-            }
-            // Use first strategy found
-            if (!strategy && profileConfig.strategy) {
-              strategy = profileConfig.strategy;
-            }
-
-            adoProjects.push({
-              name: profileConfig.project,
-              areaPaths: profileConfig.areaPaths,
-              isDefault: profileId === activeProfileId,
-              isUmbrella: profileConfig.isUmbrella
-            });
-          }
-        }
-      }
-    }
-
-    // Return null if no ADO projects found
-    if (adoProjects.length === 0 || !organization) {
-      return null;
-    }
-
-    // Return multi-project config
-    const defaultProject = adoProjects.find(p => p.isDefault) || adoProjects[0];
-    return {
-      orgUrl: `https://dev.azure.com/${organization}`,
-      project: defaultProject.name,  // Primary project for backwards compatibility
-      pat,
-      strategy,
-      projects: adoProjects  // Multi-project support
-    };
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Get umbrella project names from config.json
- * Umbrella projects are folder-structure-only (no items imported)
- */
-function getUmbrellaProjects(targetDir: string): string[] {
-  try {
-    const configPath = path.join(targetDir, '.specweave', 'config.json');
-    if (!fs.existsSync(configPath)) {
-      return [];
-    }
-
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    const umbrellaProjects: string[] = [];
-
-    // Check sync.profiles for ADO profiles with isUmbrella flag
-    if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
-      for (const profile of Object.values(config.sync.profiles)) {
-        const p = profile as { provider?: string; config?: { project?: string; isUmbrella?: boolean } };
-        if (p.provider === 'ado' && p.config?.isUmbrella && p.config?.project) {
-          umbrellaProjects.push(p.config.project);
-        }
-      }
-    }
-
-    return umbrellaProjects;
-  } catch {
-    return [];
-  }
-}
+// getUmbrellaProjects moved to ./sync-profile-helpers.ts
 
 /**
  * Prompt for multi-repository selection
@@ -1410,331 +1183,13 @@ async function convertToLivingDocs(
   }
 }
 
-/**
- * Group items by their source repository
- * Items without sourceRepo go into '_default' group
- */
-function groupItemsBySourceRepo(items: ExternalItem[]): Map<string, ExternalItem[]> {
-  const groups = new Map<string, ExternalItem[]>();
+// groupItemsBySourceRepo moved to ./external-import-grouping.ts
 
-  for (const item of items) {
-    // Extract repo name from sourceRepo (e.g., "owner/repo" -> "repo")
-    let repoKey = '_default';
-    if (item.sourceRepo) {
-      // sourceRepo is "owner/repo", we want just "repo"
-      const parts = item.sourceRepo.split('/');
-      const rawRepoName = parts.length > 1 ? parts[1] : item.sourceRepo;
-
-      // Sanitize repo name to prevent path injection:
-      // - Allow only alphanumeric, hyphens, underscores
-      // - Trim leading/trailing hyphens
-      // - Limit to 100 chars
-      repoKey = rawRepoName
-        .replace(/[^a-zA-Z0-9-_]/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .slice(0, 100);
-
-      // Fall back to _default if sanitization results in empty string
-      if (!repoKey) {
-        repoKey = '_default';
-      }
-    }
-
-    if (!groups.has(repoKey)) {
-      groups.set(repoKey, []);
-    }
-    groups.get(repoKey)!.push(item);
-  }
-
-  return groups;
-}
-
-/**
- * Group items by external container (JIRA project/board, ADO project/area path)
- * Returns groups with container context for 2-level directory structure
- *
- * CRITICAL FIX (2025-12-01): For ADO items with hierarchy, group by parent Epic/Capability
- * instead of by area path. This ensures each Epic becomes a separate FS-XXX folder.
- *
- * ADO Hierarchy: Capability → Epic → Feature → User Story → Task
- * - Each top-level Epic/Capability becomes its own group (→ FS-XXX folder)
- * - Child User Stories/Tasks are grouped under their parent Epic
- * - Items without parents get their own individual groups
- */
-interface ContainerGroup {
-  containerId: string;          // JIRA project key or ADO project name
-  containerType: 'jira' | 'ado' | null;  // null for GitHub
-  projectId: string;            // Board-based or area-path-based project ID
-  items: ExternalItem[];
-  externalContainer: ExternalContainerContext | undefined;
-  /** The parent Epic/Capability item for this group (if ADO hierarchy) */
-  parentItem?: ExternalItem;
-}
-
-function groupItemsByExternalContainer(items: ExternalItem[]): ContainerGroup[] {
-  const groups = new Map<string, ContainerGroup>();
-
-  // Check if we have ADO items with hierarchy
-  const adoItems = items.filter(item => item.platform === 'ado' && item.adoProjectName);
-  const hasAdoHierarchy = adoItems.some(item => item.parentId || item.type === 'epic');
-
-  // For ADO with hierarchy, use parent-based grouping
-  if (hasAdoHierarchy && adoItems.length > 0) {
-    const adoGroups = groupAdoItemsByParentHierarchy(adoItems);
-    for (const group of adoGroups) {
-      groups.set(group.projectId, group);
-    }
-
-    // Also process non-ADO items normally
-    const nonAdoItems = items.filter(item => item.platform !== 'ado' || !item.adoProjectName);
-    if (nonAdoItems.length > 0) {
-      const nonAdoGroups = groupNonHierarchyItems(nonAdoItems);
-      for (const group of nonAdoGroups) {
-        // Avoid key collisions with ADO groups
-        const uniqueKey = `other:${group.projectId}`;
-        groups.set(uniqueKey, group);
-      }
-    }
-
-    return Array.from(groups.values());
-  }
-
-  // No ADO hierarchy - use original grouping logic for all items
-  return groupNonHierarchyItems(items);
-}
-
-/**
- * Group ADO items by their parent Epic/Capability hierarchy
- * Each top-level Epic/Capability becomes its own FS-XXX folder
- */
-function groupAdoItemsByParentHierarchy(items: ExternalItem[]): ContainerGroup[] {
-  const groups = new Map<string, ContainerGroup>();
-
-  // Build item lookup map
-  const itemById = new Map<string, ExternalItem>();
-  for (const item of items) {
-    itemById.set(item.id, item);
-  }
-
-  // Find feature-level types (these become folder leaders)
-  const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
-
-  // Find ALL top-level parents (Epics/Capabilities that are NOT children of other items in our dataset)
-  const topLevelParents = new Map<string, ExternalItem>();
-
-  for (const item of items) {
-    const witType = item.adoWorkItemType?.toLowerCase() || item.type;
-    if (featureLevelTypes.has(witType)) {
-      // Check if this item's parent is NOT in our dataset (making it a top-level parent)
-      const hasParentInDataset = item.parentId && itemById.has(item.parentId);
-      if (!hasParentInDataset) {
-        topLevelParents.set(item.id, item);
-      }
-    }
-  }
-
-  // Function to find the top-level parent for an item
-  function findTopLevelParent(item: ExternalItem): ExternalItem | undefined {
-    // If this item IS a top-level parent, return it
-    if (topLevelParents.has(item.id)) {
-      return item;
-    }
-
-    // Walk up the parent chain
-    let current: ExternalItem | undefined = item;
-    const visited = new Set<string>();
-
-    while (current && current.parentId && !visited.has(current.id)) {
-      visited.add(current.id);
-
-      // Check if parent is a top-level parent
-      if (topLevelParents.has(current.parentId)) {
-        return topLevelParents.get(current.parentId);
-      }
-
-      // Move to parent
-      current = itemById.get(current.parentId);
-    }
-
-    // No top-level parent found
-    return undefined;
-  }
-
-  // Create groups for each top-level parent first
-  for (const [parentId, parentItem] of topLevelParents) {
-    const containerId = parentItem.adoProjectName || 'default';
-    const projectId = normalizeToProjectId(parentItem.title) || `ado-${parentId.replace('ADO-', '')}`;
-    const groupKey = `ado:parent:${parentId}`;
-
-    groups.set(groupKey, {
-      containerId,
-      containerType: 'ado',
-      projectId,
-      items: [parentItem], // Parent item goes first
-      externalContainer: {
-        type: 'ado-project',
-        containerId,
-        containerName: containerId,
-        areaPath: parentItem.adoAreaPath
-      },
-      parentItem
-    });
-  }
-
-  // Assign child items to their parent groups
-  for (const item of items) {
-    // Skip top-level parents (already added)
-    if (topLevelParents.has(item.id)) {
-      continue;
-    }
-
-    // Find the top-level parent
-    const topLevelParent = findTopLevelParent(item);
-
-    if (topLevelParent) {
-      // Add to parent's group
-      const groupKey = `ado:parent:${topLevelParent.id}`;
-      const group = groups.get(groupKey);
-      if (group) {
-        group.items.push(item);
-      }
-    } else {
-      // No parent found - group by area path (2-level structure: project/areaPath)
-      // This handles orphan items (User Stories with parents outside our dataset)
-      // CRITICAL FIX (2025-12-01): Group by area path, NOT by User Story title
-      const containerId = item.adoProjectName || 'default';
-
-      // Extract area path leaf segment for grouping (e.g., "Project\Platform-Engineering" → "platform-engineering")
-      let areaFolder = '_default';
-      if (item.adoAreaPath) {
-        const segments = item.adoAreaPath.split('\\');
-        // Use leaf segment, or second segment if only project name
-        const leafSegment = segments.length > 1 ? segments[segments.length - 1] : segments[0];
-        areaFolder = normalizeToProjectId(leafSegment) || '_default';
-      }
-
-      // Group all items without parents by their area path
-      // This ensures siblings with same area path stay together
-      const groupKey = `ado:area:${containerId}:${areaFolder}`;
-      const projectId = areaFolder;
-
-      if (!groups.has(groupKey)) {
-        groups.set(groupKey, {
-          containerId,
-          containerType: 'ado',
-          projectId,
-          items: [],
-          externalContainer: {
-            type: 'ado-project',
-            containerId,
-            containerName: containerId,
-            areaPath: item.adoAreaPath
-          }
-        });
-      }
-      groups.get(groupKey)!.items.push(item);
-    }
-  }
-
-  // Log grouping results for diagnostics
-  console.log(chalk.cyan(`   📊 ADO Hierarchy Grouping:`));
-  console.log(chalk.gray(`      → ${topLevelParents.size} top-level Epics/Capabilities found`));
-  for (const [key, group] of groups) {
-    const parentInfo = group.parentItem
-      ? ` (parent: ${group.parentItem.adoWorkItemType || 'Epic'} "${group.parentItem.title.slice(0, 30)}...")`
-      : '';
-    console.log(chalk.gray(`      → ${group.projectId}: ${group.items.length} items${parentInfo}`));
-  }
-
-  return Array.from(groups.values());
-}
-
-/**
- * Group non-hierarchy items (JIRA, GitHub, or ADO without hierarchy)
- * Original grouping logic by project/board/repo
- */
-function groupNonHierarchyItems(items: ExternalItem[]): ContainerGroup[] {
-  const groups = new Map<string, ContainerGroup>();
-
-  for (const item of items) {
-    let groupKey: string;
-    let containerType: 'jira' | 'ado' | null = null;
-    let containerId: string | undefined;
-    let projectId: string;
-    let externalContainer: ExternalContainerContext | undefined;
-
-    // Check for JIRA container context
-    if (item.jiraProjectKey) {
-      containerType = 'jira';
-      containerId = item.jiraProjectKey;
-
-      // Project ID from board name (if available) or default
-      projectId = item.jiraBoardName
-        ? normalizeToProjectId(item.jiraBoardName) || 'default'
-        : 'default';
-
-      groupKey = `jira:${containerId}:${projectId}`;
-
-      externalContainer = {
-        type: 'jira-project',
-        containerId: containerId,
-        containerName: containerId,
-        boardId: item.jiraBoardId,
-        boardName: item.jiraBoardName
-      };
-    }
-    // Check for ADO container context (without hierarchy)
-    else if (item.adoProjectName) {
-      containerType = 'ado';
-      containerId = item.adoProjectName;
-
-      // Project ID from area path (extract last segment) or default
-      if (item.adoAreaPath) {
-        const areaSegments = item.adoAreaPath.split('\\');
-        const lastSegment = areaSegments[areaSegments.length - 1];
-        projectId = normalizeToProjectId(lastSegment) || 'default';
-      } else {
-        projectId = 'default';
-      }
-
-      groupKey = `ado:${containerId}:${projectId}`;
-
-      externalContainer = {
-        type: 'ado-project',
-        containerId: containerId,
-        containerName: containerId,
-        areaPath: item.adoAreaPath
-      };
-    }
-    // GitHub or default (1-level structure)
-    else {
-      // Use sourceRepo if available, otherwise '_default'
-      if (item.sourceRepo) {
-        const parts = item.sourceRepo.split('/');
-        const rawRepoName = parts.length > 1 ? parts[1] : item.sourceRepo;
-        projectId = normalizeToProjectId(rawRepoName) || '_default';
-      } else {
-        projectId = '_default';
-      }
-
-      groupKey = `gh:${projectId}`;
-      // No externalContainer for GitHub (1-level structure)
-    }
-
-    if (!groups.has(groupKey)) {
-      groups.set(groupKey, {
-        containerId: containerId || projectId,
-        containerType,
-        projectId,
-        items: [],
-        externalContainer
-      });
-    }
-    groups.get(groupKey)!.items.push(item);
-  }
-
-  return Array.from(groups.values());
-}
+// Grouping functions moved to ./external-import-grouping.ts
+// - ContainerGroup interface
+// - groupItemsByExternalContainer()
+// - groupAdoItemsByParentHierarchy()
+// - groupNonHierarchyItems()
 
 /**
  * Create empty result object
@@ -1752,10 +1207,12 @@ function emptyResult(): CoordinatorResult {
 // ============================================================================
 // TEST EXPORTS - For unit testing internal functions
 // ============================================================================
+// Re-export from extracted modules for backwards compatibility
 export const __test__ = {
   groupAdoItemsByParentHierarchy,
   groupItemsByExternalContainer,
   groupNonHierarchyItems,
 };
 
+// Re-export types from extracted module
 export type { ContainerGroup };

@@ -2,7 +2,7 @@
 id: FS-089
 title: "Bidirectional Sync with Change Detection"
 type: feature
-status: planning
+status: completed
 priority: P1
 created: 2025-12-01
 lastUpdated: 2025-12-02
@@ -22,7 +22,7 @@ Current sync is one-directional (SpecWeave → External). When external tools (A
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0089-bidirectional-sync-pull](../../../../increments/0089-bidirectional-sync-pull/spec.md) | ⏳ planning | 2025-12-01 |
+| [0089-bidirectional-sync-pull](../../../../increments/0089-bidirectional-sync-pull/spec.md) | ✅ completed | 2025-12-01 |
 
 ## User Stories
 

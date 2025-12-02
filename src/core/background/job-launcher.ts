@@ -10,7 +10,7 @@ import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { getJobManager } from './job-manager.js';
-import type { BackgroundJob, JobType, ImportJobConfig, CloneJobConfig } from './types.js';
+import type { BackgroundJob, JobType, ImportJobConfig, CloneJobConfig, LivingDocsJobConfig, LivingDocsUserInputs } from './types.js';
 
 // ESM compatibility: create __dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
@@ -319,6 +319,121 @@ export async function launchCloneJob(options: CloneLaunchOptions): Promise<Launc
   };
 }
 
+export interface LivingDocsLaunchOptions {
+  /** Project path */
+  projectPath: string;
+  /** User inputs collected before launch */
+  userInputs: LivingDocsUserInputs;
+  /** Job IDs to wait for before starting */
+  dependsOn?: string[];
+  /** Run in foreground (blocking) instead of background */
+  foreground?: boolean;
+}
+
+/**
+ * Launch a living-docs-builder job
+ *
+ * This job waits for dependencies (clone/import jobs) to complete before
+ * analyzing the codebase and generating living documentation.
+ *
+ * @param options Launch configuration
+ * @returns Job info and process details
+ */
+export async function launchLivingDocsJob(options: LivingDocsLaunchOptions): Promise<LaunchResult> {
+  const { projectPath, userInputs, dependsOn, foreground = false } = options;
+
+  // Create job via job manager
+  const jobManager = getJobManager(projectPath);
+
+  const jobConfig: LivingDocsJobConfig = {
+    type: 'living-docs-builder',
+    projectPath,
+    dependsOn,
+    userInputs
+  };
+
+  // Create job with initial estimate (will be updated during discovery)
+  const job = jobManager.createJob('living-docs-builder', jobConfig, 100);
+
+  // Set dependency tracking on the job
+  if (dependsOn && dependsOn.length > 0) {
+    (job as any).dependsOn = dependsOn;
+    (job as any).dependencyStatus = 'waiting';
+  }
+
+  // Create job-specific directory for config and logs
+  const jobDir = path.join(projectPath, '.specweave', 'state', 'jobs', job.id);
+  fs.ensureDirSync(jobDir);
+
+  // Create checkpoints directory
+  const checkpointsDir = path.join(jobDir, 'checkpoints');
+  fs.ensureDirSync(checkpointsDir);
+
+  // Create outputs directory
+  const outputsDir = path.join(jobDir, 'outputs');
+  fs.ensureDirSync(outputsDir);
+
+  // Write worker config
+  const configPath = path.join(jobDir, 'config.json');
+  fs.writeFileSync(configPath, JSON.stringify({
+    jobId: job.id,
+    projectPath,
+    userInputs,
+    dependsOn: dependsOn || [],
+    startedAt: new Date().toISOString()
+  }, null, 2));
+
+  // If foreground mode, return job without spawning worker
+  if (foreground) {
+    return {
+      job,
+      isBackground: false
+    };
+  }
+
+  // Find living-docs worker script path
+  const workerPath = findLivingDocsWorkerPath();
+
+  if (!workerPath) {
+    // Fallback to foreground if worker not found
+    console.warn('Living docs worker not found, will run in foreground');
+    return {
+      job,
+      isBackground: false
+    };
+  }
+
+  // Spawn detached process
+  const child = spawn('node', [workerPath, job.id, projectPath], {
+    detached: true,
+    stdio: 'ignore',
+    cwd: projectPath,
+    env: {
+      ...process.env,
+      SPECWEAVE_BACKGROUND_JOB: '1'
+    }
+  });
+
+  // Unref to allow parent to exit independently
+  child.unref();
+
+  // Validate worker actually started before reporting success
+  await validateWorkerStarted(projectPath, job.id, child.pid);
+
+  // Update job with PID
+  const updatedJob = jobManager.getJob(job.id);
+  if (updatedJob) {
+    (updatedJob as any).pid = child.pid;
+    (updatedJob as any).isBackground = true;
+  }
+
+  return {
+    job: updatedJob || job,
+    pid: child.pid,
+    isBackground: true
+  };
+}
+
 /**
  * Check if a background job is still running
  */
@@ -416,6 +531,13 @@ function findWorkerPath(): string | null {
  */
 function findCloneWorkerPath(): string | null {
   return findWorkerByName('clone-worker.js');
+}
+
+/**
+ * Find the living-docs worker script path
+ */
+function findLivingDocsWorkerPath(): string | null {
+  return findWorkerByName('living-docs-worker.js');
 }
 
 /**

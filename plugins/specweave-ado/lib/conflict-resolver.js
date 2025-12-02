@@ -98,6 +98,93 @@ class ConflictResolver {
     return resolution;
   }
   /**
+   * Compare timestamps to determine winner (Increment 0089)
+   *
+   * For pull sync, we compare local lastModified vs external ChangedDate.
+   * The more recent timestamp wins.
+   *
+   * @param localTimestamp - Local file lastModified timestamp (ISO string or null)
+   * @param externalTimestamp - External tool ChangedDate (ISO string)
+   * @returns Comparison result with winner and reasoning
+   */
+  compareTimestamps(localTimestamp, externalTimestamp) {
+    const externalDate = new Date(externalTimestamp);
+    if (!localTimestamp) {
+      return {
+        winner: "external",
+        localTimestamp: null,
+        externalTimestamp,
+        timeDiffMs: 0,
+        reason: "No local timestamp available, external wins by default"
+      };
+    }
+    const localDate = new Date(localTimestamp);
+    const timeDiffMs = externalDate.getTime() - localDate.getTime();
+    if (timeDiffMs > 0) {
+      console.log(`\u{1F4CA} Timestamp Comparison:`);
+      console.log(`   Local:    ${localTimestamp}`);
+      console.log(`   External: ${externalTimestamp}`);
+      console.log(`   \u2705 Winner: EXTERNAL (${Math.round(timeDiffMs / 6e4)}min newer)`);
+      return {
+        winner: "external",
+        localTimestamp,
+        externalTimestamp,
+        timeDiffMs,
+        reason: `External is ${Math.round(timeDiffMs / 6e4)} minutes newer`
+      };
+    }
+    if (timeDiffMs < 0) {
+      console.log(`\u{1F4CA} Timestamp Comparison:`);
+      console.log(`   Local:    ${localTimestamp}`);
+      console.log(`   External: ${externalTimestamp}`);
+      console.log(`   \u2705 Winner: LOCAL (${Math.round(Math.abs(timeDiffMs) / 6e4)}min newer)`);
+      return {
+        winner: "local",
+        localTimestamp,
+        externalTimestamp,
+        timeDiffMs,
+        reason: `Local is ${Math.round(Math.abs(timeDiffMs) / 6e4)} minutes newer`
+      };
+    }
+    return {
+      winner: "none",
+      localTimestamp,
+      externalTimestamp,
+      timeDiffMs: 0,
+      reason: "Timestamps are identical, no conflict"
+    };
+  }
+  /**
+   * Resolve conflict using timestamp comparison (Increment 0089)
+   *
+   * Combines timestamp comparison with status conflict resolution.
+   * Used by ExternalChangePuller for pull sync.
+   *
+   * @param field - The field being compared (e.g., 'status')
+   * @param localValue - Current local value
+   * @param externalValue - Value from external tool
+   * @param localTimestamp - Local lastModified timestamp
+   * @param externalTimestamp - External ChangedDate
+   * @returns Conflict resolution result
+   */
+  resolveWithTimestamp(field, localValue, externalValue, localTimestamp, externalTimestamp) {
+    const comparison = this.compareTimestamps(localTimestamp, externalTimestamp);
+    const resolution = {
+      field,
+      localValue,
+      externalValue,
+      resolution: comparison.winner === "local" ? "local" : "external",
+      resolvedValue: comparison.winner === "local" ? localValue : externalValue,
+      reason: comparison.reason,
+      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    console.log(`\u{1F4CA} Conflict Resolved (${field}):`);
+    console.log(`   Winner: ${comparison.winner.toUpperCase()}`);
+    console.log(`   Reason: ${comparison.reason}`);
+    this.resolutionLog.push(resolution);
+    return resolution;
+  }
+  /**
    * Resolve priority conflict - EXTERNAL WINS
    */
   resolvePriorityConflict(localPriority, externalPriority) {

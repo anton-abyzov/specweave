@@ -54,6 +54,29 @@ export interface AdoWorkItemFilter {
   tags?: string[];          // Tags to filter by
   assignedTo?: string;      // Assigned user
   top?: number;             // Limit results
+  changedSince?: Date;      // Filter by changed date (for pull sync)
+  workItemIds?: number[];   // Filter by specific IDs (for linked items)
+}
+
+/**
+ * External change representation for pull sync
+ */
+export interface AdoExternalChange {
+  platform: 'ado';
+  externalId: string;
+  workItemId: number;
+  changedAt: string;        // ISO timestamp
+  changedBy: string;        // Email/username
+  changedFields: Array<{
+    field: string;
+    oldValue: unknown;
+    newValue: unknown;
+  }>;
+  currentState: {
+    status: string;
+    priority: number | null;
+    assignee: string | null;
+  };
 }
 
 export interface AdoWorkItemCreate {
@@ -79,6 +102,32 @@ export interface AdoWorkItemUpdate {
   state?: string;
   tags?: string[];
   customFields?: Record<string, any>;
+}
+
+/**
+ * ADO Process Template detection result
+ * Used to determine hierarchy mapping for import
+ */
+export interface AdoProcessTemplateInfo {
+  /** Detected template name */
+  template: 'Agile' | 'Scrum' | 'CMMI' | 'Basic' | 'SAFe';
+  /** Whether Capability work item type exists (SAFe/Enterprise) */
+  hasCapability: boolean;
+  /** Work item types available in this project */
+  workItemTypes: string[];
+  /** Hierarchy mapping for this template */
+  hierarchyMapping: {
+    /** ADO Capability → SpecWeave Epic (_epics/EP-XXXE/) - only in SAFe */
+    capability?: 'epic';
+    /** ADO Epic → SpecWeave Epic or Feature depending on template */
+    epic: 'epic' | 'feature';
+    /** ADO Feature → SpecWeave Feature (FS-XXXE/) */
+    feature: 'feature';
+    /** ADO User Story/PBI/Requirement → SpecWeave User Story (us-xxxe.md) */
+    userStory: 'user-story';
+    /** ADO Task → SpecWeave Task (tasks.md) */
+    task: 'task';
+  };
 }
 
 export class AdoClient {
@@ -174,6 +223,18 @@ export class AdoClient {
       filter.tags.forEach(tag => {
         conditions.push(`[System.Tags] CONTAINS '${tag}'`);
       });
+    }
+
+    // Pull sync filter: changed since timestamp
+    if (filter.changedSince) {
+      const isoDate = filter.changedSince.toISOString();
+      conditions.push(`[System.ChangedDate] >= '${isoDate}'`);
+    }
+
+    // Pull sync filter: specific work item IDs
+    if (filter.workItemIds && filter.workItemIds.length > 0) {
+      const ids = filter.workItemIds.join(', ');
+      conditions.push(`[System.Id] IN (${ids})`);
     }
 
     const whereClause = conditions.join(' AND ');
@@ -613,6 +674,204 @@ export class AdoClient {
 
     const data = await response.json() as any;
     return data.value || [];
+  }
+
+  /**
+   * Fetch recently changed work items for pull sync (Increment 0089)
+   *
+   * Queries ADO for work items that have changed since a given timestamp.
+   * Used by ExternalChangePuller to detect external updates.
+   *
+   * @param since - Timestamp to query changes from
+   * @param linkedItemIds - Optional list of work item IDs to filter (linked items only)
+   * @returns Array of external changes with changedAt, changedBy, and current values
+   */
+  public async fetchRecentChanges(
+    since: Date,
+    linkedItemIds?: number[]
+  ): Promise<AdoExternalChange[]> {
+    // Build filter for recently changed items
+    const filter: AdoWorkItemFilter = {
+      changedSince: since,
+      top: 100, // Limit to prevent overwhelming results
+    };
+
+    // If specific IDs provided, only query those
+    if (linkedItemIds && linkedItemIds.length > 0) {
+      filter.workItemIds = linkedItemIds;
+    }
+
+    // Query work items
+    const workItems = await this.listWorkItems(filter);
+
+    // Map to ExternalChange format
+    const changes: AdoExternalChange[] = workItems.map(wi => ({
+      platform: 'ado' as const,
+      externalId: `ADO-${wi.id}`,
+      workItemId: wi.id,
+      changedAt: wi.fields['System.ChangedDate'] || new Date().toISOString(),
+      changedBy: wi.fields['System.ChangedBy']?.displayName ||
+                 wi.fields['System.ChangedBy']?.uniqueName ||
+                 wi.fields['System.ChangedBy'] ||
+                 'unknown',
+      changedFields: [] as Array<{ field: string; oldValue: unknown; newValue: unknown }>, // ADO doesn't provide field-level changelog in list API
+      currentState: {
+        status: wi.fields['System.State'] || 'Unknown',
+        priority: wi.fields['Microsoft.VSTS.Common.Priority'] ?? null,
+        assignee: wi.fields['System.AssignedTo']?.displayName ||
+                  wi.fields['System.AssignedTo']?.uniqueName ||
+                  wi.fields['System.AssignedTo'] ||
+                  null,
+      },
+    }));
+
+    return changes;
+  }
+
+  /**
+   * Get work item updates (revision history) for detailed change tracking
+   *
+   * Use this for detailed changelog when needed.
+   * GET /{organization}/{project}/_apis/wit/workitems/{id}/updates
+   *
+   * @param workItemId - Work item ID
+   * @param top - Limit number of updates
+   * @returns Array of updates with field changes
+   */
+  public async getWorkItemUpdates(workItemId: number, top = 10): Promise<any[]> {
+    const url = `${this.baseUrl}/_apis/wit/workitems/${workItemId}/updates?$top=${top}&api-version=${this.apiVersion}`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`ADO API Error (${response.status}): ${error}`);
+    }
+
+    const data = await response.json() as any;
+    return data.value || [];
+  }
+
+/**
+   * ADO Process Template types
+   */
+  public static readonly PROCESS_TEMPLATES = {
+    AGILE: 'Agile',
+    SCRUM: 'Scrum',
+    CMMI: 'CMMI',
+    BASIC: 'Basic',
+    SAFE: 'SAFe',  // Enterprise with Capability work item type
+  } as const;
+
+  /**
+   * Detect ADO Process Template for the project
+   *
+   * Uses project properties API to get the process template name,
+   * then checks for Capability work item type to detect SAFe/Enterprise.
+   *
+   * @param project - Optional project name (uses default if not specified)
+   * @returns Process template info with hierarchy mapping
+   */
+  public async detectProcessTemplate(project?: string): Promise<AdoProcessTemplateInfo> {
+    const projectName = project || this.credentials.project;
+
+    // Step 1: Get project properties (includes process template)
+    const projectUrl = `https://dev.azure.com/${this.credentials.organization}/_apis/projects/${projectName}?includeCapabilities=true&api-version=${this.apiVersion}`;
+
+    const projectResponse = await fetch(projectUrl, {
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!projectResponse.ok) {
+      const error = await projectResponse.text();
+      throw new Error(`ADO API Error (${projectResponse.status}): ${error}`);
+    }
+
+    const projectData = await projectResponse.json() as any;
+    const templateName = projectData.capabilities?.processTemplate?.templateName || 'Agile';
+
+    // Step 2: Get work item types to check for Capability
+    const witUrl = `https://dev.azure.com/${this.credentials.organization}/${projectName}/_apis/wit/workitemtypes?api-version=${this.apiVersion}`;
+
+    const witResponse = await fetch(witUrl, {
+      headers: {
+        'Authorization': this.getAuthHeader(),
+        'Content-Type': 'application/json'
+      }
+    });
+
+    let workItemTypes: string[] = [];
+    let hasCapability = false;
+
+    if (witResponse.ok) {
+      const witData = await witResponse.json() as any;
+      workItemTypes = (witData.value || []).map((wit: any) => wit.name);
+      hasCapability = workItemTypes.some(wit =>
+        wit.toLowerCase() === 'capability'
+      );
+    }
+
+    // Step 3: Determine effective template and hierarchy mapping
+    let effectiveTemplate: 'Agile' | 'Scrum' | 'CMMI' | 'Basic' | 'SAFe' = templateName as any;
+
+    // If Capability exists, it's SAFe/Enterprise regardless of base template
+    if (hasCapability) {
+      effectiveTemplate = 'SAFe';
+    }
+
+    // Build hierarchy mapping based on template
+    const hierarchyMapping = this.buildHierarchyMapping(effectiveTemplate, hasCapability);
+
+    console.log(`🔍 Detected ADO Process Template: ${effectiveTemplate}${hasCapability ? ' (with Capability)' : ''}`);
+
+    return {
+      template: effectiveTemplate,
+      hasCapability,
+      workItemTypes,
+      hierarchyMapping,
+    };
+  }
+
+  /**
+   * Build hierarchy mapping based on process template
+   */
+  private buildHierarchyMapping(template: 'Agile' | 'Scrum' | 'CMMI' | 'Basic' | 'SAFe', hasCapability: boolean): {
+    capability?: 'epic';
+    epic: 'epic' | 'feature';
+    feature: 'feature';
+    userStory: 'user-story';
+    task: 'task';
+  } {
+    // SAFe/Enterprise: Capability → Epic → Feature → US → Task
+    // Capability maps to SpecWeave Epic (_epics/EP-XXXE/)
+    // Epic maps to SpecWeave Feature (FS-XXXE/)
+    if (hasCapability || template === 'SAFe') {
+      return {
+        capability: 'epic',      // ADO Capability → SpecWeave Epic (_epics/EP-XXXE/)
+        epic: 'feature',         // ADO Epic → SpecWeave Feature (FS-XXXE/)
+        feature: 'feature',      // ADO Feature → SpecWeave Feature (under Epic's FS-XXXE/)
+        userStory: 'user-story',
+        task: 'task',
+      };
+    }
+
+    // Standard templates: Epic → Feature → US → Task
+    // Epic maps to SpecWeave Epic (_epics/EP-XXXE/)
+    // Feature maps to SpecWeave Feature (FS-XXXE/)
+    return {
+      epic: 'epic',            // ADO Epic → SpecWeave Epic (_epics/EP-XXXE/)
+      feature: 'feature',      // ADO Feature → SpecWeave Feature (FS-XXXE/)
+      userStory: 'user-story',
+      task: 'task',
+    };
   }
 
   /**

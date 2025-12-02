@@ -18,32 +18,5 @@
     "pm",
     "architect",
     "living-docs"
-  ],
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/v2/dispatchers/session-start.sh",
-            "timeout": 2,
-            "description": "v2: Launch background event processor"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/v2/dispatchers/post-tool-use.sh",
-            "timeout": 2,
-            "description": "v2: Single dispatcher for all PostToolUse events (<50ms)"
-          }
-        ]
-      }
-    ]
-  }
+  ]
 }

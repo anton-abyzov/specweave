@@ -1,6 +1,11 @@
 ---
 name: user-story-updater
 description: Updates GitHub issues for user stories with proper ACs and tasks. Activates for update user story issue, fix GitHub issue format, add checkable ACs, refresh user story issue, sync user story to GitHub.
+model: claude-opus-4-5-20251101
+model_preference: opus
+cost_profile: execution
+fallback_behavior: flexible
+max_response_tokens: 2000
 ---
 
 # User Story Updater Agent
@@ -17,7 +22,7 @@ description: Updates GitHub issues for user stories with proper ACs and tasks. A
 Task({
   subagent_type: "specweave-github:user-story-updater:user-story-updater",
   prompt: "Update GitHub issue #501 for user story FS-031/US-004 with checkable ACs and task connections",
-  model: "haiku" // optional: haiku, sonnet, opus
+  model: "opus" // default: opus (best quality)
 });
 ```
 
