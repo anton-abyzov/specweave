@@ -7,12 +7,9 @@ priority: P1
 created: 2025-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-001: GitHub Status Reconciliation Command
 
-**Feature**: [FS-072](./FEATURE)
+**Feature**: [FS-072](./FEATURE.md)
 
 **As a** developer using SpecWeave
 **I want** a command to reconcile GitHub issue states with increment statuses
@@ -34,13 +31,13 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: `0072-github-status-reconciliation`
+**Increment**: [0072-github-status-reconciliation](../../../../increments/0072-github-status-reconciliation/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] T-001: Create GitHubReconciler class
-- [x] T-002: Create reconcile command markdown
-- [x] T-003: Implement reconcile report output
+- [x] **T-001**: Create GitHubReconciler class
+- [x] **T-002**: Create reconcile command markdown
+- [x] **T-003**: Implement reconcile report output

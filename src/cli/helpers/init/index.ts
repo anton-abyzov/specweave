@@ -89,3 +89,13 @@ export {
   generateInitialIncrement,
   type InitialIncrementOptions,
 } from './initial-increment-generator.js';
+
+// Brownfield analysis configuration
+export {
+  promptBrownfieldAnalysis,
+  updateConfigWithBrownfield,
+  detectExistingDocsLocations,
+  type BrownfieldAnalysisConfig,
+  type AnalysisDepth,
+  type DetectedDocsLocation,
+} from './brownfield-analysis.js';

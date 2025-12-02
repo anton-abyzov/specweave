@@ -7,9 +7,6 @@ priority: P1
 created: 2025-11-27
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-005: Move ADO Configuration to config.json
 
 **Feature**: [FS-077](./FEATURE.md)
@@ -39,5 +36,5 @@ created: 2025-11-27
 
 ## Tasks
 
-- [x] [T-010](../../../../increments/0077-ado-init-flow-critical-fixes/tasks.md#T-010): Write ADO non-secrets to config.json
-- [x] [T-011](../../../../increments/0077-ado-init-flow-critical-fixes/tasks.md#T-011): Update detection to read from both sources
+- [x] **T-010**: Write ADO non-secrets to config.json
+- [x] **T-011**: Update detection to read from both sources

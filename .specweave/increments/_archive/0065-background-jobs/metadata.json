@@ -6,11 +6,14 @@
   "created": "2025-11-26T10:00:00Z",
   "completed": "2025-11-26T17:32:00Z",
   "lastActivity": "2025-11-26T17:32:00Z",
-  "feature_id": "FS-065",
   "tasks": {
     "total": 9,
     "completed": 9,
     "in_progress": 0
   },
-  "user_stories": ["US-001", "US-002", "US-003"]
+  "user_stories": [
+    "US-001",
+    "US-002",
+    "US-003"
+  ]
 }

@@ -15,10 +15,19 @@ done
 # Consume stdin
 cat > /dev/null
 
-PROCESSOR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../queue" && pwd)/processor.sh"
-[[ ! -f "$PROCESSOR" ]] && exit 0
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROCESSOR="$HOOK_DIR/../queue/processor.sh"
+SCHEDULER_STARTUP="$HOOK_DIR/../../lib/scheduler-startup.sh"
 
-# Launch processor in background (daemon mode)
-nohup bash "$PROCESSOR" --daemon > /dev/null 2>&1 &
-disown 2>/dev/null
+# Launch queue processor in background (daemon mode)
+if [[ -f "$PROCESSOR" ]]; then
+  nohup bash "$PROCESSOR" --daemon > /dev/null 2>&1 &
+  disown 2>/dev/null
+fi
+
+# Check for due scheduled jobs (non-blocking)
+if [[ -f "$SCHEDULER_STARTUP" ]]; then
+  bash "$SCHEDULER_STARTUP" 2>/dev/null || true
+fi
+
 exit 0

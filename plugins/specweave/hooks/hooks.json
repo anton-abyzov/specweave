@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/v2/dispatchers/session-start.sh"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/dispatcher.mjs\" session-start"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/completion-guard.sh"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/dispatcher.mjs\" completion-guard"
           }
         ]
       }
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/v2/dispatchers/post-tool-use.sh"
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/dispatcher.mjs\" post-tool-use"
           }
         ]
       }

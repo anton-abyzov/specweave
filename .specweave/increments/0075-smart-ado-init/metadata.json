@@ -6,8 +6,13 @@
   "priority": "P1",
   "createdAt": "2025-11-26T12:00:00Z",
   "completedAt": "2025-11-27T12:00:00Z",
-  "userStories": ["US-001", "US-002", "US-003", "US-004", "US-005"],
-  "feature_id": "FS-075",
+  "userStories": [
+    "US-001",
+    "US-002",
+    "US-003",
+    "US-004",
+    "US-005"
+  ],
   "totalACs": 21,
   "completedACs": 21
 }

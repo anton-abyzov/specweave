@@ -6,7 +6,6 @@
   "priority": "P1",
   "created": "2025-11-24T21:00:00Z",
   "completed": "2025-11-25T04:10:00Z",
-  "feature_id": "FS-061",
   "description": "Fix confusing UX in multi-repo init flow where bulk discovery shows 'you specified 0' message. Streamline discovery flow to be more intuitive.",
   "pmValidation": {
     "timestamp": "2025-11-25T04:10:00Z",

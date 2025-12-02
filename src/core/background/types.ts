@@ -5,7 +5,7 @@
  * that can run in background while user continues working.
  */
 
-export type JobType = 'clone-repos' | 'import-issues' | 'sync-external';
+export type JobType = 'clone-repos' | 'import-issues' | 'sync-external' | 'brownfield-analysis';
 
 export type JobStatus = 'pending' | 'running' | 'paused' | 'completed' | 'failed';
 
@@ -30,6 +30,8 @@ export interface BackgroundJob {
   completedAt?: Date;
   error?: string;
   config: JobConfig;
+  /** Job-specific result data (available after completion) */
+  result?: Record<string, unknown>;
 }
 
 export interface CloneJobConfig {
@@ -59,7 +61,34 @@ export interface SyncJobConfig {
   projectPath: string;
 }
 
-export type JobConfig = CloneJobConfig | ImportJobConfig | SyncJobConfig;
+/**
+ * Brownfield analysis phases
+ */
+export type BrownfieldPhase =
+  | 'discovery'           // Find all code/doc files
+  | 'code-analysis'       // Extract signatures, APIs
+  | 'doc-matching'        // Match code to docs
+  | 'discrepancy-detect'  // Find gaps
+  | 'reporting';          // Generate summary
+
+/**
+ * Brownfield analysis job configuration
+ */
+export interface BrownfieldJobConfig {
+  type: 'brownfield-analysis';
+  projectPath: string;
+  sourceDocsPath?: string;
+  analysisDepth: 'quick' | 'standard' | 'deep';
+
+  /** Checkpoint for pause/resume */
+  checkpoint?: {
+    phase: BrownfieldPhase;
+    lastProcessedPath: string;
+    processedCount: number;
+  };
+}
+
+export type JobConfig = CloneJobConfig | ImportJobConfig | SyncJobConfig | BrownfieldJobConfig;
 
 export interface JobState {
   jobs: BackgroundJob[];

@@ -2,7 +2,7 @@
 id: US-004
 feature: FS-078
 title: "Add Repo Cloning Step for Multi-Repo Mode"
-status: not_started
+status: in_progress
 priority: P0
 created: 2025-11-28
 ---
@@ -19,11 +19,9 @@ created: 2025-11-28
 
 ## Acceptance Criteria
 
-- [ ] **AC-US4-01**: After "multiple repos" selection, show cloning options
-- [ ] **AC-US4-02**: Options: "Pattern match" (e.g., `sw-*`), "Explicit list", "Skip cloning"
-- [ ] **AC-US4-03**: For ADO repos, use ADO Repos API to list available repos
-- [ ] **AC-US4-04**: Save clone configuration to config.json
-- [ ] **AC-US4-05**: Don't block init if cloning skipped - can clone later
+- [x] **AC-US4-01**: After "multiple repos" selection, show cloning options
+- [x] **AC-US4-02**: Options: "Pattern match" (e.g., `sw-*`), "Explicit list", "Skip cloning"
+- [x] **AC-US4-05**: Don't block init if cloning skipped - can clone later
 
 ---
 
@@ -36,4 +34,4 @@ created: 2025-11-28
 
 ## Tasks
 
-_No tasks defined for this user story_
+- [x] **T-008**: Add repo cloning prompt for ADO multi-repo

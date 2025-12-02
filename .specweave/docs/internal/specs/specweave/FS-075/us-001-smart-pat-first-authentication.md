@@ -4,7 +4,7 @@ feature: FS-075
 title: "Smart PAT-First Authentication"
 status: completed
 priority: P1
-created: 2025-11-27
+created: 2025-12-02
 ---
 
 # US-001: Smart PAT-First Authentication

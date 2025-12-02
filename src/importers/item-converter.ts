@@ -91,6 +91,9 @@ export interface ItemConverterOptions {
   /** Callback for skipped duplicates */
   onDuplicateSkipped?: (externalId: string, existingUsId: string) => void;
 
+  /** Callback for parent change (file moved due to hierarchy update) */
+  onParentChanged?: (usId: string, oldFeatureId: string, newFeatureId: string, reason: string) => void;
+
   /** Callback for feature folder creation */
   onFeatureCreated?: (featureId: string, featurePath: string) => void;
 
@@ -199,6 +202,7 @@ export class ItemConverter {
     const originBadge = this.generateOriginBadge(item);
 
     // Generate markdown content for living docs
+    // CRITICAL (2025-12-01): Include parent info for future re-import parent change detection
     const markdown = this.generateMarkdown({
       id,
       title: item.title,
@@ -215,7 +219,13 @@ export class ItemConverter {
         createdAt: item.createdAt.toISOString(),
         updatedAt: item.updatedAt.toISOString(),
         labels: item.labels,
-        sourceRepo: item.sourceRepo
+        sourceRepo: item.sourceRepo,
+        // Parent tracking for re-import hierarchy updates
+        parentId: item.parentId,
+        featureId: featureId,
+        isOrphan: !item.parentId,
+        adoWorkItemType: item.adoWorkItemType,
+        adoAreaPath: item.adoAreaPath
       }
     });
 
@@ -323,6 +333,17 @@ export class ItemConverter {
         if (this.duplicateDetector) {
           const existingReference = await this.duplicateDetector.findExternalIdReference(item.id);
           if (existingReference) {
+            // CRITICAL (2025-12-01): Check if parent has changed (orphan → has parent, or parent changed)
+            const parentChanged = this.hasParentChanged(existingReference, item);
+
+            if (parentChanged) {
+              // Handle parent change - move file to new feature folder
+              await this.handleParentChange(existingReference, item, featureId);
+              // Skip conversion - file was moved/updated, not created
+              skippedCount++;
+              continue;
+            }
+
             skippedCount++;
 
             // Notify callback if provided
@@ -355,21 +376,26 @@ export class ItemConverter {
   /**
    * Group items by feature (based on source repo, parent hierarchy, or labels)
    * CRITICAL FIX (2025-12-01): For ADO, group by parent Capability/Epic to preserve hierarchy
+   * CRITICAL FIX (2025-12-01): ADO orphans (no parent) get INDIVIDUAL folders, not 'default' group
    *
    * ADO Hierarchy: Capability → Epic → Feature → User Story → Task
    * - Capability/Epic items become the feature (group leader)
-   * - User Stories are grouped under their parent
-   * - Items without parent go into a default group
+   * - User Stories are grouped under their parent Epic/Capability
+   * - Items without parent (true orphans) get INDIVIDUAL FS-XXXE folders
    */
   private groupItemsByFeature(items: ExternalItem[]): Map<string, ExternalItem[]> {
     const groups = new Map<string, ExternalItem[]>();
 
-    // For ADO items with hierarchy, use parent-based grouping
+    // CRITICAL FIX (2025-12-01): Detect ADO items even without hierarchy info
+    // ADO items have adoProjectName set by the importer
+    // Previous bug: Orphan ADO items (no parentId, not epics) fell through to 'default' group
+    const hasAdoItems = items.some(item => item.platform === 'ado' && item.adoProjectName);
     const hasAdoHierarchy = items.some(item =>
       item.platform === 'ado' && (item.parentId || item.type === 'epic')
     );
 
-    if (hasAdoHierarchy) {
+    // Process ADO items: with hierarchy (group by parent) OR orphans (individual folders)
+    if (hasAdoItems) {
       // Build a map of all items by ID for lookup
       const itemById = new Map<string, ExternalItem>();
       for (const item of items) {
@@ -422,19 +448,16 @@ export class ItemConverter {
           // DO NOT group by parentId - we want individual FS-XXXE folders per item
         }
 
-        // CRITICAL FIX (2025-12-01): For ADO orphan items, create INDIVIDUAL FS-XXXE
+        // CRITICAL FIX (2025-12-01): For orphan items, create INDIVIDUAL FS-XXXE
         // folders per item. This applies when:
         // - Item has no parentId (true orphan)
         // - Item has parentId but parent NOT in dataset (orphan with missing parent)
         // Each orphan gets its own feature folder with US title as FEATURE.md header
+        // UNIVERSAL: Applies to ALL platforms (ADO, JIRA, GitHub) for consistent handling
         if (!groupKey) {
-          if (item.platform === 'ado') {
-            // Each ADO orphan gets its own feature folder with unique group key
-            groupKey = `orphan:${item.id}`;
-          } else {
-            // Non-ADO items: fallback to sourceRepo or default
-            groupKey = item.sourceRepo || 'default';
-          }
+          // Each orphan gets its own feature folder with unique group key
+          // This ensures consistent behavior across all platforms
+          groupKey = `orphan:${item.id}`;
         }
 
         if (!groups.has(groupKey)) {
@@ -559,51 +582,68 @@ export class ItemConverter {
     // Create directory
     fs.mkdirSync(featurePath, { recursive: true });
 
-    // Check if this is an ADO feature-level item (Capability/Epic/Feature)
+    // Check if this is a feature-level item or orphan
     const isAdoFeatureGroup = groupKey.startsWith('feature:');
-    const isAdoOrphanGroup = groupKey.startsWith('orphan:');
+    const isOrphanGroup = groupKey.startsWith('orphan:');
     const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
     const adoWitType = firstItem.adoWorkItemType?.toLowerCase();
     const isAdoFeatureLevelItem = isAdoFeatureGroup &&
       firstItem.platform === 'ado' &&
       featureLevelTypes.has(adoWitType || firstItem.type);
 
-    // Generate FEATURE.md content based on item type
+    // Generate FEATURE.md content based on item type and platform
     let featureTitle: string;
     let description: string;
     let externalLink: string;
     let witTypeLabel: string;
+    let platformLabel: string;
+
+    // Platform-specific labels and links
+    switch (firstItem.platform) {
+      case 'ado':
+        platformLabel = 'Azure DevOps';
+        break;
+      case 'jira':
+        platformLabel = 'JIRA';
+        break;
+      case 'github':
+        platformLabel = 'GitHub';
+        break;
+      default:
+        platformLabel = firstItem.platform || 'external tool';
+    }
 
     if (isAdoFeatureLevelItem) {
       // For ADO Capability/Epic/Feature, use the item's actual info
       witTypeLabel = firstItem.adoWorkItemType || 'Feature';
       featureTitle = `${witTypeLabel}: ${firstItem.title}`;
-      description = firstItem.description || `This ${witTypeLabel.toLowerCase()} was imported from Azure DevOps.`;
-      externalLink = `[${witTypeLabel} in Azure DevOps](${firstItem.url})`;
-    } else if (isAdoOrphanGroup && firstItem.platform === 'ado') {
-      // CRITICAL FIX (2025-12-01): For ADO orphan User Stories (no parent Epic),
-      // create feature with the User Story info. This happens when:
-      // - User Story has no parent in ADO
-      // - Parent Epic/Feature wasn't imported (outside time range)
+      description = firstItem.description || `This ${witTypeLabel.toLowerCase()} was imported from ${platformLabel}.`;
+      externalLink = `[${witTypeLabel} in ${platformLabel}](${firstItem.url})`;
+    } else if (isOrphanGroup) {
+      // CRITICAL FIX (2025-12-01): For orphan items (no parent Epic/Feature),
+      // create feature with the item's info. This happens when:
+      // - Item has no parent in external tool
+      // - Parent wasn't imported (outside time range or different project)
+      // UNIVERSAL: Applies to ALL platforms (ADO, JIRA, GitHub)
       witTypeLabel = firstItem.adoWorkItemType || 'User Story';
       featureTitle = `${witTypeLabel}: ${firstItem.title}`;
       description = firstItem.description ||
-        `This ${witTypeLabel.toLowerCase()} was imported from Azure DevOps without a parent Epic/Feature.`;
-      externalLink = `[${witTypeLabel} in Azure DevOps](${firstItem.url})`;
+        `This ${witTypeLabel.toLowerCase()} was imported from ${platformLabel} without a parent Epic/Feature.`;
+      externalLink = firstItem.url ? `[${witTypeLabel} in ${platformLabel}](${firstItem.url})` : '';
     } else if (firstItem.sourceRepo) {
       featureTitle = `Feature: ${firstItem.sourceRepo} External Items`;
       description = 'This feature folder contains User Stories imported from external tools.';
       externalLink = '';
       witTypeLabel = 'Feature';
     } else {
-      featureTitle = `Feature: Imported from ${firstItem.platform}`;
+      featureTitle = `Feature: Imported from ${platformLabel}`;
       description = 'This feature folder contains User Stories imported from external tools.';
       externalLink = '';
       witTypeLabel = 'Feature';
     }
 
-    // Include external metadata for both feature-level items and orphan ADO items
-    const includeAdoMetadata = isAdoFeatureLevelItem || isAdoOrphanGroup;
+    // Include external metadata for feature-level items and all orphans
+    const includeExternalMetadata = isAdoFeatureLevelItem || isOrphanGroup;
 
     const featureContent = `---
 id: ${featureId}
@@ -613,15 +653,15 @@ source: ${firstItem.platform}
 ${firstItem.sourceRepo ? `source_repo: ${firstItem.sourceRepo}` : ''}
 ${firstItem.adoProjectName ? `ado_project: ${firstItem.adoProjectName}` : ''}
 ${firstItem.adoAreaPath ? `ado_area_path: ${firstItem.adoAreaPath}` : ''}
-${includeAdoMetadata ? `ado_work_item_type: ${witTypeLabel}` : ''}
-${includeAdoMetadata ? `external_id: ${firstItem.id}` : ''}
-${isAdoOrphanGroup ? `orphan: true` : ''}
+${includeExternalMetadata ? `work_item_type: ${witTypeLabel}` : ''}
+${includeExternalMetadata ? `external_id: ${firstItem.id}` : ''}
+${isOrphanGroup ? `orphan: true` : ''}
 created: ${new Date().toISOString()}
 ---
 
 # ${featureTitle}
 
-**Origin**: 🔗 ${externalLink || `Imported from ${firstItem.platform}`}
+**Origin**: 🔗 ${externalLink || `Imported from ${platformLabel}`}
 
 ## Description
 
@@ -629,7 +669,7 @@ ${description}
 
 ${firstItem.sourceRepo ? `**Source Repository**: ${firstItem.sourceRepo}` : ''}
 ${firstItem.adoAreaPath ? `**Area Path**: ${firstItem.adoAreaPath}` : ''}
-${isAdoOrphanGroup ? `\n> **Note**: This feature was created from an orphan User Story (no parent Epic/Feature in ADO or parent not imported).` : ''}
+${isOrphanGroup ? `\n> **Note**: This feature was created from an orphan item (no parent Epic/Feature in ${platformLabel} or parent not imported).` : ''}
 
 ## User Stories
 
@@ -638,9 +678,9 @@ User stories in this ${witTypeLabel.toLowerCase()} will be listed here.
 ## Status
 
 - **Created**: ${new Date().toISOString()}
-- **Source**: ${firstItem.platform}
-${includeAdoMetadata ? `- **External ID**: ${firstItem.id}` : ''}
-${isAdoOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
+- **Source**: ${platformLabel}
+${includeExternalMetadata ? `- **External ID**: ${firstItem.id}` : ''}
+${isOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
 `;
 
     // Write FEATURE.md
@@ -684,6 +724,186 @@ ${isAdoOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
     return ageDays >= threshold;
   }
 
+  // ============================================================================
+  // Parent Change Detection (v0.29.0+ - Re-Import Hierarchy Updates)
+  // ============================================================================
+
+  /**
+   * Check if parent has changed between existing reference and new item
+   *
+   * CRITICAL (2025-12-01): Detects orphan → has parent, or parent ID change
+   *
+   * @param existingRef - Existing reference from living docs
+   * @param newItem - New item being imported
+   * @returns True if parent has changed and file should be moved
+   */
+  private hasParentChanged(
+    existingRef: import('./duplicate-detector.js').ExternalIdReference,
+    newItem: ExternalItem
+  ): boolean {
+    // Only check for ADO items with hierarchy support
+    if (newItem.platform !== 'ado') {
+      return false;
+    }
+
+    // Case 1: Was orphan, now has parent
+    if (existingRef.isOrphan && newItem.parentId) {
+      return true;
+    }
+
+    // Case 2: Parent ID changed (including has parent → different parent)
+    if (existingRef.parentId && newItem.parentId && existingRef.parentId !== newItem.parentId) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Handle parent change by moving file to new feature folder
+   *
+   * CRITICAL (2025-12-01): Moves US file when hierarchy changes on re-import
+   *
+   * @param existingRef - Existing reference with old location
+   * @param newItem - New item with updated parent info
+   * @param newFeatureId - New feature folder ID (if already allocated for group)
+   */
+  private async handleParentChange(
+    existingRef: import('./duplicate-detector.js').ExternalIdReference,
+    newItem: ExternalItem,
+    newFeatureId: string | undefined
+  ): Promise<void> {
+    const oldFilePath = existingRef.filePath;
+    const oldFeatureId = existingRef.featureId || 'unknown';
+
+    // Determine the new feature folder
+    // If newFeatureId not provided, allocate one based on new parent
+    let targetFeatureId = newFeatureId;
+    if (!targetFeatureId && this.fsIdAllocator && this.options.enableFeatureAllocation) {
+      // Create a group key based on new parent
+      const groupKey = `parent:${newItem.parentId}`;
+      targetFeatureId = await this.allocateFeatureForGroup(newItem, groupKey);
+    }
+
+    if (!targetFeatureId || targetFeatureId === oldFeatureId) {
+      // No move needed - same feature folder
+      return;
+    }
+
+    // Calculate new file path
+    const baseDir = this.getBaseDirectory();
+    const fileName = path.basename(oldFilePath);
+    const newFilePath = path.join(baseDir, targetFeatureId, fileName);
+
+    // Read existing file content
+    const existingContent = fs.readFileSync(oldFilePath, 'utf-8');
+
+    // Update metadata in content
+    const updatedContent = this.updateParentMetadataInContent(
+      existingContent,
+      newItem.parentId,
+      targetFeatureId,
+      false // No longer orphan
+    );
+
+    // Ensure target directory exists
+    const targetDir = path.dirname(newFilePath);
+    fs.mkdirSync(targetDir, { recursive: true });
+
+    // Write to new location
+    fs.writeFileSync(newFilePath, updatedContent, 'utf-8');
+
+    // Remove old file
+    fs.unlinkSync(oldFilePath);
+
+    // Check if old directory is now empty and clean up
+    const oldDir = path.dirname(oldFilePath);
+    await this.cleanupEmptyFeatureFolder(oldDir, oldFeatureId);
+
+    // Notify callback
+    if (this.options.onParentChanged) {
+      const reason = existingRef.isOrphan
+        ? `Orphan now has parent: ${newItem.parentId}`
+        : `Parent changed from ${existingRef.parentId} to ${newItem.parentId}`;
+      this.options.onParentChanged(existingRef.usId, oldFeatureId, targetFeatureId, reason);
+    }
+
+    // Clear duplicate detector cache since file moved
+    if (this.duplicateDetector) {
+      this.duplicateDetector.clearCache();
+    }
+  }
+
+  /**
+   * Update parent metadata in file content
+   */
+  private updateParentMetadataInContent(
+    content: string,
+    newParentId: string | undefined,
+    newFeatureId: string,
+    isOrphan: boolean
+  ): string {
+    let updated = content;
+
+    // Update Feature ID
+    updated = updated.replace(
+      /^- \*\*Feature ID\*\*: .+$/m,
+      `- **Feature ID**: ${newFeatureId}`
+    );
+
+    // Update or add Parent ID
+    if (newParentId) {
+      if (updated.match(/^- \*\*Parent ID\*\*: .+$/m)) {
+        updated = updated.replace(
+          /^- \*\*Parent ID\*\*: .+$/m,
+          `- **Parent ID**: ${newParentId}`
+        );
+      } else {
+        // Add Parent ID after Feature ID
+        updated = updated.replace(
+          /^(- \*\*Feature ID\*\*: .+)$/m,
+          `$1\n- **Parent ID**: ${newParentId}`
+        );
+      }
+    }
+
+    // Remove Orphan line if no longer orphan
+    if (!isOrphan) {
+      updated = updated.replace(/^- \*\*Orphan\*\*: .+\n?/m, '');
+    }
+
+    return updated;
+  }
+
+  /**
+   * Clean up empty feature folder after file move
+   *
+   * Checks if folder is empty (except FEATURE.md) and removes it if orphan folder
+   */
+  private async cleanupEmptyFeatureFolder(folderPath: string, featureId: string): Promise<void> {
+    try {
+      const files = fs.readdirSync(folderPath);
+
+      // Check if only FEATURE.md remains (or empty)
+      const nonTemplateFiles = files.filter(f => f.toLowerCase() !== 'feature.md');
+
+      if (nonTemplateFiles.length === 0) {
+        // Remove FEATURE.md if exists
+        const featureMdPath = path.join(folderPath, 'FEATURE.md');
+        if (fs.existsSync(featureMdPath)) {
+          fs.unlinkSync(featureMdPath);
+        }
+
+        // Remove empty folder
+        fs.removeSync(folderPath);
+
+        console.log(`   🗑️ Cleaned up empty orphan folder: ${featureId}`);
+      }
+    } catch (error) {
+      // Folder cleanup is best-effort, don't fail on errors
+    }
+  }
+
   /**
    * Generate origin badge for living docs
    */
@@ -719,6 +939,7 @@ ${isAdoOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
 
   /**
    * Generate markdown content for living docs User Story
+   * CRITICAL (2025-12-01): Includes parent tracking info for re-import hierarchy updates
    */
   private generateMarkdown(data: {
     id: string;
@@ -737,6 +958,12 @@ ${isAdoOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
       updatedAt: string;
       labels: string[];
       sourceRepo?: string;
+      // Parent tracking (for re-import hierarchy updates)
+      parentId?: string;
+      featureId?: string;
+      isOrphan?: boolean;
+      adoWorkItemType?: string;
+      adoAreaPath?: string;
     };
   }): string {
     const parts: string[] = [];
@@ -797,6 +1024,22 @@ ${isAdoOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
     if (data.metadata.sourceRepo) {
       parts.push(`- **Source Repository**: ${data.metadata.sourceRepo}`);
     }
+    // Parent tracking for re-import hierarchy updates (CRITICAL for parent change detection)
+    if (data.metadata.featureId) {
+      parts.push(`- **Feature ID**: ${data.metadata.featureId}`);
+    }
+    if (data.metadata.parentId) {
+      parts.push(`- **Parent ID**: ${data.metadata.parentId}`);
+    }
+    if (data.metadata.isOrphan) {
+      parts.push(`- **Orphan**: true (no parent in external tool)`);
+    }
+    if (data.metadata.adoWorkItemType) {
+      parts.push(`- **ADO Work Item Type**: ${data.metadata.adoWorkItemType}`);
+    }
+    if (data.metadata.adoAreaPath) {
+      parts.push(`- **ADO Area Path**: ${data.metadata.adoAreaPath}`);
+    }
 
     return parts.join('\n');
   }
@@ -847,5 +1090,13 @@ ${isAdoOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
         `Import should ONLY create living docs, not increments.`
       );
     }
+  }
+
+  /**
+   * TESTING ONLY: Expose private method for unit tests
+   * DO NOT use in production code
+   */
+  public __test__groupItemsByFeature(items: ExternalItem[]): Map<string, ExternalItem[]> {
+    return this.groupItemsByFeature(items);
   }
 }

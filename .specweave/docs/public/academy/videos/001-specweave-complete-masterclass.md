@@ -1029,8 +1029,8 @@ npx specweave init .
 # spec.md
 ---
 increment: 0001-task-management-api
-feature_id: FS-001
 ---
+<!-- Feature ID (FS-001) is derived from increment number - not stored -->
 
 ## User Stories
 

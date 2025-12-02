@@ -1,6 +1,5 @@
 {
   "increment": "0063-fix-external-import-multi-repo",
-  "feature_id": "FS-063",
   "type": "hotfix",
   "status": "completed",
   "created": "2025-11-25T11:40:00Z",

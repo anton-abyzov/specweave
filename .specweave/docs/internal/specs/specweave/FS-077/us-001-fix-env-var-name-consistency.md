@@ -7,9 +7,6 @@ priority: P1
 created: 2025-11-27
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-001: Fix Env Var Name Consistency
 
 **Feature**: [FS-077](./FEATURE.md)
@@ -39,6 +36,6 @@ created: 2025-11-27
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0077-ado-init-flow-critical-fixes/tasks.md#T-001): Standardize ADO env var names in ado.ts
-- [x] [T-002](../../../../increments/0077-ado-init-flow-critical-fixes/tasks.md#T-002): Update config-detection.ts to read AZURE_DEVOPS_* vars
-- [x] [T-003](../../../../increments/0077-ado-init-flow-critical-fixes/tasks.md#T-003): Write AZURE_DEVOPS_PROJECTS for multi-area setup
+- [x] **T-001**: Standardize ADO env var names in ado.ts
+- [x] **T-002**: Update config-detection.ts to read AZURE_DEVOPS_* vars
+- [x] **T-003**: Write AZURE_DEVOPS_PROJECTS for multi-area setup

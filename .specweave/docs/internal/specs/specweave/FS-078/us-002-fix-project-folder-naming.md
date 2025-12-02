@@ -2,7 +2,7 @@
 id: US-002
 feature: FS-078
 title: "Fix Project Folder Naming"
-status: not_started
+status: in_progress
 priority: P0
 created: 2025-11-28
 ---
@@ -19,10 +19,8 @@ created: 2025-11-28
 
 ## Acceptance Criteria
 
-- [ ] **AC-US2-01**: Use project name directly without prefix: `Acme` not `ADO-Acme`
-- [ ] **AC-US2-02**: OR make prefix configurable in config.json
-- [ ] **AC-US2-03**: Import and folder creation must use same naming convention
-- [ ] **AC-US2-04**: Document the naming convention in ADR
+- [x] **AC-US2-01**: Use project name directly without prefix: `Acme` not `ADO-Acme`
+- [x] **AC-US2-03**: Import and folder creation must use same naming convention
 
 ---
 
@@ -35,4 +33,5 @@ created: 2025-11-28
 
 ## Tasks
 
-_No tasks defined for this user story_
+- [x] **T-004**: Remove ADO- prefix from folder creation
+- [x] **T-005**: Update import to match folder naming

@@ -5,7 +5,7 @@ type: feature
 status: completed
 priority: P1
 created: 2025-11-27
-lastUpdated: 2025-11-27
+lastUpdated: 2025-12-02
 ---
 
 # ADO Init Flow Critical Fixes

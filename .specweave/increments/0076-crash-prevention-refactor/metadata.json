@@ -5,6 +5,5 @@
   "completed": "2025-11-27",
   "type": "refactor",
   "priority": "high",
-  "risk": "low",
-  "feature_id": "FS-076"
+  "risk": "low"
 }
