@@ -3,23 +3,8 @@ name: Test & Validate
 on:
   push:
     branches: [develop, main]
-    paths-ignore:
-      - 'docs-site/**'
-      - '.specweave/docs/public/**'
-      - '**.md'
-      - '.github/workflows/deploy-docs.yml'
   pull_request:
     branches: [develop, main]
-    paths-ignore:
-      - 'docs-site/**'
-      - '.specweave/docs/public/**'
-      - '**.md'
-      - '.github/workflows/deploy-docs.yml'
-
-# Prevent duplicate runs - cancel in-progress runs when new commit pushed
-concurrency:
-  group: test-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   test:
@@ -32,11 +17,21 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Install dependencies
+      - name: Debug info
         run: |
+          echo "=== Environment ==="
           echo "Node version: $(node -v)"
           echo "NPM version: $(npm -v)"
-          npm install --ignore-scripts
+          echo "Working directory: $(pwd)"
+          echo "=== Files ==="
+          ls -la
+          echo "=== package.json exists? ==="
+          test -f package.json && echo "YES" || echo "NO"
+          echo "=== package-lock.json exists? ==="
+          test -f package-lock.json && echo "YES" || echo "NO"
+
+      - name: Install (verbose)
+        run: npm install --ignore-scripts --loglevel verbose 2>&1 | head -100
 
       - name: Build project
         run: npm run rebuild
