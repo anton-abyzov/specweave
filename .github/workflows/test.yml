@@ -21,7 +21,7 @@ jobs:
         run: |
           echo "Node: $(node -v)"
           echo "NPM: $(npm -v)"
-          npm install --ignore-scripts
+          npm install --ignore-scripts --legacy-peer-deps
 
       - name: Build project
         run: npm run rebuild
