@@ -7,9 +7,6 @@ priority: P1
 created: 2025-11-27
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-002: Fix ADO Work Item Import
 
 **Feature**: [FS-077](./FEATURE.md)
@@ -24,8 +21,8 @@ created: 2025-11-27
 
 - [x] **AC-US2-01**: ADO detection succeeds when `AZURE_DEVOPS_*` vars are in `.env`
 - [x] **AC-US2-02**: `promptAndRunExternalImport` correctly detects ADO configuration
-- [ ] **AC-US2-03**: Work items are imported and converted to User Stories
-- [ ] **AC-US2-04**: Imported items appear in `.specweave/docs/internal/specs/` structure
+- [x] **AC-US2-03**: Work items are imported and converted to User Stories
+- [x] **AC-US2-04**: Imported items appear in `.specweave/docs/internal/specs/` structure
 
 ---
 
@@ -38,5 +35,5 @@ created: 2025-11-27
 
 ## Tasks
 
-- [x] [T-004](../../../../increments/0077-ado-init-flow-critical-fixes/tasks.md#T-004): Fix detectADOConfig return type
-- [x] [T-005](../../../../increments/0077-ado-init-flow-critical-fixes/tasks.md#T-005): Add ADO to getSyncProfileProviders
+- [x] **T-004**: Fix detectADOConfig return type
+- [x] **T-005**: Add ADO to getSyncProfileProviders

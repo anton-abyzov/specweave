@@ -16,6 +16,7 @@ Monitor and manage long-running background operations:
 - **Repository cloning** (multi-repo/umbrella setup)
 - **Issue import** (10K+ items from GitHub/JIRA/ADO)
 - **External sync** operations
+- **Brownfield analysis** (codebase documentation gap detection)
 
 **ASYNC ARCHITECTURE (2025-12-01)**:
 - Jobs run as **detached processes** that survive terminal close
@@ -58,11 +59,16 @@ STATE_FILE=".specweave/state/background-jobs.json"
 ```
 📋 Background Jobs
 
-🔄 Running (1):
+🔄 Running (2):
   [abc12345] import-issues (ADO)
      Progress: 2,500/10,000 (25%)
      Rate: 15.2/s | ETA: ~8m 14s
      PID: 45678 | Started: 2 mins ago
+
+  [bfa99001] brownfield-analysis
+     Phase: 3/5 (doc-matching)
+     Files scanned: 1,234 | Discrepancies: 45
+     PID: 45680 | Started: 5 mins ago
 
 ⏸️  Paused (1):
   [def67890] import-issues (GitHub)
@@ -70,9 +76,10 @@ STATE_FILE=".specweave/state/background-jobs.json"
      Reason: Rate limited (resumes in 45s)
      Resume: /specweave:jobs --resume def67890
 
-✅ Completed (2):
+✅ Completed (3):
   [ghi11111] import-issues - 4,500 items - 5 mins ago
   [jkl22222] clone-repos - 4/4 repos - 1 hour ago
+  [bfa88001] brownfield-analysis - 127 discrepancies - 2 hours ago
 
 💡 Commands:
    /specweave:jobs --id abc12345     → Details for specific job
@@ -231,6 +238,7 @@ const result = await launchImportJob({
 | `clone-repos` | Multi-repo cloning | 1-5 mins |
 | `import-issues` | Issue import from external | 5-60 mins |
 | `sync-external` | Bidirectional sync | 1-10 mins |
+| `brownfield-analysis` | Doc gap detection | 2-30 mins |
 
 ---
 
@@ -240,6 +248,41 @@ const result = await launchImportJob({
 - Called after `/specweave:import-external` starts background import
 - Called after `/specweave-github:sync` for large syncs
 - Called after `/specweave-jira:sync` for large syncs
+- Called after `specweave init` brownfield analysis prompt
+
+---
+
+## Brownfield Analysis Completion
+
+When a brownfield-analysis job completes, it shows a summary:
+
+```
+✅ Brownfield Analysis Complete (bfa88001)
+
+📊 Results Summary:
+   Files analyzed: 2,456
+   Modules detected: 18
+   Duration: 12m 34s
+
+📋 Discrepancies Found: 127
+   By Type:
+     missing-docs:   72 (57%)
+     stale-docs:     28 (22%)
+     knowledge-gap:  15 (12%)
+     orphan-doc:      8 (6%)
+     missing-adr:     4 (3%)
+
+   By Priority:
+     🔴 Critical:    3
+     🟠 High:       24
+     🟡 Medium:     68
+     🟢 Low:        32
+
+💡 Next Steps:
+   /specweave:discrepancies           → View all pending discrepancies
+   /specweave:discrepancies --module auth → Filter by module
+   /specweave:discrepancy-to-increment DISC-0001 DISC-0002 → Create increment
+```
 
 ---
 

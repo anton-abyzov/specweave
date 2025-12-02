@@ -3,8 +3,9 @@
   "name": "ConfigManager & Jira Auto-Discovery (Phase 1a)",
   "status": "completed",
   "priority": "P1",
-  "feature_id": "FS-048",
-  "user_stories": ["US-003"],
+  "user_stories": [
+    "US-003"
+  ],
   "created_at": "2025-11-21T06:07:00Z",
   "started_at": "2025-11-21T06:07:00Z",
   "completed_at": "2025-11-21T06:25:00Z",

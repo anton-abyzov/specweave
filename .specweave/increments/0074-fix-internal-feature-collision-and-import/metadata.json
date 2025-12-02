@@ -6,7 +6,6 @@
   "status": "completed",
   "completed": "2025-11-26T18:45:00Z",
   "created": "2025-11-26T18:30:00Z",
-  "feature_id": "FS-074",
   "github_issue": null,
   "total_tasks": 11,
   "completed_tasks": 11,
@@ -20,6 +19,8 @@
     "cross-repo-dedup"
   ],
   "scope": {
-    "descoped": ["US-003 (Background Jobs - see increment 0065)"]
+    "descoped": [
+      "US-003 (Background Jobs - see increment 0065)"
+    ]
   }
 }

@@ -267,6 +267,9 @@ Three gates before any increment closes:
 | `/specweave:validate 0001` | Run quality checks |
 | `/specweave:sync-progress` | Sync to GitHub/JIRA/ADO |
 | `/specweave:tdd-cycle` | Full red-green-refactor workflow |
+| `/specweave:discrepancies` | View brownfield documentation gaps |
+| `/specweave:discrepancy-to-increment` | Convert gaps to actionable increments |
+| `/specweave:jobs` | Monitor background jobs (analysis, import) |
 
 **[Full Command Reference](https://spec-weave.com/docs/commands/overview)**
 
@@ -276,8 +279,22 @@ Three gates before any increment closes:
 
 **10-Year-Old Legacy Codebase?**
 ```bash
-specweave init . --brownfield
-# Analyzes existing code, imports from JIRA/GitHub, creates specs from reality
+specweave init .
+# During init, choose "Run brownfield analysis" to scan for documentation gaps
+# Or run manually later: /specweave:discrepancies
+```
+
+**What happens?** Brownfield analysis scans your codebase and creates **discrepancies** — actionable documentation gaps:
+- `missing-docs` — Undocumented code exports
+- `stale-docs` — Documentation out of sync with code
+- `knowledge-gap` — Single-contributor modules (bus factor risk)
+- `orphan-doc` — Docs for deleted code
+- `missing-adr` — Significant patterns without ADRs
+
+Convert discrepancies to increments:
+```bash
+/specweave:discrepancies                         # View all gaps
+/specweave:discrepancy-to-increment DISC-0001    # Create increment from gap
 ```
 
 **Fresh Startup MVP?**

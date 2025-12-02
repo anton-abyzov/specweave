@@ -247,6 +247,11 @@ export interface ExternalContainerContext {
 }
 /**
  * Extended increment metadata with multi-project support (v0.29.0+)
+ *
+ * NOTE (v0.29.0): featureId field was REMOVED
+ * Feature ID is derived from increment number: 0081 → FS-081
+ * Use deriveFeatureId() from src/utils/feature-id-derivation.ts
+ * See ADR-0140 for rationale
  */
 export interface IncrementMetadataV2 extends IncrementMetadata {
     /** Single project ID (backward compatible) */
@@ -255,8 +260,6 @@ export interface IncrementMetadataV2 extends IncrementMetadata {
     multiProject?: MultiProjectUserStory;
     /** External container context for 2-level directory structure */
     externalContainer?: ExternalContainerContext;
-    /** Feature ID this increment belongs to */
-    featureId?: string;
     /** Epic ID if part of an epic */
     epicId?: string;
 }

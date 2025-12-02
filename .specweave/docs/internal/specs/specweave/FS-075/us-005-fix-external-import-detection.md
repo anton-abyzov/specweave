@@ -4,7 +4,7 @@ feature: FS-075
 title: "Fix External Import Detection"
 status: completed
 priority: P1
-created: 2025-11-27
+created: 2025-12-02
 ---
 
 # US-005: Fix External Import Detection

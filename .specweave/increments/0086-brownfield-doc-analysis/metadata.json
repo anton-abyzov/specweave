@@ -1,0 +1,52 @@
+{
+  "incrementId": "0086-brownfield-doc-analysis",
+  "title": "Brownfield Documentation Analysis & Discrepancy Management",
+  "status": "completed",
+  "priority": "P0",
+  "type": "feature",
+  "createdAt": "2025-12-01T21:00:00.000Z",
+  "updatedAt": "2025-12-01T21:34:00.000Z",
+  "completedAt": "2025-12-01T21:34:00.000Z",
+  "tags": [
+    "brownfield",
+    "documentation",
+    "discrepancy",
+    "living-docs",
+    "init-flow"
+  ],
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Init Flow Brownfield Analysis Question",
+      "status": "completed"
+    },
+    {
+      "id": "US-002",
+      "title": "Brownfield Background Job System",
+      "status": "completed"
+    },
+    {
+      "id": "US-003",
+      "title": "Discrepancy Storage Structure",
+      "status": "completed"
+    },
+    {
+      "id": "US-004",
+      "title": "Discrepancy Detection Algorithms",
+      "status": "completed"
+    },
+    {
+      "id": "US-005",
+      "title": "Discrepancy to Increment Conversion",
+      "status": "completed"
+    },
+    {
+      "id": "US-006",
+      "title": "Discrepancy Commands",
+      "status": "completed"
+    }
+  ],
+  "dependencies": [
+    "0084-discrepancy-detection"
+  ]
+}

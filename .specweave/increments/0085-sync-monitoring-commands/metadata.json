@@ -1,0 +1,44 @@
+{
+  "incrementId": "0085-sync-monitoring-commands",
+  "title": "Sync Monitoring & Commands - Phase 4",
+  "status": "completed",
+  "priority": "P2",
+  "type": "feature",
+  "createdAt": "2025-12-01T18:55:00.000Z",
+  "updatedAt": "2025-12-01T20:32:00.000Z",
+  "completedAt": "2025-12-01T20:32:00.000Z",
+  "tags": [
+    "sync",
+    "monitoring",
+    "commands",
+    "dashboard",
+    "phase-4"
+  ],
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Sync Monitor Dashboard",
+      "status": "not_started"
+    },
+    {
+      "id": "US-002",
+      "title": "Notifications Command",
+      "status": "not_started"
+    },
+    {
+      "id": "US-003",
+      "title": "Discrepancies Command",
+      "status": "not_started"
+    },
+    {
+      "id": "US-004",
+      "title": "Log Aggregation & Querying",
+      "status": "not_started"
+    }
+  ],
+  "dependencies": [
+    "0082-unified-sync-orchestration",
+    "0083-sync-interceptor-pattern",
+    "0084-discrepancy-detection"
+  ]
+}

@@ -7,12 +7,9 @@ priority: P1
 created: 2025-11-26
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-004: Optional Auto-Reconcile on Session Start
 
-**Feature**: [FS-072](./FEATURE)
+**Feature**: [FS-072](./FEATURE.md)
 
 **As a** team lead
 **I want** automatic reconciliation on session start
@@ -31,14 +28,14 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: `0072-github-status-reconciliation`
+**Increment**: [0072-github-status-reconciliation](../../../../increments/0072-github-status-reconciliation/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] T-009: Add config option for auto-reconcile
-- [x] T-010: Create session-start reconcile hook
-- [x] T-011: Add error handling for session start
-- [x] T-012: Update hooks.json for SessionStart
+- [x] **T-009**: Add config option for auto-reconcile
+- [x] **T-010**: Create session-start reconcile hook
+- [x] **T-011**: Add error handling for session start
+- [x] **T-012**: Update hooks.json for SessionStart

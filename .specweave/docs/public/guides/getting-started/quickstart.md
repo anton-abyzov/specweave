@@ -127,6 +127,29 @@ Stripe payments, deployed on Hetzner Cloud"
 
 ---
 
+## Joining an Existing Project (Brownfield)
+
+If you're working with legacy code, SpecWeave can analyze your codebase for documentation gaps:
+
+```bash
+specweave init .
+# During init, select "Run brownfield analysis"
+```
+
+After analysis completes:
+```bash
+/specweave:discrepancies                    # View all documentation gaps
+/specweave:discrepancies --module auth      # Filter by module
+/specweave:discrepancy-to-increment DISC-0001 DISC-0002  # Create increment
+```
+
+The background analysis runs while you continue working. Check progress with:
+```bash
+/specweave:jobs
+```
+
+---
+
 ## Configuration (Optional)
 
 Edit `.specweave/config.yaml`:

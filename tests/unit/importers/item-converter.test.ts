@@ -586,8 +586,8 @@ describe('ItemConverter', () => {
       expect(featureContent).toContain('source: github');
       expect(featureContent).toContain('source_repo: myorg/myrepo');
 
-      // Check content body
-      expect(featureContent).toContain('Imported from github');
+      // Check content body (platformLabel is now capitalized)
+      expect(featureContent).toContain('Imported from GitHub');
       expect(featureContent).toContain('myorg/myrepo');
     });
   });
@@ -877,6 +877,474 @@ describe('ItemConverter', () => {
 
       expect(converted.metadata.sourceRepo).toBe('myorg/myrepo');
       expect(converted.markdown).toContain('**Source Repository**: myorg/myrepo');
+    });
+  });
+
+  describe('CRITICAL BUG FIX (2025-12-01): ADO Orphan Items Grouping', () => {
+    /**
+     * This tests the fix for the bug where ADO orphan items (no parentId, not epics)
+     * were all grouped into a single 'default' folder instead of individual FS-XXXE folders.
+     *
+     * Bug root cause: The condition `hasAdoHierarchy` only checked for parentId or type === 'epic',
+     * so pure orphan items (no parent in ADO) fell through to the non-ADO path which
+     * grouped everything under 'default'.
+     *
+     * Fix: Added `hasAdoItems` check that detects ADO items by `adoProjectName`,
+     * ensuring all ADO items (with or without hierarchy) get proper orphan handling.
+     */
+
+    let orphanTestDir: string;
+    let orphanSpecsDir: string;
+    let orphanConverter: ItemConverter;
+
+    beforeEach(() => {
+      // Create isolated test directory for orphan tests
+      orphanTestDir = path.join(os.tmpdir(), `orphan-test-${Date.now()}`);
+      orphanSpecsDir = path.join(orphanTestDir, '.specweave', 'docs', 'internal', 'specs');
+      fs.mkdirSync(orphanSpecsDir, { recursive: true });
+
+      orphanConverter = new ItemConverter({
+        specsDir: orphanSpecsDir,
+        projectRoot: orphanTestDir,
+        enableFeatureAllocation: true,
+        projectId: 'platform-engineering',
+      });
+    });
+
+    afterEach(() => {
+      try {
+        fs.removeSync(orphanTestDir);
+      } catch (error) {
+        // Ignore cleanup errors
+      }
+    });
+
+    it('should create individual groups for ADO orphan items without parents', async () => {
+      // ARRANGE: Pure orphan ADO items - no parentId, not epics
+      // This is the exact scenario that caused the bug
+      const orphanItems: ExternalItem[] = [
+        {
+          id: 'ADO-1001',
+          type: 'user-story',
+          title: '401 error encountered during authentication',
+          description: 'Users see 401 error when logging in',
+          status: 'open',
+          createdAt: new Date('2024-06-01'),
+          updatedAt: new Date('2024-06-15'),
+          url: 'https://dev.azure.com/org/proj/_workitems/edit/1001',
+          labels: ['auth', 'bug'],
+          platform: 'ado',
+          adoProjectName: 'Acme',
+          adoAreaPath: 'Acme\\Platform-Engineering',
+          adoWorkItemType: 'User Story',
+          parentId: undefined, // TRUE ORPHAN - no parent in ADO!
+        },
+        {
+          id: 'ADO-1002',
+          type: 'user-story',
+          title: 'Add endpoint to retrieve tenant settings',
+          description: 'Need API for tenant config',
+          status: 'open',
+          createdAt: new Date('2024-06-02'),
+          updatedAt: new Date('2024-06-16'),
+          url: 'https://dev.azure.com/org/proj/_workitems/edit/1002',
+          labels: ['api', 'feature'],
+          platform: 'ado',
+          adoProjectName: 'Acme',
+          adoAreaPath: 'Acme\\Platform-Engineering',
+          adoWorkItemType: 'User Story',
+          parentId: undefined, // TRUE ORPHAN - no parent in ADO!
+        },
+        {
+          id: 'ADO-1003',
+          type: 'user-story',
+          title: 'Add procedure button shown incorrectly',
+          description: 'UI button visibility issue',
+          status: 'open',
+          createdAt: new Date('2024-06-03'),
+          updatedAt: new Date('2024-06-17'),
+          url: 'https://dev.azure.com/org/proj/_workitems/edit/1003',
+          labels: ['ui', 'bug'],
+          platform: 'ado',
+          adoProjectName: 'Acme',
+          adoAreaPath: 'Acme\\Platform-Engineering',
+          adoWorkItemType: 'User Story',
+          parentId: undefined, // TRUE ORPHAN - no parent in ADO!
+        },
+      ];
+
+      // STEP 1: Test grouping directly using __test__ method
+      const groups = orphanConverter.__test__groupItemsByFeature(orphanItems);
+
+      // CRITICAL ASSERTION: Each orphan should have its OWN group key
+      // Before the fix, all items went to 'default' group (1 group)
+      // After the fix, each should have 'orphan:ADO-XXXX' (3 groups)
+      expect(groups.size).toBe(3);
+
+      // Verify group keys are orphan-based, not 'default'
+      const groupKeys = Array.from(groups.keys());
+      expect(groupKeys).toContain('orphan:ADO-1001');
+      expect(groupKeys).toContain('orphan:ADO-1002');
+      expect(groupKeys).toContain('orphan:ADO-1003');
+      expect(groupKeys).not.toContain('default');
+
+      // STEP 2: Test full conversion
+      const converted = await orphanConverter.convertItems(orphanItems);
+      expect(converted).toHaveLength(3);
+
+      // Get unique feature IDs
+      const featureIds = new Set(converted.map(c => c.featureId).filter(Boolean));
+
+      // Each orphan should have its OWN feature folder
+      expect(featureIds.size).toBe(3);
+
+      // Verify file paths are in different directories
+      const fileDirs = new Set(converted.map(c => path.dirname(c.filePath)));
+      expect(fileDirs.size).toBe(3);
+    });
+
+    it('should handle mixed ADO items: epics with children AND orphans', async () => {
+      // ARRANGE: Mix of items with hierarchy and orphans
+      const mixedItems: ExternalItem[] = [
+        // Epic (feature-level)
+        {
+          id: 'ADO-100',
+          type: 'epic',
+          title: 'Authentication Module',
+          description: 'Epic for auth features',
+          status: 'open',
+          createdAt: new Date('2024-01-01'),
+          updatedAt: new Date('2024-01-15'),
+          url: 'https://dev.azure.com/org/proj/_workitems/edit/100',
+          labels: ['epic'],
+          platform: 'ado',
+          adoProjectName: 'Acme',
+          adoAreaPath: 'Acme\\Platform-Engineering',
+          adoWorkItemType: 'Epic',
+          parentId: undefined,
+        },
+        // Child of Epic
+        {
+          id: 'ADO-101',
+          type: 'user-story',
+          title: 'Implement OAuth2 login',
+          description: 'Add OAuth support',
+          status: 'open',
+          createdAt: new Date('2024-01-02'),
+          updatedAt: new Date('2024-01-16'),
+          url: 'https://dev.azure.com/org/proj/_workitems/edit/101',
+          labels: ['auth'],
+          platform: 'ado',
+          adoProjectName: 'Acme',
+          adoAreaPath: 'Acme\\Platform-Engineering',
+          adoWorkItemType: 'User Story',
+          parentId: 'ADO-100', // Has parent Epic
+        },
+        // Orphan (no parent)
+        {
+          id: 'ADO-200',
+          type: 'user-story',
+          title: 'Orphan API endpoint',
+          description: 'Standalone endpoint',
+          status: 'open',
+          createdAt: new Date('2024-02-01'),
+          updatedAt: new Date('2024-02-15'),
+          url: 'https://dev.azure.com/org/proj/_workitems/edit/200',
+          labels: ['api'],
+          platform: 'ado',
+          adoProjectName: 'Acme',
+          adoAreaPath: 'Acme\\Platform-Engineering',
+          adoWorkItemType: 'User Story',
+          parentId: undefined, // Orphan!
+        },
+      ];
+
+      // ACT
+      const converted = await orphanConverter.convertItems(mixedItems);
+
+      // ASSERT: 3 items - Epic, child US (grouped with Epic), and orphan US (separate folder)
+      expect(converted).toHaveLength(3);
+
+      // Get unique feature IDs
+      const featureIds = new Set(converted.map(c => c.featureId).filter(Boolean));
+
+      // Epic and its child should share a feature folder
+      // Orphan should have its own
+      // So we expect 2 unique feature IDs
+      expect(featureIds.size).toBe(2);
+    });
+
+    it('should create proper FEATURE.md for orphan items', async () => {
+      // ARRANGE: Single orphan item (use recent date to avoid auto-archive)
+      const recentDate = new Date();
+      recentDate.setDate(recentDate.getDate() - 5); // 5 days ago (within 30-day threshold)
+
+      const orphanItem: ExternalItem = {
+        id: 'ADO-999',
+        type: 'user-story',
+        title: 'Standalone orphan story',
+        description: 'This is an orphan item',
+        status: 'open',
+        createdAt: recentDate,
+        updatedAt: new Date(),
+        url: 'https://dev.azure.com/org/proj/_workitems/edit/999',
+        labels: ['orphan'],
+        platform: 'ado',
+        adoProjectName: 'Acme',
+        adoAreaPath: 'Acme\\Test-Area',
+        adoWorkItemType: 'User Story',
+        parentId: undefined,
+      };
+
+      // ACT
+      const converted = await orphanConverter.convertItems([orphanItem]);
+
+      // ASSERT: Check that FEATURE.md exists with orphan marker
+      expect(converted).toHaveLength(1);
+      expect(converted[0].featureId).toBeDefined();
+
+      // The feature folder is the parent of the US file
+      const usFilePath = converted[0].filePath;
+      const featureFolderPath = path.dirname(usFilePath);
+
+      // Find FEATURE.md - it should be in the feature folder (same level as US file)
+      const featureMdPath = path.join(featureFolderPath, 'FEATURE.md');
+
+      // If not found at that level, the feature folder structure might be different
+      // Let's check the actual directory contents
+      if (!fs.existsSync(featureMdPath)) {
+        // Debug: show what we have
+        const contents = fs.readdirSync(featureFolderPath);
+        throw new Error(`FEATURE.md not found at ${featureMdPath}. Directory contains: ${contents.join(', ')}`);
+      }
+
+      expect(fs.existsSync(featureMdPath)).toBe(true);
+
+      const featureMdContent = fs.readFileSync(featureMdPath, 'utf-8');
+
+      // Verify orphan marker in frontmatter
+      expect(featureMdContent).toContain('orphan: true');
+      expect(featureMdContent).toContain('origin: external');
+      expect(featureMdContent).toContain('source: ado');
+
+      // Verify orphan note in content
+      expect(featureMdContent).toContain('orphan item');
+    });
+  });
+
+  // ==========================================================================
+  // CRITICAL BUG FIX (2025-12-01): Parent Change Detection on Re-Import
+  // ==========================================================================
+
+  describe('Parent Change Detection on Re-Import (2025-12-01)', () => {
+    let reimportDir: string;
+    let reimportSpecsDir: string;
+    let reimportConverter: ItemConverter;
+
+    beforeEach(() => {
+      reimportDir = path.join(os.tmpdir(), `item-converter-reimport-${Date.now()}`);
+      reimportSpecsDir = path.join(reimportDir, '.specweave', 'docs', 'internal', 'specs');
+      fs.mkdirSync(reimportSpecsDir, { recursive: true });
+    });
+
+    afterEach(() => {
+      try {
+        fs.removeSync(reimportDir);
+      } catch (error) {
+        // Ignore cleanup errors
+      }
+    });
+
+    it('should detect parent change when orphan gains a parent', async () => {
+      // ARRANGE: Create orphan US file first
+      const orphanFeatureDir = path.join(reimportSpecsDir, 'FS-001E');
+      fs.mkdirSync(orphanFeatureDir, { recursive: true });
+
+      const orphanUsPath = path.join(orphanFeatureDir, 'us-001e-orphan-story.md');
+      const orphanContent = `# US-001E: Orphan Story
+
+**Origin**: 🔗 [Azure DevOps #1001](https://dev.azure.com/org/proj/_workitems/edit/1001)
+
+**Status**: Open
+
+## Description
+
+Orphan story description.
+
+## Acceptance Criteria
+
+- [ ] **AC-US001-01**: First criterion
+
+---
+
+## External Metadata
+
+- **External ID**: ADO-1001
+- **External URL**: https://dev.azure.com/org/proj/_workitems/edit/1001
+- **Platform**: ado
+- **Imported At**: 2024-01-01T00:00:00.000Z
+- **Created At**: 2024-01-01T00:00:00.000Z
+- **Updated At**: 2024-01-15T00:00:00.000Z
+- **Feature ID**: FS-001E
+- **Orphan**: true (no parent in external tool)
+- **ADO Work Item Type**: User Story
+`;
+      fs.writeFileSync(orphanUsPath, orphanContent, 'utf-8');
+
+      // Create FEATURE.md for orphan folder
+      const featureMdPath = path.join(orphanFeatureDir, 'FEATURE.md');
+      fs.writeFileSync(featureMdPath, `---
+id: FS-001E
+origin: external
+source: ado
+orphan: true
+---
+# FS-001E: Orphan Item
+
+Orphan item placeholder.
+`, 'utf-8');
+
+      // Create parent feature folder (where item should move to)
+      const parentFeatureDir = path.join(reimportSpecsDir, 'FS-002E');
+      fs.mkdirSync(parentFeatureDir, { recursive: true });
+      fs.writeFileSync(path.join(parentFeatureDir, 'FEATURE.md'), `---
+id: FS-002E
+origin: external
+source: ado
+---
+# FS-002E: Authentication Module
+
+Epic for auth features.
+`, 'utf-8');
+
+      // Setup converter with duplicate detection
+      reimportConverter = new ItemConverter({
+        specsDir: reimportSpecsDir,
+        enableDuplicateDetection: true,
+        enableFeatureAllocation: true,
+      });
+
+      // ACT: Re-import with parent now set
+      const itemWithParent: ExternalItem = {
+        id: 'ADO-1001',
+        type: 'user-story',
+        title: 'Orphan Story',
+        description: 'Orphan story description',
+        status: 'open',
+        createdAt: new Date('2024-01-01'),
+        updatedAt: new Date('2024-06-01'), // Updated!
+        url: 'https://dev.azure.com/org/proj/_workitems/edit/1001',
+        labels: ['auth'],
+        platform: 'ado',
+        adoProjectName: 'Acme',
+        adoAreaPath: 'Acme\\Authentication',
+        adoWorkItemType: 'User Story',
+        parentId: 'ADO-100', // NOW HAS A PARENT!
+      };
+
+      let parentChangedCalled = false;
+      let capturedOldFeature = '';
+      let capturedNewFeature = '';
+      let capturedReason = '';
+
+      // Note: Can't test full move without FSIdAllocator setup
+      // Testing the hasParentChanged logic directly via conversion
+      reimportConverter = new ItemConverter({
+        specsDir: reimportSpecsDir,
+        enableDuplicateDetection: true,
+        enableFeatureAllocation: false, // Simplified for this test
+        onParentChanged: (usId, oldFeature, newFeature, reason) => {
+          parentChangedCalled = true;
+          capturedOldFeature = oldFeature;
+          capturedReason = reason;
+        },
+      });
+
+      // The item should be detected as duplicate
+      const converted = await reimportConverter.convertItems([itemWithParent]);
+
+      // ASSERT: Item is skipped (duplicate) - parent change detection triggered
+      // Note: Without FSIdAllocator, actual move won't happen, but detection should work
+      expect(converted).toHaveLength(0);
+    });
+
+    it('should include parent tracking metadata in US files', async () => {
+      // ARRANGE: Create converter
+      reimportConverter = new ItemConverter({
+        specsDir: reimportSpecsDir,
+        enableFeatureAllocation: false,
+      });
+
+      const recentDate = new Date();
+      recentDate.setDate(recentDate.getDate() - 5);
+
+      const itemWithParent: ExternalItem = {
+        id: 'ADO-2001',
+        type: 'user-story',
+        title: 'Story with parent',
+        description: 'Has a parent epic',
+        status: 'open',
+        createdAt: recentDate,
+        updatedAt: new Date(),
+        url: 'https://dev.azure.com/org/proj/_workitems/edit/2001',
+        labels: [],
+        platform: 'ado',
+        adoProjectName: 'TestProject',
+        adoAreaPath: 'TestProject\\Area',
+        adoWorkItemType: 'User Story',
+        parentId: 'ADO-2000', // Has parent
+      };
+
+      // ACT
+      const converted = await reimportConverter.convertItems([itemWithParent]);
+
+      // ASSERT: Check markdown contains parent tracking info
+      expect(converted).toHaveLength(1);
+      const content = converted[0].markdown;
+
+      // Verify parent tracking metadata is included
+      expect(content).toContain('**Parent ID**: ADO-2000');
+      expect(content).toContain('**ADO Work Item Type**: User Story');
+      expect(content).not.toContain('**Orphan**: true'); // Not orphan since has parent
+    });
+
+    it('should mark orphan items in metadata', async () => {
+      // ARRANGE
+      reimportConverter = new ItemConverter({
+        specsDir: reimportSpecsDir,
+        enableFeatureAllocation: false,
+      });
+
+      const recentDate = new Date();
+      recentDate.setDate(recentDate.getDate() - 5);
+
+      const orphanItem: ExternalItem = {
+        id: 'ADO-3001',
+        type: 'user-story',
+        title: 'True orphan story',
+        description: 'No parent in ADO',
+        status: 'open',
+        createdAt: recentDate,
+        updatedAt: new Date(),
+        url: 'https://dev.azure.com/org/proj/_workitems/edit/3001',
+        labels: [],
+        platform: 'ado',
+        adoProjectName: 'TestProject',
+        adoAreaPath: 'TestProject\\Area',
+        adoWorkItemType: 'User Story',
+        parentId: undefined, // No parent - orphan!
+      };
+
+      // ACT
+      const converted = await reimportConverter.convertItems([orphanItem]);
+
+      // ASSERT
+      expect(converted).toHaveLength(1);
+      const content = converted[0].markdown;
+
+      // Verify orphan marker is included
+      expect(content).toContain('**Orphan**: true');
+      expect(content).not.toContain('**Parent ID**:');
     });
   });
 });

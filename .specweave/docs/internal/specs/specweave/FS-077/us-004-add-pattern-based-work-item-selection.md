@@ -7,9 +7,6 @@ priority: P1
 created: 2025-11-27
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-004: Add Pattern-Based Work Item Selection
 
 **Feature**: [FS-077](./FEATURE.md)
@@ -38,5 +35,5 @@ created: 2025-11-27
 
 ## Tasks
 
-- [x] [T-008](../../../../increments/0077-ado-init-flow-critical-fixes/tasks.md#T-008): Create ado-area-selector.ts with pattern matching
-- [x] [T-009](../../../../increments/0077-ado-init-flow-critical-fixes/tasks.md#T-009): Integrate area selector into ADO init flow
+- [x] **T-008**: Create ado-area-selector.ts with pattern matching
+- [x] **T-009**: Integrate area selector into ADO init flow

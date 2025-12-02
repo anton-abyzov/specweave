@@ -29,3 +29,23 @@ export {
   getOrphanedJobs
 } from './job-launcher.js';
 export type { LaunchOptions, LaunchResult, CloneLaunchOptions } from './job-launcher.js';
+
+// Brownfield analysis jobs
+export {
+  launchBrownfieldAnalysisJob,
+  loadJobState as loadBrownfieldJobState,
+  listBrownfieldJobs,
+  getActiveBrownfieldJob,
+  updateJobProgress as updateBrownfieldProgress,
+  completeJob as completeBrownfieldJob,
+  failJob as failBrownfieldJob,
+  pauseJob as pauseBrownfieldJob,
+  resumeJob as resumeBrownfieldJob,
+  deleteJob as deleteBrownfieldJob,
+  formatCompletionNotification as formatBrownfieldNotification,
+} from './brownfield-launcher.js';
+export type {
+  BrownfieldLaunchOptions,
+  BrownfieldLaunchResult,
+  BrownfieldCompletionStats,
+} from './brownfield-launcher.js';

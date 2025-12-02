@@ -1,0 +1,12 @@
+{
+  "id": "0087-remove-redundant-feature-id",
+  "status": "completed",
+  "type": "refactor",
+  "created": "2025-12-01T21:00:00.000Z",
+  "lastActivity": "2025-12-01T22:00:00.000Z",
+  "readyForReviewAt": "2025-12-01T22:00:00.000Z",
+  "completedAt": "2025-12-01T21:56:00.000Z",
+  "title": "Remove Redundant feature_id/featureId from Metadata",
+  "priority": "P1",
+  "tags": ["metadata", "refactor", "cleanup", "living-docs"]
+}

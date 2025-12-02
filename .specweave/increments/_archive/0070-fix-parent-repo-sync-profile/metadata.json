@@ -7,6 +7,5 @@
   "created": "2025-11-26",
   "completed": "2025-11-26",
   "test_mode": "test-after",
-  "coverage_target": 80,
-  "feature_id": "FS-070"
+  "coverage_target": 80
 }

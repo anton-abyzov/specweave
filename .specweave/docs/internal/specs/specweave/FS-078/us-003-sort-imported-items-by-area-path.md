@@ -2,7 +2,7 @@
 id: US-003
 feature: FS-078
 title: "Sort Imported Items by Area Path"
-status: not_started
+status: in_progress
 priority: P0
 created: 2025-11-28
 ---
@@ -19,11 +19,9 @@ created: 2025-11-28
 
 ## Acceptance Criteria
 
-- [ ] **AC-US3-01**: Work items grouped by `System.AreaPath` field
-- [ ] **AC-US3-02**: Each area path gets its own subfolder under project
-- [ ] **AC-US3-03**: Structure: `specs/{project}/{area-path}/FS-XXX/US-XXX.md`
-- [ ] **AC-US3-04**: Items without area path go to `_default/` folder
-- [ ] **AC-US3-05**: Preview shows count per area path before import
+- [x] **AC-US3-01**: Work items grouped by `System.AreaPath` field
+- [x] **AC-US3-02**: Each area path gets its own subfolder under project
+- [x] **AC-US3-03**: Structure: `specs/{project}/{area-path}/FS-XXX/US-XXX.md`
 
 ---
 
@@ -36,4 +34,5 @@ created: 2025-11-28
 
 ## Tasks
 
-_No tasks defined for this user story_
+- [x] **T-006**: Fix area path extraction in grouping
+- [x] **T-007**: Create subfolders per area path
