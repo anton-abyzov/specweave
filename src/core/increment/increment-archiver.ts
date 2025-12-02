@@ -219,15 +219,16 @@ export class IncrementArchiver {
   /**
    * Archive with --keep-last N semantics
    *
-   * CRITICAL: This ensures EXACTLY N increments remain after archiving.
-   * Protected increments (external sync, active) count toward the N remaining.
+   * v0.30.0 CRITICAL FIX: "keep last 5" means "keep the 5 HIGHEST-NUMBERED increments"
    *
-   * Algorithm:
-   * 1. Start from oldest increment
-   * 2. Try to archive each one
-   * 3. Count remaining = (total - archived)
-   * 4. Stop when remaining == keepLast
-   * 5. Protected increments naturally stay and count toward keepLast
+   * Previous bug: Counted only active increments. If 5 active with gaps (0072, 0085-0088),
+   * nothing would archive because 5 <= 5.
+   *
+   * NEW Algorithm:
+   * 1. Get ALL increment numbers (active + archived) to find the global "last N"
+   * 2. Calculate which numbers should remain: the N highest by number
+   * 3. Archive any active increment NOT in that list
+   * 4. Protected increments (external sync) are SKIPPED but logged as needing attention
    */
   private async archiveWithKeepLast(
     allIncrements: string[],
@@ -235,53 +236,48 @@ export class IncrementArchiver {
     options: ArchiveOptions,
     result: ArchiveResult
   ): Promise<ArchiveResult> {
-    const total = allIncrements.length;
+    // Get ALL increment numbers (active + archived) to determine global "last N"
+    const archivedIncrements = await this.listArchived();
+    const allIncrementNumbers = [
+      ...allIncrements.map(inc => parseInt(inc.split('-')[0])),
+      ...archivedIncrements.map(inc => parseInt(inc.split('-')[0]))
+    ].sort((a, b) => b - a); // Sort descending (highest first)
 
-    if (total <= keepLast) {
-      this.logger.info(`Only ${total} increments exist, nothing to archive (keeping ${keepLast})`);
+    // Get unique numbers and find the Nth highest
+    const uniqueNumbers = [...new Set(allIncrementNumbers)];
+    const keepNumbers = new Set(uniqueNumbers.slice(0, keepLast));
+
+    this.logger.info(`Keep last ${keepLast} by NUMBER: ${[...keepNumbers].sort((a, b) => a - b).map(n => n.toString().padStart(4, '0')).join(', ')}`);
+
+    // Find active increments NOT in the "keep" list
+    const toArchive: string[] = [];
+    const toKeep: string[] = [];
+
+    for (const increment of allIncrements) {
+      const incNumber = parseInt(increment.split('-')[0]);
+      if (keepNumbers.has(incNumber)) {
+        toKeep.push(increment);
+      } else {
+        toArchive.push(increment);
+      }
+    }
+
+    if (toArchive.length === 0) {
+      this.logger.info(`All ${allIncrements.length} active increments are in the last ${keepLast} by number`);
       return result;
     }
 
-    // How many we need to archive to reach exactly keepLast
-    let targetArchiveCount = total - keepLast;
+    this.logger.info(`Will archive ${toArchive.length} increments not in last ${keepLast}: ${toArchive.map(i => i.split('-')[0]).join(', ')}`);
 
-    this.logger.debug(`Total: ${total}, Keep: ${keepLast}, Target to archive: ${targetArchiveCount}`);
-
-    // Process from oldest to newest
-    for (const increment of allIncrements) {
-      // Check if we've archived enough
-      if (result.archived.length >= targetArchiveCount) {
-        this.logger.debug(`Reached target archive count (${targetArchiveCount}), stopping`);
-        break;
-      }
-
-      // Calculate current remaining
-      const currentRemaining = total - result.archived.length;
-
-      // Safety check: never go below keepLast
-      if (currentRemaining <= keepLast) {
-        this.logger.debug(`Would go below keepLast (${keepLast}), stopping`);
-        break;
-      }
-
-      // Try to archive this increment
+    // Archive each increment not in the keep list
+    for (const increment of toArchive) {
       const archiveAttempt = await this.tryArchiveIncrement(increment, options, result);
 
-      // If increment was protected (skipped), it counts toward remaining
-      // So we need to archive one MORE to compensate
       if (!archiveAttempt.archived && !archiveAttempt.error) {
-        // Increment was skipped (protected) - it will remain active
-        // We need to archive more to compensate
-        targetArchiveCount++;
-        this.logger.debug(`${increment} is protected, adjusted target to ${targetArchiveCount}`);
+        // Increment was protected - warn that it needs attention
+        this.logger.warn(`⚠️  ${increment} should be archived (not in last ${keepLast}) but is protected`);
+        this.logger.warn(`   → Close external sync (GitHub/JIRA/ADO) to allow archiving`);
       }
-    }
-
-    // Final verification
-    const finalRemaining = total - result.archived.length;
-    if (finalRemaining !== keepLast && result.skipped.length > 0) {
-      this.logger.info(`Note: ${finalRemaining} increments remain (requested ${keepLast})`);
-      this.logger.info(`${result.skipped.length} increments have active external sync and cannot be archived`);
     }
 
     if (!options.dryRun) {
@@ -500,7 +496,7 @@ export class IncrementArchiver {
     await fs.move(sourcePath, targetPath, { overwrite: false });
 
     // Clear increment number cache (numbers changed after archiving)
-    const { IncrementNumberManager } = await import('../increment-utils.js');
+    const { IncrementNumberManager } = await import('./increment-utils.js');
     IncrementNumberManager.clearCache();
 
     // Update any references in config or living docs
@@ -760,7 +756,7 @@ export class IncrementArchiver {
     await fs.move(sourcePath, targetPath);
 
     // Clear increment number cache (numbers changed after restoring)
-    const { IncrementNumberManager } = await import('../increment-utils.js');
+    const { IncrementNumberManager } = await import('./increment-utils.js');
     IncrementNumberManager.clearCache();
 
     this.logger.success(`Restored ${increment} from archive`);

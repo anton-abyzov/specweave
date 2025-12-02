@@ -8,13 +8,13 @@
  */
 
 import { confirm, select, input, password } from '@inquirer/prompts';
-import { credentialsManager, JiraCredentials } from '../../../src/core/credentials-manager.js';
+import { credentialsManager, JiraCredentials } from '../../../src/core/credentials/credentials-manager.js';
 
 // ============================================================================
 // Types
 // ============================================================================
 
-export { JiraCredentials } from '../../../src/core/credentials-manager.js';
+export { JiraCredentials } from '../../../src/core/credentials/credentials-manager.js';
 
 export interface CredentialDetectionResult {
   found: boolean;

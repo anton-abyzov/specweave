@@ -5,7 +5,7 @@
  * Tests the complete multi-project workflow from initialization to removal
  */
 
-import { ProjectManager, ProjectContext } from '../../src/core/project-manager.js';
+import { ProjectManager, ProjectContext } from '../../src/core/project/project-manager.js';
 import { ConfigManager } from '../../src/core/config-manager.js';
 import { withTempDir } from '../../utils/temp-dir.js';
 import * as fs from '../../../../src/utils/fs-native.js';

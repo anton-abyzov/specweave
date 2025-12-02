@@ -18,7 +18,7 @@ import {
   updateSpecWithExternalLink,
   SpecContent,
   ContentSyncResult,
-} from '../../../src/core/spec-content-sync.js';
+} from '../../../src/core/specs/spec-content-sync.js';
 import path from 'path';
 import fs from 'fs/promises';
 

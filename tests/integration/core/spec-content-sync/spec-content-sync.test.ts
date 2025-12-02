@@ -23,7 +23,7 @@ import {
   type SpecUserStory,
   type SpecAcceptanceCriterion,
   type SpecContent,
-} from '../../../../dist/src/core/spec-content-sync.js';
+} from '../../../../dist/src/core/specs/spec-content-sync.js';
 import type { SpecIdentifier } from '../../../../dist/src/core/types/spec-identifier.js';
 
 /**

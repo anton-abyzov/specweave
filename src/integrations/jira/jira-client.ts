@@ -12,7 +12,7 @@
  * - Get sprint information
  */
 
-import { credentialsManager, JiraCredentials } from '../../core/credentials-manager.js';
+import { credentialsManager, JiraCredentials } from '../../core/credentials/credentials-manager.js';
 
 export interface JiraIssue {
   id: string;

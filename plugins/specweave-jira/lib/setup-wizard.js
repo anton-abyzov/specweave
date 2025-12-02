@@ -1,6 +1,6 @@
 import { confirm, select, input, password } from "@inquirer/prompts";
-import { credentialsManager } from "../../../src/core/credentials-manager.js";
-import { JiraCredentials as JiraCredentials2 } from "../../../src/core/credentials-manager.js";
+import { credentialsManager } from "../../../src/core/credentials/credentials-manager.js";
+import { JiraCredentials as JiraCredentials2 } from "../../../src/core/credentials/credentials-manager.js";
 async function detectJiraCredentials() {
   if (credentialsManager.hasJiraCredentials()) {
     try {

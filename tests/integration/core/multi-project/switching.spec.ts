@@ -97,7 +97,7 @@ test.describe('Project Switching (E2E)', () => {
 
   test('should switch project successfully and update config', async () => {
     // Dynamically import ProjectManager
-    const { ProjectManager } = await import('../../../src/core/project-manager.js');
+    const { ProjectManager } = await import('../../../src/core/project/project-manager.js');
     const manager = new ProjectManager(testDir);
 
     // Verify initial active project
@@ -119,7 +119,7 @@ test.describe('Project Switching (E2E)', () => {
   });
 
   test('should use new active project for path resolution after switch', async () => {
-    const { ProjectManager } = await import('../../../src/core/project-manager.js');
+    const { ProjectManager } = await import('../../../src/core/project/project-manager.js');
     const manager = new ProjectManager(testDir);
 
     // Initial paths (frontend) - flattened structure (v0.15.0+, ADR-0028)
@@ -144,7 +144,7 @@ test.describe('Project Switching (E2E)', () => {
   });
 
   test('should throw error when switching to non-existent project', async () => {
-    const { ProjectManager } = await import('../../../src/core/project-manager.js');
+    const { ProjectManager } = await import('../../../src/core/project/project-manager.js');
     const manager = new ProjectManager(testDir);
 
     // Attempt to switch to invalid project
@@ -158,7 +158,7 @@ test.describe('Project Switching (E2E)', () => {
   });
 
   test('should allow switching to same project (idempotent)', async () => {
-    const { ProjectManager } = await import('../../../src/core/project-manager.js');
+    const { ProjectManager } = await import('../../../src/core/project/project-manager.js');
     const manager = new ProjectManager(testDir);
 
     // Switch to current project (frontend)
