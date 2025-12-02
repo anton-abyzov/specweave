@@ -9,7 +9,7 @@
 
 import * as fs from '../../utils/fs-native.js';
 import path from 'path';
-import { IncrementStatusDetector } from '../increment-status.js';
+import { IncrementStatusDetector } from './increment-status.js';
 
 export interface MetadataValidationResult {
   valid: boolean;

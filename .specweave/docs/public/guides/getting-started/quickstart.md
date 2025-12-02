@@ -76,10 +76,10 @@ After `specweave init .`:
 
 | Component | Count | Purpose |
 |-----------|-------|---------|
-| **Skills** | 17 | Auto-activating capabilities (planning, [TDD](/docs/glossary/terms/tdd), quality) |
-| **Agents** | 11 | Specialized roles (PM, Architect, Tech Lead, QA, Security) |
-| **Commands** | 22 | Slash commands for workflow control |
-| **Hooks** | 8 | Automation (doc updates, quality validation) |
+| **Skills** | 136 | Auto-activating capabilities (planning, TDD, brownfield, sync) |
+| **Agents** | 68 | Specialized roles (PM, Architect, DevOps, QA, Security, SRE) |
+| **Commands** | 53 | Slash commands for workflow control |
+| **Hooks** | 3+ | Event-driven automation (lifecycle, sync, status) |
 | **CLAUDE.md** | 1 | Your project reference guide |
 
 ---
@@ -91,8 +91,11 @@ After `specweave init .`:
 | `/specweave:increment "..."` | Create new feature with AI agents |
 | `/specweave:do` | Execute all tasks autonomously |
 | `/specweave:done <id>` | Complete with quality gates |
+| `/specweave:next` | Auto-close + suggest next (one-click flow) |
 | `/specweave:progress` | Check status |
 | `/specweave:sync-progress` | Sync to GitHub/JIRA/ADO |
+| `/specweave:sync-monitor` | Dashboard: jobs, notifications |
+| `/specweave:discrepancies` | View code-to-spec drift |
 
 ---
 
@@ -146,6 +149,24 @@ After analysis completes:
 The background analysis runs while you continue working. Check progress with:
 ```bash
 /specweave:jobs
+```
+
+---
+
+## Sync Monitoring (NEW)
+
+SpecWeave provides **sync monitoring** for external tools (GitHub/JIRA/ADO):
+
+```bash
+/specweave:sync-progress    # Push updates to external tools
+/specweave:sync-monitor     # See sync status dashboard
+/specweave:notifications    # View/dismiss sync alerts
+```
+
+**Code is the source of truth.** When docs drift from reality, you get notified:
+```bash
+/specweave:discrepancies    # See code-to-spec drift
+/specweave:discrepancies accept DISC-0001  # Update specs from code
 ```
 
 ---

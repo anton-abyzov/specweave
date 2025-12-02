@@ -408,7 +408,7 @@ Using SpecWeave CLI for plugin management.
     }
 
     // Load plugin to get its components
-    const { PluginLoader } = await import('../../core/plugin-loader.js');
+    const { PluginLoader } = await import('../../core/plugins/plugin-loader.js');
     const loader = new PluginLoader();
     const plugin = await loader.loadFromDirectory(pluginPath);
 

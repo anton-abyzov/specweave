@@ -6,7 +6,7 @@
  */
 
 import { GitCommit, GitRepository, PullRequest } from '../utils/git-utils.js';
-import { Task, UserStory } from './spec-task-mapper.js';
+import { Task, UserStory } from './specs/spec-task-mapper.js';
 
 export interface CommentContent {
   userStory: UserStory;

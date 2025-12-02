@@ -9,7 +9,7 @@
 
 import path from 'path';
 import * as fs from '../../utils/fs-native.js';
-import { detectSpecsInIncrement } from '../../core/spec-detector.js';
+import { detectSpecsInIncrement } from '../../core/specs/spec-detector.js';
 import { ConfigManager } from '../../core/config-manager.js';
 
 async function main() {

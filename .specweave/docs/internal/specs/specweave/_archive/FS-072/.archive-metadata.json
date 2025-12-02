@@ -1,0 +1,11 @@
+{
+  "id": "FS-072",
+  "type": "feature",
+  "archivedAt": "2025-12-02T04:05:48.382Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Documents/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-072",
+  "linkedIncrements": [
+    "0072-github-status-reconciliation"
+  ]
+}

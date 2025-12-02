@@ -1,0 +1,11 @@
+{
+  "id": "FS-084",
+  "type": "feature",
+  "archivedAt": "2025-12-02T03:51:04.537Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Documents/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-084",
+  "linkedIncrements": [
+    "0084-discrepancy-detection"
+  ]
+}

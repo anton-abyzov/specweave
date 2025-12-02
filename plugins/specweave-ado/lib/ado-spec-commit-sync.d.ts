@@ -6,7 +6,7 @@
  */
 import { AdoClientV2 } from './ado-client-v2.js';
 import { GitCommit, GitRepository } from '../../../src/utils/git-utils.js';
-import { UserStory } from '../../../src/core/spec-task-mapper.js';
+import { UserStory } from '../../../src/core/specs/spec-task-mapper.js';
 export interface SyncOptions {
     incrementPath: string;
     dryRun?: boolean;

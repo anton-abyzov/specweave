@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Coverage Target: 95%
  */
 
-import { ProjectManager } from '../../../src/core/project-manager.js';
+import { ProjectManager } from '../../../src/core/project/project-manager.js';
 import { ConfigManager } from '../../../src/core/config-manager.js';
 import { benchmark } from '../../utils/benchmark.js';
 

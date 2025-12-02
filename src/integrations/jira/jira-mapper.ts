@@ -400,7 +400,7 @@ export class JiraMapper {
   private getNextIncrementId(): string {
     // UPDATED: Use centralized IncrementNumberManager to prevent gaps when increments are archived
     // This now scans ALL directories: main, _archive, _abandoned, _paused
-    const { IncrementNumberManager } = require('../../core/increment-utils.js');
+    const { IncrementNumberManager } = require('../../core/increment/increment-utils.js');
     return IncrementNumberManager.getNextIncrementNumber(this.projectRoot, false);
   }
 

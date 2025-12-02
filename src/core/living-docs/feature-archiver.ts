@@ -81,6 +81,12 @@ export class FeatureArchiver {
     };
 
     try {
+      // CRITICAL: Validate and repair feature ID mismatches BEFORE archiving
+      // Rule: Feature ID MUST match increment number (0088 → FS-088)
+      if (!options.dryRun) {
+        await this.validateAndRepairFeatureIds();
+      }
+
       // Ensure archive directories exist
       if (!options.dryRun) {
         await this.ensureArchiveDirectories();
@@ -556,22 +562,70 @@ export class FeatureArchiver {
 
   /**
    * Get increments linked to a feature
-   * CRITICAL: Uses both explicit linkage AND auto-inference from increment numbers
-   * Supports:
-   * 1. Explicit linkage (feature_id: FS-XXX or epic: FS-XXX)
-   * 2. Auto-inferred linkage (increment 0041 → FS-041)
+   *
+   * v0.30.0 CRITICAL FIX: Parse FEATURE.md Implementation History as PRIMARY SOURCE
+   *
+   * The old algorithm searched increments → features (backwards!)
+   * This caused bugs when increments were renamed (0060 → 0088)
+   *
+   * NEW algorithm: Parse FEATURE.md → extract increment names from Implementation History
+   * Fallback: metadata.json feature_id → spec.md feature_id → auto-inference
+   *
+   * Implementation History table format:
+   * | [0082-unified-sync-orchestration](../../../../increments/0082-.../spec.md) | ✅ completed | 2025-12-01 |
    */
   private async getLinkedIncrements(featureId: string): Promise<string[]> {
     const increments: string[] = [];
 
-    // Check active increments - use metadata.json as primary source
+    // ================================================================
+    // PHASE 1: Parse FEATURE.md Implementation History (PRIMARY SOURCE)
+    // ================================================================
+    const featureLocations = await this.getAllFeatureLocations();
+    const featureLocation = featureLocations.find(loc => loc.featureId === featureId);
+
+    if (featureLocation) {
+      const featureMdPath = path.join(featureLocation.featurePath, 'FEATURE.md');
+
+      if (await fs.pathExists(featureMdPath)) {
+        try {
+          const content = await fs.readFile(featureMdPath, 'utf-8');
+
+          // Parse Implementation History table
+          // Pattern: [0060-name](path/to/increments/0060-name/spec.md)
+          const incrementPattern = /\[(\d{4}-[^\]]+)\]\([^)]*increments[^)]*\/(\d{4}-[^\/)]+)/g;
+          let match;
+
+          while ((match = incrementPattern.exec(content)) !== null) {
+            const incrementName = match[1] || match[2];
+            if (incrementName && !increments.includes(incrementName)) {
+              increments.push(incrementName);
+            }
+          }
+
+          // If we found increments from FEATURE.md, use these as source of truth
+          if (increments.length > 0) {
+            console.log(`   📖 ${featureId}: Found ${increments.length} increments from FEATURE.md: ${increments.join(', ')}`);
+            return increments;
+          }
+        } catch {
+          // FEATURE.md parsing failed, fall back to other methods
+        }
+      }
+    }
+
+    // ================================================================
+    // PHASE 2: Fallback - search increments with explicit feature_id
+    // ================================================================
+    console.log(`   ⚠️  ${featureId}: No Implementation History in FEATURE.md, using fallback search`);
+
+    // Check active increments
     const activeMetadataPattern = path.join(this.rootDir, '.specweave', 'increments', '[0-9]*-*', 'metadata.json');
     const activeMetadataFiles = await glob(activeMetadataPattern);
 
     for (const file of activeMetadataFiles) {
       const incrementDir = path.basename(path.dirname(file));
 
-      // 1. Check metadata.json for feature_id (PRIMARY SOURCE - v0.28.37)
+      // Check metadata.json for feature_id
       try {
         const metadataContent = await fs.readFile(file, 'utf-8');
         const metadata = JSON.parse(metadataContent);
@@ -579,50 +633,42 @@ export class FeatureArchiver {
           increments.push(incrementDir);
           continue;
         }
-        // If metadata has feature_id but doesn't match, skip auto-inference
-        if (metadata.feature_id) {
-          continue;
-        }
+        if (metadata.feature_id) continue; // Skip auto-inference
       } catch {
-        // metadata.json doesn't exist or invalid, fall back to spec.md
+        // metadata.json doesn't exist or invalid
       }
 
-      // 2. Fall back to spec.md for backward compatibility
+      // Check spec.md for feature_id
       const specPath = path.join(path.dirname(file), 'spec.md');
       try {
         const content = await fs.readFile(specPath, 'utf-8');
         const featureIdMatch = content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
         const epicMatch = content.match(/^epic:\s*["']?([^"'\n]+)["']?$/m);
-
         const explicitLinkage = featureIdMatch ? featureIdMatch[1].trim() :
                                epicMatch ? epicMatch[1].trim() : null;
-
         if (explicitLinkage === featureId) {
           increments.push(incrementDir);
           continue;
         }
-        if (explicitLinkage !== null) {
-          continue;
-        }
+        if (explicitLinkage !== null) continue; // Skip auto-inference
       } catch {
         // spec.md doesn't exist
       }
 
-      // 3. Check auto-inferred linkage ONLY if no explicit linkage exists
+      // Auto-infer ONLY if no explicit linkage
       const inferredFeatureId = this.inferFeatureIdFromIncrement(incrementDir);
       if (inferredFeatureId === featureId) {
         increments.push(incrementDir);
       }
     }
 
-    // Check archived increments - use metadata.json as primary source
+    // Check archived increments (same logic)
     const archivedMetadataPattern = path.join(this.rootDir, '.specweave', 'increments', '_archive', '[0-9]*-*', 'metadata.json');
     const archivedMetadataFiles = await glob(archivedMetadataPattern);
 
     for (const file of archivedMetadataFiles) {
       const incrementDir = path.basename(path.dirname(file));
 
-      // 1. Check metadata.json for feature_id (PRIMARY SOURCE - v0.28.37)
       try {
         const metadataContent = await fs.readFile(file, 'utf-8');
         const metadata = JSON.parse(metadataContent);
@@ -630,35 +676,23 @@ export class FeatureArchiver {
           increments.push(incrementDir);
           continue;
         }
-        if (metadata.feature_id) {
-          continue;
-        }
-      } catch {
-        // Fall back to spec.md
-      }
+        if (metadata.feature_id) continue;
+      } catch { /* ignore */ }
 
-      // 2. Fall back to spec.md
       const specPath = path.join(path.dirname(file), 'spec.md');
       try {
         const content = await fs.readFile(specPath, 'utf-8');
         const featureIdMatch = content.match(/^feature_id:\s*["']?([^"'\n]+)["']?$/m);
         const epicMatch = content.match(/^epic:\s*["']?([^"'\n]+)["']?$/m);
-
         const explicitLinkage = featureIdMatch ? featureIdMatch[1].trim() :
                                epicMatch ? epicMatch[1].trim() : null;
-
         if (explicitLinkage === featureId) {
           increments.push(incrementDir);
           continue;
         }
-        if (explicitLinkage !== null) {
-          continue;
-        }
-      } catch {
-        // spec.md doesn't exist
-      }
+        if (explicitLinkage !== null) continue;
+      } catch { /* ignore */ }
 
-      // 3. Check auto-inferred linkage ONLY if no explicit linkage exists
       const inferredFeatureId = this.inferFeatureIdFromIncrement(incrementDir);
       if (inferredFeatureId === featureId) {
         increments.push(incrementDir);
@@ -797,6 +831,88 @@ export class FeatureArchiver {
           await fs.ensureDir(path.join(dir, '_archive'));
         }
       }
+    }
+  }
+
+  /**
+   * Validate and repair feature ID mismatches
+   *
+   * v0.30.0 CRITICAL: Enforces 1:1 mapping between increment numbers and feature IDs
+   *
+   * Rules:
+   * 1. Feature ID MUST match increment number (0088 → FS-088)
+   * 2. If FEATURE.md references a different increment, rename the feature folder
+   *
+   * This prevents orphan features when increments are renumbered.
+   */
+  private async validateAndRepairFeatureIds(): Promise<void> {
+    console.log('🔍 Validating feature ID consistency...');
+
+    const featureLocations = await this.getAllFeatureLocations();
+    let repaired = 0;
+
+    for (const { featureId, projectId, featurePath } of featureLocations) {
+      // Parse FEATURE.md to get referenced increment
+      const featureMdPath = path.join(featurePath, 'FEATURE.md');
+
+      if (!await fs.pathExists(featureMdPath)) {
+        continue;
+      }
+
+      try {
+        const content = await fs.readFile(featureMdPath, 'utf-8');
+
+        // Extract increment number from Implementation History
+        const match = content.match(/\[(\d{4})-[^\]]+\]\([^)]*increments/);
+
+        if (!match) {
+          continue; // No increment reference found
+        }
+
+        const referencedIncrementNum = parseInt(match[1]);
+        const currentFeatureNum = parseInt(featureId.slice(3));
+
+        // Check if feature ID matches referenced increment
+        if (referencedIncrementNum !== currentFeatureNum) {
+          const expectedFeatureId = `FS-${referencedIncrementNum.toString().padStart(3, '0')}`;
+
+          console.log(`   ⚠️  Mismatch: ${featureId} references increment ${match[1]}`);
+          console.log(`      Renaming ${featureId} → ${expectedFeatureId}`);
+
+          // Rename the feature folder
+          const newFeaturePath = path.join(this.specsDir, projectId, expectedFeatureId);
+
+          // Check if target already exists
+          if (await fs.pathExists(newFeaturePath)) {
+            console.log(`      ❌ Cannot rename: ${expectedFeatureId} already exists`);
+            continue;
+          }
+
+          // Rename folder
+          await fs.move(featurePath, newFeaturePath);
+
+          // Update all references inside the folder
+          const mdFiles = await glob(path.join(newFeaturePath, '**/*.md'));
+          for (const mdFile of mdFiles) {
+            const mdContent = await fs.readFile(mdFile, 'utf-8');
+            const updatedContent = mdContent.replace(new RegExp(featureId, 'g'), expectedFeatureId);
+            if (mdContent !== updatedContent) {
+              await fs.writeFile(mdFile, updatedContent, 'utf-8');
+            }
+          }
+
+          console.log(`      ✅ Renamed ${featureId} → ${expectedFeatureId}`);
+          repaired++;
+        }
+      } catch (error) {
+        console.log(`   ⚠️  Error validating ${featureId}: ${error}`);
+      }
+    }
+
+    if (repaired > 0) {
+      console.log(`✅ Repaired ${repaired} feature ID mismatches`);
+    } else {
+      console.log('✅ All feature IDs are consistent');
     }
   }
 

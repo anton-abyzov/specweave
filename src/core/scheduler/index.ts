@@ -9,3 +9,4 @@
 export * from './scheduled-job.js';
 export * from './job-scheduler.js';
 export * from './schedule-persistence.js';
+export * from './session-sync-executor.js';

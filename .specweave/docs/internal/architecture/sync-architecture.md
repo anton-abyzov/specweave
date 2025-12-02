@@ -146,6 +146,73 @@ npm run rebuild
 
 ---
 
+---
+
+## Session-Based Sync (v0.28.68+)
+
+### Sync Model: On-Demand, Not Polling
+
+**Key Design Decision**: SpecWeave does NOT use polling or background daemons.
+
+| Trigger | Description |
+|---------|-------------|
+| **Session Start** | Claude Code session starts → due jobs execute |
+| **Task Completion** | Increment task completed → living docs updated |
+| **Increment Closure** | `/specweave:done` → GitHub issues closed |
+| **Manual Command** | `/specweave:sync-progress` → full sync |
+| **Cron** | `specweave sync-scheduled` → for CI/scheduled use |
+
+### Conflict Resolution (Rule-Based, Not LLM)
+
+| Conflict Type | Resolution Rule |
+|---------------|-----------------|
+| Code vs Spec | **Code is source of truth** |
+| External vs Internal | **External item format preserved** |
+| Duplicate Increments | **Most complete version wins** |
+
+### Format Preservation
+
+External items (from JIRA/ADO) have `format_preservation=true`:
+- **Comment-only sync** - Updates posted as comments
+- **No title changes** - External title immutable
+- **No AC modifications** - Original structure preserved
+
+### Session-Start Configuration
+
+```json
+// .specweave/config.json
+{
+  "sync": {
+    "orchestration": {
+      "scheduler": {
+        "enabled": true,
+        "autoSyncOnSessionStart": true
+      }
+    },
+    "settings": {
+      "canUpdateExternalItems": false,  // Safety gate
+      "canUpsertInternalItems": true,
+      "autoSyncOnCompletion": true
+    }
+  }
+}
+```
+
+### CLI for Cron Users
+
+```bash
+# Add to crontab (every 15 minutes)
+0,15,30,45 * * * * cd /project && npx specweave sync-scheduled --silent
+
+# Force sync all jobs
+specweave sync-scheduled --force
+
+# Preview what would run
+specweave sync-scheduled --dry-run
+```
+
+---
+
 ## Related ADRs
 
 - ADR-0032: GitHub Hierarchy

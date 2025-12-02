@@ -8,7 +8,7 @@
 
 import path from 'path';
 import * as fs from '../../utils/fs-native.js';
-import { ProjectManager } from '../../core/project-manager.js';
+import { ProjectManager } from '../../core/project/project-manager.js';
 import { ConfigManager } from '../../core/config-manager.js';
 import { autoDetectProjectIdSync, formatProjectName } from '../../utils/project-detection.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';

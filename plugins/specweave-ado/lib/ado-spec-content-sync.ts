@@ -18,7 +18,7 @@ import {
   updateSpecWithExternalLink,
   SpecContent,
   ContentSyncResult,
-} from '../../../src/core/spec-content-sync.js';
+} from '../../../src/core/specs/spec-content-sync.js';
 import { SyncProfile } from '../../../src/core/types/sync-profile.js';
 import { SpecIncrementMapper, TaskInfo } from '../../../src/core/sync/spec-increment-mapper.js';
 import * as path from 'path';

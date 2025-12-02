@@ -7,7 +7,7 @@
 import path from 'path';
 import { select, confirm as confirmPrompt } from '@inquirer/prompts';
 import { BrownfieldImporter, ImportOptions } from '../../core/brownfield/importer.js';
-import { ProjectManager } from '../../core/project-manager.js';
+import { ProjectManager } from '../../core/project/project-manager.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 
 // NOTE: This CLI import command is primarily user-facing output (console.log/console.error).

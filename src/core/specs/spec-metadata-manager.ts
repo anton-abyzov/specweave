@@ -24,7 +24,7 @@ import {
   IncrementReference,
   SpecValidationResult
 } from '../types/spec-metadata.js';
-import { ProjectManager } from '../project-manager.js';
+import { ProjectManager } from '../project/project-manager.js';
 
 export class SpecMetadataManager {
   private specsDir: string;
