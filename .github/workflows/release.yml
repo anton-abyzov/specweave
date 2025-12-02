@@ -1,9 +1,8 @@
 name: Release & Publish
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # REMOVED: push on tags - causes infinite loop when workflow creates tags
+  # Tags are created by workflow_dispatch, then npm publish happens automatically
   workflow_dispatch:
     inputs:
       version:
@@ -18,6 +17,11 @@ on:
           - patch
           - minor
           - major
+
+# Prevent duplicate runs
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   release:
