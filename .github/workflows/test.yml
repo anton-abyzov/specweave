@@ -16,6 +16,11 @@ on:
       - '**.md'
       - '.github/workflows/deploy-docs.yml'
 
+# Prevent duplicate runs - cancel in-progress runs when new commit pushed
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ${{ matrix.os }}
