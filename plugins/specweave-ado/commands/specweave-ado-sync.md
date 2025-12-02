@@ -16,9 +16,9 @@ description: Two-way sync between SpecWeave increment and Azure DevOps work item
 ## Options
 
 - `--direction <mode>`: Sync direction (default: `two-way`)
-  - `two-way`: SpecWeave ↔ ADO (default - recommended)
-  - `to-ado`: SpecWeave → ADO only (push progress)
-  - `from-ado`: ADO → SpecWeave only (pull updates)
+  - `two-way`: SpecWeave <-> ADO (default - recommended)
+  - `to-ado`: SpecWeave -> ADO only (push progress)
+  - `from-ado`: ADO -> SpecWeave only (pull updates)
 
 ## Examples
 
@@ -37,54 +37,146 @@ description: Two-way sync between SpecWeave increment and Azure DevOps work item
 
 ## Command Behavior
 
-When user runs this command, invoke `ado-manager` agent to perform two-way sync:
+When user runs this command, Claude should:
 
-### Phase 1: Pull FROM ADO (default behavior)
-1. Fetch work item state from ADO API
-2. Detect changes in ADO:
-   - State changes (New → Active → Resolved → Closed)
-   - Priority changes
-   - Iteration/sprint changes
-   - Comments from team members
-   - Field updates
-3. Apply ADO changes to SpecWeave increment:
-   - Update increment status to match ADO state
-   - Update priority in metadata
-   - Import team comments to increment notes
-   - Update iteration tracking
+### 1. Check Permission Gate (MANDATORY FIRST STEP)
 
-### Phase 2: Push TO ADO (default behavior)
-1. Read tasks.md from increment
-2. Calculate completion percentage
-3. Identify recently completed tasks
-4. Format progress update comment
-5. POST comment to ADO work item
-6. Update work item state if needed (New → Active → Resolved)
-7. Update custom fields (completion %, current task, etc.)
+**Before ANY ADO write operations**, check permissions:
 
-**Agent Invocation**:
+```typescript
+// Read .specweave/config.json
+const config = JSON.parse(await fs.readFile('.specweave/config.json', 'utf-8'));
+const canUpdateExternal = config?.sync?.settings?.canUpdateExternalItems ?? false;
+const canUpdateStatus = config?.sync?.settings?.canUpdateStatus ?? false;
+
+// Permission check based on direction
+if (direction === 'to-ado' || direction === 'two-way') {
+  if (!canUpdateExternal) {
+    console.log(`
+❌ Permission Denied: ADO Write Operations Disabled
+
+Cannot push changes to ADO (sync.settings.canUpdateExternalItems = false).
+
+Options:
+1. Enable writes: Set canUpdateExternalItems to true in config.json
+2. Pull-only mode: /specweave-ado:sync ${incrementId} --direction from-ado
+`);
+    return;
+  }
+}
+```
+
+For `--direction from-ado` (pull-only), permission check is skipped as it's read-only.
+
+### 2. Resolve ADO Profile
+
+Use the increment's stored profile or fall back to global activeProfile:
+
+```typescript
+// Load increment metadata
+const metadataPath = `.specweave/increments/${incrementId}/metadata.json`;
+const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
+
+// Priority: increment profile > global activeProfile
+let profileName = metadata?.external_sync?.ado?.profile;
+if (!profileName) {
+  profileName = config?.sync?.activeProfile;
+}
+
+// Validate profile exists
+const profileConfig = config?.sync?.profiles?.[profileName];
+if (!profileConfig || profileConfig.provider !== 'ado') {
+  console.log(`❌ ADO profile "${profileName}" not found`);
+  console.log('Available ADO profiles:', Object.entries(config?.sync?.profiles || {})
+    .filter(([_, p]) => p.provider === 'ado')
+    .map(([name]) => name)
+    .join(', '));
+  return;
+}
+
+const { organization, project } = profileConfig.config;
+console.log(`Using ADO profile: ${profileName}`);
+console.log(`  Organization: ${organization}`);
+console.log(`  Project: ${project}`);
+```
+
+### 3. Invoke ADO Manager Agent
+
 ```
 Use Task tool with subagent_type: "specweave-ado:ado-manager:ado-manager"
 
-Prompt: "Two-way sync for increment 0005-payment-integration with ADO.
+Prompt: "{direction} sync for increment {increment-id} with ADO.
+
+IMPORTANT:
+- Permission verified: canUpdateExternalItems={canUpdateExternal}
+- Using profile: {profileName} (org: {organization}, project: {project})
 
 Phase 1 - Pull FROM ADO:
-1. Fetch work item #12345 from ADO API
+1. Fetch work item #{workItemId} from ADO API
 2. Detect changes: state, priority, iteration, comments
 3. Apply ADO changes to increment metadata
 4. Import team comments to increment notes
 
-Phase 2 - Push TO ADO:
-1. Read .specweave/increments/0005/tasks.md
+Phase 2 - Push TO ADO (if direction allows):
+1. Read .specweave/increments/{increment-id}/tasks.md
 2. Calculate: X/Y tasks complete (Z%)
 3. Identify: Recently completed tasks
 4. Format comment with progress update
-5. Load work item ID from increment-metadata.json
-6. POST comment to ADO API
+5. Load work item ID from metadata.json
+6. POST comment to ADO API using org: {organization}, project: {project}
 7. Update work item state/fields
 
-Display: Two-way sync summary"
+Display: Sync summary with profile used"
 ```
+
+### 4. Display Result
+
+```
+Sync Summary for increment {increment-id}
+
+Profile: {profileName}
+  Organization: {organization}
+  Project: {project}
+
+Direction: {direction}
+
+FROM ADO:
+  State: Active -> Resolved
+  Priority: 2 -> 1
+  Comments: 3 new
+
+TO ADO:
+  Progress: 60% (6/10 tasks)
+  Posted comment #98765
+
+Work Item: https://dev.azure.com/{organization}/{project}/_workitems/edit/{workItemId}
+```
+
+---
+
+## Permission Check Matrix
+
+| Direction | canUpdateExternalItems | Result |
+|-----------|------------------------|--------|
+| from-ado | any | Allowed (read-only) |
+| to-ado | false | Denied |
+| to-ado | true | Allowed |
+| two-way | false | Denied |
+| two-way | true | Allowed |
+
+---
+
+## Profile Resolution
+
+The command resolves the ADO profile in this order:
+
+1. **Increment profile** (metadata.json -> external_sync.ado.profile)
+2. **Global profile** (config.json -> sync.activeProfile)
+
+This allows:
+- Different increments to sync to different ADO projects
+- No manual `activeProfile` switching needed
+- Automatic project targeting
 
 ---
 
@@ -93,56 +185,57 @@ Display: Two-way sync summary"
 ### Two-way Sync (Default)
 
 ```
-🔄 Two-way sync for increment 0005...
+User: /specweave-ado:sync 0005-payment-integration
 
-✓ Azure DevOps work item: #12345
-✓ Sync direction: Two-way (push & pull)
+Claude:
+Checking permissions...
+  canUpdateExternalItems: true
 
-Detecting changes (both directions)...
+Resolving ADO profile...
+  Using: ado-nova-x-sandbox (from increment)
+  Organization: nova-systems
+  Project: Nova X Sandbox
+
+Syncing...
 
 FROM ADO:
-✓ Work item state changed: Active → Resolved
-✓ Iteration updated: Sprint 23 → Sprint 24
-✓ Priority changed: 2 → 1
-✓ 3 new comments from team
+  State changed: Active -> Resolved
+  Iteration updated: Sprint 23 -> Sprint 24
+  Priority changed: 2 -> 1
+  3 new comments from team
 
-FROM SpecWeave:
-✓ 2 new tasks completed (T-005, T-006)
-✓ Progress: 40% → 60% (6/10 tasks)
-✓ Current task: T-007
+TO ADO:
+  Progress: 60% complete (6/10 tasks)
+  Posted comment (ID: 98765)
+  Updated completion field: 60%
 
-Syncing TO ADO...
-✓ Posted progress comment (ID: 98765)
-✓ Updated completion: 60%
-✓ Updated current task field: T-007
-
-Syncing FROM ADO...
-✓ Updated increment status: active → completed
-✓ Updated priority: P2 → P1
-✓ Updated iteration tracking: Sprint 24
-✓ Imported 3 team comments to increment notes
-
-✅ Bidirectional Sync Complete!
-
-   SpecWeave ↔ ADO synchronized
-   • Pushed: Progress (60%), 2 task updates
-   • Pulled: State (Resolved), priority (P1), iteration, 3 comments
-
-ADO Work Item: https://dev.azure.com/myorg/MyProject/_workitems/edit/12345
-Last synced: just now
-Next sync: Automatic (hook-based) or manual when ready
+Sync Complete!
+Profile: ado-nova-x-sandbox
+Work Item: https://dev.azure.com/nova-systems/Nova%20X%20Sandbox/_workitems/edit/12345
 ```
 
-### One-Way Sync (to-ado)
+### Permission Denied
 
 ```
-✅ Pushed to ADO Work Item #12345
+User: /specweave-ado:sync 0005 --direction to-ado
 
-Progress: 60% complete (6/10 tasks)
+Claude:
+Checking permissions...
+  canUpdateExternalItems: false
 
-Recently Completed:
-- T-005: Add payment tests
-- T-006: Update documentation
+Permission Denied: ADO Write Operations Disabled
 
-URL: https://dev.azure.com/myorg/MyProject/_workitems/edit/12345
+Cannot push changes to ADO.
+
+Options:
+1. Enable writes: Set sync.settings.canUpdateExternalItems = true
+2. Pull-only: /specweave-ado:sync 0005 --direction from-ado
 ```
+
+---
+
+## Related
+
+- `/specweave-ado:create-workitem` - Create new ADO work item
+- `/specweave-ado:status` - Check sync status (read-only, always allowed)
+- `/specweave-ado:close-workitem` - Close work item when complete

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 /**
  * Unit Tests: init-multiproject CLI command
@@ -8,6 +8,17 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * Coverage: Migration process, project creation, configuration updates.
  */
 
+// Mock dependencies BEFORE imports
+vi.mock('../../../src/cli/commands/migrate-to-multiproject.js');
+vi.mock('../../../src/core/project/project-manager.js');
+vi.mock('../../../src/core/config-manager.js');
+vi.mock('../../../src/utils/project-detection.js');
+vi.mock('inquirer', () => ({
+  default: {
+    prompt: vi.fn()
+  }
+}));
+
 import { initMultiProject, listProjects } from '../../../src/cli/commands/init-multiproject.js';
 import { autoMigrateSingleToMulti } from '../../../src/cli/commands/migrate-to-multiproject.js';
 import { ProjectManager } from '../../../src/core/project/project-manager.js';
@@ -15,26 +26,19 @@ import { ConfigManager } from '../../../src/core/config-manager.js';
 import { autoDetectProjectIdSync, formatProjectName } from '../../../src/utils/project-detection.js';
 import * as inquirer from 'inquirer';
 
-// Mock dependencies
-vi.mock('../../../src/cli/commands/migrate-to-multiproject');
-vi.mock('../../../src/core/project-manager');
-vi.mock('../../../src/core/config-manager');
-vi.mock('../../../src/utils/project-detection');
-vi.mock('inquirer', () => ({
-  default: {
-    prompt: vi.fn()
-  }
-}));
-
 describe('init-multiproject command', () => {
-  const mockProjectManager = ProjectManager as vi.Mocked<typeof ProjectManager>;
-  const mockConfigManager = ConfigManager as vi.Mocked<typeof ConfigManager>;
-  const mockAutoMigrate = autoMigrateSingleToMulti as vi.MockedFunction<typeof autoMigrateSingleToMulti>;
-  const mockAutoDetect = autoDetectProjectIdSync as vi.MockedFunction<typeof autoDetectProjectIdSync>;
-  const mockFormatProjectName = formatProjectName as vi.MockedFunction<typeof formatProjectName>;
+  const mockAutoMigrate = vi.mocked(autoMigrateSingleToMulti);
+  const mockAutoDetect = vi.mocked(autoDetectProjectIdSync);
+  const mockFormatProjectName = vi.mocked(formatProjectName);
   const mockPrompt = vi.mocked(inquirer.default.prompt);
+  const MockedProjectManager = vi.mocked(ProjectManager);
+  const MockedConfigManager = vi.mocked(ConfigManager);
 
   const mockProjectRoot = '/test/project';
+
+  // Mock instances
+  let mockProjectInstance: any;
+  let mockConfigInstance: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -57,8 +61,8 @@ describe('init-multiproject command', () => {
       errors: []
     });
 
-    // Mock config manager
-    const mockConfigInstance = {
+    // Mock config manager instance
+    mockConfigInstance = {
       load: vi.fn().mockReturnValue({
         project: {
           name: 'Default',
@@ -69,10 +73,10 @@ describe('init-multiproject command', () => {
       }),
       save: vi.fn()
     };
-    mockConfigManager.mockImplementation(() => mockConfigInstance as any);
+    MockedConfigManager.mockImplementation(() => mockConfigInstance as any);
 
-    // Mock project manager
-    const mockProjectInstance = {
+    // Mock project manager instance
+    mockProjectInstance = {
       getAllProjects: vi.fn().mockReturnValue([
         {
           projectId: 'default',
@@ -91,7 +95,7 @@ describe('init-multiproject command', () => {
       }),
       addProject: vi.fn()
     };
-    mockProjectManager.mockImplementation(() => mockProjectInstance as any);
+    MockedProjectManager.mockImplementation(() => mockProjectInstance as any);
   });
 
   describe('initMultiProject function', () => {

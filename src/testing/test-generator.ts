@@ -13,6 +13,19 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
+import { Logger, consoleLogger } from '../utils/logger.js';
+
+/**
+ * Module logger - can be replaced for testing
+ */
+let moduleLogger: Logger = consoleLogger;
+
+/**
+ * Set the logger for this module
+ */
+export function setTestGeneratorLogger(logger: Logger): void {
+  moduleLogger = logger;
+}
 
 export interface TestSpec {
   name: string;
@@ -69,7 +82,7 @@ export class TestGenerator {
     const specsDir = path.join(this.testSpecsDir, skillName);
 
     if (!fs.existsSync(specsDir)) {
-      console.warn(`No test specs found for skill: ${skillName}`);
+      moduleLogger.warn(`No test specs found for skill: ${skillName}`);
       return null;
     }
 
@@ -77,7 +90,7 @@ export class TestGenerator {
     const specFiles = fs.readdirSync(specsDir).filter(f => f.endsWith('.yaml') || f.endsWith('.yml'));
 
     if (specFiles.length === 0) {
-      console.warn(`No YAML specs found in ${specsDir}`);
+      moduleLogger.warn(`No YAML specs found in ${specsDir}`);
       return null;
     }
 
@@ -130,10 +143,10 @@ export class TestGenerator {
         const result = await this.generateTestsForSkill(skillName);
         if (result) {
           generated.push(result);
-          console.log(`✅ Generated tests for ${skillName}: ${result.testCount} tests`);
+          moduleLogger.log(`✅ Generated tests for ${skillName}: ${result.testCount} tests`);
         }
       } catch (error: any) {
-        console.error(`❌ Failed to generate tests for ${skillName}:`, error.message);
+        moduleLogger.error(`❌ Failed to generate tests for ${skillName}:`, error.message);
       }
     }
 
@@ -154,13 +167,13 @@ export class TestGenerator {
 
       // Validate spec
       if (!spec || !spec.name || !spec.description) {
-        console.warn(`Invalid spec in ${filePath}: missing name or description`);
+        moduleLogger.warn(`Invalid spec in ${filePath}: missing name or description`);
         return null;
       }
 
       return spec as TestSpec;
     } catch (error: any) {
-      console.error(`Error loading spec ${filePath}:`, error.message);
+      moduleLogger.error(`Error loading spec ${filePath}:`, error.message);
       return null;
     }
   }

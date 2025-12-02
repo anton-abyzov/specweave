@@ -11,7 +11,11 @@ export interface Logger {
     /**
      * Log informational message
      */
-    log(message: string): void;
+    log(message: string, ...args: any[]): void;
+    /**
+     * Log info message (alias for log)
+     */
+    info(message: string, ...args: any[]): void;
     /**
      * Log error message with optional error object
      */

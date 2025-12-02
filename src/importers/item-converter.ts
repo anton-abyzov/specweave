@@ -16,6 +16,19 @@ import { DuplicateDetector } from './duplicate-detector.js';
 import type { ExternalContainerContext } from '../core/types/increment-metadata.js';
 import { getTwoLevelProjectPath, normalizeToProjectId } from '../utils/project-id-generator.js';
 import { MarkdownGenerator } from './markdown-generator.js';
+import { Logger, consoleLogger } from '../utils/logger.js';
+
+/**
+ * Module logger - can be replaced for testing
+ */
+let moduleLogger: Logger = consoleLogger;
+
+/**
+ * Set the logger for this module
+ */
+export function setItemConverterLogger(logger: Logger): void {
+  moduleLogger = logger;
+}
 
 export interface ConvertedUserStory {
   /** User Story ID with E suffix (e.g., US-001E) */
@@ -311,7 +324,7 @@ export class ItemConverter {
     let skippedCount = 0;
 
     // DIAGNOSTIC: Log input items count
-    console.log(`   📥 ItemConverter received: ${items.length} items for project: ${this.options.projectId || 'default'}`);
+    moduleLogger.debug(`   📥 ItemConverter received: ${items.length} items for project: ${this.options.projectId || 'default'}`);
 
     // Ensure specs directory exists
     fs.mkdirSync(this.options.specsDir, { recursive: true });
@@ -325,9 +338,9 @@ export class ItemConverter {
     const itemGroups = this.groupItemsByFeature(items);
 
     // DIAGNOSTIC: Log grouping results
-    console.log(`   📁 Grouped into ${itemGroups.size} groups:`);
+    moduleLogger.debug(`   📁 Grouped into ${itemGroups.size} groups:`);
     for (const [groupKey, groupItems] of itemGroups) {
-      console.log(`      → ${groupKey}: ${groupItems.length} items`);
+      moduleLogger.debug(`      → ${groupKey}: ${groupItems.length} items`);
     }
 
     // Process each group
@@ -1099,7 +1112,7 @@ ${isOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
         // Remove empty folder
         fs.removeSync(folderPath);
 
-        console.log(`   🗑️ Cleaned up empty orphan folder: ${featureId}`);
+        moduleLogger.debug(`   🗑️ Cleaned up empty orphan folder: ${featureId}`);
       }
     } catch (error) {
       // Folder cleanup is best-effort, don't fail on errors

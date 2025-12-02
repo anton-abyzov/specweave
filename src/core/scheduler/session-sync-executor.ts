@@ -20,6 +20,7 @@ import { ScheduledJob, markJobComplete, markJobFailed, markJobRunning } from './
 import { SchedulePersistence } from './schedule-persistence.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { SyncCoordinator } from '../../sync/sync-coordinator.js';
+import { AdoClientFactory, ResolvedAdoProfile } from '../../integrations/ado/ado-client-factory.js';
 
 /**
  * Session sync executor options
@@ -363,10 +364,19 @@ export class SessionSyncExecutor {
 
   /**
    * Execute external sync (GitHub/JIRA/ADO)
+   *
+   * Multi-project support: Each increment can have its own ADO profile
+   * stored in metadata.json -> external_sync.ado.profile
    */
   private async executeExternalSync(config: Record<string, unknown>): Promise<void> {
     // Find active increments
     const incrementsDir = path.join(this.projectRoot, '.specweave', 'increments');
+
+    // Initialize ADO profile factory for multi-project resolution
+    const adoFactory = new AdoClientFactory({
+      projectRoot: this.projectRoot,
+      logger: this.logger,
+    });
 
     try {
       const entries = await fs.readdir(incrementsDir, { withFileTypes: true });
@@ -382,11 +392,27 @@ export class SessionSyncExecutor {
           const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
 
           if (metadata.status === 'active' || metadata.status === 'in_progress') {
-            // Sync this increment
+            // Resolve ADO profile for this specific increment (multi-project support)
+            let adoProfile: ResolvedAdoProfile | undefined;
+            try {
+              const profileResult = await adoFactory.resolveProfile(entry.name);
+              if (profileResult.success && profileResult.profile) {
+                adoProfile = profileResult.profile;
+                this.logger.debug(
+                  `  📊 Increment ${entry.name} → ADO profile: ${adoProfile.profileName} ` +
+                  `(${adoProfile.organization}/${adoProfile.project}) [${adoProfile.source}]`
+                );
+              }
+            } catch {
+              // No ADO profile configured - that's OK, might use GitHub/JIRA
+            }
+
+            // Sync this increment with resolved ADO profile
             const coordinator = new SyncCoordinator({
               projectRoot: this.projectRoot,
               incrementId: entry.name,
               logger: this.logger,
+              adoProfile, // Pass the resolved profile for multi-project sync
             });
 
             await coordinator.syncIncrementCompletion();
@@ -448,7 +474,7 @@ export async function executeSessionSync(
   projectRoot: string,
   options: { dryRun?: boolean; silent?: boolean } = {}
 ): Promise<string> {
-  const logger = options.silent ? { log: () => {}, debug: () => {}, warn: () => {}, error: () => {} } as Logger : consoleLogger;
+  const logger = options.silent ? { log: () => {}, info: () => {}, debug: () => {}, warn: () => {}, error: () => {} } as Logger : consoleLogger;
 
   const executor = new SessionSyncExecutor({
     projectRoot,

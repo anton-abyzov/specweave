@@ -13,6 +13,19 @@
  */
 
 import { credentialsManager, JiraCredentials } from '../../core/credentials/credentials-manager.js';
+import { Logger, consoleLogger } from '../../utils/logger.js';
+
+/**
+ * Module logger - can be replaced for testing
+ */
+let moduleLogger: Logger = consoleLogger;
+
+/**
+ * Set the logger for this module
+ */
+export function setJiraClientLogger(logger: Logger): void {
+  moduleLogger = logger;
+}
 
 export interface JiraIssue {
   id: string;
@@ -150,7 +163,7 @@ export class JiraClient {
   public async searchIssues(filter: JiraIssueFilter = {}): Promise<JiraIssue[]> {
     const jql = filter.jql || this.buildJqlQuery(filter);
 
-    console.log('🔍 Querying Jira with JQL:', jql);
+    moduleLogger.info('🔍 Querying Jira with JQL:', jql);
 
     // Use the new /search/jql endpoint as per Jira Cloud API v3
     const url = `${this.baseUrl}/rest/api/${this.apiVersion}/search/jql`;
@@ -175,7 +188,7 @@ export class JiraClient {
     }
 
     const data = await response.json() as any;
-    console.log(`✅ Retrieved ${data.issues.length} issues from Jira`);
+    moduleLogger.info(`✅ Retrieved ${data.issues.length} issues from Jira`);
 
     return data.issues || [];
   }
@@ -246,7 +259,7 @@ export class JiraClient {
    * Create a new issue
    */
   public async createIssue(issue: JiraIssueCreate, projectKey: string): Promise<JiraIssue> {
-    console.log(`🔨 Creating ${issue.issueType}: ${issue.summary}`);
+    moduleLogger.info(`🔨 Creating ${issue.issueType}: ${issue.summary}`);
 
     const url = `${this.baseUrl}/rest/api/${this.apiVersion}/issue`;
 
@@ -290,7 +303,7 @@ export class JiraClient {
         };
       } catch (error) {
         // Priority field might not be available in this project
-        console.warn('⚠️  Priority field not available, skipping');
+        moduleLogger.warn('⚠️  Priority field not available, skipping');
       }
     }
 
@@ -334,7 +347,7 @@ export class JiraClient {
     }
 
     const result = await response.json() as any;
-    console.log(`✅ Created ${issue.issueType} ${result.key}: ${issue.summary}`);
+    moduleLogger.info(`✅ Created ${issue.issueType} ${result.key}: ${issue.summary}`);
 
     // Fetch full issue details
     return this.getIssue(result.key);
@@ -344,7 +357,7 @@ export class JiraClient {
    * Update an existing issue
    */
   public async updateIssue(update: JiraIssueUpdate): Promise<JiraIssue> {
-    console.log(`🔧 Updating issue ${update.key}`);
+    moduleLogger.info(`🔧 Updating issue ${update.key}`);
 
     const url = `${this.baseUrl}/rest/api/${this.apiVersion}/issue/${update.key}`;
 
@@ -406,7 +419,7 @@ export class JiraClient {
       throw new Error(`Jira API Error (${response.status}): ${error}`);
     }
 
-    console.log(`✅ Updated issue ${update.key}`);
+    moduleLogger.info(`✅ Updated issue ${update.key}`);
 
     // Transition status if specified
     if (update.status) {
@@ -421,7 +434,7 @@ export class JiraClient {
    * Transition issue to a new status
    */
   private async transitionIssue(issueKey: string, targetStatus: string): Promise<void> {
-    console.log(`🔀 Transitioning ${issueKey} to ${targetStatus}`);
+    moduleLogger.info(`🔀 Transitioning ${issueKey} to ${targetStatus}`);
 
     // Get available transitions
     const transitionsUrl = `${this.baseUrl}/rest/api/${this.apiVersion}/issue/${issueKey}/transitions`;
@@ -443,7 +456,7 @@ export class JiraClient {
     );
 
     if (!transition) {
-      console.warn(`⚠️  No transition found to status "${targetStatus}" for ${issueKey}`);
+      moduleLogger.warn(`⚠️  No transition found to status "${targetStatus}" for ${issueKey}`);
       return;
     }
 
@@ -466,7 +479,7 @@ export class JiraClient {
       throw new Error(`Failed to transition ${issueKey}: ${error}`);
     }
 
-    console.log(`✅ Transitioned ${issueKey} to ${targetStatus}`);
+    moduleLogger.info(`✅ Transitioned ${issueKey} to ${targetStatus}`);
   }
 
   /**
@@ -536,15 +549,15 @@ export class JiraClient {
 
       if (response.ok) {
         const user = await response.json() as any;
-        console.log(`✅ Jira connection successful (${user.displayName})`);
+        moduleLogger.info(`✅ Jira connection successful (${user.displayName})`);
         return true;
       } else {
         const error = await response.text();
-        console.error(`❌ Jira connection failed (${response.status}): ${error}`);
+        moduleLogger.error(`❌ Jira connection failed (${response.status}): ${error}`);
         return false;
       }
     } catch (error) {
-      console.error('❌ Jira connection failed:', error);
+      moduleLogger.error('❌ Jira connection failed:', error);
       return false;
     }
   }

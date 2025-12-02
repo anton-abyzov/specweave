@@ -1,12 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
 /**
  * Tests for ActiveIncrementManager
  *
  * Tests the core logic for managing active increment state
  */
-
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
@@ -220,9 +218,11 @@ describe('ActiveIncrementManager', () => {
       createTestIncrement('0001-stale');
       manager.setActive('0001-stale');
 
-      // Mark increment as completed
+      // Mark increment as completed through valid state machine path:
+      // active → ready_for_review → completed
       // NOTE: MetadataManager.updateStatus now automatically updates active state!
       // So after this call, the active increment is already cleared.
+      MetadataManager.updateStatus('0001-stale', IncrementStatus.READY_FOR_REVIEW);
       MetadataManager.updateStatus('0001-stale', IncrementStatus.COMPLETED);
 
       // validate() should return true because state is already correct
@@ -236,9 +236,11 @@ describe('ActiveIncrementManager', () => {
       createTestIncrement('0002-active');
       manager.setActive('0001-stale');
 
-      // Mark first increment as completed
+      // Mark first increment as completed through valid state machine path:
+      // active → ready_for_review → completed
       // NOTE: MetadataManager.updateStatus now automatically updates active state!
       // So after this call, the active increment is already switched to 0002-active.
+      MetadataManager.updateStatus('0001-stale', IncrementStatus.READY_FOR_REVIEW);
       MetadataManager.updateStatus('0001-stale', IncrementStatus.COMPLETED);
 
       // validate() should return true because state is already correct
@@ -274,7 +276,9 @@ describe('ActiveIncrementManager', () => {
       manager.setActive('0001-first');
       expect(manager.getActive()).toContain('0001-first');
 
-      // Complete first increment → should switch to second
+      // Complete first increment through valid state machine path
+      // active → ready_for_review → completed
+      MetadataManager.updateStatus('0001-first', IncrementStatus.READY_FOR_REVIEW);
       MetadataManager.updateStatus('0001-first', IncrementStatus.COMPLETED);
       manager.smartUpdate();
       expect(manager.getActive()).toContain('0002-second');
@@ -303,6 +307,8 @@ describe('ActiveIncrementManager', () => {
       manager.setActive('0001-test');
       expect(manager.getActive()).toContain('0001-test');
 
+      // Complete through valid state machine path
+      MetadataManager.updateStatus('0001-test', IncrementStatus.READY_FOR_REVIEW);
       MetadataManager.updateStatus('0001-test', IncrementStatus.COMPLETED);
       manager.smartUpdate();
       expect(manager.getActive()).toEqual([]);

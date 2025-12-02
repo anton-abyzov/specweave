@@ -110,19 +110,69 @@ Task({
 
 ---
 
+## Permission and Profile Requirements
+
+### Permission Gate (MANDATORY)
+
+**Before ANY ADO write operation**, verify permissions are enabled:
+
+```typescript
+// Check permissions from config.json
+const canUpdateExternal = config?.sync?.settings?.canUpdateExternalItems ?? false;
+const canUpdateStatus = config?.sync?.settings?.canUpdateStatus ?? false;
+
+// Map operations to permissions:
+// - Create work item: requires canUpdateExternalItems
+// - Update work item: requires canUpdateExternalItems
+// - Close work item: requires canUpdateExternalItems AND canUpdateStatus
+// - Read work item: always allowed
+```
+
+If permission check fails, **STOP** and return error message explaining which permission is required.
+
+### Profile Resolution (MANDATORY)
+
+**Always resolve the ADO profile before making API calls**:
+
+```typescript
+// Priority order:
+// 1. Increment's stored profile (metadata.json -> external_sync.ado.profile)
+// 2. Global activeProfile (config.json -> sync.activeProfile)
+
+const incrementProfile = metadata?.external_sync?.ado?.profile;
+const globalProfile = config?.sync?.activeProfile;
+const profileName = incrementProfile || globalProfile;
+
+// Get profile config
+const profileConfig = config?.sync?.profiles?.[profileName];
+const { organization, project } = profileConfig.config;
+
+// Use these values for ALL API calls
+// baseUrl = `https://dev.azure.com/${organization}/${project}`
+```
+
+This ensures each increment syncs to its designated ADO project, not a global setting.
+
+---
+
 ## Core Responsibilities
 
 ### 1. Work Item Creation
 
 **When**: User runs `/specweave-ado:create-workitem` or increment created with auto-sync enabled
 
+**Pre-flight checks**:
+1. **Permission**: Verify `canUpdateExternalItems = true`
+2. **Profile**: Resolve increment/global profile
+
 **Actions**:
 1. Read increment spec.md
 2. Extract: title, description, acceptance criteria
 3. Map to ADO work item fields
-4. Create work item via REST API
+4. Create work item via REST API (using resolved profile's org/project)
 5. Store work item ID in increment metadata
-6. Add initial comment with spec summary
+6. Store profile name in `metadata.external_sync.ado.profile`
+7. Add initial comment with spec summary
 
 **API Endpoint**:
 ```
@@ -156,12 +206,16 @@ POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/${type}?
 
 **When**: Task completes (post-task-completion hook) or manual `/specweave-ado:sync`
 
+**Pre-flight checks**:
+1. **Permission**: Verify `canUpdateExternalItems = true` for push operations
+2. **Profile**: Resolve increment/global profile
+
 **Actions**:
 1. Read tasks.md
 2. Calculate completion percentage
 3. Identify recently completed tasks
 4. Format progress update comment
-5. Post comment to work item
+5. Post comment to work item (using resolved profile's org/project)
 6. Update work item state if needed (New → Active → Resolved)
 
 **API Endpoint**:
@@ -196,10 +250,14 @@ POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}/com
 
 **When**: Increment completes (`/specweave:done`) or manual `/specweave-ado:close-workitem`
 
+**Pre-flight checks**:
+1. **Permission**: Verify `canUpdateExternalItems = true` AND `canUpdateStatus = true`
+2. **Profile**: Resolve increment/global profile
+
 **Actions**:
 1. Validate increment is 100% complete
 2. Generate completion summary
-3. Update work item state → Closed/Resolved
+3. Update work item state → Closed/Resolved (using resolved profile's org/project)
 4. Add final comment with deliverables
 5. Mark work item as complete
 
