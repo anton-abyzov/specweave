@@ -18,6 +18,7 @@ import { autoDetectProjectIdSync } from '../utils/project-detection.js';
 import { UserStoryContentBuilder } from '../../plugins/specweave-github/lib/user-story-content-builder.js';
 import { AdoClient } from '../integrations/ado/ado-client.js';
 import { ResolvedAdoProfile } from '../integrations/ado/ado-client-factory.js';
+import { getAdoPat } from '../integrations/ado/ado-pat-provider.js';
 
 export interface SyncCoordinatorOptions {
   projectRoot: string;
@@ -859,8 +860,9 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       }
 
       // Multi-project ADO sync using resolved profile
-      if (!this.adoProfile) {
-        this.logger.log('  ⚠️  No ADO profile resolved for this increment');
+      // Stricter validation: check profile AND required fields
+      if (!this.adoProfile || !this.adoProfile.organization || !this.adoProfile.project) {
+        this.logger.log('  ⚠️  No ADO profile resolved or incomplete configuration');
         this.logger.log('  💡 Set external_sync.ado.profile in increment metadata.json');
         this.logger.log('  💡 Or run /specweave-ado:sync to select a profile');
         return;
@@ -872,8 +874,8 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       );
 
       try {
-        // Get PAT from environment (supports org-specific PATs)
-        const pat = this.getAdoPat(this.adoProfile.organization);
+        // Get PAT from shared provider (supports org-specific PATs)
+        const pat = getAdoPat(this.adoProfile.organization);
 
         // Create client with resolved profile
         const adoClient = new AdoClient({
@@ -1097,30 +1099,6 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
     }
 
     return null;
-  }
-
-  /**
-   * Get PAT for ADO organization
-   * Supports organization-specific PATs via AZURE_DEVOPS_PAT_{ORG} env vars
-   */
-  private getAdoPat(organization: string): string {
-    // Try organization-specific PAT first (e.g., AZURE_DEVOPS_PAT_NOVA_SYSTEMS)
-    const orgEnvKey = `AZURE_DEVOPS_PAT_${organization.toUpperCase().replace(/-/g, '_')}`;
-    const orgPat = process.env[orgEnvKey];
-    if (orgPat) {
-      return orgPat;
-    }
-
-    // Fall back to default PAT
-    const defaultPat = process.env.AZURE_DEVOPS_PAT;
-    if (!defaultPat) {
-      throw new Error(
-        `Azure DevOps PAT not found. Set AZURE_DEVOPS_PAT in .env file ` +
-        `or ${orgEnvKey} for organization-specific PAT.`
-      );
-    }
-
-    return defaultPat;
   }
 
   /**
