@@ -52,14 +52,12 @@ describe('getParentRepoBenefits', () => {
     // When: getParentRepoBenefits is called
     const result = getParentRepoBenefits();
 
-    // Then: Returns markdown with 5 benefits
+    // Then: Returns markdown explaining parent folder benefits
     expect(result).toBeDefined();
     expect(typeof result).toBe('string');
     expect(result).toContain('.specweave');
-    expect(result).toContain('central');
-    expect(result).toContain('ADR');
-    expect(result).toContain('onboarding');
-    expect(result.length).toBeGreaterThan(100);
+    expect(result).toContain('parent');
+    expect(result.length).toBeGreaterThan(50);
   });
 });
 

@@ -45,11 +45,12 @@ describe('WIP Limit - PLANNING Exclusion', () => {
   });
 
   describe('WIP_COUNTED_STATUSES constant', () => {
-    it('should include ACTIVE and PAUSED only', () => {
-      expect(WIP_COUNTED_STATUSES).toHaveLength(2);
+    it('should include ACTIVE, PAUSED, and READY_FOR_REVIEW', () => {
+      expect(WIP_COUNTED_STATUSES).toHaveLength(3);
       expect(WIP_COUNTED_STATUSES).toEqual([
         IncrementStatus.ACTIVE,
-        IncrementStatus.PAUSED
+        IncrementStatus.PAUSED,
+        IncrementStatus.READY_FOR_REVIEW
       ]);
     });
 

@@ -133,11 +133,41 @@ export class EpicIdAllocator {
     this.projectRoot = projectRoot;
     this.projectId = projectId;
     this.specsPath = path.join(projectRoot, '.specweave/docs/internal/specs');
-    // CRITICAL (v0.30.3): Epics are PER-PROJECT in {project}/_epics/
-    this.epicsPath = path.join(this.specsPath, projectId, '_epics');
     this.globalCollisionDetection = options?.globalCollisionDetection ?? false;
     this.externalContainer = options?.externalContainer;
     this.logger = options?.logger ?? consoleLogger;
+
+    // CRITICAL (v0.30.4): Epics path uses 2-level structure with externalContainer
+    // - ADO/JIRA 2-level: specs/{containerId}/{projectId}/_epics/
+    // - GitHub 1-level: specs/{projectId}/_epics/
+    this.epicsPath = path.join(this.getBaseDirectory(), '_epics');
+  }
+
+  /**
+   * Get base directory for epics, handling both 1-level and 2-level structures
+   *
+   * Mirrors FSIdAllocator.getBaseDirectory() for consistency:
+   * - 2-level (JIRA): specs/JIRA-{containerId}/{projectId}/
+   * - 2-level (ADO): specs/{containerId}/{projectId}/ (no ADO- prefix)
+   * - 1-level (GitHub): specs/{projectId}/
+   */
+  private getBaseDirectory(): string {
+    if (this.externalContainer) {
+      // 2-level structure for JIRA/ADO
+      const isJira = this.externalContainer.type === 'jira-project';
+      const containerDirName = isJira
+        ? `JIRA-${normalizeToProjectId(this.externalContainer.containerId)}`
+        : normalizeToProjectId(this.externalContainer.containerId);
+
+      return path.join(
+        this.specsPath,
+        containerDirName,
+        this.projectId
+      );
+    }
+
+    // 1-level structure for GitHub or single-project mode
+    return path.join(this.specsPath, this.projectId);
   }
 
   /**
