@@ -58,7 +58,6 @@ import { triggerAdoRepoCloning } from '../helpers/init/ado-repo-cloning.js';
 import {
   collectLivingDocsInputs,
   displayJobScheduled,
-  detectBrownfield,
 } from '../helpers/init/living-docs-preflight.js';
 import { launchLivingDocsJob } from '../../core/background/job-launcher.js';
 
@@ -534,8 +533,8 @@ export async function initCommand(
         }
       }
 
-      // Living Docs Builder - schedule if brownfield project
-      if (detectBrownfield(targetDir) && !options.noLivingDocs) {
+      // Living Docs Builder - ALWAYS ask (both brownfield and greenfield)
+      if (!options.noLivingDocs) {
         try {
           const preflightResult = await collectLivingDocsInputs({
             projectPath: targetDir,
@@ -544,7 +543,8 @@ export async function initCommand(
             skipLivingDocs: options.noLivingDocs,
           });
 
-          if (preflightResult?.shouldLaunch) {
+          // Only launch background job for brownfield projects that want it
+          if (preflightResult?.shouldLaunch && preflightResult.isBrownfield) {
             // Collect dependency job IDs (clone and import jobs if any)
             const dependsOn: string[] = [];
             // Note: Import job ID would be collected from promptAndRunExternalImport result
@@ -558,6 +558,8 @@ export async function initCommand(
 
             displayJobScheduled(launchResult.job.id, preflightResult.estimatedDuration, language);
           }
+          // Greenfield projects: living docs structure already set up, no background job needed
+          // The collectLivingDocsInputs function displays the success message
         } catch (livingDocsError) {
           const errorMsg = livingDocsError instanceof Error ? livingDocsError.message : String(livingDocsError);
           console.log(chalk.yellow(`\n⚠️  Living Docs setup failed: ${errorMsg}`));

@@ -4,7 +4,11 @@
  * Allocates EP-XXX IDs for external work items (ADO Capabilities, Strategic Themes)
  * based on creation date, attempting chronological insertion while preventing collisions.
  *
+ * CRITICAL (v0.30.3): Epics are stored PER-PROJECT in {project}/_epics/ folders,
+ * NOT at the root level. Each project has its own epic namespace.
+ *
  * Features:
+ * - Per-project epic storage: {project}/_epics/EP-XXX/
  * - Chronological ID allocation based on work item creation date
  * - Gap filling (insert EP-011E between EP-010 and EP-020)
  * - Append mode fallback (max ID + 1)
@@ -12,7 +16,7 @@
  * - Archive-aware (scans both active and archived epics)
  *
  * @module living-docs/epic-id-allocator
- * @version 0.29.3
+ * @version 0.30.3
  */
 
 import * as fs from '../utils/fs-native.js';
@@ -100,14 +104,17 @@ export interface EpicIdAllocatorOptions {
  * Epic ID Allocator
  *
  * Intelligently allocates Epic IDs with chronological placement.
- * Epics are stored in _epics/ folder at the specs root level.
  *
- * CRITICAL: In umbrella/multi-repo setups, enable globalCollisionDetection
+ * CRITICAL (v0.30.3): Epics are stored PER-PROJECT in {project}/_epics/ folders.
+ * Structure: specs/{projectId}/_epics/EP-XXX/EPIC.md
+ *
+ * In umbrella/multi-repo setups, enable globalCollisionDetection
  * to prevent ID collisions like EP-001 in one repo and EP-001E in another.
  */
 export class EpicIdAllocator {
   private projectRoot: string;
   private specsPath: string;
+  private projectId: string;
   private epicsPath: string;
   private existingEpics: Map<string, EpicMetadata> = new Map();
   private scanned: boolean = false;
@@ -115,14 +122,36 @@ export class EpicIdAllocator {
   private externalContainer: ExternalContainerContext | undefined;
   private logger: Logger;
 
-  constructor(projectRoot: string, options?: EpicIdAllocatorOptions) {
+  /**
+   * Create an Epic ID Allocator for a specific project
+   *
+   * @param projectRoot - Root directory of the SpecWeave project
+   * @param projectId - Project ID (e.g., "olysense", "parent"). Required for per-project epics.
+   * @param options - Optional configuration
+   */
+  constructor(projectRoot: string, projectId: string, options?: EpicIdAllocatorOptions) {
     this.projectRoot = projectRoot;
+    this.projectId = projectId;
     this.specsPath = path.join(projectRoot, '.specweave/docs/internal/specs');
-    // Epics are at the root level: _epics/ (NOT inside project folders)
-    this.epicsPath = path.join(this.specsPath, '_epics');
+    // CRITICAL (v0.30.3): Epics are PER-PROJECT in {project}/_epics/
+    this.epicsPath = path.join(this.specsPath, projectId, '_epics');
     this.globalCollisionDetection = options?.globalCollisionDetection ?? false;
     this.externalContainer = options?.externalContainer;
     this.logger = options?.logger ?? consoleLogger;
+  }
+
+  /**
+   * Get the project ID this allocator is configured for
+   */
+  getProjectId(): string {
+    return this.projectId;
+  }
+
+  /**
+   * Get the epics path for this project
+   */
+  getEpicsPath(): string {
+    return this.epicsPath;
   }
 
   /**
@@ -130,9 +159,9 @@ export class EpicIdAllocator {
    *
    * CRITICAL: Archives are scanned to prevent ID reuse
    *
-   * Structure:
-   * - _epics/EP-XXX/
-   * - _epics/_archive/EP-XXX/
+   * Structure (per-project):
+   * - {project}/_epics/EP-XXX/
+   * - {project}/_epics/_archive/EP-XXX/
    */
   async scanExistingIds(): Promise<void> {
     this.existingEpics.clear();
@@ -443,8 +472,8 @@ export class EpicIdAllocator {
   /**
    * Create epic folder with EPIC.md and metadata
    *
-   * Structure:
-   * - _epics/EP-XXX/EPIC.md
+   * Structure (per-project):
+   * - {project}/_epics/EP-XXX/EPIC.md
    *
    * @param epId - Epic ID (e.g., "EP-042E")
    * @param workItem - External epic item metadata
@@ -456,7 +485,7 @@ export class EpicIdAllocator {
     workItem: ExternalEpicItem,
     metadata: ExternalItemMetadata
   ): Promise<string> {
-    // Epics are at root level: _epics/EP-XXX/
+    // CRITICAL (v0.30.3): Epics are PER-PROJECT: {project}/_epics/EP-XXX/
     const epicPath = path.join(this.epicsPath, epId);
     await fs.ensureDir(epicPath);
 

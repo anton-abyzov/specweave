@@ -23,6 +23,11 @@ import type { SupportedLanguage } from '../../../core/i18n/types.js';
 interface PreflightStrings {
   header: string;
   description: string;
+  descriptionGreenfield: string;
+  enableLivingDocs: string;
+  enableLivingDocsGreenfield: string;
+  detectedBrownfield: string;
+  detectedGreenfield: string;
   additionalSourcesPrompt: string;
   additionalSourcesHint: string;
   priorityAreasPrompt: string;
@@ -42,6 +47,8 @@ interface PreflightStrings {
   jobId: string;
   estimatedDuration: string;
   monitorWith: string;
+  continuousSyncNote: string;
+  greenfieldSetupComplete: string;
 }
 
 function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
@@ -49,6 +56,11 @@ function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
     en: {
       header: 'Living Docs Builder',
       description: 'Generate documentation from your codebase automatically.',
+      descriptionGreenfield: 'Set up living docs structure for your new project.',
+      enableLivingDocs: 'Enable Living Docs?',
+      enableLivingDocsGreenfield: 'Enable Living Docs for this project?',
+      detectedBrownfield: 'Detected: existing codebase',
+      detectedGreenfield: 'New project - docs will sync as you build',
       additionalSourcesPrompt: 'Any additional documentation folders to include?',
       additionalSourcesHint: 'e.g., docs/, wiki/, notion-export/ (comma-separated, or leave empty)',
       priorityAreasPrompt: 'Priority areas to document first?',
@@ -68,10 +80,17 @@ function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
       jobId: 'Job ID',
       estimatedDuration: 'Estimated duration',
       monitorWith: 'Monitor with',
+      continuousSyncNote: 'Living docs will sync automatically as you work',
+      greenfieldSetupComplete: 'Living docs structure ready - will populate as you create increments',
     },
     ru: {
       header: 'Генератор Living Docs',
       description: 'Автоматическая генерация документации из кодовой базы.',
+      descriptionGreenfield: 'Настройка структуры living docs для нового проекта.',
+      enableLivingDocs: 'Включить Living Docs?',
+      enableLivingDocsGreenfield: 'Включить Living Docs для этого проекта?',
+      detectedBrownfield: 'Обнаружен: существующий код',
+      detectedGreenfield: 'Новый проект - доки будут синхронизироваться по мере разработки',
       additionalSourcesPrompt: 'Дополнительные папки с документацией?',
       additionalSourcesHint: 'например, docs/, wiki/, notion-export/ (через запятую или пусто)',
       priorityAreasPrompt: 'Приоритетные области для документирования?',
@@ -91,6 +110,8 @@ function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
       jobId: 'ID задачи',
       estimatedDuration: 'Ожидаемое время',
       monitorWith: 'Отслеживать с помощью',
+      continuousSyncNote: 'Living docs будут синхронизироваться автоматически',
+      greenfieldSetupComplete: 'Структура living docs готова - заполнится по мере создания инкрементов',
     },
   };
 
@@ -117,6 +138,8 @@ export interface PreflightOptions {
 export interface PreflightResult {
   /** Whether to launch the job */
   shouldLaunch: boolean;
+  /** Whether project is brownfield (has existing code) */
+  isBrownfield: boolean;
   /** User inputs for the job */
   userInputs: LivingDocsUserInputs;
   /** Estimated duration string */
@@ -245,6 +268,11 @@ function countFiles(dir: string, depth: number = 0): number {
 
 /**
  * Collect user inputs for living docs builder
+ *
+ * NEW FLOW (v0.31+):
+ * 1. Always ask "Enable Living Docs?" first (both brownfield and greenfield)
+ * 2. For brownfield: ask detailed config, launch background builder job
+ * 3. For greenfield: just enable structure, docs sync automatically as you work
  */
 export async function collectLivingDocsInputs(
   options: PreflightOptions
@@ -258,30 +286,84 @@ export async function collectLivingDocsInputs(
     return null;
   }
 
-  // Check if brownfield project
-  if (!detectBrownfield(projectPath)) {
-    // Greenfield project - no code to analyze
+  // Detect project type
+  const isBrownfield = detectBrownfield(projectPath);
+
+  // CI mode: use defaults (enable for brownfield, skip config for greenfield)
+  if (isCi) {
+    if (isBrownfield) {
+      return {
+        shouldLaunch: true,
+        isBrownfield: true,
+        userInputs: {
+          additionalSources: [],
+          priorityAreas: [],
+          knownPainPoints: [],
+          analysisDepth: 'quick',
+        },
+        estimatedDuration: estimateDuration(projectPath, 'quick'),
+      };
+    } else {
+      // Greenfield CI: enable but no background job needed
+      return {
+        shouldLaunch: true,
+        isBrownfield: false,
+        userInputs: {
+          additionalSources: [],
+          priorityAreas: [],
+          knownPainPoints: [],
+          analysisDepth: 'quick',
+        },
+        estimatedDuration: 'N/A',
+      };
+    }
+  }
+
+  // Interactive mode - ALWAYS show this section
+  console.log('');
+  console.log(chalk.cyan(`  📚 ${strings.header}`));
+
+  // Show context about project type
+  if (isBrownfield) {
+    const fileCount = countFilesQuick(projectPath);
+    console.log(chalk.gray(`     ${strings.description}`));
+    console.log(chalk.gray(`     ${strings.detectedBrownfield} (${fileCount} source files)`));
+  } else {
+    console.log(chalk.gray(`     ${strings.descriptionGreenfield}`));
+    console.log(chalk.gray(`     ${strings.detectedGreenfield}`));
+  }
+  console.log('');
+
+  // FIRST: Ask if user wants Living Docs at all
+  const enablePrompt = isBrownfield ? strings.enableLivingDocs : strings.enableLivingDocsGreenfield;
+  const enableLivingDocs = await confirm({
+    message: enablePrompt,
+    default: true,
+  });
+
+  if (!enableLivingDocs) {
+    console.log(chalk.gray(`  ${strings.skipLivingDocs}`));
     return null;
   }
 
-  // CI mode: use defaults
-  if (isCi) {
+  // Greenfield: No detailed questions needed - just enable structure
+  if (!isBrownfield) {
+    console.log(chalk.green(`  ✓ ${strings.greenfieldSetupComplete}`));
+    console.log(chalk.gray(`  💡 ${strings.continuousSyncNote}`));
     return {
       shouldLaunch: true,
+      isBrownfield: false,
       userInputs: {
         additionalSources: [],
         priorityAreas: [],
         knownPainPoints: [],
         analysisDepth: 'quick',
       },
-      estimatedDuration: estimateDuration(projectPath, 'quick'),
+      estimatedDuration: 'N/A',
     };
   }
 
-  // Interactive mode
-  console.log('');
-  console.log(chalk.cyan(`  📚 ${strings.header}`));
-  console.log(chalk.gray(`     ${strings.description}`));
+  // Brownfield: Ask detailed configuration
   console.log('');
 
   // Detect existing docs and suggest them
@@ -338,29 +420,57 @@ export async function collectLivingDocsInputs(
     default: 'standard',
   });
 
-  const estimatedDuration = estimateDuration(projectPath, analysisDepth);
+  const estimatedDurationStr = estimateDuration(projectPath, analysisDepth);
 
-  // Confirm launch
+  // Final confirmation for background job
   const shouldLaunch = await confirm({
-    message: `${strings.confirmLaunch} (${estimatedDuration})`,
+    message: `${strings.confirmLaunch} (${estimatedDurationStr})`,
     default: true,
   });
 
   if (!shouldLaunch) {
-    console.log(chalk.gray(`  ${strings.skipLivingDocs}`));
-    return null;
+    // User wants living docs but not the background builder
+    console.log(chalk.green(`  ✓ Living docs enabled`));
+    console.log(chalk.gray(`  💡 ${strings.continuousSyncNote}`));
+    return {
+      shouldLaunch: false,
+      isBrownfield: true,
+      userInputs: {
+        additionalSources,
+        priorityAreas,
+        knownPainPoints,
+        analysisDepth,
+      },
+      estimatedDuration: estimatedDurationStr,
+    };
   }
 
   return {
     shouldLaunch: true,
+    isBrownfield: true,
     userInputs: {
       additionalSources,
       priorityAreas,
       knownPainPoints,
       analysisDepth,
     },
-    estimatedDuration,
+    estimatedDuration: estimatedDurationStr,
   };
+}
+
+/**
+ * Quick file count for display (limited depth, fast)
+ */
+function countFilesQuick(projectPath: string): number {
+  try {
+    const srcDir = path.join(projectPath, 'src');
+    if (fs.existsSync(srcDir)) {
+      return countFiles(srcDir);
+    }
+    return countFiles(projectPath);
+  } catch {
+    return 0;
+  }
 }
 
 /**
@@ -377,5 +487,6 @@ export function displayJobScheduled(
   console.log(chalk.green(`  ✓ ${strings.jobScheduled}`));
   console.log(chalk.gray(`    ${strings.jobId}: ${jobId}`));
   console.log(chalk.gray(`    ${strings.estimatedDuration}: ${estimatedDuration}`));
-  console.log(chalk.gray(`    ${strings.monitorWith}: specweave jobs`));
+  console.log(chalk.gray(`    ${strings.monitorWith}: /specweave:jobs`));
+  console.log(chalk.gray(`  💡 ${strings.continuousSyncNote}`));
 }

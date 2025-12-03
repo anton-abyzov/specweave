@@ -1,0 +1,11 @@
+{
+  "id": "0095-per-project-epic-hierarchy",
+  "title": "Per-Project Epic Hierarchy Fix",
+  "type": "bug-fix",
+  "priority": "P0",
+  "status": "completed",
+  "created": "2024-12-03T00:00:00.000Z",
+  "updated": "2024-12-03T00:00:00.000Z",
+  "completedAt": "2024-12-03T00:35:00.000Z",
+  "approvedBy": "user"
+}
