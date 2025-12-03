@@ -201,9 +201,12 @@ export class ItemConverter {
 
       // Initialize Epic ID allocator for ADO Capabilities (v0.29.3+)
       // Capabilities are the top-level items in ADO SAFe/Enterprise setups
-      // They go to _epics/EP-XXXE/ instead of FS-XXXE/
+      // CRITICAL (v0.30.3): Epics go to {project}/_epics/EP-XXXE/ (per-project)
+      // projectId is required for per-project epic storage
+      const epicProjectId = this.options.projectId || 'default';
       this.epicIdAllocator = new EpicIdAllocator(
         this.options.projectRoot,
+        epicProjectId,
         { globalCollisionDetection: this.options.enableGlobalCollisionDetection }
       );
     }
@@ -585,7 +588,11 @@ export class ItemConverter {
    * - "orphan:..." → Use FSIdAllocator, create in FS-XXXE/
    * - Other → Use FSIdAllocator
    *
-   * @returns Feature ID (FS-XXXE) or Epic ID (EP-XXXE)
+   * CRITICAL (v0.30.3): This method ALWAYS returns a FEATURE ID (FS-XXXE).
+   * For epic groups, it creates the epic in {project}/_epics/ AND a feature folder.
+   * User stories are NEVER placed in epic folders directly.
+   *
+   * @returns Feature ID (FS-XXXE) - NEVER returns Epic ID
    */
   private async allocateFeatureForGroup(
     firstItem: ExternalItem,
@@ -595,58 +602,63 @@ export class ItemConverter {
     // CRITICAL: Detect if this is an "epic:" group (Capability or standalone Epic)
     const isEpicGroup = groupKey.startsWith('epic:');
 
-    // Check cache based on group type
-    if (isEpicGroup) {
-      if (this.createdEpics.has(groupKey)) {
-        return this.createdEpics.get(groupKey)!;
-      }
-    } else {
-      if (this.createdFeatures.has(groupKey)) {
-        return this.createdFeatures.get(groupKey)!;
-      }
+    // Check feature cache (always check this, as we always return feature IDs)
+    // Epic cache is only for tracking epic creation, not for return values
+    const featureGroupKey = isEpicGroup ? `feature-for-${groupKey}` : groupKey;
+    if (this.createdFeatures.has(featureGroupKey)) {
+      return this.createdFeatures.get(featureGroupKey)!;
     }
 
-    // For "epic:" groups, use EpicIdAllocator
+    // For "epic:" groups, create epic in _epics/ AND a feature folder
+    // CRITICAL (v0.30.3): Do NOT return epicId - user stories go to feature folders
+    let parentEpicId: string | undefined;
+
     if (isEpicGroup) {
       if (!this.epicIdAllocator) {
         throw new Error('EpicIdAllocator not initialized');
       }
 
-      // Create external epic item for allocation
-      const epicItem: ExternalEpicItem = {
-        externalId: firstItem.id,
-        title: firstItem.title,
-        createdAt: firstItem.createdAt.toISOString(),
-        externalUrl: firstItem.url,
-        workItemType: firstItem.adoWorkItemType || 'Capability'
-      };
+      // Only create epic if not already created
+      if (!this.createdEpics.has(groupKey)) {
+        // Create external epic item for allocation
+        const epicItem: ExternalEpicItem = {
+          externalId: firstItem.id,
+          title: firstItem.title,
+          createdAt: firstItem.createdAt.toISOString(),
+          externalUrl: firstItem.url,
+          workItemType: firstItem.adoWorkItemType || 'Capability'
+        };
 
-      // Allocate Epic ID
-      const allocation = await this.epicIdAllocator.allocateId(epicItem);
-      const epicId = allocation.id;
+        // Allocate Epic ID
+        const allocation = await this.epicIdAllocator.allocateId(epicItem);
+        const epicId = allocation.id;
 
-      // Create Epic folder in _epics/
-      const metadata = createExternalMetadata({
-        id: epicId,
-        source: firstItem.platform,
-        externalId: firstItem.id,
-        externalUrl: firstItem.url,
-        externalTitle: firstItem.title
-      });
-      await this.epicIdAllocator.createEpicFolder(epicId, epicItem, metadata);
+        // Create Epic folder in {project}/_epics/
+        const metadata = createExternalMetadata({
+          id: epicId,
+          source: firstItem.platform,
+          externalId: firstItem.id,
+          externalUrl: firstItem.url,
+          externalTitle: firstItem.title
+        });
+        await this.epicIdAllocator.createEpicFolder(epicId, epicItem, metadata);
 
-      // Cache for reuse
-      this.createdEpics.set(groupKey, epicId);
+        // Cache epic for reference
+        this.createdEpics.set(groupKey, epicId);
 
-      // Notify callback
-      if (this.options.onFeatureCreated) {
-        this.options.onFeatureCreated(epicId, path.join(this.options.specsDir, '_epics', epicId));
+        // Notify epic creation callback (use per-project path)
+        if (this.options.onFeatureCreated) {
+          const epicPath = this.epicIdAllocator.getEpicsPath();
+          this.options.onFeatureCreated(epicId, path.join(epicPath, epicId));
+        }
       }
 
-      return epicId;
+      // Set parent epic for the feature folder we're about to create
+      parentEpicId = this.createdEpics.get(groupKey);
     }
 
-    // For "feature:" and other groups, use FSIdAllocator
+    // All groups (including epic groups) need a feature folder for user stories
+    // FSIdAllocator is required for feature allocation
     if (!this.fsIdAllocator) {
       throw new Error('FSIdAllocator not initialized');
     }
@@ -655,15 +667,23 @@ export class ItemConverter {
     // If so, include parent reference in the feature folder
     const isAdoFeatureGroup = groupKey.startsWith('feature:');
     const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
-    const isFeatureLevelItem = isAdoFeatureGroup &&
+    const isFeatureLevelItem = (isAdoFeatureGroup || isEpicGroup) &&
       featureLevelTypes.has(firstItem.adoWorkItemType?.toLowerCase() || firstItem.type);
 
-    // Check if this Epic has a Capability parent
-    const isEpicWithCapParent = firstItem.adoWorkItemType?.toLowerCase() === 'epic' &&
-      firstItem.parentId &&
-      this.createdEpics.has(`epic:${firstItem.parentId}`);
+    // CRITICAL (v0.30.3): Determine parent epic for this feature folder
+    // - For epic groups: parentEpicId was set above when creating the epic
+    // - For feature groups with Capability parent: look up the parent
+    if (!parentEpicId) {
+      const isEpicWithCapParent = firstItem.adoWorkItemType?.toLowerCase() === 'epic' &&
+        firstItem.parentId &&
+        this.createdEpics.has(`epic:${firstItem.parentId}`);
 
-    // Create external work item for allocation
+      if (isEpicWithCapParent) {
+        parentEpicId = this.createdEpics.get(`epic:${firstItem.parentId}`);
+      }
+    }
+
+    // Create external work item for feature allocation
     const workItem: ExternalWorkItem = {
       externalId: firstItem.id,
       title: isFeatureLevelItem ? firstItem.title : (firstItem.sourceRepo || firstItem.title),
@@ -679,21 +699,17 @@ export class ItemConverter {
     const shouldArchiveFeature = this.shouldArchiveEntireGroup(allGroupItems || [firstItem]);
 
     // Create feature folder with FEATURE.md
-    // If Epic with Capability parent, include parent reference
-    const parentEpicId = isEpicWithCapParent
-      ? this.createdEpics.get(`epic:${firstItem.parentId}`)
-      : undefined;
-
+    // Pass parent Epic ID for reference (epic_id field in frontmatter)
     const featurePath = await this.createFeatureFolder(
       featureId,
       firstItem,
       groupKey,
       shouldArchiveFeature,
-      parentEpicId // Pass parent Epic ID for reference
+      parentEpicId
     );
 
-    // Cache for reuse
-    this.createdFeatures.set(groupKey, featureId);
+    // Cache for reuse using the feature group key
+    this.createdFeatures.set(featureGroupKey, featureId);
 
     // Notify callback
     if (this.options.onFeatureCreated) {
@@ -862,11 +878,16 @@ export class ItemConverter {
     // Include external metadata for feature-level items and all orphans
     const includeExternalMetadata = isAdoFeatureLevelItem || isOrphanGroup;
 
-    // Build parent Epic reference if available (for ADO Epic → Feature mapping)
+    // CRITICAL (v0.30.3): Build parent Epic reference if available
+    // Epic ID is stored as `epic_id` in frontmatter for consistency
+    // Epic path is relative from {project}/{board}/FS-XXX/ to {project}/_epics/EP-XXX/
     const hasParentEpic = parentEpicId !== undefined;
     const parentEpicLink = hasParentEpic
-      ? `[${parentEpicId}](../_epics/${parentEpicId}/EPIC.md)`
+      ? `[${parentEpicId}](../../_epics/${parentEpicId}/EPIC.md)`
       : '';
+
+    // Determine if this is an epic group (feature created for epic's user stories)
+    const isEpicGroup = groupKey.startsWith('epic:') || groupKey.startsWith('feature-for-epic:');
 
     const featureContent = `---
 id: ${featureId}
@@ -878,7 +899,7 @@ ${firstItem.adoProjectName ? `ado_project: ${firstItem.adoProjectName}` : ''}
 ${firstItem.adoAreaPath ? `ado_area_path: ${firstItem.adoAreaPath}` : ''}
 ${includeExternalMetadata ? `work_item_type: ${witTypeLabel}` : ''}
 ${includeExternalMetadata ? `external_id: ${firstItem.id}` : ''}
-${hasParentEpic ? `parent_epic: ${parentEpicId}` : ''}
+${hasParentEpic ? `epic_id: ${parentEpicId}` : ''}
 ${isOrphanGroup ? `orphan: true` : ''}
 created: ${new Date().toISOString()}
 ---
@@ -894,7 +915,7 @@ ${description}
 
 ${firstItem.sourceRepo ? `**Source Repository**: ${firstItem.sourceRepo}` : ''}
 ${firstItem.adoAreaPath ? `**Area Path**: ${firstItem.adoAreaPath}` : ''}
-${hasParentEpic ? `\n> **Hierarchy**: This feature belongs to Epic ${parentEpicId} (Capability in Azure DevOps).` : ''}
+${hasParentEpic ? `\n> **Hierarchy**: This feature belongs to Epic ${parentEpicId}.` : ''}
 ${isOrphanGroup ? `\n> **Note**: This feature was created from an orphan item (no parent Epic/Feature in ${platformLabel} or parent not imported).` : ''}
 
 ## User Stories
@@ -906,7 +927,7 @@ User stories in this ${witTypeLabel.toLowerCase()} will be listed here.
 - **Created**: ${new Date().toISOString()}
 - **Source**: ${platformLabel}
 ${includeExternalMetadata ? `- **External ID**: ${firstItem.id}` : ''}
-${hasParentEpic ? `- **Parent Epic**: ${parentEpicId}` : ''}
+${hasParentEpic ? `- **Epic ID**: ${parentEpicId}` : ''}
 ${isOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
 `;
 
