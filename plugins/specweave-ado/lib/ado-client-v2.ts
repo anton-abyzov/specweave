@@ -624,21 +624,61 @@ export class AdoClientV2 {
         });
 
         res.on('end', () => {
-          // Parse response
-          let parsed: any;
-          try {
-            parsed = data ? JSON.parse(data) : {};
-          } catch {
-            parsed = { raw: data };
-          }
+          // Check for HTML response (indicates auth/config issue)
+          const looksLikeHtml = data.trim().startsWith('<!DOCTYPE') ||
+                                data.trim().startsWith('<html') ||
+                                data.trim().startsWith('<HTML');
 
-          // Check status code
+          // Check status code first
           if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-            resolve(parsed as T);
+            // Success response
+            if (looksLikeHtml) {
+              // 200 OK but returned HTML - this is a config issue
+              reject(new Error(
+                `Azure DevOps returned HTML instead of JSON (HTTP ${res.statusCode}).\n` +
+                `This usually indicates an authentication or configuration issue.\n\n` +
+                `Possible causes:\n` +
+                `• Invalid or expired Personal Access Token (PAT)\n` +
+                `• Incorrect organization name "${this.organization}"\n` +
+                `• Corporate firewall or proxy intercepting the request\n` +
+                `• SSO/authentication redirect (try accessing Azure DevOps in browser first)`
+              ));
+              return;
+            }
+
+            // Parse JSON response
+            try {
+              const parsed = data ? JSON.parse(data) : {};
+              resolve(parsed as T);
+            } catch {
+              reject(new Error(
+                `Azure DevOps returned invalid JSON.\n` +
+                `Response preview: ${data.substring(0, 200)}${data.length > 200 ? '...' : ''}`
+              ));
+            }
           } else {
-            const errorMsg =
-              parsed.message ||
-              `HTTP ${res.statusCode}: ${data}`;
+            // Error response
+            if (looksLikeHtml) {
+              reject(new Error(
+                `Azure DevOps returned an error page (HTTP ${res.statusCode}).\n` +
+                `This usually indicates an authentication or configuration issue.\n\n` +
+                `Possible causes:\n` +
+                `• Invalid or expired Personal Access Token (PAT)\n` +
+                `• Incorrect organization name "${this.organization}"\n` +
+                `• Corporate firewall or proxy intercepting the request\n` +
+                `• SSO/authentication redirect`
+              ));
+              return;
+            }
+
+            // Try to parse error message
+            let errorMsg = `HTTP ${res.statusCode}`;
+            try {
+              const parsed = JSON.parse(data);
+              errorMsg = parsed.message || `HTTP ${res.statusCode}: ${data.substring(0, 200)}`;
+            } catch {
+              errorMsg = `HTTP ${res.statusCode}: ${data.substring(0, 200)}`;
+            }
             reject(new Error(errorMsg));
           }
         });

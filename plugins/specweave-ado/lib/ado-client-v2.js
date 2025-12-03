@@ -402,16 +402,51 @@ class AdoClientV2 {
           data += chunk;
         });
         res.on("end", () => {
-          let parsed;
-          try {
-            parsed = data ? JSON.parse(data) : {};
-          } catch {
-            parsed = { raw: data };
-          }
+          const looksLikeHtml = data.trim().startsWith("<!DOCTYPE") || data.trim().startsWith("<html") || data.trim().startsWith("<HTML");
           if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-            resolve(parsed);
+            if (looksLikeHtml) {
+              reject(new Error(
+                `Azure DevOps returned HTML instead of JSON (HTTP ${res.statusCode}).
+This usually indicates an authentication or configuration issue.
+
+Possible causes:
+\u2022 Invalid or expired Personal Access Token (PAT)
+\u2022 Incorrect organization name "${this.organization}"
+\u2022 Corporate firewall or proxy intercepting the request
+\u2022 SSO/authentication redirect (try accessing Azure DevOps in browser first)`
+              ));
+              return;
+            }
+            try {
+              const parsed = data ? JSON.parse(data) : {};
+              resolve(parsed);
+            } catch {
+              reject(new Error(
+                `Azure DevOps returned invalid JSON.
+Response preview: ${data.substring(0, 200)}${data.length > 200 ? "..." : ""}`
+              ));
+            }
           } else {
-            const errorMsg = parsed.message || `HTTP ${res.statusCode}: ${data}`;
+            if (looksLikeHtml) {
+              reject(new Error(
+                `Azure DevOps returned an error page (HTTP ${res.statusCode}).
+This usually indicates an authentication or configuration issue.
+
+Possible causes:
+\u2022 Invalid or expired Personal Access Token (PAT)
+\u2022 Incorrect organization name "${this.organization}"
+\u2022 Corporate firewall or proxy intercepting the request
+\u2022 SSO/authentication redirect`
+              ));
+              return;
+            }
+            let errorMsg = `HTTP ${res.statusCode}`;
+            try {
+              const parsed = JSON.parse(data);
+              errorMsg = parsed.message || `HTTP ${res.statusCode}: ${data.substring(0, 200)}`;
+            } catch {
+              errorMsg = `HTTP ${res.statusCode}: ${data.substring(0, 200)}`;
+            }
             reject(new Error(errorMsg));
           }
         });

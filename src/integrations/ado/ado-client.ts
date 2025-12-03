@@ -196,6 +196,83 @@ export class AdoClient {
   }
 
   /**
+   * Safely parse JSON response with HTML detection
+   *
+   * Azure DevOps may return HTML error pages instead of JSON when:
+   * - PAT is invalid/expired
+   * - Organization name is wrong
+   * - Corporate proxy/firewall intercepts the request
+   * - SSO redirect occurs
+   *
+   * @param response - Fetch response object (body must not be consumed)
+   * @returns Parsed JSON data
+   * @throws Error with helpful message if response is not valid JSON
+   */
+  private async safeParseJson<T>(response: Response): Promise<T> {
+    const contentType = response.headers.get('content-type') || '';
+    const responseText = await response.text();
+
+    // Check if response looks like HTML
+    const looksLikeHtml = responseText.trim().startsWith('<!DOCTYPE') ||
+                          responseText.trim().startsWith('<html') ||
+                          responseText.trim().startsWith('<HTML') ||
+                          (!contentType.includes('application/json') && responseText.includes('<'));
+
+    if (looksLikeHtml) {
+      const possibleCauses = [
+        'Invalid or expired Personal Access Token (PAT)',
+        `Incorrect organization name "${this.credentials.organization}"`,
+        'Corporate firewall or proxy intercepting the request',
+        'SSO/authentication redirect (try accessing Azure DevOps in browser first)',
+        'Network connectivity issues'
+      ];
+
+      throw new Error(
+        `Azure DevOps returned HTML instead of JSON.\n` +
+        `This usually indicates an authentication or configuration issue.\n\n` +
+        `Possible causes:\n` +
+        possibleCauses.map(cause => `• ${cause}`).join('\n')
+      );
+    }
+
+    // Try to parse as JSON
+    try {
+      return JSON.parse(responseText) as T;
+    } catch (parseError) {
+      const preview = responseText.substring(0, 200);
+      throw new Error(
+        `Azure DevOps returned invalid JSON.\n` +
+        `Response preview: ${preview}${responseText.length > 200 ? '...' : ''}`
+      );
+    }
+  }
+
+  /**
+   * Handle non-OK response with helpful error messages
+   *
+   * @param response - Fetch response with !response.ok
+   * @param context - Context for error message (e.g., "querying work items")
+   * @throws Error with details
+   */
+  private async handleErrorResponse(response: Response, context: string): Promise<never> {
+    const errorText = await response.text();
+    const looksLikeHtml = errorText.trim().startsWith('<!DOCTYPE') ||
+                          errorText.trim().startsWith('<html');
+
+    if (looksLikeHtml) {
+      throw new Error(
+        `ADO API Error (${response.status}) while ${context}.\n` +
+        `Azure DevOps returned an HTML error page, which typically indicates:\n` +
+        `• Invalid or expired PAT\n` +
+        `• Incorrect organization/project name\n` +
+        `• Corporate proxy or SSO redirect`
+      );
+    }
+
+    throw new Error(`ADO API Error (${response.status}): ${errorText}`);
+  }
+
+  /**
    * List work items with filtering
    */
   public async listWorkItems(filter: AdoWorkItemFilter = {}): Promise<AdoWorkItem[]> {
@@ -215,11 +292,10 @@ export class AdoClient {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`ADO API Error (${response.status}): ${error}`);
+      await this.handleErrorResponse(response, 'querying work items');
     }
 
-    const queryResult = await response.json() as any;
+    const queryResult = await this.safeParseJson<any>(response);
     const workItemIds = queryResult.workItems?.map((wi: any) => wi.id) || [];
 
     if (workItemIds.length === 0) {
@@ -312,11 +388,10 @@ export class AdoClient {
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`ADO API Error (${response.status}): ${error}`);
+        await this.handleErrorResponse(response, 'fetching work items');
       }
 
-      const data = await response.json() as any;
+      const data = await this.safeParseJson<any>(response);
       allWorkItems.push(...(data.value || []));
     }
 
@@ -418,11 +493,10 @@ export class AdoClient {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`ADO API Error (${response.status}): ${error}`);
+      await this.handleErrorResponse(response, `creating ${item.workItemType}`);
     }
 
-    const workItem = await response.json() as AdoWorkItem;
+    const workItem = await this.safeParseJson<AdoWorkItem>(response);
 
     moduleLogger.info(`✅ Created ${item.workItemType} #${workItem.id}: ${item.title}`);
 
@@ -514,11 +588,10 @@ export class AdoClient {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`ADO API Error (${response.status}): ${error}`);
+      await this.handleErrorResponse(response, `updating work item #${update.id}`);
     }
 
-    const workItem = await response.json() as AdoWorkItem;
+    const workItem = await this.safeParseJson<AdoWorkItem>(response);
     moduleLogger.info(`✅ Updated work item #${update.id}`);
 
     return workItem;
@@ -577,11 +650,10 @@ export class AdoClient {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`ADO API Error (${response.status}): ${error}`);
+      await this.handleErrorResponse(response, 'fetching current iteration');
     }
 
-    const data = await response.json() as any;
+    const data = await this.safeParseJson<any>(response);
     const iterations = data.value || [];
 
     if (iterations.length === 0) {
@@ -606,11 +678,10 @@ export class AdoClient {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`ADO API Error (${response.status}): ${error}`);
+      await this.handleErrorResponse(response, 'fetching iterations');
     }
 
-    const data = await response.json() as any;
+    const data = await this.safeParseJson<any>(response);
     return data.value || [];
   }
 
@@ -628,11 +699,10 @@ export class AdoClient {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`ADO API Error (${response.status}): ${error}`);
+      await this.handleErrorResponse(response, 'fetching projects');
     }
 
-    const data = await response.json() as any;
+    const data = await this.safeParseJson<any>(response);
     return data.value || [];
   }
 
@@ -657,11 +727,10 @@ export class AdoClient {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`ADO API Error (${response.status}): ${error}`);
+      await this.handleErrorResponse(response, 'searching projects');
     }
 
-    const data = await response.json() as any;
+    const data = await this.safeParseJson<any>(response);
     return {
       value: data.value || [],
       count: data.count || 0,
@@ -686,11 +755,10 @@ export class AdoClient {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`ADO API Error (${response.status}): ${error}`);
+      await this.handleErrorResponse(response, `fetching area paths for ${project}`);
     }
 
-    return response.json();
+    return this.safeParseJson<any>(response);
   }
 
   /**
@@ -710,11 +778,10 @@ export class AdoClient {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`ADO API Error (${response.status}): ${error}`);
+      await this.handleErrorResponse(response, `fetching teams for ${project}`);
     }
 
-    const data = await response.json() as any;
+    const data = await this.safeParseJson<any>(response);
     return data.value || [];
   }
 
@@ -791,11 +858,10 @@ export class AdoClient {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`ADO API Error (${response.status}): ${error}`);
+      await this.handleErrorResponse(response, `fetching updates for work item #${workItemId}`);
     }
 
-    const data = await response.json() as any;
+    const data = await this.safeParseJson<any>(response);
     return data.value || [];
   }
 
@@ -833,11 +899,10 @@ export class AdoClient {
     });
 
     if (!projectResponse.ok) {
-      const error = await projectResponse.text();
-      throw new Error(`ADO API Error (${projectResponse.status}): ${error}`);
+      await this.handleErrorResponse(projectResponse, `detecting process template for ${projectName}`);
     }
 
-    const projectData = await projectResponse.json() as any;
+    const projectData = await this.safeParseJson<any>(projectResponse);
     const templateName = projectData.capabilities?.processTemplate?.templateName || 'Agile';
 
     // Step 2: Get work item types to check for Capability
@@ -854,7 +919,7 @@ export class AdoClient {
     let hasCapability = false;
 
     if (witResponse.ok) {
-      const witData = await witResponse.json() as any;
+      const witData = await this.safeParseJson<any>(witResponse);
       workItemTypes = (witData.value || []).map((wit: any) => wit.name);
       hasCapability = workItemTypes.some(wit =>
         wit.toLowerCase() === 'capability'
