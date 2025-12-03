@@ -397,13 +397,15 @@ export class SessionSyncExecutor {
             try {
               const profileResult = await adoFactory.resolveProfile(entry.name);
               if (profileResult.success && profileResult.profile) {
-                adoProfile = profileResult.profile;
+                adoProfile = profileResult.profile as ResolvedAdoProfile;
                 this.logger.debug(
                   `  📊 Increment ${entry.name} → ADO profile: ${adoProfile.profileName} ` +
                   `(${adoProfile.organization}/${adoProfile.project}) [${adoProfile.source}]`
                 );
               }
-            } catch {
+            } catch (error) {
+              // Log the error at debug level for troubleshooting
+              this.logger.debug(`  ⚠️ Could not resolve ADO profile for ${entry.name}: ${error}`);
               // No ADO profile configured - that's OK, might use GitHub/JIRA
             }
 
