@@ -49,6 +49,219 @@ export type LegacySyncStrategy = 'simple' | 'intelligent' | 'custom';
 // ============================================================================
 
 // ============================================================================
+// Universal Hierarchy Mapping Types (v0.30.6+ - Flexible 3/4/5 Level Support)
+// ============================================================================
+
+/**
+ * SpecWeave hierarchy levels for mapping external work items
+ *
+ * Universal hierarchy (flexible depth):
+ * - epic: Top-level strategic container (EP-XXXE) → _epics/ (OPTIONAL)
+ * - feature: Feature-level container (FS-XXXE) → FS-XXX/
+ * - user_story: Individual user story (us-xxxe.md) - FIXED
+ * - task: Task within user story (checkbox in US description) - FIXED
+ * - skip: Don't import this work item type
+ */
+export type SpecWeaveHierarchyLevel = 'epic' | 'feature' | 'user_story' | 'task' | 'skip';
+
+/**
+ * Flexible Hierarchy Mapping Configuration (v0.30.6+)
+ *
+ * UNIVERSAL mapping that works with ANY external tool (ADO/JIRA/GitHub)
+ * and ANY hierarchy depth (3/4/5 levels).
+ *
+ * **Core Principle:**
+ * - User Story and Task are FIXED (always the same mapping)
+ * - Container levels (Epic/Feature) are FLEXIBLE (configurable per project)
+ *
+ * **How it works:**
+ * 1. `epicLevelTypes` - Types that become TOP containers (_epics/EP-*)
+ * 2. `featureLevelTypes` - Types that become FEATURE containers (FS-*)
+ * 3. User Story types → us-*.md files (automatic/defaults)
+ * 4. Task types → checkboxes in parent US (automatic/defaults)
+ *
+ * @example ADO Scrum (3 levels: Epic → PBI → Task):
+ * ```json
+ * {
+ *   "epicLevelTypes": [],
+ *   "featureLevelTypes": ["Epic"]
+ * }
+ * ```
+ *
+ * @example ADO Agile (4 levels: Epic → Feature → US → Task):
+ * ```json
+ * {
+ *   "epicLevelTypes": [],
+ *   "featureLevelTypes": ["Epic", "Feature"]
+ * }
+ * ```
+ *
+ * @example ADO SAFe (5 levels: Capability → Epic → Feature → US → Task):
+ * ```json
+ * {
+ *   "epicLevelTypes": ["Capability"],
+ *   "featureLevelTypes": ["Epic", "Feature"]
+ * }
+ * ```
+ *
+ * @example JIRA Standard (3 levels: Epic → Story → Sub-task):
+ * ```json
+ * {
+ *   "epicLevelTypes": [],
+ *   "featureLevelTypes": ["Epic"]
+ * }
+ * ```
+ *
+ * @example JIRA SAFe (4 levels: Initiative → Epic → Story → Sub-task):
+ * ```json
+ * {
+ *   "epicLevelTypes": ["Initiative"],
+ *   "featureLevelTypes": ["Epic"]
+ * }
+ * ```
+ */
+export interface HierarchyMappingConfig {
+  /**
+   * Types that map to SpecWeave EPIC level (_epics/EP-*)
+   *
+   * These are TOP-LEVEL strategic containers.
+   * Leave empty for 3-4 level hierarchies without a strategic layer.
+   *
+   * Examples:
+   * - ADO SAFe: ["Capability"]
+   * - JIRA SAFe: ["Initiative"]
+   * - Standard projects: [] (no epic level)
+   */
+  epicLevelTypes: string[];
+
+  /**
+   * Types that map to SpecWeave FEATURE level (FS-*)
+   *
+   * These are feature-level containers that hold user stories.
+   * Required - every project needs at least one feature-level type.
+   *
+   * Examples:
+   * - ADO Agile: ["Epic", "Feature"]
+   * - ADO Scrum: ["Epic"]
+   * - JIRA: ["Epic"]
+   */
+  featureLevelTypes: string[];
+
+  /**
+   * Types that map to SpecWeave USER STORY level (us-*.md)
+   *
+   * Optional - uses sensible defaults if not provided.
+   * Defaults: ["User Story", "Story", "Product Backlog Item", "Requirement", "Bug", "Issue"]
+   */
+  userStoryTypes?: string[];
+
+  /**
+   * Types that map to SpecWeave TASK level (checkboxes in US)
+   *
+   * Optional - uses sensible defaults if not provided.
+   * Defaults: ["Task", "Sub-task"]
+   */
+  taskTypes?: string[];
+}
+
+/**
+ * Default User Story types (FIXED across all tools)
+ *
+ * NOTE: Includes both space-separated ('User Story') and hyphenated ('user-story')
+ * forms to handle different external tool conventions and internal type naming.
+ */
+export const DEFAULT_USER_STORY_TYPES = [
+  'User Story',
+  'user-story',   // Common internal/test type name
+  'Story',
+  'Product Backlog Item',
+  'Requirement',
+  'Bug',
+  'Issue',
+  'PBI',
+];
+
+/**
+ * Default Task types (FIXED across all tools)
+ */
+export const DEFAULT_TASK_TYPES = [
+  'Task',
+  'Sub-task',
+  'Subtask',
+];
+
+/**
+ * Default ADO hierarchy mapping (Agile - 4 levels)
+ *
+ * ADO Agile: Epic → Feature → User Story → Task
+ * Maps to: feature → feature → user_story → task
+ *
+ * NOTE: Epic becomes feature (not epic) because most ADO projects
+ * don't have a strategic layer above Epic.
+ */
+export const DEFAULT_ADO_HIERARCHY_MAPPING: HierarchyMappingConfig = {
+  epicLevelTypes: [],                    // No strategic layer by default
+  featureLevelTypes: ['Epic', 'Feature'], // Both are feature-level containers
+  // userStoryTypes and taskTypes use defaults
+};
+
+/**
+ * ADO SAFe hierarchy mapping (5 levels)
+ *
+ * SAFe: Capability → Epic → Feature → User Story → Task
+ * Maps to: epic → feature → feature → user_story → task
+ */
+export const ADO_SAFE_HIERARCHY_MAPPING: HierarchyMappingConfig = {
+  epicLevelTypes: ['Capability'],
+  featureLevelTypes: ['Epic', 'Feature'],
+};
+
+/**
+ * ADO Scrum hierarchy mapping (3 levels)
+ *
+ * Scrum: Epic → Product Backlog Item → Task
+ * Maps to: feature → user_story → task
+ */
+export const ADO_SCRUM_HIERARCHY_MAPPING: HierarchyMappingConfig = {
+  epicLevelTypes: [],
+  featureLevelTypes: ['Epic'],
+};
+
+/**
+ * Default JIRA hierarchy mapping (3 levels)
+ *
+ * JIRA: Epic → Story → Sub-task
+ * Maps to: feature → user_story → task
+ */
+export const DEFAULT_JIRA_HIERARCHY_MAPPING: HierarchyMappingConfig = {
+  epicLevelTypes: [],
+  featureLevelTypes: ['Epic'],
+};
+
+/**
+ * JIRA SAFe hierarchy mapping (4 levels)
+ *
+ * SAFe: Initiative → Epic → Story → Sub-task
+ * Maps to: epic → feature → user_story → task
+ */
+export const JIRA_SAFE_HIERARCHY_MAPPING: HierarchyMappingConfig = {
+  epicLevelTypes: ['Initiative'],
+  featureLevelTypes: ['Epic'],
+};
+
+/**
+ * Default GitHub hierarchy mapping (2 levels)
+ *
+ * GitHub: Milestone → Issue
+ * Maps to: feature → user_story
+ */
+export const DEFAULT_GITHUB_HIERARCHY_MAPPING: HierarchyMappingConfig = {
+  epicLevelTypes: [],
+  featureLevelTypes: ['Milestone'],
+  userStoryTypes: ['Issue'],
+};
+
+// ============================================================================
 // Provider-Specific Configuration Types
 // ============================================================================
 
@@ -351,13 +564,59 @@ export interface AdoConfig {
   autoCreateEpics?: boolean;  // Default: true (create epic per project)
   confidenceThreshold?: number;  // Default: 0.3 (30%), range: 0.0-1.0
 
-  // Work item type mapping (optional)
+  // Work item type mapping (optional) - for EXPORT to ADO
   workItemTypes?: {
     epic: string;    // Default: 'Epic'
     feature: string; // Default: 'Feature'
     story: string;   // Default: 'User Story'
     task: string;    // Default: 'Task'
   };
+
+  // ============================================================================
+  // NEW in v0.30.5: Universal Hierarchy Mapping for IMPORT
+  // ============================================================================
+
+  /**
+   * Hierarchy mapping for importing ADO work items to SpecWeave
+   *
+   * Maps ADO work item types to SpecWeave hierarchy levels.
+   * Enables configurable 4-5 level hierarchy support.
+   *
+   * @example SAFe configuration:
+   * ```json
+   * {
+   *   "hierarchyMapping": {
+   *     "Capability": "epic",
+   *     "Epic": "feature",
+   *     "Feature": "feature",
+   *     "User Story": "user_story",
+   *     "Task": "task"
+   *   }
+   * }
+   * ```
+   *
+   * If not provided, uses DEFAULT_ADO_HIERARCHY_MAPPING.
+   */
+  hierarchyMapping?: HierarchyMappingConfig;
+
+  /**
+   * How to handle orphan items (items without parents)
+   *
+   * - 'create-feature': Create individual FS-XXXE folders (current behavior, causes bug)
+   * - 'skip': Don't import orphan items
+   * - 'group': Group all orphans under _orphans/ folder (recommended)
+   *
+   * Default: 'group' (v0.30.5+)
+   */
+  orphanHandling?: 'create-feature' | 'skip' | 'group';
+
+  /**
+   * Auto-archive items older than N days on import
+   *
+   * Set to 0 to disable auto-archive on import (recommended for fresh imports).
+   * Default: 0 (disabled in v0.30.5+, was 30 before)
+   */
+  autoArchiveAfterDays?: number;
 }
 
 export type ProviderConfig = GitHubConfig | JiraConfig | AdoConfig;
@@ -505,7 +764,20 @@ export interface SyncProfile {
 }
 
 export interface SyncProfiles {
-  /** Active profile (default selection) */
+  /**
+   * Default profile (fallback when increment doesn't specify one)
+   *
+   * NOTE: This is a FALLBACK, not a constraint. Bulk operations (import/export/status)
+   * iterate ALL profiles. Each increment can override via metadata.json.
+   *
+   * @since v0.31.0 - renamed from activeProfile for clarity
+   */
+  defaultProfile?: string;
+
+  /**
+   * @deprecated Use `defaultProfile` instead. Kept for backward compatibility.
+   * If both are set, `defaultProfile` takes precedence.
+   */
   activeProfile?: string;
 
   /** All available profiles */
@@ -593,7 +865,15 @@ export interface ProjectContext {
 // ============================================================================
 
 export interface SyncConfiguration {
-  /** Active profile */
+  /**
+   * Default profile (fallback when increment doesn't specify one)
+   * @since v0.31.0 - renamed from activeProfile
+   */
+  defaultProfile?: string;
+
+  /**
+   * @deprecated Use `defaultProfile` instead. Kept for backward compatibility.
+   */
   activeProfile?: string;
 
   /** All sync profiles */
@@ -807,4 +1087,94 @@ export function getEffectiveStrategy(profile: SyncProfile): SyncStrategy {
  */
 export function isSimpleStrategy(profile: SyncProfile): boolean {
   return isIntelligentStrategy(profile);
+}
+
+// ============================================================================
+// Default Profile Helpers (v0.31.0+ - Backward Compatibility)
+// ============================================================================
+
+/**
+ * Get the effective default profile name from sync configuration
+ *
+ * Handles backward compatibility:
+ * - Returns `defaultProfile` if set (preferred, v0.31.0+)
+ * - Falls back to `activeProfile` if only that is set (legacy)
+ * - Returns undefined if neither is set
+ *
+ * @param config - Sync configuration (SyncProfiles or SyncConfiguration)
+ * @returns Default profile name or undefined
+ *
+ * @example
+ * ```typescript
+ * const defaultProfile = getDefaultProfile(config.sync);
+ * if (defaultProfile) {
+ *   const profile = config.sync.profiles[defaultProfile];
+ * }
+ * ```
+ */
+export function getDefaultProfile(
+  config: Pick<SyncProfiles, 'defaultProfile' | 'activeProfile'> | undefined
+): string | undefined {
+  if (!config) return undefined;
+
+  // Prefer defaultProfile (v0.31.0+), fall back to activeProfile (legacy)
+  return config.defaultProfile ?? config.activeProfile;
+}
+
+/**
+ * Get ALL sync profiles of a specific provider type
+ *
+ * Use this for bulk operations instead of just using the default profile.
+ * This allows sync operations to work across ALL configured profiles.
+ *
+ * @param config - Sync configuration
+ * @param provider - Provider type ('github', 'jira', 'ado')
+ * @returns Array of [profileName, profile] tuples
+ *
+ * @example
+ * ```typescript
+ * // Sync to ALL GitHub repos, not just "active" one
+ * for (const [name, profile] of getProfilesByProvider(config.sync, 'github')) {
+ *   await syncToGitHub(profile);
+ * }
+ * ```
+ */
+export function getProfilesByProvider(
+  config: Pick<SyncProfiles, 'profiles'> | undefined,
+  provider: SyncProvider
+): Array<[string, SyncProfile]> {
+  if (!config?.profiles) return [];
+
+  return Object.entries(config.profiles).filter(
+    ([_, profile]) => profile.provider === provider
+  );
+}
+
+/**
+ * Get all configured sync profiles (all providers)
+ *
+ * @param config - Sync configuration
+ * @returns Array of [profileName, profile] tuples
+ */
+export function getAllProfiles(
+  config: Pick<SyncProfiles, 'profiles'> | undefined
+): Array<[string, SyncProfile]> {
+  if (!config?.profiles) return [];
+  return Object.entries(config.profiles);
+}
+
+/**
+ * Check if sync is configured for ANY profile of a given provider
+ *
+ * More useful than checking activeProfile for permission checks.
+ *
+ * @param config - Sync configuration
+ * @param provider - Provider type
+ * @returns true if at least one profile exists for this provider
+ */
+export function hasProviderConfigured(
+  config: Pick<SyncProfiles, 'profiles'> | undefined,
+  provider: SyncProvider
+): boolean {
+  return getProfilesByProvider(config, provider).length > 0;
 }

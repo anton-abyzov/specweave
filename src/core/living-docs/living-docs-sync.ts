@@ -36,6 +36,8 @@ import type {
   UserStoryData,
   AcceptanceCriterionData,
 } from './types.js';
+// Import sync profile helpers for provider detection (v0.31.0+)
+import { getProfilesByProvider } from '../types/sync-profile.js';
 // Import extracted helpers
 import {
   calculateUSStatus,
@@ -822,23 +824,28 @@ export class LivingDocsSync {
       try {
         const config = await readJson(configPath);
 
-        // GitHub detection (4 methods in order of preference)
+        // GitHub detection (5 methods in order of preference)
         if (!tools.includes('github')) {
           // Method 1: sync.github section (most common)
           if (config.sync?.github?.enabled && config.sync?.github?.owner && config.sync?.github?.repo) {
             this.logger.log(`   ✅ GitHub sync enabled (config.sync.github, owner: ${config.sync.github.owner})`);
             tools.push('github');
           }
-          // Method 2: sync.profiles[activeProfile] (multi-profile setup)
-          else if (config.sync?.activeProfile && config.sync?.profiles?.[config.sync.activeProfile]?.provider === 'github') {
-            const profile = config.sync.profiles[config.sync.activeProfile];
-            if (profile.config?.owner && profile.config?.repo) {
-              this.logger.log(`   ✅ GitHub sync enabled (active profile: ${config.sync.activeProfile})`);
+          // Method 2: ANY profile with provider='github' (v0.31.0+ - uses helper function)
+          else {
+            const githubProfiles = getProfilesByProvider(config.sync, 'github')
+              .filter(([_, p]) => {
+                const cfg = p.config as { owner?: string; repo?: string } | undefined;
+                return cfg?.owner && cfg?.repo;
+              });
+            if (githubProfiles.length > 0) {
+              const profileNames = githubProfiles.map(([name]) => name).join(', ');
+              this.logger.log(`   ✅ GitHub sync enabled (${githubProfiles.length} profile(s): ${profileNames})`);
               tools.push('github');
             }
           }
           // Method 3: multiProject.projects[activeProject].externalTools.github
-          else if (config.multiProject?.enabled && config.multiProject?.activeProject) {
+          if (!tools.includes('github') && config.multiProject?.enabled && config.multiProject?.activeProject) {
             const activeProject = config.multiProject.activeProject;
             const projectConfig = config.multiProject.projects?.[activeProject];
             if (projectConfig?.externalTools?.github?.repository) {
@@ -847,31 +854,39 @@ export class LivingDocsSync {
             }
           }
           // Method 4: Legacy plugins.settings (backward compatibility)
-          else if (config.plugins?.settings?.['specweave-github']?.activeProfile) {
+          if (!tools.includes('github') && config.plugins?.settings?.['specweave-github']?.activeProfile) {
             this.logger.log(`   ✅ GitHub sync enabled (legacy plugins.settings)`);
             tools.push('github');
           }
         }
 
-        // Jira detection
+        // Jira detection (v0.31.0+ - uses helper function)
         if (!tools.includes('jira')) {
           if (config.sync?.jira?.enabled) {
             this.logger.log(`   ✅ Jira sync enabled (config.sync.jira)`);
             tools.push('jira');
-          } else if (config.sync?.activeProfile && config.sync?.profiles?.[config.sync.activeProfile]?.provider === 'jira') {
-            this.logger.log(`   ✅ Jira sync enabled (active profile: ${config.sync.activeProfile})`);
-            tools.push('jira');
+          } else {
+            const jiraProfiles = getProfilesByProvider(config.sync, 'jira');
+            if (jiraProfiles.length > 0) {
+              const profileNames = jiraProfiles.map(([name]) => name).join(', ');
+              this.logger.log(`   ✅ Jira sync enabled (${jiraProfiles.length} profile(s): ${profileNames})`);
+              tools.push('jira');
+            }
           }
         }
 
-        // ADO detection
+        // ADO detection (v0.31.0+ - uses helper function)
         if (!tools.includes('ado')) {
           if (config.sync?.ado?.enabled) {
             this.logger.log(`   ✅ ADO sync enabled (config.sync.ado)`);
             tools.push('ado');
-          } else if (config.sync?.activeProfile && config.sync?.profiles?.[config.sync.activeProfile]?.provider === 'ado') {
-            this.logger.log(`   ✅ ADO sync enabled (active profile: ${config.sync.activeProfile})`);
-            tools.push('ado');
+          } else {
+            const adoProfiles = getProfilesByProvider(config.sync, 'ado');
+            if (adoProfiles.length > 0) {
+              const profileNames = adoProfiles.map(([name]) => name).join(', ');
+              this.logger.log(`   ✅ ADO sync enabled (${adoProfiles.length} profile(s): ${profileNames})`);
+              tools.push('ado');
+            }
           }
         }
       } catch (error) {

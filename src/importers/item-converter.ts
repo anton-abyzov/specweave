@@ -17,6 +17,15 @@ import type { ExternalContainerContext } from '../core/types/increment-metadata.
 import { getTwoLevelProjectPath, normalizeToProjectId } from '../utils/project-id-generator.js';
 import { MarkdownGenerator, type TaskData } from './markdown-generator.js';
 import { Logger, consoleLogger } from '../utils/logger.js';
+import {
+  type HierarchyMappingConfig,
+  type SpecWeaveHierarchyLevel,
+  DEFAULT_ADO_HIERARCHY_MAPPING,
+  DEFAULT_JIRA_HIERARCHY_MAPPING,
+  DEFAULT_GITHUB_HIERARCHY_MAPPING,
+  DEFAULT_USER_STORY_TYPES,
+  DEFAULT_TASK_TYPES,
+} from '../core/types/sync-profile.js';
 
 /**
  * Module logger - can be replaced for testing
@@ -134,8 +143,39 @@ export interface ItemConverterOptions {
   /** Enable duplicate detection (default: true) */
   enableDuplicateDetection?: boolean;
 
-  /** Auto-archive items older than this many days (default: 30, 0 to disable) */
+  /** Auto-archive items older than this many days (default: 0 = disabled, was 30 before v0.30.5) */
   autoArchiveAfterDays?: number;
+
+  // ============================================================================
+  // Universal Hierarchy Mapping (v0.30.5+)
+  // ============================================================================
+
+  /**
+   * Hierarchy mapping for converting external work items to SpecWeave levels
+   *
+   * Maps external tool work item types (Epic, Feature, User Story, Task, etc.)
+   * to SpecWeave hierarchy levels (epic, feature, user_story, task, skip).
+   *
+   * Default mappings:
+   * - ADO: DEFAULT_ADO_HIERARCHY_MAPPING
+   * - JIRA: DEFAULT_JIRA_HIERARCHY_MAPPING
+   * - GitHub: DEFAULT_GITHUB_HIERARCHY_MAPPING
+   */
+  hierarchyMapping?: HierarchyMappingConfig;
+
+  /**
+   * How to handle orphan items (items without parents in the hierarchy)
+   *
+   * - 'group': Group all orphans under _orphans/ folder (RECOMMENDED - v0.30.6 default)
+   * - 'skip': Don't import orphan items
+   * - 'create-feature': Create individual FS-XXXE folders (legacy behavior, causes bug)
+   *
+   * Default: 'group' (v0.30.6+) - orphans go to _orphans/ folder inside project/board
+   *
+   * The _orphans folder follows industry-standard naming (git orphan branches,
+   * database orphan records) for items without parents in the hierarchy.
+   */
+  orphanHandling?: 'skip' | 'group' | 'create-feature';
 
   /** Callback for skipped duplicates */
   onDuplicateSkipped?: (externalId: string, existingUsId: string) => void;
@@ -211,8 +251,9 @@ export class ItemConverter {
       // - undefined means items go directly to specs/ (no project subfolder)
       // - a string value means items go to specs/{projectId}/
       // For umbrella repos, set enableGlobalCollisionDetection: true
-      autoArchiveAfterDays: 30,  // Default: archive items older than 1 month
+      autoArchiveAfterDays: 0,  // v0.30.5: Disabled by default (was 30). Set >0 to enable.
       enableGlobalCollisionDetection: false, // Default: false for backwards compatibility
+      orphanHandling: 'group',  // v0.30.6: Group orphans in _orphans folder (was 'skip')
       ...options,
     };
 
@@ -251,6 +292,98 @@ export class ItemConverter {
         }
       );
     }
+  }
+
+  // ============================================================================
+  // Universal Hierarchy Mapping Helpers (v0.30.6+ - Flexible 3/4/5 Level Support)
+  // ============================================================================
+
+  /**
+   * Get the SpecWeave hierarchy level for a work item type
+   *
+   * Uses the new array-based HierarchyMappingConfig for flexible mapping.
+   * Works with ANY hierarchy depth (3/4/5 levels) and ANY external tool.
+   *
+   * **Core Principle:**
+   * - User Story and Task are FIXED (always the same mapping)
+   * - Container levels (Epic/Feature) are FLEXIBLE (configurable per project)
+   *
+   * @param workItemType - External work item type (e.g., 'Epic', 'User Story', 'Task')
+   * @param platform - Platform (ado, jira, github) for default mapping selection
+   * @returns SpecWeave hierarchy level (epic, feature, user_story, task, skip)
+   */
+  private getSpecWeaveLevel(
+    workItemType: string | undefined,
+    platform: 'ado' | 'jira' | 'github' = 'ado'
+  ): SpecWeaveHierarchyLevel {
+    if (!workItemType) {
+      return 'skip'; // Unknown types are skipped
+    }
+
+    const normalizedType = workItemType.toLowerCase().trim();
+
+    // Get mapping config (user-provided or platform defaults)
+    const mapping = this.options.hierarchyMapping || this.getDefaultMapping(platform);
+
+    // 1. Check if type is in epicLevelTypes → 'epic'
+    if (this.typeMatchesArray(normalizedType, mapping.epicLevelTypes)) {
+      return 'epic';
+    }
+
+    // 2. Check if type is in featureLevelTypes → 'feature'
+    if (this.typeMatchesArray(normalizedType, mapping.featureLevelTypes)) {
+      return 'feature';
+    }
+
+    // 3. Check if type is in userStoryTypes (or defaults) → 'user_story'
+    const userStoryTypes = mapping.userStoryTypes || DEFAULT_USER_STORY_TYPES;
+    if (this.typeMatchesArray(normalizedType, userStoryTypes)) {
+      return 'user_story';
+    }
+
+    // 4. Check if type is in taskTypes (or defaults) → 'task'
+    const taskTypes = mapping.taskTypes || DEFAULT_TASK_TYPES;
+    if (this.typeMatchesArray(normalizedType, taskTypes)) {
+      return 'task';
+    }
+
+    // 5. Unknown type → skip (don't import)
+    return 'skip';
+  }
+
+  /**
+   * Get default hierarchy mapping for a platform
+   */
+  private getDefaultMapping(platform: 'ado' | 'jira' | 'github'): HierarchyMappingConfig {
+    switch (platform) {
+      case 'jira':
+        return DEFAULT_JIRA_HIERARCHY_MAPPING;
+      case 'github':
+        return DEFAULT_GITHUB_HIERARCHY_MAPPING;
+      case 'ado':
+      default:
+        return DEFAULT_ADO_HIERARCHY_MAPPING;
+    }
+  }
+
+  /**
+   * Case-insensitive check if a type matches any item in an array
+   */
+  private typeMatchesArray(normalizedType: string, types: string[]): boolean {
+    return types.some(t => t.toLowerCase().trim() === normalizedType);
+  }
+
+  /**
+   * Check if a work item type is a "container-level" type (epic or feature)
+   *
+   * Container-level types create folders (EP-* or FS-*), not user story files.
+   */
+  private isFeatureLevelType(
+    workItemType: string | undefined,
+    platform: 'ado' | 'jira' | 'github' = 'ado'
+  ): boolean {
+    const level = this.getSpecWeaveLevel(workItemType, platform);
+    return level === 'epic' || level === 'feature';
   }
 
   /**
@@ -510,70 +643,78 @@ export class ItemConverter {
   private groupItemsByFeature(items: ExternalItem[]): Map<string, ExternalItem[]> {
     const groups = new Map<string, ExternalItem[]>();
 
-    // Detect ADO items
+    // Detect platform (ADO, JIRA, or GitHub)
     const hasAdoItems = items.some(item => item.platform === 'ado' && item.adoProjectName);
+    const hasJiraItems = items.some(item => item.platform === 'jira');
+    const hasHierarchicalItems = hasAdoItems || hasJiraItems;
 
-    // Process ADO items with intelligent hierarchy mapping
-    if (hasAdoItems) {
+    // ========================================================================
+    // v0.30.6: Universal Hierarchy Mapping (ADO/JIRA/GitHub)
+    // ========================================================================
+    // Flexible 3/4/5 level mapping that works with ANY external tool:
+    // - epicLevelTypes → _epics/EP-XXXE/ (optional strategic layer)
+    // - featureLevelTypes → FS-XXXE/ (feature containers)
+    // - userStoryTypes → us-xxxe.md file (FIXED)
+    // - taskTypes → checkbox in parent US (FIXED)
+    //
+    // User Story and Task mappings are FIXED (always the same).
+    // Container levels (Epic/Feature) are FLEXIBLE (configurable per project).
+
+    // Process items with intelligent hierarchy mapping (ADO or JIRA)
+    if (hasHierarchicalItems) {
+      // Determine platform for default mapping
+      const platform: 'ado' | 'jira' | 'github' = hasAdoItems ? 'ado' : 'jira';
+
       // Build a map of all items by ID for lookup
       const itemById = new Map<string, ExternalItem>();
       for (const item of items) {
         itemById.set(item.id, item);
       }
 
-      // CRITICAL: Separate Capability (top-level) from other feature-level items
-      // Capabilities go to _epics/, everything else goes to FS-XXXE/
-      // CRITICAL (v0.30.4): Use normalizeAdoWorkItemType to handle 'Epics' vs 'epic'
-      const capabilityItems = items.filter(item =>
-        normalizeAdoWorkItemType(item.adoWorkItemType) === 'capability'
-      );
+      // Filter items by their SpecWeave hierarchy level using flexible mapping
+      const epicLevelItems = items.filter(item => {
+        const witType = platform === 'ado'
+          ? (normalizeAdoWorkItemType(item.adoWorkItemType) || item.type)
+          : item.type;
+        return this.getSpecWeaveLevel(witType, platform) === 'epic';
+      });
 
-      // Epics and Features are "feature-level" items
-      // But Epics with Capability parents become Features (FS-XXXE)
-      // Epics without Capability parents become Epics (_epics/EP-XXXE)
-      const epicItems = items.filter(item =>
-        normalizeAdoWorkItemType(item.adoWorkItemType) === 'epic'
-      );
+      const featureLevelItems = items.filter(item => {
+        const witType = platform === 'ado'
+          ? (normalizeAdoWorkItemType(item.adoWorkItemType) || item.type)
+          : item.type;
+        return this.getSpecWeaveLevel(witType, platform) === 'feature';
+      });
 
-      const featureItems = items.filter(item =>
-        normalizeAdoWorkItemType(item.adoWorkItemType) === 'feature'
-      );
+      // Keep backward compatibility: capabilityItems for parent lookup
+      const capabilityItems = epicLevelItems;
 
-      // Create groups for Capabilities → _epics/EP-XXXE/
-      for (const capItem of capabilityItems) {
-        const groupKey = `epic:${capItem.id}`;
-        if (!groups.has(groupKey)) {
-          groups.set(groupKey, []);
-        }
-        groups.get(groupKey)!.push(capItem);
-      }
-
-      // Process Epics: determine if they're children of Capabilities or standalone
-      for (const epicItem of epicItems) {
-        let groupKey: string;
-
-        // Check if Epic has a Capability parent
-        const hasCapabilityParent = epicItem.parentId &&
-          capabilityItems.some(cap => cap.id === epicItem.parentId);
-
-        if (hasCapabilityParent) {
-          // Epic with Capability parent → FS-XXXE/ (Feature level)
-          // The Epic becomes a Feature folder, with reference to parent Epic
-          groupKey = `feature:${epicItem.id}`;
-        } else {
-          // Standalone Epic (no Capability parent) → _epics/EP-XXXE/
-          groupKey = `epic:${epicItem.id}`;
-        }
-
+      // Create groups for Epic-level items → _epics/EP-XXXE/
+      for (const epicItem of epicLevelItems) {
+        const groupKey = `epic:${epicItem.id}`;
         if (!groups.has(groupKey)) {
           groups.set(groupKey, []);
         }
         groups.get(groupKey)!.push(epicItem);
       }
 
-      // Create groups for Features → FS-XXXE/
-      for (const featureItem of featureItems) {
-        const groupKey = `feature:${featureItem.id}`;
+      // Create groups for Feature-level items → FS-XXXE/
+      // Feature-level items with epic-level parents get a feature folder
+      for (const featureItem of featureLevelItems) {
+        let groupKey: string;
+
+        // Check if this feature has an epic-level parent
+        const hasEpicParent = featureItem.parentId &&
+          epicLevelItems.some(epic => epic.id === featureItem.parentId);
+
+        if (hasEpicParent) {
+          // Feature under Epic → FS-XXXE/ (Feature level) with parent reference
+          groupKey = `feature:${featureItem.id}`;
+        } else {
+          // Standalone Feature (no epic parent) → FS-XXXE/
+          groupKey = `feature:${featureItem.id}`;
+        }
+
         if (!groups.has(groupKey)) {
           groups.set(groupKey, []);
         }
@@ -581,12 +722,25 @@ export class ItemConverter {
       }
 
       // Assign child items (User Stories, Tasks, Bugs) to their parent groups
-      const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
+      // v0.30.6: Use flexible hierarchy mapping for ALL platforms (ADO/JIRA)
       for (const item of items) {
-        // CRITICAL (v0.30.4): Normalize work item type for plural handling
-        const witType = normalizeAdoWorkItemType(item.adoWorkItemType) || item.type;
-        if (featureLevelTypes.has(witType)) {
-          continue; // Skip feature-level items, already added
+        // Normalize work item type (ADO needs special handling for plurals)
+        const witType = platform === 'ado'
+          ? (normalizeAdoWorkItemType(item.adoWorkItemType) || item.type)
+          : item.type;
+
+        // Skip epic/feature-level items (already processed above)
+        if (this.isFeatureLevelType(witType, platform)) {
+          continue;
+        }
+
+        // Get the SpecWeave level for this item type
+        const itemLevel = this.getSpecWeaveLevel(witType, platform);
+
+        // Skip items marked as 'skip' in hierarchy mapping
+        if (itemLevel === 'skip') {
+          moduleLogger.log(`   ⏭️  Skipping ${witType} (configured as 'skip' in hierarchy mapping)`);
+          continue;
         }
 
         // Find the parent group
@@ -596,33 +750,30 @@ export class ItemConverter {
           // Try to find parent in our items
           const parent = itemById.get(item.parentId);
           if (parent) {
-            // Find the appropriate ancestor group
+            // Find the appropriate ancestor group using hierarchy mapping
             let current: ExternalItem | undefined = parent;
             while (current) {
-              // CRITICAL (v0.30.4): Normalize work item type for plural handling
-              const currentType = normalizeAdoWorkItemType(current.adoWorkItemType) || current.type;
+              // Normalize work item type for consistent lookup
+              const currentType = platform === 'ado'
+                ? (normalizeAdoWorkItemType(current.adoWorkItemType) || current.type)
+                : current.type;
+              const currentLevel = this.getSpecWeaveLevel(currentType, platform);
 
-              // Check if this ancestor is a Capability (→ epic group)
-              if (currentType === 'capability') {
+              // Epic-level ancestor → epic group
+              if (currentLevel === 'epic') {
                 groupKey = `epic:${current.id}`;
                 break;
               }
 
-              // Check if this ancestor is an Epic
-              if (currentType === 'epic') {
-                // Check if Epic has Capability parent (→ feature group)
-                const epicHasCapParent = current.parentId &&
-                  capabilityItems.some(cap => cap.id === current!.parentId);
+              // Feature-level ancestor → feature group
+              if (currentLevel === 'feature') {
+                // Check if this feature has an epic-level parent
+                const hasEpicParent = current.parentId &&
+                  epicLevelItems.some(epic => epic.id === current!.parentId);
 
-                groupKey = epicHasCapParent
+                groupKey = hasEpicParent
                   ? `feature:${current.id}`
-                  : `epic:${current.id}`;
-                break;
-              }
-
-              // Check if this ancestor is a Feature (→ feature group)
-              if (currentType === 'feature') {
-                groupKey = `feature:${current.id}`;
+                  : `feature:${current.id}`;
                 break;
               }
 
@@ -634,9 +785,29 @@ export class ItemConverter {
           }
         }
 
-        // For TRUE orphan items (no parentId at all), create INDIVIDUAL folders
+        // v0.30.6: Handle orphan items based on orphanHandling option
+        // Default changed from 'skip' to 'group' - orphans go to _orphans/ folder
         if (!groupKey) {
-          groupKey = `orphan:${item.id}`;
+          const orphanHandling = this.options.orphanHandling || 'group';
+
+          switch (orphanHandling) {
+            case 'skip':
+              // Don't import orphan items
+              moduleLogger.log(`   ⏭️  Skipping orphan ${witType} "${item.title}" (orphanHandling='skip')`);
+              continue; // Skip this item entirely
+
+            case 'group':
+              // Group all orphans under _orphans/ folder (v0.30.6 default)
+              // Industry-standard naming for items without parents in hierarchy
+              groupKey = `orphans:all`;
+              break;
+
+            case 'create-feature':
+            default:
+              // Legacy behavior: create individual FS-XXXE folders (causes bug)
+              groupKey = `orphan:${item.id}`;
+              break;
+          }
         }
 
         if (!groups.has(groupKey)) {
@@ -741,6 +912,48 @@ export class ItemConverter {
       parentEpicId = this.createdEpics.get(groupKey);
     }
 
+    // v0.30.6: Handle orphans:all group (orphanHandling='group')
+    // Instead of creating individual FS-* folders, put all orphans in _orphans/
+    // Industry-standard naming (like git orphan branches, database orphan records)
+    if (groupKey === 'orphans:all') {
+      const baseDir = this.getBaseDirectory();
+      const orphansDir = path.join(baseDir, '_orphans');
+
+      // Create _orphans directory if needed
+      if (!fs.existsSync(orphansDir)) {
+        fs.mkdirSync(orphansDir, { recursive: true });
+
+        // Create README.md explaining the folder purpose
+        const readmeContent = `# Orphan Items
+
+This folder contains items imported from external tools that have **no parent** in the hierarchy.
+
+## Why are items here?
+
+Items land here when:
+1. **No parent in external tool** - The item has no Epic/Feature parent in ADO/JIRA/GitHub
+2. **Parent not imported** - The parent exists but wasn't included in the import (different time range, project, or filter)
+3. **Hierarchy mismatch** - The external tool's hierarchy doesn't map cleanly to SpecWeave's Epic→Feature→User Story structure
+
+## What should I do?
+
+1. **Review each item** - Determine which Feature it belongs to
+2. **Move to correct folder** - Drag the \`.md\` file to the appropriate \`FS-XXX/\` folder
+3. **Update FEATURE.md** - Add the user story to the feature's list
+4. **Or create new Feature** - If no suitable feature exists, create a new increment
+
+---
+*Auto-generated by SpecWeave on ${new Date().toISOString().split('T')[0]}*
+`;
+        fs.writeFileSync(path.join(orphansDir, 'README.md'), readmeContent, 'utf-8');
+      }
+
+      // Return a special "orphans" folder name (not a real FS-* ID)
+      // User stories will be placed directly in _orphans/ folder
+      this.createdFeatures.set(featureGroupKey, '_orphans');
+      return '_orphans';
+    }
+
     // All groups (including epic groups) need a feature folder for user stories
     // FSIdAllocator is required for feature allocation
     if (!this.fsIdAllocator) {
@@ -750,11 +963,11 @@ export class ItemConverter {
     // For ADO feature groups, check if it's an Epic with Capability parent
     // If so, include parent reference in the feature folder
     const isAdoFeatureGroup = groupKey.startsWith('feature:');
-    const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
     // CRITICAL (v0.30.4): Normalize work item type for plural handling
+    // v0.30.5: Use configurable hierarchy mapping instead of hardcoded types
     const normalizedWitType = normalizeAdoWorkItemType(firstItem.adoWorkItemType) || firstItem.type;
     const isFeatureLevelItem = (isAdoFeatureGroup || isEpicGroup) &&
-      featureLevelTypes.has(normalizedWitType);
+      this.isFeatureLevelType(normalizedWitType, firstItem.platform as 'ado' | 'jira' | 'github' || 'ado');
 
     // CRITICAL (v0.30.3): Determine parent epic for this feature folder
     // - For epic groups: parentEpicId was set above when creating the epic
@@ -906,14 +1119,15 @@ export class ItemConverter {
     const isAdoFeatureGroup = groupKey.startsWith('feature:');
     const isEpicGroup = groupKey.startsWith('epic:');
     const isOrphanGroup = groupKey.startsWith('orphan:');
-    const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
     // CRITICAL (v0.30.4): Normalize work item type for plural handling ('Epics' → 'epic')
+    // v0.30.5: Use configurable hierarchy mapping instead of hardcoded types
     const adoWitType = normalizeAdoWorkItemType(firstItem.adoWorkItemType);
     // CRITICAL FIX (v0.30.3): Include epic groups in feature-level item check
     // Epic groups create feature folders for their user stories, and should use the epic's title
+    const platform = (firstItem.platform as 'ado' | 'jira' | 'github') || 'ado';
     const isAdoFeatureLevelItem = (isAdoFeatureGroup || isEpicGroup) &&
       firstItem.platform === 'ado' &&
-      featureLevelTypes.has(adoWitType || firstItem.type);
+      this.isFeatureLevelType(adoWitType || firstItem.type, platform);
 
     // Generate FEATURE.md content based on item type and platform
     let featureTitle: string;

@@ -193,7 +193,7 @@ Checking permissions...
 
 Resolving ADO profile...
   Using: ado-my-project (from increment)
-  Organization: nova-systems
+  Organization: acme-corp
   Project: My Project
 
 Syncing...
@@ -211,7 +211,7 @@ TO ADO:
 
 Sync Complete!
 Profile: ado-my-project
-Work Item: https://dev.azure.com/nova-systems/Nova%20X%20Sandbox/_workitems/edit/12345
+Work Item: https://dev.azure.com/acme-corp/My%20Project/_workitems/edit/12345
 ```
 
 ### Permission Denied

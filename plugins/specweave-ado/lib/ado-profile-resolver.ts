@@ -4,10 +4,15 @@
  * Resolves the correct ADO profile to use for sync operations.
  * Priority:
  * 1. Increment's stored profile (metadata.json -> external_sync.ado.profile)
- * 2. Global activeProfile (config.json -> sync.activeProfile)
+ * 2. Global defaultProfile (config.json -> sync.defaultProfile)
+ * 3. Legacy: Global activeProfile (config.json -> sync.activeProfile)
  *
  * This allows each increment to sync to its designated ADO project
- * without requiring manual activeProfile switching.
+ * without requiring manual profile switching.
+ *
+ * NOTE (v0.31.0): Renamed from "activeProfile" to "defaultProfile" for clarity.
+ * The default profile is a FALLBACK, not a constraint. Bulk operations
+ * iterate ALL profiles.
  *
  * Usage:
  * ```typescript
@@ -105,6 +110,9 @@ interface ConfigProfile {
  * Sync config from config.json
  */
 interface SyncConfig {
+  /** @since v0.31.0 - preferred */
+  defaultProfile?: string;
+  /** @deprecated Use defaultProfile */
   activeProfile?: string;
   profiles?: Record<string, ConfigProfile>;
 }
@@ -135,7 +143,8 @@ export class AdoProfileResolver {
    *
    * Priority:
    * 1. Increment's metadata.json -> external_sync.ado.profile
-   * 2. Config.json -> sync.activeProfile
+   * 2. Config.json -> sync.defaultProfile (v0.31.0+)
+   * 3. Config.json -> sync.activeProfile (legacy fallback)
    *
    * @param incrementId - Increment ID (e.g., "0093-my-feature")
    * @returns Profile resolution result
@@ -154,13 +163,14 @@ export class AdoProfileResolver {
     // Try to get increment-specific profile first
     const incrementProfile = await this.getIncrementProfile(incrementId);
 
-    // Determine which profile to use
-    const profileName = incrementProfile || config.sync?.activeProfile;
+    // Determine which profile to use (defaultProfile preferred over activeProfile)
+    const globalDefaultProfile = config.sync?.defaultProfile ?? config.sync?.activeProfile;
+    const profileName = incrementProfile || globalDefaultProfile;
 
     if (!profileName) {
       return {
         success: false,
-        error: 'No ADO profile configured. Set sync.activeProfile in config.json or external_sync.ado.profile in increment metadata.',
+        error: 'No ADO profile configured. Set sync.defaultProfile in config.json or external_sync.ado.profile in increment metadata.',
         incrementId,
       };
     }

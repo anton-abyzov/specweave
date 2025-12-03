@@ -217,6 +217,41 @@ async function main(): Promise<void> {
       completedAt: new Date().toISOString()
     }, null, 2));
 
+    // Persist umbrella config to config.json (v0.31.0+)
+    log('Persisting umbrella configuration...');
+    try {
+      const configPath = path.join(projectPath, '.specweave', 'config.json');
+      let config: Record<string, any> = {};
+
+      if (fs.existsSync(configPath)) {
+        config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      }
+
+      // Build child repos list from successful clones
+      const childRepos = repos.map(repo => ({
+        id: repo.name,
+        path: repo.path,
+        name: repo.name,
+        team: extractTeamFromPath(repo.path),
+        areaPath: (repo as any).areaPath,
+        clonedAt: new Date().toISOString(),
+        status: 'cloned' as const,
+      }));
+
+      config.umbrella = {
+        enabled: true,
+        childRepos,
+        detectedFrom: 'clone-job',
+        detectedAt: new Date().toISOString(),
+      };
+
+      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      log(`Umbrella config saved: ${childRepos.length} repos`);
+    } catch (umbrellaError: any) {
+      log(`Warning: Failed to persist umbrella config: ${umbrellaError.message}`);
+      // Non-fatal: continue with job completion
+    }
+
     log(`Clone job completed: ${succeeded}/${repos.length} succeeded, ${failed} failed`);
     process.exit(failed > 0 ? 1 : 0);
 
@@ -238,6 +273,34 @@ async function main(): Promise<void> {
     console.error(`Worker error: ${error.message}`);
     process.exit(1);
   }
+}
+
+/**
+ * Extract team name from repo path
+ * e.g., "acme/inventory-fe" -> "inventory"
+ */
+function extractTeamFromPath(repoPath: string): string | undefined {
+  const parts = repoPath.split('/');
+
+  if (parts.length >= 2) {
+    // Pattern: org/team-suffix -> team
+    const repoName = parts[parts.length - 1];
+    // Remove common suffixes
+    const team = repoName
+      .replace(/-fe$/, '')
+      .replace(/-be$/, '')
+      .replace(/-api$/, '')
+      .replace(/-web$/, '')
+      .replace(/-mobile$/, '')
+      .replace(/-backend$/, '')
+      .replace(/-frontend$/, '')
+      .replace(/-service$/, '')
+      .replace(/-srv$/, '');
+
+    return team;
+  }
+
+  return undefined;
 }
 
 // Run worker

@@ -110,7 +110,7 @@
     "provider": "github",
     "includeStatus": true,
     "autoApplyLabels": true,
-    "activeProfile": "specweave-dev",
+    "defaultProfile": "specweave-dev",
     "settings": {
       "canUpsertInternalItems": true,
       "canUpdateExternalItems": true,

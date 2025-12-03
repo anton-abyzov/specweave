@@ -140,6 +140,10 @@ async function readKeyFiles(
 
 /**
  * Generate overview.md content
+ *
+ * Enhanced for umbrella projects (v0.31.0+):
+ * - Shows umbrella status and child repo count
+ * - Groups overview by teams
  */
 function generateOverview(
   projectPath: string,
@@ -151,6 +155,16 @@ function generateOverview(
 
   lines.push(`# ${projectName}`);
   lines.push('');
+
+  // ==================================================
+  // UMBRELLA PROJECT INDICATOR (v0.31.0+)
+  // ==================================================
+  if (discovery.umbrella?.isUmbrella) {
+    lines.push('> **Umbrella Project** - Multi-repository architecture');
+    lines.push(`> Detected via: ${discovery.umbrella.source}`);
+    lines.push(`> Child repositories: ${discovery.umbrella.childRepoCount}`);
+    lines.push('');
+  }
 
   // Extract description from README if available
   const readme = keyFiles.get(discovery.existingDocs.readme || '');
@@ -168,6 +182,9 @@ function generateOverview(
   lines.push(`- **Total Files**: ${discovery.codebaseStats.totalFiles.toLocaleString()}`);
   lines.push(`- **Estimated LOC**: ${discovery.codebaseStats.estimatedLOC.toLocaleString()}`);
   lines.push(`- **Analysis Tier**: ${discovery.tier}`);
+  if (discovery.umbrella?.isUmbrella) {
+    lines.push(`- **Project Type**: Umbrella (${discovery.umbrella.childRepoCount} repositories)`);
+  }
   lines.push('');
 
   // File breakdown
@@ -246,6 +263,9 @@ function generateOverview(
 
 /**
  * Generate tech-stack.md content
+ *
+ * Enhanced for umbrella projects (v0.31.0+):
+ * - Shows tech stack distribution per team
  */
 function generateTechStack(
   discovery: DiscoveryResult,
@@ -257,6 +277,53 @@ function generateTechStack(
   lines.push('');
   lines.push(`Detected from: ${discovery.techStack.detectedFrom.join(', ')}`);
   lines.push('');
+
+  // ==================================================
+  // UMBRELLA: Per-Team Tech Stack Distribution (v0.31.0+)
+  // ==================================================
+  if (discovery.umbrella?.isUmbrella && discovery.modules.length > 0) {
+    lines.push('## Tech Stack by Team');
+    lines.push('');
+    lines.push('> Distribution of technologies across umbrella child repositories');
+    lines.push('');
+
+    // Group modules by team prefix
+    const teamStacks = new Map<string, { frameworks: Set<string>; languages: Set<string>; count: number }>();
+
+    for (const module of discovery.modules) {
+      // Extract team from module name (e.g., "assetcare-fe" → "assetcare")
+      const teamMatch = module.name.match(/^([a-z0-9]+)-/i);
+      const team = teamMatch ? teamMatch[1] : 'other';
+
+      if (!teamStacks.has(team)) {
+        teamStacks.set(team, { frameworks: new Set(), languages: new Set(), count: 0 });
+      }
+
+      const teamData = teamStacks.get(team)!;
+      teamData.count++;
+
+      // Detect tech from module extensions
+      for (const [ext] of Object.entries(module.extensions)) {
+        if (['.ts', '.tsx', '.js', '.jsx'].includes(ext)) teamData.languages.add('TypeScript/JavaScript');
+        if (['.py'].includes(ext)) teamData.languages.add('Python');
+        if (['.go'].includes(ext)) teamData.languages.add('Go');
+        if (['.cs'].includes(ext)) teamData.languages.add('C#');
+        if (['.java'].includes(ext)) teamData.languages.add('Java');
+
+        if (['.tsx', '.jsx'].includes(ext)) teamData.frameworks.add('React');
+      }
+    }
+
+    // Output per-team table
+    lines.push('| Team | Repos | Languages | Frameworks |');
+    lines.push('|------|-------|-----------|------------|');
+    for (const [team, data] of teamStacks) {
+      const langs = [...data.languages].slice(0, 3).join(', ') || '-';
+      const frameworks = [...data.frameworks].slice(0, 3).join(', ') || '-';
+      lines.push(`| ${team} | ${data.count} | ${langs} | ${frameworks} |`);
+    }
+    lines.push('');
+  }
 
   // Languages
   if (discovery.techStack.languages.length > 0) {
@@ -350,6 +417,10 @@ function generateTechStack(
 
 /**
  * Generate modules-skeleton.md content
+ *
+ * Enhanced for umbrella projects (v0.31.0+):
+ * - Groups modules by team for umbrella projects
+ * - Shows team-level statistics
  */
 function generateModulesSkeleton(discovery: DiscoveryResult): string {
   const lines: string[] = [];
@@ -357,6 +428,13 @@ function generateModulesSkeleton(discovery: DiscoveryResult): string {
   lines.push('# Module Structure');
   lines.push('');
   lines.push(`Total modules: ${discovery.modules.length}`);
+
+  // ==================================================
+  // UMBRELLA: Group by Team (v0.31.0+)
+  // ==================================================
+  if (discovery.umbrella?.isUmbrella) {
+    lines.push(`Project type: **Umbrella** (${discovery.umbrella.childRepoCount} child repos)`);
+  }
   lines.push('');
 
   if (discovery.modules.length === 0) {
@@ -364,52 +442,98 @@ function generateModulesSkeleton(discovery: DiscoveryResult): string {
     return lines.join('\n');
   }
 
-  // Table of modules
-  lines.push('## Module Overview');
-  lines.push('');
-  lines.push('| Module | Path | Files | LOC | Tests | Docs |');
-  lines.push('|--------|------|-------|-----|-------|------|');
+  // For umbrella projects, group by team
+  if (discovery.umbrella?.isUmbrella && discovery.modules.length > 10) {
+    const teamModules = new Map<string, typeof discovery.modules>();
 
-  for (const module of discovery.modules) {
-    const hasTests = module.hasTests ? '✅' : '❌';
-    const hasDocs = module.hasReadme ? '✅' : '❌';
-    lines.push(`| ${module.name} | \`${module.path}\` | ${module.fileCount} | ${module.estimatedLOC.toLocaleString()} | ${hasTests} | ${hasDocs} |`);
-  }
-  lines.push('');
+    for (const module of discovery.modules) {
+      // Extract team from module name or path
+      const teamMatch = module.name.match(/^([a-z0-9]+)-/i) || module.path.match(/^([^/]+)\//);
+      const team = teamMatch ? teamMatch[1] : 'other';
 
-  // Detailed module sections
-  lines.push('## Module Details');
-  lines.push('');
-
-  for (const module of discovery.modules) {
-    lines.push(`### ${module.name}`);
-    lines.push('');
-    lines.push(`**Path**: \`${module.path}\``);
-    lines.push('');
-    lines.push(`- Files: ${module.fileCount}`);
-    lines.push(`- Estimated LOC: ${module.estimatedLOC.toLocaleString()}`);
-    lines.push(`- Has Tests: ${module.hasTests ? 'Yes' : 'No'}`);
-    lines.push(`- Has README: ${module.hasReadme ? 'Yes' : 'No'}`);
-
-    if (module.entryPoints.length > 0) {
-      lines.push(`- Entry Points: ${module.entryPoints.map(e => `\`${e}\``).join(', ')}`);
+      if (!teamModules.has(team)) {
+        teamModules.set(team, []);
+      }
+      teamModules.get(team)!.push(module);
     }
 
-    // File type breakdown
-    if (Object.keys(module.extensions).length > 0) {
-      const topExtensions = Object.entries(module.extensions)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([ext, count]) => `${ext} (${count})`)
-        .join(', ');
-      lines.push(`- File Types: ${topExtensions}`);
-    }
+    // Team summary table
+    lines.push('## Team Overview');
+    lines.push('');
+    lines.push('| Team | Repositories | Total Files | Total LOC |');
+    lines.push('|------|--------------|-------------|-----------|');
 
+    for (const [team, modules] of teamModules) {
+      const totalFiles = modules.reduce((sum, m) => sum + m.fileCount, 0);
+      const totalLOC = modules.reduce((sum, m) => sum + m.estimatedLOC, 0);
+      lines.push(`| ${team} | ${modules.length} | ${totalFiles.toLocaleString()} | ${totalLOC.toLocaleString()} |`);
+    }
     lines.push('');
-    lines.push('**Description**: *To be documented*');
+
+    // Detailed sections per team
+    for (const [team, modules] of teamModules) {
+      lines.push(`## ${team}`);
+      lines.push('');
+      lines.push(`${modules.length} repositories`);
+      lines.push('');
+      lines.push('| Repository | Files | LOC | Tests | Docs |');
+      lines.push('|------------|-------|-----|-------|------|');
+
+      for (const module of modules) {
+        const hasTests = module.hasTests ? '✅' : '❌';
+        const hasDocs = module.hasReadme ? '✅' : '❌';
+        lines.push(`| ${module.name} | ${module.fileCount} | ${module.estimatedLOC.toLocaleString()} | ${hasTests} | ${hasDocs} |`);
+      }
+      lines.push('');
+    }
+  } else {
+    // Standard flat module list for non-umbrella projects
+    lines.push('## Module Overview');
     lines.push('');
-    lines.push('---');
+    lines.push('| Module | Path | Files | LOC | Tests | Docs |');
+    lines.push('|--------|------|-------|-----|-------|------|');
+
+    for (const module of discovery.modules) {
+      const hasTests = module.hasTests ? '✅' : '❌';
+      const hasDocs = module.hasReadme ? '✅' : '❌';
+      lines.push(`| ${module.name} | \`${module.path}\` | ${module.fileCount} | ${module.estimatedLOC.toLocaleString()} | ${hasTests} | ${hasDocs} |`);
+    }
     lines.push('');
+
+    // Detailed module sections
+    lines.push('## Module Details');
+    lines.push('');
+
+    for (const module of discovery.modules) {
+      lines.push(`### ${module.name}`);
+      lines.push('');
+      lines.push(`**Path**: \`${module.path}\``);
+      lines.push('');
+      lines.push(`- Files: ${module.fileCount}`);
+      lines.push(`- Estimated LOC: ${module.estimatedLOC.toLocaleString()}`);
+      lines.push(`- Has Tests: ${module.hasTests ? 'Yes' : 'No'}`);
+      lines.push(`- Has README: ${module.hasReadme ? 'Yes' : 'No'}`);
+
+      if (module.entryPoints.length > 0) {
+        lines.push(`- Entry Points: ${module.entryPoints.map(e => `\`${e}\``).join(', ')}`);
+      }
+
+      // File type breakdown
+      if (Object.keys(module.extensions).length > 0) {
+        const topExtensions = Object.entries(module.extensions)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+          .map(([ext, count]) => `${ext} (${count})`)
+          .join(', ');
+        lines.push(`- File Types: ${topExtensions}`);
+      }
+
+      lines.push('');
+      lines.push('**Description**: *To be documented*');
+      lines.push('');
+      lines.push('---');
+      lines.push('');
+    }
   }
 
   lines.push(`*Generated by Living Docs Builder on ${new Date().toISOString().split('T')[0]}*`);

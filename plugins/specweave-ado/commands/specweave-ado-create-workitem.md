@@ -150,14 +150,14 @@ Claude: Checking ADO permissions...
 
         Resolving ADO profile...
         ✓ Using profile: ado-my-project (from increment)
-        ✓ Organization: nova-systems
+        ✓ Organization: acme-corp
         ✓ Project: My Project
 
         Creating work item...
         [Invokes ADO Manager Agent]
 
         ✅ Created ADO Epic #12345
-        URL: https://dev.azure.com/nova-systems/Nova%20X%20Sandbox/_workitems/edit/12345
+        URL: https://dev.azure.com/acme-corp/My%20Project/_workitems/edit/12345
 
 # If permission denied:
 Claude: Checking ADO permissions...

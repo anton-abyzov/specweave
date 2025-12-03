@@ -40,8 +40,8 @@ Multiple code paths were creating these folders with **inconsistent normalizatio
 ```typescript
 export function normalizeToProjectId(name: string): string {
   return name
-    .toLowerCase()                    // "My Project" → "my project sandbox"
-    .replace(/[^a-z0-9]+/g, '-')      // "my project sandbox" → "my-project"
+    .toLowerCase()                    // "My Project" → "my project"
+    .replace(/[^a-z0-9]+/g, '-')      // "my project" → "my-project"
     .replace(/-+/g, '-')              // Remove consecutive hyphens
     .replace(/^-|-$/g, '');           // Remove leading/trailing hyphens
 }
