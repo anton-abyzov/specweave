@@ -26,13 +26,14 @@ describe('PLANNING Status - Enum Definition', () => {
     expect(IncrementStatus.PLANNING).toBe('planning');
   });
 
-  it('should have 6 total statuses', () => {
+  it('should have 7 total statuses (including READY_FOR_REVIEW)', () => {
     const statuses = Object.values(IncrementStatus);
-    expect(statuses).toHaveLength(6);
+    expect(statuses).toHaveLength(7);
     expect(statuses).toContain('planning');
     expect(statuses).toContain('active');
     expect(statuses).toContain('backlog');
     expect(statuses).toContain('paused');
+    expect(statuses).toContain('ready_for_review');
     expect(statuses).toContain('completed');
     expect(statuses).toContain('abandoned');
   });
@@ -142,10 +143,11 @@ describe('PLANNING Status - WIP Limit Behavior', () => {
     expect(countsTowardWipLimit(IncrementStatus.ABANDONED)).toBe(false);
   });
 
-  it('should have exactly 2 statuses that count toward WIP', () => {
-    expect(WIP_COUNTED_STATUSES).toHaveLength(2);
+  it('should have exactly 3 statuses that count toward WIP (including READY_FOR_REVIEW)', () => {
+    expect(WIP_COUNTED_STATUSES).toHaveLength(3);
     expect(WIP_COUNTED_STATUSES).toContain(IncrementStatus.ACTIVE);
     expect(WIP_COUNTED_STATUSES).toContain(IncrementStatus.PAUSED);
+    expect(WIP_COUNTED_STATUSES).toContain(IncrementStatus.READY_FOR_REVIEW);
   });
 
   it('should NOT include PLANNING in WIP counted statuses', () => {
@@ -200,11 +202,12 @@ describe('PLANNING Status - Validation Functions', () => {
 });
 
 describe('PLANNING Status - Lifecycle Scenarios', () => {
-  it('should support happy path: BACKLOG → PLANNING → ACTIVE → COMPLETED', () => {
+  it('should support happy path: BACKLOG → PLANNING → ACTIVE → READY_FOR_REVIEW → COMPLETED', () => {
     expect(() => {
       validateTransition(IncrementStatus.BACKLOG, IncrementStatus.PLANNING);
       validateTransition(IncrementStatus.PLANNING, IncrementStatus.ACTIVE);
-      validateTransition(IncrementStatus.ACTIVE, IncrementStatus.COMPLETED);
+      validateTransition(IncrementStatus.ACTIVE, IncrementStatus.READY_FOR_REVIEW);
+      validateTransition(IncrementStatus.READY_FOR_REVIEW, IncrementStatus.COMPLETED);
     }).not.toThrow();
   });
 

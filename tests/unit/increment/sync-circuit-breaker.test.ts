@@ -157,13 +157,18 @@ describe('SyncCircuitBreaker', () => {
     });
 
     it('should close on success in half-open state', () => {
+      // Use fake timers before recording failures
+      vi.useFakeTimers();
+
       // Get to half-open
       breaker.recordFailure();
       breaker.recordFailure();
       breaker.recordFailure();
 
-      vi.useFakeTimers();
       vi.advanceTimersByTime(5 * 60 * 1000 + 1000);
+
+      // canSync() triggers the transition to half-open
+      expect(breaker.canSync()).toBe(true);
       expect(breaker.getState().state).toBe('half-open');
 
       // Success should close
@@ -174,13 +179,18 @@ describe('SyncCircuitBreaker', () => {
     });
 
     it('should reopen on failure in half-open state', () => {
+      // Use fake timers before recording failures
+      vi.useFakeTimers();
+
       // Get to half-open
       breaker.recordFailure();
       breaker.recordFailure();
       breaker.recordFailure();
 
-      vi.useFakeTimers();
       vi.advanceTimersByTime(5 * 60 * 1000 + 1000);
+
+      // canSync() triggers the transition to half-open
+      expect(breaker.canSync()).toBe(true);
       expect(breaker.getState().state).toBe('half-open');
 
       // Another failure should reopen
