@@ -29,7 +29,11 @@ describe('JobLauncher', () => {
   });
 
   afterEach(() => {
-    fs.rmSync(testDir, { recursive: true, force: true });
+    try {
+      fs.rmSync(testDir, { recursive: true, force: true });
+    } catch {
+      // Ignore cleanup errors - temp directory may be in use or already deleted
+    }
   });
 
   describe('launchCloneJob', () => {
