@@ -10,6 +10,18 @@
 import type { ExternalItem } from './external-importer.js';
 
 /**
+ * Task data for checkbox rendering (v0.30.3+)
+ */
+export interface TaskData {
+  /** Task ID (e.g., "T-001") */
+  id: string;
+  /** Task title/description */
+  title: string;
+  /** Task status - determines checkbox state */
+  status: 'pending' | 'in_progress' | 'completed' | 'done' | 'closed';
+}
+
+/**
  * User Story markdown data
  */
 export interface UserStoryMarkdownData {
@@ -20,6 +32,8 @@ export interface UserStoryMarkdownData {
   priority?: string;
   status: string;
   originBadge: string;
+  /** Tasks as checkbox items (v0.30.3+) */
+  tasks?: TaskData[];
   metadata: {
     externalId: string;
     externalUrl: string;
@@ -127,12 +141,23 @@ export class MarkdownGenerator {
       parts.push('');
     }
 
-    // Tasks
+    // Tasks (v0.30.3+: render as checkboxes if provided)
     parts.push('## Tasks');
     parts.push('');
-    parts.push('> **Note**: This User Story was imported from an external tool.');
-    parts.push('> Create tasks manually when ready to implement.');
-    parts.push('');
+    if (data.tasks && data.tasks.length > 0) {
+      // Render tasks as checkboxes
+      data.tasks.forEach((task) => {
+        const isCompleted = ['completed', 'done', 'closed'].includes(task.status);
+        const checkbox = isCompleted ? '[x]' : '[ ]';
+        parts.push(`- ${checkbox} **${task.id}**: ${task.title}`);
+      });
+      parts.push('');
+    } else {
+      // Placeholder when no tasks imported
+      parts.push('> **Note**: This User Story was imported from an external tool.');
+      parts.push('> Create an increment to implement this user story, then tasks will sync here.');
+      parts.push('');
+    }
 
     // Metadata (frontmatter-style at bottom)
     parts.push('---');

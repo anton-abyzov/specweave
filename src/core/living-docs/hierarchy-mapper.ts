@@ -1,14 +1,17 @@
 /**
- * SpecWeave Hierarchy Mapper (v5.0.0 - Unified Project Structure)
+ * SpecWeave Hierarchy Mapper (v5.1.0 - Per-Project Epics)
  *
  * Maps increments to unified hierarchy:
- * - Epic (EPIC-{id}) -> Cross-project strategic themes (_epics/)
- * - Feature (FS-XXX) -> {project}/FS-XXX/FEATURE.md (+ user stories)
- * - User Story (us-{id}) -> {project}/FS-XXX/us-{id}.md
- * - Task (T-{id}) -> increments/{id}/tasks.md
+ * - Epic (EP-XXX) -> {project}/_epics/EP-XXX/EPIC.md (PER-PROJECT, not root level!)
+ * - Feature (FS-XXX) -> {project}/{board}/FS-XXX/FEATURE.md (+ user stories)
+ * - User Story (us-{id}) -> {project}/{board}/FS-XXX/us-{id}.md
+ * - Task (T-{id}) -> Checkboxes in User Story description
  *
- * All features live directly under the project folder.
- * Archive: {project}/_archive/FS-XXX/
+ * CRITICAL (v0.30.3): Epics are PER-PROJECT, not at root level.
+ * Each project has its own _epics/ folder: {project}/_epics/
+ *
+ * All features live under board folders within projects.
+ * Archive: {project}/{board}/_archive/FS-XXX/
  *
  * Key Principles:
  * - NO HARDCODED PROJECT NAMES (backend, frontend are examples)
@@ -17,9 +20,10 @@
  * - Multi-project mode: multiple project folders
  * - Feature IDs assigned by creation date (FS-001, FS-002, etc.)
  * - NO DUPLICATE FEATURE IDS (enforced by FeatureIDManager)
+ * - EPICS ARE PER-PROJECT (v0.30.3+)
  *
  * @author SpecWeave Team
- * @version 5.0.0 (Unified Project Structure)
+ * @version 5.1.0 (Per-Project Epics)
  */
 
 import * as fs from '../../utils/fs-native.js';
@@ -45,11 +49,13 @@ export interface HierarchyConfig {
 /**
  * HierarchyMapper - Maps increments to unified project structure
  *
- * Structure (v5.0.0):
- * 1. Epic (EPIC-YYYY-QN-{name}) -> _epics/EPIC-{id}/EPIC.md
- * 2. Feature (FS-XXX) -> {project}/FS-XXX/FEATURE.md
- * 3. User Story (us-NNN-{name}) -> {project}/FS-XXX/us-{id}.md
- * 4. Task (T-NNN) -> increments/{id}/tasks.md
+ * Structure (v5.1.0 - Per-Project Epics):
+ * 1. Epic (EP-XXX) -> {project}/_epics/EP-XXX/EPIC.md (PER-PROJECT!)
+ * 2. Feature (FS-XXX) -> {project}/{board}/FS-XXX/FEATURE.md
+ * 3. User Story (us-NNN-{name}) -> {project}/{board}/FS-XXX/us-{id}.md
+ * 4. Task (T-NNN) -> Checkboxes in User Story description
+ *
+ * CRITICAL (v0.30.3): Epics are now stored per-project in {project}/_epics/
  */
 export class HierarchyMapper {
   private config: HierarchyConfig;
@@ -126,10 +132,29 @@ export class HierarchyMapper {
 
   /**
    * Check if an epic is archived
+   *
+   * CRITICAL (v0.30.3): Epics are per-project in {project}/_epics/_archive/
+   *
+   * @param epicId - Epic ID (e.g., "EP-086E")
+   * @param projectId - Optional project ID. If not provided, checks all projects.
    */
-  async isEpicArchived(epicId: string): Promise<boolean> {
-    const archivePath = path.join(this.config.specsBaseDir, '_epics', '_archive', epicId);
-    return await fs.pathExists(archivePath);
+  async isEpicArchived(epicId: string, projectId?: string): Promise<boolean> {
+    // If projectId provided, check only that project
+    if (projectId) {
+      const archivePath = path.join(this.config.specsBaseDir, projectId, '_epics', '_archive', epicId);
+      return await fs.pathExists(archivePath);
+    }
+
+    // Otherwise, check all projects
+    const projects = await this.getConfiguredProjects();
+    for (const project of projects) {
+      const archivePath = path.join(this.config.specsBaseDir, project, '_epics', '_archive', epicId);
+      if (await fs.pathExists(archivePath)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -802,38 +827,61 @@ export class HierarchyMapper {
   }
 
   /**
-   * Get all epic folders
+   * Get all epic folders across all projects
+   *
+   * CRITICAL (v0.30.3): Epics are per-project in {project}/_epics/
+   *
+   * @param projectId - Optional project ID. If provided, only returns epics from that project.
+   * @returns Array of epic folder names (e.g., ["EP-086E", "EP-087E"])
    */
-  async getAllEpicFolders(): Promise<string[]> {
-    const epicsDir = path.join(this.config.specsBaseDir, '_epics');
+  async getAllEpicFolders(projectId?: string): Promise<string[]> {
+    const epicFolders = new Set<string>();
+    const projects = projectId ? [projectId] : await this.getConfiguredProjects();
 
-    if (!fs.existsSync(epicsDir)) {
-      return [];
-    }
+    for (const project of projects) {
+      const epicsDir = path.join(this.config.specsBaseDir, project, '_epics');
 
-    try {
-      const folders = await fs.readdir(epicsDir);
-      const epicFolders: string[] = [];
-
-      for (const folder of folders) {
-        // Skip special files/folders
-        if (folder.startsWith('.') || folder.startsWith('_')) {
-          continue;
-        }
-
-        const folderPath = path.join(epicsDir, folder);
-        const stats = await fs.stat(folderPath);
-
-        if (stats.isDirectory()) {
-          epicFolders.push(folder);
-        }
+      if (!fs.existsSync(epicsDir)) {
+        continue;
       }
 
-      return epicFolders.sort();
-    } catch (error) {
-      console.warn(`   ⚠️  Failed to get epic folders: ${error}`);
-      return [];
+      try {
+        const folders = await fs.readdir(epicsDir);
+
+        for (const folder of folders) {
+          // Skip special files/folders
+          if (folder.startsWith('.') || folder.startsWith('_')) {
+            continue;
+          }
+
+          // Match EP-XXX or EP-XXXE pattern
+          if (!/^EP-\d{3,}E?$/.test(folder)) {
+            continue;
+          }
+
+          const folderPath = path.join(epicsDir, folder);
+          const stats = await fs.stat(folderPath);
+
+          if (stats.isDirectory()) {
+            epicFolders.add(folder);
+          }
+        }
+      } catch (error) {
+        console.warn(`   ⚠️  Failed to get epic folders from ${project}: ${error}`);
+      }
     }
+
+    return Array.from(epicFolders).sort();
+  }
+
+  /**
+   * Get the epics path for a specific project
+   *
+   * @param projectId - Project ID
+   * @returns Path to {project}/_epics/
+   */
+  getEpicsPathForProject(projectId: string): string {
+    return path.join(this.config.specsBaseDir, projectId, '_epics');
   }
 
   /**
