@@ -373,25 +373,48 @@ export class LivingDocsSync {
    * @returns Project path (may be hierarchical like "org/project")
    */
   private async resolveProjectPath(incrementId: string): Promise<string> {
-    // 1. Extract project name from spec.md
+    // 1. Extract project name from spec.md **Project**: field (explicit)
     const specProject = await this.extractProjectFromSpec(incrementId);
 
+    // 2. Check if multi-project mode is enabled
+    const multiProjectInfo = await this.detectMultiProjectMode();
+
     if (!specProject) {
-      // No project in spec.md, use default detection
+      // No project in spec.md
+      if (multiProjectInfo.isMultiProject && multiProjectInfo.projects.length > 0) {
+        // Multi-project mode: ASK user which project
+        this.logger.log(`   ⚠️  No **Project** field in spec.md and multi-project mode detected`);
+        return await this.askUserForProject(incrementId, multiProjectInfo.projects);
+      }
+      // Single project: use default detection
       return this.projectId;
     }
 
-    // 2. Normalize the project name for comparison
+    // 3. Normalize the project name for comparison
     const normalizedProject = specProject.toLowerCase().replace(/\s+/g, '-');
 
-    // 3. Scan existing specs folder for hierarchical matches
+    // 4. Scan existing specs folder for hierarchical matches
     const specsBase = path.join(this.projectRoot, '.specweave/docs/internal/specs');
 
     if (!existsSync(specsBase)) {
+      // No specs folder yet - use normalized project name
+      if (multiProjectInfo.isMultiProject) {
+        // Multi-project: validate project is in the list
+        const matchedProject = multiProjectInfo.projects.find(
+          p => p.id.toLowerCase() === normalizedProject ||
+               p.name.toLowerCase() === normalizedProject
+        );
+        if (matchedProject) {
+          return matchedProject.id;
+        }
+        // Project not found in config - ask user
+        this.logger.log(`   ⚠️  Project "${specProject}" not found in multi-project config`);
+        return await this.askUserForProject(incrementId, multiProjectInfo.projects);
+      }
       return normalizedProject;
     }
 
-    // Search for matching paths at all levels (org/project, project)
+    // 5. Search for matching paths at all levels (org/project, project)
     const foundPath = await this.findBestProjectMatch(specsBase, normalizedProject);
 
     if (foundPath) {
@@ -399,8 +422,173 @@ export class LivingDocsSync {
       return foundPath;
     }
 
-    // No match found, use flat project name
+    // 6. No match found in existing folders
+    if (multiProjectInfo.isMultiProject) {
+      // Multi-project: validate against config, ask user if not confident
+      const matchedProject = multiProjectInfo.projects.find(
+        p => p.id.toLowerCase() === normalizedProject ||
+             p.name.toLowerCase() === normalizedProject
+      );
+      if (matchedProject) {
+        return matchedProject.id;
+      }
+      // Ask user
+      this.logger.log(`   🤔 Not sure where to sync increment ${incrementId} in multi-project mode`);
+      return await this.askUserForProject(incrementId, multiProjectInfo.projects);
+    }
+
+    // Single project: use flat project name
     return normalizedProject;
+  }
+
+  /**
+   * Detect if multi-project mode is enabled
+   * Checks config.json for: umbrella.enabled, multiProject.enabled, or multiple board/area mappings
+   */
+  private async detectMultiProjectMode(): Promise<{
+    isMultiProject: boolean;
+    projects: Array<{ id: string; name: string; source: string }>;
+    detectionReason: string;
+  }> {
+    const configPath = path.join(this.projectRoot, '.specweave/config.json');
+
+    if (!existsSync(configPath)) {
+      return { isMultiProject: false, projects: [], detectionReason: 'no-config' };
+    }
+
+    try {
+      const config = await readJson(configPath);
+      const projects: Array<{ id: string; name: string; source: string }> = [];
+
+      // Check umbrella.enabled (multi-repo setup)
+      if (config.umbrella?.enabled && config.umbrella?.childRepos?.length > 0) {
+        for (const repo of config.umbrella.childRepos) {
+          if (typeof repo === 'string') {
+            projects.push({ id: repo, name: repo, source: 'umbrella' });
+          } else if (repo.name) {
+            projects.push({ id: repo.name, name: repo.name, source: 'umbrella' });
+          }
+        }
+        if (projects.length > 0) {
+          return { isMultiProject: true, projects, detectionReason: 'umbrella' };
+        }
+      }
+
+      // Check multiProject.enabled
+      if (config.multiProject?.enabled && config.multiProject?.projects) {
+        const configProjects = config.multiProject.projects;
+        for (const [id, project] of Object.entries(configProjects)) {
+          const p = project as { name?: string };
+          projects.push({ id, name: p.name || id, source: 'multiProject' });
+        }
+        if (projects.length > 0) {
+          return { isMultiProject: true, projects, detectionReason: 'multiProject' };
+        }
+      }
+
+      // Check ADO area path mapping
+      if (config.sync?.profiles) {
+        for (const [_profileName, profile] of Object.entries(config.sync.profiles)) {
+          const p = profile as { provider?: string; config?: { areaPathMapping?: { mappings?: Array<{ specweaveProject: string }> }; boardMapping?: { boards?: Array<{ specweaveProject: string }> } } };
+          if (p.provider === 'ado' && p.config?.areaPathMapping?.mappings?.length) {
+            for (const mapping of p.config.areaPathMapping.mappings) {
+              if (!projects.find(proj => proj.id === mapping.specweaveProject)) {
+                projects.push({
+                  id: mapping.specweaveProject,
+                  name: mapping.specweaveProject,
+                  source: 'ado-area-path'
+                });
+              }
+            }
+          }
+          // Check JIRA board mapping
+          if (p.provider === 'jira' && p.config?.boardMapping?.boards?.length) {
+            for (const board of p.config.boardMapping.boards) {
+              if (!projects.find(proj => proj.id === board.specweaveProject)) {
+                projects.push({
+                  id: board.specweaveProject,
+                  name: board.specweaveProject,
+                  source: 'jira-board'
+                });
+              }
+            }
+          }
+        }
+        if (projects.length > 1) {
+          return { isMultiProject: true, projects, detectionReason: 'sync-profiles' };
+        }
+      }
+
+      // Check existing folders in specs/
+      const specsBase = path.join(this.projectRoot, '.specweave/docs/internal/specs');
+      if (existsSync(specsBase)) {
+        try {
+          const entries = await fs.readdir(specsBase, { withFileTypes: true });
+          const folders = entries
+            .filter(e => e.isDirectory() && !e.name.startsWith('_'))
+            .map(e => e.name);
+          if (folders.length > 1) {
+            for (const folder of folders) {
+              if (!projects.find(p => p.id === folder)) {
+                projects.push({ id: folder, name: folder, source: 'existing-folder' });
+              }
+            }
+            return { isMultiProject: true, projects, detectionReason: 'multiple-folders' };
+          }
+        } catch {
+          // Ignore read errors
+        }
+      }
+
+      return { isMultiProject: false, projects, detectionReason: 'single-project' };
+    } catch {
+      return { isMultiProject: false, projects: [], detectionReason: 'config-error' };
+    }
+  }
+
+  /**
+   * Ask user to select a project when sync is unsure
+   */
+  private async askUserForProject(
+    incrementId: string,
+    candidates: Array<{ id: string; name: string; source: string }>
+  ): Promise<string> {
+    // Try to import inquirer for interactive prompts
+    try {
+      const { select, input } = await import('@inquirer/prompts');
+
+      const choices = candidates.map(c => ({
+        name: `${c.name} (${c.source})`,
+        value: c.id
+      }));
+
+      choices.push({
+        name: 'Create new project folder...',
+        value: '__new__'
+      });
+
+      this.logger.log('');
+      this.logger.log(`   🤔 Which project should increment ${incrementId} sync to?`);
+
+      const selected = await select({
+        message: 'Select project:',
+        choices
+      });
+
+      if (selected === '__new__') {
+        const newProject = await input({
+          message: 'Enter new project folder name:',
+          validate: (v: string) => /^[a-z0-9-]+$/.test(v) || 'Must be lowercase kebab-case (e.g., my-project)'
+        });
+        return newProject;
+      }
+
+      return selected;
+    } catch {
+      // inquirer not available or user cancelled - use first candidate or default
+      this.logger.log(`   ⚠️  Could not prompt for project selection, using first candidate: ${candidates[0]?.id || this.projectId}`);
+      return candidates[0]?.id || this.projectId;
+    }
   }
 
   /**

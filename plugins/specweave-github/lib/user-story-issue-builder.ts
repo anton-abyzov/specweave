@@ -525,11 +525,16 @@ export class UserStoryIssueBuilder {
     sections.push('');
 
     // Generate proper GitHub blob URLs
+    // v5.0.0+: Features live in project folders, NOT _features
     if (this.repoOwner && this.repoName) {
       const baseUrl = `https://github.com/${this.repoOwner}/${this.repoName}/blob/${this.branch}`;
 
+      // Extract project from user story path: specs/{project}/FS-XXX/us-*.md
+      const pathMatch = this.userStoryPath.match(/specs\/([^/]+)\/FS-\d+\//);
+      const projectFolder = pathMatch ? pathMatch[1] : 'default';
+
       // Feature Spec link
-      sections.push(`- **Feature Spec**: [${this.featureId}](${baseUrl}/.specweave/docs/internal/specs/_features/${this.featureId}/FEATURE.md)`);
+      sections.push(`- **Feature Spec**: [${this.featureId}](${baseUrl}/.specweave/docs/internal/specs/${projectFolder}/${this.featureId}/FEATURE.md)`);
 
       // User Story File link (relative to project root)
       const relativeUSPath = path.relative(this.projectRoot, this.userStoryPath);
@@ -543,7 +548,10 @@ export class UserStoryIssueBuilder {
       }
     } else {
       // Fallback to relative links if repo info not provided
-      sections.push(`- **Feature Spec**: [${this.featureId}](../.specweave/docs/internal/specs/_features/${this.featureId}/FEATURE.md)`);
+      // v5.0.0+: Features live in project folders, NOT _features
+      const pathMatch = this.userStoryPath.match(/specs\/([^/]+)\/FS-\d+\//);
+      const projectFolder = pathMatch ? pathMatch[1] : 'default';
+      sections.push(`- **Feature Spec**: [${this.featureId}](../.specweave/docs/internal/specs/${projectFolder}/${this.featureId}/FEATURE.md)`);
       sections.push(`- **User Story File**: [${path.basename(this.userStoryPath)}](${this.userStoryPath})`);
     }
 

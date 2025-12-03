@@ -102,16 +102,22 @@ await syncSpecs(args);
 ```
 
 **This will**:
-1. Auto-generate feature ID for greenfield increments (FS-040, FS-041, etc.)
-2. **Auto-detect project folder** from:
-   - Git remote (GitHub repo name)
-   - Sync configuration (JIRA/ADO project)
-   - Falls back to "default" if not detected
+1. **Derive feature ID from increment number** (e.g., 0040 → FS-040, 0002 → FS-002)
+2. **Smart project matching** from (priority order):
+   - `**Project**:` field in spec.md (explicit)
+   - `multiProject.activeProject` in config.json
+   - ADO area path / JIRA board mapping
+   - Git remote (repo name)
+   - **ASK USER if unsure** (multi-project mode)
 3. Parse spec.md for user stories and acceptance criteria
 4. Create living docs structure:
-   - `.specweave/docs/internal/specs/_features/FS-XXX/FEATURE.md`
-   - `.specweave/docs/internal/specs/{project}/FS-XXX/README.md`
+   - `.specweave/docs/internal/specs/{project}/FS-XXX/FEATURE.md`
    - `.specweave/docs/internal/specs/{project}/FS-XXX/us-*.md`
+
+**CRITICAL**: Feature ID is DERIVED from increment number (ADR-0187)
+- Increment 0002-user-authentication → FS-002
+- Increment 0040-some-feature → FS-040
+- NO date-based patterns like FS-YY-MM-DD-name
 
 ---
 
@@ -169,37 +175,39 @@ Title: {title from spec.md}
 {/if}
 
 ───────────────────────────────────────────────────────
-📂 FILE STRUCTURE
+📂 FILE STRUCTURE (v5.0.0+)
 ───────────────────────────────────────────────────────
 
-**Project folder is auto-detected** from:
-- Git remote (e.g., `sw-qr-menu` for `github.com/user/sw-qr-menu.git`)
-- Sync config (JIRA project key or ADO project name)
-- Falls back to "default" if not detected
+**NO _features folder** - Features live directly in project folders!
+
+**Project folder detection** (priority order):
+1. `**Project**:` field in spec.md (explicit)
+2. `multiProject.activeProject` in config.json
+3. ADO area path mapping / JIRA board mapping
+4. Git remote (repo name)
+5. **ASK USER if multi-project mode and unsure**
 
 .specweave/docs/internal/specs/
-├── _epics/                     {if epic created}
-│   └── {EPIC-ID}/
+├── {project}/                  ← Features + stories together
+│   └── FS-XXX/                 ← Feature ID derived from increment (0002 → FS-002)
+│       ├── FEATURE.md          ← Feature overview
+│       ├── us-001-{title}.md   ← User story 1
+│       ├── us-002-{title}.md   ← User story 2
+│       └── ...
+├── _epics/                     ← Optional (SAFe/large orgs only)
+│   └── EP-XXX/
 │       └── EPIC.md
-├── _features/
-│   └── {FS-ID}/
-│       └── FEATURE.md          ← Cross-project feature
-└── {project}/                  ← Per-project stories (auto-detected!)
-    └── {FS-ID}/
-        ├── README.md            ← Project context
-        ├── us-001-{title}.md    ← User story 1
-        ├── us-002-{title}.md    ← User story 2
-        └── ...
+└── _archive/                   ← Archived features
+    └── {project}/FS-XXX/
 
 ───────────────────────────────────────────────────────
 🎯 WHAT THIS SYNC DID
 ───────────────────────────────────────────────────────
 
 ✅ Parsed increment spec.md
-✅ Detected Epic mapping (if applicable)
-✅ Detected Feature mapping (FS-YY-MM-DD pattern)
-✅ Classified content by project
-✅ Generated hierarchical structure
+✅ Derived Feature ID from increment number (e.g., 0002 → FS-002)
+✅ Detected project folder (or asked user if unsure)
+✅ Generated hierarchical structure in {project}/FS-XXX/
 ✅ Created bidirectional links (if tasks.md exists)
 ✅ Preserved external tool links (GitHub/Jira/ADO)
 
@@ -306,14 +314,14 @@ Output:
 🔍 DRY RUN MODE - No files will be modified
 
 Would create/update:
-  • Epic: _epics/EPIC-2025-Q1/EPIC.md
-  • Feature: _features/FS-25-11-14/FEATURE.md
-  • Project context: backend/FS-25-11-14/README.md
-  • User story: backend/FS-25-11-14/us-001-api-sync.md
-  • User story: backend/FS-25-11-14/us-002-status-mapping.md
+  • Feature: specweave/FS-031/FEATURE.md
+  • User story: specweave/FS-031/us-001-api-sync.md
+  • User story: specweave/FS-031/us-002-status-mapping.md
   • Tasks.md: Would add 5 user story links
 
-Total: 6 files would be affected
+Total: 4 files would be affected
+
+Note: Feature ID FS-031 derived from increment number 0031
 ```
 
 ### --force
@@ -334,13 +342,14 @@ User: /specweave:sync-specs
 Output:
 🎯 Target increment: 0031-external-tool-status-sync
 📁 Increment path: .specweave/increments/0031-external-tool-status-sync
-🔄 Mode: Specs-only sync (Universal Hierarchy)
+🔄 Mode: Specs-only sync
 
 Processing...
 ✅ Distribution successful!
    📊 Total stories: 7
    📁 Total files created: 10
-   🎯 Feature ID: FS-25-11-14-external-tool-status-sync
+   🎯 Feature ID: FS-031 (derived from increment 0031)
+   📁 Project folder: specweave/FS-031/
 ```
 
 ### Example 2: Sync Specific Increment
@@ -366,8 +375,8 @@ Output:
 🔍 DRY RUN MODE - No files will be modified
 
 Would sync increment: 0031-external-tool-status-sync
-Would create feature: FS-25-11-14-external-tool-status-sync
-Would affect 2 projects: backend, frontend
+Would create feature: FS-031 (derived from increment 0031)
+Would use project folder: specweave/FS-031/
 Would create 7 user stories
 Would update tasks.md with bidirectional links
 

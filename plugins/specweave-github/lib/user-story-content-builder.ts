@@ -123,8 +123,12 @@ export class UserStoryContentBuilder {
     const repo = githubRepo || await this.detectGitHubRepo();
 
     // Header with metadata
+    // v5.0.0+: Features live in project folders, NOT _features
+    // Extract project from path: specs/{project}/FS-XXX/us-*.md
     if (repo) {
-      body += `**Feature**: [${content.featureId}](https://github.com/${repo}/tree/develop/.specweave/docs/internal/specs/_features/${content.featureId})\n`;
+      const pathMatch = this.userStoryPath.match(/specs\/([^/]+)\/FS-\d+\//);
+      const projectFolder = pathMatch ? pathMatch[1] : 'default';
+      body += `**Feature**: [${content.featureId}](https://github.com/${repo}/tree/develop/.specweave/docs/internal/specs/${projectFolder}/${content.featureId})\n`;
     } else {
       body += `**Feature**: ${content.featureId}\n`;
     }
