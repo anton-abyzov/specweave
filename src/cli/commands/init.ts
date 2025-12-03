@@ -495,13 +495,19 @@ export async function initCommand(
       const gitHubRemote = detectGitHubRemote(targetDir);
       const repoResult = await setupRepositoryHosting({ targetDir, isCI, gitHubRemote, language });
 
+      // Track background job IDs for living docs dependencies
+      const pendingJobIds: string[] = [];
+
       // ADO Repository cloning (for multi-repo setups)
       if (repoResult.adoProjectSelection && repoResult.adoClonePatternResult) {
-        await triggerAdoRepoCloning(
+        const cloneJobId = await triggerAdoRepoCloning(
           targetDir,
           repoResult.adoProjectSelection,
           repoResult.adoClonePatternResult
         );
+        if (cloneJobId) {
+          pendingJobIds.push(cloneJobId);
+        }
       }
 
       // Issue tracker setup
@@ -521,6 +527,10 @@ export async function initCommand(
             // Background import started - job will complete asynchronously
             console.log(chalk.cyan('\n🚀 Import running in background'));
             console.log(chalk.gray(`   Check progress: /specweave:jobs`));
+            // Track job ID for living docs dependencies
+            if ('jobId' in importResult && importResult.jobId) {
+              pendingJobIds.push(importResult.jobId);
+            }
           } else if ('totalCount' in importResult && importResult.totalCount > 0) {
             // Sync import completed
             console.log(chalk.green('\n✅ Imported ' + importResult.totalCount + ' items from ' + importResult.platforms.join(', ')));
@@ -541,19 +551,16 @@ export async function initCommand(
             language,
             isCi: isCI,
             skipLivingDocs: options.noLivingDocs,
+            pendingJobIds, // Pass pending job IDs to treat as "will be brownfield"
           });
 
           // Only launch background job for brownfield projects that want it
           if (preflightResult?.shouldLaunch && preflightResult.isBrownfield) {
-            // Collect dependency job IDs (clone and import jobs if any)
-            const dependsOn: string[] = [];
-            // Note: Import job ID would be collected from promptAndRunExternalImport result
-            // For now, living docs job will check for any running clone/import jobs
-
+            // Use collected job IDs as dependencies - living docs will wait for them
             const launchResult = await launchLivingDocsJob({
               projectPath: targetDir,
               userInputs: preflightResult.userInputs,
-              dependsOn,
+              dependsOn: pendingJobIds, // Living docs waits for clone/import to complete
             });
 
             displayJobScheduled(launchResult.job.id, preflightResult.estimatedDuration, language);

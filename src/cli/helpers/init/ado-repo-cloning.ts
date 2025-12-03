@@ -91,11 +91,11 @@ export async function triggerAdoRepoCloning(
   projectPath: string,
   adoProjectSelection: AdoProjectSelection,
   clonePattern: ClonePatternResult
-): Promise<void> {
+): Promise<string | undefined> {
   // Skip if user chose to skip cloning
   if (clonePattern.strategy === 'skip') {
     console.log(chalk.gray('\n   Skipping repository cloning (can configure later with /specweave-ado:clone-repos)\n'));
-    return;
+    return undefined;
   }
 
   const { org, pat, projects } = adoProjectSelection;
@@ -190,4 +190,7 @@ export async function triggerAdoRepoCloning(
     console.log(chalk.yellow('   ⚠️ Running in foreground (clone worker not found)'));
     console.log(chalk.gray('   Init will block until cloning completes.\n'));
   }
+
+  // Return job ID for dependency tracking
+  return result.job.id;
 }

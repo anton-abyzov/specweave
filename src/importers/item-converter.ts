@@ -15,7 +15,7 @@ import { createExternalMetadata } from '../core/types/origin-metadata.js';
 import { DuplicateDetector } from './duplicate-detector.js';
 import type { ExternalContainerContext } from '../core/types/increment-metadata.js';
 import { getTwoLevelProjectPath, normalizeToProjectId } from '../utils/project-id-generator.js';
-import { MarkdownGenerator } from './markdown-generator.js';
+import { MarkdownGenerator, type TaskData } from './markdown-generator.js';
 import { Logger, consoleLogger } from '../utils/logger.js';
 
 /**
@@ -218,8 +218,9 @@ export class ItemConverter {
    * @param item - External item to convert
    * @param usId - User Story ID number
    * @param featureId - Optional feature ID for folder organization
+   * @param childTasks - Optional array of child Task items (v0.30.3: rendered as checkboxes)
    */
-  convertItem(item: ExternalItem, usId: number, featureId?: string): ConvertedUserStory {
+  convertItem(item: ExternalItem, usId: number, featureId?: string, childTasks?: ExternalItem[]): ConvertedUserStory {
     // Generate US-ID with E suffix
     const id = `US-${String(usId).padStart(3, '0')}E`;
 
@@ -232,6 +233,19 @@ export class ItemConverter {
     // Generate origin badge
     const originBadge = this.markdownGen.generateOriginBadge(item);
 
+    // CRITICAL FIX (v0.30.3): Convert child Tasks to TaskData for checkbox rendering
+    const tasks: TaskData[] = (childTasks || []).map((task, idx) => {
+      // Map ADO status to TaskData status
+      const taskStatus = task.status === 'closed' || task.status === 'completed'
+        ? 'completed'
+        : 'pending';
+      return {
+        id: `T-${String(idx + 1).padStart(3, '0')}`,
+        title: task.title,
+        status: taskStatus as TaskData['status']
+      };
+    });
+
     // Generate markdown content for living docs
     // CRITICAL (2025-12-01): Include parent info for future re-import parent change detection
     const markdown = this.markdownGen.generateUserStoryMarkdown({
@@ -242,6 +256,7 @@ export class ItemConverter {
       priority: item.priority,
       status,
       originBadge,
+      tasks: tasks.length > 0 ? tasks : undefined,
       metadata: {
         externalId: item.id,
         externalUrl: item.url,
@@ -340,6 +355,21 @@ export class ItemConverter {
     // Group items by source (for multi-repo) or treat as single group
     const itemGroups = this.groupItemsByFeature(items);
 
+    // CRITICAL FIX (v0.30.3): Collect ADO Tasks and map to parent User Stories
+    // Tasks should be checkboxes in US description, NOT separate files
+    const tasksByParentId = new Map<string, ExternalItem[]>();
+    for (const item of items) {
+      if (item.adoWorkItemType?.toLowerCase() === 'task' && item.parentId) {
+        if (!tasksByParentId.has(item.parentId)) {
+          tasksByParentId.set(item.parentId, []);
+        }
+        tasksByParentId.get(item.parentId)!.push(item);
+      }
+    }
+    if (tasksByParentId.size > 0) {
+      moduleLogger.debug(`   ✅ Collected ${tasksByParentId.size} parent items with Tasks (will render as checkboxes)`);
+    }
+
     // DIAGNOSTIC: Log grouping results
     moduleLogger.debug(`   📁 Grouped into ${itemGroups.size} groups:`);
     for (const [groupKey, groupItems] of itemGroups) {
@@ -361,6 +391,13 @@ export class ItemConverter {
       // Convert each item in the group
       for (let i = 0; i < groupItems.length; i++) {
         const item = groupItems[i];
+
+        // CRITICAL FIX (v0.30.3): Skip ADO Task work items - they become checkboxes in parent US
+        if (item.adoWorkItemType?.toLowerCase() === 'task') {
+          moduleLogger.debug(`   ⏭️ Skipping Task "${item.title.slice(0, 40)}..." (will be checkbox in parent US)`);
+          skippedCount++;
+          continue;
+        }
 
         // Check for duplicates if duplicate detection is enabled
         if (this.duplicateDetector) {
@@ -391,7 +428,10 @@ export class ItemConverter {
 
         const usId = startingId + (converted.length);
 
-        const userStory = this.convertItem(item, usId, featureId);
+        // CRITICAL FIX (v0.30.3): Get child Tasks for this item
+        const childTasks = tasksByParentId.get(item.id) || [];
+
+        const userStory = this.convertItem(item, usId, featureId, childTasks);
         converted.push(userStory);
 
         // Ensure directory exists for feature folders
@@ -816,11 +856,15 @@ export class ItemConverter {
     fs.mkdirSync(featurePath, { recursive: true });
 
     // Check if this is a feature-level item or orphan
+    // CRITICAL FIX (v0.30.3): Also handle epic groups - they need proper titles
     const isAdoFeatureGroup = groupKey.startsWith('feature:');
+    const isEpicGroup = groupKey.startsWith('epic:');
     const isOrphanGroup = groupKey.startsWith('orphan:');
     const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
     const adoWitType = firstItem.adoWorkItemType?.toLowerCase();
-    const isAdoFeatureLevelItem = isAdoFeatureGroup &&
+    // CRITICAL FIX (v0.30.3): Include epic groups in feature-level item check
+    // Epic groups create feature folders for their user stories, and should use the epic's title
+    const isAdoFeatureLevelItem = (isAdoFeatureGroup || isEpicGroup) &&
       firstItem.platform === 'ado' &&
       featureLevelTypes.has(adoWitType || firstItem.type);
 
@@ -886,8 +930,7 @@ export class ItemConverter {
       ? `[${parentEpicId}](../../_epics/${parentEpicId}/EPIC.md)`
       : '';
 
-    // Determine if this is an epic group (feature created for epic's user stories)
-    const isEpicGroup = groupKey.startsWith('epic:') || groupKey.startsWith('feature-for-epic:');
+    // NOTE: isEpicGroup already defined above (line ~861) - no need to redeclare
 
     const featureContent = `---
 id: ${featureId}
