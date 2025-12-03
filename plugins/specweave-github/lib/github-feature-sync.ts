@@ -277,10 +277,22 @@ export class GitHubFeatureSync {
    * Find Feature folder in specs directory
    */
   private async findFeatureFolder(featureId: string): Promise<string | null> {
-    // Check _features folder first
-    const featuresFolder = path.join(this.specsDir, '_features', featureId);
-    if (existsSync(featuresFolder)) {
-      return featuresFolder;
+    // v5.0.0+: NO _features folder - features live in project folders
+    // Search all project folders for the feature
+    const projectFolders = await this.findProjectFolders();
+
+    for (const projectFolder of projectFolders) {
+      const featureFolder = path.join(projectFolder, featureId);
+      if (existsSync(featureFolder) && existsSync(path.join(featureFolder, 'FEATURE.md'))) {
+        return featureFolder;
+      }
+    }
+
+    // Legacy fallback: Check _features folder (for brownfield migration)
+    const legacyFolder = path.join(this.specsDir, '_features', featureId);
+    if (existsSync(legacyFolder)) {
+      console.log(`   ⚠️  Found feature in legacy _features folder - consider migrating to project folder`);
+      return legacyFolder;
     }
 
     return null;

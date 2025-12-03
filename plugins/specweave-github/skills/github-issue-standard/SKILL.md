@@ -70,11 +70,13 @@ Every GitHub issue MUST include:
    - Use GitHub task checkbox format
    - Example: `- [x] [T-008: Title](https://github.com/owner/repo/tree/develop/.specweave/increments/0031/tasks.md#t-008-title)`
 
-3. **Working GitHub URLs**
-   - Feature links: `https://github.com/owner/repo/tree/develop/.specweave/docs/internal/specs/_features/FS-031`
-   - User story links: `https://github.com/owner/repo/tree/develop/.specweave/docs/internal/specs/default/FS-031/us-004-*.md`
+3. **Working GitHub URLs** (v5.0.0+ - NO _features folder)
+   - Feature links: `https://github.com/owner/repo/tree/develop/.specweave/docs/internal/specs/{project}/FS-031`
+   - User story links: `https://github.com/owner/repo/tree/develop/.specweave/docs/internal/specs/{project}/FS-031/us-004-*.md`
    - Task links: `https://github.com/owner/repo/tree/develop/.specweave/increments/0031/tasks.md#task-anchor`
    - Increment links: `https://github.com/owner/repo/tree/develop/.specweave/increments/0031`
+
+   **Note**: Feature ID is DERIVED from increment (0031 → FS-031)
 
 4. **Extracted Priority**
    - Extract from ACs (highest priority wins: P1 > P2 > P3)
@@ -87,7 +89,7 @@ Every GitHub issue MUST include:
 
 ### ❌ Never Use
 
-- ❌ Relative paths (`../../_features/FS-031`)
+- ❌ Relative paths (`../../{project}/FS-031`)
 - ❌ Undefined values (`**Priority**: undefined`)
 - ❌ Project field in metadata
 - ❌ Plain bullet points for ACs (must be checkboxes)
@@ -112,8 +114,8 @@ private async detectGitHubRepo(): Promise<string | null>
 // 3. Extract priority from ACs
 private extractPriorityFromACs(criteria: AcceptanceCriterion[]): string | null
 
-// 4. Generate GitHub URLs (not relative)
-const featureUrl = `https://github.com/${repo}/tree/develop/.specweave/docs/internal/specs/_features/${featureId}`;
+// 4. Generate GitHub URLs (not relative) - v5.0.0+: No _features folder
+const featureUrl = `https://github.com/${repo}/tree/develop/.specweave/docs/internal/specs/${project}/${featureId}`;
 
 // 5. Convert task links to GitHub URLs
 if (repo && taskLink.startsWith('../../')) {
@@ -125,7 +127,7 @@ if (repo && taskLink.startsWith('../../')) {
 ### Template
 
 ```markdown
-**Feature**: [FS-031](https://github.com/owner/repo/tree/develop/.specweave/docs/internal/specs/_features/FS-031)
+**Feature**: [FS-031](https://github.com/owner/repo/tree/develop/.specweave/docs/internal/specs/{project}/FS-031)
 **Status**: complete
 **Priority**: P1
 
@@ -137,7 +139,7 @@ if (repo && taskLink.startsWith('../../')) {
 **I want** feature
 **So that** benefit
 
-📄 View full story: [`us-004-name.md`](https://github.com/owner/repo/tree/develop/.specweave/docs/internal/specs/default/_archive/FS-031/us-004-name.md)
+📄 View full story: [`us-004-name.md`](https://github.com/owner/repo/tree/develop/.specweave/docs/internal/specs/{project}/FS-031/us-004-name.md)
 
 ---
 
