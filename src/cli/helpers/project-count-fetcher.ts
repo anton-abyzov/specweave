@@ -216,12 +216,53 @@ async function getAdoProjectCount(
 
       if (!response.ok) {
         const errorBody = await response.text().catch(() => 'No error body');
+        const looksLikeHtml = errorBody.trim().startsWith('<!DOCTYPE') ||
+                              errorBody.trim().startsWith('<html');
+
+        if (looksLikeHtml) {
+          throw new Error(
+            `Azure DevOps returned an error page (HTTP ${response.status}).\n` +
+            `This usually indicates an authentication or configuration issue.\n\n` +
+            `Possible causes:\n` +
+            `• Invalid or expired Personal Access Token (PAT)\n` +
+            `• Incorrect organization name "${organization}"\n` +
+            `• Corporate firewall or proxy intercepting the request\n` +
+            `• SSO/authentication redirect (try accessing Azure DevOps in browser first)`
+          );
+        }
+
         throw new Error(
-          `Azure DevOps API error: ${response.status} ${response.statusText}. ${errorBody}`
+          `Azure DevOps API error: ${response.status} ${response.statusText}. ${errorBody.substring(0, 200)}`
         );
       }
 
-      const data = (await response.json()) as { count: number };
+      // Parse JSON response safely
+      const responseText = await response.text();
+      const looksLikeHtml = responseText.trim().startsWith('<!DOCTYPE') ||
+                            responseText.trim().startsWith('<html');
+
+      if (looksLikeHtml) {
+        throw new Error(
+          `Azure DevOps returned HTML instead of JSON.\n` +
+          `This usually indicates an authentication or configuration issue.\n\n` +
+          `Possible causes:\n` +
+          `• Invalid or expired Personal Access Token (PAT)\n` +
+          `• Incorrect organization name "${organization}"\n` +
+          `• Corporate firewall or proxy intercepting the request\n` +
+          `• SSO/authentication redirect`
+        );
+      }
+
+      let data: { count: number };
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error(
+          `Azure DevOps returned invalid JSON.\n` +
+          `Response preview: ${responseText.substring(0, 200)}${responseText.length > 200 ? '...' : ''}`
+        );
+      }
+
       return {
         total: data.count,
         accessible: data.count

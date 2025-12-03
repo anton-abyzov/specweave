@@ -13,6 +13,62 @@ import { getAzureDevOpsAuth } from '../../../utils/auth-helpers.js';
 import { parseEnvFile, readEnvFile } from '../../../utils/env-file.js';
 
 /**
+ * Safely parse JSON response with HTML detection
+ *
+ * Azure DevOps may return HTML error pages instead of JSON when:
+ * - PAT is invalid/expired
+ * - Organization name is wrong
+ * - Corporate proxy/firewall intercepts the request
+ * - SSO redirect occurs
+ *
+ * @param response - Fetch response object
+ * @param context - Context string for error messages (e.g., "Azure DevOps")
+ * @returns Parsed JSON data
+ * @throws Error with helpful message if response is not valid JSON
+ */
+async function safeParseJsonResponse<T>(response: Response, context: string): Promise<T> {
+  const contentType = response.headers.get('content-type') || '';
+  const responseText = await response.text();
+
+  // Check if response looks like HTML
+  const looksLikeHtml = responseText.trim().startsWith('<!DOCTYPE') ||
+                        responseText.trim().startsWith('<html') ||
+                        responseText.trim().startsWith('<HTML') ||
+                        !contentType.includes('application/json');
+
+  if (looksLikeHtml && responseText.includes('<')) {
+    // Build helpful error message
+    const possibleCauses = [
+      'Invalid or expired Personal Access Token (PAT)',
+      'Incorrect organization name',
+      'Corporate firewall or proxy intercepting the request',
+      'SSO/authentication redirect (try accessing Azure DevOps in browser first)',
+      'Network connectivity issues'
+    ];
+
+    throw new Error(
+      `${context} returned HTML instead of JSON.\n` +
+      `   This usually indicates an authentication or configuration issue.\n` +
+      `   \n` +
+      `   Possible causes:\n` +
+      possibleCauses.map(cause => `   • ${cause}`).join('\n')
+    );
+  }
+
+  // Try to parse as JSON
+  try {
+    return JSON.parse(responseText) as T;
+  } catch (parseError) {
+    // JSON parse failed - provide helpful message
+    const preview = responseText.substring(0, 100);
+    throw new Error(
+      `${context} returned invalid JSON.\n` +
+      `   Response preview: ${preview}${responseText.length > 100 ? '...' : ''}`
+    );
+  }
+}
+
+/**
  * Options for repository setup
  */
 export interface RepositorySetupOptions {
@@ -527,10 +583,32 @@ async function fetchAdoProjects(
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch projects: ${response.status}`);
+    // Read response body to check for HTML error pages
+    const errorBody = await response.text();
+    const looksLikeHtml = errorBody.trim().startsWith('<!DOCTYPE') || errorBody.trim().startsWith('<html');
+
+    if (looksLikeHtml) {
+      throw new Error(
+        `Azure DevOps returned an error page (HTTP ${response.status}).\n` +
+        `   This usually indicates an authentication or configuration issue.\n` +
+        `   \n` +
+        `   Possible causes:\n` +
+        `   • Invalid or expired Personal Access Token (PAT)\n` +
+        `   • Incorrect organization name "${org}"\n` +
+        `   • Corporate firewall or proxy intercepting the request\n` +
+        `   • SSO/authentication redirect (try accessing Azure DevOps in browser first)`
+      );
+    }
+
+    throw new Error(`Failed to fetch projects: ${response.status} - ${errorBody.substring(0, 200)}`);
   }
 
-  const data: { value?: Array<{ name: string; id: string }> } = await response.json() as { value?: Array<{ name: string; id: string }> };
+  // Use safe JSON parser to detect HTML responses even on 200 OK
+  const data = await safeParseJsonResponse<{ value?: Array<{ name: string; id: string }> }>(
+    response,
+    'Azure DevOps'
+  );
+
   return (data.value || []).map((p) => ({ name: p.name, id: p.id }));
 }
 
