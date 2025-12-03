@@ -38,6 +38,7 @@ program
   .option('-l, --language <lang>', 'Language for generated content (en, ru, es, zh, de, fr, ja, ko, pt)')
   .option('-f, --force', 'Force fresh start (non-interactive, removes existing .specweave)', false)
   .option('--force-refresh', 'Force marketplace refresh (skip cache, always pull latest)', false)
+  .option('--no-living-docs', 'Skip living docs builder setup')
   .action(async (projectName, options) => {
     const { initCommand } = await import('../dist/src/cli/commands/init.js');
     await initCommand(projectName, options);

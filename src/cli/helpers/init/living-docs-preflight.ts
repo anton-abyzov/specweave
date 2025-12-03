@@ -130,6 +130,8 @@ export interface PreflightOptions {
   isCi?: boolean;
   /** Force skip living docs */
   skipLivingDocs?: boolean;
+  /** Job IDs that will populate the project (clone, import) - makes greenfield → brownfield */
+  pendingJobIds?: string[];
 }
 
 /**
@@ -273,11 +275,12 @@ function countFiles(dir: string, depth: number = 0): number {
  * 1. Always ask "Enable Living Docs?" first (both brownfield and greenfield)
  * 2. For brownfield: ask detailed config, launch background builder job
  * 3. For greenfield: just enable structure, docs sync automatically as you work
+ * 4. If pendingJobIds exist (clone/import), treat as "will be brownfield"
  */
 export async function collectLivingDocsInputs(
   options: PreflightOptions
 ): Promise<PreflightResult | null> {
-  const { projectPath, language = 'en', isCi = false, skipLivingDocs = false } = options;
+  const { projectPath, language = 'en', isCi = false, skipLivingDocs = false, pendingJobIds = [] } = options;
   const strings = getPreflightStrings(language);
 
   // Skip if explicitly disabled
@@ -287,7 +290,11 @@ export async function collectLivingDocsInputs(
   }
 
   // Detect project type
-  const isBrownfield = detectBrownfield(projectPath);
+  // IMPORTANT: If there are pending clone/import jobs, treat as "will be brownfield"
+  // because the directory will have code once those jobs complete
+  const currentlyBrownfield = detectBrownfield(projectPath);
+  const hasPendingJobs = pendingJobIds.length > 0;
+  const isBrownfield = currentlyBrownfield || hasPendingJobs;
 
   // CI mode: use defaults (enable for brownfield, skip config for greenfield)
   if (isCi) {
@@ -324,10 +331,14 @@ export async function collectLivingDocsInputs(
   console.log(chalk.cyan(`  📚 ${strings.header}`));
 
   // Show context about project type
-  if (isBrownfield) {
+  if (currentlyBrownfield) {
     const fileCount = countFilesQuick(projectPath);
     console.log(chalk.gray(`     ${strings.description}`));
     console.log(chalk.gray(`     ${strings.detectedBrownfield} (${fileCount} source files)`));
+  } else if (hasPendingJobs) {
+    // Directory is empty but will have code after jobs complete
+    console.log(chalk.gray(`     ${strings.description}`));
+    console.log(chalk.gray(`     Pending: ${pendingJobIds.length} background job(s) will populate codebase`));
   } else {
     console.log(chalk.gray(`     ${strings.descriptionGreenfield}`));
     console.log(chalk.gray(`     ${strings.detectedGreenfield}`));
