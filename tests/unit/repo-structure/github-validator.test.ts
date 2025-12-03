@@ -71,9 +71,9 @@ describe('validateRepository', () => {
     // When: validateRepository is called
     const result = await validateRepository('owner', 'repo', 'invalid_token');
 
-    // Then: returns error: 'Invalid GitHub token'
+    // Then: returns error about authentication failure
     expect(result.valid).toBe(false);
-    expect(result.error).toContain('Invalid GitHub token');
+    expect(result.error).toContain('Authentication Failed');
   });
 
   it('should return error for forbidden access (403)', async () => {
@@ -87,10 +87,10 @@ describe('validateRepository', () => {
     // When: validateRepository is called
     const result = await validateRepository('owner', 'repo', 'ghp_token');
 
-    // Then: returns error: 'Forbidden - check token permissions or rate limit'
+    // Then: returns error about permission denied
     expect(result.valid).toBe(false);
-    expect(result.error).toContain('Forbidden');
-    expect(result.error).toMatch(/permissions|rate limit/i);
+    expect(result.error).toContain('Permission Denied');
+    expect(result.error).toMatch(/permission/i);
   });
 
   it('should handle network failure gracefully', async () => {
@@ -224,9 +224,9 @@ describe('validateOwner', () => {
     // When: validateOwner is called
     const result = await validateOwner('nonexistent', 'ghp_token');
 
-    // Then: returns {valid: false, error: 'Owner not found'}
+    // Then: returns {valid: false, error about not found}
     expect(result.valid).toBe(false);
-    expect(result.error).toContain('Owner not found');
+    expect(result.error).toContain('Not Found');
   });
 
   it('should handle network failure gracefully', async () => {

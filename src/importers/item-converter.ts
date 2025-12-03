@@ -30,6 +30,40 @@ export function setItemConverterLogger(logger: Logger): void {
   moduleLogger = logger;
 }
 
+/**
+ * Normalize ADO work item type to canonical form
+ * ADO returns both singular ('Epic') and plural ('Epics') forms
+ * CRITICAL (v0.30.4): Fixes bug where 'Epics' didn't match 'epic'
+ *
+ * @param witType - Work item type from ADO (e.g., 'Epics', 'Epic', 'Feature')
+ * @returns Normalized lowercase singular form (e.g., 'epic', 'feature', 'capability')
+ */
+function normalizeAdoWorkItemType(witType: string | undefined): string | undefined {
+  if (!witType) return undefined;
+  const lower = witType.toLowerCase().trim();
+
+  // Explicit mappings for irregular plurals and known ADO types
+  const pluralMappings: Record<string, string> = {
+    'epics': 'epic',
+    'features': 'feature',
+    'capabilities': 'capability',
+    'bugs': 'bug',
+    'tasks': 'task',
+    'user stories': 'user story',
+  };
+
+  if (pluralMappings[lower]) {
+    return pluralMappings[lower];
+  }
+
+  // Fallback: remove trailing 's' for simple plurals
+  if (lower.endsWith('s') && lower.length > 1 && !lower.endsWith('ss')) {
+    return lower.slice(0, -1);
+  }
+
+  return lower;
+}
+
 export interface ConvertedUserStory {
   /** User Story ID with E suffix (e.g., US-001E) */
   id: string;
@@ -193,21 +227,28 @@ export class ItemConverter {
     if (this.options.enableFeatureAllocation && this.options.projectRoot) {
       // Use projectId if provided, otherwise undefined (direct to specs/)
       // Enable global collision detection for umbrella/multi-repo setups
+      // CRITICAL (v0.30.4): Pass externalContainer for 2-level path construction
       this.fsIdAllocator = new FSIdAllocator(
         this.options.projectRoot,
         this.options.projectId,
-        { globalCollisionDetection: this.options.enableGlobalCollisionDetection }
+        {
+          globalCollisionDetection: this.options.enableGlobalCollisionDetection,
+          externalContainer: this.options.externalContainer
+        }
       );
 
       // Initialize Epic ID allocator for ADO Capabilities (v0.29.3+)
       // Capabilities are the top-level items in ADO SAFe/Enterprise setups
-      // CRITICAL (v0.30.3): Epics go to {project}/_epics/EP-XXXE/ (per-project)
-      // projectId is required for per-project epic storage
+      // CRITICAL (v0.30.4): Epics go to {container}/{project}/_epics/EP-XXXE/ (2-level)
+      // Must pass externalContainer for correct path construction with ADO/JIRA
       const epicProjectId = this.options.projectId || 'default';
       this.epicIdAllocator = new EpicIdAllocator(
         this.options.projectRoot,
         epicProjectId,
-        { globalCollisionDetection: this.options.enableGlobalCollisionDetection }
+        {
+          globalCollisionDetection: this.options.enableGlobalCollisionDetection,
+          externalContainer: this.options.externalContainer
+        }
       );
     }
   }
@@ -482,19 +523,20 @@ export class ItemConverter {
 
       // CRITICAL: Separate Capability (top-level) from other feature-level items
       // Capabilities go to _epics/, everything else goes to FS-XXXE/
+      // CRITICAL (v0.30.4): Use normalizeAdoWorkItemType to handle 'Epics' vs 'epic'
       const capabilityItems = items.filter(item =>
-        item.adoWorkItemType?.toLowerCase() === 'capability'
+        normalizeAdoWorkItemType(item.adoWorkItemType) === 'capability'
       );
 
       // Epics and Features are "feature-level" items
       // But Epics with Capability parents become Features (FS-XXXE)
       // Epics without Capability parents become Epics (_epics/EP-XXXE)
       const epicItems = items.filter(item =>
-        item.adoWorkItemType?.toLowerCase() === 'epic'
+        normalizeAdoWorkItemType(item.adoWorkItemType) === 'epic'
       );
 
       const featureItems = items.filter(item =>
-        item.adoWorkItemType?.toLowerCase() === 'feature'
+        normalizeAdoWorkItemType(item.adoWorkItemType) === 'feature'
       );
 
       // Create groups for Capabilities → _epics/EP-XXXE/
@@ -541,7 +583,8 @@ export class ItemConverter {
       // Assign child items (User Stories, Tasks, Bugs) to their parent groups
       const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
       for (const item of items) {
-        const witType = item.adoWorkItemType?.toLowerCase() || item.type;
+        // CRITICAL (v0.30.4): Normalize work item type for plural handling
+        const witType = normalizeAdoWorkItemType(item.adoWorkItemType) || item.type;
         if (featureLevelTypes.has(witType)) {
           continue; // Skip feature-level items, already added
         }
@@ -556,7 +599,8 @@ export class ItemConverter {
             // Find the appropriate ancestor group
             let current: ExternalItem | undefined = parent;
             while (current) {
-              const currentType = current.adoWorkItemType?.toLowerCase() || current.type;
+              // CRITICAL (v0.30.4): Normalize work item type for plural handling
+              const currentType = normalizeAdoWorkItemType(current.adoWorkItemType) || current.type;
 
               // Check if this ancestor is a Capability (→ epic group)
               if (currentType === 'capability') {
@@ -707,14 +751,16 @@ export class ItemConverter {
     // If so, include parent reference in the feature folder
     const isAdoFeatureGroup = groupKey.startsWith('feature:');
     const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
+    // CRITICAL (v0.30.4): Normalize work item type for plural handling
+    const normalizedWitType = normalizeAdoWorkItemType(firstItem.adoWorkItemType) || firstItem.type;
     const isFeatureLevelItem = (isAdoFeatureGroup || isEpicGroup) &&
-      featureLevelTypes.has(firstItem.adoWorkItemType?.toLowerCase() || firstItem.type);
+      featureLevelTypes.has(normalizedWitType);
 
     // CRITICAL (v0.30.3): Determine parent epic for this feature folder
     // - For epic groups: parentEpicId was set above when creating the epic
     // - For feature groups with Capability parent: look up the parent
     if (!parentEpicId) {
-      const isEpicWithCapParent = firstItem.adoWorkItemType?.toLowerCase() === 'epic' &&
+      const isEpicWithCapParent = normalizedWitType === 'epic' &&
         firstItem.parentId &&
         this.createdEpics.has(`epic:${firstItem.parentId}`);
 
@@ -861,7 +907,8 @@ export class ItemConverter {
     const isEpicGroup = groupKey.startsWith('epic:');
     const isOrphanGroup = groupKey.startsWith('orphan:');
     const featureLevelTypes = new Set(['capability', 'epic', 'feature']);
-    const adoWitType = firstItem.adoWorkItemType?.toLowerCase();
+    // CRITICAL (v0.30.4): Normalize work item type for plural handling ('Epics' → 'epic')
+    const adoWitType = normalizeAdoWorkItemType(firstItem.adoWorkItemType);
     // CRITICAL FIX (v0.30.3): Include epic groups in feature-level item check
     // Epic groups create feature folders for their user stories, and should use the epic's title
     const isAdoFeatureLevelItem = (isAdoFeatureGroup || isEpicGroup) &&
