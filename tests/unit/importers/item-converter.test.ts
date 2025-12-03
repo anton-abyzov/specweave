@@ -903,11 +903,14 @@ describe('ItemConverter', () => {
       orphanSpecsDir = path.join(orphanTestDir, '.specweave', 'docs', 'internal', 'specs');
       fs.mkdirSync(orphanSpecsDir, { recursive: true });
 
+      // Use 'create-feature' for legacy tests that expect individual FS-* folders per orphan
+      // Default is now 'group' (v0.30.6) which puts all orphans in _triage/
       orphanConverter = new ItemConverter({
         specsDir: orphanSpecsDir,
         projectRoot: orphanTestDir,
         enableFeatureAllocation: true,
         projectId: 'platform-engineering',
+        orphanHandling: 'create-feature', // Legacy behavior for these tests
       });
     });
 
@@ -1129,6 +1132,79 @@ describe('ItemConverter', () => {
 
       // Verify orphan note in content
       expect(featureMdContent).toContain('orphan item');
+    });
+
+    it('should group orphans in _orphans folder with orphanHandling=group (v0.30.6 default)', async () => {
+      // ARRANGE: Create converter with new default behavior (orphanHandling='group')
+      const orphansConverter = new ItemConverter({
+        specsDir: orphanSpecsDir,
+        projectRoot: orphanTestDir,
+        enableFeatureAllocation: true,
+        projectId: 'platform-engineering',
+        orphanHandling: 'group', // v0.30.6 default - group all orphans in _orphans/
+      });
+
+      const orphanItems: ExternalItem[] = [
+        {
+          id: 'ADO-2001',
+          type: 'user-story',
+          title: 'First orphan item',
+          description: 'First orphan',
+          status: 'open',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          url: 'https://dev.azure.com/org/proj/_workitems/edit/2001',
+          labels: [],
+          platform: 'ado',
+          adoProjectName: 'TestProject',
+          adoAreaPath: 'TestProject\\Area',
+          adoWorkItemType: 'User Story',
+          parentId: undefined, // ORPHAN
+        },
+        {
+          id: 'ADO-2002',
+          type: 'user-story',
+          title: 'Second orphan item',
+          description: 'Second orphan',
+          status: 'open',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          url: 'https://dev.azure.com/org/proj/_workitems/edit/2002',
+          labels: [],
+          platform: 'ado',
+          adoProjectName: 'TestProject',
+          adoAreaPath: 'TestProject\\Area',
+          adoWorkItemType: 'User Story',
+          parentId: undefined, // ORPHAN
+        },
+      ];
+
+      // ACT
+      const converted = await orphansConverter.convertItems(orphanItems);
+
+      // ASSERT: Both items should be converted
+      expect(converted).toHaveLength(2);
+
+      // All orphans should have the same featureId: '_orphans'
+      expect(converted[0].featureId).toBe('_orphans');
+      expect(converted[1].featureId).toBe('_orphans');
+
+      // Files should be in _orphans folder
+      const orphansDir = path.join(orphanSpecsDir, 'platform-engineering', '_orphans');
+      expect(fs.existsSync(orphansDir)).toBe(true);
+
+      // README.md should exist (not FEATURE.md)
+      const readmePath = path.join(orphansDir, 'README.md');
+      expect(fs.existsSync(readmePath)).toBe(true);
+
+      const readmeContent = fs.readFileSync(readmePath, 'utf-8');
+      expect(readmeContent).toContain('Orphan Items');
+      expect(readmeContent).toContain('no parent');
+      expect(readmeContent).toContain('Review each item');
+
+      // Both US files should be in _orphans folder
+      expect(converted[0].filePath).toContain('_orphans');
+      expect(converted[1].filePath).toContain('_orphans');
     });
   });
 

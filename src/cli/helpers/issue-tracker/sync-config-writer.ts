@@ -168,7 +168,7 @@ async function buildGitHubSyncConfig(
       }
     }
 
-    const defaultProfile = repositoryProfiles.find(p => p.isDefault) || repositoryProfiles[0];
+    const defaultProfileObj = repositoryProfiles.find(p => p.isDefault) || repositoryProfiles[0];
     config.sync = {
       enabled: true,
       direction: 'bidirectional' as const,
@@ -176,7 +176,8 @@ async function buildGitHubSyncConfig(
       provider: 'github',
       includeStatus: syncSettings.includeStatus,
       autoApplyLabels: syncSettings.autoApplyLabels,
-      activeProfile: defaultProfile?.id || 'main',
+      // v0.31.0+: Use defaultProfile (renamed from activeProfile for clarity)
+      defaultProfile: defaultProfileObj?.id || 'main',
       settings: {
         canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
         canUpdateExternalItems: syncPermissions.canUpdateExternalItems,
@@ -210,7 +211,8 @@ async function buildGitHubSyncConfig(
       provider: 'github',
       includeStatus: syncSettings.includeStatus,
       autoApplyLabels: syncSettings.autoApplyLabels,
-      activeProfile: 'github-default',
+      // v0.31.0+: Use defaultProfile (renamed from activeProfile for clarity)
+      defaultProfile: 'github-default',
       settings: {
         canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
         canUpdateExternalItems: syncPermissions.canUpdateExternalItems,
@@ -266,7 +268,8 @@ function buildJiraSyncConfig(
     provider: 'jira',
     includeStatus: syncSettings.includeStatus,
     autoApplyLabels: syncSettings.autoApplyLabels,
-    activeProfile: 'jira-default',
+    // v0.31.0+: Use defaultProfile (renamed from activeProfile for clarity)
+    defaultProfile: 'jira-default',
     settings: {
       canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
       canUpdateExternalItems: syncPermissions.canUpdateExternalItems,
@@ -292,7 +295,7 @@ function buildAdoSyncConfig(
 
   // Handle multi-project configuration (v0.28.x+)
   if (adoCreds.projects && adoCreds.projects.length > 0) {
-    let activeProfile = '';
+    let defaultProfileName = '';
 
     for (const proj of adoCreds.projects) {
       const profileId = `ado-${proj.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
@@ -315,13 +318,13 @@ function buildAdoSyncConfig(
 
       // Set default profile (skip umbrella projects)
       if (proj.isDefault && !proj.isUmbrella) {
-        activeProfile = profileId;
+        defaultProfileName = profileId;
       }
     }
 
     // Fallback to first profile if no default set
-    if (!activeProfile) {
-      activeProfile = Object.keys(profiles)[0];
+    if (!defaultProfileName) {
+      defaultProfileName = Object.keys(profiles)[0];
     }
 
     config.sync = {
@@ -331,7 +334,8 @@ function buildAdoSyncConfig(
       provider: 'ado',
       includeStatus: syncSettings.includeStatus,
       autoApplyLabels: syncSettings.autoApplyLabels,
-      activeProfile,
+      // v0.31.0+: Use defaultProfile (renamed from activeProfile for clarity)
+      defaultProfile: defaultProfileName,
       settings: {
         canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
         canUpdateExternalItems: syncPermissions.canUpdateExternalItems,
@@ -372,7 +376,8 @@ function buildAdoSyncConfig(
       provider: 'ado',
       includeStatus: syncSettings.includeStatus,
       autoApplyLabels: syncSettings.autoApplyLabels,
-      activeProfile: 'ado-default',
+      // v0.31.0+: Use defaultProfile (renamed from activeProfile for clarity)
+      defaultProfile: 'ado-default',
       settings: {
         canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
         canUpdateExternalItems: syncPermissions.canUpdateExternalItems,

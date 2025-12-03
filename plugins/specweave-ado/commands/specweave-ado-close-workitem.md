@@ -166,7 +166,7 @@ Checking permissions...
 
 Resolving ADO profile...
   Using: ado-my-project (from increment)
-  Organization: nova-systems
+  Organization: acme-corp
   Project: My Project
 
 Validating completion...
@@ -182,7 +182,7 @@ Status: 100% complete (10/10 tasks)
 Duration: 3 days
 
 Summary posted to ADO work item
-URL: https://dev.azure.com/nova-systems/Nova%20X%20Sandbox/_workitems/edit/12345
+URL: https://dev.azure.com/acme-corp/My%20Project/_workitems/edit/12345
 ```
 
 ### Permission Denied

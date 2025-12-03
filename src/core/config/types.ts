@@ -96,7 +96,13 @@ export interface IssueTrackerConfiguration {
 }
 
 /**
- * Sync profile configuration
+ * Sync profile configuration (simplified for config serialization)
+ *
+ * NOTE: This is a SIMPLIFIED type for config.json serialization.
+ * For the full operational type with all fields (strategy, hierarchyMapping, etc.),
+ * use `SyncProfile` from `../types/sync-profile.js` instead.
+ *
+ * @see ../types/sync-profile.ts for the full operational type
  */
 export interface SyncProfile {
   provider: string;
@@ -186,7 +192,18 @@ export interface SyncConfiguration {
   includeStatus: boolean;
   autoApplyLabels: boolean;
   provider?: string;  // Exclusive provider (jira, github, ado)
-  activeProfile?: string;  // Active profile key
+
+  /**
+   * Default profile (fallback when increment doesn't specify one)
+   * @since v0.31.0 - renamed from activeProfile for clarity
+   */
+  defaultProfile?: string;
+
+  /**
+   * @deprecated Use `defaultProfile` instead. Kept for backward compatibility.
+   */
+  activeProfile?: string;
+
   settings?: SyncSettings;
   profiles?: Record<string, SyncProfile>;  // Profile configurations
 

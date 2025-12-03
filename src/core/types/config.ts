@@ -250,6 +250,56 @@ export interface LivingDocsConfig {
 }
 
 /**
+ * Child Repository Configuration (v0.31.0+)
+ *
+ * Defines a child repository in an umbrella/multi-repo project.
+ * Used by living docs builder to detect and analyze nested repositories.
+ */
+export interface ChildRepoConfig {
+  /** Unique identifier (usually repo name) */
+  id: string;
+
+  /** Relative path from project root */
+  path: string;
+
+  /** Display name */
+  name: string;
+
+  /** Team this repo belongs to (derived from ADO area path or folder structure) */
+  team?: string;
+
+  /** ADO area path (e.g., "Acme\\Inventory") */
+  areaPath?: string;
+
+  /** When the repo was cloned */
+  clonedAt?: string;
+
+  /** Clone status */
+  status?: 'cloned' | 'failed' | 'skipped';
+}
+
+/**
+ * Umbrella Repository Configuration (v0.31.0+)
+ *
+ * Configuration for umbrella/multi-repo projects where multiple
+ * independent git repositories are cloned into subdirectories.
+ * Used by living docs builder to detect and analyze each child repo.
+ */
+export interface UmbrellaConfig {
+  /** Is umbrella mode enabled */
+  enabled: boolean;
+
+  /** Child repositories */
+  childRepos: ChildRepoConfig[];
+
+  /** Source of detection ('clone-job' | 'config' | 'git-scan') */
+  detectedFrom?: string;
+
+  /** When detection occurred */
+  detectedAt?: string;
+}
+
+/**
  * Complete SpecWeave Configuration
  *
  * Represents the structure of .specweave/config.json
@@ -287,6 +337,9 @@ export interface SpecweaveConfig {
 
   /** Living docs configuration (v0.21.4+) */
   livingDocs?: LivingDocsConfig;
+
+  /** Umbrella repository configuration (v0.31.0+) */
+  umbrella?: UmbrellaConfig;
 
   /** Allow additional properties */
   [key: string]: any;

@@ -271,6 +271,14 @@ async function main(): Promise<void> {
         log(`  Discovered ${discovery.codebaseStats.totalFiles} files in ${discovery.modules.length} modules`);
         log(`  Tier: ${discovery.tier}`);
         log(`  Languages: ${discovery.techStack.languages.join(', ')}`);
+
+        // Log umbrella detection result (v0.31.0+)
+        if (discovery.umbrella?.isUmbrella) {
+          log(`  UMBRELLA PROJECT DETECTED:`);
+          log(`    Source: ${discovery.umbrella.source}`);
+          log(`    Child repos: ${discovery.umbrella.childRepoCount}`);
+          log(`    Frameworks: ${discovery.techStack.frameworks.join(', ') || 'none'}`);
+        }
       } catch (err: any) {
         recordError(projectPath, jobId, 'discovery', err.message);
         throw err;

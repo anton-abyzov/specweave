@@ -190,7 +190,8 @@ export function loadAdoConfigFromSyncProfile(targetDir: string): ADOConfig | nul
     let strategy: string | undefined;
 
     if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
-      const activeProfileId = config.sync.activeProfile;
+      // v0.31.0+: Use defaultProfile, fall back to activeProfile for backward compat
+      const defaultProfileId = config.sync.defaultProfile ?? config.sync.activeProfile;
 
       for (const [profileId, profile] of Object.entries(config.sync.profiles)) {
         const p = profile as { provider?: string; config?: { organization?: string; project?: string; areaPaths?: string[]; strategy?: string; isUmbrella?: boolean } };
@@ -210,7 +211,7 @@ export function loadAdoConfigFromSyncProfile(targetDir: string): ADOConfig | nul
             adoProjects.push({
               name: profileConfig.project,
               areaPaths: profileConfig.areaPaths,
-              isDefault: profileId === activeProfileId,
+              isDefault: profileId === defaultProfileId,
               isUmbrella: profileConfig.isUmbrella
             });
           }

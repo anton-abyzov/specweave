@@ -12,6 +12,11 @@
 
 import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
+import {
+  detectUmbrellaStructure,
+  persistUmbrellaConfig,
+  type UmbrellaDetectionResult,
+} from './umbrella-detector.js';
 
 /**
  * Module information discovered from directory structure
@@ -81,6 +86,16 @@ export interface DiscoveryResult {
   tier: SamplingConfig['tier'];
   samplingConfig: SamplingConfig;
   discoveredAt: string;
+
+  /** Umbrella detection result (v0.31.0+) */
+  umbrella?: {
+    /** Is this an umbrella project */
+    isUmbrella: boolean;
+    /** Detection source */
+    source: 'clone-job' | 'config' | 'git-scan' | 'none';
+    /** Number of child repos */
+    childRepoCount: number;
+  };
 }
 
 /**
@@ -246,7 +261,7 @@ export async function runDiscovery(
     }
   }
 
-  // Detect tech stack from config files
+  // Detect tech stack from config files (root level)
   detectTechStack(projectPath, result);
 
   // Find existing documentation
@@ -255,8 +270,34 @@ export async function runDiscovery(
   // Identify entry points
   findEntryPoints(projectPath, result);
 
-  // Build modules from directory structure
-  buildModules(projectPath, result);
+  // Check for umbrella/multi-repo structure first (v0.31.0+)
+  const umbrellaResult = await detectUmbrellaStructure(projectPath);
+
+  if (umbrellaResult.isUmbrella && umbrellaResult.modules.length > 0) {
+    // Umbrella project: use child repos as modules
+    result.modules = umbrellaResult.modules;
+    result.umbrella = {
+      isUmbrella: true,
+      source: umbrellaResult.source,
+      childRepoCount: umbrellaResult.stats.totalRepos,
+    };
+
+    // Run per-module tech stack detection for umbrella projects
+    await detectTechStackPerModule(projectPath, result);
+
+    // Persist umbrella config for future runs
+    if (umbrellaResult.config) {
+      await persistUmbrellaConfig(projectPath, umbrellaResult.config);
+    }
+  } else {
+    // Standard project: build modules from directory structure
+    buildModules(projectPath, result);
+    result.umbrella = {
+      isUmbrella: false,
+      source: 'none',
+      childRepoCount: 0,
+    };
+  }
 
   // Calculate sampling tier
   result.tier = calculateTier(result.codebaseStats.totalFiles).tier;
@@ -467,6 +508,162 @@ function detectTechStack(projectPath: string, result: DiscoveryResult): void {
   result.techStack.frameworks = [...new Set(result.techStack.frameworks)];
   result.techStack.buildTools = [...new Set(result.techStack.buildTools)];
   result.techStack.testFrameworks = [...new Set(result.techStack.testFrameworks)];
+}
+
+/**
+ * Detect tech stack for each module in umbrella projects (v0.31.0+)
+ *
+ * Runs detectTechStack-like logic per module and aggregates results.
+ * This provides accurate tech stack detection when each child repo
+ * has its own package.json/go.mod/etc.
+ */
+async function detectTechStackPerModule(
+  projectPath: string,
+  result: DiscoveryResult
+): Promise<void> {
+  const allLanguages = new Set<string>(result.techStack.languages);
+  const allFrameworks = new Set<string>(result.techStack.frameworks);
+  const allBuildTools = new Set<string>(result.techStack.buildTools);
+  const allTestFrameworks = new Set<string>(result.techStack.testFrameworks);
+  const detectedFrom = new Set<string>(result.techStack.detectedFrom);
+
+  for (const module of result.modules) {
+    const modulePath = path.join(projectPath, module.path);
+
+    // Check package.json (Node.js/JavaScript/TypeScript)
+    const packageJsonPath = path.join(modulePath, 'package.json');
+    if (fs.existsSync(packageJsonPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+        detectedFrom.add(`${module.name}/package.json`);
+
+        const allDeps = {
+          ...(pkg.dependencies || {}),
+          ...(pkg.devDependencies || {}),
+        };
+
+        // Languages
+        if (allDeps.typescript || fs.existsSync(path.join(modulePath, 'tsconfig.json'))) {
+          allLanguages.add('TypeScript');
+        } else if (Object.keys(allDeps).length > 0) {
+          allLanguages.add('JavaScript');
+        }
+
+        // Frameworks
+        if (allDeps.next) allFrameworks.add('Next.js');
+        if (allDeps.react) allFrameworks.add('React');
+        if (allDeps.vue) allFrameworks.add('Vue');
+        if (allDeps.angular || allDeps['@angular/core']) allFrameworks.add('Angular');
+        if (allDeps.svelte) allFrameworks.add('Svelte');
+        if (allDeps.express) allFrameworks.add('Express');
+        if (allDeps.fastify) allFrameworks.add('Fastify');
+        if (allDeps.nestjs || allDeps['@nestjs/core']) allFrameworks.add('NestJS');
+        if (allDeps['@microsoft/signalr']) allFrameworks.add('SignalR');
+
+        // Build tools
+        if (allDeps.webpack) allBuildTools.add('Webpack');
+        if (allDeps.vite) allBuildTools.add('Vite');
+        if (allDeps.esbuild) allBuildTools.add('esbuild');
+        if (allDeps.rollup) allBuildTools.add('Rollup');
+        if (allDeps.parcel) allBuildTools.add('Parcel');
+        if (allDeps['@nx/react'] || allDeps['@nrwl/react'] || allDeps.nx) allBuildTools.add('Nx');
+
+        // Test frameworks
+        if (allDeps.jest) allTestFrameworks.add('Jest');
+        if (allDeps.vitest) allTestFrameworks.add('Vitest');
+        if (allDeps.mocha) allTestFrameworks.add('Mocha');
+        if (allDeps.playwright || allDeps['@playwright/test']) allTestFrameworks.add('Playwright');
+        if (allDeps.cypress) allTestFrameworks.add('Cypress');
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
+    // Check requirements.txt / pyproject.toml (Python)
+    const requirementsPath = path.join(modulePath, 'requirements.txt');
+    const pyprojectPath = path.join(modulePath, 'pyproject.toml');
+    if (fs.existsSync(requirementsPath) || fs.existsSync(pyprojectPath)) {
+      allLanguages.add('Python');
+      detectedFrom.add(`${module.name}/${fs.existsSync(pyprojectPath) ? 'pyproject.toml' : 'requirements.txt'}`);
+
+      try {
+        const content = fs.existsSync(pyprojectPath)
+          ? fs.readFileSync(pyprojectPath, 'utf-8')
+          : fs.readFileSync(requirementsPath, 'utf-8');
+
+        if (content.includes('django')) allFrameworks.add('Django');
+        if (content.includes('fastapi')) allFrameworks.add('FastAPI');
+        if (content.includes('flask')) allFrameworks.add('Flask');
+        if (content.includes('pytest')) allTestFrameworks.add('pytest');
+      } catch {
+        // Ignore read errors
+      }
+    }
+
+    // Check go.mod (Go)
+    const goModPath = path.join(modulePath, 'go.mod');
+    if (fs.existsSync(goModPath)) {
+      allLanguages.add('Go');
+      detectedFrom.add(`${module.name}/go.mod`);
+
+      try {
+        const content = fs.readFileSync(goModPath, 'utf-8');
+        if (content.includes('gin-gonic')) allFrameworks.add('Gin');
+        if (content.includes('echo')) allFrameworks.add('Echo');
+        if (content.includes('fiber')) allFrameworks.add('Fiber');
+      } catch {
+        // Ignore read errors
+      }
+    }
+
+    // Check .csproj files (C#/.NET)
+    try {
+      const entries = fs.readdirSync(modulePath);
+      const csprojFiles = entries.filter(e => e.endsWith('.csproj'));
+      if (csprojFiles.length > 0) {
+        allLanguages.add('C#');
+        detectedFrom.add(`${module.name}/*.csproj`);
+
+        // Try to detect .NET frameworks
+        for (const csprojFile of csprojFiles.slice(0, 2)) {
+          try {
+            const content = fs.readFileSync(path.join(modulePath, csprojFile), 'utf-8');
+            if (content.includes('Microsoft.AspNetCore')) allFrameworks.add('ASP.NET Core');
+            if (content.includes('Microsoft.EntityFrameworkCore')) allFrameworks.add('Entity Framework');
+            if (content.includes('xunit')) allTestFrameworks.add('xUnit');
+            if (content.includes('NUnit')) allTestFrameworks.add('NUnit');
+          } catch {
+            // Ignore read errors
+          }
+        }
+      }
+    } catch {
+      // Ignore directory read errors
+    }
+
+    // Check Cargo.toml (Rust)
+    const cargoPath = path.join(modulePath, 'Cargo.toml');
+    if (fs.existsSync(cargoPath)) {
+      allLanguages.add('Rust');
+      detectedFrom.add(`${module.name}/Cargo.toml`);
+
+      try {
+        const content = fs.readFileSync(cargoPath, 'utf-8');
+        if (content.includes('actix')) allFrameworks.add('Actix');
+        if (content.includes('axum')) allFrameworks.add('Axum');
+        if (content.includes('rocket')) allFrameworks.add('Rocket');
+      } catch {
+        // Ignore read errors
+      }
+    }
+  }
+
+  // Update result with aggregated tech stack
+  result.techStack.languages = [...allLanguages];
+  result.techStack.frameworks = [...allFrameworks];
+  result.techStack.buildTools = [...allBuildTools];
+  result.techStack.testFrameworks = [...allTestFrameworks];
+  result.techStack.detectedFrom = [...detectedFrom];
 }
 
 /**

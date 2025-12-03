@@ -248,7 +248,7 @@ async function writeSyncConfigHelper(
     config: Record<string, unknown>;
     timeRange: { default: string; max: string };
   }> = {};
-  let activeProfile = '';
+  let defaultProfile = '';
 
   if (credentials.projects && credentials.projects.length > 0) {
     for (const proj of credentials.projects) {
@@ -269,12 +269,12 @@ async function writeSyncConfigHelper(
       };
 
       if (proj.isDefault) {
-        activeProfile = profileId;
+        defaultProfile = profileId;
       }
     }
 
-    if (!activeProfile) {
-      activeProfile = Object.keys(profiles)[0];
+    if (!defaultProfile) {
+      defaultProfile = Object.keys(profiles)[0];
     }
   }
 
@@ -285,7 +285,8 @@ async function writeSyncConfigHelper(
     provider: tracker,
     includeStatus: syncSettings.includeStatus,
     autoApplyLabels: syncSettings.autoApplyLabels,
-    activeProfile,
+    // v0.31.0+: Use defaultProfile (activeProfile kept for backward compat)
+    defaultProfile,
     settings: {
       canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
       canUpdateExternalItems: syncPermissions.canUpdateExternalItems,

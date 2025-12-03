@@ -12,7 +12,7 @@ import * as fs from '../../utils/fs-native.js';
 import * as path from 'path';
 import type { DiscoveryResult, ModuleInfo } from './discovery.js';
 import type { ModuleAnalysis } from './module-analyzer.js';
-import type { PriorityQueueEntry, WorkItemMatchResult } from './workitem-matcher.js';
+import type { PriorityQueueEntry, WorkItemMatchResult, WorkItem } from './workitem-matcher.js';
 import type { LivingDocsUserInputs } from '../background/types.js';
 
 /**
@@ -72,6 +72,28 @@ export interface ImmediateAction {
 }
 
 /**
+ * Unmatched work item with suggestions (v0.31.0+)
+ */
+export interface UnmatchedItemSuggestion {
+  /** Work item ID */
+  id: string;
+  /** Work item title */
+  title: string;
+  /** Feature ID */
+  featureId: string;
+  /** Area path (if available from ADO) */
+  areaPath?: string;
+  /** Team (if extracted) */
+  team?: string;
+  /** Suggested module matches */
+  suggestedModules: Array<{
+    name: string;
+    reason: string;
+    confidence: 'high' | 'medium' | 'low';
+  }>;
+}
+
+/**
  * Suggestions report
  */
 export interface SuggestionsReport {
@@ -110,10 +132,39 @@ export interface SuggestionsReport {
 
   /** User pain points addressed */
   painPointsAddressed: string[];
+
+  // ==================================================
+  // UMBRELLA-SPECIFIC FIELDS (v0.31.0+)
+  // ==================================================
+
+  /** Whether this is an umbrella project */
+  isUmbrella?: boolean;
+
+  /** Unmatched work items with suggested mappings */
+  unmatchedSuggestions?: UnmatchedItemSuggestion[];
+
+  /** Modules without any work items (potential tech debt) */
+  orphanedModules?: Array<{
+    name: string;
+    path: string;
+    reason: string;
+  }>;
+
+  /** Team-grouped summary for umbrella projects */
+  teamSummary?: Map<string, {
+    modules: number;
+    workItems: number;
+    coverage: number;
+  }>;
 }
 
 /**
  * Generate suggestions from all analysis data
+ *
+ * Enhanced for umbrella projects (v0.31.0+):
+ * - Generates suggestions for unmatched work items
+ * - Identifies orphaned modules (tech debt)
+ * - Groups suggestions by team
  */
 export async function generateSuggestions(
   projectPath: string,
@@ -140,6 +191,28 @@ export async function generateSuggestions(
   // Match pain points
   const painPointsAddressed = matchPainPoints(userInputs.knownPainPoints, moduleStatuses);
 
+  // ==================================================
+  // UMBRELLA-SPECIFIC PROCESSING (v0.31.0+)
+  // ==================================================
+  const isUmbrella = discovery.umbrella?.isUmbrella ?? false;
+  let unmatchedSuggestions: UnmatchedItemSuggestion[] | undefined;
+  let orphanedModules: SuggestionsReport['orphanedModules'];
+  let teamSummary: Map<string, { modules: number; workItems: number; coverage: number }> | undefined;
+
+  if (isUmbrella) {
+    // Generate suggestions for unmatched items
+    unmatchedSuggestions = generateUnmatchedSuggestions(
+      matchResult.unmatchedItems,
+      discovery.modules
+    );
+
+    // Find orphaned modules (no work items)
+    orphanedModules = findOrphanedModules(moduleStatuses);
+
+    // Build team summary
+    teamSummary = buildTeamSummary(moduleStatuses);
+  }
+
   return {
     generatedAt: new Date().toISOString(),
     summary,
@@ -148,7 +221,11 @@ export async function generateSuggestions(
     moduleStatuses,
     additionalSources: userInputs.additionalSources,
     notAnalyzed,
-    painPointsAddressed
+    painPointsAddressed,
+    isUmbrella,
+    unmatchedSuggestions,
+    orphanedModules,
+    teamSummary
   };
 }
 
@@ -396,6 +473,157 @@ function matchPainPoints(
   return addressed;
 }
 
+// ==================================================
+// UMBRELLA-SPECIFIC HELPERS (v0.31.0+)
+// ==================================================
+
+/**
+ * Generate suggestions for unmatched work items
+ * Analyzes unmatched items and suggests potential module matches
+ */
+function generateUnmatchedSuggestions(
+  unmatchedItems: WorkItemMatchResult['unmatchedItems'],
+  modules: ModuleInfo[]
+): UnmatchedItemSuggestion[] {
+  const suggestions: UnmatchedItemSuggestion[] = [];
+
+  // Limit to first 50 unmatched items
+  for (const item of unmatchedItems.slice(0, 50)) {
+    const suggestion: UnmatchedItemSuggestion = {
+      id: item.id,
+      title: item.title,
+      featureId: item.featureId,
+      areaPath: item.areaPath,
+      team: item.team,
+      suggestedModules: []
+    };
+
+    // Try to find potential matches based on keywords
+    for (const keyword of item.keywords.slice(0, 5)) {
+      for (const module of modules) {
+        const moduleLower = module.name.toLowerCase();
+        if (moduleLower.includes(keyword) || keyword.includes(moduleLower.replace(/-fe|-be|-api/g, ''))) {
+          suggestion.suggestedModules.push({
+            name: module.name,
+            reason: `Keyword "${keyword}" matches module`,
+            confidence: moduleLower.includes(keyword) ? 'medium' : 'low'
+          });
+        }
+      }
+    }
+
+    // Try matching based on team if available
+    if (item.team) {
+      const teamLower = item.team.toLowerCase();
+      for (const module of modules) {
+        if (module.name.toLowerCase().startsWith(teamLower)) {
+          suggestion.suggestedModules.push({
+            name: module.name,
+            reason: `Team "${item.team}" matches module prefix`,
+            confidence: 'high'
+          });
+        }
+      }
+    }
+
+    // Try matching based on area path if available
+    if (item.areaPath) {
+      const areaSegments = item.areaPath.replace(/\\\\/g, '\\').split('\\');
+      if (areaSegments.length >= 2) {
+        const teamFromArea = areaSegments[1].toLowerCase();
+        for (const module of modules) {
+          if (module.name.toLowerCase().startsWith(teamFromArea)) {
+            suggestion.suggestedModules.push({
+              name: module.name,
+              reason: `Area path "${item.areaPath}" matches module`,
+              confidence: 'high'
+            });
+          }
+        }
+      }
+    }
+
+    // Deduplicate suggestions
+    const seen = new Set<string>();
+    suggestion.suggestedModules = suggestion.suggestedModules.filter(s => {
+      if (seen.has(s.name)) return false;
+      seen.add(s.name);
+      return true;
+    }).slice(0, 5);
+
+    suggestions.push(suggestion);
+  }
+
+  return suggestions;
+}
+
+/**
+ * Find modules without any work items (potential tech debt)
+ */
+function findOrphanedModules(
+  statuses: ModuleDocStatus[]
+): SuggestionsReport['orphanedModules'] {
+  const orphaned: NonNullable<SuggestionsReport['orphanedModules']> = [];
+
+  for (const status of statuses) {
+    if (status.workItemCount === 0) {
+      let reason: string;
+
+      if (status.status === 'none') {
+        reason = 'No documentation and no work items - potential tech debt or unused code';
+      } else if (!status.hasReadme) {
+        reason = 'Has tests but no README and no associated work items';
+      } else {
+        reason = 'Documented but has no work items - may be infrastructure or utility module';
+      }
+
+      orphaned.push({
+        name: status.moduleName,
+        path: status.modulePath,
+        reason
+      });
+    }
+  }
+
+  return orphaned;
+}
+
+/**
+ * Build team summary for umbrella projects
+ */
+function buildTeamSummary(
+  statuses: ModuleDocStatus[]
+): Map<string, { modules: number; workItems: number; coverage: number }> {
+  const teamMap = new Map<string, { modules: number; workItems: number; totalCoverage: number }>();
+
+  for (const status of statuses) {
+    // Extract team from module name (e.g., "assetcare-fe" → "assetcare")
+    const teamMatch = status.moduleName.match(/^([a-z0-9]+)-/i);
+    const team = teamMatch ? teamMatch[1] : 'other';
+
+    if (!teamMap.has(team)) {
+      teamMap.set(team, { modules: 0, workItems: 0, totalCoverage: 0 });
+    }
+
+    const data = teamMap.get(team)!;
+    data.modules++;
+    data.workItems += status.workItemCount;
+    data.totalCoverage += status.coverage;
+  }
+
+  // Convert to final format with average coverage
+  const result = new Map<string, { modules: number; workItems: number; coverage: number }>();
+  for (const [team, data] of teamMap) {
+    result.set(team, {
+      modules: data.modules,
+      workItems: data.workItems,
+      coverage: data.modules > 0 ? Math.round(data.totalCoverage / data.modules) : 0
+    });
+  }
+
+  return result;
+}
+
 /**
  * Format suggestions report as markdown
  */
@@ -491,6 +719,83 @@ export function formatSuggestionsMarkdown(report: SuggestionsReport): string {
 
     if (report.notAnalyzed.length > 20) {
       lines.push(`| ... | ${report.notAnalyzed.length - 20} more | - |`);
+    }
+    lines.push('');
+  }
+
+  // ==================================================
+  // UMBRELLA-SPECIFIC SECTIONS (v0.31.0+)
+  // ==================================================
+
+  // Team Summary (umbrella only)
+  if (report.isUmbrella && report.teamSummary && report.teamSummary.size > 0) {
+    lines.push('## Team Summary');
+    lines.push('');
+    lines.push('> Documentation status grouped by team');
+    lines.push('');
+    lines.push('| Team | Repositories | Work Items | Avg Coverage |');
+    lines.push('|------|--------------|------------|--------------|');
+
+    for (const [team, data] of report.teamSummary) {
+      const coverageIcon = data.coverage >= 80 ? '✅' : data.coverage >= 40 ? '⚠️' : '❌';
+      lines.push(`| ${team} | ${data.modules} | ${data.workItems} | ${data.coverage}% ${coverageIcon} |`);
+    }
+    lines.push('');
+  }
+
+  // Unmatched Work Items with Suggestions (umbrella only)
+  if (report.isUmbrella && report.unmatchedSuggestions && report.unmatchedSuggestions.length > 0) {
+    lines.push('## Unmatched Work Items');
+    lines.push('');
+    lines.push(`> ${report.unmatchedSuggestions.length} work items could not be matched to modules`);
+    lines.push('');
+
+    // Show top 20 with suggestions
+    for (const item of report.unmatchedSuggestions.slice(0, 20)) {
+      lines.push(`### ${item.id}: ${item.title.slice(0, 60)}${item.title.length > 60 ? '...' : ''}`);
+      lines.push('');
+
+      if (item.areaPath) {
+        lines.push(`- **Area Path**: \`${item.areaPath}\``);
+      }
+      if (item.team) {
+        lines.push(`- **Team**: ${item.team}`);
+      }
+
+      if (item.suggestedModules.length > 0) {
+        lines.push('- **Suggested Modules**:');
+        for (const suggestion of item.suggestedModules) {
+          const confidenceIcon = suggestion.confidence === 'high' ? '🟢' :
+            suggestion.confidence === 'medium' ? '🟡' : '🔴';
+          lines.push(`  - ${confidenceIcon} \`${suggestion.name}\` - ${suggestion.reason}`);
+        }
+      } else {
+        lines.push('- **Suggested Modules**: None (consider creating new module)');
+      }
+      lines.push('');
+    }
+
+    if (report.unmatchedSuggestions.length > 20) {
+      lines.push(`*...and ${report.unmatchedSuggestions.length - 20} more unmatched items*`);
+      lines.push('');
+    }
+  }
+
+  // Orphaned Modules (umbrella only)
+  if (report.isUmbrella && report.orphanedModules && report.orphanedModules.length > 0) {
+    lines.push('## Orphaned Modules');
+    lines.push('');
+    lines.push('> These modules have no associated work items');
+    lines.push('');
+    lines.push('| Module | Path | Analysis |');
+    lines.push('|--------|------|----------|');
+
+    for (const orphan of report.orphanedModules.slice(0, 30)) {
+      lines.push(`| ${orphan.name} | \`${orphan.path}\` | ${orphan.reason} |`);
+    }
+
+    if (report.orphanedModules.length > 30) {
+      lines.push(`| ... | ${report.orphanedModules.length - 30} more | - |`);
     }
     lines.push('');
   }
