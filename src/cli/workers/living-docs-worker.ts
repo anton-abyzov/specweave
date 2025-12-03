@@ -77,7 +77,8 @@ async function main(): Promise<void> {
   const projectPath = args[1];
 
   // Write PID file with exclusive lock
-  const pidFile = path.join(projectPath, '.specweave', 'jobs', jobId, 'worker.pid');
+  // NOTE: Must match path in job-launcher.ts: .specweave/state/jobs/{jobId}/
+  const pidFile = path.join(projectPath, '.specweave', 'state', 'jobs', jobId, 'worker.pid');
   fs.mkdirSync(path.dirname(pidFile), { recursive: true });
 
   try {
@@ -116,7 +117,8 @@ async function main(): Promise<void> {
   process.on('SIGINT', () => { cleanup(); process.exit(0); });
 
   // Setup logging
-  const logDir = path.join(projectPath, '.specweave', 'jobs', jobId);
+  // NOTE: Must match path in job-launcher.ts: .specweave/state/jobs/{jobId}/
+  const logDir = path.join(projectPath, '.specweave', 'state', 'jobs', jobId);
   fs.mkdirSync(logDir, { recursive: true });
   const logPath = path.join(logDir, 'worker.log');
   const progressPath = path.join(logDir, 'progress.json');

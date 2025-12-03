@@ -168,9 +168,21 @@ export function groupAdoItemsByParentHierarchy(items: ExternalItem[]): Container
   }
 
   // Create groups for each top-level parent first
+  // CRITICAL FIX (v0.30.3): Use area path for projectId, NOT item title
+  // This ensures boards like "digital-service-operations" instead of "software-maintenance-..."
   for (const [parentId, parentItem] of topLevelParents) {
     const containerId = parentItem.adoProjectName || 'default';
-    const projectId = normalizeToProjectId(parentItem.title) || `ado-${parentId.replace('ADO-', '')}`;
+
+    // CRITICAL (v0.30.3): projectId MUST come from area path, not title
+    // Area path: "Acme\Digital-Service-Operations" → "digital-service-operations"
+    let projectId = 'default';
+    if (parentItem.adoAreaPath) {
+      const segments = parentItem.adoAreaPath.split('\\');
+      // Use leaf segment (last part of area path)
+      const leafSegment = segments.length > 1 ? segments[segments.length - 1] : segments[0];
+      projectId = normalizeToProjectId(leafSegment) || 'default';
+    }
+
     const groupKey = `ado:parent:${parentId}`;
 
     groups.set(groupKey, {
