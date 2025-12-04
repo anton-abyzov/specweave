@@ -376,20 +376,26 @@ Stripe, PayPal, payment processor expertise.
 
 ### 📚 Documentation & Diagrams
 
-#### **specweave-docs-preview** - Documentation Preview
-Live Docusaurus preview with hot reload.
+#### **specweave-docs** - Documentation & Preview
+Documentation generation, organization, and live Docusaurus preview with hot reload.
 
 **Commands:**
-- `/specweave-docs-preview:preview` - Launch interactive preview server
-- `/specweave-docs-preview:build` - Build static site for deployment
+- `/specweave-docs:preview` - Launch interactive preview server
+- `/specweave-docs:build` - Build static site for deployment
+- `/specweave-docs:generate` - Generate documentation
+- `/specweave-docs:organize` - Organize large doc folders
+- `/specweave-docs:health` - Documentation health report
 
 **Example:**
 ```bash
-# Preview living docs
-/specweave-docs-preview:preview
+# Preview living docs (internal on port 3015)
+/specweave-docs:preview
+
+# Preview public docs (port 3016)
+/specweave-docs:preview --public
 
 # Output:
-# 🚀 Server running at http://localhost:3000
+# 🚀 Server running at http://localhost:3015
 # 📁 Auto-generated sidebar from .specweave/docs/
 # 🔄 Hot reload enabled
 # 📊 Mermaid diagrams rendered
@@ -563,7 +569,7 @@ Suggests alternatives when users mention specific tools.
 | Deploy to K8s | **specweave-kubernetes** | Agent auto-activates |
 | Build React app | **specweave-frontend** | Agent auto-activates |
 | Create ML pipeline | **specweave-ml** | `/specweave-ml:pipeline` |
-| Preview docs | **specweave-docs-preview** | `/specweave-docs-preview:preview` |
+| Preview docs | **specweave-docs** | `/specweave-docs:preview` |
 | Handle incidents | **specweave-infrastructure** | SRE agent + playbooks |
 | Generate diagrams | **specweave-diagrams** | Agent auto-activates |
 | Integrate Stripe | **specweave-payments** | Agent auto-activates |
@@ -571,7 +577,7 @@ Suggests alternatives when users mention specific tools.
 
 ---
 
-## 🚀 Quick Reference: All 21 Plugins
+## 🚀 Quick Reference: All 20 Plugins
 
 | Plugin | Purpose | Key Features |
 |--------|---------|--------------|
@@ -589,11 +595,10 @@ Suggests alternatives when users mention specific tools.
 | **specweave-payments** | Payments | Stripe, PayPal, PCI compliance |
 | **specweave-ui** | Browser automation | Playwright, E2E testing |
 | **specweave-diagrams** | Diagram generation | Mermaid, C4 Model |
-| **specweave-docs-preview** | Docs preview | Docusaurus, hot reload |
 | **specweave-figma** | Design integration | Figma → Components |
 | **specweave-cost-optimizer** | Cost tracking | AI cost optimization |
 | **specweave-alternatives** | Tool suggestions | Alternative recommendations |
-| **specweave-docs** | Documentation | Guides, API docs |
+| **specweave-docs** | Documentation | Guides, API docs, Docusaurus preview |
 | **specweave-testing** | Testing utilities | Test automation |
 | **specweave-tooling** | Development tools | CLI utilities |
 

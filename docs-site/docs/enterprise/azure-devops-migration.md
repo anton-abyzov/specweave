@@ -369,11 +369,80 @@ Organization: MegaCorp
 **Usage**:
 
 ```bash
-# Sync to specific project
+# Git-style sync (recommended)
+/specweave-ado:pull --project InternalPortal
+/specweave-ado:push 0018
+
+# Or use legacy sync command with profiles
 /specweave-ado:sync 0018 --profile ado-internal
 /specweave-ado:sync 0019 --profile ado-customer
 /specweave-ado:sync 0020 --profile ado-partner
 ```
+
+---
+
+## 🔄 Git-Style Sync Commands (Recommended)
+
+### Quick Reference
+
+SpecWeave provides intuitive **git-style commands** for ADO synchronization:
+
+| Command | Purpose |
+|---------|---------|
+| `/specweave-ado:pull` | Pull changes from ADO (like `git pull`) |
+| `/specweave-ado:push` | Push progress to ADO (like `git push`) |
+| `/specweave-ado:sync` | Two-way sync (pull + push) |
+| `/specweave-ado:status` | Check sync status |
+
+### Basic Usage
+
+```bash
+# Pull latest changes from ADO
+/specweave-ado:pull
+
+# Push your progress to ADO
+/specweave-ado:push
+
+# Two-way sync (both directions)
+/specweave-ado:sync 0005
+```
+
+### Multi-Project Sync
+
+```bash
+# Pull ALL specs across ALL projects (living docs sync)
+/specweave-ado:pull --all
+
+# Pull specific project only
+/specweave-ado:pull --project clinical-insights
+
+# Pull specific feature hierarchy (Epic → Feature → User Stories)
+/specweave-ado:pull --feature FS-042
+
+# Push all local changes to ADO
+/specweave-ado:push --all
+```
+
+### Sync Brief Output
+
+After every sync operation, you'll see a compact summary:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PULL COMPLETE                                    ✓ ADO │
+├─────────────────────────────────────────────────────────┤
+│  Scanned: 47 specs across 3 projects                    │
+│  Updated: 7 specs                                       │
+│  Conflicts: 2 (resolved: external wins)                 │
+├─────────────────────────────────────────────────────────┤
+│  CHANGES APPLIED                                        │
+│    ↓ Status changes:    4                               │
+│    ↓ Priority changes:  2                               │
+│    + Comments imported: 8                               │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Symbols**: `↓` = pulled (incoming), `↑` = pushed (outgoing), `✓` = success
 
 ---
 
@@ -517,16 +586,19 @@ Azure DevOps Organization: Contoso
 **Promotion Workflow**:
 
 ```bash
-# 1. Create in dev ADO
-/specweave-ado:sync 0018 --profile ado-dev
+# 1. Pull latest from dev ADO (git-style)
+/specweave-ado:pull --profile ado-dev
 
-# 2. Dev complete → Promote to QA
+# 2. Push progress to dev ADO
+/specweave-ado:push 0018 --profile ado-dev
+
+# 3. Dev complete → Promote to QA
 /specweave-ado:promote 0018 --from ado-dev --to ado-qa
 
-# 3. QA approved → Promote to UAT
+# 4. QA approved → Promote to UAT
 /specweave-ado:promote 0018 --from ado-qa --to ado-uat
 
-# 4. UAT approved → Promote to prod
+# 5. UAT approved → Promote to prod
 /specweave-ado:promote 0018 --from ado-uat --to ado-prod
 
 # Result: Same increment tracked across all 4 environments!

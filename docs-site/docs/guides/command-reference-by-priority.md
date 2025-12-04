@@ -154,12 +154,15 @@ Edge cases and specialized integrations.
 
 **Note**: Epic/Feature/User Story syncing happens automatically via living docs sync (triggered by `/specweave:done`). The `/sync` command is for increments only.
 
-### Documentation Preview
+### Documentation
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/specweave-docs-preview:preview` | Launch docs preview server | `/specweave-docs-preview:preview` |
-| `/specweave-docs-preview:build` | Build static docs site | `/specweave-docs-preview:build` |
+| `/specweave-docs:preview` | Launch docs preview server | `/specweave-docs:preview` |
+| `/specweave-docs:build` | Build static docs site | `/specweave-docs:build` |
+| `/specweave-docs:generate` | Generate documentation | `/specweave-docs:generate` |
+| `/specweave-docs:organize` | Organize large doc folders | `/specweave-docs:organize` |
+| `/specweave-docs:health` | Documentation health report | `/specweave-docs:health` |
 
 ### Infrastructure & SRE
 

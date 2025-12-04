@@ -233,8 +233,8 @@ The organizer detects these themes automatically:
 Generated indexes work seamlessly with Docusaurus:
 
 ```bash
-/specweave:organize-docs         # Generate indexes
-/specweave-docs-preview:preview  # View in browser
+/specweave-docs:organize  # Generate indexes
+/specweave-docs:preview   # View in browser
 ```
 
 The sidebar will show themed categories for easy navigation.

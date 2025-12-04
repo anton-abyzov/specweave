@@ -2,7 +2,7 @@
 
 **Purpose**: Lightweight plugin manifest for progressive disclosure. Load plugin content only when triggers match.
 
-**Total Plugins**: 27 | **Last Updated**: 2025-11-24
+**Total Plugins**: 26 | **Last Updated**: 2025-12-04
 
 ---
 
@@ -71,8 +71,7 @@
 
 | Plugin | Triggers | Description |
 |--------|----------|-------------|
-| **specweave-docs** | documentation, README, API docs, technical writing | Documentation generation |
-| **specweave-docs-preview** | docs site, Docusaurus, preview, build docs | Documentation preview server |
+| **specweave-docs** | documentation, README, API docs, technical writing, docs site, Docusaurus, preview, build docs | Documentation generation and preview |
 | **specweave-release** | release, version, npm publish, changelog, RC | Release management |
 
 ## Specialized Plugins

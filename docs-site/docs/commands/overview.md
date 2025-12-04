@@ -367,6 +367,14 @@ Active: 0007-user-authentication
 - `/specweave:workflow` - Dashboard view ⭐ **NAVIGATION**
 - `/specweave:validate-status` - Fix status line ⭐ **STATUS FIX**
 
+### External Tool Sync (Git-Style)
+- `/specweave-github:pull` - Pull changes from GitHub ⭐ **GIT-STYLE**
+- `/specweave-github:push` - Push progress to GitHub ⭐ **GIT-STYLE**
+- `/specweave-ado:pull` - Pull changes from Azure DevOps ⭐ **GIT-STYLE**
+- `/specweave-ado:push` - Push progress to Azure DevOps ⭐ **GIT-STYLE**
+- `/specweave-jira:pull` - Pull changes from JIRA ⭐ **GIT-STYLE**
+- `/specweave-jira:push` - Push progress to JIRA ⭐ **GIT-STYLE**
+
 ---
 
 ## Workflow Example: Standard Feature Development
@@ -413,20 +421,100 @@ Active: 0007-user-authentication
 
 ## Integration with External Tools
 
-### GitHub Issues (via specweave-github plugin)
+### Git-Style Commands (Recommended)
+
+SpecWeave provides intuitive **git-style commands** for external tool synchronization:
+
+| Platform | Pull | Push | Sync |
+|----------|------|------|------|
+| **GitHub** | `/specweave-github:pull` | `/specweave-github:push` | `/specweave-github:sync` |
+| **Azure DevOps** | `/specweave-ado:pull` | `/specweave-ado:push` | `/specweave-ado:sync` |
+| **JIRA** | `/specweave-jira:pull` | `/specweave-jira:push` | `/specweave-jira:sync` |
+
+### Basic Usage
+
+```bash
+# Pull latest changes from external tool
+/specweave-github:pull
+/specweave-ado:pull
+/specweave-jira:pull
+
+# Push your progress to external tool
+/specweave-github:push
+/specweave-ado:push
+/specweave-jira:push
+
+# Two-way sync (both directions)
+/specweave-github:sync 0007
+/specweave-ado:sync 0007
+/specweave-jira:sync 0007
+```
+
+### Multi-Project Sync Options
+
+```bash
+# Pull ALL specs across ALL projects (living docs sync)
+/specweave-github:pull --all
+/specweave-ado:pull --all
+/specweave-jira:pull --all
+
+# Pull specific project only
+/specweave-ado:pull --project clinical-insights
+/specweave-jira:pull --project BACKEND
+
+# Pull specific feature hierarchy
+/specweave-github:pull --feature FS-042
+/specweave-ado:pull --feature FS-042
+```
+
+### Sync Brief Output
+
+After every sync operation, you'll see a compact summary:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PULL COMPLETE                                    ✓ ADO │
+├─────────────────────────────────────────────────────────┤
+│  Scanned: 47 specs across 3 projects                    │
+│  Updated: 7 specs                                       │
+│  Conflicts: 2 (resolved: external wins)                 │
+├─────────────────────────────────────────────────────────┤
+│  CHANGES APPLIED                                        │
+│    ↓ Status changes:    4                               │
+│    ↓ Priority changes:  2                               │
+│    + Comments imported: 8                               │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Symbols**: `↓` = pulled (incoming), `↑` = pushed (outgoing), `✓` = success
+
+### Other GitHub Commands
 
 ```bash
 # Create GitHub issue from increment
-/specweave-github:specweave-github-create-issue 0007
+/specweave-github:create 0007
 
-# Sync progress to GitHub
-/specweave-github:specweave-github-sync 0007
+# Check sync status
+/specweave-github:status 0007
 
 # Close GitHub issue when done
-/specweave-github:specweave-github-close-issue 0007
+/specweave-github:close 0007
 ```
 
-**Automatic sync**: When GitHub plugin enabled, `/specweave:do` and `/specweave:done` automatically sync to GitHub.
+### Other Azure DevOps Commands
+
+```bash
+# Create ADO work item from increment
+/specweave-ado:create 0007
+
+# Check sync status
+/specweave-ado:status 0007
+
+# Close work item when done
+/specweave-ado:close 0007
+```
+
+**Automatic sync**: When external tool plugins are enabled, `/specweave:do` and `/specweave:done` automatically sync to the configured platforms.
 
 ---
 

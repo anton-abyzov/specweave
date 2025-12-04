@@ -432,6 +432,71 @@ Recommendations:
 
 ---
 
+## 🔄 Git-Style Sync Commands (Recommended)
+
+### Quick Reference
+
+SpecWeave provides intuitive **git-style commands** for JIRA synchronization:
+
+| Command | Purpose |
+|---------|---------|
+| `/specweave-jira:pull` | Pull changes from JIRA (like `git pull`) |
+| `/specweave-jira:push` | Push progress to JIRA (like `git push`) |
+| `/specweave-jira:sync` | Two-way sync (pull + push) |
+
+### Basic Usage
+
+```bash
+# Pull latest changes from JIRA
+/specweave-jira:pull
+
+# Push your progress to JIRA
+/specweave-jira:push
+
+# Two-way sync (both directions)
+/specweave-jira:sync 0018
+```
+
+### Multi-Project Sync
+
+```bash
+# Pull ALL specs across ALL projects (living docs sync)
+/specweave-jira:pull --all
+
+# Pull specific project only
+/specweave-jira:pull --project BACKEND
+
+# Pull specific feature/epic hierarchy
+/specweave-jira:pull --feature FS-042
+
+# Push all local changes to JIRA
+/specweave-jira:push --all
+```
+
+### Sync Brief Output
+
+After every sync operation, you'll see a compact summary:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PULL COMPLETE                                   ✓ JIRA │
+├─────────────────────────────────────────────────────────┤
+│  Scanned: 52 specs across 4 projects                    │
+│  Updated: 8 specs                                       │
+│  Conflicts: 1 (resolved: external wins)                 │
+├─────────────────────────────────────────────────────────┤
+│  CHANGES APPLIED                                        │
+│    ↓ Status changes:    5                               │
+│    ↓ Priority changes:  2                               │
+│    ↓ Sprint updates:    3                               │
+│    + Comments imported: 6                               │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Symbols**: `↓` = pulled (incoming), `↑` = pushed (outgoing), `✓` = success
+
+---
+
 ## 🔄 Bidirectional Sync Examples
 
 ### Example 1: Local Change → JIRA
@@ -534,13 +599,16 @@ Production JIRA: jira.company.com
 **Promotion Workflow**:
 
 ```bash
-# 1. Create in dev JIRA
-/specweave-jira:sync 0018 --profile jira-dev
+# 1. Pull latest from dev JIRA (git-style)
+/specweave-jira:pull --profile jira-dev
 
-# 2. Test in dev, then promote to staging
+# 2. Push progress to dev JIRA
+/specweave-jira:push 0018 --profile jira-dev
+
+# 3. Test in dev, then promote to staging
 /specweave-jira:promote 0018 --from jira-dev --to jira-staging
 
-# 3. QA approval, then promote to prod
+# 4. QA approval, then promote to prod
 /specweave-jira:promote 0018 --from jira-staging --to jira-prod
 
 # Result: Same increment tracked across all 3 JIRA instances!
@@ -719,7 +787,8 @@ curl -u you@company.com:YOUR_API_TOKEN \
 
 **Fix**:
 ```bash
-# Use time range filtering
+# Use time range filtering (git-style)
+/specweave-jira:pull --time-range 1M
 /specweave-jira:sync 0020 --time-range 1M
 
 # Or enable rate limiting in config

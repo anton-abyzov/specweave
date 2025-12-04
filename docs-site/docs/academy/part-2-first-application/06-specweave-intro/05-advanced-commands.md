@@ -163,57 +163,85 @@ What it syncs:
 
 ## Platform-Specific Sync Commands
 
+SpecWeave provides **git-style commands** for external tool synchronization.
+
+### Git-Style Commands (Recommended)
+
+Just like `git pull` and `git push`, SpecWeave has simple commands:
+
+| Command | Purpose |
+|---------|---------|
+| `/specweave-ado:pull` | Pull changes from ADO (like `git pull`) |
+| `/specweave-ado:push` | Push progress to ADO (like `git push`) |
+| `/specweave-github:pull` | Pull changes from GitHub |
+| `/specweave-github:push` | Push progress to GitHub |
+| `/specweave-jira:pull` | Pull changes from Jira |
+| `/specweave-jira:push` | Push progress to Jira |
+
 ### GitHub Sync
 
 ```bash
-# Check GitHub connection
-/specweave-github:status
+# Git-style commands (recommended)
+/specweave-github:pull              # Pull changes from GitHub
+/specweave-github:push              # Push progress to GitHub
+/specweave-github:pull --all        # Pull ALL specs across projects
 
-# Sync increment to GitHub issue
-/specweave-github:sync 0042
-
-# Create GitHub issue for increment
-/specweave-github:create-issue 0042
-
-# Close GitHub issue when done
-/specweave-github:close-issue 0042
-```
-
-**Bidirectional Sync**:
-
-```bash
-# Pull changes FROM GitHub to SpecWeave
-/specweave-github:sync 0042 --from-external
-
-# Push changes TO GitHub from SpecWeave (default)
-/specweave-github:sync 0042
+# Other commands
+/specweave-github:status            # Check connection
+/specweave-github:sync 0042         # Two-way sync (pull + push)
+/specweave-github:create 0042       # Create GitHub issue
+/specweave-github:close 0042        # Close GitHub issue
 ```
 
 ### JIRA Sync
 
 ```bash
-# Check JIRA connection
-/specweave-jira:status
+# Git-style commands (recommended)
+/specweave-jira:pull                # Pull changes from Jira
+/specweave-jira:push                # Push progress to Jira
+/specweave-jira:pull --all          # Pull ALL specs
 
-# Sync increment to JIRA
-/specweave-jira:sync 0042
-
-# Link existing JIRA issue
-/specweave-jira:link 0042 --issue PROJ-123
+# Other commands
+/specweave-jira:status              # Check connection
+/specweave-jira:sync 0042           # Two-way sync
 ```
 
 ### Azure DevOps Sync
 
 ```bash
-# Check ADO connection
-/specweave-ado:status
+# Git-style commands (recommended)
+/specweave-ado:pull                 # Pull changes from ADO
+/specweave-ado:push                 # Push progress to ADO
+/specweave-ado:pull --all           # Pull ALL specs across projects
+/specweave-ado:pull --project xyz   # Pull specific project only
 
-# Sync increment to ADO work item
-/specweave-ado:sync 0042
-
-# Create ADO work item
-/specweave-ado:create-item 0042
+# Other commands
+/specweave-ado:status               # Check connection
+/specweave-ado:sync 0042            # Two-way sync
+/specweave-ado:create 0042          # Create ADO work item
+/specweave-ado:close 0042           # Close work item
 ```
+
+### Sync Brief Output
+
+After every sync operation, you'll see a brief summary:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PULL COMPLETE                                    ✓ ADO │
+├─────────────────────────────────────────────────────────┤
+│  Scanned: 47 specs across 3 projects                    │
+│  Updated: 7 specs                                       │
+│  Conflicts: 2 (resolved: external wins)                 │
+├─────────────────────────────────────────────────────────┤
+│  CHANGES APPLIED                                        │
+│    ↓ Status changes:    4                               │
+│    ↓ Priority changes:  2                               │
+│    + Comments imported: 8                               │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Symbols**: `↓` = pulled (incoming), `↑` = pushed (outgoing), `✓` = success
 
 ---
 
@@ -350,17 +378,40 @@ Recommended:
 
 ## Command Quick Reference
 
+### Core Commands
+
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
 | `/specweave:save` | Git add, commit, push all repos | Saving work |
 | `/specweave:sync-docs` | Full documentation sync | Major updates |
 | `/specweave:sync-specs` | Specs/stories only | Quick spec sync |
 | `/specweave:sync-progress` | Sync to external tools | Full external sync |
-| `/specweave-github:sync` | GitHub-specific sync | GitHub updates |
-| `/specweave-jira:sync` | JIRA-specific sync | JIRA updates |
-| `/specweave-ado:sync` | ADO-specific sync | ADO updates |
 | `/specweave:validate-status` | Fix status line | Status issues |
 | `/specweave:workflow` | Dashboard view | See full state |
+
+### External Tool Sync (Git-Style)
+
+| Command | Purpose |
+|---------|---------|
+| `/specweave-ado:pull` | Pull changes from Azure DevOps |
+| `/specweave-ado:push` | Push progress to Azure DevOps |
+| `/specweave-ado:sync` | Two-way sync (pull + push) |
+| `/specweave-ado:status` | Check ADO connection |
+| `/specweave-github:pull` | Pull changes from GitHub |
+| `/specweave-github:push` | Push progress to GitHub |
+| `/specweave-github:sync` | Two-way sync (pull + push) |
+| `/specweave-github:status` | Check GitHub connection |
+| `/specweave-jira:pull` | Pull changes from Jira |
+| `/specweave-jira:push` | Push progress to Jira |
+| `/specweave-jira:sync` | Two-way sync (pull + push) |
+
+### Sync Scope Options
+
+| Flag | Effect |
+|------|--------|
+| `--all` | Sync ALL specs across all projects |
+| `--project <name>` | Sync only specified project |
+| `--feature <id>` | Sync specific feature hierarchy |
 
 ---
 

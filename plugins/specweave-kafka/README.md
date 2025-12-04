@@ -156,6 +156,13 @@ Skills work together in coordinated workflows:
 
 ## Usage Examples
 
+**Complete runnable examples** are available in [`examples/`](./examples/):
+- `simple-producer-consumer/` - Basic Kafka operations (beginner)
+- `avro-schema-registry/` - Schema-based serialization (intermediate)
+- `exactly-once-semantics/` - Zero message loss (advanced)
+- `kafka-streams-app/` - Real-time stream processing (advanced)
+- `n8n-workflow/` - No-code event-driven automation (beginner)
+
 ### Deploy to AWS MSK
 
 ```bash
@@ -206,6 +213,19 @@ npm run test:coverage
 ```
 
 **Coverage Target**: 85-90%
+
+## Benchmarks
+
+Performance benchmarks are available in [`benchmarks/`](./benchmarks/):
+
+```bash
+# Run Kafka throughput benchmarks
+npx ts-node benchmarks/kafka-throughput.benchmark.ts
+```
+
+Measures: producer/consumer throughput, end-to-end latency (p50/p95/p99), batch size impact, compression comparison, concurrent producers.
+
+**Target**: 100K+ msgs/sec throughput.
 
 ## Documentation
 
