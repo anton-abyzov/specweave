@@ -161,7 +161,7 @@ Agent: "I'll update GitHub issue #501 for US-004 to include checkable ACs and ta
 
 **Related Files**:
 - `plugins/specweave-github/lib/user-story-content-builder.ts` - Core builder class
-- `plugins/specweave-github/commands/specweave-github-update-user-story.md` - Command spec
+- `plugins/specweave-github/commands/update-user-story.md` - Command spec
 - `.specweave/docs/internal/specs/{project}/FS-*/us-*.md` - User story files
 
 **Testing**:

@@ -1,11 +1,11 @@
 ---
-name: specweave-ado:create-workitem
+name: specweave-ado:create
 description: Create Azure DevOps work item from SpecWeave increment
 ---
 
 # Create ADO Work Item Command
 
-**Usage**: `/specweave-ado:create-workitem <increment-id>`
+**Usage**: `/specweave-ado:create <increment-id>`
 
 **Purpose**: Create an Epic, Feature, or User Story in Azure DevOps from a SpecWeave increment
 
@@ -172,6 +172,10 @@ Claude: Checking ADO permissions...
 
 ## Related
 
-- `/specweave-ado:sync` - Sync progress to existing work item
-- `/specweave-ado:status` - Check ADO sync status (read-only, always allowed)
-- `/specweave-ado:close-workitem` - Close work item when complete
+| Command | Purpose |
+|---------|---------|
+| `/specweave-ado:pull` | Pull changes from ADO |
+| `/specweave-ado:push` | Push progress to ADO |
+| `/specweave-ado:sync` | Two-way sync |
+| `/specweave-ado:status` | Check sync status |
+| `/specweave-ado:close` | Close work item when complete |

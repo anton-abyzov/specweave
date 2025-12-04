@@ -281,7 +281,7 @@ If upgrading from SpecWeave v0.12.x or earlier:
 - **Core Plugin Hooks**: `plugins/specweave/hooks/README.md`
 - **Architecture Analysis**: `.specweave/increments/0018-strict-increment-discipline-enforcement/reports/HOOKS-ARCHITECTURE-ANALYSIS.md`
 - **Claude Code Hooks Guide**: https://code.claude.com/docs/en/hooks-guide
-- **GitHub Sync Command**: `plugins/specweave-github/commands/specweave-github-sync.md`
+- **GitHub Sync Command**: `plugins/specweave-github/commands/sync.md`
 
 ---
 

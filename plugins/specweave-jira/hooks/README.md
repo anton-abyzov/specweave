@@ -193,7 +193,7 @@ Core hook (330 lines)      JIRA plugin hook (150 lines)
 
 - **Core Plugin Hooks**: `plugins/specweave/hooks/README.md`
 - **Architecture Analysis**: `.specweave/increments/0018-strict-increment-discipline-enforcement/reports/HOOKS-ARCHITECTURE-ANALYSIS.md`
-- **JIRA Sync Command**: `plugins/specweave-jira/commands/specweave-jira-sync.md`
+- **JIRA Sync Command**: `plugins/specweave-jira/commands/sync.md`
 
 ---
 

@@ -1,11 +1,11 @@
 ---
-name: specweave-ado:close-workitem
+name: specweave-ado:close
 description: Close Azure DevOps work item when increment complete
 ---
 
 # Close ADO Work Item Command
 
-**Usage**: `/specweave-ado:close-workitem <increment-id>`
+**Usage**: `/specweave-ado:close <increment-id>`
 
 **Purpose**: Close ADO work item and add completion summary
 
@@ -232,6 +232,10 @@ Complete remaining tasks:
 
 ## Related
 
-- `/specweave-ado:create-workitem` - Create ADO work item
-- `/specweave-ado:sync` - Sync progress to ADO
-- `/specweave-ado:status` - Check sync status (read-only, always allowed)
+| Command | Purpose |
+|---------|---------|
+| `/specweave-ado:pull` | Pull changes from ADO |
+| `/specweave-ado:push` | Push progress to ADO |
+| `/specweave-ado:sync` | Two-way sync |
+| `/specweave-ado:create` | Create ADO work item |
+| `/specweave-ado:status` | Check sync status |

@@ -547,13 +547,27 @@ If automatic profile creation fails:
    /specweave-github:sync 0004
    ```
 
+## Simpler Alternatives
+
+For most use cases, use the git-style commands:
+
+| Command | Purpose |
+|---------|---------|
+| `/specweave-github:pull` | Pull changes from GitHub (read-only) |
+| `/specweave-github:push` | Push progress to GitHub |
+
+Use `/specweave-github:sync` for advanced operations with time ranges and rate limit control.
+
 ## Related Commands
 
-- `/specweave-github:create-issue <increment-id>`: Create issue with profile selection
-- `/specweave-github:close-issue <increment-id>`: Close issue
-- `/specweave-github:status <increment-id>`: Check sync status
-- `/specweave:sync-profile create`: Create new sync profile
-- `/specweave:sync-profile list`: List all profiles
+| Command | Purpose |
+|---------|---------|
+| `/specweave-github:pull` | Pull from GitHub (git-style) |
+| `/specweave-github:push` | Push to GitHub (git-style) |
+| `/specweave-github:create` | Create GitHub issue |
+| `/specweave-github:close` | Close GitHub issue |
+| `/specweave-github:status` | Check sync status |
+| `/specweave:sync-profile create` | Create new sync profile |
 
 ## Tips & Best Practices
 

@@ -1,5 +1,5 @@
 ---
-name: specweave-github:close-issue
+name: specweave-github:close
 description: Close GitHub issue for completed SpecWeave increment. Posts completion summary with final stats, deliverables, and closes the issue. Links closure in increment metadata.
 ---
 
@@ -7,7 +7,7 @@ description: Close GitHub issue for completed SpecWeave increment. Posts complet
 
 Close the GitHub issue associated with a completed SpecWeave increment.
 
-## Usage
+**Usage**: `/specweave-github:close <increment-id>`
 
 ```bash
 /specweave:github:close-issue <increment-id> [options]

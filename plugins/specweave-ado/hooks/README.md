@@ -193,7 +193,7 @@ Core hook (330 lines)      ADO plugin hook (150 lines)
 
 - **Core Plugin Hooks**: `plugins/specweave/hooks/README.md`
 - **Architecture Analysis**: `.specweave/increments/0018-strict-increment-discipline-enforcement/reports/HOOKS-ARCHITECTURE-ANALYSIS.md`
-- **ADO Sync Command**: `plugins/specweave-ado/commands/specweave-ado-sync.md`
+- **ADO Sync Command**: `plugins/specweave-ado/commands/sync.md`
 
 ---
 

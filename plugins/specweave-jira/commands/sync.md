@@ -227,11 +227,26 @@ Conflicts: None
 - Display rich output with links
 - Save sync results to test-results/ if requested
 
+## Simpler Alternatives
+
+For most use cases, use the git-style commands:
+
+| Command | Purpose |
+|---------|---------|
+| `/specweave-jira:pull` | Pull changes from Jira (read-only) |
+| `/specweave-jira:push` | Push progress to Jira |
+
+Use `/specweave-jira:sync` for advanced operations with explicit direction control.
+
 ## Related Commands
 
-- `/specweave-github:sync` - Sync to GitHub issues (also two-way by default)
-- `/specweave:increment` - Create new increment
-- `/specweave:validate` - Validate increment quality
+| Command | Purpose |
+|---------|---------|
+| `/specweave-jira:pull` | Pull from Jira (git-style) |
+| `/specweave-jira:push` | Push to Jira (git-style) |
+| `/specweave-jira:import-boards` | Import Jira boards |
+| `/specweave-github:sync` | Sync to GitHub issues |
+| `/specweave:increment` | Create new increment |
 
 ---
 
