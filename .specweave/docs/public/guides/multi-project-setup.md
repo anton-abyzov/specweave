@@ -266,6 +266,78 @@ legacy/
 
 ---
 
+## Increment spec.md Requirements (v0.31.0+)
+
+When creating increments in multi-project mode, you must specify the target project in the spec.md YAML frontmatter. This ensures increments sync to the correct location in living docs.
+
+### 1-Level Structure (Projects Only)
+
+**When**: `multiProject.enabled: true` in config.json
+
+**Required field**: `project:`
+
+```yaml
+---
+increment: 0001-dark-mode
+project: web-app           # REQUIRED
+title: "Add Dark Mode"
+status: planned
+---
+```
+
+**Sync path**: `internal/specs/web-app/FS-001/`
+
+### 2-Level Structure (Projects + Boards)
+
+**When**: ADO area paths, JIRA boards, or umbrella with teams
+
+**Required fields**: `project:` AND `board:`
+
+```yaml
+---
+increment: 0001-clinical-reports
+project: acme-corp                 # REQUIRED
+board: clinical-insights           # REQUIRED for 2-level
+title: "Add Clinical Reports"
+status: planned
+---
+```
+
+**Sync path**: `internal/specs/acme-corp/clinical-insights/FS-001/`
+
+### Automatic Detection
+
+The increment planner automatically detects your structure level and prompts for project/board selection:
+
+```
+🔍 Detected 2-level structure (ADO area path mapping)
+   Available projects: acme-corp
+
+   📁 Project: acme-corp
+      Boards: clinical-insights, platform-engineering, digital-operations
+
+Which board should this increment sync to?
+> clinical-insights
+
+✅ Increment will sync to: internal/specs/acme-corp/clinical-insights/FS-XXX/
+```
+
+### Migration: Adding project to existing increments
+
+If you have existing increments without `project:` field:
+
+```bash
+# Add to spec.md YAML frontmatter:
+---
+increment: 0001-existing-feature
+project: my-project          # Add this line
+---
+```
+
+See [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md) for technical details.
+
+---
+
 ## Workflows
 
 ### Workflow 1: Managing Multiple Teams

@@ -20,6 +20,16 @@
             "command": "bash -c 'F=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/dispatcher.mjs\"; [ -f \"$F\" ] && node \"$F\" completion-guard || printf \"{\\\"continue\\\":true}\"' 2>/dev/null || printf '{\"continue\":true}'"
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "matcher_content": "\\.specweave/increments/\\d{4}-[^/]+/spec\\.md",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'F=\"${CLAUDE_PLUGIN_ROOT}/hooks/spec-project-validator.sh\"; [ -f \"$F\" ] && \"$F\" || printf \"{\\\"decision\\\":\\\"allow\\\"}\"' 2>/dev/null || printf '{\"decision\":\"allow\"}'"
+          }
+        ]
       }
     ],
     "PostToolUse": [

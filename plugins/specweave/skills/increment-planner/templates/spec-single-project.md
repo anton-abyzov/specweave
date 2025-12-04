@@ -8,6 +8,7 @@ created: {{DATE}}
 structure: user-stories
 test_mode: {{TEST_MODE}}
 coverage_target: {{COVERAGE_TARGET}}
+project: {{PROJECT_ID}}
 ---
 
 # Feature: {{FEATURE_TITLE}}

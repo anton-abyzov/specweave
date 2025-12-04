@@ -176,6 +176,81 @@ echo "Using coverageTarget: $coverageTarget"
 
 **Store these values for use in STEP 4 and STEP 7!**
 
+### STEP 0B: Detect Structure Level & Select Project/Board (MANDATORY!)
+
+**⚠️ CRITICAL: Before generating spec.md, you MUST know the target project (and board for 2-level structures)!**
+
+**Structure Levels:**
+- **1-Level**: `internal/specs/{project}/FS-XXX/` - requires `project` in spec.md
+- **2-Level**: `internal/specs/{project}/{board}/FS-XXX/` - requires BOTH `project` AND `board`
+
+**Detection Logic** (use `src/utils/structure-level-detector.ts`):
+
+```typescript
+import { detectStructureLevel, getRequiredSpecFields } from './utils/structure-level-detector.js';
+
+const structureConfig = detectStructureLevel(projectRoot);
+console.log(`Structure level: ${structureConfig.level}`);
+console.log(`Detection reason: ${structureConfig.detectionReason}`);
+console.log(`Available projects: ${structureConfig.projects.map(p => p.id).join(', ')}`);
+
+if (structureConfig.level === 2 && structureConfig.boardsByProject) {
+  console.log('Available boards by project:');
+  for (const [projectId, boards] of Object.entries(structureConfig.boardsByProject)) {
+    console.log(`  ${projectId}: ${boards.map(b => b.id).join(', ')}`);
+  }
+}
+```
+
+**Manual Detection:**
+```bash
+# Check if 2-level (ADO area paths or JIRA boards)
+jq '.sync.profiles | to_entries[] | select(.value.provider == "ado") | .value.config.areaPathMapping' .specweave/config.json
+
+# Check existing folder structure
+ls -la .specweave/docs/internal/specs/*/  # If sub-folders exist (not FS-XXX) → 2-level
+```
+
+**Project/Board Selection (MANDATORY BEFORE STEP 4!):**
+
+1. **For 1-level structure:**
+   - ASK user: "Which project should this increment sync to?"
+   - Options: List from `structureConfig.projects`
+   - Store selected `PROJECT_ID`
+
+2. **For 2-level structure:**
+   - ASK user: "Which project should this increment sync to?"
+   - Then ASK: "Which board/area path within {project}?"
+   - Options: List from `structureConfig.boardsByProject[selectedProject]`
+   - Store BOTH `PROJECT_ID` and `BOARD_ID`
+
+**VALIDATION RULE:**
+```
+❌ FORBIDDEN: Creating spec.md without PROJECT_ID set
+❌ FORBIDDEN: Creating spec.md for 2-level without BOARD_ID set
+❌ FORBIDDEN: Vague increments like "show last git commits" without project context
+✅ REQUIRED: Always know WHERE this increment will sync BEFORE creating spec.md
+```
+
+**Example User Interaction:**
+
+```
+🔍 Detected 2-level structure (ADO area path mapping)
+   Available projects: acme-corp
+
+   📁 Project: acme-corp
+      Boards: clinical-insights, platform-engineering, digital-operations
+
+Which board should this increment sync to?
+> digital-operations
+
+✅ Increment will sync to: internal/specs/acme-corp/digital-operations/FS-XXX/
+```
+
+**Store PROJECT_ID and BOARD_ID for use in STEP 4!**
+
+---
+
 ### STEP 1: Get Next Increment Number
 
 Use helper script:
@@ -207,26 +282,50 @@ mkdir -p .specweave/increments/0021-feature-name
 
 Create `.specweave/increments/0021-feature-name/spec.md`:
 
+**⚠️ CRITICAL: You MUST have PROJECT_ID (and BOARD_ID for 2-level) from STEP 0B before proceeding!**
+
 **⚠️ IMPORTANT: Use the correct template based on STEP 0 detection!**
 
-#### 4A: Single-Project Template (umbrella.enabled: false)
+#### 4A: Single-Project Template (1-level structure)
 
 **Template File**: `templates/spec-single-project.md`
 
-Replace placeholders: `{{INCREMENT_ID}}`, `{{FEATURE_TITLE}}`, `{{TYPE}}`, `{{PRIORITY}}`, `{{DATE}}`, `{{TEST_MODE}}`, `{{COVERAGE_TARGET}}`
+Replace placeholders:
+- `{{INCREMENT_ID}}`, `{{FEATURE_TITLE}}`, `{{TYPE}}`, `{{PRIORITY}}`, `{{DATE}}`
+- `{{TEST_MODE}}`, `{{COVERAGE_TARGET}}`
+- **`{{PROJECT_ID}}`** ← MANDATORY (from STEP 0B)
 
-#### 4B: Multi-Project Template (umbrella.enabled: true) - USE THIS!
+#### 4B: Multi-Project Template (2-level structure) - USE THIS!
 
 **Template File**: `templates/spec-multi-project.md`
 
-Replace placeholders: `{{INCREMENT_ID}}`, `{{FEATURE_TITLE}}`, `{{PROJECT_FE_ID}}`, `{{PROJECT_BE_ID}}`, `{{PROJECT_SHARED_ID}}`, etc.
+Replace placeholders:
+- `{{INCREMENT_ID}}`, `{{FEATURE_TITLE}}`, `{{TYPE}}`, `{{PRIORITY}}`, `{{DATE}}`
+- **`{{PROJECT_ID}}`** ← MANDATORY (from STEP 0B)
+- **`{{BOARD_ID}}`** ← MANDATORY for 2-level (from STEP 0B)
+- `{{PROJECT_FE_ID}}`, `{{PROJECT_BE_ID}}`, `{{PROJECT_SHARED_ID}}` (for multi-repo)
 
-**Key Rules for Multi-Project spec.md:**
-1. **User stories MUST be grouped by project** (Frontend, Backend, Shared, etc.)
-2. **User story IDs MUST have project prefix**: `US-FE-001`, `US-BE-001`, `US-SHARED-001`
-3. **AC-IDs MUST have project prefix**: `AC-FE-US1-01`, `AC-BE-US1-01`
-4. **Each user story MUST have `Related Repo` field**
-5. **Frontmatter MUST include `multi_project: true` and `projects` list**
+**Key Rules for spec.md:**
+1. **`project:` field MUST be set in YAML frontmatter** (1-level and 2-level)
+2. **`board:` field MUST be set in YAML frontmatter** (2-level only)
+3. **User stories grouped by project** if multi-project (Frontend, Backend, Shared, etc.)
+4. **User story IDs have project prefix**: `US-FE-001`, `US-BE-001` (multi-project)
+5. **AC-IDs have project prefix**: `AC-FE-US1-01`, `AC-BE-US1-01` (multi-project)
+
+**VALIDATION (spec.md frontmatter):**
+```yaml
+# 1-level structure (REQUIRED):
+project: digital-operations    # ← MUST be set
+
+# 2-level structure (BOTH REQUIRED):
+project: acme-corp             # ← MUST be set
+board: digital-operations      # ← MUST be set
+```
+
+**⚠️ FORBIDDEN:**
+- Creating spec.md with `project: {{PROJECT_ID}}` (unresolved placeholder)
+- Creating spec.md for 2-level with `board: {{BOARD_ID}}` (unresolved placeholder)
+- Leaving project/board fields empty or undefined
 
 ### STEP 5: Create plan.md Template
 

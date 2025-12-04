@@ -57,3 +57,15 @@ export { AzureOpenAIProvider } from './providers/azure-openai-provider.js';
 export { OllamaProvider } from './providers/ollama-provider.js';
 export { BedrockProvider } from './providers/bedrock-provider.js';
 export { VertexAIProvider } from './providers/vertex-ai-provider.js';
+
+// Robust JSON extraction for LLM responses (handles prose + JSON, code blocks, etc.)
+export {
+  extractJson,
+  buildJsonPrompt,
+  generateCorrectionPrompt,
+  extractRequiredFieldsFromSchema,
+  extractJsonWithRetry,
+  analyzeStructuredWithRetry,
+  type ExtractionResult,
+  type ExtractionOptions
+} from '../../utils/llm-json-extractor.js';

@@ -15,6 +15,7 @@ import type {
   StructuredOptions,
 } from '../types.js';
 import { Logger, consoleLogger } from '../../../utils/logger.js';
+import { extractJson, extractRequiredFieldsFromSchema } from '../../../utils/llm-json-extractor.js';
 
 export interface VertexAIProviderConfig {
   projectId?: string;
@@ -120,16 +121,21 @@ Return ONLY the JSON object, no markdown.`;
       temperature: 0.1,
     });
 
-    let jsonContent = result.content.trim();
-    if (jsonContent.startsWith('```')) {
-      jsonContent = jsonContent.replace(/^```json?\n?/, '').replace(/\n?```$/, '');
+    // Extract required fields from schema for validation
+    const requiredFields = extractRequiredFieldsFromSchema(options.schema);
+
+    // Use robust JSON extraction (handles prose + JSON, code blocks, nested structures)
+    const extraction = extractJson<T>(result.content, { requiredFields });
+
+    if (extraction.success && extraction.data) {
+      return {
+        data: extraction.data,
+        usage: result.usage,
+        estimatedCost: result.estimatedCost,
+      };
     }
 
-    return {
-      data: JSON.parse(jsonContent) as T,
-      usage: result.usage,
-      estimatedCost: result.estimatedCost,
-    };
+    throw new Error(`Failed to parse structured response: ${extraction.error}`);
   }
 
   estimateCost(inputTokens: number, outputTokens: number): number {

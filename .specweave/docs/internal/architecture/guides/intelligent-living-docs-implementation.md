@@ -109,6 +109,32 @@ All core components are implemented and ready for integration:
 
 **Auto-select threshold**: 0.7 (70% confidence)
 
+#### Structure Level Detector (`structure-level-detector.ts` - NEW v0.31.0)
+
+**Purpose**: Detect 1-level vs 2-level folder structure and validate spec.md fields
+
+**Capabilities**:
+- ✅ Detect ADO area path mapping → 2-level
+- ✅ Detect JIRA board mapping → 2-level
+- ✅ Detect umbrella with teams → 2-level
+- ✅ Validate spec.md has required `project:` field (1-level)
+- ✅ Validate spec.md has required `project:` AND `board:` fields (2-level)
+- ✅ Error with helpful messages listing available options
+
+**Mandatory Frontmatter Fields** (ADR-0190):
+```yaml
+# 1-Level (multiProject, single-project):
+project: my-project           # REQUIRED
+
+# 2-Level (ADO area paths, JIRA boards, umbrella teams):
+project: acme-corp           # REQUIRED
+board: digital-operations    # REQUIRED
+```
+
+**Path Resolution**:
+- 1-level: `internal/specs/{project}/FS-XXX/`
+- 2-level: `internal/specs/{project}/{board}/FS-XXX/`
+
 #### Content Distributor (`content-distributor.ts` - 600 lines)
 
 **Purpose**: Write classified sections to appropriate folders

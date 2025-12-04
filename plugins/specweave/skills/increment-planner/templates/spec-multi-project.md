@@ -8,6 +8,8 @@ created: {{DATE}}
 structure: user-stories
 test_mode: {{TEST_MODE}}
 coverage_target: {{COVERAGE_TARGET}}
+project: {{PROJECT_ID}}
+board: {{BOARD_ID}}
 multi_project: true
 projects:
   - id: {{PROJECT_FE_ID}}
