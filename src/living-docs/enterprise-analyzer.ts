@@ -563,6 +563,13 @@ export class EnterpriseDocAnalyzer {
         if (expectedRule && !expectedRule.pattern.test(fileName)) {
           // Skip if already caught by other checks
           if (!allCapsPattern.test(fileName) && !mixedCasePattern.test(fileName)) {
+            // Skip ADR numbered files (e.g., 0001-decision-name.md) - this is standard ADR convention
+            const adrPattern = /^\d{4}-[a-z0-9-]+\.md$/;
+            const isInAdrFolder = relativePath.includes('/adr/') || relativePath.includes('\\adr\\');
+            if (isInAdrFolder && adrPattern.test(fileName)) {
+              continue; // Valid ADR naming, skip
+            }
+
             violations.push({
               file: relativePath,
               category: category.name,
@@ -586,6 +593,11 @@ export class EnterpriseDocAnalyzer {
     const duplicates: DuplicateDocument[] = [];
     const titleMap = new Map<string, Set<string>>();  // Use Set to prevent duplicates
 
+    // Standard files that intentionally have same name across folders
+    const standardOrganizationalFiles = [
+      'readme', 'feature', 'api', 'changelog', 'license', 'contributing', 'index',
+    ];
+
     // Group files by normalized title
     for (const category of categories) {
       for (const doc of category.files) {
@@ -594,6 +606,11 @@ export class EnterpriseDocAnalyzer {
           .toLowerCase()
           .replace(/[\d_-]+/g, '')
           .replace(/\s+/g, '');
+
+        // Skip standard organizational files from same_title detection
+        if (standardOrganizationalFiles.includes(normalizedTitle.replace(/\.md$/, ''))) {
+          continue;
+        }
 
         if (!titleMap.has(normalizedTitle)) {
           titleMap.set(normalizedTitle, new Set());
@@ -643,13 +660,39 @@ export class EnterpriseDocAnalyzer {
         }
 
         // If no exact duplicates but same title, mark as same_title
+        // But only if files are in the same documentation type (not adr vs hld vs concepts)
         if (!hasExactDupes && files.length > 1) {
           const relativePaths = files.map(f => path.relative(this.projectPath, f));
-          duplicates.push({
-            files: relativePaths,
-            similarity: 80,
-            duplicateType: 'same_title',
-          });
+
+          // Group by documentation type to avoid cross-type false positives
+          const docTypes = ['adr', 'hld', 'concepts', 'specs', 'guides'];
+          const filesByType = new Map<string, string[]>();
+
+          for (const file of relativePaths) {
+            // Determine doc type from path
+            let docType = 'other';
+            for (const type of docTypes) {
+              if (file.includes(`/${type}/`) || file.includes(`\\${type}\\`)) {
+                docType = type;
+                break;
+              }
+            }
+            if (!filesByType.has(docType)) {
+              filesByType.set(docType, []);
+            }
+            filesByType.get(docType)!.push(file);
+          }
+
+          // Only report as duplicate if multiple files of same doc type
+          for (const [, sameTypeFiles] of filesByType) {
+            if (sameTypeFiles.length > 1) {
+              duplicates.push({
+                files: sameTypeFiles,
+                similarity: 80,
+                duplicateType: 'same_title',
+              });
+            }
+          }
         }
       }
     }
@@ -688,12 +731,28 @@ export class EnterpriseDocAnalyzer {
             const absoluteLinkedPath = path.resolve(path.dirname(doc.path), linkedPath);
 
             if (!fs.existsSync(absoluteLinkedPath)) {
-              discrepancies.push({
-                file: relativePath,
-                discrepancyType: 'broken_link',
-                description: `Broken link to: ${linkedPath}`,
-                relatedFiles: [linkedPath],
-              });
+              // For links to increments folder, also check _archive
+              let isArchivedIncrement = false;
+              if (linkedPath.includes('/increments/') && !linkedPath.includes('/_archive/')) {
+                // Extract increment ID and check archive
+                const incrementMatch = linkedPath.match(/increments\/(\d{4}-[a-z0-9-]+)/);
+                if (incrementMatch) {
+                  const archivedPath = absoluteLinkedPath.replace(
+                    `/increments/${incrementMatch[1]}`,
+                    `/increments/_archive/${incrementMatch[1]}`
+                  );
+                  isArchivedIncrement = fs.existsSync(archivedPath);
+                }
+              }
+
+              if (!isArchivedIncrement) {
+                discrepancies.push({
+                  file: relativePath,
+                  discrepancyType: 'broken_link',
+                  description: `Broken link to: ${linkedPath}`,
+                  relatedFiles: [linkedPath],
+                });
+              }
             }
           }
 
