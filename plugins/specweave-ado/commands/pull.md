@@ -348,6 +348,107 @@ To link: /specweave-ado:create 0005
 
 ---
 
+## Sync Brief (MANDATORY OUTPUT)
+
+**After EVERY pull operation, display a compact summary:**
+
+### Brief Format (Single Increment)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PULL COMPLETE                                    ✓ ADO │
+├─────────────────────────────────────────────────────────┤
+│  Increment: 0005-payment-integration                    │
+│  Work Item: #12345                                      │
+│  Profile:   ado-techcorp                                │
+├─────────────────────────────────────────────────────────┤
+│  CHANGES                                                │
+│    ↓ Status:    Active → Resolved  (external wins)      │
+│    ↓ Priority:  P2 → P1            (external wins)      │
+│    ↓ Iteration: Sprint 23 → Sprint 24                   │
+│    + Comments:  3 new imported                          │
+├─────────────────────────────────────────────────────────┤
+│  Last sync: 2025-12-04 10:32:15 (just now)              │
+│  URL: https://dev.azure.com/.../12345                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Brief Format (Multi-Project --all)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PULL COMPLETE                                    ✓ ADO │
+├─────────────────────────────────────────────────────────┤
+│  Scanned: 47 specs across 3 projects                    │
+│  Updated: 7 specs                                       │
+│  Conflicts: 2 (resolved: external wins)                 │
+│  Duration: 4.2s                                         │
+├─────────────────────────────────────────────────────────┤
+│  BY PROJECT                                             │
+│    techcorp/clinical-insights/   4 updated, 14 current  │
+│    techcorp/ai-platform/         2 updated, 20 current  │
+│    infrastructure/core/          1 updated,  6 current  │
+├─────────────────────────────────────────────────────────┤
+│  CHANGES APPLIED                                        │
+│    ↓ Status changes:    4                               │
+│    ↓ Priority changes:  2                               │
+│    ↓ Iteration updates: 3                               │
+│    + Comments imported: 8                               │
+├─────────────────────────────────────────────────────────┤
+│  UPDATED SPECS                                          │
+│    ✓ clinical-insights/FS-042/us-001  Active → Done     │
+│    ✓ clinical-insights/FS-042/us-002  P2 → P1           │
+│    ✓ clinical-insights/FS-043/us-005  Sprint 23 → 24    │
+│    ✓ ai-platform/FS-050/us-010        3 new comments    │
+│    ... +3 more (use --verbose for full list)            │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Brief Format (No Changes)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PULL COMPLETE                                    ✓ ADO │
+├─────────────────────────────────────────────────────────┤
+│  Already up to date!                                    │
+│  Checked: 47 specs                                      │
+│  Last sync: 5 minutes ago                               │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Brief Format (Errors/Warnings)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PULL COMPLETE (with warnings)                    ⚠ ADO │
+├─────────────────────────────────────────────────────────┤
+│  Scanned: 47 specs                                      │
+│  Updated: 5 specs                                       │
+│  Warnings: 2                                            │
+├─────────────────────────────────────────────────────────┤
+│  WARNINGS                                               │
+│    ⚠ FS-042/us-003: ADO item #205 not found (deleted?) │
+│    ⚠ FS-050/us-012: Rate limit hit, skipped            │
+├─────────────────────────────────────────────────────────┤
+│  Retry failed items: /specweave-ado:pull --retry        │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Symbols Reference
+
+| Symbol | Meaning |
+|--------|---------|
+| `✓` | Success |
+| `⚠` | Warning (partial success) |
+| `✗` | Error/Failed |
+| `↓` | Pulled from external (incoming) |
+| `↑` | Pushed to external (outgoing) |
+| `+` | Added (new items) |
+| `−` | Removed |
+| `~` | Modified |
+
+---
+
 ## Related Commands
 
 | Command | Purpose |

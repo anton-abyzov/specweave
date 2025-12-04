@@ -246,6 +246,111 @@ Ready to close: /specweave-ado:close 0005
 
 ---
 
+## Sync Brief (MANDATORY OUTPUT)
+
+**After EVERY push operation, display a compact summary:**
+
+### Brief Format (Single Increment)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PUSH COMPLETE                                    ✓ ADO │
+├─────────────────────────────────────────────────────────┤
+│  Increment: 0005-payment-integration                    │
+│  Work Item: #12345                                      │
+│  Profile:   ado-techcorp                                │
+├─────────────────────────────────────────────────────────┤
+│  PROGRESS                                               │
+│    Tasks: 8/10 (80%)  ████████░░                        │
+│    ↑ Comment posted: "Progress: 80% complete"           │
+│    ↑ Completion field: 60% → 80%                        │
+├─────────────────────────────────────────────────────────┤
+│  RECENTLY COMPLETED                                     │
+│    ✓ T-007: Add payment validation                      │
+│    ✓ T-008: Implement refund flow                       │
+├─────────────────────────────────────────────────────────┤
+│  Last sync: 2025-12-04 10:32:15 (just now)              │
+│  URL: https://dev.azure.com/.../12345                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Brief Format (Multi-Project --all)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PUSH COMPLETE                                    ✓ ADO │
+├─────────────────────────────────────────────────────────┤
+│  Pushed: 12 specs across 3 projects                     │
+│  Comments posted: 12                                    │
+│  Status transitions: 3                                  │
+│  Duration: 5.1s                                         │
+├─────────────────────────────────────────────────────────┤
+│  BY PROJECT                                             │
+│    techcorp/clinical-insights/   5 pushed               │
+│    techcorp/ai-platform/         4 pushed               │
+│    infrastructure/core/          3 pushed               │
+├─────────────────────────────────────────────────────────┤
+│  CHANGES PUSHED                                         │
+│    ↑ Progress comments: 12                              │
+│    ↑ Completion updates: 8                              │
+│    ↑ Status transitions: 3                              │
+│      • FS-042/us-001: Active → Resolved (100%)          │
+│      • FS-043/us-005: Active → Resolved (100%)          │
+│      • FS-050/us-010: New → Active (started)            │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Brief Format (100% Complete - Ready to Close)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PUSH COMPLETE                                    ✓ ADO │
+├─────────────────────────────────────────────────────────┤
+│  Increment: 0005-payment-integration                    │
+│  Work Item: #12345                                      │
+├─────────────────────────────────────────────────────────┤
+│  PROGRESS                                               │
+│    Tasks: 10/10 (100%)  ██████████  COMPLETE!           │
+│    ↑ Comment: "All tasks complete!"                     │
+│    ↑ Status: Active → Resolved                          │
+├─────────────────────────────────────────────────────────┤
+│  🎉 INCREMENT READY TO CLOSE                            │
+│     Run: /specweave-ado:close 0005                      │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Brief Format (Permission Denied)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PUSH BLOCKED                                     ✗ ADO │
+├─────────────────────────────────────────────────────────┤
+│  Permission: canUpdateExternalItems = false             │
+├─────────────────────────────────────────────────────────┤
+│  TO ENABLE:                                             │
+│    Edit .specweave/config.json:                         │
+│    sync.settings.canUpdateExternalItems = true          │
+│                                                         │
+│  OR USE READ-ONLY:                                      │
+│    /specweave-ado:pull 0005                             │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Symbols Reference
+
+| Symbol | Meaning |
+|--------|---------|
+| `✓` | Success |
+| `⚠` | Warning (partial success) |
+| `✗` | Error/Failed |
+| `↓` | Pulled from external (incoming) |
+| `↑` | Pushed to external (outgoing) |
+| `+` | Added (new items) |
+| `−` | Removed |
+| `~` | Modified |
+
+---
+
 ## Related Commands
 
 | Command | Purpose |
