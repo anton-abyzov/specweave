@@ -507,7 +507,9 @@ export class EnterpriseDocAnalyzer {
         const relativePath = path.relative(this.projectPath, doc.path);
 
         // Check for ALL CAPS files (e.g., CIRCUIT-BREAKER-MONITORING.md)
-        if (allCapsPattern.test(fileName)) {
+        // Exclude standard files like README.md, FEATURE.md, API.md, CHANGELOG.md
+        const standardAllCapsFiles = ['README.md', 'FEATURE.md', 'API.md', 'CHANGELOG.md', 'LICENSE.md', 'CONTRIBUTING.md'];
+        if (allCapsPattern.test(fileName) && !standardAllCapsFiles.includes(fileName)) {
           violations.push({
             file: relativePath,
             category: category.name,
@@ -520,7 +522,8 @@ export class EnterpriseDocAnalyzer {
         }
 
         // Check for mixed case (e.g., CircuitBreaker.md)
-        if (mixedCasePattern.test(fileName) && !fileName.startsWith('README') && !fileName.startsWith('API')) {
+        // Exclude standard files that use conventional naming
+        if (mixedCasePattern.test(fileName) && !standardAllCapsFiles.includes(fileName) && !fileName.startsWith('README') && !fileName.startsWith('API')) {
           violations.push({
             file: relativePath,
             category: category.name,
@@ -581,7 +584,7 @@ export class EnterpriseDocAnalyzer {
    */
   private detectDuplicates(categories: DocumentCategory[]): DuplicateDocument[] {
     const duplicates: DuplicateDocument[] = [];
-    const titleMap = new Map<string, string[]>();
+    const titleMap = new Map<string, Set<string>>();  // Use Set to prevent duplicates
 
     // Group files by normalized title
     for (const category of categories) {
@@ -593,17 +596,18 @@ export class EnterpriseDocAnalyzer {
           .replace(/\s+/g, '');
 
         if (!titleMap.has(normalizedTitle)) {
-          titleMap.set(normalizedTitle, []);
+          titleMap.set(normalizedTitle, new Set());
         }
-        titleMap.get(normalizedTitle)!.push(doc.path);
+        titleMap.get(normalizedTitle)!.add(doc.path);  // Use add() for Set
       }
     }
 
     // Find duplicates with same normalized title
-    for (const [normalizedTitle, files] of titleMap) {
+    for (const [normalizedTitle, filesSet] of titleMap) {
+      const files = Array.from(filesSet);  // Convert Set to Array
       if (files.length > 1 && normalizedTitle.length > 3) {
         // Check for exact or near duplicates by comparing content
-        const contentHashes = new Map<string, string[]>();
+        const contentHashes = new Map<string, Set<string>>();  // Use Set
 
         for (const filePath of files) {
           try {
@@ -616,17 +620,20 @@ export class EnterpriseDocAnalyzer {
               .replace(/[^a-z0-9]/g, '');
 
             if (!contentHashes.has(contentSample)) {
-              contentHashes.set(contentSample, []);
+              contentHashes.set(contentSample, new Set());
             }
-            contentHashes.get(contentSample)!.push(filePath);
+            contentHashes.get(contentSample)!.add(filePath);
           } catch {
             // Skip files that can't be read
           }
         }
 
         // Check for exact content duplicates
-        for (const [, sameContentFiles] of contentHashes) {
+        let hasExactDupes = false;
+        for (const [, sameContentFilesSet] of contentHashes) {
+          const sameContentFiles = Array.from(sameContentFilesSet);
           if (sameContentFiles.length > 1) {
+            hasExactDupes = true;
             duplicates.push({
               files: sameContentFiles.map(f => path.relative(this.projectPath, f)),
               similarity: 100,
@@ -636,7 +643,7 @@ export class EnterpriseDocAnalyzer {
         }
 
         // If no exact duplicates but same title, mark as same_title
-        if (!duplicates.some(d => d.files.length === files.length)) {
+        if (!hasExactDupes && files.length > 1) {
           const relativePaths = files.map(f => path.relative(this.projectPath, f));
           duplicates.push({
             files: relativePaths,
@@ -812,7 +819,9 @@ export class EnterpriseDocAnalyzer {
   private generateRecommendations(
     categories: DocumentCategory[],
     mismatches: SpecCodeMismatch[],
-    healthScore: HealthScore
+    healthScore: HealthScore,
+    namingViolations: NamingViolation[],
+    duplicates: DuplicateDocument[]
   ): string[] {
     const recommendations: string[] = [];
 
@@ -836,6 +845,34 @@ export class EnterpriseDocAnalyzer {
       if (ghostCompletions.length > 0) {
         recommendations.push(
           `${ghostCompletions.length} acceptance criteria are marked complete but lack code evidence. Review: ${ghostCompletions.slice(0, 3).map(m => m.criterionId).join(', ')}${ghostCompletions.length > 3 ? '...' : ''}`
+        );
+      }
+    }
+
+    // Naming convention recommendations
+    if (namingViolations.length > 0) {
+      const allCapsViolations = namingViolations.filter(v => v.violationType === 'all_caps');
+      const dateSuffixViolations = namingViolations.filter(v => v.violationType === 'date_suffix');
+
+      if (allCapsViolations.length > 0) {
+        recommendations.push(
+          `${allCapsViolations.length} files use ALL CAPS naming (e.g., ${allCapsViolations[0].actual}). Rename to lowercase-kebab-case for consistency.`
+        );
+      }
+
+      if (dateSuffixViolations.length > 0) {
+        recommendations.push(
+          `${dateSuffixViolations.length} files include dates in names. Use git history for versioning instead of date suffixes.`
+        );
+      }
+    }
+
+    // Duplicate recommendations
+    if (duplicates.length > 0) {
+      const exactDupes = duplicates.filter(d => d.duplicateType === 'exact');
+      if (exactDupes.length > 0) {
+        recommendations.push(
+          `${exactDupes.length} sets of duplicate documents detected. Consider consolidating: ${exactDupes[0].files.slice(0, 2).join(', ')}`
         );
       }
     }
@@ -913,6 +950,68 @@ export function generateEnterpriseReport(report: EnterpriseDocReport): string {
 
     if (report.mismatches.length > 20) {
       lines.push(`| ... | ... | ... | *${report.mismatches.length - 20} more* |`);
+    }
+    lines.push('');
+  }
+
+  // Naming Violations
+  if (report.namingViolations.length > 0) {
+    lines.push('## Naming Convention Violations');
+    lines.push('');
+    lines.push('| File | Type | Severity | Expected Pattern |');
+    lines.push('|------|------|----------|------------------|');
+
+    const severityEmoji = { error: '🔴', warning: '🟡', info: '🔵' };
+    for (const violation of report.namingViolations.slice(0, 25)) {
+      const emoji = severityEmoji[violation.severity];
+      lines.push(`| ${violation.file} | ${emoji} ${violation.violationType} | ${violation.severity} | ${violation.expectedPattern} |`);
+    }
+
+    if (report.namingViolations.length > 25) {
+      lines.push(`| ... | ... | ... | *${report.namingViolations.length - 25} more* |`);
+    }
+    lines.push('');
+  }
+
+  // Duplicates
+  if (report.duplicates.length > 0) {
+    lines.push('## Duplicate Documents');
+    lines.push('');
+    lines.push('| Files | Similarity | Type |');
+    lines.push('|-------|------------|------|');
+
+    for (const dup of report.duplicates.slice(0, 15)) {
+      const filesStr = dup.files.slice(0, 3).join(', ') + (dup.files.length > 3 ? '...' : '');
+      lines.push(`| ${filesStr} | ${dup.similarity}% | ${dup.duplicateType} |`);
+    }
+
+    if (report.duplicates.length > 15) {
+      lines.push(`| ... | ... | *${report.duplicates.length - 15} more* |`);
+    }
+    lines.push('');
+  }
+
+  // Discrepancies
+  if (report.discrepancies.length > 0) {
+    lines.push('## Documentation Discrepancies');
+    lines.push('');
+    lines.push('| File | Type | Description |');
+    lines.push('|------|------|-------------|');
+
+    const discrepancyEmoji: Record<string, string> = {
+      broken_link: '🔗',
+      orphaned_reference: '👻',
+      outdated_version: '📅',
+      conflicting_info: '⚠️',
+    };
+
+    for (const disc of report.discrepancies.slice(0, 20)) {
+      const emoji = discrepancyEmoji[disc.discrepancyType] ?? '❓';
+      lines.push(`| ${disc.file} | ${emoji} ${disc.discrepancyType} | ${disc.description} |`);
+    }
+
+    if (report.discrepancies.length > 20) {
+      lines.push(`| ... | ... | *${report.discrepancies.length - 20} more* |`);
     }
     lines.push('');
   }

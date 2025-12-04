@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2025-12-04T00:39:53.904Z",
-  "summary": {
-    "criticalModules": 0,
-    "highModules": 0,
-    "mediumModules": 2,
-    "lowModules": 18
+  "completedAt": "2025-12-04T00:39:01.396Z",
+  "stats": {
+    "totalWorkItems": 57,
+    "matchedWorkItems": 20,
+    "unmatchedWorkItems": 37,
+    "modulesWithWorkItems": 7
   },
-  "queue": [
+  "priorityQueue": [
     {
       "moduleName": "sync",
       "modulePath": "src/sync",
