@@ -1,0 +1,437 @@
+{
+  "generatedAt": "2025-12-04T00:17:45.489Z",
+  "summary": {
+    "totalModules": 20,
+    "modulesDocumented": 0,
+    "modulesPartial": 6,
+    "modulesUndocumented": 14,
+    "totalWorkItems": 57,
+    "matchedWorkItems": 20,
+    "coveragePercent": 12
+  },
+  "priorityZones": [
+    {
+      "name": "sync",
+      "path": "src/sync",
+      "workItems": 7,
+      "docStatus": "none",
+      "action": "START HERE - Create comprehensive module documentation",
+      "focusFiles": [
+        "Sync Monitor Dashboard",
+        "Update Living Docs Sync to Derive Feature ID",
+        "Pull Sync Execution"
+      ]
+    },
+    {
+      "name": "living-docs",
+      "path": "src/living-docs",
+      "workItems": 7,
+      "docStatus": "none",
+      "action": "START HERE - Create comprehensive module documentation",
+      "focusFiles": [
+        "Update Living Docs Sync to Derive Feature ID",
+        "Init Flow Brownfield Analysis Question",
+        "Intelligent 5-6 Level Hierarchy Mapping"
+      ]
+    },
+    {
+      "name": "init",
+      "path": "src/init",
+      "workItems": 3,
+      "docStatus": "partial",
+      "action": "ENHANCE - Add detailed API docs and usage examples",
+      "focusFiles": [
+        "Init Flow Brownfield Analysis Question",
+        "Init Integration",
+        "Remove feature_id from Type Definitions"
+      ]
+    },
+    {
+      "name": "config",
+      "path": "src/config",
+      "workItems": 3,
+      "docStatus": "none",
+      "action": "START HERE - Create comprehensive module documentation",
+      "focusFiles": [
+        "Umbrella Config Persistence",
+        "Logger Injection Compliance",
+        "Increment-Level Profile"
+      ]
+    },
+    {
+      "name": "types",
+      "path": "src/types",
+      "workItems": 2,
+      "docStatus": "none",
+      "action": "START HERE - Create comprehensive module documentation",
+      "focusFiles": [
+        "Remove feature_id from Type Definitions",
+        "Custom Error Hierarchy"
+      ]
+    },
+    {
+      "name": "templates",
+      "path": "src/templates",
+      "workItems": 1,
+      "docStatus": "partial",
+      "action": "ENHANCE - Add detailed API docs and usage examples",
+      "focusFiles": [
+        "Support All ADO Process Templates"
+      ]
+    },
+    {
+      "name": "progress",
+      "path": "src/progress",
+      "workItems": 1,
+      "docStatus": "none",
+      "action": "START HERE - Create comprehensive module documentation",
+      "focusFiles": [
+        "Progressive Deep Dive"
+      ]
+    }
+  ],
+  "immediateActions": [
+    {
+      "priority": 1,
+      "module": "sync",
+      "action": "Create foundational documentation",
+      "files": [
+        "src/sync/README.md",
+        "src/sync/API.md"
+      ],
+      "reason": "High activity module with 7 related work items"
+    },
+    {
+      "priority": 2,
+      "module": "living-docs",
+      "action": "Create foundational documentation",
+      "files": [
+        "src/living-docs/README.md",
+        "src/living-docs/API.md"
+      ],
+      "reason": "High activity module with 7 related work items"
+    },
+    {
+      "priority": 3,
+      "module": "core",
+      "action": "Add README based on existing test cases",
+      "files": [
+        "src/core/README.md"
+      ],
+      "reason": "Has test coverage but lacks documentation"
+    },
+    {
+      "priority": 4,
+      "module": "cli",
+      "action": "Add README based on existing test cases",
+      "files": [
+        "src/cli/README.md"
+      ],
+      "reason": "Has test coverage but lacks documentation"
+    }
+  ],
+  "moduleStatuses": [
+    {
+      "moduleName": "core",
+      "modulePath": "src/core",
+      "hasReadme": false,
+      "hasAnalysis": true,
+      "coverage": 40,
+      "workItemCount": 0,
+      "priority": "low",
+      "status": "partial"
+    },
+    {
+      "moduleName": "cli",
+      "modulePath": "src/cli",
+      "hasReadme": false,
+      "hasAnalysis": true,
+      "coverage": 40,
+      "workItemCount": 0,
+      "priority": "low",
+      "status": "partial"
+    },
+    {
+      "moduleName": "utils",
+      "modulePath": "src/utils",
+      "hasReadme": false,
+      "hasAnalysis": true,
+      "coverage": 40,
+      "workItemCount": 0,
+      "priority": "low",
+      "status": "partial"
+    },
+    {
+      "moduleName": "templates",
+      "modulePath": "src/templates",
+      "hasReadme": true,
+      "hasAnalysis": false,
+      "coverage": 40,
+      "workItemCount": 1,
+      "priority": "low",
+      "status": "partial"
+    },
+    {
+      "moduleName": "init",
+      "modulePath": "src/init",
+      "hasReadme": false,
+      "hasAnalysis": true,
+      "coverage": 40,
+      "workItemCount": 3,
+      "priority": "low",
+      "status": "partial"
+    },
+    {
+      "moduleName": "adapters",
+      "modulePath": "src/adapters",
+      "hasReadme": true,
+      "hasAnalysis": false,
+      "coverage": 40,
+      "workItemCount": 0,
+      "priority": "low",
+      "status": "partial"
+    },
+    {
+      "moduleName": "locales",
+      "modulePath": "src/locales",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 0,
+      "priority": "low",
+      "status": "none"
+    },
+    {
+      "moduleName": "sync",
+      "modulePath": "src/sync",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 7,
+      "priority": "medium",
+      "status": "none"
+    },
+    {
+      "moduleName": "integrations",
+      "modulePath": "src/integrations",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 0,
+      "priority": "low",
+      "status": "none"
+    },
+    {
+      "moduleName": "metrics",
+      "modulePath": "src/metrics",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 0,
+      "priority": "low",
+      "status": "none"
+    },
+    {
+      "moduleName": "importers",
+      "modulePath": "src/importers",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 0,
+      "priority": "low",
+      "status": "none"
+    },
+    {
+      "moduleName": "hooks",
+      "modulePath": "src/hooks",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 0,
+      "priority": "low",
+      "status": "none"
+    },
+    {
+      "moduleName": "living-docs",
+      "modulePath": "src/living-docs",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 7,
+      "priority": "medium",
+      "status": "none"
+    },
+    {
+      "moduleName": "config",
+      "modulePath": "src/config",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 3,
+      "priority": "low",
+      "status": "none"
+    },
+    {
+      "moduleName": "types",
+      "modulePath": "src/types",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 2,
+      "priority": "low",
+      "status": "none"
+    },
+    {
+      "moduleName": "generators",
+      "modulePath": "src/generators",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 0,
+      "priority": "low",
+      "status": "none"
+    },
+    {
+      "moduleName": "id-generators",
+      "modulePath": "src/id-generators",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 0,
+      "priority": "low",
+      "status": "none"
+    },
+    {
+      "moduleName": "validators",
+      "modulePath": "src/validators",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 0,
+      "priority": "low",
+      "status": "none"
+    },
+    {
+      "moduleName": "progress",
+      "modulePath": "src/progress",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 1,
+      "priority": "low",
+      "status": "none"
+    },
+    {
+      "moduleName": "testing",
+      "modulePath": "src/testing",
+      "hasReadme": false,
+      "hasAnalysis": false,
+      "coverage": 0,
+      "workItemCount": 0,
+      "priority": "low",
+      "status": "none"
+    }
+  ],
+  "additionalSources": [
+    ".specweave/docs"
+  ],
+  "notAnalyzed": [
+    {
+      "path": "src/core",
+      "reason": "Sampled (tier: large)",
+      "filesSkipped": 227
+    },
+    {
+      "path": "src/cli",
+      "reason": "Sampled (tier: large)",
+      "filesSkipped": 92
+    },
+    {
+      "path": "src/utils",
+      "reason": "Sampled (tier: large)",
+      "filesSkipped": 43
+    },
+    {
+      "path": "src/init",
+      "reason": "Sampled (tier: large)",
+      "filesSkipped": 24
+    },
+    {
+      "path": "src/adapters",
+      "reason": "Analysis skipped",
+      "filesSkipped": 22
+    },
+    {
+      "path": "src/locales",
+      "reason": "Analysis skipped",
+      "filesSkipped": 19
+    },
+    {
+      "path": "src/sync",
+      "reason": "Analysis skipped",
+      "filesSkipped": 12
+    },
+    {
+      "path": "src/integrations",
+      "reason": "Analysis skipped",
+      "filesSkipped": 11
+    },
+    {
+      "path": "src/metrics",
+      "reason": "Analysis skipped",
+      "filesSkipped": 10
+    },
+    {
+      "path": "src/importers",
+      "reason": "Analysis skipped",
+      "filesSkipped": 9
+    },
+    {
+      "path": "src/hooks",
+      "reason": "Analysis skipped",
+      "filesSkipped": 5
+    },
+    {
+      "path": "src/living-docs",
+      "reason": "Analysis skipped",
+      "filesSkipped": 4
+    },
+    {
+      "path": "src/config",
+      "reason": "Analysis skipped",
+      "filesSkipped": 3
+    },
+    {
+      "path": "src/types",
+      "reason": "Analysis skipped",
+      "filesSkipped": 3
+    },
+    {
+      "path": "src/generators",
+      "reason": "Analysis skipped",
+      "filesSkipped": 2
+    },
+    {
+      "path": "src/id-generators",
+      "reason": "Analysis skipped",
+      "filesSkipped": 2
+    },
+    {
+      "path": "src/validators",
+      "reason": "Analysis skipped",
+      "filesSkipped": 2
+    },
+    {
+      "path": "src/progress",
+      "reason": "Analysis skipped",
+      "filesSkipped": 1
+    },
+    {
+      "path": "src/testing",
+      "reason": "Analysis skipped",
+      "filesSkipped": 1
+    }
+  ],
+  "painPointsAddressed": [],
+  "isUmbrella": false
+}

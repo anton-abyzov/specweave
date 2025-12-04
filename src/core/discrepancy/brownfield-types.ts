@@ -40,7 +40,8 @@ export type BrownfieldDiscrepancyPriority = 'critical' | 'high' | 'medium' | 'lo
 export type BrownfieldDiscrepancySource =
   | 'brownfield-analyzer'   // Initial brownfield analysis
   | 'drift-detector'        // Ongoing drift detection
-  | 'manual';               // Manually reported
+  | 'manual'                // Manually reported
+  | `ai-${string}`;         // AI-powered analysis (e.g., 'ai-anthropic', 'ai-claude-code')
 
 /**
  * Type of resolution applied.
@@ -68,6 +69,8 @@ export interface BrownfieldDiscrepancyEvidence {
     /** Authors who have contributed */
     authors: string[];
   };
+  /** Flag indicating this was detected by AI analysis */
+  aiAnalyzed?: boolean;
 }
 
 /**

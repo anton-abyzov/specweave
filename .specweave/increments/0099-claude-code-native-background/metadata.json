@@ -1,0 +1,11 @@
+{
+  "id": "0099",
+  "title": "Claude Code Native Background Processing for Living Docs",
+  "status": "ready_for_review",
+  "type": "feature",
+  "createdAt": "2025-12-03T13:00:00.000Z",
+  "updatedAt": "2025-12-03T14:00:00.000Z",
+  "priority": "high",
+  "tags": ["ai", "background-processing", "living-docs", "claude-code"],
+  "description": "Use claude --print CLI for AI-powered deep analysis in living docs builder, leveraging MAX subscription at no extra cost"
+}

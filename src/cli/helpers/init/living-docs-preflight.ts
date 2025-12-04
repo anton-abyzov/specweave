@@ -16,6 +16,11 @@ import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
 import type { LivingDocsUserInputs } from '../../../core/background/types.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
+import {
+  isClaudeCodeAvailable,
+  getClaudeCodeStatus,
+  getAvailableProviders,
+} from '../../../core/llm/provider-factory.js';
 
 /**
  * Get translated strings for preflight prompts
@@ -39,8 +44,14 @@ interface PreflightStrings {
   depthQuickDesc: string;
   depthStandard: string;
   depthStandardDesc: string;
-  depthDeep: string;
-  depthDeepDesc: string;
+  depthDeepNative: string;
+  depthDeepNativeDesc: string;
+  depthDeepNativeNote: string;
+  depthDeepInteractive: string;
+  depthDeepInteractiveDesc: string;
+  depthDeepApi: string;
+  depthDeepApiDesc: string;
+  depthDeepApiNote: string;
   confirmLaunch: string;
   skipLivingDocs: string;
   jobScheduled: string;
@@ -68,12 +79,18 @@ function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
       painPointsPrompt: 'Known documentation pain points?',
       painPointsHint: 'e.g., "deployment process unclear", "API not documented"',
       analysisDepthPrompt: 'How deep should the analysis go?',
-      depthQuick: 'Quick (~30 min)',
-      depthQuickDesc: 'Top 5 modules only - fast overview',
-      depthStandard: 'Standard (~2 hours)',
-      depthStandardDesc: 'Top 10 modules - recommended',
-      depthDeep: 'Deep (hours/days)',
-      depthDeepDesc: 'All modules - comprehensive',
+      depthQuick: 'Quick (~5-10 min)',
+      depthQuickDesc: 'Structure scan + tech detection + imports map',
+      depthStandard: 'Standard (~15-30 min)',
+      depthStandardDesc: 'Module analysis + exports + dependencies',
+      depthDeepNative: 'Deep - Background (Claude MAX)',
+      depthDeepNativeDesc: 'AI analysis using your MAX subscription - NO EXTRA COST!',
+      depthDeepNativeNote: 'Uses claude --print in background. Monitor: /specweave:jobs',
+      depthDeepInteractive: 'Deep - Interactive (this session)',
+      depthDeepInteractiveDesc: 'AI analysis in current Claude Code session (pause/resume)',
+      depthDeepApi: 'Deep - Background (API key)',
+      depthDeepApiDesc: 'For CI/CD or non-Claude tools (requires API key in .env)',
+      depthDeepApiNote: 'Supports: Anthropic, OpenAI, Azure, Ollama, Bedrock, Vertex AI',
       confirmLaunch: 'Launch Living Docs Builder job?',
       skipLivingDocs: 'Skipping living docs generation',
       jobScheduled: 'Living Docs Builder job scheduled!',
@@ -98,12 +115,18 @@ function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
       painPointsPrompt: 'Известные проблемы с документацией?',
       painPointsHint: 'например, "процесс деплоя непонятен", "API не задокументировано"',
       analysisDepthPrompt: 'Насколько глубокий анализ?',
-      depthQuick: 'Быстрый (~30 мин)',
-      depthQuickDesc: 'Только топ-5 модулей',
-      depthStandard: 'Стандартный (~2 часа)',
-      depthStandardDesc: 'Топ-10 модулей - рекомендуется',
-      depthDeep: 'Глубокий (часы/дни)',
-      depthDeepDesc: 'Все модули - полный',
+      depthQuick: 'Быстрый (~5-10 мин)',
+      depthQuickDesc: 'Структура + технологии + карта импортов',
+      depthStandard: 'Стандартный (~15-30 мин)',
+      depthStandardDesc: 'Анализ модулей + экспорты + зависимости',
+      depthDeepNative: 'Глубокий - Фоновый (Claude MAX)',
+      depthDeepNativeDesc: 'ИИ-анализ через вашу подписку MAX - БЕЗ ДОПЛАТЫ!',
+      depthDeepNativeNote: 'Использует claude --print в фоне. Следить: /specweave:jobs',
+      depthDeepInteractive: 'Глубокий - Интерактивный (эта сессия)',
+      depthDeepInteractiveDesc: 'ИИ-анализ в текущей сессии Claude Code (пауза/продолжение)',
+      depthDeepApi: 'Глубокий - Фоновый (API ключ)',
+      depthDeepApiDesc: 'Для CI/CD или других инструментов (требуется API ключ в .env)',
+      depthDeepApiNote: 'Поддержка: Anthropic, OpenAI, Azure, Ollama, Bedrock, Vertex AI',
       confirmLaunch: 'Запустить генератор Living Docs?',
       skipLivingDocs: 'Пропуск генерации living docs',
       jobScheduled: 'Задача Living Docs Builder запланирована!',
@@ -202,11 +225,16 @@ export function detectExistingDocs(projectPath: string): string[] {
 }
 
 /**
+ * Analysis depth type - supports basic and AI-powered modes
+ */
+export type AnalysisDepth = 'quick' | 'standard' | 'deep-native' | 'deep-interactive' | 'deep-api';
+
+/**
  * Estimate duration based on codebase size
  */
 export function estimateDuration(
   projectPath: string,
-  depth: 'quick' | 'standard' | 'deep'
+  depth: AnalysisDepth
 ): string {
   // Quick file count estimate
   let fileCount = 0;
@@ -222,21 +250,35 @@ export function estimateDuration(
   }
 
   // Duration estimates based on tier and depth
+  // NOTE: Quick/Standard are Node.js file scanning (fast)
+  // Deep modes use AI analysis (progress-based, not time-estimated)
   if (depth === 'quick') {
-    return '15-30 minutes';
+    if (fileCount < 500) return '~5 min';
+    if (fileCount < 2000) return '~7 min';
+    return '~10 min';
   }
 
   if (depth === 'standard') {
-    if (fileCount < 500) return '30 minutes - 1 hour';
-    if (fileCount < 2000) return '1-2 hours';
-    return '2-4 hours';
+    if (fileCount < 500) return '~10 min';
+    if (fileCount < 2000) return '~20 min';
+    return '~30 min';
   }
 
-  // Deep
-  if (fileCount < 500) return '1-2 hours';
-  if (fileCount < 2000) return '2-6 hours';
-  if (fileCount < 10000) return '6-24 hours';
-  return '1-3 days';
+  // Deep modes - AI-powered analysis
+  // Show progress bar, not time estimates (can take hours for large codebases)
+  if (depth === 'deep-native') {
+    return 'Background (FREE with MAX) - monitor: /specweave:jobs';
+  }
+
+  if (depth === 'deep-interactive') {
+    return 'In-session (pause/resume supported)';
+  }
+
+  if (depth === 'deep-api') {
+    return 'Background (API costs apply) - monitor: /specweave:jobs';
+  }
+
+  return 'Progress-based';
 }
 
 /**
@@ -411,8 +453,28 @@ export async function collectLivingDocsInputs(
     .map(s => s.trim())
     .filter(s => s.length > 0);
 
-  // Analysis depth
-  const analysisDepth = await select<'quick' | 'standard' | 'deep'>({
+  // Analysis depth - now with 5 options including AI-powered deep modes
+  type AnalysisDepthValue = 'quick' | 'standard' | 'deep-native' | 'deep-interactive' | 'deep-api';
+
+  // Check what's available for AI analysis
+  const claudeCodeStatus = await getClaudeCodeStatus();
+  const availableProviders = await getAvailableProviders();
+  const hasApiProviders = availableProviders.some(p => p !== 'claude-code');
+
+  // Build disabled reasons for better UX
+  let deepNativeDisabledReason: string | false = false;
+  if (!claudeCodeStatus.cliInstalled) {
+    deepNativeDisabledReason = 'Claude CLI not installed (npm i -g @anthropic-ai/claude-code)';
+  } else if (!claudeCodeStatus.available) {
+    deepNativeDisabledReason = claudeCodeStatus.error || 'Claude Code not authenticated (run `claude` first)';
+  }
+
+  let deepApiDisabledReason: string | false = false;
+  if (!hasApiProviders) {
+    deepApiDisabledReason = 'No API keys found (set ANTHROPIC_API_KEY, OPENAI_API_KEY, or configure Ollama)';
+  }
+
+  const analysisDepth = await select<AnalysisDepthValue>({
     message: strings.analysisDepthPrompt,
     choices: [
       {
@@ -424,11 +486,25 @@ export async function collectLivingDocsInputs(
         name: `${strings.depthStandard} - ${strings.depthStandardDesc}`,
       },
       {
-        value: 'deep',
-        name: `${strings.depthDeep} - ${strings.depthDeepDesc}`,
+        value: 'deep-native',
+        name: `⭐ ${strings.depthDeepNative} - ${strings.depthDeepNativeDesc}`,
+        description: strings.depthDeepNativeNote,
+        disabled: deepNativeDisabledReason,
+      },
+      {
+        value: 'deep-interactive',
+        name: `${strings.depthDeepInteractive} - ${strings.depthDeepInteractiveDesc}`,
+      },
+      {
+        value: 'deep-api',
+        name: `${strings.depthDeepApi} - ${strings.depthDeepApiDesc}`,
+        description: hasApiProviders
+          ? `Available: ${availableProviders.filter(p => p !== 'claude-code').join(', ')}`
+          : strings.depthDeepApiNote,
+        disabled: deepApiDisabledReason,
       },
     ],
-    default: 'standard',
+    default: claudeCodeStatus.available ? 'deep-native' : 'quick',
   });
 
   const estimatedDurationStr = estimateDuration(projectPath, analysisDepth);

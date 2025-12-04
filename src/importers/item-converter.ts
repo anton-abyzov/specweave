@@ -251,11 +251,19 @@ export class ItemConverter {
       // - undefined means items go directly to specs/ (no project subfolder)
       // - a string value means items go to specs/{projectId}/
       // For umbrella repos, set enableGlobalCollisionDetection: true
-      autoArchiveAfterDays: 0,  // v0.30.5: Disabled by default (was 30). Set >0 to enable.
+      // CRITICAL (v0.30.12): Auto-archiving DISABLED for external imports!
+      // External items should NEVER be auto-archived during import.
+      // Archive is for increments (source of truth), not imported items.
+      // Users must explicitly archive via /specweave:archive --external
+      autoArchiveAfterDays: 0,  // ALWAYS 0 for imports - archiving is user-initiated only
       enableGlobalCollisionDetection: false, // Default: false for backwards compatibility
       orphanHandling: 'group',  // v0.30.6: Group orphans in _orphans folder (was 'skip')
       ...options,
     };
+
+    // CRITICAL (v0.30.12): Force autoArchiveAfterDays to 0 for external imports
+    // This overrides any user-provided value to prevent accidental archiving
+    this.options.autoArchiveAfterDays = 0;
 
     // Initialize duplicate detector if enabled
     if (this.options.enableDuplicateDetection) {
@@ -699,19 +707,57 @@ export class ItemConverter {
       }
 
       // Create groups for Feature-level items → FS-XXXE/
-      // Feature-level items with epic-level parents get a feature folder
+      // CRITICAL FIX (v0.30.12): Only TOP-LEVEL feature items create FS-XXXE folders
+      // Child feature-level items (e.g., ADO Feature under Epic) should be grouped
+      // with their parent, NOT create separate folders.
+      //
+      // This implements the universal 4-level mapping:
+      // - Epic (no feature-level parent) → Creates FS-XXXE/ folder
+      // - Feature (has Epic parent) → Goes into parent Epic's FS-XXXE/ folder
+      // - User Story → us-xxxe.md file
+      // - Task → checkbox in US
       for (const featureItem of featureLevelItems) {
-        let groupKey: string;
+        // Check if this feature has a parent that is ALSO at feature level
+        // If so, it should NOT create a separate folder - group with parent
+        const hasFeatureLevelParent = featureItem.parentId &&
+          featureLevelItems.some(f => f.id === featureItem.parentId);
 
         // Check if this feature has an epic-level parent
         const hasEpicParent = featureItem.parentId &&
           epicLevelItems.some(epic => epic.id === featureItem.parentId);
 
-        if (hasEpicParent) {
+        let groupKey: string;
+
+        if (hasFeatureLevelParent) {
+          // CRITICAL FIX (v0.30.12): Child of another feature-level item
+          // Group with the parent instead of creating a new folder
+          // Find the TOP-LEVEL ancestor in the feature hierarchy
+          let ancestorId = featureItem.parentId;
+          let ancestor = featureLevelItems.find(f => f.id === ancestorId);
+
+          // Walk up to find the top-level feature (one without feature-level parent)
+          while (ancestor) {
+            const ancestorHasFeatureParent = ancestor.parentId &&
+              featureLevelItems.some(f => f.id === ancestor!.parentId);
+
+            if (!ancestorHasFeatureParent) {
+              // Found the top-level feature
+              break;
+            }
+
+            ancestorId = ancestor.parentId;
+            ancestor = featureLevelItems.find(f => f.id === ancestorId);
+          }
+
+          // Group with the top-level feature ancestor
+          groupKey = ancestorId ? `feature:${ancestorId}` : `feature:${featureItem.id}`;
+
+          moduleLogger.debug(`   📁 Feature "${featureItem.title}" grouped under parent ${ancestorId}`);
+        } else if (hasEpicParent) {
           // Feature under Epic → FS-XXXE/ (Feature level) with parent reference
           groupKey = `feature:${featureItem.id}`;
         } else {
-          // Standalone Feature (no epic parent) → FS-XXXE/
+          // Standalone Feature (no feature-level or epic parent) → FS-XXXE/
           groupKey = `feature:${featureItem.id}`;
         }
 
@@ -751,6 +797,8 @@ export class ItemConverter {
           const parent = itemById.get(item.parentId);
           if (parent) {
             // Find the appropriate ancestor group using hierarchy mapping
+            // CRITICAL FIX (v0.30.12): Find the TOP-LEVEL feature ancestor
+            // to ensure items go into the correct folder
             let current: ExternalItem | undefined = parent;
             while (current) {
               // Normalize work item type for consistent lookup
@@ -765,15 +813,30 @@ export class ItemConverter {
                 break;
               }
 
-              // Feature-level ancestor → feature group
+              // Feature-level ancestor → find TOP-LEVEL feature
               if (currentLevel === 'feature') {
-                // Check if this feature has an epic-level parent
-                const hasEpicParent = current.parentId &&
-                  epicLevelItems.some(epic => epic.id === current!.parentId);
+                // CRITICAL FIX (v0.30.12): Walk up to find the top-level feature
+                // (one without a feature-level parent)
+                let topLevelFeature = current;
+                while (topLevelFeature.parentId) {
+                  const featureParent = itemById.get(topLevelFeature.parentId);
+                  if (!featureParent) break;
 
-                groupKey = hasEpicParent
-                  ? `feature:${current.id}`
-                  : `feature:${current.id}`;
+                  const featureParentType = platform === 'ado'
+                    ? (normalizeAdoWorkItemType(featureParent.adoWorkItemType) || featureParent.type)
+                    : featureParent.type;
+                  const featureParentLevel = this.getSpecWeaveLevel(featureParentType, platform);
+
+                  // If parent is also feature-level, keep walking up
+                  if (featureParentLevel === 'feature') {
+                    topLevelFeature = featureParent;
+                  } else {
+                    // Parent is epic-level or other - stop here
+                    break;
+                  }
+                }
+
+                groupKey = `feature:${topLevelFeature.id}`;
                 break;
               }
 

@@ -1,0 +1,1041 @@
+{
+  "generatedAt": "2025-12-04T00:17:45.479Z",
+  "stats": {
+    "totalWorkItems": 57,
+    "matchedWorkItems": 20,
+    "unmatchedWorkItems": 37,
+    "modulesWithWorkItems": 7
+  },
+  "modules": {
+    "core": {
+      "moduleName": "core",
+      "modulePath": "src/core",
+      "matches": [],
+      "workItemCount": 0,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "cli": {
+      "moduleName": "cli",
+      "modulePath": "src/cli",
+      "matches": [],
+      "workItemCount": 0,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "utils": {
+      "moduleName": "utils",
+      "modulePath": "src/utils",
+      "matches": [],
+      "workItemCount": 0,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "templates": {
+      "moduleName": "templates",
+      "modulePath": "src/templates",
+      "matches": [
+        {
+          "workItem": {
+            "id": "US-003",
+            "featureId": "FS-091",
+            "title": "Support All ADO Process Templates",
+            "status": "completed",
+            "priority": "P0"
+          },
+          "score": 100,
+          "reasons": [
+            "title contains \"templates\"",
+            "title contains path segment \"templates\"",
+            "keyword match: templates",
+            "partial keyword match: template"
+          ]
+        }
+      ],
+      "workItemCount": 1,
+      "priority": "low",
+      "docStatus": "partial"
+    },
+    "init": {
+      "moduleName": "init",
+      "modulePath": "src/init",
+      "matches": [
+        {
+          "workItem": {
+            "id": "US-001",
+            "featureId": "FS-086",
+            "title": "Init Flow Brownfield Analysis Question",
+            "status": "completed",
+            "priority": "P0"
+          },
+          "score": 90,
+          "reasons": [
+            "title contains \"init\"",
+            "title contains path segment \"init\"",
+            "keyword match: init"
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-001",
+            "featureId": "FS-087",
+            "title": "Remove feature_id from Type Definitions",
+            "status": "completed",
+            "priority": "P1"
+          },
+          "score": 75,
+          "reasons": [
+            "title contains \"init\"",
+            "title contains path segment \"init\"",
+            "partial keyword match: definitions"
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-010",
+            "featureId": "FS-090",
+            "title": "Init Integration",
+            "status": "completed",
+            "priority": "P1"
+          },
+          "score": 90,
+          "reasons": [
+            "title contains \"init\"",
+            "title contains path segment \"init\"",
+            "keyword match: init"
+          ]
+        }
+      ],
+      "workItemCount": 3,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "adapters": {
+      "moduleName": "adapters",
+      "modulePath": "src/adapters",
+      "matches": [],
+      "workItemCount": 0,
+      "priority": "low",
+      "docStatus": "partial"
+    },
+    "locales": {
+      "moduleName": "locales",
+      "modulePath": "src/locales",
+      "matches": [],
+      "workItemCount": 0,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "sync": {
+      "moduleName": "sync",
+      "modulePath": "src/sync",
+      "matches": [
+        {
+          "workItem": {
+            "id": "US-001",
+            "featureId": "FS-085",
+            "title": "Sync Monitor Dashboard",
+            "status": "completed",
+            "priority": "P2"
+          },
+          "score": 100,
+          "reasons": [
+            "title contains \"sync\"",
+            "title contains path segment \"sync\"",
+            "keyword match: sync",
+            "description contains \"sync\""
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-003",
+            "featureId": "FS-085",
+            "title": "Discrepancies Command",
+            "status": "completed",
+            "priority": "P2"
+          },
+          "score": 45,
+          "reasons": [
+            "keyword match: sync",
+            "description contains \"sync\""
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-004",
+            "featureId": "FS-085",
+            "title": "Log Aggregation & Querying",
+            "status": "completed",
+            "priority": "P2"
+          },
+          "score": 45,
+          "reasons": [
+            "keyword match: sync",
+            "description contains \"sync\""
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-002",
+            "featureId": "FS-087",
+            "title": "Update Living Docs Sync to Derive Feature ID",
+            "status": "completed",
+            "priority": "P1"
+          },
+          "score": 100,
+          "reasons": [
+            "title contains \"sync\"",
+            "title contains path segment \"sync\"",
+            "keyword match: sync",
+            "partial keyword match: living-docs-sync",
+            "description contains \"sync\""
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-002",
+            "featureId": "FS-089",
+            "title": "Pull Sync Execution",
+            "status": "completed",
+            "priority": "P1"
+          },
+          "score": 90,
+          "reasons": [
+            "title contains \"sync\"",
+            "title contains path segment \"sync\"",
+            "keyword match: sync"
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-004",
+            "featureId": "FS-089",
+            "title": "Scheduled Pull Sync",
+            "status": "completed",
+            "priority": "P1"
+          },
+          "score": 90,
+          "reasons": [
+            "title contains \"sync\"",
+            "title contains path segment \"sync\"",
+            "keyword match: sync"
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-002",
+            "featureId": "FS-093",
+            "title": "Increment-Level Profile",
+            "status": "completed",
+            "priority": "P1"
+          },
+          "score": 45,
+          "reasons": [
+            "keyword match: sync",
+            "description contains \"sync\""
+          ]
+        }
+      ],
+      "workItemCount": 7,
+      "priority": "medium",
+      "docStatus": "none"
+    },
+    "integrations": {
+      "moduleName": "integrations",
+      "modulePath": "src/integrations",
+      "matches": [],
+      "workItemCount": 0,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "metrics": {
+      "moduleName": "metrics",
+      "modulePath": "src/metrics",
+      "matches": [],
+      "workItemCount": 0,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "importers": {
+      "moduleName": "importers",
+      "modulePath": "src/importers",
+      "matches": [],
+      "workItemCount": 0,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "hooks": {
+      "moduleName": "hooks",
+      "modulePath": "src/hooks",
+      "matches": [],
+      "workItemCount": 0,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "living-docs": {
+      "moduleName": "living-docs",
+      "modulePath": "src/living-docs",
+      "matches": [
+        {
+          "workItem": {
+            "id": "US-001",
+            "featureId": "FS-086",
+            "title": "Init Flow Brownfield Analysis Question",
+            "status": "completed",
+            "priority": "P0"
+          },
+          "score": 30,
+          "reasons": [
+            "partial keyword match: living",
+            "partial keyword match: docs"
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-002",
+            "featureId": "FS-087",
+            "title": "Update Living Docs Sync to Derive Feature ID",
+            "status": "completed",
+            "priority": "P1"
+          },
+          "score": 60,
+          "reasons": [
+            "partial keyword match: living",
+            "partial keyword match: docs",
+            "partial keyword match: living-docs-sync",
+            "description contains \"living-docs\""
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-002",
+            "featureId": "FS-091",
+            "title": "Intelligent 5-6 Level Hierarchy Mapping",
+            "status": "completed",
+            "priority": "P0"
+          },
+          "score": 30,
+          "reasons": [
+            "partial keyword match: living",
+            "partial keyword match: docs"
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-001",
+            "featureId": "FS-097",
+            "title": "Umbrella Module Detection",
+            "status": "not_started",
+            "priority": "critical"
+          },
+          "score": 30,
+          "reasons": [
+            "partial keyword match: living",
+            "partial keyword match: docs"
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-002",
+            "featureId": "FS-097",
+            "title": "Clone Job Integration",
+            "status": "not_started",
+            "priority": "critical"
+          },
+          "score": 30,
+          "reasons": [
+            "partial keyword match: living",
+            "partial keyword match: docs"
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-003",
+            "featureId": "FS-098",
+            "title": "Foundation Docs for Umbrella",
+            "status": "not_started",
+            "priority": "high"
+          },
+          "score": 30,
+          "reasons": [
+            "partial keyword match: docs",
+            "partial keyword match: living"
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-004",
+            "featureId": "FS-098",
+            "title": "SUGGESTIONS.md Improvements",
+            "status": "not_started",
+            "priority": "high"
+          },
+          "score": 30,
+          "reasons": [
+            "partial keyword match: living",
+            "partial keyword match: docs"
+          ]
+        }
+      ],
+      "workItemCount": 7,
+      "priority": "medium",
+      "docStatus": "none"
+    },
+    "config": {
+      "moduleName": "config",
+      "modulePath": "src/config",
+      "matches": [
+        {
+          "workItem": {
+            "id": "US-001",
+            "featureId": "FS-092",
+            "title": "Logger Injection Compliance",
+            "status": "completed",
+            "priority": "P1"
+          },
+          "score": 30,
+          "reasons": [
+            "partial keyword match: configurable",
+            "description contains \"config\""
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-002",
+            "featureId": "FS-093",
+            "title": "Increment-Level Profile",
+            "status": "completed",
+            "priority": "P1"
+          },
+          "score": 30,
+          "reasons": [
+            "partial keyword match: configured",
+            "description contains \"config\""
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-004",
+            "featureId": "FS-097",
+            "title": "Umbrella Config Persistence",
+            "status": "not_started",
+            "priority": "critical"
+          },
+          "score": 100,
+          "reasons": [
+            "title contains \"config\"",
+            "title contains path segment \"config\"",
+            "keyword match: config",
+            "description contains \"config\""
+          ]
+        }
+      ],
+      "workItemCount": 3,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "types": {
+      "moduleName": "types",
+      "modulePath": "src/types",
+      "matches": [
+        {
+          "workItem": {
+            "id": "US-001",
+            "featureId": "FS-087",
+            "title": "Remove feature_id from Type Definitions",
+            "status": "completed",
+            "priority": "P1"
+          },
+          "score": 75,
+          "reasons": [
+            "partial keyword match: type",
+            "partial keyword match: typescript",
+            "keyword match: types",
+            "description contains \"types\""
+          ]
+        },
+        {
+          "workItem": {
+            "id": "US-002",
+            "featureId": "FS-092",
+            "title": "Custom Error Hierarchy",
+            "status": "completed",
+            "priority": "P1"
+          },
+          "score": 45,
+          "reasons": [
+            "keyword match: types",
+            "description contains \"types\""
+          ]
+        }
+      ],
+      "workItemCount": 2,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "generators": {
+      "moduleName": "generators",
+      "modulePath": "src/generators",
+      "matches": [],
+      "workItemCount": 0,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "id-generators": {
+      "moduleName": "id-generators",
+      "modulePath": "src/id-generators",
+      "matches": [],
+      "workItemCount": 0,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "validators": {
+      "moduleName": "validators",
+      "modulePath": "src/validators",
+      "matches": [],
+      "workItemCount": 0,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "progress": {
+      "moduleName": "progress",
+      "modulePath": "src/progress",
+      "matches": [
+        {
+          "workItem": {
+            "id": "US-007",
+            "featureId": "FS-090",
+            "title": "Progressive Deep Dive",
+            "status": "completed",
+            "priority": "P1"
+          },
+          "score": 75,
+          "reasons": [
+            "title contains \"progress\"",
+            "title contains path segment \"progress\"",
+            "partial keyword match: progressive"
+          ]
+        }
+      ],
+      "workItemCount": 1,
+      "priority": "low",
+      "docStatus": "none"
+    },
+    "testing": {
+      "moduleName": "testing",
+      "modulePath": "src/testing",
+      "matches": [],
+      "workItemCount": 0,
+      "priority": "low",
+      "docStatus": "none"
+    }
+  },
+  "unmatchedItems": [
+    {
+      "id": "US-002",
+      "featureId": "FS-085",
+      "title": "Notifications Command",
+      "keywords": [
+        "notifications",
+        "command",
+        "developer",
+        "view",
+        "manage",
+        "stay",
+        "informed",
+        "dismiss",
+        "resolved",
+        "items"
+      ]
+    },
+    {
+      "id": "US-002",
+      "featureId": "FS-086",
+      "title": "Brownfield Background Job System",
+      "keywords": [
+        "brownfield",
+        "background",
+        "job",
+        "developer",
+        "large",
+        "enterprise",
+        "codebase",
+        "analysis",
+        "run",
+        "continue"
+      ]
+    },
+    {
+      "id": "US-003",
+      "featureId": "FS-086",
+      "title": "Discrepancy Storage Structure",
+      "keywords": [
+        "discrepancy",
+        "storage",
+        "structure",
+        "developer",
+        "many",
+        "documentation",
+        "gaps",
+        "discrepancies",
+        "stored",
+        "structured"
+      ]
+    },
+    {
+      "id": "US-004",
+      "featureId": "FS-086",
+      "title": "Discrepancy Detection Algorithms",
+      "keywords": [
+        "discrepancy",
+        "detection",
+        "algorithms",
+        "developer",
+        "intelligent",
+        "documentation",
+        "gaps",
+        "know",
+        "what",
+        "missing"
+      ]
+    },
+    {
+      "id": "US-005",
+      "featureId": "FS-086",
+      "title": "Discrepancy → Increment Conversion",
+      "keywords": [
+        "discrepancy",
+        "increment",
+        "conversion",
+        "developer",
+        "convert",
+        "discrepancies",
+        "into",
+        "increments",
+        "systematically",
+        "address"
+      ]
+    },
+    {
+      "id": "US-006",
+      "featureId": "FS-086",
+      "title": "Discrepancy Commands",
+      "keywords": [
+        "discrepancy",
+        "commands",
+        "developer",
+        "view",
+        "manage",
+        "discrepancies",
+        "prioritize",
+        "track",
+        "documentation",
+        "work"
+      ]
+    },
+    {
+      "id": "US-003",
+      "featureId": "FS-087",
+      "title": "Migrate All Existing Metadata Files",
+      "keywords": [
+        "migrate",
+        "all",
+        "existing",
+        "metadata",
+        "files",
+        "maintainer",
+        "json",
+        "cleaned",
+        "codebase",
+        "consistent"
+      ]
+    },
+    {
+      "id": "US-004",
+      "featureId": "FS-087",
+      "title": "Update Documentation",
+      "keywords": [
+        "update",
+        "documentation",
+        "developer",
+        "reflect",
+        "new",
+        "simpler",
+        "model",
+        "understand",
+        "increment-to-feature",
+        "mapping"
+      ]
+    },
+    {
+      "id": "US-001",
+      "featureId": "FS-088",
+      "title": "Lifecycle Event Detection",
+      "keywords": [
+        "lifecycle",
+        "event",
+        "detection"
+      ]
+    },
+    {
+      "id": "US-002",
+      "featureId": "FS-088",
+      "title": "User Story Completion Detection",
+      "keywords": [
+        "story",
+        "completion",
+        "detection"
+      ]
+    },
+    {
+      "id": "US-003",
+      "featureId": "FS-088",
+      "title": "Living Specs Handler",
+      "keywords": [
+        "living",
+        "specs",
+        "handler"
+      ]
+    },
+    {
+      "id": "US-004",
+      "featureId": "FS-088",
+      "title": "Status Line Handler",
+      "keywords": [
+        "status",
+        "line",
+        "handler"
+      ]
+    },
+    {
+      "id": "US-005",
+      "featureId": "FS-088",
+      "title": "Race Condition Prevention",
+      "keywords": [
+        "race",
+        "condition",
+        "prevention"
+      ]
+    },
+    {
+      "id": "US-006",
+      "featureId": "FS-088",
+      "title": "Safety Measures",
+      "keywords": [
+        "safety",
+        "measures"
+      ]
+    },
+    {
+      "id": "US-001",
+      "featureId": "FS-089",
+      "title": "External Change Detection",
+      "keywords": [
+        "external",
+        "change",
+        "detection"
+      ]
+    },
+    {
+      "id": "US-003",
+      "featureId": "FS-089",
+      "title": "Timestamp-Based Conflict Resolution",
+      "keywords": [
+        "timestamp-based",
+        "conflict",
+        "resolution"
+      ]
+    },
+    {
+      "id": "US-005",
+      "featureId": "FS-089",
+      "title": "Enhanced Audit Logging",
+      "keywords": [
+        "enhanced",
+        "audit",
+        "logging"
+      ]
+    },
+    {
+      "id": "US-001",
+      "featureId": "FS-090",
+      "title": "Pre-Flight User Input Collection",
+      "keywords": [
+        "pre-flight",
+        "input",
+        "collection"
+      ]
+    },
+    {
+      "id": "US-002",
+      "featureId": "FS-090",
+      "title": "Job Dependency System",
+      "keywords": [
+        "job",
+        "dependency"
+      ]
+    },
+    {
+      "id": "US-003",
+      "featureId": "FS-090",
+      "title": "Discovery Phase (No LLM)",
+      "keywords": [
+        "discovery",
+        "phase",
+        "llm"
+      ]
+    },
+    {
+      "id": "US-004",
+      "featureId": "FS-090",
+      "title": "Smart Sampling Strategy",
+      "keywords": [
+        "smart",
+        "sampling",
+        "strategy"
+      ]
+    },
+    {
+      "id": "US-005",
+      "featureId": "FS-090",
+      "title": "Foundation Docs Generation",
+      "keywords": [
+        "foundation",
+        "docs",
+        "generation"
+      ]
+    },
+    {
+      "id": "US-006",
+      "featureId": "FS-090",
+      "title": "Work Item Integration",
+      "keywords": [
+        "work",
+        "item",
+        "integration"
+      ]
+    },
+    {
+      "id": "US-008",
+      "featureId": "FS-090",
+      "title": "Suggestions Generation",
+      "keywords": [
+        "suggestions",
+        "generation"
+      ]
+    },
+    {
+      "id": "US-009",
+      "featureId": "FS-090",
+      "title": "Comprehensive Logging",
+      "keywords": [
+        "comprehensive",
+        "logging"
+      ]
+    },
+    {
+      "id": "US-001",
+      "featureId": "FS-091",
+      "title": "Auto-Detect ADO Process Template",
+      "keywords": [
+        "auto-detect",
+        "ado",
+        "process",
+        "template",
+        "specweave",
+        "importing",
+        "azure",
+        "devops",
+        "automatically",
+        "detect"
+      ]
+    },
+    {
+      "id": "US-001",
+      "featureId": "FS-093",
+      "title": "Permission Enforcement",
+      "keywords": [
+        "permission",
+        "enforcement",
+        "project",
+        "admin",
+        "ado",
+        "commands",
+        "respect",
+        "settings",
+        "control",
+        "external"
+      ]
+    },
+    {
+      "id": "US-001",
+      "featureId": "FS-095",
+      "title": "Per-Project Epic Folder Structure",
+      "keywords": [
+        "per-project",
+        "epic",
+        "folder",
+        "structure",
+        "importing",
+        "ado",
+        "jira",
+        "epics",
+        "stored",
+        "project"
+      ]
+    },
+    {
+      "id": "US-002",
+      "featureId": "FS-095",
+      "title": "Fix Epic Folder Misplacement Bug",
+      "keywords": [
+        "fix",
+        "epic",
+        "folder",
+        "misplacement",
+        "bug",
+        "importing",
+        "ado",
+        "folders",
+        "never",
+        "appear"
+      ]
+    },
+    {
+      "id": "US-003",
+      "featureId": "FS-095",
+      "title": "Feature-to-Epic Reference",
+      "keywords": [
+        "feature-to-epic",
+        "reference",
+        "viewing",
+        "specs",
+        "features",
+        "their",
+        "parent",
+        "epic",
+        "via",
+        "field"
+      ]
+    },
+    {
+      "id": "US-004",
+      "featureId": "FS-095",
+      "title": "Task Checkbox Format for User Stories",
+      "keywords": [
+        "task",
+        "checkbox",
+        "format",
+        "stories",
+        "importing",
+        "tasks",
+        "rendered",
+        "checkboxes",
+        "description",
+        "track"
+      ]
+    },
+    {
+      "id": "US-001",
+      "featureId": "FS-096",
+      "title": "Fix board placement to use area path",
+      "keywords": [
+        "fix",
+        "board",
+        "placement",
+        "use",
+        "area",
+        "path",
+        "importing",
+        "ado",
+        "boards",
+        "derived"
+      ]
+    },
+    {
+      "id": "US-002",
+      "featureId": "FS-096",
+      "title": "Fix feature title for epic-group features",
+      "keywords": [
+        "fix",
+        "title",
+        "epic-group",
+        "features",
+        "viewing",
+        "imported",
+        "show",
+        "actual",
+        "ado",
+        "item"
+      ]
+    },
+    {
+      "id": "US-003",
+      "featureId": "FS-096",
+      "title": "Filter ADO Tasks from file creation",
+      "keywords": [
+        "filter",
+        "ado",
+        "tasks",
+        "file",
+        "creation",
+        "importing",
+        "become",
+        "checkboxes",
+        "stories",
+        "not"
+      ]
+    },
+    {
+      "id": "US-003",
+      "featureId": "FS-097",
+      "title": "Per-Module Tech Stack Detection",
+      "keywords": [
+        "per-module",
+        "tech",
+        "stack",
+        "detection",
+        "developer",
+        "documenting",
+        "multi-repo",
+        "project",
+        "each",
+        "module"
+      ]
+    },
+    {
+      "id": "US-001",
+      "featureId": "FS-098",
+      "title": "ADO Area Path to Repo Mapping",
+      "keywords": [
+        "ado",
+        "area",
+        "path",
+        "repo",
+        "mapping",
+        "ado-imported",
+        "features",
+        "organized",
+        "paths",
+        "acme"
+      ]
+    },
+    {
+      "id": "US-002",
+      "featureId": "FS-098",
+      "title": "Enhanced Work Item Matching",
+      "keywords": [
+        "enhanced",
+        "work",
+        "item",
+        "matching",
+        "developer",
+        "documenting",
+        "umbrella",
+        "project",
+        "items",
+        "match"
+      ]
+    }
+  ]
+}

@@ -17,13 +17,15 @@ import {
 } from './types.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 
+import type { AnalysisDepth } from './types.js';
+
 /**
  * Options for launching brownfield analysis
  */
 export interface BrownfieldLaunchOptions {
   projectPath: string;
   sourceDocsPath?: string;
-  analysisDepth: 'quick' | 'standard' | 'deep';
+  analysisDepth: AnalysisDepth;
   logger?: Logger;
 }
 

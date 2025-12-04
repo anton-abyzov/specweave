@@ -58,6 +58,36 @@ This command automatically synchronizes living docs by archiving features in:
 - `--archive-completed`: Archive all completed increments (use with caution!)
 - `--preserve-active`: Never archive active/paused increments (default: true)
 - `--dry-run`: Show what would be archived without moving files
+- `--external`: **Archive external living docs** (FS-XXXE folders imported from ADO/JIRA/GitHub)
+
+## NEW: External Living Docs Archiving (v0.30.12+)
+
+**CRITICAL POLICY**: External items (imported from ADO/JIRA/GitHub) are **NEVER auto-archived** during import. Archive is **USER-INITIATED ONLY** via the `--external` flag.
+
+External features are identified by the `E` suffix (e.g., `FS-001E`, `FS-042E`).
+
+### External Archive Usage
+
+```bash
+# Archive specific external features
+/specweave:archive --external FS-001E FS-002E
+
+# Archive external features older than 90 days
+/specweave:archive --external --older-than 90
+
+# Keep last 10 external features, archive the rest
+/specweave:archive --external --keep-last 10
+
+# Preview external archive (dry run)
+/specweave:archive --external --dry-run --keep-last 5
+```
+
+### Why Separate External Archiving?
+
+1. **Increments are source of truth** for new features you create
+2. **External imports are READ-ONLY references** - they track work in external tools
+3. **Different lifecycles** - increments close when work is done, external items may stay open indefinitely
+4. **Prevent accidental archiving** - external items should only be archived when YOU decide
 
 ## CRITICAL SAFETY FEATURE
 
@@ -298,11 +328,48 @@ import { Task } from '@claude/types';
 const task = new Task('archive-increments', 'Archive completed increments');
 
 task.run(async () => {
+  // Parse arguments
+  const args = process.argv.slice(2);
+  const isExternalMode = args.includes('--external');
+
+  // ================================================================
+  // EXTERNAL MODE: Archive external living docs (FS-XXXE folders)
+  // ================================================================
+  if (isExternalMode) {
+    const { FeatureArchiver } = await import('../../../dist/src/core/living-docs/feature-archiver.js');
+    const featureArchiver = new FeatureArchiver(process.cwd());
+
+    // Get feature IDs (non-flag arguments that match FS-*E pattern - external only)
+    // NOTE: Regex requires 'E' suffix to ensure only external features are targeted
+    const featureIds = args.filter(arg =>
+      !arg.startsWith('--') && /^FS-\d+E$/.test(arg)
+    );
+
+    const externalOptions = {
+      featureIds: featureIds.length > 0 ? featureIds : undefined,
+      olderThanDays: parseOption(args, '--older-than'),
+      keepLast: parseOption(args, '--keep-last'),
+      dryRun: args.includes('--dry-run'),
+      updateLinks: true
+    };
+
+    console.log('📦 External living docs archive mode');
+    const result = await featureArchiver.archiveExternalFeatures(externalOptions);
+
+    console.log(`\n✅ External archive complete:`);
+    console.log(`   Archived: ${result.archivedFeatures.length} features`);
+    if (result.errors.length > 0) {
+      console.log(`   Errors: ${result.errors.length}`);
+    }
+    return;
+  }
+
+  // ================================================================
+  // INCREMENT MODE: Archive completed increments (default)
+  // ================================================================
   const { IncrementArchiver } = await import('../../../dist/src/core/increment/increment-archiver.js');
   const archiver = new IncrementArchiver(process.cwd());
 
-  // Parse arguments
-  const args = process.argv.slice(2);
   const incrementIds = args.filter(arg => !arg.startsWith('--'));
 
   // Parse options

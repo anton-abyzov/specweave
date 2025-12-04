@@ -1108,6 +1108,245 @@ export class FeatureArchiver {
     return stats;
   }
 
+  // ============================================================================
+  // EXTERNAL LIVING DOCS ARCHIVING (v0.30.12+)
+  // ============================================================================
+
+  /**
+   * Archive external living docs features (FS-XXXE folders) on demand
+   *
+   * CRITICAL (v0.30.12): External items (imported from ADO/JIRA/GitHub) should
+   * NEVER be auto-archived during import. Archive is user-initiated only via:
+   * - /specweave:archive --external
+   * - /specweave:archive --external --older-than 90
+   * - /specweave:archive --external FS-001E FS-002E
+   *
+   * External features are identified by the 'E' suffix (e.g., FS-001E, FS-042E).
+   * They are NOT linked to increments (increments are source of truth for NEW features).
+   *
+   * @param options - Archive options for external features
+   * @returns Archive result
+   */
+  async archiveExternalFeatures(options: {
+    featureIds?: string[];      // Specific external feature IDs to archive
+    olderThanDays?: number;     // Archive features older than N days
+    keepLast?: number;          // Keep last N external features (default: 10)
+    dryRun?: boolean;           // Preview without archiving
+    updateLinks?: boolean;      // Update links in documentation
+  } = {}): Promise<FeatureArchiveResult> {
+    const result: FeatureArchiveResult = {
+      archivedFeatures: [],
+      archivedEpics: [],
+      updatedLinks: [],
+      errors: []
+    };
+
+    console.log('📦 Archiving external living docs features...');
+
+    try {
+      // Get all external features (FS-XXXE suffix)
+      const allExternalFeatures = await this.getAllExternalFeatures();
+      console.log(`   Found ${allExternalFeatures.length} external features (FS-*E pattern)`);
+
+      if (allExternalFeatures.length === 0) {
+        console.log('   No external features found to archive');
+        return result;
+      }
+
+      // Determine which features to archive
+      let featuresToArchive: typeof allExternalFeatures = [];
+
+      if (options.featureIds && options.featureIds.length > 0) {
+        // Archive specific features
+        featuresToArchive = allExternalFeatures.filter(f =>
+          options.featureIds!.includes(f.featureId)
+        );
+        console.log(`   Filtering to ${featuresToArchive.length} specified features`);
+      } else if (options.olderThanDays !== undefined) {
+        // Archive features older than N days
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - options.olderThanDays);
+
+        for (const feature of allExternalFeatures) {
+          const age = await this.getExternalFeatureAge(feature.featurePath);
+          if (age !== null && age >= options.olderThanDays) {
+            featuresToArchive.push(feature);
+          }
+        }
+        console.log(`   Found ${featuresToArchive.length} features older than ${options.olderThanDays} days`);
+      } else {
+        // Default: keep last N external features (default 10)
+        const keepLast = options.keepLast ?? 10;
+        const sorted = [...allExternalFeatures].sort((a, b) => {
+          // Sort by feature number (higher = newer)
+          const numA = parseInt(a.featureId.match(/\d+/)?.[0] || '0');
+          const numB = parseInt(b.featureId.match(/\d+/)?.[0] || '0');
+          return numB - numA; // Descending (newest first)
+        });
+
+        if (sorted.length > keepLast) {
+          featuresToArchive = sorted.slice(keepLast);
+          console.log(`   Archiving ${featuresToArchive.length} oldest features (keeping last ${keepLast})`);
+        } else {
+          console.log(`   Only ${sorted.length} features exist, keeping all (threshold: ${keepLast})`);
+        }
+      }
+
+      // Archive each feature
+      for (const { featureId, projectId, featurePath } of featuresToArchive) {
+        const archivePath = path.join(this.specsDir, projectId, '_archive', featureId);
+
+        // Check if already archived
+        if (await fs.pathExists(archivePath)) {
+          console.log(`   ⏭️  ${featureId} already in archive`);
+          continue;
+        }
+
+        const operation: ArchiveOperation = {
+          type: 'feature',
+          id: featureId,
+          sourcePath: featurePath,
+          targetPath: archivePath,
+          reason: 'external-user-initiated'
+        };
+
+        await this.executeArchiveOperation(operation, result, {
+          dryRun: options.dryRun,
+          updateLinks: options.updateLinks
+        });
+      }
+
+      // Update links if requested
+      if (options.updateLinks && !options.dryRun && result.archivedFeatures.length > 0) {
+        await this.updateAllLinks(result);
+      }
+
+      console.log(`\n✅ External feature archiving complete:`);
+      console.log(`   Archived: ${result.archivedFeatures.length} features`);
+      if (result.errors.length > 0) {
+        console.log(`   Errors: ${result.errors.length}`);
+      }
+
+    } catch (error) {
+      result.errors.push(`External feature archive failed: ${error}`);
+      console.error('❌ External feature archive failed:', error);
+    }
+
+    return result;
+  }
+
+  /**
+   * Get all external features (FS-XXXE pattern)
+   *
+   * External features have the 'E' suffix indicating they were imported
+   * from external tools (ADO, JIRA, GitHub) rather than created from increments.
+   */
+  private async getAllExternalFeatures(): Promise<Array<{
+    featureId: string;
+    projectId: string;
+    featurePath: string;
+  }>> {
+    const results: Array<{ featureId: string; projectId: string; featurePath: string }> = [];
+
+    if (!await fs.pathExists(this.specsDir)) {
+      return results;
+    }
+
+    // Scan all project folders (including 2-level structures)
+    const projectEntries = await fs.readdir(this.specsDir, { withFileTypes: true });
+
+    for (const projectEntry of projectEntries) {
+      if (!projectEntry.isDirectory()) continue;
+
+      const entryName = projectEntry.name;
+      // Skip special folders
+      if (entryName.startsWith('_')) continue;
+
+      const entryPath = path.join(this.specsDir, entryName);
+
+      // Check if this is a 2-level structure (container/project)
+      const subEntries = await fs.readdir(entryPath, { withFileTypes: true });
+      const has2LevelStructure = subEntries.some(sub =>
+        sub.isDirectory() && !sub.name.startsWith('_') && !sub.name.match(/^FS-/)
+      );
+
+      if (has2LevelStructure) {
+        // 2-level: scan project folders inside this container
+        for (const subEntry of subEntries) {
+          if (!subEntry.isDirectory() || subEntry.name.startsWith('_')) continue;
+
+          const projectPath = path.join(entryPath, subEntry.name);
+          const projectId = `${entryName}/${subEntry.name}`;
+
+          await this.scanForExternalFeatures(projectPath, projectId, results);
+        }
+      } else {
+        // 1-level: scan this folder directly
+        await this.scanForExternalFeatures(entryPath, entryName, results);
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Scan a directory for external features (FS-*E pattern)
+   */
+  private async scanForExternalFeatures(
+    dirPath: string,
+    projectId: string,
+    results: Array<{ featureId: string; projectId: string; featurePath: string }>
+  ): Promise<void> {
+    // Pattern: FS-XXXE (ends with E = external)
+    const featurePattern = path.join(dirPath, 'FS-*E');
+    const featureFolders = await glob(featurePattern, {
+      ignore: ['**/_archive/**']
+    });
+
+    for (const folder of featureFolders) {
+      const stats = await fs.stat(folder);
+      if (stats.isDirectory()) {
+        results.push({
+          featureId: path.basename(folder),
+          projectId,
+          featurePath: folder
+        });
+      }
+    }
+  }
+
+  /**
+   * Get the age of an external feature in days
+   *
+   * Reads the FEATURE.md creation date or falls back to filesystem mtime.
+   */
+  private async getExternalFeatureAge(featurePath: string): Promise<number | null> {
+    try {
+      // Try to read creation date from FEATURE.md
+      const featureMdPath = path.join(featurePath, 'FEATURE.md');
+      if (await fs.pathExists(featureMdPath)) {
+        const content = await fs.readFile(featureMdPath, 'utf-8');
+
+        // Look for created: or imported_at: in frontmatter
+        const createdMatch = content.match(/^(?:created|imported_at):\s*["']?([^"'\n]+)["']?$/m);
+        if (createdMatch) {
+          const createdDate = new Date(createdMatch[1]);
+          if (!isNaN(createdDate.getTime())) {
+            const ageMs = Date.now() - createdDate.getTime();
+            return Math.floor(ageMs / (1000 * 60 * 60 * 24));
+          }
+        }
+      }
+
+      // Fallback: use filesystem mtime
+      const stats = await fs.stat(featurePath);
+      const ageMs = Date.now() - stats.mtime.getTime();
+      return Math.floor(ageMs / (1000 * 60 * 60 * 24));
+    } catch {
+      return null;
+    }
+  }
+
   /**
    * Clean up feature folder duplicates
    * v5.0.0: Features live in {project}/FS-XXX/, archives in {project}/_archive/FS-XXX/
