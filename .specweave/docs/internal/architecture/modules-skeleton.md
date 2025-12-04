@@ -18,7 +18,7 @@ Total modules: 20
 | metrics | `src/metrics` | 10 | 1,033 | ❌ | ❌ |
 | importers | `src/importers` | 9 | 3,638 | ❌ | ❌ |
 | hooks | `src/hooks` | 5 | 668 | ❌ | ❌ |
-| living-docs | `src/living-docs` | 4 | 2,148 | ❌ | ❌ |
+| living-docs | `src/living-docs` | 4 | 2,213 | ❌ | ❌ |
 | config | `src/config` | 3 | 300 | ❌ | ❌ |
 | types | `src/types` | 3 | 128 | ❌ | ❌ |
 | generators | `src/generators` | 2 | 524 | ❌ | ❌ |
@@ -207,7 +207,7 @@ Total modules: 20
 **Path**: `src/living-docs`
 
 - Files: 4
-- Estimated LOC: 2,148
+- Estimated LOC: 2,213
 - Has Tests: No
 - Has README: No
 - File Types: .ts (4)

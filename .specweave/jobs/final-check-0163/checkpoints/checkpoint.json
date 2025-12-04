@@ -1,0 +1,424 @@
+{
+  "phase": "suggestions",
+  "progressPercent": 100,
+  "errors": [],
+  "lastUpdated": "2025-12-04T01:02:46.646Z",
+  "discovery": {
+    "codebaseStats": {
+      "totalFiles": 3501,
+      "totalDirs": 875,
+      "byExtension": {
+        "": 28,
+        ".example": 7,
+        ".json": 157,
+        ".md": 1514,
+        ".ts": 1158,
+        ".yml": 18,
+        ".py": 6,
+        ".mdx": 1,
+        ".png": 16,
+        ".js": 187,
+        ".sh": 119,
+        ".tsx": 4,
+        ".css": 3,
+        ".svg": 18,
+        ".jpg": 7,
+        ".template": 13,
+        ".mjs": 4,
+        ".cmd": 1,
+        ".ps1": 2,
+        ".hbs": 65,
+        ".map": 86,
+        ".disabled": 2,
+        ".yaml": 17,
+        ".mmd": 38,
+        ".properties": 4,
+        ".tf": 9,
+        ".tpl": 2,
+        ".cjs": 5,
+        ".stub": 1,
+        ".qa": 1,
+        ".development": 1,
+        ".staging": 1,
+        ".skip": 4,
+        ".bak2": 1,
+        ".bak3": 1
+      },
+      "byType": {
+        "code": 876,
+        "tests": 574,
+        "docs": 1453,
+        "config": 174,
+        "assets": 424
+      },
+      "estimatedLOC": 179342
+    },
+    "techStack": {
+      "languages": [
+        "TypeScript"
+      ],
+      "frameworks": [],
+      "buildTools": [],
+      "testFrameworks": [
+        "Vitest",
+        "Playwright"
+      ],
+      "detectedFrom": [
+        "package.json"
+      ]
+    },
+    "existingDocs": {
+      "readme": "README.md",
+      "contributing": null,
+      "docsFolder": "docs",
+      "wikiFolder": null,
+      "mdFiles": [
+        "CHANGELOG.md",
+        "CLAUDE.md",
+        "CODE_OF_CONDUCT.md",
+        "README.md",
+        "SECURITY.md"
+      ]
+    },
+    "entryPoints": {
+      "main": [],
+      "index": [],
+      "exports": [
+        "dist/index.js",
+        "./bin/specweave.js"
+      ]
+    },
+    "modules": [
+      {
+        "name": "core",
+        "path": "src/core",
+        "fileCount": 232,
+        "estimatedLOC": 53310,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [
+          "background/index.ts",
+          "cicd/index.ts",
+          "config/index.ts",
+          "dashboard/index.ts",
+          "discrepancy/analyzers/index.ts",
+          "discrepancy/index.ts",
+          "errors/index.ts",
+          "feature-deleter/index.ts",
+          "iac/index.ts",
+          "living-docs/index.ts",
+          "living-docs/sync-helpers/index.ts",
+          "llm/index.ts",
+          "logs/index.ts",
+          "notifications/index.ts",
+          "repo-structure/providers/index.ts",
+          "scheduler/index.ts",
+          "serverless/index.ts",
+          "workflow/index.ts"
+        ],
+        "extensions": {
+          ".ts": 230,
+          ".disabled": 1,
+          ".json": 1
+        }
+      },
+      {
+        "name": "cli",
+        "path": "src/cli",
+        "fileCount": 95,
+        "estimatedLOC": 25504,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [
+          "helpers/init/index.ts",
+          "helpers/issue-tracker/index.ts"
+        ],
+        "extensions": {
+          ".ts": 95
+        }
+      },
+      {
+        "name": "utils",
+        "path": "src/utils",
+        "fileCount": 46,
+        "estimatedLOC": 9598,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [
+          "docs-preview/index.ts",
+          "validators/index.ts"
+        ],
+        "extensions": {
+          ".ts": 46
+        }
+      },
+      {
+        "name": "templates",
+        "path": "src/templates",
+        "fileCount": 32,
+        "estimatedLOC": 0,
+        "hasTests": false,
+        "hasReadme": true,
+        "entryPoints": [],
+        "extensions": {
+          ".example": 1,
+          ".template": 7,
+          ".md": 13,
+          ".yml": 7,
+          ".qa": 1,
+          ".development": 1,
+          ".staging": 1,
+          ".yaml": 1
+        }
+      },
+      {
+        "name": "init",
+        "path": "src/init",
+        "fileCount": 28,
+        "estimatedLOC": 4581,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 27,
+          ".stub": 1
+        }
+      },
+      {
+        "name": "adapters",
+        "path": "src/adapters",
+        "fileCount": 22,
+        "estimatedLOC": 2747,
+        "hasTests": false,
+        "hasReadme": true,
+        "entryPoints": [],
+        "extensions": {
+          ".md": 10,
+          ".ts": 11,
+          ".yaml": 1
+        }
+      },
+      {
+        "name": "locales",
+        "path": "src/locales",
+        "fileCount": 19,
+        "estimatedLOC": 0,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          "": 8,
+          ".json": 11
+        }
+      },
+      {
+        "name": "sync",
+        "path": "src/sync",
+        "fileCount": 12,
+        "estimatedLOC": 3407,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [
+          "index.ts"
+        ],
+        "extensions": {
+          ".ts": 12
+        }
+      },
+      {
+        "name": "integrations",
+        "path": "src/integrations",
+        "fileCount": 11,
+        "estimatedLOC": 3797,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 11
+        }
+      },
+      {
+        "name": "metrics",
+        "path": "src/metrics",
+        "fileCount": 10,
+        "estimatedLOC": 1033,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 10
+        }
+      },
+      {
+        "name": "importers",
+        "path": "src/importers",
+        "fileCount": 9,
+        "estimatedLOC": 3638,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 9
+        }
+      },
+      {
+        "name": "hooks",
+        "path": "src/hooks",
+        "fileCount": 5,
+        "estimatedLOC": 668,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [
+          "index.ts"
+        ],
+        "extensions": {
+          ".ts": 5
+        }
+      },
+      {
+        "name": "living-docs",
+        "path": "src/living-docs",
+        "fileCount": 4,
+        "estimatedLOC": 2213,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 4
+        }
+      },
+      {
+        "name": "config",
+        "path": "src/config",
+        "fileCount": 3,
+        "estimatedLOC": 300,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 3
+        }
+      },
+      {
+        "name": "types",
+        "path": "src/types",
+        "fileCount": 3,
+        "estimatedLOC": 128,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 3
+        }
+      },
+      {
+        "name": "generators",
+        "path": "src/generators",
+        "fileCount": 2,
+        "estimatedLOC": 524,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 2
+        }
+      },
+      {
+        "name": "id-generators",
+        "path": "src/id-generators",
+        "fileCount": 2,
+        "estimatedLOC": 220,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 2
+        }
+      },
+      {
+        "name": "validators",
+        "path": "src/validators",
+        "fileCount": 2,
+        "estimatedLOC": 471,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 2
+        }
+      },
+      {
+        "name": "progress",
+        "path": "src/progress",
+        "fileCount": 1,
+        "estimatedLOC": 125,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 1
+        }
+      },
+      {
+        "name": "testing",
+        "path": "src/testing",
+        "fileCount": 1,
+        "estimatedLOC": 424,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 1
+        }
+      }
+    ],
+    "tier": "large",
+    "samplingConfig": {
+      "tier": "large",
+      "filesPerDir": 3,
+      "priorityPatterns": [
+        "**/index.*",
+        "**/main.*",
+        "**/*.config.*",
+        "**/types.*",
+        "**/README.md"
+      ],
+      "skipPatterns": [
+        "node_modules/**",
+        "dist/**",
+        "build/**",
+        "coverage/**",
+        "**/*.test.*",
+        "**/*.spec.*",
+        "**/__tests__/**"
+      ]
+    },
+    "discoveredAt": "2025-12-04T01:02:43.763Z",
+    "umbrella": {
+      "isUmbrella": false,
+      "source": "none",
+      "childRepoCount": 0
+    }
+  },
+  "foundationPaths": [
+    "/Users/antonabyzov/Documents/Projects/specweave/.specweave/docs/internal/architecture/overview.md",
+    "/Users/antonabyzov/Documents/Projects/specweave/.specweave/docs/internal/architecture/tech-stack.md",
+    "/Users/antonabyzov/Documents/Projects/specweave/.specweave/docs/internal/architecture/modules-skeleton.md"
+  ],
+  "matchingStats": {
+    "totalWorkItems": 57,
+    "matchedWorkItems": 20,
+    "unmatchedWorkItems": 37,
+    "modulesWithWorkItems": 7
+  },
+  "moduleAnalysis": {
+    "completed": [
+      "core",
+      "cli",
+      "utils",
+      "templates",
+      "init"
+    ],
+    "remaining": []
+  }
+}
