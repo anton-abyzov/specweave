@@ -1,6 +1,6 @@
 ---
 name: specweave-docs:preview
-description: Launch Docusaurus documentation server. Supports both public (port 3016) and internal (port 8001) documentation sites.
+description: Launch Docusaurus documentation server. Supports both public (port 3016) and internal (port 3015) documentation sites.
 ---
 
 # Documentation Preview Command
@@ -21,7 +21,7 @@ Launch Docusaurus development server with hot reload, Mermaid diagrams, and auto
 
 | Site | Port | Content | NPM Script |
 |------|------|---------|------------|
-| **Internal** | 8001 | `.specweave/docs/internal/` | `docs:internal` |
+| **Internal** | 3015 | `.specweave/docs/internal/` | `docs:internal` |
 | **Public** | 3016 | `docs-site/docs/` | `docs:dev` |
 
 ## Your Task
@@ -40,7 +40,7 @@ if [ "$PUBLIC_FLAG" = "--public" ]; then
   echo ""
   npm run docs:dev
 else
-  echo "Launching INTERNAL documentation on port 8001..."
+  echo "Launching INTERNAL documentation on port 3015..."
   echo "Content: .specweave/docs/internal/"
   echo ""
   npm run docs:internal
@@ -83,7 +83,7 @@ This installs Docusaurus dependencies (~200MB, ~30 seconds).
 | Script | Port | URL |
 |--------|------|-----|
 | `docs:dev` | 3016 | http://localhost:3016 |
-| `docs:internal` | 8001 | http://localhost:8001 |
+| `docs:internal` | 3015 | http://localhost:3015 |
 
 ## Internal Docs Structure
 
@@ -115,7 +115,7 @@ This installs Docusaurus dependencies (~200MB, ~30 seconds).
 ### Port already in use
 ```bash
 # Find process using port
-lsof -i :8001
+lsof -i :3015
 
 # Kill it
 kill -9 <PID>

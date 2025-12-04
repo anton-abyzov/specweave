@@ -247,7 +247,7 @@ const producer = kafka.producer({
 **Schema Registry (Avro):**
 ```javascript
 // Register schema and serialize messages
-// See: examples/avro-schema-registry/
+// See: plugins/specweave-kafka/examples/avro-schema-registry/
 ```
 
 **Kafka Streams:**
@@ -278,7 +278,7 @@ const producer = kafka.producer({
 
 ```bash
 # Working code examples
-ls examples/
+ls plugins/specweave-kafka/examples/
 
 # - simple-producer-consumer/
 # - avro-schema-registry/
@@ -376,7 +376,7 @@ curl localhost:7071/metrics
 ### Examples
 ```bash
 # Browse working examples
-cd examples/
+cd plugins/specweave-kafka/examples/
 
 # Run example
 cd simple-producer-consumer

@@ -11,7 +11,7 @@ const config: Config = {
     v4: true,
   },
 
-  url: 'http://localhost:8001',
+  url: 'http://localhost:3015',
   baseUrl: '/',
 
   // Static files (logos, images)

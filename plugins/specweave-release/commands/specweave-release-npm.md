@@ -318,9 +318,9 @@ Show the user:
 ## Direct Mode Safety Rules
 
 - ✅ ALWAYS rebuild before publishing (`npm run rebuild`)
-- ✅ Use `--only` for emergency/quick releases or local testing
-- ✅ Default mode (GitHub Actions) is preferred for regular releases
-- ✅ Direct mode gives immediate feedback (no CI wait time)
+- ✅ Use `--only` when you want to publish but push git later
+- ✅ Default mode (no flags) is preferred - auto-commits, publishes, and pushes
+- ✅ Direct mode gives control over git push timing
 - ⚠️ Remember to push git changes later to sync GitHub
 
 ## Success Criteria (Direct Mode)
@@ -415,7 +415,7 @@ Show the user:
 5. Publish: `npm publish --registry https://registry.npmjs.org`
 6. Push: `git push origin develop --follow-tags`
 
-**Or use**: `/specweave-release:npm --only --push` for full release
+**Or use**: `/specweave-release:npm` (no flags) for full instant release
 ```
 
 ## Local Mode Safety Rules

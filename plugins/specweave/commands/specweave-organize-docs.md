@@ -162,7 +162,7 @@ Uncategorized: 14 files
 After running this command, use:
 
 ```bash
-/specweave-docs-preview:preview
+/specweave-docs:preview
 ```
 
 The generated indexes will appear in the sidebar:
@@ -180,6 +180,6 @@ The generated indexes will appear in the sidebar:
 
 ## Related Commands
 
-- `/specweave-docs-preview:preview` - Preview documentation with Docusaurus
-- `/specweave-docs-preview:build` - Build static documentation site
+- `/specweave-docs:preview` - Preview documentation with Docusaurus
+- `/specweave-docs:build` - Build static documentation site
 - Enterprise health report - Includes organization recommendations

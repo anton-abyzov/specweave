@@ -407,9 +407,9 @@ cat ./docs/api/index.md ./docs/specs/index.md > ./docs/complete-reference.md
 
 ## Related Commands
 
-- `/specweave-docs:docs-init` - Initialize Docusaurus documentation site
-- `/specweave-docs-preview:preview` - Preview generated documentation
-- `/specweave-docs-preview:build` - Build static site from generated docs
+- `/specweave-docs:init` - Initialize Docusaurus documentation site
+- `/specweave-docs:preview` - Preview generated documentation
+- `/specweave-docs:build` - Build static site from generated docs
 
 ## Requirements
 

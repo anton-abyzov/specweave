@@ -286,7 +286,7 @@ Comprehensive overview of what SpecWeave supports.
 | `specweave-mobile` | Mobile architecture |
 | `specweave-payments` | Payment integration |
 | `specweave-kubernetes` | K8s architecture |
-| `specweave-docs-preview` | Documentation preview |
+| `specweave-docs` | Documentation & preview |
 | `specweave-tooling` | Plugin development |
 
 ---

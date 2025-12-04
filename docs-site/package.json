@@ -15,9 +15,9 @@
     "typecheck": "tsc",
     "generate:hero-images": "node scripts/generate-hero-images.js",
     "generate:trading-only": "node scripts/generate-trading-only.js",
-    "start:internal": "docusaurus start --port 8001 --config docusaurus.config.internal.ts",
+    "start:internal": "docusaurus start --port 3015 --config docusaurus.config.internal.ts",
     "build:internal": "docusaurus build --config docusaurus.config.internal.ts --out-dir build-internal",
-    "serve:internal": "docusaurus serve --port 8001 --dir build-internal"
+    "serve:internal": "docusaurus serve --port 3015 --dir build-internal"
   },
   "dependencies": {
     "@docusaurus/core": "3.9.2",

@@ -160,16 +160,22 @@ dev → qa → staging → uat → preview → prod
 }
 ```
 
-**Usage**:
+**Usage (Git-Style Commands)**:
 ```bash
-# Sync to dev environment
+# Pull latest from dev environment
+/specweave-github:pull --profile dev-github
+
+# Push progress to dev environment
+/specweave-github:push 0012 --profile dev-github
+
+# Two-way sync
 /specweave-github:sync 0012 --profile dev-github
 
 # Promote to QA (create new issue in QA repo)
-/specweave-github:create-issue 0012 --profile qa-github
+/specweave-github:create 0012 --profile qa-github
 
 # Promote to prod (after UAT approval)
-/specweave-github:create-issue 0012 --profile prod-github
+/specweave-github:create 0012 --profile prod-github
 ```
 
 **Result**: Same increment tracked across ALL environments with full traceability.
@@ -260,9 +266,77 @@ DevOps Team:
 **Manual Override** (When Needed):
 
 ```bash
-# Sync to specific repo
+# Pull from specific repo
+/specweave-github:pull --profile backend-auth
+
+# Push to specific repo
+/specweave-github:push 0015 --profile backend-auth
+
+# Two-way sync
 /specweave-github:sync 0015 --profile backend-auth
 ```
+
+---
+
+## 🔄 Git-Style Sync Commands (Recommended)
+
+### Quick Reference
+
+SpecWeave provides intuitive **git-style commands** for GitHub synchronization:
+
+| Command | Purpose |
+|---------|---------|
+| `/specweave-github:pull` | Pull changes from GitHub (like `git pull`) |
+| `/specweave-github:push` | Push progress to GitHub (like `git push`) |
+| `/specweave-github:sync` | Two-way sync (pull + push) |
+| `/specweave-github:status` | Check sync status |
+
+### Basic Usage
+
+```bash
+# Pull latest changes from GitHub
+/specweave-github:pull
+
+# Push your progress to GitHub
+/specweave-github:push
+
+# Two-way sync (both directions)
+/specweave-github:sync 0012
+```
+
+### Multi-Project Sync
+
+```bash
+# Pull ALL specs across ALL projects (living docs sync)
+/specweave-github:pull --all
+
+# Pull specific feature hierarchy
+/specweave-github:pull --feature FS-042
+
+# Push all local changes to GitHub
+/specweave-github:push --all
+```
+
+### Sync Brief Output
+
+After every sync operation, you'll see a compact summary:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PULL COMPLETE                                 ✓ GitHub │
+├─────────────────────────────────────────────────────────┤
+│  Scanned: 35 specs across 2 repos                       │
+│  Updated: 5 specs                                       │
+│  Conflicts: 1 (resolved: external wins)                 │
+├─────────────────────────────────────────────────────────┤
+│  CHANGES APPLIED                                        │
+│    ↓ Status changes:    3                               │
+│    ↓ Label updates:     2                               │
+│    + Comments imported: 4                               │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Symbols**: `↓` = pulled (incoming), `↑` = pushed (outgoing), `✓` = success
 
 ---
 

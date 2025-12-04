@@ -303,14 +303,14 @@ themeConfig: {
 
 ### Custom Output Directory
 ```bash
-/specweave-docs:docs-init --output ./documentation
+/specweave-docs:init --output ./documentation
 ```
 
 ## Related Commands
 
-- `/specweave-docs:docs-generate` - Generate docs from code/specs
-- `/specweave-docs-preview:preview` - Launch documentation preview server
-- `/specweave-docs-preview:build` - Build static documentation site
+- `/specweave-docs:generate` - Generate docs from code/specs
+- `/specweave-docs:preview` - Launch documentation preview server
+- `/specweave-docs:build` - Build static documentation site
 
 ## Requirements
 

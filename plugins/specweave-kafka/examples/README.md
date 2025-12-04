@@ -172,14 +172,14 @@ These examples are for learning. For production:
 
 ## Documentation
 
-- **Getting Started**: [kafka-getting-started.md](../.specweave/docs/public/guides/kafka-getting-started.md)
-- **Advanced Usage**: [kafka-advanced-usage.md](../.specweave/docs/public/guides/kafka-advanced-usage.md)
-- **Terraform Guide**: [kafka-terraform.md](../.specweave/docs/public/guides/kafka-terraform.md)
-- **Troubleshooting**: [kafka-troubleshooting.md](../.specweave/docs/public/guides/kafka-troubleshooting.md)
+- **Getting Started**: [kafka-getting-started.md](../../../.specweave/docs/public/guides/kafka-getting-started.md)
+- **Advanced Usage**: [kafka-advanced-usage.md](../../../.specweave/docs/public/guides/kafka-advanced-usage.md)
+- **Terraform Guide**: [kafka-terraform.md](../../../.specweave/docs/public/guides/kafka-terraform.md)
+- **Troubleshooting**: [kafka-troubleshooting.md](../../../.specweave/docs/public/guides/kafka-troubleshooting.md)
 
 ## Contributing
 
-Found a bug or want to add an example? See [CONTRIBUTING.md](../CONTRIBUTING.md).
+Found a bug or want to add an example? See [CONTRIBUTING.md](../../../CONTRIBUTING.md).
 
 ## Support
 

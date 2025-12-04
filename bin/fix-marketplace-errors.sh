@@ -76,7 +76,7 @@ plugins=(
     "specweave-payments"
     "specweave-ml"
     "specweave-diagrams"
-    "specweave-docs-preview"
+    "specweave-docs"
     "specweave-release"
     "specweave-mobile"
     "specweave-kafka"
