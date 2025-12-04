@@ -137,6 +137,20 @@ coverage/
 /test-*.js
 /debug-*.js
 
+# MCP/Playwright test artifacts (screenshots, traces, etc.)
+.playwright-mcp/
+.*-mcp/
+
+# Accidental test workspace folders
+enterprise-health/
+/docs/
+
+# Plugin-specific configs should NOT be in root (belong in plugins/*/)
+.eslintrc.*.json
+.prettierrc.*.json
+!.eslintrc.json
+!.prettierrc.json
+
 # Claude Code hooks (NOT needed - hooks live in plugins/)
 .claude/hooks/
 
