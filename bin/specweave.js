@@ -305,6 +305,31 @@ program
     await jobsCmd.parseAsync(['node', 'jobs', ...process.argv.slice(3)], { from: 'user' });
   });
 
+// Living-docs command - Launch or resume Living Docs Builder independently
+program
+  .command('living-docs')
+  .description('Launch or resume Living Docs Builder independently')
+  .option('--resume <jobId>', 'Resume orphaned/paused job')
+  .option('--depth <level>', 'Analysis depth: quick, standard, deep-native, deep-api')
+  .option('--priority <modules>', 'Priority modules (comma-separated)')
+  .option('--sources <folders>', 'Additional doc folders (comma-separated)')
+  .option('--depends-on <jobIds>', 'Wait for jobs before starting (comma-separated)')
+  .option('--foreground', 'Run in current session instead of background')
+  .option('--force', 'Force run even for greenfield projects')
+  .action(async (options) => {
+    const { livingDocsCommand } = await import('../dist/src/cli/commands/living-docs.js');
+    await livingDocsCommand(options);
+  });
+
+// Commits command - Display last 2 git commits
+program
+  .command('commits')
+  .description('Display the last 2 git commits')
+  .action(async () => {
+    const { commitsCommand } = await import('../dist/src/cli/commands/commits.js');
+    await commitsCommand();
+  });
+
 // Sync-scheduled command - Execute due scheduled sync jobs (for cron/CI)
 program
   .command('sync-scheduled')
@@ -348,6 +373,9 @@ program.on('--help', () => {
   console.log('  $ specweave jobs --follow <jobId>           # Follow job progress live');
   console.log('  $ specweave jobs --logs <jobId>             # View worker logs');
   console.log('  $ specweave jobs --resume <jobId>           # Resume paused job');
+  console.log('  $ specweave living-docs                     # Launch Living Docs (interactive)');
+  console.log('  $ specweave living-docs --depth deep-native # AI-powered analysis (FREE w/ MAX)');
+  console.log('  $ specweave living-docs --resume <jobId>    # Resume orphaned job');
   console.log('  $ specweave sync-scheduled                  # Execute due sync jobs');
   console.log('  $ specweave sync-scheduled --force          # Force sync all jobs');
   console.log('  $ specweave validate-jira --env .env.prod   # Validate with custom .env file');

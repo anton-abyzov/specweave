@@ -22,8 +22,8 @@
  * @throws Error if no PAT is configured
  *
  * @example
- * // Uses AZURE_DEVOPS_PAT_NOVA_SYSTEMS if set, otherwise AZURE_DEVOPS_PAT
- * const pat = getAdoPat('nova-systems');
+ * // Uses AZURE_DEVOPS_PAT_ACME_CORP if set, otherwise AZURE_DEVOPS_PAT
+ * const pat = getAdoPat('acme-corp');
  */
 export function getAdoPat(organization: string): string {
   // SECURITY: Never log the PAT value itself
@@ -71,7 +71,7 @@ export function hasAdoPat(organization?: string): boolean {
  * @returns The environment variable key
  *
  * @example
- * getPatEnvKey('nova-systems') // returns 'AZURE_DEVOPS_PAT_NOVA_SYSTEMS'
+ * getPatEnvKey('acme-corp') // returns 'AZURE_DEVOPS_PAT_ACME_CORP'
  */
 export function getPatEnvKey(organization: string): string {
   return `AZURE_DEVOPS_PAT_${organization.toUpperCase().replace(/-/g, '_')}`;

@@ -42,6 +42,28 @@ GitHub issues MUST use living docs format:
 
 ---
 
+## 🔐 CRITICAL: Authentication (DO NOT HALLUCINATE)
+
+**EXACT environment variable names - use ONLY these:**
+
+| Service | Env Var | Example |
+|---------|---------|---------|
+| **GitHub Token** | `GITHUB_TOKEN` or `GH_TOKEN` | `GITHUB_TOKEN=ghp_xxx...` |
+| **GitHub Owner** | `GITHUB_OWNER` | `GITHUB_OWNER=myorg` |
+| **GitHub Repo** | `GITHUB_REPO` | `GITHUB_REPO=myrepo` |
+
+⚠️ **NEVER USE OR SUGGEST these non-existent env vars:**
+- ❌ `GITHUB_PAT` ← DOES NOT EXIST
+- ❌ `GIT_TOKEN` ← DOES NOT EXIST
+- ❌ `GITHUB_API_TOKEN` ← DOES NOT EXIST
+
+**Alternative: Use `gh` CLI (recommended for local dev):**
+```bash
+gh auth login
+```
+
+---
+
 ## 🚀 How to Invoke This Agent
 
 **Subagent Type**: `specweave-github:github-manager:SpecWeave Sync`

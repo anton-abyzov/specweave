@@ -1,0 +1,321 @@
+---
+name: specweave:living-docs
+description: Launch or resume Living Docs Builder independently. Generates documentation from codebase analysis with AI-powered insights.
+usage: /specweave:living-docs [--resume <jobId>] [--depth <level>] [--priority <modules>] [--sources <folders>] [--depends-on <jobIds>] [--foreground]
+---
+
+# Living Docs Builder (Standalone)
+
+**Usage**: `/specweave:living-docs [options]`
+
+---
+
+## Purpose
+
+Launch the Living Docs Builder independently of `specweave init`. This is essential for:
+- **Resuming after crash** - Claude Code crashed after init, need to restart living docs
+- **On-demand analysis** - Re-analyze codebase after major changes
+- **Large brownfield projects** - Run targeted analysis on specific modules
+- **CI/CD integration** - Automate documentation generation
+
+---
+
+## Command Options
+
+| Option | Description |
+|--------|-------------|
+| (none) | Interactive mode - prompts for configuration |
+| `--resume <jobId>` | Resume orphaned/paused living-docs job |
+| `--depth <level>` | Analysis depth: `quick`, `standard`, `deep-native`, `deep-api` |
+| `--priority <modules>` | Priority modules (comma-separated): `auth,payments,api` |
+| `--sources <folders>` | Additional doc folders (comma-separated): `docs/,wiki/` |
+| `--depends-on <jobIds>` | Wait for jobs before starting (comma-separated) |
+| `--foreground` | Run in current session instead of background |
+
+---
+
+## Quick Start
+
+### Launch New Analysis (Interactive)
+
+```bash
+/specweave:living-docs
+
+# Prompts for:
+# 1. Analysis depth (quick/standard/deep-native/deep-api)
+# 2. Priority modules to focus on
+# 3. Additional documentation sources
+# 4. Confirmation to launch
+```
+
+### Resume After Crash
+
+```bash
+# Check for orphaned jobs first
+/specweave:jobs
+
+# If you see an orphaned living-docs-builder job:
+/specweave:living-docs --resume abc12345
+
+# Or let it auto-detect:
+/specweave:living-docs
+# → "Found orphaned job abc12345. Resume? [Y/n]"
+```
+
+### Quick Analysis (Non-Interactive)
+
+```bash
+# Quick scan - 5-10 minutes
+/specweave:living-docs --depth quick
+
+# Standard analysis - 15-30 minutes
+/specweave:living-docs --depth standard --priority auth,payments
+
+# AI-powered deep analysis (FREE with MAX subscription)
+/specweave:living-docs --depth deep-native --priority core,api
+```
+
+---
+
+## Analysis Depths
+
+| Depth | Duration | What It Does | Cost |
+|-------|----------|--------------|------|
+| `quick` | ~5-10 min | Structure scan, tech detection, imports map | Free |
+| `standard` | ~15-30 min | Module analysis, exports, dependencies | Free |
+| `deep-native` | Progress-based | AI analysis via Claude Code CLI | FREE (MAX) |
+| `deep-api` | Progress-based | AI analysis via API key | API costs |
+
+### Deep-Native (Recommended for MAX Users)
+
+Uses your Claude MAX subscription via `claude --print`:
+- **No extra cost** - included in MAX
+- Runs in **background** - survives terminal close
+- **Checkpoint/resume** - can resume from any phase
+- Uses **Opus 4.5** for best quality
+
+```bash
+/specweave:living-docs --depth deep-native
+
+# Monitor progress:
+/specweave:jobs --follow <jobId>
+```
+
+---
+
+## Implementation Steps
+
+When this command is invoked:
+
+### Step 1: Check for Orphaned Jobs
+
+```typescript
+import { getOrphanedJobs, getJobManager } from '../../../src/core/background/job-launcher.js';
+
+const orphaned = getOrphanedJobs(projectPath).filter(j => j.type === 'living-docs-builder');
+if (orphaned.length > 0) {
+  // Prompt: "Found orphaned job {id}. Resume? [Y/n]"
+  // If yes: resume job
+  // If no: ask if they want to start fresh
+}
+```
+
+### Step 2: Collect Configuration (if not --resume)
+
+If no `--resume` flag and no auto-resume:
+
+```typescript
+import { collectLivingDocsInputs } from '../../../src/cli/helpers/init/living-docs-preflight.js';
+
+const result = await collectLivingDocsInputs({
+  projectPath,
+  language: 'en',
+  isCi: hasFlags, // Skip prompts if flags provided
+});
+```
+
+Override with flags:
+- `--depth` → `result.userInputs.analysisDepth`
+- `--priority` → `result.userInputs.priorityAreas`
+- `--sources` → `result.userInputs.additionalSources`
+
+### Step 3: Launch Job
+
+```typescript
+import { launchLivingDocsJob } from '../../../src/core/background/job-launcher.js';
+
+const { job, pid, isBackground } = await launchLivingDocsJob({
+  projectPath,
+  userInputs: result.userInputs,
+  dependsOn: dependsOnJobIds,
+  foreground: hasForegroundFlag,
+});
+```
+
+### Step 4: Display Status
+
+```
+✅ Living Docs Builder launched!
+
+   Job ID: ldb-abc12345
+   Depth: deep-native (Claude Code Opus 4.5)
+   Priority: auth, payments, api
+   PID: 45678
+
+   Monitor: /specweave:jobs --follow ldb-abc12345
+   Logs: /specweave:jobs --logs ldb-abc12345
+
+💡 This job runs in background and survives terminal close.
+   Output will be saved to:
+   - .specweave/docs/SUGGESTIONS.md
+   - .specweave/docs/ENTERPRISE-HEALTH.md
+```
+
+---
+
+## Resume Behavior
+
+When resuming a job:
+
+1. **Load checkpoint** from `.specweave/state/jobs/<jobId>/checkpoints/`
+2. **Skip completed phases**:
+   - `waiting` → dependency waiting
+   - `discovery` → codebase scanning
+   - `foundation` → high-level docs
+   - `integration` → work item matching
+   - `deep-dive` → module analysis (per-module checkpoints)
+   - `suggestions` → recommendations
+   - `enterprise` → health report
+3. **Continue from resume point**
+
+```bash
+# Example: Job crashed during deep-dive phase
+/specweave:living-docs --resume abc12345
+
+# Output:
+# Resuming from checkpoint: phase=deep-dive, module=auth (5/18)
+# ✓ Skipping completed phases: waiting, discovery, foundation, integration
+# → Continuing deep-dive from module: payments
+```
+
+---
+
+## Waiting for Dependencies
+
+For umbrella projects with clone/import jobs:
+
+```bash
+# Launch after clone completes
+/specweave:living-docs --depends-on clone-xyz123 --depth standard
+
+# Launch after both clone and import complete
+/specweave:living-docs --depends-on clone-xyz123,import-abc456
+```
+
+The job will:
+1. Enter `waiting` phase
+2. Poll dependency status every 30 seconds
+3. Start analysis once all dependencies complete
+4. Warn if any dependency failed (proceeds with available data)
+
+---
+
+## Output Files
+
+After completion:
+
+| File | Description |
+|------|-------------|
+| `.specweave/docs/SUGGESTIONS.md` | Documentation recommendations by priority |
+| `.specweave/docs/ENTERPRISE-HEALTH.md` | Health score, coverage, accuracy metrics |
+| `.specweave/docs/overview/PROJECT-OVERVIEW.md` | Auto-generated project overview |
+| `.specweave/docs/overview/TECH-STACK.md` | Detected technologies and frameworks |
+| `.specweave/docs/modules/*.md` | Per-module documentation |
+
+---
+
+## Examples
+
+### Example 1: Post-Crash Resume
+
+```bash
+# Claude crashed after init, living docs job orphaned
+
+# Step 1: Check what's there
+/specweave:jobs
+# Shows: [ldb-abc123] living-docs-builder - ORPHANED (worker died)
+
+# Step 2: Resume
+/specweave:living-docs --resume ldb-abc123
+
+# Output:
+# ✅ Resuming Living Docs Builder (ldb-abc123)
+#    Last checkpoint: deep-dive phase, module 12/45
+#    Continuing from: payments-service
+```
+
+### Example 2: Large Brownfield (247 repos)
+
+```bash
+# Focus on critical modules first
+/specweave:living-docs --depth deep-native \
+  --priority auth,payments,billing,core \
+  --depends-on clone-main123
+
+# Monitor in another terminal
+/specweave:jobs --follow ldb-xyz789
+```
+
+### Example 3: CI/CD Integration
+
+```bash
+# In CI pipeline (non-interactive)
+specweave living-docs --depth quick --foreground
+
+# Or background with polling
+specweave living-docs --depth standard
+specweave jobs --wait ldb-latest  # Wait for completion
+```
+
+---
+
+## Error Handling
+
+### Worker Crashed
+```
+/specweave:jobs
+# Shows: ORPHANED status
+
+/specweave:living-docs --resume <jobId>
+# Resumes from last checkpoint
+```
+
+### Dependency Failed
+```
+⚠️  Dependency clone-xyz123 failed
+    Reason: Network timeout
+
+Proceeding with available data...
+Some repositories may be missing from analysis.
+```
+
+### No Brownfield Detected
+```
+ℹ️  No existing code detected (greenfield project)
+    Living docs will sync automatically as you create increments.
+
+    To force analysis anyway: /specweave:living-docs --force
+```
+
+---
+
+## See Also
+
+- `/specweave:jobs` - Monitor all background jobs
+- `/specweave:import-docs` - Import existing documentation
+- `specweave:brownfield-analyzer` skill - Analyze doc gaps
+- `specweave:brownfield-onboarder` skill - Merge existing docs
+
+---
+
+**Implementation**: `src/cli/commands/living-docs.ts`

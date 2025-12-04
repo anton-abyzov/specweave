@@ -56,6 +56,64 @@ Task({
 
 ---
 
+## 🔐 CRITICAL: Authentication (DO NOT HALLUCINATE)
+
+**EXACT environment variable names - use ONLY these, never invent variations:**
+
+| Service | Env Var | Example |
+|---------|---------|---------|
+| **ADO PAT** | `AZURE_DEVOPS_PAT` | `AZURE_DEVOPS_PAT=abc123xyz...` |
+| **ADO Org** | `AZURE_DEVOPS_ORG` | `AZURE_DEVOPS_ORG=mycompany` |
+| **ADO Project** | `AZURE_DEVOPS_PROJECT` | `AZURE_DEVOPS_PROJECT=MyProject` |
+
+⚠️ **NEVER USE OR SUGGEST these non-existent env vars:**
+- ❌ `AZURE_DEVOPS_EXT_PAT` ← DOES NOT EXIST
+- ❌ `ADO_PAT` ← DEPRECATED, not supported
+- ❌ `AZURE_PAT` ← DOES NOT EXIST
+- ❌ `DEVOPS_PAT` ← DOES NOT EXIST
+
+### Loading Credentials (MANDATORY before API calls)
+
+**ALWAYS read PAT from `.env` file before making API calls:**
+
+```bash
+# Read PAT from .env file (REQUIRED - don't rely on shell environment)
+ADO_PAT=$(grep '^AZURE_DEVOPS_PAT=' .env 2>/dev/null | cut -d'=' -f2)
+
+# If PAT not found in .env, show error
+if [ -z "$ADO_PAT" ]; then
+  echo "ERROR: AZURE_DEVOPS_PAT not found in .env file"
+  exit 1
+fi
+```
+
+**Use the PAT in API calls:**
+
+```bash
+# Create auth header from PAT
+AUTH_HEADER="Basic $(echo -n ":$ADO_PAT" | base64)"
+
+# Use in curl
+curl -H "Authorization: $AUTH_HEADER" ...
+```
+
+**When auth fails (401 error), display this EXACT message:**
+```
+ADO Authentication Required
+
+Check your .env file contains:
+  AZURE_DEVOPS_PAT=your-personal-access-token
+
+If PAT exists but still failing:
+  1. PAT may have expired - regenerate at:
+     https://dev.azure.com/{organization}/_usersSettings/tokens
+  2. Check PAT has required scopes:
+     • Work Items: Read (minimum)
+     • Work Items: Read & Write (for push/sync)
+```
+
+---
+
 ## 🚨 CRITICAL: Concept Mapping (MANDATORY)
 
 **BEFORE any sync operation, you MUST**:

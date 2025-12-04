@@ -213,6 +213,11 @@ function FeaturesSection(): ReactNode {
             title="Universal Support (Any Stack, Any AI)"
             description="Works with ANY tech stack (TS, Python, Go, Rust, Java, C#) and ANY AI tool (Claude Code, Cursor, Copilot, Gemini, ChatGPT)."
           />
+          <FeatureHighlight
+            icon="🔧"
+            title="Extensible Framework"
+            description="Not a locked product—customize everything via CLAUDE.md: custom sync rules for external tools, additional quality gates, lifecycle hooks, agent behavior overrides."
+          />
         </div>
       </div>
     </section>

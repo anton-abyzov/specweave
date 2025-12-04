@@ -3,7 +3,7 @@ increment: 0097-umbrella-module-detection
 title: Umbrella Repository Module Detection
 type: feature
 priority: critical
-status: active
+status: completed
 created: 2024-12-03
 ---
 
@@ -26,10 +26,10 @@ SpecWeave's living docs builder fails to detect modules in umbrella/multi-repo p
 **So that** living docs builder can analyze and document each project correctly
 
 #### Acceptance Criteria
-- [ ] **AC-US1-01**: Child repos with `.git` directories are detected as modules
-- [ ] **AC-US1-02**: Modules from clone job config.json are recognized when available
-- [ ] **AC-US1-03**: Each detected module has correct path, name, and file stats
-- [ ] **AC-US1-04**: Detection works for 200+ repos without performance issues
+- [x] **AC-US1-01**: Child repos with `.git` directories are detected as modules
+- [x] **AC-US1-02**: Modules from clone job config.json are recognized when available
+- [x] **AC-US1-03**: Each detected module has correct path, name, and file stats
+- [x] **AC-US1-04**: Detection works for 200+ repos without performance issues
 
 ### US-002: Clone Job Integration
 **As a** user who ran clone-repos job
@@ -37,9 +37,9 @@ SpecWeave's living docs builder fails to detect modules in umbrella/multi-repo p
 **So that** I don't need to wait for re-scanning of already-known repos
 
 #### Acceptance Criteria
-- [ ] **AC-US2-01**: Living docs worker reads repos from clone job config when available
-- [ ] **AC-US2-02**: Repo metadata (path, name, team) is preserved from clone job
-- [ ] **AC-US2-03**: Fallback to .git scanning when no clone job exists
+- [x] **AC-US2-01**: Living docs worker reads repos from clone job config when available
+- [x] **AC-US2-02**: Repo metadata (path, name, team) is preserved from clone job
+- [x] **AC-US2-03**: Fallback to .git scanning when no clone job exists
 
 ### US-003: Per-Module Tech Stack Detection
 **As a** developer documenting a multi-repo project
@@ -47,10 +47,10 @@ SpecWeave's living docs builder fails to detect modules in umbrella/multi-repo p
 **So that** I can see which technologies are used in each child repo
 
 #### Acceptance Criteria
-- [ ] **AC-US3-01**: Tech stack detection runs per-module for umbrella projects
-- [ ] **AC-US3-02**: Each module's package.json/go.mod/etc is parsed
-- [ ] **AC-US3-03**: Aggregated tech stack summary includes all modules
-- [ ] **AC-US3-04**: Framework detection (React, Vue, .NET, etc.) works per-module
+- [x] **AC-US3-01**: Tech stack detection runs per-module for umbrella projects
+- [x] **AC-US3-02**: Each module's package.json/go.mod/etc is parsed
+- [x] **AC-US3-03**: Aggregated tech stack summary includes all modules
+- [x] **AC-US3-04**: Framework detection (React, Vue, .NET, etc.) works per-module
 
 ### US-004: Umbrella Config Persistence
 **As a** user who completed clone-repos job
@@ -58,9 +58,9 @@ SpecWeave's living docs builder fails to detect modules in umbrella/multi-repo p
 **So that** subsequent runs don't need to re-discover the repo structure
 
 #### Acceptance Criteria
-- [ ] **AC-US4-01**: Clone job writes `umbrella.childRepos` to config.json
-- [ ] **AC-US4-02**: Config includes repo path, name, team mapping
-- [ ] **AC-US4-03**: Living docs can read umbrella config without clone job
+- [x] **AC-US4-01**: Clone job writes `umbrella.childRepos` to config.json
+- [x] **AC-US4-02**: Config includes repo path, name, team mapping
+- [x] **AC-US4-03**: Living docs can read umbrella config without clone job
 
 ## Technical Requirements
 

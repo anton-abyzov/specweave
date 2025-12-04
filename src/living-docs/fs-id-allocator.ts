@@ -143,7 +143,7 @@ export class FSIdAllocator {
    * - Legacy: specs/ (no projectId)
    *
    * IMPORTANT: For 2-level structure, features ALWAYS go in the inner folder (board/area level),
-   * even when containerDirName == projectId (e.g., specs/nova-x-sandbox/nova-x-sandbox/).
+   * even when containerDirName == projectId (e.g., specs/my-project/my-project/).
    * This is correct because the outer folder is PROJECT level, inner is BOARD level.
    */
   private getBaseDirectory(): string {

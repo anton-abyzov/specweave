@@ -144,8 +144,51 @@ export function getGitHubAuth(): GitHubAuth {
 }
 
 /**
+ * Get Azure DevOps authentication from project .env file
+ * Priority: .env file > process.env
+ *
+ * CRITICAL (2025-12-04): This function MUST be used when projectRoot is available
+ * to properly load tokens from .env file. The original getAzureDevOpsAuth() only
+ * reads process.env which is empty unless dotenv is explicitly loaded.
+ *
+ * @param projectRoot - Path to project root containing .env file
+ * @returns Azure DevOps authentication or null if not found
+ */
+export function getAzureDevOpsAuthFromProject(projectRoot: string): AzureDevOpsAuth | null {
+  // 1. First, try to read from project .env file
+  try {
+    const envPath = path.join(projectRoot, '.env');
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf-8');
+      const envVars = parseEnvFileSimple(content);
+
+      const pat = envVars.AZURE_DEVOPS_PAT;
+      const org = envVars.AZURE_DEVOPS_ORG;
+      const project = envVars.AZURE_DEVOPS_PROJECT;
+
+      if (pat) {
+        // PAT found in .env - return it (org/project might come from config.json)
+        return {
+          pat,
+          org: org || process.env.AZURE_DEVOPS_ORG || '',
+          project: project || process.env.AZURE_DEVOPS_PROJECT || ''
+        };
+      }
+    }
+  } catch {
+    // Silently fail - .env file is optional
+  }
+
+  // 2. Fall back to process.env
+  return getAzureDevOpsAuth();
+}
+
+/**
  * Get Azure DevOps authentication
  * Requires: AZURE_DEVOPS_PAT, AZURE_DEVOPS_ORG, AZURE_DEVOPS_PROJECT
+ *
+ * WARNING: This function only reads from process.env, NOT from .env files!
+ * If you have access to projectRoot, use getAzureDevOpsAuthFromProject() instead.
  */
 export function getAzureDevOpsAuth(): AzureDevOpsAuth | null {
   const pat = process.env.AZURE_DEVOPS_PAT;
@@ -215,6 +258,18 @@ export function hasGitHubCredentialsFromProject(projectRoot: string): boolean {
 
 export function hasAzureDevOpsCredentials(): boolean {
   return getAzureDevOpsAuth() !== null;
+}
+
+/**
+ * Check if Azure DevOps credentials are available (project-aware)
+ * Uses getAzureDevOpsAuthFromProject() to also check .env file
+ *
+ * @param projectRoot - Path to project root containing .env file
+ * @returns True if credentials are available
+ */
+export function hasAzureDevOpsCredentialsFromProject(projectRoot: string): boolean {
+  const auth = getAzureDevOpsAuthFromProject(projectRoot);
+  return auth !== null && !!auth.pat;
 }
 
 export function hasJiraCredentials(): boolean {

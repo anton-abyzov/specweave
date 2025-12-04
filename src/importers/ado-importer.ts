@@ -53,11 +53,11 @@ export class ADOImporter implements Importer {
   constructor(orgUrl: string, project: string, pat?: string) {
     this.orgUrl = orgUrl.replace(/\/+$/, ''); // Remove trailing slashes
     this.project = project;
-    this.pat = pat || process.env.ADO_PAT || process.env.AZURE_DEVOPS_PAT || '';
+    this.pat = pat || process.env.AZURE_DEVOPS_PAT || '';
 
     if (!this.pat) {
       throw new Error(
-        'Azure DevOps authentication required: Set ADO_PAT or AZURE_DEVOPS_PAT environment variable'
+        'Azure DevOps authentication required: Set AZURE_DEVOPS_PAT in .env file'
       );
     }
   }

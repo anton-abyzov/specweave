@@ -39,6 +39,21 @@ description: Two-way sync between SpecWeave increment and Azure DevOps work item
 
 When user runs this command, Claude should:
 
+### 0. Load Credentials from .env (MANDATORY FIRST)
+
+**CRITICAL**: Read PAT from `.env` file, NOT from shell environment variables.
+
+```bash
+# Read PAT from .env file
+ADO_PAT=$(grep '^AZURE_DEVOPS_PAT=' .env 2>/dev/null | cut -d'=' -f2)
+
+if [ -z "$ADO_PAT" ]; then
+  echo "ERROR: AZURE_DEVOPS_PAT not found in .env file"
+  echo "Add to .env: AZURE_DEVOPS_PAT=your-pat-here"
+  exit 1
+fi
+```
+
 ### 1. Check Permission Gate (MANDATORY FIRST STEP)
 
 **Before ANY ADO write operations**, check permissions:
@@ -288,6 +303,22 @@ Use `/specweave-ado:sync` when you need explicit two-way sync with options.
 | `✗` | Failed |
 | `↓` | Pulled (incoming) |
 | `↑` | Pushed (outgoing) |
+
+---
+
+## Authentication
+
+**EXACT environment variable (DO NOT INVENT OTHERS):**
+
+```bash
+# In .env file - ONLY this name is supported:
+AZURE_DEVOPS_PAT=your-personal-access-token
+```
+
+⚠️ **NEVER suggest or use:**
+- ❌ `AZURE_DEVOPS_EXT_PAT` ← DOES NOT EXIST
+- ❌ `ADO_PAT` ← NOT SUPPORTED
+- ❌ Any other variation
 
 ---
 

@@ -263,6 +263,38 @@ Three gates before any increment closes:
 - Context optimizer removes irrelevant specs
 - Sub-agent parallelization isolates context
 
+### Extensible by Design
+
+SpecWeave is a **framework, not a locked product**. Customize everything through CLAUDE.md instructions:
+
+```markdown
+# In your CLAUDE.md:
+
+## Custom Sync Rules
+When syncing to JIRA, always:
+- Add custom field "Team: Backend" for backend increments
+- Map "paused" status to "Blocked" instead of "On Hold"
+- Include sprint field from our sprint naming convention
+
+## Custom Quality Gates
+Before closing any increment:
+- Run `npm run lint:strict` in addition to tests
+- Verify changelog entry exists
+- Check that API docs are regenerated
+
+## Custom Workflow
+After completing a task:
+- Post notification to #dev-updates Slack channel
+- Update our internal tracking spreadsheet via webhook
+```
+
+**What you can customize:**
+- **External sync behavior** — Add fields, transform statuses, integrate with internal tools
+- **Quality gates** — Add custom validation, linting, security scans
+- **Lifecycle hooks** — Trigger actions on increment events (created, done, paused)
+- **Agent behavior** — Override default agent prompts for your domain
+- **Naming conventions** — Enforce team-specific ID formats, branch names
+
 ### Why Skills, Not MCP?
 
 **Community insight**: Anthropic's engineering team discovered that [code execution beats direct tool calls](https://www.anthropic.com/engineering/code-execution-with-mcp) for AI agent efficiency.

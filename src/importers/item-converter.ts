@@ -17,6 +17,7 @@ import type { ExternalContainerContext } from '../core/types/increment-metadata.
 import { getTwoLevelProjectPath, normalizeToProjectId } from '../utils/project-id-generator.js';
 import { MarkdownGenerator, type TaskData } from './markdown-generator.js';
 import { Logger, consoleLogger } from '../utils/logger.js';
+import { findNextAvailableUSId } from '../utils/feature-id-collision.js';
 import {
   type HierarchyMappingConfig,
   type SpecWeaveHierarchyLevel,
@@ -517,9 +518,23 @@ export class ItemConverter {
    *
    * CRITICAL: This method ONLY creates living docs files.
    * It does NOT create increments.
+   *
+   * CRITICAL FIX (2025-12-04): Now uses collision detection for US-IDs
+   * - Scans existing US-XXX and US-XXXE files in the project
+   * - Includes _orphans folder in scan
+   * - Prevents US-ID collisions between imports
    */
   async convertItems(items: ExternalItem[]): Promise<ConvertedUserStory[]> {
-    const startingId = this.options.startingId || 1;
+    // CRITICAL FIX (2025-12-04): Use collision detection for US-IDs
+    // Scans existing US-XXX/US-XXXE files to find next available ID
+    const projectSpecsPath = this.getBaseDirectory();
+    const collisionCheckedStartId = findNextAvailableUSId(projectSpecsPath, { logger: moduleLogger });
+    const startingId = Math.max(this.options.startingId || 1, collisionCheckedStartId);
+
+    if (collisionCheckedStartId > (this.options.startingId || 1)) {
+      moduleLogger.log(`   📋 US-ID collision detected: starting from US-${String(startingId).padStart(3, '0')} instead of US-${String(this.options.startingId || 1).padStart(3, '0')}`);
+    }
+
     const converted: ConvertedUserStory[] = [];
     let skippedCount = 0;
 
@@ -1117,7 +1132,7 @@ Items land here when:
    * - Legacy: specs/ (no projectId)
    *
    * IMPORTANT: For 2-level structure, features ALWAYS go in the inner folder (board/area level),
-   * even when containerDirName == projectId (e.g., specs/nova-x-sandbox/nova-x-sandbox/).
+   * even when containerDirName == projectId (e.g., specs/my-project/my-project/).
    * This is correct because the outer folder is PROJECT level, inner is BOARD level.
    */
   private getBaseDirectory(): string {
