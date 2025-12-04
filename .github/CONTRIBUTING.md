@@ -55,7 +55,7 @@ npm install
 npm run rebuild
 
 # 3. Install git hooks (recommended)
-bash scripts/install-git-hooks.sh
+bash scripts/hooks/install-git-hooks.sh
 
 # 4. That's it! Claude Code auto-installs from GitHub marketplace
 ```
@@ -230,7 +230,7 @@ node scripts/fix-js-extensions.js --dry-run
 
 ```bash
 # Install git hooks:
-bash scripts/install-git-hooks.sh
+bash scripts/hooks/install-git-hooks.sh
 
 # Hook verifies:
 # - Build succeeds
@@ -671,7 +671,7 @@ npm run release:patch    # or release:minor / release:major
 # Then commit, tag, push manually (instructions shown)
 
 # Option 2: Fully Automated (for experienced maintainers)
-bash scripts/bump-version.sh patch --release
+bash scripts/build/bump-version.sh patch --release
 # Only works if CHANGELOG already has proper content
 ```
 

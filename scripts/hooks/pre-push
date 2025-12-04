@@ -6,7 +6,7 @@
 # Related: release.yml, bump-version.sh, validate-changelog-version.sh
 # Incident: 2025-11-24 - v0.27.0 release failed due to missing CHANGELOG
 #
-# Installation: bash scripts/install-git-hooks.sh
+# Installation: bash scripts/hooks/install-git-hooks.sh
 #
 
 set -e
@@ -36,7 +36,7 @@ while read local_ref local_sha remote_ref remote_sha; do
       echo ""
       echo -e "  ${GREEN}✅ SOLUTION: Use the release script instead:${NC}"
       echo ""
-      echo "     bash scripts/bump-version.sh patch   # or minor/major"
+      echo "     bash scripts/build/bump-version.sh patch   # or minor/major"
       echo ""
       echo "  This script will:"
       echo "    1. Bump the version in package.json"

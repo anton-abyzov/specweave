@@ -4,7 +4,7 @@
 # This hook prevents commits that delete more than 50 files in .specweave/
 # which typically indicates test cleanup accidentally deleted the real folder.
 #
-# Install: bash scripts/install-git-hooks.sh
+# Install: bash scripts/hooks/install-git-hooks.sh
 # Bypass: git commit --no-verify (use with caution!)
 
 set -e

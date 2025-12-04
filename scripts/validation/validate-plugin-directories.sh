@@ -145,7 +145,7 @@ done
 
 if [ $MISSING_INVOCATION_DOCS -gt 0 ]; then
   echo ""
-  echo "Fix by running: bash scripts/add-agent-invocation-docs.sh"
+  echo "Fix by running: bash scripts/generation/add-agent-invocation-docs.sh"
 fi
 
 # Summary

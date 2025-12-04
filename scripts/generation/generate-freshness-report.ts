@@ -166,7 +166,7 @@ function generateMarkdown(data: FreshnessStatus[]): string {
   md += `   - Startup programs (credit amounts, eligibility)\n`;
   md += `3. Update the platform JSON file in \`plugins/specweave/knowledge-base/serverless/platforms/\`\n`;
   md += `4. Update \`lastVerified\` field to today's date (YYYY-MM-DD)\n`;
-  md += `5. Run validation: \`npx ts-node scripts/validate-platforms.ts\`\n`;
+  md += `5. Run validation: \`npx ts-node scripts/validation/validate-platforms.ts\`\n`;
   md += `6. Run tests: \`npm test\`\n`;
   md += `7. Commit changes and create PR\n\n`;
 

@@ -20,7 +20,7 @@ if [ ! -f .env ]; then
   echo "AZURE_DEVOPS_ORG=your-organization"
   echo "AZURE_DEVOPS_PROJECT=your-project"
   echo ""
-  echo "Or run: bash scripts/setup-sync-credentials.sh"
+  echo "Or run: bash scripts/sync/setup-sync-credentials.sh"
   exit 1
 fi
 

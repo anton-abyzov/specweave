@@ -16,7 +16,7 @@ import { glob } from 'glob';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const rootDir = path.resolve(__dirname, '..');
+const rootDir = path.resolve(__dirname, '../..');
 
 async function transpilePlugins() {
   console.log('📦 Transpiling plugin TypeScript files with esbuild...');
