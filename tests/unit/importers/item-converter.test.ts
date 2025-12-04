@@ -757,10 +757,13 @@ describe('ItemConverter', () => {
   });
 
   describe('Auto-Archive Feature', () => {
-    it('should archive items older than threshold', async () => {
+    it('should NEVER archive items during import (v0.30.12+)', async () => {
+      // CRITICAL FIX (v0.30.12): Auto-archiving is DISABLED for external imports!
+      // External items should NEVER be auto-archived during import.
+      // Archive is user-initiated only via /specweave:archive --external
       const converterWithArchive = new ItemConverter({
         specsDir,
-        autoArchiveAfterDays: 30, // Archive items older than 30 days
+        autoArchiveAfterDays: 30, // This value is now IGNORED and forced to 0
       });
 
       // Create item that's 60 days old
@@ -772,7 +775,7 @@ describe('ItemConverter', () => {
           id: 'GITHUB-OLD',
           type: 'user-story',
           title: 'Old Item',
-          description: 'Should be archived',
+          description: 'Should NOT be archived - auto-archive disabled for imports',
           status: 'closed',
           createdAt: oldDate,
           updatedAt: oldDate,
@@ -784,8 +787,8 @@ describe('ItemConverter', () => {
 
       const converted = await converterWithArchive.convertItems(items);
 
-      // File path should contain _archive
-      expect(converted[0].filePath).toContain('_archive');
+      // File path should NOT contain _archive (auto-archive is disabled)
+      expect(converted[0].filePath).not.toContain('_archive');
     });
 
     it('should not archive recent items', async () => {
@@ -819,12 +822,14 @@ describe('ItemConverter', () => {
       expect(converted[0].filePath).not.toContain('_archive');
     });
 
-    it('should call onItemArchived callback when item is archived', async () => {
+    it('should NEVER call onItemArchived callback (v0.30.12+)', async () => {
+      // CRITICAL FIX (v0.30.12): Auto-archiving is DISABLED for external imports!
+      // The onItemArchived callback will NEVER be called because auto-archive is disabled.
       const archivedItems: Array<{ usId: string; reason: string }> = [];
 
       const converterWithCallback = new ItemConverter({
         specsDir,
-        autoArchiveAfterDays: 30,
+        autoArchiveAfterDays: 30, // This value is now IGNORED and forced to 0
         onItemArchived: (usId, reason) => {
           archivedItems.push({ usId, reason });
         }
@@ -839,7 +844,7 @@ describe('ItemConverter', () => {
           id: 'GITHUB-ARCHIVE',
           type: 'user-story',
           title: 'Archive Test',
-          description: 'Test archive callback',
+          description: 'Test archive callback - should NOT be called',
           status: 'closed',
           createdAt: oldDate,
           updatedAt: oldDate,
@@ -851,9 +856,8 @@ describe('ItemConverter', () => {
 
       await converterWithCallback.convertItems(items);
 
-      expect(archivedItems).toHaveLength(1);
-      expect(archivedItems[0].usId).toBe('US-001E');
-      expect(archivedItems[0].reason).toContain('45 days old');
+      // Callback should NOT be called (auto-archive disabled for imports)
+      expect(archivedItems).toHaveLength(0);
     });
   });
 

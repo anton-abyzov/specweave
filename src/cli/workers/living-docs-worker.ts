@@ -48,6 +48,21 @@ let completeJob: any;
 let isPhaseCompleted: any;
 let getResumePoint: any;
 
+// LLM Provider for AI-powered deep analysis
+let createProvider: any;
+let isClaudeCodeAvailable: any;
+let getClaudeCodeStatus: any;
+let llmProvider: any = null;
+
+// Enterprise Documentation Analysis
+let EnterpriseDocAnalyzer: any;
+let generateEnterpriseReport: any;
+
+// Claude Availability Messaging
+let getAvailabilityMessage: any;
+let formatAvailabilityMessage: any;
+let getSimpleErrorMessage: any;
+
 interface LivingDocsJobConfig {
   jobId: string;
   projectPath: string;
@@ -57,9 +72,99 @@ interface LivingDocsJobConfig {
     additionalSources: string[];
     priorityAreas: string[];
     knownPainPoints: string[];
-    analysisDepth: 'quick' | 'standard' | 'deep';
+    analysisDepth: 'quick' | 'standard' | 'deep-native' | 'deep-interactive' | 'deep-api';
   };
   startedAt: string;
+}
+
+/**
+ * AI-enhanced module analysis using Claude Code
+ */
+async function runAIModuleAnalysis(
+  moduleName: string,
+  basicAnalysis: any,
+  provider: any,
+  log: (msg: string) => void
+): Promise<{
+  purpose: string;
+  keyConcepts: string[];
+  dependencies: string[];
+  complexity: 'low' | 'medium' | 'high';
+  suggestedDocs: string[];
+  architecturalNotes: string;
+} | null> {
+  // Build context from basic analysis
+  const filesSummary = basicAnalysis.filesAnalyzed
+    .slice(0, 5) // Limit to top 5 files to avoid prompt explosion
+    .map((f: any) => `- ${f.path}: ${f.exports?.length || 0} exports`)
+    .join('\n');
+
+  const exportsSummary = basicAnalysis.keyExports
+    ?.slice(0, 10)
+    .map((e: any) => `- ${e.name}: ${e.type}`)
+    .join('\n') || 'No exports detected';
+
+  const prompt = `Analyze this TypeScript module and provide structured insights.
+
+Module: ${moduleName}
+Files analyzed: ${basicAnalysis.filesAnalyzed.length}
+Total exports: ${basicAnalysis.totalExports}
+
+Key files:
+${filesSummary}
+
+Key exports:
+${exportsSummary}
+
+Provide a JSON response with EXACTLY this structure (no markdown, no code blocks, just pure JSON):
+{
+  "purpose": "Brief description of what this module does (1-2 sentences)",
+  "keyConcepts": ["concept1", "concept2", "concept3"],
+  "dependencies": ["likely internal or external dependencies"],
+  "complexity": "low|medium|high",
+  "suggestedDocs": ["doc1.md", "doc2.md"],
+  "architecturalNotes": "Brief notes about patterns, concerns, or suggestions"
+}`;
+
+  try {
+    log(`    Sending to Claude Code Opus 4.5...`);
+    const result = await provider.analyze(prompt);
+
+    if (!result || !result.content) {
+      log(`    Empty response from AI`);
+      return null;
+    }
+
+    const response = result.content;
+
+    // Parse JSON response (Claude may wrap in code blocks)
+    let jsonStr = response.trim();
+
+    // Remove markdown code blocks if present
+    if (jsonStr.startsWith('```')) {
+      jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    }
+
+    const parsed = JSON.parse(jsonStr);
+
+    // Validate required fields
+    if (!parsed.purpose || !parsed.complexity) {
+      log(`    Invalid AI response structure`);
+      return null;
+    }
+
+    return {
+      purpose: parsed.purpose,
+      keyConcepts: parsed.keyConcepts || [],
+      dependencies: parsed.dependencies || [],
+      complexity: parsed.complexity,
+      suggestedDocs: parsed.suggestedDocs || [],
+      architecturalNotes: parsed.architecturalNotes || ''
+    };
+  } catch (err: any) {
+    log(`    AI analysis error: ${err.message}`);
+    return null;
+  }
 }
 
 /**
@@ -203,11 +308,135 @@ async function main(): Promise<void> {
     isPhaseCompleted = checkpointModule.isPhaseCompleted;
     getResumePoint = checkpointModule.getResumePoint;
 
+    // Load enterprise analyzer
+    const enterpriseModule = await import('../../living-docs/enterprise-analyzer.js');
+    EnterpriseDocAnalyzer = enterpriseModule.EnterpriseDocAnalyzer;
+    generateEnterpriseReport = enterpriseModule.generateEnterpriseReport;
+
+    // Load availability messages
+    const availabilityModule = await import('../../core/llm/availability-messages.js');
+    getAvailabilityMessage = availabilityModule.getAvailabilityMessage;
+    formatAvailabilityMessage = availabilityModule.formatAvailabilityMessage;
+    getSimpleErrorMessage = availabilityModule.getSimpleErrorMessage;
+
     log('Dependencies loaded successfully');
     log('');
 
-    // Get job manager and mark as running
+    // Initialize LLM provider for AI-powered deep analysis
+    const depth = jobConfig.userInputs.analysisDepth;
+    if (depth === 'deep-native' || depth === 'deep-api') {
+      log('Initializing AI provider for deep analysis...');
+      try {
+        const providerModule = await import('../../core/llm/provider-factory.js');
+        createProvider = providerModule.createProvider;
+        isClaudeCodeAvailable = providerModule.isClaudeCodeAvailable;
+        getClaudeCodeStatus = providerModule.getClaudeCodeStatus;
+
+        if (depth === 'deep-native') {
+          // Use Claude Code CLI with MAX subscription (FREE!)
+          const available = await isClaudeCodeAvailable();
+          if (available) {
+            llmProvider = await createProvider({
+              provider: 'claude-code',
+              model: 'opus',  // Opus 4.5 for best quality
+            });
+            log('  ✓ Claude Code native provider initialized (using MAX subscription)');
+            log('    Model: Opus 4.5');
+            log('    Cost: FREE (included in MAX)');
+          } else {
+            // Show detailed availability message with installation instructions
+            log('  ⚠ Claude Code CLI not available');
+            log('');
+            try {
+              const status = await getClaudeCodeStatus();
+              const availMsg = getAvailabilityMessage(status);
+              log(`  ${availMsg.title}`);
+              log(`  ${availMsg.message}`);
+              log('');
+              if (availMsg.instructions.length > 0) {
+                log('  Installation Instructions:');
+                for (const instruction of availMsg.instructions) {
+                  log(`    ${instruction}`);
+                }
+                log('');
+              }
+              if (availMsg.alternatives.length > 0) {
+                log('  Alternatives:');
+                for (const alt of availMsg.alternatives) {
+                  log(`    • ${alt}`);
+                }
+                log('');
+              }
+              log(`  Learn more: ${availMsg.learnMore}`);
+            } catch {
+              log('  Install Claude Code: npm install -g @anthropic-ai/claude-code');
+              log('  Then authenticate: claude login');
+            }
+            log('');
+            log('  Falling back to standard analysis (no AI insights)');
+          }
+        } else if (depth === 'deep-api') {
+          // Load from project config
+          const llmConfig = providerModule.loadLLMConfig(projectPath);
+          if (llmConfig) {
+            llmProvider = await createProvider(llmConfig);
+            log(`  ✓ ${llmConfig.provider} provider initialized`);
+            log(`    Model: ${llmConfig.model}`);
+          } else {
+            log('  ⚠ No LLM config found in .specweave/config.json, falling back to standard analysis');
+          }
+        }
+      } catch (err: any) {
+        log(`  ⚠ Failed to initialize AI provider: ${err.message}`);
+        log('    Falling back to standard analysis');
+      }
+    }
+    log('');
+
+    // Get job manager and ensure job is registered
     const jobManager = getJobManager(projectPath);
+
+    // Auto-register if job doesn't exist in background-jobs.json
+    // This handles cases where worker is launched directly (not via job-launcher)
+    if (!jobManager.getJob(jobId)) {
+      log('Job not registered, auto-registering...');
+      const stateFilePath = path.join(projectPath, '.specweave/state/background-jobs.json');
+
+      // Load existing state or create new one
+      let state = { jobs: [] as any[] };
+      try {
+        if (fs.existsSync(stateFilePath)) {
+          state = JSON.parse(fs.readFileSync(stateFilePath, 'utf-8').toString());
+        }
+      } catch {
+        // Corrupted file - start fresh
+      }
+
+      state.jobs.push({
+        id: jobId,
+        type: 'living-docs-builder',
+        status: 'pending',
+        progress: {
+          current: 0,
+          total: 100,
+          percentage: 0,
+          itemsCompleted: [],
+          itemsFailed: []
+        },
+        startedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        config: {
+          type: 'living-docs-builder',
+          projectPath,
+          userInputs: jobConfig.userInputs
+        }
+      });
+
+      fs.mkdirSync(path.dirname(stateFilePath), { recursive: true });
+      fs.writeFileSync(stateFilePath, JSON.stringify(state, null, 2));
+      log('  ✓ Job registered in background-jobs.json');
+    }
+
     jobManager.startJob(jobId);
 
     // Check for existing checkpoint (resume support)
@@ -362,19 +591,24 @@ async function main(): Promise<void> {
     const moduleAnalyses = new Map<string, any>();
 
     if (!isPhaseCompleted(checkpoint, 'deep-dive')) {
-      log('PHASE: Deep Dive - Analyzing modules...');
+      const usingAI = llmProvider !== null;
+      log(`PHASE: Deep Dive - Analyzing modules...${usingAI ? ' (AI-POWERED)' : ''}`);
+      if (usingAI) {
+        log('  Using Claude Code Opus 4.5 for semantic analysis');
+      }
 
       // Determine which modules to analyze based on depth setting
       let modulesToAnalyze = [...discovery.modules];
+      const analysisDepth = jobConfig.userInputs.analysisDepth;
 
-      if (jobConfig.userInputs.analysisDepth === 'quick') {
+      if (analysisDepth === 'quick') {
         // Only top 5 priority modules
         modulesToAnalyze = modulesToAnalyze.slice(0, 5);
-      } else if (jobConfig.userInputs.analysisDepth === 'standard') {
+      } else if (analysisDepth === 'standard') {
         // Top 10
         modulesToAnalyze = modulesToAnalyze.slice(0, 10);
       }
-      // 'deep' = all modules
+      // deep-native, deep-interactive, deep-api = all modules
 
       // Check for resume point
       const resumePoint = getResumePoint(projectPath, jobId);
@@ -399,6 +633,7 @@ async function main(): Promise<void> {
         try {
           const workItemMatches = matchResult?.moduleMap?.get(module.name)?.matches || [];
 
+          // Basic Node.js analysis first
           const analysis = await analyzeModule(
             projectPath,
             module,
@@ -408,6 +643,26 @@ async function main(): Promise<void> {
               // File-level progress
             }
           );
+
+          // AI-enhanced analysis when provider is available
+          if (llmProvider && analysis.filesAnalyzed.length > 0) {
+            log(`    Running AI analysis on ${module.name}...`);
+            try {
+              const aiAnalysis = await runAIModuleAnalysis(
+                module.name,
+                analysis,
+                llmProvider,
+                log
+              );
+              // Merge AI insights into analysis
+              if (aiAnalysis) {
+                analysis.aiInsights = aiAnalysis;
+                log(`    AI insights generated`);
+              }
+            } catch (aiErr: any) {
+              log(`    AI analysis skipped: ${aiErr.message}`);
+            }
+          }
 
           moduleAnalyses.set(module.name, analysis);
           await saveModuleAnalysis(projectPath, analysis);
@@ -454,14 +709,59 @@ async function main(): Promise<void> {
     }
 
     // ═══════════════════════════════════════════════════════════════
+    // PHASE 7: Enterprise Documentation Analysis
+    // ═══════════════════════════════════════════════════════════════
+    log('PHASE: Enterprise - Analyzing documentation health...');
+    updateProgress('enterprise', 0, 'Running enterprise documentation analysis');
+
+    try {
+      const analyzer = new EnterpriseDocAnalyzer({
+        projectPath,
+        logger: {
+          info: (msg: string) => log(`  [INFO] ${msg}`),
+          warn: (msg: string) => log(`  [WARN] ${msg}`),
+          error: (msg: string) => log(`  [ERROR] ${msg}`),
+          debug: () => {}, // Suppress debug logs
+          verbose: () => {},
+          formatError: (err: Error) => err.message,
+        },
+        includeArchived: false,
+      });
+
+      updateProgress('enterprise', 25, 'Scanning documentation categories');
+      const enterpriseReport = await analyzer.analyze();
+
+      updateProgress('enterprise', 75, 'Generating enterprise report');
+
+      // Generate and save the enterprise report
+      const reportContent = generateEnterpriseReport(enterpriseReport);
+      const enterpriseReportPath = path.join(projectPath, '.specweave/docs/ENTERPRISE-HEALTH.md');
+      fs.writeFileSync(enterpriseReportPath, reportContent);
+
+      log(`  Created: ${enterpriseReportPath}`);
+      log(`  Summary:`);
+      log(`    - Documentation categories: ${enterpriseReport.categories.length}`);
+      log(`    - Total documents: ${enterpriseReport.totalDocuments}`);
+      log(`    - Health score: ${enterpriseReport.healthScore.overall}% (Grade: ${enterpriseReport.healthScore.grade})`);
+      log(`    - Freshness: ${enterpriseReport.healthScore.freshness}%`);
+      log(`    - Coverage: ${enterpriseReport.healthScore.coverage}%`);
+      log(`    - Accuracy: ${enterpriseReport.healthScore.accuracy}%`);
+      log(`    - Spec-code mismatches: ${enterpriseReport.mismatches.length}`);
+      log(`    - Recommendations: ${enterpriseReport.recommendations.length}`);
+
+      updateProgress('enterprise', 100, 'Enterprise analysis complete');
+    } catch (err: any) {
+      log(`  WARNING: Enterprise analysis failed: ${err.message}`);
+      log('  Continuing without enterprise report...');
+      // Non-fatal - continue to completion
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // Complete
     // ═══════════════════════════════════════════════════════════════
     completeJob(projectPath, jobId);
-    jobManager.completeJob(jobId, {
-      completedAt: new Date().toISOString(),
-      modulesAnalyzed: moduleAnalyses.size,
-      suggestionsGenerated: true
-    });
+    // Note: completeJob(jobId, optionalError?) - no error means success
+    jobManager.completeJob(jobId);
 
     updateProgress('complete', 100, 'Living docs generation complete');
 
@@ -470,7 +770,7 @@ async function main(): Promise<void> {
     log('LIVING DOCS BUILDER COMPLETED');
     log('════════════════════════════════════════════════════════════');
     log(`Completed at: ${new Date().toISOString()}`);
-    log(`Output: .specweave/docs/SUGGESTIONS.md`);
+    log(`Output: .specweave/docs/SUGGESTIONS.md, .specweave/docs/ENTERPRISE-HEALTH.md`);
 
   } catch (err: any) {
     log(`FATAL ERROR: ${err.message}`);

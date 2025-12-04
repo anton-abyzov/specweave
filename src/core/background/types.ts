@@ -78,11 +78,25 @@ export type BrownfieldPhase =
 /**
  * Brownfield analysis job configuration
  */
+/**
+ * Analysis depth options
+ * - quick/standard: Basic Node.js file scanning (no AI)
+ * - deep-native: Uses Claude Code CLI with MAX subscription (FREE!)
+ * - deep-interactive: Uses Claude Code agents in current session
+ * - deep-api: Uses configured LLM API (Anthropic, OpenAI, etc.)
+ */
+export type AnalysisDepth =
+  | 'quick'           // ~5-10 min - structure scan only
+  | 'standard'        // ~15-30 min - module analysis
+  | 'deep-native'     // Claude Code CLI (MAX subscription - FREE!)
+  | 'deep-interactive' // In-session Claude Code agents
+  | 'deep-api';       // Background with LLM API (costs apply)
+
 export interface BrownfieldJobConfig {
   type: 'brownfield-analysis';
   projectPath: string;
   sourceDocsPath?: string;
-  analysisDepth: 'quick' | 'standard' | 'deep';
+  analysisDepth: AnalysisDepth;
 
   /** Checkpoint for pause/resume */
   checkpoint?: {
@@ -114,7 +128,7 @@ export interface LivingDocsUserInputs {
   /** Known documentation pain points */
   knownPainPoints: string[];
   /** Analysis depth affects time and thoroughness */
-  analysisDepth: 'quick' | 'standard' | 'deep';
+  analysisDepth: AnalysisDepth;
 }
 
 /**

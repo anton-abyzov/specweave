@@ -1,0 +1,163 @@
+/**
+ * OpenAI Provider
+ *
+ * Implements LLMProvider interface for OpenAI's GPT models.
+ * Uses openai SDK for API calls.
+ *
+ * TODO: Implement following the same pattern as anthropic-provider.ts
+ */
+
+import type {
+  LLMProvider,
+  AnalyzeOptions,
+  AnalyzeResult,
+  StructuredOptions,
+} from '../types.js';
+import { MODEL_PRICING } from '../types.js';
+import { Logger, consoleLogger } from '../../../utils/logger.js';
+
+export interface OpenAIProviderConfig {
+  apiKey: string;
+  model?: string;
+  maxTokens?: number;
+  temperature?: number;
+  baseUrl?: string;
+  logger?: Logger;
+}
+
+export class OpenAIProvider implements LLMProvider {
+  readonly name = 'openai' as const;
+  readonly defaultModel: string;
+
+  private apiKey: string;
+  private maxTokens: number;
+  private temperature: number;
+  private baseUrl: string;
+  private logger: Logger;
+  private client: any;
+
+  constructor(config: OpenAIProviderConfig) {
+    this.apiKey = config.apiKey;
+    this.defaultModel = config.model || 'gpt-4o';
+    this.maxTokens = config.maxTokens || 4096;
+    this.temperature = config.temperature ?? 0.3;
+    this.baseUrl = config.baseUrl || 'https://api.openai.com/v1';
+    this.logger = config.logger || consoleLogger;
+  }
+
+  private async getClient(): Promise<any> {
+    if (!this.client) {
+      const OpenAI = (await import('openai')).default;
+      this.client = new OpenAI({
+        apiKey: this.apiKey,
+        baseURL: this.baseUrl,
+      });
+    }
+    return this.client;
+  }
+
+  async analyze(prompt: string, options: AnalyzeOptions = {}): Promise<AnalyzeResult> {
+    const startTime = Date.now();
+    const model = options.model || this.defaultModel;
+
+    const client = await this.getClient();
+
+    const messages: Array<{ role: 'system' | 'user'; content: string }> = [];
+
+    if (options.systemPrompt) {
+      messages.push({ role: 'system', content: options.systemPrompt });
+    }
+    messages.push({ role: 'user', content: prompt });
+
+    const response = await client.chat.completions.create({
+      model,
+      max_tokens: options.maxTokens || this.maxTokens,
+      temperature: options.temperature ?? this.temperature,
+      messages,
+    });
+
+    const content = response.choices[0]?.message?.content || '';
+    const usage = {
+      inputTokens: response.usage?.prompt_tokens || 0,
+      outputTokens: response.usage?.completion_tokens || 0,
+      totalTokens: response.usage?.total_tokens || 0,
+    };
+
+    return {
+      content,
+      usage,
+      estimatedCost: this.estimateCost(usage.inputTokens, usage.outputTokens, model),
+      model,
+      durationMs: Date.now() - startTime,
+      wasRetry: false,
+    };
+  }
+
+  async analyzeStructured<T>(
+    prompt: string,
+    options: StructuredOptions<T>
+  ): Promise<{ data: T; usage: AnalyzeResult['usage']; estimatedCost: number }> {
+    // OpenAI supports native JSON mode
+    const client = await this.getClient();
+    const model = options.model || this.defaultModel;
+
+    const messages: Array<{ role: 'system' | 'user'; content: string }> = [
+      {
+        role: 'system',
+        content: `You are a helpful assistant that responds in JSON format matching this schema: ${JSON.stringify(options.schema)}`,
+      },
+      { role: 'user', content: prompt },
+    ];
+
+    const response = await client.chat.completions.create({
+      model,
+      max_tokens: options.maxTokens || this.maxTokens,
+      temperature: options.temperature ?? 0.1,
+      messages,
+      response_format: { type: 'json_object' },
+    });
+
+    const content = response.choices[0]?.message?.content || '{}';
+    const usage = {
+      inputTokens: response.usage?.prompt_tokens || 0,
+      outputTokens: response.usage?.completion_tokens || 0,
+      totalTokens: response.usage?.total_tokens || 0,
+    };
+
+    const data = JSON.parse(content) as T;
+
+    return {
+      data,
+      usage,
+      estimatedCost: this.estimateCost(usage.inputTokens, usage.outputTokens, model),
+    };
+  }
+
+  estimateCost(inputTokens: number, outputTokens: number, model?: string): number {
+    const modelId = model || this.defaultModel;
+    const pricing = MODEL_PRICING[modelId] || { inputPer1M: 5, outputPer1M: 15 };
+
+    return (inputTokens / 1_000_000) * pricing.inputPer1M +
+           (outputTokens / 1_000_000) * pricing.outputPer1M;
+  }
+
+  async isAvailable(): Promise<boolean> {
+    try {
+      const status = await this.getStatus();
+      return status.available;
+    } catch {
+      return false;
+    }
+  }
+
+  async getStatus(): Promise<{ available: boolean; latencyMs?: number; error?: string }> {
+    const startTime = Date.now();
+    try {
+      const client = await this.getClient();
+      await client.models.list();
+      return { available: true, latencyMs: Date.now() - startTime };
+    } catch (error: any) {
+      return { available: false, error: error.message };
+    }
+  }
+}

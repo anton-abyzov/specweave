@@ -26,6 +26,8 @@ import {
   BrownfieldDiscrepancyType,
 } from '../../core/discrepancy/index.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { createProvider } from '../../core/llm/provider-factory.js';
+import type { LLMProvider } from '../../core/llm/types.js';
 
 /**
  * File metadata for discovery
@@ -74,13 +76,15 @@ interface DocInfo {
   wordCount: number;
 }
 
+import type { AnalysisDepth } from '../../core/background/types.js';
+
 /**
  * Analysis context shared across phases
  */
 interface AnalysisContext {
   projectPath: string;
   sourceDocsPath?: string;
-  depth: 'quick' | 'standard' | 'deep';
+  depth: AnalysisDepth;
   codeFiles: FileInfo[];
   docFiles: FileInfo[];
   modules: ModuleInfo[];
@@ -97,6 +101,7 @@ export class BrownfieldAnalysisWorker {
   private readonly logger: Logger;
   private readonly discrepancyManager: BrownfieldDiscrepancyManager;
   private context: AnalysisContext;
+  private llmProvider?: LLMProvider;
 
   constructor(
     projectPath: string,
@@ -123,6 +128,39 @@ export class BrownfieldAnalysisWorker {
   }
 
   /**
+   * Initialize LLM provider for deep analysis modes
+   */
+  private async initLLMProvider(): Promise<void> {
+    if (this.context.depth === 'deep-native') {
+      try {
+        this.llmProvider = await createProvider({
+          provider: 'claude-code',
+          model: 'opus',  // Use Opus 4.5 for best analysis quality
+        }, { logger: this.logger });
+        this.logger.log('Initialized Claude Code native provider (using MAX subscription)');
+      } catch (error) {
+        this.logger.warn('Claude Code not available, falling back to standard analysis');
+        this.context.depth = 'standard';
+      }
+    } else if (this.context.depth === 'deep-api') {
+      // Try to load LLM config from project
+      const configPath = path.join(this.projectPath, '.specweave', 'config.json');
+      if (fs.existsSync(configPath)) {
+        try {
+          const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+          if (config.llm) {
+            this.llmProvider = await createProvider(config.llm, { logger: this.logger });
+            this.logger.log(`Initialized ${config.llm.provider} provider for deep analysis`);
+          }
+        } catch (error) {
+          this.logger.warn('Failed to initialize LLM provider, falling back to standard analysis');
+          this.context.depth = 'standard';
+        }
+      }
+    }
+  }
+
+  /**
    * Run the brownfield analysis
    */
   async run(): Promise<number> {
@@ -133,6 +171,9 @@ export class BrownfieldAnalysisWorker {
       'discrepancy-detect',
       'reporting',
     ];
+
+    // Initialize LLM provider for deep analysis modes
+    await this.initLLMProvider();
 
     // Resume from checkpoint if exists
     const startPhaseIndex = this.config.checkpoint
@@ -313,6 +354,13 @@ export class BrownfieldAnalysisWorker {
       });
     }
 
+    // AI-powered deep analysis (when provider available)
+    if (this.llmProvider && (this.context.depth === 'deep-native' || this.context.depth === 'deep-api')) {
+      this.logger.log('Running AI-powered deep analysis...');
+      const aiDiscrepancies = await this.runAIAnalysis();
+      discrepancies.push(...aiDiscrepancies);
+    }
+
     // Create discrepancies in batch
     if (discrepancies.length > 0) {
       await this.discrepancyManager.createBatch(discrepancies);
@@ -320,6 +368,136 @@ export class BrownfieldAnalysisWorker {
 
     this.logger.log(`Detected ${discrepancies.length} discrepancies`);
     return discrepancies.length;
+  }
+
+  /**
+   * AI-powered deep analysis using Claude Code or configured LLM
+   */
+  private async runAIAnalysis(): Promise<BrownfieldDiscrepancyCreate[]> {
+    if (!this.llmProvider) return [];
+
+    const aiDiscrepancies: BrownfieldDiscrepancyCreate[] = [];
+
+    // Analyze modules in batches to avoid context overflow
+    const BATCH_SIZE = 5;
+    const totalModules = this.context.modules.length;
+
+    for (let i = 0; i < totalModules; i += BATCH_SIZE) {
+      const batch = this.context.modules.slice(i, Math.min(i + BATCH_SIZE, totalModules));
+
+      this.logger.log(`AI analyzing modules ${i + 1}-${Math.min(i + BATCH_SIZE, totalModules)} of ${totalModules}...`);
+
+      for (const module of batch) {
+        try {
+          const moduleDiscrepancies = await this.analyzeModuleWithAI(module);
+          aiDiscrepancies.push(...moduleDiscrepancies);
+        } catch (error) {
+          this.logger.warn(`AI analysis failed for module ${module.name}: ${error}`);
+        }
+      }
+    }
+
+    return aiDiscrepancies;
+  }
+
+  /**
+   * Analyze a single module with AI for semantic discrepancies
+   */
+  private async analyzeModuleWithAI(module: ModuleInfo): Promise<BrownfieldDiscrepancyCreate[]> {
+    if (!this.llmProvider) return [];
+
+    // Read sample code from the module
+    const codeFiles = this.context.codeFiles.filter(f =>
+      f.relativePath.startsWith(module.path) || path.dirname(f.relativePath) === module.path
+    );
+
+    if (codeFiles.length === 0) return [];
+
+    // Read first file as sample (limit to 2000 chars)
+    let sampleCode = '';
+    try {
+      const firstFile = codeFiles[0];
+      const content = fs.readFileSync(firstFile.path, 'utf-8');
+      sampleCode = content.slice(0, 2000);
+    } catch {
+      return [];
+    }
+
+    // Find related docs
+    const relatedDocs = this.context.docs.filter(d =>
+      d.relativePath.toLowerCase().includes(module.name.toLowerCase()) ||
+      d.topics.some(t => t.toLowerCase().includes(module.name.toLowerCase()))
+    );
+
+    const docSummary = relatedDocs.length > 0
+      ? relatedDocs.map(d => `${d.relativePath}: ${d.title || 'No title'}`).join('\n')
+      : 'No documentation found';
+
+    const prompt = `Analyze this code module for documentation quality:
+
+MODULE: ${module.name}
+EXPORTS: ${module.exports.slice(0, 10).map(e => `${e.name} (${e.type})`).join(', ')}
+
+SAMPLE CODE:
+\`\`\`typescript
+${sampleCode}
+\`\`\`
+
+RELATED DOCS:
+${docSummary}
+
+Identify documentation issues. Return JSON array of issues:
+[{"type": "missing-docs"|"stale-docs"|"incomplete-docs", "summary": "brief description", "details": "explanation", "priority": "critical"|"high"|"medium"|"low", "confidence": 0-100}]
+
+Only include issues with confidence > 70. Return empty array [] if no issues found.`;
+
+    try {
+      const result = await this.llmProvider.analyzeStructured<Array<{
+        type: 'missing-docs' | 'stale-docs' | 'incomplete-docs';
+        summary: string;
+        details: string;
+        priority: 'critical' | 'high' | 'medium' | 'low';
+        confidence: number;
+      }>>(prompt, {
+        schema: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              type: { type: 'string' },
+              summary: { type: 'string' },
+              details: { type: 'string' },
+              priority: { type: 'string' },
+              confidence: { type: 'number' },
+            },
+            required: ['type', 'summary', 'details', 'priority', 'confidence'],
+          },
+        },
+        timeout: 60000,
+      });
+
+      // Convert AI results to discrepancies
+      return result.data
+        .filter(item => item.confidence > 70)
+        .map(item => ({
+          type: item.type as BrownfieldDiscrepancyType,
+          module: module.name,
+          codeLocation: module.path,
+          summary: item.summary,
+          details: item.details,
+          evidence: { aiAnalyzed: true },
+          priority: item.priority,
+          confidence: item.confidence,
+          autoDetected: true,
+          status: 'pending' as const,
+          detectedAt: new Date().toISOString(),
+          detectedBy: `ai-${this.llmProvider!.name}`,
+          lastChecked: new Date().toISOString(),
+        }));
+    } catch (error) {
+      this.logger.warn(`AI analysis failed for ${module.name}: ${error}`);
+      return [];
+    }
   }
 
   /**

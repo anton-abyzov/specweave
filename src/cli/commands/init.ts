@@ -487,6 +487,10 @@ export async function initCommand(
 
     // Auto-install plugins for Claude
     let autoInstallSucceeded = false;
+    // Track whether import is happening - if so, skip default increment creation
+    // Declared outside claude block so it's accessible from initial increment logic
+    let skipInitialIncrement = false;
+
     if (toolName === 'claude') {
       const result = await installAllPlugins({ dirname: __dirname, forceRefresh: options.forceRefresh });
       autoInstallSucceeded = result.success;
@@ -531,9 +535,13 @@ export async function initCommand(
             if ('jobId' in importResult && importResult.jobId) {
               pendingJobIds.push(importResult.jobId);
             }
+            // Skip default increment - user is importing real work items
+            skipInitialIncrement = true;
           } else if ('totalCount' in importResult && importResult.totalCount > 0) {
             // Sync import completed
             console.log(chalk.green('\n✅ Imported ' + importResult.totalCount + ' items from ' + importResult.platforms.join(', ')));
+            // Skip default increment - user has imported real work items
+            skipInitialIncrement = true;
           }
         } catch (importError) {
           // Show actual error (was swallowed before) - helps debugging
@@ -594,7 +602,7 @@ export async function initCommand(
       updateConfigWithTranslation(targetDir, defaultTranslation);
     }
 
-    // Initial increment
+    // Initial increment - skip for brownfield projects importing external work items
     const incrementsDir = path.join(targetDir, '.specweave', 'increments');
     const existingIncrements = fs.existsSync(incrementsDir)
       ? fs.readdirSync(incrementsDir).filter(dir => {
@@ -603,7 +611,7 @@ export async function initCommand(
         })
       : [];
 
-    if (!continueExisting && existingIncrements.length === 0) {
+    if (!continueExisting && existingIncrements.length === 0 && !skipInitialIncrement) {
       console.log(chalk.cyan.bold('\n📦 Creating Initial Increment'));
       try {
         const incrementId = await generateInitialIncrement({
@@ -619,6 +627,8 @@ export async function initCommand(
       } catch {
         console.log(chalk.yellow('   ⚠️  Could not create initial increment (non-critical)'));
       }
+    } else if (skipInitialIncrement) {
+      console.log(chalk.gray('\n📦 Skipping default increment (external work items being imported)'));
     }
 
     showNextSteps(finalProjectName, toolName, language, usedDotNotation, toolName === 'claude' ? autoInstallSucceeded : undefined);
