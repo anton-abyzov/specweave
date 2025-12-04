@@ -313,7 +313,7 @@ Example:
 ## Related Decisions
 
 - [ADR-0017](0017-self-reflection-architecture.md): Self-reflection system architecture
-- [ADR-0019](0019-reflection-storage-format.md): Storage format for reflection logs
+- [ADR-0019](0154-reflection-storage-format.md): Storage format for reflection logs
 - [ADR-0003](0003-intelligent-model-selection.md): Intelligent model selection (if exists)
 
 ## Implementation Notes

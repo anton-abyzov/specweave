@@ -239,9 +239,9 @@ plugins/specweave-kafka-dev/            (Local dev, testing)
 ## References
 
 - [Claude Code Plugin System](https://docs.claude.com/en/docs/claude-code/plugins)
-- [SpecWeave Plugin Architecture](./../plugin-architecture.md)
+- [SpecWeave Plugin Architecture](../../architecture/hld/README.md)
 - [SpecWeave Core Plugin](../../../../plugins/specweave/.claude-plugin/plugin.json)
-- [SPEC-035: Kafka Event Streaming Integration Plugin](../../specs/default/spec-035-kafka-plugin.md)
+- [SPEC-035: Kafka Event Streaming Integration Plugin](../../architecture/adr/0035-kafka-multi-plugin-architecture.md)
 
 ---
 

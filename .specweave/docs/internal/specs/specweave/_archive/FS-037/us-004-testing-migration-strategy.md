@@ -10,7 +10,7 @@ project: specweave
 
 # US-004: Testing & Migration Strategy
 
-**Feature**: [FS-037](../../_features/FS-037/FEATURE.md)
+**Feature**: [FS-037](./FEATURE.md)
 
 **As a** SpecWeave contributor
 **I want** comprehensive test coverage and migration strategy for project-specific tasks

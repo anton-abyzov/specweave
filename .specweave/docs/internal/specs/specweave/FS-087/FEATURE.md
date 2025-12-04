@@ -21,7 +21,7 @@ Remove the redundant `feature_id` and `featureId` fields from `metadata.json` fi
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0087-remove-redundant-feature-id](../../../../increments/0087-remove-redundant-feature-id/spec.md) | ✅ completed | 2025-12-01 |
+| [0087-remove-redundant-feature-id](../../../../../increments/0087-remove-redundant-feature-id/spec.md) | ✅ completed | 2025-12-01 |
 
 ## User Stories
 

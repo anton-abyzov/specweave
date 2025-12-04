@@ -22,7 +22,7 @@ Current sync is one-directional (SpecWeave → External). When external tools (A
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0089-bidirectional-sync-pull](../../../../increments/0089-bidirectional-sync-pull/spec.md) | ✅ completed | 2025-12-01 |
+| [0089-bidirectional-sync-pull](../../../../../increments/0089-bidirectional-sync-pull/spec.md) | ✅ completed | 2025-12-01 |
 
 ## User Stories
 

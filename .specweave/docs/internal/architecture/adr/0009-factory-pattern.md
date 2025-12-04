@@ -131,5 +131,5 @@ npx specweave cleanup --auto
 
 ## Related
 
-- [Factory Pattern Architecture](../../../increments/0001-core-framework/reports/FACTORY-PATTERN-ARCHITECTURE.md)
+- Factory Pattern Architecture (implementation documented in this ADR)
 - [Agents/Skills Factory](../../../../CLAUDE.md#agentsskills-factory-pattern)

@@ -144,6 +144,6 @@ After any marketplace refresh:
 ---
 
 **See Also**:
-- `.specweave/docs/internal/emergency-procedures/HOOK-CRASH-RECOVERY.md`
+- `.specweave/docs/internal/../operations/hook-crash-recovery.md`
 - `scripts/refresh-marketplace.sh` (source of truth for marketplace operations)
 - CLAUDE.md section 1a (Quick Marketplace Refresh)

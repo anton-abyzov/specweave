@@ -16,9 +16,9 @@ High-Level Designs (HLDs) describe system architecture using the C4 Model:
 
 | HLD | Topic | Status | Created |
 |-----|-------|--------|---------|
-| [hld-diagram-generation.md](hld-diagram-generation.md) | Diagram Generation Architecture | Active | 2025-11 |
-| [hld-external-tool-status-sync.md](hld-external-tool-status-sync.md) | External Tool Status Synchronization | Active | 2025-11 |
-| [hld-intelligent-model-selection.md](hld-intelligent-model-selection.md) | Intelligent Model Selection System | Active | 2025-11 |
+| [diagram-generation.md](diagram-generation.md) | Diagram Generation Architecture | Active | 2025-11 |
+| [external-tool-status-sync.md](external-tool-status-sync.md) | External Tool Status Synchronization | Active | 2025-11 |
+| [intelligent-model-selection.md](intelligent-model-selection.md) | Intelligent Model Selection System | Active | 2025-11 |
 
 ## Creating New HLDs
 

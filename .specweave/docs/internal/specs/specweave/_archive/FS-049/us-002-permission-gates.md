@@ -9,7 +9,7 @@ created: 2025-11-21
 
 # US-002: CLI-First Defaults (Import All by Default)
 
-**Feature**: [FS-049](../../_features/FS-049/FEATURE.md)
+**Feature**: [FS-049](./FEATURE.md)
 
 **As a** CLI power user expecting efficient workflows
 **I want** "Import all" to be the default choice with all checkboxes pre-checked
@@ -30,6 +30,6 @@ created: 2025-11-21
 
 ## Implementation
 
-**Increment**: [0049-cli-first-init-flow](../../../../increments/0049-cli-first-init-flow/spec.md)
+**Increment**: [0049-cli-first-init-flow](../../../../../../increments/_archive/0049-cli-first-init-flow/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.

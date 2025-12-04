@@ -10,7 +10,7 @@ sourceIncrement: 0031-external-tool-status-sync
 
 # SpecWeave Implementation: External Tool Status Synchronization
 
-**Feature**: [FS-031](../../_features/FS-031/FEATURE.md)
+**Feature**: [FS-031](./FEATURE.md)
 
 ## Overview
 
@@ -41,4 +41,4 @@ User stories for this project are listed below.
 
 ---
 
-**Source**: [Increment 0031-external-tool-status-sync](../../../../../increments/0031-external-tool-status-sync)
+**Source**: [Increment 0031-external-tool-status-sync](../../../../../../increments/_archive/0031-external-tool-status-sync)

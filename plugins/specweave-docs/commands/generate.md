@@ -1,11 +1,16 @@
-# Docs Generate - Generate Documentation from Code
+---
+name: specweave-docs:generate
+description: Generate documentation from TypeScript/JavaScript code, OpenAPI specs, GraphQL schemas, and SpecWeave specifications.
+---
+
+# Generate Documentation from Code
 
 Generate documentation automatically from TypeScript/JavaScript code, OpenAPI specs, GraphQL schemas, and SpecWeave specifications. Creates comprehensive API docs, type references, and usage examples.
 
 ## Usage
 
 ```
-/specweave-docs:docs-generate <source-type> <path> [options]
+/specweave-docs:generate <source-type> <path> [options]
 ```
 
 ## Source Types

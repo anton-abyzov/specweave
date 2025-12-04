@@ -16,4 +16,4 @@ lastUpdated: 2025-11-19
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0040-vitest-living-docs-mock-fixes](../../../../increments/0040-vitest-living-docs-mock-fixes/spec.md) | ✅ completed | 2025-11-17 |
+| [0040-vitest-living-docs-mock-fixes](../../../../../../increments/_archive/0040-vitest-living-docs-mock-fixes/spec.md) | ✅ completed | 2025-11-17 |

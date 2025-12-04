@@ -18,9 +18,9 @@ The v0.26.14 "fix" for inquirer prompts broke all interactive selection prompts.
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0060-migrate-inquirer-to-modular-api](../../../../increments/0060-migrate-inquirer-to-modular-api/spec.md) | ✅ completed | 2025-11-26 |
+| [0060-migrate-inquirer-to-modular-api](../../../../../../increments/_archive/0060-migrate-inquirer-to-modular-api/spec.md) | ✅ completed | 2025-11-26 |
 
 ## User Stories
 
-- [US-001: Fix Interactive Prompts](../../specweave/FS-060/us-001-fix-interactive-prompts.md)
-- [US-002: Clean Migration](../../specweave/FS-060/us-002-clean-migration.md)
+- [US-001: Fix Interactive Prompts](./us-001-fix-interactive-prompts.md)
+- [US-002: Clean Migration](./us-002-clean-migration.md)

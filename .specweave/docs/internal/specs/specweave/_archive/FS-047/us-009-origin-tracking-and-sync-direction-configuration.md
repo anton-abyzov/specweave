@@ -9,7 +9,7 @@ created: 2025-11-19
 
 # US-009: Origin Tracking and Sync Direction Configuration
 
-**Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
+**Feature**: [FS-047](./FEATURE.md)
 
 **As a** PM managing mixed internal/external items
 **I want** clear origin indicators and configurable sync direction between living docs and external tools
@@ -33,7 +33,7 @@ created: 2025-11-19
 
 ## Implementation
 
-**Increment**: [0047-us-task-linkage](../../../../increments/0047-us-task-linkage/spec.md)
+**Increment**: [0047-us-task-linkage](../../../../../../increments/_archive/0047-us-task-linkage/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

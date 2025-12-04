@@ -205,7 +205,7 @@ New features (3 commits)
 **Usage**:
 ```bash
 node dist/cli/commands/sync-spec-commits.js \
-  --increment .specweave/increments/0001-feature \
+  --increment .specweave/increments/_archive/0001-feature \
   --provider github \
   --verbose
 ```
@@ -405,7 +405,7 @@ npm run test:integration spec-commit-sync
 ```bash
 # Dry run
 node dist/cli/commands/sync-spec-commits.js \
-  --increment .specweave/increments/0001-feature \
+  --increment .specweave/increments/_archive/0001-feature \
   --provider github \
   --dry-run \
   --verbose
@@ -462,7 +462,7 @@ cat .specweave/logs/hooks-debug.log | grep "spec commit sync"
 
 # Then sync manually
 node dist/cli/commands/sync-spec-commits.js \
-  --increment .specweave/increments/0001-feature \
+  --increment .specweave/increments/_archive/0001-feature \
   --provider github
 ```
 
@@ -490,14 +490,14 @@ node dist/cli/commands/sync-spec-commits.js \
 **Debug**:
 ```bash
 # Check metadata
-cat .specweave/increments/0001-feature/metadata.json
+cat .specweave/increments/_archive/0001-feature/metadata.json
 
 # Check logs
 cat .specweave/logs/hooks-debug.log | grep "spec commit sync"
 
 # Test manually
 node dist/cli/commands/sync-spec-commits.js \
-  --increment .specweave/increments/0001-feature \
+  --increment .specweave/increments/_archive/0001-feature \
   --provider github \
   --verbose
 ```
@@ -528,11 +528,11 @@ git remote set-url origin <correct-url>
 **Fix**:
 ```bash
 # Verify AC-IDs
-cat .specweave/increments/0001-feature/spec.md | grep "AC-US"
-cat .specweave/increments/0001-feature/tasks.md | grep "**AC**"
+cat .specweave/increments/_archive/0001-feature/spec.md | grep "AC-US"
+cat .specweave/increments/_archive/0001-feature/tasks.md | grep "**AC**"
 
 # Verify task completion
-cat .specweave/increments/0001-feature/tasks.md | grep "\[x\]"
+cat .specweave/increments/_archive/0001-feature/tasks.md | grep "\[x\]"
 ```
 
 ## Lessons Learned

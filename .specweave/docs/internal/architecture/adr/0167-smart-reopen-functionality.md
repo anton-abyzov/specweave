@@ -302,7 +302,7 @@ If this proves problematic:
 
 ## References
 
-- **Design Doc**: `.specweave/increments/0032-prevent-increment-number-gaps/reports/SMART-REOPEN-ARCHITECTURE.md`
+- **Design Doc**: `.specweave/increments/_archive/0032-prevent-increment-number-gaps/reports/SMART-REOPEN-ARCHITECTURE.md`
 - **Implementation**: `src/core/increment/increment-reopener.ts`
 - **Skill**: `plugins/specweave/skills/smart-reopen-detector/SKILL.md`
 - **Command**: `plugins/specweave/commands/specweave-reopen.md`

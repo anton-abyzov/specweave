@@ -13,7 +13,7 @@ external:
 
 # US-002: DORA Metrics Persistent Tracking (P1)
 
-**Feature**: [FS-023](../../_features/FS-023/FEATURE.md)
+**Feature**: [FS-023](./FEATURE.md)
 
 **As a** engineering leader
 **I want** DORA metrics tracked persistently over time

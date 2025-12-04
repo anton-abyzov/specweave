@@ -9,7 +9,7 @@ status: completed
 
 # Console.* Elimination - Phase 2: CLI Commands
 
-**Feature**: [FS-046](../../_features/FS-046/FEATURE.md)
+**Feature**: [FS-046](./FEATURE.md)
 
 ## Overview
 

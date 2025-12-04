@@ -18,11 +18,11 @@ The codebase has **inconsistent digit handling** for IDs (FS-XXX, US-XXX, T-XXX)
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0073-fix-y2k-id-limit-bug](../../../../increments/0073-fix-y2k-id-limit-bug/spec.md) | ✅ completed | 2025-11-26 |
+| [0073-fix-y2k-id-limit-bug](../../../../../../increments/_archive/0073-fix-y2k-id-limit-bug/spec.md) | ✅ completed | 2025-11-26 |
 
 ## User Stories
 
-- [US-001: Support Feature IDs Beyond 999](../../specweave/FS-073/us-001-support-feature-ids-beyond-999.md)
-- [US-002: Support User Story IDs Beyond 999](../../specweave/FS-073/us-002-support-user-story-ids-beyond-999.md)
-- [US-003: Support Task IDs Beyond 999](../../specweave/FS-073/us-003-support-task-ids-beyond-999.md)
-- [US-004: Maintain Backward Compatibility](../../specweave/FS-073/us-004-maintain-backward-compatibility.md)
+- [US-001: Support Feature IDs Beyond 999](./us-001-support-feature-ids-beyond-999.md)
+- [US-002: Support User Story IDs Beyond 999](./us-002-support-user-story-ids-beyond-999.md)
+- [US-003: Support Task IDs Beyond 999](./us-003-support-task-ids-beyond-999.md)
+- [US-004: Maintain Backward Compatibility](./us-004-maintain-backward-compatibility.md)

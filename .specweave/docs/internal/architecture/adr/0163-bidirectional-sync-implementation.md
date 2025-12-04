@@ -2,7 +2,7 @@
 
 **Status**: Accepted
 **Date**: 2025-11-12
-**Increment**: [0031-external-tool-status-sync](../../../../increments/0031-external-tool-status-sync/)
+**Increment**: [0031-external-tool-status-sync](../../../../increments/_archive/0031-external-tool-status-sync/)
 
 ---
 
@@ -222,6 +222,6 @@ All sync operations logged to `.specweave/logs/sync-events.json`:
 
 ## Related
 
-- **ADR**: [Status Mapping Strategy](0031-001-status-mapping-strategy.md) - How statuses are mapped
-- **ADR**: [Conflict Resolution Approach](0031-002-conflict-resolution-approach.md) - How conflicts are resolved
-- **Increment**: [0031-external-tool-status-sync](../../../../increments/0031-external-tool-status-sync/)
+- **ADR**: [Status Mapping Strategy](0031-status-mapping-strategy.md) - How statuses are mapped
+- **ADR**: [Conflict Resolution Approach](0162-conflict-resolution-approach.md) - How conflicts are resolved
+- **Increment**: [0031-external-tool-status-sync](../../../../increments/_archive/0031-external-tool-status-sync/)

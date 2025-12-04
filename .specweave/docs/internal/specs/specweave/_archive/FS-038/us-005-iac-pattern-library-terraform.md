@@ -10,7 +10,7 @@ project: specweave
 
 # US-005: IaC Pattern Library - Terraform
 
-**Feature**: [FS-038](../../_features/FS-038/FEATURE.md)
+**Feature**: [FS-038](./FEATURE.md)
 
 **As a** developer deploying serverless applications
 **I want** pre-built Terraform templates for AWS, Azure, GCP, Firebase, and Supabase

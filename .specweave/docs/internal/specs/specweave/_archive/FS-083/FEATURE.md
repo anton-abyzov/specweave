@@ -18,11 +18,11 @@ This increment implements the interceptor pattern to wrap all sync operations wi
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0083-sync-interceptor-pattern](../../../../increments/0083-sync-interceptor-pattern/spec.md) | ✅ completed | 2025-12-01 |
+| [0083-sync-interceptor-pattern](../../../../../../increments/_archive/0083-sync-interceptor-pattern/spec.md) | ✅ completed | 2025-12-01 |
 
 ## User Stories
 
-- [US-001: Wrap GitHub Sync with Permission Checks](../../specweave/FS-083/us-001-wrap-github-sync-with-permission-checks.md)
-- [US-002: Wrap JIRA Sync with Permission Checks](../../specweave/FS-083/us-002-wrap-jira-sync-with-permission-checks.md)
-- [US-003: Wrap ADO Sync with Permission Checks](../../specweave/FS-083/us-003-wrap-ado-sync-with-permission-checks.md)
-- [US-004: Sync Audit Trail](../../specweave/FS-083/us-004-sync-audit-trail.md)
+- [US-001: Wrap GitHub Sync with Permission Checks](./us-001-wrap-github-sync-with-permission-checks.md)
+- [US-002: Wrap JIRA Sync with Permission Checks](./us-002-wrap-jira-sync-with-permission-checks.md)
+- [US-003: Wrap ADO Sync with Permission Checks](./us-003-wrap-ado-sync-with-permission-checks.md)
+- [US-004: Sync Audit Trail](./us-004-sync-audit-trail.md)

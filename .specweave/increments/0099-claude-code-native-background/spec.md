@@ -1,5 +1,6 @@
 ---
 increment: 0099-claude-code-native-background
+status: completed
 ---
 
 # Claude Code Native Background Processing for Living Docs

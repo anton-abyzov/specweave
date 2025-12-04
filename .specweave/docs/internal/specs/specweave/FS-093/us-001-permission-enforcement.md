@@ -31,15 +31,15 @@ created: 2025-12-02
 
 ## Implementation
 
-**Increment**: [0093-ado-permission-profile-fixes](../../../../increments/0093-ado-permission-profile-fixes/spec.md)
+**Increment**: [0093-ado-permission-profile-fixes](../../../../../increments/0093-ado-permission-profile-fixes/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0093-ado-permission-profile-fixes/tasks.md#T-001): Create ADO Permission Gate Library
-- [x] [T-003](../../../../increments/0093-ado-permission-profile-fixes/tasks.md#T-003): Update specweave-ado-create-workitem Command
-- [x] [T-004](../../../../increments/0093-ado-permission-profile-fixes/tasks.md#T-004): Update specweave-ado-sync Command
-- [x] [T-005](../../../../increments/0093-ado-permission-profile-fixes/tasks.md#T-005): Update specweave-ado-close-workitem Command
-- [x] [T-006](../../../../increments/0093-ado-permission-profile-fixes/tasks.md#T-006): Update ADO Manager Agent
+- [x] [T-001](../../../../../increments/0093-ado-permission-profile-fixes/tasks.md#T-001): Create ADO Permission Gate Library
+- [x] [T-003](../../../../../increments/0093-ado-permission-profile-fixes/tasks.md#T-003): Update specweave-ado-create-workitem Command
+- [x] [T-004](../../../../../increments/0093-ado-permission-profile-fixes/tasks.md#T-004): Update specweave-ado-sync Command
+- [x] [T-005](../../../../../increments/0093-ado-permission-profile-fixes/tasks.md#T-005): Update specweave-ado-close-workitem Command
+- [x] [T-006](../../../../../increments/0093-ado-permission-profile-fixes/tasks.md#T-006): Update ADO Manager Agent

@@ -18,7 +18,7 @@ Current implementation has two critical bugs in epic folder placement:
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0095-per-project-epic-hierarchy](../../../../increments/0095-per-project-epic-hierarchy/spec.md) | ✅ completed | 2024-12-03 |
+| [0095-per-project-epic-hierarchy](../../../../../increments/0095-per-project-epic-hierarchy/spec.md) | ✅ completed | 2024-12-03 |
 
 ## User Stories
 

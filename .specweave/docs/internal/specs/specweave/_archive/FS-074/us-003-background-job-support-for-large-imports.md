@@ -28,6 +28,6 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0074-fix-internal-feature-collision-and-import](../../../../increments/0074-fix-internal-feature-collision-and-import/spec.md)
+**Increment**: [0074-fix-internal-feature-collision-and-import](../../../../../../increments/_archive/0074-fix-internal-feature-collision-and-import/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.

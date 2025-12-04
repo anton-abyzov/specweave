@@ -147,7 +147,7 @@ Tasks: 0/12 (0%) | ACs: 0/16 (0%)
     = Large spec = Detailed requirements
 
 # Pattern 2: Working outside increment directory
-Current file: src/cli/commands/init.ts  ← NOT in .specweave/increments/0058/
+Current file: src/cli/commands/init.ts  ← NOT in .specweave/increments/_archive/0058/
 Active increment: 0058-fix-status-sync
 
 # Pattern 3: Both combined = CRASH RISK
@@ -164,7 +164,7 @@ Tasks: 0/12 + Editing src/cli/commands/init.ts (2,393 lines) = ⚠️  PAUSE FIR
 ```bash
 # Pattern 1: Work ONLY on increment files
 /specweave:do 0058
-# Edits only files in .specweave/increments/0058/
+# Edits only files in .specweave/increments/_archive/0058/
 # OR files specified in spec.md
 # Context: Increment spec + 1 file at a time
 
@@ -273,7 +273,7 @@ git commit -m "feat: improve init"   # Commit
 ### Check Context Load
 ```bash
 # 1. Check active increment size
-wc -l .specweave/increments/0058-*/{spec,tasks}.md
+wc -l .specweave/increments/_archive/0058-*/{spec,tasks}.md
 # If total > 500 lines → HIGH RISK
 
 # 2. Check file being edited

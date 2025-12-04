@@ -9,7 +9,7 @@ created: 2025-11-21
 
 # US-004: Graceful Cancelation Support
 
-**Feature**: [FS-049](../../_features/FS-049/FEATURE.md)
+**Feature**: [FS-049](./FEATURE.md)
 
 **As a** user who needs to interrupt a long-running import
 **I want** Ctrl+C to save my progress and allow me to resume later
@@ -30,6 +30,6 @@ created: 2025-11-21
 
 ## Implementation
 
-**Increment**: [0049-cli-first-init-flow](../../../../increments/0049-cli-first-init-flow/spec.md)
+**Increment**: [0049-cli-first-init-flow](../../../../../../increments/_archive/0049-cli-first-init-flow/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.

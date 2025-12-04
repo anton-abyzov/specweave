@@ -9,7 +9,7 @@ created: 2025-11-19
 
 # US-012: Intelligent FS-XXX Folder Creation with Chronological ID Allocation
 
-**Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
+**Feature**: [FS-047](./FEATURE.md)
 
 **As a** developer syncing external work items to living docs
 **I want** FS-XXX folders created with chronologically ordered IDs based on work item creation date
@@ -33,7 +33,7 @@ created: 2025-11-19
 
 ## Implementation
 
-**Increment**: [0047-us-task-linkage](../../../../increments/0047-us-task-linkage/spec.md)
+**Increment**: [0047-us-task-linkage](../../../../../../increments/_archive/0047-us-task-linkage/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

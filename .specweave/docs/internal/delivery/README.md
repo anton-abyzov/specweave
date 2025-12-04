@@ -142,7 +142,7 @@ cp templates/docs/test-strategy-template.md docs/internal/delivery/test-strategy
 ### 📚 Detailed Guides (guides/)
 - **[Deployment Intelligence](guides/deployment-intelligence.md)** - Smart deployment target detection
 - **[Development Workflow](guides/development-workflow.md)** - Day-to-day development process
-- **[Diagram Conventions](guides/diagram-conventions.md)** - C4 diagram standards
+- **[Diagram Conventions](guides/diagram-conventions-comprehensive.md)** - C4 diagram standards
 - **[Diagram SVG Generation](guides/diagram-svg-generation.md)** - Generating diagrams from Mermaid
 - **[Increment Lifecycle](guides/increment-lifecycle.md)** - How increments flow through the system
 - **[Increment Validation](guides/increment-validation.md)** - Validating increment completeness

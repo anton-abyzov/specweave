@@ -28,7 +28,7 @@ created: 2025-11-25
 
 ## Implementation
 
-**Increment**: [0062-umbrella-multi-repo-support](../../../../increments/0062-umbrella-multi-repo-support/spec.md)
+**Increment**: [0062-umbrella-multi-repo-support](../../../../../../increments/_archive/0062-umbrella-multi-repo-support/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

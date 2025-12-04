@@ -29,7 +29,7 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0084-discrepancy-detection](../../../../increments/0084-discrepancy-detection/spec.md)
+**Increment**: [0084-discrepancy-detection](../../../../../../increments/_archive/0084-discrepancy-detection/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

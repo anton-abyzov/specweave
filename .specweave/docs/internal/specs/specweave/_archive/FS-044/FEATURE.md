@@ -18,9 +18,9 @@ lastUpdated: 2025-11-24
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0044-integration-testing-status-hooks](../../../../increments/0044-integration-testing-status-hooks/spec.md) | ✅ completed | 2025-11-19T00:00:00.000Z |
+| [0044-integration-testing-status-hooks](../../../../../../increments/_archive/0044-integration-testing-status-hooks/spec.md) | ✅ completed | 2025-11-19T00:00:00.000Z |
 
 ## User Stories
 
-- [US-001: Status Line Shows Correct Active Increment (Priority: P1)](../../specweave/FS-044/us-001-status-line-shows-correct-active-increment-priority-p1-.md)
-- [US-003: Hooks Read Correct Increment Status (Priority: P1)](../../specweave/FS-044/us-003-hooks-read-correct-increment-status-priority-p1-.md)
+- [US-001: Status Line Shows Correct Active Increment (Priority: P1)](./us-001-status-line-shows-correct-active-increment-priority-p1-.md)
+- [US-003: Hooks Read Correct Increment Status (Priority: P1)](./us-003-hooks-read-correct-increment-status-priority-p1-.md)

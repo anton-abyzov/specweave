@@ -151,7 +151,7 @@ test -L ~/.claude/plugins/marketplaces/specweave && \
 
 ### Verification Script
 
-Location: `.specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh`
+Location: `.specweave/increments/_archive/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh`
 
 **Checks**:
 1. ✅ Symlink exists (`-L` test)
@@ -167,11 +167,11 @@ Added to `.git/hooks/pre-commit` (installed via `scripts/install-git-hooks.sh`):
 
 ```bash
 # Verify local development setup (contributors only)
-if [ -f ".specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh" ]; then
+if [ -f ".specweave/increments/_archive/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh" ]; then
   if [ -d "plugins/specweave" ]; then  # Only for contributors
-    bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh > /dev/null 2>&1 || {
+    bash .specweave/increments/_archive/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh > /dev/null 2>&1 || {
       echo "⚠️  WARNING: Local development setup verification failed"
-      echo "   Run: bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh"
+      echo "   Run: bash .specweave/increments/_archive/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh"
       # Don't fail commit, just warn
     }
   fi
@@ -264,7 +264,7 @@ fi
    - Enhanced output to show symlink check
 
 3. **Created verification script**:
-   - `.specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh`
+   - `.specweave/increments/_archive/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh`
    - 6 comprehensive checks
    - Clear pass/fail reporting
    - Fix instructions on failure
@@ -272,13 +272,13 @@ fi
 ### Documentation Created
 
 1. **Ultrathink Report** (~400 lines):
-   - `.specweave/increments/0043-spec-md-desync-fix/reports/ULTRATHINK-HOOK-EXECUTION-ERRORS-ROOT-CAUSE-ANALYSIS-2025-11-18.md`
+   - `.specweave/increments/_archive/0043-spec-md-desync-fix/reports/ULTRATHINK-HOOK-EXECUTION-ERRORS-ROOT-CAUSE-ANALYSIS-2025-11-18.md`
    - 5-phase investigation process
    - Technical deep dive
    - Prevention strategies
 
 2. **Fixes Applied Summary**:
-   - `.specweave/increments/0043-spec-md-desync-fix/reports/HOOK-EXECUTION-ERRORS-FIXES-APPLIED-2025-11-18.md`
+   - `.specweave/increments/_archive/0043-spec-md-desync-fix/reports/HOOK-EXECUTION-ERRORS-FIXES-APPLIED-2025-11-18.md`
    - Before/after comparison
    - Verification results
    - One-command fix
@@ -299,7 +299,7 @@ fi
 $ ls -ld ~/.claude/plugins/marketplaces/specweave
 drwxr-xr-x  # ❌ DIRECTORY (wrong)
 
-$ bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
+$ bash .specweave/increments/_archive/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
 ❌ FAILED: Marketplace symlink missing!
 ```
 
@@ -309,7 +309,7 @@ $ bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
 $ ls -ld ~/.claude/plugins/marketplaces/specweave
 lrwxr-xr-x ... -> /Users/antonabyzov/Projects/github/specweave  # ✅ SYMLINK (correct)
 
-$ bash .specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
+$ bash .specweave/increments/_archive/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh
 ✅ ALL CHECKS PASSED! Local development setup is correct.
 ```
 
@@ -348,21 +348,21 @@ Prominent warnings in CLAUDE.md ensure new contributors know about this requirem
 ### Primary Sources
 
 1. **Root Cause Investigation**:
-   - Report: `.specweave/increments/0043-spec-md-desync-fix/reports/ULTRATHINK-HOOK-EXECUTION-ERRORS-ROOT-CAUSE-ANALYSIS-2025-11-18.md`
+   - Report: `.specweave/increments/_archive/0043-spec-md-desync-fix/reports/ULTRATHINK-HOOK-EXECUTION-ERRORS-ROOT-CAUSE-ANALYSIS-2025-11-18.md`
    - Increment: `0043-spec-md-desync-fix`
 
 2. **Fixes Applied**:
-   - Report: `.specweave/increments/0043-spec-md-desync-fix/reports/HOOK-EXECUTION-ERRORS-FIXES-APPLIED-2025-11-18.md`
+   - Report: `.specweave/increments/_archive/0043-spec-md-desync-fix/reports/HOOK-EXECUTION-ERRORS-FIXES-APPLIED-2025-11-18.md`
 
 3. **Verification Script**:
-   - Location: `.specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh`
+   - Location: `.specweave/increments/_archive/0043-spec-md-desync-fix/scripts/verify-dev-setup.sh`
 
 ### Related Documentation
 
 1. **CLAUDE.md**: Lines 13-71 - "Critical Finding: Claude Code Marketplace Directory vs Symlink Issue"
 2. **Plugin Architecture**: `.specweave/docs/internal/architecture/PLUGIN-ARCHITECTURE.md`
 3. **User Story**: `.specweave/docs/internal/specs/specweave/FS-023/us-001-claude-code-plugin-registration-p0-critical.md`
-4. **Documentation Placement Analysis**: `.specweave/increments/0043-spec-md-desync-fix/reports/DOCUMENTATION-PLACEMENT-ANALYSIS-2025-11-18.md`
+4. **Documentation Placement Analysis**: `.specweave/increments/_archive/0043-spec-md-desync-fix/reports/DOCUMENTATION-PLACEMENT-ANALYSIS-2025-11-18.md`
 
 ---
 

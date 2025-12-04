@@ -372,11 +372,11 @@ For detailed GitHub-specific workflow, the task-level sync is integrated into th
 ## References
 
 - **Related ADRs**:
-  - [ADR-0002: Context Loading](./0002-context-loading.md) - Context management architecture
+  - [ADR-0002: Agent Types](../adr/0002-agent-types-roles-vs-tools.md) - Context management architecture
   - [ADR-0015: Hybrid Plugin System](./0015-hybrid-plugin-system.md) - Plugin architecture design
 
 - **Implementation**:
-  - Increment: [0004-plugin-architecture](../../increments/0004-plugin-architecture/)
+  - Increment: [0004-plugin-architecture](../../increments/_archive/0004-plugin-architecture/)
   - Tasks: T-024-C through T-024-H (Phase 2.5)
 
 - **External References**:

@@ -10,7 +10,7 @@ project: specweave
 
 # US-002: Bidirectional Completion Tracking
 
-**Feature**: [FS-037](../../_features/FS-037/FEATURE.md)
+**Feature**: [FS-037](./FEATURE.md)
 
 **As a** developer completing project-specific tasks
 **I want** completion to be tracked bidirectionally (project ↔ increment)

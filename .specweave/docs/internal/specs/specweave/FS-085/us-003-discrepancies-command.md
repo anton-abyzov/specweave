@@ -29,7 +29,7 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0085-sync-monitoring-commands](../../../../increments/0085-sync-monitoring-commands/spec.md)
+**Increment**: [0085-sync-monitoring-commands](../../../../../increments/0085-sync-monitoring-commands/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

@@ -18,7 +18,7 @@ Testing of increment 0095 revealed several issues with ADO import:
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0096-ado-import-fixes](../../../../increments/0096-ado-import-fixes/spec.md) | ✅ completed | 2024-12-03 |
+| [0096-ado-import-fixes](../../../../../increments/0096-ado-import-fixes/spec.md) | ✅ completed | 2024-12-03 |
 
 ## User Stories
 

@@ -1,15 +1,15 @@
 ---
-title: SpecWeave Main Flow - v0.7.0 Test-Aware Planning + Smart Status Management
+title: SpecWeave Main Flow - v0.30.12+ Test-Aware Planning + Smart Status Management
 ---
 %%{ init: { 'theme': 'base', 'themeVariables': { 'fontSize': '14px' } } }%%
 
 flowchart TD
-    %% Last Updated: 2025-11-04 (v0.7.0)
+    %% Last Updated: 2025-12-03 (v0.30.12 - command syntax audit)
     %% Agent Roles: PM Agent, Architect Agent, test-aware-planner Agent, Quality Judge Agent
     %% Brownfield: Brownfield Analyzer, Brownfield Onboarder
     %% Plugins: Plugin Detector (4 phases), Plugin Manager
     %% Automation: Living Docs Agent, Hook System, Developer
-    %% v0.7.0: Test-Aware Planning (tests in tasks.md), Smart Status Management (pause/resume/abandon)
+    %% Features: Test-Aware Planning (tests in tasks.md), Smart Status Management (pause/resume/abandon)
     %% Mandatory: Spec → Plan → Tasks (with embedded tests) | Optional: Research, Validation
     Start([Developer Starts New Work]) --> Type{Project Type?}
 
@@ -38,7 +38,7 @@ flowchart TD
     Ready -.->|Migration happens per-increment,<br/>when user chooses what to work on| IncStart
 
     %% Increment Planning
-    Ready --> IncStart[Developer:<br/>Run specweave.inc]
+    Ready --> IncStart[Developer:<br/>Run /specweave:increment]
     IncStart --> Phase2[Phase 2: Pre-Spec Detection<br/>Plugin Detector]
     Phase2 --> CheckBrownfield{Brownfield context exists?}
     CheckBrownfield -->|Yes| LoadContext[Brownfield Onboarder:<br/>Load brownfield context<br/>Auto-detect related existing code<br/>Offer to include in spec analysis]
@@ -71,15 +71,15 @@ flowchart TD
     PlanSteps --> PlanGen[Architect Agent: Generate plan.md]
     PlanGen --> PlanContent[plan.md contains:<br/>Architecture<br/>Implementation strategy<br/>Dependencies]
 
-    %% Task Breakdown with Embedded Tests (MANDATORY - v0.7.0+)
+    %% Task Breakdown with Embedded Tests (MANDATORY)
     PlanContent --> Tasks[test-aware-planner Agent:<br/>Task Breakdown + Test Plans]
     Tasks --> TaskSteps[test-aware-planner performs:<br/>• Break into tasks<br/>• Embed test plan in each task<br/>• Bidirectional AC-Task-Test linking<br/>• BDD format Given/When/Then]
     TaskSteps --> TaskGen[test-aware-planner Agent:<br/>Generate tasks.md with embedded tests]
     TaskGen --> TaskContent[tasks.md contains:<br/>Task list with Test Plans embedded<br/>Dependencies<br/>Acceptance criteria<br/>Test files + Given/When/Then<br/>✅ 80%+ coverage target]
 
-    %% Coverage Validation (OPTIONAL - v0.7.0+)
-    TaskContent --> CoverageCheck{Validate coverage?<br/>OPTIONAL v0.7.0+}
-    CoverageCheck -->|Yes| ValidateCoverage[Run /validate-coverage<br/>Check AC and task coverage]
+    %% Coverage Validation (OPTIONAL)
+    TaskContent --> CoverageCheck{Validate coverage?<br/>OPTIONAL}
+    CoverageCheck -->|Yes| ValidateCoverage[Run /specweave:check-tests<br/>Check AC and task coverage]
     CoverageCheck -->|No| ValidateCheck
     ValidateCoverage --> CoverageResult{Coverage ≥80%?}
     CoverageResult -->|No| FixCoverage[Add missing tests<br/>to tasks.md]
@@ -88,7 +88,7 @@ flowchart TD
 
     %% Validation Gate (OPTIONAL)
     ValidateCheck{Run validation?<br/>OPTIONAL}
-    ValidateCheck -->|Yes| Validate[Quality Judge Agent:<br/>Run specweave.validate]
+    ValidateCheck -->|Yes| Validate[Quality Judge Agent:<br/>Run /specweave:validate]
     ValidateCheck -->|No, skip validation| Ready2
     Validate --> ValidationRules[Quality Judge performs:<br/>• Rule-based checks<br/>• Required fields present<br/>• Tasks have criteria<br/>• Tests cover requirements]
     ValidationRules --> AIJudge{AI Judge enabled?}
@@ -99,18 +99,18 @@ flowchart TD
     ValidationResult -->|Passed| Ready2[Ready for execution]
     FixIssues --> ValidateCheck
 
-    %% Status Check (v0.7.0+)
-    Ready2 --> StatusCheck[Run /status<br/>Check increment status]
+    %% Status Check
+    Ready2 --> StatusCheck[Run /specweave:status<br/>Check increment status]
     StatusCheck --> StatusDisplay[Show active, paused increments<br/>Progress, warnings, staleness]
     StatusDisplay --> StatusAction{Action needed?}
-    StatusAction -->|Resume paused| ResumeInc[Run /resume increment-id<br/>Unblock and continue]
-    StatusAction -->|Abandon obsolete| AbandonInc[Run /abandon increment-id<br/>Move to _abandoned/ folder]
+    StatusAction -->|Resume paused| ResumeInc[Run /specweave:resume increment-id<br/>Unblock and continue]
+    StatusAction -->|Abandon obsolete| AbandonInc[Run /specweave:abandon increment-id<br/>Move to _abandoned/ folder]
     StatusAction -->|Continue active| Execute
     ResumeInc --> Execute
     AbandonInc --> IncStart
 
     %% Execution Phase
-    Execute[Developer:<br/>Run specweave.do]
+    Execute[Developer:<br/>Run /specweave:do]
     Execute --> Phase3[Phase 3: Pre-Task Detection<br/>Plugin Loader]
     Phase3 --> CheckTask[Plugin Detector:<br/>Check next task description]
     CheckTask --> TaskHints{Task mentions plugins?}
@@ -118,11 +118,11 @@ flowchart TD
     TaskHints -->|No| ExecTask
     SuggestTaskPlugin --> ExecTask[Developer:<br/>Execute current task]
 
-    %% Task Execution Loop (with pause option - v0.7.0+)
+    %% Task Execution Loop (with pause option)
     ExecTask --> TaskWork[Developer + AI:<br/>Write code, tests, docs]
     TaskWork --> TaskComplete{Task complete?}
-    TaskComplete -->|Blocked| PauseDecision{Pause increment?<br/>v0.7.0+}
-    PauseDecision -->|Yes| PauseInc[Run /pause increment-id<br/>--reason='Waiting for API keys']
+    TaskComplete -->|Blocked| PauseDecision{Pause increment?}
+    PauseDecision -->|Yes| PauseInc[Run /specweave:pause increment-id<br/>--reason='Waiting for API keys']
     PauseDecision -->|No| TaskWork
     PauseInc --> PausedState[Increment paused<br/>Status tracking enabled<br/>Can resume later]
     PausedState --> End
@@ -151,7 +151,7 @@ flowchart TD
     FixGate --> QualityGate
 
     %% Increment Completion
-    AllowClose --> Close[Developer:<br/>Run specweave.done]
+    AllowClose --> Close[Developer:<br/>Run /specweave:done]
     Close --> Phase4[Phase 4: Post-Increment Detection<br/>Plugin Detector]
     Phase4 --> GitDiff[Plugin Detector:<br/>Analyze git diff]
     GitDiff --> NewDeps{New dependencies added?}

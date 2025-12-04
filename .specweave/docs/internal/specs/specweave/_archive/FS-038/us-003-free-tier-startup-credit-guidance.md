@@ -10,7 +10,7 @@ project: specweave
 
 # US-003: Free Tier and Startup Credit Guidance
 
-**Feature**: [FS-038](../../_features/FS-038/FEATURE.md)
+**Feature**: [FS-038](./FEATURE.md)
 
 **As a** cost-conscious developer (pet project or startup)
 **I want** detailed guidance on free tiers and startup credit programs

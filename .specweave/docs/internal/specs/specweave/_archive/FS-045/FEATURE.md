@@ -18,8 +18,8 @@ lastUpdated: 2025-11-24
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0045-living-docs-external-sync](../../../../increments/0045-living-docs-external-sync/spec.md) | ✅ completed | 2025-11-19T00:00:00.000Z |
+| [0045-living-docs-external-sync](../../../../../../increments/_archive/0045-living-docs-external-sync/spec.md) | ✅ completed | 2025-11-19T00:00:00.000Z |
 
 ## User Stories
 
-- [US-001: Sync All Increments by Default (Priority: P1)](../../specweave/FS-045/us-001-sync-all-increments-by-default-priority-p1-.md)
+- [US-001: Sync All Increments by Default (Priority: P1)](./us-001-sync-all-increments-by-default-priority-p1-.md)

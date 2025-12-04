@@ -9,7 +9,7 @@ status: active
 
 # Fix Status Sync Desync Bug + Auto GitHub Sync on Status Change
 
-**Feature**: [FS-058](../../_features/FS-058/FEATURE.md)
+**Feature**: [FS-058](./FEATURE.md)
 
 ## Overview
 

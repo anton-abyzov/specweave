@@ -13,7 +13,7 @@ external:
 
 # US-001: Clear Repository Count Prompt
 
-**Feature**: [FS-028](../../_features/FS-028/FEATURE.md)
+**Feature**: [FS-028](./FEATURE.md)
 
 **As a** developer setting up multi-repo architecture
 **I want** clear indication of what "repository count" means
@@ -32,10 +32,10 @@ external:
 
 ## Implementation
 
-**Increment**: [0028-multi-repo-ux-improvements](../../../../../increments/0028-multi-repo-ux-improvements/tasks.md)
+**Increment**: [0028-multi-repo-ux-improvements](../../../../../../increments/_archive/0028-multi-repo-ux-improvements/tasks.md)
 
 **Tasks**:
-- [T-001: Update Repository Count Clarification (US-001)](../../../../../increments/0028-multi-repo-ux-improvements/tasks.md#t-001-update-repository-count-clarification-us-001)
+- [T-001: Update Repository Count Clarification (US-001)](../../../../../../increments/_archive/0028-multi-repo-ux-improvements/tasks.md#t-001-update-repository-count-clarification-us-001)
 
 ---
 

@@ -26,7 +26,7 @@ Fix critical UX issues in the multi-repository GitHub setup flow that cause user
 
 ## Source
 
-This feature was created from increment: [`0028-multi-repo-ux-improvements`](../../../../../increments/0028-multi-repo-ux-improvements)
+This feature was created from increment: [`0028-multi-repo-ux-improvements`](../../../../../../increments/_archive/0028-multi-repo-ux-improvements)
 
 ## Business Value
 
@@ -41,10 +41,10 @@ This feature spans the following projects:
 
 ### specweave
 
-- [US-001: Clear Repository Count Prompt](../../specweave/FS-028/us-001-clear-repository-count-prompt.md) - complete
-- [US-002: Single-Value Repository ID Input](../../specweave/FS-028/us-002-single-value-repository-id-input.md) - complete
-- [US-003: Project ID Validation](../../specweave/FS-028/us-003-project-id-validation.md) - complete
-- [US-004: Auto-Detect Repository Count](../../specweave/FS-028/us-004-auto-detect-repository-count.md) - complete
+- [US-001: Clear Repository Count Prompt](./us-001-clear-repository-count-prompt.md) - complete
+- [US-002: Single-Value Repository ID Input](./us-002-single-value-repository-id-input.md) - complete
+- [US-003: Project ID Validation](./us-003-project-id-validation.md) - complete
+- [US-004: Auto-Detect Repository Count](./us-004-auto-detect-repository-count.md) - complete
 
 ## Progress
 

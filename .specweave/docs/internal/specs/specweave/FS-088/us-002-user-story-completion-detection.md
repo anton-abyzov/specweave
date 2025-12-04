@@ -24,7 +24,7 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0088-eda-hooks-architecture](../../../../increments/0088-eda-hooks-architecture/spec.md)
+**Increment**: [0088-eda-hooks-architecture](../../../../../increments/0088-eda-hooks-architecture/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

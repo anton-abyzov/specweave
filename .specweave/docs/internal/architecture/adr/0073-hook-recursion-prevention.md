@@ -403,7 +403,7 @@ done
 
 ## References
 
-- Root Cause Analysis: `.specweave/increments/0051-*/reports/GITHUB-COMMENT-RECURSION-ROOT-CAUSE-2025-11-24.md`
+- Root Cause Analysis: `.specweave/increments/_archive/0051-*/reports/GITHUB-COMMENT-RECURSION-ROOT-CAUSE-2025-11-24.md`
 - Hook Safety: `CLAUDE.md` section 9a (Hook Performance & Safety)
 - GitHub Issue: #719 (27 duplicate comments)
 - Bash Background Processes: https://www.gnu.org/software/bash/manual/html_node/Job-Control.html

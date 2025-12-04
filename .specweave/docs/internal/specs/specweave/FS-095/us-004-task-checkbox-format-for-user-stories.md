@@ -31,11 +31,11 @@ created: 2024-12-03
 
 ## Implementation
 
-**Increment**: [0095-per-project-epic-hierarchy](../../../../increments/0095-per-project-epic-hierarchy/spec.md)
+**Increment**: [0095-per-project-epic-hierarchy](../../../../../increments/0095-per-project-epic-hierarchy/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-005](../../../../increments/0095-per-project-epic-hierarchy/tasks.md#T-005): Add task checkbox format to User Story markdown
+- [x] [T-005](../../../../../increments/0095-per-project-epic-hierarchy/tasks.md#T-005): Add task checkbox format to User Story markdown

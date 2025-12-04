@@ -271,7 +271,7 @@ TodoWrite([{ content: "T-037", status: "completed" }])
   - ADR-0129: US Sync Guard Rails (emergency hotfix)
   - ADR-0070: Hook Consolidation (v0.25.0)
   - ADR-0073: Hook Recursion Prevention Strategy
-- **Root Cause Analysis**: `.specweave/increments/0053-safe-feature-deletion/reports/ROOT-CAUSE-ANALYSIS-TODOWRITE-CRASH-2025-11-24.md`
+- **Root Cause Analysis**: `.specweave/increments/_archive/0053-safe-feature-deletion/reports/ROOT-CAUSE-ANALYSIS-TODOWRITE-CRASH-2025-11-24.md`
 
 ## Future Improvements
 

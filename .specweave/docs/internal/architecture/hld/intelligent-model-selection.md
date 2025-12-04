@@ -8,4 +8,4 @@
 **Version**: 1.0
 **Date**: 2025-10-30
 **Status**: Planned
-**Increment**: [0003-intelligent-model-selection](../../../increments/0003-intelligent-model-selection/)
+**Increment**: [0003-intelligent-model-selection](../../../../increments/_archive/0003-intelligent-model-selection/)

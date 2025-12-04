@@ -547,9 +547,9 @@ for (const userStory of stories) {
 
 ## Related Documentation
 
-- [ULTRATHINK Architecture](../../increments/0034-github-ac-checkboxes-fix/reports/ULTRATHINK-PROJECT-SPECIFIC-TASKS-ARCHITECTURE.md)
-- [Implementation Complete](../../increments/0034-github-ac-checkboxes-fix/reports/PROJECT-SPECIFIC-TASKS-IMPLEMENTATION-COMPLETE.md)
-- [Public Guide](../public/guides/project-specific-tasks.md)
+- [ULTRATHINK Architecture](../../../increments/_archive/0034-github-ac-checkboxes-fix/reports/ULTRATHINK-PROJECT-SPECIFIC-TASKS-ARCHITECTURE.md)
+- [Implementation Complete](../../../increments/_archive/0034-github-ac-checkboxes-fix/reports/PROJECT-SPECIFIC-TASKS-IMPLEMENTATION-COMPLETE.md)
+- Public Guide (planned)
 
 ---
 

@@ -18,8 +18,8 @@ This increment implements the **foundational infrastructure** for FS-048 (Enhanc
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0048-external-tool-import-enhancement](../../../../increments/0048-external-tool-import-enhancement/spec.md) | ✅ completed | 2025-11-21 |
+| [0048-external-tool-import-enhancement](../../../../../../increments/_archive/0048-external-tool-import-enhancement/spec.md) | ✅ completed | 2025-11-21 |
 
 ## User Stories
 
-- [US-003: Three-Tier Dependency Loading (Partial)](../../specweave/FS-048/us-003-three-tier-dependency-loading-partial-.md)
+- [US-003: Three-Tier Dependency Loading (Partial)](./us-003-three-tier-dependency-loading.md)

@@ -9,7 +9,7 @@ created: 2025-11-19
 
 # US-013: Archive Command for Features and Epics
 
-**Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
+**Feature**: [FS-047](./FEATURE.md)
 
 **As a** product manager cleaning up obsolete or completed work
 **I want** dedicated command to archive entire features or epics with all related folders
@@ -36,7 +36,7 @@ created: 2025-11-19
 
 ## Implementation
 
-**Increment**: [0047-us-task-linkage](../../../../increments/0047-us-task-linkage/spec.md)
+**Increment**: [0047-us-task-linkage](../../../../../../increments/_archive/0047-us-task-linkage/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

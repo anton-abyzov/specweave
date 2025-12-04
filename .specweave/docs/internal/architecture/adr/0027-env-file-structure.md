@@ -269,7 +269,7 @@ const token = await keytar.getPassword('specweave', 'github-token');
 
 ## References
 
-- **Increment 0022 Spec**: `.specweave/increments/0022-multi-repo-init-ux/spec.md`
+- **Increment 0022 Spec**: `.specweave/increments/_archive/0022-multi-repo-init-ux/spec.md`
 - **User Story**: US-006 - Create .env File
 - **Acceptance Criteria**: AC-US6-01 through AC-US6-06
 - **User Feedback**: "think about having .env in the root folder (similar to what we have to JIRA and ADO)"

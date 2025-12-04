@@ -18,11 +18,11 @@ lastUpdated: 2025-11-26
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0056-auto-github-sync-on-increment-creation](../../../../increments/0056-auto-github-sync-on-increment-creation/spec.md) | ✅ completed | 2025-11-24T00:00:00.000Z |
+| [0056-auto-github-sync-on-increment-creation](../../../../../../increments/_archive/0056-auto-github-sync-on-increment-creation/spec.md) | ✅ completed | 2025-11-24T00:00:00.000Z |
 
 ## User Stories
 
-- [US-001: Automatic Living Docs Sync on Increment Creation (P0)](../../specweave/FS-056/us-001-automatic-living-docs-sync-on-increment-creation-p0-.md)
-- [US-002: Automatic GitHub Issue Creation on Increment Creation (P0)](../../specweave/FS-056/us-002-automatic-github-issue-creation-on-increment-creation-p0-.md)
-- [US-003: Preserve Task Completion Sync Functionality (P1)](../../specweave/FS-056/us-003-preserve-task-completion-sync-functionality-p1-.md)
-- [US-004: Handle Missing GitHub Configuration Gracefully (P1)](../../specweave/FS-056/us-004-handle-missing-github-configuration-gracefully-p1-.md)
+- [US-001: Automatic Living Docs Sync on Increment Creation (P0)](./us-001-automatic-living-docs-sync-on-increment-creation-p0-.md)
+- [US-002: Automatic GitHub Issue Creation on Increment Creation (P0)](./us-002-automatic-github-issue-creation-on-increment-creation-p0-.md)
+- [US-003: Preserve Task Completion Sync Functionality (P1)](./us-003-preserve-task-completion-sync-functionality-p1-.md)
+- [US-004: Handle Missing GitHub Configuration Gracefully (P1)](./us-004-handle-missing-github-configuration-gracefully-p1-.md)

@@ -9,7 +9,7 @@ status: planned
 
 # Fix Automatic GitHub Sync on Increment Creation
 
-**Feature**: [FS-056](../../_features/FS-056/FEATURE.md)
+**Feature**: [FS-056](./FEATURE.md)
 
 ## Overview
 

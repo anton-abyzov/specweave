@@ -33,13 +33,13 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0086-brownfield-doc-analysis](../../../../increments/0086-brownfield-doc-analysis/spec.md)
+**Increment**: [0086-brownfield-doc-analysis](../../../../../increments/0086-brownfield-doc-analysis/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-004](../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-004): Extend Background Job System for Brownfield
-- [x] [T-005](../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-005): Implement Brownfield Analysis Worker
-- [x] [T-008](../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-008): Jobs Command Integration and Notifications
+- [x] [T-004](../../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-004): Extend Background Job System for Brownfield
+- [x] [T-005](../../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-005): Implement Brownfield Analysis Worker
+- [x] [T-008](../../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-008): Jobs Command Integration and Notifications

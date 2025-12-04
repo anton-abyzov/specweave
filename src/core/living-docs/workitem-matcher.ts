@@ -396,7 +396,7 @@ function findModuleMatches(
   matches.sort((a, b) => b.score - a.score);
 
   // For umbrella projects, work items may legitimately match multiple related repos
-  // (e.g., assetcare-fe, assetcare-be, assetcare-api for the same team).
+  // (e.g., producthub-fe, producthub-be, producthub-api for the same team).
   // Keep all matches with score >= 50 (high confidence), but limit lower scores to top 3
   const highConfidenceThreshold = 50;
 
@@ -523,7 +523,7 @@ function scoreMatch(
  *
  * Uses smart fuzzy matching to handle:
  * - Different naming conventions (camelCase, kebab-case, etc.)
- * - Acronyms (AssetCare → AC)
+ * - Acronyms (ProductHub → PH)
  * - Common abbreviations (service → svc, frontend → fe)
  */
 function scoreAreaPathMatch(
@@ -744,7 +744,7 @@ const CORE_SUFFIXES = new Set([
  * Tokenize a string into words
  * Handles: camelCase, PascalCase, kebab-case, snake_case, spaces, ALL_CAPS
  *
- * "AssetCare" → ["asset", "care"]
+ * "ProductHub" → ["product", "hub"]
  * "data-platform-api" → ["data", "platform", "api"]
  * "user_management_service" → ["user", "management", "service"]
  * "CRM" → ["crm"] (short all-caps stays as one token)
@@ -876,7 +876,7 @@ function levenshteinDistance(str1: string, str2: string): number {
  * Smart fuzzy match between area path/team and module name
  *
  * Handles:
- * - "AssetCare" → "assetcare-fe", "asset-care-api", "ac-service"
+ * - "ProductHub" → "producthub-fe", "product-hub-api", "ph-service"
  * - "DataPlatform" → "data-platform-be", "dp-api", "dataplatform-worker"
  * - "UserManagement" → "user-mgmt-svc", "um-api", "usermanagement-fe"
  */
@@ -929,7 +929,7 @@ function smartFuzzyMatch(
     return { score: 85, matchType: 'acronym-prefix', confidence: 'high' };
   }
 
-  // Target is the acronym (e.g., target "ac" matches source "AssetCare")
+  // Target is the acronym (e.g., target "ph" matches source "ProductHub")
   if (targetCoreJoined === sourceAcronym && sourceAcronym.length >= 2) {
     return { score: 80, matchType: 'acronym-exact', confidence: 'high' };
   }

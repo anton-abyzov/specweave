@@ -29,11 +29,11 @@ created: 2025-12-02
 
 ## Implementation
 
-**Increment**: [0090-living-docs-builder](../../../../increments/0090-living-docs-builder/spec.md)
+**Increment**: [0090-living-docs-builder](../../../../../increments/0090-living-docs-builder/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-007](../../../../increments/0090-living-docs-builder/tasks.md#T-007): Implement Suggestions Generator
+- [x] [T-007](../../../../../increments/0090-living-docs-builder/tasks.md#T-007): Implement Suggestions Generator

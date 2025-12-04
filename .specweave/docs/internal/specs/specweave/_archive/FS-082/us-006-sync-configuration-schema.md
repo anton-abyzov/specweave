@@ -30,7 +30,7 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0082-unified-sync-orchestration](../../../../increments/0082-unified-sync-orchestration/spec.md)
+**Increment**: [0082-unified-sync-orchestration](../../../../../../increments/_archive/0082-unified-sync-orchestration/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

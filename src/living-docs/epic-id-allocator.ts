@@ -150,6 +150,10 @@ export class EpicIdAllocator {
    * - 2-level (JIRA): specs/JIRA-{containerId}/{projectId}/
    * - 2-level (ADO): specs/{containerId}/{projectId}/ (no ADO- prefix)
    * - 1-level (GitHub): specs/{projectId}/
+   *
+   * IMPORTANT: For 2-level structure, epics ALWAYS go in the inner folder (board/area level),
+   * even when containerDirName == projectId (e.g., specs/nova-x-sandbox/nova-x-sandbox/).
+   * This is correct because the outer folder is PROJECT level, inner is BOARD level.
    */
   private getBaseDirectory(): string {
     if (this.externalContainer) {

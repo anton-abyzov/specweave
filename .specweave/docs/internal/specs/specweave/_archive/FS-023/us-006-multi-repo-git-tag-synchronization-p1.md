@@ -13,7 +13,7 @@ external:
 
 # US-006: Multi-Repo Git Tag Synchronization (P1)
 
-**Feature**: [FS-023](../../_features/FS-023/FEATURE.md)
+**Feature**: [FS-023](./FEATURE.md)
 
 **As a** release engineer
 **I want** git tags synchronized across multiple repos

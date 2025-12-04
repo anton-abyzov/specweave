@@ -771,9 +771,9 @@ if (featureFlags.gitlabEnabled) {
 
 ## References
 
-- **Architectural Review**: `.specweave/increments/0051-automatic-github-sync/reports/MULTI-REPO-INIT-ARCHITECTURAL-REVIEW.md`
-- **Implementation Status**: `.specweave/increments/0051-automatic-github-sync/reports/GIT-PROVIDER-ABSTRACTION-IMPLEMENTATION-STATUS.md`
-- **Scenarios Guide**: `.specweave/increments/0051-automatic-github-sync/reports/SPECWEAVE-INIT-SCENARIOS-GUIDE.md`
+- **Architectural Review**: `.specweave/increments/_archive/0051-automatic-github-sync/reports/MULTI-REPO-INIT-ARCHITECTURAL-REVIEW.md`
+- **Implementation Status**: `.specweave/increments/_archive/0051-automatic-github-sync/reports/GIT-PROVIDER-ABSTRACTION-IMPLEMENTATION-STATUS.md`
+- **Scenarios Guide**: `.specweave/increments/_archive/0051-automatic-github-sync/reports/SPECWEAVE-INIT-SCENARIOS-GUIDE.md`
 - **GitHub API Docs**: https://docs.github.com/en/rest
 - **GitLab API Docs**: https://docs.gitlab.com/ee/api/
 - **Bitbucket API Docs**: https://developer.atlassian.com/cloud/bitbucket/rest/

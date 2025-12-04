@@ -136,7 +136,7 @@ Agent Final Response:
    - Average tasks/US: 6
    - Coverage target: 85%
 
-   File: .specweave/increments/0052-safe-feature-deletion/tasks.md
+   File: .specweave/increments/_archive/0052-safe-feature-deletion/tasks.md
 
    Next steps:
    1. Review tasks.md for completeness

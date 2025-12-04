@@ -502,13 +502,13 @@ const { strategy } = await inquirer.prompt([{
 ## Related ADRs
 
 - [ADR-0016: Multi-Project External Sync](0016-multi-project-external-sync.md) - Sync profiles architecture
-- [ADR-0017: Multi-Project Internal Structure](0017-multi-project-internal-structure.md) - Internal folder organization
+- [ADR-0017: Multi-Project Internal Structure](0153-strategy-based-team-mapping.md) - Internal folder organization
 
 ---
 
 ## References
 
-* [1350-line ADO/Jira/GitHub Comparison](../../../increments/0012-multi-project-env-support/reports/ADO-Jira-GitHub-Team-Mapping-Comparison.md) (User-provided research)
+* 1350-line ADO/Jira/GitHub Comparison (User-provided research - document archived)
 * [Atlassian: Jira Components](https://support.atlassian.com/jira-software-cloud/docs/what-are-components/)
 * [Microsoft: Azure DevOps Teams](https://learn.microsoft.com/en-us/azure/devops/organizations/settings/about-teams-and-settings)
 * [GitHub: Teams and Repositories](https://docs.github.com/en/organizations/organizing-members-into-teams)

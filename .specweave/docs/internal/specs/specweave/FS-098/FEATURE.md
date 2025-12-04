@@ -18,7 +18,7 @@ With increment 0097, SpecWeave can now detect umbrella projects and identify chi
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0098-umbrella-workitem-matching](../../../../increments/0098-umbrella-workitem-matching/spec.md) | ⏳ active | 2024-12-03 |
+| [0098-umbrella-workitem-matching](../../../../../increments/0098-umbrella-workitem-matching/spec.md) | ⏳ active | 2024-12-03 |
 
 ## User Stories
 

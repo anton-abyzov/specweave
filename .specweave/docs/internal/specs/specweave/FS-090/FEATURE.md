@@ -18,7 +18,7 @@ A smart, scalable background job system that automatically builds comprehensive 
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0090-living-docs-builder](../../../../increments/0090-living-docs-builder/spec.md) | ✅ completed | 2025-12-02 |
+| [0090-living-docs-builder](../../../../../increments/0090-living-docs-builder/spec.md) | ✅ completed | 2025-12-02 |
 
 ## User Stories
 

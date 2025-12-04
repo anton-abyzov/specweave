@@ -30,11 +30,11 @@ created: 2024-12-03
 
 ## Implementation
 
-**Increment**: [0098-umbrella-workitem-matching](../../../../increments/0098-umbrella-workitem-matching/spec.md)
+**Increment**: [0098-umbrella-workitem-matching](../../../../../increments/0098-umbrella-workitem-matching/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [ ] [T-004](../../../../increments/0098-umbrella-workitem-matching/tasks.md#T-004): Improve Suggestions Generator
+- [ ] [T-004](../../../../../increments/0098-umbrella-workitem-matching/tasks.md#T-004): Improve Suggestions Generator

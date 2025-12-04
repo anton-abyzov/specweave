@@ -20,7 +20,7 @@ Claude Code has been crashing consistently immediately after completing tasks in
 2. post-task-completion.sh (background process spawns)
    ↓  
 3. consolidated-sync.js runs (Node.js)
-   ├─ Edit: .specweave/increments/0051/tasks.md  
+   ├─ Edit: .specweave/increments/_archive/0051/tasks.md  
    │   ├─ PreToolUse:Edit → pre-edit-write-consolidated.sh
    │   ├─ PostToolUse:Edit → post-edit-write-consolidated.sh  
    │   └─ PostToolUse:Edit → post-metadata-change.sh
@@ -151,10 +151,10 @@ post-task-completion.sh:
 
 ## References
 
-- Incident Report: `.specweave/increments/0051-*/reports/CLAUDE-CODE-CRASH-ROOT-CAUSE-2025-11-23.md`
+- Incident Report: `.specweave/increments/_archive/0051-*/reports/CLAUDE-CODE-CRASH-ROOT-CAUSE-2025-11-23.md`
 - ADR-0070: Hook Consolidation (v0.25.0)
 - ADR-0060: Three-Tier Optimization Architecture (v0.24.2)
-- Emergency Procedures: `.specweave/docs/internal/emergency-procedures/HOOK-CRASH-RECOVERY.md`
+- Emergency Procedures: `.specweave/docs/internal/../operations/hook-crash-recovery.md`
 
 ## Related Work
 

@@ -9,7 +9,7 @@ created: 2025-11-24
 
 # US-005: GitHub Multi-Repo Error Handling (Priority: P1)
 
-**Feature**: [FS-054](../../_features/FS-054/FEATURE.md)
+**Feature**: [FS-054](./FEATURE.md)
 
 **As a** developer using GitHub multi-repo setup
 **I want** granular error handling during initialization
@@ -27,7 +27,7 @@ created: 2025-11-24
 
 ## Implementation
 
-**Increment**: [0054-sync-guard-security-reliability-fixes](../../../../increments/0054-sync-guard-security-reliability-fixes/spec.md)
+**Increment**: [0054-sync-guard-security-reliability-fixes](../../../../../../increments/_archive/0054-sync-guard-security-reliability-fixes/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

@@ -547,8 +547,8 @@ it('ignores invalid increment folder names', () => {
 ```typescript
 it('handles corrupted increment folder names', () => {
   createIncrement('0001-valid');
-  fs.mkdirSync('.specweave/increments/0002'); // Missing hyphen and name
-  fs.mkdirSync('.specweave/increments/0003-'); // Missing name
+  fs.mkdirSync('.specweave/increments/_archive/0002'); // Missing hyphen and name
+  fs.mkdirSync('.specweave/increments/_archive/0003-'); // Missing name
 
   const result = IncrementNumberManager.getNextIncrementNumber(projectRoot);
 
@@ -638,7 +638,7 @@ it('prevents duplicate IDs when abandoning increment', async () => {
 
   // 2. Abandon 0002
   fs.renameSync(
-    '.specweave/increments/0002-feature-b',
+    '.specweave/increments/_archive/0002-feature-b',
     '.specweave/increments/_abandoned/0002-feature-b'
   );
 
@@ -662,7 +662,7 @@ it('prevents duplicate IDs when pausing increment', () => {
 
   // Pause 0005
   fs.renameSync(
-    '.specweave/increments/0005-feature-b',
+    '.specweave/increments/_archive/0005-feature-b',
     '.specweave/increments/_paused/0005-feature-b'
   );
 
@@ -719,7 +719,7 @@ it('full workflow: create → abandon → create new', () => {
 
   // Phase 2: Abandon 0001
   fs.renameSync(
-    '.specweave/increments/0001-feature-a',
+    '.specweave/increments/_archive/0001-feature-a',
     '.specweave/increments/_abandoned/0001-feature-a'
   );
 
@@ -731,7 +731,7 @@ it('full workflow: create → abandon → create new', () => {
 
   // Verify: Should be 0003, not 0001 (collision)
   expect(next3).toBe('0003');
-  expect(fs.existsSync('.specweave/increments/0003-feature-c')).toBe(true);
+  expect(fs.existsSync('.specweave/increments/_archive/0003-feature-c')).toBe(true);
   expect(fs.existsSync('.specweave/increments/_abandoned/0001-feature-a')).toBe(true);
 });
 ```
@@ -748,7 +748,7 @@ it('full workflow: create → abandon → create new', () => {
 ```typescript
 test('PM Agent creates increment with correct numbering', async () => {
   // Setup: Existing increments
-  await exec('mkdir -p .specweave/increments/0001-feature-a');
+  await exec('mkdir -p .specweave/increments/_archive/0001-feature-a');
   await exec('mkdir -p .specweave/increments/_abandoned/0005-failed');
 
   // Execute: PM Agent creates new increment
@@ -756,27 +756,27 @@ test('PM Agent creates increment with correct numbering', async () => {
 
   // Verify: Correct increment number
   expect(stdout).toContain('Increment 0006'); // Next after 0005
-  expect(fs.existsSync('.specweave/increments/0006-new-feature')).toBe(true);
+  expect(fs.existsSync('.specweave/increments/_archive/0006-new-feature')).toBe(true);
 });
 ```
 
 **E2E-002: JIRA import creates correct increment**
 ```typescript
 test('JIRA import creates increment with correct numbering', async () => {
-  await exec('mkdir -p .specweave/increments/0010-existing');
+  await exec('mkdir -p .specweave/increments/_archive/0010-existing');
 
   const { stdout } = await exec('npx specweave jira-import EPIC-123');
 
   expect(stdout).toContain('Increment 0011');
-  expect(fs.existsSync('.specweave/increments/0011-epic-123')).toBe(true);
+  expect(fs.existsSync('.specweave/increments/_archive/0011-epic-123')).toBe(true);
 });
 ```
 
 **E2E-003: Abandon increment workflow**
 ```typescript
 test('Abandoning increment prevents ID reuse', async () => {
-  await exec('mkdir -p .specweave/increments/0001-feature');
-  await exec('mkdir -p .specweave/increments/0002-feature');
+  await exec('mkdir -p .specweave/increments/_archive/0001-feature');
+  await exec('mkdir -p .specweave/increments/_archive/0002-feature');
 
   // Abandon 0001
   await exec('npx specweave abandon 0001 --reason="Scope changed"');
@@ -792,7 +792,7 @@ test('Abandoning increment prevents ID reuse', async () => {
 **E2E-004: Pause and resume workflow**
 ```typescript
 test('Pausing increment reserves ID number', async () => {
-  await exec('mkdir -p .specweave/increments/0005-feature');
+  await exec('mkdir -p .specweave/increments/_archive/0005-feature');
 
   // Pause 0005
   await exec('npx specweave pause 0005 --reason="Waiting for dependency"');
@@ -806,7 +806,7 @@ test('Pausing increment reserves ID number', async () => {
   // Resume 0005
   await exec('npx specweave resume 0005');
 
-  expect(fs.existsSync('.specweave/increments/0005-feature')).toBe(true);
+  expect(fs.existsSync('.specweave/increments/_archive/0005-feature')).toBe(true);
   expect(fs.existsSync('.specweave/increments/_paused/0005-feature')).toBe(false);
 });
 ```

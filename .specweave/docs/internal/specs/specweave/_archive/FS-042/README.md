@@ -9,7 +9,7 @@ status: completed
 
 # Test Infrastructure Cleanup - Eliminate 48% Duplication
 
-**Feature**: [FS-042](../../_features/FS-042/FEATURE.md)
+**Feature**: [FS-042](./FEATURE.md)
 
 ## Overview
 

@@ -72,7 +72,7 @@ Notify user with actionable recommendations
 - **ADR References** (6 rules): Referenced ADRs exist, sequential numbering, valid status
 - **Diagram References** (5 rules): Diagrams exist, valid syntax, correct locations
 
-**Complete rules**: See [INCREMENT-VALIDATION-DESIGN.md](.specweave/increments/0002-core-enhancements/reports/INCREMENT-VALIDATION-DESIGN.md)
+**Complete rules**: See [INCREMENT-VALIDATION-DESIGN.md](.specweave/increments/_archive/0002-core-enhancements/reports/INCREMENT-VALIDATION-DESIGN.md)
 
 ### User Experience
 
@@ -135,7 +135,7 @@ WARNINGS:
   ✅ Risk assessment complete (3 critical, 5 high risks)
 
 📋 Validation report generated:
-.specweave/increments/0004-reporting-dashboard/reports/validation-report.md
+.specweave/increments/_archive/0004-reporting-dashboard/reports/validation-report.md
 
 🔴 CRITICAL ISSUES FOUND
 Please review validation report before proceeding with implementation.
@@ -268,7 +268,7 @@ validation:
 
 ### Related Documentation
 
-- **INCREMENT-VALIDATION-DESIGN.md** - Complete validation design (see `.specweave/increments/0002-core-enhancements/reports/` in repository)
+- **INCREMENT-VALIDATION-DESIGN.md** - Complete validation design (see `.specweave/increments/_archive/0002-core-enhancements/reports/` in repository)
 - [Test Case Strategy](https://github.com/anthropics/claude-code/blob/main/docs/testing.md) - Testing philosophy
 
 ---

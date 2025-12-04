@@ -460,9 +460,9 @@ const result = PhaseDetector.detectPhaseWithConfidence(increment);
 
 ## References
 
-- **Living Spec**: [SPEC-0039: Ultra-Smart Next Command](../../specs/specweave/spec-0039-ultra-smart-next-command.md)
-- **Increment**: [0039-ultra-smart-next-command](../../../increments/0039-ultra-smart-next-command/)
-- **Existing Command**: [/specweave:next](../../../../plugins/specweave/commands/specweave-next.md)
+- **Living Spec**: [SPEC-0039: Ultra-Smart Next Command](../../specs/specweave/_archive/FS-039/FEATURE.md)
+- **Increment**: [0039-ultra-smart-next-command](../../../increments/_archive/0039-ultra-smart-next-command/)
+- **Existing Command**: [/specweave:next](../../../../../plugins/specweave/commands/specweave-next.md)
 - **PM Agent**: [PM Agent](../../../../plugins/specweave/agents/pm/)
 
 ---

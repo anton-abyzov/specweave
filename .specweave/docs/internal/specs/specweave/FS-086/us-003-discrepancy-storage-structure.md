@@ -33,12 +33,12 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0086-brownfield-doc-analysis](../../../../increments/0086-brownfield-doc-analysis/spec.md)
+**Increment**: [0086-brownfield-doc-analysis](../../../../../increments/0086-brownfield-doc-analysis/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-001): Create Discrepancy Type System and Manager
-- [x] [T-002](../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-002): Implement Batched Folder Storage
+- [x] [T-001](../../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-001): Create Discrepancy Type System and Manager
+- [x] [T-002](../../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-002): Implement Batched Folder Storage

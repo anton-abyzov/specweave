@@ -9,7 +9,7 @@ created: 2025-11-18
 
 # US-003: Fix Dangerous Test Isolation Patterns (Priority: P1 - CRITICAL)
 
-**Feature**: [FS-042](../../_features/FS-042/FEATURE.md)
+**Feature**: [FS-042](./FEATURE.md)
 
 **As a** SpecWeave contributor
 **I want** all tests to use safe isolation patterns (createIsolatedTestDir)
@@ -28,7 +28,7 @@ created: 2025-11-18
 
 ## Implementation
 
-**Increment**: [0042-test-infrastructure-cleanup](../../../../increments/0042-test-infrastructure-cleanup/spec.md)
+**Increment**: [0042-test-infrastructure-cleanup](../../../../../../increments/_archive/0042-test-infrastructure-cleanup/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

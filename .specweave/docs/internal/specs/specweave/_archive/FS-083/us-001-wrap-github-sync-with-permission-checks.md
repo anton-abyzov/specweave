@@ -29,7 +29,7 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0083-sync-interceptor-pattern](../../../../increments/0083-sync-interceptor-pattern/spec.md)
+**Increment**: [0083-sync-interceptor-pattern](../../../../../../increments/_archive/0083-sync-interceptor-pattern/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

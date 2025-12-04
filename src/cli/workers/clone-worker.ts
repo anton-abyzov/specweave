@@ -228,7 +228,7 @@ async function main(): Promise<void> {
       }
 
       // Build child repos list from successful clones
-      const childRepos = repos.map(repo => ({
+      const newChildRepos = repos.map(repo => ({
         id: repo.name,
         path: repo.path,
         name: repo.name,
@@ -238,15 +238,32 @@ async function main(): Promise<void> {
         status: 'cloned' as const,
       }));
 
+      // CRITICAL FIX (v0.31.x): Merge and deduplicate childRepos by id
+      // Bug: Previous code overwrote entire umbrella.childRepos, losing existing repos
+      // and causing duplicates when clone job runs multiple times
+      const existingChildRepos: typeof newChildRepos = config.umbrella?.childRepos || [];
+      const mergedRepos = [...existingChildRepos];
+
+      for (const newRepo of newChildRepos) {
+        const existingIndex = mergedRepos.findIndex(r => r.id === newRepo.id);
+        if (existingIndex >= 0) {
+          // Update existing repo with new info (e.g., clonedAt timestamp)
+          mergedRepos[existingIndex] = newRepo;
+        } else {
+          // Add new repo
+          mergedRepos.push(newRepo);
+        }
+      }
+
       config.umbrella = {
         enabled: true,
-        childRepos,
+        childRepos: mergedRepos,
         detectedFrom: 'clone-job',
         detectedAt: new Date().toISOString(),
       };
 
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      log(`Umbrella config saved: ${childRepos.length} repos`);
+      log(`Umbrella config saved: ${mergedRepos.length} repos (${newChildRepos.length} from this job)`);
     } catch (umbrellaError: any) {
       log(`Warning: Failed to persist umbrella config: ${umbrellaError.message}`);
       // Non-fatal: continue with job completion

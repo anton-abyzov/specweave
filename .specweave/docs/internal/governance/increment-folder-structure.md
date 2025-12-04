@@ -111,7 +111,7 @@ ls -1 .specweave/increments/ | grep -v "^[0-9]" | grep -v "^_archive" | grep -v 
 # Should output NOTHING
 
 # Check for violations inside increment folders
-find .specweave/increments/0053-* -maxdepth 1 -type f | grep -v -E "(spec|plan|tasks|metadata)"
+find .specweave/increments/_archive/0053-* -maxdepth 1 -type f | grep -v -E "(spec|plan|tasks|metadata)"
 # Should output NOTHING (all files should be in spec.md, plan.md, tasks.md, metadata.json)
 ```
 
@@ -127,7 +127,7 @@ find .specweave/increments/0053-* -maxdepth 1 -type f | grep -v -E "(spec|plan|t
 2. **Move to correct location**:
    ```bash
    mv .specweave/increments/reports/file.md \
-      .specweave/increments/0053-increment-name/reports/file.md
+      .specweave/increments/_archive/0053-increment-name/reports/file.md
    ```
 
 3. **Delete empty violations**:
@@ -145,7 +145,7 @@ find .specweave/increments/0053-* -maxdepth 1 -type f | grep -v -E "(spec|plan|t
 - **CLAUDE.md Section 2**: "Increment Folder Structure"
 - **CLAUDE.md Section 7**: "Source of Truth: tasks.md + spec.md"
 - **ADR-0061**: "No Increment-to-Increment References"
-- **Hook Safety**: `.specweave/docs/internal/emergency-procedures/HOOK-CRASH-RECOVERY.md`
+- **Hook Safety**: `.specweave/docs/internal/../operations/hook-crash-recovery.md`
 
 ## Change History
 

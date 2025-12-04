@@ -30,7 +30,7 @@ await fs.rm(testPath, { recursive: true }); // DELETES PROJECT .specweave/!
 - Recovery required `git restore` (fortunately project was clean)
 - 4 hours wasted on recovery + investigation
 
-**Recovery**: `.specweave/increments/0037/reports/DELETION-ROOT-CAUSE-2025-11-17.md`
+**Recovery**: `.specweave/increments/_archive/0037/reports/DELETION-ROOT-CAUSE-2025-11-17.md`
 
 ### Current Audit Results
 
@@ -486,9 +486,9 @@ test('my test', async () => {
 
 ## References
 
-- **Historical Incident**: `.specweave/increments/0037/reports/DELETION-ROOT-CAUSE-2025-11-17.md`
-- **Recovery Report**: `.specweave/increments/0039/reports/ACCIDENTAL-DELETION-RECOVERY-2025-11-17.md`
-- **Analysis**: `.specweave/increments/0041/reports/TEST-DATA-CONSISTENCY-ANALYSIS.md`
+- **Historical Incident**: `.specweave/increments/_archive/0037/reports/DELETION-ROOT-CAUSE-2025-11-17.md`
+- **Recovery Report**: `.specweave/increments/_archive/0039/reports/ACCIDENTAL-DELETION-RECOVERY-2025-11-17.md`
+- **Analysis**: `.specweave/increments/_archive/0041/reports/TEST-DATA-CONSISTENCY-ANALYSIS.md`
 - **Test Utilities**: `tests/test-utils/isolated-test-dir.ts`
 
 ---

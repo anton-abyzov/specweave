@@ -189,7 +189,7 @@ Repairs desyncs by updating spec.md to match metadata.json (metadata.json = sour
 ## Related Documentation
 
 - **User Story**: US-002 (spec.md and metadata.json stay in sync)
-- **Spec**: `.specweave/increments/0043-spec-md-desync-fix/spec.md`
+- **Spec**: `.specweave/increments/_archive/0043-spec-md-desync-fix/spec.md`
 - **Implementation**:
   - `src/core/increment/spec-frontmatter-updater.ts`
   - `src/core/increment/metadata-manager.ts` (lines 268-324)

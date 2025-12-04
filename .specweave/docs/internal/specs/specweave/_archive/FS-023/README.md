@@ -12,7 +12,7 @@ sourceIncrement: 0023-release-management-enhancements
 
 **GitHub Project**: https://github.com/anton-abyzov/specweave/issues/684
 
-**Feature**: [FS-023](../../_features/FS-023/FEATURE.md)
+**Feature**: [FS-023](./FEATURE.md)
 
 ## Overview
 
@@ -43,4 +43,4 @@ User stories for this project are listed below.
 
 ---
 
-**Source**: [Increment 0023-release-management-enhancements](../../../../../increments/0023-release-management-enhancements)
+**Source**: [Increment 0023-release-management-enhancements](../../../../../../increments/_archive/0023-release-management-enhancements)

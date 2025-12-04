@@ -10,7 +10,7 @@ project: specweave
 
 # US-001: Task Splitting Logic (spec-distributor.ts)
 
-**Feature**: [FS-037](../../_features/FS-037/FEATURE.md)
+**Feature**: [FS-037](./FEATURE.md)
 
 **As a** developer working on multi-project features
 **I want** increment tasks to be automatically split into project-specific tasks

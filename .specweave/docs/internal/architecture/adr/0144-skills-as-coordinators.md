@@ -2,7 +2,7 @@
 
 **Status**: Accepted
 **Date**: 2025-10-26
-**Increment**: [0002-core-enhancements](../../../../increments/0002-core-enhancements/)
+**Increment**: [0002-core-enhancements](../../../../increments/_archive/0002-core-enhancements/)
 
 ---
 
@@ -85,5 +85,5 @@ diagrams-generator skill (saves to correct location)
 
 ## Related
 
-- **ADR**: [Agent Types](0002-001-agent-types-roles-vs-tools.md) - ROLE vs TOOL distinction
-- **Increment**: [0002-core-enhancements](../../../../increments/0002-core-enhancements/)
+- **ADR**: [Agent Types](../adr/0002-agent-types-roles-vs-tools.md) - ROLE vs TOOL distinction
+- **Increment**: [0002-core-enhancements](../../../../increments/_archive/0002-core-enhancements/)

@@ -9,7 +9,7 @@ created: 2025-11-19
 
 # US-008: ID Collision Resolution
 
-**Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
+**Feature**: [FS-047](./FEATURE.md)
 
 **As a** developer creating mixed internal/external items
 **I want** ID generation to avoid collisions between internal and external IDs
@@ -30,7 +30,7 @@ created: 2025-11-19
 
 ## Implementation
 
-**Increment**: [0047-us-task-linkage](../../../../increments/0047-us-task-linkage/spec.md)
+**Increment**: [0047-us-task-linkage](../../../../../../increments/_archive/0047-us-task-linkage/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

@@ -13,7 +13,7 @@ external:
 
 # US-007: Post-Task-Completion Hooks Integration (P1)
 
-**Feature**: [FS-023](../../_features/FS-023/FEATURE.md)
+**Feature**: [FS-023](./FEATURE.md)
 
 **As a** developer
 **I want** DORA metrics tracked automatically after task completion

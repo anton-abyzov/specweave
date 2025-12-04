@@ -16,7 +16,7 @@ graph TB
     PostHook --> GitHubIssue[Create GitHub Issue<br/>if enabled]
 
     Violations --> ShowViolations[Show Violations<br/>to User]
-    ShowViolations --> Suggestions[Suggest Fixes:<br/>- /specweave:close<br/>- /specweave:do<br/>- /specweave:status]
+    ShowViolations --> Suggestions[Suggest Fixes:<br/>- /specweave:done<br/>- /specweave:do<br/>- /specweave:status]
     Suggestions --> Block[❌ BLOCK Planning<br/>Exit Without Creating]
 
     Error --> ShowError[Show Error<br/>to User]

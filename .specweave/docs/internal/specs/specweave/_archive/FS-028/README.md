@@ -10,7 +10,7 @@ sourceIncrement: 0028-multi-repo-ux-improvements
 
 # SpecWeave Implementation: Multi-Repository Setup UX Improvements
 
-**Feature**: [FS-028](../../_features/FS-028/FEATURE.md)
+**Feature**: [FS-028](./FEATURE.md)
 
 ## Overview
 
@@ -41,4 +41,4 @@ User stories for this project are listed below.
 
 ---
 
-**Source**: [Increment 0028-multi-repo-ux-improvements](../../../../../increments/0028-multi-repo-ux-improvements)
+**Source**: [Increment 0028-multi-repo-ux-improvements](../../../../../../increments/_archive/0028-multi-repo-ux-improvements)

@@ -27,7 +27,7 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0076-crash-prevention-refactor](../../../../increments/0076-crash-prevention-refactor/spec.md)
+**Increment**: [0076-crash-prevention-refactor](../../../../../../increments/_archive/0076-crash-prevention-refactor/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

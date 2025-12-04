@@ -89,10 +89,10 @@ This isn't just philosophical - it determines:
 **spec.md is user-facing**:
 ```bash
 # Users edit spec.md in their editor
-vim .specweave/increments/0001-feature/spec.md
+vim .specweave/increments/_archive/0001-feature/spec.md
 
 # Users inspect spec.md directly
-cat .specweave/increments/0001-feature/spec.md
+cat .specweave/increments/_archive/0001-feature/spec.md
 ```
 
 **metadata.json is internal**:
@@ -137,7 +137,7 @@ if (data.status === 'completed') {
 
 **spec.md is easily inspectable**:
 ```bash
-$ cat .specweave/increments/0038-serverless/spec.md
+$ cat .specweave/increments/_archive/0038-serverless/spec.md
 ---
 increment: 0038-serverless-template-verification
 status: completed  # ← IMMEDIATELY VISIBLE
@@ -147,7 +147,7 @@ priority: P1
 
 **metadata.json requires parsing**:
 ```bash
-$ cat .specweave/increments/0038-serverless/metadata.json
+$ cat .specweave/increments/_archive/0038-serverless/metadata.json
 {"id":"0038-serverless-template-verification","status":"completed",...}
 # Must parse JSON to find status
 ```
@@ -158,8 +158,8 @@ $ cat .specweave/increments/0038-serverless/metadata.json
 
 **spec.md diffs are meaningful**:
 ```diff
---- a/.specweave/increments/0038/spec.md
-+++ b/.specweave/increments/0038/spec.md
+--- a/.specweave/increments/_archive/0038/spec.md
++++ b/.specweave/increments/_archive/0038/spec.md
 @@ -2,7 +2,7 @@
  increment: 0038-serverless-template-verification
  title: "Serverless Template Verification"
@@ -170,8 +170,8 @@ $ cat .specweave/increments/0038-serverless/metadata.json
 
 **metadata.json diffs are noisy**:
 ```diff
---- a/.specweave/increments/0038/metadata.json
-+++ b/.specweave/increments/0038/metadata.json
+--- a/.specweave/increments/_archive/0038/metadata.json
++++ b/.specweave/increments/_archive/0038/metadata.json
 @@ -1 +1 @@
 -{"id":"0038-serverless-template-verification","status":"active","created":"2025-11-15T10:00:00Z","lastActivity":"2025-11-15T10:00:00Z",...}
 +{"id":"0038-serverless-template-verification","status":"completed","created":"2025-11-15T10:00:00Z","lastActivity":"2025-11-18T14:30:00Z",...}
@@ -397,7 +397,7 @@ jobs:
 ## References
 
 **Root Cause Analysis**:
-- `.specweave/increments/0043-spec-md-desync-fix/spec.md` (bug specification)
+- `.specweave/increments/_archive/0043-spec-md-desync-fix/spec.md` (bug specification)
 - Incident: Increment 0038, 0041 desyncs (2025-11-18)
 
 **Implementation**:

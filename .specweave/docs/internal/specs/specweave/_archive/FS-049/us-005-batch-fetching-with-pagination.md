@@ -9,7 +9,7 @@ created: 2025-11-21
 
 # US-005: Batch Fetching with Pagination
 
-**Feature**: [FS-049](../../_features/FS-049/FEATURE.md)
+**Feature**: [FS-049](./FEATURE.md)
 
 **As a** system administrator with 500+ JIRA projects
 **I want** SpecWeave to fetch projects in batches of 50 with proper pagination
@@ -30,7 +30,7 @@ created: 2025-11-21
 
 ## Implementation
 
-**Increment**: [0049-cli-first-init-flow](../../../../increments/0049-cli-first-init-flow/spec.md)
+**Increment**: [0049-cli-first-init-flow](../../../../../../increments/_archive/0049-cli-first-init-flow/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

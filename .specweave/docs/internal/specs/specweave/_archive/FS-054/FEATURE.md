@@ -18,7 +18,7 @@ This increment documents a comprehensive code review and security fix implementa
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0054-sync-guard-security-reliability-fixes](../../../../increments/0054-sync-guard-security-reliability-fixes/spec.md) | ✅ completed | 2025-11-24 |
+| [0054-sync-guard-security-reliability-fixes](../../../../../../increments/_archive/0054-sync-guard-security-reliability-fixes/spec.md) | ✅ completed | 2025-11-24 |
 
 ## Related Fixes
 
@@ -33,9 +33,9 @@ During investigation of sync issues in increments 0054-0056, a critical bug was 
 
 ## User Stories
 
-- [US-001: ExternalToolDriftDetector Security Hardening (Priority: P0)](../../specweave/FS-054/us-001-externaltooldriftdetector-security-hardening-priority-p0-.md)
-- [US-002: ExternalToolDriftDetector Reliability Improvements (Priority: P1)](../../specweave/FS-054/us-002-externaltooldriftdetector-reliability-improvements-priority-p1-.md)
-- [US-003: LivingDocsSync Race Condition Fix (Priority: P0)](../../specweave/FS-054/us-003-livingdocssync-race-condition-fix-priority-p0-.md)
-- [US-004: LivingDocsSync Configuration Improvements (Priority: P1)](../../specweave/FS-054/us-004-livingdocssync-configuration-improvements-priority-p1-.md)
-- [US-005: GitHub Multi-Repo Error Handling (Priority: P1)](../../specweave/FS-054/us-005-github-multi-repo-error-handling-priority-p1-.md)
-- [US-006: GitHub Multi-Repo Input Validation (Priority: P1)](../../specweave/FS-054/us-006-github-multi-repo-input-validation-priority-p1-.md)
+- [US-001: ExternalToolDriftDetector Security Hardening (Priority: P0)](./us-001-externaltooldriftdetector-security-hardening-priority-p0-.md)
+- [US-002: ExternalToolDriftDetector Reliability Improvements (Priority: P1)](./us-002-externaltooldriftdetector-reliability-improvements-priority-p1-.md)
+- [US-003: LivingDocsSync Race Condition Fix (Priority: P0)](./us-003-livingdocssync-race-condition-fix-priority-p0-.md)
+- [US-004: LivingDocsSync Configuration Improvements (Priority: P1)](./us-004-livingdocssync-configuration-improvements-priority-p1-.md)
+- [US-005: GitHub Multi-Repo Error Handling (Priority: P1)](./us-005-github-multi-repo-error-handling-priority-p1-.md)
+- [US-006: GitHub Multi-Repo Input Validation (Priority: P1)](./us-006-github-multi-repo-input-validation-priority-p1-.md)

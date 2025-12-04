@@ -9,7 +9,7 @@ created: 2025-11-22T00:00:00.000Z
 
 # US-003: Idempotency via Caching
 
-**Feature**: [FS-051](../../_features/FS-051/FEATURE.md)
+**Feature**: [FS-051](./FEATURE.md)
 
 ---
 
@@ -26,7 +26,7 @@ created: 2025-11-22T00:00:00.000Z
 
 ## Implementation
 
-**Increment**: [0051-automatic-github-sync](../../../../increments/0051-automatic-github-sync/spec.md)
+**Increment**: [0051-automatic-github-sync](../../../../../../increments/_archive/0051-automatic-github-sync/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

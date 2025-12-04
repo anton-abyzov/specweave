@@ -9,7 +9,7 @@ created: 2025-11-16
 
 # US-008: Intelligent Backlog Suggestions (Priority: P2)
 
-**Feature**: [FS-039](../../_features/FS-039/FEATURE.md)
+**Feature**: [FS-039](./FEATURE.md)
 
 **As a** developer who completed all active increments
 **I want** /specweave:next to suggest backlog items intelligently
@@ -29,7 +29,7 @@ created: 2025-11-16
 
 ## Implementation
 
-**Increment**: [0039-ultra-smart-next-command](../../../../increments/0039-ultra-smart-next-command/spec.md)
+**Increment**: [0039-ultra-smart-next-command](../../../../../../increments/_archive/0039-ultra-smart-next-command/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

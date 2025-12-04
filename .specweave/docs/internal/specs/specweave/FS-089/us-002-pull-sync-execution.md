@@ -27,12 +27,12 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0089-bidirectional-sync-pull](../../../../increments/0089-bidirectional-sync-pull/spec.md)
+**Increment**: [0089-bidirectional-sync-pull](../../../../../increments/0089-bidirectional-sync-pull/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-005](../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-005): Create ExternalChangePuller Class
-- [x] [T-007](../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-007): Create LivingDocsUpdater for Frontmatter Updates
+- [x] [T-005](../../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-005): Create ExternalChangePuller Class
+- [x] [T-007](../../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-007): Create LivingDocsUpdater for Frontmatter Updates

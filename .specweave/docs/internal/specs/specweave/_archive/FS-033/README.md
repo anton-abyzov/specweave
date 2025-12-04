@@ -10,7 +10,7 @@ sourceIncrement: 0033-duplicate-increment-prevention
 
 # SpecWeave Implementation: Duplicate Increment Prevention System
 
-**Feature**: [FS-033](../../_features/FS-033/FEATURE.md)
+**Feature**: [FS-033](./FEATURE.md)
 
 ## Overview
 
@@ -41,4 +41,4 @@ User stories for this project are listed below.
 
 ---
 
-**Source**: [Increment 0033-duplicate-increment-prevention](../../../../../increments/0033-duplicate-increment-prevention)
+**Source**: [Increment 0033-duplicate-increment-prevention](../../../../../../increments/_archive/0033-duplicate-increment-prevention)

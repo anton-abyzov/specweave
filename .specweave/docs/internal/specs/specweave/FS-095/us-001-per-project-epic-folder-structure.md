@@ -31,13 +31,13 @@ created: 2024-12-03
 
 ## Implementation
 
-**Increment**: [0095-per-project-epic-hierarchy](../../../../increments/0095-per-project-epic-hierarchy/spec.md)
+**Increment**: [0095-per-project-epic-hierarchy](../../../../../increments/0095-per-project-epic-hierarchy/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0095-per-project-epic-hierarchy/tasks.md#T-001): Update EpicIdAllocator for per-project paths
-- [x] [T-003](../../../../increments/0095-per-project-epic-hierarchy/tasks.md#T-003): Update HierarchyMapper for per-project epics
-- [x] [T-006](../../../../increments/0095-per-project-epic-hierarchy/tasks.md#T-006): Update unit tests for per-project epics
+- [x] [T-001](../../../../../increments/0095-per-project-epic-hierarchy/tasks.md#T-001): Update EpicIdAllocator for per-project paths
+- [x] [T-003](../../../../../increments/0095-per-project-epic-hierarchy/tasks.md#T-003): Update HierarchyMapper for per-project epics
+- [x] [T-006](../../../../../increments/0095-per-project-epic-hierarchy/tasks.md#T-006): Update unit tests for per-project epics

@@ -168,5 +168,5 @@ Both SpecWeave and SpecKit use this 4-phase workflow. SpecWeave intentionally ma
 ## Related Documentation
 
 - [ADR-0005: Documentation Philosophy](../adr/0005-documentation-philosophy.md)
-- [Living Documentation Concept](../../../public/guides/intelligent-living-docs-sync.md)
-- [External Tool Sync Guide](../../../public/guides/external-tool-sync.md)
+- Living Documentation Concept (guide planned)
+- External Tool Sync Guide (planned)

@@ -1,7 +1,7 @@
 # SpecWeave Comprehensive Diagrams & Visual Reference
 
-**Version**: 0.18.0+
-**Last Updated**: 2025-11-12
+**Version**: 0.30.12+
+**Last Updated**: 2025-12-03
 **Purpose**: Complete visual reference for SpecWeave architecture, workflows, and concepts
 
 ---
@@ -78,7 +78,6 @@ stateDiagram-v2
 - **Paused**: Temporarily blocked
 - **Abandoned**: Requirements changed
 
-**Links**: [Increments Glossary](../../../glossary/terms/increments.md), [WIP Limits Glossary](../../../glossary/terms/wip-limits.md)
 
 ---
 
@@ -124,7 +123,6 @@ sequenceDiagram
 - ✅ Generate README/index (if needed)
 - ✅ Update last_updated timestamp
 
-**Links**: [Living Docs Glossary](../../../glossary/terms/living-docs.md), [Bidirectional Sync Glossary](../../../glossary/terms/bidirectional-sync.md)
 
 ---
 
@@ -235,7 +233,6 @@ After (Intelligent Mode):
     └── test-strategy-authentication.md (Test Strategy)
 ```
 
-**Links**: [Intelligent Living Docs Sync Glossary](../../../glossary/terms/intelligent-living-docs-sync.md), [Content Classification Glossary](../../../glossary/terms/content-classification.md), [Project Detection Glossary](../../../glossary/terms/project-detection.md)
 
 ---
 
@@ -339,7 +336,6 @@ graph TB
 /specweave-github:sync 0016 --time-range 1M
 ```
 
-**Links**: [Profile-Based Sync Glossary](../../../glossary/terms/profile-based-sync.md), [Bidirectional Sync Glossary](../../../glossary/terms/bidirectional-sync.md)
 
 ---
 
@@ -404,7 +400,6 @@ graph LR
 - Status conflicts: External wins (accept and merge)
 - Task conflicts: SpecWeave wins (tasks.md is source)
 
-**Links**: [Bidirectional Sync Glossary](../../../glossary/terms/bidirectional-sync.md), [Source of Truth Glossary](../../../glossary/terms/source-of-truth.md)
 
 ---
 
@@ -469,7 +464,6 @@ graph TD
 - ✅ Clear ownership (content vs status)
 - ✅ Easy rollback (source is local)
 
-**Links**: [Source of Truth Glossary](../../../glossary/terms/source-of-truth.md), [Bidirectional Sync Glossary](../../../glossary/terms/bidirectional-sync.md)
 
 ---
 
@@ -527,7 +521,6 @@ Classification: User Story
 Output Path: specs/backend/us-001-user-login.md
 ```
 
-**Links**: [Content Classification Glossary](../../../glossary/terms/content-classification.md), [Intelligent Living Docs Sync Glossary](../../../glossary/terms/intelligent-living-docs-sync.md)
 
 ---
 
@@ -608,7 +601,6 @@ Result: Below threshold (0.7) BUT frontmatter is authoritative → Use "backend"
 
 **Rule**: Frontmatter `project:` field is **always authoritative** (100% confidence) regardless of score.
 
-**Links**: [Project Detection Glossary](../../../glossary/terms/project-detection.md), [Intelligent Living Docs Sync Glossary](../../../glossary/terms/intelligent-living-docs-sync.md)
 
 ---
 
@@ -674,7 +666,7 @@ graph TD
 
 ---
 
-**Source**: [Increment 0016-authentication](../../../increments/0016-authentication/spec.md)
+**Source**: [Increment 0016-authentication](../../../increments/_archive/0016-authentication/spec.md)
 **Project**: Backend
 **Last Updated**: 2025-11-12
 ```
@@ -685,7 +677,6 @@ graph TD
 - ADRs explain decisions for strategies → DefinedIn link
 - Similar user stories → RelatedTo link
 
-**Links**: [Cross-Linking Glossary](../../../glossary/terms/cross-linking.md), [Intelligent Living Docs Sync Glossary](../../../glossary/terms/intelligent-living-docs-sync.md)
 
 ---
 
@@ -780,7 +771,6 @@ Commands:
 - 2 tasks = 20% slower (context switching)
 - 3+ tasks = 40% slower + more bugs
 
-**Links**: [WIP Limits Glossary](../../../glossary/terms/wip-limits.md), [Increments Glossary](../../../glossary/terms/increments.md)
 
 ---
 
@@ -912,7 +902,6 @@ Coverage: 87% (target: 85%)
 - ✅ Easy to find which test covers which AC
 - ✅ Clear test intent (AC-US1-01 = "valid login")
 
-**Links**: [AC-ID Glossary](../../../glossary/terms/ac-id.md), [Acceptance Criteria Glossary](../../../glossary/terms/acceptance-criteria.md), [User Stories Glossary](../../../glossary/terms/user-stories.md)
 
 ---
 
@@ -1022,7 +1011,6 @@ coverage_target: 85%
 /specweave:tdd-refactor   # Improve code
 ```
 
-**Links**: [TDD Glossary](../../../glossary/terms/tdd.md), [BDD Glossary](../../../glossary/terms/bdd.md), [Test Coverage Glossary](../../../glossary/terms/test-coverage.md)
 
 ---
 
@@ -1113,7 +1101,6 @@ git clone https://github.com/myorg/mobile-app.git mobile
 - ✅ System-wide architecture docs in one place
 - ✅ Living docs cover all services
 
-**Links**: [Multi-Project Setup Guide](../../public/guides/multi-project-setup.md), [Profile-Based Sync Glossary](../../../glossary/terms/profile-based-sync.md)
 
 ---
 
@@ -1342,7 +1329,7 @@ This comprehensive diagrams document provides visual references for all major Sp
 ---
 
 **Navigation**:
-- [Glossary Overview](../../../glossary/README.md)
-- [SpecWeave-Specific Terms](../../../glossary/README.md#specweave-specific-terms)
+- [Glossary Overview](../../../public/glossary/README.md)
+- [SpecWeave-Specific Terms](../../../public/glossary/README.md#specweave-specific-terms)
 - [Internal Architecture Docs](./)
-- [CLAUDE.md](../../../../CLAUDE.md)
+- [CLAUDE.md](../../../../../CLAUDE.md)

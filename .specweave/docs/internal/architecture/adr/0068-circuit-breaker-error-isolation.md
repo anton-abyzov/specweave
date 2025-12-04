@@ -579,18 +579,18 @@ describe('Error Isolation', () => {
 ## References
 
 - **Related ADRs**:
-  - [ADR-0060: Hook Performance Optimization](../emergency-procedures/HOOK-CRASH-RECOVERY.md) (Emergency fixes)
+  - [ADR-0060: Hook Performance Optimization](../../operations/hook-crash-recovery.md) (Emergency fixes)
   - [ADR-0065: Three-Tier Permission Gates](0065-three-tier-permission-gates.md)
   - [ADR-0066: SyncCoordinator Integration Point](0066-sync-coordinator-integration-point.md)
   - [ADR-0067: Three-Layer Idempotency Caching](0067-three-layer-idempotency-caching.md)
 
 - **User Stories**:
-  - [US-004: Error Isolation and Recovery](../../../specs/specweave/FS-049/us-004-error-isolation.md)
+  - [US-004: Error Isolation and Recovery](../../specs/specweave/_archive/FS-049/us-004-error-isolation.md)
 
 - **Implementation**:
-  - Increment: [0051-automatic-github-sync](../../../../increments/0051-automatic-github-sync/)
+  - Increment: [0051-automatic-github-sync](../../../../increments/_archive/0051-automatic-github-sync/)
   - Files: `src/sync/sync-coordinator.ts`, `plugins/specweave-github/hooks/post-task-completion.sh`
 
 - **Emergency Procedures**:
-  - [Hook Crash Recovery Guide](../emergency-procedures/HOOK-CRASH-RECOVERY.md)
-  - [Circuit Breaker Reset Procedure](../emergency-procedures/CIRCUIT-BREAKER-RESET.md)
+  - [Hook Crash Recovery Guide](../../operations/hook-crash-recovery.md)
+  - [Circuit Breaker Reset Procedure](../../operations/circuit-breaker-monitoring.md)

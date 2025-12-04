@@ -534,7 +534,7 @@ Platform → Provider(s)
 - [AWS MSK Terraform Documentation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/msk_cluster)
 - [Azure Event Hubs Terraform Documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/eventhub)
 - [Terraform Best Practices](https://www.terraform-best-practices.com/)
-- [SPEC-035: US-005 Terraform Infrastructure Modules](../../specs/default/spec-035-kafka-plugin.md#us-005-terraform-kafka-infrastructure-modules-priority-p1)
+- [SPEC-035: US-005 Terraform Infrastructure Modules](../../architecture/adr/0035-kafka-multi-plugin-architecture.md#us-005-terraform-kafka-infrastructure-modules-priority-p1)
 
 ---
 

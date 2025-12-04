@@ -11,7 +11,7 @@ created: 2025-11-18
 
 **GitHub Project**: https://github.com/anton-abyzov/specweave/issues/675
 
-**Feature**: [FS-022](../../_features/FS-022/FEATURE.md)
+**Feature**: [FS-022](./FEATURE.md)
 
 ---
 
@@ -23,6 +23,6 @@ No acceptance criteria defined.
 
 ## Implementation
 
-**Increment**: [0022-multi-repo-init-ux](../../../../increments/0022-multi-repo-init-ux/spec.md)
+**Increment**: [0022-multi-repo-init-ux](../../../../../../increments/_archive/0022-multi-repo-init-ux/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.

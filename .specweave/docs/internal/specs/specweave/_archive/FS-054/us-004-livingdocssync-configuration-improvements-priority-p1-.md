@@ -9,7 +9,7 @@ created: 2025-11-24
 
 # US-004: LivingDocsSync Configuration Improvements (Priority: P1)
 
-**Feature**: [FS-054](../../_features/FS-054/FEATURE.md)
+**Feature**: [FS-054](./FEATURE.md)
 
 **As a** developer debugging sync issues
 **I want** proper boolean environment variable parsing
@@ -26,7 +26,7 @@ created: 2025-11-24
 
 ## Implementation
 
-**Increment**: [0054-sync-guard-security-reliability-fixes](../../../../increments/0054-sync-guard-security-reliability-fixes/spec.md)
+**Increment**: [0054-sync-guard-security-reliability-fixes](../../../../../../increments/_archive/0054-sync-guard-security-reliability-fixes/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

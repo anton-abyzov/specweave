@@ -29,7 +29,7 @@ created: 2025-11-26T14:00:00Z
 
 ## Implementation
 
-**Increment**: [0066-multi-project-jira-ado-init](../../../../increments/0066-multi-project-jira-ado-init/spec.md)
+**Increment**: [0066-multi-project-jira-ado-init](../../../../../../increments/_archive/0066-multi-project-jira-ado-init/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

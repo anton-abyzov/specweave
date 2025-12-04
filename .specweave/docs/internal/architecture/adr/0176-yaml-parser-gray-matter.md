@@ -293,8 +293,8 @@ $ grep gray-matter package.json
 
 **Result**:
 ```diff
---- a/.specweave/increments/0043/spec.md
-+++ b/.specweave/increments/0043/spec.md
+--- a/.specweave/increments/_archive/0043/spec.md
++++ b/.specweave/increments/_archive/0043/spec.md
 @@ -3,7 +3,7 @@
  increment: 0043-spec-md-desync-fix
  title: "Fix spec.md Desync on Increment Closure"
@@ -307,8 +307,8 @@ $ grep gray-matter package.json
 
 **Contrast with js-yaml**:
 ```diff
---- a/.specweave/increments/0043/spec.md
-+++ b/.specweave/increments/0043/spec.md
+--- a/.specweave/increments/_archive/0043/spec.md
++++ b/.specweave/increments/_archive/0043/spec.md
 @@ -1,10 +1,10 @@
  ---
 -increment: 0043-spec-md-desync-fix

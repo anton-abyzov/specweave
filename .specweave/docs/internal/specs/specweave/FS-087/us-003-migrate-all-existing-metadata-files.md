@@ -31,12 +31,12 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0087-remove-redundant-feature-id](../../../../increments/0087-remove-redundant-feature-id/spec.md)
+**Increment**: [0087-remove-redundant-feature-id](../../../../../increments/0087-remove-redundant-feature-id/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-003](../../../../increments/0087-remove-redundant-feature-id/tasks.md#T-003): Create and Run Migration Script
-- [x] [T-004](../../../../increments/0087-remove-redundant-feature-id/tasks.md#T-004): Run Migration on All Increments
+- [x] [T-003](../../../../../increments/0087-remove-redundant-feature-id/tasks.md#T-003): Create and Run Migration Script
+- [x] [T-004](../../../../../increments/0087-remove-redundant-feature-id/tasks.md#T-004): Run Migration on All Increments

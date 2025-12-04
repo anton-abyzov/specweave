@@ -9,7 +9,7 @@ status: active
 
 # Context Optimization & Crash Prevention
 
-**Feature**: [FS-059](../../_features/FS-059/FEATURE.md)
+**Feature**: [FS-059](./FEATURE.md)
 
 ## Overview
 

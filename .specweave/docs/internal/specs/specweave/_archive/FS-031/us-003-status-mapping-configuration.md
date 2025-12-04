@@ -9,7 +9,7 @@ completed: 2025-11-16
 
 # US-003: Status Mapping Configuration
 
-**Feature**: [FS-031](../../_features/FS-031/FEATURE.md)
+**Feature**: [FS-031](./FEATURE.md)
 
 **As a** SpecWeave user
 **I want** to configure how SpecWeave statuses map to external tool statuses
@@ -29,7 +29,7 @@ completed: 2025-11-16
 
 ## Implementation
 
-**Increment**: [0031-external-tool-status-sync](../../../../../increments/0031-external-tool-status-sync/tasks.md)
+**Increment**: [0031-external-tool-status-sync](../../../../../../increments/_archive/0031-external-tool-status-sync/tasks.md)
 
 **Source Tasks**: See increment tasks.md for complete task breakdown
 

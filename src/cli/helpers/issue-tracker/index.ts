@@ -15,7 +15,7 @@ import path from 'path';
 import { execSync } from 'child_process';
 import type { IssueTracker, TrackerCredentials, SetupOptions, AzureDevOpsCredentials, SyncSettings, SyncPermissions } from './types.js';
 import { detectDefaultTracker, getTrackerDisplayName, installTrackerPlugin, isClaudeCliAvailable } from './utils.js';
-import { writeSyncConfig } from './sync-config-writer.js';
+import { writeSyncConfig, deduplicateArray } from './sync-config-writer.js';
 import {
   readEnvFile,
   writeEnvFile,
@@ -254,13 +254,21 @@ async function writeSyncConfigHelper(
     for (const proj of credentials.projects) {
       const profileId = `ado-${proj.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
 
+      // CRITICAL FIX (v0.31.x): Deduplicate areaPaths to prevent duplicates
+      // Bug: Multiple init steps could add the same areaPaths multiple times
+      const dedupedAreaPaths = proj.areaPaths?.length
+        ? deduplicateArray(proj.areaPaths, (item: any) =>
+            typeof item === 'string' ? item : (item.id || item.path || item.name || JSON.stringify(item))
+          )
+        : undefined;
+
       profiles[profileId] = {
         provider: 'ado',
         displayName: `Azure DevOps - ${proj.name}`,
         config: {
           organization: credentials.org,
           project: proj.name,
-          ...(proj.areaPaths?.length ? { areaPaths: proj.areaPaths } : {})
+          ...(dedupedAreaPaths?.length ? { areaPaths: dedupedAreaPaths } : {})
         },
         timeRange: {
           default: '1M',

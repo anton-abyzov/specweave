@@ -20,9 +20,9 @@ Implement three-level task hierarchy (Increment → Project → User Story) with
 
 ## Source
 
-This feature was created from increment: [`0037-project-specific-tasks`](../../../../../increments/0037-project-specific-tasks)
+This feature was created from increment: [`0037-project-specific-tasks`](../../../../../../increments/_archive/0037-project-specific-tasks)
 
-**Architecture Design**: Based on analysis in [PROJECT-SPECIFIC-TASKS-ARCHITECTURE.md](../../../../../increments/0034-github-ac-checkboxes-fix/reports/PROJECT-SPECIFIC-TASKS-ARCHITECTURE.md)
+**Architecture Design**: Based on analysis in [PROJECT-SPECIFIC-TASKS-ARCHITECTURE.md](../../../../../../increments/_archive/0034-github-ac-checkboxes-fix/reports/PROJECT-SPECIFIC-TASKS-ARCHITECTURE.md)
 
 ## Business Value
 
@@ -66,10 +66,10 @@ This feature applies to the SpecWeave framework:
 
 ### specweave
 
-- [US-001: Task Splitting Logic (spec-distributor.ts)](../../specweave/FS-037/us-001-task-splitting-logic.md) - planning
-- [US-002: Bidirectional Completion Tracking](../../specweave/FS-037/us-002-bidirectional-completion-tracking.md) - planning
-- [US-003: GitHub Sync Integration](../../specweave/FS-037/us-003-github-sync-integration.md) - planning
-- [US-004: Testing & Migration Strategy](../../specweave/FS-037/us-004-testing-migration-strategy.md) - planning
+- [US-001: Task Splitting Logic (spec-distributor.ts)](./us-001-task-splitting-logic.md) - planning
+- [US-002: Bidirectional Completion Tracking](./us-002-bidirectional-completion-tracking.md) - planning
+- [US-003: GitHub Sync Integration](./us-003-github-sync-integration.md) - planning
+- [US-004: Testing & Migration Strategy](./us-004-testing-migration-strategy.md) - planning
 
 ## Progress
 

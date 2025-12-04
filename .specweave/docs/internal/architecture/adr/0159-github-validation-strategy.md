@@ -304,7 +304,7 @@ if (!this.githubToken) {
 
 ## References
 
-- **Increment 0022 Spec**: `.specweave/increments/0022-multi-repo-init-ux/spec.md`
+- **Increment 0022 Spec**: `.specweave/increments/_archive/0022-multi-repo-init-ux/spec.md`
 - **User Story**: US-004 - Validate Repository Existence
 - **Acceptance Criteria**: AC-US4-01 through AC-US4-05
 - **GitHub API Docs**: https://docs.github.com/en/rest/repos/repos#get-a-repository

@@ -9,7 +9,7 @@ created: 2025-11-21
 
 # US-003: Progress Tracking with Real-Time Feedback
 
-**Feature**: [FS-049](../../_features/FS-049/FEATURE.md)
+**Feature**: [FS-049](./FEATURE.md)
 
 **As a** user importing 100+ projects
 **I want** to see real-time progress with percentage and ETA
@@ -30,6 +30,6 @@ created: 2025-11-21
 
 ## Implementation
 
-**Increment**: [0049-cli-first-init-flow](../../../../increments/0049-cli-first-init-flow/spec.md)
+**Increment**: [0049-cli-first-init-flow](../../../../../../increments/_archive/0049-cli-first-init-flow/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.

@@ -258,7 +258,7 @@ const { ACStatusManager } = require('./dist/src/core/increment/ac-status-manager
 const fs = require('fs');
 
 const manager = new ACStatusManager(process.cwd());
-const tasksPath = '.specweave/increments/0053-safe-feature-deletion/tasks.md';
+const tasksPath = '.specweave/increments/_archive/0053-safe-feature-deletion/tasks.md';
 const tasksContent = fs.readFileSync(tasksPath, 'utf-8');
 const result = manager.parseTasksForACStatus(tasksContent);
 
@@ -403,7 +403,7 @@ git push origin develop
 ## Related Issues
 
 ### Increment 0053
-- **Path**: `.specweave/increments/0053-safe-feature-deletion/`
+- **Path**: `.specweave/increments/_archive/0053-safe-feature-deletion/`
 - **Status**: Completed (already closed despite conflicts)
 - **ACs**: 70 total, all showed false "0% completion"
 - **Tasks**: 37/37 completed (correct)

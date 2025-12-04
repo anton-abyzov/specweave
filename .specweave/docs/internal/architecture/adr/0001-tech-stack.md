@@ -67,5 +67,5 @@ SpecWeave needs a technology stack that is:
 
 ## Related
 
-- [ADR-0002: Context Loading](0002-context-loading.md)
+- [ADR-0002: Agent Types](../adr/0002-agent-types-roles-vs-tools.md)
 - [CLAUDE.md](../../../../CLAUDE.md#installation--requirements)

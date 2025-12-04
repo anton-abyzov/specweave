@@ -750,7 +750,7 @@ function validateAutonomousExecutionLog(log: AutonomousExecutionLog): boolean {
 
 ## Related Documentation
 
-- **ADR-0043**: [Workflow Orchestration Architecture](../adr/0043-workflow-orchestration-architecture.md)
+- **ADR-0043**: [Workflow Orchestration Architecture](../adr/0175-workflow-orchestration-architecture.md)
 - **ADR-0044**: [Phase Detection Enhancement](../adr/0044-phase-detection-enhancement.md)
-- **ADR-0045**: [Autonomous Mode Safety](../adr/0045-autonomous-mode-safety.md)
+- **ADR-0045**: [Autonomous Mode Safety](../adr/0177-autonomous-mode-safety.md)
 - **Diagrams**: [State Machine](../diagrams/workflow-orchestration/state-machine.mmd), [Command Flow](../diagrams/workflow-orchestration/command-flow.mmd)

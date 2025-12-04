@@ -9,7 +9,7 @@ created: 2025-11-19T00:00:00.000Z
 
 # US-003: Hooks Read Correct Increment Status (Priority: P1)
 
-**Feature**: [FS-044](../../_features/FS-044/FEATURE.md)
+**Feature**: [FS-044](./FEATURE.md)
 
 **As a** developer using GitHub/JIRA/ADO sync
 **I want** hooks to read the latest increment status from spec.md
@@ -27,7 +27,7 @@ created: 2025-11-19T00:00:00.000Z
 
 ## Implementation
 
-**Increment**: [0044-integration-testing-status-hooks](../../../../increments/0044-integration-testing-status-hooks/spec.md)
+**Increment**: [0044-integration-testing-status-hooks](../../../../../../increments/_archive/0044-integration-testing-status-hooks/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

@@ -323,6 +323,21 @@ export async function selectAreaPaths(
   // Full paths like "MyProject\Platform-Engineering" become just "Platform-Engineering"
   selectionConfig.areaPaths = selectedAreas.map(a => a.name);
 
+  // CRITICAL FIX (v0.30.13): Warn when only area path is project root
+  // This causes nested identical folders: specs/nova-x-sandbox/nova-x-sandbox/
+  // With the getBaseDirectory fix, this will now use flat structure, but warn user anyway
+  if (selectedAreas.length === 1) {
+    const selectedLeafName = selectedAreas[0].name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    const normalizedProjectName = projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+    if (selectedLeafName === normalizedProjectName) {
+      console.log(chalk.yellow('\n⚠️  Note: Selected area path equals project name.'));
+      console.log(chalk.gray('   → Using flat folder structure: specs/' + selectedLeafName + '/'));
+      console.log(chalk.gray('   → For team-based organization, consider selecting team-specific area paths.'));
+      console.log(chalk.gray('   → ADO boards are team-based - each team can have different area path filters.\n'));
+    }
+  }
+
   console.log(chalk.green(`\n✅ Selected ${selectionConfig.areaPaths.length} area paths\n`));
 
   return selectionConfig;

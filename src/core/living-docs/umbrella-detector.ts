@@ -643,6 +643,10 @@ function extractTeamFromPath(repoPath: string): string | undefined {
 
 /**
  * Persist umbrella config to config.json
+ *
+ * CRITICAL FIX (v0.31.x): Merges and deduplicates childRepos by id
+ * Bug: Previous code overwrote entire childRepos array, causing duplicates
+ * when persist is called multiple times (e.g., from different detection sources)
  */
 export async function persistUmbrellaConfig(
   projectPath: string,
@@ -660,9 +664,25 @@ export async function persistUmbrellaConfig(
     }
   }
 
+  // Merge and deduplicate childRepos by id
+  const existingChildRepos: ChildRepoConfig[] = config.umbrella?.childRepos || [];
+  const newChildRepos = umbrellaConfig.childRepos || [];
+  const mergedRepos = [...existingChildRepos];
+
+  for (const newRepo of newChildRepos) {
+    const existingIndex = mergedRepos.findIndex(r => r.id === newRepo.id);
+    if (existingIndex >= 0) {
+      // Update existing repo with new info
+      mergedRepos[existingIndex] = newRepo;
+    } else {
+      // Add new repo
+      mergedRepos.push(newRepo);
+    }
+  }
+
   config.umbrella = {
     enabled: umbrellaConfig.enabled,
-    childRepos: umbrellaConfig.childRepos,
+    childRepos: mergedRepos,
     detectedFrom: umbrellaConfig.detectedFrom,
     detectedAt: umbrellaConfig.detectedAt,
   };

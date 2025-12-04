@@ -8,7 +8,7 @@ sidebar_label: "0003: Model Selection"
 
 **Status**: Accepted
 **Date**: 2025-10-30
-**Increment**: [0003-intelligent-model-selection](../../../../increments/0003-intelligent-model-selection/)
+**Increment**: [0003-intelligent-model-selection](../../../../increments/_archive/0003-intelligent-model-selection/)
 
 ---
 
@@ -97,6 +97,6 @@ Score < 0.4: Low confidence → Use agent preference + prompt user
 
 ## Related
 
-- **ADR**: [Cost Tracking System](0003-008-cost-tracking-system.md) - How costs are measured
-- **ADR**: [Phase Detection Algorithm](0003-009-phase-detection-algorithm.md) - Detection details
-- **Increment**: [0003-intelligent-model-selection](../../../../increments/0003-intelligent-model-selection/)
+- **ADR**: [Cost Tracking System](0003-intelligent-model-selection.md) - How costs are measured
+- **ADR**: [Phase Detection Algorithm](0013-phase-detection.md) - Detection details
+- **Increment**: [0003-intelligent-model-selection](../../../../increments/_archive/0003-intelligent-model-selection/)

@@ -189,5 +189,5 @@ Each ADR follows this structure:
 ## Related
 
 - [Architecture Overview](../README)
-- [CLAUDE.md](../../../../CLAUDE.md) - Complete development guide
+- [CLAUDE.md(../../../../../../CLAUDE.md) - Complete development guide
 - [Governance](../../governance/) - Coding standards and security

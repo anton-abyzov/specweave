@@ -9,11 +9,11 @@ status: completed
 
 # Automatic GitHub Sync with Permission Gates
 
-**Feature**: [FS-051](../../_features/FS-051/FEATURE.md)
+**Feature**: [FS-051](./FEATURE.md)
 
 ## Overview
 
-**Complete Requirements**: See [FS-049: Automatic GitHub Sync with Permission Gates](../../_features/_archive/FS-049/FEATURE.md)
+**Complete Requirements**: See [FS-049: Automatic GitHub Sync with Permission Gates](../FS-049/FEATURE.md)
 
 ## User Stories
 

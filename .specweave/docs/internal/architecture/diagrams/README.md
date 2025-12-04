@@ -1,6 +1,6 @@
 # SpecWeave Architecture Diagrams
 
-**Date**: 2025-11-10
+**Date**: 2025-12-03
 **Status**: Consolidated and streamlined
 
 ---
@@ -14,6 +14,7 @@ This folder contains **7 essential Mermaid diagrams** for SpecWeave architecture
 - Combined for comprehensive explanations
 
 **Change Log**:
+- **2025-12-03**: Command syntax audit - all commands now use full `/specweave:` prefix (no shortcuts!)
 - **2025-11-10**: Major consolidation - removed redundant delivery guide diagrams, renamed brownfield workflow for clarity
 - **2025-10-31**: Plugin architecture diagrams (product v0.4.0)
 - **Initial**: First diagram set
@@ -350,4 +351,4 @@ import ThemedImage from '@theme/ThemedImage';
 ---
 
 **Maintained By**: SpecWeave Architecture Team
-**Last Updated**: 2025-11-10 (v3.0 consolidation)
+**Last Updated**: 2025-12-03 (command syntax audit - all /specweave: commands use full prefix)

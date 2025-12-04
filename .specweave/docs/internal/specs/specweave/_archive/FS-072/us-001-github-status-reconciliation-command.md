@@ -31,7 +31,7 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0072-github-status-reconciliation](../../../../increments/0072-github-status-reconciliation/spec.md)
+**Increment**: [0072-github-status-reconciliation](../../../../../../increments/_archive/0072-github-status-reconciliation/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

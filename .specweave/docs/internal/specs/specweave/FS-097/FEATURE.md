@@ -18,7 +18,7 @@ SpecWeave's living docs builder fails to detect modules in umbrella/multi-repo p
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0097-umbrella-module-detection](../../../../increments/0097-umbrella-module-detection/spec.md) | ⏳ active | 2024-12-03 |
+| [0097-umbrella-module-detection](../../../../../increments/0097-umbrella-module-detection/spec.md) | ⏳ active | 2024-12-03 |
 
 ## User Stories
 

@@ -13,7 +13,7 @@ external:
 
 # US-004: Platform Release Coordination (P1)
 
-**Feature**: [FS-023](../../_features/FS-023/FEATURE.md)
+**Feature**: [FS-023](./FEATURE.md)
 
 **As a** release engineer
 **I want** to coordinate releases across multiple repos

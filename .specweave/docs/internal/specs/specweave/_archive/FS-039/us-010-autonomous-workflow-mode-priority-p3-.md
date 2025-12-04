@@ -9,7 +9,7 @@ created: 2025-11-16
 
 # US-010: Autonomous Workflow Mode (Priority: P3)
 
-**Feature**: [FS-039](../../_features/FS-039/FEATURE.md)
+**Feature**: [FS-039](./FEATURE.md)
 
 **As a** power user
 **I want** to run /specweave:next --autonomous to execute the entire workflow automatically
@@ -33,7 +33,7 @@ created: 2025-11-16
 
 ## Implementation
 
-**Increment**: [0039-ultra-smart-next-command](../../../../increments/0039-ultra-smart-next-command/spec.md)
+**Increment**: [0039-ultra-smart-next-command](../../../../../../increments/_archive/0039-ultra-smart-next-command/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

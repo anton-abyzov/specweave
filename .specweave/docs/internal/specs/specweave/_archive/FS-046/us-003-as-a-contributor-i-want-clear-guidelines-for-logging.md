@@ -9,7 +9,7 @@ created: 2025-11-19
 
 # US-003: As a Contributor, I want clear guidelines for logging
 
-**Feature**: [FS-046](../../_features/FS-046/FEATURE.md)
+**Feature**: [FS-046](./FEATURE.md)
 
 ---
 
@@ -24,7 +24,7 @@ created: 2025-11-19
 
 ## Implementation
 
-**Increment**: [0046-console-elimination](../../../../increments/0046-console-elimination/spec.md)
+**Increment**: [0046-console-elimination](../../../../../../increments/_archive/0046-console-elimination/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

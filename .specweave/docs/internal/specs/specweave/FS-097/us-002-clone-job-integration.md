@@ -30,11 +30,11 @@ created: 2024-12-03
 
 ## Implementation
 
-**Increment**: [0097-umbrella-module-detection](../../../../increments/0097-umbrella-module-detection/spec.md)
+**Increment**: [0097-umbrella-module-detection](../../../../../increments/0097-umbrella-module-detection/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [ ] [T-006](../../../../increments/0097-umbrella-module-detection/tasks.md#T-006): Living Docs Worker Clone Job Integration
+- [ ] [T-006](../../../../../increments/0097-umbrella-module-detection/tasks.md#T-006): Living Docs Worker Clone Job Integration

@@ -2,7 +2,7 @@
 
 **Status**: Accepted
 **Date**: 2025-10-26
-**Increment**: [0002-core-enhancements](../../../../increments/0002-core-enhancements/)
+**Increment**: [0002-core-enhancements](../../../../increments/_archive/0002-core-enhancements/)
 
 ---
 
@@ -50,5 +50,5 @@ We will introduce a new agent category: **TOOL AGENTS**.
 
 ## Related
 
-- **ADR**: [Skills as Coordinators](0002-002-skills-as-coordinators.md) - How skills invoke tool agents
-- **Increment**: [0002-core-enhancements](../../../../increments/0002-core-enhancements/)
+- **ADR**: [Skills as Coordinators](0144-skills-as-coordinators.md) - How skills invoke tool agents
+- **Increment**: [0002-core-enhancements](../../../../increments/_archive/0002-core-enhancements/)

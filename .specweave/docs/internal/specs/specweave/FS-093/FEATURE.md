@@ -18,7 +18,7 @@ Two critical issues with ADO plugin sync behavior:
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0093-ado-permission-profile-fixes](../../../../increments/0093-ado-permission-profile-fixes/spec.md) | ✅ completed | 2025-12-02 |
+| [0093-ado-permission-profile-fixes](../../../../../increments/0093-ado-permission-profile-fixes/spec.md) | ✅ completed | 2025-12-02 |
 
 ## User Stories
 

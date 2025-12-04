@@ -18,8 +18,8 @@ During multi-repo initiali
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0070-fix-parent-repo-sync-profile](../../../../increments/0070-fix-parent-repo-sync-profile/spec.md) | ⏳ in_progress | 2025-11-26 |
+| [0070-fix-parent-repo-sync-profile](../../../../../../increments/_archive/0070-fix-parent-repo-sync-profile/spec.md) | ⏳ in_progress | 2025-11-26 |
 
 ## User Stories
 
-- [US-001: Parent Repo Sync Profile](../../specweave/FS-070/us-001-parent-repo-sync-profile.md)
+- [US-001: Parent Repo Sync Profile](./us-001-parent-repo-sync-profile.md)

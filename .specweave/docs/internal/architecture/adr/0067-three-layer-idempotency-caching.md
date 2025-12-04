@@ -338,7 +338,7 @@ Edit: .specweave/docs/internal/specs/specweave/FS-049/us-001-*.md
 Remove: external_tools.github.number field
 
 # Clear metadata cache for increment
-Edit: .specweave/increments/0051-*/metadata.json
+Edit: .specweave/increments/_archive/0051-*/metadata.json
 Remove: github.issues array
 
 # Re-run sync (will query API)
@@ -497,10 +497,10 @@ Partial Failure Recovery (2 cached, 2 new):
   - [ADR-0068: Circuit Breaker Error Isolation](#)
 
 - **User Stories**:
-  - [US-003: Idempotency via Caching](../../../specs/specweave/FS-049/us-003-idempotency.md)
+  - [US-003: Idempotency via Caching](../../specs/specweave/_archive/FS-049/us-003-idempotency.md)
 
 - **Implementation**:
-  - Increment: [0051-automatic-github-sync](../../../../increments/0051-automatic-github-sync/)
+  - Increment: [0051-automatic-github-sync](../../../../increments/_archive/0051-automatic-github-sync/)
   - Files: `src/sync/sync-coordinator.ts`, `plugins/specweave-github/lib/github-client-v2.ts`
 
 - **Existing Components**:

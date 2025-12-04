@@ -30,11 +30,11 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0087-remove-redundant-feature-id](../../../../increments/0087-remove-redundant-feature-id/spec.md)
+**Increment**: [0087-remove-redundant-feature-id](../../../../../increments/0087-remove-redundant-feature-id/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-002](../../../../increments/0087-remove-redundant-feature-id/tasks.md#T-002): Update Living Docs Sync
+- [x] [T-002](../../../../../increments/0087-remove-redundant-feature-id/tasks.md#T-002): Update Living Docs Sync

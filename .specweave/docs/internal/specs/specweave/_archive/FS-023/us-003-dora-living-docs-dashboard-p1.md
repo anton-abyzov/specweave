@@ -13,7 +13,7 @@ external:
 
 # US-003: DORA Living Docs Dashboard (P1)
 
-**Feature**: [FS-023](../../_features/FS-023/FEATURE.md)
+**Feature**: [FS-023](./FEATURE.md)
 
 **As a** team member
 **I want** a living docs DORA dashboard with trends

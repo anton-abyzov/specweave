@@ -14,7 +14,7 @@ lastUpdated: 2025-12-02
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0086-brownfield-doc-analysis](../../../../increments/0086-brownfield-doc-analysis/spec.md) | ✅ completed | 2025-12-01 |
+| [0086-brownfield-doc-analysis](../../../../../increments/0086-brownfield-doc-analysis/spec.md) | ✅ completed | 2025-12-01 |
 
 ## User Stories
 

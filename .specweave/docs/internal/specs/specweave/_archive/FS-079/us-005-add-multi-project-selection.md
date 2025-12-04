@@ -29,7 +29,7 @@ created: 2025-11-29
 
 ## Implementation
 
-**Increment**: [0079-ado-init-flow-v2](../../../../increments/0079-ado-init-flow-v2/spec.md)
+**Increment**: [0079-ado-init-flow-v2](../../../../../../increments/_archive/0079-ado-init-flow-v2/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

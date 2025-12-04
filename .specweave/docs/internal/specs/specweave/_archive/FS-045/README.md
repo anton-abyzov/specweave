@@ -9,7 +9,7 @@ status: completed
 
 # Sync All Increments by Default
 
-**Feature**: [FS-045](../../_features/FS-045/FEATURE.md)
+**Feature**: [FS-045](./FEATURE.md)
 
 ## Overview
 

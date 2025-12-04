@@ -31,11 +31,11 @@ created: 2025-12-02
 
 ## Implementation
 
-**Increment**: [0092-code-quality-foundation](../../../../increments/0092-code-quality-foundation/spec.md)
+**Increment**: [0092-code-quality-foundation](../../../../../increments/0092-code-quality-foundation/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0092-code-quality-foundation/tasks.md#T-001): Create Custom Error Hierarchy
+- [x] [T-001](../../../../../increments/0092-code-quality-foundation/tasks.md#T-001): Create Custom Error Hierarchy

@@ -584,7 +584,7 @@ const increment = IncrementFactory.create({ id: '0042' }); // Builder pattern
 
 ## References
 
-- **Analysis**: `.specweave/increments/0041/reports/TEST-DATA-CONSISTENCY-ANALYSIS.md`
+- **Analysis**: `.specweave/increments/_archive/0041/reports/TEST-DATA-CONSISTENCY-ANALYSIS.md`
 - **Examples**: `tests/integration/core/increment-planner/increment-planner.test.ts` (has duplicate data)
 - **Fixture Templates**: JSON fixtures for API responses
 - **Mock Factory Pattern**: Builder pattern with overrides

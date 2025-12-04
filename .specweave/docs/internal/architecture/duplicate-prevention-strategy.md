@@ -10,7 +10,7 @@
 ## Problem Statement
 
 Increment `0039-ultra-smart-next-command` exists in TWO locations:
-- `.specweave/increments/0039-ultra-smart-next-command/` (Nov 20)
+- `.specweave/increments/_archive/0039-ultra-smart-next-command/` (Nov 20)
 - `.specweave/increments/_archive/0039-ultra-smart-next-command/` (Nov 17)
 
 This violates the **unique increment number constraint** and causes:
@@ -307,7 +307,7 @@ async syncFromExternal(externalId: string): Promise<void> {
 ```
 🔍 Scanning for duplicates...
 ✗ 0039-ultra-smart-next-command [completed]
-  → .specweave/increments/0039-ultra-smart-next-command/
+  → .specweave/increments/_archive/0039-ultra-smart-next-command/
   ✗ .specweave/increments/_archive/0039-ultra-smart-next-command/
 
 Recommended winner: Active version (Nov 20, most recent)
@@ -411,13 +411,13 @@ git commit -m "fix: resolve duplicate increment 0039"
 ### ❌ Don't Do This
 ```bash
 # Manual archive (creates duplicate)
-mv .specweave/increments/0039-* .specweave/increments/_archive/
+mv .specweave/increments/_archive/0039-* .specweave/increments/_archive/
 
 # Manual restore (creates duplicate)
 cp -r .specweave/increments/_archive/0039-* .specweave/increments/
 
 # Git checkout (restores old state)
-git checkout old-commit -- .specweave/increments/0039-*
+git checkout old-commit -- .specweave/increments/_archive/0039-*
 ```
 
 ### ✅ Do This Instead

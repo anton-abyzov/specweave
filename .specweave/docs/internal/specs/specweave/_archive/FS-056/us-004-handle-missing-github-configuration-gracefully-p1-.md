@@ -27,7 +27,7 @@ created: 2025-11-24T00:00:00.000Z
 
 ## Implementation
 
-**Increment**: [0056-auto-github-sync-on-increment-creation](../../../../increments/0056-auto-github-sync-on-increment-creation/spec.md)
+**Increment**: [0056-auto-github-sync-on-increment-creation](../../../../../../increments/_archive/0056-auto-github-sync-on-increment-creation/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

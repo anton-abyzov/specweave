@@ -11,7 +11,7 @@ status: planning
 
 **GitHub Project**: https://github.com/anton-abyzov/specweave/issues/665
 
-**Feature**: [FS-022](../../_features/FS-022/FEATURE.md)
+**Feature**: [FS-022](./FEATURE.md)
 
 ## Overview
 

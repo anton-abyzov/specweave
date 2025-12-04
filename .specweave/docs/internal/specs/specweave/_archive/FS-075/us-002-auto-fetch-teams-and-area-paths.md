@@ -29,7 +29,7 @@ created: 2025-12-02
 
 ## Implementation
 
-**Increment**: [0075-smart-ado-init](../../../../increments/0075-smart-ado-init/spec.md)
+**Increment**: [0075-smart-ado-init](../../../../../../increments/_archive/0075-smart-ado-init/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

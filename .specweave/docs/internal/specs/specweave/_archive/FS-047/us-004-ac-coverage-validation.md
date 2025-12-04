@@ -9,7 +9,7 @@ created: 2025-11-19
 
 # US-004: AC Coverage Validation
 
-**Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
+**Feature**: [FS-047](./FEATURE.md)
 
 **As a** PM approving increment closure
 **I want** `/specweave:validate` to detect uncovered Acceptance Criteria
@@ -28,7 +28,7 @@ created: 2025-11-19
 
 ## Implementation
 
-**Increment**: [0047-us-task-linkage](../../../../increments/0047-us-task-linkage/spec.md)
+**Increment**: [0047-us-task-linkage](../../../../../../increments/_archive/0047-us-task-linkage/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

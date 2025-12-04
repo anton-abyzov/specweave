@@ -28,7 +28,7 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0069-multi-project-spec-generation](../../../../increments/0069-multi-project-spec-generation/spec.md)
+**Increment**: [0069-multi-project-spec-generation](../../../../../../increments/_archive/0069-multi-project-spec-generation/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

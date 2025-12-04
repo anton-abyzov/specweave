@@ -9,7 +9,7 @@ status: completed
 
 # Enhanced External Tool Import - Phase 1b-7
 
-**Feature**: [FS-050](../../_features/FS-050/FEATURE.md)
+**Feature**: [FS-050](./FEATURE.md)
 
 ## User Stories
 

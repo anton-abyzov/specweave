@@ -9,7 +9,7 @@ status: completed
 
 # Ultra-Smart Next Command - Intelligent Workflow Orchestrator
 
-**Feature**: [FS-039](../../_features/FS-039/FEATURE.md)
+**Feature**: [FS-039](./FEATURE.md)
 
 ## User Stories
 

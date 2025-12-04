@@ -272,7 +272,7 @@ async finalizeSetup(): Promise<void> {
 
 ## References
 
-- **Increment 0022 Spec**: `.specweave/increments/0022-multi-repo-init-ux/spec.md`
+- **Increment 0022 Spec**: `.specweave/increments/_archive/0022-multi-repo-init-ux/spec.md`
 - **User Story**: US-007 - Ctrl+C Recovery
 - **Acceptance Criteria**: AC-US7-01 through AC-US7-06
 - **Related ADRs**:

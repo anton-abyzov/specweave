@@ -10,7 +10,7 @@ project: specweave
 
 # US-009: Platform Migration Patterns
 
-**Feature**: [FS-038](../../_features/FS-038/FEATURE.md)
+**Feature**: [FS-038](./FEATURE.md)
 
 **As a** developer migrating between serverless platforms
 **I want** guidance and IaC templates for platform migrations

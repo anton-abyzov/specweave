@@ -387,7 +387,7 @@ async detectMCPServer(): Promise<MCPServer> {
 - [tuannvm/kafka-mcp-server](https://github.com/tuannvm/kafka-mcp-server)
 - [Joel-hanson/kafka-mcp-server](https://github.com/Joel-hanson/kafka-mcp-server)
 - [Confluent MCP Server Announcement](https://www.confluent.io/blog/mcp-server-kafka/)
-- [SPEC-035: US-001 MCP Kafka Server Integration](../../specs/default/spec-035-kafka-plugin.md#us-001-mcp-kafka-server-integration-priority-p1)
+- [SPEC-035: US-001 MCP Kafka Server Integration](../../architecture/adr/0035-kafka-multi-plugin-architecture.md#us-001-mcp-kafka-server-integration-priority-p1)
 
 ---
 

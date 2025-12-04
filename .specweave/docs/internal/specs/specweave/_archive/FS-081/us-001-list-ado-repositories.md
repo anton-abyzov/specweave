@@ -27,7 +27,7 @@ created: 2025-12-02
 
 ## Implementation
 
-**Increment**: [0081-ado-repo-cloning](../../../../increments/0081-ado-repo-cloning/spec.md)
+**Increment**: [0081-ado-repo-cloning](../../../../../../increments/_archive/0081-ado-repo-cloning/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

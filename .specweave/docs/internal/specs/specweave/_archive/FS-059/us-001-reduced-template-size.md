@@ -29,7 +29,7 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0059-context-optimization-crash-prevention](../../../../increments/0059-context-optimization-crash-prevention/spec.md)
+**Increment**: [0059-context-optimization-crash-prevention](../../../../../../increments/_archive/0059-context-optimization-crash-prevention/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

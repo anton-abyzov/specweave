@@ -9,7 +9,7 @@ created: 2025-11-19
 
 # US-007: External Item Import on Init
 
-**Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
+**Feature**: [FS-047](./FEATURE.md)
 
 **As a** team adopting SpecWeave in a brownfield project
 **I want** to import existing external items (GitHub/JIRA/ADO) during initialization into living docs
@@ -33,7 +33,7 @@ created: 2025-11-19
 
 ## Implementation
 
-**Increment**: [0047-us-task-linkage](../../../../increments/0047-us-task-linkage/spec.md)
+**Increment**: [0047-us-task-linkage](../../../../../../increments/_archive/0047-us-task-linkage/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

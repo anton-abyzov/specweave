@@ -51,7 +51,7 @@ SpecWeave applies these insights through:
 
 ## Related Documentation
 
-- [ADR-0002: Context Loading](./adr/0002-context-loading) - Architecture decision
+- [ADR-0002: Agent Types](../adr/0002-agent-types-roles-vs-tools.md) - Architecture decision
 - [ADR-0140: Code over MCP Strategy](./adr/0140-code-over-mcp) - Engineering rationale
 - **Context Optimization** - Built into SpecWeave core plugin via progressive disclosure pattern
 - [Claude Skills Documentation](https://support.claude.com/en/articles/12512176-what-are-skills) - How skills work

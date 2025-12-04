@@ -582,8 +582,8 @@ CREATE TABLE reflections (
 ## Related Decisions
 
 - [ADR-0017](0017-self-reflection-architecture.md): Self-reflection system architecture
-- [ADR-0018](0018-reflection-model-selection.md): Model selection strategy
-- [ADR-0001](0001-spec-driven-development.md): Living docs storage format (if exists)
+- [ADR-0018](0151-reflection-model-selection.md): Model selection strategy
+- [ADR-0001: Tech Stack](0001-tech-stack.md)
 
 ## Implementation Notes
 

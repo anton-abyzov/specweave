@@ -106,11 +106,12 @@ Represents refinement/iteration steps in auto-refinement feedback loops.
 Indicates WHERE a file or folder is created in the SpecWeave structure.
 
 **Examples**:
-- `📁 .specweave/increments/0001-name/` - Increment folder
-- `📁 increments/0001-name/spec.md` - Spec file
-- `📁 docs/internal/architecture/adr/0001-*.md` - ADR files
+- `📁 .specweave/increments/XXXX-name/` - Active increment folder
+- `📁 .specweave/increments/_archive/XXXX-name/` - Archived increment folder
+- `📁 increments/XXXX-name/spec.md` - Spec file
+- `📁 docs/internal/architecture/adr/XXXX-*.md` - ADR files
 - `📁 tests/e2e/` - E2E test directory
-- `📁 increments/0001-name/reports/validation-report.md` - Report file
+- `📁 increments/XXXX-name/reports/validation-report.md` - Report file
 
 **Purpose**: Complete traceability - users know exactly where to find artifacts
 
@@ -324,7 +325,7 @@ PM Agent (Round 1) → PM Agent (Round 2) → PM Agent (Round 3)
 ## File Organization Patterns
 
 ### Increment-Scoped Files
-All in `.specweave/increments/0001-name/`:
+All in `.specweave/increments/_archive/0001-name/`:
 - `spec.md` - Requirements
 - `plan.md` - Technical design
 - `tasks.md` - Implementation checklist

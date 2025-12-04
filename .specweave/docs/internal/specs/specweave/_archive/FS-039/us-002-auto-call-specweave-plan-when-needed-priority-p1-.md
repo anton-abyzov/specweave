@@ -9,7 +9,7 @@ created: 2025-11-16
 
 # US-002: Auto-Call /specweave:plan When Needed (Priority: P1)
 
-**Feature**: [FS-039](../../_features/FS-039/FEATURE.md)
+**Feature**: [FS-039](./FEATURE.md)
 
 **As a** developer who just created a spec.md
 **I want** /specweave:next to automatically call /specweave:plan
@@ -30,7 +30,7 @@ created: 2025-11-16
 
 ## Implementation
 
-**Increment**: [0039-ultra-smart-next-command](../../../../increments/0039-ultra-smart-next-command/spec.md)
+**Increment**: [0039-ultra-smart-next-command](../../../../../../increments/_archive/0039-ultra-smart-next-command/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

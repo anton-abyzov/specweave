@@ -10,7 +10,7 @@ project: specweave
 
 # US-002: Platform Comparison Matrix
 
-**Feature**: [FS-038](../../_features/FS-038/FEATURE.md)
+**Feature**: [FS-038](./FEATURE.md)
 
 **As a** developer comparing serverless platforms
 **I want** an up-to-date comparison matrix of AWS, Azure, GCP, Firebase, and Supabase

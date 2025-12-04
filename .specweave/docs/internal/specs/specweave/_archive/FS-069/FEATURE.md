@@ -18,9 +18,9 @@ When generating `spec.md` for increments, SpecWeave must detect multi-project co
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0069-multi-project-spec-generation](../../../../increments/0069-multi-project-spec-generation/spec.md) | ✅ completed | 2025-11-26 |
+| [0069-multi-project-spec-generation](../../../../../../increments/_archive/0069-multi-project-spec-generation/spec.md) | ✅ completed | 2025-11-26 |
 
 ## User Stories
 
-- [US-001: Multi-Project Detection](../../specweave/FS-069/us-001-multi-project-detection.md)
-- [US-002: Project-Scoped User Story Generation](../../specweave/FS-069/us-002-project-scoped-user-story-generation.md)
+- [US-001: Multi-Project Detection](./us-001-multi-project-detection.md)
+- [US-002: Project-Scoped User Story Generation](./us-002-project-scoped-user-story-generation.md)

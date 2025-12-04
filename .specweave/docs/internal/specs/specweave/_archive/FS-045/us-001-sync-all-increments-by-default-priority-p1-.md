@@ -9,7 +9,7 @@ created: 2025-11-19T00:00:00.000Z
 
 # US-001: Sync All Increments by Default (Priority: P1)
 
-**Feature**: [FS-045](../../_features/FS-045/FEATURE.md)
+**Feature**: [FS-045](./FEATURE.md)
 
 **As a** developer working with SpecWeave
 **I want** `/specweave:sync-docs` to sync all non-archived increments by default
@@ -31,7 +31,7 @@ created: 2025-11-19T00:00:00.000Z
 
 ## Implementation
 
-**Increment**: [0045-living-docs-external-sync](../../../../increments/0045-living-docs-external-sync/spec.md)
+**Increment**: [0045-living-docs-external-sync](../../../../../../increments/_archive/0045-living-docs-external-sync/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

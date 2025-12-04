@@ -22,10 +22,10 @@ This is a TEST INCREMENT to verify that status line cache updates correctly when
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0057-test-status-line-sync](../../../../increments/0057-test-status-line-sync/spec.md) | ✅ completed | 2025-11-24T00:00:00.000Z |
+| [0057-test-status-line-sync](../../../../../../increments/_archive/0057-test-status-line-sync/spec.md) | ✅ completed | 2025-11-24T00:00:00.000Z |
 
 ## User Stories
 
-- [US-001: Verify Status Line Updates on Creation (P0)](../../specweave/FS-057/us-001-verify-status-line-updates-on-creation-p0-.md)
-- [US-002: Verify Status Line Updates on Task Completion (P0)](../../specweave/FS-057/us-002-verify-status-line-updates-on-task-completion-p0-.md)
-- [US-003: Verify No Desync on Completion (P0)](../../specweave/FS-057/us-003-verify-no-desync-on-completion-p0-.md)
+- [US-001: Verify Status Line Updates on Creation (P0)](./us-001-verify-status-line-updates-on-creation-p0-.md)
+- [US-002: Verify Status Line Updates on Task Completion (P0)](./us-002-verify-status-line-updates-on-task-completion-p0-.md)
+- [US-003: Verify No Desync on Completion (P0)](./us-003-verify-no-desync-on-completion-p0-.md)

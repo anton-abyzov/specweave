@@ -9,7 +9,7 @@ completed: 2025-11-16
 
 # US-007: Multi-Tool Workflow Support
 
-**Feature**: [FS-031](../../_features/FS-031/FEATURE.md)
+**Feature**: [FS-031](./FEATURE.md)
 
 **As a** SpecWeave user with custom workflows
 **I want** to define tool-specific workflows and transitions
@@ -28,7 +28,7 @@ completed: 2025-11-16
 
 ## Implementation
 
-**Increment**: [0031-external-tool-status-sync](../../../../../increments/0031-external-tool-status-sync/tasks.md)
+**Increment**: [0031-external-tool-status-sync](../../../../../../increments/_archive/0031-external-tool-status-sync/tasks.md)
 
 **Source Tasks**: See increment tasks.md for complete task breakdown
 
