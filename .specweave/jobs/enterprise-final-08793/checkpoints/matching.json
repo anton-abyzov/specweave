@@ -1,0 +1,178 @@
+{
+  "completedAt": "2025-12-04T00:39:53.904Z",
+  "stats": {
+    "totalWorkItems": 57,
+    "matchedWorkItems": 20,
+    "unmatchedWorkItems": 37,
+    "modulesWithWorkItems": 7
+  },
+  "priorityQueue": [
+    {
+      "moduleName": "sync",
+      "modulePath": "src/sync",
+      "workItemCount": 7,
+      "priority": "medium",
+      "topWorkItems": [
+        "Sync Monitor Dashboard",
+        "Update Living Docs Sync to Derive Feature ID",
+        "Pull Sync Execution",
+        "Scheduled Pull Sync",
+        "Discrepancies Command"
+      ]
+    },
+    {
+      "moduleName": "living-docs",
+      "modulePath": "src/living-docs",
+      "workItemCount": 7,
+      "priority": "medium",
+      "topWorkItems": [
+        "Update Living Docs Sync to Derive Feature ID",
+        "Init Flow Brownfield Analysis Question",
+        "Intelligent 5-6 Level Hierarchy Mapping",
+        "Umbrella Module Detection",
+        "Clone Job Integration"
+      ]
+    },
+    {
+      "moduleName": "init",
+      "modulePath": "src/init",
+      "workItemCount": 3,
+      "priority": "low",
+      "topWorkItems": [
+        "Init Flow Brownfield Analysis Question",
+        "Init Integration",
+        "Remove feature_id from Type Definitions"
+      ]
+    },
+    {
+      "moduleName": "config",
+      "modulePath": "src/config",
+      "workItemCount": 3,
+      "priority": "low",
+      "topWorkItems": [
+        "Umbrella Config Persistence",
+        "Logger Injection Compliance",
+        "Increment-Level Profile"
+      ]
+    },
+    {
+      "moduleName": "types",
+      "modulePath": "src/types",
+      "workItemCount": 2,
+      "priority": "low",
+      "topWorkItems": [
+        "Remove feature_id from Type Definitions",
+        "Custom Error Hierarchy"
+      ]
+    },
+    {
+      "moduleName": "templates",
+      "modulePath": "src/templates",
+      "workItemCount": 1,
+      "priority": "low",
+      "topWorkItems": [
+        "Support All ADO Process Templates"
+      ]
+    },
+    {
+      "moduleName": "progress",
+      "modulePath": "src/progress",
+      "workItemCount": 1,
+      "priority": "low",
+      "topWorkItems": [
+        "Progressive Deep Dive"
+      ]
+    },
+    {
+      "moduleName": "core",
+      "modulePath": "src/core",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "cli",
+      "modulePath": "src/cli",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "utils",
+      "modulePath": "src/utils",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "adapters",
+      "modulePath": "src/adapters",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "locales",
+      "modulePath": "src/locales",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "integrations",
+      "modulePath": "src/integrations",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "metrics",
+      "modulePath": "src/metrics",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "importers",
+      "modulePath": "src/importers",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "hooks",
+      "modulePath": "src/hooks",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "generators",
+      "modulePath": "src/generators",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "id-generators",
+      "modulePath": "src/id-generators",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "validators",
+      "modulePath": "src/validators",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "testing",
+      "modulePath": "src/testing",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    }
+  ]
+}

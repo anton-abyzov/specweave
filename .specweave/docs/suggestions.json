@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2025-12-04T00:17:45.489Z",
+  "generatedAt": "2025-12-04T00:39:53.913Z",
   "summary": {
     "totalModules": 20,
     "modulesDocumented": 0,
@@ -93,6 +93,15 @@
   "immediateActions": [
     {
       "priority": 1,
+      "module": "living-docs",
+      "action": "Document living-docs (user priority area)",
+      "files": [
+        "src/living-docs/README.md"
+      ],
+      "reason": "User identified \"living-docs\" as priority area"
+    },
+    {
+      "priority": 2,
       "module": "sync",
       "action": "Create foundational documentation",
       "files": [
@@ -102,7 +111,7 @@
       "reason": "High activity module with 7 related work items"
     },
     {
-      "priority": 2,
+      "priority": 3,
       "module": "living-docs",
       "action": "Create foundational documentation",
       "files": [
@@ -112,7 +121,7 @@
       "reason": "High activity module with 7 related work items"
     },
     {
-      "priority": 3,
+      "priority": 4,
       "module": "core",
       "action": "Add README based on existing test cases",
       "files": [
@@ -121,7 +130,7 @@
       "reason": "Has test coverage but lacks documentation"
     },
     {
-      "priority": 4,
+      "priority": 5,
       "module": "cli",
       "action": "Add README based on existing test cases",
       "files": [

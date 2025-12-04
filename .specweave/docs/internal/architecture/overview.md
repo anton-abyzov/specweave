@@ -5,7 +5,7 @@
 ## Codebase Overview
 
 - **Total Files**: 3,501
-- **Estimated LOC**: 178,888
+- **Estimated LOC**: 179,277
 - **Analysis Tier**: large
 
 ### File Breakdown

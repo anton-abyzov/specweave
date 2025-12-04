@@ -1,6 +1,6 @@
 # Living Docs Suggestions
 
-*Generated: 12/3/2025, 7:17:45 PM*
+*Generated: 12/3/2025, 7:39:53 PM*
 
 ## Summary
 
@@ -29,7 +29,16 @@ These modules have the most work items and need attention:
 
 ## Immediate Actions
 
-### 1. sync
+### 1. living-docs
+
+**Action**: Document living-docs (user priority area)
+
+**Reason**: User identified "living-docs" as priority area
+
+**Files**:
+- `src/living-docs/README.md`
+
+### 2. sync
 
 **Action**: Create foundational documentation
 
@@ -39,7 +48,7 @@ These modules have the most work items and need attention:
 - `src/sync/README.md`
 - `src/sync/API.md`
 
-### 2. living-docs
+### 3. living-docs
 
 **Action**: Create foundational documentation
 
@@ -49,7 +58,7 @@ These modules have the most work items and need attention:
 - `src/living-docs/README.md`
 - `src/living-docs/API.md`
 
-### 3. core
+### 4. core
 
 **Action**: Add README based on existing test cases
 
@@ -58,7 +67,7 @@ These modules have the most work items and need attention:
 **Files**:
 - `src/core/README.md`
 
-### 4. cli
+### 5. cli
 
 **Action**: Add README based on existing test cases
 
