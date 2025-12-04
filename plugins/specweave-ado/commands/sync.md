@@ -247,6 +247,50 @@ Use `/specweave-ado:sync` when you need explicit two-way sync with options.
 
 ---
 
+## Sync Brief (MANDATORY OUTPUT)
+
+**After EVERY sync operation, display a compact two-way summary:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  SYNC COMPLETE                                    ✓ ADO │
+├─────────────────────────────────────────────────────────┤
+│  Increment: 0005-payment-integration                    │
+│  Work Item: #12345                                      │
+│  Profile:   ado-techcorp                                │
+│  Direction: two-way (pull + push)                       │
+├─────────────────────────────────────────────────────────┤
+│  PULLED (from ADO)                              ↓       │
+│    ↓ Status:    Active → Resolved  (external wins)      │
+│    ↓ Priority:  P2 → P1                                 │
+│    + Comments:  2 new imported                          │
+├─────────────────────────────────────────────────────────┤
+│  PUSHED (to ADO)                                ↑       │
+│    Tasks: 8/10 (80%)  ████████░░                        │
+│    ↑ Comment posted: "Progress: 80% complete"           │
+│    ↑ Completion: 60% → 80%                              │
+├─────────────────────────────────────────────────────────┤
+│  CONFLICTS RESOLVED: 1                                  │
+│    Status: local "in-progress" vs ADO "Resolved"        │
+│    Winner: ADO (external tool always wins)              │
+├─────────────────────────────────────────────────────────┤
+│  Last sync: 2025-12-04 10:32:15 (just now)              │
+│  URL: https://dev.azure.com/.../12345                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Symbols Reference
+
+| Symbol | Meaning |
+|--------|---------|
+| `✓` | Success |
+| `⚠` | Warning |
+| `✗` | Failed |
+| `↓` | Pulled (incoming) |
+| `↑` | Pushed (outgoing) |
+
+---
+
 ## Related
 
 | Command | Purpose |
