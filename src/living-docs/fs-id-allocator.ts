@@ -176,10 +176,15 @@ export class FSIdAllocator {
    * Structure:
    * - With projectId: specs/{projectId}/FS-XXX/
    * - Without projectId: specs/FS-XXX/
+   * - 2-level (JIRA): specs/JIRA-{containerId}/{projectId}/FS-XXX/
+   * - 2-level (ADO): specs/{containerId}/{projectId}/FS-XXX/
    *
    * When globalCollisionDetection is enabled (umbrella mode):
    * - Scans ALL project folders under specs/
    * - Prevents ID collisions like FS-001 in project-a and FS-001E in project-b
+   *
+   * CRITICAL FIX (v0.30.12): Legacy mode now properly handles 2-level structures
+   * by using getBaseDirectory() instead of incorrectly building the path.
    */
   async scanExistingIds(): Promise<void> {
     this.existingFeatures.clear();
@@ -188,16 +193,18 @@ export class FSIdAllocator {
       // GLOBAL MODE: Scan ALL projects under specs/ to prevent cross-project collisions
       await this.scanAllProjects();
     } else {
-      // LEGACY MODE: Scan only the specified projectId folder
-      const projectSpecsPath = this.projectId
-        ? path.join(this.specsPath, this.projectId)
-        : this.specsPath;
+      // LEGACY MODE: Scan only the specified project folder
+      // CRITICAL FIX (v0.30.12): Use getBaseDirectory() to correctly handle 2-level structures
+      // Previously this used path.join(specsPath, projectId) which was WRONG for 2-level:
+      // - Expected: specs/{container}/{projectId}/ (e.g., specs/acme-corp/backend-services/)
+      // - Got: specs/{projectId}/ (e.g., specs/backend-services/) - WRONG!
+      const projectSpecsPath = this.getBaseDirectory();
 
       if (await fs.pathExists(projectSpecsPath)) {
         await this.scanDirectory(projectSpecsPath, 'active');
       }
 
-      // Scan archive: {specsPath}/_archive/FS-XXX/
+      // Scan archive: {baseDir}/_archive/FS-XXX/
       const projectArchivePath = path.join(projectSpecsPath, '_archive');
       if (await fs.pathExists(projectArchivePath)) {
         await this.scanDirectory(projectArchivePath, 'archived');
