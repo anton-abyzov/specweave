@@ -26,15 +26,24 @@ GITHUB_ENABLED=$(grep -o '"enabled"[[:space:]]*:[[:space:]]*true' "$CONFIG_FILE"
 
 # Throttle: max once per 5 minutes per increment
 THROTTLE_FILE="$PROJECT_ROOT/.specweave/state/.github-sync-$INC_ID"
+THROTTLE_LOG="$PROJECT_ROOT/.specweave/logs/throttle.log"
+THROTTLE_WINDOW=300  # 5 minutes
+mkdir -p "$(dirname "$THROTTLE_LOG")" 2>/dev/null
+
 if [[ -f "$THROTTLE_FILE" ]]; then
   if [[ "$(uname)" == "Darwin" ]]; then
     AGE=$(($(date +%s) - $(stat -f %m "$THROTTLE_FILE" 2>/dev/null || echo 0)))
   else
     AGE=$(($(date +%s) - $(stat -c %Y "$THROTTLE_FILE" 2>/dev/null || echo 0)))
   fi
-  [[ $AGE -lt 300 ]] && exit 0
+  if [[ $AGE -lt $THROTTLE_WINDOW ]]; then
+    REMAINING=$((THROTTLE_WINDOW - AGE))
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] THROTTLED $INC_ID (wait ${REMAINING}s, use /specweave:sync-progress to bypass)" >> "$THROTTLE_LOG" 2>/dev/null
+    exit 0
+  fi
 fi
 touch "$THROTTLE_FILE"
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] EXECUTING $INC_ID" >> "$THROTTLE_LOG" 2>/dev/null
 
 # Cross-platform timeout wrapper
 run_with_timeout() {

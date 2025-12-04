@@ -198,6 +198,37 @@ integrations:
 
 ---
 
+## Customization (CLAUDE.md)
+
+SpecWeave is a **framework, not a locked product**. Customize workflows through your project's `CLAUDE.md`:
+
+```markdown
+# In your CLAUDE.md:
+
+## Custom Sync Rules
+When syncing to JIRA, always:
+- Add custom field "Team: Backend" for backend increments
+- Map "paused" status to "Blocked" instead of "On Hold"
+
+## Custom Quality Gates
+Before closing any increment:
+- Run `npm run lint:strict` in addition to tests
+- Verify changelog entry exists
+
+## Custom Workflow
+After completing a task:
+- Post to #dev-updates Slack channel
+```
+
+**What you can customize:**
+- **External sync** — Add fields, transform statuses, integrate with internal tools
+- **Quality gates** — Add custom validation, linting, security scans
+- **Lifecycle hooks** — Trigger actions on increment events
+- **Agent behavior** — Override agent prompts for your domain
+- **Naming conventions** — Enforce team-specific formats
+
+---
+
 ## Requirements
 
 - **[Node.js](/docs/glossary/terms/nodejs) 20+** (`node --version`)

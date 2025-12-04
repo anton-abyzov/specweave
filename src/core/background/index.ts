@@ -19,6 +19,7 @@ export * from './job-manager.js';
 export {
   launchImportJob,
   launchCloneJob,
+  launchLivingDocsJob,
   isJobRunning,
   killJob,
   getJobLog,
@@ -28,7 +29,7 @@ export {
   detectOrphanedJobs,
   getOrphanedJobs
 } from './job-launcher.js';
-export type { LaunchOptions, LaunchResult, CloneLaunchOptions } from './job-launcher.js';
+export type { LaunchOptions, LaunchResult, CloneLaunchOptions, LivingDocsLaunchOptions } from './job-launcher.js';
 
 // Brownfield analysis jobs
 export {

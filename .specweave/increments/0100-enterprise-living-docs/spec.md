@@ -1,5 +1,6 @@
 ---
 increment: 0100-enterprise-living-docs
+status: completed
 ---
 
 # 0100: Enterprise Living Documentation

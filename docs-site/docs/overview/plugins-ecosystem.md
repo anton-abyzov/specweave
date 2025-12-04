@@ -656,6 +656,64 @@ For large projects with 100+ files:
 
 ---
 
+## 🔧 Extensibility via CLAUDE.md
+
+SpecWeave is a **framework, not a locked product**. Beyond plugins, you can customize behavior through your project's `CLAUDE.md` file:
+
+### Custom Sync Rules
+```markdown
+## Sync Customization
+When syncing to JIRA, always:
+- Add custom field "Team: Backend" for backend increments
+- Map "paused" status to "Blocked" instead of "On Hold"
+- Include sprint field using our sprint naming convention (SPRINT-YYYY-WW)
+```
+
+### Custom Quality Gates
+```markdown
+## Quality Gates
+Before closing any increment:
+- Run `npm run lint:strict` in addition to tests
+- Verify CHANGELOG.md entry exists for the feature
+- Check that OpenAPI spec is regenerated if API changed
+- Ensure Sentry release is tagged
+```
+
+### Custom Workflow Hooks
+```markdown
+## Workflow Automation
+After completing a task:
+- Post notification to #dev-updates Slack channel
+- Update team capacity spreadsheet via webhook
+- Trigger downstream pipeline if it's an API change
+```
+
+### Agent Behavior Overrides
+```markdown
+## Agent Customization
+When the PM agent creates specs:
+- Always include compliance section for HIPAA requirements
+- Add "Data Classification" field to every user story
+- Reference our design system component library
+
+When the Architect agent designs:
+- Prefer PostgreSQL over MySQL for new services
+- Always include rate limiting in API designs
+- Use our standard error response format
+```
+
+**What you can customize:**
+| Area | Examples |
+|------|----------|
+| **External Sync** | Add fields, transform statuses, integrate with internal tools |
+| **Quality Gates** | Custom validation, linting rules, security scans, compliance checks |
+| **Lifecycle Hooks** | Trigger actions on events (created, done, paused, archived) |
+| **Agent Behavior** | Override default prompts, add domain-specific requirements |
+| **Naming Conventions** | Enforce team-specific ID formats, branch names, commit messages |
+| **Integration Logic** | Custom webhook payloads, API transformations, field mappings |
+
+---
+
 ## 🤝 Contributing
 
 Want to add a new plugin? See [CLAUDE.md](https://github.com/anton-abyzov/specweave/blob/develop/CLAUDE.md) for plugin development guide.

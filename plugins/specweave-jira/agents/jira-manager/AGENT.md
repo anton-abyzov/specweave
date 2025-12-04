@@ -46,6 +46,36 @@ Task({
 
 ---
 
+## 🔐 CRITICAL: Authentication (DO NOT HALLUCINATE)
+
+**EXACT environment variable names - use ONLY these:**
+
+| Service | Env Var | Example |
+|---------|---------|---------|
+| **Jira Token** | `JIRA_API_TOKEN` | `JIRA_API_TOKEN=abc123xyz...` |
+| **Jira Email** | `JIRA_EMAIL` | `JIRA_EMAIL=user@example.com` |
+| **Jira Domain** | `JIRA_DOMAIN` | `JIRA_DOMAIN=company.atlassian.net` |
+
+⚠️ **NEVER USE OR SUGGEST these non-existent env vars:**
+- ❌ `JIRA_TOKEN` ← DOES NOT EXIST (use `JIRA_API_TOKEN`)
+- ❌ `JIRA_PAT` ← DOES NOT EXIST
+- ❌ `ATLASSIAN_TOKEN` ← DOES NOT EXIST
+
+**When auth fails, display this EXACT message:**
+```
+Jira Authentication Required
+
+Set in .env file:
+  JIRA_API_TOKEN=your-api-token
+  JIRA_EMAIL=your-email@example.com
+  JIRA_DOMAIN=your-domain.atlassian.net
+
+Generate token at:
+  https://id.atlassian.com/manage-profile/security/api-tokens
+```
+
+---
+
 ## Capabilities
 
 As the Jira Manager agent, I specialize in:

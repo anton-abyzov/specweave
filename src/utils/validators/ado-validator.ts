@@ -42,9 +42,9 @@ export class AzureDevOpsResourceValidator {
     const envDir = envPath.replace(/\.env$/, '');
     this.configPath = envDir ? `${envDir}.specweave/config.json` : '.specweave/config.json';
 
-    // Load PAT from .env (secret)
+    // Load PAT from .env (secret) - ONLY AZURE_DEVOPS_PAT is supported
     const env = this.loadEnv();
-    this.pat = env.AZURE_DEVOPS_PAT || env.ADO_PAT || '';
+    this.pat = env.AZURE_DEVOPS_PAT || '';
 
     // Load config from config.json (non-secrets)
     const config = this.loadConfig();

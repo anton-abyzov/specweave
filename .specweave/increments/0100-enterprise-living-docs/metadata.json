@@ -1,7 +1,9 @@
 {
   "id": "0100-enterprise-living-docs",
-  "status": "planning",
+  "status": "completed",
   "type": "feature",
   "created": "2025-12-04T01:55:53.319Z",
-  "lastActivity": "2025-12-04T01:55:53.319Z"
+  "lastActivity": "2025-12-04T02:15:00.000Z",
+  "completedAt": "2025-12-04T02:15:00.000Z",
+  "approvedAt": "2025-12-04T02:15:00.000Z"
 }

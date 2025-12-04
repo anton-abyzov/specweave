@@ -26,9 +26,11 @@ import { BoardMatcher, type MatchDecision } from './board-matcher.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { autoDetectProjectIdSync } from '../../utils/project-detection.js';
 import { getGitHubAuthFromProject } from '../../utils/auth-helpers.js';
-// NOTE (2025-12-01): findNextAvailableInternalIdSync removed - internal features don't need collision check
-// Collision detection is only for EXTERNAL features (FS-XXXE) imported from GitHub/JIRA/ADO
-import { deriveFeatureId } from '../../utils/feature-id-derivation.js';
+// CRITICAL FIX (2025-12-04): Re-enabled collision detection for internal features
+// Bug: When external features (FS-001E) exist, internal features (FS-001) must NOT collide
+// IDs are scoped per project/board - each board has its own FS-XXX sequence
+import { findNextAvailableInternalIdSync } from '../../utils/feature-id-collision.js';
+import { deriveFeatureId, extractIncrementNumber } from '../../utils/feature-id-derivation.js';
 // Import types from centralized location
 import type {
   SyncOptions,
@@ -145,16 +147,22 @@ export class LivingDocsSync {
       // Step 1: Build feature registry (auto-generates IDs for greenfield)
       await this.featureIdManager.buildRegistry();
 
-      // Step 2: Get feature ID (derived from increment number)
-      // SIMPLIFIED (v0.29.0): Feature ID is now always derived, not stored in metadata
+      // Step 2: Resolve project path FIRST (needed for collision detection)
+      // CRITICAL FIX (2025-12-04): Moved before feature ID derivation
+      // Collision detection is scoped per project/board
+      const basePath = path.join(this.projectRoot, '.specweave/docs/internal/specs');
+      const resolvedProjectPath = await this.resolveProjectPath(incrementId);
+
+      // Step 3: Get feature ID (derived from increment number WITH collision detection)
+      // CRITICAL FIX (2025-12-04): Now checks for FS-XXXE collisions
       let featureId: string;
       if (options.explicitFeatureId && /^FS-\d{3,}E?$/.test(options.explicitFeatureId)) {
         // Allow explicit override for special cases (e.g., epic linking)
         featureId = options.explicitFeatureId;
         this.logger.log(`📎 Using explicit feature ID: ${featureId}`);
       } else {
-        // Derive from increment number (the normal case)
-        featureId = await this.getFeatureIdForIncrement(incrementId);
+        // Derive from increment number with collision detection
+        featureId = await this.getFeatureIdForIncrement(incrementId, resolvedProjectPath);
         this.logger.log(`🔄 Derived feature ID: ${featureId}`);
       }
 
@@ -165,15 +173,8 @@ export class LivingDocsSync {
 
       this.logger.log(`📚 Syncing ${incrementId} → ${featureId}...`);
 
-      // Step 3: Parse increment spec
+      // Step 4: Parse increment spec
       const parsed = await this.parseIncrementSpec(incrementId);
-
-      // Step 4: Create living docs structure
-      // Structure: specs/{project}/FS-XXX/FEATURE.md (+ user stories)
-      // CRITICAL FIX (2025-12-02): Use smart project path resolution for brownfield setups
-      // This handles hierarchical paths like "acme/digital-operations-services"
-      const basePath = path.join(this.projectRoot, '.specweave/docs/internal/specs');
-      const resolvedProjectPath = await this.resolveProjectPath(incrementId);
 
       // Create {project}/FS-XXX/FEATURE.md
       const projectPath = path.join(basePath, resolvedProjectPath, featureId);
@@ -264,26 +265,57 @@ export class LivingDocsSync {
   }
 
   /**
-   * Get feature ID for increment
+   * Get feature ID for increment with collision detection
    *
    * SIMPLIFIED (v0.29.0): Feature ID is derived from increment number
    * No longer reads from metadata.json - derivation is the single source of truth
    *
-   * CRITICAL FIX (2025-12-01): Internal features are DETERMINISTIC - no collision check!
-   * - Increment 0060 → ALWAYS FS-060, never anything else
-   * - Increment 0072 → ALWAYS FS-072, never anything else
-   * - Sync is IDEMPOTENT: if FS-060 exists, UPDATE it (don't create FS-061)
+   * CRITICAL FIX (2025-12-04): Re-enabled collision detection!
+   * The previous assumption that "internal features are deterministic" was WRONG
+   * when external imports exist. If FS-001E exists, internal increment 0001
+   * must use FS-002 to avoid collision.
    *
-   * Collision detection is ONLY for EXTERNAL features (FS-XXXE) during imports,
-   * NOT for internal features derived from increment numbers.
+   * Collision detection is SCOPED per project/board:
+   * - Each project has its own FS-XXX sequence
+   * - Scans both FS-XXX and FS-XXXE folders
+   * - Also scans _orphans folder for US-XXX files
    *
+   * @param incrementId - Increment ID (e.g., "0081-ado-repo-cloning")
+   * @param resolvedProjectPath - Resolved project path (e.g., "acme/backend" or "my-project")
+   * @returns Feature ID with collision avoidance (e.g., "FS-081" or "FS-082" if 081 exists)
    * @see deriveFeatureId() in src/utils/feature-id-derivation.ts
-   * @see ADR-0140 for rationale
    */
-  private async getFeatureIdForIncrement(incrementId: string): Promise<string> {
-    // Derive feature ID directly from increment number (e.g., "0081-name" → "FS-081")
-    // NO collision checking - internal feature IDs are deterministic and unique by design
-    return deriveFeatureId(incrementId);
+  private async getFeatureIdForIncrement(
+    incrementId: string,
+    resolvedProjectPath: string
+  ): Promise<string> {
+    // Extract increment number (e.g., "0081-name" → 81)
+    const incrementNumber = extractIncrementNumber(incrementId);
+
+    // Build path to project's specs folder for collision detection
+    const specsPath = path.join(this.projectRoot, '.specweave/docs/internal/specs');
+
+    // CRITICAL: Use collision detection to avoid FS-XXX vs FS-XXXE conflicts
+    // This is scoped to the specific project/board folder
+    const safeNumber = findNextAvailableInternalIdSync(
+      incrementNumber,
+      specsPath,
+      resolvedProjectPath,
+      { logger: this.logger }
+    );
+
+    // Generate feature ID from safe number
+    const featureId = `FS-${String(safeNumber).padStart(3, '0')}`;
+
+    // Log if collision was avoided
+    if (safeNumber !== incrementNumber) {
+      this.logger.warn(
+        `   ⚠️ Feature ID collision avoided: FS-${String(incrementNumber).padStart(3, '0')} exists, ` +
+        `using ${featureId} instead`
+      );
+    }
+
+    return featureId;
   }
 
   /**
@@ -1315,19 +1347,207 @@ export class LivingDocsSync {
   }
 
   /**
-   * Sync to JIRA (placeholder for future implementation)
+   * Sync to JIRA Epics
+   *
+   * Uses JiraSpecSync.syncSpecToJira() which is idempotent:
+   * - Uses existing epic if it exists
+   * - Updates existing stories
+   * - Only creates new stories if they don't exist
+   *
+   * Configuration priority:
+   * 1. config.sync.jira (most common)
+   * 2. config.sync.profiles[*] with provider='jira'
+   * 3. Environment variables (JIRA_DOMAIN, JIRA_EMAIL, JIRA_API_TOKEN)
    */
   private async syncToJira(featureId: string, projectPath: string): Promise<void> {
-    this.logger.log(`   ⚠️  JIRA sync not yet implemented - skipping`);
-    // TODO: Implement JIRA sync when specweave-jira plugin is available
+    try {
+      this.logger.log(`   🔄 Syncing to JIRA...`);
+
+      // Dynamic import to avoid circular dependencies
+      const { JiraSpecSync } = await import('../../../plugins/specweave-jira/lib/jira-spec-sync.js');
+
+      // Load JIRA config from config.json FIRST, then environment
+      const configPath = path.join(this.projectRoot, '.specweave/config.json');
+      let domain = process.env.JIRA_DOMAIN || '';
+      let email = process.env.JIRA_EMAIL || '';
+      let apiToken = process.env.JIRA_API_TOKEN || '';
+      let projectKey = '';
+
+      if (existsSync(configPath)) {
+        try {
+          const config = await readJson(configPath);
+          // Method 1: Read from config.sync.jira (most common)
+          if (config.sync?.jira?.domain) {
+            domain = config.sync.jira.domain;
+            projectKey = config.sync.jira.projectKey || '';
+            this.logger.log(`   📝 Using JIRA config: ${domain}`);
+          }
+          // Method 2: Check profiles
+          else {
+            const jiraProfiles = getProfilesByProvider(config.sync, 'jira');
+            if (jiraProfiles.length > 0) {
+              const [profileName, profile] = jiraProfiles[0];
+              const cfg = profile.config as { domain?: string; projectKey?: string };
+              domain = cfg?.domain || domain;
+              projectKey = cfg?.projectKey || projectKey;
+              this.logger.log(`   📝 Using JIRA profile: ${profileName}`);
+            }
+          }
+        } catch (error) {
+          this.logger.warn(`   ⚠️  Failed to read config.json for JIRA, using environment variables`);
+        }
+      }
+
+      // Load secrets from .env if not already set
+      if (!apiToken) {
+        const envPath = path.join(this.projectRoot, '.env');
+        if (existsSync(envPath)) {
+          try {
+            const envContent = await fs.readFile(envPath, 'utf-8');
+            for (const line of envContent.split('\n')) {
+              if (line.startsWith('JIRA_API_TOKEN=')) {
+                apiToken = line.split('=')[1]?.trim().replace(/^["']|["']$/g, '') || '';
+              }
+              if (!email && line.startsWith('JIRA_EMAIL=')) {
+                email = line.split('=')[1]?.trim().replace(/^["']|["']$/g, '') || '';
+              }
+            }
+          } catch {
+            // Ignore .env read errors
+          }
+        }
+      }
+
+      if (!domain || !email || !apiToken) {
+        this.logger.warn(`   ⚠️  JIRA credentials not configured`);
+        this.logger.warn(`   💡 Set JIRA_DOMAIN, JIRA_EMAIL, JIRA_API_TOKEN in .env`);
+        return;
+      }
+
+      // Initialize JIRA sync
+      const jiraSync = new JiraSpecSync(
+        { domain, email, apiToken, projectKey },
+        this.projectRoot
+      );
+
+      // Sync feature to JIRA
+      const result = await jiraSync.syncSpecToJira(featureId);
+
+      if (result.success) {
+        this.logger.log(`   ✅ Synced to JIRA: ${result.externalId || 'updated'}`);
+      } else {
+        this.logger.warn(`   ⚠️  JIRA sync had issues: ${result.error || 'unknown'}`);
+      }
+
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Cannot find module')) {
+        this.logger.warn(`   ⚠️  JIRA plugin not installed - skipping JIRA sync`);
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**
-   * Sync to Azure DevOps (placeholder for future implementation)
+   * Sync to Azure DevOps Features
+   *
+   * Uses AdoSpecSync.syncSpecToAdo() which is idempotent:
+   * - Uses existing feature if it exists
+   * - Updates existing user stories
+   * - Only creates new user stories if they don't exist
+   *
+   * Configuration priority:
+   * 1. config.sync.ado (most common)
+   * 2. config.sync.profiles[*] with provider='ado'
+   * 3. Environment variables (AZURE_DEVOPS_ORG, AZURE_DEVOPS_PROJECT, AZURE_DEVOPS_PAT)
    */
   private async syncToADO(featureId: string, projectPath: string): Promise<void> {
-    this.logger.log(`   ⚠️  ADO sync not yet implemented - skipping`);
-    // TODO: Implement ADO sync when specweave-ado plugin is available
+    try {
+      this.logger.log(`   🔄 Syncing to Azure DevOps...`);
+
+      // Dynamic import to avoid circular dependencies
+      const { AdoSpecSync } = await import('../../../plugins/specweave-ado/lib/ado-spec-sync.js');
+
+      // Load ADO config from config.json FIRST, then environment
+      const configPath = path.join(this.projectRoot, '.specweave/config.json');
+      let organization = process.env.AZURE_DEVOPS_ORG || '';
+      let project = process.env.AZURE_DEVOPS_PROJECT || '';
+      let personalAccessToken = '';
+
+      if (existsSync(configPath)) {
+        try {
+          const config = await readJson(configPath);
+          // Method 1: Read from config.sync.ado (most common)
+          if (config.sync?.ado?.organization) {
+            organization = config.sync.ado.organization;
+            project = config.sync.ado.project || project;
+            this.logger.log(`   📝 Using ADO config: ${organization}/${project}`);
+          }
+          // Method 2: Check profiles
+          else {
+            const adoProfiles = getProfilesByProvider(config.sync, 'ado');
+            if (adoProfiles.length > 0) {
+              const [profileName, profile] = adoProfiles[0];
+              const cfg = profile.config as { organization?: string; project?: string };
+              organization = cfg?.organization || organization;
+              project = cfg?.project || project;
+              this.logger.log(`   📝 Using ADO profile: ${profileName}`);
+            }
+          }
+        } catch (error) {
+          this.logger.warn(`   ⚠️  Failed to read config.json for ADO, using environment variables`);
+        }
+      }
+
+      // Load PAT from .env if not already set
+      const envPath = path.join(this.projectRoot, '.env');
+      if (existsSync(envPath)) {
+        try {
+          const envContent = await fs.readFile(envPath, 'utf-8');
+          for (const line of envContent.split('\n')) {
+            if (line.startsWith('AZURE_DEVOPS_PAT=')) {
+              personalAccessToken = line.split('=')[1]?.trim().replace(/^["']|["']$/g, '') || '';
+            }
+            if (!organization && line.startsWith('AZURE_DEVOPS_ORG=')) {
+              organization = line.split('=')[1]?.trim().replace(/^["']|["']$/g, '') || '';
+            }
+            if (!project && line.startsWith('AZURE_DEVOPS_PROJECT=')) {
+              project = line.split('=')[1]?.trim().replace(/^["']|["']$/g, '') || '';
+            }
+          }
+        } catch {
+          // Ignore .env read errors
+        }
+      }
+
+      if (!organization || !project || !personalAccessToken) {
+        this.logger.warn(`   ⚠️  ADO credentials not configured`);
+        this.logger.warn(`   💡 Set AZURE_DEVOPS_ORG, AZURE_DEVOPS_PROJECT, AZURE_DEVOPS_PAT in .env`);
+        return;
+      }
+
+      // Initialize ADO sync
+      const adoSync = new AdoSpecSync(
+        { organization, project, personalAccessToken },
+        this.projectRoot
+      );
+
+      // Sync feature to ADO
+      const result = await adoSync.syncSpecToAdo(featureId);
+
+      if (result.success) {
+        this.logger.log(`   ✅ Synced to ADO: ${result.externalId || 'updated'}`);
+      } else {
+        this.logger.warn(`   ⚠️  ADO sync had issues: ${result.error || 'unknown'}`);
+      }
+
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Cannot find module')) {
+        this.logger.warn(`   ⚠️  ADO plugin not installed - skipping ADO sync`);
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**

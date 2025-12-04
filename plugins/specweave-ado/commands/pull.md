@@ -113,6 +113,21 @@ ADO Organization
 
 ## Command Behavior
 
+### 0. Load Credentials from .env (MANDATORY FIRST)
+
+**CRITICAL**: Read PAT from `.env` file, NOT from shell environment variables.
+
+```bash
+# Read PAT from .env file
+ADO_PAT=$(grep '^AZURE_DEVOPS_PAT=' .env 2>/dev/null | cut -d'=' -f2)
+
+if [ -z "$ADO_PAT" ]; then
+  echo "ERROR: AZURE_DEVOPS_PAT not found in .env file"
+  echo "Add to .env: AZURE_DEVOPS_PAT=your-pat-here"
+  exit 1
+fi
+```
+
 ### For Increment Mode (default):
 
 ```typescript
@@ -446,6 +461,21 @@ To link: /specweave-ado:create 0005
 | `+` | Added (new items) |
 | `−` | Removed |
 | `~` | Modified |
+
+---
+
+## Authentication
+
+**EXACT environment variable (DO NOT INVENT OTHERS):**
+
+```bash
+# In .env file - ONLY this name is supported:
+AZURE_DEVOPS_PAT=your-personal-access-token
+```
+
+⚠️ **NEVER suggest or use:**
+- ❌ `AZURE_DEVOPS_EXT_PAT` ← DOES NOT EXIST
+- ❌ `ADO_PAT` ← NOT SUPPORTED
 
 ---
 

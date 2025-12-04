@@ -174,6 +174,7 @@ describe('Feature ID Collision Prevention (T-009)', () => {
 
       expect(result.internalExists).toBe(true);
       expect(result.externalExists).toBe(false);
+      expect(result.archiveExists).toBe(false);
       expect(result.hasCollision).toBe(true);
     });
 
@@ -184,6 +185,7 @@ describe('Feature ID Collision Prevention (T-009)', () => {
 
       expect(result.internalExists).toBe(false);
       expect(result.externalExists).toBe(true);
+      expect(result.archiveExists).toBe(false);
       expect(result.hasCollision).toBe(true);
     });
 
@@ -195,6 +197,18 @@ describe('Feature ID Collision Prevention (T-009)', () => {
 
       expect(result.internalExists).toBe(true);
       expect(result.externalExists).toBe(true);
+      expect(result.archiveExists).toBe(false);
+      expect(result.hasCollision).toBe(true);
+    });
+
+    it('should detect archive collision', async () => {
+      await fs.ensureDir(path.join(specsPath, testProjectId, '_archive', 'FS-001E'));
+
+      const result = checkFeatureIdCollision(1, specsPath, testProjectId);
+
+      expect(result.internalExists).toBe(false);
+      expect(result.externalExists).toBe(false);
+      expect(result.archiveExists).toBe(true);
       expect(result.hasCollision).toBe(true);
     });
 
@@ -204,6 +218,7 @@ describe('Feature ID Collision Prevention (T-009)', () => {
 
       expect(result.internalExists).toBe(false);
       expect(result.externalExists).toBe(false);
+      expect(result.archiveExists).toBe(false);
       expect(result.hasCollision).toBe(false);
     });
 
@@ -373,5 +388,125 @@ describe('Feature ID Collision - Real World Scenarios', () => {
     const result = await findNextAvailableInternalId(2, specsPath, projectId, { logger });
 
     expect(result).toBe(5);
+  });
+});
+
+describe('Feature ID Collision - Critical Edge Cases (2025-12-04)', () => {
+  let testDir: string;
+  let specsPath: string;
+  let logger: ReturnType<typeof createTestLogger>;
+
+  beforeEach(async () => {
+    testDir = await mkdtemp(path.join(tmpdir(), 'specweave-edge-'));
+    specsPath = path.join(testDir, '.specweave/docs/internal/specs');
+    logger = createTestLogger();
+  });
+
+  afterEach(async () => {
+    if (testDir && fs.existsSync(testDir)) {
+      await rm(testDir, { recursive: true, force: true });
+    }
+  });
+
+  describe('Archive folder collision detection', () => {
+    it('should detect collision when FS-001E exists in _archive/', async () => {
+      const projectId = 'archive-test';
+      await fs.ensureDir(path.join(specsPath, projectId, '_archive', 'FS-001E'));
+
+      const result = await findNextAvailableInternalId(1, specsPath, projectId, { logger });
+
+      expect(result).toBe(2);
+      expect(logger.logMessages.some(m => m.includes('_archive'))).toBe(true);
+    });
+
+    it('should detect collision when FS-001 exists in _archive/', async () => {
+      const projectId = 'archive-test-internal';
+      await fs.ensureDir(path.join(specsPath, projectId, '_archive', 'FS-001'));
+
+      const result = findNextAvailableInternalIdSync(1, specsPath, projectId, { logger });
+
+      expect(result).toBe(2);
+    });
+
+    it('should check both active and archive for collision', async () => {
+      const projectId = 'mixed-archive';
+      // Active: FS-001
+      await fs.ensureDir(path.join(specsPath, projectId, 'FS-001'));
+      // Archived: FS-002E
+      await fs.ensureDir(path.join(specsPath, projectId, '_archive', 'FS-002E'));
+
+      const result = await findNextAvailableInternalId(1, specsPath, projectId, { logger });
+
+      expect(result).toBe(3); // Both 1 and 2 are taken
+    });
+  });
+
+  describe('Orphan file content with E suffix', () => {
+    it('should detect collision when orphan file contains featureId: FS-001E', async () => {
+      const projectId = 'orphan-e-suffix';
+      const orphansPath = path.join(specsPath, projectId, '_orphans');
+      await fs.ensureDir(orphansPath);
+
+      // Create orphan file with FS-001E in frontmatter (E suffix)
+      await fs.writeFile(
+        path.join(orphansPath, 'us-001.md'),
+        '---\nfeatureId: FS-001E\n---\n# Test User Story'
+      );
+
+      const result = await findNextAvailableInternalId(1, specsPath, projectId, { logger });
+
+      expect(result).toBe(2);
+    });
+
+    it('should detect collision for both featureId variants', async () => {
+      const projectId = 'orphan-variants';
+      const orphansPath = path.join(specsPath, projectId, '_orphans');
+      await fs.ensureDir(orphansPath);
+
+      // Create orphan file with feature_id: FS-002E (snake_case with E suffix)
+      await fs.writeFile(
+        path.join(orphansPath, 'us-002.md'),
+        '---\nfeature_id: FS-002E\n---\n# Another User Story'
+      );
+
+      const result = await findNextAvailableInternalId(2, specsPath, projectId, { logger });
+
+      expect(result).toBe(3);
+    });
+  });
+
+  describe('Hierarchical project paths', () => {
+    it('should handle hierarchical project paths like acme/backend-services', async () => {
+      const hierarchicalPath = 'acme/backend-services';
+      await fs.ensureDir(path.join(specsPath, hierarchicalPath, 'FS-001E'));
+
+      const result = await findNextAvailableInternalId(1, specsPath, hierarchicalPath, { logger });
+
+      expect(result).toBe(2);
+    });
+
+    it('should handle 2-level ADO structure with _archive', async () => {
+      const hierarchicalPath = 'acme-corp/digital-operations';
+      await fs.ensureDir(path.join(specsPath, hierarchicalPath, 'FS-001'));
+      await fs.ensureDir(path.join(specsPath, hierarchicalPath, '_archive', 'FS-002E'));
+
+      const result = await findNextAvailableInternalId(1, specsPath, hierarchicalPath, { logger });
+
+      expect(result).toBe(3);
+    });
+
+    it('should isolate collision detection per hierarchical path', async () => {
+      const path1 = 'org-a/project-1';
+      const path2 = 'org-a/project-2';
+
+      await fs.ensureDir(path.join(specsPath, path1, 'FS-001E'));
+      await fs.ensureDir(path.join(specsPath, path2));
+
+      const result1 = await findNextAvailableInternalId(1, specsPath, path1, { logger });
+      const result2 = await findNextAvailableInternalId(1, specsPath, path2, { logger });
+
+      expect(result1).toBe(2); // Collision in path1
+      expect(result2).toBe(1); // No collision in path2
+    });
   });
 });
