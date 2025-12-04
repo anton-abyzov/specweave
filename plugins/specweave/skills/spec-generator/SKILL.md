@@ -27,6 +27,24 @@ description: Generates comprehensive specifications (spec.md, plan.md, tasks.md 
 - **Bug Fix**: Problem statement, root cause, solution, impact analysis
 - **Refactoring**: Current state, proposed changes, benefits, migration plan
 
+**YAML Frontmatter** (v0.31.0+ MANDATORY):
+```yaml
+---
+increment: 0001-feature-name
+title: "Feature Title"
+type: feature
+priority: P1
+status: planned
+created: 2025-12-04
+project: my-project          # REQUIRED - target project for living docs sync
+board: my-board              # REQUIRED for 2-level structures (ADO area paths, JIRA boards)
+---
+```
+
+**Detect Structure Level First** (see `src/utils/structure-level-detector.ts`):
+- 1-level: `project:` field REQUIRED
+- 2-level: `project:` AND `board:` fields REQUIRED
+
 **Core Sections** (Always Present):
 ```markdown
 # Product Specification: [Increment Name]

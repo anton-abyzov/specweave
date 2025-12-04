@@ -4,7 +4,7 @@
   "type": "hotfix",
   "status": "active",
   "created": "2025-12-02T00:30:00.000Z",
-  "lastActivity": "2025-12-03T07:07:36.868Z",
+  "lastActivity": "2025-12-04T22:45:56.008Z",
   "featureId": null,
   "userStories": [],
   "tags": [
@@ -12,6 +12,21 @@
     "maintenance"
   ],
   "acSyncEvents": [
+    {
+      "timestamp": "2025-12-04T22:45:56.008Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
     {
       "timestamp": "2025-12-03T07:07:36.868Z",
       "updated": [],

@@ -15,6 +15,7 @@ import type {
 } from '../types.js';
 import { MODEL_PRICING } from '../types.js';
 import { Logger, consoleLogger } from '../../../utils/logger.js';
+import { extractJson, extractRequiredFieldsFromSchema } from '../../../utils/llm-json-extractor.js';
 
 export interface OpenAIProviderConfig {
   apiKey: string;
@@ -124,13 +125,21 @@ export class OpenAIProvider implements LLMProvider {
       totalTokens: response.usage?.total_tokens || 0,
     };
 
-    const data = JSON.parse(content) as T;
+    // Extract required fields from schema for validation
+    const requiredFields = extractRequiredFieldsFromSchema(options.schema);
 
-    return {
-      data,
-      usage,
-      estimatedCost: this.estimateCost(usage.inputTokens, usage.outputTokens, model),
-    };
+    // Use robust JSON extraction for safety (native JSON mode should work, but belt + suspenders)
+    const extraction = extractJson<T>(content, { requiredFields });
+
+    if (extraction.success && extraction.data) {
+      return {
+        data: extraction.data,
+        usage,
+        estimatedCost: this.estimateCost(usage.inputTokens, usage.outputTokens, model),
+      };
+    }
+
+    throw new Error(`Failed to parse structured response: ${extraction.error}`);
   }
 
   estimateCost(inputTokens: number, outputTokens: number, model?: string): number {

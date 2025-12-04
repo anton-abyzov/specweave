@@ -63,6 +63,10 @@ let getAvailabilityMessage: any;
 let formatAvailabilityMessage: any;
 let getSimpleErrorMessage: any;
 
+// Robust JSON extraction from LLM responses
+let extractJson: any;
+let buildJsonPrompt: any;
+
 interface LivingDocsJobConfig {
   jobId: string;
   projectPath: string;
@@ -78,21 +82,29 @@ interface LivingDocsJobConfig {
 }
 
 /**
- * AI-enhanced module analysis using Claude Code
+ * AI Module Analysis result type
  */
-async function runAIModuleAnalysis(
-  moduleName: string,
-  basicAnalysis: any,
-  provider: any,
-  log: (msg: string) => void
-): Promise<{
+interface AIModuleAnalysisResult {
   purpose: string;
   keyConcepts: string[];
   dependencies: string[];
   complexity: 'low' | 'medium' | 'high';
   suggestedDocs: string[];
   architecturalNotes: string;
-} | null> {
+}
+
+/**
+ * AI-enhanced module analysis using Claude Code
+ *
+ * Uses robust JSON extraction with retry logic to handle common LLM
+ * output patterns like prose before JSON, markdown code blocks, etc.
+ */
+async function runAIModuleAnalysis(
+  moduleName: string,
+  basicAnalysis: any,
+  provider: any,
+  log: (msg: string) => void
+): Promise<AIModuleAnalysisResult | null> {
   // Build context from basic analysis
   const filesSummary = basicAnalysis.filesAnalyzed
     .slice(0, 5) // Limit to top 5 files to avoid prompt explosion
@@ -104,9 +116,8 @@ async function runAIModuleAnalysis(
     .map((e: any) => `- ${e.name}: ${e.type}`)
     .join('\n') || 'No exports detected';
 
-  const prompt = `Analyze this TypeScript module and provide structured insights.
-
-Module: ${moduleName}
+  // Build prompt using robust JSON prompt builder (instruction at START for prominence)
+  const context = `Module: ${moduleName}
 Files analyzed: ${basicAnalysis.filesAnalyzed.length}
 Total exports: ${basicAnalysis.totalExports}
 
@@ -114,57 +125,93 @@ Key files:
 ${filesSummary}
 
 Key exports:
-${exportsSummary}
+${exportsSummary}`;
 
-Provide a JSON response with EXACTLY this structure (no markdown, no code blocks, just pure JSON):
-{
-  "purpose": "Brief description of what this module does (1-2 sentences)",
-  "keyConcepts": ["concept1", "concept2", "concept3"],
-  "dependencies": ["likely internal or external dependencies"],
-  "complexity": "low|medium|high",
-  "suggestedDocs": ["doc1.md", "doc2.md"],
-  "architecturalNotes": "Brief notes about patterns, concerns, or suggestions"
-}`;
+  const schema = {
+    purpose: 'Brief description of what this module does (1-2 sentences)',
+    keyConcepts: '["concept1", "concept2", "concept3"]',
+    dependencies: '["dependency1", "dependency2"]',
+    complexity: 'low|medium|high',
+    suggestedDocs: '["doc1.md", "doc2.md"]',
+    architecturalNotes: 'Brief notes about patterns, concerns, or suggestions'
+  };
 
-  try {
-    log(`    Sending to Claude Code Opus 4.5...`);
-    const result = await provider.analyze(prompt);
+  const prompt = buildJsonPrompt(
+    context,
+    schema,
+    `Analyze this TypeScript/JavaScript module and provide structured insights about its purpose, complexity, and documentation needs.`
+  );
 
-    if (!result || !result.content) {
-      log(`    Empty response from AI`);
-      return null;
+  const maxRetries = 2;
+  let lastResponse = '';
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const attemptLabel = attempt === 0 ? '' : ` (retry ${attempt}/${maxRetries})`;
+      log(`    Sending to Claude Code Opus 4.5...${attemptLabel}`);
+
+      const currentPrompt = attempt === 0 ? prompt : generateCorrectionPrompt(prompt, lastResponse);
+      const result = await provider.analyze(currentPrompt);
+
+      if (!result || !result.content) {
+        log(`    Empty response from AI`);
+        continue;
+      }
+
+      lastResponse = result.content;
+
+      // Use robust JSON extraction (dynamically loaded, no type args)
+      const extraction = extractJson(result.content, {
+        requiredFields: ['purpose', 'complexity']
+      }) as { success: boolean; data: AIModuleAnalysisResult | null; extractionMethod: string; error: string | null };
+
+      if (extraction.success && extraction.data) {
+        if (attempt > 0) {
+          log(`    JSON extraction succeeded on retry ${attempt}`);
+        }
+        return {
+          purpose: extraction.data.purpose,
+          keyConcepts: extraction.data.keyConcepts || [],
+          dependencies: extraction.data.dependencies || [],
+          complexity: extraction.data.complexity,
+          suggestedDocs: extraction.data.suggestedDocs || [],
+          architecturalNotes: extraction.data.architecturalNotes || ''
+        };
+      }
+
+      // Log extraction failure details for debugging
+      log(`    JSON extraction failed (${extraction.extractionMethod}): ${extraction.error}`);
+
+    } catch (err: any) {
+      log(`    AI analysis error: ${err.message}`);
     }
-
-    const response = result.content;
-
-    // Parse JSON response (Claude may wrap in code blocks)
-    let jsonStr = response.trim();
-
-    // Remove markdown code blocks if present
-    if (jsonStr.startsWith('```')) {
-      jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
-    }
-
-    const parsed = JSON.parse(jsonStr);
-
-    // Validate required fields
-    if (!parsed.purpose || !parsed.complexity) {
-      log(`    Invalid AI response structure`);
-      return null;
-    }
-
-    return {
-      purpose: parsed.purpose,
-      keyConcepts: parsed.keyConcepts || [],
-      dependencies: parsed.dependencies || [],
-      complexity: parsed.complexity,
-      suggestedDocs: parsed.suggestedDocs || [],
-      architecturalNotes: parsed.architecturalNotes || ''
-    };
-  } catch (err: any) {
-    log(`    AI analysis error: ${err.message}`);
-    return null;
   }
+
+  log(`    AI analysis failed after ${maxRetries + 1} attempts, using fallback`);
+  return null;
+}
+
+/**
+ * Generate a correction prompt for retry after failed JSON extraction
+ */
+function generateCorrectionPrompt(originalPrompt: string, failedResponse: string): string {
+  const preview = failedResponse.slice(0, 200);
+  return `Your previous response was not valid JSON. I received:
+"${preview}${failedResponse.length > 200 ? '...' : ''}"
+
+CRITICAL: Respond with ONLY a JSON object. No explanations, no "Based on...", no markdown.
+
+Required format (copy this structure exactly):
+{
+  "purpose": "...",
+  "keyConcepts": ["..."],
+  "dependencies": ["..."],
+  "complexity": "low|medium|high",
+  "suggestedDocs": ["..."],
+  "architecturalNotes": "..."
+}
+
+${originalPrompt.includes('Module:') ? originalPrompt.slice(originalPrompt.indexOf('Module:'), originalPrompt.indexOf('Module:') + 300) : ''}`;
 }
 
 /**
@@ -318,6 +365,11 @@ async function main(): Promise<void> {
     getAvailabilityMessage = availabilityModule.getAvailabilityMessage;
     formatAvailabilityMessage = availabilityModule.formatAvailabilityMessage;
     getSimpleErrorMessage = availabilityModule.getSimpleErrorMessage;
+
+    // Load robust JSON extraction utility
+    const jsonExtractorModule = await import('../../utils/llm-json-extractor.js');
+    extractJson = jsonExtractorModule.extractJson;
+    buildJsonPrompt = jsonExtractorModule.buildJsonPrompt;
 
     log('Dependencies loaded successfully');
     log('');

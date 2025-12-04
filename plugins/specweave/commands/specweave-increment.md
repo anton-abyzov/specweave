@@ -371,18 +371,60 @@ Proceeding with hotfix 0006...
 - Find highest number across both directories (e.g., 032)
 - Next increment: 033
 
-### Step 1.5: Detect Multi-Project Mode (CRITICAL!)
+### Step 1.5: Detect Structure Level & Select Project/Board (v0.31.0+ MANDATORY!)
 
-**⚠️ MANDATORY CHECK before generating spec.md:**
+**⚠️ MANDATORY CHECK before generating spec.md!**
 
-```bash
-# Check for umbrella configuration
-UMBRELLA_ENABLED=$(cat .specweave/config.json 2>/dev/null | jq -r '.umbrella.enabled // false')
-CHILD_REPOS=$(cat .specweave/config.json 2>/dev/null | jq -r '.umbrella.childRepos[]?.id // empty' | tr '\n' ',')
-PROJECT_FOLDERS=$(ls -1 .specweave/docs/internal/specs/ 2>/dev/null | grep -v "^_" | head -5)
+**Structure Level Detection** (use `src/utils/structure-level-detector.ts`):
+
+```typescript
+import { detectStructureLevel } from './utils/structure-level-detector.js';
+
+const structureConfig = detectStructureLevel(projectRoot);
+// structureConfig.level: 1 or 2
+// structureConfig.projects: available projects
+// structureConfig.boardsByProject: boards per project (if 2-level)
 ```
 
-**If multi-project detected:**
+**Detection Sources** (priority order):
+1. ADO area path mapping (`sync.profiles.*.config.areaPathMapping`)
+2. ADO `areaPaths` array
+3. JIRA board mapping (`sync.profiles.*.config.boardMapping`)
+4. Umbrella teams (`umbrella.teams`)
+5. Umbrella repos (`umbrella.childRepos`)
+6. Multi-project config (`multiProject.enabled`)
+7. Existing folder structure (fallback)
+
+**For 1-Level Structure** (projects only):
+```
+📁 Structure Level: 1 (projects only)
+   Available projects: web-app, mobile-app, platform-infra
+
+Which project should this increment target?
+> web-app
+
+✅ spec.md will include: project: web-app
+✅ Sync path: internal/specs/web-app/FS-XXX/
+```
+
+**For 2-Level Structure** (projects + boards):
+```
+📁 Structure Level: 2 (projects + boards)
+   Available projects: acme-corp
+
+   📁 Project: acme-corp
+      Boards: clinical-insights, platform-engineering, digital-operations
+
+Which board should this increment sync to?
+> clinical-insights
+
+✅ spec.md will include:
+   project: acme-corp
+   board: clinical-insights
+✅ Sync path: internal/specs/acme-corp/clinical-insights/FS-XXX/
+```
+
+**Multi-Project User Stories** (if umbrella detected):
 ```
 📁 Multi-Project Mode Detected!
 
@@ -399,7 +441,7 @@ User stories will be generated with project prefixes:
 Each story will include "Related Repo" field for clarity.
 ```
 
-**Pass this context to increment-planner skill!**
+**Pass project/board values to increment-planner skill!**
 
 ### Step 2: Detect tech stack (CRITICAL - framework-agnostic)
    - Settings auto-detected
@@ -628,6 +670,8 @@ Next steps:
 
 **IMPORTANT**: Tech stack is AUTO-DETECTED from project files (package.json, requirements.txt, etc.), NOT hardcoded!
 
+**IMPORTANT (v0.31.0+)**: `project:` (and `board:` for 2-level) fields are MANDATORY. See Step 1.5.
+
 ```yaml
 ---
 increment: 003-user-authentication
@@ -637,6 +681,10 @@ status: planned
 created: 2025-10-26
 dependencies: []
 structure: user-stories
+
+# PROJECT/BOARD (v0.31.0+ MANDATORY)
+project: web-app                           # REQUIRED - target project for living docs sync
+board: digital-operations                  # REQUIRED only for 2-level structures (ADO/JIRA boards)
 
 # Tech stack is DETECTED, not hardcoded
 tech_stack:

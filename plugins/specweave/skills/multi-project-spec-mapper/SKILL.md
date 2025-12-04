@@ -95,8 +95,31 @@ US-005: Cross-Platform Data Sync (Mobile)
     └── README.md
 ```
 
+**spec.md YAML Frontmatter (v0.31.0+ MANDATORY)**:
+
+```yaml
+# For 1-level structure (projects only)
+---
+increment: 0001-fitness-tracker-web
+project: FE                      # REQUIRED
+title: "Fitness Tracker Web UI"
+status: planned
+---
+
+# For 2-level structure (projects + boards)
+---
+increment: 0001-fitness-tracker-web
+project: acme-corp               # REQUIRED
+board: digital-operations        # REQUIRED for 2-level
+title: "Fitness Tracker Web UI"
+status: planned
+---
+```
+
+**Detection**: Use `detectStructureLevel()` from `src/utils/structure-level-detector.ts`
+
 **Each spec contains**:
-- Frontmatter with `project: FE` tag
+- YAML frontmatter with `project:` (and `board:` for 2-level) fields - MANDATORY
 - User stories mapped to that project
 - Project-specific acceptance criteria
 - Links to shared infrastructure/requirements

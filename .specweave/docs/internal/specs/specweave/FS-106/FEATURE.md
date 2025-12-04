@@ -1,0 +1,27 @@
+---
+id: FS-106
+title: "Unit Test Alignment"
+type: feature
+status: active
+priority: P1
+created: 2025-12-04
+lastUpdated: 2025-12-04
+---
+
+# Unit Test Alignment
+
+## Overview
+
+263 unit tests are failing due to:
+1. **Missing fs-native exports** - `mkdtemp`/`mkdtempSync` not exported
+2. **Duplicate imports** - Test files have duplicate vitest imports
+3. **fs-extra usage** - Tests still import forbidden `fs-extra` package
+4. **Mock pattern issues** - Incorrect vitest mock setup
+5. **Template changes** - Template content changed but tests not updated
+6. **Logic changes** - Various implementation changes not reflected in tests
+
+## Implementation History
+
+| Increment | Status | Completion Date |
+|-----------|--------|----------------|
+| [0094-unit-test-alignment](../../../../increments/0094-unit-test-alignment/spec.md) | ⏳ active | 2025-12-04 |

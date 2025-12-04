@@ -14,6 +14,7 @@ import type {
 } from '../types.js';
 import { MODEL_PRICING } from '../types.js';
 import { Logger, consoleLogger } from '../../../utils/logger.js';
+import { extractJson, extractRequiredFieldsFromSchema } from '../../../utils/llm-json-extractor.js';
 
 /**
  * Anthropic provider configuration
@@ -160,40 +161,30 @@ Return ONLY the JSON object, no markdown formatting or explanation.`;
       temperature: options.temperature ?? 0.1, // Lower temp for structured output
     });
 
-    try {
-      // Extract JSON from response (handle markdown code blocks)
-      let jsonContent = result.content.trim();
+    // Extract required fields from schema for validation
+    const requiredFields = extractRequiredFieldsFromSchema(options.schema);
 
-      // Remove markdown code block if present
-      if (jsonContent.startsWith('```json')) {
-        jsonContent = jsonContent.slice(7);
-      } else if (jsonContent.startsWith('```')) {
-        jsonContent = jsonContent.slice(3);
-      }
-      if (jsonContent.endsWith('```')) {
-        jsonContent = jsonContent.slice(0, -3);
-      }
-      jsonContent = jsonContent.trim();
+    // Use robust JSON extraction (handles prose + JSON, code blocks, nested structures)
+    const extraction = extractJson<T>(result.content, { requiredFields });
 
-      const data = JSON.parse(jsonContent) as T;
-
+    if (extraction.success && extraction.data) {
       return {
-        data,
-        usage: result.usage,
-        estimatedCost: result.estimatedCost,
-      };
-    } catch (parseError: any) {
-      if (options.strict) {
-        throw new Error(`Failed to parse structured response: ${parseError.message}`);
-      }
-
-      // Return raw content wrapped in error structure
-      return {
-        data: { error: 'parse_failed', raw: result.content } as unknown as T,
+        data: extraction.data,
         usage: result.usage,
         estimatedCost: result.estimatedCost,
       };
     }
+
+    // Extraction failed
+    if (options.strict) {
+      throw new Error(`Failed to parse structured response: ${extraction.error}`);
+    }
+
+    return {
+      data: { error: 'parse_failed', raw: result.content } as unknown as T,
+      usage: result.usage,
+      estimatedCost: result.estimatedCost,
+    };
   }
 
   /**

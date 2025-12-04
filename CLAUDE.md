@@ -74,6 +74,43 @@ MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 // Only succeeds if current status is "ready_for_review"
 ```
 
+### 2c. spec.md MUST Have project: (and board: for 2-level) (v0.31.0+)
+
+**Increment creation WITHOUT project context = SYNC FAILURE**
+
+```yaml
+# 1-level structure (single project or multi-project):
+---
+increment: 0001-feature-name
+project: my-project          # ← MANDATORY
+---
+
+# 2-level structure (ADO area paths, JIRA boards):
+---
+increment: 0001-feature-name
+project: acme-corp           # ← MANDATORY
+board: digital-operations    # ← MANDATORY for 2-level
+---
+```
+
+**Detection**: Use `src/utils/structure-level-detector.ts`:
+```typescript
+import { detectStructureLevel } from './utils/structure-level-detector.js';
+const config = detectStructureLevel(projectRoot);
+// config.level === 1 → project required
+// config.level === 2 → project AND board required
+```
+
+**VALIDATION RULES:**
+```
+❌ FORBIDDEN: Creating spec.md with project: {{PROJECT_ID}} (unresolved placeholder)
+❌ FORBIDDEN: Creating spec.md for 2-level without board: field
+❌ FORBIDDEN: Vague increments without knowing sync target
+✅ REQUIRED: Always select project (and board for 2-level) BEFORE generating spec.md
+```
+
+**Pre-tool-use hook `spec-project-validator.sh` BLOCKS spec.md without required fields (2-level).**
+
 ### 3. Protected Directories
 
 **NEVER delete**: `.specweave/docs/`, `.specweave/increments/`
@@ -212,9 +249,15 @@ src/cli/helpers/init/
 ```yaml
 ---
 increment: 0001-feature-name  # REQUIRED
+project: my-project           # REQUIRED (v0.31.0+)
+board: digital-operations     # REQUIRED for 2-level structures
 ---
 ```
 **NOTE**: `feature_id` is derived from increment number (0001 → FS-001), not stored
+
+**Structure Level Detection**:
+- 1-level: `project:` REQUIRED
+- 2-level (ADO area paths, JIRA boards): `project:` AND `board:` REQUIRED
 
 ### ADR Naming
 **Format**: `XXXX-decision-title.md` (4-digit, NO `adr-` prefix)

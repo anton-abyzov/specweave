@@ -103,21 +103,52 @@ await syncSpecs(args);
 
 **This will**:
 1. **Derive feature ID from increment number** (e.g., 0040 → FS-040, 0002 → FS-002)
-2. **Smart project matching** from (priority order):
-   - `**Project**:` field in spec.md (explicit)
+2. **Read project/board from spec.md YAML frontmatter** (v0.31.0+ REQUIRED):
+   - For 1-level: `project:` field REQUIRED
+   - For 2-level: `project:` AND `board:` fields REQUIRED
+   - See [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md)
+3. **Smart project matching fallback** (only if YAML fields missing - deprecated):
+   - `**Project**:` field in spec.md body (legacy)
    - `multiProject.activeProject` in config.json
    - ADO area path / JIRA board mapping
    - Git remote (repo name)
    - **ASK USER if unsure** (multi-project mode)
-3. Parse spec.md for user stories and acceptance criteria
-4. Create living docs structure:
-   - `.specweave/docs/internal/specs/{project}/FS-XXX/FEATURE.md`
-   - `.specweave/docs/internal/specs/{project}/FS-XXX/us-*.md`
+4. Parse spec.md for user stories and acceptance criteria
+5. Create living docs structure:
+   - 1-level: `.specweave/docs/internal/specs/{project}/FS-XXX/`
+   - 2-level: `.specweave/docs/internal/specs/{project}/{board}/FS-XXX/`
 
 **CRITICAL**: Feature ID is DERIVED from increment number (ADR-0187)
 - Increment 0002-user-authentication → FS-002
 - Increment 0040-some-feature → FS-040
 - NO date-based patterns like FS-YY-MM-DD-name
+
+### 3.2 Project/Board Validation (v0.31.0+)
+
+**Structure Level Detection** (from `src/utils/structure-level-detector.ts`):
+- Detects 1-level vs 2-level from config (ADO, JIRA, umbrella, multiProject, folders)
+- Validates spec.md has required fields based on structure level
+- For 2-level: **ERROR if project OR board missing** (cannot sync)
+- For 1-level: **WARNING if project missing** (uses fallback, deprecated)
+
+**Expected spec.md frontmatter**:
+
+```yaml
+# 1-level structure
+---
+increment: 0001-feature-name
+project: my-project          # REQUIRED for 1-level
+---
+
+# 2-level structure
+---
+increment: 0001-feature-name
+project: acme-corp           # REQUIRED for 2-level
+board: clinical-insights     # REQUIRED for 2-level
+---
+```
+
+**Migration**: See [Migration Guide](/public/guides/migration-v031-project-fields.md)
 
 ---
 

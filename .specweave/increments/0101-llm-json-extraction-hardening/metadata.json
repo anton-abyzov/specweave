@@ -1,0 +1,11 @@
+{
+  "id": "0101-llm-json-extraction-hardening",
+  "type": "hotfix",
+  "status": "completed",
+  "priority": "high",
+  "createdAt": "2025-12-04T17:55:00.000Z",
+  "updatedAt": "2025-12-04T18:10:00.000Z",
+  "completedAt": "2025-12-04T18:10:00.000Z",
+  "project": "specweave",
+  "tags": ["llm", "json-parsing", "reliability", "hardening"]
+}

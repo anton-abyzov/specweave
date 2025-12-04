@@ -319,21 +319,27 @@ export class LivingDocsSync {
   }
 
   /**
-   * Extract project name from increment spec.md
+   * Extract project and board from increment spec.md YAML frontmatter
    *
-   * Looks for the **Project**: field in spec.md (e.g., "**Project**: digital-operation-services")
+   * Priority:
+   * 1. YAML frontmatter `project:` field (v0.31.0+ - preferred)
+   * 2. Legacy **Project**: field in body (backward compatibility)
    *
-   * SECURITY: Validates both incrementId and extracted project name to prevent path traversal
+   * For 2-level structures, also extracts `board:` field.
+   *
+   * SECURITY: Validates both incrementId and extracted names to prevent path traversal
    *
    * @param incrementId - Increment ID (e.g., "0002-test-anton-monitor")
-   * @returns Project name or null if not specified or invalid
+   * @returns Object with project and board (null if not specified or invalid)
    */
-  private async extractProjectFromSpec(incrementId: string): Promise<string | null> {
+  private async extractProjectBoardFromSpec(incrementId: string): Promise<{
+    project: string | null;
+    board: string | null;
+  }> {
     // SECURITY FIX (2025-12-02): Validate incrementId format FIRST
-    // Prevents path traversal via malicious increment IDs like "../../../etc"
     if (!incrementId || !/^\d{4}-[a-z0-9-]+$/i.test(incrementId)) {
       this.logger.warn(`   ⚠️  Invalid increment ID format: ${incrementId}`);
-      return null;
+      return { project: null, board: null };
     }
 
     const specPath = path.join(
@@ -344,139 +350,217 @@ export class LivingDocsSync {
     );
 
     if (!existsSync(specPath)) {
-      return null;
+      return { project: null, board: null };
     }
 
     try {
       const content = await fs.readFile(specPath, 'utf-8');
-      // Match **Project**: value or **Project:** value (with or without space after colon)
-      const projectMatch = content.match(/\*\*Project\*\*:\s*(.+?)(?:\n|$)/i);
-      if (projectMatch && projectMatch[1]) {
-        // Strip markdown formatting before normalization
-        const rawProjectName = projectMatch[1]
-          .trim()
-          .replace(/\*\*/g, '')    // Remove bold markers
-          .replace(/__/g, '')      // Remove italic markers
-          .replace(/`/g, '');      // Remove code markers
+      let project: string | null = null;
+      let board: string | null = null;
 
-        const projectName = rawProjectName.toLowerCase().replace(/\s+/g, '-');
+      // 1. Try YAML frontmatter first (preferred - v0.31.0+)
+      const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+      if (frontmatterMatch) {
+        const frontmatter = frontmatterMatch[1];
 
-        // SECURITY: Minimum length check to prevent empty names after stripping
-        if (!projectName || projectName.length < 2) {
-          this.logger.warn(`   ⚠️  Project name too short: ${projectName}`);
-          return null;
+        // Extract project from YAML
+        const yamlProjectMatch = frontmatter.match(/^project:\s*["']?([^"'\n]+)["']?$/m);
+        if (yamlProjectMatch && yamlProjectMatch[1]) {
+          project = this.validateAndNormalizeName(yamlProjectMatch[1].trim(), 'project');
         }
 
-        // CRITICAL SECURITY: Block path traversal attempts
-        // Reject names containing: .., /, \, or null bytes
-        if (projectName.includes('..') ||
-            projectName.includes('/') ||
-            projectName.includes('\\') ||
-            projectName.includes('\0')) {
-          this.logger.warn(`   ⚠️  Invalid project name (potential path traversal): ${projectName}`);
-          return null;
+        // Extract board from YAML
+        const yamlBoardMatch = frontmatter.match(/^board:\s*["']?([^"'\n]+)["']?$/m);
+        if (yamlBoardMatch && yamlBoardMatch[1]) {
+          board = this.validateAndNormalizeName(yamlBoardMatch[1].trim(), 'board');
         }
-
-        // Validate: only allow alphanumeric, hyphens, underscores
-        if (!/^[a-z0-9_-]+$/.test(projectName)) {
-          this.logger.warn(`   ⚠️  Invalid project name (invalid characters): ${projectName}`);
-          return null;
-        }
-
-        return projectName;
       }
-    } catch {
-      // Ignore errors, return null
-    }
 
-    return null;
+      // 2. Fallback to legacy **Project**: field in body
+      if (!project) {
+        const bodyProjectMatch = content.match(/\*\*Project\*\*:\s*(.+?)(?:\n|$)/i);
+        if (bodyProjectMatch && bodyProjectMatch[1]) {
+          const rawName = bodyProjectMatch[1]
+            .trim()
+            .replace(/\*\*/g, '')
+            .replace(/__/g, '')
+            .replace(/`/g, '');
+          project = this.validateAndNormalizeName(rawName, 'project');
+          if (project) {
+            this.logger.log(`   ℹ️  Using legacy **Project**: field - consider migrating to YAML frontmatter`);
+          }
+        }
+      }
+
+      return { project, board };
+    } catch {
+      return { project: null, board: null };
+    }
   }
 
   /**
-   * Resolve the project path for an increment (SMART BOARD MATCHING - v0.31.0+)
+   * Validate and normalize a project/board name
    *
-   * For brownfield projects imported from ADO/JIRA, uses intelligent board matching
-   * based on increment title, description, and configured keywords.
+   * SECURITY: Prevents path traversal and validates format
+   */
+  private validateAndNormalizeName(rawName: string, fieldType: 'project' | 'board'): string | null {
+    if (!rawName) return null;
+
+    const normalized = rawName.toLowerCase().replace(/\s+/g, '-');
+
+    // Minimum length check
+    if (normalized.length < 2) {
+      this.logger.warn(`   ⚠️  ${fieldType} name too short: ${normalized}`);
+      return null;
+    }
+
+    // Block path traversal attempts
+    if (normalized.includes('..') ||
+        normalized.includes('/') ||
+        normalized.includes('\\') ||
+        normalized.includes('\0')) {
+      this.logger.warn(`   ⚠️  Invalid ${fieldType} name (potential path traversal): ${normalized}`);
+      return null;
+    }
+
+    // Validate characters
+    if (!/^[a-z0-9_-]+$/.test(normalized)) {
+      this.logger.warn(`   ⚠️  Invalid ${fieldType} name (invalid characters): ${normalized}`);
+      return null;
+    }
+
+    return normalized;
+  }
+
+  /**
+   * Extract project name from increment spec.md (legacy method - delegates to new method)
+   */
+  private async extractProjectFromSpec(incrementId: string): Promise<string | null> {
+    const { project } = await this.extractProjectBoardFromSpec(incrementId);
+    return project;
+  }
+
+  /**
+   * Resolve the project path for an increment (v0.31.0+ - SPEC.MD FRONTMATTER REQUIRED)
+   *
+   * For new increments (v0.31.0+), spec.md MUST have `project:` field in YAML frontmatter.
+   * For 2-level structures, spec.md MUST have BOTH `project:` and `board:` fields.
    *
    * Priority:
-   * 1. Explicit **Project**: field in spec.md (always wins)
-   * 2. Intelligent board matching using BoardMatcher (ADR-0178)
-   *    - High confidence (>80%): auto-assign
-   *    - Medium/Low confidence: ask user
-   * 3. Existing folder match (hierarchical search)
-   * 4. Default project ID (single-project fallback)
+   * 1. YAML frontmatter `project:` and `board:` fields (REQUIRED for v0.31.0+)
+   * 2. Legacy **Project**: field in body (backward compatibility only)
+   * 3. Fallback: intelligent board matching (deprecated - will warn)
    *
    * @param incrementId - Increment ID (e.g., "0002-test-anton-monitor")
-   * @returns Project path (may be hierarchical like "org/project")
+   * @returns Project path (e.g., "my-project" or "acme-corp/digital-ops")
+   * @throws Error if required fields are missing in spec.md
    */
   private async resolveProjectPath(incrementId: string): Promise<string> {
-    // 1. Extract project name from spec.md **Project**: field (explicit - always wins)
-    const specProject = await this.extractProjectFromSpec(incrementId);
+    // Import structure level detector
+    const { detectStructureLevel } = await import('../../utils/structure-level-detector.js');
+    const structureConfig = detectStructureLevel(this.projectRoot);
 
-    if (specProject) {
-      // Explicit project specified - use it directly
-      const normalizedProject = specProject.toLowerCase().replace(/\s+/g, '-');
-      this.logger.log(`   📎 Using explicit project from spec.md: ${normalizedProject}`);
+    // 1. Extract project and board from spec.md
+    const { project, board } = await this.extractProjectBoardFromSpec(incrementId);
 
-      // Try to find existing hierarchical path
+    // 2. For 2-level structures, REQUIRE both project AND board
+    if (structureConfig.level === 2) {
+      if (!project) {
+        this.logger.error(`❌ Missing 'project:' field in spec.md YAML frontmatter`);
+        this.logger.error(`   This is a 2-level structure - spec.md MUST have both 'project:' and 'board:' fields.`);
+        this.logger.error(`   Detection reason: ${structureConfig.detectionReason}`);
+        this.logger.error(`   Available projects: ${structureConfig.projects.map(p => p.id).join(', ')}`);
+        throw new Error(
+          `spec.md missing required 'project:' field. ` +
+          `This is a 2-level structure (${structureConfig.detectionReason}). ` +
+          `Add 'project: <project_name>' to YAML frontmatter.`
+        );
+      }
+
+      if (!board) {
+        const boardOptions = structureConfig.boardsByProject?.[project]
+          ? structureConfig.boardsByProject[project].map(b => b.id).join(', ')
+          : 'N/A';
+
+        this.logger.error(`❌ Missing 'board:' field in spec.md YAML frontmatter`);
+        this.logger.error(`   This is a 2-level structure - spec.md MUST have both 'project:' and 'board:' fields.`);
+        this.logger.error(`   Detection reason: ${structureConfig.detectionReason}`);
+        this.logger.error(`   Project: ${project}`);
+        this.logger.error(`   Available boards: ${boardOptions}`);
+        throw new Error(
+          `spec.md missing required 'board:' field. ` +
+          `This is a 2-level structure (${structureConfig.detectionReason}). ` +
+          `Add 'board: <board_name>' to YAML frontmatter. ` +
+          `Available boards for ${project}: ${boardOptions}`
+        );
+      }
+
+      // Construct 2-level path: {project}/{board}
+      const fullPath = `${project}/${board}`;
+      this.logger.log(`   📁 2-level path from spec.md: ${fullPath}`);
+      return fullPath;
+    }
+
+    // 3. For 1-level structures, project is REQUIRED (but not board)
+    if (project) {
+      this.logger.log(`   📎 Using project from spec.md: ${project}`);
+
+      // Try to find existing hierarchical path (for backward compatibility)
       const specsBase = path.join(this.projectRoot, '.specweave/docs/internal/specs');
       if (existsSync(specsBase)) {
-        const foundPath = await this.findBestProjectMatch(specsBase, normalizedProject);
+        const foundPath = await this.findBestProjectMatch(specsBase, project);
         if (foundPath) {
           this.logger.log(`   🔍 Found existing project path: ${foundPath}`);
           return foundPath;
         }
       }
-      return normalizedProject;
+      return project;
     }
 
-    // 2. No explicit project - use intelligent board matching
+    // 4. No project in spec.md - WARN and fallback to auto-detection (deprecated behavior)
+    this.logger.warn(`   ⚠️  No 'project:' field in spec.md YAML frontmatter`);
+    this.logger.warn(`   💡 Add 'project: <project_name>' to spec.md frontmatter for explicit sync target`);
+    this.logger.warn(`   ⚠️  Using auto-detection (deprecated - will be required in future versions)`);
+
+    // Fallback: intelligent board matching (deprecated)
     const availableBoards = await this.boardMatcher.getAvailableBoards();
 
     if (availableBoards.length === 0) {
-      // No boards configured - use default project detection
       return this.projectId;
     }
 
     if (availableBoards.length === 1) {
-      // Single board - use it directly
-      // CRITICAL FIX (v0.30.13): For ADO with 2-level structure, construct {project}/{board}
-      const board = availableBoards[0];
-      if (board.adoProject) {
-        const fullPath = `${board.adoProject}/${board.id}`;
-        this.logger.log(`   📁 Single ADO board: ${board.name} → ${fullPath}`);
+      const singleBoard = availableBoards[0];
+      if (singleBoard.adoProject) {
+        const fullPath = `${singleBoard.adoProject}/${singleBoard.id}`;
+        this.logger.log(`   📁 Single ADO board (auto-detected): ${singleBoard.name} → ${fullPath}`);
         return fullPath;
       }
-      this.logger.log(`   📁 Single board configured: ${board.name}`);
-      return board.id;
+      this.logger.log(`   📁 Single board (auto-detected): ${singleBoard.name}`);
+      return singleBoard.id;
     }
 
     // Multiple boards - run intelligent matching
     const specContent = await this.getIncrementSpecContent(incrementId);
     const matchDecision = await this.boardMatcher.matchIncrement(incrementId, specContent);
 
-    // Check if this is a utility/cross-cutting increment
     if (this.boardMatcher.isUtilityIncrement(specContent)) {
       this.logger.log(`   🔧 Utility increment detected - asking user for board selection`);
       return await this.askUserForBoardSelection(incrementId, matchDecision);
     }
 
-    // Handle match decision
     if (!matchDecision.needsUserInput && matchDecision.bestMatch) {
-      // High confidence match - auto-assign
       const match = matchDecision.bestMatch;
       this.logger.log(`   ✅ Auto-matched to board: ${match.boardName} (${match.confidence}% confidence)`);
       if (match.matchedTerms.length > 0) {
         this.logger.log(`      Matched terms: ${match.matchedTerms.slice(0, 5).join(', ')}`);
       }
-      // CRITICAL FIX (v0.30.13): For ADO with 2-level structure, construct {project}/{board}
       if (match.adoProject) {
         return `${match.adoProject}/${match.boardId}`;
       }
       return match.boardId;
     }
 
-    // Need user input - show match results and ask
     return await this.askUserForBoardSelection(incrementId, matchDecision);
   }
 

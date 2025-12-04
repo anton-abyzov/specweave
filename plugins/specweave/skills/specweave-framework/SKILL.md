@@ -30,6 +30,31 @@ An **increment** = a complete feature with:
 
 > **When to skip plan.md**: Bug fixes, simple migrations, hotfixes, and straightforward tasks where spec.md already describes the approach.
 
+### spec.md Mandatory Fields (v0.31.0+)
+
+**CRITICAL**: spec.md YAML frontmatter MUST include project (and board for 2-level structures):
+
+```yaml
+# 1-level structure (single-project or multiProject):
+---
+increment: 0001-feature-name
+project: my-project          # REQUIRED
+---
+
+# 2-level structure (ADO area paths, JIRA boards, umbrella teams):
+---
+increment: 0001-feature-name
+project: acme-corp           # REQUIRED
+board: digital-operations    # REQUIRED for 2-level
+---
+```
+
+**Why?** Ensures increment syncs to correct location in living docs. Without explicit project/board, sync-specs may fail or place specs in wrong folder.
+
+**Detection**: Use `src/utils/structure-level-detector.ts` to determine if 1-level or 2-level structure is needed.
+
+**See**: [ADR-0190](/internal/architecture/adr/0190-spec-project-board-requirement.md)
+
 ### Increment Naming Convention (v0.6.0+)
 
 **CRITICAL RULE**: All increments MUST use descriptive names, not just numbers!
