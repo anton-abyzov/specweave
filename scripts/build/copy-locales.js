@@ -12,7 +12,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const projectRoot = join(__dirname, '..');
+const projectRoot = join(__dirname, '../..');
 const srcLocales = join(projectRoot, 'src', 'locales');
 const distLocales = join(projectRoot, 'dist', 'src', 'locales');
 

@@ -191,7 +191,7 @@ if git diff --cached --name-only | grep -q "tests/.*\.test\.ts$"; then
   echo "🧪 Validating test safety..."
 
   # Run test safety validator
-  if ! node scripts/validate-test-safety.js; then
+  if ! node scripts/validation/validate-test-safety.js; then
     echo -e "${RED}❌ CRITICAL ERROR: Dangerous test patterns detected!${NC}"
     echo ""
     echo "   ${YELLOW}Fix:${NC}"

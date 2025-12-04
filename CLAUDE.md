@@ -274,7 +274,7 @@ npm test            # Smoke tests
 npm run test:all    # All tests (80%+ coverage required)
 ```
 
-**Plugin validation**: `bash scripts/validate-marketplace-plugins.sh`
+**Plugin validation**: `bash scripts/validation/validate-marketplace-plugins.sh`
 
 ---
 

@@ -18,14 +18,14 @@ fi
 echo "🔍 Validating plugin structure..."
 
 # Run directory structure validation
-if ! bash "$REPO_ROOT/scripts/validate-plugin-directories.sh"; then
+if ! bash "$REPO_ROOT/scripts/validation/validate-plugin-directories.sh"; then
   echo ""
   echo "❌ Commit blocked: Plugin directory validation failed"
   echo ""
   echo "Common fixes:"
   echo "  • Remove empty directories: rmdir plugins/*/agents/empty-dir"
   echo "  • Add missing files: touch plugins/*/skills/name/SKILL.md"
-  echo "  • See: scripts/validate-plugin-directories.sh for details"
+  echo "  • See: scripts/validation/validate-plugin-directories.sh for details"
   echo ""
   exit 1
 fi
@@ -38,7 +38,7 @@ if git diff --cached --name-only | grep -q ".claude-plugin/marketplace.json"; th
   echo "🔍 Validating marketplace.json completeness..."
 
   # Run enhanced marketplace validation (scoring system)
-  if ! bash "$REPO_ROOT/scripts/validate-marketplace-plugins.sh"; then
+  if ! bash "$REPO_ROOT/scripts/validation/validate-marketplace-plugins.sh"; then
     echo ""
     echo "❌ Commit blocked: Marketplace validation failed"
     echo ""
@@ -47,7 +47,7 @@ if git diff --cached --name-only | grep -q ".claude-plugin/marketplace.json"; th
     echo "Fix options:"
     echo "  1. Remove incomplete plugins from .claude-plugin/marketplace.json"
     echo "  2. Add required functionality (commands/lib/agents) to reach ≥40 points"
-    echo "  3. See: scripts/validate-marketplace-plugins.sh for scoring criteria"
+    echo "  3. See: scripts/validation/validate-marketplace-plugins.sh for scoring criteria"
     echo ""
     exit 1
   fi

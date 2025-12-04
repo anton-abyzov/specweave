@@ -2,7 +2,7 @@
 #
 # Install Git Hooks for SpecWeave Development
 #
-# Usage: bash scripts/install-git-hooks.sh
+# Usage: bash scripts/hooks/install-git-hooks.sh
 #
 # This script installs the pre-commit hook that verifies:
 # - No mass .specweave/ deletion (test cleanup protection)
@@ -14,7 +14,7 @@
 set -e
 
 HOOKS_DIR=".git/hooks"
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
 echo "📦 Installing SpecWeave Git hooks..."
 
@@ -63,8 +63,8 @@ if [ -f ".specweave/increments/0043-spec-md-desync-fix/scripts/verify-dev-setup.
 fi
 
 # 0A. Check for dangerous test patterns
-if [ -f "scripts/pre-commit-test-pattern-check.sh" ]; then
-  bash scripts/pre-commit-test-pattern-check.sh || exit 1
+if [ -f "scripts/hooks/pre-commit-test-pattern-check.sh" ]; then
+  bash scripts/hooks/pre-commit-test-pattern-check.sh || exit 1
 fi
 
 # 0B. Prevent accidental .specweave/ mass deletion
@@ -134,15 +134,15 @@ if [ -n "$staged_ts_files" ]; then
 
   if [ $missing_ext -eq 1 ]; then
     echo ""
-    echo "   Run: node scripts/fix-js-extensions.js"
+    echo "   Run: node scripts/maintenance/fix-js-extensions.js"
     echo "   Then stage the changes: git add ."
     # Don't fail, just warn (too strict otherwise)
   fi
 fi
 
 # 4. Check for duplicate increments (CRITICAL - prevents data corruption)
-if [ -f "scripts/pre-commit-duplicate-check.sh" ]; then
-  if ! bash scripts/pre-commit-duplicate-check.sh; then
+if [ -f "scripts/hooks/pre-commit-duplicate-check.sh" ]; then
+  if ! bash scripts/hooks/pre-commit-duplicate-check.sh; then
     echo ""
     echo "❌ Duplicate increment check failed"
     echo "   See error output above for resolution steps"
@@ -152,8 +152,8 @@ fi
 
 # 5. Check for status desyncs (CRITICAL - prevents source-of-truth violations)
 # Incident Reference: 2025-11-20 - Silent failure caused increment 0047 desync
-if [ -f "scripts/pre-commit-desync-check.sh" ]; then
-  if ! bash scripts/pre-commit-desync-check.sh; then
+if [ -f "scripts/hooks/pre-commit-desync-check.sh" ]; then
+  if ! bash scripts/hooks/pre-commit-desync-check.sh; then
     echo ""
     echo "❌ Status desync check failed"
     echo "   See error output above for resolution steps"
@@ -163,8 +163,8 @@ fi
 
 # 6. Validate plugin directory structure (prevents empty agent/skill directories)
 # Incident Reference: 2025-11-20 - Empty agent directory caused "Agent type not found" error
-if [ -f "scripts/validate-plugin-directories.sh" ]; then
-  if ! bash scripts/validate-plugin-directories.sh; then
+if [ -f "scripts/validation/validate-plugin-directories.sh" ]; then
+  if ! bash scripts/validation/validate-plugin-directories.sh; then
     echo ""
     echo "❌ Plugin directory validation failed"
     echo "   Empty or invalid agent/skill directories detected"
@@ -175,24 +175,24 @@ fi
 
 # 7. Check for fs-extra imports (enforce native fs migration)
 # Incident Reference: 2025-11-20 - fs-extra dependency caused hook failures
-if [ -f "scripts/pre-commit-fs-extra-check.sh" ]; then
-  if ! bash scripts/pre-commit-fs-extra-check.sh; then
+if [ -f "scripts/hooks/pre-commit-fs-extra-check.sh" ]; then
+  if ! bash scripts/hooks/pre-commit-fs-extra-check.sh; then
     exit 1
   fi
 fi
 
 # 8. Validate YAML frontmatter in spec.md files (prevent malformed YAML)
 # Incident Reference: Test case in tests/integration/commands/plan-command.integration.test.ts:626
-if [ -f "scripts/pre-commit-yaml-validation.sh" ]; then
-  if ! bash scripts/pre-commit-yaml-validation.sh; then
+if [ -f "scripts/hooks/pre-commit-yaml-validation.sh" ]; then
+  if ! bash scripts/hooks/pre-commit-yaml-validation.sh; then
     exit 1
   fi
 fi
 
 # 9. Enforce ADR-0061: No increment-to-increment references (prevent circular dependencies)
 # Incident Reference: 2025-11-22 - Spec-detector returned 0 specs, GitHub hooks failed
-if [ -f "scripts/pre-commit-no-increment-refs.sh" ]; then
-  if ! bash scripts/pre-commit-no-increment-refs.sh; then
+if [ -f "scripts/hooks/pre-commit-no-increment-refs.sh" ]; then
+  if ! bash scripts/hooks/pre-commit-no-increment-refs.sh; then
     echo ""
     echo "❌ Increment reference check failed"
     echo "   See: ADR-0061, CLAUDE.md Section 10a"
@@ -202,8 +202,8 @@ fi
 
 # 10. Validate GitHub issue title format (prevent deprecated SP- prefix)
 # Incident Reference: 2025-11-22 - 8 issues created with [SP-US-XXX] format (deprecated)
-if [ -f "scripts/pre-commit-hooks/validate-github-issue-format.sh" ]; then
-  if ! bash scripts/pre-commit-hooks/validate-github-issue-format.sh; then
+if [ -f "scripts/hooks/validate-github-issue-format.sh" ]; then
+  if ! bash scripts/hooks/validate-github-issue-format.sh; then
     echo ""
     echo "❌ GitHub issue format check failed"
     echo "   See: CLAUDE.md Section 10, ADR-0032"
@@ -215,11 +215,11 @@ fi
 # Incident Reference: 2025-11-24 - PROJECT_ROOT order bug caused 3x hook fires and crashes
 # See: .specweave/increments/0051-*/reports/PROJECT-ROOT-ORDER-BUG-2025-11-24.md
 # See: ADR-0073, CLAUDE.md Section 9a (Hook Variable Initialization Order v0.26.1)
-if [ -f "scripts/validate-hook-variable-order.sh" ]; then
-  if ! bash scripts/validate-hook-variable-order.sh > /dev/null 2>&1; then
+if [ -f "scripts/validation/validate-hook-variable-order.sh" ]; then
+  if ! bash scripts/validation/validate-hook-variable-order.sh > /dev/null 2>&1; then
     echo ""
     echo "❌ Hook variable order validation failed"
-    echo "   Run: bash scripts/validate-hook-variable-order.sh"
+    echo "   Run: bash scripts/validation/validate-hook-variable-order.sh"
     echo "   See: CLAUDE.md Section 9a (Hook Variable Initialization Order)"
     exit 1
   fi
@@ -228,10 +228,10 @@ fi
 # 12. Validate CHANGELOG entry exists for current version (CRITICAL - prevents release failures)
 # Incident Reference: 2025-11-24 - v0.27.0, v0.26.16, v0.26.13 releases ALL FAILED due to missing CHANGELOG
 # This catches the issue at commit time, BEFORE pushing tags
-if [ -f "scripts/validate-changelog-version.sh" ]; then
-  if ! bash scripts/validate-changelog-version.sh; then
+if [ -f "scripts/validation/validate-changelog-version.sh" ]; then
+  if ! bash scripts/validation/validate-changelog-version.sh; then
     echo ""
-    echo "💡 Use: bash scripts/bump-version.sh patch|minor|major"
+    echo "💡 Use: bash scripts/build/bump-version.sh patch|minor|major"
     echo "   This will auto-create the CHANGELOG entry for you!"
     exit 1
   fi
@@ -245,12 +245,12 @@ chmod +x "$HOOKS_DIR/pre-commit"
 
 # Install pre-push hook (CHANGELOG validation for version tags)
 # Incident Reference: 2025-11-24 - Multiple releases failed due to missing CHANGELOG entries
-if [ -f "scripts/git-hooks/pre-push" ]; then
-  cp "scripts/git-hooks/pre-push" "$HOOKS_DIR/pre-push"
+if [ -f "scripts/hooks/pre-push" ]; then
+  cp "scripts/hooks/pre-push" "$HOOKS_DIR/pre-push"
   chmod +x "$HOOKS_DIR/pre-push"
   echo "   ✅ Installed pre-push hook (CHANGELOG tag validation)"
 else
-  echo "   ⚠️  pre-push hook not found at scripts/git-hooks/pre-push"
+  echo "   ⚠️  pre-push hook not found at scripts/hooks/pre-push"
 fi
 
 echo "✅ Git hooks installed successfully!"
@@ -281,4 +281,4 @@ echo "  git commit --no-verify"
 echo "  git push --no-verify"
 echo ""
 echo "💡 Tip: Use the release script to avoid CHANGELOG issues:"
-echo "   bash scripts/bump-version.sh patch|minor|major"
+echo "   bash scripts/build/bump-version.sh patch|minor|major"

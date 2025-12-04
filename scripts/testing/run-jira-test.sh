@@ -20,7 +20,7 @@ if [ ! -f .env ]; then
   echo "JIRA_EMAIL=your-email@example.com"
   echo "JIRA_DOMAIN=antonabyzov.atlassian.net"
   echo ""
-  echo "Or run: bash scripts/setup-sync-credentials.sh"
+  echo "Or run: bash scripts/sync/setup-sync-credentials.sh"
   exit 1
 fi
 
