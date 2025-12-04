@@ -28,7 +28,7 @@ created: 2024-11-26
 
 ## Implementation
 
-**Increment**: [0064-fix-external-sync-tags-status-types](../../../../increments/0064-fix-external-sync-tags-status-types/spec.md)
+**Increment**: [0064-fix-external-sync-tags-status-types](../../../../../../increments/_archive/0064-fix-external-sync-tags-status-types/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

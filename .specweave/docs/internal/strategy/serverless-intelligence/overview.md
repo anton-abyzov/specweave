@@ -228,7 +228,7 @@
 
 - **Complete Feature Spec**: [FS-038](../../specs/_features/FS-038/FEATURE.md)
 - **User Stories**: [FS-038 User Stories](../../specs/specweave/FS-038/)
-- **Increment**: [0038-serverless-architecture-intelligence](../../../increments/0038-serverless-architecture-intelligence/)
+- **Increment**: [0038-serverless-architecture-intelligence](../../../increments/_archive/0038-serverless-architecture-intelligence/)
 
 ---
 

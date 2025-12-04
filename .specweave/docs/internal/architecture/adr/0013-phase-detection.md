@@ -4,7 +4,7 @@
 **⚠️ SUPERSEDED**: This ADR has been superseded by more detailed sub-ADR in Increment 0003.
 
 **See instead**:
-- [ADR-0003-009: Phase Detection Algorithm](0003-009-phase-detection-algorithm.md)
+- [ADR-0003-009: Phase Detection Algorithm](0013-phase-detection.md)
 
 **Date Superseded**: 2025-11-13
 **Reason**: Replaced by more granular, increment-scoped ADR with updated implementation details.
@@ -593,7 +593,7 @@ Measure accuracy, precision, recall, F1 score.
 
 - [ADR-0011: Intelligent Model Selection](0011-intelligent-model-selection.md)
 - [ADR-0011: Cost Tracking System](0012-cost-tracking.md)
-- [Increment 0003 Plan](../../increments/0003-intelligent-model-selection/plan.md)
+- [Increment 0003 Plan](../../../../increments/_archive/0003-intelligent-model-selection/plan.md)
 
 ## References
 

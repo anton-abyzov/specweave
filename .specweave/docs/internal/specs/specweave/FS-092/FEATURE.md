@@ -20,7 +20,7 @@ This increment addresses critical code quality issues identified during the comp
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0092-code-quality-foundation](../../../../increments/0092-code-quality-foundation/spec.md) | ✅ completed | 2025-12-02 |
+| [0092-code-quality-foundation](../../../../../increments/0092-code-quality-foundation/spec.md) | ✅ completed | 2025-12-02 |
 
 ## User Stories
 

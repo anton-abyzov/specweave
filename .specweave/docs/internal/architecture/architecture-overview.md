@@ -207,7 +207,7 @@ stateDiagram-v2
 ### 3.2 Three-File Structure
 
 ```
-.specweave/increments/0001-user-authentication/
+.specweave/increments/_archive/0001-user-authentication/
 ├── spec.md       # WHAT: User stories, acceptance criteria
 ├── plan.md       # HOW: Architecture, implementation approach
 ├── tasks.md      # DO: Task checklist with embedded tests

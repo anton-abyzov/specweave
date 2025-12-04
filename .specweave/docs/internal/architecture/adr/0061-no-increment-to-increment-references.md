@@ -137,7 +137,7 @@ async function detectSpecsByFeatureId(featureId: string, config: any = {}): Prom
 #### TC-1: Increment with feature_id
 ```bash
 # Setup
-echo '{"feature_id": "FS-048"}' > .specweave/increments/0050-test/metadata.json
+echo '{"feature_id": "FS-048"}' > .specweave/increments/_archive/0050-test/metadata.json
 
 # Execute
 node dist/src/cli/commands/detect-specs.js --increment 0050-test

@@ -97,4 +97,4 @@ Plans features by loading context manifests...
 
 - [Agents Development](../../../../CLAUDE.md#agents-development)
 - [Skills Development](../../../../CLAUDE.md#skills-development)
-- [ADR-0010: Factory Pattern](0010-factory-pattern.md)
+- [ADR-0010: Factory Pattern](0009-factory-pattern.md)

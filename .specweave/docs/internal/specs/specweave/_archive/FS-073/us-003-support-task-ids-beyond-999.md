@@ -28,7 +28,7 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0073-fix-y2k-id-limit-bug](../../../../increments/0073-fix-y2k-id-limit-bug/spec.md)
+**Increment**: [0073-fix-y2k-id-limit-bug](../../../../../../increments/_archive/0073-fix-y2k-id-limit-bug/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

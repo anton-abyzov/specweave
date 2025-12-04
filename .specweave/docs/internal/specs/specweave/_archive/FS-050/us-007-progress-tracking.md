@@ -9,7 +9,7 @@ created: 2025-11-21
 
 # US-007: Progress Tracking
 
-**Feature**: [FS-050](../../_features/FS-050/FEATURE.md)
+**Feature**: [FS-050](./FEATURE.md)
 
 ---
 
@@ -26,7 +26,7 @@ created: 2025-11-21
 
 ## Implementation
 
-**Increment**: [0050-external-tool-import-phase-1b-7](../../../../increments/0050-external-tool-import-phase-1b-7/spec.md)
+**Increment**: [0050-external-tool-import-phase-1b-7](../../../../../../increments/_archive/0050-external-tool-import-phase-1b-7/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

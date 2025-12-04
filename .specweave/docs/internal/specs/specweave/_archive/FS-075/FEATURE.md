@@ -18,12 +18,12 @@ Fix and enhance the A
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0075-smart-ado-init](../../../../increments/0075-smart-ado-init/spec.md) | ✅ completed | 2025-12-02 |
+| [0075-smart-ado-init](../../../../../../increments/_archive/0075-smart-ado-init/spec.md) | ✅ completed | 2025-12-02 |
 
 ## User Stories
 
-- [US-001: Smart PAT-First Authentication](../../specweave/FS-075/us-001-smart-pat-first-authentication.md)
-- [US-002: Auto-Fetch Teams and Area Paths](../../specweave/FS-075/us-002-auto-fetch-teams-and-area-paths.md)
-- [US-003: Smart Area Path Selection](../../specweave/FS-075/us-003-smart-area-path-selection.md)
-- [US-004: Fix Config Saving Bugs](../../specweave/FS-075/us-004-fix-config-saving-bugs.md)
-- [US-005: Fix External Import Detection](../../specweave/FS-075/us-005-fix-external-import-detection.md)
+- [US-001: Smart PAT-First Authentication](./us-001-smart-pat-first-authentication.md)
+- [US-002: Auto-Fetch Teams and Area Paths](./us-002-auto-fetch-teams-and-area-paths.md)
+- [US-003: Smart Area Path Selection](./us-003-smart-area-path-selection.md)
+- [US-004: Fix Config Saving Bugs](./us-004-fix-config-saving-bugs.md)
+- [US-005: Fix External Import Detection](./us-005-fix-external-import-detection.md)

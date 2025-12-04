@@ -9,7 +9,7 @@ status: completed
 
 # Migrate Inquirer to Modular API
 
-**Feature**: [FS-060](../../_features/FS-060/FEATURE.md)
+**Feature**: [FS-060](./FEATURE.md)
 
 ## Overview
 

@@ -10,7 +10,7 @@ project: specweave
 
 # US-008: Infrastructure Agent IaC Generation
 
-**Feature**: [FS-038](../../_features/FS-038/FEATURE.md)
+**Feature**: [FS-038](./FEATURE.md)
 
 **As an** infrastructure agent
 **I want** to auto-generate Terraform configurations from architect recommendations

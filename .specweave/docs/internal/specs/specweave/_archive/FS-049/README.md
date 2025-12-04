@@ -9,7 +9,7 @@ status: completed
 
 # CLI-First Init Flow with Smart Pagination (Phase 2)
 
-**Feature**: [FS-049](../../_features/FS-049/FEATURE.md)
+**Feature**: [FS-049](./FEATURE.md)
 
 ## Overview
 

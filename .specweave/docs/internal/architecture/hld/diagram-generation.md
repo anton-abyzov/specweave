@@ -3,7 +3,7 @@
 **Version**: 1.0
 **Date**: 2025-10-26
 **Status**: Implemented
-**Increment**: [0002-core-enhancements](../../../increments/0002-core-enhancements/)
+**Increment**: [0002-core-enhancements](../../../../increments/_archive/0002-core-enhancements/)
 
 ---
 
@@ -596,18 +596,18 @@ bin/install-skills.sh   # Handles any skill in src/skills/
 ## References
 
 ### Architecture Decision Records
-- [ADR-0002-001: Agent Types - Roles vs Tools](./adr/0002-001-agent-types-roles-vs-tools.md)
-- [ADR-0002-002: Skills as Coordinators](./adr/0002-002-skills-as-coordinators.md)
+- [ADR-0002-001: Agent Types - Roles vs Tools](../adr/0002-agent-types-roles-vs-tools.md)
+- [ADR-0002-002: Skills as Coordinators](../adr/0144-skills-as-coordinators.md)
 
 ### Increment Documentation
-- [Increment 0002](../../../increments/0002-core-enhancements/)
-- [Spec](../../../increments/0002-core-enhancements/spec.md)
-- [Plan](../../../increments/0002-core-enhancements/plan.md)
+- [Increment 0002](../../../../increments/_archive/0002-core-enhancements/)
+- [Spec](../../../../increments/_archive/0002-core-enhancements/spec.md)
+- [Plan](../../../../increments/_archive/0002-core-enhancements/plan.md)
 
 ### Related Documentation
-- [DIAGRAM-CONVENTIONS.md](../../DIAGRAM-CONVENTIONS.md) (simplified reference)
-- [C4 Model Specification](../../../src/agents/diagrams-architect/references/c4-model-spec.md)
-- [Mermaid Syntax Guide](../../../src/agents/diagrams-architect/references/mermaid-syntax-guide.md)
+- [DIAGRAM-CONVENTIONS.md](../../delivery/guides/diagram-conventions-comprehensive.md) (simplified reference)
+- C4 Model Specification (external reference)
+- Mermaid Syntax Guide (external reference)
 
 ---
 

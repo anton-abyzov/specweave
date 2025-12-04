@@ -18,11 +18,11 @@ This increment implements intelligent code-to-spec discrepancy detection. The co
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0084-discrepancy-detection](../../../../increments/0084-discrepancy-detection/spec.md) | ✅ completed | 2025-12-01 |
+| [0084-discrepancy-detection](../../../../../../increments/_archive/0084-discrepancy-detection/spec.md) | ✅ completed | 2025-12-01 |
 
 ## User Stories
 
-- [US-001: TypeScript Code Analyzer](../../specweave/FS-084/us-001-typescript-code-analyzer.md)
-- [US-002: API Route Analyzer](../../specweave/FS-084/us-002-api-route-analyzer.md)
-- [US-003: Spec-to-Code Comparator](../../specweave/FS-084/us-003-spec-to-code-comparator.md)
-- [US-004: Smart Update Recommender](../../specweave/FS-084/us-004-smart-update-recommender.md)
+- [US-001: TypeScript Code Analyzer](./us-001-typescript-code-analyzer.md)
+- [US-002: API Route Analyzer](./us-002-api-route-analyzer.md)
+- [US-003: Spec-to-Code Comparator](./us-003-spec-to-code-comparator.md)
+- [US-004: Smart Update Recommender](./us-004-smart-update-recommender.md)

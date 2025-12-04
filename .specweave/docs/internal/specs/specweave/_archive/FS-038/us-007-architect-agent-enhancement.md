@@ -10,7 +10,7 @@ project: specweave
 
 # US-007: Architect Agent Enhancement
 
-**Feature**: [FS-038](../../_features/FS-038/FEATURE.md)
+**Feature**: [FS-038](./FEATURE.md)
 
 **As an** architect agent
 **I want** enhanced serverless knowledge and decision frameworks

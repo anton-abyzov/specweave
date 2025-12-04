@@ -31,11 +31,11 @@ created: 2025-12-02
 
 ## Implementation
 
-**Increment**: [0093-ado-permission-profile-fixes](../../../../increments/0093-ado-permission-profile-fixes/spec.md)
+**Increment**: [0093-ado-permission-profile-fixes](../../../../../increments/0093-ado-permission-profile-fixes/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-002](../../../../increments/0093-ado-permission-profile-fixes/tasks.md#T-002): Create ADO Profile Resolver Library
+- [x] [T-002](../../../../../increments/0093-ado-permission-profile-fixes/tasks.md#T-002): Create ADO Profile Resolver Library

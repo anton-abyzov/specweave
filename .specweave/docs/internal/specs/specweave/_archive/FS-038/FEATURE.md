@@ -20,7 +20,7 @@ Enhance SpecWeave's architect and infrastructure agents with deep serverless pla
 
 ## Source
 
-This feature was created from increment: [`0038-serverless-architecture-intelligence`](../../../../../increments/0038-serverless-architecture-intelligence)
+This feature was created from increment: [`0038-serverless-architecture-intelligence`](../../../../../../increments/_archive/0038-serverless-architecture-intelligence)
 
 ## Business Value
 
@@ -55,16 +55,16 @@ This feature applies to the SpecWeave framework:
 
 ### specweave
 
-- [US-001: Context-Aware Serverless Recommendations](../../specweave/FS-038/us-001-context-aware-serverless-recommendations.md) - planning (P1)
-- [US-002: Platform Comparison Matrix](../../specweave/FS-038/us-002-platform-comparison-matrix.md) - planning (P1)
-- [US-003: Free Tier and Startup Credit Guidance](../../specweave/FS-038/us-003-free-tier-startup-credit-guidance.md) - planning (P1)
-- [US-004: Learning Path Recommendations](../../specweave/FS-038/us-004-learning-path-recommendations.md) - planning (P2)
-- [US-005: IaC Pattern Library - Terraform](../../specweave/FS-038/us-005-iac-pattern-library-terraform.md) - planning (P1)
-- [US-006: Cost Estimation and Optimization](../../specweave/FS-038/us-006-cost-estimation-optimization.md) - planning (P2)
-- [US-007: Architect Agent Enhancement](../../specweave/FS-038/us-007-architect-agent-enhancement.md) - planning (P1)
-- [US-008: Infrastructure Agent IaC Generation](../../specweave/FS-038/us-008-infrastructure-agent-iac-generation.md) - planning (P1)
-- [US-009: Platform Migration Patterns](../../specweave/FS-038/us-009-platform-migration-patterns.md) - planning (P3)
-- [US-010: Security and Compliance Guidance](../../specweave/FS-038/us-010-security-compliance-guidance.md) - planning (P2)
+- [US-001: Context-Aware Serverless Recommendations](./us-001-context-aware-serverless-recommendations.md) - planning (P1)
+- [US-002: Platform Comparison Matrix](./us-002-platform-comparison-matrix.md) - planning (P1)
+- [US-003: Free Tier and Startup Credit Guidance](./us-003-free-tier-startup-credit-guidance.md) - planning (P1)
+- [US-004: Learning Path Recommendations](./us-004-learning-path-recommendations.md) - planning (P2)
+- [US-005: IaC Pattern Library - Terraform](./us-005-iac-pattern-library-terraform.md) - planning (P1)
+- [US-006: Cost Estimation and Optimization](./us-006-cost-estimation-optimization.md) - planning (P2)
+- [US-007: Architect Agent Enhancement](./us-007-architect-agent-enhancement.md) - planning (P1)
+- [US-008: Infrastructure Agent IaC Generation](./us-008-infrastructure-agent-iac-generation.md) - planning (P1)
+- [US-009: Platform Migration Patterns](./us-009-platform-migration-patterns.md) - planning (P3)
+- [US-010: Security and Compliance Guidance](./us-010-security-compliance-guidance.md) - planning (P2)
 
 ## Progress
 

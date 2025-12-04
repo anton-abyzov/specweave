@@ -40,7 +40,7 @@ SpecWeave uses the **C4 model** for architecture documentation:
 | **Level 3: Component** | LLD | Internal service structure | Controller → Service → Repository |
 | **Level 4: Code** | Source | Implementation details | Class diagrams, inline docs |
 
-**See**: [Diagram Conventions](../delivery/guides/diagram-conventions.md) for complete C4 mapping and diagram naming conventions.
+**See**: [Diagram Conventions](../delivery/guides/diagram-conventions-comprehensive.md) for complete C4 mapping and diagram naming conventions.
 
 ## Subdirectories
 
@@ -144,7 +144,7 @@ Keep each diagram next to the markdown page that explains it:
 ![System Context](./hld-system-overview.context.svg)
 ```
 
-**See**: [Diagram Conventions](../delivery/guides/diagram-conventions.md) for complete guide.
+**See**: [Diagram Conventions](../delivery/guides/diagram-conventions-comprehensive.md) for complete guide.
 
 ## Document Structures
 
@@ -301,9 +301,9 @@ cp src/templates/docs/spec-template.md .specweave/docs/internal/specs/spec-0001-
 ## Index of Architecture Documents
 
 ### HLDs (C4 Levels 1-2)
-- [Diagram Generation](hld/hld-diagram-generation.md) - Architecture for generating diagrams
-- [External Tool Status Sync](hld/hld-external-tool-status-sync.md) - Integration with external tools
-- [Intelligent Model Selection](hld/hld-intelligent-model-selection.md) - AI model selection strategy
+- [Diagram Generation](hld/diagram-generation.md) - Architecture for generating diagrams
+- [External Tool Status Sync](hld/external-tool-status-sync.md) - Integration with external tools
+- [Intelligent Model Selection](hld/intelligent-model-selection.md) - AI model selection strategy
 
 ### LLDs (C4 Level 3)
 - (None yet - LLDs are created when services need detailed component documentation)
@@ -342,6 +342,6 @@ PRD (Why/What) → HLD (How - System) → LLD (How - Component) → Code (Implem
 - [Delivery Documentation](../delivery/README.md) - Build & release processes
 - [Operations Documentation](../operations/README.md) - Production runbooks
 - [Governance Documentation](../governance/README.md) - Security, compliance
-- [Diagram Conventions](../delivery/guides/diagram-conventions.md) - C4 diagram conventions and naming
+- [Diagram Conventions](../delivery/guides/diagram-conventions-comprehensive.md) - C4 diagram conventions and naming
 - [Diagram Conventions (Comprehensive)](../delivery/guides/diagram-conventions-comprehensive.md) - Complete diagram guide
 - Templates: See `src/templates/` in project root (HLD, LLD, ADR templates)

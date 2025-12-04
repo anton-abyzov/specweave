@@ -31,14 +31,14 @@ created: 2024-12-03
 
 ## Implementation
 
-**Increment**: [0097-umbrella-module-detection](../../../../increments/0097-umbrella-module-detection/spec.md)
+**Increment**: [0097-umbrella-module-detection](../../../../../increments/0097-umbrella-module-detection/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [ ] [T-001](../../../../increments/0097-umbrella-module-detection/tasks.md#T-001): Create Umbrella Detector Module
-- [ ] [T-003](../../../../increments/0097-umbrella-module-detection/tasks.md#T-003): Modify Discovery to Support Umbrella
-- [ ] [T-007](../../../../increments/0097-umbrella-module-detection/tasks.md#T-007): Unit Tests for Umbrella Detection
-- [ ] [T-008](../../../../increments/0097-umbrella-module-detection/tasks.md#T-008): Integration Test End-to-End
+- [ ] [T-001](../../../../../increments/0097-umbrella-module-detection/tasks.md#T-001): Create Umbrella Detector Module
+- [ ] [T-003](../../../../../increments/0097-umbrella-module-detection/tasks.md#T-003): Modify Discovery to Support Umbrella
+- [ ] [T-007](../../../../../increments/0097-umbrella-module-detection/tasks.md#T-007): Unit Tests for Umbrella Detection
+- [ ] [T-008](../../../../../increments/0097-umbrella-module-detection/tasks.md#T-008): Integration Test End-to-End

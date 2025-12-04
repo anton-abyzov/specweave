@@ -18,10 +18,10 @@ When users select "Bulk Discovery" to find repositories in the `specweave init` 
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0061-fix-multi-repo-init-ux](../../../../increments/0061-fix-multi-repo-init-ux/spec.md) | ✅ completed | 2025-11-24 |
+| [0061-fix-multi-repo-init-ux](../../../../../../increments/_archive/0061-fix-multi-repo-init-ux/spec.md) | ✅ completed | 2025-11-24 |
 
 ## User Stories
 
-- [US-001: Bulk Discovery Without Count](../../specweave/FS-061/us-001-bulk-discovery-without-count.md)
-- [US-002: Streamlined Flow](../../specweave/FS-061/us-002-streamlined-flow.md)
-- [US-003: Clear Messaging](../../specweave/FS-061/us-003-clear-messaging.md)
+- [US-001: Bulk Discovery Without Count](./us-001-bulk-discovery-without-count.md)
+- [US-002: Streamlined Flow](./us-002-streamlined-flow.md)
+- [US-003: Clear Messaging](./us-003-clear-messaging.md)

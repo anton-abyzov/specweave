@@ -60,7 +60,7 @@ tests/integration/
 **DELETE all 62 flat duplicate directories**, keeping only the categorized structure.
 
 **Automated Cleanup Script**:
-- Location: `.specweave/increments/0041/scripts/cleanup-duplicate-tests.sh`
+- Location: `.specweave/increments/_archive/0041/scripts/cleanup-duplicate-tests.sh`
 - Features:
   - Validates categorized structure exists
   - Lists directories to be deleted
@@ -197,7 +197,7 @@ tests/integration/
 
 ### Cleanup Script Details
 
-**Script**: `.specweave/increments/0041/scripts/cleanup-duplicate-tests.sh`
+**Script**: `.specweave/increments/_archive/0041/scripts/cleanup-duplicate-tests.sh`
 
 **Safety Features**:
 1. **Pre-flight checks**:
@@ -279,8 +279,8 @@ time npm run test:integration
 
 ## References
 
-- **Analysis**: `.specweave/increments/0041/reports/ULTRATHINK-TEST-DUPLICATION-ANALYSIS-2025-11-18.md`
-- **Cleanup Script**: `.specweave/increments/0041/scripts/cleanup-duplicate-tests.sh`
+- **Analysis**: `.specweave/increments/_archive/0041/reports/ULTRATHINK-TEST-DUPLICATION-ANALYSIS-2025-11-18.md`
+- **Cleanup Script**: `.specweave/increments/_archive/0041/scripts/cleanup-duplicate-tests.sh`
 - **Historical Context**: Reorganization started 2025-Q1 (no migration plan)
 
 ---

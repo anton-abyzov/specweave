@@ -273,5 +273,5 @@ Challenge: How to safely modify existing code without regression?
 ## Related
 
 - [Brownfield Workflow](../../../../CLAUDE.md#for-brownfield-projects)
-- [Brownfield Integration Strategy](../../delivery/BROWNFIELD-INTEGRATION-STRATEGY.md)
+- [Brownfield Integration Strategy](../../delivery/brownfield/brownfield-integration-strategy.md)
 - [Main Flow Diagram](./../diagrams/1-main-flow.mmd) - See brownfield path

@@ -13,7 +13,7 @@ external:
 
 # US-002: Single-Value Repository ID Input
 
-**Feature**: [FS-028](../../_features/FS-028/FEATURE.md)
+**Feature**: [FS-028](./FEATURE.md)
 
 **As a** developer configuring repository IDs
 **I want** clear indication that only ONE ID per repository is allowed
@@ -31,10 +31,10 @@ external:
 
 ## Implementation
 
-**Increment**: [0028-multi-repo-ux-improvements](../../../../../increments/0028-multi-repo-ux-improvements/tasks.md)
+**Increment**: [0028-multi-repo-ux-improvements](../../../../../../increments/_archive/0028-multi-repo-ux-improvements/tasks.md)
 
 **Tasks**:
-- [T-002: Fix Repository ID Single-Value Validation (US-002)](../../../../../increments/0028-multi-repo-ux-improvements/tasks.md#t-002-fix-repository-id-single-value-validation-us-002)
+- [T-002: Fix Repository ID Single-Value Validation (US-002)](../../../../../../increments/_archive/0028-multi-repo-ux-improvements/tasks.md#t-002-fix-repository-id-single-value-validation-us-002)
 
 ---
 

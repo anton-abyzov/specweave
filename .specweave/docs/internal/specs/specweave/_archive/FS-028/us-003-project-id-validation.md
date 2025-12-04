@@ -13,7 +13,7 @@ external:
 
 # US-003: Project ID Validation
 
-**Feature**: [FS-028](../../_features/FS-028/FEATURE.md)
+**Feature**: [FS-028](./FEATURE.md)
 
 **As a** developer setting up GitHub sync
 **I want** validation that project contexts are configured
@@ -31,11 +31,11 @@ external:
 
 ## Implementation
 
-**Increment**: [0028-multi-repo-ux-improvements](../../../../../increments/0028-multi-repo-ux-improvements/tasks.md)
+**Increment**: [0028-multi-repo-ux-improvements](../../../../../../increments/_archive/0028-multi-repo-ux-improvements/tasks.md)
 
 **Tasks**:
-- [T-005: Create Project Validation Module (US-003)](../../../../../increments/0028-multi-repo-ux-improvements/tasks.md#t-005-create-project-validation-module-us-003)
-- [T-006: Integrate Project Validation in GitHub Setup (US-003)](../../../../../increments/0028-multi-repo-ux-improvements/tasks.md#t-006-integrate-project-validation-in-github-setup-us-003)
+- [T-005: Create Project Validation Module (US-003)](../../../../../../increments/_archive/0028-multi-repo-ux-improvements/tasks.md#t-005-create-project-validation-module-us-003)
+- [T-006: Integrate Project Validation in GitHub Setup (US-003)](../../../../../../increments/_archive/0028-multi-repo-ux-improvements/tasks.md#t-006-integrate-project-validation-in-github-setup-us-003)
 
 ---
 

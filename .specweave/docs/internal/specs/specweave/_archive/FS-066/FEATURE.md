@@ -18,10 +18,10 @@ Currently `specweave init` only imports from a single JIRA project or ADO projec
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0066-multi-project-jira-ado-init](../../../../increments/0066-multi-project-jira-ado-init/spec.md) | ✅ completed | 2025-11-26T14:00:00Z |
+| [0066-multi-project-jira-ado-init](../../../../../../increments/_archive/0066-multi-project-jira-ado-init/spec.md) | ✅ completed | 2025-11-26T14:00:00Z |
 
 ## User Stories
 
-- [US-001: Multi-Project JIRA Import](../../specweave/FS-066/us-001-multi-project-jira-import.md)
-- [US-002: Multi-Area ADO Import](../../specweave/FS-066/us-002-multi-area-ado-import.md)
-- [US-003: Smart Defaults Based on Structure](../../specweave/FS-066/us-003-smart-defaults-based-on-structure.md)
+- [US-001: Multi-Project JIRA Import](./us-001-multi-project-jira-import.md)
+- [US-002: Multi-Area ADO Import](./us-002-multi-area-ado-import.md)
+- [US-003: Smart Defaults Based on Structure](./us-003-smart-defaults-based-on-structure.md)

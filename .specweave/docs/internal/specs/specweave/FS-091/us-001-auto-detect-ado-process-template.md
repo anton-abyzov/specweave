@@ -31,14 +31,14 @@ created: 2025-12-02
 
 ## Implementation
 
-**Increment**: [0091-ado-hierarchy-intelligence](../../../../increments/0091-ado-hierarchy-intelligence/spec.md)
+**Increment**: [0091-ado-hierarchy-intelligence](../../../../../increments/0091-ado-hierarchy-intelligence/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0091-ado-hierarchy-intelligence/tasks.md#T-001): Add ADO Process Template Detection to ADO Client
-- [x] [T-002](../../../../increments/0091-ado-hierarchy-intelligence/tasks.md#T-002): Update Config Types for Process Template
-- [x] [T-005](../../../../increments/0091-ado-hierarchy-intelligence/tasks.md#T-005): Update ADO Importer to Store Process Template
-- [x] [T-007](../../../../increments/0091-ado-hierarchy-intelligence/tasks.md#T-007): Unit tests pass
+- [x] [T-001](../../../../../increments/0091-ado-hierarchy-intelligence/tasks.md#T-001): Add ADO Process Template Detection to ADO Client
+- [x] [T-002](../../../../../increments/0091-ado-hierarchy-intelligence/tasks.md#T-002): Update Config Types for Process Template
+- [x] [T-005](../../../../../increments/0091-ado-hierarchy-intelligence/tasks.md#T-005): Update ADO Importer to Store Process Template
+- [x] [T-007](../../../../../increments/0091-ado-hierarchy-intelligence/tasks.md#T-007): Unit tests pass

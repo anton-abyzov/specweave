@@ -13,7 +13,7 @@ external:
 
 # US-003: Manual Archive with Configurable Threshold
 
-**Feature**: [FS-033](../../_features/FS-033/FEATURE.md)
+**Feature**: [FS-033](./FEATURE.md)
 
 **As a** developer
 **I want** to manually archive completed increments when I'm ready
@@ -29,12 +29,12 @@ external:
 
 ## Implementation
 
-**Increment**: [0033-duplicate-increment-prevention](../../../../../increments/0033-duplicate-increment-prevention/tasks.md)
+**Increment**: [0033-duplicate-increment-prevention](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md)
 
 **Tasks**:
-- [T-009: Create Base Archive Command](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-009-create-base-archive-command)
-- [T-012: Add Filtering Options](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-012-add-filtering-options)
-- [T-013: Respect External Sync Status](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-013-respect-external-sync-status)
+- [T-009: Create Base Archive Command](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-009-create-base-archive-command)
+- [T-012: Add Filtering Options](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-012-add-filtering-options)
+- [T-013: Respect External Sync Status](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-013-respect-external-sync-status)
 
 ---
 

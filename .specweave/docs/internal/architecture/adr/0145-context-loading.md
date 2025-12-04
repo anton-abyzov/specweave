@@ -216,7 +216,7 @@ SpecWeave generates **AGENTS.md** adapter for tools without progressive disclosu
 ## Related
 
 - [Context Loading Architecture](../concepts/context-loading.md)
-- [ADR-0003: Agents vs Skills](0003-agent-vs-skill.md)
+- [ADR-0003: Agents vs Skills](0148-agent-vs-skill.md)
 - [Claude Skills Documentation](https://support.claude.com/en/articles/12512176-what-are-skills)
 - [Agent Skills Engineering Blog](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
 - [Sub-Agents Documentation](https://docs.claude.com/en/docs/claude-code/sub-agents)

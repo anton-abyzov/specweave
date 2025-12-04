@@ -18,10 +18,10 @@ lastUpdated: 2025-11-26
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0058-fix-status-sync-and-auto-github-update](../../../../increments/0058-fix-status-sync-and-auto-github-update/spec.md) | ✅ completed | 2025-11-24T00:00:00.000Z |
+| [0058-fix-status-sync-and-auto-github-update](../../../../../../increments/_archive/0058-fix-status-sync-and-auto-github-update/spec.md) | ✅ completed | 2025-11-24T00:00:00.000Z |
 
 ## User Stories
 
-- [US-001: Fix Reopen Desync Bug (P0)](../../specweave/FS-058/us-001-fix-reopen-desync-bug-p0-.md)
-- [US-002: Auto GitHub Sync on Status Change (P0)](../../specweave/FS-058/us-002-auto-github-sync-on-status-change-p0-.md)
-- [US-003: Safety Guards Against Crashes (P0)](../../specweave/FS-058/us-003-safety-guards-against-crashes-p0-.md)
+- [US-001: Fix Reopen Desync Bug (P0)](./us-001-fix-reopen-desync-bug-p0-.md)
+- [US-002: Auto GitHub Sync on Status Change (P0)](./us-002-auto-github-sync-on-status-change-p0-.md)
+- [US-003: Safety Guards Against Crashes (P0)](./us-003-safety-guards-against-crashes-p0-.md)

@@ -20,8 +20,8 @@ When using SpecWeave with a multi-repo umbrella setup (4 repositories), the `/sp
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0068-fix-multi-repo-import-from](../../../../increments/0068-fix-multi-repo-import-from/spec.md) | ✅ completed | 2025-11-26 |
+| [0068-fix-multi-repo-import-from](../../../../../../increments/_archive/0068-fix-multi-repo-import-from/spec.md) | ✅ completed | 2025-11-26 |
 
 ## User Stories
 
-- [US-001: Fix importFrom for Multi-Repo GitHub](../../specweave/FS-068/us-001-fix-importfrom-for-multi-repo-github.md)
+- [US-001: Fix importFrom for Multi-Repo GitHub](./us-001-fix-importfrom-for-multi-repo-github.md)

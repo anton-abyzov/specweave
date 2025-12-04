@@ -88,7 +88,7 @@ description: Processes data files. Activates for CSV, JSON, data analysis.
 
 ## Related Decisions
 
-- [ADR-0002: Context Loading](./0002-context-loading.md)
+- [ADR-0002: Agent Types](../adr/0002-agent-types-roles-vs-tools.md)
 - [ADR-0127: Agent Chunking Pattern](./0127-agent-chunking-pattern.md)
 - [ADR-0133: Skills Must Not Spawn Large Agents](./0133-skills-must-not-spawn-large-agents.md)
 

@@ -9,7 +9,7 @@ created: 2025-11-18T00:00:00.000Z
 
 # US-001: Status Line Shows Correct Active Increment (Priority: P1 - CRITICAL)
 
-**Feature**: [FS-043](../../_features/FS-043/FEATURE.md)
+**Feature**: [FS-043](./FEATURE.md)
 
 **As a** developer working on SpecWeave
 **I want** the status line to always show the CURRENT active increment
@@ -27,7 +27,7 @@ created: 2025-11-18T00:00:00.000Z
 
 ## Implementation
 
-**Increment**: [0043-spec-md-desync-fix](../../../../increments/0043-spec-md-desync-fix/spec.md)
+**Increment**: [0043-spec-md-desync-fix](../../../../../../increments/_archive/0043-spec-md-desync-fix/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

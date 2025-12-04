@@ -254,7 +254,7 @@ class BrownfieldAnalyzer {
 
 - [Information Retrieval - Keyword Matching](https://en.wikipedia.org/wiki/Information_retrieval)
 - [TF-IDF Scoring](https://en.wikipedia.org/wiki/Tf%E2%80%93idf) (inspiration for weighted scoring)
-- [SpecWeave Brownfield Import](../../specs/spec-006-v0.8.0-stabilization.md)
+- SpecWeave Brownfield Import (feature archived)
 
 ---
 

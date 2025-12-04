@@ -289,8 +289,7 @@ private countByStatus(increments: IncrementStatus[]): {
 
 ## References
 
-- [Backlog Management Guide](../../public/guides/backlog-management.md)
-- [Increment Glossary](/docs/glossary/terms/increment)
+- Backlog Management Guide (planned)
 - Command docs: `plugins/specweave/commands/specweave-backlog.md`
 - Implementation: `src/core/types/increment-metadata.ts`
 

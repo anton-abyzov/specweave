@@ -13,7 +13,7 @@ external:
 
 # US-005: GitFlow Release Branch Automation (P2)
 
-**Feature**: [FS-023](../../_features/FS-023/FEATURE.md)
+**Feature**: [FS-023](./FEATURE.md)
 
 **As a** developer
 **I want** automated GitFlow release branch management

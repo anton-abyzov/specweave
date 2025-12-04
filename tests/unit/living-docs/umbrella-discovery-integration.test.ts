@@ -50,7 +50,7 @@ describe('umbrella-discovery-integration', () => {
       fs.mkdirSync(path.join(backendRepo, '.git'), { recursive: true });
       fs.mkdirSync(path.join(backendRepo, 'src'), { recursive: true });
       fs.writeFileSync(
-        path.join(backendRepo, 'AssetCare.Api.csproj'),
+        path.join(backendRepo, 'ProductHub.Api.csproj'),
         `<Project>
           <ItemGroup>
             <PackageReference Include="Microsoft.AspNetCore" />

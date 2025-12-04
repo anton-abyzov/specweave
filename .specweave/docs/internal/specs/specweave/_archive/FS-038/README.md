@@ -1,6 +1,6 @@
 # FS-038: Serverless Architecture Intelligence - User Stories
 
-**Feature**: [Serverless Architecture Intelligence](../../_features/FS-038/FEATURE.md)
+**Feature**: [Serverless Architecture Intelligence](./FEATURE.md)
 
 This directory contains all user stories for the Serverless Architecture Intelligence feature.
 
@@ -37,5 +37,5 @@ This directory contains all user stories for the Serverless Architecture Intelli
 
 ## Quick Links
 
-- [Feature Overview](../../_features/FS-038/FEATURE.md)
-- [Increment Folder](../../../../../increments/0038-serverless-architecture-intelligence/)
+- [Feature Overview](./FEATURE.md)
+- [Increment Folder](../../../../../../increments/_archive/0038-serverless-architecture-intelligence/)

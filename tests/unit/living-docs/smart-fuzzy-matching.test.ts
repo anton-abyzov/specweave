@@ -3,7 +3,7 @@
  *
  * Tests the intelligent matching logic that handles:
  * - Different naming conventions (camelCase, kebab-case, snake_case)
- * - Acronyms (AssetCare → AC)
+ * - Acronyms (ProductHub → PH)
  * - Common enterprise abbreviations (svc, fe, be, api, mgr)
  * - Fuzzy string similarity (Levenshtein distance)
  * - Word tokenization and overlap
@@ -78,25 +78,25 @@ describe('Smart Fuzzy Matching Engine', () => {
 
   describe('Exact and Normalized Matching', () => {
     it('should match exact names (case-insensitive)', async () => {
-      const discovery = createDiscovery(['assetcare-fe', 'assetcare-be', 'billing-api']);
-      const workItem = createWorkItem('US-001', 'Acme\\AssetCare', 'AssetCare');
+      const discovery = createDiscovery(['producthub-fe', 'producthub-be', 'billing-api']);
+      const workItem = createWorkItem('US-001', 'Acme\\ProductHub', 'ProductHub');
 
       const result = await matchWorkItemsToModules(testDir, discovery, [workItem]);
 
-      expect(result.moduleMap.get('assetcare-fe')?.workItemCount).toBe(1);
-      expect(result.moduleMap.get('assetcare-be')?.workItemCount).toBe(1);
+      expect(result.moduleMap.get('producthub-fe')?.workItemCount).toBe(1);
+      expect(result.moduleMap.get('producthub-be')?.workItemCount).toBe(1);
       expect(result.moduleMap.get('billing-api')?.workItemCount).toBe(0);
     });
 
     it('should match with different separators (kebab vs none)', async () => {
-      const discovery = createDiscovery(['asset-care-fe', 'assetcare-be']);
-      const workItem = createWorkItem('US-001', 'Acme\\AssetCare', 'AssetCare');
+      const discovery = createDiscovery(['product-hub-fe', 'producthub-be']);
+      const workItem = createWorkItem('US-001', 'Acme\\ProductHub', 'ProductHub');
 
       const result = await matchWorkItemsToModules(testDir, discovery, [workItem]);
 
       // Both should match - same words, different separators
-      expect(result.moduleMap.get('asset-care-fe')?.workItemCount).toBe(1);
-      expect(result.moduleMap.get('assetcare-be')?.workItemCount).toBe(1);
+      expect(result.moduleMap.get('product-hub-fe')?.workItemCount).toBe(1);
+      expect(result.moduleMap.get('producthub-be')?.workItemCount).toBe(1);
     });
 
     it('should match snake_case to kebab-case', async () => {
@@ -111,14 +111,14 @@ describe('Smart Fuzzy Matching Engine', () => {
   });
 
   describe('Acronym Matching', () => {
-    it('should match acronym prefix (AssetCare → ac-*)', async () => {
-      const discovery = createDiscovery(['ac-service', 'ac-api', 'billing-fe']);
-      const workItem = createWorkItem('US-001', 'Acme\\AssetCare', 'AssetCare');
+    it('should match acronym prefix (ProductHub → ph-*)', async () => {
+      const discovery = createDiscovery(['ph-service', 'ph-api', 'billing-fe']);
+      const workItem = createWorkItem('US-001', 'Acme\\ProductHub', 'ProductHub');
 
       const result = await matchWorkItemsToModules(testDir, discovery, [workItem]);
 
-      expect(result.moduleMap.get('ac-service')?.workItemCount).toBe(1);
-      expect(result.moduleMap.get('ac-api')?.workItemCount).toBe(1);
+      expect(result.moduleMap.get('ph-service')?.workItemCount).toBe(1);
+      expect(result.moduleMap.get('ph-api')?.workItemCount).toBe(1);
       expect(result.moduleMap.get('billing-fe')?.workItemCount).toBe(0);
     });
 
@@ -204,19 +204,19 @@ describe('Smart Fuzzy Matching Engine', () => {
 
   describe('Fuzzy String Similarity', () => {
     it('should match with minor typos (Levenshtein distance 1-2)', async () => {
-      const discovery = createDiscovery(['assetcare-fe', 'assetcar-be']); // typo: missing 'e'
-      const workItem = createWorkItem('US-001', 'Acme\\AssetCare', 'AssetCare');
+      const discovery = createDiscovery(['producthub-fe', 'producthu-be']); // typo: missing 'b'
+      const workItem = createWorkItem('US-001', 'Acme\\ProductHub', 'ProductHub');
 
       const result = await matchWorkItemsToModules(testDir, discovery, [workItem]);
 
-      expect(result.moduleMap.get('assetcare-fe')?.workItemCount).toBe(1);
-      // assetcar (missing e) should still match with fuzzy logic
-      expect(result.moduleMap.get('assetcar-be')?.workItemCount).toBe(1);
+      expect(result.moduleMap.get('producthub-fe')?.workItemCount).toBe(1);
+      // producthu (missing b) should still match with fuzzy logic
+      expect(result.moduleMap.get('producthu-be')?.workItemCount).toBe(1);
     });
 
     it('should not match completely different names', async () => {
       const discovery = createDiscovery(['payment-gateway', 'checkout-api']);
-      const workItem = createWorkItem('US-001', 'Acme\\AssetCare', 'AssetCare');
+      const workItem = createWorkItem('US-001', 'Acme\\ProductHub', 'ProductHub');
 
       const result = await matchWorkItemsToModules(testDir, discovery, [workItem]);
 
@@ -261,11 +261,11 @@ describe('Smart Fuzzy Matching Engine', () => {
 
   describe('Match Confidence Levels', () => {
     it('should report high confidence for exact matches', async () => {
-      const discovery = createDiscovery(['assetcare-fe']);
-      const workItem = createWorkItem('US-001', 'Acme\\AssetCare', 'AssetCare');
+      const discovery = createDiscovery(['producthub-fe']);
+      const workItem = createWorkItem('US-001', 'Acme\\ProductHub', 'ProductHub');
 
       const result = await matchWorkItemsToModules(testDir, discovery, [workItem]);
-      const match = result.moduleMap.get('assetcare-fe')?.matches[0];
+      const match = result.moduleMap.get('producthub-fe')?.matches[0];
 
       expect(match).toBeDefined();
       expect(match?.score).toBeGreaterThan(40);

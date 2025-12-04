@@ -9,7 +9,7 @@ created: 2025-11-16
 
 # US-001: Auto-Detect Current Workflow Phase (Priority: P1)
 
-**Feature**: [FS-039](../../_features/FS-039/FEATURE.md)
+**Feature**: [FS-039](./FEATURE.md)
 
 **As a** developer working in SpecWeave
 **I want** /specweave:next to automatically detect where I am in the workflow
@@ -31,7 +31,7 @@ created: 2025-11-16
 
 ## Implementation
 
-**Increment**: [0039-ultra-smart-next-command](../../../../increments/0039-ultra-smart-next-command/spec.md)
+**Increment**: [0039-ultra-smart-next-command](../../../../../../increments/_archive/0039-ultra-smart-next-command/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

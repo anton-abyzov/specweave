@@ -597,7 +597,7 @@ function buildTeamSummary(
   const teamMap = new Map<string, { modules: number; workItems: number; totalCoverage: number }>();
 
   for (const status of statuses) {
-    // Extract team from module name (e.g., "assetcare-fe" → "assetcare")
+    // Extract team from module name (e.g., "producthub-fe" → "producthub")
     const teamMatch = status.moduleName.match(/^([a-z0-9]+)-/i);
     const team = teamMatch ? teamMatch[1] : 'other';
 

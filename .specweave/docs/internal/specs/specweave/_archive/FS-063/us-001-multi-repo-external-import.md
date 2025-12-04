@@ -28,7 +28,7 @@ created: 2025-11-25T11:40:00Z
 
 ## Implementation
 
-**Increment**: [0063-fix-external-import-multi-repo](../../../../increments/0063-fix-external-import-multi-repo/spec.md)
+**Increment**: [0063-fix-external-import-multi-repo](../../../../../../increments/_archive/0063-fix-external-import-multi-repo/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

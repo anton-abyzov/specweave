@@ -580,9 +580,9 @@ export class MonitoringStackDetector {
 - [Grafana Kafka Dashboards](https://grafana.com/grafana/dashboards/?search=kafka)
 - [OpenTelemetry Kafka Instrumentation](https://opentelemetry.io/docs/instrumentation/js/libraries/#kafka)
 - [Grafana Mimir 3.0 Kafka Ingest](https://grafana.com/blog/2024/03/12/grafana-mimir-3.0-release/)
-- [SPEC-035: US-008 Prometheus Integration](../../specs/default/spec-035-kafka-plugin.md#us-008-prometheus-kafka-exporter-integration-priority-p1)
-- [SPEC-035: US-009 Grafana Dashboards](../../specs/default/spec-035-kafka-plugin.md#us-009-grafana-kafka-dashboards-priority-p1)
-- [SPEC-035: US-010 OpenTelemetry Instrumentation](../../specs/default/spec-035-kafka-plugin.md#us-010-opentelemetry-kafka-instrumentation-priority-p2)
+- [SPEC-035: US-008 Prometheus Integration](../../architecture/adr/0035-kafka-multi-plugin-architecture.md#us-008-prometheus-kafka-exporter-integration-priority-p1)
+- [SPEC-035: US-009 Grafana Dashboards](../../architecture/adr/0035-kafka-multi-plugin-architecture.md#us-009-grafana-kafka-dashboards-priority-p1)
+- [SPEC-035: US-010 OpenTelemetry Instrumentation](../../architecture/adr/0035-kafka-multi-plugin-architecture.md#us-010-opentelemetry-kafka-instrumentation-priority-p2)
 
 ---
 

@@ -9,7 +9,7 @@ created: 2025-11-17
 
 # US-001: Fix content-distributor Test Assertions (P1)
 
-**Feature**: [FS-041](../../_features/FS-041/FEATURE.md)
+**Feature**: [FS-041](./FEATURE.md)
 
 **As a** contributor
 **I want** content-distributor tests to pass
@@ -27,7 +27,7 @@ created: 2025-11-17
 
 ## Implementation
 
-**Increment**: [0041-living-docs-test-fixes](../../../../increments/0041-living-docs-test-fixes/spec.md)
+**Increment**: [0041-living-docs-test-fixes](../../../../../../increments/_archive/0041-living-docs-test-fixes/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

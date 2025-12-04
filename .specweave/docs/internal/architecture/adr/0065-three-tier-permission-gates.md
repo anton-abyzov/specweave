@@ -333,15 +333,15 @@ Enable automatic GitHub sync on increment completion? (Y/n)
 
 - **Related ADRs**:
   - [ADR-0030: Intelligent Living Docs Sync](0030-intelligent-living-docs-sync.md) (GATE 1 origin)
-  - [ADR-0032: Universal Hierarchy Mapping](0032-universal-hierarchy-mapping.md) (Feature → User Stories)
+  - [ADR-0032: Universal Hierarchy Mapping](0166-universal-hierarchy-mapping.md) (Feature → User Stories)
   - [ADR-0066: SyncCoordinator Integration Point](#) (Where to integrate)
   - [ADR-0067: Three-Layer Idempotency Caching](#) (Prevent duplicates)
 
 - **User Stories**:
-  - [US-002: Three-Tier Permission Model](../../../specs/specweave/FS-049/us-002-permission-gates.md)
+  - [US-002: Three-Tier Permission Model](../../specs/specweave/_archive/FS-049/us-002-permission-gates.md)
 
 - **Implementation**:
-  - Increment: [0051-automatic-github-sync](../../../../increments/0051-automatic-github-sync/)
+  - Increment: [0051-automatic-github-sync](../../../../increments/_archive/0051-automatic-github-sync/)
   - Files: `src/sync/sync-coordinator.ts`, `src/core/config/types.ts`
 
 ---

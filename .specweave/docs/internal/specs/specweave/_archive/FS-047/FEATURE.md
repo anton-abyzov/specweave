@@ -18,20 +18,20 @@ Implement explicit traceability between User Stories, Acceptance Criteria, and T
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0047-us-task-linkage](../../../../increments/0047-us-task-linkage/spec.md) | ✅ completed | 2025-11-19 |
+| [0047-us-task-linkage](../../../../../../increments/_archive/0047-us-task-linkage/spec.md) | ✅ completed | 2025-11-19 |
 
 ## User Stories
 
-- [US-001: Explicit US-Task Linkage in tasks.md](../../specweave/FS-047/us-001-explicit-us-task-linkage-in-tasks-md.md)
-- [US-002: AC-Task Mapping](../../specweave/FS-047/us-002-ac-task-mapping.md)
-- [US-003: Automatic Living Docs Sync](../../specweave/FS-047/us-003-automatic-living-docs-sync.md)
-- [US-004: AC Coverage Validation](../../specweave/FS-047/us-004-ac-coverage-validation.md)
-- [US-005: Progress Tracking by User Story](../../specweave/FS-047/us-005-progress-tracking-by-user-story.md)
-- [US-006: Migration Tooling](../../specweave/FS-047/us-006-migration-tooling.md)
-- [US-007: External Item Import on Init](../../specweave/FS-047/us-007-external-item-import-on-init.md)
-- [US-008: ID Collision Resolution](../../specweave/FS-047/us-008-id-collision-resolution.md)
-- [US-009: Origin Tracking and Sync Direction Configuration](../../specweave/FS-047/us-009-origin-tracking-and-sync-direction-configuration.md)
-- [US-010: External Import Slash Command](../../specweave/FS-047/us-010-external-import-slash-command.md)
-- [US-011: Multi-Repo Selection Strategy (GitHub Init)](../../specweave/FS-047/us-011-multi-repo-selection-strategy-github-init-.md)
-- [US-012: Intelligent FS-XXX Folder Creation with Chronological ID Allocation](../../specweave/FS-047/us-012-intelligent-fs-xxx-folder-creation-with-chronological-id-allocation.md)
-- [US-013: Archive Command for Features and Epics](../../specweave/FS-047/us-013-archive-command-for-features-and-epics.md)
+- [US-001: Explicit US-Task Linkage in tasks.md](./us-001-explicit-us-task-linkage-in-tasks-md.md)
+- [US-002: AC-Task Mapping](./us-002-ac-task-mapping.md)
+- [US-003: Automatic Living Docs Sync](./us-003-automatic-living-docs-sync.md)
+- [US-004: AC Coverage Validation](./us-004-ac-coverage-validation.md)
+- [US-005: Progress Tracking by User Story](./us-005-progress-tracking-by-user-story.md)
+- [US-006: Migration Tooling](./us-006-migration-tooling.md)
+- [US-007: External Item Import on Init](./us-007-external-item-import-on-init.md)
+- [US-008: ID Collision Resolution](./us-008-id-collision-resolution.md)
+- [US-009: Origin Tracking and Sync Direction Configuration](./us-009-origin-tracking-and-sync-direction-configuration.md)
+- [US-010: External Import Slash Command](./us-010-external-import-slash-command.md)
+- [US-011: Multi-Repo Selection Strategy (GitHub Init)](./us-011-multi-repo-selection-strategy-github-init-.md)
+- [US-012: Intelligent FS-XXX Folder Creation with Chronological ID Allocation](./us-012-intelligent-fs-xxx-folder-creation-with-chronological-id-allocation.md)
+- [US-013: Archive Command for Features and Epics](./us-013-archive-command-for-features-and-epics.md)

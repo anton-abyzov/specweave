@@ -26,7 +26,7 @@ Implement comprehensive validation system to prevent increments from existing in
 
 ## Source
 
-This feature was created from increment: [`0033-duplicate-increment-prevention`](../../../../../increments/0033-duplicate-increment-prevention)
+This feature was created from increment: [`0033-duplicate-increment-prevention`](../../../../../../increments/_archive/0033-duplicate-increment-prevention)
 
 ## Business Value
 
@@ -41,10 +41,10 @@ This feature spans the following projects:
 
 ### specweave
 
-- [US-001: Prevent Duplicate Locations](../../specweave/FS-033/us-001-prevent-duplicate-locations.md) - complete
-- [US-002: Auto-Detect and Resolve Conflicts](../../specweave/FS-033/us-002-auto-detect-and-resolve-conflicts.md) - complete
-- [US-003: Manual Archive with Configurable Threshold](../../specweave/FS-033/us-003-manual-archive-with-configurable-threshold.md) - complete
-- [US-004: Comprehensive Test Coverage](../../specweave/FS-033/us-004-comprehensive-test-coverage.md) - complete
+- [US-001: Prevent Duplicate Locations](./us-001-prevent-duplicate-locations.md) - complete
+- [US-002: Auto-Detect and Resolve Conflicts](./us-002-auto-detect-and-resolve-conflicts.md) - complete
+- [US-003: Manual Archive with Configurable Threshold](./us-003-manual-archive-with-configurable-threshold.md) - complete
+- [US-004: Comprehensive Test Coverage](./us-004-comprehensive-test-coverage.md) - complete
 
 ## Progress
 

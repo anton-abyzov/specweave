@@ -9,7 +9,7 @@ status: completed
 
 # US-Task Linkage Architecture
 
-**Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
+**Feature**: [FS-047](./FEATURE.md)
 
 ## Overview
 

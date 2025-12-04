@@ -35,6 +35,6 @@ status: "abandoned"
 
 ---
 
-**Source**: [Increment 0016-self-reflection-system](../../../increments/0016-self-reflection-system/spec.md)
+**Source**: [Increment 0016-self-reflection-system](../../../increments/_archive/0016-self-reflection-system/spec.md)
 **Project**: Default Project
 **Last Updated**: 2025-11-12

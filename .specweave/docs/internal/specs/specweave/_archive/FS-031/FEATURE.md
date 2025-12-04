@@ -21,7 +21,7 @@ Enhance SpecWeave's external tool integration (GitHub, JIRA, Azure DevOps) with 
 
 ## Source
 
-This feature was created from increment: [`0031-external-tool-status-sync`](../../../../../increments/0031-external-tool-status-sync)
+This feature was created from increment: [`0031-external-tool-status-sync`](../../../../../../increments/_archive/0031-external-tool-status-sync)
 
 ## Business Value
 
@@ -38,13 +38,13 @@ This feature spans the following projects:
 
 ### specweave
 
-- [US-001: Rich External Issue Content](../../specweave/FS-031/us-001-rich-external-issue-content.md) - complete
-- [US-002: Task-Level Mapping & Traceability](../../specweave/FS-031/us-002-task-level-mapping-traceability.md) - complete
-- [US-003: Status Mapping Configuration](../../specweave/FS-031/us-003-status-mapping-configuration.md) - complete
-- [US-004: Bidirectional Status Sync](../../specweave/FS-031/us-004-bidirectional-status-sync.md) - complete
-- [US-005: User Prompts on Completion](../../specweave/FS-031/us-005-user-prompts-on-completion.md) - complete
-- [US-006: Conflict Resolution](../../specweave/FS-031/us-006-conflict-resolution.md) - complete
-- [US-007: Multi-Tool Workflow Support](../../specweave/FS-031/us-007-multi-tool-workflow-support.md) - complete
+- [US-001: Rich External Issue Content](./us-001-rich-external-issue-content.md) - complete
+- [US-002: Task-Level Mapping & Traceability](./us-002-task-level-mapping-traceability.md) - complete
+- [US-003: Status Mapping Configuration](./us-003-status-mapping-configuration.md) - complete
+- [US-004: Bidirectional Status Sync](./us-004-bidirectional-status-sync.md) - complete
+- [US-005: User Prompts on Completion](./us-005-user-prompts-on-completion.md) - complete
+- [US-006: Conflict Resolution](./us-006-conflict-resolution.md) - complete
+- [US-007: Multi-Tool Workflow Support](./us-007-multi-tool-workflow-support.md) - complete
 
 ## Progress
 

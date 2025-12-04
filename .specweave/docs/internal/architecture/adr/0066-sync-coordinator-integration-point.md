@@ -481,10 +481,10 @@ describe('SyncCoordinator.syncIncrementCompletion', () => {
   - [ADR-0068: Circuit Breaker Error Isolation](#) (Error handling)
 
 - **User Stories**:
-  - [US-001: Automatic Issue Creation on Completion](../../../specs/specweave/FS-049/us-001-auto-issue-creation.md)
+  - [US-001: Automatic Issue Creation on Completion](../../specs/specweave/_archive/FS-049/us-001-auto-issue-creation.md)
 
 - **Implementation**:
-  - Increment: [0051-automatic-github-sync](../../../../increments/0051-automatic-github-sync/)
+  - Increment: [0051-automatic-github-sync](../../../../increments/_archive/0051-automatic-github-sync/)
   - Class: `src/sync/sync-coordinator.ts`
 
 ---

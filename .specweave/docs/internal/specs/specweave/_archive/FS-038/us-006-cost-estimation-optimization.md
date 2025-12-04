@@ -10,7 +10,7 @@ project: specweave
 
 # US-006: Cost Estimation and Optimization
 
-**Feature**: [FS-038](../../_features/FS-038/FEATURE.md)
+**Feature**: [FS-038](./FEATURE.md)
 
 **As a** developer planning a serverless deployment
 **I want** accurate cost estimates based on expected traffic

@@ -354,7 +354,7 @@ Plugins will be compiled to AGENTS.md automatically.
 - [Claude Code Plugin Documentation](https://docs.claude.com/en/docs/claude-code/plugins)
 - [Anthropic Plugin Announcement](https://www.anthropic.com/news/claude-code-plugins)
 - [SpecWeave Plugin System](../../../README.md#plugin-architecture)
-- Increment 0004: `.specweave/increments/0004-plugin-architecture/`
+- Increment 0004: `.specweave/increments/_archive/0004-plugin-architecture/`
 
 ## Notes
 

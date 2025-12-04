@@ -4,7 +4,7 @@
 **⚠️ SUPERSEDED**: This ADR has been superseded by more detailed sub-ADR in Increment 0003.
 
 **See instead**:
-- [ADR-0003-008: Cost Tracking System](0003-008-cost-tracking-system.md)
+- [ADR-0003-008: Cost Tracking System](0003-intelligent-model-selection.md)
 
 **Date Superseded**: 2025-11-13
 **Reason**: Replaced by more granular, increment-scoped ADR with updated implementation details.
@@ -20,4 +20,4 @@
 
 This ADR originally documented the cost tracking system for SpecWeave.
 
-The content has been migrated to [ADR-0003-008](0003-008-cost-tracking-system.md) which provides more detailed implementation specifics.
+The content has been migrated to [ADR-0003-008](0003-intelligent-model-selection.md) which provides more detailed implementation specifics.

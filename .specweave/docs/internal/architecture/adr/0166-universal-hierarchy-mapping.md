@@ -317,7 +317,7 @@ external_tools:
 
 | Increment | Projects | Stories Implemented | Status | Completion Date |
 |-----------|----------|---------------------|--------|-----------------|
-| [0031](../../../../increments/0031-external-tool-status-sync/) | Backend, Frontend | 7 stories | ✅ Complete | 2025-11-14 |
+| [0031](../../../../increments/_archive/0031-external-tool-status-sync/) | Backend, Frontend | 7 stories | ✅ Complete | 2025-11-14 |
 
 ## External Tool Integration
 
@@ -422,11 +422,11 @@ external_tools:
 ## Implementation
 
 Implemented in:
-- **Increment**: [0031-external-tool-status-sync](../../../../increments/0031-external-tool-status-sync/)
+- **Increment**: [0031-external-tool-status-sync](../../../../increments/_archive/0031-external-tool-status-sync/)
 - **Tasks**:
-  - [T-001: Create API endpoint](../../../../increments/0031-external-tool-status-sync/tasks.md#t-001-create-api-endpoint)
-  - [T-002: Add validation](../../../../increments/0031-external-tool-status-sync/tasks.md#t-002-add-validation)
-  - [T-003: Write tests](../../../../increments/0031-external-tool-status-sync/tasks.md#t-003-write-tests)
+  - [T-001: Create API endpoint](../../../../increments/_archive/0031-external-tool-status-sync/tasks.md#t-001-create-api-endpoint)
+  - [T-002: Add validation](../../../../increments/_archive/0031-external-tool-status-sync/tasks.md#t-002-add-validation)
+  - [T-003: Write tests](../../../../increments/_archive/0031-external-tool-status-sync/tasks.md#t-003-write-tests)
 
 ## Related Stories
 

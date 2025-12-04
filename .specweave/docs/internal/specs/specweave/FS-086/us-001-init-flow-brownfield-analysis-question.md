@@ -32,11 +32,11 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0086-brownfield-doc-analysis](../../../../increments/0086-brownfield-doc-analysis/spec.md)
+**Increment**: [0086-brownfield-doc-analysis](../../../../../increments/0086-brownfield-doc-analysis/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-003](../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-003): Add Brownfield Analysis Prompt to Init
+- [x] [T-003](../../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-003): Add Brownfield Analysis Prompt to Init

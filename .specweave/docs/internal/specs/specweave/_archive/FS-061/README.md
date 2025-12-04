@@ -9,7 +9,7 @@ status: in-progress
 
 # Fix Multi-Repo Init UX - Eliminate 'you specified 0' Message
 
-**Feature**: [FS-061](../../_features/FS-061/FEATURE.md)
+**Feature**: [FS-061](./FEATURE.md)
 
 ## Overview
 

@@ -116,7 +116,7 @@ Files in typed folders don't need type prefix:
 
 | Wrong | Correct |
 |-------|---------|
-| `hld/hld-diagram-generation.md` | `hld/diagram-generation.md` |
+| `hld/diagram-generation.md` | `hld/diagram-generation.md` |
 | `adr/adr-0001-tech-stack.md` | `adr/0001-tech-stack.md` |
 | `runbooks/runbook-api.md` | `runbooks/api.md` |
 
@@ -185,6 +185,59 @@ architecture/diagrams/workflow-orchestration/sub-diagrams/detail/flow.md
 ```
 
 **Solution**: Max 3 levels deep. Flatten if deeper.
+
+---
+
+## Smart Organization for Large Folders
+
+### When to Organize
+
+When a folder exceeds **30 files**, use `/specweave:organize-docs` to generate themed navigation indexes.
+
+### Organization Philosophy
+
+**Generate indexes, don't move files** - This preserves URLs and existing links.
+
+### What Gets Generated
+
+```
+architecture/adr/
+├── _categories.md          # Main navigation hub
+├── _index-sync.md          # Sync-related ADRs
+├── _index-github.md        # GitHub integration ADRs
+├── _index-hooks.md         # Hook & event ADRs
+├── _index-testing.md       # Testing ADRs
+└── ... (original files unchanged)
+```
+
+### Theme Categories
+
+The organizer detects these themes automatically:
+
+| Icon | Theme | Keywords |
+|------|-------|----------|
+| 🔄 | Synchronization | sync, integration, bidirectional |
+| 🐙 | GitHub | github, issue, actions |
+| 🪝 | Hooks | hook, event, trigger |
+| 🔌 | External Tools | jira, ado, area-path |
+| 🧪 | Testing | test, fixture, coverage |
+| 🏗️ | Brownfield | brownfield, migration, legacy |
+| ⚡ | Performance | cache, pagination, batch |
+| 🔒 | Security | permission, auth, token |
+| 📦 | Increments | increment, status, lifecycle |
+| ⚙️ | Configuration | config, env, setup |
+| 📚 | Documentation | doc, spec, naming |
+
+### Docusaurus Integration
+
+Generated indexes work seamlessly with Docusaurus:
+
+```bash
+/specweave:organize-docs         # Generate indexes
+/specweave-docs-preview:preview  # View in browser
+```
+
+The sidebar will show themed categories for easy navigation.
 
 ---
 

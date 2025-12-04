@@ -563,6 +563,11 @@ export class EnterpriseDocAnalyzer {
         if (expectedRule && !expectedRule.pattern.test(fileName)) {
           // Skip if already caught by other checks
           if (!allCapsPattern.test(fileName) && !mixedCasePattern.test(fileName)) {
+            // Skip files starting with _ (navigation/index files)
+            if (fileName.startsWith('_')) {
+              continue; // Navigation files like _index-*.md, _categories.md
+            }
+
             // Skip ADR numbered files (e.g., 0001-decision-name.md) - this is standard ADR convention
             const adrPattern = /^\d{4}-[a-z0-9-]+\.md$/;
             const isInAdrFolder = relativePath.includes('/adr/') || relativePath.includes('\\adr\\');
@@ -686,11 +691,33 @@ export class EnterpriseDocAnalyzer {
           // Only report as duplicate if multiple files of same doc type
           for (const [, sameTypeFiles] of filesByType) {
             if (sameTypeFiles.length > 1) {
-              duplicates.push({
-                files: sameTypeFiles,
-                similarity: 80,
-                duplicateType: 'same_title',
+              // Filter out archived feature specs - different phases of same feature may share user stories
+              const archivedFeatureFiles = sameTypeFiles.filter(f => f.includes('/_archive/FS-'));
+              if (archivedFeatureFiles.length === sameTypeFiles.length && sameTypeFiles.length > 0) {
+                // All files are archived feature specs - this is likely intentional phased features
+                continue;
+              }
+
+              // Filter out SUPERSEDED ADRs - these are intentional redirects, not duplicates
+              const nonSupersededFiles = sameTypeFiles.filter(file => {
+                try {
+                  const fullPath = path.join(this.projectPath, file);
+                  const content = fs.readFileSync(fullPath, 'utf-8').slice(0, 500);
+                  // Check if file is marked as SUPERSEDED (ADR convention)
+                  return !content.includes('SUPERSEDED');
+                } catch {
+                  return true; // Include if can't read
+                }
               });
+
+              // Only report if multiple non-superseded files remain
+              if (nonSupersededFiles.length > 1) {
+                duplicates.push({
+                  files: nonSupersededFiles,
+                  similarity: 80,
+                  duplicateType: 'same_title',
+                });
+              }
             }
           }
         }
@@ -723,10 +750,13 @@ export class EnterpriseDocAnalyzer {
           const content = fs.readFileSync(doc.path, 'utf-8');
           const relativePath = path.relative(this.projectPath, doc.path);
 
-          // Check for markdown links to other docs
+          // Strip code blocks to avoid false positives from documentation examples
+          const contentWithoutCodeBlocks = content.replace(/```[\s\S]*?```/g, '');
+
+          // Check for markdown links to other docs (using content without code blocks)
           const linkPattern = /\[([^\]]+)\]\(([^)]+\.md)\)/g;
           let match;
-          while ((match = linkPattern.exec(content)) !== null) {
+          while ((match = linkPattern.exec(contentWithoutCodeBlocks)) !== null) {
             const linkedPath = match[2];
             const absoluteLinkedPath = path.resolve(path.dirname(doc.path), linkedPath);
 
@@ -756,9 +786,9 @@ export class EnterpriseDocAnalyzer {
             }
           }
 
-          // Check for references to increment IDs that don't exist
+          // Check for references to increment IDs that don't exist (using content without code blocks)
           const incrementRefPattern = /(?:increment|spec)[:\s]+(\d{4}-[a-z0-9-]+)/gi;
-          while ((match = incrementRefPattern.exec(content)) !== null) {
+          while ((match = incrementRefPattern.exec(contentWithoutCodeBlocks)) !== null) {
             const incrementId = match[1];
             const incrementPath = path.join(this.projectPath, '.specweave/increments', incrementId);
             const archivedPath = path.join(this.projectPath, '.specweave/increments/_archive', incrementId);
@@ -773,18 +803,37 @@ export class EnterpriseDocAnalyzer {
           }
 
           // Check for outdated version references (e.g., v0.XX references)
+          // Skip historical references like "Before v0.18.3", "NEW in v0.12.0", "Added in v0.13.0"
           const versionPattern = /\bv(0\.\d+\.\d+)\b/g;
-          const currentVersionMatch = content.match(/version[:\s]+"?(\d+\.\d+\.\d+)"?/i);
-          while ((match = versionPattern.exec(content)) !== null) {
-            const referencedVersion = match[1];
-            // Flag very old versions (before 0.20)
-            const majorMinor = referencedVersion.split('.').slice(0, 2).join('.');
-            if (parseFloat(majorMinor) < 0.2) {
-              discrepancies.push({
-                file: relativePath,
-                discrepancyType: 'outdated_version',
-                description: `Potentially outdated version reference: v${referencedVersion}`,
-              });
+          const historicalPatterns = [
+            /before\s+v[\d.]+/i,
+            /after\s+v[\d.]+/i,
+            /\bnew\s+in\s+v[\d.]+/i,
+            /added\s+in\s+v[\d.]+/i,
+            /since\s+v[\d.]+/i,
+            /v[\d.]+\s*\+/i, // v0.13.0+ format
+            /v[\d.]+\s*(and\s+earlier|or\s+earlier)/i,
+            /introduced\s+in\s+v[\d.]+/i,
+            /deprecated\s+(in|since)\s+v[\d.]+/i,
+            /removed\s+in\s+v[\d.]+/i,
+            /\*\*version\*\*:\s*v[\d.]+/i, // **Version**: vX.X.X format
+            /\(planned\)/i, // (planned) indicator
+          ];
+          const isHistoricalDoc = historicalPatterns.some(p => p.test(content));
+
+          // Only check versions in non-historical documents
+          if (!isHistoricalDoc) {
+            while ((match = versionPattern.exec(content)) !== null) {
+              const referencedVersion = match[1];
+              // Flag very old versions (before 0.20)
+              const majorMinor = referencedVersion.split('.').slice(0, 2).join('.');
+              if (parseFloat(majorMinor) < 0.2) {
+                discrepancies.push({
+                  file: relativePath,
+                  discrepancyType: 'outdated_version',
+                  description: `Potentially outdated version reference: v${referencedVersion}`,
+                });
+              }
             }
           }
         } catch {
@@ -949,6 +998,15 @@ export class EnterpriseDocAnalyzer {
       recommendations.push(
         'No governance documentation found. Consider adding coding standards to .specweave/docs/internal/governance/'
       );
+    }
+
+    // Large folder organization recommendations
+    for (const category of categories) {
+      if (category.fileCount > 30) {
+        recommendations.push(
+          `📁 "${category.name}" has ${category.fileCount} files. Run /specweave:organize-docs to generate themed navigation indexes for easier browsing.`
+        );
+      }
     }
 
     return recommendations;

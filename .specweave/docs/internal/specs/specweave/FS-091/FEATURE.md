@@ -18,7 +18,7 @@ SpecWeave's current ADO import incorrectly places **Capabilities** (5th level in
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0091-ado-hierarchy-intelligence](../../../../increments/0091-ado-hierarchy-intelligence/spec.md) | ✅ completed | 2025-12-02 |
+| [0091-ado-hierarchy-intelligence](../../../../../increments/0091-ado-hierarchy-intelligence/spec.md) | ✅ completed | 2025-12-02 |
 
 ## User Stories
 

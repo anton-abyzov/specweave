@@ -327,10 +327,10 @@ export async function runReflection(incrementId: string): Promise<void> {
 
 ## Related Decisions
 
-- [ADR-0018](0018-reflection-model-selection.md): Model selection strategy for reflection
-- [ADR-0019](0019-reflection-storage-format.md): Storage format for reflection logs
-- [ADR-0001](0001-spec-driven-development.md): Original spec-driven development architecture
-- [ADR-0012](0012-post-task-completion-hook.md): Post-task-completion hook design (if exists)
+- [ADR-0018](0151-reflection-model-selection.md): Model selection strategy for reflection
+- [ADR-0019](0154-reflection-storage-format.md): Storage format for reflection logs
+- [ADR-0001: Tech Stack](0001-tech-stack.md)
+- [ADR-0012](0072-post-task-hook-simplification.md): Post-task-completion hook design (if exists)
 
 ## Implementation Notes
 

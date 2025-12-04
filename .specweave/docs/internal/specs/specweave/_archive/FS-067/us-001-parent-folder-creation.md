@@ -27,7 +27,7 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0067-multi-project-init-bugs](../../../../increments/0067-multi-project-init-bugs/spec.md)
+**Increment**: [0067-multi-project-init-bugs](../../../../../../increments/_archive/0067-multi-project-init-bugs/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

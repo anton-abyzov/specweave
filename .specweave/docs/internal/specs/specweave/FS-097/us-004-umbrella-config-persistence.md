@@ -30,12 +30,12 @@ created: 2024-12-03
 
 ## Implementation
 
-**Increment**: [0097-umbrella-module-detection](../../../../increments/0097-umbrella-module-detection/spec.md)
+**Increment**: [0097-umbrella-module-detection](../../../../../increments/0097-umbrella-module-detection/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [ ] [T-002](../../../../increments/0097-umbrella-module-detection/tasks.md#T-002): Add Umbrella Config Types
-- [ ] [T-005](../../../../increments/0097-umbrella-module-detection/tasks.md#T-005): Clone Worker Umbrella Config Persistence
+- [ ] [T-002](../../../../../increments/0097-umbrella-module-detection/tasks.md#T-002): Add Umbrella Config Types
+- [ ] [T-005](../../../../../increments/0097-umbrella-module-detection/tasks.md#T-005): Clone Worker Umbrella Config Persistence

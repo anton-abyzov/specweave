@@ -2,7 +2,7 @@
 
 **Status**: Accepted
 **Date**: 2025-11-12
-**Increment**: [0031-external-tool-status-sync](../../../../increments/0031-external-tool-status-sync/)
+**Increment**: [0031-external-tool-status-sync](../../../../increments/_archive/0031-external-tool-status-sync/)
 
 ---
 
@@ -133,6 +133,6 @@ class StatusMapper {
 
 ## Related
 
-- **ADR**: [Conflict Resolution Approach](0031-002-conflict-resolution-approach.md) - How conflicts are resolved
-- **ADR**: [Bidirectional Sync Implementation](0031-003-bidirectional-sync-implementation.md) - Sync flow
-- **Increment**: [0031-external-tool-status-sync](../../../../increments/0031-external-tool-status-sync/)
+- **ADR**: [Conflict Resolution Approach](0162-conflict-resolution-approach.md) - How conflicts are resolved
+- **ADR**: [Bidirectional Sync Implementation](0163-bidirectional-sync-implementation.md) - Sync flow
+- **Increment**: [0031-external-tool-status-sync](../../../../increments/_archive/0031-external-tool-status-sync/)

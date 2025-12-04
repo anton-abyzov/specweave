@@ -21,7 +21,7 @@ This increment creates a comprehensive Kafka event streaming plugin ecosystem fo
 
 ## Source
 
-This feature was created from increment: [`0035-kafka-event-streaming-plugin`](../../../../../increments/0035-kafka-event-streaming-plugin)
+This feature was created from increment: [`0035-kafka-event-streaming-plugin`](../../../../../../increments/_archive/0035-kafka-event-streaming-plugin)
 
 ## Business Value
 

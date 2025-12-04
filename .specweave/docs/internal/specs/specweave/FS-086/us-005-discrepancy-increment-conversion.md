@@ -33,11 +33,11 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0086-brownfield-doc-analysis](../../../../increments/0086-brownfield-doc-analysis/spec.md)
+**Increment**: [0086-brownfield-doc-analysis](../../../../../increments/0086-brownfield-doc-analysis/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-007](../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-007): Implement Discrepancy to Increment Flow
+- [x] [T-007](../../../../../increments/0086-brownfield-doc-analysis/tasks.md#T-007): Implement Discrepancy to Increment Flow

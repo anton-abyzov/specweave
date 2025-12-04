@@ -345,10 +345,10 @@ echo "Health Check Complete"
 ## 📚 RELATED DOCUMENTS
 
 1. **Executive Summary**:
-   `.specweave/increments/0053-safe-feature-deletion/reports/EXECUTIVE-SUMMARY-CRASH-FIX-2025-11-24.md`
+   `.specweave/increments/_archive/0053-safe-feature-deletion/reports/EXECUTIVE-SUMMARY-CRASH-FIX-2025-11-24.md`
 
 2. **Root Cause Analysis**:
-   `.specweave/increments/0053-safe-feature-deletion/reports/ROOT-CAUSE-ANALYSIS-TODOWRITE-CRASH-2025-11-24.md`
+   `.specweave/increments/_archive/0053-safe-feature-deletion/reports/ROOT-CAUSE-ANALYSIS-TODOWRITE-CRASH-2025-11-24.md`
 
 3. **ADR-0129** (Architectural Decision):
    `.specweave/docs/internal/architecture/adr/0129-us-sync-guard-rails.md`

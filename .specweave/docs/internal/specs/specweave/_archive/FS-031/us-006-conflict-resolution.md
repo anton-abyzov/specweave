@@ -9,7 +9,7 @@ completed: 2025-11-16
 
 # US-006: Conflict Resolution
 
-**Feature**: [FS-031](../../_features/FS-031/FEATURE.md)
+**Feature**: [FS-031](./FEATURE.md)
 
 **As a** SpecWeave user
 **I want** conflicts handled gracefully when statuses diverge
@@ -31,7 +31,7 @@ completed: 2025-11-16
 
 ## Implementation
 
-**Increment**: [0031-external-tool-status-sync](../../../../../increments/0031-external-tool-status-sync/tasks.md)
+**Increment**: [0031-external-tool-status-sync](../../../../../../increments/_archive/0031-external-tool-status-sync/tasks.md)
 
 **Source Tasks**: See increment tasks.md for complete task breakdown
 

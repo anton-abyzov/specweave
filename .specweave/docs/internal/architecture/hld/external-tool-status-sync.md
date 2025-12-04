@@ -3,7 +3,7 @@
 **Version**: 1.0
 **Date**: 2025-11-12
 **Status**: Implemented
-**Increment**: [0031-external-tool-status-sync](../../../increments/0031-external-tool-status-sync/)
+**Increment**: [0031-external-tool-status-sync](../../../../increments/_archive/0031-external-tool-status-sync/)
 
 ---
 
@@ -681,13 +681,13 @@ specweave init
 - [ADR-0031-003: Bidirectional Sync Implementation](./adr/0031-003-bidirectional-sync-implementation)
 
 ### User Documentation
-- [Status Sync Guide](../public/guides/status-sync-guide.md)
-- [Migration Guide](../public/guides/status-sync-migration.md)
+- Status Sync Guide (planned)
+- Migration Guide (planned)
 
 ### Increment Documentation
-- [Increment 0031](../../../increments/0031-external-tool-status-sync/)
-- [Spec](../../../increments/0031-external-tool-status-sync/spec.md)
-- [Plan](../../../increments/0031-external-tool-status-sync/plan.md)
+- [Increment 0031](../../../../increments/_archive/0031-external-tool-status-sync/)
+- [Spec](../../../../increments/_archive/0031-external-tool-status-sync/spec.md)
+- [Plan](../../../../increments/_archive/0031-external-tool-status-sync/plan.md)
 
 ---
 

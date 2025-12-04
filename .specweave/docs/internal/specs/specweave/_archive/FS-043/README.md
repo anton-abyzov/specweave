@@ -9,7 +9,7 @@ status: completed
 
 # Fix spec.md/metadata.json Desync + Add Validation Tools
 
-**Feature**: [FS-043](../../_features/FS-043/FEATURE.md)
+**Feature**: [FS-043](./FEATURE.md)
 
 ## Overview
 

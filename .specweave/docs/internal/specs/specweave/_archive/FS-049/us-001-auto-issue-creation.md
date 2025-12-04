@@ -9,7 +9,7 @@ created: 2025-11-21
 
 # US-001: Smart Pagination During Init (50-Project Limit)
 
-**Feature**: [FS-049](../../_features/FS-049/FEATURE.md)
+**Feature**: [FS-049](./FEATURE.md)
 
 **As a** DevOps engineer configuring SpecWeave for a large organization
 **I want** initialization to complete in < 30 seconds even with 500+ projects
@@ -30,6 +30,6 @@ created: 2025-11-21
 
 ## Implementation
 
-**Increment**: [0049-cli-first-init-flow](../../../../increments/0049-cli-first-init-flow/spec.md)
+**Increment**: [0049-cli-first-init-flow](../../../../../../increments/_archive/0049-cli-first-init-flow/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.

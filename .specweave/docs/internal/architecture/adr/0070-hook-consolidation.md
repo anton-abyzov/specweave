@@ -177,7 +177,7 @@ bash plugins/specweave/hooks/pre-edit-write-consolidated.sh
 # Result: ✓ Exits in `<1ms`
 
 # Test pre-hook with SpecWeave file (should signal post-hook)
-export TOOL_USE_ARGS='{"file_path":".specweave/increments/0051/spec.md"}'
+export TOOL_USE_ARGS='{"file_path":".specweave/increments/_archive/0051/spec.md"}'
 bash plugins/specweave/hooks/pre-edit-write-consolidated.sh
 # Result: ✓ Signal file created
 
@@ -238,7 +238,7 @@ done
 
 ## References
 
-- **Incident Report**: `.specweave/increments/0051/reports/HOOK-CRASH-ANALYSIS-2025-11-23.md`
+- **Incident Report**: `.specweave/increments/_archive/0051/reports/HOOK-CRASH-ANALYSIS-2025-11-23.md`
 - **CLAUDE.md Section 9a**: Hook Performance & Safety (v0.24.3)
 - **Related ADRs**: ADR-0060 (Three-tier optimization architecture)
 - **GitHub Issue**: #XXX (Hook process storm causing Claude Code crashes)

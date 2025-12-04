@@ -18,7 +18,7 @@ This increment completes the Unified Sync Orchestration feature by adding monito
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0085-sync-monitoring-commands](../../../../increments/0085-sync-monitoring-commands/spec.md) | ✅ completed | 2025-12-01 |
+| [0085-sync-monitoring-commands](../../../../../increments/0085-sync-monitoring-commands/spec.md) | ✅ completed | 2025-12-01 |
 
 ## User Stories
 

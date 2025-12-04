@@ -27,13 +27,13 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0089-bidirectional-sync-pull](../../../../increments/0089-bidirectional-sync-pull/spec.md)
+**Increment**: [0089-bidirectional-sync-pull](../../../../../increments/0089-bidirectional-sync-pull/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-002](../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-002): Implement ADO Change Detection
-- [x] [T-003](../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-003): Implement JIRA Change Detection
-- [x] [T-004](../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-004): Implement GitHub Change Detection
+- [x] [T-002](../../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-002): Implement ADO Change Detection
+- [x] [T-003](../../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-003): Implement JIRA Change Detection
+- [x] [T-004](../../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-004): Implement GitHub Change Detection

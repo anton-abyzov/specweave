@@ -9,7 +9,7 @@ status: completed
 
 # Test Status Line Sync Verification
 
-**Feature**: [FS-057](../../_features/FS-057/FEATURE.md)
+**Feature**: [FS-057](./FEATURE.md)
 
 ## Overview
 

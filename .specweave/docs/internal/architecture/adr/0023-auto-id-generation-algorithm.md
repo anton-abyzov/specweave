@@ -168,7 +168,7 @@ function ensureUniqueId(baseId: string, existingIds: Set<string>): UniqueIdResul
 
 ## References
 
-- **Increment 0022 Spec**: `.specweave/increments/0022-multi-repo-init-ux/spec.md`
+- **Increment 0022 Spec**: `.specweave/increments/_archive/0022-multi-repo-init-ux/spec.md`
 - **User Story**: US-002 - Auto-Generate Repository IDs
 - **Acceptance Criteria**: AC-US2-01, AC-US2-02, AC-US2-03
 - **Related ADRs**:

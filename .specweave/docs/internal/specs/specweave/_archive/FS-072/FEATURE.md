@@ -21,11 +21,11 @@ GitHub issues remain open even after increments are closed because:
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0072-github-status-reconciliation](../../../../increments/0072-github-status-reconciliation/spec.md) | ✅ completed | 2025-11-26 |
+| [0072-github-status-reconciliation](../../../../../../increments/_archive/0072-github-status-reconciliation/spec.md) | ✅ completed | 2025-11-26 |
 
 ## User Stories
 
-- [US-001: GitHub Status Reconciliation Command](../../specweave/FS-072/us-001-github-status-reconciliation-command.md)
-- [US-002: Automatic Issue Reopen on Resume](../../specweave/FS-072/us-002-automatic-issue-reopen-on-resume.md)
-- [US-003: Automatic Issue Close on Abandon](../../specweave/FS-072/us-003-automatic-issue-close-on-abandon.md)
-- [US-004: Optional Auto-Reconcile on Session Start](../../specweave/FS-072/us-004-optional-auto-reconcile-on-session-start.md)
+- [US-001: GitHub Status Reconciliation Command](./us-001-github-status-reconciliation-command.md)
+- [US-002: Automatic Issue Reopen on Resume](./us-002-automatic-issue-reopen-on-resume.md)
+- [US-003: Automatic Issue Close on Abandon](./us-003-automatic-issue-close-on-abandon.md)
+- [US-004: Optional Auto-Reconcile on Session Start](./us-004-optional-auto-reconcile-on-session-start.md)

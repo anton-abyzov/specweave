@@ -152,7 +152,7 @@ Task affects: "plugins/specweave/lib/hooks/sync-living-docs.js"
 
 After migration, review:
 ```bash
-cat .specweave/increments/0047-us-task-linkage/reports/migration-report.md
+cat .specweave/increments/_archive/0047-us-task-linkage/reports/migration-report.md
 ```
 
 Report includes:
@@ -197,7 +197,7 @@ Report includes:
 
 1. **Git restore** tasks.md changes:
    ```bash
-   git restore .specweave/increments/0046-*/tasks.md
+   git restore .specweave/increments/_archive/0046-*/tasks.md
    ```
 
 2. **Rollback living docs updates**:
@@ -229,7 +229,7 @@ After migrating an increment:
 
 1. **Parse tasks.md**: Ensure no parsing errors
    ```bash
-   npx tsx -e "import { parseTasksWithUSLinks } from './dist/src/generators/spec/task-parser.js'; parseTasksWithUSLinks('.specweave/increments/0043-*/tasks.md').then(console.log)"
+   npx tsx -e "import { parseTasksWithUSLinks } from './dist/src/generators/spec/task-parser.js'; parseTasksWithUSLinks('.specweave/increments/_archive/0043-*/tasks.md').then(console.log)"
    ```
 
 2. **Run validation**: Check AC coverage

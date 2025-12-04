@@ -9,7 +9,7 @@ created: 2025-11-16
 
 # US-005: Auto-Move to Next Active Increment (Priority: P1)
 
-**Feature**: [FS-039](../../_features/FS-039/FEATURE.md)
+**Feature**: [FS-039](./FEATURE.md)
 
 **As a** developer with multiple increments in progress
 **I want** /specweave:next to move to the next active increment when current is done
@@ -28,7 +28,7 @@ created: 2025-11-16
 
 ## Implementation
 
-**Increment**: [0039-ultra-smart-next-command](../../../../increments/0039-ultra-smart-next-command/spec.md)
+**Increment**: [0039-ultra-smart-next-command](../../../../../../increments/_archive/0039-ultra-smart-next-command/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

@@ -31,11 +31,11 @@ created: 2024-12-03
 
 ## Implementation
 
-**Increment**: [0095-per-project-epic-hierarchy](../../../../increments/0095-per-project-epic-hierarchy/spec.md)
+**Increment**: [0095-per-project-epic-hierarchy](../../../../../increments/0095-per-project-epic-hierarchy/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-002](../../../../increments/0095-per-project-epic-hierarchy/tasks.md#T-002): Fix ItemConverter epic/feature separation
+- [x] [T-002](../../../../../increments/0095-per-project-epic-hierarchy/tasks.md#T-002): Fix ItemConverter epic/feature separation

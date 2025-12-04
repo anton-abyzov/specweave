@@ -470,8 +470,8 @@ echo "[NORMAL] Running hook for single operation"
 
 ## References
 
-- Incident Analysis: `.specweave/increments/0053-safe-feature-deletion/reports/HOOK-PROCESS-STORM-CRASH-2025-11-24.md`
-- Emergency Procedures: `.specweave/docs/internal/emergency-procedures/HOOK-CRASH-RECOVERY.md`
+- Incident Analysis: `.specweave/increments/_archive/0053-safe-feature-deletion/reports/HOOK-PROCESS-STORM-CRASH-2025-11-24.md`
+- Emergency Procedures: `.specweave/docs/internal/../operations/hook-crash-recovery.md`
 - Circuit Breaker Design: `.specweave/docs/internal/emergency-procedures/CIRCUIT-BREAKER-MONITORING.md`
 
 ---

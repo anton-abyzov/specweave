@@ -9,7 +9,7 @@ completed: 2025-11-16
 
 # US-005: User Prompts on Completion
 
-**Feature**: [FS-031](../../_features/FS-031/FEATURE.md)
+**Feature**: [FS-031](./FEATURE.md)
 
 **As a** SpecWeave user
 **I want** to be prompted to update external status when completing increments
@@ -34,13 +34,13 @@ completed: 2025-11-16
 
 - [x] **T-012**: Integrate Status Sync with /specweave:done Command
 
-> **Note**: Tasks are project-specific. For the full increment task list, see [increment tasks.md](../../../../../increments/${userStory.implementation.increment}/tasks.md)
+> **Note**: Tasks are project-specific. For the full increment task list, see [increment tasks.md](../../../../../../increments/_archive/0031-external-tool-status-sync/tasks.md)
 
 ---
 
 ## Implementation
 
-**Increment**: [0031-external-tool-status-sync](../../../../../increments/0031-external-tool-status-sync/tasks.md)
+**Increment**: [0031-external-tool-status-sync](../../../../../../increments/_archive/0031-external-tool-status-sync/tasks.md)
 
 **Source Tasks**: See increment tasks.md for complete task breakdown
 

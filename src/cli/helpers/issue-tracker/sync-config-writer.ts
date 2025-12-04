@@ -280,7 +280,31 @@ function buildJiraSyncConfig(
 }
 
 /**
+ * Deduplicate an array preserving order (first occurrence wins)
+ * Works for both primitive arrays (strings) and object arrays (by key)
+ *
+ * Exported for use in other modules (e.g., index.ts writeSyncConfigHelper)
+ */
+export function deduplicateArray<T>(arr: T[] | undefined, keyFn?: (item: T) => string): T[] {
+  if (!arr || arr.length === 0) return [];
+  const seen = new Set<string>();
+  const result: T[] = [];
+
+  for (const item of arr) {
+    const key = keyFn ? keyFn(item) : String(item);
+    if (!seen.has(key)) {
+      seen.add(key);
+      result.push(item);
+    }
+  }
+  return result;
+}
+
+/**
  * Build ADO sync configuration
+ *
+ * CRITICAL FIX (v0.31.x): Deduplicates areaPaths to prevent duplicates
+ * Bug: Multiple init steps could add the same areaPaths multiple times
  */
 function buildAdoSyncConfig(
   config: any,
@@ -300,13 +324,20 @@ function buildAdoSyncConfig(
     for (const proj of adoCreds.projects) {
       const profileId = `ado-${proj.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
 
+      // Deduplicate areaPaths - handles both string[] and object[] formats
+      const dedupedAreaPaths = proj.areaPaths?.length
+        ? deduplicateArray(proj.areaPaths, (item: any) =>
+            typeof item === 'string' ? item : (item.id || item.path || item.name || JSON.stringify(item))
+          )
+        : undefined;
+
       profiles[profileId] = {
         provider: 'ado',
         displayName: `Azure DevOps - ${proj.name}`,
         config: {
           organization,
           project: proj.name,
-          ...(proj.areaPaths?.length ? { areaPaths: proj.areaPaths } : {}),
+          ...(dedupedAreaPaths?.length ? { areaPaths: dedupedAreaPaths } : {}),
           ...(adoCreds.strategy ? { strategy: adoCreds.strategy } : {}),
           ...(proj.isUmbrella ? { isUmbrella: true } : {})
         },
@@ -352,6 +383,13 @@ function buildAdoSyncConfig(
     };
   } else {
     // Single project configuration (backward compatibility)
+    // Deduplicate areaPaths for single project too
+    const dedupedAreaPaths = adoCreds.areaPaths?.length
+      ? deduplicateArray(adoCreds.areaPaths, (item: any) =>
+          typeof item === 'string' ? item : (item.id || item.path || item.name || JSON.stringify(item))
+        )
+      : undefined;
+
     profiles['ado-default'] = {
       provider: 'ado',
       displayName: 'Azure DevOps Default',
@@ -360,7 +398,7 @@ function buildAdoSyncConfig(
         project,
         ...(adoCreds.team ? { team: adoCreds.team } : {}),
         ...(adoCreds.teams?.length ? { teams: adoCreds.teams } : {}),
-        ...(adoCreds.areaPaths?.length ? { areaPaths: adoCreds.areaPaths } : {}),
+        ...(dedupedAreaPaths?.length ? { areaPaths: dedupedAreaPaths } : {}),
         ...(adoCreds.strategy ? { strategy: adoCreds.strategy } : {})
       },
       timeRange: {

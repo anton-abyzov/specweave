@@ -9,7 +9,7 @@ status: completed
 
 # ConfigManager & Jira Auto-Discovery (Phase 1a)
 
-**Feature**: [FS-048](../../_features/FS-048/FEATURE.md)
+**Feature**: [FS-048](./FEATURE.md)
 
 ## Overview
 

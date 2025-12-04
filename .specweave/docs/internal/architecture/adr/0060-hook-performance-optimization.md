@@ -315,7 +315,7 @@ disown 2>/dev/null || true
 ```bash
 # Test hook performance with 100 rapid edits
 for i in {1..100}; do
-  echo "test $i" >> .specweave/increments/0050-test/tasks.md
+  echo "test $i" >> .specweave/increments/_archive/0050-test/tasks.md
   sleep 0.1  # Simulate typing
 done
 
@@ -373,7 +373,7 @@ time bash plugins/specweave/hooks/post-edit-spec.sh
 
 **Impact:** Forces fallback logic, degraded performance
 
-**Reproduction:** See `.specweave/increments/0050-*/reports/hook-crash-analysis.md`
+**Reproduction:** See `.specweave/increments/_archive/0050-*/reports/hook-crash-analysis.md`
 
 ### Future Enhancements
 
@@ -397,7 +397,7 @@ time bash plugins/specweave/hooks/post-edit-spec.sh
 
 ## References
 
-- **Incident Report:** `.specweave/increments/0050-*/reports/hook-crash-analysis.md`
+- **Incident Report:** `.specweave/increments/_archive/0050-*/reports/hook-crash-analysis.md`
 - **Hook Source:** `plugins/specweave/hooks/post-edit-spec.sh`
 - **Status Line Update:** `plugins/specweave/hooks/lib/update-status-line.sh`
 - **Plugin Registration:** `plugins/specweave/.claude-plugin/plugin.json`

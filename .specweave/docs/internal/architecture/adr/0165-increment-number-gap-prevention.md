@@ -317,7 +317,7 @@ function getNextFeatureNumber(featuresDir = '.specweave/increments') {
 ```typescript
 describe('IncrementNumberManager', () => {
   it('scans main directory', () => {
-    // .specweave/increments/0001-feature/
+    // .specweave/increments/_archive/0001-feature/
     expect(getNext()).toBe('0002');
   });
 

@@ -247,9 +247,9 @@ After all files created (spec.md, plan.md, tasks.md, metadata.json):
 // Notify Claude Code that increment was created
 console.log('[NOTIFICATION:IncrementCreated]', {
   incrementId: '0057-feature-name',
-  spec: '.specweave/increments/0057-feature-name/spec.md',
-  plan: '.specweave/increments/0057-feature-name/plan.md',
-  tasks: '.specweave/increments/0057-feature-name/tasks.md'
+  spec: '.specweave/increments/_archive/0057-feature-name/spec.md',
+  plan: '.specweave/increments/_archive/0057-feature-name/plan.md',
+  tasks: '.specweave/increments/_archive/0057-feature-name/tasks.md'
 });
 \```
 

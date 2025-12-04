@@ -30,11 +30,11 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0087-remove-redundant-feature-id](../../../../increments/0087-remove-redundant-feature-id/spec.md)
+**Increment**: [0087-remove-redundant-feature-id](../../../../../increments/0087-remove-redundant-feature-id/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0087-remove-redundant-feature-id/tasks.md#T-001): Update Type Definitions
+- [x] [T-001](../../../../../increments/0087-remove-redundant-feature-id/tasks.md#T-001): Update Type Definitions

@@ -199,8 +199,8 @@ graph LR
 - [FS-032: Frontend Components](../../specs/default/FS-032-frontend-components/README.md)
 
 ### Implementation
-- [Increment 0031](../../../increments/0031-external-tool-status-sync/spec.md)
-- [Increment 0032](../../../increments/0032-frontend-components/spec.md)
+- [Increment 0031](../../../increments/_archive/0031-external-tool-status-sync/spec.md)
+- [Increment 0032](../../../increments/_archive/0032-frontend-components/spec.md)
 
 ---
 

@@ -18,10 +18,10 @@ Large files (1500+ lines) cause Claude Code context exhaustion crashes during ed
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0076-crash-prevention-refactor](../../../../increments/0076-crash-prevention-refactor/spec.md) | ✅ completed | 2025-11-26 |
+| [0076-crash-prevention-refactor](../../../../../../increments/_archive/0076-crash-prevention-refactor/spec.md) | ✅ completed | 2025-11-26 |
 
 ## User Stories
 
-- [US-001: Split Test File](../../specweave/FS-076/us-001-split-test-file.md)
-- [US-002: Modularize External Resource Validator](../../specweave/FS-076/us-002-modularize-external-resource-validator.md)
-- [US-003: Modularize Living Docs Sync](../../specweave/FS-076/us-003-modularize-living-docs-sync.md)
+- [US-001: Split Test File](./us-001-split-test-file.md)
+- [US-002: Modularize External Resource Validator](./us-002-modularize-external-resource-validator.md)
+- [US-003: Modularize Living Docs Sync](./us-003-modularize-living-docs-sync.md)

@@ -210,7 +210,7 @@ For each increment modifying existing code:
 
 **Example Directory Structure**:
 ```
-.specweave/increments/0003-refactor-payment/
+.specweave/increments/_archive/0003-refactor-payment/
 ├── spec.md                    # What we're changing
 ├── plan.md                    # How we'll change it
 ├── tasks.md                   # Implementation tasks
@@ -327,7 +327,7 @@ documentation:
 ```yaml
 # Incremental context, document as needed
 spec_sections:
-  - .specweave/increments/0003-refactor-payment/reports/payment-before.md
+  - .specweave/increments/_archive/0003-refactor-payment/reports/payment-before.md
 documentation:
   - .specweave/docs/internal/architecture/core-architecture.md  # From initial scan
 ```
@@ -354,7 +354,7 @@ documentation:
 Increment 0003: Refactor payment flow - COMPLETE
 
 Documentation Updated:
-  ✓ .specweave/increments/0003-refactor-payment/reports/payment-before.md (archived)
+  ✓ .specweave/increments/_archive/0003-refactor-payment/reports/payment-before.md (archived)
   ✓ .specweave/docs/internal/strategy/payments/payment-flow-spec.md (created/updated)
   ✓ .specweave/docs/internal/architecture/payment-service-design.md (updated patterns)
 
@@ -389,7 +389,7 @@ features/{increment-id}-{short-name}
 **Step 1: Create increment folder**
 ```bash
 # Auto-numbered folder in .specweave/increments/
-mkdir -p .specweave/increments/0002-diagram-agents
+mkdir -p .specweave/increments/_archive/0002-diagram-agents
 ```
 
 **Step 2: Create feature branch**
@@ -424,7 +424,7 @@ git push origin features/002-diagram-agents
 ```bash
 # Use gh CLI or GitHub web UI
 gh pr create --title "Increment 0002: Diagram Architect Agent" \
-             --body "See .specweave/increments/0002-diagram-agents/spec.md" \
+             --body "See .specweave/increments/_archive/0002-diagram-agents/spec.md" \
              --base develop \
              --head features/002-diagram-agents
 ```
@@ -470,8 +470,8 @@ git push origin --delete features/002-diagram-agents
 
 ```bash
 # 1. Create increment structure
-mkdir -p .specweave/increments/0003-jira-integration
-cd .specweave/increments/0003-jira-integration
+mkdir -p .specweave/increments/_archive/0003-jira-integration
+cd .specweave/increments/_archive/0003-jira-integration
 # Create spec.md, tasks.md, tests.md
 
 # 2. Create feature branch

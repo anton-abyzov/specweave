@@ -28,7 +28,7 @@ created: 2025-11-27
 
 ## Implementation
 
-**Increment**: [0077-ado-init-flow-critical-fixes](../../../../increments/0077-ado-init-flow-critical-fixes/spec.md)
+**Increment**: [0077-ado-init-flow-critical-fixes](../../../../../../increments/_archive/0077-ado-init-flow-critical-fixes/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

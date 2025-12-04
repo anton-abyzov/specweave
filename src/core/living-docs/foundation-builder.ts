@@ -291,7 +291,7 @@ function generateTechStack(
     const teamStacks = new Map<string, { frameworks: Set<string>; languages: Set<string>; count: number }>();
 
     for (const module of discovery.modules) {
-      // Extract team from module name (e.g., "assetcare-fe" → "assetcare")
+      // Extract team from module name (e.g., "producthub-fe" → "producthub")
       const teamMatch = module.name.match(/^([a-z0-9]+)-/i);
       const team = teamMatch ? teamMatch[1] : 'other';
 

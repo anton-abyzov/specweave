@@ -80,4 +80,4 @@ documentation:
 ## Related
 
 - [Documentation Philosophy](../../../../CLAUDE.md#documentation-philosophy--approaches)
-- [Strategy Docs](../../strategy/index.md)
+- [Strategy Docs](../../delivery/README.md)

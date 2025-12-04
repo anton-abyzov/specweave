@@ -29,7 +29,7 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0068-fix-multi-repo-import-from](../../../../increments/0068-fix-multi-repo-import-from/spec.md)
+**Increment**: [0068-fix-multi-repo-import-from](../../../../../../increments/_archive/0068-fix-multi-repo-import-from/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

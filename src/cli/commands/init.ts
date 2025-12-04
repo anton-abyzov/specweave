@@ -611,6 +611,20 @@ export async function initCommand(
         })
       : [];
 
+    // CRITICAL FIX (v0.30.13): Belt-and-suspenders check for brownfield
+    // Even if skipInitialIncrement failed to be set (import exception), check for existing specs
+    // This prevents FS-001 "Project Setup" creation for brownfield projects
+    const specsDir = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs');
+    const hasExistingSpecs = fs.existsSync(specsDir) && fs.readdirSync(specsDir).some(entry => {
+      const fullPath = path.join(specsDir, entry);
+      // Check for any directory that could be a project folder or feature folder
+      return fs.statSync(fullPath).isDirectory() && !entry.startsWith('_') && !entry.startsWith('.');
+    });
+    if (hasExistingSpecs && !skipInitialIncrement) {
+      skipInitialIncrement = true;
+      console.log(chalk.gray('\n📦 Skipping default increment (existing specs detected - brownfield project)'));
+    }
+
     if (!continueExisting && existingIncrements.length === 0 && !skipInitialIncrement) {
       console.log(chalk.cyan.bold('\n📦 Creating Initial Increment'));
       try {

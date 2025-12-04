@@ -9,7 +9,7 @@ created: 2025-11-24
 
 # US-002: ExternalToolDriftDetector Reliability Improvements (Priority: P1)
 
-**Feature**: [FS-054](../../_features/FS-054/FEATURE.md)
+**Feature**: [FS-054](./FEATURE.md)
 
 **As a** developer using multiple external tools
 **I want** drift detection to check ALL configured tools (not just first)
@@ -26,7 +26,7 @@ created: 2025-11-24
 
 ## Implementation
 
-**Increment**: [0054-sync-guard-security-reliability-fixes](../../../../increments/0054-sync-guard-security-reliability-fixes/spec.md)
+**Increment**: [0054-sync-guard-security-reliability-fixes](../../../../../../increments/_archive/0054-sync-guard-security-reliability-fixes/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

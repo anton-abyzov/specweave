@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/dispatcher.mjs\" session-start"
+            "command": "bash -c 'F=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/dispatcher.mjs\"; [ -f \"$F\" ] && node \"$F\" session-start || printf \"{\\\"continue\\\":true}\"' 2>/dev/null || printf '{\"continue\":true}'"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/dispatcher.mjs\" completion-guard"
+            "command": "bash -c 'F=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/dispatcher.mjs\"; [ -f \"$F\" ] && node \"$F\" completion-guard || printf \"{\\\"continue\\\":true}\"' 2>/dev/null || printf '{\"continue\":true}'"
           }
         ]
       }
@@ -29,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/universal/dispatcher.mjs\" post-tool-use"
+            "command": "bash -c 'F=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/dispatcher.mjs\"; [ -f \"$F\" ] && node \"$F\" post-tool-use || printf \"{\\\"continue\\\":true}\"' 2>/dev/null || printf '{\"continue\":true}'"
           }
         ]
       }

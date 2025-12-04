@@ -13,7 +13,7 @@ external:
 
 # US-001: Claude Code Plugin Registration (P0 - Critical)
 
-**Feature**: [FS-023](../../_features/FS-023/FEATURE.md)
+**Feature**: [FS-023](./FEATURE.md)
 
 **As a** SpecWeave user
 **I want** the release plugin to auto-load via Claude Code's plugin system

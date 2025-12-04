@@ -22,7 +22,7 @@ Current hooks system has issues:
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0088-eda-hooks-architecture](../../../../increments/0088-eda-hooks-architecture/spec.md) | ✅ completed | 2025-12-01 |
+| [0088-eda-hooks-architecture](../../../../../increments/0088-eda-hooks-architecture/spec.md) | ✅ completed | 2025-12-01 |
 
 ## User Stories
 

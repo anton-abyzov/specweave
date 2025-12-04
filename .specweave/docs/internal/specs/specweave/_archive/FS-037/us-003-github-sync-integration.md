@@ -10,7 +10,7 @@ project: specweave
 
 # US-003: GitHub Sync Integration
 
-**Feature**: [FS-037](../../_features/FS-037/FEATURE.md)
+**Feature**: [FS-037](./FEATURE.md)
 
 **As a** stakeholder viewing GitHub issues
 **I want** to see project-specific task progress (backend vs frontend)

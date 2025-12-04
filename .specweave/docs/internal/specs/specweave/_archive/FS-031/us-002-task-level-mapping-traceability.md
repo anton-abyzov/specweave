@@ -9,7 +9,7 @@ completed: 2025-11-16
 
 # US-002: Task-Level Mapping & Traceability
 
-**Feature**: [FS-031](../../_features/FS-031/FEATURE.md)
+**Feature**: [FS-031](./FEATURE.md)
 
 **As a** developer or PM
 **I want** to see which tasks implement which user stories
@@ -30,7 +30,7 @@ completed: 2025-11-16
 
 ## Implementation
 
-**Increment**: [0031-external-tool-status-sync](../../../../../increments/0031-external-tool-status-sync/tasks.md)
+**Increment**: [0031-external-tool-status-sync](../../../../../../increments/_archive/0031-external-tool-status-sync/tasks.md)
 
 **Source Tasks**: See increment tasks.md for complete task breakdown
 

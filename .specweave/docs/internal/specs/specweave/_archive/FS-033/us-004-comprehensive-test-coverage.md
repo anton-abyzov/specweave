@@ -13,7 +13,7 @@ external:
 
 # US-004: Comprehensive Test Coverage
 
-**Feature**: [FS-033](../../_features/FS-033/FEATURE.md)
+**Feature**: [FS-033](./FEATURE.md)
 
 **As a** contributor
 **I want** comprehensive tests for duplicate prevention
@@ -29,11 +29,11 @@ external:
 
 ## Implementation
 
-**Increment**: [0033-duplicate-increment-prevention](../../../../../increments/0033-duplicate-increment-prevention/tasks.md)
+**Increment**: [0033-duplicate-increment-prevention](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md)
 
 **Tasks**:
-- [T-004: Create Comprehensive Unit Tests](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-004-create-comprehensive-unit-tests)
-- [T-018: Add Comprehensive E2E Tests](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-018-add-comprehensive-e2e-tests)
+- [T-004: Create Comprehensive Unit Tests](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-004-create-comprehensive-unit-tests)
+- [T-018: Add Comprehensive E2E Tests](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-018-add-comprehensive-e2e-tests)
 
 ---
 

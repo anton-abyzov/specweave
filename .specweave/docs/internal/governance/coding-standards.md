@@ -576,7 +576,7 @@ function createUser(email: string): User {
 
 ## Related Documentation
 
-- [Code Review Standards](../delivery/code-review-standards.md) - Review guidelines
+- [Code Review Standards](../delivery/guides/development-workflow.md) - Review guidelines
 - [Testing Strategy](../delivery/guides/testing-strategy.md) - Test coverage goals
 - [Security Policy](./security-policy) - Security best practices
 

@@ -9,7 +9,7 @@ created: 2025-11-18T00:00:00.000Z
 
 # US-004: Existing Desyncs Detected and Repaired (Priority: P2 - Important)
 
-**Feature**: [FS-043](../../_features/FS-043/FEATURE.md)
+**Feature**: [FS-043](./FEATURE.md)
 
 **As a** SpecWeave maintainer
 **I want** a script to detect and repair existing spec.md/metadata.json desyncs
@@ -27,7 +27,7 @@ created: 2025-11-18T00:00:00.000Z
 
 ## Implementation
 
-**Increment**: [0043-spec-md-desync-fix](../../../../increments/0043-spec-md-desync-fix/spec.md)
+**Increment**: [0043-spec-md-desync-fix](../../../../../../increments/_archive/0043-spec-md-desync-fix/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

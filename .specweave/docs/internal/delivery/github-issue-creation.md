@@ -362,9 +362,9 @@ bash scripts/cleanup-duplicate-github-issues.sh --patterns "[FS-048][US-001]" --
 - **Deprecated**: `plugins/specweave-github/lib/github-spec-sync.ts` (wrong architecture)
 
 ### Reports
-- `.specweave/increments/0047-us-task-linkage/reports/FEATURE-LEVEL-GITHUB-SYNC-REMOVAL-PLAN.md`
-- `.specweave/increments/0050-*/reports/GITHUB-ISSUE-BUG-ANALYSIS-2025-11-22.md`
-- `.specweave/increments/0050-*/reports/SP-PREFIX-BUG-ROOT-CAUSE-2025-11-22.md`
+- `.specweave/increments/_archive/0047-us-task-linkage/reports/FEATURE-LEVEL-GITHUB-SYNC-REMOVAL-PLAN.md`
+- `.specweave/increments/_archive/0050-*/reports/GITHUB-ISSUE-BUG-ANALYSIS-2025-11-22.md`
+- `.specweave/increments/_archive/0050-*/reports/SP-PREFIX-BUG-ROOT-CAUSE-2025-11-22.md`
 
 ### Scripts
 - `scripts/pre-commit-hooks/validate-github-issue-format.sh` (validation)

@@ -27,7 +27,7 @@ created: 2024-12-03
 
 ## Implementation
 
-**Increment**: [0096-ado-import-fixes](../../../../increments/0096-ado-import-fixes/spec.md)
+**Increment**: [0096-ado-import-fixes](../../../../../increments/0096-ado-import-fixes/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

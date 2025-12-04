@@ -28,7 +28,7 @@ created: 2025-11-29
 
 ## Implementation
 
-**Increment**: [0080-ado-folder-naming-fix](../../../../increments/0080-ado-folder-naming-fix/spec.md)
+**Increment**: [0080-ado-folder-naming-fix](../../../../../../increments/_archive/0080-ado-folder-naming-fix/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

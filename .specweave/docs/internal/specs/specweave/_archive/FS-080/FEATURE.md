@@ -18,9 +18,9 @@ The A
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0080-ado-folder-naming-fix](../../../../increments/0080-ado-folder-naming-fix/spec.md) | ✅ completed | 2025-11-29 |
+| [0080-ado-folder-naming-fix](../../../../../../increments/_archive/0080-ado-folder-naming-fix/spec.md) | ✅ completed | 2025-11-29 |
 
 ## User Stories
 
-- [US-001: Remove ADO- Prefix from Folder Names](../../specweave/FS-080/us-001-remove-ado-prefix-from-folder-names.md)
-- [US-002: Ensure Work Items Go to Correct Area Path Folders](../../specweave/FS-080/us-002-ensure-work-items-go-to-correct-area-path-folders.md)
+- [US-001: Remove ADO- Prefix from Folder Names](./us-001-remove-ado-prefix-from-folder-names.md)
+- [US-002: Ensure Work Items Go to Correct Area Path Folders](./us-002-ensure-work-items-go-to-correct-area-path-folders.md)

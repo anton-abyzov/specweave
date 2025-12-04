@@ -27,7 +27,7 @@ created: 2025-11-24T00:00:00.000Z
 
 ## Implementation
 
-**Increment**: [0057-test-status-line-sync](../../../../increments/0057-test-status-line-sync/spec.md)
+**Increment**: [0057-test-status-line-sync](../../../../../../increments/_archive/0057-test-status-line-sync/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

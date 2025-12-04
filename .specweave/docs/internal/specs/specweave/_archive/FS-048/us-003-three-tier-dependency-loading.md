@@ -9,7 +9,7 @@ created: 2025-11-21
 
 # US-003: Three-Tier Dependency Loading (Partial)
 
-**Feature**: [FS-048](../../_features/FS-048/FEATURE.md)
+**Feature**: [FS-048](./FEATURE.md)
 
 ---
 
@@ -21,6 +21,6 @@ No acceptance criteria defined.
 
 ## Implementation
 
-**Increment**: [0048-external-tool-import-enhancement](../../../../increments/0048-external-tool-import-enhancement/spec.md)
+**Increment**: [0048-external-tool-import-enhancement](../../../../../../increments/_archive/0048-external-tool-import-enhancement/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.

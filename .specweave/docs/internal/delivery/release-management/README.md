@@ -21,7 +21,7 @@ last_updated: 2025-11-13
 
 | Increment | Stories Implemented | Status | Completion Date |
 |-----------|-------------------|--------|----------------|
-| [0023-release-management-enhancements](../../../../increments/0023-release-management-enhancements/tasks.md) | undefined through undefined (all) | ✅ Complete | 2025-11-13 |
+| [0023-release-management-enhancements](../../../../increments/_archive/0023-release-management-enhancements/tasks.md) | undefined through undefined (all) | ✅ Complete | 2025-11-13 |
 
 **Overall Progress**: 0/0 user stories complete (NaN%)
 

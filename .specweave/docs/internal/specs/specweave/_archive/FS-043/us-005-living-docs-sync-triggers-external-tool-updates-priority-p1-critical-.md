@@ -9,7 +9,7 @@ created: 2025-11-18T00:00:00.000Z
 
 # US-005: Living Docs Sync Triggers External Tool Updates (Priority: P1 - CRITICAL)
 
-**Feature**: [FS-043](../../_features/FS-043/FEATURE.md)
+**Feature**: [FS-043](./FEATURE.md)
 
 **As a** developer using GitHub/JIRA/ADO sync
 **I want** living docs sync to automatically update external tools (GitHub issues, JIRA tickets, ADO work items)
@@ -31,7 +31,7 @@ created: 2025-11-18T00:00:00.000Z
 
 ## Implementation
 
-**Increment**: [0043-spec-md-desync-fix](../../../../increments/0043-spec-md-desync-fix/spec.md)
+**Increment**: [0043-spec-md-desync-fix](../../../../../../increments/_archive/0043-spec-md-desync-fix/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

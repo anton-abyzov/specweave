@@ -26,7 +26,7 @@ created: 2025-12-02
 
 ## Implementation
 
-**Increment**: [0090-living-docs-builder](../../../../increments/0090-living-docs-builder/spec.md)
+**Increment**: [0090-living-docs-builder](../../../../../increments/0090-living-docs-builder/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

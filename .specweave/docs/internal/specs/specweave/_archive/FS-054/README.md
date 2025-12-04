@@ -9,7 +9,7 @@ status: completed
 
 # Sync Guard Security and Reliability Fixes
 
-**Feature**: [FS-054](../../_features/FS-054/FEATURE.md)
+**Feature**: [FS-054](./FEATURE.md)
 
 ## Overview
 

@@ -871,9 +871,9 @@ interface AutonomousSafetyMetrics {
 
 ## References
 
-- **Living Spec**: [SPEC-0039: Ultra-Smart Next Command](../../specs/specweave/spec-0039-ultra-smart-next-command.md)
-- **User Story**: [US-010: Autonomous Workflow Mode](../../specs/specweave/FS-039/us-010-autonomous-workflow-mode.md)
-- **Increment**: [0039-ultra-smart-next-command](../../../increments/0039-ultra-smart-next-command/)
+- **Living Spec**: [SPEC-0039: Ultra-Smart Next Command](../../specs/specweave/_archive/FS-039/FEATURE.md)
+- **User Story**: [US-010: Autonomous Workflow Mode](../../specs/specweave/_archive/FS-039/us-010-autonomous-workflow-mode-priority-p3-.md)
+- **Increment**: [0039-ultra-smart-next-command](../../../increments/_archive/0039-ultra-smart-next-command/)
 
 ---
 

@@ -41,7 +41,7 @@
 
 **Purpose**: Define HOW to validate feature meets acceptance criteria
 
-**Location**: `.specweave/increments/0001-feature-name/tests.md`
+**Location**: `.specweave/increments/_archive/0001-feature-name/tests.md`
 
 **Format**: Markdown with test coverage matrix and detailed strategies
 
@@ -210,7 +210,7 @@ test('TC-0001: Valid Login Flow', async ({ page }) => {
    - [ ] **TC-0001**: Valid credentials → redirect to dashboard
    ```
 
-2. **Feature**: `.specweave/increments/0002-user-login/tests.md`
+2. **Feature**: `.specweave/increments/_archive/0002-user-login/tests.md`
    ```markdown
    | TC-0001 | Valid login flow | E2E | tests/e2e/login.spec.ts | P1 |
    ```

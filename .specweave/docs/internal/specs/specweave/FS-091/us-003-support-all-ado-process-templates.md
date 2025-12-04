@@ -32,11 +32,11 @@ created: 2025-12-02
 
 ## Implementation
 
-**Increment**: [0091-ado-hierarchy-intelligence](../../../../increments/0091-ado-hierarchy-intelligence/spec.md)
+**Increment**: [0091-ado-hierarchy-intelligence](../../../../../increments/0091-ado-hierarchy-intelligence/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-006](../../../../increments/0091-ado-hierarchy-intelligence/tasks.md#T-006): Support All Process Templates in Hierarchy Mapping
+- [x] [T-006](../../../../../increments/0091-ado-hierarchy-intelligence/tasks.md#T-006): Support All Process Templates in Hierarchy Mapping

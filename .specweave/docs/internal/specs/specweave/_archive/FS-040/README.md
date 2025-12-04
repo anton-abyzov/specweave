@@ -9,7 +9,7 @@ status: completed
 
 # Complete Vitest Migration - Fix Living Docs Mock Issues
 
-**Feature**: [FS-040](../../_features/FS-040/FEATURE.md)
+**Feature**: [FS-040](./FEATURE.md)
 
 ## User Stories
 

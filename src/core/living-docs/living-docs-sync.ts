@@ -22,6 +22,7 @@ import yaml from 'yaml';
 import { FeatureIDManager } from './feature-id-manager.js';
 import { TaskProjectSpecificGenerator } from './task-project-specific-generator.js';
 import { FeatureConsistencyValidator } from './feature-consistency-validator.js';
+import { BoardMatcher, type MatchDecision } from './board-matcher.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { autoDetectProjectIdSync } from '../../utils/project-detection.js';
 import { getGitHubAuthFromProject } from '../../utils/auth-helpers.js';
@@ -60,6 +61,7 @@ export type { SyncOptions, SyncResult, ParsedSpec, UserStoryData, AcceptanceCrit
 export class LivingDocsSync {
   private projectRoot: string;
   private featureIdManager: FeatureIDManager;
+  private boardMatcher: BoardMatcher;
   private logger: Logger;
   private projectId: string;
 
@@ -67,6 +69,7 @@ export class LivingDocsSync {
     this.projectRoot = projectRoot;
     this.featureIdManager = new FeatureIDManager(projectRoot);
     this.logger = options.logger ?? consoleLogger;
+    this.boardMatcher = new BoardMatcher(projectRoot, { logger: this.logger });
     // Auto-detect project ID from git remote, sync config, or use "default"
     this.projectId = autoDetectProjectIdSync(projectRoot, { silent: true });
   }
@@ -358,87 +361,194 @@ export class LivingDocsSync {
   }
 
   /**
-   * Resolve the project path for an increment (SMART BROWNFIELD MATCHING)
+   * Resolve the project path for an increment (SMART BOARD MATCHING - v0.31.0+)
    *
-   * For brownfield projects imported from ADO/JIRA, the specs folder may have
-   * hierarchical organization like: acme/digital-operations-services
+   * For brownfield projects imported from ADO/JIRA, uses intelligent board matching
+   * based on increment title, description, and configured keywords.
    *
-   * This method:
-   * 1. Extracts the project name from increment spec.md
-   * 2. Scans existing specs folder for matching hierarchical paths
-   * 3. Returns the FULL path if found (e.g., "acme/digital-operations-services")
-   * 4. Falls back to flat path if no match (e.g., "digital-operation-services")
+   * Priority:
+   * 1. Explicit **Project**: field in spec.md (always wins)
+   * 2. Intelligent board matching using BoardMatcher (ADR-0178)
+   *    - High confidence (>80%): auto-assign
+   *    - Medium/Low confidence: ask user
+   * 3. Existing folder match (hierarchical search)
+   * 4. Default project ID (single-project fallback)
    *
    * @param incrementId - Increment ID (e.g., "0002-test-anton-monitor")
    * @returns Project path (may be hierarchical like "org/project")
    */
   private async resolveProjectPath(incrementId: string): Promise<string> {
-    // 1. Extract project name from spec.md **Project**: field (explicit)
+    // 1. Extract project name from spec.md **Project**: field (explicit - always wins)
     const specProject = await this.extractProjectFromSpec(incrementId);
 
-    // 2. Check if multi-project mode is enabled
-    const multiProjectInfo = await this.detectMultiProjectMode();
+    if (specProject) {
+      // Explicit project specified - use it directly
+      const normalizedProject = specProject.toLowerCase().replace(/\s+/g, '-');
+      this.logger.log(`   📎 Using explicit project from spec.md: ${normalizedProject}`);
 
-    if (!specProject) {
-      // No project in spec.md
-      if (multiProjectInfo.isMultiProject && multiProjectInfo.projects.length > 0) {
-        // Multi-project mode: ASK user which project
-        this.logger.log(`   ⚠️  No **Project** field in spec.md and multi-project mode detected`);
-        return await this.askUserForProject(incrementId, multiProjectInfo.projects);
-      }
-      // Single project: use default detection
-      return this.projectId;
-    }
-
-    // 3. Normalize the project name for comparison
-    const normalizedProject = specProject.toLowerCase().replace(/\s+/g, '-');
-
-    // 4. Scan existing specs folder for hierarchical matches
-    const specsBase = path.join(this.projectRoot, '.specweave/docs/internal/specs');
-
-    if (!existsSync(specsBase)) {
-      // No specs folder yet - use normalized project name
-      if (multiProjectInfo.isMultiProject) {
-        // Multi-project: validate project is in the list
-        const matchedProject = multiProjectInfo.projects.find(
-          p => p.id.toLowerCase() === normalizedProject ||
-               p.name.toLowerCase() === normalizedProject
-        );
-        if (matchedProject) {
-          return matchedProject.id;
+      // Try to find existing hierarchical path
+      const specsBase = path.join(this.projectRoot, '.specweave/docs/internal/specs');
+      if (existsSync(specsBase)) {
+        const foundPath = await this.findBestProjectMatch(specsBase, normalizedProject);
+        if (foundPath) {
+          this.logger.log(`   🔍 Found existing project path: ${foundPath}`);
+          return foundPath;
         }
-        // Project not found in config - ask user
-        this.logger.log(`   ⚠️  Project "${specProject}" not found in multi-project config`);
-        return await this.askUserForProject(incrementId, multiProjectInfo.projects);
       }
       return normalizedProject;
     }
 
-    // 5. Search for matching paths at all levels (org/project, project)
-    const foundPath = await this.findBestProjectMatch(specsBase, normalizedProject);
+    // 2. No explicit project - use intelligent board matching
+    const availableBoards = await this.boardMatcher.getAvailableBoards();
 
-    if (foundPath) {
-      this.logger.log(`   🔍 Found existing project path: ${foundPath}`);
-      return foundPath;
+    if (availableBoards.length === 0) {
+      // No boards configured - use default project detection
+      return this.projectId;
     }
 
-    // 6. No match found in existing folders
-    if (multiProjectInfo.isMultiProject) {
-      // Multi-project: validate against config, ask user if not confident
-      const matchedProject = multiProjectInfo.projects.find(
-        p => p.id.toLowerCase() === normalizedProject ||
-             p.name.toLowerCase() === normalizedProject
-      );
-      if (matchedProject) {
-        return matchedProject.id;
+    if (availableBoards.length === 1) {
+      // Single board - use it directly
+      // CRITICAL FIX (v0.30.13): For ADO with 2-level structure, construct {project}/{board}
+      const board = availableBoards[0];
+      if (board.adoProject) {
+        const fullPath = `${board.adoProject}/${board.id}`;
+        this.logger.log(`   📁 Single ADO board: ${board.name} → ${fullPath}`);
+        return fullPath;
       }
-      // Ask user
-      this.logger.log(`   🤔 Not sure where to sync increment ${incrementId} in multi-project mode`);
-      return await this.askUserForProject(incrementId, multiProjectInfo.projects);
+      this.logger.log(`   📁 Single board configured: ${board.name}`);
+      return board.id;
     }
 
-    // Single project: use flat project name
-    return normalizedProject;
+    // Multiple boards - run intelligent matching
+    const specContent = await this.getIncrementSpecContent(incrementId);
+    const matchDecision = await this.boardMatcher.matchIncrement(incrementId, specContent);
+
+    // Check if this is a utility/cross-cutting increment
+    if (this.boardMatcher.isUtilityIncrement(specContent)) {
+      this.logger.log(`   🔧 Utility increment detected - asking user for board selection`);
+      return await this.askUserForBoardSelection(incrementId, matchDecision);
+    }
+
+    // Handle match decision
+    if (!matchDecision.needsUserInput && matchDecision.bestMatch) {
+      // High confidence match - auto-assign
+      const match = matchDecision.bestMatch;
+      this.logger.log(`   ✅ Auto-matched to board: ${match.boardName} (${match.confidence}% confidence)`);
+      if (match.matchedTerms.length > 0) {
+        this.logger.log(`      Matched terms: ${match.matchedTerms.slice(0, 5).join(', ')}`);
+      }
+      // CRITICAL FIX (v0.30.13): For ADO with 2-level structure, construct {project}/{board}
+      if (match.adoProject) {
+        return `${match.adoProject}/${match.boardId}`;
+      }
+      return match.boardId;
+    }
+
+    // Need user input - show match results and ask
+    return await this.askUserForBoardSelection(incrementId, matchDecision);
+  }
+
+  /**
+   * Get the raw spec.md content for an increment
+   */
+  private async getIncrementSpecContent(incrementId: string): Promise<string> {
+    const specPath = path.join(
+      this.projectRoot,
+      '.specweave/increments',
+      incrementId,
+      'spec.md'
+    );
+    try {
+      return await fs.readFile(specPath, 'utf-8');
+    } catch {
+      return '';
+    }
+  }
+
+  /**
+   * Ask user to select a board with intelligent match suggestions
+   */
+  private async askUserForBoardSelection(
+    incrementId: string,
+    decision: MatchDecision
+  ): Promise<string> {
+    try {
+      const { select, input } = await import('@inquirer/prompts');
+
+      this.logger.log('');
+      this.logger.log(`   🤔 Which board/area path should increment ${incrementId} sync to?`);
+
+      if (decision.bestMatch && decision.bestMatch.confidence > 0) {
+        this.logger.log(`   💡 Best match: ${decision.bestMatch.boardName} (${decision.bestMatch.confidence}% confidence)`);
+        if (decision.reason === 'medium-confidence-needs-confirmation') {
+          this.logger.log(`      Reason: ${decision.bestMatch.matchedTerms.slice(0, 3).join(', ')}`);
+        }
+      }
+
+      // Build choices - put best matches first
+      // CRITICAL FIX (v0.30.13): Include adoProject in value for 2-level folder structure
+      const choices: Array<{ name: string; value: string }> = [];
+
+      // Add matched boards first (sorted by confidence)
+      for (const match of decision.allMatches.slice(0, 5)) {
+        // For ADO boards with project, construct full path
+        const fullPath = match.adoProject
+          ? `${match.adoProject}/${match.boardId}`
+          : match.boardId;
+        choices.push({
+          name: `${match.boardName} (${match.confidence}% match)`,
+          value: fullPath
+        });
+      }
+
+      // Add remaining boards that weren't in matches
+      const matchedIds = new Set(decision.allMatches.map(m => m.boardId));
+      for (const board of decision.availableBoards) {
+        if (!matchedIds.has(board.id)) {
+          // For ADO boards with project, construct full path
+          const fullPath = board.adoProject
+            ? `${board.adoProject}/${board.id}`
+            : board.id;
+          choices.push({
+            name: board.name,
+            value: fullPath
+          });
+        }
+      }
+
+      // Add option to create new
+      choices.push({
+        name: '📁 Create new project folder...',
+        value: '__new__'
+      });
+
+      const selected = await select({
+        message: 'Select board/area path:',
+        choices
+      });
+
+      if (selected === '__new__') {
+        const newProject = await input({
+          message: 'Enter new project folder name:',
+          validate: (v: string) => /^[a-z0-9-]+$/.test(v) || 'Must be lowercase kebab-case (e.g., my-project)'
+        });
+        return newProject;
+      }
+
+      return selected;
+    } catch {
+      // inquirer not available or user cancelled
+      if (decision.bestMatch && decision.bestMatch.confidence >= 50) {
+        // CRITICAL FIX (v0.30.13): Use full path for ADO boards
+        const fullPath = decision.bestMatch.adoProject
+          ? `${decision.bestMatch.adoProject}/${decision.bestMatch.boardId}`
+          : decision.bestMatch.boardId;
+        this.logger.log(`   ⚠️  Could not prompt - using best match: ${fullPath}`);
+        return fullPath;
+      }
+      this.logger.log(`   ⚠️  Could not prompt - using default project: ${this.projectId}`);
+      return this.projectId;
+    }
   }
 
   /**

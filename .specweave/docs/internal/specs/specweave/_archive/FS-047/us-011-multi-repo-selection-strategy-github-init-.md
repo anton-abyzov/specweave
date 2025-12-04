@@ -9,7 +9,7 @@ created: 2025-11-19
 
 # US-011: Multi-Repo Selection Strategy (GitHub Init)
 
-**Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
+**Feature**: [FS-047](./FEATURE.md)
 
 **As a** team lead adopting SpecWeave in a multi-repo organization
 **I want** intelligent repository selection during GitHub init (all org repos, personal repos, pattern matching, or explicit list)
@@ -36,7 +36,7 @@ created: 2025-11-19
 
 ## Implementation
 
-**Increment**: [0047-us-task-linkage](../../../../increments/0047-us-task-linkage/spec.md)
+**Increment**: [0047-us-task-linkage](../../../../../../increments/_archive/0047-us-task-linkage/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

@@ -13,7 +13,7 @@ external:
 
 # US-002: Auto-Detect and Resolve Conflicts
 
-**Feature**: [FS-033](../../_features/FS-033/FEATURE.md)
+**Feature**: [FS-033](./FEATURE.md)
 
 **As a** developer
 **I want** the system to automatically detect and resolve duplicate conflicts
@@ -29,18 +29,18 @@ external:
 
 ## Implementation
 
-**Increment**: [0033-duplicate-increment-prevention](../../../../../increments/0033-duplicate-increment-prevention/tasks.md)
+**Increment**: [0033-duplicate-increment-prevention](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md)
 
 **Tasks**:
-- [T-001: Create DuplicateDetector Utility](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-001-create-duplicatedetector-utility)
-- [T-002: Implement Conflict Resolution Algorithm](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-002-implement-conflict-resolution-algorithm)
-- [T-003: Implement Content Merge Logic](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-003-implement-content-merge-logic)
-- [T-010: Implement Dry-Run Mode](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-010-implement-dry-run-mode)
-- [T-011: Implement Safe Mode with Confirmation](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-011-implement-safe-mode-with-confirmation)
-- [T-014: Create Fix Duplicates Command](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-014-create-fix-duplicates-command)
-- [T-015: Implement Auto-Resolution](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-015-implement-auto-resolution)
-- [T-016: Implement Content Merging](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-016-implement-content-merging)
-- [T-017: Generate Resolution Report](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-017-generate-resolution-report)
+- [T-001: Create DuplicateDetector Utility](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-001-create-duplicatedetector-utility)
+- [T-002: Implement Conflict Resolution Algorithm](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-002-implement-conflict-resolution-algorithm)
+- [T-003: Implement Content Merge Logic](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-003-implement-content-merge-logic)
+- [T-010: Implement Dry-Run Mode](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-010-implement-dry-run-mode)
+- [T-011: Implement Safe Mode with Confirmation](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-011-implement-safe-mode-with-confirmation)
+- [T-014: Create Fix Duplicates Command](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-014-create-fix-duplicates-command)
+- [T-015: Implement Auto-Resolution](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-015-implement-auto-resolution)
+- [T-016: Implement Content Merging](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-016-implement-content-merging)
+- [T-017: Generate Resolution Report](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-017-generate-resolution-report)
 
 ---
 

@@ -28,7 +28,7 @@ created: 2025-11-24
 
 ## Implementation
 
-**Increment**: [0061-fix-multi-repo-init-ux](../../../../increments/0061-fix-multi-repo-init-ux/spec.md)
+**Increment**: [0061-fix-multi-repo-init-ux](../../../../../../increments/_archive/0061-fix-multi-repo-init-ux/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

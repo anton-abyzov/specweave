@@ -334,7 +334,7 @@ mocha "**/*.test.ts"
 
 ## References
 
-- **Analysis**: `.specweave/increments/0041/reports/ULTRATHINK-TEST-DUPLICATION-ANALYSIS-2025-11-18.md` (Part 2: E2E Test Naming)
+- **Analysis**: `.specweave/increments/_archive/0041/reports/ULTRATHINK-TEST-DUPLICATION-ANALYSIS-2025-11-18.md` (Part 2: E2E Test Naming)
 - **Industry Standards**: Jest, Vitest, Mocha documentation
 - **Current Inconsistency**: 21 `.spec.ts` files, 6 `.test.ts` files in E2E
 

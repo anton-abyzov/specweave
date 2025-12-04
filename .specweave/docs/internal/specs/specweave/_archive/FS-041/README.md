@@ -9,7 +9,7 @@ status: completed
 
 # Complete Living Docs Test Fixes
 
-**Feature**: [FS-041](../../_features/FS-041/FEATURE.md)
+**Feature**: [FS-041](./FEATURE.md)
 
 ## Overview
 

@@ -28,7 +28,7 @@ created: 2025-11-24T00:00:00.000Z
 
 ## Implementation
 
-**Increment**: [0058-fix-status-sync-and-auto-github-update](../../../../increments/0058-fix-status-sync-and-auto-github-update/spec.md)
+**Increment**: [0058-fix-status-sync-and-auto-github-update](../../../../../../increments/_archive/0058-fix-status-sync-and-auto-github-update/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

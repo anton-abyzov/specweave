@@ -1,11 +1,16 @@
-# Docs Init - Initialize Documentation Site
+---
+name: specweave-docs:init
+description: Initialize Docusaurus documentation site with spec-driven structure, living docs integration, and SpecWeave-optimized configuration.
+---
+
+# Initialize Documentation Site
 
 Initialize a Docusaurus documentation site with spec-driven documentation structure, living docs integration, and SpecWeave-optimized configuration.
 
 ## Usage
 
 ```
-/specweave-docs:docs-init [options]
+/specweave-docs:init [options]
 ```
 
 ## What I Do

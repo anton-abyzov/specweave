@@ -10,7 +10,7 @@ project: specweave
 
 # US-004: Learning Path Recommendations
 
-**Feature**: [FS-038](../../_features/FS-038/FEATURE.md)
+**Feature**: [FS-038](./FEATURE.md)
 
 **As a** developer learning a new serverless platform
 **I want** curated learning resources and sample projects

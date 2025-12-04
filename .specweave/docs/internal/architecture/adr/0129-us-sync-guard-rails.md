@@ -506,7 +506,7 @@ git cherry-pick <v0.25.1-commit-sha>
 
 ## Related Documents
 
-- **Root Cause Analysis**: `.specweave/increments/0053-safe-feature-deletion/reports/ROOT-CAUSE-ANALYSIS-TODOWRITE-CRASH-2025-11-24.md`
+- **Root Cause Analysis**: `.specweave/increments/_archive/0053-safe-feature-deletion/reports/ROOT-CAUSE-ANALYSIS-TODOWRITE-CRASH-2025-11-24.md`
 - **ADR-0070**: Hook Consolidation (v0.25.0)
 - **ADR-0073**: Hook Recursion Prevention Strategy (v0.26.0)
 - **ADR-0072**: Post-Task Hook Simplification (v0.24.4)

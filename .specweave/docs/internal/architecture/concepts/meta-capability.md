@@ -230,11 +230,11 @@ Increment: 003-figma-integration
 ↓
 Uses: pm agent (requirements)
 ↓
-Output: .specweave/increments/003-figma-integration/spec.md
+Output: .specweave/increments/_archive/003-figma-integration/spec.md
 ↓
 Uses: architect agent (design)
 ↓
-Output: .specweave/increments/003-figma-integration/plan.md
+Output: .specweave/increments/_archive/003-figma-integration/plan.md
 ↓
 Uses: docs-writer agent (documentation)
 ↓
@@ -458,8 +458,8 @@ product-mapper skill → Maps Shopify products to internal catalog
 
 - [Agents vs Skills Architecture](../../CLAUDE.md#agents-vs-skills-architecture) - Understanding agents and skills
 - [Agents/Skills Factory Pattern](../../CLAUDE.md#agents-skills-factory-pattern) - Selective installation
-- [Creating Custom Agents](../../../docs/public/guides/creating-custom-agents.md) - Step-by-step guide (to be created)
-- [Creating Custom Skills](../../../docs/public/guides/creating-custom-skills.md) - Step-by-step guide (to be created)
+- Creating Custom Agents - Step-by-step guide (planned)
+- Creating Custom Skills - Step-by-step guide (planned)
 
 ---
 

@@ -27,11 +27,11 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0089-bidirectional-sync-pull](../../../../increments/0089-bidirectional-sync-pull/spec.md)
+**Increment**: [0089-bidirectional-sync-pull](../../../../../increments/0089-bidirectional-sync-pull/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-008](../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-008): Enhance SyncAuditLogger with Pull Fields
+- [x] [T-008](../../../../../increments/0089-bidirectional-sync-pull/tasks.md#T-008): Enhance SyncAuditLogger with Pull Fields

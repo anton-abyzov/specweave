@@ -10,7 +10,7 @@ sourceIncrement: 0035-kafka-event-streaming-plugin
 
 # SpecWeave Implementation: Kafka Event Streaming Integration Plugin
 
-**Feature**: [FS-035](../../_features/FS-035/FEATURE.md)
+**Feature**: [FS-035](./FEATURE.md)
 
 ## Overview
 
@@ -29,7 +29,7 @@ This document contains the SpecWeave implementation details for the Kafka Event 
 
 ## User Stories (SpecWeave)
 
-_This increment has no user stories. See [FEATURE.md](../../_features/FS-035/FEATURE.md) for overview and implementation details._
+_This increment has no user stories. See [FEATURE.md](./FEATURE.md) for overview and implementation details._
 
 ## Dependencies
 
@@ -41,4 +41,4 @@ _This increment has no user stories. See [FEATURE.md](../../_features/FS-035/FEA
 
 ---
 
-**Source**: [Increment 0035-kafka-event-streaming-plugin](../../../../../increments/0035-kafka-event-streaming-plugin)
+**Source**: [Increment 0035-kafka-event-streaming-plugin](../../../../../../increments/_archive/0035-kafka-event-streaming-plugin)

@@ -31,16 +31,16 @@ created: 2025-12-02
 
 ## Implementation
 
-**Increment**: [0092-code-quality-foundation](../../../../increments/0092-code-quality-foundation/spec.md)
+**Increment**: [0092-code-quality-foundation](../../../../../increments/0092-code-quality-foundation/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-002](../../../../increments/0092-code-quality-foundation/tasks.md#T-002): Add Logger to CLI Helpers
-- [x] [T-003](../../../../increments/0092-code-quality-foundation/tasks.md#T-003): Add Logger to CLI Commands
-- [x] [T-004](../../../../increments/0092-code-quality-foundation/tasks.md#T-004): Add Logger to Core Modules
-- [x] [T-005](../../../../increments/0092-code-quality-foundation/tasks.md#T-005): Add Logger to Integrations
-- [x] [T-006](../../../../increments/0092-code-quality-foundation/tasks.md#T-006): Add Logger to Remaining Modules
-- [x] [T-007](../../../../increments/0092-code-quality-foundation/tasks.md#T-007): Verify Tests and Build
+- [x] [T-002](../../../../../increments/0092-code-quality-foundation/tasks.md#T-002): Add Logger to CLI Helpers
+- [x] [T-003](../../../../../increments/0092-code-quality-foundation/tasks.md#T-003): Add Logger to CLI Commands
+- [x] [T-004](../../../../../increments/0092-code-quality-foundation/tasks.md#T-004): Add Logger to Core Modules
+- [x] [T-005](../../../../../increments/0092-code-quality-foundation/tasks.md#T-005): Add Logger to Integrations
+- [x] [T-006](../../../../../increments/0092-code-quality-foundation/tasks.md#T-006): Add Logger to Remaining Modules
+- [x] [T-007](../../../../../increments/0092-code-quality-foundation/tasks.md#T-007): Verify Tests and Build

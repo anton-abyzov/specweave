@@ -9,7 +9,7 @@ created: 2025-11-19
 
 # US-005: Progress Tracking by User Story
 
-**Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
+**Feature**: [FS-047](./FEATURE.md)
 
 **As a** developer checking increment status
 **I want** `/specweave:progress` to show per-US task completion
@@ -27,7 +27,7 @@ created: 2025-11-19
 
 ## Implementation
 
-**Increment**: [0047-us-task-linkage](../../../../increments/0047-us-task-linkage/spec.md)
+**Increment**: [0047-us-task-linkage](../../../../../../increments/_archive/0047-us-task-linkage/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

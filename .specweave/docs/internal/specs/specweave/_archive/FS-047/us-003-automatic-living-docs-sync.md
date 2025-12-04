@@ -9,7 +9,7 @@ created: 2025-11-19
 
 # US-003: Automatic Living Docs Sync
 
-**Feature**: [FS-047](../../_features/FS-047/FEATURE.md)
+**Feature**: [FS-047](./FEATURE.md)
 
 **As a** developer completing tasks
 **I want** living docs User Story files to automatically update from increment
@@ -29,7 +29,7 @@ created: 2025-11-19
 
 ## Implementation
 
-**Increment**: [0047-us-task-linkage](../../../../increments/0047-us-task-linkage/spec.md)
+**Increment**: [0047-us-task-linkage](../../../../../../increments/_archive/0047-us-task-linkage/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

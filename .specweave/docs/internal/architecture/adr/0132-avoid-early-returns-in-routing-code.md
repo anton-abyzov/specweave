@@ -300,7 +300,7 @@ if (projectPath && githubToken) {
 
 ## Related
 
-- **Incident Report**: `.specweave/increments/0053-safe-feature-deletion/reports/GITHUB-MULTIREPO-INIT-FIX-2025-11-24.md`
+- **Incident Report**: `.specweave/increments/_archive/0053-safe-feature-deletion/reports/GITHUB-MULTIREPO-INIT-FIX-2025-11-24.md`
 - **RepoStructureManager**: `src/core/repo-structure/repo-structure-manager.ts:426+`
 - **promptGitHubSetupType**: `src/cli/helpers/issue-tracker/github-multi-repo.ts:80+`
 

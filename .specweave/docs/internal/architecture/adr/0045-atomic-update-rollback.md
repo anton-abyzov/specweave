@@ -563,7 +563,7 @@ it('E2E: status update with spec.md failure triggers rollback', async () => {
   await createTestIncrement(testDir, '0001', 'active');
 
   // Corrupt spec.md to trigger failure
-  const specPath = path.join(testDir, '.specweave/increments/0001/spec.md');
+  const specPath = path.join(testDir, '.specweave/increments/_archive/0001/spec.md');
   await fs.writeFile(specPath, '---\ninvalid yaml: [unclosed\n---', 'utf-8');
 
   // Act: Attempt status update (should fail)

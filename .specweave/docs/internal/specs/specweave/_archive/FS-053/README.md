@@ -9,7 +9,7 @@ status: completed
 
 # Safe Feature Deletion Command
 
-**Feature**: [FS-053](../../_features/FS-053/FEATURE.md)
+**Feature**: [FS-053](./FEATURE.md)
 
 ## Overview
 

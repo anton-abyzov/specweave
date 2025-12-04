@@ -10,7 +10,7 @@ project: specweave
 
 # US-010: Security and Compliance Guidance
 
-**Feature**: [FS-038](../../_features/FS-038/FEATURE.md)
+**Feature**: [FS-038](./FEATURE.md)
 
 **As a** developer deploying serverless applications
 **I want** security best practices and compliance guidance

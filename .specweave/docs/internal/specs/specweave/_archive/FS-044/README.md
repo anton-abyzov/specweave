@@ -9,7 +9,7 @@ status: completed
 
 # Integration Testing - Status Line and Hooks
 
-**Feature**: [FS-044](../../_features/FS-044/FEATURE.md)
+**Feature**: [FS-044](./FEATURE.md)
 
 ## Overview
 

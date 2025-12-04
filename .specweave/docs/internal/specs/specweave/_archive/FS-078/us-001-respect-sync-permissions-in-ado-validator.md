@@ -28,7 +28,7 @@ created: 2025-11-28
 
 ## Implementation
 
-**Increment**: [0078-ado-init-validation-critical-fixes](../../../../increments/0078-ado-init-validation-critical-fixes/spec.md)
+**Increment**: [0078-ado-init-validation-critical-fixes](../../../../../../increments/_archive/0078-ado-init-validation-critical-fixes/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

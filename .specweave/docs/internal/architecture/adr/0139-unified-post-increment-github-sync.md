@@ -164,4 +164,4 @@ GITHUB_TOKEN=xxx node dist/plugins/specweave-github/lib/github-feature-sync-cli.
 
 - [ADR-0135: Increment Creation Sync Orchestration](./0135-increment-creation-sync-orchestration)
 - [ADR-0134: External Tool Detection Enhancement](./0134-external-tool-detection-enhancement)
-- [CLAUDE.md: GitHub Issue Format](../../../CLAUDE.md)
+- [CLAUDE.md: GitHub Issue Format(../../../../../../CLAUDE.md)

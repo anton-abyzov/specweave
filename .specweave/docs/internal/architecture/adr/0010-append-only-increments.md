@@ -73,7 +73,7 @@ Traditional documentation approaches force a false choice:
 Each increment declares what living docs it affects:
 
 ```yaml
-# .specweave/increments/0002-oauth/context-manifest.yaml
+# .specweave/increments/_archive/0002-oauth/context-manifest.yaml
 updates_living_docs:
   - .specweave/docs/internal/strategy/auth-system.md#oauth-flow
   - .specweave/docs/public/guides/authentication.md#login-methods

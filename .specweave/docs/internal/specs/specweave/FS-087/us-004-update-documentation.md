@@ -31,12 +31,12 @@ created: 2025-12-01
 
 ## Implementation
 
-**Increment**: [0087-remove-redundant-feature-id](../../../../increments/0087-remove-redundant-feature-id/spec.md)
+**Increment**: [0087-remove-redundant-feature-id](../../../../../increments/0087-remove-redundant-feature-id/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-005](../../../../increments/0087-remove-redundant-feature-id/tasks.md#T-005): Create ADR for Feature ID Derivation
-- [x] [T-006](../../../../increments/0087-remove-redundant-feature-id/tasks.md#T-006): Update Public Documentation
+- [x] [T-005](../../../../../increments/0087-remove-redundant-feature-id/tasks.md#T-005): Create ADR for Feature ID Derivation
+- [x] [T-006](../../../../../increments/0087-remove-redundant-feature-id/tasks.md#T-006): Update Public Documentation

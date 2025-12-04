@@ -524,7 +524,7 @@ MCP Kafka Trigger (topic: support-tickets)
 - [n8n Community Kafka Producer Node](https://github.com/n8n-io/n8n-nodes-kafka)
 - [n8n Workflow Templates](https://n8n.io/workflows/)
 - [kcat (kafkacat) Documentation](https://github.com/edenhill/kcat)
-- [SPEC-035: US-014 n8n Kafka Integration](../../specs/default/spec-035-kafka-plugin.md#us-014-n8n-kafka-integration-priority-p2)
+- [SPEC-035: US-014 n8n Kafka Integration](../../architecture/adr/0035-kafka-multi-plugin-architecture.md#us-014-n8n-kafka-integration-priority-p2)
 
 ---
 

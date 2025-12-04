@@ -232,7 +232,7 @@ $ grep -r '"permissions":' .specweave/ --include="config.json"
 ## References
 
 **Related ADRs**:
-- [ADR-0047: Three-Permission Architecture](./0047-three-permission-architecture.md) - Introduced `sync.settings.*` model
+- [ADR-0047: Three-Permission Architecture](0065-three-tier-permission-gates.md) - Introduced `sync.settings.*` model
 - [ADR-0065: Three-Tier Permission Gates](./0065-three-tier-permission-gates.md) - 4-gate model for increment 0051
 
 **Related Increments**:

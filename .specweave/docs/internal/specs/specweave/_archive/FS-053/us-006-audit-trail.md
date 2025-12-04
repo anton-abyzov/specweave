@@ -9,7 +9,7 @@ created: 2025-11-23T00:00:00.000Z
 
 # US-006: Audit Trail (Priority: P2)
 
-**Feature**: [FS-053](../../_features/FS-053/FEATURE.md)
+**Feature**: [FS-053](./FEATURE.md)
 
 **As a** team lead reviewing changes
 **I want** feature deletions to be logged with full context
@@ -36,7 +36,7 @@ created: 2025-11-23T00:00:00.000Z
 
 ## Implementation
 
-**Increment**: [0053-safe-feature-deletion](../../../../increments/0053-safe-feature-deletion/spec.md)
+**Increment**: [0053-safe-feature-deletion](../../../../../../increments/_archive/0053-safe-feature-deletion/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

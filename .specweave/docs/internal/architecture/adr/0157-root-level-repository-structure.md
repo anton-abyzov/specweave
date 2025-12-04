@@ -197,7 +197,7 @@ done
 
 ## References
 
-- **Increment 0022 Spec**: `.specweave/increments/0022-multi-repo-init-ux/spec.md`
+- **Increment 0022 Spec**: `.specweave/increments/_archive/0022-multi-repo-init-ux/spec.md`
 - **User Story**: US-005 - Root-Level Repository Structure
 - **Acceptance Criteria**: AC-US5-01, AC-US5-03, AC-US5-04
 - **User Feedback**: "Don't use 'services' folder! just put all repos into the root!"

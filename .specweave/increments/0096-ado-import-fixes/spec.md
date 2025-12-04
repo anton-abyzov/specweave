@@ -13,7 +13,7 @@ created: 2024-12-03
 Testing of increment 0095 revealed several issues with ADO import:
 
 ### Bug 1: Boards at root specs level
-Boards like `ai-platform`, `assetcare` appear at `specs/` root instead of inside the project folder (`specs/acme/`).
+Boards like `ai-platform`, `inventory` appear at `specs/` root instead of inside the project folder (`specs/acme/`).
 
 **Root Cause**: In `groupAdoItemsByParentHierarchy()` line 173, the `projectId` is derived from the parent item's **title** instead of the **area path**:
 ```typescript

@@ -13,7 +13,7 @@ external:
 
 # US-001: Prevent Duplicate Locations
 
-**Feature**: [FS-033](../../_features/FS-033/FEATURE.md)
+**Feature**: [FS-033](./FEATURE.md)
 
 **As a** developer
 **I want** the system to prevent increments from existing in multiple locations
@@ -29,14 +29,14 @@ external:
 
 ## Implementation
 
-**Increment**: [0033-duplicate-increment-prevention](../../../../../increments/0033-duplicate-increment-prevention/tasks.md)
+**Increment**: [0033-duplicate-increment-prevention](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md)
 
 **Tasks**:
-- [T-001: Create DuplicateDetector Utility](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-001-create-duplicatedetector-utility)
-- [T-005: Add Validation to Increment Creation](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-005-add-validation-to-increment-creation)
-- [T-006: Add Validation to Increment Archiving](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-006-add-validation-to-increment-archiving)
-- [T-007: Add Validation to Increment Reopening](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-007-add-validation-to-increment-reopening)
-- [T-008: Add Startup Duplicate Check (Warning)](../../../../../increments/0033-duplicate-increment-prevention/tasks.md#t-008-add-startup-duplicate-check-warning)
+- [T-001: Create DuplicateDetector Utility](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-001-create-duplicatedetector-utility)
+- [T-005: Add Validation to Increment Creation](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-005-add-validation-to-increment-creation)
+- [T-006: Add Validation to Increment Archiving](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-006-add-validation-to-increment-archiving)
+- [T-007: Add Validation to Increment Reopening](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-007-add-validation-to-increment-reopening)
+- [T-008: Add Startup Duplicate Check (Warning)](../../../../../../increments/_archive/0033-duplicate-increment-prevention/tasks.md#t-008-add-startup-duplicate-check-warning)
 
 ---
 

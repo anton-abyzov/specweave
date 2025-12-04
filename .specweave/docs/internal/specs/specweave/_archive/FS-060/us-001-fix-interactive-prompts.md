@@ -28,7 +28,7 @@ created: 2025-11-26
 
 ## Implementation
 
-**Increment**: [0060-migrate-inquirer-to-modular-api](../../../../increments/0060-migrate-inquirer-to-modular-api/spec.md)
+**Increment**: [0060-migrate-inquirer-to-modular-api](../../../../../../increments/_archive/0060-migrate-inquirer-to-modular-api/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 

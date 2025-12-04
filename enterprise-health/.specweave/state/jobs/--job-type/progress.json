@@ -1,0 +1,6 @@
+{
+  "phase": "error",
+  "progress": 0,
+  "message": "Job config not found: enterprise-health/.specweave/state/jobs/--job-type/config.json",
+  "updatedAt": "2025-12-04T01:17:41.408Z"
+}

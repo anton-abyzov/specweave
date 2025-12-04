@@ -229,7 +229,7 @@ time bash plugins/specweave/hooks/pre-edit-write-consolidated.sh
 **Validation**:
 ```bash
 # Test mtime fallback
-touch .specweave/increments/0051-*/spec.md
+touch .specweave/increments/_archive/0051-*/spec.md
 # Wait 500ms
 # Hook should detect modification and update status line
 ```
@@ -305,7 +305,7 @@ time bash plugins/specweave/hooks/pre-edit-write-consolidated.sh
 
 ```bash
 # Touch spec.md
-touch .specweave/increments/0051-automatic-github-sync/spec.md
+touch .specweave/increments/_archive/0051-automatic-github-sync/spec.md
 
 # Wait 500ms
 sleep 0.5
