@@ -51,3 +51,15 @@ Sync Enabled: ✅
 
 Next Sync: Automatic on task completion
 ```
+
+---
+
+## Related
+
+| Command | Purpose |
+|---------|---------|
+| `/specweave-ado:pull` | Pull changes from ADO |
+| `/specweave-ado:push` | Push progress to ADO |
+| `/specweave-ado:sync` | Two-way sync |
+| `/specweave-ado:create` | Create ADO work item |
+| `/specweave-ado:close` | Close work item |

@@ -234,8 +234,25 @@ Options:
 
 ---
 
+## Simpler Alternatives
+
+For most use cases, use the git-style commands:
+
+| Command | Purpose |
+|---------|---------|
+| `/specweave-ado:pull` | Pull changes from ADO (read-only) |
+| `/specweave-ado:push` | Push progress to ADO |
+
+Use `/specweave-ado:sync` when you need explicit two-way sync with options.
+
+---
+
 ## Related
 
-- `/specweave-ado:create-workitem` - Create new ADO work item
-- `/specweave-ado:status` - Check sync status (read-only, always allowed)
-- `/specweave-ado:close-workitem` - Close work item when complete
+| Command | Purpose |
+|---------|---------|
+| `/specweave-ado:pull` | Pull from ADO (git-style) |
+| `/specweave-ado:push` | Push to ADO (git-style) |
+| `/specweave-ado:create` | Create new ADO work item |
+| `/specweave-ado:status` | Check sync status |
+| `/specweave-ado:close` | Close work item when complete |

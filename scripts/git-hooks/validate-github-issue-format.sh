@@ -11,7 +11,7 @@ GITHUB_FILES=(
   "plugins/specweave-github/lib/task-sync.ts"
   "plugins/specweave-github/lib/github-client-v2.ts"
   "plugins/specweave-github/agents/github-manager/AGENT.md"
-  "plugins/specweave-github/commands/specweave-github-create-issue.md"
+  "plugins/specweave-github/commands/create.md"
 )
 
 # Pattern to detect (deprecated format)

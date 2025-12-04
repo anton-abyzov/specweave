@@ -1,5 +1,5 @@
 ---
-name: specweave-github:create-issue
+name: specweave-github:create
 description: Create a GitHub issue for a SpecWeave increment. Generates issue from increment specs with task checklist, labels, and milestone. Links issue to increment metadata.
 ---
 
@@ -7,7 +7,7 @@ description: Create a GitHub issue for a SpecWeave increment. Generates issue fr
 
 Create a GitHub issue for the specified SpecWeave increment.
 
-## Usage
+**Usage**: `/specweave-github:create <increment-id>`
 
 ```bash
 /specweave:github:create-issue <increment-id> [options]
