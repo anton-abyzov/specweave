@@ -1,0 +1,169 @@
+name: Release & Publish
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.7.1, 0.8.0)'
+        required: true
+        type: string
+      version_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  check-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      has_tag: ${{ steps.check.outputs.has_tag }}
+      tag_name: ${{ steps.check.outputs.tag_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: check
+        run: |
+          TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+' | head -1)
+          if [ -n "$TAG" ]; then
+            echo "has_tag=true" >> $GITHUB_OUTPUT
+            echo "tag_name=$TAG" >> $GITHUB_OUTPUT
+            echo "Found tag: $TAG"
+          else
+            echo "has_tag=false" >> $GITHUB_OUTPUT
+            echo "No version tag found"
+          fi
+
+  release:
+    needs: check-tag
+    if: needs.check-tag.outputs.has_tag == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts
+
+      - name: Build project
+        run: npm run build
+
+      - name: Bump version (manual workflow only)
+        if: github.event_name == 'workflow_dispatch'
+        run: npm version "${{ github.event.inputs.version_type }}" --no-git-tag-version
+
+      - name: Extract version from package.json
+        id: package_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION"
+
+      - name: Auto-generate CHANGELOG if needed
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          if grep -q "## \[$VERSION\]" CHANGELOG.md; then
+            echo "CHANGELOG entry found for $VERSION"
+          else
+            echo "Auto-generating CHANGELOG entry for $VERSION..."
+            LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            if [ -n "$LAST_TAG" ]; then
+              COMMITS=$(git log --oneline "$LAST_TAG"..HEAD --no-merges | head -10)
+            else
+              COMMITS=$(git log --oneline -10 --no-merges)
+            fi
+            TEMP_FILE=$(mktemp)
+            {
+              echo "# Changelog"
+              echo ""
+              echo "All notable changes to SpecWeave will be documented in this file."
+              echo ""
+              echo "---"
+              echo ""
+              echo "## [$VERSION] - $(date +%Y-%m-%d)"
+              echo ""
+              echo "### Changes"
+              echo "$COMMITS" | sed 's/^[a-f0-9]* /- /'
+              echo ""
+              echo "---"
+              echo ""
+              tail -n +7 CHANGELOG.md
+            } > "$TEMP_FILE"
+            mv "$TEMP_FILE" CHANGELOG.md
+            git add CHANGELOG.md
+            git commit -m "docs: auto-generate CHANGELOG entry for $VERSION" || true
+          fi
+
+      - name: Extract release notes
+        id: changelog
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          awk "/## \[$VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md > /tmp/release-notes.md
+          cat /tmp/release-notes.md
+
+      - name: Commit version bump (manual workflow only)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to $VERSION"
+
+      - name: Create and push git tag (manual workflow only)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public || npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            --notes-file /tmp/release-notes.md \
+            --latest
+
+      - name: Success notification
+        if: success()
+        env:
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          echo "Successfully released v$VERSION"
+          echo "NPM: https://www.npmjs.com/package/specweave/v/$VERSION"
+          echo "GitHub: https://github.com/anton-abyzov/specweave/releases/tag/v$VERSION"
