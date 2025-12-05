@@ -9,7 +9,8 @@
   },
   "scripts": {
     "clean": "rm -rf dist/",
-    "build": "tsc && npm run copy:locales && npm run copy:plugins && npm run copy:hook-deps",
+    "build": "tsc && npm run copy:locales && npm run copy:plugins && npm run copy:hook-deps && npm run copy:adapters",
+    "copy:adapters": "node scripts/build/copy-adapters.js",
     "rebuild": "npm run clean && npm run build",
     "copy:locales": "node scripts/build/copy-locales.js",
     "copy:plugins": "node scripts/build/copy-plugin-js.js",
@@ -98,6 +99,8 @@
     "yaml": "^2.3.4"
   },
   "devDependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.700.0",
+    "@google-cloud/vertexai": "^1.9.2",
     "@mermaid-js/mermaid-cli": "^11.12.0",
     "@playwright/test": "^1.48.0",
     "@types/js-yaml": "^4.0.9",
@@ -109,6 +112,7 @@
     "ajv-formats": "^3.0.1",
     "dotenv": "^17.2.3",
     "memfs": "^4.51.0",
+    "openai": "^4.77.0",
     "typescript": "^5.3.0",
     "vitest": "^2.1.9"
   }
