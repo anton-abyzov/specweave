@@ -1,7 +1,9 @@
 name: Release & Publish
 
 on:
-  push:
+  # Trigger on tag creation (ref_type: tag)
+  create:
+  # Also allow manual trigger
   workflow_dispatch:
     inputs:
       version:
@@ -19,8 +21,8 @@ on:
 
 jobs:
   release:
-    # Only run for tag pushes (v*) or workflow_dispatch
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    # Only run for tag creation (v*) or workflow_dispatch
+    if: (github.event_name == 'create' && github.ref_type == 'tag' && startsWith(github.ref_name, 'v')) || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
