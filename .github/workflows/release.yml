@@ -1,12 +1,6 @@
 name: Release & Publish
 
 on:
-  # Trigger on version tags (v0.31.1, etc)
-  push:
-    tags:
-      - 'v*'
-
-  # Also allow manual trigger
   workflow_dispatch:
     inputs:
       version:
