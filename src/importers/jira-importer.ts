@@ -257,7 +257,7 @@ export class JiraImporter implements Importer {
       id: `JIRA-${issue.key}`,
       type,
       title: issue.fields.summary,
-      description: issue.fields.description || '',
+      description: sanitizeHtmlForMdx(issue.fields.description),
       status,
       priority,
       createdAt: new Date(issue.fields.created),
