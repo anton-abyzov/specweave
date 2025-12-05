@@ -29,8 +29,8 @@ concurrency:
 
 jobs:
   release:
-    # Run on tag push OR manual workflow_dispatch
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    # The 'on' trigger already filters: tag pushes (v*) and workflow_dispatch
+    # No 'if' condition needed - would be redundant and can cause issues
     runs-on: ubuntu-latest
     permissions:
       contents: write
