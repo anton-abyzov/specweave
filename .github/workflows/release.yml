@@ -1,9 +1,8 @@
 name: Release & Publish
 
 on:
-  # Push trigger added to pass branch protection rules (job is skipped via condition)
-  push:
-    branches: [develop, main]
+  # REMOVED: push on tags - causes infinite loop when workflow creates tags
+  # Tags are created by workflow_dispatch, then npm publish happens automatically
   workflow_dispatch:
     inputs:
       version:
@@ -25,14 +24,6 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Validation job runs on push to satisfy branch protection rules
-  validate:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Skip release on push
-        run: echo "Release workflow skipped on push events. Use workflow_dispatch to release."
-
   release:
     # Only run on manual workflow_dispatch, not on push events
     if: github.event_name == 'workflow_dispatch'
@@ -134,9 +125,21 @@ jobs:
 
             # Create auto-generated entry
             TEMP_FILE=$(mktemp)
-            printf '%s\n' "# Changelog" "" "All notable changes to SpecWeave will be documented in this file." "" "---" "" "## [$VERSION] - $(date +%Y-%m-%d)" "" "### Changes" > "$TEMP_FILE"
-            echo "$COMMITS" | sed 's/^[a-f0-9]* /- /' >> "$TEMP_FILE"
-            printf '%s\n' "" "---" "" >> "$TEMP_FILE"
+            cat > "$TEMP_FILE" << ENTRY
+# Changelog
+
+All notable changes to SpecWeave will be documented in this file.
+
+---
+
+## [$VERSION] - $(date +%Y-%m-%d)
+
+### Changes
+$(echo "$COMMITS" | sed 's/^[a-f0-9]* /- /')
+
+---
+
+ENTRY
 
             # Append rest of changelog (skip header)
             tail -n +7 CHANGELOG.md >> "$TEMP_FILE"
