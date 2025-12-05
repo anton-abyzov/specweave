@@ -35,6 +35,10 @@
     "plugins/**/lib/*-profile-resolver.ts",
     "plugins/**/lib/conflict-resolver.ts",
     "plugins/specweave-kafka/**/*.ts",
-    "plugins/**/lib/hooks/**/*.ts"
+    "plugins/**/lib/hooks/**/*.ts",
+    "src/core/llm/providers/openai-provider.ts",
+    "src/core/llm/providers/azure-openai-provider.ts",
+    "src/core/llm/providers/bedrock-provider.ts",
+    "src/core/llm/providers/vertex-ai-provider.ts"
   ]
 }
