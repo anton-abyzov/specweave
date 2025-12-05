@@ -9,9 +9,9 @@
 import * as fs from '../../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
-import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';
-import { execFileNoThrow } from '../../src/utils/execFileNoThrow.js';
-import type { SyncProfile } from '../../src/core/types/sync-profile.js';
+import { GitHubClientV2 } from '../../../../plugins/specweave-github/lib/github-client-v2.js';
+import { execFileNoThrow } from '../../../../src/utils/execFileNoThrow.js';
+import type { SyncProfile } from '../../../../src/core/types/sync-profile.js';
 
 describe('GitHubClientV2 Integration Tests', () => {
   let tempDir: string;

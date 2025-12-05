@@ -1,62 +1,205 @@
 ---
 name: specweave-docs:preview
-description: Launch Docusaurus documentation server. Supports both public (port 3016) and internal (port 3015) documentation sites.
+description: Launch Docusaurus documentation server for internal living docs. Auto-setup on first run. Port 3015.
 ---
 
 # Documentation Preview Command
 
 Launch Docusaurus development server with hot reload, Mermaid diagrams, and auto-generated sidebar.
 
-## Usage
-
-```bash
-# Preview INTERNAL docs (SpecWeave living documentation) - DEFAULT
-/specweave-docs:preview
-
-# Preview PUBLIC docs (end-user documentation)
-/specweave-docs:preview --public
-```
-
-## Two Documentation Sites
-
-| Site | Port | Content | NPM Script |
-|------|------|---------|------------|
-| **Internal** | 3015 | `.specweave/docs/internal/` | `docs:internal` |
-| **Public** | 3016 | `docs-site/docs/` | `docs:dev` |
-
 ## Your Task
 
-Execute the appropriate npm script based on user flags:
+**IMPORTANT**: This command must work in ANY SpecWeave user project, not just the SpecWeave repo itself.
+
+### Step 1: Check Prerequisites
 
 ```bash
-# Check if user wants public docs
-PUBLIC_FLAG="${1:-}"
+# Verify internal docs exist
+ls -la .specweave/docs/internal/
 
-cd /path/to/project
+# If missing, inform user:
+# "No internal documentation found at .specweave/docs/internal/.
+#  Run 'specweave init' first or create the folder structure."
+```
 
-if [ "$PUBLIC_FLAG" = "--public" ]; then
-  echo "Launching PUBLIC documentation on port 3016..."
-  echo "Content: docs-site/docs/"
-  echo ""
-  npm run docs:dev
+### Step 2: Check for Cached Installation
+
+```bash
+# Check if Docusaurus is already set up in cache
+if [ -d ".specweave/cache/docs-site/node_modules" ]; then
+  echo "✓ Docusaurus installation found in cache"
+  NEEDS_INSTALL=false
 else
-  echo "Launching INTERNAL documentation on port 3015..."
-  echo "Content: .specweave/docs/internal/"
-  echo ""
-  npm run docs:internal
+  echo "⚙ First-time setup: Installing Docusaurus (~30 seconds)..."
+  NEEDS_INSTALL=true
 fi
 ```
 
-### Alternative: Run directly with npx
+### Step 3: First-Time Setup (if needed)
 
-If in a fresh project without the docs-site setup:
+If `NEEDS_INSTALL=true`, create the cached Docusaurus installation:
 
 ```bash
-# For internal docs
-cd docs-site && npm run start:internal
+# Create cache directory
+mkdir -p .specweave/cache/docs-site
 
-# For public docs
-cd docs-site && npm run start
+# Create package.json
+cat > .specweave/cache/docs-site/package.json << 'EOF'
+{
+  "name": "specweave-docs-preview",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "docusaurus start --port 3015",
+    "build": "docusaurus build",
+    "clear": "docusaurus clear"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^3.9.2",
+    "@docusaurus/preset-classic": "^3.9.2",
+    "@docusaurus/theme-mermaid": "^3.9.2",
+    "@mdx-js/react": "^3.0.0",
+    "clsx": "^2.0.0",
+    "prism-react-renderer": "^2.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "engines": {
+    "node": ">=20.0"
+  }
+}
+EOF
+
+# Create Docusaurus config pointing to internal docs
+cat > .specweave/cache/docs-site/docusaurus.config.ts << 'EOF'
+import {themes as prismThemes} from 'prism-react-renderer';
+import type {Config} from '@docusaurus/types';
+import type * as Preset from '@docusaurus/preset-classic';
+
+const config: Config = {
+  title: 'Internal Documentation',
+  tagline: 'SpecWeave Living Documentation',
+  favicon: 'img/favicon.ico',
+  future: { v4: true },
+  url: 'http://localhost:3015',
+  baseUrl: '/',
+  onBrokenLinks: 'warn',
+  onBrokenMarkdownLinks: 'warn',
+  i18n: { defaultLocale: 'en', locales: ['en'] },
+  markdown: { mermaid: true, format: 'md' },
+  themes: ['@docusaurus/theme-mermaid'],
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          // Path relative to this config file → ../../docs/internal/
+          path: '../../docs/internal',
+          routeBasePath: '/',
+          sidebarPath: './sidebars.ts',
+          showLastUpdateTime: true,
+          sidebarCollapsible: true,
+          sidebarCollapsed: true,
+        },
+        blog: false,
+        theme: { customCss: './src/css/custom.css' },
+      } satisfies Preset.Options,
+    ],
+  ],
+  themeConfig: {
+    colorMode: {
+      defaultMode: 'dark',
+      disableSwitch: false,
+      respectPrefersColorScheme: true,
+    },
+    navbar: {
+      title: 'Internal Docs',
+      items: [
+        {to: '/', label: 'Home', position: 'left'},
+        {type: 'search', position: 'right'},
+      ],
+    },
+    footer: {
+      style: 'dark',
+      copyright: `SpecWeave Living Documentation`,
+    },
+    prism: {
+      theme: prismThemes.github,
+      darkTheme: prismThemes.dracula,
+      additionalLanguages: ['bash', 'typescript', 'yaml', 'json'],
+    },
+    mermaid: { theme: {light: 'neutral', dark: 'dark'} },
+  } satisfies Preset.ThemeConfig,
+};
+
+export default config;
+EOF
+
+# Create auto-generated sidebar
+cat > .specweave/cache/docs-site/sidebars.ts << 'EOF'
+import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
+
+const sidebars: SidebarsConfig = {
+  docs: [
+    {
+      type: 'autogenerated',
+      dirName: '.',
+    },
+  ],
+};
+
+export default sidebars;
+EOF
+
+# Create minimal CSS
+mkdir -p .specweave/cache/docs-site/src/css
+cat > .specweave/cache/docs-site/src/css/custom.css << 'EOF'
+:root {
+  --ifm-color-primary: #2563eb;
+  --ifm-code-font-size: 95%;
+}
+[data-theme='dark'] {
+  --ifm-color-primary: #60a5fa;
+}
+EOF
+
+# Create static folder with placeholder favicon
+mkdir -p .specweave/cache/docs-site/static/img
+echo '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📚</text></svg>' > .specweave/cache/docs-site/static/img/favicon.ico
+
+# Install dependencies using PUBLIC npm registry (avoids Azure DevOps/private registry issues)
+cd .specweave/cache/docs-site && npm install --registry=https://registry.npmjs.org --legacy-peer-deps
+```
+
+### Step 4: Start the Server
+
+```bash
+cd .specweave/cache/docs-site && npm start
+```
+
+This will:
+- Start Docusaurus on **http://localhost:3015**
+- Enable hot reload (edit markdown, see changes instantly)
+- Render Mermaid diagrams
+- Auto-generate sidebar from folder structure
+
+### Output to User
+
+After starting, display:
+
+```
+📚 Documentation Preview Server Started!
+
+   URL: http://localhost:3015
+   Content: .specweave/docs/internal/
+
+   Features:
+   • Hot reload - edit markdown, see changes instantly
+   • Mermaid diagrams - architecture diagrams render beautifully
+   • Auto sidebar - generated from folder structure
+   • Dark/light mode - toggle in navbar
+
+   Press Ctrl+C to stop the server.
 ```
 
 ## What You Get
@@ -66,70 +209,21 @@ cd docs-site && npm run start
 - **Mermaid diagrams** - Architecture diagrams render beautifully
 - **Dark/light mode** - Toggle in navbar
 - **Local search** - Instant search across all docs
-- **Mobile responsive** - Works on any device
-
-## First-Time Setup
-
-If `docs-site/node_modules` doesn't exist:
-
-```bash
-npm run docs:install
-```
-
-This installs Docusaurus dependencies (~200MB, ~30 seconds).
-
-## Ports
-
-| Script | Port | URL |
-|--------|------|-----|
-| `docs:dev` | 3016 | http://localhost:3016 |
-| `docs:internal` | 3015 | http://localhost:3015 |
-
-## Internal Docs Structure
-
-```
-.specweave/docs/internal/
-├── strategy/        → Product strategy
-├── specs/           → Feature specifications (708 files!)
-│   └── specweave/
-│       ├── FS-001/  → Feature folders
-│       ├── FS-002/
-│       └── ...
-├── architecture/    → ADRs, HLDs, diagrams
-├── delivery/        → Release plans, guides
-├── operations/      → Runbooks, NFRs
-└── governance/      → Standards, conventions
-```
-
-## Configuration Files
-
-| File | Purpose |
-|------|---------|
-| `docusaurus.config.ts` | Public docs config |
-| `docusaurus.config.internal.ts` | Internal docs config |
-| `sidebars.ts` | Public docs sidebar |
-| `sidebars.internal.ts` | Internal docs sidebar |
 
 ## Troubleshooting
 
 ### Port already in use
 ```bash
-# Find process using port
-lsof -i :3015
-
-# Kill it
-kill -9 <PID>
+lsof -i :3015 && kill -9 $(lsof -t -i :3015)
 ```
 
-### Missing dependencies
+### Reinstall from scratch
 ```bash
-npm run docs:install
+rm -rf .specweave/cache/docs-site && /specweave-docs:preview
 ```
 
-### Build errors
-```bash
-cd docs-site && npm run clear && npm run start:internal
-```
+### npm registry issues
+The setup uses `--registry=https://registry.npmjs.org` to bypass private registry configurations.
 
 ## See Also
 

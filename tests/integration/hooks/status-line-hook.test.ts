@@ -8,7 +8,7 @@ import { SpecValidator } from '../test-utils/spec-validator.js';
 import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
 import { SpecFrontmatterUpdater } from '../../../src/core/increment/spec-frontmatter-updater.js';
 import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
-import { findProjectRoot } from '../test-utils/project-root.js';
+import { findProjectRoot } from '../../test-utils/project-root.js';
 
 // ✅ SAFE: Find project root from test file location, not process.cwd()
 const projectRoot = findProjectRoot(import.meta.url);
@@ -52,7 +52,8 @@ describe('Status Line Hook Integration', () => {
       title: 'Test Increment'
     });
 
-    // WHEN: Close increment via MetadataManager
+    // WHEN: Close increment via MetadataManager (must go through READY_FOR_REVIEW first - v0.28.63+)
+    MetadataManager.updateStatus('0001-test', IncrementStatus.READY_FOR_REVIEW);
     MetadataManager.updateStatus('0001-test', IncrementStatus.COMPLETED);
 
     // AND: Execute status line hook
@@ -85,7 +86,8 @@ describe('Status Line Hook Integration', () => {
       title: 'Second Increment'
     });
 
-    // WHEN: Close first increment
+    // WHEN: Close first increment (must go through READY_FOR_REVIEW first - v0.28.63+)
+    MetadataManager.updateStatus('0001-test', IncrementStatus.READY_FOR_REVIEW);
     MetadataManager.updateStatus('0001-test', IncrementStatus.COMPLETED);
 
     // AND: Execute hook
@@ -113,9 +115,14 @@ describe('Status Line Hook Integration', () => {
     // THEN: Hook doesn't crash
     expect(result.exitCode).toBe(0);
 
-    // AND: Status line shows no increments
+    // AND: Status line still shows the increment (from metadata.json) with default values
     const statusLine = await harness.readStatusLine();
-    expect(statusLine?.current).toBeNull();
+    expect(statusLine?.current).toMatchObject({
+      id: '0001-test',
+      completed: 0,
+      total: 0,
+      percentage: 0
+    });
   });
 
   it('hook execution completes in < 500ms with 10 increments', async () => {

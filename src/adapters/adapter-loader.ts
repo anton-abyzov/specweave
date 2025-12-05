@@ -96,25 +96,35 @@ export class AdapterLoader {
   /**
    * Auto-detect which tool is being used
    *
-   * Detection priority (maintains backward compatibility!):
-   * 1. Cursor (if cursor CLI or .cursor/ or .cursorrules exists) - active indicators
-   * 2. Gemini CLI (if gemini CLI found)
-   * 3. Codex (if codex CLI found)
-   * 4. Claude Code:
-   *    - If claude CLI found in PATH: Shows "✅ Detected: Claude Code"
-   *    - If NOT found: Shows "ℹ️  No tool detected, recommending Claude Code"
+   * Detection priority (Claude-first! SpecWeave is built for Claude):
+   * 1. Claude Code (FIRST! If claude CLI is available, use it - active indicator)
+   * 2. Cursor (only if Claude unavailable AND cursor indicators exist)
+   * 3. Gemini CLI (only if Claude unavailable)
+   * 4. Codex (only if Claude unavailable)
    * 5. Generic (only if explicitly requested via --adapter generic)
    *
-   * This ensures users with both Claude + Cursor get Cursor (if .cursorrules exists),
-   * while users with ONLY Claude get proper "detected" message instead of "not detected".
+   * Rationale: Claude CLI being available is an ACTIVE indicator (user installed it).
+   * `.cursor/` directory is a PASSIVE indicator (may exist from old usage).
+   * If user has both, they almost certainly want Claude (since SpecWeave is native to it).
    *
    * @returns Promise<string> Detected tool name (not adapter - Claude has no adapter!)
    */
   async detectTool(): Promise<string> {
     console.log('🔍 Detecting AI coding tool...\n');
 
-    // Check other tools first (maintain backward compatibility!)
-    // If user has both Claude and Cursor, prefer the one with active indicators (.cursorrules, etc.)
+    // ✅ CLAUDE FIRST! SpecWeave is built for Claude Code.
+    // Claude CLI being available = user wants Claude (active indicator)
+    const claudeStatus = detectClaudeCli();
+
+    if (claudeStatus.available) {
+      // Claude CLI is fully functional - this is the native experience!
+      console.log(`✅ Detected: Claude Code (native plugin system, full automation)`);
+      console.log(`   Found 'claude' command in PATH`);
+      console.log('');
+      return 'claude';
+    }
+
+    // Claude not available - check other tools (passive indicators)
     const detectionOrder = ['cursor', 'gemini', 'codex'];
 
     for (const adapterName of detectionOrder) {
@@ -128,16 +138,8 @@ export class AdapterLoader {
       }
     }
 
-    // No other tool detected - check if Claude CLI is available
-    // ✅ ROBUST CHECK: Not just "command exists" but "can run plugin commands"
-    const claudeStatus = detectClaudeCli();
-
-    if (claudeStatus.available) {
-      // Claude CLI is fully functional - show positive detection message
-      console.log(`✅ Detected: Claude Code (native plugin system, full automation)`);
-      console.log(`   Found 'claude' command in PATH`);
-      console.log('');
-    } else if (claudeStatus.commandExists) {
+    // No tool detected at all
+    if (claudeStatus.commandExists) {
       // Claude command exists but plugin commands don't work
       console.log(`⚠️  Claude command found but not fully functional`);
       console.log(`   Issue: ${claudeStatus.error}`);
@@ -259,10 +261,17 @@ export class AdapterLoader {
 
   /**
    * Get recommended adapter based on detection and user preference
+   *
+   * Returns null if Claude is detected (native experience, no adapter needed)
    */
-  async getRecommendedAdapter(explicitChoice?: string): Promise<IAdapter> {
+  async getRecommendedAdapter(explicitChoice?: string): Promise<IAdapter | null> {
     // If user explicitly chose an adapter, use it
     if (explicitChoice) {
+      // 'claude' is a valid explicit choice - means "use native Claude"
+      if (explicitChoice === 'claude') {
+        return null; // No adapter needed for Claude
+      }
+
       const adapter = this.adapters.get(explicitChoice);
       if (!adapter) {
         throw new Error(`Invalid adapter: ${explicitChoice}. Use 'claude', 'cursor', or 'generic'`);
@@ -272,6 +281,12 @@ export class AdapterLoader {
 
     // Otherwise, auto-detect
     const detectedName = await this.detectTool();
+
+    // Claude detected - native experience, no adapter needed
+    if (detectedName === 'claude') {
+      return null;
+    }
+
     const adapter = this.adapters.get(detectedName);
 
     if (!adapter) {

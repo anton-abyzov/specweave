@@ -3,9 +3,19 @@
 #
 # Lists all available adapters for multi-tool support.
 # CLI reads this file to show available adapters.
+#
+# DETECTION PRIORITY (Claude-first!):
+# 1. Claude Code (FIRST! - active indicator, SpecWeave is native to Claude)
+# 2. Cursor (only if Claude unavailable - passive indicator .cursor/)
+# 3. Gemini CLI (only if Claude unavailable)
+# 4. Codex (only if Claude unavailable)
+# 5. Generic (only if explicitly requested via --adapter)
+#
+# Rationale: Claude CLI available = ACTIVE indicator (user installed it).
+# .cursor/ directory = PASSIVE indicator (may exist from old usage).
 
 version: 1
-last_updated: 2025-10-27
+last_updated: 2025-12-05
 
 adapters:
   - name: claude

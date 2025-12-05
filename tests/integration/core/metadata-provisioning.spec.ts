@@ -22,8 +22,8 @@ import { test, expect } from '@playwright/test';
 import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { MetadataManager } from '../../src/core/increment/metadata-manager.js';
-import { IncrementStatus, IncrementType } from '../../src/core/types/increment-metadata.js';
+import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
+import { IncrementStatus, IncrementType } from '../../../src/core/types/increment-metadata.js';
 import { createTestDir, cleanupTestDir, createTestIncrement } from '../../helpers/increment-test-helpers.js';
 
 const __filename = fileURLToPath(import.meta.url);

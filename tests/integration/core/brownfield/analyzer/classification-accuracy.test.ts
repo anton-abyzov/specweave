@@ -5,7 +5,7 @@
  * Tests classification accuracy with real-world-like document examples
  */
 
-import { BrownfieldAnalyzer } from '../../src/core/brownfield/analyzer.js';
+import { BrownfieldAnalyzer } from '../../../../../src/core/brownfield/analyzer.js';
 import { withTempDir } from '../../utils/temp-dir.js';
 import * as fs from '../../../../../src/utils/fs-native.js';
 import path from 'path';

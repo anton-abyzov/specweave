@@ -5,8 +5,9 @@
  * integrating all Phase 1 components.
  */
 
-import { MonitorService } from '../../src/core/cicd/monitor-service.js';
-import { loadConfig } from '../../src/core/cicd/config-loader.js';
+import { describe, it, test, expect, beforeEach, afterEach, vi } from 'vitest';
+import { MonitorService } from '../../../../src/core/cicd/monitor-service.js';
+import { loadConfig } from '../../../../src/core/cicd/config-loader.js';
 import * as fs from '../../../../src/utils/fs-native.js';
 import * as path from 'path';
 

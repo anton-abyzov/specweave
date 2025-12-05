@@ -250,6 +250,17 @@ VERDICT: MUST FIX before deployment - security critical.
 3. **Use `--strict` for critical code**: Payment, auth, security
 4. **Fix CRITICAL issues immediately**: Never ignore these
 5. **Address CONCERNS before release**: They matter
+6. **Use after bug fixes**: Especially effective when work has definitive expected behavior
+
+**Simplest workflow** - just mention "llm judge" in your prompt:
+```
+"llm judge my fix"
+"use llm judge on this"
+```
+
+Claude will automatically gather context and apply the pattern - no need to specify files.
+
+This follows the [LLM-as-Judge pattern](https://www.anthropic.com/engineering/multi-agent-research-system) - single LLM call with structured evaluation proves more consistent than multiple validation passes.
 
 ## Limitations
 

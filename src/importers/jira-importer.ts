@@ -6,6 +6,7 @@
  */
 
 import type { Importer, ExternalItem, ImportConfig } from './external-importer.js';
+import { sanitizeHtmlForMdx } from '../utils/html-to-mdx.js';
 
 interface JiraIssue {
   id: string;

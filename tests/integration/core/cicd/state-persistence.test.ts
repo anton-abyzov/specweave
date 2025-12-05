@@ -5,10 +5,11 @@
  * handling of large state files.
  */
 
+import { describe, it, test, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import * as path from 'path';
-import { StateManager } from '../../src/core/cicd/state-manager.js';
-import { CICDMonitorState, FailureRecord } from '../../src/core/cicd/types.js';
+import { StateManager } from '../../../../src/core/cicd/state-manager.js';
+import { CICDMonitorState, FailureRecord } from '../../../../src/core/cicd/types.js';
 
 describe('State Persistence (Integration)', () => {
   let testDir: string;

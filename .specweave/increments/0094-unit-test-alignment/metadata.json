@@ -4,7 +4,7 @@
   "type": "hotfix",
   "status": "active",
   "created": "2025-12-02T00:30:00.000Z",
-  "lastActivity": "2025-12-04T22:45:56.008Z",
+  "lastActivity": "2025-12-05T08:49:46.381Z",
   "featureId": null,
   "userStories": [],
   "tags": [
@@ -13,7 +13,7 @@
   ],
   "acSyncEvents": [
     {
-      "timestamp": "2025-12-04T22:45:56.008Z",
+      "timestamp": "2025-12-05T08:49:46.381Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
@@ -28,7 +28,7 @@
       "changesCount": 0
     },
     {
-      "timestamp": "2025-12-03T07:07:36.868Z",
+      "timestamp": "2025-12-05T08:49:45.369Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
@@ -43,7 +43,7 @@
       "changesCount": 0
     },
     {
-      "timestamp": "2025-12-03T07:07:11.309Z",
+      "timestamp": "2025-12-05T08:46:12.357Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
@@ -58,7 +58,7 @@
       "changesCount": 0
     },
     {
-      "timestamp": "2025-12-03T07:02:29.265Z",
+      "timestamp": "2025-12-05T08:42:01.958Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
@@ -73,7 +73,7 @@
       "changesCount": 0
     },
     {
-      "timestamp": "2025-12-03T07:01:25.970Z",
+      "timestamp": "2025-12-05T08:37:30.702Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
@@ -88,7 +88,7 @@
       "changesCount": 0
     },
     {
-      "timestamp": "2025-12-03T07:00:25.809Z",
+      "timestamp": "2025-12-05T08:36:13.344Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
@@ -103,7 +103,7 @@
       "changesCount": 0
     },
     {
-      "timestamp": "2025-12-02T14:52:59.035Z",
+      "timestamp": "2025-12-05T08:30:08.909Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
@@ -118,106 +118,196 @@
       "changesCount": 0
     },
     {
-      "timestamp": "2025-12-02T07:35:07.974Z",
+      "timestamp": "2025-12-05T08:30:07.880Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
-        "AC-001: has no tasks mapped",
-        "AC-002: has no tasks mapped",
-        "AC-003: has no tasks mapped",
-        "AC-004: has no tasks mapped",
-        "AC-005: has no tasks mapped",
-        "AC-006: has no tasks mapped",
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
         "AC-007: has no tasks mapped"
       ],
       "changesCount": 0
     },
     {
-      "timestamp": "2025-12-02T07:34:09.415Z",
+      "timestamp": "2025-12-05T08:29:00.482Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
-        "AC-001: has no tasks mapped",
-        "AC-002: has no tasks mapped",
-        "AC-003: has no tasks mapped",
-        "AC-004: has no tasks mapped",
-        "AC-005: has no tasks mapped",
-        "AC-006: has no tasks mapped",
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
         "AC-007: has no tasks mapped"
       ],
       "changesCount": 0
     },
     {
-      "timestamp": "2025-12-02T07:32:59.353Z",
+      "timestamp": "2025-12-05T08:26:09.896Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
-        "AC-001: has no tasks mapped",
-        "AC-002: has no tasks mapped",
-        "AC-003: has no tasks mapped",
-        "AC-004: has no tasks mapped",
-        "AC-005: has no tasks mapped",
-        "AC-006: has no tasks mapped",
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
         "AC-007: has no tasks mapped"
       ],
       "changesCount": 0
     },
     {
-      "timestamp": "2025-12-02T07:31:10.703Z",
+      "timestamp": "2025-12-05T08:24:13.262Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
-        "AC-001: has no tasks mapped",
-        "AC-002: has no tasks mapped",
-        "AC-003: has no tasks mapped",
-        "AC-004: has no tasks mapped",
-        "AC-005: has no tasks mapped",
-        "AC-006: has no tasks mapped",
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
         "AC-007: has no tasks mapped"
       ],
       "changesCount": 0
     },
     {
-      "timestamp": "2025-12-02T07:30:13.226Z",
+      "timestamp": "2025-12-05T08:24:12.215Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
-        "AC-001: has no tasks mapped",
-        "AC-002: has no tasks mapped",
-        "AC-003: has no tasks mapped",
-        "AC-004: has no tasks mapped",
-        "AC-005: has no tasks mapped",
-        "AC-006: has no tasks mapped",
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
         "AC-007: has no tasks mapped"
       ],
       "changesCount": 0
     },
     {
-      "timestamp": "2025-12-02T07:27:51.114Z",
+      "timestamp": "2025-12-05T08:21:58.319Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
-        "AC-001: has no tasks mapped",
-        "AC-002: has no tasks mapped",
-        "AC-003: has no tasks mapped",
-        "AC-004: has no tasks mapped",
-        "AC-005: has no tasks mapped",
-        "AC-006: has no tasks mapped",
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
         "AC-007: has no tasks mapped"
       ],
       "changesCount": 0
     },
     {
-      "timestamp": "2025-12-02T07:25:30.888Z",
+      "timestamp": "2025-12-05T08:18:16.057Z",
       "updated": [],
       "conflicts": [],
       "warnings": [
-        "AC-001: has no tasks mapped",
-        "AC-002: has no tasks mapped",
-        "AC-003: has no tasks mapped",
-        "AC-004: has no tasks mapped",
-        "AC-005: has no tasks mapped",
-        "AC-006: has no tasks mapped",
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-12-05T08:18:15.008Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-12-05T08:14:07.627Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-12-05T08:13:24.649Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-12-05T08:10:34.462Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-12-05T08:10:00.283Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
+        "AC-007: has no tasks mapped"
+      ],
+      "changesCount": 0
+    },
+    {
+      "timestamp": "2025-12-05T08:09:59.263Z",
+      "updated": [],
+      "conflicts": [],
+      "warnings": [
+        "AC-001: [x] but no tasks found (manual verification?)",
+        "AC-002: [x] but no tasks found (manual verification?)",
+        "AC-003: [x] but no tasks found (manual verification?)",
+        "AC-004: [x] but no tasks found (manual verification?)",
+        "AC-005: [x] but no tasks found (manual verification?)",
+        "AC-006: [x] but no tasks found (manual verification?)",
         "AC-007: has no tasks mapped"
       ],
       "changesCount": 0

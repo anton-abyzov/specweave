@@ -1,60 +1,55 @@
 ---
 name: specweave-docs:build
-description: Build static documentation site for deployment. Supports both public and internal docs. Outputs production-ready HTML/CSS/JS.
+description: Build static documentation site for deployment. Auto-setup on first run. Outputs production-ready HTML/CSS/JS.
 ---
 
 # Documentation Build Command
 
 Build production-ready static documentation site for deployment to any static host.
 
-## Usage
-
-```bash
-# Build INTERNAL docs (SpecWeave living documentation) - DEFAULT
-/specweave-docs:build
-
-# Build PUBLIC docs (end-user documentation)
-/specweave-docs:build --public
-```
-
-## Two Build Targets
-
-| Site | Output Directory | NPM Script |
-|------|------------------|------------|
-| **Internal** | `docs-site/build-internal/` | `docs:internal:build` |
-| **Public** | `docs-site/build/` | `docs:build` |
-
 ## Your Task
 
-Execute the appropriate npm script based on user flags:
+**IMPORTANT**: This command must work in ANY SpecWeave user project, not just the SpecWeave repo itself.
+
+### Step 1: Ensure Docusaurus is Set Up
+
+First, ensure the cached Docusaurus installation exists:
 
 ```bash
-# Check if user wants public docs
-PUBLIC_FLAG="${1:-}"
-
-cd /path/to/project
-
-if [ "$PUBLIC_FLAG" = "--public" ]; then
-  echo "Building PUBLIC documentation..."
-  echo "Output: docs-site/build/"
-  echo ""
-  npm run docs:build
-  echo ""
-  echo "Build complete! Output: docs-site/build/"
-else
-  echo "Building INTERNAL documentation..."
-  echo "Output: docs-site/build-internal/"
-  echo ""
-  npm run docs:internal:build
-  echo ""
-  echo "Build complete! Output: docs-site/build-internal/"
+# Check if Docusaurus is set up
+if [ ! -d ".specweave/cache/docs-site/node_modules" ]; then
+  echo "Setting up Docusaurus first..."
+  # Run the same setup as preview command (see preview.md for full setup)
+  # After setup, continue to build
 fi
+```
+
+If not set up, follow the same setup steps as `/specweave-docs:preview` (Step 3 in preview.md).
+
+### Step 2: Run Build
+
+```bash
+cd .specweave/cache/docs-site && npm run build
+```
+
+### Step 3: Report Output
+
+```bash
+echo ""
+echo "📦 Build Complete!"
+echo ""
+echo "   Output: .specweave/cache/docs-site/build/"
+echo ""
+echo "   Deploy with:"
+echo "   • npx serve .specweave/cache/docs-site/build/"
+echo "   • Copy to your static host"
+echo ""
 ```
 
 ## Output Structure
 
 ```
-docs-site/build-internal/
+.specweave/cache/docs-site/build/
 ├── index.html              <- Landing page
 ├── strategy/
 ├── specs/
@@ -74,41 +69,23 @@ docs-site/build-internal/
 ### 1. Preview Locally
 
 ```bash
-# Internal docs
-cd docs-site && npm run serve:internal
-
-# Public docs
-cd docs-site && npm run serve
+npx serve .specweave/cache/docs-site/build/
 ```
 
-### 2. Netlify
+### 2. Copy to Custom Location
 
 ```bash
-cd docs-site
-npx netlify deploy --dir=build-internal --prod
-```
-
-### 3. Vercel
-
-```bash
-cd docs-site
-npx vercel --prod
-```
-
-### 4. GitHub Pages
-
-```bash
-# Copy build to docs folder (GitHub Pages expects /docs)
-cp -r docs-site/build-internal/* docs/
+# Copy build to docs folder for GitHub Pages
+cp -r .specweave/cache/docs-site/build/* docs/
 git add docs/
 git commit -m "docs: update documentation site"
-git push
 ```
 
-### 5. Static Server
+### 3. Netlify/Vercel
 
 ```bash
-npx serve docs-site/build-internal/
+# Point your deployment to:
+.specweave/cache/docs-site/build/
 ```
 
 ## Build vs Preview
@@ -122,33 +99,30 @@ npx serve docs-site/build-internal/
 | **Optimization** | No | Yes (minified) |
 | **Use Case** | Writing docs | Deployment |
 
-## First-Time Setup
-
-If dependencies not installed:
-
-```bash
-npm run docs:install
-```
-
 ## Troubleshooting
 
 ### Build fails with broken links
 ```bash
 # Preview first to find errors
-npm run docs:internal
+/specweave-docs:preview
 # Fix broken links, then build
-npm run docs:internal:build
+/specweave-docs:build
 ```
 
 ### Out of memory
 ```bash
-# Increase Node memory
-NODE_OPTIONS="--max-old-space-size=4096" npm run docs:internal:build
+NODE_OPTIONS="--max-old-space-size=4096" npm run build
 ```
 
 ### Cache issues
 ```bash
-cd docs-site && npm run clear && npm run build:internal
+cd .specweave/cache/docs-site && npm run clear && npm run build
+```
+
+### Reinstall from scratch
+```bash
+rm -rf .specweave/cache/docs-site
+/specweave-docs:build
 ```
 
 ## See Also

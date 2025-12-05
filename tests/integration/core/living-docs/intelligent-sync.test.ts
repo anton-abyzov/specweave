@@ -10,7 +10,8 @@
  * 6. Verify LLM context preservation
  */
 
-import { ContentParser, ContentClassifier, ProjectDetector, ContentDistributor, CrossLinker } from '../../src/core/living-docs/index.js';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { ContentParser, ContentClassifier, ProjectDetector, ContentDistributor, CrossLinker } from '../../../../src/core/living-docs/index.js';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 

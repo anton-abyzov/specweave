@@ -17,7 +17,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
-import { ACStatusManager } from '../../src/core/increment/ac-status-manager.js';
+import { ACStatusManager } from '../../../../src/core/increment/ac-status-manager.js';
 
 describe('AC Status Hook Integration', () => {
   let testDir: string;
@@ -386,7 +386,7 @@ increment: 0001-test-increment
   });
 
   describe('Hook Script Execution (Runtime Import Validation)', () => {
-    const rootDir = path.resolve(__dirname, '../../..');
+    const rootDir = path.resolve(__dirname, '../../../..');
     const hookPath = path.join(rootDir, 'plugins/specweave/lib/hooks/update-ac-status.js');
 
     it('should execute hook script without import errors', () => {

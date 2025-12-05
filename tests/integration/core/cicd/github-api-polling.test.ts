@@ -4,8 +4,9 @@
  * Tests real GitHub API interactions (in mock mode) and network failure handling.
  */
 
-import { WorkflowMonitor } from '../../src/core/cicd/workflow-monitor.js';
-import { StateManager } from '../../src/core/cicd/state-manager.js';
+import { describe, it, test, expect, beforeEach, afterEach, vi } from 'vitest';
+import { WorkflowMonitor } from '../../../../src/core/cicd/workflow-monitor.js';
+import { StateManager } from '../../../../src/core/cicd/state-manager.js';
 import * as fs from '../../../../src/utils/fs-native.js';
 import * as path from 'path';
 

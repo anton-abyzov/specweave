@@ -16,7 +16,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { execSync } from 'child_process';
-import { ACStatusManager } from '../../src/core/increment/ac-status-manager';
+import { ACStatusManager } from '../../../src/core/increment/ac-status-manager.js';
 
 // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
 const TEST_PROJECT_DIR = path.join(os.tmpdir(), 'specweave-test-ac-status-flow-' + Date.now());

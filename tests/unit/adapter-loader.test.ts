@@ -3,11 +3,16 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 /**
  * Unit tests for AdapterLoader
  *
- * Tests adapter detection logic, especially the default-to-claude behavior
+ * Tests adapter detection logic with Claude-first priority:
+ * 1. Claude Code (FIRST - active indicator)
+ * 2. Cursor (only if Claude unavailable - passive indicator)
+ * 3. Gemini/Codex (only if Claude unavailable)
+ * 4. Generic (only if explicitly requested)
  */
 
 import { AdapterLoader } from '../../src/adapters/adapter-loader.js';
 import { CursorAdapter } from '../../src/adapters/cursor/adapter.js';
+import * as claudeCliDetector from '../../src/utils/claude-cli-detector.js';
 
 describe('AdapterLoader', () => {
   let adapterLoader: AdapterLoader;
@@ -17,17 +22,39 @@ describe('AdapterLoader', () => {
   });
 
   describe('detectTool', () => {
-    it('should default to claude when no other tools detected', async () => {
-      // Mock all adapters to return false for detection
-      vi.spyOn(CursorAdapter.prototype, 'detect').mockResolvedValue(false);
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should detect Claude FIRST when Claude CLI is available (Claude-first priority)', async () => {
+      // Claude CLI is available - should be detected first, regardless of other tools
+      vi.spyOn(claudeCliDetector, 'detectClaudeCli').mockReturnValue({
+        available: true,
+        commandExists: true,
+        pluginCommandsWork: true,
+        version: '1.0.0',
+        platform: 'darwin',
+      });
+
+      // Even if Cursor would be detected, Claude wins
+      vi.spyOn(CursorAdapter.prototype, 'detect').mockResolvedValue(true);
 
       const detected = await adapterLoader.detectTool();
 
       expect(detected).toBe('claude');
     });
 
-    it('should detect cursor when .cursorrules exists', async () => {
-      // Mock cursor detection to return true
+    it('should detect cursor only when Claude CLI is NOT available', async () => {
+      // Claude CLI NOT available - fall through to other adapters
+      vi.spyOn(claudeCliDetector, 'detectClaudeCli').mockReturnValue({
+        available: false,
+        commandExists: false,
+        pluginCommandsWork: false,
+        error: 'command_not_found',
+        platform: 'darwin',
+      });
+
+      // Cursor detection returns true
       vi.spyOn(CursorAdapter.prototype, 'detect').mockResolvedValue(true);
 
       const detected = await adapterLoader.detectTool();
@@ -35,14 +62,33 @@ describe('AdapterLoader', () => {
       expect(detected).toBe('cursor');
     });
 
-    it('should return claude as default even without CLI in PATH', async () => {
-      // This test ensures that Claude is the default,
-      // regardless of whether the CLI is installed
+    it('should default to claude when no tools detected (even without CLI)', async () => {
+      // Claude CLI NOT available
+      vi.spyOn(claudeCliDetector, 'detectClaudeCli').mockReturnValue({
+        available: false,
+        commandExists: false,
+        pluginCommandsWork: false,
+        error: 'command_not_found',
+        platform: 'darwin',
+      });
+
+      // No other adapters detected
+      vi.spyOn(CursorAdapter.prototype, 'detect').mockResolvedValue(false);
+
+      const detected = await adapterLoader.detectTool();
+
+      // Claude is still the default/recommended, even without CLI
+      expect(detected).toBe('claude');
+    });
+
+    it('should return claude as default and never generic unless explicit', async () => {
+      // This test ensures that Claude is always the default
+      // Generic is only for explicit --adapter generic flag
 
       const detected = await adapterLoader.detectTool();
 
       // Should be 'claude' (default) or 'cursor'/'copilot'/etc if detected
-      // But NOT 'generic'
+      // But NEVER 'generic' from auto-detection
       expect(detected).not.toBe('generic');
     });
   });
@@ -77,31 +123,45 @@ describe('AdapterLoader', () => {
   });
 
   describe('getRecommendedAdapter', () => {
-    it('should return claude adapter when no explicit choice', async () => {
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should return null when Claude is detected (native, no adapter needed)', async () => {
+      // Mock Claude detection to return available
+      vi.spyOn(claudeCliDetector, 'detectClaudeCli').mockReturnValue({
+        available: true,
+        commandExists: true,
+        pluginCommandsWork: true,
+        version: '1.0.0',
+        platform: 'darwin',
+      });
+
       const adapter = await adapterLoader.getRecommendedAdapter();
 
-      // Since detectTool() now defaults to 'claude',
-      // and claude is NOT an adapter (it's native),
-      // this test needs to handle that claude doesn't have an adapter object
-      // Actually looking at the code, getRecommendedAdapter() throws if adapter not found
-      // This is expected behavior since 'claude' is not in the adapters Map
+      // Claude is native - returns null (no adapter needed)
+      expect(adapter).toBeNull();
+    });
 
-      // Let's test with explicit choice instead
-      expect(adapter).toBeDefined();
+    it('should return null when claude is explicitly chosen', async () => {
+      const adapter = await adapterLoader.getRecommendedAdapter('claude');
+
+      // Explicit 'claude' choice = native experience, no adapter
+      expect(adapter).toBeNull();
     });
 
     it('should return cursor adapter when explicitly chosen', async () => {
       const adapter = await adapterLoader.getRecommendedAdapter('cursor');
 
       expect(adapter).toBeDefined();
-      expect(adapter.name).toBe('cursor');
+      expect(adapter?.name).toBe('cursor');
     });
 
     it('should return generic adapter when explicitly chosen', async () => {
       const adapter = await adapterLoader.getRecommendedAdapter('generic');
 
       expect(adapter).toBeDefined();
-      expect(adapter.name).toBe('generic');
+      expect(adapter?.name).toBe('generic');
     });
 
     it('should throw error for invalid adapter name', async () => {

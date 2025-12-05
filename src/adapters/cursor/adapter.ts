@@ -24,7 +24,11 @@ export class CursorAdapter extends AdapterBase {
   /**
    * Detect if Cursor is available
    *
-   * Checks for:
+   * NOTE: This detection only runs if Claude CLI is NOT available.
+   * Claude is checked FIRST (active indicator) before Cursor (passive indicator).
+   * See adapter-loader.ts detectTool() for full priority order.
+   *
+   * Checks for (passive indicators):
    * - cursor command in PATH
    * - .cursor/ directory exists
    */
@@ -102,124 +106,23 @@ export class CursorAdapter extends AdapterBase {
    */
   getInstructions(): string {
     return `
-================================================================
-        Cursor Adapter - Semi-Automation
-================================================================
+Cursor Adapter - Semi-Automation
 
-Your project is now configured for Cursor with SEMI-automation!
+Cursor reads AGENTS.md for workflow instructions.
 
-WHAT THIS PROVIDES:
+@ Shortcuts:
+  @increments - Current increment files
+  @docs       - Architecture docs
+  @strategy   - Business specs
+  @tests      - Test files
 
-- AGENTS.md (Universal Standard)
-  - Cursor automatically reads this file
-  - Contains all workflow instructions
-  - Defines agent roles (PM, Architect, etc.)
-  - Defines skill capabilities (increment-planner, context-loader, etc.)
-  - Project structure and templates
-  - Following agents.md standard (https://agents.md/)
+Quick Start:
+  1. Open in Cursor
+  2. Say: "Create increment for [feature]"
+  3. Use Composer (Cmd+I) for multi-file edits
 
-- @ Context Shortcuts (Quick Access)
-  - @increments - Load current increment files
-  - @docs - Load architecture documentation
-  - @strategy - Load business specifications
-  - @tests - Load test strategy and cases
-
-- Composer Multi-File Editing
-  - Create multiple files simultaneously
-  - Edit across spec.md, plan.md, tasks.md
-
-UNDERSTANDING THE DIFFERENCE:
-
-Claude Code (Full Automation):
-- Native skills (auto-activate)
-- Native agents (separate context windows)
-- Native hooks (auto-update docs)
-- Slash commands (/inc, /do, /done)
-
-Cursor (Semi-Automation - This Adapter):
-- Reads AGENTS.md for workflow instructions
-- Manual role adoption (say "act as PM")
-- No hooks (manual doc updates)
-- Manual workflows (follow AGENTS.md steps)
-
-HOW CURSOR USES AGENTS.MD:
-
-Cursor automatically reads AGENTS.md to understand:
-1. Project structure (.specweave/ folders)
-2. How to create increments (spec.md, plan.md, tasks.md)
-3. Agent roles (PM defines WHAT/WHY, Architect designs HOW)
-4. Skill workflows (increment-planner, context-loader, etc.)
-5. Context manifests (70%+ token savings)
-6. Templates and examples
-
-When you say "create increment for auth":
-→ Cursor reads AGENTS.md
-→ Follows the workflow described there
-→ Creates spec.md (adopting PM role)
-→ Creates plan.md (adopting Architect role)
-→ Creates tasks.md
-
-QUICK START:
-
-1. Open project in Cursor
-
-2. Create your first feature:
-   "Create increment for user authentication"
-
-   Cursor will:
-   - Read AGENTS.md for workflow
-   - Ask clarifying questions
-   - Create spec.md (acting as PM from AGENTS.md)
-   - Create plan.md (acting as Architect from AGENTS.md)
-   - Create tasks.md
-
-3. Use @ shortcuts for context:
-   "@increments show me the current increment"
-   "@docs show me the architecture"
-   "@strategy show me the business requirements"
-
-4. Use Composer for multi-file edits:
-   Cmd+I → "Update spec.md and plan.md to add OAuth2"
-
-CONTEXT LOADING (70%+ Token Savings):
-
-CRITICAL: Always read context-manifest.yaml first!
-
-AGENTS.md teaches Cursor:
-1. Look for .specweave/increments/####/context-manifest.yaml
-2. ONLY load files listed in manifest
-3. Don't load all specs (wastes tokens)
-
-Example manifest (YAML):
-
-spec_sections:
-  - .specweave/docs/internal/strategy/auth/spec.md
-documentation:
-  - .specweave/docs/internal/architecture/auth-design.md
-
-Cursor: "Only load these 2 files, not entire docs/ folder"
-
-LIMITATIONS (vs Claude Code):
-
-- No auto-activation (must explicitly request workflows)
-- No separate context windows (all context shared)
-- No hooks (can't auto-update docs on events)
-- Requires manual role adoption (say "act as PM")
-
-But still VERY good experience with Composer + @ shortcuts!
-
-DOCUMENTATION:
-
-- AGENTS.md: Universal workflow instructions (Cursor reads this!)
-- .cursor/README.md: Cursor-specific documentation
-- .specweave/docs/: Project documentation
-
-You're ready to build with SpecWeave on Cursor!
-
-Pro tip: Say "act as [role]" to follow AGENTS.md patterns:
-- "act as PM and create spec" (AGENTS.md defines PM role)
-- "act as Architect and design system" (AGENTS.md defines Architect role)
-- "act as DevOps and create infrastructure" (AGENTS.md defines DevOps role)
+Tip: Say "act as PM/Architect/DevOps" to adopt roles.
+Docs: AGENTS.md, .cursor/README.md
     `;
   }
 

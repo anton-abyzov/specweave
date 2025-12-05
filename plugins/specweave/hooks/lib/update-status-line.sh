@@ -174,12 +174,24 @@ fi
 TASKS_FILE="$INCREMENTS_DIR/$CURRENT_INCREMENT/tasks.md"
 SPEC_FILE="$INCREMENTS_DIR/$CURRENT_INCREMENT/spec.md"
 
-# Count tasks with single awk call
+# Count tasks with single awk call (per-task completion tracking!)
+# Bug fix: Each task counts as 0 or 1 completed, regardless of marker count
 read -r TOTAL_TASKS COMPLETED_TASKS < <(
   awk '
-    /^###? T-/ { total++ }
-    /\*\*Completed\*\*:|\*\*Status\*\*:[ \t]*\[x\]/ { completed++ }
-    END { print total+0, completed+0 }
+    BEGIN { total=0; completed=0; in_task=0; task_complete=0 }
+    /^###? T-/ {
+      if (in_task && task_complete) completed++
+      total++
+      in_task=1
+      task_complete=0
+    }
+    /\*\*Completed\*\*:|\*\*Status\*\*:[ \t]*\[x\]|^\[x\]/ {
+      if (in_task) task_complete=1
+    }
+    END {
+      if (in_task && task_complete) completed++
+      print total, completed
+    }
   ' "$TASKS_FILE" 2>/dev/null || echo "0 0"
 )
 

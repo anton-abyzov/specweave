@@ -267,7 +267,11 @@ export function moveSync(src, dest, options) {
     }
 }
 // Re-export common fs/promises methods for convenience
-export const { readFile, writeFile, appendFile, stat, readdir, access, unlink, rmdir, rename, chmod, copyFile, mkdtemp, } = fsPromises;
+export const { readFile, writeFile, appendFile, stat, lstat, // Added for symlink detection
+readdir, access, unlink, rmdir, rename, chmod, copyFile, mkdtemp, mkdir, // Added for test compatibility
+symlink, // Added for creating symlinks
+readlink, // Added for reading symlink targets
+ } = fsPromises;
 // Create renameSync alias for fs-extra compatibility
 export const renameSync = fsRenameSync;
 // Create mkdtempSync alias
@@ -297,6 +301,7 @@ export default {
     rename,
     copyFile,
     mkdtemp,
+    mkdir,
     // Sync methods
     ensureDirSync,
     mkdirpSync,

@@ -9,7 +9,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
-import { execFileNoThrow } from '../../src/utils/execFileNoThrow.js';
+import { execFileNoThrow } from '../../../../src/utils/execFileNoThrow.js';
 import {
   getGitHubAuth,
   hasGitHubCredentials,

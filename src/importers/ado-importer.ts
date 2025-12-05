@@ -6,6 +6,7 @@
  */
 
 import type { Importer, ExternalItem, ImportConfig } from './external-importer.js';
+import { sanitizeHtmlForMdx } from '../utils/html-to-mdx.js';
 
 interface ADOWorkItem {
   id: number;
@@ -401,7 +402,7 @@ export class ADOImporter implements Importer {
       id: `ADO-${workItem.fields['System.Id']}`,
       type,
       title: workItem.fields['System.Title'],
-      description: workItem.fields['System.Description'] || '',
+      description: sanitizeHtmlForMdx(workItem.fields['System.Description']),
       status,
       priority,
       createdAt: new Date(workItem.fields['System.CreatedDate']),

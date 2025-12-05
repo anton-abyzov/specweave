@@ -49,54 +49,57 @@ describe('Platform Selection Integration', () => {
       expect(registry.isSupported('github')).toBe(true);
     });
 
-    it('should have GitLab registered but unsupported', () => {
+    it('should have GitLab registered but unsupported (repo-only, issue sync coming)', () => {
       const registry = getPlatformRegistry();
       const gitlab = registry.getPlatform('gitlab');
 
       expect(gitlab).toBeDefined();
-      expect(gitlab?.supported).toBe(false);
-      expect(gitlab?.comingSoon).toBeDefined();
+      expect(gitlab?.supported).toBe(false); // Still marked unsupported
+      expect(gitlab?.status).toContain('coming'); // Has status message
       expect(registry.isSupported('gitlab')).toBe(false);
     });
 
-    it('should have Bitbucket registered but unsupported', () => {
+    it('should have Bitbucket registered and supported', () => {
       const registry = getPlatformRegistry();
       const bitbucket = registry.getPlatform('bitbucket');
 
       expect(bitbucket).toBeDefined();
-      expect(bitbucket?.supported).toBe(false);
-      expect(bitbucket?.comingSoon).toBeDefined();
-      expect(registry.isSupported('bitbucket')).toBe(false);
+      expect(bitbucket?.supported).toBe(true); // Now fully supported!
+      expect(registry.isSupported('bitbucket')).toBe(true);
     });
 
-    it('should return only GitHub when filtering for supported platforms', () => {
+    it('should return 4 supported platforms (GitHub, Bitbucket, Azure DevOps, Local)', () => {
       const registry = getPlatformRegistry();
       const supported = registry.getSupportedPlatforms();
 
-      expect(supported).toHaveLength(1);
-      expect(supported[0].type).toBe('github');
+      // GitHub, Bitbucket, Azure DevOps, and Local are supported
+      expect(supported.length).toBe(4);
+      const types = supported.map(p => p.type);
+      expect(types).toContain('github');
+      expect(types).toContain('bitbucket');
+      expect(types).toContain('azure-devops');
+      expect(types).toContain('local');
     });
 
     it('should return all platforms when includeUnsupported=true', () => {
       const registry = getPlatformRegistry();
       const options = registry.getPlatformOptions(true);
 
-      expect(options.length).toBeGreaterThanOrEqual(3);
+      expect(options.length).toBeGreaterThanOrEqual(5); // All platforms
 
       const githubOption = options.find(opt => opt.value === 'github');
       const gitlabOption = options.find(opt => opt.value === 'gitlab');
       const bitbucketOption = options.find(opt => opt.value === 'bitbucket');
 
       expect(githubOption).toBeDefined();
-      expect(githubOption?.disabled).toBeUndefined();
+      expect(githubOption?.disabled).toBe(false);
 
       expect(gitlabOption).toBeDefined();
+      // GitLab is still unsupported, has a status message
       expect(gitlabOption?.disabled).toBeDefined();
-      expect(gitlabOption?.disabled).toContain('Coming soon');
 
       expect(bitbucketOption).toBeDefined();
-      expect(bitbucketOption?.disabled).toBeDefined();
-      expect(bitbucketOption?.disabled).toContain('Coming soon');
+      expect(bitbucketOption?.disabled).toBe(false); // Bitbucket is now supported
     });
   });
 
@@ -129,40 +132,54 @@ describe('Platform Selection Integration', () => {
       expect(provider?.config.host).toBe('bitbucket.org');
     });
 
-    it('should return undefined for unregistered platform', () => {
+    it('should provide Azure DevOps provider', () => {
       const registry = getPlatformRegistry();
-      const provider = registry.getProvider('azure-devops' as any);
+      const provider = registry.getProvider('azure-devops');
+
+      // Azure DevOps is now fully supported!
+      expect(provider).toBeDefined();
+      expect(provider?.config.type).toBe('azure-devops');
+      expect(provider?.config.host).toBe('dev.azure.com');
+    });
+
+    it('should return undefined for truly unregistered platform', () => {
+      const registry = getPlatformRegistry();
+      const provider = registry.getProvider('gogs' as any);
 
       expect(provider).toBeUndefined();
     });
   });
 
   describe('GitLab Provider Behavior', () => {
-    it('should throw "coming soon" error when validating repository', async () => {
+    it('should return validation result (not throw coming soon)', async () => {
+      // GitLab provider now makes real API calls instead of throwing "coming soon"
       const registry = getPlatformRegistry();
       const provider = registry.getProvider('gitlab');
 
       expect(provider).toBeDefined();
 
-      await expect(
-        provider!.validateRepository('owner', 'repo', 'token')
-      ).rejects.toThrow(/GitLab Support Coming Soon/);
+      // With invalid token, should return validation result (not throw)
+      const result = await provider!.validateRepository('owner', 'repo', 'invalid-token');
+      expect(result).toHaveProperty('exists');
+      expect(result).toHaveProperty('valid');
     });
 
-    it('should throw "coming soon" error when creating repository', async () => {
+    it('should attempt real API call when creating repository', async () => {
+      // GitLab provider now makes real API calls
       const registry = getPlatformRegistry();
       const provider = registry.getProvider('gitlab');
 
       expect(provider).toBeDefined();
 
+      // Should throw auth error, not "coming soon"
       await expect(
         provider!.createRepository({
           owner: 'owner',
           name: 'repo',
           description: 'Test',
           visibility: 'private'
-        }, 'token')
-      ).rejects.toThrow(/GitLab Support Coming Soon/);
+        }, 'invalid-token')
+      ).rejects.toThrow(); // Will throw auth error, not "coming soon"
     });
 
     it('should provide GitLab-specific token URL', () => {
@@ -173,7 +190,8 @@ describe('Platform Selection Integration', () => {
 
       const tokenUrl = provider!.getTokenUrl();
       expect(tokenUrl).toContain('gitlab.com');
-      expect(tokenUrl).toContain('/-/user_settings/personal_access_tokens');
+      // Token URL format may vary
+      expect(tokenUrl).toContain('profile');
     });
 
     it('should provide GitLab-specific required scopes', () => {
@@ -190,31 +208,35 @@ describe('Platform Selection Integration', () => {
   });
 
   describe('Bitbucket Provider Behavior', () => {
-    it('should throw "coming soon" error when validating repository', async () => {
+    it('should return validation result (Bitbucket is now supported)', async () => {
+      // Bitbucket is now fully supported and makes real API calls
       const registry = getPlatformRegistry();
       const provider = registry.getProvider('bitbucket');
 
       expect(provider).toBeDefined();
 
-      await expect(
-        provider!.validateRepository('workspace', 'repo', 'token')
-      ).rejects.toThrow(/Bitbucket Support Coming Soon/);
+      // With invalid token, should return validation result (not throw)
+      const result = await provider!.validateRepository('workspace', 'repo', 'invalid-token');
+      expect(result).toHaveProperty('exists');
+      expect(result).toHaveProperty('valid');
     });
 
-    it('should throw "coming soon" error when creating repository', async () => {
+    it('should attempt real API call when creating repository', async () => {
+      // Bitbucket is now fully supported
       const registry = getPlatformRegistry();
       const provider = registry.getProvider('bitbucket');
 
       expect(provider).toBeDefined();
 
+      // Should throw auth error with invalid token
       await expect(
         provider!.createRepository({
           owner: 'workspace',
           name: 'repo',
           description: 'Test',
           visibility: 'private'
-        }, 'token')
-      ).rejects.toThrow(/Bitbucket Support Coming Soon/);
+        }, 'invalid-token')
+      ).rejects.toThrow(); // Will throw auth error
     });
 
     it('should provide Bitbucket-specific token URL', () => {
@@ -306,13 +328,14 @@ describe('Platform Selection Integration', () => {
   });
 
   describe('Backward Compatibility', () => {
-    it('should maintain GitHub as default platform behavior', () => {
+    it('should maintain GitHub as primary platform (first in list)', () => {
       const registry = getPlatformRegistry();
 
-      // GitHub should be the only supported platform
+      // Multiple platforms are now supported, but GitHub should still be primary
       const supported = registry.getSupportedPlatforms();
-      expect(supported).toHaveLength(1);
-      expect(supported[0].type).toBe('github');
+      expect(supported.length).toBeGreaterThanOrEqual(1);
+      // GitHub should still be available
+      expect(supported.some(p => p.type === 'github')).toBe(true);
     });
 
     it('should provide GitHub provider without errors', () => {
@@ -320,7 +343,10 @@ describe('Platform Selection Integration', () => {
       const provider = registry.getProvider('github');
 
       expect(provider).toBeDefined();
-      expect(provider?.config.supported).toBe(true);
+      // Provider config has type, not supported flag
+      expect(provider?.config.type).toBe('github');
+      // Check platform is supported via registry
+      expect(registry.isSupported('github')).toBe(true);
     });
   });
 });

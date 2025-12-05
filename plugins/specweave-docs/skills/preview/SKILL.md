@@ -1,6 +1,6 @@
 ---
 name: preview
-description: Documentation preview expert for Docusaurus integration. Launches interactive preview server for SpecWeave living documentation with hot reload, auto-generated sidebar, and Mermaid diagrams. Activates for preview docs, view documentation, Docusaurus server, docs UI, documentation website, local docs server, hot reload docs, static site build.
+description: Documentation preview expert for Docusaurus integration. Launches interactive preview server for SpecWeave living documentation with hot reload, auto-generated sidebar, and Mermaid diagrams. Works in ANY SpecWeave project with auto-setup. Activates for preview docs, view documentation, Docusaurus server, docs UI, documentation website, local docs server, hot reload docs, static site build.
 ---
 
 # Documentation Preview Skill
@@ -9,27 +9,26 @@ Expert in launching and managing Docusaurus documentation preview for SpecWeave 
 
 ## What I Do
 
-I help you preview and build your SpecWeave living documentation with Docusaurus:
+I help you preview your SpecWeave living documentation with Docusaurus:
 
-### 1. Interactive Preview
-- Launch local development server (default port: 3016)
-- Auto-generate sidebar from folder structure
-- Hot reload - edit markdown, see changes instantly
-- Mermaid diagram rendering
-- Mobile-responsive UI
-- Search functionality
+### Key Features
+- **Zero-config setup** - Works in any SpecWeave project automatically
+- **Cached installation** - Docusaurus cached in `.specweave/cache/docs-site/` (gitignored)
+- **Hot reload** - Edit markdown, see changes instantly
+- **Mermaid diagrams** - Architecture diagrams render beautifully
+- **Auto sidebar** - Generated from folder structure
+- **Bypasses private registries** - Uses public npm to avoid Azure DevOps/corporate issues
 
-### 2. Static Site Building
-- Build production-ready static site
-- Output to `.specweave/docs-site-internal/build/`
-- Ready for deployment to any static host
-- Optimized for performance
+## How It Works
 
-### 3. Smart Setup
-- Lazy installation (only installs when first used)
-- Checks Node.js version (18+ required)
-- Installs Docusaurus dependencies automatically
-- Configures from `.specweave/config.json` settings
+1. **First run (~30 seconds)**:
+   - Creates Docusaurus in `.specweave/cache/docs-site/`
+   - Installs dependencies from public npm registry
+   - Configures to read from `.specweave/docs/internal/`
+
+2. **Subsequent runs (instant)**:
+   - Uses cached installation
+   - Starts server immediately
 
 ## Available Commands
 
@@ -39,11 +38,10 @@ I help you preview and build your SpecWeave living documentation with Docusaurus
 ```
 
 **What it does:**
-1. Checks if Docusaurus is installed (installs if needed)
-2. Generates sidebar from `.specweave/docs/internal/` structure
-3. Starts development server on port 3016 (configurable)
-4. Opens browser automatically
-5. Enables hot reload
+1. Checks if `.specweave/docs/internal/` exists
+2. Sets up Docusaurus in cache (if first run)
+3. Starts dev server on **http://localhost:3015**
+4. Enables hot reload
 
 ### Build Static Site
 ```bash
@@ -51,55 +49,46 @@ I help you preview and build your SpecWeave living documentation with Docusaurus
 ```
 
 **What it does:**
-1. Checks if Docusaurus is installed
-2. Runs production build
-3. Outputs to `.specweave/docs-site-internal/build/`
-4. Shows build stats and output path
+1. Builds production-ready static site
+2. Outputs to `.specweave/cache/docs-site/build/`
+3. Ready for deployment to any static host
 
 ## When to Use This Skill
 
-### Activate for questions like:
-- "How do I preview my documentation?"
-- "Show me my docs in a UI"
-- "Launch Docusaurus server"
+### Activate for:
+- "Preview my documentation"
+- "Show me my docs in a browser"
+- "Launch Docusaurus"
 - "View my living documentation"
 - "Start docs preview"
-- "Build static docs site"
+- "I want to see my internal docs"
 
-### Common workflows:
+### Workflow
 
-**1. First-time preview:**
 ```
 User: "I want to preview my docs"
-You: "I'll set up the documentation preview with Docusaurus."
+You: "I'll launch the documentation preview server."
      [Run: /specweave-docs:preview]
 ```
 
-**2. Build for deployment:**
-```
-User: "I need to deploy my docs"
-You: "I'll build the static site for deployment."
-     [Run: /specweave-docs:build]
+## Troubleshooting
+
+### Port 3015 already in use
+```bash
+lsof -i :3015 && kill -9 $(lsof -t -i :3015)
 ```
 
-## Configuration
-
-```json
-{
-  "documentation": {
-    "preview": {
-      "enabled": true,
-      "autoInstall": true,
-      "port": 3016,
-      "openBrowser": true,
-      "theme": "default"
-    }
-  }
-}
+### Reinstall from scratch
+```bash
+rm -rf .specweave/cache/docs-site
+# Then run /specweave-docs:preview again
 ```
+
+### npm registry issues
+The setup explicitly uses `--registry=https://registry.npmjs.org` to bypass private/corporate registry configurations.
 
 ## See Also
 
+- `/specweave-docs:build` - Build static site for deployment
 - `/specweave-docs:organize` - Organize large folders with themed indexes
 - `/specweave-docs:health` - Documentation health report
-- `/specweave-docs:generate` - Generate docs from code
