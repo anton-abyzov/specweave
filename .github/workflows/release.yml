@@ -1,9 +1,12 @@
 name: Release & Publish
-# v2 - workflow_dispatch trigger for manual releases
 
 on:
-  # REMOVED: push on tags - causes infinite loop when workflow creates tags
-  # Tags are created by workflow_dispatch, then npm publish happens automatically
+  # Trigger on version tags (v0.31.1, etc)
+  push:
+    tags:
+      - 'v*'
+
+  # Also allow manual trigger
   workflow_dispatch:
     inputs:
       version:
@@ -26,8 +29,8 @@ concurrency:
 
 jobs:
   release:
-    # Only run on manual workflow_dispatch, not on push events
-    if: github.event_name == 'workflow_dispatch'
+    # Run on tag push OR manual workflow_dispatch
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
