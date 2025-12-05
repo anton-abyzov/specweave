@@ -25,17 +25,10 @@ jobs:
           # cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build project
-        run: |
-          echo "Node version: $(node --version)"
-          echo "NPM version: $(npm --version)"
-          echo "TypeScript version: $(npx tsc --version)"
-          echo "--- Running tsc to show errors ---"
-          npx tsc --noEmit 2>&1 || true
-          echo "--- Now running full rebuild ---"
-          npm run rebuild
+        run: npm run rebuild
 
       - name: Run smoke tests
         run: npm test
