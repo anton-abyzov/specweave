@@ -166,6 +166,28 @@ READ: limit:50 | EDIT: 1 per response | AGENTS: none | FLOW: "Done. Next?"
 
 **Format:** `ACTION. CONSTRAINT. CONSTRAINT.` (periods, not commas)
 
+### 8. MDX Compatibility (Docusaurus Preview)
+
+**External HTML content = MDX compilation errors** (blocks docs preview)
+
+```
+❌ MDX FAILS ON:
+- target=_blank (unquoted attribute) → target="_blank"
+- <br> (self-closing without /) → <br />
+- dir=auto, rel=noopener, alt=image (all unquoted)
+
+✅ PREVENTION (automatic in importers since v0.32.0):
+- ADO/JIRA/GitHub importers use sanitizeHtmlForMdx()
+- Located: src/utils/html-to-mdx.ts
+```
+
+**If Docusaurus preview fails with "Unexpected character":**
+```bash
+# Batch fix existing files (macOS):
+find .specweave/docs -name "*.md" -exec sed -i '' 's/target=_blank/target="_blank"/g' {} \;
+find .specweave/docs -name "*.md" -exec sed -i '' 's/dir=auto/dir="auto"/g' {} \;
+```
+
 ---
 
 ## Development Setup
