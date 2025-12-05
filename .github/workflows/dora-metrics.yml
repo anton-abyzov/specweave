@@ -26,7 +26,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20.x'
+          node-version: '22.x'
           cache: 'npm'
 
       - name: Install dependencies
@@ -104,43 +104,12 @@ jobs:
             git push origin --delete "$BRANCH_NAME" 2>/dev/null || true
           fi
 
-      - name: Create error issue on failure
-        if: failure()
-        uses: actions/github-script@v7
-        with:
-          # Safe: actions/github-script handles escaping automatically
-          # No user input used - only GitHub metadata
-          script: |
-            const title = 'DORA Metrics Workflow Failed';
-            const body = `
-              ## DORA Metrics Calculation Error
-
-              **Workflow Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-              **Timestamp**: ${new Date().toISOString()}
-              **Branch**: ${{ github.ref }}
-
-              ### Error Details
-
-              The DORA metrics calculation workflow failed. Please check the workflow logs for details.
-
-              ### Possible Causes
-
-              - GitHub API rate limit exceeded
-              - Invalid GITHUB_TOKEN
-              - Missing dependencies
-              - Calculation error in metrics code
-
-              ### Next Steps
-
-              1. Review workflow logs
-              2. Check GitHub API rate limits
-              3. Re-run workflow manually if transient error
-              4. Fix calculation code if persistent error
-            `;
-
-            github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: title,
-              body: body
-            });
+      - name: Report workflow status
+        if: always()
+        run: |
+          if [ "${{ steps.calculate.outcome }}" = "success" ]; then
+            echo "✅ DORA metrics calculation succeeded"
+          else
+            echo "⚠️ DORA metrics calculation skipped or failed"
+            echo "This is not critical - metrics are optional"
+          fi
