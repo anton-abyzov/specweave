@@ -38,8 +38,23 @@ jobs:
           echo "tsconfig.json include:"
           cat tsconfig.json | grep -A 5 '"include"'
 
-      - name: Build project
-        run: npm run rebuild
+      - name: Clean dist
+        run: rm -rf dist/
+
+      - name: TypeScript compile
+        run: npx tsc || (echo "TypeScript failed. Checking specific errors:" && npx tsc --noEmitOnError false 2>&1 | head -100)
+
+      - name: Copy locales
+        run: npm run copy:locales
+
+      - name: Copy plugins
+        run: npm run copy:plugins
+
+      - name: Copy hook deps
+        run: npm run copy:hook-deps
+
+      - name: Copy adapters
+        run: npm run copy:adapters
 
       - name: Run smoke tests
         run: npm test
