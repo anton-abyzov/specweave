@@ -280,6 +280,7 @@ export async function getAvailableProviders(): Promise<LLMProviderType[]> {
   // Check Anthropic API
   if (process.env.ANTHROPIC_API_KEY) {
     try {
+      // @ts-ignore - Optional dependency check
       await import('@anthropic-ai/sdk');
       available.push('anthropic');
     } catch {
@@ -290,6 +291,7 @@ export async function getAvailableProviders(): Promise<LLMProviderType[]> {
   // Check OpenAI
   if (process.env.OPENAI_API_KEY) {
     try {
+      // @ts-ignore - Optional dependency check
       await import('openai');
       available.push('openai');
     } catch {
