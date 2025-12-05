@@ -27,6 +27,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Debug environment
+        run: |
+          echo "Node version: $(node -v)"
+          echo "npm version: $(npm -v)"
+          echo "TypeScript version: $(npx tsc --version)"
+          echo "Checking global.d.ts:"
+          ls -la global.d.ts || echo "global.d.ts not found!"
+          cat global.d.ts | head -30
+          echo "tsconfig.json include:"
+          cat tsconfig.json | grep -A 5 '"include"'
+
       - name: Build project
         run: npm run rebuild
 
