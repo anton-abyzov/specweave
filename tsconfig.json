@@ -19,7 +19,8 @@
   },
   "include": [
     "src/**/*",
-    "plugins/**/lib/**/*.ts"
+    "plugins/**/lib/**/*.ts",
+    "global.d.ts"
   ],
   "exclude": [
     "node_modules",
