@@ -54,7 +54,12 @@ jobs:
         run: npm run copy:hook-deps
 
       - name: Copy adapters
-        run: npm run copy:adapters
+        run: |
+          echo "Checking src/adapters:"
+          ls -la src/adapters/ || echo "src/adapters does not exist"
+          echo "Checking dist/src:"
+          ls -la dist/src/ || echo "dist/src does not exist"
+          npm run copy:adapters
 
       - name: Run smoke tests
         run: npm test
