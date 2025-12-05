@@ -19,11 +19,6 @@ on:
           - minor
           - major
 
-# Prevent duplicate runs
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   release:
     # The 'on' trigger already filters: tag pushes (v*) and workflow_dispatch
