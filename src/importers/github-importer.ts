@@ -7,6 +7,7 @@
 
 import { Octokit } from '@octokit/rest';
 import type { Importer, ExternalItem, ImportConfig } from './external-importer.js';
+import { sanitizeHtmlForMdx } from '../utils/html-to-mdx.js';
 
 interface GitHubIssue {
   number: number;
@@ -182,7 +183,7 @@ export class GitHubImporter implements Importer {
       id: `github#${this.owner}/${this.repo}#${issue.number}`,
       type,
       title: issue.title,
-      description: issue.body || '',
+      description: sanitizeHtmlForMdx(issue.body),
       status,
       priority,
       createdAt: new Date(issue.created_at),
