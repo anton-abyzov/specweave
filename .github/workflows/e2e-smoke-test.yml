@@ -28,6 +28,8 @@ jobs:
     name: E2E Smoke Test
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      has_api_key: ${{ steps.check-secrets.outputs.has_api_key }}
 
     steps:
       - name: Check for required secrets
@@ -47,7 +49,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install SpecWeave Dependencies
@@ -184,8 +186,8 @@ jobs:
     name: Performance Benchmark
     runs-on: ubuntu-latest
     needs: smoke-test
-    # Only run performance benchmark if API key is available
-    if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+    # Only run performance benchmark if API key is available (use job output)
+    if: needs.smoke-test.outputs.has_api_key == 'true'
 
     steps:
       - name: Checkout
@@ -194,7 +196,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install Dependencies
