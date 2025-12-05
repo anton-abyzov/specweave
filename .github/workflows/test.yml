@@ -27,17 +27,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Debug environment
-        run: |
-          echo "Node version: $(node -v)"
-          echo "npm version: $(npm -v)"
-          echo "TypeScript version: $(npx tsc --version)"
-          echo "Checking global.d.ts:"
-          ls -la global.d.ts || echo "global.d.ts not found!"
-          cat global.d.ts | head -30
-          echo "tsconfig.json include:"
-          cat tsconfig.json | grep -A 5 '"include"'
-
       - name: Clean dist
         run: rm -rf dist/
 
@@ -54,15 +43,7 @@ jobs:
         run: npm run copy:hook-deps
 
       - name: Copy adapters
-        continue-on-error: true
-        run: |
-          echo "Checking src/adapters:"
-          ls -la src/adapters/ || echo "src/adapters does not exist"
-          echo "Checking dist/src:"
-          ls -la dist/src/ || echo "dist/src does not exist"
-          echo "Checking dist/src/adapters:"
-          ls -la dist/src/adapters/ || echo "dist/src/adapters does not exist (expected - we're about to create it)"
-          npm run copy:adapters 2>&1 || echo "copy:adapters failed but continuing..."
+        run: npm run copy:adapters
 
       - name: Run smoke tests
         run: npm test
