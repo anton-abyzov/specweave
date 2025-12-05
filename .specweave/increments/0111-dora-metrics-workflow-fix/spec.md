@@ -42,8 +42,8 @@ The DORA metrics calculation workflow fails daily. Multiple duplicate issues wer
 
 - [x] **AC-US1-01**: Investigate root cause of DORA workflow failures
 - [x] **AC-US1-02**: Fix the underlying issue
-- [ ] **AC-US1-03**: Verify workflow runs successfully
-- [ ] **AC-US1-04**: Close GitHub issue #779 upon completion
+- [x] **AC-US1-03**: Verify workflow runs successfully
+- [x] **AC-US1-04**: Close GitHub issue #779 upon completion
 
 ## Success Criteria
 
