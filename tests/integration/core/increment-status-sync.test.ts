@@ -128,6 +128,8 @@ All tasks complete (for testing purposes).
       expect(specStatus).toBe('active');
 
       // WHEN increment is closed via MetadataManager.updateStatus()
+      // Must go through READY_FOR_REVIEW first (v0.28.63+)
+      MetadataManager.updateStatus(incrementId, IncrementStatus.READY_FOR_REVIEW);
       MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 
       // THEN spec.md should be updated to "completed"
@@ -144,7 +146,8 @@ All tasks complete (for testing purposes).
       await createTestIncrement('0001-first', IncrementStatus.ACTIVE);
       await createTestIncrement('0002-second', IncrementStatus.ACTIVE);
 
-      // WHEN first increment is completed
+      // WHEN first increment is completed (must go through READY_FOR_REVIEW)
+      MetadataManager.updateStatus('0001-first', IncrementStatus.READY_FOR_REVIEW);
       MetadataManager.updateStatus('0001-first', IncrementStatus.COMPLETED);
 
       // THEN only second increment should be considered active
@@ -164,7 +167,8 @@ All tasks complete (for testing purposes).
       await createTestIncrement('0038-old', IncrementStatus.ACTIVE);
       await createTestIncrement('0042-current', IncrementStatus.ACTIVE);
 
-      // WHEN 0038 is completed
+      // WHEN 0038 is completed (must go through READY_FOR_REVIEW)
+      MetadataManager.updateStatus('0038-old', IncrementStatus.READY_FOR_REVIEW);
       MetadataManager.updateStatus('0038-old', IncrementStatus.COMPLETED);
 
       // THEN 0038 spec.md should show "completed"
@@ -194,7 +198,8 @@ All tasks complete (for testing purposes).
       expect(specStatus).toBe('active');
 
       // WHEN /specweave:done is executed (simulated via MetadataManager.updateStatus)
-      // In real usage, /specweave:done command calls MetadataManager.updateStatus
+      // Must go through READY_FOR_REVIEW before COMPLETED (v0.28.63+)
+      MetadataManager.updateStatus(incrementId, IncrementStatus.READY_FOR_REVIEW);
       MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 
       // THEN spec.md should be updated to "completed"
@@ -207,7 +212,8 @@ All tasks complete (for testing purposes).
       const incrementId = '0002-test';
       await createTestIncrement(incrementId, IncrementStatus.ACTIVE);
 
-      // WHEN increment is closed
+      // WHEN increment is closed (must go through READY_FOR_REVIEW)
+      MetadataManager.updateStatus(incrementId, IncrementStatus.READY_FOR_REVIEW);
       MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 
       // THEN metadata.json should be updated
@@ -227,7 +233,8 @@ All tasks complete (for testing purposes).
       await createTestIncrement('0001-first', IncrementStatus.ACTIVE);
       await createTestIncrement('0002-second', IncrementStatus.ACTIVE);
 
-      // WHEN first increment is closed
+      // WHEN first increment is closed (must go through READY_FOR_REVIEW)
+      MetadataManager.updateStatus('0001-first', IncrementStatus.READY_FOR_REVIEW);
       MetadataManager.updateStatus('0001-first', IncrementStatus.COMPLETED);
 
       // THEN first increment should be completed in both files
@@ -335,10 +342,11 @@ All tasks complete (for testing purposes).
    */
   describe('All Status Transitions Update spec.md', () => {
     it('testAllTransitionsUpdateSpec - should update spec.md for every valid transition', async () => {
-      // Test all valid transitions
+      // Test all valid direct transitions (v0.28.63+ requires READY_FOR_REVIEW before COMPLETED)
       const transitions = [
         { from: IncrementStatus.PLANNING, to: IncrementStatus.ACTIVE, label: 'planning→active' },
-        { from: IncrementStatus.ACTIVE, to: IncrementStatus.COMPLETED, label: 'active→completed' },
+        { from: IncrementStatus.ACTIVE, to: IncrementStatus.READY_FOR_REVIEW, label: 'active→ready_for_review' },
+        { from: IncrementStatus.READY_FOR_REVIEW, to: IncrementStatus.COMPLETED, label: 'ready_for_review→completed' },
         { from: IncrementStatus.ACTIVE, to: IncrementStatus.PAUSED, label: 'active→paused' },
         { from: IncrementStatus.PAUSED, to: IncrementStatus.ACTIVE, label: 'paused→active (resume)' },
         { from: IncrementStatus.ACTIVE, to: IncrementStatus.ABANDONED, label: 'active→abandoned' },
@@ -349,14 +357,14 @@ All tasks complete (for testing purposes).
         const incrementId = `test-${transition.from}-to-${transition.to}`;
         await createTestIncrement(incrementId, transition.from);
 
-        // Verify starting state
-        expect(await readSpecStatus(incrementId)).toBe(transition.from.toLowerCase());
+        // Verify starting state (enum values are already lowercase with underscores)
+        expect(await readSpecStatus(incrementId)).toBe(transition.from);
 
         // Execute transition
         MetadataManager.updateStatus(incrementId, transition.to);
 
         // Verify ending state
-        expect(await readSpecStatus(incrementId)).toBe(transition.to.toLowerCase());
+        expect(await readSpecStatus(incrementId)).toBe(transition.to);
         expect(MetadataManager.read(incrementId).status).toBe(transition.to);
       }
     });

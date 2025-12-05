@@ -121,7 +121,8 @@ describe('Validation and Repair Workflow Integration', () => {
       title: 'Synced Increment'
     });
 
-    // Use MetadataManager to ensure both files updated
+    // Use MetadataManager to ensure both files updated (must go through READY_FOR_REVIEW first - v0.28.63+)
+    MetadataManager.updateStatus('0001-synced', IncrementStatus.READY_FOR_REVIEW);
     MetadataManager.updateStatus('0001-synced', IncrementStatus.COMPLETED);
 
     // WHEN: Validate (both files should be in sync)

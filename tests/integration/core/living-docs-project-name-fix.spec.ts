@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { SpecDistributor } from '../../src/core/living-docs/spec-distributor';
+import { SpecDistributor } from '../../../src/core/living-docs/SpecDistributor.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

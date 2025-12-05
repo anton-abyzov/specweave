@@ -52,7 +52,8 @@ describe('Full Increment Lifecycle Integration', () => {
     metadata = MetadataManager.read('0001-test');
     expect(metadata.status).toBe(IncrementStatus.ACTIVE);
 
-    // PHASE 3: Complete work
+    // PHASE 3: Complete work (must go through READY_FOR_REVIEW first - v0.28.63+)
+    MetadataManager.updateStatus('0001-test', IncrementStatus.READY_FOR_REVIEW);
     MetadataManager.updateStatus('0001-test', IncrementStatus.COMPLETED);
 
     specStatus = await SpecFrontmatterUpdater.readStatus('0001-test');
@@ -88,7 +89,8 @@ describe('Full Increment Lifecycle Integration', () => {
       expect(specStatus).toBe(IncrementStatus.ACTIVE);
     }
 
-    // WHEN: Complete first increment
+    // WHEN: Complete first increment (must go through READY_FOR_REVIEW first - v0.28.63+)
+    MetadataManager.updateStatus('0001-first', IncrementStatus.READY_FOR_REVIEW);
     MetadataManager.updateStatus('0001-first', IncrementStatus.COMPLETED);
 
     let specStatus = await SpecFrontmatterUpdater.readStatus('0001-first');
@@ -96,7 +98,8 @@ describe('Full Increment Lifecycle Integration', () => {
     expect(specStatus).toBe(IncrementStatus.COMPLETED);
     expect(metadata.status).toBe(IncrementStatus.COMPLETED);
 
-    // WHEN: Complete second increment
+    // WHEN: Complete second increment (must go through READY_FOR_REVIEW first - v0.28.63+)
+    MetadataManager.updateStatus('0002-second', IncrementStatus.READY_FOR_REVIEW);
     MetadataManager.updateStatus('0002-second', IncrementStatus.COMPLETED);
 
     specStatus = await SpecFrontmatterUpdater.readStatus('0002-second');
@@ -104,7 +107,8 @@ describe('Full Increment Lifecycle Integration', () => {
     expect(specStatus).toBe(IncrementStatus.COMPLETED);
     expect(metadata.status).toBe(IncrementStatus.COMPLETED);
 
-    // WHEN: Complete third increment
+    // WHEN: Complete third increment (must go through READY_FOR_REVIEW first - v0.28.63+)
+    MetadataManager.updateStatus('0003-third', IncrementStatus.READY_FOR_REVIEW);
     MetadataManager.updateStatus('0003-third', IncrementStatus.COMPLETED);
 
     specStatus = await SpecFrontmatterUpdater.readStatus('0003-third');

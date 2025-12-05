@@ -322,6 +322,7 @@ export const {
   writeFile,
   appendFile,
   stat,
+  lstat,  // Added for symlink detection
   readdir,
   access,
   unlink,
@@ -330,6 +331,9 @@ export const {
   chmod,
   copyFile,
   mkdtemp,
+  mkdir,   // Added for test compatibility
+  symlink,  // Added for creating symlinks
+  readlink, // Added for reading symlink targets
 } = fsPromises;
 
 // Create renameSync alias for fs-extra compatibility
@@ -373,6 +377,7 @@ export default {
   rename,
   copyFile,
   mkdtemp,
+  mkdir,
 
   // Sync methods
   ensureDirSync,

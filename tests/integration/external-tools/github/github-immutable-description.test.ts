@@ -5,15 +5,15 @@
  * Verifies the complete flow from user story → GitHub issue → progress comment.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'';
-import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';
-import { syncSpecContentToGitHub } from '../../plugins/specweave-github/lib/github-spec-content-sync.js';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { GitHubClientV2 } from '../../../../plugins/specweave-github/lib/github-client-v2.js';
+import { syncSpecContentToGitHub } from '../../../../plugins/specweave-github/lib/github-spec-content-sync.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
 
 // Mock GitHub API
-vi.mock('../../plugins/specweave-github/lib/github-client-v2');
+vi.mock('../../../../plugins/specweave-github/lib/github-client-v2');
 
 describe('Immutable Description Pattern Integration', () => {
   let tempDir: string;

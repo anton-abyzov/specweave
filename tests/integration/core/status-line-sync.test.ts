@@ -71,6 +71,17 @@ completed: 0
 **Status**: [ ] pending
 `
     );
+
+    // Create metadata.json (REQUIRED for hook to find active increments!)
+    await fs.writeJson(
+      path.join(incrementDir, 'metadata.json'),
+      {
+        id: '0047-test-increment',
+        status: 'active',
+        created: '2025-11-20T00:00:00.000Z',
+        lastActivity: '2025-11-20T00:00:00.000Z'
+      }
+    );
   });
 
   afterEach(async () => {
@@ -148,15 +159,11 @@ completed: 0
 
   describe('Desync Detection', () => {
     it('MUST detect when status line is behind tasks.md', async () => {
-      // Complete 2 tasks in tasks.md
-      await markTaskComplete(incrementDir, 'T-001');
-      await markTaskComplete(incrementDir, 'T-002');
-
-      // Update status line for only 1 task (simulate desync)
+      // Complete T-001 only and update status line (cache shows 1 completed)
       await markTaskComplete(incrementDir, 'T-001');
       await runStatusLineUpdate(testRoot);
 
-      // Now manually complete T-002 without updating status line
+      // Now manually complete T-002 WITHOUT updating status line (creates desync)
       const tasksContent = await fs.readFile(path.join(incrementDir, 'tasks.md'), 'utf-8');
       const updated = tasksContent.replace(
         '### T-002: Second Task\n**Status**: [ ] pending',
@@ -164,7 +171,7 @@ completed: 0
       );
       await fs.writeFile(path.join(incrementDir, 'tasks.md'), updated);
 
-      // Detect desync
+      // Detect desync: actual=2 (T-001 + T-002), cached=1 (only T-001)
       const desync = await detectDesync(testRoot, '0047-test-increment');
       expect(desync.isDesynced).toBe(true);
       expect(desync.actualCompleted).toBe(2);
@@ -304,7 +311,8 @@ async function runStatusLineUpdate(projectRoot: string): Promise<void> {
   );
 
   try {
-    execSync(`bash "${scriptPath}"`, {
+    // Use --force to bypass TTL and mtime caching
+    execSync(`bash "${scriptPath}" --force`, {
       cwd: projectRoot,
       env: { ...process.env, PROJECT_ROOT: projectRoot },
       timeout: 5000

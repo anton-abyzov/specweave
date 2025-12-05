@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { StatusLineManager } from '../../src/core/status-line/status-line-manager.js';
-import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
+import { StatusLineManager } from '../../../../src/core/status-line/status-line-manager.js';
+import { MetadataManager } from '../../../../src/core/increment/metadata-manager.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -38,6 +38,31 @@ describe('Multi-Window Status Line', () => {
     // Create active increment state
     const stateFile = path.join(tempDir, '.specweave/state/active-increment.json');
     fs.writeFileSync(stateFile, JSON.stringify({ id: '0017-test-increment' }));
+
+    // Create metadata.json (required for hook to detect increment)
+    const metadataContent = {
+      id: '0017-test-increment',
+      status: 'active',
+      priority: 'P1',
+      type: 'feature',
+      created: new Date().toISOString(),
+      lastActivity: new Date().toISOString()
+    };
+    fs.writeFileSync(
+      path.join(incrementDir, 'metadata.json'),
+      JSON.stringify(metadataContent, null, 2)
+    );
+
+    // Create spec.md (required for status line)
+    const specContent = `---
+increment: 0017-test-increment
+title: Test Increment
+status: active
+---
+
+# Test Increment
+`;
+    fs.writeFileSync(path.join(incrementDir, 'spec.md'), specContent);
 
     // Create initial tasks.md
     const tasksContent = `---
@@ -215,7 +240,7 @@ total_tasks: 5
   });
 
   describe('Scenario 5: No Active Increment', () => {
-    it('should return null when no increment active', () => {
+    it('should return "No active increment" message when no increment active', () => {
       // Remove active increment state
       const stateFile = path.join(tempDir, '.specweave/state/active-increment.json');
       fs.unlinkSync(stateFile);
@@ -224,7 +249,7 @@ total_tasks: 5
       runHookScript(tempDir);
 
       const manager = new StatusLineManager(tempDir);
-      expect(manager.render()).toBeNull();
+      expect(manager.render()).toBe('No active increment');
     });
   });
 
@@ -291,7 +316,7 @@ total_tasks: 5
   function runHookScript(projectRoot: string): void {
     const hookScript = path.join(
       __dirname,
-      '../../../plugins/specweave/hooks/lib/update-status-line.sh'
+      '../../../../plugins/specweave/hooks/lib/update-status-line.sh'
     );
 
     try {

@@ -80,8 +80,17 @@ Working on it
 **Completed**: 2025-11-17
 `;
 
+    // Hook requires metadata.json to find active increments
+    const metadataContent = JSON.stringify({
+      id: '0001-test-increment',
+      status: 'active',
+      created: '2025-11-17T00:00:00.000Z',
+      lastActivity: '2025-11-17T00:00:00.000Z'
+    }, null, 2);
+
     await fs.writeFile(path.join(incrementDir, 'spec.md'), specContent);
     await fs.writeFile(path.join(incrementDir, 'tasks.md'), tasksContent);
+    await fs.writeFile(path.join(incrementDir, 'metadata.json'), metadataContent);
 
     // Run hook
     await execFileAsync('bash', [hookScript], { cwd: testDir });
@@ -123,8 +132,16 @@ created: "2025-11-17"
 Working on it
 `;
 
+    const metadataContent = JSON.stringify({
+      id: '0002-multi-marker-increment',
+      status: 'active',
+      created: '2025-11-17T00:00:00.000Z',
+      lastActivity: '2025-11-17T00:00:00.000Z'
+    }, null, 2);
+
     await fs.writeFile(path.join(incrementDir, 'spec.md'), specContent);
     await fs.writeFile(path.join(incrementDir, 'tasks.md'), tasksContent);
+    await fs.writeFile(path.join(incrementDir, 'metadata.json'), metadataContent);
 
     // Run hook
     await execFileAsync('bash', [hookScript], { cwd: testDir });
@@ -166,10 +183,26 @@ created: "2025-11-17T11:00:00Z"
 Working on it
 `;
 
+    const metadata1 = JSON.stringify({
+      id: '0001-first-increment',
+      status: 'active',
+      created: '2025-11-17T10:00:00.000Z',
+      lastActivity: '2025-11-17T10:00:00.000Z'
+    }, null, 2);
+
+    const metadata2 = JSON.stringify({
+      id: '0002-second-increment',
+      status: 'active',
+      created: '2025-11-17T11:00:00.000Z',
+      lastActivity: '2025-11-17T11:00:00.000Z'
+    }, null, 2);
+
     await fs.writeFile(path.join(increment1Dir, 'spec.md'), specContent1);
     await fs.writeFile(path.join(increment1Dir, 'tasks.md'), tasksContent);
+    await fs.writeFile(path.join(increment1Dir, 'metadata.json'), metadata1);
     await fs.writeFile(path.join(increment2Dir, 'spec.md'), specContent2);
     await fs.writeFile(path.join(increment2Dir, 'tasks.md'), tasksContent);
+    await fs.writeFile(path.join(increment2Dir, 'metadata.json'), metadata2);
 
     // Run hook
     await execFileAsync('bash', [hookScript], { cwd: testDir });
@@ -196,7 +229,15 @@ created: "2025-11-17"
 # Completed Increment
 `;
 
+    const metadataContent = JSON.stringify({
+      id: '0001-completed-increment',
+      status: 'completed',
+      created: '2025-11-17T00:00:00.000Z',
+      lastActivity: '2025-11-17T00:00:00.000Z'
+    }, null, 2);
+
     await fs.writeFile(path.join(incrementDir, 'spec.md'), specContent);
+    await fs.writeFile(path.join(incrementDir, 'metadata.json'), metadataContent);
 
     // Run hook
     await execFileAsync('bash', [hookScript], { cwd: testDir });
@@ -222,7 +263,15 @@ created: "2025-11-17"
 # Increment Without Tasks
 `;
 
+    const metadataContent = JSON.stringify({
+      id: '0001-no-tasks',
+      status: 'active',
+      created: '2025-11-17T00:00:00.000Z',
+      lastActivity: '2025-11-17T00:00:00.000Z'
+    }, null, 2);
+
     await fs.writeFile(path.join(incrementDir, 'spec.md'), specContent);
+    await fs.writeFile(path.join(incrementDir, 'metadata.json'), metadataContent);
 
     // Run hook (should not crash)
     await execFileAsync('bash', [hookScript], { cwd: testDir });
@@ -262,8 +311,16 @@ created: "2025-11-17"
 Working
 `;
 
+    const metadataContent = JSON.stringify({
+      id: '0001-mixed-formats',
+      status: 'active',
+      created: '2025-11-17T00:00:00.000Z',
+      lastActivity: '2025-11-17T00:00:00.000Z'
+    }, null, 2);
+
     await fs.writeFile(path.join(incrementDir, 'spec.md'), specContent);
     await fs.writeFile(path.join(incrementDir, 'tasks.md'), tasksContent);
+    await fs.writeFile(path.join(incrementDir, 'metadata.json'), metadataContent);
 
     // Run hook
     await execFileAsync('bash', [hookScript], { cwd: testDir });
@@ -307,12 +364,36 @@ created: "2025-11-17T11:00:00Z"
 
     const tasks = `## T-001: Task\nWorking`;
 
+    const metadata1 = JSON.stringify({
+      id: '0003-third',
+      status: 'active',
+      created: '2025-11-17T12:00:00.000Z',
+      lastActivity: '2025-11-17T12:00:00.000Z'
+    }, null, 2);
+
+    const metadata2 = JSON.stringify({
+      id: '0001-first',
+      status: 'active',
+      created: '2025-11-17T10:00:00.000Z',
+      lastActivity: '2025-11-17T10:00:00.000Z'
+    }, null, 2);
+
+    const metadata3 = JSON.stringify({
+      id: '0002-second',
+      status: 'active',
+      created: '2025-11-17T11:00:00.000Z',
+      lastActivity: '2025-11-17T11:00:00.000Z'
+    }, null, 2);
+
     await fs.writeFile(path.join(increment1Dir, 'spec.md'), spec1);
     await fs.writeFile(path.join(increment1Dir, 'tasks.md'), tasks);
+    await fs.writeFile(path.join(increment1Dir, 'metadata.json'), metadata1);
     await fs.writeFile(path.join(increment2Dir, 'spec.md'), spec2);
     await fs.writeFile(path.join(increment2Dir, 'tasks.md'), tasks);
+    await fs.writeFile(path.join(increment2Dir, 'metadata.json'), metadata2);
     await fs.writeFile(path.join(increment3Dir, 'spec.md'), spec3);
     await fs.writeFile(path.join(increment3Dir, 'tasks.md'), tasks);
+    await fs.writeFile(path.join(increment3Dir, 'metadata.json'), metadata3);
 
     // Run hook
     await execFileAsync('bash', [hookScript], { cwd: testDir });

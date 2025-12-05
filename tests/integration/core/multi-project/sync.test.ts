@@ -7,8 +7,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
-import { parseSpecFile, splitSpecIntoProjects } from '../../src/utils/spec-splitter.js';
-import { mapUserStoryToProjects, getPrimaryProject } from '../../src/utils/project-mapper.js';
+import { parseSpecFile, splitSpecIntoProjects } from '../../../../src/utils/spec-splitter.js';
+import { mapUserStoryToProjects, getPrimaryProject } from '../../../../src/utils/project-mapper.js';
 
 // Test fixtures
 const FIXTURES_DIR = path.join(__dirname, '../fixtures/multi-project-sync');

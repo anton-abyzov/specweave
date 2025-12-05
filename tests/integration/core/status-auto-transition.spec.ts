@@ -9,9 +9,9 @@ import { test, expect } from '@playwright/test';
 import * as fs from '../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
-import { IncrementStatus, IncrementType } from '../../src/core/types/increment-metadata.js';
-import { MetadataManager } from '../../src/core/increment/metadata-manager.js';
-import { autoTransitionStatus, migrateLegacyStatuses } from '../../src/core/increment/status-auto-transition.js';
+import { IncrementStatus, IncrementType } from '../../../src/core/types/increment-metadata.js';
+import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
+import { autoTransitionStatus, migrateLegacyStatuses } from '../../../src/core/increment/status-auto-transition.js';
 
 test.describe('Status Auto-Transition E2E', () => {
   // ✅ SAFE: Use temp directory instead of project root

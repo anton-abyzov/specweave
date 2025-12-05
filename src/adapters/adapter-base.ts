@@ -107,12 +107,12 @@ export abstract class AdapterBase implements IAdapter {
   abstract getInstructions(): string;
 
   /**
-   * Helper: Check if a command exists in PATH
+   * Helper: Check if a command exists in PATH (cross-platform)
    */
   protected async commandExists(command: string): Promise<boolean> {
     try {
-      const { execSync } = require('child_process');
-      execSync(`which ${command}`, { stdio: 'ignore' });
+      const checkCmd = process.platform === 'win32' ? `where ${command}` : `which ${command}`;
+      execSync(checkCmd, { stdio: 'ignore' });
       return true;
     } catch (error) {
       return false;

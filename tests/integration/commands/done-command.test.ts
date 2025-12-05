@@ -7,7 +7,7 @@ import { HookTestHarness } from '../test-utils/hook-test-harness.js';
 import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
 import { SpecFrontmatterUpdater } from '../../../src/core/increment/spec-frontmatter-updater.js';
 import { IncrementStatus } from '../../../src/core/types/increment-metadata.js';
-import { findProjectRoot } from '../test-utils/project-root.js';
+import { findProjectRoot } from '../../test-utils/project-root.js';
 
 // ✅ SAFE: Find project root from test file location, not process.cwd()
 const projectRoot = findProjectRoot(import.meta.url);
@@ -44,6 +44,8 @@ describe('/specweave:done Command Integration', () => {
     });
 
     // WHEN: Execute updateStatus (simulates /specweave:done)
+    // Must go through READY_FOR_REVIEW first (v0.28.63+)
+    MetadataManager.updateStatus('0001-test', IncrementStatus.READY_FOR_REVIEW);
     MetadataManager.updateStatus('0001-test', IncrementStatus.COMPLETED);
 
     // THEN: Both files updated
@@ -67,7 +69,8 @@ describe('/specweave:done Command Integration', () => {
       title: 'Second Increment'
     });
 
-    // WHEN: Close first increment
+    // WHEN: Close first increment (must go through READY_FOR_REVIEW first - v0.28.63+)
+    MetadataManager.updateStatus('0001-test', IncrementStatus.READY_FOR_REVIEW);
     MetadataManager.updateStatus('0001-test', IncrementStatus.COMPLETED);
 
     // AND: Execute status line hook
@@ -115,6 +118,8 @@ describe('/specweave:done Command Integration', () => {
     // AND: Attempt to update status (should fail gracefully)
     // NOTE: Current implementation logs warning but doesn't throw/rollback
     // This is by design for backward compatibility
+    // Must go through READY_FOR_REVIEW first (v0.28.63+)
+    MetadataManager.updateStatus('0001-test', IncrementStatus.READY_FOR_REVIEW);
     MetadataManager.updateStatus('0001-test', IncrementStatus.COMPLETED);
 
     // THEN: Metadata IS changed (no rollback by design)

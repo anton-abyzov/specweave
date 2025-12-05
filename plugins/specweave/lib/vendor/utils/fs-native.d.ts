@@ -131,7 +131,7 @@ export declare function move(src: string, dest: string, options?: {
 export declare function moveSync(src: string, dest: string, options?: {
     overwrite?: boolean;
 }): void;
-export declare const readFile: typeof fsPromises.readFile, writeFile: typeof fsPromises.writeFile, appendFile: typeof fsPromises.appendFile, stat: typeof fsPromises.stat, readdir: typeof fsPromises.readdir, access: typeof fsPromises.access, unlink: typeof fsPromises.unlink, rmdir: typeof fsPromises.rmdir, rename: typeof fsPromises.rename, chmod: typeof fsPromises.chmod, copyFile: typeof fsPromises.copyFile, mkdtemp: typeof fsPromises.mkdtemp;
+export declare const readFile: typeof fsPromises.readFile, writeFile: typeof fsPromises.writeFile, appendFile: typeof fsPromises.appendFile, stat: typeof fsPromises.stat, lstat: typeof fsPromises.lstat, readdir: typeof fsPromises.readdir, access: typeof fsPromises.access, unlink: typeof fsPromises.unlink, rmdir: typeof fsPromises.rmdir, rename: typeof fsPromises.rename, chmod: typeof fsPromises.chmod, copyFile: typeof fsPromises.copyFile, mkdtemp: typeof fsPromises.mkdtemp, mkdir: typeof fsPromises.mkdir, symlink: typeof fsPromises.symlink, readlink: typeof fsPromises.readlink;
 export declare const renameSync: typeof fsRenameSync;
 export declare const mkdtempSync: typeof fsMkdtempSync;
 export { readFileSync, writeFileSync, statSync, readdirSync, unlinkSync, mkdirSync, rmSync, copyFileSync, };
@@ -156,6 +156,7 @@ declare const _default: {
     rename: typeof fsPromises.rename;
     copyFile: typeof fsPromises.copyFile;
     mkdtemp: typeof fsPromises.mkdtemp;
+    mkdir: typeof fsPromises.mkdir;
     ensureDirSync: typeof ensureDirSync;
     mkdirpSync: typeof mkdirpSync;
     existsSync: typeof existsSync;
