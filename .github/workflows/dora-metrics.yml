@@ -30,16 +30,28 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --ignore-scripts
+
+      - name: Build project
+        run: npm run build
 
       - name: Calculate DORA metrics
+        id: calculate
+        continue-on-error: true
         run: npm run metrics:dora
         env:
           # Safe: Using GitHub-provided secrets and metadata (not user input)
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
 
+      - name: Check metrics calculation result
+        if: steps.calculate.outcome == 'failure'
+        run: |
+          echo "⚠️ DORA metrics calculation failed - this may be due to API rate limits or permission issues"
+          echo "The workflow will continue but metrics will not be updated"
+
       - name: Commit and push metrics (or create PR)
+        if: steps.calculate.outcome == 'success'
         id: commit-metrics
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

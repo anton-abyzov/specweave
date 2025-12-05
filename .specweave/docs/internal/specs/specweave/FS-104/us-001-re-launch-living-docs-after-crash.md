@@ -1,18 +1,15 @@
 ---
 id: US-001
-feature: FS-105
+feature: FS-104
 title: "Re-launch Living Docs After Crash"
 status: completed
 priority: P1
 created: 2025-12-04
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-001: Re-launch Living Docs After Crash
 
-**Feature**: [FS-105](./FEATURE.md)
+**Feature**: [FS-104](./FEATURE.md)
 
 ---
 
@@ -33,6 +30,6 @@ created: 2025-12-04
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0104-living-docs-command/tasks.md#T-001): Create command markdown documentation
-- [x] [T-002](../../../../increments/0104-living-docs-command/tasks.md#T-002): Implement CLI handler
-- [x] [T-003](../../../../increments/0104-living-docs-command/tasks.md#T-003): Register command in bin/specweave.js
+- [x] **T-001**: Create command markdown documentation
+- [x] **T-002**: Implement CLI handler
+- [x] **T-003**: Register command in bin/specweave.js

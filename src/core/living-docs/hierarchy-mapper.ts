@@ -32,7 +32,8 @@ import { ConfigManager } from '../config-manager.js';
 import { SpecweaveConfig, MultiProjectConfig, ProjectConfig } from '../types/config.js';
 import { EpicMapping, FeatureMapping, ProjectContext } from './types.js';
 import { FeatureIDManager } from './feature-id-manager.js';
-import { findNextAvailableInternalIdSync } from '../../utils/feature-id-collision.js';
+// NOTE: findNextAvailableInternalIdSync import removed (2025-12-04)
+// Chain shift bug fix: Feature IDs are now derived deterministically from increment numbers
 
 /**
  * Hierarchy Configuration
@@ -446,14 +447,13 @@ export class HierarchyMapper {
         const projects = await this.detectProjects(incrementId);
 
         if (!isBrownfield) {
-          // Greenfield: ALWAYS use increment number, ignore frontmatter's date-based ID
+          // Greenfield: ALWAYS use increment number (DETERMINISTIC)
+          // CRITICAL FIX (2025-12-04): Removed findNextAvailableInternalIdSync which caused chain shifts
+          // Feature ID is derived directly from increment number: 0104-xxx → FS-104
           const numMatch = incrementId.match(/^(\d{4})-/);
           if (numMatch) {
             const baseNum = parseInt(numMatch[1], 10);
-            // CRITICAL FIX (2025-11-26): Check for FS-XXXE collision before using FS-XXX
-            const primaryProject = projects[0] || 'default';
-            const safeNum = findNextAvailableInternalIdSync(baseNum, this.config.specsBaseDir, primaryProject);
-            featureId = `FS-${String(safeNum).padStart(3, '0')}`;
+            featureId = `FS-${String(baseNum).padStart(3, '0')}`;
           }
         }
         // For brownfield, keep the date-based ID from frontmatter
@@ -483,15 +483,12 @@ export class HierarchyMapper {
 
     const baseNum = parseInt(numMatch[1], 10);
 
-    // Detect projects FIRST for collision checking
+    // Detect projects
     const projects = await this.detectProjects(incrementId);
 
-    // CRITICAL FIX (2025-11-26): Check for FS-XXXE collision before using FS-XXX
-    const primaryProject = projects[0] || 'default';
-    const safeNum = findNextAvailableInternalIdSync(baseNum, this.config.specsBaseDir, primaryProject);
-
-    // Build feature ID: FS-XXX (using safe number that doesn't collide with FS-XXXE)
-    const featureId = `FS-${String(safeNum).padStart(3, '0')}`;
+    // CRITICAL FIX (2025-12-04): Derive feature ID directly from increment number (DETERMINISTIC)
+    // Removed findNextAvailableInternalIdSync which caused chain shifts
+    const featureId = `FS-${String(baseNum).padStart(3, '0')}`;
 
     // Check if feature folder already exists
     const existingFeature = await this.findExistingFeatureFolder(featureId);
@@ -531,15 +528,12 @@ export class HierarchyMapper {
 
     const baseNum = parseInt(numMatch[1], 10);
 
-    // Detect projects FIRST for collision checking
+    // Detect projects
     const projects = await this.detectProjects(incrementId);
 
-    // CRITICAL FIX (2025-11-26): Check for FS-XXXE collision before using FS-XXX
-    const primaryProject = projects[0] || 'default';
-    const safeNum = findNextAvailableInternalIdSync(baseNum, this.config.specsBaseDir, primaryProject);
-
-    // Build feature ID: FS-XXX (using safe number that doesn't collide with FS-XXXE)
-    const featureId = `FS-${String(safeNum).padStart(3, '0')}`;
+    // CRITICAL FIX (2025-12-04): Derive feature ID directly from increment number (DETERMINISTIC)
+    // Removed findNextAvailableInternalIdSync which caused chain shifts
+    const featureId = `FS-${String(baseNum).padStart(3, '0')}`;
 
     console.log(`   📁 Creating new feature: ${featureId}`);
 

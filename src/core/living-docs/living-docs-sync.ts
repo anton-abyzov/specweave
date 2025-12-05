@@ -26,10 +26,8 @@ import { BoardMatcher, type MatchDecision } from './board-matcher.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { autoDetectProjectIdSync } from '../../utils/project-detection.js';
 import { getGitHubAuthFromProject } from '../../utils/auth-helpers.js';
-// CRITICAL FIX (2025-12-04): Re-enabled collision detection for internal features
-// Bug: When external features (FS-001E) exist, internal features (FS-001) must NOT collide
-// IDs are scoped per project/board - each board has its own FS-XXX sequence
-import { findNextAvailableInternalIdSync } from '../../utils/feature-id-collision.js';
+// NOTE: findNextAvailableInternalIdSync no longer used - collision detection moved inline
+// to fix chain shift bug (2025-12-04). See getFeatureIdForIncrement() for details.
 import { deriveFeatureId, extractIncrementNumber } from '../../utils/feature-id-derivation.js';
 // Import types from centralized location
 import type {
@@ -265,24 +263,26 @@ export class LivingDocsSync {
   }
 
   /**
-   * Get feature ID for increment with collision detection
+   * Get feature ID for increment with EXTERNAL-ONLY collision detection
    *
    * SIMPLIFIED (v0.29.0): Feature ID is derived from increment number
    * No longer reads from metadata.json - derivation is the single source of truth
    *
-   * CRITICAL FIX (2025-12-04): Re-enabled collision detection!
-   * The previous assumption that "internal features are deterministic" was WRONG
-   * when external imports exist. If FS-001E exists, internal increment 0001
-   * must use FS-002 to avoid collision.
+   * CRITICAL FIX (2025-12-04): Collision detection was causing chain shifts!
    *
-   * Collision detection is SCOPED per project/board:
-   * - Each project has its own FS-XXX sequence
-   * - Scans both FS-XXX and FS-XXXE folders
-   * - Also scans _orphans folder for US-XXX files
+   * BUG: Old code checked for BOTH FS-XXX and FS-XXXE collisions.
+   * This caused: increment 0103 sync → FS-103 exists → use FS-104 (WRONG!)
+   * Result: FS-104 would contain 0103 content, FS-105 would contain 0104, etc.
+   *
+   * FIX: Internal features (FS-XXX) are DETERMINISTIC:
+   * - Increment 0104 → ALWAYS FS-104 (derived, no collision check for internal)
+   * - Only check for EXTERNAL collisions (FS-XXXE)
+   * - If FS-XXXE exists → then use next available internal ID
+   * - If FS-XXX already exists → REUSE (same increment re-syncing)
    *
    * @param incrementId - Increment ID (e.g., "0081-ado-repo-cloning")
    * @param resolvedProjectPath - Resolved project path (e.g., "acme/backend" or "my-project")
-   * @returns Feature ID with collision avoidance (e.g., "FS-081" or "FS-082" if 081 exists)
+   * @returns Feature ID (e.g., "FS-081", or "FS-082" if FS-081E exists)
    * @see deriveFeatureId() in src/utils/feature-id-derivation.ts
    */
   private async getFeatureIdForIncrement(
@@ -292,30 +292,88 @@ export class LivingDocsSync {
     // Extract increment number (e.g., "0081-name" → 81)
     const incrementNumber = extractIncrementNumber(incrementId);
 
-    // Build path to project's specs folder for collision detection
+    // Derive feature ID directly from increment number (DETERMINISTIC)
+    const derivedFeatureId = `FS-${String(incrementNumber).padStart(3, '0')}`;
+
+    // Build path to project's specs folder
     const specsPath = path.join(this.projectRoot, '.specweave/docs/internal/specs');
+    const projectSpecsPath = path.join(specsPath, resolvedProjectPath);
 
-    // CRITICAL: Use collision detection to avoid FS-XXX vs FS-XXXE conflicts
-    // This is scoped to the specific project/board folder
-    const safeNumber = findNextAvailableInternalIdSync(
-      incrementNumber,
-      specsPath,
-      resolvedProjectPath,
-      { logger: this.logger }
-    );
+    // Check if EXTERNAL feature (FS-XXXE) exists with same number
+    const externalId = `${derivedFeatureId}E`;
+    const externalPath = path.join(projectSpecsPath, externalId);
+    const externalExists = existsSync(externalPath);
 
-    // Generate feature ID from safe number
-    const featureId = `FS-${String(safeNumber).padStart(3, '0')}`;
+    // Check if INTERNAL feature (FS-XXX) already exists
+    const internalPath = path.join(projectSpecsPath, derivedFeatureId);
+    const internalExists = existsSync(internalPath);
 
-    // Log if collision was avoided
-    if (safeNumber !== incrementNumber) {
-      this.logger.warn(
-        `   ⚠️ Feature ID collision avoided: FS-${String(incrementNumber).padStart(3, '0')} exists, ` +
-        `using ${featureId} instead`
+    // CASE 1: External exists (FS-XXXE) - need collision avoidance
+    if (externalExists) {
+      // Find next available ID that doesn't collide with any FS-XXX or FS-XXXE
+      // This is the ONLY case where we increment
+      const safeNumber = this.findNextAvailableIdForExternal(
+        incrementNumber,
+        projectSpecsPath
       );
+      const safeFeatureId = `FS-${String(safeNumber).padStart(3, '0')}`;
+
+      this.logger.warn(
+        `   ⚠️ External collision avoided: ${externalId} exists, ` +
+        `using ${safeFeatureId} for increment ${incrementId}`
+      );
+      return safeFeatureId;
     }
 
-    return featureId;
+    // CASE 2: Internal exists (FS-XXX) - this is a RE-SYNC, reuse the folder
+    if (internalExists) {
+      this.logger.log(`   ♻️  Reusing existing feature folder: ${derivedFeatureId}`);
+      return derivedFeatureId;
+    }
+
+    // CASE 3: Neither exists - use derived ID (normal case)
+    return derivedFeatureId;
+  }
+
+  /**
+   * Find next available internal ID when external collision exists
+   *
+   * This is called ONLY when FS-XXXE (external) exists and we need to
+   * find a non-colliding internal ID.
+   *
+   * @param baseNumber - Starting number (from increment ID)
+   * @param projectSpecsPath - Path to project's specs folder
+   * @returns Next available number that doesn't conflict
+   */
+  private findNextAvailableIdForExternal(
+    baseNumber: number,
+    projectSpecsPath: string
+  ): number {
+    const maxIterations = 1000;
+    let currentNumber = baseNumber;
+
+    for (let i = 0; i < maxIterations; i++) {
+      const internalId = `FS-${currentNumber.toString().padStart(3, '0')}`;
+      const externalId = `${internalId}E`;
+
+      const internalPath = path.join(projectSpecsPath, internalId);
+      const externalPath = path.join(projectSpecsPath, externalId);
+
+      // Only check external collisions - internal folders are allowed to exist
+      // (they would be re-syncs of the same increment)
+      const externalExists = existsSync(externalPath);
+
+      if (!externalExists) {
+        return currentNumber;
+      }
+
+      currentNumber++;
+    }
+
+    throw new Error(
+      `Unable to find available feature ID after ${maxIterations} iterations. ` +
+      `This indicates too many external features.`
+    );
   }
 
   /**

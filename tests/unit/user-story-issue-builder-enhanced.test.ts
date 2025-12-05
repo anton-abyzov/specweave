@@ -463,9 +463,10 @@ created: 2025-11-15
       const result = await builder.buildIssueBody();
 
       // Check Links section
+      // v5.0.0+: Features live in project folders (specs/{project}/{featureId}/FEATURE.md), NOT _features
       expect(result.body).toContain('## Links');
       expect(result.body).toContain(
-        '**Feature Spec**: [FS-031](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/specs/_features/FS-031/FEATURE.md)'
+        '**Feature Spec**: [FS-031](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/specs/specweave/FS-031/FEATURE.md)'
       );
       expect(result.body).toContain(
         '**User Story File**: [us-001-links-section.md](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/specs/specweave/FS-031/us-001-links-section.md)'

@@ -245,8 +245,8 @@ export class MetadataManager {
      * before returning. This prevents race conditions in tests and ensures
      * data consistency.
      */
-    static updateStatus(incrementId, newStatus, reason) {
-        const metadata = this.read(incrementId);
+    static updateStatus(incrementId, newStatus, reason, rootDir) {
+        const metadata = this.read(incrementId, rootDir);
         const oldStatus = metadata.status; // ← Capture old status for sync trigger
         // Validate transition
         if (!isValidTransition(metadata.status, newStatus)) {
@@ -299,9 +299,9 @@ export class MetadataManager {
         // This prevents race conditions and ensures data consistency
         try {
             // Step 1: Update spec.md (may throw if spec.md exists but has errors)
-            this.updateSpecMdStatusSync(incrementId, newStatus);
+            this.updateSpecMdStatusSync(incrementId, newStatus, rootDir);
             // Step 2: Update metadata.json (only if spec.md succeeded)
-            this.write(incrementId, metadata);
+            this.write(incrementId, metadata, rootDir);
         }
         catch (error) {
             // CRITICAL: spec.md update failed - prevent desync by NOT updating metadata.json
@@ -322,7 +322,7 @@ export class MetadataManager {
                 `To check for desyncs, run: /specweave:sync-status`, incrementId, error instanceof Error ? error : undefined);
         }
         // **CRITICAL**: Update active increment state
-        const activeManager = new ActiveIncrementManager();
+        const activeManager = new ActiveIncrementManager(rootDir);
         if (newStatus === IncrementStatus.ACTIVE) {
             // Increment became active → set as active
             activeManager.setActive(incrementId);
@@ -360,13 +360,13 @@ export class MetadataManager {
      * This is a private helper to avoid async/await in updateStatus() which would
      * break backward compatibility with callers expecting sync behavior.
      */
-    static updateSpecMdStatusSync(incrementId, status) {
+    static updateSpecMdStatusSync(incrementId, status, rootDir) {
         // Validate status is valid enum value
         if (!Object.values(IncrementStatus).includes(status)) {
             throw new MetadataError(`Invalid status value: "${status}". Must be one of: ${Object.values(IncrementStatus).join(', ')}`, incrementId);
         }
         // Build spec.md path
-        const specPath = path.join(process.cwd(), '.specweave', 'increments', incrementId, 'spec.md');
+        const specPath = path.join(rootDir || process.cwd(), '.specweave', 'increments', incrementId, 'spec.md');
         // Check if spec.md exists
         if (!fs.existsSync(specPath)) {
             // Spec doesn't exist - this is OK for legacy increments

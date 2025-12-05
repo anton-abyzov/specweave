@@ -1,18 +1,15 @@
 ---
 id: US-003
-feature: FS-103
+feature: FS-100
 title: "Documentation Health Scoring"
 status: completed
 priority: P1
 created: 2025-12-04
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-003: Documentation Health Scoring
 
-**Feature**: [FS-103](./FEATURE.md)
+**Feature**: [FS-100](./FEATURE.md)
 
 **As a** project maintainer
 **I want** a documentation health score
@@ -39,4 +36,4 @@ created: 2025-12-04
 
 ## Tasks
 
-- [x] [T-003](../../../../increments/0100-enterprise-living-docs/tasks.md#T-003): Implement Health Scoring System
+- [x] **T-003**: Implement Health Scoring System

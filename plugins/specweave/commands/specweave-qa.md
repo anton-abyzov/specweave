@@ -10,10 +10,40 @@ description: Run quality assessment on a SpecWeave increment with risk scoring a
 ## Purpose
 
 Run comprehensive quality assessment on an increment using:
-- ✅ Rule-based validation (120 checks)
-- ✅ AI quality assessment (7 dimensions including risk)
-- ✅ Quantitative risk scoring (Probability × Impact)
-- ✅ Quality gate decisions (PASS/CONCERNS/FAIL)
+- ✅ **Gate 1: Rule-based validation** (130+ automated checks)
+- ✅ **Gate 2: LLM-as-Judge** (AI quality assessment with chain-of-thought reasoning)
+- ✅ **Gate 3: Risk scoring** (BMAD Probability × Impact quantitative assessment)
+- ✅ **Quality gate decisions** (PASS/CONCERNS/FAIL)
+
+## LLM-as-Judge Pattern
+
+This command implements the **LLM-as-Judge** pattern - an established AI/ML evaluation technique where an LLM evaluates outputs using structured reasoning.
+
+**How it works:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    LLM-as-Judge Gate                        │
+├─────────────────────────────────────────────────────────────┤
+│  Input: spec.md, plan.md, tasks.md                         │
+│                                                             │
+│  Process:                                                   │
+│  1. Chain-of-thought analysis (7 dimensions)               │
+│  2. Evidence-based scoring (0-100 per dimension)           │
+│  3. Risk identification (BMAD P×I formula)                 │
+│  4. Formal verdict (PASS/CONCERNS/FAIL)                    │
+│                                                             │
+│  Output: Structured quality report with:                   │
+│  - Blockers (MUST fix)                                     │
+│  - Concerns (SHOULD fix)                                   │
+│  - Recommendations (NICE to fix)                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Why LLM-as-Judge?**
+- **Consistency**: Applies uniform evaluation criteria
+- **Depth**: Catches nuanced issues humans might miss
+- **Speed**: ~30 seconds vs hours of manual review
+- **Documented reasoning**: Explains WHY something is an issue
 
 ## Usage
 

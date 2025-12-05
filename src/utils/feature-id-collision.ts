@@ -453,3 +453,102 @@ export function isUSIdUsed(number: number, projectSpecsPath: string): boolean {
 
   return usedIds.has(number);
 }
+
+/**
+ * Validate increment number uniqueness
+ *
+ * CRITICAL (2025-12-04): Prevents duplicate increment numbers like:
+ * - 0101-judge-llm-command
+ * - 0101-llm-json-extraction-hardening
+ *
+ * This causes chain shifts in living docs sync because each sync sees
+ * the other's FS folder as a "collision".
+ *
+ * @param incrementNumber - Numeric prefix to validate (e.g., 101 for 0101-xxx)
+ * @param incrementsPath - Path to increments folder
+ * @returns Object with validation result and existing increment name if duplicate found
+ */
+export function validateIncrementNumberUnique(
+  incrementNumber: number,
+  incrementsPath: string
+): { isUnique: boolean; existingIncrement?: string } {
+  if (!fs.existsSync(incrementsPath)) {
+    return { isUnique: true };
+  }
+
+  const paddedNumber = incrementNumber.toString().padStart(4, '0');
+  const pattern = new RegExp(`^${paddedNumber}-`);
+
+  try {
+    const entries = fs.readdirSync(incrementsPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (entry.isDirectory() && entry.name !== '_archive' && pattern.test(entry.name)) {
+        return { isUnique: false, existingIncrement: entry.name };
+      }
+    }
+
+    // Also check archive
+    const archivePath = path.join(incrementsPath, '_archive');
+    if (fs.existsSync(archivePath)) {
+      const archiveEntries = fs.readdirSync(archivePath, { withFileTypes: true });
+      for (const entry of archiveEntries) {
+        if (entry.isDirectory() && pattern.test(entry.name)) {
+          return { isUnique: false, existingIncrement: `_archive/${entry.name}` };
+        }
+      }
+    }
+  } catch {
+    // Error reading - assume unique to avoid blocking
+  }
+
+  return { isUnique: true };
+}
+
+/**
+ * Scan for duplicate increment numbers in the increments folder
+ *
+ * Returns all increment numbers that appear more than once.
+ * Useful for detecting existing duplicates that need cleanup.
+ *
+ * @param incrementsPath - Path to increments folder
+ * @returns Map of increment number to array of full increment names
+ */
+export function findDuplicateIncrementNumbers(
+  incrementsPath: string
+): Map<number, string[]> {
+  const duplicates = new Map<number, string[]>();
+
+  if (!fs.existsSync(incrementsPath)) {
+    return duplicates;
+  }
+
+  const numberToNames = new Map<number, string[]>();
+
+  try {
+    const entries = fs.readdirSync(incrementsPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (!entry.isDirectory() || entry.name === '_archive') continue;
+
+      const match = entry.name.match(/^(\d{4})-/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        const existing = numberToNames.get(num) || [];
+        existing.push(entry.name);
+        numberToNames.set(num, existing);
+      }
+    }
+
+    // Filter to only duplicates
+    for (const [num, names] of numberToNames) {
+      if (names.length > 1) {
+        duplicates.set(num, names);
+      }
+    }
+  } catch {
+    // Error reading folder
+  }
+
+  return duplicates;
+}

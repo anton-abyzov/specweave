@@ -1,18 +1,15 @@
 ---
 id: US-003
-feature: FS-105
+feature: FS-104
 title: "Configure Analysis Depth"
 status: completed
 priority: P1
 created: 2025-12-04
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-003: Configure Analysis Depth
 
-**Feature**: [FS-105](./FEATURE.md)
+**Feature**: [FS-104](./FEATURE.md)
 
 ---
 
@@ -33,4 +30,4 @@ created: 2025-12-04
 
 ## Tasks
 
-- [x] [T-006](../../../../increments/0104-living-docs-command/tasks.md#T-006): Implement depth/priority options
+- [x] **T-006**: Implement depth/priority options

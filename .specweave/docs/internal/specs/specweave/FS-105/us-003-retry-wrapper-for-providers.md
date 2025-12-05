@@ -1,18 +1,15 @@
 ---
 id: US-003
-feature: FS-108
+feature: FS-105
 title: "Retry Wrapper for Providers"
 status: completed
 priority: high
 created: 2025-12-04
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-003: Retry Wrapper for Providers
 
-**Feature**: [FS-108](./FEATURE.md)
+**Feature**: [FS-105](./FEATURE.md)
 
 **As a** caller of analyzeStructured
 **I want** automatic retry on JSON parse failure
@@ -31,11 +28,11 @@ created: 2025-12-04
 
 ## Implementation
 
-**Increment**: [0101-llm-json-extraction-hardening](../../../../increments/0101-llm-json-extraction-hardening/spec.md)
+**Increment**: [0105-llm-json-extraction-hardening](../../../../increments/0105-llm-json-extraction-hardening/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-005](../../../../increments/0101-llm-json-extraction-hardening/tasks.md#T-005): Add retry wrapper for analyzeStructured
+- [x] **T-005**: Add retry wrapper for analyzeStructured

@@ -1,18 +1,15 @@
 ---
 id: US-004
-feature: FS-108
+feature: FS-105
 title: "Input Sanitization"
 status: completed
 priority: high
 created: 2025-12-04
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-004: Input Sanitization
 
-**Feature**: [FS-108](./FEATURE.md)
+**Feature**: [FS-105](./FEATURE.md)
 
 **As a** JSON extractor
 **I want** to handle common LLM output quirks
@@ -30,12 +27,12 @@ created: 2025-12-04
 
 ## Implementation
 
-**Increment**: [0101-llm-json-extraction-hardening](../../../../increments/0101-llm-json-extraction-hardening/spec.md)
+**Increment**: [0105-llm-json-extraction-hardening](../../../../increments/0105-llm-json-extraction-hardening/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0101-llm-json-extraction-hardening/tasks.md#T-001): Add input sanitization (BOM + trailing commas)
-- [x] [T-006](../../../../increments/0101-llm-json-extraction-hardening/tasks.md#T-006): Add tests for new functionality
+- [x] **T-001**: Add input sanitization (BOM + trailing commas)
+- [x] **T-006**: Add tests for new functionality

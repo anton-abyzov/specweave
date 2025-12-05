@@ -96,7 +96,7 @@ export class ActiveIncrementManager {
   addActive(incrementId: string, skipValidation: boolean = false): void {
     // Validate increment exists and is active (unless skipValidation is true)
     if (!skipValidation) {
-      const metadata = MetadataManager.read(incrementId);
+      const metadata = MetadataManager.read(incrementId, this.rootDir);
 
       // Validate increment is actually active
       if (metadata.status !== IncrementStatus.ACTIVE) {

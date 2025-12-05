@@ -1,5 +1,5 @@
 ---
-increment: 0101-llm-json-extraction-hardening
+increment: 0105-llm-json-extraction-hardening
 type: hotfix
 priority: high
 status: completed

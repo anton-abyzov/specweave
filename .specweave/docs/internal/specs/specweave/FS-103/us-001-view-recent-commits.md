@@ -1,18 +1,15 @@
 ---
 id: US-001
-feature: FS-104
+feature: FS-103
 title: "View Recent Commits"
 status: completed
 priority: P2
 created: 2025-12-04
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-001: View Recent Commits
 
-**Feature**: [FS-104](./FEATURE.md)
+**Feature**: [FS-103](./FEATURE.md)
 
 ---
 
@@ -34,6 +31,6 @@ created: 2025-12-04
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0103-list-last-commits/tasks.md#T-001): Create commits CLI command
-- [x] [T-002](../../../../increments/0103-list-last-commits/tasks.md#T-002): Add git repository validation
-- [x] [T-003](../../../../increments/0103-list-last-commits/tasks.md#T-003): Write unit tests
+- [x] **T-001**: Create commits CLI command
+- [x] **T-002**: Add git repository validation
+- [x] **T-003**: Write unit tests

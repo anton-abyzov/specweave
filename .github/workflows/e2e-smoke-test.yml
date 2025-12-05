@@ -30,6 +30,17 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: Check for required secrets
+        id: check-secrets
+        run: |
+          if [ -z "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+            echo "has_api_key=false" >> $GITHUB_OUTPUT
+            echo "⚠️ ANTHROPIC_API_KEY not configured - E2E tests will run in limited mode"
+          else
+            echo "has_api_key=true" >> $GITHUB_OUTPUT
+            echo "✅ ANTHROPIC_API_KEY is configured"
+          fi
+
       - name: Checkout SpecWeave
         uses: actions/checkout@v5
 
@@ -49,9 +60,18 @@ jobs:
         run: chmod +x tests/smoke/e2e-smoke-test.sh
 
       - name: Run E2E Smoke Test
+        if: steps.check-secrets.outputs.has_api_key == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: ./tests/smoke/e2e-smoke-test.sh
+
+      - name: Run Limited Smoke Test (No API Key)
+        if: steps.check-secrets.outputs.has_api_key == 'false'
+        run: |
+          echo "🔍 Running limited E2E smoke test (no LLM calls)"
+          npm run test:smoke
+          echo "✅ Limited smoke test passed - build and structure validation complete"
+          echo "⚠️ Full E2E test skipped - ANTHROPIC_API_KEY not configured"
 
       - name: Upload Test Results on Failure
         if: failure()
@@ -164,6 +184,8 @@ jobs:
     name: Performance Benchmark
     runs-on: ubuntu-latest
     needs: smoke-test
+    # Only run performance benchmark if API key is available
+    if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
 
     steps:
       - name: Checkout
@@ -214,11 +236,11 @@ jobs:
   notify-success:
     name: Notify Success
     runs-on: ubuntu-latest
-    needs: [smoke-test, performance-benchmark]
+    needs: [smoke-test]
     if: success()
 
     steps:
       - name: Notify on Success
         run: |
-          echo "✅ All E2E smoke tests passed!"
-          echo "All scenarios validated successfully."
+          echo "✅ E2E smoke tests passed!"
+          echo "Build and structure validation completed successfully."

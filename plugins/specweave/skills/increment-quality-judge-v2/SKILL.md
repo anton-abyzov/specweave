@@ -6,9 +6,48 @@ allowed-tools: Read, Grep, Glob
 
 # Increment Quality Judge v2.0
 
-Risk Assessment + Quality Gate Decisions
+**LLM-as-Judge Pattern Implementation**
 
-AI-powered quality assessment with BMAD-pattern risk scoring and formal quality gate decisions (PASS/CONCERNS/FAIL).
+AI-powered quality assessment using the **LLM-as-Judge** pattern - an established AI/ML evaluation technique where an LLM evaluates outputs with chain-of-thought reasoning, BMAD-pattern risk scoring, and formal quality gate decisions (PASS/CONCERNS/FAIL).
+
+## LLM-as-Judge: What It Is
+
+**LLM-as-Judge (LaaJ)** is a recognized pattern in AI/ML evaluation where a large language model assesses quality using structured reasoning.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 LLM-as-Judge Pattern                        │
+├─────────────────────────────────────────────────────────────┤
+│  Input:  spec.md, plan.md, tasks.md                        │
+│                                                             │
+│  Process:                                                   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ <thinking>                                          │   │
+│  │   1. Read and understand the specification          │   │
+│  │   2. Evaluate against 7 quality dimensions          │   │
+│  │   3. Identify risks (P×I scoring)                   │   │
+│  │   4. Form evidence-based verdict                    │   │
+│  │ </thinking>                                         │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  Output: Structured verdict with:                          │
+│  • Dimension scores (0-100)                                │
+│  • Risk assessment (CRITICAL/HIGH/MEDIUM/LOW)              │
+│  • Quality gate decision (PASS/CONCERNS/FAIL)              │
+│  • Actionable recommendations                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Why LLM-as-Judge works:**
+- **Consistency**: Uniform evaluation criteria without human fatigue
+- **Reasoning**: Chain-of-thought explains WHY something is an issue
+- **Scalability**: Evaluates in seconds vs hours of manual review
+- **Industry standard**: Used by OpenAI, Anthropic, Google for AI evals
+
+**References:**
+- "Judging LLM-as-a-Judge" (NeurIPS 2023)
+- LMSYS Chatbot Arena evaluation methodology
+- AlpacaEval, MT-Bench frameworks
 
 ## IMPORTANT: This is a SKILL (Not an Agent)
 

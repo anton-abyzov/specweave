@@ -1,28 +1,25 @@
 ---
 id: FS-103
-title: "0100: Enterprise Living Documentation"
+title: "List Last 2 Commits"
 type: feature
 status: completed
-priority: P1
+priority: P2
 created: 2025-12-04
 lastUpdated: 2025-12-04
 ---
 
-# 0100: Enterprise Living Documentation
+# List Last 2 Commits
 
 ## Overview
 
-Enhance the Living Docs Builder to provide enterprise-grade documentation analysis covering ALL documentation folders, spec-code validation, and comprehensive health scoring.
+Add a CLI command to display the last 2 git commits in a concise format.
 
 ## Implementation History
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0100-enterprise-living-docs](../../../../increments/0100-enterprise-living-docs/spec.md) | ✅ completed | 2025-12-04 |
+| [0103-list-last-commits](../../../../increments/0103-list-last-commits/spec.md) | ✅ completed | 2025-12-04 |
 
 ## User Stories
 
-- [US-001: Full Documentation Coverage Scanner](../../specweave/FS-103/us-001-full-documentation-coverage-scanner.md)
-- [US-002: Spec-Code Mismatch Detection](../../specweave/FS-103/us-002-spec-code-mismatch-detection.md)
-- [US-003: Documentation Health Scoring](../../specweave/FS-103/us-003-documentation-health-scoring.md)
-- [US-004: Claude Availability Messaging](../../specweave/FS-103/us-004-claude-availability-messaging.md)
+- [US-001: View Recent Commits](../../specweave/FS-103/us-001-view-recent-commits.md)
