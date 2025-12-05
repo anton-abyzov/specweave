@@ -182,10 +182,8 @@ Return ONLY the JSON object.`;
     const startTime = Date.now();
     try {
       const client = await this.getClient();
-      const { ListFoundationModelsCommand } = await import('@aws-sdk/client-bedrock-runtime');
-
-      // Note: ListFoundationModels is on the Bedrock client, not Runtime
-      // For status check, we just verify credentials work
+      // Note: ListFoundationModels is on the Bedrock management client, not Runtime
+      // For status check, we just verify credentials work by checking client exists
       return {
         available: !!client,
         latencyMs: Date.now() - startTime,
