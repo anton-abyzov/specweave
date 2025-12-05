@@ -48,7 +48,6 @@ export class OpenAIProvider implements LLMProvider {
 
   private async getClient(): Promise<any> {
     if (!this.client) {
-      // @ts-ignore - Optional dependency, may not be installed
       const OpenAI = (await import('openai')).default;
       this.client = new OpenAI({
         apiKey: this.apiKey,

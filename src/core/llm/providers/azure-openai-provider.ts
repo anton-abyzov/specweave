@@ -53,7 +53,6 @@ export class AzureOpenAIProvider implements LLMProvider {
 
   private async getClient(): Promise<any> {
     if (!this.client) {
-      // @ts-ignore - Optional dependency, may not be installed
       const { AzureOpenAI } = await import('openai');
       this.client = new AzureOpenAI({
         apiKey: this.apiKey,
