@@ -1,9 +1,11 @@
 {
   "id": "0106-ci-health-improvements",
   "title": "CI Health Improvements",
-  "status": "active",
+  "status": "completed",
   "type": "bug",
   "priority": "high",
   "createdAt": "2025-12-05T07:40:00.000Z",
-  "updatedAt": "2025-12-05T07:40:00.000Z"
+  "updatedAt": "2025-12-05T09:15:00.000Z",
+  "completedAt": "2025-12-05T09:15:00.000Z",
+  "approvedAt": "2025-12-05T09:15:00.000Z"
 }

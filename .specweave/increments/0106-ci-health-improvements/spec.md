@@ -1,6 +1,7 @@
 ---
 increment: 0106-ci-health-improvements
 project: specweave
+status: completed
 ---
 
 # CI Health Improvements

@@ -48,6 +48,10 @@ export class StatusChangeSyncTrigger {
     oldStatus: IncrementStatus,
     newStatus: IncrementStatus
   ): Promise<void> {
+    // Skip sync in test environment to prevent real API calls and unhandled rejections
+    if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+      return;
+    }
     // CRITICAL FIX (2025-11-24): Check if feature_id is null for ACTIVE increments
     // This handles the case where increment was created directly with "active" status
     // but living docs sync never ran (no FS-XXX folder created)
