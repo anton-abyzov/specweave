@@ -46,7 +46,6 @@ export class BedrockProvider implements LLMProvider {
 
   private async getClient(): Promise<any> {
     if (!this.client) {
-      // @ts-ignore - Optional dependency, may not be installed
       const { BedrockRuntimeClient } = await import('@aws-sdk/client-bedrock-runtime');
       this.client = new BedrockRuntimeClient({ region: this.region });
     }
@@ -58,7 +57,6 @@ export class BedrockProvider implements LLMProvider {
     const model = options.model || this.defaultModel;
 
     const client = await this.getClient();
-    // @ts-ignore - Optional dependency, may not be installed
     const { InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
 
     // Format depends on model provider
