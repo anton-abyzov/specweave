@@ -134,21 +134,9 @@ jobs:
 
             # Create auto-generated entry
             TEMP_FILE=$(mktemp)
-            cat > "$TEMP_FILE" << ENTRY
-# Changelog
-
-All notable changes to SpecWeave will be documented in this file.
-
----
-
-## [$VERSION] - $(date +%Y-%m-%d)
-
-### Changes
-$(echo "$COMMITS" | sed 's/^[a-f0-9]* /- /')
-
----
-
-ENTRY
+            printf '%s\n' "# Changelog" "" "All notable changes to SpecWeave will be documented in this file." "" "---" "" "## [$VERSION] - $(date +%Y-%m-%d)" "" "### Changes" > "$TEMP_FILE"
+            echo "$COMMITS" | sed 's/^[a-f0-9]* /- /' >> "$TEMP_FILE"
+            printf '%s\n' "" "---" "" >> "$TEMP_FILE"
 
             # Append rest of changelog (skip header)
             tail -n +7 CHANGELOG.md >> "$TEMP_FILE"
