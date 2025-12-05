@@ -196,22 +196,36 @@ describe('DashboardDataProvider', () => {
     });
 
     it('should format past times correctly', () => {
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      // Use fake timers to avoid timing flakiness
+      vi.useFakeTimers();
+      const now = new Date('2025-12-05T12:00:00.000Z');
+      vi.setSystemTime(now);
+
+      const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000).toISOString();
       expect(provider.formatRelativeTime(fiveMinutesAgo)).toBe('5m ago');
 
-      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+      const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString();
       expect(provider.formatRelativeTime(twoHoursAgo)).toBe('2h ago');
 
-      const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString();
       expect(provider.formatRelativeTime(twoDaysAgo)).toBe('2d ago');
+
+      vi.useRealTimers();
     });
 
     it('should format future times correctly', () => {
-      const inTenMinutes = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+      // Use fake timers to avoid timing flakiness
+      vi.useFakeTimers();
+      const now = new Date('2025-12-05T12:00:00.000Z');
+      vi.setSystemTime(now);
+
+      const inTenMinutes = new Date(now.getTime() + 10 * 60 * 1000).toISOString();
       expect(provider.formatRelativeTime(inTenMinutes)).toBe('in 10m');
 
-      const inThreeHours = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
+      const inThreeHours = new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString();
       expect(provider.formatRelativeTime(inThreeHours)).toBe('in 3h');
+
+      vi.useRealTimers();
     });
   });
 });

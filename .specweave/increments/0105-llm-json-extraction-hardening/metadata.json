@@ -1,5 +1,5 @@
 {
-  "id": "0101-llm-json-extraction-hardening",
+  "id": "0105-llm-json-extraction-hardening",
   "type": "hotfix",
   "status": "completed",
   "priority": "high",

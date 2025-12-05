@@ -57,7 +57,7 @@ export class IncrementDetector {
 
     for (const incrementId of allIncrements) {
       try {
-        const metadata = MetadataManager.read(incrementId);
+        const metadata = MetadataManager.read(incrementId, this.projectRoot);
 
         if (metadata.status === IncrementStatus.PLANNING) {
           planningIncrements.push(incrementId);
@@ -133,7 +133,7 @@ export class IncrementDetector {
 
     // Read metadata
     try {
-      const metadata = MetadataManager.read(incrementId);
+      const metadata = MetadataManager.read(incrementId, this.projectRoot);
 
       // Check if increment is in suitable state
       if (metadata.status === IncrementStatus.COMPLETED ||

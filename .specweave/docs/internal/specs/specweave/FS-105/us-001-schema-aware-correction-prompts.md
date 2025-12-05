@@ -1,18 +1,15 @@
 ---
 id: US-001
-feature: FS-108
+feature: FS-105
 title: "Schema-Aware Correction Prompts"
 status: completed
 priority: high
 created: 2025-12-04
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-001: Schema-Aware Correction Prompts
 
-**Feature**: [FS-108](./FEATURE.md)
+**Feature**: [FS-105](./FEATURE.md)
 
 **As a** developer using analyzeStructured
 **I want** correction prompts to show the actual expected schema
@@ -30,11 +27,12 @@ created: 2025-12-04
 
 ## Implementation
 
-**Increment**: [0101-llm-json-extraction-hardening](../../../../increments/0101-llm-json-extraction-hardening/spec.md)
+**Increment**: [0105-llm-json-extraction-hardening](../../../../increments/0105-llm-json-extraction-hardening/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [x] [T-002](../../../../increments/0101-llm-json-extraction-hardening/tasks.md#T-002): Make generateCorrectionPrompt schema-aware
+- [x] **T-002**: Make generateCorrectionPrompt schema-aware
+- [x] **T-006**: Add tests for new functionality

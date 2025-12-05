@@ -13,17 +13,17 @@ global.fetch = mockFetch as any;
 describe('ADOImporter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Set required environment variable
-    process.env.ADO_PAT = 'test-pat-token';
+    // Set required environment variable (implementation checks AZURE_DEVOPS_PAT)
+    process.env.AZURE_DEVOPS_PAT = 'test-pat-token';
   });
 
   afterEach(() => {
-    delete process.env.ADO_PAT;
+    delete process.env.AZURE_DEVOPS_PAT;
   });
 
   describe('constructor', () => {
     it('should throw error if PAT not provided', () => {
-      delete process.env.ADO_PAT;
+      delete process.env.AZURE_DEVOPS_PAT;
 
       expect(() => {
         new ADOImporter('https://dev.azure.com/org', 'project');

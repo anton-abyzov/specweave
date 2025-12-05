@@ -1,30 +1,28 @@
 ---
 id: FS-105
-title: "Standalone Living Docs Command"
+title: "LLM JSON Extraction Hardening"
 type: feature
 status: completed
-priority: P1
+priority: high
 created: 2025-12-04
 lastUpdated: 2025-12-04
 ---
 
-# Standalone Living Docs Command
+# LLM JSON Extraction Hardening
 
 ## Overview
 
-Currently, the Living Docs Builder can only be launched during `specweave init`. If Claude Code crashes after init completes but before/during the living docs job, users have no way to:
-1. Re-launch the living docs builder independently
-2. Resume an orphaned job easily
-3. Trigger living docs analysis on demand for brownfield projects
+The Living Docs Builder AI-powered module analysis experienced ~50% failure rate due to LLMs returning prose-wrapped JSON ("Based on the analysis...") instead of pure JSON. Initial fix implemented robust extraction, but judge evaluation identified gaps.
 
 ## Implementation History
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0104-living-docs-command](../../../../increments/0104-living-docs-command/spec.md) | ✅ completed | 2025-12-04 |
+| [0105-llm-json-extraction-hardening](../../../../increments/0105-llm-json-extraction-hardening/spec.md) | ✅ completed | 2025-12-04 |
 
 ## User Stories
 
-- [US-001: Re-launch Living Docs After Crash](../../specweave/FS-105/us-001-re-launch-living-docs-after-crash.md)
-- [US-002: Resume Orphaned Jobs](../../specweave/FS-105/us-002-resume-orphaned-jobs.md)
-- [US-003: Configure Analysis Depth](../../specweave/FS-105/us-003-configure-analysis-depth.md)
+- [US-001: Schema-Aware Correction Prompts](../../specweave/FS-105/us-001-schema-aware-correction-prompts.md)
+- [US-002: Automatic Required Fields Extraction](../../specweave/FS-105/us-002-automatic-required-fields-extraction.md)
+- [US-003: Retry Wrapper for Providers](../../specweave/FS-105/us-003-retry-wrapper-for-providers.md)
+- [US-004: Input Sanitization](../../specweave/FS-105/us-004-input-sanitization.md)

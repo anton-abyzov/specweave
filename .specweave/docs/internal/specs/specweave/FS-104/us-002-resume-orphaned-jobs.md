@@ -1,18 +1,15 @@
 ---
 id: US-002
-feature: FS-105
+feature: FS-104
 title: "Resume Orphaned Jobs"
 status: completed
 priority: P1
 created: 2025-12-04
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-002: Resume Orphaned Jobs
 
-**Feature**: [FS-105](./FEATURE.md)
+**Feature**: [FS-104](./FEATURE.md)
 
 ---
 
@@ -33,5 +30,5 @@ created: 2025-12-04
 
 ## Tasks
 
-- [x] [T-004](../../../../increments/0104-living-docs-command/tasks.md#T-004): Implement orphan detection
-- [x] [T-005](../../../../increments/0104-living-docs-command/tasks.md#T-005): Implement resume from checkpoint
+- [x] **T-004**: Implement orphan detection
+- [x] **T-005**: Implement resume from checkpoint

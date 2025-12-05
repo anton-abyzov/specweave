@@ -91,7 +91,7 @@ export class PlanValidator {
 
     // 4. Check increment status
     try {
-      const metadata = MetadataManager.read(incrementId);
+      const metadata = MetadataManager.read(incrementId, this.projectRoot);
 
       // Block if increment is closed
       if (metadata.status === IncrementStatus.COMPLETED ||

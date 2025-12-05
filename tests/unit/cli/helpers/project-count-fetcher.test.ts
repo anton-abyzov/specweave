@@ -96,10 +96,10 @@ describe('ProjectCountFetcher', () => {
     });
 
     it('should get project count from Azure DevOps', async () => {
-      // Mock ADO response
+      // Mock ADO response - implementation uses response.text() then JSON.parse
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ count: 42 }),
+        text: async () => JSON.stringify({ count: 42 }),
         headers: new Headers()
       } as Response);
 

@@ -184,7 +184,7 @@ export class PlanCommandOrchestrator {
 
       // Transition PLANNING → ACTIVE (tasks.md now exists)
       if (metadata.status === IncrementStatus.PLANNING) {
-        MetadataManager.updateStatus(incrementId, IncrementStatus.ACTIVE, this.projectRoot);
+        MetadataManager.updateStatus(incrementId, IncrementStatus.ACTIVE, undefined, this.projectRoot);
 
         return {
           from: IncrementStatus.PLANNING,

@@ -342,9 +342,10 @@ export class MetadataManager {
   static updateStatus(
     incrementId: string,
     newStatus: IncrementStatus,
-    reason?: string
+    reason?: string,
+    rootDir?: string
   ): IncrementMetadata {
-    const metadata = this.read(incrementId);
+    const metadata = this.read(incrementId, rootDir);
     const oldStatus = metadata.status; // ← Capture old status for sync trigger
 
     // Validate transition
@@ -400,10 +401,10 @@ export class MetadataManager {
 
     try {
       // Step 1: Update spec.md (may throw if spec.md exists but has errors)
-      this.updateSpecMdStatusSync(incrementId, newStatus);
+      this.updateSpecMdStatusSync(incrementId, newStatus, rootDir);
 
       // Step 2: Update metadata.json (only if spec.md succeeded)
-      this.write(incrementId, metadata);
+      this.write(incrementId, metadata, rootDir);
     } catch (error) {
       // CRITICAL: spec.md update failed - prevent desync by NOT updating metadata.json
       this.logger.error(
@@ -432,7 +433,7 @@ export class MetadataManager {
     }
 
     // **CRITICAL**: Update active increment state
-    const activeManager = new ActiveIncrementManager();
+    const activeManager = new ActiveIncrementManager(rootDir);
 
     if (newStatus === IncrementStatus.ACTIVE) {
       // Increment became active → set as active
@@ -483,7 +484,8 @@ export class MetadataManager {
    */
   private static updateSpecMdStatusSync(
     incrementId: string,
-    status: IncrementStatus
+    status: IncrementStatus,
+    rootDir?: string
   ): void {
     // Validate status is valid enum value
     if (!Object.values(IncrementStatus).includes(status)) {
@@ -495,7 +497,7 @@ export class MetadataManager {
 
     // Build spec.md path
     const specPath = path.join(
-      process.cwd(),
+      rootDir || process.cwd(),
       '.specweave',
       'increments',
       incrementId,

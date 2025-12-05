@@ -1,18 +1,15 @@
 ---
 id: US-004
-feature: FS-103
+feature: FS-100
 title: "Claude Availability Messaging"
 status: completed
 priority: P1
 created: 2025-12-04
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-004: Claude Availability Messaging
 
-**Feature**: [FS-103](./FEATURE.md)
+**Feature**: [FS-100](./FEATURE.md)
 
 **As a** user without Claude installed
 **I want** clear instructions when Claude is not available
@@ -38,4 +35,4 @@ created: 2025-12-04
 
 ## Tasks
 
-- [x] [T-004](../../../../increments/0100-enterprise-living-docs/tasks.md#T-004): Implement Claude Availability Detection
+- [x] **T-004**: Implement Claude Availability Detection

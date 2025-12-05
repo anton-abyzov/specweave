@@ -85,7 +85,7 @@ export declare class MetadataManager {
      * before returning. This prevents race conditions in tests and ensures
      * data consistency.
      */
-    static updateStatus(incrementId: string, newStatus: IncrementStatus, reason?: string): IncrementMetadata;
+    static updateStatus(incrementId: string, newStatus: IncrementStatus, reason?: string, rootDir?: string): IncrementMetadata;
     /**
      * Update spec.md status synchronously (used by updateStatus)
      *

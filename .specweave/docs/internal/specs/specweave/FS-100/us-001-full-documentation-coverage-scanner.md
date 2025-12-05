@@ -1,18 +1,15 @@
 ---
 id: US-001
-feature: FS-103
+feature: FS-100
 title: "Full Documentation Coverage Scanner"
 status: completed
 priority: P1
 created: 2025-12-04
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-001: Full Documentation Coverage Scanner
 
-**Feature**: [FS-103](./FEATURE.md)
+**Feature**: [FS-100](./FEATURE.md)
 
 **As a** developer
 **I want** the living docs builder to scan all documentation folders (specs, architecture, ADRs, governance)
@@ -39,4 +36,4 @@ created: 2025-12-04
 
 ## Tasks
 
-- [x] [T-001](../../../../increments/0100-enterprise-living-docs/tasks.md#T-001): Implement Documentation Folder Scanner
+- [x] **T-001**: Implement Documentation Folder Scanner

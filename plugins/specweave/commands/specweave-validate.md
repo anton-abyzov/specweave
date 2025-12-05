@@ -19,9 +19,49 @@ You are helping the user validate a SpecWeave increment with optional AI-powered
 
 ## Flags
 
-- `--quality`: Run AI quality assessment (LLM-as-judge, ~2k tokens, 1-2 minutes)
+- `--quality`: **Run LLM-as-Judge gate** (AI quality assessment, ~2k tokens, 1-2 minutes)
 - `--export`: Export AI suggestions to tasks.md automatically
 - `--fix`: Auto-fix HIGH priority issues (experimental, requires confirmation)
+
+## Quality Gates
+
+This command implements a **two-gate validation system**:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              GATE 1: Rule-Based Validation                  │
+│                    (Always runs, FREE)                      │
+├─────────────────────────────────────────────────────────────┤
+│  130+ automated checks:                                     │
+│  • Structure (file existence, format)                       │
+│  • Three-file canonical (ADR-0047 compliance)              │
+│  • Consistency (cross-document alignment)                   │
+│  • Completeness (required sections)                         │
+│  • Traceability (AC-ID linkage)                            │
+│                                                             │
+│  Result: PASS (all checks) or FAIL (with specific errors)  │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│              GATE 2: LLM-as-Judge                           │
+│                 (Optional, --quality flag)                  │
+├─────────────────────────────────────────────────────────────┤
+│  AI-powered evaluation using chain-of-thought reasoning:   │
+│  • 6 quality dimensions (clarity, testability, etc.)       │
+│  • Evidence-based scoring (0-100 per dimension)            │
+│  • Structured suggestions with code examples               │
+│  • Formal verdict (score + recommendations)                │
+│                                                             │
+│  Pattern: "LLM-as-Judge" (established AI/ML technique)     │
+│  Cost: ~$0.02-0.05 per assessment                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Why two gates?**
+- **Gate 1** catches structural issues (FREE, instant)
+- **Gate 2** catches semantic issues (paid, ~30 seconds)
+- Run Gate 1 first to avoid wasting tokens on invalid specs
 
 ## Workflow
 

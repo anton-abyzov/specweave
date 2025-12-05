@@ -1,18 +1,15 @@
 ---
 id: US-002
-feature: FS-103
+feature: FS-100
 title: "Spec-Code Mismatch Detection"
 status: completed
 priority: P1
 created: 2025-12-04
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-002: Spec-Code Mismatch Detection
 
-**Feature**: [FS-103](./FEATURE.md)
+**Feature**: [FS-100](./FEATURE.md)
 
 **As a** developer
 **I want** to detect mismatches between spec.md files and actual code implementation
@@ -39,4 +36,4 @@ created: 2025-12-04
 
 ## Tasks
 
-- [x] [T-002](../../../../increments/0100-enterprise-living-docs/tasks.md#T-002): Implement Spec-Code Validation
+- [x] **T-002**: Implement Spec-Code Validation

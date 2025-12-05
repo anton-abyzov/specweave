@@ -1,27 +1,27 @@
 ---
 id: FS-106
-title: "Unit Test Alignment"
+title: "CI Health Improvements"
 type: feature
 status: active
 priority: P1
-created: 2025-12-04
-lastUpdated: 2025-12-04
+created: 2025-12-05
+lastUpdated: 2025-12-05
 ---
 
-# Unit Test Alignment
+# CI Health Improvements
 
 ## Overview
 
-263 unit tests are failing due to:
-1. **Missing fs-native exports** - `mkdtemp`/`mkdtempSync` not exported
-2. **Duplicate imports** - Test files have duplicate vitest imports
-3. **fs-extra usage** - Tests still import forbidden `fs-extra` package
-4. **Mock pattern issues** - Incorrect vitest mock setup
-5. **Template changes** - Template content changed but tests not updated
-6. **Logic changes** - Various implementation changes not reflected in tests
+Fix GitHub Actions failures to ensure CI remains healthy. Focus on unit tests as the primary quality gate while making other workflows more robust.
 
 ## Implementation History
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0094-unit-test-alignment](../../../../increments/0094-unit-test-alignment/spec.md) | ⏳ active | 2025-12-04 |
+| [0106-ci-health-improvements](../../../../increments/0106-ci-health-improvements/spec.md) | ⏳ active | 2025-12-05 |
+
+## User Stories
+
+- [US-001: Fix Flaky Unit Tests](../../specweave/FS-106/us-001-fix-flaky-unit-tests.md)
+- [US-002: Make E2E Workflow Robust](../../specweave/FS-106/us-002-make-e2e-workflow-robust.md)
+- [US-003: Fix DORA Metrics Workflow](../../specweave/FS-106/us-003-fix-dora-metrics-workflow.md)
