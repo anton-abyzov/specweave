@@ -1,4 +1,5 @@
 name: Release & Publish
+# v2 - workflow_dispatch trigger for manual releases
 
 on:
   # REMOVED: push on tags - causes infinite loop when workflow creates tags
