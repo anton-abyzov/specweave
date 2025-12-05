@@ -6,6 +6,10 @@
  *
  * Prevents increment number reuse when increments are moved to subdirectories.
  *
+ * CRITICAL FIX (v0.30.21): Removed cache entirely to prevent duplicate IDs.
+ * The cache was premature optimization that caused bugs. Scanning 4 directories
+ * is fast enough (~5ms) and doesn't need caching.
+ *
  * @module increment-utils
  * @since 0.18.3
  */
@@ -28,81 +32,43 @@ import * as path from 'path';
  * // Check if increment exists
  * const exists = IncrementNumberManager.incrementNumberExists("0032");
  * console.log(exists); // true
- *
- * // Clear cache (if needed)
- * IncrementNumberManager.clearCache();
  * ```
  */
 export class IncrementNumberManager {
   /**
-   * In-memory cache for increment numbers (performance optimization)
-   * Key: incrementsDir path, Value: highest increment number
-   * @private
-   */
-  private static cache: Map<string, { number: number; timestamp: number }> = new Map();
-
-  /**
-   * Cache time-to-live in milliseconds (5 seconds)
-   * @private
-   */
-  private static readonly CACHE_TTL = 5000;
-
-  /**
    * Get the next available increment number across all directories.
    *
-   * Scans main directory and all subdirectories (_archive, _abandoned, _paused)
-   * to find the highest increment number and returns the next sequential number.
+   * ALWAYS performs fresh filesystem scan to guarantee unique IDs.
+   * No caching - simplicity over premature optimization.
    *
    * @param projectRoot - Project root directory (defaults to process.cwd())
-   * @param useCache - Whether to use cached value (defaults to true)
+   * @param _useCache - DEPRECATED: ignored, always scans fresh (kept for API compatibility)
    * @returns Next increment number as 4-digit string (e.g., "0033")
    *
    * @example
    * ```typescript
    * const nextId = IncrementNumberManager.getNextIncrementNumber();
-   * // "0033"
-   *
-   * const nextIdNoCache = IncrementNumberManager.getNextIncrementNumber(undefined, false);
-   * // "0033" (fresh scan)
+   * // "0033" - always unique, always fresh scan
    * ```
    */
   static getNextIncrementNumber(
     projectRoot: string = process.cwd(),
-    useCache: boolean = true
+    _useCache: boolean = true // Ignored - always fresh scan
   ): string {
     const incrementsDir = path.join(projectRoot, '.specweave', 'increments');
-    const cacheKey = incrementsDir;
 
-    // Check cache if enabled
-    if (useCache) {
-      const cached = this.cache.get(cacheKey);
-      if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
-        // Validate cached value (detect corruption)
-        if (cached.number < 1 || cached.number > 10000) {
-          console.warn('⚠️  Cache corruption detected (invalid number), clearing cache...');
-          this.cache.delete(cacheKey);
-        } else {
-          return String(cached.number).padStart(4, '0');
-        }
-      }
-    }
-
-    // Scan all directories
+    // ALWAYS scan fresh - no caching to prevent duplicate ID bugs
     const highestNumber = this.scanAllIncrementDirectories(incrementsDir);
     const nextNumber = highestNumber + 1;
 
-    // Update cache
-    this.cache.set(cacheKey, {
-      number: nextNumber,
-      timestamp: Date.now()
-    });
-
-    // Auto-expire cache after TTL
-    setTimeout(() => {
-      this.cache.delete(cacheKey);
-    }, this.CACHE_TTL);
-
     return String(nextNumber).padStart(4, '0');
+  }
+
+  /**
+   * @deprecated No-op, kept for API compatibility. Cache was removed in v0.30.21.
+   */
+  static clearCache(): void {
+    // No-op - cache removed
   }
 
   /**
@@ -167,23 +133,6 @@ export class IncrementNumberManager {
     return false;
   }
 
-  /**
-   * Clear the increment number cache.
-   *
-   * Forces next call to getNextIncrementNumber() to perform a fresh
-   * filesystem scan instead of using cached value.
-   *
-   * Useful for testing or when you know the filesystem has changed.
-   *
-   * @example
-   * ```typescript
-   * IncrementNumberManager.clearCache();
-   * const freshId = IncrementNumberManager.getNextIncrementNumber();
-   * ```
-   */
-  static clearCache(): void {
-    this.cache.clear();
-  }
 
   /**
    * Scan all increment directories and return highest number found.

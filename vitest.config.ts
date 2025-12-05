@@ -12,14 +12,13 @@ export default defineConfig({
       'tests/integration/**/*.test.ts',
       'tests/performance/**/*.test.ts',
       'tests/plugin-validation/**/*.test.ts',
+      'tests/e2e/**/*.test.ts',
     ],
 
     // Exclude patterns
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
-      '**/tests/e2e/**', // E2E tests run with Playwright
-      '**/*.skip.test.ts', // Skip tests with .skip.test.ts extension
       '**/plugins/**/lib/hooks/**', // Exclude hook TypeScript files (not tests!)
     ],
 

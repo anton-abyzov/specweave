@@ -1,6 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
-
-import { describe, it, expect, beforeEach, afterEach, jest } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { IncrementNumberManager } from '../../src/core/increment/increment-utils.js';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -135,30 +133,31 @@ describe('IncrementNumberManager', () => {
       expect(result).toBe('0033');
     });
 
-    it('should use cache on repeated calls', () => {
+    it('should always scan fresh (no caching) - v0.30.21', () => {
       fs.mkdirSync(path.join(incrementsDir, '0001-test'));
 
-      const first = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, true);
+      const first = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
       expect(first).toBe('0002');
 
-      // Add new increment but cached value should be returned
-      fs.mkdirSync(path.join(incrementsDir, '0005-new'));
+      // Second call scans fresh - still returns 0002 because no new increment created
+      const second = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
+      expect(second).toBe('0002'); // Same - no new increments on disk
 
-      const second = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, true);
-      expect(second).toBe('0002'); // Should still be cached value
+      // Create new increment, should see it
+      fs.mkdirSync(path.join(incrementsDir, '0005-new'));
+      const third = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
+      expect(third).toBe('0006'); // Sees new highest
     });
 
-    it('should bypass cache when useCache=false', () => {
+    it('should ignore useCache parameter (deprecated) - v0.30.21', () => {
       fs.mkdirSync(path.join(incrementsDir, '0001-test'));
 
-      const first = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, true);
-      expect(first).toBe('0002');
+      // Both calls should behave the same regardless of useCache
+      const withCache = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, true);
+      const withoutCache = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
 
-      // Add new increment
-      fs.mkdirSync(path.join(incrementsDir, '0005-new'));
-
-      const second = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
-      expect(second).toBe('0006'); // Should see new highest
+      expect(withCache).toBe('0002');
+      expect(withoutCache).toBe('0002'); // Same because it always scans fresh
     });
 
     it('should use process.cwd() when projectRoot not specified', () => {
