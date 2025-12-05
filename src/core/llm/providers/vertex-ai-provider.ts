@@ -49,6 +49,7 @@ export class VertexAIProvider implements LLMProvider {
 
   private async getModel(): Promise<any> {
     if (!this.model) {
+      // @ts-ignore - @google-cloud/vertexai is an optional runtime dependency (may not be installed)
       const { VertexAI } = await import('@google-cloud/vertexai');
 
       this.client = new VertexAI({
