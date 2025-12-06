@@ -1,7 +1,8 @@
 ---
-increment: 0111-dora-metrics-workflow-fix
+increment: 0111E-dora-metrics-workflow-fix
 project: specweave
 type: bug
+status: completed
 origin: external
 external_ref:
   platform: github
@@ -9,7 +10,7 @@ external_ref:
   url: https://github.com/anton-abyzov/specweave/issues/779
 ---
 
-# 0111: DORA Metrics Workflow Fix
+# 0111E: DORA Metrics Workflow Fix
 
 ## Overview
 

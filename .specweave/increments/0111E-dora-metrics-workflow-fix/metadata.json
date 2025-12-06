@@ -1,8 +1,8 @@
 {
-  "id": "0111-dora-metrics-workflow-fix",
+  "id": "0111E-dora-metrics-workflow-fix",
   "title": "DORA Metrics Workflow Fix",
   "type": "bug",
-  "status": "active",
+  "status": "completed",
   "project": "specweave",
   "origin": "external",
   "external": {
@@ -11,5 +11,6 @@
     "url": "https://github.com/anton-abyzov/specweave/issues/779"
   },
   "createdAt": "2025-12-05T19:25:00.000Z",
-  "updatedAt": "2025-12-05T19:25:00.000Z"
+  "updatedAt": "2025-12-05T19:50:00.000Z",
+  "completedAt": "2025-12-05T19:50:00.000Z"
 }
