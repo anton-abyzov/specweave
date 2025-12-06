@@ -12,6 +12,7 @@
  *   - session-start
  *   - post-tool-use
  *   - completion-guard
+ *   - bash-file-guard
  *
  * @module hooks/universal/dispatcher
  */
@@ -27,18 +28,82 @@ const __dirname = dirname(__filename);
 // Hook type from arguments
 const hookType = process.argv[2] || 'unknown';
 
+// Global timeout for hook execution (30 seconds max)
+const HOOK_TIMEOUT_MS = 30000;
+
 /**
- * Find the dist/hooks directory
+ * Detect if we're in a development environment with duplicate hooks
+ *
+ * Problem: When working IN the specweave project AND having the marketplace
+ * plugin installed, Claude Code loads hooks from BOTH sources, causing:
+ * - Duplicate hook execution
+ * - Potential race conditions
+ * - Confusing output
+ *
+ * Solution: If we detect we're running from the marketplace copy while
+ * the CWD is the specweave project itself, skip execution (let local hooks handle it).
+ *
+ * @returns {boolean} true if we should skip this hook execution
+ */
+function shouldSkipDueToDevEnvironment() {
+  const pluginRoot = process.env.CLAUDE_PLUGIN_ROOT || '';
+  const cwd = process.cwd();
+
+  // Check if running from marketplace (installed plugin)
+  const isFromMarketplace = pluginRoot.includes('.claude/plugins/marketplaces/');
+
+  // Check if CWD is the specweave project itself
+  const isInSpecweaveProject = existsSync(join(cwd, 'plugins', 'specweave', 'hooks', 'hooks.json'));
+
+  // Skip marketplace hooks when developing specweave locally
+  if (isFromMarketplace && isInSpecweaveProject) {
+    // Output diagnostic only for session-start (once per session)
+    if (hookType === 'session-start') {
+      console.log(JSON.stringify({
+        continue: true,
+        systemMessage: 'SpecWeave dev environment: Using local hooks (marketplace hooks skipped)'
+      }));
+    } else {
+      console.log(JSON.stringify({ continue: true }));
+    }
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Wrap a promise with a timeout
+ * @param promise - Promise to wrap
+ * @param timeoutMs - Timeout in milliseconds
+ * @param cleanup - Optional cleanup function (e.g., to kill child process)
+ */
+function withTimeout(promise, timeoutMs, cleanup) {
+  let timeoutId;
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      if (cleanup) cleanup();
+      reject(new Error(`Hook timeout after ${timeoutMs}ms`));
+    }, timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => {
+    clearTimeout(timeoutId);
+  });
+}
+
+/**
+ * Find the dist/src/hooks directory (TypeScript compiled hooks)
  */
 function findHooksDir() {
   // Try multiple locations
   const candidates = [
-    // Production: node_modules/specweave/dist/hooks
-    join(__dirname, '..', '..', '..', '..', 'node_modules', 'specweave', 'dist', 'hooks'),
-    // Development: project root dist/hooks
+    // Production: node_modules/specweave/dist/src/hooks
+    join(__dirname, '..', '..', '..', '..', 'node_modules', 'specweave', 'dist', 'src', 'hooks'),
+    // Development: project root dist/src/hooks
+    join(__dirname, '..', '..', '..', '..', 'dist', 'src', 'hooks'),
+    // Fallback: older path without src/ (backward compatibility)
     join(__dirname, '..', '..', '..', '..', 'dist', 'hooks'),
-    // Relative to this file
-    join(__dirname, '..', '..', '..', '..', 'src', 'hooks'),
   ];
 
   for (const candidate of candidates) {
@@ -52,7 +117,7 @@ function findHooksDir() {
 }
 
 /**
- * Run a hook script
+ * Run a hook script with timeout protection
  */
 async function runHook(scriptName) {
   const hooksDir = findHooksDir();
@@ -74,13 +139,26 @@ async function runHook(scriptName) {
     windowsHide: true,
   });
 
-  return new Promise((resolve) => {
+  const execPromise = new Promise((resolve) => {
     child.on('exit', (code) => resolve(code || 0));
     child.on('error', () => {
       console.log(JSON.stringify({ continue: true }));
       resolve(1);
     });
   });
+
+  try {
+    return await withTimeout(execPromise, HOOK_TIMEOUT_MS, () => {
+      // Kill the child process on timeout
+      try {
+        child.kill('SIGTERM');
+        setTimeout(() => child.kill('SIGKILL'), 1000);
+      } catch { /* ignore */ }
+    });
+  } catch (err) {
+    console.log(JSON.stringify({ continue: true, error: err.message }));
+    return 1;
+  }
 }
 
 /**
@@ -124,7 +202,39 @@ function findGitBash() {
 }
 
 /**
- * Fallback to bash script if TypeScript not built
+ * Helper to spawn a bash script with timeout protection
+ */
+async function spawnBashWithTimeout(bashExe, args, options = {}) {
+  const child = spawn(bashExe, args, {
+    stdio: ['inherit', 'inherit', 'inherit'],
+    windowsHide: true,
+    ...options,
+  });
+
+  const execPromise = new Promise((resolve) => {
+    child.on('exit', (code) => resolve(code || 0));
+    child.on('error', () => {
+      console.log(JSON.stringify({ continue: true }));
+      resolve(1);
+    });
+  });
+
+  try {
+    return await withTimeout(execPromise, HOOK_TIMEOUT_MS, () => {
+      // Kill the child process on timeout
+      try {
+        child.kill('SIGTERM');
+        setTimeout(() => child.kill('SIGKILL'), 1000);
+      } catch { /* ignore */ }
+    });
+  } catch (err) {
+    console.log(JSON.stringify({ continue: true, error: err.message }));
+    return 1;
+  }
+}
+
+/**
+ * Fallback to bash script if TypeScript not built (with timeout protection)
  *
  * @param bashScript - Name of the bash script (e.g., 'post-tool-use.sh')
  * @param subdir - Subdirectory under v2 (e.g., 'dispatchers', 'guards')
@@ -143,17 +253,7 @@ async function fallbackToBash(bashScript, subdir = 'dispatchers') {
     // Strategy 1: Git Bash (preferred - most common)
     const bashExe = findGitBash();
     if (bashExe) {
-      const child = spawn(bashExe, [scriptPath], {
-        stdio: ['inherit', 'inherit', 'inherit'],
-        windowsHide: true,
-      });
-      return new Promise((resolve) => {
-        child.on('exit', (code) => resolve(code || 0));
-        child.on('error', () => {
-          console.log(JSON.stringify({ continue: true }));
-          resolve(1);
-        });
-      });
+      return spawnBashWithTimeout(bashExe, [scriptPath]);
     }
 
     // Strategy 2: WSL (if Git Bash not available) - FALLBACK only
@@ -166,17 +266,7 @@ async function fallbackToBash(bashScript, subdir = 'dispatchers') {
       const wslScriptPath = scriptPath
         .replace(/\\/g, '/')
         .replace(/^([A-Za-z]):/, (_, d) => `/mnt/${d.toLowerCase()}`);
-      const child = spawn('wsl', ['bash', wslScriptPath], {
-        stdio: ['inherit', 'inherit', 'inherit'],
-        windowsHide: true,
-      });
-      return new Promise((resolve) => {
-        child.on('exit', (code) => resolve(code || 0));
-        child.on('error', () => {
-          console.log(JSON.stringify({ continue: true }));
-          resolve(1);
-        });
-      });
+      return spawnBashWithTimeout('wsl', ['bash', wslScriptPath]);
     }
 
     // Strategy 3: No bash available - output warning and continue
@@ -188,21 +278,18 @@ async function fallbackToBash(bashScript, subdir = 'dispatchers') {
     return;
   }
 
-  // POSIX (macOS, Linux) - run directly
-  const child = spawn('bash', [scriptPath], {
-    stdio: ['inherit', 'inherit', 'inherit'],
-  });
-  return new Promise((resolve) => {
-    child.on('exit', (code) => resolve(code || 0));
-    child.on('error', () => {
-      console.log(JSON.stringify({ continue: true }));
-      resolve(1);
-    });
-  });
+  // POSIX (macOS, Linux) - run directly with timeout
+  return spawnBashWithTimeout('bash', [scriptPath]);
 }
 
 // Main routing
 async function main() {
+  // CRITICAL: Skip if we're in dev environment with duplicate hooks
+  // This prevents marketplace hooks from running when local hooks are available
+  if (shouldSkipDueToDevEnvironment()) {
+    return;
+  }
+
   const isWindows = process.platform === 'win32';
 
   try {
@@ -233,6 +320,12 @@ async function main() {
         // Guards are in a different subdirectory
         // On Windows without Git Bash, will gracefully skip
         await fallbackToBash('completion-guard.sh', 'guards');
+        break;
+
+      case 'bash-file-guard':
+        // CRITICAL: Prevents infinite hangs from heredoc/echo file creation
+        // See CLAUDE.md Rule 9 for why this is essential
+        await fallbackToBash('bash-file-guard.sh', 'guards');
         break;
 
       default:

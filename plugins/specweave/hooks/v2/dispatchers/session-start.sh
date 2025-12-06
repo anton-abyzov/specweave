@@ -15,7 +15,19 @@ done
 # Consume stdin
 cat > /dev/null
 
+# === CRITICAL: Guard Verification ===
+# Check that essential guards are available to prevent session hangs
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+GUARDS_DIR="$HOOK_DIR/../guards"
+BASH_FILE_GUARD="$GUARDS_DIR/bash-file-guard.sh"
+
+if [[ ! -f "$BASH_FILE_GUARD" ]] || [[ ! -x "$BASH_FILE_GUARD" ]]; then
+  # Output warning as system message
+  echo '{"continue":true,"systemMessage":"⚠️ CRITICAL: bash-file-guard.sh not found or not executable! Session hang protection DISABLED. Run: bash scripts/refresh-marketplace.sh"}'
+  # Continue session but warn about missing protection
+fi
+
+# Background processor paths (HOOK_DIR already defined above)
 PROCESSOR="$HOOK_DIR/../queue/processor.sh"
 SCHEDULER_STARTUP="$HOOK_DIR/../../lib/scheduler-startup.sh"
 
