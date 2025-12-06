@@ -1,4 +1,4 @@
-# Tasks: 0111-dora-metrics-workflow-fix
+# Tasks: 0111E-dora-metrics-workflow-fix
 
 ## Task List
 
@@ -77,7 +77,7 @@
 **Description**: Run /specweave:done to sync completion and close GitHub issue #779.
 
 **Steps**:
-1. Run /specweave:done 0111
+1. Run /specweave:done 0111E
 2. Verify GitHub issue #779 is closed
 3. Confirm sync metadata updated
 
