@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v0.26.13 - ULTRA-OPTIMIZED)
+# SpecWeave UserPromptSubmit Hook (v0.33.0 - SCRIPT DELEGATION)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Discipline validation, context injection, command suggestions
 #
-# OPTIMIZATIONS (v0.26.13):
-# 1. jq for JSON parsing (10x faster than node -e)
-# 2. Single active increment detection (cached, not 4x!)
-# 3. Removed redundant find | while loops
-# 4. Deferred heavy checks (SpecSyncManager only when needed)
-# 5. Ultra-fast early exits
+# FEATURES:
+# - v0.33.0: Script delegation - status commands bypass LLM entirely (<1s)
+# - v0.26.13: jq for JSON parsing (10x faster than node -e)
+# - Single active increment detection (cached, not 4x!)
+# - Deferred heavy checks (SpecSyncManager only when needed)
+# - Ultra-fast early exits
 #
-# Performance: <10ms (most prompts) vs 200-500ms (before)
+# Performance: Status commands <1s (was 3+ min), other prompts <10ms
 
 set +e
 
@@ -43,6 +43,57 @@ SPECWEAVE_DIR=".specweave"
 if [[ ! -d "$SPECWEAVE_DIR" ]]; then
   echo '{"decision":"approve"}'
   exit 0
+fi
+
+# ==============================================================================
+# INSTANT SCRIPT EXECUTION: Status commands bypass LLM entirely (v0.33.0)
+# ==============================================================================
+# These commands need NO LLM reasoning - execute scripts directly for <1s response
+# Pattern: Detect command → Execute script → Return output via "block" → Exit
+
+PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPTS_DIR="$PLUGIN_ROOT/scripts"
+
+# Helper: Escape output for JSON (handles newlines, quotes, backslashes)
+escape_json() {
+  local input="$1"
+  # Escape backslashes, then quotes, then newlines
+  echo "$input" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed 's/\\n$//'
+}
+
+# /specweave:jobs → Execute jobs.js
+if echo "$PROMPT" | grep -qE "^/specweave:jobs($| )"; then
+  if [[ -f "$SCRIPTS_DIR/jobs.js" ]] && command -v node >/dev/null 2>&1; then
+    # Extract arguments after command
+    ARGS=$(echo "$PROMPT" | sed 's|^/specweave:jobs\s*||')
+    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/jobs.js" $ARGS 2>&1)
+    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+    printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+    exit 0
+  fi
+  # Fallback: let LLM handle if script/node not available
+fi
+
+# /specweave:progress → Execute progress.js
+if echo "$PROMPT" | grep -qE "^/specweave:progress($| )"; then
+  if [[ -f "$SCRIPTS_DIR/progress.js" ]] && command -v node >/dev/null 2>&1; then
+    ARGS=$(echo "$PROMPT" | sed 's|^/specweave:progress\s*||')
+    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/progress.js" $ARGS 2>&1)
+    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+    printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+    exit 0
+  fi
+fi
+
+# /specweave:status → Execute status.js
+if echo "$PROMPT" | grep -qE "^/specweave:status($| )"; then
+  if [[ -f "$SCRIPTS_DIR/status.js" ]] && command -v node >/dev/null 2>&1; then
+    ARGS=$(echo "$PROMPT" | sed 's|^/specweave:status\s*||')
+    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/status.js" $ARGS 2>&1)
+    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+    printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+    exit 0
+  fi
 fi
 
 # ==============================================================================
@@ -101,23 +152,13 @@ if echo "$PROMPT" | grep -q "/specweave:increment"; then
 
   # Above hard cap: strong warning but NOT a block (user decides!)
   if [[ "$ACTIVE_COUNT" -ge "$HARD_CAP" ]]; then
-    cat <<EOF
-{
-  "decision": "approve",
-  "systemMessage": "⚠️  WIP LIMIT EXCEEDED (${ACTIVE_COUNT}/${HARD_CAP})\n\nYou have $ACTIVE_COUNT active increments (configured maximum: $HARD_CAP)\n\nActive increments:\n$ACTIVE_LIST\n\n🧠 Research shows 3+ concurrent tasks = 40% slower + more bugs\n\n💡 Options:\n  1️⃣  Complete an increment: /specweave:done <id>\n  2️⃣  Pause an increment: /specweave:pause <id>\n  3️⃣  Increase limit: Edit .specweave/config.json limits.hardCap\n  4️⃣  Continue anyway (not recommended)\n\n📝 To proceed anyway, just confirm your intent."
-}
-EOF
+    printf '{"decision":"approve","systemMessage":"⚠️  WIP LIMIT EXCEEDED (%s/%s)\\n\\nYou have %s active increments (configured maximum: %s)\\n\\nActive increments:\\n%s\\n\\n🧠 Research shows 3+ concurrent tasks = 40%% slower + more bugs\\n\\n💡 Options:\\n  1️⃣  Complete an increment: /specweave:done <id>\\n  2️⃣  Pause an increment: /specweave:pause <id>\\n  3️⃣  Increase limit: Edit .specweave/config.json limits.hardCap\\n  4️⃣  Continue anyway (not recommended)\\n\\n📝 To proceed anyway, just confirm your intent."}\n' "$ACTIVE_COUNT" "$HARD_CAP" "$ACTIVE_COUNT" "$HARD_CAP" "$ACTIVE_LIST"
     exit 0
   fi
 
   # At soft limit: mild warning, approve
   if [[ "$ACTIVE_COUNT" -ge "$SOFT_LIMIT" ]]; then
-    cat <<EOF
-{
-  "decision": "approve",
-  "systemMessage": "⚠️  WIP LIMIT REACHED (${ACTIVE_COUNT}/${SOFT_LIMIT})\n\nYou have $ACTIVE_COUNT active increment(s) (recommended limit: $SOFT_LIMIT)\n\nActive increments:\n$ACTIVE_LIST\n\n🧠 Focus Principle: Fewer active increments = maximum productivity\n\n💡 Consider:\n  1️⃣  Complete current work (recommended)\n  2️⃣  Pause current work (/specweave:pause)\n  3️⃣  Continue anyway\n\n⚠️  Emergency hotfix/bug? Use --type=hotfix or --type=bug"
-}
-EOF
+    printf '{"decision":"approve","systemMessage":"⚠️  WIP LIMIT REACHED (%s/%s)\\n\\nYou have %s active increment(s) (recommended limit: %s)\\n\\nActive increments:\\n%s\\n\\n🧠 Focus Principle: Fewer active increments = maximum productivity\\n\\n💡 Consider:\\n  1️⃣  Complete current work (recommended)\\n  2️⃣  Pause current work (/specweave:pause)\\n  3️⃣  Continue anyway\\n\\n⚠️  Emergency hotfix/bug? Use --type=hotfix or --type=bug"}\n' "$ACTIVE_COUNT" "$SOFT_LIMIT" "$ACTIVE_COUNT" "$SOFT_LIMIT" "$ACTIVE_LIST"
     exit 0
   fi
 fi
@@ -163,12 +204,7 @@ if [[ -n "$ACTIVE_INCREMENT" ]] && echo "$PROMPT" | grep -qE "/(specweave:)?(syn
   if [[ -f "$SPEC_FILE" ]] && [[ -f "$PLAN_FILE" ]]; then
     # Check if spec is newer than plan (indicates spec changes need sync)
     if [[ -n $(find "$SPEC_FILE" -newer "$PLAN_FILE" 2>/dev/null) ]]; then
-      cat <<EOF
-{
-  "decision": "approve",
-  "systemMessage": "⚠️ Spec changes detected in $ACTIVE_INCREMENT\n\nspec.md has been modified after plan.md.\nConsider running /specweave:sync-docs to update living documentation."
-}
-EOF
+      printf '{"decision":"approve","systemMessage":"⚠️ Spec changes detected in %s\\n\\nspec.md has been modified after plan.md.\\nConsider running /specweave:sync-docs to update living documentation."}\n' "$ACTIVE_INCREMENT"
       exit 0
     fi
   fi
@@ -253,19 +289,11 @@ fi
 # ==============================================================================
 
 if [[ -n "$CONTEXT" ]]; then
-  cat <<EOF
-{
-  "decision": "approve",
-  "systemMessage": "$CONTEXT"
-}
-EOF
+  # Escape context for JSON (newlines, quotes)
+  CONTEXT_ESCAPED=$(echo "$CONTEXT" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed 's/\\n$//')
+  printf '{"decision":"approve","systemMessage":"%s"}\n' "$CONTEXT_ESCAPED"
 else
-  # Just approve, no extra context
-  cat <<EOF
-{
-  "decision": "approve"
-}
-EOF
+  echo '{"decision":"approve"}'
 fi
 
 exit 0

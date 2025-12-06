@@ -67,6 +67,10 @@ let getSimpleErrorMessage: any;
 let extractJson: any;
 let buildJsonPrompt: any;
 
+// Intelligent Codebase Analyzer (Phase B-E)
+let runIntelligentAnalysis: any;
+let loadIntelligentCheckpoint: any;
+
 interface LivingDocsJobConfig {
   jobId: string;
   projectPath: string;
@@ -371,6 +375,11 @@ async function main(): Promise<void> {
     extractJson = jsonExtractorModule.extractJson;
     buildJsonPrompt = jsonExtractorModule.buildJsonPrompt;
 
+    // Load intelligent analyzer for deep analysis modes
+    const intelligentAnalyzerModule = await import('../../core/living-docs/intelligent-analyzer/index.js');
+    runIntelligentAnalysis = intelligentAnalyzerModule.runIntelligentAnalysis;
+    loadIntelligentCheckpoint = intelligentAnalyzerModule.loadCheckpoint;
+
     log('Dependencies loaded successfully');
     log('');
 
@@ -599,6 +608,60 @@ async function main(): Promise<void> {
     }
 
     // ═══════════════════════════════════════════════════════════════
+    // PHASE 3.5: Intelligent Codebase Analysis (deep-native/deep-api only)
+    // ═══════════════════════════════════════════════════════════════
+    const analysisDepth = jobConfig.userInputs.analysisDepth;
+    const hasMultipleRepos = discovery.umbrella?.isUmbrella || discovery.modules.length > 1;
+    if ((analysisDepth === 'deep-native' || analysisDepth === 'deep-api') && hasMultipleRepos) {
+      log('');
+      log('PHASE: Intelligent Analysis - Deep codebase understanding...');
+      log('  This phase uses LLM to understand each repository\'s purpose,');
+      log('  synthesize organization structure, and detect inconsistencies.');
+      updateProgress('intelligent-analysis', 0, 'Starting intelligent codebase analysis');
+
+      try {
+        // Build repo list from umbrella discovery
+        const repos = discovery.umbrella.childRepos?.map((r: any) => ({
+          name: r.name || path.basename(r.path),
+          path: r.path,
+        })) || discovery.modules.map((m: any) => ({
+          name: m.name,
+          path: path.join(projectPath, m.path),
+        }));
+
+        log(`  Analyzing ${repos.length} repositories...`);
+
+        const intelligentResult = await runIntelligentAnalysis({
+          projectPath,
+          repos,
+          llmProvider,
+          onProgress: (phase: string, current: number, total: number, message: string) => {
+            const progress = Math.round((current / total) * 100);
+            updateProgress('intelligent-analysis', progress, `${phase}: ${message}`);
+          },
+          log: (msg: string) => log(`  ${msg}`),
+          checkpoint: loadIntelligentCheckpoint(projectPath),
+        });
+
+        log(`  Intelligent analysis complete:`);
+        log(`    - Repos analyzed: ${intelligentResult.repoAnalyses.size}`);
+        log(`    - Files generated: ${intelligentResult.savedFiles.length}`);
+        log('');
+        log('  Generated folders:');
+        log('    - /repos/ - Per-repository deep analysis');
+        log('    - /organization/ - Team/service/domain clustering');
+        log('    - /architecture/ - C4 diagrams and detected ADRs');
+        log('    - /review-needed/ - Questions for CTO/PO');
+
+      } catch (err: any) {
+        log(`  WARNING: Intelligent analysis failed: ${err.message}`);
+        log('  Continuing with standard analysis...');
+        recordError(projectPath, jobId, 'intelligent-analysis', err.message);
+        // Non-fatal - continue to next phase
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // PHASE 4: Integration (Work Item Matching)
     // ═══════════════════════════════════════════════════════════════
     let matchResult: any;
@@ -822,7 +885,16 @@ async function main(): Promise<void> {
     log('LIVING DOCS BUILDER COMPLETED');
     log('════════════════════════════════════════════════════════════');
     log(`Completed at: ${new Date().toISOString()}`);
-    log(`Output: .specweave/docs/SUGGESTIONS.md, .specweave/docs/ENTERPRISE-HEALTH.md`);
+    log(`Output:`);
+    log(`  - .specweave/docs/SUGGESTIONS.md`);
+    log(`  - .specweave/docs/ENTERPRISE-HEALTH.md`);
+    if (analysisDepth === 'deep-native' || analysisDepth === 'deep-api') {
+      log(`  - .specweave/docs/internal/repos/ (per-repo analysis)`);
+      log(`  - .specweave/docs/internal/organization/ (team/service clustering)`);
+      log(`  - .specweave/docs/internal/architecture/ (C4 diagrams, detected ADRs)`);
+      log(`  - .specweave/docs/internal/review-needed/ (questions for CTO/PO)`);
+      log(`  - .specweave/docs/internal/strategy/ (tech debt, modernization, recommendations)`);
+    }
 
   } catch (err: any) {
     log(`FATAL ERROR: ${err.message}`);

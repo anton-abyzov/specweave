@@ -1,0 +1,11 @@
+{
+  "id": "0116-livingspec-universal-standard",
+  "name": "livingspec-universal-standard",
+  "type": "feature",
+  "status": "planning",
+  "created": "2025-12-06T14:30:00.000Z",
+  "lastActivity": "2025-12-06T14:30:00.000Z",
+  "userStories": ["US-001", "US-002", "US-003", "US-004", "US-005"],
+  "tags": ["standard", "documentation", "open-source", "community"],
+  "priority": "P1"
+}

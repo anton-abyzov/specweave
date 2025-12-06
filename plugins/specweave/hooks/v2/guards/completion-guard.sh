@@ -45,34 +45,32 @@ if echo "$NEW_CONTENT" | grep -q '"status"[[:space:]]*:[[:space:]]*"completed"';
   fi
 
   # BLOCK - trying to set completed without going through ready_for_review
-  cat << 'EOF'
-
-==============================================================================
-  BLOCKED: Direct status change to "completed" is not allowed (v0.28.63+)
-==============================================================================
-
-You cannot directly set status to "completed" in metadata.json.
-
-This prevents the auto-completion bug where increments get marked as
-completed without proper validation.
-
-CORRECT WORKFLOW:
-1. All tasks completed -> status auto-transitions to "ready_for_review"
-2. Run /specweave:done <increment-id> with explicit user confirmation
-3. Only then does status become "completed"
-
-WHY THIS MATTERS:
-- Ensures all ACs are checked in spec.md before closure
-- Requires explicit user approval
-- Maintains audit trail (approvedAt timestamp)
-
-If you're implementing closure logic, use:
-  MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED)
-
-This will only succeed if current status is "ready_for_review".
-
-==============================================================================
-EOF
+  echo ""
+  echo "=============================================================================="
+  echo "  BLOCKED: Direct status change to \"completed\" is not allowed (v0.28.63+)"
+  echo "=============================================================================="
+  echo ""
+  echo "You cannot directly set status to \"completed\" in metadata.json."
+  echo ""
+  echo "This prevents the auto-completion bug where increments get marked as"
+  echo "completed without proper validation."
+  echo ""
+  echo "CORRECT WORKFLOW:"
+  echo "1. All tasks completed -> status auto-transitions to \"ready_for_review\""
+  echo "2. Run /specweave:done <increment-id> with explicit user confirmation"
+  echo "3. Only then does status become \"completed\""
+  echo ""
+  echo "WHY THIS MATTERS:"
+  echo "- Ensures all ACs are checked in spec.md before closure"
+  echo "- Requires explicit user approval"
+  echo "- Maintains audit trail (approvedAt timestamp)"
+  echo ""
+  echo "If you're implementing closure logic, use:"
+  echo "  MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED)"
+  echo ""
+  echo "This will only succeed if current status is \"ready_for_review\"."
+  echo ""
+  echo "=============================================================================="
 
   exit 2  # Block the tool call
 fi

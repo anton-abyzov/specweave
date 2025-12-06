@@ -128,18 +128,9 @@ rm -f "$STDIN_DATA"
 # ============================================================================
 
 if [ "$TOOL_NAME" = "AskUserQuestion" ]; then
-  cat <<EOF
-{
-  "continue": true,
-  "systemMessage": "🔔 Sound played - user notified of question request"
-}
-EOF
+  echo '{"continue":true,"systemMessage":"🔔 Sound played - user notified of question request"}'
 else
-  cat <<EOF
-{
-  "continue": true
-}
-EOF
+  echo '{"continue":true}'
 fi
 
 # ALWAYS exit 0 - NEVER let hook errors crash Claude Code
