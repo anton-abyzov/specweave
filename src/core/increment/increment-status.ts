@@ -124,7 +124,7 @@ export class IncrementStatusDetector {
     const entries = await fs.readdir(this.incrementsPath, { withFileTypes: true });
     const incrementDirs = entries
       .filter(entry => entry.isDirectory())
-      .filter(entry => /^\d{4}-/.test(entry.name)) // Only numbered increments
+      .filter(entry => /^\d{3,4}E?-/.test(entry.name)) // Only numbered increments
       .map(entry => entry.name);
 
     const statuses = await Promise.all(
@@ -145,7 +145,7 @@ export class IncrementStatusDetector {
     const entries = await fs.readdir(this.incrementsPath, { withFileTypes: true });
     const incrementDirs = entries
       .filter(entry => entry.isDirectory())
-      .filter(entry => /^\d{4}-/.test(entry.name))
+      .filter(entry => /^\d{3,4}E?-/.test(entry.name))
       .map(entry => entry.name)
       .sort()
       .reverse();

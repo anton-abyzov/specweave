@@ -8,6 +8,7 @@
 import type { ExternalItem } from './external-importer.js';
 import * as fs from '../utils/fs-native.js';
 import path from 'path';
+import matter from 'gray-matter';
 import { FSIdAllocator, type ExternalWorkItem } from '../living-docs/fs-id-allocator.js';
 import { EpicIdAllocator, type ExternalEpicItem } from '../living-docs/epic-id-allocator.js';
 import { IDRegistry } from '../living-docs/id-registry.js';
@@ -523,6 +524,10 @@ export class ItemConverter {
    * - Scans existing US-XXX and US-XXXE files in the project
    * - Includes _orphans folder in scan
    * - Prevents US-ID collisions between imports
+   *
+   * CRITICAL FIX (2025-12-05): Prevents empty FS-XXXE folder creation on re-import
+   * - Checks if ANY item in group is non-duplicate BEFORE allocating folder
+   * - Only creates folder if at least one new item will be converted
    */
   async convertItems(items: ExternalItem[]): Promise<ConvertedUserStory[]> {
     // CRITICAL FIX (2025-12-04): Use collision detection for US-IDs
@@ -573,16 +578,48 @@ export class ItemConverter {
       moduleLogger.debug(`      → ${groupKey}: ${groupItems.length} items`);
     }
 
+    // CRITICAL FIX (2025-12-05): Pre-scan for duplicates and find existing feature folders
+    // Build a map of external IDs that already exist and their feature folders
+    const existingFeatureFolders = await this.findExistingFeatureFolders(itemGroups);
+
     // Process each group
     for (const [groupKey, groupItems] of itemGroups.entries()) {
+      // CRITICAL FIX (2025-12-05): Check for existing feature folder for this source
+      // If all items are duplicates and folder exists, skip folder creation entirely
+      const existingFolder = existingFeatureFolders.get(groupKey);
+
       // Allocate feature ID for this group if feature allocation is enabled
       let featureId: string | undefined;
 
       if (this.fsIdAllocator && this.options.enableFeatureAllocation && groupItems.length > 0) {
-        const firstItem = groupItems[0];
-        // CRITICAL FIX (2025-12-01): Pass ALL group items to check if entire group should be archived
-        // This prevents duplicate folders when all items are old
-        featureId = await this.allocateFeatureForGroup(firstItem, groupKey, groupItems);
+        // CRITICAL FIX (2025-12-05): First check if at least one item is NOT a duplicate
+        const hasNonDuplicates = await this.groupHasNonDuplicates(groupItems);
+
+        if (existingFolder && !hasNonDuplicates) {
+          // All items are duplicates AND folder already exists - reuse existing folder
+          moduleLogger.log(`   ⏭️  Reusing existing folder ${existingFolder} for group "${groupKey}" (all items are duplicates)`);
+          featureId = existingFolder;
+        } else if (!hasNonDuplicates) {
+          // All items are duplicates but no existing folder found - skip folder creation
+          moduleLogger.log(`   ⏭️  Skipping folder creation for group "${groupKey}" (all items are duplicates)`);
+          // Mark all items as skipped
+          for (const item of groupItems) {
+            if (this.duplicateDetector) {
+              const existingRef = await this.duplicateDetector.findExternalIdReference(item.id);
+              if (existingRef && this.options.onDuplicateSkipped) {
+                this.options.onDuplicateSkipped(item.id, existingRef.usId);
+              }
+            }
+            skippedCount++;
+          }
+          continue; // Skip this entire group
+        } else {
+          // Has non-duplicates - allocate/create feature folder
+          const firstItem = groupItems[0];
+          // CRITICAL FIX (2025-12-01): Pass ALL group items to check if entire group should be archived
+          // This prevents duplicate folders when all items are old
+          featureId = await this.allocateFeatureForGroup(firstItem, groupKey, groupItems);
+        }
       }
 
       // Convert each item in the group
@@ -1497,6 +1534,115 @@ ${isOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
     return updated;
   }
 
+  // ============================================================================
+  // Duplicate Prevention Helpers (v0.30.13+ - Prevent Empty FS-XXXE Folders)
+  // ============================================================================
+
+  /**
+   * Find existing feature folders for item groups by scanning FEATURE.md files
+   *
+   * CRITICAL FIX (2025-12-05): Prevents duplicate FS-XXXE folder creation on re-import
+   *
+   * For GitHub items grouped by sourceRepo, this finds any existing FS-XXXE folder
+   * that has the same source_repo in its FEATURE.md frontmatter.
+   *
+   * @param itemGroups - Groups of items from groupItemsByFeature()
+   * @returns Map from groupKey to existing feature ID (e.g., "anton-abyzov/specweave" -> "FS-111E")
+   */
+  private async findExistingFeatureFolders(
+    itemGroups: Map<string, ExternalItem[]>
+  ): Promise<Map<string, string>> {
+    const result = new Map<string, string>();
+
+    // Only scan if duplicate detection is enabled
+    if (!this.duplicateDetector) {
+      return result;
+    }
+
+    const baseDir = this.getBaseDirectory();
+    if (!fs.existsSync(baseDir)) {
+      return result;
+    }
+
+    // Build a map of source_repo -> feature ID from existing FEATURE.md files
+    const sourceRepoToFeature = new Map<string, string>();
+
+    try {
+      const entries = fs.readdirSync(baseDir, { withFileTypes: true });
+
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue;
+
+        // Match FS-XXXE folders only
+        if (!/^FS-\d{3,}E$/.test(entry.name)) continue;
+
+        const featureMdPath = path.join(baseDir, entry.name, 'FEATURE.md');
+        if (!fs.existsSync(featureMdPath)) continue;
+
+        try {
+          const content = fs.readFileSync(featureMdPath, 'utf-8');
+          const parsed = matter(content);
+
+          // Check for source_repo in frontmatter
+          if (parsed.data.source_repo) {
+            sourceRepoToFeature.set(parsed.data.source_repo, entry.name);
+          }
+        } catch {
+          // Skip files that can't be parsed
+        }
+      }
+    } catch {
+      // Directory read failed - return empty map
+      return result;
+    }
+
+    // Now match item groups to existing feature folders
+    for (const [groupKey, groupItems] of itemGroups) {
+      if (groupItems.length === 0) continue;
+
+      const firstItem = groupItems[0];
+
+      // For GitHub items grouped by sourceRepo
+      if (firstItem.sourceRepo && sourceRepoToFeature.has(firstItem.sourceRepo)) {
+        result.set(groupKey, sourceRepoToFeature.get(firstItem.sourceRepo)!);
+        moduleLogger.debug(`   🔍 Found existing folder ${sourceRepoToFeature.get(firstItem.sourceRepo)} for source_repo: ${firstItem.sourceRepo}`);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Check if a group has at least one non-duplicate item
+   *
+   * CRITICAL FIX (2025-12-05): Prevents empty folder creation when all items are duplicates
+   *
+   * @param groupItems - Items in a group
+   * @returns True if at least one item is NOT a duplicate
+   */
+  private async groupHasNonDuplicates(groupItems: ExternalItem[]): Promise<boolean> {
+    if (!this.duplicateDetector) {
+      // No duplicate detection - all items are "new"
+      return groupItems.length > 0;
+    }
+
+    for (const item of groupItems) {
+      // Skip ADO Tasks - they become checkboxes, not separate files
+      if (item.adoWorkItemType?.toLowerCase() === 'task') {
+        continue;
+      }
+
+      const existingRef = await this.duplicateDetector.findExternalIdReference(item.id);
+      if (!existingRef) {
+        // Found a non-duplicate item
+        return true;
+      }
+    }
+
+    // All items are duplicates (or Tasks)
+    return false;
+  }
+
   /**
    * Clean up empty feature folder after file move
    *
@@ -1548,7 +1694,7 @@ ${isOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
     const items = fs.readdirSync(incrementsDir);
     const incrementDirs = items.filter(item => {
       const fullPath = path.join(incrementsDir, item);
-      return fs.statSync(fullPath).isDirectory() && /^\d{4}-/.test(item);
+      return fs.statSync(fullPath).isDirectory() && /^\d{3,4}E?-/.test(item);
     });
 
     if (incrementDirs.length > 0) {

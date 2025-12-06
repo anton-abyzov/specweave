@@ -607,7 +607,7 @@ export async function initCommand(
     const existingIncrements = fs.existsSync(incrementsDir)
       ? fs.readdirSync(incrementsDir).filter(dir => {
           const fullPath = path.join(incrementsDir, dir);
-          return fs.statSync(fullPath).isDirectory() && /^\d{4}-/.test(dir);
+          return fs.statSync(fullPath).isDirectory() && /^\d{3,4}E?-/.test(dir);
         })
       : [];
 

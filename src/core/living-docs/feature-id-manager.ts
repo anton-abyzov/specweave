@@ -76,7 +76,7 @@ export class FeatureIDManager {
     const increments = await fs.readdir(this.incrementsDir);
 
     for (const incrementId of increments) {
-      if (!incrementId.match(/^\d{4}-/)) continue;
+      if (!incrementId.match(/^\d{3,4}E?-/)) continue;
 
       const specPath = path.join(this.incrementsDir, incrementId, 'spec.md');
       const metadataPath = path.join(this.incrementsDir, incrementId, 'metadata.json');

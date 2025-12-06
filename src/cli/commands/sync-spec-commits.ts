@@ -178,7 +178,7 @@ function detectIncrementPath(): string | null {
   try {
     const files = require('fs').readdirSync(incrementsDir);
     const increments = files
-      .filter((f: string) => f.match(/^\d{4}-/))
+      .filter((f: string) => f.match(/^\d{3,4}E?-/))
       .sort()
       .reverse();
 

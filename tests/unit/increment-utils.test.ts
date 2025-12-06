@@ -272,4 +272,85 @@ describe('IncrementNumberManager', () => {
       expect(result).toBe('0002'); // Should ignore the file
     });
   });
+
+  describe('T-006: External Increment E-Suffix (v0.32.0)', () => {
+    it('should recognize E suffix increments when scanning', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0010E-external-fix'));
+
+      const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
+      expect(result).toBe('0011'); // Next number after 0010E
+    });
+
+    it('should handle mixed internal and external increments', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0005-internal'));
+      fs.mkdirSync(path.join(incrementsDir, '0010E-external'));
+      fs.mkdirSync(path.join(incrementsDir, '0008-another'));
+
+      const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
+      expect(result).toBe('0011'); // Highest is 10 (from 0010E)
+    });
+
+    it('should detect E suffix increment existence', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0032E-external-fix'));
+
+      const exists = IncrementNumberManager.incrementNumberExists('0032', testProjectRoot);
+      expect(exists).toBe(true);
+    });
+
+    it('should find E suffix increments in _archive', () => {
+      const archiveDir = path.join(incrementsDir, '_archive');
+      fs.mkdirSync(archiveDir, { recursive: true });
+      fs.mkdirSync(path.join(archiveDir, '0015E-archived-external'));
+
+      const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
+      expect(result).toBe('0016');
+    });
+
+    it('should generate external increment number with E suffix', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0010-test'));
+
+      const result = IncrementNumberManager.getNextExternalIncrementNumber(testProjectRoot);
+      expect(result).toBe('0011E');
+    });
+
+    it('should generate full increment ID for internal items', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0005-existing'));
+
+      const result = IncrementNumberManager.generateIncrementId('new-feature', { projectRoot: testProjectRoot });
+      expect(result).toBe('0006-new-feature');
+    });
+
+    it('should generate full increment ID for external items with E suffix', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0005-existing'));
+
+      const result = IncrementNumberManager.generateIncrementId('dora-fix', {
+        isExternal: true,
+        projectRoot: testProjectRoot
+      });
+      expect(result).toBe('0006E-dora-fix');
+    });
+
+    it('should correctly identify external increments', () => {
+      expect(IncrementNumberManager.isExternalIncrement('0033E-dora-fix')).toBe(true);
+      expect(IncrementNumberManager.isExternalIncrement('033E-short')).toBe(true);
+      expect(IncrementNumberManager.isExternalIncrement('0033-internal')).toBe(false);
+      expect(IncrementNumberManager.isExternalIncrement('invalid')).toBe(false);
+    });
+
+    it('should extract number from internal increment', () => {
+      expect(IncrementNumberManager.extractNumber('0033-feature')).toBe('0033');
+      expect(IncrementNumberManager.extractNumber('033-short')).toBe('0033');
+    });
+
+    it('should extract number from external increment', () => {
+      expect(IncrementNumberManager.extractNumber('0033E-dora-fix')).toBe('0033');
+      expect(IncrementNumberManager.extractNumber('033E-short')).toBe('0033');
+    });
+
+    it('should return null for invalid increment IDs', () => {
+      expect(IncrementNumberManager.extractNumber('invalid')).toBe(null);
+      expect(IncrementNumberManager.extractNumber('E-no-number')).toBe(null);
+      expect(IncrementNumberManager.extractNumber('')).toBe(null);
+    });
+  });
 });

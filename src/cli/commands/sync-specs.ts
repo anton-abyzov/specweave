@@ -148,7 +148,7 @@ async function findAllSyncableIncrements(projectRoot: string, logger: Logger): P
 
   for (const entry of entries) {
     // Skip non-increment directories (_archive, _backup, etc.)
-    if (!entry.match(/^\d{4}-/)) {
+    if (!entry.match(/^\d{3,4}E?-/)) {
       continue;
     }
 
@@ -179,7 +179,7 @@ async function findCompletedIncrements(projectRoot: string, logger: Logger): Pro
   const completed: string[] = [];
 
   for (const entry of entries) {
-    if (!entry.match(/^\d{4}-/)) continue;
+    if (!entry.match(/^\d{3,4}E?-/)) continue;
 
     const metadataPath = path.join(incrementsDir, entry, 'metadata.json');
     const specPath = path.join(incrementsDir, entry, 'spec.md');

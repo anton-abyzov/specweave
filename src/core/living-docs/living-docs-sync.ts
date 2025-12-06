@@ -1042,7 +1042,8 @@ export class LivingDocsSync {
       }
     }
     if (!title) {
-      title = incrementId.replace(/^\d+-/, '').split('-').map(w =>
+      // Handle both regular (0111-name) and external (0111E-name) increment IDs
+      title = incrementId.replace(/^\d+E?-/, '').split('-').map(w =>
         w.charAt(0).toUpperCase() + w.slice(1)
       ).join(' ');
     }

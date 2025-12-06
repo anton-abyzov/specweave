@@ -227,10 +227,36 @@ git add . && git commit -m "feat: feature" && git push origin develop
 
 ## Folder Structure
 
-**At `.specweave/increments/` root - ONLY**: `####-name/` folders, `_archive/`, `README.md`
+**At `.specweave/increments/` root - ONLY**: `####-name/` or `####E-name/` folders, `_archive/`, `README.md`
 
 **Inside increment folders - ONLY at root**: `spec.md`, `plan.md`, `tasks.md`, `metadata.json`
 **Everything else → subfolders**: `reports/`, `scripts/`, `logs/`, `backups/`, `docs/`
+
+### External Increment E-Suffix (v0.32.0+)
+
+**Increments for external items MUST use E suffix** to match FS-XXXE, US-XXXE conventions:
+
+```
+✅ CORRECT: 0111E-dora-metrics-fix (external GitHub issue #779)
+❌ WRONG:   0111-dora-metrics-fix  (missing E suffix)
+```
+
+**When to use E suffix:**
+- Increment works on imported GitHub/JIRA/ADO issue
+- spec.md has `origin: external` or `external_ref:`
+- Feature folder is FS-XXXE (ends with E)
+
+**API (v0.32.0+):**
+```typescript
+import { IncrementNumberManager } from './core/increment/increment-utils.js';
+
+// For external items:
+const id = IncrementNumberManager.generateIncrementId('fix-name', { isExternal: true });
+// → "0112E-fix-name"
+
+// Check if external:
+IncrementNumberManager.isExternalIncrement('0111E-fix'); // true
+```
 
 ### CLI Command Structure (ADR-0138)
 

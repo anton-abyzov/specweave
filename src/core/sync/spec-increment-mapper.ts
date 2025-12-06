@@ -78,7 +78,7 @@ export class SpecIncrementMapper {
     try {
       const entries = await fs.readdir(incrementsDir, { withFileTypes: true });
       const incrementDirs = entries
-        .filter(e => e.isDirectory() && /^\d{4}-/.test(e.name))
+        .filter(e => e.isDirectory() && /^\d{3,4}E?-/.test(e.name))
         .map(e => e.name);
 
       const results: IncrementInfo[] = [];
@@ -249,7 +249,7 @@ export class SpecIncrementMapper {
     try {
       const entries = await fs.readdir(incrementsDir, { withFileTypes: true });
       const incrementDirs = entries
-        .filter(e => e.isDirectory() && /^\d{4}-/.test(e.name))
+        .filter(e => e.isDirectory() && /^\d{3,4}E?-/.test(e.name))
         .map(e => e.name);
 
       for (const incrementId of incrementDirs) {
@@ -370,7 +370,7 @@ export class SpecIncrementMapper {
     try {
       const entries = await fs.readdir(incrementsDir, { withFileTypes: true });
       const incrementDirs = entries
-        .filter(e => e.isDirectory() && /^\d{4}-/.test(e.name))
+        .filter(e => e.isDirectory() && /^\d{3,4}E?-/.test(e.name))
         .map(e => e.name);
 
       const results: IncrementInfo[] = [];
