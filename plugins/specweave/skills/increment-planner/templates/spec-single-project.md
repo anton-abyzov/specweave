@@ -8,7 +8,7 @@ created: {{DATE}}
 structure: user-stories
 test_mode: {{TEST_MODE}}
 coverage_target: {{COVERAGE_TARGET}}
-project: {{PROJECT_ID}}
+default_project: {{PROJECT_ID}}
 ---
 
 # Feature: {{FEATURE_TITLE}}
@@ -19,7 +19,10 @@ project: {{PROJECT_ID}}
 
 ## User Stories
 
+<!-- Each US can have its own **Project** field. If omitted, uses default_project from frontmatter -->
+
 ### US-001: [Story Title] (P1)
+**Project**: {{PROJECT_ID}}
 
 **As a** [user type]
 **I want** [goal]
@@ -30,8 +33,9 @@ project: {{PROJECT_ID}}
 - [ ] **AC-US1-02**: [Another criterion]
 
 ### US-002: [Story Title] (P2)
+**Project**: {{PROJECT_ID}}
 
-[Repeat structure]
+[Repeat structure - change Project per US if spanning multiple projects]
 
 ## Functional Requirements
 

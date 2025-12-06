@@ -1,0 +1,25 @@
+{
+  "incrementId": "0115-ultra-smart-project-selection",
+  "title": "Ultra-Smart Project/Board Selection",
+  "type": "feature",
+  "priority": "P1",
+  "status": "completed",
+  "created": "2025-12-06",
+  "completedAt": "2025-12-06",
+  "project": "specweave",
+  "userStories": ["US-001", "US-002", "US-003", "US-004"],
+  "tasks": {
+    "total": 4,
+    "completed": 4
+  },
+  "acceptanceCriteria": {
+    "total": 8,
+    "satisfied": 8
+  },
+  "filesModified": [
+    "plugins/specweave/skills/increment-planner/SKILL.md",
+    "plugins/specweave/commands/specweave-increment.md",
+    "plugins/specweave/skills/increment-planner/templates/spec-single-project.md",
+    "plugins/specweave/skills/increment-planner/templates/spec-multi-project.md"
+  ]
+}

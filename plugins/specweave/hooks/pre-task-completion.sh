@@ -167,11 +167,7 @@ fi
 if [ "$COMPLETING_TASK" = "false" ]; then
   echo "[$(date)] ⏭️  No tasks being completed, skipping validation" >> "$DEBUG_LOG" 2>/dev/null || true
   rm -f "$STDIN_DATA"
-  cat <<EOF
-{
-  "continue": true
-}
-EOF
+  echo '{"continue":true}'
   exit 0
 fi
 
@@ -184,11 +180,7 @@ CURRENT_INCREMENT=$(ls -td .specweave/increments/*/ 2>/dev/null | xargs -n1 base
 if [ -z "$CURRENT_INCREMENT" ]; then
   echo "[$(date)] ℹ️  No active increment found, skipping validation" >> "$DEBUG_LOG" 2>/dev/null || true
   rm -f "$STDIN_DATA"
-  cat <<EOF
-{
-  "continue": true
-}
-EOF
+  echo '{"continue":true}'
   exit 0
 fi
 
@@ -197,11 +189,7 @@ TASKS_MD=".specweave/increments/$CURRENT_INCREMENT/tasks.md"
 if [ ! -f "$TASKS_MD" ]; then
   echo "[$(date)] ℹ️  tasks.md not found for $CURRENT_INCREMENT (increment may be in planning stage)" >> "$DEBUG_LOG" 2>/dev/null || true
   rm -f "$STDIN_DATA"
-  cat <<EOF
-{
-  "continue": true
-}
-EOF
+  echo '{"continue":true}'
   exit 0
 fi
 
@@ -231,12 +219,7 @@ fi
 if [ -z "$VALIDATOR_SCRIPT" ] || ! command -v node &> /dev/null; then
   echo "[$(date)] ⚠️  AC test validator not found or Node.js missing" >> "$DEBUG_LOG" 2>/dev/null || true
   rm -f "$STDIN_DATA"
-  cat <<EOF
-{
-  "continue": true,
-  "systemMessage": "⚠️  Warning: AC test validator not available. Task completion validation skipped. Install Node.js and rebuild SpecWeave to enable validation."
-}
-EOF
+  echo '{"continue":true,"systemMessage":"⚠️  Warning: AC test validator not available. Task completion validation skipped. Install Node.js and rebuild SpecWeave to enable validation."}'
   exit 0
 fi
 
@@ -262,16 +245,11 @@ if [ "$VALIDATION_EXIT_CODE" = "0" ]; then
   # Reset circuit breaker on success
   echo "0" > "$CIRCUIT_BREAKER_FILE" 2>/dev/null || true
 
-  VALIDATION_SUMMARY=$(cat "$VALIDATION_OUTPUT" | tail -5 | tr '\n' ' ')
+  VALIDATION_SUMMARY=$(cat "$VALIDATION_OUTPUT" | tail -5 | tr '\n' ' ' | sed 's/"/\\"/g')
 
   rm -f "$VALIDATION_OUTPUT"
 
-  cat <<EOF
-{
-  "continue": true,
-  "systemMessage": "✅ AC Test Validation Passed: All acceptance criteria have passing tests. Task completion allowed. ${VALIDATION_SUMMARY}"
-}
-EOF
+  printf '{"continue":true,"systemMessage":"✅ AC Test Validation Passed: All acceptance criteria have passing tests. Task completion allowed. %s"}\n' "$VALIDATION_SUMMARY"
 else
   # Validation failed - block completion
   echo "[$(date)] ❌ AC test validation failed" >> "$DEBUG_LOG" 2>/dev/null || true
@@ -280,18 +258,11 @@ else
   CURRENT_FAILURES=$(cat "$CIRCUIT_BREAKER_FILE" 2>/dev/null || echo 0)
   echo "$((CURRENT_FAILURES + 1))" > "$CIRCUIT_BREAKER_FILE" 2>/dev/null || true
 
-  VALIDATION_ERROR=$(cat "$VALIDATION_OUTPUT" | grep -A 10 "VALIDATION FAILED" | tr '\n' ' ' | cut -c 1-300)
+  VALIDATION_ERROR=$(cat "$VALIDATION_OUTPUT" | grep -A 10 "VALIDATION FAILED" | tr '\n' ' ' | cut -c 1-300 | sed 's/"/\\"/g')
 
   rm -f "$VALIDATION_OUTPUT"
 
-  cat <<EOF
-{
-  "continue": false,
-  "systemMessage": "❌ AC TEST VALIDATION FAILED: Cannot mark task as complete until all acceptance criteria have passing tests. ${VALIDATION_ERROR}
-
-Fix the failing tests and try again. Run tests manually: npm test"
-}
-EOF
+  printf '{"continue":false,"systemMessage":"❌ AC TEST VALIDATION FAILED: Cannot mark task as complete until all acceptance criteria have passing tests. %s\\n\\nFix the failing tests and try again. Run tests manually: npm test"}\n' "$VALIDATION_ERROR"
 fi
 
 # ALWAYS exit 0 - NEVER let hook errors crash Claude Code

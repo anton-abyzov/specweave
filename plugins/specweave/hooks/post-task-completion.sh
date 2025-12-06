@@ -193,11 +193,7 @@ if [ -f "$LAST_FIRE_FILE" ]; then
 
   if [ "$TIME_DIFF" -lt "$DEBOUNCE_SECONDS" ]; then
     echo "[$(date)] ⏭️  Debounced (last fire: ${TIME_DIFF}s ago)" >> "$DEBUG_LOG" 2>/dev/null || true
-    cat <<EOF
-{
-  "continue": true
-}
-EOF
+    echo '{"continue":true}'
     exit 0
   fi
 fi
@@ -550,26 +546,11 @@ echo "---" >> "$DEBUG_LOG" 2>/dev/null || true
 # ============================================================================
 
 if [ "$SESSION_ENDING" = "true" ]; then
-  cat <<EOF
-{
-  "continue": true,
-  "systemMessage": "🎉 ALL WORK COMPLETED! Session ending detected (${INACTIVITY_GAP}s inactivity). Remember to update documentation with inline edits to CLAUDE.md and README.md as needed."
-}
-EOF
+  printf '{"continue":true,"systemMessage":"🎉 ALL WORK COMPLETED! Session ending detected (%ss inactivity). Remember to update documentation with inline edits to CLAUDE.md and README.md as needed."}\n' "$INACTIVITY_GAP"
 elif [ "$ALL_COMPLETED" = "true" ]; then
-  cat <<EOF
-{
-  "continue": true,
-  "systemMessage": "✅ Task batch completed (${INACTIVITY_GAP}s since last activity). Continuing work..."
-}
-EOF
+  printf '{"continue":true,"systemMessage":"✅ Task batch completed (%ss since last activity). Continuing work..."}\n' "$INACTIVITY_GAP"
 else
-  cat <<EOF
-{
-  "continue": true,
-  "systemMessage": "✅ Task completed. More tasks remaining - keep going!"
-}
-EOF
+  echo '{"continue":true,"systemMessage":"✅ Task completed. More tasks remaining - keep going!"}'
 fi
 
 # ALWAYS exit 0 - NEVER let hook errors crash Claude Code

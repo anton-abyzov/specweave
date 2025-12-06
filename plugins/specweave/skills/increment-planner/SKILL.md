@@ -211,43 +211,298 @@ jq '.sync.profiles | to_entries[] | select(.value.provider == "ado") | .value.co
 ls -la .specweave/docs/internal/specs/*/  # If sub-folders exist (not FS-XXX) → 2-level
 ```
 
-**Project/Board Selection (MANDATORY BEFORE STEP 4!):**
+**Project/Board Selection - ULTRA-SMART LOGIC (MANDATORY BEFORE STEP 4!):**
 
-1. **For 1-level structure:**
-   - ASK user: "Which project should this increment sync to?"
-   - Options: List from `structureConfig.projects`
-   - Store selected `PROJECT_ID`
+**⚠️ CORE PRINCIPLE: Each User Story belongs to exactly ONE project (1-level) or ONE project+board (2-level). An increment can contain USs spanning MULTIPLE projects/boards.**
 
-2. **For 2-level structure:**
-   - ASK user: "Which project should this increment sync to?"
-   - Then ASK: "Which board/area path within {project}?"
-   - Options: List from `structureConfig.boardsByProject[selectedProject]`
-   - Store BOTH `PROJECT_ID` and `BOARD_ID`
+---
 
-**VALIDATION RULE:**
+### SMART SELECTION DECISION TREE
+
+**RULE 1: NO QUESTION IF ONLY 1 OPTION**
 ```
-❌ FORBIDDEN: Creating spec.md without PROJECT_ID set
-❌ FORBIDDEN: Creating spec.md for 2-level without BOARD_ID set
-❌ FORBIDDEN: Vague increments like "show last git commits" without project context
-✅ REQUIRED: Always know WHERE this increment will sync BEFORE creating spec.md
+IF 1-level AND only 1 project → AUTO-SELECT silently
+IF 2-level AND only 1 project AND only 1 board → AUTO-SELECT silently
 ```
 
-**Example User Interaction:**
+**RULE 2: KEYWORD-BASED AUTO-DETECTION**
+
+Analyze feature description and US content for keywords:
+
+**Project-Level Keywords (1-level and 2-level):**
+```
+Frontend (FE) keywords:
+  UI, form, button, page, component, React, Vue, Angular, Next.js,
+  CSS, style, responsive, chart, dashboard, view, modal, widget,
+  Tailwind, Material-UI, Recharts
+
+Backend (BE) keywords:
+  API, endpoint, REST, GraphQL, database, query, migration, service,
+  controller, authentication, JWT, session, middleware, CRUD,
+  Redis, PostgreSQL, MongoDB, microservice
+
+Mobile keywords:
+  mobile, iOS, Android, React Native, Flutter, Expo, app, native,
+  push notification, offline, AsyncStorage, screen, touch, gesture
+
+Infrastructure (INFRA) keywords:
+  deploy, CI/CD, Docker, Kubernetes, terraform, monitoring,
+  logging, pipeline, AWS, Azure, GCP, nginx, Helm, ArgoCD
+
+Shared (SHARED) keywords:
+  types, interfaces, utilities, validators, shared, common, library,
+  SDK, models, constants, helpers
+```
+
+**Board-Level Keywords (2-level structures only):**
+```
+When project has multiple boards, also match board-specific keywords:
+
+analytics/reporting: analytics, metrics, KPI, dashboard, report, chart, graph
+user-management: user, auth, login, registration, profile, permissions, roles
+integrations: integration, webhook, API, third-party, sync, import, export
+payments: payment, billing, subscription, invoice, stripe, checkout
+notifications: notification, alert, email, SMS, push, messaging
+devops/platform: deploy, infrastructure, monitoring, CI/CD, pipeline
+```
+
+**RULE 3: CONFIDENCE CALCULATION FORMULA**
+```
+confidence = (matched_keywords / total_feature_keywords) × 100
+
+Example: "Add React login form with JWT authentication"
+  Keywords found: React (FE), login (FE), form (FE), JWT (BE), authentication (BE)
+  FE matches: 3, BE matches: 2
+  FE confidence: 3/5 = 60%
+  BE confidence: 2/5 = 40%
+  → Primary: FE (60%), Secondary: BE (40%)
+  → SUGGEST: "Frontend (60%), but also touches Backend (40%)"
+
+If multiple projects have similar confidence (within 15%):
+  → Treat as MULTI-PROJECT feature
+  → Auto-split USs by detected keywords
+```
+
+**RULE 4: CONFIDENCE-BASED DECISION**
+```
+>80% single project → AUTO-SELECT with notification (no question)
+50-80% single project → SUGGEST with quick confirm option
+Multiple projects within 15% → AUTO-SPLIT across projects
+<50% OR ambiguous → ASK user with all options
+```
+
+**RULE 5: FALLBACK TO DEFAULTS**
+```
+IF US has explicit **Project**: field → USE IT
+ELSE IF frontmatter has default_project → USE default_project
+ELSE → ASK user (should not happen if flow followed correctly)
+
+Same logic applies to **Board**: and default_board for 2-level
+```
+
+---
+
+### DECISION FLOWCHART
 
 ```
-🔍 Detected 2-level structure (ADO area path mapping)
-   Available projects: acme-corp
-
-   📁 Project: acme-corp
-      Boards: clinical-insights, platform-engineering, digital-operations
-
-Which board should this increment sync to?
-> digital-operations
-
-✅ Increment will sync to: internal/specs/acme-corp/digital-operations/FS-XXX/
+START
+  │
+  ▼
+┌─────────────────────────────────────┐
+│ 1. Detect structure level (1 or 2) │
+│ 2. Count available projects/boards │
+└─────────────────────────────────────┘
+  │
+  ▼
+┌─────────────────────────────────────┐
+│ ONLY 1 PROJECT?                     │
+│ (1-level: 1 project)                │
+│ (2-level: 1 project + 1 board)      │
+└─────────────────────────────────────┘
+  │
+  ├── YES ──► AUTO-SELECT SILENTLY
+  │           Output: "✅ Project: {name} (auto-selected)"
+  │           NO QUESTION ASKED
+  │
+  ▼ NO
+┌─────────────────────────────────────┐
+│ ANALYZE KEYWORDS in feature desc   │
+│ Calculate confidence per project   │
+└─────────────────────────────────────┘
+  │
+  ├── HIGH CONFIDENCE (>80% single) ──► AUTO-SELECT + NOTIFY
+  │   Output: "✅ Detected: {project} (keywords: form, React)"
+  │
+  ├── MULTI-PROJECT (within 15%) ──► AUTO-SPLIT USs
+  │   Output: "🔀 Multi-project detected:
+  │            • US-001 (Login UI) → web-app (60%)
+  │            • US-002 (Auth API) → api-service (55%)
+  │            Proceed? (Y/n)"
+  │
+  ├── MEDIUM CONFIDENCE (50-80%) ──► SUGGEST + CONFIRM
+  │   Output: "📍 Suggested: {project}. Confirm? (Y/n)"
+  │
+  ▼ LOW CONFIDENCE (<50%)
+┌─────────────────────────────────────┐
+│ ASK USER with ALL options listed   │
+│ multiSelect: true                  │
+│ Show complete list (never truncate)│
+└─────────────────────────────────────┘
 ```
 
-**Store PROJECT_ID and BOARD_ID for use in STEP 4!**
+---
+
+### PER-USER-STORY ASSIGNMENT MODEL
+
+**CRITICAL: Assignment is at USER STORY level, not increment level!**
+
+Each US in spec.md has its own project (and board for 2-level):
+
+```markdown
+## User Stories
+
+### US-001: Login Form UI
+**Project**: web-app
+**Board**: frontend  <!-- 2-level only -->
+**As a** user...
+
+### US-002: Auth API Endpoints
+**Project**: api-service
+**Board**: backend  <!-- 2-level only -->
+**As a** developer...
+
+### US-003: Mobile Login Screen
+**Project**: mobile-app
+**Board**: mobile-team  <!-- 2-level only -->
+**As a** mobile user...
+```
+
+**User can manually change project/board per US at any time by editing spec.md!**
+
+---
+
+### EXAMPLE SCENARIOS
+
+**Scenario 1: Single Project (NO QUESTION)**
+```
+Config: 1 project (my-app)
+Feature: "Add user authentication"
+
+→ AUTO-SELECT: my-app
+→ Output: "✅ Project: my-app (single project - auto-selected)"
+→ NO question asked
+```
+
+**Scenario 2: Multiple Projects, Clear Keywords (AUTO-DETECT)**
+```
+Config: 3 projects (web-app, api-service, mobile-app)
+Feature: "Add React dashboard with charts"
+
+→ Keyword analysis: "React" (FE), "dashboard" (FE), "charts" (FE)
+→ Confidence: 95% → web-app
+→ Output: "✅ Detected project: web-app (keywords: React, dashboard, charts)"
+→ NO question asked (high confidence)
+```
+
+**Scenario 3: Multiple Projects, Multi-Area Feature (SMART SPLIT)**
+```
+Config: 3 projects (web-app, api-service, shared-lib)
+Feature: "User authentication with JWT"
+
+→ Analyze: This spans FE (login form) + BE (auth API) + possibly shared (types)
+→ Output:
+  "🔍 This feature likely spans multiple projects:
+
+   Based on 'user authentication with JWT', I'll create:
+   • US-001: Login/Register UI → web-app (keywords: UI, form)
+   • US-002: Auth API endpoints → api-service (keywords: API, JWT)
+   • US-003: Auth types/validators → shared-lib (keywords: types, shared)
+
+   ✅ Proceed with this assignment? (Y/n)
+   💡 You can modify project per US in spec.md anytime"
+```
+
+**Scenario 4: 2-Level, Single Project, Auto-Detect Board**
+```
+Config: 1 project (enterprise-corp), 5 boards (analytics, frontend, backend, mobile, devops)
+Feature: "Add reporting dashboard"
+
+→ Project: AUTO-SELECT enterprise-corp (only option)
+→ Board keywords: "reporting" → analytics, "dashboard" → frontend
+→ Confidence: 70% analytics, 60% frontend
+→ Output:
+  "✅ Project: enterprise-corp (auto-selected)
+   📍 Suggested board: analytics (keyword: reporting)
+
+   Confirm or select different board:
+   1. analytics (suggested)
+   2. frontend
+   3. backend
+   4. mobile
+   5. devops"
+```
+
+**Scenario 5: Completely Ambiguous (ASK WITH ALL OPTIONS)**
+```
+Config: 4 projects (proj-a, proj-b, proj-c, proj-d)
+Feature: "Improve system performance"
+
+→ Keyword analysis: No clear project match
+→ Output:
+  "❓ Which project(s) should this increment target?
+
+   Available projects:
+   • proj-a - E-commerce frontend
+   • proj-b - Order processing API
+   • proj-c - Mobile shopping app
+   • proj-d - Infrastructure/DevOps
+
+   Select one or more (comma-separated, e.g., '1,2' or 'proj-a,proj-b'):"
+```
+
+---
+
+### VALIDATION RULES
+
+```
+❌ FORBIDDEN: Asking project question when only 1 project exists
+❌ FORBIDDEN: Asking board question when only 1 board exists in project
+❌ FORBIDDEN: Hiding options behind "Let me see all" - ALWAYS show complete list
+❌ FORBIDDEN: Truncating project/board lists
+❌ FORBIDDEN: Assigning ALL USs to same project when content clearly differs
+✅ REQUIRED: Auto-select when only 1 option available
+✅ REQUIRED: Use keyword matching before asking user
+✅ REQUIRED: Each US has explicit project (and board for 2-level) assignment
+✅ REQUIRED: Allow user to modify assignments per-US in spec.md
+✅ REQUIRED: When asking, show ALL options with descriptions
+```
+
+---
+
+### SPEC.MD YAML FORMAT
+
+**1-Level Structure:**
+```yaml
+---
+increment: 0045-user-auth
+title: "User Authentication"
+# Optional default (used if US doesn't specify)
+default_project: web-app
+---
+```
+
+**2-Level Structure:**
+```yaml
+---
+increment: 0045-user-auth
+title: "User Authentication"
+# Optional defaults (used if US doesn't specify)
+default_project: enterprise-corp
+default_board: backend
+---
+```
+
+**Store detected/selected values for use in STEP 4!**
 
 ---
 

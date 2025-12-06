@@ -188,6 +188,76 @@ find .specweave/docs -name "*.md" -exec sed -i '' 's/target=_blank/target="_blan
 find .specweave/docs -name "*.md" -exec sed -i '' 's/dir=auto/dir="auto"/g' {} \;
 ```
 
+### 9. NEVER Use Bash for File Creation (INFINITE HANG PREVENTION!)
+
+**Bash + heredoc/echo for files = SESSION FREEZE** (shell waits forever for EOF)
+
+```
+❌ FORBIDDEN (Crash pattern from 2025-12-06 - 2 HOUR HANG!):
+Bash("cat > file.md << 'EOF'\nContent here\nEOF")
+Bash("echo 'content' > file.md")
+Bash("printf 'content' > file.md")
+
+→ If heredoc is truncated mid-content, shell waits FOREVER for EOF terminator!
+→ Claude Code session stuck "Marinating..." for hours with no recovery!
+
+✅ MANDATORY - Use Write tool:
+Write({ file_path: "/path/to/file.md", content: "Content here" })
+
+✅ MANDATORY - Use Edit tool for modifications:
+Edit({ file_path: "/path/to/file.md", old_string: "old", new_string: "new" })
+```
+
+**Why heredocs are catastrophically dangerous:**
+1. **Truncation = infinite wait**: Token limits can cut off EOF terminator
+2. **No timeout**: Shell waits forever, bypasses Claude Code's 2-min limit
+3. **No recovery**: Session becomes completely unresponsive
+4. **Silent failure**: No error message, just endless "Waiting..."
+
+**Tool selection rules:**
+| Operation | CORRECT Tool | FORBIDDEN |
+|-----------|--------------|-----------|
+| Create file | `Write` | `Bash cat/echo/printf >` |
+| Edit file | `Edit` | `Bash sed/awk` |
+| Append to file | `Read` + `Write` | `Bash echo >>` |
+| Create directory | `Bash mkdir -p` | ✅ OK |
+
+**If session gets stuck ("Marinating..." / "Waiting..."):**
+```bash
+# 1. Kill Claude Code (Ctrl+C or close terminal)
+# 2. Kill zombie shell processes:
+pkill -f "cat.*EOF"
+pkill -f "bash.*heredoc"
+# 3. Clean state:
+rm -f .specweave/state/.processor.lock
+rm -f .specweave/state/.dedup-cache/*.lock
+# 4. Restart Claude Code
+```
+
+### 10. Bash Tool - Terminal Operations ONLY
+
+**Bash is for system commands, NOT file manipulation:**
+
+```
+✅ ALLOWED Bash operations:
+- git commands (status, add, commit, push, diff)
+- npm/pnpm/yarn commands (install, build, test)
+- Directory operations (mkdir, ls, pwd)
+- Process management (ps, kill, pkill)
+- Network tools (curl, wget for APIs)
+- Build tools (make, cmake, cargo)
+
+❌ FORBIDDEN - Use dedicated tools instead:
+- File reading → Read tool
+- File writing → Write tool
+- File editing → Edit tool
+- File searching → Glob tool
+- Content searching → Grep tool
+- Communication → Direct text output
+```
+
+**Mental model**: Bash = "run a program". Write/Edit/Read = "modify files".
+
 ---
 
 ## Development Setup
@@ -371,7 +441,30 @@ npm run test:all    # All tests (80%+ coverage required)
 
 ## Emergency
 
-**Crash loop / prompt duplication? Disable hooks FIRST:**
+### Session Stuck ("Marinating..." for hours)
+
+**Cause**: Heredoc command truncated, shell waiting forever for EOF.
+
+```bash
+# 1. Force quit Claude Code (Ctrl+C multiple times, or close terminal)
+
+# 2. Kill zombie processes:
+pkill -f "cat.*EOF"
+pkill -9 -f "bash.*specweave"
+
+# 3. Clean locks:
+rm -f .specweave/state/.processor.lock
+rm -f .specweave/state/*.lock
+rm -rf .specweave/state/.dedup-cache/*.lock
+
+# 4. Restart Claude Code
+```
+
+**Prevention**: NEVER use `Bash("cat > file << EOF")` - use `Write` tool instead!
+
+### Crash loop / prompt duplication
+
+**Disable hooks FIRST:**
 ```bash
 export SPECWEAVE_DISABLE_HOOKS=1   # In terminal before starting Claude
 # OR rename hooks.json:
@@ -393,10 +486,12 @@ npm run rebuild
 
 | Aspect | Rule |
 |--------|------|
+| **File ops** | Write/Edit/Read tools ONLY. NEVER Bash heredoc/echo! |
 | Skills vs Agents | Skills = auto-activate (keywords), Agents = explicit `Task()` |
 | Hook events | PostToolUse, PreToolUse, UserPromptSubmit, Stop, SessionStart/End, etc. |
 | Cache location | `.specweave/cache/` (24h TTL) |
 | Pre-commit | Blocks 50+ deletions, `rm -rf` on protected dirs |
+| Stuck session | Kill + `pkill -f "cat.*EOF"` + clean locks + restart |
 
 ---
 

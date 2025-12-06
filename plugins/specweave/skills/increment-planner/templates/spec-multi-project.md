@@ -8,8 +8,8 @@ created: {{DATE}}
 structure: user-stories
 test_mode: {{TEST_MODE}}
 coverage_target: {{COVERAGE_TARGET}}
-project: {{PROJECT_ID}}
-board: {{BOARD_ID}}
+default_project: {{PROJECT_ID}}
+default_board: {{BOARD_ID}}
 multi_project: true
 projects:
   - id: {{PROJECT_FE_ID}}
@@ -26,12 +26,16 @@ projects:
 
 [High-level description - WHAT this feature does and WHY it's needed]
 
-## User Stories by Project
+## User Stories
 
-### Frontend ({{PROJECT_FE_ID}})
+<!-- Each US has its own **Project** and **Board** fields. User can modify per-US anytime. -->
+
+### Frontend Stories
 
 #### US-FE-001: [Story Title] (P1)
-**Related Repo**: {{PROJECT_FE_ID}}
+**Project**: {{PROJECT_ID}}
+**Board**: {{BOARD_FE_ID}}
+
 **As a** [user type]
 **I want** [goal]
 **So that** [benefit]
@@ -42,10 +46,12 @@ projects:
 
 ---
 
-### Backend ({{PROJECT_BE_ID}})
+### Backend Stories
 
 #### US-BE-001: [Story Title] (P1)
-**Related Repo**: {{PROJECT_BE_ID}}
+**Project**: {{PROJECT_ID}}
+**Board**: {{BOARD_BE_ID}}
+
 **As a** [system/frontend application]
 **I want** [API endpoint/service goal]
 **So that** [benefit]
@@ -56,10 +62,12 @@ projects:
 
 ---
 
-### Shared Library ({{PROJECT_SHARED_ID}})
+### Shared Library Stories
 
 #### US-SHARED-001: [Story Title] (P1)
-**Related Repo**: {{PROJECT_SHARED_ID}}
+**Project**: {{PROJECT_ID}}
+**Board**: {{BOARD_SHARED_ID}}
+
 **As a** developer in FE or BE repos
 **I want** [shared types/utilities/validators]
 **So that** [consistency across projects]

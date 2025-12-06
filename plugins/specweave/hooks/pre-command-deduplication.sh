@@ -48,12 +48,7 @@ if [[ "$COMMAND" == *specweave* ]]; then
   if [[ -f "$CACHE_FILE" ]]; then
     CACHE_AGE=$(($(date +%s) - $(stat -f %m "$CACHE_FILE" 2>/dev/null || stat -c %Y "$CACHE_FILE" 2>/dev/null || echo 0)))
     if [[ "$CACHE_AGE" -lt 1 ]]; then
-      cat <<EOF
-{
-  "decision": "block",
-  "reason": "Duplicate command detected (within 1 second). Wait a moment and try again."
-}
-EOF
+      echo '{"decision":"block","reason":"Duplicate command detected (within 1 second). Wait a moment and try again."}'
       exit 0
     fi
   fi
