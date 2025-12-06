@@ -531,7 +531,7 @@ export function findDuplicateIncrementNumbers(
     for (const entry of entries) {
       if (!entry.isDirectory() || entry.name === '_archive') continue;
 
-      const match = entry.name.match(/^(\d{4})-/);
+      const match = entry.name.match(/^(\d{3,4})E?-/);
       if (match) {
         const num = parseInt(match[1], 10);
         const existing = numberToNames.get(num) || [];

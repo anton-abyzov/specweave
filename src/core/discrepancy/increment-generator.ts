@@ -197,8 +197,11 @@ export function getNextIncrementId(projectPath: string): string {
   }
 
   const folders = fs.readdirSync(incrementsDir, { withFileTypes: true })
-    .filter(d => d.isDirectory() && /^\d{4}-/.test(d.name))
-    .map(d => parseInt(d.name.slice(0, 4), 10));
+    .filter(d => d.isDirectory() && /^\d{3,4}E?-/.test(d.name))
+    .map(d => {
+      const match = d.name.match(/^(\d{3,4})E?-/);
+      return match ? parseInt(match[1], 10) : 0;
+    });
 
   if (folders.length === 0) {
     return '0001';

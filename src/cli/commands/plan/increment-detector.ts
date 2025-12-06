@@ -40,7 +40,7 @@ export class IncrementDetector {
     const allIncrements = fs.readdirSync(incrementsDir)
       .filter(dir => {
         const fullPath = path.join(incrementsDir, dir);
-        return fs.statSync(fullPath).isDirectory() && /^\d{4}-/.test(dir);
+        return fs.statSync(fullPath).isDirectory() && /^\d{3,4}E?-/.test(dir);
       });
 
     if (allIncrements.length === 0) {
@@ -173,7 +173,7 @@ export class IncrementDetector {
     return fs.readdirSync(incrementsDir)
       .filter(dir => {
         const fullPath = path.join(incrementsDir, dir);
-        return fs.statSync(fullPath).isDirectory() && /^\d{4}-/.test(dir);
+        return fs.statSync(fullPath).isDirectory() && /^\d{3,4}E?-/.test(dir);
       })
       .sort();
   }

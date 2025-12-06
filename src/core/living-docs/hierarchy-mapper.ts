@@ -450,7 +450,7 @@ export class HierarchyMapper {
           // Greenfield: ALWAYS use increment number (DETERMINISTIC)
           // CRITICAL FIX (2025-12-04): Removed findNextAvailableInternalIdSync which caused chain shifts
           // Feature ID is derived directly from increment number: 0104-xxx → FS-104
-          const numMatch = incrementId.match(/^(\d{4})-/);
+          const numMatch = incrementId.match(/^(\d{3,4})E?-/);
           if (numMatch) {
             const baseNum = parseInt(numMatch[1], 10);
             featureId = `FS-${String(baseNum).padStart(3, '0')}`;
@@ -478,7 +478,7 @@ export class HierarchyMapper {
    */
   private async detectFeatureFromIncrementName(incrementId: string): Promise<FeatureMapping | null> {
     // Extract increment number (first 4 digits)
-    const numMatch = incrementId.match(/^(\d{4})-/);
+    const numMatch = incrementId.match(/^(\d{3,4})E?-/);
     if (!numMatch) return null;
 
     const baseNum = parseInt(numMatch[1], 10);
@@ -521,7 +521,7 @@ export class HierarchyMapper {
    */
   private async createFallbackFeatureMapping(incrementId: string): Promise<FeatureMapping> {
     // Extract increment number (first 4 digits)
-    const numMatch = incrementId.match(/^(\d{4})-/);
+    const numMatch = incrementId.match(/^(\d{3,4})E?-/);
     if (!numMatch) {
       throw new Error(`Invalid increment ID format: ${incrementId}`);
     }

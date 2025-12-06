@@ -10,6 +10,11 @@
  * The cache was premature optimization that caused bugs. Scanning 4 directories
  * is fast enough (~5ms) and doesn't need caching.
  *
+ * E-SUFFIX CONVENTION (v0.32.0):
+ * Increments working on external items (imported from GitHub/JIRA/ADO) use
+ * E suffix: 0111E-feature-name instead of 0111-feature-name.
+ * This maintains consistency with FS-XXXE feature IDs and US-XXXE user stories.
+ *
  * @module increment-utils
  * @since 0.18.3
  */
@@ -115,8 +120,8 @@ export class IncrementNumberManager {
         for (const entry of entries) {
           if (!entry.isDirectory()) continue;
 
-          // Match pattern: 0032-name or 032-name
-          const match = entry.name.match(/^(\d{3,4})-/);
+          // Match pattern: 0032-name, 032-name, or 0032E-name (external)
+          const match = entry.name.match(/^(\d{3,4})E?-/);
           if (match) {
             const entryNumber = match[1].padStart(4, '0');
             if (entryNumber === normalizedNumber) {
@@ -171,8 +176,8 @@ export class IncrementNumberManager {
         for (const entry of entries) {
           if (!entry.isDirectory()) continue;
 
-          // Match pattern: 0032-name or 032-name
-          const match = entry.name.match(/^(\d{3,4})-/);
+          // Match pattern: 0032-name, 032-name, or 0032E-name (external)
+          const match = entry.name.match(/^(\d{3,4})E?-/);
           if (match) {
             totalIncrements++;
             const number = parseInt(match[1], 10);
@@ -198,5 +203,107 @@ export class IncrementNumberManager {
     }
 
     return highestNumber;
+  }
+
+  /**
+   * Generate an increment ID for external items.
+   *
+   * External increments (those working on imported GitHub/JIRA/ADO items)
+   * use E suffix to maintain consistency with FS-XXXE and US-XXXE conventions.
+   *
+   * @param projectRoot - Project root directory (defaults to process.cwd())
+   * @returns Next increment ID with E suffix (e.g., "0033E")
+   *
+   * @example
+   * ```typescript
+   * const id = IncrementNumberManager.getNextExternalIncrementNumber();
+   * // "0033E" - for use as "0033E-feature-name"
+   * ```
+   *
+   * @since 0.32.0
+   */
+  static getNextExternalIncrementNumber(
+    projectRoot: string = process.cwd()
+  ): string {
+    const baseNumber = this.getNextIncrementNumber(projectRoot);
+    return `${baseNumber}E`;
+  }
+
+  /**
+   * Generate a full increment folder name.
+   *
+   * @param name - Kebab-case increment name (e.g., "dora-metrics-fix")
+   * @param options - Options for ID generation
+   * @param options.isExternal - If true, adds E suffix for external items
+   * @param options.projectRoot - Project root directory
+   * @returns Full increment folder name (e.g., "0033E-dora-metrics-fix")
+   *
+   * @example
+   * ```typescript
+   * // Internal increment
+   * const id = IncrementNumberManager.generateIncrementId('feature-name');
+   * // "0033-feature-name"
+   *
+   * // External increment (GitHub/JIRA/ADO item)
+   * const extId = IncrementNumberManager.generateIncrementId('dora-fix', { isExternal: true });
+   * // "0033E-dora-fix"
+   * ```
+   *
+   * @since 0.32.0
+   */
+  static generateIncrementId(
+    name: string,
+    options: { isExternal?: boolean; projectRoot?: string } = {}
+  ): string {
+    const { isExternal = false, projectRoot = process.cwd() } = options;
+    const number = this.getNextIncrementNumber(projectRoot);
+    const suffix = isExternal ? 'E' : '';
+    return `${number}${suffix}-${name}`;
+  }
+
+  /**
+   * Check if an increment ID represents an external item.
+   *
+   * External increments have E suffix: 0033E-name
+   * Internal increments do not: 0033-name
+   *
+   * @param incrementId - Increment ID or folder name
+   * @returns true if increment is external (has E suffix)
+   *
+   * @example
+   * ```typescript
+   * IncrementNumberManager.isExternalIncrement('0033E-dora-fix'); // true
+   * IncrementNumberManager.isExternalIncrement('0033-feature');   // false
+   * ```
+   *
+   * @since 0.32.0
+   */
+  static isExternalIncrement(incrementId: string): boolean {
+    return /^\d{3,4}E-/.test(incrementId);
+  }
+
+  /**
+   * Extract the numeric part from an increment ID.
+   *
+   * Works with both internal and external increments.
+   *
+   * @param incrementId - Increment ID or folder name
+   * @returns Numeric part as 4-digit string, or null if invalid
+   *
+   * @example
+   * ```typescript
+   * IncrementNumberManager.extractNumber('0033E-dora-fix'); // "0033"
+   * IncrementNumberManager.extractNumber('0033-feature');   // "0033"
+   * IncrementNumberManager.extractNumber('invalid');        // null
+   * ```
+   *
+   * @since 0.32.0
+   */
+  static extractNumber(incrementId: string): string | null {
+    const match = incrementId.match(/^(\d{3,4})E?-/);
+    if (match) {
+      return match[1].padStart(4, '0');
+    }
+    return null;
   }
 }

@@ -184,8 +184,8 @@ async function scanDirectory(dir, throwOnError = false) {
  * Extract increment number from increment name (e.g., "0001-feature" → "0001")
  */
 function extractIncrementNumber(name) {
-    const match = name.match(/^(\d{4})-/);
-    return match ? match[1] : null;
+    const match = name.match(/^(\d{3,4})E?-/);
+    return match ? match[1].padStart(4, '0') : null;
 }
 /**
  * Select winning version based on priority rules

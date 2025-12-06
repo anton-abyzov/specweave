@@ -10,6 +10,8 @@
 | T-004 | Detect existing increment for reopen | pending | US-003 |
 | T-005 | Implement auto-close on completion | pending | US-004 |
 | T-006 | Update living docs status on close | pending | US-004 |
+| T-007 | Fix duplicate FS-XXXE folder creation | completed | US-001 |
+| T-008 | Implement E-suffix for external increment IDs | completed | US-002 |
 
 ---
 
@@ -123,3 +125,62 @@ Update the external item's status in living docs when GitHub issue is closed.
 
 **Files**:
 - MODIFY: `src/core/living-docs/living-docs-sync.ts`
+
+---
+
+### T-007: Fix Duplicate FS-XXXE Folder Creation
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-05
+**Status**: [x] completed
+
+**Description**:
+Fixed bug where multiple empty FS-XXXE folders were created on re-import when all items are duplicates.
+
+**Root Cause**:
+Feature folders were allocated BEFORE duplicate detection, causing empty folders to be created when all items in a group were already imported.
+
+**Implementation**:
+1. Added `findExistingFeatureFolders()` to scan existing FS-XXXE folders by source_repo
+2. Added `groupHasNonDuplicates()` to check if any item in a group is NOT a duplicate
+3. Modified `convertItems()` to skip folder creation when all items are duplicates
+4. Reuses existing feature folder when source_repo matches
+
+**Files**:
+- MODIFIED: `src/importers/item-converter.ts`
+
+**Tests**:
+- All 36 item-converter tests pass
+- All 19 duplicate-detector tests pass
+- All 31 fs-id-allocator tests pass
+
+---
+
+### T-008: Implement E-Suffix for External Increment IDs
+**User Story**: US-002
+**Satisfies ACs**: AC-US2-01
+**Status**: [x] completed
+
+**Description**:
+Increments working on external items (imported from GitHub/JIRA/ADO) must use E suffix in their ID to maintain consistency with FS-XXXE and US-XXXE conventions.
+
+**Implementation**:
+1. Updated `IncrementNumberManager` regex patterns to recognize E suffix: `/^(\d{3,4})E?-/`
+2. Added `getNextExternalIncrementNumber()` method returning "XXXXE" format
+3. Added `generateIncrementId(name, { isExternal: true })` helper
+4. Added `isExternalIncrement(id)` detection utility
+5. Added `extractNumber(id)` utility for both internal/external IDs
+6. Updated CLAUDE.md with E-suffix convention documentation
+
+**Example**:
+```
+✅ CORRECT: 0111E-dora-metrics-fix (external GitHub issue)
+❌ WRONG:   0111-dora-metrics-fix  (missing E for external)
+```
+
+**Files**:
+- MODIFIED: `src/core/increment/increment-utils.ts`
+- MODIFIED: `tests/unit/increment-utils.test.ts` (13 new tests)
+- MODIFIED: `CLAUDE.md` (documented convention)
+
+**Tests**:
+- All 40 increment-utils tests pass (including 13 new E-suffix tests)

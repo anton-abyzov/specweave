@@ -173,7 +173,7 @@ export class MetadataValidator {
     const entries = await fs.readdir(incrementsDir, { withFileTypes: true });
     const incrementDirs = entries
       .filter(entry => entry.isDirectory())
-      .filter(entry => /^\d{4}-/.test(entry.name));
+      .filter(entry => /^\d{3,4}E?-/.test(entry.name));
 
     for (const dir of incrementDirs) {
       const result = await this.validate(dir.name);

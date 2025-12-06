@@ -209,7 +209,7 @@ export function listIncrementsByProfile(projectPath: string): void {
 
   // Scan all increments
   const increments = fs.readdirSync(incrementsDir)
-    .filter(dir => dir.match(/^\d{4}-/));  // Only numbered increments
+    .filter(dir => dir.match(/^\d{3,4}E?-/));  // Only numbered increments (including E-suffix external)
 
   for (const incrementId of increments) {
     const profileId = getIncrementProfile(projectPath, incrementId);
