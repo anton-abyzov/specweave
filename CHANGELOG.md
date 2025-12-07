@@ -4,6 +4,14 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.32.2] - 2025-12-07
+
+### 🗂️ Maintenance
+- Archive completed increments 0085-0106, 0111E, 0113
+- Move feature specs FS-085 through FS-113 to archive
+
+---
+
 ## [0.29.2] - 2025-12-01
 
 ### 🔧 CI/CD Improvements
