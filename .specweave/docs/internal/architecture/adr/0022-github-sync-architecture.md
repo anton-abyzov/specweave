@@ -79,7 +79,7 @@ if [ "$ISSUE_STATE" = "OPEN" ]; then
   echo "🔗 Closing GitHub issue #$ISSUE_NUMBER for completed increment $INCREMENT_ID"
 
   # Generate completion summary
-  SUMMARY=$(cat "$INCREMENT_PATH/spec.md" | head -20 | tail -10)
+  SUMMARY="$(cat" "$INCREMENT_PATH/spec.md" | head -20 | tail -10)
   COMMENT="✅ Increment $INCREMENT_ID completed\n\n$SUMMARY\n\nClosed automatically by SpecWeave"
 
   # Close issue with comment
@@ -230,7 +230,7 @@ fi
 
 ### Neutral
 
-⚪ **Performance**: Negligible (\&lt;2s network call)
+⚪ **Performance**: Negligible (\<2s network call)
 ⚪ **Maintenance**: Need to keep sync logic in sync with GitHub API changes
 ⚪ **Testing**: Need integration tests with GitHub (or mocks)
 

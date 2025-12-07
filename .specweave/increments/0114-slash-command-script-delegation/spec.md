@@ -1,8 +1,9 @@
 ---
 increment: 0114-slash-command-script-delegation
 project: specweave
-status: active
+status: completed
 created: 2025-12-06
+completed: 2025-12-06
 ---
 
 # Slash Command Script Delegation
@@ -52,15 +53,15 @@ All three layers use the **same scripts** in `plugins/specweave/scripts/` - sing
 - [x] **AC-US4-02**: If script errors, show error and fall through
 
 ### US-005: Skill-Based Discoverability (NEW)
-- [ ] **AC-US5-01**: `skills/instant-status/SKILL.md` exists with execution instructions
-- [ ] **AC-US5-02**: Skill activates for `/specweave:status`, `/specweave:progress`, `/specweave:jobs`
-- [ ] **AC-US5-03**: Skill instructs ANY LLM to execute scripts via shell (portable)
-- [ ] **AC-US5-04**: Skill documents all three execution paths (hook, skill, CLI)
+- [x] **AC-US5-01**: `skills/instant-status/SKILL.md` exists with execution instructions
+- [x] **AC-US5-02**: Skill activates for `/specweave:status`, `/specweave:progress`, `/specweave:jobs`
+- [x] **AC-US5-03**: Skill instructs ANY LLM to execute scripts via shell (portable)
+- [x] **AC-US5-04**: Skill documents all three execution paths (hook, skill, CLI)
 
 ### US-006: Non-Claude Documentation (NEW)
-- [ ] **AC-US6-01**: Scripts have `--help` output explaining standalone usage
-- [ ] **AC-US6-02**: SKILL.md documents `specweave status` CLI alternative
-- [ ] **AC-US6-03**: README in scripts folder explains direct execution
+- [x] **AC-US6-01**: Scripts have `--help` output explaining standalone usage
+- [x] **AC-US6-02**: SKILL.md documents `specweave status` CLI alternative
+- [x] **AC-US6-03**: README in scripts folder explains direct execution
 
 ## Performance Targets
 

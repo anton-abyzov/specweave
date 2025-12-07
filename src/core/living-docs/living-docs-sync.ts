@@ -1186,6 +1186,11 @@ export class LivingDocsSync {
    * AC-US5-02: When GitHub configured, trigger GitHub sync
    * AC-US5-03: When no external tools configured, skip
    * AC-US5-05: External tool failures don't break living docs sync
+   *
+   * v0.32.2+ (AC-US3-01 to AC-US3-05): Permission checks before syncing
+   * - canUpsertInternalItems: Required for creating issues from SpecWeave increments
+   * - canUpdateExternalItems: Required for updating externally-imported items
+   * - canUpdateStatus: Required for updating issue status (open/closed)
    */
   private async syncToExternalTools(
     incrementId: string,
@@ -1201,9 +1206,41 @@ export class LivingDocsSync {
         return;
       }
 
-      this.logger.log(`\n📡 Syncing to external tools: ${externalTools.join(', ')}`);
+      // 2. Load sync settings and check permissions (v0.32.2+ AC-US3-01 to AC-US3-05)
+      const configPath = path.join(this.projectRoot, '.specweave/config.json');
+      let syncSettings = {
+        canUpsertInternalItems: false,
+        canUpdateExternalItems: false,
+        canUpdateStatus: false,
+      };
 
-      // 2. Sync to each configured external tool
+      if (existsSync(configPath)) {
+        try {
+          const config = await readJson(configPath);
+          syncSettings = {
+            canUpsertInternalItems: config.sync?.settings?.canUpsertInternalItems ?? false,
+            canUpdateExternalItems: config.sync?.settings?.canUpdateExternalItems ?? false,
+            canUpdateStatus: config.sync?.settings?.canUpdateStatus ?? false,
+          };
+        } catch (error) {
+          this.logger.warn('   ⚠️  Failed to load sync settings, using defaults (disabled)');
+        }
+      }
+
+      // 3. AC-US3-01: Check canUpsertInternalItems permission for creating issues
+      if (!syncSettings.canUpsertInternalItems) {
+        this.logger.log('   ⚠️  Skipping external sync - canUpsertInternalItems is disabled in config');
+        this.logger.log('   💡 Enable in .specweave/config.json: sync.settings.canUpsertInternalItems: true');
+        return;
+      }
+
+      this.logger.log(`\n📡 Syncing to external tools: ${externalTools.join(', ')}`);
+      this.logger.log(
+        `   📋 Permissions: upsert=${syncSettings.canUpsertInternalItems}, ` +
+          `update=${syncSettings.canUpdateExternalItems}, status=${syncSettings.canUpdateStatus}`
+      );
+
+      // 4. Sync to each configured external tool (passing permissions for granular control)
       for (const tool of externalTools) {
         try {
           switch (tool) {
@@ -1225,7 +1262,6 @@ export class LivingDocsSync {
           this.logger.error(`      Living docs sync will continue...`);
         }
       }
-
     } catch (error) {
       // AC-US5-05: External tool failures don't break living docs sync
       this.logger.error(`   ⚠️  External tool sync failed:`, error);

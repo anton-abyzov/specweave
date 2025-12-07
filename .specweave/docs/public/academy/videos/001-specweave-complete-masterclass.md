@@ -28,12 +28,13 @@
 | 53:30 | DEMO 4: GitHub Sync with Bidirectional Pull (NEW!) | 4 min |
 | 57:30 | DEMO 5: JIRA Sync | 3 min |
 | 60:30 | DEMO 6: Azure DevOps with Hierarchy Intelligence (NEW!) | 4 min |
-| 64:30 | Background Jobs Monitoring (NEW!) | 2 min |
-| 66:30 | AGENT.md for Non-Claude Tools | 2 min |
-| 68:30 | Academy + Resources | 1.5 min |
-| 70:00 | Outro (This was HUGE work!) | 1 min |
+| 64:30 | **DEMO 7: External Increments — Work Starts Outside (NEW!)** | 3.5 min |
+| 68:00 | Background Jobs Monitoring (NEW!) | 2 min |
+| 70:00 | AGENT.md for Non-Claude Tools | 2 min |
+| 72:00 | Academy + Resources | 1.5 min |
+| 73:30 | Outro (This was HUGE work!) | 1 min |
 
-**Total: ~71 minutes** (extended for new features)
+**Total: ~75 minutes** (extended for external increments demo)
 
 ---
 
@@ -919,11 +920,38 @@ winget install Microsoft.VisualStudioCode
 
 > "Now every new terminal starts with Claude ready."
 
-#### The Skip-Permissions Trick
+#### The Skip-Permissions Trick (VS Code Extension - RECOMMENDED!)
+
+**[VISUAL: VS Code settings.json]**
+
+> "By default, Claude asks permission for everything. If you're using the **VS Code extension** (which I highly recommend!), there's an undocumented but super helpful way to bypass permissions.
+>
+> Add these settings to your VS Code `settings.json`:"
+
+```json
+{
+  "claudeCode.allowDangerouslySkipPermissions": true,
+  "claudeCode.initialPermissionMode": "bypassPermissions"
+}
+```
+
+> "This is WAY better than the terminal approach because:
+> - It's per-project or global in VS Code settings
+> - No shell function needed
+> - Works automatically every time you open VS Code
+>
+> **Note**: There's a known issue where VS Code extension can sometimes hang or become unresponsive. If that happens, check this GitHub issue for workarounds: https://github.com/anthropics/claude-code/issues/12604
+>
+> Quick fixes if you hit that bug:
+> - Restart VS Code Extension Host (Cmd+Shift+P → 'Developer: Restart Extension Host')
+> - Close extra tabs/files to reduce diagnostics payload
+> - Or fall back to terminal mode for long sessions"
+
+#### Alternative: Terminal Skip-Permissions (if not using VS Code extension)
 
 **[VISUAL: ~/.zshrc file]**
 
-> "By default, Claude asks permission for everything. For your own projects, add this to `.zshrc`:"
+> "If you're using the terminal directly instead of VS Code extension, add this to `.zshrc`:"
 
 ```bash
 function claude() {
@@ -1673,7 +1701,244 @@ ADO: /MyProject/Team-Frontend/Mobile
 
 ---
 
-### BACKGROUND JOBS MONITORING (64:30 - 66:30) — NEW!
+### DEMO 7: EXTERNAL INCREMENTS — Work Starts in External Tools (64:30 - 68:00) — NEW!
+
+**[VISUAL: GitHub Issues / JIRA / ADO boards with existing items]**
+
+> "Here's a game-changer most frameworks miss entirely. What if work STARTS in your external tool — not in SpecWeave?
+
+> Your PM creates a JIRA epic. A customer files a GitHub issue. Your manager assigns you an ADO work item. You don't create these — they're handed to you.
+
+> SpecWeave handles this NATIVELY. Let me show you."
+
+#### The Problem: External Work Items
+
+**[VISUAL: Split screen - external tool on left, empty SpecWeave on right]**
+
+> "Real scenario: Your PM filed this GitHub issue three days ago."
+
+**[VISUAL: GitHub issue #786 displayed]**
+
+```
+GitHub Issue #786:
+[Bug] External tool sync is not working when opening an increment
+
+Labels: bug, high-priority
+Assignee: you
+Created: 3 days ago
+```
+
+> "You didn't create this. You didn't plan it. But now you need to work on it — with full spec-driven discipline. How?"
+
+#### Step 1: Import External Items
+
+**[VISUAL: Terminal running import command]**
+
+```bash
+/specweave:import-external --source github --since "7 days"
+```
+
+```
+Importing from GitHub...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Found 5 new items:
+  • #786 [Bug] External tool sync... → FS-118E/us-014e
+  • #785 Feature request: dark mode → FS-117E/us-013e
+  • #782 Performance issue in API   → FS-116E/us-012e
+  ...
+
+Imported to: .specweave/docs/internal/specs/specweave/
+
+Note: These are READ-ONLY REFERENCES.
+To implement, create an increment from the imported spec.
+```
+
+> "See that 'E' suffix? FS-118**E**, us-014**e**. That 'E' means EXTERNAL origin. SpecWeave tracks that this came from outside — not created here."
+
+#### Step 2: Review Imported Specs
+
+**[VISUAL: Opening the imported user story file]**
+
+```bash
+cat .specweave/docs/internal/specs/specweave/FS-118E/us-014e-bug-external-tool-sync.md
+```
+
+```markdown
+# US-014E: [Bug] External tool sync is not working
+
+**Origin**: 🔗 [GitHub #786](https://github.com/...)
+**Status**: Open
+
+## Description
+[Bug content from GitHub issue...]
+
+## Tasks
+> **Note**: This User Story was imported from an external tool.
+> Create an increment to implement, then tasks will sync here.
+
+---
+## External Metadata
+- **External ID**: github#anton-abyzov/specweave#786
+- **Platform**: github
+- **Labels**: bug
+- **Feature ID**: FS-118E
+```
+
+> "The spec is READ-ONLY. It mirrors the GitHub issue. You don't edit this — you CREATE AN INCREMENT from it."
+
+#### Step 3: Create Increment from External Item
+
+**[VISUAL: Terminal creating increment]**
+
+```bash
+/specweave:increment --from-external FS-118E/us-014e
+```
+
+```
+Creating increment from external item...
+
+External Source: GitHub Issue #786
+Feature: FS-118E (External Tool Sync Issues)
+User Story: US-014E
+
+Generating spec.md with external context...
+✓ Imported acceptance criteria from issue
+✓ Linked to GitHub issue #786
+✓ E-suffix preserved: 0118E-external-tool-sync-fix
+
+Architect agent creating plan.md...
+✓ Analyzed codebase for affected files
+✓ Generated implementation approach
+
+Tasks generated: 6 tasks in tasks.md
+✓ T-001: Investigate root cause
+✓ T-002: Add sync trigger on increment start
+...
+
+Increment ready: .specweave/increments/0118E-external-tool-sync-fix/
+```
+
+> "Notice the increment number: 0118**E**. The E-suffix carries through. When this syncs back to GitHub, everyone knows it originated externally."
+
+#### Step 4: Work Normally
+
+**[VISUAL: Standard SpecWeave workflow]**
+
+```bash
+/specweave:do
+```
+
+> "Now you work exactly like any other increment. Read the spec. Complete tasks. Check off acceptance criteria.
+
+> But here's the magic — when you complete tasks..."
+
+**[VISUAL: Split screen - tasks.md updating AND GitHub issue updating]**
+
+```
+Task T-003 completed!
+
+Syncing to external tool...
+✓ GitHub Issue #786: Checklist updated (3/6 complete)
+✓ Comment posted: "Progress update: T-003 completed"
+```
+
+> "The GitHub issue updates automatically. Your PM sees real-time progress without checking SpecWeave."
+
+#### Step 5: Close and Sync Back
+
+```bash
+/specweave:done 0118E
+```
+
+```
+Closing increment 0118E-external-tool-sync-fix...
+
+Quality Gates:
+✓ All 6 tasks completed
+✓ All acceptance criteria checked
+✓ Tests passing
+
+External Sync:
+✓ GitHub Issue #786: Closed with summary
+✓ Comment: "Resolved in increment 0118E - see PR #789"
+
+Increment archived to: _archive/0118E-external-tool-sync-fix/
+```
+
+> "The GitHub issue closes automatically. Your PM gets notified. Full audit trail. Zero manual copying."
+
+#### The Pattern: External → SpecWeave → External
+
+**[VISUAL: Flow diagram]**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│              EXTERNAL-FIRST WORKFLOW                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  EXTERNAL TOOL                    SPECWEAVE                      │
+│                                                                  │
+│  ┌──────────────┐                                               │
+│  │ PM creates   │                                               │
+│  │ GitHub Issue │ ──── /import-external ────┐                   │
+│  │ #786         │                           │                   │
+│  └──────────────┘                           ▼                   │
+│                                    ┌──────────────┐             │
+│                                    │ FS-118E/     │             │
+│                                    │ us-014e.md   │             │
+│                                    │ (read-only)  │             │
+│                                    └──────┬───────┘             │
+│                                           │                     │
+│                           /increment --from-external            │
+│                                           │                     │
+│                                           ▼                     │
+│                                    ┌──────────────┐             │
+│                                    │ 0118E-fix/   │             │
+│                                    │ spec.md      │             │
+│                                    │ tasks.md     │             │
+│                                    └──────┬───────┘             │
+│                                           │                     │
+│  ┌──────────────┐              /do + hooks│                     │
+│  │ Issue #786   │◀────────────────────────┘                     │
+│  │ ✓ Progress   │     (real-time sync)                          │
+│  │ ✓ Comments   │                                               │
+│  └──────┬───────┘                                               │
+│         │                                                        │
+│         │         /done                                          │
+│         ▼                                                        │
+│  ┌──────────────┐                                               │
+│  │ Issue #786   │                                               │
+│  │ CLOSED ✓     │                                               │
+│  └──────────────┘                                               │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+> "External tools stay the source of truth for WHAT needs to be done. SpecWeave is where you DO the work. Both stay in sync. Always."
+
+#### Works with ALL External Tools
+
+**[VISUAL: Three tool logos side by side]**
+
+```bash
+# GitHub
+/specweave:import-external --source github --since "7 days"
+
+# JIRA
+/specweave:import-external --source jira --project PROJ --since "30 days"
+
+# Azure DevOps
+/specweave:import-external --source ado --project MyProject --since "14 days"
+```
+
+> "Same pattern for JIRA epics, ADO work items, GitHub issues. Import. Create increment. Work. Sync back. Close.
+
+> Your managers work in their tools. You work in SpecWeave. Everyone wins."
+
+---
+
+### BACKGROUND JOBS MONITORING (68:00 - 70:00) — NEW!
 
 **[VISUAL: Terminal with specweave jobs output]**
 
@@ -1964,7 +2229,8 @@ EOF
 | 53:00 | GitHub sync with pull sync demo (NEW!) |
 | 57:00 | JIRA board sync |
 | 60:00 | Azure DevOps with SAFe hierarchy detection (NEW!) |
-| 64:00 | specweave jobs command (NEW!) |
+| 64:00 | **External Increments: import from GitHub issue, create increment, sync back (NEW!)** |
+| 68:00 | specweave jobs command (NEW!) |
 
 ### Graphics Needed
 
@@ -1974,6 +2240,7 @@ EOF
 - Living Docs Builder 6-phase diagram (NEW!)
 - ADO process template comparison table (NEW!)
 - Bidirectional sync flow diagram (NEW!)
+- **External-First Workflow diagram: PM → GitHub Issue → Import → Increment → Sync back (NEW!)**
 - Sync flow diagram (JIRA ↔ SpecWeave ↔ Code)
 - 4-terminal layout diagram
 - Feature cards animation
@@ -2024,13 +2291,14 @@ THE SOLUTION:
 • 🏢 ADO HIERARCHY INTELLIGENCE: Auto-detect SAFe, Agile, Scrum, CMMI
 • ⏸️ PAUSE/RESUME: Long-running jobs with checkpoints
 
-7 REAL DEMOS:
+8 REAL DEMOS:
 • 🆕 Greenfield: Build from scratch
 • 🌍 Translation: Multi-language in one command
 • 🏚️ Brownfield: Living Docs Builder (auto-generate docs!)
 • 🐙 GitHub: Bidirectional sync with pull
 • 📋 JIRA: Enterprise epic/story integration
 • 🔷 Azure DevOps: SAFe hierarchy detection
+• 🔄 **External Increments: Work starts in ADO/GitHub/JIRA, implement in SpecWeave (NEW!)**
 • 📊 Background Jobs: Monitor, pause, resume
 
 BONUS:
@@ -2068,10 +2336,11 @@ TIMESTAMPS:
 53:30 - DEMO: GitHub Sync with Bidirectional Pull (NEW!)
 57:30 - DEMO: JIRA Sync
 60:30 - DEMO: Azure DevOps with Hierarchy Intelligence (NEW!)
-64:30 - Background Jobs Monitoring (NEW!)
-66:30 - Works with ANY AI (AGENT.md)
-68:30 - Academy & Resources
-70:00 - This was HUGE (Outro)
+64:30 - **DEMO: External Increments — ADO/GitHub/JIRA → SpecWeave (NEW!)**
+68:00 - Background Jobs Monitoring (NEW!)
+70:00 - Works with ANY AI (AGENT.md)
+72:00 - Academy & Resources
+73:30 - This was HUGE (Outro)
 
 Free. Open Source. No catch.
 
@@ -2130,7 +2399,16 @@ Add to settings.json:
     "zsh": {"path": "zsh", "args": ["-i", "-c", "claude && exec zsh"]}
 }
 
-# Skip Permissions (~/.zshrc)
+# Skip Permissions (VS Code Extension - RECOMMENDED!)
+# Add to settings.json:
+{
+  "claudeCode.allowDangerouslySkipPermissions": true,
+  "claudeCode.initialPermissionMode": "bypassPermissions"
+}
+
+# If VS Code hangs, see: https://github.com/anthropics/claude-code/issues/12604
+
+# Alternative: Terminal (~/.zshrc)
 function claude() {
     command claude --dangerously-skip-permissions "$@"
 }

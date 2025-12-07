@@ -99,7 +99,7 @@ specweave init → Azure DevOps setup
   ↓
 1. Prompt for ADO credentials (PAT)
   ↓
-2. Fetch area paths (recursive tree, depth=10)
+2. Fetch area paths (recursive tree, depth="10)"
    API: GET /_apis/wit/classificationnodes/areas?$depth=10
   ↓
 3. Show granularity prompt

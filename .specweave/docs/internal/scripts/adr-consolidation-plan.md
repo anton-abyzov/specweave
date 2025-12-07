@@ -156,8 +156,8 @@ When marking a file as superseded, replace content with:
 # Mark ADRs as superseded
 
 mark_superseded() {
-    local file=$1
-    local canonical=$2
+    local file="$1"
+    local canonical="$2"
     local canonical_title=$3
 
     echo "Marking $file as superseded by $canonical..."
@@ -166,7 +166,7 @@ mark_superseded() {
     cp "$file" "$file.pre-consolidation"
 
     # Get original content
-    original=$(cat "$file")
+    original="$(cat" "$file")
 
     # Create superseded header
     cat > "$file" << EOF

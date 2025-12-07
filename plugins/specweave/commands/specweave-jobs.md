@@ -1,7 +1,7 @@
 ---
 name: specweave:jobs
-description: Monitor background jobs (repo cloning, issue import). Shows progress, allows pause/resume/kill.
-usage: /specweave:jobs [--active|--all|--id <job-id>] [--resume <job-id>] [--kill <job-id>] [--follow <job-id>] [--logs <job-id>]
+description: Show current work status (active increments, progress) and background jobs (imports, cloning). Even with no jobs, shows increment summary and helpful context.
+usage: /specweave:jobs [--all] [--id <job-id>] [--resume <job-id>] [--kill <job-id>] [--follow <job-id>] [--logs <job-id>]
 ---
 
 # Background Jobs Monitor

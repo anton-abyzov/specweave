@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://livingspec.io/schemas/v1/user-story.schema.json",
+  "title": "LivingSpec User Story Schema",
+  "description": "JSON Schema for User Story documents with E-suffix support for external items",
+  "type": "object",
+  "required": ["id", "feature", "title", "status"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^US-\\d{3,}E?$",
+      "description": "User Story ID. Format: US-XXX (internal) or US-XXXE (external)"
+    },
+    "feature": {
+      "type": "string",
+      "pattern": "^FS-\\d{3,}E?$",
+      "description": "Parent Feature ID"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "User Story title"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "ready", "in-progress", "completed", "blocked"],
+      "description": "User Story status"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["P0", "P1", "P2", "P3", "P4"],
+      "description": "Priority level"
+    },
+    "origin": {
+      "type": "string",
+      "enum": ["internal", "external"],
+      "description": "Origin of this user story"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["github", "jira", "ado"],
+      "description": "External tool source"
+    },
+    "external_id": {
+      "type": "string",
+      "description": "ID in the external tool (e.g., #123 for GitHub)"
+    },
+    "external_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to the item in external tool"
+    }
+  },
+  "if": {
+    "properties": {
+      "id": { "pattern": "E$" }
+    }
+  },
+  "then": {
+    "required": ["origin", "source", "external_id"],
+    "properties": {
+      "origin": { "const": "external" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "feature": { "pattern": "E$" }
+        },
+        "required": ["feature"]
+      },
+      "then": {
+        "properties": {
+          "id": { "pattern": "E$" }
+        }
+      }
+    }
+  ]
+}

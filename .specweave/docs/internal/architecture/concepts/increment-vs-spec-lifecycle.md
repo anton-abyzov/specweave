@@ -202,7 +202,7 @@ function getSpecStatus(specId: string): Status {
 // During sync, external tool status takes precedence
 function resolveStatusConflict(local: Status, external: Status): Status {
   if (local !== external) {
-    console.log(`Conflict: Local=${local}, External=${external}`);
+    console.log(`Conflict: Local="${local}," External="${external}`);"
     console.log(`Resolution: EXTERNAL WINS - ${external}`);
     return external; // ALWAYS return external
   }

@@ -15,7 +15,7 @@ created: 2025-12-02
 
 ## Acceptance Criteria
 
-- [x] **AC-US4-01**: Tier-based sampling: small=all, medium=5/dir, large=3/dir, massive=1/dir
+- [x] **AC-US4-01**: Tier-based sampling: small="all," medium="5/dir," large="3/dir," massive="1/dir"
 - [x] **AC-US4-02**: Priority files always read regardless of tier (index.*, main.*, *.config.*, types.*)
 - [x] **AC-US4-03**: Skip patterns exclude node_modules, dist, build, tests, minified files
 - [x] **AC-US4-04**: Representative file selection uses heuristics (size, imports, exports, name match)

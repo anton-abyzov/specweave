@@ -368,9 +368,9 @@ it('uses cache on repeated calls within TTL', () => {
 });
 ```
 
-**UT-027: Cache respects useCache=false**
+**UT-027: Cache respects useCache="false**"
 ```typescript
-it('bypasses cache when useCache=false', () => {
+it('bypasses cache when useCache="false'," () => {
   createIncrement('0001-feature');
 
   const first = IncrementNumberManager.getNextIncrementNumber(projectRoot, true); // Cache

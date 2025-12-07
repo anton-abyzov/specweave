@@ -1,0 +1,68 @@
+%%{ init: { 'theme': 'base' } }%%
+flowchart TD
+    subgraph External["External Tools"]
+        GH["GitHub Issues"]
+        JIRA["JIRA Epics/Stories"]
+        ADO["ADO Work Items"]
+    end
+
+    subgraph Import["Import Process"]
+        DETECT["Detect External Item"]
+        ASSIGN["Assign E-Suffix"]
+        VALIDATE["Validate ID Pattern"]
+        PROPAGATE["Propagate to Children"]
+    end
+
+    subgraph LivingSpec["LivingSpec E-Suffix IDs"]
+        EP["EP-001E<br/>Epic"]
+        FS["FS-042E<br/>Feature"]
+        US["US-001E<br/>User Story"]
+        AC["AC-US1E-01E<br/>Acceptance Criteria"]
+        T["T-001E<br/>Task"]
+    end
+
+    subgraph Validation["Validation Rules"]
+        V1["Pattern: *-XXXE"]
+        V2["Parent E → Children E"]
+        V3["E-suffix immutable"]
+        V4["Origin tracking required"]
+    end
+
+    subgraph Internal["Internal Items (No E)"]
+        EP_INT["EP-001<br/>Epic"]
+        FS_INT["FS-042<br/>Feature"]
+        US_INT["US-001<br/>User Story"]
+        AC_INT["AC-US1-01<br/>Acceptance Criteria"]
+        T_INT["T-001<br/>Task"]
+    end
+
+    GH --> DETECT
+    JIRA --> DETECT
+    ADO --> DETECT
+
+    DETECT --> ASSIGN
+    ASSIGN --> VALIDATE
+    VALIDATE --> PROPAGATE
+
+    PROPAGATE --> EP
+    EP --> FS
+    FS --> US
+    US --> AC
+    US --> T
+
+    VALIDATE --> V1
+    VALIDATE --> V2
+    VALIDATE --> V3
+    VALIDATE --> V4
+
+    classDef external fill:#ff9800,stroke:#e65100,color:#000
+    classDef import fill:#2196f3,stroke:#1565c0,color:#fff
+    classDef esuffix fill:#4caf50,stroke:#2e7d32,color:#fff
+    classDef internal fill:#9e9e9e,stroke:#616161,color:#fff
+    classDef validation fill:#9c27b0,stroke:#6a1b9a,color:#fff
+
+    class GH,JIRA,ADO external
+    class DETECT,ASSIGN,VALIDATE,PROPAGATE import
+    class EP,FS,US,AC,T esuffix
+    class EP_INT,FS_INT,US_INT,AC_INT,T_INT internal
+    class V1,V2,V3,V4 validation

@@ -175,7 +175,7 @@ Prevent hook spam with debouncing:
 DEBOUNCE_SECONDS=5
 TIMESTAMP_FILE=".specweave/state/.hook-timestamp"
 LAST_RUN=$(cat "$TIMESTAMP_FILE" 2>/dev/null || echo 0)
-NOW=$(date +%s)
+NOW="$(date" +%s)
 if [[ $((NOW - LAST_RUN)) -lt $DEBOUNCE_SECONDS ]]; then
   exit 0
 fi

@@ -871,12 +871,98 @@ This will:
 
 ```
 ✅ Strategic documentation synchronized!
+```
+
+### Step 10: Trigger Living Docs & External Tool Sync (v0.32.2+)
+
+**🔄 CRITICAL: After increment files are created, sync to living docs AND external tools:**
+
+```
+🔄 Syncing increment to living docs...
+📡 Syncing to external tools (GitHub/JIRA/ADO)...
+```
+
+**This step uses the existing sync infrastructure:**
+
+Run `/specweave:sync-specs {increment-id}` to trigger the full sync cascade:
+
+```bash
+/specweave:sync-specs {increment-id}
+```
+
+OR call LivingDocsSync directly in TypeScript implementations:
+
+```typescript
+import { LivingDocsSync } from './src/core/living-docs/living-docs-sync.js';
+
+const sync = new LivingDocsSync(projectRoot);
+const result = await sync.syncIncrement(incrementId, { dryRun: false });
+
+if (result.success) {
+  console.log(`✅ Living docs synced: ${result.featureId}`);
+  console.log(`   Created: ${result.filesCreated.length} files`);
+} else {
+  console.log(`⚠️  Living docs sync had errors (non-blocking): ${result.errors.join(', ')}`);
+}
+```
+
+**What `syncIncrement()` does automatically (Step 7 in the sync flow):**
+
+1. Creates living docs (FS-XXX folder with FEATURE.md and us-*.md files)
+2. Calls `syncToExternalTools()` which detects GitHub/JIRA/ADO from config
+3. Checks permissions (`canUpsertInternalItems`) before creating issues
+4. Creates issues in external tools via existing sync infrastructure:
+   - GitHub: `GitHubFeatureSync.syncFeatureToGitHub(featureId)`
+   - JIRA: `JiraFeatureSync.syncFeatureToJira(featureId)`
+   - ADO: `ADOFeatureSync.syncFeatureToADO(featureId)`
+
+**Expected output:**
+
+```
+🔄 Syncing increment to living docs...
+✅ Living docs synced: FS-118E
+   Created: 4 files (FEATURE.md, us-001.md, us-002.md, us-003.md)
+
+📡 Syncing to external tools: github
+   📋 Permissions: upsert=true, update=true, status=true
+   ✅ Synced to GitHub: 0 updated, 3 created
+```
+
+**Permission-aware sync (v0.32.2+):**
+
+Before calling external sync, `syncToExternalTools()` checks permissions from `.specweave/config.json`:
+
+| Permission | Controls | When Required |
+|------------|----------|---------------|
+| `canUpsertInternalItems` | CREATE new issues for SpecWeave-created items | Creating increment issues |
+| `canUpdateExternalItems` | UPDATE issues imported from external tools | Updating imported items |
+| `canUpdateStatus` | UPDATE issue status (open/closed) | Closing completed items |
+
+If `canUpsertInternalItems: false`:
+```
+⚠️ Skipping external sync - canUpsertInternalItems is disabled in config
+💡 Enable in .specweave/config.json: sync.settings.canUpsertInternalItems: true
+```
+
+**Error handling:**
+
+External tool sync failures are **NON-BLOCKING** (increment creation succeeds):
+
+```
+⚠️ External sync failed: Rate limit exceeded
+💡 Run /specweave:sync-specs {increment-id} to retry
+```
+
+**After Step 10 completes:**
+
+```
+✅ Increment created and synced!
 
 Next steps:
 1. Review the increment plan and strategic docs
-2. Start implementation: /specweave:do 0003
-3. (Optional) Sync to GitHub: /sync-github
-    ```
+2. Start implementation: /specweave:do {increment-id}
+3. Monitor external tool status: /specweave:status {increment-id}
+```
 
 ## Frontmatter Format (spec.md):
 

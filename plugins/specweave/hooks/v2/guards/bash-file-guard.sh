@@ -60,6 +60,24 @@ if echo "$COMMAND" | grep -qE "(cat|tee).*<<-?[[:space:]]*\\\\\"[A-Za-z]+" 2>/de
   PATTERN_NAME="heredoc with quoted delimiter"
 fi
 
+# Pattern 1c: SUPER AGGRESSIVE - block ANY heredoc-like pattern
+# Catches edge cases where content has << followed by word boundary
+# This is the NUCLEAR option - heredocs are NEVER safe in Claude context
+if echo "$COMMAND" | grep -qE "<<[[:space:]]*['\"]?[A-Za-z_]+" 2>/dev/null; then
+  BLOCKED=1
+  PATTERN_NAME="heredoc pattern (any form)"
+fi
+
+# Pattern 1d: Multiline content in the command itself
+# If the command contains literal newlines, it might be a heredoc in disguise
+if echo "$COMMAND" | grep -qE $'\n' 2>/dev/null; then
+  # Commands with newlines are suspicious - check for file redirects
+  if echo "$COMMAND" | grep -qE '>' 2>/dev/null; then
+    BLOCKED=1
+    PATTERN_NAME="multiline command with redirect (heredoc variant)"
+  fi
+fi
+
 # === CAT STDIN REDIRECT (VERY DANGEROUS!) ===
 # Pattern 2: Plain cat with output redirect but no input
 # Matches: cat > file.txt (waits forever for stdin!)

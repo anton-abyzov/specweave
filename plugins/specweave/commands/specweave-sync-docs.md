@@ -597,7 +597,7 @@ Status: {status} → Documentation Updated
 ✅ User Stories: {count} created/updated in .specweave/docs/internal/specs/
 ✅ Acceptance Criteria: Synchronized with completion status from spec.md
 ✅ Tasks: Linked to user stories with completion tracking
-✅ Feature Files: Created/updated in .specweave/docs/internal/specs/_features/
+✅ Feature Files: Created/updated in .specweave/docs/internal/specs/{project}/
 
 ───────────────────────────────────────────────────────
 📊 STRATEGIC DOCS CHANGES (Steps 1-5)

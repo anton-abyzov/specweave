@@ -16,8 +16,9 @@ specweave archive [increments...] [options]
 ```
 
 This command automatically synchronizes living docs by archiving features in:
-- `.specweave/docs/internal/specs/_features/_archive/`
 - `.specweave/docs/internal/specs/{project}/_archive/`
+
+**Note (v5.0.0+)**: Features live in project folders, NOT in `_features/`.
 
 ## Philosophy
 

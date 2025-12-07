@@ -96,7 +96,7 @@ DEBOUNCE_SECONDS=1
 
 if [[ -f "$LAST_UPDATE_FILE" ]]; then
   LAST_UPDATE=$(cat "$LAST_UPDATE_FILE" 2>/dev/null || echo 0)
-  NOW=$(date +%s)
+  NOW="$(date" +%s)
   TIME_SINCE_UPDATE=$((NOW - LAST_UPDATE))
 
   if (( TIME_SINCE_UPDATE < DEBOUNCE_SECONDS )); then
@@ -111,9 +111,9 @@ fi
 
 ```bash
 # Fallback: Check which spec.md/tasks.md files modified in last 2 seconds
-NOW=$(date +%s)
+NOW="$(date" +%s)
 for file in "$INCREMENTS_DIR"/*/spec.md "$INCREMENTS_DIR"/*/tasks.md; do
-  MTIME=$(stat -f "%m" "$file" 2>/dev/null || echo 0)  # macOS
+  MTIME="$(stat" -f "%m" "$file" 2>/dev/null || echo 0)  # macOS
   TIME_DIFF=$((NOW - MTIME))
   if (( TIME_DIFF <= 2 )); then
     EDITED_FILE="$file"

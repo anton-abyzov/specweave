@@ -374,7 +374,7 @@ if (shouldSuggestLivingDocs) {
   console.log('  ✅ Complete requirements in one place');
   console.log('  ✅ Increment specs reference it (avoid duplication)');
   console.log('');
-  console.log('Location: .specweave/docs/internal/specs/_features/FS-####/FEATURE.md');
+  console.log('Location: .specweave/docs/internal/specs/{project}/FS-####/FEATURE.md');
   console.log('⚠️  CRITICAL: Living docs created via /specweave:sync-docs update!');
   console.log('');
   console.log('💡 See FAQ: https://spec-weave.com/docs/faq#do-i-need-both-for-every-feature');
@@ -873,16 +873,19 @@ The PM Agent acts as your AI Product Manager, helping you:
    - **From config**: `multiProject.activeProject` field
    - **Fallback**: Use `default` project
 
-3. **Use CORRECT three-layer structure** (v0.18.0+):
-   - ✅ **CORRECT**: `.specweave/docs/internal/specs/_features/FS-{number}/FEATURE.md` (cross-project)
-   - ✅ **CORRECT**: `.specweave/docs/internal/specs/{project}/FS-{number}/us-*.md` (project-specific)
+3. **Use CORRECT project-based structure** (v5.0.0+ - NO _features folder!):
+   - ✅ **CORRECT**: `.specweave/docs/internal/specs/{project}/FS-{number}/FEATURE.md`
+   - ✅ **CORRECT**: `.specweave/docs/internal/specs/{project}/FS-{number}/us-*.md`
+   - ❌ **WRONG**: `.specweave/docs/internal/specs/_features/FS-{number}/...` (OBSOLETE!)
    - ❌ **WRONG**: `.specweave/docs/internal/specs/{project}/spec-{number}-{name}.md` (OLD v0.17.x)
 
 **Examples**:
-- Feature overview: `.specweave/docs/internal/specs/_features/FS-001/FEATURE.md`
+- Feature overview: `.specweave/docs/internal/specs/specweave/FS-001/FEATURE.md`
 - Backend user story: `.specweave/docs/internal/specs/backend/FS-002/us-001-api-auth.md`
 - Frontend user story: `.specweave/docs/internal/specs/frontend/FS-003/us-001-dark-mode.md`
-- Cross-project feature: `.specweave/docs/internal/specs/_features/FS-004/FEATURE.md`
+- Single-project: `.specweave/docs/internal/specs/my-project/FS-004/FEATURE.md`
+
+**⚠️ CRITICAL (v5.0.0+)**: The `_features/` folder is OBSOLETE! Features ALWAYS go in `{project}/FS-XXX/`.
 
 **CRITICAL**: Living docs are created via `/specweave:sync-docs update` - NOT manually created!
 
@@ -1094,7 +1097,7 @@ High-level business context: [Strategy Overview](../../docs/internal/strategy/{m
 ```markdown
 # Feature: [Name]
 
-**Complete Requirements**: See [FS-{number}](../../docs/internal/specs/_features/FS-{number}/FEATURE.md)
+**Complete Requirements**: See [FS-{number}](../../docs/internal/specs/{project}/FS-{number}/FEATURE.md)
 
 **Quick Summary**:
 - US-001: View current weather

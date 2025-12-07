@@ -61,38 +61,112 @@ escape_json() {
   echo "$input" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed 's/\\n$//'
 }
 
-# /specweave:jobs → Execute jobs.js
+# /specweave:jobs → Execute read-jobs.sh (pure bash, ~2ms)
 if echo "$PROMPT" | grep -qE "^/specweave:jobs($| )"; then
-  if [[ -f "$SCRIPTS_DIR/jobs.js" ]] && command -v node >/dev/null 2>&1; then
-    # Extract arguments after command
-    ARGS=$(echo "$PROMPT" | sed 's|^/specweave:jobs\s*||')
+  ARGS=$(echo "$PROMPT" | sed 's|^/specweave:jobs\s*||')
+  if [[ -f "$SCRIPTS_DIR/read-jobs.sh" ]]; then
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-jobs.sh" $ARGS 2>&1)
+  elif [[ -f "$SCRIPTS_DIR/jobs.js" ]] && command -v node >/dev/null 2>&1; then
     OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/jobs.js" $ARGS 2>&1)
-    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-    printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
-    exit 0
+  else
+    OUTPUT="❌ No jobs script available"
   fi
-  # Fallback: let LLM handle if script/node not available
+  OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+  printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+  exit 0
 fi
 
-# /specweave:progress → Execute progress.js
+# /specweave:progress → Execute read-progress.sh (pure bash, ~30ms)
 if echo "$PROMPT" | grep -qE "^/specweave:progress($| )"; then
-  if [[ -f "$SCRIPTS_DIR/progress.js" ]] && command -v node >/dev/null 2>&1; then
-    ARGS=$(echo "$PROMPT" | sed 's|^/specweave:progress\s*||')
+  ARGS=$(echo "$PROMPT" | sed 's|^/specweave:progress\s*||')
+  if [[ -f "$SCRIPTS_DIR/read-progress.sh" ]]; then
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-progress.sh" $ARGS 2>&1)
+  elif [[ -f "$SCRIPTS_DIR/progress.js" ]] && command -v node >/dev/null 2>&1; then
     OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/progress.js" $ARGS 2>&1)
-    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-    printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
-    exit 0
+  else
+    OUTPUT="❌ No progress script available"
   fi
+  OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+  printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+  exit 0
 fi
 
-# /specweave:status → Execute status.js
+# /specweave:status → Execute read-status.sh (pure bash, ~150ms)
 if echo "$PROMPT" | grep -qE "^/specweave:status($| )"; then
-  if [[ -f "$SCRIPTS_DIR/status.js" ]] && command -v node >/dev/null 2>&1; then
-    ARGS=$(echo "$PROMPT" | sed 's|^/specweave:status\s*||')
+  ARGS=$(echo "$PROMPT" | sed 's|^/specweave:status\s*||')
+  if [[ -f "$SCRIPTS_DIR/read-status.sh" ]]; then
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-status.sh" $ARGS 2>&1)
+  elif [[ -f "$SCRIPTS_DIR/status.js" ]] && command -v node >/dev/null 2>&1; then
     OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/status.js" $ARGS 2>&1)
-    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-    printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
-    exit 0
+  else
+    OUTPUT="❌ No status script available"
+  fi
+  OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+  printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+  exit 0
+fi
+
+# /specweave:workflow → Execute read-workflow.sh (pure bash, ~100ms)
+if echo "$PROMPT" | grep -qE "^/specweave:workflow($| )"; then
+  ARGS=$(echo "$PROMPT" | sed 's|^/specweave:workflow\s*||')
+  if [[ -f "$SCRIPTS_DIR/read-workflow.sh" ]]; then
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-workflow.sh" $ARGS 2>&1)
+  else
+    OUTPUT="❌ No workflow script available"
+  fi
+  OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+  printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+  exit 0
+fi
+
+# /specweave:costs → Execute read-costs.sh (pure bash, ~50ms)
+if echo "$PROMPT" | grep -qE "^/specweave:costs($| )"; then
+  ARGS=$(echo "$PROMPT" | sed 's|^/specweave:costs\s*||')
+  if [[ -f "$SCRIPTS_DIR/read-costs.sh" ]]; then
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-costs.sh" $ARGS 2>&1)
+  else
+    OUTPUT="❌ No costs script available"
+  fi
+  OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+  printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+  exit 0
+fi
+
+# ==============================================================================
+# TASK COUNT GUARD: Block /specweave:do for oversized increments (v0.32.2+)
+# ==============================================================================
+# >8 tasks = context explosion = CRASH (per CLAUDE.md)
+MAX_TASKS=8
+
+if echo "$PROMPT" | grep -qE "^/specweave:do($| )"; then
+  # Extract increment ID from prompt
+  DO_INCREMENT_ID=$(echo "$PROMPT" | grep -oE "[0-9]{4}[a-zA-Z0-9-]*" | head -1)
+
+  # If no ID provided, find active increment
+  if [[ -z "$DO_INCREMENT_ID" ]]; then
+    for meta in "$SPECWEAVE_DIR/increments"/*/metadata.json; do
+      [[ -f "$meta" ]] || continue
+      if command -v jq >/dev/null 2>&1; then
+        status=$(jq -r '.status // "unknown"' "$meta" 2>/dev/null)
+      else
+        status=$(grep -oP '"status"\s*:\s*"\K[^"]*' "$meta" 2>/dev/null || echo "unknown")
+      fi
+      if [[ "$status" == "active" || "$status" == "in-progress" ]]; then
+        DO_INCREMENT_ID=$(basename "$(dirname "$meta")")
+        break
+      fi
+    done
+  fi
+
+  if [[ -n "$DO_INCREMENT_ID" ]]; then
+    TASKS_FILE="$SPECWEAVE_DIR/increments/$DO_INCREMENT_ID/tasks.md"
+    if [[ -f "$TASKS_FILE" ]]; then
+      TASK_COUNT=$(grep -c "^### T-" "$TASKS_FILE" 2>/dev/null || echo "0")
+      if [[ "$TASK_COUNT" -gt "$MAX_TASKS" ]]; then
+        printf '{"decision":"block","reason":"❌ TASK COUNT EXCEEDS LIMIT\\n\\nIncrement %s has %s tasks (maximum: %s)\\n\\n>8 tasks = context explosion = CRASH\\n\\n💡 REQUIRED: Split into smaller increments:\\n\\n  Pattern: %s/ → Split into:\\n    • %s-part1/ (T-001 to T-004)\\n    • Next increment (T-005 to T-008)\\n    • Next increment (T-009+)\\n\\n⚠️ DO NOT PROCEED until tasks.md has ≤8 tasks!"}\n' "$DO_INCREMENT_ID" "$TASK_COUNT" "$MAX_TASKS" "$DO_INCREMENT_ID" "$DO_INCREMENT_ID"
+        exit 0
+      fi
+    fi
   fi
 fi
 

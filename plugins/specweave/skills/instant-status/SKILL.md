@@ -11,9 +11,9 @@ These commands need **NO LLM reasoning** - execute scripts directly for instant 
 
 | Command | Script | Purpose |
 |---------|--------|---------|
-| `/specweave:status` | `node plugins/specweave/scripts/status.js` | Increment status overview |
-| `/specweave:progress` | `node plugins/specweave/scripts/progress.js` | Task completion progress |
-| `/specweave:jobs` | `node plugins/specweave/scripts/jobs.js` | Background job status |
+| `/specweave:status` | `bash plugins/specweave/scripts/read-status.sh` | Increment status overview |
+| `/specweave:progress` | `bash plugins/specweave/scripts/read-progress.sh` | Task completion progress |
+| `/specweave:jobs` | `bash plugins/specweave/scripts/read-jobs.sh` | Background job status |
 
 ## CRITICAL: Direct Execution Required
 
@@ -21,7 +21,7 @@ When user requests these commands:
 
 1. **DO NOT** process as natural language
 2. **DO NOT** expand slash command markdown
-3. **RUN** the script via Bash tool
+3. **RUN** the bash script via Bash tool (NOT node!)
 4. **SHOW** output directly to user
 
 ### Example Execution
@@ -29,15 +29,15 @@ When user requests these commands:
 ```bash
 # User types: /specweave:status
 # You execute:
-node plugins/specweave/scripts/status.js
+bash plugins/specweave/scripts/read-status.sh
 
 # User types: /specweave:progress
 # You execute:
-node plugins/specweave/scripts/progress.js
+bash plugins/specweave/scripts/read-progress.sh
 
 # User types: /specweave:jobs
 # You execute:
-node plugins/specweave/scripts/jobs.js
+bash plugins/specweave/scripts/read-jobs.sh
 ```
 
 ## Three Execution Paths
@@ -59,8 +59,8 @@ specweave jobs      # Background jobs
 ## Script Arguments
 
 ```bash
-node plugins/specweave/scripts/status.js 0045      # Specific increment
-node plugins/specweave/scripts/jobs.js --all       # All jobs
+bash plugins/specweave/scripts/read-status.sh 0045    # Specific increment
+bash plugins/specweave/scripts/read-jobs.sh --all     # All jobs
 ```
 
 ## Why This Matters

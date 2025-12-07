@@ -700,6 +700,60 @@ const metadata = {
 
 **DO NOT invoke Task() tool to spawn agents from this skill!**
 
+### STEP 9: Trigger Living Docs & External Tool Sync (v0.32.2+)
+
+**🔄 CRITICAL: After increment files are created, trigger sync to living docs AND external tools!**
+
+This step uses the existing sync infrastructure to:
+1. Create living docs (FS-XXX folder with FEATURE.md and us-*.md files)
+2. Check permissions (`canUpsertInternalItems`) from `.specweave/config.json`
+3. Sync to external tools (GitHub/JIRA/ADO) if configured and permitted
+
+**Run the sync-specs command:**
+
+```bash
+/specweave:sync-specs {increment-id}
+```
+
+**Expected output:**
+
+```
+🔄 Syncing increment to living docs...
+✅ Living docs synced: FS-021
+   Created: 4 files (FEATURE.md, us-001.md, us-002.md, us-003.md)
+
+📡 Syncing to external tools: github
+   📋 Permissions: upsert=true, update=true, status=true
+   ✅ Synced to GitHub: 0 updated, 3 created
+```
+
+**Permission handling (v0.32.2+):**
+
+If `canUpsertInternalItems: false` in config:
+```
+⚠️ Skipping external sync - canUpsertInternalItems is disabled
+💡 Enable in .specweave/config.json: sync.settings.canUpsertInternalItems: true
+```
+
+**Error handling:**
+
+External tool sync failures are NON-BLOCKING:
+```
+⚠️ External sync failed: Rate limit exceeded
+💡 Run /specweave:sync-specs {increment-id} to retry
+```
+
+**Output after sync:**
+
+```
+✅ Increment created and synced!
+
+Next steps:
+1. Review the increment plan and docs
+2. Start implementation: /specweave:do {increment-id}
+3. Monitor status: /specweave:status {increment-id}
+```
+
 ---
 
 ## Model Selection for Tasks

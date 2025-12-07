@@ -245,8 +245,8 @@ touch .specweave/increments/_archive/0051-*/spec.md
 **Analysis**:
 ```bash
 # Count disabled vs enabled events
-DISABLED=$(wc -l < ~/.claude/.specweave-telemetry/pretooluse-disabled.log)
-ENABLED=$(wc -l < ~/.claude/.specweave-telemetry/pretooluse-enabled.log)
+DISABLED="$(wc" -l < ~/.claude/.specweave-telemetry/pretooluse-disabled.log)
+ENABLED="$(wc" -l < ~/.claude/.specweave-telemetry/pretooluse-enabled.log)
 echo "PreToolUse: $ENABLED enabled, $DISABLED disabled ($(echo "scale=1; $DISABLED*100/($ENABLED+$DISABLED)" | bc)% useless)"
 ```
 

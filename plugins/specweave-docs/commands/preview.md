@@ -1,11 +1,13 @@
 ---
 name: specweave-docs:preview
-description: Launch Docusaurus documentation server for internal living docs. Auto-setup on first run. Port 3015.
+description: Launch Docusaurus documentation server for internal living docs. Validates docs first, auto-fixes issues, auto-setup on first run. Port 3015.
 ---
 
 # Documentation Preview Command
 
 Launch Docusaurus development server with hot reload, Mermaid diagrams, and auto-generated sidebar.
+
+**CRITICAL**: Runs pre-flight validation to catch issues BEFORE starting the server.
 
 ## Your Task
 
@@ -21,6 +23,46 @@ ls -la .specweave/docs/internal/
 # "No internal documentation found at .specweave/docs/internal/.
 #  Run 'specweave init' first or create the folder structure."
 ```
+
+### Step 1.5: CRITICAL - Run Pre-Flight Validation
+
+**ALWAYS run validation BEFORE starting the server!**
+
+```typescript
+import { DocsValidator } from '../../../src/utils/docs-validator.js';
+
+const validator = new DocsValidator({
+  docsPath: '.specweave/docs/internal',
+  autoFix: true,  // Auto-fix common issues
+});
+
+console.log('\n🔍 Running pre-flight validation...\n');
+const result = await validator.validate();
+
+// Show summary
+console.log(DocsValidator.formatResult(result));
+
+// If errors remain after auto-fix, STOP and report
+if (!result.valid) {
+  console.log('\n❌ Documentation has errors that must be fixed before preview.');
+  console.log('   Fix the issues above, then try again.\n');
+  process.exit(1);
+}
+
+console.log('\n✅ Validation passed! Starting server...\n');
+```
+
+**What this catches:**
+- YAML frontmatter errors (unquoted colons, tabs)
+- MDX compatibility issues (unquoted attributes, unclosed tags)
+- Duplicate routes
+- Broken internal links
+
+**Auto-fixes applied:**
+- Wraps YAML values with colons in quotes
+- Quotes HTML attributes
+- Adds closing slashes to void elements (`<br>` → `<br />`)
+- Converts tabs to spaces in YAML
 
 ### Step 2: Check for Cached Installation
 

@@ -622,6 +622,102 @@ const syncEnabled = config.hooks?.post_increment_done?.sync_to_github_project ==
 ℹ️ No GitHub issue linked to this increment
 ```
 
+#### B.2) Auto-Close External-Origin GitHub Issue (NEW - v0.32.2+)
+
+**For increments with E-suffix (external origin), auto-close the source issue:**
+
+**This is different from section B** which handles issues created BY SpecWeave. Section B.2 handles issues that SpecWeave increments were CREATED FROM (imported from GitHub).
+
+**Check metadata** (`.specweave/increments/0118E-name/metadata.json`):
+```json
+{
+  "origin": "external",
+  "external_ref": "github#anton-abyzov/specweave#786"
+}
+```
+
+**If external_ref exists AND starts with "github#"**:
+
+1. **Parse the external_ref format**:
+   ```typescript
+   const externalRef = metadata.external_ref;
+
+   if (externalRef && externalRef.startsWith('github#')) {
+     // Parse: github#owner/repo#issue_number
+     const match = externalRef.match(/^github#([^#]+)#(\d+)$/);
+     if (match) {
+       const [, ownerRepo, issueNumber] = match;
+       // ownerRepo = "anton-abyzov/specweave"
+       // issueNumber = "786"
+     }
+   }
+   ```
+
+2. **Check canUpdateStatus permission**:
+   ```typescript
+   const configPath = path.join(projectRoot, '.specweave/config.json');
+   const config = await readJson(configPath);
+
+   if (!config.sync?.settings?.canUpdateStatus) {
+     console.log('⚠️ Skipping external issue closure - canUpdateStatus is disabled');
+     console.log('💡 Enable in .specweave/config.json: sync.settings.canUpdateStatus: true');
+     return;
+   }
+   ```
+
+3. **Close issue via gh CLI with completion summary**:
+   ```bash
+   gh issue close 786 -R anton-abyzov/specweave --comment "$(cat <<'EOF'
+   ✅ **Fixed in SpecWeave increment 0118E**
+
+   ## PM Validation Passed
+   - ✅ Gate 1: All tasks completed
+   - ✅ Gate 2: Tests passing
+   - ✅ Gate 3: Documentation updated
+
+   ## Deliverables
+   [Summary of key deliverables from increment]
+
+   ## Duration
+   Started: 2025-12-07
+   Completed: 2025-12-07
+   Duration: 1 day
+
+   🔗 Closed automatically by `/specweave:done`
+   EOF
+   )"
+   ```
+
+4. **Handle errors gracefully**:
+   - If `gh` CLI not installed: `⚠️ GitHub CLI not installed. Install: brew install gh`
+   - If `gh` not authenticated: `⚠️ GitHub auth failed. Run: gh auth login`
+   - If issue already closed: `ℹ️ Issue #786 already closed`
+   - If rate limited: `⚠️ GitHub rate limit. Retry later or close manually: gh issue close 786`
+
+**Expected output (success)**:
+```
+🐙 External Issue Closure:
+   ✓ Detected external_ref: github#anton-abyzov/specweave#786
+   ✓ Permission check passed (canUpdateStatus: true)
+   ✓ Closing GitHub issue #786...
+   ✓ Issue #786 closed with completion summary
+```
+
+**Expected output (permission denied)**:
+```
+🐙 External Issue Closure:
+   ✓ Detected external_ref: github#anton-abyzov/specweave#786
+   ⚠️ Skipping - canUpdateStatus is disabled in config
+   💡 Enable in .specweave/config.json to auto-close external issues
+```
+
+**Expected output (no external ref)**:
+```
+ℹ️ No external_ref in metadata (not an external-origin increment)
+```
+
+**IMPORTANT**: This section runs ONLY for external-origin increments (E-suffix). Regular increments (without E-suffix) skip this section entirely.
+
 #### C) Sync Status to External Tools (NEW in Phase 2)
 
 **CRITICAL**: After increment completes, automatically sync status to all linked external tools (GitHub, JIRA, Azure DevOps).

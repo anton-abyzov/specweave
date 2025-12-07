@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://livingspec.io/schemas/v1/manifest.schema.json",
+  "title": "LivingSpec Manifest Schema",
+  "description": "JSON Schema for the project manifest (manifest.yaml)",
+  "type": "object",
+  "required": ["name", "version"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Project name"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "LivingSpec version used (SemVer format)"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Project description"
+    },
+    "repository": {
+      "type": "string",
+      "format": "uri",
+      "description": "Project repository URL"
+    },
+    "documentation_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Documentation site URL"
+    },
+    "sync": {
+      "type": "object",
+      "description": "Sync configuration",
+      "properties": {
+        "e_suffix_for_imports": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enforce E-suffix for all imported items (recommended: true)"
+        },
+        "conflict_resolution": {
+          "type": "string",
+          "enum": ["external-wins", "internal-wins", "manual"],
+          "default": "external-wins",
+          "description": "How to resolve sync conflicts"
+        },
+        "providers": {
+          "type": "object",
+          "description": "Sync provider configurations",
+          "properties": {
+            "github": {
+              "$ref": "#/definitions/syncProvider"
+            },
+            "jira": {
+              "$ref": "#/definitions/syncProvider"
+            },
+            "ado": {
+              "$ref": "#/definitions/syncProvider"
+            }
+          }
+        }
+      }
+    },
+    "ai_context": {
+      "type": "object",
+      "description": "AI/LLM context configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "summary_max_length": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 500,
+          "default": 100
+        }
+      }
+    }
+  },
+  "definitions": {
+    "syncProvider": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "sync_direction": {
+          "type": "string",
+          "enum": ["import-only", "export-only", "bidirectional"],
+          "default": "bidirectional"
+        },
+        "project": {
+          "type": "string",
+          "description": "Project/repo identifier in the external tool"
+        },
+        "e_suffix_for_imports": {
+          "type": "boolean",
+          "default": true,
+          "description": "Add E-suffix to imported items"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "0117-instant-dashboard-cache",
+  "title": "Instant Dashboard Cache",
+  "type": "feature",
+  "status": "completed",
+  "completedAt": "2025-12-07T12:00:00.000Z",
+  "priority": "P1",
+  "project": "specweave",
+  "createdAt": "2025-12-07T00:00:00.000Z",
+  "userStories": ["US-001", "US-002", "US-003", "US-004", "US-005"],
+  "tags": ["performance", "cache", "dashboard", "instant-commands", "bash", "jq"],
+  "tasks": {
+    "total": 6,
+    "completed": 6
+  },
+  "acceptanceCriteria": {
+    "total": 18,
+    "satisfied": 18
+  }
+}
