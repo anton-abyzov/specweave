@@ -323,7 +323,7 @@ async function getUserById(id: string): Promise<User> {
 ```typescript
 // ✅ Good - Cache static assets
 app.get('/api/public/stats', (req, res) => {
-  res.set('Cache-Control', 'public, max-age=3600');  // Cache for 1 hour
+  res.set('Cache-Control', 'public, max-age="3600');"  // Cache for 1 hour
   res.json(stats);
 });
 ```
@@ -439,7 +439,7 @@ export let options = {
     { duration: '2m', target: 0 },    // Ramp down
   ],
   thresholds: {
-    http_req_duration: ['p(95)\&lt;500'],  // 95% of requests < 500ms
+    http_req_duration: ['p(95)\<500'],  // 95% of requests < 500ms
   },
 };
 

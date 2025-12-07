@@ -1,0 +1,15 @@
+{
+  "id": "0118E-external-tool-sync-on-increment-start",
+  "status": "completed",
+  "type": "bug",
+  "priority": "P1",
+  "created": "2025-12-07T06:00:00Z",
+  "lastActivity": "2025-12-07T12:15:00Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": "FS-118E",
+  "epic_id": null,
+  "origin": "external",
+  "external_ref": "github#anton-abyzov/specweave#786",
+  "externalLinks": {}
+}

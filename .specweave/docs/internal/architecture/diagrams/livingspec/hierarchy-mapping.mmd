@@ -1,0 +1,72 @@
+%%{ init: { 'theme': 'base' } }%%
+flowchart TB
+    subgraph External["External Tool Hierarchies"]
+        subgraph GitHub_H["GitHub (2-level)"]
+            GH_PROJ["Project/Milestone"]
+            GH_ISSUE["Issue"]
+            GH_PROJ --> GH_ISSUE
+        end
+
+        subgraph JIRA_H["JIRA (3-4 level)"]
+            J_EPIC["Epic"]
+            J_STORY["Story"]
+            J_TASK["Task/Subtask"]
+            J_EPIC --> J_STORY --> J_TASK
+        end
+
+        subgraph ADO_H["ADO SAFe (5-level)"]
+            A_CAP["Capability"]
+            A_EPIC["Epic"]
+            A_FEAT["Feature"]
+            A_STORY["User Story"]
+            A_TASK["Task"]
+            A_CAP --> A_EPIC --> A_FEAT --> A_STORY --> A_TASK
+        end
+    end
+
+    subgraph LivingSpec["LivingSpec Standard (4-level)"]
+        LS_EPIC["EP-XXXE<br/>Epic"]
+        LS_FEAT["FS-XXXE<br/>Feature"]
+        LS_US["US-XXXE<br/>User Story"]
+        LS_AC["AC-*E<br/>Acceptance Criteria"]
+        LS_TASK["T-XXXE<br/>Task"]
+
+        LS_EPIC --> LS_FEAT --> LS_US --> LS_AC
+        LS_US --> LS_TASK
+    end
+
+    subgraph Mapping["Hierarchy Mapping Rules"]
+        M1["epicLevelTypes → EP-XXXE"]
+        M2["featureLevelTypes → FS-XXXE"]
+        M3["userStoryTypes → US-XXXE (FIXED)"]
+        M4["taskTypes → T-XXXE checkbox (FIXED)"]
+    end
+
+    %% GitHub mapping
+    GH_PROJ -.->|"epicLevelTypes"| M1
+    GH_ISSUE -.->|"userStoryTypes"| M3
+
+    %% JIRA mapping
+    J_EPIC -.->|"epicLevelTypes"| M1
+    J_STORY -.->|"featureLevelTypes or userStoryTypes"| M2
+    J_TASK -.->|"taskTypes"| M4
+
+    %% ADO SAFe mapping
+    A_CAP -.->|"epicLevelTypes"| M1
+    A_EPIC -.->|"epicLevelTypes or featureLevelTypes"| M1
+    A_FEAT -.->|"featureLevelTypes"| M2
+    A_STORY -.->|"userStoryTypes"| M3
+    A_TASK -.->|"taskTypes"| M4
+
+    M1 --> LS_EPIC
+    M2 --> LS_FEAT
+    M3 --> LS_US
+    M4 --> LS_TASK
+
+    classDef external fill:#ff9800,stroke:#e65100,color:#000
+    classDef livingspec fill:#4caf50,stroke:#2e7d32,color:#fff
+    classDef mapping fill:#2196f3,stroke:#1565c0,color:#fff
+
+    class GH_PROJ,GH_ISSUE,J_EPIC,J_STORY,J_TASK,A_CAP,A_EPIC,A_FEAT,A_STORY,A_TASK external
+    class LS_EPIC,LS_FEAT,LS_US,LS_AC,LS_TASK livingspec
+    class M1,M2,M3,M4 mapping

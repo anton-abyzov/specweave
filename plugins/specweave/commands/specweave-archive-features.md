@@ -48,22 +48,20 @@ Archive features and epics based on their increment archive status. Features are
 1. All linked features are in _archive folder
 2. Epic is orphaned (no features) and --orphaned is set
 
-### Archive Structure:
+### Archive Structure (v5.0.0+):
 ```
 .specweave/docs/internal/specs/
-├── _features/
-│   ├── FS-023/              # Active feature
+├── {project}/               # e.g., specweave/, backend/, frontend/
+│   ├── FS-023/              # Active feature (FEATURE.md + us-*.md)
 │   └── _archive/
 │       └── FS-001/          # Archived feature
 ├── _epics/
 │   ├── EPIC-2025-Q1/        # Active epic
 │   └── _archive/
 │       └── EPIC-2024-Q4/    # Archived epic
-└── default/
-    ├── FS-023/              # Active project files
-    └── _archive/
-        └── FS-001/          # Archived project files
 ```
+
+**Note**: The `_features/` folder is OBSOLETE (v5.0.0+). Features live in `{project}/FS-XXX/`.
 
 ## Important Notes
 

@@ -15,7 +15,7 @@ created: 2025-12-01
 
 ## Acceptance Criteria
 
-- [x] **AC-US1-01**: Detect increment.created when metadata.json created with status=planning
+- [x] **AC-US1-01**: Detect increment.created when metadata.json created with status="planning"
 - [x] **AC-US1-02**: Detect increment.done when status changes to completed
 - [x] **AC-US1-03**: Detect increment.archived when folder moved to _archive/
 - [x] **AC-US1-04**: Detect increment.reopened when status changes from completed to active

@@ -1,0 +1,36 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#326ce5', 'primaryTextColor': '#fff', 'primaryBorderColor': '#1a4a9e', 'secondaryColor': '#f4f4f4', 'tertiaryColor': '#fafafa' } } }%%
+C4Context
+    title LivingSpec System Context Diagram
+
+    Person(dev, "Developer", "Writes code, creates specs, implements features")
+    Person(pm, "Product Manager", "Defines requirements, creates user stories, tracks progress")
+    Person(architect, "Architect", "Designs systems, creates ADRs, defines structure")
+    Person(devops, "DevOps Engineer", "Manages CI/CD, deployment, monitoring")
+
+    System_Boundary(livingspec, "LivingSpec Standard") {
+        System(specs, "Specification System", "Structured specs with E-suffix for external items")
+        System(sync, "Sync Engine", "Bidirectional sync with external tools")
+        System(docs, "Documentation Site", "Docusaurus-powered living documentation")
+    }
+
+    System_Ext(github, "GitHub", "Issues, PRs, Projects")
+    System_Ext(jira, "JIRA", "Epics, Stories, Tasks")
+    System_Ext(ado, "Azure DevOps", "Work Items, Boards, Repos")
+    System_Ext(confluence, "Confluence", "Legacy wiki documentation")
+    System_Ext(notion, "Notion", "Team knowledge base")
+
+    Rel(dev, specs, "Creates specs, implements tasks")
+    Rel(pm, specs, "Defines requirements, tracks progress")
+    Rel(architect, specs, "Creates ADRs, designs architecture")
+    Rel(devops, docs, "Deploys documentation site")
+
+    Rel(sync, github, "Imports issues (E-suffix), syncs progress")
+    Rel(sync, jira, "Imports epics/stories (E-suffix), syncs status")
+    Rel(sync, ado, "Imports work items (E-suffix), syncs progress")
+    Rel(sync, confluence, "Migrates legacy docs")
+    Rel(sync, notion, "Imports knowledge base")
+
+    Rel(specs, sync, "Triggers sync on changes")
+    Rel(specs, docs, "Generates documentation")
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

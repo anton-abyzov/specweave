@@ -38,7 +38,9 @@ INC_ID=$(echo "$FILE_PATH" | grep -o '[0-9][0-9][0-9][0-9]-[^/]*' | head -1)
 [[ -z "$INC_ID" ]] && exit 0
 
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PLUGIN_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
 DETECTOR_DIR="$HOOK_DIR/detectors"
+SCRIPTS_DIR="$PLUGIN_ROOT/scripts"
 
 # ============================================================================
 # EDA DISPATCHER: Route to detectors based on file type
@@ -51,6 +53,10 @@ case "$FILE_PATH" in
     # Metadata changed -> check for lifecycle transitions
     # Events: increment.created, increment.done, increment.archived, increment.reopened
     bash "$DETECTOR_DIR/lifecycle-detector.sh" "$INC_ID" 2>/dev/null &
+
+    # Update dashboard cache (v0.34.0 - instant status commands)
+    [[ -f "$SCRIPTS_DIR/update-dashboard-cache.sh" ]] && \
+      bash "$SCRIPTS_DIR/update-dashboard-cache.sh" "$INC_ID" metadata 2>/dev/null &
     ;;
 
   */.specweave/increments/*/tasks.md|*/.specweave/increments/*/spec.md)
@@ -61,8 +67,14 @@ case "$FILE_PATH" in
     # Also queue legacy event for backward compatibility
     if [[ "$FILE_PATH" == *tasks.md ]]; then
       bash "$HOOK_DIR/queue/enqueue.sh" "task.updated" "$INC_ID" 2>/dev/null &
+      # Update dashboard cache (v0.34.0 - instant status commands)
+      [[ -f "$SCRIPTS_DIR/update-dashboard-cache.sh" ]] && \
+        bash "$SCRIPTS_DIR/update-dashboard-cache.sh" "$INC_ID" tasks 2>/dev/null &
     else
       bash "$HOOK_DIR/queue/enqueue.sh" "spec.updated" "$INC_ID" 2>/dev/null &
+      # Update dashboard cache (v0.34.0 - instant status commands)
+      [[ -f "$SCRIPTS_DIR/update-dashboard-cache.sh" ]] && \
+        bash "$SCRIPTS_DIR/update-dashboard-cache.sh" "$INC_ID" spec 2>/dev/null &
     fi
     ;;
 

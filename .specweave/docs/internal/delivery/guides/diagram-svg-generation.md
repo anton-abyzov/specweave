@@ -536,7 +536,7 @@ Generated files:
   • .specweave/docs/internal/architecture/diagrams/specweave-workflow-dark.svg (224K)
 
 💡 Tip: Commit both .mmd and .svg files to git
-   Use <img src="path/to/diagram.svg"> in Markdown
+   Use <img src="path/to/diagram.svg" /> in Markdown
 ```
 
 ---

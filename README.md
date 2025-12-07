@@ -217,6 +217,28 @@ As a user, I want to toggle dark mode so that I can reduce eye strain at night.
 
 ---
 
+## When to Use Increments
+
+Not every change needs an increment. **The rule of thumb:**
+
+| Change Type | Use Increment? | Why |
+|-------------|----------------|-----|
+| **Typo fix, version bump** | No | Zero learning, purely mechanical |
+| **Bug fix that taught you something** | **Yes** | Capture the knowledge for future devs |
+| **Any user-facing change** | **Yes** | Track delivery, enable DORA metrics |
+| **Architecture decision** | **Yes** | Needs ADR for future understanding |
+
+**The principle**: *If you'd explain this change to a colleague, document it in an increment.*
+
+Increments capture **knowledge**. Ad-hoc work is **ephemeral**. When teams routinely do meaningful work without increments, they lose:
+- **Traceability** — Why was this decision made?
+- **Knowledge transfer** — How does this system work?
+- **Metrics accuracy** — DORA metrics reflect reality
+
+**Quick check before ad-hoc work**: "Will I remember why I made this change in 6 months?" If no → increment.
+
+---
+
 ## Key Features
 
 ### Works With ANY AI Tool

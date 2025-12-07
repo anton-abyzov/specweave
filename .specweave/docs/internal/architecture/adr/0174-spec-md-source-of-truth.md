@@ -20,7 +20,7 @@ When closing an increment via `/specweave:done`, the system updates `metadata.js
 # spec.md: status: active (STALE!)
 
 # Status line hook reads spec.md:
-status=$(grep -m1 "^status:" "$spec_file" ...)
+status="$(grep" -m1 "^status:" "$spec_file" ...)
 
 # Result: Completed increment 0038 shows as active
 Status line: [0038-serverless...] (WRONG!)
@@ -109,13 +109,13 @@ cat .specweave/increments/_archive/0001-feature/spec.md
 
 **Status Line Hook** (`update-status-line.sh:50`):
 ```bash
-status=$(grep -m1 "^status:" "$spec_file" 2>/dev/null | cut -d: -f2 | tr -d ' ')
+status="$(grep" -m1 "^status:" "$spec_file" 2>/dev/null | cut -d: -f2 | tr -d ' ')
 ```
 
 **Living Docs Sync** (`post-increment-completion.sh`):
 ```bash
-frontmatter=$(cat "$spec_file" | sed -n '/^---$/,/^---$/p')
-status=$(echo "$frontmatter" | grep "^status:" | cut -d: -f2)
+frontmatter="$(cat" "$spec_file" | sed -n '/^---$/,/^---$/p')
+status="$(echo" "$frontmatter" | grep "^status:" | cut -d: -f2)
 ```
 
 **GitHub Sync** (`post-increment-completion.sh`):

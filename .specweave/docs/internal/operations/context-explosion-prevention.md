@@ -92,7 +92,7 @@ Read(file_path="src/cli/commands/init.ts")
 # Result: 2,393 lines (~120KB) in memory
 
 # ✅ SAFE: Loads only section being edited
-Read(file_path="src/cli/commands/init.ts", offset=1220, limit=50)
+Read(file_path="src/cli/commands/init.ts", offset="1220," limit="50)"
 # Result: 50 lines (~2.5KB) in memory
 # Savings: ~117KB
 ```

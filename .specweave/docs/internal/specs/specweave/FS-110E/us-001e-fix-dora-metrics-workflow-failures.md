@@ -5,8 +5,8 @@ feature_id: FS-110E
 origin: external
 external_platform: github
 external_id: GH-#779
-external_url: https://github.com/anton-abyzov/specweave/issues/779
-imported_at: 2025-12-05T19:20:00Z
+external_url: "https://github.com/anton-abyzov/specweave/issues/779"
+imported_at: "2025-12-05T19:20:00Z"
 status: open
 project: specweave
 ---

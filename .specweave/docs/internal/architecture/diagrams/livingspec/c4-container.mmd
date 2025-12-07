@@ -1,0 +1,57 @@
+%%{ init: { 'theme': 'base', 'themeVariables': { 'primaryColor': '#326ce5', 'primaryTextColor': '#fff', 'primaryBorderColor': '#1a4a9e' } } }%%
+C4Container
+    title LivingSpec Container Diagram
+
+    Person(user, "User", "Developer, PM, Architect")
+
+    System_Boundary(livingspec, "LivingSpec System") {
+        Container_Boundary(specs_boundary, "Specs Container") {
+            Container(epics, "Epics", "_epics/EP-XXXE/", "Strategic-level containers for features")
+            Container(features, "Features", "specs/FS-XXXE/", "Feature folders with user stories")
+            Container(stories, "User Stories", "us-xxxe.md", "Detailed requirements with ACs")
+        }
+
+        Container_Boundary(work_boundary, "Work Container") {
+            Container(increments, "Increments", "work/NNNN[E]-name/", "Active work units with tasks")
+            Container(tasks, "Tasks", "tasks.md", "Implementation tasks T-XXXE")
+            Container(metadata, "Metadata", "metadata.json", "Status, progress, sync state")
+        }
+
+        Container_Boundary(arch_boundary, "Architecture Container") {
+            Container(adrs, "ADRs", "architecture/adr/", "Decision records (always internal)")
+            Container(diagrams, "Diagrams", "architecture/diagrams/", "C4, sequence, ERD")
+            Container(modules, "Modules", "architecture/modules/", "Component documentation")
+        }
+
+        Container_Boundary(sync_boundary, "Sync Container") {
+            Container(sync_engine, "Sync Engine", "sync/", "Bidirectional sync logic")
+            Container(id_registry, "ID Registry", "sync/id-registry.json", "External ID → Internal ID mapping")
+            Container(conflict_resolver, "Conflict Resolver", "sync/conflicts/", "Handles sync conflicts")
+        }
+
+        Container_Boundary(docs_boundary, "Documentation Container") {
+            Container(docusaurus, "Docusaurus", "docs-site/", "Primary documentation platform")
+            Container(mkdocs, "MkDocs", "mkdocs/", "Fallback documentation platform")
+        }
+    }
+
+    System_Ext(external, "External Tools", "GitHub, JIRA, ADO")
+
+    Rel(user, epics, "Creates/views strategic items")
+    Rel(user, features, "Creates/views features")
+    Rel(user, stories, "Creates/views requirements")
+    Rel(user, increments, "Works on active items")
+    Rel(user, adrs, "Records decisions")
+
+    Rel(increments, tasks, "Contains implementation tasks")
+    Rel(features, stories, "Contains user stories")
+    Rel(epics, features, "Contains features")
+
+    Rel(sync_engine, external, "Bidirectional sync")
+    Rel(sync_engine, id_registry, "Tracks ID mappings")
+    Rel(sync_engine, conflict_resolver, "Resolves conflicts")
+
+    Rel(specs_boundary, docusaurus, "Generates documentation")
+    Rel(arch_boundary, docusaurus, "Includes architecture docs")
+
+    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="2")

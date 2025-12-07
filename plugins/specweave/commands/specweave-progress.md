@@ -18,12 +18,12 @@ Simple, fast progress check for all active increments.
 ```bash
 #!/bin/bash
 #
-# Enhanced progress tracking with User Story grouping (v0.23.0+)
-# Uses TypeScript script for accurate task parsing and US-level progress
+# Instant progress tracking (v0.32.0+)
+# Uses pre-computed dashboard cache for <10ms response time
 #
 
-# Call TypeScript progress script
-npx tsx "$(dirname "${BASH_SOURCE[0]}")"/../../../scripts/show-progress.ts "$@"
+# Call instant bash script (reads from cache, no Node.js needed)
+bash "$(dirname "${BASH_SOURCE[0]}")"/../scripts/read-progress.sh "$@"
 ```
 
 ## Example Output

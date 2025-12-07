@@ -111,6 +111,24 @@ const config = detectStructureLevel(projectRoot);
 
 **Pre-tool-use hook `spec-project-validator.sh` BLOCKS spec.md without required fields (2-level).**
 
+### 2d. NEVER Create Files in _features/ Folder (OBSOLETE v5.0.0+)
+
+**The `_features/` folder is OBSOLETE!** Features MUST live in project folders:
+
+```
+❌ FORBIDDEN (Bug pattern from 2025-12-06):
+.specweave/docs/internal/specs/_features/FS-116/FEATURE.md
+
+✅ CORRECT:
+.specweave/docs/internal/specs/{project}/FS-116/FEATURE.md
+```
+
+**Where `{project}` comes from:**
+1. spec.md YAML frontmatter `project:` field (MANDATORY)
+2. Example: `project: specweave` → `.specweave/docs/internal/specs/specweave/FS-116/`
+
+**Pre-tool-use hook `features-folder-guard.sh` BLOCKS writes to `_features/` (v0.33.0+).**
+
 ### 3. Protected Directories
 
 **NEVER delete**: `.specweave/docs/`, `.specweave/increments/`
@@ -221,6 +239,9 @@ Edit({ file_path: "/path/to/file.md", old_string: "old", new_string: "new" })
 | Edit file | `Edit` | `Bash sed/awk` |
 | Append to file | `Read` + `Write` | `Bash echo >>` |
 | Create directory | `Bash mkdir -p` | ✅ OK |
+
+**Pre-tool-use hook `bash-file-guard.sh` BLOCKS dangerous Bash file patterns (v0.32.1+).**
+This hook automatically blocks: heredoc, echo >, printf >, cat > patterns.
 
 **If session gets stuck ("Marinating..." / "Waiting..."):**
 ```bash
@@ -462,6 +483,36 @@ rm -rf .specweave/state/.dedup-cache/*.lock
 
 **Prevention**: NEVER use `Bash("cat > file << EOF")` - use `Write` tool instead!
 
+### MCP IDE Connection Drops (v0.32.1+)
+
+**Symptoms**: Session hangs, commands not responding, "Waiting..." forever, UI frozen
+**Root Cause**: VSCode MCP server WebSocket connection drops after ~2 seconds
+
+**Detection** (check `~/.claude/debug/latest`):
+```
+MCP server "ide": WS-IDE connection dropped after 2s uptime
+MCP server "ide": Connection error: Received a response for an unknown message ID
+```
+
+**Quick Fix:**
+```bash
+# 1. Restart VS Code Extension Host:
+#    Cmd+Shift+P → "Developer: Restart Extension Host"
+
+# 2. Reduce diagnostics payload (close extra tabs/files in VS Code)
+
+# 3. If persists, run Claude Code in plain terminal (not VS Code integrated):
+cd /path/to/project && claude
+
+# 4. Run cleanup script:
+bash plugins/specweave/scripts/cleanup-state.sh
+```
+
+**Prevention:**
+- Keep VS Code file count low (large diagnostics payloads cause drops)
+- Update Claude Code VS Code extension regularly
+- Use terminal mode for long-running sessions
+
 ### Crash loop / prompt duplication
 
 **Disable hooks FIRST:**
@@ -487,11 +538,13 @@ npm run rebuild
 | Aspect | Rule |
 |--------|------|
 | **File ops** | Write/Edit/Read tools ONLY. NEVER Bash heredoc/echo! |
+| **Bash guard** | Hook `bash-file-guard.sh` BLOCKS dangerous patterns (v0.32.1+) |
 | Skills vs Agents | Skills = auto-activate (keywords), Agents = explicit `Task()` |
 | Hook events | PostToolUse, PreToolUse, UserPromptSubmit, Stop, SessionStart/End, etc. |
 | Cache location | `.specweave/cache/` (24h TTL) |
 | Pre-commit | Blocks 50+ deletions, `rm -rf` on protected dirs |
 | Stuck session | Kill + `pkill -f "cat.*EOF"` + clean locks + restart |
+| MCP drops | Restart Extension Host OR use terminal mode |
 
 ---
 

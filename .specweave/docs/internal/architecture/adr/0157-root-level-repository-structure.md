@@ -176,7 +176,7 @@ This repository contains specs, docs, and increments for the entire system.
 #!/bin/bash
 # setup.sh - Clone all implementation repos
 
-repos=("frontend" "backend" "shared")
+repos="("frontend"" "backend" "shared")
 owner="my-org"
 
 for repo in "${repos[@]}"; do

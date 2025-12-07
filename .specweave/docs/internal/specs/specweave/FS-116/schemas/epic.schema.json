@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://livingspec.io/schemas/v1/epic.schema.json",
+  "title": "LivingSpec Epic Schema",
+  "description": "JSON Schema for Epic documents with E-suffix support for external items",
+  "type": "object",
+  "required": ["id", "title", "status"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^EP-\\d{3,}E?$",
+      "description": "Epic ID. Format: EP-XXX (internal) or EP-XXXE (external)"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Epic title"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "proposed", "approved", "in-progress", "completed", "archived"],
+      "description": "Epic status"
+    },
+    "owner": {
+      "type": "string",
+      "description": "Team or individual owning this epic"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Classification tags"
+    },
+    "origin": {
+      "type": "string",
+      "enum": ["internal", "external"],
+      "description": "Origin of this epic. Required if ID has E-suffix"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["github", "jira", "ado"],
+      "description": "External tool source. Required if origin is external"
+    },
+    "external_id": {
+      "type": "string",
+      "description": "ID in the external tool"
+    },
+    "external_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to the item in external tool"
+    }
+  },
+  "if": {
+    "properties": {
+      "id": { "pattern": "E$" }
+    }
+  },
+  "then": {
+    "required": ["origin", "source", "external_id"],
+    "properties": {
+      "origin": { "const": "external" }
+    }
+  }
+}

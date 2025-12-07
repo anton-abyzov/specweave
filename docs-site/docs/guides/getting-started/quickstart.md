@@ -70,6 +70,23 @@ Use explicit commands for full control:
 
 ---
 
+## When to Use Increments
+
+Not every change needs an increment. **The rule of thumb:**
+
+| Change Type | Use Increment? | Why |
+|-------------|----------------|-----|
+| **Typo fix, version bump** | No | Zero learning, purely mechanical |
+| **Bug fix that taught you something** | **Yes** | Capture the knowledge for future devs |
+| **Any user-facing change** | **Yes** | Track delivery, enable DORA metrics |
+| **Architecture decision** | **Yes** | Needs ADR for future understanding |
+
+**The principle**: *If you'd explain this change to a colleague, document it in an increment.*
+
+Increments capture **knowledge**. Ad-hoc work is **ephemeral**. Quick check before doing ad-hoc work: *"Will I remember why I made this change in 6 months?"* If no → create an increment.
+
+---
+
 ## What You Get
 
 After `specweave init .`:

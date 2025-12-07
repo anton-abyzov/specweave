@@ -1,11 +1,14 @@
 ---
 name: specweave:validate-features
-description: Validate feature folder consistency between _features/ and project folders. Detects orphaned features and auto-repairs discrepancies. Use when features appear in _features but not in project folders.
+description: Validate feature folder consistency across project folders. Detects orphaned features, missing FEATURE.md, and auto-repairs discrepancies. Use for periodic health checks of living docs structure.
 ---
 
 # Validate Feature Folder Consistency
 
-Validates that features in `_features/` have corresponding project folders (e.g., `specweave/FS-XXX/`).
+Validates that feature folders in project directories (e.g., `specweave/FS-XXX/`) have proper structure.
+
+**Note (v5.0.0+)**: The `_features/` folder is OBSOLETE. Features live in `{project}/FS-XXX/`.
+If you find features in `_features/`, they should be migrated to the correct project folder.
 
 ---
 
@@ -120,9 +123,9 @@ Manual intervention required for:
 {list orphaned features}
 
 Options:
-  1. Delete orphaned _features folder if no longer needed
+  1. Delete orphaned folder if no longer needed
   2. Re-sync from increment if increment still exists
-  3. Create project folder manually
+  3. Move to correct project folder manually
 {/if}
 ```
 
@@ -147,8 +150,8 @@ Discrepancies found: 1
 ⚠️  DISCREPANCIES FOUND
 
 Feature: FS-062
-Type: missing_project_folder
-Description: Feature FS-062 exists in _features/ but not in any project folder
+Type: missing_feature_md
+Description: Feature FS-062 folder exists but missing FEATURE.md
 Auto-repairable: Yes
 Linked increment: 0062-test-living-docs-auto-sync (not found)
 
@@ -184,15 +187,17 @@ Discrepancies found: 1
 ## WHEN TO USE
 
 **Use this command when**:
-- Features appear in `_features/` but not in project folders
+- Feature folders are missing FEATURE.md or us-*.md files
 - After interrupted/failed sync operations
 - After manual cleanup of increments
 - Periodic health check of living docs structure
+- Legacy migration from `_features/` to `{project}/` folders
 
 **Root cause of discrepancies**:
-1. Sync interrupted between creating _features and project folders
+1. Sync interrupted during feature creation
 2. Increment deleted without cleaning up living docs
 3. Manual editing of living docs structure
+4. Legacy `_features/` folders not yet migrated (v5.0.0+)
 
 ---
 

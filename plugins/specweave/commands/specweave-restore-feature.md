@@ -25,10 +25,11 @@ Restore an archived feature or epic back to its active location. This also resto
 
 ## What Gets Restored
 
-### For Features:
-1. `_features/_archive/FS-XXX/` → `_features/FS-XXX/`
-2. `{project}/_archive/FS-XXX/` → `{project}/FS-XXX/` (all projects)
-3. All links updated from archive paths back to active paths
+### For Features (v5.0.0+):
+1. `{project}/_archive/FS-XXX/` → `{project}/FS-XXX/`
+2. All links updated from archive paths back to active paths
+
+**Note**: The `_features/` folder is OBSOLETE. Features live in `{project}/FS-XXX/`.
 
 ### For Epics:
 1. `_epics/_archive/EPIC-XXX/` → `_epics/EPIC-XXX/`

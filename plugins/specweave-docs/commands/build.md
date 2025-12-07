@@ -1,19 +1,47 @@
 ---
 name: specweave-docs:build
-description: Build static documentation site for deployment. Auto-setup on first run. Outputs production-ready HTML/CSS/JS.
+description: Build static documentation site for deployment. Validates docs first, auto-fixes issues, auto-setup on first run. Outputs production-ready HTML/CSS/JS.
 ---
 
 # Documentation Build Command
 
 Build production-ready static documentation site for deployment to any static host.
 
+**CRITICAL**: Runs pre-flight validation to catch issues BEFORE building.
+
 ## Your Task
 
 **IMPORTANT**: This command must work in ANY SpecWeave user project, not just the SpecWeave repo itself.
 
-### Step 1: Ensure Docusaurus is Set Up
+### Step 1: CRITICAL - Run Pre-Flight Validation
 
-First, ensure the cached Docusaurus installation exists:
+**ALWAYS validate BEFORE building to prevent cryptic webpack errors!**
+
+```typescript
+import { DocsValidator } from '../../../src/utils/docs-validator.js';
+
+const validator = new DocsValidator({
+  docsPath: '.specweave/docs/internal',
+  autoFix: true,  // Auto-fix common issues
+});
+
+console.log('\n🔍 Running pre-build validation...\n');
+const result = await validator.validate();
+
+// Show summary
+console.log(DocsValidator.formatResult(result));
+
+// If errors remain after auto-fix, STOP and report
+if (!result.valid) {
+  console.log('\n❌ Documentation has errors that must be fixed before build.');
+  console.log('   Fix the issues above, then try again.\n');
+  process.exit(1);
+}
+
+console.log('\n✅ Validation passed! Proceeding with build...\n');
+```
+
+### Step 2: Ensure Docusaurus is Set Up
 
 ```bash
 # Check if Docusaurus is set up
@@ -26,7 +54,7 @@ fi
 
 If not set up, follow the same setup steps as `/specweave-docs:preview` (Step 3 in preview.md).
 
-### Step 2: Run Build
+### Step 3: Run Build
 
 ```bash
 cd .specweave/cache/docs-site && npm run build

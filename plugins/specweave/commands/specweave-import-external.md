@@ -1,6 +1,6 @@
 ---
 name: specweave:import-external
-description: Pull external work items from GitHub, JIRA, or Azure DevOps into living docs as READ-ONLY REFERENCES (not increments). To implement imported items, manually create an increment. Supports time range filtering and dry-run mode.
+description: AUTO-EXECUTE import of external work items (GitHub/JIRA/ADO) since last import. NO PROMPTS - immediately runs with defaults. Creates READ-ONLY references in living docs. Options available but NOT required.
 ---
 
 # Import External Work Items (Reference Import)
@@ -8,6 +8,29 @@ description: Pull external work items from GitHub, JIRA, or Azure DevOps into li
 Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azure DevOps (work items) into SpecWeave living docs **as read-only references**.
 
 > **Important**: This command creates a **reference catalog**, NOT increments. Imported items have E-suffix IDs (US-001E, FS-042E). To implement an imported item, you must **manually create an increment** that references it.
+
+## CRITICAL: Default Behavior (NO PROMPTS!)
+
+**When user runs `/specweave:import-external` with NO arguments:**
+1. **IMMEDIATELY execute** with default settings - DO NOT show menus or ask questions
+2. **Default = "since last import"** - auto-detects from `.specweave/sync-metadata.json`
+3. **If first import ever** - defaults to last 1 month
+4. **Import from ALL configured platforms** (GitHub, JIRA, ADO - whichever are configured)
+
+**WRONG behavior** (DO NOT DO THIS):
+```
+❌ "What would you like to import?"
+❌ "Which option would you like?"
+❌ "Should I run a dry run first?"
+❌ Showing a menu of options
+```
+
+**CORRECT behavior**:
+```
+✅ Immediately start importing
+✅ Show progress: "🔄 Importing from GitHub... [25/150]"
+✅ Show summary when done
+```
 
 ## What This Does
 
@@ -25,10 +48,10 @@ Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azur
 /specweave:import-external [options]
 ```
 
-### Options
+### Options (ALL OPTIONAL - defaults work without them)
 
 - `--since=<range>` - Time range filter (default: since last import)
-  - `last` - Since last import (uses sync metadata)
+  - `last` - Since last import (uses sync metadata) **← DEFAULT**
   - `1m`, `3m`, `6m` - Last 1/3/6 months
   - `all` - All items (no time filter)
   - Custom: `2025-01-01` - Since specific date (ISO format)
@@ -39,25 +62,28 @@ Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azur
 
 ## Examples
 
-### Example 1: Import New Items (Default)
+### Example 1: Import New Items (Default - NO PROMPTS!)
 
 ```bash
 /specweave:import-external
 
-# Uses default behavior:
-# - Imports from ALL configured platforms (GitHub, JIRA, ADO)
-# - Since last import timestamp (from .specweave/sync-metadata.json)
-# - Creates living docs files
-# - Updates sync metadata
+# IMMEDIATELY executes with defaults:
+# - Since last import (or 1 month if first import)
+# - All configured platforms
 
-# Result:
-# 🔄 Importing from GitHub... [30/30] ✓
-# 🔄 Importing from JIRA... [12/12] ✓
+# Output (NO QUESTIONS ASKED):
+# 📥 Import External Work Items
+#
+# 📋 Import Configuration:
+#   Platforms: GITHUB
+#   Time range: last
+#   Dry run: No
+#
+# 🔗 Imported from GITHUB: 15 items
+#
 # 📊 Import Summary:
-#    Total imported: 42 items
-#    - GitHub: 30 items (US-201E to US-230E)
-#    - JIRA: 12 items (US-231E to US-242E)
-#    Duplicates skipped: 5 items
+#    Total imported: 15 items
+#    🔗 GITHUB: 15 items
 # ✅ Import complete!
 ```
 
@@ -359,10 +385,11 @@ No tasks defined.
 | Feature | `specweave init` | `/specweave:import-external` |
 |---------|------------------|------------------------------|
 | When to use | First-time setup | Ongoing imports after init |
-| User prompts | Interactive setup | Minimal prompts (confirmation only) |
-| Time range | Configurable (default: 1 month) | Since last import (default) |
+| User prompts | Interactive setup | **NONE** (auto-execute with defaults) |
+| Time range | Configurable (default: 1 month) | Since last import (auto-detected) |
 | Config update | Creates `.specweave/config.json` | Uses existing config |
 | Primary use case | Brownfield onboarding | Stay in sync with external tools |
+| Execution | Step-by-step wizard | **Immediate** (no questions asked) |
 
 ## Troubleshooting
 

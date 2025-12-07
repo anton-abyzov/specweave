@@ -10,7 +10,7 @@ external_tools:
   github:
     type: milestone
     id: 26
-    url: https://github.com/anton-abyzov/specweave/milestone/26
+    url: "https://github.com/anton-abyzov/specweave/milestone/26"
 ---
 
 # Unit Test Alignment

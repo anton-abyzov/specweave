@@ -77,7 +77,7 @@ cp -r .specweave/increments/_archive/0039-* .specweave/increments/
 # File: .git/hooks/pre-commit
 
 # Run duplicate detection
-output=$(npx tsx -e "
+output="$(npx" tsx -e "
 import { detectAllDuplicates } from './dist/src/core/increment/duplicate-detector.js';
 const report = await detectAllDuplicates('.');
 if (report.duplicateCount > 0) {

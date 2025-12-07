@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://livingspec.io/schemas/v1/acceptance-criteria.schema.json",
+  "title": "LivingSpec Acceptance Criteria Schema",
+  "description": "JSON Schema for Acceptance Criteria with E-suffix support for external items",
+  "type": "object",
+  "required": ["id", "description", "status"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^AC-US\\d+E?-\\d{2}E?$",
+      "description": "AC ID. Format: AC-USX-XX (internal) or AC-USXE-XXE (external). Pattern: AC-{parent_us}-{sequence}[E]"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Given-When-Then description of the acceptance criterion"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "passed", "failed"],
+      "description": "AC status"
+    },
+    "user_story": {
+      "type": "string",
+      "pattern": "^US-\\d{3,}E?$",
+      "description": "Parent User Story ID"
+    },
+    "origin": {
+      "type": "string",
+      "enum": ["internal", "external"],
+      "description": "Origin of this AC"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["github", "jira", "ado"],
+      "description": "External tool source"
+    }
+  },
+  "if": {
+    "properties": {
+      "id": { "pattern": "E$" }
+    }
+  },
+  "then": {
+    "required": ["origin"],
+    "properties": {
+      "origin": { "const": "external" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "user_story": { "pattern": "E$" }
+        },
+        "required": ["user_story"]
+      },
+      "then": {
+        "properties": {
+          "id": { "pattern": "E$" }
+        }
+      }
+    }
+  ]
+}

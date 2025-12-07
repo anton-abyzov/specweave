@@ -108,7 +108,7 @@ program
 // Archive command - Archive completed increments and sync living docs
 program
   .command('archive [increments...]')
-  .description('Archive completed increments and sync living docs (_features/ + project-specific)')
+  .description('Archive completed increments and sync living docs (project-specific folders)')
   .option('--keep-last <n>', 'Keep last N increments, archive the rest', '5')
   .option('--last <n>', 'STRICT: Keep exactly last N increments by number, ignoring all protections')
   .option('--older-than <days>', 'Archive increments older than N days')
@@ -321,6 +321,20 @@ program
     await livingDocsCommand(options);
   });
 
+// Cache command - Dashboard cache management
+program
+  .command('cache')
+  .description('Manage dashboard cache for instant status commands')
+  .option('--rebuild', 'Rebuild cache from increments')
+  .option('--status', 'Show cache status (default)')
+  .option('--clear', 'Clear cache')
+  .option('--quiet', 'Minimal output')
+  .option('--debug', 'Show debug information')
+  .action(async (options) => {
+    const { cacheCommand } = await import('../dist/src/cli/commands/cache.js');
+    await cacheCommand(options);
+  });
+
 // Commits command - Display last 2 git commits
 program
   .command('commits')
@@ -378,6 +392,9 @@ program.on('--help', () => {
   console.log('  $ specweave living-docs --resume <jobId>    # Resume orphaned job');
   console.log('  $ specweave sync-scheduled                  # Execute due sync jobs');
   console.log('  $ specweave sync-scheduled --force          # Force sync all jobs');
+  console.log('  $ specweave cache                           # Show cache status');
+  console.log('  $ specweave cache --rebuild                 # Rebuild dashboard cache');
+  console.log('  $ specweave cache --debug                   # Show cache debug info');
   console.log('  $ specweave validate-jira --env .env.prod   # Validate with custom .env file');
   console.log('');
   console.log('Supported AI Tools:');

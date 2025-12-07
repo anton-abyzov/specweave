@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://livingspec.io/schemas/v1/feature.schema.json",
+  "title": "LivingSpec Feature Schema",
+  "description": "JSON Schema for Feature documents with E-suffix support for external items",
+  "type": "object",
+  "required": ["id", "title", "status"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^FS-\\d{3,}E?$",
+      "description": "Feature ID. Format: FS-XXX (internal) or FS-XXXE (external)"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Feature title"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "proposed", "approved", "in-progress", "completed", "archived"],
+      "description": "Feature status"
+    },
+    "owner": {
+      "type": "string",
+      "description": "Team or individual owning this feature"
+    },
+    "epic": {
+      "type": "string",
+      "pattern": "^EP-\\d{3,}E?$",
+      "description": "Parent Epic ID"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["P0", "P1", "P2", "P3", "P4"],
+      "description": "Priority level"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Classification tags"
+    },
+    "origin": {
+      "type": "string",
+      "enum": ["internal", "external"],
+      "description": "Origin of this feature"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["github", "jira", "ado"],
+      "description": "External tool source"
+    },
+    "external_id": {
+      "type": "string",
+      "description": "ID in the external tool"
+    },
+    "external_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to the item in external tool"
+    }
+  },
+  "if": {
+    "properties": {
+      "id": { "pattern": "E$" }
+    }
+  },
+  "then": {
+    "required": ["origin", "source", "external_id"],
+    "properties": {
+      "origin": { "const": "external" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "epic": { "pattern": "E$" }
+        },
+        "required": ["epic"]
+      },
+      "then": {
+        "properties": {
+          "id": { "pattern": "E$" }
+        }
+      }
+    }
+  ]
+}

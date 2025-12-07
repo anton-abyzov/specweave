@@ -58,7 +58,41 @@ You are helping the user implement a SpecWeave increment by executing tasks from
    - Check no blocking dependencies
    - Check tasks.md has tasks to execute
 
-4. **🚨 CRITICAL: Validate AC Presence (v0.24.0+)**:
+4. **🚨 CRITICAL: Task Count Validation (CRASH PREVENTION!)**:
+
+   **MANDATORY**: Count tasks in tasks.md before proceeding.
+
+   ```bash
+   TASK_COUNT=$(grep -c "^### T-" .specweave/increments/<id>/tasks.md)
+   ```
+
+   **If TASK_COUNT > 8**:
+   ```
+   ❌ TASK COUNT EXCEEDS LIMIT
+
+   This increment has X tasks (maximum allowed: 8)
+
+   >8 tasks = context explosion = CRASH (per CLAUDE.md rules)
+
+   💡 REQUIRED ACTION: Split this increment into smaller chunks:
+
+   Pattern: 0116-feature/ → Split into:
+     • 0116-feature-part1/ (T-001 to T-004)
+     • 0117-feature-part2/ (T-005 to T-008)
+     • 0118-feature-part3/ (T-009 to T-012)
+
+   Commands:
+     1. Create new increment folders manually
+     2. Split tasks.md into 4-task chunks
+     3. Update spec.md to reference correct tasks
+     4. Run /specweave:do on each part sequentially
+
+   ⚠️ DO NOT PROCEED - splitting is MANDATORY for stability!
+   ```
+
+   **If TASK_COUNT <= 8**: Proceed to next step
+
+5. **🚨 CRITICAL: Validate AC Presence (v0.24.0+)**:
 
    **MANDATORY**: Run pre-increment-start validation hook to verify spec.md contains ACs.
 

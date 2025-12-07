@@ -38,29 +38,31 @@ Test results:
 ### T-007: Create instant-status skill
 **User Story**: US-005
 **Satisfies ACs**: AC-US5-01, AC-US5-02, AC-US5-03, AC-US5-04
-**Status**: [ ] pending
+**Status**: [x] completed
 
-Create `plugins/specweave/skills/instant-status/SKILL.md` with:
+Created `plugins/specweave/skills/instant-status/SKILL.md` with:
 - Activation keywords for status commands
 - Instructions to execute scripts via Bash (portable to any LLM)
-- Documentation of all three execution paths
+- Documentation of all three execution paths (hook, skill, CLI)
 
 ### T-008: Add --help to scripts
 **User Story**: US-006
 **Satisfies ACs**: AC-US6-01
-**Status**: [ ] pending
+**Status**: [x] completed
 
-Add `--help` argument handling to:
-- status.js
-- progress.js
-- jobs.js
+All scripts already have comprehensive `--help` handling:
+- status.js: `node plugins/specweave/scripts/status.js --help`
+- progress.js: `node plugins/specweave/scripts/progress.js --help`
+- jobs.js: `node plugins/specweave/scripts/jobs.js --help`
 
 ### T-009: Create scripts README
 **User Story**: US-006
 **Satisfies ACs**: AC-US6-02, AC-US6-03
-**Status**: [ ] pending
+**Status**: [x] completed
 
-Create `plugins/specweave/scripts/README.md` explaining:
-- Direct execution usage
-- CLI alternatives
-- When to use each approach
+Created `plugins/specweave/scripts/README.md` with comprehensive docs:
+- Direct execution usage for all scripts
+- CLI alternatives (`specweave status`, etc.)
+- Three execution paths (hook, skill, CLI)
+- When to use which approach
+- Template for adding new instant commands

@@ -500,7 +500,7 @@ MCP Kafka Trigger (topic: support-tickets)
 
 # Output:
 # ✓ Workflow created: "Orders to API"
-# ✓ Kafka Trigger: topic=orders, group=n8n-consumer-group
+# ✓ Kafka Trigger: topic="orders," group="n8n-consumer-group"
 # ✓ HTTP Request: POST https://api.example.com/orders
 #
 # Import to n8n:
