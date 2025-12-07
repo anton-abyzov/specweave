@@ -1,6 +1,6 @@
 ---
 name: specweave-release:npm
-description: Bump patch version, auto-commit dirty changes, push to GitHub, build, publish to npmjs.org. Use --ci for GitHub Actions publish. Use --only for local publish without git push. Use --only --local for version bump only.
+description: Bump patch version, auto-commit dirty changes, push to GitHub, build, publish to npmjs.org. Use --quick for save+release (no GH workflow). Use --ci for GitHub Actions publish. Use --only for local publish without git push. Use --only --local for version bump only.
 ---
 
 # /specweave-release:npm - NPM Release Automation
@@ -12,6 +12,7 @@ You are the NPM Release Assistant. Your job is to automate the patch version rel
 | Command | Flow | Use Case |
 |---------|------|----------|
 | `/specweave-release:npm` | Auto-commit → **PUSH** → Bump → Build → **Publish** → Push tag | **DEFAULT: INSTANT RELEASE** |
+| `/specweave-release:npm --quick` | Auto-commit → **PUSH** → Bump → Build → **Publish locally** → NO GH workflow | **QUICK: Save + Local Release** |
 | `/specweave-release:npm --ci` | Bump → Push → **CI publishes** | Let GitHub Actions handle npm publish |
 | `/specweave-release:npm --only` | Bump → Build → **Publish locally** → NO push | Quick local release, push later |
 | `/specweave-release:npm --only --local` | **Bump ONLY** → NO build, NO publish, NO git | FASTEST: Local testing only |
@@ -21,6 +22,7 @@ You are the NPM Release Assistant. Your job is to automate the patch version rel
 Check flags in the command invocation:
 
 ```
+--quick        → QUICK MODE: save (commit+push) + local npm publish (NO GH workflow trigger)
 --ci           → CI MODE: push to git, GitHub Actions publishes (requires clean working tree)
 --only --local → Version bump ONLY (no build, no publish, no git) - FASTEST
 --only         → Direct publish to npm (bypass CI), no git push
@@ -28,12 +30,14 @@ Check flags in the command invocation:
 ```
 
 **Flag Detection Order:**
-1. Check for `--ci` flag → CI MODE (GitHub Actions publishes)
-2. Check for `--only` flag
-3. If `--only` present, check for `--local` flag → LOCAL MODE (fastest)
-4. If `--only` only → DIRECT MODE
-5. No flags → **DEFAULT: INSTANT RELEASE** (auto-commit dirty, push, build, publish)
+1. Check for `--quick` flag → QUICK MODE (save + local publish, NO GH workflow)
+2. Check for `--ci` flag → CI MODE (GitHub Actions publishes)
+3. Check for `--only` flag
+4. If `--only` present, check for `--local` flag → LOCAL MODE (fastest)
+5. If `--only` only → DIRECT MODE
+6. No flags → **DEFAULT: INSTANT RELEASE** (auto-commit dirty, push, build, publish)
 
+**If `--quick`**: Use QUICK MODE (section "Quick Mode Workflow")
 **If `--ci`**: Use CI MODE (section "CI Mode Workflow")
 **If `--only --local`**: Use LOCAL MODE (section "Local Mode Workflow") - FASTEST!
 **If `--only` only**: Use DIRECT MODE (section "Direct Mode Workflow")
@@ -157,6 +161,124 @@ git push origin develop --follow-tags
 ✅ Package rebuilt
 ✅ Published to npmjs.org (explicit registry!)
 ✅ Version commit + tag pushed to GitHub
+
+---
+
+## QUICK MODE WORKFLOW (--quick flag) - SAVE + LOCAL RELEASE
+
+Use this workflow when `--quick` flag is detected. This combines `/specweave:save` behavior with local npm publish. **NO GitHub workflow trigger** - everything happens locally.
+
+**Use case**: You want to quickly save your work AND release a new patch version without waiting for GitHub Actions. Perfect for:
+- Hotfixes that need immediate npm availability
+- Iterative releases during active development
+- When GitHub Actions are slow or unavailable
+
+**Key difference from DEFAULT mode**: Does NOT push the version tag, so GitHub Actions release workflow is NOT triggered.
+
+### 1. Pre-flight Check
+
+```bash
+# Verify we're on develop branch
+git rev-parse --abbrev-ref HEAD
+
+# Get current version
+node -p "require('./package.json').version"
+```
+
+**STOP if**: Not on `develop` branch (ask user to switch)
+
+### 2. Auto-Commit Dirty Changes (if any)
+
+```bash
+# Check for uncommitted changes
+git status --porcelain
+```
+
+If dirty, generate smart commit message and commit:
+
+```bash
+git add -A
+git commit -m "[auto-generated message based on changed files]"
+```
+
+**Message generation rules:**
+- `src/**` changes → `fix: update implementation`
+- `plugins/**` changes → `feat(plugins): update plugin`
+- `.specweave/**` changes → `chore: update specweave config`
+- `*.md` changes → `docs: update documentation`
+- Mixed → `chore: update code and documentation`
+
+### 3. Push Dirty Commit to Remote
+
+```bash
+# Push dirty commit to remote - ensures code is safe before release
+git push origin develop
+```
+
+### 4. Bump Patch Version
+
+```bash
+npm version patch -m "chore: bump version to %s"
+```
+
+This creates a NEW commit + tag locally.
+
+### 5. Build Package
+
+```bash
+npm run rebuild
+```
+
+### 6. Publish to NPM Locally
+
+```bash
+# Publish directly to npmjs.org (NO GitHub Actions!)
+npm publish --registry https://registry.npmjs.org
+```
+
+### 7. Push Version Commit ONLY (NO tag!)
+
+```bash
+# Push ONLY the version commit, NOT the tag
+# This prevents GitHub Actions release workflow from triggering
+git push origin develop
+```
+
+**CRITICAL**: Do NOT use `--follow-tags`! We want local npm publish only.
+
+### 8. Report Results
+
+```markdown
+✅ **Quick release complete!**
+
+📦 **Version**: vX.Y.Z
+🔗 **NPM**: https://www.npmjs.com/package/specweave
+🏷️ **Git Tag**: vX.Y.Z (local only - NOT pushed)
+
+**What happened**:
+- ✅ Dirty changes auto-committed
+- ✅ Pushed to GitHub (code safe!)
+- ✅ Version bumped to X.Y.Z
+- ✅ Package built
+- ✅ Published to npmjs.org (locally)
+- ⏭️ Tag NOT pushed (no GitHub Actions triggered)
+
+**Verify**: `npm view specweave version --registry https://registry.npmjs.org`
+
+**If you want to push the tag later** (triggers GH release):
+`git push origin vX.Y.Z`
+```
+
+## Quick Mode Success Criteria
+
+✅ Any dirty changes auto-committed
+✅ Dirty commit pushed to remote
+✅ Version bumped in package.json
+✅ Git commit and tag created locally
+✅ Package rebuilt
+✅ Published to npmjs.org (explicit registry!)
+✅ Version commit pushed to GitHub
+⏭️ Tag NOT pushed (no GitHub Actions)
 
 ---
 
@@ -337,8 +459,11 @@ Show the user:
 ## Quick Reference
 
 ```bash
-# DEFAULT: Instant release (auto-commits dirty, publishes, pushes)
+# DEFAULT: Instant release (auto-commits dirty, publishes, pushes + tag)
 /specweave-release:npm
+
+# QUICK: Save + local release (auto-commits, pushes, publishes - NO GH workflow)
+/specweave-release:npm --quick
 
 # CI release (GitHub Actions handles npm publish) - requires clean tree
 /specweave-release:npm --ci
@@ -350,12 +475,13 @@ Show the user:
 /specweave-release:npm --only --local
 ```
 
-| Scenario | Command | Auto-Commit Dirty? | NPM Published By | Git Pushed |
-|----------|---------|-------------------|------------------|------------|
-| **INSTANT RELEASE** | (no flags) | ✅ Yes | You (npmjs.org) | ✅ Yes |
-| CI release | `--ci` | ❌ STOP | GitHub Actions | ✅ Yes |
-| Quick local, push later | `--only` | ❌ STOP | You (npmjs.org) | ❌ No |
-| **FASTEST local test** | `--only --local` | N/A | ❌ None | ❌ No |
+| Scenario | Command | Auto-Commit Dirty? | NPM Published By | Git Pushed | Tag Pushed |
+|----------|---------|-------------------|------------------|------------|------------|
+| **INSTANT RELEASE** | (no flags) | ✅ Yes | You (npmjs.org) | ✅ Yes | ✅ Yes (triggers GH) |
+| **QUICK RELEASE** | `--quick` | ✅ Yes | You (npmjs.org) | ✅ Yes | ❌ No (no GH workflow) |
+| CI release | `--ci` | ❌ STOP | GitHub Actions | ✅ Yes | ✅ Yes |
+| Quick local, push later | `--only` | ❌ STOP | You (npmjs.org) | ❌ No | ❌ No |
+| **FASTEST local test** | `--only --local` | N/A | ❌ None | ❌ No | ❌ No |
 
 ---
 
