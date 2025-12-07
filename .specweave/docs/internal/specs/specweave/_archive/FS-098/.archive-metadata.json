@@ -1,0 +1,11 @@
+{
+  "id": "FS-098",
+  "type": "feature",
+  "archivedAt": "2025-12-07T06:25:27.042Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-098",
+  "linkedIncrements": [
+    "0098-umbrella-workitem-matching"
+  ]
+}

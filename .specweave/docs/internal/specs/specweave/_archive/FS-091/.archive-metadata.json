@@ -1,0 +1,11 @@
+{
+  "id": "FS-091",
+  "type": "feature",
+  "archivedAt": "2025-12-07T06:25:29.087Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-091",
+  "linkedIncrements": [
+    "0091-ado-hierarchy-intelligence"
+  ]
+}
