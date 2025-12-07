@@ -1,0 +1,11 @@
+{
+  "id": "FS-087",
+  "type": "feature",
+  "archivedAt": "2025-12-07T06:25:27.901Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-087",
+  "linkedIncrements": [
+    "0087-remove-redundant-feature-id"
+  ]
+}

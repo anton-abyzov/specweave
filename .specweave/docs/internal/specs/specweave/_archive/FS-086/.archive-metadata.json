@@ -1,0 +1,11 @@
+{
+  "id": "FS-086",
+  "type": "feature",
+  "archivedAt": "2025-12-07T06:25:27.590Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-086",
+  "linkedIncrements": [
+    "0086-brownfield-doc-analysis"
+  ]
+}

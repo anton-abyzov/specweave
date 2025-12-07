@@ -1,0 +1,11 @@
+{
+  "id": "FS-088",
+  "type": "feature",
+  "archivedAt": "2025-12-07T06:25:28.202Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Projects/github/specweave/.specweave/docs/internal/specs/specweave/FS-088",
+  "linkedIncrements": [
+    "0088-eda-hooks-architecture"
+  ]
+}

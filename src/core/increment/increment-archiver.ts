@@ -464,6 +464,16 @@ export class IncrementArchiver {
 
   /**
    * Archive a single increment
+   *
+   * CRITICAL FIX (2025-12-07): Sync to living docs BEFORE moving to archive!
+   *
+   * Previous bug: Living docs were only reorganized (moved) after archive, but
+   * content was never synced. If feature folder didn't exist, nothing got archived.
+   *
+   * Flow now:
+   * 1. SYNC: Create/update living docs from spec.md (while increment is active)
+   * 2. MOVE: Move increment to _archive/
+   * 3. ARCHIVE: Move feature folder to _archive/ (if all increments archived)
    */
   private async archiveIncrement(increment: string): Promise<void> {
     const sourcePath = path.join(this.incrementsDir, increment);
@@ -492,15 +502,65 @@ export class IncrementArchiver {
       }
     }
 
-    // Move the directory
+    // STEP 1: Sync to living docs BEFORE moving (increment must be in active folder!)
+    // This ensures feature folder exists with latest content before archiving
+    await this.syncToLivingDocsBeforeArchive(increment);
+
+    // STEP 2: Move the directory to archive
     await fs.move(sourcePath, targetPath, { overwrite: false });
 
     // Clear increment number cache (numbers changed after archiving)
     const { IncrementNumberManager } = await import('./increment-utils.js');
     IncrementNumberManager.clearCache();
 
-    // Update any references in config or living docs
+    // STEP 3: Archive feature folder (now that increment is archived)
     await this.updateReferences(increment);
+  }
+
+  /**
+   * Sync increment to living docs BEFORE archiving
+   *
+   * CRITICAL: This must happen while the increment is still in the active folder!
+   * LivingDocsSync.syncIncrement() checks for active folder location and skips
+   * if increment is already archived.
+   *
+   * This ensures:
+   * - Feature folder exists in living docs
+   * - FEATURE.md has latest content
+   * - User story files are created/updated
+   * - Tasks are synced to living docs
+   */
+  private async syncToLivingDocsBeforeArchive(increment: string): Promise<void> {
+    try {
+      // Check if spec.md exists (required for sync)
+      const specPath = path.join(this.incrementsDir, increment, 'spec.md');
+      if (!await fs.pathExists(specPath)) {
+        this.logger.debug(`No spec.md for ${increment}, skipping living docs sync`);
+        return;
+      }
+
+      this.logger.info(`📝 Syncing ${increment} to living docs before archive...`);
+
+      const { LivingDocsSync } = await import('../living-docs/living-docs-sync.js');
+      const sync = new LivingDocsSync(this.rootDir);
+
+      const result = await sync.syncIncrement(increment, { force: true });
+
+      if (result.success) {
+        if (result.filesCreated.length > 0) {
+          this.logger.success(`   ✅ Created/updated ${result.filesCreated.length} files in ${result.featureId}`);
+        } else {
+          this.logger.info(`   ℹ️  ${result.featureId} already up to date`);
+        }
+      } else if (result.errors.length > 0) {
+        // Log errors but don't fail archiving
+        this.logger.warn(`   ⚠️  Sync warnings: ${result.errors.join(', ')}`);
+      }
+    } catch (error) {
+      // Log error but don't fail archiving - living docs sync is best-effort
+      this.logger.warn(`   ⚠️  Could not sync to living docs: ${error}`);
+      this.logger.info(`   ℹ️  You can manually sync later with: /specweave:sync-specs ${increment}`);
+    }
   }
 
   /**
