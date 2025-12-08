@@ -43,7 +43,8 @@ fi
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
 
 # Only validate spec.md files in increments folder
-if [[ ! "$FILE_PATH" =~ \.specweave/increments/[0-9]{4}E?-[^/]+/spec\.md$ ]]; then
+# Match: 3-4 digits, optional E suffix, kebab-case name, spec.md
+if [[ ! "$FILE_PATH" =~ \.specweave/increments/[0-9]{3,4}E?-[^/]+/spec\.md$ ]]; then
   echo '{"decision": "allow"}'
   exit 0
 fi
