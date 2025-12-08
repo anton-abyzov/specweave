@@ -8,11 +8,8 @@ created: 2025-12-06
 external:
   github:
     issue: 784
-    url: "https://github.com/anton-abyzov/specweave/issues/784"
+    url: https://github.com/anton-abyzov/specweave/issues/784
 ---
-
-**Origin**: 🏠 **Internal**
-
 
 # US-005: Skill-Based Discoverability (NEW)
 
@@ -38,4 +35,4 @@ external:
 
 ## Tasks
 
-- [x] [T-007](../../../../increments/0114-slash-command-script-delegation/tasks.md#T-007): Create instant-status skill
+- [x] **T-007**: Create instant-status skill

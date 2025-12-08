@@ -44,7 +44,7 @@ export class AnthropicProvider implements LLMProvider {
 
   constructor(config: AnthropicProviderConfig) {
     this.apiKey = config.apiKey;
-    this.defaultModel = config.model || 'claude-sonnet-4-20250514';
+    this.defaultModel = config.model || 'claude-opus-4-5-20251101';
     this.maxTokens = config.maxTokens || 4096;
     this.temperature = config.temperature ?? 0.3;
     this.baseUrl = config.baseUrl || 'https://api.anthropic.com';

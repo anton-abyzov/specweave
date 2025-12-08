@@ -64,7 +64,7 @@ graph LR
 
 2. **Context Window**: Maximum input length
    - GPT-5: 128K tokens (~96K words)
-   - Claude Sonnet 4.5: 200K tokens (~150K words)
+   - Claude Opus 4.5: 200K tokens (~150K words)
    - Claude Haiku 4.5: 200K tokens (ultra-fast, simple tasks)
 
 3. **Temperature**: Randomness of output
@@ -140,7 +140,7 @@ const anthropic = new Anthropic({
 
 async function analyzeCodeQuality(code) {
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-5',
+    model: 'claude-opus-4-5',
     max_tokens: 1024,
     messages: [
       {
@@ -564,15 +564,15 @@ async function selfConsistentAnswer(question) {
 
 | Model | Provider | Context | Strengths | Cost (per 1M tokens) |
 |-------|----------|---------|-----------|---------------------|
-| **Claude Sonnet 4.5** | Anthropic | 200K | Best coding, long context, research | $3 in / $15 out |
+| **Claude Opus 4.5** | Anthropic | 200K | Best-in-class coding, complex reasoning, architecture | $15 in / $75 out |
 | **GPT-5** | OpenAI | 128K | General purpose, reasoning, creative | $10 in / $30 out |
-| **Claude Haiku 4.5** | Anthropic | 200K | Ultra-fast, cheap, simple tasks | $0.25 in / $1.25 out |
+| **Claude Haiku 4.5** | Anthropic | 200K | Ultra-fast, cheap, simple tasks | $1 in / $5 out |
 | **o1** | OpenAI | 128K | Complex reasoning, math, science | $15 in / $60 out |
 | **Llama 3.1 405B** | Meta | 128K | Open source, self-hosted | Free (compute costs) |
 
 ### When to Use Each Model
 
-**Claude Sonnet 4.5**: Best for coding, long documents, technical writing, research
+**Claude Opus 4.5**: Best for coding, complex architecture, technical writing, research
 **GPT-5**: Complex reasoning, creative content, general-purpose tasks
 **Claude Haiku 4.5**: Real-time chat, simple classifications, high-volume processing
 **o1**: Advanced reasoning tasks, mathematical proofs, scientific analysis
@@ -589,12 +589,12 @@ function selectModel(taskType, contextLength, budget) {
 
   // Long context
   if (contextLength > 100000) {
-    return 'claude-sonnet-4-5'; // 200K context
+    return 'claude-opus-4-5'; // 200K context
   }
 
   // Complex reasoning
   if (taskType === 'complex' || taskType === 'reasoning') {
-    return 'o1'; // Best for complex reasoning
+    return 'claude-opus-4-5'; // Best for complex reasoning
   }
 
   // Creative tasks
@@ -604,11 +604,11 @@ function selectModel(taskType, contextLength, budget) {
 
   // Coding tasks
   if (taskType === 'code') {
-    return 'claude-sonnet-4-5'; // Best for code
+    return 'claude-opus-4-5'; // Best for code
   }
 
   // Default
-  return 'claude-sonnet-4-5';
+  return 'claude-opus-4-5';
 }
 ```
 
@@ -919,7 +919,7 @@ class BaseAgent {
     const userPrompt = this.buildUserPrompt(task);
 
     const response = await this.llm.chat.completions.create({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-opus-4-5',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
@@ -1083,9 +1083,9 @@ async function generateWithCascade(prompt) {
     return cheapResponse; // Good enough!
   }
 
-  // Fallback to Sonnet 4.5 (more capable)
+  // Fallback to Opus 4.5 (more capable)
   return await anthropic.messages.create({
-    model: 'claude-sonnet-4-5',
+    model: 'claude-opus-4-5',
     messages: [{ role: 'user', content: prompt }]
   });
 }
@@ -1221,10 +1221,10 @@ SpecWeave increments document AI usage:
 - AC-US1-03: AI provides explanations for suggestions
 
 **AI Integration**:
-- Model: Claude Sonnet 4.5 (200K context for large PRs)
+- Model: Claude Opus 4.5 (200K context for large PRs)
 - Prompt: "Analyze this code for quality issues..."
 - Fallback: GPT-5 if Claude unavailable
-- Cost estimate: $0.50 per PR review
+- Cost estimate: $1.50 per PR review
 - Caching: Cache identical file reviews for 24h
 
 **Test Plan**:

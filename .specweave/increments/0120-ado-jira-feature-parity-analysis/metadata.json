@@ -1,0 +1,14 @@
+{
+  "id": "0120-ado-jira-feature-parity-analysis",
+  "title": "ADO vs JIRA Feature Parity Analysis",
+  "status": "completed",
+  "priority": "P2",
+  "createdAt": "2025-12-07T04:30:00Z",
+  "updatedAt": "2025-12-07T10:45:00Z",
+  "completedAt": "2025-12-07T10:45:00Z",
+  "approvedAt": "2025-12-07T10:45:00Z",
+  "type": "analysis",
+  "tags": ["integration", "ado", "jira", "feature-parity", "gap-analysis"],
+  "completedTasks": 13,
+  "totalTasks": 13
+}

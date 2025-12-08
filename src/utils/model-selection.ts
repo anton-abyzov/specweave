@@ -4,10 +4,9 @@
  * Intelligent model selection for SpecWeave tasks based on complexity,
  * instruction detail, and task characteristics.
  *
- * Strategy:
- * - Haiku: Detailed instructions, clear acceptance criteria, mechanical work
- * - Sonnet: Complex decisions, architecture, creative problem-solving
- * - Opus: Critical architecture, high-stakes decisions (rare)
+ * Strategy (Opus 4.5 Default):
+ * - Haiku: Simple/cheap operations, translations, mechanical work
+ * - Opus: Default for all complex work, architecture, creative problem-solving
  */
 
 export type ModelTier = 'haiku' | 'sonnet' | 'opus';

@@ -8,11 +8,8 @@ created: 2025-12-06
 external:
   github:
     issue: 785
-    url: "https://github.com/anton-abyzov/specweave/issues/785"
+    url: https://github.com/anton-abyzov/specweave/issues/785
 ---
-
-**Origin**: 🏠 **Internal**
-
 
 # US-006: Non-Claude Documentation (NEW)
 
@@ -37,5 +34,5 @@ external:
 
 ## Tasks
 
-- [x] [T-008](../../../../increments/0114-slash-command-script-delegation/tasks.md#T-008): Add --help to scripts
-- [x] [T-009](../../../../increments/0114-slash-command-script-delegation/tasks.md#T-009): Create scripts README
+- [x] **T-008**: Add --help to scripts
+- [x] **T-009**: Create scripts README

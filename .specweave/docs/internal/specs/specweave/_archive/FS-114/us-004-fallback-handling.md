@@ -8,11 +8,8 @@ created: 2025-12-06
 external:
   github:
     issue: 783
-    url: "https://github.com/anton-abyzov/specweave/issues/783"
+    url: https://github.com/anton-abyzov/specweave/issues/783
 ---
-
-**Origin**: 🏠 **Internal**
-
 
 # US-004: Fallback Handling
 
@@ -36,4 +33,4 @@ external:
 
 ## Tasks
 
-- [x] [T-005](../../../../increments/0114-slash-command-script-delegation/tasks.md#T-005): Add fallback handling
+- [x] **T-005**: Add fallback handling

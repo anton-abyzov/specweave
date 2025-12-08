@@ -115,6 +115,7 @@ program
   .option('--pattern <pattern>', 'Archive increments matching pattern (regex)')
   .option('--archive-completed', 'Archive all completed increments')
   .option('--no-preserve-active', 'Allow archiving active/paused increments (dangerous!)')
+  .option('--external', 'Archive external living docs (FS-XXXE features imported from ADO/JIRA/GitHub)')
   .option('--dry-run', 'Preview what would be archived without moving files')
   .action(async (incrementIds, options) => {
     const { archiveCommand } = await import('../dist/src/cli/commands/archive.js');
@@ -358,6 +359,36 @@ program
     await syncCmd.parseAsync(['node', 'sync-scheduled', ...process.argv.slice(3)], { from: 'user' });
   });
 
+// Context command - Get project/board context for increment planning
+const contextCmd = program
+  .command('context')
+  .description('Get project/board context for increment planning');
+
+contextCmd
+  .command('projects')
+  .description('List available projects and structure level')
+  .action(async () => {
+    const { contextProjectsCommand } = await import('../dist/src/cli/commands/context.js');
+    await contextProjectsCommand();
+  });
+
+contextCmd
+  .command('boards')
+  .description('List available boards for a project (2-level structures)')
+  .option('-p, --project <id>', 'Project ID to filter boards')
+  .action(async (options) => {
+    const { contextBoardsCommand } = await import('../dist/src/cli/commands/context.js');
+    await contextBoardsCommand(options);
+  });
+
+contextCmd
+  .command('select')
+  .description('Interactive project/board selection (auto-selects if single option)')
+  .action(async () => {
+    const { contextSelectCommand } = await import('../dist/src/cli/commands/context.js');
+    await contextSelectCommand();
+  });
+
 // Help text
 program.on('--help', () => {
   console.log('');
@@ -396,6 +427,9 @@ program.on('--help', () => {
   console.log('  $ specweave cache --rebuild                 # Rebuild dashboard cache');
   console.log('  $ specweave cache --debug                   # Show cache debug info');
   console.log('  $ specweave validate-jira --env .env.prod   # Validate with custom .env file');
+  console.log('  $ specweave context projects                # Get available projects as JSON');
+  console.log('  $ specweave context boards --project myapp  # Get boards for a project');
+  console.log('  $ specweave context select                  # Interactive project/board selection');
   console.log('');
   console.log('Supported AI Tools:');
   console.log('  - Claude Code (full automation) - Native skills, agents, hooks');

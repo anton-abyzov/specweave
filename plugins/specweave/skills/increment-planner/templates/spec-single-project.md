@@ -8,7 +8,8 @@ created: {{DATE}}
 structure: user-stories
 test_mode: {{TEST_MODE}}
 coverage_target: {{COVERAGE_TARGET}}
-default_project: {{PROJECT_ID}}
+# MANDATORY: Run "specweave context projects" to get valid project ID
+project: {{PROJECT_ID}}
 ---
 
 # Feature: {{FEATURE_TITLE}}

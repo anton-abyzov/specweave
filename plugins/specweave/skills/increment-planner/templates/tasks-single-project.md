@@ -6,7 +6,7 @@
 - `[P]`: Parallelizable
 - `[ ]`: Not started
 - `[x]`: Completed
-- Model hints: ⚡ haiku, 🧠 sonnet, 💎 opus
+- Model hints: ⚡ haiku (simple), 💎 opus (default)
 
 ## Phase 1: Setup
 

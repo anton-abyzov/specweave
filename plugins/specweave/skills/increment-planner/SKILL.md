@@ -176,39 +176,68 @@ echo "Using coverageTarget: $coverageTarget"
 
 **Store these values for use in STEP 4 and STEP 7!**
 
-### STEP 0B: Detect Structure Level & Select Project/Board (MANDATORY!)
+### STEP 0B: Get Project Context (MANDATORY - BLOCKING!)
 
-**⚠️ CRITICAL: Before generating spec.md, you MUST know the target project (and board for 2-level structures)!**
+**⛔ DO NOT PROCEED TO STEP 1 WITHOUT COMPLETING THIS STEP!**
+
+Before generating ANY spec.md content, you MUST run this CLI command:
+
+```bash
+specweave context projects
+```
+
+This returns JSON with available projects and structure level:
+
+```json
+{
+  "level": 1,
+  "projects": [{"id": "my-app", "name": "My App"}],
+  "detectionReason": "multiProject configuration",
+  "source": "multi-project"
+}
+```
+
+**For 2-level structures**, output includes boards:
+```json
+{
+  "level": 2,
+  "projects": [{"id": "acme-corp", "name": "ACME Corporation"}],
+  "boardsByProject": {
+    "acme-corp": [
+      {"id": "digital-ops", "name": "Digital Operations"},
+      {"id": "mobile-team", "name": "Mobile Team"}
+    ]
+  },
+  "detectionReason": "ADO area path mapping configured",
+  "source": "ado-area-path"
+}
+```
+
+**VALIDATION RULES:**
+
+```
+✅ REQUIRED: Parse the JSON output and use ONLY those project/board values
+✅ REQUIRED: project field MUST match one of the returned projects[].id
+✅ REQUIRED: board field (2-level) MUST match one of boardsByProject[project].id
+❌ FORBIDDEN: Inventing or guessing project names
+❌ FORBIDDEN: Using folder name as project (e.g., "sw-olysense")
+❌ FORBIDDEN: Creating spec.md with {{PROJECT_ID}} placeholder
+❌ FORBIDDEN: Creating spec.md for 2-level without board: field
+```
 
 **Structure Levels:**
 - **1-Level**: `internal/specs/{project}/FS-XXX/` - requires `project` in spec.md
 - **2-Level**: `internal/specs/{project}/{board}/FS-XXX/` - requires BOTH `project` AND `board`
 
-**Detection Logic** (use `src/utils/structure-level-detector.ts`):
-
-```typescript
-import { detectStructureLevel, getRequiredSpecFields } from './utils/structure-level-detector.js';
-
-const structureConfig = detectStructureLevel(projectRoot);
-console.log(`Structure level: ${structureConfig.level}`);
-console.log(`Detection reason: ${structureConfig.detectionReason}`);
-console.log(`Available projects: ${structureConfig.projects.map(p => p.id).join(', ')}`);
-
-if (structureConfig.level === 2 && structureConfig.boardsByProject) {
-  console.log('Available boards by project:');
-  for (const [projectId, boards] of Object.entries(structureConfig.boardsByProject)) {
-    console.log(`  ${projectId}: ${boards.map(b => b.id).join(', ')}`);
-  }
-}
+**Alternative: Interactive Selection:**
+```bash
+specweave context select
+# Returns auto-selected or prompts for selection
 ```
 
-**Manual Detection:**
+**Get boards for a specific project (2-level):**
 ```bash
-# Check if 2-level (ADO area paths or JIRA boards)
-jq '.sync.profiles | to_entries[] | select(.value.provider == "ado") | .value.config.areaPathMapping' .specweave/config.json
-
-# Check existing folder structure
-ls -la .specweave/docs/internal/specs/*/  # If sub-folders exist (not FS-XXX) → 2-level
+specweave context boards --project=acme-corp
 ```
 
 **Project/Board Selection - ULTRA-SMART LOGIC (MANDATORY BEFORE STEP 4!):**
@@ -766,18 +795,20 @@ When creating tasks, assign optimal models:
 - Simple CRUD, configuration, setup
 - Mechanical work with defined approach
 
-**🧠 Sonnet** (thinking, balanced):
+**💎 Opus** (best quality, default):
 - Architecture decisions
 - Multiple valid approaches
 - Integration between components
 - Complex business logic
 - Error handling strategies
-
-**💎 Opus** (critical, expensive):
 - Critical system architecture
 - Security-critical decisions
 - Performance-critical algorithms
 - Novel problem-solving
+
+**🧠 Sonnet** (legacy, rarely needed):
+- Use only for backwards compatibility
+- Prefer Opus or Haiku instead
 
 ---
 

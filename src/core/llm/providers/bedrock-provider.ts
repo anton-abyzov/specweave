@@ -38,7 +38,7 @@ export class BedrockProvider implements LLMProvider {
 
   constructor(config: BedrockProviderConfig) {
     this.region = config.region || process.env.AWS_REGION || 'us-east-1';
-    this.defaultModel = config.model || 'anthropic.claude-3-5-sonnet-20241022-v2:0';
+    this.defaultModel = config.model || 'anthropic.claude-opus-4-5-20251101-v1:0';
     this.maxTokens = config.maxTokens || 4096;
     this.temperature = config.temperature ?? 0.3;
     this.logger = config.logger || consoleLogger;
@@ -162,17 +162,21 @@ Return ONLY the JSON object.`;
     // Bedrock Claude pricing (slightly higher than direct)
     const modelId = model || this.defaultModel;
 
-    if (modelId.includes('claude-3-5-sonnet')) {
+    if (modelId.includes('claude-opus-4')) {
+      return (inputTokens / 1_000_000) * 15 + (outputTokens / 1_000_000) * 75;
+    }
+    if (modelId.includes('claude-sonnet-4') || modelId.includes('claude-3-5-sonnet')) {
       return (inputTokens / 1_000_000) * 3 + (outputTokens / 1_000_000) * 15;
     }
-    if (modelId.includes('claude-3-haiku')) {
+    if (modelId.includes('claude-3-haiku') || modelId.includes('claude-haiku')) {
       return (inputTokens / 1_000_000) * 0.25 + (outputTokens / 1_000_000) * 1.25;
     }
     if (modelId.includes('titan')) {
       return (inputTokens / 1_000_000) * 0.8 + (outputTokens / 1_000_000) * 1.6;
     }
 
-    return (inputTokens / 1_000_000) * 3 + (outputTokens / 1_000_000) * 15;
+    // Default to opus pricing
+    return (inputTokens / 1_000_000) * 15 + (outputTokens / 1_000_000) * 75;
   }
 
   async isAvailable(): Promise<boolean> {

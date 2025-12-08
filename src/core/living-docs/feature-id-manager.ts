@@ -101,11 +101,13 @@ export class FeatureIDManager {
         }
 
         // Extract feature ID - CRITICAL LOGIC for greenfield vs brownfield
-        const match = incrementId.match(/^(\d{4})-(.+)$/);
+        // CRITICAL (v0.33.0): Handle external increments with E suffix (e.g., 0111E-name)
+        const match = incrementId.match(/^(\d{4})(E)?-(.+)$/);
         let featureId = '';
 
         if (match) {
           const num = parseInt(match[1], 10);
+          const isExternalIncrement = match[2] === 'E';
 
           // Check if brownfield (imported from external tool)
           const isBrownfield = frontmatter.source === 'external' ||
@@ -120,12 +122,14 @@ export class FeatureIDManager {
               const yy = String(created.getFullYear()).slice(-2);
               const mm = String(created.getMonth() + 1).padStart(2, '0');
               const dd = String(created.getDate()).padStart(2, '0');
-              featureId = `FS-${yy}-${mm}-${dd}-${match[2]}`;
+              featureId = `FS-${yy}-${mm}-${dd}-${match[3]}`;
             }
           } else {
             // Greenfield: ALWAYS use increment number (ignore frontmatter)
             // This ensures 0031 → FS-031 even if frontmatter says FS-25-11-12
-            featureId = `FS-${String(num).padStart(3, '0')}`;
+            // External increments (0111E-...) map to external features (FS-111E)
+            const baseFeatureId = `FS-${String(num).padStart(3, '0')}`;
+            featureId = isExternalIncrement ? `${baseFeatureId}E` : baseFeatureId;
           }
         }
 

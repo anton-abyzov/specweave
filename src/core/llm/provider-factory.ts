@@ -140,7 +140,7 @@ async function createAnthropicProvider(
 
   return new AnthropicProvider({
     apiKey,
-    model: config.model || 'claude-sonnet-4-20250514',
+    model: config.model || 'claude-opus-4-5-20251101',
     maxTokens: config.maxTokensPerRequest,
     temperature: config.temperature,
     logger,
@@ -236,7 +236,7 @@ async function createBedrockProvider(
 
   return new BedrockProvider({
     region: config.awsRegion || process.env.AWS_REGION || 'us-east-1',
-    model: config.model || 'anthropic.claude-3-5-sonnet-20241022-v2:0',
+    model: config.model || 'anthropic.claude-opus-4-5-20251101-v1:0',
     maxTokens: config.maxTokensPerRequest,
     temperature: config.temperature,
     logger,

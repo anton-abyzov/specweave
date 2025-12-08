@@ -8,11 +8,8 @@ created: 2025-12-06
 external:
   github:
     issue: 782
-    url: "https://github.com/anton-abyzov/specweave/issues/782"
+    url: https://github.com/anton-abyzov/specweave/issues/782
 ---
-
-**Origin**: 🏠 **Internal**
-
 
 # US-003: Core Status Scripts
 
@@ -22,7 +19,7 @@ external:
 
 ## Acceptance Criteria
 
-- [ ] **AC-US3-01**: `scripts/jobs.js` - background job status
+- [x] **AC-US3-01**: `scripts/jobs.js` - background job status
 - [x] **AC-US3-02**: `scripts/progress.js` - increment progress
 - [x] **AC-US3-03**: `scripts/status.js` - status overview
 
@@ -37,5 +34,6 @@ external:
 
 ## Tasks
 
-- [x] [T-002](../../../../increments/0114-slash-command-script-delegation/tasks.md#T-002): Create progress.js script
-- [x] [T-003](../../../../increments/0114-slash-command-script-delegation/tasks.md#T-003): Create status.js script
+- [x] **T-001**: Create scripts folder and jobs.js
+- [x] **T-002**: Create progress.js script
+- [x] **T-003**: Create status.js script

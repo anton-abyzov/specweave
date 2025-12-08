@@ -56,7 +56,7 @@
     {
       "sessionId": "session_1730386335123_abc123",
       "agent": "pm",
-      "model": "sonnet",
+      "model": "opus",
       "increment": "0003",
       "command": "/specweave:do",
       "startedAt": "2025-10-31T14:30:00.000Z",
@@ -106,7 +106,7 @@ cost = (inputTokens / 1_000_000) * inputRate +
 ### Savings Calculation
 
 ```typescript
-baselineCost = calculateCost('sonnet', inputTokens, outputTokens)
+baselineCost = calculateCost('opus', inputTokens, outputTokens)
 actualCost = calculateCost(usedModel, inputTokens, outputTokens)
 savings = baselineCost - actualCost
 ```
@@ -128,7 +128,7 @@ savings = baselineCost - actualCost
   "totalTokens": 1250000,
   "sessionCount": 42,
   "costByModel": {
-    "sonnet": 12.00,
+    "opus": 12.00,
     "haiku": 10.50
   },
   "costByAgent": {
@@ -147,7 +147,7 @@ savings = baselineCost - actualCost
 **Columns**:
 ```csv
 Session ID,Agent,Model,Command,Started At,Ended At,Input Tokens,Output Tokens,Total Tokens,Cost ($),Savings ($)
-session_123,pm,sonnet,/specweave:increment,2025-10-31T14:00:00.000Z,2025-10-31T14:05:00.000Z,5000,2000,7000,0.045,0.105
+session_123,pm,opus,/specweave:increment,2025-10-31T14:00:00.000Z,2025-10-31T14:05:00.000Z,5000,2000,7000,0.045,0.105
 ```
 
 ---
@@ -193,7 +193,7 @@ const tracker = new CostTracker({
 });
 
 // Start session
-const sessionId = tracker.startSession('pm', 'sonnet', '0003', '/specweave:increment');
+const sessionId = tracker.startSession('pm', 'opus', '0003', '/specweave:increment');
 
 // Record tokens
 tracker.recordTokens(5000, 2000, sessionId);

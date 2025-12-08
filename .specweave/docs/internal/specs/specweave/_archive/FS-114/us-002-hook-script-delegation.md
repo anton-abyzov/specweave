@@ -8,11 +8,8 @@ created: 2025-12-06
 external:
   github:
     issue: 781
-    url: "https://github.com/anton-abyzov/specweave/issues/781"
+    url: https://github.com/anton-abyzov/specweave/issues/781
 ---
-
-**Origin**: 🏠 **Internal**
-
 
 # US-002: Hook Script Delegation
 
@@ -38,5 +35,5 @@ external:
 
 ## Tasks
 
-- [x] [T-004](../../../../increments/0114-slash-command-script-delegation/tasks.md#T-004): Modify user-prompt-submit.sh
-- [x] [T-006](../../../../increments/0114-slash-command-script-delegation/tasks.md#T-006): Test implementation
+- [x] **T-004**: Modify user-prompt-submit.sh
+- [x] **T-006**: Test implementation

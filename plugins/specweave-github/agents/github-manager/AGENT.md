@@ -780,8 +780,8 @@ You can now:
 ---
 
 **Agent Type**: Specialized
-**Model**: Sonnet (Claude 3.5 Sonnet) - Best for API operations and structured tasks
+**Model**: Opus (Claude Opus 4.5) - Best for API operations and structured tasks
 **Context**: Separate context window (doesn't pollute main conversation)
 **Version**: 1.0.0
 **Plugin**: specweave-github
-**Last Updated**: 2025-10-30
+**Last Updated**: 2025-12-07

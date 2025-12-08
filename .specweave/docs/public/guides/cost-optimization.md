@@ -31,8 +31,8 @@ SpecWeave analyzes:
 Decision: Use Haiku 4.5
 Reasoning: Mechanical implementation task
           ↓
-Cost: $0.06 (vs $0.18 with Sonnet)
-Savings: $0.12 (67%)
+Cost: $0.06 (vs $0.90 with Opus)
+Savings: $0.84 (93%)
 ```
 
 ### 2. Three-Layer Intelligence

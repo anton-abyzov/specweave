@@ -1,0 +1,14 @@
+{
+  "id": "0122-multi-technology-governance",
+  "title": "Multi-Technology Governance Standards Detection",
+  "status": "completed",
+  "priority": "P1",
+  "createdAt": "2025-12-07T18:00:00Z",
+  "updatedAt": "2025-12-08T12:00:00Z",
+  "completedAt": "2025-12-08T12:00:00Z",
+  "type": "feature",
+  "tags": ["governance", "coding-standards", "multi-technology", "python", "go", "java", "react", "angular", "vue"],
+  "completedTasks": 8,
+  "totalTasks": 8,
+  "totalACs": 24
+}

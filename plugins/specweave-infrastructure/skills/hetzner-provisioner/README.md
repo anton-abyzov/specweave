@@ -1,6 +1,6 @@
 **Name:** hetzner-provisioner
 **Type:** Infrastructure / DevOps
-**Model:** Claude Sonnet 4.5 (balanced for IaC generation)
+**Model:** Claude Opus 4.5 (best-in-class for IaC generation)
 **Status:** Planned
 
 ---

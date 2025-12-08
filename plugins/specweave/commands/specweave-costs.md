@@ -11,9 +11,9 @@ You are being invoked via the `/specweave:costs [incrementId]` command.
 
 Display a comprehensive cost dashboard showing:
 1. Token usage breakdown
-2. Cost by model (Sonnet vs Haiku)
+2. Cost by model (Opus vs Haiku)
 3. Cost by agent
-4. Savings vs baseline (all-Sonnet)
+4. Savings vs baseline (all-Opus)
 5. Recent sessions
 
 **Optional**: Export data to JSON/CSV format
@@ -155,7 +155,7 @@ SUMMARY
 
 COST BY MODEL
 ───────────────────────────────────────────────────────────────
-  sonnet          $    0.0734  ( 59.4%)
+  opus            $    0.0734  ( 59.4%)
   haiku           $    0.0500  ( 40.6%)
 
 COST BY AGENT
@@ -240,7 +240,7 @@ Use /specweave:costs without arguments to see all increments.
 ## Important Notes
 
 1. **Cost Data Persistence**: Costs are persisted to `.specweave/logs/costs.json`
-2. **Baseline Calculation**: Savings are calculated vs an all-Sonnet baseline
+2. **Baseline Calculation**: Savings are calculated vs an all-Opus baseline
 3. **Real-Time Updates**: Costs update after each agent invocation
 4. **Export Formats**: JSON for machine parsing, CSV for spreadsheet import
 5. **Privacy**: Cost data is local only, never sent to external services

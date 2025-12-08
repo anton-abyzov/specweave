@@ -95,6 +95,32 @@ Available increments:
 Usage: /specweave:validate-increment <id> [--quality] [--export] [--fix] [--always]
 ```
 
+### Step 1.5: Sync AC Status (NEW - v0.33.0)
+
+**Before running validation, synchronize spec.md ACs with tasks.md completion status**:
+
+```typescript
+import { ACStatusManager } from '../../../src/core/increment/ac-status-manager.js';
+
+// Sync ACs BEFORE validation to prevent false positives
+// This ensures spec.md ACs reflect actual task completion from tasks.md
+console.log('🔄 Syncing AC status before validation...');
+const acManager = new ACStatusManager(projectRoot);
+const acSyncResult = await acManager.syncACStatus(incrementId);
+
+if (acSyncResult.synced && acSyncResult.updated.length > 0) {
+  console.log(`✅ Pre-validation sync: Updated ${acSyncResult.updated.length} ACs`);
+  acSyncResult.updated.forEach(acId => console.log(`   ${acId} → [x]`));
+} else {
+  console.log('✅ AC status already in sync');
+}
+```
+
+**Why this matters**:
+- Background hooks (`post-task-completion.sh`) run async and may not complete before validation
+- This explicit sync prevents "0 ACs checked" false positives
+- Idempotent: safe to call multiple times (no-op if already synced)
+
 ### Step 2: Run Rule-Based Validation (Always)
 
 Run 130+ validation rules across 7 categories:
@@ -260,7 +286,7 @@ This will:
   • Evaluate spec clarity, testability, edge cases
   • Provide detailed improvement suggestions
   • Use ~2,000 tokens (1-2 minutes)
-  • Cost: ~$0.02 (Claude Sonnet 4.5)
+  • Cost: ~$0.05 (Claude Opus 4.5)
 
 Your choice:
   [Y] Yes, assess quality

@@ -31,9 +31,9 @@ You are helping the user implement a SpecWeave increment by executing tasks from
   - **Smart resume**: Automatically starts from next incomplete task
 
 - `--model <tier>`: Optional. Override model selection for all tasks
-  - `haiku`: Fast, cheap execution (3x faster, 20x cheaper than Sonnet)
-  - `sonnet`: Balanced quality and speed
-  - `opus`: Maximum quality (default for all tasks)
+  - `haiku`: Fast, cheap execution (simple mechanical tasks)
+  - `sonnet`: Legacy option (rarely needed)
+  - `opus`: Maximum quality (default for all complex tasks)
   - If omitted, uses model hints from tasks.md (recommended)
 
 ---
@@ -162,13 +162,13 @@ You are helping the user implement a SpecWeave increment by executing tasks from
    📊 Resume Context:
 
    Completed: 3/12 tasks (25%)
-   ├─ [✅] T001: ⚡ haiku - Setup auth module (P1) [saved $0.04]
-   ├─ [✅] T002: ⚡ haiku - Create user model (P1) [saved $0.04]
-   ├─ [✅] T003: 🧠 sonnet - Implement JWT tokens (P1)
+   ├─ [✅] T001: ⚡ haiku - Setup auth module (P1) [saved $0.14]
+   ├─ [✅] T002: ⚡ haiku - Create user model (P1) [saved $0.14]
+   ├─ [✅] T003: 💎 opus - Implement JWT tokens (P1)
    └─ [⏳] T004: ⚡ haiku - Add password hashing (P1) ← RESUMING HERE
 
    Remaining: 9 tasks (estimated 2 weeks)
-   Cost savings so far: $0.08 (67% cheaper than all-Sonnet)
+   Cost savings so far: $0.28 (67% cheaper than all-Opus)
    ```
 
 **Why smart resume?**
@@ -281,14 +281,14 @@ TASK T001: Create User model (PostgreSQL)
    • Description: Create User model with Prisma
    • Acceptance: Model has id, email, passwordHash, createdAt fields
 
-⚡ Executing with Haiku (3x faster, ~$0.0025 vs $0.05 Sonnet)...
+⚡ Executing with Haiku (3x faster, ~$0.0025 vs $0.15 Opus)...
    ✓ Created src/models/User.ts
    ✓ Added Prisma schema definition
    ✓ Generated migration file
    ✓ Added inline documentation
 
 ✅ Task T001 completed
-💰 Cost savings: $0.0475 (95% cheaper than Sonnet)
+💰 Cost savings: $0.1475 (98% cheaper than Opus)
 
 🔊 [Glass.aiff plays automatically via hook]
 🔔 Task completed! Remember to update documentation...

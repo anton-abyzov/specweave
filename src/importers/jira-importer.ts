@@ -71,15 +71,102 @@ export class JiraImporter implements Importer {
 
   /**
    * Import all issues matching config
+   *
+   * Implements 3-phase import like ADO:
+   * 1. Paginated JQL fetch (time-range based)
+   * 2. Detect missing parent Epics
+   * 3. Fetch missing parents to maintain hierarchy
    */
   async import(config: ImportConfig = {}): Promise<ExternalItem[]> {
     const items: ExternalItem[] = [];
+    const fetchedIds = new Set<string>();
 
+    // Phase 1: Paginated JQL fetch
     for await (const page of this.paginate(config)) {
       items.push(...page);
+      for (const item of page) {
+        fetchedIds.add(item.id);
+      }
+    }
+
+    // Phase 2: Detect missing parent Epics (not in time range)
+    const missingParentKeys = this.findMissingParentKeys(items, fetchedIds);
+
+    // Phase 3: Fetch missing parents to maintain hierarchy
+    if (missingParentKeys.length > 0) {
+      console.log(`📥 Fetching ${missingParentKeys.length} missing parent Epic(s)...`);
+      const parentItems = await this.fetchIssuesByKeys(missingParentKeys);
+      items.push(...parentItems);
+      console.log(`   ✅ Recovered ${parentItems.length} parent Epic(s)`);
     }
 
     return items;
+  }
+
+  /**
+   * Find parent keys that are referenced but not in fetched set
+   * (Typically Epics that weren't modified in the time range)
+   */
+  private findMissingParentKeys(items: ExternalItem[], fetchedIds: Set<string>): string[] {
+    const missingKeys = new Set<string>();
+
+    for (const item of items) {
+      if (item.parentId) {
+        // parentId format is "JIRA-PROJ-123", extract "PROJ-123"
+        const parentKey = item.parentId.replace('JIRA-', '');
+        if (!fetchedIds.has(item.parentId)) {
+          missingKeys.add(parentKey);
+        }
+      }
+    }
+
+    return Array.from(missingKeys);
+  }
+
+  /**
+   * Fetch specific issues by their keys (for parent recovery)
+   */
+  private async fetchIssuesByKeys(keys: string[]): Promise<ExternalItem[]> {
+    if (keys.length === 0) return [];
+
+    // Batch in groups of 50 (JIRA limit)
+    const batchSize = 50;
+    const allItems: ExternalItem[] = [];
+
+    for (let i = 0; i < keys.length; i += batchSize) {
+      const batchKeys = keys.slice(i, i + batchSize);
+      const jql = `key in (${batchKeys.join(',')})`;
+
+      try {
+        const response = await this.makeJiraRequest<JiraSearchResponse>(
+          '/rest/api/3/search',
+          {
+            jql,
+            maxResults: batchSize,
+            fields: [
+              'summary',
+              'description',
+              'status',
+              'priority',
+              'issuetype',
+              'created',
+              'updated',
+              'labels',
+              'customfield_10016',
+              'subtasks',
+              'parent',
+            ],
+          }
+        );
+
+        const items = response.issues.map((issue) => this.convertToExternalItem(issue));
+        allItems.push(...items);
+      } catch (error: any) {
+        console.log(`   ⚠️  Failed to fetch parent batch: ${error.message}`);
+      }
+    }
+
+    return allItems;
   }
 
   /**

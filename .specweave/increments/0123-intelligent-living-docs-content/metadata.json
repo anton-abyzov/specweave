@@ -1,0 +1,16 @@
+{
+  "id": "0123-intelligent-living-docs-content",
+  "title": "Intelligent Living Docs Content Generation",
+  "status": "completed",
+  "priority": "P1",
+  "createdAt": "2025-12-07T12:45:00Z",
+  "updatedAt": "2025-12-08T10:00:00Z",
+  "completedAt": "2025-12-08T10:00:00Z",
+  "approvedAt": "2025-12-08T10:00:00Z",
+  "reopenedAt": "2025-12-07T15:30:00Z",
+  "reopenReason": "Added US-004 for project/board-based team organization to mirror specs structure",
+  "type": "feature",
+  "tags": ["living-docs", "llm", "content-generation", "adr", "modules", "teams", "organization-structure"],
+  "completedTasks": 9,
+  "totalTasks": 9
+}

@@ -2,6 +2,16 @@
  * Init command helpers - barrel export
  */
 
+// Wizard navigation (go-back support)
+export {
+  WIZARD_BACK,
+  isGoBack,
+  getGoBackStrings,
+  createGoBackChoice,
+  logGoingBack,
+  type WizardResult,
+} from './wizard-navigation.js';
+
 // Types
 export * from './types.js';
 

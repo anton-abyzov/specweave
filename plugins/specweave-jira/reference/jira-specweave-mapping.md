@@ -41,15 +41,20 @@ This is the **MOST CRITICAL** mapping. Never deviate from this 1:1 relationship.
 ```yaml
 # .specweave/increments/####-{name}/metadata.json
 {
-  "external_ids": {
+  "external_sync": {
     "jira": {
-      "epic": "PROJ-123",
-      "epic_url": "https://company.atlassian.net/browse/PROJ-123",
-      "project_key": "PROJ"
+      "profile": "jira-my-project",
+      "issueKey": "PROJ-123",
+      "issueUrl": "https://company.atlassian.net/browse/PROJ-123",
+      "projectKey": "PROJ",
+      "lastSyncedAt": "2025-12-07T04:30:00Z"
     }
   }
 }
 ```
+
+**NOTE (v0.32.0+)**: Standardized to `external_sync.jira.*` for consistency with ADO (`external_sync.ado.*`).
+Legacy `external_ids.jira.*` is still supported for backwards compatibility.
 
 **Example**:
 ```
@@ -180,12 +185,12 @@ SpecWeave: .specweave/docs/internal/delivery/release-v1.0.md
 ```yaml
 # metadata.json
 {
-  "external_ids": {
+  "external_sync": {
     "jira": {
       "tasks": [
-        {"id": "T-001", "jira_key": "PROJ-126"},
-        {"id": "T-002", "jira_key": "PROJ-127"},
-        {"id": "T-003", "jira_key": "PROJ-128"}
+        {"id": "T-001", "issueKey": "PROJ-126"},
+        {"id": "T-002", "issueKey": "PROJ-127"},
+        {"id": "T-003", "issueKey": "PROJ-128"}
       ]
     }
   }
@@ -264,7 +269,7 @@ SpecWeave: .specweave/docs/internal/architecture/frontend-auth/
 3. SpecWeave creates new increment:
    ```bash
    .specweave/increments/0001-user-authentication/
-   ├── metadata.json  # external_ids.jira.epic = PROJ-123
+   ├── metadata.json  # external_sync.jira.issueKey = PROJ-123
    ├── spec.md
    ├── plan.md
    └── tasks.md
@@ -301,7 +306,7 @@ SpecWeave: .specweave/docs/internal/architecture/frontend-auth/
 4. SpecWeave updates `metadata.json`:
    ```json
    {
-     "external_ids": {
+     "external_sync": {
        "jira": {
          "stories": ["PROJ-124"]
        }
@@ -330,7 +335,7 @@ SpecWeave: .specweave/docs/internal/architecture/frontend-auth/
 6. SpecWeave updates `metadata.json`:
    ```json
    {
-     "external_ids": {
+     "external_sync": {
        "jira": {
          "stories": ["PROJ-124", "PROJ-131"]
        }

@@ -12,10 +12,20 @@
 # Rules:
 # - 1-level structure: spec.md MUST have `project:` in YAML frontmatter
 # - 2-level structure: spec.md MUST have BOTH `project:` AND `board:` in frontmatter
+# - Project MUST exist in configuration (validated via specweave context projects)
+# - Board MUST exist under project for 2-level (validated via specweave context boards)
 #
 # Returns exit code 1 (block) if validation fails, 0 (allow) otherwise.
+#
+# Bypass: Set SPECWEAVE_FORCE_PROJECT=1 to skip validation
 
 set -e
+
+# Check for force bypass
+if [ "$SPECWEAVE_FORCE_PROJECT" = "1" ]; then
+  echo '{"decision": "allow", "message": "⚠️  Project validation bypassed (SPECWEAVE_FORCE_PROJECT=1)"}'
+  exit 0
+fi
 
 # Read tool input from stdin
 INPUT=$(cat)
@@ -33,7 +43,7 @@ fi
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // ""')
 
 # Only validate spec.md files in increments folder
-if [[ ! "$FILE_PATH" =~ \.specweave/increments/[0-9]{4}-[^/]+/spec\.md$ ]]; then
+if [[ ! "$FILE_PATH" =~ \.specweave/increments/[0-9]{4}E?-[^/]+/spec\.md$ ]]; then
   echo '{"decision": "allow"}'
   exit 0
 fi
@@ -52,57 +62,102 @@ FRONTMATTER=$(echo "$CONTENT" | sed -n '/^---$/,/^---$/p' | tail -n +2 | head -n
 
 # Check for unresolved project placeholder
 if echo "$FRONTMATTER" | grep -q 'project:\s*{{PROJECT_ID}}'; then
-  echo '{"decision": "block", "reason": "spec.md has unresolved placeholder {{PROJECT_ID}}. Run STEP 0B to select project before creating spec.md."}'
+  echo '{"decision": "block", "reason": "spec.md has unresolved placeholder {{PROJECT_ID}}. Run '\''specweave context projects'\'' to get available projects, then select one."}'
   exit 0
 fi
 
 # Check for unresolved board placeholder
 if echo "$FRONTMATTER" | grep -q 'board:\s*{{BOARD_ID}}'; then
-  echo '{"decision": "block", "reason": "spec.md has unresolved placeholder {{BOARD_ID}}. Run STEP 0B to select board before creating spec.md."}'
+  echo '{"decision": "block", "reason": "spec.md has unresolved placeholder {{BOARD_ID}}. Run '\''specweave context boards --project=<id>'\'' to get available boards, then select one."}'
   exit 0
 fi
 
-# Check for project field
+# Extract project and board from frontmatter
 PROJECT=$(echo "$FRONTMATTER" | grep -E '^project:\s*' | sed 's/^project:\s*//' | tr -d '"'"'" | tr -d '[:space:]')
+BOARD=$(echo "$FRONTMATTER" | grep -E '^board:\s*' | sed 's/^board:\s*//' | tr -d '"'"'" | tr -d '[:space:]')
 
-# Detect structure level by checking config
+# Get project root from file path
 PROJECT_ROOT="${FILE_PATH%%/.specweave/*}"
-CONFIG_PATH="$PROJECT_ROOT/.specweave/config.json"
 
-IS_2_LEVEL=false
+# Change to project root for specweave command
+cd "$PROJECT_ROOT" 2>/dev/null || true
 
-if [ -f "$CONFIG_PATH" ]; then
-  # Check for ADO area path mapping (indicates 2-level)
-  if jq -e '.sync.profiles | to_entries[] | select(.value.provider == "ado") | .value.config.areaPathMapping.mappings | length > 0' "$CONFIG_PATH" >/dev/null 2>&1; then
-    IS_2_LEVEL=true
-  fi
+# Get project context via CLI command
+CONTEXT_OUTPUT=$(specweave context projects 2>/dev/null || echo '{"level": 1, "projects": []}')
 
-  # Check for ADO areaPaths (indicates 2-level)
-  if jq -e '.sync.profiles | to_entries[] | select(.value.provider == "ado") | .value.config.areaPaths | length > 0' "$CONFIG_PATH" >/dev/null 2>&1; then
-    IS_2_LEVEL=true
-  fi
-fi
+# Parse structure level
+STRUCTURE_LEVEL=$(echo "$CONTEXT_OUTPUT" | jq -r '.level // 1')
+
+# Parse available projects
+AVAILABLE_PROJECTS=$(echo "$CONTEXT_OUTPUT" | jq -r '.projects[].id // empty' | tr '\n' ', ' | sed 's/,$//')
 
 # Validation based on structure level
-if [ "$IS_2_LEVEL" = true ]; then
+if [ "$STRUCTURE_LEVEL" = "2" ]; then
   # 2-level: BOTH project AND board required
+
+  # Check project field exists
   if [ -z "$PROJECT" ] || [ "$PROJECT" = "null" ]; then
-    echo '{"decision": "block", "reason": "spec.md missing required '\''project:'\'' field in YAML frontmatter. This is a 2-level structure - add '\''project: <project_name>'\'' to frontmatter."}'
+    echo "{\"decision\": \"block\", \"reason\": \"spec.md missing required 'project:' field in YAML frontmatter.\\n\\n2-level structure detected.\\n\\nAvailable projects: ${AVAILABLE_PROJECTS:-none detected}\\n\\nAdd 'project: <project_name>' to frontmatter.\\n\\nRun 'specweave context projects' to see all options.\"}"
     exit 0
   fi
 
-  BOARD=$(echo "$FRONTMATTER" | grep -E '^board:\s*' | sed 's/^board:\s*//' | tr -d '"'"'" | tr -d '[:space:]')
-
+  # Check board field exists
   if [ -z "$BOARD" ] || [ "$BOARD" = "null" ]; then
-    echo '{"decision": "block", "reason": "spec.md missing required '\''board:'\'' field in YAML frontmatter. This is a 2-level structure - add '\''board: <board_name>'\'' to frontmatter."}'
+    # Get available boards for the project
+    AVAILABLE_BOARDS=$(specweave context boards --project="$PROJECT" 2>/dev/null | jq -r '.boards[].id // empty' | tr '\n' ', ' | sed 's/,$//')
+
+    echo "{\"decision\": \"block\", \"reason\": \"spec.md missing required 'board:' field in YAML frontmatter.\\n\\n2-level structure detected (project: ${PROJECT}).\\n\\nAvailable boards: ${AVAILABLE_BOARDS:-none detected}\\n\\nAdd 'board: <board_name>' to frontmatter.\\n\\nRun 'specweave context boards --project=${PROJECT}' to see all options.\"}"
     exit 0
   fi
-else
-  # 1-level: project is strongly recommended (warning, not block)
-  if [ -z "$PROJECT" ] || [ "$PROJECT" = "null" ]; then
-    # For 1-level, we warn but don't block (backward compatibility)
-    echo '{"decision": "allow", "message": "⚠️  spec.md should have '\''project:'\'' field in YAML frontmatter for explicit sync target."}'
+
+  # Validate project exists in configuration
+  PROJECT_EXISTS=$(echo "$CONTEXT_OUTPUT" | jq --arg proj "$PROJECT" '.projects[] | select(.id == $proj)' 2>/dev/null)
+  if [ -z "$PROJECT_EXISTS" ]; then
+    # Try case-insensitive match
+    PROJECT_EXISTS=$(echo "$CONTEXT_OUTPUT" | jq --arg proj "$PROJECT" '.projects[] | select(.id | ascii_downcase == ($proj | ascii_downcase))' 2>/dev/null)
+  fi
+
+  if [ -z "$PROJECT_EXISTS" ] && [ -n "$AVAILABLE_PROJECTS" ]; then
+    echo "{\"decision\": \"block\", \"reason\": \"Project '${PROJECT}' not found in configuration.\\n\\nAvailable projects: ${AVAILABLE_PROJECTS}\\n\\nEither:\\n1. Update project: field to a valid project\\n2. Set SPECWEAVE_FORCE_PROJECT=1 to bypass validation\"}"
     exit 0
+  fi
+
+  # Validate board exists under project
+  BOARDS_OUTPUT=$(specweave context boards --project="$PROJECT" 2>/dev/null || echo '{"boards": []}')
+  BOARD_EXISTS=$(echo "$BOARDS_OUTPUT" | jq --arg board "$BOARD" '.boards[] | select(.id == $board)' 2>/dev/null)
+
+  if [ -z "$BOARD_EXISTS" ]; then
+    # Try case-insensitive match
+    BOARD_EXISTS=$(echo "$BOARDS_OUTPUT" | jq --arg board "$BOARD" '.boards[] | select(.id | ascii_downcase == ($board | ascii_downcase))' 2>/dev/null)
+  fi
+
+  AVAILABLE_BOARDS=$(echo "$BOARDS_OUTPUT" | jq -r '.boards[].id // empty' | tr '\n' ', ' | sed 's/,$//')
+
+  if [ -z "$BOARD_EXISTS" ] && [ -n "$AVAILABLE_BOARDS" ]; then
+    echo "{\"decision\": \"block\", \"reason\": \"Board '${BOARD}' not found under project '${PROJECT}'.\\n\\nAvailable boards: ${AVAILABLE_BOARDS}\\n\\nEither:\\n1. Update board: field to a valid board\\n2. Set SPECWEAVE_FORCE_PROJECT=1 to bypass validation\"}"
+    exit 0
+  fi
+
+else
+  # 1-level: project is REQUIRED (not just recommended)
+
+  if [ -z "$PROJECT" ] || [ "$PROJECT" = "null" ]; then
+    echo "{\"decision\": \"block\", \"reason\": \"spec.md missing required 'project:' field in YAML frontmatter.\\n\\nAvailable projects: ${AVAILABLE_PROJECTS:-none detected}\\n\\nAdd 'project: <project_name>' to frontmatter.\\n\\nRun 'specweave context projects' to see all options.\"}"
+    exit 0
+  fi
+
+  # Validate project exists in configuration (if we have projects configured)
+  if [ -n "$AVAILABLE_PROJECTS" ]; then
+    PROJECT_EXISTS=$(echo "$CONTEXT_OUTPUT" | jq --arg proj "$PROJECT" '.projects[] | select(.id == $proj)' 2>/dev/null)
+    if [ -z "$PROJECT_EXISTS" ]; then
+      # Try case-insensitive match
+      PROJECT_EXISTS=$(echo "$CONTEXT_OUTPUT" | jq --arg proj "$PROJECT" '.projects[] | select(.id | ascii_downcase == ($proj | ascii_downcase))' 2>/dev/null)
+    fi
+
+    if [ -z "$PROJECT_EXISTS" ]; then
+      echo "{\"decision\": \"block\", \"reason\": \"Project '${PROJECT}' not found in configuration.\\n\\nAvailable projects: ${AVAILABLE_PROJECTS}\\n\\nEither:\\n1. Update project: field to a valid project\\n2. Set SPECWEAVE_FORCE_PROJECT=1 to bypass validation\"}"
+      exit 0
+    fi
   fi
 fi
 

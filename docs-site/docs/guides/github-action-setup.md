@@ -286,7 +286,7 @@ github_actions:
 
 # AI Model Configuration
 ai:
-  model: "claude-sonnet-4-5-20250929"
+  model: "claude-opus-4-5-20251101"
   max_tokens: 16000
 ```
 
@@ -764,7 +764,7 @@ cat .specweave/docs/changelog/2025-10.md
    curl https://api.anthropic.com/v1/messages \
      -H "x-api-key: YOUR_KEY" \
      -H "anthropic-version: 2023-06-01" \
-     -d '{"model":"claude-sonnet-4-5-20250929","max_tokens":10,"messages":[{"role":"user","content":"Hi"}]}'
+     -d '{"model":"claude-opus-4-5-20251101","max_tokens":10,"messages":[{"role":"user","content":"Hi"}]}'
    ```
 
 2. **Check key format**

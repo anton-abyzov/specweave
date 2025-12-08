@@ -1,0 +1,11 @@
+{
+  "id": "FS-111E",
+  "type": "feature",
+  "archivedAt": "2025-12-07T08:39:48.718Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Documents/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-111E",
+  "linkedIncrements": [
+    "0111E-dora-metrics-workflow-fix"
+  ]
+}

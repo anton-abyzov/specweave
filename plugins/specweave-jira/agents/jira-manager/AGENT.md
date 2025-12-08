@@ -415,7 +415,7 @@ done
 3. Format Jira epic payload (project key, summary, description, labels)
 4. POST to Jira API → Create epic
 5. Parse response → Extract epic key (PROJ-123)
-6. Save to metadata.json: `external_ids.jira.epic = PROJ-123`
+6. Save to metadata.json: `external_sync.jira.issueKey = PROJ-123`
 7. Display: "Created Jira Epic: PROJ-123"
 
 ### Example 2: Sync Progress

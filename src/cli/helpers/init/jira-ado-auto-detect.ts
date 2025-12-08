@@ -14,6 +14,14 @@ import { JiraClient } from '../../../integrations/jira/jira-client.js';
 import { fetchBoardsForProject, type JiraBoard } from '../../../../plugins/specweave-jira/lib/jira-board-resolver.js';
 import { fetchAreaPathsForProject, type AdoAreaPath } from '../../../../plugins/specweave-ado/lib/ado-board-resolver.js';
 import { normalizeToProjectId } from '../../../utils/project-id-generator.js';
+import {
+  type HierarchyMappingConfig,
+  DEFAULT_ADO_HIERARCHY_MAPPING,
+  ADO_SAFE_HIERARCHY_MAPPING,
+  ADO_SCRUM_HIERARCHY_MAPPING,
+  DEFAULT_JIRA_HIERARCHY_MAPPING,
+  JIRA_SAFE_HIERARCHY_MAPPING,
+} from '../../../core/types/sync-profile.js';
 
 // =============================================================================
 // TYPES
@@ -71,6 +79,8 @@ export interface JiraMappingResult {
   mode: 'simple' | 'by-project' | 'by-board' | 'hybrid';
   /** Project key → board name → specweave folder */
   mappings: Map<string, Map<string, string>>;
+  /** Hierarchy mapping for 3-4-5 level support (v0.33.0+) */
+  hierarchyMapping?: HierarchyMappingConfig;
 }
 
 /**
@@ -80,6 +90,8 @@ export interface AdoMappingResult {
   mode: 'simple' | 'by-project' | 'by-area';
   /** Project name → area path → specweave folder */
   mappings: Map<string, Map<string, string>>;
+  /** Hierarchy mapping for 3-4-5 level support (v0.33.0+) */
+  hierarchyMapping?: HierarchyMappingConfig;
 }
 
 // =============================================================================
@@ -266,6 +278,238 @@ function analyzeAdoStructureDeep(projects: AdoProjectInfo[]): StructureAnalysis 
     scrumBoardCount: 0,
     kanbanBoardCount: 0,
     suggestedMapping,
+  };
+}
+
+// =============================================================================
+// HIERARCHY MAPPING SELECTION (v0.33.0+ - Universal 3/4/5 Level Support)
+// =============================================================================
+
+/**
+ * Hierarchy preset definitions for JIRA
+ *
+ * Maps JIRA work item types to SpecWeave hierarchy levels.
+ */
+export const JIRA_HIERARCHY_PRESETS = {
+  'standard': {
+    name: 'Standard (3 levels: Epic → Story → Sub-task)',
+    description: 'Most JIRA projects use this structure',
+    config: DEFAULT_JIRA_HIERARCHY_MAPPING,
+  },
+  'safe': {
+    name: 'SAFe (4 levels: Initiative → Epic → Story → Sub-task)',
+    description: 'Scaled Agile Framework with strategic Initiatives',
+    config: JIRA_SAFE_HIERARCHY_MAPPING,
+  },
+  'custom': {
+    name: 'Custom (configure manually)',
+    description: 'Define your own work item type mappings',
+    config: null as HierarchyMappingConfig | null,
+  },
+} as const;
+
+/**
+ * Hierarchy preset definitions for ADO
+ *
+ * Maps ADO work item types to SpecWeave hierarchy levels.
+ */
+export const ADO_HIERARCHY_PRESETS = {
+  'agile': {
+    name: 'Agile (4 levels: Epic → Feature → User Story → Task)',
+    description: 'Default ADO Agile process template',
+    config: DEFAULT_ADO_HIERARCHY_MAPPING,
+  },
+  'scrum': {
+    name: 'Scrum (3 levels: Epic → Product Backlog Item → Task)',
+    description: 'ADO Scrum process template',
+    config: ADO_SCRUM_HIERARCHY_MAPPING,
+  },
+  'safe': {
+    name: 'SAFe (5 levels: Capability → Epic → Feature → User Story → Task)',
+    description: 'Scaled Agile Framework with Capabilities',
+    config: ADO_SAFE_HIERARCHY_MAPPING,
+  },
+  'custom': {
+    name: 'Custom (configure manually)',
+    description: 'Define your own work item type mappings',
+    config: null as HierarchyMappingConfig | null,
+  },
+} as const;
+
+/**
+ * Prompt user to select JIRA hierarchy mapping
+ *
+ * Explains the 3/4/5 level hierarchy options and lets user choose
+ * how their JIRA work items map to SpecWeave structure.
+ */
+export async function selectJiraHierarchyMapping(): Promise<HierarchyMappingConfig> {
+  console.log(chalk.cyan('\n📊 Work Item Hierarchy Mapping\n'));
+  console.log(chalk.gray('   SpecWeave maps your JIRA work items to a universal structure:'));
+  console.log(chalk.gray('   • Epic level (optional) → _epics/EP-XXX/'));
+  console.log(chalk.gray('   • Feature level → FS-XXX/ folders'));
+  console.log(chalk.gray('   • User Story level → us-XXX.md files'));
+  console.log(chalk.gray('   • Task level → checkboxes in User Stories'));
+  console.log('');
+
+  const preset = await select<keyof typeof JIRA_HIERARCHY_PRESETS>({
+    message: 'What hierarchy does your JIRA project use?',
+    choices: [
+      {
+        name: `● ${JIRA_HIERARCHY_PRESETS.standard.name}`,
+        value: 'standard',
+        description: JIRA_HIERARCHY_PRESETS.standard.description,
+      },
+      {
+        name: `○ ${JIRA_HIERARCHY_PRESETS.safe.name}`,
+        value: 'safe',
+        description: JIRA_HIERARCHY_PRESETS.safe.description,
+      },
+      {
+        name: `○ ${JIRA_HIERARCHY_PRESETS.custom.name}`,
+        value: 'custom',
+        description: JIRA_HIERARCHY_PRESETS.custom.description,
+      },
+    ],
+    default: 'standard',
+  });
+
+  if (preset === 'custom') {
+    return await configureCustomJiraHierarchy();
+  }
+
+  const selectedConfig = JIRA_HIERARCHY_PRESETS[preset].config!;
+
+  // Show mapping preview
+  console.log(chalk.cyan('\n📁 Hierarchy Mapping Preview:\n'));
+  if (selectedConfig.epicLevelTypes.length > 0) {
+    console.log(chalk.gray(`   ${selectedConfig.epicLevelTypes.join(', ')} → _epics/EP-XXX/ (strategic)`));
+  }
+  console.log(chalk.gray(`   ${selectedConfig.featureLevelTypes.join(', ')} → FS-XXX/ (features)`));
+  console.log(chalk.gray(`   Story, Bug, Task → us-XXX.md (user stories)`));
+  console.log(chalk.gray(`   Sub-task → checkboxes in parent story`));
+  console.log('');
+
+  return selectedConfig;
+}
+
+/**
+ * Prompt user to select ADO hierarchy mapping
+ *
+ * Explains the 3/4/5 level hierarchy options and lets user choose
+ * how their ADO work items map to SpecWeave structure.
+ */
+export async function selectAdoHierarchyMapping(): Promise<HierarchyMappingConfig> {
+  console.log(chalk.cyan('\n📊 Work Item Hierarchy Mapping\n'));
+  console.log(chalk.gray('   SpecWeave maps your ADO work items to a universal structure:'));
+  console.log(chalk.gray('   • Epic level (optional) → _epics/EP-XXX/'));
+  console.log(chalk.gray('   • Feature level → FS-XXX/ folders'));
+  console.log(chalk.gray('   • User Story level → us-XXX.md files'));
+  console.log(chalk.gray('   • Task level → checkboxes in User Stories'));
+  console.log('');
+
+  const preset = await select<keyof typeof ADO_HIERARCHY_PRESETS>({
+    message: 'What process template does your ADO project use?',
+    choices: [
+      {
+        name: `● ${ADO_HIERARCHY_PRESETS.agile.name}`,
+        value: 'agile',
+        description: ADO_HIERARCHY_PRESETS.agile.description,
+      },
+      {
+        name: `○ ${ADO_HIERARCHY_PRESETS.scrum.name}`,
+        value: 'scrum',
+        description: ADO_HIERARCHY_PRESETS.scrum.description,
+      },
+      {
+        name: `○ ${ADO_HIERARCHY_PRESETS.safe.name}`,
+        value: 'safe',
+        description: ADO_HIERARCHY_PRESETS.safe.description,
+      },
+      {
+        name: `○ ${ADO_HIERARCHY_PRESETS.custom.name}`,
+        value: 'custom',
+        description: ADO_HIERARCHY_PRESETS.custom.description,
+      },
+    ],
+    default: 'agile',
+  });
+
+  if (preset === 'custom') {
+    return await configureCustomAdoHierarchy();
+  }
+
+  const selectedConfig = ADO_HIERARCHY_PRESETS[preset].config!;
+
+  // Show mapping preview
+  console.log(chalk.cyan('\n📁 Hierarchy Mapping Preview:\n'));
+  if (selectedConfig.epicLevelTypes.length > 0) {
+    console.log(chalk.gray(`   ${selectedConfig.epicLevelTypes.join(', ')} → _epics/EP-XXX/ (strategic)`));
+  }
+  console.log(chalk.gray(`   ${selectedConfig.featureLevelTypes.join(', ')} → FS-XXX/ (features)`));
+  console.log(chalk.gray(`   User Story, Bug, PBI → us-XXX.md (user stories)`));
+  console.log(chalk.gray(`   Task → checkboxes in parent story`));
+  console.log('');
+
+  return selectedConfig;
+}
+
+/**
+ * Configure custom JIRA hierarchy mapping
+ */
+async function configureCustomJiraHierarchy(): Promise<HierarchyMappingConfig> {
+  console.log(chalk.cyan('\n🔧 Custom Hierarchy Configuration\n'));
+  console.log(chalk.gray('   Enter comma-separated work item types for each level.'));
+  console.log(chalk.gray('   Leave empty to skip a level.\n'));
+
+  const { input } = await import('@inquirer/prompts');
+
+  const epicTypes = await input({
+    message: 'Epic-level types (strategic containers, optional):',
+    default: '',
+  });
+
+  const featureTypes = await input({
+    message: 'Feature-level types (required):',
+    default: 'Epic',
+  });
+
+  if (!featureTypes.trim()) {
+    console.log(chalk.yellow('   ⚠️  Feature-level types are required. Using "Epic" as default.'));
+  }
+
+  return {
+    epicLevelTypes: epicTypes.split(',').map(t => t.trim()).filter(Boolean),
+    featureLevelTypes: featureTypes.split(',').map(t => t.trim()).filter(Boolean) || ['Epic'],
+  };
+}
+
+/**
+ * Configure custom ADO hierarchy mapping
+ */
+async function configureCustomAdoHierarchy(): Promise<HierarchyMappingConfig> {
+  console.log(chalk.cyan('\n🔧 Custom Hierarchy Configuration\n'));
+  console.log(chalk.gray('   Enter comma-separated work item types for each level.'));
+  console.log(chalk.gray('   Leave empty to skip a level.\n'));
+
+  const { input } = await import('@inquirer/prompts');
+
+  const epicTypes = await input({
+    message: 'Epic-level types (strategic containers, optional):',
+    default: '',
+  });
+
+  const featureTypes = await input({
+    message: 'Feature-level types (required):',
+    default: 'Epic, Feature',
+  });
+
+  if (!featureTypes.trim()) {
+    console.log(chalk.yellow('   ⚠️  Feature-level types are required. Using "Epic, Feature" as default.'));
+  }
+
+  return {
+    epicLevelTypes: epicTypes.split(',').map(t => t.trim()).filter(Boolean),
+    featureLevelTypes: featureTypes.split(',').map(t => t.trim()).filter(Boolean) || ['Epic', 'Feature'],
   };
 }
 
@@ -466,9 +710,10 @@ export async function confirmJiraMapping(
     }
   }
 
-  // No confirmation needed - user already accepted by selecting projects/boards
+  // Step 2: Select hierarchy mapping (v0.33.0+ - Universal 3/4/5 Level Support)
+  const hierarchyMapping = await selectJiraHierarchyMapping();
 
-  return { mode, mappings };
+  return { mode, mappings, hierarchyMapping };
 }
 
 // =============================================================================
@@ -682,9 +927,10 @@ export async function confirmAdoMapping(
     }
   }
 
-  // No confirmation needed - user already accepted by selecting projects/areas
+  // Step 2: Select hierarchy mapping (v0.33.0+ - Universal 3/4/5 Level Support)
+  const hierarchyMapping = await selectAdoHierarchyMapping();
 
-  return { mode, mappings };
+  return { mode, mappings, hierarchyMapping };
 }
 
 // =============================================================================
@@ -706,6 +952,7 @@ export function buildJiraCoordinatorConfig(
     projectKey: string;
     boardMappings: Array<{ boardName: string; specweaveFolder: string }>;
   }>;
+  hierarchyMapping?: HierarchyMappingConfig;
 } {
   const projectMappings: Array<{
     projectKey: string;
@@ -724,6 +971,7 @@ export function buildJiraCoordinatorConfig(
     ...baseConfig,
     mode: mapping.mode,
     projectMappings,
+    hierarchyMapping: mapping.hierarchyMapping,
   };
 }
 
@@ -742,6 +990,7 @@ export function buildAdoCoordinatorConfig(
     projectName: string;
     areaMappings: Array<{ areaPath: string; specweaveFolder: string }>;
   }>;
+  hierarchyMapping?: HierarchyMappingConfig;
 } {
   const projectMappings: Array<{
     projectName: string;
@@ -762,5 +1011,6 @@ export function buildAdoCoordinatorConfig(
     pat: baseConfig.pat,
     mode: mapping.mode,
     projectMappings,
+    hierarchyMapping: mapping.hierarchyMapping,
   };
 }

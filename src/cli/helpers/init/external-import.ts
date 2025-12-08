@@ -8,6 +8,7 @@ import * as path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import { select, confirm, checkbox } from '@inquirer/prompts';
+import { WIZARD_BACK, createGoBackChoice, getGoBackStrings } from './wizard-navigation.js';
 import { Octokit } from '@octokit/rest';
 import { ImportCoordinator, CoordinatorConfig, CoordinatorResult, ProgressInfo } from '../../../importers/import-coordinator.js';
 import { ItemConverter, ConvertedUserStory } from '../../../importers/item-converter.js';
@@ -503,13 +504,26 @@ export async function promptAndRunExternalImport(
     return emptyResult();
   }
 
-  // Prompt user to import
-  const shouldImport = await confirm({
+  // Prompt user to import - use select with go-back option
+  const goBackStrings = getGoBackStrings(language);
+  const importChoice = await select<'yes' | 'no' | 'back'>({
     message: `${strings.importQuestion} (${availableTools.join(', ')})`,
-    default: false
+    choices: [
+      { value: 'yes', name: strings.importItems },
+      { value: 'no', name: strings.skipForNow },
+      { value: 'back', name: chalk.gray(goBackStrings.goBack) },
+    ],
+    default: 'no',
   });
 
-  if (!shouldImport) {
+  // Handle go back
+  if (importChoice === 'back') {
+    const result = emptyResult();
+    (result as CoordinatorResult & { goBack?: typeof WIZARD_BACK }).goBack = WIZARD_BACK;
+    return result;
+  }
+
+  if (importChoice === 'no') {
     console.log(chalk.gray('   ' + strings.skipImport + '\n'));
     return emptyResult();
   }
@@ -780,6 +794,8 @@ export interface BackgroundImportResult {
   isBackground: true;
   pid?: number;
   message: string;
+  /** Signal to go back to previous step */
+  goBack?: typeof WIZARD_BACK;
 }
 
 /**

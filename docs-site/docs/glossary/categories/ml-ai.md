@@ -52,7 +52,7 @@ ML/AI terms cover machine learning models, training, inference, and AI-powered a
 
 **[Context Window](/docs/glossary/terms/context-window)**
 - Maximum tokens an LLM can process
-- Claude Sonnet 4.5: 200K tokens
+- Claude Opus 4.5: 200K tokens
 - SpecWeave optimization: 75%+ reduction via plugins
 - Trade-off: context size vs cost/speed
 
@@ -153,7 +153,7 @@ client = anthropic.Anthropic(api_key="...")
 
 def get_response(message):
     response = client.messages.create(
-        model="claude-3-5-sonnet-20250929",
+        model="claude-opus-4-5-20251101",
         max_tokens=1024,
         system="You are a helpful customer support agent for an e-commerce company. Be polite and concise.",
         messages=[
@@ -202,7 +202,7 @@ def get_response(message):
 
     # Generate response with context
     response = client.messages.create(
-        model="claude-3-5-sonnet-20250929",
+        model="claude-opus-4-5-20251101",
         max_tokens=1024,
         system=f"""You are a customer support agent. Use the following knowledge to answer:
 
@@ -251,7 +251,7 @@ def get_response(user_id, message):
 
     # Generate response with history + context
     response = client.messages.create(
-        model="claude-3-5-sonnet-20250929",
+        model="claude-opus-4-5-20251101",
         max_tokens=1024,
         system=f"""Customer support agent. Use this knowledge:
 
@@ -422,13 +422,13 @@ Be concise. Only report significant issues.
 - Response: ~3K tokens (output)
 - Total: ~10K tokens/PR
 
-**Pricing** (Claude Sonnet 4.5):
-- Input: $3 / 1M tokens
-- Output: $15 / 1M tokens
-- Cost per PR: $0.06 (6 cents)
+**Pricing** (Claude Opus 4.5):
+- Input: $15 / 1M tokens
+- Output: $75 / 1M tokens
+- Cost per PR: $0.30 (30 cents)
 
 **Monthly cost** (100 PRs/month):
-- $6/month (very affordable!)
+- $30/month (affordable for quality!)
 ```
 
 ---
