@@ -2,11 +2,14 @@
  * Project ID Auto-Detection Utilities
  *
  * Detects project ID from (priority order):
- * 1. multiProject.activeProject (explicit project folder config)
- * 2. sync.activeProfile (ONLY for legacy umbrella repos without multiProject)
- * 3. Git remote (GitHub repo name)
- * 4. Sync configuration (JIRA project key, ADO project name)
- * 5. User prompt (fallback)
+ * 1. sync.activeProfile (for multi-profile monorepos)
+ * 2. Git remote (GitHub repo name)
+ * 3. Sync configuration (JIRA project key, ADO project name)
+ * 4. User prompt (fallback)
+ *
+ * NOTE (v0.33.0): multiProject.activeProject has been REMOVED!
+ * Per-US project targeting replaces global activeProject.
+ * See: 0125-cross-project-user-story-targeting
  *
  * Also provides repo name parsing for domain context understanding.
  */
@@ -111,10 +114,11 @@ export function parseRepoName(repoName: string): ParsedRepoName {
 /**
  * Detect active project ID from configuration
  *
+ * NOTE (v0.33.0): multiProject.activeProject has been REMOVED!
+ * This function now only uses sync.activeProfile for legacy umbrella repos.
+ *
  * Priority:
- * 1. multiProject.activeProject - explicit project folder configuration
- * 2. sync.activeProfile - ONLY for umbrella repos where profile maps to folder
- *    (skipped if profile name differs from multiProject.activeProject)
+ * 1. sync.activeProfile - for umbrella repos where profile maps to folder
  *
  * @param projectRoot - Project root directory
  * @returns Active project ID or null if not configured
@@ -124,22 +128,10 @@ export function detectActiveProfileId(projectRoot: string): string | null {
     const configManager = new ConfigManager(projectRoot);
     const config = configManager.load();
 
-    // Priority 1: Explicit multiProject.activeProject (most reliable)
-    if (config.multiProject?.activeProject && config.multiProject.activeProject !== 'default') {
-      return config.multiProject.activeProject.toLowerCase();
-    }
-
-    // Priority 2: sync.activeProfile ONLY for umbrella repos
+    // sync.activeProfile for umbrella repos
     // where profile IS a folder (like "be", "fe", "shared")
-    // Skip if multiProject is configured (activeProfile is just a sync config name)
     if (config.sync?.activeProfile && config.sync?.profiles) {
       const activeProfileId = config.sync.activeProfile;
-
-      // If multiProject is enabled, sync.activeProfile is just a connection name
-      // NOT a project folder - skip it
-      if (config.multiProject?.enabled) {
-        return null;
-      }
 
       // CRITICAL FIX (2025-11-30): Provider-prefixed profile IDs are NOT folder names
       // ProfileIds like "ado-myproject", "jira-webapp" are sync connection identifiers

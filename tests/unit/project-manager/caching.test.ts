@@ -119,21 +119,10 @@ describe('ProjectManager - Caching Mechanism', () => {
     });
   });
 
-  describe('Cache invalidation on project switch', () => {
-    it('should clear cache when switching projects', async () => {
-      // Load initial project
-      const project1 = projectManager.getActiveProject();
-      expect(project1.projectId).toBe('web-app');
-
-      // Switch to different project (should clear cache)
-      await projectManager.switchProject('mobile-app');
-
-      // Next call should load new project
-      const project2 = projectManager.getActiveProject();
-      expect(project2.projectId).toBe('mobile-app');
-      expect(project2).not.toBe(project1); // Different instance
-    });
-  });
+  // NOTE: 'Cache invalidation on project switch' tests removed
+  // The switchProject() functionality was deprecated and removed in increment 0125
+  // Per-US project targeting replaces the activeProject concept
+  // See: AC-US5-01 through AC-US5-05
 
   describe('Caching Performance', () => {
     it('should make cached reads very fast (<0.01ms)', async () => {

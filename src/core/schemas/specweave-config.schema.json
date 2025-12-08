@@ -325,12 +325,6 @@
           "description": "Enable multi-project mode (false = single project using projects/default/)",
           "default": false
         },
-        "activeProject": {
-          "type": "string",
-          "description": "Currently active project ID",
-          "pattern": "^[a-z0-9-]+$",
-          "default": "default"
-        },
         "projects": {
           "type": "array",
           "description": "Available projects",
@@ -1048,6 +1042,74 @@
       },
       "additionalProperties": false
     },
+    "projectMappings": {
+      "type": "object",
+      "description": "Cross-project targeting: Map project IDs to external tool targets (v0.33.0+). Allows per-US sync to different repos/projects.",
+      "patternProperties": {
+        "^[a-z0-9-]+$": {
+          "type": "object",
+          "description": "External tool mappings for a project",
+          "properties": {
+            "github": {
+              "type": "object",
+              "description": "GitHub repository mapping",
+              "properties": {
+                "owner": {
+                  "type": "string",
+                  "description": "GitHub owner (org or user)",
+                  "minLength": 1
+                },
+                "repo": {
+                  "type": "string",
+                  "description": "GitHub repository name",
+                  "minLength": 1
+                }
+              },
+              "required": ["owner", "repo"],
+              "additionalProperties": false
+            },
+            "jira": {
+              "type": "object",
+              "description": "JIRA project mapping",
+              "properties": {
+                "project": {
+                  "type": "string",
+                  "description": "JIRA project key (e.g., 'FE', 'BE', 'SECURITY')",
+                  "minLength": 1
+                },
+                "board": {
+                  "type": "string",
+                  "description": "JIRA board name (for 2-level)",
+                  "minLength": 1
+                }
+              },
+              "required": ["project"],
+              "additionalProperties": false
+            },
+            "ado": {
+              "type": "object",
+              "description": "Azure DevOps project mapping",
+              "properties": {
+                "project": {
+                  "type": "string",
+                  "description": "ADO project name",
+                  "minLength": 1
+                },
+                "areaPath": {
+                  "type": "string",
+                  "description": "ADO area path (e.g., 'infrastructure/security')",
+                  "minLength": 1
+                }
+              },
+              "required": ["project"],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "specs": {
       "type": "object",
       "description": "Spec identifier and sync configuration for flexible multi-project architecture (v0.16.0+)",
@@ -1379,7 +1441,6 @@
       },
       "multiProject": {
         "enabled": true,
-        "activeProject": "web-app",
         "projects": [
           {
             "id": "web-app",
@@ -1445,6 +1506,49 @@
       },
       "plugins": {
         "enabled": ["specweave-github", "specweave-frontend"]
+      }
+    },
+    {
+      "project": {
+        "name": "cross-project-example",
+        "version": "1.0.0",
+        "description": "Cross-project targeting with projectMappings (v0.33.0+)"
+      },
+      "projectMappings": {
+        "frontend-app": {
+          "github": {
+            "owner": "myorg",
+            "repo": "frontend-app"
+          },
+          "jira": {
+            "project": "FE",
+            "board": "web-team"
+          }
+        },
+        "backend-api": {
+          "github": {
+            "owner": "myorg",
+            "repo": "backend-api"
+          },
+          "jira": {
+            "project": "BE",
+            "board": "api-team"
+          }
+        },
+        "security-compliance": {
+          "jira": {
+            "project": "SECURITY"
+          }
+        },
+        "infrastructure": {
+          "ado": {
+            "project": "platform",
+            "areaPath": "infrastructure/security"
+          }
+        }
+      },
+      "plugins": {
+        "enabled": ["specweave-github", "specweave-jira"]
       }
     }
   ]

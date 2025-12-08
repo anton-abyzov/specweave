@@ -26,9 +26,31 @@ export function calculateUSStatus(totalACs: number, completedACs: number): strin
 }
 
 /**
- * Extract user stories from spec content
+ * Extract per-US project and board fields from a US section
+ * Parses: **Project**: frontend-app and **Board**: web-team
  */
-export function extractUserStories(content: string): UserStoryData[] {
+function extractUserStoryProjectInfo(storyContent: string): {
+  project?: string;
+  board?: string;
+  externalProvider?: 'github' | 'jira' | 'ado';
+} {
+  const projectMatch = storyContent.match(/\*\*Project\*\*:\s*([^\n]+)/i);
+  const boardMatch = storyContent.match(/\*\*Board\*\*:\s*([^\n]+)/i);
+  const externalMatch = storyContent.match(/\*\*External\*\*:\s*(github|jira|ado)/i);
+
+  return {
+    project: projectMatch?.[1]?.trim() || undefined,
+    board: boardMatch?.[1]?.trim() || undefined,
+    externalProvider: externalMatch?.[1]?.toLowerCase() as 'github' | 'jira' | 'ado' | undefined
+  };
+}
+
+/**
+ * Extract user stories from spec content
+ * @param content - The spec.md content
+ * @param defaultProject - Default project to use if US doesn't specify one
+ */
+export function extractUserStories(content: string, defaultProject?: string): UserStoryData[] {
   const stories: UserStoryData[] = [];
   const lines = content.split('\n');
 
@@ -67,12 +89,19 @@ export function extractUserStories(content: string): UserStoryData[] {
       }
     }
 
+    // Extract per-US project/board targeting (v0.33.0+)
+    const { project, board, externalProvider } = extractUserStoryProjectInfo(storyContent);
+
     stories.push({
       id,
       title,
       description,
       acceptanceCriteria: acIds,
-      status: undefined
+      status: undefined,
+      // Use explicit project or fall back to default
+      project: project || defaultProject,
+      board,
+      externalProvider
     });
   }
 

@@ -58,10 +58,10 @@ export async function initMultiProject(projectRoot: string): Promise<void> {
     }
 
     // 3. Enable multi-project mode
+    // NOTE (v0.33.0): activeProject REMOVED - per-US project targeting replaces it
     if (!config.multiProject) {
       config.multiProject = {
         enabled: true,
-        activeProject: projectId,
         projects: {
           [projectId]: {
             id: projectId,

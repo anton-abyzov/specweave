@@ -246,6 +246,34 @@ export interface ExternalContainerContext {
     areaPath?: string;
 }
 /**
+ * External reference for a single US in a single external tool
+ * @since v0.33.0
+ */
+export interface USExternalRef {
+    /** External tool type */
+    provider: 'github' | 'jira' | 'ado';
+    /** Issue/work item number */
+    issueNumber: number | string;
+    /** Issue URL */
+    url: string;
+    /** Target project/repo for this US (from projectMappings) */
+    targetProject: string;
+    /** Last sync timestamp */
+    lastSynced?: string;
+}
+/**
+ * Per-US external references map
+ * Maps US-ID → provider → reference
+ * @since v0.33.0
+ */
+export interface USExternalRefsMap {
+    [usId: string]: {
+        github?: USExternalRef;
+        jira?: USExternalRef;
+        ado?: USExternalRef;
+    };
+}
+/**
  * Extended increment metadata with multi-project support (v0.29.0+)
  *
  * NOTE (v0.29.0): featureId field was REMOVED
@@ -262,5 +290,11 @@ export interface IncrementMetadataV2 extends IncrementMetadata {
     externalContainer?: ExternalContainerContext;
     /** Epic ID if part of an epic */
     epicId?: string;
+    /**
+     * Per-US external references (v0.33.0+)
+     * Replaces the single external_ref for cross-project increments
+     * Maps: US-001 → { github: {...}, jira: {...} }
+     */
+    externalRefs?: USExternalRefsMap;
 }
 //# sourceMappingURL=increment-metadata.d.ts.map

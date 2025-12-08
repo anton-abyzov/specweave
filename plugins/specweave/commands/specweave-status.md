@@ -262,6 +262,70 @@ Experiments inactive >14 days → warning:
 
 ---
 
+## Cross-Project View (v0.33.0+)
+
+When an increment has user stories targeting multiple projects, show grouped view:
+
+```bash
+/specweave:status 0125
+
+📊 Increment Status: 0125-cross-project-targeting
+
+🔀 Cross-Project Increment (spans 3 projects):
+
+┌───────────────┬────────────┬──────────┬────────────────┬─────────────────────┐
+│ Project       │ Provider   │ USs      │ Status         │ External Issues     │
+├───────────────┼────────────┼──────────┼────────────────┼─────────────────────┤
+│ frontend-app  │ github     │ US-001,  │ ✅ Synced      │ #45, #46            │
+│               │            │ US-003   │                │ github.com/org/fe   │
+├───────────────┼────────────┼──────────┼────────────────┼─────────────────────┤
+│ backend-api   │ jira       │ US-002   │ ✅ Synced      │ SEC-123             │
+│               │            │          │                │ jira.com/browse     │
+├───────────────┼────────────┼──────────┼────────────────┼─────────────────────┤
+│ shared-lib    │ ⚠️ None    │ US-004   │ Not mapped     │ —                   │
+│               │            │          │                │                     │
+└───────────────┴────────────┴──────────┴────────────────┴─────────────────────┘
+
+📋 Progress by Project:
+  frontend-app: 75% (3/4 tasks)
+  backend-api:  50% (2/4 tasks)
+  shared-lib:   100% (2/2 tasks)
+
+💡 Unmapped project 'shared-lib':
+   Add to .specweave/config.json projectMappings or create issues manually
+```
+
+### Cross-Project Implementation
+
+```typescript
+import { CrossProjectSync } from '../src/core/living-docs/cross-project-sync';
+import { ExternalSyncOrchestrator } from '../src/core/living-docs/external-sync-orchestrator';
+
+// Detect cross-project
+const crossProjectSync = new CrossProjectSync(projectRoot);
+const userStories = parseUserStories(specContent);
+const isCrossProject = crossProjectSync.isCrossProject(userStories, defaultProject);
+
+if (isCrossProject) {
+  // Group by project
+  const groups = crossProjectSync.groupByProject(userStories, defaultProject);
+
+  // Load project mappings
+  const orchestrator = new ExternalSyncOrchestrator(projectRoot);
+  await orchestrator.loadProjectMappings();
+
+  // Display per-project status
+  for (const [projectId, stories] of groups) {
+    const mapping = orchestrator.getProjectMapping(projectId);
+    const provider = mapping?.github ? 'github' : mapping?.jira ? 'jira' : mapping?.ado ? 'ado' : null;
+
+    console.log(`│ ${projectId.padEnd(13)} │ ${(provider || '⚠️ None').padEnd(10)} │ ...`);
+  }
+}
+```
+
+---
+
 ## Filters
 
 ### --active

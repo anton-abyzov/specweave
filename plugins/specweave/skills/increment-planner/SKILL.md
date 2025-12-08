@@ -246,6 +246,70 @@ specweave context boards --project=acme-corp
 
 ---
 
+### RULE 0: LEVERAGE ALL AVAILABLE CONTEXT (v0.33.0+ CRITICAL!)
+
+**🧠 YOU ARE AN LLM WITH FULL CONTEXT ACCESS - USE IT!**
+
+Before asking the user ANYTHING about project/board, you MUST analyze:
+
+**1. Living Docs Structure** (`.specweave/docs/internal/specs/`):
+```bash
+# List existing project folders
+ls -la .specweave/docs/internal/specs/
+# Example output: frontend-app/, backend-api/, mobile-app/, shared-lib/
+```
+→ These ARE the actual project IDs! Use them directly.
+
+**2. Existing Increment Patterns** (`.specweave/increments/`):
+```bash
+# Read recent increments to see project assignments
+grep -r "^\*\*Project\*\*:" .specweave/increments/*/spec.md | tail -20
+```
+→ Learn from how past USs were assigned to projects.
+
+**3. Config projectMappings** (`.specweave/config.json`):
+```bash
+cat .specweave/config.json | jq '.projectMappings'
+```
+→ Use ACTUAL project IDs from config, not generic keywords.
+
+**4. Git Remotes** (for repo-based projects):
+```bash
+git remote -v | head -2
+```
+→ If repo is `myorg/frontend-app`, that's likely the project.
+
+**5. Feature Description + US Content**:
+- Analyze the feature user is describing
+- Match against project patterns from above sources
+- Map generic terms to actual project IDs
+
+**MAPPING EXAMPLE:**
+```
+User says: "Add login form to the frontend"
+You detect: "frontend" keyword
+
+WRONG: Assign project = "frontend" (generic, may not exist!)
+RIGHT: Check living docs → find "frontend-app" folder → Assign project = "frontend-app"
+```
+
+**RESOLUTION PRIORITY:**
+```
+1. Exact match in projectMappings keys → USE IT
+2. Exact match in living docs folders → USE IT
+3. Pattern match in recent increment specs → USE SAME PROJECT
+4. Keyword → Map to closest projectMappings/folder
+5. ONLY IF ALL ABOVE FAIL → Ask user with dropdown of valid options
+```
+
+**FORBIDDEN:**
+- ❌ Inventing project names not in config/folders
+- ❌ Using generic keywords ("frontend") when actual ID exists ("frontend-app")
+- ❌ Asking user when context provides clear answer
+- ❌ Assigning `{{PROJECT_ID}}` placeholder
+
+---
+
 ### SMART SELECTION DECISION TREE
 
 **RULE 1: NO QUESTION IF ONLY 1 OPTION**
@@ -254,9 +318,20 @@ IF 1-level AND only 1 project → AUTO-SELECT silently
 IF 2-level AND only 1 project AND only 1 board → AUTO-SELECT silently
 ```
 
-**RULE 2: KEYWORD-BASED AUTO-DETECTION**
+**RULE 2: KEYWORD-BASED AUTO-DETECTION (v0.33.0+)**
 
-Analyze feature description and US content for keywords:
+Use `CrossCuttingDetector` utility for programmatic detection:
+
+```typescript
+import { detectCrossCutting } from 'src/utils/cross-cutting-detector.js';
+
+const result = detectCrossCutting("OAuth with React frontend and Node backend");
+// result.isCrossCutting = true
+// result.suggestedProjects = ["frontend", "backend"]
+// result.confidence = "high"
+```
+
+Or analyze feature description and US content for keywords:
 
 **Project-Level Keywords (1-level and 2-level):**
 ```

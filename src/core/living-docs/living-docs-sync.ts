@@ -23,6 +23,7 @@ import { FeatureIDManager } from './feature-id-manager.js';
 import { TaskProjectSpecificGenerator } from './task-project-specific-generator.js';
 import { FeatureConsistencyValidator } from './feature-consistency-validator.js';
 import { BoardMatcher, type MatchDecision } from './board-matcher.js';
+import { CrossProjectSync } from './cross-project-sync.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { autoDetectProjectIdSync } from '../../utils/project-detection.js';
 import { getGitHubAuthFromProject } from '../../utils/auth-helpers.js';
@@ -62,6 +63,7 @@ export class LivingDocsSync {
   private projectRoot: string;
   private featureIdManager: FeatureIDManager;
   private boardMatcher: BoardMatcher;
+  private crossProjectSync: CrossProjectSync;
   private logger: Logger;
   private projectId: string;
 
@@ -70,6 +72,7 @@ export class LivingDocsSync {
     this.featureIdManager = new FeatureIDManager(projectRoot);
     this.logger = options.logger ?? consoleLogger;
     this.boardMatcher = new BoardMatcher(projectRoot, { logger: this.logger });
+    this.crossProjectSync = new CrossProjectSync(projectRoot, { logger: this.logger });
     // Auto-detect project ID from git remote, sync config, or use "default"
     this.projectId = autoDetectProjectIdSync(projectRoot, { silent: true });
   }
@@ -173,6 +176,89 @@ export class LivingDocsSync {
 
       // Step 4: Parse increment spec
       const parsed = await this.parseIncrementSpec(incrementId);
+
+      // Step 4b: Detect cross-project increments (v0.33.0+)
+      // If USs target different projects, sync to multiple project folders
+      const defaultProject = parsed.frontmatter.project || resolvedProjectPath;
+      const isCrossProject = this.crossProjectSync.isCrossProject(parsed.userStories, defaultProject);
+
+      if (isCrossProject) {
+        this.logger.log(`📦 Cross-project increment detected`);
+        const groups = this.crossProjectSync.groupByProject(parsed.userStories, defaultProject);
+        this.logger.log(`   ${groups.size} projects: ${[...groups.keys()].join(', ')}`);
+
+        // For cross-project increments, create feature folder in each project
+        // USs are synced to their respective project's feature folder
+        // Cross-references are added to link related projects
+        for (const [projectId, projectStories] of groups) {
+          const crossProjectPath = path.join(basePath, projectId, featureId);
+          this.logger.log(`   📁 Syncing ${projectStories.length} USs to ${projectId}/${featureId}/`);
+
+          if (!options.dryRun) {
+            await ensureDir(crossProjectPath);
+
+            // Generate FEATURE.md with cross-references
+            const crossRefs = this.crossProjectSync.generateCrossReferences(
+              featureId,
+              [...groups.keys()],
+              projectId
+            );
+            let featureContent = generateFeatureFile(featureId, {
+              ...parsed,
+              userStories: projectStories  // Only this project's USs
+            }, incrementId);
+            // Append cross-references section
+            if (crossRefs) {
+              featureContent += crossRefs;
+            }
+            await fs.writeFile(path.join(crossProjectPath, 'FEATURE.md'), featureContent, 'utf-8');
+            result.filesCreated.push(path.join(crossProjectPath, 'FEATURE.md'));
+
+            // Create user story files for this project
+            const allProjects = [...groups.keys()];
+            for (const story of projectStories) {
+              const existingFile = await findExistingUserStoryFile(crossProjectPath, story.id, this.logger);
+              let storyFile: string;
+              if (existingFile) {
+                storyFile = path.join(crossProjectPath, existingFile);
+              } else {
+                const storySlug = story.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                storyFile = path.join(crossProjectPath, `${story.id.toLowerCase()}-${storySlug}.md`);
+              }
+              // Pass allProjects for related_projects frontmatter (v0.33.0+)
+              const storyContent = generateUserStoryFile(story, featureId, incrementId, {
+                ...parsed,
+                userStories: projectStories
+              }, { allProjects });
+              await fs.writeFile(storyFile, storyContent, 'utf-8');
+              result.filesCreated.push(storyFile);
+            }
+
+            // Cleanup and sync tasks for this project's USs
+            await cleanupDuplicateFiles(crossProjectPath, this.logger);
+            await cleanupTempFiles(crossProjectPath, this.logger);
+            await this.syncTasksToUserStories(incrementId, featureId, projectStories, crossProjectPath);
+          }
+        }
+
+        // Cross-project sync complete - skip single-project logic
+        result.success = true;
+        this.crossProjectSync.logSyncSummary({
+          success: true,
+          projects: [...groups.entries()].map(([projectId, stories]) => ({
+            projectId,
+            success: true,
+            userStories: stories.map(s => s.id),
+            filesCreated: [] as string[],
+            filesUpdated: [] as string[],
+            errors: [] as string[]
+          })),
+          crossReferences: [],
+          totalUserStories: parsed.userStories.length,
+          projectCount: groups.size
+        });
+        return result;
+      }
 
       // Create {project}/FS-XXX/FEATURE.md
       const projectPath = path.join(basePath, resolvedProjectPath, featureId);
@@ -1065,8 +1151,9 @@ export class LivingDocsSync {
       overview = overviewMatch[1].trim().split('\n\n')[0];
     }
 
-    // Extract user stories
-    const userStories = extractUserStories(bodyContent);
+    // Extract user stories (v0.33.0+: pass defaultProject for cross-project targeting)
+    const defaultProject = frontmatter.project || this.projectId;
+    const userStories = extractUserStories(bodyContent, defaultProject);
 
     // Extract acceptance criteria
     const acceptanceCriteria = extractAcceptanceCriteria(bodyContent);

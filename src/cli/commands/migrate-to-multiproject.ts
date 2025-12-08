@@ -71,10 +71,10 @@ export async function autoMigrateSingleToMulti(
       console.log(`✅ Already using multi-project structure (projects/${projectId}/ exists)`);
 
       // Update config to reflect reality
+      // NOTE (v0.33.0): activeProject REMOVED - per-US project targeting replaces it
       if (!config.multiProject) {
         config.multiProject = {
           enabled: false,
-          activeProject: projectId,
           projects: {
             [projectId]: {
               id: projectId,
@@ -120,10 +120,10 @@ export async function autoMigrateSingleToMulti(
     const projectManager = new ProjectManager(projectRoot);
 
     // Ensure multiProject section exists
+    // NOTE (v0.33.0): activeProject REMOVED - per-US project targeting replaces it
     if (!config.multiProject) {
       config.multiProject = {
         enabled: false,  // Still single project, just using new structure
-        activeProject: projectId,
         projects: {
           [projectId]: {
             id: projectId,

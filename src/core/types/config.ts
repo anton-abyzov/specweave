@@ -86,13 +86,14 @@ export interface AdapterConfig {
  *
  * Single-project mode: No multiProject config = default project "default"
  * Multi-project mode: multiProject.projects contains user-defined project names
+ *
+ * NOTE (v0.33.0): activeProject has been REMOVED!
+ * Per-US project targeting replaces global activeProject.
+ * See: 0125-cross-project-user-story-targeting
  */
 export interface MultiProjectConfig {
   /** Is multi-project mode enabled? (default: false = single project "default") */
   enabled?: boolean;
-
-  /** Active project (for increment creation, can be switched) */
-  activeProject?: string;
 
   /** Project definitions (dynamic, no hardcodes) */
   projects?: Record<string, ProjectConfig>;

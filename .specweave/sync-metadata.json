@@ -1,18 +1,18 @@
 {
   "jira": {
-    "lastImport": "2025-12-06T03:35:53.847Z",
+    "lastImport": "2025-12-08T07:19:35.546Z",
     "lastImportCount": 0,
     "lastSyncResult": "failed"
   },
-  "lastUpdated": "2025-12-07T05:11:51.311Z",
+  "lastUpdated": "2025-12-08T07:19:35.548Z",
   "ado": {
-    "lastImport": "2025-12-06T03:35:53.848Z",
+    "lastImport": "2025-12-08T07:19:35.546Z",
     "lastImportCount": 0,
     "lastSyncResult": "failed"
   },
   "github": {
-    "lastImport": "2025-12-07T05:11:51.310Z",
-    "lastImportCount": 1,
-    "lastSyncResult": "success"
+    "lastImport": "2025-12-08T07:19:35.548Z",
+    "lastImportCount": 0,
+    "lastSyncResult": "failed"
   }
 }
