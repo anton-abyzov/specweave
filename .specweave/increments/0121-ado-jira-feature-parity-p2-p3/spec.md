@@ -4,7 +4,7 @@ project: specweave
 title: ADO/JIRA Feature Parity P2/P3 Implementation
 type: feature
 priority: P2
-status: active
+status: completed
 ---
 
 # ADO/JIRA Feature Parity P2/P3 Implementation
