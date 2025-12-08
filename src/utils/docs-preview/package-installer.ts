@@ -49,6 +49,9 @@ export async function checkNpmInstalled(): Promise<boolean> {
 
 /**
  * Install npm packages
+ *
+ * IMPORTANT: Uses public npm registry to bypass private registry configurations.
+ * This is critical for user projects that may have Azure DevOps/private registries configured.
  */
 export async function installPackages(options: InstallOptions): Promise<void> {
   const { targetDir, packages, dev = false } = options;
@@ -57,7 +60,12 @@ export async function installPackages(options: InstallOptions): Promise<void> {
   await fs.ensureDir(targetDir);
 
   // Build npm install command
-  const args = ['install'];
+  // Use public npm registry to avoid authentication issues with private registries
+  const args = [
+    'install',
+    '--registry=https://registry.npmjs.org',
+    '--legacy-peer-deps' // Handle React 19 peer dependency issues
+  ];
   if (dev) {
     args.push('--save-dev');
   }
@@ -104,20 +112,21 @@ export async function installPackages(options: InstallOptions): Promise<void> {
  * Install Docusaurus packages
  */
 export async function installDocusaurus(targetDir: string): Promise<void> {
+  // Use latest stable Docusaurus 3.x versions
   const packages = [
-    '@docusaurus/core@^3.0.0',
-    '@docusaurus/preset-classic@^3.0.0',
-    '@docusaurus/theme-mermaid@^3.0.0',
+    '@docusaurus/core@^3.9.0',
+    '@docusaurus/preset-classic@^3.9.0',
+    '@docusaurus/theme-mermaid@^3.9.0',
     '@mdx-js/react@^3.0.0',
     'clsx@^2.0.0',
-    'prism-react-renderer@^2.1.0',
-    'react@^18.0.0',
-    'react-dom@^18.0.0'
+    'prism-react-renderer@^2.3.0',
+    'react@^19.0.0',
+    'react-dom@^19.0.0'
   ];
 
   const devPackages = [
-    '@docusaurus/module-type-aliases@^3.0.0',
-    '@docusaurus/types@^3.0.0'
+    '@docusaurus/module-type-aliases@^3.9.0',
+    '@docusaurus/types@^3.9.0'
   ];
 
   console.log('   Installing Docusaurus packages...');

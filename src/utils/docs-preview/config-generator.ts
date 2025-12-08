@@ -117,14 +117,10 @@ const config = {
     }),
 
   // Mermaid diagrams support
+  // Use 'md' format since SpecWeave docs are .md files, not .mdx
   markdown: {
     mermaid: true,
-    format: 'mdx',
-    mdx1Compat: {
-      comments: true,
-      admonitions: true,
-      headingIds: true,
-    },
+    format: 'md',
   },
   themes: ['@docusaurus/theme-mermaid'],
 };
@@ -165,21 +161,21 @@ export function generatePackageJSON(title: string): string {
         'write-heading-ids': 'docusaurus write-heading-ids'
       },
       dependencies: {
-        '@docusaurus/core': '^3.0.0',
-        '@docusaurus/preset-classic': '^3.0.0',
-        '@docusaurus/theme-mermaid': '^3.0.0',
+        '@docusaurus/core': '^3.9.0',
+        '@docusaurus/preset-classic': '^3.9.0',
+        '@docusaurus/theme-mermaid': '^3.9.0',
         '@mdx-js/react': '^3.0.0',
         clsx: '^2.0.0',
-        'prism-react-renderer': '^2.1.0',
-        react: '^18.0.0',
-        'react-dom': '^18.0.0'
+        'prism-react-renderer': '^2.3.0',
+        react: '^19.0.0',
+        'react-dom': '^19.0.0'
       },
       devDependencies: {
-        '@docusaurus/module-type-aliases': '^3.0.0',
-        '@docusaurus/types': '^3.0.0'
+        '@docusaurus/module-type-aliases': '^3.9.0',
+        '@docusaurus/types': '^3.9.0'
       },
       engines: {
-        node: '>=18.0'
+        node: '>=20.0'
       }
     },
     null,
@@ -299,7 +295,7 @@ import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import styles from './index.module.css.js';
+import styles from './index.module.css';
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();

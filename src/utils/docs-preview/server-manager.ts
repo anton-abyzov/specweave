@@ -62,7 +62,8 @@ export async function startDevServer(targetDir: string, options: ServerOptions):
   const url = `http://${host}:${port}`;
 
   // Wait for server to be ready
-  await waitForServer(url, 30000); // 30 second timeout
+  // Increased timeout to 120s for large documentation sites (744+ docs)
+  await waitForServer(url, 120000); // 120 second timeout
 
   // Open browser if requested
   if (openBrowser) {
