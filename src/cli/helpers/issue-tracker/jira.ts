@@ -3,12 +3,18 @@
  *
  * Handles Jira Cloud and Jira Server/Data Center authentication
  *
+ * NEW (v0.33.0): Aligned with ADO init pattern
+ * - Single vs multi-project selection
+ * - Per-project board selection (2-level structure)
+ * - Configuration stored in config.json (ADR-0050)
+ *
  * @module cli/helpers/issue-tracker/jira
  */
 
 import chalk from 'chalk';
 import { select, input, confirm, checkbox, password } from '@inquirer/prompts';
 import ora from 'ora';
+import * as path from 'path';
 import { getJiraAuth } from '../../../utils/auth-helpers.js';
 import {
   parseEnvFile,
@@ -18,12 +24,13 @@ import type {
   JiraCredentials,
   ExistingCredentials,
   ValidationResult,
-  JiraInstanceType
+  JiraInstanceType,
+  JiraProjectConfig
 } from './types.js';
 import type {
   JiraStrategy,
   JiraInstanceType as ConfigJiraInstanceType,
-  JiraProjectConfig,
+  JiraProjectConfig as ConfigJiraProjectConfig,
   JiraBoardConfig
 } from '../../../core/config/types.js';
 import {
@@ -343,43 +350,317 @@ export async function promptJiraCredentials(
     }
   });
 
-  // Auto-discover projects using the credentials (with cache support)
-  const selectedProjects = await autoDiscoverJiraProjects(
-    {
-      domain,
-      email,
-      token,
-      instanceType: instanceType as JiraInstanceType
-    },
-    projectRoot
-  );
+  // Step 3.5: Validate PAT and fetch all accessible projects (similar to ADO)
+  const spinner = ora('Validating credentials and fetching projects...').start();
+  let allProjects: Array<{ key: string; name: string; id: string }> = [];
 
-  if (selectedProjects.length === 0) {
-    console.log(chalk.yellow('⏭️  No projects selected. Jira setup cancelled.\n'));
+  try {
+    const { getProjectCount } = await import('../project-count-fetcher.js');
+    const countResult = await getProjectCount({
+      provider: 'jira',
+      credentials: {
+        domain,
+        email,
+        token,
+        instanceType: instanceType as JiraInstanceType
+      }
+    });
+
+    if (countResult.error) {
+      spinner.fail('Credential validation failed');
+      console.log(chalk.red(`   Error: ${countResult.error}`));
+      return null;
+    }
+
+    const totalCount = countResult.accessible;
+    spinner.succeed(`Found ${totalCount} accessible project${totalCount === 1 ? '' : 's'}`);
+
+    if (totalCount === 0) {
+      console.log(chalk.yellow('\n⚠️  No accessible projects found.'));
+      console.log(chalk.gray('   Please check your permissions or create a project first.\n'));
+      return null;
+    }
+
+    // Fetch projects for selection
+    const { AsyncProjectLoader } = await import('../async-project-loader.js');
+    const loader = new AsyncProjectLoader(
+      { domain, email, token, instanceType: instanceType as JiraInstanceType },
+      'jira',
+      { batchSize: 50 }
+    );
+
+    const result = await loader.fetchAllProjects(Math.min(100, totalCount));
+    allProjects = result.projects.map(p => ({
+      key: p.key,
+      name: p.name,
+      id: p.id || ''
+    }));
+  } catch (error: any) {
+    spinner.fail('Failed to fetch projects');
+    console.log(chalk.red(`   Error: ${error.message}`));
     return null;
   }
 
-  // Auto-detect strategy based on number of selected projects
-  let strategy: string;
-  if (selectedProjects.length === 1) {
-    strategy = 'single-project';
-    console.log(chalk.gray(`\n📊 Detected strategy: Single project (${selectedProjects[0]})\n`));
-  } else {
-    strategy = 'project-per-team';
-    console.log(chalk.gray(`\n📊 Detected strategy: Project-per-team (${selectedProjects.length} projects)\n`));
+  // Step 4: Ask single vs multi-project (ALIGNED WITH ADO!)
+  const projectMode = await select<'single' | 'multi'>({
+    message: 'How many projects do you want to configure?',
+    choices: [
+      {
+        name: `Single project (quick setup)`,
+        value: 'single' as const
+      },
+      {
+        name: `Multiple projects (enterprise setup - ${allProjects.length} available)`,
+        value: 'multi' as const
+      }
+    ],
+    default: allProjects.length > 1 ? 'multi' : 'single'
+  });
+
+  // Handle multi-project selection (NEW - mirrors ADO pattern)
+  if (projectMode === 'multi') {
+    return handleMultiProjectSelection(domain, email, token, instanceType as JiraInstanceType, allProjects, projectRoot);
   }
 
-  // Build credentials with auto-discovered projects
-  const credentials: JiraCredentials = {
-    token: token,
-    email: email,
-    domain: domain,
-    instanceType: instanceType as JiraInstanceType,
-    strategy: strategy as any,
-    projects: selectedProjects
-  };
+  // Single project flow
+  return handleSingleProjectSelection(domain, email, token, instanceType as JiraInstanceType, allProjects, projectRoot);
+}
 
-  return credentials;
+/**
+ * Handle single project selection (mirrors ADO pattern)
+ */
+async function handleSingleProjectSelection(
+  domain: string,
+  email: string,
+  token: string,
+  instanceType: JiraInstanceType,
+  allProjects: Array<{ key: string; name: string; id: string }>,
+  projectRoot?: string
+): Promise<JiraCredentials | null> {
+  // Select a single project
+  const projectKey = await select<string>({
+    message: 'Select project:',
+    choices: allProjects.map(p => ({
+      name: `${p.key} - ${p.name}`,
+      value: p.key
+    })),
+    default: allProjects[0]?.key
+  });
+
+  const selectedProject = allProjects.find(p => p.key === projectKey);
+
+  // Fetch boards for selected project (2-level: project → boards)
+  const spinner = ora('Fetching boards...').start();
+  let boards: Array<{ id: string; name: string }> = [];
+
+  try {
+    boards = await fetchProjectBoards(domain, email, token, instanceType, projectKey);
+    spinner.succeed(`Found ${boards.length} board${boards.length === 1 ? '' : 's'}`);
+  } catch {
+    spinner.succeed('No boards found (will use project root)');
+  }
+
+  // Let user select boards (optional, for 2-level structure)
+  let selectedBoards: Array<{ id: string; name?: string }> = [];
+  if (boards.length > 0) {
+    const boardSelection = await selectBoards(boards, projectKey);
+    selectedBoards = boardSelection || [];
+  }
+
+  // Build credentials with single project + boards
+  return {
+    token,
+    email,
+    domain,
+    instanceType,
+    strategy: 'project-per-team',
+    projects: [projectKey],
+    projectConfigs: [{
+      key: projectKey,
+      name: selectedProject?.name,
+      id: selectedProject?.id,
+      boards: selectedBoards.length > 0 ? selectedBoards : undefined,
+      isDefault: true
+    }]
+  };
+}
+
+/**
+ * Handle multi-project selection (NEW - mirrors ADO pattern)
+ */
+async function handleMultiProjectSelection(
+  domain: string,
+  email: string,
+  token: string,
+  instanceType: JiraInstanceType,
+  allProjects: Array<{ key: string; name: string; id: string }>,
+  projectRoot?: string
+): Promise<JiraCredentials | null> {
+  console.log('');
+  console.log(chalk.cyan('📦 Multi-Project Selection'));
+  console.log(chalk.gray('   Select the projects you want to manage with SpecWeave.\n'));
+
+  // Multi-select checkbox for projects (default: first project selected)
+  const selectedProjectKeys = await checkbox({
+    message: 'Select projects to configure:',
+    choices: allProjects.map((p, index) => ({
+      name: `${p.key} - ${p.name}`,
+      value: p.key,
+      checked: index === 0 // Default: first project selected
+    })),
+    pageSize: 15,
+    validate: (selected) => {
+      if (selected.length === 0) {
+        return 'Please select at least one project';
+      }
+      return true;
+    }
+  });
+
+  if (selectedProjectKeys.length === 0) {
+    console.log(chalk.yellow('\n⚠️  No projects selected'));
+    return null;
+  }
+
+  console.log(chalk.green(`\n✓ Selected ${selectedProjectKeys.length} project${selectedProjectKeys.length > 1 ? 's' : ''}`));
+
+  // For each project, prompt for board selection (2-level structure)
+  const projectConfigs: JiraProjectConfig[] = [];
+
+  for (let i = 0; i < selectedProjectKeys.length; i++) {
+    const projectKey = selectedProjectKeys[i];
+    const projectInfo = allProjects.find(p => p.key === projectKey);
+    console.log('');
+    console.log(chalk.cyan(`📁 Configuring: ${projectKey} (${i + 1}/${selectedProjectKeys.length})`));
+
+    // Fetch boards for this project
+    const spinner = ora('Fetching boards...').start();
+    let boards: Array<{ id: string; name: string }> = [];
+
+    try {
+      boards = await fetchProjectBoards(domain, email, token, instanceType, projectKey);
+      spinner.succeed(`Found ${boards.length} board${boards.length === 1 ? '' : 's'}`);
+    } catch {
+      spinner.succeed('No boards found (will use project root)');
+    }
+
+    let selectedBoards: Array<{ id: string; name?: string }> = [];
+    if (boards.length > 0) {
+      const boardSelection = await selectBoards(boards, projectKey);
+      selectedBoards = boardSelection || [];
+    }
+
+    projectConfigs.push({
+      key: projectKey,
+      name: projectInfo?.name,
+      id: projectInfo?.id,
+      boards: selectedBoards.length > 0 ? selectedBoards : undefined,
+      isDefault: i === 0 // First project is default
+    });
+  }
+
+  // Cache the configuration (NOT the token)
+  if (projectRoot) {
+    const { CacheManager } = await import('../../../core/cache/cache-manager.js');
+    const cacheManager = new CacheManager(projectRoot);
+    await cacheManager.set('jira-config', {
+      domain,
+      projectConfigs
+    });
+  }
+
+  console.log('');
+  console.log(chalk.green('✓ Multi-project configuration complete'));
+  console.log(chalk.gray(`   ${projectConfigs.length} project${projectConfigs.length > 1 ? 's' : ''} configured`));
+
+  const strategy = projectConfigs.length === 1 ? 'single-project' : 'project-per-team';
+  console.log(chalk.gray(`\n📊 Detected strategy: ${strategy === 'single-project' ? 'Single project' : 'Project-per-team'}\n`));
+
+  return {
+    token,
+    email,
+    domain,
+    instanceType,
+    strategy: strategy as any,
+    projects: selectedProjectKeys,
+    projectConfigs
+  };
+}
+
+/**
+ * Fetch boards for a Jira project
+ *
+ * Uses Jira Agile API to fetch boards associated with a project
+ */
+async function fetchProjectBoards(
+  domain: string,
+  email: string,
+  token: string,
+  instanceType: JiraInstanceType,
+  projectKey: string
+): Promise<Array<{ id: string; name: string }>> {
+  const apiBase = instanceType === 'cloud'
+    ? `https://${domain}/rest/agile/1.0`
+    : `https://${domain}/rest/agile/1.0`;
+
+  const auth = Buffer.from(`${email}:${token}`).toString('base64');
+
+  const response = await fetch(`${apiBase}/board?projectKeyOrId=${projectKey}`, {
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Accept': 'application/json'
+    }
+  });
+
+  if (!response.ok) {
+    return [];
+  }
+
+  const data: any = await response.json();
+  return (data.values || []).map((b: any) => ({
+    id: String(b.id),
+    name: b.name
+  }));
+}
+
+/**
+ * Prompt user to select boards for a project
+ *
+ * Similar to ADO's selectAreaPaths function
+ */
+async function selectBoards(
+  boards: Array<{ id: string; name: string }>,
+  projectKey: string
+): Promise<Array<{ id: string; name?: string }> | null> {
+  const useAllBoards = await confirm({
+    message: `Use all ${boards.length} board${boards.length === 1 ? '' : 's'} for ${projectKey}?`,
+    default: true
+  });
+
+  if (useAllBoards) {
+    return boards.map(b => ({ id: b.id, name: b.name }));
+  }
+
+  // Let user select specific boards
+  const selected = await checkbox({
+    message: `Select boards for ${projectKey}:`,
+    choices: boards.map((b, index) => ({
+      name: `${b.name} (ID: ${b.id})`,
+      value: b.id,
+      checked: index === 0 // Default: first board selected
+    })),
+    pageSize: 10
+  });
+
+  if (selected.length === 0) {
+    console.log(chalk.gray(`   No boards selected, using project root`));
+    return null;
+  }
+
+  return selected.map(id => {
+    const board = boards.find(b => b.id === id);
+    return { id, name: board?.name };
+  });
 }
 
 /**
@@ -493,7 +774,7 @@ export function getJiraConfig(credentials: JiraCredentials): {
     domain: string;
     instanceType?: ConfigJiraInstanceType;
     strategy?: JiraStrategy;
-    projects?: JiraProjectConfig[];
+    projects?: ConfigJiraProjectConfig[];
     project?: string;
     components?: string[];
     boards?: JiraBoardConfig[];
@@ -505,7 +786,7 @@ export function getJiraConfig(credentials: JiraCredentials): {
       domain: string;
       instanceType?: ConfigJiraInstanceType;
       strategy?: JiraStrategy;
-      projects?: JiraProjectConfig[];
+      projects?: ConfigJiraProjectConfig[];
       project?: string;
       components?: string[];
       boards?: JiraBoardConfig[];
@@ -523,7 +804,18 @@ export function getJiraConfig(credentials: JiraCredentials): {
     config.issueTracker.strategy = credentials.strategy as JiraStrategy;
   }
 
-  // Strategy 1: Project-per-team
+  // NEW (v0.33.0): Handle multi-project with per-project boards (2-level structure)
+  if (credentials.projectConfigs && credentials.projectConfigs.length > 0) {
+    config.issueTracker.projects = credentials.projectConfigs.map((projConfig: JiraProjectConfig) => ({
+      key: projConfig.key,
+      name: projConfig.name,
+      id: projConfig.id,
+      boards: projConfig.boards?.map(b => ({ id: b.id, name: b.name }))
+    }));
+    return config;
+  }
+
+  // Legacy: Strategy 1: Project-per-team (string array)
   if (credentials.strategy === 'project-per-team' && credentials.projects) {
     config.issueTracker.projects = credentials.projects.map((key: string) => ({ key }));
   }
@@ -547,6 +839,91 @@ export function getJiraConfig(credentials: JiraCredentials): {
   }
 
   return config;
+}
+
+/**
+ * Create Jira project folder structure (similar to ADO)
+ *
+ * NEW (v0.33.0): Creates living docs folder structure for Jira projects
+ * - 1-level: project only (e.g., .specweave/docs/internal/specs/frontend/)
+ * - 2-level: project + board (e.g., .specweave/docs/internal/specs/frontend/sprint-board/)
+ *
+ * @param projectPath - Path to project root
+ * @param credentials - Jira credentials with projectConfigs
+ */
+export function createJiraProjectFolders(
+  projectPath: string,
+  credentials: JiraCredentials
+): void {
+  const specsDir = path.join(projectPath, '.specweave', 'docs', 'internal', 'specs');
+  const fs = require('fs');
+
+  if (!fs.existsSync(specsDir)) {
+    fs.mkdirSync(specsDir, { recursive: true });
+  }
+
+  // Handle multi-project configuration (v0.33.0+)
+  if (credentials.projectConfigs && credentials.projectConfigs.length > 0) {
+    console.log(chalk.cyan(`\n📁 Creating folder structure for ${credentials.projectConfigs.length} project(s)...`));
+
+    for (const projConfig of credentials.projectConfigs) {
+      const projectKey = projConfig.key.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const projectDir = path.join(specsDir, projectKey);
+
+      // Create project folder
+      if (!fs.existsSync(projectDir)) {
+        fs.mkdirSync(projectDir, { recursive: true });
+        console.log(chalk.gray(`   Created: ${projectKey}/`));
+      }
+
+      // Create board folders (2-level structure)
+      if (projConfig.boards && projConfig.boards.length > 0) {
+        for (const board of projConfig.boards) {
+          const boardName = (board.name || `board-${board.id}`).toLowerCase().replace(/[^a-z0-9]/g, '-');
+          const boardDir = path.join(projectDir, boardName);
+
+          if (!fs.existsSync(boardDir)) {
+            fs.mkdirSync(boardDir, { recursive: true });
+            console.log(chalk.gray(`   Created: ${projectKey}/${boardName}/`));
+          }
+        }
+      }
+    }
+
+    console.log(chalk.green(`✓ JIRA folder structure created for ${credentials.projectConfigs.length} project(s)`));
+    return;
+  }
+
+  // Handle legacy single-project or string array configuration
+  if (credentials.projects && credentials.projects.length > 0) {
+    console.log(chalk.cyan(`\n📁 Creating folder structure for ${credentials.projects.length} project(s)...`));
+
+    for (const projectKey of credentials.projects) {
+      const sanitizedKey = projectKey.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const projectDir = path.join(specsDir, sanitizedKey);
+
+      if (!fs.existsSync(projectDir)) {
+        fs.mkdirSync(projectDir, { recursive: true });
+        console.log(chalk.gray(`   Created: ${sanitizedKey}/`));
+      }
+    }
+
+    console.log(chalk.green(`✓ JIRA folder structure created for ${credentials.projects.length} project(s)`));
+    return;
+  }
+
+  // Handle single project (backward compatibility)
+  if (credentials.project) {
+    const projectKey = credentials.project.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const projectDir = path.join(specsDir, projectKey);
+
+    if (!fs.existsSync(projectDir)) {
+      fs.mkdirSync(projectDir, { recursive: true });
+      console.log(chalk.gray(`   Created: ${projectKey}/`));
+    }
+
+    console.log(chalk.green(`✓ JIRA folder structure created`));
+  }
 }
 
 /**

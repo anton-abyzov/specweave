@@ -225,6 +225,9 @@ async function buildGitHubSyncConfig(
 
 /**
  * Build JIRA sync configuration
+ *
+ * NEW (v0.33.0): Supports 2-level structure (project → boards) similar to ADO (project → areaPaths)
+ * Uses projectConfigs[] when available for per-project board configuration.
  */
 function buildJiraSyncConfig(
   config: any,
@@ -236,7 +239,75 @@ function buildJiraSyncConfig(
   const jiraCreds = credentials as any;
   const domain = jiraCreds.domain || '';
 
-  // Handle different Jira strategies
+  // NEW (v0.33.0): Handle multi-project with boards (2-level structure)
+  if (jiraCreds.projectConfigs && jiraCreds.projectConfigs.length > 0) {
+    let defaultProfileName = '';
+
+    for (const projConfig of jiraCreds.projectConfigs) {
+      const profileId = `jira-${projConfig.key.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+
+      // Deduplicate boards (same as ADO areaPaths deduplication)
+      const dedupedBoards = projConfig.boards?.length
+        ? deduplicateArray(projConfig.boards, (item: any) =>
+            typeof item === 'string' ? item : (item.id || item.name || JSON.stringify(item))
+          )
+        : undefined;
+
+      profiles[profileId] = {
+        provider: 'jira',
+        displayName: `Jira - ${projConfig.key}`,
+        config: {
+          domain,
+          projectKey: projConfig.key,
+          projectName: projConfig.name,
+          projectId: projConfig.id,
+          ...(dedupedBoards?.length ? { boards: dedupedBoards } : {}),
+          ...(jiraCreds.strategy ? { strategy: jiraCreds.strategy } : {})
+        },
+        timeRange: {
+          default: '1M',
+          max: '6M'
+        }
+      };
+
+      // Set default profile (first project with isDefault flag, or first project)
+      if (projConfig.isDefault) {
+        defaultProfileName = profileId;
+      }
+    }
+
+    // Fallback to first profile if no default set
+    if (!defaultProfileName) {
+      defaultProfileName = Object.keys(profiles)[0];
+    }
+
+    config.sync = {
+      enabled: true,
+      direction: 'bidirectional' as const,
+      autoSync: false,
+      provider: 'jira',
+      includeStatus: syncSettings.includeStatus,
+      autoApplyLabels: syncSettings.autoApplyLabels,
+      defaultProfile: defaultProfileName,
+      settings: {
+        canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
+        canUpdateExternalItems: syncPermissions.canUpdateExternalItems,
+        canUpdateStatus: syncPermissions.canUpdateStatus
+      },
+      profiles
+    };
+
+    // Set multiProject.enabled for JIRA multi-project setups (like ADO)
+    const defaultProject = jiraCreds.projectConfigs.find((p: any) => p.isDefault) || jiraCreds.projectConfigs[0];
+    (config as any).multiProject = {
+      enabled: true,
+      activeProject: defaultProject.key.toLowerCase().replace(/\s+/g, '-')
+    };
+
+    return;
+  }
+
+  // Legacy: Handle single project or string array of projects
   let project: string | string[] = '';
   if (jiraCreds.strategy === 'project-per-team' && jiraCreds.projects) {
     project = jiraCreds.projects; // Array of project keys
