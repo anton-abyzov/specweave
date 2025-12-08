@@ -59,7 +59,29 @@ export type JiraStrategy =
   | 'board-based';               // One project with filtered boards
 
 /**
+ * Per-project configuration for Jira
+ *
+ * NEW (v0.33.0): Mirrors AzureDevOpsProjectConfig for consistent 2-level structure
+ * - JIRA: project → boards (like ADO: project → areaPaths)
+ */
+export interface JiraProjectConfig {
+  /** Jira project key (e.g., "FRONTEND") */
+  key: string;
+  /** Jira project name (optional, for display) */
+  name?: string;
+  /** Jira project ID (populated after validation) */
+  id?: string;
+  /** Boards for this project (2-level structure) */
+  boards?: Array<{ id: string; name?: string }>;
+  /** Whether this is the default project */
+  isDefault?: boolean;
+}
+
+/**
  * Jira credentials
+ *
+ * NEW (v0.33.0): Added `projectConfigs` for 2-level structure (project → boards)
+ * This aligns with ADO's `projects[]` structure for consistency.
  */
 export interface JiraCredentials {
   token: string;
@@ -68,8 +90,11 @@ export interface JiraCredentials {
   instanceType: JiraInstanceType;
   strategy?: JiraStrategy;       // Team mapping strategy (optional)
 
-  // Strategy 1: Project-per-team
-  projects?: string[];           // Multiple projects (e.g., ["FRONTEND", "BACKEND", "MOBILE"])
+  // Strategy 1: Project-per-team (legacy: string array)
+  projects?: string[];           // Multiple project keys (e.g., ["FRONTEND", "BACKEND", "MOBILE"])
+
+  // NEW (v0.33.0): Project-per-team with boards (2-level structure)
+  projectConfigs?: JiraProjectConfig[];  // Projects with per-project boards
 
   // Strategy 2: Component-based
   project?: string;              // Single project (e.g., "MAIN")

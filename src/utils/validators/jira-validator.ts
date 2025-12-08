@@ -1,13 +1,18 @@
 /**
  * Jira Resource Validator
- * 
+ *
  * Validates and creates Jira resources (projects, boards).
  * Split from external-resource-validator.ts for maintainability.
- * 
+ *
+ * NEW (v0.33.0): Reads configuration from config.json (ADR-0050 compliant)
+ * - Secrets (API token, email) from .env
+ * - Configuration (domain, strategy, projects, boards) from config.json
+ *
  * @module utils/validators/jira-validator
  */
 
 import * as fs from '../fs-native.js';
+import * as path from 'path';
 import { select, input } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { exec } from 'child_process';
@@ -19,23 +24,55 @@ const execAsync = promisify(exec);
 // Re-export types for convenience
 export type { JiraProject, JiraBoard, JiraValidationResult };
 
+/**
+ * Configuration structure from config.json
+ */
+interface JiraConfigFromFile {
+  issueTracker?: {
+    provider?: string;
+    domain?: string;
+    instanceType?: string;
+    strategy?: string;
+    projects?: Array<{ key: string; id?: string; name?: string; boards?: Array<{ id: string; name?: string }> }>;
+    project?: string;
+    components?: string[];
+    boards?: Array<{ id: string; name?: string }>;
+  };
+  sync?: {
+    profiles?: Record<string, {
+      config?: {
+        domain?: string;
+        projectKey?: string;
+        projects?: string[];
+      };
+    }>;
+  };
+}
+
 export class JiraResourceValidator {
   private apiToken: string;
   private email: string;
   private domain: string;
   private envPath: string;
+  private projectRoot: string;
 
   constructor(envPath: string = '.env') {
     this.envPath = envPath;
-    // Load from .env
+    // Derive project root from envPath (e.g., '/path/to/project/.env' -> '/path/to/project')
+    this.projectRoot = path.dirname(path.resolve(envPath));
+
+    // Load secrets from .env (API token, email)
     const env = this.loadEnv();
     this.apiToken = env.JIRA_API_TOKEN || '';
     this.email = env.JIRA_EMAIL || '';
-    this.domain = env.JIRA_DOMAIN || '';
+
+    // Load domain from config.json (ADR-0050: non-secrets in config.json)
+    const config = this.loadConfig();
+    this.domain = config.issueTracker?.domain || env.JIRA_DOMAIN || '';
   }
 
   /**
-   * Load .env file
+   * Load .env file (secrets only)
    */
   private loadEnv(): Record<string, string> {
     try {
@@ -58,6 +95,52 @@ export class JiraResourceValidator {
       return env;
     } catch (error) {
       return {};
+    }
+  }
+
+  /**
+   * Load config.json (ADR-0050: non-secrets configuration)
+   *
+   * NEW (v0.33.0): Configuration is read from config.json, NOT .env
+   * This aligns JIRA with ADO init pattern.
+   */
+  private loadConfig(): JiraConfigFromFile {
+    try {
+      const configPath = path.join(this.projectRoot, '.specweave', 'config.json');
+      if (!fs.existsSync(configPath)) {
+        return {};
+      }
+
+      const content = fs.readFileSync(configPath, 'utf-8');
+      return JSON.parse(content) as JiraConfigFromFile;
+    } catch (error) {
+      return {};
+    }
+  }
+
+  /**
+   * Update config.json with new values (for project/board IDs after validation)
+   */
+  private async updateConfig(updates: Partial<JiraConfigFromFile>): Promise<void> {
+    try {
+      const configPath = path.join(this.projectRoot, '.specweave', 'config.json');
+      let config: JiraConfigFromFile = {};
+
+      if (fs.existsSync(configPath)) {
+        const content = fs.readFileSync(configPath, 'utf-8');
+        config = JSON.parse(content);
+      }
+
+      // Deep merge updates
+      if (updates.issueTracker) {
+        config.issueTracker = { ...config.issueTracker, ...updates.issueTracker };
+      }
+
+      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      console.log(chalk.green(`✅ Updated .specweave/config.json`));
+    } catch (error: any) {
+      console.error(chalk.red(`❌ Failed to update config.json: ${error.message}`));
+      throw error;
     }
   }
 
@@ -293,6 +376,14 @@ export class JiraResourceValidator {
 
   /**
    * Validate and fix Jira configuration
+   *
+   * NEW (v0.33.0): Reads configuration from config.json (ADR-0050 compliant)
+   * - Secrets (API token, email) from .env
+   * - Configuration (domain, strategy, projects, boards) from config.json
+   *
+   * Structure levels:
+   * - 1-level: project only (issueTracker.projects[].key)
+   * - 2-level: project + boards (issueTracker.projects[].boards[])
    */
   async validate(): Promise<JiraValidationResult> {
     console.log(chalk.blue('\n🔍 Validating Jira configuration...\n'));
@@ -304,51 +395,56 @@ export class JiraResourceValidator {
       envUpdated: false,
     };
 
-    const env = this.loadEnv();
-    const strategy = env.JIRA_STRATEGY || 'project-per-team';
+    // Load configuration from config.json (ADR-0050)
+    const config = this.loadConfig();
+    const issueTracker = config.issueTracker;
 
-    // Determine project key(s) based on strategy
+    if (!issueTracker || issueTracker.provider !== 'jira') {
+      console.log(chalk.red('❌ Jira not configured in .specweave/config.json'));
+      console.log(chalk.gray('   Expected: issueTracker.provider = "jira"'));
+      console.log(chalk.gray('   Run: specweave init to configure Jira'));
+      result.valid = false;
+      return result;
+    }
+
+    const strategy = issueTracker.strategy || 'project-per-team';
+
+    // Determine project key(s) from config.json (NOT .env!)
     let projectKeys: string[] = [];
 
-    if (strategy === 'project-per-team') {
-      // Multiple projects (JIRA_PROJECTS is comma-separated)
-      const projectsEnv = env.JIRA_PROJECTS || '';
-      if (!projectsEnv) {
-        console.log(chalk.red('❌ JIRA_PROJECTS not found in .env'));
-        result.valid = false;
-        return result;
-      }
-      projectKeys = projectsEnv.split(',').map(p => p.trim()).filter(p => p);
+    if (issueTracker.projects && issueTracker.projects.length > 0) {
+      // NEW: Read from config.json issueTracker.projects array
+      projectKeys = issueTracker.projects.map(p => p.key);
+    } else if (issueTracker.project) {
+      // Single project (component-based or board-based strategy)
+      projectKeys = [issueTracker.project];
     } else {
-      // Single project (component-based or board-based)
-      const projectKey = env.JIRA_PROJECT;
-      if (!projectKey) {
-        console.log(chalk.red('❌ JIRA_PROJECT not found in .env'));
-        result.valid = false;
-        return result;
+      // Fallback: Try to read from sync profiles
+      const syncProfiles = config.sync?.profiles;
+      if (syncProfiles) {
+        for (const profile of Object.values(syncProfiles)) {
+          if (profile.config?.projects) {
+            projectKeys = profile.config.projects;
+            break;
+          } else if (profile.config?.projectKey) {
+            projectKeys = [profile.config.projectKey];
+            break;
+          }
+        }
       }
-      projectKeys = [projectKey];
+    }
+
+    if (projectKeys.length === 0) {
+      console.log(chalk.red('❌ No Jira projects configured in .specweave/config.json'));
+      console.log(chalk.gray('   Expected: issueTracker.projects[].key or issueTracker.project'));
+      console.log(chalk.gray('   Run: specweave init to configure Jira projects'));
+      result.valid = false;
+      return result;
     }
 
     // 1. Validate project(s)
     console.log(chalk.gray(`Strategy: ${strategy}`));
     console.log(chalk.gray(`Checking project(s): ${projectKeys.join(', ')}...\n`));
-
-    // NEW: Validate per-project var naming (detect orphaned configs)
-    const perProjectBoardVars = Object.keys(env).filter(
-      key => key.startsWith('JIRA_BOARDS_')
-    );
-
-    for (const varName of perProjectBoardVars) {
-      const projectFromVar = varName.split('JIRA_BOARDS_')[1];
-
-      if (!projectKeys.includes(projectFromVar)) {
-        console.log(chalk.yellow(`⚠️  Configuration warning: ${varName}`));
-        console.log(chalk.gray(`    Project "${projectFromVar}" not found in JIRA_PROJECTS`));
-        console.log(chalk.gray(`    Expected projects: ${projectKeys.join(', ')}`));
-        console.log(chalk.gray(`    This configuration will be ignored.\n`));
-      }
-    }
 
     // Track all validated/created projects (for multi-project IDs)
     const allProjects: Array<{ key: string; id: string; name: string }> = [];
@@ -478,186 +574,203 @@ export class JiraResourceValidator {
 
     console.log(); // Empty line after project validation
 
-    // Update .env with project IDs (for multi-project strategy)
-    if (strategy === 'project-per-team' && allProjects.length > 0) {
-      const projectIds = allProjects.map(p => p.id).join(',');
-      await this.updateEnv({ JIRA_PROJECT_IDS: projectIds });
-      result.envUpdated = true;
-      console.log(chalk.green(`✅ Updated .env with project IDs: ${projectIds}\n`));
-    } else if (allProjects.length === 1) {
-      // Single project - store both key and ID
-      await this.updateEnv({ JIRA_PROJECT_ID: allProjects[0].id });
-      result.envUpdated = true;
-      console.log(chalk.green(`✅ Updated .env with project ID: ${allProjects[0].id}\n`));
+    // Update config.json with project IDs (for multi-project strategy)
+    // NOTE: In v0.33.0+, we update config.json, NOT .env (ADR-0050)
+    if (allProjects.length > 0) {
+      // Update issueTracker.projects with validated IDs
+      const updatedProjects = allProjects.map(p => ({
+        key: p.key,
+        id: p.id,
+        name: p.name
+      }));
+
+      await this.updateConfig({
+        issueTracker: {
+          ...issueTracker,
+          projects: updatedProjects as any
+        }
+      });
+      result.envUpdated = true; // Renamed but still indicates config was updated
+      console.log(chalk.green(`✅ Updated config.json with project IDs\n`));
     }
 
-    // 2. Validate boards (per-project OR legacy board-based strategy)
+    // 2. Validate boards (from config.json issueTracker.projects[].boards)
     result.boards = { valid: true, existing: [], missing: [], created: [] };
 
-    // NEW: Check for per-project boards (JIRA_BOARDS_{ProjectKey})
-    let hasPerProjectBoards = false;
-    for (const projectKey of projectKeys) {
-      const perProjectKey = `JIRA_BOARDS_${projectKey}`;
-      if (env[perProjectKey]) {
-        hasPerProjectBoards = true;
-        break;
-      }
-    }
+    // Check if any project has boards configured in config.json
+    const projectsWithBoards = issueTracker.projects?.filter(p => p.boards && p.boards.length > 0) || [];
+    const hasPerProjectBoards = projectsWithBoards.length > 0;
+
+    // Also check legacy board-based strategy (issueTracker.boards)
+    const legacyBoards = issueTracker.boards || [];
 
     if (hasPerProjectBoards) {
-      // Per-project boards (NEW!)
+      // Per-project boards from config.json (2-level structure)
       console.log(chalk.gray(`Checking per-project boards...\n`));
 
       // Track board names to detect conflicts across projects
       const boardNamesSeen = new Map<string, string>(); // name -> project
 
-      for (const projectKey of projectKeys) {
-        const perProjectKey = `JIRA_BOARDS_${projectKey}`;
-        const boardsConfig = env[perProjectKey];
+      for (const projectConfig of issueTracker.projects || []) {
+        const projectKey = projectConfig.key;
+        const boards = projectConfig.boards || [];
 
-        if (boardsConfig) {
-          const boardEntries = boardsConfig.split(',').map((b) => b.trim()).filter(b => b);
+        if (boards.length > 0) {
+          console.log(chalk.gray(`  Project: ${projectKey} (${boards.length} boards)`));
 
-          if (boardEntries.length > 0) {
-            console.log(chalk.gray(`  Project: ${projectKey} (${boardEntries.length} boards)`));
+          const finalBoardIds: Array<{ id: string; name?: string }> = [];
 
-            const finalBoardIds: number[] = [];
+          for (const boardConfig of boards) {
+            const boardIdStr = boardConfig.id;
+            const isNumeric = /^\d+$/.test(boardIdStr);
 
-            for (const entry of boardEntries) {
-              const isNumeric = /^\d+$/.test(entry);
+            if (isNumeric) {
+              // Entry is a board ID - validate it exists AND belongs to this project
+              const boardId = parseInt(boardIdStr, 10);
+              const board = await this.checkBoard(boardId);
 
-              if (isNumeric) {
-                // Entry is a board ID - validate it exists AND belongs to this project
-                const boardId = parseInt(entry, 10);
-                const board = await this.checkBoard(boardId);
-
-                if (board) {
-                  // NEW: Validate board belongs to the correct project
-                  if (board.location?.projectKey && board.location.projectKey !== projectKey) {
-                    console.log(chalk.yellow(`    ⚠️  Board ${boardId}: ${board.name} belongs to project ${board.location.projectKey}, not ${projectKey}`));
-                    console.log(chalk.gray(`       Expected: ${projectKey}, Found: ${board.location.projectKey}`));
-                    result.boards.missing.push(entry);
-                    result.boards.valid = false;
-                  } else {
-                    // Board exists and belongs to correct project (or project unknown - backward compat)
-                    if (board.location?.projectKey) {
-                      console.log(chalk.green(`    ✅ Board ${boardId}: ${board.name} (project: ${board.location.projectKey})`));
-                    } else {
-                      console.log(chalk.green(`    ✅ Board ${boardId}: ${board.name} (project verification skipped)`));
-                    }
-                    result.boards.existing.push(board.id);
-                    finalBoardIds.push(board.id);
-                  }
-                } else {
-                  console.log(chalk.yellow(`    ⚠️  Board ${boardId}: Not found`));
-                  result.boards.missing.push(entry);
+              if (board) {
+                // Validate board belongs to the correct project
+                if (board.location?.projectKey && board.location.projectKey !== projectKey) {
+                  console.log(chalk.yellow(`    ⚠️  Board ${boardId}: ${board.name} belongs to project ${board.location.projectKey}, not ${projectKey}`));
+                  console.log(chalk.gray(`       Expected: ${projectKey}, Found: ${board.location.projectKey}`));
+                  result.boards.missing.push(boardIdStr);
                   result.boards.valid = false;
+                } else {
+                  // Board exists and belongs to correct project
+                  if (board.location?.projectKey) {
+                    console.log(chalk.green(`    ✅ Board ${boardId}: ${board.name} (project: ${board.location.projectKey})`));
+                  } else {
+                    console.log(chalk.green(`    ✅ Board ${boardId}: ${board.name} (project verification skipped)`));
+                  }
+                  result.boards.existing.push(board.id);
+                  finalBoardIds.push({ id: String(board.id), name: board.name });
                 }
               } else {
-                // Entry is a board name - check for conflicts, then create it
+                console.log(chalk.yellow(`    ⚠️  Board ${boardId}: Not found`));
+                result.boards.missing.push(boardIdStr);
+                result.boards.valid = false;
+              }
+            } else {
+              // Entry is a board name - check for conflicts, then create it
+              const boardName = boardConfig.name || boardIdStr;
 
-                // NEW: Detect board name conflicts across projects
-                if (boardNamesSeen.has(entry)) {
-                  const existingProject = boardNamesSeen.get(entry);
-                  console.log(chalk.yellow(`    ⚠️  Board name conflict: "${entry}" already used in project ${existingProject}`));
-                  console.log(chalk.gray(`       Tip: Use unique board names or append project suffix (e.g., "${entry}-${projectKey}")`));
-                  result.boards.missing.push(entry);
+              if (boardNamesSeen.has(boardName)) {
+                const existingProject = boardNamesSeen.get(boardName);
+                console.log(chalk.yellow(`    ⚠️  Board name conflict: "${boardName}" already used in project ${existingProject}`));
+                console.log(chalk.gray(`       Tip: Use unique board names or append project suffix (e.g., "${boardName}-${projectKey}")`));
+                result.boards.missing.push(boardName);
+                result.boards.valid = false;
+              } else {
+                console.log(chalk.blue(`    📦 Creating board: ${boardName}...`));
+
+                try {
+                  const board = await this.createBoard(boardName, projectKey);
+                  console.log(chalk.green(`    ✅ Created: ${boardName} (ID: ${board.id})`));
+                  result.boards.created.push({ name: boardName, id: board.id });
+                  finalBoardIds.push({ id: String(board.id), name: board.name });
+                  boardNamesSeen.set(boardName, projectKey);
+                } catch (error: any) {
+                  console.log(chalk.red(`    ❌ Failed to create ${boardName}: ${error.message}`));
+                  result.boards.missing.push(boardName);
                   result.boards.valid = false;
-                } else {
-                  console.log(chalk.blue(`    📦 Creating board: ${entry}...`));
-
-                  try {
-                    const board = await this.createBoard(entry, projectKey);
-                    console.log(chalk.green(`    ✅ Created: ${entry} (ID: ${board.id})`));
-                    result.boards.created.push({ name: entry, id: board.id });
-                    finalBoardIds.push(board.id);
-                    boardNamesSeen.set(entry, projectKey); // Track this board name
-                  } catch (error: any) {
-                    console.log(chalk.red(`    ❌ Failed to create ${entry}: ${error.message}`));
-                    result.boards.missing.push(entry);
-                    result.boards.valid = false;
-                  }
                 }
               }
             }
+          }
 
-            // Update .env with final board IDs for this project
-            if (finalBoardIds.length > 0) {
-              await this.updateEnv({ [perProjectKey]: finalBoardIds.join(',') });
-              result.envUpdated = true;
-              console.log(chalk.green(`    ✅ Updated ${perProjectKey}: ${finalBoardIds.join(',')}`));
-            }
+          // Update config.json with validated board IDs
+          if (finalBoardIds.length > 0) {
+            const currentConfig = this.loadConfig();
+            const updatedProjects = (currentConfig.issueTracker?.projects || []).map(p => {
+              if (p.key === projectKey) {
+                return { ...p, boards: finalBoardIds };
+              }
+              return p;
+            });
+
+            await this.updateConfig({
+              issueTracker: {
+                ...currentConfig.issueTracker,
+                projects: updatedProjects as any
+              }
+            });
+            result.envUpdated = true;
+            console.log(chalk.green(`    ✅ Updated config.json with board IDs for ${projectKey}`));
           }
         }
       }
 
       console.log();
-    } else {
-      // Legacy: Global boards (backward compatibility)
-      const boardsConfig = env.JIRA_BOARDS || '';
-      if (boardsConfig && strategy === 'board-based') {
-        console.log(chalk.gray(`Checking boards: ${boardsConfig}...`));
+    } else if (legacyBoards.length > 0 && strategy === 'board-based') {
+      // Legacy: Global boards from config.json (backward compatibility)
+      console.log(chalk.gray(`Checking boards: ${legacyBoards.map(b => b.id).join(', ')}...`));
 
-        // For board-based strategy, use the single project key
-        const projectKeyForBoards = projectKeys[0];
+      // For board-based strategy, use the single project key
+      const projectKeyForBoards = projectKeys[0];
 
-        const boardEntries = boardsConfig.split(',').map((b) => b.trim());
-        const finalBoardIds: number[] = [];
+      const finalBoardIds: Array<{ id: string; name?: string }> = [];
 
-        for (const entry of boardEntries) {
-          const isNumeric = /^\d+$/.test(entry);
+      for (const boardConfig of legacyBoards) {
+        const boardIdStr = boardConfig.id;
+        const isNumeric = /^\d+$/.test(boardIdStr);
 
-          if (isNumeric) {
-            // Entry is a board ID - validate it exists
-            const boardId = parseInt(entry, 10);
-            const board = await this.checkBoard(boardId);
+        if (isNumeric) {
+          // Entry is a board ID - validate it exists
+          const boardId = parseInt(boardIdStr, 10);
+          const board = await this.checkBoard(boardId);
 
-            if (board) {
-              console.log(chalk.green(`  ✅ Board ${boardId}: ${board.name} (exists)`));
-              result.boards.existing.push(board.id);
-              finalBoardIds.push(board.id);
-            } else {
-              console.log(chalk.yellow(`  ⚠️  Board ${boardId}: Not found`));
-              result.boards.missing.push(entry);
-              result.boards.valid = false;
-            }
+          if (board) {
+            console.log(chalk.green(`  ✅ Board ${boardId}: ${board.name} (exists)`));
+            result.boards.existing.push(board.id);
+            finalBoardIds.push({ id: String(board.id), name: board.name });
           } else {
-            // Entry is a board name - create it
-            console.log(chalk.blue(`  📦 Creating board: ${entry}...`));
+            console.log(chalk.yellow(`  ⚠️  Board ${boardId}: Not found`));
+            result.boards.missing.push(boardIdStr);
+            result.boards.valid = false;
+          }
+        } else {
+          // Entry is a board name - create it
+          const boardName = boardConfig.name || boardIdStr;
+          console.log(chalk.blue(`  📦 Creating board: ${boardName}...`));
 
-            try {
-              const board = await this.createBoard(entry, projectKeyForBoards);
-              console.log(chalk.green(`  ✅ Created: ${entry} (ID: ${board.id})`));
-              result.boards.created.push({ name: entry, id: board.id });
-              finalBoardIds.push(board.id);
-            } catch (error: any) {
-              console.log(chalk.red(`  ❌ Failed to create ${entry}: ${error.message}`));
-              result.boards.missing.push(entry);
-              result.boards.valid = false;
-            }
+          try {
+            const board = await this.createBoard(boardName, projectKeyForBoards);
+            console.log(chalk.green(`  ✅ Created: ${boardName} (ID: ${board.id})`));
+            result.boards.created.push({ name: boardName, id: board.id });
+            finalBoardIds.push({ id: String(board.id), name: board.name });
+          } catch (error: any) {
+            console.log(chalk.red(`  ❌ Failed to create ${boardName}: ${error.message}`));
+            result.boards.missing.push(boardName);
+            result.boards.valid = false;
           }
         }
+      }
 
-        // Update .env if any boards were created
-        if (result.boards.created.length > 0) {
-          console.log(chalk.blue('\n📝 Updating .env with board IDs...'));
-          await this.updateEnv({ JIRA_BOARDS: finalBoardIds.join(',') });
-          result.boards.existing = finalBoardIds;
-          result.envUpdated = true;
-          console.log(chalk.green(`✅ Updated JIRA_BOARDS: ${finalBoardIds.join(',')}`));
-        }
+      // Update config.json if any boards were validated/created
+      if (finalBoardIds.length > 0) {
+        console.log(chalk.blue('\n📝 Updating config.json with board IDs...'));
+        await this.updateConfig({
+          issueTracker: {
+            ...issueTracker,
+            boards: finalBoardIds
+          }
+        });
+        result.boards.existing = finalBoardIds.map(b => parseInt(b.id, 10));
+        result.envUpdated = true;
+        console.log(chalk.green(`✅ Updated issueTracker.boards in config.json`));
+      }
 
-        // Summary
-        console.log();
-        if (result.boards.missing.length > 0) {
-          console.log(
-            chalk.yellow(
-              `⚠️  Issues found: ${result.boards.missing.length} board(s)\n`
-            )
-          );
-        } else {
-          console.log(chalk.green(`✅ All boards validated/created successfully\n`));
-        }
+      // Summary
+      console.log();
+      if (result.boards.missing.length > 0) {
+        console.log(
+          chalk.yellow(
+            `⚠️  Issues found: ${result.boards.missing.length} board(s)\n`
+          )
+        );
+      } else {
+        console.log(chalk.green(`✅ All boards validated/created successfully\n`));
       }
     }
 

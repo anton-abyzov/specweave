@@ -43,6 +43,7 @@ import {
   validateJiraConnection,
   getJiraEnvVars,
   getJiraConfig,
+  createJiraProjectFolders,
   showJiraSetupComplete,
   showJiraSetupSkipped
 } from './jira.js';
@@ -497,9 +498,11 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
           await validateResources(tracker, credentials, projectPath, syncPermissions);
         }
 
-        // Step 5.6: Create ADO folder structure (ADO only)
+        // Step 5.6: Create folder structure (ADO and JIRA)
         if (tracker === 'ado') {
           createAdoProjectFolders(projectPath, credentials as any);
+        } else if (tracker === 'jira') {
+          createJiraProjectFolders(projectPath, credentials as any);
         }
 
         // Show setup complete message (plugins managed via marketplace)
@@ -620,9 +623,11 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
     await validateResources(tracker, credentials, projectPath, syncPermissions);
   }
 
-  // Step 5.6: Create ADO folder structure (ADO only)
+  // Step 5.6: Create folder structure (ADO and JIRA)
   if (tracker === 'ado') {
     createAdoProjectFolders(projectPath, credentials as any);
+  } else if (tracker === 'jira') {
+    createJiraProjectFolders(projectPath, credentials as any);
   }
 
   // Step 6: Show success message (plugins managed via marketplace)
