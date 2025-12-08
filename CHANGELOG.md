@@ -4,6 +4,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.32.6] - 2025-12-08
+
+### ✨ Features
+- Add `specweave docs` command for Docusaurus preview management
+- Enhanced JIRA integration with multi-board detection and setup wizard
+- GitHub/Bitbucket multi-repo pattern parity improvements
+
+### 🔧 Improvements
+- Repository setup refactoring with better multi-repo support
+- Improved config generator for docs preview
+- Enhanced JIRA validator with comprehensive error handling
+
+---
+
 ## [0.32.5] - 2025-12-08
 
 ### 🗂️ Maintenance
