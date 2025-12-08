@@ -53,18 +53,17 @@ export class ProjectManager {
       return this.cachedProject;
     }
 
-    // Multi-project mode → return active project
-    const activeProjectId = config.multiProject.activeProject;
-    if (!activeProjectId) {
-      throw new Error('Multi-project mode enabled but no active project set in config');
+    // Multi-project mode → return first available project
+    // NOTE (v0.33.0): activeProject REMOVED - per-US project targeting replaces it
+    // In multi-project mode, we use the first project as default context
+    // Individual USs can target specific projects via **Project**: field
+    const projectIds = Object.keys(config.multiProject.projects || {});
+    if (projectIds.length === 0) {
+      throw new Error('Multi-project mode enabled but no projects defined in config');
     }
 
-    const projectConfig = config.multiProject.projects[activeProjectId];
-
-    if (!projectConfig) {
-      const availableProjects = Object.keys(config.multiProject.projects).join(', ');
-      throw new Error(`Active project '${activeProjectId}' not found in config. Available projects: ${availableProjects}`);
-    }
+    const activeProjectId = projectIds[0];  // Use first project as default
+    const projectConfig = config.multiProject.projects![activeProjectId];
 
     // Convert ProjectConfig to ProjectContext
     const project: ProjectContext = {
@@ -236,14 +235,11 @@ export class ProjectManager {
       throw new Error(`Project '${projectId}' not found. Available projects: ${availableProjects}`);
     }
 
-    // Update config
-    config.multiProject.activeProject = projectId;
-    await this.configManager.save(config);
-
-    // Clear cache
-    this.cachedProject = null;
-
-    console.log(`✅ Switched to project: ${projectConfig.name} (${projectId})`);
+    // NOTE (v0.33.0): activeProject REMOVED - per-US project targeting replaces it
+    // switchToProject() is now a no-op but kept for backward compatibility
+    console.log(`ℹ️  Project context: ${projectConfig.name} (${projectId})`);
+    console.log('   Note: Per-US project targeting now determines sync destination');
+    console.log('   Use **Project**: field in spec.md to target specific projects');
   }
 
   /**
@@ -277,10 +273,10 @@ export class ProjectManager {
     const config = this.configManager.load();
 
     // Initialize multiProject if not present
+    // NOTE (v0.33.0): activeProject REMOVED - per-US project targeting replaces it
     if (!config.multiProject) {
       config.multiProject = {
         enabled: false,
-        activeProject: 'default',
         projects: {}
       };
     }
@@ -329,8 +325,11 @@ export class ProjectManager {
       throw new Error('Cannot remove default project');
     }
 
-    if (config.multiProject.activeProject === projectId) {
-      throw new Error('Cannot remove active project. Switch to another project first.');
+    // NOTE (v0.33.0): activeProject check removed - projects can always be removed
+    // Just ensure at least one project remains
+    const projectCount = Object.keys(config.multiProject.projects).length;
+    if (projectCount <= 1) {
+      throw new Error('Cannot remove last project. At least one project must remain.');
     }
 
     if (!config.multiProject.projects[projectId]) {

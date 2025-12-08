@@ -19,26 +19,29 @@ For **contributors to SpecWeave itself** (not users).
 # OR close completed increments: /specweave:done XXXX
 ```
 
-### 1b. Max 8 Tasks Per Increment (HARD LIMIT!)
+### 1b. Max 25 Tasks Per Increment (SOFT LIMIT)
 
-**>8 tasks = context explosion = CRASH**
+**>25 tasks = consider splitting for maintainability**
 
 ```bash
 # Check task count before starting work:
 grep -c "^### T-" .specweave/increments/*/tasks.md
 
-# If >8 tasks: SPLIT the increment
-# Pattern: Feature → Increment-Part1 (T-001 to T-004) + Increment-Part2 (T-005 to T-008)
+# If >25 tasks: Consider splitting by phase
+# Pattern: Feature → Phase1 (T-001 to T-008) + Phase2 (T-009 to T-016) + ...
 ```
 
-**Splitting large features:**
+**When to split (guidelines, not hard rules):**
+- Tasks span unrelated subsystems
+- Different teams would own different phases
+- Review cycles would benefit from smaller PRs
+
+**Phase-by-phase execution** (recommended for 15-25 tasks):
 ```
-0045-auth-system/        → 0045-auth-system-core/ (T-001 to T-004)
-                         → 0046-auth-system-ui/   (T-005 to T-008)
-                         → 0047-auth-system-tests/ (T-009 to T-012)
+Execute Phase 1 → validate → continue to Phase 2 → ...
 ```
 
-**Token budget per increment**: ~50k tokens max (tasks + spec + plan + context)
+**Token budget per increment**: ~80k tokens max (tasks + spec + plan + context)
 
 ### 2. Source of Truth
 

@@ -15,6 +15,7 @@ export {
   generateFeatureFile,
   generateReadmeFile,
   generateUserStoryFile,
+  type UserStoryFileOptions,
 } from './generators.js';
 
 // File utilities

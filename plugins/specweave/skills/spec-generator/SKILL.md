@@ -66,18 +66,53 @@ board: my-board              # REQUIRED for 2-level structures (ADO area paths, 
 ## User Stories & Acceptance Criteria
 
 <!--
-⚠️ MULTI-PROJECT MODE: If umbrella.enabled=true in config.json,
-   user stories MUST be project-scoped! See section below.
+⚠️ PER-US PROJECT TARGETING (v0.33.0+):
+Each user story MUST have **Project**: (and **Board**: for 2-level) fields.
+The LLM MUST resolve these from context - see RULE 0 in increment-planner.
 -->
 
 ### US-001: [Title]
+**Project**: [resolved-from-context]    <!-- REQUIRED - actual project ID from config/folders -->
+**Board**: [resolved-from-context]      <!-- REQUIRED for 2-level structures -->
+
 **As a** [user type]
 **I want** [goal]
 **So that** [benefit]
 
 **Acceptance Criteria**:
-- ✅ [Criterion 1]
-- ✅ [Criterion 2]
+- [ ] **AC-US1-01**: [Criterion 1]
+- [ ] **AC-US1-02**: [Criterion 2]
+
+---
+
+### Per-US Project Resolution (v0.33.0+ MANDATORY)
+
+**🧠 USE ALL AVAILABLE CONTEXT TO RESOLVE PROJECT/BOARD:**
+
+Before generating spec.md, analyze:
+1. **Living docs folders**: `ls .specweave/docs/internal/specs/` → actual project IDs
+2. **Recent increment patterns**: `grep "**Project**:" .specweave/increments/*/spec.md`
+3. **Config projectMappings**: Exact project IDs from config
+4. **Feature keywords**: Map to actual projects (not generic terms)
+
+**Resolution Example:**
+```
+Feature: "Add OAuth login to React frontend"
+Detected: "React", "frontend", "login"
+
+Step 1: Check living docs → folders: frontend-app/, backend-api/, shared/
+Step 2: "frontend" keyword → matches "frontend-app" folder
+Step 3: Assign **Project**: frontend-app (NOT "frontend"!)
+
+If cross-cutting ("OAuth" = both frontend + backend):
+  US-001 (Login UI) → **Project**: frontend-app
+  US-002 (Auth API) → **Project**: backend-api
+```
+
+**NEVER:**
+- ❌ Use generic keywords as project names ("frontend", "backend")
+- ❌ Ask user when context provides the answer
+- ❌ Leave `{{PROJECT_ID}}` placeholders
 
 ## Success Metrics
 [How we'll measure success]
@@ -392,9 +427,45 @@ spec_generator:
 - Multiple project folders exist in `specs/` (e.g., `sw-app-fe/`, `sw-app-be/`, `sw-app-shared/`)
 - User prompt mentions: "3 repos", "frontend repo", "backend API", "shared library"
 
-### Project-Scoped User Story Format (MANDATORY in Multi-Project Mode)
+### Per-User-Story Project Targeting (v0.33.0+ PREFERRED)
 
-**❌ WRONG (Single-Project Format - DO NOT USE in multi-project!):**
+**v0.33.0+ introduces per-US project targeting** - each user story specifies its target project inline:
+
+```markdown
+## User Stories
+
+### US-001: Thumbnail Upload & Comparison (P1)
+**Project**: frontend-app
+**Board**: ui-team        <!-- 2-level structures only -->
+**As a** content creator
+**I want** to upload multiple thumbnail variants
+**So that** I can visually evaluate my options
+
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: User can drag-and-drop up to 5 images
+
+---
+
+### US-002: CTR Prediction API (P1)
+**Project**: backend-api
+**Board**: ml-team        <!-- 2-level structures only -->
+**As a** frontend application
+**I want** to call POST /predict-ctr endpoint
+**So that** I can get AI-powered predictions
+
+**Acceptance Criteria**:
+- [ ] **AC-US2-01**: POST /predict-ctr accepts thumbnail image
+```
+
+**Benefits of per-US targeting:**
+- Each US syncs to correct project/repo
+- Single increment can span multiple projects
+- Living docs auto-grouped by project
+- External tools (GitHub/JIRA/ADO) receive issues in correct project
+
+### Legacy Project-Scoped User Story Format (Pre-v0.33.0)
+
+**❌ LEGACY (Project prefixes - still works but per-US targeting preferred):**
 ```markdown
 ## User Stories
 
@@ -405,7 +476,7 @@ As a content creator, I want to upload thumbnails...
 As a system, I want to predict click-through rates...
 ```
 
-**✅ CORRECT (Multi-Project Format - ALWAYS USE when umbrella detected!):**
+**✅ LEGACY (Multi-Project Format with prefixes - use per-US targeting instead):**
 ```markdown
 ## User Stories by Project
 

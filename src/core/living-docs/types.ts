@@ -184,6 +184,15 @@ export interface UserStoryData {
   external_url?: string;
   imported_at?: string;
   origin?: 'internal' | 'external';
+
+  // Cross-project targeting (v0.33.0+)
+  // Allows each US to sync to a different project/board
+  /** Target project for this US (e.g., "frontend-app", "backend-api") */
+  project?: string;
+  /** Target board for 2-level structures (e.g., "web-team", "api-team") */
+  board?: string;
+  /** Preferred external provider for this US: "github" | "jira" | "ado" */
+  externalProvider?: 'github' | 'jira' | 'ado';
 }
 
 export interface AcceptanceCriterionData {

@@ -98,13 +98,22 @@ export function generateReadmeFile(
 }
 
 /**
+ * Options for user story file generation
+ */
+export interface UserStoryFileOptions {
+  /** All projects in cross-project increment (for related_projects frontmatter) */
+  allProjects?: string[];
+}
+
+/**
  * Generate user story file content
  */
 export function generateUserStoryFile(
   story: UserStoryData,
   featureId: string,
   incrementId: string,
-  parsed: ParsedSpec
+  parsed: ParsedSpec,
+  options?: UserStoryFileOptions
 ): string {
   const lines: string[] = [];
 
@@ -115,6 +124,25 @@ export function generateUserStoryFile(
   lines.push('status: ' + (story.status || parsed.status));
   lines.push('priority: ' + parsed.priority);
   lines.push('created: ' + parsed.created);
+
+  // Cross-project targeting (v0.33.0+)
+  if (story.project) {
+    lines.push('project: ' + story.project);
+  }
+  if (story.board) {
+    lines.push('board: ' + story.board);
+  }
+  if (story.externalProvider) {
+    lines.push('external_provider: ' + story.externalProvider);
+  }
+
+  // Related projects (for cross-project increments)
+  if (options?.allProjects && story.project) {
+    const relatedProjects = options.allProjects.filter(p => p !== story.project);
+    if (relatedProjects.length > 0) {
+      lines.push('related_projects: [' + relatedProjects.join(', ') + ']');
+    }
+  }
 
   if (story.format_preservation !== undefined) {
     lines.push('format_preservation: ' + story.format_preservation);
