@@ -353,4 +353,111 @@ describe('IncrementNumberManager', () => {
       expect(IncrementNumberManager.extractNumber('')).toBe(null);
     });
   });
+
+  describe('T-007: Duplicate Detection and Prevention (v0.33.0)', () => {
+    it('should find duplicates with same base number', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0121-feature-a'));
+      fs.mkdirSync(path.join(incrementsDir, '0121-feature-b'));
+
+      const duplicates = IncrementNumberManager.findDuplicates('0121', testProjectRoot);
+      expect(duplicates).toHaveLength(2);
+      expect(duplicates).toContain('0121-feature-a (active)');
+      expect(duplicates).toContain('0121-feature-b (active)');
+    });
+
+    it('should find duplicates across directories', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0050-active'));
+
+      const archiveDir = path.join(incrementsDir, '_archive');
+      fs.mkdirSync(archiveDir, { recursive: true });
+      fs.mkdirSync(path.join(archiveDir, '0050-archived'));
+
+      const duplicates = IncrementNumberManager.findDuplicates('0050', testProjectRoot);
+      expect(duplicates).toHaveLength(2);
+      expect(duplicates).toContain('0050-active (active)');
+      expect(duplicates).toContain('0050-archived (_archive)');
+    });
+
+    it('should treat 0001 and 0001E as the same base number', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0001-internal'));
+      fs.mkdirSync(path.join(incrementsDir, '0001E-external'));
+
+      const duplicates = IncrementNumberManager.findDuplicates('0001', testProjectRoot);
+      expect(duplicates).toHaveLength(2);
+      expect(duplicates.some(d => d.includes('0001-internal'))).toBe(true);
+      expect(duplicates.some(d => d.includes('0001E-external'))).toBe(true);
+    });
+
+    it('should return empty array for unique numbers', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0001-only'));
+
+      const duplicates = IncrementNumberManager.findDuplicates('0099', testProjectRoot);
+      expect(duplicates).toHaveLength(0);
+    });
+
+    it('should validate unique increment IDs', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0050-existing'));
+
+      // Should throw for duplicate
+      expect(() => {
+        IncrementNumberManager.validateUnique('0050-new-feature', testProjectRoot);
+      }).toThrow('Duplicate increment number detected');
+    });
+
+    it('should allow unique increment IDs', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0050-existing'));
+
+      // Should NOT throw for different number
+      expect(() => {
+        IncrementNumberManager.validateUnique('0051-new-feature', testProjectRoot);
+      }).not.toThrow();
+    });
+
+    it('should block 0001E when 0001 exists (same base)', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0001-internal'));
+
+      expect(() => {
+        IncrementNumberManager.validateUnique('0001E-external', testProjectRoot);
+      }).toThrow('Duplicate increment number detected');
+    });
+
+    it('should block 0001 when 0001E exists (same base)', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0001E-external'));
+
+      expect(() => {
+        IncrementNumberManager.validateUnique('0001-internal', testProjectRoot);
+      }).toThrow('Duplicate increment number detected');
+    });
+
+    it('should generate guaranteed unique ID', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0010-existing'));
+
+      const id = IncrementNumberManager.generateUniqueIncrementId('new-feature', {
+        projectRoot: testProjectRoot
+      });
+
+      expect(id).toBe('0011-new-feature');
+      // Verify it's actually unique
+      expect(() => {
+        IncrementNumberManager.validateUnique(id, testProjectRoot);
+      }).not.toThrow();
+    });
+
+    it('should generate unique external ID', () => {
+      fs.mkdirSync(path.join(incrementsDir, '0010-existing'));
+
+      const id = IncrementNumberManager.generateUniqueIncrementId('fix', {
+        isExternal: true,
+        projectRoot: testProjectRoot
+      });
+
+      expect(id).toBe('0011E-fix');
+    });
+
+    it('should throw for invalid increment ID format', () => {
+      expect(() => {
+        IncrementNumberManager.validateUnique('invalid-no-number', testProjectRoot);
+      }).toThrow('Invalid increment ID format');
+    });
+  });
 });

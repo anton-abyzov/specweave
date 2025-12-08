@@ -6,16 +6,15 @@
 
 ## Overview
 
-SpecWeave uses a three-layer intelligent system to automatically choose the best AI model for each task:
-1. **Agent Preferences** - Each agent declares its optimal model
-2. **Phase Detection** - Analyzes your prompt to detect planning vs execution
-3. **Model Selector** - Combines all signals to make the final decision
+SpecWeave uses a two-tier model strategy:
+1. **Opus 4.5** - Default for all complex work (planning, analysis, architecture, code review)
+2. **Haiku** - For simple/cheap operations (translations, mechanical tasks)
 
 ---
 
-## The Three Models
+## The Models
 
-### Sonnet 4.5 (Planning & Strategy)
+### Opus 4.5 (Default - Planning, Analysis & Complex Work)
 
 **Use for**:
 - Strategic planning
@@ -23,40 +22,38 @@ SpecWeave uses a three-layer intelligent system to automatically choose the best
 - Complex problem solving
 - Security analysis
 - Code review
+- Quality assessment
 
-**Pricing**: $3 per 1M input tokens, $15 per 1M output tokens
+**Pricing**: $15 per 1M input tokens, $75 per 1M output tokens
 
 **Characteristics**:
-- Deep reasoning
-- Complex analysis
-- Strategic thinking
-- High accuracy
+- Deepest reasoning
+- Highest quality analysis
+- Best for complex tasks
+- Default for all agents
 
-### Haiku 4.5 (Execution & Implementation)
+### Haiku 4.5 (Simple & Cheap Operations)
 
 **Use for**:
-- Code implementation
-- Refactoring
-- Data processing
+- Translations
+- Mechanical execution
+- Simple data processing
 - Configuration generation
-- Test writing
+- Routine tasks
 
 **Pricing**: $1 per 1M input tokens, $5 per 1M output tokens
 
 **Characteristics**:
-- Fast execution (2x Sonnet speed)
-- Excellent code generation
-- Pattern recognition
+- Fast execution
 - Cost-effective
+- Good for repetitive tasks
+- Used when task has detailed spec
 
-### Opus 4.0 (Coming Soon)
+### Sonnet 4 (Legacy)
 
-**Use for**:
-- Extremely complex reasoning
-- Novel algorithm design
-- Research-level tasks
+**Rarely used** - Available for backwards compatibility.
 
-**Pricing**: $15 per 1M input tokens, $75 per 1M output tokens
+**Pricing**: $3 per 1M input tokens, $15 per 1M output tokens
 
 ---
 

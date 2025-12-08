@@ -498,7 +498,7 @@ GitHub Actions workflow includes performance benchmarking:
 1. Check prompt clarity
 2. Verify ANTHROPIC_API_KEY is set
 3. Increase timeout (generation may need more time)
-4. Check AI model (should be claude-sonnet-4-5)
+4. Check AI model (should be claude-opus-4-5)
 
 ---
 

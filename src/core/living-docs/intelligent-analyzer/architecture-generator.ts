@@ -157,6 +157,63 @@ async function generateC4Diagrams(
   return createBasicDiagrams();
 }
 
+/**
+ * Derives a human-readable ADR title from pattern and evidence using LLM
+ * Returns a concise 5-8 word title explaining WHAT was decided
+ */
+async function deriveADRTitle(
+  pattern: string,
+  evidence: string[],
+  llmProvider: LLMProvider
+): Promise<string> {
+  const prompt = `Given this architectural pattern and evidence, generate a concise decision title (5-8 words).
+
+Pattern: ${pattern}
+Evidence: ${evidence.slice(0, 5).join(', ')}
+
+Good examples:
+- "Adopt Feature-Based Folder Structure"
+- "Use Event-Driven Architecture for Async Processing"
+- "Implement CQRS for Write Operations"
+- "Standardize REST API Design Patterns"
+- "Apply Domain-Driven Design Principles"
+
+Return ONLY the title (5-8 words), no explanation or quotes.`;
+
+  try {
+    const result = await llmProvider.analyze(prompt);
+    if (result?.content) {
+      // Clean up the response: remove quotes, special chars, limit length
+      const cleaned = result.content
+        .trim()
+        .replace(/^["']|["']$/g, '')      // Remove surrounding quotes
+        .replace(/[^\w\s-]/g, '')          // Remove special chars except hyphen
+        .substring(0, 60);                 // Max 60 chars
+
+      if (cleaned.length >= 10) {
+        return cleaned;
+      }
+    }
+  } catch {
+    // Fallback silently
+  }
+
+  // Fallback: Use pattern name with "Adopt" prefix
+  return `Adopt ${pattern}`;
+}
+
+/**
+ * Converts a title to kebab-case for use in ADR filenames
+ */
+function toKebabCase(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .substring(0, 50);
+}
+
 async function detectArchitecturalDecisions(
   analyses: Map<string, RepoAnalysis>,
   llmProvider: LLMProvider,
@@ -180,9 +237,13 @@ async function detectArchitecturalDecisions(
 
   for (const [pattern, data] of patternMap) {
     if (data.repos.length >= 2) {
+      // Derive semantic title using LLM
+      const semanticTitle = await deriveADRTitle(pattern, data.evidence, llmProvider);
+      const kebabTitle = toKebabCase(semanticTitle);
+
       adrs.push({
-        id: `DETECTED-${String(adrNum).padStart(4, '0')}`,
-        title: `Use ${pattern}`,
+        id: `${String(adrNum).padStart(4, '0')}-${kebabTitle}`,
+        title: semanticTitle,
         pattern,
         status: 'Detected',
         context: `Found ${pattern} pattern in ${data.repos.length} repositories.`,

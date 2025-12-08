@@ -1,0 +1,11 @@
+{
+  "id": "FS-114",
+  "type": "feature",
+  "archivedAt": "2025-12-07T08:39:48.717Z",
+  "archivedBy": "antonabyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/antonabyzov/Documents/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-114",
+  "linkedIncrements": [
+    "0114-slash-command-script-delegation"
+  ]
+}

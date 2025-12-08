@@ -56,7 +56,7 @@
     {
       "sessionId": "session_1730386335123_abc123",
       "agent": "pm",
-      "model": "sonnet",
+      "model": "opus",
       "increment": "0003",
       "command": "/specweave:do",
       "startedAt": "2025-10-31T14:30:00.000Z",
@@ -193,7 +193,7 @@ const tracker = new CostTracker({
 });
 
 // Start session
-const sessionId = tracker.startSession('pm', 'sonnet', '0003', '/specweave:inc');
+const sessionId = tracker.startSession('pm', 'opus', '0003', '/specweave:increment');
 
 // Record tokens
 tracker.recordTokens(5000, 2000, sessionId);

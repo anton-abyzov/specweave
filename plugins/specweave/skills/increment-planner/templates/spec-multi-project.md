@@ -8,8 +8,10 @@ created: {{DATE}}
 structure: user-stories
 test_mode: {{TEST_MODE}}
 coverage_target: {{COVERAGE_TARGET}}
-default_project: {{PROJECT_ID}}
-default_board: {{BOARD_ID}}
+# MANDATORY: Run "specweave context projects" to get valid project/board IDs
+# For 2-level structures: BOTH project AND board are REQUIRED
+project: {{PROJECT_ID}}
+board: {{BOARD_ID}}
 multi_project: true
 projects:
   - id: {{PROJECT_FE_ID}}

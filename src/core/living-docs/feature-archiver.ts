@@ -162,6 +162,15 @@ export class FeatureArchiver {
       // Archive orphaned features ONLY if option is set
       const isOrphaned = linkedIncrements.length === 0 && options.archiveOrphanedFeatures;
 
+      // v0.33.0: External features (FS-XXXE) are NOT orphaned - they're imported from
+      // external tools and should be handled by archiveExternalFeatures() separately!
+      // Skip external features in the normal archiving flow.
+      const isExternalFeature = featureId.endsWith('E');
+      if (isExternalFeature && linkedIncrements.length === 0) {
+        console.log(`⏭️  Skipping ${featureId}: external feature (use --external flag to archive)`);
+        continue;
+      }
+
       // Check if all linked increments are archived (EXACT MATCH, not partial)
       // CRITICAL: Use exact match (===) not .includes() to avoid false positives
       // SAFETY: If no linked increments and archiveOrphanedFeatures is false, skip
@@ -708,19 +717,26 @@ export class FeatureArchiver {
    * Examples:
    * - "0041-living-docs-test-fixes" → "FS-041"
    * - "0123-my-feature" → "FS-123"
+   * - "0111E-external-issue" → "FS-111E" (external increment → external feature)
    * - "temp-experiment" → null (no number)
+   *
+   * CRITICAL (v0.33.0): External increments (with E suffix like 0111E-...)
+   * MUST map to external features (FS-111E), not internal ones (FS-111).
    */
   private inferFeatureIdFromIncrement(increment: string): string | null {
-    // Extract 4-digit number prefix
-    const match = increment.match(/^(\d{4})/);
+    // Extract 4-digit number prefix and optional E suffix
+    // Pattern: NNNN or NNNNE (e.g., 0041, 0111E)
+    const match = increment.match(/^(\d{4})(E)?/);
     if (!match) {
       return null; // Can't infer (no number prefix)
     }
 
     const number = parseInt(match[1], 10);
+    const isExternal = match[2] === 'E';
 
-    // Convert to feature ID format: 41 → "FS-041"
-    return `FS-${number.toString().padStart(3, '0')}`;
+    // Convert to feature ID format: 41 → "FS-041", 111E → "FS-111E"
+    const featureId = `FS-${number.toString().padStart(3, '0')}`;
+    return isExternal ? `${featureId}E` : featureId;
   }
 
   /**
@@ -862,19 +878,28 @@ export class FeatureArchiver {
       try {
         const content = await fs.readFile(featureMdPath, 'utf-8');
 
-        // Extract increment number from Implementation History
-        const match = content.match(/\[(\d{4})-[^\]]+\]\([^)]*increments/);
+        // Extract increment number and optional E suffix from Implementation History
+        // CRITICAL (v0.33.0): Handle external increments like [0111E-name](...)
+        const match = content.match(/\[(\d{4})(E)?-[^\]]+\]\([^)]*increments/);
 
         if (!match) {
           continue; // No increment reference found
         }
 
         const referencedIncrementNum = parseInt(match[1]);
-        const currentFeatureNum = parseInt(featureId.slice(3));
+        const isExternalIncrement = match[2] === 'E';
 
-        // Check if feature ID matches referenced increment
-        if (referencedIncrementNum !== currentFeatureNum) {
-          const expectedFeatureId = `FS-${referencedIncrementNum.toString().padStart(3, '0')}`;
+        // Parse current feature ID - handle both FS-111 and FS-111E
+        const currentFeatureNum = parseInt(featureId.replace('FS-', '').replace('E', ''));
+        const isCurrentExternal = featureId.endsWith('E');
+
+        // Check if feature ID matches referenced increment (both number AND external status)
+        const numberMismatch = referencedIncrementNum !== currentFeatureNum;
+        const externalMismatch = isExternalIncrement !== isCurrentExternal;
+
+        if (numberMismatch || externalMismatch) {
+          const baseId = `FS-${referencedIncrementNum.toString().padStart(3, '0')}`;
+          const expectedFeatureId = isExternalIncrement ? `${baseId}E` : baseId;
 
           console.log(`   ⚠️  Mismatch: ${featureId} references increment ${match[1]}`);
           console.log(`      Renaming ${featureId} → ${expectedFeatureId}`);

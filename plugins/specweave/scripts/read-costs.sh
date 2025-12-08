@@ -66,12 +66,12 @@ if [[ "$TOTAL_TOKENS" -eq 0 ]] && [[ "$TOTAL_COST" == "0" ]]; then
   echo ""
   echo "💡 Tips:"
   echo "   • Use ⚡ haiku for simple tasks (3x faster, 20x cheaper)"
-  echo "   • Use 🧠 sonnet for complex reasoning"
-  echo "   • Use 💎 opus only for critical decisions"
+  echo "   • Use 💎 opus for complex reasoning (default, best quality)"
+  echo "   • Use 🧠 sonnet only for legacy compatibility (rarely needed)"
   echo ""
   echo "Model hints in tasks.md:"
   echo "   ### T-001: Setup project structure ⚡"
-  echo "   ### T-002: Design architecture 🧠"
+  echo "   ### T-002: Design architecture 💎"
   exit 0
 fi
 

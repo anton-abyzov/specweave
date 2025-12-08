@@ -11,7 +11,11 @@
  */
 
 import chalk from 'chalk';
-import { input, select, confirm, checkbox } from '@inquirer/prompts';
+import { input, select, confirm } from '@inquirer/prompts';
+import { WIZARD_BACK, getGoBackStrings } from './wizard-navigation.js';
+
+// Re-export for backwards compatibility
+export { WIZARD_BACK };
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
 import type { LivingDocsUserInputs } from '../../../core/background/types.js';
@@ -60,6 +64,9 @@ interface PreflightStrings {
   monitorWith: string;
   continuousSyncNote: string;
   greenfieldSetupComplete: string;
+  goBack: string;
+  yes: string;
+  no: string;
 }
 
 function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
@@ -99,6 +106,9 @@ function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
       monitorWith: 'Monitor with',
       continuousSyncNote: 'Living docs will sync automatically as you work',
       greenfieldSetupComplete: 'Living docs structure ready - will populate as you create increments',
+      goBack: '← Go back to previous step',
+      yes: 'Yes',
+      no: 'No',
     },
     ru: {
       header: 'Генератор Living Docs',
@@ -135,6 +145,9 @@ function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
       monitorWith: 'Отслеживать с помощью',
       continuousSyncNote: 'Living docs будут синхронизироваться автоматически',
       greenfieldSetupComplete: 'Структура living docs готова - заполнится по мере создания инкрементов',
+      goBack: '← Вернуться к предыдущему шагу',
+      yes: 'Да',
+      no: 'Нет',
     },
   };
 
@@ -169,6 +182,8 @@ export interface PreflightResult {
   userInputs: LivingDocsUserInputs;
   /** Estimated duration string */
   estimatedDuration: string;
+  /** Signal to go back to previous step */
+  goBack?: typeof WIZARD_BACK;
 }
 
 /**
@@ -388,13 +403,36 @@ export async function collectLivingDocsInputs(
   console.log('');
 
   // FIRST: Ask if user wants Living Docs at all
+  // Use select with Yes/No/Go Back to allow navigation
   const enablePrompt = isBrownfield ? strings.enableLivingDocs : strings.enableLivingDocsGreenfield;
-  const enableLivingDocs = await confirm({
+  const goBackStrings = getGoBackStrings(language);
+  const enableChoice = await select<'yes' | 'no' | 'back'>({
     message: enablePrompt,
-    default: true,
+    choices: [
+      { value: 'yes', name: strings.yes },
+      { value: 'no', name: strings.no },
+      { value: 'back', name: chalk.gray(goBackStrings.goBack) },
+    ],
+    default: 'yes',
   });
 
-  if (!enableLivingDocs) {
+  // Handle go back
+  if (enableChoice === 'back') {
+    return {
+      shouldLaunch: false,
+      isBrownfield,
+      userInputs: {
+        additionalSources: [],
+        priorityAreas: [],
+        knownPainPoints: [],
+        analysisDepth: 'quick',
+      },
+      estimatedDuration: 'N/A',
+      goBack: WIZARD_BACK,
+    };
+  }
+
+  if (enableChoice === 'no') {
     console.log(chalk.gray(`  ${strings.skipLivingDocs}`));
     return null;
   }

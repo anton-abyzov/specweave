@@ -129,6 +129,45 @@ const config = detectStructureLevel(projectRoot);
 
 **Pre-tool-use hook `features-folder-guard.sh` BLOCKS writes to `_features/` (v0.33.0+).**
 
+### 2e. NEVER Create Duplicate Increment IDs (v0.33.0+)
+
+**Increment numbers MUST be unique across ALL directories!**
+
+```
+❌ FORBIDDEN (Bug pattern from 2025-12-07):
+0121-ado-jira-feature-parity-p2-p3/  ← exists
+0121-intelligent-living-docs-content/ ← DUPLICATE!
+
+❌ ALSO FORBIDDEN (0001 and 0001E share SAME base number):
+0001-internal-feature/
+0001E-external-fix/  ← COLLISION! Same base number!
+```
+
+**VALIDATION RULES:**
+```
+✅ ALWAYS use IncrementNumberManager.generateUniqueIncrementId()
+✅ ALWAYS use IncrementNumberManager.validateUnique() before creating
+✅ Check ALL directories: active, _archive, _abandoned, _paused
+```
+
+**API (v0.33.0+):**
+```typescript
+import { IncrementNumberManager } from './core/increment/increment-utils.js';
+
+// Safe generation with validation:
+const id = IncrementNumberManager.generateUniqueIncrementId('feature-name');
+// → "0122-feature-name" (guaranteed unique)
+
+// Manual validation:
+IncrementNumberManager.validateUnique('0121-new-name'); // throws if duplicate!
+
+// Find duplicates:
+IncrementNumberManager.findDuplicates('0121');
+// → ["0121-ado-jira-feature (active)", "0121-intelligent-living-docs (active)"]
+```
+
+**Pre-tool-use hook `increment-duplicate-guard.sh` BLOCKS duplicate increment creation (v0.33.0+).**
+
 ### 3. Protected Directories
 
 **NEVER delete**: `.specweave/docs/`, `.specweave/increments/`

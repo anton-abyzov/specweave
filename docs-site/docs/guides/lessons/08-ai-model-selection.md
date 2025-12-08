@@ -15,12 +15,12 @@ description: "Choose the right model for each task"
 
 | Model | Best For | Cost | Speed |
 |-------|----------|------|-------|
-| **Opus 4.5** | Architecture, complex analysis | $$$ | Slower |
-| **Sonnet 4.5** | Daily coding, features, tests | $$ | Fast |
-| **Haiku 3.5** | Quick lookups, simple edits | $ | Fastest |
+| **Opus 4.5** | All complex work (default) | $$$ | Best quality |
+| **Haiku 4.5** | Quick lookups, simple edits | $ | Fastest |
+| **Sonnet 4** | Legacy (rarely needed) | $$ | Fast |
 
-> **The most expensive model isn't always best.**
-> Using Opus for a typo is like a sledgehammer for a thumbtack.
+> **Opus 4.5 is now best-in-class and the default.**
+> Use Haiku for mechanical tasks to save costs.
 
 ---
 
@@ -42,22 +42,7 @@ description: "Choose the right model for each task"
 /specweave:qa 0001          # Uses Opus for analysis
 ```
 
-### Sonnet 4.5
-
-```
-✅ Feature implementation
-✅ Writing tests
-✅ Bug fixes
-✅ Code reviews
-✅ Daily development
-```
-
-**Example commands:**
-```bash
-/specweave:do   # Uses Sonnet for execution
-```
-
-### Haiku 3.5
+### Haiku 4.5
 
 ```
 ✅ Quick lookups
@@ -184,14 +169,13 @@ ai:
 │  "I need to..."                                         │
 │                                                         │
 │  Design / Architect     ────────────► OPUS 4.5         │
-│  Complex refactor                                       │
+│  Complex refactor                     (DEFAULT)         │
 │  Security review                                        │
+│  Feature implementation                                 │
+│  Writing tests                                          │
+│  Bug fixes                                              │
 │                                                         │
-│  Write features         ────────────► SONNET 4.5       │
-│  Fix bugs                                               │
-│  Write tests                                            │
-│                                                         │
-│  Quick lookup           ────────────► HAIKU 3.5        │
+│  Quick lookup           ────────────► HAIKU 4.5        │
 │  Simple edit                                            │
 │  Bulk operation                                         │
 │                                                         │

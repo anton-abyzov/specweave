@@ -53,6 +53,8 @@ import {
   createConfigFile,
   showNextSteps,
   generateInitialIncrement,
+  WIZARD_BACK,
+  logGoingBack,
 } from '../helpers/init/index.js';
 import { triggerAdoRepoCloning } from '../helpers/init/ado-repo-cloning.js';
 import {
@@ -521,85 +523,137 @@ export async function initCommand(
       // Multi-project folders
       await createMultiProjectFolders(targetDir);
 
-      // External import
-      if (!continueExisting) {
-        try {
-          const importResult = await promptAndRunExternalImport(targetDir, isCI, language);
+      // Comprehensive wizard loop with "go back" support
+      // Covers: External import → Living Docs → Testing → Translation
+      type WizardStep = 'external-import' | 'living-docs' | 'testing' | 'translation' | 'done';
+      let wizardStep: WizardStep = continueExisting ? 'living-docs' : 'external-import';
 
-          // Handle both sync and async import results
-          if ('isBackground' in importResult && importResult.isBackground) {
-            // Background import started - job will complete asynchronously
-            console.log(chalk.cyan('\n🚀 Import running in background'));
-            console.log(chalk.gray(`   Check progress: /specweave:jobs`));
-            // Track job ID for living docs dependencies
-            if ('jobId' in importResult && importResult.jobId) {
-              pendingJobIds.push(importResult.jobId);
+      while (wizardStep !== 'done') {
+        // STEP: External Import
+        if (wizardStep === 'external-import') {
+          try {
+            const importResult = await promptAndRunExternalImport(targetDir, isCI, language);
+
+            // Handle "go back" signal
+            if ('goBack' in importResult && importResult.goBack === WIZARD_BACK) {
+              // Can't go back from first step - stay here
+              logGoingBack(language);
+              continue;
             }
-            // Skip default increment - user is importing real work items
-            skipInitialIncrement = true;
-          } else if ('totalCount' in importResult && importResult.totalCount > 0) {
-            // Sync import completed
-            console.log(chalk.green('\n✅ Imported ' + importResult.totalCount + ' items from ' + importResult.platforms.join(', ')));
-            // Skip default increment - user has imported real work items
-            skipInitialIncrement = true;
+
+            // Handle both sync and async import results
+            if ('isBackground' in importResult && importResult.isBackground) {
+              // Background import started - job will complete asynchronously
+              console.log(chalk.cyan('\n🚀 Import running in background'));
+              console.log(chalk.gray(`   Check progress: /specweave:jobs`));
+              // Track job ID for living docs dependencies
+              if ('jobId' in importResult && importResult.jobId) {
+                pendingJobIds.push(importResult.jobId);
+              }
+              // Skip default increment - user is importing real work items
+              skipInitialIncrement = true;
+            } else if ('totalCount' in importResult && importResult.totalCount > 0) {
+              // Sync import completed
+              console.log(chalk.green('\n✅ Imported ' + importResult.totalCount + ' items from ' + importResult.platforms.join(', ')));
+              // Skip default increment - user has imported real work items
+              skipInitialIncrement = true;
+            }
+          } catch (importError) {
+            // Show actual error (was swallowed before) - helps debugging
+            const errorMsg = importError instanceof Error ? importError.message : String(importError);
+            console.log(chalk.yellow(`\n⚠️  External tool import failed: ${errorMsg}`));
+            console.log(chalk.gray('   → You can run /specweave-github:sync later to retry'));
           }
-        } catch (importError) {
-          // Show actual error (was swallowed before) - helps debugging
-          const errorMsg = importError instanceof Error ? importError.message : String(importError);
-          console.log(chalk.yellow(`\n⚠️  External tool import failed: ${errorMsg}`));
-          console.log(chalk.gray('   → You can run /specweave-github:sync later to retry'));
+          wizardStep = 'living-docs';
+          continue;
+        }
+
+        // STEP: Living Docs
+        if (wizardStep === 'living-docs') {
+          // Living Docs Builder - ALWAYS ask (both brownfield and greenfield)
+          if (!options.noLivingDocs) {
+            try {
+              const preflightResult = await collectLivingDocsInputs({
+                projectPath: targetDir,
+                language,
+                isCi: isCI,
+                skipLivingDocs: options.noLivingDocs,
+                pendingJobIds, // Pass pending job IDs to treat as "will be brownfield"
+              });
+
+              // Handle "go back" signal
+              if (preflightResult?.goBack === WIZARD_BACK) {
+                logGoingBack(language);
+                wizardStep = continueExisting ? 'living-docs' : 'external-import';
+                continue;
+              }
+
+              // Only launch background job for brownfield projects that want it
+              if (preflightResult?.shouldLaunch && preflightResult.isBrownfield) {
+                // Use collected job IDs as dependencies - living docs will wait for them
+                const launchResult = await launchLivingDocsJob({
+                  projectPath: targetDir,
+                  userInputs: preflightResult.userInputs,
+                  dependsOn: pendingJobIds, // Living docs waits for clone/import to complete
+                });
+
+                displayJobScheduled(launchResult.job.id, preflightResult.estimatedDuration, language);
+              }
+              // Greenfield projects: living docs structure already set up, no background job needed
+              // The collectLivingDocsInputs function displays the success message
+            } catch (livingDocsError) {
+              const errorMsg = livingDocsError instanceof Error ? livingDocsError.message : String(livingDocsError);
+              console.log(chalk.yellow(`\n⚠️  Living Docs setup failed: ${errorMsg}`));
+              console.log(chalk.gray('   → You can run /specweave:jobs later to check status'));
+            }
+          }
+          wizardStep = 'testing';
+          continue;
+        }
+
+        // STEP: Testing Configuration
+        if (wizardStep === 'testing') {
+          if (!isCI && !continueExisting) {
+            const testingResult = await promptTestingConfig(language);
+
+            // Handle "go back" signal
+            if (testingResult.goBack === WIZARD_BACK) {
+              logGoingBack(language);
+              wizardStep = 'living-docs';
+              continue;
+            }
+
+            updateConfigWithTesting(targetDir, testingResult.testMode, testingResult.coverageTarget, language);
+          }
+          wizardStep = 'translation';
+          continue;
+        }
+
+        // STEP: Translation Configuration
+        if (wizardStep === 'translation') {
+          // Translation configuration (CRITICAL: Must ask user - cost implications!)
+          // Language already selected in step 1, now ask about auto-translation scope
+          if (!isCI && !continueExisting && language !== 'en') {
+            // Only ask about translation if non-English language selected
+            const translationResult = await promptTranslationConfig(languageResult);
+
+            // Handle "go back" signal
+            if ('goBack' in translationResult && translationResult.goBack === WIZARD_BACK) {
+              logGoingBack(language);
+              wizardStep = 'testing';
+              continue;
+            }
+
+            updateConfigWithTranslation(targetDir, translationResult);
+          } else {
+            // English or CI mode: Use defaults (no auto-translation needed)
+            const defaultTranslation = getDefaultTranslationConfig(language);
+            defaultTranslation.keepEnglishOriginals = languageResult.keepEnglishOriginals;
+            updateConfigWithTranslation(targetDir, defaultTranslation);
+          }
+          wizardStep = 'done';
         }
       }
-
-      // Living Docs Builder - ALWAYS ask (both brownfield and greenfield)
-      if (!options.noLivingDocs) {
-        try {
-          const preflightResult = await collectLivingDocsInputs({
-            projectPath: targetDir,
-            language,
-            isCi: isCI,
-            skipLivingDocs: options.noLivingDocs,
-            pendingJobIds, // Pass pending job IDs to treat as "will be brownfield"
-          });
-
-          // Only launch background job for brownfield projects that want it
-          if (preflightResult?.shouldLaunch && preflightResult.isBrownfield) {
-            // Use collected job IDs as dependencies - living docs will wait for them
-            const launchResult = await launchLivingDocsJob({
-              projectPath: targetDir,
-              userInputs: preflightResult.userInputs,
-              dependsOn: pendingJobIds, // Living docs waits for clone/import to complete
-            });
-
-            displayJobScheduled(launchResult.job.id, preflightResult.estimatedDuration, language);
-          }
-          // Greenfield projects: living docs structure already set up, no background job needed
-          // The collectLivingDocsInputs function displays the success message
-        } catch (livingDocsError) {
-          const errorMsg = livingDocsError instanceof Error ? livingDocsError.message : String(livingDocsError);
-          console.log(chalk.yellow(`\n⚠️  Living Docs setup failed: ${errorMsg}`));
-          console.log(chalk.gray('   → You can run /specweave:jobs later to check status'));
-        }
-      }
-    }
-
-    // Testing configuration
-    if (!isCI && !continueExisting) {
-      const testingResult = await promptTestingConfig(language);
-      updateConfigWithTesting(targetDir, testingResult.testMode, testingResult.coverageTarget, language);
-    }
-
-    // Translation configuration (CRITICAL: Must ask user - cost implications!)
-    // Language already selected in step 1, now ask about auto-translation scope
-    if (!isCI && !continueExisting && language !== 'en') {
-      // Only ask about translation if non-English language selected
-      const translationResult = await promptTranslationConfig(languageResult);
-      updateConfigWithTranslation(targetDir, translationResult);
-    } else {
-      // English or CI mode: Use defaults (no auto-translation needed)
-      const defaultTranslation = getDefaultTranslationConfig(language);
-      defaultTranslation.keepEnglishOriginals = languageResult.keepEnglishOriginals;
-      updateConfigWithTranslation(targetDir, defaultTranslation);
     }
 
     // Initial increment - skip for brownfield projects importing external work items

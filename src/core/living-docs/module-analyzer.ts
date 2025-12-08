@@ -515,26 +515,134 @@ function findModuleForPath(normalizedPath: string): string | null {
 }
 
 /**
- * Generate placeholder summary (no LLM)
+ * AI insights for module analysis (optional, from LLM)
  */
-function generatePlaceholderSummary(
+export interface AIModuleInsights {
+  purpose?: string;
+  integrationPoints?: string[];
+  patterns?: Array<{ name: string; evidence: string }>;
+}
+
+/**
+ * Module dependency information
+ */
+export interface ModuleDependencyInfo {
+  imports: string[];
+  importedBy: string[];
+}
+
+/**
+ * Infer purpose from module name using common patterns
+ */
+function inferPurposeFromName(name: string): string {
+  const patterns: Record<string, string> = {
+    'cli': 'Command-line interface for user interaction and command execution.',
+    'core': 'Core business logic and domain models.',
+    'api': 'API layer handling HTTP requests and responses.',
+    'utils': 'Shared utility functions and helpers.',
+    'services': 'Service layer orchestrating business operations.',
+    'types': 'TypeScript type definitions and interfaces.',
+    'integrations': 'External service integrations and adapters.',
+    'models': 'Data models and schemas.',
+    'controllers': 'Request handling and routing logic.',
+    'middleware': 'Request/response processing middleware.',
+    'config': 'Configuration management and settings.',
+    'auth': 'Authentication and authorization handling.',
+    'database': 'Database access and query management.',
+    'workers': 'Background job processing and async tasks.',
+    'hooks': 'Lifecycle hooks and event handlers.',
+  };
+
+  const lowerName = name.toLowerCase();
+
+  // Check exact match first
+  if (patterns[lowerName]) {
+    return patterns[lowerName];
+  }
+
+  // Check if name contains any pattern keyword
+  for (const [key, desc] of Object.entries(patterns)) {
+    if (lowerName.includes(key)) {
+      return desc;
+    }
+  }
+
+  return `Provides ${name} functionality for the application.`;
+}
+
+/**
+ * Format dependency list for markdown
+ */
+function formatDependencyList(deps: string[] | undefined, prefix: string): string {
+  if (!deps || deps.length === 0) {
+    return 'No dependencies detected.';
+  }
+  return `${prefix}:\n${deps.map(d => `- \`${d}\``).join('\n')}`;
+}
+
+/**
+ * Format integration points for markdown
+ */
+function formatIntegrationPoints(points: string[] | undefined): string {
+  if (!points || points.length === 0) {
+    return 'No external integration points detected.';
+  }
+  return points.map(p => `- ${p}`).join('\n');
+}
+
+/**
+ * Format patterns for markdown
+ */
+function formatPatterns(patterns: Array<{ name: string; evidence: string }> | undefined): string {
+  if (!patterns || patterns.length === 0) {
+    return 'No specific patterns detected.';
+  }
+  return patterns.map(p => `- **${p.name}**: ${p.evidence}`).join('\n');
+}
+
+/**
+ * Generate rich module summary with Purpose, Dependencies, Dependents, Integration Points, and Patterns
+ */
+export function generateRichModuleSummary(
   module: ModuleInfo,
   analyzedFiles: AnalyzedFile[],
-  totalExports: number
+  totalExports: number,
+  aiInsights?: AIModuleInsights,
+  dependencyGraph?: ModuleDependencyInfo
 ): string {
   const sourceFiles = analyzedFiles.filter(f => f.type === 'source');
   const testFiles = analyzedFiles.filter(f => f.type === 'test');
 
-  const lines: string[] = [
-    `## ${module.name}`,
+  const sections: string[] = [
+    `# ${module.name}`,
     '',
     `**Path**: \`${module.path}\``,
     '',
-    '### Overview',
+    '## Purpose',
+    '',
+    aiInsights?.purpose || inferPurposeFromName(module.name),
+    '',
+    '## Overview',
     '',
     `The ${module.name} module contains ${module.fileCount} files with approximately ${module.estimatedLOC.toLocaleString()} lines of code.`,
     '',
-    '### Analysis Summary',
+    '## Dependencies',
+    '',
+    formatDependencyList(dependencyGraph?.imports, 'This module imports from'),
+    '',
+    '## Dependents',
+    '',
+    formatDependencyList(dependencyGraph?.importedBy, 'This module is used by'),
+    '',
+    '## Integration Points',
+    '',
+    formatIntegrationPoints(aiInsights?.integrationPoints),
+    '',
+    '## Patterns Used',
+    '',
+    formatPatterns(aiInsights?.patterns),
+    '',
+    '## Analysis Summary',
     '',
     `- **Files Analyzed**: ${analyzedFiles.length}`,
     `- **Source Files**: ${sourceFiles.length}`,
@@ -545,31 +653,66 @@ function generatePlaceholderSummary(
 
   // Top exports
   if (totalExports > 0) {
-    lines.push('### Main Exports');
-    lines.push('');
+    sections.push('## Main Exports');
+    sections.push('');
 
     const allExports = analyzedFiles.flatMap(f => f.exports);
     const topExports = allExports.slice(0, 10);
 
     for (const exp of topExports) {
-      lines.push(`- \`${exp.name}\` (${exp.type})`);
+      sections.push(`- \`${exp.name}\` (${exp.type})`);
     }
 
     if (allExports.length > 10) {
-      lines.push(`- ...and ${allExports.length - 10} more exports`);
+      sections.push(`- ...and ${allExports.length - 10} more exports`);
     }
-    lines.push('');
+    sections.push('');
   }
 
-  lines.push('### Documentation Status');
-  lines.push('');
-  lines.push(`**Has README**: ${module.hasReadme ? 'Yes' : 'No'}`);
-  lines.push(`**Has Tests**: ${module.hasTests ? 'Yes' : 'No'}`);
-  lines.push('');
-  lines.push('---');
-  lines.push(`*Analysis generated on ${new Date().toISOString().split('T')[0]}*`);
+  sections.push('## Documentation Status');
+  sections.push('');
+  sections.push(`**Has README**: ${module.hasReadme ? 'Yes' : 'No'}`);
+  sections.push(`**Has Tests**: ${testFiles.length > 0 ? 'Yes' : 'No'}`);
+  sections.push('');
+  sections.push('---');
+  sections.push(`*Analysis generated on ${new Date().toISOString().split('T')[0]}*`);
 
-  return lines.join('\n');
+  return sections.join('\n');
+}
+
+/**
+ * Generate placeholder summary (no LLM) - delegates to rich summary with defaults
+ */
+function generatePlaceholderSummary(
+  module: ModuleInfo,
+  analyzedFiles: AnalyzedFile[],
+  totalExports: number
+): string {
+  // Build dependency info from analyzed files
+  const imports = new Set<string>();
+  for (const file of analyzedFiles) {
+    for (const imp of file.imports) {
+      if (!imp.isExternal) {
+        const moduleName = findModuleForPath(imp.from);
+        if (moduleName && moduleName !== module.name) {
+          imports.add(moduleName);
+        }
+      }
+    }
+  }
+
+  const dependencyGraph: ModuleDependencyInfo = {
+    imports: [...imports],
+    importedBy: [] // Would need cross-module analysis to populate
+  };
+
+  return generateRichModuleSummary(
+    module,
+    analyzedFiles,
+    totalExports,
+    undefined, // No AI insights in placeholder mode
+    dependencyGraph
+  );
 }
 
 /**

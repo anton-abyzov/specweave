@@ -89,6 +89,19 @@ status was set to "completed" without ACs being checked or user approval.
 ```typescript
 import { IncrementCompletionValidator } from '../../../src/core/increment/completion-validator.js';
 import { DesyncDetector } from '../../../src/core/increment/desync-detector.js';
+import { ACStatusManager } from '../../../src/core/increment/ac-status-manager.js';
+
+// **NEW (2025-12-08)**: Sync ACs BEFORE validation to prevent race conditions
+// The background hook (post-task-completion.sh) may not have completed yet
+// This ensures spec.md ACs are up-to-date with tasks.md completion status
+console.log('🔄 Syncing AC status before validation...');
+const acManager = new ACStatusManager(projectRoot);
+const acSyncResult = await acManager.syncACStatus(incrementId);
+if (acSyncResult.synced && acSyncResult.updated.length > 0) {
+  console.log(`✅ Updated ${acSyncResult.updated.length} ACs: ${acSyncResult.updated.join(', ')}`);
+} else {
+  console.log('✅ AC status already in sync');
+}
 
 // **NEW (2025-11-20)**: Validate no status desync exists
 // This prevents closing increments with inconsistent metadata.json and spec.md

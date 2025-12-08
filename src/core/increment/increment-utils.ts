@@ -306,4 +306,140 @@ export class IncrementNumberManager {
     }
     return null;
   }
+
+  /**
+   * Find all existing increments with a given number (detects duplicates).
+   *
+   * Returns all folder names that share the same base number.
+   * E.g., for "0121" returns both "0121-feature-a" and "0121E-feature-b".
+   *
+   * IMPORTANT: 0001 and 0001E are considered the SAME base number!
+   *
+   * @param incrementNumber - Increment number to search for (string or number)
+   * @param projectRoot - Project root directory (defaults to process.cwd())
+   * @returns Array of folder names with the same base number
+   *
+   * @example
+   * ```typescript
+   * const duplicates = IncrementNumberManager.findDuplicates("0121");
+   * // ["0121-ado-jira-feature", "0121-intelligent-living-docs"]
+   * ```
+   *
+   * @since 0.33.0
+   */
+  static findDuplicates(
+    incrementNumber: string | number,
+    projectRoot: string = process.cwd()
+  ): string[] {
+    const incrementsDir = path.join(projectRoot, '.specweave', 'increments');
+    const normalizedNumber = String(incrementNumber).padStart(4, '0');
+    const duplicates: string[] = [];
+
+    const dirsToCheck = [
+      { path: incrementsDir, label: 'active' },
+      { path: path.join(incrementsDir, '_archive'), label: '_archive' },
+      { path: path.join(incrementsDir, '_abandoned'), label: '_abandoned' },
+      { path: path.join(incrementsDir, '_paused'), label: '_paused' }
+    ];
+
+    for (const { path: dirPath, label } of dirsToCheck) {
+      if (!fs.existsSync(dirPath)) continue;
+
+      try {
+        const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+        for (const entry of entries) {
+          if (!entry.isDirectory()) continue;
+
+          const match = entry.name.match(/^(\d{3,4})E?-/);
+          if (match) {
+            const entryNumber = match[1].padStart(4, '0');
+            if (entryNumber === normalizedNumber) {
+              duplicates.push(`${entry.name} (${label})`);
+            }
+          }
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return duplicates;
+  }
+
+  /**
+   * Validate that an increment ID is unique before creation.
+   *
+   * Throws an error if the number already exists (including E-suffix variants).
+   * Use this method to validate BEFORE creating increment directories.
+   *
+   * @param incrementId - Full increment ID to validate (e.g., "0121-feature-name")
+   * @param projectRoot - Project root directory (defaults to process.cwd())
+   * @throws Error if increment number already exists
+   *
+   * @example
+   * ```typescript
+   * // Safe increment creation
+   * const id = IncrementNumberManager.generateIncrementId('my-feature');
+   * IncrementNumberManager.validateUnique(id); // throws if duplicate
+   * fs.mkdirSync(path.join(incrementsDir, id));
+   * ```
+   *
+   * @since 0.33.0
+   */
+  static validateUnique(
+    incrementId: string,
+    projectRoot: string = process.cwd()
+  ): void {
+    const number = this.extractNumber(incrementId);
+    if (!number) {
+      throw new Error(`Invalid increment ID format: ${incrementId}`);
+    }
+
+    const duplicates = this.findDuplicates(number, projectRoot);
+
+    // Filter out the exact same ID (it's okay to exist if we're just checking)
+    const otherDuplicates = duplicates.filter(d => !d.startsWith(incrementId));
+
+    if (otherDuplicates.length > 0) {
+      throw new Error(
+        `Duplicate increment number detected! Number ${number} already exists:\n` +
+        otherDuplicates.map(d => `  - ${d}`).join('\n') +
+        `\n\nIMPORTANT: 0001 and 0001E share the SAME base number and cannot coexist.\n` +
+        `Use getNextIncrementNumber() to get a unique number.`
+      );
+    }
+  }
+
+  /**
+   * Generate a guaranteed-unique increment ID with validation.
+   *
+   * Unlike generateIncrementId(), this method validates that the generated
+   * ID doesn't conflict with existing increments before returning.
+   *
+   * @param name - Kebab-case increment name
+   * @param options - Generation options
+   * @returns Validated unique increment ID
+   * @throws Error if validation fails (should never happen with fresh scan)
+   *
+   * @example
+   * ```typescript
+   * const id = IncrementNumberManager.generateUniqueIncrementId('my-feature');
+   * // Guaranteed unique, safe to create directory
+   * ```
+   *
+   * @since 0.33.0
+   */
+  static generateUniqueIncrementId(
+    name: string,
+    options: { isExternal?: boolean; projectRoot?: string } = {}
+  ): string {
+    const { projectRoot = process.cwd() } = options;
+    const id = this.generateIncrementId(name, options);
+
+    // Double-check uniqueness (defends against race conditions)
+    this.validateUnique(id, projectRoot);
+
+    return id;
+  }
 }

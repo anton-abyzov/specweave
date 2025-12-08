@@ -82,7 +82,7 @@ codex "Read AGENTS.md and increment 0001. Fix auth bug. Run tests."
 | **Skills** | Native | Via AGENTS.md |
 | **Agents** | Native | Via AGENTS.md |
 | **Access Points** | CLI only | CLI + Web + IDE + GitHub + iOS |
-| **Model** | Sonnet 4.5 | GPT-5-Codex |
+| **Model** | Opus 4.5 | GPT-5-Codex |
 | **Task Isolation** | No | Yes (isolated per task) |
 | **Hooks** | Yes | No |
 

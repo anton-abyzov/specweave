@@ -482,7 +482,7 @@ Tracks AI costs, suggests optimizations.
 
 **Features:**
 - Cost tracking per increment
-- Model selection recommendations (Sonnet vs Haiku)
+- Model selection recommendations (Opus vs Haiku)
 - Context optimization suggestions
 
 ---

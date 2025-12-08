@@ -4,13 +4,54 @@
  * Archives increments to .specweave/increments/_archive/ and automatically
  * archives corresponding features in:
  * - .specweave/docs/internal/specs/{project}/_archive/
+ *
+ * v0.33.0: Added --external flag for archiving external living docs (FS-XXXE)
  */
 
 import chalk from 'chalk';
 import { IncrementArchiver } from '../../core/increment/increment-archiver.js';
+import { FeatureArchiver } from '../../core/living-docs/feature-archiver.js';
 
 export async function archiveCommand(incrementIds: string[], options: any): Promise<void> {
   try {
+    // ================================================================
+    // EXTERNAL MODE: Archive external living docs (FS-XXXE features)
+    // ================================================================
+    if (options.external) {
+      console.log(chalk.blue('📦 External living docs archive mode\n'));
+
+      const featureArchiver = new FeatureArchiver(process.cwd());
+
+      // Filter feature IDs (FS-*E pattern only)
+      const featureIds = incrementIds.filter(id =>
+        /^FS-\d+E$/.test(id)
+      );
+
+      const externalOptions = {
+        featureIds: featureIds.length > 0 ? featureIds : undefined,
+        olderThanDays: options.olderThan ? parseInt(options.olderThan) : undefined,
+        keepLast: options.keepLast ? parseInt(options.keepLast) : undefined,
+        dryRun: options.dryRun,
+        updateLinks: true
+      };
+
+      const result = await featureArchiver.archiveExternalFeatures(externalOptions);
+
+      console.log(chalk.green(`\n✅ External archive complete:`));
+      console.log(`   Archived: ${result.archivedFeatures.length} features`);
+      if (result.archivedFeatures.length > 0) {
+        result.archivedFeatures.forEach(f => console.log(`   - ${f}`));
+      }
+      if (result.errors.length > 0) {
+        console.log(chalk.red(`   Errors: ${result.errors.length}`));
+        result.errors.forEach(e => console.log(`   - ${e}`));
+      }
+      return;
+    }
+
+    // ================================================================
+    // INCREMENT MODE: Archive completed increments (default)
+    // ================================================================
     console.log(chalk.blue('📦 Archiving increments...\n'));
 
     const archiver = new IncrementArchiver(process.cwd());

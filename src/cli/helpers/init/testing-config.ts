@@ -9,6 +9,7 @@ import chalk from 'chalk';
 import { select, input } from '@inquirer/prompts';
 import type { TestMode, TestingConfig } from './types.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
+import { WIZARD_BACK, createGoBackChoice, type WizardResult } from './wizard-navigation.js';
 
 /**
  * Get translated strings for testing configuration
@@ -244,6 +245,8 @@ function getTestingStrings(language: SupportedLanguage): {
 export interface TestingConfigResult {
   testMode: TestMode;
   coverageTarget: number;
+  /** Signal to go back to previous step */
+  goBack?: typeof WIZARD_BACK;
 }
 
 /**
@@ -267,24 +270,32 @@ export async function promptTestingConfig(language: SupportedLanguage = 'en'): P
   console.log(chalk.gray('   ' + strings.manualHint));
   console.log('');
 
-  const testMode = await select<TestMode>({
+  const testModeChoice = await select<TestMode | 'back'>({
     message: strings.selectApproach,
     choices: [
       {
         name: strings.tddOption,
-        value: 'TDD' as const,
+        value: 'TDD' as TestMode | 'back',
       },
       {
         name: strings.testAfterOption,
-        value: 'test-after' as const,
+        value: 'test-after' as TestMode | 'back',
       },
       {
         name: strings.manualOption,
-        value: 'manual' as const,
-      }
+        value: 'manual' as TestMode | 'back',
+      },
+      createGoBackChoice(language) as { name: string; value: TestMode | 'back' },
     ],
     default: 'test-after'
   });
+
+  // Handle go back
+  if (testModeChoice === 'back') {
+    return { testMode: 'test-after', coverageTarget: 80, goBack: WIZARD_BACK };
+  }
+
+  const testMode = testModeChoice as TestMode;
 
   let coverageTarget = 80;
 

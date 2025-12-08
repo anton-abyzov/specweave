@@ -31,8 +31,8 @@ SpecWeave analyzes:
 Decision: Use Haiku 4.5
 Reasoning: Mechanical implementation task
           ↓
-Cost: $0.06 (vs $0.18 with Sonnet)
-Savings: $0.12 (67%)
+Cost: $0.06 (vs $0.90 with Opus)
+Savings: $0.84 (93%)
 ```
 
 ### 2. Three-Layer Intelligence
@@ -378,7 +378,7 @@ Since we store NO personal data:
 
 ### Q: Is quality affected?
 
-**A**: No. Haiku 4.5 matches Sonnet 3.5 quality, perfect for execution tasks. Sonnet 4.5 is still used for all complex planning.
+**A**: No. Opus 4.5 is used for all complex planning and analysis. Haiku 4.5 is used for mechanical execution tasks where quality is consistent.
 
 ### Q: Can I opt out?
 
@@ -386,11 +386,11 @@ Since we store NO personal data:
 
 ### Q: How accurate is phase detection?
 
-**A**: >95% accuracy on typical prompts. When uncertain, defaults to Opus (maximum quality).
+**A**: >95% accuracy on typical prompts. When uncertain, defaults to Opus 4.5 (maximum quality).
 
-### Q: Does this work with Opus?
+### Q: Why is Opus 4.5 the default?
 
-**A**: Yes! Opus 4.0 will be supported when released. Currently: planning=Sonnet, execution=Haiku.
+**A**: Opus 4.5 provides the highest quality reasoning and analysis. It's the default for all complex work (planning, architecture, security). Haiku is automatically used for simple mechanical tasks to save costs.
 
 ---
 

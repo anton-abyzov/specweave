@@ -889,3 +889,51 @@ If analysis fails at any phase:
 - **PM Agent**: Uses standards during increment planning
 - **Architect Agent**: References standards in HLD
 - **Code Reviewer Agent**: Enforces standards during review
+
+---
+
+## Multi-Technology Support
+
+**Status**: ✅ Implemented (increment 0122-multi-technology-governance)
+
+| Technology | Config Files | Status |
+|------------|--------------|--------|
+| TypeScript/JS | `.eslintrc.*`, `.prettierrc`, `tsconfig.json` | ✅ Implemented |
+| Python | `pyproject.toml`, `.pylintrc`, `ruff.toml`, `.flake8`, `mypy.ini` | ✅ Implemented |
+| Go | `go.mod`, `.golangci.yml`, `staticcheck.conf` | ✅ Implemented |
+| Java/Kotlin | `checkstyle.xml`, `pmd.xml`, `spotbugs.xml`, `detekt.yml` | ✅ Implemented |
+| C#/.NET | `.editorconfig`, `StyleCop.json`, `Directory.Build.props` | ✅ Implemented |
+| Rust | `rustfmt.toml`, `clippy.toml`, `Cargo.toml` | ✅ Implemented |
+| React | ESLint + `plugin:react/*`, `package.json` | ✅ Implemented |
+| Angular | `angular.json`, `.eslintrc` | ✅ Implemented |
+| Vue | ESLint + `plugin:vue/*`, `vite.config.*` | ✅ Implemented |
+| Svelte | `svelte.config.js`, `package.json` | ✅ Implemented |
+
+**Output Structure:**
+```
+.specweave/docs/internal/governance/
+├── coding-standards.md          # Unified summary of ALL technologies
+├── shared-conventions.md        # EditorConfig, Git conventions
+└── standards/
+    ├── typescript.md
+    ├── python.md
+    ├── golang.md
+    ├── java.md
+    ├── react.md
+    ├── angular.md
+    ├── vue.md
+    └── svelte.md
+```
+
+**Usage**:
+```typescript
+import {
+  detectEcosystems,
+  parsePythonStandards,
+  parseGoStandards,
+  parseJavaStandards,
+  parseFrontendStandards,
+  generateStandardsMarkdown,
+  generateUnifiedSummary
+} from 'src/core/living-docs/governance/index.js';
+```

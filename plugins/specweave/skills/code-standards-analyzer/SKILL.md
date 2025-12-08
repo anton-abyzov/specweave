@@ -408,9 +408,15 @@ Full standards: .specweave/docs/internal/governance/coding-standards.md"
 ### Supported Languages
 - ✅ TypeScript (primary)
 - ✅ JavaScript (ES6+)
-- 🔜 Python (future)
-- 🔜 Java (future)
-- 🔜 Go (future)
+- ✅ Python (pyproject.toml, .pylintrc, ruff.toml, .flake8, mypy.ini)
+- ✅ Java/Kotlin (checkstyle.xml, pmd.xml, spotbugs.xml, detekt.yml)
+- ✅ Go (go.mod, .golangci.yml, staticcheck.conf)
+- ✅ C#/.NET (.editorconfig, StyleCop.json, Directory.Build.props)
+- ✅ Rust (rustfmt.toml, clippy.toml, Cargo.toml)
+- ✅ React (package.json, ESLint plugin:react/*)
+- ✅ Angular (angular.json, ESLint @angular-eslint)
+- ✅ Vue (package.json, ESLint plugin:vue/*)
+- ✅ Svelte (package.json, svelte.config.js)
 
 ### Detection Algorithms
 
@@ -439,14 +445,60 @@ Full standards: .specweave/docs/internal/governance/coding-standards.md"
 
 1. **Implicit Standards**: Requires representative codebase sample
 2. **False Positives**: Anti-pattern detection may flag intentional code
-3. **Language Support**: Currently TypeScript/JavaScript only
-4. **Context**: Can't understand business rationale for patterns
+3. **Context**: Can't understand business rationale for patterns
+
+---
+
+## Multi-Technology Support
+
+**Status**: ✅ Implemented (increment 0122-multi-technology-governance)
+
+| Technology | Config Files | Status |
+|------------|--------------|--------|
+| TypeScript/JavaScript | `.eslintrc.*`, `.prettierrc`, `tsconfig.json` | ✅ Implemented |
+| Python | `pyproject.toml`, `.pylintrc`, `ruff.toml`, `.flake8`, `mypy.ini` | ✅ Implemented |
+| Go | `go.mod`, `.golangci.yml`, `staticcheck.conf` | ✅ Implemented |
+| Java/Kotlin | `checkstyle.xml`, `pmd.xml`, `spotbugs.xml`, `detekt.yml` | ✅ Implemented |
+| C#/.NET | `.editorconfig`, `StyleCop.json`, `Directory.Build.props` | ✅ Implemented |
+| Rust | `rustfmt.toml`, `clippy.toml`, `Cargo.toml` | ✅ Implemented |
+| React | ESLint + `plugin:react/*`, `package.json` | ✅ Implemented |
+| Angular | `angular.json`, `.eslintrc` | ✅ Implemented |
+| Vue | ESLint + `plugin:vue/*`, `vite.config.*` | ✅ Implemented |
+| Svelte | `svelte.config.js`, `package.json` | ✅ Implemented |
+
+**Output Structure:**
+```
+.specweave/docs/internal/governance/
+├── coding-standards.md          # Unified summary of ALL technologies
+├── shared-conventions.md        # EditorConfig, Git conventions
+└── standards/
+    ├── typescript.md
+    ├── python.md
+    ├── golang.md
+    ├── java.md
+    ├── react.md
+    ├── angular.md
+    ├── vue.md
+    └── svelte.md
+```
+
+**Usage**:
+```typescript
+import {
+  detectEcosystems,
+  parsePythonStandards,
+  parseGoStandards,
+  parseJavaStandards,
+  parseFrontendStandards,
+  generateStandardsMarkdown,
+  generateUnifiedSummary
+} from 'src/core/living-docs/governance/index.js';
+```
 
 ---
 
 ## Future Enhancements
 
-- [ ] Multi-language support (Python, Java, Go)
 - [ ] Auto-generate ESLint rules from detected patterns
 - [ ] AI-powered suggestions from top OSS projects
 - [ ] Team-specific standards in multi-project mode

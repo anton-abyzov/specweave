@@ -88,6 +88,41 @@ export interface OrganizationCluster {
 }
 
 /**
+ * Enhanced team structure with responsibilities, expertise, and tech stack
+ * Used for rich team documentation generation
+ */
+export interface EnhancedTeam {
+  name: string;
+  description: string;
+  responsibilities: string[];
+  domainExpertise: string[];
+  techStack: string[];
+  repos: string[];
+  reasoning: string;
+  integrationBoundaries?: string;
+
+  // Structure level context (for 1-level or 2-level folder organization)
+  project?: string;    // Project ID for folder structure (e.g., "sw-olysense")
+  board?: string;      // Board/Area path ID for 2-level structure (e.g., "digital-operations")
+
+  // External tool integration
+  externalId?: string;         // ID in external tool (ADO team ID, JIRA team ID)
+  externalUrl?: string;        // Direct link to team in external tool
+  externalProvider?: 'ado' | 'jira' | 'github';  // Source of team data
+}
+
+/**
+ * LLM response for team clustering with enhanced fields
+ */
+export interface EnhancedClusteringResponse {
+  teams: EnhancedTeam[];
+  microservices: Array<{ name: string; description: string; repos: string[]; reasoning: string }>;
+  domains: Array<{ name: string; description: string; repos: string[]; reasoning: string }>;
+  crossCutting: Array<{ name: string; description: string; repos: string[]; reasoning: string }>;
+  hypotheses: string[];
+}
+
+/**
  * Detected architectural decision
  */
 export interface DetectedADR {

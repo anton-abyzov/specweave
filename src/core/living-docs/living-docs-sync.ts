@@ -280,20 +280,29 @@ export class LivingDocsSync {
    * - If FS-XXXE exists → then use next available internal ID
    * - If FS-XXX already exists → REUSE (same increment re-syncing)
    *
-   * @param incrementId - Increment ID (e.g., "0081-ado-repo-cloning")
+   * CRITICAL (v0.33.0): External increments (0111E-...) MUST map to external
+   * features (FS-111E), not internal ones. Uses canonical deriveFeatureId().
+   *
+   * @param incrementId - Increment ID (e.g., "0081-ado-repo-cloning" or "0111E-external")
    * @param resolvedProjectPath - Resolved project path (e.g., "acme/backend" or "my-project")
-   * @returns Feature ID (e.g., "FS-081", or "FS-082" if FS-081E exists)
+   * @returns Feature ID (e.g., "FS-081", "FS-111E", or "FS-082" if collision)
    * @see deriveFeatureId() in src/utils/feature-id-derivation.ts
    */
   private async getFeatureIdForIncrement(
     incrementId: string,
     resolvedProjectPath: string
   ): Promise<string> {
-    // Extract increment number (e.g., "0081-name" → 81)
-    const incrementNumber = extractIncrementNumber(incrementId);
+    // Use canonical deriveFeatureId which handles E suffix for external increments
+    // e.g., "0081-name" → "FS-081", "0111E-external" → "FS-111E"
+    const derivedFeatureId = deriveFeatureId(incrementId);
 
-    // Derive feature ID directly from increment number (DETERMINISTIC)
-    const derivedFeatureId = `FS-${String(incrementNumber).padStart(3, '0')}`;
+    // For external increments (FS-XXXE), no collision checking needed - use directly
+    if (derivedFeatureId.endsWith('E')) {
+      return derivedFeatureId;
+    }
+
+    // Extract increment number for collision checking (internal increments only)
+    const incrementNumber = extractIncrementNumber(incrementId);
 
     // Build path to project's specs folder
     const specsPath = path.join(this.projectRoot, '.specweave/docs/internal/specs');
@@ -387,7 +396,7 @@ export class LivingDocsSync {
    *
    * SECURITY: Validates both incrementId and extracted names to prevent path traversal
    *
-   * @param incrementId - Increment ID (e.g., "0002-test-anton-monitor")
+   * @param incrementId - Increment ID (e.g., "0002-test-anton-monitor" or "0111E-external")
    * @returns Object with project and board (null if not specified or invalid)
    */
   private async extractProjectBoardFromSpec(incrementId: string): Promise<{
@@ -395,7 +404,8 @@ export class LivingDocsSync {
     board: string | null;
   }> {
     // SECURITY FIX (2025-12-02): Validate incrementId format FIRST
-    if (!incrementId || !/^\d{4}-[a-z0-9-]+$/i.test(incrementId)) {
+    // CRITICAL (v0.33.0): Allow E suffix for external increments (e.g., 0111E-name)
+    if (!incrementId || !/^\d{4}E?-[a-z0-9-]+$/i.test(incrementId)) {
       this.logger.warn(`   ⚠️  Invalid increment ID format: ${incrementId}`);
       return { project: null, board: null };
     }

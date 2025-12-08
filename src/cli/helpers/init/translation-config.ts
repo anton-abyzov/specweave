@@ -17,6 +17,7 @@ import { select, confirm } from '@inquirer/prompts';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import { getLocaleManager } from '../../../core/i18n/locale-manager.js';
 import type { LanguageSelectionResult } from './language-selection.js';
+import { WIZARD_BACK, getGoBackStrings } from './wizard-navigation.js';
 
 /**
  * Translation scope - what gets auto-translated
@@ -38,6 +39,8 @@ export interface TranslationConfigResult {
   translationEnabled: boolean;
   translationScope: TranslationScope;
   keepEnglishOriginals: boolean;
+  /** Signal to go back to previous step */
+  goBack?: typeof WIZARD_BACK;
 }
 
 /**
@@ -386,13 +389,30 @@ export async function promptTranslationConfig(
   console.log(chalk.yellow('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
   console.log('');
 
-  // STEP 2: Enable Translation?
-  const enableTranslation = await confirm({
+  // STEP 2: Enable Translation? (with go-back option)
+  const goBackStrings = getGoBackStrings(language);
+  const enableChoice = await select<'yes' | 'no' | 'back'>({
     message: strings.enableQuestion,
-    default: false, // Default to NO (opt-in, not opt-out)
+    choices: [
+      { value: 'no', name: strings.disabled.replace('Translat', 'No translat').replace('Перевод:', 'Нет -').replace('Traducción:', 'No -') },
+      { value: 'yes', name: '✓ ' + strings.translationEnabled.replace('Translat', 'Enable translat').replace('Перевод:', 'Включить').replace('Traducción:', 'Activar') },
+      { value: 'back', name: chalk.gray(goBackStrings.goBack) },
+    ],
+    default: 'no', // Default to NO (opt-in, not opt-out)
   });
 
-  if (!enableTranslation) {
+  // Handle go back
+  if (enableChoice === 'back') {
+    return {
+      language,
+      translationEnabled: false,
+      translationScope: { livingDocs: false, externalSync: false, incrementSpecs: false },
+      keepEnglishOriginals,
+      goBack: WIZARD_BACK,
+    };
+  }
+
+  if (enableChoice === 'no') {
     console.log('');
     console.log(chalk.green(`   ✔ ${strings.disabled} (${strings.manualHint})`));
     console.log('');

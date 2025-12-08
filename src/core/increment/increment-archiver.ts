@@ -220,15 +220,20 @@ export class IncrementArchiver {
    * Archive with --keep-last N semantics
    *
    * v0.30.0 CRITICAL FIX: "keep last 5" means "keep the 5 HIGHEST-NUMBERED increments"
+   * v0.33.0 CRITICAL FIX: External increments (E suffix) are SEPARATE from internal!
    *
    * Previous bug: Counted only active increments. If 5 active with gaps (0072, 0085-0088),
    * nothing would archive because 5 <= 5.
    *
+   * v0.33.0 bug fix: parseInt("0118E") → 118, losing E suffix! This caused 0118E
+   * to be treated as same number as 0118, potentially archiving the wrong one.
+   *
    * NEW Algorithm:
-   * 1. Get ALL increment numbers (active + archived) to find the global "last N"
-   * 2. Calculate which numbers should remain: the N highest by number
-   * 3. Archive any active increment NOT in that list
-   * 4. Protected increments (external sync) are SKIPPED but logged as needing attention
+   * 1. Get ALL increment KEYS (number + E suffix) to find the global "last N"
+   * 2. Extract key using extractIncrementKey() which preserves E suffix
+   * 3. Calculate which keys should remain: the N highest by number (E variants separate)
+   * 4. Archive any active increment NOT in that list
+   * 5. Protected increments (external sync) are SKIPPED but logged as needing attention
    */
   private async archiveWithKeepLast(
     allIncrements: string[],
@@ -236,26 +241,39 @@ export class IncrementArchiver {
     options: ArchiveOptions,
     result: ArchiveResult
   ): Promise<ArchiveResult> {
-    // Get ALL increment numbers (active + archived) to determine global "last N"
+    // Get ALL increment KEYS (preserving E suffix!) to determine global "last N"
+    // Key format: "0118" or "0118E" - preserves external flag
     const archivedIncrements = await this.listArchived();
-    const allIncrementNumbers = [
-      ...allIncrements.map(inc => parseInt(inc.split('-')[0])),
-      ...archivedIncrements.map(inc => parseInt(inc.split('-')[0]))
-    ].sort((a, b) => b - a); // Sort descending (highest first)
+    const allIncrementKeys = [
+      ...allIncrements.map(inc => this.extractIncrementKey(inc)),
+      ...archivedIncrements.map(inc => this.extractIncrementKey(inc))
+    ].sort((a, b) => {
+      // Sort by number descending (highest first)
+      // External (E) comes AFTER internal with same number: 0118 before 0118E
+      const numA = parseInt(a.replace('E', ''));
+      const numB = parseInt(b.replace('E', ''));
+      if (numA !== numB) return numB - numA;
+      // Same number: internal before external (so 0118 sorts before 0118E)
+      return a.endsWith('E') ? 1 : -1;
+    });
 
-    // Get unique numbers and find the Nth highest
-    const uniqueNumbers = [...new Set(allIncrementNumbers)];
-    const keepNumbers = new Set(uniqueNumbers.slice(0, keepLast));
+    // Get unique keys and find the N highest
+    const uniqueKeys = [...new Set(allIncrementKeys)];
+    const keepKeys = new Set(uniqueKeys.slice(0, keepLast));
 
-    this.logger.info(`Keep last ${keepLast} by NUMBER: ${[...keepNumbers].sort((a, b) => a - b).map(n => n.toString().padStart(4, '0')).join(', ')}`);
+    this.logger.info(`Keep last ${keepLast} by NUMBER: ${[...keepKeys].sort((a, b) => {
+      const numA = parseInt(a.replace('E', ''));
+      const numB = parseInt(b.replace('E', ''));
+      return numA - numB;
+    }).join(', ')}`);
 
     // Find active increments NOT in the "keep" list
     const toArchive: string[] = [];
     const toKeep: string[] = [];
 
     for (const increment of allIncrements) {
-      const incNumber = parseInt(increment.split('-')[0]);
-      if (keepNumbers.has(incNumber)) {
+      const incKey = this.extractIncrementKey(increment);
+      if (keepKeys.has(incKey)) {
         toKeep.push(increment);
       } else {
         toArchive.push(increment);
@@ -267,7 +285,7 @@ export class IncrementArchiver {
       return result;
     }
 
-    this.logger.info(`Will archive ${toArchive.length} increments not in last ${keepLast}: ${toArchive.map(i => i.split('-')[0]).join(', ')}`);
+    this.logger.info(`Will archive ${toArchive.length} increments not in last ${keepLast}: ${toArchive.map(i => this.extractIncrementKey(i)).join(', ')}`);
 
     // Archive each increment not in the keep list
     for (const increment of toArchive) {
@@ -285,6 +303,25 @@ export class IncrementArchiver {
     }
 
     return result;
+  }
+
+  /**
+   * Extract increment key from increment name
+   *
+   * Preserves the E suffix for external increments!
+   * - "0118-my-feature" → "0118"
+   * - "0118E-external-issue" → "0118E"
+   *
+   * CRITICAL (v0.33.0): This is NOT the same as parseInt()!
+   * parseInt("0118E") → 118 (WRONG - loses E)
+   * extractIncrementKey("0118E-name") → "0118E" (CORRECT)
+   */
+  private extractIncrementKey(increment: string): string {
+    const match = increment.match(/^(\d+)(E)?/);
+    if (!match) {
+      return increment.split('-')[0]; // Fallback
+    }
+    return match[2] ? `${match[1]}E` : match[1];
   }
 
   /**
@@ -892,19 +929,26 @@ export class IncrementArchiver {
    * Examples:
    * - "0041-living-docs-test-fixes" → "FS-041"
    * - "0123-my-feature" → "FS-123"
+   * - "0111E-external-issue" → "FS-111E" (external increment → external feature)
    * - "temp-experiment" → null (no number)
+   *
+   * CRITICAL (v0.33.0): External increments (with E suffix like 0111E-...)
+   * MUST map to external features (FS-111E), not internal ones (FS-111).
    */
   private inferFeatureIdFromIncrement(increment: string): string | null {
-    // Extract 4-digit number prefix
-    const match = increment.match(/^(\d{4})/);
+    // Extract 4-digit number prefix and optional E suffix
+    // Pattern: NNNN or NNNNE (e.g., 0041, 0111E)
+    const match = increment.match(/^(\d{4})(E)?/);
     if (!match) {
       return null; // Can't infer (no number prefix)
     }
 
     const number = parseInt(match[1], 10);
+    const isExternal = match[2] === 'E';
 
-    // Convert to feature ID format: 41 → "FS-041"
-    return `FS-${number.toString().padStart(3, '0')}`;
+    // Convert to feature ID format: 41 → "FS-041", 111E → "FS-111E"
+    const featureId = `FS-${number.toString().padStart(3, '0')}`;
+    return isExternal ? `${featureId}E` : featureId;
   }
 
   /**

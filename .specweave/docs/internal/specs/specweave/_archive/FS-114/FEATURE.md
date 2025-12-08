@@ -2,15 +2,15 @@
 id: FS-114
 title: Slash Command Script Delegation
 type: feature
-status: active
+status: completed
 priority: P1
 created: 2025-12-06
-lastUpdated: 2025-12-06
+lastUpdated: 2025-12-07
 external_tools:
   github:
     type: milestone
     id: 29
-    url: "https://github.com/anton-abyzov/specweave/milestone/29"
+    url: https://github.com/anton-abyzov/specweave/milestone/29
 ---
 
 # Slash Command Script Delegation
@@ -19,7 +19,7 @@ external_tools:
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0114-slash-command-script-delegation](../../../../increments/0114-slash-command-script-delegation/spec.md) | ⏳ active | 2025-12-06 |
+| [0114-slash-command-script-delegation](../../../../increments/0114-slash-command-script-delegation/spec.md) | ✅ completed | 2025-12-06 |
 
 ## User Stories
 

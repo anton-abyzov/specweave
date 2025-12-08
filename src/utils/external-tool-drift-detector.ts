@@ -43,13 +43,14 @@ export class ExternalToolDriftDetector {
    * Validate increment ID format to prevent path traversal attacks
    * P0-1: Path traversal vulnerability fix
    *
-   * @param incrementId - Increment ID to validate
+   * @param incrementId - Increment ID to validate (e.g., "0053-feature" or "0111E-external")
    * @throws Error if increment ID format is invalid
    */
   private validateIncrementId(incrementId: string): void {
-    // Expected format: 4 digits + hyphen + kebab-case (e.g., "0053-safe-feature-deletion")
-    if (!/^\d{4}-[a-z0-9-]+$/.test(incrementId)) {
-      throw new Error(`Invalid increment ID format: ${incrementId}. Expected format: XXXX-kebab-case`);
+    // Expected format: 4 digits + optional E suffix + hyphen + kebab-case
+    // CRITICAL (v0.33.0): Allow E suffix for external increments (e.g., 0111E-name)
+    if (!/^\d{4}E?-[a-z0-9-]+$/i.test(incrementId)) {
+      throw new Error(`Invalid increment ID format: ${incrementId}. Expected format: XXXX-kebab-case or XXXXE-kebab-case`);
     }
 
     // Additional safety: reject path traversal attempts
