@@ -359,6 +359,77 @@ program
     await syncCmd.parseAsync(['node', 'sync-scheduled', ...process.argv.slice(3)], { from: 'user' });
   });
 
+// Docs command - Documentation preview, build, validation
+const docsCmd = program
+  .command('docs')
+  .description('Documentation preview, build, and validation (works in any SpecWeave project)');
+
+docsCmd
+  .command('preview')
+  .description('Start documentation preview server with hot reload')
+  .option('-p, --port <number>', 'Port number (default: auto-find 3000-3010)')
+  .option('-f, --force', 'Force reinstall Docusaurus')
+  .option('--no-browser', 'Do not open browser automatically')
+  .option('--no-validate', 'Skip pre-flight validation')
+  .option('--no-auto-fix', 'Do not auto-fix validation issues')
+  .action(async (options) => {
+    const { docsPreviewCommand } = await import('../dist/src/cli/commands/docs.js');
+    await docsPreviewCommand({
+      port: options.port ? parseInt(options.port, 10) : undefined,
+      force: options.force,
+      noBrowser: !options.browser,
+      validate: options.validate,
+      autoFix: options.autoFix,
+    });
+  });
+
+docsCmd
+  .command('build')
+  .description('Build static documentation site for deployment')
+  .option('--no-validate', 'Skip pre-build validation')
+  .option('--no-auto-fix', 'Do not auto-fix validation issues')
+  .option('-o, --output <path>', 'Output directory')
+  .action(async (options) => {
+    const { docsBuildCommand } = await import('../dist/src/cli/commands/docs.js');
+    await docsBuildCommand({
+      validate: options.validate,
+      autoFix: options.autoFix,
+      output: options.output,
+    });
+  });
+
+docsCmd
+  .command('validate')
+  .description('Validate documentation without starting server')
+  .option('--auto-fix', 'Auto-fix common issues')
+  .option('-v, --verbose', 'Show all issues (not just errors)')
+  .action(async (options) => {
+    const { docsValidateCommand } = await import('../dist/src/cli/commands/docs.js');
+    await docsValidateCommand(options);
+  });
+
+docsCmd
+  .command('kill')
+  .description('Stop all running documentation servers')
+  .action(async () => {
+    const { docsKillCommand } = await import('../dist/src/cli/commands/docs.js');
+    await docsKillCommand();
+  });
+
+docsCmd
+  .command('status')
+  .description('Show documentation status and help')
+  .action(async () => {
+    const { docsStatusCommand } = await import('../dist/src/cli/commands/docs.js');
+    await docsStatusCommand();
+  });
+
+// Default action for 'specweave docs' without subcommand
+docsCmd.action(async () => {
+  const { docsStatusCommand } = await import('../dist/src/cli/commands/docs.js');
+  await docsStatusCommand();
+});
+
 // Context command - Get project/board context for increment planning
 const contextCmd = program
   .command('context')
@@ -430,6 +501,13 @@ program.on('--help', () => {
   console.log('  $ specweave context projects                # Get available projects as JSON');
   console.log('  $ specweave context boards --project myapp  # Get boards for a project');
   console.log('  $ specweave context select                  # Interactive project/board selection');
+  console.log('  $ specweave docs                            # Show docs status and help');
+  console.log('  $ specweave docs preview                    # Start docs server with hot reload');
+  console.log('  $ specweave docs preview --port 3015        # Start on specific port');
+  console.log('  $ specweave docs build                      # Build static site for deployment');
+  console.log('  $ specweave docs validate                   # Check for docs errors');
+  console.log('  $ specweave docs validate --auto-fix        # Fix common issues automatically');
+  console.log('  $ specweave docs kill                       # Stop all docs servers');
   console.log('');
   console.log('Supported AI Tools:');
   console.log('  - Claude Code (full automation) - Native skills, agents, hooks');
