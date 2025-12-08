@@ -320,7 +320,7 @@ function buildClusteringPrompt(
   const context = `Analyze these repositories to understand organization structure.
 
 For each TEAM, provide comprehensive documentation:
-- name: Team name (e.g., "AssetCare Team", "CDP Platform Team")
+- name: Team name (e.g., "Platform Team", "API Gateway Team")
 - description: 2-3 sentence summary of what this team does
 - responsibilities: Array of 3-5 bullet points defining what the team owns and maintains
 - domainExpertise: Array of technical competencies (e.g., "FHIR integration", "Angular development", "Azure Functions")
