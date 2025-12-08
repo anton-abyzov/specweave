@@ -4,6 +4,20 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.32.5] - 2025-12-08
+
+### 🗂️ Maintenance
+- Patch release
+
+---
+
+## [0.32.4] - 2025-12-08
+
+### 🗂️ Maintenance
+- Patch release
+
+---
+
 ## [0.32.3] - 2025-12-08
 
 ### 🗂️ Maintenance
