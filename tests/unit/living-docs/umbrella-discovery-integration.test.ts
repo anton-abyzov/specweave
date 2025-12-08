@@ -43,7 +43,7 @@ describe('umbrella-discovery-integration', () => {
           devDependencies: { typescript: '^5.0.0', vite: '^5.0.0', vitest: '^1.0.0' },
         })
       );
-      fs.writeFileSync(path.join(frontendRepo, 'README.md'), '# Asset Care Frontend');
+      fs.writeFileSync(path.join(frontendRepo, 'README.md'), '# Inventory Manager Frontend');
       fs.writeFileSync(path.join(frontendRepo, 'src', 'App.tsx'), 'export default function App() {}');
 
       // Backend repo (C#/.NET)

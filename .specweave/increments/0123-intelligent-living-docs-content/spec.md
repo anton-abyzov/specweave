@@ -16,7 +16,7 @@ After running `living-docs-builder` on large enterprise projects (246 repos, 6,7
 
 1. **ADRs are named `DETECTED-0001.md` through `DETECTED-XXXX.md`** - Generic sequential names instead of human-readable titles that describe the actual architectural decision
 
-2. **Modules contain only statistics** - Files like `assetcare-be.md` show file counts and LOC but lack architectural context, purpose, dependencies, or integration points
+2. **Modules contain only statistics** - Files like `backend-service.md` show file counts and LOC but lack architectural context, purpose, dependencies, or integration points
 
 3. **Teams have minimal descriptions** - Repository lists without explaining team responsibilities, domain expertise, or ownership boundaries
 
@@ -172,7 +172,7 @@ function generateRichModuleSummary(
 const prompt = `Analyze these repositories and cluster them into logical teams.
 
 For each team, provide:
-- name: Team name (e.g., "AssetCare Team", "CDP Platform Team")
+- name: Team name (e.g., "Platform Team", "API Gateway Team")
 - description: 2-3 sentence summary
 - responsibilities: Array of 3-5 bullet points defining what the team owns
 - domainExpertise: Array of technical competencies (e.g., "FHIR integration", "Angular development")
