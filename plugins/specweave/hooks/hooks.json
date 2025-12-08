@@ -42,7 +42,7 @@
       },
       {
         "matcher": "Write",
-        "matcher_content": "\\.specweave/increments/\\d{4}-[^/]+/spec\\.md",
+        "matcher_content": "\\.specweave/increments/\\d{3,4}E?-[^/]+/spec\\.md",
         "hooks": [
           {
             "type": "command",
