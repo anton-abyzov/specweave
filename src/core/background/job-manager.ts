@@ -3,9 +3,13 @@
  *
  * Manages long-running operations with persistent state.
  * Jobs survive session restarts - can check progress later.
+ *
+ * CRITICAL FIX (2025-12-09): Uses file locking to prevent race conditions
+ * when multiple workers (clone, import, living-docs) write simultaneously.
  */
 
 import * as fs from '../../utils/fs-native.js';
+import * as fsNative from 'fs';  // For low-level file locking operations
 import * as path from 'path';
 import * as crypto from 'crypto';
 import type {
@@ -18,14 +22,86 @@ import type {
 } from './types.js';
 
 const STATE_FILE = '.specweave/state/background-jobs.json';
+const LOCK_FILE = '.specweave/state/background-jobs.lock';
+const LOCK_TIMEOUT = 5000; // 5 seconds max wait for lock
+const LOCK_RETRY_INTERVAL = 50; // Check every 50ms
 
 export class BackgroundJobManager {
   private projectPath: string;
   private statePath: string;
+  private lockPath: string;
 
   constructor(projectPath: string) {
     this.projectPath = projectPath;
     this.statePath = path.join(projectPath, STATE_FILE);
+    this.lockPath = path.join(projectPath, LOCK_FILE);
+  }
+
+  /**
+   * Acquire file lock using atomic exclusive file creation
+   * CRITICAL: Prevents race conditions between multiple worker processes
+   */
+  private acquireLock(): boolean {
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < LOCK_TIMEOUT) {
+      try {
+        // Try to create lock file exclusively (will fail if exists)
+        const fd = fsNative.openSync(this.lockPath, 'wx');
+        fsNative.writeSync(fd, `${process.pid}\n${Date.now()}`);
+        fsNative.closeSync(fd);
+        return true;
+      } catch (err: any) {
+        if (err.code === 'EEXIST') {
+          // Lock exists - check if it's stale (older than 30 seconds)
+          try {
+            const lockContent = fs.readFileSync(this.lockPath, 'utf-8');
+            const lockTime = parseInt(lockContent.split('\n')[1], 10);
+            if (Date.now() - lockTime > 30000) {
+              // Stale lock - remove it and retry
+              fs.unlinkSync(this.lockPath);
+              continue;
+            }
+          } catch {
+            // Can't read lock, try removing it
+            try { fs.unlinkSync(this.lockPath); } catch { /* ignore */ }
+          }
+
+          // Wait and retry
+          const delay = Math.min(LOCK_RETRY_INTERVAL, LOCK_TIMEOUT - (Date.now() - startTime));
+          if (delay > 0) {
+            // Synchronous sleep
+            const end = Date.now() + delay;
+            while (Date.now() < end) { /* busy wait */ }
+          }
+        } else {
+          // Other error - ensure directory exists and retry
+          fs.ensureDirSync(path.dirname(this.lockPath));
+        }
+      }
+    }
+
+    // Timeout - force acquire by removing stale lock
+    try {
+      fs.unlinkSync(this.lockPath);
+      const fd = fsNative.openSync(this.lockPath, 'wx');
+      fsNative.writeSync(fd, `${process.pid}\n${Date.now()}`);
+      fsNative.closeSync(fd);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Release file lock
+   */
+  private releaseLock(): void {
+    try {
+      fs.unlinkSync(this.lockPath);
+    } catch {
+      // Lock may have been released by timeout - ignore
+    }
   }
 
   /**
@@ -188,19 +264,25 @@ export class BackgroundJobManager {
 
   /**
    * Clean up old completed jobs (keep last 10)
+   * Uses file locking for safe concurrent access
    */
   cleanup(): void {
-    const state = this.loadState();
-    const active = state.jobs.filter(j =>
-      j.status === 'running' || j.status === 'paused' || j.status === 'pending'
-    );
-    const completed = state.jobs
-      .filter(j => j.status === 'completed' || j.status === 'failed')
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-      .slice(0, 10);
+    this.acquireLock();
+    try {
+      const state = this.loadState();
+      const active = state.jobs.filter(j =>
+        j.status === 'running' || j.status === 'paused' || j.status === 'pending'
+      );
+      const completed = state.jobs
+        .filter(j => j.status === 'completed' || j.status === 'failed')
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        .slice(0, 10);
 
-    state.jobs = [...active, ...completed];
-    this.saveState(state);
+      state.jobs = [...active, ...completed];
+      this.saveState(state);
+    } finally {
+      this.releaseLock();
+    }
   }
 
   /**
@@ -228,18 +310,27 @@ export class BackgroundJobManager {
 
   /**
    * Save a single job (merge into state)
+   * CRITICAL FIX (2025-12-09): Uses file locking to prevent race conditions
+   * between multiple worker processes writing simultaneously
    */
   private saveJob(job: BackgroundJob): void {
-    const state = this.loadState();
-    const index = state.jobs.findIndex(j => j.id === job.id);
+    // Acquire lock to prevent race conditions
+    this.acquireLock();
+    try {
+      // Re-load state after acquiring lock (another process may have changed it)
+      const state = this.loadState();
+      const index = state.jobs.findIndex(j => j.id === job.id);
 
-    if (index >= 0) {
-      state.jobs[index] = job;
-    } else {
-      state.jobs.push(job);
+      if (index >= 0) {
+        state.jobs[index] = job;
+      } else {
+        state.jobs.push(job);
+      }
+
+      this.saveState(state);
+    } finally {
+      this.releaseLock();
     }
-
-    this.saveState(state);
   }
 
   /**

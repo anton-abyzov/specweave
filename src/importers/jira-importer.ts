@@ -43,9 +43,12 @@ interface JiraIssue {
 
 interface JiraSearchResponse {
   issues: JiraIssue[];
-  startAt: number;
+  startAt?: number;  // Deprecated in new API
   maxResults: number;
   total: number;
+  // New pagination fields for /rest/api/3/search/jql
+  nextPageToken?: string;
+  isLast?: boolean;
 }
 
 /**
@@ -157,8 +160,10 @@ export class JiraImporter implements Importer {
       const jql = `key in (${batchKeys.join(',')})`;
 
       try {
+        // CRITICAL FIX (2025-12-09): Use new /rest/api/3/search/jql endpoint
+        // Old /rest/api/3/search was deprecated and removed by Atlassian
         const response = await this.makeJiraRequest<JiraSearchResponse>(
-          '/rest/api/3/search',
+          '/rest/api/3/search/jql',
           {
             jql,
             maxResults: batchSize,
@@ -232,33 +237,41 @@ export class JiraImporter implements Importer {
 
     const jql = jqlParts.join(' AND ');
 
-    let startAt = 0;
     const maxResults = 50; // JIRA pagination size
     let totalFetched = 0;
+    let nextPageToken: string | undefined = undefined;
 
     while (totalFetched < maxItems) {
       try {
-        // Fetch page from JIRA API
+        // CRITICAL FIX (2025-12-09): Use new /rest/api/3/search/jql endpoint
+        // Old /rest/api/3/search was deprecated and removed by Atlassian
+        // New API uses nextPageToken for pagination instead of startAt
+        const params: Record<string, any> = {
+          jql,
+          maxResults,
+          fields: [
+            'summary',
+            'description',
+            'status',
+            'priority',
+            'issuetype',
+            'created',
+            'updated',
+            'labels',
+            'customfield_10016', // Story points
+            'subtasks',
+            'parent',
+          ],
+        };
+
+        // Add nextPageToken for subsequent pages
+        if (nextPageToken) {
+          params.nextPageToken = nextPageToken;
+        }
+
         const response = await this.makeJiraRequest<JiraSearchResponse>(
-          '/rest/api/3/search',
-          {
-            jql,
-            startAt,
-            maxResults,
-            fields: [
-              'summary',
-              'description',
-              'status',
-              'priority',
-              'issuetype',
-              'created',
-              'updated',
-              'labels',
-              'customfield_10016', // Story points
-              'subtasks',
-              'parent',
-            ],
-          }
+          '/rest/api/3/search/jql',
+          params
         );
 
         // Convert JIRA issues to ExternalItems
@@ -270,12 +283,13 @@ export class JiraImporter implements Importer {
           totalFetched += items.length;
         }
 
-        // Check if we've reached the end
-        if (startAt + maxResults >= response.total) {
+        // Check if we've reached the end (new API uses isLast or no nextPageToken)
+        if (response.isLast || !response.nextPageToken || items.length === 0) {
           break;
         }
 
-        startAt += maxResults;
+        // Get token for next page
+        nextPageToken = response.nextPageToken;
       } catch (error: any) {
         if (error.status === 401) {
           throw new Error(`JIRA authentication failed: ${error.message}`);
