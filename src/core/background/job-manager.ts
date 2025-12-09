@@ -241,6 +241,34 @@ export class BackgroundJobManager {
 
     this.saveState(state);
   }
+
+  /**
+   * Set dependency tracking fields on a job
+   * CRITICAL FIX (2025-12-09): Must be called after createJob to persist dependsOn/dependencyStatus
+   */
+  setDependencies(jobId: string, dependsOn: string[]): BackgroundJob | null {
+    const job = this.getJob(jobId);
+    if (!job) return null;
+
+    job.dependsOn = dependsOn;
+    job.dependencyStatus = 'waiting';
+    job.updatedAt = new Date();
+    this.saveJob(job);
+    return job;
+  }
+
+  /**
+   * Update dependency status (waiting → ready/partial)
+   */
+  updateDependencyStatus(jobId: string, status: 'waiting' | 'ready' | 'partial'): BackgroundJob | null {
+    const job = this.getJob(jobId);
+    if (!job) return null;
+
+    job.dependencyStatus = status;
+    job.updatedAt = new Date();
+    this.saveJob(job);
+    return job;
+  }
 }
 
 /**

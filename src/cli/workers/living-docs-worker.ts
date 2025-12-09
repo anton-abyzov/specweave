@@ -531,6 +531,11 @@ async function main(): Promise<void> {
       if (depStatus.failedDeps.length > 0) {
         log(`  WARNING: Some dependencies failed: ${depStatus.failedDeps.join(', ')}`);
         log('  Proceeding with available data...');
+        // Update dependency status to 'partial' (some deps failed)
+        jobManager.updateDependencyStatus(jobId, 'partial');
+      } else {
+        // All dependencies completed successfully
+        jobManager.updateDependencyStatus(jobId, 'ready');
       }
 
       log('  Dependencies complete');
