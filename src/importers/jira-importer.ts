@@ -68,7 +68,15 @@ export class JiraImporter implements Importer {
    * @param projectKey - Optional project key for multi-project mode (e.g., "PROJ")
    */
   constructor(host: string, email?: string, apiToken?: string, projectKey?: string) {
-    this.host = host.replace(/\/+$/, ''); // Remove trailing slashes
+    // Remove trailing slashes and ensure https:// prefix
+    // CRITICAL FIX (2025-12-09): new URL() requires full URL with protocol
+    // Bug: host="farside.atlassian.net" → new URL('/path', host) throws "Invalid URL"
+    let normalizedHost = host.replace(/\/+$/, '');
+    if (!normalizedHost.startsWith('https://') && !normalizedHost.startsWith('http://')) {
+      normalizedHost = `https://${normalizedHost}`;
+    }
+    this.host = normalizedHost;
+
     this.email = email || process.env.JIRA_EMAIL || '';
     this.apiToken = apiToken || process.env.JIRA_API_TOKEN || '';
     this.projectKey = projectKey;  // Store project key for JQL filtering
