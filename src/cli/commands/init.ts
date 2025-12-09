@@ -210,6 +210,54 @@ async function createMultiProjectFolders(targetDir: string): Promise<void> {
     }
     console.log('');
   }
+
+  // JIRA Multi-Board Folder Creation (reads from config.json, similar to ADO)
+  // CRITICAL FIX (2025-12-09): Creates folders from JIRA sync profiles
+  // Bug: JIRA folders were only created from legacy .env JIRA_PROJECTS, not from config.json profiles
+  const jiraProfiles = Object.values(profiles).filter(p => p.provider === 'jira') as Array<{
+    provider?: string;
+    config?: {
+      domain?: string;
+      projectKey?: string;
+      boards?: Array<{ id: string; name?: string }>;
+    }
+  }>;
+
+  if (jiraProfiles.length > 0) {
+    console.log(chalk.blue('\n📁 Creating JIRA Folders'));
+
+    for (const jiraProfile of jiraProfiles) {
+      if (!jiraProfile?.config?.projectKey) continue;
+
+      const { projectKey, boards } = jiraProfile.config;
+      console.log(chalk.gray(`   Project: ${projectKey}`));
+
+      const projectFolder = projectKey.toLowerCase().replace(/[^a-z0-9]/g, '-');
+
+      if (boards?.length) {
+        // Create folder per board (2-level structure)
+        for (const board of boards) {
+          const boardName = board.name || `board-${board.id}`;
+          const boardFolder = boardName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+          const specsPath = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs', projectFolder, boardFolder);
+
+          if (!fs.existsSync(specsPath)) {
+            fs.mkdirSync(specsPath, { recursive: true });
+          }
+          console.log(chalk.green(`   ✓ Created: specs/${projectFolder}/${boardFolder}/`));
+        }
+      } else {
+        // Single project folder (no boards)
+        const specsPath = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs', projectFolder);
+
+        if (!fs.existsSync(specsPath)) {
+          fs.mkdirSync(specsPath, { recursive: true });
+        }
+        console.log(chalk.green(`   ✓ Created: specs/${projectFolder}/`));
+      }
+    }
+    console.log('');
+  }
 }
 
 /**
