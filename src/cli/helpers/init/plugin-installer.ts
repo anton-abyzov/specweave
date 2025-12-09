@@ -253,6 +253,88 @@ async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void
 }
 
 /**
+ * Work around Claude CLI bug where marketplace name = plugin name causes EINVAL.
+ *
+ * When the marketplace name matches a plugin name ("specweave"), Claude CLI:
+ * 1. Creates cache/specweave/ with full marketplace content
+ * 2. Tries to rename cache/specweave → cache/specweave/specweave/0.25.0
+ * 3. Fails with EINVAL (can't move directory into itself)
+ *
+ * WORKAROUND: Manually install the "specweave" plugin by copying from marketplace.
+ * Returns true if manual install succeeded, false if should use claude plugin install.
+ */
+function manuallyInstallSpecweavePlugin(version: string): boolean {
+  const marketplacePath = path.join(
+    os.homedir(),
+    '.claude/plugins/marketplaces/specweave/plugins/specweave'
+  );
+  const targetPath = path.join(
+    os.homedir(),
+    '.claude/plugins/cache/specweave/specweave',
+    version
+  );
+
+  // Check if marketplace plugin exists
+  if (!fs.existsSync(marketplacePath)) {
+    return false;
+  }
+
+  // Check if already installed
+  if (fs.existsSync(targetPath)) {
+    return true;
+  }
+
+  try {
+    // Create target directory structure
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+
+    // Copy plugin files from marketplace to cache
+    copyDirRecursive(marketplacePath, targetPath);
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Recursively copy directory contents
+ */
+function copyDirRecursive(src: string, dest: string): void {
+  fs.mkdirSync(dest, { recursive: true });
+
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+
+    if (entry.isDirectory()) {
+      copyDirRecursive(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
+/**
+ * Get the version of a plugin from marketplace.json
+ */
+function getPluginVersion(pluginName: string): string {
+  try {
+    const marketplacePath = path.join(
+      os.homedir(),
+      '.claude/plugins/marketplaces/specweave/.claude-plugin/marketplace.json'
+    );
+    const marketplace = JSON.parse(fs.readFileSync(marketplacePath, 'utf-8'));
+    const plugin = marketplace.plugins?.find((p: { name: string }) => p.name === pluginName);
+    return plugin?.version || '0.25.0';
+  } catch {
+    return '0.25.0';
+  }
+}
+
+/**
  * Install plugins with retry logic
  */
 async function installPluginsWithRetry(
@@ -263,12 +345,35 @@ async function installPluginsWithRetry(
   let failCount = 0;
   const failedPlugins: string[] = [];
 
-  for (const plugin of plugins) {
+  // Sort plugins to install "specweave" FIRST
+  // This prevents cache corruption from other plugin installs
+  const sortedPlugins = [...plugins].sort((a, b) => {
+    if (a.name === 'specweave') return -1;
+    if (b.name === 'specweave') return 1;
+    return 0;
+  });
+
+  for (const plugin of sortedPlugins) {
     const pluginName = plugin.name;
     spinner.start(`Installing ${pluginName}...`);
 
-    // Retry up to 3 times with exponential backoff
     let installed = false;
+
+    // Special handling for "specweave" plugin due to Claude CLI bug
+    // (marketplace name = plugin name causes EINVAL on rename)
+    if (pluginName === 'specweave') {
+      const version = getPluginVersion('specweave');
+      installed = manuallyInstallSpecweavePlugin(version);
+
+      if (installed) {
+        successCount++;
+        spinner.succeed(`${pluginName} installed (manual workaround)`);
+        continue;
+      }
+      // Fall through to try claude plugin install if manual failed
+    }
+
+    // Retry up to 3 times with exponential backoff
     for (let attempt = 1; attempt <= 3; attempt++) {
       const installResult = execFileNoThrowSync('claude', ['plugin', 'install', pluginName]);
 
