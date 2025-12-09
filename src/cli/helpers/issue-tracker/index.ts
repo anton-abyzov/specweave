@@ -31,6 +31,8 @@ import {
   checkExistingGitHubCredentials,
   promptGitHubCredentials,
   validateGitHubConnection,
+  validateGitHubWriteAccess,
+  forcePromptGitHubToken,
   getGitHubEnvVars,
   showGitHubSetupComplete,
   showGitHubSetupSkipped
@@ -490,19 +492,77 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
           }
         }
 
-        // Step 5.2: Write sync config to .specweave/config.json
-        await writeSyncConfig(projectPath, tracker, credentials, syncSettings, syncPermissions, repositoryProfiles, monorepoProjects);
+        // Step 5.2: Validate GitHub write access (CRITICAL - v0.33.0)
+        // Must be mutable for token replacement
+        let activeCredentials = credentials;
+        let activeSyncPermissions = syncPermissions;
+
+        if (tracker === 'github' && repositoryProfiles.length > 0) {
+          const primaryProfile = repositoryProfiles[0];
+          const owner = primaryProfile?.config?.owner;
+          const repo = primaryProfile?.config?.repo;
+
+          if (owner && repo) {
+            console.log(chalk.cyan(`\n🔐 Validating write access to ${owner}/${repo}...\n`));
+
+            const writeCheck = await validateGitHubWriteAccess(activeCredentials as any, owner, repo);
+
+            if (!writeCheck.success) {
+              console.log(chalk.red(`❌ Write access check failed: ${writeCheck.error}`));
+              if (writeCheck.suggestion) {
+                console.log(chalk.yellow(`   💡 ${writeCheck.suggestion}`));
+              }
+
+              // Force user to provide a new token
+              const newCredentials = await forcePromptGitHubToken(
+                language,
+                existing.source,
+                writeCheck.error || 'Unknown permission error'
+              );
+
+              if (newCredentials) {
+                const retryCheck = await validateGitHubWriteAccess(newCredentials, owner, repo);
+
+                if (retryCheck.success) {
+                  console.log(chalk.green(`\n✅ New token validated successfully!\n`));
+                  activeCredentials = newCredentials;
+                  await saveCredentials(projectPath, 'github', newCredentials);
+                } else {
+                  console.log(chalk.red(`\n❌ New token also lacks write access: ${retryCheck.error}`));
+                  console.log(chalk.yellow('   GitHub sync will be disabled.\n'));
+                  activeSyncPermissions = {
+                    canUpsertInternalItems: false,
+                    canUpdateExternalItems: false,
+                    canUpdateStatus: false
+                  };
+                }
+              } else {
+                console.log(chalk.yellow('\n⚠️  GitHub sync disabled due to permission issues\n'));
+                activeSyncPermissions = {
+                  canUpsertInternalItems: false,
+                  canUpdateExternalItems: false,
+                  canUpdateStatus: false
+                };
+              }
+            } else {
+              console.log(chalk.green(`✅ Write access confirmed to ${owner}/${repo}\n`));
+            }
+          }
+        }
+
+        // Step 5.3: Write sync config to .specweave/config.json
+        await writeSyncConfig(projectPath, tracker, activeCredentials, syncSettings, activeSyncPermissions, repositoryProfiles, monorepoProjects);
 
         // Step 5.5: Validate resources (Jira/ADO - auto-create missing projects/boards/teams)
         if (tracker === 'jira' || tracker === 'ado') {
-          await validateResources(tracker, credentials, projectPath, syncPermissions);
+          await validateResources(tracker, activeCredentials, projectPath, activeSyncPermissions);
         }
 
         // Step 5.6: Create folder structure (ADO and JIRA)
         if (tracker === 'ado') {
-          createAdoProjectFolders(projectPath, credentials as any);
+          createAdoProjectFolders(projectPath, activeCredentials as any);
         } else if (tracker === 'jira') {
-          createJiraProjectFolders(projectPath, credentials as any);
+          createJiraProjectFolders(projectPath, activeCredentials as any);
         }
 
         // Show setup complete message (plugins managed via marketplace)
@@ -591,10 +651,82 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
     }
   }
 
-  // Step 5.2: Write sync config to .specweave/config.json
-  await writeSyncConfig(projectPath, tracker, credentials, syncSettings, syncPermissions, repositoryProfiles, monorepoProjects);
+  // Step 5.2: Validate GitHub write access (CRITICAL - v0.33.0)
+  // This catches permission issues NOW instead of later when sync fails
+  // Use mutable variables for potential token replacement
+  let activeCredentials = credentials;
+  let activeSyncPermissions = syncPermissions;
 
-  // Step 5.3: Validate project configuration (GitHub only)
+  if (tracker === 'github' && repositoryProfiles.length > 0) {
+    // Get the primary repository from profiles
+    const primaryProfile = repositoryProfiles[0];
+    const owner = primaryProfile?.config?.owner;
+    const repo = primaryProfile?.config?.repo;
+
+    if (owner && repo) {
+      console.log(chalk.cyan(`\n🔐 Validating write access to ${owner}/${repo}...\n`));
+
+      const writeCheck = await validateGitHubWriteAccess(activeCredentials as any, owner, repo);
+
+      if (!writeCheck.success) {
+        console.log(chalk.red(`❌ Write access check failed: ${writeCheck.error}`));
+        if (writeCheck.suggestion) {
+          console.log(chalk.yellow(`   💡 ${writeCheck.suggestion}`));
+        }
+
+        // Determine token source for context
+        const existingCreds = await checkExistingCredentials('github', projectPath);
+        const tokenSource = existingCreds?.source || 'unknown';
+
+        // Force user to provide a new token with proper permissions
+        const newCredentials = await forcePromptGitHubToken(
+          language,
+          tokenSource,
+          writeCheck.error || 'Unknown permission error'
+        );
+
+        if (newCredentials) {
+          // Validate the new token has write access
+          const retryCheck = await validateGitHubWriteAccess(newCredentials, owner, repo);
+
+          if (retryCheck.success) {
+            console.log(chalk.green(`\n✅ New token validated successfully!\n`));
+
+            // Update credentials with new token
+            activeCredentials = newCredentials;
+
+            // Save new token to .env
+            await saveCredentials(projectPath, 'github', newCredentials);
+          } else {
+            console.log(chalk.red(`\n❌ New token also lacks write access: ${retryCheck.error}`));
+            console.log(chalk.yellow('   GitHub sync will be disabled. You can reconfigure later.\n'));
+
+            // Disable GitHub sync in config
+            activeSyncPermissions = {
+              canUpsertInternalItems: false,
+              canUpdateExternalItems: false,
+              canUpdateStatus: false
+            };
+          }
+        } else {
+          // User chose to skip - disable GitHub sync
+          console.log(chalk.yellow('\n⚠️  GitHub sync disabled due to permission issues\n'));
+          activeSyncPermissions = {
+            canUpsertInternalItems: false,
+            canUpdateExternalItems: false,
+            canUpdateStatus: false
+          };
+        }
+      } else {
+        console.log(chalk.green(`✅ Write access confirmed to ${owner}/${repo}\n`));
+      }
+    }
+  }
+
+  // Step 5.3: Write sync config to .specweave/config.json
+  await writeSyncConfig(projectPath, tracker, activeCredentials, syncSettings, activeSyncPermissions, repositoryProfiles, monorepoProjects);
+
+  // Step 5.4: Validate project configuration (GitHub only)
   // NOW we can ask about project contexts (after repos are configured)
   if (tracker === 'github') {
     const { validateProjectConfiguration, promptCreateProject } = await import('../../../utils/project-validator.js');
@@ -620,14 +752,14 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
 
   // Step 5.5: Validate resources (Jira/ADO - auto-create missing projects/boards/teams)
   if (tracker === 'jira' || tracker === 'ado') {
-    await validateResources(tracker, credentials, projectPath, syncPermissions);
+    await validateResources(tracker, activeCredentials, projectPath, activeSyncPermissions);
   }
 
   // Step 5.6: Create folder structure (ADO and JIRA)
   if (tracker === 'ado') {
-    createAdoProjectFolders(projectPath, credentials as any);
+    createAdoProjectFolders(projectPath, activeCredentials as any);
   } else if (tracker === 'jira') {
-    createJiraProjectFolders(projectPath, credentials as any);
+    createJiraProjectFolders(projectPath, activeCredentials as any);
   }
 
   // Step 6: Show success message (plugins managed via marketplace)
