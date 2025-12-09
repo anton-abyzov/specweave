@@ -17,7 +17,7 @@ import type { ExternalContainerContext } from '../../../core/types/increment-met
 import { loadImportConfig } from '../../../config/import-config.js';
 import { selectRepositories, type RepoSelectionConfig } from '../github-repo-selector.js';
 import { detectAllConfigs } from './config-detection.js';
-import type { ADOConfig } from './types.js';
+import type { ADOConfig, JiraConfig } from './types.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import { parseEnvFile } from '../../../utils/env-file.js';
 import { getGitHubAuthFromProject } from '../../../utils/auth-helpers.js';
@@ -40,6 +40,7 @@ import {
   isUmbrellaModeFromConfig,
   getSyncProfileProviders,
   loadAdoConfigFromSyncProfile,
+  loadJiraConfigFromSyncProfile,
   getUmbrellaProjects,
 } from './sync-profile-helpers.js';
 import {
@@ -373,6 +374,80 @@ function buildAdoConfigFromProjects(
 }
 
 /**
+ * Build JIRA coordinator config from pre-configured projects
+ *
+ * MIRRORS buildAdoConfigFromProjects for JIRA multi-project support.
+ *
+ * Creates correct 2-level folder structure:
+ * - specs/{project}/{board}/FS-XXX/ for items with boards
+ * - specs/{project}/_default/FS-XXX/ for items without boards
+ *
+ * CRITICAL FIX (2025-12-09): This ensures work items are imported from ALL
+ * configured JIRA projects into their correct board folders.
+ */
+function buildJiraConfigFromProjects(jira: JiraConfig): {
+  host: string;
+  email?: string;
+  apiToken?: string;
+  mode: 'simple' | 'by-project' | 'by-board' | 'hybrid';
+  projectMappings: Array<{
+    projectKey: string;
+    boardMappings: Array<{ boardName: string; specweaveFolder: string }>;
+  }>;
+} {
+  const jiraExt = jira as any; // Extended with projects array
+
+  // If jira.projects is available (from sync profiles), build projectMappings
+  if (jiraExt.projects && jiraExt.projects.length > 0) {
+    const projectMappings = jiraExt.projects.map((proj: any) => {
+      // Use normalizeToProjectId() for consistent folder names
+      const projectFolder = normalizeToProjectId(proj.key);
+
+      // Build board mappings with 2-level folder structure: {project}/{board}
+      const boardMappings = proj.boards?.map((board: any) => {
+        // Use board name or ID for folder name
+        const boardName = board.name || `board-${board.id}`;
+        const boardFolder = normalizeToProjectId(boardName);
+
+        return {
+          boardName: boardName,
+          // 2-level: specs/{project}/{board}/FS-XXX/
+          specweaveFolder: `${projectFolder}/${boardFolder}`
+        };
+      }) || [
+        // No boards configured - use _default subfolder
+        { boardName: '*', specweaveFolder: `${projectFolder}/_default` }
+      ];
+
+      return {
+        projectKey: proj.key,
+        boardMappings
+      };
+    });
+
+    // Determine mode based on boards presence
+    const hasBoards = jiraExt.projects.some((p: any) => p.boards && p.boards.length > 0);
+
+    return {
+      host: jira.host,
+      email: jira.email,
+      apiToken: jira.apiToken,
+      mode: hasBoards ? 'by-board' as const : 'by-project' as const,
+      projectMappings
+    };
+  }
+
+  // Fallback to simple mode
+  return {
+    host: jira.host,
+    email: jira.email,
+    apiToken: jira.apiToken,
+    mode: 'simple' as const,
+    projectMappings: []
+  };
+}
+
+/**
  * Prompt user and run external tool import
  * Detects GitHub/JIRA/ADO configuration and imports work items
  *
@@ -485,6 +560,35 @@ export async function promptAndRunExternalImport(
       // Ensure Azure DevOps is in availableTools
       if (!availableTools.includes('Azure DevOps')) {
         availableTools = [...availableTools, 'Azure DevOps'];
+      }
+    }
+  }
+
+  // CRITICAL FIX (2025-12-09): Load JIRA config from sync profile if detectAllConfigs() failed
+  // Bug: detectAllConfigs() might return jira:null even when sync profile exists with valid config
+  // This caused folders to be created but NO work items imported!
+  //
+  // CRITICAL FIX: Also handle case where jira exists but projects array is missing
+  // Bug: detectJiraConfig() returns jira object but with projects:undefined, causing single-project fallback
+  // Fix: If jira exists but has no projects, try to load full config from sync profiles
+  const needsJiraProjectsFromProfile = syncProfileProviders.includes('jira') && (!jira || !jira.projects?.length);
+
+  if (needsJiraProjectsFromProfile) {
+    const jiraConfigFromProfile = loadJiraConfigFromSyncProfile(targetDir);
+    if (jiraConfigFromProfile) {
+      // If we had partial jira config, merge. Otherwise replace entirely.
+      if (jira) {
+        // Merge: keep existing values but add projects from profile
+        jira = {
+          ...jira,
+          projects: jiraConfigFromProfile.projects
+        } as any;
+      } else {
+        jira = jiraConfigFromProfile as any;
+      }
+      // Ensure JIRA is in availableTools
+      if (!availableTools.includes('JIRA')) {
+        availableTools = [...availableTools, 'JIRA'];
       }
     }
   }
@@ -613,17 +717,42 @@ export async function promptAndRunExternalImport(
     }
   }
 
-  // Add JIRA config with auto-detection
+  // Add JIRA config - prefer pre-configured projects over auto-detection (MIRRORS ADO!)
   if (jira) {
-    // Auto-detect JIRA structure (projects + boards)
-    const jiraStructure = await detectJiraStructure();
-    if (jiraStructure) {
-      const jiraMapping = await confirmJiraMapping(jiraStructure);
-      if (jiraMapping) {
-        const jiraConfig = buildJiraCoordinatorConfig(jira, jiraMapping);
-        coordinatorConfig.jira = jiraConfig;
+    // CRITICAL FIX (2025-12-09): Check if projects are already configured (multi-project mode)
+    // If yes, use them directly WITHOUT calling detectJiraStructure/confirmJiraMapping
+    // This ensures user's carefully selected projects and boards are respected!
+    const jiraExt = jira as any; // Extended with projects array
+    if (jiraExt.projects && jiraExt.projects.length > 0) {
+      // Multi-project mode: User already configured projects with boards during init
+      console.log(chalk.cyan(`   📦 Using ${jiraExt.projects.length} pre-configured JIRA project(s)`));
+      for (const proj of jiraExt.projects) {
+        const boardInfo = proj.boards?.length ? ` (${proj.boards.length} board${proj.boards.length > 1 ? 's' : ''})` : '';
+        console.log(chalk.gray(`      → ${proj.key}${boardInfo}`));
+      }
+
+      // Build coordinator config directly from configured projects
+      coordinatorConfig.jira = buildJiraConfigFromProjects(jira);
+    } else if (jira.host && jira.apiToken) {
+      // Legacy single-project mode: Auto-detect JIRA structure (projects + boards)
+      const jiraStructure = await detectJiraStructure();
+      if (jiraStructure) {
+        const jiraMapping = await confirmJiraMapping(jiraStructure);
+        if (jiraMapping) {
+          const jiraConfig = buildJiraCoordinatorConfig(jira, jiraMapping);
+          coordinatorConfig.jira = jiraConfig;
+        } else {
+          // User declined - use simple mode
+          coordinatorConfig.jira = {
+            host: jira.host,
+            email: jira.email,
+            apiToken: jira.apiToken,
+            mode: 'simple' as const,
+            projectMappings: [],
+          };
+        }
       } else {
-        // User declined - use simple mode
+        // Auto-detect failed - use simple mode
         coordinatorConfig.jira = {
           host: jira.host,
           email: jira.email,
@@ -632,15 +761,6 @@ export async function promptAndRunExternalImport(
           projectMappings: [],
         };
       }
-    } else {
-      // Auto-detect failed - use simple mode
-      coordinatorConfig.jira = {
-        host: jira.host,
-        email: jira.email,
-        apiToken: jira.apiToken,
-        mode: 'simple' as const,
-        projectMappings: [],
-      };
     }
   }
 

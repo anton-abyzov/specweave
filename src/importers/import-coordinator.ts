@@ -140,6 +140,8 @@ export class ImportCoordinator {
   private githubRepoImporters: Map<string, GitHubImporter> = new Map();
   /** Multi-project ADO importers keyed by "ado:projectName" */
   private adoProjectImporters: Map<string, ADOImporter> = new Map();
+  /** Multi-project JIRA importers keyed by "jira:projectKey" */
+  private jiraProjectImporters: Map<string, JiraImporter> = new Map();
   private config: CoordinatorConfig;
   private rateLimiter: RateLimiter | null = null;
   private projectRoot: string;
@@ -202,17 +204,44 @@ export class ImportCoordinator {
       }
     }
 
-    // JIRA importer
+    // JIRA importer - supports multi-project mode (similar to ADO multi-project)
     if (this.config.jira) {
-      try {
-        const importer = new JiraImporter(
-          this.config.jira.host,
-          this.config.jira.email,
-          this.config.jira.apiToken
-        );
-        this.importers.set('jira', importer);
-      } catch (error: any) {
-        console.warn(`Failed to initialize JIRA importer: ${error.message}`);
+      // Check for multi-project configuration (projectMappings with multiple projects)
+      const projectMappings = this.config.jira.projectMappings;
+
+      if (projectMappings && projectMappings.length > 0) {
+        // Multi-project mode: create one importer per project
+        for (const mapping of projectMappings) {
+          try {
+            const importer = new JiraImporter(
+              this.config.jira.host,
+              this.config.jira.email,
+              this.config.jira.apiToken,
+              mapping.projectKey  // Pass project key for JQL filtering
+            );
+            const key = `jira:${mapping.projectKey}`;
+            this.jiraProjectImporters.set(key, importer);
+          } catch (error: any) {
+            console.warn(`Failed to initialize JIRA importer for ${mapping.projectKey}: ${error.message}`);
+          }
+        }
+
+        // If we have multi-project importers, don't create single project importer
+        if (this.jiraProjectImporters.size > 0) {
+          // Multi-project mode active - will be handled in importAll()
+        }
+      } else {
+        // Single project mode (backwards compatible)
+        try {
+          const importer = new JiraImporter(
+            this.config.jira.host,
+            this.config.jira.email,
+            this.config.jira.apiToken
+          );
+          this.importers.set('jira', importer);
+        } catch (error: any) {
+          console.warn(`Failed to initialize JIRA importer: ${error.message}`);
+        }
       }
     }
 
@@ -256,7 +285,7 @@ export class ImportCoordinator {
       }
     }
 
-    if (this.importers.size === 0 && this.githubRepoImporters.size === 0 && this.adoProjectImporters.size === 0) {
+    if (this.importers.size === 0 && this.githubRepoImporters.size === 0 && this.adoProjectImporters.size === 0 && this.jiraProjectImporters.size === 0) {
       throw new Error('No importers configured. Provide at least one platform configuration.');
     }
   }
@@ -296,6 +325,12 @@ export class ImportCoordinator {
     for (const [key, importer] of this.adoProjectImporters.entries()) {
       const projectName = key.replace('ado:', '');
       promises.push(this.importFromAdoProject(importer, projectName));
+    }
+
+    // Add multi-project JIRA importers
+    for (const [key, importer] of this.jiraProjectImporters.entries()) {
+      const projectKey = key.replace('jira:', '');
+      promises.push(this.importFromJiraProject(importer, projectKey));
     }
 
     const results = await Promise.allSettled(promises);
@@ -341,6 +376,20 @@ export class ImportCoordinator {
       const projectName = key.replace('ado:', '');
       try {
         const result = await this.importFromAdoProject(importer, projectName);
+        results.push({ status: 'fulfilled', value: result });
+      } catch (error: any) {
+        results.push({
+          status: 'rejected',
+          reason: error,
+        });
+      }
+    }
+
+    // Multi-project JIRA importers (sequentially to avoid rate limits)
+    for (const [key, importer] of this.jiraProjectImporters.entries()) {
+      const projectKey = key.replace('jira:', '');
+      try {
+        const result = await this.importFromJiraProject(importer, projectKey);
         results.push({ status: 'fulfilled', value: result });
       } catch (error: any) {
         results.push({
@@ -526,6 +575,97 @@ export class ImportCoordinator {
   }
 
   /**
+   * Import from a single JIRA project with source tagging
+   * MIRRORS importFromAdoProject for JIRA multi-project support.
+   *
+   * @param importer - JiraImporter instance configured for this project
+   * @param projectKey - JIRA project key (e.g., "PROJ")
+   */
+  private async importFromJiraProject(importer: JiraImporter, projectKey: string): Promise<ImportResult> {
+    const errors: string[] = [];
+    const items: ExternalItem[] = [];
+    let totalEstimate: number | undefined;
+    let pageNumber = 0;
+
+    try {
+      // Use pagination for progress tracking
+      for await (const page of importer.paginate(this.config.importConfig)) {
+        pageNumber++;
+
+        // Tag each item with source project
+        for (const item of page) {
+          item.jiraProjectKey = projectKey;
+        }
+        items.push(...page);
+
+        // Calculate progress info
+        const elapsed = (Date.now() - this.importStartTime) / 1000;
+        const rate = elapsed > 0 ? items.length / elapsed : 0;
+        const eta = totalEstimate && rate > 0 ? (totalEstimate - items.length) / rate : undefined;
+
+        // Report enhanced progress
+        if (this.config.onProgressEnhanced) {
+          this.config.onProgressEnhanced({
+            platform: 'jira',
+            current: items.length,
+            total: totalEstimate,
+            percentage: totalEstimate ? Math.round((items.length / totalEstimate) * 100) : undefined,
+            rate: Math.round(rate * 10) / 10,
+            eta: eta ? Math.round(eta) : undefined,
+            sourceRepo: projectKey, // Use sourceRepo field for project key
+            page: pageNumber,
+          });
+        }
+
+        // Legacy progress callback
+        if (this.config.onProgress) {
+          this.config.onProgress(`jira (${projectKey})`, items.length, totalEstimate);
+        }
+      }
+
+      // Update sync metadata if enabled
+      if (this.config.enableSyncMetadata && items.length > 0) {
+        const metadata: PlatformSyncMetadata = {
+          lastImport: new Date().toISOString(),
+          lastImportCount: items.length,
+          lastSyncResult: errors.length > 0 ? 'partial' : 'success',
+        };
+
+        try {
+          updateSyncMetadata(this.projectRoot, 'jira', metadata);
+        } catch (error: any) {
+          errors.push(`Failed to update sync metadata: ${error.message}`);
+        }
+      }
+    } catch (error: any) {
+      errors.push(error.message || String(error));
+
+      if (this.config.enableSyncMetadata) {
+        const metadata: PlatformSyncMetadata = {
+          lastImport: new Date().toISOString(),
+          lastImportCount: 0,
+          lastSyncResult: 'failed',
+        };
+
+        try {
+          updateSyncMetadata(this.projectRoot, 'jira', metadata);
+        } catch {
+          // Ignore
+        }
+      }
+    }
+
+    return {
+      count: items.length,
+      items,
+      errors,
+      platform: 'jira',
+      totalEstimate,
+      sourceRepo: projectKey,
+    };
+  }
+
+  /**
    * Import from a single platform with progress tracking
    */
   private async importFromPlatform(platform: string, importer: Importer): Promise<ImportResult> {
@@ -697,6 +837,11 @@ export class ImportCoordinator {
       platforms.push('ado');
     }
 
+    // Add 'jira' if multi-project importers are configured
+    if (this.jiraProjectImporters.size > 0 && !platforms.includes('jira')) {
+      platforms.push('jira');
+    }
+
     return platforms;
   }
 
@@ -709,6 +854,9 @@ export class ImportCoordinator {
     }
     if (platform === 'ado') {
       return this.importers.has(platform) || this.adoProjectImporters.size > 0;
+    }
+    if (platform === 'jira') {
+      return this.importers.has(platform) || this.jiraProjectImporters.size > 0;
     }
     return this.importers.has(platform);
   }
@@ -725,5 +873,12 @@ export class ImportCoordinator {
    */
   getConfiguredAdoProjects(): string[] {
     return Array.from(this.adoProjectImporters.keys()).map(key => key.replace('ado:', ''));
+  }
+
+  /**
+   * Get list of configured JIRA projects (for multi-project support)
+   */
+  getConfiguredJiraProjects(): string[] {
+    return Array.from(this.jiraProjectImporters.keys()).map(key => key.replace('jira:', ''));
   }
 }

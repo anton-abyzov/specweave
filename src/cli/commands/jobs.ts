@@ -114,6 +114,7 @@ async function handleListJobs(projectPath: string, showAll: boolean): Promise<vo
 
   // Group jobs by status
   const running = jobs.filter((j: BackgroundJob) => j.status === 'running');
+  const pending = jobs.filter((j: BackgroundJob) => j.status === 'pending');
   const paused = jobs.filter((j: BackgroundJob) => j.status === 'paused');
   const completed = jobs.filter((j: BackgroundJob) => j.status === 'completed');
   const failed = jobs.filter((j: BackgroundJob) => j.status === 'failed');
@@ -125,6 +126,21 @@ async function handleListJobs(projectPath: string, showAll: boolean): Promise<vo
     console.log(chalk.green(`🔄 Running (${running.length}):`));
     for (const job of running) {
       printJobSummary(job, projectPath);
+    }
+    console.log('');
+  }
+
+  // Pending jobs (worker started but not yet running - may indicate crash)
+  if (pending.length > 0) {
+    console.log(chalk.yellow(`⏳ Pending (${pending.length}):`));
+    for (const job of pending) {
+      // Check if worker is actually running
+      const workerAlive = isJobRunning(projectPath, job.id);
+      printJobSummary(job, projectPath);
+      if (!workerAlive) {
+        console.log(chalk.red(`     ⚠️  Worker not running - job may have crashed before starting`));
+        console.log(chalk.gray(`     → Check logs: specweave jobs --logs ${job.id.slice(0, 8)}`));
+      }
     }
     console.log('');
   }

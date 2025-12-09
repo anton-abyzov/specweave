@@ -12,8 +12,14 @@
 import * as fs from '../../../utils/fs-native.js';
 import * as path from 'path';
 import chalk from 'chalk';
-import type { ADOConfig } from './types.js';
+import type { ADOConfig, JiraConfig, JiraProjectConfig } from './types.js';
 import { parseEnvFile } from '../../../utils/env-file.js';
+
+/**
+ * Type alias for backwards compatibility
+ * JiraConfig in types.ts now includes multi-project support
+ */
+export type JiraConfigExtended = JiraConfig;
 
 /**
  * Get existing sync profiles from config.json
@@ -265,5 +271,113 @@ export function getUmbrellaProjects(targetDir: string): string[] {
     return umbrellaProjects;
   } catch {
     return [];
+  }
+}
+
+/**
+ * Load JIRA config from sync profiles in config.json
+ *
+ * MIRRORS loadAdoConfigFromSyncProfile for JIRA multi-project support.
+ *
+ * CRITICAL FIX (2025-12-09): This fixes the bug where JIRA folders were created
+ * but no work items were imported because jira was null in the import flow.
+ *
+ * ENHANCED (2025-12-09): Supports multi-project JIRA setups by collecting
+ * ALL JIRA profiles and building the projects array for multi-project import.
+ */
+export function loadJiraConfigFromSyncProfile(targetDir: string): JiraConfigExtended | null {
+  try {
+    const configPath = path.join(targetDir, '.specweave', 'config.json');
+    if (!fs.existsSync(configPath)) {
+      return null;
+    }
+
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+    // Load API token and email from .env file (needed for all profiles)
+    let apiToken: string | undefined;
+    let email: string | undefined;
+    const envPath = path.join(targetDir, '.env');
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf-8');
+      const envVars = parseEnvFile(envContent);
+      apiToken = envVars.JIRA_API_TOKEN || envVars.JIRA_TOKEN;
+      email = envVars.JIRA_EMAIL;
+    }
+    // Also check environment variables
+    if (!apiToken) {
+      apiToken = process.env.JIRA_API_TOKEN || process.env.JIRA_TOKEN;
+    }
+    if (!email) {
+      email = process.env.JIRA_EMAIL;
+    }
+
+    if (!apiToken || !email) {
+      return null;
+    }
+
+    // Collect ALL JIRA profiles for multi-project support
+    const jiraProjects: JiraProjectConfig[] = [];
+    let domain: string | undefined;
+    let strategy: string | undefined;
+
+    if (config.sync?.profiles && typeof config.sync.profiles === 'object') {
+      // v0.31.0+: Use defaultProfile, fall back to activeProfile for backward compat
+      const defaultProfileId = config.sync.defaultProfile ?? config.sync.activeProfile;
+
+      for (const [profileId, profile] of Object.entries(config.sync.profiles)) {
+        const p = profile as {
+          provider?: string;
+          config?: {
+            domain?: string;
+            projectKey?: string;
+            projectName?: string;
+            projectId?: string;
+            boards?: Array<{ id: string; name?: string }>;
+            strategy?: string;
+          }
+        };
+
+        if (p.provider?.toLowerCase() === 'jira' && p.config) {
+          const profileConfig = p.config;
+
+          if (profileConfig.domain && profileConfig.projectKey) {
+            // Use first domain found (they should all be the same)
+            if (!domain) {
+              domain = profileConfig.domain;
+            }
+            // Use first strategy found
+            if (!strategy && profileConfig.strategy) {
+              strategy = profileConfig.strategy;
+            }
+
+            jiraProjects.push({
+              key: profileConfig.projectKey,
+              name: profileConfig.projectName,
+              id: profileConfig.projectId,
+              boards: profileConfig.boards,
+              isDefault: profileId === defaultProfileId
+            });
+          }
+        }
+      }
+    }
+
+    // Return null if no JIRA projects found
+    if (jiraProjects.length === 0 || !domain) {
+      return null;
+    }
+
+    // Return multi-project config
+    const defaultProject = jiraProjects.find(p => p.isDefault) || jiraProjects[0];
+    return {
+      host: domain,
+      email,
+      apiToken,
+      strategy,
+      projects: jiraProjects
+    };
+  } catch {
+    return null;
   }
 }
