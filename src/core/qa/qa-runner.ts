@@ -403,7 +403,7 @@ function displayReport(report: QAReport, options: QAOptions): void {
     const { dimension_scores } = report.spec_quality;
     console.log('Dimension Scores:');
     Object.entries(dimension_scores).forEach(([dim, score]) => {
-      const percentage = Math.round(score * 100);
+      const percentage = Math.round(score); // Scores are already 0-100, just round
       const indicator = percentage >= 80 ? '✓✓' : percentage >= 70 ? '✓' : '⚠️';
       console.log(`  ${dim.padEnd(20)}: ${percentage}/100 ${indicator}`);
     });
