@@ -56,12 +56,26 @@ export interface GitHubRemote {
 }
 
 /**
+ * JIRA project configuration for multi-project mode
+ */
+export interface JiraProjectConfig {
+  key: string;
+  name?: string;
+  id?: string;
+  boards?: Array<{ id: string; name?: string }>;
+  isDefault?: boolean;
+}
+
+/**
  * JIRA configuration detection result
+ * Extended with multi-project support (v0.33.0+)
  */
 export interface JiraConfig {
   host: string;
   email?: string;
   apiToken?: string;
+  strategy?: string;
+  projects?: JiraProjectConfig[];  // Multi-project support
 }
 
 /**

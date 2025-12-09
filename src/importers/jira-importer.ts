@@ -50,17 +50,28 @@ interface JiraSearchResponse {
 
 /**
  * JIRA Importer Implementation
+ *
+ * Supports multi-project mode via optional projectKey parameter.
+ * When projectKey is set, JQL queries are filtered to that project only.
  */
 export class JiraImporter implements Importer {
   readonly platform = 'jira' as const;
   private host: string;
   private email: string;
   private apiToken: string;
+  private projectKey?: string;  // Optional: filter to specific project
 
-  constructor(host: string, email?: string, apiToken?: string) {
+  /**
+   * @param host - JIRA host URL (e.g., "your-domain.atlassian.net")
+   * @param email - JIRA user email
+   * @param apiToken - JIRA API token
+   * @param projectKey - Optional project key for multi-project mode (e.g., "PROJ")
+   */
+  constructor(host: string, email?: string, apiToken?: string, projectKey?: string) {
     this.host = host.replace(/\/+$/, ''); // Remove trailing slashes
     this.email = email || process.env.JIRA_EMAIL || '';
     this.apiToken = apiToken || process.env.JIRA_API_TOKEN || '';
+    this.projectKey = projectKey;  // Store project key for JQL filtering
 
     if (!this.email || !this.apiToken) {
       throw new Error(
@@ -183,6 +194,12 @@ export class JiraImporter implements Importer {
 
     // Build JQL query
     const jqlParts: string[] = [];
+
+    // CRITICAL FIX (2025-12-09): Filter by project key for multi-project mode
+    // This ensures each importer only fetches issues from its assigned project
+    if (this.projectKey) {
+      jqlParts.push(`project = "${this.projectKey}"`);
+    }
 
     // Time range
     const since = new Date();
