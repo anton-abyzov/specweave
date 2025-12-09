@@ -87,9 +87,17 @@ function getJobProvider(job: BackgroundJob): string {
   }
   if (config.type === 'living-docs-builder') {
     // Show dependency status if waiting
-    const depStatus = (job as any).dependencyStatus;
-    if (depStatus === 'waiting') {
-      return 'waiting for deps';
+    // Check both job.dependencyStatus AND job.dependsOn (for jobs created before this fix)
+    const depStatus = job.dependencyStatus;
+    const hasDependencies = job.dependsOn && job.dependsOn.length > 0;
+
+    if (depStatus === 'waiting' || (hasDependencies && depStatus !== 'ready' && depStatus !== 'partial')) {
+      // Show which jobs we're waiting for
+      const depIds = job.dependsOn?.map(id => id.slice(0, 8)).join(', ') || '';
+      return depIds ? `waiting: ${depIds}` : 'waiting for deps';
+    }
+    if (depStatus === 'partial') {
+      return 'running (some deps failed)';
     }
     return 'codebase analysis';
   }

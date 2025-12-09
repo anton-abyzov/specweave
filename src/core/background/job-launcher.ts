@@ -366,12 +366,15 @@ export async function launchLivingDocsJob(options: LivingDocsLaunchOptions): Pro
   };
 
   // Create job with initial estimate (will be updated during discovery)
-  const job = jobManager.createJob('living-docs-builder', jobConfig, 100);
+  let job = jobManager.createJob('living-docs-builder', jobConfig, 100);
 
-  // Set dependency tracking on the job
+  // Set dependency tracking on the job (PERSISTED to background-jobs.json)
+  // CRITICAL FIX (2025-12-09): Must use setDependencies() to persist, not direct mutation
   if (dependsOn && dependsOn.length > 0) {
-    (job as any).dependsOn = dependsOn;
-    (job as any).dependencyStatus = 'waiting';
+    const updatedJob = jobManager.setDependencies(job.id, dependsOn);
+    if (updatedJob) {
+      job = updatedJob;
+    }
   }
 
   // Create job-specific directory for config and logs
