@@ -54,7 +54,7 @@ jobs:
             console.log(`Found PR #${pr.number}: ${pr.title}`);
 
       - name: Checkout PR branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.pr-info.outputs.pr_branch }}
           fetch-depth: 0
