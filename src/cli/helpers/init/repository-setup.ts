@@ -97,6 +97,28 @@ import type { AdoProjectSelection } from '../issue-tracker/types.js';
 export type { AdoProjectSelection };
 
 /**
+ * GitHub repository selection (for multi-repo cloning)
+ */
+export interface GitHubRepoSelection {
+  /** GitHub organization or owner */
+  org: string;
+  /** Personal Access Token */
+  pat: string;
+}
+
+/**
+ * Bitbucket repository selection (for multi-repo cloning)
+ */
+export interface BitbucketRepoSelection {
+  /** Bitbucket workspace slug */
+  workspace: string;
+  /** Bitbucket username */
+  username: string;
+  /** Bitbucket App Password */
+  appPassword: string;
+}
+
+/**
  * Result of repository setup
  */
 export interface RepositorySetupResult {
@@ -108,6 +130,10 @@ export interface RepositorySetupResult {
   adoClonePatternResult?: AdoClonePatternResult;
   /** ADO project(s) to clone repositories from */
   adoProjectSelection?: AdoProjectSelection;
+  /** GitHub repo selection for multi-repo cloning (v0.32.7+) */
+  githubRepoSelection?: GitHubRepoSelection;
+  /** Bitbucket repo selection for multi-repo cloning (v0.32.7+) */
+  bitbucketRepoSelection?: BitbucketRepoSelection;
 }
 
 /**
@@ -241,6 +267,126 @@ async function promptAdoProjectSelection(
 }
 
 /**
+ * Prompt user for GitHub organization and PAT for multi-repo cloning
+ *
+ * @param targetDir - Target directory (for reading existing .env)
+ * @param gitHubRemote - Detected GitHub remote (provides default org)
+ * @param strings - Translated strings
+ * @returns GitHub selection or null if cancelled
+ */
+async function promptGitHubRepoSelection(
+  targetDir: string,
+  gitHubRemote: { owner: string; repo: string } | null,
+  strings: { githubOrgPrompt: string; githubPatPrompt: string; githubSelected: string }
+): Promise<GitHubRepoSelection | null> {
+  // Check for existing credentials in .env or environment
+  let existingOrg: string | undefined;
+  let existingPat: string | undefined;
+
+  const envContent = readEnvFile(targetDir);
+  if (envContent) {
+    const parsed = parseEnvFile(envContent);
+    existingOrg = parsed.GITHUB_ORG;
+    existingPat = parsed.GITHUB_PAT || parsed.GITHUB_TOKEN;
+  }
+
+  // Fall back to environment variables
+  existingOrg = existingOrg || process.env.GITHUB_ORG;
+  existingPat = existingPat || process.env.GITHUB_PAT || process.env.GITHUB_TOKEN;
+
+  // Use detected remote owner as default
+  const defaultOrg = existingOrg || gitHubRemote?.owner;
+
+  // Prompt for organization
+  const org = await input({
+    message: strings.githubOrgPrompt,
+    default: defaultOrg,
+    validate: (value: string) => {
+      if (!value.trim()) return 'Organization or username is required';
+      return true;
+    }
+  });
+
+  // Prompt for PAT
+  const pat = await password({
+    message: strings.githubPatPrompt,
+    mask: true,
+    validate: (value: string) => {
+      if (!value.trim()) return 'Personal Access Token is required';
+      return true;
+    }
+  });
+
+  console.log(chalk.green(`   ✓ ${strings.githubSelected.replace('{org}', org)}`));
+
+  return { org, pat };
+}
+
+/**
+ * Prompt user for Bitbucket workspace and credentials for multi-repo cloning
+ *
+ * @param targetDir - Target directory (for reading existing .env)
+ * @param strings - Translated strings
+ * @returns Bitbucket selection or null if cancelled
+ */
+async function promptBitbucketRepoSelection(
+  targetDir: string,
+  strings: { bitbucketWorkspacePrompt: string; bitbucketUsernamePrompt: string; bitbucketAppPasswordPrompt: string; bitbucketSelected: string }
+): Promise<BitbucketRepoSelection | null> {
+  // Check for existing credentials in .env or environment
+  let existingWorkspace: string | undefined;
+  let existingUsername: string | undefined;
+  let existingAppPassword: string | undefined;
+
+  const envContent = readEnvFile(targetDir);
+  if (envContent) {
+    const parsed = parseEnvFile(envContent);
+    existingWorkspace = parsed.BITBUCKET_WORKSPACE;
+    existingUsername = parsed.BITBUCKET_USERNAME;
+    existingAppPassword = parsed.BITBUCKET_APP_PASSWORD;
+  }
+
+  // Fall back to environment variables
+  existingWorkspace = existingWorkspace || process.env.BITBUCKET_WORKSPACE;
+  existingUsername = existingUsername || process.env.BITBUCKET_USERNAME;
+  existingAppPassword = existingAppPassword || process.env.BITBUCKET_APP_PASSWORD;
+
+  // Prompt for workspace
+  const workspace = await input({
+    message: strings.bitbucketWorkspacePrompt,
+    default: existingWorkspace,
+    validate: (value: string) => {
+      if (!value.trim()) return 'Workspace slug is required';
+      return true;
+    }
+  });
+
+  // Prompt for username
+  const username = await input({
+    message: strings.bitbucketUsernamePrompt,
+    default: existingUsername,
+    validate: (value: string) => {
+      if (!value.trim()) return 'Username is required';
+      return true;
+    }
+  });
+
+  // Prompt for app password
+  const appPassword = await password({
+    message: strings.bitbucketAppPasswordPrompt,
+    mask: true,
+    validate: (value: string) => {
+      if (!value.trim()) return 'App Password is required';
+      return true;
+    }
+  });
+
+  console.log(chalk.green(`   ✓ ${strings.bitbucketSelected.replace('{workspace}', workspace)}`));
+
+  return { workspace, username, appPassword };
+}
+
+/**
  * Get translated strings for repository setup
  */
 function getRepoStrings(language: SupportedLanguage): {
@@ -294,6 +440,14 @@ function getRepoStrings(language: SupportedLanguage): {
   bitbucketMultiRepoHeader: string;
   bitbucketMultiRepoDesc: string;
   bitbucketSelectStrategy: string;
+  // GitHub/Bitbucket credential prompts (v0.32.7+)
+  githubOrgPrompt: string;
+  githubPatPrompt: string;
+  githubSelected: string;
+  bitbucketWorkspacePrompt: string;
+  bitbucketUsernamePrompt: string;
+  bitbucketAppPasswordPrompt: string;
+  bitbucketSelected: string;
 } {
   const strings: Record<SupportedLanguage, ReturnType<typeof getRepoStrings>> = {
     en: {
@@ -347,6 +501,14 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketMultiRepoHeader: '📁 Bitbucket Multi-Repository Selection',
       bitbucketMultiRepoDesc: 'Select which repositories to work with from your Bitbucket workspace.',
       bitbucketSelectStrategy: 'How do you want to select Bitbucket repositories?',
+      // GitHub/Bitbucket credential prompts (v0.32.7+)
+      githubOrgPrompt: 'GitHub organization or username:',
+      githubPatPrompt: 'GitHub Personal Access Token (PAT):',
+      githubSelected: 'GitHub organization "{org}" configured for cloning',
+      bitbucketWorkspacePrompt: 'Bitbucket workspace slug:',
+      bitbucketUsernamePrompt: 'Bitbucket username:',
+      bitbucketAppPasswordPrompt: 'Bitbucket App Password:',
+      bitbucketSelected: 'Bitbucket workspace "{workspace}" configured for cloning',
     },
     ru: {
       header: '📦 Хостинг репозитория',
@@ -399,6 +561,13 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketMultiRepoHeader: '📁 Выбор репозиториев Bitbucket',
       bitbucketMultiRepoDesc: 'Выберите репозитории для работы из вашего рабочего пространства Bitbucket.',
       bitbucketSelectStrategy: 'Как вы хотите выбрать репозитории Bitbucket?',
+      githubOrgPrompt: 'Организация или имя пользователя GitHub:',
+      githubPatPrompt: 'Personal Access Token (PAT) GitHub:',
+      githubSelected: 'Организация GitHub "{org}" настроена для клонирования',
+      bitbucketWorkspacePrompt: 'Workspace Bitbucket:',
+      bitbucketUsernamePrompt: 'Имя пользователя Bitbucket:',
+      bitbucketAppPasswordPrompt: 'App Password Bitbucket:',
+      bitbucketSelected: 'Workspace Bitbucket "{workspace}" настроен для клонирования',
     },
     es: {
       header: '📦 Alojamiento del repositorio',
@@ -451,6 +620,13 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketMultiRepoHeader: '📁 Selección de repositorios Bitbucket',
       bitbucketMultiRepoDesc: 'Seleccione los repositorios de su espacio de trabajo Bitbucket.',
       bitbucketSelectStrategy: '¿Cómo desea seleccionar los repositorios de Bitbucket?',
+      githubOrgPrompt: 'Organización o nombre de usuario de GitHub:',
+      githubPatPrompt: 'Token de acceso personal (PAT) de GitHub:',
+      githubSelected: 'Organización de GitHub "{org}" configurada para clonar',
+      bitbucketWorkspacePrompt: 'Workspace de Bitbucket:',
+      bitbucketUsernamePrompt: 'Nombre de usuario de Bitbucket:',
+      bitbucketAppPasswordPrompt: 'Contraseña de aplicación de Bitbucket:',
+      bitbucketSelected: 'Workspace de Bitbucket "{workspace}" configurado para clonar',
     },
     zh: {
       header: '📦 仓库托管',
@@ -503,6 +679,13 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketMultiRepoHeader: '📁 Bitbucket 多仓库选择',
       bitbucketMultiRepoDesc: '从您的 Bitbucket 工作区中选择要使用的仓库。',
       bitbucketSelectStrategy: '您想如何选择 Bitbucket 仓库？',
+      githubOrgPrompt: 'GitHub 组织或用户名：',
+      githubPatPrompt: 'GitHub 个人访问令牌 (PAT)：',
+      githubSelected: 'GitHub 组织 "{org}" 已配置用于克隆',
+      bitbucketWorkspacePrompt: 'Bitbucket 工作区：',
+      bitbucketUsernamePrompt: 'Bitbucket 用户名：',
+      bitbucketAppPasswordPrompt: 'Bitbucket 应用密码：',
+      bitbucketSelected: 'Bitbucket 工作区 "{workspace}" 已配置用于克隆',
     },
     de: {
       header: '📦 Repository-Hosting',
@@ -555,6 +738,13 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketMultiRepoHeader: '📁 Bitbucket Multi-Repository Auswahl',
       bitbucketMultiRepoDesc: 'Wählen Sie die Repositories aus Ihrem Bitbucket-Workspace.',
       bitbucketSelectStrategy: 'Wie möchten Sie Bitbucket-Repositories auswählen?',
+      githubOrgPrompt: 'GitHub-Organisation oder Benutzername:',
+      githubPatPrompt: 'GitHub Personal Access Token (PAT):',
+      githubSelected: 'GitHub-Organisation "{org}" für Klonen konfiguriert',
+      bitbucketWorkspacePrompt: 'Bitbucket-Workspace:',
+      bitbucketUsernamePrompt: 'Bitbucket-Benutzername:',
+      bitbucketAppPasswordPrompt: 'Bitbucket-App-Passwort:',
+      bitbucketSelected: 'Bitbucket-Workspace "{workspace}" für Klonen konfiguriert',
     },
     fr: {
       header: '📦 Hébergement du dépôt',
@@ -607,6 +797,13 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketMultiRepoHeader: '📁 Sélection multi-dépôt Bitbucket',
       bitbucketMultiRepoDesc: 'Sélectionnez les dépôts de votre espace de travail Bitbucket.',
       bitbucketSelectStrategy: 'Comment voulez-vous sélectionner les dépôts Bitbucket?',
+      githubOrgPrompt: 'Organisation ou nom d\'utilisateur GitHub :',
+      githubPatPrompt: 'Token d\'accès personnel GitHub (PAT) :',
+      githubSelected: 'Organisation GitHub "{org}" configurée pour le clonage',
+      bitbucketWorkspacePrompt: 'Workspace Bitbucket :',
+      bitbucketUsernamePrompt: 'Nom d\'utilisateur Bitbucket :',
+      bitbucketAppPasswordPrompt: 'Mot de passe d\'application Bitbucket :',
+      bitbucketSelected: 'Workspace Bitbucket "{workspace}" configuré pour le clonage',
     },
     ja: {
       header: '📦 リポジトリホスティング',
@@ -659,6 +856,13 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketMultiRepoHeader: '📁 Bitbucket マルチリポジトリ選択',
       bitbucketMultiRepoDesc: 'Bitbucketワークスペースからリポジトリを選択してください。',
       bitbucketSelectStrategy: 'Bitbucketリポジトリをどのように選択しますか？',
+      githubOrgPrompt: 'GitHub組織またはユーザー名：',
+      githubPatPrompt: 'GitHub Personal Access Token (PAT)：',
+      githubSelected: 'GitHub組織 "{org}" がクローン用に設定されました',
+      bitbucketWorkspacePrompt: 'Bitbucketワークスペース：',
+      bitbucketUsernamePrompt: 'Bitbucketユーザー名：',
+      bitbucketAppPasswordPrompt: 'Bitbucketアプリパスワード：',
+      bitbucketSelected: 'Bitbucketワークスペース "{workspace}" がクローン用に設定されました',
     },
     ko: {
       header: '📦 저장소 호스팅',
@@ -711,6 +915,13 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketMultiRepoHeader: '📁 Bitbucket 다중 저장소 선택',
       bitbucketMultiRepoDesc: 'Bitbucket 워크스페이스에서 저장소를 선택하세요.',
       bitbucketSelectStrategy: 'Bitbucket 저장소를 어떻게 선택하시겠습니까?',
+      githubOrgPrompt: 'GitHub 조직 또는 사용자 이름:',
+      githubPatPrompt: 'GitHub Personal Access Token (PAT):',
+      githubSelected: 'GitHub 조직 "{org}"이(가) 복제용으로 구성되었습니다',
+      bitbucketWorkspacePrompt: 'Bitbucket 워크스페이스:',
+      bitbucketUsernamePrompt: 'Bitbucket 사용자 이름:',
+      bitbucketAppPasswordPrompt: 'Bitbucket 앱 비밀번호:',
+      bitbucketSelected: 'Bitbucket 워크스페이스 "{workspace}"이(가) 복제용으로 구성되었습니다',
     },
     pt: {
       header: '📦 Hospedagem do repositório',
@@ -763,6 +974,13 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketMultiRepoHeader: '📁 Seleção de múltiplos repositórios Bitbucket',
       bitbucketMultiRepoDesc: 'Selecione os repositórios do seu workspace Bitbucket.',
       bitbucketSelectStrategy: 'Como você quer selecionar os repositórios do Bitbucket?',
+      githubOrgPrompt: 'Organização ou nome de usuário do GitHub:',
+      githubPatPrompt: 'Token de acesso pessoal do GitHub (PAT):',
+      githubSelected: 'Organização do GitHub "{org}" configurada para clonagem',
+      bitbucketWorkspacePrompt: 'Workspace do Bitbucket:',
+      bitbucketUsernamePrompt: 'Nome de usuário do Bitbucket:',
+      bitbucketAppPasswordPrompt: 'Senha de aplicativo do Bitbucket:',
+      bitbucketSelected: 'Workspace do Bitbucket "{workspace}" configurado para clonagem',
     },
   };
   return strings[language] || strings.en;
@@ -971,9 +1189,11 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
   let adoClonePattern: string | undefined;
   let adoClonePatternResult: AdoClonePatternResult | undefined;
   let adoProjectSelection: AdoProjectSelection | undefined;
+  let githubRepoSelection: GitHubRepoSelection | undefined;
+  let bitbucketRepoSelection: BitbucketRepoSelection | undefined;
 
   if (isMultiRepo && (provider === 'ado' || provider === 'github' || provider === 'bitbucket')) {
-    // Step 3a: For ADO only - prompt for organization and project selection
+    // Step 3a: Provider-specific credential prompts
     if (provider === 'ado') {
       console.log(chalk.blue('\n📁 Azure DevOps Project Selection\n'));
       console.log(chalk.gray('   Select which project(s) to clone repositories from.\n'));
@@ -981,6 +1201,24 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
       const projectSelection = await promptAdoProjectSelection(options.targetDir, strings);
       if (projectSelection) {
         adoProjectSelection = projectSelection;
+      }
+    } else if (provider === 'github') {
+      // GitHub multi-repo credential prompt (v0.32.7+)
+      console.log(chalk.blue(`\n${strings.githubMultiRepoHeader}\n`));
+      console.log(chalk.gray(`   ${strings.githubMultiRepoDesc}\n`));
+
+      const githubSelection = await promptGitHubRepoSelection(options.targetDir, gitHubRemote, strings);
+      if (githubSelection) {
+        githubRepoSelection = githubSelection;
+      }
+    } else if (provider === 'bitbucket') {
+      // Bitbucket multi-repo credential prompt (v0.32.7+)
+      console.log(chalk.blue(`\n${strings.bitbucketMultiRepoHeader}\n`));
+      console.log(chalk.gray(`   ${strings.bitbucketMultiRepoDesc}\n`));
+
+      const bitbucketSelection = await promptBitbucketRepoSelection(options.targetDir, strings);
+      if (bitbucketSelection) {
+        bitbucketRepoSelection = bitbucketSelection;
       }
     }
 
@@ -1005,5 +1243,13 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
     // For 'skip', adoClonePattern remains undefined
   }
 
-  return { hosting: repositoryHosting, isMultiRepo, adoClonePattern, adoClonePatternResult, adoProjectSelection };
+  return {
+    hosting: repositoryHosting,
+    isMultiRepo,
+    adoClonePattern,
+    adoClonePatternResult,
+    adoProjectSelection,
+    githubRepoSelection,
+    bitbucketRepoSelection
+  };
 }

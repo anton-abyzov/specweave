@@ -1,24 +1,32 @@
 ---
-id: "US-001"
-feature: "FS-115"
-title: "Auto-Select When Only One Option"
-status: "completed"
-priority: "P1"
+id: US-001
+feature: FS-115
+title: "Auto-Select When Only One Option (P1)"
+status: completed
+priority: P1
+created: 2025-12-06
+project: specweave
 ---
 
-# US-001: Auto-Select When Only One Option
+# US-001: Auto-Select When Only One Option (P1)
 
-## Description
+**Feature**: [FS-115](./FEATURE.md)
 
-As a **developer**, I want **auto-selection when only one project/board exists** so that **I avoid unnecessary questions**.
+**As a** developer
+**I want** auto-selection when only one project/board exists
+**So that** I avoid unnecessary questions
+
+---
 
 ## Acceptance Criteria
 
-- [x] **AC-US1-01**: 1-level + 1 project -> auto-select silently
-- [x] **AC-US1-02**: 2-level + 1 project + 1 board -> auto-select silently
+- [x] **AC-US1-01**: 1-level + 1 project → auto-select silently
+- [x] **AC-US1-02**: 2-level + 1 project + 1 board → auto-select silently
 
 ---
 
-**Related**:
-- Feature: [FS-115](FEATURE.md)
-- Increment: [0115-ultra-smart-project-selection](../../../../increments/0115-ultra-smart-project-selection/)
+## Implementation
+
+**Increment**: [0115-ultra-smart-project-selection](../../../../increments/0115-ultra-smart-project-selection/spec.md)
+
+**Tasks**: See increment tasks.md for implementation details.

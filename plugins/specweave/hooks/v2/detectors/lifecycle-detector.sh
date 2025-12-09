@@ -51,7 +51,9 @@ elif [[ -f "$META_FILE" ]]; then
   # Detect transitions
   if [[ -z "$PREV_STATUS" ]]; then
     # First time seeing this increment
-    if [[ "$CURRENT_STATUS" == "planning" ]] || [[ "$CURRENT_STATUS" == "active" ]]; then
+    # Note: "planned" is the initial status when increment is created via prompt
+    # "planning" and "active" are also valid initial statuses
+    if [[ "$CURRENT_STATUS" == "planned" ]] || [[ "$CURRENT_STATUS" == "planning" ]] || [[ "$CURRENT_STATUS" == "active" ]]; then
       EVENT="increment.created"
     fi
   elif [[ "$PREV_STATUS" != "$CURRENT_STATUS" ]]; then
