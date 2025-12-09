@@ -1,5 +1,8 @@
 # SpecWeave
 
+[![Run in Smithery](https://smithery.ai/badge/skills/anton-abyzov)](https://smithery.ai/skills?ns=anton-abyzov&utm_source=github&utm_medium=badge)
+
+
 **Finally. A Framework That Works on Legacy, Startup, AND Enterprise.**
 
 *Drop it into a 10-year-old codebase — it understands everything. Use it on your weekend MVP — specs write themselves. Scale it to 50 teams — JIRA, GitHub, Azure DevOps sync automatically.*
