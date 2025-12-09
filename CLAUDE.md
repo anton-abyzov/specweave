@@ -132,7 +132,36 @@ const config = detectStructureLevel(projectRoot);
 
 **Pre-tool-use hook `features-folder-guard.sh` BLOCKS writes to `_features/` (v0.33.0+).**
 
-### 2e. NEVER Create Duplicate Increment IDs (v0.33.0+)
+### 2e. NEVER Create Files at Increment Root (FOLDER STRUCTURE v0.33.0+)
+
+**Files at increment root MUST be limited to required files!**
+
+```
+❌ FORBIDDEN (Bug pattern from 2025-12-09):
+.specweave/increments/0134-feature/COMPLETION_REPORT.md
+.specweave/increments/0135-feature/COMPLETION_SUMMARY.md
+
+✅ CORRECT - Use reports/ subfolder:
+.specweave/increments/0134-feature/reports/COMPLETION_REPORT.md
+.specweave/increments/0135-feature/reports/COMPLETION_SUMMARY.md
+```
+
+**ONLY ALLOWED at increment root:**
+- `metadata.json`
+- `spec.md`
+- `plan.md`
+- `tasks.md`
+
+**Everything else → subfolders:**
+- `reports/` - completion reports, validation reports, analysis docs
+- `scripts/` - helper scripts, automation
+- `logs/` - execution logs, debug output
+- `backups/` - backup files
+- `docs/` - additional documentation
+
+**Pre-tool-use hook `increment-root-guard.sh` BLOCKS non-standard files at root (v0.33.0+).**
+
+### 2f. NEVER Create Duplicate Increment IDs (v0.33.0+)
 
 **Increment numbers MUST be unique across ALL directories!**
 
@@ -170,6 +199,44 @@ IncrementNumberManager.findDuplicates('0121');
 ```
 
 **Pre-tool-use hook `increment-duplicate-guard.sh` BLOCKS duplicate increment creation (v0.33.0+).**
+
+### 2f. Gap-Filling Increment IDs (v0.33.1+)
+
+**Increment IDs now FILL GAPS instead of always using highest + 1!**
+
+```
+OLD BEHAVIOR (v0.33.0 and earlier):
+0128 (exists) → next is 0136 (highest + 1, even if gaps exist)
+
+NEW BEHAVIOR (v0.33.1+):
+0106, 0108, 0128, 0131 (exists) → next is 0107 (fills first gap!)
+```
+
+**Gap-filling algorithm:**
+1. Scans ALL directories (main, _archive, _paused, _abandoned)
+2. Finds first available number starting from 0001
+3. Returns gap number if found, otherwise returns highest + 1
+
+**Examples:**
+```typescript
+// Existing: [0001, 0002, 0004, 0005]
+IncrementNumberManager.getNextIncrementNumber(); // "0003" ← Fills gap!
+
+// Existing: [0001, 0002, 0003, 0004]
+IncrementNumberManager.getNextIncrementNumber(); // "0005" ← Sequential (no gaps)
+
+// Existing: [0050, 0051]
+IncrementNumberManager.getNextIncrementNumber(); // "0001" ← Starts from beginning!
+```
+
+**Benefits:**
+- ✅ No wasted ID space (4-digit limit = max 9999 increments)
+- ✅ Clear sequence without confusing gaps
+- ✅ Total increment count = highest number (no need to scan all)
+
+**Migration:** Automatic, no action required. Next increment fills first gap!
+
+**Details:** See ADR-0142 (`.specweave/docs/internal/architecture/adr/0142-gap-filling-increment-ids.md`)
 
 ### 3. Protected Directories
 
@@ -554,6 +621,44 @@ bash plugins/specweave/scripts/cleanup-state.sh
 - Keep VS Code file count low (large diagnostics payloads cause drops)
 - Update Claude Code VS Code extension regularly
 - Use terminal mode for long-running sessions
+
+### Zombie Processes (v0.33.0+ AUTO-CLEANUP)
+
+**Status**: ✅ AUTOMATED - No manual intervention needed!
+
+**How it works:**
+- SessionStart hook registers all Claude Code sessions
+- Heartbeat process monitors parent health every 5s
+- Session watchdog cleans up zombies every 60s
+- Automatic cleanup within 60s of session termination
+
+**Session Registry**: `.specweave/state/.session-registry.json`
+
+**Logs**:
+```bash
+# Session tracking logs
+cat .specweave/logs/sessions/session-*.log
+
+# Cleanup logs
+cat .specweave/logs/cleanup.log
+
+# Heartbeat logs
+cat .specweave/logs/heartbeat-*.log
+```
+
+**Manual Cleanup (if needed)**:
+```bash
+# Kill all zombie processes
+node dist/src/cli/cleanup-zombies.js 60
+
+# Or use watchdog
+bash plugins/specweave/scripts/session-watchdog.sh
+```
+
+**Troubleshooting**:
+- If zombies persist >5 minutes: Check `.specweave/state/.session-registry.json`
+- If cleanup fails: Run `bash plugins/specweave/scripts/cleanup-state.sh`
+- For details: See `.specweave/docs/internal/troubleshooting/zombie-processes.md`
 
 ### Crash loop / prompt duplication
 
