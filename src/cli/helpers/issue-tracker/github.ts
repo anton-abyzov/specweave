@@ -407,3 +407,239 @@ export async function configureGitHubRepositories(
       return { profiles: [] };
   }
 }
+
+/**
+ * Validate GitHub write access to a specific repository
+ *
+ * CRITICAL (v0.33.0): This function tests that the token has WRITE permissions
+ * to the configured repository. This catches permission issues DURING init
+ * instead of later when user tries to sync.
+ *
+ * Test methodology:
+ * 1. Try to get repo (confirms read access and repo exists)
+ * 2. Try to create a test label (confirms write access)
+ * 3. Clean up test label immediately
+ *
+ * @param credentials - GitHub credentials
+ * @param owner - Repository owner
+ * @param repo - Repository name
+ * @returns Validation result with specific error messages
+ */
+export async function validateGitHubWriteAccess(
+  credentials: GitHubCredentials,
+  owner: string,
+  repo: string
+): Promise<{
+  success: boolean;
+  error?: string;
+  errorType?: 'repo_not_found' | 'no_read_access' | 'no_write_access' | 'token_scope' | 'rate_limit' | 'unknown';
+  suggestion?: string;
+}> {
+  const apiBase = credentials.apiEndpoint || 'https://api.github.com';
+  const headers = {
+    'Authorization': `Bearer ${credentials.token}`,
+    'Accept': 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+
+  // Step 1: Check repository access
+  try {
+    const repoResponse = await fetch(`${apiBase}/repos/${owner}/${repo}`, { headers });
+
+    if (repoResponse.status === 404) {
+      return {
+        success: false,
+        error: `Repository ${owner}/${repo} not found or not accessible`,
+        errorType: 'repo_not_found',
+        suggestion: 'Check that the repository exists and your token has access to it'
+      };
+    }
+
+    if (repoResponse.status === 403) {
+      // Check if it's a rate limit issue
+      const rateLimitRemaining = repoResponse.headers.get('x-ratelimit-remaining');
+      if (rateLimitRemaining === '0') {
+        return {
+          success: false,
+          error: 'GitHub API rate limit exceeded',
+          errorType: 'rate_limit',
+          suggestion: 'Wait a few minutes and try again'
+        };
+      }
+
+      return {
+        success: false,
+        error: `Access forbidden to ${owner}/${repo}`,
+        errorType: 'no_read_access',
+        suggestion: 'Your token may lack the "repo" scope. Create a new token with full repo access.'
+      };
+    }
+
+    if (!repoResponse.ok) {
+      return {
+        success: false,
+        error: `Failed to access repository: HTTP ${repoResponse.status}`,
+        errorType: 'unknown',
+        suggestion: 'Check your network connection and try again'
+      };
+    }
+
+    // Parse repo info to check permissions
+    const repoInfo: any = await repoResponse.json();
+
+    // Check if we have push permission (required for creating issues)
+    if (repoInfo.permissions && !repoInfo.permissions.push && !repoInfo.permissions.admin) {
+      return {
+        success: false,
+        error: `No write access to ${owner}/${repo}`,
+        errorType: 'no_write_access',
+        suggestion: 'You need push or admin access to this repository. Ask the repo owner to add you as a collaborator.'
+      };
+    }
+  } catch (error: any) {
+    return {
+      success: false,
+      error: `Network error checking repository: ${error.message}`,
+      errorType: 'unknown',
+      suggestion: 'Check your network connection and try again'
+    };
+  }
+
+  // Step 2: Test write access by creating a temporary label
+  // Using labels because they're non-disruptive and easily reversible
+  const testLabelName = `specweave-test-${Date.now()}`;
+
+  try {
+    const createLabelResponse = await fetch(`${apiBase}/repos/${owner}/${repo}/labels`, {
+      method: 'POST',
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: testLabelName,
+        color: '000000',
+        description: 'SpecWeave write access test - safe to delete'
+      })
+    });
+
+    if (createLabelResponse.status === 403) {
+      // This is the key check - 403 on label creation means no write access
+      const errorBody = await createLabelResponse.text();
+
+      // Check for specific permission error
+      if (errorBody.includes('must have admin rights') || errorBody.includes('Resource not accessible')) {
+        return {
+          success: false,
+          error: 'Token lacks write permissions to create labels/issues',
+          errorType: 'token_scope',
+          suggestion: 'Your token needs the "repo" scope with write access. Create a Personal Access Token (PAT) at:\n   https://github.com/settings/tokens/new?scopes=repo'
+        };
+      }
+
+      return {
+        success: false,
+        error: 'Write access denied to repository',
+        errorType: 'no_write_access',
+        suggestion: 'You need collaborator access with write permissions'
+      };
+    }
+
+    if (createLabelResponse.status === 422) {
+      // Label already exists - this still proves we have read access, try to delete
+      // This counts as a successful permissions check
+    } else if (!createLabelResponse.ok && createLabelResponse.status !== 422) {
+      return {
+        success: false,
+        error: `Write test failed: HTTP ${createLabelResponse.status}`,
+        errorType: 'unknown',
+        suggestion: 'Unable to verify write permissions'
+      };
+    }
+
+    // Step 3: Clean up test label (best effort)
+    try {
+      await fetch(`${apiBase}/repos/${owner}/${repo}/labels/${encodeURIComponent(testLabelName)}`, {
+        method: 'DELETE',
+        headers
+      });
+    } catch {
+      // Ignore cleanup errors - label will be harmless if left behind
+    }
+
+    // Success! Token has write access
+    return { success: true };
+
+  } catch (error: any) {
+    return {
+      success: false,
+      error: `Write access test failed: ${error.message}`,
+      errorType: 'unknown',
+      suggestion: 'Network error during write test'
+    };
+  }
+}
+
+/**
+ * Force prompt for a new GitHub token with proper scopes
+ *
+ * Called when existing token (e.g., from gh CLI) lacks write permissions.
+ * User MUST provide a new token - cannot skip this step.
+ *
+ * @param language - User's language
+ * @param currentSource - Source of the failing token (for user context)
+ * @param errorMessage - Error message explaining why new token is needed
+ * @returns New credentials or null if user refuses (setup will fail)
+ */
+export async function forcePromptGitHubToken(
+  language: SupportedLanguage,
+  currentSource: string,
+  errorMessage: string
+): Promise<GitHubCredentials | null> {
+  console.log(chalk.red('\n⚠️  GitHub Token Permission Issue Detected\n'));
+  console.log(chalk.yellow(`Current token source: ${currentSource}`));
+  console.log(chalk.yellow(`Problem: ${errorMessage}\n`));
+
+  console.log(chalk.white('Your current token cannot create GitHub issues for syncing.'));
+  console.log(chalk.white('This is required for SpecWeave to work properly.\n'));
+
+  console.log(chalk.cyan('📋 To fix this, create a new Personal Access Token (PAT):'));
+  console.log(chalk.gray('   1. Go to: https://github.com/settings/tokens/new'));
+  console.log(chalk.gray('   2. Set expiration (recommended: 90 days)'));
+  console.log(chalk.gray('   3. Select scopes: ☑ repo (full control)'));
+  console.log(chalk.gray('   4. Click "Generate token"'));
+  console.log(chalk.gray('   5. Copy the token (starts with ghp_ or github_pat_)\n'));
+
+  const proceed = await select({
+    message: 'How would you like to proceed?',
+    choices: [
+      { name: '🔑 Enter a new token with proper permissions', value: 'enter' },
+      { name: '⏭️  Skip GitHub sync (can configure later)', value: 'skip' }
+    ]
+  });
+
+  if (proceed === 'skip') {
+    console.log(chalk.yellow('\n⚠️  GitHub sync will be DISABLED'));
+    console.log(chalk.gray('   You can configure it later by re-running: specweave init\n'));
+    return null;
+  }
+
+  // Prompt for new token
+  const newToken = await password({
+    message: 'Paste your new GitHub Personal Access Token:',
+    validate: (value: string) => {
+      if (!value || value.length < 20) {
+        return 'Invalid token format (should be at least 20 characters)';
+      }
+      if (!value.startsWith('ghp_') && !value.startsWith('github_pat_')) {
+        return 'GitHub tokens typically start with "ghp_" or "github_pat_"';
+      }
+      return true;
+    }
+  });
+
+  return {
+    token: newToken,
+    instanceType: 'cloud' // Assume cloud for now, Enterprise users went through full flow
+  };
+}
