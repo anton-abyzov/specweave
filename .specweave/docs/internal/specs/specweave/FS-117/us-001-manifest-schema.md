@@ -1,57 +1,34 @@
 ---
 id: US-001
 feature: FS-117
-title: "Manifest Schema"
-status: planned
+title: "Cache Infrastructure"
+status: completed
 priority: P1
+created: 2025-12-09
+project: specweave
 ---
 
-# US-001: Manifest Schema
+# US-001: Cache Infrastructure
 
-## Description
+**Feature**: [FS-117](./FEATURE.md)
 
-As a LivingSpec implementer, I want a JSON Schema for manifest.yaml so that I can validate project configuration.
+**As a** SpecWeave developer
+**I want** a pre-computed dashboard cache
+**So that** status commands have O(1) read complexity
+
+---
 
 ## Acceptance Criteria
 
-- [ ] **AC-US1-01**: Schema validates required fields (name, version)
-- [ ] **AC-US1-02**: Schema validates optional fields (sync, providers)
-- [ ] **AC-US1-03**: Schema includes E-suffix configuration options
-- [ ] **AC-US1-04**: VS Code intellisense works with schema
+- [x] **AC-US1-01**: `dashboard.json` schema defined with version field for migrations
+- [x] **AC-US1-02**: Cache includes increments, summary, jobs, and costs sections
+- [x] **AC-US1-03**: Atomic writes prevent corruption (write to temp, rename)
+- [x] **AC-US1-04**: Cache rebuilds automatically if missing or corrupted
 
-## Tasks
+---
 
-- [ ] T-001: Create manifest.schema.json
-- [ ] T-002: Add VS Code schema association
+## Implementation
 
-## Schema Preview
+**Increment**: [0117-instant-dashboard-cache](../../../../increments/0117-instant-dashboard-cache/spec.md)
 
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "LivingSpec Manifest",
-  "type": "object",
-  "required": ["name", "version"],
-  "properties": {
-    "name": {
-      "type": "string",
-      "description": "Project name"
-    },
-    "version": {
-      "type": "string",
-      "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "LivingSpec version (SemVer)"
-    },
-    "sync": {
-      "type": "object",
-      "properties": {
-        "e_suffix_for_imports": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enforce E-suffix for all imported items"
-        }
-      }
-    }
-  }
-}
-```
+**Tasks**: See increment tasks.md for implementation details.

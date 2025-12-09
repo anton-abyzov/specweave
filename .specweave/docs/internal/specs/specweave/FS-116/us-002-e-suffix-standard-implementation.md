@@ -1,9 +1,13 @@
 ---
-id: "US-002"
-feature: "FS-116"
-title: "E-Suffix Standard Implementation"
-status: "completed"
-priority: "P1"
+id: US-002
+feature: FS-116
+title: E-Suffix Standard Implementation
+status: completed
+priority: P1
+external:
+  github:
+    issue: 801
+    url: https://github.com/anton-abyzov/specweave/issues/801
 ---
 
 # US-002: E-Suffix Standard Implementation

@@ -1,16 +1,22 @@
 ---
-id: "US-002"
-feature: "FS-115"
-title: "Keyword-Based Auto-Detection"
-status: "completed"
-priority: "P1"
+id: US-002
+feature: FS-115
+title: "Keyword-Based Auto-Detection (P1)"
+status: completed
+priority: P1
+created: 2025-12-06
+project: specweave
 ---
 
-# US-002: Keyword-Based Auto-Detection
+# US-002: Keyword-Based Auto-Detection (P1)
 
-## Description
+**Feature**: [FS-115](./FEATURE.md)
 
-As a **developer**, I want **keyword-based project detection** so that **obvious assignments happen automatically**.
+**As a** developer
+**I want** keyword-based project detection
+**So that** obvious assignments happen automatically
+
+---
 
 ## Acceptance Criteria
 
@@ -19,6 +25,8 @@ As a **developer**, I want **keyword-based project detection** so that **obvious
 
 ---
 
-**Related**:
-- Feature: [FS-115](FEATURE.md)
-- Increment: [0115-ultra-smart-project-selection](../../../../increments/0115-ultra-smart-project-selection/)
+## Implementation
+
+**Increment**: [0115-ultra-smart-project-selection](../../../../increments/0115-ultra-smart-project-selection/spec.md)
+
+**Tasks**: See increment tasks.md for implementation details.

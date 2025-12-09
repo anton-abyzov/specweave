@@ -57,6 +57,8 @@ import {
   logGoingBack,
 } from '../helpers/init/index.js';
 import { triggerAdoRepoCloning } from '../helpers/init/ado-repo-cloning.js';
+import { triggerGitHubRepoCloning } from '../helpers/init/github-repo-cloning.js';
+import { triggerBitbucketRepoCloning } from '../helpers/init/bitbucket-repo-cloning.js';
 import {
   collectLivingDocsInputs,
   displayJobScheduled,
@@ -509,6 +511,30 @@ export async function initCommand(
         const cloneJobId = await triggerAdoRepoCloning(
           targetDir,
           repoResult.adoProjectSelection,
+          repoResult.adoClonePatternResult
+        );
+        if (cloneJobId) {
+          pendingJobIds.push(cloneJobId);
+        }
+      }
+
+      // GitHub Repository cloning (for multi-repo setups) - v0.32.7+
+      if (repoResult.githubRepoSelection && repoResult.adoClonePatternResult) {
+        const cloneJobId = await triggerGitHubRepoCloning(
+          targetDir,
+          repoResult.githubRepoSelection,
+          repoResult.adoClonePatternResult
+        );
+        if (cloneJobId) {
+          pendingJobIds.push(cloneJobId);
+        }
+      }
+
+      // Bitbucket Repository cloning (for multi-repo setups) - v0.32.7+
+      if (repoResult.bitbucketRepoSelection && repoResult.adoClonePatternResult) {
+        const cloneJobId = await triggerBitbucketRepoCloning(
+          targetDir,
+          repoResult.bitbucketRepoSelection,
           repoResult.adoClonePatternResult
         );
         if (cloneJobId) {

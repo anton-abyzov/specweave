@@ -1,0 +1,203 @@
+name: Dependabot Auto-Fix
+
+# Triggered when Dependabot PR tests fail
+# Uses Claude to automatically fix build/test issues
+
+on:
+  workflow_run:
+    workflows: ["Test & Validate"]
+    types: [completed]
+    branches:
+      - 'dependabot/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  autofix:
+    # Only run on failed Dependabot PRs
+    if: |
+      github.event.workflow_run.conclusion == 'failure' &&
+      startsWith(github.event.workflow_run.head_branch, 'dependabot/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get PR info
+        id: pr-info
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = context.payload.workflow_run.head_branch;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // Find PR for this branch
+            const prs = await github.rest.pulls.list({
+              owner,
+              repo,
+              head: `${owner}:${branch}`,
+              state: 'open'
+            });
+
+            if (prs.data.length === 0) {
+              core.setFailed('No open PR found for branch: ' + branch);
+              return;
+            }
+
+            const pr = prs.data[0];
+            core.setOutput('pr_number', pr.number);
+            core.setOutput('pr_branch', branch);
+            core.setOutput('pr_title', pr.title);
+
+            console.log(`Found PR #${pr.number}: ${pr.title}`);
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr-info.outputs.pr_branch }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - name: Get failure logs
+        id: failure-logs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const runId = context.payload.workflow_run.id;
+
+            // Get jobs from the failed run
+            const jobs = await github.rest.actions.listJobsForWorkflowRun({
+              owner,
+              repo,
+              run_id: runId
+            });
+
+            let failedLogs = '';
+            for (const job of jobs.data.jobs) {
+              if (job.conclusion === 'failure') {
+                // Get logs for failed job
+                try {
+                  const logs = await github.rest.actions.downloadJobLogsForWorkflowRun({
+                    owner,
+                    repo,
+                    job_id: job.id
+                  });
+                  // Extract last 200 lines of error context
+                  const logLines = logs.data.split('\n');
+                  const errorContext = logLines.slice(-200).join('\n');
+                  failedLogs += `\n=== Job: ${job.name} ===\n${errorContext}\n`;
+                } catch (e) {
+                  console.log(`Could not get logs for job ${job.id}: ${e.message}`);
+                }
+              }
+            }
+
+            // Write to file for Claude to read
+            const fs = require('fs');
+            fs.writeFileSync('failure-logs.txt', failedLogs || 'No detailed logs available');
+
+            return failedLogs.substring(0, 5000);  // Limit output size
+
+      - name: Analyze and fix with Claude
+        id: claude-fix
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          timeout_minutes: 10
+          prompt: |
+            A Dependabot PR is failing CI. Analyze and fix automatically.
+
+            **PR**: #${{ steps.pr-info.outputs.pr_number }} - ${{ steps.pr-info.outputs.pr_title }}
+            **Branch**: ${{ steps.pr-info.outputs.pr_branch }}
+
+            ## Your Task
+
+            1. Read `failure-logs.txt` to understand what failed
+            2. Run `npm ci && npm run rebuild && npm test` to reproduce
+            3. Identify the root cause (common issues below)
+            4. Fix the issue with minimal changes
+            5. Commit the fix to this branch
+
+            ## Common Dependabot Issues
+
+            1. **TypeScript errors** - Missing types, incompatible versions
+               - Check `package.json` for missing `@types/*` or outdated types
+               - Some packages now include their own types (remove `@types/*`)
+
+            2. **Peer dependency conflicts** (especially vitest ecosystem)
+               - `vitest`, `@vitest/coverage-v8`, `@vitest/ui` MUST be same version
+               - Fix: Align all vitest packages to the same version
+
+            3. **Breaking changes** in major version bumps
+               - Check package changelogs for migration guides
+               - Update code to match new API
+
+            4. **Missing transitive dependencies**
+               - If build fails with "Cannot find module X", add X to dependencies
+
+            ## Rules
+
+            - ONLY fix build/test issues, don't refactor or improve code
+            - Keep changes minimal - just enough to make CI pass
+            - If unfixable (major breaking change), comment on PR explaining why
+            - Commit with message: `fix(deps): auto-fix for dependabot update`
+
+            ## Commit the fix
+
+            After fixing, run:
+            ```bash
+            git add -A
+            git commit -m "fix(deps): auto-fix for dependabot update
+
+            🤖 Generated with Claude Code"
+            git push
+            ```
+          claude_args: '--allowed-tools "Bash(git*),Bash(npm*),Bash(npx*),Read,Write,Edit,Glob,Grep"'
+
+      - name: Comment on PR (success)
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = ${{ steps.pr-info.outputs.pr_number }};
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `🤖 **Auto-fix applied!**
+
+              Claude analyzed the failing tests and pushed a fix. The CI should re-run automatically.
+
+              If tests still fail, manual intervention may be needed.`
+            });
+
+      - name: Comment on PR (failure)
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = ${{ steps.pr-info.outputs.pr_number }};
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `⚠️ **Auto-fix failed**
+
+              Claude couldn't automatically fix the failing tests. This may require manual intervention.
+
+              Common reasons:
+              - Major breaking changes requiring code refactoring
+              - Complex dependency conflicts
+              - Test failures unrelated to the dependency update
+
+              Please review the [workflow logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.`
+            });
