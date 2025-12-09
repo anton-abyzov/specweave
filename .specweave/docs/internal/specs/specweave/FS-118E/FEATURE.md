@@ -1,36 +1,25 @@
 ---
 id: FS-118E
-title: "Feature: anton-abyzov/specweave External Items"
-origin: external
-source: github
-source_repo: anton-abyzov/specweave
-
-
-created: "2025-12-07T05:11:51.375Z"
+title: "External Tool Sync on Increment Start"
+type: feature
+status: completed
+priority: P1
+created: 2025-12-07
+lastUpdated: 2025-12-09
 ---
 
-# Feature: anton-abyzov/specweave External Items
+# External Tool Sync on Increment Start
 
-**Origin**: 🔗 Imported from GitHub
+## Implementation History
 
-
-## Description
-
-This feature folder contains User Stories imported from external tools.
-
-**Source Repository**: anton-abyzov/specweave
-
-
-
+| Increment | Status | Completion Date |
+|-----------|--------|----------------|
+| [0118E-external-tool-sync-on-increment-start](../../../../increments/0118E-external-tool-sync-on-increment-start/spec.md) | ✅ completed | 2025-12-07 |
 
 ## User Stories
 
-User stories in this feature will be listed here.
-
-## Status
-
-- **Created**: 2025-12-07T05:11:51.375Z
-- **Source**: GitHub
-
-
-
+- [US-001: Auto-Trigger Sync-Specs After Increment Creation](../../specweave/FS-118E/us-001-auto-trigger-sync-specs-after-increment-creation.md)
+- [US-002: Increment Creation Workflow Update](../../specweave/FS-118E/us-002-increment-creation-workflow-update.md)
+- [US-003: Permission Checking Before External Sync](../../specweave/FS-118E/us-003-permission-checking-before-external-sync.md)
+- [US-004: Fallback for Manual Sync](../../specweave/FS-118E/us-004-fallback-for-manual-sync.md)
+- [US-005: Auto-Close GitHub Issue on Increment Completion](../../specweave/FS-118E/us-005-auto-close-github-issue-on-increment-completion.md)

@@ -1,0 +1,19 @@
+{
+  "id": "0127-github-bitbucket-clone-parity",
+  "status": "completed",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2025-12-08T00:00:00Z",
+  "started": "2025-12-09T00:00:00Z",
+  "completed": "2025-12-09T18:30:00Z",
+  "lastActivity": "2025-12-09T18:30:00Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {},
+  "totalACs": 22,
+  "completedACs": 22,
+  "approvedAt": "2025-12-09T18:30:00Z",
+  "approvedBy": "user"
+}

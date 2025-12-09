@@ -976,6 +976,40 @@ Increment remains: in-progress
 Try again after fixing blockers: /specweave:done 0001
 ```
 
+### Step 5.25: Sync Living Docs (MANDATORY - v0.33.0+)
+
+**🔄 CRITICAL: Before quality assessment, sync increment to living docs!**
+
+This ensures living docs are up-to-date with completed increment status.
+
+**🚨 MANDATORY - USE SlashCommand TOOL:**
+
+You MUST invoke the sync-specs command using the SlashCommand tool:
+
+```
+SlashCommand(command: "/specweave:sync-specs {increment-id}")
+```
+
+**DO NOT** just mention the command in output - you MUST actually execute it!
+
+**What this syncs**:
+1. Creates/updates FS-XXX folder in `.specweave/docs/internal/specs/{project}/`
+2. Updates FEATURE.md with completion status
+3. Updates us-*.md files with final implementation details
+4. Triggers external tool sync (GitHub/JIRA/ADO) if configured
+
+**Expected output**:
+```
+🔄 Syncing increment to living docs...
+✅ Living docs synced: FS-127
+   Created/Updated: 4 files (FEATURE.md, us-001.md, us-002.md, us-003.md)
+```
+
+**Why this is mandatory (Bug Fix v0.33.0)**:
+- The event-driven hook may not fire reliably in all scenarios
+- Explicit sync ensures living docs are ALWAYS up-to-date after closure
+- Prevents stale documentation in `.specweave/docs/internal/specs/`
+
 ### Step 5.5: Post-Closure Quality Assessment (NEW - v0.24.0+)
 
 **🎯 MANDATORY**: After successful closure, automatically run quality assessment to validate implementation quality.

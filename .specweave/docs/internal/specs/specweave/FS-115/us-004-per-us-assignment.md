@@ -1,16 +1,22 @@
 ---
-id: "US-004"
-feature: "FS-115"
-title: "Per-US Assignment"
-status: "completed"
-priority: "P1"
+id: US-004
+feature: FS-115
+title: "Per-US Assignment (P1)"
+status: completed
+priority: P1
+created: 2025-12-06
+project: specweave
 ---
 
-# US-004: Per-US Assignment
+# US-004: Per-US Assignment (P1)
 
-## Description
+**Feature**: [FS-115](./FEATURE.md)
 
-As a **developer**, I want **per-User-Story project/board assignment** so that **one increment can span multiple projects**.
+**As a** developer
+**I want** per-User-Story project/board assignment
+**So that** one increment can span multiple projects
+
+---
 
 ## Acceptance Criteria
 
@@ -19,6 +25,8 @@ As a **developer**, I want **per-User-Story project/board assignment** so that *
 
 ---
 
-**Related**:
-- Feature: [FS-115](FEATURE.md)
-- Increment: [0115-ultra-smart-project-selection](../../../../increments/0115-ultra-smart-project-selection/)
+## Implementation
+
+**Increment**: [0115-ultra-smart-project-selection](../../../../increments/0115-ultra-smart-project-selection/spec.md)
+
+**Tasks**: See increment tasks.md for implementation details.

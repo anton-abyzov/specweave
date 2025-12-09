@@ -174,9 +174,21 @@ export class JiraResourceValidator {
 
   /**
    * Call Jira API
+   *
+   * @param endpoint - API endpoint (relative path)
+   * @param method - HTTP method (GET, POST, PUT, etc.)
+   * @param body - Request body (for POST/PUT)
+   * @param apiType - API type: 'rest' for /rest/api/3, 'agile' for /rest/agile/1.0
    */
-  private async callJiraApi(endpoint: string, method: string = 'GET', body?: any): Promise<any> {
-    const url = `https://${this.domain}/rest/api/3/${endpoint}`;
+  private async callJiraApi(
+    endpoint: string,
+    method: string = 'GET',
+    body?: any,
+    apiType: 'rest' | 'agile' = 'rest'
+  ): Promise<any> {
+    // Choose base path based on API type
+    const basePath = apiType === 'agile' ? '/rest/agile/1.0' : '/rest/api/3';
+    const url = `https://${this.domain}${basePath}/${endpoint}`;
     const auth = Buffer.from(`${this.email}:${this.apiToken}`).toString('base64');
 
     const curlCommand = `curl -s -f -X ${method} \
@@ -278,10 +290,12 @@ export class JiraResourceValidator {
 
   /**
    * Fetch all boards for a project
+   *
+   * Uses Agile API: GET /rest/agile/1.0/board?projectKeyOrId={projectKey}
    */
   async fetchBoards(projectKey: string): Promise<JiraBoard[]> {
     try {
-      const response = await this.callJiraApi(`board?projectKeyOrId=${projectKey}`);
+      const response = await this.callJiraApi(`board?projectKeyOrId=${projectKey}`, 'GET', undefined, 'agile');
       return response.values.map((b: any) => ({
         id: b.id,
         name: b.name,
@@ -294,15 +308,18 @@ export class JiraResourceValidator {
 
   /**
    * Check if board exists by ID
+   *
+   * Uses Agile API: GET /rest/agile/1.0/board/{boardId}
+   * Also fetches board configuration to get project information.
    */
   async checkBoard(boardId: number): Promise<JiraBoard | null> {
     try {
-      const board = await this.callJiraApi(`board/${boardId}`);
+      const board = await this.callJiraApi(`board/${boardId}`, 'GET', undefined, 'agile');
 
       // Fetch board configuration to get project information
       let location: { projectKey?: string; projectId?: string } | undefined;
       try {
-        const config = await this.callJiraApi(`board/${boardId}/configuration`);
+        const config = await this.callJiraApi(`board/${boardId}/configuration`, 'GET', undefined, 'agile');
         if (config.location) {
           location = {
             projectKey: config.location.projectKey,
@@ -327,6 +344,8 @@ export class JiraResourceValidator {
 
   /**
    * Create new Jira board
+   *
+   * Uses Agile API: POST /rest/agile/1.0/board
    */
   async createBoard(boardName: string, projectKey: string): Promise<JiraBoard> {
     console.log(chalk.blue(`📦 Creating Jira board: ${boardName} in project ${projectKey}...`));
@@ -342,7 +361,7 @@ export class JiraResourceValidator {
     };
 
     try {
-      const board = await this.callJiraApi('board', 'POST', body);
+      const board = await this.callJiraApi('board', 'POST', body, 'agile');
       console.log(chalk.green(`✅ Board created: ${boardName} (ID: ${board.id})`));
       return {
         id: board.id,
@@ -495,13 +514,25 @@ export class JiraResourceValidator {
             continue;
           }
 
-          // Update .env (handle both single and multiple projects)
+          // Update config.json (handle both single and multiple projects)
+          // ADR-0050: Non-secrets (project keys) go in config.json, not .env
           if (strategy === 'project-per-team') {
-            // Replace this project key in JIRA_PROJECTS
-            const updatedKeys = projectKeys.map(k => k === projectKey ? selectedProject : k);
-            await this.updateEnv({ JIRA_PROJECTS: updatedKeys.join(',') });
+            // Replace this project in issueTracker.projects array
+            const config = this.loadConfig();
+            const existingProjectsList = config.issueTracker?.projects || [];
+            const updatedProjects = existingProjectsList.map(p =>
+              p.key === projectKey
+                ? { ...p, key: selectedProject, id: selectedProjectDetails.id, name: selectedProjectDetails.name }
+                : p
+            );
+            await this.updateConfig({
+              issueTracker: { projects: updatedProjects }
+            });
           } else {
-            await this.updateEnv({ JIRA_PROJECT: selectedProject });
+            // Single project mode - update issueTracker.project
+            await this.updateConfig({
+              issueTracker: { project: selectedProject }
+            });
           }
 
           // Print link to selected project

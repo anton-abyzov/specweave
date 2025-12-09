@@ -1,6 +1,9 @@
 # Dependabot Configuration for SpecWeave
 # Automated dependency updates for security and maintenance
 # See: https://docs.github.com/en/code-security/dependabot
+#
+# NOTE: Failed PRs are auto-fixed by .github/workflows/dependabot-autofix.yml
+# which uses Claude to analyze failures and push fixes.
 
 version: 2
 updates:
@@ -16,27 +19,71 @@ updates:
     labels:
       - "dependencies"
       - "automated"
-    # Group minor/patch updates to reduce PR noise
+
+    # Ignore stub type packages (packages that now include their own types)
+    ignore:
+      - dependency-name: "@types/uuid"
+        # uuid v9+ includes its own TypeScript types
+      - dependency-name: "@types/glob"
+        # glob v9+ includes its own TypeScript types
+
+    # Group related packages to avoid peer dependency issues
     groups:
       # CRITICAL: Group vitest packages together (strict peer dependencies)
       vitest-ecosystem:
         patterns:
-          - "vitest*"
+          - "vitest"
           - "@vitest/*"
         update-types:
           - "major"
           - "minor"
           - "patch"
+
+      # Group TypeScript tooling
+      typescript-tooling:
+        patterns:
+          - "typescript"
+          - "@types/node"
+        update-types:
+          - "minor"
+          - "patch"
+
+      # Group Playwright (test framework)
+      playwright:
+        patterns:
+          - "@playwright/*"
+          - "playwright"
+        update-types:
+          - "minor"
+          - "patch"
+
+      # Production dependencies (non-grouped)
       production-dependencies:
         dependency-type: "production"
         update-types:
           - "minor"
           - "patch"
+        # Exclude packages in other groups
+        exclude-patterns:
+          - "vitest*"
+          - "@vitest/*"
+          - "typescript"
+          - "@playwright/*"
+
+      # Development dependencies (non-grouped)
       development-dependencies:
         dependency-type: "development"
         update-types:
           - "minor"
           - "patch"
+        # Exclude packages in other groups
+        exclude-patterns:
+          - "vitest*"
+          - "@vitest/*"
+          - "typescript"
+          - "@types/node"
+          - "@playwright/*"
+
     # Keep security updates separate (high priority)
     commit-message:
       prefix: "chore(deps)"

@@ -1,9 +1,13 @@
 ---
-id: "US-001"
-feature: "FS-116"
-title: "Core Specification Document"
-status: "in-progress"
-priority: "P1"
+id: US-001
+feature: FS-116
+title: Core Specification Document
+status: in-progress
+priority: P1
+external:
+  github:
+    issue: 800
+    url: https://github.com/anton-abyzov/specweave/issues/800
 ---
 
 # US-001: Core Specification Document

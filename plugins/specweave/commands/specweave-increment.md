@@ -882,15 +882,23 @@ This will:
 📡 Syncing to external tools (GitHub/JIRA/ADO)...
 ```
 
-**This step uses the existing sync infrastructure:**
+**🚨 MANDATORY - USE SlashCommand TOOL:**
 
-Run `/specweave:sync-specs {increment-id}` to trigger the full sync cascade:
+You MUST invoke the sync-specs command using the SlashCommand tool:
 
-```bash
-/specweave:sync-specs {increment-id}
+```
+SlashCommand(command: "/specweave:sync-specs {increment-id}")
 ```
 
-OR call LivingDocsSync directly in TypeScript implementations:
+**DO NOT** just mention the command in output - you MUST actually execute it!
+
+**WHY THIS IS MANDATORY (Bug Fix v0.33.0):**
+- Without explicit SlashCommand call, living docs get out of sync
+- Increments folder and specs folder diverge
+- External tool sync doesn't happen
+- User sees stale documentation
+
+**Alternative** - call LivingDocsSync directly in TypeScript implementations:
 
 ```typescript
 import { LivingDocsSync } from './src/core/living-docs/living-docs-sync.js';
