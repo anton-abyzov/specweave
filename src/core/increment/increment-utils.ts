@@ -43,6 +43,11 @@ export class IncrementNumberManager {
   /**
    * Get the next available increment number across all directories.
    *
+   * GAP-FILLING STRATEGY (v0.33.1+):
+   * - Finds the first available number starting from 0001
+   * - Prevents gaps in increment numbering sequence
+   * - If no gaps exist, returns highest + 1
+   *
    * ALWAYS performs fresh filesystem scan to guarantee unique IDs.
    * No caching - simplicity over premature optimization.
    *
@@ -52,8 +57,13 @@ export class IncrementNumberManager {
    *
    * @example
    * ```typescript
+   * // If increments [0001, 0002, 0004, 0005] exist:
    * const nextId = IncrementNumberManager.getNextIncrementNumber();
-   * // "0033" - always unique, always fresh scan
+   * // "0003" - fills the gap!
+   *
+   * // If increments [0001, 0002, 0003] exist:
+   * const nextId = IncrementNumberManager.getNextIncrementNumber();
+   * // "0004" - sequential if no gaps
    * ```
    */
   static getNextIncrementNumber(
@@ -63,10 +73,15 @@ export class IncrementNumberManager {
     const incrementsDir = path.join(projectRoot, '.specweave', 'increments');
 
     // ALWAYS scan fresh - no caching to prevent duplicate ID bugs
-    const highestNumber = this.scanAllIncrementDirectories(incrementsDir);
-    const nextNumber = highestNumber + 1;
+    const existingNumbers = this.getAllIncrementNumbers(incrementsDir);
 
-    return String(nextNumber).padStart(4, '0');
+    // Gap-filling: Find first available number starting from 1
+    let candidate = 1;
+    while (existingNumbers.has(candidate)) {
+      candidate++;
+    }
+
+    return String(candidate).padStart(4, '0');
   }
 
   /**
@@ -138,6 +153,58 @@ export class IncrementNumberManager {
     return false;
   }
 
+
+  /**
+   * Get all existing increment numbers across all directories.
+   *
+   * Returns a Set of all increment numbers found in:
+   * 1. .specweave/increments/ (main)
+   * 2. .specweave/increments/_archive/
+   * 3. .specweave/increments/_abandoned/
+   * 4. .specweave/increments/_paused/
+   *
+   * @param incrementsDir - Path to .specweave/increments directory
+   * @returns Set of increment numbers (e.g., Set([1, 2, 4, 5]))
+   * @private
+   * @since 0.33.1
+   */
+  private static getAllIncrementNumbers(incrementsDir: string): Set<number> {
+    const numbers = new Set<number>();
+
+    // Directories to scan
+    const dirsToScan = [
+      incrementsDir,
+      path.join(incrementsDir, '_archive'),
+      path.join(incrementsDir, '_abandoned'),
+      path.join(incrementsDir, '_paused')
+    ];
+
+    // Scan each directory
+    for (const dirPath of dirsToScan) {
+      if (!fs.existsSync(dirPath)) continue;
+
+      try {
+        const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+        for (const entry of entries) {
+          if (!entry.isDirectory()) continue;
+
+          // Match pattern: 0032-name, 032-name, or 0032E-name (external)
+          const match = entry.name.match(/^(\d{3,4})E?-/);
+          if (match) {
+            const number = parseInt(match[1], 10);
+            numbers.add(number);
+          }
+        }
+      } catch (error) {
+        // Permission denied or other error - log warning and continue
+        console.warn(`Warning: Could not scan directory ${dirPath}:`, (error as Error).message);
+        continue;
+      }
+    }
+
+    return numbers;
+  }
 
   /**
    * Scan all increment directories and return highest number found.
