@@ -70,7 +70,7 @@ export interface ApiSurface {
  */
 export interface PatternUsage {
   pattern: string;
-  category: 'auth' | 'api' | 'data' | 'messaging' | 'architecture' | 'other';
+  category: 'auth' | 'api' | 'data' | 'messaging' | 'architecture' | 'security' | 'cloud' | 'deployment' | 'frontend' | 'testing' | 'quality' | 'integration' | 'structure' | 'other';
   evidence: string[];
   confidence: 'high' | 'medium' | 'low';
 }

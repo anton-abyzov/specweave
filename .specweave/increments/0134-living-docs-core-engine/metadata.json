@@ -1,0 +1,19 @@
+{
+  "id": "0134-living-docs-core-engine",
+  "status": "completed",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2025-12-09T10:10:00Z",
+  "started": "2025-12-09T12:00:00Z",
+  "lastActivity": "2025-12-09T22:28:51.249Z",
+  "testMode": "TDD",
+  "coverageTarget": 95,
+  "feature_id": "FS-134",
+  "epic_id": null,
+  "dependencies": [
+    "0128-process-lifecycle-zombie-prevention"
+  ],
+  "externalLinks": {},
+  "notes": "Part 1 of 2: Core analysis engine. Depends on 0128 for stable process management. Part 2 (0135) handles visualization and integration.",
+  "completed": "2025-12-09T22:28:51.248Z"
+}

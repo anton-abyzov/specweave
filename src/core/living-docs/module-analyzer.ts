@@ -85,6 +85,8 @@ export interface ModuleAnalysis {
   summary: string;
   /** Documentation status */
   docStatus: 'generated' | 'partial' | 'skipped';
+  /** AI-generated insights (added after initial analysis) */
+  aiInsights?: AIModuleInsights;
 }
 
 /**
@@ -717,6 +719,7 @@ function generatePlaceholderSummary(
 
 /**
  * Save module analysis to disk
+ * Regenerates summary if AI insights are available
  */
 export async function saveModuleAnalysis(
   projectPath: string,
@@ -731,8 +734,57 @@ export async function saveModuleAnalysis(
   );
   fs.ensureDirSync(outputDir);
 
+  // If AI insights were added after initial analysis, regenerate summary with enriched data
+  let summaryToWrite = analysis.summary;
+  if (analysis.aiInsights) {
+    // Count file extensions
+    const extensions: Record<string, number> = {};
+    for (const file of analysis.filesAnalyzed) {
+      const ext = path.extname(file.path);
+      extensions[ext] = (extensions[ext] || 0) + 1;
+    }
+
+    // Reconstruct module info for regeneration
+    const moduleInfo: ModuleInfo = {
+      name: analysis.moduleName,
+      path: analysis.modulePath,
+      fileCount: analysis.filesAnalyzed.length + analysis.filesSkipped,
+      estimatedLOC: analysis.filesAnalyzed.reduce((sum, f) => sum + f.lineCount, 0),
+      hasReadme: false, // Would need to check analyzed files
+      hasTests: analysis.filesAnalyzed.some(f => f.type === 'test'),
+      entryPoints: [], // Not available in this context
+      extensions
+    };
+
+    // Build dependency graph from analyzed files
+    const imports = new Set<string>();
+    for (const file of analysis.filesAnalyzed) {
+      for (const imp of file.imports) {
+        if (!imp.isExternal) {
+          const moduleName = findModuleForPath(imp.from);
+          if (moduleName && moduleName !== moduleInfo.name) {
+            imports.add(moduleName);
+          }
+        }
+      }
+    }
+
+    const dependencyGraph: ModuleDependencyInfo = {
+      imports: [...imports],
+      importedBy: [] // Cross-module analysis not available in this context
+    };
+
+    summaryToWrite = generateRichModuleSummary(
+      moduleInfo,
+      analysis.filesAnalyzed,
+      analysis.totalExports,
+      analysis.aiInsights,
+      dependencyGraph
+    );
+  }
+
   const outputPath = path.join(outputDir, `${analysis.moduleName}.md`);
-  fs.writeFileSync(outputPath, analysis.summary);
+  fs.writeFileSync(outputPath, summaryToWrite);
 
   return outputPath;
 }

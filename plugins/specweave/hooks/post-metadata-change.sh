@@ -224,7 +224,7 @@ case "$CURRENT_STATUS" in
     bash "$HOOK_DIR/lib/update-status-line.sh" --force 2>/dev/null || true
     ;;
 
-  active|planning|in-progress)
+  active|planning|backlog|ready_for_review)
     # Increment became active - MUST register in active-increment.json!
     # CRITICAL FIX (v0.26.15): post-task-completion.sh depends on this file
     # Without registration, ALL sync operations are skipped!

@@ -1,0 +1,47 @@
+---
+id: US-001
+feature: FS-128
+title: Session Registry & Process Tracking
+status: not_started
+priority: P1
+created: 2025-12-09
+project: specweave
+external:
+  github:
+    issue: 810
+    url: https://github.com/anton-abyzov/specweave/issues/810
+---
+
+# US-001: Session Registry & Process Tracking
+
+**Feature**: [FS-128](./FEATURE.md)
+
+**As a** SpecWeave developer
+**I want** all Claude Code sessions and their child processes registered in a central location
+**So that** we can track active sessions and clean up orphaned processes automatically
+
+---
+
+## Acceptance Criteria
+
+- [ ] **AC-US1-01**: Session registry created at `.specweave/state/.session-registry.json` on session start
+- [ ] **AC-US1-02**: Each session entry includes: session_id, pid, start_time, last_heartbeat, child_pids[]
+- [ ] **AC-US1-03**: Registry supports concurrent updates (atomic file operations with locks)
+- [ ] **AC-US1-04**: Sessions send heartbeat every 5 seconds to update last_heartbeat timestamp
+- [ ] **AC-US1-05**: Stale sessions (no heartbeat >30s) marked as "zombie" candidates
+- [ ] **AC-US1-06**: Registry cleanup removes completed sessions after 24 hours
+
+---
+
+## Implementation
+
+**Increment**: [0128-process-lifecycle-zombie-prevention](../../../../increments/0128-process-lifecycle-zombie-prevention/spec.md)
+
+**Tasks**: See increment tasks.md for implementation details.
+
+
+## Tasks
+
+- [ ] **T-001**: Create Session Registry Data Structure
+- [ ] **T-002**: Implement Atomic Registry Operations
+- [ ] **T-003**: Implement Staleness Detection Logic
