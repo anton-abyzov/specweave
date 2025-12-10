@@ -45,6 +45,7 @@ export function checkDependencies(
 
     switch (job.status) {
       case 'completed':
+      case 'completed_with_warnings': // Treat partial success as completed (v0.33.5)
         completedDeps.push(depId);
         break;
       case 'failed':

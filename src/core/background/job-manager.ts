@@ -213,6 +213,26 @@ export class BackgroundJobManager {
   }
 
   /**
+   * Complete a job with warnings (partial success).
+   * CRITICAL (v0.33.5): Use this when most items succeeded but some failed.
+   * Dependent jobs will treat this as success and proceed.
+   *
+   * Example: 252/253 repos cloned = completed_with_warnings, not failed
+   */
+  completeJobWithWarnings(jobId: string, warning: string): BackgroundJob | null {
+    const job = this.getJob(jobId);
+    if (!job) return null;
+
+    job.status = 'completed_with_warnings';
+    job.completedAt = new Date();
+    job.updatedAt = new Date();
+    job.error = warning; // Store warning in error field for display
+
+    this.saveJob(job);
+    return job;
+  }
+
+  /**
    * Pause a job (can resume later)
    */
   pauseJob(jobId: string): BackgroundJob | null {
@@ -274,7 +294,7 @@ export class BackgroundJobManager {
         j.status === 'running' || j.status === 'paused' || j.status === 'pending'
       );
       const completed = state.jobs
-        .filter(j => j.status === 'completed' || j.status === 'failed')
+        .filter(j => j.status === 'completed' || j.status === 'completed_with_warnings' || j.status === 'failed')
         .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
         .slice(0, 10);
 
