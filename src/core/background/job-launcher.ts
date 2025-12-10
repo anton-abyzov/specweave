@@ -663,8 +663,8 @@ export function cleanupOldJobs(projectPath: string, keepDays: number = 7): void 
         const jobManager = getJobManager(projectPath);
         const job = jobManager.getJob(entry);
 
-        // Only delete completed/failed jobs
-        if (!job || job.status === 'completed' || job.status === 'failed') {
+        // Only delete completed/failed/completed_with_warnings jobs
+        if (!job || job.status === 'completed' || job.status === 'completed_with_warnings' || job.status === 'failed') {
           fs.rmSync(jobDir, { recursive: true, force: true });
         }
       }

@@ -19,6 +19,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
+import { JOB_SUCCESS_THRESHOLD } from '../../core/background/types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -204,9 +205,28 @@ async function main(): Promise<void> {
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    // Mark job as complete
-    const errorMsg = failed > 0 ? `${failed} repositories failed to clone` : undefined;
-    jobManager.completeJob(jobId, errorMsg);
+    // Mark job as complete - use success threshold to determine status
+    // CRITICAL FIX (v0.33.5): 95%+ success = completed_with_warnings (not failed!)
+    // This prevents cascading failures that block living docs and other dependent jobs
+    const successRate = repos.length > 0 ? (succeeded / repos.length) * 100 : 100;
+
+    if (failed === 0) {
+      // Perfect success - no error message
+      jobManager.completeJob(jobId);
+    } else if (successRate >= JOB_SUCCESS_THRESHOLD) {
+      // Partial success - completed with warnings, not failed
+      // Use completeJobWithWarnings to set status to 'completed_with_warnings'
+      jobManager.completeJobWithWarnings(
+        jobId,
+        `${failed} of ${repos.length} repositories failed (${successRate.toFixed(1)}% success rate)`
+      );
+    } else {
+      // Too many failures - mark as failed
+      jobManager.completeJob(
+        jobId,
+        `${failed} of ${repos.length} repositories failed (${successRate.toFixed(1)}% success rate - below ${JOB_SUCCESS_THRESHOLD}% threshold)`
+      );
+    }
 
     // Write result summary
     const resultPath = path.join(projectPath, '.specweave', 'state', 'jobs', jobId, 'result.json');
@@ -269,8 +289,10 @@ async function main(): Promise<void> {
       // Non-fatal: continue with job completion
     }
 
-    log(`Clone job completed: ${succeeded}/${repos.length} succeeded, ${failed} failed`);
-    process.exit(failed > 0 ? 1 : 0);
+    log(`Clone job completed: ${succeeded}/${repos.length} succeeded, ${failed} failed (${successRate.toFixed(1)}% success rate)`);
+    // Exit code 0 if success rate >= threshold, 1 otherwise
+    // This allows dependent jobs to proceed when most repos cloned successfully
+    process.exit(successRate >= JOB_SUCCESS_THRESHOLD ? 0 : 1);
 
   } catch (error: any) {
     // Log error

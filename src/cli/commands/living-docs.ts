@@ -206,7 +206,7 @@ async function handleResume(projectPath: string, jobId: string): Promise<void> {
     return;
   }
 
-  if (job.status === 'completed') {
+  if (job.status === 'completed' || job.status === 'completed_with_warnings') {
     console.log(chalk.gray(`Job ${job.id.slice(0, 8)} is already completed.`));
     console.log(chalk.gray('Run `specweave living-docs` to start a new analysis.'));
     return;

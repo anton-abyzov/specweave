@@ -7,7 +7,16 @@
 
 export type JobType = 'clone-repos' | 'import-issues' | 'sync-external' | 'brownfield-analysis' | 'living-docs-builder';
 
-export type JobStatus = 'pending' | 'running' | 'paused' | 'completed' | 'failed';
+export type JobStatus = 'pending' | 'running' | 'paused' | 'completed' | 'completed_with_warnings' | 'failed';
+
+/**
+ * Success threshold for batch operations (percentage).
+ * Jobs with success rate >= this threshold are considered successful,
+ * even if some items failed.
+ *
+ * Example: 95% threshold means 252/253 repos cloned = completed_with_warnings (not failed)
+ */
+export const JOB_SUCCESS_THRESHOLD = 95;
 
 export interface JobProgress {
   current: number;
