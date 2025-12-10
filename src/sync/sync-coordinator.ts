@@ -19,6 +19,7 @@ import { UserStoryContentBuilder } from '../../plugins/specweave-github/lib/user
 import { AdoClient } from '../integrations/ado/ado-client.js';
 import { ResolvedAdoProfile } from '../integrations/ado/ado-client-factory.js';
 import { getAdoPat } from '../integrations/ado/ado-pat-provider.js';
+import { deriveFeatureId } from '../utils/feature-id-derivation.js';
 
 export interface SyncCoordinatorOptions {
   projectRoot: string;
@@ -114,12 +115,13 @@ export class SyncCoordinator {
       }
 
       if (!featureId) {
-        // AUTO-GENERATE feature ID from increment number (ADR-0139)
-        const incrementMatch = this.incrementId.match(/^(\d+)/);
-        if (incrementMatch) {
-          featureId = `FS-${incrementMatch[1]}`;
+        // AUTO-GENERATE feature ID using deriveFeatureId() (ADR-0139)
+        // CRITICAL FIX (v0.34.0): Must use deriveFeatureId() to get correct format (FS-128, not FS-0128)
+        // The old code used raw regex match which preserved leading zeros, causing duplicates
+        try {
+          featureId = deriveFeatureId(this.incrementId);
           this.logger.log(`📝 Auto-generated feature ID: ${featureId} (no epic/feature_id in spec.md)`);
-        } else {
+        } catch {
           this.logger.log('⚠️  No feature ID found and could not auto-generate - skipping GitHub sync');
           this.logger.log('   💡 Add epic: FS-XXX or feature_id: FS-XXX to spec.md frontmatter');
           return createdIssues;
@@ -427,12 +429,12 @@ export class SyncCoordinator {
       }
 
       if (!featureId) {
-        // AUTO-GENERATE feature ID from increment number (same logic as create)
-        const incrementMatch = this.incrementId.match(/^(\d+)/);
-        if (incrementMatch) {
-          featureId = `FS-${incrementMatch[1]}`;
+        // AUTO-GENERATE feature ID using deriveFeatureId() (same logic as create)
+        // CRITICAL FIX (v0.34.0): Must use deriveFeatureId() to get correct format (FS-128, not FS-0128)
+        try {
+          featureId = deriveFeatureId(this.incrementId);
           this.logger.log(`📝 Auto-generated feature ID: ${featureId}`);
-        } else {
+        } catch {
           this.logger.log('⚠️  No feature ID found - skipping GitHub issue closure');
           return closedIssues;
         }
@@ -442,16 +444,18 @@ export class SyncCoordinator {
       for (const usFile of userStories) {
         try {
           // Search for the GitHub issue by title pattern
+          // v0.34.0: includeClosedIssues=true to correctly detect already-closed issues
+          // Without this, we'd report "No issue found" instead of "already closed"
           const searchTitle = `[${featureId}][${usFile.id}]`;
-          const existingIssue = await client.searchIssueByTitle(searchTitle);
+          const existingIssue = await client.searchIssueByTitle(searchTitle, true);
 
           if (!existingIssue) {
             this.logger.log(`  ⏭️  ${usFile.id} - No GitHub issue found (skipping)`);
             continue;
           }
 
-          // Check if already closed (GitHub returns lowercase state)
-          if (existingIssue.state === 'closed') {
+          // Check if already closed (GitHub API returns UPPERCASE: "OPEN" or "CLOSED")
+          if (existingIssue.state.toLowerCase() === 'closed') {
             this.logger.log(`  ⏭️  ${usFile.id} - Issue #${existingIssue.number} already closed`);
             continue;
           }
@@ -492,6 +496,191 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       return closedIssues;
     } catch (error) {
       this.logger.error('❌ Failed to close GitHub issues:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Close JIRA issues for completed user stories (v0.34.0)
+   *
+   * Transitions JIRA issues to "Done" status when increment is completed.
+   * Reads issue references from user story frontmatter (external.jira.issue_key).
+   *
+   * @param config - Project config with JIRA settings
+   * @returns Number of closed JIRA issues
+   */
+  async closeJiraIssuesForUserStories(config: any): Promise<number> {
+    let closedCount = 0;
+
+    try {
+      const userStories = await this.loadUserStoriesForIncrement();
+      this.logger.log(`📚 Found ${userStories.length} user stor${userStories.length === 1 ? 'y' : 'ies'} for JIRA closure`);
+
+      if (userStories.length === 0) {
+        return 0;
+      }
+
+      // Get JIRA config
+      const jiraConfig = config.sync?.jira;
+      if (!jiraConfig?.domain || !jiraConfig?.email) {
+        this.logger.log('⚠️  JIRA config incomplete (missing domain or email)');
+        return 0;
+      }
+
+      // Import JIRA client dynamically to avoid circular deps
+      // JiraClient uses credentialsManager internally to get credentials from env
+      const { JiraClient } = await import('../integrations/jira/jira-client.js');
+      const jiraClient = new JiraClient();
+
+      // Target status for completion (configurable via statusSync.mappings.jira.completed)
+      const targetStatus = config.sync?.statusSync?.mappings?.jira?.completed || 'Done';
+
+      for (const usFile of userStories) {
+        try {
+          // Check if US has JIRA reference in frontmatter (key not issue_key per type def)
+          const jiraKey = usFile.external_tools?.jira?.key || usFile.external_id;
+          if (!jiraKey || !String(jiraKey).includes('-')) {
+            this.logger.log(`  ⏭️  ${usFile.id} - No JIRA issue reference`);
+            continue;
+          }
+
+          // Get current issue status
+          const issue = await jiraClient.getIssue(jiraKey);
+          if (!issue) {
+            this.logger.log(`  ⚠️  ${usFile.id} - JIRA issue ${jiraKey} not found`);
+            continue;
+          }
+
+          // Check if already in target status (status is nested in fields)
+          const currentStatus = issue.fields?.status?.name || '';
+          if (currentStatus.toLowerCase() === targetStatus.toLowerCase()) {
+            this.logger.log(`  ⏭️  ${usFile.id} - ${jiraKey} already ${targetStatus}`);
+            continue;
+          }
+
+          // Transition to Done
+          this.logger.log(`  🔒 Transitioning JIRA ${jiraKey} to ${targetStatus}...`);
+          await jiraClient.updateIssue({
+            key: jiraKey,
+            status: targetStatus
+          });
+
+          this.logger.log(`  ✅ Transitioned ${jiraKey}`);
+          closedCount++;
+        } catch (error) {
+          this.logger.error(`  ❌ Failed to close JIRA issue for ${usFile.id}:`, error);
+        }
+      }
+
+      return closedCount;
+    } catch (error) {
+      this.logger.error('❌ Failed to close JIRA issues:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Close ADO work items for completed user stories (v0.34.0)
+   *
+   * Transitions ADO work items to "Closed" state when increment is completed.
+   * Reads work item references from user story frontmatter (external.ado.id).
+   *
+   * @param config - Project config with ADO settings
+   * @returns Number of closed ADO work items
+   */
+  async closeAdoWorkItemsForUserStories(config: any): Promise<number> {
+    let closedCount = 0;
+
+    try {
+      const userStories = await this.loadUserStoriesForIncrement();
+      this.logger.log(`📚 Found ${userStories.length} user stor${userStories.length === 1 ? 'y' : 'ies'} for ADO closure`);
+
+      if (userStories.length === 0) {
+        return 0;
+      }
+
+      // Get ADO config
+      const adoConfig = config.sync?.ado;
+      if (!adoConfig?.organization || !adoConfig?.project) {
+        this.logger.log('⚠️  ADO config incomplete (missing organization or project)');
+        return 0;
+      }
+
+      // Get PAT from environment
+      const adoPat = await getAdoPat(adoConfig.organization);
+      if (!adoPat) {
+        this.logger.log('⚠️  ADO PAT not available');
+        return 0;
+      }
+
+      // Create ADO client
+      const adoClient = new AdoClient({
+        organization: adoConfig.organization,
+        project: adoConfig.project,
+        pat: adoPat
+      });
+
+      // Target state for completion (configurable via statusSync.mappings.ado.completed)
+      const targetStateConfig = config.sync?.statusSync?.mappings?.ado?.completed || { state: 'Closed' };
+      const targetState = typeof targetStateConfig === 'string' ? targetStateConfig : targetStateConfig.state;
+
+      // Collect work item IDs to fetch
+      const workItemIds: { id: number; usId: string }[] = [];
+      for (const usFile of userStories) {
+        // Check if US has ADO reference in frontmatter (id not work_item_id per type def)
+        const adoId = usFile.external_tools?.ado?.id || usFile.external_id;
+        if (adoId && !isNaN(Number(adoId))) {
+          workItemIds.push({ id: Number(adoId), usId: usFile.id });
+        } else {
+          this.logger.log(`  ⏭️  ${usFile.id} - No ADO work item reference`);
+        }
+      }
+
+      if (workItemIds.length === 0) {
+        return 0;
+      }
+
+      // Fetch work items in batch (ADO supports batch retrieval)
+      const workItems = await adoClient.listWorkItems({
+        workItemIds: workItemIds.map(w => w.id)
+      });
+
+      // Create lookup map
+      const workItemMap = new Map(workItems.map(w => [w.id, w]));
+
+      // Close each work item
+      for (const { id: workItemId, usId } of workItemIds) {
+        try {
+          const workItem = workItemMap.get(workItemId);
+          if (!workItem) {
+            this.logger.log(`  ⚠️  ${usId} - ADO work item #${workItemId} not found`);
+            continue;
+          }
+
+          // Check if already in target state (state is in fields['System.State'])
+          const currentState = workItem.fields?.['System.State'] || '';
+          if (currentState.toLowerCase() === targetState.toLowerCase()) {
+            this.logger.log(`  ⏭️  ${usId} - #${workItemId} already ${targetState}`);
+            continue;
+          }
+
+          // Update to Closed state
+          this.logger.log(`  🔒 Closing ADO work item #${workItemId}...`);
+          await adoClient.updateWorkItem({
+            id: workItemId,
+            state: targetState
+          });
+
+          this.logger.log(`  ✅ Closed #${workItemId}`);
+          closedCount++;
+        } catch (error) {
+          this.logger.error(`  ❌ Failed to close ADO work item for ${usId}:`, error);
+        }
+      }
+
+      return closedCount;
+    } catch (error) {
+      this.logger.error('❌ Failed to close ADO work items:', error);
       throw error;
     }
   }
@@ -546,38 +735,82 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
         return result;
       }
 
-      if (!githubEnabled) {
-        this.logger.log('ℹ️  GitHub sync disabled (sync.github.enabled=false)');
+      // Check which external tools are enabled
+      const jiraEnabled = config.sync?.jira?.enabled ?? false;
+      const adoEnabled = config.sync?.ado?.enabled ?? false;
+
+      if (!githubEnabled && !jiraEnabled && !adoEnabled) {
+        this.logger.log('ℹ️  No external tools enabled (GitHub/JIRA/ADO all disabled)');
         result.syncMode = 'external-disabled';
         result.success = true;
         return result;
       }
 
-      this.logger.log('✅ All gates passed - closing GitHub issues for user stories');
+      this.logger.log('✅ All gates passed - closing external issues for user stories');
 
-      // 2. First, ensure all issues exist (idempotent creation)
-      this.logger.log('\n🔹 Step 1: Ensuring all GitHub issues exist...');
-      try {
-        await this.createGitHubIssuesForUserStories(config);
-      } catch (error) {
-        this.logger.error('⚠️  GitHub issue creation failed (non-blocking):', error);
-        result.errors.push(`GitHub issue creation error: ${error}`);
+      // Track closed items across all tools
+      let totalClosed = 0;
+
+      // ========================================================================
+      // GitHub Closure
+      // ========================================================================
+      if (githubEnabled) {
+        this.logger.log('\n🔹 GitHub: Ensuring all issues exist...');
+        try {
+          await this.createGitHubIssuesForUserStories(config);
+        } catch (error) {
+          this.logger.error('⚠️  GitHub issue creation failed (non-blocking):', error);
+          result.errors.push(`GitHub issue creation error: ${error}`);
+        }
+
+        this.logger.log('\n🔹 GitHub: Closing issues for completed user stories...');
+        try {
+          result.closedIssues = await this.closeGitHubIssuesForUserStories(config);
+          totalClosed += result.closedIssues.length;
+        } catch (error) {
+          this.logger.error('⚠️  GitHub issue closure failed:', error);
+          result.errors.push(`GitHub issue closure error: ${error}`);
+        }
       }
 
-      // 3. Close all User Story issues
-      this.logger.log('\n🔹 Step 2: Closing GitHub issues for completed user stories...');
-      try {
-        result.closedIssues = await this.closeGitHubIssuesForUserStories(config);
-      } catch (error) {
-        this.logger.error('⚠️  GitHub issue closure failed:', error);
-        result.errors.push(`GitHub issue closure error: ${error}`);
+      // ========================================================================
+      // JIRA Closure (v0.34.0)
+      // ========================================================================
+      if (jiraEnabled) {
+        this.logger.log('\n🔹 JIRA: Closing issues for completed user stories...');
+        try {
+          const jiraClosed = await this.closeJiraIssuesForUserStories(config);
+          totalClosed += jiraClosed;
+          this.logger.log(`   ✅ Closed ${jiraClosed} JIRA issue(s)`);
+        } catch (error) {
+          this.logger.error('⚠️  JIRA issue closure failed:', error);
+          result.errors.push(`JIRA issue closure error: ${error}`);
+        }
+      }
+
+      // ========================================================================
+      // ADO Closure (v0.34.0)
+      // ========================================================================
+      if (adoEnabled) {
+        this.logger.log('\n🔹 ADO: Closing work items for completed user stories...');
+        try {
+          const adoClosed = await this.closeAdoWorkItemsForUserStories(config);
+          totalClosed += adoClosed;
+          this.logger.log(`   ✅ Closed ${adoClosed} ADO work item(s)`);
+        } catch (error) {
+          this.logger.error('⚠️  ADO work item closure failed:', error);
+          result.errors.push(`ADO work item closure error: ${error}`);
+        }
       }
 
       result.success = result.errors.length === 0;
       result.syncMode = 'full-sync';
 
       this.logger.log(`\n✅ Increment closure sync complete`);
-      this.logger.log(`   Issues closed: ${result.closedIssues.length}`);
+      this.logger.log(`   Total items closed: ${totalClosed}`);
+      if (result.closedIssues.length > 0) {
+        this.logger.log(`   GitHub: ${result.closedIssues.length}`);
+      }
       if (result.errors.length > 0) {
         this.logger.log(`   ⚠️  ${result.errors.length} error(s) occurred`);
       }
@@ -1008,7 +1241,29 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
     }
 
     const frontmatter = yaml.parse(frontmatterMatch[1]);
-    const featureId = frontmatter.feature_id || frontmatter.epic || frontmatter.feature;
+    let featureId = frontmatter.feature_id || frontmatter.epic || frontmatter.feature;
+
+    // v0.34.0: Fallback to metadata.json if spec.md doesn't have feature_id
+    // This handles legacy increments where feature_id was only in metadata.json
+    if (!featureId) {
+      const metadataFile = path.join(
+        this.projectRoot,
+        '.specweave/increments',
+        this.incrementId,
+        'metadata.json'
+      );
+      if (existsSync(metadataFile)) {
+        try {
+          const metadata = JSON.parse(await fs.readFile(metadataFile, 'utf-8'));
+          featureId = metadata.feature_id || metadata.epic_id;
+          if (featureId) {
+            this.logger.log(`  📎 Using feature_id from metadata.json: ${featureId}`);
+          }
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    }
 
     if (!featureId) {
       return [];

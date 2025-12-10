@@ -51,6 +51,16 @@
         ]
       },
       {
+        "matcher": "Write",
+        "matcher_content": "\\.specweave/increments/\\d{3,4}E?-[^/]+/spec\\.md",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/per-us-project-validator.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"allow\\\"}\")'"
+          }
+        ]
+      },
+      {
         "matcher": "Write|Edit",
         "matcher_content": "\\.specweave/docs/internal/specs/_features/",
         "hooks": [

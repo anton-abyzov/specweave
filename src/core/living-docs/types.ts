@@ -185,13 +185,45 @@ export interface UserStoryData {
   imported_at?: string;
   origin?: 'internal' | 'external';
 
-  // Cross-project targeting (v0.33.0+)
-  // Allows each US to sync to a different project/board
-  /** Target project for this US (e.g., "frontend-app", "backend-api") */
+  // ============================================================================
+  // Per-US Project/Board Targeting (v0.33.0+, enforced v0.34.0+)
+  //
+  // CRITICAL: Each User Story maps to EXACTLY ONE project and ONE board.
+  // This is a 1:1 relationship - NOT optional, NOT multiple values allowed.
+  //
+  // For cross-project features, create separate USs for each project.
+  //
+  // Validation hook: plugins/specweave/hooks/v2/guards/per-us-project-validator.sh
+  // ============================================================================
+
+  /**
+   * Target project for this US (REQUIRED for all structures)
+   *
+   * CONSTRAINT: Must be exactly ONE project ID (not comma-separated list)
+   * - ✅ "frontend-app"
+   * - ✅ "backend-api"
+   * - ❌ "frontend-app, backend-api" (FORBIDDEN - use separate USs)
+   *
+   * @example "frontend-app"
+   */
   project?: string;
-  /** Target board for 2-level structures (e.g., "web-team", "api-team") */
+
+  /**
+   * Target board for 2-level structures (REQUIRED for 2-level)
+   *
+   * CONSTRAINT: Must be exactly ONE board ID (not comma-separated list)
+   * - ✅ "web-team"
+   * - ✅ "api-team"
+   * - ❌ "web-team, api-team" (FORBIDDEN - use separate USs)
+   *
+   * @example "mobile-team"
+   */
   board?: string;
-  /** Preferred external provider for this US: "github" | "jira" | "ado" */
+
+  /**
+   * Preferred external provider for this US
+   * Used when project has multiple external tool mappings
+   */
   externalProvider?: 'github' | 'jira' | 'ado';
 }
 

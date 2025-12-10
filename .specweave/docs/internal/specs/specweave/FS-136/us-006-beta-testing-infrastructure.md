@@ -12,6 +12,9 @@ external:
     url: https://github.com/anton-abyzov/specweave/issues/822
 ---
 
+**Origin**: 🏠 **Internal**
+
+
 # US-006: Beta Testing Infrastructure
 
 **Feature**: [FS-136](./FEATURE.md)
@@ -42,4 +45,4 @@ external:
 
 ## Tasks
 
-- [ ] **T-006**: Create Beta Testing Tools and Documentation
+- [x] [T-006](../../../../increments/0136-process-lifecycle-test-suite/tasks.md#T-006): Create Beta Testing Tools and Documentation

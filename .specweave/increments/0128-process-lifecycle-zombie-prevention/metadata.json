@@ -13,11 +13,66 @@
   "externalLinks": {
     "github": {
       "milestone": "https://github.com/anton-abyzov/specweave/milestone/33",
-      "issues": ["#810", "#811", "#812", "#813", "#814", "#815", "#816"]
+      "issues": [
+        "#810",
+        "#811",
+        "#812",
+        "#813",
+        "#814",
+        "#815",
+        "#816"
+      ]
     }
   },
   "total_acs": 42,
   "completed_acs": 41,
   "approvedBy": "PM Agent",
-  "approvedAt": "2025-12-09T16:35:00Z"
+  "approvedAt": "2025-12-09T16:35:00Z",
+  "github": {
+    "issues": [
+      {
+        "userStory": "US-001",
+        "number": 823,
+        "url": "https://github.com/anton-abyzov/specweave/issues/823",
+        "createdAt": "2025-12-10T05:16:18.492Z"
+      },
+      {
+        "userStory": "US-002",
+        "number": 824,
+        "url": "https://github.com/anton-abyzov/specweave/issues/824",
+        "createdAt": "2025-12-10T05:16:20.503Z"
+      },
+      {
+        "userStory": "US-003",
+        "number": 825,
+        "url": "https://github.com/anton-abyzov/specweave/issues/825",
+        "createdAt": "2025-12-10T05:16:22.560Z"
+      },
+      {
+        "userStory": "US-004",
+        "number": 826,
+        "url": "https://github.com/anton-abyzov/specweave/issues/826",
+        "createdAt": "2025-12-10T05:16:24.703Z"
+      },
+      {
+        "userStory": "US-005",
+        "number": 827,
+        "url": "https://github.com/anton-abyzov/specweave/issues/827",
+        "createdAt": "2025-12-10T05:16:26.741Z"
+      },
+      {
+        "userStory": "US-006",
+        "number": 828,
+        "url": "https://github.com/anton-abyzov/specweave/issues/828",
+        "createdAt": "2025-12-10T05:16:28.781Z"
+      },
+      {
+        "userStory": "US-007",
+        "number": 829,
+        "url": "https://github.com/anton-abyzov/specweave/issues/829",
+        "createdAt": "2025-12-10T05:16:31.393Z"
+      }
+    ],
+    "lastSync": "2025-12-10T05:16:31.393Z"
+  }
 }

@@ -1,10 +1,12 @@
 {
   "id": "0136-process-lifecycle-test-suite",
-  "status": "ready_for_review",
+  "status": "completed",
   "type": "feature",
   "priority": "P2",
   "created": "2025-12-09T17:00:00Z",
-  "lastActivity": "2025-12-09T18:30:00Z",
+  "lastActivity": "2025-12-09T21:10:00Z",
+  "completed": "2025-12-09T21:10:00Z",
+  "approvedAt": "2025-12-09T21:10:00Z",
   "started": "2025-12-09T17:15:00Z",
   "testMode": "test-after",
   "coverageTarget": 80,
@@ -13,9 +15,57 @@
   "externalLinks": {
     "github": {
       "milestone": "#34",
-      "issues": ["#817", "#818", "#819", "#820", "#821", "#822"]
+      "issues": [
+        "#817",
+        "#818",
+        "#819",
+        "#820",
+        "#821",
+        "#822"
+      ]
     }
   },
   "total_acs": 36,
-  "completed_acs": 36
+  "completed_acs": 36,
+  "github": {
+    "issues": [
+      {
+        "userStory": "US-001",
+        "number": 817,
+        "url": "https://github.com/anton-abyzov/specweave/issues/817",
+        "createdAt": "2025-12-10T04:49:49.003Z"
+      },
+      {
+        "userStory": "US-002",
+        "number": 818,
+        "url": "https://github.com/anton-abyzov/specweave/issues/818",
+        "createdAt": "2025-12-10T04:49:49.406Z"
+      },
+      {
+        "userStory": "US-003",
+        "number": 819,
+        "url": "https://github.com/anton-abyzov/specweave/issues/819",
+        "createdAt": "2025-12-10T04:49:49.856Z"
+      },
+      {
+        "userStory": "US-004",
+        "number": 820,
+        "url": "https://github.com/anton-abyzov/specweave/issues/820",
+        "createdAt": "2025-12-10T04:49:50.241Z"
+      },
+      {
+        "userStory": "US-005",
+        "number": 821,
+        "url": "https://github.com/anton-abyzov/specweave/issues/821",
+        "createdAt": "2025-12-10T04:49:50.707Z"
+      },
+      {
+        "userStory": "US-006",
+        "number": 822,
+        "url": "https://github.com/anton-abyzov/specweave/issues/822",
+        "createdAt": "2025-12-10T04:49:51.113Z"
+      }
+    ],
+    "lastSync": "2025-12-10T04:49:51.113Z"
+  }
 }

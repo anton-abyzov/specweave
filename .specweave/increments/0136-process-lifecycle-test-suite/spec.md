@@ -2,7 +2,7 @@
 increment: 0136-process-lifecycle-test-suite
 title: "Process Lifecycle - Automated Test Suite"
 project: specweave
-status: ready_for_review
+status: completed
 type: feature
 priority: P2
 created: 2025-12-09

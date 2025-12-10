@@ -204,7 +204,91 @@ fi
 # DISCIPLINE VALIDATION: Warn about WIP limits (configurable, not hard block!)
 # ==============================================================================
 
-if echo "$PROMPT" | grep -q "/specweave:increment"; then
+# ==============================================================================
+# PROJECT CONTEXT + WIP LIMITS FOR /specweave:increment (v0.34.0)
+# ==============================================================================
+# CRITICAL: Inject project/board context BEFORE Claude generates spec.md
+# This ensures Claude knows available projects and uses correct IDs
+# ALSO: Check WIP limits in same block to avoid duplicate command detection
+
+if echo "$PROMPT" | grep -qE "^/specweave:increment"; then
+  # Get project context (uses specweave CLI if available)
+  PROJECT_CONTEXT=""
+
+  if command -v specweave >/dev/null 2>&1; then
+    # Use CLI for accurate project/board detection
+    CONTEXT_JSON=$(specweave context projects 2>/dev/null || echo '{}')
+
+    # Validate JSON before parsing (defensive coding)
+    if [[ -n "$CONTEXT_JSON" ]] && [[ "$CONTEXT_JSON" != "{}" ]]; then
+      if command -v jq >/dev/null 2>&1; then
+        # Verify JSON is parseable before extracting fields
+        if ! echo "$CONTEXT_JSON" | jq empty 2>/dev/null; then
+          CONTEXT_JSON='{}'  # Invalid JSON - reset to empty
+        fi
+      fi
+    fi
+
+    if [[ -n "$CONTEXT_JSON" ]] && [[ "$CONTEXT_JSON" != "{}" ]]; then
+      # Parse JSON with jq
+      if command -v jq >/dev/null 2>&1; then
+        LEVEL=$(echo "$CONTEXT_JSON" | jq -r '.level // 1')
+        PROJECTS=$(echo "$CONTEXT_JSON" | jq -r '.projects | map(.id) | join(", ")' 2>/dev/null || echo "")
+
+        if [[ "$LEVEL" == "2" ]]; then
+          # 2-level structure: include boards
+          BOARDS_JSON=$(echo "$CONTEXT_JSON" | jq -r '.boardsByProject // {}' 2>/dev/null)
+          if [[ -n "$BOARDS_JSON" ]] && [[ "$BOARDS_JSON" != "{}" ]]; then
+            PROJECT_CONTEXT="\\n\\n📦 PROJECT CONTEXT (2-LEVEL STRUCTURE)\\n\\n"
+            PROJECT_CONTEXT="${PROJECT_CONTEXT}⚠️ MANDATORY: Each User Story MUST have both:\\n"
+            PROJECT_CONTEXT="${PROJECT_CONTEXT}  - **Project**: <project_id>\\n"
+            PROJECT_CONTEXT="${PROJECT_CONTEXT}  - **Board**: <board_id>\\n\\n"
+            PROJECT_CONTEXT="${PROJECT_CONTEXT}Available projects: ${PROJECTS}\\n"
+            PROJECT_CONTEXT="${PROJECT_CONTEXT}Boards by project:\\n"
+
+            # Format boards
+            for proj in $(echo "$CONTEXT_JSON" | jq -r '.projects[].id' 2>/dev/null); do
+              PROJ_BOARDS=$(echo "$CONTEXT_JSON" | jq -r ".boardsByProject[\"$proj\"] | map(.id) | join(\", \")" 2>/dev/null || echo "")
+              [[ -n "$PROJ_BOARDS" ]] && PROJECT_CONTEXT="${PROJECT_CONTEXT}  - ${proj}: ${PROJ_BOARDS}\\n"
+            done
+
+            PROJECT_CONTEXT="${PROJECT_CONTEXT}\\n❌ FORBIDDEN: Comma-separated values (e.g., **Project**: fe, be)\\n"
+            PROJECT_CONTEXT="${PROJECT_CONTEXT}✅ REQUIRED: One project + one board per User Story"
+          fi
+        elif [[ -n "$PROJECTS" ]]; then
+          # 1-level structure: projects only
+          PROJECT_COUNT=$(echo "$CONTEXT_JSON" | jq '.projects | length' 2>/dev/null || echo "0")
+
+          if [[ "$PROJECT_COUNT" -gt 1 ]]; then
+            PROJECT_CONTEXT="\\n\\n📦 PROJECT CONTEXT (MULTI-PROJECT)\\n\\n"
+            PROJECT_CONTEXT="${PROJECT_CONTEXT}⚠️ MANDATORY: Each User Story MUST have:\\n"
+            PROJECT_CONTEXT="${PROJECT_CONTEXT}  - **Project**: <project_id>\\n\\n"
+            PROJECT_CONTEXT="${PROJECT_CONTEXT}Available projects: ${PROJECTS}\\n"
+            PROJECT_CONTEXT="${PROJECT_CONTEXT}\\n❌ FORBIDDEN: Comma-separated values\\n"
+            PROJECT_CONTEXT="${PROJECT_CONTEXT}✅ REQUIRED: One project per User Story"
+          elif [[ "$PROJECT_COUNT" -eq 1 ]]; then
+            # Single project: auto-select
+            SINGLE_PROJECT=$(echo "$CONTEXT_JSON" | jq -r '.projects[0].id' 2>/dev/null)
+            PROJECT_CONTEXT="\\n\\n📦 PROJECT CONTEXT\\n"
+            PROJECT_CONTEXT="${PROJECT_CONTEXT}Single project detected: ${SINGLE_PROJECT} (auto-selected)"
+          fi
+        fi
+      fi
+    fi
+  else
+    # Fallback: Check for multi-project folders
+    if [[ -d "$SPECWEAVE_DIR/docs/internal/specs" ]]; then
+      PROJ_COUNT=$(find "$SPECWEAVE_DIR/docs/internal/specs" -maxdepth 1 -type d | wc -l)
+      if [[ "$PROJ_COUNT" -gt 2 ]]; then
+        PROJ_LIST=$(ls -1 "$SPECWEAVE_DIR/docs/internal/specs" 2>/dev/null | grep -v "_" | tr '\n' ', ' | sed 's/,$//')
+        PROJECT_CONTEXT="\\n\\n📦 PROJECT CONTEXT (MULTI-PROJECT)\\n"
+        PROJECT_CONTEXT="${PROJECT_CONTEXT}⚠️ MANDATORY: Each User Story MUST have **Project**: field\\n"
+        PROJECT_CONTEXT="${PROJECT_CONTEXT}Available folders: ${PROJ_LIST}"
+      fi
+    fi
+  fi
+
+  # WIP LIMITS CHECK (inside same block - no duplicate command detection)
   # Read limits from config.json (respect user's settings!)
   CONFIG_FILE="$SPECWEAVE_DIR/config.json"
   SOFT_LIMIT=1
@@ -226,13 +310,31 @@ if echo "$PROMPT" | grep -q "/specweave:increment"; then
 
   # Above hard cap: strong warning but NOT a block (user decides!)
   if [[ "$ACTIVE_COUNT" -ge "$HARD_CAP" ]]; then
-    printf '{"decision":"approve","systemMessage":"⚠️  WIP LIMIT EXCEEDED (%s/%s)\\n\\nYou have %s active increments (configured maximum: %s)\\n\\nActive increments:\\n%s\\n\\n🧠 Research shows 3+ concurrent tasks = 40%% slower + more bugs\\n\\n💡 Options:\\n  1️⃣  Complete an increment: /specweave:done <id>\\n  2️⃣  Pause an increment: /specweave:pause <id>\\n  3️⃣  Increase limit: Edit .specweave/config.json limits.hardCap\\n  4️⃣  Continue anyway (not recommended)\\n\\n📝 To proceed anyway, just confirm your intent."}\n' "$ACTIVE_COUNT" "$HARD_CAP" "$ACTIVE_COUNT" "$HARD_CAP" "$ACTIVE_LIST"
+    WIP_MSG="⚠️  WIP LIMIT EXCEEDED (${ACTIVE_COUNT}/${HARD_CAP})\\n\\nYou have ${ACTIVE_COUNT} active increments (configured maximum: ${HARD_CAP})\\n\\nActive increments:\\n${ACTIVE_LIST}\\n\\n🧠 Research shows 3+ concurrent tasks = 40%% slower + more bugs\\n\\n💡 Options:\\n  1️⃣  Complete an increment: /specweave:done <id>\\n  2️⃣  Pause an increment: /specweave:pause <id>\\n  3️⃣  Increase limit: Edit .specweave/config.json limits.hardCap\\n  4️⃣  Continue anyway (not recommended)\\n\\n📝 To proceed anyway, just confirm your intent."
+    # Prepend project context if available
+    if [[ -n "$PROJECT_CONTEXT" ]]; then
+      printf '{"decision":"approve","systemMessage":"%s%s"}\n' "$PROJECT_CONTEXT" "$WIP_MSG"
+    else
+      printf '{"decision":"approve","systemMessage":"%s"}\n' "$WIP_MSG"
+    fi
     exit 0
   fi
 
   # At soft limit: mild warning, approve
   if [[ "$ACTIVE_COUNT" -ge "$SOFT_LIMIT" ]]; then
-    printf '{"decision":"approve","systemMessage":"⚠️  WIP LIMIT REACHED (%s/%s)\\n\\nYou have %s active increment(s) (recommended limit: %s)\\n\\nActive increments:\\n%s\\n\\n🧠 Focus Principle: Fewer active increments = maximum productivity\\n\\n💡 Consider:\\n  1️⃣  Complete current work (recommended)\\n  2️⃣  Pause current work (/specweave:pause)\\n  3️⃣  Continue anyway\\n\\n⚠️  Emergency hotfix/bug? Use --type=hotfix or --type=bug"}\n' "$ACTIVE_COUNT" "$SOFT_LIMIT" "$ACTIVE_COUNT" "$SOFT_LIMIT" "$ACTIVE_LIST"
+    WIP_MSG="⚠️  WIP LIMIT REACHED (${ACTIVE_COUNT}/${SOFT_LIMIT})\\n\\nYou have ${ACTIVE_COUNT} active increment(s) (recommended limit: ${SOFT_LIMIT})\\n\\nActive increments:\\n${ACTIVE_LIST}\\n\\n🧠 Focus Principle: Fewer active increments = maximum productivity\\n\\n💡 Consider:\\n  1️⃣  Complete current work (recommended)\\n  2️⃣  Pause current work (/specweave:pause)\\n  3️⃣  Continue anyway\\n\\n⚠️  Emergency hotfix/bug? Use --type=hotfix or --type=bug"
+    # Prepend project context if available
+    if [[ -n "$PROJECT_CONTEXT" ]]; then
+      printf '{"decision":"approve","systemMessage":"%s%s"}\n' "$PROJECT_CONTEXT" "$WIP_MSG"
+    else
+      printf '{"decision":"approve","systemMessage":"%s"}\n' "$WIP_MSG"
+    fi
+    exit 0
+  fi
+
+  # No WIP limit warning, but we may have project context to inject
+  if [[ -n "$PROJECT_CONTEXT" ]]; then
+    printf '{"decision":"approve","systemMessage":"%s"}\n' "$PROJECT_CONTEXT"
     exit 0
   fi
 fi

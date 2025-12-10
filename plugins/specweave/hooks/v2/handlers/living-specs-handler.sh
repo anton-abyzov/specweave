@@ -120,6 +120,35 @@ case "$EVENT" in
         run_with_timeout 30 node "$SYNC_SCRIPT" "$INC_ID" >/dev/null 2>&1 &
       fi
     fi
+
+    # ========================================================================
+    # CRITICAL FIX (v0.34.0): Close GitHub/JIRA/ADO issues on increment.done
+    # ========================================================================
+    # Root cause: sync-increment-closure.js was NEVER being called when
+    # increments completed. The EDA architecture routes increment.done to
+    # this handler, but only sync-living-docs.js was called (updates docs).
+    #
+    # sync-increment-closure.js contains the actual logic to:
+    # - Close GitHub issues linked to User Stories
+    # - Close JIRA/ADO issues (with proper gates)
+    # - Post completion comments on external issues
+    #
+    # Without this, GitHub issues stayed OPEN forever after increment closure!
+    # See: GitHub Issues #817-#822 (increment 0136) stayed open until manual fix
+    CLOSURE_SCRIPT=""
+    for path in \
+      "$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-increment-closure.js" \
+      "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-increment-closure.js" \
+      "${CLAUDE_PLUGIN_ROOT:-}/lib/hooks/sync-increment-closure.js"; do
+      [[ -f "$path" ]] && { CLOSURE_SCRIPT="$path"; break; }
+    done
+
+    if [[ -n "$CLOSURE_SCRIPT" ]]; then
+      cd "$PROJECT_ROOT" || exit 0
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] Calling sync-increment-closure.js for $INC_ID" >> "$LOG_FILE" 2>/dev/null
+      # Run closure sync in background (can take 10-30s for multiple issues)
+      run_with_timeout 60 node "$CLOSURE_SCRIPT" "$INC_ID" >> "$LOG_FILE" 2>&1 &
+    fi
     ;;
 
   increment.archived)
