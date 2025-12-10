@@ -1,0 +1,15 @@
+{
+  "id": "0137-per-us-project-board-enforcement",
+  "status": "ready_for_review",
+  "type": "feature",
+  "priority": "P0",
+  "created": "2025-12-09T12:00:00Z",
+  "lastActivity": "2025-12-09T21:42:00Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": "FS-137",
+  "epic_id": null,
+  "externalLinks": {},
+  "completedTasks": 23,
+  "totalTasks": 23
+}

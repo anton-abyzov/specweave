@@ -12,6 +12,9 @@ external:
     url: https://github.com/anton-abyzov/specweave/issues/819
 ---
 
+**Origin**: 🏠 **Internal**
+
+
 # US-003: Crash Recovery E2E Test
 
 **Feature**: [FS-136](./FEATURE.md)
@@ -42,4 +45,4 @@ external:
 
 ## Tasks
 
-- [ ] **T-003**: Create E2E Test - Crash Recovery
+- [x] [T-003](../../../../increments/0136-process-lifecycle-test-suite/tasks.md#T-003): Create E2E Test - Crash Recovery

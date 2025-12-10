@@ -392,12 +392,15 @@ export class GitHubClientV2 {
    * Search for issue by exact title match
    *
    * IDEMPOTENCY: Use this before creating issues to prevent duplicates
+   *
+   * @param title - Title pattern to search for (e.g., "[FS-136][US-001]")
+   * @param includeClosedIssues - If true, searches all issues (open+closed). Default: false (open only)
    */
-  async searchIssueByTitle(title: string): Promise<GitHubIssue | null> {
+  async searchIssueByTitle(title: string, includeClosedIssues: boolean = false): Promise<GitHubIssue | null> {
     // Escape double quotes in title for gh search
     const escapedTitle = title.replace(/"/g, '\\"');
 
-    const result = await execFileNoThrow('gh', [
+    const args = [
       'issue',
       'list',
       '--repo',
@@ -408,7 +411,16 @@ export class GitHubClientV2 {
       'number,title,state,url,labels',
       '--limit',
       '50',  // ✅ FIX: Increased from 1 to 50 to catch duplicates (Issue #0047)
-    ]);
+    ];
+
+    // v0.34.0: Add --state all to search closed issues too (for closure flow)
+    // Without this, closeGitHubIssuesForUserStories() can't find already-closed issues
+    // and reports "No GitHub issue found" instead of "already closed"
+    if (includeClosedIssues) {
+      args.push('--state', 'all');
+    }
+
+    const result = await execFileNoThrow('gh', args);
 
     if (result.exitCode !== 0) {
       // Search failed, return null (treat as not found)
