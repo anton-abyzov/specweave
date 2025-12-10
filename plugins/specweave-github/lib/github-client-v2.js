@@ -291,10 +291,13 @@ ${body}`;
    * Search for issue by exact title match
    *
    * IDEMPOTENCY: Use this before creating issues to prevent duplicates
+   *
+   * @param title - Title pattern to search for (e.g., "[FS-136][US-001]")
+   * @param includeClosedIssues - If true, searches all issues (open+closed). Default: false (open only)
    */
-  async searchIssueByTitle(title) {
+  async searchIssueByTitle(title, includeClosedIssues = false) {
     const escapedTitle = title.replace(/"/g, '\\"');
-    const result = await execFileNoThrow("gh", [
+    const args = [
       "issue",
       "list",
       "--repo",
@@ -306,7 +309,11 @@ ${body}`;
       "--limit",
       "50"
       // ✅ FIX: Increased from 1 to 50 to catch duplicates (Issue #0047)
-    ]);
+    ];
+    if (includeClosedIssues) {
+      args.push("--state", "all");
+    }
+    const result = await execFileNoThrow("gh", args);
     if (result.exitCode !== 0) {
       return null;
     }

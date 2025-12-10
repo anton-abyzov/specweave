@@ -246,6 +246,69 @@ export class ConfigManager {
       }
     }
 
+    // Validate projectMappings (v0.34.0+)
+    if (cfg.projectMappings) {
+      for (const [projectId, mapping] of Object.entries(cfg.projectMappings)) {
+        // Validate project ID format (kebab-case)
+        if (!/^[a-z0-9-]+$/.test(projectId)) {
+          errors.push({
+            path: `projectMappings.${projectId}`,
+            message: 'Project ID must be kebab-case (lowercase letters, numbers, hyphens)',
+            value: projectId
+          });
+        }
+
+        // Validate GitHub mapping
+        if (mapping.github) {
+          if (!mapping.github.owner || typeof mapping.github.owner !== 'string') {
+            errors.push({
+              path: `projectMappings.${projectId}.github.owner`,
+              message: 'GitHub owner is required and must be a string',
+              value: mapping.github.owner
+            });
+          }
+          if (!mapping.github.repo || typeof mapping.github.repo !== 'string') {
+            errors.push({
+              path: `projectMappings.${projectId}.github.repo`,
+              message: 'GitHub repo is required and must be a string',
+              value: mapping.github.repo
+            });
+          }
+        }
+
+        // Validate JIRA mapping
+        if (mapping.jira) {
+          if (!mapping.jira.project || typeof mapping.jira.project !== 'string') {
+            errors.push({
+              path: `projectMappings.${projectId}.jira.project`,
+              message: 'JIRA project is required and must be a string',
+              value: mapping.jira.project
+            });
+          }
+        }
+
+        // Validate ADO mapping
+        if (mapping.ado) {
+          if (!mapping.ado.project || typeof mapping.ado.project !== 'string') {
+            errors.push({
+              path: `projectMappings.${projectId}.ado.project`,
+              message: 'ADO project is required and must be a string',
+              value: mapping.ado.project
+            });
+          }
+        }
+
+        // At least one mapping should be defined (warn, not error)
+        if (!mapping.github && !mapping.jira && !mapping.ado) {
+          errors.push({
+            path: `projectMappings.${projectId}`,
+            message: 'At least one external mapping (github, jira, or ado) should be defined',
+            value: mapping
+          });
+        }
+      }
+    }
+
     return {
       valid: errors.length === 0,
       errors

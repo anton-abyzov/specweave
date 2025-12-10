@@ -309,4 +309,76 @@ project: frontend-app
     expect(result2.isValid).toBe(false);
     expect(result2.warning).toContain('not found in config');
   });
+
+  test('ProjectResolver should integrate CrossCuttingDetector', async () => {
+    const { ProjectResolver } = await import('../../../src/utils/project-resolver.js');
+
+    const resolver = new ProjectResolver(testDir);
+
+    // Test increment resolution with cross-cutting description
+    const result = resolver.resolveForIncrement('OAuth with React frontend and Node backend API');
+    expect(result.isCrossProject).toBe(true);
+    expect(result.crossCuttingResult).toBeDefined();
+    expect(result.crossCuttingResult?.suggestedProjects).toContain('frontend');
+    expect(result.crossCuttingResult?.suggestedProjects).toContain('backend');
+  });
+
+  test('ProjectResolver should resolve user story with detected patterns', async () => {
+    const { ProjectResolver } = await import('../../../src/utils/project-resolver.js');
+
+    const resolver = new ProjectResolver(testDir);
+
+    // Test user story resolution with frontend patterns
+    const result = resolver.resolveForUserStory('Create React login form component');
+    expect(result.resolved).toBe(true);
+    // Should match keyword patterns first
+    expect(result.reason).toBeDefined();
+    expect(['Keyword match', 'Cross-cutting analysis'].some(r => result.reason!.includes(r))).toBe(true);
+  });
+
+  test('ProjectResolver should provide cross-cutting detector access', async () => {
+    const { ProjectResolver } = await import('../../../src/utils/project-resolver.js');
+
+    const resolver = new ProjectResolver(testDir);
+
+    const detector = resolver.getCrossCuttingDetector();
+    expect(detector).toBeDefined();
+
+    // Use a more explicit cross-cutting phrase
+    const result = detector.detect('Build feature affecting frontend and backend systems');
+    expect(result.isCrossCutting).toBe(true);
+  });
+
+  test('Config validation should validate projectMappings', async () => {
+    const { ConfigManager } = await import('../../../src/core/config/config-manager.js');
+
+    const manager = new ConfigManager(testDir);
+
+    // Valid config with projectMappings
+    const validConfig = {
+      version: '2.0',
+      projectMappings: {
+        'frontend-app': {
+          github: { owner: 'myorg', repo: 'frontend-app' }
+        }
+      }
+    };
+
+    const result1 = manager.validate(validConfig);
+    expect(result1.valid).toBe(true);
+
+    // Invalid config - missing github owner
+    const invalidConfig = {
+      version: '2.0',
+      projectMappings: {
+        'frontend-app': {
+          github: { repo: 'frontend-app' } // missing owner
+        }
+      }
+    };
+
+    const result2 = manager.validate(invalidConfig);
+    expect(result2.valid).toBe(false);
+    expect(result2.errors.some(e => e.path.includes('github.owner'))).toBe(true);
+  });
 });

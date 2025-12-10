@@ -114,6 +114,62 @@ const config = detectStructureLevel(projectRoot);
 
 **Pre-tool-use hook `spec-project-validator.sh` BLOCKS spec.md without required fields (2-level).**
 
+### 2c-bis. Each User Story MUST Have **Project**: (and **Board**: for 2-level) (v0.34.0+)
+
+**CRITICAL 1:1 MAPPING RULE: Each User Story maps to EXACTLY ONE project and ONE board!**
+
+```markdown
+### US-001: Login Form UI
+**Project**: frontend-app     ← MANDATORY (exactly ONE project)
+**Board**: ui-team            ← MANDATORY for 2-level (exactly ONE board)
+**As a** user, I want a login form...
+
+### US-002: Auth API Endpoints
+**Project**: backend-api      ← DIFFERENT project = OK
+**Board**: api-team           ← DIFFERENT board = OK
+**As a** developer, I want JWT auth API...
+```
+
+**1:1 MAPPING ENFORCEMENT:**
+```
+❌ FORBIDDEN: **Project**: frontend-app, backend-api  (MULTIPLE projects)
+❌ FORBIDDEN: **Board**: ui-team, api-team           (MULTIPLE boards)
+❌ FORBIDDEN: User Story without **Project**: field
+
+✅ REQUIRED: Each US has exactly ONE **Project**: value
+✅ REQUIRED: Each US has exactly ONE **Board**: value (2-level)
+✅ CROSS-PROJECT: Split into separate USs per project
+```
+
+**Cross-project features → Create SEPARATE User Stories:**
+```markdown
+## OAuth Feature (Cross-Project)
+
+### US-001: OAuth Login Form
+**Project**: frontend-app     ← One project per US
+...
+
+### US-002: OAuth API Endpoints
+**Project**: backend-api      ← Different project = separate US
+...
+
+### US-003: OAuth Mobile Screen
+**Project**: mobile-app       ← Different project = separate US
+...
+```
+
+**Pre-tool-use hook `per-us-project-validator.sh` BLOCKS spec.md with:**
+- Missing `**Project**:` field per US
+- Missing `**Board**:` field per US (2-level)
+- Multiple comma-separated projects
+- Multiple comma-separated boards
+
+**Bypass (EMERGENCY ONLY):**
+```bash
+SPECWEAVE_FORCE_PROJECT=1   # Skip all validation
+SPECWEAVE_LEGACY_SPEC=1     # Allow legacy specs without per-US fields
+```
+
 ### 2d. NEVER Create Files in _features/ Folder (OBSOLETE v5.0.0+)
 
 **The `_features/` folder is OBSOLETE!** Features MUST live in project folders:

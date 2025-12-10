@@ -12,6 +12,9 @@ external:
     url: https://github.com/anton-abyzov/specweave/issues/817
 ---
 
+**Origin**: 🏠 **Internal**
+
+
 # US-001: CI Matrix Cross-Platform Tests
 
 **Feature**: [FS-136](./FEATURE.md)
@@ -42,4 +45,4 @@ external:
 
 ## Tasks
 
-- [ ] **T-001**: Create GitHub Actions Workflow for Cross-Platform Tests
+- [x] [T-001](../../../../increments/0136-process-lifecycle-test-suite/tasks.md#T-001): Create GitHub Actions Workflow for Cross-Platform Tests

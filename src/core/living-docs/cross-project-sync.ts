@@ -5,8 +5,11 @@
  * Groups user stories by their target project and syncs each group
  * to the appropriate project folder in living docs.
  *
+ * Supports both 1-level (project) and 2-level (project/board) structures.
+ *
  * @module core/living-docs/cross-project-sync
  * @since v0.33.0
+ * @updated v0.34.0 - Added 2-level structure support (project/board)
  */
 
 import * as path from 'node:path';
@@ -14,6 +17,7 @@ import * as fs from 'node:fs/promises';
 import type { UserStoryData, SyncResult } from './types.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { pathExists, ensureDir } from '../../utils/fs-native.js';
+import { detectStructureLevel, type StructureLevelConfig } from '../../utils/structure-level-detector.js';
 
 /**
  * Result of syncing to a single project
@@ -53,6 +57,7 @@ export interface CrossProjectSyncOptions {
 export class CrossProjectSync {
   private projectRoot: string;
   private logger: Logger;
+  private structureConfig: StructureLevelConfig | null = null;
 
   constructor(projectRoot: string, options: { logger?: Logger } = {}) {
     this.projectRoot = projectRoot;
@@ -60,13 +65,80 @@ export class CrossProjectSync {
   }
 
   /**
-   * Group user stories by their target project
+   * Get structure level configuration (cached)
+   */
+  private getStructureConfig(): StructureLevelConfig {
+    if (!this.structureConfig) {
+      this.structureConfig = detectStructureLevel(this.projectRoot);
+    }
+    return this.structureConfig;
+  }
+
+  /**
+   * Check if 2-level structure is detected
+   */
+  is2LevelStructure(): boolean {
+    return this.getStructureConfig().level === 2;
+  }
+
+  /**
+   * Get full target path for a user story
+   *
+   * For 1-level: returns project
+   * For 2-level: returns project/board
+   *
+   * @param us - User story
+   * @param defaultProject - Default project if US doesn't specify
+   * @param defaultBoard - Default board if US doesn't specify (2-level only)
+   * @returns Full path like "project" or "project/board"
+   */
+  getUSTargetPath(
+    us: UserStoryData,
+    defaultProject: string,
+    defaultBoard?: string
+  ): string {
+    const project = us.project || defaultProject;
+
+    if (this.is2LevelStructure()) {
+      const board = us.board || defaultBoard || 'default';
+      return `${project}/${board}`;
+    }
+
+    return project;
+  }
+
+  /**
+   * Group user stories by their target path (project or project/board)
    *
    * @param userStories - User stories to group
    * @param defaultProject - Default project for USs without explicit project
-   * @returns Map of project ID to user stories
+   * @param defaultBoard - Default board for USs without explicit board (2-level only)
+   * @returns Map of target path to user stories
    */
   groupByProject(
+    userStories: UserStoryData[],
+    defaultProject: string,
+    defaultBoard?: string
+  ): Map<string, UserStoryData[]> {
+    const groups = new Map<string, UserStoryData[]>();
+
+    for (const us of userStories) {
+      const targetPath = this.getUSTargetPath(us, defaultProject, defaultBoard);
+
+      if (!groups.has(targetPath)) {
+        groups.set(targetPath, []);
+      }
+      groups.get(targetPath)!.push(us);
+    }
+
+    return groups;
+  }
+
+  /**
+   * Group user stories by project only (ignoring board)
+   * Useful for project-level operations like external sync
+   */
+  groupByProjectOnly(
     userStories: UserStoryData[],
     defaultProject: string
   ): Map<string, UserStoryData[]> {
@@ -85,18 +157,49 @@ export class CrossProjectSync {
   }
 
   /**
-   * Check if an increment is cross-project (spans multiple projects)
+   * Check if an increment is cross-project (spans multiple projects/boards)
+   *
+   * For 1-level: checks if USs target different projects
+   * For 2-level: checks if USs target different project/board combinations
    */
   isCrossProject(
     userStories: UserStoryData[],
-    defaultProject: string
+    defaultProject: string,
+    defaultBoard?: string
   ): boolean {
-    const groups = this.groupByProject(userStories, defaultProject);
+    const groups = this.groupByProject(userStories, defaultProject, defaultBoard);
     return groups.size > 1;
   }
 
   /**
-   * Get the specs folder path for a project
+   * Check if an increment spans multiple projects (ignoring boards)
+   * Useful for external sync which groups at project level
+   */
+  spansMultipleProjects(
+    userStories: UserStoryData[],
+    defaultProject: string
+  ): boolean {
+    const groups = this.groupByProjectOnly(userStories, defaultProject);
+    return groups.size > 1;
+  }
+
+  /**
+   * Get the specs folder path for a target path
+   * Handles both 1-level (project) and 2-level (project/board)
+   *
+   * @param targetPath - Either "project" or "project/board"
+   */
+  getSpecsPath(targetPath: string): string {
+    return path.join(
+      this.projectRoot,
+      '.specweave/docs/internal/specs',
+      targetPath
+    );
+  }
+
+  /**
+   * Get the specs folder path for a project (legacy, 1-level only)
+   * @deprecated Use getSpecsPath() instead for 2-level support
    */
   getProjectSpecsPath(projectId: string): string {
     return path.join(
@@ -107,17 +210,32 @@ export class CrossProjectSync {
   }
 
   /**
-   * Get the feature folder path for a project and feature
+   * Get the feature folder path for a target path and feature
+   * Handles both 1-level and 2-level structures
+   *
+   * @param targetPath - Either "project" or "project/board"
+   * @param featureId - Feature ID (e.g., "FS-125")
    */
-  getFeaturePath(projectId: string, featureId: string): string {
+  getFeaturePath(targetPath: string, featureId: string): string {
     return path.join(
-      this.getProjectSpecsPath(projectId),
+      this.getSpecsPath(targetPath),
       featureId
     );
   }
 
   /**
-   * Ensure project specs folder exists
+   * Ensure specs folder exists for a target path
+   * Handles both 1-level and 2-level structures
+   */
+  async ensureSpecsFolder(targetPath: string): Promise<string> {
+    const folderPath = this.getSpecsPath(targetPath);
+    await ensureDir(folderPath);
+    return folderPath;
+  }
+
+  /**
+   * Ensure project specs folder exists (legacy, 1-level only)
+   * @deprecated Use ensureSpecsFolder() instead
    */
   async ensureProjectFolder(projectId: string): Promise<string> {
     const folderPath = this.getProjectSpecsPath(projectId);
@@ -126,10 +244,11 @@ export class CrossProjectSync {
   }
 
   /**
-   * Ensure feature folder exists within a project
+   * Ensure feature folder exists within a target path
+   * Handles both 1-level and 2-level structures
    */
-  async ensureFeatureFolder(projectId: string, featureId: string): Promise<string> {
-    const folderPath = this.getFeaturePath(projectId, featureId);
+  async ensureFeatureFolder(targetPath: string, featureId: string): Promise<string> {
+    const folderPath = this.getFeaturePath(targetPath, featureId);
     await ensureDir(folderPath);
     return folderPath;
   }
@@ -138,33 +257,43 @@ export class CrossProjectSync {
    * Generate cross-references section for FEATURE.md
    *
    * @param featureId - The feature ID (e.g., "FS-125")
-   * @param allProjects - All projects this feature spans
-   * @param currentProject - The current project being generated
+   * @param allTargetPaths - All target paths this feature spans (can be "project" or "project/board")
+   * @param currentTargetPath - The current target path being generated
    * @returns Markdown content for "Related Projects" section
    */
   generateCrossReferences(
     featureId: string,
-    allProjects: string[],
-    currentProject: string
+    allTargetPaths: string[],
+    currentTargetPath: string
   ): string {
-    const otherProjects = allProjects.filter(p => p !== currentProject);
+    const otherPaths = allTargetPaths.filter(p => p !== currentTargetPath);
 
-    if (otherProjects.length === 0) {
+    if (otherPaths.length === 0) {
       return '';
     }
+
+    // Determine depth of current path for relative link calculation
+    const currentDepth = currentTargetPath.split('/').length;
 
     const lines = [
       '',
       '## Related Projects',
       '',
-      'This feature spans multiple projects:',
+      this.is2LevelStructure()
+        ? 'This feature spans multiple project/board combinations:'
+        : 'This feature spans multiple projects:',
       ''
     ];
 
-    for (const projectId of otherProjects) {
-      // Relative path from current project to other project
-      const relativePath = `../../${projectId}/${featureId}/`;
-      lines.push(`- [${projectId}](${relativePath})`);
+    for (const targetPath of otherPaths) {
+      // Calculate relative path based on depth
+      // From project/board/FS-XXX/FEATURE.md to ../../../other-project/other-board/FS-XXX/
+      const upLevels = '../'.repeat(currentDepth + 1); // +1 for featureId folder
+      const relativePath = `${upLevels}${targetPath}/${featureId}/`;
+
+      // Display label (show full path for clarity)
+      const label = targetPath;
+      lines.push(`- [${label}](${relativePath})`);
     }
 
     lines.push('');
@@ -173,18 +302,40 @@ export class CrossProjectSync {
 
   /**
    * Generate cross-reference frontmatter for US files
+   *
+   * @param allTargetPaths - All target paths (can be "project" or "project/board")
+   * @param currentTargetPath - Current target path
    */
   generateRelatedProjectsFrontmatter(
-    allProjects: string[],
-    currentProject: string
+    allTargetPaths: string[],
+    currentTargetPath: string
   ): string {
-    const otherProjects = allProjects.filter(p => p !== currentProject);
+    const otherPaths = allTargetPaths.filter(p => p !== currentTargetPath);
 
-    if (otherProjects.length === 0) {
+    if (otherPaths.length === 0) {
       return '';
     }
 
-    return `related_projects: [${otherProjects.join(', ')}]`;
+    return `related_projects: [${otherPaths.join(', ')}]`;
+  }
+
+  /**
+   * Extract project ID from target path
+   * "project" -> "project"
+   * "project/board" -> "project"
+   */
+  extractProjectId(targetPath: string): string {
+    return targetPath.split('/')[0];
+  }
+
+  /**
+   * Extract board ID from target path (for 2-level structures)
+   * "project" -> undefined
+   * "project/board" -> "board"
+   */
+  extractBoardId(targetPath: string): string | undefined {
+    const parts = targetPath.split('/');
+    return parts.length > 1 ? parts[1] : undefined;
   }
 
   /**

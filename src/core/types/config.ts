@@ -301,6 +301,73 @@ export interface UmbrellaConfig {
 }
 
 /**
+ * External Tool Mapping for GitHub (v0.34.0+)
+ *
+ * Maps a SpecWeave project to a GitHub repository
+ */
+export interface GitHubMapping {
+  /** GitHub organization or username */
+  owner: string;
+
+  /** Repository name */
+  repo: string;
+}
+
+/**
+ * External Tool Mapping for JIRA (v0.34.0+)
+ *
+ * Maps a SpecWeave project to a JIRA project/board
+ */
+export interface JiraMapping {
+  /** JIRA project key (e.g., "BE", "FE", "MOBILE") */
+  project: string;
+
+  /** JIRA board name (optional) */
+  board?: string;
+}
+
+/**
+ * External Tool Mapping for Azure DevOps (v0.34.0+)
+ *
+ * Maps a SpecWeave project to an ADO project/area path
+ */
+export interface AdoMapping {
+  /** ADO project name */
+  project: string;
+
+  /** ADO area path (e.g., "Mobile\\iOS") */
+  areaPath?: string;
+}
+
+/**
+ * Project Mapping Configuration (v0.34.0+)
+ *
+ * Defines external tool targets for a single SpecWeave project.
+ * A project can have multiple external mappings (e.g., GitHub AND JIRA).
+ */
+export interface ProjectMapping {
+  /** GitHub repository mapping (optional) */
+  github?: GitHubMapping;
+
+  /** JIRA project mapping (optional) */
+  jira?: JiraMapping;
+
+  /** Azure DevOps mapping (optional) */
+  ado?: AdoMapping;
+}
+
+/**
+ * Project Mappings (v0.34.0+)
+ *
+ * Maps SpecWeave project IDs to external tool configurations.
+ * Used by per-US sync to route each User Story to its correct external location.
+ *
+ * Key: SpecWeave project ID (e.g., "frontend-app", "backend-api")
+ * Value: ProjectMapping with external tool targets
+ */
+export type ProjectMappings = Record<string, ProjectMapping>;
+
+/**
  * Complete SpecWeave Configuration
  *
  * Represents the structure of .specweave/config.json
@@ -341,6 +408,29 @@ export interface SpecweaveConfig {
 
   /** Umbrella repository configuration (v0.31.0+) */
   umbrella?: UmbrellaConfig;
+
+  /**
+   * Project Mappings (v0.34.0+)
+   *
+   * Maps SpecWeave project IDs to external tool targets (GitHub repos, JIRA projects, ADO areas).
+   * Used for per-US sync to route each User Story to its correct external location.
+   *
+   * @example
+   * ```json
+   * {
+   *   "frontend-app": {
+   *     "github": { "owner": "myorg", "repo": "frontend-app" }
+   *   },
+   *   "backend-api": {
+   *     "jira": { "project": "BE", "board": "api-team" }
+   *   },
+   *   "mobile-app": {
+   *     "ado": { "project": "MobileApp", "areaPath": "Mobile\\iOS" }
+   *   }
+   * }
+   * ```
+   */
+  projectMappings?: ProjectMappings;
 
   /** Allow additional properties */
   [key: string]: any;

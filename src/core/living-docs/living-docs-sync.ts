@@ -177,35 +177,48 @@ export class LivingDocsSync {
       // Step 4: Parse increment spec
       const parsed = await this.parseIncrementSpec(incrementId);
 
-      // Step 4b: Detect cross-project increments (v0.33.0+)
-      // If USs target different projects, sync to multiple project folders
+      // Step 4b: Detect cross-project/cross-board increments (v0.33.0+, v0.34.0 2-level)
+      // If USs target different projects (or project/board combinations), sync to multiple folders
       const defaultProject = parsed.frontmatter.project || resolvedProjectPath;
-      const isCrossProject = this.crossProjectSync.isCrossProject(parsed.userStories, defaultProject);
+      const defaultBoard = parsed.frontmatter.board;
+      const isCrossProject = this.crossProjectSync.isCrossProject(
+        parsed.userStories,
+        defaultProject,
+        defaultBoard
+      );
 
       if (isCrossProject) {
-        this.logger.log(`📦 Cross-project increment detected`);
-        const groups = this.crossProjectSync.groupByProject(parsed.userStories, defaultProject);
-        this.logger.log(`   ${groups.size} projects: ${[...groups.keys()].join(', ')}`);
+        const is2Level = this.crossProjectSync.is2LevelStructure();
+        this.logger.log(`📦 Cross-project increment detected${is2Level ? ' (2-level structure)' : ''}`);
 
-        // For cross-project increments, create feature folder in each project
-        // USs are synced to their respective project's feature folder
-        // Cross-references are added to link related projects
-        for (const [projectId, projectStories] of groups) {
-          const crossProjectPath = path.join(basePath, projectId, featureId);
-          this.logger.log(`   📁 Syncing ${projectStories.length} USs to ${projectId}/${featureId}/`);
+        // Group by full target path (project for 1-level, project/board for 2-level)
+        const groups = this.crossProjectSync.groupByProject(
+          parsed.userStories,
+          defaultProject,
+          defaultBoard
+        );
+        this.logger.log(`   ${groups.size} target${is2Level ? ' paths' : ' projects'}: ${[...groups.keys()].join(', ')}`);
+
+        // For cross-project increments, create feature folder in each target path
+        // USs are synced to their respective target's feature folder
+        // Cross-references are added to link related projects/boards
+        for (const [targetPath, projectStories] of groups) {
+          // Use full target path (may be "project" or "project/board")
+          const crossProjectPath = path.join(basePath, targetPath, featureId);
+          this.logger.log(`   📁 Syncing ${projectStories.length} USs to ${targetPath}/${featureId}/`);
 
           if (!options.dryRun) {
             await ensureDir(crossProjectPath);
 
-            // Generate FEATURE.md with cross-references
+            // Generate FEATURE.md with cross-references (now uses target paths)
             const crossRefs = this.crossProjectSync.generateCrossReferences(
               featureId,
               [...groups.keys()],
-              projectId
+              targetPath
             );
             let featureContent = generateFeatureFile(featureId, {
               ...parsed,
-              userStories: projectStories  // Only this project's USs
+              userStories: projectStories  // Only this target's USs
             }, incrementId);
             // Append cross-references section
             if (crossRefs) {
@@ -214,8 +227,8 @@ export class LivingDocsSync {
             await fs.writeFile(path.join(crossProjectPath, 'FEATURE.md'), featureContent, 'utf-8');
             result.filesCreated.push(path.join(crossProjectPath, 'FEATURE.md'));
 
-            // Create user story files for this project
-            const allProjects = [...groups.keys()];
+            // Create user story files for this target path
+            const allTargetPaths = [...groups.keys()];
             for (const story of projectStories) {
               const existingFile = await findExistingUserStoryFile(crossProjectPath, story.id, this.logger);
               let storyFile: string;
@@ -225,16 +238,16 @@ export class LivingDocsSync {
                 const storySlug = story.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
                 storyFile = path.join(crossProjectPath, `${story.id.toLowerCase()}-${storySlug}.md`);
               }
-              // Pass allProjects for related_projects frontmatter (v0.33.0+)
+              // Pass allProjects for related_projects frontmatter (v0.33.0+, v0.34.0 paths)
               const storyContent = generateUserStoryFile(story, featureId, incrementId, {
                 ...parsed,
                 userStories: projectStories
-              }, { allProjects });
+              }, { allProjects: allTargetPaths });
               await fs.writeFile(storyFile, storyContent, 'utf-8');
               result.filesCreated.push(storyFile);
             }
 
-            // Cleanup and sync tasks for this project's USs
+            // Cleanup and sync tasks for this target's USs
             await cleanupDuplicateFiles(crossProjectPath, this.logger);
             await cleanupTempFiles(crossProjectPath, this.logger);
             await this.syncTasksToUserStories(incrementId, featureId, projectStories, crossProjectPath);
@@ -245,8 +258,8 @@ export class LivingDocsSync {
         result.success = true;
         this.crossProjectSync.logSyncSummary({
           success: true,
-          projects: [...groups.entries()].map(([projectId, stories]) => ({
-            projectId,
+          projects: [...groups.entries()].map(([targetPath, stories]) => ({
+            projectId: targetPath,  // Now contains full path (project or project/board)
             success: true,
             userStories: stories.map(s => s.id),
             filesCreated: [] as string[],

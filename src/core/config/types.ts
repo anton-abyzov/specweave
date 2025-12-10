@@ -337,6 +337,72 @@ export interface UmbrellaConfig {
 }
 
 /**
+ * GitHub project mapping for per-US targeting
+ * @since v0.34.0
+ */
+export interface GitHubProjectMapping {
+  /** GitHub owner (org or user) */
+  owner: string;
+  /** GitHub repository name */
+  repo: string;
+}
+
+/**
+ * JIRA project mapping for per-US targeting
+ * @since v0.34.0
+ */
+export interface JiraProjectMapping {
+  /** JIRA project key (e.g., 'FE', 'BE', 'SECURITY') */
+  project: string;
+  /** Optional JIRA board name for 2-level structures */
+  board?: string;
+}
+
+/**
+ * ADO project mapping for per-US targeting
+ * @since v0.34.0
+ */
+export interface AdoProjectMapping {
+  /** ADO project name */
+  project: string;
+  /** Optional ADO area path (e.g., 'infrastructure/security') */
+  areaPath?: string;
+}
+
+/**
+ * External tool mappings for a single project
+ * Each project can be mapped to multiple external tools
+ * @since v0.34.0
+ */
+export interface ProjectMapping {
+  /** GitHub repository mapping */
+  github?: GitHubProjectMapping;
+  /** JIRA project mapping */
+  jira?: JiraProjectMapping;
+  /** Azure DevOps project mapping */
+  ado?: AdoProjectMapping;
+}
+
+/**
+ * Project mappings for cross-project targeting
+ * Maps SpecWeave project IDs to external tool targets
+ * @since v0.34.0
+ *
+ * @example
+ * ```json
+ * {
+ *   "frontend-app": {
+ *     "github": { "owner": "myorg", "repo": "frontend-app" }
+ *   },
+ *   "backend-api": {
+ *     "jira": { "project": "BE", "board": "api-team" }
+ *   }
+ * }
+ * ```
+ */
+export type ProjectMappings = Record<string, ProjectMapping>;
+
+/**
  * Supported languages for SpecWeave
  * Re-exported here for config type completeness
  */
@@ -482,6 +548,26 @@ export interface SpecWeaveConfig {
    * Umbrella/multi-repo configuration (optional)
    */
   umbrella?: UmbrellaConfig;
+
+  /**
+   * Project mappings for cross-project targeting (v0.34.0+)
+   *
+   * Maps SpecWeave project IDs to external tool targets.
+   * Allows per-US sync to different repos/projects.
+   *
+   * @example
+   * ```json
+   * {
+   *   "frontend-app": {
+   *     "github": { "owner": "myorg", "repo": "frontend-app" }
+   *   },
+   *   "backend-api": {
+   *     "jira": { "project": "BE", "board": "api-team" }
+   *   }
+   * }
+   * ```
+   */
+  projectMappings?: ProjectMappings;
 }
 
 /**
