@@ -35,12 +35,12 @@ test_should_block() {
   mkdir -p "$(dirname "$file_path")"
 
   # Build JSON input for the guard
+  # Use printf + jq -Rs to properly escape newlines in the content
   local json_input
-  json_input=$(jq -n \
+  json_input=$(printf '%s' "$spec_content" | jq -Rs \
     --arg tool_name "Write" \
     --arg file_path "$file_path" \
-    --arg content "$spec_content" \
-    '{tool_name: $tool_name, tool_input: {file_path: $file_path, content: $content}}')
+    '{tool_name: $tool_name, tool_input: {file_path: $file_path, content: .}}')
 
   result=$(echo "$json_input" | bash "$GUARD" 2>&1; echo "EXIT:$?")
   exit_code=$(echo "$result" | grep -o 'EXIT:[0-9]*' | cut -d: -f2)
@@ -66,12 +66,12 @@ test_should_allow() {
   mkdir -p "$(dirname "$file_path")"
 
   # Build JSON input for the guard
+  # Use printf + jq -Rs to properly escape newlines in the content
   local json_input
-  json_input=$(jq -n \
+  json_input=$(printf '%s' "$spec_content" | jq -Rs \
     --arg tool_name "Write" \
     --arg file_path "$file_path" \
-    --arg content "$spec_content" \
-    '{tool_name: $tool_name, tool_input: {file_path: $file_path, content: $content}}')
+    '{tool_name: $tool_name, tool_input: {file_path: $file_path, content: .}}')
 
   result=$(echo "$json_input" | bash "$GUARD" 2>&1; echo "EXIT:$?")
   exit_code=$(echo "$result" | grep -o 'EXIT:[0-9]*' | cut -d: -f2)

@@ -67,10 +67,10 @@ Edit("spec.md", "- [ ] **AC-US1-01**", "- [x] **AC-US1-01**");
 .specweave/
 ├── increments/              # Feature increments (####-name/)
 │   └── 0001-feature/
+│       ├── metadata.json    # Increment metadata - REQUIRED
 │       ├── spec.md          # WHAT & WHY
-│       ├── plan.md          # HOW
-│       ├── tasks.md         # Checklist with embedded tests
-│       └── context-manifest.yaml  # Selective loading
+│       ├── plan.md          # HOW (optional)
+│       └── tasks.md         # Checklist with embedded tests
 ├── docs/internal/
 │   ├── strategy/            # Business specs
 │   ├── specs/               # Living docs (post-completion)
@@ -96,12 +96,16 @@ Edit("spec.md", "- [ ] **AC-US1-01**", "- [x] **AC-US1-01**");
 
 ---
 
-## Context Loading (Token Savings)
+## Increment Files
 
-**ALWAYS read `context-manifest.yaml` first!** Load only files listed there.
-- Full specs: 50k tokens
-- Manifest files: 5k tokens
-- **Savings: 90%**
+**Required files** for every increment:
+1. `metadata.json` - Increment metadata (status, type, dates) - MUST create FIRST
+2. `spec.md` - User stories, acceptance criteria
+3. `tasks.md` - Implementation tasks with embedded tests
+
+**Optional**:
+- `plan.md` - Technical design (for complex features only)
+- `reports/` - Completion reports, analyses
 
 ---
 

@@ -442,11 +442,11 @@ export async function syncUserStoriesToGitHub(
 
 #### Acceptance Criteria
 
-- [ ] **AC-US1-01**: `/specweave:increment` hook detects structure level before planning starts
-- [ ] **AC-US1-02**: Available projects/boards are listed in a context block injected into conversation
-- [ ] **AC-US1-03**: Context block includes clear instructions that each US needs **Project**: field
-- [ ] **AC-US1-04**: For 2-level structures, context block includes board options per project
-- [ ] **AC-US1-05**: Context injection happens BEFORE Claude starts generating spec.md content
+- [x] **AC-US1-01**: `/specweave:increment` hook detects structure level before planning starts
+- [x] **AC-US1-02**: Available projects/boards are listed in a context block injected into conversation
+- [x] **AC-US1-03**: Context block includes clear instructions that each US needs **Project**: field
+- [x] **AC-US1-04**: For 2-level structures, context block includes board options per project
+- [x] **AC-US1-05**: Context injection happens BEFORE Claude starts generating spec.md content
 
 ---
 
@@ -459,13 +459,13 @@ export async function syncUserStoriesToGitHub(
 
 #### Acceptance Criteria
 
-- [ ] **AC-US2-01**: Hook parses spec.md to count User Stories (### US-XXX pattern)
-- [ ] **AC-US2-02**: Hook counts USs with **Project**: field (line after heading)
-- [ ] **AC-US2-03**: Hook BLOCKS write if any US lacks **Project**: field
-- [ ] **AC-US2-04**: For 2-level structures, hook also requires **Board**: field
-- [ ] **AC-US2-05**: Error message lists which USs are missing fields
-- [ ] **AC-US2-06**: Error message shows available projects/boards from config
-- [ ] **AC-US2-07**: Hook can be bypassed with explicit `--force` flag
+- [x] **AC-US2-01**: Hook parses spec.md to count User Stories (### US-XXX pattern)
+- [x] **AC-US2-02**: Hook counts USs with **Project**: field (line after heading)
+- [x] **AC-US2-03**: Hook BLOCKS write if any US lacks **Project**: field
+- [x] **AC-US2-04**: For 2-level structures, hook also requires **Board**: field
+- [x] **AC-US2-05**: Error message lists which USs are missing fields
+- [x] **AC-US2-06**: Error message shows available projects/boards from config
+- [x] **AC-US2-07**: Hook can be bypassed with explicit `--force` flag
 
 ---
 
@@ -478,12 +478,12 @@ export async function syncUserStoriesToGitHub(
 
 #### Acceptance Criteria
 
-- [ ] **AC-US3-01**: Single project → auto-selects silently (no question)
-- [ ] **AC-US3-02**: Keyword matching → suggests project with confidence level
-- [ ] **AC-US3-03**: Cross-cutting detection → splits USs across projects
-- [ ] **AC-US3-04**: Resolution includes `confidence` (high/medium/low) and `reason`
-- [ ] **AC-US3-05**: Low confidence → prompts user with all options
-- [ ] **AC-US3-06**: Existing spec patterns learned from `.specweave/increments/*/spec.md`
+- [x] **AC-US3-01**: Single project → auto-selects silently (no question)
+- [x] **AC-US3-02**: Keyword matching → suggests project with confidence level
+- [x] **AC-US3-03**: Cross-cutting detection → splits USs across projects
+- [x] **AC-US3-04**: Resolution includes `confidence` (high/medium/low) and `reason`
+- [x] **AC-US3-05**: Low confidence → prompts user with all options
+- [x] **AC-US3-06**: Existing spec patterns learned from `.specweave/increments/*/spec.md`
 
 ---
 
@@ -496,12 +496,12 @@ export async function syncUserStoriesToGitHub(
 
 #### Acceptance Criteria
 
-- [ ] **AC-US4-01**: `specweave-github` reads `projectMappings` from config.json
-- [ ] **AC-US4-02**: Sync groups USs by their `project` field
-- [ ] **AC-US4-03**: Each project group syncs to its mapped `github.owner/repo`
-- [ ] **AC-US4-04**: metadata.json stores `externalRefs` per US (not per increment)
-- [ ] **AC-US4-05**: USs without mapping show clear error (not silent failure)
-- [ ] **AC-US4-06**: Rate limiting applies per-provider, batched across USs
+- [x] **AC-US4-01**: `specweave-github` reads `projectMappings` from config.json
+- [x] **AC-US4-02**: Sync groups USs by their `project` field
+- [x] **AC-US4-03**: Each project group syncs to its mapped `github.owner/repo`
+- [x] **AC-US4-04**: metadata.json stores `externalRefs` per US (not per increment)
+- [x] **AC-US4-05**: USs without mapping show clear error (not silent failure)
+- [x] **AC-US4-06**: Rate limiting applies per-provider, batched across USs
 
 ---
 
@@ -514,12 +514,12 @@ export async function syncUserStoriesToGitHub(
 
 #### Acceptance Criteria
 
-- [ ] **AC-US5-01**: `specweave-jira` reads `projectMappings` from config.json
-- [ ] **AC-US5-02**: Sync groups USs by their `project` field
-- [ ] **AC-US5-03**: Each project group syncs to its mapped `jira.project/board`
-- [ ] **AC-US5-04**: metadata.json stores `externalRefs` per US
-- [ ] **AC-US5-05**: USs without mapping show clear error
-- [ ] **AC-US5-06**: Existing JIRA issues updated if already synced
+- [x] **AC-US5-01**: `specweave-jira` reads `projectMappings` from config.json
+- [x] **AC-US5-02**: Sync groups USs by their `project` field
+- [x] **AC-US5-03**: Each project group syncs to its mapped `jira.project/board`
+- [x] **AC-US5-04**: metadata.json stores `externalRefs` per US
+- [x] **AC-US5-05**: USs without mapping show clear error
+- [x] **AC-US5-06**: Existing JIRA issues updated if already synced
 
 ---
 
@@ -532,12 +532,12 @@ export async function syncUserStoriesToGitHub(
 
 #### Acceptance Criteria
 
-- [ ] **AC-US6-01**: `specweave-ado` reads `projectMappings` from config.json
-- [ ] **AC-US6-02**: Sync groups USs by their `project` field
-- [ ] **AC-US6-03**: Each project group syncs to its mapped `ado.project/areaPath`
-- [ ] **AC-US6-04**: metadata.json stores `externalRefs` per US
-- [ ] **AC-US6-05**: USs without mapping show clear error
-- [ ] **AC-US6-06**: Work items tagged with area path correctly
+- [x] **AC-US6-01**: `specweave-ado` reads `projectMappings` from config.json
+- [x] **AC-US6-02**: Sync groups USs by their `project` field
+- [x] **AC-US6-03**: Each project group syncs to its mapped `ado.project/areaPath`
+- [x] **AC-US6-04**: metadata.json stores `externalRefs` per US
+- [x] **AC-US6-05**: USs without mapping show clear error
+- [x] **AC-US6-06**: Work items tagged with area path correctly
 
 ---
 
@@ -550,12 +550,12 @@ export async function syncUserStoriesToGitHub(
 
 #### Acceptance Criteria
 
-- [ ] **AC-US7-01**: JSON schema defines `projectMappings` structure
-- [ ] **AC-US7-02**: Each mapping has optional `github`, `jira`, `ado` sub-objects
-- [ ] **AC-US7-03**: GitHub mapping requires `owner` and `repo`
-- [ ] **AC-US7-04**: JIRA mapping requires `project`, optional `board`
-- [ ] **AC-US7-05**: ADO mapping requires `project`, optional `areaPath`
-- [ ] **AC-US7-06**: Schema validation runs on `specweave init` and config load
+- [x] **AC-US7-01**: JSON schema defines `projectMappings` structure
+- [x] **AC-US7-02**: Each mapping has optional `github`, `jira`, `ado` sub-objects
+- [x] **AC-US7-03**: GitHub mapping requires `owner` and `repo`
+- [x] **AC-US7-04**: JIRA mapping requires `project`, optional `board`
+- [x] **AC-US7-05**: ADO mapping requires `project`, optional `areaPath`
+- [x] **AC-US7-06**: Schema validation runs on `specweave init` and config load
 
 ---
 
@@ -568,11 +568,11 @@ export async function syncUserStoriesToGitHub(
 
 #### Acceptance Criteria
 
-- [ ] **AC-US8-01**: Status groups USs by their target project
-- [ ] **AC-US8-02**: Each US shows external tool link (GitHub/JIRA/ADO issue URL)
-- [ ] **AC-US8-03**: Aggregate shows "3/5 USs synced, 2 pending"
-- [ ] **AC-US8-04**: Warning shown for USs without project mapping
-- [ ] **AC-US8-05**: 2-level structures show project AND board per US
+- [x] **AC-US8-01**: Status groups USs by their target project
+- [x] **AC-US8-02**: Each US shows external tool link (GitHub/JIRA/ADO issue URL)
+- [x] **AC-US8-03**: Aggregate shows "3/5 USs synced, 2 pending"
+- [x] **AC-US8-04**: Warning shown for USs without project mapping
+- [x] **AC-US8-05**: 2-level structures show project AND board per US
 
 ---
 
@@ -585,11 +585,11 @@ export async function syncUserStoriesToGitHub(
 
 #### Acceptance Criteria
 
-- [ ] **AC-US9-01**: `syncIncrement()` reads `project` field from each US
-- [ ] **AC-US9-02**: Each US file placed in `specs/{project}/FS-XXX/us-XXX.md`
-- [ ] **AC-US9-03**: Cross-project increments create FS-XXX folder in EACH project
-- [ ] **AC-US9-04**: FEATURE.md in each project links to related projects
-- [ ] **AC-US9-05**: 2-level structures place files in `specs/{project}/{board}/FS-XXX/`
+- [x] **AC-US9-01**: `syncIncrement()` reads `project` field from each US
+- [x] **AC-US9-02**: Each US file placed in `specs/{project}/FS-XXX/us-XXX.md`
+- [x] **AC-US9-03**: Cross-project increments create FS-XXX folder in EACH project
+- [x] **AC-US9-04**: FEATURE.md in each project links to related projects
+- [x] **AC-US9-05**: 2-level structures place files in `specs/{project}/{board}/FS-XXX/`
 
 ---
 
@@ -602,11 +602,11 @@ export async function syncUserStoriesToGitHub(
 
 #### Acceptance Criteria
 
-- [ ] **AC-US10-01**: If US has no `**Project**:`, use spec.md frontmatter `project:`
-- [ ] **AC-US10-02**: If no frontmatter project, use first project from config
-- [ ] **AC-US10-03**: Fallback logged as warning (not error)
-- [ ] **AC-US10-04**: Validation hook has `--legacy` mode for existing specs
-- [ ] **AC-US10-05**: Migration guide documents how to add per-US fields
+- [x] **AC-US10-01**: If US has no `**Project**:`, use spec.md frontmatter `project:`
+- [x] **AC-US10-02**: If no frontmatter project, use first project from config
+- [x] **AC-US10-03**: Fallback logged as warning (not error)
+- [x] **AC-US10-04**: Validation hook has `--legacy` mode for existing specs
+- [x] **AC-US10-05**: Migration guide documents how to add per-US fields
 
 ## Functional Requirements
 
