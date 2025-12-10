@@ -20,6 +20,7 @@ import { AdoClient } from '../integrations/ado/ado-client.js';
 import { ResolvedAdoProfile } from '../integrations/ado/ado-client-factory.js';
 import { getAdoPat } from '../integrations/ado/ado-pat-provider.js';
 import { deriveFeatureId } from '../utils/feature-id-derivation.js';
+import { ClosureMetrics, createClosureMetrics } from './closure-metrics.js';
 
 export interface SyncCoordinatorOptions {
   projectRoot: string;
@@ -46,6 +47,7 @@ export class SyncCoordinator {
   private frontmatterUpdater: FrontmatterUpdater;
   private projectId: string;
   private adoProfile?: ResolvedAdoProfile;
+  private metrics: ClosureMetrics;
 
   constructor(options: SyncCoordinatorOptions) {
     this.projectRoot = options.projectRoot;
@@ -56,6 +58,25 @@ export class SyncCoordinator {
     this.projectId = autoDetectProjectIdSync(this.projectRoot, { silent: true });
     // Store resolved ADO profile for multi-project sync
     this.adoProfile = options.adoProfile;
+    // Initialize closure metrics (v0.34.0)
+    this.metrics = createClosureMetrics(this.projectRoot, this.incrementId, this.logger);
+  }
+
+  /**
+   * Get closure sync metrics summary (v0.34.0)
+   *
+   * Returns aggregated metrics for all external tool closure operations.
+   * Useful for monitoring and alerting on sync health.
+   */
+  getClosureMetrics(): ReturnType<ClosureMetrics['getSummary']> {
+    return this.metrics.getSummary();
+  }
+
+  /**
+   * Get formatted closure metrics for display (v0.34.0)
+   */
+  getFormattedClosureMetrics(): string {
+    return this.metrics.formatSummary();
   }
 
   /**
@@ -268,7 +289,34 @@ export class SyncCoordinator {
             continue;
           }
 
-          // All 3 layers miss - create new issue
+          // All 3 layers miss - but check for DUPLICATES with wrong format first!
+          // ========================================================================
+          // DUPLICATE DETECTION (v0.34.0): Prevent FS-0128 vs FS-128 duplicates
+          // ========================================================================
+          // Before creating, search for issues with similar titles but different feature ID formats.
+          // This catches cases where an old bug created issues with leading zeros (FS-0128)
+          // but the correct format is without (FS-128).
+          const duplicateCheck = await this.detectDuplicateIssue(client, featureId, usFile.id);
+          if (duplicateCheck) {
+            this.logger.log(`  ⚠️  DUPLICATE DETECTED: Issue #${duplicateCheck.number} exists with format "${duplicateCheck.format}"`);
+            this.logger.log(`     Current format: [${featureId}][${usFile.id}]`);
+            this.logger.log(`     Existing issue: ${duplicateCheck.title}`);
+            this.logger.log(`     ⏭️  Skipping creation to avoid duplicate. Use existing issue #${duplicateCheck.number}`);
+
+            // Backfill metadata with the existing issue (even if wrong format)
+            await this.frontmatterUpdater.updateUserStoryFrontmatter({
+              projectRoot: this.projectRoot,
+              featureId,
+              userStoryId: usFile.id,
+              githubIssue: {
+                number: duplicateCheck.number,
+                url: duplicateCheck.url,
+                createdAt: new Date().toISOString(),
+              },
+            });
+            continue;
+          }
+
           this.logger.log(`  📝 Creating GitHub issue for ${usFile.id}...`);
 
           // Format issue body - use UserStoryContentBuilder for rich content with ACs
@@ -478,9 +526,17 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
 ---
 🤖 Auto-closed by SpecWeave on increment completion`;
 
-          await client.closeIssue(existingIssue.number, completionComment);
-          closedIssues.push(existingIssue.number);
-          this.logger.log(`  ✅ Closed issue #${existingIssue.number}`);
+          // Track metrics (v0.34.0)
+          this.metrics.startOperation();
+          try {
+            await client.closeIssue(existingIssue.number, completionComment);
+            closedIssues.push(existingIssue.number);
+            this.metrics.recordClosure('github', existingIssue.number, true);
+            this.logger.log(`  ✅ Closed issue #${existingIssue.number}`);
+          } catch (closeError) {
+            this.metrics.recordClosure('github', existingIssue.number, false, String(closeError));
+            throw closeError;
+          }
 
         } catch (error) {
           this.logger.error(`  ❌ Failed to close issue for ${usFile.id}:`, error);
@@ -560,13 +616,21 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
 
           // Transition to Done
           this.logger.log(`  🔒 Transitioning JIRA ${jiraKey} to ${targetStatus}...`);
-          await jiraClient.updateIssue({
-            key: jiraKey,
-            status: targetStatus
-          });
 
-          this.logger.log(`  ✅ Transitioned ${jiraKey}`);
-          closedCount++;
+          // Track metrics (v0.34.0)
+          this.metrics.startOperation();
+          try {
+            await jiraClient.updateIssue({
+              key: jiraKey,
+              status: targetStatus
+            });
+            this.metrics.recordClosure('jira', jiraKey, true);
+            this.logger.log(`  ✅ Transitioned ${jiraKey}`);
+            closedCount++;
+          } catch (updateError) {
+            this.metrics.recordClosure('jira', jiraKey, false, String(updateError));
+            throw updateError;
+          }
         } catch (error) {
           this.logger.error(`  ❌ Failed to close JIRA issue for ${usFile.id}:`, error);
         }
@@ -666,13 +730,21 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
 
           // Update to Closed state
           this.logger.log(`  🔒 Closing ADO work item #${workItemId}...`);
-          await adoClient.updateWorkItem({
-            id: workItemId,
-            state: targetState
-          });
 
-          this.logger.log(`  ✅ Closed #${workItemId}`);
-          closedCount++;
+          // Track metrics (v0.34.0)
+          this.metrics.startOperation();
+          try {
+            await adoClient.updateWorkItem({
+              id: workItemId,
+              state: targetState
+            });
+            this.metrics.recordClosure('ado', workItemId, true);
+            this.logger.log(`  ✅ Closed #${workItemId}`);
+            closedCount++;
+          } catch (updateError) {
+            this.metrics.recordClosure('ado', workItemId, false, String(updateError));
+            throw updateError;
+          }
         } catch (error) {
           this.logger.error(`  ❌ Failed to close ADO work item for ${usId}:`, error);
         }
@@ -815,11 +887,88 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
         this.logger.log(`   ⚠️  ${result.errors.length} error(s) occurred`);
       }
 
+      // Check for high failure rate and warn (v0.34.0 metrics)
+      const tools: Array<'github' | 'jira' | 'ado'> = ['github', 'jira', 'ado'];
+      for (const tool of tools) {
+        if (this.metrics.isFailureRateHigh(tool)) {
+          this.logger.log(`   ⚠️  ${tool.toUpperCase()} has high failure rate - check credentials/permissions`);
+        }
+      }
+
       return result;
     } catch (error) {
       result.errors.push(`Sync closure error: ${error}`);
       this.logger.error('❌ Increment closure sync failed:', error);
       return result;
+    }
+  }
+
+  /**
+   * Detect duplicate issues with different feature ID formats (v0.34.0)
+   *
+   * Searches for issues that match the user story but have a different feature ID format.
+   * This prevents creating duplicates like:
+   * - [FS-0128][US-001] (old bug format with leading zeros)
+   * - [FS-128][US-001] (correct format)
+   *
+   * The search uses a regex pattern that matches any FS-XXX format for the same US-XXX.
+   *
+   * @param client - GitHub client
+   * @param featureId - Current feature ID (e.g., "FS-128")
+   * @param userStoryId - User story ID (e.g., "US-001")
+   * @returns Duplicate info if found, null otherwise
+   */
+  private async detectDuplicateIssue(
+    client: GitHubClientV2,
+    featureId: string,
+    userStoryId: string
+  ): Promise<{ number: number; url: string; title: string; format: string } | null> {
+    try {
+      // Extract the numeric part of the feature ID (e.g., "128" from "FS-128" or "FS-0128")
+      const featureNumMatch = featureId.match(/FS-0*(\d+)E?/i);
+      if (!featureNumMatch) {
+        return null;
+      }
+      const featureNum = featureNumMatch[1];
+
+      // Search for issues with ANY format of this feature ID + user story
+      // Patterns to check:
+      // - [FS-128][US-001]   (correct, no leading zeros)
+      // - [FS-0128][US-001]  (bug format, with leading zeros)
+      // - [FS-00128][US-001] (edge case, multiple leading zeros)
+      const searchPatterns = [
+        `[FS-${featureNum}][${userStoryId}]`,           // FS-128
+        `[FS-0${featureNum}][${userStoryId}]`,          // FS-0128
+        `[FS-00${featureNum}][${userStoryId}]`,         // FS-00128
+        `[FS-${featureNum}E][${userStoryId}]`,          // FS-128E (external)
+        `[FS-0${featureNum}E][${userStoryId}]`,         // FS-0128E
+      ];
+
+      // Filter out the exact current format (we already checked that)
+      const currentFormat = `[${featureId}][${userStoryId}]`;
+      const alternatePatterns = searchPatterns.filter(p => p !== currentFormat);
+
+      for (const pattern of alternatePatterns) {
+        const existingIssue = await client.searchIssueByTitle(pattern, true); // Include closed
+        if (existingIssue) {
+          // Extract the format from the issue title
+          const formatMatch = existingIssue.title.match(/\[(FS-\d+E?)\]/i);
+          const detectedFormat = formatMatch ? formatMatch[1] : 'unknown';
+
+          return {
+            number: existingIssue.number,
+            url: existingIssue.html_url,
+            title: existingIssue.title,
+            format: detectedFormat,
+          };
+        }
+      }
+
+      return null;
+    } catch (error) {
+      // Don't block issue creation on duplicate detection failure
+      this.logger.log(`    ⚠️ Duplicate detection failed (non-blocking): ${error}`);
+      return null;
     }
   }
 

@@ -318,13 +318,19 @@ export class PlatformUtils {
    *
    * Fails gracefully if notification system is unavailable
    *
-   * @param title Notification title
-   * @param body Notification body text
+   * IMPORTANT: Notifications MUST be explicit! Always:
+   * 1. Start title with "SpecWeave:" to identify source
+   * 2. Use explicit message describing what happened
+   * 3. Include "No action needed" for informational notifications
+   *
+   * @param title Notification title (should start with "SpecWeave:")
+   * @param body Notification body text (should be explicit about what happened)
+   * @param sound Optional sound name for macOS (default: "Pop" for neutral notifications)
    */
-  async sendNotification(title: string, body: string): Promise<void> {
+  async sendNotification(title: string, body: string, sound?: string): Promise<void> {
     try {
       if (this.platform === 'darwin') {
-        await this.sendNotificationMacOS(title, body);
+        await this.sendNotificationMacOS(title, body, sound);
       } else if (this.platform === 'linux') {
         await this.sendNotificationLinux(title, body);
       } else if (this.platform === 'win32') {
@@ -338,11 +344,16 @@ export class PlatformUtils {
 
   /**
    * macOS notification using osascript
+   *
+   * @param title Notification title (should start with "SpecWeave:")
+   * @param body Notification body (should be explicit about what happened)
+   * @param sound Optional sound name (default: "Pop" for neutral notifications)
    */
-  private async sendNotificationMacOS(title: string, body: string): Promise<void> {
+  private async sendNotificationMacOS(title: string, body: string, sound: string = 'Pop'): Promise<void> {
     const escapedTitle = title.replace(/"/g, '\\"');
     const escapedBody = body.replace(/"/g, '\\"');
-    const cmd = `osascript -e 'display notification "${escapedBody}" with title "${escapedTitle}"'`;
+    const soundParam = sound ? ` sound name "${sound}"` : '';
+    const cmd = `osascript -e 'display notification "${escapedBody}" with title "${escapedTitle}"${soundParam}'`;
     execSync(cmd, { stdio: 'ignore' });
   }
 

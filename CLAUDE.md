@@ -444,6 +444,44 @@ rm -f .specweave/state/.dedup-cache/*.lock
 
 **Mental model**: Bash = "run a program". Write/Edit/Read = "modify files".
 
+### 11. macOS Notifications - MUST Be Explicit (v0.33.3+)
+
+**Vague notifications = user confusion!** Every notification MUST clearly state:
+1. **WHO** sent it (always start with "SpecWeave:")
+2. **WHAT** happened (specific action, not vague alert)
+3. **ACTION** needed (or "No action needed" if informational)
+
+```
+❌ FORBIDDEN (vague, alarming):
+Title: "🚨 Zombie Cleanup"           ← What does this mean?!
+Sound: "Basso" (error sound)         ← Red alert icon, scary!
+Message: "Cleaned up 5 processes"    ← So what?
+
+✅ CORRECT (explicit, calm):
+Title: "SpecWeave: Cleanup Done"     ← Clear source
+Sound: "Pop" (neutral)               ← Not alarming
+Message: "Cleaned up 5 zombie processes. No action needed."
+```
+
+**Sound selection rules:**
+| Sound | When to use |
+|-------|-------------|
+| `Pop` | Success, completion (neutral) |
+| `Glass` | Informational (gentle) |
+| `Submarine` | Warning (not critical) |
+| `Basso` | ONLY critical errors requiring immediate action |
+
+**Use notification constants from `src/utils/notification-constants.ts`:**
+```typescript
+import { getTitleForType, buildNotificationMessage, getSoundForType } from './notification-constants.js';
+
+const title = getTitleForType('cleanup');  // "SpecWeave: Cleanup Done"
+const msg = buildNotificationMessage('cleanup', { count: 5 });  // "Cleaned up 5 zombie..."
+const sound = getSoundForType('cleanup');  // "Pop"
+```
+
+**Pre-commit hook validates notification messages in new code (v0.33.3+).**
+
 ---
 
 ## Development Setup

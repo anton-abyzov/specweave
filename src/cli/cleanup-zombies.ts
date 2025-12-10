@@ -267,19 +267,22 @@ async function main() {
       logCleanupAction('INFO', 'SUMMARY', `Total processes cleaned: ${totalKilled}`);
 
       // Send notification if >3 processes cleaned
+      // Use explicit, user-friendly messages (not vague alerts!)
       if (totalKilled > 3) {
-        const title = '🚨 Zombie Cleanup';
-        const message = `Cleaned up ${totalKilled} zombie processes`;
+        const title = 'SpecWeave: Cleanup Done';
+        const message = `Cleaned up ${totalKilled} zombie processes. No action needed.`;
+        // Use "Pop" sound (neutral) instead of alarming sounds
+        const sound = 'Pop';
 
         try {
           if (process.platform === 'darwin') {
-            // macOS notification
+            // macOS notification with explicit SpecWeave branding
             await exec(
-              `osascript -e 'display notification "${message}" with title "${title}" sound name "Glass"'`
+              `osascript -e 'display notification "${message}" with title "${title}" sound name "${sound}"'`
             );
           } else if (process.platform === 'linux') {
             // Linux notification
-            await exec(`notify-send "${title}" "${message}" --urgency=normal`);
+            await exec(`notify-send "${title}" "${message}" --urgency=low`);
           } else if (process.platform === 'win32') {
             // Windows notification (PowerShell)
             const psScript = `[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null; $null`;
