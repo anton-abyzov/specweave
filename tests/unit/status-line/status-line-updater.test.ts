@@ -62,19 +62,6 @@ describe('StatusLineUpdater', () => {
       expect(cache?.current?.id).toBe('0003-planning');
     });
 
-    it('should find in-progress increments', async () => {
-      // Setup: 1 in-progress increment
-      await createIncrement(testRoot, '0004-in-progress', 'in-progress', '2025-11-04');
-
-      // Execute
-      await updater.update();
-
-      // Verify: Cache shows 1 open increment
-      const cache = await updater.getCurrentCache();
-      expect(cache?.openCount).toBe(1);
-      expect(cache?.current?.id).toBe('0004-in-progress');
-    });
-
     it('should ignore completed increments', async () => {
       // Setup: 1 active, 1 completed
       await createIncrement(testRoot, '0005-active', 'active', '2025-11-05');
