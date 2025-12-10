@@ -125,6 +125,7 @@ async function handleListJobs(projectPath: string, showAll: boolean): Promise<vo
   const pending = jobs.filter((j: BackgroundJob) => j.status === 'pending');
   const paused = jobs.filter((j: BackgroundJob) => j.status === 'paused');
   const completed = jobs.filter((j: BackgroundJob) => j.status === 'completed');
+  const completedWithWarnings = jobs.filter((j: BackgroundJob) => j.status === 'completed_with_warnings');
   const failed = jobs.filter((j: BackgroundJob) => j.status === 'failed');
 
   console.log(chalk.blue('\n📋 Background Jobs\n'));
@@ -158,6 +159,18 @@ async function handleListJobs(projectPath: string, showAll: boolean): Promise<vo
     console.log(chalk.yellow(`⏸️  Paused (${paused.length}):`));
     for (const job of paused) {
       printJobSummary(job, projectPath);
+    }
+    console.log('');
+  }
+
+  // Completed with warnings (partial success - v0.33.5)
+  if (completedWithWarnings.length > 0) {
+    console.log(chalk.yellow(`⚠️  Completed with Warnings (${completedWithWarnings.length}):`));
+    for (const job of completedWithWarnings) {
+      printJobSummary(job, projectPath);
+      if (job.error) {
+        console.log(chalk.yellow(`     ℹ️  ${job.error}`));
+      }
     }
     console.log('');
   }
@@ -392,11 +405,13 @@ async function handleFollow(projectPath: string, jobId: string): Promise<void> {
       lastItem = progress.currentItem || '';
     }
 
-    // Stop if job completed
-    if (job.status === 'completed' || job.status === 'failed') {
+    // Stop if job completed (including partial success)
+    if (job.status === 'completed' || job.status === 'completed_with_warnings' || job.status === 'failed') {
       console.log('');
       if (job.status === 'completed') {
         console.log(chalk.green(`✅ Job completed! ${progress.current} items processed.`));
+      } else if (job.status === 'completed_with_warnings') {
+        console.log(chalk.yellow(`⚠️  Job completed with warnings: ${job.error}`));
       } else {
         console.log(chalk.red(`❌ Job failed: ${job.error}`));
       }
@@ -516,6 +531,8 @@ function formatStatus(status: string): string {
       return chalk.yellow('paused');
     case 'completed':
       return chalk.gray('completed');
+    case 'completed_with_warnings':
+      return chalk.yellow('completed with warnings');
     case 'failed':
       return chalk.red('failed');
     default:
