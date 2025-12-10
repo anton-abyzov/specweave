@@ -1,11 +1,15 @@
 ---
 id: US-002
 feature: FS-118E
-title: "Increment Creation Workflow Update"
+title: Increment Creation Workflow Update
 status: completed
 priority: P1
 created: 2025-12-07
 project: specweave
+external:
+  github:
+    issue: 885
+    url: https://github.com/anton-abyzov/specweave/issues/885
 ---
 
 # US-002: Increment Creation Workflow Update

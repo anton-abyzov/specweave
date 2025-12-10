@@ -1,19 +1,39 @@
-## generators
+# generators
 
 **Path**: `src/generators`
 
-### Overview
+## Purpose
 
-The generators module contains 2 files with approximately 524 lines of code.
+Parsing and validation utilities for SpecWeave specification files (spec.md) and task files (tasks.md), extracting structured data like user stories, acceptance criteria, and task metadata.
 
-### Analysis Summary
+## Overview
+
+The generators module contains 2 files with approximately 739 lines of code.
+
+## Dependencies
+
+No dependencies detected.
+
+## Dependents
+
+No dependencies detected.
+
+## Integration Points
+
+No external integration points detected.
+
+## Patterns Used
+
+No specific patterns detected.
+
+## Analysis Summary
 
 - **Files Analyzed**: 2
 - **Source Files**: 2
 - **Test Files**: 0
 - **Total Exports**: 16
 
-### Main Exports
+## Main Exports
 
 - `UserStory` (interface)
 - `SpecMetadata` (interface)
@@ -27,10 +47,10 @@ The generators module contains 2 files with approximately 524 lines of code.
 - `TasksByUserStory` (interface)
 - ...and 6 more exports
 
-### Documentation Status
+## Documentation Status
 
 **Has README**: No
 **Has Tests**: No
 
 ---
-*Analysis generated on 2025-12-04*
+*Analysis generated on 2025-12-10*

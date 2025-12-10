@@ -314,6 +314,214 @@ IncrementNumberManager.getNextIncrementNumber(); // "0001" ← Starts from begin
 
 **Details:** See ADR-0142 (`.specweave/docs/internal/architecture/adr/0142-gap-filling-increment-ids.md`)
 
+### 2g. NEVER Create Project Folders Without Validation (v0.34.0+)
+
+**Project folders MUST exist in config.json before creation!**
+
+```
+❌ FORBIDDEN (Bug pattern from 2025-12-10):
+.specweave/docs/internal/specs/MyApp (3 repos)/      ← Example from spec.md!
+.specweave/docs/internal/specs/frontend-app/         ← Example from spec.md!
+.specweave/docs/internal/specs/backend-api/          ← Example from spec.md!
+.specweave/docs/internal/specs/acme-corp/            ← Example from spec.md!
+
+✅ CORRECT - Only configured projects:
+.specweave/docs/internal/specs/specweave/  (exists in config.json)
+```
+
+**ROOT CAUSE:**
+- Increments contain EXAMPLE User Stories with placeholder `**Project**:` values
+- [living-docs-sync.ts:684](src/core/living-docs/living-docs-sync.ts#L684) trusts `project:` without validation
+- When sync runs, creates folders for ALL projects mentioned in User Stories
+- No validation hook existed to prevent placeholder project creation
+
+**EXAMPLES OF FORBIDDEN PATTERNS:**
+```markdown
+### US-001: Example Login Form
+**Project**: MyApp (3 repos)  ← FORBIDDEN (not in config!)
+
+### US-002: Example API
+**Project**: frontend-app, backend-api  ← FORBIDDEN (comma-separated)
+
+### US-003: Placeholder Story
+**Project**: acme-corp  ← FORBIDDEN (example name not in config!)
+```
+
+**VALIDATION RULES (ENFORCED BY HOOK):**
+```
+❌ FORBIDDEN: Creating folders for projects not in config.json
+❌ FORBIDDEN: Example/placeholder project names in spec.md
+❌ FORBIDDEN: Parentheses in project names (e.g., "MyApp (3 repos)")
+❌ FORBIDDEN: Comma-separated projects (must be ONE project per US)
+
+✅ REQUIRED: All projects MUST be in config.json multiProject.projects
+✅ REQUIRED: Run `specweave context projects` to get valid project IDs
+✅ REQUIRED: Use RESOLVED values from config, never placeholders
+```
+
+**BYPASS (EMERGENCY ONLY):**
+```bash
+SPECWEAVE_FORCE_PROJECT=1  # Skip project folder validation (DANGEROUS!)
+```
+
+**Pre-tool-use hook `project-folder-guard.sh` BLOCKS writes to non-configured project folders (v0.34.0+).**
+
+### 2h. Single-Project-First Architecture (v0.34.0+)
+
+**SpecWeave defaults to single-project mode** for 99% of users. Multi-project is an explicit opt-in.
+
+```
+DEFAULT: Single-project mode (multiProject.enabled=false)
+OPT-IN:  Multi-project mode (/specweave:enable-multiproject)
+```
+
+**Why Single-Project-First?**
+- **Simplicity**: Most repos have one project → no need for project complexity
+- **No Accidental Folders**: Example user stories don't create random project folders
+- **Clear Migration Path**: Explicit command when you need multi-project features
+- **Backwards Compatible**: Existing multi-project setups unaffected
+
+#### Single-Project Mode (Default)
+
+```json
+// config.json - single project
+{
+  "project": {
+    "name": "my-app",
+    "description": "My Application",
+    "techStack": ["TypeScript", "React"]
+  },
+  "multiProject": {
+    "enabled": false  // ← Default!
+  }
+}
+```
+
+**Behavior**:
+- All increments go to same project folder
+- No `project:` field required in spec.md (optional)
+- No `board:` field allowed (always blocked)
+- Living docs auto-use `project.name`
+
+**Commands**:
+```bash
+specweave init .  # Creates single-project config by default
+```
+
+#### Multi-Project Mode (Opt-In)
+
+```json
+// config.json - multi-project (after migration)
+{
+  "multiProject": {
+    "enabled": true,
+    "activeProject": "frontend-app",
+    "projects": {
+      "frontend-app": {
+        "name": "Frontend App",
+        "techStack": ["TypeScript", "React"]
+      },
+      "backend-api": {
+        "name": "Backend API",
+        "techStack": ["Node.js", "Express"]
+      }
+    }
+  }
+}
+```
+
+**Behavior**:
+- Each increment requires `project:` field in spec.md
+- Living docs distributed across project folders
+- Can switch between projects with `/specweave:switch-project`
+
+**Commands**:
+```bash
+/specweave:enable-multiproject  # Explicit opt-in with confirmation
+/specweave:switch-project       # Change active project
+```
+
+#### When to Enable Multi-Project?
+
+| Scenario | Use Single-Project | Use Multi-Project |
+|----------|-------------------|-------------------|
+| One repository, one application | ✅ Default | ❌ Unnecessary |
+| Monorepo with 2-3 services | ✅ Simpler | ⚠️  Optional |
+| 5+ services/teams | ❌ Too simple | ✅ Recommended |
+| Multi-repo (umbrella) | ❌ Not supported | ✅ Required |
+
+**Migration Example**:
+```bash
+# You start with single-project (default):
+# project.name = "my-app"
+# multiProject.enabled = false
+
+# Later, you need multi-project features:
+/specweave:enable-multiproject
+
+# Prompts for confirmation, then:
+# 1. Migrates project → multiProject.projects
+# 2. Sets multiProject.enabled = true
+# 3. Creates project folders
+# 4. Updates existing increments with project: field
+```
+
+#### Validation Rules
+
+**Single-Project Mode**:
+```markdown
+# spec.md frontmatter
+---
+increment: 0001-feature
+project: my-app        # ← OPTIONAL (auto-filled if missing)
+---
+
+# User story
+### US-001: Feature Name
+**Project**: my-app    # ← OPTIONAL (ignored in single-project)
+```
+
+**Multi-Project Mode**:
+```markdown
+# spec.md frontmatter
+---
+increment: 0001-feature
+project: frontend-app  # ← REQUIRED
+---
+
+# User story
+### US-001: Feature Name
+**Project**: frontend-app  # ← REQUIRED (validated against config)
+```
+
+#### Automatic Migration (v0.34.0+)
+
+**SpecWeave auto-detects single-project repos with incorrect config:**
+
+```
+If config.multiProject.enabled = true
+AND only 1 project in multiProject.projects
+THEN auto-migrate to single-project mode
+```
+
+This fixes the bug where `specweave init` created multi-project configs by default.
+
+**Migration log**: `.specweave/logs/migration.log`
+
+#### Troubleshooting
+
+**Error**: "Project folders created for example names (MyApp, frontend-app)"
+**Cause**: Old bug - auto-enabled multi-project mode
+**Fix**: Auto-migration runs on next command. Check `migration.log`.
+
+**Error**: "board: field not allowed"
+**Cause**: Using `board:` in single-project mode
+**Fix**: Remove `board:` field OR run `/specweave:enable-multiproject`
+
+**Error**: "Only folder allowed: my-app"
+**Cause**: Trying to create non-configured project folder
+**Fix**: Check `project.name` in config OR run `/specweave:enable-multiproject`
+
 ### 3. Protected Directories
 
 **NEVER delete**: `.specweave/docs/`, `.specweave/increments/`
@@ -464,13 +672,14 @@ rm -f .specweave/state/.dedup-cache/*.lock
 
 **Mental model**: Bash = "run a program". Write/Edit/Read = "modify files".
 
-### 11. Notifications - MUST Be Non-Alarming (v0.33.4+)
+### 11. Notifications - MUST Be Non-Alarming AND Non-Blocking (v0.33.4+)
 
 **All notifications are INFORMATIVE only - NEVER alarming!** Every notification MUST:
 1. **WHO** sent it (always start with "SpecWeave:")
 2. **WHAT** happened (specific action, not vague alert)
 3. **ACTION** needed (or "No action needed" if informational)
 4. **NEVER trigger alert icon** - no red/warning badges!
+5. **NEVER block execution** - fire-and-forget pattern ONLY!
 
 ```
 ❌ FORBIDDEN (alarming):
@@ -478,11 +687,47 @@ Title: "🚨 Zombie Cleanup"           ← Emoji overload
 Sound: "Basso"                       ← Shows RED ALERT ICON - NEVER USE!
 Message: "Cleaned up 5 processes"    ← Too vague
 
-✅ CORRECT (explicit, calm):
+❌ FORBIDDEN (blocking):
+execSync(`osascript -e 'display notification...'`)  ← BLOCKS main thread!
+await exec(`osascript -e 'display notification...'`)  ← BLOCKS cleanup/exit!
+
+✅ CORRECT (explicit, calm, non-blocking):
 Title: "SpecWeave: Cleanup Done"     ← Clear source
 Sound: "Pop" or "Submarine"          ← Neutral sounds ONLY
 Message: "Cleaned up 5 zombie processes. No action needed."
+exec(`osascript...`, (error) => { /* log */ })  ← Fire-and-forget!
 ```
+
+**CRITICAL: Fire-and-Forget Pattern (v0.33.6+)**
+
+**⛔ NEVER use `execSync()` or `await exec()` for notifications!**
+- Notifications MUST be **fire-and-forget** to prevent blocking Claude Code
+- macOS `osascript` can take 1-2 seconds → blocks session if awaited
+- Use callback-based `exec()` WITHOUT await/Promise wrapping
+
+```typescript
+// ❌ WRONG - BLOCKS execution!
+execSync(`osascript -e 'display notification...'`);
+await exec(`osascript -e 'display notification...'`);
+
+// ✅ CORRECT - Fire-and-forget!
+import('child_process').then(cp => {
+  cp.exec(`osascript -e 'display notification...'`, (error) => {
+    if (error) logger.debug(`Notification failed: ${error.message}`);
+  });
+});
+
+// Or using require (CommonJS):
+const { exec } = require('child_process');
+exec(`osascript -e 'display notification...'`, (error) => {
+  if (error) logger.debug(`Notification failed: ${error.message}`);
+});
+```
+
+**Files using notifications MUST follow fire-and-forget pattern:**
+- [src/utils/platform-utils.ts](src/utils/platform-utils.ts) (uses dynamic import)
+- [src/utils/notification-manager.ts](src/utils/notification-manager.ts) (resolves immediately)
+- [src/cli/cleanup-zombies.ts](src/cli/cleanup-zombies.ts) (uses childProcess.exec callback)
 
 **Sound selection rules (macOS only, other OS have no sound param):**
 | Sound | When to use |
@@ -508,7 +753,10 @@ const msg = buildNotificationMessage('cleanup', { count: 5 });  // "Cleaned up 5
 const sound = getSoundForType('cleanup');  // "Pop" (NEVER returns "Basso")
 ```
 
-**Code review should verify notification messages follow these standards.**
+**Code review should verify:**
+1. Notification messages follow WHO/WHAT/ACTION pattern
+2. All notification calls use fire-and-forget (no await/execSync)
+3. macOS notifications use dynamic import or callback pattern
 
 ---
 
@@ -661,20 +909,66 @@ Use `getPlatformRegistry().getProvider('github')`. NEVER hardcode platform names
 
 ## Configuration
 
-**Secrets** (`.env`, gitignored): Tokens, PATs, emails
-**Config** (`.specweave/config.json`, committed): Domains, strategies, sync settings
+### Secrets vs Configuration (v0.34.0+ MANDATORY)
+
+**CRITICAL**: Configuration values MUST NOT be in .env. Use config.json via ConfigManager.
+
+**Secrets** (`.env`, gitignored):
+- `AZURE_DEVOPS_PAT` - Personal Access Token
+- `JIRA_API_TOKEN` - API Token
+- `JIRA_EMAIL` - Auth email
+- `GH_TOKEN` / `GITHUB_TOKEN` - GitHub token
+
+**Config** (`.specweave/config.json`, committed):
+- `issueTracker.domain` - JIRA domain (e.g., "company.atlassian.net")
+- `issueTracker.organization_ado` - ADO organization name
+- `issueTracker.project` - Project name
+- `sync.profiles` - Sync profile configurations
+
+### FORBIDDEN Patterns (Pre-tool-use hook blocks these)
+```typescript
+// NEVER DO THIS in src/ files:
+const domain = process.env.JIRA_DOMAIN;  // VIOLATION!
+const org = process.env.AZURE_DEVOPS_ORG;  // VIOLATION!
+
+// ALWAYS DO THIS:
+const config = await this.configManager.read();
+const domain = config.issueTracker?.domain || '';
+const org = config.issueTracker?.organization_ado || '';
+```
+
+### Migration from .env to config.json
+```bash
+# 1. Add to config.json
+specweave config set issueTracker.domain "company.atlassian.net"
+specweave config set issueTracker.organization_ado "my-org"
+
+# 2. Remove deprecated vars from .env (keep only secrets)
+# JIRA_DOMAIN=xxx  # DELETE THIS LINE
+# AZURE_DEVOPS_ORG=xxx  # DELETE THIS LINE
+
+# 3. Keep these in .env (secrets):
+AZURE_DEVOPS_PAT=xxx
+JIRA_API_TOKEN=xxx
+JIRA_EMAIL=xxx
+```
+
+### ADR Reference
+See ADR-0194 for full architecture decision.
 
 ---
 
 ## Commands
 
 ```bash
-/specweave:increment "feature"  # Plan new increment
-/specweave:do                   # Execute tasks
-/specweave:done 0002            # Close (validates gates)
-/specweave:progress             # Show status
-/specweave:sync-progress        # Full sync (tasks→docs→GitHub/JIRA/ADO)
-/specweave:validate 0001        # Validate increment
+/specweave:increment "feature"    # Plan new increment
+/specweave:do                     # Execute tasks
+/specweave:done 0002              # Close (validates gates)
+/specweave:progress               # Show status
+/specweave:sync-progress          # Full sync (tasks→docs→GitHub/JIRA/ADO)
+/specweave:validate 0001          # Validate increment
+/specweave:living-docs            # Launch living docs builder (interactive)
+/specweave:living-docs --full-scan # Full deep scan (all phases: repos, org, arch, inconsistencies, strategy)
 ```
 
 ---

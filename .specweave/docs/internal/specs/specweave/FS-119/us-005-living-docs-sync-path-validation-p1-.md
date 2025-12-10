@@ -1,11 +1,15 @@
 ---
 id: US-005
 feature: FS-119
-title: "Living Docs Sync Path Validation (P1)"
+title: Living Docs Sync Path Validation (P1)
 status: completed
 priority: P1
 created: 2025-12-07
 project: specweave
+external:
+  github:
+    issue: 851
+    url: https://github.com/anton-abyzov/specweave/issues/851
 ---
 
 # US-005: Living Docs Sync Path Validation (P1)

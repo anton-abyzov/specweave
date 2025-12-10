@@ -1,11 +1,15 @@
 ---
 id: US-002
 feature: FS-117
-title: "Write Path - Incremental Updates"
+title: Write Path - Incremental Updates
 status: completed
 priority: P1
-created: 2025-12-09
+created: 2025-12-10
 project: specweave
+external:
+  github:
+    issue: 843
+    url: https://github.com/anton-abyzov/specweave/issues/843
 ---
 
 # US-002: Write Path - Incremental Updates

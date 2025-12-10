@@ -1,19 +1,40 @@
-## validators
+# validators
 
 **Path**: `src/validators`
 
-### Overview
+## Purpose
 
-The validators module contains 2 files with approximately 471 lines of code.
+Provides validation utilities for SpecWeave increments: AC (Acceptance Criteria) coverage validation ensuring all ACs have implementing tasks, and format preservation validation ensuring external items maintain their original format during sync operations.
 
-### Analysis Summary
+## Overview
+
+The validators module contains 2 files with approximately 642 lines of code.
+
+## Dependencies
+
+This module imports from:
+- `..`
+
+## Dependents
+
+No dependencies detected.
+
+## Integration Points
+
+No external integration points detected.
+
+## Patterns Used
+
+No specific patterns detected.
+
+## Analysis Summary
 
 - **Files Analyzed**: 2
 - **Source Files**: 2
 - **Test Files**: 0
 - **Total Exports**: 11
 
-### Main Exports
+## Main Exports
 
 - `ACCoverageReport` (interface)
 - `USCoverageStats` (interface)
@@ -27,10 +48,10 @@ The validators module contains 2 files with approximately 471 lines of code.
 - `ValidationResult` (interface)
 - ...and 1 more exports
 
-### Documentation Status
+## Documentation Status
 
 **Has README**: No
 **Has Tests**: No
 
 ---
-*Analysis generated on 2025-12-04*
+*Analysis generated on 2025-12-10*

@@ -1,11 +1,15 @@
 ---
 id: US-003
 feature: FS-123
-title: "Comprehensive Team Documentation"
+title: Comprehensive Team Documentation
 status: completed
 priority: P1
-created: 2025-12-09
+created: 2025-12-10
 project: specweave
+external:
+  github:
+    issue: 864
+    url: https://github.com/anton-abyzov/specweave/issues/864
 ---
 
 # US-003: Comprehensive Team Documentation

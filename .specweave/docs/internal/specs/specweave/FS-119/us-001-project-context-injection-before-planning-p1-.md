@@ -1,11 +1,15 @@
 ---
 id: US-001
 feature: FS-119
-title: "Project Context Injection Before Planning (P1)"
+title: Project Context Injection Before Planning (P1)
 status: completed
 priority: P1
 created: 2025-12-07
 project: specweave
+external:
+  github:
+    issue: 847
+    url: https://github.com/anton-abyzov/specweave/issues/847
 ---
 
 # US-001: Project Context Injection Before Planning (P1)

@@ -1,11 +1,15 @@
 ---
 id: US-002
 feature: FS-124
-title: "Ensure JIRA Board Detection Works for 2-Level (P1)"
+title: Ensure JIRA Board Detection Works for 2-Level (P1)
 status: completed
 priority: P1
 created: 2025-12-08
 project: specweave
+external:
+  github:
+    issue: 867
+    url: https://github.com/anton-abyzov/specweave/issues/867
 ---
 
 # US-002: Ensure JIRA Board Detection Works for 2-Level (P1)

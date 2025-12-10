@@ -10,6 +10,8 @@
   "feature_id": null,
   "epic_id": null,
   "externalLinks": {},
-  "completedTasks": 0,
-  "totalTasks": 17
+  "completedTasks": 3,
+  "totalTasks": 17,
+  "totalACs": 39,
+  "completedACs": 4
 }

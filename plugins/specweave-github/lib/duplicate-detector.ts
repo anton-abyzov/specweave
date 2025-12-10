@@ -179,6 +179,9 @@ export class DuplicateDetector {
   ): Promise<VerificationResult> {
     console.log(`\n🔍 VERIFICATION: Checking issue count for pattern: ${titlePattern}`);
 
+    // ✅ GitHub API indexing delay: Wait 2 seconds for issue to be indexed
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
     try {
       const args = [
         'issue',

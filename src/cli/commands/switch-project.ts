@@ -1,96 +1,130 @@
-/**
- * CLI Command: /specweave:switch-project
- *
- * Switch active project for increment planning
- */
-
-import { ProjectManager } from '../../core/project/project-manager.js';
-import { ConfigManager } from '../../core/config-manager.js';
-import { listProjects } from './init-multiproject.js';
+import { ConfigManager } from '../../core/config/config-manager.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import prompts from 'prompts';
+import chalk from 'chalk';
 
-// NOTE: This CLI switch-project command is primarily user-facing output (console.log/console.error).
-// All console.* calls in this file are legitimate user-facing exceptions
-// as defined in CONTRIBUTING.md (project switching status, confirmations, errors).
-// Logger infrastructure available for future internal debug logs if needed.
-
-export async function switchProject(
-  projectRoot: string,
-  projectId?: string
-): Promise<void> {
-  const projectManager = new ProjectManager(projectRoot);
-  const configManager = new ConfigManager(projectRoot);
-  const config = configManager.load();
-
-  // Check if multi-project mode is enabled
-  if (!config.multiProject?.enabled) {
-    console.error('\n❌ Multi-project mode not enabled');
-    console.error('   Run /specweave:init-multiproject first\n');
-    return;
-  }
-
-  // If no project ID provided, list projects and prompt
-  if (!projectId) {
-    await listProjects(projectRoot);
-    console.log('Usage: /specweave:switch-project <project-id>\n');
-    return;
-  }
-
-  try {
-    // Validate project exists
-    const project = projectManager.getProjectById(projectId);
-    if (!project) {
-      const allProjects = projectManager.getAllProjects();
-      const availableIds = allProjects.map(p => p.projectId).join(', ');
-
-      console.error(`\n❌ Project '${projectId}' not found`);
-      console.error(`   Available projects: ${availableIds}\n`);
-      return;
-    }
-
-    // Check if already active
-    const currentActive = projectManager.getActiveProject();
-    if (currentActive.projectId === projectId) {
-      console.log(`\nℹ️  Project '${project.projectName}' is already active\n`);
-      return;
-    }
-
-    // Switch project
-    await projectManager.switchProject(projectId);
-
-    console.log(`\n✅ Switched to project: ${project.projectName} (${projectId})`);
-    console.log('\nℹ️  Future increments will use:');
-    console.log(`   - ${projectManager.getSpecsPath(projectId).replace(projectRoot, '')}`);
-    console.log(`   - ${projectManager.getModulesPath(projectId).replace(projectRoot, '')}`);
-    console.log(`   - ${projectManager.getTeamPath(projectId).replace(projectRoot, '')}\n`);
-
-  } catch (error) {
-    console.error(`\n❌ Failed to switch project: ${error instanceof Error ? error.message : String(error)}\n`);
-    throw error;
-  }
+interface SwitchProjectOptions {
+  logger?: Logger;
+  projectRoot?: string;
+  projectId?: string; // For non-interactive mode
 }
 
-/**
- * Get current active project
- *
- * @param projectRoot - Project root directory
- */
-export async function getCurrentProject(projectRoot: string): Promise<void> {
-  const projectManager = new ProjectManager(projectRoot);
-  const project = projectManager.getActiveProject();
+export async function switchProject(
+  options: SwitchProjectOptions = {}
+): Promise<{ success: boolean; message: string }> {
+  const logger = options.logger ?? consoleLogger;
+  const projectRoot = options.projectRoot ?? process.cwd();
+  const configManager = new ConfigManager({ projectRoot, logger });
 
-  console.log('\n📋 Current Active Project:\n');
-  console.log(`  ID: ${project.projectId}`);
-  console.log(`  Name: ${project.projectName}`);
-  console.log(`  Path: ${project.projectPath}`);
+  try {
+    // Load current config
+    const config = await configManager.read();
 
-  if (project.techStack.length > 0) {
-    console.log(`  Tech Stack: ${project.techStack.join(', ')}`);
+    // Check if multi-project mode is enabled
+    if (config.multiProject?.enabled !== true) {
+      logger.log(chalk.yellow('\n⚠️  Multi-project mode is not enabled.\n'));
+      logger.log('This repository is in single-project mode.');
+      logger.log('To enable multi-project mode, run:\n');
+      logger.log(chalk.cyan('  /specweave:enable-multiproject\n'));
+      return {
+        success: false,
+        message: 'Multi-project mode not enabled. Run /specweave:enable-multiproject first.'
+      };
+    }
+
+    const projects = config.multiProject.projects || {};
+    const projectIds = Object.keys(projects);
+
+    // Validate projects exist
+    if (projectIds.length === 0) {
+      return {
+        success: false,
+        message: 'No projects found in configuration.'
+      };
+    }
+
+    // If project ID provided, validate and switch directly
+    if (options.projectId) {
+      const targetProjectId = options.projectId;
+
+      if (!projects[targetProjectId]) {
+        logger.log(chalk.red(`\n❌ Project "${targetProjectId}" not found.\n`));
+        logger.log('Available projects:');
+        projectIds.forEach(id => {
+          logger.log(`  • ${id}`);
+        });
+        return {
+          success: false,
+          message: `Project "${targetProjectId}" not found.`
+        };
+      }
+
+      // Update active project
+      config.multiProject.activeProject = targetProjectId;
+      await configManager.write(config);
+
+      logger.log(chalk.green(`\n✅ Switched to: ${targetProjectId}\n`));
+      return {
+        success: true,
+        message: `Switched to project: ${targetProjectId}`
+      };
+    }
+
+    // Interactive mode - show current and list available
+    const currentProject = config.multiProject.activeProject;
+
+    logger.log(chalk.cyan('\n📂 Switch Project\n'));
+    logger.log(`Current project: ${chalk.bold(currentProject || '(none)')}\n`);
+
+    // Build choices for prompts
+    const choices = projectIds.map(id => ({
+      title: id === currentProject ? `${id} ${chalk.gray('(current)')}` : id,
+      value: id,
+      description: projects[id].description || projects[id].name
+    }));
+
+    const response = await prompts({
+      type: 'select',
+      name: 'projectId',
+      message: 'Select project:',
+      choices,
+      initial: currentProject ? projectIds.indexOf(currentProject) : 0
+    });
+
+    // User cancelled
+    if (!response.projectId) {
+      return {
+        success: false,
+        message: 'Operation cancelled by user.'
+      };
+    }
+
+    // Same project selected
+    if (response.projectId === currentProject) {
+      logger.log(chalk.gray('\nAlready using this project.\n'));
+      return {
+        success: true,
+        message: 'No change - already using selected project.'
+      };
+    }
+
+    // Update active project
+    config.multiProject.activeProject = response.projectId;
+    await configManager.write(config);
+
+    logger.log(chalk.green(`\n✅ Switched to: ${response.projectId}\n`));
+    logger.log('New increments will now target this project.');
+    logger.log(chalk.gray('Existing increments remain in their original projects.\n'));
+
+    return {
+      success: true,
+      message: `Switched to project: ${response.projectId}`
+    };
+  } catch (error) {
+    logger.error('Failed to switch project:', error);
+    return {
+      success: false,
+      message: `Error: ${error instanceof Error ? error.message : String(error)}`
+    };
   }
-
-  if (project.keywords.length > 0) {
-    console.log(`  Keywords: ${project.keywords.join(', ')}`);
-  }
-
-  console.log('');
 }

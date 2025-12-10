@@ -37,6 +37,7 @@ export interface LivingDocsOptions {
   dependsOn?: string;
   foreground?: boolean;
   force?: boolean;
+  fullScan?: boolean; // Force full scan (deep-native) regardless of brownfield detection
 }
 
 /**
@@ -80,10 +81,11 @@ export async function livingDocsCommand(options: LivingDocsOptions): Promise<voi
 
   // Check if project has code (brownfield)
   const isBrownfield = detectBrownfield(projectPath);
-  if (!isBrownfield && !options.force) {
+  if (!isBrownfield && !options.force && !options.fullScan) {
     console.log(chalk.blue('\nNo existing code detected (greenfield project).'));
     console.log(chalk.gray('Living docs will sync automatically as you create increments.'));
-    console.log(chalk.gray('\nTo force analysis anyway: specweave living-docs --force'));
+    console.log(chalk.gray('\nTo force analysis: specweave living-docs --force'));
+    console.log(chalk.gray('For full deep scan: specweave living-docs --full-scan'));
     return;
   }
 
@@ -279,6 +281,24 @@ async function collectConfiguration(
   projectPath: string,
   options: LivingDocsOptions
 ): Promise<LivingDocsUserInputs | null> {
+  // Handle --full-scan flag (forces deep-native analysis)
+  if (options.fullScan) {
+    const claudeCodeStatus = await getClaudeCodeStatus();
+    const depth = claudeCodeStatus.available ? 'deep-native' : 'deep-api';
+
+    console.log(chalk.cyan('\nFull Scan Mode Enabled'));
+    console.log(chalk.gray(`  Using: ${depth} (comprehensive AI-powered analysis)`));
+    console.log(chalk.gray('  Analyzing: All repos, modules, architecture, inconsistencies, strategy'));
+    console.log('');
+
+    return {
+      analysisDepth: depth,
+      priorityAreas: [],
+      additionalSources: [],
+      knownPainPoints: [],
+    };
+  }
+
   // If all options provided via flags, use them directly
   if (options.depth) {
     const priorityAreas = options.priority

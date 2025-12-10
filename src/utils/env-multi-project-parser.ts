@@ -1,6 +1,17 @@
 /**
  * Environment Multi-Project Parser
  *
+ * @deprecated (v0.34.0+) This module reads configuration from process.env.
+ *             Configuration should come from ConfigManager (config.json) instead.
+ *
+ * MIGRATION GUIDE:
+ * - JIRA_DOMAIN → config.issueTracker.domain (config.json)
+ * - AZURE_DEVOPS_ORG → config.issueTracker.organization_ado (config.json)
+ * - AZURE_DEVOPS_PROJECT → config.issueTracker.project (config.json)
+ * - Keep JIRA_API_TOKEN, JIRA_EMAIL, AZURE_DEVOPS_PAT, GITHUB_TOKEN in .env (secrets)
+ *
+ * This module will be removed in v1.0.
+ *
  * Parses comma-separated project lists from .env:
  * - JIRA_PROJECT_KEYS=BACKEND,FRONTEND,MOBILE (multiple projects)
  * - GITHUB_REPOS=owner/backend-api,owner/frontend-web (multiple repos)
@@ -74,6 +85,9 @@ export function parseCommaSeparated(value: string | undefined): string[] {
 /**
  * Parse JIRA project keys from .env
  *
+ * @deprecated (v0.34.0+) Use ConfigManager for domain configuration.
+ *             JIRA_DOMAIN should be in config.json, not .env
+ *
  * Reads:
  * - JIRA_PROJECT_KEYS (comma-separated, NEW format)
  * - JIRA_PROJECT_KEY (single, legacy format)
@@ -96,7 +110,11 @@ export function parseCommaSeparated(value: string | undefined): string[] {
  * // ]
  */
 export function parseJiraProjects(): JiraProjectConfig[] {
+  // DEPRECATED: Domain should come from ConfigManager (config.json)
   const domain = process.env.JIRA_DOMAIN;
+  if (domain) {
+    console.warn('DEPRECATED: JIRA_DOMAIN in .env - migrate to config.json (issueTracker.domain)');
+  }
   const email = process.env.JIRA_EMAIL;
   const apiToken = process.env.JIRA_API_TOKEN;
 
@@ -188,6 +206,9 @@ export function parseGitHubRepos(): GitHubRepoConfig[] {
 /**
  * Parse Azure DevOps project from .env
  *
+ * @deprecated (v0.34.0+) Use ConfigManager for organization/project configuration.
+ *             AZURE_DEVOPS_ORG and AZURE_DEVOPS_PROJECT should be in config.json
+ *
  * NOTE: Azure DevOps supports ONE project per organization with multiple teams.
  * For multi-team support, use AZURE_DEVOPS_TEAMS (comma-separated).
  *
@@ -212,9 +233,13 @@ export function parseGitHubRepos(): GitHubRepoConfig[] {
  * // ]
  */
 export function parseAdoProjects(): AdoProjectConfig[] {
+  // DEPRECATED: Org and project should come from ConfigManager (config.json)
   const organization = process.env.AZURE_DEVOPS_ORG;
-  const pat = process.env.AZURE_DEVOPS_PAT;
   const project = process.env.AZURE_DEVOPS_PROJECT;
+  if (organization || project) {
+    console.warn('DEPRECATED: AZURE_DEVOPS_ORG/PROJECT in .env - migrate to config.json (issueTracker.organization_ado)');
+  }
+  const pat = process.env.AZURE_DEVOPS_PAT;
 
   // Missing credentials → return empty array
   if (!organization || !pat || !project) {

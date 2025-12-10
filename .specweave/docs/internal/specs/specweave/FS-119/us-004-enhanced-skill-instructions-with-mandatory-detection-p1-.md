@@ -1,11 +1,15 @@
 ---
 id: US-004
 feature: FS-119
-title: "Enhanced Skill Instructions with MANDATORY Detection (P1)"
+title: Enhanced Skill Instructions with MANDATORY Detection (P1)
 status: completed
 priority: P1
 created: 2025-12-07
 project: specweave
+external:
+  github:
+    issue: 850
+    url: https://github.com/anton-abyzov/specweave/issues/850
 ---
 
 # US-004: Enhanced Skill Instructions with MANDATORY Detection (P1)

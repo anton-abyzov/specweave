@@ -1,19 +1,40 @@
-## init
+# init
 
 **Path**: `src/init`
 
-### Overview
+## Purpose
 
-The init module contains 28 files with approximately 4,581 lines of code.
+Orchestrates the initialization flow for SpecWeave projects, handling architecture configuration, compliance requirements, and project setup workflows.
 
-### Analysis Summary
+## Overview
+
+The init module contains 27 files with approximately 598 lines of code.
+
+## Dependencies
+
+This module imports from:
+- `.`
+
+## Dependents
+
+No dependencies detected.
+
+## Integration Points
+
+No external integration points detected.
+
+## Patterns Used
+
+No specific patterns detected.
+
+## Analysis Summary
 
 - **Files Analyzed**: 3
 - **Source Files**: 3
 - **Test Files**: 0
 - **Total Exports**: 17
 
-### Main Exports
+## Main Exports
 
 - `InitFlowResult` (interface)
 - `executeStrategicInit` (function)
@@ -27,10 +48,10 @@ The init module contains 28 files with approximately 4,581 lines of code.
 - `CloudCreditSchema` (const)
 - ...and 7 more exports
 
-### Documentation Status
+## Documentation Status
 
 **Has README**: No
 **Has Tests**: No
 
 ---
-*Analysis generated on 2025-12-04*
+*Analysis generated on 2025-12-10*

@@ -1,19 +1,40 @@
-## progress
+# progress
 
 **Path**: `src/progress`
 
-### Overview
+## Purpose
 
-The progress module contains 1 files with approximately 125 lines of code.
+Tracks and calculates task completion statistics grouped by User Story, providing per-US and aggregate completion percentages with visualization utilities.
 
-### Analysis Summary
+## Overview
+
+The progress module contains 1 files with approximately 165 lines of code.
+
+## Dependencies
+
+This module imports from:
+- `..`
+
+## Dependents
+
+No dependencies detected.
+
+## Integration Points
+
+No external integration points detected.
+
+## Patterns Used
+
+No specific patterns detected.
+
+## Analysis Summary
 
 - **Files Analyzed**: 1
 - **Source Files**: 1
 - **Test Files**: 0
 - **Total Exports**: 11
 
-### Main Exports
+## Main Exports
 
 - `USProgress` (interface)
 - `AggregateProgress` (interface)
@@ -27,10 +48,10 @@ The progress module contains 1 files with approximately 125 lines of code.
 - `sortUSByCompletion` (function)
 - ...and 1 more exports
 
-### Documentation Status
+## Documentation Status
 
 **Has README**: No
 **Has Tests**: No
 
 ---
-*Analysis generated on 2025-12-04*
+*Analysis generated on 2025-12-10*

@@ -11,9 +11,20 @@
   "approvedBy": "PM (Claude AI)",
   "testMode": "TDD",
   "coverageTarget": 95,
-  "feature_id": "FS-134",
+  "feature_id": "FS-135",
   "epic_id": null,
   "dependencies": ["0134-living-docs-core-engine"],
-  "externalLinks": {},
-  "notes": "Part 2 of 2: Visualization and integration layer. Builds on core engine from 0134 to add dashboards, CLI, and hooks. Completed with 100% AC coverage (26/26 ACs). 4 ACs removed as out-of-scope (future enhancements)."
+  "externalLinks": {
+    "github": {
+      "milestone": 53,
+      "milestone_url": "https://github.com/anton-abyzov/specweave/milestone/53",
+      "issues": [830, 831],
+      "issue_urls": [
+        "https://github.com/anton-abyzov/specweave/issues/830",
+        "https://github.com/anton-abyzov/specweave/issues/831"
+      ],
+      "closed_at": "2025-12-10T19:30:00Z"
+    }
+  },
+  "notes": "Part 2 of 2: Visualization and integration layer. Builds on core engine from 0134 to add dashboards, CLI, and hooks. Completed with 100% AC coverage (26/26 ACs). 4 ACs removed as out-of-scope (future enhancements). GitHub issues #830 and #831 closed on 2025-12-10."
 }

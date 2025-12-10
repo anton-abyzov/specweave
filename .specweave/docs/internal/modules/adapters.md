@@ -1,19 +1,41 @@
-## adapters
+# adapters
 
 **Path**: `src/adapters`
 
-### Overview
+## Purpose
 
-The adapters module contains 22 files with approximately 2,747 lines of code.
+Provides an adapter pattern implementation for integrating external issue tracking systems (GitHub, JIRA, Azure DevOps) with a unified interface for work item synchronization.
 
-### Analysis Summary
+## Overview
+
+The adapters module contains 11 files with approximately 649 lines of code.
+
+## Dependencies
+
+This module imports from:
+- `..`
+- `.`
+
+## Dependents
+
+No dependencies detected.
+
+## Integration Points
+
+No external integration points detected.
+
+## Patterns Used
+
+No specific patterns detected.
+
+## Analysis Summary
 
 - **Files Analyzed**: 3
 - **Source Files**: 3
 - **Test Files**: 0
 - **Total Exports**: 7
 
-### Main Exports
+## Main Exports
 
 - `AdapterOptions` (interface)
 - `RequirementsResult` (interface)
@@ -23,10 +45,10 @@ The adapters module contains 22 files with approximately 2,747 lines of code.
 - `AdapterRegistry` (interface)
 - `AdapterLoader` (class)
 
-### Documentation Status
+## Documentation Status
 
-**Has README**: Yes
+**Has README**: No
 **Has Tests**: No
 
 ---
-*Analysis generated on 2025-12-04*
+*Analysis generated on 2025-12-10*

@@ -98,7 +98,7 @@ Every AI coding tool promises productivity. But after the chat ends:
 ```bash
 npm install -g specweave
 cd your-project
-specweave init .
+specweave init .  # Creates single-project config by default
 ```
 
 Then in Claude Code:
@@ -107,6 +107,8 @@ Then in Claude Code:
 /specweave:do                                # Autonomous implementation
 /specweave:done 0001                         # Quality-validated completion
 ```
+
+**Single-project by default**: SpecWeave defaults to simple single-project mode. Need multiple projects? Run `/specweave:enable-multiproject` when ready.
 
 **Pro tip**: Use `/specweave:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
 
@@ -411,7 +413,8 @@ specweave init .
 
 **50-Team Enterprise?**
 ```bash
-specweave init . --multiproject
+specweave init .                     # Start with single-project
+/specweave:enable-multiproject       # Explicit opt-in when ready
 # Maps to JIRA projects, ADO area paths, GitHub repos automatically
 ```
 

@@ -1,11 +1,15 @@
 ---
 id: US-001
 feature: FS-124
-title: "Fix Regex to Match All Increment Patterns (P1)"
+title: Fix Regex to Match All Increment Patterns (P1)
 status: completed
 priority: P1
 created: 2025-12-08
 project: specweave
+external:
+  github:
+    issue: 866
+    url: https://github.com/anton-abyzov/specweave/issues/866
 ---
 
 # US-001: Fix Regex to Match All Increment Patterns (P1)

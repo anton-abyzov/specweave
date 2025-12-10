@@ -2,10 +2,17 @@
  * Secure Credentials Manager
  *
  * Handles API keys and credentials for external integrations (Jira, ADO, etc.)
- * - Loads from .env file or environment variables
- * - Validates credential format
- * - Never logs secrets
- * - Provides masked logging for debugging
+ *
+ * ARCHITECTURE (v0.34.0+):
+ * - SECRETS (PAT, API_TOKEN, EMAIL) -> .env file (gitignored)
+ * - CONFIG (domain, organization, project) -> config.json via ConfigManager
+ *
+ * This class loads secrets from .env and provides fallback to process.env
+ * for backward compatibility. Config values should be loaded from ConfigManager
+ * in calling code (reconcilers, importers, etc.)
+ *
+ * @deprecated For config values (domain, org, project), use ConfigManager directly.
+ *             Only use CredentialsManager for secrets (PAT, tokens, emails).
  */
 
 import * as fs from 'fs';
@@ -80,9 +87,9 @@ export class CredentialsManager {
       });
     }
 
-    // Load ADO credentials
+    // Load ADO credentials (SECRETS only - PAT)
+    // NOTE: organization and project should come from config.json via ConfigManager
     if (process.env.AZURE_DEVOPS_PAT) {
-      const project = process.env.AZURE_DEVOPS_PROJECT || '';
       const singleTeam = process.env.AZURE_DEVOPS_TEAM || '';
       const multiTeams = process.env.AZURE_DEVOPS_TEAMS || '';
 
@@ -91,16 +98,29 @@ export class CredentialsManager {
         ? multiTeams.split(',').map(t => t.trim()).filter(t => t.length > 0)
         : (singleTeam ? [singleTeam] : []);
 
+      // DEPRECATED (v0.34.0+): org and project should come from config.json
+      // Kept for backward compatibility - will be removed in v1.0
+      const deprecatedOrg = process.env.AZURE_DEVOPS_ORG || '';
+      const deprecatedProject = process.env.AZURE_DEVOPS_PROJECT || '';
+      if (deprecatedOrg || deprecatedProject) {
+        console.warn(
+          '⚠️  DEPRECATED: AZURE_DEVOPS_ORG and AZURE_DEVOPS_PROJECT in .env\n' +
+          '   Move to .specweave/config.json: issueTracker.organization_ado and issueTracker.project\n' +
+          '   This will be removed in v1.0'
+        );
+      }
+
       this.credentials.ado = {
         pat: process.env.AZURE_DEVOPS_PAT,
-        organization: process.env.AZURE_DEVOPS_ORG || '',
-        project: project,  // One project (ADO standard)
+        organization: deprecatedOrg,  // DEPRECATED - use ConfigManager
+        project: deprecatedProject,   // DEPRECATED - use ConfigManager
         team: singleTeam || teams[0],  // Use first team for backward compatibility
         teams: teams.length > 1 ? teams : undefined  // Multiple teams (optional)
       };
     }
 
-    // Load Jira credentials
+    // Load Jira credentials (SECRETS only - token, email)
+    // NOTE: domain should come from config.json via ConfigManager
     if (process.env.JIRA_API_TOKEN) {
       const strategy = (process.env.JIRA_STRATEGY as any) || undefined;
       const singleProject = process.env.JIRA_PROJECT || '';
@@ -121,10 +141,21 @@ export class CredentialsManager {
         ? boardsStr.split(',').map(b => b.trim()).filter(b => b.length > 0)
         : [];
 
+      // DEPRECATED (v0.34.0+): domain should come from config.json
+      // Kept for backward compatibility - will be removed in v1.0
+      const deprecatedDomain = process.env.JIRA_DOMAIN || '';
+      if (deprecatedDomain) {
+        console.warn(
+          '⚠️  DEPRECATED: JIRA_DOMAIN in .env\n' +
+          '   Move to .specweave/config.json: issueTracker.domain\n' +
+          '   This will be removed in v1.0'
+        );
+      }
+
       this.credentials.jira = {
         apiToken: process.env.JIRA_API_TOKEN,
-        email: process.env.JIRA_EMAIL || '',
-        domain: process.env.JIRA_DOMAIN || '',
+        email: process.env.JIRA_EMAIL || '',  // SECRET - stays in .env
+        domain: deprecatedDomain,  // DEPRECATED - use ConfigManager
         strategy,
 
         // Strategy 1: Project-per-team
@@ -224,13 +255,20 @@ export class CredentialsManager {
 
   /**
    * Get ADO credentials
+   *
+   * NOTE (v0.34.0+): This method returns secrets from .env.
+   * For config values (organization, project), use ConfigManager directly:
+   *   const config = await configManager.read();
+   *   const org = config.issueTracker?.organization_ado || '';
+   *
    * @throws Error if credentials not found
+   * @deprecated organization and project fields are deprecated - use ConfigManager
    */
   public getAdoCredentials(): AdoCredentials {
     if (!this.credentials.ado) {
       throw new Error(
-        'Azure DevOps credentials not found. Please set AZURE_DEVOPS_PAT, ' +
-        'AZURE_DEVOPS_ORG, and AZURE_DEVOPS_PROJECT in .env file or environment variables.'
+        'Azure DevOps credentials not found. Please set AZURE_DEVOPS_PAT in .env file.\n' +
+        'For organization and project, use .specweave/config.json (issueTracker.organization_ado).'
       );
     }
 
@@ -240,13 +278,20 @@ export class CredentialsManager {
 
   /**
    * Get Jira credentials
+   *
+   * NOTE (v0.34.0+): This method returns secrets from .env.
+   * For config values (domain), use ConfigManager directly:
+   *   const config = await configManager.read();
+   *   const domain = config.issueTracker?.domain || '';
+   *
    * @throws Error if credentials not found
+   * @deprecated domain field is deprecated - use ConfigManager
    */
   public getJiraCredentials(): JiraCredentials {
     if (!this.credentials.jira) {
       throw new Error(
-        'Jira credentials not found. Please set JIRA_API_TOKEN, JIRA_EMAIL, ' +
-        'and JIRA_DOMAIN in .env file or environment variables.'
+        'Jira credentials not found. Please set JIRA_API_TOKEN and JIRA_EMAIL in .env file.\n' +
+        'For domain, use .specweave/config.json (issueTracker.domain).'
       );
     }
 

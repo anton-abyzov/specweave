@@ -1,19 +1,40 @@
-## importers
+# importers
 
 **Path**: `src/importers`
 
-### Overview
+## Purpose
 
-The importers module contains 9 files with approximately 3,638 lines of code.
+Provides functionality for importing external work items from Azure DevOps, JIRA, and GitHub into SpecWeave increments, with duplicate detection to prevent creating redundant entries.
 
-### Analysis Summary
+## Overview
+
+The importers module contains 9 files with approximately 941 lines of code.
+
+## Dependencies
+
+This module imports from:
+- `..`
+
+## Dependents
+
+No dependencies detected.
+
+## Integration Points
+
+No external integration points detected.
+
+## Patterns Used
+
+No specific patterns detected.
+
+## Analysis Summary
 
 - **Files Analyzed**: 3
 - **Source Files**: 3
 - **Test Files**: 0
 - **Total Exports**: 9
 
-### Main Exports
+## Main Exports
 
 - `ADOImporter` (class)
 - `ExternalIdReference` (interface)
@@ -25,10 +46,10 @@ The importers module contains 9 files with approximately 3,638 lines of code.
 - `Importer` (interface)
 - `ImportResult` (interface)
 
-### Documentation Status
+## Documentation Status
 
 **Has README**: No
 **Has Tests**: No
 
 ---
-*Analysis generated on 2025-12-04*
+*Analysis generated on 2025-12-10*

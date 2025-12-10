@@ -1,11 +1,15 @@
 ---
 id: US-003
 feature: FS-115
-title: "Confidence-Based Decisions (P1)"
+title: Confidence-Based Decisions (P1)
 status: completed
 priority: P1
 created: 2025-12-06
 project: specweave
+external:
+  github:
+    issue: 840
+    url: https://github.com/anton-abyzov/specweave/issues/840
 ---
 
 # US-003: Confidence-Based Decisions (P1)

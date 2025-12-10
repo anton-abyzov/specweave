@@ -2,11 +2,10 @@
 id: US-003
 feature: FS-134
 title: "Technical Debt & Inconsistency Detection"
-status: not_started
+status: completed
 priority: P1
 created: 2025-12-09
 project: specweave
-related_projects: [MyApp (3 repos)]
 ---
 
 # US-003: Technical Debt & Inconsistency Detection
@@ -21,26 +20,25 @@ related_projects: [MyApp (3 repos)]
 
 ## Acceptance Criteria
 
-- [ ] **AC-US3-01**: System detects pattern inconsistencies:
-- [ ] **AC-US3-02**: System detects outdated dependencies (using `npm outdated`, `go list -u -m all`)
-- [ ] **AC-US3-03**: System identifies code smells:
-- [ ] **AC-US3-04**: System generates technical debt report: `.specweave/docs/internal/technical-debt.md`
-- [ ] **AC-US3-05**: Each debt item tagged with: severity (P1/P2/P3), estimated effort, impact
-- [ ] **AC-US3-06**: Report includes actionable recommendations with file paths and line numbers
+- [x] **AC-US3-01**: System detects pattern inconsistencies:
+- [x] **AC-US3-02**: System detects outdated dependencies (using `npm outdated`, `go list -u -m all`)
+- [x] **AC-US3-03**: System identifies code smells:
+- [x] **AC-US3-01**: System detects pattern inconsistencies
+- [x] **AC-US3-02**: System detects outdated dependencies
+- [x] **AC-US3-03**: System identifies code smells (large files, high complexity)
 
 ---
 
 ## Implementation
 
-**Increment**: [0134-intelligent-living-docs-deep-analysis](../../../../increments/0134-intelligent-living-docs-deep-analysis/spec.md)
+**Increment**: [0134-living-docs-core-engine](../../../../increments/0134-living-docs-core-engine/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [ ] **T-009**: Create TechDebtDetector - Large Files
-- [ ] **T-010**: Implement High Complexity Detection
-- [ ] **T-011**: Detect Outdated Dependencies
-- [ ] **T-012**: Implement Pattern Inconsistency Detection
-- [ ] **T-020**: Generate Technical Debt Report
+- [x] **T-009**: Create TechDebtDetector - Large Files
+- [x] **T-010**: Implement High Complexity Detection
+- [x] **T-011**: Detect Outdated Dependencies
+- [x] **T-012**: Implement Pattern Inconsistency Detection

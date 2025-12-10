@@ -17,6 +17,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { ConfigManager } from '../../core/config/config-manager.js';
 
 /**
  * Module logger - can be replaced for testing
@@ -91,13 +92,31 @@ export interface SyncConflict {
   resolution?: 'jira' | 'specweave' | 'manual';
 }
 
+/**
+ * Configuration options for JiraMapper
+ * Domain should come from ConfigManager (config.json), not process.env
+ */
+export interface JiraMapperConfig {
+  /** JIRA domain (e.g., "company.atlassian.net") - from config.json */
+  domain: string;
+}
+
 export class JiraMapper {
   private client: JiraClient;
   private projectRoot: string;
+  private domain: string;
 
-  constructor(client: JiraClient, projectRoot: string = process.cwd()) {
+  /**
+   * Create a JiraMapper
+   *
+   * @param client - JiraClient instance
+   * @param config - Configuration with domain from ConfigManager
+   * @param projectRoot - Project root path
+   */
+  constructor(client: JiraClient, config: JiraMapperConfig, projectRoot: string = process.cwd()) {
     this.client = client;
     this.projectRoot = projectRoot;
+    this.domain = config.domain;
   }
 
   /**
@@ -439,7 +458,7 @@ export class JiraMapper {
       jira: {
         epic_key: epic.key,
         epic_id: epic.id,
-        epic_url: `https://${process.env.JIRA_DOMAIN}/browse/${epic.key}`,
+        epic_url: `https://${this.domain}/browse/${epic.key}`,
         imported_at: new Date().toISOString(),
         last_sync: new Date().toISOString(),
         sync_direction: 'import' as const
@@ -454,7 +473,7 @@ export class JiraMapper {
       const usId = `US${incrementId}-${String(index + 1).padStart(3, '0')}`;
       content += `### ${usId}: ${story.fields.summary}\n\n`;
       content += this.extractTextFromJiraDescription(story.fields.description) + '\n\n';
-      content += `**Jira Story**: [${story.key}](https://${process.env.JIRA_DOMAIN}/browse/${story.key})\n\n`;
+      content += `**Jira Story**: [${story.key}](https://${this.domain}/browse/${story.key})\n\n`;
     });
 
     const specMd = this.serializeMarkdownWithFrontmatter(frontmatter, content);
@@ -493,7 +512,7 @@ export class JiraMapper {
     let content = `# RFC ${incrementId}: ${epic.fields.summary}\n\n`;
     content += `**Status**: Draft\n`;
     content += `**Created**: ${new Date().toISOString().split('T')[0]}\n`;
-    content += `**Jira Epic**: [${epic.key}](https://${process.env.JIRA_DOMAIN}/browse/${epic.key})\n\n`;
+    content += `**Jira Epic**: [${epic.key}](https://${this.domain}/browse/${epic.key})\n\n`;
 
     content += `## Summary\n\n`;
     content += this.extractTextFromJiraDescription(epic.fields.description) + '\n\n';
@@ -629,7 +648,7 @@ export class JiraMapper {
     parsed.frontmatter.jira = {
       epic_key: epic.key,
       epic_id: epic.id,
-      epic_url: `https://${process.env.JIRA_DOMAIN}/browse/${epic.key}`,
+      epic_url: `https://${this.domain}/browse/${epic.key}`,
       stories: stories.map(s => ({ key: s.key, id: s.id })),
       last_sync: new Date().toISOString(),
       sync_direction: 'export'

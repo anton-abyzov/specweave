@@ -12,9 +12,6 @@ external:
     url: https://github.com/anton-abyzov/specweave/issues/820
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-004: Concurrent Sessions E2E Test
 
 **Feature**: [FS-136](./FEATURE.md)
@@ -45,4 +42,4 @@ external:
 
 ## Tasks
 
-- [x] [T-004](../../../../increments/0136-process-lifecycle-test-suite/tasks.md#T-004): Create E2E Test - Multiple Concurrent Sessions
+- [x] **T-004**: Create E2E Test - Multiple Concurrent Sessions

@@ -2,7 +2,7 @@
 id: US-004
 feature: FS-128
 title: Automated Zombie Cleanup Service
-status: not_started
+status: completed
 priority: P1
 created: 2025-12-09
 project: specweave
@@ -24,12 +24,12 @@ external:
 
 ## Acceptance Criteria
 
-- [ ] **AC-US4-01**: Cleanup service runs every 60 seconds as part of session-watchdog
-- [ ] **AC-US4-02**: Service scans session registry for stale sessions (no heartbeat >60s)
-- [ ] **AC-US4-03**: For each stale session, service kills parent PID and all child_pids
-- [ ] **AC-US4-04**: Service detects orphaned processes matching patterns: `cat.*EOF`, `esbuild.*--service`, `bash.*processor.sh`
-- [ ] **AC-US4-05**: Service logs all cleanup actions to `.specweave/logs/cleanup.log`
-- [ ] **AC-US4-06**: Service sends macOS/Linux notification after cleaning >3 processes
+- [x] **AC-US4-01**: Cleanup service runs every 60 seconds as part of session-watchdog
+- [x] **AC-US4-02**: Service scans session registry for stale sessions (no heartbeat >60s)
+- [x] **AC-US4-03**: For each stale session, service kills parent PID and all child_pids
+- [x] **AC-US4-04**: Service detects orphaned processes matching patterns: `cat.*EOF`, `esbuild.*--service`, `bash.*processor.sh`
+- [x] **AC-US4-05**: Service logs all cleanup actions to `.specweave/logs/cleanup.log`
+- [x] **AC-US4-06**: Service sends macOS/Linux notification after cleaning >3 processes
 
 ---
 
@@ -42,6 +42,6 @@ external:
 
 ## Tasks
 
-- [ ] **T-006**: Implement Cleanup Service in Watchdog
-- [ ] **T-007**: Add Cleanup Logging and Notifications
+- [x] **T-006**: Implement Cleanup Service in Watchdog
+- [x] **T-007**: Add Cleanup Logging and Notifications
 - [ ] **T-017**: E2E Test - Crash Recovery

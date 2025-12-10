@@ -12,9 +12,6 @@ external:
     url: https://github.com/anton-abyzov/specweave/issues/818
 ---
 
-**Origin**: 🏠 **Internal**
-
-
 # US-002: Normal Session Lifecycle E2E Test
 
 **Feature**: [FS-136](./FEATURE.md)
@@ -45,4 +42,4 @@ external:
 
 ## Tasks
 
-- [x] [T-002](../../../../increments/0136-process-lifecycle-test-suite/tasks.md#T-002): Create E2E Test - Normal Session Lifecycle
+- [x] **T-002**: Create E2E Test - Normal Session Lifecycle

@@ -53,79 +53,87 @@ export class NotificationManager {
   }
 
   /**
-   * Sends notification on macOS using osascript
+   * Sends notification on macOS using osascript (NON-BLOCKING)
+   *
+   * CRITICAL: Fire-and-forget pattern to prevent blocking Claude Code!
+   * Notifications are informational only and should NEVER block execution.
    */
   private async sendMacOSNotification(
     title: string,
     body: string,
     sound?: string
   ): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const soundParam = sound ? ` sound name "${sound}"` : '';
-      const script = `display notification "${this.escapeForAppleScript(body)}" with title "${this.escapeForAppleScript(title)}"${soundParam}`;
+    const soundParam = sound ? ` sound name "${sound}"` : '';
+    const script = `display notification "${this.escapeForAppleScript(body)}" with title "${this.escapeForAppleScript(title)}"${soundParam}`;
 
-      exec(`osascript -e '${script}'`, (error) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      });
+    // Fire-and-forget: DON'T wait for completion!
+    exec(`osascript -e '${script}'`, (error) => {
+      if (error) {
+        this.logger.debug(`Notification failed (non-critical): ${error.message}`);
+      }
     });
+
+    // Resolve immediately without waiting
+    return Promise.resolve();
   }
 
   /**
-   * Sends notification on Linux using notify-send
+   * Sends notification on Linux using notify-send (NON-BLOCKING)
+   *
+   * CRITICAL: Fire-and-forget pattern to prevent blocking Claude Code!
+   * Notifications are informational only and should NEVER block execution.
    */
   private async sendLinuxNotification(title: string, body: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      // Check if notify-send is available
-      exec('command -v notify-send', (error) => {
-        if (error) {
-          this.logger.warn('notify-send not found, skipping notification');
-          resolve();
-          return;
-        }
+    // Fire-and-forget: DON'T wait for completion!
+    exec('command -v notify-send', (error) => {
+      if (error) {
+        this.logger.debug('notify-send not available, skipping notification');
+        return;
+      }
 
-        exec(`notify-send "${this.escapeForShell(title)}" "${this.escapeForShell(body)}"`, (error) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve();
-          }
-        });
+      // Fire-and-forget: nested exec also non-blocking
+      exec(`notify-send "${this.escapeForShell(title)}" "${this.escapeForShell(body)}" --urgency=normal`, (error) => {
+        if (error) {
+          this.logger.debug(`Notification failed (non-critical): ${error.message}`);
+        }
       });
     });
+
+    // Resolve immediately without waiting
+    return Promise.resolve();
   }
 
   /**
-   * Sends notification on Windows using PowerShell toast
+   * Sends notification on Windows using PowerShell toast (NON-BLOCKING)
+   *
+   * CRITICAL: Fire-and-forget pattern to prevent blocking Claude Code!
+   * Notifications are informational only and should NEVER block execution.
    */
   private async sendWindowsNotification(title: string, body: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const script = `
-        [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
-        [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
+    const script = `
+      [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+      [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] | Out-Null
 
-        $template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
-        $toastXml = [xml] $template.GetXml()
-        $toastXml.GetElementsByTagName("text")[0].AppendChild($toastXml.CreateTextNode("${this.escapeForPowerShell(title)}")) | Out-Null
-        $toastXml.GetElementsByTagName("text")[1].AppendChild($toastXml.CreateTextNode("${this.escapeForPowerShell(body)}")) | Out-Null
+      $template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
+      $toastXml = [xml] $template.GetXml()
+      $toastXml.GetElementsByTagName("text")[0].AppendChild($toastXml.CreateTextNode("${this.escapeForPowerShell(title)}")) | Out-Null
+      $toastXml.GetElementsByTagName("text")[1].AppendChild($toastXml.CreateTextNode("${this.escapeForPowerShell(body)}")) | Out-Null
 
-        $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
-        $xml.LoadXml($toastXml.OuterXml)
-        $toast = [Windows.UI.Notifications.ToastNotification]::new($xml)
-        [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("SpecWeave").Show($toast)
-      `;
+      $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
+      $xml.LoadXml($toastXml.OuterXml)
+      $toast = [Windows.UI.Notifications.ToastNotification]::new($xml)
+      [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("SpecWeave").Show($toast)
+    `;
 
-      exec(`powershell -Command "${script}"`, (error) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      });
+    // Fire-and-forget: DON'T wait for completion!
+    exec(`powershell -Command "${script}"`, (error) => {
+      if (error) {
+        this.logger.debug(`Notification failed (non-critical): ${error.message}`);
+      }
     });
+
+    // Resolve immediately without waiting
+    return Promise.resolve();
   }
 
   /**

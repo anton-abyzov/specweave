@@ -1,11 +1,15 @@
 ---
 id: US-002
 feature: FS-119
-title: "Validation Guard for spec.md Project/Board (P1)"
+title: Validation Guard for spec.md Project/Board (P1)
 status: completed
 priority: P1
 created: 2025-12-07
 project: specweave
+external:
+  github:
+    issue: 848
+    url: https://github.com/anton-abyzov/specweave/issues/848
 ---
 
 # US-002: Validation Guard for spec.md Project/Board (P1)

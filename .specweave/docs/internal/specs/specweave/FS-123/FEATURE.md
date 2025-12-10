@@ -1,11 +1,16 @@
 ---
 id: FS-123
-title: "Intelligent Living Docs Content Generation"
+title: Intelligent Living Docs Content Generation
 type: feature
 status: completed
 priority: P1
-created: 2025-12-09
-lastUpdated: 2025-12-09
+created: 2025-12-10
+lastUpdated: 2025-12-10
+external_tools:
+  github:
+    type: milestone
+    id: 46
+    url: https://github.com/anton-abyzov/specweave/milestone/46
 ---
 
 # Intelligent Living Docs Content Generation
@@ -18,7 +23,7 @@ After running `living-docs-builder` on large enterprise projects (246 repos, 6,7
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0123-intelligent-living-docs-content](../../../../increments/0123-intelligent-living-docs-content/spec.md) | ✅ completed | 2025-12-09 |
+| [0123-intelligent-living-docs-content](../../../../increments/0123-intelligent-living-docs-content/spec.md) | ✅ completed | 2025-12-10 |
 
 ## User Stories
 

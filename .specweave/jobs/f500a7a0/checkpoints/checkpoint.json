@@ -1,0 +1,441 @@
+{
+  "phase": "suggestions",
+  "progressPercent": 100,
+  "errors": [],
+  "lastUpdated": "2025-12-10T17:33:38.310Z",
+  "discovery": {
+    "codebaseStats": {
+      "totalFiles": 2527,
+      "totalDirs": 714,
+      "byExtension": {
+        "": 28,
+        ".example": 7,
+        ".json": 122,
+        ".md": 752,
+        ".yml": 17,
+        ".py": 4,
+        ".mdx": 1,
+        ".png": 16,
+        ".ts": 1045,
+        ".js": 186,
+        ".sh": 110,
+        ".tsx": 4,
+        ".css": 3,
+        ".svg": 9,
+        ".jpg": 7,
+        ".template": 13,
+        ".mjs": 1,
+        ".cmd": 2,
+        ".ps1": 1,
+        ".hbs": 65,
+        ".map": 86,
+        ".disabled": 1,
+        ".yaml": 17,
+        ".mmd": 6,
+        ".properties": 4,
+        ".tf": 9,
+        ".tpl": 2,
+        ".cjs": 1,
+        ".stub": 1,
+        ".qa": 1,
+        ".development": 1,
+        ".staging": 1,
+        ".skip": 4
+      },
+      "byType": {
+        "code": 911,
+        "tests": 422,
+        "docs": 691,
+        "config": 137,
+        "assets": 366
+      },
+      "estimatedLOC": 196620
+    },
+    "techStack": {
+      "languages": [
+        "TypeScript"
+      ],
+      "frameworks": [],
+      "buildTools": [],
+      "testFrameworks": [
+        "Vitest",
+        "Playwright"
+      ],
+      "detectedFrom": [
+        "package.json"
+      ]
+    },
+    "existingDocs": {
+      "readme": "README.md",
+      "contributing": null,
+      "docsFolder": null,
+      "wikiFolder": null,
+      "mdFiles": [
+        "CHANGELOG.md",
+        "CLAUDE.md",
+        "CODE_OF_CONDUCT.md",
+        "README.md",
+        "SECURITY.md"
+      ]
+    },
+    "entryPoints": {
+      "main": [],
+      "index": [],
+      "exports": [
+        "dist/index.js",
+        "./bin/specweave.js"
+      ]
+    },
+    "modules": [
+      {
+        "name": "core",
+        "path": "src/core",
+        "fileCount": 270,
+        "estimatedLOC": 63923,
+        "hasTests": true,
+        "hasReadme": false,
+        "entryPoints": [
+          "background/index.ts",
+          "cicd/index.ts",
+          "config/index.ts",
+          "dashboard/index.ts",
+          "discrepancy/analyzers/index.ts",
+          "discrepancy/index.ts",
+          "errors/index.ts",
+          "external-tools/index.ts",
+          "external-tools/providers/index.ts",
+          "feature-deleter/index.ts",
+          "iac/index.ts",
+          "living-docs/governance/index.ts",
+          "living-docs/index.ts",
+          "living-docs/intelligent-analyzer/index.ts",
+          "living-docs/sync-helpers/index.ts",
+          "living-docs/validators/index.ts",
+          "llm/index.ts",
+          "logs/index.ts",
+          "notifications/index.ts",
+          "repo-structure/providers/index.ts",
+          "scheduler/index.ts",
+          "serverless/index.ts",
+          "workflow/index.ts"
+        ],
+        "extensions": {
+          ".ts": 269,
+          ".json": 1
+        }
+      },
+      {
+        "name": "cli",
+        "path": "src/cli",
+        "fileCount": 112,
+        "estimatedLOC": 30069,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [
+          "helpers/init/index.ts",
+          "helpers/issue-tracker/index.ts"
+        ],
+        "extensions": {
+          ".ts": 112
+        }
+      },
+      {
+        "name": "utils",
+        "path": "src/utils",
+        "fileCount": 57,
+        "estimatedLOC": 13457,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [
+          "docs-preview/index.ts",
+          "validators/index.ts"
+        ],
+        "extensions": {
+          ".ts": 57
+        }
+      },
+      {
+        "name": "templates",
+        "path": "src/templates",
+        "fileCount": 32,
+        "estimatedLOC": 0,
+        "hasTests": false,
+        "hasReadme": true,
+        "entryPoints": [],
+        "extensions": {
+          ".example": 1,
+          ".template": 7,
+          ".md": 13,
+          ".yml": 7,
+          ".qa": 1,
+          ".development": 1,
+          ".staging": 1,
+          ".yaml": 1
+        }
+      },
+      {
+        "name": "init",
+        "path": "src/init",
+        "fileCount": 28,
+        "estimatedLOC": 4581,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 27,
+          ".stub": 1
+        }
+      },
+      {
+        "name": "adapters",
+        "path": "src/adapters",
+        "fileCount": 22,
+        "estimatedLOC": 2680,
+        "hasTests": false,
+        "hasReadme": true,
+        "entryPoints": [],
+        "extensions": {
+          ".md": 10,
+          ".ts": 11,
+          ".yaml": 1
+        }
+      },
+      {
+        "name": "locales",
+        "path": "src/locales",
+        "fileCount": 19,
+        "estimatedLOC": 0,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          "": 8,
+          ".json": 11
+        }
+      },
+      {
+        "name": "sync",
+        "path": "src/sync",
+        "fileCount": 15,
+        "estimatedLOC": 4864,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [
+          "index.ts"
+        ],
+        "extensions": {
+          ".ts": 15
+        }
+      },
+      {
+        "name": "integrations",
+        "path": "src/integrations",
+        "fileCount": 12,
+        "estimatedLOC": 3955,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 12
+        }
+      },
+      {
+        "name": "metrics",
+        "path": "src/metrics",
+        "fileCount": 10,
+        "estimatedLOC": 1033,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 10
+        }
+      },
+      {
+        "name": "importers",
+        "path": "src/importers",
+        "fileCount": 9,
+        "estimatedLOC": 4208,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 9
+        }
+      },
+      {
+        "name": "hooks",
+        "path": "src/hooks",
+        "fileCount": 5,
+        "estimatedLOC": 668,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [
+          "index.ts"
+        ],
+        "extensions": {
+          ".ts": 5
+        }
+      },
+      {
+        "name": "living-docs",
+        "path": "src/living-docs",
+        "fileCount": 5,
+        "estimatedLOC": 2786,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 5
+        }
+      },
+      {
+        "name": "types",
+        "path": "src/types",
+        "fileCount": 5,
+        "estimatedLOC": 300,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 5
+        }
+      },
+      {
+        "name": "config",
+        "path": "src/config",
+        "fileCount": 3,
+        "estimatedLOC": 300,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 3
+        }
+      },
+      {
+        "name": "generators",
+        "path": "src/generators",
+        "fileCount": 2,
+        "estimatedLOC": 524,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 2
+        }
+      },
+      {
+        "name": "id-generators",
+        "path": "src/id-generators",
+        "fileCount": 2,
+        "estimatedLOC": 220,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 2
+        }
+      },
+      {
+        "name": "validators",
+        "path": "src/validators",
+        "fileCount": 2,
+        "estimatedLOC": 471,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 2
+        }
+      },
+      {
+        "name": "progress",
+        "path": "src/progress",
+        "fileCount": 1,
+        "estimatedLOC": 125,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 1
+        }
+      },
+      {
+        "name": "testing",
+        "path": "src/testing",
+        "fileCount": 1,
+        "estimatedLOC": 424,
+        "hasTests": false,
+        "hasReadme": false,
+        "entryPoints": [],
+        "extensions": {
+          ".ts": 1
+        }
+      }
+    ],
+    "tier": "large",
+    "samplingConfig": {
+      "tier": "large",
+      "filesPerDir": 3,
+      "priorityPatterns": [
+        "**/index.*",
+        "**/main.*",
+        "**/*.config.*",
+        "**/types.*",
+        "**/README.md"
+      ],
+      "skipPatterns": [
+        "node_modules/**",
+        "dist/**",
+        "build/**",
+        "coverage/**",
+        "**/*.test.*",
+        "**/*.spec.*",
+        "**/__tests__/**"
+      ]
+    },
+    "discoveredAt": "2025-12-10T17:13:02.594Z",
+    "umbrella": {
+      "isUmbrella": false,
+      "source": "none",
+      "childRepoCount": 0
+    }
+  },
+  "foundationPaths": [
+    "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/architecture/overview.md",
+    "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/architecture/tech-stack.md",
+    "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/architecture/modules-skeleton.md"
+  ],
+  "matchingStats": {
+    "totalWorkItems": 106,
+    "matchedWorkItems": 44,
+    "unmatchedWorkItems": 62,
+    "modulesWithWorkItems": 9
+  },
+  "moduleAnalysis": {
+    "completed": [
+      "core",
+      "cli",
+      "utils",
+      "templates",
+      "init",
+      "adapters",
+      "locales",
+      "sync",
+      "integrations",
+      "metrics",
+      "importers",
+      "hooks",
+      "living-docs",
+      "types",
+      "config",
+      "generators",
+      "id-generators",
+      "validators",
+      "progress",
+      "testing"
+    ],
+    "remaining": []
+  }
+}

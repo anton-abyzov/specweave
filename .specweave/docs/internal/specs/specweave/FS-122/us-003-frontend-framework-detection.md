@@ -1,11 +1,15 @@
 ---
 id: US-003
 feature: FS-122
-title: "Frontend Framework Detection"
+title: Frontend Framework Detection
 status: completed
 priority: P1
-created: 2025-12-09
+created: 2025-12-10
 project: specweave
+external:
+  github:
+    issue: 860
+    url: https://github.com/anton-abyzov/specweave/issues/860
 ---
 
 # US-003: Frontend Framework Detection

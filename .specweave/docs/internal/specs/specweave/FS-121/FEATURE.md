@@ -1,11 +1,16 @@
 ---
 id: FS-121
-title: "ADO/JIRA Feature Parity P2/P3 Implementation"
+title: ADO/JIRA Feature Parity P2/P3 Implementation
 type: feature
 status: completed
 priority: P2
-created: 2025-12-09
-lastUpdated: 2025-12-09
+created: 2025-12-10
+lastUpdated: 2025-12-10
+external_tools:
+  github:
+    type: milestone
+    id: 44
+    url: https://github.com/anton-abyzov/specweave/milestone/44
 ---
 
 # ADO/JIRA Feature Parity P2/P3 Implementation
@@ -23,7 +28,7 @@ This increment implements the remaining P2 and P3 gaps identified in increment 0
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0121-ado-jira-feature-parity-p2-p3](../../../../increments/0121-ado-jira-feature-parity-p2-p3/spec.md) | ✅ completed | 2025-12-09 |
+| [0121-ado-jira-feature-parity-p2-p3](../../../../increments/0121-ado-jira-feature-parity-p2-p3/spec.md) | ✅ completed | 2025-12-10 |
 
 ## User Stories
 

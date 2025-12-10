@@ -1,11 +1,15 @@
 ---
 id: US-001
 feature: FS-118E
-title: "Auto-Trigger Sync-Specs After Increment Creation"
+title: Auto-Trigger Sync-Specs After Increment Creation
 status: completed
 priority: P1
 created: 2025-12-07
 project: specweave
+external:
+  github:
+    issue: 884
+    url: https://github.com/anton-abyzov/specweave/issues/884
 ---
 
 # US-001: Auto-Trigger Sync-Specs After Increment Creation

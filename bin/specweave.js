@@ -122,6 +122,38 @@ program
     await archiveCommand(incrementIds, options);
   });
 
+// Save command - Smart save with auto-sync
+program
+  .command('save [message]')
+  .description('Smart save - auto-generate commit message, sync with remote, commit and push')
+  .option('-i, --interactive', 'Interactive mode - ask before each step')
+  .option('--dry-run', 'Preview without executing')
+  .option('--sync <strategy>', 'Sync strategy (rebase, merge, none)', 'rebase')
+  .option('--no-stash', 'Skip auto-stash')
+  .option('--repos <list>', 'Only save specific repos (comma-separated)')
+  .option('--skip-no-remote', 'Skip repos without remotes')
+  .option('--all', 'Include all repos (even outside umbrella config)')
+  .option('--no-push', 'Commit but don\'t push')
+  .option('--force', 'Force push (requires confirmation)')
+  .option('--branch <name>', 'Create new branch instead of force pushing')
+  .action(async (message, options) => {
+    const { executeSave } = await import('../dist/src/cli/commands/save.js');
+    await executeSave({
+      message,
+      interactive: options.interactive,
+      dryRun: options.dryRun,
+      sync: options.sync,
+      noStash: options.noStash,
+      repos: options.repos,
+      skipNoRemote: options.skipNoRemote,
+      all: options.all,
+      noPush: options.push === false, // Handle --no-push
+      force: options.force,
+      branch: options.branch,
+      projectRoot: process.cwd()
+    });
+  });
+
 // Delete feature command - Registered dynamically in startup
 // (See registerDeleteFeatureCommand call below)
 
@@ -317,6 +349,7 @@ program
   .option('--depends-on <jobIds>', 'Wait for jobs before starting (comma-separated)')
   .option('--foreground', 'Run in current session instead of background')
   .option('--force', 'Force run even for greenfield projects')
+  .option('--full-scan', 'Force full deep scan (all phases: repos, org, arch, inconsistencies, strategy)')
   .action(async (options) => {
     const { livingDocsCommand } = await import('../dist/src/cli/commands/living-docs.js');
     await livingDocsCommand(options);
@@ -460,6 +493,29 @@ contextCmd
     await contextSelectCommand();
   });
 
+// Enable multi-project command - Migrate from single-project to multi-project mode
+program
+  .command('enable-multiproject')
+  .description('Enable multi-project mode (explicit opt-in from single-project)')
+  .option('-y, --yes', 'Skip confirmation prompt')
+  .action(async (options) => {
+    const { enableMultiProject } = await import('../dist/src/cli/commands/enable-multiproject.js');
+    await enableMultiProject({
+      skipConfirmation: options.yes
+    });
+  });
+
+// Switch project command - Change active project (multi-project mode)
+program
+  .command('switch-project [project-id]')
+  .description('Switch active project (multi-project mode only)')
+  .action(async (projectId) => {
+    const { switchProject } = await import('../dist/src/cli/commands/switch-project.js');
+    await switchProject({
+      projectId
+    });
+  });
+
 // Help text
 program.on('--help', () => {
   console.log('');
@@ -491,6 +547,7 @@ program.on('--help', () => {
   console.log('  $ specweave jobs --resume <jobId>           # Resume paused job');
   console.log('  $ specweave living-docs                     # Launch Living Docs (interactive)');
   console.log('  $ specweave living-docs --depth deep-native # AI-powered analysis (FREE w/ MAX)');
+  console.log('  $ specweave living-docs --full-scan         # Full deep scan (all phases)');
   console.log('  $ specweave living-docs --resume <jobId>    # Resume orphaned job');
   console.log('  $ specweave sync-scheduled                  # Execute due sync jobs');
   console.log('  $ specweave sync-scheduled --force          # Force sync all jobs');

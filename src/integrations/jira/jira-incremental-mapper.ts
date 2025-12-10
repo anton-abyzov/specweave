@@ -14,6 +14,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { ConfigManager } from '../../core/config/config-manager.js';
 
 /**
  * Module logger - can be replaced for testing
@@ -50,15 +51,33 @@ export interface IncrementWorkItems {
   tasks: WorkItem[];
 }
 
+/**
+ * Configuration options for JiraIncrementalMapper
+ * Domain should come from ConfigManager (config.json), not process.env
+ */
+export interface JiraIncrementalMapperConfig {
+  /** JIRA domain (e.g., "company.atlassian.net") - from config.json */
+  domain: string;
+}
+
 export class JiraIncrementalMapper {
   private client: JiraClient;
   private projectRoot: string;
   private rfcGenerator: FlexibleRFCGenerator;
+  private domain: string;
 
-  constructor(client: JiraClient, projectRoot: string = process.cwd()) {
+  /**
+   * Create a JiraIncrementalMapper
+   *
+   * @param client - JiraClient instance
+   * @param config - Configuration with domain from ConfigManager
+   * @param projectRoot - Project root path
+   */
+  constructor(client: JiraClient, config: JiraIncrementalMapperConfig, projectRoot: string = process.cwd()) {
     this.client = client;
     this.projectRoot = projectRoot;
     this.rfcGenerator = new FlexibleRFCGenerator(projectRoot);
+    this.domain = config.domain;
   }
 
   /**
@@ -310,7 +329,7 @@ export class JiraIncrementalMapper {
     let newContent = parsed.content;
 
     if (workItem.type === 'story') {
-      const storySection = `\n### ${workItem.id}: ${workItem.title}\n\n${workItem.description}\n\n**Jira**: [${workItem.jira_key}](https://${process.env.JIRA_DOMAIN}/browse/${workItem.jira_key})\n`;
+      const storySection = `\n### ${workItem.id}: ${workItem.title}\n\n${workItem.description}\n\n**Jira**: [${workItem.jira_key}](https://${this.domain}/browse/${workItem.jira_key})\n`;
 
       if (newContent.includes('## User Stories')) {
         newContent = newContent.replace('## User Stories\n', `## User Stories\n${storySection}`);
@@ -318,7 +337,7 @@ export class JiraIncrementalMapper {
         newContent += `\n## User Stories\n${storySection}`;
       }
     } else if (workItem.type === 'bug') {
-      const bugSection = `\n### ${workItem.id}: ${workItem.title}\n\n${workItem.description}\n\n**Priority**: ${workItem.priority}\n**Jira**: [${workItem.jira_key}](https://${process.env.JIRA_DOMAIN}/browse/${workItem.jira_key})\n`;
+      const bugSection = `\n### ${workItem.id}: ${workItem.title}\n\n${workItem.description}\n\n**Priority**: ${workItem.priority}\n**Jira**: [${workItem.jira_key}](https://${this.domain}/browse/${workItem.jira_key})\n`;
 
       if (newContent.includes('## Bugs')) {
         newContent = newContent.replace('## Bugs\n', `## Bugs\n${bugSection}`);
@@ -326,7 +345,7 @@ export class JiraIncrementalMapper {
         newContent += `\n## Bugs\n${bugSection}`;
       }
     } else if (workItem.type === 'task') {
-      const taskSection = `\n### ${workItem.id}: ${workItem.title}\n\n${workItem.description}\n\n**Jira**: [${workItem.jira_key}](https://${process.env.JIRA_DOMAIN}/browse/${workItem.jira_key})\n`;
+      const taskSection = `\n### ${workItem.id}: ${workItem.title}\n\n${workItem.description}\n\n**Jira**: [${workItem.jira_key}](https://${this.domain}/browse/${workItem.jira_key})\n`;
 
       if (newContent.includes('## Technical Tasks')) {
         newContent = newContent.replace('## Technical Tasks\n', `## Technical Tasks\n${taskSection}`);
@@ -366,7 +385,7 @@ export class JiraIncrementalMapper {
     const rfcPath = path.join(rfcFolder, rfcFiles[0]);
     let content = fs.readFileSync(rfcPath, 'utf-8');
 
-    const workItemSection = `\n### ${workItem.type.toUpperCase()}: ${workItem.title}\n\n${workItem.description}\n\n**Jira**: [${workItem.jira_key}](https://${process.env.JIRA_DOMAIN}/browse/${workItem.jira_key})\n`;
+    const workItemSection = `\n### ${workItem.type.toUpperCase()}: ${workItem.title}\n\n${workItem.description}\n\n**Jira**: [${workItem.jira_key}](https://${this.domain}/browse/${workItem.jira_key})\n`;
 
     if (content.includes('## Detailed Design')) {
       content = content.replace('## Detailed Design\n', `## Detailed Design\n${workItemSection}`);
@@ -400,7 +419,7 @@ export class JiraIncrementalMapper {
         source_issues: issues.map(i => ({
           key: i.key,
           type: i.fields.issuetype.name,
-          url: `https://${process.env.JIRA_DOMAIN}/browse/${i.key}`
+          url: `https://${this.domain}/browse/${i.key}`
         })),
         last_sync: new Date().toISOString(),
         sync_direction: 'import'
@@ -413,7 +432,7 @@ export class JiraIncrementalMapper {
       content += `## User Stories\n\n`;
       workItems.stories.forEach(story => {
         content += `### ${story.id}: ${story.title}\n\n${story.description}\n\n`;
-        content += `**Jira**: [${story.jira_key}](https://${process.env.JIRA_DOMAIN}/browse/${story.jira_key})\n\n`;
+        content += `**Jira**: [${story.jira_key}](https://${this.domain}/browse/${story.jira_key})\n\n`;
       });
     }
 
@@ -421,7 +440,7 @@ export class JiraIncrementalMapper {
       content += `## Bugs\n\n`;
       workItems.bugs.forEach(bug => {
         content += `### ${bug.id}: ${bug.title}\n\n${bug.description}\n\n`;
-        content += `**Priority**: ${bug.priority} | **Jira**: [${bug.jira_key}](https://${process.env.JIRA_DOMAIN}/browse/${bug.jira_key})\n\n`;
+        content += `**Priority**: ${bug.priority} | **Jira**: [${bug.jira_key}](https://${this.domain}/browse/${bug.jira_key})\n\n`;
       });
     }
 
@@ -429,7 +448,7 @@ export class JiraIncrementalMapper {
       content += `## Technical Tasks\n\n`;
       workItems.tasks.forEach(task => {
         content += `### ${task.id}: ${task.title}\n\n${task.description}\n\n`;
-        content += `**Jira**: [${task.jira_key}](https://${process.env.JIRA_DOMAIN}/browse/${task.jira_key})\n\n`;
+        content += `**Jira**: [${task.jira_key}](https://${this.domain}/browse/${task.jira_key})\n\n`;
       });
     }
 
@@ -469,7 +488,7 @@ export class JiraIncrementalMapper {
         description: item.description,
         priority: item.priority,
         source_key: item.jira_key,
-        source_url: `https://${process.env.JIRA_DOMAIN}/browse/${item.jira_key}`,
+        source_url: `https://${this.domain}/browse/${item.jira_key}`,
         parent: item.parent_epic ? {
           type: 'Epic',
           key: item.parent_epic.key,
@@ -484,7 +503,7 @@ export class JiraIncrementalMapper {
         description: item.description,
         priority: item.priority,
         source_key: item.jira_key,
-        source_url: `https://${process.env.JIRA_DOMAIN}/browse/${item.jira_key}`,
+        source_url: `https://${this.domain}/browse/${item.jira_key}`,
         parent: item.parent_epic ? {
           type: 'Epic',
           key: item.parent_epic.key,
@@ -499,7 +518,7 @@ export class JiraIncrementalMapper {
         description: item.description,
         priority: item.priority,
         source_key: item.jira_key,
-        source_url: `https://${process.env.JIRA_DOMAIN}/browse/${item.jira_key}`,
+        source_url: `https://${this.domain}/browse/${item.jira_key}`,
         parent: item.parent_epic ? {
           type: 'Epic',
           key: item.parent_epic.key,

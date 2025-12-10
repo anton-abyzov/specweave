@@ -1,7 +1,7 @@
 ---
 name: specweave:living-docs
 description: Launch or resume Living Docs Builder independently. Generates documentation from codebase analysis with AI-powered insights.
-usage: /specweave:living-docs [--resume <jobId>] [--depth <level>] [--priority <modules>] [--sources <folders>] [--depends-on <jobIds>] [--foreground]
+usage: /specweave:living-docs [--resume <jobId>] [--depth <level>] [--priority <modules>] [--sources <folders>] [--depends-on <jobIds>] [--foreground] [--full-scan]
 ---
 
 # Living Docs Builder (Standalone)
@@ -31,7 +31,8 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 | `--sources <folders>` | Additional doc folders (comma-separated): `docs/,wiki/` |
 | `--depends-on <jobIds>` | Wait for jobs before starting (comma-separated) |
 | `--foreground` | Run in current session instead of background |
-| `--full` | Force full rebuild by clearing cache and checkpoints (bypasses incremental mode) |
+| `--force` | Force run even for greenfield projects |
+| `--full-scan` | **Force full deep scan** - All phases (repos, org, arch, inconsistencies, strategy) |
 
 ---
 
@@ -75,8 +76,8 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 # AI-powered deep analysis (FREE with MAX subscription)
 /specweave:living-docs --depth deep-native --priority core,api
 
-# Force full rebuild (clears cache and checkpoints)
-/specweave:living-docs --full --depth standard
+# Force FULL deep scan (all phases: repos, org, arch, inconsistencies, strategy)
+/specweave:living-docs --full-scan
 ```
 
 ---
@@ -89,6 +90,48 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 | `standard` | ~15-30 min | Module analysis, exports, dependencies | Free |
 | `deep-native` | Progress-based | AI analysis via Claude Code CLI | FREE (MAX) |
 | `deep-api` | Progress-based | AI analysis via API key | API costs |
+
+### Full Scan Mode (--full-scan)
+
+**What it does**: Forces a comprehensive deep analysis with ALL phases, regardless of brownfield detection.
+
+**When to use**:
+- Initial setup - want complete documentation structure
+- After major refactoring - need fresh analysis of everything
+- Imported external repos - want full org structure, inconsistencies, strategy docs
+- Complete living docs - need `review-needed/` and `strategy/` folders populated
+
+**What you get** (beyond standard depths):
+```
+.specweave/docs/internal/
+├── repos/                      # All repos analyzed (Phase B)
+│   └── {repo-name}/
+│       ├── overview.md
+│       └── api-surface.md
+├── organization/               # Team structure (Phase C)
+│   ├── teams/
+│   └── org-chart.mmd
+├── architecture/               # System architecture (Phase D)
+│   ├── adr/                   # Auto-detected ADRs
+│   └── system-architecture.md
+├── review-needed/              # Inconsistencies (Phase E) ✨
+│   ├── questions-for-cto.md
+│   ├── questions-for-po.md
+│   └── inconsistencies.md
+└── strategy/                   # Strategic recommendations (Phase F) ✨
+    ├── tech-debt-catalog.md
+    ├── modernization-candidates.md
+    └── recommendations.md
+```
+
+**Command**:
+```bash
+/specweave:living-docs --full-scan
+
+# Uses deep-native if Claude MAX available, otherwise deep-api
+# Runs ALL phases: B → C → D → E → F
+# Duration: Variable (depends on project size)
+```
 
 ### Deep-Native (Recommended for MAX Users)
 

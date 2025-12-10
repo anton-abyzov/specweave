@@ -1,11 +1,15 @@
 ---
 id: US-004
 feature: FS-118E
-title: "Fallback for Manual Sync"
+title: Fallback for Manual Sync
 status: completed
 priority: P1
 created: 2025-12-07
 project: specweave
+external:
+  github:
+    issue: 887
+    url: https://github.com/anton-abyzov/specweave/issues/887
 ---
 
 # US-004: Fallback for Manual Sync

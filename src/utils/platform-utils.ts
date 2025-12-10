@@ -343,38 +343,58 @@ export class PlatformUtils {
   }
 
   /**
-   * macOS notification using osascript
+   * macOS notification using osascript (NON-BLOCKING)
+   *
+   * CRITICAL: Uses exec() without await to prevent blocking the main thread!
+   * Notifications should NEVER block Claude Code execution.
    *
    * @param title Notification title (should start with "SpecWeave:")
    * @param body Notification body (should be explicit about what happened)
    * @param sound Optional sound name (default: "Pop" for neutral notifications)
    */
   private async sendNotificationMacOS(title: string, body: string, sound: string = 'Pop'): Promise<void> {
+    const cp = await import('child_process');
     const escapedTitle = title.replace(/"/g, '\\"');
     const escapedBody = body.replace(/"/g, '\\"');
     const soundParam = sound ? ` sound name "${sound}"` : '';
     const cmd = `osascript -e 'display notification "${escapedBody}" with title "${escapedTitle}"${soundParam}'`;
-    execSync(cmd, { stdio: 'ignore' });
+
+    // Fire-and-forget: DON'T await or block!
+    cp.exec(cmd, (error: Error | null) => {
+      if (error) {
+        this.logger.debug(`Notification failed (non-critical): ${error.message}`);
+      }
+    });
   }
 
   /**
-   * Linux notification using notify-send
+   * Linux notification using notify-send (NON-BLOCKING)
+   *
+   * CRITICAL: Fire-and-forget pattern to prevent blocking Claude Code!
+   * Notifications should NEVER block execution.
    */
   private async sendNotificationLinux(title: string, body: string): Promise<void> {
-    try {
-      execSync('command -v notify-send', { stdio: 'ignore' });
-      const escapedTitle = title.replace(/"/g, '\\"');
-      const escapedBody = body.replace(/"/g, '\\"');
-      execSync(`notify-send "${escapedTitle}" "${escapedBody}"`, { stdio: 'ignore' });
-    } catch (err) {
-      throw new Error('notify-send not available on this system');
-    }
+    const cp = await import('child_process');
+    const escapedTitle = title.replace(/"/g, '\\"');
+    const escapedBody = body.replace(/"/g, '\\"');
+    const cmd = `notify-send "${escapedTitle}" "${escapedBody}" --urgency=normal`;
+
+    // Fire-and-forget: DON'T wait for completion!
+    cp.exec(cmd, (error: Error | null) => {
+      if (error) {
+        this.logger.debug(`Notification failed (non-critical): ${error.message}`);
+      }
+    });
   }
 
   /**
-   * Windows notification using PowerShell toast
+   * Windows notification using PowerShell toast (NON-BLOCKING)
+   *
+   * CRITICAL: Fire-and-forget pattern to prevent blocking Claude Code!
+   * Notifications should NEVER block execution.
    */
   private async sendNotificationWindows(title: string, body: string): Promise<void> {
+    const cp = await import('child_process');
     const escapedTitle = title.replace(/'/g, "''");
     const escapedBody = body.replace(/'/g, "''");
     const psScript = `
@@ -386,9 +406,12 @@ export class PlatformUtils {
       $toast = [Windows.UI.Notifications.ToastNotification]::new($xml);
       [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('SpecWeave').Show($toast);
     `;
-    execSync(`powershell -Command "${psScript}"`, {
-      stdio: 'ignore',
-      windowsHide: true
+
+    // Fire-and-forget: DON'T wait for completion!
+    cp.exec(`powershell -Command "${psScript}"`, (error: Error | null) => {
+      if (error) {
+        this.logger.debug(`Notification failed (non-critical): ${error.message}`);
+      }
     });
   }
 }

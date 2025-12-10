@@ -1,11 +1,15 @@
 ---
 id: US-001
 feature: FS-115
-title: "Auto-Select When Only One Option (P1)"
+title: Auto-Select When Only One Option (P1)
 status: completed
 priority: P1
 created: 2025-12-06
 project: specweave
+external:
+  github:
+    issue: 838
+    url: https://github.com/anton-abyzov/specweave/issues/838
 ---
 
 # US-001: Auto-Select When Only One Option (P1)

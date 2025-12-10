@@ -1,36 +1,57 @@
-## living-docs
+# living-docs
 
 **Path**: `src/living-docs`
 
-### Overview
+## Purpose
 
-The living-docs module contains 3 files with approximately 1,279 lines of code.
+Provides living documentation infrastructure including enterprise codebase analysis, epic ID allocation for feature tracking, and feature specification (FS) ID allocation for increment management.
 
-### Analysis Summary
+## Overview
+
+The living-docs module contains 5 files with approximately 2,495 lines of code.
+
+## Dependencies
+
+This module imports from:
+- `..`
+
+## Dependents
+
+No dependencies detected.
+
+## Integration Points
+
+No external integration points detected.
+
+## Patterns Used
+
+No specific patterns detected.
+
+## Analysis Summary
 
 - **Files Analyzed**: 3
 - **Source Files**: 3
 - **Test Files**: 0
-- **Total Exports**: 13
+- **Total Exports**: 23
 
-### Main Exports
+## Main Exports
 
-- `EpicMetadata` (interface)
-- `ExternalEpicItem` (interface)
-- `EpicAllocationResult` (interface)
-- `EpicIdAllocatorOptions` (interface)
-- `EpicIdAllocator` (class)
-- `FeatureMetadata` (interface)
-- `ExternalWorkItem` (interface)
-- `AllocationResult` (interface)
-- `FSIdAllocatorOptions` (interface)
-- `FSIdAllocator` (class)
-- ...and 3 more exports
+- `DocumentCategory` (interface)
+- `DocumentInfo` (interface)
+- `AcceptanceCriterion` (interface)
+- `SpecCodeMismatch` (interface)
+- `CodeEvidence` (interface)
+- `HealthScore` (interface)
+- `NamingViolation` (interface)
+- `DuplicateDocument` (interface)
+- `DocumentDiscrepancy` (interface)
+- `EnterpriseDocReport` (interface)
+- ...and 13 more exports
 
-### Documentation Status
+## Documentation Status
 
 **Has README**: No
 **Has Tests**: No
 
 ---
-*Analysis generated on 2025-12-04*
+*Analysis generated on 2025-12-10*

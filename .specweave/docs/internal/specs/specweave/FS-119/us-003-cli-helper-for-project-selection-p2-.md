@@ -1,11 +1,15 @@
 ---
 id: US-003
 feature: FS-119
-title: "CLI Helper for Project Selection (P2)"
+title: CLI Helper for Project Selection (P2)
 status: completed
 priority: P1
 created: 2025-12-07
 project: specweave
+external:
+  github:
+    issue: 849
+    url: https://github.com/anton-abyzov/specweave/issues/849
 ---
 
 # US-003: CLI Helper for Project Selection (P2)

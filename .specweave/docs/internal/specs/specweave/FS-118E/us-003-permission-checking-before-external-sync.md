@@ -1,11 +1,15 @@
 ---
 id: US-003
 feature: FS-118E
-title: "Permission Checking Before External Sync"
+title: Permission Checking Before External Sync
 status: completed
 priority: P1
 created: 2025-12-07
 project: specweave
+external:
+  github:
+    issue: 886
+    url: https://github.com/anton-abyzov/specweave/issues/886
 ---
 
 # US-003: Permission Checking Before External Sync

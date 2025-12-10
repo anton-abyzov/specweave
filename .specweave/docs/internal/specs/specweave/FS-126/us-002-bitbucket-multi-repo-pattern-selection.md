@@ -1,11 +1,15 @@
 ---
 id: US-002
 feature: FS-126
-title: "Bitbucket Multi-Repo Pattern Selection"
+title: Bitbucket Multi-Repo Pattern Selection
 status: completed
 priority: P1
 created: 2025-12-08
 project: specweave
+external:
+  github:
+    issue: 869
+    url: https://github.com/anton-abyzov/specweave/issues/869
 ---
 
 # US-002: Bitbucket Multi-Repo Pattern Selection

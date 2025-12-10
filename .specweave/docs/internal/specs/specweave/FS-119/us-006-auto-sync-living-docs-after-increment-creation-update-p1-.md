@@ -1,11 +1,15 @@
 ---
 id: US-006
 feature: FS-119
-title: "Auto-Sync Living Docs After Increment Creation/Update (P1)"
+title: Auto-Sync Living Docs After Increment Creation/Update (P1)
 status: completed
 priority: P1
 created: 2025-12-07
 project: specweave
+external:
+  github:
+    issue: 852
+    url: https://github.com/anton-abyzov/specweave/issues/852
 ---
 
 # US-006: Auto-Sync Living Docs After Increment Creation/Update (P1)
