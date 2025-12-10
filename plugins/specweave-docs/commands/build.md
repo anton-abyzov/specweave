@@ -52,7 +52,7 @@ if [ ! -d ".specweave/cache/docs-site/node_modules" ]; then
 fi
 ```
 
-If not set up, follow the same setup steps as `/specweave-docs:preview` (Step 3 in preview.md).
+If not set up, follow the same setup steps as `/specweave-docs:view` (Step 3 in view.md).
 
 ### Step 3: Run Build
 
@@ -131,8 +131,8 @@ git commit -m "docs: update documentation site"
 
 ### Build fails with broken links
 ```bash
-# Preview first to find errors
-/specweave-docs:preview
+# View docs first to find errors
+/specweave-docs:view
 # Fix broken links, then build
 /specweave-docs:build
 ```
@@ -155,6 +155,6 @@ rm -rf .specweave/cache/docs-site
 
 ## See Also
 
-- `/specweave-docs:preview` - Preview docs locally with hot reload
+- `/specweave-docs:view` - View docs locally with hot reload
 - `/specweave-docs:organize` - Organize large folders with themed indexes
 - `/specweave-docs:health` - Documentation health report

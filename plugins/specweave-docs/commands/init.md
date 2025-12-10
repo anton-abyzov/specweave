@@ -309,7 +309,7 @@ themeConfig: {
 ## Related Commands
 
 - `/specweave-docs:generate` - Generate docs from code/specs
-- `/specweave-docs:preview` - Launch documentation preview server
+- `/specweave-docs:view` - Launch documentation server
 - `/specweave-docs:build` - Build static documentation site
 
 ## Requirements
