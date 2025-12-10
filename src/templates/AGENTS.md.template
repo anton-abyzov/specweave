@@ -32,16 +32,17 @@
 ```
 1. NEVER pollute project root with .md files
 2. Increment IDs unique (0001-9999)
-3. ONLY 3 files in increment root: spec.md, plan.md, tasks.md
+3. ONLY 4 files in increment root: metadata.json, spec.md, plan.md, tasks.md
 4. All reports/scripts/logs → increment subfolders
-5. Read context-manifest.yaml first (70%+ token savings)
+5. metadata.json MUST exist BEFORE spec.md can be created
 6. tasks.md + spec.md = SOURCE OF TRUTH (update after every task!)
 ```
 
 **File Organization**:
 ```
 .specweave/increments/0001-feature/
-├── spec.md, plan.md, tasks.md    # ONLY these in root
+├── metadata.json                  # REQUIRED - create FIRST
+├── spec.md, plan.md, tasks.md    # Core increment docs
 ├── reports/                       # SESSION-*.md, analysis, etc.
 ├── scripts/                       # Helper scripts
 └── logs/                          # Execution logs
@@ -410,26 +411,21 @@ TASK COMPLETED
 
 ## Context Loading {#context-loading}
 
-### Why Context Manifests Matter
+### Efficient Context Management
 
 ```
-Without manifest: Load all docs (50k tokens) → Crash risk
-With manifest:    Load relevant files (5k tokens) → 90% savings
+Read only what's needed for the current task:
+- Active increment: spec.md, tasks.md (always)
+- Supporting docs: only when referenced in tasks
+- Living docs: load per-US when implementing
 ```
 
-### Using context-manifest.yaml
+### Token-Efficient Approach
 
-```yaml
-# .specweave/increments/0001-feature/context-manifest.yaml
-spec_sections:
-  - .specweave/docs/internal/strategy/prd.md
-  - .specweave/docs/internal/architecture/hld.md
-documentation:
-  - .specweave/docs/internal/specs/default/relevant-spec.md
-max_context_tokens: 10000
-```
-
-**Rule**: Read context-manifest.yaml FIRST. Only load files listed there.
+1. Start with increment's `tasks.md` - contains current task list
+2. Reference `spec.md` for acceptance criteria
+3. Load living docs only when needed for context
+4. Avoid loading entire documentation trees
 
 ---
 
@@ -439,10 +435,10 @@ max_context_tokens: 10000
 .specweave/
 ├── increments/           # Feature increments (0001-9999)
 │   └── 0001-feature/
+│       ├── metadata.json # Increment metadata - REQUIRED
 │       ├── spec.md       # WHAT & WHY (user stories, ACs)
-│       ├── plan.md       # HOW (architecture, APIs)
-│       ├── tasks.md      # Task checklist with test plans
-│       └── context-manifest.yaml  # Files to load
+│       ├── plan.md       # HOW (architecture, APIs) - optional
+│       └── tasks.md      # Task checklist with test plans
 ├── docs/internal/
 │   ├── strategy/         # PRD, business requirements
 │   ├── specs/            # Living docs (extracted user stories)
@@ -521,10 +517,10 @@ AI: [Creates .specweave/increments/0001-auth/spec.md, plan.md, tasks.md]
 
 ### Creating Increment
 1. `mkdir -p .specweave/increments/0001-feature`
-2. Create `spec.md` (WHAT/WHY, user stories, ACs)
-3. Create `plan.md` (HOW, architecture, APIs)
+2. Create `metadata.json` (increment metadata) - **MUST be FIRST**
+3. Create `spec.md` (WHAT/WHY, user stories, ACs)
 4. Create `tasks.md` (task checklist with tests)
-5. Create `context-manifest.yaml` (selective loading)
+5. Optional: Create `plan.md` (HOW, architecture) for complex features
 
 ### Completing Tasks
 1. Implement the task
@@ -599,12 +595,12 @@ Or run: `/specweave:sync-tasks`
 
 **Symptoms**: Tool crashes 10-50s after start
 
-**Causes**: Loading too many files, no context manifest
+**Causes**: Loading too many files at once
 
 **Fix**:
-1. Create `context-manifest.yaml` in increment folder
-2. List only files needed for current task
-3. Never load entire `.specweave/docs/` folder
+1. Load only the active increment's spec.md and tasks.md
+2. Reference living docs only when needed for specific tasks
+3. Never load entire `.specweave/docs/` folder at once
 
 ### Skills/Agents Not Activating
 
