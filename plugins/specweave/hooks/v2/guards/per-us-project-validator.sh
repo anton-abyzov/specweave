@@ -12,9 +12,16 @@
 # - file_path matches: .specweave/increments/*/spec.md
 #
 # Rules:
-# - Each ### US-XXX section MUST have **Project**: <value> on next few lines
+# - Each US section MUST have **Project**: <value> on next few lines
 # - For 2-level structures, each US MUST also have **Board**: <value>
 # - Project values MUST match configured projects (not generic keywords)
+# - Supports ALL US formats:
+#   - ### US-001: (simple)
+#   - #### US-001: (4 hashes)
+#   - ### US-FE-001: (with project prefix)
+#   - #### US-FE-001: (multi-project)
+#   - #### US-BE-001: (backend)
+#   - #### US-SHARED-001: (shared)
 # - Fallback allowed for existing specs via SPECWEAVE_LEGACY_SPEC=1
 #
 # Returns exit code 1 (block) if validation fails, 0 (allow) otherwise.
@@ -23,6 +30,7 @@
 # - SPECWEAVE_FORCE_PROJECT=1 - Skip all project validation
 # - SPECWEAVE_LEGACY_SPEC=1 - Allow specs without per-US project (legacy mode)
 #
+# v0.34.0 - Fixed to handle all US ID formats (US-001, US-FE-001, etc.)
 
 set -e
 
@@ -75,8 +83,13 @@ log_debug "Validating per-US project fields for: $FILE_PATH"
 # Extract file content
 CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // ""')
 
-# Count User Stories (### US-XXX pattern)
-US_PATTERN='### US-[0-9]+'
+# Count User Stories - support ALL formats:
+# - ### US-001: (simple, 3 hashes)
+# - #### US-001: (4 hashes)
+# - ### US-FE-001: (with project prefix like FE, BE, SHARED)
+# - #### US-FE-001: (multi-project with 4 hashes)
+# Pattern: 3-4 hashes, space, US-, optional prefix (letters+dash), digits, colon
+US_PATTERN='^#{3,4} US-([A-Z]+-)?[0-9]+:'
 TOTAL_US=$(echo "$CONTENT" | grep -cE "$US_PATTERN" || echo 0)
 
 log_debug "Total User Stories found: $TOTAL_US"
@@ -88,7 +101,7 @@ if [ "$TOTAL_US" -eq 0 ]; then
 fi
 
 # Extract User Story sections and check for **Project**: field
-# Strategy: For each ### US-XXX, look at next 10 lines for **Project**:
+# Strategy: For each US heading, look at next 10 lines for **Project**:
 
 MISSING_PROJECT=()
 MISSING_BOARD=()
@@ -96,26 +109,46 @@ MULTI_PROJECT=()   # USs with multiple projects (comma-separated)
 MULTI_BOARD=()     # USs with multiple boards (comma-separated)
 US_WITH_PROJECT=0
 
-# Use awk to extract US sections and check for Project field
+# Use grep to find all US headings (both ### and ####, with or without prefix)
 while IFS= read -r us_line; do
-  # Extract US ID (e.g., US-001)
-  US_ID=$(echo "$us_line" | grep -oE 'US-[0-9]+' | head -1)
+  # Extract US ID - handles US-001, US-FE-001, US-BE-001, US-SHARED-001, etc.
+  US_ID=$(echo "$us_line" | grep -oE 'US-([A-Z]+-)?[0-9]+' | head -1)
 
   if [ -z "$US_ID" ]; then
     continue
   fi
 
-  # Get line number of this US heading
-  LINE_NUM=$(echo "$CONTENT" | grep -nE "^### $US_ID:" | head -1 | cut -d: -f1)
+  # Get line number of this US heading (works with both ### and ####)
+  # Escape the US_ID for grep (the dash needs no escape, but be safe)
+  LINE_NUM=$(echo "$CONTENT" | grep -nE "^#{3,4} ${US_ID}:" | head -1 | cut -d: -f1)
 
   if [ -z "$LINE_NUM" ]; then
+    log_debug "Could not find line number for $US_ID"
     continue
   fi
 
-  # Extract next 10 lines after heading
-  SECTION=$(echo "$CONTENT" | tail -n +$((LINE_NUM + 1)) | head -n 10)
+  # Extract lines after heading UNTIL next US heading, separator (---), or max 15 lines
+  # This prevents reading **Project** from a DIFFERENT user story
+  SECTION=""
+  line_count=0
+  while IFS= read -r line; do
+    # Stop at next US heading (### US- or #### US-)
+    if [[ "$line" =~ ^#{3,4}\ US- ]] && [ "$line_count" -gt 0 ]; then
+      break
+    fi
+    # Stop at separator
+    if [[ "$line" =~ ^---$ ]] && [ "$line_count" -gt 0 ]; then
+      break
+    fi
+    # Max 15 lines
+    if [ "$line_count" -ge 15 ]; then
+      break
+    fi
+    SECTION+="$line"$'\n'
+    line_count=$((line_count + 1))
+  done < <(echo "$CONTENT" | tail -n +$((LINE_NUM + 1)))
 
-  # Check for **Project**: field
+  # Check for **Project**: field within this US section only
   PROJECT_LINE=$(echo "$SECTION" | grep -E '^\*\*Project\*\*:\s*\S' | head -1)
 
   if [ -n "$PROJECT_LINE" ]; then
@@ -136,7 +169,7 @@ while IFS= read -r us_line; do
     log_debug "$US_ID MISSING **Project**: field ✗"
   fi
 
-done < <(echo "$CONTENT" | grep -E "^### US-[0-9]+:")
+done < <(echo "$CONTENT" | grep -E "^#{3,4} US-([A-Z]+-)?[0-9]+:")
 
 log_debug "User Stories with **Project**: $US_WITH_PROJECT / $TOTAL_US"
 
@@ -167,21 +200,42 @@ log_debug "Structure level: $STRUCTURE_LEVEL"
 # For 2-level structures, also check for **Board**: field
 if [ "$STRUCTURE_LEVEL" = "2" ]; then
   while IFS= read -r us_line; do
-    US_ID=$(echo "$us_line" | grep -oE 'US-[0-9]+' | head -1)
+    # Extract US ID - handles all formats (US-001, US-FE-001, etc.)
+    US_ID=$(echo "$us_line" | grep -oE 'US-([A-Z]+-)?[0-9]+' | head -1)
 
     if [ -z "$US_ID" ]; then
       continue
     fi
 
-    LINE_NUM=$(echo "$CONTENT" | grep -nE "^### $US_ID:" | head -1 | cut -d: -f1)
+    # Get line number (works with both ### and ####)
+    LINE_NUM=$(echo "$CONTENT" | grep -nE "^#{3,4} ${US_ID}:" | head -1 | cut -d: -f1)
 
     if [ -z "$LINE_NUM" ]; then
+      log_debug "Could not find line number for $US_ID (board check)"
       continue
     fi
 
-    SECTION=$(echo "$CONTENT" | tail -n +$((LINE_NUM + 1)) | head -n 10)
+    # Extract lines after heading UNTIL next US heading, separator, or max 15 lines
+    SECTION=""
+    line_count=0
+    while IFS= read -r line; do
+      # Stop at next US heading
+      if [[ "$line" =~ ^#{3,4}\ US- ]] && [ "$line_count" -gt 0 ]; then
+        break
+      fi
+      # Stop at separator
+      if [[ "$line" =~ ^---$ ]] && [ "$line_count" -gt 0 ]; then
+        break
+      fi
+      # Max 15 lines
+      if [ "$line_count" -ge 15 ]; then
+        break
+      fi
+      SECTION+="$line"$'\n'
+      line_count=$((line_count + 1))
+    done < <(echo "$CONTENT" | tail -n +$((LINE_NUM + 1)))
 
-    # Check for **Board**: field
+    # Check for **Board**: field within this US section only
     BOARD_LINE=$(echo "$SECTION" | grep -E '^\*\*Board\*\*:\s*\S' | head -1)
 
     if [ -n "$BOARD_LINE" ]; then
@@ -200,7 +254,7 @@ if [ "$STRUCTURE_LEVEL" = "2" ]; then
       log_debug "$US_ID MISSING **Board**: field ✗"
     fi
 
-  done < <(echo "$CONTENT" | grep -E "^### US-[0-9]+:")
+  done < <(echo "$CONTENT" | grep -E "^#{3,4} US-([A-Z]+-)?[0-9]+:")
 fi
 
 # Build error message if validation fails

@@ -500,7 +500,7 @@ const msg = buildNotificationMessage('cleanup', { count: 5 });  // "Cleaned up 5
 const sound = getSoundForType('cleanup');  // "Pop"
 ```
 
-**Pre-commit hook validates notification messages in new code (v0.33.3+).**
+**Code review should verify notification messages follow these standards.**
 
 ---
 

@@ -2,10 +2,20 @@
  * Notification Manager - Cross-platform system notifications
  *
  * Sends native notifications on macOS, Linux, and Windows
+ *
+ * IMPORTANT: Use sendStandardNotification() for consistent, explicit notifications!
+ * See notification-constants.ts for the standard notification types and messages.
  */
 
 import { exec } from 'child_process';
 import { Logger, consoleLogger } from './logger.js';
+import {
+  NotificationType,
+  NotificationContext,
+  buildNotificationMessage,
+  getTitleForType,
+  getSoundForType,
+} from './notification-constants.js';
 
 export class NotificationManager {
   private logger: Logger;
@@ -137,5 +147,35 @@ export class NotificationManager {
    */
   private escapeForPowerShell(str: string): string {
     return str.replace(/"/g, '`"').replace(/\$/g, '`$');
+  }
+
+  /**
+   * Sends a standardized notification using the notification-constants module.
+   *
+   * PREFERRED METHOD - ensures consistent, explicit notifications that follow
+   * the WHO/WHAT/ACTION pattern documented in CLAUDE.md Rule 11.
+   *
+   * @param type - Notification type (cleanup, job_complete, error, etc.)
+   * @param context - Context for message interpolation (count, items, reason, etc.)
+   *
+   * @example
+   * // Send cleanup completion notification
+   * await manager.sendStandardNotification('cleanup', { count: 5 });
+   * // Result: "SpecWeave: Cleanup Done" - "Cleaned up 5 zombie processes. No action needed."
+   *
+   * @example
+   * // Send job completion notification
+   * await manager.sendStandardNotification('job_complete', { jobType: 'Import', items: 12 });
+   * // Result: "SpecWeave: Job Complete" - "Import job finished. Processed 12 items."
+   */
+  async sendStandardNotification(
+    type: NotificationType,
+    context: NotificationContext = {}
+  ): Promise<void> {
+    const title = getTitleForType(type);
+    const body = buildNotificationMessage(type, context);
+    const sound = getSoundForType(type);
+
+    return this.sendNotification(title, body, sound);
   }
 }
