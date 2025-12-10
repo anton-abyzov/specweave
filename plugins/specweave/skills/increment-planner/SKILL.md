@@ -178,26 +178,29 @@ echo "Using coverageTarget: $coverageTarget"
 
 ### STEP 0B: Get Project Context (MANDATORY - BLOCKING!)
 
-**⛔ DO NOT PROCEED TO STEP 1 WITHOUT COMPLETING THIS STEP!**
+**⛔ THIS IS A HARD BLOCK - YOU CANNOT PROCEED WITHOUT PROJECT CONTEXT!**
 
-Before generating ANY spec.md content, you MUST run this CLI command:
+**🚨 FAILURE TO COMPLETE THIS STEP = spec.md WILL BE BLOCKED BY VALIDATION HOOK!**
 
+Before generating ANY spec.md content, you MUST:
+
+**1. RUN THE CONTEXT API (via Bash tool):**
 ```bash
 specweave context projects
 ```
 
-This returns JSON with available projects and structure level:
+**2. CAPTURE AND STORE THE OUTPUT:**
 
+For 1-level structures:
 ```json
 {
   "level": 1,
   "projects": [{"id": "my-app", "name": "My App"}],
-  "detectionReason": "multiProject configuration",
-  "source": "multi-project"
+  "detectionReason": "multiProject configuration"
 }
 ```
 
-**For 2-level structures**, output includes boards:
+For 2-level structures (ADO/JIRA boards):
 ```json
 {
   "level": 2,
@@ -207,27 +210,54 @@ This returns JSON with available projects and structure level:
       {"id": "digital-ops", "name": "Digital Operations"},
       {"id": "mobile-team", "name": "Mobile Team"}
     ]
-  },
-  "detectionReason": "ADO area path mapping configured",
-  "source": "ado-area-path"
+  }
 }
 ```
 
-**VALIDATION RULES:**
+**3. RESOLVE PROJECT/BOARD FOR EACH USER STORY:**
 
 ```
-✅ REQUIRED: Parse the JSON output and use ONLY those project/board values
-✅ REQUIRED: project field MUST match one of the returned projects[].id
-✅ REQUIRED: board field (2-level) MUST match one of boardsByProject[project].id
-❌ FORBIDDEN: Inventing or guessing project names
-❌ FORBIDDEN: Using folder name as project (e.g., "sw-olysense")
-❌ FORBIDDEN: Creating spec.md with {{PROJECT_ID}} placeholder
-❌ FORBIDDEN: Creating spec.md for 2-level without board: field
+CONTEXT_OUTPUT = <output from specweave context projects>
+
+For each US you will generate:
+  IF CONTEXT_OUTPUT.level == 1:
+    US.project = select from CONTEXT_OUTPUT.projects[].id
+
+  IF CONTEXT_OUTPUT.level == 2:
+    US.project = select from CONTEXT_OUTPUT.projects[].id
+    US.board = select from CONTEXT_OUTPUT.boardsByProject[project][].id
 ```
+
+**4. NOW PROCEED TO STEP 1 (with resolved values stored)**
+
+---
+
+**VALIDATION RULES (ENFORCED BY HOOK):**
+
+```
+✅ REQUIRED: Actually RUN "specweave context projects" command
+✅ REQUIRED: Parse the JSON and extract project IDs
+✅ REQUIRED: project field MUST match one of projects[].id from output
+✅ REQUIRED: board field (2-level) MUST match one of boardsByProject[project][].id
+✅ REQUIRED: Each US has **Project**: and **Board**: (2-level) with RESOLVED values
+
+❌ FORBIDDEN: Skipping this step and generating spec.md directly
+❌ FORBIDDEN: Inventing project names not in the API output
+❌ FORBIDDEN: Using folder names as project (e.g., "sw-olysense")
+❌ FORBIDDEN: Using {{PROJECT_ID}} or {{BOARD_ID}} placeholders
+❌ FORBIDDEN: Creating spec.md for 2-level without board: field
+❌ FORBIDDEN: Generating spec.md without running context API first
+```
+
+**WHY THIS IS BLOCKING:**
+- Hook `spec-project-validator.sh` BLOCKS spec.md with placeholders or invalid projects
+- Without resolved project/board, living docs sync FAILS
+- Without resolved project/board, external tool sync (GitHub/JIRA/ADO) FAILS
+- User gets blocked error and must manually fix - BAD UX!
 
 **Structure Levels:**
-- **1-Level**: `internal/specs/{project}/FS-XXX/` - requires `project` in spec.md
-- **2-Level**: `internal/specs/{project}/{board}/FS-XXX/` - requires BOTH `project` AND `board`
+- **1-Level**: `internal/specs/{project}/FS-XXX/` - requires `project` per US
+- **2-Level**: `internal/specs/{project}/{board}/FS-XXX/` - requires `project` AND `board` per US
 
 **Alternative: Interactive Selection:**
 ```bash
