@@ -264,5 +264,5 @@ jobs:
 ## See Also
 
 - `/specweave-docs:organize` - Organize large folders with themed indexes
-- `/specweave-docs:preview` - Preview documentation with Docusaurus
+- `/specweave-docs:view` - View documentation with Docusaurus
 - `/specweave-docs:generate` - Generate docs from code

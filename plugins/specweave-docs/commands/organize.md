@@ -161,7 +161,7 @@ Generated 9 index files:
 After running this command, use:
 
 ```bash
-/specweave-docs:preview
+/specweave-docs:view
 ```
 
 The generated indexes will appear in the sidebar:
@@ -179,6 +179,6 @@ The generated indexes will appear in the sidebar:
 
 ## See Also
 
-- `/specweave-docs:preview` - Preview documentation with Docusaurus
+- `/specweave-docs:view` - View documentation with Docusaurus
 - `/specweave-docs:build` - Build static documentation site
 - `/specweave-docs:health` - Documentation health report

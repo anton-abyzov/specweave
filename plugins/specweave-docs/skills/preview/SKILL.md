@@ -1,18 +1,19 @@
 ---
 name: preview
-description: Documentation preview expert for Docusaurus integration. Launches interactive preview server for SpecWeave living documentation with hot reload, auto-generated sidebar, and Mermaid diagrams. Works in ANY SpecWeave project with auto-setup. Activates for preview docs, view documentation, Docusaurus server, docs UI, documentation website, local docs server, hot reload docs, static site build.
+description: Documentation view expert for Docusaurus integration. Launches interactive server for SpecWeave living documentation with hot reload, auto-generated sidebar, and Mermaid diagrams. Works in ANY SpecWeave project with auto-setup. Supports both internal (port 3015) and public (port 3016) docs. Activates for preview docs, view documentation, Docusaurus server, docs UI, documentation website, local docs server, hot reload docs, static site build.
 ---
 
-# Documentation Preview Skill
+# Documentation View Skill
 
-Expert in launching and managing Docusaurus documentation preview for SpecWeave projects.
+Expert in launching and managing Docusaurus documentation server for SpecWeave projects.
 
 ## What I Do
 
-I help you preview your SpecWeave living documentation with Docusaurus:
+I help you view your SpecWeave living documentation with Docusaurus:
 
 ### Key Features
 - **Zero-config setup** - Works in any SpecWeave project automatically
+- **Internal & Public docs** - Internal on port 3015, public on port 3016
 - **Cached installation** - Docusaurus cached in `.specweave/cache/docs-site/` (gitignored)
 - **Hot reload** - Edit markdown, see changes instantly
 - **Mermaid diagrams** - Architecture diagrams render beautifully
@@ -22,9 +23,9 @@ I help you preview your SpecWeave living documentation with Docusaurus:
 ## How It Works
 
 1. **First run (~30 seconds)**:
-   - Creates Docusaurus in `.specweave/cache/docs-site/`
+   - Creates Docusaurus in `.specweave/cache/docs-site/` (internal) or `.specweave/cache/docs-site-public/` (public)
    - Installs dependencies from public npm registry
-   - Configures to read from `.specweave/docs/internal/`
+   - Configures to read from `.specweave/docs/internal/` or `.specweave/docs/public/`
 
 2. **Subsequent runs (instant)**:
    - Uses cached installation
@@ -32,16 +33,29 @@ I help you preview your SpecWeave living documentation with Docusaurus:
 
 ## Available Commands
 
-### Preview Documentation
+### View Internal Documentation (Default)
 ```bash
-/specweave-docs:preview
+/specweave-docs:view
 ```
 
 **What it does:**
 1. Checks if `.specweave/docs/internal/` exists
-2. Sets up Docusaurus in cache (if first run)
-3. Starts dev server on **http://localhost:3015**
-4. Enables hot reload
+2. Runs pre-flight validation (auto-fixes common issues)
+3. Sets up Docusaurus in cache (if first run)
+4. Starts dev server on **http://localhost:3015**
+5. Enables hot reload
+
+### View Public Documentation
+```bash
+/specweave-docs:view --public
+```
+
+**What it does:**
+1. Checks if `.specweave/docs/public/` exists
+2. Runs pre-flight validation (auto-fixes common issues)
+3. Sets up Docusaurus in cache (if first run)
+4. Starts dev server on **http://localhost:3016**
+5. Enables hot reload
 
 ### Build Static Site
 ```bash
@@ -56,32 +70,56 @@ I help you preview your SpecWeave living documentation with Docusaurus:
 ## When to Use This Skill
 
 ### Activate for:
-- "Preview my documentation"
+- "View my documentation"
+- "Preview my docs"
 - "Show me my docs in a browser"
 - "Launch Docusaurus"
 - "View my living documentation"
-- "Start docs preview"
+- "Start docs server"
 - "I want to see my internal docs"
+- "View public docs"
 
 ### Workflow
 
 ```
 User: "I want to preview my docs"
-You: "I'll launch the documentation preview server."
-     [Run: /specweave-docs:preview]
+You: "I'll launch the documentation view server."
+     [Run: /specweave-docs:view]
 ```
+
+```
+User: "Show me my public documentation"
+You: "I'll launch the public documentation server."
+     [Run: /specweave-docs:view --public]
+```
+
+## Port Reference
+
+| Docs Type | Port | Path |
+|-----------|------|------|
+| Internal (default) | 3015 | `.specweave/docs/internal/` |
+| Public | 3016 | `.specweave/docs/public/` |
 
 ## Troubleshooting
 
-### Port 3015 already in use
+### Port 3015 or 3016 already in use
 ```bash
+# For internal docs
 lsof -i :3015 && kill -9 $(lsof -t -i :3015)
+
+# For public docs
+lsof -i :3016 && kill -9 $(lsof -t -i :3016)
 ```
 
 ### Reinstall from scratch
 ```bash
+# For internal docs
 rm -rf .specweave/cache/docs-site
-# Then run /specweave-docs:preview again
+# Then run /specweave-docs:view again
+
+# For public docs
+rm -rf .specweave/cache/docs-site-public
+# Then run /specweave-docs:view --public again
 ```
 
 ### npm registry issues
@@ -92,3 +130,4 @@ The setup explicitly uses `--registry=https://registry.npmjs.org` to bypass priv
 - `/specweave-docs:build` - Build static site for deployment
 - `/specweave-docs:organize` - Organize large folders with themed indexes
 - `/specweave-docs:health` - Documentation health report
+- `/specweave-docs:validate` - Validate documentation before viewing

@@ -245,6 +245,6 @@ onBrokenMarkdownLinks: 'warn',
 
 ## See Also
 
-- `/specweave-docs:preview` - Preview docs (runs validation first)
+- `/specweave-docs:view` - View docs (runs validation first)
 - `/specweave-docs:build` - Build docs (runs validation first)
 - `/specweave-docs:health` - Full documentation health report
