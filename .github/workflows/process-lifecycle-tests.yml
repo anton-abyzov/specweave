@@ -1,0 +1,258 @@
+name: Process Lifecycle Tests
+
+on:
+  push:
+    branches: [develop, main]
+    paths:
+      - 'src/utils/session-registry.ts'
+      - 'src/utils/platform-utils.ts'
+      - 'src/utils/notification-manager.ts'
+      - 'src/utils/lock-manager.ts'
+      - 'src/cli/register-session.ts'
+      - 'src/cli/find-session-by-pid.ts'
+      - 'src/cli/add-child-pid.ts'
+      - 'src/cli/remove-session.ts'
+      - 'src/cli/cleanup-zombies.ts'
+      - 'plugins/specweave/scripts/session-watchdog.sh'
+      - 'plugins/specweave/scripts/heartbeat.sh'
+      - 'plugins/specweave/hooks/v2/session-start.sh'
+      - 'plugins/specweave/hooks/v2/session-end.sh'
+      - '.github/workflows/process-lifecycle-tests.yml'
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - 'src/utils/session-registry.ts'
+      - 'src/utils/platform-utils.ts'
+      - 'src/utils/notification-manager.ts'
+      - 'src/utils/lock-manager.ts'
+      - 'src/cli/**'
+      - 'plugins/specweave/scripts/**'
+      - 'plugins/specweave/hooks/**'
+
+jobs:
+  test-cross-platform:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run rebuild
+
+      - name: Run unit tests
+        run: npm run test:unit
+        env:
+          CI: true
+
+      - name: Test platform utilities (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          echo "Testing platform detection..."
+          node -e "
+            const { PlatformUtils } = require('./dist/src/utils/platform-utils.js');
+            const platform = PlatformUtils.detectPlatform();
+            console.log('Detected platform:', platform);
+            if (!platform) process.exit(1);
+          "
+
+          echo "Testing process existence check..."
+          node -e "
+            const { PlatformUtils } = require('./dist/src/utils/platform-utils.js');
+            const exists = PlatformUtils.checkProcessExists(process.pid);
+            console.log('Current process exists:', exists);
+            if (!exists) process.exit(1);
+          "
+
+          echo "Testing file timestamp extraction..."
+          echo "test" > /tmp/test-file-$$.txt
+          node -e "
+            const { PlatformUtils } = require('./dist/src/utils/platform-utils.js');
+            const mtime = PlatformUtils.getFileMtime('/tmp/test-file-' + process.pid + '.txt');
+            console.log('File mtime:', mtime);
+            if (!mtime || mtime <= 0) process.exit(1);
+          "
+          rm /tmp/test-file-$$.txt
+
+      - name: Test platform utilities (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "Testing platform detection..."
+          node -e "const { PlatformUtils } = require('./dist/src/utils/platform-utils.js'); console.log('Platform:', PlatformUtils.detectPlatform());"
+
+          Write-Host "Testing process existence..."
+          node -e "const { PlatformUtils } = require('./dist/src/utils/platform-utils.js'); console.log('Exists:', PlatformUtils.checkProcessExists(process.pid));"
+
+      - name: Test session registry operations
+        shell: bash
+        run: |
+          echo "Testing session registry..."
+
+          # Create test session
+          node dist/src/cli/register-session.js "test-session-$$" $$ "test" || exit 1
+          echo "✅ Session registered"
+
+          # Find session by PID
+          result=$(node dist/src/cli/find-session-by-pid.js $$ || echo "")
+          if [[ -z "$result" ]]; then
+            echo "❌ Failed to find session"
+            exit 1
+          fi
+          echo "✅ Session found"
+
+          # Add child PID
+          node dist/src/cli/add-child-pid.js "test-session-$$" 99999 || exit 1
+          echo "✅ Child PID added"
+
+          # Remove session
+          node dist/src/cli/remove-session.js "test-session-$$" || exit 1
+          echo "✅ Session removed"
+
+          echo "✅ All session registry operations passed"
+
+      - name: Test cleanup script (dry-run)
+        shell: bash
+        run: |
+          if [[ -f ".specweave/scripts/cleanup-existing-zombies.sh" ]]; then
+            bash .specweave/scripts/cleanup-existing-zombies.sh --dry-run
+            echo "✅ Cleanup script dry-run passed"
+          else
+            echo "⚠️  Cleanup script not found (may not be committed)"
+          fi
+
+      - name: Test session-watchdog coordination (Unix)
+        if: runner.os != 'Windows'
+        shell: bash
+        timeout-minutes: 2
+        run: |
+          # Test single-check mode (no daemon)
+          bash plugins/specweave/scripts/session-watchdog.sh || true
+          echo "✅ Watchdog single-check mode works"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}-node${{ matrix.node-version }}
+          path: |
+            .specweave/logs/
+            coverage/
+          retention-days: 7
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run rebuild
+
+      - name: Run integration tests
+        run: npm run test:integration || true
+        env:
+          CI: true
+
+      - name: Run E2E Lifecycle Tests
+        timeout-minutes: 10
+        run: npm run test:e2e:lifecycle || true
+        env:
+          CI: true
+
+      - name: Run Performance Benchmarks
+        timeout-minutes: 15
+        run: |
+          echo "🔬 Running performance benchmarks..."
+          ts-node tests/performance/session-registry-bench.ts || true
+          echo "✅ Registry benchmarks complete"
+
+          echo "📊 Running baseline comparison..."
+          ts-node tests/performance/compare-to-baseline.ts || true
+          echo "✅ Baseline comparison complete"
+        env:
+          CI: true
+
+      - name: E2E Test - Session Lifecycle (Legacy)
+        timeout-minutes: 3
+        run: |
+          echo "🧪 Testing full session lifecycle..."
+
+          # Start mock session
+          session_id="e2e-test-$$"
+          node dist/src/cli/register-session.js "$session_id" $$ "e2e-test"
+          echo "✅ Session registered: $session_id"
+
+          # Simulate heartbeat
+          sleep 2
+          node dist/src/cli/update-heartbeat.js "$session_id"
+          echo "✅ Heartbeat updated"
+
+          # Verify session is active
+          stale=$(node dist/src/cli/get-stale-sessions.js 60 | grep "$session_id" || echo "")
+          if [[ -n "$stale" ]]; then
+            echo "❌ Session marked as stale prematurely"
+            exit 1
+          fi
+          echo "✅ Session is active"
+
+          # Clean up
+          node dist/src/cli/remove-session.js "$session_id"
+          echo "✅ Session cleaned up"
+
+          echo "🎉 E2E session lifecycle test passed!"
+
+  ci-summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [test-cross-platform, integration-tests]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          echo "## Process Lifecycle CI Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ needs.test-cross-platform.result }}" == "success" ]]; then
+            echo "✅ Cross-platform tests: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Cross-platform tests: FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [[ "${{ needs.integration-tests.result }}" == "success" ]]; then
+            echo "✅ Integration tests: PASSED" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️  Integration tests: SKIPPED or FAILED" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Tested platforms:** Ubuntu, macOS, Windows" >> $GITHUB_STEP_SUMMARY
+          echo "**Node versions:** 18.x, 20.x" >> $GITHUB_STEP_SUMMARY

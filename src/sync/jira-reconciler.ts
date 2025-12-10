@@ -157,7 +157,7 @@ export class JiraReconciler {
 
     // Determine expected JIRA state
     const shouldBeClosed = status === 'completed' || status === 'abandoned';
-    const shouldBeOpen = status === 'in-progress' || status === 'active' || status === 'planning';
+    const shouldBeOpen = status === 'active' || status === 'planning' || status === 'backlog' || status === 'ready_for_review';
 
     // Check main issue
     if (inc.issue) {

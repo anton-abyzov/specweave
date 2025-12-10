@@ -69,6 +69,20 @@ export async function synthesizeOrganization(
   const repoSummaries = buildRepoSummaries(repoAnalyses);
   log(`  Built summaries for ${repoAnalyses.size} repos`);
 
+  // If we have external teams WITH LLM, enrich them first
+  if (llmProvider && externalTeams.length > 0) {
+    log('  Enriching external teams with LLM analysis...');
+    const enrichedExternalTeams = await enrichExternalTeamsWithLLM(
+      externalEnhancedTeams,
+      repoAnalyses,
+      llmProvider,
+      log
+    );
+    // Update the external teams array with enriched versions
+    externalEnhancedTeams.splice(0, externalEnhancedTeams.length, ...enrichedExternalTeams);
+    log(`  Enriched ${enrichedExternalTeams.length} external teams with AI-powered analysis`);
+  }
+
   // If we have external teams and no LLM, use external teams directly
   if (!llmProvider && externalTeams.length > 0) {
     log('  No LLM provider, using external teams');
@@ -162,6 +176,70 @@ interface LLMClusteringResponse {
   domains: Array<{ name: string; description: string; repos: string[]; reasoning: string }>;
   crossCutting: Array<{ name: string; description: string; repos: string[]; reasoning: string }>;
   hypotheses: string[];
+}
+
+/**
+ * Enrich external teams (from ADO/JIRA) with LLM-powered analysis
+ * This provides rich responsibilities, domain expertise, and tech stack based on repo analysis
+ */
+async function enrichExternalTeamsWithLLM(
+  externalTeams: EnhancedTeam[],
+  repoAnalyses: Map<string, RepoAnalysis>,
+  llmProvider: LLMProvider,
+  log: (msg: string) => void
+): Promise<EnhancedTeam[]> {
+  const enrichedTeams: EnhancedTeam[] = [];
+
+  // Build a comprehensive repo context for LLM
+  const repoContext = Array.from(repoAnalyses.entries())
+    .map(([name, analysis]) => {
+      const patterns = analysis.patternsUsed.map(p => p.pattern).join(', ');
+      const concepts = analysis.keyConcepts.join(', ');
+      return `- ${name}: ${analysis.purpose} | Patterns: ${patterns || 'none'} | Concepts: ${concepts || 'none'}`;
+    })
+    .join('\n');
+
+  for (const team of externalTeams) {
+    try {
+      const schema = {
+        responsibilities: '["responsibility1", "responsibility2", ...]',
+        domainExpertise: '["expertise1", "expertise2", ...]',
+        techStack: '["tech1", "tech2", ...]',
+        description: 'string (2-3 sentences about what this team does)',
+        integrationBoundaries: 'string (description of upstream/downstream dependencies)',
+      };
+
+      const prompt = buildJsonPrompt(
+        `Team: ${team.name}\nOriginal description: ${team.description}\n\nAvailable repositories:\n${repoContext}\n\nAnalyze this team and provide:\n- responsibilities: 3-5 specific bullet points of what this team owns\n- domainExpertise: 3-5 technical competencies (e.g., "Azure Functions", "React development", "Medical device integration")\n- techStack: Primary technologies used (infer from repos)\n- description: Rich 2-3 sentence summary\n- integrationBoundaries: How this team integrates with others`,
+        schema,
+        `Provide detailed team analysis for ${team.name}`
+      );
+
+      const result = await llmProvider.analyze(prompt);
+      if (result?.content) {
+        const extraction = extractJson<any>(result.content, { requiredFields: [] });
+        if (extraction.success && extraction.data) {
+          enrichedTeams.push({
+            ...team,
+            description: extraction.data.description || team.description,
+            responsibilities: extraction.data.responsibilities || team.responsibilities,
+            domainExpertise: extraction.data.domainExpertise || team.domainExpertise,
+            techStack: extraction.data.techStack || team.techStack,
+            integrationBoundaries: extraction.data.integrationBoundaries || team.integrationBoundaries,
+          });
+          log(`    Enriched team: ${team.name}`);
+          continue;
+        }
+      }
+    } catch (err: any) {
+      log(`    Failed to enrich team ${team.name}: ${err.message}`);
+    }
+
+    // Fallback: keep original if enrichment fails
+    enrichedTeams.push(team);
+  }
+
+  return enrichedTeams;
 }
 
 async function loadExternalSpecs(projectPath: string): Promise<string[]> {

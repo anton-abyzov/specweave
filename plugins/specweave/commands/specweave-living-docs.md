@@ -31,6 +31,7 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 | `--sources <folders>` | Additional doc folders (comma-separated): `docs/,wiki/` |
 | `--depends-on <jobIds>` | Wait for jobs before starting (comma-separated) |
 | `--foreground` | Run in current session instead of background |
+| `--full` | Force full rebuild by clearing cache and checkpoints (bypasses incremental mode) |
 
 ---
 
@@ -73,6 +74,9 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 
 # AI-powered deep analysis (FREE with MAX subscription)
 /specweave:living-docs --depth deep-native --priority core,api
+
+# Force full rebuild (clears cache and checkpoints)
+/specweave:living-docs --full --depth standard
 ```
 
 ---
@@ -219,6 +223,44 @@ The job will:
 4. Warn if any dependency failed (proceeds with available data)
 
 ---
+
+## Update Summary (v0.33.0+)
+
+After completion, you'll see a detailed summary showing:
+
+```
+✅ LIVING DOCS UPDATE COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 SUMMARY:
+
+  Discovery: Discovered 3 repos (2,845 files)
+    Duration: 5s
+
+  Analysis: Analyzed 3 repos
+    Duration: 127s
+
+  Synthesis: Generated 12 ADRs, 4 teams
+    Duration: 43s
+
+  Files Created: 47
+    • .specweave/docs/internal/repos/main/overview.md
+    • .specweave/docs/internal/repos/main/api-surface.md
+    • .specweave/docs/internal/architecture/system-architecture.md
+    • .specweave/docs/internal/architecture/adr/0001-typescript-migration.md
+    • .specweave/docs/internal/architecture/adr/0002-plugin-system.md
+    ... and 42 more
+
+  Files Updated: 8
+    • .specweave/docs/internal/modules/auth.md
+    • .specweave/docs/internal/modules/payments.md
+    ... and 6 more
+
+  Total Duration: 175s
+  Mode: INCREMENTAL (cache used)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
 ## Output Files
 

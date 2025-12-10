@@ -149,7 +149,7 @@ export class AdoReconciler {
 
     // Determine expected ADO state
     const shouldBeClosed = status === 'completed' || status === 'abandoned';
-    const shouldBeActive = status === 'in-progress' || status === 'active' || status === 'planning';
+    const shouldBeActive = status === 'active' || status === 'planning' || status === 'backlog' || status === 'ready_for_review';
 
     // Check main work item
     if (inc.workItem) {

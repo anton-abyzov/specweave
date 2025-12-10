@@ -1,0 +1,27 @@
+{
+  "registry_update_latency_ms": {
+    "p50": 5,
+    "p95": 15,
+    "p99": 25,
+    "description": "Registry update latency (1000 iterations)"
+  },
+  "heartbeat_overhead": {
+    "cpu_percent_max": 1,
+    "memory_mb_max": 10,
+    "description": "Heartbeat process overhead over 5 minutes"
+  },
+  "cleanup_service_scan_time_ms": {
+    "sessions_10": 100,
+    "sessions_50": 300,
+    "sessions_100": 500,
+    "description": "Cleanup service scan time by session count"
+  },
+  "cleanup_service_total_time_ms": {
+    "sessions_10": 500,
+    "sessions_50": 1500,
+    "sessions_100": 2000,
+    "description": "Total cleanup time including kills"
+  },
+  "regression_threshold_percent": 20,
+  "description": "Performance regression detected if >20% slower than baseline"
+}

@@ -391,7 +391,7 @@ export class SessionSyncExecutor {
         try {
           const metadata = JSON.parse(await fs.readFile(metadataPath, 'utf-8'));
 
-          if (metadata.status === 'active' || metadata.status === 'in_progress') {
+          if (metadata.status === 'active' || metadata.status === 'planning' || metadata.status === 'backlog' || metadata.status === 'ready_for_review') {
             // Resolve ADO profile for this specific increment (multi-project support)
             let adoProfile: ResolvedAdoProfile | undefined;
             try {

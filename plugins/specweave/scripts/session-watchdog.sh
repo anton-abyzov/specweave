@@ -12,6 +12,9 @@ SPECWEAVE_ROOT="${SPECWEAVE_ROOT:-.specweave}"
 SIGNAL_FILE="${SPECWEAVE_ROOT}/state/.session-stuck"
 HEARTBEAT_FILE="${SPECWEAVE_ROOT}/state/.heartbeat"
 DAEMON_MODE=false
+PROJECT_ROOT="${PWD}"
+SESSION_ID="watchdog-$$-$(date +%s)"
+COORDINATION_THRESHOLD=30  # Heartbeat threshold for active watchdog detection
 
 # Colors
 RED='\033[0;31m'
@@ -176,15 +179,77 @@ check_session_health() {
   fi
 }
 
+# Coordination Functions
+check_active_watchdog() {
+  # Check if another watchdog is running via session registry
+  node "${PROJECT_ROOT}/dist/src/cli/check-watchdog.js" 2>/dev/null || echo ""
+}
+
+register_watchdog() {
+  # Register this watchdog in session registry
+  node "${PROJECT_ROOT}/dist/src/cli/register-session.js" "$SESSION_ID" $$ "watchdog" 2>&1 | \
+    grep -v "^$" | head -3
+}
+
+update_watchdog_heartbeat() {
+  # Update watchdog heartbeat
+  node "${PROJECT_ROOT}/dist/src/cli/update-heartbeat.js" "$SESSION_ID" 2>/dev/null || true
+}
+
+cleanup_watchdog() {
+  # Remove watchdog from registry on exit
+  node "${PROJECT_ROOT}/dist/src/cli/remove-session.js" "$SESSION_ID" 2>&1 | \
+    grep -v "^$" | head -3
+  log "Watchdog cleanup complete"
+}
+
+run_cleanup_service() {
+  # Run zombie process cleanup
+  node "${PROJECT_ROOT}/dist/src/cli/cleanup-zombies.js" 60 2>&1 | \
+    grep -v "^$" | head -10 || true
+}
+
 # Main execution
 if [[ "$DAEMON_MODE" == "true" ]]; then
+  # Coordination check before starting daemon
+  active_watchdog=$(check_active_watchdog)
+
+  if [[ -n "$active_watchdog" ]]; then
+    log "${YELLOW}Watchdog already active (PID: $active_watchdog)${NC}"
+    log "Exiting to avoid duplicate watchdogs"
+    exit 0
+  fi
+
+  # Register as watchdog
+  register_watchdog
+
+  # Trap signals for graceful shutdown
+  trap cleanup_watchdog SIGTERM SIGINT EXIT
+
   log "Starting session watchdog daemon (interval: ${CHECK_INTERVAL}s, threshold: ${STUCK_THRESHOLD_SECONDS}s)"
+  log "Watchdog session: $SESSION_ID (PID: $$)"
   log "Press Ctrl+C to stop"
 
   while true; do
+    # Update own heartbeat
+    update_watchdog_heartbeat
+
+    # Check session health
     check_session_health || true
+
+    # Run cleanup service
+    run_cleanup_service
+
+    # Check if parent process still exists (if we have a parent session)
+    if ! kill -0 $PPID 2>/dev/null; then
+      log "${YELLOW}Parent process died, exiting watchdog${NC}"
+      break
+    fi
+
     sleep "$CHECK_INTERVAL"
   done
+
+  cleanup_watchdog
 else
   log "Running single health check..."
   check_session_health

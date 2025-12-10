@@ -1,0 +1,23 @@
+{
+  "id": "0128-process-lifecycle-zombie-prevention",
+  "status": "completed",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2025-12-09T09:56:00Z",
+  "lastActivity": "2025-12-09T16:30:00Z",
+  "completedAt": "2025-12-09T16:35:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 95,
+  "feature_id": "FS-128",
+  "epic_id": null,
+  "externalLinks": {
+    "github": {
+      "milestone": "https://github.com/anton-abyzov/specweave/milestone/33",
+      "issues": ["#810", "#811", "#812", "#813", "#814", "#815", "#816"]
+    }
+  },
+  "total_acs": 42,
+  "completed_acs": 41,
+  "approvedBy": "PM Agent",
+  "approvedAt": "2025-12-09T16:35:00Z"
+}

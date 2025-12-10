@@ -64,7 +64,7 @@ else
   # Find first active increment
   ACTIVE_ID=$(jq -r '
     .increments | to_entries[] |
-    select(.value.status == "active" or .value.status == "in-progress") |
+    select(.value.status == "active" or .value.status == "planning" or .value.status == "backlog" or .value.status == "ready_for_review") |
     .key
   ' "$CACHE_FILE" 2>/dev/null | head -1)
 fi

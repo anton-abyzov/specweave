@@ -86,7 +86,7 @@ for (const folder of incrementFolders) {
 // Display
 console.log('\n📋 SpecWeave Status Overview\n');
 
-const statusOrder = ['active', 'planning', 'in-progress', 'ready_for_review', 'paused', 'backlog', 'completed', 'abandoned'];
+const statusOrder = ['ready_for_review', 'active', 'planning', 'in-progress', 'paused', 'backlog', 'completed', 'abandoned'];
 const statusIcons = {
   'active': '🔄',
   'planning': '📝',
@@ -105,12 +105,16 @@ for (const status of statusOrder) {
   if (items && items.length > 0) {
     hasOutput = true;
     const icon = statusIcons[status] || '•';
-    console.log(`${icon} ${status.replace('_', ' ')} (${items.length}):`);
-    
+    console.log(`${icon} ${status.replace(/_/g, ' ')} (${items.length}):`);
+
     // Show first 5, summarize rest
     const toShow = items.slice(0, 5);
     for (const item of toShow) {
       console.log(`   ${item}`);
+      // Add action hint for ready_for_review
+      if (status === 'ready_for_review') {
+        console.log(`      → /specweave:done ${item}`);
+      }
     }
     if (items.length > 5) {
       console.log(`   ... and ${items.length - 5} more`);
@@ -140,15 +144,28 @@ if (!hasOutput) {
 
 // Summary line
 const total = incrementFolders.length;
-const activeCount = (byStatus['active']?.length || 0) + 
-                   (byStatus['planning']?.length || 0) + 
-                   (byStatus['in-progress']?.length || 0);
+const reviewCount = byStatus['ready_for_review']?.length || 0;
+const activeCount = (byStatus['active']?.length || 0) +
+                   (byStatus['planning']?.length || 0) +
+                   (byStatus['backlog']?.length || 0);
 const completedCount = byStatus['completed']?.length || 0;
 
 console.log('─'.repeat(40));
-console.log(`Total: ${total} increment(s) | Active: ${activeCount} | Completed: ${completedCount} | Archived: ${archivedCount}`);
+const summaryParts = [`Total: ${total}`];
+if (reviewCount > 0) summaryParts.push(`Review: ${reviewCount}`);
+summaryParts.push(`Active: ${activeCount}`);
+summaryParts.push(`Completed: ${completedCount}`);
+if (archivedCount > 0) summaryParts.push(`Archived: ${archivedCount}`);
+console.log(summaryParts.join(' | '));
 console.log('');
-console.log('💡 Commands:');
-console.log('   /specweave:progress        Show task progress');
-console.log('   /specweave:do              Execute current tasks');
-console.log('   /specweave:done <id>       Close increment');
+
+// Context-aware command hints
+if (reviewCount > 0) {
+  console.log('💡 Next step: /specweave:done <id> to close reviewed increment(s)');
+} else if (activeCount > 0) {
+  console.log('💡 Commands:');
+  console.log('   /specweave:progress        Show task progress');
+  console.log('   /specweave:do              Execute current tasks');
+} else {
+  console.log('💡 Run /specweave:increment to start new work');
+}

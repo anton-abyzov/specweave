@@ -219,51 +219,90 @@ async function detectArchitecturalDecisions(
   llmProvider: LLMProvider,
   log: (msg: string) => void
 ): Promise<DetectedADR[]> {
-  const patternMap = new Map<string, { repos: string[]; evidence: string[] }>();
+  const patternMap = new Map<string, { repos: string[]; evidence: string[]; highConfidenceCount: number }>();
 
+  // Collect all patterns with confidence tracking
   for (const [name, analysis] of analyses) {
     for (const p of analysis.patternsUsed) {
       if (!patternMap.has(p.pattern)) {
-        patternMap.set(p.pattern, { repos: [], evidence: [] });
+        patternMap.set(p.pattern, { repos: [], evidence: [], highConfidenceCount: 0 });
       }
       const entry = patternMap.get(p.pattern)!;
       entry.repos.push(name);
       entry.evidence.push(...p.evidence);
+      if (p.confidence === 'high') {
+        entry.highConfidenceCount++;
+      }
     }
   }
 
   const adrs: DetectedADR[] = [];
   let adrNum = 1;
 
-  for (const [pattern, data] of patternMap) {
-    if (data.repos.length >= 2) {
+  // Sort patterns by adoption (repos count DESC) for better ADR numbering
+  const sortedPatterns = Array.from(patternMap.entries())
+    .sort((a, b) => b[1].repos.length - a[1].repos.length);
+
+  for (const [pattern, data] of sortedPatterns) {
+    // Generate ADR if:
+    // 1. Found in 2+ repos (standard adoption), OR
+    // 2. Found in 1 repo with HIGH confidence (clear architectural decision)
+    // Skip trivial single-repo low-confidence patterns
+    const shouldGenerateADR =
+      data.repos.length >= 2 ||
+      (data.repos.length === 1 && data.highConfidenceCount > 0);
+
+    if (shouldGenerateADR) {
       // Derive semantic title using LLM
       const semanticTitle = await deriveADRTitle(pattern, data.evidence, llmProvider);
       const kebabTitle = toKebabCase(semanticTitle);
+
+      // Determine confidence based on adoption breadth
+      let confidence: 'high' | 'medium' | 'low';
+      if (data.repos.length >= 5 && data.highConfidenceCount >= 3) {
+        confidence = 'high';
+      } else if (data.repos.length >= 2) {
+        confidence = 'medium';
+      } else {
+        confidence = 'low'; // Single repo with high confidence
+      }
+
+      // Craft context based on adoption
+      const context = data.repos.length >= 2
+        ? `Found ${pattern} pattern in ${data.repos.length} repositories.`
+        : `Found ${pattern} pattern with high confidence in ${data.repos[0]}.`;
 
       adrs.push({
         id: `${String(adrNum).padStart(4, '0')}-${kebabTitle}`,
         title: semanticTitle,
         pattern,
         status: 'Detected',
-        context: `Found ${pattern} pattern in ${data.repos.length} repositories.`,
-        decision: `The team has adopted ${pattern} as a standard approach.`,
-        consequences: [
-          `Consistent ${pattern} implementation across services`,
-          'Team familiarity with the pattern',
-        ],
+        context,
+        decision: data.repos.length >= 2
+          ? `The team has adopted ${pattern} as a standard approach.`
+          : `${pattern} was chosen for ${data.repos[0]} implementation.`,
+        consequences: data.repos.length >= 2
+          ? [
+              `Consistent ${pattern} implementation across services`,
+              'Team familiarity with the pattern',
+              `Standardization benefits for ${data.repos.length} repositories`,
+            ]
+          : [
+              `${pattern} enables specific architectural requirements`,
+              'Pattern establishes precedent for similar use cases',
+            ],
         evidence: [{
           repo: data.repos.join(', '),
           files: [],
-          description: data.evidence.slice(0, 3).join('; '),
+          description: data.evidence.slice(0, 5).join('; '),
         }],
-        confidence: data.repos.length >= 3 ? 'high' : 'medium',
+        confidence,
       });
       adrNum++;
     }
   }
 
-  log(`  Detected ${adrs.length} architectural decisions`);
+  log(`  Detected ${adrs.length} architectural decisions from ${patternMap.size} total patterns`);
   return adrs;
 }
 

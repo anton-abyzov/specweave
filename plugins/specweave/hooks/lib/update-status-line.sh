@@ -129,7 +129,7 @@ while IFS= read -r metadata_file; do
   fi
 
   # Check if active
-  if [[ "$status" == "active" || "$status" == "planning" || "$status" == "in-progress" ]]; then
+  if [[ "$status" == "active" || "$status" == "planning" || "$status" == "backlog" || "$status" == "ready_for_review" ]]; then
     OPEN_COUNT=$((OPEN_COUNT + 1))
     increment_id=$(basename "$(dirname "$metadata_file")")
 

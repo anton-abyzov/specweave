@@ -1,0 +1,46 @@
+---
+id: US-003
+feature: FS-128
+title: Parent Process Death Detection
+status: not_started
+priority: P1
+created: 2025-12-09
+project: specweave
+external:
+  github:
+    issue: 812
+    url: https://github.com/anton-abyzov/specweave/issues/812
+---
+
+# US-003: Parent Process Death Detection
+
+**Feature**: [FS-128](./FEATURE.md)
+
+**As a** background daemon (watchdog, processor)
+**I want** to detect when my parent Claude session terminates
+**So that** I can self-terminate and avoid becoming a zombie
+
+---
+
+## Acceptance Criteria
+
+- [ ] **AC-US3-01**: Daemons poll parent PID every 5 seconds using `kill -0 $PPID`
+- [ ] **AC-US3-02**: If parent process doesn't exist, daemon self-terminates within 5 seconds
+- [ ] **AC-US3-03**: Before terminating, daemon removes itself from session registry
+- [ ] **AC-US3-04**: Before terminating, daemon kills all registered child processes
+- [ ] **AC-US3-05**: Cross-platform implementation (macOS `ps`, Linux `/proc`, Windows `tasklist`)
+- [ ] **AC-US3-06**: Graceful shutdown with 2-second timeout before force-kill
+
+---
+
+## Implementation
+
+**Increment**: [0128-process-lifecycle-zombie-prevention](../../../../increments/0128-process-lifecycle-zombie-prevention/spec.md)
+
+**Tasks**: See increment tasks.md for implementation details.
+
+
+## Tasks
+
+- [ ] **T-004**: Create Heartbeat Background Script
+- [ ] **T-017**: E2E Test - Crash Recovery

@@ -132,7 +132,8 @@ export class StatusChangeSyncTrigger {
    *
    * SYNC-WORTHY TRANSITIONS:
    * - planning → active (work started)
-   * - active → completed (work finished)
+   * - active → completed (work finished - legacy direct completion)
+   * - ready_for_review → completed (work approved - v0.28.63+ user confirmation)
    * - completed → active (work reopened)
    * - backlog → active (backlog item started)
    * - paused → active (work resumed)
@@ -140,6 +141,7 @@ export class StatusChangeSyncTrigger {
    * NOT SYNC-WORTHY:
    * - active → paused (temporary pause)
    * - active → backlog (deprioritized)
+   * - active → ready_for_review (internal state - sync when actually completed)
    * - Any → abandoned (cancelled)
    *
    * @param oldStatus - Previous status
@@ -153,11 +155,12 @@ export class StatusChangeSyncTrigger {
     const transition = `${oldStatus} → ${newStatus}`;
 
     const SYNC_WORTHY = [
-      'planning → active',       // Work started
-      'active → completed',      // Work finished
-      'completed → active',      // Work reopened
-      'backlog → active',        // Backlog item started
-      'paused → active'          // Work resumed
+      'planning → active',            // Work started
+      'active → completed',           // Work finished (legacy direct completion)
+      'ready_for_review → completed', // Work approved (v0.28.63+ user confirmation)
+      'completed → active',           // Work reopened
+      'backlog → active',             // Backlog item started
+      'paused → active'               // Work resumed
     ];
 
     return SYNC_WORTHY.includes(transition);

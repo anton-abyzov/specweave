@@ -86,7 +86,7 @@ export class GitHubReconciler {
         const status = inc.metadataStatus;
         // Determine expected GitHub state
         const shouldBeClosed = status === 'completed' || status === 'abandoned';
-        const shouldBeOpen = status === 'in-progress' || status === 'active' || status === 'planning';
+        const shouldBeOpen = status === 'active' || status === 'planning' || status === 'backlog' || status === 'ready_for_review';
         // Check main issue
         if (inc.mainIssue) {
             await this.reconcileIssue(inc.incrementId, inc.mainIssue.number, shouldBeClosed, shouldBeOpen, status, result);

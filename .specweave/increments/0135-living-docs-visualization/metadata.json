@@ -1,0 +1,19 @@
+{
+  "id": "0135-living-docs-visualization",
+  "status": "completed",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2025-12-09T10:15:00Z",
+  "started": "2025-12-09T10:15:00Z",
+  "completed": "2025-12-09T18:00:00Z",
+  "lastActivity": "2025-12-09T18:00:00Z",
+  "approvedAt": "2025-12-09T18:00:00Z",
+  "approvedBy": "PM (Claude AI)",
+  "testMode": "TDD",
+  "coverageTarget": 95,
+  "feature_id": "FS-134",
+  "epic_id": null,
+  "dependencies": ["0134-living-docs-core-engine"],
+  "externalLinks": {},
+  "notes": "Part 2 of 2: Visualization and integration layer. Builds on core engine from 0134 to add dashboards, CLI, and hooks. Completed with 100% AC coverage (26/26 ACs). 4 ACs removed as out-of-scope (future enhancements)."
+}
