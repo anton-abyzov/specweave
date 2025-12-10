@@ -1,0 +1,188 @@
+{
+  "completedAt": "2025-12-10T17:29:46.149Z",
+  "stats": {
+    "totalWorkItems": 106,
+    "matchedWorkItems": 44,
+    "unmatchedWorkItems": 62,
+    "modulesWithWorkItems": 9
+  },
+  "priorityQueue": [
+    {
+      "moduleName": "living-docs",
+      "modulePath": "src/living-docs",
+      "workItemCount": 16,
+      "priority": "high",
+      "topWorkItems": [
+        "Auto-Trigger Sync-Specs After Increment Creation",
+        "Increment Creation Workflow Update",
+        "Validation Guard for spec.md Project/Board (P1)",
+        "Living Docs Sync Path Validation (P1)",
+        "Auto-Sync Living Docs After Increment Creation/Update (P1)"
+      ]
+    },
+    {
+      "moduleName": "sync",
+      "modulePath": "src/sync",
+      "workItemCount": 13,
+      "priority": "high",
+      "topWorkItems": [
+        "Auto-Trigger Sync-Specs After Increment Creation",
+        "Permission Checking Before External Sync",
+        "Fallback for Manual Sync",
+        "Living Docs Sync Path Validation (P1)",
+        "Auto-Sync Living Docs After Increment Creation/Update (P1)"
+      ]
+    },
+    {
+      "moduleName": "config",
+      "modulePath": "src/config",
+      "workItemCount": 13,
+      "priority": "high",
+      "topWorkItems": [
+        "ConfigManager-Based Configuration Loading",
+        "JIRA Integration Config Migration",
+        "ADO Integration Config Migration",
+        "Quality Gates for Config Architecture",
+        "Project Mapping Configuration (P1)"
+      ]
+    },
+    {
+      "moduleName": "init",
+      "modulePath": "src/init",
+      "workItemCount": 4,
+      "priority": "low",
+      "topWorkItems": [
+        "Init Flow Integration",
+        "Cache Initialization and Recovery",
+        "Project Context Injection Before Planning (P1)",
+        "Bitbucket Multi-Repo Pattern Selection"
+      ]
+    },
+    {
+      "moduleName": "cli",
+      "modulePath": "src/cli",
+      "workItemCount": 3,
+      "priority": "low",
+      "topWorkItems": [
+        "CLI Helper for Project Selection (P2)",
+        "CLI Validator",
+        "Read Path - Pure Bash Readers"
+      ]
+    },
+    {
+      "moduleName": "hooks",
+      "modulePath": "src/hooks",
+      "workItemCount": 3,
+      "priority": "low",
+      "topWorkItems": [
+        "Hooks Support Per-US Context (P2)",
+        "SessionStart Hook Integration",
+        "SessionStart Hook Integration"
+      ]
+    },
+    {
+      "moduleName": "core",
+      "modulePath": "src/core",
+      "workItemCount": 1,
+      "priority": "low",
+      "topWorkItems": [
+        "Core Specification Document"
+      ]
+    },
+    {
+      "moduleName": "integrations",
+      "modulePath": "src/integrations",
+      "workItemCount": 1,
+      "priority": "low",
+      "topWorkItems": [
+        "Test Migration and Documentation"
+      ]
+    },
+    {
+      "moduleName": "testing",
+      "modulePath": "src/testing",
+      "workItemCount": 1,
+      "priority": "low",
+      "topWorkItems": [
+        "Beta Testing Infrastructure"
+      ]
+    },
+    {
+      "moduleName": "utils",
+      "modulePath": "src/utils",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "templates",
+      "modulePath": "src/templates",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "adapters",
+      "modulePath": "src/adapters",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "locales",
+      "modulePath": "src/locales",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "metrics",
+      "modulePath": "src/metrics",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "importers",
+      "modulePath": "src/importers",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "types",
+      "modulePath": "src/types",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "generators",
+      "modulePath": "src/generators",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "id-generators",
+      "modulePath": "src/id-generators",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "validators",
+      "modulePath": "src/validators",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    },
+    {
+      "moduleName": "progress",
+      "modulePath": "src/progress",
+      "workItemCount": 0,
+      "priority": "low",
+      "topWorkItems": []
+    }
+  ]
+}

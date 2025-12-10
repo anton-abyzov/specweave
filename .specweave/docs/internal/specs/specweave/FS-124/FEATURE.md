@@ -1,11 +1,16 @@
 ---
 id: FS-124
-title: "Fix spec-project-validator Hook Regex to Match All Increment Patterns"
+title: Fix spec-project-validator Hook Regex to Match All Increment Patterns
 type: feature
-status: ready_for_review
+status: completed
 priority: P1
 created: 2025-12-08
-lastUpdated: 2025-12-09
+lastUpdated: 2025-12-10
+external_tools:
+  github:
+    type: milestone
+    id: 47
+    url: https://github.com/anton-abyzov/specweave/milestone/47
 ---
 
 # Fix spec-project-validator Hook Regex to Match All Increment Patterns
@@ -18,7 +23,7 @@ The `spec-project-validator.sh` hook is not being triggered for some increment s
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0124-spec-project-validator-regex-fix](../../../../increments/0124-spec-project-validator-regex-fix/spec.md) | ⏳ ready_for_review | 2025-12-08 |
+| [0124-spec-project-validator-regex-fix](../../../../increments/0124-spec-project-validator-regex-fix/spec.md) | ✅ completed | 2025-12-08 |
 
 ## User Stories
 

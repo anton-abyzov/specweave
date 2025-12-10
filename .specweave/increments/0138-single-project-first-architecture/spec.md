@@ -64,12 +64,12 @@ project: specweave
 **So that** I can upgrade when ready, not by accident
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Command prompts for confirmation with clear explanation
-- [ ] **AC-US2-02**: Migrates existing `project.name` to `multiProject.projects` structure
-- [ ] **AC-US2-03**: Sets `multiProject.enabled=true` only after user confirms
-- [ ] **AC-US2-04**: Creates project folders in `.specweave/docs/internal/specs/`
-- [ ] **AC-US2-05**: Validates no data loss during migration
-- [ ] **AC-US2-06**: Updates all existing increments with `project:` field if missing
+- [x] **AC-US2-01**: Command prompts for confirmation with clear explanation
+- [x] **AC-US2-02**: Migrates existing `project.name` to `multiProject.projects` structure
+- [x] **AC-US2-03**: Sets `multiProject.enabled=true` only after user confirms
+- [x] **AC-US2-04**: Creates project folders in `.specweave/docs/internal/specs/`
+- [x] **AC-US2-05**: Validates no data loss during migration
+- [x] **AC-US2-06**: Updates all existing increments with `project:` field if missing
 
 **Example Flow**:
 ```bash
@@ -102,11 +102,11 @@ Continue? (y/N)
 **So that** new increments target correct project
 
 **Acceptance Criteria**:
-- [ ] **AC-US3-01**: Lists available projects from config
-- [ ] **AC-US3-02**: Updates `multiProject.activeProject`
-- [ ] **AC-US3-03**: Only works if `multiProject.enabled=true`
-- [ ] **AC-US3-04**: Validates project exists before switching
-- [ ] **AC-US3-05**: Shows current active project in status
+- [x] **AC-US3-01**: Lists available projects from config
+- [x] **AC-US3-02**: Updates `multiProject.activeProject`
+- [x] **AC-US3-03**: Only works if `multiProject.enabled=true`
+- [x] **AC-US3-04**: Validates project exists before switching
+- [x] **AC-US3-05**: Shows current active project in status
 
 **Example Flow**:
 ```bash
@@ -134,11 +134,11 @@ Select project: 2
 **So that** I don't accidentally create complexity
 
 **Acceptance Criteria**:
-- [ ] **AC-US4-01**: Block `project:` field in spec.md if `multiProject.enabled=false`
-- [ ] **AC-US4-02**: Auto-fill `project:` with `project.name` in single-project mode
-- [ ] **AC-US4-03**: Prevent `board:` field in single-project mode (always)
-- [ ] **AC-US4-04**: Clear error messages guiding to `/specweave:enable-multiproject`
-- [ ] **AC-US4-05**: Update `spec-project-validator.sh` hook to check mode first
+- [x] **AC-US4-01**: Block `project:` field in spec.md if `multiProject.enabled=false`
+- [x] **AC-US4-02**: Auto-fill `project:` with `project.name` in single-project mode
+- [x] **AC-US4-03**: Prevent `board:` field in single-project mode (always)
+- [x] **AC-US4-04**: Clear error messages guiding to `/specweave:enable-multiproject`
+- [x] **AC-US4-05**: Update `spec-project-validator.sh` hook to check mode first
 
 **Validation Flow**:
 ```
@@ -192,11 +192,11 @@ if (config.multiProject.enabled === true) {
 **So that** validation logic is consistent
 
 **Acceptance Criteria**:
-- [ ] **AC-US6-01**: Check `multiProject.enabled` flag FIRST
-- [ ] **AC-US6-02**: If false, only allow `project.name` folder
-- [ ] **AC-US6-03**: If true, check `multiProject.projects` structure
-- [ ] **AC-US6-04**: Error messages guide to correct mode
-- [ ] **AC-US6-05**: Hook handles both modes correctly
+- [x] **AC-US6-01**: Check `multiProject.enabled` flag FIRST
+- [x] **AC-US6-02**: If false, only allow `project.name` folder
+- [x] **AC-US6-03**: If true, check `multiProject.projects` structure
+- [x] **AC-US6-04**: Error messages guide to correct mode
+- [x] **AC-US6-05**: Hook handles both modes correctly
 
 **Hook Update** ([project-folder-guard.sh](../../../../../../plugins/specweave/hooks/project-folder-guard.sh)):
 ```bash
@@ -229,10 +229,10 @@ fi
 **So that** I understand when/how to use each mode
 
 **Acceptance Criteria**:
-- [ ] **AC-US7-01**: CLAUDE.md explains single-project-first principle
-- [ ] **AC-US7-02**: Document `/specweave:enable-multiproject` flow
-- [ ] **AC-US7-03**: Document `/specweave:switch-project` usage
-- [ ] **AC-US7-04**: Update init command docs with default behavior
+- [x] **AC-US7-01**: CLAUDE.md explains single-project-first principle
+- [x] **AC-US7-02**: Document `/specweave:enable-multiproject` flow
+- [x] **AC-US7-03**: Document `/specweave:switch-project` usage
+- [x] **AC-US7-04**: Update init command docs with default behavior
 
 **Documentation Sections to Add**:
 
@@ -250,11 +250,11 @@ fi
 **So that** files go to right location based on mode
 
 **Acceptance Criteria**:
-- [ ] **AC-US8-01**: Single-project: all features go to `{project.name}/` folder
-- [ ] **AC-US8-02**: Multi-project: features distributed by spec.md `project:` field
-- [ ] **AC-US8-03**: No `project:` field validation in single-project mode
-- [ ] **AC-US8-04**: Automatic project resolution in single-project mode
-- [ ] **AC-US8-05**: Update [living-docs-sync.ts:684](../../../../../../../src/core/living-docs/living-docs-sync.ts#L684) to check mode
+- [x] **AC-US8-01**: Single-project: all features go to `{project.name}/` folder
+- [x] **AC-US8-02**: Multi-project: features distributed by spec.md `project:` field
+- [x] **AC-US8-03**: No `project:` field validation in single-project mode
+- [x] **AC-US8-04**: Automatic project resolution in single-project mode
+- [x] **AC-US8-05**: Update [living-docs-sync.ts:625](../../../../../../../src/core/living-docs/living-docs-sync.ts#L625) to check mode
 
 **Code Update** (living-docs-sync.ts):
 ```typescript

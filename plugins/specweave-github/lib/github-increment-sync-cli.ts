@@ -269,12 +269,34 @@ function buildUserStoryIssueBody(
   const incrementId = incrementData.frontmatter.increment;
   let body = '';
 
-  // Header with metadata
-  body += `**Feature**: ${incrementData.frontmatter.feature_id || 'N/A'}\n`;
-  body += `**Status**: ${story.acceptanceCriteria.every(ac => ac.completed) ? 'complete' : 'in-progress'}\n`;
-  body += `**Priority**: ${story.priority || incrementData.frontmatter.priority || 'P2'}\n`;
+  // ❌ REMOVED: Metadata header (Feature, Status, Priority)
+  // WHY: GitHub has NATIVE fields for this (labels, milestones)
+  // Body should contain ONLY actual work content (ACs, tasks, user story)
+  // See: .specweave/docs/internal/troubleshooting/CRITICAL-remove-metadata-header-from-github-issues.md
 
-  body += `\n---\n\n`;
+  // Progress section (consistency with user-story-issue-builder.ts)
+  const completedACs = story.acceptanceCriteria.filter(ac => ac.completed).length;
+  const totalACs = story.acceptanceCriteria.length;
+  const storyTasks = tasks.filter(t =>
+    t.userStories.includes(story.id) ||
+    t.userStories.some(us => us.includes(story.id.replace('US-', '')))
+  );
+  const completedTasks = storyTasks.filter(t => t.completed).length;
+  const totalTasks = storyTasks.length;
+  const overallPercentage = (totalACs + totalTasks) > 0
+    ? Math.round(((completedACs + completedTasks) / (totalACs + totalTasks)) * 100)
+    : 0;
+
+  body += `## Progress\n\n`;
+  body += `**Acceptance Criteria**: ${completedACs}/${totalACs} (${totalACs > 0 ? Math.round((completedACs / totalACs) * 100) : 0}%)\n`;
+  body += `**Tasks**: ${completedTasks}/${totalTasks} (${totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}%)\n`;
+  body += `**Overall**: ${overallPercentage}%\n\n`;
+
+  // Progress bar
+  const filledBlocks = Math.floor(overallPercentage / 5);
+  const emptyBlocks = 20 - filledBlocks;
+  body += `${'█'.repeat(filledBlocks)}${'░'.repeat(emptyBlocks)} ${overallPercentage}%\n\n`;
+  body += `---\n\n`;
 
   // User Story description
   body += `## User Story\n\n`;
@@ -307,12 +329,7 @@ function buildUserStoryIssueBody(
 
   body += `---\n\n`;
 
-  // Tasks for this user story
-  const storyTasks = tasks.filter(t =>
-    t.userStories.includes(story.id) ||
-    t.userStories.some(us => us.includes(story.id.replace('US-', '')))
-  );
-
+  // Tasks for this user story (already calculated above for Progress section)
   if (storyTasks.length > 0) {
     body += `## Implementation Tasks\n\n`;
     const completedTasks = storyTasks.filter(t => t.completed).length;

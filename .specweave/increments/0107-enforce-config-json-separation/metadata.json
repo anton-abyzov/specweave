@@ -1,0 +1,19 @@
+{
+  "incrementId": "0107-enforce-config-json-separation",
+  "featureId": "FS-107",
+  "title": "Enforce Config JSON Separation - Fix 15 Architectural Violations",
+  "status": "completed",
+  "createdAt": "2025-12-10T12:00:00.000Z",
+  "updatedAt": "2025-12-10T18:00:00.000Z",
+  "completedAt": "2025-12-10T18:00:00.000Z",
+  "approvedAt": "2025-12-10T18:00:00.000Z",
+  "project": "specweave",
+  "tags": ["architecture", "config", "refactoring", "quality-gate"],
+  "priority": "high",
+  "complexity": "medium",
+  "estimatedHours": 25,
+  "description": "Fix 15 confirmed architectural violations where non-secret configuration (JIRA_DOMAIN, AZURE_DEVOPS_ORG, AZURE_DEVOPS_PROJECT) is read from process.env instead of ConfigManager/config.json. Establishes quality gates to prevent regression.",
+  "userStories": ["US-001", "US-002", "US-003", "US-004", "US-005"],
+  "totalTasks": 16,
+  "completedTasks": 16
+}

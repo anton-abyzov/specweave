@@ -1,11 +1,16 @@
 ---
 id: FS-119
-title: "Enforce Project/Board Context in Increment Planning"
+title: Enforce Project/Board Context in Increment Planning
 type: feature
 status: completed
 priority: P1
 created: 2025-12-07
-lastUpdated: 2025-12-09
+lastUpdated: 2025-12-10
+external_tools:
+  github:
+    type: milestone
+    id: 42
+    url: https://github.com/anton-abyzov/specweave/milestone/42
 ---
 
 # Enforce Project/Board Context in Increment Planning

@@ -1,11 +1,15 @@
 ---
 id: US-001
 feature: FS-121
-title: "JIRA Sync Judge Agent"
+title: JIRA Sync Judge Agent
 status: completed
 priority: P2
-created: 2025-12-09
+created: 2025-12-10
 project: specweave
+external:
+  github:
+    issue: 853
+    url: https://github.com/anton-abyzov/specweave/issues/853
 ---
 
 # US-001: JIRA Sync Judge Agent

@@ -2,11 +2,10 @@
 id: US-001
 feature: FS-134
 title: "Multi-Repo Deep Scan & Discovery"
-status: not_started
+status: in_progress
 priority: P1
 created: 2025-12-09
 project: specweave
-related_projects: [MyApp (3 repos)]
 ---
 
 # US-001: Multi-Repo Deep Scan & Discovery
@@ -21,10 +20,16 @@ related_projects: [MyApp (3 repos)]
 
 ## Acceptance Criteria
 
-- [ ] **AC-US1-01**: System detects umbrella.childRepos from config.json
-- [ ] **AC-US1-02**: For each repo, system performs: git clone (if not present), structure scan, file inventory
-- [ ] **AC-US1-03**: System identifies repo type: frontend, backend, mobile, shared-lib, infrastructure
-- [ ] **AC-US1-04**: System extracts tech stack per repo: package.json, go.mod, requirements.txt, etc.
+- [x] **AC-US1-01**: System detects umbrella.childRepos from config.json
+- [x] **AC-US1-02**: For each repo, system performs: git clone (if not present), structure scan, file inventory
+- [x] **AC-US1-03**: System identifies repo type: frontend, backend, mobile, shared-lib, infrastructure
+- [x] **AC-US1-04**: System extracts tech stack per repo: package.json, go.mod, requirements.txt, etc.
+- [ ] **AC-US1-05**: System maps projects/boards to repos based on folder structure and config
+- [ ] **AC-US1-06**: Scan results cached in `.specweave/cache/repo-scan-{repo}.json` (24h TTL)
+- [x] **AC-US1-01**: System detects umbrella.childRepos from config.json
+- [x] **AC-US1-02**: For each repo, system performs: git clone (if not present), structure scan, file inventory
+- [x] **AC-US1-03**: System identifies repo type: frontend, backend, mobile, shared-lib, infrastructure
+- [x] **AC-US1-04**: System extracts tech stack per repo: package.json, go.mod, requirements.txt, etc.
 - [ ] **AC-US1-05**: System maps projects/boards to repos based on folder structure and config
 - [ ] **AC-US1-06**: Scan results cached in `.specweave/cache/repo-scan-{repo}.json` (24h TTL)
 
@@ -32,12 +37,12 @@ related_projects: [MyApp (3 repos)]
 
 ## Implementation
 
-**Increment**: [0134-intelligent-living-docs-deep-analysis](../../../../increments/0134-intelligent-living-docs-deep-analysis/spec.md)
+**Increment**: [0134-living-docs-core-engine](../../../../increments/0134-living-docs-core-engine/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
 
 
 ## Tasks
 
-- [ ] **T-001**: Create LivingDocsOrchestrator
-- [ ] **T-002**: Implement RepoScanner with Multi-Repo Support
+- [x] **T-001**: Create LivingDocsOrchestrator
+- [x] **T-002**: Implement RepoScanner with Multi-Repo Support

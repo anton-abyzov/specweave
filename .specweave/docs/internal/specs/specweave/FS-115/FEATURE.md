@@ -1,11 +1,16 @@
 ---
 id: FS-115
-title: "Ultra-Smart Project/Board Selection"
+title: Ultra-Smart Project/Board Selection
 type: feature
 status: completed
 priority: P1
 created: 2025-12-06
-lastUpdated: 2025-12-09
+lastUpdated: 2025-12-10
+external_tools:
+  github:
+    type: milestone
+    id: 39
+    url: https://github.com/anton-abyzov/specweave/milestone/39
 ---
 
 # Ultra-Smart Project/Board Selection

@@ -268,31 +268,45 @@ async function main() {
 
       // Send notification if >3 processes cleaned
       // Use explicit, user-friendly messages (not vague alerts!)
+      // CRITICAL: Fire-and-forget to prevent blocking cleanup completion!
       if (totalKilled > 3) {
         const title = 'SpecWeave: Cleanup Done';
         const message = `Cleaned up ${totalKilled} zombie processes. No action needed.`;
         // Use "Pop" sound (neutral) instead of alarming sounds
         const sound = 'Pop';
 
-        try {
-          if (process.platform === 'darwin') {
-            // macOS notification with explicit SpecWeave branding
-            await exec(
-              `osascript -e 'display notification "${message}" with title "${title}" sound name "${sound}"'`
-            );
-          } else if (process.platform === 'linux') {
-            // Linux notification
-            await exec(`notify-send "${title}" "${message}" --urgency=low`);
-          } else if (process.platform === 'win32') {
-            // Windows notification (PowerShell)
-            const psScript = `[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null; $null`;
-            await exec(`powershell -Command "${psScript}"`);
-          }
-
-          logCleanupAction('INFO', 'NOTIFICATION', `Sent notification - ${totalKilled} processes cleaned`);
-        } catch (err) {
-          // Ignore notification errors
-          logCleanupAction('WARN', 'NOTIFICATION', `Failed to send notification: ${err}`);
+        // Fire-and-forget: DON'T await! Notifications should NEVER block cleanup
+        if (process.platform === 'darwin') {
+          // macOS notification with explicit SpecWeave branding
+          childProcess.exec(
+            `osascript -e 'display notification "${message}" with title "${title}" sound name "${sound}"'`,
+            (error) => {
+              if (error) {
+                logCleanupAction('WARN', 'NOTIFICATION', `Failed to send notification: ${error.message}`);
+              } else {
+                logCleanupAction('INFO', 'NOTIFICATION', `Sent notification - ${totalKilled} processes cleaned`);
+              }
+            }
+          );
+        } else if (process.platform === 'linux') {
+          // Linux notification
+          childProcess.exec(`notify-send "${title}" "${message}" --urgency=low`, (error) => {
+            if (error) {
+              logCleanupAction('WARN', 'NOTIFICATION', `Failed to send notification: ${error.message}`);
+            } else {
+              logCleanupAction('INFO', 'NOTIFICATION', `Sent notification - ${totalKilled} processes cleaned`);
+            }
+          });
+        } else if (process.platform === 'win32') {
+          // Windows notification (PowerShell)
+          const psScript = `[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null; $null`;
+          childProcess.exec(`powershell -Command "${psScript}"`, (error) => {
+            if (error) {
+              logCleanupAction('WARN', 'NOTIFICATION', `Failed to send notification: ${error.message}`);
+            } else {
+              logCleanupAction('INFO', 'NOTIFICATION', `Sent notification - ${totalKilled} processes cleaned`);
+            }
+          });
         }
       }
     }

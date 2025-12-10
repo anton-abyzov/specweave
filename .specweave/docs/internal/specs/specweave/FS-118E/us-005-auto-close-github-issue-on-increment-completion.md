@@ -1,11 +1,15 @@
 ---
 id: US-005
 feature: FS-118E
-title: "Auto-Close GitHub Issue on Increment Completion"
+title: Auto-Close GitHub Issue on Increment Completion
 status: completed
 priority: P1
 created: 2025-12-07
 project: specweave
+external:
+  github:
+    issue: 888
+    url: https://github.com/anton-abyzov/specweave/issues/888
 ---
 
 # US-005: Auto-Close GitHub Issue on Increment Completion

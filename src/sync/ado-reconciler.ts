@@ -17,6 +17,7 @@
 import { promises as fs, existsSync } from 'fs';
 import path from 'path';
 import { Logger, consoleLogger } from '../utils/logger.js';
+import { ConfigManager } from '../core/config/config-manager.js';
 
 export interface AdoReconcileOptions {
   projectRoot: string;
@@ -65,11 +66,13 @@ export class AdoReconciler {
   private projectRoot: string;
   private dryRun: boolean;
   private logger: Logger;
+  private configManager: ConfigManager;
 
   constructor(options: AdoReconcileOptions) {
     this.projectRoot = options.projectRoot;
     this.dryRun = options.dryRun ?? false;
     this.logger = options.logger ?? consoleLogger;
+    this.configManager = new ConfigManager(options.projectRoot);
   }
 
   /**
@@ -360,13 +363,19 @@ This typically happens when an increment was resumed after being paused/complete
 
   /**
    * Get work item from ADO API
+   * Reads secrets (PAT) from process.env
+   * Reads config (organization) from ConfigManager (config.json)
    */
   private async getWorkItem(workItemId: number): Promise<any> {
-    const org = process.env.AZURE_DEVOPS_ORG;
+    // Config from ConfigManager (correct - organization is not secret)
+    const config = await this.configManager.read();
+    const org = config.issueTracker?.organization_ado || config.sync?.ado?.organization || '';
+
+    // Secret from .env (correct - PAT is sensitive)
     const pat = process.env.AZURE_DEVOPS_PAT || process.env.AZURE_DEVOPS_TOKEN;
 
     if (!org || !pat) {
-      throw new Error('ADO credentials not configured');
+      throw new Error('ADO credentials not configured. Set AZURE_DEVOPS_PAT in .env and issueTracker.organization_ado in config.json.');
     }
 
     const url = `https://dev.azure.com/${org}/_apis/wit/workitems/${workItemId}?api-version=7.1`;
@@ -388,17 +397,23 @@ This typically happens when an increment was resumed after being paused/complete
 
   /**
    * Update work item state in ADO
+   * Reads secrets (PAT) from process.env
+   * Reads config (organization) from ConfigManager (config.json)
    */
   private async updateWorkItemState(
     workItemId: number,
     newState: string,
     comment: string
   ): Promise<void> {
-    const org = process.env.AZURE_DEVOPS_ORG;
+    // Config from ConfigManager (correct - organization is not secret)
+    const config = await this.configManager.read();
+    const org = config.issueTracker?.organization_ado || config.sync?.ado?.organization || '';
+
+    // Secret from .env (correct - PAT is sensitive)
     const pat = process.env.AZURE_DEVOPS_PAT || process.env.AZURE_DEVOPS_TOKEN;
 
     if (!org || !pat) {
-      throw new Error('ADO credentials not configured');
+      throw new Error('ADO credentials not configured. Set AZURE_DEVOPS_PAT in .env and issueTracker.organization_ado in config.json.');
     }
 
     const url = `https://dev.azure.com/${org}/_apis/wit/workitems/${workItemId}?api-version=7.1`;

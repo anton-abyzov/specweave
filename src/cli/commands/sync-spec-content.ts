@@ -18,6 +18,7 @@ import { syncSpecContentToAdo } from '../../../plugins/specweave-ado/lib/ado-spe
 import { AdoClientV2 } from '../../../plugins/specweave-ado/lib/ado-client-v2.js';
 import { detectRepository } from '../../utils/git-utils.js';
 import { SyncProfile } from '../../core/types/sync-profile.js';
+import { ConfigManager } from '../../core/config/config-manager.js';
 import path from 'path';
 import fs from 'fs/promises';
 import { Logger, consoleLogger } from '../../utils/logger.js';
@@ -118,17 +119,27 @@ async function syncGitHub(specPath: string, options: any) {
 }
 
 async function syncJira(specPath: string, options: any) {
-  // Load JIRA config from environment
+  // Load JIRA config - domain from ConfigManager, secrets from .env
+  const configManager = new ConfigManager(process.cwd());
+  const specweaveConfig = await configManager.read();
+  const domainFromConfig = specweaveConfig.issueTracker?.domain || '';
+
+  // Fallback to env for backward compatibility (deprecated)
+  const domain = domainFromConfig || process.env.JIRA_DOMAIN || '';
+  if (!domainFromConfig && process.env.JIRA_DOMAIN) {
+    console.warn('DEPRECATED: JIRA_DOMAIN in .env - migrate to config.json (issueTracker.domain)');
+  }
+
   const config = {
-    domain: process.env.JIRA_DOMAIN || '',
-    email: process.env.JIRA_EMAIL || '',
-    apiToken: process.env.JIRA_API_TOKEN || '',
+    domain,
+    email: process.env.JIRA_EMAIL || '',  // Secret - stays in .env
+    apiToken: process.env.JIRA_API_TOKEN || '',  // Secret - stays in .env
     projectKey: process.env.JIRA_PROJECT_KEY || '',
   };
 
   if (!config.domain || !config.email || !config.apiToken || !config.projectKey) {
-    console.error('❌ JIRA credentials not found in environment');
-    console.error('   Required: JIRA_DOMAIN, JIRA_EMAIL, JIRA_API_TOKEN, JIRA_PROJECT_KEY');
+    console.error('❌ JIRA credentials not found');
+    console.error('   Required: issueTracker.domain (config.json), JIRA_EMAIL, JIRA_API_TOKEN, JIRA_PROJECT_KEY (.env)');
     process.exit(1);
   }
 

@@ -228,7 +228,7 @@ describe('specweave init (single-project)', () => {
 ### T-004: Create /specweave:enable-multiproject command
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: 💎 Opus
 **Estimated Effort**: 3 hours
 
@@ -294,7 +294,7 @@ describe('/specweave:enable-multiproject', () => {
 ### T-005: Create project folders during migration
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: ⚡ Haiku
 **Estimated Effort**: 1 hour
 
@@ -337,7 +337,7 @@ describe('enable-multiproject folder creation', () => {
 ### T-006: Update existing increments with project field
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: 💎 Opus
 **Estimated Effort**: 2 hours
 
@@ -396,7 +396,7 @@ describe('update existing increments', () => {
 ### T-007: Create /specweave:switch-project command
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-01, AC-US3-02, AC-US3-03, AC-US3-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: 💎 Opus
 **Estimated Effort**: 2 hours
 
@@ -471,7 +471,7 @@ describe('/specweave:switch-project', () => {
 ### T-008: Update project-folder-guard.sh hook
 **User Story**: US-006
 **Satisfies ACs**: AC-US6-01, AC-US6-02, AC-US6-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: 💎 Opus
 **Estimated Effort**: 2 hours
 
@@ -545,7 +545,7 @@ describe('project-folder-guard hook', () => {
 ### T-009: Update spec-project-validator.sh hook
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-01, AC-US4-03, AC-US4-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: 💎 Opus
 **Estimated Effort**: 2 hours
 
@@ -619,7 +619,7 @@ describe('spec-project-validator hook', () => {
 ### T-010: Update living-docs-sync.ts resolveProjectPath()
 **User Story**: US-008
 **Satisfies ACs**: AC-US8-01, AC-US8-04, AC-US8-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: 💎 Opus
 **Estimated Effort**: 2 hours
 
@@ -680,7 +680,7 @@ describe('LivingDocsSync.resolveProjectPath', () => {
 ### T-011: Add CLAUDE.md section 2h
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: ⚡ Haiku
 **Estimated Effort**: 1 hour
 
@@ -703,7 +703,7 @@ describe('LivingDocsSync.resolveProjectPath', () => {
 ### T-012: Create multi-project migration guide
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: ⚡ Haiku
 **Estimated Effort**: 1 hour
 
@@ -726,7 +726,7 @@ describe('LivingDocsSync.resolveProjectPath', () => {
 ### T-013: Update README.md and init docs
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: ⚡ Haiku
 **Estimated Effort**: 30 minutes
 

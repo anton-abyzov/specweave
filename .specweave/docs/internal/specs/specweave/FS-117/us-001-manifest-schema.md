@@ -1,11 +1,15 @@
 ---
 id: US-001
 feature: FS-117
-title: "Cache Infrastructure"
+title: Cache Infrastructure
 status: completed
 priority: P1
-created: 2025-12-09
+created: 2025-12-10
 project: specweave
+external:
+  github:
+    issue: 842
+    url: https://github.com/anton-abyzov/specweave/issues/842
 ---
 
 # US-001: Cache Infrastructure
