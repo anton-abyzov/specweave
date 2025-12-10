@@ -187,11 +187,12 @@ Edge cases and specialized integrations.
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/specweave-docs:preview` | Launch docs preview server | `/specweave-docs:preview` |
+| `/specweave-docs:view` | Launch docs server (internal or public) | `/specweave-docs:view` or `/specweave-docs:view --public` |
 | `/specweave-docs:build` | Build static docs site | `/specweave-docs:build` |
 | `/specweave-docs:generate` | Generate documentation | `/specweave-docs:generate` |
 | `/specweave-docs:organize` | Organize large doc folders | `/specweave-docs:organize` |
 | `/specweave-docs:health` | Documentation health report | `/specweave-docs:health` |
+| `/specweave-docs:validate` | Validate documentation | `/specweave-docs:validate` |
 
 ### Infrastructure & SRE
 

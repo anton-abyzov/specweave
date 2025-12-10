@@ -380,22 +380,23 @@ Stripe, PayPal, payment processor expertise.
 Documentation generation, organization, and live Docusaurus preview with hot reload.
 
 **Commands:**
-- `/specweave-docs:preview` - Launch interactive preview server
+- `/specweave-docs:view` - Launch interactive docs server (internal or public)
 - `/specweave-docs:build` - Build static site for deployment
 - `/specweave-docs:generate` - Generate documentation
 - `/specweave-docs:organize` - Organize large doc folders
 - `/specweave-docs:health` - Documentation health report
+- `/specweave-docs:validate` - Validate documentation (MDX, YAML, links)
 
 **Example:**
 ```bash
-# Preview living docs (internal on port 3015)
-/specweave-docs:preview
+# View internal docs (default) - port 3015
+/specweave-docs:view
 
-# Preview public docs (port 3016)
-/specweave-docs:preview --public
+# View public docs - port 3016
+/specweave-docs:view --public
 
 # Output:
-# 🚀 Server running at http://localhost:3015
+# 🚀 Server running at http://localhost:3015 (or 3016 for public)
 # 📁 Auto-generated sidebar from .specweave/docs/
 # 🔄 Hot reload enabled
 # 📊 Mermaid diagrams rendered
@@ -569,7 +570,7 @@ Suggests alternatives when users mention specific tools.
 | Deploy to K8s | **specweave-kubernetes** | Agent auto-activates |
 | Build React app | **specweave-frontend** | Agent auto-activates |
 | Create ML pipeline | **specweave-ml** | `/specweave-ml:pipeline` |
-| Preview docs | **specweave-docs** | `/specweave-docs:preview` |
+| View docs | **specweave-docs** | `/specweave-docs:view` |
 | Handle incidents | **specweave-infrastructure** | SRE agent + playbooks |
 | Generate diagrams | **specweave-diagrams** | Agent auto-activates |
 | Integrate Stripe | **specweave-payments** | Agent auto-activates |

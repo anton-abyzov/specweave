@@ -234,7 +234,8 @@ Generated indexes work seamlessly with Docusaurus:
 
 ```bash
 /specweave-docs:organize  # Generate indexes
-/specweave-docs:preview   # View in browser
+/specweave-docs:view      # View in browser (internal docs, port 3015)
+/specweave-docs:view --public  # View public docs (port 3016)
 ```
 
 The sidebar will show themed categories for easy navigation.
