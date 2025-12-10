@@ -623,6 +623,26 @@ export class LivingDocsSync {
    * @throws Error if required fields are missing in spec.md
    */
   private async resolveProjectPath(incrementId: string): Promise<string> {
+    // NEW (v0.34.0+): Check if single-project mode
+    const configPath = path.join(this.projectRoot, '.specweave/config.json');
+    let config: any = {};
+    try {
+      const configContent = await fs.readFile(configPath, 'utf-8');
+      config = JSON.parse(configContent);
+    } catch {
+      // Config not found - proceed with multi-project logic
+    }
+
+    const isSingleProject = config.multiProject?.enabled !== true;
+
+    if (isSingleProject) {
+      // Single-project mode: always use project.name from config
+      const projectName = config.project?.name || this.projectId;
+      this.logger.log(`📁 Single-project mode: using ${projectName}`);
+      return projectName;
+    }
+
+    // Multi-project mode: existing complex logic continues below
     // Import structure level detector
     const { detectStructureLevel } = await import('../../utils/structure-level-detector.js');
     const structureConfig = detectStructureLevel(this.projectRoot);

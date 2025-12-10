@@ -1,11 +1,15 @@
 ---
 id: US-003
 feature: FS-117
-title: "Read Path - Pure Bash Readers"
+title: Read Path - Pure Bash Readers
 status: completed
 priority: P1
-created: 2025-12-09
+created: 2025-12-10
 project: specweave
+external:
+  github:
+    issue: 844
+    url: https://github.com/anton-abyzov/specweave/issues/844
 ---
 
 # US-003: Read Path - Pure Bash Readers

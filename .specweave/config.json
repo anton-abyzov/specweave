@@ -1,36 +1,185 @@
 {
+  "version": "2.0",
+  "repository": {
+    "provider": "local"
+  },
+  "issueTracker": {
+    "provider": "none"
+  },
+  "sync": {
+    "enabled": true,
+    "direction": "bidirectional",
+    "autoSync": false,
+    "includeStatus": true,
+    "autoApplyLabels": true,
+    "provider": "github",
+    "defaultProfile": "specweave-dev",
+    "settings": {
+      "canUpsertInternalItems": true,
+      "canUpdateExternalItems": true,
+      "canUpdateStatus": true,
+      "autoSyncOnCompletion": true
+    },
+    "github": {
+      "enabled": true,
+      "owner": "anton-abyzov",
+      "repo": "specweave"
+    },
+    "jira": {
+      "enabled": false
+    },
+    "ado": {
+      "enabled": false
+    },
+    "statusSync": {
+      "enabled": true,
+      "autoSync": true,
+      "promptUser": false,
+      "conflictResolution": "external-wins",
+      "mappings": {
+        "github": {
+          "planning": {
+            "state": "open",
+            "labels": [
+              "status:planning",
+              "phase:design"
+            ]
+          },
+          "active": {
+            "state": "open",
+            "labels": [
+              "status:active",
+              "in-progress"
+            ]
+          },
+          "paused": {
+            "state": "open",
+            "labels": [
+              "status:paused",
+              "on-hold"
+            ]
+          },
+          "completed": {
+            "state": "closed",
+            "labels": [
+              "status:completed",
+              "done"
+            ]
+          },
+          "abandoned": {
+            "state": "closed",
+            "labels": [
+              "status:abandoned",
+              "wont-fix"
+            ]
+          }
+        },
+        "jira": {
+          "planning": "To Do",
+          "active": "In Progress",
+          "paused": "On Hold",
+          "completed": "Done",
+          "abandoned": "Won't Do"
+        },
+        "ado": {
+          "planning": {
+            "state": "New",
+            "tags": [
+              "Planning"
+            ]
+          },
+          "active": {
+            "state": "Active",
+            "tags": [
+              "In Progress"
+            ]
+          },
+          "paused": {
+            "state": "Active",
+            "tags": [
+              "Paused"
+            ]
+          },
+          "completed": {
+            "state": "Closed",
+            "tags": [
+              "Completed"
+            ]
+          },
+          "abandoned": {
+            "state": "Removed",
+            "tags": [
+              "Abandoned"
+            ]
+          }
+        }
+      }
+    },
+    "profiles": {
+      "specweave-dev": {
+        "provider": "github",
+        "displayName": "SpecWeave Development",
+        "config": {
+          "owner": "anton-abyzov",
+          "repo": "specweave"
+        },
+        "timeRange": {
+          "default": "1M",
+          "max": "6M"
+        },
+        "rateLimits": {
+          "maxItemsPerSync": 500,
+          "warnThreshold": 100
+        }
+      },
+      "easychamp-ado": {
+        "provider": "ado",
+        "displayName": "EasyChamp Azure DevOps",
+        "config": {
+          "organization": "easychamp",
+          "project": "SpecWeaveSync"
+        },
+        "timeRange": {
+          "default": "1M",
+          "max": "6M"
+        },
+        "rateLimits": {
+          "maxItemsPerSync": 500,
+          "warnThreshold": 100
+        }
+      }
+    }
+  },
+  "statusLine": {
+    "enabled": true,
+    "maxCacheAge": 30000,
+    "progressBarWidth": 8,
+    "maxNameLength": 30
+  },
   "language": "en",
   "translation": {
-    "languages": ["en"],
+    "languages": [
+      "en"
+    ],
     "primary": "en",
     "method": "auto",
     "preserveFrameworkTerms": true
   },
   "project": {
     "name": "specweave",
-    "version": "0.22.0",
+    "version": "SpecWeave",
     "description": "Core SpecWeave framework and CLI",
-    "techStack": ["TypeScript", "Node.js", "Claude Code", "Playwright"],
+    "techStack": [
+      "TypeScript",
+      "Node.js",
+      "Claude Code",
+      "Playwright"
+    ],
     "team": "core"
   },
   "multiProject": {
-    "enabled": true,
-    "activeProject": "specweave",
-    "projects": {
-      "specweave": {
-        "id": "specweave",
-        "name": "SpecWeave",
-        "description": "Core SpecWeave framework and CLI",
-        "keywords": ["specweave", "framework", "spec-driven", "claude-code", "plugins"],
-        "techStack": ["TypeScript", "Node.js", "Claude Code", "Playwright"],
-        "team": "core",
-        "externalTools": {
-          "github": {
-            "repository": "anton-abyzov/specweave"
-          }
-        }
-      }
-    }
+    "enabled": false,
+    "projects": {}
   },
   "adapters": {
     "default": "claude"
@@ -49,7 +198,10 @@
     "hardCap": 3,
     "allowEmergencyInterrupt": true,
     "typeBehaviors": {
-      "canInterrupt": ["hotfix", "bug"],
+      "canInterrupt": [
+        "hotfix",
+        "bug"
+      ],
       "autoAbandonDays": {
         "experiment": 14
       }
@@ -103,93 +255,6 @@
       "sync_to_github_project": true,
       "close_github_issue": true,
       "update_living_docs_first": true
-    }
-  },
-  "sync": {
-    "enabled": true,
-    "provider": "github",
-    "includeStatus": true,
-    "autoApplyLabels": true,
-    "defaultProfile": "specweave-dev",
-    "settings": {
-      "canUpsertInternalItems": true,
-      "canUpdateExternalItems": true,
-      "canUpdateStatus": true,
-      "autoSyncOnCompletion": true
-    },
-    "github": {
-      "enabled": true,
-      "owner": "anton-abyzov",
-      "repo": "specweave"
-    },
-    "jira": {
-      "enabled": false
-    },
-    "ado": {
-      "enabled": false
-    },
-    "statusSync": {
-      "enabled": true,
-      "autoSync": true,
-      "promptUser": false,
-      "conflictResolution": "external-wins",
-      "mappings": {
-        "github": {
-          "planning": { "state": "open", "labels": ["status:planning", "phase:design"] },
-          "active": { "state": "open", "labels": ["status:active", "in-progress"] },
-          "paused": { "state": "open", "labels": ["status:paused", "on-hold"] },
-          "completed": { "state": "closed", "labels": ["status:completed", "done"] },
-          "abandoned": { "state": "closed", "labels": ["status:abandoned", "wont-fix"] }
-        },
-        "jira": {
-          "planning": "To Do",
-          "active": "In Progress",
-          "paused": "On Hold",
-          "completed": "Done",
-          "abandoned": "Won't Do"
-        },
-        "ado": {
-          "planning": { "state": "New", "tags": ["Planning"] },
-          "active": { "state": "Active", "tags": ["In Progress"] },
-          "paused": { "state": "Active", "tags": ["Paused"] },
-          "completed": { "state": "Closed", "tags": ["Completed"] },
-          "abandoned": { "state": "Removed", "tags": ["Abandoned"] }
-        }
-      }
-    },
-    "profiles": {
-      "specweave-dev": {
-        "provider": "github",
-        "displayName": "SpecWeave Development",
-        "config": {
-          "owner": "anton-abyzov",
-          "repo": "specweave"
-        },
-        "timeRange": {
-          "default": "1M",
-          "max": "6M"
-        },
-        "rateLimits": {
-          "maxItemsPerSync": 500,
-          "warnThreshold": 100
-        }
-      },
-      "easychamp-ado": {
-        "provider": "ado",
-        "displayName": "EasyChamp Azure DevOps",
-        "config": {
-          "organization": "easychamp",
-          "project": "SpecWeaveSync"
-        },
-        "timeRange": {
-          "default": "1M",
-          "max": "6M"
-        },
-        "rateLimits": {
-          "maxItemsPerSync": 500,
-          "warnThreshold": 100
-        }
-      }
     }
   },
   "documentation": {

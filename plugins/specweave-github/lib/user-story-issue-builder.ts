@@ -65,11 +65,11 @@ export class UserStoryIssueBuilder {
       );
     }
 
-    // ✅ VALIDATION: Ensure featureId matches expected pattern (FS-XXX, 3+ digits)
-    if (!/^FS-\d{3,}$/.test(featureId)) {
+    // ✅ VALIDATION: Ensure featureId matches expected pattern (FS-XXX or FS-XXXE for external)
+    if (!/^FS-\d{3,}E?$/.test(featureId)) {
       throw new Error(
         `UserStoryIssueBuilder: Invalid featureId format "${featureId}".\n` +
-        `Expected format: FS-XXX (e.g., "FS-047", "FS-123", "FS-1000").\n` +
+        `Expected format: FS-XXX or FS-XXXE (e.g., "FS-047", "FS-123E", "FS-1000").\n` +
         `This prevents incorrect issue titles like [SP-US-XXX] or [${featureId}][US-XXX].`
       );
     }
@@ -115,11 +115,11 @@ export class UserStoryIssueBuilder {
     const title = `[${this.featureId}][${frontmatter.id}] ${frontmatter.title}`;
 
     // ✅ SAFETY CHECK: Ensure title matches expected pattern (3+ digits)
-    const titlePattern = /^\[FS-\d{3,}\]\[US-\d{3,}\] .+$/;
+    const titlePattern = /^\[FS-\d{3,}E?\]\[US-\d{3,}E?\] .+$/;
     if (!titlePattern.test(title)) {
       throw new Error(
         `Generated issue title has incorrect format: "${title}"\n` +
-        `Expected: [FS-XXX][US-YYY] Title (3+ digits each)\n` +
+        `Expected: [FS-XXX][US-YYY] or [FS-XXXE][US-YYYE] Title (3+ digits each, E-suffix for external)\n` +
         `This indicates a bug in UserStoryIssueBuilder or invalid frontmatter.\n` +
         `Feature ID: ${this.featureId}\n` +
         `User Story ID: ${frontmatter.id}`
@@ -397,17 +397,12 @@ export class UserStoryIssueBuilder {
       data.tasks
     );
 
-    // Header with metadata
-    sections.push(`**Feature**: ${this.featureId}`);
-    sections.push(`**Status**: ${this.capitalize(data.frontmatter.status)}`);
-    sections.push(`**Priority**: ${data.frontmatter.priority || 'P2'}`);
-    // ✅ FIX: Only output Project if defined and not "default"
-    if (data.frontmatter.project && data.frontmatter.project !== 'default') {
-      sections.push(`**Project**: ${data.frontmatter.project}`);
-    }
-    sections.push('');
+    // ❌ REMOVED: Metadata header (Feature, Status, Priority, Project)
+    // WHY: GitHub has NATIVE fields for this (labels, milestones)
+    // Body should contain ONLY actual work content (ACs, tasks, user story)
+    // See: .specweave/docs/internal/troubleshooting/CRITICAL-remove-metadata-header-from-github-issues.md
 
-    // Progress section (NEW)
+    // Progress section
     sections.push(IssueStateManager.formatProgressMarkdown(progress));
     sections.push('');
 

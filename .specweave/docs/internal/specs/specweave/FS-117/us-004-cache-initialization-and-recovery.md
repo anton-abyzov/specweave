@@ -1,11 +1,15 @@
 ---
 id: US-004
 feature: FS-117
-title: "Cache Initialization and Recovery"
+title: Cache Initialization and Recovery
 status: completed
 priority: P1
-created: 2025-12-09
+created: 2025-12-10
 project: specweave
+external:
+  github:
+    issue: 845
+    url: https://github.com/anton-abyzov/specweave/issues/845
 ---
 
 # US-004: Cache Initialization and Recovery

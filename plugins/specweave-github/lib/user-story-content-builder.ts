@@ -116,28 +116,33 @@ export class UserStoryContentBuilder {
 
     let body = '';
 
-    // Extract priority from ACs (highest priority wins)
-    const priority = this.extractPriorityFromACs(content.acceptanceCriteria);
-
     // Detect GitHub repo from git remote if not provided
     const repo = githubRepo || await this.detectGitHubRepo();
 
-    // Header with metadata
-    // v5.0.0+: Features live in project folders, NOT _features
-    // Extract project from path: specs/{project}/FS-XXX/us-*.md
-    if (repo) {
-      const pathMatch = this.userStoryPath.match(/specs\/([^/]+)\/FS-\d+\//);
-      const projectFolder = pathMatch ? pathMatch[1] : 'default';
-      body += `**Feature**: [${content.featureId}](https://github.com/${repo}/tree/develop/.specweave/docs/internal/specs/${projectFolder}/${content.featureId})\n`;
-    } else {
-      body += `**Feature**: ${content.featureId}\n`;
-    }
-    body += `**Status**: ${content.frontmatter.status}\n`;
-    if (priority) {
-      body += `**Priority**: ${priority}\n`;
-    }
+    // ❌ REMOVED: Metadata header (Feature, Status, Priority)
+    // WHY: GitHub has NATIVE fields for this (labels, milestones)
+    // Body should contain ONLY actual work content (ACs, tasks, user story)
+    // See: .specweave/docs/internal/troubleshooting/CRITICAL-remove-metadata-header-from-github-issues.md
 
-    body += `\n---\n\n`;
+    // Progress section (consistency with user-story-issue-builder.ts)
+    const completedACs = content.acceptanceCriteria.filter(ac => ac.completed).length;
+    const totalACs = content.acceptanceCriteria.length;
+    const completedTasks = content.tasks.filter(t => t.status).length;
+    const totalTasks = content.tasks.length;
+    const overallPercentage = (totalACs + totalTasks) > 0
+      ? Math.round(((completedACs + completedTasks) / (totalACs + totalTasks)) * 100)
+      : 0;
+
+    body += `## Progress\n\n`;
+    body += `**Acceptance Criteria**: ${completedACs}/${totalACs} (${totalACs > 0 ? Math.round((completedACs / totalACs) * 100) : 0}%)\n`;
+    body += `**Tasks**: ${completedTasks}/${totalTasks} (${totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}%)\n`;
+    body += `**Overall**: ${overallPercentage}%\n\n`;
+
+    // Progress bar
+    const filledBlocks = Math.floor(overallPercentage / 5);
+    const emptyBlocks = 20 - filledBlocks;
+    body += `${'█'.repeat(filledBlocks)}${'░'.repeat(emptyBlocks)} ${overallPercentage}%\n\n`;
+    body += `---\n\n`;
 
     // User Story description
     body += `## User Story\n\n`;

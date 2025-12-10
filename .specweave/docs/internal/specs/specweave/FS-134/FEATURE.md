@@ -1,36 +1,31 @@
 ---
-feature_id: FS-134
-title: Intelligent Living Docs - Core Engine & Analysis (Part 1)
+id: FS-134
+title: "Intelligent Living Docs - Core Engine & Analysis (Part 1)"
+type: feature
 status: completed
 priority: P1
-project: specweave
+created: 2025-12-09
+lastUpdated: 2025-12-10
 ---
 
-# FS-134: Intelligent Living Docs - Core Engine & Analysis (Part 1)
+# Intelligent Living Docs - Core Engine & Analysis (Part 1)
 
 ## Overview
 
-Build the core analysis engine that can:
-- Scan multi-repo umbrella setups
-- Detect code patterns (state management, API styles, etc.)
-- Discover and synthesize Architecture Decision Records (ADRs)
-- Use LLM intelligence for deep insights
+**Current Gap**: Living docs sync is currently a **simple file copy** operation - it takes spec.md and splits it into FEATURE.md and us-*.md files. This is **NOT intelligent** - it doesn't analy
+
+## Implementation History
+
+| Increment | Status | Completion Date |
+|-----------|--------|----------------|
+| [0134-living-docs-core-engine](../../../../increments/0134-living-docs-core-engine/spec.md) | ✅ completed | 2025-12-09 |
 
 ## User Stories
 
-- [US-001](us-001.md): Multi-Repo Deep Scan & Discovery
-- [US-002](us-002.md): ADR Discovery & Synthesis from Codebase
-- [US-003](us-003.md): Technical Debt & Inconsistency Detection
-- [US-004](us-004.md): Module & Dependency Graph Generation
-- [US-006](us-006.md): Incremental Update with Change Detection
-- [US-007](us-007.md): Generic Algorithm for Any SpecWeave Project
-- [US-008](us-008.md): LLM-Powered Deep Analysis
-
-## Status
-
-**Status**: Completed
-**Completion Date**: 2025-12-09
-
-## Related Increments
-
-- [0134-living-docs-core-engine](../../../increments/0134-living-docs-core-engine/)
+- [US-001: Multi-Repo Deep Scan & Discovery](../../specweave/FS-134/us-001-multi-repo-deep-scan-discovery.md)
+- [US-002: ADR Discovery & Synthesis from Codebase](../../specweave/FS-134/us-002-adr-discovery-synthesis-from-codebase.md)
+- [US-003: Technical Debt & Inconsistency Detection](../../specweave/FS-134/us-003-technical-debt-inconsistency-detection.md)
+- [US-004: Module & Dependency Graph Generation](../../specweave/FS-134/us-004-module-dependency-graph-generation.md)
+- [US-006: Incremental Update with Change Detection](../../specweave/FS-134/us-006-incremental-update-with-change-detection.md)
+- [US-007: Generic Algorithm for Any SpecWeave Project](../../specweave/FS-134/us-007-generic-algorithm-for-any-specweave-project.md)
+- [US-008: LLM-Powered Deep Analysis](../../specweave/FS-134/us-008-llm-powered-deep-analysis.md)

@@ -1,19 +1,40 @@
-## metrics
+# metrics
 
 **Path**: `src/metrics`
 
-### Overview
+## Purpose
 
-The metrics module contains 10 files with approximately 1,033 lines of code.
+DORA metrics calculation module for measuring software delivery performance, including deployment frequency, change failure rate, and related DevOps metrics.
 
-### Analysis Summary
+## Overview
+
+The metrics module contains 10 files with approximately 289 lines of code.
+
+## Dependencies
+
+This module imports from:
+- `..`
+
+## Dependents
+
+No dependencies detected.
+
+## Integration Points
+
+No external integration points detected.
+
+## Patterns Used
+
+No specific patterns detected.
+
+## Analysis Summary
 
 - **Files Analyzed**: 3
 - **Source Files**: 3
 - **Test Files**: 0
 - **Total Exports**: 12
 
-### Main Exports
+## Main Exports
 
 - `DORAType` (type)
 - `Release` (interface)
@@ -27,10 +48,10 @@ The metrics module contains 10 files with approximately 1,033 lines of code.
 - `GitHubConfig` (interface)
 - ...and 2 more exports
 
-### Documentation Status
+## Documentation Status
 
 **Has README**: No
 **Has Tests**: No
 
 ---
-*Analysis generated on 2025-12-04*
+*Analysis generated on 2025-12-10*

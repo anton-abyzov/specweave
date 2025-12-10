@@ -105,6 +105,10 @@ PROJECT_ROOT="${FILE_PATH%%/.specweave/*}"
 # Change to project root for specweave command
 cd "$PROJECT_ROOT" 2>/dev/null || true
 
+# Check if single-project or multi-project mode (NEW - v0.34.0+)
+CONFIG_FILE="$PROJECT_ROOT/.specweave/config.json"
+MULTI_PROJECT_ENABLED=$(jq -r '.multiProject.enabled // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
+
 # Get project context via CLI command
 CONTEXT_OUTPUT=$(specweave context projects 2>/dev/null || echo '{"level": 1, "projects": []}')
 
@@ -114,6 +118,29 @@ STRUCTURE_LEVEL=$(echo "$CONTEXT_OUTPUT" | jq -r '.level // 1')
 # Parse available projects
 AVAILABLE_PROJECTS=$(echo "$CONTEXT_OUTPUT" | jq -r '.projects[].id // empty' | tr '\n' ', ' | sed 's/,$//')
 
+# NEW (v0.34.0+): Single-project mode validation
+if [ "$MULTI_PROJECT_ENABLED" = "false" ]; then
+  # Single-project mode: project field is OPTIONAL
+  # If provided, validate it matches config.project.name
+  CONFIGURED_PROJECT=$(jq -r '.project.name // "specweave"' "$CONFIG_FILE" 2>/dev/null)
+
+  if [ -n "$PROJECT" ] && [ "$PROJECT" != "null" ] && [ "$PROJECT" != "$CONFIGURED_PROJECT" ]; then
+    echo "{\"decision\": \"block\", \"reason\": \"spec.md has project: '${PROJECT}' but config has project.name: '${CONFIGURED_PROJECT}'.\\n\\nIn single-project mode, the project: field MUST match config.project.name OR be omitted.\\n\\nFix:\\n1. Remove project: field (recommended for single-project mode)\\n2. OR change to: project: ${CONFIGURED_PROJECT}\\n3. OR enable multi-project mode: /specweave:enable-multiproject\"}"
+    exit 0
+  fi
+
+  # ALWAYS block board: field in single-project mode
+  if [ -n "$BOARD" ] && [ "$BOARD" != "null" ]; then
+    echo "{\"decision\": \"block\", \"reason\": \"spec.md has board: field but this is a SINGLE-PROJECT repository.\\n\\nThe board: field is ONLY for multi-project mode.\\n\\nFix:\\n1. Remove the board: field\\n2. OR enable multi-project mode: /specweave:enable-multiproject\"}"
+    exit 0
+  fi
+
+  # All validations passed for single-project mode
+  echo '{"decision": "allow"}'
+  exit 0
+fi
+
+# Multi-project mode validation continues below
 # Validation based on structure level
 if [ "$STRUCTURE_LEVEL" = "2" ]; then
   # 2-level: BOTH project AND board required

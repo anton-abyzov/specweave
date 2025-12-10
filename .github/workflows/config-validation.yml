@@ -1,0 +1,103 @@
+name: Config Separation Validation
+
+on:
+  pull_request:
+    paths:
+      - 'src/**/*.ts'
+      - 'plugins/**/*.ts'
+  push:
+    branches:
+      - develop
+      - main
+    paths:
+      - 'src/**/*.ts'
+      - 'plugins/**/*.ts'
+
+jobs:
+  validate-config-separation:
+    name: Check Config vs Secrets Separation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for config-in-env violations
+        run: |
+          echo "Checking for configuration values incorrectly read from process.env..."
+          echo ""
+
+          # Define config variables that should NOT be in process.env
+          CONFIG_VARS=(
+            "JIRA_DOMAIN"
+            "JIRA_BASE_URL"
+            "AZURE_DEVOPS_ORG"
+            "AZURE_DEVOPS_PROJECT"
+            "GITHUB_OWNER"
+            "GITHUB_REPO"
+            "ADO_ORG_URL"
+            "ADO_PROJECT"
+          )
+
+          VIOLATIONS_FOUND=0
+
+          for VAR in "${CONFIG_VARS[@]}"; do
+            echo "Checking for process.env.$VAR..."
+
+            # Search in src/ files, excluding tests and deprecated files
+            MATCHES=$(grep -rn "process\.env\.$VAR" src/ \
+              --include="*.ts" \
+              --exclude="*.test.ts" \
+              --exclude="*.spec.ts" \
+              --exclude="credentials-manager.ts" \
+              --exclude="env-multi-project-parser.ts" \
+              2>/dev/null || true)
+
+            if [[ -n "$MATCHES" ]]; then
+              echo ""
+              echo "VIOLATION: process.env.$VAR found in src/ files:"
+              echo "$MATCHES"
+              echo ""
+
+              # Check if it's a fallback pattern (allowed)
+              if echo "$MATCHES" | grep -q "|| process\.env\.$VAR"; then
+                echo "  Note: This appears to be a fallback pattern (ConfigManager first)"
+              else
+                VIOLATIONS_FOUND=$((VIOLATIONS_FOUND + 1))
+              fi
+            fi
+          done
+
+          echo ""
+          echo "========================================"
+          if [[ $VIOLATIONS_FOUND -gt 0 ]]; then
+            echo "FAILED: $VIOLATIONS_FOUND config-in-env violation(s) found!"
+            echo ""
+            echo "Configuration values MUST use ConfigManager (config.json), not process.env."
+            echo ""
+            echo "CORRECT PATTERN:"
+            echo "  const config = await this.configManager.read();"
+            echo "  const domain = config.issueTracker?.domain || '';"
+            echo ""
+            echo "Ref: ADR-0194, CLAUDE.md Configuration section"
+            exit 1
+          else
+            echo "PASSED: No config-in-env violations found."
+          fi
+
+      - name: Verify ConfigManager usage
+        run: |
+          echo "Verifying ConfigManager is used for config values..."
+          echo ""
+
+          # Count ConfigManager imports in relevant files
+          MANAGER_IMPORTS=$(grep -r "from.*config-manager" src/ \
+            --include="*.ts" \
+            --exclude="*.test.ts" \
+            -c 2>/dev/null || echo "0")
+
+          echo "ConfigManager imports found: $MANAGER_IMPORTS"
+
+          if [[ "$MANAGER_IMPORTS" -lt "5" ]]; then
+            echo "WARNING: Few ConfigManager imports found. Ensure config values use ConfigManager."
+          fi

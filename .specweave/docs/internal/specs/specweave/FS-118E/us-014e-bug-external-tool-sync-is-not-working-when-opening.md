@@ -1,3 +1,18 @@
+---
+id: US-014E
+feature: FS-118E
+title: "[Bug] External tool sync is not working when opening an increment"
+status: active
+priority: P1
+created: 2025-12-07
+origin: external
+external_url: https://github.com/anton-abyzov/specweave/issues/786
+external:
+  github:
+    issue: 889
+    url: https://github.com/anton-abyzov/specweave/issues/889
+---
+
 # US-014E: [Bug] External tool sync is not working when opening an increment (GH issues)
 
 **Origin**: 🔗 [GitHub #786](https://github.com/anton-abyzov/specweave/issues/786)

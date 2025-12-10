@@ -1,11 +1,15 @@
 ---
 id: US-003
 feature: FS-121
-title: "ADO/JIRA Reconcile Commands"
+title: ADO/JIRA Reconcile Commands
 status: completed
 priority: P2
-created: 2025-12-09
+created: 2025-12-10
 project: specweave
+external:
+  github:
+    issue: 855
+    url: https://github.com/anton-abyzov/specweave/issues/855
 ---
 
 # US-003: ADO/JIRA Reconcile Commands

@@ -1,11 +1,15 @@
 ---
 id: US-005
 feature: FS-117
-title: "Additional Instant Commands"
+title: Additional Instant Commands
 status: completed
 priority: P1
-created: 2025-12-09
+created: 2025-12-10
 project: specweave
+external:
+  github:
+    issue: 846
+    url: https://github.com/anton-abyzov/specweave/issues/846
 ---
 
 # US-005: Additional Instant Commands

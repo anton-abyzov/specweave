@@ -1,11 +1,15 @@
 ---
 id: US-002
 feature: FS-123
-title: "Rich Module Documentation"
+title: Rich Module Documentation
 status: completed
 priority: P1
-created: 2025-12-09
+created: 2025-12-10
 project: specweave
+external:
+  github:
+    issue: 863
+    url: https://github.com/anton-abyzov/specweave/issues/863
 ---
 
 # US-002: Rich Module Documentation

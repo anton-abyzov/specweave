@@ -1,0 +1,44 @@
+---
+id: US-001
+feature: FS-137
+title: "Pre-Planning Context Injection (P0)"
+status: completed
+priority: P0
+created: 2025-12-09
+project: specweave
+related_projects: [acme-corp, {{PROJECT_ID}}` placeholders - no hook catches this, frontend-app, backend-api, mobile-app, shared-lib, frontend-app, backend-api, mobile-app  ← ❌ FORBIDDEN]
+---
+
+# US-001: Pre-Planning Context Injection (P0)
+
+**Feature**: [FS-137](./FEATURE.md)
+
+**As a** user creating a new increment
+**I want** project/board context automatically injected before Claude generates spec.md
+**So that** Claude has the information needed to assign projects per US
+
+---
+
+## Acceptance Criteria
+
+- [x] **AC-US1-01**: `/specweave:increment` hook detects structure level before planning starts
+- [x] **AC-US1-02**: Available projects/boards are listed in a context block injected into conversation
+- [x] **AC-US1-03**: Context block includes clear instructions that each US needs **Project**: field
+- [x] **AC-US1-04**: For 2-level structures, context block includes board options per project
+- [x] **AC-US1-05**: Context injection happens BEFORE Claude starts generating spec.md content
+
+---
+
+## Implementation
+
+**Increment**: [0137-per-us-project-board-enforcement](../../../../increments/0137-per-us-project-board-enforcement/spec.md)
+
+**Tasks**: See increment tasks.md for implementation details.
+
+
+## Tasks
+
+- [x] **T-005**: Create Pre-Increment-Planning Hook
+- [x] **T-006**: Integrate Context Injection with /specweave:increment
+- [x] **T-007**: Format Context Block for Claude Consumption
+- [x] **T-022**: Integration Tests for Cross-Project Workflow

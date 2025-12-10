@@ -17,6 +17,7 @@
 import { promises as fs, existsSync } from 'fs';
 import path from 'path';
 import { Logger, consoleLogger } from '../utils/logger.js';
+import { ConfigManager } from '../core/config/config-manager.js';
 
 export interface JiraReconcileOptions {
   projectRoot: string;
@@ -65,6 +66,7 @@ export class JiraReconciler {
   private projectRoot: string;
   private dryRun: boolean;
   private logger: Logger;
+  private configManager: ConfigManager;
   private domain: string = '';
   private auth: string = '';
 
@@ -72,6 +74,7 @@ export class JiraReconciler {
     this.projectRoot = options.projectRoot;
     this.dryRun = options.dryRun ?? false;
     this.logger = options.logger ?? consoleLogger;
+    this.configManager = new ConfigManager(options.projectRoot);
   }
 
   /**
@@ -106,10 +109,10 @@ export class JiraReconciler {
         return result;
       }
 
-      // 2. Verify JIRA credentials
-      if (!this.initCredentials()) {
+      // 2. Verify JIRA credentials (secrets from .env, domain from config.json)
+      if (!(await this.initCredentials())) {
         result.errors.push('JIRA credentials not configured');
-        this.logger.error('❌ JIRA credentials not found. Set JIRA_API_TOKEN and JIRA_EMAIL environment variables.');
+        this.logger.error('❌ JIRA credentials not found. Set JIRA_API_TOKEN and JIRA_EMAIL in .env, and issueTracker.domain in config.json.');
         return result;
       }
 
@@ -361,11 +364,17 @@ This typically happens when an increment was resumed after being paused/complete
 
   /**
    * Initialize JIRA credentials
+   * Reads secrets (token, email) from process.env
+   * Reads config (domain) from ConfigManager (config.json)
    */
-  private initCredentials(): boolean {
+  private async initCredentials(): Promise<boolean> {
+    // Secrets from .env (correct - these are sensitive)
     const token = process.env.JIRA_API_TOKEN;
     const email = process.env.JIRA_EMAIL;
-    this.domain = process.env.JIRA_DOMAIN || '';
+
+    // Config from ConfigManager (correct - domain is not secret)
+    const config = await this.configManager.read();
+    this.domain = config.issueTracker?.domain || '';
 
     if (!token || !email || !this.domain) {
       return false;

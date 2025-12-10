@@ -1,17 +1,17 @@
 # Living Docs Suggestions
 
-*Generated: 12/3/2025, 8:09:09 PM*
+*Generated: 12/10/2025, 12:33:16 PM*
 
 ## Summary
 
 | Metric | Value |
 |--------|-------|
 | Total Modules | 20 |
-| Fully Documented | 0 |
-| Partially Documented | 6 |
-| Undocumented | 14 |
-| Documentation Coverage | 12% |
-| Work Items Matched | 20/57 |
+| Fully Documented | 1 |
+| Partially Documented | 18 |
+| Undocumented | 1 |
+| Documentation Coverage | 41% |
+| Work Items Matched | 44/106 |
 
 ## Priority Zones
 
@@ -19,46 +19,19 @@ These modules have the most work items and need attention:
 
 | Module | Path | Work Items | Status | Action |
 |--------|------|------------|--------|--------|
-| sync | `src/sync` | 7 | ❌ | START HERE - Create comprehensive module documentation |
-| living-docs | `src/living-docs` | 7 | ❌ | START HERE - Create comprehensive module documentation |
-| init | `src/init` | 3 | ⚠️ | ENHANCE - Add detailed API docs and usage examples |
-| config | `src/config` | 3 | ❌ | START HERE - Create comprehensive module documentation |
-| types | `src/types` | 2 | ❌ | START HERE - Create comprehensive module documentation |
-| templates | `src/templates` | 1 | ⚠️ | ENHANCE - Add detailed API docs and usage examples |
-| progress | `src/progress` | 1 | ❌ | START HERE - Create comprehensive module documentation |
+| living-docs | `src/living-docs` | 16 | ⚠️ | ENHANCE - Add detailed API docs and usage examples |
+| sync | `src/sync` | 13 | ⚠️ | ENHANCE - Add detailed API docs and usage examples |
+| config | `src/config` | 13 | ⚠️ | ENHANCE - Add detailed API docs and usage examples |
+| init | `src/init` | 4 | ⚠️ | ENHANCE - Add detailed API docs and usage examples |
+| cli | `src/cli` | 3 | ⚠️ | ENHANCE - Add detailed API docs and usage examples |
+| hooks | `src/hooks` | 3 | ⚠️ | ENHANCE - Add detailed API docs and usage examples |
+| core | `src/core` | 1 | ⚠️ | ENHANCE - Add detailed API docs and usage examples |
+| integrations | `src/integrations` | 1 | ⚠️ | ENHANCE - Add detailed API docs and usage examples |
+| testing | `src/testing` | 1 | ⚠️ | ENHANCE - Add detailed API docs and usage examples |
 
 ## Immediate Actions
 
-### 1. living-docs
-
-**Action**: Document living-docs (user priority area)
-
-**Reason**: User identified "living-docs" as priority area
-
-**Files**:
-- `src/living-docs/README.md`
-
-### 2. sync
-
-**Action**: Create foundational documentation
-
-**Reason**: High activity module with 7 related work items
-
-**Files**:
-- `src/sync/README.md`
-- `src/sync/API.md`
-
-### 3. living-docs
-
-**Action**: Create foundational documentation
-
-**Reason**: High activity module with 7 related work items
-
-**Files**:
-- `src/living-docs/README.md`
-- `src/living-docs/API.md`
-
-### 4. core
+### 1. core
 
 **Action**: Add README based on existing test cases
 
@@ -67,7 +40,7 @@ These modules have the most work items and need attention:
 **Files**:
 - `src/core/README.md`
 
-### 5. cli
+### 2. cli
 
 **Action**: Add README based on existing test cases
 
@@ -76,35 +49,24 @@ These modules have the most work items and need attention:
 **Files**:
 - `src/cli/README.md`
 
-## Additional Sources Processed
-
-- `.specweave/docs`
-
 ## Directories Not Fully Analyzed
 
 Due to codebase size, these directories were sampled:
 
 | Path | Reason | Files Skipped |
 |------|--------|---------------|
-| `src/core` | Sampled (tier: large) | 227 |
-| `src/cli` | Sampled (tier: large) | 92 |
-| `src/utils` | Sampled (tier: large) | 43 |
+| `src/core` | Sampled (tier: large) | 266 |
+| `src/cli` | Sampled (tier: large) | 109 |
+| `src/utils` | Sampled (tier: large) | 54 |
 | `src/init` | Sampled (tier: large) | 24 |
-| `src/adapters` | Analysis skipped | 22 |
-| `src/locales` | Analysis skipped | 19 |
-| `src/sync` | Analysis skipped | 12 |
-| `src/integrations` | Analysis skipped | 11 |
-| `src/metrics` | Analysis skipped | 10 |
-| `src/importers` | Analysis skipped | 9 |
-| `src/hooks` | Analysis skipped | 5 |
-| `src/living-docs` | Analysis skipped | 4 |
-| `src/config` | Analysis skipped | 3 |
-| `src/types` | Analysis skipped | 3 |
-| `src/generators` | Analysis skipped | 2 |
-| `src/id-generators` | Analysis skipped | 2 |
-| `src/validators` | Analysis skipped | 2 |
-| `src/progress` | Analysis skipped | 1 |
-| `src/testing` | Analysis skipped | 1 |
+| `src/adapters` | Sampled (tier: large) | 8 |
+| `src/sync` | Sampled (tier: large) | 12 |
+| `src/integrations` | Sampled (tier: large) | 9 |
+| `src/metrics` | Sampled (tier: large) | 7 |
+| `src/importers` | Sampled (tier: large) | 6 |
+| `src/hooks` | Sampled (tier: large) | 2 |
+| `src/living-docs` | Sampled (tier: large) | 2 |
+| `src/types` | Sampled (tier: large) | 2 |
 
 ## Module Documentation Status
 
@@ -113,26 +75,26 @@ Due to codebase size, these directories were sampled:
 
 | Module | Path | README | Analysis | Coverage | Work Items | Priority |
 |--------|------|--------|----------|----------|------------|----------|
-| core | `src/core` | ❌ | ✅ | 40% | 0 | low |
-| cli | `src/cli` | ❌ | ✅ | 40% | 0 | low |
+| core | `src/core` | ❌ | ✅ | 60% | 1 | low |
+| cli | `src/cli` | ❌ | ✅ | 40% | 3 | low |
 | utils | `src/utils` | ❌ | ✅ | 40% | 0 | low |
-| templates | `src/templates` | ✅ | ❌ | 40% | 1 | low |
-| init | `src/init` | ❌ | ✅ | 40% | 3 | low |
-| adapters | `src/adapters` | ✅ | ❌ | 40% | 0 | low |
+| templates | `src/templates` | ✅ | ❌ | 40% | 0 | low |
+| init | `src/init` | ❌ | ✅ | 40% | 4 | low |
+| adapters | `src/adapters` | ✅ | ✅ | 80% | 0 | low |
 | locales | `src/locales` | ❌ | ❌ | 0% | 0 | low |
-| sync | `src/sync` | ❌ | ❌ | 0% | 7 | medium |
-| integrations | `src/integrations` | ❌ | ❌ | 0% | 0 | low |
-| metrics | `src/metrics` | ❌ | ❌ | 0% | 0 | low |
-| importers | `src/importers` | ❌ | ❌ | 0% | 0 | low |
-| hooks | `src/hooks` | ❌ | ❌ | 0% | 0 | low |
-| living-docs | `src/living-docs` | ❌ | ❌ | 0% | 7 | medium |
-| config | `src/config` | ❌ | ❌ | 0% | 3 | low |
-| types | `src/types` | ❌ | ❌ | 0% | 2 | low |
-| generators | `src/generators` | ❌ | ❌ | 0% | 0 | low |
-| id-generators | `src/id-generators` | ❌ | ❌ | 0% | 0 | low |
-| validators | `src/validators` | ❌ | ❌ | 0% | 0 | low |
-| progress | `src/progress` | ❌ | ❌ | 0% | 1 | low |
-| testing | `src/testing` | ❌ | ❌ | 0% | 0 | low |
+| sync | `src/sync` | ❌ | ✅ | 40% | 13 | high |
+| integrations | `src/integrations` | ❌ | ✅ | 40% | 1 | low |
+| metrics | `src/metrics` | ❌ | ✅ | 40% | 0 | low |
+| importers | `src/importers` | ❌ | ✅ | 40% | 0 | low |
+| hooks | `src/hooks` | ❌ | ✅ | 40% | 3 | low |
+| living-docs | `src/living-docs` | ❌ | ✅ | 40% | 16 | high |
+| types | `src/types` | ❌ | ✅ | 40% | 0 | low |
+| config | `src/config` | ❌ | ✅ | 40% | 13 | high |
+| generators | `src/generators` | ❌ | ✅ | 40% | 0 | low |
+| id-generators | `src/id-generators` | ❌ | ✅ | 40% | 0 | low |
+| validators | `src/validators` | ❌ | ✅ | 40% | 0 | low |
+| progress | `src/progress` | ❌ | ✅ | 40% | 0 | low |
+| testing | `src/testing` | ❌ | ✅ | 40% | 1 | low |
 
 </details>
 
