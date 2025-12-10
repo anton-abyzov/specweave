@@ -85,34 +85,93 @@ The LLM MUST resolve these from context - see RULE 0 in increment-planner.
 
 ---
 
+### MANDATORY STEP 0: Get Project Context FIRST (v0.34.0+ BLOCKING!)
+
+**⛔ YOU CANNOT GENERATE spec.md UNTIL YOU COMPLETE THIS STEP!**
+
+**This step is BLOCKING - do not proceed until you have actual project/board IDs.**
+
+**1. Run the context API command:**
+```bash
+specweave context projects
+```
+
+**2. Parse the JSON output:**
+```json
+{
+  "level": 1,
+  "projects": [{"id": "frontend-app", "name": "Frontend App"}],
+  "detectionReason": "multiProject configuration"
+}
+```
+For 2-level:
+```json
+{
+  "level": 2,
+  "projects": [{"id": "acme-corp", "name": "ACME Corp"}],
+  "boardsByProject": {
+    "acme-corp": [
+      {"id": "digital-ops", "name": "Digital Operations"},
+      {"id": "mobile-team", "name": "Mobile Team"}
+    ]
+  }
+}
+```
+
+**3. STORE the actual IDs for use in spec.md:**
+```
+RESOLVED_PROJECT = "frontend-app"  // from projects[].id
+RESOLVED_BOARD = "digital-ops"     // from boardsByProject (2-level only)
+```
+
+**4. Now generate spec.md using RESOLVED values (NEVER placeholders!)**
+
+---
+
 ### Per-US Project Resolution (v0.33.0+ MANDATORY)
 
-**🧠 USE ALL AVAILABLE CONTEXT TO RESOLVE PROJECT/BOARD:**
+**🧠 USE CONTEXT API OUTPUT + LIVING DOCS TO RESOLVE PROJECT/BOARD:**
 
-Before generating spec.md, analyze:
-1. **Living docs folders**: `ls .specweave/docs/internal/specs/` → actual project IDs
-2. **Recent increment patterns**: `grep "**Project**:" .specweave/increments/*/spec.md`
-3. **Config projectMappings**: Exact project IDs from config
-4. **Feature keywords**: Map to actual projects (not generic terms)
+After running `specweave context projects`, you have the valid project/board IDs.
+Now map each user story to the correct project:
+
+**Resolution Flow:**
+```
+1. Get valid projects from context API: ["frontend-app", "backend-api", "shared"]
+2. Analyze feature description for keywords
+3. Map keywords to ACTUAL project IDs (from step 1, NOT generic terms!)
+4. Assign each US to its project
+```
 
 **Resolution Example:**
 ```
+Context API returned: projects = ["frontend-app", "backend-api", "shared"]
+
 Feature: "Add OAuth login to React frontend"
-Detected: "React", "frontend", "login"
+Detected keywords: "React", "frontend", "login"
 
-Step 1: Check living docs → folders: frontend-app/, backend-api/, shared/
-Step 2: "frontend" keyword → matches "frontend-app" folder
-Step 3: Assign **Project**: frontend-app (NOT "frontend"!)
+Mapping:
+- "frontend" keyword → matches "frontend-app" (from context API)
+- "login" spans frontend + backend
 
-If cross-cutting ("OAuth" = both frontend + backend):
+Result:
   US-001 (Login UI) → **Project**: frontend-app
   US-002 (Auth API) → **Project**: backend-api
 ```
 
-**NEVER:**
-- ❌ Use generic keywords as project names ("frontend", "backend")
-- ❌ Ask user when context provides the answer
-- ❌ Leave `{{PROJECT_ID}}` placeholders
+**VALIDATION RULES:**
+
+```
+✅ REQUIRED: Run "specweave context projects" BEFORE generating spec.md
+✅ REQUIRED: Use ONLY project IDs from the API response
+✅ REQUIRED: Each US has explicit **Project**: field with resolved value
+✅ REQUIRED: For 2-level, each US has explicit **Board**: field with resolved value
+
+❌ FORBIDDEN: Generating spec.md without running context API first
+❌ FORBIDDEN: Using {{PROJECT_ID}} or {{BOARD_ID}} placeholders
+❌ FORBIDDEN: Using generic keywords as project names ("frontend" vs "frontend-app")
+❌ FORBIDDEN: Inventing project names not in the API response
+```
 
 ## Success Metrics
 [How we'll measure success]

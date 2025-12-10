@@ -72,9 +72,9 @@ describe('JiraImporter', () => {
             },
           },
         ],
-        startAt: 0,
         maxResults: 50,
         total: 1,
+        isLast: true,  // New JIRA API uses isLast instead of startAt
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -109,9 +109,9 @@ describe('JiraImporter', () => {
     });
   });
 
-  describe('TC-064: Pagination with startAt/maxResults', () => {
-    it('should paginate through multiple pages', async () => {
-      // Page 1
+  describe('TC-064: Pagination with nextPageToken (new JIRA API)', () => {
+    it('should paginate through multiple pages using nextPageToken', async () => {
+      // Page 1 - has nextPageToken indicating more pages
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -128,13 +128,14 @@ describe('JiraImporter', () => {
               labels: [],
             },
           })),
-          startAt: 0,
           maxResults: 50,
           total: 75,
+          nextPageToken: 'token-for-page-2',
+          isLast: false,
         }),
       });
 
-      // Page 2
+      // Page 2 - no nextPageToken and isLast=true indicates end
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -151,9 +152,9 @@ describe('JiraImporter', () => {
               labels: [],
             },
           })),
-          startAt: 50,
           maxResults: 50,
           total: 75,
+          isLast: true,
         }),
       });
 
@@ -181,9 +182,10 @@ describe('JiraImporter', () => {
               labels: [],
             },
           })),
-          startAt: 0,
           maxResults: 50,
           total: 100,
+          nextPageToken: 'more-pages',
+          isLast: false,
         }),
       });
 
@@ -263,9 +265,9 @@ describe('JiraImporter', () => {
                 labels: [],
               },
             }],
-            startAt: 0,
             maxResults: 50,
             total: 1,
+            isLast: true,  // New JIRA API pagination
           }),
         });
 
@@ -302,9 +304,9 @@ describe('JiraImporter', () => {
                 labels: [],
               },
             }],
-            startAt: 0,
             maxResults: 50,
             total: 1,
+            isLast: true,  // New JIRA API pagination
           }),
         });
 
@@ -341,9 +343,9 @@ describe('JiraImporter', () => {
                 labels: [],
               },
             }],
-            startAt: 0,
             maxResults: 50,
             total: 1,
+            isLast: true,  // New JIRA API pagination
           }),
         });
 
@@ -375,9 +377,9 @@ describe('JiraImporter', () => {
               labels: [],
             },
           }],
-          startAt: 0,
           maxResults: 50,
           total: 1,
+          isLast: true,  // New JIRA API pagination
         }),
       });
 
@@ -410,9 +412,9 @@ describe('JiraImporter', () => {
               labels: [],
             },
           }],
-          startAt: 0,
           maxResults: 50,
           total: 1,
+          isLast: true,  // New JIRA API pagination
         }),
       });
 

@@ -1,7 +1,7 @@
 ---
 name: specweave:jobs
 description: Show current work status (active increments, progress) and background jobs (imports, cloning). Even with no jobs, shows increment summary and helpful context.
-usage: /specweave:jobs [--all] [--id <job-id>] [--resume <job-id>] [--kill <job-id>] [--follow <job-id>] [--logs <job-id>]
+usage: /specweave:jobs [--all] [--id <job-id>] [--resume <job-id>] [--kill <job-id>] [--follow <job-id>] [--logs <job-id>] [--diagnostics]
 ---
 
 # Background Jobs Monitor
@@ -17,6 +17,7 @@ Monitor and manage long-running background operations:
 - **Issue import** (10K+ items from GitHub/JIRA/ADO)
 - **External sync** operations
 - **Brownfield analysis** (codebase documentation gap detection)
+- **Session health monitoring** (watchdog diagnostics)
 
 **ASYNC ARCHITECTURE (2025-12-01)**:
 - Jobs run as **detached processes** that survive terminal close
@@ -29,13 +30,14 @@ Monitor and manage long-running background operations:
 
 | Option | Description |
 |--------|-------------|
-| (none) | Show active jobs |
+| (none) | Show active jobs + session health |
 | `--all` | Show all jobs (including completed) |
 | `--id <jobId>` | Show details for specific job |
 | `--follow <jobId>` | Follow job progress in real-time |
 | `--logs <jobId>` | Show worker log output |
 | `--resume <jobId>` | Resume paused job |
 | `--kill <jobId>` | Kill running background job |
+| `--diagnostics` | Show detailed watchdog diagnostics |
 
 ---
 
@@ -57,7 +59,9 @@ STATE_FILE=".specweave/state/background-jobs.json"
 ### Display Format
 
 ```
-📋 Background Jobs
+📋 Background Jobs & Session Health
+
+🩺 Session Health: ✅ healthy (last check: 30s ago)
 
 🔄 Running (2):
   [abc12345] import-issues (ADO)
@@ -87,6 +91,7 @@ STATE_FILE=".specweave/state/background-jobs.json"
    /specweave:jobs --logs abc12345   → View worker logs
    /specweave:jobs --resume def67890 → Resume paused job
    /specweave:jobs --kill abc12345   → Kill running job
+   /specweave:jobs --diagnostics     → Show watchdog diagnostics
    /specweave:jobs --all             → Show all jobs (including old)
 ```
 
@@ -221,14 +226,57 @@ const result = await launchImportJob({
 ## Implementation
 
 1. Read `.specweave/state/background-jobs.json`
-2. Parse job entries
-3. Display formatted status
-4. For --resume, update job status and continue operation
+2. Read `.specweave/state/.watchdog-diagnostics.json` for session health
+3. Parse job entries
+4. Display formatted status with health indicator
+5. For --resume, update job status and continue operation
+6. For --diagnostics, show detailed watchdog checks
 
-### State File Location
+### State File Locations
 
 ```
-.specweave/state/background-jobs.json
+.specweave/state/background-jobs.json          - Job status and progress
+.specweave/state/.watchdog-diagnostics.json    - Session health checks
+.specweave/state/jobs/<jobId>/config.json      - Job configuration
+.specweave/state/jobs/<jobId>/worker.pid       - Worker process ID
+.specweave/state/jobs/<jobId>/worker.log       - Worker output log
+.specweave/logs/watchdog.log                   - Watchdog history
+```
+
+### Reading Session Health
+
+```typescript
+import * as fs from 'fs';
+import * as path from 'path';
+
+function getSessionHealth(projectPath: string): SessionHealth | null {
+  const diagnosticsPath = path.join(projectPath, '.specweave/state/.watchdog-diagnostics.json');
+  if (!fs.existsSync(diagnosticsPath)) {
+    return null; // Watchdog not running
+  }
+
+  try {
+    const content = fs.readFileSync(diagnosticsPath, 'utf-8');
+    return JSON.parse(content);
+  } catch {
+    return null;
+  }
+}
+
+interface SessionHealth {
+  timestamp: string;
+  severity: 0 | 1 | 2;  // INFO | WARNING | CRITICAL
+  status: 'healthy' | 'warning' | 'critical';
+  checks: {
+    lock: { severity: number; message: string };
+    zombies: { count: number; message: string };
+    mcp: { drops: number; message: string };
+    orphanedJobs: { count: number; message: string };
+  };
+  consecutiveWarnings: number;
+  thresholdSeconds: number;
+  checkIntervalSeconds: number;
+}
 ```
 
 ### Job Types
@@ -299,9 +347,106 @@ If job failed:
 
 ---
 
+## Session Health & Watchdog Diagnostics (v2.0)
+
+The `/specweave:jobs` command now includes session health monitoring. The watchdog runs in the background and writes diagnostics that help explain any alerts you may have received.
+
+### Display Format (with health status)
+
+```
+📋 Background Jobs & Session Health
+
+🩺 Session Health: ✅ healthy
+   Last check: 30 seconds ago
+   Consecutive warnings: 0/3
+
+🔄 Running (1):
+  [abc12345] import-issues (ADO)
+     Progress: 2,500/10,000 (25%)
+     ...
+```
+
+### Diagnostics File
+
+The watchdog writes diagnostics to `.specweave/state/.watchdog-diagnostics.json`:
+
+```json
+{
+  "timestamp": "2025-12-10T10:30:00Z",
+  "severity": 0,
+  "status": "healthy",
+  "checks": {
+    "lock": { "severity": 0, "message": "ok" },
+    "zombies": { "count": 0, "message": "none" },
+    "mcp": { "drops": 2, "message": "minor instability" },
+    "orphanedJobs": { "count": 0, "message": "none" }
+  },
+  "consecutiveWarnings": 0,
+  "thresholdSeconds": 300,
+  "checkIntervalSeconds": 60
+}
+```
+
+### View Detailed Diagnostics
+
+```
+/specweave:jobs --diagnostics
+
+🩺 Watchdog Diagnostics
+
+Overall Status: ✅ healthy
+Last Check: 2025-12-10 10:30:00
+Severity Level: INFO (0)
+
+Checks:
+  📁 Lock File:      ✅ ok
+  💀 Zombie Procs:   ✅ none (0)
+  🔌 MCP Connection: ⚠️  2 drops detected (minor instability)
+  📦 Orphaned Jobs:  ✅ none (0)
+
+Alert Threshold: 3 consecutive warnings
+Current Warnings: 0/3
+
+Severity Levels:
+  INFO (0)     - Everything healthy, no action needed
+  WARNING (1)  - Minor issue detected, monitoring (NO notification)
+  CRITICAL (2) - Real stuck condition detected → NOTIFICATION SENT
+
+💡 The watchdog only sends notifications for CRITICAL issues
+   that persist across 3+ consecutive checks (prevents false positives).
+```
+
+### Why You Got a Notification
+
+If you received a notification but your job completed successfully, here's what happened:
+
+1. **Old behavior (v1)**: Watchdog triggered on stale lock files even if no process was stuck
+2. **New behavior (v2)**: Watchdog verifies actual process state before alerting
+
+Common false positive causes (now fixed):
+- Stale `.processor.lock` file from completed job
+- Missing heartbeat file (never written in normal operation)
+- MCP connection drops (warning only, not critical)
+
+**The v2 watchdog now requires**:
+1. **Actual stuck process** (zombie heredoc, hung worker)
+2. **3 consecutive checks** showing the same issue
+3. **CRITICAL severity** (not just warnings)
+
+### Watchdog Log
+
+View historical watchdog checks:
+
+```bash
+cat .specweave/logs/watchdog.log
+```
+
+---
+
 ## Notes
 
 - Jobs persist across Claude sessions
 - Paused jobs can be resumed later
 - Completed jobs cleaned up after 10 entries
 - Rate limiting auto-pauses and notifies
+- Watchdog diagnostics available via `--diagnostics` flag

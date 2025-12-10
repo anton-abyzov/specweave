@@ -77,42 +77,62 @@ MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 // Only succeeds if current status is "ready_for_review"
 ```
 
-### 2c. spec.md MUST Have project: (and board: for 2-level) (v0.31.0+)
+### 2c. spec.md MUST Have project: (and board: for 2-level) - RESOLVED VALUES ONLY! (v0.34.0+)
 
-**Increment creation WITHOUT project context = SYNC FAILURE**
+**Increment creation WITHOUT resolved project context = SYNC FAILURE**
+
+**⛔ YOU MUST RUN `specweave context projects` BEFORE GENERATING spec.md!**
+
+```bash
+# MANDATORY FIRST STEP - run this BEFORE generating any spec.md:
+specweave context projects
+
+# Parse the JSON output:
+# 1-level: {"level": 1, "projects": [{"id": "frontend-app"}, {"id": "backend-api"}]}
+# 2-level: {"level": 2, "projects": [...], "boardsByProject": {"project-id": [{"id": "board-1"}]}}
+
+# USE the actual IDs from the output - NEVER use placeholders!
+```
 
 ```yaml
-# 1-level structure (single project or multi-project):
+# 1-level structure (RESOLVED values only):
 ---
 increment: 0001-feature-name
-project: my-project          # ← MANDATORY
+project: frontend-app        # ← RESOLVED from context API (NOT {{PROJECT_ID}})
 ---
 
-# 2-level structure (ADO area paths, JIRA boards):
+# 2-level structure (BOTH RESOLVED):
 ---
 increment: 0001-feature-name
-project: acme-corp           # ← MANDATORY
-board: digital-operations    # ← MANDATORY for 2-level
+project: acme-corp           # ← RESOLVED from projects[].id
+board: digital-operations    # ← RESOLVED from boardsByProject[project][].id
 ---
 ```
 
-**Detection**: Use `src/utils/structure-level-detector.ts`:
-```typescript
-import { detectStructureLevel } from './utils/structure-level-detector.js';
-const config = detectStructureLevel(projectRoot);
-// config.level === 1 → project required
-// config.level === 2 → project AND board required
+**Per-US Project/Board (v0.34.0+ MANDATORY):**
+```markdown
+### US-001: Login Form
+**Project**: frontend-app     # ← RESOLVED value, not placeholder!
+**Board**: ui-team            # ← RESOLVED value (2-level only)
 ```
 
-**VALIDATION RULES:**
+**VALIDATION RULES (ENFORCED BY HOOK):**
 ```
-❌ FORBIDDEN: Creating spec.md with project: {{PROJECT_ID}} (unresolved placeholder)
-❌ FORBIDDEN: Creating spec.md for 2-level without board: field
-❌ FORBIDDEN: Vague increments without knowing sync target
-✅ REQUIRED: Always select project (and board for 2-level) BEFORE generating spec.md
+❌ FORBIDDEN: Generating spec.md WITHOUT running "specweave context projects" first
+❌ FORBIDDEN: Using {{PROJECT_ID}}, {{BOARD_ID}}, {{RESOLVED_PROJECT}} placeholders
+❌ FORBIDDEN: Inventing project/board names not in the API response
+❌ FORBIDDEN: User stories without **Project**: field
+❌ FORBIDDEN: User stories in 2-level without **Board**: field
+✅ REQUIRED: Run "specweave context projects" and parse output BEFORE generating
+✅ REQUIRED: Each US has **Project**: with RESOLVED value from API
+✅ REQUIRED: Each US (2-level) has **Board**: with RESOLVED value from API
 ```
 
-**Pre-tool-use hook `spec-project-validator.sh` BLOCKS spec.md without required fields (2-level).**
+**Pre-tool-use hook `spec-project-validator.sh` BLOCKS:**
+- spec.md with `{{...}}` placeholders
+- spec.md without `project:` field
+- spec.md (2-level) without `board:` field
+- User stories with unresolved `**Project**:` or `**Board**:` placeholders
 
 ### 2c-bis. Each User Story MUST Have **Project**: (and **Board**: for 2-level) (v0.34.0+)
 

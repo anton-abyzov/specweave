@@ -8,17 +8,18 @@ created: {{DATE}}
 structure: user-stories
 test_mode: {{TEST_MODE}}
 coverage_target: {{COVERAGE_TARGET}}
-# MANDATORY: Run "specweave context projects" to get valid project/board IDs
-# For 2-level structures: BOTH project AND board are REQUIRED
-project: {{PROJECT_ID}}
-board: {{BOARD_ID}}
+# MANDATORY: Must be RESOLVED values from "specweave context projects" output
+# ⛔ NEVER use {{PROJECT_ID}} or {{BOARD_ID}} placeholders!
+# For 2-level structures: BOTH project AND board are REQUIRED per US
+project: {{RESOLVED_PROJECT}}
+board: {{RESOLVED_BOARD}}
 multi_project: true
 projects:
-  - id: {{PROJECT_FE_ID}}
+  - id: {{RESOLVED_PROJECT_FE}}
     prefix: FE
-  - id: {{PROJECT_BE_ID}}
+  - id: {{RESOLVED_PROJECT_BE}}
     prefix: BE
-  - id: {{PROJECT_SHARED_ID}}
+  - id: {{RESOLVED_PROJECT_SHARED}}
     prefix: SHARED
 ---
 
@@ -30,13 +31,25 @@ projects:
 
 ## User Stories
 
-<!-- Each US has its own **Project** and **Board** fields. User can modify per-US anytime. -->
+<!--
+⚠️ MANDATORY RESOLUTION (v0.34.0+):
+1. Run: specweave context projects
+2. Parse JSON output:
+   - level 1: projects[].id gives valid project IDs
+   - level 2: projects[].id + boardsByProject[project][].id gives project AND board IDs
+3. Replace ALL placeholders with actual IDs from step 2
+4. Each US MUST have **Project**: (and **Board**: for 2-level) with RESOLVED values
+
+❌ FORBIDDEN: Using {{PROJECT_ID}}, {{BOARD_ID}} placeholders
+❌ FORBIDDEN: Inventing project/board names
+✅ REQUIRED: Use ONLY IDs from "specweave context projects" output
+-->
 
 ### Frontend Stories
 
 #### US-FE-001: [Story Title] (P1)
-**Project**: {{PROJECT_ID}}
-**Board**: {{BOARD_FE_ID}}
+**Project**: {{RESOLVED_PROJECT}}
+**Board**: {{RESOLVED_BOARD_FE}}
 
 **As a** [user type]
 **I want** [goal]
@@ -51,8 +64,8 @@ projects:
 ### Backend Stories
 
 #### US-BE-001: [Story Title] (P1)
-**Project**: {{PROJECT_ID}}
-**Board**: {{BOARD_BE_ID}}
+**Project**: {{RESOLVED_PROJECT}}
+**Board**: {{RESOLVED_BOARD_BE}}
 
 **As a** [system/frontend application]
 **I want** [API endpoint/service goal]
@@ -67,8 +80,8 @@ projects:
 ### Shared Library Stories
 
 #### US-SHARED-001: [Story Title] (P1)
-**Project**: {{PROJECT_ID}}
-**Board**: {{BOARD_SHARED_ID}}
+**Project**: {{RESOLVED_PROJECT}}
+**Board**: {{RESOLVED_BOARD_SHARED}}
 
 **As a** developer in FE or BE repos
 **I want** [shared types/utilities/validators]

@@ -162,6 +162,8 @@ export class JiraImporter implements Importer {
       try {
         // CRITICAL FIX (2025-12-09): Use new /rest/api/3/search/jql endpoint
         // Old /rest/api/3/search was deprecated and removed by Atlassian
+        //
+        // CRITICAL FIX (2025-12-10): fields must be comma-separated string, NOT JSON array!
         const response = await this.makeJiraRequest<JiraSearchResponse>(
           '/rest/api/3/search/jql',
           {
@@ -179,7 +181,7 @@ export class JiraImporter implements Importer {
               'customfield_10016',
               'subtasks',
               'parent',
-            ],
+            ].join(','),  // MUST be comma-separated string, not array
           }
         );
 
@@ -246,6 +248,11 @@ export class JiraImporter implements Importer {
         // CRITICAL FIX (2025-12-09): Use new /rest/api/3/search/jql endpoint
         // Old /rest/api/3/search was deprecated and removed by Atlassian
         // New API uses nextPageToken for pagination instead of startAt
+        //
+        // CRITICAL FIX (2025-12-10): fields must be comma-separated string, NOT JSON array!
+        // The new /search/jql endpoint does NOT accept JSON array format for fields.
+        // Bug: fields=["summary","issuetype"] returns NO field data
+        // Fix: fields=summary,issuetype returns correct field data
         const params: Record<string, any> = {
           jql,
           maxResults,
@@ -261,7 +268,7 @@ export class JiraImporter implements Importer {
             'customfield_10016', // Story points
             'subtasks',
             'parent',
-          ],
+          ].join(','),  // MUST be comma-separated string, not array
         };
 
         // Add nextPageToken for subsequent pages
@@ -366,8 +373,11 @@ export class JiraImporter implements Importer {
       ? priorityMap[issue.fields.priority.name.toLowerCase()]
       : undefined;
 
-    // Extract acceptance criteria from description
-    const acceptanceCriteria = this.extractAcceptanceCriteria(issue.fields.description || '');
+    // Extract text from description (handles ADF format)
+    const descriptionText = this.extractTextFromDescription(issue.fields.description);
+
+    // Extract acceptance criteria from description text
+    const acceptanceCriteria = this.extractAcceptanceCriteria(descriptionText);
 
     // Map JIRA status category to ExternalItem status
     let status: ExternalItem['status'] = 'open';
@@ -383,7 +393,8 @@ export class JiraImporter implements Importer {
       id: `JIRA-${issue.key}`,
       type,
       title: issue.fields.summary,
-      description: sanitizeHtmlForMdx(issue.fields.description),
+      // Use pre-extracted text (ADF → plain text) and sanitize for MDX
+      description: sanitizeHtmlForMdx(descriptionText),
       status,
       priority,
       createdAt: new Date(issue.fields.created),
@@ -394,6 +405,47 @@ export class JiraImporter implements Importer {
       parentId: issue.fields.parent ? `JIRA-${issue.fields.parent.key}` : undefined,
       platform: 'jira',
     };
+  }
+
+  /**
+   * Extract plain text from JIRA description (handles ADF format)
+   *
+   * JIRA Cloud uses Atlassian Document Format (ADF) which is a JSON object.
+   * This method converts ADF to plain text for processing.
+   *
+   * @param description - Either a string or ADF object
+   * @returns Plain text string
+   */
+  private extractTextFromDescription(description: any): string {
+    if (!description) return '';
+
+    // Handle Atlassian Document Format (ADF) - JSON object with type: 'doc'
+    if (typeof description === 'object' && description.type === 'doc') {
+      const texts: string[] = [];
+      const extractText = (node: any): void => {
+        if (node.type === 'text') {
+          texts.push(node.text);
+        } else if (node.type === 'hardBreak') {
+          texts.push('\n');
+        } else if (node.content) {
+          node.content.forEach(extractText);
+          // Add paragraph breaks
+          if (node.type === 'paragraph' || node.type === 'bulletList' || node.type === 'orderedList') {
+            texts.push('\n');
+          }
+        }
+      };
+      description.content?.forEach(extractText);
+      return texts.join('').trim();
+    }
+
+    // Already a string
+    if (typeof description === 'string') {
+      return description;
+    }
+
+    // Unknown format - try to stringify
+    return String(description);
   }
 
   /**

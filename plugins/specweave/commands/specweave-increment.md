@@ -364,6 +364,52 @@ Proceeding with hotfix 0006...
 - Hotfixes and bugs bypass context switching warnings (emergency work)
 - Use sparingly - discipline exists for a reason!
 
+### Step 0D: Get Project Context (MANDATORY - RUN FIRST!)
+
+**⛔ THIS STEP MUST BE COMPLETED BEFORE ANY SPEC GENERATION!**
+
+**🚨 YOU MUST USE THE BASH TOOL TO RUN THIS COMMAND:**
+
+```bash
+specweave context projects
+```
+
+**CAPTURE THE OUTPUT AND STORE IT:**
+
+```json
+// Example 1-level output:
+{
+  "level": 1,
+  "projects": [{"id": "frontend-app"}, {"id": "backend-api"}, {"id": "shared"}]
+}
+
+// Example 2-level output:
+{
+  "level": 2,
+  "projects": [{"id": "acme-corp"}],
+  "boardsByProject": {
+    "acme-corp": [{"id": "digital-ops"}, {"id": "mobile-team"}]
+  }
+}
+```
+
+**STORE THESE VALUES FOR USE IN STEP 5:**
+```
+STRUCTURE_LEVEL = 1 or 2
+AVAILABLE_PROJECTS = ["frontend-app", "backend-api", "shared"]
+AVAILABLE_BOARDS = {...}  // for 2-level only
+```
+
+**WHY THIS IS MANDATORY:**
+- Without this data, spec.md will have `{{PROJECT_ID}}` placeholders
+- Placeholders WILL BE BLOCKED by `spec-project-validator.sh` hook
+- Living docs sync and external tool sync WILL FAIL
+- User will get frustrated with blocked edits
+
+**YOU MUST ACTUALLY RUN THE COMMAND** - reading documentation about it is NOT enough!
+
+---
+
 ### Step 1: Find next increment number
 
 - Scan `.specweave/increments/` directory (active increments)
