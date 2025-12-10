@@ -61,15 +61,37 @@ fi
 # Extract YAML frontmatter
 FRONTMATTER=$(echo "$CONTENT" | sed -n '/^---$/,/^---$/p' | tail -n +2 | head -n -1)
 
-# Check for unresolved project placeholder
+# Check for unresolved project placeholder (legacy {{PROJECT_ID}})
 if echo "$FRONTMATTER" | grep -q 'project:\s*{{PROJECT_ID}}'; then
   echo '{"decision": "block", "reason": "spec.md has unresolved placeholder {{PROJECT_ID}}. Run '\''specweave context projects'\'' to get available projects, then select one."}'
   exit 0
 fi
 
-# Check for unresolved board placeholder
+# Check for unresolved board placeholder (legacy {{BOARD_ID}})
 if echo "$FRONTMATTER" | grep -q 'board:\s*{{BOARD_ID}}'; then
   echo '{"decision": "block", "reason": "spec.md has unresolved placeholder {{BOARD_ID}}. Run '\''specweave context boards --project=<id>'\'' to get available boards, then select one."}'
+  exit 0
+fi
+
+# Check for ANY unresolved {{...}} placeholder in frontmatter (v0.34.0+)
+# This catches {{RESOLVED_PROJECT}}, {{RESOLVED_BOARD}}, and any other placeholders
+if echo "$FRONTMATTER" | grep -qE '\{\{[A-Z_]+\}\}'; then
+  FOUND_PLACEHOLDERS=$(echo "$FRONTMATTER" | grep -oE '\{\{[A-Z_]+\}\}' | tr '\n' ', ' | sed 's/,$//')
+  echo "{\"decision\": \"block\", \"reason\": \"spec.md has unresolved placeholders: ${FOUND_PLACEHOLDERS}\\n\\nYOU MUST RESOLVE these BEFORE creating spec.md:\\n1. Run: specweave context projects\\n2. Parse the JSON output to get valid project/board IDs\\n3. Replace placeholders with actual values from step 2\\n\\n❌ FORBIDDEN: Using placeholder templates directly\\n✅ REQUIRED: Resolve ALL placeholders to actual values\"}"
+  exit 0
+fi
+
+# Check for ANY unresolved {{...}} placeholder in full content (catches per-US **Project**: {{...}})
+if echo "$CONTENT" | grep -qE '\*\*Project\*\*:\s*\{\{[A-Z_]+\}\}'; then
+  FOUND_PLACEHOLDERS=$(echo "$CONTENT" | grep -oE '\*\*Project\*\*:\s*\{\{[A-Z_]+\}\}' | head -1)
+  echo "{\"decision\": \"block\", \"reason\": \"spec.md has unresolved **Project**: placeholder\\n\\nFound: ${FOUND_PLACEHOLDERS}\\n\\nEach user story MUST have a resolved **Project**: field.\\n\\n1. Run: specweave context projects\\n2. Get valid project IDs from the JSON output\\n3. Replace the placeholder with an actual project ID\"}"
+  exit 0
+fi
+
+# Check for unresolved **Board**: placeholders in full content (2-level structures)
+if echo "$CONTENT" | grep -qE '\*\*Board\*\*:\s*\{\{[A-Z_]+\}\}'; then
+  FOUND_PLACEHOLDERS=$(echo "$CONTENT" | grep -oE '\*\*Board\*\*:\s*\{\{[A-Z_]+\}\}' | head -1)
+  echo "{\"decision\": \"block\", \"reason\": \"spec.md has unresolved **Board**: placeholder\\n\\nFound: ${FOUND_PLACEHOLDERS}\\n\\nEach user story MUST have a resolved **Board**: field (for 2-level structures).\\n\\n1. Run: specweave context projects\\n2. Get valid board IDs from boardsByProject in the JSON output\\n3. Replace the placeholder with an actual board ID\"}"
   exit 0
 fi
 
