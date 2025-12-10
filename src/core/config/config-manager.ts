@@ -15,6 +15,11 @@ import {
   ValidationResult,
   ValidationError
 } from './types.js';
+import {
+  detectAndMigrateSingleProject,
+  type Config as MigrationConfig
+} from './single-project-migrator.js';
+import { consoleLogger, type Logger } from '../../utils/logger.js';
 
 /**
  * Configuration file path
@@ -26,19 +31,26 @@ const CONFIG_FILE_NAME = 'config.json';
  */
 export class ConfigManager {
   private configPath: string;
+  private projectRoot: string;
   private config: SpecWeaveConfig | null = null;
+  private logger: Logger;
 
   /**
    * Create a new ConfigManager
    *
    * @param projectRoot - Path to project root (default: process.cwd())
+   * @param logger - Logger instance (default: consoleLogger)
    */
-  constructor(projectRoot: string = process.cwd()) {
+  constructor(projectRoot: string = process.cwd(), logger: Logger = consoleLogger) {
+    this.projectRoot = projectRoot;
     this.configPath = path.join(projectRoot, '.specweave', CONFIG_FILE_NAME);
+    this.logger = logger;
   }
 
   /**
    * Read configuration from disk
+   *
+   * Auto-migration: Detects and fixes single-project repos with multiProject.enabled=true
    *
    * @returns Configuration object
    */
@@ -52,7 +64,30 @@ export class ConfigManager {
       const parsed = JSON.parse(content);
 
       // Merge with defaults (for backward compatibility)
-      this.config = this.mergeWithDefaults(parsed);
+      let config = this.mergeWithDefaults(parsed);
+
+      // Auto-migration: Single-project detection (v0.34.0+)
+      const migrationResult = await detectAndMigrateSingleProject(
+        config as MigrationConfig,
+        {
+          logger: this.logger,
+          projectRoot: this.projectRoot,
+          createBackup: true
+        }
+      );
+
+      // If migrated, save the updated config directly (bypass validation to preserve all fields)
+      if (migrationResult.result.migrated) {
+        this.logger.log('✅ Auto-migrated to single-project mode');
+
+        // Write directly to disk without validation (migration already validated)
+        const content = JSON.stringify(migrationResult.config, null, 2);
+        await fs.writeFile(this.configPath, content, 'utf-8');
+
+        config = migrationResult.config as SpecWeaveConfig;
+      }
+
+      this.config = config;
       return this.config;
     } catch (error: any) {
       if (error.code === 'ENOENT') {
