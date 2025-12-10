@@ -44,6 +44,10 @@ const config: Config = {
           // Disable auto category index from README.md
           sidebarCollapsible: true,
           sidebarCollapsed: true,
+          // CRITICAL: Override default exclude to include _ folders (_archive, _orphans, etc.)
+          // Docusaurus default excludes: ['**/_*.{js,jsx,ts,tsx,md,mdx}', '**/_*/**', '**/__tests__/**']
+          // We want ALL folders and files visible, so we set exclude to empty array
+          exclude: [],
         },
         blog: false,
         theme: {

@@ -173,12 +173,12 @@ const filter = await this.callJiraApi('filter', 'POST', body);  // Uses /rest/ap
 ```bash
 # ❌ REST API v3 (fails)
 curl -H "Authorization: Basic ..." \
-  https://farside.atlassian.net/rest/api/3/board/365
+  https://example.atlassian.net/rest/api/3/board/365
 → HTTP 404
 
 # ✅ Agile API (succeeds)
 curl -H "Authorization: Basic ..." \
-  https://farside.atlassian.net/rest/agile/1.0/board/365
+  https://example.atlassian.net/rest/agile/1.0/board/365
 → HTTP 200 + board details
 ```
 
