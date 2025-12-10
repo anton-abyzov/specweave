@@ -62,7 +62,7 @@ echo "[$(date)] 📊 Status changed: $NEW_STATUS" >> "$DEBUG_LOG" 2>/dev/null ||
 
 # Validate status
 case "$NEW_STATUS" in
-  paused|resumed|abandoned|active|in-progress)
+  paused|abandoned|active|planning|backlog|ready_for_review|completed)
     ;;
   *)
     echo "[$(date)] ⚠️  Unknown status: $NEW_STATUS (skipping sync)" >> "$DEBUG_LOG" 2>/dev/null || true
@@ -107,11 +107,11 @@ fi
 # ============================================================================
 
 case "$NEW_STATUS" in
-  resumed|active|in-progress)
+  active|planning|backlog|ready_for_review)
     # ========================================================================
     # REOPEN GitHub Issues (NEW)
     # ========================================================================
-    # When increment is resumed, reopen all closed GitHub issues
+    # When increment becomes active (including resumed from pause), reopen all closed GitHub issues
     echo "[$(date)] ▶️  Status is $NEW_STATUS - checking if issues need reopening" >> "$DEBUG_LOG" 2>/dev/null || true
 
     if command -v node &> /dev/null; then

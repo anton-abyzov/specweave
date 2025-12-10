@@ -118,10 +118,23 @@ if (specificId) {
 
 // Show all active increments
 const increments = incrementFolders.map(parseIncrement);
-const active = increments.filter(i => ['active', 'planning', 'in-progress'].includes(i.status));
+const readyForReview = increments.filter(i => i.status === 'ready_for_review');
+const active = increments.filter(i => ['active', 'planning', 'backlog'].includes(i.status));
 const paused = increments.filter(i => i.status === 'paused');
 
 console.log('\n📊 Increment Progress\n');
+
+// Show ready_for_review FIRST (needs attention!)
+if (readyForReview.length > 0) {
+  console.log(`👀 Ready for Review (${readyForReview.length}):`);
+  for (const inc of readyForReview) {
+    const bar = createProgressBar(inc.percentage, 15);
+    console.log(`  ${inc.id}`);
+    console.log(`     ${bar} ${inc.completedTasks}/${inc.totalTasks} (${inc.percentage}%)`);
+    console.log(`     → /specweave:done ${inc.id}`);
+  }
+  console.log('');
+}
 
 if (active.length > 0) {
   console.log(`🔄 Active (${active.length}):`);
@@ -141,15 +154,30 @@ if (paused.length > 0) {
   console.log('');
 }
 
-if (active.length === 0 && paused.length === 0) {
+// Summary section
+if (readyForReview.length > 0 || active.length > 0 || paused.length > 0) {
+  console.log('─'.repeat(40));
+  const parts = [];
+  if (readyForReview.length > 0) parts.push(`${readyForReview.length} ready for review`);
+  if (active.length > 0) parts.push(`${active.length} active`);
+  if (paused.length > 0) parts.push(`${paused.length} paused`);
+  console.log(`Summary: ${parts.join(', ')}`);
+  console.log('');
+
+  if (readyForReview.length > 0) {
+    console.log('💡 Run /specweave:done <id> to close reviewed increments');
+  } else {
+    console.log('💡 For details: /specweave:progress <incrementId>');
+  }
+} else {
   console.log('No active increments.');
   const completed = increments.filter(i => i.status === 'completed');
   if (completed.length > 0) {
     console.log(`${completed.length} completed increment(s).`);
   }
+  console.log('');
+  console.log('💡 Run /specweave:increment to start new work');
 }
-
-console.log('💡 For details: /specweave:progress <incrementId>');
 
 // Helpers
 function createProgressBar(pct, width = 20) {
@@ -162,6 +190,8 @@ function formatStatus(status) {
   const icons = {
     'active': '🔄 active',
     'planning': '📝 planning',
+    'backlog': '📋 backlog',
+    'ready_for_review': '👀 ready for review',
     'paused': '⏸️ paused',
     'completed': '✅ completed',
     'abandoned': '❌ abandoned'

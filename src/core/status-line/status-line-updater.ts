@@ -7,7 +7,7 @@
  * Purpose: Force-refresh status line when it appears stale
  *
  * Architecture:
- * 1. Scan all spec.md files for open increments (status = active/planning/in-progress)
+ * 1. Scan all spec.md files for open increments (status = active/planning/backlog/ready_for_review)
  * 2. Sort by creation date (oldest first)
  * 3. Select first as current increment
  * 4. Parse tasks.md for progress (use TaskCounter for accuracy)
@@ -137,12 +137,13 @@ export class StatusLineUpdater {
         const specContent = await fs.readFile(specPath, 'utf-8');
         const metadata = this.parseSpecMetadata(specContent);
 
-        // Check if increment is open (active, planning, or in-progress)
+        // Check if increment is open (active, planning, backlog, or ready_for_review)
         // ONLY accepts official IncrementStatus enum values
         if (
           metadata.status === 'active' ||
           metadata.status === 'planning' ||
-          metadata.status === 'in-progress'
+          metadata.status === 'backlog' ||
+          metadata.status === 'ready_for_review'
         ) {
           openIncrements.push({
             id: entry,

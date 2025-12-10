@@ -37,7 +37,7 @@ mkdir -p "$STATE_DIR" 2>/dev/null || true
 # ============================================================================
 # SCAN ALL INCREMENTS FOR ACTIVE STATUS
 # ============================================================================
-# Strategy: Scan metadata.json files for status=active|planning|in-progress
+# Strategy: Scan metadata.json files for status=active|planning|backlog|ready_for_review
 # This matches what ActiveIncrementManager.smartUpdate() does in TypeScript
 
 ACTIVE_IDS=()
@@ -54,7 +54,7 @@ while IFS= read -r metadata_file; do
   fi
 
   # Check if status is active-like
-  if [[ "$status" == "active" ]] || [[ "$status" == "planning" ]] || [[ "$status" == "in-progress" ]]; then
+  if [[ "$status" == "active" ]] || [[ "$status" == "planning" ]] || [[ "$status" == "backlog" ]] || [[ "$status" == "ready_for_review" ]]; then
     increment_id=$(basename "$(dirname "$metadata_file")")
     ACTIVE_IDS+=("$increment_id")
     echo "[$(date)] update-active-increment: Found active: $increment_id (status: $status)" >> "$DEBUG_LOG" 2>/dev/null || true

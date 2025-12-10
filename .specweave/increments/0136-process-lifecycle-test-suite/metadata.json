@@ -1,0 +1,21 @@
+{
+  "id": "0136-process-lifecycle-test-suite",
+  "status": "ready_for_review",
+  "type": "feature",
+  "priority": "P2",
+  "created": "2025-12-09T17:00:00Z",
+  "lastActivity": "2025-12-09T18:30:00Z",
+  "started": "2025-12-09T17:15:00Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": "FS-136",
+  "epic_id": null,
+  "externalLinks": {
+    "github": {
+      "milestone": "#34",
+      "issues": ["#817", "#818", "#819", "#820", "#821", "#822"]
+    }
+  },
+  "total_acs": 36,
+  "completed_acs": 36
+}

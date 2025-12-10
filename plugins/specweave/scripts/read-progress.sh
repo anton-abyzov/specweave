@@ -126,10 +126,36 @@ echo ""
 echo "📊 Increment Progress"
 echo ""
 
-# Get active increments
+# Get ready_for_review increments FIRST (needs attention!)
+READY_FOR_REVIEW=$(jq -r '
+  .increments | to_entries[] |
+  select(.value.status == "ready_for_review") |
+  "\(.key)|\(.value.tasks.completed)|\(.value.tasks.total)"
+' "$CACHE_FILE" 2>/dev/null)
+
+REVIEW_COUNT=0
+if [[ -n "$READY_FOR_REVIEW" ]]; then
+  echo "👀 Ready for Review:"
+  while IFS='|' read -r id completed total; do
+    [[ -z "$id" ]] && continue
+    REVIEW_COUNT=$((REVIEW_COUNT + 1))
+    if [[ "$total" -gt 0 ]]; then
+      pct=$((completed * 100 / total))
+    else
+      pct=0
+    fi
+    bar=$(progress_bar "$pct" 15)
+    echo "  $id"
+    echo "     $bar $completed/$total ($pct%)"
+    echo "     → /specweave:done $id"
+  done <<< "$READY_FOR_REVIEW"
+  echo ""
+fi
+
+# Get active increments (excluding ready_for_review)
 ACTIVE=$(jq -r '
   .increments | to_entries[] |
-  select(.value.status == "active" or .value.status == "planning" or .value.status == "in-progress") |
+  select(.value.status == "active" or .value.status == "planning" or .value.status == "backlog") |
   "\(.key)|\(.value.tasks.completed)|\(.value.tasks.total)"
 ' "$CACHE_FILE" 2>/dev/null)
 
@@ -173,8 +199,20 @@ if [[ -n "$PAUSED" ]]; then
   echo ""
 fi
 
-# If no active/paused
-if [[ "$ACTIVE_COUNT" -eq 0 ]] && [[ -z "$PAUSED" ]]; then
+# Summary section
+if [[ "$REVIEW_COUNT" -gt 0 ]] || [[ "$ACTIVE_COUNT" -gt 0 ]] || [[ -n "$PAUSED" ]]; then
+  # Has work - show summary
+  echo "────────────────────────────────────────"
+  SUMMARY_PARTS=()
+  [[ "$REVIEW_COUNT" -gt 0 ]] && SUMMARY_PARTS+=("$REVIEW_COUNT ready for review")
+  [[ "$ACTIVE_COUNT" -gt 0 ]] && SUMMARY_PARTS+=("$ACTIVE_COUNT active")
+  PAUSED_COUNT=0
+  [[ -n "$PAUSED" ]] && PAUSED_COUNT=$(echo "$PAUSED" | grep -c '|' || echo 0)
+  [[ "$PAUSED_COUNT" -gt 0 ]] && SUMMARY_PARTS+=("$PAUSED_COUNT paused")
+
+  IFS=', '; echo "Summary: ${SUMMARY_PARTS[*]}"
+else
+  # No work in progress
   echo "No active increments."
   COMPLETED_COUNT=$(jq '.summary.completed // 0' "$CACHE_FILE")
   if [[ "$COMPLETED_COUNT" -gt 0 ]]; then
@@ -182,4 +220,11 @@ if [[ "$ACTIVE_COUNT" -eq 0 ]] && [[ -z "$PAUSED" ]]; then
   fi
 fi
 
-echo "💡 For details: /specweave:progress <incrementId>"
+echo ""
+if [[ "$REVIEW_COUNT" -gt 0 ]]; then
+  echo "💡 Run /specweave:done <id> to close reviewed increments"
+elif [[ "$ACTIVE_COUNT" -eq 0 ]]; then
+  echo "💡 Run /specweave:increment to start new work"
+else
+  echo "💡 For details: /specweave:progress <incrementId>"
+fi
