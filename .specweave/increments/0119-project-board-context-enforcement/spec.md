@@ -17,7 +17,7 @@ project: specweave
 
 When users create new increments via `/specweave:increment` after completing `specweave init` with multi-project/multi-board setup, the system fails to:
 
-1. **Detect configured projects/boards** - Falls back to folder name (e.g., `sw-olysense`) instead of querying actual config
+1. **Detect configured projects/boards** - Falls back to folder name (e.g., `my-folder`) instead of querying actual config
 2. **Enforce project selection** - Generates specs with `project: <folder-name>` instead of valid configured project
 3. **Enforce board selection for 2-level structures** - Omits `board:` field entirely when required
 4. **Validate project/board values** - Allows unresolved placeholders like `{{PROJECT_ID}}`
@@ -29,8 +29,8 @@ User prompt: "ultrathink to create new inc to get last 2 commits git history"
 
 **Actual (WRONG):**
 ```yaml
-project: sw-olysense  # <- Folder name, NOT a configured project!
-# board: missing!     # <- Missing for 2-level structures
+project: my-folder  # <- Folder name, NOT a configured project!
+# board: missing!   # <- Missing for 2-level structures
 ```
 
 **Expected (CORRECT):**

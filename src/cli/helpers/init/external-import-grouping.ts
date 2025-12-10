@@ -283,23 +283,27 @@ export function groupNonHierarchyItems(items: ExternalItem[]): ContainerGroup[] 
     let externalContainer: ExternalContainerContext | undefined;
 
     // Check for JIRA container context
+    // CRITICAL FIX (v0.34.1): JIRA 3-level structure
+    // - Space (top level, not exposed in API yet) → SpecWeave project (1st level)
+    // - Project (JIRA project key like "ID") → SpecWeave board (2nd level subfolder)
+    // - Board (Sprint board, DEPRECATED for structure) → Not used in directory mapping
     if (item.jiraProjectKey) {
       containerType = 'jira';
       containerId = item.jiraProjectKey;
 
-      // Project ID from board name (if available) or default
-      projectId = item.jiraBoardName
-        ? normalizeToProjectId(item.jiraBoardName) || 'default'
-        : 'default';
+      // CRITICAL FIX (v0.34.1): Use jiraProjectKey as projectId (2nd level folder)
+      // OLD BUG: Used jiraBoardName which created wrong directory structure
+      // NEW: JIRA Project Key (e.g., "ID" for Identity) becomes the folder name
+      projectId = normalizeToProjectId(item.jiraProjectKey) || 'default';
 
       groupKey = `jira:${containerId}:${projectId}`;
 
       externalContainer = {
         type: 'jira-project',
         containerId: containerId,
-        containerName: containerId,
-        boardId: item.jiraBoardId,
-        boardName: item.jiraBoardName
+        containerName: item.jiraProjectName || containerId,
+        boardId: item.jiraBoardId,  // Kept for backwards compat, not used for folders
+        boardName: item.jiraBoardName  // Kept for backwards compat, not used for folders
       };
     }
     // Check for ADO container context (without hierarchy)

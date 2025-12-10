@@ -77,15 +77,21 @@ send_notification() {
     return
   fi
 
-  # macOS notification
+  # macOS notification - use "Submarine" for warnings (not alarming like "Basso")
+  # Per CLAUDE.md section 11: Basso = ONLY critical errors requiring IMMEDIATE action
+  # Zombie detection is recoverable - user can run cleanup script when convenient
   if command -v osascript &> /dev/null; then
-    osascript -e "display notification \"$message\" with title \"$title\" sound name \"Basso\""
+    osascript -e "display notification \"$message\" with title \"$title\" sound name \"Submarine\""
   fi
 
-  # Linux notification (if available)
+  # Linux notification (if available) - use "normal" urgency (not "critical")
+  # Critical urgency can bypass Do Not Disturb, which is too aggressive
   if command -v notify-send &> /dev/null; then
-    notify-send "$title" "$message" --urgency=critical
+    notify-send "$title" "$message" --urgency=normal
   fi
+
+  # Windows: notifications sent via PowerShell toast don't have urgency levels
+  # They're always non-alarming by design
 }
 
 get_file_age_seconds() {

@@ -464,32 +464,40 @@ rm -f .specweave/state/.dedup-cache/*.lock
 
 **Mental model**: Bash = "run a program". Write/Edit/Read = "modify files".
 
-### 11. macOS Notifications - MUST Be Explicit (v0.33.3+)
+### 11. Notifications - MUST Be Non-Alarming (v0.33.4+)
 
-**Vague notifications = user confusion!** Every notification MUST clearly state:
+**All notifications are INFORMATIVE only - NEVER alarming!** Every notification MUST:
 1. **WHO** sent it (always start with "SpecWeave:")
 2. **WHAT** happened (specific action, not vague alert)
 3. **ACTION** needed (or "No action needed" if informational)
+4. **NEVER trigger alert icon** - no red/warning badges!
 
 ```
-❌ FORBIDDEN (vague, alarming):
-Title: "🚨 Zombie Cleanup"           ← What does this mean?!
-Sound: "Basso" (error sound)         ← Red alert icon, scary!
-Message: "Cleaned up 5 processes"    ← So what?
+❌ FORBIDDEN (alarming):
+Title: "🚨 Zombie Cleanup"           ← Emoji overload
+Sound: "Basso"                       ← Shows RED ALERT ICON - NEVER USE!
+Message: "Cleaned up 5 processes"    ← Too vague
 
 ✅ CORRECT (explicit, calm):
 Title: "SpecWeave: Cleanup Done"     ← Clear source
-Sound: "Pop" (neutral)               ← Not alarming
+Sound: "Pop" or "Submarine"          ← Neutral sounds ONLY
 Message: "Cleaned up 5 zombie processes. No action needed."
 ```
 
-**Sound selection rules:**
+**Sound selection rules (macOS only, other OS have no sound param):**
 | Sound | When to use |
 |-------|-------------|
 | `Pop` | Success, completion (neutral) |
 | `Glass` | Informational (gentle) |
-| `Submarine` | Warning (not critical) |
-| `Basso` | ONLY critical errors requiring immediate action |
+| `Submarine` | Warning OR error (deep but calm) |
+
+**⛔ NEVER USE "Basso"** - it triggers a RED ALERT ICON in macOS notification center!
+SpecWeave notifications are informative, never require immediate action.
+
+**Cross-platform behavior:**
+- **macOS**: Uses `osascript` with sound name param (Pop/Glass/Submarine ONLY)
+- **Linux**: Uses `notify-send` with `--urgency=normal` (never `critical`)
+- **Windows**: Uses PowerShell toast (no urgency levels, always neutral)
 
 **Use notification constants from `src/utils/notification-constants.ts`:**
 ```typescript
@@ -497,7 +505,7 @@ import { getTitleForType, buildNotificationMessage, getSoundForType } from './no
 
 const title = getTitleForType('cleanup');  // "SpecWeave: Cleanup Done"
 const msg = buildNotificationMessage('cleanup', { count: 5 });  // "Cleaned up 5 zombie..."
-const sound = getSoundForType('cleanup');  // "Pop"
+const sound = getSoundForType('cleanup');  // "Pop" (NEVER returns "Basso")
 ```
 
 **Code review should verify notification messages follow these standards.**

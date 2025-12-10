@@ -153,7 +153,7 @@ Enhance `plugins/specweave/hooks/spec-project-validator.sh` to validate project/
 
 **Error Output**:
 ```
-❌ Invalid project "sw-olysense" in spec.md
+❌ Invalid project "my-folder" in spec.md
 
 Available projects:
   • my-app-fe (Frontend)
@@ -275,14 +275,14 @@ Add validation to `src/core/living-docs/living-docs-sync.ts` that checks project
 ```
 ❌ Cannot sync increment to living docs
 
-Project "sw-olysense" not found in configuration.
+Project "my-folder" not found in configuration.
 
 Available projects:
   • my-app-fe
   • my-app-be
 
 Expected path: specs/my-app-fe/FS-119/
-Actual project in spec.md: sw-olysense
+Actual project in spec.md: my-folder
 
 Fix: Update project: field in spec.md
 ```

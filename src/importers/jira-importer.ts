@@ -38,6 +38,12 @@ interface JiraIssue {
       id: string;
       key: string;
     };
+    // CRITICAL (v0.34.1+): Project information for proper space/project/board mapping
+    project?: {
+      id: string;
+      key: string;
+      name: string;
+    };
   };
 }
 
@@ -73,7 +79,7 @@ export class JiraImporter implements Importer {
   constructor(host: string, email?: string, apiToken?: string, projectKey?: string) {
     // Remove trailing slashes and ensure https:// prefix
     // CRITICAL FIX (2025-12-09): new URL() requires full URL with protocol
-    // Bug: host="farside.atlassian.net" → new URL('/path', host) throws "Invalid URL"
+    // Bug: host="example.atlassian.net" → new URL('/path', host) throws "Invalid URL"
     let normalizedHost = host.replace(/\/+$/, '');
     if (!normalizedHost.startsWith('https://') && !normalizedHost.startsWith('http://')) {
       normalizedHost = `https://${normalizedHost}`;
@@ -181,6 +187,7 @@ export class JiraImporter implements Importer {
               'customfield_10016',
               'subtasks',
               'parent',
+              'project',  // CRITICAL (v0.34.1+): Fetch project info for space/project mapping
             ].join(','),  // MUST be comma-separated string, not array
           }
         );
@@ -268,6 +275,7 @@ export class JiraImporter implements Importer {
             'customfield_10016', // Story points
             'subtasks',
             'parent',
+            'project',  // CRITICAL (v0.34.1+): Fetch project info for space/project mapping
           ].join(','),  // MUST be comma-separated string, not array
         };
 
@@ -389,6 +397,15 @@ export class JiraImporter implements Importer {
       status = 'completed';
     }
 
+    // CRITICAL (v0.34.1+): Extract JIRA project information
+    // JIRA Structure: Space > Project > Board (3 levels)
+    // SpecWeave Mapping: Space → Project, Project → Board
+    //
+    // NOTE: JIRA API doesn't expose Space directly in issue fields
+    // Space must be inferred from projectKey or fetched separately via /rest/api/3/project/{projectKey}
+    // For now, we use projectKey as both space and project (will be enhanced in future)
+    const jiraProject = issue.fields.project;
+
     return {
       id: `JIRA-${issue.key}`,
       type,
@@ -404,6 +421,10 @@ export class JiraImporter implements Importer {
       acceptanceCriteria,
       parentId: issue.fields.parent ? `JIRA-${issue.fields.parent.key}` : undefined,
       platform: 'jira',
+      // CRITICAL (v0.34.1+): Populate JIRA project info for proper hierarchy mapping
+      // TODO: Fetch space information separately if needed (JIRA doesn't expose space in issues)
+      jiraProjectKey: jiraProject?.key,
+      jiraProjectName: jiraProject?.name,
     };
   }
 

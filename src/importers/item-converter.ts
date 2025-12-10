@@ -850,7 +850,10 @@ export class ItemConverter {
           if (parent) {
             // Find the appropriate ancestor group using hierarchy mapping
             // CRITICAL FIX (v0.30.12): Find the TOP-LEVEL feature ancestor
-            // to ensure items go into the correct folder
+            // CRITICAL FIX (v0.34.1): Simplified logic for JIRA 3-level hierarchy
+            //
+            // JIRA Hierarchy (3 levels): Epic → Story → Task
+            // ADO Hierarchy (5 levels): Capability → Epic → Feature → User Story → Task
             let current: ExternalItem | undefined = parent;
             while (current) {
               // Normalize work item type for consistent lookup
@@ -859,9 +862,15 @@ export class ItemConverter {
                 : current.type;
               const currentLevel = this.getSpecWeaveLevel(currentType, platform);
 
+              // DIAGNOSTIC: Log hierarchy walk for JIRA items
+              if (platform === 'jira') {
+                moduleLogger.debug(`   🔍 JIRA Hierarchy: ${item.id} → parent ${current.id} (${currentType} → ${currentLevel})`);
+              }
+
               // Epic-level ancestor → epic group
               if (currentLevel === 'epic') {
                 groupKey = `epic:${current.id}`;
+                moduleLogger.debug(`   ✅ JIRA: Assigned ${item.id} to epic group ${groupKey}`);
                 break;
               }
 
@@ -889,13 +898,23 @@ export class ItemConverter {
                 }
 
                 groupKey = `feature:${topLevelFeature.id}`;
+                moduleLogger.debug(`   ✅ JIRA: Assigned ${item.id} to feature group ${groupKey}`);
                 break;
               }
 
+              // CRITICAL FIX (v0.34.1): For User Story level items, walk up to parent
+              // JIRA: Story with Epic parent → should go to epic group
               current = current.parentId ? itemById.get(current.parentId) : undefined;
+
+              // DIAGNOSTIC: Warn if parent lookup failed (should not happen after Phase 3 recovery)
+              if (!current && parent.parentId) {
+                moduleLogger.warn(`   ⚠️  JIRA: Parent ${parent.parentId} not found in itemById map for ${item.id}`);
+              }
             }
           } else {
             // Parent NOT in dataset - group by parentId so siblings stay together
+            // CRITICAL (v0.34.1): This should NOT happen for JIRA after Phase 3 parent recovery!
+            moduleLogger.warn(`   ⚠️  JIRA: Parent ${item.parentId} missing for ${item.id} (Phase 3 recovery failed?)`);
             groupKey = `missing-parent:${item.parentId}`;
           }
         }
