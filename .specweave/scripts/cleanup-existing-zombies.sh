@@ -184,11 +184,15 @@ log "Completed: $(date)"
 log "Log saved: $LOG_FILE"
 
 # macOS notification (if not dry run and killed >0)
+# Use explicit, user-friendly messages - not vague red alerts!
 if [[ "$DRY_RUN" == "false" && "$TOTAL_KILLED" -gt 0 ]]; then
+  NOTIF_TITLE="SpecWeave: Cleanup Done"
+  NOTIF_MSG="Cleaned up $TOTAL_KILLED zombie processes. No action needed."
   if command -v osascript &>/dev/null; then
-    osascript -e "display notification \"Killed $TOTAL_KILLED zombie processes\" with title \"SpecWeave Cleanup\" sound name \"Glass\"" 2>/dev/null || true
+    # Use "Pop" sound (neutral) instead of alarming sounds
+    osascript -e "display notification \"$NOTIF_MSG\" with title \"$NOTIF_TITLE\" sound name \"Pop\"" 2>/dev/null || true
   elif command -v notify-send &>/dev/null; then
-    notify-send "SpecWeave Cleanup" "Killed $TOTAL_KILLED zombie processes" 2>/dev/null || true
+    notify-send "$NOTIF_TITLE" "$NOTIF_MSG" --urgency=low 2>/dev/null || true
   fi
 fi
 
