@@ -145,6 +145,9 @@ export function createConfigFile(
       name: projectName,
       version: '0.1.0',
     },
+    multiProject: {
+      enabled: false,  // Single-project mode by default (v0.34.0+)
+    },
     adapters: {
       default: adapter,
     },
