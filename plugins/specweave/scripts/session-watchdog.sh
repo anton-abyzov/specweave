@@ -44,15 +44,16 @@ log() {
 send_notification() {
   local title="$1"
   local message="$2"
+  local sound="${3:-Submarine}"  # Default to warning sound (not alarming Basso)
 
   # macOS notification
   if command -v osascript &> /dev/null; then
-    osascript -e "display notification \"$message\" with title \"$title\" sound name \"Basso\""
+    osascript -e "display notification \"$message\" with title \"$title\" sound name \"$sound\""
   fi
 
   # Linux notification (if available)
   if command -v notify-send &> /dev/null; then
-    notify-send "$title" "$message" --urgency=critical
+    notify-send "$title" "$message" --urgency=normal
   fi
 }
 
@@ -157,7 +158,8 @@ check_session_health() {
     echo "stuck_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$SIGNAL_FILE"
     echo "reasons=$reason_str" >> "$SIGNAL_FILE"
 
-    send_notification "🚨 Claude Code Stuck" "$reason_str - Run cleanup-state.sh"
+    # Use explicit, user-friendly notification with SpecWeave branding
+    send_notification "SpecWeave: Session Warning" "Session may be stuck: $reason_str. Run cleanup-state.sh if unresponsive." "Submarine"
 
     log "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     log "${RED}SESSION STUCK DETECTED${NC}"
