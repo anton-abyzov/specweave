@@ -243,7 +243,7 @@ For each US you will generate:
 
 ❌ FORBIDDEN: Skipping this step and generating spec.md directly
 ❌ FORBIDDEN: Inventing project names not in the API output
-❌ FORBIDDEN: Using folder names as project (e.g., "sw-olysense")
+❌ FORBIDDEN: Using folder names as project (e.g., "my-project-folder")
 ❌ FORBIDDEN: Using {{PROJECT_ID}} or {{BOARD_ID}} placeholders
 ❌ FORBIDDEN: Creating spec.md for 2-level without board: field
 ❌ FORBIDDEN: Generating spec.md without running context API first

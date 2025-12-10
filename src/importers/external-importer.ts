@@ -64,20 +64,44 @@ export interface ExternalItem {
   // ============================================================================
 
   /**
-   * JIRA project key (e.g., "CORE")
-   * Used for 2-level directory: specs/JIRA-{projectKey}/{boardMapping}/
+   * JIRA space key (e.g., "myspace")
+   * CRITICAL (v0.34.1+): Space is the TOP-LEVEL container in JIRA
+   * Maps to SpecWeave PROJECT in 2-level structure
+   * Used for 2-level directory: specs/JIRA-{spaceKey}/{projectKey}/
+   */
+  jiraSpaceKey?: string;
+
+  /**
+   * JIRA space name (e.g., "My Space")
+   * Human-readable name for display purposes
+   */
+  jiraSpaceName?: string;
+
+  /**
+   * JIRA project key (e.g., "ID" for Identity project)
+   * CRITICAL (v0.34.1+): Project is the MIDDLE level in JIRA
+   * Maps to SpecWeave BOARD (2nd level subfolder) in 2-level structure
+   * Used for 2-level directory: specs/JIRA-{spaceKey}/{projectKey}/
    */
   jiraProjectKey?: string;
 
   /**
+   * JIRA project name (e.g., "Identity")
+   * Human-readable name for display purposes
+   */
+  jiraProjectName?: string;
+
+  /**
    * JIRA board ID (numeric)
-   * Maps to SpecWeave project via boardMapping configuration
+   * DEPRECATED (v0.34.1+): Boards are NOT used for directory structure
+   * Kept for backwards compatibility with sync profiles
    */
   jiraBoardId?: number;
 
   /**
-   * JIRA board name (e.g., "Frontend Board")
-   * Human-readable name for display purposes
+   * JIRA board name (e.g., "Identity Sprint Board")
+   * DEPRECATED (v0.34.1+): Boards are NOT used for directory structure
+   * Kept for backwards compatibility with sync profiles
    */
   jiraBoardName?: string;
 

@@ -102,7 +102,7 @@ export interface EnhancedTeam {
   integrationBoundaries?: string;
 
   // Structure level context (for 1-level or 2-level folder organization)
-  project?: string;    // Project ID for folder structure (e.g., "sw-olysense")
+  project?: string;    // Project ID for folder structure (e.g., "my-project")
   board?: string;      // Board/Area path ID for 2-level structure (e.g., "digital-operations")
 
   // External tool integration

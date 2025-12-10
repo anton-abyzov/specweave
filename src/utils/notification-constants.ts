@@ -10,14 +10,16 @@
  */
 
 /**
- * Notification sounds - prefer neutral sounds over alarming ones
+ * Notification sounds - ALL notifications should be non-alarming!
  *
- * macOS sounds ranked by urgency:
+ * macOS sounds ranked by urgency (ALL are gentle):
  * - "Pop" - neutral, short (good for completions)
  * - "Glass" - gentle (good for info)
  * - "Purr" - subtle (good for minor events)
- * - "Submarine" - deep (good for warnings)
- * - "Basso" - alarming (ONLY for critical errors)
+ * - "Submarine" - deep but calm (good for warnings AND errors)
+ *
+ * NEVER use "Basso" - it shows a red alert icon which scares users!
+ * SpecWeave notifications are INFORMATIVE, never require immediate attention.
  */
 export const NotificationSounds = {
   /** For successful completions */
@@ -26,8 +28,8 @@ export const NotificationSounds = {
   INFO: 'Glass',
   /** For warnings (not critical) */
   WARNING: 'Submarine',
-  /** For critical errors ONLY - use sparingly! */
-  CRITICAL: 'Basso',
+  /** For errors - still use Submarine (not Basso!) - errors are recoverable */
+  CRITICAL: 'Submarine',
 } as const;
 
 /**
