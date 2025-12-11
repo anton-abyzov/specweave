@@ -250,9 +250,9 @@ ${body}`;
   /**
    * Get all repositories accessible to the user
    * @param owner Optional: filter by specific owner/org (e.g., 'octocat', 'my-org')
-   * @param limit Maximum number of repos to fetch (default: 100, max: 1000)
+   * @param limit Maximum number of repos to fetch (default: 1000, max: 1000)
    */
-  static async getRepositories(owner, limit = 100) {
+  static async getRepositories(owner, limit = 1e3) {
     try {
       const ownerFilter = owner ? `${owner}/` : "";
       const cmd = `gh repo list ${ownerFilter} --limit ${limit} --json owner,name,nameWithOwner`;

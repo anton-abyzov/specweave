@@ -10,9 +10,49 @@
  */
 
 import chalk from 'chalk';
+import * as fs from 'fs';
+import * as path from 'path';
 import type { ExternalItem } from '../../../importers/external-importer.js';
 import type { ExternalContainerContext } from '../../../core/types/increment-metadata.js';
 import { normalizeToProjectId } from '../../../utils/project-id-generator.js';
+
+/**
+ * Load JIRA board mappings from config.json
+ * Maps jiraBoardId → normalized specweaveProject
+ *
+ * CRITICAL FIX (v0.34.1): Needed to map boards to correct specweaveProject folders
+ */
+function loadJiraBoardMappings(projectPath: string): Map<number, string> | undefined {
+  const jiraBoardMappings = new Map<number, string>();
+
+  try {
+    const configPath = path.join(projectPath, '.specweave', 'config.json');
+    if (!fs.existsSync(configPath)) {
+      return undefined;
+    }
+
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+    // Extract board mappings from sync.profiles
+    if (config.sync?.profiles) {
+      for (const profile of Object.values(config.sync.profiles) as any[]) {
+        if (profile.provider === 'jira' && profile.config?.boardMapping?.boards) {
+          for (const board of profile.config.boardMapping.boards) {
+            if (board.boardId && board.specweaveProject) {
+              jiraBoardMappings.set(board.boardId, normalizeToProjectId(board.specweaveProject));
+            }
+          }
+        }
+      }
+    }
+
+    return jiraBoardMappings.size > 0 ? jiraBoardMappings : undefined;
+  } catch (error) {
+    // Config parsing failed - log warning but continue with fallback behavior
+    console.warn(chalk.yellow(`   ⚠️  Failed to load JIRA board mappings: ${error instanceof Error ? error.message : String(error)}`));
+    return undefined;
+  }
+}
 
 /**
  * Container group for organizing imported items
@@ -73,13 +113,21 @@ export function groupItemsBySourceRepo(items: ExternalItem[]): Map<string, Exter
  * CRITICAL FIX (2025-12-01): For ADO items with hierarchy, group by parent Epic/Capability
  * instead of by area path. This ensures each Epic becomes a separate FS-XXX folder.
  *
+ * CRITICAL FIX (v0.34.1): Load JIRA board mappings from config for proper 2-level structure
+ *
  * ADO Hierarchy: Capability → Epic → Feature → User Story → Task
  * - Each top-level Epic/Capability becomes its own group (→ FS-XXX folder)
  * - Child User Stories/Tasks are grouped under their parent Epic
  * - Items without parents get their own individual groups
  */
-export function groupItemsByExternalContainer(items: ExternalItem[]): ContainerGroup[] {
+export function groupItemsByExternalContainer(items: ExternalItem[], projectPath?: string): ContainerGroup[] {
   const groups = new Map<string, ContainerGroup>();
+
+  // CRITICAL FIX (v0.34.1): Load JIRA board mappings from config
+  let jiraBoardMappings: Map<number, string> | undefined;
+  if (projectPath) {
+    jiraBoardMappings = loadJiraBoardMappings(projectPath);
+  }
 
   // Check if we have ADO items with hierarchy
   const adoItems = items.filter(item => item.platform === 'ado' && item.adoProjectName);
@@ -95,7 +143,7 @@ export function groupItemsByExternalContainer(items: ExternalItem[]): ContainerG
     // Also process non-ADO items normally
     const nonAdoItems = items.filter(item => item.platform !== 'ado' || !item.adoProjectName);
     if (nonAdoItems.length > 0) {
-      const nonAdoGroups = groupNonHierarchyItems(nonAdoItems);
+      const nonAdoGroups = groupNonHierarchyItems(nonAdoItems, jiraBoardMappings);
       for (const group of nonAdoGroups) {
         // Avoid key collisions with ADO groups
         const uniqueKey = `other:${group.projectId}`;
@@ -107,7 +155,7 @@ export function groupItemsByExternalContainer(items: ExternalItem[]): ContainerG
   }
 
   // No ADO hierarchy - use original grouping logic for all items
-  return groupNonHierarchyItems(items);
+  return groupNonHierarchyItems(items, jiraBoardMappings);
 }
 
 /**
@@ -271,8 +319,15 @@ export function groupAdoItemsByParentHierarchy(items: ExternalItem[]): Container
 /**
  * Group non-hierarchy items (JIRA, GitHub, or ADO without hierarchy)
  * Original grouping logic by project/board/repo
+ *
+ * CRITICAL FIX (v0.34.1): Load JIRA board mappings from config
+ * - Level 1 (project): JIRA projectKey (e.g., "CORE")
+ * - Level 2 (board): specweaveProject from boardMapping (e.g., "fe", "be")
+ *
+ * This respects the structure-level-detector configuration and matches
+ * the import-worker.ts grouping logic.
  */
-export function groupNonHierarchyItems(items: ExternalItem[]): ContainerGroup[] {
+export function groupNonHierarchyItems(items: ExternalItem[], jiraBoardMappings?: Map<number, string>): ContainerGroup[] {
   const groups = new Map<string, ContainerGroup>();
 
   for (const item of items) {
@@ -283,18 +338,23 @@ export function groupNonHierarchyItems(items: ExternalItem[]): ContainerGroup[] 
     let externalContainer: ExternalContainerContext | undefined;
 
     // Check for JIRA container context
-    // CRITICAL FIX (v0.34.1): JIRA 3-level structure
-    // - Space (top level, not exposed in API yet) → SpecWeave project (1st level)
-    // - Project (JIRA project key like "ID") → SpecWeave board (2nd level subfolder)
-    // - Board (Sprint board, DEPRECATED for structure) → Not used in directory mapping
+    // CRITICAL FIX (v0.34.1): JIRA 2-level structure using config board mappings
+    // - Level 1 (project): JIRA projectKey (e.g., "CORE")
+    // - Level 2 (board): specweaveProject from boardMapping (e.g., "fe", "be")
     if (item.jiraProjectKey) {
       containerType = 'jira';
       containerId = item.jiraProjectKey;
 
-      // CRITICAL FIX (v0.34.1): Use jiraProjectKey as projectId (2nd level folder)
-      // OLD BUG: Used jiraBoardName which created wrong directory structure
-      // NEW: JIRA Project Key (e.g., "ID" for Identity) becomes the folder name
-      projectId = normalizeToProjectId(item.jiraProjectKey) || 'default';
+      // CRITICAL FIX (v0.34.1): Use specweaveProject from boardMapping (Level 2)
+      // Map jiraBoardId → specweaveProject using config
+      // Fallback to normalized boardName if mapping not found
+      if (item.jiraBoardId && jiraBoardMappings && jiraBoardMappings.has(item.jiraBoardId)) {
+        projectId = jiraBoardMappings.get(item.jiraBoardId)!;
+      } else if (item.jiraBoardName) {
+        projectId = normalizeToProjectId(item.jiraBoardName) || 'default';
+      } else {
+        projectId = 'default';
+      }
 
       groupKey = `jira:${containerId}:${projectId}`;
 
@@ -302,8 +362,8 @@ export function groupNonHierarchyItems(items: ExternalItem[]): ContainerGroup[] 
         type: 'jira-project',
         containerId: containerId,
         containerName: item.jiraProjectName || containerId,
-        boardId: item.jiraBoardId,  // Kept for backwards compat, not used for folders
-        boardName: item.jiraBoardName  // Kept for backwards compat, not used for folders
+        boardId: item.jiraBoardId,
+        boardName: item.jiraBoardName
       };
     }
     // Check for ADO container context (without hierarchy)

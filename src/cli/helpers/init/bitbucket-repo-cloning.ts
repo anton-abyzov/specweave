@@ -16,6 +16,7 @@
 import chalk from 'chalk';
 import { filterRepositoriesByPattern, type ClonePatternResult } from '../selection-strategy.js';
 import { launchCloneJob } from '../../../core/background/job-launcher.js';
+import { REPO_FETCH_LIMITS } from './types.js';
 
 /**
  * Bitbucket repository selection (from init flow)
@@ -84,17 +85,17 @@ function sleep(ms: number): Promise<void> {
  * @param workspace - Bitbucket workspace slug
  * @param username - Bitbucket username
  * @param appPassword - Bitbucket App Password
- * @param maxRepos - Maximum repos to fetch (default 500)
+ * @param maxRepos - Maximum repos to fetch (default 1000, configurable via REPO_FETCH_LIMITS)
  * @returns Fetch result with repos and metadata
  */
 async function fetchBitbucketRepos(
   workspace: string,
   username: string,
   appPassword: string,
-  maxRepos: number = 500
+  maxRepos: number = REPO_FETCH_LIMITS.DEFAULT_MAX_REPOS
 ): Promise<FetchResult> {
   const repos: BitbucketRepository[] = [];
-  let nextUrl: string | undefined = `https://api.bitbucket.org/2.0/repositories/${encodeURIComponent(workspace)}?pagelen=100`;
+  let nextUrl: string | undefined = `https://api.bitbucket.org/2.0/repositories/${encodeURIComponent(workspace)}?pagelen=${REPO_FETCH_LIMITS.API_PER_PAGE}`;
   let partial = false;
 
   // Create Basic Auth header
