@@ -632,7 +632,7 @@ All commands adapt to detected tech stack.
   - Sub-agents isolate context (no bloat accumulation)
   - Typical savings: $60-120/month per developer
 
-- **Figma integration**: Design sync capabilities via specweave-figma plugin
+- **Figma integration**: Design sync capabilities via sw-figma plugin
   - Import Figma designs into SpecWeave specs
   - Track design-to-code alignment
 

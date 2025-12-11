@@ -277,7 +277,7 @@ SpecWeave throttles sync to prevent API rate limits. Wait 60 seconds or:
 
 ```bash
 # Clean up duplicates
-/sw-github:specweave-github-cleanup-duplicates
+/sw-github:cleanup-duplicates
 ```
 
 ---
