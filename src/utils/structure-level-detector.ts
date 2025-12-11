@@ -100,6 +100,8 @@ interface ConfigSubset {
           }>;
         };
         boardMapping?: {
+          /** JIRA project key (e.g., "CORE") - Level 1 in 2-level structure */
+          projectKey?: string;
           boards?: Array<{
             id: string;
             name: string;
@@ -214,33 +216,41 @@ export function detectStructureLevel(projectRoot: string = process.cwd()): Struc
   }
 
   // Check 2: JIRA board mapping with multiple boards (2-level structure)
+  // 2-level structure for JIRA:
+  //   Level 1 (project): JIRA projectKey (e.g., "CORE" or "JIRA-CORE")
+  //   Level 2 (board): specweaveProject from each board (e.g., "fe", "be", "mobile")
+  //
+  // Example folder structure: .specweave/docs/internal/specs/JIRA-CORE/fe/FS-XXX/
   if (config.sync?.profiles) {
     for (const [, profile] of Object.entries(config.sync.profiles)) {
       if (profile.provider !== 'jira') continue;
 
       if (profile.config?.boardMapping?.boards?.length) {
         const boards = profile.config.boardMapping.boards;
+        const jiraProjectKey = profile.config.boardMapping.projectKey;
 
-        // Group boards by specweaveProject to detect structure
-        const projectSet = new Set(boards.map(b => normalizeId(b.specweaveProject)));
+        if (boards.length > 1 || (boards.length === 1 && jiraProjectKey)) {
+          // Multiple boards = 2-level structure
+          // Level 1: JIRA project key (use projectKey if available, otherwise derive from boards)
+          const projectId = jiraProjectKey
+            ? normalizeId(jiraProjectKey)
+            : normalizeId(profile.config.project || 'jira-default');
 
-        if (projectSet.size > 1 || boards.length > 1) {
-          // Multiple boards or multiple projects = 2-level
-          const projects: ProjectInfo[] = Array.from(projectSet).map(p => ({
-            id: p,
-            name: p
-          }));
+          const projects: ProjectInfo[] = [{
+            id: projectId,
+            name: jiraProjectKey || profile.config.project || 'JIRA Project',
+            externalId: jiraProjectKey
+          }];
 
+          // Level 2: specweaveProject from each board
           const boardsByProject: Record<string, BoardInfo[]> = {};
+          boardsByProject[projectId] = [];
+
           for (const board of boards) {
-            const pid = normalizeId(board.specweaveProject);
-            if (!boardsByProject[pid]) {
-              boardsByProject[pid] = [];
-            }
-            boardsByProject[pid].push({
-              id: normalizeId(board.name),
-              name: board.name,
-              projectId: pid,
+            boardsByProject[projectId].push({
+              id: normalizeId(board.specweaveProject),
+              name: board.specweaveProject,
+              projectId: projectId,
               keywords: board.keywords,
               jiraBoardId: board.id
             });

@@ -146,7 +146,51 @@ describe('structure-level-detector', () => {
     });
 
     describe('JIRA board mapping (2-level)', () => {
-      it('should detect 2-level structure from JIRA boardMapping with multiple boards', () => {
+      it('should detect 2-level structure from JIRA boardMapping with projectKey and multiple boards', () => {
+        // 2-level structure for JIRA:
+        //   Level 1 (project): JIRA projectKey (e.g., "CORE")
+        //   Level 2 (board): specweaveProject from each board (e.g., "fe", "be")
+        // Expected folder structure: .specweave/docs/internal/specs/core/fe/FS-XXX/
+        createConfig({
+          sync: {
+            profiles: {
+              'jira-profile': {
+                provider: 'jira',
+                config: {
+                  boardMapping: {
+                    projectKey: 'CORE',
+                    boards: [
+                      { id: '1', name: 'Frontend Board', specweaveProject: 'fe' },
+                      { id: '2', name: 'Backend Board', specweaveProject: 'be' }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        const result = detectStructureLevel(tempDir);
+
+        expect(result.level).toBe(2);
+        expect(result.source).toBe('jira-board');
+        // Level 1: JIRA project key
+        expect(result.projects).toHaveLength(1);
+        expect(result.projects[0].id).toBe('core');
+        expect(result.projects[0].name).toBe('CORE');
+        expect(result.projects[0].externalId).toBe('CORE');
+        // Level 2: specweaveProject from boards
+        expect(result.boardsByProject).toBeDefined();
+        expect(result.boardsByProject!['core']).toHaveLength(2);
+        expect(result.boardsByProject!['core'].map(b => b.id)).toContain('fe');
+        expect(result.boardsByProject!['core'].map(b => b.id)).toContain('be');
+        // Board names should be specweaveProject, NOT board display names
+        expect(result.boardsByProject!['core'].map(b => b.name)).toContain('fe');
+        expect(result.boardsByProject!['core'].map(b => b.name)).toContain('be');
+        expect(result.boardsByProject!['core'].map(b => b.name)).not.toContain('Frontend Board');
+      });
+
+      it('should fallback to jira-default when no projectKey is provided', () => {
         createConfig({
           sync: {
             profiles: {
@@ -169,8 +213,66 @@ describe('structure-level-detector', () => {
 
         expect(result.level).toBe(2);
         expect(result.source).toBe('jira-board');
-        expect(result.projects.map(p => p.id)).toContain('frontend');
-        expect(result.projects.map(p => p.id)).toContain('backend');
+        // Without projectKey, falls back to jira-default
+        expect(result.projects[0].id).toBe('jira-default');
+        // Boards should still use specweaveProject
+        expect(result.boardsByProject!['jira-default'].map(b => b.id)).toContain('frontend');
+        expect(result.boardsByProject!['jira-default'].map(b => b.id)).toContain('backend');
+      });
+
+      it('should use profile.config.project as fallback when projectKey is missing', () => {
+        createConfig({
+          sync: {
+            profiles: {
+              'jira-profile': {
+                provider: 'jira',
+                config: {
+                  project: 'MY-PROJECT',
+                  boardMapping: {
+                    boards: [
+                      { id: '1', name: 'Team A', specweaveProject: 'team-a' },
+                      { id: '2', name: 'Team B', specweaveProject: 'team-b' }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        const result = detectStructureLevel(tempDir);
+
+        expect(result.level).toBe(2);
+        expect(result.projects[0].id).toBe('my-project');
+        expect(result.boardsByProject!['my-project'].map(b => b.id)).toContain('team-a');
+        expect(result.boardsByProject!['my-project'].map(b => b.id)).toContain('team-b');
+      });
+
+      it('should include jiraBoardId in board info', () => {
+        createConfig({
+          sync: {
+            profiles: {
+              'jira-profile': {
+                provider: 'jira',
+                config: {
+                  boardMapping: {
+                    projectKey: 'TEST',
+                    boards: [
+                      { id: '123', name: 'Sprint Board', specweaveProject: 'sprints', keywords: ['sprint'] }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        const result = detectStructureLevel(tempDir);
+
+        expect(result.level).toBe(2);
+        const board = result.boardsByProject!['test'][0];
+        expect(board.jiraBoardId).toBe('123');
+        expect(board.keywords).toEqual(['sprint']);
       });
     });
 
