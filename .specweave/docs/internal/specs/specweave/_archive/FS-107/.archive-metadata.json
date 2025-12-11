@@ -1,0 +1,11 @@
+{
+  "id": "FS-107",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:04:41.822Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-107",
+  "linkedIncrements": [
+    "0107-enforce-config-json-separation"
+  ]
+}

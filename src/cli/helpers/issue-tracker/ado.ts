@@ -556,7 +556,7 @@ async function handleMultiProjectSelection(
     const syncableProjects = projects.filter(p => !p.isUmbrella);
 
     if (syncableProjects.length > 0) {
-      // First syncable project is default (for validation and activeProfile)
+      // First syncable project is default (for validation and defaultProfile)
       syncableProjects[0].isDefault = true;
     }
   }
@@ -724,14 +724,12 @@ export function getAzureDevOpsEnvVars(
  * @param projectName - ADO project name
  * @param areaPaths - Area paths for the project (optional)
  * @param strategy - Team mapping strategy
- * @param teams - Teams for team-based strategy (deprecated)
  */
 function createSingleProjectFolders(
   specsDir: string,
   projectName: string,
   areaPaths?: string[],
-  strategy?: string,
-  teams?: string[]
+  strategy?: string
 ): void {
   // CRITICAL FIX (2025-12-01): Use normalizeToProjectId() for consistent folder names
   // Bug: Using raw project name created "My Project" folder while other code paths
@@ -751,14 +749,6 @@ function createSingleProjectFolders(
       const areaDir = path.join(projectDir, normalizedArea);
       fs.mkdirSync(areaDir, { recursive: true });
       console.log(chalk.gray(`  ✓ Created area folder: ${normalizedArea}`));
-    }
-  } else if (effectiveStrategy === 'team-based' && teams?.length) {
-    for (const team of teams) {
-      // CRITICAL FIX: Normalize team names too
-      const normalizedTeam = normalizeToProjectId(team);
-      const teamDir = path.join(projectDir, normalizedTeam);
-      fs.mkdirSync(teamDir, { recursive: true });
-      console.log(chalk.gray(`  ✓ Created team folder: ${normalizedTeam}`));
     }
   }
 }
@@ -809,8 +799,7 @@ export function createAdoProjectFolders(
     specsDir,
     projectName,
     credentials.areaPaths,
-    credentials.strategy,
-    credentials.teams
+    credentials.strategy
   );
 
   console.log(chalk.green(`✓ ADO folder structure created`));

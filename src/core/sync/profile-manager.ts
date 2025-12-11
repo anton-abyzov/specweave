@@ -121,28 +121,28 @@ export class ProfileManager {
   }
 
   /**
-   * Get active profile
+   * Get default profile
    */
-  async getActiveProfile(): Promise<{ id: string; profile: SyncProfile } | null> {
+  async getDefaultProfile(): Promise<{ id: string; profile: SyncProfile } | null> {
     const config = await this.load();
-    const activeId = config.activeProfile;
+    const defaultId = config.defaultProfile;
 
-    if (!activeId) {
+    if (!defaultId) {
       return null;
     }
 
-    const profile = config.profiles?.[activeId];
+    const profile = config.profiles?.[defaultId];
     if (!profile) {
       return null;
     }
 
-    return { id: activeId, profile };
+    return { id: defaultId, profile };
   }
 
   /**
-   * Set active profile
+   * Set default profile
    */
-  async setActiveProfile(profileId: string): Promise<void> {
+  async setDefaultProfile(profileId: string): Promise<void> {
     const config = await this.load();
 
     // Validate profile exists
@@ -150,7 +150,7 @@ export class ProfileManager {
       throw new Error(`Profile '${profileId}' does not exist`);
     }
 
-    config.activeProfile = profileId;
+    config.defaultProfile = profileId;
     await this.save();
   }
 
@@ -187,9 +187,9 @@ export class ProfileManager {
     }
     config.profiles[profileId] = profile;
 
-    // Set as active if first profile
+    // Set as default if first profile
     if (Object.keys(config.profiles).length === 1) {
-      config.activeProfile = profileId;
+      config.defaultProfile = profileId;
     }
 
     await this.save();
@@ -234,14 +234,14 @@ export class ProfileManager {
 
     delete config.profiles[profileId];
 
-    // If this was the active profile, clear it
-    if (config.activeProfile === profileId) {
-      config.activeProfile = undefined;
+    // If this was the default profile, clear it
+    if (config.defaultProfile === profileId) {
+      config.defaultProfile = undefined;
 
-      // Set first available profile as active
+      // Set first available profile as default
       const remaining = Object.keys(config.profiles);
       if (remaining.length > 0) {
-        config.activeProfile = remaining[0];
+        config.defaultProfile = remaining[0];
       }
     }
 
@@ -405,7 +405,7 @@ export class ProfileManager {
   async getStats(): Promise<{
     totalProfiles: number;
     byProvider: Record<SyncProvider, number>;
-    activeProfile: string | null;
+    defaultProfile: string | null;
   }> {
     const config = await this.load();
     const all = config.profiles || {};
@@ -417,7 +417,7 @@ export class ProfileManager {
         jira: 0,
         ado: 0,
       } as Record<SyncProvider, number>,
-      activeProfile: config.activeProfile || null,
+      defaultProfile: config.defaultProfile || null,
     };
 
     for (const profile of Object.values(all)) {

@@ -109,8 +109,7 @@ export interface JiraCredentials {
  */
 export type AzureDevOpsStrategy =
   | 'project-per-team'           // Separate projects for each team
-  | 'area-path-based'            // One project with multiple area paths
-  | 'team-based';                // One project with multiple teams
+  | 'area-path-based';           // One project with multiple area paths
 
 /**
  * ADO Process Template types
@@ -157,10 +156,6 @@ export interface AzureDevOpsCredentials {
   areaPaths?: string[];
   /** Team mapping strategy (optional, defaults to 'area-path-based') */
   strategy?: AzureDevOpsStrategy;
-  /** @deprecated Teams are no longer part of init flow. Use areaPaths instead. */
-  team?: string;
-  /** @deprecated Teams are no longer part of init flow. Use areaPaths instead. */
-  teams?: string[];
 }
 
 /**

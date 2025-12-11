@@ -1,0 +1,11 @@
+{
+  "id": "FS-135",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:09:55.082Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-135",
+  "linkedIncrements": [
+    "0135-living-docs-visualization"
+  ]
+}

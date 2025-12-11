@@ -604,9 +604,9 @@
           "description": "Automatically apply labels based on increment type ([Bug], [Feature], [Docs])",
           "default": true
         },
-        "activeProfile": {
+        "defaultProfile": {
           "type": "string",
-          "description": "Default active sync profile"
+          "description": "Default sync profile"
         },
         "profiles": {
           "type": "object",

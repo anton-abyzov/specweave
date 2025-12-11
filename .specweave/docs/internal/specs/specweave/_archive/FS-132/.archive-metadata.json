@@ -1,0 +1,11 @@
+{
+  "id": "FS-132",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:09:07.610Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-132",
+  "linkedIncrements": [
+    "0132-process-lifecycle-integration"
+  ]
+}

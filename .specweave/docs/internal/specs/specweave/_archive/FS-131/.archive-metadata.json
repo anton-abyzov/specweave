@@ -1,0 +1,11 @@
+{
+  "id": "FS-131",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:08:55.908Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-131",
+  "linkedIncrements": [
+    "0131-process-lifecycle-foundation"
+  ]
+}

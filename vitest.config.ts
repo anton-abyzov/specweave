@@ -13,6 +13,7 @@ export default defineConfig({
       'tests/performance/**/*.test.ts',
       'tests/plugin-validation/**/*.test.ts',
       'tests/e2e/**/*.test.ts',
+      'tests/e2e/**/*.e2e.ts', // E2E test files with .e2e.ts extension
     ],
 
     // Exclude patterns

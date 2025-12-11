@@ -116,18 +116,7 @@ async function runProjectManagerBenchmarks(): Promise<void> {
   console.log(`   Avg Time: ${specsPathResult.avgTime.toFixed(4)}ms`);
   console.log(`   ${specsPathResult.avgTime < 1 ? '✅ PASS' : '❌ FAIL'} (<1ms target)\n`);
 
-  // Benchmark 3: getModulesPath() (1000 iterations)
-  const modulesPathResult = await benchmark(
-    'getModulesPath()',
-    1000,
-    () => manager.getModulesPath()
-  );
-
-  console.log(`📊 ${modulesPathResult.operation}`);
-  console.log(`   Avg Time: ${modulesPathResult.avgTime.toFixed(4)}ms`);
-  console.log(`   ${modulesPathResult.avgTime < 1 ? '✅ PASS' : '❌ FAIL'} (<1ms target)\n`);
-
-  // Benchmark 4: getActiveProject() with caching (1000 iterations)
+  // Benchmark 3: getActiveProject() with caching (1000 iterations)
   const getActiveProjectResult = await benchmark(
     'getActiveProject() with caching',
     1000,
@@ -157,11 +146,10 @@ async function runProjectManagerBenchmarks(): Promise<void> {
   await fs.remove(testDir);
 
   console.log('\n=== Summary ===');
-  console.log(`Total benchmarks: 5`);
+  console.log(`Total benchmarks: 4`);
   console.log(`All path resolution < 1ms: ${
     basePathResult.avgTime < 1 &&
-    specsPathResult.avgTime < 1 &&
-    modulesPathResult.avgTime < 1 ? '✅ PASS' : '❌ FAIL'
+    specsPathResult.avgTime < 1 ? '✅ PASS' : '❌ FAIL'
   }`);
   console.log(`Caching effective: ${getActiveProjectResult.avgTime < 0.1 ? '✅ PASS' : '❌ FAIL'}`);
   console.log('');

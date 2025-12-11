@@ -116,7 +116,7 @@ async function createMultiProjectFolders(targetDir: string): Promise<void> {
     config.sync = {
       enabled: true,
       profiles: {},
-      activeProfile: null,
+      defaultProfile: undefined,
       settings: {
         autoCreateIssue: true,
         syncDirection: 'bidirectional'
@@ -142,7 +142,7 @@ async function createMultiProjectFolders(targetDir: string): Promise<void> {
       };
 
       profiles[profileId] = jiraProfile;
-      syncConfig.activeProfile = profileId;
+      syncConfig.defaultProfile = profileId;
 
       await fs.writeJson(configPath, config, { spaces: 2 });
 
@@ -870,9 +870,9 @@ async function setupIssueTrackerWrapper(
 
     if (fs.existsSync(configPath)) {
       const config = await fs.readJson(configPath);
-      if (config.sync?.activeProfile && config.sync?.profiles) {
-        const activeProfile = config.sync.profiles[config.sync.activeProfile];
-        existingTracker = activeProfile?.provider || null;
+      if (config.sync?.defaultProfile && config.sync?.profiles) {
+        const defaultProfile = config.sync.profiles[config.sync.defaultProfile];
+        existingTracker = defaultProfile?.provider || null;
       }
     }
 

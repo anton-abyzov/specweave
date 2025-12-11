@@ -27,7 +27,6 @@ import {
 export type AdoOrganizationStrategy =
   | 'single-project'    // All work at project root level (default for small teams)
   | 'area-path-based'   // Single project, area paths → SpecWeave projects
-  | 'team-based'        // Single project, teams → SpecWeave projects (maps to area paths)
   | 'multi-project';    // Multiple ADO projects (rare, separate projects per team)
 
 /**
@@ -45,9 +44,6 @@ export interface AreaPathSelectionResult {
 
   /** Single project name (for single-project strategy) */
   projectName?: string;
-
-  /** Teams (for team-based strategy, maps to area paths) */
-  teams?: string[];
 }
 
 /**
@@ -76,11 +72,6 @@ export async function promptAdoOrganizationStrategy(
         name: 'Area path-based teams (area paths → SpecWeave projects)',
         value: 'area-path-based',
         description: 'Best for enterprise teams using area paths for organization',
-      },
-      {
-        name: 'Team-based organization (teams → SpecWeave projects)',
-        value: 'team-based',
-        description: 'Best when teams have dedicated areas in ADO',
       },
     ],
     default: defaultStrategy,
@@ -258,7 +249,6 @@ export async function completeAreaPathSelectionFlow(
     organization: string;
     project: string;
     pat: string;
-    teams?: string[];
   },
   projectRoot: string
 ): Promise<AreaPathSelectionResult> {
@@ -286,37 +276,6 @@ export async function completeAreaPathSelectionFlow(
       return {
         strategy: 'single-project',
         projectName: credentials.project,
-      };
-    }
-
-    if (strategy === 'team-based') {
-      // Team-based maps to area paths internally
-      // Ask user to enter team names if not already provided
-      let teams = credentials.teams || [];
-
-      if (teams.length === 0) {
-        const teamsInput = await input({
-          message: 'Enter team names (comma-separated):',
-          default: '',
-        });
-        teams = teamsInput
-          .split(',')
-          .map((t) => t.trim())
-          .filter((t) => t.length > 0);
-      }
-
-      if (teams.length === 0) {
-        console.log(chalk.yellow('\n⚠️  No teams specified. Falling back to single-project mode.\n'));
-        return {
-          strategy: 'single-project',
-          projectName: credentials.project,
-        };
-      }
-
-      return {
-        strategy: 'team-based',
-        projectName: credentials.project,
-        teams,
       };
     }
 

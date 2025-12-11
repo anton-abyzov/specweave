@@ -1,0 +1,11 @@
+{
+  "id": "FS-137",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:09:55.799Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-137",
+  "linkedIncrements": [
+    "0137-per-us-project-board-enforcement"
+  ]
+}

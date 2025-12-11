@@ -40,7 +40,7 @@ export interface GitHubProfile {
 interface SpecWeaveConfig {
   sync?: {
     enabled: boolean;
-    activeProfile: string;
+    defaultProfile: string;
     settings?: {
       autoCreateIssue?: boolean;
       syncDirection?: 'bidirectional' | 'push' | 'pull';
@@ -80,7 +80,7 @@ export class GitHubProfileManager {
       if (!this.config.sync) {
         this.config.sync = {
           enabled: false,
-          activeProfile: '',
+          defaultProfile: '',
           profiles: {}
         };
       }
@@ -92,7 +92,7 @@ export class GitHubProfileManager {
       this.config = {
         sync: {
           enabled: false,
-          activeProfile: '',
+          defaultProfile: '',
           profiles: {}
         }
       };
@@ -145,18 +145,18 @@ export class GitHubProfileManager {
   }
 
   /**
-   * Get the active/default profile
+   * Get the default profile
    *
-   * @returns Active profile or null
+   * @returns Default profile or null
    */
-  getActiveProfile(): GitHubProfile | null {
-    const activeId = this.config.sync?.activeProfile;
-    if (!activeId) {
-      // If no active profile set, return the first GitHub profile
+  getDefaultProfile(): GitHubProfile | null {
+    const defaultId = this.config.sync?.defaultProfile;
+    if (!defaultId) {
+      // If no default profile set, return the first GitHub profile
       const profiles = this.getAllProfiles();
       return profiles.length > 0 ? profiles[0] : null;
     }
-    return this.getProfile(activeId);
+    return this.getProfile(defaultId);
   }
 
   /**
@@ -170,7 +170,7 @@ export class GitHubProfileManager {
       if (!this.config.sync) {
         this.config.sync = {
           enabled: true,
-          activeProfile: profile.id,
+          defaultProfile: profile.id,
           profiles: {}
         };
       }
@@ -195,9 +195,9 @@ export class GitHubProfileManager {
         }
       };
 
-      // Set as active if it's the first profile
-      if (!this.config.sync.activeProfile) {
-        this.config.sync.activeProfile = profile.id;
+      // Set as default if it's the first profile
+      if (!this.config.sync.defaultProfile) {
+        this.config.sync.defaultProfile = profile.id;
         this.config.sync.enabled = true;
       }
 
@@ -255,10 +255,10 @@ export class GitHubProfileManager {
       // Delete the profile
       delete this.config.sync.profiles[id];
 
-      // Update active profile if necessary
-      if (this.config.sync.activeProfile === id) {
+      // Update default profile if necessary
+      if (this.config.sync.defaultProfile === id) {
         const remainingProfiles = this.getAllProfiles();
-        this.config.sync.activeProfile = remainingProfiles.length > 0
+        this.config.sync.defaultProfile = remainingProfiles.length > 0
           ? remainingProfiles[0].id
           : '';
 
@@ -277,24 +277,24 @@ export class GitHubProfileManager {
   }
 
   /**
-   * Set active profile
+   * Set default profile
    *
    * @param id - Profile ID
    * @returns Success status
    */
-  setActiveProfile(id: string): boolean {
+  setDefaultProfile(id: string): boolean {
     try {
       if (!this.config.sync?.profiles?.[id]) {
         console.error(chalk.red(`Profile '${id}' not found`));
         return false;
       }
 
-      this.config.sync!.activeProfile = id;
+      this.config.sync!.defaultProfile = id;
       this.config.sync!.enabled = true;
       this.saveConfig();
       return true;
     } catch (error) {
-      console.error(chalk.red('Failed to set active profile:'), error);
+      console.error(chalk.red('Failed to set default profile:'), error);
       return false;
     }
   }
@@ -352,7 +352,7 @@ export class GitHubProfileManager {
    */
   listProfiles(): void {
     const profiles = this.getAllProfiles();
-    const activeId = this.config.sync?.activeProfile;
+    const defaultId = this.config.sync?.defaultProfile;
 
     if (profiles.length === 0) {
       console.log(chalk.yellow('No GitHub profiles configured'));
@@ -361,9 +361,9 @@ export class GitHubProfileManager {
 
     console.log(chalk.cyan('\nGitHub Repository Profiles:\n'));
     profiles.forEach(profile => {
-      const isActive = profile.id === activeId;
-      const marker = isActive ? chalk.green('✓') : ' ';
-      const label = isActive ? chalk.green('(active)') : '';
+      const isDefault = profile.id === defaultId;
+      const marker = isDefault ? chalk.green('✓') : ' ';
+      const label = isDefault ? chalk.green('(default)') : '';
 
       console.log(`${marker} ${chalk.white(profile.id)}: ${profile.displayName} ${label}`);
       console.log(`  ${chalk.gray(`${profile.config.owner}/${profile.config.repo}`)}`);
