@@ -24,7 +24,7 @@ Developer C: 0003-notification-system
 **Coordination**:
 ```bash
 # View team status
-/specweave:status --all
+/sw:status --all
 
 # Output:
 0001-authentication        ████████░░  65%  (Dev A)
@@ -74,14 +74,14 @@ my-app/
 **Orchestration**:
 ```bash
 # Start infra first
-cd infrastructure && /specweave:do
+cd infrastructure && /sw:do
 
 # Then backend (parallel)
-cd backend-auth && /specweave:do &
-cd backend-api && /specweave:do &
+cd backend-auth && /sw:do &
+cd backend-api && /sw:do &
 
 # Finally frontend
-cd frontend && /specweave:do
+cd frontend && /sw:do
 ```
 
 ---
@@ -92,13 +92,13 @@ cd frontend && /specweave:do
 
 ```bash
 # Create hotfix (bypasses WIP)
-/specweave:increment "Critical: Fix CVE-2025-1234" --type hotfix
+/sw:increment "Critical: Fix CVE-2025-1234" --type hotfix
 
 # Fast-track execution
-/specweave:do
+/sw:do
 
 # Expedited close
-/specweave:done 0001 --expedite
+/sw:done 0001 --expedite
 ```
 
 **Hotfix spec template**:
@@ -130,7 +130,7 @@ Parameterize query in SearchService.ts
 **When**: Technical unknown to investigate
 
 ```bash
-/specweave:increment "Spike: Evaluate GraphQL migration" --type spike
+/sw:increment "Spike: Evaluate GraphQL migration" --type spike
 ```
 
 **Spike structure**:
@@ -174,13 +174,13 @@ Proceed with 0011-graphql-phase-1
 specweave init . --brownfield
 
 # Import existing issues
-/specweave-github:sync --import-only --since "2025-01-01"
+/sw-github:sync --import-only --since "2025-01-01"
 
 # Create new increment
-/specweave:increment "New feature X"
+/sw:increment "New feature X"
 
 # Link to existing issue
-/specweave-github:create-issue 0001 --link-existing 42
+/sw-github:create-issue 0001 --link-existing 42
 ```
 
 ---
@@ -191,7 +191,7 @@ specweave init . --brownfield
 
 ```bash
 # Initialize multi-project
-/specweave:init-multiproject
+/sw:init-multiproject
 
 # Creates:
 .specweave/
@@ -208,8 +208,8 @@ specweave init . --brownfield
 
 **Switching projects**:
 ```bash
-/specweave:switch-project frontend
-/specweave:increment "New UI component"
+/sw:switch-project frontend
+/sw:increment "New UI component"
 ```
 
 ---
@@ -229,7 +229,7 @@ Q1 2025 Release Train:
 
 **Release command**:
 ```bash
-/specweave-release:npm
+/sw-release:npm
 # Creates version bump, git tag, changelog
 ```
 
@@ -240,7 +240,7 @@ Q1 2025 Release Train:
 **When**: Pre-commit quality check
 
 ```bash
-/specweave:qa 0001 --review-only
+/sw:qa 0001 --review-only
 ```
 
 ```
@@ -289,9 +289,9 @@ Here's a comprehensive reference of commands organized by when you'll use them:
 
 ```bash
 # Create new work
-/specweave:increment "feature"      # New feature increment
-/specweave:increment "fix" --type bug       # Bug fix
-/specweave:increment "spike" --type spike   # Exploration
+/sw:increment "feature"      # New feature increment
+/sw:increment "fix" --type bug       # Bug fix
+/sw:increment "spike" --type spike   # Exploration
 
 # Review specs
 cat .specweave/increments/0001-feature/spec.md
@@ -303,81 +303,81 @@ cat .specweave/increments/0001-feature/tasks.md
 
 ```bash
 # Execute work
-/specweave:do                        # Auto-resume active increment
-/specweave:do 0001                   # Specific increment
+/sw:do                        # Auto-resume active increment
+/sw:do 0001                   # Specific increment
 
 # Check progress
-/specweave:progress                  # All increments
-/specweave:progress 0001             # Specific increment
+/sw:progress                  # All increments
+/sw:progress 0001             # Specific increment
 
 # Workflow guidance
-/specweave:workflow                  # Smart suggestions
-/specweave:next                      # What to do next
+/sw:workflow                  # Smart suggestions
+/sw:next                      # What to do next
 ```
 
 ### Quality Phase
 
 ```bash
 # Validation
-/specweave:validate 0001             # Rule-based checks (120+ rules)
-/specweave:qa 0001                   # AI quality assessment
-/specweave:qa 0001 --pre             # Before starting work
-/specweave:qa 0001 --gate            # Before closing
+/sw:validate 0001             # Rule-based checks (120+ rules)
+/sw:qa 0001                   # AI quality assessment
+/sw:qa 0001 --pre             # Before starting work
+/sw:qa 0001 --gate            # Before closing
 
 # Testing
-/specweave:check-tests 0001          # Test coverage check
+/sw:check-tests 0001          # Test coverage check
 ```
 
 ### Completion Phase
 
 ```bash
 # Close increment
-/specweave:done 0001                 # Normal close (validates gates)
-/specweave:done 0001 --expedite      # Emergency close (skip gates)
+/sw:done 0001                 # Normal close (validates gates)
+/sw:done 0001 --expedite      # Emergency close (skip gates)
 
 # Sync documentation
-/specweave:sync-docs update          # Update living docs
-/specweave:sync-progress             # Full sync to all systems
+/sw:sync-docs update          # Update living docs
+/sw:sync-progress             # Full sync to all systems
 ```
 
 ### Lifecycle Management
 
 ```bash
 # Status transitions
-/specweave:pause 0001                # Pause (blocked, deprioritized)
-/specweave:resume 0001               # Resume paused work
-/specweave:backlog 0001              # Move to backlog
-/specweave:abandon 0001              # Cancel (obsolete, requirements changed)
+/sw:pause 0001                # Pause (blocked, deprioritized)
+/sw:resume 0001               # Resume paused work
+/sw:backlog 0001              # Move to backlog
+/sw:abandon 0001              # Cancel (obsolete, requirements changed)
 
 # Workspace cleanup
-/specweave:archive 0001              # Archive completed increment
-/specweave:archive --completed       # Archive all completed
-/specweave:restore 0001              # Restore archived increment
+/sw:archive 0001              # Archive completed increment
+/sw:archive --completed       # Archive all completed
+/sw:restore 0001              # Restore archived increment
 
 # Status overview
-/specweave:status                    # All increments
-/specweave:status --all              # Include completed
-/specweave:sync-status               # Fix status desync
+/sw:status                    # All increments
+/sw:status --all              # Include completed
+/sw:sync-status               # Fix status desync
 ```
 
 ### External Tool Sync
 
 ```bash
 # GitHub
-/specweave-github:status             # Check connection
-/specweave-github:create-issue 0001  # Create issue
-/specweave-github:sync 0001          # Sync progress
-/specweave-github:close-issue 0001   # Close issue
+/sw-github:status             # Check connection
+/sw-github:create-issue 0001  # Create issue
+/sw-github:sync 0001          # Sync progress
+/sw-github:close-issue 0001   # Close issue
 
 # JIRA
-/specweave-jira:status               # Check connection
-/specweave-jira:sync 0001            # Sync to JIRA
-/specweave-jira:sync 0001 --create   # Create Epic hierarchy
+/sw-jira:status               # Check connection
+/sw-jira:sync 0001            # Sync to JIRA
+/sw-jira:sync 0001 --create   # Create Epic hierarchy
 
 # Azure DevOps
-/specweave-ado:status                # Check connection
-/specweave-ado:sync 0001             # Sync to ADO
-/specweave-ado:create-workitem 0001  # Create work item
+/sw-ado:status                # Check connection
+/sw-ado:sync 0001             # Sync to ADO
+/sw-ado:create-workitem 0001  # Create work item
 ```
 
 ---

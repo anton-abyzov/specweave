@@ -28,7 +28,7 @@ justification: |
 ## Usage
 
 ```bash
-/specweave-jira:cleanup-duplicates <feature-id> [--dry-run]
+/sw-jira:cleanup-duplicates <feature-id> [--dry-run]
 ```
 
 ## What It Does
@@ -47,7 +47,7 @@ justification: |
 ### Dry Run (No Changes)
 
 ```bash
-/specweave-jira:cleanup-duplicates FS-031 --dry-run
+/sw-jira:cleanup-duplicates FS-031 --dry-run
 ```
 
 **Output**:
@@ -79,7 +79,7 @@ This was a DRY RUN - no changes made.
 ### Actual Cleanup
 
 ```bash
-/specweave-jira:cleanup-duplicates FS-031
+/sw-jira:cleanup-duplicates FS-031
 ```
 
 **Output**:
@@ -156,7 +156,7 @@ Auto-closed by SpecWeave Duplicate Cleanup
 ```
 WARNING: 10 duplicate(s) detected!
    Run cleanup command to resolve:
-   /specweave-jira:cleanup-duplicates FS-031
+   /sw-jira:cleanup-duplicates FS-031
 ```
 
 ## Architecture
@@ -182,9 +182,9 @@ summary ~ "[FS-031]" ORDER BY created ASC
 
 ## Related Commands
 
-- `/specweave-jira:sync` - Sync Feature to JIRA (with duplicate detection)
-- `/specweave-jira:reconcile` - Reconcile issue states
-- `/specweave:validate` - Validate increment completeness
+- `/sw-jira:sync` - Sync Feature to JIRA (with duplicate detection)
+- `/sw-jira:reconcile` - Reconcile issue states
+- `/sw:validate` - Validate increment completeness
 
 ## Implementation
 
@@ -211,7 +211,7 @@ After cleanup:
 
 1. **Verify cleanup**: JQL query `summary ~ "[FS-031]"`
 2. **Check Feature FEATURE.md**: Verify frontmatter has correct issue keys
-3. **Re-run sync**: `/specweave-jira:sync` (should show no duplicates)
+3. **Re-run sync**: `/sw-jira:sync` (should show no duplicates)
 4. **Duplicate detection**: Automatically enabled via JiraDuplicateDetector
 
 ---

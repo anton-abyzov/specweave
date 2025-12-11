@@ -76,7 +76,7 @@ Each request produced isolated code. No shared services. No consistent patterns.
 
 **Real cost**: Technical debt from day 1. Refactoring becomes the norm, not the exception.
 
-**SpecWeave solution**: The `/specweave:increment` command creates a **complete architecture** before any code is written. All components are designed to work together.
+**SpecWeave solution**: The `/sw:increment` command creates a **complete architecture** before any code is written. All components are designed to work together.
 
 ---
 
@@ -97,7 +97,7 @@ Generated code →  copy/paste → ship
 
 **Real cost**: Bugs in production. Security vulnerabilities. Customer trust destroyed.
 
-**SpecWeave solution**: `/specweave:qa` and `/specweave:validate` enforce quality gates. Code doesn't ship until tests pass, security is verified, and acceptance criteria are met.
+**SpecWeave solution**: `/sw:qa` and `/sw:validate` enforce quality gates. Code doesn't ship until tests pass, security is verified, and acceptance criteria are met.
 
 ---
 
@@ -140,7 +140,7 @@ Developer B: "Claude, add a customer model"
 
 **Real cost**: Team velocity drops. Conflicts waste hours. Inconsistent codebase emerges.
 
-**SpecWeave solution**: One increment = one source of truth. `/specweave:status --all` shows who's working on what. WIP limits prevent stepping on each other's toes.
+**SpecWeave solution**: One increment = one source of truth. `/sw:status --all` shows who's working on what. WIP limits prevent stepping on each other's toes.
 
 ---
 
@@ -255,7 +255,7 @@ Week 2:
 
 ```
 Day 1:
-  /specweave:increment "User authentication with JWT"
+  /sw:increment "User authentication with JWT"
 
   → spec.md created with:
     - AC-US1-01: Login with email/password
@@ -275,13 +275,13 @@ Day 1:
     - T-004: Write security tests
 
 Day 2:
-  /specweave:do
+  /sw:do
   → All tasks completed with tests
   → Rate limiting included from start
   → ENV vars documented
 
 Day 3:
-  /specweave:done
+  /sw:done
   → Quality gates pass
   → Security audit passes (rate limiting present)
   → Documentation complete

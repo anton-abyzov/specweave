@@ -2,13 +2,13 @@
 sidebar_position: 7
 ---
 
-# /specweave:save - Save Changes Across Repositories
+# /sw:save - Save Changes Across Repositories
 
 Save and push changes across all repositories in your project. Works for both single repos and umbrella multi-repo setups.
 
 ## Overview
 
-The `/specweave:save` command simplifies git operations across multiple repositories:
+The `/sw:save` command simplifies git operations across multiple repositories:
 
 - **Detects repositories** - Finds all repos (umbrella childRepos or current repo)
 - **Checks for changes** - Identifies repos with uncommitted changes
@@ -20,19 +20,19 @@ The `/specweave:save` command simplifies git operations across multiple reposito
 
 ```bash
 # Interactive (prompts for commit message)
-/specweave:save
+/sw:save
 
 # With commit message
-/specweave:save "feat: Add menu builder feature"
+/sw:save "feat: Add menu builder feature"
 
 # Dry run (show what would happen, don't execute)
-/specweave:save --dry-run
+/sw:save --dry-run
 
 # Save specific repos only (umbrella mode)
-/specweave:save "fix: Bug fixes" --repos frontend,backend
+/sw:save "fix: Bug fixes" --repos frontend,backend
 
 # Skip repos without remote (don't prompt)
-/specweave:save "chore: Updates" --skip-no-remote
+/sw:save "chore: Updates" --skip-no-remote
 ```
 
 ## Workflow Example
@@ -40,7 +40,7 @@ The `/specweave:save` command simplifies git operations across multiple reposito
 ### Multi-Repo (Umbrella Mode)
 
 ```
-/specweave:save "feat: Complete user registration flow"
+/sw:save "feat: Complete user registration flow"
 
 Scanning for repositories...
 Mode: Umbrella (3 child repos)
@@ -78,7 +78,7 @@ Summary:
 ### Single Repo Mode
 
 ```
-/specweave:save "chore: Update dependencies"
+/sw:save "chore: Update dependencies"
 
 Scanning for repositories...
 Mode: Single repository
@@ -194,9 +194,9 @@ backend:
 
 ## Related Commands
 
-- [`/specweave-release:align`](/docs/enterprise/release-management) - Align versions across repos (for releases)
-- [`/specweave:sync-progress`](/docs/commands/overview#monitoring-commands) - Sync task progress to external tools
-- [`/specweave-github:sync`](/docs/integrations/issue-trackers) - Sync increments to GitHub issues
+- [`/sw-release:align`](/docs/enterprise/release-management) - Align versions across repos (for releases)
+- [`/sw:sync-progress`](/docs/commands/overview#monitoring-commands) - Sync task progress to external tools
+- [`/sw-github:sync`](/docs/integrations/issue-trackers) - Sync increments to GitHub issues
 
 ## See Also
 

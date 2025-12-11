@@ -537,7 +537,7 @@ File: .specweave/increments/0020-siem-implementation/spec.md
 
 **SOC 2 Requires**: Mapping controls to technical implementations
 
-**SpecWeave Command**: `/specweave:compliance-matrix --standard=soc2`
+**SpecWeave Command**: `/sw:compliance-matrix --standard=soc2`
 
 **Output**:
 
@@ -568,7 +568,7 @@ File: .specweave/increments/0020-siem-implementation/spec.md
 **SpecWeave Solution**:
 ```bash
 # Every backup test creates an increment with evidence
-/specweave:increment "Quarterly backup restoration test - Q2 2024"
+/sw:increment "Quarterly backup restoration test - Q2 2024"
 
 # Spec.md documents procedure
 # Tasks.md includes test steps
@@ -605,7 +605,7 @@ Rollback: Plan documented in plan.md
 **SpecWeave Solution**:
 ```bash
 # Every incident = increment
-/specweave:increment "Incident 003: DDoS attack on API gateway"
+/sw:increment "Incident 003: DDoS attack on API gateway"
 
 # Spec.md: What happened, impact, timeline
 # Plan.md: Mitigation steps, root cause
@@ -699,16 +699,16 @@ ROI: 1,500% in Year 1
 
 ```bash
 # Generate SOC 2 traceability matrix
-/specweave:compliance-matrix --standard=soc2
+/sw:compliance-matrix --standard=soc2
 
 # Validate SOC 2 control coverage
-/specweave:compliance-check --standard=soc2
+/sw:compliance-check --standard=soc2
 
 # Auto-generate SOC 2 readiness report
-/specweave:compliance-report --standard=soc2 --output=reports/soc2-readiness-2025.pdf
+/sw:compliance-report --standard=soc2 --output=reports/soc2-readiness-2025.pdf
 
 # Create incident response increment
-/specweave:incident --severity=P1 --description="DDoS attack on API"
+/sw:incident --severity=P1 --description="DDoS attack on API"
 ```
 
 ---

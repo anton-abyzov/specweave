@@ -8,7 +8,7 @@
  * - Fetches repos from Bitbucket workspace via API v2.0
  * - Filters by user-selected pattern (all/glob/regex)
  * - Creates background clone jobs
- * - Tracks progress via /specweave:jobs
+ * - Tracks progress via /sw:jobs
  *
  * @module cli/helpers/init/bitbucket-repo-cloning
  */
@@ -347,8 +347,8 @@ export async function triggerBitbucketRepoCloning(
 
   if (result.isBackground) {
     console.log(chalk.green(`   ✓ Clone job started in background (PID: ${result.pid})`));
-    console.log(chalk.cyan('\n   Check progress: /specweave:jobs'));
-    console.log(chalk.cyan(`   Kill if needed: /specweave:jobs --kill ${result.job.id}`));
+    console.log(chalk.cyan('\n   Check progress: /sw:jobs'));
+    console.log(chalk.cyan(`   Kill if needed: /sw:jobs --kill ${result.job.id}`));
     console.log(chalk.gray('\n   Init will continue - cloning runs independently.\n'));
   } else {
     console.log(chalk.yellow('   ⚠️ Running in foreground (clone worker not found)'));

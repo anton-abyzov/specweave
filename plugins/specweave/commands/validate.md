@@ -10,7 +10,7 @@ You are helping the user validate a SpecWeave increment with optional AI-powered
 ## Usage
 
 ```bash
-/specweave:validate <increment-id> [--quality] [--export] [--fix] [--always]
+/sw:validate <increment-id> [--quality] [--export] [--fix] [--always]
 ```
 
 ## Arguments
@@ -68,7 +68,7 @@ This command implements a **two-gate validation system**:
 ### Step 1: Parse and Validate Arguments
 
 1. **Extract increment ID**:
-   - Parse from command: `/specweave:validate 001` → "001"
+   - Parse from command: `/sw:validate 001` → "001"
    - Normalize to 4-digit format: "0001"
    - Support formats: "1", "01", "001", "0001"
 
@@ -92,7 +92,7 @@ Available increments:
   • 0003-payment-processing
   • 0004-reporting-dashboard
 
-Usage: /specweave:validate-increment <id> [--quality] [--export] [--fix] [--always]
+Usage: /sw:validate-increment <id> [--quality] [--export] [--fix] [--always]
 ```
 
 ### Step 1.5: Sync AC Status (NEW - v0.33.0)
@@ -263,7 +263,7 @@ Action required:
 3. 🔴 FIX AC COVERAGE ERRORS (v0.23.0 - US-Task Linkage):
    - Create tasks for 4 uncovered ACs (AC-US2-03, AC-US3-01, AC-US3-05, AC-US4-02)
    - Add **Satisfies ACs** field to 2 orphan tasks (T-008, T-015)
-   - Run: /specweave:validate 0001 to verify 100% coverage
+   - Run: /sw:validate 0001 to verify 100% coverage
 4. Fix missing acceptance criteria for US-003
 5. Address "real-time updates" in plan.md or remove from spec.md
 6. Consider breaking down T012 into smaller tasks
@@ -591,7 +591,7 @@ To disable:
   1. Initialize your project
   2. Set validation.quality_judge.always_run: false
 
-Or run: /specweave:validate-increment <id> (quality will run automatically)
+Or run: /sw:validate-increment <id> (quality will run automatically)
 ```
 
 ### Step 8: Generate Validation Report
@@ -604,7 +604,7 @@ Or run: /specweave:validate-increment <id> (quality will run automatically)
 # Validation Report: Increment 0001-authentication
 
 Generated: 2025-10-28 14:32:15 UTC
-Command: /specweave:validate-increment 001 --quality
+Command: /sw:validate-increment 001 --quality
 
 ## Executive Summary
 
@@ -707,7 +707,7 @@ Command: /specweave:validate-increment 001 --quality
 
 | Date | Rule-Based | Quality Score | Command |
 |------|------------|---------------|---------|
-| 2025-10-28 | 120/120 | 87/100 | /specweave:validate-increment 001 --quality |
+| 2025-10-28 | 120/120 | 87/100 | /sw:validate-increment 001 --quality |
 | 2025-10-25 | 115/120 | N/A | Auto-validation on save |
 | 2025-10-24 | 110/120 | N/A | Auto-validation on save |
 
@@ -728,7 +728,7 @@ For details: .specweave/docs/internal/delivery/guides/increment-validation.md
 ### Example 1: Basic Validation (Rule-Based Only)
 
 ```bash
-/specweave:validate 001
+/sw:validate 001
 ```
 
 **Output**:
@@ -741,7 +741,7 @@ For details: .specweave/docs/internal/delivery/guides/increment-validation.md
 ### Example 2: Validation with Quality Assessment
 
 ```bash
-/specweave:validate 001 --quality
+/sw:validate 001 --quality
 ```
 
 **Output**:
@@ -758,7 +758,7 @@ Suggestions: 3 (2 high, 1 medium)
 ### Example 3: Validate and Export Suggestions
 
 ```bash
-/specweave:validate 001 --quality --export
+/sw:validate 001 --quality --export
 ```
 
 **Output**:
@@ -775,7 +775,7 @@ Suggestions: 3 (2 high, 1 medium)
 ### Example 4: Auto-Fix Issues
 
 ```bash
-/specweave:validate 001 --quality --fix
+/sw:validate 001 --quality --fix
 ```
 
 **Output**:
@@ -796,7 +796,7 @@ Re-validated: 92/100 (improvement: +5)
 ### Example 5: Make Quality Assessment Default
 
 ```bash
-/specweave:validate 001 --always
+/sw:validate 001 --always
 ```
 
 **Output**:
@@ -818,7 +818,7 @@ Available increments:
   • 0002-core-enhancements
   • 0003-payment-processing
 
-Usage: /specweave:validate-increment <id> [--quality] [--export] [--fix] [--always]
+Usage: /sw:validate-increment <id> [--quality] [--export] [--fix] [--always]
 ```
 
 ### Invalid Flags
@@ -831,7 +831,7 @@ Valid flags:
   --fix       Auto-fix issues (experimental)
   --always    Make quality assessment default
 
-Usage: /specweave:validate-increment <id> [--quality] [--export] [--fix] [--always]
+Usage: /sw:validate-increment <id> [--quality] [--export] [--fix] [--always]
 ```
 
 ### Quality Assessment Failed
@@ -841,7 +841,7 @@ Usage: /specweave:validate-increment <id> [--quality] [--export] [--fix] [--alwa
 ✅ Rule-based validation completed successfully (120/120)
 
 You can:
-  1. Try again: /specweave:validate-increment 001 --quality
+  1. Try again: /sw:validate-increment 001 --quality
   2. Continue with rule-based results
   3. Check logs: .specweave/increments/0001-name/logs/validation.log
 ```
@@ -862,7 +862,7 @@ Export suggestions to tasks? [Y/n]: _
 
 This command can be triggered by:
 
-1. **Manual execution**: `/specweave:validate 001 --quality`
+1. **Manual execution**: `/sw:validate 001 --quality`
 2. **Post-document-save hook**: Auto-runs rule-based validation
 3. **Pre-implementation hook**: Validates before starting tasks
 4. **CI/CD pipeline**: Automated validation in GitHub Actions
@@ -877,7 +877,7 @@ if [[ "$FILE" =~ spec\.md|plan\.md|tasks\.md|tests\.md ]]; then
   INCREMENT_ID=$(echo "$FILE" | grep -oP '(?<=increments/)\d{4}')
 
   # Run validation (rule-based only, no quality unless config says so)
-  /specweave:validate-increment "$INCREMENT_ID"
+  /sw:validate-increment "$INCREMENT_ID"
 fi
 ```
 
@@ -888,7 +888,7 @@ All validation settings use sensible defaults. Quality assessment is prompted ea
 ## Related Commands
 
 - `/create-increment`: Create new increment (auto-validates on creation)
-- `/specweave:sync-docs`: Review strategic documentation before implementation
+- `/sw:sync-docs`: Review strategic documentation before implementation
 - `/close-increment`: Close increment (validates before closing)
 - `/sync-github`: Sync to GitHub (validates before sync)
 
@@ -902,6 +902,6 @@ All validation settings use sensible defaults. Quality assessment is prompted ea
 
 **Important**: This command works alongside intent-based validation. Users can say:
 - "Validate quality of increment 001" (intent-based)
-- `/specweave:validate 001 --quality` (slash command)
+- `/sw:validate 001 --quality` (slash command)
 
 Both routes activate the same validation logic for consistency.

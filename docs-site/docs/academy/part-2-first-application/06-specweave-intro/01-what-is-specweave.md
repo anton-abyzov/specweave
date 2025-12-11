@@ -229,7 +229,7 @@ sequenceDiagram
     participant TL as Tech Lead Agent
     participant QA as QA Lead Agent
 
-    You->>PM: /specweave:increment "Feature X"
+    You->>PM: /sw:increment "Feature X"
     PM->>PM: Analyze request
     PM-->>You: spec.md (user stories, ACs)
 
@@ -241,10 +241,10 @@ sequenceDiagram
     TL->>TL: Break into tasks
     TL-->>You: tasks.md (tasks, test plans)
 
-    You->>You: /specweave:do
+    You->>You: /sw:do
     Note over You: Implement tasks
 
-    You->>QA: /specweave:done
+    You->>QA: /sw:done
     QA->>QA: Validate quality
     QA-->>You: Completion report
 ```
@@ -270,7 +270,7 @@ AI: [500 lines of code]
 ### SpecWeave Approach
 
 ```
-You: /specweave:increment "Task Tracker CLI with add, list, complete, delete"
+You: /sw:increment "Task Tracker CLI with add, list, complete, delete"
 
 PM Agent creates spec.md:
 - US-001: Add Task
@@ -288,10 +288,10 @@ Tech Lead Agent creates tasks.md:
 - T-001 through T-012 (12 implementation tasks)
 - BDD test scenarios for each task
 
-You: /specweave:do
+You: /sw:do
 [Code generated with full context]
 
-You: /specweave:done 0001
+You: /sw:done 0001
 QA validates:
 ✓ 12/12 tasks complete
 ✓ 15/15 ACs satisfied

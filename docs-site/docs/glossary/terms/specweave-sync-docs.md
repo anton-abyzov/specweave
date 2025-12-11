@@ -1,12 +1,12 @@
 ---
 id: specweave-sync-docs
-title: /specweave:sync-docs Command
+title: /sw:sync-docs Command
 sidebar_label: specweave:sync-docs
 ---
 
-# /specweave:sync-docs Command
+# /sw:sync-docs Command
 
-The **`/specweave:sync-docs`** command provides **phase-based** synchronization between strategic [living documentation](/docs/glossary/terms/living-docs) and implementation.
+The **`/sw:sync-docs`** command provides **phase-based** synchronization between strategic [living documentation](/docs/glossary/terms/living-docs) and implementation.
 
 > **Note**: This is NOT bidirectional sync. It's two separate one-way operations at different phases:
 > - **Review mode** = Pull context (docs → you)
@@ -26,10 +26,10 @@ The **`/specweave:sync-docs`** command provides **phase-based** synchronization 
 
 ```bash
 # Before implementation (review strategic docs)
-/specweave:sync-docs review
+/sw:sync-docs review
 
 # After implementation (update with learnings)
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 ## Review Mode
@@ -37,7 +37,7 @@ The **`/specweave:sync-docs`** command provides **phase-based** synchronization 
 Before starting work, review strategic documentation:
 
 ```bash
-$ /specweave:sync-docs review
+$ /sw:sync-docs review
 
 📚 Strategic Documentation Review
 
@@ -61,7 +61,7 @@ $ /specweave:sync-docs review
 After completing work, sync learnings:
 
 ```bash
-$ /specweave:sync-docs update
+$ /sw:sync-docs update
 
 📤 Syncing to Living Documentation...
 
@@ -96,4 +96,4 @@ $ /specweave:sync-docs update
 - [External Tool Sync](/docs/glossary/terms/split-source-sync) - Split-source sync pattern (content vs status)
 - [ADR](/docs/glossary/terms/adr) - Architecture decisions
 - [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Sync feature
-- [/specweave:done](/docs/glossary/terms/specweave-done) - Close increment
+- [/sw:done](/docs/glossary/terms/specweave-done) - Close increment

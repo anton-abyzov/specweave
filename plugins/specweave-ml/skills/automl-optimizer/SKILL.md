@@ -372,7 +372,7 @@ optimizer.optimize(n_trials=100)
 ### Living Docs Integration
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 Updates:

@@ -104,7 +104,7 @@ Scenario: Weak password rejected
 
 ### Quality Gates
 
-`/specweave:done` validates:
+`/sw:done` validates:
 - ✓ All tasks have test plans
 - ✓ Test coverage meets threshold (default: 70%)
 - ✓ All acceptance criteria covered by tests

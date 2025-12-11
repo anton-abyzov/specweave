@@ -12,8 +12,8 @@ Increment → Living Docs → GitHub
 ```
 
 **USE INSTEAD**:
-- `/specweave:sync-docs update` - Generate living docs from increments
-- `/specweave-github:sync` - Sync living docs to GitHub Issues
+- `/sw:sync-docs update` - Generate living docs from increments
+- `/sw-github:sync` - Sync living docs to GitHub Issues
 - Result: Issues use correct `US-XXX` or `FS-YY-MM-DD` format
 
 **WHY THIS IS DEPRECATED**:
@@ -442,7 +442,7 @@ tasks:
 
 ## Workflow Integration
 
-### Increment Creation (`/specweave:inc`)
+### Increment Creation (`/sw:inc`)
 
 When a new increment is created:
 
@@ -480,7 +480,7 @@ When a new increment is created:
    https://github.com/owner/repo/issues/130
    ```
 
-### Task Completion (`/specweave:do`)
+### Task Completion (`/sw:do`)
 
 After each task:
 
@@ -512,7 +512,7 @@ After each task:
    - Log comment ID
    - Update sync timestamp
 
-### Increment Completion (`/specweave:done`)
+### Increment Completion (`/sw:done`)
 
 When increment is closed:
 
@@ -603,7 +603,7 @@ Possible causes:
 - Wrong repository
 - Access permissions
 
-Run /specweave:github:status 0004 to check sync state.
+Run /sw:github:status 0004 to check sync state.
 ```
 
 ### Permission Denied
@@ -731,7 +731,7 @@ plugins:
 ## Example Session
 
 ```
-User: /specweave:github:create-issue 0004
+User: /sw:github:create-issue 0004
 
 GitHub Manager Agent:
 📦 Creating GitHub issue for increment 0004...
@@ -775,7 +775,7 @@ You can now:
 
 - **github-sync skill**: High-level sync orchestration
 - **github-issue-tracker skill**: Task-level tracking
-- **Commands**: `/specweave:github:*` commands all use this agent
+- **Commands**: `/sw:github:*` commands all use this agent
 
 ---
 

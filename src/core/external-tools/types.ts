@@ -31,7 +31,7 @@ export interface ExternalItemsCounts {
 }
 
 // ============================================================================
-// TIER 2: SUMMARY BY PROJECT (for /specweave:external overview)
+// TIER 2: SUMMARY BY PROJECT (for /sw:external overview)
 // Aggregated counts per project/board, no item details
 // ============================================================================
 

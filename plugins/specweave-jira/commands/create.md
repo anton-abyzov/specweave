@@ -5,7 +5,7 @@ description: Create JIRA issue from SpecWeave increment
 
 # Create JIRA Issue Command
 
-**Usage**: `/specweave-jira:create <increment-id>`
+**Usage**: `/sw-jira:create <increment-id>`
 
 **Purpose**: Create an Epic or Story in JIRA from a SpecWeave increment
 
@@ -140,7 +140,7 @@ This setting was configured during 'specweave init'.
 ## Example Usage
 
 ```
-User: /specweave-jira:create 0005-payment-integration
+User: /sw-jira:create 0005-payment-integration
 
 # If permission granted:
 Claude: Checking JIRA permissions...
@@ -191,8 +191,8 @@ After successful creation, the increment's `metadata.json` will be updated:
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-jira:pull` | Pull changes from JIRA |
-| `/specweave-jira:push` | Push progress to JIRA |
-| `/specweave-jira:sync` | Two-way sync |
-| `/specweave-jira:status` | Check sync status |
-| `/specweave-jira:close` | Close issue when complete |
+| `/sw-jira:pull` | Pull changes from JIRA |
+| `/sw-jira:push` | Push progress to JIRA |
+| `/sw-jira:sync` | Two-way sync |
+| `/sw-jira:status` | Check sync status |
+| `/sw-jira:close` | Close issue when complete |

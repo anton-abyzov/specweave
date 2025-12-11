@@ -23,7 +23,7 @@ A **Dark Mode Toggle** — simple but complete:
 ## Step 1: Create the Increment
 
 ```bash
-/specweave:increment "Add dark mode toggle"
+/sw:increment "Add dark mode toggle"
 ```
 
 ### What Happens
@@ -106,7 +106,7 @@ Just tell Claude: "Add AC-US1-05 for animated transitions"
 ## Step 3: Execute the Tasks
 
 ```bash
-/specweave:do
+/sw:do
 ```
 
 Watch as each task is completed:
@@ -143,7 +143,7 @@ EXECUTION COMPLETE: 5/5 tasks
 ## Step 4: Check Progress
 
 ```bash
-/specweave:progress
+/sw:progress
 ```
 
 ```
@@ -163,7 +163,7 @@ Status: Ready to close
 ## Step 5: Close the Increment
 
 ```bash
-/specweave:next
+/sw:next
 ```
 
 This runs the [quality gates](/docs/glossary/terms/acceptance-criteria):
@@ -266,11 +266,11 @@ export function ThemeToggle() {
 You just completed a full cycle:
 
 ```
-1. /specweave:increment  → Created spec, plan, tasks
+1. /sw:increment  → Created spec, plan, tasks
 2. (Reviewed specs)      → Verified requirements
-3. /specweave:do         → Implemented all tasks
-4. /specweave:progress   → Checked status
-5. /specweave:next       → Validated and closed
+3. /sw:do         → Implemented all tasks
+4. /sw:progress   → Checked status
+5. /sw:next       → Validated and closed
 ```
 
 **Total time**: ~30 minutes
@@ -289,9 +289,9 @@ Choose a simple feature for your project:
 - Add a simple notification toast
 
 ```bash
-/specweave:increment "Your feature here"
-/specweave:do
-/specweave:next
+/sw:increment "Your feature here"
+/sw:do
+/sw:next
 ```
 
 ---
@@ -330,10 +330,10 @@ npm test -- --verbose
 
 ## Key Takeaways
 
-1. **One command** creates all specs: `/specweave:increment`
+1. **One command** creates all specs: `/sw:increment`
 2. **Review** before implementing
-3. **Execute** with `/specweave:do`
-4. **Close** with `/specweave:next` (validates quality gates)
+3. **Execute** with `/sw:do`
+4. **Close** with `/sw:next` (validates quality gates)
 5. **Everything documented** automatically
 
 ---

@@ -5,11 +5,11 @@ Query and export sync audit logs. Supports date range, platform, and result filt
 ## Usage
 
 ```bash
-/specweave:sync-logs                       # Last 24 hours
-/specweave:sync-logs --since "2025-12-01"  # Since specific date
-/specweave:sync-logs --platform github     # Filter by platform
-/specweave:sync-logs --result denied       # Filter by result
-/specweave:sync-logs --export logs.json    # Export to file
+/sw:sync-logs                       # Last 24 hours
+/sw:sync-logs --since "2025-12-01"  # Since specific date
+/sw:sync-logs --platform github     # Filter by platform
+/sw:sync-logs --result denied       # Filter by result
+/sw:sync-logs --export logs.json    # Export to file
 ```
 
 ## Arguments
@@ -28,7 +28,7 @@ Query and export sync audit logs. Supports date range, platform, and result filt
 ### View Recent Logs
 
 ```bash
-/specweave:sync-logs
+/sw:sync-logs
 ```
 
 Output:
@@ -49,13 +49,13 @@ Use --limit to show more, --export to save all
 ### Filter by Platform
 
 ```bash
-/specweave:sync-logs --platform github
+/sw:sync-logs --platform github
 ```
 
 ### Filter by Result
 
 ```bash
-/specweave:sync-logs --result denied
+/sw:sync-logs --result denied
 ```
 
 Shows only denied operations (permission enforcement in action):
@@ -73,20 +73,20 @@ Shows only denied operations (permission enforcement in action):
 ### Date Range Query
 
 ```bash
-/specweave:sync-logs --since "2025-12-01" --until "2025-12-02"
+/sw:sync-logs --since "2025-12-01" --until "2025-12-02"
 ```
 
 ### Export to File
 
 ```bash
 # Export to JSON
-/specweave:sync-logs --export logs.json
+/sw:sync-logs --export logs.json
 
 # Export to CSV (for spreadsheets)
-/specweave:sync-logs --export logs.csv
+/sw:sync-logs --export logs.csv
 
 # Export to JSONL (for processing)
-/specweave:sync-logs --export logs.jsonl
+/sw:sync-logs --export logs.jsonl
 ```
 
 ## Output Formats
@@ -127,5 +127,5 @@ timestamp,platform,operation,itemId,result,reason,error,durationMs
 
 ## Related
 
-- `/specweave:sync-monitor`: Dashboard with activity summary
-- `/specweave:notifications`: View sync failure notifications
+- `/sw:sync-monitor`: Dashboard with activity summary
+- `/sw:notifications`: View sync failure notifications

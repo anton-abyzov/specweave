@@ -1,6 +1,6 @@
 ---
 name: ado-sync
-description: Bidirectional synchronization between SpecWeave increments and Azure DevOps work items (two-way sync by default). Activates ONLY when user asks questions about Azure DevOps integration or needs help configuring ADO sync. Does NOT activate for slash commands. For syncing, use /specweave-ado:sync command instead.
+description: Bidirectional synchronization between SpecWeave increments and Azure DevOps work items (two-way sync by default). Activates ONLY when user asks questions about Azure DevOps integration or needs help configuring ADO sync. Does NOT activate for slash commands. For syncing, use /sw-ado:sync command instead.
 ---
 
 # Azure DevOps Sync Skill
@@ -9,7 +9,7 @@ description: Bidirectional synchronization between SpecWeave increments and Azur
 
 **Default Behavior**: **Bidirectional (two-way) sync** - Changes in either system are automatically synchronized
 
-**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about Azure DevOps sync. For actual syncing, users should use the `/specweave-ado:sync` command directly. This skill should NOT auto-activate when the command is being invoked.
+**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about Azure DevOps sync. For actual syncing, users should use the `/sw-ado:sync` command directly. This skill should NOT auto-activate when the command is being invoked.
 
 **Capabilities**:
 - Bidirectional sync: SpecWeave ↔ ADO (default)
@@ -31,7 +31,7 @@ description: Bidirectional synchronization between SpecWeave increments and Azur
 - User needs help configuring Azure DevOps integration
 
 ❌ **Do NOT activate when**:
-- User invokes `/specweave-ado:sync` command (command handles it)
+- User invokes `/sw-ado:sync` command (command handles it)
 - Command is already running (avoid duplicate invocation)
 - Task completion hook is syncing (automatic process)
 - "Close ADO work item when done"
@@ -87,13 +87,13 @@ Add to `.specweave/config.json`:
 
 ## Commands Available
 
-### `/specweave-ado:create-workitem <increment-id>`
+### `/sw-ado:create-workitem <increment-id>`
 
 **Purpose**: Create ADO work item from increment
 
 **Example**:
 ```bash
-/specweave-ado:create-workitem 0005
+/sw-ado:create-workitem 0005
 ```
 
 **Result**:
@@ -104,13 +104,13 @@ Add to `.specweave/config.json`:
 
 ---
 
-### `/specweave-ado:sync <increment-id>`
+### `/sw-ado:sync <increment-id>`
 
 **Purpose**: Sync increment progress with ADO work item
 
 **Example**:
 ```bash
-/specweave-ado:sync 0005
+/sw-ado:sync 0005
 ```
 
 **Result**:
@@ -121,13 +121,13 @@ Add to `.specweave/config.json`:
 
 ---
 
-### `/specweave-ado:close-workitem <increment-id>`
+### `/sw-ado:close-workitem <increment-id>`
 
 **Purpose**: Close ADO work item when increment complete
 
 **Example**:
 ```bash
-/specweave-ado:close-workitem 0005
+/sw-ado:close-workitem 0005
 ```
 
 **Result**:
@@ -137,13 +137,13 @@ Add to `.specweave/config.json`:
 
 ---
 
-### `/specweave-ado:status <increment-id>`
+### `/sw-ado:status <increment-id>`
 
 **Purpose**: Check ADO sync status for increment
 
 **Example**:
 ```bash
-/specweave-ado:status 0005
+/sw-ado:status 0005
 ```
 
 **Result**:
@@ -193,10 +193,10 @@ Sync Enabled: ✅
 
 ### When Increment Completes
 
-**Trigger**: `/specweave:done` command
+**Trigger**: `/sw:done` command
 
 **Flow**:
-1. User runs `/specweave:done 0005`
+1. User runs `/sw:done 0005`
 2. Validate all tasks complete
 3. Close ADO work item automatically
 4. Add completion comment with summary
@@ -353,10 +353,10 @@ Sync Enabled: ✅
 
 ## Related Commands
 
-- `/specweave:inc` - Create increment (auto-creates ADO work item if enabled)
-- `/specweave:do` - Execute tasks (auto-syncs progress to ADO)
-- `/specweave:done` - Complete increment (auto-closes ADO work item)
-- `/specweave:status` - Show increment status (includes ADO sync status)
+- `/sw:inc` - Create increment (auto-creates ADO work item if enabled)
+- `/sw:do` - Execute tasks (auto-syncs progress to ADO)
+- `/sw:done` - Complete increment (auto-closes ADO work item)
+- `/sw:status` - Show increment status (includes ADO sync status)
 
 ---
 
@@ -381,7 +381,7 @@ Sync Enabled: ✅
 # User completed 3 tasks manually
 # Now sync to ADO
 
-/specweave-ado:sync 0005
+/sw-ado:sync 0005
 
 # Result: ADO Epic #12345 updated with 30% progress
 ```
@@ -389,7 +389,7 @@ Sync Enabled: ✅
 ### Example 3: Check Sync Status
 
 ```bash
-/specweave-ado:status 0005
+/sw-ado:status 0005
 
 # Output:
 # Work Item: #12345

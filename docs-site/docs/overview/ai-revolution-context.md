@@ -172,7 +172,7 @@ Every feature in SpecWeave has:
 
 1. **You describe the feature**
    ```
-   /specweave:increment "User authentication with OAuth"
+   /sw:increment "User authentication with OAuth"
    ```
 
 2. **AI generates spec.md**
@@ -197,7 +197,7 @@ Every feature in SpecWeave has:
 
 6. **Implementation runs autonomously**
    ```
-   /specweave:do
+   /sw:do
    ```
    - AI writes code following the plan
    - Tests run automatically
@@ -205,7 +205,7 @@ Every feature in SpecWeave has:
 
 7. **Quality gates validate completion**
    ```
-   /specweave:done 0001
+   /sw:done 0001
    ```
    - All tasks checked? ✓
    - All tests passing? ✓

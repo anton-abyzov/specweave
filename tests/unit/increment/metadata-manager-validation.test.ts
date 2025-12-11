@@ -120,7 +120,7 @@ describe('MetadataManager Duplicate Validation', () => {
         expect(message).toContain('Resolution options');
         expect(message).toContain('Use a different increment number');
         expect(message).toContain('Delete/archive the existing increment');
-        expect(message).toContain('/specweave:fix-duplicates');
+        expect(message).toContain('/sw:fix-duplicates');
       }
     });
 

@@ -5,7 +5,7 @@
  *
  * WHY THIS EXISTS:
  * - Users expect GitHub issues to update automatically when work starts/completes
- * - Manual `/specweave:sync-progress` is friction
+ * - Manual `/sw:sync-progress` is friction
  * - Task completion hook only fires on task changes, not status changes
  *
  * SAFETY GUARDS:
@@ -71,7 +71,7 @@ export class StatusChangeSyncTrigger {
     // Check circuit breaker
     if (!this.circuitBreaker.canSync()) {
       this.logger.warn('⚠️  Sync circuit breaker open - skipping auto-sync');
-      this.logger.warn('💡 Run /specweave:sync-progress manually to retry');
+      this.logger.warn('💡 Run /sw:sync-progress manually to retry');
       return;
     }
 
@@ -80,7 +80,7 @@ export class StatusChangeSyncTrigger {
       .catch(error => {
         this.circuitBreaker.recordFailure();
         this.logger.error(`❌ Auto-sync failed for ${incrementId}:`, error.message);
-        this.logger.log('💡 Run /specweave:sync-progress to retry');
+        this.logger.log('💡 Run /sw:sync-progress to retry');
       });
   }
 

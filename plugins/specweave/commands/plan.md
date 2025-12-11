@@ -3,17 +3,17 @@ name: specweave:plan
 description: Generate plan.md and tasks.md for PLANNING increment using Architect Agent
 ---
 
-# /specweave:plan - Generate Implementation Plan
+# /sw:plan - Generate Implementation Plan
 
 Generate `plan.md` and `tasks.md` for an increment using Architect Agent and test-aware-planner.
 
 ## Usage
 
 ```bash
-/specweave:plan                      # Auto-detect PLANNING increment
-/specweave:plan 0039                 # Explicit increment ID
-/specweave:plan --force              # Overwrite existing plan/tasks
-/specweave:plan 0039 --verbose       # Verbose output
+/sw:plan                      # Auto-detect PLANNING increment
+/sw:plan 0039                 # Explicit increment ID
+/sw:plan --force              # Overwrite existing plan/tasks
+/sw:plan 0039 --verbose       # Verbose output
 ```
 
 ## What It Does
@@ -52,7 +52,7 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
 
 **Auto-detect and plan**:
 ```bash
-/specweave:plan
+/sw:plan
 # ✅ Auto-detected increment: 0039-ultra-smart-next-command
 # ✅ Generated plan.md (2.5K)
 # ✅ Generated tasks.md (4.2K, 15 tasks)
@@ -61,7 +61,7 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
 
 **Force regenerate**:
 ```bash
-/specweave:plan 0039 --force
+/sw:plan 0039 --force
 # ⚠️  Overwriting existing plan.md
 # ⚠️  Overwriting existing tasks.md
 # ✅ Generated plan.md (2.8K)
@@ -70,11 +70,11 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
 
 **Multiple PLANNING increments**:
 ```bash
-/specweave:plan
+/sw:plan
 # ❌ Multiple increments in PLANNING status found:
 #    - 0040-feature-a
 #    - 0041-feature-b
-# Please specify: /specweave:plan 0040
+# Please specify: /sw:plan 0040
 ```
 
 ## Workflow Integration
@@ -82,18 +82,18 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
 **Typical workflow**:
 ```bash
 # 1. Create increment (generates spec.md)
-/specweave:increment "Add user authentication"
+/sw:increment "Add user authentication"
 # Status: BACKLOG → PLANNING (spec.md created)
 
 # 2. Edit spec.md (add requirements, ACs)
 # ... edit spec.md ...
 
 # 3. Generate plan and tasks
-/specweave:plan
+/sw:plan
 # Status: PLANNING → ACTIVE (tasks.md created)
 
 # 4. Execute tasks
-/specweave:do
+/sw:do
 ```
 
 ## Error Handling
@@ -101,7 +101,7 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
 **spec.md not found**:
 ```bash
 ❌ spec.md not found in increment '0039-ultra-smart-next-command'
-💡 Create spec.md first using `/specweave:increment` or manually
+💡 Create spec.md first using `/sw:increment` or manually
 ```
 
 **plan.md already exists**:
@@ -113,7 +113,7 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
 **Increment closed**:
 ```bash
 ❌ Cannot generate plan for COMPLETED increment
-💡 Reopen increment with `/specweave:reopen` first
+💡 Reopen increment with `/sw:reopen` first
 ```
 
 ## Architecture
@@ -132,10 +132,10 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
 
 ## Related Commands
 
-- `/specweave:increment` - Create new increment (generates spec.md)
-- `/specweave:do` - Execute tasks from tasks.md
-- `/specweave:validate` - Validate increment structure
-- `/specweave:sync-docs` - Sync spec changes to living docs
+- `/sw:increment` - Create new increment (generates spec.md)
+- `/sw:do` - Execute tasks from tasks.md
+- `/sw:validate` - Validate increment structure
+- `/sw:sync-docs` - Sync spec changes to living docs
 
 ## Notes
 

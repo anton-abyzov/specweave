@@ -8,7 +8,7 @@ description: Generates comprehensive specifications (spec.md, plan.md, tasks.md 
 **Purpose**: Automatically generate comprehensive specification documentation (spec.md, plan.md, tasks.md with embedded tests) for SpecWeave increments using proven templates and flexible, context-aware structure.
 
 **When to Use**:
-- Creating new increments (`/specweave:inc`)
+- Creating new increments (`/sw:inc`)
 - Planning features or products
 - Generating structured documentation
 - Converting ideas into actionable specs
@@ -345,7 +345,7 @@ END IF
 
 ### Example 1: Simple Feature
 ```
-User: /specweave:inc "Add dark mode toggle to settings"
+User: /sw:inc "Add dark mode toggle to settings"
 
 Spec Generator:
 ✓ Detected: Frontend feature (UI component)
@@ -361,7 +361,7 @@ Generating specifications...
 
 ### Example 2: Complex System
 ```
-User: /specweave:inc "Multi-tenant SaaS platform with billing"
+User: /sw:inc "Multi-tenant SaaS platform with billing"
 
 Spec Generator:
 ✓ Detected: New product (SaaS, multi-tenant, payments)
@@ -377,7 +377,7 @@ Generating specifications...
 
 ### Example 3: Bug Fix
 ```
-User: /specweave:inc "Fix race condition in user session handling"
+User: /sw:inc "Fix race condition in user session handling"
 
 Spec Generator:
 ✓ Detected: Bug fix (concurrency issue)
@@ -393,9 +393,9 @@ Generating specifications...
 
 ---
 
-## Integration with /specweave:inc
+## Integration with /sw:inc
 
-The Spec Generator is automatically invoked by `/specweave:inc`:
+The Spec Generator is automatically invoked by `/sw:inc`:
 
 1. **User Intent Analysis**:
    - Analyze increment description

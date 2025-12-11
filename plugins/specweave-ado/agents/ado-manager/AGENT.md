@@ -217,7 +217,7 @@ This ensures each increment syncs to its designated ADO project, not a global se
 
 ### 1. Work Item Creation
 
-**When**: User runs `/specweave-ado:create-workitem` or increment created with auto-sync enabled
+**When**: User runs `/sw-ado:create-workitem` or increment created with auto-sync enabled
 
 **Pre-flight checks**:
 1. **Permission**: Verify `canUpdateExternalItems = true`
@@ -262,7 +262,7 @@ POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/${type}?
 
 ### 2. Progress Synchronization
 
-**When**: Task completes (post-task-completion hook) or manual `/specweave-ado:sync`
+**When**: Task completes (post-task-completion hook) or manual `/sw-ado:sync`
 
 **Pre-flight checks**:
 1. **Permission**: Verify `canUpdateExternalItems = true` for push operations
@@ -306,7 +306,7 @@ POST https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}/com
 
 ### 3. Work Item Closure
 
-**When**: Increment completes (`/specweave:done`) or manual `/specweave-ado:close-workitem`
+**When**: Increment completes (`/sw:done`) or manual `/sw-ado:close-workitem`
 
 **Pre-flight checks**:
 1. **Permission**: Verify `canUpdateExternalItems = true` AND `canUpdateStatus = true`
@@ -339,7 +339,7 @@ PATCH https://dev.azure.com/{organization}/{project}/_apis/wit/workitems/{id}?ap
 
 ### 4. Status Checking
 
-**When**: User runs `/specweave-ado:status`
+**When**: User runs `/sw-ado:status`
 
 **Actions**:
 1. Read increment metadata

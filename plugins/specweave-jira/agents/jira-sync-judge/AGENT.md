@@ -58,7 +58,7 @@ if (localStatus !== externalStatus) {
    - MUST be 100% complete to close
    - All tasks completed
    - All tests passing
-   - `/specweave:done` validates strictly
+   - `/sw:done` validates strictly
    - Can be deleted after completion
 
 2. **Spec Lifecycle** (Flexible):
@@ -85,7 +85,7 @@ Verify hooks fire correctly:
 
 ```bash
 # Check 1: Post-increment completion
-Event: /specweave:done completes
+Event: /sw:done completes
 Expected: Living docs updated → Sync triggered
 Validate:
   - Hook fires within 5 seconds
@@ -294,7 +294,7 @@ Timeline:
   Day 3:
     - All tasks complete
     - Tests passing
-    - /specweave:done executed
+    - /sw:done executed
     - Increment: closed
     - JIRA status: In Progress (from JIRA)
     - Spec status: in_progress (from JIRA)

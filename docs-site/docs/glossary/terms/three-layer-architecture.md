@@ -116,9 +116,9 @@ The three-layer architecture supports **TWO separate bidirectional flows**:
 **Flow Steps**:
 1. Developer completes JWT service implementation
 2. Developer updates increment tasks.md: `[x] T-001`
-3. Living docs sync runs (`/specweave:sync-docs`)
+3. Living docs sync runs (`/sw:sync-docs`)
 4. User Story Implementation section updated
-5. GitHub sync runs (`/specweave-github:sync`)
+5. GitHub sync runs (`/sw-github:sync`)
 6. GitHub issue subtask checkbox updated
 
 ### Flow 2: GitHub → Living Docs → Increment
@@ -233,7 +233,7 @@ The three-layer architecture supports validation that propagates through all lay
 ```
 ┌─────────────────────────────────────────────┐
 │ STEP 1: Validation Command                 │
-│ - /specweave:validate 0031                  │
+│ - /sw:validate 0031                  │
 │ - Check if code exists for T-001            │
 │ - Result: FILE NOT FOUND!                   │
 └──────────────────┬──────────────────────────┘
@@ -310,8 +310,8 @@ class ThreeLayerSyncManager {
 
 **Flow**:
 1. Developer updates increment tasks.md: `[x] T-001`
-2. Run `/specweave:sync-docs` to update living docs
-3. Run `/specweave-github:sync` to update GitHub
+2. Run `/sw:sync-docs` to update living docs
+3. Run `/sw-github:sync` to update GitHub
 4. Stakeholder sees checked subtask in GitHub issue
 
 **Result**: Three layers synchronized, stakeholder sees progress
@@ -331,7 +331,7 @@ class ThreeLayerSyncManager {
 **Scenario**: Task marked complete but code doesn't exist
 
 **Flow**:
-1. Run `/specweave:validate 0031`
+1. Run `/sw:validate 0031`
 2. Validation detects T-001 marked complete but code missing
 3. Reopen in increment tasks.md: `[ ] T-001`
 4. Propagate to living docs and GitHub
@@ -345,8 +345,8 @@ class ThreeLayerSyncManager {
 
 ### For Developers
 - Update increment files (spec.md, tasks.md) first
-- Run `/specweave:sync-docs` to propagate to living docs
-- Run `/specweave-github:sync` to update GitHub
+- Run `/sw:sync-docs` to propagate to living docs
+- Run `/sw-github:sync` to update GitHub
 - Verify GitHub issue reflects your changes
 
 ### For Stakeholders

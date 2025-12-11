@@ -474,7 +474,7 @@ $ specweave init
 2. Change `strategy` from `"simple"` to `"filtered"`
 3. Replace `projectKey` with `containers` array
 4. Add board names to `subOrganizations`
-5. Test sync: `/specweave-jira:sync <increment-id>`
+5. Test sync: `/sw-jira:sync <increment-id>`
 
 ---
 

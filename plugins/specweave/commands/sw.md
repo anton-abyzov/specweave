@@ -1,6 +1,6 @@
 ---
 name: specweave
-description: SpecWeave command reference and help. Shows available commands. DO NOT use routing syntax like '/specweave do' - always use full namespaced commands like '/specweave:do' instead.
+description: SpecWeave command reference and help. Shows available commands. DO NOT use routing syntax like '/specweave do' - always use full namespaced commands like '/sw:do' instead.
 ---
 
 # SpecWeave Command Reference
@@ -8,7 +8,7 @@ description: SpecWeave command reference and help. Shows available commands. DO 
 **⚠️ IMPORTANT: This is a REFERENCE ONLY, not a router!**
 
 **DO NOT use**: `/specweave do`, `/specweave inc`, etc.
-**ALWAYS use**: `/specweave:do`, `/specweave:increment`, etc.
+**ALWAYS use**: `/sw:do`, `/sw:increment`, etc.
 
 Claude Code does not support command routing. Each command must be invoked directly by its full namespaced name.
 
@@ -24,29 +24,29 @@ Claude Code does not support command routing. Each command must be invoked direc
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/specweave:increment` | Create new increment (PM-led) | `/specweave:increment "User auth"` |
-| `/specweave:do` | Execute tasks (auto-resumes) | `/specweave:do` or `/specweave:do 0031` |
-| `/specweave:next` | Smart transition (close + suggest) | `/specweave:next` |
-| `/specweave:done` | Manual closure with PM validation | `/specweave:done 0031` |
-| `/specweave:progress` | Check status and next action | `/specweave:progress` |
-| `/specweave:validate` | Validate increment quality | `/specweave:validate 0031` |
+| `/sw:increment` | Create new increment (PM-led) | `/sw:increment "User auth"` |
+| `/sw:do` | Execute tasks (auto-resumes) | `/sw:do` or `/sw:do 0031` |
+| `/sw:next` | Smart transition (close + suggest) | `/sw:next` |
+| `/sw:done` | Manual closure with PM validation | `/sw:done 0031` |
+| `/sw:progress` | Check status and next action | `/sw:progress` |
+| `/sw:validate` | Validate increment quality | `/sw:validate 0031` |
 
 ### Documentation & Sync
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/specweave:sync-docs` | Sync living docs | `/specweave:sync-docs update` |
-| `/specweave:sync-tasks` | Sync tasks with status | `/specweave:sync-tasks` |
+| `/sw:sync-docs` | Sync living docs | `/sw:sync-docs update` |
+| `/sw:sync-tasks` | Sync tasks with status | `/sw:sync-tasks` |
 
 ### GitHub Plugin
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/specweave-github:create-issue` | Create GitHub issue | `/specweave-github:create-issue 0031` |
-| `/specweave-github:sync` | Two-way sync | `/specweave-github:sync 0031` |
-| `/specweave-github:sync-tasks` | Sync tasks as sub-issues | `/specweave-github:sync-tasks 0031` |
-| `/specweave-github:close-issue` | Close GitHub issue | `/specweave-github:close-issue 0031` |
-| `/specweave-github:status` | Show sync status | `/specweave-github:status` |
+| `/sw-github:create-issue` | Create GitHub issue | `/sw-github:create-issue 0031` |
+| `/sw-github:sync` | Two-way sync | `/sw-github:sync 0031` |
+| `/sw-github:sync-tasks` | Sync tasks as sub-issues | `/sw-github:sync-tasks 0031` |
+| `/sw-github:close-issue` | Close GitHub issue | `/sw-github:close-issue 0031` |
+| `/sw-github:status` | Show sync status | `/sw-github:status` |
 
 ---
 
@@ -60,12 +60,12 @@ This file is a **reference guide only**. You cannot do:
 - ❌ `/specweave next` (doesn't work!)
 
 **Instead, always use full namespaced commands:**
-- ✅ `/specweave:do`
-- ✅ `/specweave:increment "feature"`
-- ✅ `/specweave:next`
+- ✅ `/sw:do`
+- ✅ `/sw:increment "feature"`
+- ✅ `/sw:next`
 
 **Why This Matters:**
-Calling both `/specweave` and `/specweave:do` causes **duplicate invocations**! Always use the namespaced version with the colon.
+Calling both `/specweave` and `/sw:do` causes **duplicate invocations**! Always use the namespaced version with the colon.
 
 ---
 
@@ -75,16 +75,16 @@ Calling both `/specweave` and `/specweave:do` causes **duplicate invocations**! 
 
 ```bash
 # Create increment
-/specweave:increment "User authentication"
+/sw:increment "User authentication"
 
 # Execute tasks
-/specweave:do
+/sw:do
 
 # Check progress
-/specweave:progress
+/sw:progress
 
 # Complete increment
-/specweave:done 0031
+/sw:done 0031
 ```
 
 ### ❌ INCORRECT Usage (Causes Duplicates!)
@@ -96,9 +96,9 @@ Calling both `/specweave` and `/specweave:do` causes **duplicate invocations**! 
 /specweave next         # ❌ Won't work!
 
 # ALWAYS use namespaced commands:
-/specweave:do           # ✅ Correct!
-/specweave:increment "feat"  # ✅ Correct!
-/specweave:next         # ✅ Correct!
+/sw:do           # ✅ Correct!
+/sw:increment "feat"  # ✅ Correct!
+/sw:next         # ✅ Correct!
 ```
 
 ---
@@ -124,4 +124,4 @@ Calling both `/specweave` and `/specweave:do` causes **duplicate invocations**! 
 
 ---
 
-**⚠️ Remember**: Always use `/specweave:` with a colon, never `/specweave ` with a space!
+**⚠️ Remember**: Always use `/sw:` with a colon, never `/specweave ` with a space!

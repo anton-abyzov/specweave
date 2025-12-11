@@ -141,12 +141,12 @@ plugins/specweave-release/
 
 ```bash
 # Standard workflow
-/specweave:increment "0050-v2-release"        # Create increment
-/specweave-release:align                      # Align versions
-/specweave-release:rc create 2.0.0            # Create RC
-/specweave:do                                 # Execute tasks
-/specweave-release:rc promote 2.0.0-rc.3      # Promote to prod
-/specweave:done 0050                          # Complete increment
+/sw:increment "0050-v2-release"        # Create increment
+/sw-release:align                      # Align versions
+/sw-release:rc create 2.0.0            # Create RC
+/sw:do                                 # Execute tasks
+/sw-release:rc promote 2.0.0-rc.3      # Promote to prod
+/sw:done 0050                          # Complete increment
 ```
 
 ### Brownfield Integration
@@ -341,11 +341,11 @@ plugins/specweave-release/lib/
 
 ### Additional Commands (Planned)
 
-- `/specweave-release:coordinate` - Plan coordinated releases
-- `/specweave-release:publish` - Execute releases
-- `/specweave-release:rollback` - Rollback failed releases
-- `/specweave-release:matrix` - Show/update version matrix
-- `/specweave-release:hotfix` - Fast-track hotfix releases
+- `/sw-release:coordinate` - Plan coordinated releases
+- `/sw-release:publish` - Execute releases
+- `/sw-release:rollback` - Rollback failed releases
+- `/sw-release:matrix` - Show/update version matrix
+- `/sw-release:hotfix` - Fast-track hotfix releases
 
 ### Enhanced Integrations (Planned)
 
@@ -406,11 +406,11 @@ describe('RCManager', () => {
 ```bash
 # Test with real repos
 1. Clone test repository
-2. Run /specweave-release:init
+2. Run /sw-release:init
 3. Verify release-strategy.md created
-4. Run /specweave-release:align
+4. Run /sw-release:align
 5. Verify versions bumped correctly
-6. Run /specweave-release:rc create 1.0.0
+6. Run /sw-release:rc create 1.0.0
 7. Verify RC tag created
 ```
 

@@ -470,7 +470,7 @@ PM Agent:
 ### Phase 2: Increment 1 (Core MVP)
 
 ```bash
-User: "/specweave:increment 0001-core-framework"
+User: "/sw:increment 0001-core-framework"
 
 PM Agent:
 1. Creates increment spec:
@@ -488,7 +488,7 @@ PM Agent:
 ### Phase 3: Increment 2 (Enhancements)
 
 ```bash
-User: "/specweave:increment 0002-core-enhancements"
+User: "/sw:increment 0002-core-enhancements"
 
 PM Agent:
 1. Creates increment spec:

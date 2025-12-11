@@ -254,7 +254,7 @@ status: planning
         MetadataManager.updateStatus(incrementId, 'active', 'Start');
       }).not.toThrow();
 
-      // Manual sync can be triggered (this would be /specweave:sync-progress)
+      // Manual sync can be triggered (this would be /sw:sync-progress)
       // For this test, we just verify the API exists and doesn't crash
       expect(StatusChangeSyncTrigger.getCircuitBreakerState).toBeDefined();
       expect(StatusChangeSyncTrigger.resetCircuitBreaker).toBeDefined();

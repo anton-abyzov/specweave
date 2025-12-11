@@ -176,7 +176,7 @@ npx specweave init my-saas-app
 cd my-saas-app
 
 # Start first increment
-/specweave:increment "0001-user-authentication"
+/sw:increment "0001-user-authentication"
 
 # SpecWeave guides you through:
 # - Choosing tech stack (Next.js + Supabase + Vercel)
@@ -290,7 +290,7 @@ npx specweave init my-app --greenfield
 
 ```bash
 # Create first feature increment
-/specweave:increment "0001-user-authentication"
+/sw:increment "0001-user-authentication"
 
 # PM agent generates:
 # - spec.md (user stories, acceptance criteria)
@@ -302,7 +302,7 @@ npx specweave init my-app --greenfield
 
 ```bash
 # Execute tasks with AI assistance
-/specweave:do
+/sw:do
 
 # After each task completes:
 # - Living docs sync automatically (via post-task-completion hook)
@@ -315,8 +315,8 @@ npx specweave init my-app --greenfield
 
 ```bash
 # Continue with next increments
-/specweave:increment "0002-payment-processing"
-/specweave:increment "0003-notification-system"
+/sw:increment "0002-payment-processing"
+/sw:increment "0003-notification-system"
 
 # SpecWeave maintains:
 # - Complete project history (.specweave/docs/internal/specs/)
@@ -503,13 +503,13 @@ Break project into small, testable increments:
 
 ```bash
 # Increment 1: Core infrastructure
-/specweave:increment "0001-project-setup-and-auth"
+/sw:increment "0001-project-setup-and-auth"
 
 # Increment 2: Basic features
-/specweave:increment "0002-project-and-task-crud"
+/sw:increment "0002-project-and-task-crud"
 
 # Increment 3: Advanced features
-/specweave:increment "0003-real-time-collaboration"
+/sw:increment "0003-real-time-collaboration"
 ```
 
 ### 5. Document as You Go

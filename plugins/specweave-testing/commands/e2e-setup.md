@@ -1,4 +1,4 @@
-# /specweave-testing:e2e-setup
+# /sw-testing:e2e-setup
 
 Set up comprehensive Playwright E2E testing with best practices, page objects, and CI/CD integration.
 

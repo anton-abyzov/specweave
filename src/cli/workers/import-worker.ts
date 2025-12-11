@@ -349,7 +349,7 @@ async function main(): Promise<void> {
     log(``);
     log(`Next steps:`);
     log(`  → Review User Stories: .specweave/docs/internal/specs/`);
-    log(`  → Create increments: /specweave:increment "feature"`);
+    log(`  → Create increments: /sw:increment "feature"`);
     log(`════════════════════════════════════════════════════════════`);
 
     process.exit(0);

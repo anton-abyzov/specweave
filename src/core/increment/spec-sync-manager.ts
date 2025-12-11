@@ -647,6 +647,6 @@ Increment: ${detection.incrementId}
 ⚡ Task completion status will be preserved
 
 💡 To skip sync: Add --skip-sync flag to your command
-📖 Learn more: /specweave:help sync`;
+📖 Learn more: /sw:help sync`;
   }
 }

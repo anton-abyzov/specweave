@@ -19,7 +19,7 @@ The **Tech Lead Agent** is SpecWeave's AI-powered Technical Lead that handles co
 
 ## When It Activates
 
-- `/specweave:do` - During implementation, provides guidance
+- `/sw:do` - During implementation, provides guidance
 - Code review requests - When asked to review code
 - Refactoring tasks - When cleaning up code
 - Technical questions - When implementation approach is unclear

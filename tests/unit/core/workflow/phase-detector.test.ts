@@ -134,10 +134,10 @@ describe('PhaseDetector', () => {
   });
 
   describe('Command Analysis (30% weight)', () => {
-    it('should detect phase from recent /specweave:plan command', async () => {
+    it('should detect phase from recent /sw:plan command', async () => {
       const context: DetectionContext = {
         userPrompt: 'What should I do next?',
-        recentCommands: ['/specweave:plan']
+        recentCommands: ['/sw:plan']
       };
 
       const result = await detector.detect(context);
@@ -145,14 +145,14 @@ describe('PhaseDetector', () => {
       expect(result.phase).toBe(WorkflowPhase.PLAN_GENERATION);
       expect(result.evidence.some(e =>
         e.type === EvidenceType.COMMAND &&
-        e.description.includes('/specweave:plan')
+        e.description.includes('/sw:plan')
       )).toBe(true);
     });
 
-    it('should detect phase from recent /specweave:do command', async () => {
+    it('should detect phase from recent /sw:do command', async () => {
       const context: DetectionContext = {
         userPrompt: 'Continue',
-        recentCommands: ['/specweave:do']
+        recentCommands: ['/sw:do']
       };
 
       const result = await detector.detect(context);
@@ -160,7 +160,7 @@ describe('PhaseDetector', () => {
       expect(result.phase).toBe(WorkflowPhase.IMPLEMENTATION);
       expect(result.evidence.some(e =>
         e.type === EvidenceType.COMMAND &&
-        e.description.includes('/specweave:do')
+        e.description.includes('/sw:do')
       )).toBe(true);
     });
 
@@ -168,9 +168,9 @@ describe('PhaseDetector', () => {
       const context: DetectionContext = {
         userPrompt: 'What next?',
         recentCommands: [
-          '/specweave:do',         // Most recent (weight: 1.0)
-          '/specweave:plan',       // Older (weight: 0.7)
-          '/specweave:increment'   // Oldest (weight: 0.5)
+          '/sw:do',         // Most recent (weight: 1.0)
+          '/sw:plan',       // Older (weight: 0.7)
+          '/sw:increment'   // Oldest (weight: 0.5)
         ]
       };
 
@@ -194,7 +194,7 @@ describe('PhaseDetector', () => {
     it('should combine keyword and command evidence', async () => {
       const context: DetectionContext = {
         userPrompt: 'Let\'s implement this',
-        recentCommands: ['/specweave:do']
+        recentCommands: ['/sw:do']
       };
 
       const result = await detector.detect(context);
@@ -246,7 +246,7 @@ describe('PhaseDetector', () => {
     it('should have high confidence with multiple evidence sources', async () => {
       const context: DetectionContext = {
         userPrompt: 'I want to implement the authentication feature',
-        recentCommands: ['/specweave:do', '/specweave:progress'],
+        recentCommands: ['/sw:do', '/sw:progress'],
         explicitHint: 'implementation'
       };
 
@@ -272,7 +272,7 @@ describe('PhaseDetector', () => {
     it('should cap confidence at 1.0', async () => {
       const context: DetectionContext = {
         userPrompt: 'implement build develop code create feature write implement',
-        recentCommands: ['/specweave:do', '/specweave:do', '/specweave:do'],
+        recentCommands: ['/sw:do', '/sw:do', '/sw:do'],
         explicitHint: 'implementation'
       };
 
@@ -335,10 +335,10 @@ describe('PhaseDetector', () => {
   });
 
   describe('Command Suggestions', () => {
-    it('should suggest /specweave:plan for PLAN_GENERATION phase', async () => {
+    it('should suggest /sw:plan for PLAN_GENERATION phase', async () => {
       const context: DetectionContext = {
         userPrompt: 'I need to create an implementation plan and design the architecture',
-        recentCommands: ['/specweave:increment'] // Add command for more evidence
+        recentCommands: ['/sw:increment'] // Add command for more evidence
       };
 
       const result = await detector.detect(context);
@@ -346,36 +346,36 @@ describe('PhaseDetector', () => {
       expect(result.phase).toBe(WorkflowPhase.PLAN_GENERATION);
       // Suggestion only if confidence >= threshold (0.6)
       if (result.confidence >= 0.6) {
-        expect(result.suggestedCommand).toBe('/specweave:plan');
+        expect(result.suggestedCommand).toBe('/sw:plan');
         expect(result.suggestionReason).toBeDefined();
       }
     });
 
-    it('should suggest /specweave:do for IMPLEMENTATION phase', async () => {
+    it('should suggest /sw:do for IMPLEMENTATION phase', async () => {
       const context: DetectionContext = {
         userPrompt: 'Let\'s start coding and implement this feature',
-        recentCommands: ['/specweave:plan'] // Add command for more evidence
+        recentCommands: ['/sw:plan'] // Add command for more evidence
       };
 
       const result = await detector.detect(context);
 
       expect(result.phase).toBe(WorkflowPhase.IMPLEMENTATION);
       if (result.confidence >= 0.6) {
-        expect(result.suggestedCommand).toBe('/specweave:do');
+        expect(result.suggestedCommand).toBe('/sw:do');
       }
     });
 
-    it('should suggest /specweave:done for COMPLETION phase', async () => {
+    it('should suggest /sw:done for COMPLETION phase', async () => {
       const context: DetectionContext = {
         userPrompt: 'Everything is complete and done, ready to finish and close',
-        recentCommands: ['/specweave:progress'] // Add command for more evidence
+        recentCommands: ['/sw:progress'] // Add command for more evidence
       };
 
       const result = await detector.detect(context);
 
       expect(result.phase).toBe(WorkflowPhase.COMPLETION);
       if (result.confidence >= 0.6) {
-        expect(result.suggestedCommand).toBe('/specweave:done');
+        expect(result.suggestedCommand).toBe('/sw:done');
       }
     });
 
@@ -674,7 +674,7 @@ describe('PhaseDetector', () => {
     it('should complete detection in <50ms for typical case', async () => {
       const context: DetectionContext = {
         userPrompt: 'Let\'s implement this',
-        recentCommands: ['/specweave:plan']
+        recentCommands: ['/sw:plan']
       };
 
       const startTime = Date.now();
@@ -809,7 +809,7 @@ describe('PhaseDetector', () => {
     it('should handle conflicting evidence gracefully', async () => {
       const context: DetectionContext = {
         userPrompt: 'write spec',           // SPEC_WRITING
-        recentCommands: ['/specweave:done'], // COMPLETION
+        recentCommands: ['/sw:done'], // COMPLETION
         explicitHint: 'testing'              // TESTING
       };
 

@@ -262,16 +262,16 @@ SpecWeave creates documentation that:
 
 ```mermaid
 graph TD
-    A["/specweave:increment"] --> B[spec.md<br/>Requirements]
+    A["/sw:increment"] --> B[spec.md<br/>Requirements]
     A --> C[plan.md<br/>Architecture]
     A --> D[tasks.md<br/>Implementation]
 
-    E["/specweave:do"] --> F[Code Changes]
+    E["/sw:do"] --> F[Code Changes]
     F --> G[Task Status Updates]
-    G --> H["/specweave:sync-docs"]
+    G --> H["/sw:sync-docs"]
     H --> I[Living Docs Updated]
 
-    J["/specweave:done"] --> K[Completion Report]
+    J["/sw:done"] --> K[Completion Report]
 ```
 
 ### Traceability
@@ -294,11 +294,11 @@ Business Need: "Users must authenticate to access data"
 
 | Traditional | SpecWeave |
 |------------|-----------|
-| Write requirements doc (2 hours) | `/specweave:increment` (5 minutes) |
+| Write requirements doc (2 hours) | `/sw:increment` (5 minutes) |
 | Create architecture diagram (1 hour) | `plan.md` auto-generated |
 | Write task breakdown (1 hour) | `tasks.md` auto-generated |
-| Update docs after changes (never) | `/specweave:sync-docs` |
-| Generate completion report (30 min) | `/specweave:done` |
+| Update docs after changes (never) | `/sw:sync-docs` |
+| Generate completion report (30 min) | `/sw:done` |
 
 ---
 

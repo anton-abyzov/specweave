@@ -129,7 +129,7 @@ export async function printNotificationSummary(
 
   if (result.output) {
     console.log(result.output);
-    console.log("Run '/specweave:notifications' to view");
+    console.log("Run '/sw:notifications' to view");
     return true;
   }
 

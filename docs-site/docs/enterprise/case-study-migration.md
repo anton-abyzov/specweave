@@ -119,7 +119,7 @@ Used brownfield quick-start approach:
 
 ```bash
 # Import critical documentation only
-/specweave:import-docs --source=confluence --filter="payment*"
+/sw:import-docs --source=confluence --filter="payment*"
 
 # Result: Created minimal living docs structure
 .specweave/
@@ -141,7 +141,7 @@ Used brownfield quick-start approach:
 
 ```bash
 # Team's first SpecWeave increment
-/specweave:increment "Add Apple Pay support"
+/sw:increment "Add Apple Pay support"
 
 # PM agent generates:
 # ✅ spec.md with user stories
@@ -157,15 +157,15 @@ Used brownfield quick-start approach:
 
 ```
 Morning standup:
-/specweave:progress
+/sw:progress
 → Shows: "3/8 tasks complete (37%)"
 
 During development:
-/specweave:do
+/sw:do
 → Implements task with AI assistance
 
 End of day:
-/specweave:sync-progress
+/sw:sync-progress
 → Updates JIRA automatically
 ```
 

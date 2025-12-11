@@ -250,7 +250,7 @@ COPIED content becomes checkable checkboxes in GitHub issues:
 
 ### Copy Process
 
-**Command**: `/specweave:sync-docs`
+**Command**: `/sw:sync-docs`
 
 **Steps**:
 1. Read increment spec.md (all ACs)
@@ -399,7 +399,7 @@ validation, and protected route middleware.
 ### For Developers
 
 1. **Trust the Increment**: Always update increment spec.md and tasks.md first
-2. **Sync Regularly**: Run `/specweave:sync-docs` to propagate changes
+2. **Sync Regularly**: Run `/sw:sync-docs` to propagate changes
 3. **Verify Filtering**: Check User Stories have correct project-specific content
 4. **Validate Status**: Ensure checkbox status matches code completion
 

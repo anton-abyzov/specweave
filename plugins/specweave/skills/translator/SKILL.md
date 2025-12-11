@@ -112,7 +112,7 @@ Me: *Translates spec.md, preserves framework terms, maintains formatting*
 
 ### ⏸️ **Keep in English**:
 - Framework terms: "increment", "spec.md", "plan.md", "tasks.md", "COMPLETION-SUMMARY.md"
-- SpecWeave commands: "/specweave:inc", "/specweave:do", "/specweave:progress"
+- SpecWeave commands: "/sw:inc", "/sw:do", "/sw:progress"
 - Technical terms: "TypeScript", "npm", "git", "API", "CLI"
 - File names and paths: `.specweave/`, `src/`, `CLAUDE.md`
 - Code blocks and examples
@@ -126,11 +126,11 @@ Me: *Translates spec.md, preserves framework terms, maintains formatting*
 
 ### CLI Message (English → Russian)
 
-**English**: "✅ Increment created successfully! Next: Run /specweave:do to start implementation."
+**English**: "✅ Increment created successfully! Next: Run /sw:do to start implementation."
 
-**Russian**: "✅ Increment успешно создан! Далее: Запустите /specweave:do для начала реализации."
+**Russian**: "✅ Increment успешно создан! Далее: Запустите /sw:do для начала реализации."
 
-**Note**: "Increment" kept in English (framework term), "/specweave:do" kept as-is (command)
+**Note**: "Increment" kept in English (framework term), "/sw:do" kept as-is (command)
 
 ### Documentation (English → Spanish)
 

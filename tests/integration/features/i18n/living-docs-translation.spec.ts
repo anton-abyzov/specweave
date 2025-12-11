@@ -225,7 +225,7 @@ test.describe('Living Docs Translation E2E', () => {
     expect(originalContent).toContain('Тестовая функция'); // Russian title
 
     // 4. Simulate post-increment-planning hook execution
-    // In real scenario, this would be triggered by /specweave:increment
+    // In real scenario, this would be triggered by /sw:increment
     // For testing, we'll call the translation script directly
 
     const translateScriptPath = path.join(process.cwd(), 'dist/hooks/lib/translate-file.js');

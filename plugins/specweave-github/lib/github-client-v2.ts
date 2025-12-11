@@ -216,7 +216,7 @@ export class GitHubClientV2 {
         `  ❌ WRONG: "[Increment XXXX] Title" (old format)\n\n` +
         `WHY: Correct data flow is: Increment → Living Docs → GitHub\n` +
         `      Living docs are the source of truth for GitHub sync.\n\n` +
-        `FIX: Use /specweave:sync-docs to generate living docs, then sync to GitHub.`
+        `FIX: Use /sw:sync-docs to generate living docs, then sync to GitHub.`
       );
     }
 

@@ -547,7 +547,7 @@ ${PROJECT_KEYWORDS[projectName]?.join(', ') || 'TBD'}
 
 ## Getting Started
 
-1. Create a new spec: \`/specweave:increment "feature-name"\`
+1. Create a new spec: \`/sw:increment "feature-name"\`
 2. Specs will be organized here automatically
 3. Sync to Azure DevOps: \`/specweave-ado:sync-spec spec-001\`
 

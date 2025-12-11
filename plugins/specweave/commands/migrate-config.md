@@ -100,5 +100,5 @@ Variables classified as **config** (move to config.json):
 **See also:**
 
 - ADR-0050: Secrets vs Configuration Separation
-- `/specweave:validate` - Validate configuration after migration
+- `/sw:validate` - Validate configuration after migration
 - Documentation: `CLAUDE.md` → Configuration Management section

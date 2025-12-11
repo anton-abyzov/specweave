@@ -19,7 +19,7 @@ specweave init .
 Open Claude Code and run:
 
 ```bash
-/specweave:increment "Add dark mode toggle"
+/sw:increment "Add dark mode toggle"
 ```
 
 **SpecWeave creates:**
@@ -32,15 +32,15 @@ Open Claude Code and run:
 
 Then build it:
 ```bash
-/specweave:do
+/sw:do
 ```
 
 When done, validate and close:
 ```bash
-/specweave:done 0001
+/sw:done 0001
 ```
 
-**Pro tip**: Use `/specweave:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
+**Pro tip**: Use `/sw:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
 
 **Your specs, architecture, and tests are now permanent documentation.**
 
@@ -61,9 +61,9 @@ SpecWeave's assistant guides you through features, tech stack, and approach. **P
 
 Use explicit commands for full control:
 ```bash
-/specweave:increment "payment processing with Stripe"  # Plan
-/specweave:do                                          # Build
-/specweave:done 0002                                   # Close
+/sw:increment "payment processing with Stripe"  # Plan
+/sw:do                                          # Build
+/sw:done 0002                                   # Close
 ```
 
 **Perfect for production features and team projects.**
@@ -105,14 +105,14 @@ After `specweave init .`:
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave:increment "..."` | Create new feature with AI agents |
-| `/specweave:do` | Execute all tasks autonomously |
-| `/specweave:done <id>` | Complete with quality gates |
-| `/specweave:next` | Auto-close + suggest next (one-click flow) |
-| `/specweave:progress` | Check status |
-| `/specweave:sync-progress` | Sync to GitHub/JIRA/ADO |
-| `/specweave:sync-monitor` | Dashboard: jobs, notifications |
-| `/specweave:discrepancies` | View code-to-spec drift |
+| `/sw:increment "..."` | Create new feature with AI agents |
+| `/sw:do` | Execute all tasks autonomously |
+| `/sw:done <id>` | Complete with quality gates |
+| `/sw:next` | Auto-close + suggest next (one-click flow) |
+| `/sw:progress` | Check status |
+| `/sw:sync-progress` | Sync to GitHub/JIRA/ADO |
+| `/sw:sync-monitor` | Dashboard: jobs, notifications |
+| `/sw:discrepancies` | View code-to-spec drift |
 
 ---
 
@@ -158,14 +158,14 @@ specweave init .
 
 After analysis completes:
 ```bash
-/specweave:discrepancies                    # View all documentation gaps
-/specweave:discrepancies --module auth      # Filter by module
-/specweave:discrepancy-to-increment DISC-0001 DISC-0002  # Create increment
+/sw:discrepancies                    # View all documentation gaps
+/sw:discrepancies --module auth      # Filter by module
+/sw:discrepancy-to-increment DISC-0001 DISC-0002  # Create increment
 ```
 
 The background analysis runs while you continue working. Check progress with:
 ```bash
-/specweave:jobs
+/sw:jobs
 ```
 
 ---
@@ -175,15 +175,15 @@ The background analysis runs while you continue working. Check progress with:
 SpecWeave provides **sync monitoring** for external tools (GitHub/JIRA/ADO):
 
 ```bash
-/specweave:sync-progress    # Push updates to external tools
-/specweave:sync-monitor     # See sync status dashboard
-/specweave:notifications    # View/dismiss sync alerts
+/sw:sync-progress    # Push updates to external tools
+/sw:sync-monitor     # See sync status dashboard
+/sw:notifications    # View/dismiss sync alerts
 ```
 
 **Code is the source of truth.** When docs drift from reality, you get notified:
 ```bash
-/specweave:discrepancies    # See code-to-spec drift
-/specweave:discrepancies accept DISC-0001  # Update specs from code
+/sw:discrepancies    # See code-to-spec drift
+/sw:discrepancies accept DISC-0001  # Update specs from code
 ```
 
 ---

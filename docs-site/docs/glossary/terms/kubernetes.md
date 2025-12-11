@@ -533,7 +533,7 @@ After K8s deployment, update architecture docs:
 
 ```bash
 # Sync deployment architecture
-/specweave:sync-docs update
+/sw:sync-docs update
 
 # Results in:
 # - Updated HLD with K8s architecture diagram

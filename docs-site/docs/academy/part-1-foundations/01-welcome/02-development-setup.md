@@ -182,12 +182,12 @@ specweave --version
 
 ```
 specweave
-├── /specweave:increment    → Create new feature specs
-├── /specweave:do           → Execute tasks
-├── /specweave:done         → Complete with quality gates
-├── /specweave:progress     → Check status
-├── /specweave:validate     → Validate specs
-└── /specweave:qa           → Quality assessment
+├── /sw:increment    → Create new feature specs
+├── /sw:do           → Execute tasks
+├── /sw:done         → Complete with quality gates
+├── /sw:progress     → Check status
+├── /sw:validate     → Validate specs
+└── /sw:qa           → Quality assessment
 ```
 
 ---

@@ -126,8 +126,8 @@ export async function listNotifications(options: NotificationsOptions & {
   }
 
   console.log('');
-  console.log("Use '/specweave:notifications show <id>' to view details");
-  console.log("Use '/specweave:notifications dismiss <id>' to dismiss");
+  console.log("Use '/sw:notifications show <id>' to view details");
+  console.log("Use '/sw:notifications dismiss <id>' to dismiss");
 }
 
 /**
@@ -241,7 +241,7 @@ export async function dismissAllNotifications(options: {
   if (!options.skipConfirm) {
     // In non-interactive mode, require --yes flag
     console.log(`⚠️ This will dismiss ${pending.length} pending notifications.`);
-    console.log('Use --yes flag to confirm: /specweave:notifications dismiss-all --yes');
+    console.log('Use --yes flag to confirm: /sw:notifications dismiss-all --yes');
     return;
   }
 

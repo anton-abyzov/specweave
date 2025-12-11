@@ -5,7 +5,7 @@ description: Push local progress to Jira (like git push). Updates epic/story wit
 
 # Jira Push Command
 
-**Usage**: `/specweave-jira:push [increment-id]`
+**Usage**: `/sw-jira:push [increment-id]`
 
 **Purpose**: Push local progress to Jira (like `git push`)
 
@@ -15,10 +15,10 @@ description: Push local progress to Jira (like git push). Updates epic/story wit
 
 ```bash
 # Push current/active increment
-/specweave-jira:push
+/sw-jira:push
 
 # Push specific increment
-/specweave-jira:push 0005
+/sw-jira:push 0005
 ```
 
 ---
@@ -50,7 +50,7 @@ Permission Denied: Jira writes disabled
 
 To enable: Set sync.settings.canUpdateExternalItems = true
 
-Or use read-only: /specweave-jira:pull ${incrementId}
+Or use read-only: /sw-jira:pull ${incrementId}
 `);
   return;
 }
@@ -127,7 +127,7 @@ URL: https://mycompany.atlassian.net/browse/PROJ-123
 ### Example 1: Simple Push
 
 ```
-User: /specweave-jira:push
+User: /sw-jira:push
 
 Claude:
 Pushing to Jira...
@@ -143,7 +143,7 @@ Push complete!
 ### Example 2: 100% Complete
 
 ```
-User: /specweave-jira:push 0005
+User: /sw-jira:push 0005
 
 Claude:
 Pushing to Jira...
@@ -156,7 +156,7 @@ Comment posted:
 Status transitioned:
   In Progress -> Done (canUpdateStatus = true)
 
-Ready to close: /specweave:done 0005
+Ready to close: /sw:done 0005
 ```
 
 ---
@@ -165,6 +165,6 @@ Ready to close: /specweave:done 0005
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-jira:pull` | Pull changes from Jira |
-| `/specweave-jira:sync` | Two-way sync (pull + push) |
-| `/specweave-jira:import-boards` | Import Jira boards |
+| `/sw-jira:pull` | Pull changes from Jira |
+| `/sw-jira:sync` | Two-way sync (pull + push) |
+| `/sw-jira:import-boards` | Import Jira boards |

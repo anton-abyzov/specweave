@@ -106,7 +106,7 @@ All notable changes to SpecWeave will be documented in this file.
 ## [0.28.33] - 2025-11-26
 
 ### ✨ Features
-- Add GitHub status reconciliation command (`/specweave-github:reconcile`)
+- Add GitHub status reconciliation command (`/sw-github:reconcile`)
 - Add automatic issue reopen on increment resume
 - Add automatic issue close on increment abandon
 - Add optional auto-reconcile on session start hook
@@ -152,7 +152,7 @@ All notable changes to SpecWeave will be documented in this file.
 ## [0.28.25] - 2025-11-26
 
 ### ✨ Features
-- Add `--only --local` flag to `/specweave-release:npm` for fastest version bump (no publish, no git, no build)
+- Add `--only --local` flag to `/sw-release:npm` for fastest version bump (no publish, no git, no build)
 
 ---
 
@@ -169,7 +169,7 @@ All notable changes to SpecWeave will be documented in this file.
 ## [0.28.22] - 2025-11-26
 
 ### 🔧 Improvements
-- Add `--push` flag to `/specweave-release:npm --only` for complete local release
+- Add `--push` flag to `/sw-release:npm --only` for complete local release
 - Auto-commit uncommitted changes before version bump (with smart message generation)
 - Reorganize internal docs to 6-pillar enterprise structure
 - Fix ADR numbering (41 duplicate numbers resolved)
@@ -183,7 +183,7 @@ All notable changes to SpecWeave will be documented in this file.
 ### ✨ Features
 - Add background jobs for long-running operations (FS-065)
   - BackgroundJobManager for tracking clone-repos and import-issues jobs
-  - `/specweave:jobs` command for monitoring job status
+  - `/sw:jobs` command for monitoring job status
   - Rate limit auto-pause and resume functionality
   - Persistent job state across Claude sessions
 - Multi-project JIRA/ADO import during init (FS-066)
@@ -209,7 +209,7 @@ All notable changes to SpecWeave will be documented in this file.
 ## [0.28.17] - 2025-11-26
 
 ### ✨ Features
-- Make `/specweave:save` command prompt-free by default (removes deprecated `--yes` flag)
+- Make `/sw:save` command prompt-free by default (removes deprecated `--yes` flag)
 
 ---
 
@@ -239,7 +239,7 @@ All notable changes to SpecWeave will be documented in this file.
 ## [0.28.13] - 2025-11-25
 
 ### ✨ Features
-- Enhanced `/specweave:save` command with auto-generated commit messages
+- Enhanced `/sw:save` command with auto-generated commit messages
 - Smart analysis of git changes to generate conventional commit messages
 - Added `--yes` flag for quick auto-save without confirmation
 
@@ -519,7 +519,7 @@ All notable changes to SpecWeave will be documented in this file.
   - **Emergency Fix**: Added `export SKIP_US_SYNC=true` to post-task-completion hook (line 463)
   - **Impact**:
     - ✅ NO MORE CRASHES: TodoWrite is now safe
-    - ⚠️  Manual sync required: Must run `/specweave:sync-progress` after completing tasks
+    - ⚠️  Manual sync required: Must run `/sw:sync-progress` after completing tasks
     - ✅ Living docs still work: AC sync, tasks.md updates, status line all function normally
   - **Verification**: `grep "SKIP_US_SYNC=true" plugins/specweave/hooks/post-task-completion.sh`
   - **Recovery**: See `.specweave/docs/internal/emergency-procedures/TODOWRITE-CRASH-RECOVERY.md`
@@ -548,7 +548,7 @@ All notable changes to SpecWeave will be documented in this file.
 
 ### ✨ Features
 - **🚀 Automatic GitHub Sync** (FS-049): Issues auto-created on increment completion
-  - Eliminates manual `/specweave-github:sync` commands (100% automation)
+  - Eliminates manual `/sw-github:sync` commands (100% automation)
   - Zero workflow crashes guaranteed (7-layer error isolation)
   - 100% duplicate prevention (3-layer idempotency caching)
   - Real-time stakeholder visibility (issues created immediately on `/done`)
@@ -584,12 +584,12 @@ All notable changes to SpecWeave will be documented in this file.
   - Error handling: non-blocking (GitHub failures), blocking (validation failures)
   - See Increment 0053 for comprehensive implementation details
 - Judge-Based Marketplace Plugin Validation (LLM scoring system, 40-point threshold)
-- Mandatory Post-Closure Quality Assessment (automatic QA after `/specweave:done`)
+- Mandatory Post-Closure Quality Assessment (automatic QA after `/sw:done`)
 
 ### 📝 Documentation
 - **Recovery Guide**: Emergency procedures for GitHub sync failures
   - Circuit breaker reset: `rm .specweave/state/.hook-circuit-breaker-github`
-  - Manual retry: `/specweave-github:sync --retry`
+  - Manual retry: `/sw-github:sync --retry`
   - Rate limit check: `gh api rate_limit`
   - Auth refresh: `gh auth login`
 - **Migration Guide**: v0.24 → v0.25 migration path

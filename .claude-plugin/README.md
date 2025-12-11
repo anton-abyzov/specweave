@@ -17,7 +17,7 @@ When you clone this repo and **trust the folder** in Claude Code:
    /plugin install specweave
    ```
 4. **Restart Claude Code**
-5. Commands are now available: `/specweave:increment`, `/specweave:do`, etc.
+5. Commands are now available: `/sw:increment`, `/sw:do`, etc.
 
 **How it works**: The `.claude/settings.json` file contains:
 ```json
@@ -53,13 +53,13 @@ If automatic setup doesn't work (or folder not trusted):
 
 ### Verify Installation
 
-After installing plugins, type `/specweave:` to see available commands:
-- `/specweave:increment` - Plan new increment
-- `/specweave:do` - Execute tasks
-- `/specweave:next` - Smart transition
-- `/specweave:done` - Close increment
-- `/specweave:progress` - Show status
-- `/specweave:validate` - Validate increment
+After installing plugins, type `/sw:` to see available commands:
+- `/sw:increment` - Plan new increment
+- `/sw:do` - Execute tasks
+- `/sw:next` - Smart transition
+- `/sw:done` - Close increment
+- `/sw:progress` - Show status
+- `/sw:validate` - Validate increment
 - ... (19 total commands)
 
 Type `/github:` to see GitHub commands (if installed):
@@ -125,12 +125,12 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 ## How It Works
 
 **Without Plugin System** (old):
-- Commands: `/specweave.increment`, `/specweave:do`
+- Commands: `/specweave.increment`, `/sw:do`
 - Direct commands in `.claude/commands/`
 - No namespacing
 
 **With Plugin System** (new):
-- Commands: `/specweave:increment`, `/specweave:do`, `/specweave-github:sync`
+- Commands: `/sw:increment`, `/sw:do`, `/sw-github:sync`
 - Plugin-namespaced via `.claude-plugin/`
 - Proper marketplace structure
 - Each plugin has its own namespace (e.g., `specweave`, `specweave-github`)
@@ -138,7 +138,7 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 ## Available Plugins
 
 ### 1. SpecWeave Core (`specweave`)
-**Commands** (invoked as `/specweave:command`):
+**Commands** (invoked as `/sw:command`):
 - `increment` - Plan new product increment
 - `do` - Execute implementation tasks
 - `next` - Smart increment transition
@@ -166,7 +166,7 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 ### 2. GitHub Integration (`specweave-github`)
 **Location**: `./plugins/specweave-github`
 
-**Commands** (invoked as `/specweave-github:command`):
+**Commands** (invoked as `/sw-github:command`):
 - `create-issue` - Create GitHub issue
 - `sync` - Sync increments with issues
 - `close-issue` - Close GitHub issue
@@ -237,7 +237,7 @@ This means you're using the **old direct command structure**, not the plugin sys
 
 2. Follow Quick Setup above to install via plugin system
 
-**Result**: Commands will now be `/specweave:increment` (colon-namespaced)
+**Result**: Commands will now be `/sw:increment` (colon-namespaced)
 
 ### Can't find marketplace
 

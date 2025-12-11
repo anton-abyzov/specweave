@@ -289,7 +289,7 @@ async function main() {
 
   if (!dryRun) {
     console.log(`\nNext steps:`);
-    console.log(`  1. Re-sync living docs: /specweave:sync-docs update 0002`);
+    console.log(`  1. Re-sync living docs: /sw:sync-docs update 0002`);
     console.log(`  2. Re-sync GitHub epics: /specweave-github:sync-spec`);
   }
 }

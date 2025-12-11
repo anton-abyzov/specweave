@@ -39,8 +39,8 @@ fi
 # If no increment ID found, prompt user
 if [ -z "$INCREMENT_ID" ]; then
   echo "❌ No active increment found."
-  echo "Usage: /specweave:sync-progress <increment-id>"
-  echo "   or: /specweave:sync-progress (auto-detects active increment)"
+  echo "Usage: /sw:sync-progress <increment-id>"
+  echo "   or: /sw:sync-progress (auto-detects active increment)"
   exit 1
 fi
 ```
@@ -96,7 +96,7 @@ fi
 
 ### 2.2: Sync to Living Docs (User Stories)
 
-Call the existing `/specweave:sync-specs` command:
+Call the existing `/sw:sync-specs` command:
 
 ```bash
 echo "📚 Step 2/4: Syncing increment to living docs..."
@@ -177,7 +177,7 @@ if [[ " ${EXTERNAL_TOOLS[@]} " =~ " github " ]] && [ "$NO_GITHUB" != "true" ]; t
   if [ "$DRY_RUN" = "true" ]; then
     echo "   [DRY-RUN] Would sync to GitHub"
   else
-    /specweave-github:sync "$INCREMENT_ID"
+    /sw-github:sync "$INCREMENT_ID"
 
     if [ $? -eq 0 ]; then
       echo "   ✅ GitHub sync complete"
@@ -206,7 +206,7 @@ if [[ " ${EXTERNAL_TOOLS[@]} " =~ " jira " ]] && [ "$NO_JIRA" != "true" ]; then
   if [ "$DRY_RUN" = "true" ]; then
     echo "   [DRY-RUN] Would sync to JIRA"
   else
-    /specweave-jira:sync "$INCREMENT_ID"
+    /sw-jira:sync "$INCREMENT_ID"
 
     if [ $? -eq 0 ]; then
       echo "   ✅ JIRA sync complete"
@@ -226,7 +226,7 @@ if [[ " ${EXTERNAL_TOOLS[@]} " =~ " ado " ]] && [ "$NO_ADO" != "true" ]; then
   if [ "$DRY_RUN" = "true" ]; then
     echo "   [DRY-RUN] Would sync to ADO"
   else
-    /specweave-ado:sync "$INCREMENT_ID"
+    /sw-ado:sync "$INCREMENT_ID"
 
     if [ $? -eq 0 ]; then
       echo "   ✅ ADO sync complete"
@@ -247,7 +247,7 @@ fi
 echo "📊 Updating status line cache..."
 
 # Force update status line cache
-/specweave:update-status
+/sw:update-status
 
 echo "   ✅ Status line updated"
 ```
@@ -300,8 +300,8 @@ echo ""
 echo "Next steps:"
 echo "   • Review status line for updated progress"
 echo "   • Check external tools (GitHub/JIRA/ADO) for synced updates"
-echo "   • Run /specweave:validate $INCREMENT_ID to validate quality"
-echo "   • Run /specweave:done $INCREMENT_ID when ready to close"
+echo "   • Run /sw:validate $INCREMENT_ID to validate quality"
+echo "   • Run /sw:done $INCREMENT_ID when ready to close"
 echo ""
 ```
 
@@ -326,8 +326,8 @@ echo ""
 Next steps:
    • Review status line for updated progress
    • Check external tools (GitHub/JIRA/ADO) for synced updates
-   • Run /specweave:validate 0053 to validate quality
-   • Run /specweave:done 0053 when ready to close
+   • Run /sw:validate 0053 to validate quality
+   • Run /sw:done 0053 when ready to close
 ```
 
 ---
@@ -414,16 +414,16 @@ fi
 
 ```bash
 # Dry-run mode (preview only)
-/specweave:sync-progress 0053 --dry-run
+/sw:sync-progress 0053 --dry-run
 
 # Skip GitHub sync
-/specweave:sync-progress 0053 --no-github
+/sw:sync-progress 0053 --no-github
 
 # Skip all external tools
-/specweave:sync-progress 0053 --no-github --no-jira --no-ado
+/sw:sync-progress 0053 --no-github --no-jira --no-ado
 
 # Auto-detect active increment
-/specweave:sync-progress
+/sw:sync-progress
 ```
 
 ---
@@ -436,7 +436,7 @@ fi
 
 ```bash
 # Single command syncs everything
-/specweave:sync-progress
+/sw:sync-progress
 ```
 
 **What happens**:
@@ -451,11 +451,11 @@ fi
 **Scenario**: All tasks complete, ready to close increment. Want to ensure all systems are in sync.
 
 ```bash
-# Final sync before /specweave:done
-/specweave:sync-progress 0053
+# Final sync before /sw:done
+/sw:sync-progress 0053
 
 # Then close increment
-/specweave:done 0053
+/sw:done 0053
 ```
 
 ### Use Case 3: Preview Sync (Dry-Run)
@@ -464,7 +464,7 @@ fi
 
 ```bash
 # Preview mode
-/specweave:sync-progress 0053 --dry-run
+/sw:sync-progress 0053 --dry-run
 ```
 
 **Output**:
@@ -484,7 +484,7 @@ Would sync:
 
 ```bash
 # Skip all external tools
-/specweave:sync-progress 0053 --no-github --no-jira --no-ado
+/sw:sync-progress 0053 --no-github --no-jira --no-ado
 ```
 
 ---
@@ -495,7 +495,7 @@ Would sync:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                   /specweave:sync-progress                  │
+│                   /sw:sync-progress                  │
 │                  (Single Orchestrator Command)              │
 └────────────────────────┬────────────────────────────────────┘
                          │
@@ -536,18 +536,18 @@ Would sync:
 
 | Command | Purpose | Scope |
 |---------|---------|-------|
-| `/specweave:sync-acs` | Sync tasks → ACs (spec.md) | Tasks to spec only |
-| `/specweave:sync-specs` | Sync spec → living docs | Spec to docs only |
-| `/specweave:sync-tasks` | Sync GitHub → tasks | External to tasks |
-| `/specweave-github:sync` | Sync to GitHub | Living docs to GitHub |
-| **`/specweave:sync-progress`** | **Comprehensive multi-system sync** | **Tasks → Docs → External** |
+| `/sw:sync-acs` | Sync tasks → ACs (spec.md) | Tasks to spec only |
+| `/sw:sync-specs` | Sync spec → living docs | Spec to docs only |
+| `/sw:sync-tasks` | Sync GitHub → tasks | External to tasks |
+| `/sw-github:sync` | Sync to GitHub | Living docs to GitHub |
+| **`/sw:sync-progress`** | **Comprehensive multi-system sync** | **Tasks → Docs → External** |
 
 **When to use each**:
 
-- Use `/specweave:sync-acs` when you only want to update ACs in spec.md
-- Use `/specweave:sync-specs` when you only want to sync to living docs
-- Use `/specweave-github:sync` when you only want to sync to GitHub
-- **Use `/specweave:sync-progress` for complete end-to-end sync** ✅ (Recommended!)
+- Use `/sw:sync-acs` when you only want to update ACs in spec.md
+- Use `/sw:sync-specs` when you only want to sync to living docs
+- Use `/sw-github:sync` when you only want to sync to GitHub
+- **Use `/sw:sync-progress` for complete end-to-end sync** ✅ (Recommended!)
 
 ---
 
@@ -563,10 +563,10 @@ Would sync:
 **Fix**:
 ```bash
 # Embed ACs from living docs into spec.md
-/specweave:embed-acs 0053
+/sw:embed-acs 0053
 
 # Then retry sync
-/specweave:sync-progress 0053
+/sw:sync-progress 0053
 ```
 
 ### Issue: GitHub sync failed (rate limit)
@@ -588,7 +588,7 @@ Would sync:
 **Fix**:
 ```bash
 # Provide increment ID explicitly
-/specweave:sync-progress 0053
+/sw:sync-progress 0053
 ```
 
 ---
@@ -599,13 +599,13 @@ Would sync:
 
 ```bash
 # 1. Sync progress (this command)
-/specweave:sync-progress 0053
+/sw:sync-progress 0053
 
 # 2. Validate quality
-/specweave:validate 0053 --quality
+/sw:validate 0053 --quality
 
 # 3. Close increment (PM validation)
-/specweave:done 0053
+/sw:done 0053
 ```
 
 ---

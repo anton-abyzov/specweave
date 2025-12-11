@@ -20,19 +20,19 @@ description: Automatically detect and resolve duplicate increments with smart co
 
 ```bash
 # Detect and fix all duplicates interactively
-/specweave:fix-duplicates
+/sw:fix-duplicates
 
 # Preview what would be done (dry-run)
-/specweave:fix-duplicates --dry-run
+/sw:fix-duplicates --dry-run
 
 # Auto-fix with content merging
-/specweave:fix-duplicates --merge
+/sw:fix-duplicates --merge
 
 # Force fix without confirmation (use with caution!)
-/specweave:fix-duplicates --force --merge
+/sw:fix-duplicates --force --merge
 
 # Fix specific increment number
-/specweave:fix-duplicates 0031
+/sw:fix-duplicates 0031
 ```
 
 ## Options
@@ -135,7 +135,7 @@ Loser 2: .specweave/increments/_abandoned/0031-old-attempt/
 ### Example 1: Interactive Fix (Recommended)
 
 ```bash
-/specweave:fix-duplicates
+/sw:fix-duplicates
 ```
 
 **Output**:
@@ -182,7 +182,7 @@ Space freed: 2.3 MB
 ### Example 2: Dry-Run Preview
 
 ```bash
-/specweave:fix-duplicates --dry-run
+/sw:fix-duplicates --dry-run
 ```
 
 **Output**:
@@ -205,13 +205,13 @@ Summary:
   Would free: 2.5 MB
 
 Run without --dry-run to proceed:
-  /specweave:fix-duplicates --merge
+  /sw:fix-duplicates --merge
 ```
 
 ### Example 3: Auto-Fix with Merge
 
 ```bash
-/specweave:fix-duplicates --merge --force
+/sw:fix-duplicates --merge --force
 ```
 
 **Output**:
@@ -244,7 +244,7 @@ Summary:
 ### Example 4: Fix Specific Increment
 
 ```bash
-/specweave:fix-duplicates 0031
+/sw:fix-duplicates 0031
 ```
 
 **Output**:
@@ -314,7 +314,7 @@ Recommendation:
 
 **Increment**: 0031-external-tool-status-sync
 **Resolved**: 2025-11-15 07:00:00 UTC
-**Command**: /specweave:fix-duplicates --merge
+**Command**: /sw:fix-duplicates --merge
 
 ## Detected Duplicates
 
@@ -461,7 +461,7 @@ task.run(async () => {
       console.log(`Would merge: ${totalMerged} file${totalMerged > 1 ? 's' : ''}`);
     }
     console.log('\nRun without --dry-run to proceed:');
-    console.log('  /specweave:fix-duplicates --merge');
+    console.log('  /sw:fix-duplicates --merge');
   } else {
     console.log(`\nDuplicates resolved: ${results.length}`);
     console.log(`Paths deleted: ${totalDeleted}`);
@@ -484,9 +484,9 @@ No configuration needed - all options are provided via command-line flags.
 
 ## Related Commands
 
-- `/specweave:archive <id>` - Archive specific increment (prevents duplicates)
-- `/specweave:restore <id>` - Restore increment from archive
-- `/specweave:status` - View all increment statuses
+- `/sw:archive <id>` - Archive specific increment (prevents duplicates)
+- `/sw:restore <id>` - Restore increment from archive
+- `/sw:status` - View all increment statuses
 
 ## Safety Notes
 

@@ -7,7 +7,7 @@
  * This script is called from:
  * - Post-increment-planning hook (auto-translate spec.md, plan.md, tasks.md)
  * - Post-task-completion hook (auto-translate living docs)
- * - Manual /specweave:translate command
+ * - Manual /sw:translate command
  *
  * Usage:
  *   node translate-file.js <file-path> [--target-lang en] [--preview]
@@ -273,11 +273,11 @@ async function invokeLLMTranslation(prompt: string, verbose: boolean): Promise<s
 
     console.error('\n⚠️  AUTO-TRANSLATION REQUIRES MANUAL STEP:');
     console.error('   Option A (Recommended): Set ANTHROPIC_API_KEY environment variable');
-    console.error('   Option B: Run /specweave:translate <file-path>');
+    console.error('   Option B: Run /sw:translate <file-path>');
     console.error('   Option C: Manually translate the content\n');
 
     // Return original content with clear marker
-    return `<!-- ⚠️ AUTO-TRANSLATION PENDING -->\n<!-- Set ANTHROPIC_API_KEY for automatic translation -->\n<!-- Or run: /specweave:translate to complete -->\n<!-- Original content below -->\n\n${contentToTranslate}`;
+    return `<!-- ⚠️ AUTO-TRANSLATION PENDING -->\n<!-- Set ANTHROPIC_API_KEY for automatic translation -->\n<!-- Or run: /sw:translate to complete -->\n<!-- Original content below -->\n\n${contentToTranslate}`;
   }
 }
 

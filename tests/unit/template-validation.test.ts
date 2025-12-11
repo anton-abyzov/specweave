@@ -83,9 +83,9 @@ describe('Template Validation Tests', () => {
     });
 
     test('should mention SpecWeave commands', () => {
-      expect(claudeContent).toContain('/specweave:increment');
-      expect(claudeContent).toContain('/specweave:do');
-      expect(claudeContent).toContain('/specweave:done');
+      expect(claudeContent).toContain('/sw:increment');
+      expect(claudeContent).toContain('/sw:do');
+      expect(claudeContent).toContain('/sw:done');
     });
 
     test('should contain Emergency Minimal Mode section', () => {
@@ -144,7 +144,7 @@ describe('Template Validation Tests', () => {
     });
 
     test('should mention SpecWeave commands', () => {
-      expect(agentsContent).toContain('/specweave:');
+      expect(agentsContent).toContain('/sw:');
     });
 
     test('should have context loading section', () => {

@@ -41,7 +41,7 @@ SpecWeave works seamlessly with localized AI interfaces. Here's Claude Code runn
 - Interface in Russian: "Создай профессионального риелтора" (Create a professional realtor)
 - Multi-choice options in Russian
 - Natural language project description
-- Framework terms preserved in English (`spec.md`, `/specweave:do`)
+- Framework terms preserved in English (`spec.md`, `/sw:do`)
 
 ### Translation Workflow
 
@@ -51,7 +51,7 @@ SpecWeave works seamlessly with localized AI interfaces. Here's Claude Code runn
 Он помогает клиентам покупать, продавать и арендовать недвижимость."
 
 # 2. SpecWeave creates specs in your language
-/specweave:inc "риелтор-ассистент"
+/sw:inc "риелтор-ассистент"
 
 # Created:
 # ✅ spec.md - Requirements in Russian
@@ -63,7 +63,7 @@ SpecWeave works seamlessly with localized AI interfaces. Here's Claude Code runn
 "Реализуй функционал поиска недвижимости"
 
 # 4. Translate docs when needed
-/specweave:translate "spec.md" --to="en"
+/sw:translate "spec.md" --to="en"
 ```
 
 ## Translation Rules
@@ -79,7 +79,7 @@ SpecWeave follows smart translation rules:
 
 ### ⏸️ **Always in English**:
 - Framework terms: `increment`, `spec.md`, `plan.md`, `tasks.md`
-- SpecWeave commands: `/specweave:inc`, `/specweave:do`
+- SpecWeave commands: `/sw:inc`, `/sw:do`
 - Technical terms: `TypeScript`, `npm`, `git`, `API`, `CLI`
 - File paths: `.specweave/`, `src/`, `CLAUDE.md`
 - Code blocks and examples
@@ -201,19 +201,19 @@ specweave init .
 ### Workflow
 ```bash
 # 1. PM creates increment (Spanish)
-/specweave:inc "autenticación-usuarios"
+/sw:inc "autenticación-usuarios"
 # spec.md created in Spanish
 
 # 2. Translate for developers (Russian)
-/specweave:translate "spec.md" --to="ru"
+/sw:translate "spec.md" --to="ru"
 # Creates spec.ru.md
 
 # 3. QA translates tests (German)
-/specweave:translate "tests.md" --to="de"
+/sw:translate "tests.md" --to="de"
 # Creates tests.de.md
 
 # 4. Final docs (English)
-/specweave:translate "increment 0001" --to="en" --output="public/"
+/sw:translate "increment 0001" --to="en" --output="public/"
 # Creates English versions in public/
 ```
 
@@ -279,18 +279,18 @@ A: No! Just start using your preferred language naturally. SpecWeave auto-detect
 A: Yes! SpecWeave handles multi-language specs, tasks, and docs.
 
 **Q: Are slash commands translated?**
-A: No, commands stay in English (`/specweave:inc`, `/specweave:do`) for consistency across all languages.
+A: No, commands stay in English (`/sw:inc`, `/sw:do`) for consistency across all languages.
 
 **Q: What about code comments?**
 A: Code stays in English by default. You can request comment translation explicitly.
 
 **Q: Is translation automatic?**
-A: You control when translation happens. Use the translator skill or `/specweave:translate` command.
+A: You control when translation happens. Use the translator skill or `/sw:translate` command.
 
 ## Resources
 
 - **Translator Skill**: Auto-activates for translation requests
-- **Command**: `/specweave:translate <file> --to=<language>`
+- **Command**: `/sw:translate <file> --to=<language>`
 - **Supported Languages**: 9 languages (see table above)
 - **Documentation**: This guide + translator skill docs
 

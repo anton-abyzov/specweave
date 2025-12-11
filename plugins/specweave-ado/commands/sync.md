@@ -5,7 +5,7 @@ description: Two-way sync between SpecWeave increment and Azure DevOps work item
 
 # Sync ADO Work Item Command
 
-**Usage**: `/specweave-ado:sync <increment-id> [options]`
+**Usage**: `/sw-ado:sync <increment-id> [options]`
 
 **Purpose**: Two-way synchronization between SpecWeave increment and Azure DevOps work item
 
@@ -24,13 +24,13 @@ description: Two-way sync between SpecWeave increment and Azure DevOps work item
 
 ```bash
 # Two-way sync (default - both directions)
-/specweave-ado:sync 0005
+/sw-ado:sync 0005
 
 # Push only (one-way to ADO)
-/specweave-ado:sync 0005 --direction to-ado
+/sw-ado:sync 0005 --direction to-ado
 
 # Pull only (one-way from ADO)
-/specweave-ado:sync 0005 --direction from-ado
+/sw-ado:sync 0005 --direction from-ado
 ```
 
 ---
@@ -74,7 +74,7 @@ Cannot push changes to ADO (sync.settings.canUpdateExternalItems = false).
 
 Options:
 1. Enable writes: Set canUpdateExternalItems to true in config.json
-2. Pull-only mode: /specweave-ado:sync ${incrementId} --direction from-ado
+2. Pull-only mode: /sw-ado:sync ${incrementId} --direction from-ado
 `);
     return;
   }
@@ -200,7 +200,7 @@ This allows:
 ### Two-way Sync (Default)
 
 ```
-User: /specweave-ado:sync 0005-payment-integration
+User: /sw-ado:sync 0005-payment-integration
 
 Claude:
 Checking permissions...
@@ -232,7 +232,7 @@ Work Item: https://dev.azure.com/acme-corp/My%20Project/_workitems/edit/12345
 ### Permission Denied
 
 ```
-User: /specweave-ado:sync 0005 --direction to-ado
+User: /sw-ado:sync 0005 --direction to-ado
 
 Claude:
 Checking permissions...
@@ -244,7 +244,7 @@ Cannot push changes to ADO.
 
 Options:
 1. Enable writes: Set sync.settings.canUpdateExternalItems = true
-2. Pull-only: /specweave-ado:sync 0005 --direction from-ado
+2. Pull-only: /sw-ado:sync 0005 --direction from-ado
 ```
 
 ---
@@ -255,10 +255,10 @@ For most use cases, use the git-style commands:
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-ado:pull` | Pull changes from ADO (read-only) |
-| `/specweave-ado:push` | Push progress to ADO |
+| `/sw-ado:pull` | Pull changes from ADO (read-only) |
+| `/sw-ado:push` | Push progress to ADO |
 
-Use `/specweave-ado:sync` when you need explicit two-way sync with options.
+Use `/sw-ado:sync` when you need explicit two-way sync with options.
 
 ---
 
@@ -326,8 +326,8 @@ AZURE_DEVOPS_PAT=your-personal-access-token
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-ado:pull` | Pull from ADO (git-style) |
-| `/specweave-ado:push` | Push to ADO (git-style) |
-| `/specweave-ado:create` | Create new ADO work item |
-| `/specweave-ado:status` | Check sync status |
-| `/specweave-ado:close` | Close work item when complete |
+| `/sw-ado:pull` | Pull from ADO (git-style) |
+| `/sw-ado:push` | Push to ADO (git-style) |
+| `/sw-ado:create` | Create new ADO work item |
+| `/sw-ado:status` | Check sync status |
+| `/sw-ado:close` | Close work item when complete |

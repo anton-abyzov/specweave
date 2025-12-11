@@ -9,7 +9,7 @@
  *
  * CRITICAL (v0.35.0+): ACTIVE → READY_FOR_REVIEW auto-transition prevents
  * the auto-completion bug where increments get marked "completed" without
- * user approval. Only /specweave:done can transition READY_FOR_REVIEW → COMPLETED.
+ * user approval. Only /sw:done can transition READY_FOR_REVIEW → COMPLETED.
  *
  * Part of increment 0039: Ultra-Smart Next Command
  */
@@ -131,7 +131,7 @@ export function areAllTasksCompleted(incrementId) {
  *
  * CRITICAL (v0.35.0+): Rule 4 prevents the auto-completion bug.
  * ACTIVE cannot transition directly to COMPLETED - it MUST go through READY_FOR_REVIEW.
- * Only /specweave:done can transition READY_FOR_REVIEW → COMPLETED with user approval.
+ * Only /sw:done can transition READY_FOR_REVIEW → COMPLETED with user approval.
  *
  * @param incrementId - Increment ID to check
  * @param triggerFile - File that triggered the check (optional, for logging)
@@ -145,11 +145,11 @@ export function autoTransitionStatus(incrementId, triggerFile) {
         // Rule 4 (HIGHEST PRIORITY - v0.35.0+): ACTIVE → READY_FOR_REVIEW (when ALL tasks completed)
         // CRITICAL: This prevents the auto-completion bug! Must be checked FIRST.
         // When all tasks are done, increment goes to READY_FOR_REVIEW, NOT completed.
-        // Only /specweave:done can then transition to COMPLETED with user approval.
+        // Only /sw:done can then transition to COMPLETED with user approval.
         if (currentStatus === IncrementStatus.ACTIVE && areAllTasksCompleted(incrementId)) {
             MetadataManager.updateStatus(incrementId, IncrementStatus.READY_FOR_REVIEW);
             console.log(`📋 Auto-transitioned ${incrementId}: ACTIVE → READY_FOR_REVIEW (all tasks completed)`);
-            console.log(`   Run /specweave:done ${incrementId} to close this increment with user approval.`);
+            console.log(`   Run /sw:done ${incrementId} to close this increment with user approval.`);
             return true;
         }
         // Rule 1: PLANNING → ACTIVE (when tasks.md created AND tasks in-progress)
@@ -222,7 +222,7 @@ export function checkAndTransitionToReadyForReview(incrementId) {
             from: IncrementStatus.ACTIVE,
             to: IncrementStatus.READY_FOR_REVIEW,
             taskStatus,
-            message: `All ${taskStatus.totalTasks} tasks completed - transitioned to READY_FOR_REVIEW. Run /specweave:done to close.`
+            message: `All ${taskStatus.totalTasks} tasks completed - transitioned to READY_FOR_REVIEW. Run /sw:done to close.`
         };
     }
     catch (error) {
@@ -251,7 +251,7 @@ export function onFileCreated(incrementId, createdFile) {
 /**
  * Check if increment should auto-transition to ACTIVE
  *
- * Used by /specweave:do command before execution
+ * Used by /sw:do command before execution
  */
 export function shouldTransitionToActive(incrementId) {
     try {

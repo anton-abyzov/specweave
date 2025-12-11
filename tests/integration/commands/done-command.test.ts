@@ -12,7 +12,7 @@ import { findProjectRoot } from '../../test-utils/project-root.js';
 // ✅ SAFE: Find project root from test file location, not process.cwd()
 const projectRoot = findProjectRoot(import.meta.url);
 
-describe('/specweave:done Command Integration', () => {
+describe('/sw:done Command Integration', () => {
   let testRoot: string;
   let testCounter = 0;
 
@@ -43,7 +43,7 @@ describe('/specweave:done Command Integration', () => {
       acsChecked: true
     });
 
-    // WHEN: Execute updateStatus (simulates /specweave:done)
+    // WHEN: Execute updateStatus (simulates /sw:done)
     // Must go through READY_FOR_REVIEW first (v0.28.63+)
     MetadataManager.updateStatus('0001-test', IncrementStatus.READY_FOR_REVIEW);
     MetadataManager.updateStatus('0001-test', IncrementStatus.COMPLETED);

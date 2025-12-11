@@ -97,7 +97,7 @@ if (require.main === module) {
   const contextFile = prepareReflectionContext(incrementId, taskId);
   if (contextFile) {
     console.log(`Reflection context prepared: ${contextFile}`);
-    console.log("\u2728 Reflection ready. Run /specweave:reflect to analyze your work.");
+    console.log("\u2728 Reflection ready. Run /sw:reflect to analyze your work.");
   } else {
     console.log("Reflection skipped (disabled or no changes).");
   }

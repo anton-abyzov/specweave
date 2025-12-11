@@ -192,7 +192,7 @@ Gate 3 checks checkboxes in spec.md:
 
 **Fix unchecked ACs:**
 ```bash
-/specweave:sync-acs
+/sw:sync-acs
 ```
 
 ---
@@ -249,7 +249,7 @@ quality:
 **Never for convenience.**
 
 ```bash
-/specweave:done 0001 --force --reason "Production hotfix for CVE-2025-1234"
+/sw:done 0001 --force --reason "Production hotfix for CVE-2025-1234"
 ```
 
 What happens:

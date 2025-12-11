@@ -162,8 +162,8 @@ export async function listDiscrepancies(options: DiscrepanciesOptions & {
   }
 
   console.log('');
-  console.log("Use '/specweave:discrepancies show <id>' to view details");
-  console.log("Use '/specweave:discrepancies accept <id>' to apply patch");
+  console.log("Use '/sw:discrepancies show <id>' to view details");
+  console.log("Use '/sw:discrepancies accept <id>' to apply patch");
 }
 
 /**
@@ -210,7 +210,7 @@ export async function runCheck(options: {
     console.log(`  - Trivial: ${bySeverity.trivial}`);
   }
   console.log('');
-  console.log("Use '/specweave:discrepancies' to view list");
+  console.log("Use '/sw:discrepancies' to view list");
 
   // Update last check timestamp
   state.lastCheck = new Date().toISOString();
@@ -283,8 +283,8 @@ export async function showDiscrepancy(
   }
 
   console.log('');
-  console.log(`Use '/specweave:discrepancies accept ${id}' to apply patch`);
-  console.log(`Use '/specweave:discrepancies dismiss ${id}' to mark intentional`);
+  console.log(`Use '/sw:discrepancies accept ${id}' to apply patch`);
+  console.log(`Use '/sw:discrepancies dismiss ${id}' to mark intentional`);
 }
 
 /**
@@ -325,7 +325,7 @@ export async function acceptDiscrepancy(
     console.log(`   File: ${recommendation.patch.filePath}`);
     console.log(`   Change: ${recommendation.patch.reason}`);
     console.log('');
-    console.log('Use --yes flag to apply: /specweave:discrepancies accept --yes ' + id);
+    console.log('Use --yes flag to apply: /sw:discrepancies accept --yes ' + id);
     return;
   }
 

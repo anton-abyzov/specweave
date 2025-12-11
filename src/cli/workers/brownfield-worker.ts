@@ -743,7 +743,7 @@ Only include issues with confidence > 70. Return empty array [] if no issues fou
     }
 
     if (stats.total > 50) {
-      recommendations.push('Consider using /specweave:discrepancy-to-increment to batch discrepancies');
+      recommendations.push('Consider using /sw:discrepancy-to-increment to batch discrepancies');
     }
 
     return recommendations;

@@ -1,5 +1,5 @@
 /**
- * CLI handler for /specweave:plan command
+ * CLI handler for /sw:plan command
  *
  * Entry point that parses args and invokes PlanCommandOrchestrator.
  *
@@ -17,7 +17,7 @@ import { Logger, consoleLogger } from '../../utils/logger.js';
 // Logger infrastructure available for future internal debug logs if needed.
 
 /**
- * Execute /specweave:plan command
+ * Execute /sw:plan command
  */
 export async function executePlanCommand(args: string[]): Promise<void> {
   // Parse arguments
@@ -53,7 +53,7 @@ export async function executePlanCommand(args: string[]): Promise<void> {
     }
 
     console.log(chalk.gray(`\n⏱️  Execution time: ${result.executionTime}ms`));
-    console.log(chalk.cyan('\n💡 Next step: /specweave:do\n'));
+    console.log(chalk.cyan('\n💡 Next step: /sw:do\n'));
   } else {
     console.log(chalk.red('❌ Plan generation failed\n'));
 
@@ -114,12 +114,12 @@ function parseArgs(args: string[]): PlanCommandConfig {
 }
 
 /**
- * Show help for /specweave:plan command
+ * Show help for /sw:plan command
  */
 export function showPlanHelp(): void {
   console.log(`
 ${chalk.bold('Usage:')}
-  /specweave:plan [increment-id] [options]
+  /sw:plan [increment-id] [options]
 
 ${chalk.bold('Description:')}
   Generate plan.md and tasks.md for an increment using Architect Agent
@@ -130,16 +130,16 @@ ${chalk.bold('Options:')}
   --verbose, -v            Show detailed execution information
 
 ${chalk.bold('Examples:')}
-  /specweave:plan                     # Auto-detect PLANNING increment
-  /specweave:plan 0039                # Explicit increment ID
-  /specweave:plan --force             # Overwrite existing files
-  /specweave:plan 0039 --verbose      # Verbose output
+  /sw:plan                     # Auto-detect PLANNING increment
+  /sw:plan 0039                # Explicit increment ID
+  /sw:plan --force             # Overwrite existing files
+  /sw:plan 0039 --verbose      # Verbose output
 
 ${chalk.bold('Workflow:')}
-  1. Create increment: /specweave:increment "feature name"
+  1. Create increment: /sw:increment "feature name"
   2. Edit spec.md (add requirements, ACs)
-  3. Generate plan: /specweave:plan
-  4. Execute tasks: /specweave:do
+  3. Generate plan: /sw:plan
+  4. Execute tasks: /sw:do
 
 ${chalk.bold('For more info:')}
   See plugins/specweave/commands/specweave-plan.md

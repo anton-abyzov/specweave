@@ -13,7 +13,7 @@ The **PM Agent** is SpecWeave's AI-powered Product Manager that handles requirem
 The PM Agent is the first agent activated when you create a new [increment](/docs/glossary/terms/increments):
 
 ```bash
-/specweave:increment "Add user authentication"
+/sw:increment "Add user authentication"
 ```
 
 **Key responsibilities:**
@@ -82,9 +82,9 @@ graph LR
 
 ## When It Activates
 
-- `/specweave:increment "feature"` - Creates new increment
-- `/specweave:done` - PM validates completion (quality gate)
-- `/specweave:update-scope` - Reviews scope changes
+- `/sw:increment "feature"` - Creates new increment
+- `/sw:done` - PM validates completion (quality gate)
+- `/sw:update-scope` - Reviews scope changes
 
 ## Related
 

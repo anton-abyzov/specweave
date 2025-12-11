@@ -1,4 +1,4 @@
-# /specweave-diagrams:diagrams-generate
+# /sw-diagrams:diagrams-generate
 
 Generate Mermaid architecture diagrams following C4 Model conventions.
 

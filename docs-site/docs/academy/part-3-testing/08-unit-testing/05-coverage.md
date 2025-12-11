@@ -270,7 +270,7 @@ SpecWeave's quality gates include coverage:
 - `/src/payments/**`
 ```
 
-The `/specweave:done` command validates coverage before closing increments.
+The `/sw:done` command validates coverage before closing increments.
 
 ---
 

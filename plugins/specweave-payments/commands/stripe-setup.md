@@ -1,4 +1,4 @@
-# /specweave-payments:stripe-setup
+# /sw-payments:stripe-setup
 
 Complete Stripe integration setup guide with production-ready code templates, security best practices, and testing workflows.
 

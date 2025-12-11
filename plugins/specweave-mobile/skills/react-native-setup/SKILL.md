@@ -210,7 +210,7 @@ npm run android
 ## Integration with SpecWeave
 
 This skill integrates with SpecWeave's increment workflow:
-- Use during `/specweave:increment` planning for environment setup tasks
+- Use during `/sw:increment` planning for environment setup tasks
 - Reference in `tasks.md` for setup-related acceptance criteria
 - Include in `spec.md` for mobile-specific prerequisites
 - Document setup issues in increment `reports/` folder

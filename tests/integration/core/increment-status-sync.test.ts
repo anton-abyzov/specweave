@@ -185,9 +185,9 @@ All tasks complete (for testing purposes).
   });
 
   /**
-   * T-014: Test /specweave:done Updates spec.md
+   * T-014: Test /sw:done Updates spec.md
    */
-  describe('T-014: /specweave:done Command Updates spec.md', () => {
+  describe('T-014: /sw:done Command Updates spec.md', () => {
     it('testDoneCommandUpdatesSpec - should update spec.md when closing increment', async () => {
       // GIVEN an active increment with all tasks completed
       const incrementId = '0001-test';
@@ -197,7 +197,7 @@ All tasks complete (for testing purposes).
       let specStatus = await readSpecStatus(incrementId);
       expect(specStatus).toBe('active');
 
-      // WHEN /specweave:done is executed (simulated via MetadataManager.updateStatus)
+      // WHEN /sw:done is executed (simulated via MetadataManager.updateStatus)
       // Must go through READY_FOR_REVIEW before COMPLETED (v0.28.63+)
       MetadataManager.updateStatus(incrementId, IncrementStatus.READY_FOR_REVIEW);
       MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
@@ -250,7 +250,7 @@ All tasks complete (for testing purposes).
   });
 
   /**
-   * T-015: Test /specweave:pause and /specweave:resume Update spec.md
+   * T-015: Test /sw:pause and /sw:resume Update spec.md
    */
   describe('T-015: /pause and /resume Commands Update spec.md', () => {
     it('testPauseCommandUpdatesSpec - should update spec.md to paused', async () => {
@@ -262,7 +262,7 @@ All tasks complete (for testing purposes).
       let specStatus = await readSpecStatus(incrementId);
       expect(specStatus).toBe('active');
 
-      // WHEN /specweave:pause is executed
+      // WHEN /sw:pause is executed
       MetadataManager.updateStatus(incrementId, IncrementStatus.PAUSED, 'Waiting for dependencies');
 
       // THEN spec.md should be updated to "paused"
@@ -283,7 +283,7 @@ All tasks complete (for testing purposes).
       let specStatus = await readSpecStatus(incrementId);
       expect(specStatus).toBe('paused');
 
-      // WHEN /specweave:resume is executed
+      // WHEN /sw:resume is executed
       MetadataManager.updateStatus(incrementId, IncrementStatus.ACTIVE);
 
       // THEN spec.md should be updated to "active"
@@ -326,7 +326,7 @@ All tasks complete (for testing purposes).
       const incrementId = '0008-abandon-test';
       await createTestIncrement(incrementId, IncrementStatus.ACTIVE);
 
-      // WHEN /specweave:abandon is executed
+      // WHEN /sw:abandon is executed
       MetadataManager.updateStatus(incrementId, IncrementStatus.ABANDONED, 'Requirements changed');
 
       // THEN spec.md should be updated to "abandoned"

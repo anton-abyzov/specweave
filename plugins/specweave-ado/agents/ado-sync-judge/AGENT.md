@@ -61,7 +61,7 @@ if (localStatus !== externalStatus) {
    - MUST be 100% complete to close
    - All tasks completed
    - All tests passing
-   - `/specweave:done` validates strictly
+   - `/sw:done` validates strictly
    - Can be deleted after completion
 
 2. **Spec Lifecycle** (Flexible):
@@ -78,7 +78,7 @@ Verify hooks fire correctly:
 
 ```bash
 # Check 1: Post-increment completion
-Event: /specweave:done completes
+Event: /sw:done completes
 Expected: Living docs updated → Sync triggered
 Validate:
   - Hook fires within 5 seconds
@@ -230,7 +230,7 @@ fi
 # Step 3: Test increment strictness
 echo "3. Testing increment completion strictness..."
 # Try to close incomplete increment (should fail)
-RESULT=$(/specweave:done test-increment-incomplete 2>&1)
+RESULT=$(/sw:done test-increment-incomplete 2>&1)
 if [[ $RESULT != *"Cannot close increment"* ]]; then
   echo "❌ Incomplete increment was allowed to close"
   exit 1
@@ -296,7 +296,7 @@ Timeline:
   Day 3:
     - All tasks complete
     - Tests passing
-    - /specweave:done executed
+    - /sw:done executed
     - Increment: closed ✅
     - Spec synced to ADO
     - ADO status: Active

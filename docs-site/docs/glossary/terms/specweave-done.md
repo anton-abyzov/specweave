@@ -1,18 +1,18 @@
 ---
 id: specweave-done
-title: /specweave:done Command
+title: /sw:done Command
 sidebar_label: specweave:done
 ---
 
-# /specweave:done Command
+# /sw:done Command
 
-The **`/specweave:done`** command closes an [increment](/docs/glossary/terms/increments) after validating that all [quality gates](/docs/glossary/terms/quality-gate) pass.
+The **`/sw:done`** command closes an [increment](/docs/glossary/terms/increments) after validating that all [quality gates](/docs/glossary/terms/quality-gate) pass.
 
 ## What It Does
 
 **Key actions:**
 - Validates all tasks in [tasks.md](/docs/glossary/terms/tasks-md) are complete
-- Runs [/specweave:qa](/docs/glossary/terms/specweave-qa) with `--gate` flag
+- Runs [/sw:qa](/docs/glossary/terms/specweave-qa) with `--gate` flag
 - [PM Agent](/docs/glossary/terms/pm-agent) validates completion
 - Creates completion report
 - Closes external tool issues (GitHub, JIRA, ADO)
@@ -22,10 +22,10 @@ The **`/specweave:done`** command closes an [increment](/docs/glossary/terms/inc
 
 ```bash
 # Close specific increment
-/specweave:done 0007
+/sw:done 0007
 
 # Close active increment
-/specweave:done
+/sw:done
 ```
 
 ## Three-Gate Validation
@@ -59,7 +59,7 @@ Minimum [test coverage](/docs/glossary/terms/test-coverage):
 ## Output
 
 ```bash
-$ /specweave:done 0007
+$ /sw:done 0007
 
 📊 Validating increment 0007-user-authentication...
 
@@ -89,7 +89,7 @@ The [PM Agent](/docs/glossary/terms/pm-agent) validates:
 ## Related
 
 - [Quality Gate](/docs/glossary/terms/quality-gate) - Validation checkpoints
-- [/specweave:qa](/docs/glossary/terms/specweave-qa) - Quality assessment
-- [/specweave:do](/docs/glossary/terms/specweave-do) - Execute tasks
+- [/sw:qa](/docs/glossary/terms/specweave-qa) - Quality assessment
+- [/sw:do](/docs/glossary/terms/specweave-do) - Execute tasks
 - [PM Agent](/docs/glossary/terms/pm-agent) - Validation agent
 - [Increments](/docs/glossary/terms/increments) - Work units

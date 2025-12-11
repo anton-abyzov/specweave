@@ -117,8 +117,8 @@ DISC-0003   knowledge-gap   🟡 medium    legacy-adapter      Single contributo
 DISC-0004   missing-adr     🟢 low       cache               No ADR for caching strategy
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Use '/specweave:discrepancies show <ID>' for details
-Use '/specweave:discrepancy-to-increment <ID> <ID>...' to create an increment
+Use '/sw:discrepancies show <ID>' for details
+Use '/sw:discrepancy-to-increment <ID> <ID>...' to create an increment
 ```
 
 ### Statistics
@@ -149,6 +149,6 @@ By Priority:
 
 ## Related
 
-- `/specweave:discrepancy-to-increment` - Convert discrepancies to increments
-- `/specweave:jobs` - Monitor brownfield analysis jobs
+- `/sw:discrepancy-to-increment` - Convert discrepancies to increments
+- `/sw:jobs` - Monitor brownfield analysis jobs
 - `brownfield-analyzer` skill - Run new analysis

@@ -10,7 +10,7 @@ Scan all increments and fix any drift between local metadata.json status and Git
 ## Usage
 
 ```bash
-/specweave-github:reconcile [options]
+/sw-github:reconcile [options]
 ```
 
 ## Options
@@ -81,7 +81,7 @@ if (result.errors.length > 0) {
 ## Dry Run Mode
 
 ```bash
-/specweave-github:reconcile --dry-run
+/sw-github:reconcile --dry-run
 ```
 
 Shows what would be changed without making any modifications:
@@ -104,7 +104,7 @@ Shows what would be changed without making any modifications:
 
 ## Related Commands
 
-- `/specweave-github:status`: View sync status for increments
-- `/specweave-github:sync`: Manual sync to GitHub
-- `/specweave:done`: Close increment (triggers auto-close)
-- `/specweave:resume`: Resume increment (now triggers auto-reopen)
+- `/sw-github:status`: View sync status for increments
+- `/sw-github:sync`: Manual sync to GitHub
+- `/sw:done`: Close increment (triggers auto-close)
+- `/sw:resume`: Resume increment (now triggers auto-reopen)

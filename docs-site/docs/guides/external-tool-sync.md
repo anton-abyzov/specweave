@@ -83,7 +83,7 @@ SpecWeave syncs **different data types in different directions**:
 ### When It Runs
 
 **Automatic** (via hooks):
-- After creating new increment with `/specweave:increment`
+- After creating new increment with `/sw:increment`
 - When spec.md is created in `.specweave/docs/internal/specs/`
 
 **Manual** (CLI):
@@ -168,7 +168,7 @@ To GitHub Issue Body:
 - When syncing increment progress
 
 **Manual** (CLI):
-- Run: `/specweave-github:sync <increment-id>`
+- Run: `/sw-github:sync <increment-id>`
 
 ### What It Does
 
@@ -331,7 +331,7 @@ export AZURE_DEVOPS_PAT="your-personal-access-token"
 
 ```bash
 # 1. PM creates spec
-/specweave:increment "User authentication with OAuth"
+/sw:increment "User authentication with OAuth"
 
 # PM agent generates:
 # - .specweave/docs/internal/specs/spec-001-user-auth.md
@@ -343,7 +343,7 @@ export AZURE_DEVOPS_PAT="your-personal-access-token"
 # → Adds link to spec-001-user-auth.md
 
 # 3. Developer starts work
-/specweave:do
+/sw:do
 
 # 4. As tasks complete, commits are posted to issue #456
 # → Comment: "US-001 implemented in commits abc123f, def456g"
@@ -385,7 +385,7 @@ node dist/cli/commands/sync-spec-content.js \
 # 1. PM closes GitHub issue #456 (all work complete)
 
 # 2. Developer syncs status
-/specweave-github:sync 0001
+/sw-github:sync 0001
 
 # Output:
 # 🔄 Syncing increment 0001-user-auth with GitHub...

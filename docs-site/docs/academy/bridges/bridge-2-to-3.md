@@ -110,7 +110,7 @@ it('should throw for empty title', () => {
 
 In Part 2, you used SpecWeave:
 ```bash
-/specweave:increment "Add task feature"
+/sw:increment "Add task feature"
 ```
 
 In Part 3, you'll add tests to your workflow:

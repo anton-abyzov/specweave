@@ -39,7 +39,7 @@ Brings the same engineering discipline to ML that SpecWeave brings to software:
 
 ```bash
 # Create ML increment
-/specweave:inc "build recommendation model"
+/sw:inc "build recommendation model"
 
 # The ml-pipeline-orchestrator skill activates and creates:
 # .specweave/increments/0042-recommendation-model/
@@ -53,7 +53,7 @@ Brings the same engineering discipline to ML that SpecWeave brings to software:
 # └── notebooks/         # Exploratory notebooks
 
 # Execute ML tasks
-/specweave:do
+/sw:do
 
 # The skill guides you through:
 # 1. Data exploration
@@ -415,7 +415,7 @@ Generate deployment artifacts.
 ### Step 1: Create ML Increment
 
 ```bash
-/specweave:inc "build product recommendation model"
+/sw:inc "build product recommendation model"
 ```
 
 **What happens**:
@@ -445,7 +445,7 @@ Generate deployment artifacts.
 ### Step 2: Execute ML Tasks
 
 ```bash
-/specweave:do
+/sw:do
 ```
 
 **Guided workflow**:
@@ -525,7 +525,7 @@ explainer.generate_all_reports()
 ### Step 3: Validate Increment
 
 ```bash
-/specweave:validate 0042
+/sw:validate 0042
 ```
 
 **Checks**:
@@ -538,7 +538,7 @@ explainer.generate_all_reports()
 ### Step 4: Complete Increment
 
 ```bash
-/specweave:done 0042
+/sw:done 0042
 ```
 
 **Generates COMPLETION-SUMMARY.md**:
@@ -570,7 +570,7 @@ explainer.generate_all_reports()
 
 ```bash
 # Create deployment increment
-/specweave:inc "0043-deploy-recommendation-model"
+/sw:inc "0043-deploy-recommendation-model"
 
 # Generate deployment artifacts
 /ml:deploy 0042
@@ -586,7 +586,7 @@ explainer.generate_all_reports()
 ### Step 6: Sync Living Docs
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 **Updates**:
@@ -744,7 +744,7 @@ ML decisions captured in docs:
 
 ```bash
 # ML increments sync to GitHub issues
-/specweave:github:sync
+/sw:github:sync
 
 # Creates issue: "0042: Build recommendation model"
 # Tracks: experiments, model versions, deployment

@@ -19,11 +19,11 @@ Arguments provided: $ARGUMENTS
 
 | Input | Mode | Action |
 |-------|------|--------|
-| `/specweave:sync-specs` | **ALL** (default) | Sync ALL increments |
-| `/specweave:sync-specs --all` | **ALL** (explicit) | Sync ALL increments |
-| `/specweave:sync-specs 0106` | **SINGLE** | Sync only increment 0106 |
-| `/specweave:sync-specs 0106 --dry-run` | **SINGLE + DRY** | Preview sync for 0106 |
-| `/specweave:sync-specs --dry-run` | **ALL + DRY** | Preview sync for ALL |
+| `/sw:sync-specs` | **ALL** (default) | Sync ALL increments |
+| `/sw:sync-specs --all` | **ALL** (explicit) | Sync ALL increments |
+| `/sw:sync-specs 0106` | **SINGLE** | Sync only increment 0106 |
+| `/sw:sync-specs 0106 --dry-run` | **SINGLE + DRY** | Preview sync for 0106 |
+| `/sw:sync-specs --dry-run` | **ALL + DRY** | Preview sync for ALL |
 
 **CRITICAL**: No increment ID = sync ALL increments (this is the DEFAULT!)
 
@@ -210,16 +210,16 @@ These were synced in this run.
 Preview what would be synced without making changes:
 
 ```bash
-/specweave:sync-specs --dry-run        # Preview ALL
-/specweave:sync-specs 0106 --dry-run   # Preview single
+/sw:sync-specs --dry-run        # Preview ALL
+/sw:sync-specs 0106 --dry-run   # Preview single
 ```
 
 ### --force
 Overwrite existing files without prompting:
 
 ```bash
-/specweave:sync-specs --force          # Force ALL
-/specweave:sync-specs 0106 --force     # Force single
+/sw:sync-specs --force          # Force ALL
+/sw:sync-specs 0106 --force     # Force single
 ```
 
 ---
@@ -228,7 +228,7 @@ Overwrite existing files without prompting:
 
 ### Example 1: Sync ALL (Default - Most Common)
 ```
-User: /specweave:sync-specs
+User: /sw:sync-specs
 
 Output:
 🔄 Syncing ALL increments to living docs...
@@ -250,7 +250,7 @@ Found 25 increments with spec.md files.
 
 ### Example 2: Sync Single Increment
 ```
-User: /specweave:sync-specs 0106
+User: /sw:sync-specs 0106
 
 Output:
 🎯 Target increment: 0106-ci-health-improvements
@@ -264,7 +264,7 @@ Output:
 
 ### Example 3: Dry Run ALL
 ```
-User: /specweave:sync-specs --dry-run
+User: /sw:sync-specs --dry-run
 
 Output:
 🔍 DRY RUN MODE - No files will be modified
@@ -288,7 +288,7 @@ No changes made (dry run mode)
 ❌ Error: No increments found in .specweave/increments/
 
 Create an increment first:
-  /specweave:increment "feature name"
+  /sw:increment "feature name"
 ```
 
 ### Error: Specific Increment Not Found
@@ -300,7 +300,7 @@ Available increments:
   0094-unit-test-alignment
   ...
 
-Usage: /specweave:sync-specs [increment_id]
+Usage: /sw:sync-specs [increment_id]
 ```
 
 ### Error: Missing spec.md
@@ -324,13 +324,13 @@ Increment must have a spec.md file to sync.
 
 ## WHEN TO USE THIS COMMAND
 
-✅ **Use `/specweave:sync-specs` (no args) when**:
+✅ **Use `/sw:sync-specs` (no args) when**:
 - You want to ensure ALL increments are in living docs
 - After creating multiple increments
 - To fix gaps in specs folder
 - Regular maintenance sync
 
-✅ **Use `/specweave:sync-specs <id>` when**:
+✅ **Use `/sw:sync-specs <id>` when**:
 - You only want to sync one specific increment
 - After updating a single spec.md
 - Debugging sync issues for one increment

@@ -101,7 +101,7 @@ Linked increment: {incrementId} ({exists/not found})
 
 {if discrepancies > 0 && !repair}
 To auto-repair these discrepancies:
-  /specweave:validate-features --repair
+  /sw:validate-features --repair
 
 This will:
   • Create missing project folders
@@ -135,7 +135,7 @@ Options:
 
 ### Example 1: Check for discrepancies
 ```
-User: /specweave:validate-features
+User: /sw:validate-features
 
 Output:
 ═══════════════════════════════════════════════════════
@@ -157,13 +157,13 @@ Linked increment: 0062-test-living-docs-auto-sync (not found)
 
 ───────────────────────────────────────────────────────
 
-🎯 To repair: /specweave:validate-features --repair
+🎯 To repair: /sw:validate-features --repair
 ═══════════════════════════════════════════════════════
 ```
 
 ### Example 2: Auto-repair discrepancies
 ```
-User: /specweave:validate-features --repair
+User: /sw:validate-features --repair
 
 Output:
 ═══════════════════════════════════════════════════════
@@ -203,6 +203,6 @@ Discrepancies found: 1
 
 ## RELATED COMMANDS
 
-- `/specweave:sync-specs` - Sync increment to living docs (includes consistency check)
-- `/specweave:validate` - Validate increment structure
-- `/specweave:archive` - Archive completed increments
+- `/sw:sync-specs` - Sync increment to living docs (includes consistency check)
+- `/sw:validate` - Validate increment structure
+- `/sw:archive` - Archive completed increments

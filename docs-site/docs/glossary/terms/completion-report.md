@@ -6,12 +6,12 @@ sidebar_label: Completion Report
 
 # Completion Report
 
-A **completion report** is automatically generated when closing an [increment](/docs/glossary/terms/increments) with [/specweave:done](/docs/glossary/terms/specweave-done), documenting what was accomplished.
+A **completion report** is automatically generated when closing an [increment](/docs/glossary/terms/increments) with [/sw:done](/docs/glossary/terms/specweave-done), documenting what was accomplished.
 
 ## When Generated
 
 Created automatically when:
-1. [/specweave:done](/docs/glossary/terms/specweave-done) is called
+1. [/sw:done](/docs/glossary/terms/specweave-done) is called
 2. All [quality gates](/docs/glossary/terms/quality-gate) pass
 3. [PM Agent](/docs/glossary/terms/pm-agent) validates completion
 
@@ -94,7 +94,7 @@ The completion report is also synced to [living documentation](/docs/glossary/te
 
 ## Related
 
-- [/specweave:done](/docs/glossary/terms/specweave-done) - Close command
+- [/sw:done](/docs/glossary/terms/specweave-done) - Close command
 - [Quality Gate](/docs/glossary/terms/quality-gate) - Validation checks
 - [Living Docs](/docs/glossary/terms/living-docs) - Documentation system
 - [Increments](/docs/glossary/terms/increments) - Work units

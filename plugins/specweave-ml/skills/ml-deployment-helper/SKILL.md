@@ -333,10 +333,10 @@ The skill creates a deployment increment:
 
 ```bash
 # After training model (increment 0042)
-/specweave:inc "0043-deploy-recommendation-model"
+/sw:inc "0043-deploy-recommendation-model"
 
 # Generates deployment increment with all artifacts
-/specweave:do
+/sw:do
 
 # Deploy to production when ready
 /ml:deploy 0043 --environment production

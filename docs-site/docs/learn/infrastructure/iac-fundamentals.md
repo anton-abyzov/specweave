@@ -2519,7 +2519,7 @@ After infrastructure deployment, SpecWeave updates architecture docs:
 
 ```bash
 # Sync infrastructure to living docs
-/specweave:sync-docs update
+/sw:sync-docs update
 
 # Results in:
 # 1. Updated HLD with infrastructure diagram

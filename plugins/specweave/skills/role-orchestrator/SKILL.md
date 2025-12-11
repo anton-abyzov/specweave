@@ -433,16 +433,16 @@ Total estimated time: 35 minutes
 
 ```bash
 # Check status
-/specweave:status
+/sw:status
 
 # Sync to external tools
-/specweave:sync-progress 0001
+/sw:sync-progress 0001
 
 # Validate quality
-/specweave:qa 0001
+/sw:qa 0001
 
 # Close increment
-/specweave:done 0001
+/sw:done 0001
 ```
 
 ---

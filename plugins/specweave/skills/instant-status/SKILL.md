@@ -1,6 +1,6 @@
 ---
 name: instant-status
-description: Instant status commands that bypass LLM processing. Execute scripts directly for /specweave:status, /specweave:progress, /specweave:jobs. Activates for specweave status, specweave progress, specweave jobs, increment status, show status, show progress, background jobs, job status.
+description: Instant status commands that bypass LLM processing. Execute scripts directly for /sw:status, /sw:progress, /sw:jobs. Activates for specweave status, specweave progress, specweave jobs, increment status, show status, show progress, background jobs, job status.
 ---
 
 # Instant Status Commands
@@ -11,9 +11,9 @@ These commands need **NO LLM reasoning** - execute scripts directly for instant 
 
 | Command | Script | Purpose |
 |---------|--------|---------|
-| `/specweave:status` | `bash plugins/specweave/scripts/read-status.sh` | Increment status overview |
-| `/specweave:progress` | `bash plugins/specweave/scripts/read-progress.sh` | Task completion progress |
-| `/specweave:jobs` | `bash plugins/specweave/scripts/read-jobs.sh` | Background job status |
+| `/sw:status` | `bash plugins/specweave/scripts/read-status.sh` | Increment status overview |
+| `/sw:progress` | `bash plugins/specweave/scripts/read-progress.sh` | Task completion progress |
+| `/sw:jobs` | `bash plugins/specweave/scripts/read-jobs.sh` | Background job status |
 
 ## CRITICAL: Direct Execution Required
 
@@ -27,15 +27,15 @@ When user requests these commands:
 ### Example Execution
 
 ```bash
-# User types: /specweave:status
+# User types: /sw:status
 # You execute:
 bash plugins/specweave/scripts/read-status.sh
 
-# User types: /specweave:progress
+# User types: /sw:progress
 # You execute:
 bash plugins/specweave/scripts/read-progress.sh
 
-# User types: /specweave:jobs
+# User types: /sw:jobs
 # You execute:
 bash plugins/specweave/scripts/read-jobs.sh
 ```

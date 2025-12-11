@@ -161,12 +161,12 @@ function calculateTotal(items: Item[]): number {
 ### Method 2: Manual Translation Command
 
 **When**: You want to translate specific content
-**Command**: `/specweave:translate`
+**Command**: `/sw:translate`
 **What**: Batch translate entire project or specific scopes
 
 **Syntax**:
 ```bash
-/specweave:translate <target-language> [--scope <scope>] [--dry-run]
+/sw:translate <target-language> [--scope <scope>] [--dry-run]
 ```
 
 **Scopes**:
@@ -182,16 +182,16 @@ function calculateTotal(items: Item[]): number {
 
 ```bash
 # Translate entire project to Russian
-/specweave:translate ru --scope all
+/sw:translate ru --scope all
 
 # Translate only current increment to Spanish
-/specweave:translate es --scope current
+/sw:translate es --scope current
 
 # Translate documentation to German
-/specweave:translate de --scope docs
+/sw:translate de --scope docs
 
 # Dry run (preview without writing)
-/specweave:translate zh --scope increments --dry-run
+/sw:translate zh --scope increments --dry-run
 ```
 
 **Workflow**:
@@ -280,7 +280,7 @@ specweave init my-app
 # Обнаружена Claude Code
 # ✨ Инициализация завершена!
 
-/specweave:increment "authentication"
+/sw:increment "authentication"
 # 📝 Создание increment: authentication
 # ✅ Increment 0001 успешно создан!
 ```
@@ -322,7 +322,7 @@ specweave init my-app
 
 **CLI Output**:
 ```bash
-/specweave:increment "búsqueda de productos"
+/sw:increment "búsqueda de productos"
 # 📝 Creando increment: búsqueda de productos
 # ✅ ¡Increment 0002 creado exitosamente!
 ```
@@ -400,7 +400,7 @@ Este increment implementa búsqueda full-text usando Elasticsearch...
 **For Open Source**:
 - ✅ Keep everything in English (global audience)
 - ✅ Provide translations in separate branch (optional)
-- ✅ Use `/specweave:translate` for release docs (user-facing only)
+- ✅ Use `/sw:translate` for release docs (user-facing only)
 
 ### 2. Framework Term Preservation
 
@@ -586,9 +586,9 @@ Support multiple languages simultaneously:
 **Command**:
 ```bash
 # Translate to multiple languages
-/specweave:translate ru --scope current
-/specweave:translate es --scope current
-/specweave:translate zh --scope current
+/sw:translate ru --scope current
+/sw:translate es --scope current
+/sw:translate zh --scope current
 ```
 
 ---
@@ -606,8 +606,8 @@ vim .specweave/config.json
 
 **Step 2: Translate Existing Content**
 ```bash
-/specweave:translate ru --scope all --dry-run  # Preview
-/specweave:translate ru --scope all             # Execute
+/sw:translate ru --scope all --dry-run  # Preview
+/sw:translate ru --scope all             # Execute
 ```
 
 **Step 3: Verify Translations**
@@ -685,7 +685,7 @@ For better organization, use separate commits for source changes vs. translation
 
 ### Q: Can I disable auto-translation temporarily?
 
-**A**: Yes! Set `autoTranslateLivingDocs: false` in config. You can still use `/specweave:translate` manually when needed.
+**A**: Yes! Set `autoTranslateLivingDocs: false` in config. You can still use `/sw:translate` manually when needed.
 
 ---
 

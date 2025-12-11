@@ -59,7 +59,7 @@ flowchart LR
 ### 1. One Command Creates Foundation
 
 ```bash
-/specweave:increment "User authentication with OAuth"
+/sw:increment "User authentication with OAuth"
 ```
 
 AI agents (PM, Architect, Planner) create:
@@ -74,7 +74,7 @@ AI agents (PM, Architect, Planner) create:
 ### 2. One Command Builds
 
 ```bash
-/specweave:do
+/sw:do
 ```
 
 Autonomous execution through all tasks with quality validation.
@@ -82,7 +82,7 @@ Autonomous execution through all tasks with quality validation.
 ### 3. One Command Closes
 
 ```bash
-/specweave:done 0001
+/sw:done 0001
 ```
 
 Three quality gates validate completion:
@@ -146,9 +146,9 @@ specweave init .
 
 Then in Claude Code:
 ```bash
-/specweave:increment "Your first feature"
-/specweave:do
-/specweave:done 0001
+/sw:increment "Your first feature"
+/sw:do
+/sw:done 0001
 ```
 
 **[Full Quickstart Guide](/docs/guides/getting-started/quickstart)**

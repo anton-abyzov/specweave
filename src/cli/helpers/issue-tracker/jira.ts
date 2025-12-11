@@ -936,7 +936,7 @@ export function showJiraSetupComplete(language: SupportedLanguage): void {
 
   console.log(chalk.green.bold('\n✅ Jira integration configured!\n'));
   console.log(chalk.gray('Credentials saved to .env (gitignored)\n'));
-  console.log(chalk.cyan('💡 Tip: Run /specweave:increment "feature" to create an increment'));
+  console.log(chalk.cyan('💡 Tip: Run /sw:increment "feature" to create an increment'));
   console.log(chalk.gray('   It will automatically sync to Jira!\n'));
 }
 

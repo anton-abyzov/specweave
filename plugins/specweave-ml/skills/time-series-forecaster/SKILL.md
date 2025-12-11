@@ -454,7 +454,7 @@ metrics = evaluator.evaluate(
 ### Living Docs Integration
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 Updates:

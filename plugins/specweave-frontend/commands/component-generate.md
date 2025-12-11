@@ -1,4 +1,4 @@
-# /specweave-frontend:component-generate
+# /sw-frontend:component-generate
 
 Generate React/Vue/Angular components with tests, stories, and documentation following Atomic Design principles.
 

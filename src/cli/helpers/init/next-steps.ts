@@ -15,39 +15,39 @@ function getNextStepsStrings(language: SupportedLanguage) {
     pluginsReady: string;
   }> = {
     en: {
-      slashCommandsHint: '↑ Required for slash commands like /specweave:increment',
+      slashCommandsHint: '↑ Required for slash commands like /sw:increment',
       pluginsReady: 'All plugins ready',
     },
     ru: {
-      slashCommandsHint: '↑ Необходимо для слеш-команд типа /specweave:increment',
+      slashCommandsHint: '↑ Необходимо для слеш-команд типа /sw:increment',
       pluginsReady: 'Все плагины готовы',
     },
     es: {
-      slashCommandsHint: '↑ Requerido para comandos como /specweave:increment',
+      slashCommandsHint: '↑ Requerido para comandos como /sw:increment',
       pluginsReady: 'Todos los plugins listos',
     },
     zh: {
-      slashCommandsHint: '↑ 需要用于斜杠命令如 /specweave:increment',
+      slashCommandsHint: '↑ 需要用于斜杠命令如 /sw:increment',
       pluginsReady: '所有插件就绪',
     },
     de: {
-      slashCommandsHint: '↑ Erforderlich für Slash-Befehle wie /specweave:increment',
+      slashCommandsHint: '↑ Erforderlich für Slash-Befehle wie /sw:increment',
       pluginsReady: 'Alle Plugins bereit',
     },
     fr: {
-      slashCommandsHint: '↑ Requis pour les commandes slash comme /specweave:increment',
+      slashCommandsHint: '↑ Requis pour les commandes slash comme /sw:increment',
       pluginsReady: 'Tous les plugins prêts',
     },
     ja: {
-      slashCommandsHint: '↑ /specweave:increment などのスラッシュコマンドに必要',
+      slashCommandsHint: '↑ /sw:increment などのスラッシュコマンドに必要',
       pluginsReady: 'すべてのプラグイン準備完了',
     },
     ko: {
-      slashCommandsHint: '↑ /specweave:increment 같은 슬래시 명령에 필요',
+      slashCommandsHint: '↑ /sw:increment 같은 슬래시 명령에 필요',
       pluginsReady: '모든 플러그인 준비 완료',
     },
     pt: {
-      slashCommandsHint: '↑ Necessário para comandos slash como /specweave:increment',
+      slashCommandsHint: '↑ Necessário para comandos slash como /sw:increment',
       pluginsReady: 'Todos os plugins prontos',
     },
   };

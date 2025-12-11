@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 /**
  * Unit tests for IncrementDetector
  *
- * Tests auto-detection and validation of increments for /specweave:plan command.
+ * Tests auto-detection and validation of increments for /sw:plan command.
  *
  * Part of increment 0039: Ultra-Smart Next Command
  */

@@ -1,12 +1,12 @@
 ---
 name: specweave:external
 description: View external items dashboard - open issues from GitHub, JIRA, and Azure DevOps
-usage: /specweave:external [--refresh]
+usage: /sw:external [--refresh]
 ---
 
 # External Items Dashboard
 
-**Usage**: `/specweave:external [--refresh]`
+**Usage**: `/sw:external [--refresh]`
 
 ---
 
@@ -53,7 +53,7 @@ Last updated: 2 minutes ago (use --refresh to update)
 Force refresh the cache and fetch latest data from all providers.
 
 ```bash
-/specweave:external --refresh
+/sw:external --refresh
 ```
 
 ---
@@ -130,21 +130,21 @@ Set environment variables:
 ## Integration Points
 
 External items are also shown in:
-- `/specweave:status` - Summary section at bottom
-- `/specweave:increment` - Notification after planning
-- `/specweave:progress` - Footer line
+- `/sw:status` - Summary section at bottom
+- `/sw:increment` - Notification after planning
+- `/sw:progress` - Footer line
 
 ---
 
 ## Related Commands
 
-- `/specweave:status` - Show increment status with external items summary
-- `/specweave:progress` - Show detailed progress with external items footer
-- `/specweave:import-external` - Import external items as increments
+- `/sw:status` - Show increment status with external items summary
+- `/sw:progress` - Show detailed progress with external items footer
+- `/sw:import-external` - Import external items as increments
 
 ---
 
-**Command**: `/specweave:external`
+**Command**: `/sw:external`
 **Plugin**: specweave (core)
 **Version**: v0.31.0+
 **Part of**: Increment 0109 - External Items Dashboard

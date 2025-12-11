@@ -180,7 +180,7 @@ describe('Post-Increment-Planning Hook - Idempotency', () => {
 
   describe('Idempotency Scenarios', () => {
     it('should skip creation on first re-run (idempotent)', () => {
-      // Scenario: User runs /specweave:increment twice
+      // Scenario: User runs /sw:increment twice
 
       // First run: Create metadata with issue
       const firstRunMetadata = {
@@ -206,7 +206,7 @@ describe('Post-Increment-Planning Hook - Idempotency', () => {
     });
 
     it('should skip creation on multiple re-runs (idempotent)', () => {
-      // Scenario: User runs /specweave:increment 5 times
+      // Scenario: User runs /sw:increment 5 times
 
       // Initial metadata
       const metadata = {

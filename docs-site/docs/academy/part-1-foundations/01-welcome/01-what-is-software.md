@@ -209,7 +209,7 @@ Day 30: "Why did we make this decision?" Nobody knows.
 
 **With SpecWeave**:
 ```
-Day 1: /specweave:increment "User authentication"
+Day 1: /sw:increment "User authentication"
        → spec.md captures requirements
        → plan.md captures architecture
        → tasks.md captures implementation plan

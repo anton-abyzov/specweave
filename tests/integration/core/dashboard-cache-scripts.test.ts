@@ -376,9 +376,9 @@ describe('Dashboard Cache Scripts', () => {
 
       const output = runStatusScript();
 
-      expect(output).toContain('/specweave:progress');
-      expect(output).toContain('/specweave:do');
-      expect(output).toContain('/specweave:done');
+      expect(output).toContain('/sw:progress');
+      expect(output).toContain('/sw:do');
+      expect(output).toContain('/sw:done');
     });
   });
 

@@ -257,17 +257,17 @@ Which would you like to do?
 
 ## Saving Changes Across Repos
 
-Use `/specweave:save` to commit and push changes across all repos at once:
+Use `/sw:save` to commit and push changes across all repos at once:
 
 ```bash
 # Save all repos with same commit message
-/specweave:save "feat: Add user authentication"
+/sw:save "feat: Add user authentication"
 
 # Preview what would happen
-/specweave:save --dry-run
+/sw:save --dry-run
 
 # Save specific repos only
-/specweave:save "fix: Bug fixes" --repos frontend,backend
+/sw:save "fix: Bug fixes" --repos frontend,backend
 ```
 
 **Features:**
@@ -283,4 +283,4 @@ Use `/specweave:save` to commit and push changes across all repos at once:
 2. **Parent repo is optional** - Can have umbrella config or just independent repos
 3. **User stories MUST have project prefix** - Never generate generic `US-001` in multi-repo mode
 4. **Cross-project stories get special handling** - Tagged and linked across repos
-5. **Use `/specweave:save`** - Single command to save changes across all repos
+5. **Use `/sw:save`** - Single command to save changes across all repos

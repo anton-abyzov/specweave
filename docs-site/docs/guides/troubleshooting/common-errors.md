@@ -414,7 +414,7 @@ npm run migrate
 
 **Solution**: Use SpecWeave commands within Claude Code:
 ```
-/specweave:increment "feature name"
+/sw:increment "feature name"
 ```
 
 ### "No active increment found"
@@ -424,10 +424,10 @@ npm run migrate
 **Solution**:
 ```
 # Create new increment
-/specweave:increment "feature name"
+/sw:increment "feature name"
 
 # Or resume an existing one
-/specweave:resume 0001
+/sw:resume 0001
 ```
 
 ### "Increment validation failed"
@@ -437,13 +437,13 @@ npm run migrate
 **Solution**:
 ```
 # Check what failed
-/specweave:validate 0001
+/sw:validate 0001
 
 # Common fixes:
 # - Mark incomplete tasks as done
 # - Run and pass tests
 # - Sync documentation
-/specweave:sync-docs
+/sw:sync-docs
 ```
 
 ### "GitHub sync failed"

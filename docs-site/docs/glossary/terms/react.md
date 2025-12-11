@@ -447,12 +447,12 @@ my-react-app/
 
 ```mermaid
 graph TB
-    A[/specweave:increment "User Profile"] --> B[PM: Generate Spec]
+    A[/sw:increment "User Profile"] --> B[PM: Generate Spec]
     B --> C[Architect: Plan Component Structure]
-    C --> D[/specweave:do]
+    C --> D[/sw:do]
     D --> E[Implement React Components]
     E --> F[Write Tests]
-    F --> G[/specweave:done]
+    F --> G[/sw:done]
 
     style B fill:#61dafb
     style E fill:#61dafb

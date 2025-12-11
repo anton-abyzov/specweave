@@ -34,10 +34,10 @@ Comprehensive plugin providing MCP server integration, CLI tools (kcat), Terrafo
 
 ### ⚡ Commands (4)
 
-- `/specweave-kafka:deploy` - Deploy Kafka cluster via Terraform (AWS MSK, Azure Event Hubs, Apache Kafka)
-- `/specweave-kafka:monitor-setup` - Setup Prometheus/Grafana monitoring stack with 5 dashboards and 14 alerts
-- `/specweave-kafka:mcp-configure` - Configure MCP server integration (auto-detects kanapuli, tuannvm, Joel-hanson, Confluent)
-- `/specweave-kafka:dev-env` - Setup local development environment (Docker Compose: Kafka KRaft or Redpanda)
+- `/sw-kafka:deploy` - Deploy Kafka cluster via Terraform (AWS MSK, Azure Event Hubs, Apache Kafka)
+- `/sw-kafka:monitor-setup` - Setup Prometheus/Grafana monitoring stack with 5 dashboards and 14 alerts
+- `/sw-kafka:mcp-configure` - Configure MCP server integration (auto-detects kanapuli, tuannvm, Joel-hanson, Confluent)
+- `/sw-kafka:dev-env` - Setup local development environment (Docker Compose: Kafka KRaft or Redpanda)
 
 ## Installation
 
@@ -63,7 +63,7 @@ specweave plugin install specweave-kafka
 ### 1. Start Local Kafka Cluster
 
 ```bash
-/specweave-kafka:dev-env start
+/sw-kafka:dev-env start
 ```
 
 This starts a Kafka cluster (KRaft mode) with Schema Registry and Kafka UI on your local machine.
@@ -71,7 +71,7 @@ This starts a Kafka cluster (KRaft mode) with Schema Registry and Kafka UI on yo
 ### 2. Configure MCP Server
 
 ```bash
-/specweave-kafka:mcp-configure
+/sw-kafka:mcp-configure
 ```
 
 Auto-detects available MCP servers and generates configuration.
@@ -100,7 +100,7 @@ await producer.send({
 ### 4. Setup Monitoring
 
 ```bash
-/specweave-kafka:monitor-setup
+/sw-kafka:monitor-setup
 ```
 
 Deploys Prometheus, Grafana, and pre-built dashboards for Kafka monitoring.
@@ -111,19 +111,19 @@ Deploys Prometheus, Grafana, and pre-built dashboards for Kafka monitoring.
 
 Skills work together in coordinated workflows:
 
-**Deployment Workflow** (`/specweave-kafka:deploy`):
+**Deployment Workflow** (`/sw-kafka:deploy`):
 1. `kafka-architect` → Cluster sizing and partitioning strategy
 2. `kafka-iac-deployment` → Generate Terraform modules
 3. `kafka-kubernetes` → Kubernetes manifests (if K8s deployment)
 4. `kafka-observability` → Monitoring stack configuration
 
-**Monitoring Workflow** (`/specweave-kafka:monitor-setup`):
+**Monitoring Workflow** (`/sw-kafka:monitor-setup`):
 1. `kafka-observability` → JMX exporter configuration
 2. `kafka-observability` → Prometheus scraping setup
 3. `kafka-observability` → Grafana dashboard provisioning (5 dashboards)
 4. `kafka-observability` → Alerting rules deployment (14 critical/high/warning alerts)
 
-**Local Development** (`/specweave-kafka:dev-env`):
+**Local Development** (`/sw-kafka:dev-env`):
 1. `kafka-cli-tools` → Docker Compose stack selection (Kafka or Redpanda)
 2. `kafka-observability` → Monitoring integration
 3. `kafka-mcp-integration` → Configure MCP server for local cluster
@@ -166,7 +166,7 @@ Skills work together in coordinated workflows:
 ### Deploy to AWS MSK
 
 ```bash
-/specweave-kafka:deploy aws-msk
+/sw-kafka:deploy aws-msk
 ```
 
 Interactive prompts guide you through:
@@ -191,7 +191,7 @@ Edit and apply:
 ### Monitor Multiple Clusters
 
 ```bash
-/specweave-kafka:monitor-setup --multi-cluster
+/sw-kafka:monitor-setup --multi-cluster
 ```
 
 Creates unified Grafana dashboard with cluster selector.

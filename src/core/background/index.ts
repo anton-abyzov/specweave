@@ -9,9 +9,9 @@
  * ASYNC ARCHITECTURE (2025-12-01):
  * - Jobs spawn as detached processes that survive terminal close
  * - Progress tracked via filesystem (.specweave/state/jobs/)
- * - Check status: /specweave:jobs
- * - Resume: /specweave:jobs --resume <jobId>
- * - Kill: /specweave:jobs --kill <jobId>
+ * - Check status: /sw:jobs
+ * - Resume: /sw:jobs --resume <jobId>
+ * - Kill: /sw:jobs --kill <jobId>
  */
 
 export * from './types.js';

@@ -52,31 +52,31 @@ Expert at keeping the `.specweave/increments/` folder clean and organized throug
 ### Keep Workspace Clean
 ```bash
 # Interactive archiving - prompts for confirmation
-/specweave:archive-increments
+/sw:archive-increments
 
 # Keep only last 5 increments
-/specweave:archive-increments --keep-last 5
+/sw:archive-increments --keep-last 5
 
 # Archive all completed increments
-/specweave:archive-increments --archive-completed
+/sw:archive-increments --archive-completed
 ```
 
 ### Prepare for Release
 ```bash
 # Archive all pre-release increments
-/specweave:archive-increments --pattern "v0.7"
+/sw:archive-increments --pattern "v0.7"
 
 # Archive by date range
-/specweave:archive-increments --older-than 30d
+/sw:archive-increments --older-than 30d
 ```
 
 ### Restore from Archive
 ```bash
 # List archived increments
-/specweave:archive-increments --list-archived
+/sw:archive-increments --list-archived
 
 # Restore specific increment
-/specweave:archive-increments --restore 0015
+/sw:archive-increments --restore 0015
 ```
 
 ## Configuration
@@ -161,9 +161,9 @@ Based on analysis, I suggest:
 - Suggests archiving when appropriate
 
 ### Increment Commands
-- `/specweave:done` can trigger auto-archive
-- `/specweave:status` shows archive statistics
-- `/specweave:next` considers archived increments
+- `/sw:done` can trigger auto-archive
+- `/sw:status` shows archive statistics
+- `/sw:next` considers archived increments
 
 ### Living Docs
 - Archive preserves living docs references
@@ -182,17 +182,17 @@ Based on analysis, I suggest:
 
 ```bash
 # Archive old increments
-/specweave:archive-increments --older-than 30d
+/sw:archive-increments --older-than 30d
 
 # Keep workspace minimal
-/specweave:archive-increments --keep-last 5
+/sw:archive-increments --keep-last 5
 
 # Archive after release
-/specweave:archive-increments --pattern "pre-release"
+/sw:archive-increments --pattern "pre-release"
 
 # Restore for reference
-/specweave:archive-increments --restore 0015
+/sw:archive-increments --restore 0015
 
 # Check archive stats
-/specweave:archive-increments --stats
+/sw:archive-increments --stats
 ```

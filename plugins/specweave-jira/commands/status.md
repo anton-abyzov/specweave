@@ -5,7 +5,7 @@ description: Check JIRA sync status for SpecWeave increment
 
 # JIRA Status Command
 
-**Usage**: `/specweave-jira:status <increment-id>`
+**Usage**: `/sw-jira:status <increment-id>`
 
 **Purpose**: Display JIRA sync status and issue details for an increment
 
@@ -31,7 +31,7 @@ if (!issueKey) {
 ⚠️ No JIRA issue linked
 
 This increment is not linked to a JIRA issue.
-Create one with: /specweave-jira:create ${incrementId}
+Create one with: /sw-jira:create ${incrementId}
 `);
   return;
 }
@@ -108,7 +108,7 @@ Next Sync: Automatic on task completion
 ### Issue Linked
 
 ```
-User: /specweave-jira:status 0005-payment-integration
+User: /sw-jira:status 0005-payment-integration
 
 Claude:
 JIRA Sync Status
@@ -135,7 +135,7 @@ Next Sync: Automatic on task completion
 ### No Issue Linked
 
 ```
-User: /specweave-jira:status 0005
+User: /sw-jira:status 0005
 
 Claude:
 JIRA Sync Status
@@ -145,13 +145,13 @@ Increment: 0005-payment-integration
 ⚠️ No JIRA issue linked
 
 This increment is not linked to a JIRA issue.
-Create one with: /specweave-jira:create 0005-payment-integration
+Create one with: /sw-jira:create 0005-payment-integration
 ```
 
 ### Sync Issues Detected
 
 ```
-User: /specweave-jira:status 0005
+User: /sw-jira:status 0005
 
 Claude:
 JIRA Sync Status
@@ -166,7 +166,7 @@ Sync Enabled: ✅
 
 ⚠️ Sync Issues Detected:
   - Local status: in_progress, JIRA status: Done
-  - Status drift detected - run /specweave-jira:pull to sync
+  - Status drift detected - run /sw-jira:pull to sync
 
 Profile: jira-my-project
   Domain: company.atlassian.net
@@ -197,9 +197,9 @@ The status command detects common sync issues:
 
 | Issue | Detection | Resolution |
 |-------|-----------|------------|
-| Status drift | Local vs JIRA status mismatch | `/specweave-jira:pull` |
-| Stale sync | Last synced > 24 hours ago | `/specweave-jira:sync` |
-| Missing issue | Issue deleted in JIRA | `/specweave-jira:create` |
+| Status drift | Local vs JIRA status mismatch | `/sw-jira:pull` |
+| Stale sync | Last synced > 24 hours ago | `/sw-jira:sync` |
+| Missing issue | Issue deleted in JIRA | `/sw-jira:create` |
 | Permission denied | canUpdateExternalItems=false | Read-only mode note |
 
 ---
@@ -208,8 +208,8 @@ The status command detects common sync issues:
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-jira:pull` | Pull changes from JIRA |
-| `/specweave-jira:push` | Push progress to JIRA |
-| `/specweave-jira:sync` | Two-way sync |
-| `/specweave-jira:create` | Create JIRA issue |
-| `/specweave-jira:close` | Close issue when complete |
+| `/sw-jira:pull` | Pull changes from JIRA |
+| `/sw-jira:push` | Push progress to JIRA |
+| `/sw-jira:sync` | Two-way sync |
+| `/sw-jira:create` | Create JIRA issue |
+| `/sw-jira:close` | Close issue when complete |

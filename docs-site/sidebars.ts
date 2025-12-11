@@ -242,42 +242,42 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'link',
-          label: '1️⃣ /specweave:increment',
+          label: '1️⃣ /sw:increment',
           href: '/docs/commands/overview#1-planning-commands',
         },
         {
           type: 'link',
-          label: '2️⃣ /specweave:do',
+          label: '2️⃣ /sw:do',
           href: '/docs/commands/overview#2-implementation-commands',
         },
         {
           type: 'link',
-          label: '3️⃣ /specweave:progress',
+          label: '3️⃣ /sw:progress',
           href: '/docs/commands/overview#5-monitoring-commands',
         },
         {
           type: 'link',
-          label: '4️⃣ /specweave:validate',
+          label: '4️⃣ /sw:validate',
           href: '/docs/commands/overview#3-quality-assurance-commands',
         },
         {
           type: 'link',
-          label: '5️⃣ /specweave:qa',
+          label: '5️⃣ /sw:qa',
           href: '/docs/commands/overview#3-quality-assurance-commands',
         },
         {
           type: 'link',
-          label: '6️⃣ /specweave:check-tests',
+          label: '6️⃣ /sw:check-tests',
           href: '/docs/commands/overview#3-quality-assurance-commands',
         },
         {
           type: 'link',
-          label: '7️⃣ /specweave:done',
+          label: '7️⃣ /sw:done',
           href: '/docs/commands/overview#4-completion-commands',
         },
         {
           type: 'link',
-          label: '8️⃣ /specweave:sync-docs',
+          label: '8️⃣ /sw:sync-docs',
           href: '/docs/commands/overview#4-completion-commands',
         },
       ],

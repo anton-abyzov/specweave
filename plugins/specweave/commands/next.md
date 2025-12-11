@@ -14,7 +14,7 @@ You are helping the user complete their current increment and move to the next o
 ## Usage
 
 ```bash
-/specweave:next
+/sw:next
 ```
 
 **No arguments needed** - the command intelligently handles the transition.
@@ -23,7 +23,7 @@ You are helping the user complete their current increment and move to the next o
 
 ## What This Does
 
-The `/specweave:next` command is your **workflow continuation** command. It:
+The `/sw:next` command is your **workflow continuation** command. It:
 
 1. **Validates current increment** - Checks if work is complete
 2. **Transitions to ready_for_review** - If all tasks done, auto-transitions to `ready_for_review`
@@ -195,7 +195,7 @@ AskUserQuestion({
 
 Running quality assessment to validate implementation...
 
-/specweave:qa 0001
+/sw:qa 0001
 
 Overall Score: 87/100 (GOOD) ✓
 
@@ -267,7 +267,7 @@ What would you like to do? [A/B/C]
 
 1. **Invoke QA command automatically**:
    ```bash
-   /specweave:qa ${incrementId}
+   /sw:qa ${incrementId}
    ```
 
 2. **Quality assessment evaluates**:
@@ -420,7 +420,7 @@ Proceeding to next work...
       Example: /specweave inc "Admin dashboard"
 
    B. Check existing ideas → Look in .specweave/increments/_backlog/
-      If you have ideas saved, promote them with /specweave:increment
+      If you have ideas saved, promote them with /sw:increment
 
    C. Review roadmap → See .specweave/docs/internal/strategy/roadmap.md
 
@@ -435,7 +435,7 @@ Proceeding to next work...
 
 **User**:
 ```bash
-/specweave:next
+/sw:next
 ```
 
 **Output**:
@@ -510,7 +510,7 @@ Next Action: Run `/specweave do 0002` to begin
 
 **User**:
 ```bash
-/specweave:next
+/sw:next
 ```
 
 **Output**:
@@ -552,7 +552,7 @@ Next Action: Run `/specweave do 0001` to resume at T010
 
 **User**:
 ```bash
-/specweave:next
+/sw:next
 ```
 
 **Output**:
@@ -592,7 +592,7 @@ Options:
 
 **User**:
 ```bash
-/specweave:next
+/sw:next
 ```
 
 **Output**:
@@ -626,16 +626,16 @@ Your choice? [A/B/C] _
 
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
-| `/specweave:increment "feature"` | Create NEW increment with specific feature | Starting fresh work |
-| `/specweave:do` | Execute tasks in increment | Implementing planned work |
-| `/specweave:progress` | Check status (no action) | Quick status check |
-| `/specweave:done` | Explicitly close increment | Manual closure with validation |
-| `/specweave:qa` | Quality assessment only | Standalone QA check |
-| `/specweave:next` ⭐ | **Smart transition** (close + QA + suggest next) | **Natural workflow continuation** |
+| `/sw:increment "feature"` | Create NEW increment with specific feature | Starting fresh work |
+| `/sw:do` | Execute tasks in increment | Implementing planned work |
+| `/sw:progress` | Check status (no action) | Quick status check |
+| `/sw:done` | Explicitly close increment | Manual closure with validation |
+| `/sw:qa` | Quality assessment only | Standalone QA check |
+| `/sw:next` ⭐ | **Smart transition** (close + QA + suggest next) | **Natural workflow continuation** |
 
-**Why `/specweave:next` is special**:
+**Why `/sw:next` is special**:
 - ✅ Combines validation + closure + **quality assessment** + suggestion in one command
-- ✅ No need to remember `/specweave:done` then `/specweave:qa` then `/specweave:increment` sequence
+- ✅ No need to remember `/sw:done` then `/sw:qa` then `/sw:increment` sequence
 - ✅ Intelligent suggestions (backlog, WIP, new work)
 - ✅ User stays in control (never forces actions)
 - ✅ Natural "what's next?" workflow
@@ -645,7 +645,7 @@ Your choice? [A/B/C] _
 
 ## Best Practices
 
-1. **Run `/specweave:next` when you feel done** - It validates completion and suggests next steps
+1. **Run `/sw:next` when you feel done** - It validates completion and suggests next steps
 2. **Trust the PM validation** - If gates fail, there's unfinished work
 3. **Follow recommendations** - Backlog items are already planned
 4. **Keep WIP limit in mind** - Don't force multiple increments

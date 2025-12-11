@@ -284,7 +284,7 @@ This folder contains specifications for the {Project} project.
 ### Sync Increment to Projects
 
 ```bash
-/specweave-ado:sync-increment 0014
+/sw-ado:sync-increment 0014
 
 # Detects projects from spec
 # Creates work items in each project
@@ -294,7 +294,7 @@ This folder contains specifications for the {Project} project.
 ### Sync Spec to Project
 
 ```bash
-/specweave-ado:sync-spec AuthService/spec-001
+/sw-ado:sync-spec AuthService/spec-001
 
 # Syncs single spec to specific project
 # Updates existing work item or creates new
@@ -303,7 +303,7 @@ This folder contains specifications for the {Project} project.
 ### Sync All Specs
 
 ```bash
-/specweave-ado:sync-all
+/sw-ado:sync-all
 
 # Syncs all specs across all projects
 # Maintains relationships
@@ -430,9 +430,9 @@ Related Specs:
 
 Prefix increment names with primary project:
 ```bash
-/specweave:increment "payment-stripe-integration"
-/specweave:increment "auth-oauth-provider"
-/specweave:increment "user-profile-redesign"
+/sw:increment "payment-stripe-integration"
+/sw:increment "auth-oauth-provider"
+/sw:increment "user-profile-redesign"
 ```
 
 ## Error Handling

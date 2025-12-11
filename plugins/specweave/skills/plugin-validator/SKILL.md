@@ -33,8 +33,8 @@ This skill ensures that your SpecWeave environment is properly configured with a
 - During: `specweave init` (initial setup only)
 
 ❌ **Does NOT auto-activate for**:
-- `/specweave:increment` commands
-- `/specweave:do` commands
+- `/sw:increment` commands
+- `/sw:do` commands
 - Any other workflow commands
 - Reason: Prevents false positive errors when plugins are installed but detection fails
 
@@ -103,7 +103,7 @@ This skill ensures that your SpecWeave environment is properly configured with a
 
 **Scenario**: You cloned a project to a new VM and want to start working.
 
-**Action**: Run `/specweave:increment "Add authentication"`
+**Action**: Run `/sw:increment "Add authentication"`
 
 **What Happens**:
 ```
@@ -124,7 +124,7 @@ This skill ensures that your SpecWeave environment is properly configured with a
 
 **Scenario**: You're adding a new feature that uses GitHub and React.
 
-**Action**: Run `/specweave:increment "Add GitHub sync with React UI"`
+**Action**: Run `/sw:increment "Add GitHub sync with React UI"`
 
 **What Happens**:
 ```
@@ -307,15 +307,15 @@ specweave validate-plugins --auto-install --context="Deploy to Kubernetes" --ver
 
 **All SpecWeave commands validate plugins** before execution (STEP 0):
 
-- `/specweave:increment` - Validates before PM agent runs
-- `/specweave:do` - Validates before task execution
-- `/specweave:next` - Validates before next increment
-- `/specweave:done` - Validates before completion
+- `/sw:increment` - Validates before PM agent runs
+- `/sw:do` - Validates before task execution
+- `/sw:next` - Validates before next increment
+- `/sw:done` - Validates before completion
 - ... (all 22 commands)
 
 **Workflow**:
 ```
-User: /specweave:increment "Add feature"
+User: /sw:increment "Add feature"
         ↓
    [STEP 0: Plugin Validation]
         ↓ (only proceeds if valid)

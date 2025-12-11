@@ -241,7 +241,7 @@ export class BacklogScanner {
 
     let summary = '';
     if (items.length === 0) {
-      summary = 'No items in backlog. Use /specweave:increment to create new work.';
+      summary = 'No items in backlog. Use /sw:increment to create new work.';
     } else if (topItems.length === 0) {
       summary = 'No actionable items found (all blocked by dependencies).';
     } else {

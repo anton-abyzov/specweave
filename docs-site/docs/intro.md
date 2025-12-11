@@ -66,15 +66,15 @@ specweave init .
 
 Then in Claude Code:
 ```bash
-/specweave:increment "Add dark mode toggle"  # AI creates spec + plan + tasks
-/specweave:do                                # Autonomous implementation
-/specweave:done 0001                         # Quality-validated completion
+/sw:increment "Add dark mode toggle"  # AI creates spec + plan + tasks
+/sw:do                                # Autonomous implementation
+/sw:done 0001                         # Quality-validated completion
 ```
 
-**Pro tip**: Use `/specweave:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
+**Pro tip**: Use `/sw:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
 
 :::tip Keep Increments Small — 2-3x Faster with Opus 4.5!
-**5-15 tasks, 1-3 user stories, completable in 1-3 days.** With **Claude Opus 4.5**, development speed increases **2-3x** (some report **5-10x**!). Small increments + Opus 4.5 = almost **no manual interaction**. Just define requirements, run `/specweave:do`, and review what's done.
+**5-15 tasks, 1-3 user stories, completable in 1-3 days.** With **Claude Opus 4.5**, development speed increases **2-3x** (some report **5-10x**!). Small increments + Opus 4.5 = almost **no manual interaction**. Just define requirements, run `/sw:do`, and review what's done.
 :::
 
 :::caution Prevent Claude Code Crashes
@@ -90,7 +90,7 @@ Then in Claude Code:
 ```mermaid
 flowchart TB
     subgraph INPUT["1. TYPE ONE COMMAND"]
-        A["/specweave:increment<br/>'Add dark mode'"]
+        A["/sw:increment<br/>'Add dark mode'"]
     end
 
     subgraph AGENTS["2. AI AGENTS CREATE"]
@@ -109,7 +109,7 @@ flowchart TB
     end
 
     subgraph EXECUTE["4. BUILD"]
-        B["/specweave:do<br/>Autonomous execution"]
+        B["/sw:do<br/>Autonomous execution"]
     end
 
     subgraph SYNC["5. AUTO-SYNC"]
@@ -254,7 +254,7 @@ SpecWeave keeps your project management tools in sync **automatically**:
 **Existing Projects**:
 ```bash
 specweave init .
-/specweave:import-docs ~/exports/notion --source=notion
+/sw:import-docs ~/exports/notion --source=notion
 ```
 
 Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically and creates retroactive specifications.
@@ -265,13 +265,13 @@ Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically an
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave:increment "feature"` | Plan new increment (PM -> Architect -> Tasks) |
-| `/specweave:do` | Execute all tasks autonomously |
-| `/specweave:done 0001` | Complete with quality gate validation |
-| `/specweave:progress` | Show real-time status |
-| `/specweave:validate 0001` | Run quality checks |
-| `/specweave:sync-progress` | Sync to GitHub/JIRA/ADO |
-| `/specweave:tdd-cycle` | Full red-green-refactor workflow |
+| `/sw:increment "feature"` | Plan new increment (PM -> Architect -> Tasks) |
+| `/sw:do` | Execute all tasks autonomously |
+| `/sw:done 0001` | Complete with quality gate validation |
+| `/sw:progress` | Show real-time status |
+| `/sw:validate 0001` | Run quality checks |
+| `/sw:sync-progress` | Sync to GitHub/JIRA/ADO |
+| `/sw:tdd-cycle` | Full red-green-refactor workflow |
 
 **[Full Command Reference](./reference/commands/overview)**
 

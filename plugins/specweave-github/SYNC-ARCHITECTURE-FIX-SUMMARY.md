@@ -101,7 +101,7 @@ node "$SYNC_CLI" --spec-id "$SPEC_ID"
 
 ### 1. Increment → GitHub Issue (Export)
 
-**Trigger**: After `/specweave:inc` creates a new increment
+**Trigger**: After `/sw:inc` creates a new increment
 
 **Actions**:
 1. Create GitHub issue with:
@@ -133,7 +133,7 @@ node "$SYNC_CLI" --spec-id "$SPEC_ID"
 - ✅ Added: Clear explanation of WHY specs, not increments
 - ✅ Added: Visual architecture diagram (correct vs wrong)
 - ✅ Updated: All examples to use specs instead of increments
-- ✅ Updated: Commands to `/specweave-github:sync-spec` (not `/sync`)
+- ✅ Updated: Commands to `/sw-github:sync-spec` (not `/sync`)
 
 ### 3. Commands (DEPRECATED, need rewrite)
 
@@ -141,16 +141,16 @@ node "$SYNC_CLI" --spec-id "$SPEC_ID"
 
 | Command | What It Does (WRONG!) | What It Should Do |
 |---------|----------------------|-------------------|
-| `/specweave-github:sync` | Syncs increment to GitHub issue | **DEPRECATED!** Should be removed |
-| `/specweave-github:sync-tasks` | Syncs tasks to GitHub issues | **DEPRECATED!** Should sync user stories instead |
+| `/sw-github:sync` | Syncs increment to GitHub issue | **DEPRECATED!** Should be removed |
+| `/sw-github:sync-tasks` | Syncs tasks to GitHub issues | **DEPRECATED!** Should sync user stories instead |
 
 **Correct commands** (need to be created):
 
 | Command | What It Does (CORRECT!) | Status |
 |---------|------------------------|--------|
-| `/specweave-github:sync-spec <spec-id>` | Syncs spec to GitHub Project | ✅ Already exists (github-spec-sync.ts) |
-| `/specweave-github:sync-spec --all` | Syncs all specs to GitHub | ✅ Already exists |
-| `/specweave-github:import-project <id>` | Imports GitHub Project as spec | 🔜 TODO |
+| `/sw-github:sync-spec <spec-id>` | Syncs spec to GitHub Project | ✅ Already exists (github-spec-sync.ts) |
+| `/sw-github:sync-spec --all` | Syncs all specs to GitHub | ✅ Already exists |
+| `/sw-github:import-project <id>` | Imports GitHub Project as spec | 🔜 TODO |
 
 ---
 
@@ -159,7 +159,7 @@ node "$SYNC_CLI" --spec-id "$SPEC_ID"
 ### 1. Deprecate Old Commands
 
 **File**: `plugins/specweave-github/commands/specweave-github-sync.md`
-**Action**: Add deprecation notice, point to `/specweave-github:sync-spec`
+**Action**: Add deprecation notice, point to `/sw-github:sync-spec`
 
 **File**: `plugins/specweave-github/commands/specweave-github-sync-tasks.md`
 **Action**: Add deprecation notice, point to spec-based sync
@@ -198,9 +198,9 @@ node "$SYNC_CLI" --spec-id "$SPEC_ID"
 - [x] Skill documentation updated to reflect spec sync
 
 ### 🔜 TODO
-- [ ] Deprecate `/specweave-github:sync` command
-- [ ] Deprecate `/specweave-github:sync-tasks` command
-- [ ] Create `/specweave-github:sync-spec` command documentation
+- [ ] Deprecate `/sw-github:sync` command
+- [ ] Deprecate `/sw-github:sync-tasks` command
+- [ ] Create `/sw-github:sync-spec` command documentation
 - [ ] Update all references in docs and code
 - [ ] Remove old increment-based sync libraries
 - [ ] Test end-to-end spec → GitHub Project sync
@@ -215,11 +215,11 @@ node "$SYNC_CLI" --spec-id "$SPEC_ID"
 
 ```bash
 # Create increment
-/specweave:increment "Add authentication"
+/sw:increment "Add authentication"
 
 # Sync increment to GitHub issue (❌ WRONG!)
-/specweave-github:sync 0005
-/specweave-github:sync-tasks 0005
+/sw-github:sync 0005
+/sw-github:sync-tasks 0005
 
 # Result: GitHub Issue for increment (temporary!)
 ```
@@ -232,13 +232,13 @@ User: "Create spec for user authentication"
 PM: Creates .specweave/docs/internal/specs/spec-005-user-auth.md
 
 # Sync spec to GitHub Project (✅ CORRECT!)
-/specweave-github:sync-spec spec-005
+/sw-github:sync-spec spec-005
 
 # Create increments (implements parts of spec)
-/specweave:increment "Add login flow"
+/sw:increment "Add login flow"
 → Increment 0010 (implements US-001, US-002 from spec-005)
 
-/specweave:increment "Add 2FA"
+/sw:increment "Add 2FA"
 → Increment 0011 (implements US-003 from spec-005)
 
 # Result: GitHub Project for spec (permanent!)
@@ -285,7 +285,7 @@ PM: Creates .specweave/docs/internal/specs/spec-005-user-auth.md
 
 **What needs to be done**:
 - 🔜 Formally deprecate old commands
-- 🔜 Create command documentation for `/specweave-github:sync-spec`
+- 🔜 Create command documentation for `/sw-github:sync-spec`
 - 🔜 Remove old increment-based sync libraries
 - 🔜 Test end-to-end workflow
 

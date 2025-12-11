@@ -95,7 +95,7 @@ export function displayStatusSection(summary: ExternalItemsSummary): void {
 
   // Show hint for large counts
   if (total > 50) {
-    console.log(chalk.gray(`   Run /specweave:external for details (paginated)`));
+    console.log(chalk.gray(`   Run /sw:external for details (paginated)`));
   }
   console.log('');
 }
@@ -182,8 +182,8 @@ export function displayDashboardHeader(summary: ExternalItemsSummary): void {
   // Usage hints
   if (total > 0) {
     console.log(chalk.gray('View items:'));
-    console.log(chalk.gray('  /specweave:external --provider github --limit 20'));
-    console.log(chalk.gray('  /specweave:external --provider jira --offset 20'));
+    console.log(chalk.gray('  /sw:external --provider github --limit 20'));
+    console.log(chalk.gray('  /sw:external --provider jira --offset 20'));
   }
 
   // Last updated
@@ -199,7 +199,7 @@ export function displayDashboardHeader(summary: ExternalItemsSummary): void {
  */
 export function formatPlanningNotification(counts: ExternalItemsCounts): string | null {
   if (counts.grandTotal === 0) return null;
-  return `⚠️ ${formatCount(counts.grandTotal)} unaddressed external items. Run /specweave:external to view.`;
+  return `⚠️ ${formatCount(counts.grandTotal)} unaddressed external items. Run /sw:external to view.`;
 }
 
 /**

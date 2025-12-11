@@ -5,9 +5,9 @@ Convert one or more brownfield discrepancies into a new increment for systematic
 ## Usage
 
 ```bash
-/specweave:discrepancy-to-increment DISC-0001
-/specweave:discrepancy-to-increment DISC-0001 DISC-0002 DISC-0003
-/specweave:discrepancy-to-increment --module payment-service
+/sw:discrepancy-to-increment DISC-0001
+/sw:discrepancy-to-increment DISC-0001 DISC-0002 DISC-0003
+/sw:discrepancy-to-increment --module payment-service
 ```
 
 ## Arguments
@@ -40,7 +40,7 @@ Convert one or more brownfield discrepancies into a new increment for systematic
    - Add `incrementId` reference
 
 5. **On Increment Completion**
-   - When increment closes via `/specweave:done`
+   - When increment closes via `/sw:done`
    - All linked discrepancies auto-marked `resolved`
    - Archived to `resolved/YYYY-MM/`
 
@@ -71,8 +71,8 @@ Updated discrepancy status:
 
 Next steps:
   1. Review: .specweave/increments/0087-payment-docs-improvement/spec.md
-  2. Plan: /specweave:plan 0087
-  3. Execute: /specweave:do 0087
+  2. Plan: /sw:plan 0087
+  3. Execute: /sw:do 0087
 ```
 
 ## Generated Spec Structure
@@ -127,7 +127,7 @@ From DISC-0003:
 
 ## Completion Hook
 
-When the increment is closed with `/specweave:done`:
+When the increment is closed with `/sw:done`:
 
 ```typescript
 // Automatically triggered by increment completion
@@ -155,6 +155,6 @@ async function onIncrementComplete(incrementId: string) {
 
 ## Related
 
-- `/specweave:discrepancies` - View pending discrepancies
-- `/specweave:increment` - Create new increment manually
-- `/specweave:done` - Complete increment (triggers resolution)
+- `/sw:discrepancies` - View pending discrepancies
+- `/sw:increment` - Create new increment manually
+- `/sw:done` - Complete increment (triggers resolution)

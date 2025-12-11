@@ -5,7 +5,7 @@ Create and execute automated browser workflows using Playwright. Generate script
 ## Usage
 
 ```
-/specweave-ui:ui-automate <workflow-name> [options]
+/sw-ui:ui-automate <workflow-name> [options]
 ```
 
 ## What I Do
@@ -21,31 +21,31 @@ Create and execute automated browser workflows using Playwright. Generate script
 
 ### 1. Form Automation
 ```bash
-/specweave-ui:ui-automate form-fill --url https://example.com/form \
+/sw-ui:ui-automate form-fill --url https://example.com/form \
   --fields "email=test@example.com,name=John Doe"
 ```
 
 ### 2. Data Extraction
 ```bash
-/specweave-ui:ui-automate scrape --url https://example.com/products \
+/sw-ui:ui-automate scrape --url https://example.com/products \
   --selectors "title=h1.product-title,price=.price"
 ```
 
 ### 3. UI Testing Sequence
 ```bash
-/specweave-ui:ui-automate test-login --url https://example.com/login \
+/sw-ui:ui-automate test-login --url https://example.com/login \
   --steps "fill:email,fill:password,click:submit,wait:dashboard"
 ```
 
 ### 4. Screenshot Capture
 ```bash
-/specweave-ui:ui-automate screenshot --url https://example.com \
+/sw-ui:ui-automate screenshot --url https://example.com \
   --fullPage --output screenshots/homepage.png
 ```
 
 ### 5. Multi-Page Navigation
 ```bash
-/specweave-ui:ui-automate navigate --start https://example.com \
+/sw-ui:ui-automate navigate --start https://example.com \
   --flow "home>products>cart>checkout"
 ```
 
@@ -165,9 +165,9 @@ for (const selector of selectors) {
 
 ## Related Commands
 
-- `/specweave-ui:ui-inspect` - Inspect page elements for selectors
-- `/specweave-testing:e2e-setup` - Set up full E2E testing framework
-- `/specweave-testing:test-generate` - Generate test files from automation scripts
+- `/sw-ui:ui-inspect` - Inspect page elements for selectors
+- `/sw-testing:e2e-setup` - Set up full E2E testing framework
+- `/sw-testing:test-generate` - Generate test files from automation scripts
 
 ## Environment Variables
 

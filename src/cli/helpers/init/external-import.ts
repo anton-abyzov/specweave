@@ -99,7 +99,7 @@ function getExternalImportStrings(language: SupportedLanguage): {
       location: '→ Location: .specweave/docs/internal/specs/',
       nextStepsHeader: '💡 Next steps:',
       nextStepReview: '→ Review imported User Stories in living docs',
-      nextStepCreate: '→ Create increments manually when ready: /specweave:increment "feature"',
+      nextStepCreate: '→ Create increments manually when ready: /sw:increment "feature"',
     },
     ru: {
       toolDetectionHeader: '🔍 Обнаружение внешних инструментов',
@@ -122,7 +122,7 @@ function getExternalImportStrings(language: SupportedLanguage): {
       location: '→ Расположение: .specweave/docs/internal/specs/',
       nextStepsHeader: '💡 Следующие шаги:',
       nextStepReview: '→ Просмотрите импортированные User Stories в living docs',
-      nextStepCreate: '→ Создайте инкременты когда будете готовы: /specweave:increment "feature"',
+      nextStepCreate: '→ Создайте инкременты когда будете готовы: /sw:increment "feature"',
     },
     es: {
       toolDetectionHeader: '🔍 Detección de herramientas externas',
@@ -145,7 +145,7 @@ function getExternalImportStrings(language: SupportedLanguage): {
       location: '→ Ubicación: .specweave/docs/internal/specs/',
       nextStepsHeader: '💡 Próximos pasos:',
       nextStepReview: '→ Revise las User Stories importadas en living docs',
-      nextStepCreate: '→ Cree incrementos cuando esté listo: /specweave:increment "feature"',
+      nextStepCreate: '→ Cree incrementos cuando esté listo: /sw:increment "feature"',
     },
     zh: {
       toolDetectionHeader: '🔍 外部工具检测',
@@ -168,7 +168,7 @@ function getExternalImportStrings(language: SupportedLanguage): {
       location: '→ 位置：.specweave/docs/internal/specs/',
       nextStepsHeader: '💡 下一步：',
       nextStepReview: '→ 在 living docs 中查看导入的用户故事',
-      nextStepCreate: '→ 准备好后创建增量：/specweave:increment "feature"',
+      nextStepCreate: '→ 准备好后创建增量：/sw:increment "feature"',
     },
     de: {
       toolDetectionHeader: '🔍 Externe Tool-Erkennung',
@@ -191,7 +191,7 @@ function getExternalImportStrings(language: SupportedLanguage): {
       location: '→ Speicherort: .specweave/docs/internal/specs/',
       nextStepsHeader: '💡 Nächste Schritte:',
       nextStepReview: '→ Importierte User Stories in Living Docs überprüfen',
-      nextStepCreate: '→ Bei Bedarf Inkremente erstellen: /specweave:increment "feature"',
+      nextStepCreate: '→ Bei Bedarf Inkremente erstellen: /sw:increment "feature"',
     },
     fr: {
       toolDetectionHeader: '🔍 Détection des outils externes',
@@ -214,7 +214,7 @@ function getExternalImportStrings(language: SupportedLanguage): {
       location: '→ Emplacement : .specweave/docs/internal/specs/',
       nextStepsHeader: '💡 Prochaines étapes :',
       nextStepReview: '→ Examiner les User Stories importées dans living docs',
-      nextStepCreate: '→ Créer des incréments si prêt : /specweave:increment "feature"',
+      nextStepCreate: '→ Créer des incréments si prêt : /sw:increment "feature"',
     },
     ja: {
       toolDetectionHeader: '🔍 外部ツール検出',
@@ -237,7 +237,7 @@ function getExternalImportStrings(language: SupportedLanguage): {
       location: '→ 場所：.specweave/docs/internal/specs/',
       nextStepsHeader: '💡 次のステップ：',
       nextStepReview: '→ living docsでインポートされたユーザーストーリーを確認',
-      nextStepCreate: '→ 準備ができたらインクリメントを作成：/specweave:increment "feature"',
+      nextStepCreate: '→ 準備ができたらインクリメントを作成：/sw:increment "feature"',
     },
     ko: {
       toolDetectionHeader: '🔍 외부 도구 감지',
@@ -260,7 +260,7 @@ function getExternalImportStrings(language: SupportedLanguage): {
       location: '→ 위치: .specweave/docs/internal/specs/',
       nextStepsHeader: '💡 다음 단계:',
       nextStepReview: '→ living docs에서 가져온 사용자 스토리 검토',
-      nextStepCreate: '→ 준비되면 증분 생성: /specweave:increment "feature"',
+      nextStepCreate: '→ 준비되면 증분 생성: /sw:increment "feature"',
     },
     pt: {
       toolDetectionHeader: '🔍 Detecção de ferramentas externas',
@@ -283,7 +283,7 @@ function getExternalImportStrings(language: SupportedLanguage): {
       location: '→ Local: .specweave/docs/internal/specs/',
       nextStepsHeader: '💡 Próximos passos:',
       nextStepReview: '→ Revise as User Stories importadas em living docs',
-      nextStepCreate: '→ Crie incrementos quando estiver pronto: /specweave:increment "feature"',
+      nextStepCreate: '→ Crie incrementos quando estiver pronto: /sw:increment "feature"',
     },
   };
   return strings[language] || strings.en;
@@ -481,7 +481,7 @@ export async function promptAndRunExternalImport(
     for (const job of orphanedJobs) {
       console.log(chalk.gray(`      → Job ${job.id}: ${job.progress.current}/${job.progress.total} items processed`));
     }
-    console.log(chalk.gray('      These jobs have been marked as failed. Use /specweave:jobs --resume <id> to restart.'));
+    console.log(chalk.gray('      These jobs have been marked as failed. Use /sw:jobs --resume <id> to restart.'));
     console.log('');
   }
 
@@ -490,12 +490,12 @@ export async function promptAndRunExternalImport(
   if (activeJob) {
     console.log(chalk.cyan(`\n   📦 Import job already running (Job ID: ${activeJob.id})`));
     console.log(chalk.gray(`      Progress: ${activeJob.progress.current}/${activeJob.progress.total} items`));
-    console.log(chalk.gray(`      Use '/specweave:jobs --follow ${activeJob.id}' to monitor progress`));
+    console.log(chalk.gray(`      Use '/sw:jobs --follow ${activeJob.id}' to monitor progress`));
     console.log('');
     return {
       jobId: activeJob.id,
       isBackground: true,
-      message: `Existing import job in progress. Monitor with /specweave:jobs`
+      message: `Existing import job in progress. Monitor with /sw:jobs`
     };
   }
 
@@ -824,7 +824,7 @@ export async function promptAndRunExternalImport(
 
   // Run import in BACKGROUND by default (non-blocking)
   // This prevents large imports from polluting the terminal and allows
-  // users to track progress via /specweave:jobs
+  // users to track progress via /sw:jobs
   //
   // Only run in foreground if explicitly requested (options.background === false)
   const useBackground = options.background !== false;
@@ -954,16 +954,16 @@ async function runImport(
         console.log(chalk.gray(`   PID: ${result.pid}`));
         console.log('');
         console.log(chalk.blue('   📊 Monitor import progress:'));
-        console.log(chalk.gray(`   → /specweave:jobs                  Show job status`));
-        console.log(chalk.gray(`   → /specweave:jobs --follow ${shortId}  Follow live progress`));
-        console.log(chalk.gray(`   → /specweave:jobs --logs ${shortId}    View full logs`));
+        console.log(chalk.gray(`   → /sw:jobs                  Show job status`));
+        console.log(chalk.gray(`   → /sw:jobs --follow ${shortId}  Follow live progress`));
+        console.log(chalk.gray(`   → /sw:jobs --logs ${shortId}    View full logs`));
         console.log('');
 
         return {
           jobId: result.job.id,
           isBackground: true,
           pid: result.pid,
-          message: `Background import started. Check progress with /specweave:jobs`
+          message: `Background import started. Check progress with /sw:jobs`
         };
       }
       // Fallback to foreground if background launch failed
@@ -1311,7 +1311,7 @@ async function convertToLivingDocs(
 
     console.log(chalk.blue('   💡 Next steps:'));
     console.log(chalk.gray('   → Review imported User Stories in living docs'));
-    console.log(chalk.gray('   → Create increments manually when ready: /specweave:increment "feature"'));
+    console.log(chalk.gray('   → Create increments manually when ready: /sw:increment "feature"'));
     console.log('');
   } catch (conversionError) {
     spinner.fail('Conversion to living docs failed');

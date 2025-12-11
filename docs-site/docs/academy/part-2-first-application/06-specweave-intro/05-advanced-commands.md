@@ -20,7 +20,7 @@ By the end of this lesson, you will understand:
 
 ---
 
-## The `/specweave:save` Command
+## The `/sw:save` Command
 
 **Save and push changes across all repositories in one command.**
 
@@ -30,18 +30,18 @@ When working with multiple repositories (umbrella mode) or even a single repo, t
 
 ```bash
 # Auto-generate commit message from changes
-/specweave:save
+/sw:save
 
 # With explicit commit message
-/specweave:save "feat: Add menu builder feature"
+/sw:save "feat: Add menu builder feature"
 
 # Preview what would happen
-/specweave:save --dry-run
+/sw:save --dry-run
 ```
 
 ### Auto-Generated Commit Messages
 
-When you run `/specweave:save` without a message, SpecWeave analyzes your changes:
+When you run `/sw:save` without a message, SpecWeave analyzes your changes:
 
 ```
 📊 Analyzing changes...
@@ -67,7 +67,7 @@ Detected:
 For projects with multiple repositories:
 
 ```bash
-/specweave:save "feat: Complete user registration flow"
+/sw:save "feat: Complete user registration flow"
 
 Scanning for repositories...
 Mode: Umbrella (3 child repos)
@@ -118,16 +118,16 @@ Summary:
 
 SpecWeave keeps documentation in sync automatically via hooks, but sometimes you need manual control.
 
-### `/specweave:sync-docs`
+### `/sw:sync-docs`
 
 **Full documentation sync** — updates ALL documentation areas.
 
 ```bash
 # Review before implementation
-/specweave:sync-docs review
+/sw:sync-docs review
 
 # Update after implementation
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 What it syncs:
@@ -137,27 +137,27 @@ What it syncs:
 - Feature documentation
 - User stories
 
-### `/specweave:sync-specs`
+### `/sw:sync-specs`
 
 **Specs-only sync** — just user stories and features.
 
 ```bash
 # Sync current increment
-/specweave:sync-specs
+/sw:sync-specs
 
 # Sync specific increment
-/specweave:sync-specs 0042
+/sw:sync-specs 0042
 
 # Preview changes
-/specweave:sync-specs 0042 --dry-run
+/sw:sync-specs 0042 --dry-run
 ```
 
 **When to use which**:
 
 | Command | Use When |
 |---------|----------|
-| `/specweave:sync-docs` | Full documentation update needed |
-| `/specweave:sync-specs` | Only user stories/features changed |
+| `/sw:sync-docs` | Full documentation update needed |
+| `/sw:sync-specs` | Only user stories/features changed |
 
 ---
 
@@ -171,55 +171,55 @@ Just like `git pull` and `git push`, SpecWeave has simple commands:
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-ado:pull` | Pull changes from ADO (like `git pull`) |
-| `/specweave-ado:push` | Push progress to ADO (like `git push`) |
-| `/specweave-github:pull` | Pull changes from GitHub |
-| `/specweave-github:push` | Push progress to GitHub |
-| `/specweave-jira:pull` | Pull changes from Jira |
-| `/specweave-jira:push` | Push progress to Jira |
+| `/sw-ado:pull` | Pull changes from ADO (like `git pull`) |
+| `/sw-ado:push` | Push progress to ADO (like `git push`) |
+| `/sw-github:pull` | Pull changes from GitHub |
+| `/sw-github:push` | Push progress to GitHub |
+| `/sw-jira:pull` | Pull changes from Jira |
+| `/sw-jira:push` | Push progress to Jira |
 
 ### GitHub Sync
 
 ```bash
 # Git-style commands (recommended)
-/specweave-github:pull              # Pull changes from GitHub
-/specweave-github:push              # Push progress to GitHub
-/specweave-github:pull --all        # Pull ALL specs across projects
+/sw-github:pull              # Pull changes from GitHub
+/sw-github:push              # Push progress to GitHub
+/sw-github:pull --all        # Pull ALL specs across projects
 
 # Other commands
-/specweave-github:status            # Check connection
-/specweave-github:sync 0042         # Two-way sync (pull + push)
-/specweave-github:create 0042       # Create GitHub issue
-/specweave-github:close 0042        # Close GitHub issue
+/sw-github:status            # Check connection
+/sw-github:sync 0042         # Two-way sync (pull + push)
+/sw-github:create 0042       # Create GitHub issue
+/sw-github:close 0042        # Close GitHub issue
 ```
 
 ### JIRA Sync
 
 ```bash
 # Git-style commands (recommended)
-/specweave-jira:pull                # Pull changes from Jira
-/specweave-jira:push                # Push progress to Jira
-/specweave-jira:pull --all          # Pull ALL specs
+/sw-jira:pull                # Pull changes from Jira
+/sw-jira:push                # Push progress to Jira
+/sw-jira:pull --all          # Pull ALL specs
 
 # Other commands
-/specweave-jira:status              # Check connection
-/specweave-jira:sync 0042           # Two-way sync
+/sw-jira:status              # Check connection
+/sw-jira:sync 0042           # Two-way sync
 ```
 
 ### Azure DevOps Sync
 
 ```bash
 # Git-style commands (recommended)
-/specweave-ado:pull                 # Pull changes from ADO
-/specweave-ado:push                 # Push progress to ADO
-/specweave-ado:pull --all           # Pull ALL specs across projects
-/specweave-ado:pull --project xyz   # Pull specific project only
+/sw-ado:pull                 # Pull changes from ADO
+/sw-ado:push                 # Push progress to ADO
+/sw-ado:pull --all           # Pull ALL specs across projects
+/sw-ado:pull --project xyz   # Pull specific project only
 
 # Other commands
-/specweave-ado:status               # Check connection
-/specweave-ado:sync 0042            # Two-way sync
-/specweave-ado:create 0042          # Create ADO work item
-/specweave-ado:close 0042           # Close work item
+/sw-ado:status               # Check connection
+/sw-ado:sync 0042            # Two-way sync
+/sw-ado:create 0042          # Create ADO work item
+/sw-ado:close 0042           # Close work item
 ```
 
 ### Sync Brief Output
@@ -247,10 +247,10 @@ After every sync operation, you'll see a brief summary:
 
 ## Full Progress Sync
 
-The `/specweave:sync-progress` command syncs EVERYTHING at once:
+The `/sw:sync-progress` command syncs EVERYTHING at once:
 
 ```bash
-/specweave:sync-progress
+/sw:sync-progress
 
 Syncing progress across all platforms...
 
@@ -282,7 +282,7 @@ The status line shows your current progress. Sometimes it can get out of sync.
 ### Validate Status Line
 
 ```bash
-/specweave:validate-status
+/sw:validate-status
 ```
 
 This command:
@@ -319,7 +319,7 @@ After:  37/37 (100%)
 
 ### When to Use
 
-Run `/specweave:validate-status` when:
+Run `/sw:validate-status` when:
 - Status line shows wrong percentage
 - You edited tasks.md manually
 - After resolving git conflicts
@@ -327,12 +327,12 @@ Run `/specweave:validate-status` when:
 
 ---
 
-## The `/specweave:workflow` Command
+## The `/sw:workflow` Command
 
 Get a complete workflow dashboard:
 
 ```bash
-/specweave:workflow
+/sw:workflow
 ```
 
 Shows:
@@ -370,8 +370,8 @@ CURRENT PHASE: REVIEW_READY
 ━━━ NEXT STEPS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Recommended:
-  1. /specweave:validate 0042 --quality
-  2. /specweave:done 0042
+  1. /sw:validate 0042 --quality
+  2. /sw:done 0042
 ```
 
 ---
@@ -382,28 +382,28 @@ Recommended:
 
 | Command | Purpose | When to Use |
 |---------|---------|-------------|
-| `/specweave:save` | Git add, commit, push all repos | Saving work |
-| `/specweave:sync-docs` | Full documentation sync | Major updates |
-| `/specweave:sync-specs` | Specs/stories only | Quick spec sync |
-| `/specweave:sync-progress` | Sync to external tools | Full external sync |
-| `/specweave:validate-status` | Fix status line | Status issues |
-| `/specweave:workflow` | Dashboard view | See full state |
+| `/sw:save` | Git add, commit, push all repos | Saving work |
+| `/sw:sync-docs` | Full documentation sync | Major updates |
+| `/sw:sync-specs` | Specs/stories only | Quick spec sync |
+| `/sw:sync-progress` | Sync to external tools | Full external sync |
+| `/sw:validate-status` | Fix status line | Status issues |
+| `/sw:workflow` | Dashboard view | See full state |
 
 ### External Tool Sync (Git-Style)
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-ado:pull` | Pull changes from Azure DevOps |
-| `/specweave-ado:push` | Push progress to Azure DevOps |
-| `/specweave-ado:sync` | Two-way sync (pull + push) |
-| `/specweave-ado:status` | Check ADO connection |
-| `/specweave-github:pull` | Pull changes from GitHub |
-| `/specweave-github:push` | Push progress to GitHub |
-| `/specweave-github:sync` | Two-way sync (pull + push) |
-| `/specweave-github:status` | Check GitHub connection |
-| `/specweave-jira:pull` | Pull changes from Jira |
-| `/specweave-jira:push` | Push progress to Jira |
-| `/specweave-jira:sync` | Two-way sync (pull + push) |
+| `/sw-ado:pull` | Pull changes from Azure DevOps |
+| `/sw-ado:push` | Push progress to Azure DevOps |
+| `/sw-ado:sync` | Two-way sync (pull + push) |
+| `/sw-ado:status` | Check ADO connection |
+| `/sw-github:pull` | Pull changes from GitHub |
+| `/sw-github:push` | Push progress to GitHub |
+| `/sw-github:sync` | Two-way sync (pull + push) |
+| `/sw-github:status` | Check GitHub connection |
+| `/sw-jira:pull` | Pull changes from Jira |
+| `/sw-jira:push` | Push progress to Jira |
+| `/sw-jira:sync` | Two-way sync (pull + push) |
 
 ### Sync Scope Options
 
@@ -421,7 +421,7 @@ Recommended:
 
 ```bash
 # End of coding session
-/specweave:save
+/sw:save
 ```
 
 Keeps all repos in sync with consistent commit messages.
@@ -430,16 +430,16 @@ Keeps all repos in sync with consistent commit messages.
 
 ```bash
 # After editing tasks.md manually
-/specweave:validate-status
+/sw:validate-status
 ```
 
 Ensures the status line reflects reality.
 
-### 3. Use Sync Commands After `/specweave:done`
+### 3. Use Sync Commands After `/sw:done`
 
 ```bash
-/specweave:done 0042
-/specweave:sync-progress
+/sw:done 0042
+/sw:sync-progress
 ```
 
 Ensures external tools are updated.
@@ -447,7 +447,7 @@ Ensures external tools are updated.
 ### 4. Check Workflow When Confused
 
 ```bash
-/specweave:workflow
+/sw:workflow
 ```
 
 Shows exactly where you are and what to do next.
@@ -456,12 +456,12 @@ Shows exactly where you are and what to do next.
 
 ## Key Takeaways
 
-1. **`/specweave:save`** — One command to commit and push all repos
-2. **`/specweave:sync-docs`** — Full docs sync when needed
-3. **`/specweave:sync-specs`** — Quick specs-only sync
+1. **`/sw:save`** — One command to commit and push all repos
+2. **`/sw:sync-docs`** — Full docs sync when needed
+3. **`/sw:sync-specs`** — Quick specs-only sync
 4. **Platform-specific syncs** — GitHub, JIRA, ADO support
-5. **`/specweave:validate-status`** — Fix status line desync
-6. **`/specweave:workflow`** — Dashboard for full visibility
+5. **`/sw:validate-status`** — Fix status line desync
+6. **`/sw:workflow`** — Dashboard for full visibility
 
 ---
 

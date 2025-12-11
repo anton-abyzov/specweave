@@ -28,7 +28,7 @@ Set up MCP (Model Context Protocol) server integration for natural language Kafk
 
 ```bash
 # Start MCP configuration wizard
-/specweave-kafka:mcp-configure
+/sw-kafka:mcp-configure
 
 # I'll:
 # 1. Detect installed MCP servers (npm, go, pip, CLI)
@@ -97,5 +97,5 @@ After MCP is configured, I'll:
 ---
 
 **Skills Activated**: kafka-mcp-integration
-**Related Commands**: /specweave-kafka:deploy, /specweave-kafka:dev-env
+**Related Commands**: /sw-kafka:deploy, /sw-kafka:dev-env
 **MCP Docs**: https://modelcontextprotocol.io/

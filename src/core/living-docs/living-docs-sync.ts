@@ -342,7 +342,7 @@ export class LivingDocsSync {
         await this.syncToExternalTools(incrementId, featureId, projectPath);
       } else if (skipExternalSync) {
         this.logger.log(`   ⏭️  External tool sync skipped (SKIP_EXTERNAL_SYNC=${process.env.SKIP_EXTERNAL_SYNC})`);
-        this.logger.log(`   ℹ️  Run /specweave:sync-progress to manually sync when ready`);
+        this.logger.log(`   ℹ️  Run /sw:sync-progress to manually sync when ready`);
       }
 
       // Step 8: Final cleanup (remove any temp files created during sync)

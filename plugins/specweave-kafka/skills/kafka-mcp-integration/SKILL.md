@@ -146,7 +146,7 @@ confluent plugin install mcp-server
 SpecWeave can auto-detect installed MCP servers:
 
 ```bash
-/specweave-kafka:mcp-configure
+/sw-kafka:mcp-configure
 ```
 
 This command:
@@ -161,7 +161,7 @@ This command:
 ### Option 1: Auto-Configure (Recommended)
 
 ```bash
-/specweave-kafka:mcp-configure
+/sw-kafka:mcp-configure
 ```
 
 Interactive wizard guides you through:
@@ -248,7 +248,7 @@ confluent version             # Confluent
 
 - Ensure MCP server supports the operation (see comparison table)
 - Check broker ACLs (permissions for the authenticated user)
-- Verify topic exists: `/specweave-kafka:mcp-configure list-topics`
+- Verify topic exists: `/sw-kafka:mcp-configure list-topics`
 
 ## Operations via MCP
 
@@ -277,9 +277,9 @@ if (result.recommended) {
 
 ## Related Commands
 
-- `/specweave-kafka:mcp-configure` - Interactive MCP server setup
-- `/specweave-kafka:dev-env start` - Start local Kafka for testing
-- `/specweave-kafka:deploy` - Deploy production Kafka cluster
+- `/sw-kafka:mcp-configure` - Interactive MCP server setup
+- `/sw-kafka:dev-env start` - Start local Kafka for testing
+- `/sw-kafka:deploy` - Deploy production Kafka cluster
 
 ## External Links
 

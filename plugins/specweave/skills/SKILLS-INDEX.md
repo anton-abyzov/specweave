@@ -31,7 +31,7 @@
 
 | Skill | Triggers | Location |
 |-------|----------|----------|
-| **increment-quality-judge-v2** | quality check, assess spec, risk assessment, qa check, quality gate, /specweave:qa, validate quality, evaluate increment | `skills/increment-quality-judge-v2/SKILL.md` |
+| **increment-quality-judge-v2** | quality check, assess spec, risk assessment, qa check, quality gate, /sw:qa, validate quality, evaluate increment | `skills/increment-quality-judge-v2/SKILL.md` |
 | **pm-closure-validation** | /done, close increment, validate increment, completion check, quality gate, PM approval, ready to close, scope creep | `skills/pm-closure-validation/SKILL.md` |
 | **code-reviewer** | code review, security vulnerabilities, performance optimization, static analysis, code quality, pull request review | `skills/code-reviewer/SKILL.md` |
 | **code-standards-analyzer** | coding standards, conventions, code style, naming conventions, linting rules, best practices, standards audit, anti-patterns | `skills/code-standards-analyzer/SKILL.md` |
@@ -42,14 +42,14 @@
 | Skill | Triggers | Location |
 |-------|----------|----------|
 | **external-sync-wizard** | GitHub sync, Jira integration, Azure DevOps, ADO, issue tracking sync, bidirectional sync, import issues, export increments | `skills/external-sync-wizard/SKILL.md` |
-| **progress-sync** | sync progress, update progress, sync everything, sync all systems, sync to GitHub, sync to JIRA, /specweave:sync-progress | `skills/progress-sync/SKILL.md` |
+| **progress-sync** | sync progress, update progress, sync everything, sync all systems, sync to GitHub, sync to JIRA, /sw:sync-progress | `skills/progress-sync/SKILL.md` |
 | **multi-project-spec-mapper** | multi-project, project mapping, spec splitting, JIRA projects, multiple projects, microservices, FE/BE/MOBILE split | `skills/multi-project-spec-mapper/SKILL.md` |
 
 ### Framework & Context
 
 | Skill | Triggers | Location |
 |-------|----------|----------|
-| **specweave-detector** | slash commands, /specweave:increment, /specweave:do, /specweave:progress, /specweave:done, specweave commands, workflow help | `skills/specweave-detector/SKILL.md` |
+| **specweave-detector** | slash commands, /sw:increment, /sw:do, /sw:progress, /sw:done, specweave commands, workflow help | `skills/specweave-detector/SKILL.md` |
 | **specweave-framework** | specweave rules, how does specweave work, framework structure, increment lifecycle, source of truth, tasks.md format | `skills/specweave-framework/SKILL.md` |
 | **context-loader** | context loading, progressive disclosure, token efficiency, sub-agents, context management, how SpecWeave scales | `skills/context-loader/SKILL.md` |
 | **context-optimizer** | optimize context, reduce tokens, clean context, smart context, precision loading, 80% reduction | `skills/context-optimizer/SKILL.md` |

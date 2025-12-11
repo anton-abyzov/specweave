@@ -73,7 +73,7 @@ export interface PhaseEvidence {
   /** Weight of this evidence (0.0-1.0) */
   weight: number;
 
-  /** Source of evidence (e.g., "keyword: implement", "command: /specweave:do") */
+  /** Source of evidence (e.g., "keyword: implement", "command: /sw:do") */
   source: string;
 }
 

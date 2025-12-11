@@ -1,12 +1,12 @@
 ---
 id: specweave-progress
-title: /specweave:progress Command
+title: /sw:progress Command
 sidebar_label: specweave:progress
 ---
 
-# /specweave:progress Command
+# /sw:progress Command
 
-The **`/specweave:progress`** command shows detailed progress for active [increments](/docs/glossary/terms/increments).
+The **`/sw:progress`** command shows detailed progress for active [increments](/docs/glossary/terms/increments).
 
 ## What It Does
 
@@ -21,16 +21,16 @@ The **`/specweave:progress`** command shows detailed progress for active [increm
 
 ```bash
 # Show all active increments
-/specweave:progress
+/sw:progress
 
 # Show specific increment
-/specweave:progress 0007
+/sw:progress 0007
 ```
 
 ## Output Example
 
 ```bash
-$ /specweave:progress 0007
+$ /sw:progress 0007
 
 📊 Progress: 0007-user-authentication
 
@@ -84,6 +84,6 @@ Typical increment phases:
 
 - [tasks.md](/docs/glossary/terms/tasks-md) - Task tracking
 - [Increments](/docs/glossary/terms/increments) - Work units
-- [/specweave:do](/docs/glossary/terms/specweave-do) - Execute tasks
-- [/specweave:status](/docs/glossary/terms/specweave-status) - Overview of all increments
+- [/sw:do](/docs/glossary/terms/specweave-do) - Execute tasks
+- [/sw:status](/docs/glossary/terms/specweave-status) - Overview of all increments
 - [WIP Limits](/docs/glossary/terms/wip-limits) - Work-in-progress limits

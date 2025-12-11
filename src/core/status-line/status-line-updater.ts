@@ -98,7 +98,7 @@ export class StatusLineUpdater {
 
       // Add default state message when no active increments
       message: openIncrements.length === 0
-        ? 'No active increments. Start with /specweave:increment "feature name"'
+        ? 'No active increments. Start with /sw:increment "feature name"'
         : undefined
     };
 

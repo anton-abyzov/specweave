@@ -442,7 +442,7 @@ export interface TranslationScope {
 export interface TranslationConfiguration {
   /**
    * Master switch for auto-translation
-   * When false, user must use /specweave:translate manually
+   * When false, user must use /sw:translate manually
    */
   enabled: boolean;
 
@@ -461,14 +461,14 @@ export interface TranslationConfiguration {
   /**
    * Translation method
    * - 'auto': Hooks trigger translation automatically
-   * - 'manual': User must run /specweave:translate
+   * - 'manual': User must run /sw:translate
    * - 'none': Translation disabled entirely
    */
   method: 'auto' | 'manual' | 'none';
 
   /**
    * Keep SpecWeave framework terms in English
-   * e.g., increment, spec.md, tasks.md, /specweave:*
+   * e.g., increment, spec.md, tasks.md, /sw:*
    */
   preserveFrameworkTerms: boolean;
 

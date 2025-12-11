@@ -19,19 +19,19 @@ This command clones Azure DevOps repositories **after** initial SpecWeave setup 
 
 ```bash
 # Interactive mode (prompts for everything)
-/specweave-ado:clone-repos
+/sw-ado:clone-repos
 
 # With pattern filter
-/specweave-ado:clone-repos --pattern "sw-*"
+/sw-ado:clone-repos --pattern "sw-*"
 
 # Regex pattern
-/specweave-ado:clone-repos --pattern "regex:^api-.*$"
+/sw-ado:clone-repos --pattern "regex:^api-.*$"
 
 # Specific project only
-/specweave-ado:clone-repos --project "MyProject"
+/sw-ado:clone-repos --project "MyProject"
 
 # Dry-run (preview only)
-/specweave-ado:clone-repos --dry-run
+/sw-ado:clone-repos --dry-run
 ```
 
 ## Your Task
@@ -265,7 +265,7 @@ await triggerAdoRepoCloning(projectPath, adoProjectSelection, clonePatternResult
 ## Examples
 
 ### Example 1: Interactive Clone
-**User**: `/specweave-ado:clone-repos`
+**User**: `/sw-ado:clone-repos`
 
 **Output**:
 ```
@@ -319,12 +319,12 @@ Clone 16 repositories to current directory? (Y/n)
 
    ✓ Clone job started in background (PID: 12345)
 
-   Check progress: /specweave:jobs
-   Kill if needed: /specweave:jobs --kill abc12345
+   Check progress: /sw:jobs
+   Kill if needed: /sw:jobs --kill abc12345
 ```
 
 ### Example 2: Pattern Filter
-**User**: `/specweave-ado:clone-repos --pattern "sw-*"`
+**User**: `/sw-ado:clone-repos --pattern "sw-*"`
 
 **Output**:
 ```
@@ -345,7 +345,7 @@ Clone 8 repositories to current directory? (Y/n)
 ```
 
 ### Example 3: Dry Run
-**User**: `/specweave-ado:clone-repos --dry-run`
+**User**: `/sw-ado:clone-repos --dry-run`
 
 **Output**:
 ```
@@ -361,8 +361,8 @@ Clone 8 repositories to current directory? (Y/n)
 ## Important Notes
 
 - **Background Cloning**: Repositories clone in background (non-blocking)
-- **Progress Tracking**: Check progress with `/specweave:jobs`
-- **Resumable**: Interrupted clones can resume with `/specweave:jobs --resume <id>`
+- **Progress Tracking**: Check progress with `/sw:jobs`
+- **Resumable**: Interrupted clones can resume with `/sw:jobs --resume <id>`
 - **Auth via PAT**: Uses HTTPS clone URLs with PAT authentication
 - **Project-Based Folders**: Repos organized by ADO project: `./<project-name>/<repo-name>/`
   - Project names sanitized for filesystem (lowercase, spaces→hyphens)
@@ -370,16 +370,16 @@ Clone 8 repositories to current directory? (Y/n)
 
 ## Related Commands
 
-- `/specweave:init` - Initial SpecWeave setup (includes repo cloning option)
-- `/specweave:jobs` - Monitor background jobs
-- `/specweave-ado:import-projects` - Import ADO projects with area path mapping
+- `/sw:init` - Initial SpecWeave setup (includes repo cloning option)
+- `/sw:jobs` - Monitor background jobs
+- `/sw-ado:import-projects` - Import ADO projects with area path mapping
 
 ## Error Handling
 
 - **Missing Credentials**: Prompt to run `specweave init` first
 - **Auth Failures**: Check PAT permissions (vso.code_read scope required)
 - **Clone Failures**: Individual repo failures logged, others continue
-- **Network Errors**: Job pauses, resume with `/specweave:jobs --resume`
+- **Network Errors**: Job pauses, resume with `/sw:jobs --resume`
 
 ---
 

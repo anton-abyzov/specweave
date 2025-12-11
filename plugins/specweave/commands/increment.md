@@ -26,7 +26,7 @@ if ! specweave check-discipline; then
   echo "💡 What would you like to do?"
   echo ""
   echo "1️⃣  Close incomplete increments:"
-  echo "   /specweave:done <id>"
+  echo "   /sw:done <id>"
   echo ""
   echo "2️⃣  Check status:"
   echo "   specweave check-discipline --verbose"
@@ -52,7 +52,7 @@ echo "✅ Discipline check passed"
 - ❌ NO options to defer - close previous first
 - ❌ NO auto-closing gates - explicit closure required
 - ✅ HARD BLOCK - cannot proceed without closing previous
-- ✅ Clear next steps - use `/specweave:close`
+- ✅ Clear next steps - use `/sw:close`
 - ✅ Safety valve - `--force` flag for emergencies (logged)
 
 **Rationale**:
@@ -178,8 +178,8 @@ if (activeCount >= limits.hardCap) {
   });
 
   console.log(chalk.blue('\n💡 Options:\n'));
-  console.log(chalk.white('1️⃣  Complete an increment: /specweave:done <id>'));
-  console.log(chalk.white('2️⃣  Pause an increment: /specweave:pause <id>'));
+  console.log(chalk.white('1️⃣  Complete an increment: /sw:done <id>'));
+  console.log(chalk.white('2️⃣  Pause an increment: /sw:pause <id>'));
   console.log(chalk.white('3️⃣  Increase limit: Edit .specweave/config.json limits.hardCap'));
   console.log(chalk.white('4️⃣  Continue anyway (confirm below)\n'));
 
@@ -246,7 +246,7 @@ if (activeCount >= limits.maxActiveIncrements) {
 
     if (choice === 'complete') {
       console.log(chalk.green('\n✅ Smart choice! Finish current work first.\n'));
-      console.log(chalk.dim('Use /specweave:do to continue work\n'));
+      console.log(chalk.dim('Use /sw:do to continue work\n'));
       process.exit(0);
     } else if (choice === 'pause') {
       console.log(chalk.blue('\n⏸️  Pausing current increment...\n'));
@@ -290,13 +290,13 @@ Active increments:
 💡 You MUST complete or pause existing work first:
 
 1️⃣  Complete an increment:
-   /specweave:done <id>
+   /sw:done <id>
 
 2️⃣  Pause an increment:
-   /specweave:pause <id> --reason="..."
+   /sw:pause <id> --reason="..."
 
 3️⃣  Check status:
-   /specweave:status
+   /sw:status
 
 📝 Multiple hotfixes? Combine them into ONE increment!
    Example: 0009-security-fixes (SQL + XSS + CSRF)
@@ -332,7 +332,7 @@ Choose an option: 1
 
 ✅ Smart choice! Finish current work first.
 
-Use /specweave:do to continue work
+Use /sw:do to continue work
 ```
 
 **Example Output - Emergency Interrupt (hotfix)**:
@@ -899,10 +899,10 @@ After the increment-planner skill completes, verify:
 📝 Now syncing strategic documentation to living docs...
 ```
 
-**Run `/specweave:sync-docs update` to create initial documentation**:
+**Run `/sw:sync-docs update` to create initial documentation**:
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 This will:
@@ -913,7 +913,7 @@ This will:
 - Update security docs in `.specweave/docs/internal/security/`
 - May prompt for conflict resolution if needed
 
-**After `/specweave:sync-docs update` completes**:
+**After `/sw:sync-docs update` completes**:
 
 ```
 ✅ Strategic documentation synchronized!
@@ -933,7 +933,7 @@ This will:
 You MUST invoke the sync-specs command using the SlashCommand tool:
 
 ```
-SlashCommand(command: "/specweave:sync-specs {increment-id}")
+SlashCommand(command: "/sw:sync-specs {increment-id}")
 ```
 
 **DO NOT** just mention the command in output - you MUST actually execute it!
@@ -1004,7 +1004,7 @@ External tool sync failures are **NON-BLOCKING** (increment creation succeeds):
 
 ```
 ⚠️ External sync failed: Rate limit exceeded
-💡 Run /specweave:sync-specs {increment-id} to retry
+💡 Run /sw:sync-specs {increment-id} to retry
 ```
 
 **After Step 10 completes:**
@@ -1014,8 +1014,8 @@ External tool sync failures are **NON-BLOCKING** (increment creation succeeds):
 
 Next steps:
 1. Review the increment plan and strategic docs
-2. Start implementation: /specweave:do {increment-id}
-3. Monitor external tool status: /specweave:status {increment-id}
+2. Start implementation: /sw:do {increment-id}
+3. Monitor external tool status: /sw:status {increment-id}
 ```
 
 ## Frontmatter Format (spec.md):

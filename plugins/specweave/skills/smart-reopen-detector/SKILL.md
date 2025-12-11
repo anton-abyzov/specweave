@@ -47,7 +47,7 @@ Found 2 related item(s) in recent work:
    Matched: github, sync
 
 💡 Suggested action:
-   /specweave:reopen 0031-external-tool-status-sync --reason "GitHub sync not working"
+   /sw:reopen 0031-external-tool-status-sync --reason "GitHub sync not working"
 
 Would you like me to:
 1. Reopen the entire increment (checks WIP limits)
@@ -79,7 +79,7 @@ Found 3 related item(s) in recent work:
    Matched: authentication
 
 💡 Suggested action:
-   /specweave:reopen 0025-user-auth --task T-012 --reason "Authentication broken after deployment"
+   /sw:reopen 0025-user-auth --task T-012 --reason "Authentication broken after deployment"
 
 ⚠️  Note: Increment 0025 was completed 3 days ago. Consider checking deployment config first.
 ```
@@ -131,7 +131,7 @@ I assign relevance scores using:
 I provide:
 - Top matches (up to 5)
 - Relevance scores
-- Suggested `/specweave:reopen` command
+- Suggested `/sw:reopen` command
 - WIP limit warnings (if applicable)
 
 ## Smart Suggestions
@@ -139,25 +139,25 @@ I provide:
 ### For Increments
 ```bash
 # Reopen entire increment
-/specweave:reopen 0031-external-tool-status-sync --reason "GitHub sync failing"
+/sw:reopen 0031-external-tool-status-sync --reason "GitHub sync failing"
 
 # Check WIP limits first (recommended)
-/specweave:status
+/sw:status
 ```
 
 ### For Specific Tasks
 ```bash
 # Reopen single task (surgical fix)
-/specweave:reopen 0031 --task T-003 --reason "GitHub API 500 error"
+/sw:reopen 0031 --task T-003 --reason "GitHub API 500 error"
 
 # Reopen multiple related tasks
-/specweave:reopen 0031 --user-story US-001 --reason "All GitHub features broken"
+/sw:reopen 0031 --user-story US-001 --reason "All GitHub features broken"
 ```
 
 ### Force Reopen (Bypass WIP Limits)
 ```bash
 # Use --force for critical production issues
-/specweave:reopen 0031 --force --reason "Production down, critical fix needed"
+/sw:reopen 0031 --force --reason "Production down, critical fix needed"
 ```
 
 ## WIP Limit Awareness
@@ -175,26 +175,26 @@ Before suggesting increment reopen, I check:
    Reopening 0031-external-tool-status-sync will EXCEED the limit!
 
    Options:
-   1. Pause another feature first: /specweave:pause 0030
-   2. Complete another feature: /specweave:done 0029
+   1. Pause another feature first: /sw:pause 0030
+   2. Complete another feature: /sw:done 0029
    3. Force reopen (not recommended): --force
 ```
 
 ## Integration with Commands
 
 I work seamlessly with:
-- `/specweave:reopen` - Execute reopen action
-- `/specweave:status` - Check WIP limits
-- `/specweave:progress` - See increment progress
-- `/specweave:pause` - Pause another increment to make room
+- `/sw:reopen` - Execute reopen action
+- `/sw:status` - Check WIP limits
+- `/sw:progress` - See increment progress
+- `/sw:pause` - Pause another increment to make room
 
 ## When NOT to Use
 
 I don't activate for:
 - ❌ General questions about code
-- ❌ Feature requests (use `/specweave:increment`)
+- ❌ Feature requests (use `/sw:increment`)
 - ❌ Documentation questions
-- ❌ Status inquiries (use `/specweave:status`)
+- ❌ Status inquiries (use `/sw:status`)
 
 I **only** activate when you explicitly report something is broken/not working.
 
@@ -240,5 +240,5 @@ I'm successful when:
 ---
 
 **Auto-loads when**: You report issues with recently completed work
-**Commands**: `/specweave:reopen`, `/specweave:status`
+**Commands**: `/sw:reopen`, `/sw:status`
 **Related Skills**: `increment-planner`, `tdd-workflow`

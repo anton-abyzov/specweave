@@ -20,19 +20,19 @@ When folders grow beyond 30+ files, navigation becomes painful:
 
 ```bash
 # Analyze and organize all internal docs
-/specweave-docs:organize
+/sw-docs:organize
 
 # Analyze specific folder only
-/specweave-docs:organize --folder architecture/adr
+/sw-docs:organize --folder architecture/adr
 
 # Preview without generating files
-/specweave-docs:organize --dry-run
+/sw-docs:organize --dry-run
 
 # Force regeneration even if under threshold
-/specweave-docs:organize --force
+/sw-docs:organize --force
 
 # Set custom threshold (default: 30)
-/specweave-docs:organize --threshold 20
+/sw-docs:organize --threshold 20
 ```
 
 ## Your Task
@@ -161,7 +161,7 @@ Generated 9 index files:
 After running this command, use:
 
 ```bash
-/specweave-docs:view
+/sw-docs:view
 ```
 
 The generated indexes will appear in the sidebar:
@@ -179,6 +179,6 @@ The generated indexes will appear in the sidebar:
 
 ## See Also
 
-- `/specweave-docs:view` - View documentation with Docusaurus
-- `/specweave-docs:build` - Build static documentation site
-- `/specweave-docs:health` - Documentation health report
+- `/sw-docs:view` - View documentation with Docusaurus
+- `/sw-docs:build` - Build static documentation site
+- `/sw-docs:health` - Documentation health report

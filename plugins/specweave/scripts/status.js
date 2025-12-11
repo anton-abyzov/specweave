@@ -2,7 +2,7 @@
 /**
  * Instant Increment Status Overview
  *
- * Executed by UserPromptSubmit hook for /specweave:status
+ * Executed by UserPromptSubmit hook for /sw:status
  * Bypasses LLM entirely - output shown directly to user
  *
  * Usage: node status.js [--help]
@@ -28,7 +28,7 @@ DESCRIPTION
   This script bypasses LLM processing for instant results (<100ms).
 
 EXECUTION PATHS
-  1. Claude Code:  /specweave:status  (hook intercepts, <100ms)
+  1. Claude Code:  /sw:status  (hook intercepts, <100ms)
   2. Any LLM:      Skill instructs to run this script (~2s)
   3. Terminal:     specweave status (~500ms)
 
@@ -113,7 +113,7 @@ for (const status of statusOrder) {
       console.log(`   ${item}`);
       // Add action hint for ready_for_review
       if (status === 'ready_for_review') {
-        console.log(`      → /specweave:done ${item}`);
+        console.log(`      → /sw:done ${item}`);
       }
     }
     if (items.length > 5) {
@@ -161,11 +161,11 @@ console.log('');
 
 // Context-aware command hints
 if (reviewCount > 0) {
-  console.log('💡 Next step: /specweave:done <id> to close reviewed increment(s)');
+  console.log('💡 Next step: /sw:done <id> to close reviewed increment(s)');
 } else if (activeCount > 0) {
   console.log('💡 Commands:');
-  console.log('   /specweave:progress        Show task progress');
-  console.log('   /specweave:do              Execute current tasks');
+  console.log('   /sw:progress        Show task progress');
+  console.log('   /sw:do              Execute current tasks');
 } else {
-  console.log('💡 Run /specweave:increment to start new work');
+  console.log('💡 Run /sw:increment to start new work');
 }

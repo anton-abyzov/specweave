@@ -1,12 +1,12 @@
 ---
 name: specweave:living-docs
 description: Launch or resume Living Docs Builder independently. Generates documentation from codebase analysis with AI-powered insights.
-usage: /specweave:living-docs [--resume <jobId>] [--depth <level>] [--priority <modules>] [--sources <folders>] [--depends-on <jobIds>] [--foreground] [--full-scan]
+usage: /sw:living-docs [--resume <jobId>] [--depth <level>] [--priority <modules>] [--sources <folders>] [--depends-on <jobIds>] [--foreground] [--full-scan]
 ---
 
 # Living Docs Builder (Standalone)
 
-**Usage**: `/specweave:living-docs [options]`
+**Usage**: `/sw:living-docs [options]`
 
 ---
 
@@ -41,7 +41,7 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 ### Launch New Analysis (Interactive)
 
 ```bash
-/specweave:living-docs
+/sw:living-docs
 
 # Prompts for:
 # 1. Analysis depth (quick/standard/deep-native/deep-api)
@@ -54,13 +54,13 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 
 ```bash
 # Check for orphaned jobs first
-/specweave:jobs
+/sw:jobs
 
 # If you see an orphaned living-docs-builder job:
-/specweave:living-docs --resume abc12345
+/sw:living-docs --resume abc12345
 
 # Or let it auto-detect:
-/specweave:living-docs
+/sw:living-docs
 # → "Found orphaned job abc12345. Resume? [Y/n]"
 ```
 
@@ -68,16 +68,16 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 
 ```bash
 # Quick scan - 5-10 minutes
-/specweave:living-docs --depth quick
+/sw:living-docs --depth quick
 
 # Standard analysis - 15-30 minutes
-/specweave:living-docs --depth standard --priority auth,payments
+/sw:living-docs --depth standard --priority auth,payments
 
 # AI-powered deep analysis (FREE with MAX subscription)
-/specweave:living-docs --depth deep-native --priority core,api
+/sw:living-docs --depth deep-native --priority core,api
 
 # Force FULL deep scan (all phases: repos, org, arch, inconsistencies, strategy)
-/specweave:living-docs --full-scan
+/sw:living-docs --full-scan
 ```
 
 ---
@@ -126,7 +126,7 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 
 **Command**:
 ```bash
-/specweave:living-docs --full-scan
+/sw:living-docs --full-scan
 
 # Uses deep-native if Claude MAX available, otherwise deep-api
 # Runs ALL phases: B → C → D → E → F
@@ -142,10 +142,10 @@ Uses your Claude MAX subscription via `claude --print`:
 - Uses **Opus 4.5** for best quality
 
 ```bash
-/specweave:living-docs --depth deep-native
+/sw:living-docs --depth deep-native
 
 # Monitor progress:
-/specweave:jobs --follow <jobId>
+/sw:jobs --follow <jobId>
 ```
 
 ---
@@ -209,8 +209,8 @@ const { job, pid, isBackground } = await launchLivingDocsJob({
    Priority: auth, payments, api
    PID: 45678
 
-   Monitor: /specweave:jobs --follow ldb-abc12345
-   Logs: /specweave:jobs --logs ldb-abc12345
+   Monitor: /sw:jobs --follow ldb-abc12345
+   Logs: /sw:jobs --logs ldb-abc12345
 
 💡 This job runs in background and survives terminal close.
    Output will be saved to:
@@ -237,7 +237,7 @@ When resuming a job:
 
 ```bash
 # Example: Job crashed during deep-dive phase
-/specweave:living-docs --resume abc12345
+/sw:living-docs --resume abc12345
 
 # Output:
 # Resuming from checkpoint: phase=deep-dive, module=auth (5/18)
@@ -253,10 +253,10 @@ For umbrella projects with clone/import jobs:
 
 ```bash
 # Launch after clone completes
-/specweave:living-docs --depends-on clone-xyz123 --depth standard
+/sw:living-docs --depends-on clone-xyz123 --depth standard
 
 # Launch after both clone and import complete
-/specweave:living-docs --depends-on clone-xyz123,import-abc456
+/sw:living-docs --depends-on clone-xyz123,import-abc456
 ```
 
 The job will:
@@ -327,11 +327,11 @@ After completion:
 # Claude crashed after init, living docs job orphaned
 
 # Step 1: Check what's there
-/specweave:jobs
+/sw:jobs
 # Shows: [ldb-abc123] living-docs-builder - ORPHANED (worker died)
 
 # Step 2: Resume
-/specweave:living-docs --resume ldb-abc123
+/sw:living-docs --resume ldb-abc123
 
 # Output:
 # ✅ Resuming Living Docs Builder (ldb-abc123)
@@ -343,12 +343,12 @@ After completion:
 
 ```bash
 # Focus on critical modules first
-/specweave:living-docs --depth deep-native \
+/sw:living-docs --depth deep-native \
   --priority auth,payments,billing,core \
   --depends-on clone-main123
 
 # Monitor in another terminal
-/specweave:jobs --follow ldb-xyz789
+/sw:jobs --follow ldb-xyz789
 ```
 
 ### Example 3: CI/CD Integration
@@ -368,10 +368,10 @@ specweave jobs --wait ldb-latest  # Wait for completion
 
 ### Worker Crashed
 ```
-/specweave:jobs
+/sw:jobs
 # Shows: ORPHANED status
 
-/specweave:living-docs --resume <jobId>
+/sw:living-docs --resume <jobId>
 # Resumes from last checkpoint
 ```
 
@@ -389,15 +389,15 @@ Some repositories may be missing from analysis.
 ℹ️  No existing code detected (greenfield project)
     Living docs will sync automatically as you create increments.
 
-    To force analysis anyway: /specweave:living-docs --force
+    To force analysis anyway: /sw:living-docs --force
 ```
 
 ---
 
 ## See Also
 
-- `/specweave:jobs` - Monitor all background jobs
-- `/specweave:import-docs` - Import existing documentation
+- `/sw:jobs` - Monitor all background jobs
+- `/sw:import-docs` - Import existing documentation
 - `specweave:brownfield-analyzer` skill - Analyze doc gaps
 - `specweave:brownfield-onboarder` skill - Merge existing docs
 

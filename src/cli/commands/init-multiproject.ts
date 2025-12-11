@@ -1,5 +1,5 @@
 /**
- * CLI Command: /specweave:init-multiproject
+ * CLI Command: /sw:init-multiproject
  *
  * Initialize multi-project mode for SpecWeave
  */
@@ -91,8 +91,8 @@ export async function initMultiProject(projectRoot: string): Promise<void> {
 
     console.log('\n🎉 Multi-project setup complete!\n');
     console.log('📖 Next steps:');
-    console.log('   - Use /specweave:switch-project <id> to change active project');
-    console.log('   - Use /specweave:import-docs to import brownfield docs');
+    console.log('   - Use /sw:switch-project <id> to change active project');
+    console.log('   - Use /sw:import-docs to import brownfield docs');
     console.log('   - Create increments as usual - they\'ll use the active project\n');
 
   } catch (error) {

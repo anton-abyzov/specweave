@@ -5,7 +5,7 @@ Analyze technology stack alternatives using the **BMAD** (Best, Most Appropriate
 ## Usage
 
 ```
-/specweave-alternatives:alternatives-analyze <category> [context] [options]
+/sw-alternatives:alternatives-analyze <category> [context] [options]
 ```
 
 ## What I Do
@@ -20,7 +20,7 @@ Analyze technology stack alternatives using the **BMAD** (Best, Most Appropriate
 
 ### 1. Databases
 ```bash
-/specweave-alternatives:alternatives-analyze database \
+/sw-alternatives:alternatives-analyze database \
   --requirements "high-throughput,strong-consistency,cloud-native" \
   --scale "startup"
 ```
@@ -29,7 +29,7 @@ Analyze technology stack alternatives using the **BMAD** (Best, Most Appropriate
 
 ### 2. Backend Frameworks
 ```bash
-/specweave-alternatives:alternatives-analyze backend-framework \
+/sw-alternatives:alternatives-analyze backend-framework \
   --language typescript \
   --requirements "fast-development,type-safe,good-orms"
 ```
@@ -38,7 +38,7 @@ Analyze technology stack alternatives using the **BMAD** (Best, Most Appropriate
 
 ### 3. Frontend Frameworks
 ```bash
-/specweave-alternatives:alternatives-analyze frontend-framework \
+/sw-alternatives:alternatives-analyze frontend-framework \
   --requirements "SEO,performance,large-team" \
   --existing-stack "React"
 ```
@@ -47,7 +47,7 @@ Analyze technology stack alternatives using the **BMAD** (Best, Most Appropriate
 
 ### 4. Cloud Providers
 ```bash
-/specweave-alternatives:alternatives-analyze cloud-provider \
+/sw-alternatives:alternatives-analyze cloud-provider \
   --workload "containerized-microservices" \
   --scale "enterprise" \
   --constraints "EU-data-residency"
@@ -57,7 +57,7 @@ Analyze technology stack alternatives using the **BMAD** (Best, Most Appropriate
 
 ### 5. Message Queues
 ```bash
-/specweave-alternatives:alternatives-analyze message-queue \
+/sw-alternatives:alternatives-analyze message-queue \
   --requirements "exactly-once,high-throughput,stream-processing" \
   --scale "100k-msgs-sec"
 ```
@@ -66,7 +66,7 @@ Analyze technology stack alternatives using the **BMAD** (Best, Most Appropriate
 
 ### 6. Authentication
 ```bash
-/specweave-alternatives:alternatives-analyze auth \
+/sw-alternatives:alternatives-analyze auth \
   --requirements "social-login,SSO,MFA,compliance" \
   --constraints "GDPR,SOC2"
 ```
@@ -272,7 +272,7 @@ Choose technologies that match team expertise or learning goals.
 
 ### Analyze Database Options
 ```bash
-/specweave-alternatives:alternatives-analyze database \
+/sw-alternatives:alternatives-analyze database \
   --scale startup \
   --budget 200 \
   --requirements "ACID,JSON-support,full-text-search" \
@@ -281,7 +281,7 @@ Choose technologies that match team expertise or learning goals.
 
 ### Compare Cloud Providers
 ```bash
-/specweave-alternatives:alternatives-analyze cloud-provider \
+/sw-alternatives:alternatives-analyze cloud-provider \
   --workload "containerized-apps" \
   --scale "scale-up" \
   --budget 5000 \
@@ -290,7 +290,7 @@ Choose technologies that match team expertise or learning goals.
 
 ### Frontend Framework Decision
 ```bash
-/specweave-alternatives:alternatives-analyze frontend-framework \
+/sw-alternatives:alternatives-analyze frontend-framework \
   --existing-stack React \
   --requirements "SEO,SSR,static-generation" \
   --team-size 8
@@ -298,7 +298,7 @@ Choose technologies that match team expertise or learning goals.
 
 ### Message Queue Selection
 ```bash
-/specweave-alternatives:alternatives-analyze message-queue \
+/sw-alternatives:alternatives-analyze message-queue \
   --scale enterprise \
   --requirements "exactly-once,replay,stream-processing" \
   --throughput "500k-msgs-sec"
@@ -306,9 +306,9 @@ Choose technologies that match team expertise or learning goals.
 
 ## Related Commands
 
-- `/specweave-alternatives:cost-compare` - Detailed cost comparison only
-- `/specweave-alternatives:migration-plan` - Generate migration plan from A to B
-- `/specweave-cost-optimizer:analyze` - Optimize costs for chosen stack
+- `/sw-alternatives:cost-compare` - Detailed cost comparison only
+- `/sw-alternatives:migration-plan` - Generate migration plan from A to B
+- `/sw-cost:analyze` - Optimize costs for chosen stack
 
 ## Best Practices
 

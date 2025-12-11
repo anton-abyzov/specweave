@@ -2,7 +2,7 @@
  * Background Job Launcher
  *
  * Spawns import workers as detached processes that survive terminal close.
- * Progress tracked via file system - check with /specweave:jobs
+ * Progress tracked via file system - check with /sw:jobs
  */
 
 import { spawn } from 'child_process';
@@ -87,8 +87,8 @@ export async function launchImportJob(options: LaunchOptions): Promise<LaunchRes
   if (existingJob) {
     throw new Error(
       `An import job is already running (Job ID: ${existingJob.id}). ` +
-      `Use '/specweave:jobs --kill ${existingJob.id}' to stop it first, ` +
-      `or '/specweave:jobs --follow ${existingJob.id}' to monitor progress.`
+      `Use '/sw:jobs --kill ${existingJob.id}' to stop it first, ` +
+      `or '/sw:jobs --follow ${existingJob.id}' to monitor progress.`
     );
   }
 

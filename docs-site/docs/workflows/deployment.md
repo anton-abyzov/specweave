@@ -29,7 +29,7 @@ graph LR
 
 Before deploying:
 
-- [ ] `/specweave:validate` passed
+- [ ] `/sw:validate` passed
 - [ ] Code reviewed and approved
 - [ ] All tests passing
 - [ ] Documentation updated
@@ -336,10 +336,10 @@ Close increment after successful deploy:
 curl https://api.example.com/health
 
 # Close the increment
-/specweave:done 0001
+/sw:done 0001
 
 # Sync to external tools
-/specweave:sync-progress
+/sw:sync-progress
 ```
 
 ---

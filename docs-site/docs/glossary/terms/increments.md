@@ -343,7 +343,7 @@ graph TB
 
 ### Phase 1: Planning
 
-**Command**: `/specweave:increment "feature description"`
+**Command**: `/sw:increment "feature description"`
 
 **What Happens**:
 1. PM agent generates spec.md (user stories, AC)
@@ -355,7 +355,7 @@ graph TB
 
 ### Phase 2: Implementation
 
-**Command**: `/specweave:do`
+**Command**: `/sw:do`
 
 **What Happens**:
 1. Smart resume (continues from last incomplete task)
@@ -369,7 +369,7 @@ graph TB
 
 ### Phase 3: Validation
 
-**Command**: `/specweave:validate 0008` or `/specweave:qa 0008`
+**Command**: `/sw:validate 0008` or `/sw:qa 0008`
 
 **What Happens**:
 1. Rule-based validation:
@@ -385,7 +385,7 @@ graph TB
 
 ### Phase 4: Done
 
-**Command**: `/specweave:done 0008`
+**Command**: `/sw:done 0008`
 
 **What Happens**:
 1. PM validation (checks all gates)
@@ -448,7 +448,7 @@ graph LR
 **Scenario 1: 0 Active** → Create new (no warnings)
 
 ```bash
-/specweave:increment "user authentication"
+/sw:increment "user authentication"
 # ✅ Creates 0008-user-authentication (no conflict)
 ```
 
@@ -456,7 +456,7 @@ graph LR
 
 ```bash
 # 0008-user-authentication is active
-/specweave:increment "dark mode"
+/sw:increment "dark mode"
 # ⚠️  Warning: 1 increment already active (0008)
 # 💡 Recommendation: Complete 0008 first
 # ❓ Continue anyway? (y/N)
@@ -466,17 +466,17 @@ graph LR
 
 ```bash
 # 0008-user-authentication and 0009-dark-mode both active
-/specweave:increment "payment integration"
+/sw:increment "payment integration"
 # ❌ BLOCKED! Hard cap reached (2 active)
 # 💡 Must complete or pause one increment first
-# Options: /specweave:done 0008 OR /specweave:pause 0009
+# Options: /sw:done 0008 OR /sw:pause 0009
 ```
 
 **Exception: Emergency Interrupt**
 
 ```bash
 # 0008-user-authentication is active
-/specweave:increment "SQL injection hotfix" --type hotfix
+/sw:increment "SQL injection hotfix" --type hotfix
 # ✅ Allowed! Hotfix can interrupt (emergency)
 # ⚠️  Now 2 active (max reached)
 ```
@@ -489,29 +489,29 @@ graph LR
 
 | Command | Purpose | Example |
 |---------|---------|---------|
-| `/specweave:increment` | Plan new increment | `/specweave:increment "user auth"` |
-| `/specweave:do` | Execute tasks (smart resume) | `/specweave:do` |
-| `/specweave:done` | Close increment | `/specweave:done 0008` |
-| `/specweave:validate` | Validate increment | `/specweave:validate 0008` |
-| `/specweave:qa` | Quality assessment | `/specweave:qa 0008` |
-| `/specweave:progress` | Check current progress | `/specweave:progress` |
-| `/specweave:status` | Show all increments | `/specweave:status` |
+| `/sw:increment` | Plan new increment | `/sw:increment "user auth"` |
+| `/sw:do` | Execute tasks (smart resume) | `/sw:do` |
+| `/sw:done` | Close increment | `/sw:done 0008` |
+| `/sw:validate` | Validate increment | `/sw:validate 0008` |
+| `/sw:qa` | Quality assessment | `/sw:qa 0008` |
+| `/sw:progress` | Check current progress | `/sw:progress` |
+| `/sw:status` | Show all increments | `/sw:status` |
 
 ### State Management
 
 | Command | Purpose | Example |
 |---------|---------|---------|
-| `/specweave:pause` | Pause active increment | `/specweave:pause 0008 --reason="blocked"` |
-| `/specweave:resume` | Resume paused increment | `/specweave:resume 0008` |
-| `/specweave:abandon` | Abandon increment | `/specweave:abandon 0008 --reason="obsolete"` |
+| `/sw:pause` | Pause active increment | `/sw:pause 0008 --reason="blocked"` |
+| `/sw:resume` | Resume paused increment | `/sw:resume 0008` |
+| `/sw:abandon` | Abandon increment | `/sw:abandon 0008 --reason="obsolete"` |
 
 ### Documentation
 
 | Command | Purpose | Example |
 |---------|---------|---------|
-| `/specweave:sync-docs` | Sync living docs | `/specweave:sync-docs update` |
-| `/specweave:update-scope` | Log scope changes | `/specweave:update-scope "Added dark mode"` |
-| `/specweave:check-tests` | Validate test coverage | `/specweave:check-tests 0008` |
+| `/sw:sync-docs` | Sync living docs | `/sw:sync-docs update` |
+| `/sw:update-scope` | Log scope changes | `/sw:update-scope "Added dark mode"` |
+| `/sw:check-tests` | Validate test coverage | `/sw:check-tests 0008` |
 
 ---
 
@@ -529,7 +529,7 @@ graph LR
 [user-authentication] ███████░ 4/5 (80%) • T-005: Write documentation
 
 # Complete
-[user-authentication] ████████ 5/5 (100%) • Use /specweave:done
+[user-authentication] ████████ 5/5 (100%) • Use /sw:done
 ```
 
 **How It Works**:
@@ -540,7 +540,7 @@ graph LR
 ### Status Overview
 
 ```bash
-/specweave:status
+/sw:status
 
 # Output:
 ✅ 0001-core-framework (100% complete)
@@ -592,7 +592,7 @@ Each increment has optional metadata file:
 - Scope creep (jumping between features without finishing)
 
 **The Solution**:
-- ✅ Hard block on `/specweave:increment` if previous incomplete
+- ✅ Hard block on `/sw:increment` if previous incomplete
 - ✅ Helper commands to close increments properly
 - ✅ Force discipline = force quality
 
@@ -601,7 +601,7 @@ Each increment has optional metadata file:
 **When you try to start a new increment**:
 
 ```bash
-/specweave:increment "new feature"
+/sw:increment "new feature"
 
 # If previous increments incomplete:
 ❌ Cannot create new increment!
@@ -616,8 +616,8 @@ Previous increments are incomplete:
 
 💡 What would you like to do?
 
-1️⃣  Close incomplete increments: /specweave:close
-2️⃣  Check status: /specweave:status
+1️⃣  Close incomplete increments: /sw:close
+2️⃣  Check status: /sw:status
 3️⃣  Force create (DANGEROUS): Add --force flag
 ```
 
@@ -626,15 +626,15 @@ Previous increments are incomplete:
 **Option 1: Complete the Work** (Recommended)
 
 ```bash
-/specweave:do  # Continue working
+/sw:do  # Continue working
 # Once all tasks done, it's automatically complete
-/specweave:increment "new feature"  # ✅ Now works!
+/sw:increment "new feature"  # ✅ Now works!
 ```
 
 **Option 2: Close Interactively**
 
 ```bash
-/specweave:close
+/sw:close
 
 # You'll be asked to choose:
 # - Force complete (mark all tasks done)
@@ -645,7 +645,7 @@ Previous increments are incomplete:
 **Option 3: Force Create** (Emergency Only!)
 
 ```bash
-/specweave:increment "urgent-hotfix" --force
+/sw:increment "urgent-hotfix" --force
 # This bypasses the check (USE SPARINGLY!)
 ```
 

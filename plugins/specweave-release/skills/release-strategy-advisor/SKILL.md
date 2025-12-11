@@ -429,10 +429,10 @@ description: Expert in analyzing and recommending release strategies for softwar
 
 Works with release management commands:
 
-- `/specweave-release:init` - Analyze & recommend strategy
-- `/specweave-release:align` - Align versions across repos
-- `/specweave-release:rc` - Create release candidate
-- `/specweave-release:publish` - Execute release
+- `/sw-release:init` - Analyze & recommend strategy
+- `/sw-release:align` - Align versions across repos
+- `/sw-release:rc` - Create release candidate
+- `/sw-release:publish` - Execute release
 
 ## Dependencies
 

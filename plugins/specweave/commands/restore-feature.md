@@ -10,17 +10,17 @@ Restore an archived feature or epic back to its active location. This also resto
 ## Usage
 
 ```bash
-/specweave:restore-feature <feature-or-epic-id>
+/sw:restore-feature <feature-or-epic-id>
 ```
 
 ## Examples
 
 ```bash
 # Restore a feature
-/specweave:restore-feature FS-001
+/sw:restore-feature FS-001
 
 # Restore an epic
-/specweave:restore-feature EPIC-2024-Q4
+/sw:restore-feature EPIC-2024-Q4
 ```
 
 ## What Gets Restored
@@ -53,8 +53,8 @@ task.run(async () => {
 
   if (!itemId) {
     console.error('❌ Please provide a feature or epic ID to restore');
-    console.log('Usage: /specweave:restore-feature <feature-or-epic-id>');
-    console.log('Example: /specweave:restore-feature FS-001');
+    console.log('Usage: /sw:restore-feature <feature-or-epic-id>');
+    console.log('Example: /sw:restore-feature FS-001');
     process.exit(1);
   }
 

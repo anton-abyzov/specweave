@@ -32,22 +32,22 @@ This command automatically synchronizes living docs by archiving features in:
 
 ```bash
 # Archive specific increment
-/specweave:archive 0031
+/sw:archive 0031
 
 # Archive multiple increments
-/specweave:archive 0001 0002 0003
+/sw:archive 0001 0002 0003
 
 # Archive all completed increments older than N days
-/specweave:archive --older-than 90
+/sw:archive --older-than 90
 
 # Keep last N increments, archive the rest
-/specweave:archive --keep-last 10
+/sw:archive --keep-last 10
 
 # Archive by pattern
-/specweave:archive --pattern "auth-*"
+/sw:archive --pattern "auth-*"
 
 # Dry run (preview without archiving)
-/specweave:archive --dry-run --older-than 90
+/sw:archive --dry-run --older-than 90
 ```
 
 ## Options
@@ -71,16 +71,16 @@ External features are identified by the `E` suffix (e.g., `FS-001E`, `FS-042E`).
 
 ```bash
 # Archive specific external features
-/specweave:archive --external FS-001E FS-002E
+/sw:archive --external FS-001E FS-002E
 
 # Archive external features older than 90 days
-/specweave:archive --external --older-than 90
+/sw:archive --external --older-than 90
 
 # Keep last 10 external features, archive the rest
-/specweave:archive --external --keep-last 10
+/sw:archive --external --keep-last 10
 
 # Preview external archive (dry run)
-/specweave:archive --external --dry-run --keep-last 5
+/sw:archive --external --dry-run --keep-last 5
 ```
 
 ### Why Separate External Archiving?
@@ -95,14 +95,14 @@ External features are identified by the `E` suffix (e.g., `FS-001E`, `FS-042E`).
 **Default `--keep-last 5`**: When called without any filtering options (no increment IDs, no pattern, no `--older-than`, no `--archive-completed`), the archiver **automatically defaults to `--keep-last 5`** to prevent accidentally archiving ALL increments.
 
 This safety feature ensures:
-- ✅ Running `/specweave:archive` without options won't archive everything
+- ✅ Running `/sw:archive` without options won't archive everything
 - ✅ Last 5 increments always remain visible for easy reference
 - ✅ Explicit criteria required to archive recent work
 
 ## Archive Rules
 
 ### Increments are archived when:
-1. Explicitly specified by ID (e.g., `/specweave:archive 0031`)
+1. Explicitly specified by ID (e.g., `/sw:archive 0031`)
 2. Match age criteria (e.g., `--older-than 90`)
 3. Match pattern criteria (e.g., `--pattern "old-*"`)
 4. Not in last N increments (e.g., `--keep-last 10`)
@@ -135,7 +135,7 @@ This safety feature ensures:
 ### Example 1: Archive Specific Increment
 
 ```bash
-/specweave:archive 0031
+/sw:archive 0031
 ```
 
 **Output**:
@@ -161,13 +161,13 @@ Checking increment 0031-external-tool-status-sync...
    Auto-archived features: 1
    Auto-archived epics: 0
 
-Next: /specweave:restore 0031 (if you need to unarchive)
+Next: /sw:restore 0031 (if you need to unarchive)
 ```
 
 ### Example 2: Archive Old Increments (Keep Last 10)
 
 ```bash
-/specweave:archive --keep-last 10
+/sw:archive --keep-last 10
 ```
 
 **Output**:
@@ -198,7 +198,7 @@ Filtering by status and safety checks...
 ### Example 3: Dry Run (Preview)
 
 ```bash
-/specweave:archive --older-than 90 --dry-run
+/sw:archive --older-than 90 --dry-run
 ```
 
 **Output**:
@@ -217,13 +217,13 @@ Summary:
   Total size: 180 MB
 
 Run without --dry-run to proceed:
-  /specweave:archive --older-than 90
+  /sw:archive --older-than 90
 ```
 
 ### Example 4: Archive by Pattern
 
 ```bash
-/specweave:archive --pattern "auth-|payment-|legacy-"
+/sw:archive --pattern "auth-|payment-|legacy-"
 ```
 
 **Output**:
@@ -255,8 +255,8 @@ Location: .specweave/increments/_archive/0031-external-tool-status-sync/
 
 Options:
   1. Delete from archive first, then retry
-  2. Restore from archive: /specweave:restore 0031
-  3. Resolve duplicates: /specweave:fix-duplicates
+  2. Restore from archive: /sw:restore 0031
+  3. Resolve duplicates: /sw:fix-duplicates
 ```
 
 ### Active Increment Protection
@@ -269,8 +269,8 @@ Skipped:
   • 0033-current-work (status: in-progress)
 
 Recommendation:
-  1. Close increments first: /specweave:done 0032
-  2. Then archive: /specweave:archive 0032
+  1. Close increments first: /sw:done 0032
+  2. Then archive: /sw:archive 0032
 ```
 
 ### External Sync Active
@@ -284,25 +284,25 @@ Skipped:
 
 Recommendation:
   1. Close external issues first
-  2. Then retry: /specweave:archive 0031 0030
+  2. Then retry: /sw:archive 0031 0030
 
 Or force archive (not recommended):
-  /specweave:archive 0031 --force
+  /sw:archive 0031 --force
 ```
 
 ## Related Commands
 
-- `/specweave:restore <increment-id>` - Restore increment from archive
-- `/specweave:done <increment-id>` - Close increment (does NOT archive!)
-- `/specweave:archive-features` - **DEPRECATED**: Now automatic, no longer needed!
-- `/specweave:status` - View archive statistics
+- `/sw:restore <increment-id>` - Restore increment from archive
+- `/sw:done <increment-id>` - Close increment (does NOT archive!)
+- `/sw:archive-features` - **DEPRECATED**: Now automatic, no longer needed!
+- `/sw:status` - View archive statistics
 
 ## Important Notes
 
 ### ⚠️ Manual Only Policy
 
 **Increments are NEVER auto-archived!** This is a deliberate design decision:
-- ✅ `/specweave:done` closes increments but leaves them visible
+- ✅ `/sw:done` closes increments but leaves them visible
 - ✅ You control when increments are archived
 - ✅ Keep ~10-20 recent increments visible for reference
 - ✅ Archive older work when you're ready
@@ -310,12 +310,12 @@ Or force archive (not recommended):
 ### 🔗 Feature Archiving (FULLY AUTOMATIC!)
 
 **Features/epics ARE automatically archived** when all their increments are archived:
-- ✅ `/specweave:archive 0031` → **AUTOMATICALLY** archives FS-031 if all increments archived
+- ✅ `/sw:archive 0031` → **AUTOMATICALLY** archives FS-031 if all increments archived
 - ✅ **AUTOMATICALLY** updates living docs and archives orphaned features
-- ✅ **ONE COMMAND** does everything - no manual `/specweave:archive-features` needed!
+- ✅ **ONE COMMAND** does everything - no manual `/sw:archive-features` needed!
 - ✅ Keeps feature docs in sync with increment archives
 
-**You never need to run `/specweave:archive-features` manually anymore!**
+**You never need to run `/sw:archive-features` manually anymore!**
 
 ### 📦 Archive is Local Only
 
@@ -476,13 +476,13 @@ Default behavior:
 **Recommended Workflow**:
 ```bash
 # 1. Check what would be archived (dry run)
-/specweave:archive --keep-last 10 --dry-run
+/sw:archive --keep-last 10 --dry-run
 
 # 2. Archive old increments (features auto-archived!)
-/specweave:archive --keep-last 10
+/sw:archive --keep-last 10
 
 # 3. Check results
-/specweave:status
+/sw:status
 ```
 
 **That's it!** Features are automatically archived in step 2 - no manual intervention needed!

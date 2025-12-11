@@ -159,7 +159,7 @@ describe('Hook Validation', () => {
 
   describe('user-prompt-submit.sh', () => {
     const sampleInput = JSON.stringify({
-      prompt: '/specweave:increment "test feature"',
+      prompt: '/sw:increment "test feature"',
       session_id: 'test-123',
       cwd: projectRoot
     });
@@ -186,7 +186,7 @@ describe('Hook Validation', () => {
     it('should handle missing metadata gracefully', async () => {
       // Simulate missing node/dist files
       const inputWithoutDist = JSON.stringify({
-        prompt: '/specweave:increment "test"',
+        prompt: '/sw:increment "test"',
         cwd: '/tmp/no-dist'
       });
 
@@ -211,7 +211,7 @@ describe('Hook Validation', () => {
 
   describe('pre-command-deduplication.sh', () => {
     const sampleInput = JSON.stringify({
-      prompt: '/specweave:do',
+      prompt: '/sw:do',
       session_id: 'test-456',
       cwd: projectRoot
     });
@@ -269,7 +269,7 @@ describe('Hook Validation', () => {
 
     it('should handle missing deduplicator gracefully', async () => {
       const inputWithoutDist = JSON.stringify({
-        prompt: '/specweave:do',
+        prompt: '/sw:do',
         cwd: '/tmp/no-dist'
       });
 
@@ -348,7 +348,7 @@ describe('Hook Validation', () => {
 
       for (const hook of hooks) {
         const result = await runHook(hook, JSON.stringify({
-          prompt: '/specweave:test',
+          prompt: '/sw:test',
           cwd: projectRoot
         }));
 
@@ -364,7 +364,7 @@ describe('Hook Validation', () => {
     it('should use proper JSON structure for blocking', async () => {
       // Create scenario that triggers block
       const input = JSON.stringify({
-        prompt: '/specweave:increment "test"',
+        prompt: '/sw:increment "test"',
         cwd: projectRoot
       });
 

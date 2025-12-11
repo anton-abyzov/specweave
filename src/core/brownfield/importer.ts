@@ -65,7 +65,7 @@ export class BrownfieldImporter {
     // Validate project exists
     const project = this.projectManager.getProjectById(options.project);
     if (!project) {
-      throw new Error(`Project '${options.project}' not found. Create it first with /specweave:init-multiproject`);
+      throw new Error(`Project '${options.project}' not found. Create it first with /sw:init-multiproject`);
     }
 
     // 1. Analyze files

@@ -7,7 +7,7 @@
  * - Builds traceability matrix (AC ↔ Task mapping)
  * - Calculates coverage metrics
  *
- * Used by `/specweave:validate` and `/specweave:done` commands to ensure
+ * Used by `/sw:validate` and `/sw:done` commands to ensure
  * all acceptance criteria are covered before increment closure.
  */
 

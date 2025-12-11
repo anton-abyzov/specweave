@@ -1,4 +1,4 @@
-# /specweave-testing:test-init
+# /sw-testing:test-init
 
 Initialize comprehensive testing infrastructure with Vitest, Playwright, and testing best practices.
 

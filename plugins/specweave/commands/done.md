@@ -18,7 +18,7 @@ You are acting as the Product Manager to validate increment completion before cl
 ## Usage
 
 ```bash
-/specweave:done <increment-id>
+/sw:done <increment-id>
 ```
 
 ## Arguments
@@ -125,7 +125,7 @@ if (!validation.isValid) {
   console.error('');
   validation.errors.forEach(err => console.error(`  • ${err}`));
   console.error('');
-  console.error('Fix these issues before running /specweave:done again');
+  console.error('Fix these issues before running /sw:done again');
   process.exit(1);
 }
 ```
@@ -139,7 +139,7 @@ if (!validation.isValid) {
   • 4 ACs uncovered by tasks (NEW - v0.23.0)
   • 2 orphan tasks detected (NEW - v0.23.0)
 
-Fix these issues before running /specweave:done again
+Fix these issues before running /sw:done again
 ```
 
 **Example validation output** (PASS):
@@ -217,7 +217,7 @@ if (coverageReport.uncoveredACs.length > 0) {
     `All ACs MUST have at least one implementing task.\n` +
     `Create tasks with **Satisfies ACs** field linking to these ACs.\n` +
     `\n` +
-    `Run: /specweave:validate ${incrementId} to see detailed coverage report.`
+    `Run: /sw:validate ${incrementId} to see detailed coverage report.`
   );
 }
 
@@ -231,7 +231,7 @@ if (coverageReport.orphanTasks.length > 0) {
     `All tasks MUST have **Satisfies ACs** field linking to acceptance criteria.\n` +
     `Add AC references to these tasks.\n` +
     `\n` +
-    `Run: /specweave:validate ${incrementId} to see detailed validation report.`
+    `Run: /sw:validate ${incrementId} to see detailed validation report.`
   );
 }
 ```
@@ -545,7 +545,7 @@ Closing increment 0001-user-authentication...
 - Prevents desyncs between metadata.json and spec.md
 - Ensures status line shows correct increment count
 - Maintains source-of-truth discipline
-- No need to manually run `/specweave:sync-status`
+- No need to manually run `/sw:sync-status`
 
 **What gets synced**:
 1. spec.md YAML frontmatter `status` field → `completed`
@@ -554,7 +554,7 @@ Closing increment 0001-user-authentication...
 **If you still see desync after closure**:
 ```bash
 # Manual fix (should rarely be needed)
-/specweave:sync-status --fix
+/sw:sync-status --fix
 ```
 
 **CRITICAL**: After increment closes, automatically perform these syncs:
@@ -576,7 +576,7 @@ const syncEnabled = config.hooks?.post_increment_done?.sync_to_github_project ==
 
 2. **Sync to GitHub Project**:
    ```bash
-   /specweave-github:sync-spec <spec-file>
+   /sw-github:sync-spec <spec-file>
    ```
 
 3. **Report result**:
@@ -696,7 +696,7 @@ const syncEnabled = config.hooks?.post_increment_done?.sync_to_github_project ==
    Completed: 2025-12-07
    Duration: 1 day
 
-   🔗 Closed automatically by `/specweave:done`
+   🔗 Closed automatically by `/sw:done`
    EOF
    )"
    ```
@@ -924,7 +924,7 @@ Status Sync:
 
   1. Create PR: git push && gh pr create
   2. Deploy to staging: npm run deploy:staging
-  3. Create new increment: /specweave:increment "Next feature"
+  3. Create new increment: /sw:increment "Next feature"
 ```
 
 #### Scenario B: One or More Gates Fail ❌
@@ -956,7 +956,7 @@ Action Plan:
   2. Complete T008 (JWT validation) - 3h
   3. Update CLAUDE.md - 30m
   4. Update README.md - 1h
-  5. Re-run /specweave:done 0001 for validation
+  5. Re-run /sw:done 0001 for validation
 
 Increment remains: in-progress
 
@@ -973,7 +973,7 @@ Increment remains: in-progress
 
      See PM validation report for details."
 
-Try again after fixing blockers: /specweave:done 0001
+Try again after fixing blockers: /sw:done 0001
 ```
 
 ### Step 5.25: Sync Living Docs (MANDATORY - v0.33.0+)
@@ -987,7 +987,7 @@ This ensures living docs are up-to-date with completed increment status.
 You MUST invoke the sync-specs command using the SlashCommand tool:
 
 ```
-SlashCommand(command: "/specweave:sync-specs {increment-id}")
+SlashCommand(command: "/sw:sync-specs {increment-id}")
 ```
 
 **DO NOT** just mention the command in output - you MUST actually execute it!
@@ -1027,7 +1027,7 @@ SlashCommand(command: "/specweave:sync-specs {increment-id}")
 
 1. **Invoke QA command automatically**:
    ```bash
-   /specweave:qa ${incrementId}
+   /sw:qa ${incrementId}
    ```
 
 2. **Quality assessment evaluates 7 dimensions**:
@@ -1192,7 +1192,7 @@ Closing increment 0001-user-authentication...
 ### Example 1: Successful Closure
 
 ```bash
-/specweave:done 0001
+/sw:done 0001
 ```
 
 **Output**:
@@ -1224,13 +1224,13 @@ Quality Gate Decision: ✅ PASS
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Next: /specweave:increment "Next feature"
+Next: /sw:increment "Next feature"
 ```
 
 ### Example 2: Blocked by Failing Tests
 
 ```bash
-/specweave:done 0002
+/sw:done 0002
 ```
 
 **Output**:
@@ -1251,7 +1251,7 @@ Increment remains: in-progress
 ### Example 3: Blocked by Outdated Docs
 
 ```bash
-/specweave:done 0003
+/sw:done 0003
 ```
 
 **Output**:
@@ -1274,7 +1274,7 @@ Increment remains: in-progress
 ### Example 4: Scope Creep - Transfer to Next Increment
 
 ```bash
-/specweave:done 0004
+/sw:done 0004
 ```
 
 **Output**:
@@ -1308,7 +1308,7 @@ Available increments:
   • 0002-core-enhancements (in-progress)
   • 0003-payment-processing (planned)
 
-Usage: /specweave:done <increment-id>
+Usage: /sw:done <increment-id>
 ```
 
 ### Increment Not In-Progress
@@ -1317,7 +1317,7 @@ Usage: /specweave:done <increment-id>
 
 Increment must be "in-progress" before closing.
 
-Run: /specweave:do 0001 to start implementation first.
+Run: /sw:do 0001 to start implementation first.
 ```
 
 ### Major Blockers Found
@@ -1373,7 +1373,7 @@ All PM validation settings use sensible defaults:
 
 **Important**: This command represents PM validation and MUST NOT be bypassed. All 3 gates (tasks, tests, docs) must pass before increment can close.
 
-**Best Practice**: Always run `/specweave:validate 0001 --quality` before `/specweave:done 0001` to catch issues early.
+**Best Practice**: Always run `/sw:validate 0001 --quality` before `/sw:done 0001` to catch issues early.
 
 **PM Role**: The PM agent acts as the final quality gate, ensuring:
 - ✅ Business value delivered (tasks complete)

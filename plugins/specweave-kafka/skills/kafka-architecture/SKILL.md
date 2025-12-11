@@ -631,13 +631,13 @@ console.log(recommendation);
 ```
 
 **SpecWeave Commands**:
-- `/specweave-kafka:deploy` - Validates cluster sizing before deployment
-- `/specweave-kafka:monitor-setup` - Configures metrics for key indicators
+- `/sw-kafka:deploy` - Validates cluster sizing before deployment
+- `/sw-kafka:monitor-setup` - Configures metrics for key indicators
 
 ## Related Skills
 
-- `/specweave-kafka:kafka-mcp-integration` - MCP server setup
-- `/specweave-kafka:kafka-cli-tools` - CLI operations
+- `/sw-kafka:kafka-mcp-integration` - MCP server setup
+- `/sw-kafka:kafka-cli-tools` - CLI operations
 
 ## External Links
 

@@ -165,11 +165,11 @@ async function performTranslation(
     // Non-interactive environment - provide clear instructions
     console.error('\n⚠️  AUTO-TRANSLATION REQUIRES ONE OF:');
     console.error('   Option A (Recommended): Set ANTHROPIC_API_KEY environment variable');
-    console.error('   Option B: Run /specweave:translate <file-path>');
+    console.error('   Option B: Run /sw:translate <file-path>');
     console.error('   Option C: Manually translate the content\n');
 
     return postProcessTranslation(
-      `<!-- ⚠️ AUTO-TRANSLATION PENDING -->\n<!-- Set ANTHROPIC_API_KEY for automatic translation -->\n<!-- Or run: /specweave:translate to complete -->\n<!-- Original content below -->\n\n${contentToTranslate}`,
+      `<!-- ⚠️ AUTO-TRANSLATION PENDING -->\n<!-- Set ANTHROPIC_API_KEY for automatic translation -->\n<!-- Or run: /sw:translate to complete -->\n<!-- Original content below -->\n\n${contentToTranslate}`,
       preserved
     );
   }

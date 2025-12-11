@@ -228,7 +228,7 @@ ${mergedFiles.length > 0 ? mergedFiles.map(f => `- \`${path.basename(f)}\``).joi
 ## Command Used
 
 \`\`\`bash
-/specweave:fix-duplicates ${options.merge ? '--merge ' : ''}${options.force ? '--force ' : ''}${options.dryRun ? '--dry-run' : ''}
+/sw:fix-duplicates ${options.merge ? '--merge ' : ''}${options.force ? '--force ' : ''}${options.dryRun ? '--dry-run' : ''}
 \`\`\`
 
 ## Next Steps
@@ -236,7 +236,7 @@ ${mergedFiles.length > 0 ? mergedFiles.map(f => `- \`${path.basename(f)}\``).joi
 ${options.dryRun ? `
 This was a dry-run. To apply these changes:
 1. Review this report
-2. Run: \`/specweave:fix-duplicates --merge\` (without --dry-run)
+2. Run: \`/sw:fix-duplicates --merge\` (without --dry-run)
 ` : `
 ✅ Duplicate resolved successfully!
 

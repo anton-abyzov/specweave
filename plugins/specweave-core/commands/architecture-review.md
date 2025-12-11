@@ -1,4 +1,4 @@
-# /specweave-core:architecture-review
+# /sw-core:architecture-review
 
 Review software architecture for scalability, maintainability, security, and alignment with best practices.
 

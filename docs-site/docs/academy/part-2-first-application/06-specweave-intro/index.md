@@ -35,15 +35,15 @@ Result: Code works, but...
 ### SpecWeave Development
 
 ```
-You: "/specweave:increment Task Tracker CLI"
+You: "/sw:increment Task Tracker CLI"
 PM Agent: Creates spec.md (requirements, user stories, ACs)
 Architect Agent: Creates plan.md (architecture, ADRs)
 Tech Lead Agent: Creates tasks.md (implementation plan, test plans)
 
-You: "/specweave:do"
+You: "/sw:do"
 [Code generated with FULL context]
 
-You: "/specweave:done"
+You: "/sw:done"
 [Quality validated, docs updated, report generated]
 
 Result: Code works AND...
@@ -113,7 +113,7 @@ Here's what rebuilding the task tracker looks like with SpecWeave:
 specweave init .
 
 # Create increment (planning phase)
-/specweave:increment "Task Tracker CLI - add, list, complete, delete tasks"
+/sw:increment "Task Tracker CLI - add, list, complete, delete tasks"
 
 # Review generated specs
 cat .specweave/increments/0001-task-tracker-cli/spec.md
@@ -121,10 +121,10 @@ cat .specweave/increments/0001-task-tracker-cli/plan.md
 cat .specweave/increments/0001-task-tracker-cli/tasks.md
 
 # Execute the plan
-/specweave:do
+/sw:do
 
 # Validate and complete
-/specweave:done 0001
+/sw:done 0001
 ```
 
 In one workflow, you get:

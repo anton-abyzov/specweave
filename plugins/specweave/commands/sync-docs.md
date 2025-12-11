@@ -678,7 +678,7 @@ ALL documentation is now in sync with increment {increment_id}! 🎉
 Available increments:
   {list .specweave/increments/*/}
 
-Usage: /specweave:sync-docs [review|update] [increment_id]
+Usage: /sw:sync-docs [review|update] [increment_id]
 ```
 
 ### Error: No Increment Files
@@ -702,7 +702,7 @@ Valid modes:
   - update (post-implementation doc sync)
   - [none] (auto-detect based on status)
 
-Usage: /specweave:sync-docs [review|update] [increment_id]
+Usage: /sw:sync-docs [review|update] [increment_id]
 ```
 
 ---
@@ -711,7 +711,7 @@ Usage: /specweave:sync-docs [review|update] [increment_id]
 
 ### Example 1: Sync all increments (NEW DEFAULT)
 ```
-User: /specweave:sync-docs
+User: /sw:sync-docs
 
 Output:
 🔄 Syncing all increments...
@@ -733,7 +733,7 @@ Output:
 
 ### Example 2: Sync specific increment
 ```
-User: /specweave:sync-docs 0042
+User: /sw:sync-docs 0042
 
 Output:
 🔍 Detected increment: 0042
@@ -746,7 +746,7 @@ Proceeding with UPDATE mode...
 
 ### Example 3: Explicit review mode
 ```
-User: /specweave:sync-docs review 0003
+User: /sw:sync-docs review 0003
 
 Output:
 🔍 Increment: 0003
@@ -758,7 +758,7 @@ Output:
 
 ### Example 4: Explicit update mode with increment
 ```
-User: /specweave:sync-docs update 0002
+User: /sw:sync-docs update 0002
 
 Output:
 🔍 Increment: 0002

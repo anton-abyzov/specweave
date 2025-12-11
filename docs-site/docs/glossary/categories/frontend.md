@@ -350,7 +350,7 @@ src/
 When creating frontend increments:
 
 ```bash
-/specweave:increment "User Profile Dashboard"
+/sw:increment "User Profile Dashboard"
 ```
 
 The Architect agent:

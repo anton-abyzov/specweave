@@ -118,11 +118,11 @@ Save this for later:
 │                   ESSENTIAL COMMANDS                         │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  /specweave:increment "feature"  → Plan new work            │
-│  /specweave:do                   → Execute tasks            │
-│  /specweave:next                 → Smart continuation       │
-│  /specweave:progress             → Check status             │
-│  /specweave:done                 → Close increment          │
+│  /sw:increment "feature"  → Plan new work            │
+│  /sw:do                   → Execute tasks            │
+│  /sw:next                 → Smart continuation       │
+│  /sw:progress             → Check status             │
+│  /sw:done                 → Close increment          │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```

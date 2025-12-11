@@ -259,11 +259,11 @@ Most successful teams combine:
 ```mermaid
 graph TB
     subgraph "SpecWeave Increment"
-        A["/specweave:increment"] --> B[spec.md<br/>Requirements]
+        A["/sw:increment"] --> B[spec.md<br/>Requirements]
         B --> C[plan.md<br/>Architecture]
         C --> D[tasks.md<br/>Implementation Plan]
-        D --> E["/specweave:do<br/>AI Implementation"]
-        E --> F["/specweave:done<br/>Quality Validated"]
+        D --> E["/sw:do<br/>AI Implementation"]
+        E --> F["/sw:done<br/>Quality Validated"]
     end
 
     subgraph "What You Get"
@@ -281,8 +281,8 @@ Each increment is a complete mini-project:
 1. **Specify** (spec.md) — What are we building?
 2. **Design** (plan.md) — How will we build it?
 3. **Plan** (tasks.md) — What are the steps?
-4. **Build** (/specweave:do) — Implement with AI
-5. **Validate** (/specweave:done) — Quality gates pass
+4. **Build** (/sw:do) — Implement with AI
+5. **Validate** (/sw:done) — Quality gates pass
 
 But increments are **small** (days, not months) and **frequent** (Agile cycles).
 

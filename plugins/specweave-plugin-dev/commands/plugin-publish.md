@@ -1,4 +1,4 @@
-# /specweave-plugin-dev:plugin-publish
+# /sw-plugin-dev:plugin-publish
 
 Publish Claude Code plugins to npm, GitHub, or marketplace with proper packaging and documentation.
 

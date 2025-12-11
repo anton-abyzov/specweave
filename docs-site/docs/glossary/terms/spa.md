@@ -428,14 +428,14 @@ my-spa-app/
 
 ```mermaid
 graph TB
-    A[/specweave:increment "Dashboard SPA"] --> B[PM: Define User Flows]
+    A[/sw:increment "Dashboard SPA"] --> B[PM: Define User Flows]
     B --> C[Architect: Design Routing Structure]
-    C --> D[/specweave:do]
+    C --> D[/sw:do]
     D --> E[Setup Router]
     E --> F[Implement Pages]
     F --> G[Add State Management]
     G --> H[Test Navigation]
-    H --> I[/specweave:done]
+    H --> I[/sw:done]
 
     style B fill:#61dafb
     style C fill:#61dafb

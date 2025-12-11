@@ -1,4 +1,4 @@
-# /specweave-frontend:design-system-init
+# /sw-frontend:design-system-init
 
 Initialize a complete design system with Atomic Design principles, design tokens, and component library.
 

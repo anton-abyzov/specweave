@@ -226,7 +226,7 @@ export class ProjectManager {
     const config = this.configManager.load();
 
     if (!config.multiProject?.enabled) {
-      throw new Error('Multi-project mode not enabled. Run /specweave:init-multiproject first.');
+      throw new Error('Multi-project mode not enabled. Run /sw:init-multiproject first.');
     }
 
     const projectConfig = config.multiProject.projects[projectId];

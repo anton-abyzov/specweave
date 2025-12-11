@@ -3262,10 +3262,10 @@ CREATE TABLE comments (
 
 ### 5. Living API Documentation
 
-After `/specweave:done`, sync docs automatically:
+After `/sw:done`, sync docs automatically:
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 
 # Updates:
 # - .specweave/docs/public/api/authentication.md

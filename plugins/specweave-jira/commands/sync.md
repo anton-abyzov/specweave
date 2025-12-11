@@ -13,20 +13,20 @@ You are a Jira synchronization expert. Help the user sync between Jira and SpecW
 
 **1. Two-way Sync (Default - Recommended)**
 ```
-/specweave-jira:sync 0003                    # Two-way sync (default)
-/specweave-jira:sync 0003 --direction two-way  # Explicit
+/sw-jira:sync 0003                    # Two-way sync (default)
+/sw-jira:sync 0003 --direction two-way  # Explicit
 ```
 
 **2. Import Jira Epic as SpecWeave Increment**
 ```
-/specweave-jira:sync import SCRUM-123        # One-time pull
-/specweave-jira:sync SCRUM-123 --direction from-jira  # Same as import
+/sw-jira:sync import SCRUM-123        # One-time pull
+/sw-jira:sync SCRUM-123 --direction from-jira  # Same as import
 ```
 
 **3. Export SpecWeave Increment to Jira**
 ```
-/specweave-jira:sync export 0001             # One-time push
-/specweave-jira:sync 0001 --direction to-jira  # Same as export
+/sw-jira:sync export 0001             # One-time push
+/sw-jira:sync 0001 --direction to-jira  # Same as export
 ```
 
 ### Sync Direction Options
@@ -51,20 +51,20 @@ You are a Jira synchronization expert. Help the user sync between Jira and SpecW
 
 **4. Add specific Story/Bug/Task to existing Increment**
 ```
-/specweave-jira:sync add SCRUM-1 to 0003
-/specweave-jira:sync add SCRUM-1              # Adds to current increment
+/sw-jira:sync add SCRUM-1 to 0003
+/sw-jira:sync add SCRUM-1              # Adds to current increment
 ```
 
 **5. Create Increment from specific items (cherry-pick)**
 ```
-/specweave-jira:sync create "User Authentication" from SCRUM-1 SCRUM-5 SCRUM-7
-/specweave-jira:sync create "Bug Fixes Sprint 1" from SCRUM-10 SCRUM-15 SCRUM-20
+/sw-jira:sync create "User Authentication" from SCRUM-1 SCRUM-5 SCRUM-7
+/sw-jira:sync create "Bug Fixes Sprint 1" from SCRUM-10 SCRUM-15 SCRUM-20
 ```
 
 **6. Show sync status**
 ```
-/specweave-jira:sync status
-/specweave-jira:sync status 0003              # Status of specific increment
+/sw-jira:sync status
+/sw-jira:sync status 0003              # Status of specific increment
 ```
 
 ## Your Task
@@ -127,7 +127,7 @@ When the user runs this command:
 ## Examples
 
 ### Example 1: Import Epic
-**User**: `/specweave:sync-jira import SCRUM-2`
+**User**: `/sw:sync-jira import SCRUM-2`
 **You**:
 - Import Epic SCRUM-2 from Jira
 - Show: "✅ Imported as Increment 0004"
@@ -135,7 +135,7 @@ When the user runs this command:
 - Link: "Jira: https://... | Increment: .specweave/increments/0004/"
 
 ### Example 2: Add Story to Current Increment
-**User**: `/specweave:sync-jira add SCRUM-1`
+**User**: `/sw:sync-jira add SCRUM-1`
 **You**:
 - Determine current increment (latest or from context)
 - Fetch SCRUM-1 from Jira
@@ -146,7 +146,7 @@ When the user runs this command:
 - Display: "Type: story | Title: User can login | Status: in-progress"
 
 ### Example 3: Add Bug to Specific Increment
-**User**: `/specweave:sync-jira add SCRUM-10 to 0003`
+**User**: `/sw:sync-jira add SCRUM-10 to 0003`
 **You**:
 - Fetch SCRUM-10 from Jira (it's a Bug)
 - Add to increment 0003's spec.md (under ## Bugs)
@@ -156,7 +156,7 @@ When the user runs this command:
 - Display: "Type: bug | Priority: P1 | Title: Fix login redirect"
 
 ### Example 4: Create Increment from Multiple Items
-**User**: `/specweave:sync-jira create "User Authentication" from SCRUM-1 SCRUM-5 SCRUM-7`
+**User**: `/sw:sync-jira create "User Authentication" from SCRUM-1 SCRUM-5 SCRUM-7`
 **You**:
 - Fetch all 3 issues from Jira
 - Determine types (story, bug, task)
@@ -176,7 +176,7 @@ When the user runs this command:
   ```
 
 ### Example 5: Two-way Sync (Default)
-**User**: `/specweave-jira:sync 0003`
+**User**: `/sw-jira:sync 0003`
 **You**:
 - Read increment 0003
 - Find linked Jira items (from spec.md frontmatter.work_items)
@@ -207,7 +207,7 @@ Conflicts: None
 - Apply resolution in both directions
 
 ### Example 6: Status Overview
-**User**: `/specweave-jira:sync status`
+**User**: `/sw-jira:sync status`
 **You**:
 - Scan all increments for Jira metadata
 - Show table:
@@ -233,20 +233,20 @@ For most use cases, use the git-style commands:
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-jira:pull` | Pull changes from Jira (read-only) |
-| `/specweave-jira:push` | Push progress to Jira |
+| `/sw-jira:pull` | Pull changes from Jira (read-only) |
+| `/sw-jira:push` | Push progress to Jira |
 
-Use `/specweave-jira:sync` for advanced operations with explicit direction control.
+Use `/sw-jira:sync` for advanced operations with explicit direction control.
 
 ## Related Commands
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-jira:pull` | Pull from Jira (git-style) |
-| `/specweave-jira:push` | Push to Jira (git-style) |
-| `/specweave-jira:import-boards` | Import Jira boards |
-| `/specweave-github:sync` | Sync to GitHub issues |
-| `/specweave:increment` | Create new increment |
+| `/sw-jira:pull` | Pull from Jira (git-style) |
+| `/sw-jira:push` | Push to Jira (git-style) |
+| `/sw-jira:import-boards` | Import Jira boards |
+| `/sw-github:sync` | Sync to GitHub issues |
+| `/sw:increment` | Create new increment |
 
 ---
 

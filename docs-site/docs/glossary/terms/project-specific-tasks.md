@@ -521,7 +521,7 @@ export class TaskProjectSpecificGenerator {
 ### For Teams
 
 1. **Single Source of Truth**: Update increment tasks.md, not User Story files
-2. **Sync After Updates**: Run `/specweave:sync-docs` to propagate changes
+2. **Sync After Updates**: Run `/sw:sync-docs` to propagate changes
 3. **Verify Filtering**: Check User Stories have correct project-specific tasks
 4. **Track Progress**: Use project-specific completion percentages
 

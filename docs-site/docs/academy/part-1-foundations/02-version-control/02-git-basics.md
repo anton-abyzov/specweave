@@ -362,7 +362,7 @@ git add .specweave/
 git commit -m "Initialize SpecWeave"
 
 # Later, after creating an increment
-/specweave:increment "User authentication"
+/sw:increment "User authentication"
 
 # Git shows new specs
 git status

@@ -390,13 +390,13 @@ git commit -m "chore: initialize SpecWeave"
 /plugin install specweave-github
 
 # Create GitHub issue from increment
-/specweave-github:specweave-github-create-issue 0030
+/sw-github:specweave-github-create-issue 0030
 
 # Sync increment ↔ GitHub issue
-/specweave-github:specweave-github-sync 0030
+/sw-github:specweave-github-sync 0030
 
 # View status
-/specweave-github:specweave-github-status 0030
+/sw-github:specweave-github-status 0030
 ```
 
 **Features**:

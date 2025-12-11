@@ -447,13 +447,13 @@ my-nextjs-app/
 
 ```mermaid
 graph TB
-    A[/specweave:increment "Product Catalog"] --> B[PM: Choose Rendering Strategy]
+    A[/sw:increment "Product Catalog"] --> B[PM: Choose Rendering Strategy]
     B --> C[Architect: Design SSG + ISR]
-    C --> D[/specweave:do]
+    C --> D[/sw:do]
     D --> E[Implement Pages]
     E --> F[Configure next.config.js]
     F --> G[Test Performance]
-    G --> H[/specweave:done]
+    G --> H[/sw:done]
 
     style B fill:#7c3aed
     style C fill:#8b5cf6

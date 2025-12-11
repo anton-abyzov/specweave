@@ -11,13 +11,13 @@ Restore an archived increment back to the main increments folder. Useful when yo
 
 ```bash
 # Restore specific increment
-/specweave:restore 0031
+/sw:restore 0031
 
 # Restore multiple increments
-/specweave:restore 0001 0002 0003
+/sw:restore 0001 0002 0003
 
 # List archived increments
-/specweave:restore --list
+/sw:restore --list
 ```
 
 ## Arguments
@@ -30,7 +30,7 @@ Restore an archived increment back to the main increments folder. Useful when yo
 ### Example 1: Restore Specific Increment
 
 ```bash
-/specweave:restore 0031
+/sw:restore 0031
 ```
 
 **Output**:
@@ -51,13 +51,13 @@ Checking target location...
    Active: 33 increments (+ 1 restored)
    Archived: 30 increments (- 1)
 
-Next: /specweave:do 0031 (to continue work)
+Next: /sw:do 0031 (to continue work)
 ```
 
 ### Example 2: List Archived Increments
 
 ```bash
-/specweave:restore --list
+/sw:restore --list
 ```
 
 **Output**:
@@ -76,13 +76,13 @@ Next: /specweave:do 0031 (to continue work)
 
 Total: 31 archived increments
 
-To restore: /specweave:restore <increment-id>
+To restore: /sw:restore <increment-id>
 ```
 
 ### Example 3: Restore Multiple Increments
 
 ```bash
-/specweave:restore 0030 0031
+/sw:restore 0030 0031
 ```
 
 **Output**:
@@ -117,7 +117,7 @@ Available archived increments:
   • 0003-auth-service
   ...
 
-Use: /specweave:restore --list to see all
+Use: /sw:restore --list to see all
 ```
 
 ### Target Location Already Exists
@@ -131,11 +131,11 @@ Conflict:
 
 Options:
   1. Delete active version first (if it's a duplicate)
-  2. Resolve duplicates: /specweave:fix-duplicates
-  3. Archive active version: /specweave:archive 0031
+  2. Resolve duplicates: /sw:fix-duplicates
+  3. Archive active version: /sw:archive 0031
   4. Rename one version manually
 
-Recommended: /specweave:fix-duplicates (auto-resolves conflicts)
+Recommended: /sw:fix-duplicates (auto-resolves conflicts)
 ```
 
 ### Permission Errors
@@ -163,10 +163,10 @@ Before restoring, the system checks:
 
 ## Related Commands
 
-- `/specweave:archive <increment-id>` - Archive completed increments
-- `/specweave:status` - View archive statistics
-- `/specweave:fix-duplicates` - Auto-resolve duplicate increments
-- `/specweave:do <increment-id>` - Resume work on restored increment
+- `/sw:archive <increment-id>` - Archive completed increments
+- `/sw:status` - View archive statistics
+- `/sw:fix-duplicates` - Auto-resolve duplicate increments
+- `/sw:do <increment-id>` - Resume work on restored increment
 
 ## Implementation
 
@@ -197,7 +197,7 @@ task.run(async () => {
       console.log(`├── ${inc}`);
     });
     console.log(`\nTotal: ${archived.length} archived increments`);
-    console.log('\nTo restore: /specweave:restore <increment-id>');
+    console.log('\nTo restore: /sw:restore <increment-id>');
     return;
   }
 
@@ -207,8 +207,8 @@ task.run(async () => {
   if (incrementIds.length === 0) {
     console.error('❌ Error: No increment IDs provided');
     console.log('\nUsage:');
-    console.log('  /specweave:restore <increment-id>');
-    console.log('  /specweave:restore --list');
+    console.log('  /sw:restore <increment-id>');
+    console.log('  /sw:restore --list');
     return;
   }
 
@@ -284,9 +284,9 @@ Common scenarios for restoring from archive:
 ### After Restoring
 
 Once restored, the increment is back in the active folder:
-- ✅ Shows up in `/specweave:status`
-- ✅ Can be resumed with `/specweave:do`
-- ✅ Can be re-archived with `/specweave:archive`
+- ✅ Shows up in `/sw:status`
+- ✅ Can be resumed with `/sw:do`
+- ✅ Can be re-archived with `/sw:archive`
 - ✅ Included in increment counts and WIP limits
 
 ---
@@ -296,14 +296,14 @@ Once restored, the increment is back in the active folder:
 **Recommended Workflow**:
 ```bash
 # 1. List archived increments
-/specweave:restore --list
+/sw:restore --list
 
 # 2. Restore specific increment
-/specweave:restore 0031
+/sw:restore 0031
 
 # 3. Review or update the increment
 cat .specweave/increments/0031-external-tool-status-sync/spec.md
 
 # 4. Re-archive when done
-/specweave:archive 0031
+/sw:archive 0031
 ```

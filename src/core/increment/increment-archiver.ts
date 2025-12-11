@@ -534,7 +534,7 @@ export class IncrementArchiver {
           `Resolution options:\n` +
           `  1. Delete the existing archive/abandoned version first\n` +
           `  2. Use --force to overwrite (not recommended)\n` +
-          `  3. Run /specweave:fix-duplicates to resolve conflicts`
+          `  3. Run /sw:fix-duplicates to resolve conflicts`
         );
       }
     }
@@ -596,7 +596,7 @@ export class IncrementArchiver {
     } catch (error) {
       // Log error but don't fail archiving - living docs sync is best-effort
       this.logger.warn(`   ⚠️  Could not sync to living docs: ${error}`);
-      this.logger.info(`   ℹ️  You can manually sync later with: /specweave:sync-specs ${increment}`);
+      this.logger.info(`   ℹ️  You can manually sync later with: /sw:sync-specs ${increment}`);
     }
   }
 
@@ -776,7 +776,7 @@ export class IncrementArchiver {
 
     } catch (error) {
       this.logger.warn(`Could not sync living docs on restore: ${error}`);
-      this.logger.info(`You may need to manually restore the feature with: /specweave:restore-feature <feature-id>`);
+      this.logger.info(`You may need to manually restore the feature with: /sw:restore-feature <feature-id>`);
     }
   }
 
@@ -845,7 +845,7 @@ export class IncrementArchiver {
           `Cannot restore ${increment}: Increment number ${incrementNumber} already exists in active folder:\n  - ${locations}\n\n` +
           `Resolution options:\n` +
           `  1. Delete/archive the existing active version first\n` +
-          `  2. Run /specweave:fix-duplicates to resolve conflicts`
+          `  2. Run /sw:fix-duplicates to resolve conflicts`
         );
       }
     }

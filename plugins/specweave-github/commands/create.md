@@ -7,10 +7,10 @@ description: Create a GitHub issue for a SpecWeave increment. Generates issue fr
 
 Create a GitHub issue for the specified SpecWeave increment.
 
-**Usage**: `/specweave-github:create <increment-id>`
+**Usage**: `/sw-github:create <increment-id>`
 
 ```bash
-/specweave:github:create-issue <increment-id> [options]
+/sw:github:create-issue <increment-id> [options]
 ```
 
 ## Arguments
@@ -29,19 +29,19 @@ Create a GitHub issue for the specified SpecWeave increment.
 
 ```bash
 # Basic usage
-/specweave:github:create-issue 0004
+/sw:github:create-issue 0004
 
 # With custom labels
-/specweave:github:create-issue 0004 --labels "urgent,backend"
+/sw:github:create-issue 0004 --labels "urgent,backend"
 
 # Assign to developer
-/specweave:github:create-issue 0004 --assignee @developer1
+/sw:github:create-issue 0004 --assignee @developer1
 
 # Add to project
-/specweave:github:create-issue 0004 --project 3
+/sw:github:create-issue 0004 --project 3
 
 # Force recreate
-/specweave:github:create-issue 0004 --force
+/sw:github:create-issue 0004 --force
 ```
 
 ## What This Command Does
@@ -195,18 +195,18 @@ Options:
 1. Wait 30 minutes
 2. Use authenticated token (higher limit)
 
-Run /specweave:github:status 0004 to check sync state.
+Run /sw:github:status 0004 to check sync state.
 ```
 
 ## Related Commands
 
-- `/specweave:github:sync <increment-id>`: Update existing issue
-- `/specweave:github:close-issue <increment-id>`: Close issue
-- `/specweave:github:status <increment-id>`: Check sync status
+- `/sw:github:sync <increment-id>`: Update existing issue
+- `/sw:github:close-issue <increment-id>`: Close issue
+- `/sw:github:status <increment-id>`: Check sync status
 
 ## Tips
 
-1. **Auto-Create**: Enable `auto_create_issue: true` in config to auto-create issues when running `/specweave:inc`
+1. **Auto-Create**: Enable `auto_create_issue: true` in config to auto-create issues when running `/sw:inc`
 
 2. **Templates**: Customize issue template in `.specweave/github/issue-template.md`
 
@@ -251,7 +251,7 @@ Create issues for multiple increments:
 
 ```bash
 for i in 0004 0005 0006; do
-  /specweave:github:create-issue $i
+  /sw:github:create-issue $i
 done
 ```
 
@@ -260,7 +260,7 @@ Or using a script:
 ```bash
 # Create issues for all increments in backlog
 ls .specweave/increments/_backlog/ | while read inc; do
-  /specweave:github:create-issue $inc
+  /sw:github:create-issue $inc
 done
 ```
 
@@ -269,7 +269,7 @@ done
 Preview issue body before creating:
 
 ```bash
-/specweave:github:create-issue 0004 --dry-run
+/sw:github:create-issue 0004 --dry-run
 ```
 
 Output:
@@ -300,7 +300,7 @@ Run without --dry-run to create this issue.
 
 ---
 
-**Command**: `/specweave:github:create-issue`
+**Command**: `/sw:github:create-issue`
 **Plugin**: specweave-github
 **Agent**: github-manager
 **Version**: 1.0.0

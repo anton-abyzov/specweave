@@ -499,15 +499,15 @@ my-ssg-app/
 
 ```mermaid
 graph TB
-    A[/specweave:increment "Marketing Site"] --> B[PM: Define Pages]
+    A[/sw:increment "Marketing Site"] --> B[PM: Define Pages]
     B --> C[Architect: Design SSG Strategy]
-    C --> D[/specweave:do]
+    C --> D[/sw:do]
     D --> E[Implement getStaticProps]
     E --> F[Generate All Paths]
     F --> G[Build Site]
     G --> H[Test Performance]
     H --> I[Deploy to CDN]
-    I --> J[/specweave:done]
+    I --> J[/sw:done]
 
     style B fill:#339af0
     style C fill:#339af0

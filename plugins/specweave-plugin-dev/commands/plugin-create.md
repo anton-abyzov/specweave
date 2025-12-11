@@ -1,4 +1,4 @@
-# /specweave-plugin-dev:plugin-create
+# /sw-plugin-dev:plugin-create
 
 Create complete Claude Code plugins with proper structure, configuration, and best practices.
 

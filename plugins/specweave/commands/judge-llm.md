@@ -3,7 +3,7 @@ name: specweave:judge-llm
 description: Ultrathink LLM-as-Judge validation of completed work. Uses extended thinking by DEFAULT for thorough evaluation.
 ---
 
-# /specweave:judge-llm - Ultrathink LLM-as-Judge Validation
+# /sw:judge-llm - Ultrathink LLM-as-Judge Validation
 
 **ULTRATHINK BY DEFAULT** - Validate completed work using extended thinking and the LLM-as-Judge pattern.
 
@@ -32,26 +32,26 @@ Use when you've completed work and want **maximum-quality AI validation**:
 
 ```bash
 # DEFAULT: Ultrathink validation (recommended)
-/specweave:judge-llm src/file.ts
-/specweave:judge-llm "src/**/*.ts"
+/sw:judge-llm src/file.ts
+/sw:judge-llm "src/**/*.ts"
 
 # Validate git changes (ultrathink by default)
-/specweave:judge-llm --staged           # Staged changes
-/specweave:judge-llm --last-commit      # Last commit
-/specweave:judge-llm --diff main        # Diff vs branch
+/sw:judge-llm --staged           # Staged changes
+/sw:judge-llm --last-commit      # Last commit
+/sw:judge-llm --diff main        # Diff vs branch
 
 # Quick mode (ONLY if you need speed over thoroughness)
-/specweave:judge-llm src/file.ts --quick
+/sw:judge-llm src/file.ts --quick
 
 # Additional options
-/specweave:judge-llm src/file.ts --strict   # Fail on any concern
-/specweave:judge-llm src/file.ts --fix      # Include fix suggestions
-/specweave:judge-llm src/file.ts --export   # Export report to markdown
+/sw:judge-llm src/file.ts --strict   # Fail on any concern
+/sw:judge-llm src/file.ts --fix      # Include fix suggestions
+/sw:judge-llm src/file.ts --export   # Export report to markdown
 ```
 
 ## How It Works
 
-When you invoke `/specweave:judge-llm`, Claude will:
+When you invoke `/sw:judge-llm`, Claude will:
 
 ### Step 1: Gather Input
 
@@ -145,7 +145,7 @@ VERDICT: [summary sentence]
 ### Example 1: Default ultrathink validation
 
 ```
-User: /specweave:judge-llm src/core/auth/login.ts
+User: /sw:judge-llm src/core/auth/login.ts
 
 Claude: [Uses extended thinking for deep analysis]
 
@@ -182,7 +182,7 @@ VERDICT: Production-ready implementation with excellent security posture.
 ### Example 2: Validate staged changes
 
 ```
-User: /specweave:judge-llm --staged
+User: /sw:judge-llm --staged
 
 Claude: [Uses extended thinking]
 
@@ -230,7 +230,7 @@ VERDICT: Address HIGH issues before merging. LOW can be follow-up.
 ### Example 3: Quick validation (when needed)
 
 ```
-User: /specweave:judge-llm src/utils/format.ts --quick
+User: /sw:judge-llm src/utils/format.ts --quick
 
 Claude: [Standard reasoning, no extended thinking]
 
@@ -263,9 +263,9 @@ Claude will:
 2. Use ULTRATHINK extended thinking by default
 3. Apply thorough LLM-as-Judge evaluation
 
-## Difference from /specweave:qa
+## Difference from /sw:qa
 
-| Aspect | `/specweave:qa` | `/specweave:judge-llm` |
+| Aspect | `/sw:qa` | `/sw:judge-llm` |
 |--------|-----------------|------------------------|
 | **Scope** | Increments only | Any files |
 | **Input** | Increment ID | Files, git diff, context |
@@ -291,6 +291,6 @@ Claude will:
 
 ## Related
 
-- `/specweave:qa` - Increment-bound quality assessment
-- `/specweave:validate` - Rule-based increment validation
+- `/sw:qa` - Increment-bound quality assessment
+- `/sw:validate` - Rule-based increment validation
 - `ado-sync-judge` agent - Uses judge pattern for sync validation

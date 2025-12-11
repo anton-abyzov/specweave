@@ -81,12 +81,12 @@ ${contentToTranslate}`,
   } else {
     console.error("\n\u26A0\uFE0F  AUTO-TRANSLATION REQUIRES ONE OF:");
     console.error("   Option A (Recommended): Set ANTHROPIC_API_KEY environment variable");
-    console.error("   Option B: Run /specweave:translate <file-path>");
+    console.error("   Option B: Run /sw:translate <file-path>");
     console.error("   Option C: Manually translate the content\n");
     return postProcessTranslation(
       `<!-- \u26A0\uFE0F AUTO-TRANSLATION PENDING -->
 <!-- Set ANTHROPIC_API_KEY for automatic translation -->
-<!-- Or run: /specweave:translate to complete -->
+<!-- Or run: /sw:translate to complete -->
 <!-- Original content below -->
 
 ${contentToTranslate}`,

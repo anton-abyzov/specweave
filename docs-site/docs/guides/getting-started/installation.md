@@ -289,7 +289,7 @@ ls -la .claude/hooks/       # Should have 8 hooks
 cat AGENTS.md               # Should exist
 
 # Test a command (Claude Code only)
-# Open Claude Code and type: /specweave:progress
+# Open Claude Code and type: /sw:progress
 ```
 
 ### Verification Checklist
@@ -325,7 +325,7 @@ cat AGENTS.md               # Should exist
 
 ```bash
 # In Claude Code:
-/specweave:increment "my first feature"
+/sw:increment "my first feature"
 
 # This creates:
 # ✅ .specweave/increments/0001-my-first-feature/

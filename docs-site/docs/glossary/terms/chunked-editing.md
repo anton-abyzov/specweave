@@ -110,7 +110,7 @@ When working on increments:
 ```bash
 # Large file + active increment = HIGH RISK
 # Pause increment first
-/specweave:pause 0058
+/sw:pause 0058
 
 # Make chunked edits
 # Edit 1, verify
@@ -118,7 +118,7 @@ When working on increments:
 # Edit 3, verify
 
 # Resume increment
-/specweave:resume 0058
+/sw:resume 0058
 ```
 
 ---

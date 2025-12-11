@@ -71,7 +71,7 @@ Log: "[GitHub] ✅ GitHub sync complete"
 - Created performance overhead and duplicate executions
 
 **New behavior (v0.26.0+)**:
-- Hook must be invoked manually via `/specweave-github:sync`
+- Hook must be invoked manually via `/sw-github:sync`
 - OR triggered on increment completion (not task completion)
 - Reduces API calls by 90%+
 - Eliminates duplicate hook executions
@@ -81,16 +81,16 @@ Log: "[GitHub] ✅ GitHub sync complete"
 **Manual Sync** (recommended workflow):
 ```bash
 # After completing several tasks, sync progress to GitHub
-/specweave-github:sync
+/sw-github:sync
 
 # Or sync specific feature
-/specweave-github:sync FS-048
+/sw-github:sync FS-048
 ```
 
 **Automatic Sync Options**:
 1. **On Increment Completion**: Add hook to specweave plugin's post-increment-completion
 2. **Periodic Sync**: Set up cron job or CI/CD trigger
-3. **On Demand**: Call `/specweave-github:sync` when needed
+3. **On Demand**: Call `/sw-github:sync` when needed
 
 ### Metadata Format
 
@@ -149,10 +149,10 @@ bash -n plugins/specweave-github/hooks/post-task-completion.sh
 
 ### Test with GitHub Issue
 
-1. Create increment: `/specweave:increment "test feature"`
-2. Create GitHub issue: `/specweave-github:create-issue 0001`
+1. Create increment: `/sw:increment "test feature"`
+2. Create GitHub issue: `/sw-github:create-issue 0001`
 3. Complete several tasks via TodoWrite
-4. **Manually trigger sync**: `/specweave-github:sync`
+4. **Manually trigger sync**: `/sw-github:sync`
 5. Check GitHub issue for updates
 
 ---
@@ -258,7 +258,7 @@ tail -f .specweave/logs/hooks-debug.log | grep '\[GitHub\]'
 ```
 
 **Common issues**:
-- ❌ No `metadata.json`: Create GitHub issue via `/specweave-github:create-issue`
+- ❌ No `metadata.json`: Create GitHub issue via `/sw-github:create-issue`
 - ❌ Not authenticated: Run `gh auth login`
 - ❌ Invalid issue number: Check `metadata.json` has correct issue ID
 - ❌ Network error: Check internet connection

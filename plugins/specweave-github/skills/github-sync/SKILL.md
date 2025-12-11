@@ -1,6 +1,6 @@
 ---
 name: github-sync
-description: Two-way synchronization between SpecWeave specs and GitHub Projects (push & pull by default). Activates ONLY when user asks questions about GitHub integration or needs help configuring GitHub sync. Does NOT activate for slash commands. For syncing, use /specweave-github:sync-spec command instead.
+description: Two-way synchronization between SpecWeave specs and GitHub Projects (push & pull by default). Activates ONLY when user asks questions about GitHub integration or needs help configuring GitHub sync. Does NOT activate for slash commands. For syncing, use /sw-github:sync-spec command instead.
 ---
 
 # GitHub Sync - Two-way Spec ↔ Project Synchronization
@@ -9,7 +9,7 @@ description: Two-way synchronization between SpecWeave specs and GitHub Projects
 
 **Default Behavior**: **Two-way sync** (push & pull) - Changes in either system are automatically synchronized
 
-**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about GitHub sync. For actual syncing, users should use the `/specweave-github:sync-spec` command directly. This skill should NOT auto-activate when the command is being invoked.
+**⚠️ IMPORTANT**: This skill provides HELP and GUIDANCE about GitHub sync. For actual syncing, users should use the `/sw-github:sync-spec` command directly. This skill should NOT auto-activate when the command is being invoked.
 
 ## When to Activate
 
@@ -20,11 +20,11 @@ description: Two-way synchronization between SpecWeave specs and GitHub Projects
 - User needs help configuring GitHub integration
 
 ❌ **Do NOT activate when**:
-- User invokes `/specweave-github:sync-spec` command (command handles it)
+- User invokes `/sw-github:sync-spec` command (command handles it)
 - Command is already running (avoid duplicate invocation)
 - Task completion hook is syncing (automatic process)
 
-**Integration**: Works with `/specweave-github:sync-spec` command
+**Integration**: Works with `/sw-github:sync-spec` command
 
 ---
 
@@ -176,7 +176,7 @@ As a developer, I want to install SpecWeave via NPM so that I can use it in my p
 
 **Use Case**: Import existing GitHub Projects as SpecWeave specs
 
-**Command**: `/specweave-github:import-project <project-number>`
+**Command**: `/sw-github:import-project <project-number>`
 
 **Actions**:
 1. Fetch project via GitHub GraphQL API
@@ -238,7 +238,7 @@ gh auth status
 ### Sync Spec to GitHub
 
 ```bash
-/specweave-github:sync-spec spec-001
+/sw-github:sync-spec spec-001
 ```
 
 Creates or updates GitHub Project for spec-001.
@@ -246,7 +246,7 @@ Creates or updates GitHub Project for spec-001.
 ### Sync All Specs
 
 ```bash
-/specweave-github:sync-spec --all
+/sw-github:sync-spec --all
 ```
 
 Syncs all specs to GitHub Projects.
@@ -254,7 +254,7 @@ Syncs all specs to GitHub Projects.
 ### Import Project
 
 ```bash
-/specweave-github:import-project 123
+/sw-github:import-project 123
 ```
 
 Imports GitHub Project #123 as a SpecWeave spec.
@@ -262,7 +262,7 @@ Imports GitHub Project #123 as a SpecWeave spec.
 ### Check Status
 
 ```bash
-/specweave-github:status spec-001
+/sw-github:status spec-001
 ```
 
 Shows sync status (project ID, last sync time, progress %).
@@ -283,11 +283,11 @@ PM: Creates .specweave/docs/internal/specs/spec-005-user-auth.md
 → Issues created for each user story
 
 # 3. Implement increments
-/specweave:increment "Add login flow"
+/sw:increment "Add login flow"
 → Increment 0010 created (implements US-001, US-002)
 
 # 4. Work on tasks
-/specweave:do
+/sw:do
 → Task completed
 → Hook fires
 → Spec updated (AC marked complete)
@@ -328,7 +328,7 @@ The spec is always the source of truth. GitHub Projects are a mirror for visibil
 2. Manual edits to project/issue body/title
 
 **Resolution**:
-- Run `/specweave-github:sync-spec spec-001 --force` to overwrite project from spec
+- Run `/sw-github:sync-spec spec-001 --force` to overwrite project from spec
 - Or manually update spec metadata to match project
 
 ---
@@ -386,7 +386,7 @@ The spec is always the source of truth. GitHub Projects are a mirror for visibil
 **Progress not updating?**
 - Check `autoSyncSpecs: true` in config
 - Verify hook execution: `.specweave/logs/hooks-debug.log`
-- Manually sync: `/specweave-github:sync-spec spec-001`
+- Manually sync: `/sw-github:sync-spec spec-001`
 
 ---
 
@@ -462,7 +462,7 @@ For monorepos with multiple GitHub repositories:
 
 - **github-issue-tracker**: Track individual tasks as issue comments (DEPRECATED - use spec sync instead)
 - **github-manager agent**: AI agent for GitHub operations
-- **Commands**: `/specweave-github:sync-spec`, `/specweave-github:import-project`, `/specweave-github:status`
+- **Commands**: `/sw-github:sync-spec`, `/sw-github:import-project`, `/sw-github:status`
 
 ---
 

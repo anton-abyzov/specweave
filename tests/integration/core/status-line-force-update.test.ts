@@ -1,7 +1,7 @@
 /**
  * Status Line Force Update - Integration Test
  *
- * Tests the /specweave:update-status command end-to-end.
+ * Tests the /sw:update-status command end-to-end.
  *
  * Coverage:
  * - CLI execution (update-status-line.ts)

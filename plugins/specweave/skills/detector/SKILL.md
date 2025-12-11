@@ -1,6 +1,6 @@
 ---
 name: specweave-detector
-description: Detects SpecWeave context (.specweave/ directory exists) and provides workflow documentation. Explains available slash commands and workflow. Keywords slash commands, /specweave:increment, /increment, /specweave:do, /specweave:progress, /specweave:validate, /specweave:done, specweave commands, workflow help, specweave folder.
+description: Detects SpecWeave context (.specweave/ directory exists) and provides workflow documentation. Explains available slash commands and workflow. Keywords slash commands, /sw:increment, /increment, /sw:do, /sw:progress, /sw:validate, /sw:done, specweave commands, workflow help, specweave folder.
 ---
 
 # SpecWeave - Smart Workflow Documentation
@@ -36,7 +36,7 @@ SpecWeave provides explicit slash commands for reliable workflow execution.
 | Command | Description | Example |
 |---------|-------------|---------|
 | `/list-increments` | List all increments with status | `/list-increments` |
-| `/specweave:sync-docs` | Review strategic docs vs code | `/specweave:sync-docs --increment=003` |
+| `/sw:sync-docs` | Review strategic docs vs code | `/sw:sync-docs --increment=003` |
 | `/sync-github` | Sync increment to GitHub issues | `/sync-github` |
 
 ## Why Only ONE Alias?
@@ -82,7 +82,7 @@ npx specweave init my-saas
 /do
 # Auto-finds active increment 0002
 
-# Repeat: /specweave:increment → /specweave:do → /specweave:progress → /specweave:increment (auto-closes) → /specweave:do...
+# Repeat: /sw:increment → /sw:do → /sw:progress → /sw:increment (auto-closes) → /sw:do...
 ```
 
 ## Command Details
@@ -325,7 +325,7 @@ User: "What SpecWeave commands are available?"
 **Command syntax**:
 ```
 User: "How do I create a new increment?"
-→ Claude explains /specweave:increment command with examples
+→ Claude explains /sw:increment command with examples
 ```
 
 ## Documentation

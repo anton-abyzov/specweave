@@ -22,8 +22,8 @@ export declare enum IncrementStatus {
      *
      * CRITICAL: This is a gating status that prevents auto-completion bugs.
      * - Auto-transitions to READY_FOR_REVIEW when all tasks completed
-     * - User MUST explicitly run /specweave:done to move to COMPLETED
-     * - /specweave:next will prompt for confirmation before closure
+     * - User MUST explicitly run /sw:done to move to COMPLETED
+     * - /sw:next will prompt for confirmation before closure
      *
      * Prevents the bug where status becomes "completed" without:
      * 1. ACs being checked in spec.md
@@ -92,7 +92,7 @@ export interface IncrementMetadata {
     readyForReviewAt?: string;
     /**
      * Timestamp when user approved completion (ISO 8601)
-     * Set only via explicit /specweave:done command
+     * Set only via explicit /sw:done command
      * (v0.28.63+)
      */
     approvedAt?: string;

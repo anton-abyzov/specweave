@@ -55,7 +55,7 @@ Default coverage targets by test type:
 ### Check Test Coverage
 
 ```bash
-/specweave:check-tests 0001
+/sw:check-tests 0001
 ```
 
 **Output**:
@@ -82,7 +82,7 @@ Recommendations:
 ### Validate Quality
 
 ```bash
-/specweave:qa 0001 --gate
+/sw:qa 0001 --gate
 ```
 
 ## Test Pyramid Enforcement

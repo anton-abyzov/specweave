@@ -3,7 +3,7 @@ name: specweave:translate
 description: Translate SpecWeave project content to target language using LLM-native zero-cost translation
 ---
 
-# /specweave:translate - Batch Translation Command
+# /sw:translate - Batch Translation Command
 
 You are being asked to translate SpecWeave project content to a target language.
 
@@ -37,21 +37,21 @@ SpecWeave supports **LLM-native i18n** - zero-cost translation using system prom
 
 ```bash
 # Translate entire project
-/specweave:translate <target-language>
+/sw:translate <target-language>
 
 # Translate specific scope
-/specweave:translate <target-language> --scope <scope>
+/sw:translate <target-language> --scope <scope>
 
 # Preview without writing
-/specweave:translate <target-language> --dry-run
+/sw:translate <target-language> --dry-run
 ```
 
 **Examples**:
 ```bash
-/specweave:translate ru                          # Translate all to Russian
-/specweave:translate es --scope increments       # Only increment specs
-/specweave:translate zh --scope current          # Only current increment
-/specweave:translate de --dry-run                # Preview German translation
+/sw:translate ru                          # Translate all to Russian
+/sw:translate es --scope increments       # Only increment specs
+/sw:translate zh --scope current          # Only current increment
+/sw:translate de --dry-run                # Preview German translation
 ```
 
 ## Scopes
@@ -153,7 +153,7 @@ Translation process per file:
    - YAML frontmatter
    - Code blocks
    - Markdown formatting
-   - Framework terms (increment, spec.md, /specweave:*)
+   - Framework terms (increment, spec.md, /sw:*)
    - Technical terms (TypeScript, npm, git, etc.)
    - File paths and names
 4. Write translated content
@@ -254,7 +254,7 @@ If issues found, restore from git:
 
 ### ⏸️ **Never Translate**:
 - Framework terms: increment, spec.md, plan.md, tasks.md, COMPLETION-SUMMARY.md
-- Commands: /specweave:inc, /specweave:do, /specweave:progress, /specweave:sync-docs
+- Commands: /sw:inc, /sw:do, /sw:progress, /sw:sync-docs
 - File paths: .specweave/, src/, .claude/, .cursor/, .github/
 - Technical terms: TypeScript, npm, git, API, CLI, REST, JSON, HTTP
 - SpecWeave keywords: living docs, context-manifest.yaml, PM gate, Spec
@@ -275,7 +275,7 @@ If issues found, restore from git:
 - `COMPLETION-SUMMARY.md`
 - `CLAUDE.md`, `AGENTS.md`
 - `.specweave/`, `src/`, `.claude/`, `.cursor/`, `.github/`
-- `/specweave:inc`, `/specweave:do`, `/specweave:next`, `/specweave:done`, `/specweave:progress`, `/specweave:validate`, `/specweave:sync-docs`
+- `/sw:inc`, `/sw:do`, `/sw:next`, `/sw:done`, `/sw:progress`, `/sw:validate`, `/sw:sync-docs`
 - `living docs`
 - `PM gate`, `Architect`, `Tech Lead`
 - `context-manifest`
@@ -330,8 +330,8 @@ function createIncrement(name: string) {
 ### Framework Examples
 ```markdown
 <!-- Translate explanation, keep framework terms -->
-To create an increment, run: /specweave:inc "feature-name"
-→ Para criar um increment, execute: /specweave:inc "feature-name"
+To create an increment, run: /sw:inc "feature-name"
+→ Para criar um increment, execute: /sw:inc "feature-name"
 ```
 
 ## Integration with Translator Agent
@@ -354,7 +354,7 @@ This command invokes the **translator agent** which:
 specweave --help
 
 # 2. Test increment creation (if CLAUDE.md translated)
-/specweave:inc "test-feature"
+/sw:inc "test-feature"
 
 # 3. Check skill activation (if skills translated)
 # Ask questions that should trigger skills
@@ -388,7 +388,7 @@ git checkout -- .specweave/config.json
 
 ## Example Execution
 
-**User command**: `/specweave:translate ru`
+**User command**: `/sw:translate ru`
 
 **Your response**:
 ```
@@ -411,7 +411,7 @@ Estimated Time: 30-45 minutes
 
 Framework Terms (will be preserved in English):
 - increment, spec.md, plan.md, tasks.md
-- /specweave:*, /specweave:sync-docs
+- /sw:*, /sw:sync-docs
 - .specweave/, src/, .claude/
 - living docs, PM gate, context-manifest
 

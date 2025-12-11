@@ -418,7 +418,7 @@ SpecWeave includes security checks in quality gates:
 - [ ] Error handling doesn't leak info
 ```
 
-The `/specweave:validate` command includes security checks.
+The `/sw:validate` command includes security checks.
 
 ---
 

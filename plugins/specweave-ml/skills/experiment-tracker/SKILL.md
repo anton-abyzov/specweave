@@ -125,7 +125,7 @@ comparison = compare_experiments(increment="0042")
 After completing increment:
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 Automatically updates:
@@ -338,7 +338,7 @@ with track_experiment("xgboost-v1") as exp:
 
 ```bash
 # Experiments automatically tied to increment
-/specweave:inc "0042-recommendation-model"
+/sw:inc "0042-recommendation-model"
 # All experiments logged to: .specweave/increments/0042.../experiments/
 ```
 
@@ -346,7 +346,7 @@ with track_experiment("xgboost-v1") as exp:
 
 ```bash
 # Sync experiment findings to docs
-/specweave:sync-docs update
+/sw:sync-docs update
 # Updates: architecture/ml-models.md, runbooks/model-training.md
 ```
 
@@ -354,7 +354,7 @@ with track_experiment("xgboost-v1") as exp:
 
 ```bash
 # Create issue for model retraining
-/specweave:github:create-issue "Retrain model with Q1 2024 data"
+/sw:github:create-issue "Retrain model with Q1 2024 data"
 # Links to previous experiments in increment
 ```
 

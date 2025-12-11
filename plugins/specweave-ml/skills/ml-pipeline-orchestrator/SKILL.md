@@ -150,7 +150,7 @@ results = run_experiments(
 
 ### Phase 3: Increment Completion
 
-When `/specweave:done 0042` runs:
+When `/sw:done 0042` runs:
 
 1. **Validates ML-specific criteria**:
    - ✅ All experiments logged
@@ -183,7 +183,7 @@ When `/specweave:done 0042` runs:
 - ✅ A/B test plan documented
 ```
 
-3. **Syncs living docs** (via `/specweave:sync-docs`):
+3. **Syncs living docs** (via `/sw:sync-docs`):
    - Updates architecture docs with model design
    - Adds ADR for algorithm selection
    - Documents learnings in runbooks
@@ -241,7 +241,7 @@ Activate this skill when you need to:
 ### With Experiment Tracking
 ```bash
 # Start ML increment
-/specweave:inc "0042-recommendation-model"
+/sw:inc "0042-recommendation-model"
 
 # Automatically integrates experiment tracking
 # All MLflow/W&B logs saved to increment folder
@@ -250,7 +250,7 @@ Activate this skill when you need to:
 ### With Living Docs
 ```bash
 # After training best model
-/specweave:sync-docs update
+/sw:sync-docs update
 
 # Automatically:
 # - Updates architecture/ml-models.md
@@ -261,7 +261,7 @@ Activate this skill when you need to:
 ### With GitHub Sync
 ```bash
 # Create GitHub issue for model retraining
-/specweave:github:create-issue "Retrain recommendation model with new data"
+/sw:github:create-issue "Retrain recommendation model with new data"
 
 # Linked to increment 0042
 # Issue tracks model performance over time
@@ -433,7 +433,7 @@ with track_boosting_model("xgboost", increment="0042") as tracked:
 
 ## Skill Outputs
 
-After running `/specweave:do` on an ML increment, you get:
+After running `/sw:do` on an ML increment, you get:
 
 ```
 .specweave/increments/0042-recommendation-model/
@@ -470,22 +470,22 @@ This skill integrates with SpecWeave commands:
 
 ```bash
 # Create ML increment
-/specweave:inc "build recommendation model"
+/sw:inc "build recommendation model"
 → Activates ml-pipeline-orchestrator
 → Creates ML-specific increment structure
 
 # Execute ML tasks
-/specweave:do
+/sw:do
 → Guides through data → train → eval workflow
 → Auto-tracks experiments
 
 # Validate ML increment
-/specweave:validate 0042
+/sw:validate 0042
 → Checks: experiments logged, model saved, metrics documented
 → Validates: model meets success criteria
 
 # Complete ML increment
-/specweave:done 0042
+/sw:done 0042
 → Generates ML completion summary
 → Syncs model metadata to living docs
 ```

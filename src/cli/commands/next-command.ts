@@ -2,7 +2,7 @@
  * Next Command - Intelligent workflow orchestration
  *
  * CLI wrapper for WorkflowOrchestrator and AutonomousExecutor.
- * Provides /specweave:next command functionality.
+ * Provides /sw:next command functionality.
  *
  * Part of increment 0039: Ultra-Smart Next Command
  *
@@ -124,7 +124,7 @@ async function executeAutonomousMode(config: NextCommandConfig): Promise<void> {
   // Ensure increment ID is provided
   if (!config.incrementId) {
     console.error(chalk.red('❌ Increment ID required for autonomous mode'));
-    console.error(chalk.yellow('Usage: /specweave:next --autonomous <increment-id>'));
+    console.error(chalk.yellow('Usage: /sw:next --autonomous <increment-id>'));
     process.exit(1);
   }
 
@@ -247,10 +247,10 @@ export function parseArgs(args: string[]): NextCommandConfig {
  * Display help text
  */
 export function displayHelp(): void {
-  console.log(chalk.bold('\n/specweave:next - Intelligent Workflow Orchestrator\n'));
+  console.log(chalk.bold('\n/sw:next - Intelligent Workflow Orchestrator\n'));
 
   console.log(chalk.cyan('Usage:'));
-  console.log('  /specweave:next [options] [increment-id]\n');
+  console.log('  /sw:next [options] [increment-id]\n');
 
   console.log(chalk.cyan('Modes:'));
   console.log('  Interactive (default)  Suggests next action, waits for confirmation');
@@ -266,9 +266,9 @@ export function displayHelp(): void {
   console.log('  --resume-from <id>     Resume from checkpoint\n');
 
   console.log(chalk.cyan('Examples:'));
-  console.log('  /specweave:next                          # Interactive mode, auto-detect increment');
-  console.log('  /specweave:next 0039                     # Interactive mode, specific increment');
-  console.log('  /specweave:next --autonomous 0039        # Autonomous mode');
-  console.log('  /specweave:next --dry-run --verbose      # Preview with details');
-  console.log('  /specweave:next --autonomous --max-cost 10  # Autonomous with cost limit\n');
+  console.log('  /sw:next                          # Interactive mode, auto-detect increment');
+  console.log('  /sw:next 0039                     # Interactive mode, specific increment');
+  console.log('  /sw:next --autonomous 0039        # Autonomous mode');
+  console.log('  /sw:next --dry-run --verbose      # Preview with details');
+  console.log('  /sw:next --autonomous --max-cost 10  # Autonomous with cost limit\n');
 }

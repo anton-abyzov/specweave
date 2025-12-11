@@ -25,7 +25,7 @@ This skill ensures your Azure DevOps configuration in `.env` is valid and all re
 
 ✅ **Automatically activates when**:
 - You set up Azure DevOps integration for the first time
-- You run `/specweave-ado:sync` and resources are missing
+- You run `/sw-ado:sync` and resources are missing
 - Your `.env` has invalid Azure DevOps configuration
 - You mention "ado setup" or "azure devops validation"
 
@@ -227,7 +227,7 @@ Checking teams...
 
 **Scenario**: New setup with multiple projects for different teams
 
-**Action**: Run `/specweave-ado:sync`
+**Action**: Run `/sw-ado:sync`
 
 **What Happens**:
 ```bash
@@ -462,7 +462,7 @@ export async function validateAzureDevOpsResources(
 npx specweave init
 
 # Also runs automatically before sync
-/specweave-ado:sync 0014
+/sw-ado:sync 0014
 ```
 
 **Manual validation**:
@@ -751,10 +751,10 @@ Contact Azure DevOps support for limit increases.
 
 ### Automatic Validation
 
-When using `/specweave-ado:sync`, validation runs automatically:
+When using `/sw-ado:sync`, validation runs automatically:
 
 ```bash
-/specweave-ado:sync 0014
+/sw-ado:sync 0014
 
 # Internally calls:
 1. validateAzureDevOpsResources()

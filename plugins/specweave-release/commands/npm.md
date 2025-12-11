@@ -3,7 +3,7 @@ name: specweave-release:npm
 description: Bump patch version, auto-commit dirty changes, push to GitHub, build, publish to npmjs.org. Use --quick for save+release (no GH workflow). Use --ci for GitHub Actions publish. Use --only for local publish without git push. Use --only --local for version bump only.
 ---
 
-# /specweave-release:npm - NPM Release Automation
+# /sw-release:npm - NPM Release Automation
 
 You are the NPM Release Assistant. Your job is to automate the patch version release process.
 
@@ -11,11 +11,11 @@ You are the NPM Release Assistant. Your job is to automate the patch version rel
 
 | Command | Flow | Use Case |
 |---------|------|----------|
-| `/specweave-release:npm` | Auto-commit → **PUSH** → Bump → Build → **Publish** → Push tag | **DEFAULT: INSTANT RELEASE** |
-| `/specweave-release:npm --quick` | Auto-commit → **PUSH** → Bump → Build → **Publish locally** → NO GH workflow | **QUICK: Save + Local Release** |
-| `/specweave-release:npm --ci` | Bump → Push → **CI publishes** | Let GitHub Actions handle npm publish |
-| `/specweave-release:npm --only` | Bump → Build → **Publish locally** → NO push | Quick local release, push later |
-| `/specweave-release:npm --only --local` | **Bump ONLY** → NO build, NO publish, NO git | FASTEST: Local testing only |
+| `/sw-release:npm` | Auto-commit → **PUSH** → Bump → Build → **Publish** → Push tag | **DEFAULT: INSTANT RELEASE** |
+| `/sw-release:npm --quick` | Auto-commit → **PUSH** → Bump → Build → **Publish locally** → NO GH workflow | **QUICK: Save + Local Release** |
+| `/sw-release:npm --ci` | Bump → Push → **CI publishes** | Let GitHub Actions handle npm publish |
+| `/sw-release:npm --only` | Bump → Build → **Publish locally** → NO push | Quick local release, push later |
+| `/sw-release:npm --only --local` | **Bump ONLY** → NO build, NO publish, NO git | FASTEST: Local testing only |
 
 ## Detecting Mode
 
@@ -166,7 +166,7 @@ git push origin develop --follow-tags
 
 ## QUICK MODE WORKFLOW (--quick flag) - SAVE + LOCAL RELEASE
 
-Use this workflow when `--quick` flag is detected. This combines `/specweave:save` behavior with local npm publish. **NO GitHub workflow trigger** - everything happens locally.
+Use this workflow when `--quick` flag is detected. This combines `/sw:save` behavior with local npm publish. **NO GitHub workflow trigger** - everything happens locally.
 
 **Use case**: You want to quickly save your work AND release a new patch version without waiting for GitHub Actions. Perfect for:
 - Hotfixes that need immediate npm availability
@@ -460,19 +460,19 @@ Show the user:
 
 ```bash
 # DEFAULT: Instant release (auto-commits dirty, publishes, pushes + tag)
-/specweave-release:npm
+/sw-release:npm
 
 # QUICK: Save + local release (auto-commits, pushes, publishes - NO GH workflow)
-/specweave-release:npm --quick
+/sw-release:npm --quick
 
 # CI release (GitHub Actions handles npm publish) - requires clean tree
-/specweave-release:npm --ci
+/sw-release:npm --ci
 
 # Quick local publish, sync git later
-/specweave-release:npm --only
+/sw-release:npm --only
 
 # FASTEST: Version bump only (no publish, no git, no build)
-/specweave-release:npm --only --local
+/sw-release:npm --only --local
 ```
 
 | Scenario | Command | Auto-Commit Dirty? | NPM Published By | Git Pushed | Tag Pushed |
@@ -541,7 +541,7 @@ Show the user:
 5. Publish: `npm publish --registry https://registry.npmjs.org`
 6. Push: `git push origin develop --follow-tags`
 
-**Or use**: `/specweave-release:npm` (no flags) for full instant release
+**Or use**: `/sw-release:npm` (no flags) for full instant release
 ```
 
 ## Local Mode Safety Rules

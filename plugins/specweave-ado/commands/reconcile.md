@@ -10,7 +10,7 @@ Scan all increments and fix any drift between local metadata.json status and ADO
 ## Usage
 
 ```bash
-/specweave-ado:reconcile [options]
+/sw-ado:reconcile [options]
 ```
 
 ## Options
@@ -81,7 +81,7 @@ if (result.errors.length > 0) {
 ## Dry Run Mode
 
 ```bash
-/specweave-ado:reconcile --dry-run
+/sw-ado:reconcile --dry-run
 ```
 
 Shows what would be changed without making any modifications:
@@ -114,7 +114,7 @@ Shows what would be changed without making any modifications:
 
 ## Related Commands
 
-- `/specweave-ado:status`: View sync status for increments
-- `/specweave-ado:sync`: Manual sync to ADO
-- `/specweave:done`: Close increment (triggers auto-close)
-- `/specweave:resume`: Resume increment (now triggers auto-reopen)
+- `/sw-ado:status`: View sync status for increments
+- `/sw-ado:sync`: Manual sync to ADO
+- `/sw:done`: Close increment (triggers auto-close)
+- `/sw:resume`: Resume increment (now triggers auto-reopen)

@@ -340,7 +340,7 @@ Compatibility:
 **Interactive Version Bump**:
 ```bash
 # Command
-/specweave-release:align
+/sw-release:align
 
 # Interactive prompts
 ? Which repositories to align?
@@ -485,7 +485,7 @@ git tag v4.0.0 (api-gateway)
 
 ```bash
 # 1. Analyze changes
-/specweave-release:align
+/sw-release:align
 
 # 2. Review suggested bumps
 Frontend v4.2.0 → v5.0.0 (breaking changes)
@@ -510,7 +510,7 @@ Update Backend to use shared-lib v2.0.0
 
 ```bash
 # 1. Create product release
-/specweave:increment "0040-product-v6-release"
+/sw:increment "0040-product-v6-release"
 
 # 2. Analyze component versions
 Current umbrella: v5.0.0
@@ -534,10 +534,10 @@ Product v5.0.0 → v6.0.0 ✓
 
 Works with release commands:
 
-- `/specweave-release:align` - Interactive version alignment
-- `/specweave-release:validate-versions` - Check compatibility
-- `/specweave-release:bump <repo> <type>` - Bump specific repo
-- `/specweave-release:matrix` - Show version matrix
+- `/sw-release:align` - Interactive version alignment
+- `/sw-release:validate-versions` - Check compatibility
+- `/sw-release:bump <repo> <type>` - Bump specific repo
+- `/sw-release:matrix` - Show version matrix
 
 ## Dependencies
 

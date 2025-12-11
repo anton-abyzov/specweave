@@ -10,12 +10,12 @@ A **quality gate** is a checkpoint in the SpecWeave workflow that validates work
 
 ## SpecWeave Quality Gates
 
-### 1. Pre-Implementation Gate (`/specweave:qa --pre`)
+### 1. Pre-Implementation Gate (`/sw:qa --pre`)
 
 Validates specifications before starting implementation:
 
 ```bash
-/specweave:qa 0001 --pre
+/sw:qa 0001 --pre
 ```
 
 **Checks**:
@@ -24,12 +24,12 @@ Validates specifications before starting implementation:
 - ✅ Completeness - All necessary sections present
 - ✅ Feasibility - Technical approach is sound
 
-### 2. Completion Gate (`/specweave:done`)
+### 2. Completion Gate (`/sw:done`)
 
 Validates work before closing an [increment](/docs/glossary/terms/increments):
 
 ```bash
-/specweave:done 0001
+/sw:done 0001
 ```
 
 **Three validation gates**:
@@ -37,12 +37,12 @@ Validates work before closing an [increment](/docs/glossary/terms/increments):
 2. **Tests Pass** - 60%+ [test coverage](/docs/glossary/terms/test-coverage)
 3. **Docs Updated** - [Living docs](/docs/glossary/terms/living-docs) synchronized
 
-### 3. Quality Assessment Gate (`/specweave:qa --gate`)
+### 3. Quality Assessment Gate (`/sw:qa --gate`)
 
 Comprehensive quality check before release:
 
 ```bash
-/specweave:qa 0001 --gate
+/sw:qa 0001 --gate
 ```
 
 **7 Quality Dimensions** (weighted scoring):
@@ -73,7 +73,7 @@ Quality gates include risk assessment using **Probability × Impact** method:
 ## Example Output
 
 ```bash
-$ /specweave:qa 0001 --gate
+$ /sw:qa 0001 --gate
 
 📊 Quality Assessment: 0001-user-authentication
 

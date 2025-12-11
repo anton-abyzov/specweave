@@ -143,7 +143,7 @@ async function runConsolidatedSync(incrementId) {
     // OPERATION 0 (v0.35.0+ - CRITICAL): Check for ACTIVE → READY_FOR_REVIEW transition
     // This MUST run FIRST to prevent the auto-completion bug!
     // When all tasks are done, increment transitions to READY_FOR_REVIEW (not COMPLETED).
-    // Only /specweave:done can then transition to COMPLETED with user approval.
+    // Only /sw:done can then transition to COMPLETED with user approval.
     console.log('\n📋 [0/6] Checking for status auto-transition...');
     try {
       const transitionResult = checkAndTransitionToReadyForReview(incrementId);
@@ -156,7 +156,7 @@ async function runConsolidatedSync(incrementId) {
         console.log(`   Tasks: ${transitionResult.taskStatus?.completedTasks}/${transitionResult.taskStatus?.totalTasks} completed`);
         console.log('');
         console.log('   To close this increment, run:');
-        console.log(`   /specweave:done ${incrementId}`);
+        console.log(`   /sw:done ${incrementId}`);
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
       } else {
         console.log(`   ${transitionResult.message}`);

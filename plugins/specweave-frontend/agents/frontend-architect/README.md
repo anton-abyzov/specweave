@@ -270,13 +270,13 @@ Document complex components in Storybook with examples.
 
 ## Integration with SpecWeave
 
-### Use with /specweave:increment
+### Use with /sw:increment
 
 When planning a frontend feature increment:
 
 ```bash
 # 1. Plan increment
-/specweave:increment "Design and implement responsive navigation with mega menu"
+/sw:increment "Design and implement responsive navigation with mega menu"
 
 # 2. Generate architectural plan
 Task({
@@ -285,16 +285,16 @@ Task({
 });
 
 # 3. Implement based on architectural plan
-/specweave:do
+/sw:do
 ```
 
-### Use with /specweave:qa
+### Use with /sw:qa
 
 After implementation, validate architecture decisions:
 
 ```bash
 # Run quality assessment
-/specweave:qa 0123
+/sw:qa 0123
 
 # Agent checks:
 # - Component modularity

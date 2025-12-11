@@ -103,14 +103,14 @@ specweave init .  # Creates single-project config by default
 
 Then in Claude Code:
 ```bash
-/specweave:increment "Add dark mode toggle"  # AI creates spec + plan + tasks
-/specweave:do                                # Autonomous implementation
-/specweave:done 0001                         # Quality-validated completion
+/sw:increment "Add dark mode toggle"  # AI creates spec + plan + tasks
+/sw:do                                # Autonomous implementation
+/sw:done 0001                         # Quality-validated completion
 ```
 
-**Single-project by default**: SpecWeave defaults to simple single-project mode. Need multiple projects? Run `/specweave:enable-multiproject` when ready.
+**Single-project by default**: SpecWeave defaults to simple single-project mode. Need multiple projects? Run `/sw:enable-multiproject` when ready.
 
-**Pro tip**: Use `/specweave:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
+**Pro tip**: Use `/sw:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
 
 **[Full Quickstart Guide](https://spec-weave.com/docs/guides/getting-started/quickstart)**
 
@@ -150,9 +150,9 @@ SpecWeave keeps your project management tools in sync **automatically**:
 SpecWeave includes **sync monitoring** to keep track of external tool state:
 
 ```bash
-/specweave:sync-progress     # Push updates to GitHub/JIRA/ADO
-/specweave:sync-monitor      # Dashboard: sync status, notifications
-/specweave:notifications     # View/dismiss sync notifications
+/sw:sync-progress     # Push updates to GitHub/JIRA/ADO
+/sw:sync-monitor      # Dashboard: sync status, notifications
+/sw:notifications     # View/dismiss sync notifications
 ```
 
 **Key principle: Code is the source of truth.** When your living docs describe one thing but code does another, SpecWeave detects the **discrepancy** and notifies you:
@@ -163,7 +163,7 @@ SpecWeave includes **sync monitoring** to keep track of external tool state:
 DISC-0001   ⚠️ MAJOR   function-signature   getUserById params changed
 DISC-0002   ✅ MINOR   api-route            New endpoint added
 
-Use '/specweave:discrepancies accept DISC-0001' to update specs
+Use '/sw:discrepancies accept DISC-0001' to update specs
 ```
 
 ---
@@ -173,7 +173,7 @@ Use '/specweave:discrepancies accept DISC-0001' to update specs
 | Before | After SpecWeave |
 |--------|-----------------|
 | Specs in chat history | **Permanent, searchable specs** |
-| Manual JIRA/GitHub updates | **Auto-sync on `/specweave:sync-progress`** |
+| Manual JIRA/GitHub updates | **Auto-sync on `/sw:sync-progress`** |
 | Tests? Maybe later... | **Tests embedded in tasks (60%+ enforced)** |
 | Architecture in your head | **ADRs captured automatically** |
 | "Ask John, he knows" | **Living docs, always current** |
@@ -351,33 +351,33 @@ After completing a task:
 **Core Workflow** (daily use):
 | Command | Purpose |
 |---------|---------|
-| `/specweave:increment "feature"` | Plan new increment (PM → Architect → Tasks) |
-| `/specweave:do` | Execute all tasks autonomously |
-| `/specweave:done 0001` | Complete with quality gate validation |
-| `/specweave:next` | Auto-close + suggest next work (one-click flow) |
-| `/specweave:progress` | Show real-time status |
+| `/sw:increment "feature"` | Plan new increment (PM → Architect → Tasks) |
+| `/sw:do` | Execute all tasks autonomously |
+| `/sw:done 0001` | Complete with quality gate validation |
+| `/sw:next` | Auto-close + suggest next work (one-click flow) |
+| `/sw:progress` | Show real-time status |
 
 **Sync & Monitoring** (stay in sync):
 | Command | Purpose |
 |---------|---------|
-| `/specweave:sync-progress` | Sync to GitHub/JIRA/ADO |
-| `/specweave:sync-monitor` | Dashboard: jobs, notifications, activity |
-| `/specweave:notifications` | View/dismiss sync alerts |
-| `/specweave:discrepancies` | Code-to-spec drift detection |
+| `/sw:sync-progress` | Sync to GitHub/JIRA/ADO |
+| `/sw:sync-monitor` | Dashboard: jobs, notifications, activity |
+| `/sw:notifications` | View/dismiss sync alerts |
+| `/sw:discrepancies` | Code-to-spec drift detection |
 
 **Brownfield** (legacy codebases):
 | Command | Purpose |
 |---------|---------|
-| `/specweave:discrepancy-to-increment` | Convert doc gaps to increments |
-| `/specweave:jobs` | Monitor background analysis/import |
-| `/specweave:import-external` | Import from GitHub/JIRA/ADO |
+| `/sw:discrepancy-to-increment` | Convert doc gaps to increments |
+| `/sw:jobs` | Monitor background analysis/import |
+| `/sw:import-external` | Import from GitHub/JIRA/ADO |
 
 **Quality** (ship with confidence):
 | Command | Purpose |
 |---------|---------|
-| `/specweave:validate 0001` | Run quality checks |
-| `/specweave:tdd-cycle` | Full red-green-refactor workflow |
-| `/specweave:check-tests` | Validate test coverage |
+| `/sw:validate 0001` | Run quality checks |
+| `/sw:tdd-cycle` | Full red-green-refactor workflow |
+| `/sw:check-tests` | Validate test coverage |
 
 **53 total commands** — [Full Command Reference](https://spec-weave.com/docs/commands/overview)
 
@@ -389,7 +389,7 @@ After completing a task:
 ```bash
 specweave init .
 # During init, choose "Run brownfield analysis" to scan for documentation gaps
-# Or run manually later: /specweave:discrepancies
+# Or run manually later: /sw:discrepancies
 ```
 
 **What happens?** Brownfield analysis scans your codebase and creates **discrepancies** — actionable documentation gaps:
@@ -401,20 +401,20 @@ specweave init .
 
 Convert discrepancies to increments:
 ```bash
-/specweave:discrepancies                         # View all gaps
-/specweave:discrepancy-to-increment DISC-0001    # Create increment from gap
+/sw:discrepancies                         # View all gaps
+/sw:discrepancy-to-increment DISC-0001    # Create increment from gap
 ```
 
 **Fresh Startup MVP?**
 ```bash
 specweave init .
-/specweave:increment "Build user auth"  # Full spec in 60 seconds
+/sw:increment "Build user auth"  # Full spec in 60 seconds
 ```
 
 **50-Team Enterprise?**
 ```bash
 specweave init .                     # Start with single-project
-/specweave:enable-multiproject       # Explicit opt-in when ready
+/sw:enable-multiproject       # Explicit opt-in when ready
 # Maps to JIRA projects, ADO area paths, GitHub repos automatically
 ```
 
@@ -430,7 +430,7 @@ Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically.
 
 ### Why Opus 4.5? 2-3x Faster Development!
 
-With **Claude Opus 4.5**, development speed increases **2-3x** (some report **5-10x**!). The key: formulate small, well-defined increments (5-15 tasks), and Opus completes them almost **without manual interaction**. Just define requirements, run `/specweave:do`, and review what's done.
+With **Claude Opus 4.5**, development speed increases **2-3x** (some report **5-10x**!). The key: formulate small, well-defined increments (5-15 tasks), and Opus completes them almost **without manual interaction**. Just define requirements, run `/sw:do`, and review what's done.
 
 ---
 

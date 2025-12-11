@@ -10,7 +10,7 @@ Scan all increments and fix any drift between local metadata.json status and JIR
 ## Usage
 
 ```bash
-/specweave-jira:reconcile [options]
+/sw-jira:reconcile [options]
 ```
 
 ## Options
@@ -81,7 +81,7 @@ if (result.errors.length > 0) {
 ## Dry Run Mode
 
 ```bash
-/specweave-jira:reconcile --dry-run
+/sw-jira:reconcile --dry-run
 ```
 
 Shows what would be changed without making any modifications:
@@ -117,7 +117,7 @@ Shows what would be changed without making any modifications:
 
 ## Related Commands
 
-- `/specweave-jira:status`: View sync status for increments
-- `/specweave-jira:sync`: Manual sync to JIRA
-- `/specweave:done`: Close increment (triggers auto-close)
-- `/specweave:resume`: Resume increment (now triggers auto-reopen)
+- `/sw-jira:status`: View sync status for increments
+- `/sw-jira:sync`: Manual sync to JIRA
+- `/sw:done`: Close increment (triggers auto-close)
+- `/sw:resume`: Resume increment (now triggers auto-reopen)

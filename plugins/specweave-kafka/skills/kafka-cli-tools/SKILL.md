@@ -407,9 +407,9 @@ if (available.includes('kcat')) {
 ```
 
 **SpecWeave Commands**:
-- `/specweave-kafka:dev-env` - Uses Docker Compose + kcat for local testing
-- `/specweave-kafka:monitor-setup` - Sets up kcat-based lag monitoring
-- `/specweave-kafka:mcp-configure` - Validates CLI tools are installed
+- `/sw-kafka:dev-env` - Uses Docker Compose + kcat for local testing
+- `/sw-kafka:monitor-setup` - Sets up kcat-based lag monitoring
+- `/sw-kafka:mcp-configure` - Validates CLI tools are installed
 
 ## Security Best Practices
 
@@ -421,8 +421,8 @@ if (available.includes('kcat')) {
 
 ## Related Skills
 
-- `/specweave-kafka:kafka-mcp-integration` - MCP server setup and configuration
-- `/specweave-kafka:kafka-architecture` - Cluster design and sizing
+- `/sw-kafka:kafka-mcp-integration` - MCP server setup and configuration
+- `/sw-kafka:kafka-architecture` - Cluster design and sizing
 
 ## External Links
 

@@ -46,7 +46,7 @@ export async function docsPreviewCommand(options: DocsPreviewOptions = {}): Prom
     console.log(chalk.dim(`   Expected: ${docsPath}`));
     console.log(chalk.dim('\n   Run one of these commands first:'));
     console.log(chalk.dim('   • specweave init (for new projects)'));
-    console.log(chalk.dim('   • /specweave:increment "feature" (to create docs)\n'));
+    console.log(chalk.dim('   • /sw:increment "feature" (to create docs)\n'));
     process.exit(1);
   }
 

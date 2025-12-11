@@ -5,7 +5,7 @@ description: Display AI cost dashboard for current or specified increment with r
 
 # Cost Dashboard Command
 
-You are being invoked via the `/specweave:costs [incrementId]` command.
+You are being invoked via the `/sw:costs [incrementId]` command.
 
 ## Your Task
 
@@ -206,7 +206,7 @@ COST BY INCREMENT
 
 ═══════════════════════════════════════════════════════════════
 
-💡 Tip: Use "/specweave:costs 0003" to see detailed report for increment 0003
+💡 Tip: Use "/sw:costs 0003" to see detailed report for increment 0003
 ```
 
 ## Error Handling
@@ -221,7 +221,7 @@ This could mean:
 - Cost tracking is not enabled
 - The cost log file is missing
 
-Run /specweave:do to start executing tasks with cost tracking enabled.
+Run /sw:do to start executing tasks with cost tracking enabled.
 ```
 
 ### Invalid Increment ID
@@ -234,7 +234,7 @@ Available increments:
 - 0002-core-enhancements
 - 0003-intelligent-model-selection
 
-Use /specweave:costs without arguments to see all increments.
+Use /sw:costs without arguments to see all increments.
 ```
 
 ## Important Notes
@@ -247,9 +247,9 @@ Use /specweave:costs without arguments to see all increments.
 
 ## Related Commands
 
-- `/specweave:do` - Execute tasks with cost tracking
-- `/specweave:progress` - View progress with cost summary
-- `/specweave:validate` - Validate increment (includes cost checks)
+- `/sw:do` - Execute tasks with cost tracking
+- `/sw:progress` - View progress with cost summary
+- `/sw:validate` - Validate increment (includes cost checks)
 
 ## Success Criteria
 

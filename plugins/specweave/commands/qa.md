@@ -3,7 +3,7 @@ name: specweave:qa
 description: Run quality assessment on a SpecWeave increment with risk scoring and quality gate decisions
 ---
 
-# /specweave:qa - Quality Assessment Command
+# /sw:qa - Quality Assessment Command
 
 **IMPORTANT**: You MUST invoke the CLI `specweave qa` command using the Bash tool. The slash command provides guidance and orchestration only.
 
@@ -48,32 +48,32 @@ This command implements the **LLM-as-Judge** pattern - an established AI/ML eval
 ## Usage
 
 ```bash
-/specweave:qa <increment-id> [options]
+/sw:qa <increment-id> [options]
 ```
 
 ### Examples
 
 ```bash
 # Quick mode (default)
-/specweave:qa 0008
+/sw:qa 0008
 
 # Pre-implementation check
-/specweave:qa 0008 --pre
+/sw:qa 0008 --pre
 
 # Quality gate check (comprehensive)
-/specweave:qa 0008 --gate
+/sw:qa 0008 --gate
 
 # Export blockers to tasks.md
-/specweave:qa 0008 --export
+/sw:qa 0008 --export
 
 # CI mode (exit 1 on FAIL)
-/specweave:qa 0008 --ci
+/sw:qa 0008 --ci
 
 # Skip AI assessment (rule-based only)
-/specweave:qa 0008 --no-ai
+/sw:qa 0008 --no-ai
 
 # Force run even if rule-based fails
-/specweave:qa 0008 --force
+/sw:qa 0008 --force
 ```
 
 ### Options
@@ -207,7 +207,7 @@ If `--export` flag provided:
 
 ### Quality Gate Mode (`--gate`)
 
-**Use when**: Before closing increment (via `/specweave:done`)
+**Use when**: Before closing increment (via `/sw:done`)
 **Checks**: All pre-implementation checks + test coverage + security audit
 **Time**: ~2-3 minutes
 **Cost**: ~$0.10-$0.20
@@ -247,14 +247,14 @@ When `--ci` flag used:
 
 **Common errors**:
 - ❌ Increment not found → Check ID format (4 digits: 0001, 0008)
-- ❌ Missing files → Run `/specweave:inc` to create increment first
+- ❌ Missing files → Run `/sw:inc` to create increment first
 - ❌ Rule-based fails → Fix validation errors before AI assessment
 - ❌ AI timeout → Retry with `--quick` mode or `--no-ai`
 
 ## Integration Points
 
 **Auto-invoked by**:
-- `/specweave:done` - Runs `--gate` mode before closing increment
+- `/sw:done` - Runs `--gate` mode before closing increment
 - Post-task-completion hook (optional) - Runs `--quick` mode after tasks complete
 
 **Manual invocation**:
@@ -274,7 +274,7 @@ When `--ci` flag used:
 ## Related
 
 - **Skill**: `increment-quality-judge-v2` (7 dimensions with risk assessment)
-- **Command**: `/specweave:done` (auto-runs QA gate)
+- **Command**: `/sw:done` (auto-runs QA gate)
 - **CLI**: `specweave qa` (direct invocation)
 - **Types**: `src/core/qa/types.ts` (TypeScript definitions)
 - **Tests**: `tests/unit/qa/` (58 test cases, 100% passing)
@@ -282,4 +282,4 @@ When `--ci` flag used:
 ## Example Session
 
 ```
-User: /specweave:qa 0008
+User: /sw:qa 0008

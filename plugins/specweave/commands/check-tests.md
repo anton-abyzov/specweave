@@ -22,16 +22,16 @@ Shows:
 
 ```bash
 # Check tests for current increment
-/specweave:check-tests
+/sw:check-tests
 
 # Check tests for specific increment
-/specweave:check-tests 0007
+/sw:check-tests 0007
 
 # Detailed report with test case breakdown
-/specweave:check-tests 0007 --detailed
+/sw:check-tests 0007 --detailed
 
 # AC-ID coverage report only
-/specweave:check-tests 0007 --ac-coverage
+/sw:check-tests 0007 --ac-coverage
 ```
 
 ---
@@ -58,7 +58,7 @@ Shows:
 ## Output Example (NEW Format)
 
 ```bash
-/specweave:check-tests 0007
+/sw:check-tests 0007
 
 📊 Test Status Report: 0007-smart-increment-discipline
 
@@ -138,7 +138,7 @@ Summary:
 ## Detailed Report (--detailed flag)
 
 ```bash
-/specweave:check-tests 0007 --detailed
+/sw:check-tests 0007 --detailed
 
 [Shows expanded report with:]
 - Full test case breakdown per task
@@ -153,7 +153,7 @@ Summary:
 ## AC Coverage Report (--ac-coverage flag)
 
 ```bash
-/specweave:check-tests 0007 --ac-coverage
+/sw:check-tests 0007 --ac-coverage
 
 ═══════════════════════════════════════════════════════════════
 
@@ -325,7 +325,7 @@ AC-US1-01 → Covered by T-001 ✅
 **If increment has tests.md** (pre-v0.7.0):
 
 ```bash
-/specweave:check-tests 0003  # Old format increment
+/sw:check-tests 0003  # Old format increment
 
 ⚠️  OLD FORMAT DETECTED: tests.md exists
 
@@ -365,12 +365,12 @@ if (hasTestsMd) {
    ```bash
    # Implement T-001
    # Write tests
-   /specweave:check-tests  # Verify tests pass
+   /sw:check-tests  # Verify tests pass
    ```
 
 2. **Before PR**: Ensure coverage meets targets
    ```bash
-   /specweave:check-tests 0007
+   /sw:check-tests 0007
    # Fix any failing tests
    # Commit and push
    ```
@@ -384,8 +384,8 @@ if (hasTestsMd) {
 
 4. **PM Gate 2**: Part of increment closure
    ```bash
-   /specweave:done 0007
-   # PM Agent runs /specweave:check-tests automatically
+   /sw:done 0007
+   # PM Agent runs /sw:check-tests automatically
    # Verifies >80% coverage before closure
    ```
 
@@ -396,7 +396,7 @@ if (hasTestsMd) {
 For CI/CD integration:
 
 ```bash
-/specweave:check-tests 0007
+/sw:check-tests 0007
 echo $?  # Exit code
 
 # Exit codes:
