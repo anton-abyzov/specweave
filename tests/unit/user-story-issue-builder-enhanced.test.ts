@@ -477,17 +477,23 @@ created: 2025-11-15
   describe('Labels Generation', () => {
     it('should include correct labels', async () => {
       const userStoryPath = path.join(tmpDir, 'us-001-labels.md');
+      // v0.34.1 (ADR-0140): Project derived from per-US **Project**: field, not frontmatter
       const content = `---
 id: US-001
 feature: FS-031
 title: Test Labels
 status: complete
 priority: P1
-project: backend
 created: 2025-11-15
 ---
 
 # US-001: Test Labels
+
+**Project**: backend
+
+**As a** developer
+**I want** labels to be generated correctly
+**So that** issues are categorized properly
 `;
 
       await fs.writeFile(userStoryPath, content);
@@ -509,16 +515,22 @@ created: 2025-11-15
 
     it('should not include project label for default project', async () => {
       const userStoryPath = path.join(tmpDir, 'us-001-default.md');
+      // v0.34.1 (ADR-0140): Project derived from per-US **Project**: field, not frontmatter
       const content = `---
 id: US-001
 feature: FS-031
 title: Default Project
 status: active
-project: default
 created: 2025-11-15
 ---
 
 # US-001: Default Project
+
+**Project**: default
+
+**As a** developer
+**I want** default project not to create labels
+**So that** labels are meaningful
 `;
 
       await fs.writeFile(userStoryPath, content);

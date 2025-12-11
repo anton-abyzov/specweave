@@ -30,11 +30,11 @@ feature: FS-135
 title: Test User Story
 status: not-started
 priority: P1
-project: specweave
 created: 2025-12-10
 ---
 
-## User Story
+# US-001: Test User Story
+**Project**: specweave
 
 **As a** developer
 **I want** to test metadata removal
