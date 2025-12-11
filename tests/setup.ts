@@ -53,6 +53,33 @@ if (!process.env.DEBUG_TESTS) {
     // Keep other stderr output (actual failures)
     return originalStderrWrite(chunk, encoding, callback);
   }) as typeof process.stderr.write;
+
+  // Suppress stdout progress bars from tests
+  const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+  process.stdout.write = ((chunk: any, encoding?: any, callback?: any): boolean => {
+    const str = chunk.toString();
+    // Suppress progress bars and spinner output from tests
+    if (
+      str.includes('[K') || // ANSI escape codes (clear line)
+      str.includes('[=>') || // Progress bar patterns
+      str.includes('[==>') ||
+      str.includes('[===>') ||
+      str.includes('% [') || // Percentage with progress bar
+      str.includes('elapsed') ||
+      str.includes('remaining') ||
+      str.match(/\d+\/\d+.*\[/) || // Pattern: "5/100 ["
+      str.includes('All succeeded...') ||
+      str.includes('All done...') ||
+      str.includes('Fetching projects...') ||
+      str.includes('Performance Test...')
+    ) {
+      // Silently discard progress output
+      if (typeof callback === 'function') callback();
+      return true;
+    }
+    // Keep other stdout (vitest reporter output)
+    return originalStdoutWrite(chunk, encoding, callback);
+  }) as typeof process.stdout.write;
 }
 
 // Clean up after each test

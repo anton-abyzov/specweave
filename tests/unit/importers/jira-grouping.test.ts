@@ -51,51 +51,62 @@ describe('JIRA Board Mapping Resolution', () => {
     ...overrides
   });
 
-  describe('Board Mapping from Config', () => {
-    it('should use specweaveProject from config when boardId matches', () => {
+  describe('Board Mapping from Config (project-per-team)', () => {
+    it('should use projectKey for all boards in project-per-team strategy', () => {
       createConfig({
         sync: {
           profiles: {
-            'jira-profile': {
+            'jira-id': {
               provider: 'jira',
               config: {
-                boardMapping: {
-                  projectKey: 'PROJ',
-                  boards: [
-                    { boardId: 123, name: 'Frontend Board', specweaveProject: 'fe' },
-                    { boardId: 456, name: 'Backend Board', specweaveProject: 'be' }
-                  ]
-                }
+                projectKey: 'ID',
+                projectName: 'Identity',
+                boards: [
+                  { id: '332', name: 'Identity board' },
+                  { id: '401', name: 'Identity Risk Board' }
+                ],
+                strategy: 'project-per-team'
               }
             }
           }
         }
       });
 
-      const items = [createJiraItem({ jiraBoardId: 123 })];
+      const items = [createJiraItem({ jiraBoardId: 332, jiraProjectKey: 'ID' })];
       const groups = groupItemsByExternalContainer(items, tempDir);
 
       expect(groups).toHaveLength(1);
-      expect(groups[0].projectId).toBe('fe'); // Uses specweaveProject from config
-      expect(groups[0].containerId).toBe('PROJ');
+      expect(groups[0].projectId).toBe('id'); // Uses normalized projectKey
+      expect(groups[0].containerId).toBe('ID');
       expect(groups[0].containerType).toBe('jira');
     });
 
-    it('should handle multiple boards mapping to different specweaveProjects', () => {
+    it('should handle multiple JIRA profiles with different projects', () => {
       createConfig({
         sync: {
           profiles: {
-            'jira-profile': {
+            'jira-aac': {
               provider: 'jira',
               config: {
-                boardMapping: {
-                  projectKey: 'CORE',
-                  boards: [
-                    { boardId: 10, name: 'FE Team', specweaveProject: 'frontend-app' },
-                    { boardId: 20, name: 'BE Team', specweaveProject: 'backend-api' },
-                    { boardId: 30, name: 'Mobile Team', specweaveProject: 'mobile-app' }
-                  ]
-                }
+                projectKey: 'AAC',
+                boards: [{ id: '338', name: 'AAC board' }],
+                strategy: 'project-per-team'
+              }
+            },
+            'jira-dmc': {
+              provider: 'jira',
+              config: {
+                projectKey: 'DMC',
+                boards: [{ id: '334', name: 'DMC board' }],
+                strategy: 'project-per-team'
+              }
+            },
+            'jira-id': {
+              provider: 'jira',
+              config: {
+                projectKey: 'ID',
+                boards: [{ id: '332', name: 'ID board' }],
+                strategy: 'project-per-team'
               }
             }
           }
@@ -103,40 +114,37 @@ describe('JIRA Board Mapping Resolution', () => {
       });
 
       const items = [
-        createJiraItem({ jiraBoardId: 10, jiraProjectKey: 'CORE' }),
-        createJiraItem({ id: 'JIRA-CORE-124', jiraBoardId: 20, jiraProjectKey: 'CORE' }),
-        createJiraItem({ id: 'JIRA-CORE-125', jiraBoardId: 30, jiraProjectKey: 'CORE' })
+        createJiraItem({ jiraBoardId: 338, jiraProjectKey: 'AAC' }),
+        createJiraItem({ id: 'JIRA-DMC-124', jiraBoardId: 334, jiraProjectKey: 'DMC' }),
+        createJiraItem({ id: 'JIRA-ID-125', jiraBoardId: 332, jiraProjectKey: 'ID' })
       ];
 
       const groups = groupItemsByExternalContainer(items, tempDir);
 
       expect(groups).toHaveLength(3);
-      expect(groups.map(g => g.projectId).sort()).toEqual(['backend-api', 'frontend-app', 'mobile-app']);
+      expect(groups.map(g => g.projectId).sort()).toEqual(['aac', 'dmc', 'id']);
     });
 
-    it('should normalize specweaveProject from config (spaces, uppercase)', () => {
+    it('should normalize projectKey from config (uppercase → lowercase)', () => {
       createConfig({
         sync: {
           profiles: {
-            'jira-profile': {
+            'jira-aac': {
               provider: 'jira',
               config: {
-                boardMapping: {
-                  projectKey: 'PROJ',
-                  boards: [
-                    { boardId: 123, name: 'Test', specweaveProject: 'Frontend App' } // Has space and uppercase
-                  ]
-                }
+                projectKey: 'AAC',  // Uppercase
+                boards: [{ id: '338', name: 'Test Board' }],
+                strategy: 'project-per-team'
               }
             }
           }
         }
       });
 
-      const items = [createJiraItem({ jiraBoardId: 123 })];
+      const items = [createJiraItem({ jiraBoardId: 338, jiraProjectKey: 'AAC' })];
       const groups = groupItemsByExternalContainer(items, tempDir);
 
-      expect(groups[0].projectId).toBe('frontend-app'); // Normalized
+      expect(groups[0].projectId).toBe('aac'); // Normalized to lowercase
     });
   });
 
@@ -287,15 +295,12 @@ describe('JIRA Board Mapping Resolution', () => {
       createConfig({
         sync: {
           profiles: {
-            'jira-profile': {
+            'jira-id': {
               provider: 'jira',
               config: {
-                boardMapping: {
-                  projectKey: 'PROJ',
-                  boards: [
-                    { boardId: 123, name: 'Frontend Board', specweaveProject: 'fe' }
-                  ]
-                }
+                projectKey: 'ID',
+                boards: [{ id: '332', name: 'Identity board' }],
+                strategy: 'project-per-team'
               }
             }
           }
@@ -303,15 +308,15 @@ describe('JIRA Board Mapping Resolution', () => {
       });
 
       const items = [
-        createJiraItem({ id: 'JIRA-PROJ-1', jiraBoardId: 123 }),
-        createJiraItem({ id: 'JIRA-PROJ-2', jiraBoardId: 123 }),
-        createJiraItem({ id: 'JIRA-PROJ-3', jiraBoardId: 123 })
+        createJiraItem({ id: 'JIRA-ID-1', jiraBoardId: 332, jiraProjectKey: 'ID' }),
+        createJiraItem({ id: 'JIRA-ID-2', jiraBoardId: 332, jiraProjectKey: 'ID' }),
+        createJiraItem({ id: 'JIRA-ID-3', jiraBoardId: 332, jiraProjectKey: 'ID' })
       ];
       const groups = groupItemsByExternalContainer(items, tempDir);
 
       expect(groups).toHaveLength(1);
       expect(groups[0].items).toHaveLength(3);
-      expect(groups[0].projectId).toBe('fe');
+      expect(groups[0].projectId).toBe('id'); // Normalized projectKey
     });
 
     it('should handle special characters in board names', () => {
