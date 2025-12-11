@@ -2,7 +2,7 @@
 
 **Purpose**: Lightweight plugin manifest for progressive disclosure. Load plugin content only when triggers match.
 
-**Total Plugins**: 26 | **Last Updated**: 2025-12-04
+**Total Plugins**: 25 | **Last Updated**: 2025-12-11
 
 ---
 
@@ -87,7 +87,6 @@
 
 | Plugin | Triggers | Description |
 |--------|----------|-------------|
-| **specweave-core** | core utilities, shared, common | Core shared utilities |
 | **specweave-plugin-dev** | create plugin, plugin development | Plugin development guide |
 | **specweave-tooling** | tooling, skill create, agent create | SpecWeave tooling |
 
