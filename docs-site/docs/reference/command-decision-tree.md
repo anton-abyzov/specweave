@@ -239,7 +239,7 @@ Check Tests →  /sw:check-tests (test coverage)
 
 ```bash
 # Check sync status
-/sw-github:specweave-github-status
+/sw-github:status
 
 # Force sync
 /sw:sync-progress
@@ -264,25 +264,25 @@ Check Tests →  /sw:check-tests (test coverage)
 ### GitHub
 
 ```bash
-/sw-github:specweave-github-sync       # Sync increment
-/sw-github:specweave-github-create-issue  # Create issue
-/sw-github:specweave-github-close-issue   # Close issue
-/sw-github:specweave-github-status        # Check status
+/sw-github:sync       # Sync increment
+/sw-github:create     # Create issue
+/sw-github:close      # Close issue
+/sw-github:status     # Check status
 ```
 
 ### JIRA
 
 ```bash
-/sw-jira:specweave-jira-sync    # Sync increment
+/sw-jira:sync         # Sync increment
 /sw-jira:import-projects        # Import JIRA projects
 ```
 
 ### Azure DevOps
 
 ```bash
-/sw-ado:specweave-ado-sync           # Sync increment
-/sw-ado:specweave-ado-create-workitem  # Create work item
-/sw-ado:specweave-ado-status           # Check status
+/sw-ado:sync           # Sync increment
+/sw-ado:create         # Create work item
+/sw-ado:status         # Check status
 ```
 
 ---

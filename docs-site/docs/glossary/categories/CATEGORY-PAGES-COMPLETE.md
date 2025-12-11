@@ -91,7 +91,7 @@ Each category page follows the **EXACT structure** from `architecture.md`:
 - Real-world scenarios
 
 ✅ **SpecWeave Integration**
-- Plugin references (specweave-github, specweave-kubernetes, etc.)
+- Plugin references (sw-github, sw-k8s, etc.)
 - Command examples (/sw:inc, /sw:do, etc.)
 - Living documentation structure
 - Increment planning workflows
