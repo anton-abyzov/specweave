@@ -31,10 +31,10 @@ title: Test User Story
 status: not-started
 priority: P1
 created: 2025-12-10
+project: specweave
 ---
 
 # US-001: Test User Story
-**Project**: specweave
 
 **As a** developer
 **I want** to test metadata removal

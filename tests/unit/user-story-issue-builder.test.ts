@@ -171,7 +171,8 @@ created: 2025-11-15
     });
 
     it('should output Project field when non-default', async () => {
-      // Arrange: User story with per-US **Project**: field (ADR-0140: body is source of truth)
+      // Arrange: User story with project in frontmatter (living docs format)
+      // Living docs sync transforms spec.md **Project**: → us-*.md frontmatter project:
       const userStoryPath = path.join(tempDir, '.specweave/docs/internal/specs/backend/FS-031/us-005-backend-project.md');
       const userStoryContent = `---
 id: US-005
@@ -179,10 +180,10 @@ feature: FS-031
 title: "Backend User Story"
 status: active
 created: 2025-11-15
+project: backend
 ---
 
 # US-005: Backend User Story
-**Project**: backend
 
 **As a** developer
 **I want** to specify project per US
@@ -196,8 +197,8 @@ created: 2025-11-15
       const builder = new UserStoryIssueBuilder(userStoryPath, projectRoot, 'FS-031');
       const result = await builder.buildIssueBody();
 
-      // Assert: Project label derived from per-US **Project**: field (ADR-0140)
-      // Source: us-*.md body content '**Project**: xxx' field (v0.35.0+)
+      // Assert: Project label derived from frontmatter.project in us-*.md file
+      // Source: Living docs sync extracts spec.md **Project**: → us-*.md frontmatter project:
       expect(result.labels).toContain('project:backend'); // ✅ Verify label present
     });
   });
