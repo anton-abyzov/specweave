@@ -2,7 +2,7 @@
 # completion-guard.sh - Block direct editing of metadata.json to "completed" status
 #
 # v0.28.63+: Prevents the auto-completion bug by blocking direct status changes to completed.
-# Status MUST go through ready_for_review first, and only /specweave:done can mark completed.
+# Status MUST go through ready_for_review first, and only /sw:done can mark completed.
 #
 # PreToolUse hook - can BLOCK the tool call by returning non-zero exit code
 #
@@ -57,7 +57,7 @@ if echo "$NEW_CONTENT" | grep -q '"status"[[:space:]]*:[[:space:]]*"completed"';
   echo ""
   echo "CORRECT WORKFLOW:"
   echo "1. All tasks completed -> status auto-transitions to \"ready_for_review\""
-  echo "2. Run /specweave:done <increment-id> with explicit user confirmation"
+  echo "2. Run /sw:done <increment-id> with explicit user confirmation"
   echo "3. Only then does status become \"completed\""
   echo ""
   echo "WHY THIS MATTERS:"

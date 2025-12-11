@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# read-status.sh - Pure bash reader for /specweave:status
+# read-status.sh - Pure bash reader for /sw:status
 #
 # Reads from pre-computed dashboard cache for <10ms response time.
 # Falls back to Node.js script if jq is not available.
@@ -141,6 +141,6 @@ fi
 
 echo ""
 echo "💡 Commands:"
-echo "   /specweave:progress        Show task progress"
-echo "   /specweave:do              Execute current tasks"
-echo "   /specweave:done <id>       Close increment"
+echo "   /sw:progress        Show task progress"
+echo "   /sw:do              Execute current tasks"
+echo "   /sw:done <id>       Close increment"

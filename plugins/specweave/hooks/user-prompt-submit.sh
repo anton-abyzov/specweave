@@ -30,7 +30,7 @@ fi
 
 # CRITICAL: Exit immediately for non-SpecWeave prompts
 # This covers 90%+ of prompts with <5ms overhead
-if ! echo "$PROMPT" | grep -qE "(specweave|/specweave:|increment|add|create|implement|build|develop)"; then
+if ! echo "$PROMPT" | grep -qE "(specweave|/sw:|increment|add|create|implement|build|develop)"; then
   echo '{"decision":"approve"}'
   exit 0
 fi
@@ -61,9 +61,9 @@ escape_json() {
   echo "$input" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed 's/\\n$//'
 }
 
-# /specweave:jobs → Execute read-jobs.sh (pure bash, ~2ms)
-if echo "$PROMPT" | grep -qE "^/specweave:jobs($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/specweave:jobs\s*||')
+# /sw:jobs → Execute read-jobs.sh (pure bash, ~2ms)
+if echo "$PROMPT" | grep -qE "^/sw:jobs($| )"; then
+  ARGS=$(echo "$PROMPT" | sed 's|^/sw:jobs\s*||')
   if [[ -f "$SCRIPTS_DIR/read-jobs.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-jobs.sh" $ARGS 2>&1)
   elif [[ -f "$SCRIPTS_DIR/jobs.js" ]] && command -v node >/dev/null 2>&1; then
@@ -76,9 +76,9 @@ if echo "$PROMPT" | grep -qE "^/specweave:jobs($| )"; then
   exit 0
 fi
 
-# /specweave:progress → Execute read-progress.sh (pure bash, ~30ms)
-if echo "$PROMPT" | grep -qE "^/specweave:progress($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/specweave:progress\s*||')
+# /sw:progress → Execute read-progress.sh (pure bash, ~30ms)
+if echo "$PROMPT" | grep -qE "^/sw:progress($| )"; then
+  ARGS=$(echo "$PROMPT" | sed 's|^/sw:progress\s*||')
   if [[ -f "$SCRIPTS_DIR/read-progress.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-progress.sh" $ARGS 2>&1)
   elif [[ -f "$SCRIPTS_DIR/progress.js" ]] && command -v node >/dev/null 2>&1; then
@@ -91,9 +91,9 @@ if echo "$PROMPT" | grep -qE "^/specweave:progress($| )"; then
   exit 0
 fi
 
-# /specweave:status → Execute read-status.sh (pure bash, ~150ms)
-if echo "$PROMPT" | grep -qE "^/specweave:status($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/specweave:status\s*||')
+# /sw:status → Execute read-status.sh (pure bash, ~150ms)
+if echo "$PROMPT" | grep -qE "^/sw:status($| )"; then
+  ARGS=$(echo "$PROMPT" | sed 's|^/sw:status\s*||')
   if [[ -f "$SCRIPTS_DIR/read-status.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-status.sh" $ARGS 2>&1)
   elif [[ -f "$SCRIPTS_DIR/status.js" ]] && command -v node >/dev/null 2>&1; then
@@ -106,9 +106,9 @@ if echo "$PROMPT" | grep -qE "^/specweave:status($| )"; then
   exit 0
 fi
 
-# /specweave:workflow → Execute read-workflow.sh (pure bash, ~100ms)
-if echo "$PROMPT" | grep -qE "^/specweave:workflow($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/specweave:workflow\s*||')
+# /sw:workflow → Execute read-workflow.sh (pure bash, ~100ms)
+if echo "$PROMPT" | grep -qE "^/sw:workflow($| )"; then
+  ARGS=$(echo "$PROMPT" | sed 's|^/sw:workflow\s*||')
   if [[ -f "$SCRIPTS_DIR/read-workflow.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-workflow.sh" $ARGS 2>&1)
   else
@@ -119,9 +119,9 @@ if echo "$PROMPT" | grep -qE "^/specweave:workflow($| )"; then
   exit 0
 fi
 
-# /specweave:costs → Execute read-costs.sh (pure bash, ~50ms)
-if echo "$PROMPT" | grep -qE "^/specweave:costs($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/specweave:costs\s*||')
+# /sw:costs → Execute read-costs.sh (pure bash, ~50ms)
+if echo "$PROMPT" | grep -qE "^/sw:costs($| )"; then
+  ARGS=$(echo "$PROMPT" | sed 's|^/sw:costs\s*||')
   if [[ -f "$SCRIPTS_DIR/read-costs.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-costs.sh" $ARGS 2>&1)
   else
@@ -133,12 +133,12 @@ if echo "$PROMPT" | grep -qE "^/specweave:costs($| )"; then
 fi
 
 # ==============================================================================
-# TASK COUNT GUARD: Block /specweave:do for oversized increments (v0.32.2+)
+# TASK COUNT GUARD: Block /sw:do for oversized increments (v0.32.2+)
 # ==============================================================================
 # >8 tasks = context explosion = CRASH (per CLAUDE.md)
 MAX_TASKS=8
 
-if echo "$PROMPT" | grep -qE "^/specweave:do($| )"; then
+if echo "$PROMPT" | grep -qE "^/sw:do($| )"; then
   # Extract increment ID from prompt
   DO_INCREMENT_ID=$(echo "$PROMPT" | grep -oE "[0-9]{4}[a-zA-Z0-9-]*" | head -1)
 
@@ -205,13 +205,13 @@ fi
 # ==============================================================================
 
 # ==============================================================================
-# PROJECT CONTEXT + WIP LIMITS FOR /specweave:increment (v0.34.0)
+# PROJECT CONTEXT + WIP LIMITS FOR /sw:increment (v0.34.0)
 # ==============================================================================
 # CRITICAL: Inject project/board context BEFORE Claude generates spec.md
 # This ensures Claude knows available projects and uses correct IDs
 # ALSO: Check WIP limits in same block to avoid duplicate command detection
 
-if echo "$PROMPT" | grep -qE "^/specweave:increment"; then
+if echo "$PROMPT" | grep -qE "^/sw:increment"; then
   # Get project context (uses specweave CLI if available)
   PROJECT_CONTEXT=""
 
@@ -310,7 +310,7 @@ if echo "$PROMPT" | grep -qE "^/specweave:increment"; then
 
   # Above hard cap: strong warning but NOT a block (user decides!)
   if [[ "$ACTIVE_COUNT" -ge "$HARD_CAP" ]]; then
-    WIP_MSG="⚠️  WIP LIMIT EXCEEDED (${ACTIVE_COUNT}/${HARD_CAP})\\n\\nYou have ${ACTIVE_COUNT} active increments (configured maximum: ${HARD_CAP})\\n\\nActive increments:\\n${ACTIVE_LIST}\\n\\n🧠 Research shows 3+ concurrent tasks = 40%% slower + more bugs\\n\\n💡 Options:\\n  1️⃣  Complete an increment: /specweave:done <id>\\n  2️⃣  Pause an increment: /specweave:pause <id>\\n  3️⃣  Increase limit: Edit .specweave/config.json limits.hardCap\\n  4️⃣  Continue anyway (not recommended)\\n\\n📝 To proceed anyway, just confirm your intent."
+    WIP_MSG="⚠️  WIP LIMIT EXCEEDED (${ACTIVE_COUNT}/${HARD_CAP})\\n\\nYou have ${ACTIVE_COUNT} active increments (configured maximum: ${HARD_CAP})\\n\\nActive increments:\\n${ACTIVE_LIST}\\n\\n🧠 Research shows 3+ concurrent tasks = 40%% slower + more bugs\\n\\n💡 Options:\\n  1️⃣  Complete an increment: /sw:done <id>\\n  2️⃣  Pause an increment: /sw:pause <id>\\n  3️⃣  Increase limit: Edit .specweave/config.json limits.hardCap\\n  4️⃣  Continue anyway (not recommended)\\n\\n📝 To proceed anyway, just confirm your intent."
     # Prepend project context if available
     if [[ -n "$PROJECT_CONTEXT" ]]; then
       printf '{"decision":"approve","systemMessage":"%s%s"}\n' "$PROJECT_CONTEXT" "$WIP_MSG"
@@ -322,7 +322,7 @@ if echo "$PROMPT" | grep -qE "^/specweave:increment"; then
 
   # At soft limit: mild warning, approve
   if [[ "$ACTIVE_COUNT" -ge "$SOFT_LIMIT" ]]; then
-    WIP_MSG="⚠️  WIP LIMIT REACHED (${ACTIVE_COUNT}/${SOFT_LIMIT})\\n\\nYou have ${ACTIVE_COUNT} active increment(s) (recommended limit: ${SOFT_LIMIT})\\n\\nActive increments:\\n${ACTIVE_LIST}\\n\\n🧠 Focus Principle: Fewer active increments = maximum productivity\\n\\n💡 Consider:\\n  1️⃣  Complete current work (recommended)\\n  2️⃣  Pause current work (/specweave:pause)\\n  3️⃣  Continue anyway\\n\\n⚠️  Emergency hotfix/bug? Use --type=hotfix or --type=bug"
+    WIP_MSG="⚠️  WIP LIMIT REACHED (${ACTIVE_COUNT}/${SOFT_LIMIT})\\n\\nYou have ${ACTIVE_COUNT} active increment(s) (recommended limit: ${SOFT_LIMIT})\\n\\nActive increments:\\n${ACTIVE_LIST}\\n\\n🧠 Focus Principle: Fewer active increments = maximum productivity\\n\\n💡 Consider:\\n  1️⃣  Complete current work (recommended)\\n  2️⃣  Pause current work (/sw:pause)\\n  3️⃣  Continue anyway\\n\\n⚠️  Emergency hotfix/bug? Use --type=hotfix or --type=bug"
     # Prepend project context if available
     if [[ -n "$PROJECT_CONTEXT" ]]; then
       printf '{"decision":"approve","systemMessage":"%s%s"}\n' "$PROJECT_CONTEXT" "$WIP_MSG"
@@ -380,7 +380,7 @@ if [[ -n "$ACTIVE_INCREMENT" ]] && echo "$PROMPT" | grep -qE "/(specweave:)?(syn
   if [[ -f "$SPEC_FILE" ]] && [[ -f "$PLAN_FILE" ]]; then
     # Check if spec is newer than plan (indicates spec changes need sync)
     if [[ -n $(find "$SPEC_FILE" -newer "$PLAN_FILE" 2>/dev/null) ]]; then
-      printf '{"decision":"approve","systemMessage":"⚠️ Spec changes detected in %s\\n\\nspec.md has been modified after plan.md.\\nConsider running /specweave:sync-docs to update living documentation."}\n' "$ACTIVE_INCREMENT"
+      printf '{"decision":"approve","systemMessage":"⚠️ Spec changes detected in %s\\n\\nspec.md has been modified after plan.md.\\nConsider running /sw:sync-docs to update living documentation."}\n' "$ACTIVE_INCREMENT"
       exit 0
     fi
   fi
@@ -437,14 +437,14 @@ fi
 # COMMAND SUGGESTIONS: Guide users to structured workflow
 # ==============================================================================
 
-if echo "$PROMPT" | grep -qiE "(add|create|implement|build|develop)" && ! echo "$PROMPT" | grep -q "/specweave:"; then
+if echo "$PROMPT" | grep -qiE "(add|create|implement|build|develop)" && ! echo "$PROMPT" | grep -q "/sw:"; then
   if [[ -n "$CONTEXT" ]]; then
     CONTEXT="$CONTEXT
 
 💡 TIP: Consider using SpecWeave commands for structured development:
-  - /specweave:increment \"feature name\"  # Plan new increment
-  - /specweave:do                         # Execute current tasks
-  - /specweave:progress                   # Check progress"
+  - /sw:increment \"feature name\"  # Plan new increment
+  - /sw:do                         # Execute current tasks
+  - /sw:progress                   # Check progress"
   fi
 fi
 

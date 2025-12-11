@@ -2,7 +2,7 @@
 #
 # Pre-Increment-Start Hook
 #
-# Validates increment readiness before allowing `/specweave:do` to start work.
+# Validates increment readiness before allowing `/sw:do` to start work.
 #
 # **Critical Checks**:
 # 1. spec.md contains Acceptance Criteria
@@ -10,7 +10,7 @@
 # 3. No duplicate task files (tasks.md, tasks-detailed.md)
 # 4. Increment structure is valid
 #
-# **Triggered by**: /specweave:do command (before starting implementation)
+# **Triggered by**: /sw:do command (before starting implementation)
 #
 # **Exit codes**:
 # - 0: Validation passed, safe to start
@@ -62,7 +62,7 @@ if [ -f "$INCREMENT_PATH/spec.md" ]; then
     echo "   Even when using 'structure: user-stories', ACs must be embedded in spec.md."
     echo ""
     echo "   💡 SUGGESTED FIX:"
-    echo "      Run: /specweave:embed-acs $(basename "$INCREMENT_PATH")"
+    echo "      Run: /sw:embed-acs $(basename "$INCREMENT_PATH")"
     echo ""
     VALIDATION_PASSED=false
   fi
@@ -81,7 +81,7 @@ if [ "$AC_COUNT" -eq 0 ]; then
   echo ""
   echo "   💡 SUGGESTED FIX:"
   echo "      1. Add ACs manually to spec.md, OR"
-  echo "      2. Run: /specweave:embed-acs $(basename "$INCREMENT_PATH") (auto-embed from living docs)"
+  echo "      2. Run: /sw:embed-acs $(basename "$INCREMENT_PATH") (auto-embed from living docs)"
   echo ""
   VALIDATION_PASSED=false
 else
@@ -140,7 +140,7 @@ if [ -f "$INCREMENT_PATH/spec.md" ]; then
       echo "  even when living docs exist as documentation layer."
       echo ""
       echo "**IMMEDIATE ACTION REQUIRED**:"
-      echo "  Run: /specweave:embed-acs $(basename "$INCREMENT_PATH")"
+      echo "  Run: /sw:embed-acs $(basename "$INCREMENT_PATH")"
       echo ""
       echo "This will auto-embed ACs from living docs into spec.md."
       echo ""
@@ -158,7 +158,7 @@ if [ "$VALIDATION_PASSED" = true ]; then
   echo "✅ PRE-START VALIDATION: PASSED"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
-  echo "Increment is ready to start. Proceeding with /specweave:do..."
+  echo "Increment is ready to start. Proceeding with /sw:do..."
   exit 0
 else
   echo "❌ PRE-START VALIDATION: FAILED"
@@ -167,7 +167,7 @@ else
   echo "Cannot start increment due to validation failures above."
   echo ""
   echo "Fix the issues and try again, or run validation manually:"
-  echo "  /specweave:validate $(basename "$INCREMENT_PATH")"
+  echo "  /sw:validate $(basename "$INCREMENT_PATH")"
   echo ""
   exit 1
 fi

@@ -2,7 +2,7 @@
 # ---
 # name: specweave-analyze-standards
 # description: Analyze and document coding standards from codebase. Detects naming conventions, import patterns, type usage, and anti-patterns. Generates evidence-based standards documentation with confidence levels. Supports full analysis, drift detection, and standards updates.
-# usage: /specweave:analyze-standards [--drift] [--update] [--verbose]
+# usage: /sw:analyze-standards [--drift] [--update] [--verbose]
 # ---
 
 set -e
@@ -40,7 +40,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       echo "❌ Unknown option: $1"
-      echo "Usage: /specweave:analyze-standards [--drift] [--update] [--verbose]"
+      echo "Usage: /sw:analyze-standards [--drift] [--update] [--verbose]"
       exit 1
       ;;
   esac
@@ -148,7 +148,7 @@ AGENT_PROMPT
       echo "❌ Error: No coding standards found at:"
       echo "   $GOVERNANCE_DIR/coding-standards.md"
       echo ""
-      echo "💡 Tip: Run /specweave:analyze-standards first to generate baseline standards"
+      echo "💡 Tip: Run /sw:analyze-standards first to generate baseline standards"
       exit 1
     fi
 
@@ -299,7 +299,7 @@ case $MODE in
   full)
     echo "   1. Review the analysis report"
     echo "   2. Fix critical issues (hardcoded secrets, etc.)"
-    echo "   3. Run /specweave:analyze-standards --update to formalize"
+    echo "   3. Run /sw:analyze-standards --update to formalize"
     ;;
   drift)
     echo "   1. Review drift report"
