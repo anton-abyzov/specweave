@@ -72,7 +72,10 @@ created: 2025-11-15
 
       // Assert: Title includes Feature ID
       expect(result.title).toBe('[FS-031][US-001] Test User Story');
-      expect(result.body).toContain('**Feature**: FS-031');
+      // ❌ REMOVED: Feature field no longer in body (uses milestone instead)
+      // Implementation INTENTIONALLY removed metadata header (2025-12-10)
+      // See: .specweave/docs/internal/troubleshooting/CRITICAL-remove-metadata-header-from-github-issues.md
+      expect(result.body).not.toContain('**Feature**:');
     });
 
     it('should fail gracefully if epic: field is used (legacy)', async () => {
@@ -141,19 +144,20 @@ created: 2025-11-15
 
     });
 
-    it('should NOT output Project field when "default"', async () => {
-      // Arrange: User story with project: default
+    it('should NOT output Project label when "default"', async () => {
+      // Arrange: User story with **Project**: default in body (should NOT create label)
       const userStoryPath = path.join(tempDir, '.specweave/docs/internal/specs/default/FS-031/us-004-default-project.md');
       const userStoryContent = `---
 id: US-004
 feature: FS-031
 title: "User Story With Default Project"
 status: active
-project: default
 created: 2025-11-15
 ---
 
 # US-004: User Story With Default Project
+
+**Project**: default
 `;
 
       await fs.writeFile(userStoryPath, userStoryContent);
@@ -162,23 +166,27 @@ created: 2025-11-15
       const builder = new UserStoryIssueBuilder(userStoryPath, projectRoot, 'FS-031');
       const result = await builder.buildIssueBody();
 
-      // Assert: NO Project field for "default"
-      expect(result.body).not.toContain('**Project**: default');
+      // Assert: NO project label for "default" (v0.34.1)
+      expect(result.labels).not.toContain('project:default');
     });
 
     it('should output Project field when non-default', async () => {
-      // Arrange: User story with project: backend
+      // Arrange: User story with per-US **Project**: field (ADR-0140: body is source of truth)
       const userStoryPath = path.join(tempDir, '.specweave/docs/internal/specs/backend/FS-031/us-005-backend-project.md');
       const userStoryContent = `---
 id: US-005
 feature: FS-031
 title: "Backend User Story"
 status: active
-project: backend
 created: 2025-11-15
 ---
 
 # US-005: Backend User Story
+**Project**: backend
+
+**As a** developer
+**I want** to specify project per US
+**So that** it syncs to correct location
 `;
 
       await fs.mkdir(path.dirname(userStoryPath), { recursive: true });
@@ -188,8 +196,9 @@ created: 2025-11-15
       const builder = new UserStoryIssueBuilder(userStoryPath, projectRoot, 'FS-031');
       const result = await builder.buildIssueBody();
 
-      // Assert: Project field IS present
-      expect(result.body).toContain('**Project**: backend');
+      // Assert: Project label derived from per-US **Project**: field (ADR-0140)
+      // Source: us-*.md body content '**Project**: xxx' field (v0.35.0+)
+      expect(result.labels).toContain('project:backend'); // ✅ Verify label present
     });
   });
 
@@ -646,11 +655,13 @@ Perfect GitHub issues improve team collaboration and traceability.
       const result = await builder.buildIssueBody();
 
       // Assert: ALL fixes verified
-      // Bug #1: Feature field correct
+      // Bug #1: Feature field correct (in title, NOT in body)
       expect(result.title).toBe('[FS-031][US-012] Complete User Story');
-      expect(result.body).toContain('**Feature**: FS-031');
+      // ❌ REMOVED: Feature field no longer in body (uses milestone instead)
+      // Implementation INTENTIONALLY removed metadata header (2025-12-10)
+      expect(result.body).not.toContain('**Feature**:');
 
-      // Bug #2: No "Project: undefined"
+      // Bug #2: No "Project: undefined" ✅ CORRECT (already expects NO Project field)
       expect(result.body).not.toContain('**Project**: undefined');
       expect(result.body).not.toMatch(/\*\*Project\*\*:/);
 
