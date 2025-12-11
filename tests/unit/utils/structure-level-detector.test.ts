@@ -143,6 +143,38 @@ describe('structure-level-detector', () => {
         expect(result.source).toBe('ado-area-path');
         expect(result.boardsByProject!['myproject']).toHaveLength(3);
       });
+
+      it('should skip area path mappings with missing specweaveProject (defensive)', () => {
+        createConfig({
+          sync: {
+            profiles: {
+              'ado-profile': {
+                provider: 'ado',
+                config: {
+                  project: 'MyProject',
+                  areaPathMapping: {
+                    project: 'MyProject',
+                    mappings: [
+                      { areaPath: 'MyProject\\TeamA', specweaveProject: 'team-a' },
+                      { areaPath: 'MyProject\\Invalid', specweaveProject: '' } as any, // Missing/empty
+                      { areaPath: 'MyProject\\TeamB', specweaveProject: 'team-b' }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        const result = detectStructureLevel(tempDir);
+
+        expect(result.level).toBe(2);
+        // Should only include valid mappings (skip the one with empty specweaveProject)
+        expect(result.boardsByProject!['myproject']).toHaveLength(2);
+        expect(result.boardsByProject!['myproject'].map(b => b.id)).toContain('team-a');
+        expect(result.boardsByProject!['myproject'].map(b => b.id)).toContain('team-b');
+        expect(result.boardsByProject!['myproject'].map(b => b.id)).not.toContain('');
+      });
     });
 
     describe('JIRA board mapping (2-level)', () => {
@@ -273,6 +305,37 @@ describe('structure-level-detector', () => {
         const board = result.boardsByProject!['test'][0];
         expect(board.jiraBoardId).toBe('123');
         expect(board.keywords).toEqual(['sprint']);
+      });
+
+      it('should skip boards with missing specweaveProject (defensive)', () => {
+        createConfig({
+          sync: {
+            profiles: {
+              'jira-profile': {
+                provider: 'jira',
+                config: {
+                  boardMapping: {
+                    projectKey: 'CORE',
+                    boards: [
+                      { id: '1', name: 'Valid Board', specweaveProject: 'valid' },
+                      { id: '2', name: 'Invalid Board', specweaveProject: '' } as any, // Missing/empty
+                      { id: '3', name: 'Another Valid', specweaveProject: 'another' }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        const result = detectStructureLevel(tempDir);
+
+        expect(result.level).toBe(2);
+        // Should only include valid boards (skip the one with empty specweaveProject)
+        expect(result.boardsByProject!['core']).toHaveLength(2);
+        expect(result.boardsByProject!['core'].map(b => b.id)).toContain('valid');
+        expect(result.boardsByProject!['core'].map(b => b.id)).toContain('another');
+        expect(result.boardsByProject!['core'].map(b => b.id)).not.toContain('');
       });
     });
 
