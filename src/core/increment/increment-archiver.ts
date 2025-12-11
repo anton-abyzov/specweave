@@ -546,10 +546,6 @@ export class IncrementArchiver {
     // STEP 2: Move the directory to archive
     await fs.move(sourcePath, targetPath, { overwrite: false });
 
-    // Clear increment number cache (numbers changed after archiving)
-    const { IncrementNumberManager } = await import('./increment-utils.js');
-    IncrementNumberManager.clearCache();
-
     // STEP 3: Archive feature folder (now that increment is archived)
     await this.updateReferences(increment);
   }
@@ -851,10 +847,6 @@ export class IncrementArchiver {
     }
 
     await fs.move(sourcePath, targetPath);
-
-    // Clear increment number cache (numbers changed after restoring)
-    const { IncrementNumberManager } = await import('./increment-utils.js');
-    IncrementNumberManager.clearCache();
 
     this.logger.success(`Restored ${increment} from archive`);
 

@@ -201,18 +201,6 @@ export class CrossProjectSync {
   }
 
   /**
-   * Get the specs folder path for a project (legacy, 1-level only)
-   * @deprecated Use getSpecsPath() instead for 2-level support
-   */
-  getProjectSpecsPath(projectId: string): string {
-    return path.join(
-      this.projectRoot,
-      '.specweave/docs/internal/specs',
-      projectId
-    );
-  }
-
-  /**
    * Get the feature folder path for a target path and feature
    * Handles both 1-level and 2-level structures
    *
@@ -247,28 +235,6 @@ export class CrossProjectSync {
     }
 
     const folderPath = this.getSpecsPath(targetPath);
-    await ensureDir(folderPath);
-    return folderPath;
-  }
-
-  /**
-   * Ensure project specs folder exists (legacy, 1-level only)
-   * @deprecated Use ensureSpecsFolder() instead
-   *
-   * CRITICAL v0.35.1: Validates project before folder creation to prevent pollution
-   * @throws Error if project validation fails
-   */
-  async ensureProjectFolder(projectId: string): Promise<string> {
-    // Validate project before creating folder
-    const validation = await this.projectResolution.validateProjectForFolderCreation(projectId);
-    if (!validation.valid) {
-      throw new Error(
-        `Cannot create project folder for invalid project '${projectId}': ${validation.reason}. ` +
-        `Allowed projects: [${validation.allowedProjects.join(', ')}]`
-      );
-    }
-
-    const folderPath = this.getProjectSpecsPath(projectId);
     await ensureDir(folderPath);
     return folderPath;
   }

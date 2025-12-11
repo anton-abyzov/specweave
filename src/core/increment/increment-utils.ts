@@ -85,13 +85,6 @@ export class IncrementNumberManager {
   }
 
   /**
-   * @deprecated No-op, kept for API compatibility. Cache was removed in v0.30.21.
-   */
-  static clearCache(): void {
-    // No-op - cache removed
-  }
-
-  /**
    * Check if an increment number already exists in any directory.
    *
    * Scans all directories to determine if the given increment number

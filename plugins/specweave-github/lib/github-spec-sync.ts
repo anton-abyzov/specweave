@@ -143,7 +143,7 @@ export class GitHubSpecSync {
     }
 
     // Get profile from project's default sync profile
-    const profileId = project.defaultSyncProfile || config.activeProfile;
+    const profileId = project.defaultSyncProfile || config.defaultProfile;
     if (!profileId) {
       return null;
     }

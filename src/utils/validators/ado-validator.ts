@@ -319,35 +319,6 @@ export class AzureDevOpsResourceValidator {
   }
 
   /**
-   * Create area path in project (kept for backwards compatibility, but not used in validation)
-   * @deprecated Use checkAreaPathExists() for validation instead
-   */
-  async createAreaPath(projectName: string, areaName: string): Promise<AzureDevOpsAreaPath> {
-    console.log(chalk.blue(`  📦 Creating area path: ${projectName}\\${areaName}...`));
-
-    const body = {
-      name: areaName
-    };
-
-    try {
-      const area = await this.callAzureDevOpsApi(
-        `wit/classificationnodes/areas?projectId=${encodeURIComponent(projectName)}&api-version=7.0`,
-        'POST',
-        body
-      );
-      console.log(chalk.green(`  ✅ Area path created: ${projectName}\\${areaName}`));
-      return {
-        id: area.id,
-        name: area.name,
-        path: area.path,
-      };
-    } catch (error: any) {
-      console.error(chalk.red(`  ❌ Failed to create area path: ${error.message}`));
-      throw error;
-    }
-  }
-
-  /**
    * Fetch teams in project
    */
   async fetchTeams(projectName: string): Promise<AzureDevOpsTeam[]> {

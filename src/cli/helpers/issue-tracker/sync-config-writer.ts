@@ -176,7 +176,6 @@ async function buildGitHubSyncConfig(
       provider: 'github',
       includeStatus: syncSettings.includeStatus,
       autoApplyLabels: syncSettings.autoApplyLabels,
-      // v0.31.0+: Use defaultProfile (renamed from activeProfile for clarity)
       defaultProfile: defaultProfileObj?.id || 'main',
       settings: {
         canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
@@ -211,7 +210,6 @@ async function buildGitHubSyncConfig(
       provider: 'github',
       includeStatus: syncSettings.includeStatus,
       autoApplyLabels: syncSettings.autoApplyLabels,
-      // v0.31.0+: Use defaultProfile (renamed from activeProfile for clarity)
       defaultProfile: 'github-default',
       settings: {
         canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
@@ -339,7 +337,6 @@ function buildJiraSyncConfig(
     provider: 'jira',
     includeStatus: syncSettings.includeStatus,
     autoApplyLabels: syncSettings.autoApplyLabels,
-    // v0.31.0+: Use defaultProfile (renamed from activeProfile for clarity)
     defaultProfile: 'jira-default',
     settings: {
       canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
@@ -436,7 +433,6 @@ function buildAdoSyncConfig(
       provider: 'ado',
       includeStatus: syncSettings.includeStatus,
       autoApplyLabels: syncSettings.autoApplyLabels,
-      // v0.31.0+: Use defaultProfile (renamed from activeProfile for clarity)
       defaultProfile: defaultProfileName,
       settings: {
         canUpsertInternalItems: syncPermissions.canUpsertInternalItems,
@@ -467,8 +463,6 @@ function buildAdoSyncConfig(
       config: {
         organization,
         project,
-        ...(adoCreds.team ? { team: adoCreds.team } : {}),
-        ...(adoCreds.teams?.length ? { teams: adoCreds.teams } : {}),
         ...(dedupedAreaPaths?.length ? { areaPaths: dedupedAreaPaths } : {}),
         ...(adoCreds.strategy ? { strategy: adoCreds.strategy } : {})
       },
@@ -485,7 +479,6 @@ function buildAdoSyncConfig(
       provider: 'ado',
       includeStatus: syncSettings.includeStatus,
       autoApplyLabels: syncSettings.autoApplyLabels,
-      // v0.31.0+: Use defaultProfile (renamed from activeProfile for clarity)
       defaultProfile: 'ado-default',
       settings: {
         canUpsertInternalItems: syncPermissions.canUpsertInternalItems,

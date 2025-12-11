@@ -1,0 +1,11 @@
+{
+  "id": "FS-136",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:24:34.209Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-136",
+  "linkedIncrements": [
+    "0136-process-lifecycle-test-suite"
+  ]
+}

@@ -2,11 +2,15 @@
  * CLI Command: /sw:import-docs
  *
  * Import brownfield documentation from external sources
+ *
+ * NOTE: Temporarily disabled - brownfield importer refactored to background job architecture.
+ * Use /sw:living-docs for brownfield analysis instead.
  */
 
 import path from 'path';
 import { select, confirm as confirmPrompt } from '@inquirer/prompts';
-import { BrownfieldImporter, ImportOptions } from '../../core/brownfield/importer.js';
+// TEMPORARILY DISABLED: BrownfieldImporter removed, now uses background job architecture
+// import { BrownfieldImporter, ImportOptions } from '../../core/brownfield/importer.js';
 import { ProjectManager } from '../../core/project/project-manager.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 
@@ -28,7 +32,13 @@ export async function importDocs(
   args: ImportDocsArgs
 ): Promise<void> {
   console.log('\n📥 Import Brownfield Documentation\n');
+  console.log('⚠️  This command is temporarily disabled.\n');
+  console.log('The brownfield importer has been refactored to use background job architecture.\n');
+  console.log('Please use /sw:living-docs for brownfield analysis instead.\n');
+  console.log('For more information, see the living docs documentation.\n');
+  return;
 
+  /* TEMPORARILY DISABLED - Brownfield importer refactored
   try {
     // Validate source path
     if (!args.sourcePath) {
@@ -132,6 +142,7 @@ export async function importDocs(
     console.error(`\n❌ Import failed: ${error instanceof Error ? error.message : String(error)}\n`);
     throw error;
   }
+  */
 }
 
 /**

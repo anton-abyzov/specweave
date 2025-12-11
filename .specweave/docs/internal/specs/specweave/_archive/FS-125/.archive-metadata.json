@@ -1,0 +1,11 @@
+{
+  "id": "FS-125",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:08:01.042Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-125",
+  "linkedIncrements": [
+    "0125-cross-project-user-story-targeting"
+  ]
+}

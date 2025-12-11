@@ -1,0 +1,11 @@
+{
+  "id": "FS-121",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:07:06.168Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-121",
+  "linkedIncrements": [
+    "0121-ado-jira-feature-parity-p2-p3"
+  ]
+}

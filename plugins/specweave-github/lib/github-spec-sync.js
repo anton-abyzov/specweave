@@ -42,7 +42,7 @@ class GitHubSpecSync {
     if (!project) {
       return null;
     }
-    const profileId = project.defaultSyncProfile || config.activeProfile;
+    const profileId = project.defaultSyncProfile || config.defaultProfile;
     if (!profileId) {
       return null;
     }

@@ -14,9 +14,6 @@ describe('IncrementNumberManager', () => {
     testProjectRoot = mkdtempSync(path.join(tmpdir(), 'specweave-test-'));
     incrementsDir = path.join(testProjectRoot, '.specweave', 'increments');
     fs.mkdirSync(incrementsDir, { recursive: true });
-
-    // Clear cache before each test
-    IncrementNumberManager.clearCache();
   });
 
   afterEach(() => {
@@ -42,10 +39,6 @@ describe('IncrementNumberManager', () => {
       expect(typeof IncrementNumberManager.incrementNumberExists).toBe('function');
     });
 
-    it('should have static clearCache method', () => {
-      expect(IncrementNumberManager.clearCache).toBeDefined();
-      expect(typeof IncrementNumberManager.clearCache).toBe('function');
-    });
   });
 
   describe('T-002: Directory Scanning Logic (Gap-Filling v0.33.1+)', () => {
@@ -254,16 +247,13 @@ describe('IncrementNumberManager', () => {
     it('should clear all cached values', () => {
       fs.mkdirSync(path.join(incrementsDir, '0001-test'));
 
-      // Populate cache
+      // Get next number
       IncrementNumberManager.getNextIncrementNumber(testProjectRoot, true);
-
-      // Clear cache
-      IncrementNumberManager.clearCache();
 
       // Add new increment
       fs.mkdirSync(path.join(incrementsDir, '0005-new'));
 
-      // Should see new value (cache was cleared)
+      // Should see new value (always fresh scan, no caching)
       // Gap-filling: 0001 and 0005 exist → first gap is 0002
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, true);
       expect(result).toBe('0002');

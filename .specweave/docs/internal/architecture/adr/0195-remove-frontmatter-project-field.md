@@ -119,9 +119,71 @@ npx tsx scripts/migrate-project-frontmatter.ts --dry-run
 npx tsx scripts/migrate-project-frontmatter.ts
 ```
 
+## v1.0.0 Deprecation Plan
+
+**Target**: SpecWeave v1.0.0 release
+**Status**: Planned
+**Date**: TBD (post-v0.35.0 stabilization)
+
+### Removal Strategy
+
+After sufficient monitoring period (6-12 months) and user migration, completely remove backward-compat fallbacks:
+
+#### Code Removal Targets
+
+1. **ProjectResolutionService** (`src/core/project/project-resolution.ts`):
+   ```typescript
+   // REMOVE in v1.0.0:
+   - Frontmatter project/board field reading
+   - Backward-compat warnings
+   - Fallback to frontmatter when per-US missing
+   ```
+
+2. **Validation Hooks**:
+   - Remove `SPECWEAVE_LEGACY_SPEC=1` bypass option
+   - Make per-US `**Project**:` fields MANDATORY (no fallback)
+   - Remove frontmatter project/board validation entirely
+
+3. **Templates**:
+   - Remove all frontmatter project/board references
+   - Templates generate ONLY per-US fields
+
+4. **Documentation**:
+   - Remove all mentions of frontmatter project/board
+   - Update migration guide to "v0.x → v1.0 breaking changes"
+
+#### Breaking Changes (v1.0.0)
+
+```yaml
+# ❌ WILL NOT WORK in v1.0.0
+---
+increment: 0001-feature
+project: my-app      # ← No longer supported!
+---
+
+# ✅ REQUIRED in v1.0.0
+### US-001: Feature Name
+**Project**: my-app  # ← MANDATORY
+```
+
+#### Pre-v1.0.0 Migration Window
+
+1. **v0.35.0 - v0.40.0**: Deprecation warnings when frontmatter used
+2. **v0.40.0 - v0.50.0**: Stricter warnings, suggest migration
+3. **v1.0.0**: Complete removal, hard requirement for per-US fields
+
+### Monitoring Before Removal
+
+**Criteria for v1.0.0 readiness**:
+- [ ] 95%+ of active projects migrated to per-US fields
+- [ ] No reported issues with per-US resolution in 6 months
+- [ ] All SpecWeave internal increments use per-US fields only
+- [ ] Documentation thoroughly updated
+- [ ] Community notified 3 months in advance
+
 ## References
 
 - Increment 0140: Remove Frontmatter Project Field (parent)
-- Increment 0141: Part 1 - Core Implementation
-- Increment 0142: Part 2 - Migration & Rollout
+- Increment 0143: Part 1 - Core Implementation
+- Increment 0144: Part 2 - Migration & Rollout
 - ADR-0190: spec-project-board-requirement (superseded by this ADR)

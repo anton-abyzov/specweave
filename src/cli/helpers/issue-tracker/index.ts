@@ -296,7 +296,6 @@ async function writeSyncConfigHelper(
     provider: tracker,
     includeStatus: syncSettings.includeStatus,
     autoApplyLabels: syncSettings.autoApplyLabels,
-    // v0.31.0+: Use defaultProfile (activeProfile kept for backward compat)
     defaultProfile,
     settings: {
       canUpsertInternalItems: syncPermissions.canUpsertInternalItems,

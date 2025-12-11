@@ -47,7 +47,7 @@ export async function selectProfileForIncrement(
 
   // If only one profile, auto-select it
   if (profileCount === 1) {
-    const profile = manager.getActiveProfile();
+    const profile = manager.getDefaultProfile();
     if (profile) {
       console.log(chalk.gray(`Using GitHub repository: ${profile.config.owner}/${profile.config.repo}`));
       return profile.id;

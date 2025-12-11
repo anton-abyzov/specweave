@@ -51,21 +51,3 @@ export function findProjectRoot(testFileUrl: string): string {
   );
 }
 
-/**
- * DEPRECATED: Do not use process.cwd() in tests
- *
- * This function is kept for documentation purposes only.
- * Using process.cwd() in tests can cause:
- *
- * 1. **Deletion risks**: If cleanup uses wrong cwd, could delete project files
- * 2. **Parallel execution failures**: Different workers have different cwd values
- * 3. **Unreliable paths**: cwd can change during test execution
- *
- * @deprecated Use findProjectRoot(import.meta.url) instead
- */
-export function getProjectRootUnsafe(): string {
-  throw new Error(
-    'UNSAFE: Do not use process.cwd() in tests!\n' +
-    'Use: findProjectRoot(import.meta.url) instead'
-  );
-}

@@ -183,7 +183,7 @@ async function syncAdo(specPath: string, options: any) {
     process.exit(1);
   }
 
-  const adoProfile = config.sync?.profiles?.[config.sync?.activeProfile];
+  const adoProfile = config.sync?.profiles?.[config.sync?.defaultProfile];
   if (!adoProfile || adoProfile.provider !== 'ado') {
     console.error('❌ No ADO sync profile found in config');
     process.exit(1);

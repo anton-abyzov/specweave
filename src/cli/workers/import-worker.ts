@@ -288,6 +288,8 @@ async function main(): Promise<void> {
       const specsDir = path.join(projectPath, '.specweave', 'docs', 'internal', 'specs');
 
       // Group items by source for proper folder structure
+      // REFACTOR (v0.34.1): Use shared function from external-import-grouping
+      const { groupItemsByExternalContainer } = await import('../../cli/helpers/init/external-import-grouping.js');
       const groups = groupItemsByExternalContainer(result.allItems, projectPath);
       let totalConverted = 0;
 
@@ -374,139 +376,9 @@ async function main(): Promise<void> {
   }
 }
 
-/**
- * Group items by external container (JIRA project/board, ADO project/area path)
- * Returns groups with container context for 2-level directory structure
- *
- * CRITICAL FIX (v0.34.1): Use specweaveProject from config for JIRA Level 2
- * - Level 1 (project): JIRA projectKey (e.g., "CORE")
- * - Level 2 (board): specweaveProject from boardMapping (e.g., "fe", "be")
- *
- * This respects the structure-level-detector configuration.
- */
-interface ContainerGroup {
-  containerId: string;
-  containerType: 'jira' | 'ado' | null;
-  projectId: string;
-  items: any[];
-  externalContainer: any;
-}
-
-function groupItemsByExternalContainer(items: any[], projectPath: string): ContainerGroup[] {
-  const groups = new Map<string, ContainerGroup>();
-
-  // Import normalizeToProjectId dynamically would be complex, so inline the logic
-  const normalize = (name: string): string => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
-  };
-
-  // CRITICAL FIX (v0.34.1): Load config to get JIRA board mappings
-  // This is needed to map jiraBoardId → specweaveProject
-  let jiraBoardMappings: Map<number, string> = new Map();
-  try {
-    const configPath = path.join(projectPath, '.specweave', 'config.json');
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-
-      // Extract board mappings from sync.profiles
-      if (config.sync?.profiles) {
-        for (const profile of Object.values(config.sync.profiles) as any[]) {
-          if (profile.provider === 'jira' && profile.config?.boardMapping?.boards) {
-            for (const board of profile.config.boardMapping.boards) {
-              if (board.boardId && board.specweaveProject) {
-                jiraBoardMappings.set(board.boardId, normalize(board.specweaveProject));
-              }
-            }
-          }
-        }
-      }
-    }
-  } catch (error) {
-    // Config parsing failed - log warning but continue with fallback behavior
-    console.warn(`Failed to load JIRA board mappings from config: ${error instanceof Error ? error.message : String(error)}`);
-  }
-
-  for (const item of items) {
-    let groupKey: string;
-    let containerType: 'jira' | 'ado' | null = null;
-    let containerId: string | undefined;
-    let projectId: string;
-    let externalContainer: any;
-
-    // Check for JIRA container context
-    if (item.jiraProjectKey) {
-      containerType = 'jira';
-      containerId = item.jiraProjectKey;
-
-      // CRITICAL FIX (v0.34.1): Use specweaveProject from boardMapping (Level 2)
-      // Map jiraBoardId → specweaveProject using config
-      // Fallback to normalized boardName if mapping not found
-      if (item.jiraBoardId && jiraBoardMappings.has(item.jiraBoardId)) {
-        projectId = jiraBoardMappings.get(item.jiraBoardId)!;
-      } else if (item.jiraBoardName) {
-        projectId = normalize(item.jiraBoardName) || 'default';
-      } else {
-        projectId = 'default';
-      }
-
-      groupKey = `jira:${containerId}:${projectId}`;
-      externalContainer = {
-        type: 'jira-project',
-        containerId,
-        containerName: containerId,
-        boardId: item.jiraBoardId,
-        boardName: item.jiraBoardName
-      };
-    }
-    // Check for ADO container context
-    else if (item.adoProjectName) {
-      containerType = 'ado';
-      containerId = item.adoProjectName;
-      if (item.adoAreaPath) {
-        const areaSegments = item.adoAreaPath.split('\\');
-        const lastSegment = areaSegments[areaSegments.length - 1];
-        projectId = normalize(lastSegment) || 'default';
-      } else {
-        projectId = 'default';
-      }
-      groupKey = `ado:${containerId}:${projectId}`;
-      externalContainer = {
-        type: 'ado-project',
-        containerId,
-        containerName: containerId,
-        areaPath: item.adoAreaPath
-      };
-    }
-    // GitHub or default
-    else {
-      if (item.sourceRepo) {
-        const parts = item.sourceRepo.split('/');
-        const rawRepoName = parts.length > 1 ? parts[1] : item.sourceRepo;
-        projectId = normalize(rawRepoName) || '_default';
-      } else {
-        projectId = '_default';
-      }
-      groupKey = `gh:${projectId}`;
-    }
-
-    if (!groups.has(groupKey)) {
-      groups.set(groupKey, {
-        containerId: containerId || projectId,
-        containerType,
-        projectId,
-        items: [],
-        externalContainer
-      });
-    }
-    groups.get(groupKey)!.items.push(item);
-  }
-
-  return Array.from(groups.values());
-}
+// REFACTOR (v0.34.1): Removed duplicate groupItemsByExternalContainer()
+// Now uses shared implementation from external-import-grouping.ts
+// This eliminates code duplication and ensures consistency across code paths
 
 // Run worker
 main().catch((error) => {

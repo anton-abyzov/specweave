@@ -1,0 +1,11 @@
+{
+  "id": "FS-117",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:05:36.857Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-117",
+  "linkedIncrements": [
+    "0117-instant-dashboard-cache"
+  ]
+}

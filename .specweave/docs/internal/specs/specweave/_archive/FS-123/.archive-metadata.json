@@ -1,0 +1,11 @@
+{
+  "id": "FS-123",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:07:49.058Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-123",
+  "linkedIncrements": [
+    "0123-intelligent-living-docs-content"
+  ]
+}

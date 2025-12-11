@@ -1,0 +1,11 @@
+{
+  "id": "FS-124",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:08:00.078Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-124",
+  "linkedIncrements": [
+    "0124-spec-project-validator-regex-fix"
+  ]
+}

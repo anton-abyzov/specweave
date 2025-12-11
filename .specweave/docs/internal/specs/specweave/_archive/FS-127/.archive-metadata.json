@@ -1,0 +1,11 @@
+{
+  "id": "FS-127",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:08:28.784Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-127",
+  "linkedIncrements": [
+    "0127-github-bitbucket-clone-parity"
+  ]
+}

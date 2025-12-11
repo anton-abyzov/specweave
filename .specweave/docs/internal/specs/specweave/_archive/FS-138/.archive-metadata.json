@@ -1,0 +1,11 @@
+{
+  "id": "FS-138",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:10:51.571Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-138",
+  "linkedIncrements": [
+    "0138-single-project-first-architecture"
+  ]
+}

@@ -197,37 +197,6 @@ Fully supported platforms include repository validation, creation, and issue tra
 }
 
 /**
- * Get GitHub token permission guidance
- *
- * @param isOrganization - Whether creating repos in an organization
- * @returns Formatted guidance message
- * @deprecated Use getTokenGuidance() for platform-agnostic guidance
- */
-export function getGitHubTokenGuidance(isOrganization: boolean = false): string {
-  const requiredScopes = [
-    '• repo (Full control of private repositories)',
-  ];
-
-  if (isOrganization) {
-    requiredScopes.push('• admin:org (Manage organization repositories)');
-  }
-
-  return `
-📋 GitHub Personal Access Token Requirements
-
-Required Scopes:
-${requiredScopes.join('\n')}
-
-🔗 Create token at: https://github.com/settings/tokens/new
-
-⚠️  Important:
-   - Select "repo" scope at minimum
-   ${isOrganization ? '- Select "admin:org" if creating in organization\n' : ''}- Token will be stored in .env (never committed)
-   - Keep your token secure
-  `.trim();
-}
-
-/**
  * Get platform-specific token permission guidance
  *
  * @param platform - Platform type

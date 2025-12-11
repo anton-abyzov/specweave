@@ -1551,7 +1551,7 @@ export class LivingDocsSync {
             }
           }
           // Method 4: Legacy plugins.settings (backward compatibility)
-          if (!tools.includes('github') && config.plugins?.settings?.['specweave-github']?.activeProfile) {
+          if (!tools.includes('github') && config.plugins?.settings?.['specweave-github']?.defaultProfile) {
             this.logger.log(`   ✅ GitHub sync enabled (legacy plugins.settings)`);
             tools.push('github');
           }

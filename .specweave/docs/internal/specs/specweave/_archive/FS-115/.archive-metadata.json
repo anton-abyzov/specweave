@@ -1,0 +1,11 @@
+{
+  "id": "FS-115",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:05:03.735Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-115",
+  "linkedIncrements": [
+    "0115-ultra-smart-project-selection"
+  ]
+}
