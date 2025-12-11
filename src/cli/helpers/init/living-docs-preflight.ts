@@ -242,7 +242,7 @@ export function detectExistingDocs(projectPath: string): string[] {
 /**
  * Analysis depth type - supports basic and AI-powered modes
  */
-export type AnalysisDepth = 'quick' | 'standard' | 'deep-native' | 'deep-interactive' | 'deep-api';
+export type AnalysisDepth = 'quick' | 'standard' | 'deep-native' | 'deep-interactive';
 
 /**
  * Estimate duration based on codebase size
@@ -287,10 +287,6 @@ export function estimateDuration(
 
   if (depth === 'deep-interactive') {
     return 'In-session (pause/resume supported)';
-  }
-
-  if (depth === 'deep-api') {
-    return 'Background (API costs apply) - monitor: /sw:jobs';
   }
 
   return 'Progress-based';
@@ -491,13 +487,11 @@ export async function collectLivingDocsInputs(
     .map(s => s.trim())
     .filter(s => s.length > 0);
 
-  // Analysis depth - now with 5 options including AI-powered deep modes
-  type AnalysisDepthValue = 'quick' | 'standard' | 'deep-native' | 'deep-interactive' | 'deep-api';
+  // Analysis depth - now with 4 options including AI-powered deep modes
+  type AnalysisDepthValue = 'quick' | 'standard' | 'deep-native' | 'deep-interactive';
 
   // Check what's available for AI analysis
   const claudeCodeStatus = await getClaudeCodeStatus();
-  const availableProviders = await getAvailableProviders();
-  const hasApiProviders = availableProviders.some(p => p !== 'claude-code');
 
   // Build disabled reasons for better UX
   let deepNativeDisabledReason: string | false = false;
@@ -505,11 +499,6 @@ export async function collectLivingDocsInputs(
     deepNativeDisabledReason = 'Claude CLI not installed (npm i -g @anthropic-ai/claude-code)';
   } else if (!claudeCodeStatus.available) {
     deepNativeDisabledReason = claudeCodeStatus.error || 'Claude Code not authenticated (run `claude` first)';
-  }
-
-  let deepApiDisabledReason: string | false = false;
-  if (!hasApiProviders) {
-    deepApiDisabledReason = 'No API keys found (set ANTHROPIC_API_KEY, OPENAI_API_KEY, or configure Ollama)';
   }
 
   const analysisDepth = await select<AnalysisDepthValue>({
@@ -532,14 +521,6 @@ export async function collectLivingDocsInputs(
       {
         value: 'deep-interactive',
         name: `${strings.depthDeepInteractive} - ${strings.depthDeepInteractiveDesc}`,
-      },
-      {
-        value: 'deep-api',
-        name: `${strings.depthDeepApi} - ${strings.depthDeepApiDesc}`,
-        description: hasApiProviders
-          ? `Available: ${availableProviders.filter(p => p !== 'claude-code').join(', ')}`
-          : strings.depthDeepApiNote,
-        disabled: deepApiDisabledReason,
       },
     ],
     default: claudeCodeStatus.available ? 'deep-native' : 'quick',

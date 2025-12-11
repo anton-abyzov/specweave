@@ -31,7 +31,7 @@ import { isClaudeCodeAvailable, getClaudeCodeStatus, getAvailableProviders } fro
 
 export interface LivingDocsOptions {
   resume?: string;
-  depth?: 'quick' | 'standard' | 'deep-native' | 'deep-api';
+  depth?: 'quick' | 'standard' | 'deep-native' | 'deep-interactive';
   priority?: string;
   sources?: string;
   dependsOn?: string;
@@ -284,15 +284,21 @@ async function collectConfiguration(
   // Handle --full-scan flag (forces deep-native analysis)
   if (options.fullScan) {
     const claudeCodeStatus = await getClaudeCodeStatus();
-    const depth = claudeCodeStatus.available ? 'deep-native' : 'deep-api';
+
+    if (!claudeCodeStatus.available) {
+      console.log(chalk.red('\nFull Scan requires Claude MAX subscription.'));
+      console.log(chalk.gray('Please use Claude Code with MAX plan to access AI-powered analysis.'));
+      console.log(chalk.gray('\nAlternatively, use --depth=standard for non-AI analysis.'));
+      return null;
+    }
 
     console.log(chalk.cyan('\nFull Scan Mode Enabled'));
-    console.log(chalk.gray(`  Using: ${depth} (comprehensive AI-powered analysis)`));
+    console.log(chalk.gray('  Using: deep-native (comprehensive AI-powered analysis)'));
     console.log(chalk.gray('  Analyzing: All repos, modules, architecture, inconsistencies, strategy'));
     console.log('');
 
     return {
-      analysisDepth: depth,
+      analysisDepth: 'deep-native',
       priorityAreas: [],
       additionalSources: [],
       knownPainPoints: [],
@@ -321,30 +327,27 @@ async function collectConfiguration(
 
   // Analysis depth
   const claudeCodeStatus = await getClaudeCodeStatus();
-  const availableProviders = await getAvailableProviders();
-  const hasApiProviders = availableProviders.some(p => p !== 'claude-code');
 
-  type DepthChoice = 'quick' | 'standard' | 'deep-native' | 'deep-api';
+  type DepthChoice = 'quick' | 'standard' | 'deep-native' | 'deep-interactive';
 
   const depthChoices: Array<{ value: DepthChoice; name: string; disabled?: string | false }> = [
-    { value: 'quick', name: 'Quick (~5-10 min) - Structure scan, tech detection' },
-    { value: 'standard', name: 'Standard (~15-30 min) - Module analysis, dependencies' },
+    { value: 'quick', name: 'Quick (~5-10 min) - Structure scan + tech detection + imports map' },
+    { value: 'standard', name: 'Standard (~15-30 min) - Module analysis + exports + dependencies' },
     {
       value: 'deep-native',
-      name: 'Deep-Native (Claude MAX) - AI-powered analysis (FREE!)',
+      name: '⭐ Deep - Background (Claude MAX) - AI analysis using your MAX subscription - NO EXTRA COST!',
       disabled: !claudeCodeStatus.available
         ? (claudeCodeStatus.error || 'Claude Code not available')
         : false,
     },
     {
-      value: 'deep-api',
-      name: 'Deep-API - AI analysis via API key (costs apply)',
-      disabled: !hasApiProviders ? 'No API keys configured' : false,
+      value: 'deep-interactive',
+      name: 'Deep - Interactive (this session) - AI analysis in current Claude Code session (pause/resume)',
     },
   ];
 
   const analysisDepth = await select<DepthChoice>({
-    message: 'Analysis depth:',
+    message: 'How deep should the analysis go?',
     choices: depthChoices,
     default: claudeCodeStatus.available ? 'deep-native' : 'quick',
   });

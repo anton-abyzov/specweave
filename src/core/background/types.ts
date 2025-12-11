@@ -92,14 +92,12 @@ export type BrownfieldPhase =
  * - quick/standard: Basic Node.js file scanning (no AI)
  * - deep-native: Uses Claude Code CLI with MAX subscription (FREE!)
  * - deep-interactive: Uses Claude Code agents in current session
- * - deep-api: Uses configured LLM API (Anthropic, OpenAI, etc.)
  */
 export type AnalysisDepth =
   | 'quick'           // ~5-10 min - structure scan only
   | 'standard'        // ~15-30 min - module analysis
   | 'deep-native'     // Claude Code CLI (MAX subscription - FREE!)
-  | 'deep-interactive' // In-session Claude Code agents
-  | 'deep-api';       // Background with LLM API (costs apply)
+  | 'deep-interactive'; // In-session Claude Code agents
 
 export interface BrownfieldJobConfig {
   type: 'brownfield-analysis';
