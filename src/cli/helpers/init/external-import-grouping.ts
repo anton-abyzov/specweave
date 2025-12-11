@@ -20,7 +20,13 @@ import { normalizeToProjectId } from '../../../utils/project-id-generator.js';
  * Load JIRA board mappings from config.json
  * Maps jiraBoardId → normalized specweaveProject
  *
- * CRITICAL FIX (v0.34.1): Needed to map boards to correct specweaveProject folders
+ * CRITICAL FIX (v0.34.7): For project-per-team strategy, ALL boards map to projectKey
+ *
+ * Config format (project-per-team):
+ *   config.boards = [{ id, name }]
+ *   config.strategy = "project-per-team"
+ *   config.projectKey = "ID"
+ *   → ALL boards in profile map to normalized projectKey (e.g., "id")
  */
 function loadJiraBoardMappings(projectPath: string): Map<number, string> | undefined {
   const jiraBoardMappings = new Map<number, string>();
@@ -36,10 +42,17 @@ function loadJiraBoardMappings(projectPath: string): Map<number, string> | undef
     // Extract board mappings from sync.profiles
     if (config.sync?.profiles) {
       for (const profile of Object.values(config.sync.profiles) as any[]) {
-        if (profile.provider === 'jira' && profile.config?.boardMapping?.boards) {
-          for (const board of profile.config.boardMapping.boards) {
-            if (board.boardId && board.specweaveProject) {
-              jiraBoardMappings.set(board.boardId, normalizeToProjectId(board.specweaveProject));
+        if (profile.provider !== 'jira') continue;
+
+        // project-per-team strategy: ALL boards in profile map to projectKey
+        if (profile.config?.boards && profile.config?.projectKey) {
+          const projectKey = profile.config.projectKey;
+          const normalizedProject = normalizeToProjectId(projectKey);
+
+          for (const board of profile.config.boards) {
+            const boardId = typeof board.id === 'string' ? parseInt(board.id, 10) : board.id;
+            if (boardId && !isNaN(boardId)) {
+              jiraBoardMappings.set(boardId, normalizedProject);
             }
           }
         }
