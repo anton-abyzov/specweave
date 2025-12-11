@@ -135,8 +135,8 @@ export class UserStoryIssueBuilder {
       bodyContent
     });
 
-    // 5. Determine labels (v0.34.1: extract project from body per-US field, not frontmatter)
-    const labels = this.buildLabels(frontmatter, bodyContent);
+    // 5. Determine labels (v0.35.0: project from frontmatter, not body)
+    const labels = this.buildLabels(frontmatter);
 
     return {
       title,
@@ -564,10 +564,10 @@ export class UserStoryIssueBuilder {
    * CRITICAL: Label names must match repository labels exactly!
    * Repository uses: status:complete, status:active, status:not_started
    *
-   * v0.34.1 (ADR-0140): Project derived from per-US **Project**: field in body,
-   * NOT from frontmatter.project (which is deprecated).
+   * v0.35.0: Project derived from frontmatter.project in us-*.md files.
+   * Living docs sync transforms spec.md **Project**: → us-*.md frontmatter project:
    */
-  private buildLabels(frontmatter: UserStoryFrontmatter, bodyContent: string): string[] {
+  private buildLabels(frontmatter: UserStoryFrontmatter): string[] {
     const labels: string[] = ['user-story', 'specweave'];
 
     // Add status label with proper mapping
@@ -605,10 +605,10 @@ export class UserStoryIssueBuilder {
       labels.push(frontmatter.priority.toLowerCase());
     }
 
-    // Add project label (v0.34.1: extract from per-US **Project**: field, not frontmatter)
-    // Pattern: **Project**: project-name (case-insensitive)
-    const projectMatch = bodyContent.match(/\*\*Project\*\*:\s*([a-zA-Z0-9_-]+)/i);
-    const project = projectMatch ? projectMatch[1].toLowerCase() : null;
+    // Add project label (v0.35.0: extract from frontmatter.project in us-*.md files)
+    // Living docs sync transforms spec.md **Project**: → us-*.md frontmatter project:
+    // See CLAUDE.md "Two File Formats for Project Field" for architecture
+    const project = frontmatter.project?.toLowerCase();
     if (project && project !== 'default') {
       labels.push(`project:${project}`);
     }
