@@ -31,16 +31,16 @@ This guide covers deploying Kafka to AWS, Azure, and Confluent Cloud using SpecW
 
 ```bash
 # Deploy to AWS MSK
-/specweave-kafka:deploy aws-msk
+/sw-kafka:deploy aws-msk
 
 # Deploy to Apache Kafka (EC2)
-/specweave-kafka:deploy apache-kafka
+/sw-kafka:deploy apache-kafka
 
 # Deploy to Azure Event Hubs
-/specweave-kafka:deploy azure-event-hubs
+/sw-kafka:deploy azure-event-hubs
 
 # Deploy to Confluent Cloud
-/specweave-confluent:cluster-create
+/sw-confluent:cluster-create
 ```
 
 **Output**:
@@ -78,7 +78,7 @@ VPC (10.0.0.0/16)
 ### Generate Module
 
 ```bash
-/specweave-kafka:deploy apache-kafka \
+/sw-kafka:deploy apache-kafka \
   --environment production \
   --region us-east-1 \
   --brokers 3 \
@@ -284,7 +284,7 @@ AWS MSK Cluster
 ### Generate Module
 
 ```bash
-/specweave-kafka:deploy aws-msk \
+/sw-kafka:deploy aws-msk \
   --environment production \
   --region us-east-1 \
   --instance-type kafka.m5.large \
@@ -507,7 +507,7 @@ Azure Event Hubs Namespace
 ### Generate Module
 
 ```bash
-/specweave-kafka:deploy azure-event-hubs \
+/sw-kafka:deploy azure-event-hubs \
   --environment production \
   --location eastus \
   --sku Standard \
@@ -728,7 +728,7 @@ Fully managed Kafka service by Confluent.
 ### Generate Module
 
 ```bash
-/specweave-confluent:cluster-create \
+/sw-confluent:cluster-create \
   --environment production \
   --cloud aws \
   --region us-east-1 \
