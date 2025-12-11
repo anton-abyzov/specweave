@@ -4,6 +4,23 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [0.34.7] - 2025-12-11
+
+### 🐛 Bug Fixes
+- **GitHub Sync**: Fix milestone detection for repos with 30+ milestones
+  - Added pagination parameters (`?per_page=100&state=all`) to milestone detection API call
+  - Prevents HTTP 422 "already_exists" error when syncing features #31-100
+  - Includes `state=all` to detect closed milestones (fixes reopened increment sync)
+  - Root cause: GitHub API default page size is 30, causing detection to fail for milestone #31+
+  - Impact: All features beyond #30 can now sync successfully to GitHub
+  - See `tests/unit/github-feature-sync-pagination.test.ts` for regression prevention
+
+### 📝 Documentation
+- Added comprehensive root cause analysis and validation report
+- LLM Judge validation with confidence score 0.88 (APPROVED)
+
+---
+
 ## [0.32.6] - 2025-12-08
 
 ### ✨ Features
