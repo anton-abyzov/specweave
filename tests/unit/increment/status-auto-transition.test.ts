@@ -11,7 +11,10 @@ import {
   autoTransitionStatus,
   onFileCreated,
   shouldTransitionToActive,
-  migrateLegacyStatuses
+  migrateLegacyStatuses,
+  getTaskCompletionStatus,
+  areAllTasksCompleted,
+  checkAndTransitionToReadyForReview
 } from '../../../src/core/increment/status-auto-transition.js';
 import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
 import { IncrementStatus, IncrementType } from '../../../src/core/types/increment-metadata.js';
@@ -20,19 +23,17 @@ import * as path from 'path';
 import * as os from 'os';
 
 describe('Status Auto-Transition', () => {
-  // ✅ SAFE: Use temp directory instead of project root
-  const testRootPath = path.join(os.tmpdir(), 'specweave-test-status-auto-transition');
-  const testIncrementsPath = path.join(testRootPath, '.specweave', 'increments');
-
+  // ✅ SAFE: Use unique temp directory per test run to avoid parallel test interference
+  let testRootPath: string;
+  let testIncrementsPath: string;
   let originalCwd: string;
 
   beforeEach(() => {
     originalCwd = process.cwd();
 
-    // Clean up test directory
-    if (fs.existsSync(testRootPath)) {
-      fs.removeSync(testRootPath);
-    }
+    // Generate unique path for each test to avoid parallel test collisions
+    testRootPath = path.join(os.tmpdir(), `specweave-test-status-auto-transition-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testIncrementsPath = path.join(testRootPath, '.specweave', 'increments');
 
     // Create test structure
     fs.ensureDirSync(testIncrementsPath);
@@ -383,6 +384,336 @@ describe('Status Auto-Transition', () => {
     });
   });
 
+  describe('getTaskCompletionStatus()', () => {
+    it('returns null when tasks.md does not exist', () => {
+      const incrementId = '0030-no-tasks';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      const status = getTaskCompletionStatus(incrementId);
+      expect(status).toBeNull();
+    });
+
+    it('returns correct count for all pending tasks', () => {
+      const incrementId = '0031-all-pending';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [ ] pending
+
+### T-002: Second Task
+**Status**: [ ] pending
+
+### T-003: Third Task
+**Status**: [ ] pending
+`);
+
+      const status = getTaskCompletionStatus(incrementId);
+      expect(status).not.toBeNull();
+      expect(status!.totalTasks).toBe(3);
+      expect(status!.completedTasks).toBe(0);
+      expect(status!.pendingTasks).toBe(3);
+      expect(status!.percentage).toBe(0);
+      expect(status!.allCompleted).toBe(false);
+    });
+
+    it('returns correct count for all completed tasks', () => {
+      const incrementId = '0032-all-complete';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [x] completed
+
+### T-002: Second Task
+**Status**: [x] completed
+
+### T-003: Third Task
+**Status**: [x] completed
+`);
+
+      const status = getTaskCompletionStatus(incrementId);
+      expect(status).not.toBeNull();
+      expect(status!.totalTasks).toBe(3);
+      expect(status!.completedTasks).toBe(3);
+      expect(status!.pendingTasks).toBe(0);
+      expect(status!.percentage).toBe(100);
+      expect(status!.allCompleted).toBe(true);
+    });
+
+    it('returns correct count for mixed tasks', () => {
+      const incrementId = '0033-mixed-tasks';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [x] completed
+
+### T-002: Second Task
+**Status**: [ ] pending
+
+### T-003: Third Task
+**Status**: [x] completed
+
+### T-004: Fourth Task
+**Status**: [ ] pending
+`);
+
+      const status = getTaskCompletionStatus(incrementId);
+      expect(status).not.toBeNull();
+      expect(status!.totalTasks).toBe(4);
+      expect(status!.completedTasks).toBe(2);
+      expect(status!.pendingTasks).toBe(2);
+      expect(status!.percentage).toBe(50);
+      expect(status!.allCompleted).toBe(false);
+    });
+
+    it('returns zero tasks for empty tasks.md', () => {
+      const incrementId = '0034-empty-tasks';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      createFile(incrementId, 'tasks.md', '# Tasks\n\nNo tasks yet.');
+
+      const status = getTaskCompletionStatus(incrementId);
+      expect(status).not.toBeNull();
+      expect(status!.totalTasks).toBe(0);
+      expect(status!.completedTasks).toBe(0);
+      expect(status!.allCompleted).toBe(false);
+    });
+  });
+
+  describe('areAllTasksCompleted()', () => {
+    it('returns false when tasks.md does not exist', () => {
+      const incrementId = '0035-no-tasks';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      expect(areAllTasksCompleted(incrementId)).toBe(false);
+    });
+
+    it('returns false when some tasks are pending', () => {
+      const incrementId = '0036-some-pending';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [x] completed
+
+### T-002: Second Task
+**Status**: [ ] pending
+`);
+
+      expect(areAllTasksCompleted(incrementId)).toBe(false);
+    });
+
+    it('returns true when all tasks are completed', () => {
+      const incrementId = '0037-all-complete';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [x] completed
+
+### T-002: Second Task
+**Status**: [x] completed
+`);
+
+      expect(areAllTasksCompleted(incrementId)).toBe(true);
+    });
+
+    it('returns false for empty tasks.md (no tasks)', () => {
+      const incrementId = '0038-empty';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      createFile(incrementId, 'tasks.md', '# Tasks\n\nNothing here.');
+
+      expect(areAllTasksCompleted(incrementId)).toBe(false);
+    });
+  });
+
+  describe('Rule 4 (v0.35.0+): ACTIVE → READY_FOR_REVIEW when all tasks completed', () => {
+    it('transitions from ACTIVE to READY_FOR_REVIEW when all tasks completed', () => {
+      const incrementId = '0040-auto-review';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [x] completed
+
+### T-002: Second Task
+**Status**: [x] completed
+
+### T-003: Third Task
+**Status**: [x] completed
+`);
+
+      const result = autoTransitionStatus(incrementId);
+
+      expect(result).toBe(true);
+
+      const metadata = MetadataManager.read(incrementId);
+      expect(metadata.status).toBe(IncrementStatus.READY_FOR_REVIEW);
+    });
+
+    it('does NOT transition if some tasks are pending', () => {
+      const incrementId = '0041-not-all-complete';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [x] completed
+
+### T-002: Second Task
+**Status**: [ ] pending
+`);
+
+      const result = autoTransitionStatus(incrementId);
+
+      expect(result).toBe(false);
+
+      const metadata = MetadataManager.read(incrementId);
+      expect(metadata.status).toBe(IncrementStatus.ACTIVE); // Unchanged
+    });
+
+    it('does NOT transition directly to READY_FOR_REVIEW if not ACTIVE status', () => {
+      const incrementId = '0042-not-active';
+      createTestIncrement(incrementId, IncrementStatus.PLANNING);
+
+      // Tasks are all completed but status is PLANNING
+      // The only way to get to READY_FOR_REVIEW is from ACTIVE
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [x] completed
+`);
+
+      const result = autoTransitionStatus(incrementId);
+
+      // No transition because:
+      // - Not ACTIVE (so can't go to READY_FOR_REVIEW)
+      // - No in-progress tasks (so can't trigger PLANNING → ACTIVE)
+      expect(result).toBe(false);
+
+      const metadata = MetadataManager.read(incrementId);
+      // Status remains PLANNING - would need to go to ACTIVE first (via in-progress task)
+      expect(metadata.status).toBe(IncrementStatus.PLANNING);
+    });
+
+    it('prevents direct transition to COMPLETED (must go through READY_FOR_REVIEW)', () => {
+      const incrementId = '0043-no-direct-complete';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [x] completed
+`);
+
+      // Auto-transition triggers
+      autoTransitionStatus(incrementId);
+
+      // Status should be READY_FOR_REVIEW, NOT COMPLETED
+      const metadata = MetadataManager.read(incrementId);
+      expect(metadata.status).toBe(IncrementStatus.READY_FOR_REVIEW);
+      expect(metadata.status).not.toBe(IncrementStatus.COMPLETED);
+    });
+  });
+
+  describe('checkAndTransitionToReadyForReview()', () => {
+    it('transitions and returns correct result when all tasks complete', () => {
+      const incrementId = '0050-check-transition';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [x] completed
+
+### T-002: Second Task
+**Status**: [x] completed
+`);
+
+      const result = checkAndTransitionToReadyForReview(incrementId);
+
+      expect(result.transitioned).toBe(true);
+      expect(result.from).toBe(IncrementStatus.ACTIVE);
+      expect(result.to).toBe(IncrementStatus.READY_FOR_REVIEW);
+      expect(result.taskStatus).toBeDefined();
+      expect(result.taskStatus!.allCompleted).toBe(true);
+      expect(result.message).toContain('READY_FOR_REVIEW');
+
+      const metadata = MetadataManager.read(incrementId);
+      expect(metadata.status).toBe(IncrementStatus.READY_FOR_REVIEW);
+    });
+
+    it('does not transition when tasks are pending', () => {
+      const incrementId = '0051-check-pending';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [x] completed
+
+### T-002: Second Task
+**Status**: [ ] pending
+`);
+
+      const result = checkAndTransitionToReadyForReview(incrementId);
+
+      expect(result.transitioned).toBe(false);
+      expect(result.taskStatus).toBeDefined();
+      expect(result.taskStatus!.completedTasks).toBe(1);
+      expect(result.taskStatus!.pendingTasks).toBe(1);
+      expect(result.message).toContain('not ready for review');
+
+      const metadata = MetadataManager.read(incrementId);
+      expect(metadata.status).toBe(IncrementStatus.ACTIVE); // Unchanged
+    });
+
+    it('does not transition when not ACTIVE', () => {
+      const incrementId = '0052-check-not-active';
+      createTestIncrement(incrementId, IncrementStatus.PLANNING);
+
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [x] completed
+`);
+
+      const result = checkAndTransitionToReadyForReview(incrementId);
+
+      expect(result.transitioned).toBe(false);
+      expect(result.message).toContain('not active');
+
+      const metadata = MetadataManager.read(incrementId);
+      expect(metadata.status).toBe(IncrementStatus.PLANNING); // Unchanged
+    });
+
+    it('handles missing tasks.md gracefully', () => {
+      const incrementId = '0053-check-no-tasks';
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      const result = checkAndTransitionToReadyForReview(incrementId);
+
+      expect(result.transitioned).toBe(false);
+      expect(result.message).toContain('No tasks.md found');
+    });
+
+    it('handles missing increment gracefully', () => {
+      const result = checkAndTransitionToReadyForReview('9999-nonexistent');
+
+      expect(result.transitioned).toBe(false);
+      expect(result.message).toContain('Error');
+    });
+  });
+
   describe('Integration: Full workflow', () => {
     it('increment lifecycle: PLANNING → ACTIVE', () => {
       const incrementId = '0022-full-lifecycle';
@@ -430,6 +761,61 @@ describe('Status Auto-Transition', () => {
 
       metadata = MetadataManager.read(incrementId);
       expect(metadata.status).toBe(IncrementStatus.ACTIVE);
+    });
+
+    it('CRITICAL: Full lifecycle prevents auto-completion bug (v0.35.0+)', () => {
+      const incrementId = '0024-full-lifecycle-review';
+
+      // Step 1: Create increment in ACTIVE
+      createTestIncrement(incrementId, IncrementStatus.ACTIVE);
+
+      // Step 2: Create tasks.md with pending tasks
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [ ] pending
+
+### T-002: Second Task
+**Status**: [ ] pending
+`);
+
+      autoTransitionStatus(incrementId);
+      let metadata = MetadataManager.read(incrementId);
+      expect(metadata.status).toBe(IncrementStatus.ACTIVE);
+
+      // Step 3: Complete first task (still ACTIVE)
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [x] completed
+
+### T-002: Second Task
+**Status**: [ ] pending
+`);
+
+      autoTransitionStatus(incrementId);
+      metadata = MetadataManager.read(incrementId);
+      expect(metadata.status).toBe(IncrementStatus.ACTIVE);
+
+      // Step 4: Complete all tasks → AUTO-TRANSITION to READY_FOR_REVIEW
+      createFile(incrementId, 'tasks.md', `# Tasks
+
+### T-001: First Task
+**Status**: [x] completed
+
+### T-002: Second Task
+**Status**: [x] completed
+`);
+
+      autoTransitionStatus(incrementId);
+      metadata = MetadataManager.read(incrementId);
+
+      // CRITICAL: Status should be READY_FOR_REVIEW, NOT COMPLETED!
+      expect(metadata.status).toBe(IncrementStatus.READY_FOR_REVIEW);
+      expect(metadata.status).not.toBe(IncrementStatus.COMPLETED);
+
+      // Step 5: Only /specweave:done can transition to COMPLETED
+      // (This would require user approval via MetadataManager.updateStatus)
     });
   });
 });
