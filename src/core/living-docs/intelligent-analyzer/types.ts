@@ -8,13 +8,13 @@
  * Analysis checkpoint for resume support
  */
 export interface IntelligentAnalysisCheckpoint {
-  phase: 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
-  
+  phase: 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H';
+
   // Phase B: Per-repo progress
   reposTotal: number;
   reposCompleted: string[];
   repoInProgress: string | null;
-  
+
   // Phase completion flags
   discoveryComplete: boolean;
   deepAnalysisComplete: boolean;
@@ -22,7 +22,9 @@ export interface IntelligentAnalysisCheckpoint {
   architectureComplete: boolean;
   inconsistenciesComplete: boolean;
   strategyComplete: boolean;
-  
+  enterpriseComplete: boolean;    // Phase G: Enterprise KB, Delivery, Ops
+  diagramsComplete: boolean;      // Phase H: Mermaid diagrams
+
   // Timestamps
   startedAt: string;
   lastActivityAt: string;

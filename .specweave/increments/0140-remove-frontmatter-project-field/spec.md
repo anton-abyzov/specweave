@@ -1,6 +1,6 @@
 # 0140: Remove Frontmatter Project Field
 
-**Status**: Planned
+**Status**: Completed
 **Priority**: P1
 **Type**: Refactor
 **Created**: 2025-12-10

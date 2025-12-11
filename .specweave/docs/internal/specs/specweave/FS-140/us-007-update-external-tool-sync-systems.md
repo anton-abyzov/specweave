@@ -39,5 +39,5 @@ project: specweave
 ## Tasks
 
 - [x] **T-014**: Update spec-identifier-detector.ts
-- [ ] **T-015**: Update GitHub Sync (user-story-issue-builder.ts)
-- [ ] **T-016**: Update JIRA and ADO Sync
+- [x] **T-015**: Update GitHub Sync (user-story-issue-builder.ts)
+- [x] **T-016**: Update JIRA and ADO Sync

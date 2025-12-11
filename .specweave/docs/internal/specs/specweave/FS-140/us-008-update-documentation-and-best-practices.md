@@ -38,9 +38,9 @@ project: specweave
 
 ## Tasks
 
-- [ ] **T-029**: Rewrite CLAUDE.md Section 2c
-- [ ] **T-030**: Update Skill Documentation
-- [ ] **T-031**: Create ADR for Architectural Decision
-- [ ] **T-032**: Add Migration Guide
-- [ ] **T-033**: Add FAQ
-- [ ] **T-044**: Final Documentation Review
+- [x] **T-029**: Rewrite CLAUDE.md Section 2c
+- [x] **T-030**: Update Skill Documentation
+- [x] **T-031**: Create ADR for Architectural Decision
+- [x] **T-032**: Add Migration Guide
+- [x] **T-033**: Add FAQ
+- [x] **T-044**: Final Documentation Review

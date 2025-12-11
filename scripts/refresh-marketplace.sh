@@ -1,5 +1,25 @@
 #!/bin/bash
 
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║  ⛔  WARNING: DEVELOPER-ONLY SCRIPT - DO NOT USE IN PRODUCTION!  ⛔      ║
+# ╠══════════════════════════════════════════════════════════════════════════╣
+# ║                                                                          ║
+# ║  This script performs DESTRUCTIVE operations:                            ║
+# ║    • REMOVES all installed SpecWeave plugins                             ║
+# ║    • REMOVES marketplace registration                                    ║
+# ║    • CLEARS plugin caches                                                ║
+# ║                                                                          ║
+# ║  This is intended ONLY for SpecWeave framework developers who are:       ║
+# ║    • Actively developing new plugins                                     ║
+# ║    • Testing marketplace changes                                         ║
+# ║    • Publishing new plugin versions                                      ║
+# ║                                                                          ║
+# ║  USERS: DO NOT RUN THIS! Use these instead:                              ║
+# ║    • /plugin install specweave (in Claude Code session)                  ║
+# ║    • specweave init . (safe, non-destructive reinit)                     ║
+# ║                                                                          ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+#
 # SpecWeave Marketplace Refresh Script
 # Usage: bash scripts/refresh-marketplace.sh [--github|--local]
 #

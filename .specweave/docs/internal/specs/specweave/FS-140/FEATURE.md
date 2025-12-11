@@ -2,10 +2,15 @@
 id: FS-140
 title: "0140: Remove Frontmatter Project Field"
 type: feature
-status: completed
+status: active
 priority: P1
 created: 2025-12-11
 lastUpdated: 2025-12-11
+external_tools:
+  github:
+    type: milestone
+    id: 55
+    url: https://github.com/anton-abyzov/specweave/milestone/55
 ---
 
 # 0140: Remove Frontmatter Project Field
@@ -18,7 +23,7 @@ Remove the redundant `project:` field from spec.md YAML frontmatter and implemen
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0140-remove-frontmatter-project-field](../../../../increments/0140-remove-frontmatter-project-field/spec.md) | ✅ completed | 2025-12-11 |
+| [0140-remove-frontmatter-project-field](../../../../increments/0140-remove-frontmatter-project-field/spec.md) | ⏳ active | 2025-12-11 |
 
 ## User Stories
 

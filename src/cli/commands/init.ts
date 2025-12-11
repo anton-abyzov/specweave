@@ -544,8 +544,16 @@ export async function initCommand(
     let skipInitialIncrement = false;
 
     if (toolName === 'claude') {
-      const result = await installAllPlugins({ dirname: __dirname, forceRefresh: options.forceRefresh });
-      autoInstallSucceeded = result.success;
+      // CRITICAL FIX (v0.34.6): Skip plugin installation in "continue existing" mode
+      // This prevents marketplace/plugin deregistration on reinit
+      // Users who choose "continue working" expect their plugins to remain intact
+      if (continueExisting) {
+        console.log(chalk.green('   ✓ Keeping existing plugin configuration'));
+        autoInstallSucceeded = true; // Assume plugins are already installed
+      } else {
+        const result = await installAllPlugins({ dirname: __dirname, forceRefresh: options.forceRefresh });
+        autoInstallSucceeded = result.success;
+      }
 
       // Repository hosting setup
       const gitHubRemote = detectGitHubRemote(targetDir);

@@ -38,6 +38,6 @@ project: specweave
 
 ## Tasks
 
-- [ ] **T-022**: Update spec-project-validator.sh Hook
-- [ ] **T-023**: Elevate per-us-project-validator.sh to Primary
-- [ ] **T-024**: Update Validation Hook Tests
+- [x] **T-022**: Update spec-project-validator.sh Hook
+- [x] **T-023**: Elevate per-us-project-validator.sh to Primary
+- [x] **T-024**: Update Validation Hook Tests

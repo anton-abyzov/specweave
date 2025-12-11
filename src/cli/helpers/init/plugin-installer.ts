@@ -13,6 +13,30 @@ import { detectClaudeCli, getClaudeCliDiagnostic, getClaudeCliSuggestions } from
 import { findSourceDir } from './path-utils.js';
 
 /**
+ * Detect if we're running in the SpecWeave framework repository itself.
+ * Framework developers need faster cache TTL for plugin iteration.
+ */
+function isSpecWeaveFrameworkRepository(dirname: string): boolean {
+  try {
+    // Walk up from dirname to find package.json
+    let currentDir = dirname;
+    for (let i = 0; i < 10; i++) {
+      const packageJsonPath = path.join(currentDir, 'package.json');
+      if (fs.existsSync(packageJsonPath)) {
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+        return packageJson.name === 'specweave';
+      }
+      const parentDir = path.dirname(currentDir);
+      if (parentDir === currentDir) break;
+      currentDir = parentDir;
+    }
+  } catch {
+    // Ignore errors, assume not framework repo
+  }
+  return false;
+}
+
+/**
  * Options for plugin installation
  */
 export interface PluginInstallOptions {
@@ -111,25 +135,36 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
       '.claude/plugins/marketplaces/specweave/.claude-plugin/marketplace.json'
     );
 
-    // Check if cache is fresh (< 5 min old) and valid
+    // Check if cache is fresh and valid
+    // CRITICAL FIX (v0.34.6): Increased from 5 min to 24 hours for users
+    // ENHANCEMENT (v0.34.6): Framework developers get 5 min TTL for faster iteration
     let needsRefresh = true;
 
     if (!forceRefresh && fs.existsSync(marketplaceCachePath)) {
       const cacheStats = fs.statSync(marketplaceCachePath);
       const cacheAge = Date.now() - cacheStats.mtimeMs;
-      const fiveMinutes = 5 * 60 * 1000;
 
-      if (cacheAge < fiveMinutes) {
+      // Detect if we're in SpecWeave framework repo (developers need faster refresh)
+      const isFrameworkRepo = isSpecWeaveFrameworkRepository(dirname);
+      const cacheTTL = isFrameworkRepo
+        ? 5 * 60 * 1000           // 5 min for framework developers
+        : 24 * 60 * 60 * 1000;    // 24 hours for users
+
+      if (cacheAge < cacheTTL) {
         try {
           const cacheData = JSON.parse(fs.readFileSync(marketplaceCachePath, 'utf-8'));
+          // Validate cache has at least one plugin with required fields
+          // NOTE: Don't hardcode plugin count - marketplace may grow/shrink
           const hasValidPlugins = cacheData.plugins &&
-            cacheData.plugins.length >= 25 &&
+            cacheData.plugins.length > 0 &&
+            cacheData.plugins.some((p: { name?: string }) => p.name === 'specweave') && // Core plugin must exist
             cacheData.plugins.every((p: { name?: string; version?: string; description?: string }) =>
               p.name && p.version && p.description);
 
           if (hasValidPlugins) {
             needsRefresh = false;
-            console.log(chalk.green('   ⚡ Using cached marketplace (fresh)'));
+            const ttlMsg = isFrameworkRepo ? 'dev mode, 5min TTL' : 'fresh';
+            console.log(chalk.green(`   ⚡ Using cached marketplace (${ttlMsg})`));
           }
         } catch {
           // Cache invalid, needs refresh
@@ -222,9 +257,22 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
 
 /**
  * Refresh the SpecWeave marketplace
+ *
+ * CRITICAL FIX (v0.34.6): Never remove existing marketplace!
+ * Previous behavior:
+ *   1. Remove marketplace → all plugins deregistered
+ *   2. Re-add marketplace → plugins need reinstall
+ *   3. Network failure after removal → broken state!
+ *
+ * New behavior:
+ *   1. Check if marketplace exists → skip if yes
+ *   2. Only add if missing → idempotent, safe
+ *
+ * This prevents the bug where users lose all plugins after
+ * running `specweave init .` multiple times.
  */
 async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void> {
-  spinner.start('Refreshing SpecWeave marketplace...');
+  spinner.start('Checking SpecWeave marketplace...');
 
   const listResult = execFileNoThrowSync('claude', ['plugin', 'marketplace', 'list']);
 
@@ -232,11 +280,15 @@ async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void
     (listResult.stdout || '').toLowerCase().includes('specweave');
 
   if (marketplaceExists) {
-    execFileNoThrowSync('claude', ['plugin', 'marketplace', 'remove', 'specweave']);
-    console.log(chalk.blue('   🔄 Removed existing marketplace for update'));
+    // CRITICAL: Do NOT remove the marketplace!
+    // This was causing users to lose all plugins on every init
+    console.log(chalk.green('   ✓ SpecWeave marketplace already registered'));
+    spinner.succeed('SpecWeave marketplace ready');
+    return;
   }
 
-  // Add marketplace from GitHub
+  // Only add marketplace if it doesn't exist
+  spinner.text = 'Adding SpecWeave marketplace...';
   const addResult = execFileNoThrowSync('claude', [
     'plugin',
     'marketplace',

@@ -1,23 +1,71 @@
 #!/bin/bash
 
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║  ⚠️  CAUTION: This script CLEARS ALL installed plugins!  ⚠️              ║
+# ╠══════════════════════════════════════════════════════════════════════════╣
+# ║                                                                          ║
+# ║  This is a NUCLEAR OPTION for fixing corrupted plugin registries.        ║
+# ║  It will:                                                                ║
+# ║    • REMOVE the SpecWeave marketplace registration                       ║
+# ║    • CLEAR the entire plugin registry (ALL plugins, not just SpecWeave!) ║
+# ║    • RE-INSTALL SpecWeave plugins from scratch                           ║
+# ║                                                                          ║
+# ║  USE THIS ONLY IF:                                                       ║
+# ║    • `specweave init .` keeps failing with marketplace errors            ║
+# ║    • `/plugin list` shows corrupted/broken entries                       ║
+# ║    • You understand you'll lose ALL installed plugins                    ║
+# ║                                                                          ║
+# ║  SAFER ALTERNATIVES:                                                     ║
+# ║    • `/plugin install specweave` (install single plugin)                 ║
+# ║    • `specweave init .` (safe, non-destructive reinit)                   ║
+# ║    • Restart Claude Code (fixes most loading issues)                     ║
+# ║                                                                          ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+#
 # SpecWeave Marketplace Error Fix Script
 # Fixes the common "Plugin not found in marketplace" errors
 # Created: 2025-11-11
+# Updated: 2025-12-11 (v0.34.6) - Added confirmation prompt
 
 set -e
-
-echo "🔧 SpecWeave Marketplace Error Fix Script"
-echo "========================================="
-echo ""
-echo "This script fixes the common marketplace and plugin loading errors"
-echo "that can occur when Claude Code's plugin registry gets corrupted."
-echo ""
 
 # Function to print colored output
 print_success() { echo -e "\033[0;32m✓ $1\033[0m"; }
 print_error() { echo -e "\033[0;31m✗ $1\033[0m"; }
 print_info() { echo -e "\033[0;34mℹ $1\033[0m"; }
 print_warning() { echo -e "\033[0;33m⚠ $1\033[0m"; }
+
+echo ""
+echo "🔧 SpecWeave Marketplace Error Fix Script"
+echo "========================================="
+echo ""
+print_warning "WARNING: This script will CLEAR ALL installed plugins!"
+echo ""
+echo "This includes:"
+echo "  • ALL SpecWeave plugins"
+echo "  • ANY other plugins you've installed (Cursor, custom, etc.)"
+echo ""
+echo "Backups will be created, but you'll need to reinstall non-SpecWeave plugins."
+echo ""
+
+# Interactive confirmation
+read -p "Type 'I understand' to continue (or anything else to abort): " confirm
+if [ "$confirm" != "I understand" ]; then
+    echo ""
+    print_info "Aborted. No changes were made."
+    echo ""
+    echo "Safer alternatives:"
+    echo "  • /plugin install specweave (in Claude Code session)"
+    echo "  • specweave init . (safe, non-destructive)"
+    echo "  • Restart Claude Code"
+    echo ""
+    exit 0
+fi
+
+echo ""
+print_info "Proceeding with plugin registry reset..."
+echo ""
+
 
 # Check if Claude CLI is available
 if ! command -v claude &> /dev/null; then

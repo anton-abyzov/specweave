@@ -4,6 +4,7 @@
  * Main orchestrator for deep codebase understanding.
  * Phases: A) Discovery -> B) Deep Analysis -> C) Org Synthesis
  *         -> D) Architecture -> E) Inconsistencies -> F) Strategy
+ *         -> G) Enterprise -> H) Diagrams
  */
 
 import * as fs from 'fs';
@@ -13,6 +14,10 @@ import { synthesizeOrganization, saveOrganizationStructure } from './organizatio
 import { generateArchitecture, saveArchitecture } from './architecture-generator.js';
 import { detectInconsistencies, saveReviewNeeded } from './inconsistency-detector.js';
 import { generateStrategy, saveStrategy } from './strategy-generator.js';
+import { EnterpriseGenerator } from '../enterprise/enterprise-generator.js';
+import { DeliveryGenerator } from '../delivery/delivery-generator.js';
+import { OpsGenerator } from '../operations/ops-generator.js';
+import { MermaidGenerator } from '../diagrams/mermaid-generator.js';
 import type { OrganizationSynthesisResult } from './organization-synthesizer.js';
 import type { InconsistencyResult } from './inconsistency-detector.js';
 import type {
@@ -24,11 +29,18 @@ import type {
 
 export interface IntelligentAnalysisOptions {
   projectPath: string;
+  projectName?: string;
   repos: Array<{ name: string; path: string }>;
   llmProvider?: LLMProvider;
   onProgress?: ProgressCallback;
   log?: (msg: string) => void;
   checkpoint?: IntelligentAnalysisCheckpoint;
+  /** Enable enterprise knowledge base generation (Phase G) */
+  enableEnterprise?: boolean;
+  /** Enable delivery/ops documentation (Phase G) */
+  enableDeliveryOps?: boolean;
+  /** Enable Mermaid diagram generation (Phase H) */
+  enableDiagrams?: boolean;
 }
 
 export interface IntelligentAnalysisResult {
@@ -42,11 +54,15 @@ export async function runIntelligentAnalysis(
 ): Promise<IntelligentAnalysisResult> {
   const {
     projectPath,
+    projectName = path.basename(projectPath),
     repos,
     llmProvider = null,
     onProgress = () => {},
     log = console.log,
     checkpoint: existingCheckpoint,
+    enableEnterprise = true,
+    enableDeliveryOps = true,
+    enableDiagrams = true,
   } = options;
 
   const savedFiles: string[] = [];
@@ -137,21 +153,22 @@ export async function runIntelligentAnalysis(
     saveCheckpoint(projectPath, checkpoint);
     log(`Phase D complete: ${archResult.detectedAdrs.length} ADRs detected`);
 
-    // Phase E: Inconsistency Detection
+    // Phase E: Inconsistency Detection (Enhanced)
     log('');
     inconsistencyResult = await detectInconsistencies(
       repoAnalyses,
       orgResult,
       llmProvider,
       onProgress,
-      log
+      log,
+      projectPath // Pass projectPath for broken links, spec-code gaps detection
     );
     const reviewFiles = await saveReviewNeeded(projectPath, inconsistencyResult);
     savedFiles.push(...reviewFiles);
     checkpoint.inconsistenciesComplete = true;
     checkpoint.phase = 'F';
     saveCheckpoint(projectPath, checkpoint);
-    log(`Phase E complete: ${inconsistencyResult.issues.length} issues, ${inconsistencyResult.techDebt.length} tech debt`);
+    log(`Phase E complete: ${inconsistencyResult.enhancedIssues?.length || inconsistencyResult.issues.length} issues, ${inconsistencyResult.techDebt.length} tech debt`);
   }
 
   // Phase F: Strategy Generation
@@ -168,8 +185,88 @@ export async function runIntelligentAnalysis(
     const strategyFiles = await saveStrategy(projectPath, strategyResult);
     savedFiles.push(...strategyFiles);
     checkpoint.strategyComplete = true;
+    checkpoint.phase = 'G';
     saveCheckpoint(projectPath, checkpoint);
     log(`Phase F complete: ${strategyResult.recommendations.length} recommendations generated`);
+  }
+
+  // Phase G: Enterprise Knowledge Base & Delivery/Ops
+  if (!checkpoint.enterpriseComplete && orgResult) {
+    log('');
+    log('PHASE G: Enterprise Knowledge Base');
+
+    // G.1: Enterprise documentation (history, features, teams, relationships)
+    if (enableEnterprise) {
+      try {
+        const enterpriseGen = new EnterpriseGenerator({
+          projectPath,
+          projectName,
+          teams: orgResult.teams,
+        });
+        const enterpriseResult = await enterpriseGen.generate();
+        savedFiles.push(...enterpriseResult.savedFiles);
+        log(`  Generated ${enterpriseResult.savedFiles.length} enterprise docs`);
+      } catch (err) {
+        log(`  Enterprise generation warning: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+
+    // G.2: Delivery documentation (CI/CD, releases, deployments)
+    if (enableDeliveryOps) {
+      try {
+        const deliveryGen = new DeliveryGenerator({ projectPath, projectName });
+        const deliveryResult = await deliveryGen.generate();
+        savedFiles.push(...deliveryResult.savedFiles);
+        log(`  Generated ${deliveryResult.savedFiles.length} delivery docs`);
+      } catch (err) {
+        log(`  Delivery generation warning: ${err instanceof Error ? err.message : String(err)}`);
+      }
+
+      // G.3: Operations documentation (runbooks, monitoring, incidents)
+      try {
+        const opsGen = new OpsGenerator({ projectPath, projectName });
+        const opsResult = await opsGen.generate();
+        savedFiles.push(...opsResult.savedFiles);
+        log(`  Generated ${opsResult.savedFiles.length} ops docs`);
+      } catch (err) {
+        log(`  Ops generation warning: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+
+    checkpoint.enterpriseComplete = true;
+    checkpoint.phase = 'H';
+    saveCheckpoint(projectPath, checkpoint);
+    log('Phase G complete: Enterprise documentation generated');
+  }
+
+  // Phase H: Mermaid Diagrams
+  if (!checkpoint.diagramsComplete && enableDiagrams) {
+    log('');
+    log('PHASE H: Diagram Generation');
+
+    try {
+      // Load feature specs for diagrams
+      const { EnhancedSpecLoader } = await import('../enterprise/spec-loader.js');
+      const specLoader = new EnhancedSpecLoader({ projectPath });
+      const specsCatalog = await specLoader.loadAllSpecs();
+
+      const mermaidGen = new MermaidGenerator({
+        projectPath,
+        projectName,
+        features: specsCatalog.features,
+        teams: orgResult?.teams,
+        repoAnalyses,
+      });
+      const diagramResult = await mermaidGen.generate();
+      savedFiles.push(...diagramResult.savedFiles);
+      log(`  Generated ${diagramResult.diagrams.length} Mermaid diagrams`);
+    } catch (err) {
+      log(`  Diagram generation warning: ${err instanceof Error ? err.message : String(err)}`);
+    }
+
+    checkpoint.diagramsComplete = true;
+    saveCheckpoint(projectPath, checkpoint);
+    log('Phase H complete: Diagrams generated');
   }
 
   log('');
@@ -256,6 +353,8 @@ function createInitialCheckpoint(repoCount: number): IntelligentAnalysisCheckpoi
     architectureComplete: false,
     inconsistenciesComplete: false,
     strategyComplete: false,
+    enterpriseComplete: false,
+    diagramsComplete: false,
     startedAt: new Date().toISOString(),
     lastActivityAt: new Date().toISOString(),
     estimatedCompletion: null,

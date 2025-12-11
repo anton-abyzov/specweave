@@ -403,9 +403,11 @@ export class GitHubFeatureSync {
     const title = `${featureData.id}: ${featureData.title}`;
 
     // CRITICAL: Check if milestone already exists before creating
+    // NOTE: Must use per_page=100 to handle repos with 30+ milestones (GitHub default is 30)
+    // BUG FIX: Without pagination, milestone #31+ won't be found → false "not found" → HTTP 422 duplicate error
     const existingResult = await execFileNoThrow('gh', [
       'api',
-      'repos/:owner/:repo/milestones',
+      'repos/:owner/:repo/milestones?per_page=100&state=all',
       '--jq',
       `.[] | select(.title == "${title}") | {number, html_url}`,
     ], { env: this.getGhEnv() });

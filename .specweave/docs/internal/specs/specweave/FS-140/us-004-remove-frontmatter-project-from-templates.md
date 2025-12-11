@@ -38,7 +38,7 @@ project: specweave
 
 ## Tasks
 
-- [ ] **T-018**: Update Single-Project Template
-- [ ] **T-019**: Update Multi-Project Template
-- [ ] **T-020**: Update All Other Templates
-- [ ] **T-021**: Update Template Documentation
+- [x] **T-018**: Update Single-Project Template
+- [x] **T-019**: Update Multi-Project Template
+- [x] **T-020**: Update All Other Templates
+- [x] **T-021**: Update Template Documentation

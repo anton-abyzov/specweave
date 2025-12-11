@@ -331,18 +331,18 @@ async function collectConfiguration(
   type DepthChoice = 'quick' | 'standard' | 'deep-native' | 'deep-interactive';
 
   const depthChoices: Array<{ value: DepthChoice; name: string; disabled?: string | false }> = [
-    { value: 'quick', name: 'Quick (~5-10 min) - Structure scan + tech detection + imports map' },
-    { value: 'standard', name: 'Standard (~15-30 min) - Module analysis + exports + dependencies' },
+    { value: 'quick', name: 'Quick - Structure scan + tech detection + imports + basic inconsistencies + diagrams' },
+    { value: 'standard', name: 'Standard - Module analysis + dependencies + team detection + relationships + full diagrams' },
     {
       value: 'deep-native',
-      name: '⭐ Deep - Background (Claude MAX) - AI analysis using your MAX subscription - NO EXTRA COST!',
+      name: '⭐ Deep - Background (Claude MAX) - AI-powered analysis, org synthesis, enterprise KB - NO EXTRA COST!',
       disabled: !claudeCodeStatus.available
         ? (claudeCodeStatus.error || 'Claude Code not available')
         : false,
     },
     {
       value: 'deep-interactive',
-      name: 'Deep - Interactive (this session) - AI analysis in current Claude Code session (pause/resume)',
+      name: 'Deep - Interactive (this session) - Full enterprise KB in current session (checkpoint/resume)',
     },
   ];
 

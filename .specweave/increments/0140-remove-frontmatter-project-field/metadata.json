@@ -4,8 +4,21 @@
   "type": "refactor",
   "priority": "P1",
   "created": "2025-12-10T16:00:00Z",
-  "lastActivity": "2025-12-10T16:15:00Z",
-  "completedAt": "2025-12-10T16:15:00Z",
+  "lastActivity": "2025-12-11T12:00:00Z",
+  "completedAt": "2025-12-11T12:00:00Z",
+  "approvedAt": "2025-12-11T12:00:00Z",
+  "approvedBy": "user",
+  "reopened": {
+    "count": 1,
+    "history": [
+      {
+        "date": "2025-12-11T10:00:00Z",
+        "reason": "Increment was marked completed prematurely - only 14/44 tasks done (32%). Reopening to complete remaining 30 tasks.",
+        "previousStatus": "completed",
+        "by": "user"
+      }
+    ]
+  },
   "testMode": "test-after",
   "coverageTarget": 80,
   "totalACs": 60,
