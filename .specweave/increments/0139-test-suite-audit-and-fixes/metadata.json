@@ -1,0 +1,17 @@
+{
+  "id": "0139-test-suite-audit-and-fixes",
+  "status": "completed",
+  "type": "feature",
+  "priority": "P0",
+  "created": "2025-12-10T19:00:00Z",
+  "started": "2025-12-10T19:30:00Z",
+  "completed": "2025-12-10T21:00:00Z",
+  "lastActivity": "2025-12-10T21:00:00Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {},
+  "total_acs": 27,
+  "approvedAt": "2025-12-10T21:00:00Z"
+}

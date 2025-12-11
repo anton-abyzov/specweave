@@ -8,7 +8,6 @@ created: 2025-12-08
 structure: user-stories
 testMode: test-after
 coverageTarget: 80
-project: specweave
 ---
 
 # Fix spec-project-validator Hook Regex

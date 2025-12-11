@@ -303,6 +303,7 @@ export class IncrementNumberManager {
    * @param options - Options for ID generation
    * @param options.isExternal - If true, adds E suffix for external items
    * @param options.projectRoot - Project root directory
+   * @param options.skipValidation - If true, skips uniqueness validation (DANGEROUS - use only for testing)
    * @returns Full increment folder name (e.g., "0033E-dora-metrics-fix")
    *
    * @example
@@ -320,12 +321,66 @@ export class IncrementNumberManager {
    */
   static generateIncrementId(
     name: string,
-    options: { isExternal?: boolean; projectRoot?: string } = {}
+    options: { isExternal?: boolean; projectRoot?: string; skipValidation?: boolean } = {}
   ): string {
-    const { isExternal = false, projectRoot = process.cwd() } = options;
+    const { isExternal = false, projectRoot = process.cwd(), skipValidation = false } = options;
     const number = this.getNextIncrementNumber(projectRoot);
     const suffix = isExternal ? 'E' : '';
-    return `${number}${suffix}-${name}`;
+    const id = `${number}${suffix}-${name}`;
+
+    // Validate by default to prevent duplicates (v0.34.0+)
+    if (!skipValidation) {
+      this.validateUnique(id, projectRoot);
+    }
+
+    return id;
+  }
+
+  /**
+   * Validate that a manually-specified increment ID is unique.
+   *
+   * CRITICAL: Use this when creating increments with explicit IDs (e.g., from splits).
+   * The ID format "0141-feature-name" will be validated against all existing increments.
+   *
+   * @param incrementId - Full increment ID to validate (e.g., "0141-feature-name")
+   * @param projectRoot - Project root directory (defaults to process.cwd())
+   * @throws Error if increment number already exists
+   *
+   * @example
+   * ```typescript
+   * // Before creating increment folder with explicit ID:
+   * IncrementNumberManager.validateExplicitId('0141-my-feature');
+   * // Throws if 0141 already exists!
+   * ```
+   *
+   * @since 0.34.0
+   */
+  static validateExplicitId(
+    incrementId: string,
+    projectRoot: string = process.cwd()
+  ): void {
+    const number = this.extractNumber(incrementId);
+    if (!number) {
+      throw new Error(
+        `Invalid increment ID format: "${incrementId}". ` +
+        `Expected format: "XXXX-name" (e.g., "0141-my-feature") or "XXXXE-name" for external items.`
+      );
+    }
+
+    const duplicates = this.findDuplicates(number, projectRoot);
+
+    if (duplicates.length > 0) {
+      const nextNumber = this.getNextIncrementNumber(projectRoot);
+      throw new Error(
+        `DUPLICATE INCREMENT ID DETECTED!\n\n` +
+        `You specified increment ID: ${incrementId}\n` +
+        `But number ${number} already exists:\n` +
+        duplicates.map(d => `  - ${d}`).join('\n') + `\n\n` +
+        `CRITICAL: Increment IDs MUST be unique. This prevents confusion and sync issues.\n\n` +
+        `FIX: Use the next available number: ${nextNumber}\n` +
+        `Suggested ID: ${nextNumber}${this.isExternalIncrement(incrementId) ? '' : ''}-${incrementId.replace(/^\d{3,4}E?-/, '')}`
+      );
+    }
   }
 
   /**
@@ -481,8 +536,8 @@ export class IncrementNumberManager {
   /**
    * Generate a guaranteed-unique increment ID with validation.
    *
-   * Unlike generateIncrementId(), this method validates that the generated
-   * ID doesn't conflict with existing increments before returning.
+   * NOTE: As of v0.34.0, generateIncrementId() also validates by default.
+   * This method is kept for explicit clarity when uniqueness is critical.
    *
    * @param name - Kebab-case increment name
    * @param options - Generation options
@@ -502,11 +557,42 @@ export class IncrementNumberManager {
     options: { isExternal?: boolean; projectRoot?: string } = {}
   ): string {
     const { projectRoot = process.cwd() } = options;
-    const id = this.generateIncrementId(name, options);
-
-    // Double-check uniqueness (defends against race conditions)
-    this.validateUnique(id, projectRoot);
+    // generateIncrementId now validates by default (v0.34.0+)
+    const id = this.generateIncrementId(name, { ...options, skipValidation: false });
 
     return id;
+  }
+
+  /**
+   * Create an increment folder safely with full validation.
+   *
+   * This is the RECOMMENDED way to create new increments programmatically.
+   * It validates uniqueness and creates all necessary files atomically.
+   *
+   * @param name - Kebab-case increment name
+   * @param options - Creation options
+   * @returns Created increment ID
+   * @throws Error if increment number already exists
+   *
+   * @example
+   * ```typescript
+   * // For normal increments:
+   * const id = await IncrementNumberManager.createIncrement('my-feature', {
+   *   projectRoot: '/path/to/project'
+   * });
+   *
+   * // For split increments, use explicit ID with validation:
+   * IncrementNumberManager.validateExplicitId('0145-split-part1');
+   * // Then create folder manually only if validation passes
+   * ```
+   *
+   * @since 0.34.0
+   */
+  static createIncrementId(
+    name: string,
+    options: { isExternal?: boolean; projectRoot?: string } = {}
+  ): string {
+    // This is a wrapper that enforces the safe pattern
+    return this.generateUniqueIncrementId(name, options);
   }
 }

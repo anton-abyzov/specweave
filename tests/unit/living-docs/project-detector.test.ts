@@ -232,7 +232,7 @@ describe('ProjectDetector', () => {
 
       expect(result.id).toBe('mobile');
       expect(result.confidence).toBeGreaterThan(0.6);
-      expect(result.reasoning).toContain('Explicit project metadata: "mobile"');
+      expect(result.reasoning).toContain('Explicit project metadata: "mobile" (deprecated - use per-US fields)');
     });
 
     it('should detect project from tech stack in spec content', () => {

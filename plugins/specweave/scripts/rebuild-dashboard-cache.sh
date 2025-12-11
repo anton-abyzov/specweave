@@ -47,7 +47,7 @@ log "🔄 Rebuilding dashboard cache..."
 
 # Initialize counters using simple variables (bash 3.x compatible)
 status_backlog=0
-status_planned=0
+status_planning=0
 status_active=0
 status_paused=0
 status_ready_for_review=0
@@ -197,9 +197,10 @@ for increment_dir in "$INCREMENTS_DIR"/[0-9]*/; do
     '.[$id] = { metadata: $meta, tasks: $tasks, spec: $spec }')
 
   # Update status counters (bash 3.x compatible)
+  # Note: "planned" is a legacy typo for "planning" - both map to planning counter
   case "$status" in
     backlog) status_backlog=$((status_backlog + 1)) ;;
-    planned) status_planned=$((status_planned + 1)) ;;
+    planning|planned) status_planning=$((status_planning + 1)) ;;
     active) status_active=$((status_active + 1)) ;;
     paused) status_paused=$((status_paused + 1)) ;;
     ready_for_review) status_ready_for_review=$((status_ready_for_review + 1)) ;;
@@ -266,7 +267,7 @@ cache_json=$(jq -n \
   --argjson active "$status_active" \
   --argjson paused "$status_paused" \
   --argjson backlog "$status_backlog" \
-  --argjson planned "$status_planned" \
+  --argjson planning "$status_planning" \
   --argjson ready_for_review "$status_ready_for_review" \
   --argjson completed "$status_completed" \
   --argjson abandoned "$status_abandoned" \
@@ -293,7 +294,7 @@ cache_json=$(jq -n \
       active: $active,
       paused: $paused,
       backlog: $backlog,
-      planned: $planned,
+      planning: $planning,
       ready_for_review: $ready_for_review,
       completed: $completed,
       abandoned: $abandoned,
@@ -323,5 +324,5 @@ echo "$cache_json" > "$TEMP_FILE"
 mv "$TEMP_FILE" "$CACHE_FILE"
 
 log "✅ Dashboard cache rebuilt"
-log "   📊 $total_count increments | $status_active active | $status_completed completed"
+log "   📊 $total_count increments | $status_active active | $status_planning planning | $status_completed completed"
 log "   📁 Cache: $CACHE_FILE"

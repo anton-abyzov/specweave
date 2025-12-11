@@ -597,6 +597,9 @@ export class GitHubFeatureSync {
       overallComplete: boolean;
       acsPercentage: number;
       tasksPercentage: number;
+      acsTotal?: number;
+      tasksTotal?: number;
+      frontmatterStatus?: string;
     }
   ): Promise<void> {
     try {
@@ -615,6 +618,29 @@ export class GitHubFeatureSync {
         newStatusLabel = 'status:complete'; // Repository uses "complete" not "completed"
       } else if (completion.acsPercentage > 0 || completion.tasksPercentage > 0) {
         newStatusLabel = 'status:active'; // Repository uses "active" not "in-progress"
+      } else if (
+        // v0.35.1 FIX: For external-origin USs without ACs/tasks, use frontmatter status
+        // This fixes issue #889 where external USs always showed "not_started"
+        (completion.acsTotal === 0 || completion.acsTotal === undefined) &&
+        (completion.tasksTotal === 0 || completion.tasksTotal === undefined) &&
+        completion.frontmatterStatus
+      ) {
+        // Map frontmatter status to GitHub label
+        switch (completion.frontmatterStatus) {
+          case 'complete':
+          case 'completed':
+            newStatusLabel = 'status:complete';
+            break;
+          case 'active':
+          case 'in-progress':
+            newStatusLabel = 'status:active';
+            break;
+          case 'planning':
+          case 'not-started':
+          default:
+            newStatusLabel = 'status:not_started';
+        }
+        console.log(`      ℹ️  Using frontmatter status (no ACs/tasks): ${completion.frontmatterStatus} → ${newStatusLabel}`);
       } else {
         newStatusLabel = 'status:not_started';
       }

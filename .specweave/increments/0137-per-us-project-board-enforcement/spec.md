@@ -8,7 +8,6 @@ created: 2025-12-09
 structure: user-stories
 test_mode: test-after
 coverage_target: 80
-project: specweave
 ---
 
 # Feature: Per-US Project/Board Enforcement - The Missing Runtime Layer

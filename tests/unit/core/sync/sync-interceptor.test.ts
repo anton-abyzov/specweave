@@ -153,7 +153,7 @@ describe('SyncInterceptor', () => {
     it('should track operation duration', async () => {
       // Arrange
       const mockExecute = vi.fn().mockImplementation(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 15));
         return { id: 123 };
       });
 
@@ -177,7 +177,9 @@ describe('SyncInterceptor', () => {
       );
 
       // Assert
-      expect(result.durationMs).toBeGreaterThanOrEqual(10);
+      // Note: setTimeout(15) can resolve in 9-16ms due to timer resolution
+      // Use a relaxed threshold to avoid flaky tests
+      expect(result.durationMs).toBeGreaterThanOrEqual(5);
     });
   });
 

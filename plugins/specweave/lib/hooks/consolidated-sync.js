@@ -50,6 +50,9 @@ import { consoleLogger } from '../vendor/utils/logger.js';
 // Import US completion orchestrator (NEW in v0.25.0+)
 import { syncCompletedUserStories } from './us-completion-orchestrator.js';
 
+// Import auto-transition (NEW in v0.35.0+ - CRITICAL for preventing auto-completion bug)
+import { checkAndTransitionToReadyForReview } from '../vendor/core/increment/status-auto-transition.js';
+
 // ============================================================================
 // WRAPPER: UPDATE AC STATUS
 // ============================================================================
@@ -57,7 +60,7 @@ import { syncCompletedUserStories } from './us-completion-orchestrator.js';
 // So we replicate the core logic here using ACStatusManager
 async function updateACStatus(incrementId) {
   try {
-    console.log(`\n🔄 [3/5] Syncing AC status for increment ${incrementId}...`);
+    console.log(`\n🔄 [3/6] Syncing AC status for increment ${incrementId}...`);
 
     const projectRoot = process.cwd();
 
@@ -100,7 +103,7 @@ async function updateACStatus(incrementId) {
 // ============================================================================
 async function syncGitHub(incrementId) {
   try {
-    console.log(`\n🔗 [5/5] Syncing to GitHub...`);
+    console.log(`\n🔗 [5/6] Syncing to GitHub...`);
 
     const projectRoot = process.cwd();
 
@@ -137,8 +140,35 @@ async function runConsolidatedSync(incrementId) {
   const results = {};
 
   try {
+    // OPERATION 0 (v0.35.0+ - CRITICAL): Check for ACTIVE → READY_FOR_REVIEW transition
+    // This MUST run FIRST to prevent the auto-completion bug!
+    // When all tasks are done, increment transitions to READY_FOR_REVIEW (not COMPLETED).
+    // Only /specweave:done can then transition to COMPLETED with user approval.
+    console.log('\n📋 [0/6] Checking for status auto-transition...');
+    try {
+      const transitionResult = checkAndTransitionToReadyForReview(incrementId);
+      if (transitionResult.transitioned) {
+        console.log(`\n🎉 ${transitionResult.message}`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log('📋 INCREMENT READY FOR REVIEW');
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        console.log(`   Status: ACTIVE → READY_FOR_REVIEW`);
+        console.log(`   Tasks: ${transitionResult.taskStatus?.completedTasks}/${transitionResult.taskStatus?.totalTasks} completed`);
+        console.log('');
+        console.log('   To close this increment, run:');
+        console.log(`   /specweave:done ${incrementId}`);
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+      } else {
+        console.log(`   ${transitionResult.message}`);
+      }
+      results.autoTransition = { success: true, ...transitionResult };
+    } catch (error) {
+      console.error('❌ Error checking auto-transition:', error.message);
+      results.autoTransition = { success: false, error: error.message };
+    }
+
     // OPERATION 1: Update tasks.md (uses imported function)
-    console.log('\n🔄 [1/5] Updating tasks.md...');
+    console.log('\n🔄 [1/6] Updating tasks.md...');
     try {
       await updateTasksMd(incrementId);
       results.updateTasks = { success: true };
@@ -148,7 +178,7 @@ async function runConsolidatedSync(incrementId) {
     }
 
     // OPERATION 2: Sync living docs (uses imported function)
-    console.log('\n📚 [2/5] Syncing living docs...');
+    console.log('\n📚 [2/6] Syncing living docs...');
     try {
       await syncLivingDocs(incrementId);
       results.syncDocs = { success: true };
@@ -166,7 +196,7 @@ async function runConsolidatedSync(incrementId) {
     }
 
     // OPERATION 4: Translate living docs (uses imported function)
-    console.log('\n🌐 [4/5] Checking translation needs...');
+    console.log('\n🌐 [4/6] Checking translation needs...');
     try {
       await translateLivingDocs(incrementId);
       results.translate = { success: true };

@@ -2,18 +2,19 @@
 #
 # spec-project-validator.sh
 #
-# Pre-tool-use hook that validates spec.md has required project/board fields
+# Pre-tool-use hook that validates spec.md project/board configuration
 # before allowing Write tool to create/update spec.md files.
 #
 # Activation:
 # - tool_name: Write
 # - file_path matches: .specweave/increments/*/spec.md
 #
-# Rules:
-# - 1-level structure: spec.md MUST have `project:` in YAML frontmatter
-# - 2-level structure: spec.md MUST have BOTH `project:` AND `board:` in frontmatter
-# - Project MUST exist in configuration (validated via specweave context projects)
-# - Board MUST exist under project for 2-level (validated via specweave context boards)
+# Rules (ADR-0140 v0.35.0+):
+# - Frontmatter `project:` and `board:` fields are OPTIONAL (deprecated)
+# - Per-US `**Project**:` and `**Board**:` fields are the PRIMARY source
+# - Validates no unresolved {{...}} placeholders exist
+# - Single-project mode: frontmatter project must match config if present
+# - Multi-project mode: validates projects exist in config if referenced
 #
 # Returns exit code 1 (block) if validation fails, 0 (allow) otherwise.
 #
@@ -141,63 +142,56 @@ if [ "$MULTI_PROJECT_ENABLED" = "false" ]; then
 fi
 
 # Multi-project mode validation continues below
+# ADR-0140 (v0.35.0+): Frontmatter project/board fields are OPTIONAL
+# Per-US fields are the PRIMARY source of truth
+
 # Validation based on structure level
 if [ "$STRUCTURE_LEVEL" = "2" ]; then
-  # 2-level: BOTH project AND board required
+  # 2-level: Frontmatter project/board are OPTIONAL (per-US fields are primary)
 
-  # Check project field exists
-  if [ -z "$PROJECT" ] || [ "$PROJECT" = "null" ]; then
-    echo "{\"decision\": \"block\", \"reason\": \"spec.md missing required 'project:' field in YAML frontmatter.\\n\\n2-level structure detected.\\n\\nAvailable projects: ${AVAILABLE_PROJECTS:-none detected}\\n\\nAdd 'project: <project_name>' to frontmatter.\\n\\nRun 'specweave context projects' to see all options.\"}"
-    exit 0
+  # If project is provided in frontmatter, validate it exists
+  if [ -n "$PROJECT" ] && [ "$PROJECT" != "null" ]; then
+    PROJECT_EXISTS=$(echo "$CONTEXT_OUTPUT" | jq --arg proj "$PROJECT" '.projects[] | select(.id == $proj)' 2>/dev/null)
+    if [ -z "$PROJECT_EXISTS" ]; then
+      # Try case-insensitive match
+      PROJECT_EXISTS=$(echo "$CONTEXT_OUTPUT" | jq --arg proj "$PROJECT" '.projects[] | select(.id | ascii_downcase == ($proj | ascii_downcase))' 2>/dev/null)
+    fi
+
+    if [ -z "$PROJECT_EXISTS" ] && [ -n "$AVAILABLE_PROJECTS" ]; then
+      echo "{\"decision\": \"block\", \"reason\": \"Frontmatter project '${PROJECT}' not found in configuration.\\n\\nAvailable projects: ${AVAILABLE_PROJECTS}\\n\\nFix:\\n1. Remove project: field (recommended - use per-US **Project**: instead)\\n2. OR update to a valid project\\n3. OR set SPECWEAVE_FORCE_PROJECT=1 to bypass\"}"
+      exit 0
+    fi
   fi
 
-  # Check board field exists
-  if [ -z "$BOARD" ] || [ "$BOARD" = "null" ]; then
-    # Get available boards for the project
-    AVAILABLE_BOARDS=$(specweave context boards --project="$PROJECT" 2>/dev/null | jq -r '.boards[].id // empty' | tr '\n' ', ' | sed 's/,$//')
+  # If board is provided in frontmatter, validate it exists under project
+  if [ -n "$BOARD" ] && [ "$BOARD" != "null" ]; then
+    # Need project to validate board
+    if [ -z "$PROJECT" ] || [ "$PROJECT" = "null" ]; then
+      echo "{\"decision\": \"block\", \"reason\": \"Frontmatter has board: '${BOARD}' but no project: field.\\n\\nIf using board: you must also specify project:.\\n\\nRecommended: Remove both and use per-US **Project**: and **Board**: fields instead.\"}"
+      exit 0
+    fi
 
-    echo "{\"decision\": \"block\", \"reason\": \"spec.md missing required 'board:' field in YAML frontmatter.\\n\\n2-level structure detected (project: ${PROJECT}).\\n\\nAvailable boards: ${AVAILABLE_BOARDS:-none detected}\\n\\nAdd 'board: <board_name>' to frontmatter.\\n\\nRun 'specweave context boards --project=${PROJECT}' to see all options.\"}"
-    exit 0
-  fi
+    BOARDS_OUTPUT=$(specweave context boards --project="$PROJECT" 2>/dev/null || echo '{"boards": []}')
+    BOARD_EXISTS=$(echo "$BOARDS_OUTPUT" | jq --arg board "$BOARD" '.boards[] | select(.id == $board)' 2>/dev/null)
 
-  # Validate project exists in configuration
-  PROJECT_EXISTS=$(echo "$CONTEXT_OUTPUT" | jq --arg proj "$PROJECT" '.projects[] | select(.id == $proj)' 2>/dev/null)
-  if [ -z "$PROJECT_EXISTS" ]; then
-    # Try case-insensitive match
-    PROJECT_EXISTS=$(echo "$CONTEXT_OUTPUT" | jq --arg proj "$PROJECT" '.projects[] | select(.id | ascii_downcase == ($proj | ascii_downcase))' 2>/dev/null)
-  fi
+    if [ -z "$BOARD_EXISTS" ]; then
+      # Try case-insensitive match
+      BOARD_EXISTS=$(echo "$BOARDS_OUTPUT" | jq --arg board "$BOARD" '.boards[] | select(.id | ascii_downcase == ($board | ascii_downcase))' 2>/dev/null)
+    fi
 
-  if [ -z "$PROJECT_EXISTS" ] && [ -n "$AVAILABLE_PROJECTS" ]; then
-    echo "{\"decision\": \"block\", \"reason\": \"Project '${PROJECT}' not found in configuration.\\n\\nAvailable projects: ${AVAILABLE_PROJECTS}\\n\\nEither:\\n1. Update project: field to a valid project\\n2. Set SPECWEAVE_FORCE_PROJECT=1 to bypass validation\"}"
-    exit 0
-  fi
+    AVAILABLE_BOARDS=$(echo "$BOARDS_OUTPUT" | jq -r '.boards[].id // empty' | tr '\n' ', ' | sed 's/,$//')
 
-  # Validate board exists under project
-  BOARDS_OUTPUT=$(specweave context boards --project="$PROJECT" 2>/dev/null || echo '{"boards": []}')
-  BOARD_EXISTS=$(echo "$BOARDS_OUTPUT" | jq --arg board "$BOARD" '.boards[] | select(.id == $board)' 2>/dev/null)
-
-  if [ -z "$BOARD_EXISTS" ]; then
-    # Try case-insensitive match
-    BOARD_EXISTS=$(echo "$BOARDS_OUTPUT" | jq --arg board "$BOARD" '.boards[] | select(.id | ascii_downcase == ($board | ascii_downcase))' 2>/dev/null)
-  fi
-
-  AVAILABLE_BOARDS=$(echo "$BOARDS_OUTPUT" | jq -r '.boards[].id // empty' | tr '\n' ', ' | sed 's/,$//')
-
-  if [ -z "$BOARD_EXISTS" ] && [ -n "$AVAILABLE_BOARDS" ]; then
-    echo "{\"decision\": \"block\", \"reason\": \"Board '${BOARD}' not found under project '${PROJECT}'.\\n\\nAvailable boards: ${AVAILABLE_BOARDS}\\n\\nEither:\\n1. Update board: field to a valid board\\n2. Set SPECWEAVE_FORCE_PROJECT=1 to bypass validation\"}"
-    exit 0
+    if [ -z "$BOARD_EXISTS" ] && [ -n "$AVAILABLE_BOARDS" ]; then
+      echo "{\"decision\": \"block\", \"reason\": \"Frontmatter board '${BOARD}' not found under project '${PROJECT}'.\\n\\nAvailable boards: ${AVAILABLE_BOARDS}\\n\\nFix:\\n1. Remove board: field (recommended - use per-US **Board**: instead)\\n2. OR update to a valid board\\n3. OR set SPECWEAVE_FORCE_PROJECT=1 to bypass\"}"
+      exit 0
+    fi
   fi
 
 else
-  # 1-level: project is REQUIRED (not just recommended)
+  # 1-level multi-project: Frontmatter project is OPTIONAL (per-US fields are primary)
 
-  if [ -z "$PROJECT" ] || [ "$PROJECT" = "null" ]; then
-    echo "{\"decision\": \"block\", \"reason\": \"spec.md missing required 'project:' field in YAML frontmatter.\\n\\nAvailable projects: ${AVAILABLE_PROJECTS:-none detected}\\n\\nAdd 'project: <project_name>' to frontmatter.\\n\\nRun 'specweave context projects' to see all options.\"}"
-    exit 0
-  fi
-
-  # Validate project exists in configuration (if we have projects configured)
-  if [ -n "$AVAILABLE_PROJECTS" ]; then
+  # If project is provided in frontmatter, validate it exists
+  if [ -n "$PROJECT" ] && [ "$PROJECT" != "null" ] && [ -n "$AVAILABLE_PROJECTS" ]; then
     PROJECT_EXISTS=$(echo "$CONTEXT_OUTPUT" | jq --arg proj "$PROJECT" '.projects[] | select(.id == $proj)' 2>/dev/null)
     if [ -z "$PROJECT_EXISTS" ]; then
       # Try case-insensitive match
@@ -205,7 +199,7 @@ else
     fi
 
     if [ -z "$PROJECT_EXISTS" ]; then
-      echo "{\"decision\": \"block\", \"reason\": \"Project '${PROJECT}' not found in configuration.\\n\\nAvailable projects: ${AVAILABLE_PROJECTS}\\n\\nEither:\\n1. Update project: field to a valid project\\n2. Set SPECWEAVE_FORCE_PROJECT=1 to bypass validation\"}"
+      echo "{\"decision\": \"block\", \"reason\": \"Frontmatter project '${PROJECT}' not found in configuration.\\n\\nAvailable projects: ${AVAILABLE_PROJECTS}\\n\\nFix:\\n1. Remove project: field (recommended - use per-US **Project**: instead)\\n2. OR update to a valid project\\n3. OR set SPECWEAVE_FORCE_PROJECT=1 to bypass\"}"
       exit 0
     fi
   fi

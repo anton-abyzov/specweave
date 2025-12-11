@@ -126,16 +126,30 @@ export class BacklogScanner {
     const titleMatch = content.match(/^#\s+(.+)$/m);
     const title = titleMatch ? titleMatch[1] : frontmatter.title || incrementId;
 
+    // v0.34.1: Prioritize per-US **Project**: fields over frontmatter.project (ADR-0140)
+    const perUSProject = this.extractPrimaryPerUSProject(content);
+    const project = perUSProject || frontmatter.project;
+
     return {
       incrementId,
       specPath,
       title,
       priority: frontmatter.priority || 'P2',
-      project: frontmatter.project,
+      project,
       dependencies: frontmatter.dependencies || [],
       estimatedEffort: frontmatter.estimated_effort || frontmatter.estimatedEffort,
       created: frontmatter.created
     };
+  }
+
+  /**
+   * Extract primary project from per-US **Project**: fields
+   * v0.34.1: New method for ADR-0140
+   */
+  private extractPrimaryPerUSProject(content: string): string | undefined {
+    const projectPattern = /\*\*Project\*\*:\s*([a-zA-Z0-9-]+)/i;
+    const match = content.match(projectPattern);
+    return match ? match[1].toLowerCase() : undefined;
   }
 
   /**

@@ -62,6 +62,10 @@ export interface CompletionStatus {
   // Blocking items (for reopen)
   blockingAcs: string[]; // List of incomplete AC-IDs
   blockingTasks: string[]; // List of incomplete Task-IDs
+
+  // Frontmatter status (fallback for external-origin USs without ACs/tasks)
+  // v0.35.1: Used when acsTotal=0 AND tasksTotal=0 to determine label
+  frontmatterStatus?: 'complete' | 'completed' | 'active' | 'planning' | 'not-started' | string;
 }
 
 /**
@@ -128,6 +132,8 @@ export class CompletionCalculator {
       overallComplete,
       blockingAcs: acs.filter((ac) => !ac.completed).map((ac) => ac.id),
       blockingTasks: tasks.filter((t) => !t.completed).map((t) => t.id),
+      // v0.35.1: Include frontmatter status for external-origin USs fallback
+      frontmatterStatus: frontmatter.status,
     };
   }
 

@@ -73,7 +73,7 @@ progress_bar() {
 format_status() {
   case "$1" in
     active) echo "🔄 active" ;;
-    planning) echo "📝 planning" ;;
+    planning|planned) echo "📝 planning" ;;
     paused) echo "⏸️ paused" ;;
     completed) echo "✅ completed" ;;
     abandoned) echo "❌ abandoned" ;;
@@ -153,16 +153,17 @@ if [[ -n "$READY_FOR_REVIEW" ]]; then
 fi
 
 # Get active increments (excluding ready_for_review)
+# Note: "planned" is a legacy typo for "planning" - support both for backwards compatibility
 ACTIVE=$(jq -r '
   .increments | to_entries[] |
-  select(.value.status == "active" or .value.status == "planning" or .value.status == "backlog") |
-  "\(.key)|\(.value.tasks.completed)|\(.value.tasks.total)"
+  select(.value.status == "active" or .value.status == "planning" or .value.status == "planned" or .value.status == "backlog") |
+  "\(.key)|\(.value.tasks.completed)|\(.value.tasks.total)|\(.value.status)"
 ' "$CACHE_FILE" 2>/dev/null)
 
 ACTIVE_COUNT=0
 if [[ -n "$ACTIVE" ]]; then
   echo "🔄 Active:"
-  while IFS='|' read -r id completed total; do
+  while IFS='|' read -r id completed total inc_status; do
     [[ -z "$id" ]] && continue
     ACTIVE_COUNT=$((ACTIVE_COUNT + 1))
     if [[ "$total" -gt 0 ]]; then
@@ -171,7 +172,13 @@ if [[ -n "$ACTIVE" ]]; then
       pct=0
     fi
     bar=$(progress_bar "$pct" 15)
-    echo "  $id"
+    # Show status indicator if not "active"
+    status_indicator=""
+    case "$inc_status" in
+      planning|planned) status_indicator=" (📝 planning)" ;;
+      backlog) status_indicator=" (📋 backlog)" ;;
+    esac
+    echo "  $id$status_indicator"
     echo "     $bar $completed/$total ($pct%)"
   done <<< "$ACTIVE"
   echo ""

@@ -1,0 +1,922 @@
+{
+  "timestamp": "2025-12-11T03:53:00.998Z",
+  "dryRun": true,
+  "results": [
+    {
+      "file": ".specweave/increments/0107-enforce-config-json-separation/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": true,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/0115-ultra-smart-project-selection/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": true,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/0116-livingspec-universal-standard/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0117-instant-dashboard-cache/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0118E-external-tool-sync-on-increment-start/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0119-project-board-context-enforcement/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": true,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/0120-ado-jira-feature-parity-analysis/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0121-ado-jira-feature-parity-p2-p3/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0122-multi-technology-governance/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0123-intelligent-living-docs-content/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0124-spec-project-validator-regex-fix/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": true,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/0125-cross-project-user-story-targeting/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": true,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/0126-github-bitbucket-multirepo-pattern-parity/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0127-github-bitbucket-clone-parity/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0128-process-lifecycle-zombie-prevention/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0131-process-lifecycle-foundation/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0132-process-lifecycle-integration/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0133-process-lifecycle-testing/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0134-living-docs-core-engine/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0135-living-docs-visualization/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0136-process-lifecycle-test-suite/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/0137-per-us-project-board-enforcement/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": true,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/0138-single-project-first-architecture/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": true,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/0139-test-suite-audit-and-fixes/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": true,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/0140-remove-frontmatter-project-field/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/0141-frontmatter-removal-part1-implementation/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/0142-frontmatter-removal-part2-migration/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/0143-frontmatter-removal-code-templates-tests/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/0144-frontmatter-removal-migration-rollout/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0001-core-framework/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0002-core-enhancements/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0003-intelligent-model-selection/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0004-plugin-architecture/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0005-cross-platform-cli/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0006-llm-native-i18n/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0007-smart-increment-discipline/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0008-user-education-faq/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0009-intelligent-reopen-logic/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0010-dora-metrics-mvp/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0011-multi-project-sync/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0012-multi-project-internal-docs/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0013-v0.8.0-stabilization/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0014-proactive-plugin-validation/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0015-hierarchical-external-sync/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0016-self-reflection-system/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0017-sync-architecture-fix/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0018-strict-increment-discipline-enforcement/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0019-e2e-test-cleanup/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0020-github-multi-repo/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0021-jira-init-improvements/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0022-multi-repo-init-ux/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0023-release-management-enhancements/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0024-bidirectional-spec-sync/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0025-per-project-resource-config/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0026-multi-repo-unit-tests/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0027-multi-project-github-sync/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0028-multi-repo-ux-improvements/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0029-cicd-failure-detection-auto-fix/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0030-intelligent-living-docs/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0031-external-tool-status-sync/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0033-duplicate-increment-prevention/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0035-kafka-event-streaming-plugin/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0037-project-specific-tasks/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0038-serverless-architecture-intelligence/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0039-ultra-smart-next-command/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/_archive/0040-vitest-living-docs-mock-fixes/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0041-living-docs-test-fixes/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0042-test-infrastructure-cleanup/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0043-spec-md-desync-fix/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0044-integration-testing-status-hooks/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0045-living-docs-external-sync/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0046-console-elimination/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0047-us-task-linkage/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0048-external-tool-import-enhancement/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0049-cli-first-init-flow/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0050-external-tool-import-phase-1b-7/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0051-automatic-github-sync/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0053-safe-feature-deletion/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0054-sync-guard-security-reliability-fixes/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0055-eliminate-skill-agent-spawning-crashes/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0056-auto-github-sync-on-increment-creation/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0057-test-status-line-sync/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0058-fix-status-sync-and-auto-github-update/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0059-context-optimization-crash-prevention/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0060-migrate-inquirer-to-modular-api/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0061-fix-multi-repo-init-ux/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0062-umbrella-multi-repo-support/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0063-fix-external-import-multi-repo/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0064-fix-external-sync-tags-status-types/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0065-background-jobs/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0066-multi-project-jira-ado-init/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0067-multi-project-init-bugs/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0068-fix-multi-repo-import-from/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0069-multi-project-spec-generation/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0070-fix-parent-repo-sync-profile/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0071-fix-feature-id-collision-github-import/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0072-github-status-reconciliation/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0073-fix-y2k-id-limit-bug/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0074-fix-internal-feature-collision-and-import/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0075-smart-ado-init/spec.md",
+      "status": "skipped",
+      "reason": "No valid frontmatter found"
+    },
+    {
+      "file": ".specweave/increments/_archive/0076-crash-prevention-refactor/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0077-ado-init-flow-critical-fixes/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0078-ado-init-validation-critical-fixes/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0079-ado-init-flow-v2/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0080-ado-folder-naming-fix/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0081-ado-repo-cloning/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0082-unified-sync-orchestration/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0083-sync-interceptor-pattern/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0084-discrepancy-detection/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0085-sync-monitoring-commands/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0086-brownfield-doc-analysis/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0087-remove-redundant-feature-id/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0088-eda-hooks-architecture/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0089-bidirectional-sync-pull/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0090-living-docs-builder/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0091-ado-hierarchy-intelligence/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0092-code-quality-foundation/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0093-ado-permission-profile-fixes/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0094-unit-test-alignment/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0095-per-project-epic-hierarchy/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0096-ado-import-fixes/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0097-umbrella-module-detection/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0098-umbrella-workitem-matching/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0099-claude-code-native-background/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0100-enterprise-living-docs/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0101-judge-llm-command/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0102-docs-plugin-consolidation/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0103-list-last-commits/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0104-living-docs-command/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": false,
+      "reason": "No frontmatter project/board field to remove"
+    },
+    {
+      "file": ".specweave/increments/_archive/0105-llm-json-extraction-hardening/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/_archive/0106-ci-health-improvements/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/_archive/0109-external-items-dashboard/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/_archive/0110-external-items-workflow/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/_archive/0111E-dora-metrics-workflow-fix/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/_archive/0113-enhanced-living-docs-architecture/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/_archive/0114-slash-command-script-delegation/spec.md",
+      "status": "skipped",
+      "hadFrontmatterProject": true,
+      "hasPerUsFields": false,
+      "reason": "No per-US **Project**: fields found - unsafe to remove frontmatter"
+    },
+    {
+      "file": ".specweave/increments/_archive/0134-intelligent-living-docs-deep-analysis/spec.md",
+      "status": "no-change",
+      "hadFrontmatterProject": false,
+      "hasPerUsFields": true,
+      "reason": "No frontmatter project/board field to remove"
+    }
+  ],
+  "summary": {
+    "total": 137,
+    "migrated": 0,
+    "skipped": 49,
+    "noChange": 88,
+    "errors": 0
+  }
+}

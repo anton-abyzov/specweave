@@ -48,25 +48,29 @@ describe('IncrementNumberManager', () => {
     });
   });
 
-  describe('T-002: Directory Scanning Logic', () => {
+  describe('T-002: Directory Scanning Logic (Gap-Filling v0.33.1+)', () => {
+    // NOTE: Tests updated for gap-filling behavior (v0.33.1+)
+    // Gap-filling finds first available number from 0001, not highest+1
+
     it('should find increments in main directory', () => {
       fs.mkdirSync(path.join(incrementsDir, '0001-test'));
       fs.mkdirSync(path.join(incrementsDir, '0002-test'));
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
-      expect(result).toBe('0003');
+      expect(result).toBe('0003'); // Sequential, no gaps
     });
 
-    it('should find increments in _archive directory', () => {
+    it('should find increments in _archive directory and fill gaps', () => {
       const archiveDir = path.join(incrementsDir, '_archive');
       fs.mkdirSync(archiveDir, { recursive: true });
       fs.mkdirSync(path.join(archiveDir, '0005-archived'));
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
-      expect(result).toBe('0006');
+      // Gap-filling: finds first gap from 0001 → 0001 is available
+      expect(result).toBe('0001');
     });
 
-    it('should find highest across all directories', () => {
+    it('should fill first gap across all directories', () => {
       fs.mkdirSync(path.join(incrementsDir, '0001-main'));
 
       const archiveDir = path.join(incrementsDir, '_archive');
@@ -78,22 +82,25 @@ describe('IncrementNumberManager', () => {
       fs.mkdirSync(path.join(abandonedDir, '0005-abandoned'));
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
-      expect(result).toBe('0011'); // Highest is 10 in _archive
+      // Gap-filling: 0001 taken → first gap is 0002
+      expect(result).toBe('0002');
     });
 
-    it('should handle 3-digit increment IDs', () => {
+    it('should handle 3-digit increment IDs and fill gaps', () => {
       fs.mkdirSync(path.join(incrementsDir, '005-old-format'));
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
-      expect(result).toBe('0006');
+      // Gap-filling: 0005 taken → first gap is 0001
+      expect(result).toBe('0001');
     });
 
-    it('should handle mixed 3-digit and 4-digit formats', () => {
+    it('should handle mixed 3-digit and 4-digit formats with gap-filling', () => {
       fs.mkdirSync(path.join(incrementsDir, '005-old'));
       fs.mkdirSync(path.join(incrementsDir, '0010-new'));
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
-      expect(result).toBe('0011'); // Highest is 10
+      // Gap-filling: 0005 and 0010 taken → first gap is 0001
+      expect(result).toBe('0001');
     });
 
     it('should gracefully handle missing subdirectories', () => {
@@ -101,7 +108,8 @@ describe('IncrementNumberManager', () => {
       // No _archive, _abandoned, or _paused directories
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
-      expect(result).toBe('0003');
+      // Gap-filling: 0002 taken → first gap is 0001
+      expect(result).toBe('0001');
     });
 
     it('should ignore folders without number prefix', () => {
@@ -110,27 +118,38 @@ describe('IncrementNumberManager', () => {
       fs.mkdirSync(path.join(incrementsDir, '_archive'));
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
-      expect(result).toBe('0002');
+      expect(result).toBe('0002'); // 0001 taken, 0002 is first gap
     });
 
     it('should return 0001 for empty directories', () => {
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
       expect(result).toBe('0001');
     });
+
+    it('should return sequential number when no gaps exist', () => {
+      // Create consecutive increments with no gaps
+      fs.mkdirSync(path.join(incrementsDir, '0001-first'));
+      fs.mkdirSync(path.join(incrementsDir, '0002-second'));
+      fs.mkdirSync(path.join(incrementsDir, '0003-third'));
+
+      const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
+      expect(result).toBe('0004'); // No gaps, so highest+1
+    });
   });
 
-  describe('T-003: getNextIncrementNumber with Caching', () => {
+  describe('T-003: getNextIncrementNumber with Caching (Gap-Filling v0.33.1+)', () => {
     it('should always return 4-digit format', () => {
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
       expect(result).toMatch(/^\d{4}$/);
       expect(result.length).toBe(4);
     });
 
-    it('should return next number after highest', () => {
+    it('should fill gap when single high number exists', () => {
       fs.mkdirSync(path.join(incrementsDir, '0032-test'));
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
-      expect(result).toBe('0033');
+      // Gap-filling: 0032 exists → first gap is 0001
+      expect(result).toBe('0001');
     });
 
     it('should always scan fresh (no caching) - v0.30.21', () => {
@@ -143,10 +162,11 @@ describe('IncrementNumberManager', () => {
       const second = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
       expect(second).toBe('0002'); // Same - no new increments on disk
 
-      // Create new increment, should see it
+      // Create new increment, should see it and still find next gap
       fs.mkdirSync(path.join(incrementsDir, '0005-new'));
       const third = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
-      expect(third).toBe('0006'); // Sees new highest
+      // Gap-filling: 0001, 0005 exist → first gap is 0002 (still available)
+      expect(third).toBe('0002');
     });
 
     it('should ignore useCache parameter (deprecated) - v0.30.21', () => {
@@ -230,7 +250,7 @@ describe('IncrementNumberManager', () => {
     });
   });
 
-  describe('T-005: Cache Management', () => {
+  describe('T-005: Cache Management (Gap-Filling v0.33.1+)', () => {
     it('should clear all cached values', () => {
       fs.mkdirSync(path.join(incrementsDir, '0001-test'));
 
@@ -244,17 +264,19 @@ describe('IncrementNumberManager', () => {
       fs.mkdirSync(path.join(incrementsDir, '0005-new'));
 
       // Should see new value (cache was cleared)
+      // Gap-filling: 0001 and 0005 exist → first gap is 0002
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, true);
-      expect(result).toBe('0006');
+      expect(result).toBe('0002');
     });
   });
 
-  describe('T-005: Edge Cases', () => {
-    it('should handle very large increment numbers', () => {
+  describe('T-005: Edge Cases (Gap-Filling v0.33.1+)', () => {
+    it('should handle very large increment numbers with gap-filling', () => {
       fs.mkdirSync(path.join(incrementsDir, '9998-large'));
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot, false);
-      expect(result).toBe('9999');
+      // Gap-filling: 9998 exists → first gap is 0001
+      expect(result).toBe('0001');
     });
 
     it('should handle increments with complex names', () => {
@@ -273,21 +295,23 @@ describe('IncrementNumberManager', () => {
     });
   });
 
-  describe('T-006: External Increment E-Suffix (v0.32.0)', () => {
-    it('should recognize E suffix increments when scanning', () => {
+  describe('T-006: External Increment E-Suffix (v0.32.0) with Gap-Filling (v0.33.1+)', () => {
+    it('should recognize E suffix increments when scanning and fill gaps', () => {
       fs.mkdirSync(path.join(incrementsDir, '0010E-external-fix'));
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
-      expect(result).toBe('0011'); // Next number after 0010E
+      // Gap-filling: 0010E exists → first gap is 0001
+      expect(result).toBe('0001');
     });
 
-    it('should handle mixed internal and external increments', () => {
+    it('should handle mixed internal and external increments with gap-filling', () => {
       fs.mkdirSync(path.join(incrementsDir, '0005-internal'));
       fs.mkdirSync(path.join(incrementsDir, '0010E-external'));
       fs.mkdirSync(path.join(incrementsDir, '0008-another'));
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
-      expect(result).toBe('0011'); // Highest is 10 (from 0010E)
+      // Gap-filling: 5, 8, 10 exist → first gap is 0001
+      expect(result).toBe('0001');
     });
 
     it('should detect E suffix increment existence', () => {
@@ -297,37 +321,41 @@ describe('IncrementNumberManager', () => {
       expect(exists).toBe(true);
     });
 
-    it('should find E suffix increments in _archive', () => {
+    it('should find E suffix increments in _archive and fill gaps', () => {
       const archiveDir = path.join(incrementsDir, '_archive');
       fs.mkdirSync(archiveDir, { recursive: true });
       fs.mkdirSync(path.join(archiveDir, '0015E-archived-external'));
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
-      expect(result).toBe('0016');
+      // Gap-filling: 0015E exists in _archive → first gap is 0001
+      expect(result).toBe('0001');
     });
 
-    it('should generate external increment number with E suffix', () => {
+    it('should generate external increment number with E suffix and gap-filling', () => {
       fs.mkdirSync(path.join(incrementsDir, '0010-test'));
 
       const result = IncrementNumberManager.getNextExternalIncrementNumber(testProjectRoot);
-      expect(result).toBe('0011E');
+      // Gap-filling: 0010 exists → first gap is 0001 → returns 0001E
+      expect(result).toBe('0001E');
     });
 
-    it('should generate full increment ID for internal items', () => {
+    it('should generate full increment ID for internal items with gap-filling', () => {
       fs.mkdirSync(path.join(incrementsDir, '0005-existing'));
 
       const result = IncrementNumberManager.generateIncrementId('new-feature', { projectRoot: testProjectRoot });
-      expect(result).toBe('0006-new-feature');
+      // Gap-filling: 0005 exists → first gap is 0001
+      expect(result).toBe('0001-new-feature');
     });
 
-    it('should generate full increment ID for external items with E suffix', () => {
+    it('should generate full increment ID for external items with E suffix and gap-filling', () => {
       fs.mkdirSync(path.join(incrementsDir, '0005-existing'));
 
       const result = IncrementNumberManager.generateIncrementId('dora-fix', {
         isExternal: true,
         projectRoot: testProjectRoot
       });
-      expect(result).toBe('0006E-dora-fix');
+      // Gap-filling: 0005 exists → first gap is 0001 → returns 0001E-...
+      expect(result).toBe('0001E-dora-fix');
     });
 
     it('should correctly identify external increments', () => {
@@ -429,21 +457,22 @@ describe('IncrementNumberManager', () => {
       }).toThrow('Duplicate increment number detected');
     });
 
-    it('should generate guaranteed unique ID', () => {
+    it('should generate guaranteed unique ID with gap-filling', () => {
       fs.mkdirSync(path.join(incrementsDir, '0010-existing'));
 
       const id = IncrementNumberManager.generateUniqueIncrementId('new-feature', {
         projectRoot: testProjectRoot
       });
 
-      expect(id).toBe('0011-new-feature');
+      // Gap-filling: 0010 exists → first gap is 0001
+      expect(id).toBe('0001-new-feature');
       // Verify it's actually unique
       expect(() => {
         IncrementNumberManager.validateUnique(id, testProjectRoot);
       }).not.toThrow();
     });
 
-    it('should generate unique external ID', () => {
+    it('should generate unique external ID with gap-filling', () => {
       fs.mkdirSync(path.join(incrementsDir, '0010-existing'));
 
       const id = IncrementNumberManager.generateUniqueIncrementId('fix', {
@@ -451,7 +480,8 @@ describe('IncrementNumberManager', () => {
         projectRoot: testProjectRoot
       });
 
-      expect(id).toBe('0011E-fix');
+      // Gap-filling: 0010 exists → first gap is 0001 → returns 0001E-...
+      expect(id).toBe('0001E-fix');
     });
 
     it('should throw for invalid increment ID format', () => {

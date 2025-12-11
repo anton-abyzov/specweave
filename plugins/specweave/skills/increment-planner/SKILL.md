@@ -694,27 +694,28 @@ Replace placeholders:
 - **`{{BOARD_ID}}`** ← MANDATORY for 2-level (from STEP 0B)
 - `{{PROJECT_FE_ID}}`, `{{PROJECT_BE_ID}}`, `{{PROJECT_SHARED_ID}}` (for multi-repo)
 
-**Key Rules for spec.md:**
-1. **`project:` field MUST be set in YAML frontmatter** (1-level and 2-level)
-2. **`board:` field MUST be set in YAML frontmatter** (2-level only)
-3. **User stories grouped by project** if multi-project (Frontend, Backend, Shared, etc.)
-4. **User story IDs have project prefix**: `US-FE-001`, `US-BE-001` (multi-project)
-5. **AC-IDs have project prefix**: `AC-FE-US1-01`, `AC-BE-US1-01` (multi-project)
+**Key Rules for spec.md (ADR-0140: v0.35.0+):**
+1. **`project:` field REMOVED from YAML frontmatter** - now resolved from per-US fields
+2. **`board:` field REMOVED from YAML frontmatter** (2-level) - now in per-US fields
+3. **Each User Story MUST have `**Project**:` field** - source of truth for project
+4. **Each User Story (2-level) MUST have `**Board**:` field** - source of truth for board
+5. **User story IDs have project prefix**: `US-FE-001`, `US-BE-001` (multi-project)
+6. **AC-IDs have project prefix**: `AC-FE-US1-01`, `AC-BE-US1-01` (multi-project)
 
-**VALIDATION (spec.md frontmatter):**
-```yaml
-# 1-level structure (REQUIRED):
-project: digital-operations    # ← MUST be set
+**VALIDATION (per-US fields - v0.35.0+):**
+```markdown
+### US-001: Feature Name
+**Project**: digital-operations    # ← REQUIRED (resolved from config)
 
-# 2-level structure (BOTH REQUIRED):
-project: acme-corp             # ← MUST be set
-board: digital-operations      # ← MUST be set
+### US-001: Feature Name (2-level)
+**Project**: acme-corp             # ← REQUIRED
+**Board**: digital-operations      # ← REQUIRED for 2-level
 ```
 
 **⚠️ FORBIDDEN:**
-- Creating spec.md with `project: {{PROJECT_ID}}` (unresolved placeholder)
-- Creating spec.md for 2-level with `board: {{BOARD_ID}}` (unresolved placeholder)
-- Leaving project/board fields empty or undefined
+- User stories without `**Project**:` field
+- User stories (2-level) without `**Board**:` field
+- Using unresolved placeholders like `{{PROJECT_ID}}`
 
 ### STEP 5: Create plan.md Template
 

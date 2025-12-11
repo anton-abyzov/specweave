@@ -8,7 +8,6 @@ created: 2025-12-10
 structure: user-stories
 test_mode: test-after
 coverage_target: 80
-project: specweave
 ---
 
 # Feature: Single-Project-First Architecture

@@ -46,7 +46,8 @@ export function detectSpecIdentifier(
   const projectCode = getProjectCode(project);
 
   // Priority 1: External tool link (JIRA, ADO, GitHub)
-  const externalId = detectExternalId(frontmatter);
+  // v0.34.1: Pass project from spec (not frontmatter) - see ADR-0140
+  const externalId = detectExternalId(frontmatter, project);
   if (externalId) {
     return externalId;
   }
@@ -97,12 +98,20 @@ export function detectSpecIdentifier(
 
 /**
  * Detect external tool ID from frontmatter
+ *
+ * @param frontmatter - Parsed YAML frontmatter
+ * @param resolvedProject - Project ID resolved via ProjectResolutionService (v0.34.1+)
  */
-function detectExternalId(frontmatter: Record<string, any>): SpecIdentifier | null {
+function detectExternalId(
+  frontmatter: Record<string, any>,
+  resolvedProject: string
+): SpecIdentifier | null {
+  // v0.34.1: Use resolvedProject instead of frontmatter.project (ADR-0140)
+  const project = resolvedProject || 'default';
+
   // Check for JIRA
   if (frontmatter.externalLinks?.jira?.issueKey) {
     const { issueKey, url } = frontmatter.externalLinks.jira;
-    const project = frontmatter.project || 'default';
     const projectCode = getProjectCode(project);
 
     return {
@@ -120,7 +129,6 @@ function detectExternalId(frontmatter: Record<string, any>): SpecIdentifier | nu
   // Check for Azure DevOps
   if (frontmatter.externalLinks?.ado?.workItemId) {
     const { workItemId, url } = frontmatter.externalLinks.ado;
-    const project = frontmatter.project || 'default';
     const projectCode = getProjectCode(project);
 
     return {
@@ -138,7 +146,6 @@ function detectExternalId(frontmatter: Record<string, any>): SpecIdentifier | nu
   // Check for GitHub
   if (frontmatter.externalLinks?.github?.issueNumber) {
     const { issueNumber, issueUrl } = frontmatter.externalLinks.github;
-    const project = frontmatter.project || 'default';
     const projectCode = getProjectCode(project);
 
     return {

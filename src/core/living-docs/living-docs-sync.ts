@@ -26,6 +26,7 @@ import { BoardMatcher, type MatchDecision } from './board-matcher.js';
 import { CrossProjectSync } from './cross-project-sync.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { autoDetectProjectIdSync } from '../../utils/project-detection.js';
+import { ProjectResolutionService } from '../project/project-resolution.js';
 import { getGitHubAuthFromProject } from '../../utils/auth-helpers.js';
 // NOTE: findNextAvailableInternalIdSync no longer used - collision detection moved inline
 // to fix chain shift bug (2025-12-04). See getFeatureIdForIncrement() for details.
@@ -66,6 +67,7 @@ export class LivingDocsSync {
   private crossProjectSync: CrossProjectSync;
   private logger: Logger;
   private projectId: string;
+  private projectResolution: ProjectResolutionService;
 
   constructor(projectRoot: string, options: { logger?: Logger } = {}) {
     this.projectRoot = projectRoot;
@@ -75,6 +77,8 @@ export class LivingDocsSync {
     this.crossProjectSync = new CrossProjectSync(projectRoot, { logger: this.logger });
     // Auto-detect project ID from git remote, sync config, or use "default"
     this.projectId = autoDetectProjectIdSync(projectRoot, { silent: true });
+    // Initialize project resolution service for centralized project detection (v0.34.1+)
+    this.projectResolution = new ProjectResolutionService(projectRoot, { logger: this.logger });
   }
 
   /**
@@ -179,7 +183,10 @@ export class LivingDocsSync {
 
       // Step 4b: Detect cross-project/cross-board increments (v0.33.0+, v0.34.0 2-level)
       // If USs target different projects (or project/board combinations), sync to multiple folders
-      const defaultProject = parsed.frontmatter.project || resolvedProjectPath;
+      // v0.34.1: Use ProjectResolutionService instead of frontmatter.project (ADR-0140)
+      const resolved = await this.projectResolution.resolveProjectForIncrement(incrementId);
+      const defaultProject = resolved.projectId;
+      this.logger.debug(`   Resolved project: ${defaultProject} (${resolved.source}, ${resolved.confidence})`);
       const defaultBoard = parsed.frontmatter.board;
       const isCrossProject = this.crossProjectSync.isCrossProject(
         parsed.userStories,
@@ -1185,7 +1192,9 @@ export class LivingDocsSync {
     }
 
     // Extract user stories (v0.33.0+: pass defaultProject for cross-project targeting)
-    const defaultProject = frontmatter.project || this.projectId;
+    // v0.34.1: Use ProjectResolutionService instead of frontmatter.project (ADR-0140)
+    const resolved = await this.projectResolution.resolveProjectForIncrement(incrementId);
+    const defaultProject = resolved.projectId;
     const userStories = extractUserStories(bodyContent, defaultProject);
 
     // Extract acceptance criteria

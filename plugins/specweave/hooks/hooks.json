@@ -56,7 +56,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/spec-project-validator.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"allow\\\"}\")'"
+            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/per-us-project-validator.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"allow\\\"}\")'"
           }
         ]
       },
@@ -66,7 +66,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/per-us-project-validator.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"allow\\\"}\")'"
+            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/spec-project-validator.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"allow\\\"}\")'"
           }
         ]
       },
