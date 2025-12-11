@@ -1,15 +1,11 @@
 ---
 id: US-001
 feature: FS-142
-title: Create Production-Ready Migration Script
+title: "Create Production-Ready Migration Script"
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 918
-    url: https://github.com/anton-abyzov/specweave/issues/918
 ---
 
 # US-001: Create Production-Ready Migration Script

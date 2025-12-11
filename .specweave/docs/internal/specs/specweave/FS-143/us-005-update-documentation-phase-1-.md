@@ -1,15 +1,11 @@
 ---
 id: US-005
 feature: FS-143
-title: Update Documentation (Phase 1)
+title: "Update Documentation (Phase 1)"
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 928
-    url: https://github.com/anton-abyzov/specweave/issues/928
 ---
 
 # US-005: Update Documentation (Phase 1)

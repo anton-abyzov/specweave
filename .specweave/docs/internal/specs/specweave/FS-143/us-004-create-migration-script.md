@@ -1,15 +1,11 @@
 ---
 id: US-004
 feature: FS-143
-title: Create Migration Script
+title: "Create Migration Script"
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 926
-    url: https://github.com/anton-abyzov/specweave/issues/926
 ---
 
 # US-004: Create Migration Script

@@ -1,15 +1,11 @@
 ---
 id: US-004
 feature: FS-142
-title: Execute Production Rollout
+title: "Execute Production Rollout"
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 921
-    url: https://github.com/anton-abyzov/specweave/issues/921
 ---
 
 # US-004: Execute Production Rollout
