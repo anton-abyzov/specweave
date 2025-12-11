@@ -1,7 +1,7 @@
 {
   "name": "sw-plugin-dev",
-  "description": "Claude Code plugin development tools including plugin creation, testing, marketplace publishing, skill authoring, agent development, and CLI command integration.",
-  "version": "0.24.0",
+  "description": "Claude Code plugin and skill development toolkit. Plugin creation, testing, publishing. Skill creation, validation, packaging. Agent development, CLI command integration, and marketplace publishing.",
+  "version": "0.35.0",
   "author": {
     "name": "Anton Abyzov",
     "email": "anton.abyzov@gmail.com"
@@ -11,10 +11,17 @@
   "license": "MIT",
   "keywords": [
     "plugin-development",
+    "skill-creation",
+    "skill-validation",
+    "skill-packaging",
     "claude-sdk",
     "marketplace",
     "skills",
     "agents",
+    "yaml-frontmatter",
+    "skill-routing",
+    "plugin-scaffolding",
+    "developer-tools",
     "specweave"
   ]
 }

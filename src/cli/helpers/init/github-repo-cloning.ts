@@ -16,6 +16,7 @@
 import chalk from 'chalk';
 import { filterRepositoriesByPattern, type ClonePatternResult } from '../selection-strategy.js';
 import { launchCloneJob } from '../../../core/background/job-launcher.js';
+import { REPO_FETCH_LIMITS } from './types.js';
 
 /**
  * GitHub repository selection (from init flow)
@@ -88,17 +89,17 @@ function sleep(ms: number): Promise<void> {
  *
  * @param org - GitHub organization or owner
  * @param pat - Personal Access Token
- * @param maxRepos - Maximum repos to fetch (default 500)
+ * @param maxRepos - Maximum repos to fetch (default 1000, configurable via REPO_FETCH_LIMITS)
  * @returns Fetch result with repos and metadata
  */
 async function fetchGitHubRepos(
   org: string,
   pat: string,
-  maxRepos: number = 500
+  maxRepos: number = REPO_FETCH_LIMITS.DEFAULT_MAX_REPOS
 ): Promise<FetchResult> {
   const repos: GitHubRepository[] = [];
   let page = 1;
-  const perPage = 100;
+  const perPage = REPO_FETCH_LIMITS.API_PER_PAGE;
   let rateLimit: RateLimitInfo | undefined;
   let partial = false;
 

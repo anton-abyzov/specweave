@@ -1,9 +1,6 @@
----
-name: sw-tooling:skill-package
-description: Package Claude Code skill for distribution via npm, GitHub, or direct sharing. Creates distributable archives with installation instructions and validation.
----
+# /sw-plugin-dev:skill-package
 
-# Package Skill for Distribution
+Package Claude Code skill for distribution via npm, GitHub, or direct sharing. Creates distributable archives with installation instructions and validation.
 
 **Distribution-Ready Packaging**: Create shareable skill packages with installation scripts and documentation.
 

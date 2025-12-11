@@ -1,8 +1,5 @@
 # SpecWeave
 
-[![Run in Smithery](https://smithery.ai/badge/skills/anton-abyzov)](https://smithery.ai/skills?ns=anton-abyzov&utm_source=github&utm_medium=badge)
-
-
 **Finally. A Framework That Works on Legacy, Startup, AND Enterprise.**
 
 *Drop it into a 10-year-old codebase — it understands everything. Use it on your weekend MVP — specs write themselves. Scale it to 50 teams — JIRA, GitHub, Azure DevOps sync automatically.*
@@ -11,6 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UYg4BGJ65V)
 [![YouTube](https://img.shields.io/badge/YouTube-Tutorials-red?logo=youtube&logoColor=white)](https://www.youtube.com/@antonabyzov)
+[![Run in Smithery](https://smithery.ai/badge/skills/anton-abyzov)](https://smithery.ai/skills?ns=anton-abyzov&utm_source=github&utm_medium=badge)
 
 ---
 
@@ -19,7 +17,7 @@
 > **SpecWeave is 100% built using SpecWeave.** Every feature, every bug fix, every release — all spec-driven.
 
 This isn't just a framework we made — it's the framework we use every day. Our entire development workflow runs on SpecWeave:
-- **88+ completed increments** with full specs, plans, and tasks
+- **140+ completed increments** with full specs, plans, and tasks
 - **Living docs** that auto-update via event-driven hooks
 - **DORA metrics** tracking real delivery performance
 - **Code-as-source-of-truth** discrepancy detection built-in

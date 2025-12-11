@@ -6,6 +6,21 @@ import type { Logger } from '../../../utils/logger.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 
 /**
+ * Repository fetching limits
+ *
+ * These limits control how many repositories can be fetched during init.
+ * Increased from 500 to 1000 in v0.35.0 to support large organizations.
+ */
+export const REPO_FETCH_LIMITS = {
+  /** Default maximum repos to fetch during init (GitHub, Bitbucket, ADO) */
+  DEFAULT_MAX_REPOS: 1000,
+  /** Maximum repos allowed via gh repo list command */
+  GH_CLI_MAX_REPOS: 1000,
+  /** Per-page limit for API pagination (GitHub/Bitbucket API max is 100) */
+  API_PER_PAGE: 100,
+} as const;
+
+/**
  * Options passed to the init command
  */
 export interface InitOptions {

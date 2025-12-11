@@ -1,9 +1,6 @@
----
-name: sw-tooling:skill-validate
-description: Validate Claude Code skill structure, YAML frontmatter, and activation triggers. Comprehensive validation with detailed error reporting and auto-fix suggestions.
----
+# /sw-plugin-dev:skill-validate
 
-# Validate Skill Structure
+Validate Claude Code skill structure, YAML frontmatter, and activation triggers. Comprehensive validation with detailed error reporting and auto-fix suggestions.
 
 **Comprehensive Validation**: Detect and fix skill structure issues, YAML errors, and activation problems.
 

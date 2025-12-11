@@ -288,7 +288,7 @@ async function main(): Promise<void> {
       const specsDir = path.join(projectPath, '.specweave', 'docs', 'internal', 'specs');
 
       // Group items by source for proper folder structure
-      const groups = groupItemsByExternalContainer(result.allItems);
+      const groups = groupItemsByExternalContainer(result.allItems, projectPath);
       let totalConverted = 0;
 
       for (const group of groups) {
@@ -377,6 +377,12 @@ async function main(): Promise<void> {
 /**
  * Group items by external container (JIRA project/board, ADO project/area path)
  * Returns groups with container context for 2-level directory structure
+ *
+ * CRITICAL FIX (v0.34.1): Use specweaveProject from config for JIRA Level 2
+ * - Level 1 (project): JIRA projectKey (e.g., "CORE")
+ * - Level 2 (board): specweaveProject from boardMapping (e.g., "fe", "be")
+ *
+ * This respects the structure-level-detector configuration.
  */
 interface ContainerGroup {
   containerId: string;
@@ -386,7 +392,7 @@ interface ContainerGroup {
   externalContainer: any;
 }
 
-function groupItemsByExternalContainer(items: any[]): ContainerGroup[] {
+function groupItemsByExternalContainer(items: any[], projectPath: string): ContainerGroup[] {
   const groups = new Map<string, ContainerGroup>();
 
   // Import normalizeToProjectId dynamically would be complex, so inline the logic
@@ -397,6 +403,32 @@ function groupItemsByExternalContainer(items: any[]): ContainerGroup[] {
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '');
   };
+
+  // CRITICAL FIX (v0.34.1): Load config to get JIRA board mappings
+  // This is needed to map jiraBoardId → specweaveProject
+  let jiraBoardMappings: Map<number, string> = new Map();
+  try {
+    const configPath = path.join(projectPath, '.specweave', 'config.json');
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+      // Extract board mappings from sync.profiles
+      if (config.sync?.profiles) {
+        for (const profile of Object.values(config.sync.profiles) as any[]) {
+          if (profile.provider === 'jira' && profile.config?.boardMapping?.boards) {
+            for (const board of profile.config.boardMapping.boards) {
+              if (board.boardId && board.specweaveProject) {
+                jiraBoardMappings.set(board.boardId, normalize(board.specweaveProject));
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch (error) {
+    // Config parsing failed - log warning but continue with fallback behavior
+    console.warn(`Failed to load JIRA board mappings from config: ${error instanceof Error ? error.message : String(error)}`);
+  }
 
   for (const item of items) {
     let groupKey: string;
@@ -409,9 +441,18 @@ function groupItemsByExternalContainer(items: any[]): ContainerGroup[] {
     if (item.jiraProjectKey) {
       containerType = 'jira';
       containerId = item.jiraProjectKey;
-      projectId = item.jiraBoardName
-        ? normalize(item.jiraBoardName) || 'default'
-        : 'default';
+
+      // CRITICAL FIX (v0.34.1): Use specweaveProject from boardMapping (Level 2)
+      // Map jiraBoardId → specweaveProject using config
+      // Fallback to normalized boardName if mapping not found
+      if (item.jiraBoardId && jiraBoardMappings.has(item.jiraBoardId)) {
+        projectId = jiraBoardMappings.get(item.jiraBoardId)!;
+      } else if (item.jiraBoardName) {
+        projectId = normalize(item.jiraBoardName) || 'default';
+      } else {
+        projectId = 'default';
+      }
+
       groupKey = `jira:${containerId}:${projectId}`;
       externalContainer = {
         type: 'jira-project',

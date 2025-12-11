@@ -204,6 +204,11 @@ export class JiraImporter implements Importer {
 
   /**
    * Paginate through issues using JQL (50 per page)
+   *
+   * CRITICAL FIX (v0.34.1): Add Phase 3 parent recovery INSIDE paginate()
+   * - Problem: import-coordinator calls paginate() directly, not import()
+   * - Solution: Move Phase 3 parent recovery from import() to paginate()
+   * - This mirrors ADO's implementation where parent recovery happens after all pages
    */
   async *paginate(config: ImportConfig = {}): AsyncGenerator<ExternalItem[], void, unknown> {
     const {
@@ -250,6 +255,11 @@ export class JiraImporter implements Importer {
     let totalFetched = 0;
     let nextPageToken: string | undefined = undefined;
 
+    // CRITICAL FIX (v0.34.1): Collect all items for Phase 3 parent recovery
+    const allFetchedItems: ExternalItem[] = [];
+    const fetchedIds = new Set<string>();
+
+    // Phase 1: Paginated JQL fetch
     while (totalFetched < maxItems) {
       try {
         // CRITICAL FIX (2025-12-09): Use new /rest/api/3/search/jql endpoint
@@ -292,6 +302,12 @@ export class JiraImporter implements Importer {
         // Convert JIRA issues to ExternalItems
         const items = response.issues.map((issue) => this.convertToExternalItem(issue));
 
+        // CRITICAL FIX (v0.34.1): Store items for Phase 3 parent recovery
+        allFetchedItems.push(...items);
+        for (const item of items) {
+          fetchedIds.add(item.id);
+        }
+
         // Yield page
         if (items.length > 0) {
           yield items.slice(0, maxItems - totalFetched);
@@ -312,6 +328,24 @@ export class JiraImporter implements Importer {
           throw new Error(`JIRA access forbidden: ${error.message}`);
         }
         throw error;
+      }
+    }
+
+    // Phase 2: Detect missing parent Epics (not in time range)
+    const missingParentKeys = this.findMissingParentKeys(allFetchedItems, fetchedIds);
+
+    // Phase 3: Fetch missing parents to maintain hierarchy
+    // CRITICAL FIX (v0.34.1): This fixes "_orphans" folder issue!
+    // Items were marked as orphans because their parents weren't fetched.
+    // Now we fetch missing parents and yield them as a final page.
+    if (missingParentKeys.length > 0) {
+      console.log(`📥 Fetching ${missingParentKeys.length} missing parent Epic(s)...`);
+      const parentItems = await this.fetchIssuesByKeys(missingParentKeys);
+
+      if (parentItems.length > 0) {
+        console.log(`   ✅ Recovered ${parentItems.length} parent Epic(s)`);
+        // Yield parents as final page so coordinator includes them
+        yield parentItems;
       }
     }
   }

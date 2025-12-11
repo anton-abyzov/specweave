@@ -1,9 +1,6 @@
----
-name: sw-tooling:skill-create
-description: Create new Claude Code skill with proper YAML frontmatter, directory structure, and activation triggers. Interactive wizard for skill creation with validation and best practices.
----
+# /sw-plugin-dev:skill-create
 
-# Create New Skill
+Create new Claude Code skill with proper YAML frontmatter, directory structure, and activation triggers. Interactive wizard for skill creation with validation and best practices.
 
 **Interactive Wizard**: From concept to production-ready skill with proper structure and validation.
 
