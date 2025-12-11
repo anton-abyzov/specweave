@@ -206,17 +206,6 @@
       }
     },
     {
-      "name": "sw-tooling",
-      "description": "Development tooling - Skill creation, plugin scaffolding, development utilities",
-      "source": "./plugins/specweave-tooling",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
       "name": "sw-diagrams",
       "description": "Architecture diagram generation - Mermaid, C4 Model, sequence diagrams, ER diagrams, deployment diagrams",
       "source": "./plugins/specweave-diagrams",
