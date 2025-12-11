@@ -1,0 +1,14 @@
+{
+  "id": "0144-frontmatter-removal-migration-rollout",
+  "status": "planning",
+  "type": "refactor",
+  "priority": "P1",
+  "created": "2025-12-10T16:20:00Z",
+  "lastActivity": "2025-12-10T20:55:00Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "totalACs": 16,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

@@ -8,11 +8,8 @@ created: {{DATE}}
 structure: user-stories
 test_mode: {{TEST_MODE}}
 coverage_target: {{COVERAGE_TARGET}}
-# MANDATORY: Must be RESOLVED values from "specweave context projects" output
-# ⛔ NEVER use {{PROJECT_ID}} or {{BOARD_ID}} placeholders!
-# For 2-level structures: BOTH project AND board are REQUIRED per US
-project: {{RESOLVED_PROJECT}}
-board: {{RESOLVED_BOARD}}
+# NOTE: project:/board: fields REMOVED per ADR-0140 (v0.35.0+)
+# Project and Board are now resolved from per-US **Project**: and **Board**: fields
 multi_project: true
 projects:
   - id: {{RESOLVED_PROJECT_FE}}
@@ -32,17 +29,10 @@ projects:
 ## User Stories
 
 <!--
-⚠️ MANDATORY RESOLUTION (v0.34.0+):
-1. Run: specweave context projects
-2. Parse JSON output:
-   - level 1: projects[].id gives valid project IDs
-   - level 2: projects[].id + boardsByProject[project][].id gives project AND board IDs
-3. Replace ALL placeholders with actual IDs from step 2
-4. Each US MUST have **Project**: (and **Board**: for 2-level) with RESOLVED values
-
-❌ FORBIDDEN: Using {{PROJECT_ID}}, {{BOARD_ID}} placeholders
-❌ FORBIDDEN: Inventing project/board names
-✅ REQUIRED: Use ONLY IDs from "specweave context projects" output
+📋 Per-US **Project**: and **Board**: fields (v0.35.0+ - ADR-0140):
+- Each US MUST specify **Project**: field with resolved value
+- For 2-level structures: Each US MUST also specify **Board**: field
+- Run: specweave context projects - to get valid project/board IDs
 -->
 
 ### Frontend Stories

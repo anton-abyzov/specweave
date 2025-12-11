@@ -1,6 +1,5 @@
 ---
 increment: 0107-enforce-config-json-separation
-project: specweave
 status: completed
 ---
 

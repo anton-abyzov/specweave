@@ -2,7 +2,7 @@
 id: US-014E
 feature: FS-118E
 title: "[Bug] External tool sync is not working when opening an increment"
-status: active
+status: completed
 priority: P1
 created: 2025-12-07
 origin: external

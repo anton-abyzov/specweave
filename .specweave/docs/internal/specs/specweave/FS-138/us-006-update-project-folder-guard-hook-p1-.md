@@ -1,15 +1,11 @@
 ---
 id: US-006
 feature: FS-138
-title: Update Project Folder Guard Hook (P1)
-status: not_started
+title: "Update Project Folder Guard Hook (P1)"
+status: completed
 priority: P0
 created: 2025-12-10
 project: specweave
-external:
-  github:
-    issue: 895
-    url: https://github.com/anton-abyzov/specweave/issues/895
 ---
 
 # US-006: Update Project Folder Guard Hook (P1)
@@ -24,11 +20,11 @@ external:
 
 ## Acceptance Criteria
 
-- [ ] **AC-US6-01**: Check `multiProject.enabled` flag FIRST
-- [ ] **AC-US6-02**: If false, only allow `project.name` folder
-- [ ] **AC-US6-03**: If true, check `multiProject.projects` structure
-- [ ] **AC-US6-04**: Error messages guide to correct mode
-- [ ] **AC-US6-05**: Hook handles both modes correctly
+- [x] **AC-US6-01**: Check `multiProject.enabled` flag FIRST
+- [x] **AC-US6-02**: If false, only allow `project.name` folder
+- [x] **AC-US6-03**: If true, check `multiProject.projects` structure
+- [x] **AC-US6-04**: Error messages guide to correct mode
+- [x] **AC-US6-05**: Hook handles both modes correctly
 
 ---
 
@@ -41,5 +37,5 @@ external:
 
 ## Tasks
 
-- [ ] **T-008**: Update project-folder-guard.sh hook
+- [x] **T-008**: Update project-folder-guard.sh hook
 - [ ] **T-016**: Write hook integration tests

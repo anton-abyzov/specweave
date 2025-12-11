@@ -593,6 +593,15 @@ export class HierarchyMapper {
    * Detect projects from frontmatter
    */
   private async detectProjectsFromFrontmatter(content: string): Promise<string[]> {
+    // v0.34.1: Priority is per-US **Project**: fields > frontmatter.project (ADR-0140)
+
+    // First, check per-US **Project**: fields (primary source)
+    const perUSProjects = this.extractPerUSProjects(content);
+    if (perUSProjects.length > 0) {
+      return perUSProjects;
+    }
+
+    // Fallback to frontmatter.project (deprecated, for backward compatibility)
     const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
     if (!frontmatterMatch) return [];
 
@@ -600,12 +609,12 @@ export class HierarchyMapper {
       const yaml = await import('yaml');
       const frontmatter = yaml.parse(frontmatterMatch[1]) as Record<string, any>;
 
-      // Single project: project: backend
+      // Single project: project: backend (deprecated)
       if (frontmatter.project && typeof frontmatter.project === 'string') {
         return [frontmatter.project];
       }
 
-      // Multiple projects: projects: [backend, frontend]
+      // Multiple projects: projects: [backend, frontend] (deprecated)
       if (frontmatter.projects && Array.isArray(frontmatter.projects)) {
         return frontmatter.projects.filter((p: any) => typeof p === 'string');
       }
@@ -614,6 +623,22 @@ export class HierarchyMapper {
     }
 
     return [];
+  }
+
+  /**
+   * Extract project IDs from per-US **Project**: fields
+   * v0.34.1: New method for ADR-0140
+   */
+  private extractPerUSProjects(content: string): string[] {
+    const projects = new Set<string>();
+    const projectPattern = /\*\*Project\*\*:\s*([a-zA-Z0-9-]+)/gi;
+    let match;
+
+    while ((match = projectPattern.exec(content)) !== null) {
+      projects.add(match[1].toLowerCase());
+    }
+
+    return Array.from(projects);
   }
 
   /**

@@ -8,9 +8,8 @@ created: {{DATE}}
 structure: user-stories
 test_mode: {{TEST_MODE}}
 coverage_target: {{COVERAGE_TARGET}}
-# MANDATORY: Must be a RESOLVED value from "specweave context projects" output
-# ⛔ NEVER use {{PROJECT_ID}} placeholder - always resolve BEFORE creating spec.md!
-project: {{RESOLVED_PROJECT}}
+# NOTE: project: field REMOVED per ADR-0140 (v0.35.0+)
+# Project is now resolved from per-US **Project**: fields or config.project.name
 ---
 
 # Feature: {{FEATURE_TITLE}}
@@ -22,15 +21,10 @@ project: {{RESOLVED_PROJECT}}
 ## User Stories
 
 <!--
-⚠️ MANDATORY RESOLUTION (v0.34.0+):
-1. Run: specweave context projects
-2. Parse JSON: projects[].id gives valid project IDs
-3. Replace {{RESOLVED_PROJECT}} with actual ID from step 2
-4. Each US MUST have **Project**: field with RESOLVED value
-
-❌ FORBIDDEN: Using {{PROJECT_ID}} placeholder
-❌ FORBIDDEN: Inventing project names
-✅ REQUIRED: Use ONLY IDs from "specweave context projects" output
+📋 Per-US **Project**: field (v0.35.0+ - ADR-0140):
+- In single-project mode: **Project**: can use config.project.name (auto-resolved)
+- In multi-project mode: Each US MUST specify its **Project**: field
+- Run: specweave context projects - to get valid project IDs
 -->
 
 ### US-001: [Story Title] (P1)
