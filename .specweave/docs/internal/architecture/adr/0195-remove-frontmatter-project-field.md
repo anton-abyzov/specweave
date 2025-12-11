@@ -172,14 +172,7 @@ project: my-app      # ← No longer supported!
 2. **v0.40.0 - v0.50.0**: Stricter warnings, suggest migration
 3. **v1.0.0**: Complete removal, hard requirement for per-US fields
 
-### Monitoring Before Removal
-
-**Criteria for v1.0.0 readiness**:
-- [ ] 95%+ of active projects migrated to per-US fields
-- [ ] No reported issues with per-US resolution in 6 months
-- [ ] All SpecWeave internal increments use per-US fields only
-- [ ] Documentation thoroughly updated
-- [ ] Community notified 3 months in advance
+**Note**: Since SpecWeave has no external users yet (all GitHub releases will be removed), the v1.0.0 transition can happen immediately once internal migration is complete. No external communication or waiting period required.
 
 ## References
 

@@ -32,7 +32,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
  * - GitHubSpecSync (class method)
  * - ThreeLayerSyncManager (class method)
  * - github-issue-updater.ts (module function)
- * - github-sync-bidirectional.ts (module function)
  * - github-board-resolver.ts (module function)
  * - github-hierarchical-sync.ts (module function)
  * - github-increment-sync-cli.ts (module function)
@@ -224,7 +223,7 @@ describe('File Implementation Verification', () => {
       'github-feature-sync.ts',
       'github-spec-sync.ts',
       'github-issue-updater.ts',
-      'github-sync-bidirectional.ts',
+      // 'github-sync-bidirectional.ts', // Removed - deprecated module deleted
       'github-board-resolver.ts',
       'github-hierarchical-sync.ts',
       'github-increment-sync-cli.ts',

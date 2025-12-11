@@ -11,8 +11,8 @@
  * for backward compatibility. Config values should be loaded from ConfigManager
  * in calling code (reconcilers, importers, etc.)
  *
- * @deprecated For config values (domain, org, project), use ConfigManager directly.
- *             Only use CredentialsManager for secrets (PAT, tokens, emails).
+ * NOTE: For config values (domain, org, project), use ConfigManager directly.
+ * Only use CredentialsManager for secrets (PAT, tokens, emails).
  */
 
 import * as fs from 'fs';
@@ -98,22 +98,14 @@ export class CredentialsManager {
         ? multiTeams.split(',').map(t => t.trim()).filter(t => t.length > 0)
         : (singleTeam ? [singleTeam] : []);
 
-      // DEPRECATED (v0.34.0+): org and project should come from config.json
-      // Kept for backward compatibility - will be removed in v1.0
-      const deprecatedOrg = process.env.AZURE_DEVOPS_ORG || '';
-      const deprecatedProject = process.env.AZURE_DEVOPS_PROJECT || '';
-      if (deprecatedOrg || deprecatedProject) {
-        console.warn(
-          '⚠️  DEPRECATED: AZURE_DEVOPS_ORG and AZURE_DEVOPS_PROJECT in .env\n' +
-          '   Move to .specweave/config.json: issueTracker.organization_ado and issueTracker.project\n' +
-          '   This will be removed in v1.0'
-        );
-      }
+      // NOTE: org and project should come from config.json via ConfigManager
+      const org = process.env.AZURE_DEVOPS_ORG || '';
+      const project = process.env.AZURE_DEVOPS_PROJECT || '';
 
       this.credentials.ado = {
         pat: process.env.AZURE_DEVOPS_PAT,
-        organization: deprecatedOrg,  // DEPRECATED - use ConfigManager
-        project: deprecatedProject,   // DEPRECATED - use ConfigManager
+        organization: org,
+        project: project,
         team: singleTeam || teams[0],  // Use first team for backward compatibility
         teams: teams.length > 1 ? teams : undefined  // Multiple teams (optional)
       };
@@ -141,21 +133,13 @@ export class CredentialsManager {
         ? boardsStr.split(',').map(b => b.trim()).filter(b => b.length > 0)
         : [];
 
-      // DEPRECATED (v0.34.0+): domain should come from config.json
-      // Kept for backward compatibility - will be removed in v1.0
-      const deprecatedDomain = process.env.JIRA_DOMAIN || '';
-      if (deprecatedDomain) {
-        console.warn(
-          '⚠️  DEPRECATED: JIRA_DOMAIN in .env\n' +
-          '   Move to .specweave/config.json: issueTracker.domain\n' +
-          '   This will be removed in v1.0'
-        );
-      }
+      // NOTE: domain should come from config.json via ConfigManager
+      const domain = process.env.JIRA_DOMAIN || '';
 
       this.credentials.jira = {
         apiToken: process.env.JIRA_API_TOKEN,
         email: process.env.JIRA_EMAIL || '',  // SECRET - stays in .env
-        domain: deprecatedDomain,  // DEPRECATED - use ConfigManager
+        domain: domain,
         strategy,
 
         // Strategy 1: Project-per-team
@@ -262,7 +246,6 @@ export class CredentialsManager {
    *   const org = config.issueTracker?.organization_ado || '';
    *
    * @throws Error if credentials not found
-   * @deprecated organization and project fields are deprecated - use ConfigManager
    */
   public getAdoCredentials(): AdoCredentials {
     if (!this.credentials.ado) {
@@ -285,7 +268,6 @@ export class CredentialsManager {
    *   const domain = config.issueTracker?.domain || '';
    *
    * @throws Error if credentials not found
-   * @deprecated domain field is deprecated - use ConfigManager
    */
   public getJiraCredentials(): JiraCredentials {
     if (!this.credentials.jira) {

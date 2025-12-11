@@ -403,10 +403,10 @@ create_github_issue() {
     log_debug "Found githubProfile in metadata: $profile_id"
   fi
 
-  # If no profile in metadata, use activeProfile from config
+  # If no profile in metadata, use defaultProfile from config
   if [ -z "$profile_id" ]; then
-    profile_id=$(cat "$CONFIG_FILE" 2>/dev/null | grep -o '"activeProfile"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"\([^"]*\)".*/\1/')
-    log_debug "Using activeProfile from config: $profile_id"
+    profile_id=$(cat "$CONFIG_FILE" 2>/dev/null | grep -o '"defaultProfile"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*"\([^"]*\)".*/\1/')
+    log_debug "Using defaultProfile from config: $profile_id"
   fi
 
   if [ -n "$profile_id" ]; then
