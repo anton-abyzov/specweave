@@ -1,4 +1,9 @@
 import { execFileNoThrow } from "../../../src/utils/execFileNoThrow.js";
+import { getGitHubAuthFromProject } from "../../../src/utils/auth-helpers.js";
+function getGhEnv() {
+  const { token } = getGitHubAuthFromProject(process.cwd());
+  return token ? { ...process.env, GH_TOKEN: token } : process.env;
+}
 async function fetchBoardsForRepo(owner, repo) {
   console.log(`\u{1F50D} Fetching project boards for repo: ${owner}/${repo}`);
   try {
@@ -9,7 +14,7 @@ async function fetchBoardsForRepo(owner, repo) {
       ".[] | {id: .id, name: .name, number: .number, state: .state, html_url: .html_url}",
       "-H",
       "Accept: application/vnd.github+json"
-    ]);
+    ], { env: getGhEnv() });
     if (result.status !== 0) {
       console.error(`\u274C Failed to fetch boards for ${owner}/${repo}:`, result.stderr);
       throw new Error(`GitHub API error: ${result.status} ${result.stderr}`);
@@ -32,7 +37,7 @@ async function fetchBoardsForOrg(org) {
       ".[] | {id: .id, name: .name, number: .number, state: .state, html_url: .html_url}",
       "-H",
       "Accept: application/vnd.github+json"
-    ]);
+    ], { env: getGhEnv() });
     if (result.status !== 0) {
       console.error(`\u274C Failed to fetch boards for org ${org}:`, result.stderr);
       throw new Error(`GitHub API error: ${result.status} ${result.stderr}`);

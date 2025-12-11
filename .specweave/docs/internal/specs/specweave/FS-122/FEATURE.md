@@ -1,16 +1,11 @@
 ---
 id: FS-122
-title: Multi-Technology Governance Standards Detection
+title: "Multi-Technology Governance Standards Detection"
 type: feature
 status: completed
 priority: P1
-created: 2025-12-10
-lastUpdated: 2025-12-10
-external_tools:
-  github:
-    type: milestone
-    id: 45
-    url: https://github.com/anton-abyzov/specweave/milestone/45
+created: 2025-12-11
+lastUpdated: 2025-12-11
 ---
 
 # Multi-Technology Governance Standards Detection
@@ -23,7 +18,7 @@ Enterprise projects often have multiple technology stacks (backend: Node.js + Py
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0122-multi-technology-governance](../../../../increments/0122-multi-technology-governance/spec.md) | ✅ completed | 2025-12-10 |
+| [0122-multi-technology-governance](../../../../increments/0122-multi-technology-governance/spec.md) | ✅ completed | 2025-12-11 |
 
 ## User Stories
 

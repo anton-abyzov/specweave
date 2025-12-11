@@ -24,7 +24,8 @@ describe('USSyncThrottle', () => {
 
   beforeEach(() => {
     // Create isolated test directory
-    testDir = path.join(os.tmpdir(), `specweave-test-throttle-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `specweave-test-throttle-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     mkdirSync(testDir, { recursive: true });
 
     // Reset singleton instance

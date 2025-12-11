@@ -21,7 +21,8 @@ import * as os from 'os';
 import { execSync } from 'child_process';
 
 // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
-const TEST_ROOT = path.join(os.tmpdir(), 'specweave-test-github-status-sync-' + Date.now());
+// ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+const TEST_ROOT = path.join(os.tmpdir(), `specweave-test-github-status-sync-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 const FEATURE_ID = 'FS-TEST-STATUS';
 
 test.describe('GitHub User Story Status Sync', () => {

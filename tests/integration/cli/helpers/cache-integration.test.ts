@@ -15,7 +15,8 @@ describe('CLI Helper Cache Integration', () => {
   let cacheManager: CacheManager;
 
   beforeEach(() => {
-    testProjectRoot = join(tmpdir(), 'specweave-test-' + Date.now());
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testProjectRoot = join(tmpdir(), `specweave-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     mkdirSync(testProjectRoot, { recursive: true });
     mkdirSync(join(testProjectRoot, '.specweave'), { recursive: true });
     cacheManager = new CacheManager(testProjectRoot);

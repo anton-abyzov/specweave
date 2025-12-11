@@ -18,6 +18,7 @@ import type { UserStoryData, SyncResult } from './types.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { pathExists, ensureDir } from '../../utils/fs-native.js';
 import { detectStructureLevel, type StructureLevelConfig } from '../../utils/structure-level-detector.js';
+import { ProjectResolutionService } from '../project/project-resolution.js';
 
 /**
  * Result of syncing to a single project
@@ -58,10 +59,12 @@ export class CrossProjectSync {
   private projectRoot: string;
   private logger: Logger;
   private structureConfig: StructureLevelConfig | null = null;
+  private projectResolution: ProjectResolutionService;
 
-  constructor(projectRoot: string, options: { logger?: Logger } = {}) {
+  constructor(projectRoot: string, options: { logger?: Logger; projectResolution?: ProjectResolutionService } = {}) {
     this.projectRoot = projectRoot;
     this.logger = options.logger ?? consoleLogger;
+    this.projectResolution = options.projectResolution ?? new ProjectResolutionService(projectRoot, { logger: this.logger });
   }
 
   /**
@@ -226,8 +229,23 @@ export class CrossProjectSync {
   /**
    * Ensure specs folder exists for a target path
    * Handles both 1-level and 2-level structures
+   *
+   * CRITICAL v0.35.1: Validates project before folder creation to prevent pollution
+   * @throws Error if project validation fails
    */
   async ensureSpecsFolder(targetPath: string): Promise<string> {
+    // Extract project from path (handles both "project" and "project/board")
+    const projectId = targetPath.split('/')[0];
+
+    // Validate project before creating folder
+    const validation = await this.projectResolution.validateProjectForFolderCreation(projectId);
+    if (!validation.valid) {
+      throw new Error(
+        `Cannot create specs folder for invalid project '${projectId}': ${validation.reason}. ` +
+        `Allowed projects: [${validation.allowedProjects.join(', ')}]`
+      );
+    }
+
     const folderPath = this.getSpecsPath(targetPath);
     await ensureDir(folderPath);
     return folderPath;
@@ -236,8 +254,20 @@ export class CrossProjectSync {
   /**
    * Ensure project specs folder exists (legacy, 1-level only)
    * @deprecated Use ensureSpecsFolder() instead
+   *
+   * CRITICAL v0.35.1: Validates project before folder creation to prevent pollution
+   * @throws Error if project validation fails
    */
   async ensureProjectFolder(projectId: string): Promise<string> {
+    // Validate project before creating folder
+    const validation = await this.projectResolution.validateProjectForFolderCreation(projectId);
+    if (!validation.valid) {
+      throw new Error(
+        `Cannot create project folder for invalid project '${projectId}': ${validation.reason}. ` +
+        `Allowed projects: [${validation.allowedProjects.join(', ')}]`
+      );
+    }
+
     const folderPath = this.getProjectSpecsPath(projectId);
     await ensureDir(folderPath);
     return folderPath;
@@ -246,8 +276,23 @@ export class CrossProjectSync {
   /**
    * Ensure feature folder exists within a target path
    * Handles both 1-level and 2-level structures
+   *
+   * CRITICAL v0.35.1: Validates project before folder creation to prevent pollution
+   * @throws Error if project validation fails
    */
   async ensureFeatureFolder(targetPath: string, featureId: string): Promise<string> {
+    // Extract project from path (handles both "project" and "project/board")
+    const projectId = targetPath.split('/')[0];
+
+    // Validate project before creating folder
+    const validation = await this.projectResolution.validateProjectForFolderCreation(projectId);
+    if (!validation.valid) {
+      throw new Error(
+        `Cannot create feature folder for invalid project '${projectId}': ${validation.reason}. ` +
+        `Allowed projects: [${validation.allowedProjects.join(', ')}]`
+      );
+    }
+
     const folderPath = this.getFeaturePath(targetPath, featureId);
     await ensureDir(folderPath);
     return folderPath;

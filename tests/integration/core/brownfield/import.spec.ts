@@ -13,20 +13,17 @@
 import { test, expect } from '@playwright/test';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import * as os from 'os';
 
 test.describe('Brownfield Import Workflow (E2E)', () => {
+  // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
   let testDir: string;
   let specweaveRoot: string;
   let sourceDir: string;
 
   test.beforeEach(async ({ }, testInfo) => {
-    // Create unique directory for each test
-    testDir = path.join(__dirname, '../../fixtures/e2e-brownfield-import', `test-${testInfo.workerIndex}-${Date.now()}`);
+    // Create unique directory in OS temp folder to avoid parallel execution race conditions
+    testDir = path.join(os.tmpdir(), `specweave-e2e-brownfield-${testInfo.workerIndex}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     specweaveRoot = path.join(testDir, '.specweave');
     sourceDir = path.join(testDir, 'source-docs');
 

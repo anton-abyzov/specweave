@@ -16,7 +16,8 @@ describe('ConfigMigrator', () => {
   let envPath: string;
 
   beforeEach(async () => {
-    testDir = path.join(os.tmpdir(), 'migrator-test-' + Date.now());
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `migrator-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.mkdir(testDir, { recursive: true });
     await fs.mkdir(path.join(testDir, '.specweave'), { recursive: true });
     envPath = path.join(testDir, '.env');

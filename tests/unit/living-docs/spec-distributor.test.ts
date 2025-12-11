@@ -9,7 +9,8 @@ import * as os from 'os';
 import { SpecDistributor } from '../../../src/core/living-docs/SpecDistributor.js';
 
 // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
-const TEST_DIR = path.join(os.tmpdir(), 'specweave-test-spec-distributor-' + Date.now());
+// ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+const TEST_DIR = path.join(os.tmpdir(), `specweave-test-spec-distributor-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 const TEST_INCREMENT = path.join(TEST_DIR, 'increments/0001-test');
 const TEST_LIVING_DOCS = path.join(TEST_DIR, 'docs/user-stories');
 

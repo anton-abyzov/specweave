@@ -5,6 +5,11 @@ import {
   loadIncrementMetadata,
   detectRepo
 } from "./github-issue-updater.js";
+import { getGitHubAuthFromProject } from "../../../src/utils/auth-helpers.js";
+function getGhEnv() {
+  const { token } = getGitHubAuthFromProject(process.cwd());
+  return token ? { ...process.env, GH_TOKEN: token } : process.env;
+}
 async function syncFromGitHub(incrementId) {
   console.log(`
 \u{1F504} Syncing from GitHub for increment: ${incrementId}`);
@@ -47,7 +52,7 @@ async function fetchGitHubIssueState(issueNumber, owner, repo) {
     `${owner}/${repo}`,
     "--json",
     "number,title,body,state,labels,assignees,milestone,updatedAt"
-  ]);
+  ], { env: getGhEnv() });
   if (issueResult.exitCode !== 0) {
     throw new Error(`Failed to fetch issue: ${issueResult.stderr}`);
   }
@@ -57,7 +62,7 @@ async function fetchGitHubIssueState(issueNumber, owner, repo) {
     `repos/${owner}/${repo}/issues/${issueNumber}/comments`,
     "--jq",
     ".[] | {id: .id, author: .user.login, body: .body, created_at: .created_at}"
-  ]);
+  ], { env: getGhEnv() });
   let comments = [];
   if (commentsResult.exitCode === 0 && commentsResult.stdout.trim()) {
     const commentLines = commentsResult.stdout.trim().split("\n");

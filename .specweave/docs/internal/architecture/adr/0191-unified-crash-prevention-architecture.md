@@ -28,7 +28,7 @@ Create a **Unified Crash Prevention Runtime** consisting of:
 | # | Category | Root Cause | Detection | Prevention |
 |---|----------|------------|-----------|------------|
 | 1 | **Bash Heredoc Hang** | Shell waits forever for truncated EOF | Pattern match `<< EOF` | `bash-file-guard.sh` blocks |
-| 2 | **Context Explosion** | >280KB total context | Token estimation | Task limit (8 max) |
+| 2 | **Context Explosion** | >280KB total context | Token estimation | Task limit (25 soft max) |
 | 3 | **Hook Recursion** | Hooks trigger other hooks | File-based guard | `.hook-recursion-guard` |
 | 4 | **Process Storms** | Bulk ops spawn 100+ processes | Process count | Bulk detection + skip |
 | 5 | **Agent Chunking** | Skills spawn large agents | N/A (design rule) | CLAUDE.md rule |
@@ -138,7 +138,7 @@ Key rules preserved in CLAUDE.md:
 ```markdown
 ### CRITICAL SAFETY RULES
 
-1. **Max 8 tasks per increment** (context budget)
+1. **Max 25 tasks per increment** (soft limit for maintainability)
 2. **NEVER use Bash heredoc/echo for file creation** (infinite hang)
 3. **Pause increment before editing large files** (context explosion)
 4. **Skills must NOT spawn large agents** (nested context explosion)

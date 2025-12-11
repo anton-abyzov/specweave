@@ -2,11 +2,21 @@ import { SpecMetadataManager } from "../../../src/core/specs/spec-metadata-manag
 import { SpecParser } from "../../../src/core/specs/spec-parser.js";
 import { execFileNoThrow } from "../../../src/utils/execFileNoThrow.js";
 import { ProjectContextManager } from "../../../src/core/sync/project-context.js";
+import { getGitHubAuthFromProject } from "../../../src/utils/auth-helpers.js";
 class GitHubSpecSync {
   constructor(projectRoot = process.cwd()) {
     this.projectRoot = projectRoot;
     this.specManager = new SpecMetadataManager(projectRoot);
     this.projectContextManager = new ProjectContextManager(projectRoot);
+    this.token = getGitHubAuthFromProject(projectRoot).token;
+  }
+  /**
+   * Get environment object with GH_TOKEN for gh CLI commands.
+   * This ensures the token from .env is passed to all gh operations,
+   * regardless of `gh auth` status.
+   */
+  getGhEnv() {
+    return this.token ? { ...process.env, GH_TOKEN: this.token } : process.env;
   }
   /**
    * Detect project from spec file path
@@ -408,7 +418,7 @@ ${acList}
       "-f",
       `query=${query}`,
       ...Object.entries(variables).flatMap(([key, value]) => ["-F", `${key}=${value}`])
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.error) {
       throw new Error(`GraphQL query failed: ${result.error}`);
     }
@@ -457,7 +467,7 @@ ${acList}
       "number,title,body,state,labels",
       "--limit",
       "1"
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.error || !result.stdout) {
       return null;
     }
@@ -481,7 +491,7 @@ ${acList}
       issue.labels.join(","),
       "--json",
       "number,title,body,state"
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.error) {
       throw new Error(`Failed to create issue: ${result.error}`);
     }
@@ -503,7 +513,7 @@ ${acList}
     } else if (updates.state === "open") {
       args.push("--state", "open");
     }
-    const result = await execFileNoThrow("gh", args);
+    const result = await execFileNoThrow("gh", args, { env: this.getGhEnv() });
     if (result.error) {
       throw new Error(`Failed to update issue #${issueNumber}: ${result.error}`);
     }

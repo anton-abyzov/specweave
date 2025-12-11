@@ -1,15 +1,11 @@
 ---
 id: US-004
 feature: FS-131
-title: Automated Zombie Cleanup Service
+title: "Automated Zombie Cleanup Service"
 status: completed
 priority: P1
 created: 2025-12-09
 project: specweave
-external:
-  github:
-    issue: 873
-    url: https://github.com/anton-abyzov/specweave/issues/873
 ---
 
 # US-004: Automated Zombie Cleanup Service

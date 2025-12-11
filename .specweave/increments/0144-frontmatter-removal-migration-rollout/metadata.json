@@ -1,14 +1,22 @@
 {
   "id": "0144-frontmatter-removal-migration-rollout",
-  "status": "planning",
+  "status": "completed",
   "type": "refactor",
   "priority": "P1",
   "created": "2025-12-10T16:20:00Z",
-  "lastActivity": "2025-12-10T20:55:00Z",
+  "lastActivity": "2025-12-11T10:30:00Z",
+  "completedAt": "2025-12-11T13:45:00Z",
+  "approvedAt": "2025-12-11T13:45:00Z",
   "testMode": "test-after",
   "coverageTarget": 80,
-  "totalACs": 16,
-  "feature_id": null,
+  "totalACs": 9,
+  "completedACs": 9,
+  "feature_id": "FS-144",
   "epic_id": null,
-  "externalLinks": {}
+  "externalLinks": {
+    "github_milestone": "https://github.com/anton-abyzov/specweave/milestone/60",
+    "github_issues": ["#925", "#927"]
+  },
+  "dependencies": ["0143-frontmatter-removal-code-templates-tests"],
+  "parent": "0140-remove-frontmatter-project-field"
 }

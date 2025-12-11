@@ -16,7 +16,8 @@ describe('CompletionCalculator', () => {
 
   beforeEach(async () => {
     // Create temp directory for test files
-    tempDir = path.join(os.tmpdir(), `completion-calculator-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    tempDir = path.join(os.tmpdir(), `completion-calculator-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await mkdir(tempDir, { recursive: true });
     await mkdir(path.join(tempDir, '.specweave/increments/0001-test'), { recursive: true });
 

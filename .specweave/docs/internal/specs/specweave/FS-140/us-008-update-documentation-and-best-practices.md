@@ -1,15 +1,11 @@
 ---
 id: US-008
 feature: FS-140
-title: Update Documentation and Best Practices
+title: "Update Documentation and Best Practices"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 905
-    url: https://github.com/anton-abyzov/specweave/issues/905
 ---
 
 # US-008: Update Documentation and Best Practices

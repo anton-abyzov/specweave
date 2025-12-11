@@ -17,7 +17,8 @@ describe('StatusLineValidator', () => {
 
   beforeEach(async () => {
     validator = new StatusLineValidator({ logger: silentLogger });
-    testRoot = path.join(os.tmpdir(), `validator-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testRoot = path.join(os.tmpdir(), `validator-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testRoot);
   });
 

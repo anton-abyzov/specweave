@@ -29,7 +29,8 @@ describe('Status Line Hook Integration', () => {
 
   beforeEach(async () => {
     // Create isolated test directory
-    testDir = path.join(os.tmpdir(), `status-line-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `status-line-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     incrementsDir = path.join(testDir, '.specweave', 'increments');
     stateDir = path.join(testDir, '.specweave', 'state');
     cacheFile = path.join(stateDir, 'status-line.json');

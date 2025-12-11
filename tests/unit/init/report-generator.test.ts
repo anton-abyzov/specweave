@@ -10,7 +10,8 @@ import { ReportGenerator } from '../../../src/init/research/ReportGenerator.js';
 import type { VisionInsights } from '../../../src/init/research/types.js';
 
 // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
-const TEST_ROOT = path.join(os.tmpdir(), 'specweave-test-report-generator-' + Date.now());
+// ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+const TEST_ROOT = path.join(os.tmpdir(), `specweave-test-report-generator-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 const TEST_REPORT_PATH = path.join(TEST_ROOT, '.specweave/test-reports/market-research.md');
 
 describe('ReportGenerator', () => {

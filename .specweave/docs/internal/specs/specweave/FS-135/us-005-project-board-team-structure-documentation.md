@@ -1,15 +1,11 @@
 ---
 id: US-005
 feature: FS-135
-title: Project/Board/Team Structure Documentation
+title: "Project/Board/Team Structure Documentation"
 status: completed
 priority: P1
 created: 2025-12-09
 project: specweave
-external:
-  github:
-    issue: 880
-    url: https://github.com/anton-abyzov/specweave/issues/880
 ---
 
 # US-005: Project/Board/Team Structure Documentation

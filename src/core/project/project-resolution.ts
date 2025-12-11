@@ -19,6 +19,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { ConfigManager } from '../config/config-manager.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { ProjectRegistry } from './project-registry.js';
 
 /**
  * Resolved project result with confidence and source tracking
@@ -50,6 +51,8 @@ export interface ProjectResolutionOptions {
   logger?: Logger;
   /** ConfigManager instance (default: created from projectRoot) */
   configManager?: ConfigManager;
+  /** ProjectRegistry instance (default: created from projectRoot) */
+  registry?: ProjectRegistry;
 }
 
 /**
@@ -61,6 +64,7 @@ export interface ProjectResolutionOptions {
 export class ProjectResolutionService {
   private cache = new Map<string, ResolvedProject>();
   private configManager: ConfigManager;
+  private registry: ProjectRegistry;
   private logger: Logger;
   private projectRoot: string;
 
@@ -77,6 +81,7 @@ export class ProjectResolutionService {
     this.projectRoot = projectRoot;
     this.logger = options.logger ?? consoleLogger;
     this.configManager = options.configManager ?? new ConfigManager(projectRoot, this.logger);
+    this.registry = options.registry ?? new ProjectRegistry(projectRoot, { logger: this.logger });
   }
 
   /**
@@ -424,6 +429,110 @@ export class ProjectResolutionService {
   }
 
   /**
+   * Validate resolved project against the project registry
+   *
+   * Checks if the project exists in the registry and provides suggestions if not.
+   * This integration supports AC-US9-01 through AC-US9-04 for Living Docs integration.
+   *
+   * @param projectId - Project ID to validate
+   * @returns Validation result with suggestions if project not found
+   */
+  async validateAgainstRegistry(projectId: string): Promise<{
+    valid: boolean;
+    projectId: string;
+    inRegistry: boolean;
+    suggestions?: string[];
+    techStack?: string[];
+    team?: string;
+  }> {
+    try {
+      const project = await this.registry.getProject(projectId);
+
+      if (project) {
+        return {
+          valid: true,
+          projectId: project.id,
+          inRegistry: true,
+          techStack: project.techStack,
+          team: project.team
+        };
+      }
+
+      // Project not found - get suggestions from registered projects
+      const registeredProjects = await this.registry.listProjects();
+      const suggestions = registeredProjects
+        .map(p => p.id)
+        .filter(id => {
+          // Suggest projects with similar names (partial match)
+          return id.includes(projectId) || projectId.includes(id);
+        })
+        .slice(0, 3);
+
+      this.logger.warn(
+        `Project '${projectId}' not found in registry. ` +
+        `Run 'specweave project add ${projectId}' to register it.`
+      );
+
+      if (suggestions.length > 0) {
+        this.logger.warn(`Similar registered projects: ${suggestions.join(', ')}`);
+      }
+
+      return {
+        valid: false,
+        projectId,
+        inRegistry: false,
+        suggestions: suggestions.length > 0 ? suggestions : undefined
+      };
+    } catch (error) {
+      // Registry not initialized or error - return valid to not block sync
+      this.logger.debug(`Registry validation skipped: ${error}`);
+      return {
+        valid: true,
+        projectId,
+        inRegistry: false
+      };
+    }
+  }
+
+  /**
+   * Get project metadata from registry (techStack, team, etc.)
+   *
+   * Useful for enriching living docs with project context.
+   *
+   * @param projectId - Project ID to look up
+   * @returns Project metadata or null if not found
+   */
+  async getProjectMetadata(projectId: string): Promise<{
+    techStack?: string[];
+    team?: string;
+    description?: string;
+    keywords?: string[];
+  } | null> {
+    try {
+      const project = await this.registry.getProject(projectId);
+      if (!project) return null;
+
+      return {
+        techStack: project.techStack,
+        team: project.team,
+        description: project.description,
+        keywords: project.keywords
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Get the project registry instance
+   *
+   * Allows external code to interact with the registry directly.
+   */
+  getRegistry(): ProjectRegistry {
+    return this.registry;
+  }
+
+  /**
    * Get all unique projects from an increment's user stories
    *
    * Useful for cross-project increment handling.
@@ -447,5 +556,233 @@ export class ProjectResolutionService {
       const resolved = await this.resolveProjectForIncrement(incrementId);
       return [resolved.projectId];
     }
+  }
+
+  /**
+   * CRITICAL: Validate a project ID before folder creation
+   *
+   * This is the primary guard against folder pollution from example/invalid projects.
+   * Called before any ensureDir() or mkdirSync() that creates project folders.
+   *
+   * Validation rules (STRICT - returns false if ANY rule fails):
+   * 1. Must be a valid project format (kebab-case, alphanumeric)
+   * 2. Must NOT be an obvious example/placeholder name
+   * 3. In single-project mode: must match config.project.name
+   * 4. In multi-project mode: must exist in config.multiProject.projects
+   *
+   * @param projectId - Project ID to validate
+   * @returns Validation result with reason for rejection
+   */
+  async validateProjectForFolderCreation(projectId: string): Promise<{
+    valid: boolean;
+    projectId: string;
+    reason: string;
+    allowedProjects: string[];
+  }> {
+    // Rule 1: Basic format validation
+    if (!projectId || typeof projectId !== 'string') {
+      return {
+        valid: false,
+        projectId: projectId || '(empty)',
+        reason: 'Project ID is empty or not a string',
+        allowedProjects: []
+      };
+    }
+
+    // Rule 2: Reject obvious placeholders and invalid characters
+    const invalidPatterns = [
+      /\{\{.*\}\}/,           // Template placeholders like {{PROJECT_ID}}
+      /,/,                     // Comma-separated lists
+      /\s{2,}/,               // Multiple spaces
+      /[←→❌✅⚠️]/,          // Emoji indicators (from examples)
+      /[()]/,                 // Parentheses (like "MyApp (3 repos)")
+      /[^\w-]/,               // Non-alphanumeric (except hyphen)
+      /^(example|test-project|my-?app|sample|demo|placeholder|todo|tbd|xxx)$/i,
+    ];
+
+    for (const pattern of invalidPatterns) {
+      if (pattern.test(projectId)) {
+        return {
+          valid: false,
+          projectId,
+          reason: `Project ID contains invalid pattern: ${pattern.toString()}`,
+          allowedProjects: []
+        };
+      }
+    }
+
+    // Rule 3: Known example project names that appear in documentation/specs
+    const exampleProjects = new Set([
+      'frontend-app',
+      'backend-api',
+      'mobile-app',
+      'shared-lib',
+      'acme-corp',
+      'myapp',
+      'my-app',
+      'example-project',
+      'sample-project',
+      'test-project',
+      'per',
+      'default'
+    ]);
+
+    // CRITICAL v0.35.1: Use ProjectRegistry as PRIMARY source of truth
+    // Fallback to config.json for backward compatibility
+    let allowedProjects: string[] = [];
+    const projectIdLower = projectId.toLowerCase();
+
+    try {
+      // Check ProjectRegistry FIRST (.specweave/state/projects.json)
+      const registeredProjects = await this.registry.listProjects();
+
+      if (registeredProjects.length > 0) {
+        allowedProjects = registeredProjects.map(p => p.id.toLowerCase());
+
+        // If project exists in registry, it's valid
+        if (allowedProjects.includes(projectIdLower)) {
+          return {
+            valid: true,
+            projectId,
+            reason: 'Project exists in registry',
+            allowedProjects
+          };
+        }
+
+        // If project is a known example and NOT in registry, reject it
+        if (exampleProjects.has(projectIdLower)) {
+          return {
+            valid: false,
+            projectId,
+            reason: `Project '${projectId}' is a known example project name. Add it with 'specweave project add ${projectId}' to allow.`,
+            allowedProjects
+          };
+        }
+
+        // Project not in registry - REJECT
+        return {
+          valid: false,
+          projectId,
+          reason: `Project '${projectId}' is not in the project registry. Allowed: [${allowedProjects.join(', ')}]`,
+          allowedProjects
+        };
+      }
+    } catch (error) {
+      this.logger.debug(`Registry check failed, falling back to config.json: ${error}`);
+    }
+
+    // FALLBACK: Use config.json if registry is empty or failed
+    const config = await this.configManager.read() as any;
+    const isSingleProject = config.multiProject?.enabled !== true;
+
+    if (isSingleProject) {
+      // Single-project mode: only config.project.name is allowed
+      const configProject = config.project?.name;
+      if (configProject) {
+        allowedProjects = [configProject.toLowerCase()];
+      }
+    } else {
+      // Multi-project mode: only projects in config.multiProject.projects
+      const multiProjects = config.multiProject?.projects || {};
+      allowedProjects = Object.keys(multiProjects).map(p => p.toLowerCase());
+    }
+
+    // If project is in allowed list, it's valid (even if it's in exampleProjects)
+    if (allowedProjects.includes(projectIdLower)) {
+      return {
+        valid: true,
+        projectId,
+        reason: 'Project is in config.json',
+        allowedProjects
+      };
+    }
+
+    // If project is a known example and NOT in allowed list, reject it
+    if (exampleProjects.has(projectIdLower)) {
+      return {
+        valid: false,
+        projectId,
+        reason: `Project '${projectId}' is a known example project name. Add it to config to allow.`,
+        allowedProjects
+      };
+    }
+
+    // If there are no allowed projects configured, be permissive (new project setup)
+    if (allowedProjects.length === 0) {
+      this.logger.warn(
+        `No projects configured. Project '${projectId}' will be allowed. ` +
+        `Consider adding it with 'specweave project add ${projectId}'`
+      );
+      return {
+        valid: true,
+        projectId,
+        reason: 'No projects configured, allowing new project',
+        allowedProjects
+      };
+    }
+
+    // Project not in allowed list - REJECT
+    return {
+      valid: false,
+      projectId,
+      reason: `Project '${projectId}' is not in the allowed list: [${allowedProjects.join(', ')}]`,
+      allowedProjects
+    };
+  }
+
+  /**
+   * Filter project IDs extracted from spec.md to only valid projects
+   *
+   * This prevents example User Stories from polluting the specs folder.
+   * Should be called after extractProjectsFromUSFields() to filter results.
+   *
+   * @param projectIds - Raw project IDs from spec.md
+   * @returns Only valid, configured project IDs
+   */
+  async filterValidProjects(projectIds: string[]): Promise<string[]> {
+    const validProjects: string[] = [];
+
+    for (const projectId of projectIds) {
+      const validation = await this.validateProjectForFolderCreation(projectId);
+      if (validation.valid) {
+        validProjects.push(projectId);
+      } else {
+        this.logger.debug(
+          `Filtered out invalid project '${projectId}': ${validation.reason}`
+        );
+      }
+    }
+
+    return validProjects;
+  }
+
+  /**
+   * Synchronous check for common example project names
+   *
+   * Fast path for pre-tool-use hooks that can't be async.
+   * Returns true if the project name looks like an example.
+   */
+  static isExampleProjectName(projectId: string): boolean {
+    if (!projectId) return true;
+
+    const examplePatterns = [
+      /^frontend-?app$/i,
+      /^backend-?api$/i,
+      /^mobile-?app$/i,
+      /^shared-?lib$/i,
+      /^acme-?corp$/i,
+      /^my-?app$/i,
+      /^example/i,
+      /^sample/i,
+      /^test-project/i,
+      /^demo/i,
+      /^placeholder/i,
+      /\{\{.*\}\}/,         // Template placeholders
+      /,/,                   // Comma-separated
+      /[()]/,               // Parentheses
+      /[←→❌✅]/,           // Emoji indicators
+    ];
+
+    return examplePatterns.some(p => p.test(projectId));
   }
 }

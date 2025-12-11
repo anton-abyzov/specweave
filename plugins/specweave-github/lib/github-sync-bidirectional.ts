@@ -24,6 +24,17 @@ import {
   IncrementMetadata,
   detectRepo
 } from './github-issue-updater.js';
+import { getGitHubAuthFromProject } from '../../../src/utils/auth-helpers.js';
+
+/**
+ * Get environment object with GH_TOKEN for gh CLI commands.
+ */
+function getGhEnv(): NodeJS.ProcessEnv {
+  const { token } = getGitHubAuthFromProject(process.cwd());
+  return token
+    ? { ...process.env, GH_TOKEN: token }
+    : process.env;
+}
 
 export interface GitHubIssueState {
   number: number;
@@ -124,7 +135,7 @@ async function fetchGitHubIssueState(
     `${owner}/${repo}`,
     '--json',
     'number,title,body,state,labels,assignees,milestone,updatedAt'
-  ]);
+  ], { env: getGhEnv() });
 
   if (issueResult.exitCode !== 0) {
     throw new Error(`Failed to fetch issue: ${issueResult.stderr}`);
@@ -138,7 +149,7 @@ async function fetchGitHubIssueState(
     `repos/${owner}/${repo}/issues/${issueNumber}/comments`,
     '--jq',
     '.[] | {id: .id, author: .user.login, body: .body, created_at: .created_at}'
-  ]);
+  ], { env: getGhEnv() });
 
   let comments: GitHubComment[] = [];
   if (commentsResult.exitCode === 0 && commentsResult.stdout.trim()) {

@@ -1,15 +1,11 @@
 ---
 id: US-003
 feature: FS-131
-title: Parent Process Death Detection
+title: "Parent Process Death Detection"
 status: completed
 priority: P1
 created: 2025-12-09
 project: specweave
-external:
-  github:
-    issue: 872
-    url: https://github.com/anton-abyzov/specweave/issues/872
 ---
 
 # US-003: Parent Process Death Detection

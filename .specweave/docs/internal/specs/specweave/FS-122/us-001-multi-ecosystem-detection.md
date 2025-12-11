@@ -1,15 +1,11 @@
 ---
 id: US-001
 feature: FS-122
-title: Multi-Ecosystem Detection
+title: "Multi-Ecosystem Detection"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 858
-    url: https://github.com/anton-abyzov/specweave/issues/858
 ---
 
 # US-001: Multi-Ecosystem Detection

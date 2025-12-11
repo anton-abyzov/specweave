@@ -15,7 +15,8 @@ describe('DisciplineChecker', () => {
 
   beforeEach(async () => {
     // Create temp directory for test
-    testDir = path.join(os.tmpdir(), `discipline-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `discipline-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testDir);
     await fs.ensureDir(path.join(testDir, '.specweave', 'increments'));
   });

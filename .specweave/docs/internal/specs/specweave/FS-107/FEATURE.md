@@ -4,8 +4,8 @@ title: "FS-107: Enforce Config JSON Separation"
 type: feature
 status: completed
 priority: P1
-created: 2025-12-10
-lastUpdated: 2025-12-10
+created: 2025-12-11
+lastUpdated: 2025-12-11
 external_tools:
   github:
     type: milestone
@@ -23,7 +23,7 @@ Fix 15 confirmed architectural violations where non-secret configuration data is
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0107-enforce-config-json-separation](../../../../increments/0107-enforce-config-json-separation/spec.md) | ✅ completed | 2025-12-10 |
+| [0107-enforce-config-json-separation](../../../../increments/0107-enforce-config-json-separation/spec.md) | ✅ completed | 2025-12-11 |
 
 ## User Stories
 

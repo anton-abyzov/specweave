@@ -7,6 +7,11 @@ import {
   postScopeChangeComment
 } from "./github-issue-updater.js";
 import { execFileNoThrow } from "../../../src/utils/execFileNoThrow.js";
+import { getGitHubAuthFromProject } from "../../../src/utils/auth-helpers.js";
+function getGhEnv() {
+  const { token } = getGitHubAuthFromProject(process.cwd());
+  return token ? { ...process.env, GH_TOKEN: token } : process.env;
+}
 async function syncIncrementChanges(incrementId, changedFile) {
   console.log(`
 \u{1F504} Syncing ${changedFile} changes to GitHub...`);
@@ -181,7 +186,7 @@ async function updateIssueTitle(issueNumber, title, owner, repo) {
     `${owner}/${repo}`,
     "--title",
     title
-  ]);
+  ], { env: getGhEnv() });
   if (result.exitCode !== 0) {
     console.warn(`\u26A0\uFE0F  Could not update issue title: ${result.stderr}`);
   }
@@ -197,7 +202,7 @@ async function updateIssueTaskChecklist(issueNumber, tasks, owner, repo) {
     "body",
     "-q",
     ".body"
-  ]);
+  ], { env: getGhEnv() });
   if (result.exitCode !== 0) {
     throw new Error(`Failed to get issue body: ${result.stderr}`);
   }
@@ -224,7 +229,7 @@ ${taskChecklist}
     `${owner}/${repo}`,
     "--body",
     updatedBody
-  ]);
+  ], { env: getGhEnv() });
   if (updateResult.exitCode !== 0) {
     throw new Error(`Failed to update issue body: ${updateResult.stderr}`);
   }
@@ -238,7 +243,7 @@ async function postComment(issueNumber, comment, owner, repo) {
     `${owner}/${repo}`,
     "--body",
     comment
-  ]);
+  ], { env: getGhEnv() });
   if (result.exitCode !== 0) {
     throw new Error(`Failed to post comment: ${result.stderr}`);
   }

@@ -1,15 +1,11 @@
 ---
 id: US-004
 feature: FS-139
-title: Fix user-story-issue-builder.test.ts Failures (P1 - 3 failures)
+title: "Fix user-story-issue-builder.test.ts Failures (P1 - 3 failures)"
 status: completed
 priority: P0
 created: 2025-12-10
 project: specweave
-external:
-  github:
-    issue: 910
-    url: https://github.com/anton-abyzov/specweave/issues/910
 ---
 
 # US-004: Fix user-story-issue-builder.test.ts Failures (P1 - 3 failures)

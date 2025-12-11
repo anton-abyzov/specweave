@@ -1,0 +1,11 @@
+{
+  "id": "0146-github-cli-token-passthrough-fix",
+  "title": "GitHub CLI Token Passthrough Fix",
+  "type": "bug",
+  "priority": "P1",
+  "status": "completed",
+  "created": "2025-12-11T00:00:00.000Z",
+  "completed": "2025-12-11T02:44:00.000Z",
+  "totalTasks": 8,
+  "completedTasks": 8
+}

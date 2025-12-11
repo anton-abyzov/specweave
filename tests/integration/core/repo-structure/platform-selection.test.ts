@@ -21,8 +21,8 @@ describe('Platform Selection Integration', () => {
   let manager: RepoStructureManager;
 
   beforeEach(() => {
-    // Create isolated test directory
-    testDir = join(tmpdir(), `specweave-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = join(tmpdir(), `specweave-test-platform-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     mkdirSync(testDir, { recursive: true });
 
     // Initialize providers

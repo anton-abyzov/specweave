@@ -19,6 +19,7 @@ import { UserStoryIssueBuilder } from './user-story-issue-builder.js';
 import { CompletionCalculator } from './completion-calculator.js';
 import { DuplicateDetector } from './duplicate-detector.js';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
+import { getGitHubAuthFromProject } from '../../../src/utils/auth-helpers.js';
 
 interface FeatureFrontmatter {
   id: string;
@@ -51,6 +52,7 @@ export class GitHubFeatureSync {
   private specsDir: string;
   private projectRoot: string;
   private calculator: CompletionCalculator;
+  private token?: string;
 
   // SYNC LOCK: Prevent concurrent syncs of the same feature
   // Maps featureId → last sync timestamp
@@ -62,6 +64,19 @@ export class GitHubFeatureSync {
     this.specsDir = specsDir;
     this.projectRoot = projectRoot;
     this.calculator = new CompletionCalculator(projectRoot);
+    // Get token from .env for gh CLI passthrough
+    this.token = getGitHubAuthFromProject(projectRoot).token;
+  }
+
+  /**
+   * Get environment object with GH_TOKEN for gh CLI commands.
+   * This ensures the token from .env is passed to all gh operations,
+   * regardless of `gh auth` status.
+   */
+  private getGhEnv(): NodeJS.ProcessEnv {
+    return this.token
+      ? { ...process.env, GH_TOKEN: this.token }
+      : process.env;
   }
 
   /**
@@ -393,7 +408,7 @@ export class GitHubFeatureSync {
       'repos/:owner/:repo/milestones',
       '--jq',
       `.[] | select(.title == "${title}") | {number, html_url}`,
-    ]);
+    ], { env: this.getGhEnv() });
 
     // DEBUG: Log detection result
     console.log(`   🔍 Milestone detection: exitCode=${existingResult.exitCode}, stdout length=${existingResult.stdout.length}`);
@@ -426,7 +441,7 @@ export class GitHubFeatureSync {
       `description=${description}`,
       '-f',
       'state=open',
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(`Failed to create Milestone: ${result.stderr || result.stdout}`);
@@ -467,7 +482,7 @@ export class GitHubFeatureSync {
       '--milestone',
       milestoneTitle,
       ...issueContent.labels.flatMap((label) => ['--label', label]),
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(`Failed to create GitHub Issue: ${result.stderr || result.stdout}`);
@@ -493,7 +508,7 @@ export class GitHubFeatureSync {
         issueNumber.toString(),
         '--comment',
         this.calculator.buildCompletionComment(completion),
-      ]);
+      ], { env: this.getGhEnv() });
       console.log(
         `      ✅ Created and verified complete: ${completion.acsCompleted}/${completion.acsTotal} ACs, ${completion.tasksCompleted}/${completion.tasksTotal} tasks`
       );
@@ -535,7 +550,7 @@ export class GitHubFeatureSync {
       issueContent.title,
       '--body',
       issueContent.body,
-    ]);
+    ], { env: this.getGhEnv() });
 
     // ✅ VERIFICATION GATE: Calculate ACTUAL completion from checkboxes
     const completion = await this.calculator.calculateCompletion(userStoryPath);
@@ -554,7 +569,7 @@ export class GitHubFeatureSync {
           issueNumber.toString(),
           '--comment',
           this.calculator.buildCompletionComment(completion),
-        ]);
+        ], { env: this.getGhEnv() });
         console.log(
           `      ✅ Verified complete: ${completion.acsCompleted}/${completion.acsTotal} ACs, ${completion.tasksCompleted}/${completion.tasksTotal} tasks`
         );
@@ -569,7 +584,7 @@ export class GitHubFeatureSync {
           issueNumber.toString(),
           '--comment',
           this.calculator.buildReopenComment(completion, 'Work verification failed'),
-        ]);
+        ], { env: this.getGhEnv() });
         console.log(
           `      ⚠️ Reopened: ${completion.blockingAcs.length + completion.blockingTasks.length} items incomplete`
         );
@@ -663,7 +678,7 @@ export class GitHubFeatureSync {
           issueNumber.toString(),
           '--remove-label',
           ...statusLabels,
-        ]);
+        ], { env: this.getGhEnv() });
       }
 
       // Step 2: Add new status label
@@ -673,7 +688,7 @@ export class GitHubFeatureSync {
         issueNumber.toString(),
         '--add-label',
         newStatusLabel,
-      ]);
+      ], { env: this.getGhEnv() });
 
       if (result.exitCode === 0) {
         console.log(`      🏷️  Updated label: ${newStatusLabel}`);
@@ -712,7 +727,7 @@ export class GitHubFeatureSync {
         'repos/:owner/:repo/issues/' + issueNumber + '/comments',
         '--jq',
         '.[-1] | {body: .body, created_at: .created_at}',  // Get last comment only
-      ]);
+      ], { env: this.getGhEnv() });
 
       let lastCommentBody = '';
       if (commentsResult.exitCode === 0 && commentsResult.stdout.trim()) {
@@ -753,7 +768,7 @@ export class GitHubFeatureSync {
         issueNumber.toString(),
         '--body',
         newCommentBody,
-      ]);
+      ], { env: this.getGhEnv() });
       console.log(
         `      📊 Progress: ${completion.acsPercentage.toFixed(0)}% ACs, ${completion.tasksPercentage.toFixed(0)}% tasks (updated)`
       );

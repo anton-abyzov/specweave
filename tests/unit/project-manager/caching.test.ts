@@ -140,25 +140,27 @@ describe('ProjectManager - Caching Mechanism', () => {
       expect(result.avg).toBeLessThan(0.01);
     });
 
-    it('should show performance benefit from caching', async () => {
-      // Benchmark cold reads (with cache clearing)
-      const coldResult = await benchmark(() => {
-        projectManager.clearCache();
+    it('should avoid ConfigManager.load() calls when cached', async () => {
+      // This test validates caching behavior by counting mock calls
+      // rather than timing (which is flaky with mocked dependencies)
+
+      // Cold read - should call load()
+      projectManager.clearCache();
+      projectManager.getActiveProject();
+      const callsAfterColdRead = mockConfigManager.load.mock.calls.length;
+
+      // 100 cached reads - should NOT call load() again
+      for (let i = 0; i < 100; i++) {
         projectManager.getActiveProject();
-      }, 100);
+      }
+      const callsAfterCachedReads = mockConfigManager.load.mock.calls.length;
 
-      // Benchmark cached reads (no cache clearing)
-      projectManager.getActiveProject(); // Prime cache
-      const cachedResult = await benchmark(() => {
-        projectManager.getActiveProject();
-      }, 100);
+      console.log(`Cold read calls: ${callsAfterColdRead}`);
+      console.log(`After 100 cached reads: ${callsAfterCachedReads}`);
+      console.log(`Avoided ${100 - (callsAfterCachedReads - callsAfterColdRead)} load() calls`);
 
-      console.log(`Cold read:   ${coldResult.avg.toFixed(3)}ms avg`);
-      console.log(`Cached read: ${cachedResult.avg.toFixed(6)}ms avg`);
-      console.log(`Speedup:     ${(coldResult.avg / cachedResult.avg).toFixed(1)}x`);
-
-      // Cached should be faster (note: ConfigManager also caches, so speedup is modest)
-      expect(cachedResult.avg).toBeLessThan(coldResult.avg);
+      // Cached reads should NOT increase the call count
+      expect(callsAfterCachedReads).toBe(callsAfterColdRead);
     });
   });
 });

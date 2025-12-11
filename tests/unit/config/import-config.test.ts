@@ -21,7 +21,8 @@ describe('Import Configuration (T-027)', () => {
 
   beforeEach(() => {
     // Create isolated test directory
-    testDir = path.join(os.tmpdir(), `import-config-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `import-config-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     fs.mkdirSync(path.join(testDir, '.specweave'), { recursive: true });
 
     // Clear environment variables

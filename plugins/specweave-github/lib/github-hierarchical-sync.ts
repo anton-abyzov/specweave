@@ -19,6 +19,17 @@ import {
 import { GitHubIssue } from './types.js';
 import { getBoardNumbers } from './github-board-resolver.js';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
+import { getGitHubAuthFromProject } from '../../../src/utils/auth-helpers.js';
+
+/**
+ * Get environment object with GH_TOKEN for gh CLI commands.
+ */
+function getGhEnv(): NodeJS.ProcessEnv {
+  const { token } = getGitHubAuthFromProject(process.cwd());
+  return token
+    ? { ...process.env, GH_TOKEN: token }
+    : process.env;
+}
 
 /**
  * Build hierarchical GitHub search query from containers
@@ -304,7 +315,7 @@ async function executeSearch(query: string): Promise<GitHubIssue[]> {
     'number,title,body,state,url,labels,milestone,repository',
     '--limit',
     '1000', // Max results
-  ]);
+  ], { env: getGhEnv() });
 
   if (result.status !== 0) {
     throw new Error(`Failed to search issues: ${result.stderr || result.stdout}`);
