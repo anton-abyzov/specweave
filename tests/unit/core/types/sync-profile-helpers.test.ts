@@ -25,25 +25,8 @@ describe('sync-profile helpers', () => {
       expect(getDefaultProfile(config)).toBe('new-profile');
     });
 
-    it('should return activeProfile when only activeProfile is set (backward compat)', () => {
-      const config: Pick<SyncProfiles, 'defaultProfile' | 'activeProfile'> = {
-        activeProfile: 'legacy-profile',
-      };
-
-      expect(getDefaultProfile(config)).toBe('legacy-profile');
-    });
-
-    it('should prefer defaultProfile over activeProfile when both are set', () => {
-      const config: Pick<SyncProfiles, 'defaultProfile' | 'activeProfile'> = {
-        defaultProfile: 'new-profile',
-        activeProfile: 'legacy-profile',
-      };
-
-      expect(getDefaultProfile(config)).toBe('new-profile');
-    });
-
-    it('should return undefined when neither is set', () => {
-      const config: Pick<SyncProfiles, 'defaultProfile' | 'activeProfile'> = {};
+    it('should return undefined when defaultProfile is not set', () => {
+      const config: Pick<SyncProfiles, 'defaultProfile'> = {};
 
       expect(getDefaultProfile(config)).toBeUndefined();
     });
@@ -230,38 +213,8 @@ describe('sync-profile helpers', () => {
     });
   });
 
-  describe('backward compatibility integration', () => {
-    it('should work with real-world legacy config (only activeProfile)', () => {
-      // Simulates a config.json from before v0.31.0
-      const legacyConfig = {
-        activeProfile: 'specweave-dev',
-        profiles: {
-          'specweave-dev': {
-            provider: 'github' as const,
-            displayName: 'SpecWeave Development',
-            config: {
-              owner: 'anton-abyzov',
-              repo: 'specweave',
-            },
-            timeRange: { default: '1M' as const, max: '6M' as const },
-          },
-        },
-      };
-
-      // getDefaultProfile should return the legacy activeProfile
-      expect(getDefaultProfile(legacyConfig)).toBe('specweave-dev');
-
-      // getProfilesByProvider should still work
-      const githubProfiles = getProfilesByProvider(legacyConfig, 'github');
-      expect(githubProfiles).toHaveLength(1);
-      expect(githubProfiles[0][0]).toBe('specweave-dev');
-
-      // hasProviderConfigured should still work
-      expect(hasProviderConfigured(legacyConfig, 'github')).toBe(true);
-      expect(hasProviderConfigured(legacyConfig, 'ado')).toBe(false);
-    });
-
-    it('should work with new config (only defaultProfile)', () => {
+  describe('profile configuration', () => {
+    it('should work with config using defaultProfile', () => {
       // Simulates a config.json from v0.31.0+
       const newConfig = {
         defaultProfile: 'specweave-dev',
@@ -286,29 +239,30 @@ describe('sync-profile helpers', () => {
       expect(hasProviderConfigured(newConfig, 'github')).toBe(true);
     });
 
-    it('should work with mixed config (both fields, different values)', () => {
-      // Edge case: user has both fields with different values
-      const mixedConfig = {
-        defaultProfile: 'new-preferred',
-        activeProfile: 'old-legacy',
+    it('should work with multiple profiles', () => {
+      const config = {
+        defaultProfile: 'github-profile',
         profiles: {
-          'new-preferred': {
+          'github-profile': {
             provider: 'github' as const,
-            displayName: 'New Preferred',
-            config: { owner: 'test', repo: 'new' },
+            displayName: 'GitHub Profile',
+            config: { owner: 'test', repo: 'repo1' },
             timeRange: { default: '1M' as const, max: '6M' as const },
           },
-          'old-legacy': {
-            provider: 'github' as const,
-            displayName: 'Old Legacy',
-            config: { owner: 'test', repo: 'old' },
+          'ado-profile': {
+            provider: 'ado' as const,
+            displayName: 'ADO Profile',
+            config: { organization: 'test', project: 'proj1' },
             timeRange: { default: '1M' as const, max: '6M' as const },
           },
         },
       };
 
-      // defaultProfile should win
-      expect(getDefaultProfile(mixedConfig)).toBe('new-preferred');
+      // defaultProfile should be returned
+      expect(getDefaultProfile(config)).toBe('github-profile');
+      // Both providers should be configured
+      expect(hasProviderConfigured(config, 'github')).toBe(true);
+      expect(hasProviderConfigured(config, 'ado')).toBe(true);
     });
   });
 });
