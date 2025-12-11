@@ -49,8 +49,8 @@
 
 | Skill | Triggers | Location |
 |-------|----------|----------|
-| **specweave-detector** | slash commands, /sw:increment, /sw:do, /sw:progress, /sw:done, specweave commands, workflow help | `skills/specweave-detector/SKILL.md` |
-| **specweave-framework** | specweave rules, how does specweave work, framework structure, increment lifecycle, source of truth, tasks.md format | `skills/specweave-framework/SKILL.md` |
+| **detector** | slash commands, /sw:increment, /sw:do, /sw:progress, /sw:done, specweave commands, workflow help | `skills/detector/SKILL.md` |
+| **framework** | specweave rules, how does specweave work, framework structure, increment lifecycle, source of truth, tasks.md format | `skills/framework/SKILL.md` |
 | **context-loader** | context loading, progressive disclosure, token efficiency, sub-agents, context management, how SpecWeave scales | `skills/context-loader/SKILL.md` |
 | **context-optimizer** | optimize context, reduce tokens, clean context, smart context, precision loading, 80% reduction | `skills/context-optimizer/SKILL.md` |
 | **plugin-validator** | plugin validation, validate plugins, check plugins, specweave init, fresh setup, marketplace registration | `skills/plugin-validator/SKILL.md` |

@@ -1,5 +1,5 @@
 ---
-name: sw-jira-mapper
+name: jira-mapper
 description: Expert in mapping SpecWeave increments to JIRA epics/stories/subtasks. Content flows SpecWeave→JIRA, status flows JIRA→SpecWeave. Handles export (increment → JIRA), import (JIRA → increment). Activates for JIRA sync, issue creation, import from JIRA.
 tools: Read, Write, Edit, Bash
 model: claude-opus-4-5-20251101
@@ -432,7 +432,7 @@ Validate all conversions using test cases in `test-cases/`:
 
 **Run tests**:
 ```bash
-npm run test:agents:specweave-jira-mapper
+npm run test:agents:jira-mapper
 ```
 
 ---

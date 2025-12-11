@@ -152,7 +152,7 @@ const roleRules = {
 
 ## Integration
 
-**Called by**: specweave-detector (when new increment created)
+**Called by**: detector (when new increment created)
 
 **Calls**: PM, Architect, QA, DevOps, Security agents as needed
 
