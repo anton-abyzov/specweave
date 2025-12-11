@@ -142,21 +142,6 @@ export class BrownfieldAnalysisWorker {
         this.logger.warn('Claude Code not available, falling back to standard analysis');
         this.context.depth = 'standard';
       }
-    } else if (this.context.depth === 'deep-api') {
-      // Try to load LLM config from project
-      const configPath = path.join(this.projectPath, '.specweave', 'config.json');
-      if (fs.existsSync(configPath)) {
-        try {
-          const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-          if (config.llm) {
-            this.llmProvider = await createProvider(config.llm, { logger: this.logger });
-            this.logger.log(`Initialized ${config.llm.provider} provider for deep analysis`);
-          }
-        } catch (error) {
-          this.logger.warn('Failed to initialize LLM provider, falling back to standard analysis');
-          this.context.depth = 'standard';
-        }
-      }
     }
   }
 
@@ -355,7 +340,7 @@ export class BrownfieldAnalysisWorker {
     }
 
     // AI-powered deep analysis (when provider available)
-    if (this.llmProvider && (this.context.depth === 'deep-native' || this.context.depth === 'deep-api')) {
+    if (this.llmProvider && this.context.depth === 'deep-native') {
       this.logger.log('Running AI-powered deep analysis...');
       const aiDiscrepancies = await this.runAIAnalysis();
       discrepancies.push(...aiDiscrepancies);

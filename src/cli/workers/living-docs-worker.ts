@@ -80,7 +80,7 @@ interface LivingDocsJobConfig {
     additionalSources: string[];
     priorityAreas: string[];
     knownPainPoints: string[];
-    analysisDepth: 'quick' | 'standard' | 'deep-native' | 'deep-interactive' | 'deep-api';
+    analysisDepth: 'quick' | 'standard' | 'deep-native' | 'deep-interactive';
   };
   startedAt: string;
 }
@@ -385,7 +385,7 @@ async function main(): Promise<void> {
 
     // Initialize LLM provider for AI-powered deep analysis
     const depth = jobConfig.userInputs.analysisDepth;
-    if (depth === 'deep-native' || depth === 'deep-api') {
+    if (depth === 'deep-native') {
       log('Initializing AI provider for deep analysis...');
       try {
         const providerModule = await import('../../core/llm/provider-factory.js');
@@ -393,59 +393,47 @@ async function main(): Promise<void> {
         isClaudeCodeAvailable = providerModule.isClaudeCodeAvailable;
         getClaudeCodeStatus = providerModule.getClaudeCodeStatus;
 
-        if (depth === 'deep-native') {
-          // Use Claude Code CLI with MAX subscription (FREE!)
-          const available = await isClaudeCodeAvailable();
-          if (available) {
-            llmProvider = await createProvider({
-              provider: 'claude-code',
-              model: 'opus',  // Opus 4.5 for best quality
-            });
-            log('  ✓ Claude Code native provider initialized (using MAX subscription)');
-            log('    Model: Opus 4.5');
-            log('    Cost: FREE (included in MAX)');
-          } else {
-            // Show detailed availability message with installation instructions
-            log('  ⚠ Claude Code CLI not available');
+        // Use Claude Code CLI with MAX subscription (FREE!)
+        const available = await isClaudeCodeAvailable();
+        if (available) {
+          llmProvider = await createProvider({
+            provider: 'claude-code',
+            model: 'opus',  // Opus 4.5 for best quality
+          });
+          log('  ✓ Claude Code native provider initialized (using MAX subscription)');
+          log('    Model: Opus 4.5');
+          log('    Cost: FREE (included in MAX)');
+        } else {
+          // Show detailed availability message with installation instructions
+          log('  ⚠ Claude Code CLI not available');
+          log('');
+          try {
+            const status = await getClaudeCodeStatus();
+            const availMsg = getAvailabilityMessage(status);
+            log(`  ${availMsg.title}`);
+            log(`  ${availMsg.message}`);
             log('');
-            try {
-              const status = await getClaudeCodeStatus();
-              const availMsg = getAvailabilityMessage(status);
-              log(`  ${availMsg.title}`);
-              log(`  ${availMsg.message}`);
+            if (availMsg.instructions.length > 0) {
+              log('  Installation Instructions:');
+              for (const instruction of availMsg.instructions) {
+                log(`    ${instruction}`);
+              }
               log('');
-              if (availMsg.instructions.length > 0) {
-                log('  Installation Instructions:');
-                for (const instruction of availMsg.instructions) {
-                  log(`    ${instruction}`);
-                }
-                log('');
-              }
-              if (availMsg.alternatives.length > 0) {
-                log('  Alternatives:');
-                for (const alt of availMsg.alternatives) {
-                  log(`    • ${alt}`);
-                }
-                log('');
-              }
-              log(`  Learn more: ${availMsg.learnMore}`);
-            } catch {
-              log('  Install Claude Code: npm install -g @anthropic-ai/claude-code');
-              log('  Then authenticate: claude login');
             }
-            log('');
-            log('  Falling back to standard analysis (no AI insights)');
+            if (availMsg.alternatives.length > 0) {
+              log('  Alternatives:');
+              for (const alt of availMsg.alternatives) {
+                log(`    • ${alt}`);
+              }
+              log('');
+            }
+            log(`  Learn more: ${availMsg.learnMore}`);
+          } catch {
+            log('  Install Claude Code: npm install -g @anthropic-ai/claude-code');
+            log('  Then authenticate: claude login');
           }
-        } else if (depth === 'deep-api') {
-          // Load from project config
-          const llmConfig = providerModule.loadLLMConfig(projectPath);
-          if (llmConfig) {
-            llmProvider = await createProvider(llmConfig);
-            log(`  ✓ ${llmConfig.provider} provider initialized`);
-            log(`    Model: ${llmConfig.model}`);
-          } else {
-            log('  ⚠ No LLM config found in .specweave/config.json, falling back to standard analysis');
-          }
+          log('');
+          log('  Falling back to standard analysis (no AI insights)');
         }
       } catch (err: any) {
         log(`  ⚠ Failed to initialize AI provider: ${err.message}`);
@@ -613,11 +601,11 @@ async function main(): Promise<void> {
     }
 
     // ═══════════════════════════════════════════════════════════════
-    // PHASE 3.5: Intelligent Codebase Analysis (deep-native/deep-api only)
+    // PHASE 3.5: Intelligent Codebase Analysis (deep-native only)
     // ═══════════════════════════════════════════════════════════════
     const analysisDepth = jobConfig.userInputs.analysisDepth;
     const hasMultipleRepos = discovery.umbrella?.isUmbrella || discovery.modules.length > 1;
-    if ((analysisDepth === 'deep-native' || analysisDepth === 'deep-api') && hasMultipleRepos) {
+    if (analysisDepth === 'deep-native' && hasMultipleRepos) {
       log('');
       log('PHASE: Intelligent Analysis - Deep codebase understanding...');
       log('  This phase uses LLM to understand each repository\'s purpose,');
@@ -728,7 +716,7 @@ async function main(): Promise<void> {
         // Top 10
         modulesToAnalyze = modulesToAnalyze.slice(0, 10);
       }
-      // deep-native, deep-interactive, deep-api = all modules
+      // deep-native, deep-interactive = all modules
 
       // Check for resume point
       const resumePoint = getResumePoint(projectPath, jobId);
@@ -893,7 +881,7 @@ async function main(): Promise<void> {
     log(`Output:`);
     log(`  - .specweave/docs/SUGGESTIONS.md`);
     log(`  - .specweave/docs/ENTERPRISE-HEALTH.md`);
-    if (analysisDepth === 'deep-native' || analysisDepth === 'deep-api') {
+    if (analysisDepth === 'deep-native') {
       log(`  - .specweave/docs/internal/repos/ (per-repo analysis)`);
       log(`  - .specweave/docs/internal/organization/ (team/service clustering)`);
       log(`  - .specweave/docs/internal/architecture/ (C4 diagrams, detected ADRs)`);

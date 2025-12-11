@@ -26,7 +26,7 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 |--------|-------------|
 | (none) | Interactive mode - prompts for configuration |
 | `--resume <jobId>` | Resume orphaned/paused living-docs job |
-| `--depth <level>` | Analysis depth: `quick`, `standard`, `deep-native`, `deep-api` |
+| `--depth <level>` | Analysis depth: `quick`, `standard`, `deep-native`, `deep-interactive` |
 | `--priority <modules>` | Priority modules (comma-separated): `auth,payments,api` |
 | `--sources <folders>` | Additional doc folders (comma-separated): `docs/,wiki/` |
 | `--depends-on <jobIds>` | Wait for jobs before starting (comma-separated) |
@@ -44,7 +44,7 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 /sw:living-docs
 
 # Prompts for:
-# 1. Analysis depth (quick/standard/deep-native/deep-api)
+# 1. Analysis depth (quick/standard/deep-native/deep-interactive)
 # 2. Priority modules to focus on
 # 3. Additional documentation sources
 # 4. Confirmation to launch
@@ -86,10 +86,10 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 
 | Depth | Duration | What It Does | Cost |
 |-------|----------|--------------|------|
-| `quick` | ~5-10 min | Structure scan, tech detection, imports map | Free |
-| `standard` | ~15-30 min | Module analysis, exports, dependencies | Free |
-| `deep-native` | Progress-based | AI analysis via Claude Code CLI | FREE (MAX) |
-| `deep-api` | Progress-based | AI analysis via API key | API costs |
+| `quick` | ~5-10 min | Structure scan + tech detection + imports map | Free |
+| `standard` | ~15-30 min | Module analysis + exports + dependencies | Free |
+| `deep-native` | Progress-based | ⭐ AI analysis using your MAX subscription - NO EXTRA COST! | FREE (MAX) |
+| `deep-interactive` | Session-based | AI analysis in current Claude Code session (pause/resume) | FREE (MAX) |
 
 ### Full Scan Mode (--full-scan)
 
@@ -128,7 +128,7 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 ```bash
 /sw:living-docs --full-scan
 
-# Uses deep-native if Claude MAX available, otherwise deep-api
+# Uses deep-native if Claude MAX available, otherwise fails with error
 # Runs ALL phases: B → C → D → E → F
 # Duration: Variable (depends on project size)
 ```
