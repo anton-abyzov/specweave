@@ -112,7 +112,7 @@ interface MarketplaceConfig {
  * Scoring: 2+ keyword matches = high confidence (plugin suggested)
  */
 export const PLUGIN_KEYWORDS: Record<string, string[]> = {
-  'specweave-github': [
+  'sw-github': [
     'github',
     'git',
     'issues',
@@ -121,7 +121,7 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'repository',
     'commit',
   ],
-  'specweave-jira': [
+  'sw-jira': [
     'jira',
     'epic',
     'story',
@@ -129,7 +129,7 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'backlog',
     'atlassian',
   ],
-  'specweave-ado': [
+  'sw-ado': [
     'azure devops',
     'ado',
     'azure',
@@ -137,7 +137,7 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'work item',
     'boards',
   ],
-  'specweave-payments': [
+  'sw-payments': [
     'stripe',
     'billing',
     'payment',
@@ -145,7 +145,7 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'invoice',
     'checkout',
   ],
-  'specweave-frontend': [
+  'sw-frontend': [
     'react',
     'nextjs',
     'next.js',
@@ -155,7 +155,7 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'frontend',
     'ui',
   ],
-  'specweave-kubernetes': [
+  'sw-k8s': [
     'kubernetes',
     'k8s',
     'helm',
@@ -164,7 +164,7 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'service mesh',
     'kubectl',
   ],
-  'specweave-ml': [
+  'sw-ml': [
     'machine learning',
     'ml',
     'tensorflow',
@@ -173,7 +173,7 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'training',
     'dataset',
   ],
-  'specweave-infrastructure': [
+  'sw-infra': [
     'prometheus',
     'grafana',
     'monitoring',
@@ -191,7 +191,7 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'sre',
     'cloud',
   ],
-  'specweave-diagrams': [
+  'sw-diagrams': [
     'diagram',
     'c4',
     'mermaid',
@@ -199,7 +199,7 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'visualization',
     'flowchart',
   ],
-  'specweave-backend': [
+  'sw-backend': [
     'nodejs',
     'express',
     'fastify',
@@ -219,7 +219,7 @@ export const PLUGIN_KEYWORDS: Record<string, string[]> = {
     'rest',
     'microservices',
   ],
-  'specweave-testing': [
+  'sw-testing': [
     'playwright',
     'e2e',
     'end-to-end',

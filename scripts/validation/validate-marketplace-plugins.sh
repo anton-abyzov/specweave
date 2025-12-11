@@ -9,7 +9,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 MARKETPLACE_JSON="$PROJECT_ROOT/.claude-plugin/marketplace.json"
 PLUGINS_DIR="$PROJECT_ROOT/plugins"
 
@@ -40,9 +40,9 @@ fi
 # ============================================================
 echo -e "${BLUE}📄 Reading marketplace.json...${NC}"
 
-# Extract plugin names from marketplace.json
-LISTED_PLUGINS=$(grep -o '"name": "specweave[^"]*"' "$MARKETPLACE_JSON" | sed 's/"name": "//;s/"//g' | grep -v '^specweave$' | sort -u)
-TOTAL_LISTED=$(echo "$LISTED_PLUGINS" | wc -l | tr -d ' ')
+# Extract plugin names from marketplace.json (supports both sw-* and specweave-* patterns)
+LISTED_PLUGINS=$(grep -o '"name": "sw[^"]*"' "$MARKETPLACE_JSON" | sed 's/"name": "//;s/"//g' | grep -v '^sw$' | sort -u)
+TOTAL_LISTED=$(echo "$LISTED_PLUGINS" | grep -c . || echo "0")
 
 echo -e "${GREEN}✓ Found $TOTAL_LISTED plugins listed in marketplace.json${NC}"
 echo ""
@@ -125,6 +125,43 @@ validate_plugin_content() {
 }
 
 # ============================================================
+# Helper: Map marketplace name to directory name
+# sw-* -> specweave-* mapping
+# ============================================================
+map_plugin_to_dir() {
+    local plugin_name="$1"
+    # Map short names to directory names
+    case "$plugin_name" in
+        sw) echo "specweave" ;;
+        sw-github) echo "specweave-github" ;;
+        sw-jira) echo "specweave-jira" ;;
+        sw-ado) echo "specweave-ado" ;;
+        sw-infra) echo "specweave-infrastructure" ;;
+        sw-ml) echo "specweave-ml" ;;
+        sw-release) echo "specweave-release" ;;
+        sw-kafka) echo "specweave-kafka" ;;
+        sw-kafka-streams) echo "specweave-kafka-streams" ;;
+        sw-n8n) echo "specweave-n8n" ;;
+        sw-backend) echo "specweave-backend" ;;
+        sw-confluent) echo "specweave-confluent" ;;
+        sw-k8s) echo "specweave-kubernetes" ;;
+        sw-mobile) echo "specweave-mobile" ;;
+        sw-payments) echo "specweave-payments" ;;
+        sw-frontend) echo "specweave-frontend" ;;
+        sw-testing) echo "specweave-testing" ;;
+        sw-figma) echo "specweave-figma" ;;
+        sw-tooling) echo "specweave-tooling" ;;
+        sw-diagrams) echo "specweave-diagrams" ;;
+        sw-ui) echo "specweave-ui" ;;
+        sw-docs) echo "specweave-docs" ;;
+        sw-alternatives) echo "specweave-alternatives" ;;
+        sw-cost) echo "specweave-cost-optimizer" ;;
+        sw-plugin-dev) echo "specweave-plugin-dev" ;;
+        *) echo "$plugin_name" ;;  # Default: use as-is
+    esac
+}
+
+# ============================================================
 # Main Validation Loop
 # ============================================================
 
@@ -136,12 +173,13 @@ echo -e "${BLUE}🔎 Validating plugin completeness with scoring...${NC}"
 echo ""
 
 for plugin in $LISTED_PLUGINS; do
-    PLUGIN_DIR="$PLUGINS_DIR/$plugin"
+    DIR_NAME=$(map_plugin_to_dir "$plugin")
+    PLUGIN_DIR="$PLUGINS_DIR/$DIR_NAME"
 
-    echo -e "${CYAN}▶ $plugin${NC}"
+    echo -e "${CYAN}▶ $plugin${NC} (dir: $DIR_NAME)"
 
     if [ ! -d "$PLUGIN_DIR" ]; then
-        echo -e "  ${YELLOW}⚠  Directory not found${NC}"
+        echo -e "  ${YELLOW}⚠  Directory not found: $PLUGIN_DIR${NC}"
         INCOMPLETE_PLUGINS+=("$plugin")
         echo ""
         continue

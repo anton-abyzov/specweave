@@ -429,14 +429,14 @@ Profiles work seamlessly with **project contexts** for team-based organization:
 {
   "sync": {
     "projects": {
-      "specweave-core": {
-        "id": "specweave-core",
-        "name": "SpecWeave Core",
-        "description": "Core framework development",
-        "keywords": ["framework", "cli", "plugin"],
-        "team": "Core Team",
-        "defaultSyncProfile": "specweave-dev",
-        "specsFolder": ".specweave/docs/internal/specs/specweave-core"
+      "backend-api": {
+        "id": "backend-api",
+        "name": "Backend API",
+        "description": "Core backend services",
+        "keywords": ["api", "backend", "services"],
+        "team": "Backend Team",
+        "defaultSyncProfile": "backend-dev",
+        "specsFolder": ".specweave/docs/internal/specs/backend-api"
       },
       "mobile-app": {
         "id": "mobile-app",

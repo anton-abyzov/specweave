@@ -18,8 +18,11 @@ const projectRoot = join(__dirname, '..', '..');
  * Bug Context (2025-11-22):
  * - PLUGIN_KEYWORDS had: specweave-backend-nodejs, specweave-backend-python,
  *   specweave-backend-dotnet, specweave-e2e-testing (4 non-existent plugins)
- * - Actual marketplace has: specweave-backend, specweave-testing (2 plugins)
+ * - Actual marketplace has: sw-backend, sw-testing (2 plugins)
  * - This caused "Plugin not found in marketplace" errors on client projects
+ *
+ * Updated (2025-12-11):
+ * - Plugin names changed from specweave-* to sw-* format
  */
 describe('PLUGIN_KEYWORDS Validation', () => {
   let marketplacePlugins: string[];
@@ -53,17 +56,17 @@ describe('PLUGIN_KEYWORDS Validation', () => {
   });
 
   it('should have keywords for all major marketplace plugins', () => {
-    // Core plugins that SHOULD have keyword mappings
+    // Core plugins that SHOULD have keyword mappings (using sw-* names)
     const corePlugins = [
-      'specweave-github',
-      'specweave-jira',
-      'specweave-ado',
-      'specweave-backend',
-      'specweave-frontend',
-      'specweave-testing',
-      'specweave-kubernetes',
-      'specweave-payments',
-      'specweave-diagrams',
+      'sw-github',
+      'sw-jira',
+      'sw-ado',
+      'sw-backend',
+      'sw-frontend',
+      'sw-testing',
+      'sw-k8s',
+      'sw-payments',
+      'sw-diagrams',
     ];
 
     const missingKeywords = corePlugins.filter(
@@ -85,7 +88,8 @@ describe('PLUGIN_KEYWORDS Validation', () => {
     Object.entries(PLUGIN_KEYWORDS).forEach(([plugin, keywords]) => {
       expect(Array.isArray(keywords)).toBe(true);
       expect(keywords.length).toBeGreaterThan(0);
-      expect(plugin).toMatch(/^specweave-/);
+      // Plugin names should start with sw- (new naming convention)
+      expect(plugin).toMatch(/^sw-/);
 
       // Each keyword should be a non-empty string
       keywords.forEach((keyword) => {
@@ -96,8 +100,8 @@ describe('PLUGIN_KEYWORDS Validation', () => {
   });
 
   it('should detect backend plugin with multi-stack keywords', () => {
-    // Test that specweave-backend covers all backend stacks
-    const backendKeywords = PLUGIN_KEYWORDS['specweave-backend'];
+    // Test that sw-backend covers all backend stacks
+    const backendKeywords = PLUGIN_KEYWORDS['sw-backend'];
 
     expect(backendKeywords).toBeDefined();
     expect(backendKeywords).toContain('nodejs');
@@ -106,8 +110,8 @@ describe('PLUGIN_KEYWORDS Validation', () => {
   });
 
   it('should detect testing plugin with E2E keywords', () => {
-    // Test that specweave-testing covers E2E testing
-    const testingKeywords = PLUGIN_KEYWORDS['specweave-testing'];
+    // Test that sw-testing covers E2E testing
+    const testingKeywords = PLUGIN_KEYWORDS['sw-testing'];
 
     expect(testingKeywords).toBeDefined();
     expect(testingKeywords).toContain('playwright');

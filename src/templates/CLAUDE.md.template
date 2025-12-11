@@ -43,21 +43,21 @@ Edit("spec.md", "- [ ] **AC-US1-01**", "- [x] **AC-US1-01**");
 ## Core Workflow
 
 ```
-/specweave:increment "feature" → /specweave:do → /specweave:progress → /specweave:done 0001
+/sw:increment "feature" → /sw:do → /sw:progress → /sw:done 0001
 ```
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave:increment "X"` | Plan new feature |
-| `/specweave:do` | Execute implementation |
-| `/specweave:progress` | Check status |
-| `/specweave:validate 0001` | Quality check |
-| `/specweave:done 0001` | Close increment |
+| `/sw:increment "X"` | Plan new feature |
+| `/sw:do` | Execute implementation |
+| `/sw:progress` | Check status |
+| `/sw:validate 0001` | Quality check |
+| `/sw:done 0001` | Close increment |
 
 **Sync Commands** (if plugins installed):
-- `/specweave-github:sync` - Sync to GitHub Issues
-- `/specweave-jira:sync` - Sync to Jira
-- `/specweave-ado:sync` - Sync to Azure DevOps
+- `/sw-github:sync` - Sync to GitHub Issues
+- `/sw-jira:sync` - Sync to Jira
+- `/sw-ado:sync` - Sync to Azure DevOps
 
 ---
 
@@ -184,8 +184,8 @@ After **EVERY task completion**, hooks automatically:
 | Skills not activating | Restart Claude Code |
 | Commands not found | Check plugin: `/plugin list --installed` |
 | Root polluted | Move files to increment folders |
-| Tasks out of sync | `/specweave:sync-tasks` |
-| Can't find increment | `/specweave:status` |
+| Tasks out of sync | `/sw:sync-tasks` |
+| Can't find increment | `/sw:status` |
 
 ---
 

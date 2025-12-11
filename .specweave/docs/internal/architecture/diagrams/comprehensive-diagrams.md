@@ -1243,8 +1243,8 @@ plugins/specweave/              # Core plugin
 │   │   └── AGENT.md
 │   └── ...
 ├── commands/                   # Slash commands
-│   ├── specweave-increment.md
-│   ├── specweave-do.md
+│   ├── increment.md
+│   ├── do.md
 │   └── ...
 ├── hooks/                      # Lifecycle hooks
 │   ├── hooks.json              # Hook registration
