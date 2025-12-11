@@ -19,7 +19,7 @@
       }
     },
     {
-      "name": "specweave-github",
+      "name": "sw-github",
       "description": "GitHub integration - bidirectional sync, issue tracking, task management",
       "source": "./plugins/specweave-github",
       "category": "productivity",
@@ -30,7 +30,7 @@
       }
     },
     {
-      "name": "specweave-jira",
+      "name": "sw-jira",
       "description": "JIRA integration - bidirectional sync with epics/stories",
       "source": "./plugins/specweave-jira",
       "category": "productivity",
@@ -41,7 +41,7 @@
       }
     },
     {
-      "name": "specweave-ado",
+      "name": "sw-ado",
       "description": "Azure DevOps integration - bidirectional sync with work items",
       "source": "./plugins/specweave-ado",
       "category": "productivity",
@@ -52,7 +52,7 @@
       }
     },
     {
-      "name": "specweave-infrastructure",
+      "name": "sw-infra",
       "description": "Cloud infrastructure - Hetzner, Prometheus, Grafana, monitoring",
       "source": "./plugins/specweave-infrastructure",
       "category": "development",
@@ -63,7 +63,7 @@
       }
     },
     {
-      "name": "specweave-ml",
+      "name": "sw-ml",
       "description": "Machine learning - ML pipelines, training, deployment",
       "source": "./plugins/specweave-ml",
       "category": "development",
@@ -74,7 +74,7 @@
       }
     },
     {
-      "name": "specweave-release",
+      "name": "sw-release",
       "description": "Release management - version alignment, RC workflows, multi-repo coordination, semantic versioning",
       "source": "./plugins/specweave-release",
       "category": "development",
@@ -85,7 +85,7 @@
       }
     },
     {
-      "name": "specweave-kafka",
+      "name": "sw-kafka",
       "description": "Apache Kafka event streaming integration with MCP servers, CLI tools (kcat), Terraform modules, and comprehensive observability stack",
       "source": "./plugins/specweave-kafka",
       "category": "development",
@@ -96,7 +96,7 @@
       }
     },
     {
-      "name": "specweave-kafka-streams",
+      "name": "sw-kafka-streams",
       "description": "Kafka Streams library integration - Stream processing with Java/Kotlin, topology design, state stores, windowing, joins, exactly-once semantics",
       "source": "./plugins/specweave-kafka-streams",
       "category": "development",
@@ -107,7 +107,7 @@
       }
     },
     {
-      "name": "specweave-n8n",
+      "name": "sw-n8n",
       "description": "n8n workflow automation with Kafka integration - Event-driven workflows, Kafka triggers, producers, no-code/low-code event processing patterns",
       "source": "./plugins/specweave-n8n",
       "category": "development",
@@ -118,7 +118,7 @@
       }
     },
     {
-      "name": "specweave-backend",
+      "name": "sw-backend",
       "description": "Backend development - Node.js, Python, .NET, REST APIs, database design, microservices architecture",
       "source": "./plugins/specweave-backend",
       "category": "development",
@@ -129,7 +129,7 @@
       }
     },
     {
-      "name": "specweave-confluent",
+      "name": "sw-confluent",
       "description": "Confluent Cloud integration - Schema Registry, ksqlDB, Kafka Connect, Flink, stream processing, enterprise Kafka features",
       "source": "./plugins/specweave-confluent",
       "category": "development",
@@ -140,7 +140,7 @@
       }
     },
     {
-      "name": "specweave-kubernetes",
+      "name": "sw-k8s",
       "description": "Kubernetes deployment - K8s manifests, Helm charts, GitOps, cluster management, container orchestration",
       "source": "./plugins/specweave-kubernetes",
       "category": "development",
@@ -151,7 +151,7 @@
       }
     },
     {
-      "name": "specweave-mobile",
+      "name": "sw-mobile",
       "description": "React Native & Expo mobile development - environment setup, debugging, performance optimization, native modules, testing",
       "source": "./plugins/specweave-mobile",
       "category": "development",
@@ -162,7 +162,7 @@
       }
     },
     {
-      "name": "specweave-payments",
+      "name": "sw-payments",
       "description": "Payment processing - Stripe, PayPal, billing, PCI compliance, subscription management, payment gateways",
       "source": "./plugins/specweave-payments",
       "category": "development",
@@ -173,7 +173,7 @@
       }
     },
     {
-      "name": "specweave-frontend",
+      "name": "sw-frontend",
       "description": "Frontend development - React, Next.js, component generation, design systems, UI scaffolding",
       "source": "./plugins/specweave-frontend",
       "category": "development",
@@ -184,7 +184,7 @@
       }
     },
     {
-      "name": "specweave-testing",
+      "name": "sw-testing",
       "description": "Testing framework - E2E with Playwright, unit testing, test coverage, test generation",
       "source": "./plugins/specweave-testing",
       "category": "development",
@@ -195,7 +195,7 @@
       }
     },
     {
-      "name": "specweave-figma",
+      "name": "sw-figma",
       "description": "Figma integration - Design import, component sync, design-to-code workflows",
       "source": "./plugins/specweave-figma",
       "category": "productivity",
@@ -206,7 +206,7 @@
       }
     },
     {
-      "name": "specweave-tooling",
+      "name": "sw-tooling",
       "description": "Development tooling - Skill creation, plugin scaffolding, development utilities",
       "source": "./plugins/specweave-tooling",
       "category": "development",
@@ -217,7 +217,7 @@
       }
     },
     {
-      "name": "specweave-diagrams",
+      "name": "sw-diagrams",
       "description": "Architecture diagram generation - Mermaid, C4 Model, sequence diagrams, ER diagrams, deployment diagrams",
       "source": "./plugins/specweave-diagrams",
       "category": "development",
@@ -228,7 +228,7 @@
       }
     },
     {
-      "name": "specweave-ui",
+      "name": "sw-ui",
       "description": "Browser automation and UI tools - Element inspection, automated testing, Playwright integration",
       "source": "./plugins/specweave-ui",
       "category": "development",
@@ -239,7 +239,7 @@
       }
     },
     {
-      "name": "specweave-docs",
+      "name": "sw-docs",
       "description": "Documentation generation and management - Docusaurus, spec-driven docs, API documentation, living documentation",
       "source": "./plugins/specweave-docs",
       "category": "productivity",
@@ -250,7 +250,7 @@
       }
     },
     {
-      "name": "specweave-alternatives",
+      "name": "sw-alternatives",
       "description": "Technology stack alternatives analysis using BMAD method - Best, Most Appropriate, Design decisions for architecture choices",
       "source": "./plugins/specweave-alternatives",
       "category": "development",
@@ -261,7 +261,7 @@
       }
     },
     {
-      "name": "specweave-cost-optimizer",
+      "name": "sw-cost",
       "description": "Cloud cost optimization - AWS, GCP, Azure cost analysis, right-sizing, reserved instances, savings plans",
       "source": "./plugins/specweave-cost-optimizer",
       "category": "development",
@@ -272,7 +272,7 @@
       }
     },
     {
-      "name": "specweave-core",
+      "name": "sw-core",
       "description": "Core utility commands - Code analysis, refactoring, debugging, performance profiling, dependency management",
       "source": "./plugins/specweave-core",
       "category": "development",
@@ -283,7 +283,7 @@
       }
     },
     {
-      "name": "specweave-plugin-dev",
+      "name": "sw-plugin-dev",
       "description": "Plugin development tools - Create, validate, and scaffold SpecWeave plugins, skills, commands, and agents",
       "source": "./plugins/specweave-plugin-dev",
       "category": "development",

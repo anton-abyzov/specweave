@@ -1,5 +1,5 @@
 {
-  "name": "specweave-kubernetes",
+  "name": "sw-k8s",
   "description": "Kubernetes deployment and management for SpecWeave projects. Generate K8s manifests, Helm charts, and GitOps workflows. Includes security policies (NetworkPolicy, RBAC) and best practices for production deployments.",
   "version": "0.22.14",
   "author": {

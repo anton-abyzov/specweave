@@ -1,5 +1,5 @@
 {
-  "name": "specweave-diagrams",
+  "name": "sw-diagrams",
   "description": "Architecture diagram generation with Mermaid following C4 Model conventions. Creates C4 Context/Container/Component diagrams, sequence diagrams, ER diagrams, and deployment diagrams. SpecWeave-aware for HLD/LLD documentation.",
   "version": "0.24.0",
   "author": {
