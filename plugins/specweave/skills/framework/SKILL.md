@@ -1,5 +1,5 @@
 ---
-name: sw-framework
+name: framework
 description: Expert knowledge of SpecWeave framework structure, rules, conventions, and increment lifecycle. Deep understanding of source-of-truth discipline, increment naming, living docs sync. Covers SpecWeave-specific hooks (post-task-completion), and increment discipline. Activates for specweave rules, increment lifecycle, source of truth, increment naming, tasks.md format, spec.md structure, living docs sync, specweave hooks, where do files go, how to use specweave, specweave best practices, specweave conventions.
 allowed-tools: Read, Grep, Glob
 ---

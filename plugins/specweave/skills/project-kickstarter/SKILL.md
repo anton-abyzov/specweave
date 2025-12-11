@@ -10,7 +10,7 @@ description: Proactively detects product/project descriptions and guides users t
 The project-kickstarter skill is a **generic, pattern-based detection system** that:
 - ✅ Works for ANY product/project (not hardcoded for specific products)
 - ✅ Detects structural patterns (features list, tech stack, timeline, etc.)
-- ✅ Integrates with specweave-detector to check SpecWeave context
+- ✅ Integrates with detector to check SpecWeave context
 - ✅ Routes to appropriate SpecWeave workflow automatically
 
 **Not product-specific!** This skill recognizes the STRUCTURE of product descriptions, not specific products.
@@ -317,7 +317,7 @@ This is a technical question, not a project description. Let other skills or gen
 
 **Workflow**:
 ```
-User message → specweave-detector (checks .specweave/ exists)
+User message → detector (checks .specweave/ exists)
                     ↓
               project-kickstarter (pattern detection)
                     ↓
@@ -329,7 +329,7 @@ User message → specweave-detector (checks .specweave/ exists)
 ```
 
 **Calls:**
-- `specweave-detector` - Checks if .specweave/ directory exists (SpecWeave context)
+- `detector` - Checks if .specweave/ directory exists (SpecWeave context)
 - `/sw:inc` - For clear requirements (high confidence)
 - Spec-driven brainstorming - For unclear requirements (medium confidence)
 - Planning workflow - Directly if enough detail provided

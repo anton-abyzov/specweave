@@ -454,7 +454,7 @@ Users can override auto-routing with explicit instructions:
 
 - **project-kickstarter**: For NEW project descriptions (complements, doesn't overlap)
 - **increment-planner**: For creating increment structure (invoked by this skill)
-- **specweave-detector**: For checking SpecWeave context
+- **detector**: For checking SpecWeave context
 
 ---
 

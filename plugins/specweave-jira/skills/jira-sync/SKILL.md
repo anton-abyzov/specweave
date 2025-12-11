@@ -1,12 +1,12 @@
 ---
 name: jira-sync
-description: Sync SpecWeave increments with JIRA epics/stories. Content flows SpecWeave→JIRA, status flows JIRA→SpecWeave. Activates ONLY when user asks questions about JIRA integration or needs help configuring JIRA sync. Does NOT activate for slash commands. For syncing, use /sw-jira:sync command instead. Coordinates with specweave-jira-mapper agent.
+description: Sync SpecWeave increments with JIRA epics/stories. Content flows SpecWeave→JIRA, status flows JIRA→SpecWeave. Activates ONLY when user asks questions about JIRA integration or needs help configuring JIRA sync. Does NOT activate for slash commands. For syncing, use /sw-jira:sync command instead. Coordinates with jira-mapper agent.
 allowed-tools: Read, Write, Edit, Task, Bash
 ---
 
 # JIRA Sync Skill
 
-Coordinates JIRA synchronization by delegating to `specweave-jira-mapper` agent.
+Coordinates JIRA synchronization by delegating to `jira-mapper` agent.
 
 **Sync Behavior**: Content (specs, tasks) syncs SpecWeave → JIRA. Status (open/closed) syncs JIRA → SpecWeave.
 
@@ -223,4 +223,4 @@ fi
 **Import**: `/sync-jira import PROJ-123`
 **Sync**: `/sync-jira sync 0001`
 
-All conversion logic is handled by the `specweave-jira-mapper` agent.
+All conversion logic is handled by the `jira-mapper` agent.
