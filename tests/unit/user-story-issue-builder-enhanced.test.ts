@@ -477,7 +477,8 @@ created: 2025-11-15
   describe('Labels Generation', () => {
     it('should include correct labels', async () => {
       const userStoryPath = path.join(tmpDir, 'us-001-labels.md');
-      // v0.34.1 (ADR-0140): Project derived from per-US **Project**: field, not frontmatter
+      // v0.35.0: Project derived from frontmatter.project in us-*.md files
+      // Living docs sync transforms spec.md **Project**: → us-*.md frontmatter project:
       const content = `---
 id: US-001
 feature: FS-031
@@ -485,11 +486,10 @@ title: Test Labels
 status: complete
 priority: P1
 created: 2025-11-15
+project: backend
 ---
 
 # US-001: Test Labels
-
-**Project**: backend
 
 **As a** developer
 **I want** labels to be generated correctly
