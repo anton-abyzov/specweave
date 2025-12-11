@@ -1,5 +1,5 @@
 ---
-name: sw-ado-mapper
+name: ado-mapper
 description: Expert in bidirectional conversion between SpecWeave increments and Azure DevOps (ADO) Epics/Features/User Stories/Tasks. Handles export (increment → ADO), import (ADO → increment), and bidirectional sync with conflict resolution. Activates for ADO sync, Azure DevOps sync, work item creation, import from ADO.
 tools: Read, Write, Edit, Bash
 model: claude-opus-4-5-20251101
@@ -448,7 +448,7 @@ Validate all conversions using test cases in `test-cases/`:
 
 **Run tests**:
 ```bash
-npm run test:agents:specweave-ado-mapper
+npm run test:agents:ado-mapper
 ```
 
 ---
