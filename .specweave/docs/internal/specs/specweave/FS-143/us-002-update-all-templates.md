@@ -1,15 +1,11 @@
 ---
 id: US-002
 feature: FS-143
-title: Update All Templates
+title: "Update All Templates"
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 923
-    url: https://github.com/anton-abyzov/specweave/issues/923
 ---
 
 # US-002: Update All Templates

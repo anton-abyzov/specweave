@@ -6,11 +6,6 @@ status: completed
 priority: P1
 created: 2025-12-11
 lastUpdated: 2025-12-11
-external_tools:
-  github:
-    type: milestone
-    id: 59
-    url: https://github.com/anton-abyzov/specweave/milestone/59
 ---
 
 # 0143: Frontmatter Removal - Code, Templates & Tests (Part 1 of 2)
