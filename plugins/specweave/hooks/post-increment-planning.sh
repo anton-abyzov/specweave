@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # SpecWeave Post-Increment-Planning Hook
-# Runs automatically after /specweave:inc completes
+# Runs automatically after /sw:inc completes
 #
 # PURPOSE:
 # Translates newly generated spec.md, plan.md, and tasks.md from target language
@@ -13,7 +13,7 @@
 # - Cost: ~$0.01 per increment (using Haiku)
 #
 # WORKFLOW:
-# 1. User runs: /specweave:inc "Добавить AI чат-бот" (in Russian)
+# 1. User runs: /sw:inc "Добавить AI чат-бот" (in Russian)
 # 2. PM agent generates spec.md in Russian (natural, user-friendly)
 # 3. THIS HOOK fires automatically
 # 4. Detects non-English content
@@ -741,7 +741,7 @@ EOF
   #
   # Feature/Increment-level issues like "[FS-047] Title" are NO LONGER created.
   # Instead, use:
-  #   /specweave-github:sync FS-047
+  #   /sw-github:sync FS-047
   #
   # This creates PROPER User Story-level issues:
   #   [FS-047][US-001] User Story Title
@@ -759,10 +759,10 @@ EOF
   local can_upsert=$(cat "$CONFIG_FILE" 2>/dev/null | grep -A 5 '"sync"' | grep -A 5 '"settings"' | grep -o '"canUpsertInternalItems"[[:space:]]*:[[:space:]]*\(true\|false\)' | grep -o '\(true\|false\)' || echo "false")
 
   # DEPRECATED: Override to false unless explicitly enabled via env var
-  # This entire section is deprecated - use /specweave-github:sync for User Story-level issues
+  # This entire section is deprecated - use /sw-github:sync for User Story-level issues
   if [ "$SPECWEAVE_ENABLE_INCREMENT_GITHUB_SYNC" != "true" ]; then
     can_upsert="false"
-    log_debug "Increment GitHub sync disabled (use /specweave-github:sync for User Story-level issues)"
+    log_debug "Increment GitHub sync disabled (use /sw-github:sync for User Story-level issues)"
   fi
 
   log_debug "Can upsert internal items (deprecated increment sync): $can_upsert"
@@ -770,7 +770,7 @@ EOF
 
   if [ "$auto_create" = "true" ]; then
     log_info "  ⚠️  WARNING: Increment-level sync is DEPRECATED"
-    log_info "  ✅ Use /specweave-github:sync for [FS-XXX][US-YYY] format"
+    log_info "  ✅ Use /sw-github:sync for [FS-XXX][US-YYY] format"
     log_info "  📦 Auto-create enabled, checking for GitHub CLI..."
 
     # ============================================================================
@@ -891,7 +891,7 @@ EOF_MINIMAL
 
     log_info "  ✅ Created minimal metadata.json"
     log_info "  ⚠️  Note: No GitHub issue linked"
-    log_info "  💡 Run /specweave-github:create-issue $increment_id to create one manually"
+    log_info "  💡 Run /sw-github:create-issue $increment_id to create one manually"
   else
     log_info "  ✅ metadata.json exists"
 
@@ -921,7 +921,7 @@ EOF_MINIMAL
   # Previous behavior (BROKEN):
   # - Living docs only synced AFTER first task completion
   # - New increments had empty living docs until tasks marked complete
-  # - Manual /specweave:sync-docs required for every new increment
+  # - Manual /sw:sync-docs required for every new increment
   #
   # New behavior (FIXED):
   # - Living docs auto-sync during increment creation
@@ -1034,7 +1034,7 @@ EOF_MINIMAL
       log_info "  ✅ Living docs sync complete!"
     else
       log_info "  ⚠️  sync-living-docs.js not found, skipping auto-sync"
-      log_info "  💡 Run /specweave:sync-docs manually to sync living docs"
+      log_info "  💡 Run /sw:sync-docs manually to sync living docs"
     fi
   else
     if ! command -v node &> /dev/null; then
@@ -1053,7 +1053,7 @@ EOF_MINIMAL
   # Why this is needed:
   # - sync-living-docs.js has 5 config gates that can silently skip GitHub sync
   # - Living docs exist but GitHub issues might not be created
-  # - User expects GitHub issues after /specweave:increment
+  # - User expects GitHub issues after /sw:increment
   #
   # Retry mechanism: 2 attempts with 3 second delay
   # ============================================================================
@@ -1118,7 +1118,7 @@ EOF_MINIMAL
           log_info "  ✅ GitHub issues created successfully!"
         else
           log_info "  ⚠️  GitHub sync failed after $max_attempts attempts (non-blocking)"
-          log_info "  💡 Run /specweave-github:sync $FEATURE_ID manually to retry"
+          log_info "  💡 Run /sw-github:sync $FEATURE_ID manually to retry"
         fi
       fi
     else

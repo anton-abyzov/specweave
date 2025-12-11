@@ -78,7 +78,7 @@ if [ $FILES_REFACTORED -gt 0 ]; then
   echo ""
   echo "Next steps:"
   echo "  1. Review changes: git diff .specweave/increments/*/tasks.md"
-  echo "  2. Validate structure: /specweave:validate (once implemented)"
+  echo "  2. Validate structure: /sw:validate (once implemented)"
   echo "  3. Commit changes: git add -u && git commit -m 'refactor: fix AC sections in tasks.md (ADR-0047)'"
 else
   echo "No files needed refactoring."

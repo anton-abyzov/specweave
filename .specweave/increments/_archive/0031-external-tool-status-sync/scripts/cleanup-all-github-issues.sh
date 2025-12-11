@@ -79,4 +79,4 @@ if [ "$FAILED_COUNT" -gt "0" ]; then
 fi
 echo ""
 echo "🔄 Next step: Run Epic sync to recreate issues with new system"
-echo "   /specweave-github:sync-epic FS-031"
+echo "   /sw-github:sync-epic FS-031"

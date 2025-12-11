@@ -418,8 +418,8 @@ fi
   #
   # NEW STRATEGY: Run consolidated sync ONLY at:
   # 1. Session end (all tasks done + 120s inactivity)
-  # 2. Manual sync (/specweave:sync-docs command)
-  # 3. Increment closure (/specweave:done validation)
+  # 2. Manual sync (/sw:sync-docs command)
+  # 3. Increment closure (/sw:done validation)
   #
   # See: .specweave/increments/0051-*/reports/CLAUDE-CODE-CRASH-ROOT-CAUSE-2025-11-23.md
   # See: ADR-0072 (Post-Task Hook Simplification)

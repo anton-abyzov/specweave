@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# read-progress.sh - Pure bash reader for /specweave:progress
+# read-progress.sh - Pure bash reader for /sw:progress
 #
 # Reads from pre-computed dashboard cache for <10ms response time.
 # Falls back to Node.js script if jq is not available.
@@ -147,7 +147,7 @@ if [[ -n "$READY_FOR_REVIEW" ]]; then
     bar=$(progress_bar "$pct" 15)
     echo "  $id"
     echo "     $bar $completed/$total ($pct%)"
-    echo "     → /specweave:done $id"
+    echo "     → /sw:done $id"
   done <<< "$READY_FOR_REVIEW"
   echo ""
 fi
@@ -229,9 +229,9 @@ fi
 
 echo ""
 if [[ "$REVIEW_COUNT" -gt 0 ]]; then
-  echo "💡 Run /specweave:done <id> to close reviewed increments"
+  echo "💡 Run /sw:done <id> to close reviewed increments"
 elif [[ "$ACTIVE_COUNT" -eq 0 ]]; then
-  echo "💡 Run /specweave:increment to start new work"
+  echo "💡 Run /sw:increment to start new work"
 else
-  echo "💡 For details: /specweave:progress <incrementId>"
+  echo "💡 For details: /sw:progress <incrementId>"
 fi

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# read-jobs.sh - Pure bash reader for /specweave:jobs
+# read-jobs.sh - Pure bash reader for /sw:jobs
 #
 # Shows current work status (increments) + background jobs + helpful context.
 # Reads from pre-computed dashboard cache for <10ms response time.
@@ -185,7 +185,7 @@ if [[ -f "$CACHE_FILE" ]] && jq -e '.' "$CACHE_FILE" >/dev/null 2>&1; then
 else
   echo ""
   echo "   No increment data available (cache not found)."
-  echo "   Run /specweave:status to rebuild cache."
+  echo "   Run /sw:status to rebuild cache."
 fi
 
 echo ""
@@ -215,7 +215,7 @@ if [[ "$HAS_JOBS" == "false" ]]; then
   echo "   • Brownfield analysis (documentation gap detection)"
   echo ""
   echo "   Start jobs with:"
-  echo "   • /specweave:import-external  - Import from external tools"
+  echo "   • /sw:import-external  - Import from external tools"
   echo "   • specweave init              - May spawn background jobs"
 else
   echo ""
@@ -316,9 +316,9 @@ echo ""
 echo "────────────────────────────────────────"
 echo ""
 echo "💡 Commands:"
-echo "   /specweave:do               Execute current tasks"
-echo "   /specweave:progress         Show task progress details"
-echo "   /specweave:done <id>        Close increment"
-echo "   /specweave:jobs --id <id>   View background job details"
-echo "   /specweave:jobs --all       Show completed jobs"
+echo "   /sw:do               Execute current tasks"
+echo "   /sw:progress         Show task progress details"
+echo "   /sw:done <id>        Close increment"
+echo "   /sw:jobs --id <id>   View background job details"
+echo "   /sw:jobs --all       Show completed jobs"
 echo ""

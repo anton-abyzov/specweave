@@ -5,7 +5,7 @@
 # Pre-tool-use hook that ensures metadata.json exists BEFORE spec.md can be created.
 # This prevents increments from being created without proper metadata.
 #
-# ROOT CAUSE: When Claude creates increments via user prompt (not /specweave:increment),
+# ROOT CAUSE: When Claude creates increments via user prompt (not /sw:increment),
 # metadata.json may be forgotten, causing:
 # - Status tracking broken
 # - WIP limits don't work

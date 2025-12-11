@@ -207,7 +207,7 @@ case "$CURRENT_STATUS" in
 
   paused|resumed|abandoned)
     # Status change - call post-increment-status-change.sh
-    # Note: This typically gets called manually by /specweave:pause commands
+    # Note: This typically gets called manually by /sw:pause commands
     # But we handle it here for completeness
     echo "[$(date)] post-metadata-change: Status changed to $CURRENT_STATUS - calling post-increment-status-change.sh" >> "$DEBUG_LOG" 2>/dev/null || true
 

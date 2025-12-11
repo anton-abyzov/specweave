@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# read-workflow.sh - Pure bash reader for /specweave:workflow
+# read-workflow.sh - Pure bash reader for /sw:workflow
 #
 # Shows current phase, suggests next actions based on increment state.
 # Reads from pre-computed dashboard cache for <10ms response time.
@@ -79,13 +79,13 @@ if [[ -z "$ACTIVE_ID" ]]; then
   BACKLOG_COUNT=$(jq '.summary.backlog // 0' "$CACHE_FILE")
   if [[ "$BACKLOG_COUNT" -gt 0 ]]; then
     echo "📋 Backlog: $BACKLOG_COUNT item(s) waiting"
-    echo "   Resume with: /specweave:resume <id>"
+    echo "   Resume with: /sw:resume <id>"
     echo ""
   fi
 
   echo "💡 Suggestions:"
-  echo "   • /specweave:increment \"feature name\"  - Plan new work"
-  echo "   • /specweave:status                     - View all increments"
+  echo "   • /sw:increment \"feature name\"  - Plan new work"
+  echo "   • /sw:status                     - View all increments"
   exit 0
 fi
 
@@ -117,37 +117,37 @@ SUGGESTIONS=""
 
 if [[ "$STATUS" == "backlog" ]] || [[ "$STATUS" == "planned" ]]; then
   PHASE="📝 Planning"
-  SUGGESTIONS="• /specweave:do     - Start implementation
-• /specweave:plan   - Generate plan.md and tasks.md"
+  SUGGESTIONS="• /sw:do     - Start implementation
+• /sw:plan   - Generate plan.md and tasks.md"
 
 elif [[ "$TASKS_COMPLETED" -eq 0 ]]; then
   PHASE="🚀 Starting"
-  SUGGESTIONS="• /specweave:do     - Execute first task
-• /specweave:pause  - Pause if not ready"
+  SUGGESTIONS="• /sw:do     - Execute first task
+• /sw:pause  - Pause if not ready"
 
 elif [[ "$TASK_PCT" -lt 50 ]]; then
   PHASE="🔨 In Progress (Early)"
-  SUGGESTIONS="• /specweave:do         - Continue implementation
-• /specweave:progress   - Check task details"
+  SUGGESTIONS="• /sw:do         - Continue implementation
+• /sw:progress   - Check task details"
 
 elif [[ "$TASK_PCT" -lt 100 ]]; then
   PHASE="⚙️ In Progress (Late)"
-  SUGGESTIONS="• /specweave:do         - Complete remaining tasks
-• /specweave:validate   - Early quality check"
+  SUGGESTIONS="• /sw:do         - Complete remaining tasks
+• /sw:validate   - Early quality check"
 
 elif [[ "$STATUS" == "ready_for_review" ]]; then
   PHASE="👀 Review"
-  SUGGESTIONS="• /specweave:validate   - Full validation
-• /specweave:done       - Close increment (PM approval)"
+  SUGGESTIONS="• /sw:validate   - Full validation
+• /sw:done       - Close increment (PM approval)"
 
 elif [[ "$TASKS_COMPLETED" -eq "$TASKS_TOTAL" ]]; then
   PHASE="✅ Tasks Complete"
-  SUGGESTIONS="• /specweave:validate   - Run quality checks
-• /specweave:done       - Close increment"
+  SUGGESTIONS="• /sw:validate   - Run quality checks
+• /sw:done       - Close increment"
 
 else
   PHASE="❓ Unknown"
-  SUGGESTIONS="• /specweave:status     - Check status"
+  SUGGESTIONS="• /sw:status     - Check status"
 fi
 
 # Display
@@ -168,6 +168,6 @@ echo ""
 # Additional context
 PAUSED_COUNT=$(jq '.summary.paused // 0' "$CACHE_FILE")
 if [[ "$PAUSED_COUNT" -gt 0 ]]; then
-  echo "ℹ️  $PAUSED_COUNT paused increment(s) - /specweave:resume to continue"
+  echo "ℹ️  $PAUSED_COUNT paused increment(s) - /sw:resume to continue"
   echo ""
 fi

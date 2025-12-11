@@ -95,7 +95,7 @@ flowchart TD
     UpdateProgress --> CheckCancel{Ctrl+C pressed?}
     CheckCancel -->|No| BatchLoop
     CheckCancel -->|Yes| SaveState[Save Partial State<br/>cache/import-state.json]
-    SaveState --> ShowResume[Show Resume Command<br/>/specweave-jira:import --resume]
+    SaveState --> ShowResume[Show Resume Command<br/>/sw-jira:import --resume]
     ShowResume --> End2([Partial Init Complete])
 
     BatchLoop -->|No| AllFetched[All Projects Fetched<br/>127/127 complete]

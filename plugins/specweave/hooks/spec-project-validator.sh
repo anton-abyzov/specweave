@@ -126,13 +126,13 @@ if [ "$MULTI_PROJECT_ENABLED" = "false" ]; then
   CONFIGURED_PROJECT=$(jq -r '.project.name // "specweave"' "$CONFIG_FILE" 2>/dev/null)
 
   if [ -n "$PROJECT" ] && [ "$PROJECT" != "null" ] && [ "$PROJECT" != "$CONFIGURED_PROJECT" ]; then
-    echo "{\"decision\": \"block\", \"reason\": \"spec.md has project: '${PROJECT}' but config has project.name: '${CONFIGURED_PROJECT}'.\\n\\nIn single-project mode, the project: field MUST match config.project.name OR be omitted.\\n\\nFix:\\n1. Remove project: field (recommended for single-project mode)\\n2. OR change to: project: ${CONFIGURED_PROJECT}\\n3. OR enable multi-project mode: /specweave:enable-multiproject\"}"
+    echo "{\"decision\": \"block\", \"reason\": \"spec.md has project: '${PROJECT}' but config has project.name: '${CONFIGURED_PROJECT}'.\\n\\nIn single-project mode, the project: field MUST match config.project.name OR be omitted.\\n\\nFix:\\n1. Remove project: field (recommended for single-project mode)\\n2. OR change to: project: ${CONFIGURED_PROJECT}\\n3. OR enable multi-project mode: /sw:enable-multiproject\"}"
     exit 0
   fi
 
   # ALWAYS block board: field in single-project mode
   if [ -n "$BOARD" ] && [ "$BOARD" != "null" ]; then
-    echo "{\"decision\": \"block\", \"reason\": \"spec.md has board: field but this is a SINGLE-PROJECT repository.\\n\\nThe board: field is ONLY for multi-project mode.\\n\\nFix:\\n1. Remove the board: field\\n2. OR enable multi-project mode: /specweave:enable-multiproject\"}"
+    echo "{\"decision\": \"block\", \"reason\": \"spec.md has board: field but this is a SINGLE-PROJECT repository.\\n\\nThe board: field is ONLY for multi-project mode.\\n\\nFix:\\n1. Remove the board: field\\n2. OR enable multi-project mode: /sw:enable-multiproject\"}"
     exit 0
   fi
 

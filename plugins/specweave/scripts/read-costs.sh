@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# read-costs.sh - Pure bash reader for /specweave:costs
+# read-costs.sh - Pure bash reader for /sw:costs
 #
 # Shows cost/token tracking dashboard.
 # Reads from pre-computed dashboard cache for <10ms response time.
@@ -128,5 +128,5 @@ jq -r '.costs.byIncrement | to_entries | sort_by(-.value.cost) | .[0:5][] |
 echo ""
 
 echo "💡 Commands:"
-echo "   /specweave:costs <id>     View increment costs"
-echo "   /specweave:progress       View task progress"
+echo "   /sw:costs <id>     View increment costs"
+echo "   /sw:progress       View task progress"

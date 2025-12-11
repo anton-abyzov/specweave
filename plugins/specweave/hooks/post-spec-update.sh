@@ -9,7 +9,7 @@
 # - Replaces increment-based sync (which was wrong!)
 #
 # Trigger Points:
-# 1. After /specweave:sync-docs update (spec updated from increment)
+# 1. After /sw:sync-docs update (spec updated from increment)
 # 2. After manual spec.md edits (user updates living docs directly)
 # 3. After bidirectional sync from external tool
 #
@@ -98,7 +98,7 @@ fi
 # No external link found - skip sync
 if [[ -z "$PROVIDER" ]]; then
   echo "   ℹ️  Spec not linked to external tool, skipping sync"
-  echo "   Hint: Use /specweave-github:sync-spec or /specweave-jira:sync-spec to link"
+  echo "   Hint: Use /sw-github:sync-spec or /sw-jira:sync-spec to link"
   exit 0
 fi
 

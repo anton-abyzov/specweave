@@ -178,14 +178,14 @@ echo ""
 log_info "Test 6: Verify command detection regex"
 
 TEST_PROMPTS=(
-  "/specweave:done"
-  "/specweave:done 0025"
+  "/sw:done"
+  "/sw:done 0025"
   "/done"
-  "/specweave:validate 0025"
+  "/sw:validate 0025"
   "/validate"
-  "/specweave:progress"
+  "/sw:progress"
   "/progress"
-  "/specweave:do"
+  "/sw:do"
   "/do"
   "some other command"
 )
@@ -210,7 +210,7 @@ echo ""
 # Test 7: Verify increment ID extraction
 log_info "Test 7: Verify increment ID extraction from prompt"
 
-TEST_PROMPT="/specweave:done 0025-per-project-resource-config"
+TEST_PROMPT="/sw:done 0025-per-project-resource-config"
 EXTRACTED_ID=$(echo "$TEST_PROMPT" | grep -oE "[0-9]{4}[a-z0-9-]*" | head -1)
 
 if [[ "$EXTRACTED_ID" == "0025-per-project-resource-config" ]]; then
@@ -253,7 +253,7 @@ else
   echo "Pre-flight sync implementation is working correctly."
   echo ""
   echo "Next steps:"
-  echo "  1. Test with real /specweave:done command"
+  echo "  1. Test with real /sw:done command"
   echo "  2. Monitor .specweave/logs/hooks-debug.log during execution"
   echo "  3. Verify sync triggers before command execution"
 fi

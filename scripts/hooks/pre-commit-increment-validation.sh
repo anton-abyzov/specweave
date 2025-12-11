@@ -50,15 +50,15 @@ fi
 # CHECK 2: Forbidden _archive directory (created during closure)
 # ============================================================================
 
-# Note: _archive is allowed ONLY via explicit /specweave:archive command
-# It should NEVER be created during /specweave:done closure
+# Note: _archive is allowed ONLY via explicit /sw:archive command
+# It should NEVER be created during /sw:done closure
 if git diff --cached --name-only | grep -q ".specweave/increments/_archive"; then
   # Check if this is a new directory (not existing archive)
   if ! git ls-tree -r HEAD --name-only | grep -q ".specweave/increments/_archive"; then
     echo -e "${RED}❌ CRITICAL ERROR: _archive directory created during increment closure!${NC}"
     echo ""
-    echo "   _archive is for explicit archiving ONLY (/specweave:archive)"
-    echo "   Closure (/specweave:done) MUST NOT create _archive"
+    echo "   _archive is for explicit archiving ONLY (/sw:archive)"
+    echo "   Closure (/sw:done) MUST NOT create _archive"
     echo ""
     echo "   ${YELLOW}Fix:${NC}"
     echo "   mv .specweave/increments/_archive/* .specweave/increments/"
@@ -175,7 +175,7 @@ git diff --cached --name-status | grep "^D" | grep ".specweave/increments/[0-9]"
     echo "   git restore $increment_dir"
     echo ""
     echo "   If increment is truly obsolete, use:"
-    echo "   /specweave:abandon <id> --reason='...'"
+    echo "   /sw:abandon <id> --reason='...'"
     echo ""
     VALIDATION_FAILED=1
   fi
@@ -222,7 +222,7 @@ if [ $VALIDATION_FAILED -eq 1 ]; then
   echo "   ${YELLOW}Common mistakes:${NC}"
   echo "   1. Moving increments to _completed/ (use status update)"
   echo "   2. Using invalid status values (use enum: planning/active/paused/completed/abandoned)"
-  echo "   3. Deleting increments (use /specweave:abandon instead)"
+  echo "   3. Deleting increments (use /sw:abandon instead)"
   echo "   4. Using process.cwd() in tests (catastrophic deletion risk)"
   echo ""
   echo "   ${YELLOW}Correct patterns:${NC}"

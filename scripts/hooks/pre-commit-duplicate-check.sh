@@ -62,7 +62,7 @@ import { detectAllDuplicates } from './dist/src/core/increment/duplicate-detecto
       console.error('❌ Cannot commit with duplicate increments!');
       console.error('');
       console.error('Resolution Options:');
-      console.error('  1. Run: /specweave:fix-duplicates');
+      console.error('  1. Run: /sw:fix-duplicates');
       console.error('     (Guided resolution with automatic cleanup)');
       console.error('');
       console.error('  2. Manual deletion:');

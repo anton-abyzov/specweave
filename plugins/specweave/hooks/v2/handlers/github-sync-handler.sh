@@ -38,7 +38,7 @@ if [[ -f "$THROTTLE_FILE" ]]; then
   fi
   if [[ $AGE -lt $THROTTLE_WINDOW ]]; then
     REMAINING=$((THROTTLE_WINDOW - AGE))
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] THROTTLED $INC_ID (wait ${REMAINING}s, use /specweave:sync-progress to bypass)" >> "$THROTTLE_LOG" 2>/dev/null
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] THROTTLED $INC_ID (wait ${REMAINING}s, use /sw:sync-progress to bypass)" >> "$THROTTLE_LOG" 2>/dev/null
     exit 0
   fi
 fi

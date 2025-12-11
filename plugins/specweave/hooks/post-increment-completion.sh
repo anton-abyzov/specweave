@@ -127,7 +127,7 @@ fi
 # This ensures source-of-truth discipline is maintained.
 #
 # See: Incident 2025-11-20 - metadata.json="completed" but spec.md="active"
-# See: /specweave:sync-status command for manual recovery
+# See: /sw:sync-status command for manual recovery
 
 SPEC_FILE="$INCREMENT_DIR/spec.md"
 
@@ -196,7 +196,7 @@ echo "✅ Status line cache updated"
 #
 # Architecture Decision: Non-blocking execution
 # - If sync fails, log error but don't crash hook (GitHub issue already closed)
-# - Living docs can be manually synced later with /specweave:sync-docs
+# - Living docs can be manually synced later with /sw:sync-docs
 # - Failure mode: Graceful degradation (increment still completes)
 
 if command -v node &> /dev/null; then
@@ -298,19 +298,19 @@ if command -v node &> /dev/null; then
     # Pass FEATURE_ID and PROJECT_ID as environment variables if available
     if [ -n "$FEATURE_ID" ]; then
       (cd "$PROJECT_ROOT" && FEATURE_ID="$FEATURE_ID" PROJECT_ID="$PROJECT_ID" node "$SYNC_SCRIPT" "$INCREMENT_ID") 2>&1 || {
-        echo "  ⚠️  Failed to sync living docs (non-blocking - you can run /specweave:sync-docs manually)" >&2
+        echo "  ⚠️  Failed to sync living docs (non-blocking - you can run /sw:sync-docs manually)" >&2
       }
     else
       # No explicit feature ID - sync will auto-generate
       (cd "$PROJECT_ROOT" && PROJECT_ID="$PROJECT_ID" node "$SYNC_SCRIPT" "$INCREMENT_ID") 2>&1 || {
-        echo "  ⚠️  Failed to sync living docs (non-blocking - you can run /specweave:sync-docs manually)" >&2
+        echo "  ⚠️  Failed to sync living docs (non-blocking - you can run /sw:sync-docs manually)" >&2
       }
     fi
     echo "  ✅ Living docs sync complete"
     echo ""
   else
     echo "  ⚠️  sync-living-docs.js not found in any location - skipping living docs sync" >&2
-    echo "  💡 To manually sync: /specweave:sync-docs update" >&2
+    echo "  💡 To manually sync: /sw:sync-docs update" >&2
     echo ""
   fi
 else
@@ -410,13 +410,13 @@ if command -v node &> /dev/null; then
       echo "  ✅ GitHub sync complete"
       echo ""
     else
-      echo "  ⚠️  Failed to sync GitHub issues (non-blocking - you can run /specweave-github:sync manually)" >&2
+      echo "  ⚠️  Failed to sync GitHub issues (non-blocking - you can run /sw-github:sync manually)" >&2
       echo "  💡 Check that sync.github.enabled=true in .specweave/config.json" >&2
       echo ""
     fi
   else
     echo "  ⚠️  consolidated-sync.js not found in any location - skipping GitHub sync" >&2
-    echo "  💡 To manually sync: /specweave-github:sync" >&2
+    echo "  💡 To manually sync: /sw-github:sync" >&2
     echo ""
   fi
 else

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Post-Increment-Completion Hook - DORA Metrics Tracking
 #
-# Fires after: /specweave:done completes
+# Fires after: /sw:done completes
 # Purpose: Automatically track DORA metrics and update living docs dashboard
 #
 # Integration: plugins/specweave-release/hooks/hooks.json
