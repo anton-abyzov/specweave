@@ -904,7 +904,8 @@ describe('ItemConverter', () => {
 
     beforeEach(() => {
       // Create isolated test directory for orphan tests
-      orphanTestDir = path.join(os.tmpdir(), `orphan-test-${Date.now()}`);
+      // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+      orphanTestDir = path.join(os.tmpdir(), `orphan-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
       orphanSpecsDir = path.join(orphanTestDir, '.specweave', 'docs', 'internal', 'specs');
       fs.mkdirSync(orphanSpecsDir, { recursive: true });
 
@@ -1223,7 +1224,8 @@ describe('ItemConverter', () => {
     let reimportConverter: ItemConverter;
 
     beforeEach(() => {
-      reimportDir = path.join(os.tmpdir(), `item-converter-reimport-${Date.now()}`);
+      // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+      reimportDir = path.join(os.tmpdir(), `item-converter-reimport-${Date.now()}-${Math.random().toString(36).slice(2)}`);
       reimportSpecsDir = path.join(reimportDir, '.specweave', 'docs', 'internal', 'specs');
       fs.mkdirSync(reimportSpecsDir, { recursive: true });
     });

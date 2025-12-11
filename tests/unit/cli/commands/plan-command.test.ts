@@ -255,7 +255,8 @@ ${'## User Story\n'.repeat(1000)}
 
     it('should handle missing .specweave directory', async () => {
       // Given: Clean test directory without .specweave
-      const newTestDir = path.join(os.tmpdir(), `plan-no-specweave-${Date.now()}`);
+      // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+      const newTestDir = path.join(os.tmpdir(), `plan-no-specweave-${Date.now()}-${Math.random().toString(36).slice(2)}`);
       await fs.ensureDir(newTestDir);
 
       try {

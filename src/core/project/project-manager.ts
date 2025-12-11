@@ -332,39 +332,21 @@ export class ProjectManager {
     const specsPath = this.getSpecsPath(project.projectId);
     const content = `# ${project.projectName}
 
-${project.projectName} project
-
 ## Project Information
 
 - **Team**: Engineering Team
 - **Tech Stack**: ${project.techStack.length > 0 ? project.techStack.join(', ') : 'Not specified'}
 
-## Documentation Structure (Simplified)
+## Documentation
 
-This project uses a simplified structure:
-
-- \`.specweave/docs/internal/specs/${project.projectId}/\` - **All living documentation** (specs, features, requirements)
-
-**Note**: As of v0.X.X (increment 0026), we use a simplified structure with ONLY the specs folder. All project documentation lives here.
-
-## Specs
-
-Living documentation for features and requirements. Each spec follows the format:
-- \`spec-NNN-feature-name.md\`
-
-Examples:
-- \`spec-001-user-authentication.md\` - User authentication feature
-- \`spec-002-payment-processing.md\` - Payment integration
-- \`spec-003-admin-dashboard.md\` - Admin dashboard
-
-## External Sync
-
-No external sync profiles configured yet.
+All living documentation lives in this folder:
+- Feature specs (FS-XXX)
+- User stories (us-XXX-*.md)
+- Requirements and acceptance criteria
 
 ---
 
 **Created**: ${new Date().toISOString().split('T')[0]}
-**Last Updated**: ${new Date().toISOString().split('T')[0]}
 `;
 
     await fs.writeFile(path.join(specsPath, 'README.md'), content);
