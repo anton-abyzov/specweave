@@ -41,12 +41,12 @@ project: specweave
 ## Tasks
 
 - [x] **T-006**: Write Comprehensive Unit Tests
-- [ ] **T-011**: Update Living Docs Sync Tests
-- [ ] **T-024**: Update Validation Hook Tests
-- [ ] **T-034**: Update All Test Fixtures
-- [ ] **T-035**: Run Full Test Suite
-- [ ] **T-036**: Integration Test: End-to-End Increment Creation
-- [ ] **T-037**: Test Single-Project Mode Resolution
-- [ ] **T-038**: Test Multi-Project Mode Resolution
-- [ ] **T-039**: Test Cross-Project Increment Handling
-- [ ] **T-040**: Test Fallback Mechanisms
+- [x] **T-011**: Update Living Docs Sync Tests
+- [x] **T-024**: Update Validation Hook Tests
+- [x] **T-034**: Update All Test Fixtures
+- [x] **T-035**: Run Full Test Suite
+- [x] **T-036**: Integration Test: End-to-End Increment Creation
+- [x] **T-037**: Test Single-Project Mode Resolution
+- [x] **T-038**: Test Multi-Project Mode Resolution
+- [x] **T-039**: Test Cross-Project Increment Handling
+- [x] **T-040**: Test Fallback Mechanisms

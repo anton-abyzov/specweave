@@ -1,6 +1,6 @@
 ---
 name: sw:living-docs
-description: Launch or resume Living Docs Builder independently. Generates documentation from codebase analysis with AI-powered insights.
+description: Launch or resume Living Docs Builder independently. Generates comprehensive enterprise documentation from codebase analysis with AI-powered insights.
 usage: /sw:living-docs [--resume <jobId>] [--depth <level>] [--priority <modules>] [--sources <folders>] [--depends-on <jobIds>] [--foreground] [--full-scan]
 ---
 
@@ -17,6 +17,7 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 - **On-demand analysis** - Re-analyze codebase after major changes
 - **Large brownfield projects** - Run targeted analysis on specific modules
 - **CI/CD integration** - Automate documentation generation
+- **Enterprise knowledge base** - Generate comprehensive "wikipedia-style" documentation of your entire organization
 
 ---
 
@@ -32,7 +33,7 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 | `--depends-on <jobIds>` | Wait for jobs before starting (comma-separated) |
 | `--foreground` | Run in current session instead of background |
 | `--force` | Force run even for greenfield projects |
-| `--full-scan` | **Force full deep scan** - All phases (repos, org, arch, inconsistencies, strategy) |
+| `--full-scan` | **Force full enterprise scan** - All 8 phases including enterprise KB, delivery/ops docs, diagrams |
 
 ---
 
@@ -67,16 +68,17 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 ### Quick Analysis (Non-Interactive)
 
 ```bash
-# Quick scan - 5-10 minutes
+# Quick scan - basic structure + imports + tech detection + inconsistencies
 /sw:living-docs --depth quick
 
-# Standard analysis - 15-30 minutes
+# Standard analysis - modules + dependencies + relationships + diagrams
 /sw:living-docs --depth standard --priority auth,payments
 
 # AI-powered deep analysis (FREE with MAX subscription)
 /sw:living-docs --depth deep-native --priority core,api
 
-# Force FULL deep scan (all phases: repos, org, arch, inconsistencies, strategy)
+# FULL ENTERPRISE SCAN - All 8 phases (A through H)
+# Generates complete knowledge base: company history, team structure, delivery docs, diagrams
 /sw:living-docs --full-scan
 ```
 
@@ -84,53 +86,131 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 
 ## Analysis Depths
 
-| Depth | Duration | What It Does | Cost |
-|-------|----------|--------------|------|
-| `quick` | ~5-10 min | Structure scan + tech detection + imports map | Free |
-| `standard` | ~15-30 min | Module analysis + exports + dependencies | Free |
-| `deep-native` | Progress-based | ⭐ AI analysis using your MAX subscription - NO EXTRA COST! | FREE (MAX) |
-| `deep-interactive` | Session-based | AI analysis in current Claude Code session (pause/resume) | FREE (MAX) |
+| Depth | Scope | What It Does | Cost |
+|-------|-------|--------------|------|
+| `quick` | Core analysis | Structure scan + tech detection + imports map + inconsistency detection + basic diagrams | Free |
+| `standard` | Full module analysis | Module deep-dive + exports + dependencies + relationships + team detection + Mermaid diagrams | Free |
+| `deep-native` | Intelligent analysis | ⭐ AI-powered understanding: purpose extraction, pattern recognition, organization synthesis | FREE (MAX) |
+| `deep-interactive` | Enterprise knowledge | AI analysis in current session with full enterprise KB generation (checkpoint/resume) | FREE (MAX) |
 
-### Full Scan Mode (--full-scan)
+### Quick Depth Features (Expanded)
 
-**What it does**: Forces a comprehensive deep analysis with ALL phases, regardless of brownfield detection.
+Quick mode now includes:
+- File structure discovery across all repos
+- Technology stack detection (frameworks, languages, tools)
+- Import/export dependency mapping
+- **Basic inconsistency detection** (duplicates, naming issues)
+- **Basic Mermaid diagrams** (module structure, imports)
+- External specification loading (GitHub/JIRA/ADO imports)
+
+### Standard Depth Features (Expanded)
+
+Standard mode adds:
+- Deep module analysis with exports/APIs
+- Cross-module dependency graphs
+- **Team structure inference** from code ownership
+- **Relationship mapping** (feature-to-code, team-to-features)
+- **Full Mermaid diagram suite** (org charts, dependencies, timelines)
+- Basic architecture detection (patterns, ADR candidates)
+- Spec-code gap detection
+
+### Full Scan Mode (--full-scan) - Enterprise Knowledge Base
+
+**What it does**: Forces a comprehensive deep analysis through **ALL 8 PHASES (A-H)**, generating a complete enterprise knowledge base that serves as a "living wikipedia" for your organization.
 
 **When to use**:
 - Initial setup - want complete documentation structure
 - After major refactoring - need fresh analysis of everything
 - Imported external repos - want full org structure, inconsistencies, strategy docs
-- Complete living docs - need `review-needed/` and `strategy/` folders populated
+- Enterprise documentation - need company history, team directory, delivery docs
+- Complete living docs - all folders populated with cross-referenced documentation
 
-**What you get** (beyond standard depths):
+**Duration**: Variable based on project size and complexity. For large enterprise projects (50+ repos, 247+ microservices), **expect this to run over multiple sessions spanning days or weeks**. The checkpoint/resume system ensures no work is lost.
+
+**What you get** (complete enterprise knowledge base):
 ```
 .specweave/docs/internal/
-├── repos/                      # All repos analyzed (Phase B)
+├── repos/                      # Per-repo analysis (Phase B)
 │   └── {repo-name}/
-│       ├── overview.md
-│       └── api-surface.md
+│       ├── overview.md         # Purpose, key concepts, patterns
+│       └── api-surface.md      # All public APIs documented
+│
 ├── organization/               # Team structure (Phase C)
 │   ├── teams/
-│   └── org-chart.mmd
+│   │   └── {team-name}.md      # Responsibilities, expertise, tech stack
+│   ├── microservices/          # Service boundaries
+│   ├── domains/                # Domain groupings
+│   └── org-synthesis.md        # Organization overview
+│
 ├── architecture/               # System architecture (Phase D)
-│   ├── adr/                   # Auto-detected ADRs
-│   └── system-architecture.md
-├── review-needed/              # Inconsistencies (Phase E) ✨
-│   ├── questions-for-cto.md
-│   ├── questions-for-po.md
-│   └── inconsistencies.md
-└── strategy/                   # Strategic recommendations (Phase F) ✨
-    ├── tech-debt-catalog.md
-    ├── modernization-candidates.md
-    └── recommendations.md
+│   ├── adr/                    # Auto-detected ADRs with evidence
+│   │   └── 0001-pattern-name.md
+│   ├── system-architecture.md  # High-level architecture
+│   └── c4-diagrams/            # C4 model diagrams
+│
+├── review-needed/              # Categorized issues (Phase E) ✨
+│   ├── index.md                # Overview with priority summary
+│   ├── CRITICAL-ISSUES.md      # P0: Must fix immediately
+│   ├── BROKEN-LINKS.md         # All broken references
+│   ├── SPEC-CODE-GAPS.md       # Ghost completions, missing impl
+│   ├── ORPHANED-DOCS.md        # Docs without owners
+│   └── tech-debt-catalog.md    # Categorized tech debt
+│
+├── strategy/                   # Strategic recommendations (Phase F) ✨
+│   ├── recommendations.md      # Prioritized action items
+│   ├── modernization.md        # Migration/upgrade candidates
+│   └── risk-assessment.md      # Security and compliance risks
+│
+├── enterprise/                 # Enterprise KB (Phase G) ✨✨ NEW
+│   ├── COMPANY-HISTORY.md      # Timeline of project evolution
+│   ├── FEATURE-CATALOG.md      # All features with status/ownership
+│   ├── TEAM-DIRECTORY.md       # Team roster with expertise areas
+│   └── PROJECT-METRICS.md      # Stats: features, completions, velocity
+│
+├── delivery/                   # Delivery documentation (Phase G) ✨✨ NEW
+│   ├── RELEASE-HISTORY.md      # All releases with changelogs
+│   ├── CI-CD-PIPELINE.md       # Pipeline documentation
+│   ├── DEPLOYMENT-GUIDE.md     # How to deploy
+│   └── ENVIRONMENTS.md         # Environment configurations
+│
+├── operations/                 # Ops documentation (Phase G) ✨✨ NEW
+│   ├── RUNBOOKS.md             # Operational procedures
+│   ├── MONITORING.md           # What to monitor
+│   ├── INCIDENT-HISTORY.md     # Past incidents (if any)
+│   └── SLA-TRACKING.md         # Service level targets
+│
+├── relationships/              # Cross-references (Phase G) ✨✨ NEW
+│   ├── FEATURE-TO-CODE.md      # Feature → file mappings
+│   ├── TEAM-TO-FEATURES.md     # Team → owned features
+│   ├── MODULE-DEPENDENCIES.md  # Module → module deps
+│   └── EXTERNAL-REFS.md        # External tool linkages
+│
+└── diagrams/                   # Mermaid diagrams (Phase H) ✨✨ NEW
+    ├── feature-hierarchy.md    # Feature tree visualization
+    ├── team-org-chart.md       # Team structure
+    ├── module-dependencies.md  # Dependency graph
+    ├── project-timeline.md     # Gantt chart of evolution
+    ├── system-architecture.md  # C4 context diagram
+    └── feature-status.md       # Pie chart of completion
 ```
 
 **Command**:
 ```bash
 /sw:living-docs --full-scan
 
-# Uses deep-native if Claude MAX available, otherwise fails with error
-# Runs ALL phases: B → C → D → E → F
-# Duration: Variable (depends on project size)
+# Uses deep-native (Claude MAX) for AI-powered analysis
+# Runs ALL 8 phases: A → B → C → D → E → F → G → H
+# Checkpoint/resume: Can stop and continue from any phase
+# Enterprise projects: May take multiple sessions (days/weeks)
+```
+
+**Resume after interruption**:
+```bash
+# Check progress
+/sw:jobs
+
+# Resume from checkpoint (all previous work preserved)
+/sw:living-docs --resume <jobId>
 ```
 
 ### Deep-Native (Recommended for MAX Users)
@@ -147,6 +227,27 @@ Uses your Claude MAX subscription via `claude --print`:
 # Monitor progress:
 /sw:jobs --follow <jobId>
 ```
+
+---
+
+## The 8 Phases of Enterprise Analysis
+
+Full scan (`--full-scan`) executes all 8 phases sequentially with checkpoint/resume support:
+
+| Phase | Name | What It Does | Output |
+|-------|------|--------------|--------|
+| **A** | Discovery | Scan file structure, detect repos, identify entry points | Internal state |
+| **B** | Deep Analysis | AI-powered per-repo understanding: purpose, concepts, APIs, patterns | `repos/{name}/overview.md`, `api-surface.md` |
+| **C** | Org Synthesis | Infer team structure, microservices, domains from code patterns | `organization/teams/`, `microservices/`, `domains/` |
+| **D** | Architecture | Detect architectural decisions, generate ADRs, system diagrams | `architecture/adr/`, `system-architecture.md` |
+| **E** | Inconsistencies | Find issues: broken links, spec-code gaps, orphaned docs, duplicates | `review-needed/CRITICAL-ISSUES.md`, `BROKEN-LINKS.md`, etc. |
+| **F** | Strategy | Generate recommendations, tech debt catalog, modernization roadmap | `strategy/recommendations.md`, `tech-debt-catalog.md` |
+| **G** | Enterprise | Build knowledge base: history, feature catalog, delivery docs, runbooks | `enterprise/`, `delivery/`, `operations/`, `relationships/` |
+| **H** | Diagrams | Generate Mermaid visualizations: org charts, dependencies, timelines | `diagrams/*.md` |
+
+**Checkpoint/Resume**: Each phase completion is checkpointed. If interrupted, resume continues from the last completed phase - no work is lost.
+
+**Enterprise Scale**: For large organizations (50+ repos), phases B-G may each take significant time. The system is designed for long-running analysis that spans multiple sessions.
 
 ---
 
@@ -307,7 +408,9 @@ After completion, you'll see a detailed summary showing:
 
 ## Output Files
 
-After completion:
+After completion (varies by depth):
+
+### Core Output (All Depths)
 
 | File | Description |
 |------|-------------|
@@ -316,6 +419,26 @@ After completion:
 | `.specweave/docs/overview/PROJECT-OVERVIEW.md` | Auto-generated project overview |
 | `.specweave/docs/overview/TECH-STACK.md` | Detected technologies and frameworks |
 | `.specweave/docs/modules/*.md` | Per-module documentation |
+
+### Standard+ Output
+
+| Folder | Description |
+|--------|-------------|
+| `.specweave/docs/internal/organization/` | Team structure, microservices, domains |
+| `.specweave/docs/internal/relationships/` | Feature-to-code, team-to-features mappings |
+| `.specweave/docs/internal/diagrams/` | Mermaid diagrams for visual navigation |
+
+### Full Scan Output (Enterprise KB)
+
+| Folder | Description |
+|--------|-------------|
+| `.specweave/docs/internal/repos/` | Per-repo deep analysis with APIs |
+| `.specweave/docs/internal/architecture/` | ADRs, system architecture, C4 diagrams |
+| `.specweave/docs/internal/review-needed/` | Categorized issues (P0-P3) with remediation |
+| `.specweave/docs/internal/strategy/` | Recommendations, modernization, risk assessment |
+| `.specweave/docs/internal/enterprise/` | Company history, feature catalog, team directory |
+| `.specweave/docs/internal/delivery/` | CI/CD, releases, deployment guides |
+| `.specweave/docs/internal/operations/` | Runbooks, monitoring, SLAs |
 
 ---
 
@@ -339,16 +462,22 @@ After completion:
 #    Continuing from: payments-service
 ```
 
-### Example 2: Large Brownfield (247 repos)
+### Example 2: Large Enterprise (247 repos)
 
 ```bash
-# Focus on critical modules first
-/sw:living-docs --depth deep-native \
-  --priority auth,payments,billing,core \
-  --depends-on clone-main123
+# Full enterprise scan - generates complete knowledge base
+# For large projects, this runs across multiple sessions
+/sw:living-docs --full-scan --depends-on clone-main123
 
-# Monitor in another terminal
+# Monitor progress (runs in background, survives terminal close)
 /sw:jobs --follow ldb-xyz789
+
+# Resume after interruption (all progress preserved)
+/sw:living-docs --resume ldb-xyz789
+
+# Alternatively: Focus on critical modules first (faster initial pass)
+/sw:living-docs --depth standard \
+  --priority auth,payments,billing,core
 ```
 
 ### Example 3: CI/CD Integration
