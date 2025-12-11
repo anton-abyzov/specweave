@@ -1,15 +1,11 @@
 ---
 id: US-001
 feature: FS-133
-title: E2E Test Coverage
+title: "E2E Test Coverage"
 status: not_started
 priority: P1
 created: 2025-12-09
 project: specweave
-external:
-  github:
-    issue: 877
-    url: https://github.com/anton-abyzov/specweave/issues/877
 ---
 
 # US-001: E2E Test Coverage

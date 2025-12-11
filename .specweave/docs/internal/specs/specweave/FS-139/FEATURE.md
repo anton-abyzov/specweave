@@ -1,16 +1,11 @@
 ---
 id: FS-139
-title: Test Suite Audit and Systematic Fixes
+title: "Test Suite Audit and Systematic Fixes"
 type: feature
 status: completed
 priority: P0
 created: 2025-12-10
 lastUpdated: 2025-12-11
-external_tools:
-  github:
-    type: milestone
-    id: 56
-    url: https://github.com/anton-abyzov/specweave/milestone/56
 ---
 
 # Test Suite Audit and Systematic Fixes

@@ -6,11 +6,6 @@ status: completed
 priority: P1
 created: 2025-12-11
 lastUpdated: 2025-12-11
-external_tools:
-  github:
-    type: milestone
-    id: 57
-    url: https://github.com/anton-abyzov/specweave/milestone/57
 ---
 
 # 0141: Frontmatter Project Removal - Part 1: Core Implementation

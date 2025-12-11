@@ -1,15 +1,11 @@
 ---
 id: US-007
 feature: FS-135
-title: Generic Algorithm for Any SpecWeave Project
+title: "Generic Algorithm for Any SpecWeave Project"
 status: completed
 priority: P1
 created: 2025-12-09
 project: specweave
-external:
-  github:
-    issue: 882
-    url: https://github.com/anton-abyzov/specweave/issues/882
 ---
 
 # US-007: Generic Algorithm for Any SpecWeave Project

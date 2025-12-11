@@ -1,15 +1,11 @@
 ---
 id: US-004
 feature: FS-140
-title: Remove Frontmatter Project from Templates
+title: "Remove Frontmatter Project from Templates"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 901
-    url: https://github.com/anton-abyzov/specweave/issues/901
 ---
 
 # US-004: Remove Frontmatter Project from Templates

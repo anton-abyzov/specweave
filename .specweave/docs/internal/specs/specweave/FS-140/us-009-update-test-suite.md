@@ -1,15 +1,11 @@
 ---
 id: US-009
 feature: FS-140
-title: Update Test Suite
+title: "Update Test Suite"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 906
-    url: https://github.com/anton-abyzov/specweave/issues/906
 ---
 
 # US-009: Update Test Suite
@@ -44,7 +40,7 @@ external:
 
 ## Tasks
 
-- [ ] **T-006**: Write Comprehensive Unit Tests
+- [x] **T-006**: Write Comprehensive Unit Tests
 - [ ] **T-011**: Update Living Docs Sync Tests
 - [ ] **T-024**: Update Validation Hook Tests
 - [ ] **T-034**: Update All Test Fixtures

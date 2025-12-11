@@ -1,15 +1,11 @@
 ---
 id: US-002
 feature: FS-133
-title: Documentation Completeness
+title: "Documentation Completeness"
 status: not_started
 priority: P1
 created: 2025-12-09
 project: specweave
-external:
-  github:
-    issue: 878
-    url: https://github.com/anton-abyzov/specweave/issues/878
 ---
 
 # US-002: Documentation Completeness

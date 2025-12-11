@@ -1,15 +1,11 @@
 ---
 id: US-003
 feature: FS-140
-title: Update Living Docs Sync to Use Resolution Service
+title: "Update Living Docs Sync to Use Resolution Service"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 900
-    url: https://github.com/anton-abyzov/specweave/issues/900
 ---
 
 # US-003: Update Living Docs Sync to Use Resolution Service
@@ -42,8 +38,8 @@ external:
 
 ## Tasks
 
-- [ ] **T-007**: Integrate ProjectResolutionService into LivingDocsSync
-- [ ] **T-008**: Update resolveProjectPath() Method
-- [ ] **T-009**: Update parseIncrementSpec() Method
-- [ ] **T-010**: Update Cross-Project Sync Logic
+- [x] **T-007**: Integrate ProjectResolutionService into LivingDocsSync
+- [x] **T-008**: Update resolveProjectPath() Method
+- [x] **T-009**: Update parseIncrementSpec() Method
+- [x] **T-010**: Update Cross-Project Sync Logic
 - [ ] **T-011**: Update Living Docs Sync Tests

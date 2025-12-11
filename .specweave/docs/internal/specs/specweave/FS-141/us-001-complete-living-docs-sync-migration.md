@@ -1,15 +1,11 @@
 ---
 id: US-001
 feature: FS-141
-title: Complete Living Docs Sync Migration
+title: "Complete Living Docs Sync Migration"
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 914
-    url: https://github.com/anton-abyzov/specweave/issues/914
 ---
 
 # US-001: Complete Living Docs Sync Migration

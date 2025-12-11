@@ -1,15 +1,11 @@
 ---
 id: US-002
 feature: FS-121
-title: JIRA Multi-Project Mapper Agent
+title: "JIRA Multi-Project Mapper Agent"
 status: completed
 priority: P2
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 854
-    url: https://github.com/anton-abyzov/specweave/issues/854
 ---
 
 # US-002: JIRA Multi-Project Mapper Agent

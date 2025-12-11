@@ -6,6 +6,17 @@
  */
 
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
+import { getGitHubAuthFromProject } from '../../../src/utils/auth-helpers.js';
+
+/**
+ * Get environment object with GH_TOKEN for gh CLI commands.
+ */
+function getGhEnv(): NodeJS.ProcessEnv {
+  const { token } = getGitHubAuthFromProject(process.cwd());
+  return token
+    ? { ...process.env, GH_TOKEN: token }
+    : process.env;
+}
 
 /**
  * GitHub Project Board (Classic Projects)
@@ -41,7 +52,7 @@ export async function fetchBoardsForRepo(
       '.[] | {id: .id, name: .name, number: .number, state: .state, html_url: .html_url}',
       '-H',
       'Accept: application/vnd.github+json',
-    ]);
+    ], { env: getGhEnv() });
 
     if (result.status !== 0) {
       console.error(`❌ Failed to fetch boards for ${owner}/${repo}:`, result.stderr);
@@ -85,7 +96,7 @@ export async function fetchBoardsForOrg(
       '.[] | {id: .id, name: .name, number: .number, state: .state, html_url: .html_url}',
       '-H',
       'Accept: application/vnd.github+json',
-    ]);
+    ], { env: getGhEnv() });
 
     if (result.status !== 0) {
       console.error(`❌ Failed to fetch boards for org ${org}:`, result.stderr);

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 /**
  * Unit Tests: Post-Increment-Planning Hook Idempotency
@@ -9,17 +9,22 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
  * @module tests/unit/hooks/post-increment-planning-idempotency
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdirSync, writeFileSync, rmSync, readFileSync, existsSync } from 'fs';
-import { execSync } from 'child_process';
 import path from 'path';
+import * as os from 'os';
 
 describe('Post-Increment-Planning Hook - Idempotency', () => {
-  const testRoot = path.join(__dirname, '../../.tmp/idempotency-test');
-  const incrementDir = path.join(testRoot, '.specweave/increments/9999-test-idempotency');
-  const metadataFile = path.join(incrementDir, 'metadata.json');
+  // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+  let testRoot: string;
+  let incrementDir: string;
+  let metadataFile: string;
 
   beforeEach(() => {
+    // Create unique directory per test to avoid parallel execution race conditions
+    testRoot = path.join(os.tmpdir(), `specweave-test-idempotency-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    incrementDir = path.join(testRoot, '.specweave/increments/9999-test-idempotency');
+    metadataFile = path.join(incrementDir, 'metadata.json');
+
     // Create test directory structure
     mkdirSync(incrementDir, { recursive: true });
   });

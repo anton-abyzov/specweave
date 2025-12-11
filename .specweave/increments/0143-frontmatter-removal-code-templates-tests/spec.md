@@ -1,6 +1,6 @@
 # 0143: Frontmatter Removal - Code, Templates & Tests (Part 1 of 2)
 
-**Status**: Planned
+**Status**: Completed
 **Priority**: P1
 **Type**: Refactor
 **Created**: 2025-12-10

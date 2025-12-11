@@ -67,7 +67,8 @@ test.describe('GitHub Bidirectional Sync (E2E)', () => {
 
   test.beforeEach(async () => {
     // Setup test directory
-    testDir = path.join(os.tmpdir(), `specweave-e2e-github-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `specweave-e2e-github-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testDir);
 
     // Initialize SpecWeave directory structure

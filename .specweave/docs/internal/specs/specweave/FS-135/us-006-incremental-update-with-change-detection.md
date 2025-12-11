@@ -1,15 +1,11 @@
 ---
 id: US-006
 feature: FS-135
-title: Incremental Update with Change Detection
+title: "Incremental Update with Change Detection"
 status: completed
 priority: P1
 created: 2025-12-09
 project: specweave
-external:
-  github:
-    issue: 881
-    url: https://github.com/anton-abyzov/specweave/issues/881
 ---
 
 # US-006: Incremental Update with Change Detection

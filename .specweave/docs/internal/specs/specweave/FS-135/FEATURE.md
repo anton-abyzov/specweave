@@ -1,16 +1,11 @@
 ---
 id: FS-135
-title: Intelligent Living Docs - Visualization & Integration (Part 2)
+title: "Intelligent Living Docs - Visualization & Integration (Part 2)"
 type: feature
 status: completed
 priority: P1
 created: 2025-12-09
-lastUpdated: 2025-12-10
-external_tools:
-  github:
-    type: milestone
-    id: 53
-    url: https://github.com/anton-abyzov/specweave/milestone/53
+lastUpdated: 2025-12-11
 ---
 
 # Intelligent Living Docs - Visualization & Integration (Part 2)

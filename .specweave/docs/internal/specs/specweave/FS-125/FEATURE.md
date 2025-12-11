@@ -5,7 +5,7 @@ type: feature
 status: completed
 priority: P1
 created: 2025-12-08
-lastUpdated: 2025-12-10
+lastUpdated: 2025-12-11
 ---
 
 # Cross-Project User Story Targeting

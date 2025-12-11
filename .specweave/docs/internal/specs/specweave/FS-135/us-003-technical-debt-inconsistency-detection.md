@@ -1,15 +1,11 @@
 ---
 id: US-003
 feature: FS-135
-title: Technical Debt & Inconsistency Detection
+title: "Technical Debt & Inconsistency Detection"
 status: completed
 priority: P1
 created: 2025-12-09
 project: specweave
-external:
-  github:
-    issue: 832
-    url: https://github.com/anton-abyzov/specweave/issues/832
 ---
 
 # US-003: Technical Debt & Inconsistency Detection

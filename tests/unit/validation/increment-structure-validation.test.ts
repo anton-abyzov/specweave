@@ -16,7 +16,8 @@ import * as os from 'os';
 
 describe('IncrementStructureValidator', () => {
   // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
-  const testIncrementsDir = path.join(os.tmpdir(), 'specweave-test-increment-validation-' + Date.now());
+  // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+  const testIncrementsDir = path.join(os.tmpdir(), `specweave-test-increment-validation-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
   beforeEach(async () => {
     // Create test directory

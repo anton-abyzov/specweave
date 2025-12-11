@@ -1,15 +1,11 @@
 ---
 id: US-004
 feature: FS-123
-title: Project/Board-Based Team Organization
+title: "Project/Board-Based Team Organization"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 865
-    url: https://github.com/anton-abyzov/specweave/issues/865
 ---
 
 # US-004: Project/Board-Based Team Organization

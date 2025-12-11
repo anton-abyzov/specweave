@@ -28,8 +28,30 @@ describe('AC Sync - Second Update (Critical Scenario)', () => {
 
   beforeEach(async () => {
     // Create isolated test directory
-    testRoot = path.join(os.tmpdir(), `specweave-ac-second-sync-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testRoot = path.join(os.tmpdir(), `specweave-ac-second-sync-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testRoot);
+
+    // Create SpecWeave structure with valid project config
+    // Note: Project name must NOT match blocked patterns (test-project, example, my-app, etc.)
+    await fs.ensureDir(path.join(testRoot, '.specweave/docs/internal/specs/ac-sync-tests'));
+
+    // Create config.json with valid project (required by v0.35.1+ validation)
+    const config = {
+      version: '1.0',
+      project: {
+        name: 'ac-sync-tests',
+        description: 'Test project for AC sync tests'
+      },
+      multiProject: {
+        enabled: false
+      }
+    };
+    await fs.writeFile(
+      path.join(testRoot, '.specweave/config.json'),
+      JSON.stringify(config, null, 2),
+      'utf-8'
+    );
 
     // Initialize living docs sync
     livingDocsSync = new LivingDocsSync(testRoot);

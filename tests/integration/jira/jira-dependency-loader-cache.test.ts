@@ -21,7 +21,8 @@ describe('JiraDependencyLoader - Cache Integration', () => {
 
   beforeEach(async () => {
     // Create temporary test directory
-    testDir = path.join(os.tmpdir(), `jira-loader-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `jira-loader-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.mkdir(testDir, { recursive: true });
 
     // Initialize cache manager

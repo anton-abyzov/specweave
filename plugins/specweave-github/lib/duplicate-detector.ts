@@ -31,6 +31,19 @@
  */
 
 import { execFileSync } from 'child_process';
+import { getGitHubAuthFromProject } from '../../../src/utils/auth-helpers.js';
+
+/**
+ * Get environment object with GH_TOKEN for gh CLI commands.
+ * This ensures the token from .env is passed to all gh operations,
+ * regardless of `gh auth` status.
+ */
+function getGhEnv(): NodeJS.ProcessEnv {
+  const { token } = getGitHubAuthFromProject(process.cwd());
+  return token
+    ? { ...process.env, GH_TOKEN: token }
+    : process.env;
+}
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -115,7 +128,7 @@ export class DuplicateDetector {
         args.push('--repo', repo);
       }
 
-      const output = execFileSync('gh', args, { encoding: 'utf-8' });
+      const output = execFileSync('gh', args, { encoding: 'utf-8', env: getGhEnv() });
       const issues = JSON.parse(output) as GitHubIssue[];
 
       if (issues.length === 0) {
@@ -196,7 +209,7 @@ export class DuplicateDetector {
         args.push('--repo', repo);
       }
 
-      const output = execFileSync('gh', args, { encoding: 'utf-8' });
+      const output = execFileSync('gh', args, { encoding: 'utf-8', env: getGhEnv() });
       const issues = JSON.parse(output) as GitHubIssue[];
 
       // Filter exact matches only
@@ -321,7 +334,7 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
         }
 
         // Add comment explaining closure
-        execFileSync('gh', commentArgs, { encoding: 'utf-8' });
+        execFileSync('gh', commentArgs, { encoding: 'utf-8', env: getGhEnv() });
 
         const closeArgs = [
           'issue',
@@ -334,7 +347,7 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
         }
 
         // Close the issue
-        execFileSync('gh', closeArgs, { encoding: 'utf-8' });
+        execFileSync('gh', closeArgs, { encoding: 'utf-8', env: getGhEnv() });
 
         console.log(`      ✅ Closed #${duplicate.number}`);
         closed++;
@@ -432,7 +445,7 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
           args.push('--assignee', assignee);
         });
 
-        const output = execFileSync('gh', args, { encoding: 'utf-8' });
+        const output = execFileSync('gh', args, { encoding: 'utf-8', env: getGhEnv() });
 
         // Extract issue number from output (format: "https://github.com/owner/repo/issues/123")
         const match = output.match(/\/issues\/(\d+)/);
@@ -519,7 +532,7 @@ The original issue (#${keepIssueNumber}) should be used for tracking instead.
    */
   static checkGitHubCLI(): boolean {
     try {
-      execFileSync('gh', ['auth', 'status'], { encoding: 'utf-8' });
+      execFileSync('gh', ['auth', 'status'], { encoding: 'utf-8', env: getGhEnv() });
       return true;
     } catch {
       return false;

@@ -1,15 +1,11 @@
 ---
 id: US-002
 feature: FS-122
-title: Backend Standards Generation
+title: "Backend Standards Generation"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 859
-    url: https://github.com/anton-abyzov/specweave/issues/859
 ---
 
 # US-002: Backend Standards Generation

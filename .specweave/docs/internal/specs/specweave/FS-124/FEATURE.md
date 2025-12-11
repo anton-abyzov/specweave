@@ -1,16 +1,11 @@
 ---
 id: FS-124
-title: Fix spec-project-validator Hook Regex to Match All Increment Patterns
+title: "Fix spec-project-validator Hook Regex to Match All Increment Patterns"
 type: feature
 status: completed
 priority: P1
 created: 2025-12-08
-lastUpdated: 2025-12-10
-external_tools:
-  github:
-    type: milestone
-    id: 47
-    url: https://github.com/anton-abyzov/specweave/milestone/47
+lastUpdated: 2025-12-11
 ---
 
 # Fix spec-project-validator Hook Regex to Match All Increment Patterns

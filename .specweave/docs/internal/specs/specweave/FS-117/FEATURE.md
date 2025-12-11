@@ -4,8 +4,8 @@ title: Instant Dashboard Cache
 type: feature
 status: completed
 priority: P1
-created: 2025-12-10
-lastUpdated: 2025-12-10
+created: 2025-12-11
+lastUpdated: 2025-12-11
 external_tools:
   github:
     type: milestone
@@ -23,7 +23,7 @@ Status commands (`/specweave:progress`, `/specweave:status`, `/specweave:jobs`, 
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0117-instant-dashboard-cache](../../../../increments/0117-instant-dashboard-cache/spec.md) | ✅ completed | 2025-12-10 |
+| [0117-instant-dashboard-cache](../../../../increments/0117-instant-dashboard-cache/spec.md) | ✅ completed | 2025-12-11 |
 
 ## User Stories
 

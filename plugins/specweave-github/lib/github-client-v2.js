@@ -11,6 +11,17 @@ class GitHubClientV2 {
     this.owner = config.owner;
     this.repo = config.repo;
     this.fullRepo = `${this.owner}/${this.repo}`;
+    this.token = config.token;
+  }
+  /**
+   * Get environment object with GH_TOKEN for gh CLI commands.
+   * This ensures the token from .env is passed to all gh operations,
+   * regardless of `gh auth` status.
+   *
+   * @returns Environment object with GH_TOKEN set if token available
+   */
+  getGhEnv() {
+    return this.token ? { ...process.env, GH_TOKEN: this.token } : process.env;
   }
   /**
    * Create client from owner/repo directly
@@ -110,7 +121,7 @@ class GitHubClientV2 {
     if (description) {
       args.splice(4, 0, "-f", `description=${description}`);
     }
-    const result = await execFileNoThrow("gh", args);
+    const result = await execFileNoThrow("gh", args, { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       throw new Error(`Failed to create milestone: ${result.stderr || result.stdout}`);
     }
@@ -125,7 +136,7 @@ class GitHubClientV2 {
       `repos/${this.fullRepo}/milestones`,
       "--jq",
       `.[] | select(.title=="${title}") | {number: .number, title: .title, description: .description, state: .state}`
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.exitCode !== 0 || !result.stdout.trim()) {
       return null;
     }
@@ -232,7 +243,7 @@ FIX:
           `repos/${this.fullRepo}/milestones/${milestone}`,
           "--jq",
           ".title"
-        ]);
+        ], { env: this.getGhEnv() });
         if (msResult.exitCode === 0 && msResult.stdout.trim()) {
           args.push("--milestone", msResult.stdout.trim());
         }
@@ -240,7 +251,7 @@ FIX:
         args.push("--milestone", milestone);
       }
     }
-    const createResult = await execFileNoThrow("gh", args);
+    const createResult = await execFileNoThrow("gh", args, { env: this.getGhEnv() });
     if (createResult.exitCode !== 0) {
       throw new Error(
         `Failed to create epic issue: ${createResult.stderr || createResult.stdout}`
@@ -274,7 +285,7 @@ ${body}`;
       this.fullRepo,
       "--json",
       "number,title,body,state,url,labels,milestone"
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       throw new Error(
         `Failed to get issue #${issueNumber}: ${result.stderr || result.stdout}`
@@ -313,7 +324,7 @@ ${body}`;
     if (includeClosedIssues) {
       args.push("--state", "all");
     }
-    const result = await execFileNoThrow("gh", args);
+    const result = await execFileNoThrow("gh", args, { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       return null;
     }
@@ -344,7 +355,7 @@ ${body}`;
       this.fullRepo,
       "--body",
       newBody
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       throw new Error(
         `Failed to update issue #${issueNumber}: ${result.stderr || result.stdout}`
@@ -364,7 +375,7 @@ ${body}`;
       String(issueNumber),
       "--repo",
       this.fullRepo
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       throw new Error(
         `Failed to close issue #${issueNumber}: ${result.stderr || result.stdout}`
@@ -387,7 +398,7 @@ ${body}`;
       String(issueNumber),
       "--repo",
       this.fullRepo
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       throw new Error(
         `Failed to reopen issue #${issueNumber}: ${result.stderr || result.stdout}`
@@ -406,7 +417,7 @@ ${body}`;
       this.fullRepo,
       "--body",
       comment
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       throw new Error(
         `Failed to add comment to issue #${issueNumber}: ${result.stderr || result.stdout}`
@@ -425,7 +436,7 @@ ${body}`;
       "--jq",
       ".[-1] | {body: .body, author: .user.login}"
       // Get last comment only
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       return null;
     }
@@ -453,7 +464,7 @@ ${body}`;
     for (const label of labels) {
       args.push("--add-label", label);
     }
-    const result = await execFileNoThrow("gh", args);
+    const result = await execFileNoThrow("gh", args, { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       throw new Error(
         `Failed to add labels to issue #${issueNumber}: ${result.stderr || result.stdout}`
@@ -482,7 +493,7 @@ ${body}`;
       // Include both open and closed
       "--limit",
       "100"
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.exitCode !== 0 || !result.stdout) {
       return [];
     }
@@ -510,7 +521,7 @@ ${body}`;
       "--limit",
       "1000"
       // Max results
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       throw new Error(
         `Failed to list issues: ${result.stderr || result.stdout}`
@@ -578,7 +589,7 @@ ${body}`;
       "rate_limit",
       "--jq",
       ".rate | {remaining: .remaining, limit: .limit, reset: .reset}"
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       throw new Error(
         `Failed to check rate limit: ${result.stderr || result.stdout}`
@@ -669,7 +680,7 @@ ${body}`;
       "per_page=100",
       "--jq",
       jqFilter
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       throw new Error(
         `Failed to fetch recent changes: ${result.stderr || result.stdout}`
@@ -717,7 +728,7 @@ ${body}`;
       `per_page=${perPage}`,
       "--jq",
       ".[].{event, created_at, actor: .actor.login}"
-    ]);
+    ], { env: this.getGhEnv() });
     if (result.exitCode !== 0) {
       throw new Error(
         `Failed to get issue events: ${result.stderr || result.stdout}`

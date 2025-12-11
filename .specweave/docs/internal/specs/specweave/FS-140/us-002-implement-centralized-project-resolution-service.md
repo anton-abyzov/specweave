@@ -1,15 +1,11 @@
 ---
 id: US-002
 feature: FS-140
-title: Implement Centralized Project Resolution Service
+title: "Implement Centralized Project Resolution Service"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 899
-    url: https://github.com/anton-abyzov/specweave/issues/899
 ---
 
 # US-002: Implement Centralized Project Resolution Service
@@ -43,8 +39,8 @@ external:
 
 ## Tasks
 
-- [ ] **T-001**: Create ProjectResolutionService Class
-- [ ] **T-002**: Implement Per-US Field Extraction
-- [ ] **T-003**: Implement Config-Based Resolution
-- [ ] **T-004**: Implement Intelligent Detection
-- [ ] **T-005**: Add Caching and Cache Management
+- [x] **T-001**: Create ProjectResolutionService Class
+- [x] **T-002**: Implement Per-US Field Extraction
+- [x] **T-003**: Implement Config-Based Resolution
+- [x] **T-004**: Implement Intelligent Detection
+- [x] **T-005**: Add Caching and Cache Management

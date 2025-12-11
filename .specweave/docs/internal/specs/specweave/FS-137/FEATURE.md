@@ -5,7 +5,7 @@ type: feature
 status: completed
 priority: P0
 created: 2025-12-09
-lastUpdated: 2025-12-10
+lastUpdated: 2025-12-11
 ---
 
 # Per-US Project/Board Enforcement - The Missing Runtime Layer
@@ -22,7 +22,6 @@ lastUpdated: 2025-12-10
 
 ## User Stories
 
-- [US-001: Login Form UI](../../specweave/FS-137/us-001-login-form-ui.md)
 - [US-001: Pre-Planning Context Injection (P0)](../../specweave/FS-137/us-001-pre-planning-context-injection-p0-.md)
 - [US-002: Per-US Project Validation Hook (P0)](../../specweave/FS-137/us-002-per-us-project-validation-hook-p0-.md)
 - [US-003: Smart Project Resolution Utility (P1)](../../specweave/FS-137/us-003-smart-project-resolution-utility-p1-.md)
@@ -39,6 +38,7 @@ lastUpdated: 2025-12-10
 This feature spans multiple projects:
 
 - [acme-corp](../../acme-corp/FS-137/)
+- [per](../../per/FS-137/)
 - [{{PROJECT_ID}}` placeholders - no hook catches this](../../{{PROJECT_ID}}` placeholders - no hook catches this/FS-137/)
 - [frontend-app](../../frontend-app/FS-137/)
 - [backend-api](../../backend-api/FS-137/)

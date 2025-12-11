@@ -1,15 +1,11 @@
 ---
 id: US-006
 feature: FS-132
-title: SessionStart Hook Integration
+title: "SessionStart Hook Integration"
 status: completed
 priority: P1
 created: 2025-12-09
 project: specweave
-external:
-  github:
-    issue: 875
-    url: https://github.com/anton-abyzov/specweave/issues/875
 ---
 
 # US-006: SessionStart Hook Integration

@@ -187,6 +187,16 @@ export class LivingDocsSync {
       const resolved = await this.projectResolution.resolveProjectForIncrement(incrementId);
       const defaultProject = resolved.projectId;
       this.logger.debug(`   Resolved project: ${defaultProject} (${resolved.source}, ${resolved.confidence})`);
+
+      // v0.35.0: Validate project against registry (AC-US9-01, AC-US9-02)
+      const registryValidation = await this.projectResolution.validateAgainstRegistry(defaultProject);
+      if (!registryValidation.inRegistry) {
+        this.logger.warn(`   ⚠️  Project '${defaultProject}' is not in the registry`);
+        this.logger.warn(`   💡 Run: specweave project add ${defaultProject} --name "${defaultProject.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}"`);
+        if (registryValidation.suggestions && registryValidation.suggestions.length > 0) {
+          this.logger.warn(`   📋 Similar registered projects: ${registryValidation.suggestions.join(', ')}`);
+        }
+      }
       const defaultBoard = parsed.frontmatter.board;
       const isCrossProject = this.crossProjectSync.isCrossProject(
         parsed.userStories,
@@ -206,10 +216,37 @@ export class LivingDocsSync {
         );
         this.logger.log(`   ${groups.size} target${is2Level ? ' paths' : ' projects'}: ${[...groups.keys()].join(', ')}`);
 
+        // CRITICAL v0.35.1: Filter out invalid projects BEFORE creating folders
+        // This prevents example User Stories from polluting the specs folder
+        const validGroups = new Map<string, UserStoryData[]>();
+        for (const [targetPath, projectStories] of groups) {
+          // Extract project from path (handles both "project" and "project/board")
+          const projectIdToValidate = targetPath.split('/')[0];
+          const validation = await this.projectResolution.validateProjectForFolderCreation(projectIdToValidate);
+
+          if (validation.valid) {
+            validGroups.set(targetPath, projectStories);
+          } else {
+            this.logger.warn(`   ⛔ Skipping invalid project folder: ${targetPath}`);
+            this.logger.warn(`      Reason: ${validation.reason}`);
+            this.logger.warn(`      Allowed projects: [${validation.allowedProjects.join(', ')}]`);
+            result.errors.push(
+              `Skipped example project '${projectIdToValidate}' - not in allowed list`
+            );
+          }
+        }
+
+        if (validGroups.size === 0) {
+          this.logger.error('❌ No valid projects found for sync - all were filtered as examples');
+          result.success = false;
+          result.errors.push('No valid projects found - all extracted projects were examples/placeholders');
+          return result;
+        }
+
         // For cross-project increments, create feature folder in each target path
         // USs are synced to their respective target's feature folder
         // Cross-references are added to link related projects/boards
-        for (const [targetPath, projectStories] of groups) {
+        for (const [targetPath, projectStories] of validGroups) {
           // Use full target path (may be "project" or "project/board")
           const crossProjectPath = path.join(basePath, targetPath, featureId);
           this.logger.log(`   📁 Syncing ${projectStories.length} USs to ${targetPath}/${featureId}/`);
@@ -265,17 +302,17 @@ export class LivingDocsSync {
         result.success = true;
         this.crossProjectSync.logSyncSummary({
           success: true,
-          projects: [...groups.entries()].map(([targetPath, stories]) => ({
+          projects: [...validGroups.entries()].map(([targetPath, stories]) => ({
             projectId: targetPath,  // Now contains full path (project or project/board)
             success: true,
-            userStories: stories.map(s => s.id),
+            userStories: stories.map((s: UserStoryData) => s.id),
             filesCreated: [] as string[],
             filesUpdated: [] as string[],
             errors: [] as string[]
           })),
           crossReferences: [],
-          totalUserStories: parsed.userStories.length,
-          projectCount: groups.size
+          totalUserStories: [...validGroups.values()].reduce((sum, stories) => sum + stories.length, 0),
+          projectCount: validGroups.size
         });
         return result;
       }
@@ -284,6 +321,18 @@ export class LivingDocsSync {
       const projectPath = path.join(basePath, resolvedProjectPath, featureId);
       this.logger.log(`   📁 Feature folder: ${resolvedProjectPath}/${featureId}/`);
       const featureFile = path.join(projectPath, 'FEATURE.md');
+
+      // CRITICAL v0.35.1: Validate project BEFORE creating folder
+      const projectIdToValidate = resolvedProjectPath.split('/')[0];
+      const projectValidation = await this.projectResolution.validateProjectForFolderCreation(projectIdToValidate);
+      if (!projectValidation.valid) {
+        this.logger.error(`❌ Cannot create folder for invalid project: ${projectIdToValidate}`);
+        this.logger.error(`   Reason: ${projectValidation.reason}`);
+        this.logger.error(`   Allowed projects: [${projectValidation.allowedProjects.join(', ')}]`);
+        result.success = false;
+        result.errors.push(`Invalid project '${projectIdToValidate}' - ${projectValidation.reason}`);
+        return result;
+      }
 
       if (!options.dryRun) {
         await ensureDir(projectPath);

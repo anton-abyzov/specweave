@@ -1,15 +1,11 @@
 ---
 id: US-001
 feature: FS-126
-title: GitHub Multi-Repo Pattern Selection
+title: "GitHub Multi-Repo Pattern Selection"
 status: completed
 priority: P1
 created: 2025-12-08
 project: specweave
-external:
-  github:
-    issue: 868
-    url: https://github.com/anton-abyzov/specweave/issues/868
 ---
 
 # US-001: GitHub Multi-Repo Pattern Selection

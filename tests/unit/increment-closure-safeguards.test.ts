@@ -21,7 +21,8 @@ describe('Increment Closure Safeguards (CRITICAL)', () => {
 
   beforeEach(async () => {
     // Create isolated test directory
-    testRoot = path.join(os.tmpdir(), 'test-increment-closure-' + Date.now());
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testRoot = path.join(os.tmpdir(), `test-increment-closure-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     incrementsDir = path.join(testRoot, '.specweave', 'increments');
     incrementPath = path.join(incrementsDir, '0001-test-increment');
     metadataPath = path.join(incrementPath, 'metadata.json');

@@ -342,47 +342,63 @@ IncrementNumberManager.getNextIncrementNumber(); // "0001" ← Starts from begin
 
 **Details:** See ADR-0142 (`.specweave/docs/internal/architecture/adr/0142-gap-filling-increment-ids.md`)
 
-### 2g. NEVER Create Project Folders Without Validation (v0.34.0+)
+### 2g. NEVER Create Project Folders Without Validation (v0.34.0+, fixed v0.35.1)
 
 **Project folders MUST exist in config.json before creation!**
 
 ```
-❌ FORBIDDEN (Bug pattern from 2025-12-10):
+❌ FORBIDDEN (Bug pattern from 2025-12-11):
 .specweave/docs/internal/specs/MyApp (3 repos)/      ← Example from spec.md!
 .specweave/docs/internal/specs/frontend-app/         ← Example from spec.md!
 .specweave/docs/internal/specs/backend-api/          ← Example from spec.md!
 .specweave/docs/internal/specs/acme-corp/            ← Example from spec.md!
+.specweave/docs/internal/specs/{{PROJECT_ID}}.../    ← Unresolved placeholder!
 
 ✅ CORRECT - Only configured projects:
 .specweave/docs/internal/specs/specweave/  (exists in config.json)
 ```
 
-**ROOT CAUSE:**
+**ROOT CAUSE (Fixed in v0.35.1):**
 - Increments contain EXAMPLE User Stories with placeholder `**Project**:` values
-- [living-docs-sync.ts:684](src/core/living-docs/living-docs-sync.ts#L684) trusts `project:` without validation
-- When sync runs, creates folders for ALL projects mentioned in User Stories
-- No validation hook existed to prevent placeholder project creation
+- `extractUserStoryProjectInfo()` in parsers.ts extracts ANY string after `**Project**:`
+- When sync runs, creates folders for ALL projects mentioned, including examples
+- v0.35.1 FIX: `ProjectResolutionService.validateProjectForFolderCreation()` now validates BEFORE folder creation
+
+**KNOWN EXAMPLE PROJECT NAMES (ALWAYS BLOCKED unless configured):**
+- `frontend-app`, `backend-api`, `mobile-app`, `shared-lib`
+- `acme-corp`, `my-app`, `myapp`, `example-project`, `sample-project`
+- `test-project`, `demo`, `placeholder`, `per`, `default`
+
+**MULTI-LAYER PROTECTION (v0.35.1+):**
+1. **Code-level**: `ProjectResolutionService.validateProjectForFolderCreation()` validates in TypeScript
+2. **Living-docs-sync**: Filters out invalid projects BEFORE calling `ensureDir()`
+3. **Cross-project-sync**: `ensureSpecsFolder()` throws Error if project invalid
+4. **Hook-level**: `project-folder-guard.sh` blocks Write operations to invalid folders
 
 **EXAMPLES OF FORBIDDEN PATTERNS:**
 ```markdown
 ### US-001: Example Login Form
-**Project**: MyApp (3 repos)  ← FORBIDDEN (not in config!)
+**Project**: MyApp (3 repos)  ← FORBIDDEN (parentheses not allowed!)
 
 ### US-002: Example API
-**Project**: frontend-app, backend-api  ← FORBIDDEN (comma-separated)
+**Project**: frontend-app, backend-api  ← FORBIDDEN (comma-separated!)
 
 ### US-003: Placeholder Story
 **Project**: acme-corp  ← FORBIDDEN (example name not in config!)
+
+### US-004: Unresolved
+**Project**: {{PROJECT_ID}}  ← FORBIDDEN (unresolved placeholder!)
 ```
 
-**VALIDATION RULES (ENFORCED BY HOOK):**
+**VALIDATION RULES (ENFORCED BY CODE + HOOK):**
 ```
 ❌ FORBIDDEN: Creating folders for projects not in config.json
-❌ FORBIDDEN: Example/placeholder project names in spec.md
+❌ FORBIDDEN: Example/placeholder project names (see list above)
 ❌ FORBIDDEN: Parentheses in project names (e.g., "MyApp (3 repos)")
 ❌ FORBIDDEN: Comma-separated projects (must be ONE project per US)
+❌ FORBIDDEN: Template placeholders like {{PROJECT_ID}}
 
-✅ REQUIRED: All projects MUST be in config.json multiProject.projects
+✅ REQUIRED: All projects MUST be in config.project.name (single) or config.multiProject.projects (multi)
 ✅ REQUIRED: Run `specweave context projects` to get valid project IDs
 ✅ REQUIRED: Use RESOLVED values from config, never placeholders
 ```
@@ -392,7 +408,26 @@ IncrementNumberManager.getNextIncrementNumber(); // "0001" ← Starts from begin
 SPECWEAVE_FORCE_PROJECT=1  # Skip project folder validation (DANGEROUS!)
 ```
 
-**Pre-tool-use hook `project-folder-guard.sh` BLOCKS writes to non-configured project folders (v0.34.0+).**
+**API for validation (v0.35.1+):**
+```typescript
+import { ProjectResolutionService } from './core/project/project-resolution.js';
+
+const resolver = new ProjectResolutionService(projectRoot);
+
+// Validate before folder creation
+const validation = await resolver.validateProjectForFolderCreation('frontend-app');
+if (!validation.valid) {
+  console.error(`Cannot create folder: ${validation.reason}`);
+  console.log(`Allowed projects: ${validation.allowedProjects.join(', ')}`);
+}
+
+// Static sync check for hooks
+if (ProjectResolutionService.isExampleProjectName('frontend-app')) {
+  // Block - it's a known example name
+}
+```
+
+**Pre-tool-use hook `project-folder-guard.sh` BLOCKS writes to non-configured project folders (v0.35.1 enhanced).**
 
 ### 2h. Single-Project-First Architecture (v0.34.0+)
 

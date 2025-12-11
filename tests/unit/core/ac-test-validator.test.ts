@@ -23,7 +23,8 @@ describe('ACTestValidator', () => {
 
   beforeEach(async () => {
     // Create isolated test directory
-    testDir = path.join(os.tmpdir(), `ac-validator-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `ac-validator-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testDir);
 
     // Default test runner config

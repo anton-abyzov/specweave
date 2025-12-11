@@ -1,15 +1,11 @@
 ---
 id: US-003
 feature: FS-141
-title: Update All Templates
+title: "Update All Templates"
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 916
-    url: https://github.com/anton-abyzov/specweave/issues/916
 ---
 
 # US-003: Update All Templates

@@ -1,15 +1,11 @@
 ---
 id: US-004
 feature: FS-122
-title: Unified Standards Summary
+title: "Unified Standards Summary"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 861
-    url: https://github.com/anton-abyzov/specweave/issues/861
 ---
 
 # US-004: Unified Standards Summary

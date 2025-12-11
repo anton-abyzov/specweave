@@ -28,7 +28,8 @@ describe('Status Line Desync Prevention', () => {
 
   beforeEach(async () => {
     // Create isolated test directory (NEVER use process.cwd()!)
-    testRoot = path.join(os.tmpdir(), `status-line-desync-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testRoot = path.join(os.tmpdir(), `status-line-desync-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testRoot);
 
     // Create .specweave structure

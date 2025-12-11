@@ -1,15 +1,11 @@
 ---
 id: US-001
 feature: FS-140
-title: Remove Frontmatter Project Field from All Code Paths
+title: "Remove Frontmatter Project Field from All Code Paths"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 898
-    url: https://github.com/anton-abyzov/specweave/issues/898
 ---
 
 # US-001: Remove Frontmatter Project Field from All Code Paths
@@ -43,8 +39,8 @@ external:
 
 ## Tasks
 
-- [ ] **T-012**: Remove Frontmatter References from project-detector.ts
-- [ ] **T-013**: Remove Frontmatter References from hierarchy-mapper.ts
-- [ ] **T-014**: Update spec-identifier-detector.ts
+- [x] **T-012**: Remove Frontmatter References from project-detector.ts
+- [x] **T-013**: Remove Frontmatter References from hierarchy-mapper.ts
+- [x] **T-014**: Update spec-identifier-detector.ts
 - [ ] **T-017**: Verify Zero Frontmatter References in src/
 - [ ] **T-043**: Remove Deprecated Code

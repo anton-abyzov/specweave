@@ -22,7 +22,8 @@ const __dirname = path.dirname(__filename);
 const projectRoot = findProjectRoot(import.meta.url);
 
 describe('Task Consistency Integration', () => {
-  const testDir = path.join(os.tmpdir(), `test-increment-consistency-${Date.now()}`);
+  // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+  const testDir = path.join(os.tmpdir(), `test-increment-consistency-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   const incrementDir = path.join(testDir, '.specweave/increments/0001-test');
   const tasksPath = path.join(incrementDir, 'tasks.md');
   const specPath = path.join(incrementDir, 'spec.md');

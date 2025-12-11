@@ -4,8 +4,8 @@ title: ADO vs JIRA Feature Parity Analysis
 type: feature
 status: completed
 priority: P2
-created: 2025-12-10
-lastUpdated: 2025-12-10
+created: 2025-12-11
+lastUpdated: 2025-12-11
 external_tools:
   github:
     type: milestone
@@ -23,4 +23,4 @@ This increment identifies and documents gaps between A
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0120-ado-jira-feature-parity-analysis](../../../../increments/0120-ado-jira-feature-parity-analysis/spec.md) | ✅ completed | 2025-12-10 |
+| [0120-ado-jira-feature-parity-analysis](../../../../increments/0120-ado-jira-feature-parity-analysis/spec.md) | ✅ completed | 2025-12-11 |

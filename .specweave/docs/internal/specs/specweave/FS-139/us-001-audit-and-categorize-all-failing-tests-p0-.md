@@ -1,15 +1,11 @@
 ---
 id: US-001
 feature: FS-139
-title: Audit and Categorize All Failing Tests (P0)
+title: "Audit and Categorize All Failing Tests (P0)"
 status: completed
 priority: P0
 created: 2025-12-10
 project: specweave
-external:
-  github:
-    issue: 907
-    url: https://github.com/anton-abyzov/specweave/issues/907
 ---
 
 # US-001: Audit and Categorize All Failing Tests (P0)

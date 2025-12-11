@@ -1,15 +1,11 @@
 ---
 id: US-001
 feature: FS-123
-title: Human-Readable ADR Names
+title: "Human-Readable ADR Names"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 862
-    url: https://github.com/anton-abyzov/specweave/issues/862
 ---
 
 # US-001: Human-Readable ADR Names

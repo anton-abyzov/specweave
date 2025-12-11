@@ -19,7 +19,8 @@ import { execSync } from 'child_process';
 import { ACStatusManager } from '../../../src/core/increment/ac-status-manager.js';
 
 // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
-const TEST_PROJECT_DIR = path.join(os.tmpdir(), 'specweave-test-ac-status-flow-' + Date.now());
+// ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+const TEST_PROJECT_DIR = path.join(os.tmpdir(), `specweave-test-ac-status-flow-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
 test.describe('AC Status Automation E2E Flow', () => {
   let manager: ACStatusManager;

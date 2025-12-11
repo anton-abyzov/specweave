@@ -1,6 +1,11 @@
 import * as fs from "../../../src/utils/fs-native.js";
 import path from "path";
 import { execFileNoThrow } from "../../../src/utils/execFileNoThrow.js";
+import { getGitHubAuthFromProject } from "../../../src/utils/auth-helpers.js";
+function getGhEnv() {
+  const { token } = getGitHubAuthFromProject(process.cwd());
+  return token ? { ...process.env, GH_TOKEN: token } : process.env;
+}
 async function updateIssueLivingDocs(issueNumber, livingDocs, owner, repo) {
   console.log(`\u{1F4DD} Updating GitHub issue #${issueNumber} with living docs...`);
   const currentBody = await getIssueBody(issueNumber, owner, repo);
@@ -166,7 +171,7 @@ async function getIssueBody(issueNumber, owner, repo) {
     "body",
     "-q",
     ".body"
-  ]);
+  ], { env: getGhEnv() });
   if (result.exitCode !== 0) {
     throw new Error(`Failed to get issue body: ${result.stderr}`);
   }
@@ -181,7 +186,7 @@ async function updateIssueBody(issueNumber, body, owner, repo) {
     `${owner}/${repo}`,
     "--body",
     body
-  ]);
+  ], { env: getGhEnv() });
   if (result.exitCode !== 0) {
     throw new Error(`Failed to update issue body: ${result.stderr}`);
   }
@@ -195,7 +200,7 @@ async function postComment(issueNumber, comment, owner, repo) {
     `${owner}/${repo}`,
     "--body",
     comment
-  ]);
+  ], { env: getGhEnv() });
   if (result.exitCode !== 0) {
     throw new Error(`Failed to post comment: ${result.stderr}`);
   }

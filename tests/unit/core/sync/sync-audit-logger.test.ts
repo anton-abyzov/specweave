@@ -17,7 +17,8 @@ describe('SyncAuditLogger', () => {
 
   beforeEach(async () => {
     // Create isolated test directory
-    testDir = path.join(os.tmpdir(), `specweave-audit-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `specweave-audit-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.mkdir(testDir, { recursive: true });
     await fs.mkdir(path.join(testDir, '.specweave'), { recursive: true });
 

@@ -4,6 +4,11 @@ import {
   isCustomStrategy
 } from "../../../src/core/types/sync-profile.js";
 import { execFileNoThrow } from "../../../src/utils/execFileNoThrow.js";
+import { getGitHubAuthFromProject } from "../../../src/utils/auth-helpers.js";
+function getGhEnv() {
+  const { token } = getGitHubAuthFromProject(process.cwd());
+  return token ? { ...process.env, GH_TOKEN: token } : process.env;
+}
 async function buildHierarchicalSearchQuery(containers) {
   const parts = [];
   for (const container of containers) {
@@ -150,7 +155,7 @@ async function executeSearch(query) {
     "--limit",
     "1000"
     // Max results
-  ]);
+  ], { env: getGhEnv() });
   if (result.status !== 0) {
     throw new Error(`Failed to search issues: ${result.stderr || result.stdout}`);
   }

@@ -9,16 +9,19 @@ import { WorkflowMonitor } from '../../../../src/core/cicd/workflow-monitor.js';
 import { StateManager } from '../../../../src/core/cicd/state-manager.js';
 import * as fs from '../../../../src/utils/fs-native.js';
 import * as path from 'path';
+import * as os from 'os';
 
 // Mock Octokit for integration tests
 vi.mock('@octokit/rest');
 
 describe('GitHub API Polling (Integration)', () => {
+  // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
   let testDir: string;
   let stateManager: StateManager;
 
   beforeEach(async () => {
-    testDir = path.join(__dirname, '../../tmp', `test-integration-polling-${Date.now()}`);
+    // Create unique directory in OS temp folder to avoid parallel execution race conditions
+    testDir = path.join(os.tmpdir(), `specweave-test-polling-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testDir);
     stateManager = new StateManager(testDir);
   });

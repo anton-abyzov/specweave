@@ -7,15 +7,17 @@
 import { TaskProjectSpecificGenerator } from '../../../src/core/living-docs/task-project-specific-generator.js';
 import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
+import * as os from 'os';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 describe('TaskProjectSpecificGenerator', () => {
   let generator: TaskProjectSpecificGenerator;
+  // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
   let testDir: string;
 
   beforeEach(async () => {
-    // Create temporary test directory
-    testDir = path.join(__dirname, '../../fixtures/temp-task-generator-test');
+    // Create unique directory per test to avoid parallel execution race conditions
+    testDir = path.join(os.tmpdir(), `specweave-test-task-generator-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testDir);
     generator = new TaskProjectSpecificGenerator(testDir);
   });

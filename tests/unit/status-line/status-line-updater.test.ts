@@ -23,7 +23,8 @@ describe('StatusLineUpdater', () => {
 
   beforeEach(async () => {
     // Create isolated test directory
-    testRoot = path.join(os.tmpdir(), `specweave-status-updater-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testRoot = path.join(os.tmpdir(), `specweave-status-updater-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testRoot);
 
     updater = new StatusLineUpdater(testRoot);

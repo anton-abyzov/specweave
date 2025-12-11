@@ -11,11 +11,7 @@ import { BrownfieldImporter } from '../../src/core/brownfield/importer';
 import { BrownfieldAnalyzer } from '../../src/core/brownfield/analyzer';
 import * as fs from '../../src/utils/fs-native.js';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import * as os from 'os';
 
 interface ImportBenchmarkResult {
   fileCount: number;
@@ -85,7 +81,8 @@ Notes and random information.
 }
 
 async function runImportBenchmark(fileCount: number): Promise<ImportBenchmarkResult> {
-  const testDir = path.join(__dirname, `../fixtures/perf-import-${fileCount}`);
+  // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+  const testDir = path.join(os.tmpdir(), `specweave-perf-import-${fileCount}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   const sourceDir = path.join(testDir, 'source');
   const specweaveRoot = path.join(testDir, '.specweave');
 

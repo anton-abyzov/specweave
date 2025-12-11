@@ -22,6 +22,7 @@ import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
 import { CodeValidator, type TaskValidationResult } from './CodeValidator.js';
+import { getGitHubAuthFromProject } from '../../../src/utils/auth-helpers.js';
 
 /**
  * Acceptance Criterion with completion state
@@ -74,10 +75,21 @@ export class ThreeLayerSyncManager {
   private codeValidator: CodeValidator;
   private userStoryFileCache: Map<string, string | null> = new Map();
   private projectRoot: string;
+  private token?: string;
 
   constructor(projectRoot: string = process.cwd()) {
     this.projectRoot = projectRoot;
     this.codeValidator = new CodeValidator({ projectRoot });
+    this.token = getGitHubAuthFromProject(projectRoot).token;
+  }
+
+  /**
+   * Get environment object with GH_TOKEN for gh CLI commands.
+   */
+  private getGhEnv(): NodeJS.ProcessEnv {
+    return this.token
+      ? { ...process.env, GH_TOKEN: this.token }
+      : process.env;
   }
 
   /**
@@ -334,7 +346,7 @@ export class ThreeLayerSyncManager {
       String(issueNumber),
       '--json',
       'body,state'
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.stderr) {
       throw new Error(`Failed to fetch GitHub issue: ${result.stderr}`);
@@ -765,7 +777,7 @@ export class ThreeLayerSyncManager {
       String(issueNumber),
       '--json',
       'body'
-    ]);
+    ], { env: this.getGhEnv() });
 
     const { body } = JSON.parse(result.stdout);
 
@@ -791,7 +803,7 @@ export class ThreeLayerSyncManager {
       String(issueNumber),
       '--body',
       updatedBody
-    ]);
+    ], { env: this.getGhEnv() });
   }
 
   /**
@@ -804,6 +816,6 @@ export class ThreeLayerSyncManager {
       String(issueNumber),
       '--body',
       comment
-    ]);
+    ], { env: this.getGhEnv() });
   }
 }

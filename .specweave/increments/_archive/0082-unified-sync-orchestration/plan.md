@@ -6,7 +6,7 @@ This increment implements SpecWeave's core sync infrastructure: recurring backgr
 
 ## Implementation Phases
 
-Given the scope, this work is organized into 4 phases, each kept under the 8-task limit:
+Given the scope, this work is organized into 4 phases, each kept under the 25-task soft limit:
 
 ---
 

@@ -1,15 +1,11 @@
 ---
 id: US-002
 feature: FS-131
-title: Coordinated Daemon Startup Prevention
+title: "Coordinated Daemon Startup Prevention"
 status: completed
 priority: P1
 created: 2025-12-09
 project: specweave
-external:
-  github:
-    issue: 871
-    url: https://github.com/anton-abyzov/specweave/issues/871
 ---
 
 # US-002: Coordinated Daemon Startup Prevention

@@ -1,15 +1,11 @@
 ---
 id: US-004
 feature: FS-141
-title: Update Validation Hooks
+title: "Update Validation Hooks"
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 917
-    url: https://github.com/anton-abyzov/specweave/issues/917
 ---
 
 # US-004: Update Validation Hooks

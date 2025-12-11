@@ -1,16 +1,11 @@
 ---
 id: FS-126
-title: GitHub/Bitbucket Multi-Repo Pattern Selection Parity with ADO
+title: "GitHub/Bitbucket Multi-Repo Pattern Selection Parity with ADO"
 type: feature
 status: completed
 priority: P1
 created: 2025-12-08
-lastUpdated: 2025-12-10
-external_tools:
-  github:
-    type: milestone
-    id: 48
-    url: https://github.com/anton-abyzov/specweave/milestone/48
+lastUpdated: 2025-12-11
 ---
 
 # GitHub/Bitbucket Multi-Repo Pattern Selection Parity with ADO

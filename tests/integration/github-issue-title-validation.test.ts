@@ -19,6 +19,11 @@ import { writeFileSync, mkdirSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 
+// ✅ SAFE: Helper to create unique test directory with random suffix (prevents race conditions)
+function createTestDir(): string {
+  return join(tmpdir(), `specweave-test-title-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+}
+
 describe('GitHub Issue Title Validation (ADR-0032)', () => {
   // Helper to create test user story file
   function createTestUserStory(dir: string, frontmatter: string, content: string = ''): string {
@@ -30,7 +35,7 @@ describe('GitHub Issue Title Validation (ADR-0032)', () => {
 
   describe('❌ REJECT deprecated SP- prefix', () => {
     it('should THROW on SP-US-XXX format', () => {
-      const testDir = join(tmpdir(), `test-${Date.now()}`);
+      const testDir = createTestDir();
       mkdirSync(testDir, { recursive: true });
 
       try {
@@ -48,7 +53,7 @@ describe('GitHub Issue Title Validation (ADR-0032)', () => {
     });
 
     it('should THROW on SP-FS-XXX format', () => {
-      const testDir = join(tmpdir(), `test-${Date.now()}`);
+      const testDir = createTestDir();
       mkdirSync(testDir, { recursive: true });
 
       try {
@@ -66,7 +71,7 @@ describe('GitHub Issue Title Validation (ADR-0032)', () => {
     });
 
     it('should THROW on SP-FS-XXX-specweave format', () => {
-      const testDir = join(tmpdir(), `test-${Date.now()}`);
+      const testDir = createTestDir();
       mkdirSync(testDir, { recursive: true });
 
       try {
@@ -86,7 +91,7 @@ describe('GitHub Issue Title Validation (ADR-0032)', () => {
 
   describe('❌ REJECT missing Feature ID', () => {
     it('should THROW on undefined featureId', () => {
-      const testDir = join(tmpdir(), `test-${Date.now()}`);
+      const testDir = createTestDir();
       mkdirSync(testDir, { recursive: true });
 
       try {
@@ -104,7 +109,7 @@ describe('GitHub Issue Title Validation (ADR-0032)', () => {
     });
 
     it('should THROW on empty string featureId', () => {
-      const testDir = join(tmpdir(), `test-${Date.now()}`);
+      const testDir = createTestDir();
       mkdirSync(testDir, { recursive: true });
 
       try {
@@ -124,7 +129,7 @@ describe('GitHub Issue Title Validation (ADR-0032)', () => {
 
   describe('❌ REJECT project suffix in featureId', () => {
     it('should THROW on FS-XXX-specweave format (project suffix belongs in README.md only)', () => {
-      const testDir = join(tmpdir(), `test-${Date.now()}`);
+      const testDir = createTestDir();
       mkdirSync(testDir, { recursive: true });
 
       try {
@@ -144,7 +149,7 @@ describe('GitHub Issue Title Validation (ADR-0032)', () => {
 
   describe('✅ ACCEPT correct FS-XXX format', () => {
     it('should ACCEPT FS-001 format', () => {
-      const testDir = join(tmpdir(), `test-${Date.now()}`);
+      const testDir = createTestDir();
       mkdirSync(testDir, { recursive: true });
 
       try {
@@ -161,7 +166,7 @@ describe('GitHub Issue Title Validation (ADR-0032)', () => {
     });
 
     it('should ACCEPT FS-048 format', () => {
-      const testDir = join(tmpdir(), `test-${Date.now()}`);
+      const testDir = createTestDir();
       mkdirSync(testDir, { recursive: true });
 
       try {
@@ -178,7 +183,7 @@ describe('GitHub Issue Title Validation (ADR-0032)', () => {
     });
 
     it('should ACCEPT FS-999 format (3-digit)', () => {
-      const testDir = join(tmpdir(), `test-${Date.now()}`);
+      const testDir = createTestDir();
       mkdirSync(testDir, { recursive: true });
 
       try {
@@ -197,7 +202,7 @@ describe('GitHub Issue Title Validation (ADR-0032)', () => {
 
   describe('✅ Generate correct [FS-XXX][US-YYY] title', () => {
     it('should generate [FS-048][US-001] Title format', async () => {
-      const testDir = join(tmpdir(), `test-${Date.now()}`);
+      const testDir = createTestDir();
       mkdirSync(testDir, { recursive: true });
 
       try {
@@ -245,7 +250,7 @@ created: 2025-11-22`;
     });
 
     it('should generate [FS-033][US-015] Title format (different IDs)', async () => {
-      const testDir = join(tmpdir(), `test-${Date.now()}`);
+      const testDir = createTestDir();
       mkdirSync(testDir, { recursive: true });
 
       try {
@@ -280,7 +285,7 @@ created: 2025-10-15`;
       // This is a defensive test - if the title generation logic breaks,
       // the final pattern check should catch it
 
-      const testDir = join(tmpdir(), `test-${Date.now()}`);
+      const testDir = createTestDir();
       mkdirSync(testDir, { recursive: true });
 
       try {

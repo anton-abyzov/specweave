@@ -10,7 +10,8 @@ import { ConfigManager } from '../../../src/config/ConfigManager.js';
 import type { SpecWeaveConfig } from '../../../src/config/types.js';
 
 // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
-const TEST_ROOT = path.join(os.tmpdir(), 'specweave-test-config-manager-' + Date.now());
+// ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+const TEST_ROOT = path.join(os.tmpdir(), `specweave-test-config-manager-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 const TEST_CONFIG_PATH = path.join(TEST_ROOT, '.specweave/test-config.json');
 
 describe('ConfigManager', () => {

@@ -1,15 +1,11 @@
 ---
 id: US-003
 feature: FS-139
-title: Fix lock-manager.test.ts Failures (P0 - ~20 failures)
+title: "Fix lock-manager.test.ts Failures (P0 - ~20 failures)"
 status: completed
 priority: P0
 created: 2025-12-10
 project: specweave
-external:
-  github:
-    issue: 909
-    url: https://github.com/anton-abyzov/specweave/issues/909
 ---
 
 # US-003: Fix lock-manager.test.ts Failures (P0 - ~20 failures)

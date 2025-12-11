@@ -3,7 +3,7 @@ increment: 0145-project-registry-eda-sync
 title: "Project Registry with EDA-Based Synchronization"
 type: feature
 priority: P1
-status: planning
+status: completed
 ---
 
 # Feature: Project Registry with EDA-Based Synchronization
@@ -89,11 +89,11 @@ Project information is scattered across multiple locations:
 **So that** all project information is stored in one place
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: Create `ProjectRegistry` class in `src/core/project/project-registry.ts`
-- [ ] **AC-US1-02**: Define `Project` interface with: id, name, description, techStack, team, externalMappings
-- [ ] **AC-US1-03**: Define `ExternalMapping` interface: { github?: GitHubMapping, ado?: ADOMapping, jira?: JiraMapping }
-- [ ] **AC-US1-04**: Store registry in `.specweave/state/projects.json` (not config.json)
-- [ ] **AC-US1-05**: Unit tests for ProjectRegistry CRUD operations
+- [x] **AC-US1-01**: Create `ProjectRegistry` class in `src/core/project/project-registry.ts`
+- [x] **AC-US1-02**: Define `Project` interface with: id, name, description, techStack, team, externalMappings
+- [x] **AC-US1-03**: Define `ExternalMapping` interface: { github?: GitHubMapping, ado?: ADOMapping, jira?: JiraMapping }
+- [x] **AC-US1-04**: Store registry in `.specweave/state/projects.json` (not config.json)
+- [x] **AC-US1-05**: Unit tests for ProjectRegistry CRUD operations
 
 ---
 
@@ -105,12 +105,12 @@ Project information is scattered across multiple locations:
 **So that** I can manage my project portfolio
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: `registry.addProject(project)` - adds new project, emits `ProjectCreated`
-- [ ] **AC-US2-02**: `registry.updateProject(id, updates)` - updates project, emits `ProjectUpdated`
-- [ ] **AC-US2-03**: `registry.removeProject(id)` - removes project, emits `ProjectDeleted`
-- [ ] **AC-US2-04**: `registry.getProject(id)` - returns project or null
-- [ ] **AC-US2-05**: `registry.listProjects()` - returns all projects
-- [ ] **AC-US2-06**: Validation: prevent duplicate IDs, require valid project name
+- [x] **AC-US2-01**: `registry.addProject(project)` - adds new project, emits `ProjectCreated`
+- [x] **AC-US2-02**: `registry.updateProject(id, updates)` - updates project, emits `ProjectUpdated`
+- [x] **AC-US2-03**: `registry.removeProject(id)` - removes project, emits `ProjectDeleted`
+- [x] **AC-US2-04**: `registry.getProject(id)` - returns project or null
+- [x] **AC-US2-05**: `registry.listProjects()` - returns all projects
+- [x] **AC-US2-06**: Validation: prevent duplicate IDs, require valid project name
 
 ---
 
@@ -122,12 +122,12 @@ Project information is scattered across multiple locations:
 **So that** handlers can react to project changes asynchronously
 
 **Acceptance Criteria**:
-- [ ] **AC-US3-01**: Create `ProjectEventBus` class in `src/core/project/project-event-bus.ts`
-- [ ] **AC-US3-02**: Support event types: `ProjectCreated`, `ProjectUpdated`, `ProjectDeleted`, `ProjectSyncRequested`
-- [ ] **AC-US3-03**: Support `on(eventType, handler)` for registering handlers
-- [ ] **AC-US3-04**: Support `emit(eventType, payload)` for triggering events
-- [ ] **AC-US3-05**: Handlers execute asynchronously (non-blocking)
-- [ ] **AC-US3-06**: Error handling: log errors but don't block other handlers
+- [x] **AC-US3-01**: Create `ProjectEventBus` class in `src/core/project/project-event-bus.ts`
+- [x] **AC-US3-02**: Support event types: `ProjectCreated`, `ProjectUpdated`, `ProjectDeleted`, `ProjectSyncRequested`
+- [x] **AC-US3-03**: Support `on(eventType, handler)` for registering handlers
+- [x] **AC-US3-04**: Support `emit(eventType, payload)` for triggering events
+- [x] **AC-US3-05**: Handlers execute asynchronously (non-blocking)
+- [x] **AC-US3-06**: Error handling: log errors but don't block other handlers
 
 ---
 
@@ -139,11 +139,11 @@ Project information is scattered across multiple locations:
 **So that** my GitHub issues are always correctly labeled
 
 **Acceptance Criteria**:
-- [ ] **AC-US4-01**: Create `GitHubProjectAdapter` that subscribes to project events
-- [ ] **AC-US4-02**: On `ProjectCreated`: Create `project:{id}` label in GitHub repo
-- [ ] **AC-US4-03**: On `ProjectUpdated`: Update label name/description if changed
-- [ ] **AC-US4-04**: On `ProjectDeleted`: Archive label (rename to `_archived_project:{id}`)
-- [ ] **AC-US4-05**: Store sync status in registry: `lastSynced`, `syncError`
+- [x] **AC-US4-01**: Create `GitHubProjectAdapter` that subscribes to project events
+- [x] **AC-US4-02**: On `ProjectCreated`: Create `project:{id}` label in GitHub repo
+- [x] **AC-US4-03**: On `ProjectUpdated`: Update label name/description if changed
+- [x] **AC-US4-04**: On `ProjectDeleted`: Archive label (rename to `_archived_project:{id}`)
+- [x] **AC-US4-05**: Store sync status in registry: `lastSynced`, `syncError`
 
 ---
 
@@ -155,11 +155,11 @@ Project information is scattered across multiple locations:
 **So that** my ADO work items are correctly organized
 
 **Acceptance Criteria**:
-- [ ] **AC-US5-01**: Create `ADOProjectAdapter` that subscribes to project events
-- [ ] **AC-US5-02**: On `ProjectCreated`: Create area path in ADO (if permissions allow)
-- [ ] **AC-US5-03**: On `ProjectUpdated`: Update area path name
-- [ ] **AC-US5-04**: Map registry project ID to ADO area path
-- [ ] **AC-US5-05**: Handle ADO rate limits and errors gracefully
+- [x] **AC-US5-01**: Create `ADOProjectAdapter` that subscribes to project events
+- [x] **AC-US5-02**: On `ProjectCreated`: Create area path in ADO (if permissions allow)
+- [x] **AC-US5-03**: On `ProjectUpdated`: Update area path name
+- [x] **AC-US5-04**: Map registry project ID to ADO area path
+- [x] **AC-US5-05**: Handle ADO rate limits and errors gracefully
 
 ---
 
@@ -171,11 +171,11 @@ Project information is scattered across multiple locations:
 **So that** I can track which JIRA projects correspond to SpecWeave projects
 
 **Acceptance Criteria**:
-- [ ] **AC-US6-01**: Create `JiraProjectAdapter` that subscribes to project events
-- [ ] **AC-US6-02**: Store JIRA project key mapping in registry
-- [ ] **AC-US6-03**: Validate JIRA project exists on sync
-- [ ] **AC-US6-04**: Note: JIRA projects can't be created via API (read-only mapping)
-- [ ] **AC-US6-05**: On `ProjectSyncRequested`: Verify mapping is still valid
+- [x] **AC-US6-01**: Create `JiraProjectAdapter` that subscribes to project events
+- [x] **AC-US6-02**: Store JIRA project key mapping in registry
+- [x] **AC-US6-03**: Validate JIRA project exists on sync
+- [x] **AC-US6-04**: Note: JIRA projects can't be created via API (read-only mapping)
+- [x] **AC-US6-05**: On `ProjectSyncRequested`: Verify mapping is still valid
 
 ---
 
@@ -187,11 +187,11 @@ Project information is scattered across multiple locations:
 **So that** I don't lose my project configuration
 
 **Acceptance Criteria**:
-- [ ] **AC-US7-01**: On first run, detect `config.json` projects (single or multi-project)
-- [ ] **AC-US7-02**: Create `projects.json` with migrated data
-- [ ] **AC-US7-03**: Preserve backward compatibility: read from both sources during transition
-- [ ] **AC-US7-04**: Log migration: "Migrated N projects to registry"
-- [ ] **AC-US7-05**: Don't delete config.json projects (read-only migration)
+- [x] **AC-US7-01**: On first run, detect `config.json` projects (single or multi-project)
+- [x] **AC-US7-02**: Create `projects.json` with migrated data
+- [x] **AC-US7-03**: Preserve backward compatibility: read from both sources during transition
+- [x] **AC-US7-04**: Log migration: "Migrated N projects to registry"
+- [x] **AC-US7-05**: Don't delete config.json projects (read-only migration)
 
 ---
 
@@ -203,11 +203,11 @@ Project information is scattered across multiple locations:
 **So that** I can add/list/remove projects easily
 
 **Acceptance Criteria**:
-- [ ] **AC-US8-01**: `specweave project list` - Lists all projects with sync status
-- [ ] **AC-US8-02**: `specweave project add <id> --name "Name" [--github] [--ado] [--jira]`
-- [ ] **AC-US8-03**: `specweave project remove <id>` - Removes project (with confirmation)
-- [ ] **AC-US8-04**: `specweave project sync [<id>]` - Force sync to external tools
-- [ ] **AC-US8-05**: `specweave project show <id>` - Show project details and mappings
+- [x] **AC-US8-01**: `specweave project list` - Lists all projects with sync status
+- [x] **AC-US8-02**: `specweave project add <id> --name "Name" [--github] [--ado] [--jira]`
+- [x] **AC-US8-03**: `specweave project remove <id>` - Removes project (with confirmation)
+- [x] **AC-US8-04**: `specweave project sync [<id>]` - Force sync to external tools
+- [x] **AC-US8-05**: `specweave project show <id>` - Show project details and mappings
 
 ---
 
@@ -219,10 +219,10 @@ Project information is scattered across multiple locations:
 **So that** only valid projects can be used in specs
 
 **Acceptance Criteria**:
-- [ ] **AC-US9-01**: Before sync, validate `**Project**:` field exists in registry
-- [ ] **AC-US9-02**: If project not found, prompt to add it or fail sync
-- [ ] **AC-US9-03**: Update sync to read project metadata from registry (not just ID)
-- [ ] **AC-US9-04**: Add project techStack/team to generated us-*.md (optional enhancement)
+- [x] **AC-US9-01**: Before sync, validate `**Project**:` field exists in registry
+- [x] **AC-US9-02**: If project not found, prompt to add it or fail sync
+- [x] **AC-US9-03**: Update sync to read project metadata from registry (not just ID)
+- [x] **AC-US9-04**: Add project techStack/team to generated us-*.md (optional enhancement)
 
 ---
 
@@ -234,10 +234,10 @@ Project information is scattered across multiple locations:
 **So that** I can quickly onboard existing projects
 
 **Acceptance Criteria**:
-- [ ] **AC-US10-01**: `specweave project discover --github` - List GitHub labels matching `project:*`
-- [ ] **AC-US10-02**: `specweave project discover --ado` - List ADO area paths
-- [ ] **AC-US10-03**: `specweave project discover --jira` - List JIRA projects
-- [ ] **AC-US10-04**: `specweave project import <id>` - Add discovered project to registry
+- [x] **AC-US10-01**: `specweave project discover --github` - List GitHub labels matching `project:*`
+- [x] **AC-US10-02**: `specweave project discover --ado` - List ADO area paths
+- [x] **AC-US10-03**: `specweave project discover --jira` - List JIRA projects
+- [x] **AC-US10-04**: `specweave project import <id>` - Add discovered project to registry
 
 ---
 

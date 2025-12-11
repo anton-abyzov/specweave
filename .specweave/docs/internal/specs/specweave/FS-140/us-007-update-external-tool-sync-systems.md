@@ -1,15 +1,11 @@
 ---
 id: US-007
 feature: FS-140
-title: Update External Tool Sync Systems
+title: "Update External Tool Sync Systems"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 904
-    url: https://github.com/anton-abyzov/specweave/issues/904
 ---
 
 # US-007: Update External Tool Sync Systems
@@ -42,6 +38,6 @@ external:
 
 ## Tasks
 
-- [ ] **T-014**: Update spec-identifier-detector.ts
+- [x] **T-014**: Update spec-identifier-detector.ts
 - [ ] **T-015**: Update GitHub Sync (user-story-issue-builder.ts)
 - [ ] **T-016**: Update JIRA and ADO Sync

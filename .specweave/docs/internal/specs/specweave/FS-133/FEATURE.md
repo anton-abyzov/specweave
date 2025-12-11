@@ -5,12 +5,7 @@ type: feature
 status: completed
 priority: P1
 created: 2025-12-09
-lastUpdated: 2025-12-10
-external_tools:
-  github:
-    type: milestone
-    id: 51
-    url: https://github.com/anton-abyzov/specweave/milestone/51
+lastUpdated: 2025-12-11
 ---
 
 # Process Lifecycle - Part 3: Testing & Documentation

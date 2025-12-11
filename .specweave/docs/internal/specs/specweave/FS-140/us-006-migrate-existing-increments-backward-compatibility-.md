@@ -1,15 +1,11 @@
 ---
 id: US-006
 feature: FS-140
-title: Migrate Existing Increments (Backward Compatibility)
+title: "Migrate Existing Increments (Backward Compatibility)"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 903
-    url: https://github.com/anton-abyzov/specweave/issues/903
 ---
 
 # US-006: Migrate Existing Increments (Backward Compatibility)

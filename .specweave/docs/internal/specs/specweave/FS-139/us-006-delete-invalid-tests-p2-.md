@@ -1,15 +1,11 @@
 ---
 id: US-006
 feature: FS-139
-title: Delete Invalid Tests (P2)
+title: "Delete Invalid Tests (P2)"
 status: completed
 priority: P0
 created: 2025-12-10
 project: specweave
-external:
-  github:
-    issue: 912
-    url: https://github.com/anton-abyzov/specweave/issues/912
 ---
 
 # US-006: Delete Invalid Tests (P2)

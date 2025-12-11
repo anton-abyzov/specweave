@@ -34,7 +34,8 @@ describe('Performance Benchmark: Init Time', () => {
     vi.clearAllMocks();
 
     // Create temp directory for test files
-    testDir = path.join(os.tmpdir(), `init-perf-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `init-perf-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.mkdir(testDir, { recursive: true });
     stateFile = path.join(testDir, 'import-state.json');
     errorLogFile = path.join(testDir, 'import-errors.log');

@@ -300,6 +300,11 @@ export interface GitHubConfig {
   // Pattern 1: Single repo (backward compatible - intelligent with 1 repo)
   repo?: string;
 
+  // Authentication token (v0.35.0+)
+  // Read from .env GITHUB_TOKEN or GH_TOKEN via getGitHubAuthFromProject()
+  // Passed to gh CLI via GH_TOKEN env var for all operations
+  token?: string;
+
   // Pattern 2: Multiple repos (intelligent mapping)
   // User stories auto-classified and synced to respective repos
   repos?: string[];  // ['frontend-web', 'backend-api', 'mobile-app']
