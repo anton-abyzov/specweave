@@ -22,7 +22,7 @@
 
 **Initial Increment**: `0001-project-setup` (`.specweave/increments/0001-project-setup/`)
 
-1. **Start Fresh**: Delete it, run `/specweave:increment "your-feature"`
+1. **Start Fresh**: Delete it, run `/sw:increment "your-feature"`
 2. **Customize**: Edit spec.md in the increment folder
 
 ---
@@ -56,21 +56,21 @@
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave:increment "name"` | Plan new feature (PM-led) |
-| `/specweave:do` | Execute tasks from active increment |
-| `/specweave:done 0001` | Close increment (validates gates) |
-| `/specweave:progress` | Show task completion status |
-| `/specweave:validate 0001` | Quality check before closing |
-| `/specweave:sync-tasks` | Sync tasks.md with reality |
-| `/specweave:sync-docs update` | Sync to living docs |
+| `/sw:increment "name"` | Plan new feature (PM-led) |
+| `/sw:do` | Execute tasks from active increment |
+| `/sw:done 0001` | Close increment (validates gates) |
+| `/sw:progress` | Show task completion status |
+| `/sw:validate 0001` | Quality check before closing |
+| `/sw:sync-tasks` | Sync tasks.md with reality |
+| `/sw:sync-docs update` | Sync to living docs |
 
 ### Plugin Commands (when installed)
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-github:sync 0001` | Sync increment to GitHub issue |
-| `/specweave-jira:sync 0001` | Sync to Jira |
-| `/specweave-ado:sync 0001` | Sync to Azure DevOps |
+| `/sw-github:sync 0001` | Sync increment to GitHub issue |
+| `/sw-jira:sync 0001` | Sync to Jira |
+| `/sw-ado:sync 0001` | Sync to Azure DevOps |
 
 ---
 
@@ -85,7 +85,7 @@ SpecWeave v0.28+ introduces powerful automation that **works differently** in no
 | Feature | Claude Code | Non-Claude Tools |
 |---------|-------------|------------------|
 | **Living Docs Builder** | Auto-runs after init | Use `specweave jobs --follow` to monitor |
-| **Bidirectional Sync** | Pull sync on session start | Run `/specweave:sync-pull` manually |
+| **Bidirectional Sync** | Pull sync on session start | Run `/sw:sync-pull` manually |
 | **Background Jobs** | Automatic with hooks | Monitor with `specweave jobs` CLI |
 | **EDA Hooks** | Auto-detect task completion | Manually update tasks.md + spec.md |
 
@@ -184,9 +184,9 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 # Change: - [ ] AC-US1-01 → - [x] AC-US1-01
 
 # Step 3: Sync to external tools (if configured)
-/specweave:sync-tasks
-/specweave-github:sync <increment-id>   # If GitHub enabled
-/specweave-jira:sync <increment-id>     # If Jira enabled
+/sw:sync-tasks
+/sw-github:sync <increment-id>   # If GitHub enabled
+/sw-jira:sync <increment-id>     # If Jira enabled
 ```
 
 #### 2. After User Story Completion (all ACs satisfied)
@@ -195,25 +195,25 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 # When ALL acceptance criteria for a user story are [x] checked:
 
 # Step 1: Sync to living docs
-/specweave:sync-docs update
+/sw:sync-docs update
 
 # Step 2: Update GitHub/Jira issue status
-/specweave-github:sync <increment-id>
+/sw-github:sync <increment-id>
 ```
 
 #### 3. After Increment Completion
 ```bash
 # Claude hook: PostIncrementDone
-# When running /specweave:done:
+# When running /sw:done:
 
 # Step 1: Validate all tasks complete
-/specweave:validate <increment-id>
+/sw:validate <increment-id>
 
 # Step 2: Sync living docs
-/specweave:sync-docs update
+/sw:sync-docs update
 
 # Step 3: Close external issues
-/specweave-github:close-issue <increment-id>
+/sw-github:close-issue <increment-id>
 ```
 
 #### 4. After Writing to spec.md or tasks.md
@@ -222,10 +222,10 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 # After any edit to spec.md or tasks.md:
 
 # Sync status line cache
-/specweave:sync-tasks
+/sw:sync-tasks
 
 # If external tools configured, sync progress
-/specweave-github:sync <increment-id>
+/sw-github:sync <increment-id>
 ```
 
 #### 5. Bidirectional Sync - PULL from External Tools (NEW in v0.28)
@@ -234,7 +234,7 @@ This gives you the SAME experience as Claude Code with MCP, but deterministic an
 # For non-Claude tools, run manually to catch external changes:
 
 # Pull changes from external tools (status, priority, assignee)
-/specweave:sync-pull
+/sw:sync-pull
 
 # This does:
 # 1. Query ADO/JIRA/GitHub for items changed since last sync
@@ -292,7 +292,7 @@ In non-Claude tools, commands are markdown workflows:
 
 ```bash
 # Find and read command file
-cat plugins/specweave/commands/specweave-increment.md
+cat plugins/specweave/commands/increment.md
 # Follow the workflow steps manually
 ```
 
@@ -304,9 +304,9 @@ cat plugins/specweave/commands/specweave-increment.md
 ├─────────────────────────────────────────────────────────────┤
 │ 1. Update tasks.md: [ ] → [x]                               │
 │ 2. Update spec.md ACs if satisfied: [ ] → [x]               │
-│ 3. Run: /specweave:sync-tasks                               │
-│ 4. Run: /specweave-github:sync <id>  (if GitHub configured) │
-│ 5. If all ACs for US done: /specweave:sync-docs update      │
+│ 3. Run: /sw:sync-tasks                               │
+│ 4. Run: /sw-github:sync <id>  (if GitHub configured) │
+│ 5. If all ACs for US done: /sw:sync-docs update      │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -316,10 +316,10 @@ cat plugins/specweave/commands/specweave-increment.md
 ┌─────────────────────────────────────────────────────────────┐
 │ START OF EVERY SESSION (FOR NON-CLAUDE TOOLS)               │
 ├─────────────────────────────────────────────────────────────┤
-│ 1. Pull external changes: /specweave:sync-pull              │
+│ 1. Pull external changes: /sw:sync-pull              │
 │ 2. Check job status:      specweave jobs                    │
-│ 3. Check progress:        /specweave:progress               │
-│ 4. Continue work:         /specweave:do                     │
+│ 3. Check progress:        /sw:progress               │
+│ 4. Continue work:         /sw:do                     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -353,12 +353,12 @@ cat plugins/specweave/commands/specweave-increment.md
 
 | Command | What It Does | When to Run |
 |---------|--------------|-------------|
-| `/specweave:sync-tasks` | Recalculates progress from tasks.md | After editing tasks.md |
-| `/specweave:sync-docs update` | Updates living docs from increment | After US complete |
-| `/specweave-github:sync <id>` | Syncs progress to GitHub issue | After each task |
-| `/specweave-github:close-issue <id>` | Closes GitHub issue | On increment done |
-| `/specweave-jira:sync <id>` | Syncs progress to Jira story | After each task |
-| `/specweave-ado:sync <id>` | Syncs to Azure DevOps work item | After each task |
+| `/sw:sync-tasks` | Recalculates progress from tasks.md | After editing tasks.md |
+| `/sw:sync-docs update` | Updates living docs from increment | After US complete |
+| `/sw-github:sync <id>` | Syncs progress to GitHub issue | After each task |
+| `/sw-github:close-issue <id>` | Closes GitHub issue | On increment done |
+| `/sw-jira:sync <id>` | Syncs progress to Jira story | After each task |
+| `/sw-ado:sync <id>` | Syncs to Azure DevOps work item | After each task |
 
 ### Complete Sync Flow (Non-Claude Tools)
 
@@ -379,19 +379,19 @@ TASK COMPLETED
      │
      ▼
 ┌─────────────────────────────┐
-│ 3. /specweave:sync-tasks    │
+│ 3. /sw:sync-tasks    │
 │    Updates progress cache   │
 └─────────────────────────────┘
      │
      ▼
 ┌─────────────────────────────┐
-│ 4. /specweave-github:sync   │
+│ 4. /sw-github:sync   │
 │    Updates GitHub issue     │
 └─────────────────────────────┘
      │
      ▼ (if all ACs for US done)
 ┌─────────────────────────────┐
-│ 5. /specweave:sync-docs     │
+│ 5. /sw:sync-docs     │
 │    Updates living docs      │
 └─────────────────────────────┘
 ```
@@ -529,7 +529,7 @@ AI: [Creates .specweave/increments/0001-auth/spec.md, plan.md, tasks.md]
 4. Sync to external trackers if enabled
 
 ### Closing Increment
-1. Run `/specweave:done 0001`
+1. Run `/sw:done 0001`
 2. PM validates 3 gates (tasks, tests, docs)
 3. Living docs synced automatically
 4. GitHub issue closed (if enabled)
@@ -540,9 +540,9 @@ AI: [Creates .specweave/increments/0001-auth/spec.md, plan.md, tasks.md]
 
 | Command | Plugin |
 |---------|--------|
-| `/specweave-github:sync` | GitHub sync |
-| `/specweave-jira:sync` | Jira sync |
-| `/specweave-ado:sync` | Azure DevOps |
+| `/sw-github:sync` | GitHub sync |
+| `/sw-jira:sync` | Jira sync |
+| `/sw-ado:sync` | Azure DevOps |
 
 ---
 
@@ -555,7 +555,7 @@ AI: [Creates .specweave/increments/0001-auth/spec.md, plan.md, tasks.md]
 ```bash
 # Find and read the command file
 ls plugins/specweave/commands/
-cat plugins/specweave/commands/specweave-increment.md
+cat plugins/specweave/commands/increment.md
 # Follow the workflow steps manually
 ```
 
@@ -565,9 +565,9 @@ cat plugins/specweave/commands/specweave-increment.md
 
 **Solution** (run after EVERY task in non-Claude tools):
 ```bash
-/specweave:sync-tasks                  # Update tasks.md
-/specweave:sync-docs update            # Sync living docs
-/specweave-github:sync <increment-id>  # Sync to GitHub
+/sw:sync-tasks                  # Update tasks.md
+/sw:sync-docs update            # Sync living docs
+/sw-github:sync <increment-id>  # Sync to GitHub
 ```
 
 ### Root Folder Polluted
@@ -589,7 +589,7 @@ mv *.md .specweave/increments/$CURRENT/reports/
 **Status**: [ ] pending  →  **Status**: [x] completed
 ```
 
-Or run: `/specweave:sync-tasks`
+Or run: `/sw:sync-tasks`
 
 ### Context Explosion / Crashes
 
