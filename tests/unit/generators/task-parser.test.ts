@@ -14,7 +14,8 @@ describe('Task Parser - E Suffix Support (T-029)', () => {
 
   beforeEach(() => {
     // Create isolated test directory
-    testDir = path.join(os.tmpdir(), `task-parser-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `task-parser-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     fs.mkdirSync(testDir, { recursive: true });
     tasksPath = path.join(testDir, 'tasks.md');
   });

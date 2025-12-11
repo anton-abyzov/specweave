@@ -1,15 +1,11 @@
 ---
 id: US-007
 feature: FS-132
-title: Cross-Platform Compatibility
+title: "Cross-Platform Compatibility"
 status: completed
 priority: P1
 created: 2025-12-09
 project: specweave
-external:
-  github:
-    issue: 876
-    url: https://github.com/anton-abyzov/specweave/issues/876
 ---
 
 # US-007: Cross-Platform Compatibility

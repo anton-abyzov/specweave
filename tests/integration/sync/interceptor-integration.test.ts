@@ -22,7 +22,8 @@ describe('Interceptor Integration Tests', () => {
 
   beforeEach(async () => {
     // Create isolated test directory
-    testDir = path.join(os.tmpdir(), `specweave-interceptor-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `specweave-interceptor-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     specweavePath = path.join(testDir, '.specweave');
     await fs.mkdir(specweavePath, { recursive: true });
   });

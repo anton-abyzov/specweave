@@ -7,16 +7,18 @@
 import { SpecDistributor } from '../../../../src/core/living-docs/SpecDistributor.js';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
+import * as os from 'os';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 // SKIPPED: SpecDistributor API changed - tests need update to use new copyAcsAndTasksToUserStories() method
 describe.skip('SpecDistributor - Project-Specific Tasks Integration', () => {
+  // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
   let testDir: string;
   let distributor: SpecDistributor;
 
   beforeEach(async () => {
-    // Create temporary test directory
-    testDir = path.join(__dirname, '../../fixtures/temp-distributor-tasks-test');
+    // Create unique directory in OS temp folder to avoid parallel execution race conditions
+    testDir = path.join(os.tmpdir(), `specweave-test-distributor-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testDir);
 
     // Create .specweave structure

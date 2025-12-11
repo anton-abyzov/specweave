@@ -25,7 +25,8 @@ describe('End-to-End Duplicate Prevention', () => {
 
   beforeEach(() => {
     // Create isolated test directory
-    testDir = path.join(os.tmpdir(), `duplicate-e2e-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `duplicate-e2e-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     specsDir = path.join(testDir, '.specweave', 'docs', 'internal', 'specs', 'default');
     mkdirSync(specsDir, { recursive: true });
   });

@@ -303,12 +303,15 @@ describe('SpecSyncManager.detectSpecChange', () => {
 
 describe('ACStatusManager.parseSpecForACs', () => {
   let manager: ACStatusManager;
-  const testRoot = path.join(__dirname, '../fixtures/ac-status-test');
+  // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+  let testRoot: string;
 
   beforeEach(() => {
+    // Create unique directory per test to avoid parallel execution race conditions
+    testRoot = path.join(os.tmpdir(), `specweave-test-parseSpec-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     manager = new ACStatusManager(testRoot);
 
-    // Clean up test directory
+    // Clean up test directory if it exists (shouldn't happen with unique IDs)
     if (fs.existsSync(testRoot)) {
       fs.rmSync(testRoot, { recursive: true, force: true });
     }
@@ -538,12 +541,15 @@ AC-US11-02: Missing checkbox
 
 describe('ACStatusManager.syncACStatus', () => {
   let manager: ACStatusManager;
-  const testRoot = path.join(__dirname, '../fixtures/ac-status-test');
+  // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+  let testRoot: string;
 
   beforeEach(() => {
+    // Create unique directory per test to avoid parallel execution race conditions
+    testRoot = path.join(os.tmpdir(), `specweave-test-syncAC-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     manager = new ACStatusManager(testRoot);
 
-    // Clean up test directory
+    // Clean up test directory if it exists (shouldn't happen with unique IDs)
     if (fs.existsSync(testRoot)) {
       fs.rmSync(testRoot, { recursive: true, force: true });
     }

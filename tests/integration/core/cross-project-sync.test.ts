@@ -26,7 +26,8 @@ describe('Cross-Project User Story Sync (v0.33.0)', () => {
 
   beforeEach(() => {
     // Create isolated test directory
-    testDir = path.join(os.tmpdir(), 'specweave-cross-project-' + Date.now());
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `specweave-cross-project-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     fs.mkdirSync(testDir, { recursive: true });
 
     // Initialize SpecWeave project structure

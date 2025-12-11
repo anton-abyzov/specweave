@@ -76,7 +76,8 @@ describe('ImportCoordinator Multi-Repo Support', () => {
   let testDir: string;
 
   beforeEach(() => {
-    testDir = path.join(os.tmpdir(), `import-coordinator-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `import-coordinator-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     fs.mkdirSync(testDir, { recursive: true });
     vi.clearAllMocks();
   });

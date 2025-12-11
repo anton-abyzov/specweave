@@ -22,7 +22,8 @@ describe('Duplicate Detector', () => {
 
   beforeEach(() => {
     // Create isolated test directory
-    testDir = path.join(os.tmpdir(), `duplicate-detector-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `duplicate-detector-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     specsDir = path.join(testDir, '.specweave', 'docs', 'internal', 'specs');
     fs.mkdirSync(specsDir, { recursive: true });
   });

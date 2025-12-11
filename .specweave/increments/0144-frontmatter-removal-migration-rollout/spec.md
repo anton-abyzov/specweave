@@ -1,6 +1,6 @@
 # 0144: Frontmatter Removal - Migration & Rollout (Part 2 of 2)
 
-**Status**: Planned
+**Status**: Completed
 **Priority**: P1
 **Type**: Refactor
 **Created**: 2025-12-10
@@ -40,11 +40,11 @@ This increment handles tasks T-036 through T-044 (9 tasks) from the original inc
 **So that** I have confidence everything works correctly
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: E2E increment creation test (T-036)
-- [ ] **AC-US1-02**: Single-project mode tests (T-037)
-- [ ] **AC-US1-03**: Multi-project mode tests (T-038)
-- [ ] **AC-US1-04**: Cross-project increment tests (T-039)
-- [ ] **AC-US1-05**: Fallback mechanism tests (T-040)
+- [x] **AC-US1-01**: E2E increment creation test (T-036)
+- [x] **AC-US1-02**: Single-project mode tests (T-037)
+- [x] **AC-US1-03**: Multi-project mode tests (T-038)
+- [x] **AC-US1-04**: Cross-project increment tests (T-039)
+- [x] **AC-US1-05**: Fallback mechanism tests (T-040)
 
 ---
 
@@ -57,10 +57,10 @@ This increment handles tasks T-036 through T-044 (9 tasks) from the original inc
 **So that** the rollout succeeds without disruption
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Production migration executed (T-041)
-- [ ] **AC-US2-02**: Post-migration monitoring (T-042)
-- [ ] **AC-US2-03**: Deprecated code removed (T-043)
-- [ ] **AC-US2-04**: Final documentation review (T-044)
+- [x] **AC-US2-01**: Production migration executed (T-041)
+- [x] **AC-US2-02**: Post-migration monitoring (T-042)
+- [x] **AC-US2-03**: Deprecated code removed (T-043)
+- [x] **AC-US2-04**: Final documentation review (T-044)
 
 ---
 

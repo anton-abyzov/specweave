@@ -24,7 +24,8 @@ describe('AC Coverage Validator', () => {
 
   beforeEach(async () => {
     // Create isolated test directory
-    testDir = path.join(os.tmpdir(), `ac-coverage-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `ac-coverage-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     incrementPath = path.join(testDir, '0047-test-increment');
     await fs.ensureDir(incrementPath);
   });

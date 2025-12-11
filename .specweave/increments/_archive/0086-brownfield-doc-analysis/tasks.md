@@ -3,7 +3,7 @@
 ## Overview
 
 This increment implements brownfield documentation analysis with discrepancy management.
-**Max 8 tasks** per CLAUDE.md guidelines to prevent context explosion.
+**Max 25 tasks** per CLAUDE.md guidelines (soft limit for maintainability).
 
 ---
 

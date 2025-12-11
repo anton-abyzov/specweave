@@ -10,11 +10,7 @@ import { ProjectManager } from '../../src/core/multi-project/project-manager';
 import { ConfigManager } from '../../src/core/config-manager';
 import * as fs from '../../src/utils/fs-native.js';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import * as os from 'os';
 
 interface BenchmarkResult {
   operation: string;
@@ -67,7 +63,8 @@ async function benchmark(
 async function runProjectManagerBenchmarks(): Promise<void> {
   console.log('\n=== ProjectManager Performance Benchmarks ===\n');
 
-  const testDir = path.join(__dirname, '../fixtures/perf-test');
+  // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+  const testDir = path.join(os.tmpdir(), `specweave-perf-pm-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   const specweaveRoot = path.join(testDir, '.specweave');
 
   // Setup

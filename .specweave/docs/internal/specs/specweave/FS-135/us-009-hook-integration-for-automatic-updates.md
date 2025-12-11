@@ -1,15 +1,11 @@
 ---
 id: US-009
 feature: FS-135
-title: Hook Integration for Automatic Updates
+title: "Hook Integration for Automatic Updates"
 status: completed
 priority: P1
 created: 2025-12-09
 project: specweave
-external:
-  github:
-    issue: 883
-    url: https://github.com/anton-abyzov/specweave/issues/883
 ---
 
 # US-009: Hook Integration for Automatic Updates

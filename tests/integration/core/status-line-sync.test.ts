@@ -24,7 +24,8 @@ describe('Status Line Synchronization', () => {
 
   beforeEach(async () => {
     // Create isolated test environment
-    testRoot = path.join(os.tmpdir(), `status-line-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testRoot = path.join(os.tmpdir(), `status-line-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testRoot);
 
     incrementDir = path.join(testRoot, '.specweave', 'increments', '0047-test-increment');

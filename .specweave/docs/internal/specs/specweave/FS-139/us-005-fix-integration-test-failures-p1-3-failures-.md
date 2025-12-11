@@ -1,15 +1,11 @@
 ---
 id: US-005
 feature: FS-139
-title: Fix Integration Test Failures (P1 - 3 failures)
+title: "Fix Integration Test Failures (P1 - 3 failures)"
 status: completed
 priority: P0
 created: 2025-12-10
 project: specweave
-external:
-  github:
-    issue: 911
-    url: https://github.com/anton-abyzov/specweave/issues/911
 ---
 
 # US-005: Fix Integration Test Failures (P1 - 3 failures)

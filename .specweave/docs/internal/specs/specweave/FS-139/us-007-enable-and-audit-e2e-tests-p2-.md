@@ -1,15 +1,11 @@
 ---
 id: US-007
 feature: FS-139
-title: Enable and Audit E2E Tests (P2)
+title: "Enable and Audit E2E Tests (P2)"
 status: not_started
 priority: P0
 created: 2025-12-10
 project: specweave
-external:
-  github:
-    issue: 913
-    url: https://github.com/anton-abyzov/specweave/issues/913
 ---
 
 # US-007: Enable and Audit E2E Tests (P2)

@@ -16,6 +16,7 @@ export class GitHubClientV2 {
   private owner: string;
   private repo: string;
   private fullRepo: string;
+  private token?: string;
 
   /**
    * Create GitHub client from sync profile
@@ -29,6 +30,20 @@ export class GitHubClientV2 {
     this.owner = config.owner;
     this.repo = config.repo;
     this.fullRepo = `${this.owner}/${this.repo}`;
+    this.token = config.token;
+  }
+
+  /**
+   * Get environment object with GH_TOKEN for gh CLI commands.
+   * This ensures the token from .env is passed to all gh operations,
+   * regardless of `gh auth` status.
+   *
+   * @returns Environment object with GH_TOKEN set if token available
+   */
+  private getGhEnv(): NodeJS.ProcessEnv {
+    return this.token
+      ? { ...process.env, GH_TOKEN: this.token }
+      : process.env;
   }
 
   /**
@@ -159,7 +174,7 @@ export class GitHubClientV2 {
       args.splice(4, 0, '-f', `description=${description}`);
     }
 
-    const result = await execFileNoThrow('gh', args);
+    const result = await execFileNoThrow('gh', args, { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(`Failed to create milestone: ${result.stderr || result.stdout}`);
@@ -179,7 +194,7 @@ export class GitHubClientV2 {
       `repos/${this.fullRepo}/milestones`,
       '--jq',
       `.[] | select(.title=="${title}") | {number: .number, title: .title, description: .description, state: .state}`,
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0 || !result.stdout.trim()) {
       return null;
@@ -313,7 +328,7 @@ export class GitHubClientV2 {
           `repos/${this.fullRepo}/milestones/${milestone}`,
           '--jq',
           '.title'
-        ]);
+        ], { env: this.getGhEnv() });
 
         if (msResult.exitCode === 0 && msResult.stdout.trim()) {
           args.push('--milestone', msResult.stdout.trim());
@@ -325,7 +340,7 @@ export class GitHubClientV2 {
     }
 
     // Create issue (returns URL)
-    const createResult = await execFileNoThrow('gh', args);
+    const createResult = await execFileNoThrow('gh', args, { env: this.getGhEnv() });
 
     if (createResult.exitCode !== 0) {
       throw new Error(
@@ -372,7 +387,7 @@ export class GitHubClientV2 {
       this.fullRepo,
       '--json',
       'number,title,body,state,url,labels,milestone',
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(
@@ -420,7 +435,7 @@ export class GitHubClientV2 {
       args.push('--state', 'all');
     }
 
-    const result = await execFileNoThrow('gh', args);
+    const result = await execFileNoThrow('gh', args, { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       // Search failed, return null (treat as not found)
@@ -457,7 +472,7 @@ export class GitHubClientV2 {
       this.fullRepo,
       '--body',
       newBody,
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(
@@ -480,7 +495,7 @@ export class GitHubClientV2 {
       String(issueNumber),
       '--repo',
       this.fullRepo,
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(
@@ -506,7 +521,7 @@ export class GitHubClientV2 {
       String(issueNumber),
       '--repo',
       this.fullRepo,
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(
@@ -527,7 +542,7 @@ export class GitHubClientV2 {
       this.fullRepo,
       '--body',
       comment,
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(
@@ -548,7 +563,7 @@ export class GitHubClientV2 {
       `repos/${this.fullRepo}/issues/${issueNumber}/comments`,
       '--jq',
       '.[-1] | {body: .body, author: .user.login}',  // Get last comment only
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       // If error, return null (no comments or API error)
@@ -585,7 +600,7 @@ export class GitHubClientV2 {
       args.push('--add-label', label);
     }
 
-    const result = await execFileNoThrow('gh', args);
+    const result = await execFileNoThrow('gh', args, { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(
@@ -623,7 +638,7 @@ export class GitHubClientV2 {
       'all',  // Include both open and closed
       '--limit',
       '100',
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0 || !result.stdout) {
       return [];
@@ -661,7 +676,7 @@ export class GitHubClientV2 {
       'number,title,body,state,url,labels,milestone',
       '--limit',
       '1000', // Max results
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(
@@ -747,7 +762,7 @@ export class GitHubClientV2 {
       'rate_limit',
       '--jq',
       '.rate | {remaining: .remaining, limit: .limit, reset: .reset}',
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(
@@ -862,7 +877,7 @@ export class GitHubClientV2 {
       '-f', 'direction=desc',
       '-f', 'per_page=100',
       '--jq', jqFilter,
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(
@@ -916,7 +931,7 @@ export class GitHubClientV2 {
       `repos/${this.fullRepo}/issues/${issueNumber}/events`,
       '-f', `per_page=${perPage}`,
       '--jq', '.[].{event, created_at, actor: .actor.login}',
-    ]);
+    ], { env: this.getGhEnv() });
 
     if (result.exitCode !== 0) {
       throw new Error(

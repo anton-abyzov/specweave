@@ -1,15 +1,11 @@
 ---
 id: US-005
 feature: FS-121
-title: Parent Item Recovery
+title: "Parent Item Recovery"
 status: completed
 priority: P2
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 857
-    url: https://github.com/anton-abyzov/specweave/issues/857
 ---
 
 # US-005: Parent Item Recovery

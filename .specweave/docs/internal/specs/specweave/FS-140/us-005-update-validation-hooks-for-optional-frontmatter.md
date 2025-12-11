@@ -1,15 +1,11 @@
 ---
 id: US-005
 feature: FS-140
-title: Update Validation Hooks for Optional Frontmatter
+title: "Update Validation Hooks for Optional Frontmatter"
 status: completed
 priority: P1
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 902
-    url: https://github.com/anton-abyzov/specweave/issues/902
 ---
 
 # US-005: Update Validation Hooks for Optional Frontmatter

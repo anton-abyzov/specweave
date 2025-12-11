@@ -1,15 +1,11 @@
 ---
 id: US-001
 feature: FS-131
-title: Session Registry & Process Tracking
+title: "Session Registry & Process Tracking"
 status: completed
 priority: P1
 created: 2025-12-09
 project: specweave
-external:
-  github:
-    issue: 870
-    url: https://github.com/anton-abyzov/specweave/issues/870
 ---
 
 # US-001: Session Registry & Process Tracking

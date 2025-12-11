@@ -14,7 +14,8 @@ describe('Folder Creation and ID Registry (T-042)', () => {
 
   beforeEach(async () => {
     // Create isolated test directory
-    testDir = path.join(os.tmpdir(), `test-folder-creation-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `test-folder-creation-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testDir);
 
     allocator = new FSIdAllocator(testDir);

@@ -16,7 +16,8 @@ describe('ConfigManager', () => {
   let configPath: string;
 
   beforeEach(async () => {
-    testDir = path.join(os.tmpdir(), 'config-test-' + Date.now());
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `config-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.mkdir(testDir, { recursive: true });
     await fs.mkdir(path.join(testDir, '.specweave'), { recursive: true });
     configPath = path.join(testDir, '.specweave', 'config.json');

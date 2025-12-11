@@ -29,7 +29,8 @@ test.describe('Living Docs Project Name Fix (E2E)', () => {
 
   test.beforeEach(() => {
     // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
-    testDir = path.join(os.tmpdir(), 'specweave-test-project-name-fix-' + Date.now());
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `specweave-test-project-name-fix-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     fs.mkdirSync(testDir, { recursive: true });
   });
 

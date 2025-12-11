@@ -2,7 +2,7 @@
 
 **Original Increment**: 0140-remove-frontmatter-project-field
 **Split Date**: 2025-12-10
-**Reason**: 44 tasks exceeded safe execution limit (max 8 tasks per increment)
+**Reason**: 44 tasks exceeded recommended limit (25 tasks soft limit per increment)
 
 ---
 

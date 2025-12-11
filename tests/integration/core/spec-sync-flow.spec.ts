@@ -16,7 +16,8 @@ import * as os from 'os';
 import { execSync } from 'child_process';
 
 // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
-const TEST_PROJECT_DIR = path.join(os.tmpdir(), 'specweave-test-spec-sync-' + Date.now());
+// ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+const TEST_PROJECT_DIR = path.join(os.tmpdir(), `specweave-test-spec-sync-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
 test.describe('Spec Synchronization E2E Flow', () => {
   // ✅ FIX: Save original cwd to restore after tests (prevents Claude Code crashes)

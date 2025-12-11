@@ -6,7 +6,7 @@ status: completed
 priority: P0
 created: 2025-12-09
 project: specweave
-related_projects: [acme-corp, {{PROJECT_ID}}` placeholders - no hook catches this, frontend-app, backend-api, mobile-app, shared-lib, frontend-app, backend-api, mobile-app  ← ❌ FORBIDDEN]
+related_projects: [acme-corp, per, {{PROJECT_ID}}` placeholders - no hook catches this, frontend-app, backend-api, mobile-app, shared-lib, frontend-app, backend-api, mobile-app  ← ❌ FORBIDDEN]
 ---
 
 # US-001: Pre-Planning Context Injection (P0)
@@ -34,11 +34,3 @@ related_projects: [acme-corp, {{PROJECT_ID}}` placeholders - no hook catches thi
 **Increment**: [0137-per-us-project-board-enforcement](../../../../increments/0137-per-us-project-board-enforcement/spec.md)
 
 **Tasks**: See increment tasks.md for implementation details.
-
-
-## Tasks
-
-- [x] **T-005**: Create Pre-Increment-Planning Hook
-- [x] **T-006**: Integrate Context Injection with /specweave:increment
-- [x] **T-007**: Format Context Block for Claude Consumption
-- [x] **T-022**: Integration Tests for Cross-Project Workflow

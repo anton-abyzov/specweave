@@ -1,15 +1,11 @@
 ---
 id: US-004
 feature: FS-121
-title: ADO/JIRA Cleanup-Duplicates Commands
+title: "ADO/JIRA Cleanup-Duplicates Commands"
 status: completed
 priority: P2
-created: 2025-12-10
+created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 856
-    url: https://github.com/anton-abyzov/specweave/issues/856
 ---
 
 # US-004: ADO/JIRA Cleanup-Duplicates Commands

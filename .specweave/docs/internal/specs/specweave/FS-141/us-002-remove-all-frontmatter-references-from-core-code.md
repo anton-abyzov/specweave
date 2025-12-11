@@ -1,15 +1,11 @@
 ---
 id: US-002
 feature: FS-141
-title: Remove All Frontmatter References from Core Code
+title: "Remove All Frontmatter References from Core Code"
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 915
-    url: https://github.com/anton-abyzov/specweave/issues/915
 ---
 
 # US-002: Remove All Frontmatter References from Core Code

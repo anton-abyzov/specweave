@@ -16,6 +16,17 @@ import {
   postScopeChangeComment
 } from './github-issue-updater.js';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
+import { getGitHubAuthFromProject } from '../../../src/utils/auth-helpers.js';
+
+/**
+ * Get environment object with GH_TOKEN for gh CLI commands.
+ */
+function getGhEnv(): NodeJS.ProcessEnv {
+  const { token } = getGitHubAuthFromProject(process.cwd());
+  return token
+    ? { ...process.env, GH_TOKEN: token }
+    : process.env;
+}
 
 export interface SpecChanges {
   added: string[];
@@ -289,7 +300,7 @@ async function updateIssueTitle(
     `${owner}/${repo}`,
     '--title',
     title
-  ]);
+  ], { env: getGhEnv() });
 
   if (result.exitCode !== 0) {
     console.warn(`⚠️  Could not update issue title: ${result.stderr}`);
@@ -316,7 +327,7 @@ async function updateIssueTaskChecklist(
     'body',
     '-q',
     '.body'
-  ]);
+  ], { env: getGhEnv() });
 
   if (result.exitCode !== 0) {
     throw new Error(`Failed to get issue body: ${result.stderr}`);
@@ -348,7 +359,7 @@ async function updateIssueTaskChecklist(
     `${owner}/${repo}`,
     '--body',
     updatedBody
-  ]);
+  ], { env: getGhEnv() });
 
   if (updateResult.exitCode !== 0) {
     throw new Error(`Failed to update issue body: ${updateResult.stderr}`);
@@ -372,7 +383,7 @@ async function postComment(
     `${owner}/${repo}`,
     '--body',
     comment
-  ]);
+  ], { env: getGhEnv() });
 
   if (result.exitCode !== 0) {
     throw new Error(`Failed to post comment: ${result.stderr}`);

@@ -19,7 +19,8 @@ describe('UserStoryIssueBuilder - Metadata Removal (v0.34.0)', () => {
 
   beforeEach(async () => {
     // Create temp directory for test files
-    tempDir = path.join(tmpdir(), `specweave-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    tempDir = path.join(tmpdir(), `specweave-test-metadata-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.mkdir(tempDir, { recursive: true });
 
     // Create test user story file

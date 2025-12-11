@@ -29,7 +29,8 @@ describe('Sync Metadata Management', () => {
   beforeEach(() => {
     // Create isolated test directory with .specweave/ folder
     // CRITICAL: .specweave/ must exist for updateSyncMetadata safety checks
-    testDir = path.join(os.tmpdir(), `sync-metadata-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `sync-metadata-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     fs.mkdirSync(path.join(testDir, '.specweave'), { recursive: true });
     metadataPath = path.join(testDir, SYNC_METADATA_FILE);
   });

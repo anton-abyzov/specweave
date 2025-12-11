@@ -5,7 +5,7 @@
 ### T-001: Create Project Types & Interfaces
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-02, AC-US1-03
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Create TypeScript interfaces in `src/core/project/types/project-types.ts`:
 - `Project` interface with id, name, description, techStack, team, keywords
@@ -18,7 +18,7 @@ Create TypeScript interfaces in `src/core/project/types/project-types.ts`:
 ### T-002: Implement ProjectRegistry Class
 **User Story**: US-001, US-002
 **Satisfies ACs**: AC-US1-01, AC-US1-04
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Create `src/core/project/project-registry.ts`:
 - Class with private `projects: Map<string, Project>`
@@ -31,7 +31,7 @@ Create `src/core/project/project-registry.ts`:
 ### T-003: Implement CRUD Operations
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-04, AC-US2-05, AC-US2-06
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Add methods to ProjectRegistry:
 - `addProject(project: Project): void` - validates and adds
@@ -46,7 +46,7 @@ Add methods to ProjectRegistry:
 ### T-004: Implement ProjectEventBus
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-01, AC-US3-02, AC-US3-03, AC-US3-04, AC-US3-05, AC-US3-06
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Create `src/core/project/project-event-bus.ts`:
 - EventEmitter-based implementation
@@ -60,7 +60,7 @@ Create `src/core/project/project-event-bus.ts`:
 ### T-005: Connect Registry to Event Bus
 **User Story**: US-002, US-003
 **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Modify CRUD operations to emit events:
 - `addProject()` → emit `ProjectCreated`
@@ -73,7 +73,7 @@ Modify CRUD operations to emit events:
 ### T-006: Implement Migration from config.json
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-01, AC-US7-02, AC-US7-03, AC-US7-04, AC-US7-05
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Add migration logic to ProjectRegistry:
 - On first load, check if `.specweave/state/projects.json` exists
@@ -87,7 +87,7 @@ Add migration logic to ProjectRegistry:
 ### T-007: Unit Tests for Core Registry
 **User Story**: US-001, US-002
 **Satisfies ACs**: AC-US1-05
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Create `tests/unit/core/project/project-registry.test.ts`:
 - Test CRUD operations
@@ -101,7 +101,7 @@ Create `tests/unit/core/project/project-registry.test.ts`:
 ### T-008: Unit Tests for Event Bus
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-06
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Create `tests/unit/core/project/project-event-bus.test.ts`:
 - Test handler registration
@@ -117,7 +117,7 @@ Create `tests/unit/core/project/project-event-bus.test.ts`:
 ### T-009: Implement GitHub Project Adapter
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-01, AC-US4-02, AC-US4-03, AC-US4-04, AC-US4-05
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Create `src/core/project/adapters/github-project-adapter.ts`:
 - Subscribe to ProjectCreated, ProjectUpdated, ProjectDeleted
@@ -131,7 +131,7 @@ Create `src/core/project/adapters/github-project-adapter.ts`:
 ### T-010: Implement ADO Project Adapter
 **User Story**: US-005
 **Satisfies ACs**: AC-US5-01, AC-US5-02, AC-US5-03, AC-US5-04, AC-US5-05
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Create `src/core/project/adapters/ado-project-adapter.ts`:
 - Subscribe to project events
@@ -145,7 +145,7 @@ Create `src/core/project/adapters/ado-project-adapter.ts`:
 ### T-011: Implement JIRA Project Adapter
 **User Story**: US-006
 **Satisfies ACs**: AC-US6-01, AC-US6-02, AC-US6-03, AC-US6-04, AC-US6-05
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Create `src/core/project/adapters/jira-project-adapter.ts`:
 - Subscribe to project events
@@ -159,7 +159,7 @@ Create `src/core/project/adapters/jira-project-adapter.ts`:
 ### T-012: Unit Tests for Adapters
 **User Story**: US-004, US-005, US-006
 **Satisfies ACs**: AC-US4-05, AC-US5-05, AC-US6-05
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Create adapter tests:
 - `tests/unit/core/project/adapters/github-adapter.test.ts`
@@ -176,7 +176,7 @@ Create adapter tests:
 ### T-013: Implement CLI project list
 **User Story**: US-008
 **Satisfies ACs**: AC-US8-01
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Create `src/cli/commands/project.ts`:
 - `specweave project list` command
@@ -189,7 +189,7 @@ Create `src/cli/commands/project.ts`:
 ### T-014: Implement CLI project add/remove
 **User Story**: US-008
 **Satisfies ACs**: AC-US8-02, AC-US8-03
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Add to project.ts:
 - `specweave project add <id> --name "Name" [--github] [--ado] [--jira]`
@@ -202,7 +202,7 @@ Add to project.ts:
 ### T-015: Implement CLI project sync/show
 **User Story**: US-008
 **Satisfies ACs**: AC-US8-04, AC-US8-05
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Add to project.ts:
 - `specweave project sync [<id>]` - Force sync to external tools
@@ -214,7 +214,7 @@ Add to project.ts:
 ### T-016: Integrate with Living Docs Sync
 **User Story**: US-009
 **Satisfies ACs**: AC-US9-01, AC-US9-02, AC-US9-03, AC-US9-04
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Modify `src/core/living-docs/living-docs-sync.ts`:
 - Before sync, validate `**Project**:` against registry
@@ -226,7 +226,7 @@ Modify `src/core/living-docs/living-docs-sync.ts`:
 ### T-017: E2E Tests for CLI
 **User Story**: US-008
 **Satisfies ACs**: AC-US8-01, AC-US8-02, AC-US8-03, AC-US8-04, AC-US8-05
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Create `tests/e2e/project-cli.test.ts`:
 - Test full workflow: add → list → sync → show → remove
@@ -240,7 +240,7 @@ Create `tests/e2e/project-cli.test.ts`:
 ### T-018: Implement Project Discovery
 **User Story**: US-010
 **Satisfies ACs**: AC-US10-01, AC-US10-02, AC-US10-03, AC-US10-04
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Add discovery commands:
 - `specweave project discover --github` - List `project:*` labels
@@ -253,7 +253,7 @@ Add discovery commands:
 ### T-019: Update Documentation
 **User Story**: All
 **Satisfies ACs**: Documentation
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Update documentation:
 - CLAUDE.md: Add Project Registry section
@@ -266,7 +266,7 @@ Update documentation:
 ### T-020: Integration Tests
 **User Story**: All
 **Satisfies ACs**: All
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Create integration tests:
 - Full sync flow test
@@ -279,7 +279,7 @@ Create integration tests:
 ### T-021: Final Review & Cleanup
 **User Story**: All
 **Satisfies ACs**: All
-**Status**: [ ] pending
+**Status**: [x] completed
 
 Final tasks:
 - Code review

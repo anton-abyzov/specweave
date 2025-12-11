@@ -10,6 +10,19 @@
 import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
+import { getGitHubAuthFromProject } from '../../../src/utils/auth-helpers.js';
+
+/**
+ * Get environment object with GH_TOKEN for gh CLI commands.
+ * This ensures the token from .env is passed to all gh operations,
+ * regardless of `gh auth` status.
+ */
+function getGhEnv(): NodeJS.ProcessEnv {
+  const { token } = getGitHubAuthFromProject(process.cwd());
+  return token
+    ? { ...process.env, GH_TOKEN: token }
+    : process.env;
+}
 
 export interface LivingDocsSection {
   specs: string[];
@@ -296,7 +309,7 @@ async function getIssueBody(
     'body',
     '-q',
     '.body'
-  ]);
+  ], { env: getGhEnv() });
 
   if (result.exitCode !== 0) {
     throw new Error(`Failed to get issue body: ${result.stderr}`);
@@ -322,7 +335,7 @@ async function updateIssueBody(
     `${owner}/${repo}`,
     '--body',
     body
-  ]);
+  ], { env: getGhEnv() });
 
   if (result.exitCode !== 0) {
     throw new Error(`Failed to update issue body: ${result.stderr}`);
@@ -346,7 +359,7 @@ async function postComment(
     `${owner}/${repo}`,
     '--body',
     comment
-  ]);
+  ], { env: getGhEnv() });
 
   if (result.exitCode !== 0) {
     throw new Error(`Failed to post comment: ${result.stderr}`);

@@ -23,6 +23,17 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { IncrementIssueBuilder, UserStory, Task, IncrementData } from './increment-issue-builder.js';
 import { execFileNoThrow } from '../../../src/utils/execFileNoThrow.js';
+import { getGitHubAuthFromProject } from '../../../src/utils/auth-helpers.js';
+
+/**
+ * Get environment object with GH_TOKEN for gh CLI commands.
+ */
+function getGhEnv(): NodeJS.ProcessEnv {
+  const { token } = getGitHubAuthFromProject(process.cwd());
+  return token
+    ? { ...process.env, GH_TOKEN: token }
+    : process.env;
+}
 
 interface GitHubConfig {
   owner: string;
@@ -213,7 +224,7 @@ async function createOrGetMilestone(
     const verifyResult = await execFileNoThrow('gh', [
       'api', `repos/${owner}/${repo}/milestones/${existingMilestone}`,
       '--jq', '.number'
-    ]);
+    ], { env: getGhEnv() });
     if (verifyResult.exitCode === 0) {
       return {
         number: existingMilestone,
@@ -226,7 +237,7 @@ async function createOrGetMilestone(
   const searchResult = await execFileNoThrow('gh', [
     'api', `repos/${owner}/${repo}/milestones`,
     '--jq', `.[] | select(.title | contains("${featureId}")) | .number`
-  ]);
+  ], { env: getGhEnv() });
 
   if (searchResult.exitCode === 0 && searchResult.stdout.trim()) {
     const milestoneNumber = parseInt(searchResult.stdout.trim().split('\n')[0], 10);
@@ -244,7 +255,7 @@ async function createOrGetMilestone(
     '-f', `title=${milestoneTitle}`,
     '-f', `description=Feature milestone for ${featureId}`,
     '--jq', '.number'
-  ]);
+  ], { env: getGhEnv() });
 
   if (createResult.exitCode !== 0) {
     throw new Error(`Failed to create milestone: ${createResult.stderr || createResult.stdout}`);
@@ -386,7 +397,7 @@ async function syncUserStoryIssue(
       '--repo', `${owner}/${repo}`,
       '--title', title,
       '--body', body
-    ]);
+    ], { env: getGhEnv() });
 
     if (updateResult.exitCode !== 0) {
       throw new Error(`Failed to update issue #${existingIssueNumber}: ${updateResult.stderr}`);
@@ -411,7 +422,7 @@ async function syncUserStoryIssue(
     createArgs.push('--label', labels.join(','));
   }
 
-  const createResult = await execFileNoThrow('gh', createArgs);
+  const createResult = await execFileNoThrow('gh', createArgs, { env: getGhEnv() });
 
   if (createResult.exitCode !== 0) {
     throw new Error(`Failed to create issue: ${createResult.stderr || createResult.stdout}`);

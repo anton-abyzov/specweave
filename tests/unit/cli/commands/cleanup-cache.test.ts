@@ -21,7 +21,8 @@ describe('cleanupCache', () => {
 
   beforeEach(() => {
     // Create isolated test directory
-    testDir = path.join(tmpdir(), `cleanup-cache-test-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(tmpdir(), `cleanup-cache-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     mkdirSync(testDir, { recursive: true });
 
     // Change to test directory

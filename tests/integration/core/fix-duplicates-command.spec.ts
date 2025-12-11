@@ -18,7 +18,8 @@ import { detectAllDuplicates } from '../../dist/src/core/increment/duplicate-det
 import { resolveConflict } from '../../dist/src/core/increment/conflict-resolver.js';
 
 // ✅ FIXED: Use os.tmpdir() instead of process.cwd() to prevent deletion of project .specweave/
-const TEST_ROOT = path.join(os.tmpdir(), 'test-fix-duplicates-integration-' + Date.now());
+// ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+const TEST_ROOT = path.join(os.tmpdir(), `test-fix-duplicates-integration-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 const INCREMENTS_DIR = path.join(TEST_ROOT, '.specweave', 'increments');
 const ARCHIVE_DIR = path.join(INCREMENTS_DIR, '_archive');
 const ABANDONED_DIR = path.join(INCREMENTS_DIR, '_abandoned');

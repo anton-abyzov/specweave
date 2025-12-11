@@ -66,31 +66,29 @@ You are helping the user implement a SpecWeave increment by executing tasks from
    TASK_COUNT=$(grep -c "^### T-" .specweave/increments/<id>/tasks.md)
    ```
 
-   **If TASK_COUNT > 8**:
+   **If TASK_COUNT > 25**:
    ```
-   ❌ TASK COUNT EXCEEDS LIMIT
+   ⚠️ TASK COUNT EXCEEDS SOFT LIMIT
 
-   This increment has X tasks (maximum allowed: 8)
+   This increment has X tasks (soft limit: 25)
 
-   >8 tasks = context explosion = CRASH (per CLAUDE.md rules)
+   >25 tasks = consider splitting for maintainability (per CLAUDE.md rules)
 
-   💡 REQUIRED ACTION: Split this increment into smaller chunks:
+   💡 RECOMMENDED: Split this increment OR execute phase-by-phase:
 
+   Option A - Split into separate increments:
    Pattern: 0116-feature/ → Split into:
-     • 0116-feature-part1/ (T-001 to T-004)
-     • 0117-feature-part2/ (T-005 to T-008)
-     • 0118-feature-part3/ (T-009 to T-012)
+     • 0116-feature-phase1/ (T-001 to T-008)
+     • 0117-feature-phase2/ (T-009 to T-016)
+     • 0118-feature-phase3/ (T-017 to T-025)
 
-   Commands:
-     1. Create new increment folders manually
-     2. Split tasks.md into 4-task chunks
-     3. Update spec.md to reference correct tasks
-     4. Run /sw:do on each part sequentially
+   Option B - Phase-by-phase execution (recommended for 15-25 tasks):
+     Execute Phase 1 → validate → continue to Phase 2 → ...
 
-   ⚠️ DO NOT PROCEED - splitting is MANDATORY for stability!
+   User choice required to proceed.
    ```
 
-   **If TASK_COUNT <= 8**: Proceed to next step
+   **If TASK_COUNT <= 25**: Proceed to next step
 
 5. **🚨 CRITICAL: Validate AC Presence (v0.24.0+)**:
 
