@@ -84,6 +84,34 @@ if (!process.env.DEBUG_TESTS) {
 }
 ```
 
+### 3. Suppress stdout progress bars
+
+Added stdout filtering to suppress progress bar output from tests:
+
+```typescript
+// Suppress stdout progress bars from tests
+const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+process.stdout.write = ((chunk: any, encoding?: any, callback?: any): boolean => {
+  const str = chunk.toString();
+  // Suppress progress bars and spinner output from tests
+  if (
+    str.includes('[=>') || // Progress bar patterns
+    str.includes('% [') || // Percentage with progress bar
+    str.includes('elapsed') ||
+    str.includes('remaining') ||
+    str.match(/\d+\/\d+.*\[/) || // Pattern: "5/100 ["
+    str.includes('All succeeded...') ||
+    str.includes('Fetching projects...') ||
+    str.includes('Performance Test...')
+  ) {
+    // Silently discard progress output
+    return true;
+  }
+  // Keep other stdout (vitest reporter output)
+  return originalStdoutWrite(chunk, encoding, callback);
+}) as typeof process.stdout.write;
+```
+
 ---
 
 ## Suppressed Messages
@@ -134,6 +162,20 @@ if (!process.env.DEBUG_TESTS) {
 **Test**: [tests/unit/project-registry-events.test.ts](../../../tests/unit/project-registry-events.test.ts)
 **Purpose**: Verify event system handles handler errors gracefully
 **Status**: ✅ Test validates error handling works
+
+### 6. Progress Bar Output (EXPECTED)
+
+**Messages**:
+- `All succeeded... 0/10 (0%) [>...] [0s elapsed, ~? remaining]`
+- `Performance Test... 5/100 (5%) [=>...] [0s elapsed]`
+- `Fetching projects... 10/50 (20%) [====>...] [3s elapsed, ~0s remaining]`
+
+**Tests**:
+- [tests/unit/core/progress/progress-tracker.test.ts](../../../tests/unit/core/progress/progress-tracker.test.ts)
+- [tests/unit/cli/helpers/async-project-loader.test.ts](../../../tests/unit/cli/helpers/async-project-loader.test.ts)
+
+**Purpose**: Tests verify progress bar rendering and ETA calculations work
+**Status**: ✅ Tests validate progress tracking works correctly
 
 ---
 
