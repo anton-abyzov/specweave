@@ -207,7 +207,7 @@ LEVEL 7: Enterprise
 | Module | Topics |
 |--------|--------|
 | 12. Code Quality | Linting, formatting, code review |
-| 13. Quality Gates | /specweave:validate, /specweave:qa |
+| 13. Quality Gates | /sw:validate, /sw:qa |
 | 14. Documentation | Living docs, ADRs |
 
 ### Part 5: Full-Stack Development

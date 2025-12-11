@@ -295,7 +295,7 @@ Body: We need OAuth2 authentication with Google and GitHub providers...
 
 ### Example 3: Close Increment → Close Issue
 
-**SpecWeave**: `/specweave:done 0004` (all 48 tasks complete)
+**SpecWeave**: `/sw:done 0004` (all 48 tasks complete)
 
 **GitHub**: Close issue #130 with comment:
 ```markdown

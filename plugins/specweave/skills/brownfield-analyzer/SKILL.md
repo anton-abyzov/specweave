@@ -166,7 +166,7 @@ grep -rh "^import" src/ | sort | uniq -c | sort -rn | head -10
 ## Phase 2: First Increment (1-3 days)
 - [ ] Select first feature to modify
 - [ ] Document module before touching
-- [ ] Create increment with /specweave:increment
+- [ ] Create increment with /sw:increment
 - [ ] Implement changes
 - [ ] Update docs
 
@@ -273,7 +273,7 @@ grep -r "jira" . --include="*.md" | head -5
 **3. Sync strategy**:
 ```bash
 # Option 1: Import existing Jira items
-/specweave-jira:sync --import
+/sw-jira:sync --import
 
 # Option 2: Start fresh, sync new work only
 # (Use SpecWeave as source of truth)
@@ -288,7 +288,7 @@ grep -r "jira" . --include="*.md" | head -5
 
 **Sync**:
 ```bash
-/specweave-ado:sync --import
+/sw-ado:sync --import
 ```
 
 ### GitHub Issues → SpecWeave
@@ -300,7 +300,7 @@ grep -r "jira" . --include="*.md" | head -5
 
 **Sync**:
 ```bash
-/specweave-github:sync --import
+/sw-github:sync --import
 ```
 
 ---
@@ -342,7 +342,7 @@ Week 1: Setup (2 hours)
 Week 1-2: First Increment
 - Select first feature: "Add rate limiting"
 - Document rate-limiting module
-- Create increment with /specweave:increment
+- Create increment with /sw:increment
 - Implement with TDD
 - Update docs
 

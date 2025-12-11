@@ -22,7 +22,7 @@ Import existing documentation from Notion exports, Confluence, GitHub Wiki, or a
 ## Usage
 
 ```bash
-/specweave:import-docs <source-path> [options]
+/sw:import-docs <source-path> [options]
 ```
 
 ### Options
@@ -40,7 +40,7 @@ Import existing documentation from Notion exports, Confluence, GitHub Wiki, or a
 # Export Notion workspace to /tmp/notion-export/
 # Then import:
 
-/specweave:import-docs /tmp/notion-export/ --source=notion
+/sw:import-docs /tmp/notion-export/ --source=notion
 
 # Result:
 # 📊 Analysis Results:
@@ -55,7 +55,7 @@ Import existing documentation from Notion exports, Confluence, GitHub Wiki, or a
 ### Example 2: Confluence Export
 
 ```bash
-/specweave:import-docs /path/to/confluence/ --source=confluence --project=web-app
+/sw:import-docs /path/to/confluence/ --source=confluence --project=web-app
 
 # Imports to: projects/web-app/specs/, modules/, team/, legacy/confluence/
 ```
@@ -63,7 +63,7 @@ Import existing documentation from Notion exports, Confluence, GitHub Wiki, or a
 ### Example 3: Dry Run (Preview)
 
 ```bash
-/specweave:import-docs /tmp/docs/ --source=custom --dry-run
+/sw:import-docs /tmp/docs/ --source=custom --dry-run
 
 # Shows classification without importing files
 # Use this to preview results before actual import
@@ -72,7 +72,7 @@ Import existing documentation from Notion exports, Confluence, GitHub Wiki, or a
 ### Example 4: Preserve Structure
 
 ```bash
-/specweave:import-docs /path/to/wiki/ --source=wiki --preserve-structure
+/sw:import-docs /path/to/wiki/ --source=wiki --preserve-structure
 
 # Preserves original folder structure:
 # legacy/wiki/engineering/backend/auth.md
@@ -203,7 +203,7 @@ Import history is tracked in `.specweave/config.json`:
 
 ## See Also
 
-- `/specweave:init-multiproject` - Set up multi-project mode first
+- `/sw:init-multiproject` - Set up multi-project mode first
 - [Brownfield Import Guide](https://docs.spec-weave.com/guides/brownfield-import)
 - [Migration Best Practices](https://docs.spec-weave.com/guides/migration-best-practices)
 

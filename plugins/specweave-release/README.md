@@ -34,13 +34,13 @@ The **specweave-release** plugin provides end-to-end release management capabili
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-release:init` | Initialize or analyze release strategy |
-| `/specweave-release:align` | Align versions across repositories |
-| `/specweave-release:rc` | Manage release candidates |
-| `/specweave-release:coordinate` | Plan coordinated multi-repo releases |
-| `/specweave-release:publish` | Execute releases (single or multi-repo) |
-| `/specweave-release:rollback` | Rollback failed releases |
-| `/specweave-release:matrix` | Show/update version matrix |
+| `/sw-release:init` | Initialize or analyze release strategy |
+| `/sw-release:align` | Align versions across repositories |
+| `/sw-release:rc` | Manage release candidates |
+| `/sw-release:coordinate` | Plan coordinated multi-repo releases |
+| `/sw-release:publish` | Execute releases (single or multi-repo) |
+| `/sw-release:rollback` | Rollback failed releases |
+| `/sw-release:matrix` | Show/update version matrix |
 
 ## Installation
 
@@ -61,7 +61,7 @@ npx specweave init .
 
 ```bash
 # 1. Initialize release strategy
-/specweave-release:init
+/sw-release:init
 
 # Answer questions:
 # - How many repositories? [3]
@@ -73,23 +73,23 @@ npx specweave init .
 # → Recommends: Umbrella versioning strategy
 
 # 2. Create first release
-/specweave:increment "0001-v1-0-0-release"
+/sw:increment "0001-v1-0-0-release"
 
 # 3. Align versions
-/specweave-release:align
+/sw-release:align
 
 # 4. Create RC
-/specweave-release:rc create 1.0.0
+/sw-release:rc create 1.0.0
 
 # 5. Test and promote
-/specweave-release:rc promote 1.0.0-rc.3
+/sw-release:rc promote 1.0.0-rc.3
 ```
 
 ### Brownfield Project (Existing Release Process)
 
 ```bash
 # 1. Analyze existing release patterns
-/specweave-release:init
+/sw-release:init
 
 # → Detects:
 #   - Git tags (v1.0.0, v1.1.0, ...)
@@ -101,9 +101,9 @@ npx specweave init .
 # → Documents: Existing process + recommendations
 
 # 2. Start using SpecWeave for next release
-/specweave:increment "0010-v2-0-0-release"
-/specweave-release:align
-/specweave-release:rc create 2.0.0
+/sw:increment "0010-v2-0-0-release"
+/sw-release:align
+/sw-release:rc create 2.0.0
 ```
 
 ## Use Cases
@@ -117,24 +117,24 @@ npx specweave init .
 # Goal: Release v2.0.0 (breaking changes)
 
 # 1. Initialize strategy (if not done)
-/specweave-release:init
+/sw-release:init
 
 # 2. Create release increment
-/specweave:increment "0050-v2-release"
+/sw:increment "0050-v2-release"
 
 # 3. Align version (analyze commits → suggest v2.0.0)
-/specweave-release:align
+/sw-release:align
 
 # 4. Create RC
-/specweave-release:rc create 2.0.0
+/sw-release:rc create 2.0.0
 # → v2.0.0-rc.1 → staging → testing
 
 # 5. Iterate if needed
-# Fix bugs → /specweave-release:rc iterate 2.0.0-rc.1
+# Fix bugs → /sw-release:rc iterate 2.0.0-rc.1
 # → v2.0.0-rc.2
 
 # 6. Promote to production
-/specweave-release:rc promote 2.0.0-rc.3
+/sw-release:rc promote 2.0.0-rc.3
 # → v2.0.0 → gradual rollout
 ```
 
@@ -153,10 +153,10 @@ npx specweave init .
 # Goal: Product v5.0.0 (breaking changes in 3 services)
 
 # 1. Create product release increment
-/specweave:increment "0060-product-v5-release"
+/sw:increment "0060-product-v5-release"
 
 # 2. Analyze and align versions
-/specweave-release:align
+/sw-release:align
 # → Suggests:
 #   frontend: v5.0.0 (breaking)
 #   backend: v2.9.0 (feature)
@@ -165,7 +165,7 @@ npx specweave init .
 #   shared-lib: v2.0.0 (breaking)
 
 # 3. Create coordinated RC
-/specweave-release:rc create-multi product-v5.0.0
+/sw-release:rc create-multi product-v5.0.0
 # → Tags all repos with rc.1
 
 # 4. Test cross-service
@@ -173,7 +173,7 @@ npx specweave init .
 # → E2E tests (cross-service flows)
 
 # 5. Promote when ready
-/specweave-release:rc promote-multi product-v5.0.0-rc.2
+/sw-release:rc promote-multi product-v5.0.0-rc.2
 # → Wave-by-wave deployment
 # → Updates version matrix
 ```
@@ -186,12 +186,12 @@ npx specweave init .
 # Current: 12 packages with different versions
 
 # 1. Initialize strategy (detects Lerna)
-/specweave-release:init
+/sw-release:init
 # → Detects: Lerna independent mode
 # → Documents: Current approach
 
 # 2. Align versions (only changed packages)
-/specweave-release:align
+/sw-release:align
 # → Analyzes commits per package
 # → Suggests bumps for changed packages only
 # → Validates inter-package dependencies
@@ -413,7 +413,7 @@ Recommendations:
 
 ```bash
 # Tag all repos with same RC iteration
-/specweave-release:rc create-multi product-v3.0.0
+/sw-release:rc create-multi product-v3.0.0
 
 # Creates:
 # - frontend: v5.0.0-rc.1
@@ -425,7 +425,7 @@ Recommendations:
 # Run E2E tests
 
 # Found bugs → iterate
-/specweave-release:rc iterate-multi product-v3.0.0-rc.1
+/sw-release:rc iterate-multi product-v3.0.0-rc.1
 
 # Creates:
 # - frontend: v5.0.0-rc.2 (bug fixed)
@@ -433,7 +433,7 @@ Recommendations:
 # - backend: v3.0.0-rc.1 (unchanged)
 
 # All pass → promote
-/specweave-release:rc promote-multi product-v3.0.0-rc.2
+/sw-release:rc promote-multi product-v3.0.0-rc.2
 ```
 
 ### Hotfix Workflow
@@ -471,13 +471,13 @@ git merge hotfix/v2.0.1
 **Issue**: RC testing failed
 ```bash
 # Solution: Fix issues, iterate to next RC
-/specweave-release:rc iterate 1.0.0-rc.1
+/sw-release:rc iterate 1.0.0-rc.1
 ```
 
 **Issue**: Canary deployment showing errors
 ```bash
 # Solution: Rollback immediately
-/specweave-release:rc rollback 1.0.0-rc.3
+/sw-release:rc rollback 1.0.0-rc.3
 ```
 
 ## Examples

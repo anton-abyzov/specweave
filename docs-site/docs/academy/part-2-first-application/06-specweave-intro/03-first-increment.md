@@ -53,9 +53,9 @@ Initializing SpecWeave...
 SpecWeave initialized successfully!
 
 Next steps:
-  1. Create an increment: /specweave:increment "Your feature"
-  2. Execute tasks: /specweave:do
-  3. Complete: /specweave:done <id>
+  1. Create an increment: /sw:increment "Your feature"
+  2. Execute tasks: /sw:do
+  3. Complete: /sw:done <id>
 ```
 
 ---
@@ -65,7 +65,7 @@ Next steps:
 Let's rebuild our task tracker, but this time with SpecWeave:
 
 ```bash
-/specweave:increment "Task Tracker CLI - a command-line tool to add, list, complete, and delete tasks with JSON file storage"
+/sw:increment "Task Tracker CLI - a command-line tool to add, list, complete, and delete tasks with JSON file storage"
 ```
 
 Watch the AI agents work:
@@ -350,7 +350,7 @@ Scenario: Add task with empty title
 Now, implement the plan:
 
 ```bash
-/specweave:do
+/sw:do
 ```
 
 Watch the implementation happen:
@@ -410,7 +410,7 @@ node task.js list
 Validate and finalize:
 
 ```bash
-/specweave:done 0001
+/sw:done 0001
 ```
 
 ```

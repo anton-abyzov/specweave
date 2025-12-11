@@ -29,7 +29,7 @@ graph LR
 ## The Validation Command
 
 ```bash
-/specweave:validate 0001
+/sw:validate 0001
 ```
 
 This runs comprehensive checks on your increment.
@@ -48,7 +48,7 @@ All tasks in tasks.md must be marked complete.
 
 **If failing:**
 ```bash
-/specweave:progress 0001
+/sw:progress 0001
 # See which tasks are incomplete
 ```
 
@@ -119,7 +119,7 @@ npm run format
 ### Quick Validation
 
 ```bash
-/specweave:validate 0001 --quick
+/sw:validate 0001 --quick
 ```
 
 - Task completion
@@ -129,7 +129,7 @@ npm run format
 ### Full Validation
 
 ```bash
-/specweave:validate 0001
+/sw:validate 0001
 ```
 
 - All quick checks
@@ -140,7 +140,7 @@ npm run format
 ### AI Quality Assessment
 
 ```bash
-/specweave:qa 0001
+/sw:qa 0001
 ```
 
 - All validation checks
@@ -189,7 +189,7 @@ Status: READY TO SHIP
 - Status: PASS
 
 ## Conclusion
-All validation gates passed. Ready for /specweave:done.
+All validation gates passed. Ready for /sw:done.
 ```
 
 ---
@@ -322,7 +322,7 @@ jobs:
 
 ```bash
 # All checks passed? Close the increment
-/specweave:done 0001
+/sw:done 0001
 ```
 
 This:

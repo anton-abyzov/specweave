@@ -51,13 +51,13 @@ Sprint 24 (Nov 13 - Nov 27, 2025)
 
 ```bash
 # 1. Plan sprint
-/specweave:sprint create 24 --start "2025-11-13" --end "2025-11-27"
+/sw:sprint create 24 --start "2025-11-13" --end "2025-11-27"
 
 # 2. Link increments to sprint
-/specweave:sprint link 24 --increments 0018,0019,0020,0021
+/sw:sprint link 24 --increments 0018,0019,0020,0021
 
 # 3. Track progress during sprint
-/specweave:sprint status 24
+/sw:sprint status 24
 
 # Output:
 📊 Sprint 24 Status
@@ -85,10 +85,10 @@ Next Actions:
   4. Reduce scope on 0021 OR roll to Sprint 25
 
 # 4. Create release at sprint end
-/specweave:release create v1.24.0 --sprint 24
+/sw:release create v1.24.0 --sprint 24
 
 # 5. Deploy release to prod
-/specweave:release deploy v1.24.0 --environment prod
+/sw:release deploy v1.24.0 --environment prod
 ```
 
 ---
@@ -110,10 +110,10 @@ November 2025 Release
 
 ```bash
 # 1. Plan monthly release
-/specweave:release plan v1.11.0 --month November --year 2025
+/sw:release plan v1.11.0 --month November --year 2025
 
 # 2. Track increments throughout month
-/specweave:release status v1.11.0
+/sw:release status v1.11.0
 
 # Output:
 📦 Release v1.11.0 Status
@@ -149,10 +149,10 @@ Recommendations:
   ✓ Allocate extra QA time for 0022 (high complexity)
 
 # 3. Finalize release scope (cut features if needed)
-/specweave:release scope v1.11.0 --cut 0024,0025
+/sw:release scope v1.11.0 --cut 0024,0025
 
 # 4. Deploy to prod
-/specweave:release deploy v1.11.0 --environment prod --date "2025-11-30 18:00:00 UTC"
+/sw:release deploy v1.11.0 --environment prod --date "2025-11-30 18:00:00 UTC"
 ```
 
 ---
@@ -172,10 +172,10 @@ Week of Nov 13-19, 2025
 
 ```bash
 # 1. Complete increment
-/specweave:done 0018
+/sw:done 0018
 
 # 2. Create release immediately
-/specweave:release create v1.23.1 --increments 0018 --deploy-now
+/sw:release create v1.23.1 --increments 0018 --deploy-now
 
 # Result:
 ✅ Release v1.23.1 created
@@ -213,16 +213,16 @@ v1.25.0 → v2.0.0   (MAJOR: API v2, breaking changes)
 
 ```bash
 # Increment PATCH version (bug fix)
-/specweave:release bump patch
+/sw:release bump patch
 
 # Increment MINOR version (new feature)
-/specweave:release bump minor
+/sw:release bump minor
 
 # Increment MAJOR version (breaking change)
-/specweave:release bump major
+/sw:release bump major
 
 # Auto-detect based on increments
-/specweave:release bump auto
+/sw:release bump auto
 
 # Auto-detect logic:
 # - If any increment has "breaking: true" → MAJOR
@@ -238,15 +238,15 @@ v1.25.0 → v2.0.0   (MAJOR: API v2, breaking changes)
 
 ```bash
 # 1. Create release
-/specweave:release create v1.24.0 --sprint 24
+/sw:release create v1.24.0 --sprint 24
 
 # 2. Add increments to release
-/specweave:release add-increment v1.24.0 0018
-/specweave:release add-increment v1.24.0 0019
-/specweave:release add-increment v1.24.0 0020
+/sw:release add-increment v1.24.0 0018
+/sw:release add-increment v1.24.0 0019
+/sw:release add-increment v1.24.0 0020
 
 # 3. Review dependencies
-/specweave:release dependencies v1.24.0
+/sw:release dependencies v1.24.0
 
 # Output:
 🔗 Release v1.24.0 Dependencies
@@ -288,7 +288,7 @@ Recommendations:
 
 ```bash
 # Track progress daily
-/specweave:release status v1.24.0 --daily
+/sw:release status v1.24.0 --daily
 
 # Output (Day 3):
 📊 Release v1.24.0 Status (Day 3/14)
@@ -319,10 +319,10 @@ Forecast: ✅ ON TRACK for Nov 27 release
 
 ```bash
 # Promote release to QA
-/specweave:release promote v1.24.0 --to qa
+/sw:release promote v1.24.0 --to qa
 
 # Run QA tests
-/specweave:release test v1.24.0 --environment qa
+/sw:release test v1.24.0 --environment qa
 
 # Output:
 🧪 Release v1.24.0 QA Test Results
@@ -364,14 +364,14 @@ Next Actions:
 
 ```bash
 # Promote to UAT
-/specweave:release promote v1.24.0 --to uat
+/sw:release promote v1.24.0 --to uat
 
 # Request stakeholder approval
-/specweave:release request-approval v1.24.0 \
+/sw:release request-approval v1.24.0 \
   --approvers jane.smith@company.com,john.doe@company.com
 
 # Track approval status
-/specweave:release approval-status v1.24.0
+/sw:release approval-status v1.24.0
 
 # Output:
 ✅ Release v1.24.0 Approval Status
@@ -400,7 +400,7 @@ Next Actions:
 
 ```bash
 # Create change request (if required)
-/specweave:release change-request v1.24.0 \
+/sw:release change-request v1.24.0 \
   --title "Deploy Release v1.24.0" \
   --description "OAuth integration, user profiles, email notifications" \
   --change-window "2025-11-27 18:00-20:00 UTC" \
@@ -408,7 +408,7 @@ Next Actions:
   --rollback-plan "Revert to v1.23.0 (blue-green swap)"
 
 # Deploy to production
-/specweave:release deploy v1.24.0 \
+/sw:release deploy v1.24.0 \
   --environment prod \
   --change-request CHG-2024-11-001 \
   --health-check \
@@ -461,7 +461,7 @@ Communication:
 ### Command: Release Dashboard
 
 ```bash
-/specweave:release dashboard --period last-quarter
+/sw:release dashboard --period last-quarter
 
 # Output:
 📊 Release Dashboard (Q4 2025)
@@ -520,7 +520,7 @@ Recommendations:
 
 ```bash
 # Generate SOX audit report
-/specweave:release audit v1.24.0 --compliance sox
+/sw:release audit v1.24.0 --compliance sox
 
 # Output:
 📋 SOX Compliance Audit Report: Release v1.24.0

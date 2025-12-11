@@ -1,4 +1,4 @@
-# /specweave-plugin-dev:plugin-test
+# /sw-plugin-dev:plugin-test
 
 Test Claude Code plugins for correctness, activation, and best practices compliance.
 

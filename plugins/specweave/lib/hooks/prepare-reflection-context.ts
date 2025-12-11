@@ -171,7 +171,7 @@ if (require.main === module) {
 
   if (contextFile) {
     console.log(`Reflection context prepared: ${contextFile}`);
-    console.log('✨ Reflection ready. Run /specweave:reflect to analyze your work.');
+    console.log('✨ Reflection ready. Run /sw:reflect to analyze your work.');
   } else {
     console.log('Reflection skipped (disabled or no changes).');
   }

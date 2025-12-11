@@ -471,14 +471,14 @@ my-ssr-app/
 
 ```mermaid
 graph TB
-    A[/specweave:increment "SSR Product Pages"] --> B[PM: Define Data Requirements]
+    A[/sw:increment "SSR Product Pages"] --> B[PM: Define Data Requirements]
     B --> C[Architect: Design SSR Strategy]
-    C --> D[/specweave:do]
+    C --> D[/sw:do]
     D --> E[Implement getServerSideProps]
     E --> F[Fetch Data on Server]
     F --> G[Test SEO]
     G --> H[Optimize Performance]
-    H --> I[/specweave:done]
+    H --> I[/sw:done]
 
     style B fill:#7c3aed
     style C fill:#8b5cf6

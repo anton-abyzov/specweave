@@ -170,9 +170,9 @@ describe('validatePassword', () => {
 
 SpecWeave enforces testing through quality gates.
 
-### `/specweave:validate` Checks
+### `/sw:validate` Checks
 
-When you run `/specweave:validate`, SpecWeave verifies:
+When you run `/sw:validate`, SpecWeave verifies:
 
 ```
 Validating increment 0001-user-auth...
@@ -195,7 +195,7 @@ Validating increment 0001-user-auth...
    ✓ Overall: 85% (threshold: 70%)
 ```
 
-### `/specweave:done` Requirements
+### `/sw:done` Requirements
 
 You **cannot** complete an increment without:
 - ✓ All tasks marked complete
@@ -205,7 +205,7 @@ You **cannot** complete an increment without:
 - ✓ All tests passing
 
 ```
-/specweave:done 0001
+/sw:done 0001
 
 ❌ Cannot complete increment:
    - Task T-008 missing test file
@@ -253,7 +253,7 @@ Code (src/validators/password.ts → validatePassword)
 ### Step 1: Create Increment
 
 ```
-/specweave:increment "User registration with password validation"
+/sw:increment "User registration with password validation"
 ```
 
 ### Step 2: Review BDD Scenarios in tasks.md
@@ -306,17 +306,17 @@ Clean up the code while tests keep passing.
 ### Step 6: Mark Task Complete
 
 ```
-/specweave:do
+/sw:do
 → T-003 complete ✓
 ```
 
 ### Step 7: Validate and Done
 
 ```
-/specweave:validate 0001
+/sw:validate 0001
 → All checks passed ✓
 
-/specweave:done 0001
+/sw:done 0001
 → Increment complete ✓
 ```
 

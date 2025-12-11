@@ -23,7 +23,7 @@ Core hooks automate SpecWeave's fundamental workflows:
 **Triggers**: BEFORE user's command executes (prompt-based hook)
 
 **Actions** (Zero-Token Validation):
-1. **Discipline enforcement** - Blocks `/specweave:increment` if incomplete increments exist
+1. **Discipline enforcement** - Blocks `/sw:increment` if incomplete increments exist
 2. **Context injection** - Adds active increment status to every prompt
 3. **Command suggestions** - Guides users to SpecWeave commands
 
@@ -199,7 +199,7 @@ Hooks are configured via `.specweave/config.json` (created automatically during 
 - `external_tracker_sync: true` - Syncs progress to GitHub/Jira/ADO (requires sync profile configured)
 
 **post-increment-planning**:
-- `auto_create_issue: true` - Automatically creates GitHub issue after `/specweave:increment` completes
+- `auto_create_issue: true` - Automatically creates GitHub issue after `/sw:increment` completes
 
 ### Sound Notifications
 
@@ -260,7 +260,7 @@ bash -n plugins/specweave-github/hooks/post-task-completion.sh
 ```
 
 ### Test Integrated Workflow
-1. Create increment: `/specweave:increment "test feature"`
+1. Create increment: `/sw:increment "test feature"`
 2. Complete a task (via TodoWrite)
 3. Check logs: `tail -f .specweave/logs/hooks-debug.log`
 4. Verify hook execution in logs
@@ -405,8 +405,8 @@ bash -n plugins/specweave-ado/hooks/post-task-completion.sh
 ```
 
 **Test integrated workflow**:
-1. Create increment: `/specweave:increment "test"`
-2. Create GitHub issue: `/specweave-github:create-issue 0001`
+1. Create increment: `/sw:increment "test"`
+2. Create GitHub issue: `/sw-github:create-issue 0001`
 3. Complete a task (TodoWrite)
 4. Check logs: `tail -f .specweave/logs/hooks-debug.log`
 5. Verify:

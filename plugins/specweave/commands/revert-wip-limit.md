@@ -19,7 +19,7 @@ This command reverts it back to the original value (usually 2).
 ## Usage
 
 ```bash
-/specweave:revert-wip-limit
+/sw:revert-wip-limit
 ```
 
 ## What Gets Reverted
@@ -37,10 +37,10 @@ bash plugins/specweave/hooks/lib/migrate-increment-work.sh adjust-wip 3
 # 2. Work on both increments (20% productivity cost)
 
 # 3. Complete one increment
-/specweave:done 0026
+/sw:done 0026
 
 # 4. Revert WIP limit back to 2
-/specweave:revert-wip-limit
+/sw:revert-wip-limit
 ```
 
 ## Output

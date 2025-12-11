@@ -1,5 +1,5 @@
 /**
- * Type definitions for /specweave:plan command
+ * Type definitions for /sw:plan command
  *
  * Based on ADR-0046: Plan Command Architecture
  * Part of increment 0039: Ultra-Smart Next Command

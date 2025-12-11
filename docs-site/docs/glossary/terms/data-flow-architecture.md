@@ -41,15 +41,15 @@ SpecWeave uses a **hub-and-spoke architecture** with Living Docs at the center. 
 When you create and work on increments in SpecWeave:
 
 ```
-/specweave:increment "User Auth"
+/sw:increment "User Auth"
      ↓
 spec.md, plan.md, tasks.md  (increment)
      ↓
-/specweave:sync-docs update
+/sw:sync-docs update
      ↓
 Living Docs (.specweave/docs/)
      ↓
-/specweave:sync-progress  OR  hooks
+/sw:sync-progress  OR  hooks
      ↓
 GitHub Issue / JIRA Epic / ADO Work Item
 ```
@@ -68,13 +68,13 @@ When you import work items from external tools:
 ```
 GitHub Issues / JIRA Epics / ADO Work Items
      ↓
-/specweave:import-external
+/sw:import-external
      ↓
 Living Docs with E-suffix (US-001E, FS-042E)
      ↓
 READ-ONLY REFERENCE (not implemented yet!)
      ↓
-/specweave:increment "Implement US-001E"  ← Manual!
+/sw:increment "Implement US-001E"  ← Manual!
      ↓
 spec.md references the external item
 ```
@@ -110,7 +110,7 @@ This is called [Split-Source Sync](/docs/glossary/terms/split-source-sync).
 **Wrong**. Import creates Living Docs references only.
 
 ```bash
-/specweave:import-external --github-only
+/sw:import-external --github-only
 
 # Creates:
 # .specweave/docs/internal/specs/FS-042E/us-001e-login.md  ← Reference!
@@ -141,11 +141,11 @@ Content edits in GitHub do NOT sync back to SpecWeave.
 
 | Flow | Command | What It Does |
 |------|---------|--------------|
-| Publish | `/specweave:increment` | Create local increment |
-| Publish | `/specweave:sync-docs update` | Push to living docs |
-| Publish | `/specweave:sync-progress` | Push to external tools |
-| Import | `/specweave:import-external` | Pull from external as references |
-| Import | Manual `/specweave:increment` | Create increment to implement |
+| Publish | `/sw:increment` | Create local increment |
+| Publish | `/sw:sync-docs update` | Push to living docs |
+| Publish | `/sw:sync-progress` | Push to external tools |
+| Import | `/sw:import-external` | Pull from external as references |
+| Import | Manual `/sw:increment` | Create increment to implement |
 
 ---
 
@@ -154,4 +154,4 @@ Content edits in GitHub do NOT sync back to SpecWeave.
 - [Living Docs](/docs/glossary/terms/living-docs) - The central hub
 - [Split-Source Sync](/docs/glossary/terms/split-source-sync) - Content out, status in
 - [Increments](/docs/glossary/terms/increments) - Units of work
-- [/specweave:import-external](/docs/glossary/terms/specweave-import-external) - Import command
+- [/sw:import-external](/docs/glossary/terms/specweave-import-external) - Import command

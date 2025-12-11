@@ -454,7 +454,7 @@ When using multi-project mode, select templates per project:
 
 ```bash
 # Switch to backend project
-/specweave:switch-project backend-api
+/sw:switch-project backend-api
 
 # Run init (will prompt for templates)
 specweave init
@@ -465,7 +465,7 @@ specweave init
 ❌ frontend-react (skip - not backend)
 
 # Switch to frontend project
-/specweave:switch-project frontend-app
+/sw:switch-project frontend-app
 
 # Run init
 specweave init

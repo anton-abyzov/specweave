@@ -351,16 +351,16 @@ Refactor when tests are green!
 
 ## TDD with SpecWeave
 
-SpecWeave's `/specweave:tdd-cycle` automates TDD:
+SpecWeave's `/sw:tdd-cycle` automates TDD:
 
 ```bash
 # Start TDD cycle
-/specweave:tdd-cycle
+/sw:tdd-cycle
 
 # Or step by step:
-/specweave:tdd-red     # Write failing tests
-/specweave:tdd-green   # Implement to pass
-/specweave:tdd-refactor # Clean up code
+/sw:tdd-red     # Write failing tests
+/sw:tdd-green   # Implement to pass
+/sw:tdd-refactor # Clean up code
 ```
 
 ### Tasks with Embedded Tests

@@ -107,10 +107,10 @@ async function syncLivingDocs(incrementId) {
       } catch (importErr) {
         // translate-file.js may not be compiled yet
         console.log(`   \u2139\uFE0F  Translation module not available (run 'npm run build')`);
-        console.log(`   \u{1F4A1} Tip: Run /specweave:translate to translate manually`);
+        console.log(`   \u{1F4A1} Tip: Run /sw:translate to translate manually`);
       }
     } else if (targetLang !== 'en' && !translationEnabled) {
-      console.log(`   \u2139\uFE0F  Translation disabled (use /specweave:translate manually)`);
+      console.log(`   \u2139\uFE0F  Translation disabled (use /sw:translate manually)`);
     }
 
     // ========================================================================
@@ -133,7 +133,7 @@ async function syncLivingDocs(incrementId) {
     // GATE 3: autoSyncOnCompletion (v0.24.0+ - Automatic vs Manual Sync)
     // ========================================================================
     // This setting controls whether sync to external tools happens automatically
-    // on increment completion or requires manual /specweave:sync-* commands.
+    // on increment completion or requires manual /sw:sync-* commands.
     // DEFAULT: true (automatic sync enabled for better UX)
     const autoSync = config.sync?.settings?.autoSyncOnCompletion ?? true;
 
@@ -170,7 +170,7 @@ async function hierarchicalDistribution(incrementId) {
     // Why this change:
     // - Old SpecDistributor.distribute() method no longer exists (removed in v3.0.0)
     // - LivingDocsSync is the official, stable API for syncing increments
-    // - Used by /specweave:sync-docs command - battle-tested and maintained
+    // - Used by /sw:sync-docs command - battle-tested and maintained
     // - Future-proof: Won't break when internal APIs change
     //
     // Architecture:
@@ -259,7 +259,7 @@ async function hierarchicalDistribution(incrementId) {
     console.error(`   \u274C Living docs sync failed: ${error}`);
     console.error(error.stack);
     console.error("   \u26A0\uFE0F  Living docs sync skipped due to error");
-    console.error("   \u{1F4A1} Tip: Run /specweave:sync-docs manually to retry");
+    console.error("   \u{1F4A1} Tip: Run /sw:sync-docs manually to retry");
     return {
       success: false,
       changedFiles: []

@@ -136,7 +136,7 @@ cat .specweave/config.json
 ### Test Connection
 
 ```bash
-/specweave-github:status
+/sw-github:status
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -265,7 +265,7 @@ Team identification via labels: team:frontend, team:backend, etc.
 When `autoCreateIssues: true`:
 
 ```bash
-/specweave:increment "User authentication"
+/sw:increment "User authentication"
 
 # Output:
 Creating increment: 0042-user-authentication
@@ -280,7 +280,7 @@ Creating increment: 0042-user-authentication
 If auto-create is disabled:
 
 ```bash
-/specweave-github:create-issue 0042
+/sw-github:create-issue 0042
 
 # Output:
 Creating GitHub issue for 0042-user-authentication...
@@ -326,7 +326,7 @@ Implementation of user authentication feature.
 ### Manual Sync
 
 ```bash
-/specweave-github:sync 0042
+/sw-github:sync 0042
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -349,7 +349,7 @@ Sync complete!
 When configured, sync happens automatically:
 
 ```bash
-# After each task completion during /specweave:do
+# After each task completion during /sw:do
 T-003: Add login endpoint
 ├── Creating src/auth/login.ts
 ├── Tests: ✓ 4/4 passing
@@ -362,7 +362,7 @@ T-003: Add login endpoint
 If someone checks a box directly on GitHub:
 
 ```bash
-/specweave-github:sync 0042 --from-external
+/sw-github:sync 0042 --from-external
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -430,7 +430,7 @@ manual:
 When increment completes:
 
 ```bash
-/specweave:done 0042
+/sw:done 0042
 
 # Output includes:
 ...
@@ -449,10 +449,10 @@ When increment completes:
 ### Manual Close
 
 ```bash
-/specweave-github:close-issue 0042
+/sw-github:close-issue 0042
 
 # Or close without completion (abandoned):
-/specweave-github:close-issue 0042 --reason "Feature cancelled"
+/sw-github:close-issue 0042 --reason "Feature cancelled"
 ```
 
 ---
@@ -512,7 +512,7 @@ Configure in config.json:
 
 ```bash
 # Check token validity
-/specweave-github:status
+/sw-github:status
 
 # If expired, regenerate:
 # https://github.com/settings/tokens
@@ -525,7 +525,7 @@ export GITHUB_TOKEN=ghp_new_token
 ### "Rate limit exceeded"
 
 ```bash
-/specweave-github:status
+/sw-github:status
 
 # Output:
 ⚠️ Rate limit: 0/5000 (resets in 23 min)
@@ -541,17 +541,17 @@ export GITHUB_TOKEN=ghp_new_token
 gh issue view 142
 
 # Re-link increment to issue:
-/specweave-github:link 0042 --issue 142
+/sw-github:link 0042 --issue 142
 ```
 
 ### "Sync conflict"
 
 ```bash
 # Force from SpecWeave (overwrite GitHub)
-/specweave-github:sync 0042 --force
+/sw-github:sync 0042 --force
 
 # Force from GitHub (overwrite SpecWeave)
-/specweave-github:sync 0042 --from-external --force
+/sw-github:sync 0042 --from-external --force
 ```
 
 ### "Checkboxes not updating"
@@ -563,7 +563,7 @@ gh issue view 142
 # - [x] T-002: Completed task
 
 # If format is different, re-create issue:
-/specweave-github:create-issue 0042 --overwrite
+/sw-github:create-issue 0042 --overwrite
 ```
 
 ---
@@ -636,20 +636,20 @@ jobs:
 
 ```bash
 # 1. Create increment (auto-creates GitHub issue)
-/specweave:increment "Add user profile page"
+/sw:increment "Add user profile page"
 
 # Output:
 ✓ Increment 0050-user-profile-page created
 ✓ GitHub Issue #200 created
 
 # 2. Implement tasks
-/specweave:do
+/sw:do
 
 # Each task completion syncs to GitHub automatically
 # Checkboxes get checked, progress comments added
 
 # 3. Check sync status
-/specweave-github:status 0050
+/sw-github:status 0050
 
 # Output:
 Issue #200: In sync ✓
@@ -657,7 +657,7 @@ Issue #200: In sync ✓
   GitHub tasks: 8/12 complete
 
 # 4. Complete increment
-/specweave:done 0050
+/sw:done 0050
 
 # Output:
 ✓ Quality gates passed
@@ -680,10 +680,10 @@ export GITHUB_TOKEN=your_token
 specweave init . --reconfigure
 
 # 4. Test connection
-/specweave-github:status
+/sw-github:status
 
 # 5. Create test increment
-/specweave:increment "Test GitHub sync"
+/sw:increment "Test GitHub sync"
 
 # 6. Verify issue created
 gh issue list --limit 5

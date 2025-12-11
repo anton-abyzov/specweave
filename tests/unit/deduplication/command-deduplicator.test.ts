@@ -42,7 +42,7 @@ describe('CommandDeduplicator', () => {
 
   describe('Basic Duplicate Detection', () => {
     it('should detect duplicate command within time window', async () => {
-      const command = '/specweave:do';
+      const command = '/sw:do';
       const args = ['0031'];
 
       // First invocation - should NOT be duplicate
@@ -58,7 +58,7 @@ describe('CommandDeduplicator', () => {
     });
 
     it('should allow same command after time window expires', async () => {
-      const command = '/specweave:do';
+      const command = '/sw:do';
       const args = ['0031'];
 
       // First invocation
@@ -77,7 +77,7 @@ describe('CommandDeduplicator', () => {
     });
 
     it('should treat different arguments as different commands', async () => {
-      const command = '/specweave:do';
+      const command = '/sw:do';
 
       // Record with args ['0031']
       await deduplicator.recordInvocation(command, ['0031']);
@@ -88,16 +88,16 @@ describe('CommandDeduplicator', () => {
     });
 
     it('should treat different commands as different invocations', async () => {
-      // Record /specweave:do
-      await deduplicator.recordInvocation('/specweave:do', ['0031']);
+      // Record /sw:do
+      await deduplicator.recordInvocation('/sw:do', ['0031']);
 
-      // Check /specweave:progress - should NOT be duplicate
-      const isDup = await deduplicator.checkDuplicate('/specweave:progress', []);
+      // Check /sw:progress - should NOT be duplicate
+      const isDup = await deduplicator.checkDuplicate('/sw:progress', []);
       expect(isDup).toBe(false);
     });
 
     it('should handle commands without arguments', async () => {
-      const command = '/specweave:progress';
+      const command = '/sw:progress';
 
       // First invocation - no args
       await deduplicator.recordInvocation(command, []);
@@ -110,16 +110,16 @@ describe('CommandDeduplicator', () => {
 
   describe('Statistics Tracking', () => {
     it('should track total invocations', async () => {
-      await deduplicator.recordInvocation('/specweave:do', ['0031']);
-      await deduplicator.recordInvocation('/specweave:do', ['0032']);
-      await deduplicator.recordInvocation('/specweave:progress', []);
+      await deduplicator.recordInvocation('/sw:do', ['0031']);
+      await deduplicator.recordInvocation('/sw:do', ['0032']);
+      await deduplicator.recordInvocation('/sw:progress', []);
 
       const stats = deduplicator.getStats();
       expect(stats.totalInvocations).toBe(3);
     });
 
     it('should track duplicates blocked', async () => {
-      const command = '/specweave:do';
+      const command = '/sw:do';
       const args = ['0031'];
 
       // Record first invocation
@@ -147,7 +147,7 @@ describe('CommandDeduplicator', () => {
 
   describe('Cache Persistence', () => {
     it('should persist cache to disk', async () => {
-      await deduplicator.recordInvocation('/specweave:do', ['0031']);
+      await deduplicator.recordInvocation('/sw:do', ['0031']);
 
       // Check file exists
       const exists = await fs.pathExists(testCachePath);
@@ -156,13 +156,13 @@ describe('CommandDeduplicator', () => {
       // Read and verify content
       const data = await fs.readJson(testCachePath);
       expect(data.invocations).toHaveLength(1);
-      expect(data.invocations[0].command).toBe('/specweave:do');
+      expect(data.invocations[0].command).toBe('/sw:do');
       expect(data.invocations[0].args).toEqual(['0031']);
     });
 
     it('should load cache from disk on initialization', async () => {
       // Create first deduplicator and record invocation
-      await deduplicator.recordInvocation('/specweave:do', ['0031']);
+      await deduplicator.recordInvocation('/sw:do', ['0031']);
 
       // Create second deduplicator (should load from disk)
       const deduplicator2 = new CommandDeduplicator({
@@ -172,7 +172,7 @@ describe('CommandDeduplicator', () => {
       });
 
       // Check should detect duplicate (loaded from disk)
-      const isDup = await deduplicator2.checkDuplicate('/specweave:do', ['0031']);
+      const isDup = await deduplicator2.checkDuplicate('/sw:do', ['0031']);
       expect(isDup).toBe(true);
     });
 
@@ -264,7 +264,7 @@ describe('CommandDeduplicator', () => {
 
   describe('Fingerprinting', () => {
     it('should create same fingerprint for identical commands', async () => {
-      const command = '/specweave:do';
+      const command = '/sw:do';
       const args = ['0031'];
 
       // Record first invocation
@@ -297,8 +297,8 @@ describe('CommandDeduplicator', () => {
     });
 
     it('should create different fingerprints for same command with different args', async () => {
-      await deduplicator.recordInvocation('/specweave:do', ['0031']);
-      await deduplicator.recordInvocation('/specweave:do', ['0032']);
+      await deduplicator.recordInvocation('/sw:do', ['0031']);
+      await deduplicator.recordInvocation('/sw:do', ['0032']);
 
       const data = await fs.readJson(testCachePath);
       const fp1 = data.invocations[0].fingerprint;
@@ -352,7 +352,7 @@ describe('CommandDeduplicator', () => {
     });
 
     it('should handle commands with special characters', async () => {
-      const command = '/specweave:do@#$%^&*()';
+      const command = '/sw:do@#$%^&*()';
       await deduplicator.recordInvocation(command, []);
       const isDup = await deduplicator.checkDuplicate(command, []);
       expect(isDup).toBe(true);
@@ -374,7 +374,7 @@ describe('CommandDeduplicator', () => {
     });
 
     it('should handle rapid sequential invocations', async () => {
-      const command = '/specweave:do';
+      const command = '/sw:do';
       const args = ['0031'];
 
       // Record first

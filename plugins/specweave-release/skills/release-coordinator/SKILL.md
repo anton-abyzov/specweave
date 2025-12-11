@@ -259,7 +259,7 @@ See plan.md for detailed orchestration
 
 ```bash
 # Command
-/specweave-release:execute 0025-product-v3-release
+/sw-release:execute 0025-product-v3-release
 
 # Executes:
 1. Pre-flight checks (validation)
@@ -324,7 +324,7 @@ Reverse wave order (rollback dependencies first)
 
 ```bash
 # 1. Plan release
-/specweave:increment "0025-product-v3-release"
+/sw:increment "0025-product-v3-release"
 # → Creates increment with multi-repo spec
 
 # 2. Coordinate release (this skill activates)
@@ -333,13 +333,13 @@ Reverse wave order (rollback dependencies first)
 # → Creates validation checklist
 
 # 3. Execute release
-/specweave:do
+/sw:do
 # → Runs pre-flight checks
 # → Executes wave-by-wave
 # → Monitors progress
 
 # 4. Complete release
-/specweave:done 0025
+/sw:done 0025
 # → Validates all repos released
 # → Updates living docs
 # → Syncs to GitHub/Jira/ADO
@@ -424,7 +424,7 @@ Reverse wave order (rollback dependencies first)
 
 ```bash
 # 1. User initiates release
-/specweave:increment "0030-product-v4-release"
+/sw:increment "0030-product-v4-release"
 
 # 2. Coordinator analyzes
 # - 8 microservices detected
@@ -444,7 +444,7 @@ Reverse wave order (rollback dependencies first)
 # - Ready to release ✓
 
 # 5. Execute release
-/specweave:do
+/sw:do
 # - Wave 1 released (15 min)
 # - Wave 2 released (20 min, parallel)
 # - Wave 3 released (10 min)
@@ -462,7 +462,7 @@ Reverse wave order (rollback dependencies first)
 
 ```bash
 # 1. User initiates release
-/specweave:increment "0035-monorepo-v2-release"
+/sw:increment "0035-monorepo-v2-release"
 
 # 2. Coordinator analyzes
 # - Lerna monorepo (12 packages)
@@ -489,10 +489,10 @@ npx lerna publish --conventional-commits
 
 Works with release commands:
 
-- `/specweave-release:coordinate <increment>` - Plan multi-repo release
-- `/specweave-release:validate <increment>` - Run pre-flight checks
-- `/specweave-release:execute <increment>` - Execute coordinated release
-- `/specweave-release:rollback <increment>` - Rollback coordinated release
+- `/sw-release:coordinate <increment>` - Plan multi-repo release
+- `/sw-release:validate <increment>` - Run pre-flight checks
+- `/sw-release:execute <increment>` - Execute coordinated release
+- `/sw-release:rollback <increment>` - Rollback coordinated release
 
 ## Dependencies
 

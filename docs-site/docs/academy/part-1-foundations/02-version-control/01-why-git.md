@@ -239,7 +239,7 @@ git blame .specweave/docs/internal/adr/0001-jwt-auth.md
 git checkout -b feature/0002-payments
 
 # Work on specs
-/specweave:increment "Payment processing"
+/sw:increment "Payment processing"
 
 # All specs isolated until merged
 ```

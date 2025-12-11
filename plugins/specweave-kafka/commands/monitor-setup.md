@@ -37,7 +37,7 @@ I'll detect your environment and guide setup:
 
 ```bash
 # Start monitoring setup wizard
-/specweave-kafka:monitor-setup
+/sw-kafka:monitor-setup
 
 # I'll activate kafka-observability skill and:
 # 1. Detect your environment
@@ -92,5 +92,5 @@ After setup completes, I'll:
 ---
 
 **Skills Activated**: kafka-observability
-**Related Commands**: /specweave-kafka:deploy
+**Related Commands**: /sw-kafka:deploy
 **Dashboard Locations**: `plugins/specweave-kafka/monitoring/grafana/dashboards/`

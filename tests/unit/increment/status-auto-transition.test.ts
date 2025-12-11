@@ -814,7 +814,7 @@ describe('Status Auto-Transition', () => {
       expect(metadata.status).toBe(IncrementStatus.READY_FOR_REVIEW);
       expect(metadata.status).not.toBe(IncrementStatus.COMPLETED);
 
-      // Step 5: Only /specweave:done can transition to COMPLETED
+      // Step 5: Only /sw:done can transition to COMPLETED
       // (This would require user approval via MetadataManager.updateStatus)
     });
   });

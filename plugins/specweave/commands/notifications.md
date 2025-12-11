@@ -5,13 +5,13 @@ View and manage sync notifications - import completions, discrepancies, sync fai
 ## Usage
 
 ```bash
-/specweave:notifications                     # List pending notifications
-/specweave:notifications --all               # Include dismissed notifications
-/specweave:notifications --type sync-failure # Filter by type
-/specweave:notifications --severity warning  # Filter by severity
-/specweave:notifications show <id>           # Show notification details
-/specweave:notifications dismiss <id>        # Dismiss a notification
-/specweave:notifications dismiss-all         # Dismiss all pending notifications
+/sw:notifications                     # List pending notifications
+/sw:notifications --all               # Include dismissed notifications
+/sw:notifications --type sync-failure # Filter by type
+/sw:notifications --severity warning  # Filter by severity
+/sw:notifications show <id>           # Show notification details
+/sw:notifications dismiss <id>        # Dismiss a notification
+/sw:notifications dismiss-all         # Dismiss all pending notifications
 ```
 
 ## Arguments
@@ -40,8 +40,8 @@ notif-abc123   ❗ CRITICAL   GitHub sync failed           2m ago
 notif-def456   ⚠️ WARNING    2 discrepancies in FS-045    1h ago
 notif-ghi789   ℹ️ INFO       107 items imported           3h ago
 
-Use '/specweave:notifications show <id>' to view details
-Use '/specweave:notifications dismiss <id>' to dismiss
+Use '/sw:notifications show <id>' to view details
+Use '/sw:notifications dismiss <id>' to dismiss
 ```
 
 ### show <id>
@@ -88,5 +88,5 @@ Proceed? [y/N]: y
 
 ## Related
 
-- `/specweave:sync-monitor`: Dashboard showing notification summary
-- `/specweave:discrepancies`: View and act on discrepancy notifications
+- `/sw:sync-monitor`: Dashboard showing notification summary
+- `/sw:discrepancies`: View and act on discrepancy notifications

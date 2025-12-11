@@ -105,7 +105,7 @@ SpecWeave works best when we start with a proper increment plan. I'm going to:
 
 Let's start: [Ask 1 clarifying question if needed, otherwise proceed]"
 
-[Automatically invoke /specweave:inc or spec-driven-brainstorming]
+[Automatically invoke /sw:inc or spec-driven-brainstorming]
 ```
 
 **Medium Confidence:**
@@ -188,7 +188,7 @@ project-kickstarter:
 6. Checks: specweave-github plugin installed? Yes
 7. Tests: GitHub API connection? ✅ Success
 8. Saves: externalPM.tool = "github" to config
-9. Creates increment: /specweave:inc "User authentication"
+9. Creates increment: /sw:inc "User authentication"
 10. Auto-creates: GitHub Issue #42 linked to increment
 ```
 
@@ -198,7 +198,7 @@ project-kickstarter:
 
 Based on clarity of requirements:
 
-- **Clear requirements** (detailed features, tech stack known) → `/specweave:inc` directly
+- **Clear requirements** (detailed features, tech stack known) → `/sw:inc` directly
 - **Unclear requirements** (vague features, tech stack uncertain) → `spec-driven-brainstorming` first
 
 ## Examples
@@ -250,9 +250,9 @@ I'm going to use SpecWeave's increment planning process to:
 
 Since you've provided the tech stack (.NET 8 + Next.js 14+), I'll structure this as a full-stack increment.
 
-Creating increment now with /specweave:inc...
+Creating increment now with /sw:inc...
 
-[Invokes /specweave:inc "RosterSync team scheduling SaaS"]
+[Invokes /sw:inc "RosterSync team scheduling SaaS"]
 ```
 
 ### Example 2: Clarify Then Route (Medium Confidence)
@@ -325,12 +325,12 @@ User message → specweave-detector (checks .specweave/ exists)
                     ↓ YES
          [Calculate confidence with SpecWeave context bonus]
                     ↓
-         [Route to /specweave:inc or spec-driven-brainstorming]
+         [Route to /sw:inc or spec-driven-brainstorming]
 ```
 
 **Calls:**
 - `specweave-detector` - Checks if .specweave/ directory exists (SpecWeave context)
-- `/specweave:inc` - For clear requirements (high confidence)
+- `/sw:inc` - For clear requirements (high confidence)
 - Spec-driven brainstorming - For unclear requirements (medium confidence)
 - Planning workflow - Directly if enough detail provided
 
@@ -355,7 +355,7 @@ Users can override auto-routing with explicit instructions:
 ## Success Criteria
 
 - ✅ Users with product descriptions are automatically guided to increment planning
-- ✅ No "I forgot to use /specweave:inc" scenarios
+- ✅ No "I forgot to use /sw:inc" scenarios
 - ✅ Confidence >80% routes immediately (no friction)
 - ✅ Confidence 50-80% clarifies then routes (1-2 questions max)
 - ✅ Confidence <50% doesn't activate (avoids false positives)

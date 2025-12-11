@@ -1,12 +1,12 @@
 ---
 id: specweave-increment
-title: /specweave:increment Command
+title: /sw:increment Command
 sidebar_label: specweave:increment
 ---
 
-# /specweave:increment Command
+# /sw:increment Command
 
-The **`/specweave:increment`** command is SpecWeave's primary planning command that creates a new [increment](/docs/glossary/terms/increments) with full PM-led workflow.
+The **`/sw:increment`** command is SpecWeave's primary planning command that creates a new [increment](/docs/glossary/terms/increments) with full PM-led workflow.
 
 ## What It Does
 
@@ -21,12 +21,12 @@ The **`/specweave:increment`** command is SpecWeave's primary planning command t
 
 ```bash
 # Create feature increment
-/specweave:increment "User authentication with JWT"
+/sw:increment "User authentication with JWT"
 
 # Create specific type
-/specweave:increment "Payment processing" --type=feature
-/specweave:increment "Critical login bug" --type=hotfix
-/specweave:increment "Try GraphQL" --type=experiment
+/sw:increment "Payment processing" --type=feature
+/sw:increment "Critical login bug" --type=hotfix
+/sw:increment "Try GraphQL" --type=experiment
 ```
 
 ## Increment Types

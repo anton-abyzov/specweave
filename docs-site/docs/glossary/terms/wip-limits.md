@@ -125,7 +125,7 @@ graph TB
 
 ```bash
 # No active increments
-/specweave:increment "user authentication"
+/sw:increment "user authentication"
 
 # ✅ Creates 0008-user-authentication (no warnings)
 # Status: 1 active (within limit)
@@ -135,7 +135,7 @@ graph TB
 
 ```bash
 # 0008-user-authentication is active (50% complete)
-/specweave:increment "dark mode"
+/sw:increment "dark mode"
 
 # ⚠️  WARNING: Context Switching Detected
 #
@@ -147,7 +147,7 @@ graph TB
 #   - Delay completion of both increments
 #   - Increase bug risk
 #
-# 💡 Recommendation: Complete 0008 first (/specweave:do)
+# 💡 Recommendation: Complete 0008 first (/sw:do)
 #
 # ❓ Continue anyway? (y/N)
 ```
@@ -164,7 +164,7 @@ graph TB
 ```bash
 # 0008-user-authentication (50% complete)
 # 0009-dark-mode (20% complete)
-/specweave:increment "payment integration"
+/sw:increment "payment integration"
 
 # ❌ BLOCKED! Hard Cap Reached
 #
@@ -174,13 +174,13 @@ graph TB
 #
 # 💡 Before creating a new increment, you must:
 #   Option 1: Complete an increment
-#     /specweave:done 0008 (if all tasks complete)
+#     /sw:done 0008 (if all tasks complete)
 #
 #   Option 2: Pause an increment
-#     /specweave:pause 0009 --reason="blocked by API"
+#     /sw:pause 0009 --reason="blocked by API"
 #
 #   Option 3: Abandon an increment
-#     /specweave:abandon 0009 --reason="requirements changed"
+#     /sw:abandon 0009 --reason="requirements changed"
 #
 # ⚠️  The discipline exists for a reason:
 #   - Prevents scope creep
@@ -197,7 +197,7 @@ graph TB
 
 ```bash
 # 0008-user-authentication is active (80% complete)
-/specweave:increment "SQL injection hotfix" --type hotfix
+/sw:increment "SQL injection hotfix" --type hotfix
 
 # ✅ ALLOWED! Hotfix can interrupt (emergency)
 #
@@ -228,7 +228,7 @@ graph TB
 ### Check Status
 
 ```bash
-/specweave:status
+/sw:status
 
 # Output:
 ✅ 0001-core-framework (100% complete)
@@ -247,7 +247,7 @@ Abandoned: 0
 ### Pause Increment
 
 ```bash
-/specweave:pause 0009 --reason="blocked by backend API availability"
+/sw:pause 0009 --reason="blocked by backend API availability"
 
 # ✅ Paused 0009-dark-mode
 # Reason: Blocked by backend API availability
@@ -259,7 +259,7 @@ Abandoned: 0
 ### Resume Increment
 
 ```bash
-/specweave:resume 0009
+/sw:resume 0009
 
 # ✅ Resumed 0009-dark-mode
 # Status: 2 active (hard cap reached)
@@ -277,11 +277,11 @@ Abandoned: 0
 
 ```bash
 # ❌ Wrong: Multiple hotfix increments
-/specweave:increment "SQL injection fix" --type hotfix  # 0009
-/specweave:increment "XSS vulnerability fix" --type hotfix  # 0010 (BLOCKED!)
+/sw:increment "SQL injection fix" --type hotfix  # 0009
+/sw:increment "XSS vulnerability fix" --type hotfix  # 0010 (BLOCKED!)
 
 # ✅ Right: Combined hotfix increment
-/specweave:increment "Security fixes (SQL + XSS + CSRF)" --type hotfix
+/sw:increment "Security fixes (SQL + XSS + CSRF)" --type hotfix
 
 # Increment 0009: Security Fixes
 # - SQL injection fix (AC-US1-01)
@@ -297,7 +297,7 @@ Abandoned: 0
 
 ```bash
 # Temporarily allow 3 active (not recommended)
-/specweave:adjust-wip-limit 3
+/sw:adjust-wip-limit 3
 
 # ⚠️  WARNING: Increasing WIP limit to 3
 #
@@ -321,7 +321,7 @@ Reason: Multiple critical production issues require parallel fixes
 
 **Revert to default**:
 ```bash
-/specweave:revert-wip-limit
+/sw:revert-wip-limit
 
 # ✅ WIP limit reverted to 1 (default)
 ```
@@ -386,9 +386,9 @@ Result: Nothing ships, everything delayed
 
 ```bash
 # ❌ Bad: Always using --force
-/specweave:increment "new feature" --force  # Bypasses WIP check
-/specweave:increment "another feature" --force
-/specweave:increment "yet another feature" --force
+/sw:increment "new feature" --force  # Bypasses WIP check
+/sw:increment "another feature" --force
+/sw:increment "yet another feature" --force
 
 Result: Chaos, low productivity, nothing ships
 ```
@@ -397,11 +397,11 @@ Result: Chaos, low productivity, nothing ships
 
 ```bash
 # ❌ Bad: Splitting to bypass WIP limit
-/specweave:increment "Authentication Part 1"
-/specweave:increment "Authentication Part 2"  # Trying to bypass limit
+/sw:increment "Authentication Part 1"
+/sw:increment "Authentication Part 2"  # Trying to bypass limit
 
 # ✅ Good: One complete increment
-/specweave:increment "Authentication (complete)"
+/sw:increment "Authentication (complete)"
 ```
 
 ---
@@ -412,30 +412,30 @@ Result: Chaos, low productivity, nothing ships
 
 ```bash
 # ✅ Good workflow
-/specweave:do  # Work on current increment
+/sw:do  # Work on current increment
 # ... all tasks complete
-/specweave:done 0008  # Close increment
-/specweave:increment "next feature"  # Start new
+/sw:done 0008  # Close increment
+/sw:increment "next feature"  # Start new
 ```
 
 ### 2. Pause When Blocked
 
 ```bash
 # ✅ Good: Pause when blocked, start new
-/specweave:pause 0008 --reason="waiting for API approval"
-/specweave:increment "dark mode"  # Start new work
+/sw:pause 0008 --reason="waiting for API approval"
+/sw:increment "dark mode"  # Start new work
 # ... API approved
-/specweave:resume 0008  # Resume when unblocked
+/sw:resume 0008  # Resume when unblocked
 ```
 
 ### 3. Use Hotfix for True Emergencies Only
 
 ```bash
 # ✅ Good: Hotfix for production issues
-/specweave:increment "SQL injection fix" --type hotfix
+/sw:increment "SQL injection fix" --type hotfix
 
 # ❌ Bad: Hotfix for non-emergency
-/specweave:increment "add dark mode toggle" --type hotfix  # Not a hotfix!
+/sw:increment "add dark mode toggle" --type hotfix  # Not a hotfix!
 ```
 
 ---

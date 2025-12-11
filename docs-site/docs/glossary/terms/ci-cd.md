@@ -654,7 +654,7 @@ After CI/CD setup, update docs:
 
 ```bash
 # Sync CI/CD setup to docs
-/specweave:sync-docs update
+/sw:sync-docs update
 
 # Results in:
 # - Updated README with build badges

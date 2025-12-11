@@ -1,12 +1,12 @@
 ---
 name: specweave:resume
 description: Resume a paused or backlog increment
-usage: /specweave:resume <increment-id>
+usage: /sw:resume <increment-id>
 ---
 
 # Resume Increment Command
 
-**Usage**: `/specweave:resume <increment-id>`
+**Usage**: `/sw:resume <increment-id>`
 
 ---
 
@@ -30,7 +30,7 @@ Resume a paused or backlog increment when:
    - Clears `backlogReason` and `backlogAt` (if backlog)
    - Updates `lastActivity` timestamp
 4. **Displays** context (duration, last activity)
-5. **Suggests** next actions (`/specweave:do` to continue/start work)
+5. **Suggests** next actions (`/sw:do` to continue/start work)
 
 ---
 
@@ -38,31 +38,31 @@ Resume a paused or backlog increment when:
 
 ### Resume from backlog
 ```bash
-/specweave:resume 0032
+/sw:resume 0032
 
 ✅ Increment 0032 activated from backlog
 📦 Was in backlog for: 5 days
 💡 Reason: Low priority, focus on 0031 first
-📋 Start work with: /specweave:do
+📋 Start work with: /sw:do
 ```
 
 ### Resume paused work after a few days
 ```bash
-/specweave:resume 0006
+/sw:resume 0006
 
 ✅ Increment 0006 resumed
 ⏱️  Was paused for: 3 days, 4 hours
 💡 Last activity: Created translation pipeline
-📋 Continue with: /specweave:do
+📋 Continue with: /sw:do
 ```
 
 ### Resume paused work after a few hours
 ```bash
-/specweave:resume 0007
+/sw:resume 0007
 
 ✅ Increment 0007 resumed
 ⏱️  Was paused for: 2 hours
-📋 Continue with: /specweave:do
+📋 Continue with: /sw:do
 ```
 
 ---
@@ -71,15 +71,15 @@ Resume a paused or backlog increment when:
 
 ### Already Active
 ```bash
-/specweave:resume 0006
+/sw:resume 0006
 
 ⚠️  Increment 0006 is already active
-   No action needed. Continue with: /specweave:do
+   No action needed. Continue with: /sw:do
 ```
 
 ### Cannot Resume Completed
 ```bash
-/specweave:resume 0005
+/sw:resume 0005
 
 ❌ Cannot resume increment 0005
    Status: completed
@@ -88,7 +88,7 @@ Resume a paused or backlog increment when:
 
 ### Resume Abandoned (Confirmation Required)
 ```bash
-/specweave:resume 0008
+/sw:resume 0008
 
 ⚠️  Increment 0008 is abandoned
    Reason: Requirements changed
@@ -98,15 +98,15 @@ Resume a paused or backlog increment when:
 ✅ Increment 0008 resumed
 ⚠️  Note: Was abandoned 5 days ago
 💡 Review spec.md to ensure still relevant
-📋 Continue with: /specweave:do
+📋 Continue with: /sw:do
 ```
 
 ### Increment Not Found
 ```bash
-/specweave:resume 9999
+/sw:resume 9999
 
 ❌ Increment not found: 9999
-💡 Check paused increments: /specweave:status --paused
+💡 Check paused increments: /sw:status --paused
 ```
 
 ---
@@ -159,12 +159,12 @@ abandoned ──resume──> active (with confirmation)
 
 ## Related Commands
 
-- `/specweave:pause <id>` - Pause active increment
-- `/specweave:backlog <id>` - Move increment to backlog
-- `/specweave:status` - Show all increment statuses
-- `/specweave:status --paused` - Show only paused increments
-- `/specweave:status --backlog` - Show only backlog increments
-- `/specweave:do` - Continue/start work after resuming
+- `/sw:pause <id>` - Pause active increment
+- `/sw:backlog <id>` - Move increment to backlog
+- `/sw:status` - Show all increment statuses
+- `/sw:status --paused` - Show only paused increments
+- `/sw:status --backlog` - Show only backlog increments
+- `/sw:do` - Continue/start work after resuming
 
 ---
 
@@ -186,22 +186,22 @@ abandoned ──resume──> active (with confirmation)
 
 ## Automatic Suggestions
 
-When you run `/specweave:status`, stale paused/backlog increments trigger suggestions:
+When you run `/sw:status`, stale paused/backlog increments trigger suggestions:
 
 ```bash
-/specweave:status
+/sw:status
 
 🗂️  Backlog (2):
   📦 0032-feature-a [feature]
      In backlog: 5 days
      Reason: Low priority
-     💡 Ready to start? → /specweave:resume 0032
+     💡 Ready to start? → /sw:resume 0032
 
 ⏸️  Paused (2):
   🔄 0006-stripe [feature]
      Paused: 3 days ago
      Reason: Waiting for API keys
-     💡 Check if API keys arrived → /specweave:resume 0006
+     💡 Check if API keys arrived → /sw:resume 0006
 
   🔄 0007-refactor [refactor]
      Paused: 10 days ago
@@ -216,7 +216,7 @@ When you run `/specweave:status`, stale paused/backlog increments trigger sugges
 After resuming, the command shows helpful context:
 
 ```bash
-/specweave:resume 0006
+/sw:resume 0006
 
 ✅ Increment 0006 resumed
 
@@ -228,17 +228,17 @@ After resuming, the command shows helpful context:
 💡 Next steps:
    1. Review spec.md (requirements may have changed)
    2. Check dependencies (are API keys available?)
-   3. Continue with: /specweave:do
+   3. Continue with: /sw:do
 
 📋 Quick commands:
-   /specweave:do           # Resume work
-   /specweave:progress     # See detailed progress
-   /specweave:validate     # Check increment health
+   /sw:do           # Resume work
+   /sw:progress     # See detailed progress
+   /sw:validate     # Check increment health
 ```
 
 ---
 
-**Command**: `/specweave:resume`
+**Command**: `/sw:resume`
 **Plugin**: specweave (core)
 **Version**: v0.7.0+
 **Part of**: Increment 0007 - Smart Status Management

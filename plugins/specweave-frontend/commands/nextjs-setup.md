@@ -1,4 +1,4 @@
-# /specweave-frontend:nextjs-setup
+# /sw-frontend:nextjs-setup
 
 Set up Next.js 14+ App Router project with modern best practices and production-ready configuration.
 

@@ -441,10 +441,10 @@ tags: ["project:frontend", "project:backend", "cross-team"]
 
 ```bash
 # Create spec
-/specweave:increment "User authentication"
+/sw:increment "User authentication"
 
 # Sync to GitHub (auto-detects project = default)
-/specweave-github:sync-spec spec-001
+/sw-github:sync-spec spec-001
 ```
 
 ### Multi-Project Usage
@@ -454,10 +454,10 @@ tags: ["project:frontend", "project:backend", "cross-team"]
 # (place in .specweave/docs/internal/specs/frontend/)
 
 # Sync to GitHub (auto-detects project = frontend, routes to frontend-app repo)
-/specweave-github:sync-spec spec-001
+/sw-github:sync-spec spec-001
 
 # Cross-team spec (auto-syncs to multiple repos)
-/specweave-github:sync-spec spec-auth
+/sw-github:sync-spec spec-auth
 # → Creates issues in frontend-app AND backend-api
 ```
 

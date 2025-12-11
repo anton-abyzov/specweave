@@ -160,7 +160,7 @@ GitHub issues MUST use living docs format:
 WHY: Correct data flow is: Increment \u2192 Living Docs \u2192 GitHub
       Living docs are the source of truth for GitHub sync.
 
-FIX: Use /specweave:sync-docs to generate living docs, then sync to GitHub.`
+FIX: Use /sw:sync-docs to generate living docs, then sync to GitHub.`
       );
     }
     const typePrefixPattern = /^\[(BUG|HOTFIX|FEATURE|DOCS|REFACTOR|CHORE|EXPERIMENT|Bug|Hotfix|Feature|Docs|Refactor|Chore|Experiment)\]/i;

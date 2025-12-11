@@ -1,12 +1,12 @@
 ---
 id: specweave-do
-title: /specweave:do Command
+title: /sw:do Command
 sidebar_label: specweave:do
 ---
 
-# /specweave:do Command
+# /sw:do Command
 
-The **`/specweave:do`** command is SpecWeave's primary implementation command that executes tasks from [tasks.md](/docs/glossary/terms/tasks-md) with smart auto-resume.
+The **`/sw:do`** command is SpecWeave's primary implementation command that executes tasks from [tasks.md](/docs/glossary/terms/tasks-md) with smart auto-resume.
 
 ## What It Does
 
@@ -22,10 +22,10 @@ The **`/specweave:do`** command is SpecWeave's primary implementation command th
 
 ```bash
 # Auto-find active increment
-/specweave:do
+/sw:do
 
 # Execute specific increment
-/specweave:do 0007
+/sw:do 0007
 ```
 
 ## Smart Features
@@ -36,10 +36,10 @@ The command automatically resumes from the last incomplete task:
 
 ```bash
 # First session: Tasks T-001 through T-005 completed
-$ /specweave:do 0007
+$ /sw:do 0007
 
 # Second session: Automatically resumes at T-006
-$ /specweave:do 0007
+$ /sw:do 0007
 → Resuming from T-006...
 ```
 
@@ -62,7 +62,7 @@ After EVERY task completion:
 
 ```mermaid
 graph LR
-    A[/specweave:do] --> B{Find Increment}
+    A[/sw:do] --> B{Find Increment}
     B --> C[Load tasks.md]
     C --> D[Find Next Task]
     D --> E[Execute Task]
@@ -77,5 +77,5 @@ graph LR
 - [tasks.md](/docs/glossary/terms/tasks-md) - Task format
 - [Hooks](/docs/glossary/terms/hooks) - Automation hooks
 - [Increments](/docs/glossary/terms/increments) - Work units
-- [/specweave:progress](/docs/glossary/terms/specweave-progress) - Check progress
-- [/specweave:done](/docs/glossary/terms/specweave-done) - Close increment
+- [/sw:progress](/docs/glossary/terms/specweave-progress) - Check progress
+- [/sw:done](/docs/glossary/terms/specweave-done) - Close increment

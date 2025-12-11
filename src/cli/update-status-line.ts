@@ -29,7 +29,7 @@ async function main() {
     if (!cache || !cache.current) {
       // No active increments - show default state message
       console.log('ℹ️  No active increments');
-      console.log('   Start new work with: /specweave:increment "feature name"');
+      console.log('   Start new work with: /sw:increment "feature name"');
     } else {
       // Active increment exists - show progress
       console.log('✅ Status line updated');

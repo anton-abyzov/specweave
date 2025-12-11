@@ -1,5 +1,5 @@
 /**
- * Workflow Orchestrator - Core orchestration logic for /specweave:next
+ * Workflow Orchestrator - Core orchestration logic for /sw:next
  *
  * Coordinates workflow execution by detecting current phase and
  * invoking appropriate commands.
@@ -173,7 +173,7 @@ export class WorkflowOrchestrator {
     const activeIds = this.activeIncrementManager.getActive();
 
     if (activeIds.length === 0) {
-      throw new Error('No active increments found. Use /specweave:increment to create one.');
+      throw new Error('No active increments found. Use /sw:increment to create one.');
     }
 
     if (activeIds.length === 1) {
@@ -212,13 +212,13 @@ export class WorkflowOrchestrator {
       case WorkflowPhase.PLAN_GENERATION:
         return {
           description: 'Generate implementation plan',
-          command: '/specweave:plan'
+          command: '/sw:plan'
         };
 
       case WorkflowPhase.IMPLEMENTATION:
         return {
           description: 'Execute tasks',
-          command: '/specweave:do'
+          command: '/sw:do'
         };
 
       case WorkflowPhase.TESTING:
@@ -230,31 +230,31 @@ export class WorkflowOrchestrator {
       case WorkflowPhase.REVIEW:
         return {
           description: 'Run quality assessment',
-          command: '/specweave:qa'
+          command: '/sw:qa'
         };
 
       case WorkflowPhase.COMPLETION:
         return {
           description: 'Close increment',
-          command: '/specweave:done'
+          command: '/sw:done'
         };
 
       case WorkflowPhase.SPEC_WRITING:
         return {
           description: 'Complete spec.md and generate plan',
-          command: '/specweave:plan'
+          command: '/sw:plan'
         };
 
       case WorkflowPhase.TASK_BREAKDOWN:
         return {
           description: 'Create tasks and start implementation',
-          command: '/specweave:do'
+          command: '/sw:do'
         };
 
       case WorkflowPhase.DOCUMENTATION:
         return {
           description: 'Update living documentation',
-          command: '/specweave:sync-docs update'
+          command: '/sw:sync-docs update'
         };
 
       default:

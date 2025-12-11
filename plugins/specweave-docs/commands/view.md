@@ -13,11 +13,11 @@ Launch Docusaurus development server with hot reload, Mermaid diagrams, and auto
 
 ```bash
 # View internal docs (default) - port 3015
-/specweave-docs:view
+/sw-docs:view
 
 # View public docs - port 3016
-/specweave-docs:view --public
-/specweave-docs:view public
+/sw-docs:view --public
+/sw-docs:view public
 ```
 
 ## Your Task
@@ -316,7 +316,7 @@ After starting, display:
 ### View Internal Docs (Default)
 
 ```bash
-/specweave-docs:view
+/sw-docs:view
 
 # Output:
 📚 Starting Internal Documentation server...
@@ -332,7 +332,7 @@ After starting, display:
 ### View Public Docs
 
 ```bash
-/specweave-docs:view --public
+/sw-docs:view --public
 
 # Output:
 📚 Starting Public Documentation server...
@@ -350,10 +350,10 @@ After starting, display:
 Run in separate terminals:
 ```bash
 # Terminal 1: Internal docs
-/specweave-docs:view
+/sw-docs:view
 
 # Terminal 2: Public docs
-/specweave-docs:view --public
+/sw-docs:view --public
 
 # Now both servers are running!
 # Internal: http://localhost:3015
@@ -374,10 +374,10 @@ lsof -i :3016 && kill -9 $(lsof -t -i :3016)
 ### Reinstall from scratch
 ```bash
 # For internal docs
-rm -rf .specweave/cache/docs-site && /specweave-docs:view
+rm -rf .specweave/cache/docs-site && /sw-docs:view
 
 # For public docs
-rm -rf .specweave/cache/docs-site-public && /specweave-docs:view --public
+rm -rf .specweave/cache/docs-site-public && /sw-docs:view --public
 ```
 
 ### npm registry issues
@@ -385,7 +385,7 @@ The setup uses `--registry=https://registry.npmjs.org` to bypass private registr
 
 ## See Also
 
-- `/specweave-docs:build` - Build static site for deployment
-- `/specweave-docs:organize` - Generate themed indexes for large folders
-- `/specweave-docs:health` - Documentation health report
-- `/specweave-docs:validate` - Validate documentation without starting server
+- `/sw-docs:build` - Build static site for deployment
+- `/sw-docs:organize` - Generate themed indexes for large folders
+- `/sw-docs:health` - Documentation health report
+- `/sw-docs:validate` - Validate documentation without starting server

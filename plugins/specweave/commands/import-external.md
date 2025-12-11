@@ -11,7 +11,7 @@ Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azur
 
 ## CRITICAL: Default Behavior (NO PROMPTS!)
 
-**When user runs `/specweave:import-external` with NO arguments:**
+**When user runs `/sw:import-external` with NO arguments:**
 1. **IMMEDIATELY execute** with default settings - DO NOT show menus or ask questions
 2. **Default = "since last import"** - auto-detects from `.specweave/sync-metadata.json`
 3. **If first import ever** - defaults to last 1 month
@@ -45,7 +45,7 @@ Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azur
 ## Usage
 
 ```bash
-/specweave:import-external [options]
+/sw:import-external [options]
 ```
 
 ### Options (ALL OPTIONAL - defaults work without them)
@@ -65,7 +65,7 @@ Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azur
 ### Example 1: Import New Items (Default - NO PROMPTS!)
 
 ```bash
-/specweave:import-external
+/sw:import-external
 
 # IMMEDIATELY executes with defaults:
 # - Since last import (or 1 month if first import)
@@ -90,7 +90,7 @@ Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azur
 ### Example 2: GitHub Only (Last 3 Months)
 
 ```bash
-/specweave:import-external --github-only --since=3m
+/sw:import-external --github-only --since=3m
 
 # Imports only from GitHub
 # Items created in last 3 months
@@ -99,7 +99,7 @@ Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azur
 ### Example 3: Dry Run (Preview)
 
 ```bash
-/specweave:import-external --dry-run --since=1m
+/sw:import-external --dry-run --since=1m
 
 # Shows what would be imported without creating files
 # Useful for checking item counts before actual import
@@ -116,7 +116,7 @@ Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azur
 ### Example 4: JIRA Only (All Items)
 
 ```bash
-/specweave:import-external --jira-only --since=all
+/sw:import-external --jira-only --since=all
 
 # Imports all JIRA items (no time filter)
 # ⚠️  Warning shown if > 100 items detected
@@ -127,7 +127,7 @@ Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azur
 ### Since Last Import (Default)
 
 ```bash
-/specweave:import-external
+/sw:import-external
 
 # Reads last import timestamp from:
 # .specweave/sync-metadata.json
@@ -382,7 +382,7 @@ No tasks defined.
 
 ## Differences from `specweave init`
 
-| Feature | `specweave init` | `/specweave:import-external` |
+| Feature | `specweave init` | `/sw:import-external` |
 |---------|------------------|------------------------------|
 | When to use | First-time setup | Ongoing imports after init |
 | User prompts | Interactive setup | **NONE** (auto-execute with defaults) |

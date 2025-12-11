@@ -256,7 +256,7 @@ export class ItemConverter {
       // CRITICAL (v0.30.12): Auto-archiving DISABLED for external imports!
       // External items should NEVER be auto-archived during import.
       // Archive is for increments (source of truth), not imported items.
-      // Users must explicitly archive via /specweave:archive --external
+      // Users must explicitly archive via /sw:archive --external
       autoArchiveAfterDays: 0,  // ALWAYS 0 for imports - archiving is user-initiated only
       enableGlobalCollisionDetection: false, // Default: false for backwards compatibility
       orphanHandling: 'group',  // v0.30.6: Group orphans in _orphans folder (was 'skip')

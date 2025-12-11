@@ -108,13 +108,13 @@ Create a test increment to verify mappings work:
 
 ```bash
 # 1. Create test increment
-/specweave:increment "Test status sync"
+/sw:increment "Test status sync"
 
 # 2. Link to GitHub (creates issue)
-/specweave-github:create-issue 0999-test-status-sync
+/sw-github:create-issue 0999-test-status-sync
 
 # 3. Complete increment
-/specweave:done 0999
+/sw:done 0999
 
 # 4. Verify prompt appears
 # Output should show:
@@ -284,17 +284,17 @@ Conflicts detected and resolved based on strategy:
 
 1. **Create test increment**
    ```bash
-   /specweave:increment "Migration test"
+   /sw:increment "Migration test"
    ```
 
 2. **Link to external tool**
    ```bash
-   /specweave-github:create-issue 0998-migration-test
+   /sw-github:create-issue 0998-migration-test
    ```
 
 3. **Complete increment**
    ```bash
-   /specweave:done 0998
+   /sw:done 0998
    ```
 
 4. **Verify sync**
@@ -306,7 +306,7 @@ Conflicts detected and resolved based on strategy:
    ```bash
    # Close GitHub issue manually
    # Then sync from external:
-   /specweave-github:sync-from 0998
+   /sw-github:sync-from 0998
    ```
    - ✅ Prompt appears about SpecWeave status change
    - ✅ Selecting "Yes" updates SpecWeave to `completed`
@@ -316,7 +316,7 @@ Conflicts detected and resolved based on strategy:
    # Change SpecWeave status to "active"
    # Change GitHub status to "closed"
    # Then sync:
-   /specweave-github:sync 0998
+   /sw-github:sync 0998
    ```
    - ✅ Conflict detected
    - ✅ Prompt shows both statuses with timestamps
@@ -328,7 +328,7 @@ Conflicts detected and resolved based on strategy:
 
 ### What Still Works
 
-✅ **Old sync commands** - `/specweave-github:sync` still works
+✅ **Old sync commands** - `/sw-github:sync` still works
 ✅ **Existing metadata** - Old `metadata.json` files compatible
 ✅ **Profiles** - Sync profiles unchanged
 
@@ -366,7 +366,7 @@ If you need to revert to old sync:
 
 3. **Use old sync commands**
    ```bash
-   /specweave-github:sync 0001 --legacy-mode
+   /sw-github:sync 0001 --legacy-mode
    ```
 
 ---
@@ -458,7 +458,7 @@ If you need to revert to old sync:
 
 **A**: Use test increments (e.g., `0999-test-sync`) or dry-run mode:
 ```bash
-/specweave-github:sync 0001 --dry-run
+/sw-github:sync 0001 --dry-run
 ```
 
 ---

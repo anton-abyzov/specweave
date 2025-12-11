@@ -14,15 +14,15 @@ description: Know exactly which SpecWeave command to use in any situation
 
 | I want to... | Command |
 |--------------|---------|
-| Start new feature | `/specweave:increment "feature name"` |
-| Implement current feature | `/specweave:do` |
-| See what's in progress | `/specweave:progress` |
-| Complete an increment | `/specweave:done 0001` |
-| Pause for other work | `/specweave:pause 0001` |
-| Resume paused work | `/specweave:resume 0001` |
-| Validate before closing | `/specweave:validate 0001` |
-| Sync to GitHub/JIRA | `/specweave:sync-progress` |
-| Save and push changes | `/specweave:save` |
+| Start new feature | `/sw:increment "feature name"` |
+| Implement current feature | `/sw:do` |
+| See what's in progress | `/sw:progress` |
+| Complete an increment | `/sw:done 0001` |
+| Pause for other work | `/sw:pause 0001` |
+| Resume paused work | `/sw:resume 0001` |
+| Validate before closing | `/sw:validate 0001` |
+| Sync to GitHub/JIRA | `/sw:sync-progress` |
+| Save and push changes | `/sw:save` |
 
 ---
 
@@ -33,13 +33,13 @@ description: Know exactly which SpecWeave command to use in any situation
 ```mermaid
 flowchart TD
     A[What's my situation?] --> B{Have active increment?}
-    B -->|No| C[/specweave:increment]
+    B -->|No| C[/sw:increment]
     B -->|Yes| D{Is it complete?}
-    D -->|Yes| E[/specweave:done]
+    D -->|Yes| E[/sw:done]
     D -->|No| F{Am I blocked?}
-    F -->|Yes, temporarily| G[/specweave:pause]
-    F -->|Yes, deprioritized| H[/specweave:backlog]
-    F -->|No| I[/specweave:do]
+    F -->|Yes, temporarily| G[/sw:pause]
+    F -->|Yes, deprioritized| H[/sw:backlog]
+    F -->|No| I[/sw:do]
 ```
 
 ### "I finished my task"
@@ -47,10 +47,10 @@ flowchart TD
 ```mermaid
 flowchart TD
     A[Task complete] --> B{All tasks done?}
-    B -->|No| C[Continue with /specweave:do]
-    B -->|Yes| D[/specweave:validate]
+    B -->|No| C[Continue with /sw:do]
+    B -->|Yes| D[/sw:validate]
     D --> E{Validation passed?}
-    E -->|Yes| F[/specweave:done]
+    E -->|Yes| F[/sw:done]
     E -->|No| G[Fix issues, then validate again]
 ```
 
@@ -62,43 +62,43 @@ flowchart TD
 
 | Scenario | Command | Notes |
 |----------|---------|-------|
-| New feature | `/specweave:increment "feature name"` | Creates spec, plan, tasks |
-| New bug fix | `/specweave:increment "fix: bug description"` | Use `fix:` prefix |
-| New experiment | `/specweave:increment "experiment: idea"` | Use `experiment:` prefix |
-| Resume from backlog | `/specweave:resume 0001` | Picks up where you left off |
+| New feature | `/sw:increment "feature name"` | Creates spec, plan, tasks |
+| New bug fix | `/sw:increment "fix: bug description"` | Use `fix:` prefix |
+| New experiment | `/sw:increment "experiment: idea"` | Use `experiment:` prefix |
+| Resume from backlog | `/sw:resume 0001` | Picks up where you left off |
 
 ### During Implementation
 
 | Scenario | Command | Notes |
 |----------|---------|-------|
-| Implement tasks | `/specweave:do` | Autonomous implementation |
-| Check progress | `/specweave:progress` | Shows task completion |
-| View current status | `/specweave:status` | Shows all increments |
-| Run quality check | `/specweave:qa` | AI quality assessment |
+| Implement tasks | `/sw:do` | Autonomous implementation |
+| Check progress | `/sw:progress` | Shows task completion |
+| View current status | `/sw:status` | Shows all increments |
+| Run quality check | `/sw:qa` | AI quality assessment |
 
 ### Pausing Work
 
 | Scenario | Command | Notes |
 |----------|---------|-------|
-| Temporarily blocked | `/specweave:pause 0001` | External dependency, will resume |
-| Deprioritized | `/specweave:backlog 0001` | Not abandoned, just later |
-| Feature canceled | `/specweave:abandon 0001` | Won't continue this work |
+| Temporarily blocked | `/sw:pause 0001` | External dependency, will resume |
+| Deprioritized | `/sw:backlog 0001` | Not abandoned, just later |
+| Feature canceled | `/sw:abandon 0001` | Won't continue this work |
 
 ### Completing Work
 
 | Scenario | Command | Notes |
 |----------|---------|-------|
-| Validate before closing | `/specweave:validate 0001` | Checks tasks, tests, docs |
-| Close with PM review | `/specweave:done 0001` | 3-gate validation |
-| Move to next increment | `/specweave:next` | Auto-close current, suggest next |
+| Validate before closing | `/sw:validate 0001` | Checks tasks, tests, docs |
+| Close with PM review | `/sw:done 0001` | 3-gate validation |
+| Move to next increment | `/sw:next` | Auto-close current, suggest next |
 
 ### Syncing & Saving
 
 | Scenario | Command | Notes |
 |----------|---------|-------|
-| Sync to external tools | `/specweave:sync-progress` | GitHub/JIRA/ADO |
-| Update living docs | `/specweave:sync-docs` | Bidirectional sync |
-| Save and push to git | `/specweave:save` | Commits and pushes |
+| Sync to external tools | `/sw:sync-progress` | GitHub/JIRA/ADO |
+| Update living docs | `/sw:sync-docs` | Bidirectional sync |
+| Save and push to git | `/sw:save` | Commits and pushes |
 
 ---
 
@@ -107,45 +107,45 @@ flowchart TD
 ### Lifecycle Commands
 
 ```
-Start     →  /specweave:increment
-Implement →  /specweave:do
-Validate  →  /specweave:validate
-Complete  →  /specweave:done
+Start     →  /sw:increment
+Implement →  /sw:do
+Validate  →  /sw:validate
+Complete  →  /sw:done
 ```
 
 ### Status Management
 
 ```
-Pause      →  /specweave:pause    (temporary block)
-Backlog    →  /specweave:backlog  (deprioritized)
-Resume     →  /specweave:resume   (continue work)
-Abandon    →  /specweave:abandon  (cancel)
-Reopen     →  /specweave:reopen   (needs more work)
+Pause      →  /sw:pause    (temporary block)
+Backlog    →  /sw:backlog  (deprioritized)
+Resume     →  /sw:resume   (continue work)
+Abandon    →  /sw:abandon  (cancel)
+Reopen     →  /sw:reopen   (needs more work)
 ```
 
 ### Visibility
 
 ```
-Progress   →  /specweave:progress   (task completion)
-Status     →  /specweave:status     (all increments)
-Workflow   →  /specweave:workflow   (next steps)
+Progress   →  /sw:progress   (task completion)
+Status     →  /sw:status     (all increments)
+Workflow   →  /sw:workflow   (next steps)
 ```
 
 ### Synchronization
 
 ```
-Sync All       →  /specweave:sync-progress   (tasks → docs → external)
-Sync Docs      →  /specweave:sync-docs       (living docs)
-Sync Tasks     →  /specweave:sync-tasks      (external → tasks.md)
-Sync ACs       →  /specweave:sync-acs        (acceptance criteria)
+Sync All       →  /sw:sync-progress   (tasks → docs → external)
+Sync Docs      →  /sw:sync-docs       (living docs)
+Sync Tasks     →  /sw:sync-tasks      (external → tasks.md)
+Sync ACs       →  /sw:sync-acs        (acceptance criteria)
 ```
 
 ### Quality
 
 ```
-Validate   →  /specweave:validate   (rule-based)
-QA         →  /specweave:qa         (AI assessment)
-Check Tests →  /specweave:check-tests (test coverage)
+Validate   →  /sw:validate   (rule-based)
+QA         →  /sw:qa         (AI assessment)
+Check Tests →  /sw:check-tests (test coverage)
 ```
 
 ---
@@ -156,46 +156,46 @@ Check Tests →  /specweave:check-tests (test coverage)
 
 ```bash
 # 1. Plan the feature
-/specweave:increment "User authentication"
+/sw:increment "User authentication"
 
 # 2. Implement it
-/specweave:do
+/sw:do
 
 # 3. Check progress periodically
-/specweave:progress
+/sw:progress
 
 # 4. Validate when tasks complete
-/specweave:validate 0001
+/sw:validate 0001
 
 # 5. Close when ready
-/specweave:done 0001
+/sw:done 0001
 ```
 
 ### Handling Interruptions
 
 ```bash
 # Working on feature A
-/specweave:do
+/sw:do
 
 # Urgent bug comes in
-/specweave:pause 0001
+/sw:pause 0001
 
 # Fix the bug
-/specweave:increment "fix: critical login bug"
-/specweave:do
-/specweave:done 0002
+/sw:increment "fix: critical login bug"
+/sw:do
+/sw:done 0002
 
 # Resume feature A
-/specweave:resume 0001
-/specweave:do
+/sw:resume 0001
+/sw:do
 ```
 
 ### Team Handoff
 
 ```bash
 # Before handoff: validate and sync
-/specweave:validate 0001
-/specweave:sync-progress
+/sw:validate 0001
+/sw:sync-progress
 
 # Handoff to teammate with clean state
 # They can see progress in GitHub/JIRA
@@ -205,10 +205,10 @@ Check Tests →  /specweave:check-tests (test coverage)
 
 ```bash
 # Sync all progress
-/specweave:sync-progress
+/sw:sync-progress
 
 # Save and push
-/specweave:save
+/sw:save
 ```
 
 ---
@@ -218,43 +218,43 @@ Check Tests →  /specweave:check-tests (test coverage)
 ### Increment Needs More Work (Closed Too Early)
 
 ```bash
-/specweave:reopen 0001
+/sw:reopen 0001
 # Continue work
-/specweave:do
-/specweave:done 0001
+/sw:do
+/sw:done 0001
 ```
 
 ### Wrong Increment Active
 
 ```bash
 # Check what's active
-/specweave:status
+/sw:status
 
 # Switch to correct one
-/specweave:pause 0001    # Pause wrong one
-/specweave:resume 0002   # Resume correct one
+/sw:pause 0001    # Pause wrong one
+/sw:resume 0002   # Resume correct one
 ```
 
 ### Sync Failed
 
 ```bash
 # Check sync status
-/specweave-github:specweave-github-status
+/sw-github:specweave-github-status
 
 # Force sync
-/specweave:sync-progress
+/sw:sync-progress
 ```
 
 ### Validation Fails
 
 ```bash
 # See what failed
-/specweave:validate 0001
+/sw:validate 0001
 
 # Common issues:
 # - Tasks not complete → mark tasks done
 # - Tests not passing → fix tests
-# - Docs not updated → run /specweave:sync-docs
+# - Docs not updated → run /sw:sync-docs
 ```
 
 ---
@@ -264,25 +264,25 @@ Check Tests →  /specweave:check-tests (test coverage)
 ### GitHub
 
 ```bash
-/specweave-github:specweave-github-sync       # Sync increment
-/specweave-github:specweave-github-create-issue  # Create issue
-/specweave-github:specweave-github-close-issue   # Close issue
-/specweave-github:specweave-github-status        # Check status
+/sw-github:specweave-github-sync       # Sync increment
+/sw-github:specweave-github-create-issue  # Create issue
+/sw-github:specweave-github-close-issue   # Close issue
+/sw-github:specweave-github-status        # Check status
 ```
 
 ### JIRA
 
 ```bash
-/specweave-jira:specweave-jira-sync    # Sync increment
-/specweave-jira:import-projects        # Import JIRA projects
+/sw-jira:specweave-jira-sync    # Sync increment
+/sw-jira:import-projects        # Import JIRA projects
 ```
 
 ### Azure DevOps
 
 ```bash
-/specweave-ado:specweave-ado-sync           # Sync increment
-/specweave-ado:specweave-ado-create-workitem  # Create work item
-/specweave-ado:specweave-ado-status           # Check status
+/sw-ado:specweave-ado-sync           # Sync increment
+/sw-ado:specweave-ado-create-workitem  # Create work item
+/sw-ado:specweave-ado-status           # Check status
 ```
 
 ---
@@ -293,39 +293,39 @@ Check Tests →  /specweave:check-tests (test coverage)
 
 | Command | Shortcut | Purpose |
 |---------|----------|---------|
-| `/specweave:increment` | - | Start new work |
-| `/specweave:do` | - | Implement tasks |
-| `/specweave:progress` | - | Check completion |
-| `/specweave:done` | - | Complete increment |
-| `/specweave:save` | - | Commit and push |
+| `/sw:increment` | - | Start new work |
+| `/sw:do` | - | Implement tasks |
+| `/sw:progress` | - | Check completion |
+| `/sw:done` | - | Complete increment |
+| `/sw:save` | - | Commit and push |
 
 ### Frequent (Weekly)
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave:pause` | Temporarily stop |
-| `/specweave:resume` | Continue paused |
-| `/specweave:validate` | Pre-close check |
-| `/specweave:sync-progress` | Sync external tools |
+| `/sw:pause` | Temporarily stop |
+| `/sw:resume` | Continue paused |
+| `/sw:validate` | Pre-close check |
+| `/sw:sync-progress` | Sync external tools |
 
 ### Occasional (As Needed)
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave:backlog` | Deprioritize |
-| `/specweave:abandon` | Cancel work |
-| `/specweave:reopen` | Needs more work |
-| `/specweave:qa` | Quality assessment |
+| `/sw:backlog` | Deprioritize |
+| `/sw:abandon` | Cancel work |
+| `/sw:reopen` | Needs more work |
+| `/sw:qa` | Quality assessment |
 
 ---
 
 ## Tips
 
-1. **Start with `/specweave:increment`** — Always plan before coding
-2. **Use `/specweave:progress` often** — Stay aware of status
-3. **Validate before closing** — `/specweave:validate` catches issues
-4. **Sync at end of day** — `/specweave:sync-progress` keeps everyone informed
-5. **Save frequently** — `/specweave:save` protects your work
+1. **Start with `/sw:increment`** — Always plan before coding
+2. **Use `/sw:progress` often** — Stay aware of status
+3. **Validate before closing** — `/sw:validate` catches issues
+4. **Sync at end of day** — `/sw:sync-progress` keeps everyone informed
+5. **Save frequently** — `/sw:save` protects your work
 
 ---
 

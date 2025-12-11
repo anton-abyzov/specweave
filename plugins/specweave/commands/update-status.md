@@ -11,7 +11,7 @@ description: Force-update status line cache with latest increment status
 - Status line doesn't reflect recent changes
 - After completing tasks (want to see updated progress immediately)
 - After status transitions (active → completed)
-- Before checking progress with `/specweave:progress`
+- Before checking progress with `/sw:progress`
 - When status line shows outdated information
 
 ---
@@ -44,7 +44,7 @@ description: Force-update status line cache with latest increment status
 
 ```bash
 # Force-update status line (no arguments)
-/specweave:update-status
+/sw:update-status
 ```
 
 **Output**:
@@ -72,15 +72,15 @@ Status Line: [0043] ████████ 8/8 tasks (1 open) ✓
 
 This command is automatically called by:
 
-1. **`/specweave:progress`**
+1. **`/sw:progress`**
    - Ensures status line is fresh before showing progress
    - User always sees accurate completion percentages
 
-2. **`/specweave:done`**
+2. **`/sw:done`**
    - Refreshes status line before PM validation
    - Ensures final progress is accurate
 
-3. **`/specweave:status`**
+3. **`/sw:status`**
    - Updates cache before showing increment list
    - Shows current increment status
 

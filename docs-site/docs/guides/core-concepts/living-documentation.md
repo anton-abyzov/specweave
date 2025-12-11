@@ -40,7 +40,7 @@ graph LR
 ```
 
 **How it works:**
-1. You complete a task with `/specweave:do`
+1. You complete a task with `/sw:do`
 2. Post-task-completion hook fires automatically
 3. Specs, architecture docs, ADRs update to reflect reality
 4. Docs commit with implementation changes
@@ -205,7 +205,7 @@ Fires after **every task completion**:
 
 ```bash
 # You complete a task
-/specweave:do
+/sw:do
 # Task T-001: Implement AuthService ✅
 
 # Hook fires automatically:
@@ -343,11 +343,11 @@ Fires after **every task completion**:
 
 ### ❌ DON'T
 
-1. **Don't manually edit living docs** - Use `/specweave:sync-docs` instead
+1. **Don't manually edit living docs** - Use `/sw:sync-docs` instead
 2. **Don't skip hook execution** - Docs will drift
 3. **Don't modify increment snapshots** - They're immutable history
 4. **Don't duplicate docs** - One source of truth only
-5. **Don't bypass the workflow** - Use `/specweave:do` for all work
+5. **Don't bypass the workflow** - Use `/sw:do` for all work
 
 ## Comparison: Traditional vs Living
 
@@ -384,7 +384,7 @@ Month 3: Docs already outdated
 **With living docs:**
 ```
 Day 1: Implement OAuth
-  /specweave:do
+  /sw:do
   # Hook fires:
   # ✅ Updates strategy/authentication.md
   # ✅ Updates architecture/hld-authentication.md
@@ -412,7 +412,7 @@ sequenceDiagram
     participant Docs as Living Docs
     participant Git as Git
 
-    Dev->>CLI: /specweave:do
+    Dev->>CLI: /sw:do
     CLI->>CLI: Execute task
     CLI->>Hook: ✅ Task completed
     Hook->>Docs: Analyze changes
@@ -443,10 +443,10 @@ cat .specweave/docs/internal/architecture/adr/0001-jwt-tokens.md
 
 ```bash
 # Review docs vs implementation
-/specweave:sync-docs review
+/sw:sync-docs review
 
 # Update docs from implementation
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 **Note**: Hooks handle updates automatically, manual sync rarely needed.
@@ -464,7 +464,7 @@ cat .specweave/docs/internal/architecture/adr/0001-jwt-tokens.md
 ## Next Steps
 
 - [Understanding Increments](/docs/guides/core-concepts/what-is-an-increment)
-- [The /specweave:do Workflow](/docs/workflows/implementation)
+- [The /sw:do Workflow](/docs/workflows/implementation)
 - [Hook System](/docs/guides/advanced/hooks)
 
 ---

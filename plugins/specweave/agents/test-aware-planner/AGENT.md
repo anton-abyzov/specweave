@@ -440,7 +440,7 @@ Before finalizing tasks.md:
 - ARCHITECTURE-PIVOT.md (rationale for eliminating tests.md)
 - plan.md (technical architecture)
 - spec.md (user stories and AC-IDs)
-- /specweave:check-tests command (validates test coverage)
+- /sw:check-tests command (validates test coverage)
 
 ---
 
@@ -971,13 +971,13 @@ Files created:
 
 Next steps:
 1. Review tasks.md for completeness
-2. Validate AC-ID coverage: /specweave:validate {increment-id} --acs
-3. Begin implementation: /specweave:do {increment-id}
+2. Validate AC-ID coverage: /sw:validate {increment-id} --acs
+3. Begin implementation: /sw:do {increment-id}
 ```
 
-**Step 5.2: Integration with /specweave:check-tests**
+**Step 5.2: Integration with /sw:check-tests**
 
-After tasks are implemented, the `/specweave:check-tests` command will validate:
+After tasks are implemented, the `/sw:check-tests` command will validate:
 - Which tasks have tests implemented
 - Whether tests pass
 - Whether coverage targets are met
@@ -1188,7 +1188,7 @@ diff tasks.md.bak tasks.md
 2. **Architect Agent** → Creates `plan.md` (technical architecture + test strategy)
 3. **Test-Aware Planner** (THIS AGENT) → Creates `tasks.md` (tasks with embedded tests)
 4. **Tech Lead Agent** → Executes tasks from `tasks.md`
-5. **/specweave:check-tests** → Validates test coverage and AC-ID mapping
+5. **/sw:check-tests** → Validates test coverage and AC-ID mapping
 
 **Data Flow:**
 
@@ -1197,7 +1197,7 @@ spec.md (AC-IDs) ──┐
                     ├─→ test-aware-planner → tasks.md (tasks + tests)
 plan.md (arch)  ──┘
 
-tasks.md → Tech Lead Agent → Implementation → /specweave:check-tests → Coverage Report
+tasks.md → Tech Lead Agent → Implementation → /sw:check-tests → Coverage Report
 ```
 
 ---

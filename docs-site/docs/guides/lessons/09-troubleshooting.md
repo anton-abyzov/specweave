@@ -17,16 +17,16 @@ When something isn't working:
 
 ```bash
 # Step 1: Check status
-/specweave:status
+/sw:status
 
 # Step 2: Validate structure
-/specweave:validate 0001
+/sw:validate 0001
 
 # Step 3: Sync everything
-/specweave:sync-progress
+/sw:sync-progress
 
 # Step 4: Check workflow
-/specweave:workflow
+/sw:workflow
 ```
 
 ---
@@ -40,10 +40,10 @@ When something isn't working:
 **Solution**:
 ```bash
 # Create new
-/specweave:increment "Your feature"
+/sw:increment "Your feature"
 
 # Or resume existing
-/specweave:resume 0001
+/sw:resume 0001
 ```
 
 ---
@@ -55,13 +55,13 @@ When something isn't working:
 **Solution**:
 ```bash
 # Complete one
-/specweave:done 0001
+/sw:done 0001
 
 # Or pause one
-/specweave:pause 0002
+/sw:pause 0002
 
 # Or override (with reason)
-/specweave:increment "urgent-fix" --override-wip "Critical bug"
+/sw:increment "urgent-fix" --override-wip "Critical bug"
 ```
 
 ---
@@ -73,10 +73,10 @@ When something isn't working:
 **Solution**:
 ```bash
 # Check what's missing
-/specweave:validate 0001
+/sw:validate 0001
 
 # Complete missing work
-/specweave:do --task T-005
+/sw:do --task T-005
 
 # Or defer P2/P3 tasks
 # In tasks.md:
@@ -84,7 +84,7 @@ When something isn't working:
 # **Deferral Reason**: Scheduled for 0003
 
 # Emergency bypass (rare!)
-/specweave:done 0001 --force --reason "CVE fix"
+/sw:done 0001 --force --reason "CVE fix"
 ```
 
 ---
@@ -96,13 +96,13 @@ When something isn't working:
 **Solution**:
 ```bash
 # Check status
-/specweave-github:status
+/sw-github:status
 
 # If expired: regenerate token in .env
 # GITHUB_TOKEN=ghp_newtoken
 
 # Force re-sync
-/specweave-github:sync 0001 --force
+/sw-github:sync 0001 --force
 ```
 
 ---
@@ -128,7 +128,7 @@ When something isn't working:
 **Solution**:
 ```bash
 # Check hooks
-/specweave:check-hooks
+/sw:check-hooks
 
 # Verify hooks.json exists
 ls plugins/specweave/hooks/hooks.json
@@ -205,13 +205,13 @@ In `.specweave/config.json`:
 **Solution**:
 ```bash
 # Pause complex increments
-/specweave:pause 0001
+/sw:pause 0001
 
 # Use smaller model
 "Using Haiku: find all TODO comments"
 
 # Close completed work
-/specweave:done 0001
+/sw:done 0001
 ```
 
 ---
@@ -219,11 +219,11 @@ In `.specweave/config.json`:
 ## Diagnostic Commands
 
 ```bash
-/specweave:status          # Overall status
-/specweave:validate 0001   # Validate increment
-/specweave:check-hooks     # Hook health
-/specweave:sync-diagnostics # Sync issues
-/specweave:workflow        # Current state
+/sw:status          # Overall status
+/sw:validate 0001   # Validate increment
+/sw:check-hooks     # Hook health
+/sw:sync-diagnostics # Sync issues
+/sw:workflow        # Current state
 ```
 
 ---
@@ -237,7 +237,7 @@ In `.specweave/config.json`:
 cp -r .specweave/increments/0001 0001.bak
 
 # Try fix
-/specweave:validate 0001 --fix
+/sw:validate 0001 --fix
 
 # Or restore from git
 git checkout HEAD -- .specweave/increments/0001/
@@ -267,13 +267,13 @@ git checkout abc123 -- .specweave/increments/0001/tasks.md
 
 | Issue | Quick Fix |
 |-------|-----------|
-| No active increment | `/specweave:status` → create or resume |
+| No active increment | `/sw:status` → create or resume |
 | WIP limit | Complete or pause an increment |
-| Gate failed | `/specweave:validate` → fix issues |
-| Sync broken | `/specweave:sync-progress --force` |
+| Gate failed | `/sw:validate` → fix issues |
+| Sync broken | `/sw:sync-progress --force` |
 | Hooks crashing | `export SPECWEAVE_DISABLE_HOOKS=1` |
 
-**Golden rule**: When stuck, run `/specweave:workflow`
+**Golden rule**: When stuck, run `/sw:workflow`
 
 ---
 

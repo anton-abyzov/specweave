@@ -5,7 +5,7 @@ description: Close Azure DevOps work item when increment complete
 
 # Close ADO Work Item Command
 
-**Usage**: `/specweave-ado:close <increment-id>`
+**Usage**: `/sw-ado:close <increment-id>`
 
 **Purpose**: Close ADO work item and add completion summary
 
@@ -157,7 +157,7 @@ This command requires **both** permissions:
 ### Success
 
 ```
-User: /specweave-ado:close-workitem 0005-payment-integration
+User: /sw-ado:close-workitem 0005-payment-integration
 
 Claude:
 Checking permissions...
@@ -188,7 +188,7 @@ URL: https://dev.azure.com/acme-corp/My%20Project/_workitems/edit/12345
 ### Permission Denied
 
 ```
-User: /specweave-ado:close-workitem 0005
+User: /sw-ado:close-workitem 0005
 
 Claude:
 Checking permissions...
@@ -207,7 +207,7 @@ Update .specweave/config.json to enable these permissions.
 ### Incomplete Increment
 
 ```
-User: /specweave-ado:close-workitem 0005
+User: /sw-ado:close-workitem 0005
 
 Claude:
 Checking permissions...
@@ -234,8 +234,8 @@ Complete remaining tasks:
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-ado:pull` | Pull changes from ADO |
-| `/specweave-ado:push` | Push progress to ADO |
-| `/specweave-ado:sync` | Two-way sync |
-| `/specweave-ado:create` | Create ADO work item |
-| `/specweave-ado:status` | Check sync status |
+| `/sw-ado:pull` | Pull changes from ADO |
+| `/sw-ado:push` | Push progress to ADO |
+| `/sw-ado:sync` | Two-way sync |
+| `/sw-ado:create` | Create ADO work item |
+| `/sw-ado:status` | Check sync status |

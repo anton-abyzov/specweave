@@ -238,14 +238,14 @@ describe('IncrementStructureValidator', () => {
     });
   });
 
-  describe('Integration with /specweave:validate', () => {
-    it('should be called by /specweave:validate command', async () => {
+  describe('Integration with /sw:validate', () => {
+    it('should be called by /sw:validate command', async () => {
       // This test ensures structure validation is integrated into the validate command
       // Implementation will be added when integrating with validate command
       expect(true).toBe(true); // Placeholder
     });
 
-    it('should be called by /specweave:plan command', async () => {
+    it('should be called by /sw:plan command', async () => {
       // This test ensures structure validation is integrated into the plan command
       // Implementation will be added when integrating with plan command
       expect(true).toBe(true); // Placeholder

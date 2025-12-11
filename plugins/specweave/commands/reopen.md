@@ -14,16 +14,16 @@ Reopen completed work when issues are discovered after completion.
 
 ```bash
 # Reopen entire increment (natural language - RECOMMENDED)
-/specweave:reopen 0043 Bug found in AC sync implementation
+/sw:reopen 0043 Bug found in AC sync implementation
 
 # OR with explicit --reason flag
-/specweave:reopen 0031 --reason "GitHub sync failing"
+/sw:reopen 0031 --reason "GitHub sync failing"
 
 # Reopen specific task
-/specweave:reopen 0031 --task T-003 --reason "API integration broken"
+/sw:reopen 0031 --task T-003 --reason "API integration broken"
 
 # Reopen user story (all related tasks)
-/specweave:reopen 0031 --user-story US-001 --reason "Acceptance criteria not met"
+/sw:reopen 0031 --user-story US-001 --reason "Acceptance criteria not met"
 ```
 
 ### Natural Language Syntax (NEW!)
@@ -32,13 +32,13 @@ You can now use natural language without the `--reason` flag:
 
 ```bash
 # ✅ WORKS: Natural language (everything after increment ID is the reason)
-/specweave:reopen 0043 Bug found in implementation, need to fix
+/sw:reopen 0043 Bug found in implementation, need to fix
 
 # ✅ WORKS: Traditional syntax with flag
-/specweave:reopen 0043 --reason "Bug found in implementation"
+/sw:reopen 0043 --reason "Bug found in implementation"
 
 # ✅ WORKS: With task ID
-/specweave:reopen 0043 --task T-005 Found edge case not covered
+/sw:reopen 0043 --task T-005 Found edge case not covered
 ```
 
 **How it works**: All text after the increment ID (and any flags) is treated as the reason. No quotes needed!
@@ -62,12 +62,12 @@ The `smart-reopen-detector` skill will:
 Reopens the increment and marks all tasks as active.
 
 ```bash
-/specweave:reopen <increment-id> --reason "Why reopening"
+/sw:reopen <increment-id> --reason "Why reopening"
 ```
 
 **Example**:
 ```bash
-/specweave:reopen 0031-external-tool-status-sync --reason "GitHub sync failing in production"
+/sw:reopen 0031-external-tool-status-sync --reason "GitHub sync failing in production"
 ```
 
 **What happens**:
@@ -83,12 +83,12 @@ Reopens the increment and marks all tasks as active.
 Reopens a single task without changing increment status.
 
 ```bash
-/specweave:reopen <increment-id> --task <task-id> --reason "Why reopening"
+/sw:reopen <increment-id> --task <task-id> --reason "Why reopening"
 ```
 
 **Example**:
 ```bash
-/specweave:reopen 0031 --task T-003 --reason "GitHub API returning 500 errors"
+/sw:reopen 0031 --task T-003 --reason "GitHub API returning 500 errors"
 ```
 
 **What happens**:
@@ -102,12 +102,12 @@ Reopens a single task without changing increment status.
 Reopens a user story and all its related tasks.
 
 ```bash
-/specweave:reopen <increment-id> --user-story <us-id> --reason "Why reopening"
+/sw:reopen <increment-id> --user-story <us-id> --reason "Why reopening"
 ```
 
 **Example**:
 ```bash
-/specweave:reopen 0031 --user-story US-001 --reason "Authentication not working as specified"
+/sw:reopen 0031 --user-story US-001 --reason "Authentication not working as specified"
 ```
 
 **What happens**:
@@ -121,12 +121,12 @@ Reopens a user story and all its related tasks.
 Use `--force` to bypass WIP limit checks (use sparingly!).
 
 ```bash
-/specweave:reopen <increment-id> --force --reason "Critical production issue"
+/sw:reopen <increment-id> --force --reason "Critical production issue"
 ```
 
 **Example**:
 ```bash
-/specweave:reopen 0031 --force --reason "Production down, need immediate fix"
+/sw:reopen 0031 --force --reason "Production down, need immediate fix"
 ```
 
 **⚠️  Warning**: This can violate WIP limits. Use only for:
@@ -147,9 +147,9 @@ Use `--force` to bypass WIP limit checks (use sparingly!).
 **Natural Language**: If `--reason` is not provided, all remaining text is used as the reason.
 
 Examples:
-- `/specweave:reopen 0043 Bug found` → reason = "Bug found"
-- `/specweave:reopen 0043 --task T-005 Edge case` → reason = "Edge case"
-- `/specweave:reopen 0043 --reason "Formal reason"` → reason = "Formal reason" (explicit)
+- `/sw:reopen 0043 Bug found` → reason = "Bug found"
+- `/sw:reopen 0043 --task T-005 Edge case` → reason = "Edge case"
+- `/sw:reopen 0043 --reason "Formal reason"` → reason = "Formal reason" (explicit)
 
 ## WIP Limit Validation
 
@@ -163,9 +163,9 @@ The command automatically checks WIP limits before reopening increments.
    Reopening 0031 will EXCEED the limit (3/2)!
 
 Options:
-1. Pause another feature: /specweave:pause 0030 --reason "Paused for critical fix"
-2. Complete another feature: /specweave:done 0029
-3. Force reopen: /specweave:reopen 0031 --force --reason "Production critical"
+1. Pause another feature: /sw:pause 0030 --reason "Paused for critical fix"
+2. Complete another feature: /sw:done 0029
+3. Force reopen: /sw:reopen 0031 --force --reason "Production critical"
 
 Continue? (y/n)
 ```
@@ -236,20 +236,20 @@ When you reopen an increment/task, it syncs to external tools:
 "The payment processing is broken after deployment"
 
 # Suggested command (from smart detector)
-/specweave:reopen 0028-payment-integration --reason "Payment processing failing in prod"
+/sw:reopen 0028-payment-integration --reason "Payment processing failing in prod"
 
 # Result
 ✅ Increment 0028 reopened
 ⚠️  WIP LIMIT: 3/2 active features (EXCEEDED)
 📋 Reopened 5 tasks
 🔄 Synced to GitHub issue #123
-💡 Continue work: /specweave:do 0028
+💡 Continue work: /sw:do 0028
 ```
 
 ### Example 2: Specific Task Fix
 ```bash
 # Surgical reopen (just one task)
-/specweave:reopen 0031 --task T-003 --reason "GitHub API rate limiting not handled"
+/sw:reopen 0031 --task T-003 --reason "GitHub API rate limiting not handled"
 
 # Result
 ✅ Task T-003 reopened
@@ -260,7 +260,7 @@ When you reopen an increment/task, it syncs to external tools:
 ### Example 3: User Story Not Met
 ```bash
 # Reopen entire user story
-/specweave:reopen 0025 --user-story US-002 --reason "Security requirements not satisfied"
+/sw:reopen 0025 --user-story US-002 --reason "Security requirements not satisfied"
 
 # Result
 ✅ User story US-002 reopened
@@ -285,7 +285,7 @@ The `⚠️  REOPENED` badge indicates the increment was previously completed.
 
 ```bash
 # Reopen increment to investigate
-/specweave:reopen 0032 --reason "CI tests failing, passing locally"
+/sw:reopen 0032 --reason "CI tests failing, passing locally"
 
 # Debug CI config
 # Fix issue
@@ -296,7 +296,7 @@ The `⚠️  REOPENED` badge indicates the increment was previously completed.
 
 ```bash
 # Reopen specific user story
-/specweave:reopen 0029 --user-story US-003 --reason "Missing error handling requirement"
+/sw:reopen 0029 --user-story US-003 --reason "Missing error handling requirement"
 
 # Implement missing AC
 # Complete user story
@@ -306,7 +306,7 @@ The `⚠️  REOPENED` badge indicates the increment was previously completed.
 
 ```bash
 # Reopen old increment (if within 7 days)
-/specweave:reopen 0027 --task T-012 --reason "Regression: login timeout increased"
+/sw:reopen 0027 --task T-012 --reason "Regression: login timeout increased"
 
 # Fix regression
 # Add regression test
@@ -321,13 +321,13 @@ The `⚠️  REOPENED` badge indicates the increment was previously completed.
 "The GitHub sync is broken"
 
 # 2. Smart detector suggests
-# /specweave:reopen 0031 --task T-003 --reason "GitHub sync broken"
+# /sw:reopen 0031 --task T-003 --reason "GitHub sync broken"
 
 # 3. Execute reopen
-/specweave:reopen 0031 --task T-003 --reason "GitHub sync broken"
+/sw:reopen 0031 --task T-003 --reason "GitHub sync broken"
 
 # 4. Check status
-/specweave:status
+/sw:status
 
 # 5. Fix the issue
 # Edit code...
@@ -336,14 +336,14 @@ The `⚠️  REOPENED` badge indicates the increment was previously completed.
 # Update tasks.md: [ ] → [x]
 
 # 7. Close increment (if all tasks done)
-/specweave:done 0031
+/sw:done 0031
 ```
 
 ## Best Practices
 
 ### ✅ Do
 - Always provide a clear `--reason`
-- Check WIP limits first (`/specweave:status`)
+- Check WIP limits first (`/sw:status`)
 - Use task-level reopen for surgical fixes
 - Use increment reopen for systemic issues
 - Add reopened annotation to tasks.md
@@ -366,8 +366,8 @@ The `⚠️  REOPENED` badge indicates the increment was previously completed.
 
 **Solution**: Pause or complete another increment first:
 ```bash
-/specweave:pause 0030 --reason "Paused for critical fix"
-/specweave:reopen 0031 --reason "Production issue"
+/sw:pause 0030 --reason "Paused for critical fix"
+/sw:reopen 0031 --reason "Production issue"
 ```
 
 ---
@@ -388,11 +388,11 @@ cat .specweave/increments/0031-external-tool-status-sync/tasks.md | grep "^##"
 
 ## Related Commands
 
-- `/specweave:status` - Check WIP limits
-- `/specweave:progress` - See increment progress
-- `/specweave:do` - Continue work after reopening
-- `/specweave:pause` - Pause another increment to make room
-- `/specweave:done` - Close increment when fixed
+- `/sw:status` - Check WIP limits
+- `/sw:progress` - See increment progress
+- `/sw:do` - Continue work after reopening
+- `/sw:pause` - Pause another increment to make room
+- `/sw:done` - Close increment when fixed
 
 ## Technical Details
 

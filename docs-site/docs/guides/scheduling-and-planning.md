@@ -56,7 +56,7 @@ SpecWeave deliberately **does not sync** scheduling and planning metadata:
 ### GitHub Users: GitHub Projects
 
 **Setup**:
-1. SpecWeave syncs increments → GitHub Issues (automatic via `/specweave-github:create-issue`)
+1. SpecWeave syncs increments → GitHub Issues (automatic via `/sw-github:create-issue`)
 2. Create GitHub Project for scheduling (Web UI or CLI)
 3. Add SpecWeave issues to Project
 4. Manage sprints/estimates/dates in Project UI
@@ -65,7 +65,7 @@ SpecWeave deliberately **does not sync** scheduling and planning metadata:
 
 ```bash
 # 1. SpecWeave creates increment + syncs to GitHub
-/specweave:increment "Multi-repo scheduling support"
+/sw:increment "Multi-repo scheduling support"
 # → Creates increment 0034-multi-repo-scheduling
 # → Auto-creates GitHub issue #67 (via post-increment-planning hook)
 
@@ -81,7 +81,7 @@ gh project item-add <PROJECT_NUMBER> \
 # - Due Date: "2025-11-30"
 
 # 4. Work on increment as usual
-/specweave:do
+/sw:do
 # → Updates GitHub issue status automatically
 # → GitHub Project reflects changes (status, checkboxes)
 ```
@@ -116,7 +116,7 @@ gh project item-add <PROJECT_NUMBER> \
 ### JIRA Users: JIRA Boards + Sprints
 
 **Setup**:
-1. SpecWeave syncs increments → JIRA Epics/Stories (via `/specweave-jira:sync`)
+1. SpecWeave syncs increments → JIRA Epics/Stories (via `/sw-jira:sync`)
 2. Use JIRA's native sprint planning
 3. Assign stories to sprints in JIRA
 4. SpecWeave reflects implementation status only
@@ -125,7 +125,7 @@ gh project item-add <PROJECT_NUMBER> \
 
 ```bash
 # 1. SpecWeave creates increment + syncs to JIRA
-/specweave:increment "Authentication service"
+/sw:increment "Authentication service"
 # → Creates increment 0035-authentication-service
 # → Syncs to JIRA epic PROJ-123
 
@@ -136,7 +136,7 @@ gh project item-add <PROJECT_NUMBER> \
 # - Set labels: backend, security, P1
 
 # 3. Work on increment as usual
-/specweave:do
+/sw:do
 # → Updates JIRA epic status automatically (In Progress → Done)
 # → JIRA board reflects completion
 # → Sprint burndown updates automatically
@@ -158,7 +158,7 @@ gh project item-add <PROJECT_NUMBER> \
 ### Azure DevOps Users: ADO Boards + Iterations
 
 **Setup**:
-1. SpecWeave syncs increments → ADO Work Items (via `/specweave-ado:sync`)
+1. SpecWeave syncs increments → ADO Work Items (via `/sw-ado:sync`)
 2. Use ADO's iteration planning
 3. Set Iteration Path and Effort in ADO
 4. SpecWeave reflects implementation status only
@@ -167,7 +167,7 @@ gh project item-add <PROJECT_NUMBER> \
 
 ```bash
 # 1. SpecWeave creates increment + syncs to ADO
-/specweave:increment "Payment gateway integration"
+/sw:increment "Payment gateway integration"
 # → Creates increment 0036-payment-gateway
 # → Syncs to ADO feature #456
 
@@ -178,7 +178,7 @@ gh project item-add <PROJECT_NUMBER> \
 # - Set Area Path: Backend\Payments
 
 # 3. Work on increment as usual
-/specweave:do
+/sw:do
 # → Updates ADO work item status (Active → Resolved → Closed)
 # → ADO sprint board reflects completion
 # → Sprint capacity updates automatically
@@ -289,7 +289,7 @@ gh issue list --milestone "v0.19.0"
 ✅ **DO**:
 - Write clear user stories with acceptance criteria
 - Break work into P1/P2/P3 tasks
-- Track implementation progress via `/specweave:do`
+- Track implementation progress via `/sw:do`
 - Update external tools automatically via sync
 
 ❌ **DON'T**:
@@ -332,7 +332,7 @@ gh project create --owner anton-abyzov --title "SpecWeave Sprints"
 **Daily Workflow**:
 ```bash
 # Morning: Plan increment
-/specweave:increment "User authentication"
+/sw:increment "User authentication"
 # → Creates increment 0037 + GitHub issue #70
 
 # Add to GitHub Project (Web UI):
@@ -341,12 +341,12 @@ gh project create --owner anton-abyzov --title "SpecWeave Sprints"
 # - Status: Backlog
 
 # Afternoon: Start work
-/specweave:do
+/sw:do
 # → Updates issue to "In Progress" automatically
 # → GitHub Project shows progress
 
 # Next day: Complete work
-/specweave:done 0037
+/sw:done 0037
 # → Updates issue to "Closed" automatically
 # → GitHub Project shows "Done"
 # → Sprint burndown updates
@@ -365,7 +365,7 @@ gh project create --owner anton-abyzov --title "SpecWeave Sprints"
 **Daily Workflow**:
 ```bash
 # Morning: Plan increment
-/specweave:increment "Payment processing"
+/sw:increment "Payment processing"
 # → Creates increment 0038
 # → Syncs to JIRA epic SPEC-123
 
@@ -375,11 +375,11 @@ gh project create --owner anton-abyzov --title "SpecWeave Sprints"
 # - Move to "To Do"
 
 # Afternoon: Start work
-/specweave:do
+/sw:do
 # → Updates JIRA epic to "In Progress" automatically
 
 # Next week: Complete work
-/specweave:done 0038
+/sw:done 0038
 # → Updates JIRA epic to "Done" automatically
 # → Sprint burndown updates
 # → Velocity chart updates
@@ -397,7 +397,7 @@ gh project create --owner anton-abyzov --title "SpecWeave Sprints"
 **Daily Workflow**:
 ```bash
 # Monday: Plan increment
-/specweave:increment "Infrastructure monitoring"
+/sw:increment "Infrastructure monitoring"
 # → Creates increment 0039
 # → Syncs to ADO feature #456
 
@@ -407,11 +407,11 @@ gh project create --owner anton-abyzov --title "SpecWeave Sprints"
 # - Set Assigned To: Team
 
 # Tuesday: Start work
-/specweave:do
+/sw:do
 # → Updates ADO feature to "Active" automatically
 
 # Friday: Complete work
-/specweave:done 0039
+/sw:done 0039
 # → Updates ADO feature to "Closed" automatically
 # → Sprint capacity updates
 # → Team velocity updates

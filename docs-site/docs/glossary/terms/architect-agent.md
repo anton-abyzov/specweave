@@ -90,9 +90,9 @@ graph LR
 
 ## When It Activates
 
-- `/specweave:increment` - After PM creates spec
+- `/sw:increment` - After PM creates spec
 - Architecture questions - When user asks about design
-- `/specweave:sync-docs review` - Reviews architecture docs
+- `/sw:sync-docs review` - Reviews architecture docs
 
 ## Related
 

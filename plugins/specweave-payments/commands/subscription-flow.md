@@ -1,4 +1,4 @@
-# /specweave-payments:subscription-flow
+# /sw-payments:subscription-flow
 
 Complete subscription billing implementation guide with pricing tiers, trials, upgrades/downgrades, and lifecycle management.
 

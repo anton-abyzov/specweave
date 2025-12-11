@@ -326,7 +326,7 @@ with track_experiment("xgboost-v1", increment="0042") as exp:
 ### Living Docs Integration
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 Updates:

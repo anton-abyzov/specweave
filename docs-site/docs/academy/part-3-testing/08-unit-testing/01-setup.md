@@ -333,7 +333,7 @@ When using SpecWeave, tests are defined in `tasks.md`:
 - `multiply(3, 4)` → returns `12`
 ```
 
-SpecWeave's `/specweave:do` generates test files from these plans.
+SpecWeave's `/sw:do` generates test files from these plans.
 
 ---
 

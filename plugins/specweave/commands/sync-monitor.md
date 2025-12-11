@@ -5,8 +5,8 @@ Show sync orchestration status at a glance - jobs, notifications, and recent act
 ## Usage
 
 ```bash
-/specweave:sync-monitor           # Show dashboard
-/specweave:sync-monitor --json    # JSON output for scripting
+/sw:sync-monitor           # Show dashboard
+/sw:sync-monitor --json    # JSON output for scripting
 ```
 
 ## Arguments
@@ -52,6 +52,6 @@ Show sync orchestration status at a glance - jobs, notifications, and recent act
 
 ## Related
 
-- `/specweave:notifications`: Manage notifications
-- `/specweave:discrepancies`: View and act on discrepancies
-- `/specweave:sync-logs`: Query sync audit logs
+- `/sw:notifications`: Manage notifications
+- `/sw:discrepancies`: View and act on discrepancies
+- `/sw:sync-logs`: Query sync audit logs

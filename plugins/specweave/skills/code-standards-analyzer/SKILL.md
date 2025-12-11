@@ -208,7 +208,7 @@ Coding Standards: .specweave/docs/internal/governance/coding-standards.md
 **Optional**: Re-analyze on increment done
 
 ```bash
-/specweave:done 0046 --update-standards
+/sw:done 0046 --update-standards
 ```
 
 ---
@@ -310,13 +310,13 @@ Full standards: .specweave/docs/internal/governance/coding-standards.md"
 
 ```bash
 # Full analysis
-/specweave:analyze-standards
+/sw:analyze-standards
 
 # Drift detection only
-/specweave:analyze-standards --drift
+/sw:analyze-standards --drift
 
 # Update existing standards
-/specweave:analyze-standards --update
+/sw:analyze-standards --update
 ```
 
 ---

@@ -1,4 +1,4 @@
-# /specweave-core:refactor-plan
+# /sw-core:refactor-plan
 
 Generate comprehensive refactoring plans with risk assessment, step-by-step execution, and rollback strategies.
 

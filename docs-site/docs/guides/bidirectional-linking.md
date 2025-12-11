@@ -14,12 +14,12 @@ SpecWeave automatically creates **bidirectional links** between tasks and user s
 
 ## How It Works
 
-### Automatic During `/specweave:done`
+### Automatic During `/sw:done`
 
 When you complete an increment:
 
 ```bash
-/specweave:done 0031
+/sw:done 0031
 ```
 
 SpecWeave automatically:
@@ -200,7 +200,7 @@ AI assistants (Claude, GitHub Copilot, ChatGPT) can:
 
 ### 3. Zero Manual Work ✅
 
-- Links created automatically during `/specweave:done`
+- Links created automatically during `/sw:done`
 - No manual linking needed
 - Idempotent (safe to run sync multiple times)
 
@@ -279,7 +279,7 @@ To disable bidirectional linking (not recommended):
 
 ### Duplicate Prevention
 
-**Scenario**: Run `/specweave:done` twice on same increment
+**Scenario**: Run `/sw:done` twice on same increment
 
 **Behavior**: Checks if `**User Story**:` already exists → Skip
 
@@ -326,7 +326,7 @@ To disable bidirectional linking (not recommended):
 
 ## Manual Sync
 
-If automatic sync didn't work during `/specweave:done`:
+If automatic sync didn't work during `/sw:done`:
 
 ```bash
 node -e "import('./dist/src/core/living-docs/spec-distributor.js').then(async ({ SpecDistributor }) => {

@@ -30,7 +30,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Role**: Product Manager
 - **Expertise**: Product strategy, requirements gathering, user stories, feature prioritization
 - **Activates**: When planning features, creating specs, defining acceptance criteria
-- **Commands**: `/specweave:increment`, `/specweave:done`
+- **Commands**: `/sw:increment`, `/sw:done`
 - **Output**: `spec.md` with user stories and acceptance criteria
 
 **2. Architect Agent** (`architect`)
@@ -51,14 +51,14 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Role**: QA Lead
 - **Expertise**: Test strategy, test planning, quality gates
 - **Activates**: When planning test coverage, validating quality
-- **Commands**: `/specweave:check-tests`, `/specweave:qa`
+- **Commands**: `/sw:check-tests`, `/sw:qa`
 - **Output**: Test plans, quality assessment reports
 
 **5. TDD Orchestrator Agent** (`tdd-orchestrator`)
 - **Role**: [TDD](/docs/glossary/terms/tdd) (Test-Driven Development) Workflow Leader
 - **Expertise**: Red-Green-Refactor cycle, test-first development
 - **Activates**: When using TDD workflow
-- **Commands**: `/specweave:tdd-cycle`, `/specweave:tdd-red`, `/specweave:tdd-green`, `/specweave:tdd-refactor`
+- **Commands**: `/sw:tdd-cycle`, `/sw:tdd-red`, `/sw:tdd-green`, `/sw:tdd-refactor`
 - **Output**: TDD workflow guidance, test implementation
 
 **6. Test-Aware Planner Agent** (`test-aware-planner`)
@@ -93,7 +93,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 - **Role**: Translation Specialist
 - **Expertise**: Multilingual support, content translation
 - **Activates**: When translating specs/docs to English (multilingual workflow)
-- **Commands**: `/specweave:translate`
+- **Commands**: `/sw:translate`
 - **Output**: Translated content (maintains code blocks, technical terms)
 
 **11. Code Reviewer Agent** (`code-reviewer`)
@@ -121,7 +121,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
 
 ```markdown
 # User creates increment
-/specweave:increment "Add user authentication with OAuth"
+/sw:increment "Add user authentication with OAuth"
 
 # PM Agent activates automatically and:
 1. Generates spec.md with:
@@ -131,7 +131,7 @@ SpecWeave includes **11 specialized AI agents** that perform different roles in 
    - Priority assignments (P1, P2, P3)
 2. Creates [living docs](/docs/glossary/terms/living-docs) in .specweave/docs/internal/specs/
 3. Links to external PM tools (Jira, ADO, GitHub Issues)
-4. Validates increment completion via /specweave:done
+4. Validates increment completion via /sw:done
 ```
 
 **Example Output** (spec.md):
@@ -221,7 +221,7 @@ Use PostgreSQL for transactional data, Redis for session cache.
 - MySQL: Weaker JSON support than PostgreSQL (rejected)
 ```
 
-Architect Agent stores [ADRs](/docs/glossary/terms/adr) permanently in [living docs](/docs/glossary/terms/living-docs), updated via `/specweave:sync-docs`.
+Architect Agent stores [ADRs](/docs/glossary/terms/adr) permanently in [living docs](/docs/glossary/terms/living-docs), updated via `/sw:sync-docs`.
 
 ---
 
@@ -302,8 +302,8 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 
 **QA Lead Agent**:
 - Defines test strategy (unit/integration/E2E targets)
-- Validates test coverage via `/specweave:check-tests`
-- Runs quality gates via `/specweave:qa`
+- Validates test coverage via `/sw:check-tests`
+- Runs quality gates via `/sw:qa`
 - Ensures AC-ID traceability (spec.md AC → tasks.md tests)
 
 **Test-Aware Planner Agent**:
@@ -316,7 +316,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 
 ```bash
 # 1. QA Lead validates test coverage
-/specweave:check-tests 0008
+/sw:check-tests 0008
 
 # Output:
 # ✅ AC-US1-01: Covered by T-001 (unit + integration)
@@ -327,7 +327,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 # Developer adds test for AC-US1-03
 
 # 3. QA Lead runs quality gate
-/specweave:qa 0008
+/sw:qa 0008
 
 # Output:
 # ✅ PASS - All tests passing, coverage targets met
@@ -473,7 +473,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 
 ```markdown
 # Docs Writer updates documentation after feature completion
-# Invoked via /specweave:sync-docs or manually
+# Invoked via /sw:sync-docs or manually
 
 1. [Living Docs](/docs/glossary/terms/living-docs) Sync:
    - Updates .specweave/docs/internal/ (architecture, [ADRs](/docs/glossary/terms/adr))
@@ -494,7 +494,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 
 ```bash
 # After implementing authentication feature
-/specweave:sync-docs update
+/sw:sync-docs update
 
 # Docs Writer Agent:
 1. Copies increment spec.md → living docs spec-0008-user-authentication.md
@@ -512,7 +512,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 ### Step 1: Product Planning (PM Agent)
 
 ```bash
-/specweave:increment "Add real-time chat with WebSocket support"
+/sw:increment "Add real-time chat with WebSocket support"
 ```
 
 **PM Agent activates**:
@@ -599,16 +599,16 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 ### Step 7: Implementation & Testing
 
 **Developer implements** tasks from tasks.md:
-1. Uses TDD workflow (`/specweave:tdd-cycle`)
+1. Uses TDD workflow (`/sw:tdd-cycle`)
 2. TDD Orchestrator guides red-green-refactor cycle
-3. Runs tests via `/specweave:check-tests`
+3. Runs tests via `/sw:check-tests`
 
 ---
 
 ### Step 8: Quality Gate (QA Lead Agent)
 
 ```bash
-/specweave:qa 0009
+/sw:qa 0009
 ```
 
 **QA Lead Agent validates**:
@@ -624,7 +624,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 ### Step 9: Documentation (Docs Writer Agent)
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 **Docs Writer Agent**:
@@ -638,7 +638,7 @@ Tech Lead Agent ensures every task has clear implementation steps and acceptance
 ### Step 10: Closure (PM Agent)
 
 ```bash
-/specweave:done 0009
+/sw:done 0009
 ```
 
 **PM Agent validates**:
@@ -695,10 +695,10 @@ graph TD
 
 ### 1. Start with PM Agent
 
-Always begin with `/specweave:increment` to let PM Agent create the spec:
+Always begin with `/sw:increment` to let PM Agent create the spec:
 
 ```bash
-/specweave:increment "Add user authentication"
+/sw:increment "Add user authentication"
 ```
 
 PM Agent generates spec.md, which triggers Architect Agent, Tech Lead Agent, etc.
@@ -713,9 +713,9 @@ Don't micro-manage agents. They collaborate automatically:
 Always validate before closing:
 
 ```bash
-/specweave:check-tests 0008  # Check test coverage
-/specweave:qa 0008           # Run quality assessment
-/specweave:done 0008         # PM validation + closure
+/sw:check-tests 0008  # Check test coverage
+/sw:qa 0008           # Run quality assessment
+/sw:done 0008         # PM validation + closure
 ```
 
 ### 4. Keep Living Docs Synced
@@ -723,7 +723,7 @@ Always validate before closing:
 After completing tasks, sync living docs:
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 This keeps `.specweave/docs/internal/` permanently up-to-date.
@@ -742,7 +742,7 @@ Acceptance Criteria IDs (AC-US1-01) enable traceability:
 **Beginner**:
 1. Read [Getting Started](../../guides/getting-started/quickstart.md)
 2. Understand [What is an Increment](../../guides/core-concepts/what-is-an-increment.md)
-3. Try `/specweave:increment "simple feature"` to see PM Agent in action
+3. Try `/sw:increment "simple feature"` to see PM Agent in action
 
 **Intermediate**:
 1. **Planning Workflow** (coming soon) - PM + Architect + Tech Lead collaboration

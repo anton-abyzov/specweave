@@ -5,7 +5,7 @@ description: Push local changes to Azure DevOps (like git push). Supports increm
 
 # ADO Push Command
 
-**Usage**: `/specweave-ado:push [target] [options]`
+**Usage**: `/sw-ado:push [target] [options]`
 
 **Purpose**: Push local changes to Azure DevOps (like `git push`)
 
@@ -15,19 +15,19 @@ description: Push local changes to Azure DevOps (like git push). Supports increm
 
 ```bash
 # Push current/active increment (simple mode)
-/specweave-ado:push
+/sw-ado:push
 
 # Push specific increment
-/specweave-ado:push 0005
+/sw-ado:push 0005
 
 # Push ALL local changes to ADO (living docs sync)
-/specweave-ado:push --all
+/sw-ado:push --all
 
 # Push specific project/board
-/specweave-ado:push --project clinical-insights
+/sw-ado:push --project clinical-insights
 
 # Push specific feature hierarchy
-/specweave-ado:push --feature FS-042
+/sw-ado:push --feature FS-042
 ```
 
 ---
@@ -97,7 +97,7 @@ To enable writes, update .specweave/config.json:
   "sync": { "settings": { "canUpdateExternalItems": true } }
 
 Or use read-only mode:
-  /specweave-ado:pull ${incrementId}
+  /sw-ado:pull ${incrementId}
 `);
   return;
 }
@@ -114,7 +114,7 @@ const metadata = JSON.parse(await fs.readFile(
 
 const adoWorkItemId = metadata?.external_sync?.ado?.workItemId;
 if (!adoWorkItemId) {
-  console.log(`Not linked to ADO. Run: /specweave-ado:create ${incrementId}`);
+  console.log(`Not linked to ADO. Run: /sw-ado:create ${incrementId}`);
   return;
 }
 
@@ -204,7 +204,7 @@ If `canUpdateStatus` is false, progress is posted but state unchanged.
 ### Example 1: Simple Push
 
 ```
-User: /specweave-ado:push
+User: /sw-ado:push
 
 Claude:
 Checking permissions...
@@ -225,7 +225,7 @@ Push complete!
 ### Example 2: Permission Denied
 
 ```
-User: /specweave-ado:push 0005
+User: /sw-ado:push 0005
 
 Claude:
 Checking permissions...
@@ -237,13 +237,13 @@ To enable ADO writes:
 1. Edit .specweave/config.json
 2. Set sync.settings.canUpdateExternalItems = true
 
-Or use read-only: /specweave-ado:pull 0005
+Or use read-only: /sw-ado:pull 0005
 ```
 
 ### Example 3: 100% Complete
 
 ```
-User: /specweave-ado:push 0005
+User: /sw-ado:push 0005
 
 Claude:
 Pushing to ADO...
@@ -256,7 +256,7 @@ Comment posted:
 State updated:
   Active -> Resolved (canUpdateStatus = true)
 
-Ready to close: /specweave-ado:close 0005
+Ready to close: /sw-ado:close 0005
 ```
 
 ---
@@ -330,7 +330,7 @@ Ready to close: /specweave-ado:close 0005
 │    ↑ Status: Active → Resolved                          │
 ├─────────────────────────────────────────────────────────┤
 │  🎉 INCREMENT READY TO CLOSE                            │
-│     Run: /specweave-ado:close 0005                      │
+│     Run: /sw-ado:close 0005                      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -347,7 +347,7 @@ Ready to close: /specweave-ado:close 0005
 │    sync.settings.canUpdateExternalItems = true          │
 │                                                         │
 │  OR USE READ-ONLY:                                      │
-│    /specweave-ado:pull 0005                             │
+│    /sw-ado:pull 0005                             │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -385,7 +385,7 @@ AZURE_DEVOPS_PAT=your-personal-access-token
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-ado:pull` | Pull changes from ADO |
-| `/specweave-ado:sync` | Two-way sync (pull + push) |
-| `/specweave-ado:status` | Check sync status |
-| `/specweave-ado:close` | Close completed work item |
+| `/sw-ado:pull` | Pull changes from ADO |
+| `/sw-ado:sync` | Two-way sync (pull + push) |
+| `/sw-ado:status` | Check sync status |
+| `/sw-ado:close` | Close completed work item |

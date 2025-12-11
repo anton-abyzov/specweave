@@ -284,12 +284,12 @@ SpecWeave provides AI agents that mirror these roles:
 
 ```mermaid
 graph LR
-    A["/specweave:increment"] --> B[PM Agent]
+    A["/sw:increment"] --> B[PM Agent]
     B -->|spec.md| C[Architect Agent]
     C -->|plan.md| D[Tech Lead Agent]
-    D -->|tasks.md| E["/specweave:do"]
+    D -->|tasks.md| E["/sw:do"]
     E --> F[QA Lead Agent]
-    F -->|validation| G["/specweave:done"]
+    F -->|validation| G["/sw:done"]
 ```
 
 ### The Paradigm Shift
@@ -306,11 +306,11 @@ AI: "What documentation?"
 
 **SpecWeave Approach**:
 ```
-You: "/specweave:increment User authentication"
+You: "/sw:increment User authentication"
 PM Agent: Creates spec.md with user stories, ACs
 Architect Agent: Creates plan.md with ADRs
 Tech Lead Agent: Creates tasks.md with test plans
-You: "/specweave:do"
+You: "/sw:do"
 [Code generated with full context]
 QA Agent: Validates all ACs covered
 ```

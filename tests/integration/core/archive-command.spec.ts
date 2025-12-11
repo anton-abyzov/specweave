@@ -1,5 +1,5 @@
 /**
- * E2E Tests for /specweave:archive command
+ * E2E Tests for /sw:archive command
  *
  * Tests the manual archiving workflow including:
  * - Archiving specific increments

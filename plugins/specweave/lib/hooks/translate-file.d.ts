@@ -7,7 +7,7 @@
  * This script is called from:
  * - Post-increment-planning hook (auto-translate spec.md, plan.md, tasks.md)
  * - Post-task-completion hook (auto-translate living docs)
- * - Manual /specweave:translate command
+ * - Manual /sw:translate command
  *
  * Usage:
  *   node translate-file.js <file-path> [--target-lang en] [--preview]

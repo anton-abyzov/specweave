@@ -50,13 +50,13 @@ Future: "Why was Task 5 removed?" → Check report, find exact reason
 ### Quick Log
 
 ```bash
-/specweave:update-scope "Added dark mode toggle (stakeholder request from CMO, +16 hours)"
+/sw:update-scope "Added dark mode toggle (stakeholder request from CMO, +16 hours)"
 ```
 
 ### Detailed Log
 
 ```bash
-/specweave:update-scope
+/sw:update-scope
 # Interactive prompts:
 # - What changed? (Added/Removed/Modified user story)
 # - What specifically? (e.g., "US6: Dark mode toggle")
@@ -80,7 +80,7 @@ const active = await MetadataManager.getActive();
 
 if (active.length === 0) {
   console.error('❌ No active increment found');
-  console.error('   Run /specweave:status to check increment status');
+  console.error('   Run /sw:status to check increment status');
   process.exit(1);
 }
 
@@ -107,7 +107,7 @@ const reportPath = `.specweave/increments/${increment}/reports/COMPLETION-REPORT
 if (!fs.existsSync(reportPath)) {
   console.error('❌ Completion report not found');
   console.error(`   Expected: ${reportPath}`);
-  console.error('   Run /specweave:increment to create increment properly');
+  console.error('   Run /sw:increment to create increment properly');
   process.exit(1);
 }
 
@@ -342,9 +342,9 @@ Always include:
 
 ## Related Commands
 
-- `/specweave:increment "feature"` - Creates increment with initial completion report
-- `/specweave:done <id>` - Finalizes report and marks increment complete
-- `/specweave:status` - Check which increment is active
+- `/sw:increment "feature"` - Creates increment with initial completion report
+- `/sw:done <id>` - Finalizes report and marks increment complete
+- `/sw:status` - Check which increment is active
 
 ---
 

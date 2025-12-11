@@ -46,7 +46,7 @@ export class IncrementDetector {
     if (allIncrements.length === 0) {
       return {
         success: false,
-        reason: 'No increments found. Create an increment with `/specweave:increment` first.',
+        reason: 'No increments found. Create an increment with `/sw:increment` first.',
         candidates: []
       };
     }
@@ -111,7 +111,7 @@ export class IncrementDetector {
     // No suitable increments found
     return {
       success: false,
-      reason: 'No PLANNING or ACTIVE increments found. Create an increment with `/specweave:increment` first.',
+      reason: 'No PLANNING or ACTIVE increments found. Create an increment with `/sw:increment` first.',
       candidates: []
     };
   }

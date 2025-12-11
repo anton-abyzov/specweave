@@ -12,7 +12,7 @@ You are helping the user navigate through the SpecWeave increment workflow with 
 ## Usage
 
 ```bash
-/specweave:workflow [increment-id]
+/sw:workflow [increment-id]
 ```
 
 **No arguments**: Auto-detects active increment
@@ -128,7 +128,7 @@ CURRENT PHASE: REVIEW_READY
 You're in the PLANNING phase. Tasks need to be generated.
 
 SUGGESTED ACTION:
-  Run: /specweave:plan 0053
+  Run: /sw:plan 0053
 
 This will:
   • Generate plan.md with architecture design
@@ -149,7 +149,7 @@ CURRENT TASK: T-024 - Implement soft delete mechanism
   Satisfies: AC-US3-01, AC-US3-02
 
 SUGGESTED ACTION:
-  Continue: /specweave:do 0053
+  Continue: /sw:do 0053
 
 PROGRESS:
   Estimated remaining: ~4-6 hours
@@ -176,14 +176,14 @@ SUGGESTED ACTIONS (in order):
      cat .specweave/increments/0053-*/tasks.md | head -100
 
   2. VALIDATE QUALITY:
-     /specweave:validate 0053 --quality
+     /sw:validate 0053 --quality
 
   3. IF VALIDATION PASSES:
-     /specweave:done 0053
+     /sw:done 0053
 
 Quick commands:
-  • /specweave:progress       - See task breakdown
-  • /specweave:check-tests 0053 - Verify test coverage
+  • /sw:progress       - See task breakdown
+  • /sw:check-tests 0053 - Verify test coverage
 ```
 
 ### Phase: VALIDATE_READY
@@ -194,7 +194,7 @@ Quick commands:
 Ready for validation. Run quality checks before closing.
 
 SUGGESTED ACTION:
-  Run: /specweave:validate 0053 --quality
+  Run: /sw:validate 0053 --quality
 
 This will check:
   • 141 rule-based validation checks
@@ -203,7 +203,7 @@ This will check:
   • Three-file canonical structure (ADR-0047)
 
 After validation passes:
-  Run: /specweave:done 0053
+  Run: /sw:done 0053
 ```
 
 ### Phase: CLOSE_READY
@@ -219,7 +219,7 @@ VALIDATION SUMMARY:
   Quality score: 87/100 (GOOD) ✅
 
 SUGGESTED ACTION:
-  Run: /specweave:done 0053
+  Run: /sw:done 0053
 
 This will:
   • Run PM validation (3 gates: tasks, tests, docs)
@@ -241,7 +241,7 @@ After closure:
 Increment closed! Sync to external tools pending.
 
 SUGGESTED ACTION:
-  Run: /specweave:sync-progress 0053
+  Run: /sw:sync-progress 0053
 
 This will sync to:
   ✅ Living docs (user stories, features)
@@ -250,8 +250,8 @@ This will sync to:
   ⚪ ADO (not configured)
 
 Or sync individually:
-  • /specweave:sync-specs 0053  - Living docs only
-  • /specweave-github:close-issue 0053 - GitHub only
+  • /sw:sync-specs 0053  - Living docs only
+  • /sw-github:close-issue 0053 - GitHub only
 ```
 
 ### Phase: COMPLETED
@@ -271,11 +271,11 @@ EXTERNAL TOOLS STATUS:
   Living docs: Synced ✅
 
 WHAT'S NEXT:
-  • Start new increment: /specweave:increment "feature name"
-  • Check backlog: /specweave:status
-  • Archive this increment: /specweave:archive 0053
+  • Start new increment: /sw:increment "feature name"
+  • Check backlog: /sw:status
+  • Archive this increment: /sw:archive 0053
 
-Quick: /specweave:next (auto-suggests next work)
+Quick: /sw:next (auto-suggests next work)
 ```
 
 ---
@@ -297,7 +297,7 @@ async function showExternalToolsStatus(metadata) {
     console.log(`    Last sync: ${metadata.github.lastSync || 'Not synced'}`);
   } else {
     console.log('  GitHub: ⚪ Not linked');
-    console.log('    Setup: /specweave-github:create-issue 0053');
+    console.log('    Setup: /sw-github:create-issue 0053');
   }
 
   // JIRA
@@ -332,10 +332,10 @@ async function showExternalToolsStatus(metadata) {
     URL: https://github.com/org/repo/issues/142
     Last sync: 2025-11-25 09:15:00
 
-    Action needed: Run /specweave:sync-progress to update
+    Action needed: Run /sw:sync-progress to update
 
   JIRA: ⚪ Not configured
-    Setup: /specweave-jira:sync to connect
+    Setup: /sw-jira:sync to connect
 
   Azure DevOps: ⚪ Not configured
 ```
@@ -358,7 +358,7 @@ async function showExternalToolsStatus(metadata) {
     US-003: Cascade delete child items        [PENDING] 🔵
     US-004: Audit log for deletions           [PENDING] 🔵
 
-  Action: Run /specweave:sync-specs 0053 to update living docs
+  Action: Run /sw:sync-specs 0053 to update living docs
 ```
 
 ---
@@ -402,7 +402,7 @@ CURRENT PHASE: REVIEW_READY
   GitHub Issue #142:
     Status: open 🔵
     Checklist: 35/37 tasks checked
-    Action: Will auto-close after /specweave:done
+    Action: Will auto-close after /sw:done
 
   JIRA: ⚪ Not configured
   ADO:  ⚪ Not configured
@@ -421,16 +421,16 @@ All tasks complete! Recommended workflow:
      Review spec.md and tasks.md for completeness
 
   2. VALIDATE:
-     /specweave:validate 0053 --quality
+     /sw:validate 0053 --quality
 
   3. CLOSE (if validation passes):
-     /specweave:done 0053
+     /sw:done 0053
 
   4. SYNC (automatic after close):
      Living docs and GitHub will auto-sync
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Quick: /specweave:workflow (refresh) | /specweave:next (auto-transition)
+Quick: /sw:workflow (refresh) | /sw:next (auto-transition)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -443,9 +443,9 @@ Quick: /specweave:workflow (refresh) | /specweave:next (auto-transition)
 ❌ No active increment found.
 
 Options:
-  • Check status: /specweave:status
-  • Start new: /specweave:increment "feature name"
-  • Resume paused: /specweave:resume <id>
+  • Check status: /sw:status
+  • Start new: /sw:increment "feature name"
+  • Resume paused: /sw:resume <id>
 
 Available increments:
   0052-feature-a (paused)
@@ -460,24 +460,24 @@ Available increments:
   0052-feature-a (in-progress)
   0053-feature-b (completed)
 
-Usage: /specweave:workflow [increment-id]
+Usage: /sw:workflow [increment-id]
 ```
 
 ---
 
 ## Related Commands
 
-- `/specweave:progress` - Quick task completion view
-- `/specweave:validate` - Quality validation
-- `/specweave:done` - Close increment
-- `/specweave:sync-progress` - Sync to external tools
-- `/specweave:next` - Auto-transition to next work
-- `/specweave:status` - Overview of all increments
+- `/sw:progress` - Quick task completion view
+- `/sw:validate` - Quality validation
+- `/sw:done` - Close increment
+- `/sw:sync-progress` - Sync to external tools
+- `/sw:next` - Auto-transition to next work
+- `/sw:status` - Overview of all increments
 
 ---
 
-**Key difference from `/specweave:next`**:
-- `/specweave:workflow` = **Informational dashboard** (where am I? what's next?)
-- `/specweave:next` = **Action-oriented** (auto-close and transition)
+**Key difference from `/sw:next`**:
+- `/sw:workflow` = **Informational dashboard** (where am I? what's next?)
+- `/sw:next` = **Action-oriented** (auto-close and transition)
 
-Use `/specweave:workflow` to **understand your position**, then use specific commands to act.
+Use `/sw:workflow` to **understand your position**, then use specific commands to act.

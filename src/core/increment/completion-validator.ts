@@ -108,7 +108,7 @@ export class IncrementCompletionValidator {
           `CRITICAL: ${coverageResult.orphanedP0.length} P0 Acceptance Criteria have no implementing tasks:\n` +
           coverageResult.orphanedP0.map(ac => `    • ${ac.acId}: ${ac.description} (${ac.priority})`).join('\n') +
           `\n\n  All P0 ACs MUST have at least one task with **Satisfies ACs** field.\n` +
-          `  Run: /specweave:validate ${incrementId} for detailed coverage report.`
+          `  Run: /sw:validate ${incrementId} for detailed coverage report.`
         );
       }
 
@@ -150,7 +150,7 @@ export class IncrementCompletionValidator {
             `CRITICAL: External tools severely out of sync (${Math.floor(hoursSince / 168)} weeks)!\n` +
             `    Last sync: ${drift.lastSyncTime ? drift.lastSyncTime.toISOString() : 'NEVER'}\n\n` +
             `  External tools (GitHub/JIRA/ADO) are critically stale.\n` +
-            `  Run: /specweave:sync-progress ${incrementId} before closing.\n\n` +
+            `  Run: /sw:sync-progress ${incrementId} before closing.\n\n` +
             `  Closing without sync will leave external tools outdated.`
           );
         }
@@ -160,7 +160,7 @@ export class IncrementCompletionValidator {
           warnings.push(
             `⚠️  External tools not synced recently (${daysAgo} days ago)\n` +
             `    Last sync: ${drift.lastSyncTime ? drift.lastSyncTime.toISOString() : 'NEVER'}\n\n` +
-            `  Recommendation: Run /specweave:sync-progress ${incrementId} before closing\n` +
+            `  Recommendation: Run /sw:sync-progress ${incrementId} before closing\n` +
             `  This ensures GitHub/JIRA/ADO reflect latest progress.`
           );
         }

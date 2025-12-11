@@ -1,12 +1,12 @@
 ---
 name: specweave:jobs
 description: Show current work status (active increments, progress) and background jobs (imports, cloning). Even with no jobs, shows increment summary and helpful context.
-usage: /specweave:jobs [--all] [--id <job-id>] [--resume <job-id>] [--kill <job-id>] [--follow <job-id>] [--logs <job-id>] [--diagnostics]
+usage: /sw:jobs [--all] [--id <job-id>] [--resume <job-id>] [--kill <job-id>] [--follow <job-id>] [--logs <job-id>] [--diagnostics]
 ---
 
 # Background Jobs Monitor
 
-**Usage**: `/specweave:jobs [options]`
+**Usage**: `/sw:jobs [options]`
 
 ---
 
@@ -22,7 +22,7 @@ Monitor and manage long-running background operations:
 **ASYNC ARCHITECTURE (2025-12-01)**:
 - Jobs run as **detached processes** that survive terminal close
 - Progress tracked via filesystem (`.specweave/state/jobs/`)
-- Can check status anytime with `/specweave:jobs`
+- Can check status anytime with `/sw:jobs`
 
 ---
 
@@ -78,7 +78,7 @@ STATE_FILE=".specweave/state/background-jobs.json"
   [def67890] import-issues (GitHub)
      Progress: 1,234/10,000 (12%)
      Reason: Rate limited (resumes in 45s)
-     Resume: /specweave:jobs --resume def67890
+     Resume: /sw:jobs --resume def67890
 
 ✅ Completed (3):
   [ghi11111] import-issues - 4,500 items - 5 mins ago
@@ -86,13 +86,13 @@ STATE_FILE=".specweave/state/background-jobs.json"
   [bfa88001] brownfield-analysis - 127 discrepancies - 2 hours ago
 
 💡 Commands:
-   /specweave:jobs --id abc12345     → Details for specific job
-   /specweave:jobs --follow abc12345 → Follow progress live
-   /specweave:jobs --logs abc12345   → View worker logs
-   /specweave:jobs --resume def67890 → Resume paused job
-   /specweave:jobs --kill abc12345   → Kill running job
-   /specweave:jobs --diagnostics     → Show watchdog diagnostics
-   /specweave:jobs --all             → Show all jobs (including old)
+   /sw:jobs --id abc12345     → Details for specific job
+   /sw:jobs --follow abc12345 → Follow progress live
+   /sw:jobs --logs abc12345   → View worker logs
+   /sw:jobs --resume def67890 → Resume paused job
+   /sw:jobs --kill abc12345   → Kill running job
+   /sw:jobs --diagnostics     → Show watchdog diagnostics
+   /sw:jobs --all             → Show all jobs (including old)
 ```
 
 ---
@@ -102,7 +102,7 @@ STATE_FILE=".specweave/state/background-jobs.json"
 ### View Specific Job Details
 
 ```
-/specweave:jobs --id abc12345
+/sw:jobs --id abc12345
 
 📦 Job Details: abc12345
 
@@ -130,7 +130,7 @@ Files:
 Watch job progress in real-time (like `tail -f`):
 
 ```
-/specweave:jobs --follow abc12345
+/sw:jobs --follow abc12345
 
 📦 Following job abc12345 (Ctrl+C to stop)
 
@@ -148,7 +148,7 @@ Watch job progress in real-time (like `tail -f`):
 Show detailed worker output:
 
 ```
-/specweave:jobs --logs abc12345
+/sw:jobs --logs abc12345
 
 📋 Worker Logs for abc12345 (last 50 lines):
 
@@ -168,7 +168,7 @@ Show detailed worker output:
 Stop a background job:
 
 ```
-/specweave:jobs --kill abc12345
+/sw:jobs --kill abc12345
 
 ⚠️  Killing job abc12345...
    Type: import-issues
@@ -176,7 +176,7 @@ Stop a background job:
    Progress: 2,500/10,000 (25%)
 
 ✅ Job killed. Status changed to 'paused'.
-   Resume later: /specweave:jobs --resume abc12345
+   Resume later: /sw:jobs --resume abc12345
 ```
 
 **Implementation**:
@@ -194,7 +194,7 @@ if (success) {
 When a job is paused (rate limited, killed, or user requested), resume it:
 
 ```
-/specweave:jobs --resume def67890
+/sw:jobs --resume def67890
 
 🔄 Resuming job def67890...
    Type: import-issues
@@ -205,7 +205,7 @@ When a job is paused (rate limited, killed, or user requested), resume it:
    New PID: 45679
 
 ✅ Job resumed in background.
-   Check progress: /specweave:jobs --follow def67890
+   Check progress: /sw:jobs --follow def67890
 ```
 
 **Implementation**:
@@ -293,9 +293,9 @@ interface SessionHealth {
 ## Integration Points
 
 - Called after `specweave init` with background clone
-- Called after `/specweave:import-external` starts background import
-- Called after `/specweave-github:sync` for large syncs
-- Called after `/specweave-jira:sync` for large syncs
+- Called after `/sw:import-external` starts background import
+- Called after `/sw-github:sync` for large syncs
+- Called after `/sw-jira:sync` for large syncs
 - Called after `specweave init` brownfield analysis prompt
 
 ---
@@ -327,9 +327,9 @@ When a brownfield-analysis job completes, it shows a summary:
      🟢 Low:        32
 
 💡 Next Steps:
-   /specweave:discrepancies           → View all pending discrepancies
-   /specweave:discrepancies --module auth → Filter by module
-   /specweave:discrepancy-to-increment DISC-0001 DISC-0002 → Create increment
+   /sw:discrepancies           → View all pending discrepancies
+   /sw:discrepancies --module auth → Filter by module
+   /sw:discrepancy-to-increment DISC-0001 DISC-0002 → Create increment
 ```
 
 ---
@@ -342,14 +342,14 @@ If job failed:
   [xyz99999] import-issues
      Error: Rate limit exceeded (retry after 60s)
      Failed at: item 5,000 of 10,000
-     Resume: /specweave:jobs --resume xyz99999
+     Resume: /sw:jobs --resume xyz99999
 ```
 
 ---
 
 ## Session Health & Watchdog Diagnostics (v2.0)
 
-The `/specweave:jobs` command now includes session health monitoring. The watchdog runs in the background and writes diagnostics that help explain any alerts you may have received.
+The `/sw:jobs` command now includes session health monitoring. The watchdog runs in the background and writes diagnostics that help explain any alerts you may have received.
 
 ### Display Format (with health status)
 
@@ -390,7 +390,7 @@ The watchdog writes diagnostics to `.specweave/state/.watchdog-diagnostics.json`
 ### View Detailed Diagnostics
 
 ```
-/specweave:jobs --diagnostics
+/sw:jobs --diagnostics
 
 🩺 Watchdog Diagnostics
 

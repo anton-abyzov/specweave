@@ -92,7 +92,7 @@ function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
       depthStandardDesc: 'Module analysis + exports + dependencies',
       depthDeepNative: 'Deep - Background (Claude MAX)',
       depthDeepNativeDesc: 'AI analysis using your MAX subscription - NO EXTRA COST!',
-      depthDeepNativeNote: 'Uses claude --print in background. Monitor: /specweave:jobs',
+      depthDeepNativeNote: 'Uses claude --print in background. Monitor: /sw:jobs',
       depthDeepInteractive: 'Deep - Interactive (this session)',
       depthDeepInteractiveDesc: 'AI analysis in current Claude Code session (pause/resume)',
       depthDeepApi: 'Deep - Background (API key)',
@@ -131,7 +131,7 @@ function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
       depthStandardDesc: 'Анализ модулей + экспорты + зависимости',
       depthDeepNative: 'Глубокий - Фоновый (Claude MAX)',
       depthDeepNativeDesc: 'ИИ-анализ через вашу подписку MAX - БЕЗ ДОПЛАТЫ!',
-      depthDeepNativeNote: 'Использует claude --print в фоне. Следить: /specweave:jobs',
+      depthDeepNativeNote: 'Использует claude --print в фоне. Следить: /sw:jobs',
       depthDeepInteractive: 'Глубокий - Интерактивный (эта сессия)',
       depthDeepInteractiveDesc: 'ИИ-анализ в текущей сессии Claude Code (пауза/продолжение)',
       depthDeepApi: 'Глубокий - Фоновый (API ключ)',
@@ -282,7 +282,7 @@ export function estimateDuration(
   // Deep modes - AI-powered analysis
   // Show progress bar, not time estimates (can take hours for large codebases)
   if (depth === 'deep-native') {
-    return 'Background (FREE with MAX) - monitor: /specweave:jobs';
+    return 'Background (FREE with MAX) - monitor: /sw:jobs';
   }
 
   if (depth === 'deep-interactive') {
@@ -290,7 +290,7 @@ export function estimateDuration(
   }
 
   if (depth === 'deep-api') {
-    return 'Background (API costs apply) - monitor: /specweave:jobs';
+    return 'Background (API costs apply) - monitor: /sw:jobs';
   }
 
   return 'Progress-based';
@@ -612,6 +612,6 @@ export function displayJobScheduled(
   console.log(chalk.green(`  ✓ ${strings.jobScheduled}`));
   console.log(chalk.gray(`    ${strings.jobId}: ${jobId}`));
   console.log(chalk.gray(`    ${strings.estimatedDuration}: ${estimatedDuration}`));
-  console.log(chalk.gray(`    ${strings.monitorWith}: /specweave:jobs`));
+  console.log(chalk.gray(`    ${strings.monitorWith}: /sw:jobs`));
   console.log(chalk.gray(`  💡 ${strings.continuousSyncNote}`));
 }

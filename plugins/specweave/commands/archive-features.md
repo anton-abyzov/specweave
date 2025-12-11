@@ -10,7 +10,7 @@ Archive features and epics based on their increment archive status. Features are
 ## Usage
 
 ```bash
-/specweave:archive-features [options]
+/sw:archive-features [options]
 ```
 
 ## Options
@@ -25,16 +25,16 @@ Archive features and epics based on their increment archive status. Features are
 
 ```bash
 # Preview what would be archived
-/specweave:archive-features --dry-run
+/sw:archive-features --dry-run
 
 # Archive features and update all links
-/specweave:archive-features
+/sw:archive-features
 
 # Archive including orphaned features
-/specweave:archive-features --orphaned
+/sw:archive-features --orphaned
 
 # Archive with custom reason for audit trail (AC-US13-07)
-/specweave:archive-features --reason="Obsolete after product pivot"
+/sw:archive-features --reason="Obsolete after product pivot"
 ```
 
 ## Archive Rules
@@ -67,7 +67,7 @@ Archive features and epics based on their increment archive status. Features are
 
 - Archives are LOCAL ONLY (not synced to GitHub/JIRA/ADO)
 - All links are automatically updated to point to archive locations
-- Use `/specweave:restore-feature FS-001` to restore from archive
+- Use `/sw:restore-feature FS-001` to restore from archive
 
 ## Implementation
 

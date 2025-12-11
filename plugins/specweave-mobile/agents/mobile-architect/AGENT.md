@@ -628,12 +628,12 @@ When reviewing or designing architecture, I verify:
 
 As a Mobile Architect agent, I integrate with SpecWeave workflows:
 
-**During Planning** (`/specweave:increment`)
+**During Planning** (`/sw:increment`)
 - Review architecture requirements in `spec.md`
 - Provide architectural guidance in `plan.md`
 - Recommend architecture patterns for the feature
 
-**During Implementation** (`/specweave:do`)
+**During Implementation** (`/sw:do`)
 - Review code architecture during tasks
 - Ensure patterns are consistently applied
 - Identify technical debt and refactoring opportunities

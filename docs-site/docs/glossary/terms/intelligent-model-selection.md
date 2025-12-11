@@ -89,7 +89,7 @@ Force a specific model when needed:
 
 ```bash
 # Force Opus for complex task
-/specweave:do --model opus
+/sw:do --model opus
 
 # Use Haiku for simple search
 Task agent with model: haiku

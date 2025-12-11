@@ -15,8 +15,8 @@ This skill acts as a **discovery hub** for Test-Driven Development (TDD) in Spec
 
 **NOT a full TDD implementation** - delegates to:
 - `tdd-orchestrator` agent (deep TDD expertise)
-- `/specweave:tdd:cycle` command (enforced red-green-refactor)
-- Individual phase commands (`/specweave:tdd:red`, `/specweave:tdd:green`, `/specweave:tdd:refactor`)
+- `/sw:tdd:cycle` command (enforced red-green-refactor)
+- Individual phase commands (`/sw:tdd:red`, `/sw:tdd:green`, `/sw:tdd:refactor`)
 
 ---
 
@@ -64,7 +64,7 @@ Would you like to:"
 ```typescript
 Question: "How would you like to implement TDD for this feature?"
 Options:
-  1. "Guided TDD Workflow (/specweave:tdd:cycle)"
+  1. "Guided TDD Workflow (/sw:tdd:cycle)"
      Description: "Full red-green-refactor cycle with gates between phases.
                    Can't proceed to GREEN without RED test. Most rigorous."
 
@@ -81,12 +81,12 @@ Options:
 
 **Option 1: Guided TDD Workflow**
 ```bash
-Invoke: /specweave:tdd:cycle
+Invoke: /sw:tdd:cycle
 
 This command orchestrates:
-1. /specweave:tdd:red    - Write failing test (blocks until red)
-2. /specweave:tdd:green  - Implement minimal code (blocks until green)
-3. /specweave:tdd:refactor - Refactor safely (tests must stay green)
+1. /sw:tdd:red    - Write failing test (blocks until red)
+2. /sw:tdd:green  - Implement minimal code (blocks until green)
+3. /sw:tdd:refactor - Refactor safely (tests must stay green)
 
 Benefits:
 - Enforces discipline (gates prevent skipping phases)
@@ -162,7 +162,7 @@ I'll notify you at each phase transition."
 
 **In Increment Workflow**:
 ```
-/specweave:inc "Authentication feature" → spec.md created
+/sw:inc "Authentication feature" → spec.md created
 ↓
 User: "Implement with TDD"
 ↓
@@ -170,7 +170,7 @@ tdd-workflow skill activates → offers options
 ↓
 User chooses: Guided TDD Workflow
 ↓
-/specweave:tdd:cycle invoked
+/sw:tdd:cycle invoked
   ↓
   Phase 1: RED   - tests.md updated with failing tests
   Phase 2: GREEN - tasks.md implementation
@@ -193,16 +193,16 @@ tdd-workflow can coordinate test-first bug fixes
 ## Commands Reference
 
 ### Full Cycle
-- `/specweave:tdd:cycle` - Complete red-green-refactor orchestration
+- `/sw:tdd:cycle` - Complete red-green-refactor orchestration
 
 ### Individual Phases
-- `/specweave:tdd:red` - RED phase only (write failing test)
-- `/specweave:tdd:green` - GREEN phase only (make test pass)
-- `/specweave:tdd:refactor` - REFACTOR phase only (improve code)
+- `/sw:tdd:red` - RED phase only (write failing test)
+- `/sw:tdd:green` - GREEN phase only (make test pass)
+- `/sw:tdd:refactor` - REFACTOR phase only (improve code)
 
 ### When to Use Each
 
-**Use /specweave:tdd:cycle when**:
+**Use /sw:tdd:cycle when**:
 - ✅ Starting new feature from scratch
 - ✅ Learning TDD or teaching team
 - ✅ Want enforced discipline (gates)
@@ -242,7 +242,7 @@ Great! TDD (Test-Driven Development) follows red-green-refactor:
 
 **tdd-workflow**:
 ```
-Perfect! I'm invoking /specweave:tdd:cycle to orchestrate your TDD workflow.
+Perfect! I'm invoking /sw:tdd:cycle to orchestrate your TDD workflow.
 
 🔴 Starting RED phase...
 Write a failing test for user registration. Let me create the test skeleton:
@@ -252,7 +252,7 @@ Write a failing test for user registration. Let me create the test skeleton:
 ✅ Test written and failing. Run: npm test
 ❌ Expected failure confirmed.
 
-Ready to proceed to GREEN phase? (type 'yes' or run /specweave:tdd:green)
+Ready to proceed to GREEN phase? (type 'yes' or run /sw:tdd:green)
 ```
 
 ---
@@ -292,7 +292,7 @@ Invoking tdd-orchestrator agent for advanced refactoring support...
 Great! Tests are passing. Time for REFACTOR phase.
 
 You can:
-1. Run /specweave:tdd:refactor (guided refactoring)
+1. Run /sw:tdd:refactor (guided refactoring)
 2. Refactor manually (I'll verify tests stay green)
 
 Which would you prefer?
@@ -309,7 +309,7 @@ Perfect! I'll monitor your refactoring:
 ✅ Tests still passing after refactor
 ✅ TDD cycle maintained
 
-Ready for next feature? Run /specweave:tdd:cycle or continue manually.
+Ready for next feature? Run /sw:tdd:cycle or continue manually.
 ```
 
 ---
@@ -352,8 +352,8 @@ tdd:
 - `qa-lead` - Test strategy overlaps with TDD principles
 
 **Commands**:
-- `/specweave:tdd:cycle` - Full red-green-refactor orchestration
-- `/specweave:tdd:red`, `/specweave:tdd:green`, `/specweave:tdd:refactor` - Individual phases
+- `/sw:tdd:cycle` - Full red-green-refactor orchestration
+- `/sw:tdd:red`, `/sw:tdd:green`, `/sw:tdd:refactor` - Individual phases
 
 ---
 
@@ -369,7 +369,7 @@ tdd:
 
 **Not a replacement for**:
 - `tdd-orchestrator` agent (deep expertise)
-- `/specweave:tdd-*` commands (workflow enforcement)
+- `/sw:tdd-*` commands (workflow enforcement)
 
 **Instead, it's the entry point** that helps users choose the right TDD tool for their context.
 

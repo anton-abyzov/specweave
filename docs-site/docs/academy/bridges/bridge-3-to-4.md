@@ -99,7 +99,7 @@ npm run test:coverage
 
 In Part 4, you enforce minimums:
 ```bash
-/specweave:validate 0001
+/sw:validate 0001
 # ✓ Coverage: 85% (minimum: 80%)
 # ✓ Linting: 0 errors
 # ✓ Types: No errors
@@ -177,7 +177,7 @@ These are what quality tools catch automatically.
 
 ```
             ┌──────────────────┐
-            │   Quality Gates  │  /specweave:validate
+            │   Quality Gates  │  /sw:validate
             │    (SpecWeave)   │
             └────────┬─────────┘
                      │

@@ -250,7 +250,7 @@ Tests are defined **before** code is written.
 
 ### Quality Gates Enforce Testing
 
-`/specweave:done` validates:
+`/sw:done` validates:
 - ✓ Test plans exist for all tasks
 - ✓ Coverage meets threshold
 - ✓ All tests passing

@@ -58,10 +58,10 @@ behavior   test works    implement    it works    quality
 ## SpecWeave TDD Commands
 
 ```bash
-/specweave:tdd-cycle     # Full orchestration
-/specweave:tdd-red       # Write failing tests
-/specweave:tdd-green     # Implement to pass
-/specweave:tdd-refactor  # Clean up code
+/sw:tdd-cycle     # Full orchestration
+/sw:tdd-red       # Write failing tests
+/sw:tdd-green     # Implement to pass
+/sw:tdd-refactor  # Clean up code
 ```
 
 ---
@@ -73,13 +73,13 @@ Let's build a calculator using TDD.
 ### Step 1: Create Increment
 
 ```bash
-/specweave:increment "Calculator with basic operations"
+/sw:increment "Calculator with basic operations"
 ```
 
 ### Step 2: Start TDD
 
 ```bash
-/specweave:tdd-cycle
+/sw:tdd-cycle
 ```
 
 ### Phase 1: RED (Write Failing Tests)
@@ -249,9 +249,9 @@ Build a string calculator using TDD:
 - Negative numbers throw error
 
 ```bash
-/specweave:increment "String calculator with TDD"
-/specweave:tdd-cycle
-/specweave:next
+/sw:increment "String calculator with TDD"
+/sw:tdd-cycle
+/sw:next
 ```
 
 ---
@@ -269,10 +269,10 @@ Build a string calculator using TDD:
 
 | Command | Phase | Purpose |
 |---------|-------|---------|
-| `/specweave:tdd-cycle` | All | Full orchestration |
-| `/specweave:tdd-red` | RED | Write failing tests |
-| `/specweave:tdd-green` | GREEN | Implement to pass |
-| `/specweave:tdd-refactor` | REFACTOR | Improve code |
+| `/sw:tdd-cycle` | All | Full orchestration |
+| `/sw:tdd-red` | RED | Write failing tests |
+| `/sw:tdd-green` | GREEN | Implement to pass |
+| `/sw:tdd-refactor` | REFACTOR | Improve code |
 
 **The TDD mantra**:
 1. **Red**: Write a failing test

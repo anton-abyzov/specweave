@@ -293,7 +293,7 @@ Release Manager:
      - Promote to v2.0.0 when all tests pass
 
   5. Create release increment
-     /specweave:increment "0055-backend-v2-release"
+     /sw:increment "0055-backend-v2-release"
      Generates: spec.md, plan.md, tasks.md
 
   6. Execute release (if user confirms)
@@ -341,7 +341,7 @@ Release Manager:
      frontend: v4.2.0 → v5.0.0 (breaking: React 18)
 
   5. Create coordinated release plan
-     /specweave:increment "0060-product-v4-release"
+     /sw:increment "0060-product-v4-release"
 
      spec.md:
        - Product v4.0.0 umbrella
@@ -429,18 +429,18 @@ Release Manager:
 # I work seamlessly with SpecWeave's increment workflow
 
 1. Planning Phase
-   /specweave:increment "0065-product-v5-release"
+   /sw:increment "0065-product-v5-release"
    → I'm automatically invoked to create release plan
    → Generate spec.md, plan.md, tasks.md
 
 2. Execution Phase
-   /specweave:do
+   /sw:do
    → I orchestrate wave-by-wave execution
    → Validate at each gate
    → Update task completion
 
 3. Completion Phase
-   /specweave:done 0065
+   /sw:done 0065
    → I validate all releases successful
    → Update living docs
    → Sync to external tools (GitHub, Jira)
@@ -482,18 +482,18 @@ I receive detection results:
 ## Commands I Support
 
 **Primary Commands**:
-- `/specweave-release:init` - Initialize or analyze release strategy
-- `/specweave-release:align` - Align versions across repos
-- `/specweave-release:rc` - Create/manage release candidates
-- `/specweave-release:coordinate` - Plan coordinated multi-repo release
-- `/specweave-release:publish` - Execute release (single or multi-repo)
-- `/specweave-release:rollback` - Rollback failed release
-- `/specweave-release:matrix` - Show/update version matrix
+- `/sw-release:init` - Initialize or analyze release strategy
+- `/sw-release:align` - Align versions across repos
+- `/sw-release:rc` - Create/manage release candidates
+- `/sw-release:coordinate` - Plan coordinated multi-repo release
+- `/sw-release:publish` - Execute release (single or multi-repo)
+- `/sw-release:rollback` - Rollback failed release
+- `/sw-release:matrix` - Show/update version matrix
 
 **Status Commands**:
-- `/specweave-release:status` - Show release status
-- `/specweave-release:rc-status` - Show RC testing status
-- `/specweave-release:validate` - Run pre-release validation
+- `/sw-release:status` - Show release status
+- `/sw-release:rc-status` - Show RC testing status
+- `/sw-release:validate` - Run pre-release validation
 
 ## When to Invoke Me
 
@@ -588,7 +588,7 @@ Would you like me to proceed with these steps?
 ### Example 2: Multi-Repo Release Execution
 
 ```
-User: "/specweave-release:coordinate product-v3"
+User: "/sw-release:coordinate product-v3"
 
 Release Manager: I'll orchestrate the Product v3.0.0 release across all repositories.
 
@@ -626,7 +626,7 @@ Would you like me to:
 ### Example 3: RC Management
 
 ```
-User: "/specweave-release:rc create 2.0.0"
+User: "/sw-release:rc create 2.0.0"
 
 Release Manager: Creating Release Candidate for v2.0.0...
 
@@ -656,7 +656,7 @@ Next steps:
 1. Wait for CI/CD to complete
 2. Deploy to staging
 3. Run validation tests
-4. Review RC status: /specweave-release:rc-status 2.0.0-rc.1
+4. Review RC status: /sw-release:rc-status 2.0.0-rc.1
 5. If issues found: Iterate to rc.2
 6. If all pass: Promote to v2.0.0
 ```

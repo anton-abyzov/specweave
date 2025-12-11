@@ -40,7 +40,7 @@ SpecWeave solves this by making specifications permanent:
 
 ```
 Monday:
-  /specweave:increment "user profile feature"
+  /sw:increment "user profile feature"
 
   → Creates spec.md (requirements)
   → Creates plan.md (technical design)
@@ -155,7 +155,7 @@ You should see:
 Let's verify everything works:
 
 ```bash
-/specweave:status
+/sw:status
 ```
 
 You should see something like:
@@ -183,10 +183,10 @@ If you see this, you're ready!
 Here's the entire SpecWeave workflow. You'll learn each command in the following lessons:
 
 ```
-1. /specweave:increment "feature"  → Plan the work
-2. /specweave:do                   → Execute tasks
-3. /specweave:progress             → Check status
-4. /specweave:next                 → Close or continue
+1. /sw:increment "feature"  → Plan the work
+2. /sw:do                   → Execute tasks
+3. /sw:progress             → Check status
+4. /sw:next                 → Close or continue
 5. (repeat)
 ```
 
@@ -200,7 +200,7 @@ That's it. Five commands cover 90% of daily use.
 
 ```bash
 # 1. Check status
-/specweave:status
+/sw:status
 
 # 2. Explore the structure
 ls .specweave/

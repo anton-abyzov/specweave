@@ -60,7 +60,7 @@ This skill activates when user expresses **implementation/continuation intent**:
 - "Plan a new feature" → increment-planner
 
 **Already in Workflow**:
-- User is already executing `/specweave:do`
+- User is already executing `/sw:do`
 - Increment planning is in progress
 - Another skill is handling the request
 
@@ -117,9 +117,9 @@ Active: 0031-user-authentication-system
 ✅ High match → Auto-resume:
 
 "I see you have an active increment for user authentication (0031).
-Resuming work on that increment now with /specweave:do..."
+Resuming work on that increment now with /sw:do..."
 
-[Automatically invokes /specweave:do]
+[Automatically invokes /sw:do]
 ```
 
 **Scenario B: Unrelated to active increment**
@@ -153,9 +153,9 @@ I'm going to create a SpecWeave increment with:
 - Technical plan (HOW)
 - Task breakdown (STEPS with embedded tests)
 
-Creating increment now with /specweave:increment..."
+Creating increment now with /sw:increment..."
 
-[Automatically invokes /specweave:increment "user authentication"]
+[Automatically invokes /sw:increment "user authentication"]
 ```
 
 **Scenario D: Multiple active increments**
@@ -184,7 +184,7 @@ Progress: 3/10 tasks complete (30%)
 
 Next task: T-004 Implement password hashing
 
-[Automatically invokes /specweave:do]"
+[Automatically invokes /sw:do]"
 ```
 
 ## Integration Architecture
@@ -203,14 +203,14 @@ increment-work-router (detects intent)
 └─────┬─────────────┴──────┬───────────┴──────┬─────────┘
       │                    │                  │
       ↓                    ↓                  ↓
-/specweave:do        Ask to select    /specweave:increment
+/sw:do        Ask to select    /sw:increment
 (auto-resume)        (clarify)        (create new)
 ```
 
 **Calls:**
-- `/specweave:do` - Resume active increment
-- `/specweave:increment` - Create new increment
-- `/specweave:status` - Check increment state (if needed)
+- `/sw:do` - Resume active increment
+- `/sw:increment` - Create new increment
+- `/sw:status` - Check increment state (if needed)
 
 **Called By:**
 - Automatically when implementation intent detected
@@ -220,11 +220,11 @@ increment-work-router (detects intent)
 
 | User Intent | Active Increments | Relevance | Action |
 |-------------|------------------|-----------|--------|
-| "Implement auth" | 1 (auth-related) | High (>70%) | Auto `/specweave:do` |
+| "Implement auth" | 1 (auth-related) | High (>70%) | Auto `/sw:do` |
 | "Implement auth" | 1 (unrelated) | Low (<40%) | Ask: New or add to current? |
-| "Implement auth" | 0 | N/A | Auto `/specweave:increment` |
+| "Implement auth" | 0 | N/A | Auto `/sw:increment` |
 | "Implement auth" | 2+ | N/A | Ask which increment |
-| "Let's continue" | 1 | N/A | Auto `/specweave:do` |
+| "Let's continue" | 1 | N/A | Auto `/sw:do` |
 | "Let's continue" | 2+ | N/A | Ask which increment |
 | "Let's continue" | 0 | N/A | "No active increment. What should we build?" |
 
@@ -304,9 +304,9 @@ Implement JWT token refresh
 "I see you have an active increment for user authentication (0031).
 Task T-005 'Implement JWT token refresh' is already in your plan.
 
-Resuming increment 0031 now with /specweave:do...
+Resuming increment 0031 now with /sw:do...
 
-[Automatically invokes /specweave:do]
+[Automatically invokes /sw:do]
 ```
 
 ### Example 2: Create New (No Active Increment)
@@ -335,9 +335,9 @@ I'm going to create a SpecWeave increment with:
 - Technical plan (API integration, webhooks, security)
 - Task breakdown (implementation steps with tests)
 
-Creating increment now with /specweave:increment...
+Creating increment now with /sw:increment...
 
-[Automatically invokes /specweave:increment "payment processing with Stripe"]
+[Automatically invokes /sw:increment "payment processing with Stripe"]
 ```
 
 ### Example 3: Unrelated Request (Ask)
@@ -403,7 +403,7 @@ Let's continue working
 
 Which one would you like to work on?"
 
-[Wait for user selection, then invoke /specweave:do {selected-id}]
+[Wait for user selection, then invoke /sw:do {selected-id}]
 ```
 
 ### Example 5: Vague Intent + Single Active (Auto-Resume)
@@ -430,7 +430,7 @@ Progress: 3/10 tasks complete (30%)
 
 Next task: **T-004 Implement password hashing**
 
-[Automatically invokes /specweave:do]"
+[Automatically invokes /sw:do]"
 ```
 
 ## Opt-Out Mechanism
@@ -438,13 +438,13 @@ Next task: **T-004 Implement password hashing**
 Users can override auto-routing with explicit instructions:
 - "Don't resume, create new" → Forces new increment
 - "Just discuss first" → Regular conversation
-- "Plan without implementing" → Routes to `/specweave:increment` only
-- "Show me the current state" → Uses `/specweave:status` instead
+- "Plan without implementing" → Routes to `/sw:increment` only
+- "Show me the current state" → Uses `/sw:status` instead
 
 ## Success Criteria
 
 - ✅ Users can say "implement X" and work starts automatically
-- ✅ Smart routing to active increments (no manual `/specweave:do`)
+- ✅ Smart routing to active increments (no manual `/sw:do`)
 - ✅ Detects unrelated requests and prevents scope creep
 - ✅ No "which increment?" confusion (auto-handles single active)
 - ✅ Clear choices when ambiguous (multiple active or unrelated)

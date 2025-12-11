@@ -214,8 +214,8 @@ Implements user authentication feature.
 ## Quality Gates
 - [x] All tasks complete (5/5)
 - [x] Test coverage: 92%
-- [x] `/specweave:validate` passed
-- [x] `/specweave:qa` passed
+- [x] `/sw:validate` passed
+- [x] `/sw:qa` passed
 
 ## Related
 - Increment: `.specweave/increments/0001-user-authentication/`
@@ -326,7 +326,7 @@ SpecWeave enhances team collaboration:
 
 ```bash
 # Create increment with specs
-/specweave:increment "Payment processing"
+/sw:increment "Payment processing"
 
 # Commit just the specs
 git add .specweave/increments/0001-payment/

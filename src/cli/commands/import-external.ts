@@ -1,5 +1,5 @@
 /**
- * CLI Command: /specweave:import-external
+ * CLI Command: /sw:import-external
  *
  * Import external work items from GitHub, JIRA, or Azure DevOps
  */

@@ -1,5 +1,5 @@
 /**
- * CLI Command: /specweave:import-docs
+ * CLI Command: /sw:import-docs
  *
  * Import brownfield documentation from external sources
  */
@@ -32,7 +32,7 @@ export async function importDocs(
   try {
     // Validate source path
     if (!args.sourcePath) {
-      throw new Error('Source path is required. Usage: /specweave:import-docs <source-path> [options]');
+      throw new Error('Source path is required. Usage: /sw:import-docs <source-path> [options]');
     }
 
     // Resolve source path (handle relative paths)

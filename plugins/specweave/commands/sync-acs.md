@@ -48,19 +48,19 @@ description: Manually synchronize acceptance criteria (AC) checkbox status in sp
 
 ```bash
 # Auto-detect and sync active increment
-/specweave:sync-acs
+/sw:sync-acs
 
 # Sync specific increment
-/specweave:sync-acs 0039
+/sw:sync-acs 0039
 
 # Show what would change (dry run)
-/specweave:sync-acs --dry-run
+/sw:sync-acs --dry-run
 
 # Force sync (ignore conflicts)
-/specweave:sync-acs --force
+/sw:sync-acs --force
 
 # Validate only (check for mismatches)
-/specweave:sync-acs --validate
+/sw:sync-acs --validate
 ```
 
 ---
@@ -303,24 +303,24 @@ export SKIP_AC_SYNC=true
 
 ## Integration with Other Commands
 
-### /specweave:validate
+### /sw:validate
 ```bash
 # Validate ACs before closing increment
-/specweave:sync-acs --validate
+/sw:sync-acs --validate
 # Warns if ACs out of sync
 ```
 
-### /specweave:done
+### /sw:done
 ```bash
 # Auto-sync ACs before closing
-/specweave:sync-acs
+/sw:sync-acs
 # Then proceed with increment closure
 ```
 
-### /specweave:progress
+### /sw:progress
 ```bash
 # Show AC completion alongside task progress
-/specweave:sync-acs --status
+/sw:sync-acs --status
 # Display: 8/10 ACs complete (80%)
 ```
 

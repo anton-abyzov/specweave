@@ -183,8 +183,8 @@ export async function triggerAdoRepoCloning(
 
   if (result.isBackground) {
     console.log(chalk.green(`   ✓ Clone job started in background (PID: ${result.pid})`));
-    console.log(chalk.cyan('\n   Check progress: /specweave:jobs'));
-    console.log(chalk.cyan(`   Kill if needed: /specweave:jobs --kill ${result.job.id}`));
+    console.log(chalk.cyan('\n   Check progress: /sw:jobs'));
+    console.log(chalk.cyan(`   Kill if needed: /sw:jobs --kill ${result.job.id}`));
     console.log(chalk.gray('\n   Init will continue - cloning runs independently.\n'));
   } else {
     console.log(chalk.yellow('   ⚠️ Running in foreground (clone worker not found)'));

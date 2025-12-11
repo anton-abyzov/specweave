@@ -3,7 +3,7 @@ name: specweave-release:rc
 description: Manage Release Candidate (RC) lifecycle including creation, testing, validation, and promotion to production. Handles RC iteration (rc.1, rc.2, rc.3), tracks testing status, coordinates RC across multiple repositories, manages canary deployments, and promotes RC to final release when validation passes.
 ---
 
-# /specweave-release:rc - Manage Release Candidates
+# /sw-release:rc - Manage Release Candidates
 
 Manage the complete Release Candidate (RC) lifecycle from creation to production promotion.
 
@@ -35,32 +35,32 @@ Manage the complete Release Candidate (RC) lifecycle from creation to production
 
 ```bash
 # Create new RC
-/specweave-release:rc create <version>
-/specweave-release:rc create 1.0.0
+/sw-release:rc create <version>
+/sw-release:rc create 1.0.0
 
 # Create RC iteration (bug fixes)
-/specweave-release:rc iterate <rc-version>
-/specweave-release:rc iterate 1.0.0-rc.2
+/sw-release:rc iterate <rc-version>
+/sw-release:rc iterate 1.0.0-rc.2
 
 # Show RC status
-/specweave-release:rc status <rc-version>
-/specweave-release:rc status 1.0.0-rc.3
+/sw-release:rc status <rc-version>
+/sw-release:rc status 1.0.0-rc.3
 
 # Run RC validation tests
-/specweave-release:rc test <rc-version>
-/specweave-release:rc test 1.0.0-rc.3
+/sw-release:rc test <rc-version>
+/sw-release:rc test 1.0.0-rc.3
 
 # Promote RC to production
-/specweave-release:rc promote <rc-version>
-/specweave-release:rc promote 1.0.0-rc.3
+/sw-release:rc promote <rc-version>
+/sw-release:rc promote 1.0.0-rc.3
 
 # Rollback failed RC
-/specweave-release:rc rollback <rc-version>
-/specweave-release:rc rollback 1.0.0-rc.2
+/sw-release:rc rollback <rc-version>
+/sw-release:rc rollback 1.0.0-rc.2
 
 # Multi-repo RC (creates RC for all repos)
-/specweave-release:rc create-multi <product-version>
-/specweave-release:rc create-multi product-v3.0.0
+/sw-release:rc create-multi <product-version>
+/sw-release:rc create-multi product-v3.0.0
 ```
 
 ## Workflow: Single-Repo RC
@@ -68,7 +68,7 @@ Manage the complete Release Candidate (RC) lifecycle from creation to production
 ### Step 1: Create Initial RC
 
 ```bash
-/specweave-release:rc create 1.0.0
+/sw-release:rc create 1.0.0
 ```
 
 ```markdown
@@ -98,8 +98,8 @@ RC created successfully! ✓
 Next steps:
   1. Wait for CI/CD to complete
   2. Deploy to staging: (automated via CI/CD)
-  3. Run validation: /specweave-release:rc test 1.0.0-rc.1
-  4. Review status: /specweave-release:rc status 1.0.0-rc.1
+  3. Run validation: /sw-release:rc test 1.0.0-rc.1
+  4. Review status: /sw-release:rc status 1.0.0-rc.1
   5. If issues: Fix and iterate to rc.2
   6. If pass: Promote to v1.0.0
 
@@ -109,7 +109,7 @@ Monitor build: https://github.com/myorg/myapp/actions/runs/542
 ### Step 2: Monitor RC Testing
 
 ```bash
-/specweave-release:rc status 1.0.0-rc.1
+/sw-release:rc status 1.0.0-rc.1
 ```
 
 ```markdown
@@ -170,7 +170,7 @@ Blocking: Mobile testing, exploratory testing incomplete
 ### Step 3: Found Bug → Iterate to rc.2
 
 ```bash
-/specweave-release:rc iterate 1.0.0-rc.1
+/sw-release:rc iterate 1.0.0-rc.1
 ```
 
 ```markdown
@@ -210,7 +210,7 @@ Monitor: https://github.com/myorg/myapp/actions/runs/548
 ### Step 4: All Tests Pass → Promote to Production
 
 ```bash
-/specweave-release:rc promote 1.0.0-rc.3
+/sw-release:rc promote 1.0.0-rc.3
 ```
 
 ```markdown
@@ -254,7 +254,7 @@ Canary deployment started! ✓
 I'll monitor the metrics and notify you when ready for next wave.
 
 Monitor dashboard: https://grafana.example.com/d/prod-release
-Rollback command: /specweave-release:rc rollback 1.0.0-rc.3
+Rollback command: /sw-release:rc rollback 1.0.0-rc.3
 ```
 
 ## Workflow: Multi-Repo RC
@@ -262,7 +262,7 @@ Rollback command: /specweave-release:rc rollback 1.0.0-rc.3
 ### Create Coordinated RC
 
 ```bash
-/specweave-release:rc create-multi product-v3.0.0
+/sw-release:rc create-multi product-v3.0.0
 ```
 
 ```markdown
@@ -307,9 +307,9 @@ Next steps:
   1. Wait for all builds to complete
   2. Deploy to staging (coordinated)
   3. Run cross-service E2E tests
-  4. Validate: /specweave-release:rc status product-v3.0.0-rc.1
+  4. Validate: /sw-release:rc status product-v3.0.0-rc.1
   5. Iterate if needed: Fix issues → rc.2
-  6. Promote: /specweave-release:rc promote product-v3.0.0-rc.3
+  6. Promote: /sw-release:rc promote product-v3.0.0-rc.3
 ```
 
 ## RC Testing Checklist
@@ -369,7 +369,7 @@ Scheduled: 2025-01-16 10:00 UTC
 **If issues detected during canary**:
 
 ```bash
-/specweave-release:rc rollback 1.0.0-rc.3
+/sw-release:rc rollback 1.0.0-rc.3
 ```
 
 ```markdown
@@ -427,26 +427,26 @@ Next steps:
 
 ```bash
 # 1. Create release increment
-/specweave:increment "0090-v1-0-0-release"
+/sw:increment "0090-v1-0-0-release"
 
 # 2. Create RC
-/specweave-release:rc create 1.0.0
+/sw-release:rc create 1.0.0
 # → Creates v1.0.0-rc.1
 
 # 3. Testing phase
-/specweave-release:rc test 1.0.0-rc.1
+/sw-release:rc test 1.0.0-rc.1
 # → Runs automated tests
 
 # 4. Iterate if needed
-/specweave-release:rc iterate 1.0.0-rc.1
+/sw-release:rc iterate 1.0.0-rc.1
 # → Creates v1.0.0-rc.2
 
 # 5. Promote when ready
-/specweave-release:rc promote 1.0.0-rc.3
+/sw-release:rc promote 1.0.0-rc.3
 # → Creates v1.0.0, deploys to production
 
 # 6. Mark increment complete
-/specweave:done 0090
+/sw:done 0090
 # → Updates living docs
 ```
 
@@ -474,10 +474,10 @@ Next steps:
 
 ## Related Commands
 
-- `/specweave-release:init` - Initialize release strategy
-- `/specweave-release:align` - Align versions before RC
-- `/specweave-release:coordinate` - Coordinate multi-repo RC
-- `/specweave:done` - Complete release increment
+- `/sw-release:init` - Initialize release strategy
+- `/sw-release:align` - Align versions before RC
+- `/sw-release:coordinate` - Coordinate multi-repo RC
+- `/sw:done` - Complete release increment
 
 ## Dependencies
 

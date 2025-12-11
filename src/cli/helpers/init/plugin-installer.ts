@@ -175,11 +175,11 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
 
     console.log('');
     console.log(chalk.cyan('📋 Available capabilities:'));
-    console.log(chalk.gray('   • /specweave:increment - Plan new features'));
-    console.log(chalk.gray('   • /specweave:do - Execute tasks'));
+    console.log(chalk.gray('   • /sw:increment - Plan new features'));
+    console.log(chalk.gray('   • /sw:do - Execute tasks'));
     console.log(chalk.gray('   • /specweave-github:sync - GitHub integration'));
     console.log(chalk.gray('   • /specweave-jira:sync - JIRA integration'));
-    console.log(chalk.gray('   • /specweave:docs preview - Documentation preview'));
+    console.log(chalk.gray('   • /sw:docs preview - Documentation preview'));
     console.log(chalk.gray('   • ...and more!'));
 
     return {

@@ -501,7 +501,7 @@ US-003: Secure User Authentication
 ### Creation (PM Agent)
 
 ```bash
-/specweave:increment "user authentication"
+/sw:increment "user authentication"
 
 # PM Agent generates spec.md with user stories:
 # - US-001: Basic Login Flow
@@ -513,7 +513,7 @@ US-003: Secure User Authentication
 ### Implementation (Developer)
 
 ```bash
-/specweave:do
+/sw:do
 
 # Developer works through tasks:
 # T-001: Implement AuthService (AC-US1-01, AC-US1-02, AC-US1-03)
@@ -524,7 +524,7 @@ US-003: Secure User Authentication
 ### Validation (QA)
 
 ```bash
-/specweave:validate 0008
+/sw:validate 0008
 
 # Validates:
 # ✅ All AC-IDs implemented?

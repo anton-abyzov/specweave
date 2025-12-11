@@ -77,7 +77,7 @@ test.describe('Status Auto-Transition E2E', () => {
     let metadata = MetadataManager.read(incrementId);
     expect(metadata.status).toBe(IncrementStatus.PLANNING);
 
-    // Step 2: Write spec.md (simulate /specweave:increment planning phase)
+    // Step 2: Write spec.md (simulate /sw:increment planning phase)
     const specPath = path.join(testIncrementsPath, incrementId, 'spec.md');
     const specContent = `---
 increment: ${incrementId}

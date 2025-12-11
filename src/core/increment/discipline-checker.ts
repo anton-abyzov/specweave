@@ -268,7 +268,7 @@ export class DisciplineChecker {
       violations.push({
         type: 'hard_cap_exceeded',
         message: `Hard cap exceeded: ${activeCount} active increments (maximum: ${this.limits.hardCap})`,
-        suggestion: `Complete or pause at least ${activeCount - this.limits.hardCap} increment(s). Use /specweave:done <id> or /specweave:pause <id>`,
+        suggestion: `Complete or pause at least ${activeCount - this.limits.hardCap} increment(s). Use /sw:done <id> or /sw:pause <id>`,
         severity: 'error',
         context: {
           activeCount,
@@ -312,7 +312,7 @@ export class DisciplineChecker {
         violations.push({
           type: 'incomplete_work',
           message: `Incomplete increment: ${inc.id} (${inc.percentComplete}% complete, ${inc.pendingTasks.length} tasks remaining)`,
-          suggestion: `Complete increment ${inc.id} before starting new work. Use /specweave:done ${inc.id} or /specweave:close ${inc.id}`,
+          suggestion: `Complete increment ${inc.id} before starting new work. Use /sw:done ${inc.id} or /sw:close ${inc.id}`,
           severity: 'error',
           incrementId: inc.id,
           context: {

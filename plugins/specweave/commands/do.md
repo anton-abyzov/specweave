@@ -13,15 +13,15 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 
 ```bash
 # Auto-resumes from last incomplete task
-/specweave:do <increment-id>
+/sw:do <increment-id>
 
 # Or let it find active increment automatically
-/specweave:do
+/sw:do
 
 # Override model selection for all tasks (advanced)
-/specweave:do <increment-id> --model haiku
-/specweave:do <increment-id> --model sonnet
-/specweave:do <increment-id> --model opus
+/sw:do <increment-id> --model haiku
+/sw:do <increment-id> --model sonnet
+/sw:do <increment-id> --model opus
 ```
 
 ## Arguments
@@ -85,7 +85,7 @@ You are helping the user implement a SpecWeave increment by executing tasks from
      1. Create new increment folders manually
      2. Split tasks.md into 4-task chunks
      3. Update spec.md to reference correct tasks
-     4. Run /specweave:do on each part sequentially
+     4. Run /sw:do on each part sequentially
 
    ⚠️ DO NOT PROCEED - splitting is MANDATORY for stability!
    ```
@@ -116,12 +116,12 @@ You are helping the user implement a SpecWeave increment by executing tasks from
       • spec.md contains 0 ACs (expected 39)
       • ACs are REQUIRED for task-AC sync to work
 
-   💡 Fix: Run /specweave:embed-acs <increment-id>
+   💡 Fix: Run /sw:embed-acs <increment-id>
    ```
 
    **What to Do After Validation**:
    - ✅ **If validation passes**: Proceed to Step 2
-   - ❌ **If validation fails**: Show error, run `/specweave:embed-acs`, then retry
+   - ❌ **If validation fails**: Show error, run `/sw:embed-acs`, then retry
    - **DO NOT PROCEED** without ACs in spec.md (hooks will fail!)
 
    **Why This Matters** (ADR-0064):
@@ -266,7 +266,7 @@ If already "in-progress", keep existing metadata.
      - New features
 
    **Step D: Continue to next task**:
-   - Do NOT call `/specweave:sync-docs` yet (wait until all tasks complete)
+   - Do NOT call `/sw:sync-docs` yet (wait until all tasks complete)
    - Move to next incomplete task
 
 **Example task execution**:
@@ -418,10 +418,10 @@ Up next:
 📝 Now syncing implementation learnings to living docs...
 ```
 
-**CRITICAL: Now run `/specweave:sync-docs update` to sync to living docs**:
+**CRITICAL: Now run `/sw:sync-docs update` to sync to living docs**:
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 This will:
@@ -431,15 +431,15 @@ This will:
 - Update feature lists with completed features
 - May prompt for conflict resolution if needed
 
-**After `/specweave:sync-docs update` completes**:
+**After `/sw:sync-docs update` completes**:
 
 ```
 ✅ Living documentation synchronized!
 
 Next steps:
 1. Run full test suite: npm test
-2. Validate increment: /specweave:validate 0001 --quality
-3. Close increment: /specweave:done 0001 (PM validates before closing)
+2. Validate increment: /sw:validate 0001 --quality
+3. Close increment: /sw:done 0001 (PM validates before closing)
 ```
 
 ---
@@ -503,7 +503,7 @@ After each task, Claude should manually update:
 - **README.md**: User-facing features, installation, usage, API changes
 - **CHANGELOG.md**: Public API changes, breaking changes, new features
 
-**Living docs sync** (via `/specweave:sync-docs update`):
+**Living docs sync** (via `/sw:sync-docs update`):
 - Only after ALL tasks complete
 - Updates `.specweave/docs/` with implementation learnings
 - Updates ADRs from Proposed → Accepted
@@ -516,7 +516,7 @@ After each task, Claude should manually update:
 ### Example 1: Execute Complete Increment
 
 ```bash
-/specweave:do 0001
+/sw:do 0001
 ```
 
 **Output**:
@@ -536,13 +536,13 @@ Task T001: Create User model
 
 🎉 All tasks completed (42/42)
 
-Next: /specweave:validate 0001 --quality
+Next: /sw:validate 0001 --quality
 ```
 
 ### Example 2: Execute with Blocker
 
 ```bash
-/specweave:do 0002
+/sw:do 0002
 ```
 
 **Output**:
@@ -565,7 +565,7 @@ Your choice? [A/B/C]: _
 ### Example 3: Execute with Test Failure
 
 ```bash
-/specweave:do 0003
+/sw:do 0003
 ```
 
 **Output**:
@@ -602,7 +602,7 @@ Available increments:
   • 0002-core-enhancements (planned)
   • 0003-payment-processing (in-progress)
 
-Usage: /specweave:do <increment-id>
+Usage: /sw:do <increment-id>
 ```
 
 ### Increment Not Planned
@@ -611,7 +611,7 @@ Usage: /specweave:do <increment-id>
 
 Increment must be "planned" before execution.
 
-Run: /specweave:increment "User authentication" to plan this increment first.
+Run: /sw:increment "User authentication" to plan this increment first.
 ```
 
 ### No Tasks to Execute
@@ -623,7 +623,7 @@ This usually means:
   2. Tasks.md is empty or missing
 
 Options:
-  1. Re-plan increment: /specweave:increment 0001 (regenerate tasks)
+  1. Re-plan increment: /sw:increment 0001 (regenerate tasks)
   2. Add tasks manually: Edit .specweave/increments/0001-name/tasks.md
 ```
 
@@ -662,6 +662,6 @@ Options:
 
 ---
 
-**Important**: This command is designed for continuous execution. It's normal to run `/specweave:do` and let it execute multiple tasks sequentially with documentation updates after each one.
+**Important**: This command is designed for continuous execution. It's normal to run `/sw:do` and let it execute multiple tasks sequentially with documentation updates after each one.
 
-**Best Practice**: Always run `/specweave:validate 0001 --quality` after execution to ensure quality before closing with `/specweave:done`.
+**Best Practice**: Always run `/sw:validate 0001 --quality` after execution to ensure quality before closing with `/sw:done`.

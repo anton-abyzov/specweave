@@ -5,7 +5,7 @@
  * 1. Create increment with spec.md (ACs) and tasks.md
  * 2. Mark tasks as complete
  * 3. Verify AC checkboxes update automatically (via hook)
- * 4. Test manual sync command (/specweave:sync-acs)
+ * 4. Test manual sync command (/sw:sync-acs)
  * 5. Test conflict detection (manual override)
  * 6. Test orphaned AC warnings
  * 7. Test metadata logging

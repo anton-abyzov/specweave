@@ -103,7 +103,7 @@ gh auth status
 
 ```bash
 # Plan increment
-/specweave:increment "Add user authentication"
+/sw:increment "Add user authentication"
 
 # Result: Auto-creates GitHub issue!
 # 🔗 GitHub Issue #123 created
@@ -163,19 +163,19 @@ dev → qa → staging → uat → preview → prod
 **Usage (Git-Style Commands)**:
 ```bash
 # Pull latest from dev environment
-/specweave-github:pull --profile dev-github
+/sw-github:pull --profile dev-github
 
 # Push progress to dev environment
-/specweave-github:push 0012 --profile dev-github
+/sw-github:push 0012 --profile dev-github
 
 # Two-way sync
-/specweave-github:sync 0012 --profile dev-github
+/sw-github:sync 0012 --profile dev-github
 
 # Promote to QA (create new issue in QA repo)
-/specweave-github:create 0012 --profile qa-github
+/sw-github:create 0012 --profile qa-github
 
 # Promote to prod (after UAT approval)
-/specweave-github:create 0012 --profile prod-github
+/sw-github:create 0012 --profile prod-github
 ```
 
 **Result**: Same increment tracked across ALL environments with full traceability.
@@ -254,7 +254,7 @@ DevOps Team:
 
 ```bash
 # Create increment with keywords
-/specweave:increment "Add dark mode to mobile app"
+/sw:increment "Add dark mode to mobile app"
 
 # SpecWeave detects:
 # - Keywords: "mobile", "app"
@@ -267,13 +267,13 @@ DevOps Team:
 
 ```bash
 # Pull from specific repo
-/specweave-github:pull --profile backend-auth
+/sw-github:pull --profile backend-auth
 
 # Push to specific repo
-/specweave-github:push 0015 --profile backend-auth
+/sw-github:push 0015 --profile backend-auth
 
 # Two-way sync
-/specweave-github:sync 0015 --profile backend-auth
+/sw-github:sync 0015 --profile backend-auth
 ```
 
 ---
@@ -286,35 +286,35 @@ SpecWeave provides intuitive **git-style commands** for GitHub synchronization:
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-github:pull` | Pull changes from GitHub (like `git pull`) |
-| `/specweave-github:push` | Push progress to GitHub (like `git push`) |
-| `/specweave-github:sync` | Two-way sync (pull + push) |
-| `/specweave-github:status` | Check sync status |
+| `/sw-github:pull` | Pull changes from GitHub (like `git pull`) |
+| `/sw-github:push` | Push progress to GitHub (like `git push`) |
+| `/sw-github:sync` | Two-way sync (pull + push) |
+| `/sw-github:status` | Check sync status |
 
 ### Basic Usage
 
 ```bash
 # Pull latest changes from GitHub
-/specweave-github:pull
+/sw-github:pull
 
 # Push your progress to GitHub
-/specweave-github:push
+/sw-github:push
 
 # Two-way sync (both directions)
-/specweave-github:sync 0012
+/sw-github:sync 0012
 ```
 
 ### Multi-Project Sync
 
 ```bash
 # Pull ALL specs across ALL projects (living docs sync)
-/specweave-github:pull --all
+/sw-github:pull --all
 
 # Pull specific feature hierarchy
-/specweave-github:pull --feature FS-042
+/sw-github:pull --feature FS-042
 
 # Push all local changes to GitHub
-/specweave-github:push --all
+/sw-github:push --all
 ```
 
 ### Sync Brief Output
@@ -352,7 +352,7 @@ After every sync operation, you'll see a compact summary:
 
 ```bash
 # Plan feature for Sprint 24
-/specweave:increment "User profile enhancements"
+/sw:increment "User profile enhancements"
 
 # During sprint: Tasks auto-update GitHub
 # Task T-001 completed → GitHub checkbox updated
@@ -365,7 +365,7 @@ After every sync operation, you'll see a compact summary:
 git checkout -b release/v1.24.0
 
 # Tag increment with release version
-/specweave:done 0018 --tag v1.24.0
+/sw:done 0018 --tag v1.24.0
 
 # Result: GitHub issue tagged with "release-v1.24.0" label
 ```
@@ -419,7 +419,7 @@ team:frontend          # Team assignment
 
 ```bash
 # Generate audit report for increment
-/specweave:audit 0018
+/sw:audit 0018
 
 # Output:
 📊 Audit Report: Increment 0018
@@ -524,7 +524,7 @@ GHE_TOKEN=ghp_enterprise_token_here          # For GitHub Enterprise
 
 ```bash
 # Sync last 1 month only (recommended)
-/specweave-github:sync 0020 --time-range 1M
+/sw-github:sync 0020 --time-range 1M
 
 # Time range options:
 # 1W  - Last 1 week  (~50 items, 75 API calls)
@@ -605,14 +605,14 @@ jobs:
 SpecWeave tracks **DORA 4 metrics** automatically:
 
 1. **Deployment Frequency**
-   - Tracked via `/specweave:done` with `--deployed` flag
+   - Tracked via `/sw:done` with `--deployed` flag
    - Syncs to GitHub as deployment event
    - Viewable in GitHub Insights
 
 2. **Lead Time for Changes**
    - Increment created → Deployed
    - Tracked in metadata.json
-   - Reported in `/specweave:metrics`
+   - Reported in `/sw:metrics`
 
 3. **Change Failure Rate**
    - Hotfix increments tagged with `type:hotfix`
@@ -627,7 +627,7 @@ SpecWeave tracks **DORA 4 metrics** automatically:
 **View DORA Metrics**:
 
 ```bash
-/specweave:metrics --dora
+/sw:metrics --dora
 
 # Output:
 📊 DORA Metrics (Last 90 Days)
@@ -736,7 +736,7 @@ GITHUB_TOKEN=ghp_new_token_here
 gh api rate_limit
 
 # Wait for reset OR reduce time range
-/specweave-github:sync 0020 --time-range 1W  # Use shorter range
+/sw-github:sync 0020 --time-range 1W  # Use shorter range
 ```
 
 ---
@@ -759,7 +759,7 @@ cat .specweave/increments/0020-feature/metadata.json
 # }
 
 # If missing, link manually:
-/specweave-github:link 0020 --issue 145
+/sw-github:link 0020 --issue 145
 ```
 
 ---

@@ -183,7 +183,7 @@ This is a test increment for status line desync prevention.
     expect(cache!.activeIncrements[0].total).toBe(5);
     expect(cache!.activeIncrements[0].percentage).toBe(40);
 
-    // Step 3: Complete 2 more tasks (simulates /specweave:do progress)
+    // Step 3: Complete 2 more tasks (simulates /sw:do progress)
     await createIncrement('0002-test-increment', 'active', {
       totalTasks: 5,
       completedTasks: 4 // 2 → 4
@@ -261,7 +261,7 @@ This is a test increment for status line desync prevention.
     expect(cache).not.toBeNull();
     expect(cache!.openCount).toBe(0); // Paused is NOT open
     expect(cache!.activeIncrements).toHaveLength(0);
-    expect(cache!.message).toBe('No active increments. Start with /specweave:increment "feature name"');
+    expect(cache!.message).toBe('No active increments. Start with /sw:increment "feature name"');
 
     // Step 3: Resume increment (paused → active)
     await updateSpecStatus('0004-paused', 'active');
@@ -293,7 +293,7 @@ This is a test increment for status line desync prevention.
     expect(cache).not.toBeNull();
     expect(cache!.openCount).toBe(0);
     expect(cache!.activeIncrements).toHaveLength(0);
-    expect(cache!.message).toBe('No active increments. Start with /specweave:increment "feature name"');
+    expect(cache!.message).toBe('No active increments. Start with /sw:increment "feature name"');
     expect(cache!.current).toBeNull();
   });
 
@@ -425,7 +425,7 @@ created: 2025-11-18
     // Step 3: User manually edits spec.md (planning → active)
     await updateSpecStatus('0043-desync-fix', 'active');
 
-    // Step 4: User runs ANY command (e.g., /specweave:progress)
+    // Step 4: User runs ANY command (e.g., /sw:progress)
     // user-prompt-submit.sh hook fires BEFORE command executes
     // Hook calls: bash "$HOOK_DIR/lib/update-status-line.sh"
     await updater.update(); // Simulates hook execution

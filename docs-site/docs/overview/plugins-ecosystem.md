@@ -39,7 +39,7 @@ The foundation of SpecWeave, always loaded in every project.
 **Example: Planning a New Feature**
 ```bash
 # The PM agent (from core plugin) helps you create a spec
-/specweave:increment "User authentication with OAuth"
+/sw:increment "User authentication with OAuth"
 
 # Output: Creates spec.md, plan.md, tasks.md with:
 # - User stories with acceptance criteria
@@ -69,24 +69,24 @@ Bidirectional sync between SpecWeave increments and GitHub Issues.
 **Example: Auto-Sync Workflow**
 ```bash
 # 1. Create increment (issue auto-created!)
-/specweave:increment "Add dark mode"
+/sw:increment "Add dark mode"
 # 🔗 GitHub Issue #42 created automatically
 
 # 2. Start work
-/specweave:do
+/sw:do
 
 # 3. Complete a task
 # ✅ GitHub issue checkbox updates automatically!
 
 # 4. Manual sync (if needed)
-/specweave-github:sync 0023 --time-range 1M
+/sw-github:sync 0023 --time-range 1M
 ```
 
 **Commands:**
-- `/specweave-github:sync` - Bidirectional sync with time range filtering
-- `/specweave-github:create-issue` - Manual issue creation
-- `/specweave-github:sync-epic` - Sync Epic folder to GitHub Milestone
-- `/specweave-github:status` - Check sync status
+- `/sw-github:sync` - Bidirectional sync with time range filtering
+- `/sw-github:create-issue` - Manual issue creation
+- `/sw-github:sync-epic` - Sync Epic folder to GitHub Milestone
+- `/sw-github:status` - Check sync status
 
 **Configuration:**
 ```json
@@ -123,13 +123,13 @@ Enterprise JIRA integration with Epic/Story sync.
 **Example: JIRA Sync**
 ```bash
 # Sync increment to JIRA
-/specweave-jira:sync 0042
+/sw-jira:sync 0042
 
 # Sync Epic folder (20+ user stories)
-/specweave-jira:sync-epic FS-031-authentication
+/sw-jira:sync-epic FS-031-authentication
 
 # Check status
-/specweave-jira:status 0042
+/sw-jira:status 0042
 ```
 
 **Status Mapping:**
@@ -157,13 +157,13 @@ Enterprise Azure DevOps sync with Work Items.
 **Example:**
 ```bash
 # Sync to Azure DevOps
-/specweave-ado:sync 0031
+/sw-ado:sync 0031
 
 # Create work item manually
-/specweave-ado:create-workitem 0031
+/sw-ado:create-workitem 0031
 
 # Check sync status
-/specweave-ado:status 0031
+/sw-ado:status 0031
 ```
 
 ---
@@ -443,22 +443,22 @@ Multi-repo releases, semantic versioning, RC workflows.
 - **release-manager**: Coordinates releases across monorepo/polyrepo
 
 **Commands:**
-- `/specweave-release:init` - Initialize release strategy
-- `/specweave-release:align` - Align versions across repos
-- `/specweave-release:rc` - Manage Release Candidate lifecycle
-- `/specweave-release:platform` - Multi-repo platform releases
+- `/sw-release:init` - Initialize release strategy
+- `/sw-release:align` - Align versions across repos
+- `/sw-release:rc` - Manage Release Candidate lifecycle
+- `/sw-release:platform` - Multi-repo platform releases
 
 **Example:**
 ```bash
 # Initialize release strategy
-/specweave-release:init
+/sw-release:init
 # Analyzes git history, CI/CD configs, recommends strategy
 
 # Create Release Candidate
-/specweave-release:rc create v1.5.0-rc.1
+/sw-release:rc create v1.5.0-rc.1
 
 # Promote to production
-/specweave-release:rc promote v1.5.0-rc.3
+/sw-release:rc promote v1.5.0-rc.3
 ```
 
 ---
@@ -511,7 +511,7 @@ Suggests alternatives when users mention specific tools.
 
 ```bash
 # 1. PM Agent (Core) creates spec
-/specweave:increment "Real-time chat feature"
+/sw:increment "Real-time chat feature"
 
 # 2. Architect Agent (Core) designs system
 # - WebSocket architecture
@@ -538,7 +538,7 @@ Suggests alternatives when users mention specific tools.
 # - Links to increment
 
 # 7. Start implementation
-/specweave:do
+/sw:do
 
 # 8. All agents collaborate during implementation!
 ```
@@ -565,8 +565,8 @@ Suggests alternatives when users mention specific tools.
 
 | I want to... | Use Plugin | Key Command |
 |-------------|-----------|-------------|
-| Plan increment | **specweave** | `/specweave:increment` |
-| Sync to GitHub | **specweave-github** | `/specweave-github:sync` |
+| Plan increment | **specweave** | `/sw:increment` |
+| Sync to GitHub | **specweave-github** | `/sw-github:sync` |
 | Deploy to K8s | **specweave-kubernetes** | Agent auto-activates |
 | Build React app | **specweave-frontend** | Agent auto-activates |
 | Create ML pipeline | **specweave-ml** | `/specweave-ml:pipeline` |
@@ -574,7 +574,7 @@ Suggests alternatives when users mention specific tools.
 | Handle incidents | **specweave-infrastructure** | SRE agent + playbooks |
 | Generate diagrams | **specweave-diagrams** | Agent auto-activates |
 | Integrate Stripe | **specweave-payments** | Agent auto-activates |
-| Manage releases | **specweave-release** | `/specweave-release:init` |
+| Manage releases | **specweave-release** | `/sw-release:init` |
 
 ---
 
@@ -623,13 +623,13 @@ For large projects with 100+ files:
 ### 3. Leverage Command Shortcuts
 ```bash
 # Planning
-/specweave:increment → /specweave:do → /specweave:done
+/sw:increment → /sw:do → /sw:done
 
 # Quality
-/specweave:validate → /specweave:qa → /specweave:check-tests
+/sw:validate → /sw:qa → /sw:check-tests
 
 # Sync
-/specweave-github:sync → /specweave:sync-docs
+/sw-github:sync → /sw:sync-docs
 ```
 
 ### 4. Multi-Project Setup
@@ -730,10 +730,10 @@ Want to add a new plugin? See [CLAUDE.md](https://github.com/anton-abyzov/specwe
 
 :::tip Next Steps
 1. ✅ Install: `npx specweave init .`
-2. 🎯 Plan: `/specweave:increment "Your feature"`
-3. ⚡ Implement: `/specweave:do`
-4. 🔗 Sync: `/specweave-github:sync`
-5. ✅ Complete: `/specweave:done`
+2. 🎯 Plan: `/sw:increment "Your feature"`
+3. ⚡ Implement: `/sw:do`
+4. 🔗 Sync: `/sw-github:sync`
+5. ✅ Complete: `/sw:done`
 
 **All 21 plugins are ready to help you build faster!**
 :::

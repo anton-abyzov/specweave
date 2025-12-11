@@ -1,12 +1,12 @@
 ---
 name: specweave:backlog
 description: Move an increment to backlog (planned but not ready to start)
-usage: /specweave:backlog <increment-id> --reason="<reason>"
+usage: /sw:backlog <increment-id> --reason="<reason>"
 ---
 
 # Backlog Increment Command
 
-**Usage**: `/specweave:backlog <increment-id> --reason="<reason>"`
+**Usage**: `/sw:backlog <increment-id> --reason="<reason>"`
 
 ---
 
@@ -33,7 +33,7 @@ Move an increment to backlog when:
    - `backlogReason`: User-provided reason
    - `backlogAt`: Current timestamp
 4. **Displays** confirmation message
-5. **Suggests** next actions (`/specweave:resume` to start work)
+5. **Suggests** next actions (`/sw:resume` to start work)
 
 ---
 
@@ -41,17 +41,17 @@ Move an increment to backlog when:
 
 ### Move to backlog with reason
 ```bash
-/specweave:backlog 0032 --reason="Low priority, focus on 0031 first"
+/sw:backlog 0032 --reason="Low priority, focus on 0031 first"
 
 ✅ Increment 0032 moved to backlog
 📝 Reason: Low priority, focus on 0031 first
 🗂️  No longer counts toward WIP limits
-💡 Start work with: /specweave:resume 0032
+💡 Start work with: /sw:resume 0032
 ```
 
 ### Move to backlog without reason (prompts)
 ```bash
-/specweave:backlog 0032
+/sw:backlog 0032
 
 ❓ Why are you moving this to backlog?
    1. Low priority
@@ -63,7 +63,7 @@ Move an increment to backlog when:
 
 ✅ Increment 0032 moved to backlog
 📝 Reason: Low priority
-💡 Start work with: /specweave:resume 0032
+💡 Start work with: /sw:resume 0032
 ```
 
 ---
@@ -72,7 +72,7 @@ Move an increment to backlog when:
 
 ### Already in Backlog
 ```bash
-/specweave:backlog 0032 --reason="Different reason"
+/sw:backlog 0032 --reason="Different reason"
 
 ⚠️  Increment 0032 is already in backlog
    Previous reason: Low priority
@@ -86,7 +86,7 @@ Update reason? [Y/n]: y
 
 ### Cannot Backlog Completed
 ```bash
-/specweave:backlog 0005
+/sw:backlog 0005
 
 ❌ Cannot move increment 0005 to backlog
    Status: completed
@@ -95,20 +95,20 @@ Update reason? [Y/n]: y
 
 ### Cannot Backlog Paused
 ```bash
-/specweave:backlog 0008
+/sw:backlog 0008
 
 ❌ Cannot move increment 0008 to backlog
    Status: paused
    Paused work should be resumed or abandoned, not moved to backlog
-   Resume it: /specweave:resume 0008
+   Resume it: /sw:resume 0008
 ```
 
 ### Increment Not Found
 ```bash
-/specweave:backlog 9999
+/sw:backlog 9999
 
 ❌ Increment not found: 9999
-💡 Check available increments: /specweave:status
+💡 Check available increments: /sw:status
 ```
 
 ---
@@ -146,10 +146,10 @@ active ──backlog──> backlog
 
 ## Related Commands
 
-- `/specweave:resume <id>` - Move from backlog to active (start work)
-- `/specweave:pause <id>` - Pause active work (different from backlog)
-- `/specweave:status` - Show all increment statuses including backlog
-- `/specweave:abandon <id>` - Abandon increment (permanent)
+- `/sw:resume <id>` - Move from backlog to active (start work)
+- `/sw:pause <id>` - Pause active work (different from backlog)
+- `/sw:status` - Show all increment statuses including backlog
+- `/sw:abandon <id>` - Abandon increment (permanent)
 
 ---
 
@@ -161,7 +161,7 @@ active ──backlog──> backlog
 
 ✅ **Clear reasons** - Helps with prioritization decisions
 
-✅ **Start when ready** - Use `/specweave:resume` to move from backlog to active
+✅ **Start when ready** - Use `/sw:resume` to move from backlog to active
 
 ❌ **Don't confuse with paused** - Backlog = never started, Paused = started but blocked
 
@@ -182,10 +182,10 @@ active ──backlog──> backlog
 
 ## Warning: Large Backlog
 
-If your backlog grows too large (10+ increments), `/specweave:status` will warn:
+If your backlog grows too large (10+ increments), `/sw:status` will warn:
 
 ```bash
-/specweave:status
+/sw:status
 
 🗂️  Backlog (12):
   📦 0032-feature-a [feature] - Low priority
@@ -199,13 +199,13 @@ If your backlog grows too large (10+ increments), `/specweave:status` will warn:
    - Reviewing priorities
 
 💡 Actions:
-   /specweave:resume <id>  # Start work on highest priority
-   /specweave:abandon <id> # Remove obsolete items
+   /sw:resume <id>  # Start work on highest priority
+   /sw:abandon <id> # Remove obsolete items
 ```
 
 ---
 
-**Command**: `/specweave:backlog`
+**Command**: `/sw:backlog`
 **Plugin**: specweave (core)
 **Version**: v0.19.0+
 **Part of**: Backlog Support Feature

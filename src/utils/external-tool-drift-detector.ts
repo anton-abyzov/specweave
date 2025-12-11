@@ -5,9 +5,9 @@
  * indicating potential drift between living docs and external systems.
  *
  * Used by:
- * - /specweave:done (validation warning if drift > 24h)
+ * - /sw:done (validation warning if drift > 24h)
  * - Status line (show "sync pending" indicator)
- * - /specweave:progress (show last sync time)
+ * - /sw:progress (show last sync time)
  *
  * See: ADR-0131 (External Tool Sync Context Detection)
  */
@@ -200,7 +200,7 @@ export class ExternalToolDriftDetector {
           lastSyncTime: null,
           hoursSinceSync: null,
           externalToolsConfigured: true,
-          recommendation: 'External tools never synced - run /specweave:sync-progress'
+          recommendation: 'External tools never synced - run /sw:sync-progress'
         };
       }
 
@@ -214,11 +214,11 @@ export class ExternalToolDriftDetector {
       let recommendation = '';
       if (hasDrift) {
         if (hoursSinceSync < WARNING_THRESHOLD_HOURS) {
-          recommendation = 'External tools synced 1-2 days ago - consider running /specweave:sync-progress';
+          recommendation = 'External tools synced 1-2 days ago - consider running /sw:sync-progress';
         } else if (hoursSinceSync < CRITICAL_THRESHOLD_HOURS) {
-          recommendation = `External tools synced ${Math.floor(hoursSinceSync / 24)} days ago - run /specweave:sync-progress soon`;
+          recommendation = `External tools synced ${Math.floor(hoursSinceSync / 24)} days ago - run /sw:sync-progress soon`;
         } else {
-          recommendation = `External tools synced ${Math.floor(hoursSinceSync / 168)} weeks ago - URGENT: run /specweave:sync-progress`;
+          recommendation = `External tools synced ${Math.floor(hoursSinceSync / 168)} weeks ago - URGENT: run /sw:sync-progress`;
         }
       } else {
         recommendation = `External tools synced ${Math.floor(hoursSinceSync)} hours ago - up to date`;

@@ -193,7 +193,7 @@ graph LR
 **Example**:
 ```bash
 # Manual sync command
-/specweave-github:sync-from 0008
+/sw-github:sync-from 0008
 
 # Result:
 # → Pull from GitHub: Issue status, task checkboxes, comments
@@ -254,7 +254,7 @@ sequenceDiagram
     participant External as GitHub Issue
 
     Note over Dev,External: Phase 1: Increment Planning
-    Dev->>Local: /specweave:increment "user auth"
+    Dev->>Local: /sw:increment "user auth"
     Local->>Local: Generate spec.md, plan.md, tasks.md
     Local->>External: Create GitHub issue #30
     External->>Local: Return issue URL
@@ -268,7 +268,7 @@ sequenceDiagram
     Hook->>Local: Update tasks.md, metadata.json
 
     Note over Dev,External: Phase 3: Completion
-    Dev->>Local: /specweave:done 0008
+    Dev->>Local: /sw:done 0008
     Local->>External: Close GitHub issue #30
     External->>Local: Confirm closure
     Local->>Local: Archive increment
@@ -276,10 +276,10 @@ sequenceDiagram
 
 ### Step-by-Step Example
 
-**1. Create Increment** (`/specweave:increment`):
+**1. Create Increment** (`/sw:increment`):
 
 ```bash
-/specweave:increment "Add user authentication"
+/sw:increment "Add user authentication"
 
 # SpecWeave:
 # 1. Generate spec.md (user stories, AC)
@@ -340,10 +340,10 @@ sequenceDiagram
 #    status: done
 ```
 
-**4. Close Increment** (`/specweave:done`):
+**4. Close Increment** (`/sw:done`):
 
 ```bash
-/specweave:done 0008
+/sw:done 0008
 
 # SpecWeave:
 # 1. Validate all tasks complete
@@ -459,7 +459,7 @@ Split-source sync happens **automatically** via hooks:
 
 ### Post-Increment-Done Hook
 
-**When**: After `/specweave:done` completes
+**When**: After `/sw:done` completes
 
 **Location**: `plugins/specweave/hooks/post-increment-done.sh`
 
@@ -471,7 +471,7 @@ Split-source sync happens **automatically** via hooks:
 
 **Example**:
 ```bash
-/specweave:done 0008
+/sw:done 0008
 
 # Hook fires automatically:
 # ✅ Living docs final sync
@@ -493,7 +493,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Create GitHub issue for increment
-/specweave-github:create-issue 0008
+/sw-github:create-issue 0008
 
 # Output:
 # 🚀 Creating GitHub issue for 0008-user-authentication...
@@ -506,7 +506,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Sync increment to external tracker (content out, status in)
-/specweave-github:sync 0008
+/sw-github:sync 0008
 
 # Prompts:
 # 1. Select profile (default: specweave-dev)
@@ -523,7 +523,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Pull changes from external tracker (no push)
-/specweave-github:sync-from 0008
+/sw-github:sync-from 0008
 
 # Output:
 # 📥 Pulling from GitHub issue #30...
@@ -538,7 +538,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Close external issue
-/specweave-github:close-issue 0008
+/sw-github:close-issue 0008
 
 # Output:
 # 🔒 Closing GitHub issue #30...
@@ -550,7 +550,7 @@ For advanced scenarios, manual sync commands are available:
 
 ```bash
 # Check sync status for increment
-/specweave-github:status 0008
+/sw-github:status 0008
 
 # Output:
 # 📊 Sync Status: 0008-user-authentication
@@ -819,8 +819,8 @@ Links:
 - Conflict resolution built-in
 
 **Manual Commands**:
-- `/specweave-github:sync` - Split-source sync (content out, status in)
-- `/specweave-github:sync-from` - Import only
-- `/specweave-github:status` - Check sync status
+- `/sw-github:sync` - Split-source sync (content out, status in)
+- `/sw-github:sync-from` - Import only
+- `/sw-github:status` - Check sync status
 
 **Result**: Content authored in SpecWeave, status tracked in external tool, always in sync.

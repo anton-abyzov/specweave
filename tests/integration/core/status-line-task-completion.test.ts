@@ -4,7 +4,7 @@
  * Tests that status line cache is updated after tasks are completed.
  *
  * Bug Report:
- * - User doesn't see status line update during /specweave:done
+ * - User doesn't see status line update during /sw:done
  * - Root cause: Status line updates asynchronously via hooks
  * - Claude Code polls cache file periodically
  *

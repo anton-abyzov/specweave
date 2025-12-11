@@ -141,7 +141,7 @@ SpecWeave follows these key principles for all contributions:
 
 ### 4. Incremental Development
 - Work in small, measurable increments
-- Use SpecWeave's own workflow (`/specweave:increment`, `/specweave:do`, etc.)
+- Use SpecWeave's own workflow (`/sw:increment`, `/sw:do`, etc.)
 - All work traces back to specs
 
 ### 5. Multi-Tool Support

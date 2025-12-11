@@ -67,7 +67,7 @@ async function syncCompletedUserStories(incrementId) {
       const secondsRemaining = Math.ceil((6e4 - timeSinceLastSync) / 1e3);
       console.log(`\u23ED\uFE0F  US sync throttled (last sync ${Math.floor(timeSinceLastSync / 1e3)}s ago)`);
       console.log(`   \u2139\uFE0F  Sync will be available in ${secondsRemaining}s`);
-      console.log(`   \u{1F4A1} Manual sync: /specweave:sync-progress ${incrementId}`);
+      console.log(`   \u{1F4A1} Manual sync: /sw:sync-progress ${incrementId}`);
       return {
         success: true,
         message: "Sync throttled",

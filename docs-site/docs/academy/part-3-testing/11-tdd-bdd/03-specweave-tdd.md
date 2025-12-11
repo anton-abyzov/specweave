@@ -37,11 +37,11 @@ Tests are embedded directly in `tasks.md`, linked to acceptance criteria.
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave:tdd-cycle` | Full red-green-refactor workflow |
-| `/specweave:tdd-red` | Generate failing tests |
-| `/specweave:tdd-green` | Implement to pass tests |
-| `/specweave:tdd-refactor` | Improve with test safety |
-| `/specweave:check-tests` | Validate coverage |
+| `/sw:tdd-cycle` | Full red-green-refactor workflow |
+| `/sw:tdd-red` | Generate failing tests |
+| `/sw:tdd-green` | Implement to pass tests |
+| `/sw:tdd-refactor` | Improve with test safety |
+| `/sw:check-tests` | Validate coverage |
 
 ---
 
@@ -85,7 +85,7 @@ describe('User Registration', () => {
 ### Step 1: Start TDD Mode
 
 ```bash
-/specweave:tdd-cycle
+/sw:tdd-cycle
 ```
 
 SpecWeave will:
@@ -96,7 +96,7 @@ SpecWeave will:
 ### Step 2: Red Phase
 
 ```bash
-/specweave:tdd-red
+/sw:tdd-red
 ```
 
 The AI generates comprehensive failing tests:
@@ -160,7 +160,7 @@ npm test
 ### Step 3: Green Phase
 
 ```bash
-/specweave:tdd-green
+/sw:tdd-green
 ```
 
 The AI implements minimal code to pass tests:
@@ -204,7 +204,7 @@ npm test
 ### Step 4: Refactor Phase
 
 ```bash
-/specweave:tdd-refactor
+/sw:tdd-refactor
 ```
 
 With tests as safety net, improve the code:
@@ -281,7 +281,7 @@ SpecWeave tracks which acceptance criteria have tests:
 Check coverage:
 
 ```bash
-/specweave:check-tests
+/sw:check-tests
 ```
 
 Output:
@@ -297,7 +297,7 @@ Missing coverage:
 - AC-US1-07: Email verification flow
 - AC-US1-08: Account lockout after failed attempts
 
-Run /specweave:tdd-red to generate missing tests.
+Run /sw:tdd-red to generate missing tests.
 ```
 
 ---
@@ -387,7 +387,7 @@ describe('Password Reset', () => {
 SpecWeave validates TDD compliance before closing increments:
 
 ```bash
-/specweave:done 0001
+/sw:done 0001
 ```
 
 ```
@@ -412,7 +412,7 @@ PM Validation: TDD Quality Gate
 ✗ Task T-005 has no embedded tests
 ✗ Coverage below threshold (72% < 80%)
 
-Cannot close increment. Run /specweave:tdd-red to add missing tests.
+Cannot close increment. Run /sw:tdd-red to add missing tests.
 ```
 
 ---
@@ -454,9 +454,9 @@ Don't cheat! Write failing tests first:
 
 ```bash
 # Correct flow
-/specweave:tdd-red    # Tests fail
+/sw:tdd-red    # Tests fail
 npm test              # Verify RED
-/specweave:tdd-green  # Implement
+/sw:tdd-green  # Implement
 npm test              # Verify GREEN
 ```
 
@@ -499,7 +499,7 @@ Set minimum coverage per increment:
 ## Key Takeaways
 
 1. **Tests are first-class** — Embedded in tasks.md, linked to ACs
-2. **Use TDD commands** — `/specweave:tdd-red`, `green`, `refactor`
+2. **Use TDD commands** — `/sw:tdd-red`, `green`, `refactor`
 3. **AI generates tests** — Based on specs and context
 4. **Coverage is tracked** — Per AC, verified at closure
 5. **Quality gates enforce TDD** — Can't close without tests
@@ -510,24 +510,24 @@ Set minimum coverage per increment:
 
 1. Create a new increment:
    ```bash
-   /specweave:increment "Todo List API"
+   /sw:increment "Todo List API"
    ```
 
 2. Define acceptance criteria in spec.md
 
 3. Run TDD cycle:
    ```bash
-   /specweave:tdd-cycle
+   /sw:tdd-cycle
    ```
 
 4. Check coverage:
    ```bash
-   /specweave:check-tests
+   /sw:check-tests
    ```
 
 5. Close when complete:
    ```bash
-   /specweave:done
+   /sw:done
    ```
 
 ---

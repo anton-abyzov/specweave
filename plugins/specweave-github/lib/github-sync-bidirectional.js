@@ -108,7 +108,7 @@ async function resolveStatusConflict(incrementId, metadata, githubState) {
   if (githubStatus === "closed" && specweaveStatus === "active") {
     console.log(`
 \u26A0\uFE0F  **CONFLICT**: GitHub issue closed but SpecWeave increment still active!`);
-    console.log(`   Recommendation: Run /specweave:done ${incrementId} to close increment`);
+    console.log(`   Recommendation: Run /sw:done ${incrementId} to close increment`);
     console.log(`   Or reopen issue on GitHub if work is not complete`);
   }
   if (githubStatus === "open" && specweaveStatus === "completed") {

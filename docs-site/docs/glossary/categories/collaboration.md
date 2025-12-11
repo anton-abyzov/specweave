@@ -295,7 +295,7 @@ Predicted Epic 1 completion: 5 sprints (50 points / 10 points)
 
 ```bash
 # Create Jira issue from increment
-/specweave-jira:specweave-jira-sync 0035 --mode=export
+/sw-jira:specweave-jira-sync 0035 --mode=export
 
 # Result:
 # ✅ Created Jira epic: PLAT-100 "User Registration"
@@ -305,7 +305,7 @@ Predicted Epic 1 completion: 5 sprints (50 points / 10 points)
 # ✅ Linked to increment: 0035-user-registration
 
 # Sync status: SpecWeave → Jira
-/specweave-jira:specweave-jira-sync 0035
+/sw-jira:specweave-jira-sync 0035
 
 # Result:
 # ✅ T-001 done → PLAT-101 status updated to "Done"
@@ -338,9 +338,9 @@ Sprint (2 weeks)       → Increment (.specweave/increments/)
 User Story             → Acceptance Criteria (AC-US1-01)
 Task                   → Task (tasks.md: T-001)
 Backlog                → .specweave/increments/_backlog/
-Sprint Planning        → /specweave:increment (increment planning)
-Daily Standup          → /specweave:progress (status update)
-Sprint Review          → /specweave:done (completion report)
+Sprint Planning        → /sw:increment (increment planning)
+Daily Standup          → /sw:progress (status update)
+Sprint Review          → /sw:done (completion report)
 Sprint Retrospective   → COMPLETION-REPORT.md (lessons learned)
 ```
 
@@ -349,22 +349,22 @@ Sprint Retrospective   → COMPLETION-REPORT.md (lessons learned)
 **specweave-github plugin**:
 ```bash
 # Sync increment ↔ GitHub issue
-/specweave-github:specweave-github-create-issue 0035
-/specweave-github:specweave-github-sync 0035
+/sw-github:specweave-github-create-issue 0035
+/sw-github:specweave-github-sync 0035
 ```
 
 **specweave-jira plugin**:
 ```bash
 # Sync increment ↔ Jira epic/stories
-/specweave-jira:specweave-jira-sync 0035 --mode=export
-/specweave-jira:specweave-jira-sync 0035
+/sw-jira:specweave-jira-sync 0035 --mode=export
+/sw-jira:specweave-jira-sync 0035
 ```
 
 **specweave-ado plugin**:
 ```bash
 # Sync increment ↔ Azure DevOps work item
-/specweave-ado:specweave-ado-create-workitem 0035
-/specweave-ado:specweave-ado-sync 0035
+/sw-ado:specweave-ado-create-workitem 0035
+/sw-ado:specweave-ado-sync 0035
 ```
 
 ### 3. Living Documentation for Collaboration
@@ -388,10 +388,10 @@ Team collaboration documented in:
 # Increment = Sprint (SpecWeave's unit of work)
 
 **Duration**: Typically 1-2 weeks (flexible)
-**Planning**: /specweave:increment (generate spec.md, plan.md, tasks)
-**Execution**: /specweave:do (implement tasks)
-**Daily Updates**: /specweave:progress (check status)
-**Completion**: /specweave:done (close increment, generate report)
+**Planning**: /sw:increment (generate spec.md, plan.md, tasks)
+**Execution**: /sw:do (implement tasks)
+**Daily Updates**: /sw:progress (check status)
+**Completion**: /sw:done (close increment, generate report)
 
 **Key Difference from Scrum**:
 - ✅ No fixed sprint length (increments are flexible)
@@ -402,7 +402,7 @@ Team collaboration documented in:
 ### 5. Velocity Tracking
 
 ```bash
-/specweave:status
+/sw:status
 
 # Output:
 # Increment History:

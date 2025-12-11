@@ -423,7 +423,7 @@ Scenario: Title exceeds maximum length
 
 ## The Completion Report
 
-After `/specweave:done`, a completion report is generated:
+After `/sw:done`, a completion report is generated:
 
 ```markdown
 # Increment Completion Report
@@ -472,10 +472,10 @@ After `/specweave:done`, a completion report is generated:
 
 ```bash
 # After manual edits, validate
-/specweave:validate 0001
+/sw:validate 0001
 
 # Sync documentation
-/specweave:sync-docs
+/sw:sync-docs
 ```
 
 ### 2. Reference Consistently

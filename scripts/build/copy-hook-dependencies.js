@@ -51,7 +51,7 @@ const PLUGIN_DEPENDENCIES = {
     'dist/src/core/increment/metadata-manager.js',
     // Status Auto-Transition (v0.35.0+) - CRITICAL for preventing auto-completion bug
     // Detects when all tasks complete and transitions ACTIVE → READY_FOR_REVIEW
-    // Only /specweave:done can then transition to COMPLETED with user approval
+    // Only /sw:done can then transition to COMPLETED with user approval
     'dist/src/core/increment/status-auto-transition.js',
     'dist/src/core/types/increment-metadata.js',
     'dist/src/generators/spec/task-parser.js',

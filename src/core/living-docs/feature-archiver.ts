@@ -1142,9 +1142,9 @@ export class FeatureArchiver {
    *
    * CRITICAL (v0.30.12): External items (imported from ADO/JIRA/GitHub) should
    * NEVER be auto-archived during import. Archive is user-initiated only via:
-   * - /specweave:archive --external
-   * - /specweave:archive --external --older-than 90
-   * - /specweave:archive --external FS-001E FS-002E
+   * - /sw:archive --external
+   * - /sw:archive --external --older-than 90
+   * - /sw:archive --external FS-001E FS-002E
    *
    * External features are identified by the 'E' suffix (e.g., FS-001E, FS-042E).
    * They are NOT linked to increments (increments are source of truth for NEW features).

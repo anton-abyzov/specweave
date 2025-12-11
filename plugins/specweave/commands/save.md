@@ -1,18 +1,18 @@
 ---
 name: specweave:save
-description: SMART save - auto-generates commit messages, handles git pull/merge/rebase automatically, resolves divergent branches, stashes dirty work. Works for single repos and umbrella multi-repo setups. Just run /specweave:save with no args for fully automatic save!
+description: SMART save - auto-generates commit messages, handles git pull/merge/rebase automatically, resolves divergent branches, stashes dirty work. Works for single repos and umbrella multi-repo setups. Just run /sw:save with no args for fully automatic save!
 ---
 
-# /specweave:save - Smart Save with Auto-Sync
+# /sw:save - Smart Save with Auto-Sync
 
-**SMART SAVE** - Handles everything automatically: commit message generation, remote sync (pull/rebase), branch setup, and push. Just run `/specweave:save` and it figures out what to do!
+**SMART SAVE** - Handles everything automatically: commit message generation, remote sync (pull/rebase), branch setup, and push. Just run `/sw:save` and it figures out what to do!
 
 ## TL;DR - Just Works!
 
 ```bash
-/specweave:save           # FULLY AUTOMATIC - generates message, syncs, pushes (NO prompts!)
-/specweave:save "msg"     # Your message, auto-sync
-/specweave:save -i        # Interactive - asks before each step
+/sw:save           # FULLY AUTOMATIC - generates message, syncs, pushes (NO prompts!)
+/sw:save "msg"     # Your message, auto-sync
+/sw:save -i        # Interactive - asks before each step
 ```
 
 **What it handles automatically:**
@@ -38,20 +38,20 @@ description: SMART save - auto-generates commit messages, handles git pull/merge
 
 ```bash
 # FULLY AUTOMATIC - zero prompts! (DEFAULT)
-/specweave:save
+/sw:save
 
 # With your own commit message
-/specweave:save "feat: Add menu builder"
+/sw:save "feat: Add menu builder"
 
 # Interactive mode - asks before each action
-/specweave:save -i
-/specweave:save --interactive
+/sw:save -i
+/sw:save --interactive
 
 # Dry run - preview without executing
-/specweave:save --dry-run
+/sw:save --dry-run
 
 # Force push (careful! requires "FORCE" confirmation)
-/specweave:save --force
+/sw:save --force
 ```
 
 ## Auto-Generated Commit Messages (IMPORTANT!)
@@ -511,7 +511,7 @@ NEEDS DECISION:
 **Force push is DISABLED by default.** Even with `--force` flag:
 
 ```markdown
-User: /specweave:save --force
+User: /sw:save --force
 
 Claude:
 ⚠️  Force push requested!
@@ -530,13 +530,13 @@ This will OVERWRITE remote history. Are you SURE?
 
 **Better alternatives:**
 - Let auto-sync handle it (rebase/merge)
-- Create a new branch: `/specweave:save --branch fix-conflict`
+- Create a new branch: `/sw:save --branch fix-conflict`
 - Ask team to pull before you push
 
 ### Full Smart Workflow
 
 ```markdown
-/specweave:save
+/sw:save
 
 📡 Scanning repositories...
    Mode: Single repo (my-project)
@@ -873,7 +873,7 @@ This command reads from `.specweave/config.json`:
 Without umbrella config, operates on current repository:
 
 ```markdown
-/specweave:save "chore: Update dependencies"
+/sw:save "chore: Update dependencies"
 
 Scanning for repositories...
 Mode: Single repository
@@ -918,25 +918,25 @@ Summary:
 
 ```bash
 # Most common - fully automatic (DEFAULT!)
-/specweave:save
+/sw:save
 
 # Preview what will happen
-/specweave:save --dry-run
+/sw:save --dry-run
 
 # Custom message, automatic sync
-/specweave:save "feat: new feature"
+/sw:save "feat: new feature"
 
 # Interactive - asks before each step
-/specweave:save -i
+/sw:save -i
 
 # Merge instead of rebase
-/specweave:save --sync=merge
+/sw:save --sync=merge
 
 # Create branch if conflicts (safest!)
-/specweave:save --branch my-changes
+/sw:save --branch my-changes
 
 # Old behavior (fail if behind)
-/specweave:save --sync=none
+/sw:save --sync=none
 ```
 
 ### Conflict Resolution Strategy
@@ -954,7 +954,7 @@ This ensures you never lose work while still syncing with team.
 
 ## Best Practices
 
-1. **Just run `/specweave:save`** - Zero prompts, fully automatic! Let it figure things out
+1. **Just run `/sw:save`** - Zero prompts, fully automatic! Let it figure things out
 2. **Use `-i` for control** - Interactive mode when you want to review/edit the message
 3. **Preview with `--dry-run`** - See what will happen before committing
 4. **Configure `githubUrl` in umbrella config** - Enables auto-remote setup
@@ -965,7 +965,7 @@ This ensures you never lose work while still syncing with team.
 ### Zero-Args Fully Automatic (The Power Move!)
 
 ```
-User: /specweave:save
+User: /sw:save
 
 Claude:
 📡 Scanning... Single repo (specweave)
@@ -995,7 +995,7 @@ Claude:
 ### With Commit Message (Still Smart!)
 
 ```
-User: /specweave:save "feat: Complete user registration"
+User: /sw:save "feat: Complete user registration"
 
 Claude:
 📡 Scanning... Umbrella (3 repos)
@@ -1023,7 +1023,7 @@ backend:
 ### Interactive Mode (With `-i` flag)
 
 ```
-User: /specweave:save -i
+User: /sw:save -i
 
 Claude:
 📡 Scanning... Single repo
@@ -1049,7 +1049,7 @@ User: 1
 ### Handling Merge Conflicts (Rare but Covered!)
 
 ```
-User: /specweave:save
+User: /sw:save
 
 Claude:
 📡 Scanning... Single repo
@@ -1090,7 +1090,7 @@ User: continue
 ### First-Time Remote Setup
 
 ```
-User: /specweave:save "Initial commit"
+User: /sw:save "Initial commit"
 
 Claude:
 Scanning for repositories...
@@ -1124,7 +1124,7 @@ Saving changes...
 ### Dry Run Preview
 
 ```
-User: /specweave:save --dry-run
+User: /sw:save --dry-run
 
 Claude:
 DRY RUN MODE - No changes will be made
@@ -1157,9 +1157,9 @@ Preview complete. Run without --dry-run to execute.
 
 ## Related Commands
 
-- `/specweave-release:align` - Align versions across repos (for releases)
-- `/specweave:sync-progress` - Sync task progress to external tools
-- `/specweave-github:sync` - Sync increments to GitHub issues
+- `/sw-release:align` - Align versions across repos (for releases)
+- `/sw:sync-progress` - Sync task progress to external tools
+- `/sw-github:sync` - Sync increments to GitHub issues
 
 ## Dependencies
 

@@ -2,7 +2,7 @@
 /**
  * Instant Background Jobs Status
  *
- * Executed by UserPromptSubmit hook for /specweave:jobs
+ * Executed by UserPromptSubmit hook for /sw:jobs
  * Bypasses LLM entirely - output shown directly to user
  *
  * Usage: node jobs.js [--all] [--id <jobId>] [--help]
@@ -30,7 +30,7 @@ DESCRIPTION
   This script bypasses LLM processing for instant results (<100ms).
 
 EXECUTION PATHS
-  1. Claude Code:  /specweave:jobs  (hook intercepts, <100ms)
+  1. Claude Code:  /sw:jobs  (hook intercepts, <100ms)
   2. Any LLM:      Skill instructs to run this script (~2s)
   3. Terminal:     specweave jobs (~500ms)
 

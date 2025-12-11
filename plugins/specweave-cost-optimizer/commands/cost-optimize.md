@@ -1,4 +1,4 @@
-# /specweave-cost-optimizer:cost-optimize
+# /sw-cost:cost-optimize
 
 Implement cost optimization recommendations with automated resource modifications and savings plan purchases.
 

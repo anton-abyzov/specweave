@@ -1,12 +1,12 @@
 ---
 id: specweave-qa
-title: /specweave:qa Command
+title: /sw:qa Command
 sidebar_label: specweave:qa
 ---
 
-# /specweave:qa Command
+# /sw:qa Command
 
-The **`/specweave:qa`** command runs comprehensive AI-powered quality assessment with risk scoring using the Probability x Impact method.
+The **`/sw:qa`** command runs comprehensive AI-powered quality assessment with risk scoring using the Probability x Impact method.
 
 ## What It Does
 
@@ -21,16 +21,16 @@ The **`/specweave:qa`** command runs comprehensive AI-powered quality assessment
 
 ```bash
 # Quick assessment
-/specweave:qa 0007
+/sw:qa 0007
 
 # Pre-implementation check
-/specweave:qa 0007 --pre
+/sw:qa 0007 --pre
 
 # Quality gate (before closing)
-/specweave:qa 0007 --gate
+/sw:qa 0007 --gate
 
 # Export blockers to tasks
-/specweave:qa 0007 --export
+/sw:qa 0007 --export
 ```
 
 ## 7 Quality Dimensions
@@ -69,7 +69,7 @@ Based on overall score:
 ## Output Example
 
 ```bash
-$ /specweave:qa 0007 --gate
+$ /sw:qa 0007 --gate
 
 📊 Quality Assessment: 0007-user-authentication
 
@@ -100,5 +100,5 @@ Dimension Scores:
 - [Quality Gate](/docs/glossary/terms/quality-gate) - Validation checkpoints
 - [QA Lead Agent](/docs/glossary/terms/qa-lead-agent) - Quality agent
 - [Acceptance Criteria](/docs/glossary/terms/acceptance-criteria) - Testable requirements
-- [/specweave:validate](/docs/glossary/terms/specweave-validate) - Rule-based validation
-- [/specweave:done](/docs/glossary/terms/specweave-done) - Close increment
+- [/sw:validate](/docs/glossary/terms/specweave-validate) - Rule-based validation
+- [/sw:done](/docs/glossary/terms/specweave-done) - Close increment

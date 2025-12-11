@@ -151,7 +151,7 @@ cat .specweave/config.json
 ### Test Connection
 
 ```bash
-/specweave-ado:status
+/sw-ado:status
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -240,7 +240,7 @@ Iterations:
 When an increment is created:
 
 ```bash
-/specweave:increment "User authentication"
+/sw:increment "User authentication"
 
 # Output:
 Creating increment: 0042-user-authentication
@@ -266,7 +266,7 @@ Iteration: Sprint 23
 ### Manual Creation
 
 ```bash
-/specweave-ado:create-workitem 0042
+/sw-ado:create-workitem 0042
 
 # Creates Feature → User Stories → Tasks
 ```
@@ -311,7 +311,7 @@ Iteration Path: ProductLine-A\Sprint 23
 ### Manual Sync
 
 ```bash
-/specweave-ado:sync 0042
+/sw-ado:sync 0042
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -363,7 +363,7 @@ SpecWeave task status maps to Azure DevOps states:
 If someone updates status in Azure DevOps:
 
 ```bash
-/specweave-ado:sync 0042 --from-external
+/sw-ado:sync 0042 --from-external
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -402,7 +402,7 @@ Update tasks.md? (Y/n)
 ### Automatic Iteration Assignment
 
 ```bash
-/specweave:increment "User authentication"
+/sw:increment "User authentication"
 
 # Output includes:
 ✓ Feature AB#1000 assigned to Sprint 23 (current iteration)
@@ -412,7 +412,7 @@ Update tasks.md? (Y/n)
 ### Sprint Planning View
 
 ```bash
-/specweave-ado:sprint-status
+/sw-ado:sprint-status
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -571,7 +571,7 @@ WHERE [System.Tags] CONTAINS 'increment:0042'
 ### Automatic Close on Done
 
 ```bash
-/specweave:done 0042
+/sw:done 0042
 
 # Output includes:
 ✓ Feature AB#1000 state: Closed
@@ -584,10 +584,10 @@ WHERE [System.Tags] CONTAINS 'increment:0042'
 ### Manual Close
 
 ```bash
-/specweave-ado:close-workitem 0042
+/sw-ado:close-workitem 0042
 
 # Or close with specific reason:
-/specweave-ado:close-workitem 0042 --reason "Deferred"
+/sw-ado:close-workitem 0042 --reason "Deferred"
 ```
 
 ---
@@ -598,7 +598,7 @@ WHERE [System.Tags] CONTAINS 'increment:0042'
 
 ```bash
 # Check PAT validity
-/specweave-ado:status
+/sw-ado:status
 
 # Common issues:
 # 1. PAT expired (regenerate)
@@ -629,7 +629,7 @@ curl -u "":"$ADO_PAT" \
 # Backend ✗ (missing project prefix)
 
 # List area paths:
-/specweave-ado:area-paths
+/sw-ado:area-paths
 
 # Output:
 Area Paths for ProductLine-A:
@@ -644,7 +644,7 @@ Area Paths for ProductLine-A:
 ```bash
 # ADO workflows may restrict transitions
 # Check allowed transitions:
-/specweave-ado:transitions AB#1002
+/sw-ado:transitions AB#1002
 
 # Output:
 Current state: Active
@@ -665,7 +665,7 @@ Allowed transitions:
 # CMMI: Epic, Feature, Requirement, Task, Bug
 
 # Check available types:
-/specweave-ado:work-item-types
+/sw-ado:work-item-types
 
 # Update config to match your process template
 ```
@@ -768,7 +768,7 @@ ADO_PAT=service_account_pat
 
 ```bash
 # 1. Create increment
-/specweave:increment "User profile feature"
+/sw:increment "User profile feature"
 
 # Output:
 ✓ Increment 0050-user-profile created
@@ -783,7 +783,7 @@ Area Path: ProductLine-A\Backend
 Iteration: Sprint 23
 
 # 2. Work on tasks
-/specweave:do
+/sw:do
 
 # Each task completion syncs to ADO
 # Tasks transition: New → Closed
@@ -795,7 +795,7 @@ Iteration: Sprint 23
 # - Sprint burndown updates
 
 # 4. Complete increment
-/specweave:done 0050
+/sw:done 0050
 
 # All work items closed automatically
 # Feature state: Closed
@@ -822,10 +822,10 @@ EOF
 specweave init . --reconfigure
 
 # 4. Test connection
-/specweave-ado:status
+/sw-ado:status
 
 # 5. Create test increment
-/specweave:increment "Test ADO sync"
+/sw:increment "Test ADO sync"
 
 # 6. Verify in Azure DevOps
 # Check your project board for new Feature

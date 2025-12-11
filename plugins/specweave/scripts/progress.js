@@ -2,7 +2,7 @@
 /**
  * Instant Increment Progress
  *
- * Executed by UserPromptSubmit hook for /specweave:progress
+ * Executed by UserPromptSubmit hook for /sw:progress
  * Bypasses LLM entirely - output shown directly to user
  *
  * Usage: node progress.js [incrementId] [--help]
@@ -29,7 +29,7 @@ DESCRIPTION
   This script bypasses LLM processing for instant results (<100ms).
 
 EXECUTION PATHS
-  1. Claude Code:  /specweave:progress  (hook intercepts, <100ms)
+  1. Claude Code:  /sw:progress  (hook intercepts, <100ms)
   2. Any LLM:      Skill instructs to run this script (~2s)
   3. Terminal:     specweave status --verbose (~500ms)
 
@@ -131,7 +131,7 @@ if (readyForReview.length > 0) {
     const bar = createProgressBar(inc.percentage, 15);
     console.log(`  ${inc.id}`);
     console.log(`     ${bar} ${inc.completedTasks}/${inc.totalTasks} (${inc.percentage}%)`);
-    console.log(`     → /specweave:done ${inc.id}`);
+    console.log(`     → /sw:done ${inc.id}`);
   }
   console.log('');
 }
@@ -165,9 +165,9 @@ if (readyForReview.length > 0 || active.length > 0 || paused.length > 0) {
   console.log('');
 
   if (readyForReview.length > 0) {
-    console.log('💡 Run /specweave:done <id> to close reviewed increments');
+    console.log('💡 Run /sw:done <id> to close reviewed increments');
   } else {
-    console.log('💡 For details: /specweave:progress <incrementId>');
+    console.log('💡 For details: /sw:progress <incrementId>');
   }
 } else {
   console.log('No active increments.');
@@ -176,7 +176,7 @@ if (readyForReview.length > 0 || active.length > 0 || paused.length > 0) {
     console.log(`${completed.length} completed increment(s).`);
   }
   console.log('');
-  console.log('💡 Run /specweave:increment to start new work');
+  console.log('💡 Run /sw:increment to start new work');
 }
 
 // Helpers

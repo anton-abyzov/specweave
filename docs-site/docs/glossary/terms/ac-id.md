@@ -201,7 +201,7 @@ describe('AuthService', () => {
 **Automated coverage report links AC-IDs to tests**:
 
 ```bash
-/specweave:check-tests 0008
+/sw:check-tests 0008
 
 # Output:
 ## AC Coverage Report
@@ -398,7 +398,7 @@ Requirement (AC-US1-01) → Task (T-001) → Test (auth.test.ts) → Report (✅
 ### 2. Automated Coverage Measurement
 
 ```bash
-/specweave:check-tests 0008
+/sw:check-tests 0008
 
 # Automatically reports:
 # - Which ACs are tested (✅)
@@ -568,7 +568,7 @@ test('should authenticate user with valid credentials (AC-US1-01)', async () => 
 **AC-ID** enables complete traceability in SpecWeave:
 - **Format**: `AC-US{story}-{number}` (e.g., AC-US1-01, AC-US12-05)
 - **Traceability**: spec.md → tasks.md → tests → coverage report
-- **Validation**: Automated AC coverage checking (`/specweave:check-tests`)
+- **Validation**: Automated AC coverage checking (`/sw:check-tests`)
 - **Audit**: Clear proof of requirement → implementation → validation
 - **Benefits**: Complete traceability, automated coverage, audit trail, gap detection
 

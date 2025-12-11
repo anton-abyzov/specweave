@@ -3,7 +3,7 @@ name: specweave-release:init
 description: Initialize or analyze release strategy for the project. For new projects, recommends optimal release approach based on architecture, team size, and deployment frequency. For brownfield projects, detects existing release patterns from git history, CI/CD configs, and package managers, then documents the strategy. Creates release-strategy.md in living docs with comprehensive release process documentation.
 ---
 
-# /specweave-release:init - Initialize Release Strategy
+# /sw-release:init - Initialize Release Strategy
 
 Initialize or analyze the release strategy for your project.
 
@@ -28,13 +28,13 @@ Initialize or analyze the release strategy for your project.
 
 ```bash
 # Interactive analysis and recommendation
-/specweave-release:init
+/sw-release:init
 
 # Force re-analysis (overwrite existing strategy)
-/specweave-release:init --force
+/sw-release:init --force
 
 # Quick analysis (no interactive prompts, use defaults)
-/specweave-release:init --quick
+/sw-release:init --quick
 ```
 
 ## Workflow
@@ -69,7 +69,7 @@ Initialize or analyze the release strategy for your project.
    → Set up CI/CD automation (GitHub Actions template provided)
    → Configure semantic-release or Changesets
    → Define release waves (dependency order)
-   → Create first release increment: /specweave:increment "0001-v1-release"
+   → Create first release increment: /sw:increment "0001-v1-release"
 ```
 
 ### Brownfield Projects
@@ -262,27 +262,27 @@ Or cross-project if all projects share the same strategy:
 
 1. **Create first release increment**:
    ```bash
-   /specweave:increment "0001-v1-0-0-release"
+   /sw:increment "0001-v1-0-0-release"
    ```
 
 2. **Align versions** (for multi-repo):
    ```bash
-   /specweave-release:align
+   /sw-release:align
    ```
 
 3. **Create RC** (for major versions):
    ```bash
-   /specweave-release:rc create 1.0.0
+   /sw-release:rc create 1.0.0
    ```
 
 4. **Execute release**:
    ```bash
-   /specweave:do
+   /sw:do
    ```
 
 5. **Complete release**:
    ```bash
-   /specweave:done 0001
+   /sw:done 0001
    ```
 
 ## Brownfield Integration
@@ -332,7 +332,7 @@ Or cross-project if all projects share the same strategy:
 ### Greenfield Project
 
 ```bash
-User: /specweave-release:init
+User: /sw-release:init
 
 Release Manager: I'll help you set up your release strategy.
 
@@ -358,7 +358,7 @@ Release Manager: I'll help you set up your release strategy.
 5. Next steps:
    - Set up GitHub Actions workflow
    - Configure semantic-release
-   - Create first release: /specweave:increment "0001-v1-0-0-release"
+   - Create first release: /sw:increment "0001-v1-0-0-release"
 
 Would you like me to create a GitHub Actions workflow template?
 ```
@@ -366,7 +366,7 @@ Would you like me to create a GitHub Actions workflow template?
 ### Brownfield Project
 
 ```bash
-User: /specweave-release:init
+User: /sw-release:init
 
 Release Manager: I'll analyze your existing release process.
 
@@ -407,11 +407,11 @@ Would you like me to create version matrix documentation?
 
 ## Related Commands
 
-- `/specweave-release:align` - Align versions across repos
-- `/specweave-release:rc` - Manage release candidates
-- `/specweave-release:coordinate` - Plan multi-repo releases
-- `/specweave-release:publish` - Execute releases
-- `/specweave:increment` - Create release increment
+- `/sw-release:align` - Align versions across repos
+- `/sw-release:rc` - Manage release candidates
+- `/sw-release:coordinate` - Plan multi-repo releases
+- `/sw-release:publish` - Execute releases
+- `/sw:increment` - Create release increment
 
 ## Dependencies
 

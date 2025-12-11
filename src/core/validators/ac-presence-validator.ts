@@ -11,9 +11,9 @@ import { Logger, consoleLogger } from '../../utils/logger.js';
  * with external living docs. This is required for AC sync hooks to function.
  *
  * **Validation Gates**:
- * 1. `/specweave:increment` (after spec generation) - BLOCKS if ACs missing
- * 2. `/specweave:do` (before starting work) - BLOCKS if ACs missing
- * 3. `/specweave:validate` (rule-based validation) - WARNS if ACs missing
+ * 1. `/sw:increment` (after spec generation) - BLOCKS if ACs missing
+ * 2. `/sw:do` (before starting work) - BLOCKS if ACs missing
+ * 3. `/sw:validate` (rule-based validation) - WARNS if ACs missing
  * 4. Pre-commit hook (git) - WARNS if ACs missing in new specs
  *
  * **See**: ADR-0062 (AC Embedding Architecture)
@@ -26,7 +26,7 @@ export interface ACPresenceValidationResult {
   errors: string[];
   warnings: string[];
   /**
-   * Suggested fix (e.g., "Run /specweave:embed-acs 0050")
+   * Suggested fix (e.g., "Run /sw:embed-acs 0050")
    */
   suggestedFix?: string;
 }
@@ -73,7 +73,7 @@ export function validateACPresence(
   if (!specContent.includes('## Acceptance Criteria')) {
     result.valid = false;
     result.errors.push('spec.md missing "## Acceptance Criteria" section');
-    result.suggestedFix = `Add ACs to spec.md or run: /specweave:embed-acs ${incrementPath.split('/').pop()}`;
+    result.suggestedFix = `Add ACs to spec.md or run: /sw:embed-acs ${incrementPath.split('/').pop()}`;
   }
 
   // 3. Count ACs in spec.md
@@ -83,7 +83,7 @@ export function validateACPresence(
   if (result.acCount === 0) {
     result.valid = false;
     result.errors.push('spec.md contains 0 Acceptance Criteria');
-    result.suggestedFix = `Add ACs to spec.md or run: /specweave:embed-acs ${incrementPath.split('/').pop()}`;
+    result.suggestedFix = `Add ACs to spec.md or run: /sw:embed-acs ${incrementPath.split('/').pop()}`;
   }
 
   // 4. Check metadata.json for expected AC count
@@ -140,7 +140,7 @@ export function validateACPresence(
       result.errors.push(
         '   AC sync hooks require ACs in spec.md even when using external living docs'
       );
-      result.suggestedFix = `Run: /specweave:embed-acs ${incrementPath.split('/').pop()} to auto-embed ACs from living docs`;
+      result.suggestedFix = `Run: /sw:embed-acs ${incrementPath.split('/').pop()} to auto-embed ACs from living docs`;
       result.valid = false;
     }
   }

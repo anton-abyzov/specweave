@@ -1,12 +1,12 @@
 ---
 id: specweave-validate
-title: /specweave:validate Command
+title: /sw:validate Command
 sidebar_label: specweave:validate
 ---
 
-# /specweave:validate Command
+# /sw:validate Command
 
-The **`/specweave:validate`** command runs fast, rule-based validation with 120+ checks on [increment](/docs/glossary/terms/increments) files.
+The **`/sw:validate`** command runs fast, rule-based validation with 120+ checks on [increment](/docs/glossary/terms/increments) files.
 
 ## What It Does
 
@@ -20,13 +20,13 @@ The **`/specweave:validate`** command runs fast, rule-based validation with 120+
 
 ```bash
 # Basic validation
-/specweave:validate 0007
+/sw:validate 0007
 
 # Include AI quality assessment
-/specweave:validate 0007 --quality
+/sw:validate 0007 --quality
 
 # Export suggestions to tasks.md
-/specweave:validate 0007 --export
+/sw:validate 0007 --export
 ```
 
 ## Validation Categories
@@ -79,7 +79,7 @@ The **`/specweave:validate`** command runs fast, rule-based validation with 120+
 ## Output Example
 
 ```bash
-$ /specweave:validate 0007
+$ /sw:validate 0007
 
 🔍 Validating: 0007-user-authentication
 
@@ -106,7 +106,7 @@ $ /specweave:validate 0007
 
 ## Validation vs QA
 
-| Aspect | /specweave:validate | /specweave:qa |
+| Aspect | /sw:validate | /sw:qa |
 |--------|---------------------|---------------|
 | Speed | Fast (seconds) | Slower (AI analysis) |
 | Cost | Free (rule-based) | Uses AI tokens |
@@ -115,7 +115,7 @@ $ /specweave:validate 0007
 
 ## Related
 
-- [/specweave:qa](/docs/glossary/terms/specweave-qa) - AI quality assessment
+- [/sw:qa](/docs/glossary/terms/specweave-qa) - AI quality assessment
 - [Quality Gate](/docs/glossary/terms/quality-gate) - Validation checkpoints
 - [AC-ID](/docs/glossary/terms/ac-id) - Acceptance criteria identifiers
 - [spec.md](/docs/glossary/terms/spec-md) - Specification format

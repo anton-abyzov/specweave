@@ -539,7 +539,7 @@ export function generateUnifiedSummary(
   lines.push('');
   lines.push('---');
   lines.push('');
-  lines.push('*Re-run: `npx specweave analyze-standards` or `/specweave:analyze-standards` to update*');
+  lines.push('*Re-run: `npx specweave analyze-standards` or `/sw:analyze-standards` to update*');
 
   return lines.join('\n');
 }

@@ -3,7 +3,7 @@ name: specweave-release:align
 description: Align versions across multiple repositories according to release strategy. Analyzes conventional commits to suggest version bumps, detects version conflicts, validates cross-repo compatibility, and executes version alignment (updates package.json, creates git tags, updates changelogs). Supports lockstep, independent, and umbrella versioning strategies.
 ---
 
-# /specweave-release:align - Align Repository Versions
+# /sw-release:align - Align Repository Versions
 
 Align versions across multiple repositories according to your release strategy.
 
@@ -20,21 +20,21 @@ Align versions across multiple repositories according to your release strategy.
 
 ```bash
 # Interactive alignment (prompts for confirmation)
-/specweave-release:align
+/sw-release:align
 
 # Align specific repositories only
-/specweave-release:align --repos frontend,backend
+/sw-release:align --repos frontend,backend
 
 # Dry run (show what would change, don't execute)
-/specweave-release:align --dry-run
+/sw-release:align --dry-run
 
 # Force alignment (skip validation)
-/specweave-release:align --force
+/sw-release:align --force
 
 # Align for specific strategy
-/specweave-release:align --strategy lockstep
-/specweave-release:align --strategy independent
-/specweave-release:align --strategy umbrella
+/sw-release:align --strategy lockstep
+/sw-release:align --strategy independent
+/sw-release:align --strategy umbrella
 ```
 
 ## Workflow
@@ -222,7 +222,7 @@ shared-lib (v1.5.0 → v1.5.1):
 Version alignment complete! ✓
 
 Next steps:
-1. Create release increment: /specweave:increment "0080-product-v5-release"
+1. Create release increment: /sw:increment "0080-product-v5-release"
 2. Or trigger CI/CD: Git tags will trigger automated releases
 3. Monitor: Check CI/CD pipelines for build/test/publish
 ```
@@ -394,13 +394,13 @@ test: add unit tests
 
 ```bash
 # Align versions within a specific project
-/specweave-release:align --project frontend-team
+/sw-release:align --project frontend-team
 
 # Align across all projects
-/specweave-release:align --all-projects
+/sw-release:align --all-projects
 
 # Align specific project's repos only
-/specweave-release:align --project backend-team --repos api,database
+/sw-release:align --project backend-team --repos api,database
 ```
 
 ## Best Practices
@@ -428,7 +428,7 @@ test: add unit tests
 ### Lockstep Alignment
 
 ```bash
-User: /specweave-release:align --strategy lockstep
+User: /sw-release:align --strategy lockstep
 
 Release Manager: Analyzing repositories with lockstep strategy...
 
@@ -457,7 +457,7 @@ Proposed:
 ### Independent Alignment with Conflict
 
 ```bash
-User: /specweave-release:align
+User: /sw-release:align
 
 Release Manager: Analyzing repositories with independent strategy...
 
@@ -484,10 +484,10 @@ Would you like me to create a coordinated release increment?
 
 ## Related Commands
 
-- `/specweave-release:init` - Initialize release strategy
-- `/specweave-release:rc` - Create release candidates for aligned versions
-- `/specweave-release:coordinate` - Plan coordinated multi-repo release
-- `/specweave-release:publish` - Execute release after alignment
+- `/sw-release:init` - Initialize release strategy
+- `/sw-release:rc` - Create release candidates for aligned versions
+- `/sw-release:coordinate` - Plan coordinated multi-repo release
+- `/sw-release:publish` - Execute release after alignment
 
 ## Dependencies
 

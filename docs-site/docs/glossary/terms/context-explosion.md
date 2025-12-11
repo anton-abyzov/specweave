@@ -48,13 +48,13 @@ Active increment (10+ tasks) + Large file (2000+ lines) + Tool call = CRASH
 
 ```bash
 # Before editing files outside your increment
-/specweave:pause 0058
+/sw:pause 0058
 
 # Edit project files freely
 # ...
 
 # Resume when done
-/specweave:resume 0058
+/sw:resume 0058
 ```
 
 ### 2. Use Focused File Reads
@@ -102,7 +102,7 @@ git add . && git commit -m "WIP before crash"
 # 3. Restart Claude Code or use /clear
 
 # 4. Resume with paused increment
-/specweave:pause XXXX  # Pause first
+/sw:pause XXXX  # Pause first
 ```
 
 ---

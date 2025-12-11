@@ -20,16 +20,16 @@ This validator catches these issues **before** you see webpack errors.
 
 ```bash
 # Validate internal docs (default)
-/specweave-docs:validate
+/sw-docs:validate
 
 # Validate with auto-fix
-/specweave-docs:validate --fix
+/sw-docs:validate --fix
 
 # Validate public docs
-/specweave-docs:validate public
+/sw-docs:validate public
 
 # Validate specific path
-/specweave-docs:validate --path .specweave/docs/internal/specs
+/sw-docs:validate --path .specweave/docs/internal/specs
 ```
 
 ## Your Task
@@ -132,7 +132,7 @@ ERRORS (must fix):
 QUICK FIXES:
 ───────────────────────────────────────────────────────────────
   1. Run validation with auto-fix:
-     /specweave-docs:validate --fix
+     /sw-docs:validate --fix
 
   2. Or fix manually:
      • YAML: Wrap values with colons in quotes
@@ -245,6 +245,6 @@ onBrokenMarkdownLinks: 'warn',
 
 ## See Also
 
-- `/specweave-docs:view` - View docs (runs validation first)
-- `/specweave-docs:build` - Build docs (runs validation first)
-- `/specweave-docs:health` - Full documentation health report
+- `/sw-docs:view` - View docs (runs validation first)
+- `/sw-docs:build` - Build docs (runs validation first)
+- `/sw-docs:health` - Full documentation health report

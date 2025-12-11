@@ -144,7 +144,7 @@ export interface TranslationConfig {
   languages: SupportedLanguage[];
   /** Primary output language for user */
   primary: SupportedLanguage;
-  /** Translation method: auto (hooks), manual (/specweave:translate), none */
+  /** Translation method: auto (hooks), manual (/sw:translate), none */
   method: 'auto' | 'manual' | 'none';
   /** Keep SpecWeave framework terms in English (increment, spec.md, etc.) */
   preserveFrameworkTerms: boolean;

@@ -72,7 +72,7 @@ export function buildNotificationMessage(
       return `Cleaned up ${context.count ?? 0} zombie processes. No action needed.`;
 
     case 'job_complete':
-      return `${context.jobType ?? 'Background'} job finished. ${context.items ? `Processed ${context.items} items.` : 'Check /specweave:jobs for details.'}`;
+      return `${context.jobType ?? 'Background'} job finished. ${context.items ? `Processed ${context.items} items.` : 'Check /sw:jobs for details.'}`;
 
     case 'job_started':
       return `${context.jobType ?? 'Background'} job started${context.jobId ? ` (${context.jobId})` : ''}. Running in background.`;
@@ -87,7 +87,7 @@ export function buildNotificationMessage(
       return `Sync finished. ${context.items ? `Updated ${context.items} items.` : 'All items synced.'}`;
 
     case 'import_complete':
-      return `Import finished. ${context.items ? `Imported ${context.items} items.` : 'Check /specweave:external for results.'}`;
+      return `Import finished. ${context.items ? `Imported ${context.items} items.` : 'Check /sw:external for results.'}`;
 
     case 'error':
       return `Error: ${context.reason ?? 'Unknown error'}. Check logs for details.`;

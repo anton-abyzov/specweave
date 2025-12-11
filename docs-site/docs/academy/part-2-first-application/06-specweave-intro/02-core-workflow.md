@@ -26,8 +26,8 @@ SpecWeave development follows a simple cycle:
 
 ```mermaid
 graph LR
-    A["/specweave:increment"] --> B["/specweave:do"]
-    B --> C["/specweave:done"]
+    A["/sw:increment"] --> B["/sw:do"]
+    B --> C["/sw:done"]
     C --> D{New feature?}
     D -->|Yes| A
     D -->|No| E[Ship!]
@@ -35,20 +35,20 @@ graph LR
 
 | Phase | Command | Purpose |
 |-------|---------|---------|
-| **Plan** | `/specweave:increment` | Create specifications |
-| **Build** | `/specweave:do` | Implement tasks |
-| **Validate** | `/specweave:done` | Verify quality |
+| **Plan** | `/sw:increment` | Create specifications |
+| **Build** | `/sw:do` | Implement tasks |
+| **Validate** | `/sw:done` | Verify quality |
 
 ---
 
-## Phase 1: Plan (`/specweave:increment`)
+## Phase 1: Plan (`/sw:increment`)
 
 This is where the magic starts. A single description becomes complete specifications.
 
 ### How It Works
 
 ```bash
-/specweave:increment "User authentication with email/password login"
+/sw:increment "User authentication with email/password login"
 ```
 
 The AI agents create:
@@ -73,7 +73,7 @@ The AI agents create:
 ### Example Output
 
 ```
-/specweave:increment "Task tracker CLI with add, list, complete, delete"
+/sw:increment "Task tracker CLI with add, list, complete, delete"
 
 Creating increment 0001-task-tracker-cli...
 
@@ -108,14 +108,14 @@ Review specs at:
 
 ---
 
-## Phase 2: Build (`/specweave:do`)
+## Phase 2: Build (`/sw:do`)
 
 With specifications approved, implementation begins.
 
 ### How It Works
 
 ```bash
-/specweave:do
+/sw:do
 ```
 
 SpecWeave:
@@ -128,7 +128,7 @@ SpecWeave:
 ### During Implementation
 
 ```
-/specweave:do
+/sw:do
 
 Loading increment 0001-task-tracker-cli...
 
@@ -164,25 +164,25 @@ Life happens. You can pause and resume:
 
 ```bash
 # Pause current work
-/specweave:pause 0001
+/sw:pause 0001
 
 # Resume later
-/specweave:resume 0001
+/sw:resume 0001
 
 # Check status
-/specweave:status
+/sw:status
 ```
 
 ---
 
-## Phase 3: Validate (`/specweave:done`)
+## Phase 3: Validate (`/sw:done`)
 
 Before marking complete, quality gates must pass.
 
 ### How It Works
 
 ```bash
-/specweave:done 0001
+/sw:done 0001
 ```
 
 SpecWeave validates:
@@ -206,7 +206,7 @@ SpecWeave validates:
 ### Example Output
 
 ```
-/specweave:done 0001
+/sw:done 0001
 
 Validating increment 0001-task-tracker-cli...
 
@@ -239,7 +239,7 @@ Validating increment 0001-task-tracker-cli...
 ### If Validation Fails
 
 ```
-/specweave:done 0001
+/sw:done 0001
 
 Validating increment 0001-task-tracker-cli...
 
@@ -253,12 +253,12 @@ Validating increment 0001-task-tracker-cli...
 
 ---
 
-## The Flow Command: `/specweave:next`
+## The Flow Command: `/sw:next`
 
-**Pro tip**: Instead of running `/specweave:done` then deciding what's next, use `/specweave:next`:
+**Pro tip**: Instead of running `/sw:done` then deciding what's next, use `/sw:next`:
 
 ```bash
-/specweave:next
+/sw:next
 ```
 
 This single command:
@@ -271,7 +271,7 @@ This single command:
 ### Example: Happy Path
 
 ```
-/specweave:next
+/sw:next
 
 📊 Checking current increment...
 
@@ -293,13 +293,13 @@ Active: 0001-task-tracker-cli
 No planned increments found.
 Time to plan your next feature!
 
-Run: /specweave:increment "feature description"
+Run: /sw:increment "feature description"
 ```
 
 ### Example: Not Ready Yet
 
 ```
-/specweave:next
+/sw:next
 
 📊 Checking current increment...
 
@@ -313,7 +313,7 @@ C. Stay on current increment
 What would you like to do? [A/B/C]
 ```
 
-**Why `/specweave:next` is special**:
+**Why `/sw:next` is special**:
 - ✅ One command for the entire completion flow
 - ✅ No need to remember `/done` → `/qa` → `/increment` sequence
 - ✅ Intelligent suggestions from backlog
@@ -323,12 +323,12 @@ What would you like to do? [A/B/C]
 
 ## Supporting Commands
 
-### `/specweave:status`
+### `/sw:status`
 
 View current state:
 
 ```bash
-/specweave:status
+/sw:status
 
 SpecWeave Status
 ════════════════════
@@ -341,12 +341,12 @@ Active Increment: 0001-task-tracker-cli
 WIP Limit: 1 (current: 1)
 ```
 
-### `/specweave:progress`
+### `/sw:progress`
 
 Detailed progress view:
 
 ```bash
-/specweave:progress 0001
+/sw:progress 0001
 
 Increment: 0001-task-tracker-cli
 ═══════════════════════════════
@@ -364,12 +364,12 @@ US-002: List Tasks
   [ ] T-006: List tests
 ```
 
-### `/specweave:validate`
+### `/sw:validate`
 
 Run validation without completing:
 
 ```bash
-/specweave:validate 0001
+/sw:validate 0001
 
 Validation Results:
   Tasks: 6/10 complete
@@ -378,12 +378,12 @@ Validation Results:
   Issues: 2 pending tasks
 ```
 
-### `/specweave:sync-docs`
+### `/sw:sync-docs`
 
 Sync living documentation:
 
 ```bash
-/specweave:sync-docs
+/sw:sync-docs
 
 Syncing documentation...
   ✓ Updated API reference
@@ -397,28 +397,28 @@ Syncing documentation...
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Planning: /specweave:increment
+    [*] --> Planning: /sw:increment
     Planning --> Review: Specs generated
     Review --> Planning: Changes needed
     Review --> Building: Approved
-    Building --> Paused: /specweave:pause
-    Paused --> Building: /specweave:resume
+    Building --> Paused: /sw:pause
+    Paused --> Building: /sw:resume
     Building --> Validating: All tasks done
     Validating --> Building: Quality gate failed
     Validating --> Complete: All gates passed
-    Complete --> [*]: /specweave:done
+    Complete --> [*]: /sw:done
 ```
 
 ### State Transitions
 
 | From | To | Trigger |
 |------|-----|---------|
-| None | Planning | `/specweave:increment` |
+| None | Planning | `/sw:increment` |
 | Planning | Review | Specs generated |
 | Review | Building | Specs approved |
-| Building | Paused | `/specweave:pause` |
-| Paused | Building | `/specweave:resume` |
-| Building | Validating | `/specweave:done` |
+| Building | Paused | `/sw:pause` |
+| Paused | Building | `/sw:resume` |
+| Building | Validating | `/sw:done` |
 | Validating | Complete | All gates pass |
 
 ---
@@ -429,18 +429,18 @@ stateDiagram-v2
 
 ```bash
 # ❌ Too big
-/specweave:increment "Complete e-commerce platform"
+/sw:increment "Complete e-commerce platform"
 
 # ✓ Right size
-/specweave:increment "User registration with email verification"
-/specweave:increment "Product catalog display"
-/specweave:increment "Shopping cart functionality"
+/sw:increment "User registration with email verification"
+/sw:increment "Product catalog display"
+/sw:increment "Shopping cart functionality"
 ```
 
 ### 2. Review Specs Before Building
 
 ```bash
-/specweave:increment "Feature X"
+/sw:increment "Feature X"
 
 # STOP! Review before proceeding:
 cat .specweave/increments/0001-feature-x/spec.md
@@ -448,31 +448,31 @@ cat .specweave/increments/0001-feature-x/plan.md
 cat .specweave/increments/0001-feature-x/tasks.md
 
 # Make adjustments if needed, then:
-/specweave:do
+/sw:do
 ```
 
 ### 3. Complete Before Starting New
 
 ```bash
 # ❌ Don't jump between increments
-/specweave:increment "Feature A"
-/specweave:do  # Partially done
-/specweave:increment "Feature B"  # Starting new!
+/sw:increment "Feature A"
+/sw:do  # Partially done
+/sw:increment "Feature B"  # Starting new!
 
 # ✓ Complete one at a time
-/specweave:increment "Feature A"
-/specweave:do
-/specweave:done 0001
-/specweave:increment "Feature B"
+/sw:increment "Feature A"
+/sw:do
+/sw:done 0001
+/sw:increment "Feature B"
 ```
 
 ### 4. Use Status Commands
 
 ```bash
 # Regular check-ins
-/specweave:status        # Quick status
-/specweave:progress 0001 # Detailed progress
-/specweave:validate 0001 # Pre-validate
+/sw:status        # Quick status
+/sw:progress 0001 # Detailed progress
+/sw:validate 0001 # Pre-validate
 ```
 
 ---
@@ -480,9 +480,9 @@ cat .specweave/increments/0001-feature-x/tasks.md
 ## Key Takeaways
 
 1. **Three phases: Plan → Build → Validate** — never skip
-2. **`/specweave:increment` creates specifications** — the foundation
-3. **`/specweave:do` implements with context** — not just code generation
-4. **`/specweave:done` validates quality** — gates ensure completeness
+2. **`/sw:increment` creates specifications** — the foundation
+3. **`/sw:do` implements with context** — not just code generation
+4. **`/sw:done` validates quality** — gates ensure completeness
 5. **Supporting commands help manage** — status, progress, validate
 
 ---

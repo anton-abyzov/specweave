@@ -162,7 +162,7 @@ Task(
 
 ### During Increment Planning
 
-When using `/specweave:increment` for mobile features:
+When using `/sw:increment` for mobile features:
 
 1. **Spec Creation** - Mobile architect reviews requirements
 2. **Architecture Design** - Agent recommends patterns and structure
@@ -171,7 +171,7 @@ When using `/specweave:increment` for mobile features:
 
 ### During Implementation
 
-When using `/specweave:do`:
+When using `/sw:do`:
 
 1. **Environment Setup** - react-native-setup skill guides configuration
 2. **Development** - Skills activate based on task context

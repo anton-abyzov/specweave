@@ -71,9 +71,9 @@ From Part 6 onwards, you'll use SpecWeave to manage the project:
 
 ```bash
 # Initialize SpecWeave in your project
-/specweave:increment "Add REST API"
-/specweave:do
-/specweave:done
+/sw:increment "Add REST API"
+/sw:do
+/sw:done
 ```
 
 This teaches you professional spec-driven development while building real features.
