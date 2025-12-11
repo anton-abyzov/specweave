@@ -1208,7 +1208,7 @@ async function convertToLivingDocs(
     // - 2-level structure for JIRA: specs/JIRA-{projectKey}/{boardName}/FS-XXX/
     // - 2-level structure for ADO: specs/{projectName}/{areaPath}/FS-XXX/
     // - 1-level structure for GitHub: specs/{repoName}/FS-XXX/
-    const containerGroups = groupItemsByExternalContainer(result.allItems);
+    const containerGroups = groupItemsByExternalContainer(result.allItems, targetDir);
     const groupCount = containerGroups.length;
 
     // CRITICAL FIX (2025-11-26): Detect umbrella mode from config, NOT just current batch

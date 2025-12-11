@@ -85,7 +85,7 @@ export declare class GitHubClient {
     /**
      * Get all repositories accessible to the user
      * @param owner Optional: filter by specific owner/org (e.g., 'octocat', 'my-org')
-     * @param limit Maximum number of repos to fetch (default: 100, max: 1000)
+     * @param limit Maximum number of repos to fetch (default: 1000, max: 1000)
      */
     static getRepositories(owner?: string, limit?: number): Promise<Array<{
         owner: string;

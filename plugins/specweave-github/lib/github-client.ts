@@ -342,9 +342,9 @@ export class GitHubClient {
   /**
    * Get all repositories accessible to the user
    * @param owner Optional: filter by specific owner/org (e.g., 'octocat', 'my-org')
-   * @param limit Maximum number of repos to fetch (default: 100, max: 1000)
+   * @param limit Maximum number of repos to fetch (default: 1000, max: 1000)
    */
-  static async getRepositories(owner?: string, limit: number = 100): Promise<Array<{owner: string, name: string, fullName: string}>> {
+  static async getRepositories(owner?: string, limit: number = 1000): Promise<Array<{owner: string, name: string, fullName: string}>> {
     try {
       const ownerFilter = owner ? `${owner}/` : '';
       const cmd = `gh repo list ${ownerFilter} --limit ${limit} --json owner,name,nameWithOwner`;
