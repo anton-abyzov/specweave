@@ -59,9 +59,9 @@ async function loadGitHubConfig(): Promise<GitHubConfig | null> {
           }
         }
       }
-      // Method 3: sync.profiles[activeProfile]
-      else if (config.sync?.activeProfile && config.sync?.profiles) {
-        const profile = config.sync.profiles[config.sync.activeProfile];
+      // Method 3: sync.profiles[defaultProfile]
+      else if (config.sync?.defaultProfile && config.sync?.profiles) {
+        const profile = config.sync.profiles[config.sync.defaultProfile];
         if (profile?.config?.owner && profile?.config?.repo) {
           owner = profile.config.owner;
           repo = profile.config.repo;

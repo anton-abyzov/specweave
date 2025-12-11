@@ -5,12 +5,10 @@
  * Priority:
  * 1. Increment's stored profile (metadata.json -> external_sync.jira.profile)
  * 2. Global defaultProfile (config.json -> sync.defaultProfile)
- * 3. Legacy: Global activeProfile (config.json -> sync.activeProfile)
  *
  * This allows each increment to sync to its designated JIRA project
  * without requiring manual profile switching.
  *
- * NOTE (v0.31.0): Renamed from "activeProfile" to "defaultProfile" for clarity.
  * The default profile is a FALLBACK, not a constraint. Bulk operations
  * iterate ALL profiles.
  *
@@ -116,10 +114,7 @@ interface ConfigProfile {
  * Sync config from config.json
  */
 interface SyncConfig {
-  /** @since v0.31.0 - preferred */
   defaultProfile?: string;
-  /** @deprecated Use defaultProfile */
-  activeProfile?: string;
   profiles?: Record<string, ConfigProfile>;
 }
 
@@ -149,8 +144,7 @@ export class JiraProfileResolver {
    *
    * Priority:
    * 1. Increment's metadata.json -> external_sync.jira.profile
-   * 2. Config.json -> sync.defaultProfile (v0.31.0+)
-   * 3. Config.json -> sync.activeProfile (legacy fallback)
+   * 2. Config.json -> sync.defaultProfile
    *
    * @param incrementId - Increment ID (e.g., "0093-my-feature")
    * @returns Profile resolution result
@@ -169,8 +163,8 @@ export class JiraProfileResolver {
     // Try to get increment-specific profile first
     const incrementProfile = await this.getIncrementProfile(incrementId);
 
-    // Determine which profile to use (defaultProfile preferred over activeProfile)
-    const globalDefaultProfile = config.sync?.defaultProfile ?? config.sync?.activeProfile;
+    // Determine which profile to use
+    const globalDefaultProfile = config.sync?.defaultProfile;
     const profileName = incrementProfile || globalDefaultProfile;
 
     if (!profileName) {

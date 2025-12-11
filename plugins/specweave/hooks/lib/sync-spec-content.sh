@@ -72,33 +72,33 @@ if [ "$SPEC_SYNC_ENABLED" != "true" ]; then
   exit 0
 fi
 
-# Get active provider
-ACTIVE_PROFILE=$(node -p "
+# Get default profile
+DEFAULT_PROFILE=$(node -p "
   try {
     const config = require('$CONFIG_FILE');
-    config.sync?.activeProfile ?? null;
+    config.sync?.defaultProfile ?? null;
   } catch {
     null;
   }
 " 2>/dev/null || echo "null")
 
-if [ "$ACTIVE_PROFILE" = "null" ]; then
-  echo "ℹ️  No active sync profile, skipping spec content sync" >&2
+if [ "$DEFAULT_PROFILE" = "null" ]; then
+  echo "ℹ️  No default sync profile, skipping spec content sync" >&2
   exit 0
 fi
 
-# Get provider from active profile
+# Get provider from default profile
 PROVIDER=$(node -p "
   try {
     const config = require('$CONFIG_FILE');
-    config.sync?.profiles?.['"$ACTIVE_PROFILE"']?.provider ?? null;
+    config.sync?.profiles?.['"$DEFAULT_PROFILE"']?.provider ?? null;
   } catch {
     null;
   }
 " 2>/dev/null || echo "null")
 
 if [ "$PROVIDER" = "null" ]; then
-  echo "ℹ️  No provider configured for profile '$ACTIVE_PROFILE'" >&2
+  echo "ℹ️  No provider configured for profile '$DEFAULT_PROFILE'" >&2
   exit 0
 fi
 
