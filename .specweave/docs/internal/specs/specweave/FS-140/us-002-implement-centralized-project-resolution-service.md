@@ -1,11 +1,15 @@
 ---
 id: US-002
 feature: FS-140
-title: "Implement Centralized Project Resolution Service"
+title: Implement Centralized Project Resolution Service
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
+external:
+  github:
+    issue: 899
+    url: https://github.com/anton-abyzov/specweave/issues/899
 ---
 
 # US-002: Implement Centralized Project Resolution Service

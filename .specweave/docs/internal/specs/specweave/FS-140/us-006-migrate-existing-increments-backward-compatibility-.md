@@ -40,9 +40,9 @@ project: specweave
 
 ## Tasks
 
-- [ ] **T-025**: Create Migration Script
-- [ ] **T-026**: Add Migration Logging and Reporting
-- [ ] **T-027**: Make Migration Idempotent
-- [ ] **T-028**: Test Migration on Copy of Data
-- [ ] **T-041**: Run Migration Script on Production
-- [ ] **T-042**: Monitor for Issues Post-Migration
+- [x] **T-025**: Create Migration Script
+- [x] **T-026**: Add Migration Logging and Reporting
+- [x] **T-027**: Make Migration Idempotent
+- [x] **T-028**: Test Migration on Copy of Data
+- [x] **T-041**: Run Migration Script on Production
+- [x] **T-042**: Monitor for Issues Post-Migration
