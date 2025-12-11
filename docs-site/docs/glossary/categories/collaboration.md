@@ -94,13 +94,13 @@ Collaboration and management terms cover the methodologies, practices, and tools
 - Issue tracking and project management tool
 - Features: boards, sprints, roadmaps, reports
 - Most popular in enterprises
-- SpecWeave plugin: `specweave-jira` (planned)
+- SpecWeave plugin: `sw-jira`
 
 **[GitHub Issues](/docs/glossary/terms/github-issues)**
 - Issue tracking on GitHub
 - Lightweight, integrated with Git
 - Labels, milestones, projects
-- SpecWeave plugin: `specweave-github` (available)
+- SpecWeave plugin: `sw-github`
 
 ---
 
@@ -295,7 +295,7 @@ Predicted Epic 1 completion: 5 sprints (50 points / 10 points)
 
 ```bash
 # Create Jira issue from increment
-/sw-jira:specweave-jira-sync 0035 --mode=export
+/sw-jira:sync 0035 --mode=export
 
 # Result:
 # ✅ Created Jira epic: PLAT-100 "User Registration"
@@ -305,7 +305,7 @@ Predicted Epic 1 completion: 5 sprints (50 points / 10 points)
 # ✅ Linked to increment: 0035-user-registration
 
 # Sync status: SpecWeave → Jira
-/sw-jira:specweave-jira-sync 0035
+/sw-jira:sync 0035
 
 # Result:
 # ✅ T-001 done → PLAT-101 status updated to "Done"
@@ -346,25 +346,25 @@ Sprint Retrospective   → COMPLETION-REPORT.md (lessons learned)
 
 ### 2. External PM Tool Integration
 
-**specweave-github plugin**:
+**sw-github plugin**:
 ```bash
 # Sync increment ↔ GitHub issue
-/sw-github:specweave-github-create-issue 0035
-/sw-github:specweave-github-sync 0035
+/sw-github:create 0035
+/sw-github:sync 0035
 ```
 
-**specweave-jira plugin**:
+**sw-jira plugin**:
 ```bash
 # Sync increment ↔ Jira epic/stories
-/sw-jira:specweave-jira-sync 0035 --mode=export
-/sw-jira:specweave-jira-sync 0035
+/sw-jira:sync 0035 --mode=export
+/sw-jira:sync 0035
 ```
 
-**specweave-ado plugin**:
+**sw-ado plugin**:
 ```bash
 # Sync increment ↔ Azure DevOps work item
-/sw-ado:specweave-ado-create-workitem 0035
-/sw-ado:specweave-ado-sync 0035
+/sw-ado:create 0035
+/sw-ado:sync 0035
 ```
 
 ### 3. Living Documentation for Collaboration

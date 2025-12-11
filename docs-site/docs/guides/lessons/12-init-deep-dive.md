@@ -100,7 +100,7 @@ Detecting project configuration...
 ### Why This Question Matters
 
 The Git provider determines:
-1. **Which sync plugin** gets installed (specweave-github, specweave-ado, etc.)
+1. **Which sync plugin** gets installed (sw-github, sw-ado, etc.)
 2. **Issue linking format** (`#123` for GitHub, `AB#123` for ADO)
 3. **CI/CD integration** templates
 
@@ -149,7 +149,7 @@ Additional questions:
 
 Creates:
   - .env (gitignored) with GITHUB_TOKEN placeholder
-  - Installs specweave-github plugin
+  - Installs sw-github plugin
 ```
 
 **JIRA**:
@@ -162,7 +162,7 @@ Additional questions:
 
 Creates:
   - .env with JIRA_EMAIL, JIRA_API_TOKEN, JIRA_BASE_URL
-  - Installs specweave-jira plugin
+  - Installs sw-jira plugin
 ```
 
 **Azure DevOps**:
@@ -175,7 +175,7 @@ Additional questions:
 
 Creates:
   - .env with ADO_PAT, ADO_ORGANIZATION, ADO_PROJECT
-  - Installs specweave-ado plugin
+  - Installs sw-ado plugin
 ```
 
 ---
@@ -368,13 +368,13 @@ If yes:
 ```
 Installing plugins...
 
-✓ specweave-github (GitHub integration)
-✓ specweave-release (Release management)
+✓ sw-github (GitHub integration)
+✓ sw-release (Release management)
 
 Optional plugins available:
-  ? Install specweave-kafka? (Kafka infrastructure) [y/N]
-  ? Install specweave-ml? (ML pipeline support) [y/N]
-  ? Install specweave-mobile? (React Native support) [y/N]
+  ? Install sw-kafka? (Kafka infrastructure) [y/N]
+  ? Install sw-ml? (ML pipeline support) [y/N]
+  ? Install sw-mobile? (React Native support) [y/N]
 ```
 
 ### Core Plugins (Auto-installed)
@@ -382,18 +382,18 @@ Optional plugins available:
 | Plugin | What It Does |
 |--------|--------------|
 | specweave | Core framework, increment management |
-| specweave-github/jira/ado | External tool sync |
-| specweave-release | Version bumping, changelog |
+| sw-github/jira/ado | External tool sync |
+| sw-release | Version bumping, changelog |
 
 ### Optional Plugins
 
 | Plugin | When to Install |
 |--------|-----------------|
-| specweave-kafka | Building event-driven systems |
-| specweave-ml | ML pipelines, model deployment |
-| specweave-mobile | React Native mobile apps |
-| specweave-kubernetes | K8s deployments |
-| specweave-infrastructure | Terraform, cloud infrastructure |
+| sw-kafka | Building event-driven systems |
+| sw-ml | ML pipelines, model deployment |
+| sw-mobile | React Native mobile apps |
+| sw-k8s | K8s deployments |
+| sw-infra | Terraform, cloud infrastructure |
 
 ---
 

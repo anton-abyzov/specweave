@@ -158,28 +158,28 @@ Edge cases and specialized integrations.
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/specweave-docs:view` | Launch docs server (internal or public) | `/specweave-docs:view` or `/specweave-docs:view --public` |
-| `/specweave-docs:build` | Build static docs site | `/specweave-docs:build` |
-| `/specweave-docs:generate` | Generate documentation | `/specweave-docs:generate` |
-| `/specweave-docs:organize` | Organize large doc folders | `/specweave-docs:organize` |
-| `/specweave-docs:health` | Documentation health report | `/specweave-docs:health` |
-| `/specweave-docs:validate` | Validate documentation | `/specweave-docs:validate` |
+| `/sw-docs:view` | Launch docs server (internal or public) | `/sw-docs:view` or `/sw-docs:view --public` |
+| `/sw-docs:build` | Build static docs site | `/sw-docs:build` |
+| `/sw-docs:generate` | Generate documentation | `/sw-docs:generate` |
+| `/sw-docs:organize` | Organize large doc folders | `/sw-docs:organize` |
+| `/sw-docs:health` | Documentation health report | `/sw-docs:health` |
+| `/sw-docs:validate` | Validate documentation | `/sw-docs:validate` |
 
 ### Infrastructure & SRE
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/specweave-infrastructure:monitor-setup` | Setup monitoring | `/specweave-infrastructure:monitor-setup` |
-| `/specweave-infrastructure:slo-implement` | Implement SLOs | `/specweave-infrastructure:slo-implement` |
+| `/sw-infra:monitor-setup` | Setup monitoring | `/sw-infra:monitor-setup` |
+| `/sw-infra:slo-implement` | Implement SLOs | `/sw-infra:slo-implement` |
 
 ### ML/AI Workflows
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/specweave-ml:pipeline` | Design ML pipeline | `/specweave-ml:pipeline` |
-| `/specweave-ml:evaluate` | Evaluate ML model | `/specweave-ml:evaluate` |
-| `/specweave-ml:explain` | Model explainability | `/specweave-ml:explain` |
-| `/specweave-ml:deploy` | Deploy ML model | `/specweave-ml:deploy` |
+| `/sw-ml:pipeline` | Design ML pipeline | `/sw-ml:pipeline` |
+| `/sw-ml:evaluate` | Evaluate ML model | `/sw-ml:evaluate` |
+| `/sw-ml:explain` | Model explainability | `/sw-ml:explain` |
+| `/sw-ml:deploy` | Deploy ML model | `/sw-ml:deploy` |
 
 ### Release Management
 
@@ -195,7 +195,7 @@ Edge cases and specialized integrations.
 | Command | Description | Example |
 |---------|-------------|---------|
 | `/sw:revert-wip-limit` | Revert WIP limit adjustment | `/sw:revert-wip-limit` |
-| `/specweave` | Command reference/help | `/specweave` |
+| `/sw` | Command reference/help | `/sw` |
 
 ---
 
@@ -425,7 +425,7 @@ Options:
 
 ## Related Documentation
 
-- **Full Command List**: `plugins/specweave/commands/specweave.md`
+- **Full Command List**: `plugins/specweave/commands/sw.md`
 - **Quick Start**: `.specweave/docs/public/guides/getting-started.md`
 - **Workflow Guide**: `.specweave/docs/internal/delivery/guides/increment-lifecycle.md`
 - **Reopen Architecture**: `.specweave/docs/internal/architecture/adr/0033-smart-reopen-functionality.md`

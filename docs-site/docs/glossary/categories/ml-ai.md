@@ -100,7 +100,7 @@ ML/AI terms cover machine learning models, training, inference, and AI-powered a
 - Database optimized for similarity search
 - Use cases: RAG, recommendations, semantic search
 - Tools: Pinecone, Weaviate, Chroma, pgvector
-- SpecWeave plugin: `specweave-vector-search` (planned)
+- SpecWeave plugin: `sw-ml` provides vector search features
 
 ---
 
@@ -545,7 +545,7 @@ When planning increments:
 
 ### 5. ML/AI Plugin (Planned)
 
-**specweave-ml-ops plugin** (planned):
+**sw-ml plugin**:
 - ML model training workflows
 - Experiment tracking (MLflow)
 - Model versioning

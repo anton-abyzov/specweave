@@ -23,7 +23,7 @@ Frontend development terms cover client-side logic, UI frameworks, state managem
 - Virtual DOM for performance
 - Declarative programming model
 - Most popular frontend framework
-- SpecWeave plugin: `specweave-frontend` (planned)
+- SpecWeave plugin: `sw-frontend`
 
 **[Next.js](/docs/glossary/terms/nextjs)**
 - React framework for production
@@ -334,13 +334,13 @@ src/
 
 ### 1. Frontend-Specific Plugins
 
-**specweave-frontend plugin** (planned):
+**sw-frontend plugin**:
 - React/Next.js best practices
 - Component boilerplate generation
 - State management patterns
 - Responsive design helpers
 
-**specweave-figma plugin** (planned):
+**sw-figma plugin**:
 - Design system integration
 - Component generation from Figma
 - Design token export

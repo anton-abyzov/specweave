@@ -36,7 +36,7 @@ Infrastructure and operations terms cover the deployment, scaling, monitoring, a
 - Container orchestration platform
 - Automates deployment, scaling, and management
 - Industry standard for cloud-native applications
-- SpecWeave plugin: `specweave-kubernetes` for K8s-specific features
+- SpecWeave plugin: `sw-k8s` for K8s-specific features
 
 **[Docker](/docs/glossary/terms/docker)**
 - Container platform for packaging applications
@@ -64,7 +64,7 @@ Infrastructure and operations terms cover the deployment, scaling, monitoring, a
 - Understanding system behavior from external outputs
 - Three pillars: logs, metrics, traces
 - Tools: Prometheus, Grafana, Datadog
-- SpecWeave plugin: `specweave-observability` (planned)
+- SpecWeave plugin: `sw-infra` provides observability features
 
 ---
 
@@ -238,13 +238,13 @@ The Architect agent:
 
 ### 2. Plugin System for Infrastructure
 
-**specweave-kubernetes plugin** (planned):
+**sw-k8s plugin**:
 - Kubernetes-specific skills (deployment, scaling, monitoring)
 - Helm chart generation
 - K8s configuration validation
 - kubectl command suggestions
 
-**specweave-terraform plugin** (planned):
+**sw-infra plugin**:
 - Terraform module templates
 - State management guidance
 - Provider-specific best practices

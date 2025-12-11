@@ -27,7 +27,7 @@ DevOps and tools terms cover the practices, workflows, and technologies that bri
 **GitHub**
 - Git hosting platform + collaboration tools
 - Features: pull requests, issues, actions, projects
-- SpecWeave plugin: `specweave-github` for issue sync
+- SpecWeave plugin: `sw-github` for issue sync
 - Most popular: 100M+ developers
 
 **Branch Strategies**:
@@ -383,20 +383,20 @@ git commit -m "chore: initialize SpecWeave"
 
 ### 2. GitHub Integration Plugin
 
-**specweave-github plugin**:
+**sw-github plugin**:
 
 ```bash
 # Install plugin
-/plugin install specweave-github
+/plugin install sw-github
 
 # Create GitHub issue from increment
-/sw-github:specweave-github-create-issue 0030
+/sw-github:create 0030
 
 # Sync increment ↔ GitHub issue
-/sw-github:specweave-github-sync 0030
+/sw-github:sync 0030
 
 # View status
-/sw-github:specweave-github-status 0030
+/sw-github:status 0030
 ```
 
 **Features**:
@@ -410,7 +410,7 @@ git commit -m "chore: initialize SpecWeave"
 SpecWeave increments include CI/CD examples:
 
 ```yaml
-# .github/workflows/specweave-validation.yml
+# .github/workflows/sw-validation.yml
 name: SpecWeave Validation
 
 on:

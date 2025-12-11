@@ -263,17 +263,17 @@ git remote -v
 - `src/core/comment-builder.ts` - Comment formatting (437 lines)
 
 **Plugin Implementations**:
-- `plugins/specweave-github/lib/github-spec-commit-sync.ts` - GitHub sync (243 lines)
-- `plugins/specweave-jira/lib/jira-spec-commit-sync.ts` - JIRA sync (267 lines)
-- `plugins/specweave-ado/lib/ado-spec-commit-sync.ts` - ADO sync (241 lines)
+- `plugins/sw-github/lib/github-spec-commit-sync.ts` - GitHub sync (243 lines)
+- `plugins/sw-jira/lib/jira-spec-commit-sync.ts` - JIRA sync (267 lines)
+- `plugins/sw-ado/lib/ado-spec-commit-sync.ts` - ADO sync (241 lines)
 
 **CLI**:
 - `src/cli/commands/sync-spec-commits.ts` - CLI interface (169 lines)
 
 **Hooks**:
-- `plugins/specweave-github/hooks/post-task-completion.sh` - GitHub hook integration
-- `plugins/specweave-jira/hooks/post-task-completion.sh` - JIRA hook integration
-- `plugins/specweave-ado/hooks/post-task-completion.sh` - ADO hook integration
+- `plugins/sw-github/hooks/post-task-completion.sh` - GitHub hook integration
+- `plugins/sw-jira/hooks/post-task-completion.sh` - JIRA hook integration
+- `plugins/sw-ado/hooks/post-task-completion.sh` - ADO hook integration
 
 **Total**: ~2,102 lines of TypeScript + bash integration
 
