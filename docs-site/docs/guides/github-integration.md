@@ -151,7 +151,7 @@ specweave init
 
 # The plugin auto-detects GitHub and enables automatically
 # OR enable manually:
-specweave plugin enable specweave-github
+specweave plugin enable sw-github
 ```
 
 ### Step 2: Create an Increment
@@ -836,7 +836,7 @@ GitHub issues are created with default labels:
 # .specweave/config.yaml
 plugins:
   settings:
-    specweave-github:
+    sw-github:
       default_labels:
         - "specweave"
         - "increment"
@@ -856,7 +856,7 @@ For monorepos with multiple GitHub repositories:
 # .specweave/config.yaml
 plugins:
   settings:
-    specweave-github:
+    sw-github:
       repo: "org/frontend"  # Sync to this repo instead
 ```
 
@@ -1194,7 +1194,7 @@ Update `tasks.md` manually to align, or re-sync.
 **A**: Yes! SpecWeave supports both:
 ```bash
 # Enable JIRA plugin
-specweave plugin enable specweave-jira
+specweave plugin enable sw-jira
 
 # Sync to JIRA
 /sw:jira:sync-tasks 0005

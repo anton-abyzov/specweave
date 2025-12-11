@@ -241,13 +241,13 @@ Your application's backend APIs are documented in:
 
 SpecWeave integrates with external APIs:
 
-**GitHub API** (via `specweave-github` plugin):
+**GitHub API** (via `sw-github` plugin):
 ```bash
 # Create GitHub issue from increment
 /sw-github:create-issue
 ```
 
-**Jira API** (via `specweave-jira` plugin):
+**Jira API** (via `sw-jira` plugin):
 ```bash
 # Sync increment to Jira epic
 /sw-jira:sync

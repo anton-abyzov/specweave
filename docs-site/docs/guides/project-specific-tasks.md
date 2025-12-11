@@ -240,7 +240,7 @@ Create GitHub issues with checkable task lists:
    - Calls TaskProjectSpecificGenerator for each user story
    - Formats `## Tasks` section in user story files
 
-3. **UserStoryIssueBuilder** (`plugins/specweave-github/lib/user-story-issue-builder.ts`):
+3. **UserStoryIssueBuilder** (`plugins/sw-github/lib/user-story-issue-builder.ts`):
    - Reads tasks from `## Tasks` section (NEW)
    - Falls back to legacy extraction from increment tasks.md
    - Generates GitHub issue body with task checkboxes

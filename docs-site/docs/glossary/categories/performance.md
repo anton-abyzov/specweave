@@ -416,7 +416,7 @@ async function getUsersWithPosts() {
 
 ### 1. Performance-Focused Plugins
 
-**specweave-observability plugin** (planned):
+**sw-infra plugin** (observability features):
 - Performance monitoring setup
 - APM integration (Datadog, New Relic)
 - Metric collection (Prometheus)

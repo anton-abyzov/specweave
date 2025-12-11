@@ -70,9 +70,9 @@ SpecWeave provides **3 workflow tiers**:
 
 | Tier | File | Features | Best For |
 |------|------|----------|----------|
-| **Starter** | `specweave-starter.yml` | Feature planning, basic PR validation, auto-docs | New users, small teams |
-| **Standard** | `specweave-standard.yml` | + Brownfield protection, test coverage, issue triage | Production teams |
-| **Enterprise** | `specweave-enterprise.yml` | + Security scanning, performance, compliance | Large organizations |
+| **Starter** | `sw-starter.yml` | Feature planning, basic PR validation, auto-docs | New users, small teams |
+| **Standard** | `sw-standard.yml` | + Brownfield protection, test coverage, issue triage | Production teams |
+| **Enterprise** | `sw-enterprise.yml` | + Security scanning, performance, compliance | Large organizations |
 
 **Recommendation**: Start with **Starter**, upgrade to **Standard** after testing.
 
@@ -91,7 +91,7 @@ SpecWeave provides **3 workflow tiers**:
 
 ```bash
 # Copy starter workflow
-cp .github/workflows/specweave-starter.yml.template .github/workflows/specweave-starter.yml
+cp .github/workflows/sw-starter.yml.template .github/workflows/sw-starter.yml
 
 # Or use install script
 ./install.sh --enable-github-actions
@@ -125,7 +125,7 @@ Create a test issue:
 
 ### Tier 1: Starter (Recommended for New Users)
 
-**File**: `.github/workflows/specweave-starter.yml`
+**File**: `.github/workflows/sw-starter.yml`
 
 **Features**:
 - ✅ Auto increment planning (issue labeled 'feature')
@@ -145,7 +145,7 @@ Create a test issue:
 
 ### Tier 2: Standard (Recommended for Production)
 
-**File**: `.github/workflows/specweave-standard.yml`
+**File**: `.github/workflows/sw-standard.yml`
 
 **Features**:
 - ✅ Everything in Starter, PLUS:
@@ -171,7 +171,7 @@ Create a test issue:
 
 ### Tier 3: Enterprise (For Large Organizations)
 
-**File**: `.github/workflows/specweave-enterprise.yml`
+**File**: `.github/workflows/sw-enterprise.yml`
 
 **Features**:
 - ✅ Everything in Standard, PLUS:
@@ -258,7 +258,7 @@ github_actions:
     slack:
       enabled: false
       webhook_url: "${SLACK_WEBHOOK}"
-      channel: "#specweave-notifications"
+      channel: "#sw-notifications"
 
     azure_devops:
       enabled: false
@@ -360,7 +360,7 @@ integrations:
 integrations:
   slack:
     enabled: true
-    channel: "#specweave-notifications"
+    channel: "#sw-notifications"
 ```
 
 ---
@@ -736,7 +736,7 @@ cat .specweave/docs/changelog/2025-10.md
    - Fix: Add API key
 
 2. **Workflow file missing or disabled**
-   - Check: `.github/workflows/specweave-*.yml` exists
+   - Check: `.github/workflows/sw-*.yml` exists
    - Check: Actions tab shows workflow
    - Fix: Copy workflow file, commit, push
 
@@ -966,21 +966,21 @@ jobs:
 
 **Different workflows per branch**:
 ```yaml
-# .github/workflows/specweave-main.yml
+# .github/workflows/sw-main.yml
 on:
   push:
     branches: [main]
 jobs:
   # Production validations only
 
-# .github/workflows/specweave-develop.yml
+# .github/workflows/sw-develop.yml
 on:
   push:
     branches: [develop]
 jobs:
   # Development validations + performance tests
 
-# .github/workflows/specweave-feature.yml
+# .github/workflows/sw-feature.yml
 on:
   push:
     branches: [features/**]

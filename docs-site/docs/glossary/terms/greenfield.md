@@ -343,8 +343,8 @@ npx specweave init my-app --greenfield
 
 4. **Plugin System**
    - Load only relevant plugins (70%+ context reduction)
-   - Tech stack plugins (specweave-frontend, specweave-backend)
-   - Domain plugins (specweave-ml, specweave-payments)
+   - Tech stack plugins (sw-frontend, sw-backend)
+   - Domain plugins (sw-ml, sw-payments)
 
 ---
 

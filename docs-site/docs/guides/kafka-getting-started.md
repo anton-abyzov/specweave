@@ -39,7 +39,7 @@ specweave init
 
 ```bash
 # Start Kafka with Docker Compose
-/specweave-kafka:dev-env start
+/sw-kafka:dev-env start
 
 # Wait for cluster to be ready (~60 seconds)
 # ✓ Kafka broker (KRaft mode) on port 9092
@@ -69,7 +69,7 @@ The MCP (Model Context Protocol) server enables AI-powered Kafka operations.
 
 ```bash
 # Auto-detect and configure MCP server
-/specweave-kafka:mcp-configure
+/sw-kafka:mcp-configure
 
 # The command will:
 # 1. Detect available MCP servers (kanapuli, tuannvm, etc.)
@@ -200,7 +200,7 @@ node consumer.js
 
 ```bash
 # Deploy Prometheus + Grafana stack
-/specweave-kafka:monitor-setup
+/sw-kafka:monitor-setup
 
 # This deploys:
 # - Prometheus with JMX Exporter
@@ -247,13 +247,13 @@ const producer = kafka.producer({
 **Schema Registry (Avro):**
 ```javascript
 // Register schema and serialize messages
-// See: plugins/specweave-kafka/examples/avro-schema-registry/
+// See: plugins/sw-kafka/examples/avro-schema-registry/
 ```
 
 **Kafka Streams:**
 ```bash
 # Generate Kafka Streams app
-/specweave-kafka-streams:app-scaffold
+/sw-kafka:app-scaffold
 
 # See: .specweave/docs/public/guides/kafka-streams.md
 ```
@@ -262,23 +262,23 @@ const producer = kafka.producer({
 
 **AWS MSK:**
 ```bash
-/specweave-kafka:deploy aws-msk
+/sw-kafka:deploy aws-msk
 
 # See: .specweave/docs/public/guides/kafka-terraform.md
 ```
 
 **Confluent Cloud:**
 ```bash
-/specweave-confluent:cluster-create
+/sw-confluent:cluster-create
 
-# See: plugins/specweave-confluent/README.md
+# See: plugins/sw-confluent/README.md
 ```
 
 ### Explore Examples
 
 ```bash
 # Working code examples
-ls plugins/specweave-kafka/examples/
+ls plugins/sw-kafka/examples/
 
 # - simple-producer-consumer/
 # - avro-schema-registry/
@@ -299,10 +299,10 @@ ls plugins/specweave-kafka/examples/
 lsof -i :9092
 
 # If occupied, kill the process or change port in docker-compose.yml
-docker-compose -f plugins/specweave-kafka/templates/docker/kafka-kraft/docker-compose.yml down
+docker-compose -f plugins/sw-kafka/templates/docker/kafka-kraft/docker-compose.yml down
 
 # Restart
-/specweave-kafka:dev-env start
+/sw-kafka:dev-env start
 ```
 
 ### MCP Server Connection Failed
@@ -319,7 +319,7 @@ brew install kcat  # macOS
 sudo apt-get install kafkacat  # Linux
 
 # Reconfigure
-/specweave-kafka:mcp-configure
+/sw-kafka:mcp-configure
 ```
 
 ### Consumer Not Receiving Messages
@@ -348,7 +348,7 @@ kcat -b localhost:9092 -G my-consumer-group user-events
 curl localhost:9090/api/v1/targets
 
 # Restart monitoring stack
-/specweave-kafka:monitor-setup --restart
+/sw-kafka:monitor-setup --restart
 
 # Verify JMX Exporter port (7071)
 curl localhost:7071/metrics
@@ -368,15 +368,15 @@ curl localhost:7071/metrics
 - "Setup monitoring" → `kafka-observability` skill
 
 ### Commands
-- `/specweave-kafka:deploy` - Deploy to cloud
-- `/specweave-kafka:monitor-setup` - Setup monitoring
-- `/specweave-kafka:dev-env` - Local development
-- `/specweave-confluent:cluster-create` - Confluent Cloud
+- `/sw-kafka:deploy` - Deploy to cloud
+- `/sw-kafka:monitor-setup` - Setup monitoring
+- `/sw-kafka:dev-env` - Local development
+- `/sw-confluent:cluster-create` - Confluent Cloud
 
 ### Examples
 ```bash
 # Browse working examples
-cd plugins/specweave-kafka/examples/
+cd plugins/sw-kafka/examples/
 
 # Run example
 cd simple-producer-consumer
@@ -390,16 +390,16 @@ npm start
 
 ```bash
 # Start
-/specweave-kafka:dev-env start
+/sw-kafka:dev-env start
 
 # Stop
-/specweave-kafka:dev-env stop
+/sw-kafka:dev-env stop
 
 # Reset (deletes all data)
-/specweave-kafka:dev-env reset
+/sw-kafka:dev-env reset
 
 # View logs
-/specweave-kafka:dev-env logs
+/sw-kafka:dev-env logs
 ```
 
 ### Produce/Consume with kcat

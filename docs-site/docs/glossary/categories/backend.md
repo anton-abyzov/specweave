@@ -42,7 +42,7 @@ Backend development terms cover server-side logic, API design, database manageme
 - JavaScript runtime for server-side development
 - Event-driven, non-blocking I/O
 - Frameworks: Express, Fastify, NestJS
-- SpecWeave plugin: `specweave-nodejs-backend` (planned)
+- SpecWeave plugin: `sw-backend`
 
 **Express.js**
 - Minimal Node.js web framework
@@ -331,13 +331,11 @@ Creates a new order.
 
 ### 1. Backend-Specific Plugins
 
-**specweave-nodejs-backend plugin** (planned):
+**sw-backend plugin**:
 - Node.js best practices
 - Express/NestJS boilerplate generation
 - Database schema suggestions
 - API endpoint templates
-
-**specweave-python-backend plugin** (planned):
 - FastAPI/Django/Flask expertise
 - Python-specific testing (pytest)
 - Virtual environment setup

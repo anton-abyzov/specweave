@@ -28,7 +28,7 @@ npx specweave init .
 
 ### 🔧 Core Framework (Always Active)
 
-#### **specweave** - Essential Framework
+#### **sw** - Essential Framework
 The foundation of SpecWeave, always loaded in every project.
 
 **Key Capabilities:**
@@ -57,7 +57,7 @@ The foundation of SpecWeave, always loaded in every project.
 
 ### 🔗 External Integrations
 
-#### **specweave-github** - GitHub Issues Integration
+#### **sw-github** - GitHub Issues Integration
 Bidirectional sync between SpecWeave increments and GitHub Issues.
 
 **Key Features:**
@@ -111,7 +111,7 @@ Bidirectional sync between SpecWeave increments and GitHub Issues.
 
 ---
 
-#### **specweave-jira** - JIRA Integration
+#### **sw-jira** - JIRA Integration
 Enterprise JIRA integration with Epic/Story sync.
 
 **Key Features:**
@@ -145,7 +145,7 @@ abandoned          → Cancelled
 
 ---
 
-#### **specweave-ado** - Azure DevOps Integration
+#### **sw-ado** - Azure DevOps Integration
 Enterprise Azure DevOps sync with Work Items.
 
 **Key Features:**
@@ -168,7 +168,7 @@ Enterprise Azure DevOps sync with Work Items.
 
 ---
 
-#### **specweave-figma** - Figma Design Integration
+#### **sw-figma** - Figma Design Integration
 Connect designs to implementation.
 
 **Skills:**
@@ -180,7 +180,7 @@ Connect designs to implementation.
 
 ### 💻 Tech Stack Plugins
 
-#### **specweave-frontend** - Frontend Development
+#### **sw-frontend** - Frontend Development
 [React](/docs/glossary/terms/react), Vue, [Angular](/docs/glossary/terms/angular), [Next.js](/docs/glossary/terms/nextjs) expertise.
 
 **Agents:**
@@ -209,7 +209,7 @@ Connect designs to implementation.
 
 ---
 
-#### **specweave-backend** - Backend Development
+#### **sw-backend** - Backend Development
 [Node.js](/docs/glossary/terms/nodejs), Python, .NET expertise.
 
 **Agents:**
@@ -232,7 +232,7 @@ Connect designs to implementation.
 
 ---
 
-#### **specweave-mobile** - Mobile Development
+#### **sw-mobile** - Mobile Development
 React Native and Expo expertise.
 
 **Agents:**
@@ -255,7 +255,7 @@ React Native and Expo expertise.
 
 ### ☁️ Infrastructure & DevOps
 
-#### **specweave-infrastructure** - Infrastructure Engineering
+#### **sw-infra** - Infrastructure Engineering
 Cloud infrastructure with Hetzner, DigitalOcean, monitoring.
 
 **Agents:**
@@ -290,7 +290,7 @@ Cloud infrastructure with Hetzner, DigitalOcean, monitoring.
 
 ---
 
-#### **specweave-kubernetes** - Kubernetes Orchestration
+#### **sw-k8s** - Kubernetes Orchestration
 Cloud-native [Kubernetes](/docs/glossary/terms/kubernetes) architecture, GitOps, service mesh.
 
 **Agent:**
@@ -313,7 +313,7 @@ Cloud-native [Kubernetes](/docs/glossary/terms/kubernetes) architecture, GitOps,
 
 ### 🤖 Machine Learning & Data Science
 
-#### **specweave-ml** - ML Engineering
+#### **sw-ml** - ML Engineering
 Complete ML lifecycle from data to deployment.
 
 **Agents:**
@@ -322,15 +322,15 @@ Complete ML lifecycle from data to deployment.
 - **mlops-engineer**: MLflow, Kubeflow, experiment tracking
 
 **Commands:**
-- `/specweave-ml:pipeline` - Design complete ML pipeline
-- `/specweave-ml:evaluate` - Evaluate model with metrics
-- `/specweave-ml:deploy` - Generate deployment artifacts
-- `/specweave-ml:explain` - Model explainability (SHAP, LIME)
+- `/sw-ml:pipeline` - Design complete ML pipeline
+- `/sw-ml:evaluate` - Evaluate model with metrics
+- `/sw-ml:deploy` - Generate deployment artifacts
+- `/sw-ml:explain` - Model explainability (SHAP, LIME)
 
 **Example: ML Pipeline**
 ```bash
 # Design complete ML workflow
-/specweave-ml:pipeline "Customer churn prediction"
+/sw-ml:pipeline "Customer churn prediction"
 
 # Generates:
 # 1. Data preprocessing (feature engineering, scaling)
@@ -353,7 +353,7 @@ Complete ML lifecycle from data to deployment.
 
 ### 💳 Specialized Domains
 
-#### **specweave-payments** - Payment Integration
+#### **sw-payments** - Payment Integration
 Stripe, PayPal, payment processor expertise.
 
 **Agent:**
@@ -376,24 +376,24 @@ Stripe, PayPal, payment processor expertise.
 
 ### 📚 Documentation & Diagrams
 
-#### **specweave-docs** - Documentation & Preview
+#### **sw-docs** - Documentation & Preview
 Documentation generation, organization, and live Docusaurus preview with hot reload.
 
 **Commands:**
-- `/specweave-docs:view` - Launch interactive docs server (internal or public)
-- `/specweave-docs:build` - Build static site for deployment
-- `/specweave-docs:generate` - Generate documentation
-- `/specweave-docs:organize` - Organize large doc folders
-- `/specweave-docs:health` - Documentation health report
-- `/specweave-docs:validate` - Validate documentation (MDX, YAML, links)
+- `/sw-docs:view` - Launch interactive docs server (internal or public)
+- `/sw-docs:build` - Build static site for deployment
+- `/sw-docs:generate` - Generate documentation
+- `/sw-docs:organize` - Organize large doc folders
+- `/sw-docs:health` - Documentation health report
+- `/sw-docs:validate` - Validate documentation (MDX, YAML, links)
 
 **Example:**
 ```bash
 # View internal docs (default) - port 3015
-/specweave-docs:view
+/sw-docs:view
 
 # View public docs - port 3016
-/specweave-docs:view --public
+/sw-docs:view --public
 
 # Output:
 # 🚀 Server running at http://localhost:3015 (or 3016 for public)
@@ -404,7 +404,7 @@ Documentation generation, organization, and live Docusaurus preview with hot rel
 
 ---
 
-#### **specweave-diagrams** - Diagram Generation
+#### **sw-diagrams** - Diagram Generation
 Mermaid diagrams following C4 Model conventions.
 
 **Agent:**
@@ -436,7 +436,7 @@ graph TB
 
 ### 🚀 Release Management
 
-#### **specweave-release** - Release Orchestration
+#### **sw-release** - Release Orchestration
 Multi-repo releases, semantic versioning, RC workflows.
 
 **Agents:**
@@ -465,7 +465,7 @@ Multi-repo releases, semantic versioning, RC workflows.
 
 ### 🎨 UI Testing & Automation
 
-#### **specweave-ui** - Browser Automation
+#### **sw-testing** - Testing & Browser Automation
 Playwright integration with MCP protocol.
 
 **Features:**
@@ -478,7 +478,7 @@ Playwright integration with MCP protocol.
 
 ### 🔧 Utilities
 
-#### **specweave-cost-optimizer** - AI Cost Optimization
+#### **sw-cost** - AI Cost Optimization
 Tracks AI costs, suggests optimizations.
 
 **Features:**
@@ -488,7 +488,7 @@ Tracks AI costs, suggests optimizations.
 
 ---
 
-#### **specweave-alternatives** - Tool Alternatives
+#### **sw-alternatives** - Tool Alternatives
 Suggests alternatives when users mention specific tools.
 
 **Example:**
@@ -565,16 +565,16 @@ Suggests alternatives when users mention specific tools.
 
 | I want to... | Use Plugin | Key Command |
 |-------------|-----------|-------------|
-| Plan increment | **specweave** | `/sw:increment` |
-| Sync to GitHub | **specweave-github** | `/sw-github:sync` |
-| Deploy to K8s | **specweave-kubernetes** | Agent auto-activates |
-| Build React app | **specweave-frontend** | Agent auto-activates |
-| Create ML pipeline | **specweave-ml** | `/specweave-ml:pipeline` |
-| View docs | **specweave-docs** | `/specweave-docs:view` |
-| Handle incidents | **specweave-infrastructure** | SRE agent + playbooks |
-| Generate diagrams | **specweave-diagrams** | Agent auto-activates |
-| Integrate Stripe | **specweave-payments** | Agent auto-activates |
-| Manage releases | **specweave-release** | `/sw-release:init` |
+| Plan increment | **sw** | `/sw:increment` |
+| Sync to GitHub | **sw-github** | `/sw-github:sync` |
+| Deploy to K8s | **sw-k8s** | Agent auto-activates |
+| Build React app | **sw-frontend** | Agent auto-activates |
+| Create ML pipeline | **sw-ml** | `/sw-ml:pipeline` |
+| View docs | **sw-docs** | `/sw-docs:view` |
+| Handle incidents | **sw-infra** | SRE agent + playbooks |
+| Generate diagrams | **sw-diagrams** | Agent auto-activates |
+| Integrate Stripe | **sw-payments** | Agent auto-activates |
+| Manage releases | **sw-release** | `/sw-release:init` |
 
 ---
 
@@ -582,26 +582,26 @@ Suggests alternatives when users mention specific tools.
 
 | Plugin | Purpose | Key Features |
 |--------|---------|--------------|
-| **specweave** | Core framework | 22 agents, 22 commands, increment lifecycle |
-| **specweave-github** | GitHub sync | Bidirectional sync, auto-issue creation |
-| **specweave-jira** | JIRA sync | Epic/Story sync, status mapping |
-| **specweave-ado** | Azure DevOps | Work items, multi-project strategies |
-| **specweave-frontend** | Frontend dev | React, Vue, Angular, Next.js |
-| **specweave-backend** | Backend dev | Node.js, Python, .NET, APIs |
-| **specweave-mobile** | Mobile dev | React Native, Expo, offline-first |
-| **specweave-infrastructure** | DevOps | SRE, monitoring, incident response |
-| **specweave-kubernetes** | K8s orchestration | Helm, GitOps, service mesh |
-| **specweave-ml** | Machine Learning | MLOps, pipelines, deployment |
-| **specweave-release** | Release mgmt | Semantic versioning, RC workflow |
-| **specweave-payments** | Payments | Stripe, PayPal, PCI compliance |
-| **specweave-ui** | Browser automation | Playwright, E2E testing |
-| **specweave-diagrams** | Diagram generation | Mermaid, C4 Model |
-| **specweave-figma** | Design integration | Figma → Components |
-| **specweave-cost-optimizer** | Cost tracking | AI cost optimization |
-| **specweave-alternatives** | Tool suggestions | Alternative recommendations |
-| **specweave-docs** | Documentation | Guides, API docs, Docusaurus preview |
-| **specweave-testing** | Testing utilities | Test automation |
-| **specweave-tooling** | Development tools | CLI utilities |
+| **sw** | Core framework | 22 agents, 22 commands, increment lifecycle |
+| **sw-github** | GitHub sync | Bidirectional sync, auto-issue creation |
+| **sw-jira** | JIRA sync | Epic/Story sync, status mapping |
+| **sw-ado** | Azure DevOps | Work items, multi-project strategies |
+| **sw-frontend** | Frontend dev | React, Vue, Angular, Next.js |
+| **sw-backend** | Backend dev | Node.js, Python, .NET, APIs |
+| **sw-mobile** | Mobile dev | React Native, Expo, offline-first |
+| **sw-infra** | DevOps | SRE, monitoring, incident response |
+| **sw-k8s** | K8s orchestration | Helm, GitOps, service mesh |
+| **sw-ml** | Machine Learning | MLOps, pipelines, deployment |
+| **sw-release** | Release mgmt | Semantic versioning, RC workflow |
+| **sw-payments** | Payments | Stripe, PayPal, PCI compliance |
+| **sw-testing** | Testing & automation | Playwright, E2E testing |
+| **sw-diagrams** | Diagram generation | Mermaid, C4 Model |
+| **sw-figma** | Design integration | Figma → Components |
+| **sw-cost** | Cost tracking | AI cost optimization |
+| **sw-alternatives** | Tool suggestions | Alternative recommendations |
+| **sw-docs** | Documentation | Guides, API docs, Docusaurus preview |
+| **sw-confluent** | Kafka/Confluent | Streaming, Schema Registry |
+| **sw-kafka** | Kafka operations | DevOps, monitoring, architecture |
 
 ---
 
