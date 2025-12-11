@@ -169,6 +169,11 @@ export function detectStructureLevel(projectRoot: string = process.cwd()): Struc
         boardsByProject[projectId] = [];
 
         for (const mapping of profile.config.areaPathMapping.mappings) {
+          // Defensive: Skip mappings with missing specweaveProject
+          if (!mapping.specweaveProject) {
+            continue;
+          }
+
           boardsByProject[projectId].push({
             id: normalizeId(mapping.specweaveProject),
             name: mapping.specweaveProject,
@@ -247,6 +252,13 @@ export function detectStructureLevel(projectRoot: string = process.cwd()): Struc
           boardsByProject[projectId] = [];
 
           for (const board of boards) {
+            // Defensive: Skip boards with missing specweaveProject
+            // TypeScript types enforce this, but runtime validation prevents
+            // undefined folder names if config validation is bypassed
+            if (!board.specweaveProject) {
+              continue;
+            }
+
             boardsByProject[projectId].push({
               id: normalizeId(board.specweaveProject),
               name: board.specweaveProject,
