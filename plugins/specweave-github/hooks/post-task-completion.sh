@@ -259,7 +259,7 @@ fi
 # ⚠️  DEPRECATED: SpecWeave now syncs ONLY at User Story level.
 #
 # Feature/Epic-level issues are no longer updated.
-# Use /specweave-github:sync instead to sync User Story issues.
+# Use /sw-github:sync instead to sync User Story issues.
 #
 # To re-enable (NOT recommended):
 #   export SPECWEAVE_ENABLE_EPIC_SYNC=true
@@ -288,7 +288,7 @@ if [ "$SPECWEAVE_ENABLE_EPIC_SYNC" = "true" ]; then
     if [ -f "$PROJECT_ROOT/scripts/update-epic-github-issue.sh" ]; then
       echo "[$(date)] [GitHub] 🚀 Updating Epic GitHub issue (DEPRECATED)..." >> "$DEBUG_LOG" 2>/dev/null || true
       "$PROJECT_ROOT/scripts/update-epic-github-issue.sh" "$ACTIVE_INCREMENT" >> "$DEBUG_LOG" 2>&1 || true
-      echo "[$(date)] [GitHub] ⚠️  Epic sync is deprecated. Use /specweave-github:sync instead." >> "$DEBUG_LOG" 2>/dev/null || true
+      echo "[$(date)] [GitHub] ⚠️  Epic sync is deprecated. Use /sw-github:sync instead." >> "$DEBUG_LOG" 2>/dev/null || true
     else
       echo "[$(date)] [GitHub] ⚠️  Epic sync script not found, skipping" >> "$DEBUG_LOG" 2>/dev/null || true
     fi

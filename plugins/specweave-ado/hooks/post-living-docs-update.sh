@@ -8,8 +8,8 @@
 # CRITICAL: External tool status ALWAYS wins in conflicts!
 #
 # Triggers:
-# 1. After /specweave:done (increment completion)
-# 2. After /specweave:sync-docs update
+# 1. After /sw:done (increment completion)
+# 2. After /sw:sync-docs update
 # 3. After manual spec edits
 # 4. After webhook from ADO
 #

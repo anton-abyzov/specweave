@@ -6,7 +6,7 @@
 # - ELIMINATED FALSE POSITIVES: No longer triggers on stale files alone
 # - SMART DETECTION: Verifies actual stuck processes, not just file ages
 # - SEVERITY LEVELS: Only CRITICAL issues trigger notifications
-# - DIAGNOSTICS: Writes detailed logs for /specweave:jobs to display
+# - DIAGNOSTICS: Writes detailed logs for /sw:jobs to display
 #
 # Usage: bash session-watchdog.sh [--daemon] [--interval=60] [--threshold=300]
 
@@ -257,7 +257,7 @@ check_orphaned_jobs() {
   fi
 
   if [[ "$orphaned_count" -gt 0 ]]; then
-    result_message="$orphaned_count orphaned job(s) found (run /specweave:jobs to see details)"
+    result_message="$orphaned_count orphaned job(s) found (run /sw:jobs to see details)"
   fi
 
   echo "orphaned_jobs=$orphaned_count" >> "$DIAGNOSTICS_FILE.tmp"
@@ -266,7 +266,7 @@ check_orphaned_jobs() {
   return $result_severity
 }
 
-# Write diagnostics file for /specweave:jobs to read
+# Write diagnostics file for /sw:jobs to read
 write_diagnostics() {
   local overall_severity="$1"
   local overall_status="$2"
@@ -351,7 +351,7 @@ check_session_health() {
     CONSECUTIVE_WARNINGS=0  # Reset on healthy check
   fi
 
-  # Write diagnostics for /specweave:jobs
+  # Write diagnostics for /sw:jobs
   write_diagnostics "$max_severity" "$overall_status"
 
   # Only alert if CRITICAL and seen multiple consecutive times

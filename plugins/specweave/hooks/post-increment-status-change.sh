@@ -3,7 +3,7 @@
 # SpecWeave Post-Increment-Status-Change Hook (v0.28.33)
 # Runs automatically after increment status changes (pause/resume/abandon)
 #
-# Trigger: /specweave:pause, /specweave:resume, /specweave:abandon commands
+# Trigger: /sw:pause, /sw:resume, /sw:abandon commands
 # Purpose: Sync GitHub issue state with increment status
 #
 # What it does:

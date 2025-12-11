@@ -101,8 +101,8 @@ echo ""
 echo "Examples:"
 echo "  /specweave inc \"user authentication\""
 echo "  /specweave do"
-echo "  /specweave:github:create-issue 0001"
-echo "  /specweave:github:sync 0001"
+echo "  /sw:github:create-issue 0001"
+echo "  /sw:github:sync 0001"
 echo ""
 
 exit 0
