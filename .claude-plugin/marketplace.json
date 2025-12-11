@@ -272,17 +272,6 @@
       }
     },
     {
-      "name": "sw-core",
-      "description": "Core utility commands - Code analysis, refactoring, debugging, performance profiling, dependency management",
-      "source": "./plugins/specweave-core",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
       "name": "sw-plugin-dev",
       "description": "Plugin development tools - Create, validate, and scaffold SpecWeave plugins, skills, commands, and agents",
       "source": "./plugins/specweave-plugin-dev",
