@@ -8,11 +8,11 @@
   },
   "plugins": [
     {
-      "name": "specweave",
+      "name": "sw",
       "description": "SpecWeave framework - increment lifecycle, living docs, PM-led planning",
       "source": "./plugins/specweave",
       "category": "development",
-      "version": "0.11.0",
+      "version": "0.25.0",
       "author": {
         "name": "Anton Abyzov",
         "email": "anton.abyzov@gmail.com"
