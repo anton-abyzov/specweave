@@ -1,0 +1,9 @@
+{
+  "id": "0145-project-registry-eda-sync",
+  "title": "Project Registry with EDA-Based Synchronization",
+  "type": "feature",
+  "status": "planning",
+  "priority": "P1",
+  "created": "2025-12-11T05:30:00Z",
+  "description": "Implement a centralized Project Registry as single source of truth for all projects, with Event-Driven Architecture (EDA) for keeping project data synchronized across config, living docs, and external tools (GitHub/ADO/JIRA)"
+}
