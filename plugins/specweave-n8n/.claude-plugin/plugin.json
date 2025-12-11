@@ -1,5 +1,5 @@
 {
-  "name": "specweave-n8n",
+  "name": "sw-n8n",
   "description": "n8n workflow automation integration with Kafka - Event-driven workflows, Kafka triggers, producers, consumers, and workflow patterns for no-code/low-code event processing",
   "version": "0.24.0",
   "author": {

@@ -1,5 +1,5 @@
 {
-  "name": "specweave-ui",
+  "name": "sw-ui",
   "version": "0.24.0",
   "description": "Browser automation and UI tools - Element inspection, automated testing, Playwright integration",
   "author": {

@@ -1,5 +1,5 @@
 {
-  "name": "specweave-frontend",
+  "name": "sw-frontend",
   "description": "Frontend development for React, Vue, and Angular projects. Includes Next.js 14+ App Router support, design system architecture (Atomic Design), and UI component best practices. Focus on modern frontend patterns and performance.",
   "version": "0.24.0",
   "author": {

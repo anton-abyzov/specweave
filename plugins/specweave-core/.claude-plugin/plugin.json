@@ -1,5 +1,5 @@
 {
-  "name": "specweave-core",
+  "name": "sw-core",
   "description": "Core software engineering practices including code review, refactoring, architecture design, design patterns, SOLID principles, clean code, technical debt management, and software craftsmanship.",
   "version": "0.24.0",
   "author": {

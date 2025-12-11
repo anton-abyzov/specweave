@@ -1,5 +1,5 @@
 {
-  "name": "specweave-plugin-dev",
+  "name": "sw-plugin-dev",
   "description": "Claude Code plugin development tools including plugin creation, testing, marketplace publishing, skill authoring, agent development, and CLI command integration.",
   "version": "0.24.0",
   "author": {

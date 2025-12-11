@@ -1,5 +1,5 @@
 {
-  "name": "specweave-kafka",
+  "name": "sw-kafka",
   "description": "Apache Kafka event streaming integration with MCP servers, CLI tools (kcat), Terraform modules, and comprehensive observability stack",
   "version": "0.24.0",
   "author": {

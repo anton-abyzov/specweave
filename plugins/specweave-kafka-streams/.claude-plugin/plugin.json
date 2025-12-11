@@ -1,5 +1,5 @@
 {
-  "name": "specweave-kafka-streams",
+  "name": "sw-kafka-streams",
   "description": "Kafka Streams library integration for SpecWeave - Stream processing with Java/Kotlin, topology patterns, state stores, windowing, joins, and testing frameworks",
   "version": "0.24.0",
   "author": {
