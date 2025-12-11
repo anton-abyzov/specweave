@@ -195,14 +195,8 @@ export interface SyncConfiguration {
 
   /**
    * Default profile (fallback when increment doesn't specify one)
-   * @since v0.31.0 - renamed from activeProfile for clarity
    */
   defaultProfile?: string;
-
-  /**
-   * @deprecated Use `defaultProfile` instead. Kept for backward compatibility.
-   */
-  activeProfile?: string;
 
   settings?: SyncSettings;
   profiles?: Record<string, SyncProfile>;  // Profile configurations

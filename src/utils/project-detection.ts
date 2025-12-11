@@ -2,7 +2,7 @@
  * Project ID Auto-Detection Utilities
  *
  * Detects project ID from (priority order):
- * 1. sync.activeProfile (for multi-profile monorepos)
+ * 1. sync.defaultProfile (for multi-profile monorepos)
  * 2. Git remote (GitHub repo name)
  * 3. Sync configuration (JIRA project key, ADO project name)
  * 4. User prompt (fallback)
@@ -112,34 +112,34 @@ export function parseRepoName(repoName: string): ParsedRepoName {
 }
 
 /**
- * Detect active project ID from configuration
+ * Detect default project ID from configuration
  *
  * NOTE (v0.33.0): multiProject.activeProject has been REMOVED!
- * This function now only uses sync.activeProfile for legacy umbrella repos.
+ * This function now only uses sync.defaultProfile for legacy umbrella repos.
  *
  * Priority:
- * 1. sync.activeProfile - for umbrella repos where profile maps to folder
+ * 1. sync.defaultProfile - for umbrella repos where profile maps to folder
  *
  * @param projectRoot - Project root directory
- * @returns Active project ID or null if not configured
+ * @returns Default project ID or null if not configured
  */
-export function detectActiveProfileId(projectRoot: string): string | null {
+export function detectDefaultProfileId(projectRoot: string): string | null {
   try {
     const configManager = new ConfigManager(projectRoot);
     const config = configManager.load();
 
-    // sync.activeProfile for umbrella repos
+    // sync.defaultProfile for umbrella repos
     // where profile IS a folder (like "be", "fe", "shared")
-    if (config.sync?.activeProfile && config.sync?.profiles) {
-      const activeProfileId = config.sync.activeProfile;
+    if (config.sync?.defaultProfile && config.sync?.profiles) {
+      const defaultProfileId = config.sync.defaultProfile;
 
       // CRITICAL FIX (2025-11-30): Provider-prefixed profile IDs are NOT folder names
       // ProfileIds like "ado-myproject", "jira-webapp" are sync connection identifiers
       // NOT project folders! The actual folder name comes from profile.config.project
       // Bug: "ado-myproject" was being used as folder name instead of "MyProject"
-      if (activeProfileId.startsWith('ado-') || activeProfileId.startsWith('jira-') || activeProfileId.startsWith('github-')) {
+      if (defaultProfileId.startsWith('ado-') || defaultProfileId.startsWith('jira-') || defaultProfileId.startsWith('github-')) {
         // Extract actual project name from profile config
-        const profile = config.sync.profiles[activeProfileId] as SyncProfile | undefined;
+        const profile = config.sync.profiles[defaultProfileId] as SyncProfile | undefined;
         if (profile?.config) {
           const profileConfig = profile.config as Record<string, unknown>;
           // ADO: use project name from config
@@ -160,8 +160,8 @@ export function detectActiveProfileId(projectRoot: string): string | null {
       }
 
       // Legacy umbrella repos: profile maps to folder (e.g., "be", "fe", "shared")
-      if (config.sync.profiles[activeProfileId]) {
-        return activeProfileId.toLowerCase();
+      if (config.sync.profiles[defaultProfileId]) {
+        return defaultProfileId.toLowerCase();
       }
     }
 
@@ -373,13 +373,13 @@ export function autoDetectProjectIdSync(
 ): string {
   const { silent = false } = options;
 
-  // 1. Try active profile ID (highest priority for multi-profile monorepos)
-  const activeProfileId = detectActiveProfileId(projectRoot);
-  if (activeProfileId) {
+  // 1. Try default profile ID (highest priority for multi-profile monorepos)
+  const defaultProfileId = detectDefaultProfileId(projectRoot);
+  if (defaultProfileId) {
     if (!silent) {
-      console.log(`✅ Detected active profile: ${activeProfileId}`);
+      console.log(`✅ Detected default profile: ${defaultProfileId}`);
     }
-    return activeProfileId;
+    return defaultProfileId;
   }
 
   // 2. Try git remote (for single-repo projects)
@@ -408,7 +408,7 @@ export function autoDetectProjectIdSync(
  * Auto-detect project ID with fallback chain (async version with prompts)
  *
  * Priority:
- * 1. Active sync profile ID (for multi-profile monorepos)
+ * 1. Default sync profile ID (for multi-profile monorepos)
  * 2. Git remote (GitHub repo name)
  * 3. Sync configuration (JIRA/ADO project)
  * 4. User prompt (with detected suggestion)
@@ -419,9 +419,9 @@ export function autoDetectProjectIdSync(
  * @returns Detected or prompted project ID
  *
  * @example
- * // Multi-project setup with activeProject: "be"
+ * // Multi-project setup with defaultProfile: "be"
  * await autoDetectProjectId('/path/to/sw-qr-menu')
- * // Output: "✅ Detected active profile: be"
+ * // Output: "✅ Detected default profile: be"
  * // Returns: "be"
  *
  * @example
@@ -446,13 +446,13 @@ export async function autoDetectProjectId(
 ): Promise<string> {
   const { silent = false, promptIfNotDetected = true } = options;
 
-  // 1. Try active profile ID (highest priority for multi-profile monorepos)
-  const activeProfileId = detectActiveProfileId(projectRoot);
-  if (activeProfileId) {
+  // 1. Try default profile ID (highest priority for multi-profile monorepos)
+  const defaultProfileId = detectDefaultProfileId(projectRoot);
+  if (defaultProfileId) {
     if (!silent) {
-      console.log(`✅ Detected active profile: ${activeProfileId}`);
+      console.log(`✅ Detected default profile: ${defaultProfileId}`);
     }
-    return activeProfileId;
+    return defaultProfileId;
   }
 
   // 2. Try git remote
@@ -562,16 +562,16 @@ export function validateProjectId(projectId: string): true | string {
  * Full project context for intelligent user story routing and domain awareness
  */
 export interface ProjectContext {
-  /** Active project/profile ID (folder name under specs/) */
+  /** Default project/profile ID (folder name under specs/) */
   projectId: string;
   /** How projectId was detected */
-  detectedFrom: 'activeProfile' | 'gitRemote' | 'syncConfig' | 'fallback';
+  detectedFrom: 'defaultProfile' | 'gitRemote' | 'syncConfig' | 'fallback';
   /** Parsed repo name with domain context (if git remote detected) */
   repoInfo: ParsedRepoName | null;
   /** All available profiles (for multi-profile monorepos) */
   availableProfiles: string[];
-  /** Active profile config (if multi-profile) */
-  activeProfile: {
+  /** Default profile config (if multi-profile) */
+  defaultProfile: {
     id: string;
     displayName: string;
     provider: string;
@@ -592,15 +592,15 @@ export interface ProjectContext {
  * @returns Full project context
  *
  * @example
- * // sw-qr-menu monorepo with activeProfile: "be"
+ * // sw-qr-menu monorepo with defaultProfile: "be"
  * getProjectContext('/path/to/sw-qr-menu')
  * // Returns:
  * // {
  * //   projectId: 'be',
- * //   detectedFrom: 'activeProfile',
+ * //   detectedFrom: 'defaultProfile',
  * //   repoInfo: { prefix: 'sw', product: 'qr-menu', component: 'be', domain: 'hospitality/restaurant' },
  * //   availableProfiles: ['be', 'fe', 'shared'],
- * //   activeProfile: { id: 'be', displayName: 'sw-qr-menu-be service', provider: 'github', repo: 'sw-qr-menu-be' }
+ * //   defaultProfile: { id: 'be', displayName: 'sw-qr-menu-be service', provider: 'github', repo: 'sw-qr-menu-be' }
  * // }
  */
 export function getProjectContext(projectRoot: string): ProjectContext {
@@ -608,7 +608,7 @@ export function getProjectContext(projectRoot: string): ProjectContext {
   let detectedFrom: ProjectContext['detectedFrom'] = 'fallback';
   let repoInfo: ParsedRepoName | null = null;
   let availableProfiles: string[] = [];
-  let activeProfile: ProjectContext['activeProfile'] = null;
+  let defaultProfile: ProjectContext['defaultProfile'] = null;
 
   try {
     const configManager = new ConfigManager(projectRoot);
@@ -619,16 +619,16 @@ export function getProjectContext(projectRoot: string): ProjectContext {
       availableProfiles = Object.keys(config.sync.profiles);
     }
 
-    // 1. Try active profile ID (highest priority)
-    if (config.sync?.activeProfile && config.sync?.profiles) {
-      const profileId = config.sync.activeProfile;
+    // 1. Try default profile ID (highest priority)
+    if (config.sync?.defaultProfile && config.sync?.profiles) {
+      const profileId = config.sync.defaultProfile;
       const profile = config.sync.profiles[profileId] as SyncProfile;
 
       if (profile) {
         projectId = profileId.toLowerCase();
-        detectedFrom = 'activeProfile';
+        detectedFrom = 'defaultProfile';
 
-        activeProfile = {
+        defaultProfile = {
           id: profileId,
           displayName: profile.displayName || profileId,
           provider: profile.provider,
@@ -636,8 +636,8 @@ export function getProjectContext(projectRoot: string): ProjectContext {
         };
 
         // Parse repo name for domain context
-        if (activeProfile.repo) {
-          repoInfo = parseRepoName(activeProfile.repo);
+        if (defaultProfile.repo) {
+          repoInfo = parseRepoName(defaultProfile.repo);
         }
       }
     }
@@ -645,7 +645,7 @@ export function getProjectContext(projectRoot: string): ProjectContext {
     // Config doesn't exist, continue to git detection
   }
 
-  // 2. Try git remote (if no active profile)
+  // 2. Try git remote (if no default profile)
   if (detectedFrom === 'fallback') {
     const gitProjectId = detectProjectIdFromGit(projectRoot);
     if (gitProjectId) {
@@ -670,6 +670,6 @@ export function getProjectContext(projectRoot: string): ProjectContext {
     detectedFrom,
     repoInfo,
     availableProfiles,
-    activeProfile,
+    defaultProfile,
   };
 }

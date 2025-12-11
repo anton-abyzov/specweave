@@ -5,7 +5,7 @@
  * DELEGATES to AdoProfileResolver (plugin) to determine which org/project to use
  * based on the increment's metadata.
  *
- * This is the FIX for the single-activeProfile problem:
+ * This is the FIX for the single-defaultProfile problem:
  * - Each increment can have its own ADO profile in metadata.json
  * - The factory resolves the profile and creates a client for that specific org/project
  *
@@ -64,7 +64,7 @@ export class AdoClientFactory {
    *
    * Resolution priority:
    * 1. Increment's metadata.json -> external_sync.ado.profile
-   * 2. Global config.json -> sync.activeProfile
+   * 2. Global config.json -> sync.defaultProfile
    *
    * @param incrementId - The increment ID (e.g., "0005-feature-name")
    * @returns Configured AdoClient for the resolved profile

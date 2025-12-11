@@ -1,0 +1,11 @@
+{
+  "id": "FS-139",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:11:27.604Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-139",
+  "linkedIncrements": [
+    "0139-test-suite-audit-and-fixes"
+  ]
+}

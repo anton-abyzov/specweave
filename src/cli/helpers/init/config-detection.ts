@@ -152,7 +152,7 @@ export function detectADOConfig(targetDir: string): ADOConfig | null {
             projectsFromProfiles.push({
               name: projectName,
               areaPaths: profileConfig.areaPaths,
-              isDefault: profileId === config.sync?.activeProfile,
+              isDefault: profileId === config.sync?.defaultProfile,
               isUmbrella: profileConfig.isUmbrella
             });
           }

@@ -774,16 +774,8 @@ export interface SyncProfiles {
    *
    * NOTE: This is a FALLBACK, not a constraint. Bulk operations (import/export/status)
    * iterate ALL profiles. Each increment can override via metadata.json.
-   *
-   * @since v0.31.0 - renamed from activeProfile for clarity
    */
   defaultProfile?: string;
-
-  /**
-   * @deprecated Use `defaultProfile` instead. Kept for backward compatibility.
-   * If both are set, `defaultProfile` takes precedence.
-   */
-  activeProfile?: string;
 
   /** All available profiles */
   profiles: Record<string, SyncProfile>;
@@ -872,14 +864,8 @@ export interface ProjectContext {
 export interface SyncConfiguration {
   /**
    * Default profile (fallback when increment doesn't specify one)
-   * @since v0.31.0 - renamed from activeProfile
    */
   defaultProfile?: string;
-
-  /**
-   * @deprecated Use `defaultProfile` instead. Kept for backward compatibility.
-   */
-  activeProfile?: string;
 
   /** All sync profiles */
   profiles: Record<string, SyncProfile>;
@@ -1095,16 +1081,11 @@ export function isSimpleStrategy(profile: SyncProfile): boolean {
 }
 
 // ============================================================================
-// Default Profile Helpers (v0.31.0+ - Backward Compatibility)
+// Default Profile Helpers
 // ============================================================================
 
 /**
- * Get the effective default profile name from sync configuration
- *
- * Handles backward compatibility:
- * - Returns `defaultProfile` if set (preferred, v0.31.0+)
- * - Falls back to `activeProfile` if only that is set (legacy)
- * - Returns undefined if neither is set
+ * Get the default profile name from sync configuration
  *
  * @param config - Sync configuration (SyncProfiles or SyncConfiguration)
  * @returns Default profile name or undefined
@@ -1118,12 +1099,10 @@ export function isSimpleStrategy(profile: SyncProfile): boolean {
  * ```
  */
 export function getDefaultProfile(
-  config: Pick<SyncProfiles, 'defaultProfile' | 'activeProfile'> | undefined
+  config: Pick<SyncProfiles, 'defaultProfile'> | undefined
 ): string | undefined {
   if (!config) return undefined;
-
-  // Prefer defaultProfile (v0.31.0+), fall back to activeProfile (legacy)
-  return config.defaultProfile ?? config.activeProfile;
+  return config.defaultProfile;
 }
 
 /**
@@ -1171,7 +1150,7 @@ export function getAllProfiles(
 /**
  * Check if sync is configured for ANY profile of a given provider
  *
- * More useful than checking activeProfile for permission checks.
+ * More useful than checking defaultProfile for permission checks.
  *
  * @param config - Sync configuration
  * @param provider - Provider type

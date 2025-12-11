@@ -1,0 +1,11 @@
+{
+  "id": "FS-140",
+  "type": "feature",
+  "archivedAt": "2025-12-11T22:12:37.712Z",
+  "archivedBy": "anton.abyzov",
+  "reason": "all-increments-archived",
+  "sourcePath": "/Users/anton.abyzov/Projects/specweave/.specweave/docs/internal/specs/specweave/FS-140",
+  "linkedIncrements": [
+    "0140-remove-frontmatter-project-field"
+  ]
+}
