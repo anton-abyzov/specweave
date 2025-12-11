@@ -1,11 +1,16 @@
 ---
 id: FS-134
-title: "Intelligent Living Docs - Core Engine & Analysis (Part 1)"
+title: Intelligent Living Docs - Core Engine & Analysis (Part 1)
 type: feature
 status: completed
 priority: P1
 created: 2025-12-09
 lastUpdated: 2025-12-11
+external_tools:
+  github:
+    type: milestone
+    id: 63
+    url: https://github.com/anton-abyzov/specweave/milestone/63
 ---
 
 # Intelligent Living Docs - Core Engine & Analysis (Part 1)

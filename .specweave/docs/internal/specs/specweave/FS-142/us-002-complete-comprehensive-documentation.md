@@ -1,15 +1,11 @@
 ---
 id: US-002
 feature: FS-142
-title: Complete Comprehensive Documentation
+title: "Complete Comprehensive Documentation"
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
-external:
-  github:
-    issue: 919
-    url: https://github.com/anton-abyzov/specweave/issues/919
 ---
 
 # US-002: Complete Comprehensive Documentation
