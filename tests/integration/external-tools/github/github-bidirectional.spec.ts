@@ -573,7 +573,8 @@ test.describe('GitHub Sync Error Handling', () => {
   let testDir: string;
 
   test.beforeEach(async () => {
-    testDir = path.join(os.tmpdir(), `specweave-e2e-github-errors-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    testDir = path.join(os.tmpdir(), `specweave-e2e-github-errors-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testDir);
   });
 

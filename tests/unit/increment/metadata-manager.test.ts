@@ -15,12 +15,12 @@ import * as path from 'path';
 import * as os from 'os';
 
 describe('MetadataManager', () => {
-  // ✅ SAFE: Use temp directory instead of project root
-  const testRootPath = path.join(os.tmpdir(), 'specweave-test-metadata-manager');
-  const testIncrementsPath = path.join(testRootPath, '.specweave', 'increments');
+  // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+  let testRootPath: string;
+  let testIncrementsPath: string;
   const testIncrementId = '0001-test-increment';
-  const testIncrementPath = path.join(testIncrementsPath, testIncrementId);
-  const testMetadataPath = path.join(testIncrementPath, 'metadata.json');
+  let testIncrementPath: string;
+  let testMetadataPath: string;
 
   let originalCwd: string;
 
@@ -28,10 +28,11 @@ describe('MetadataManager', () => {
     // Save original cwd
     originalCwd = process.cwd();
 
-    // Clean up test directory
-    if (fs.existsSync(testRootPath)) {
-      fs.removeSync(testRootPath);
-    }
+    // Create unique test directory for each test run
+    testRootPath = path.join(os.tmpdir(), `specweave-test-metadata-manager-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    testIncrementsPath = path.join(testRootPath, '.specweave', 'increments');
+    testIncrementPath = path.join(testIncrementsPath, testIncrementId);
+    testMetadataPath = path.join(testIncrementPath, 'metadata.json');
 
     // Create test structure
     fs.ensureDirSync(testIncrementPath);

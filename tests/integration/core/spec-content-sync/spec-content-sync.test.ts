@@ -71,8 +71,8 @@ describe('Spec Content Sync - Core', () => {
   let tempDir: string;
 
   beforeEach(async () => {
-    // ✅ SAFE: Use OS temp directory with unique timestamp
-    tempDir = path.join(process.env.TMPDIR || '/tmp', `specweave-test-spec-content-sync-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    tempDir = path.join(process.env.TMPDIR || '/tmp', `specweave-test-spec-content-sync-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.mkdir(tempDir, { recursive: true });
   });
 
@@ -516,8 +516,8 @@ Add user authentication system.
 
 describe('Spec Content Sync - Integration Scenarios', () => {
   it('should handle full workflow: parse → detect changes → build description → update link', async () => {
-    // ✅ SAFE: Use OS temp directory with unique timestamp
-    const tempDir = path.join(process.env.TMPDIR || '/tmp', `specweave-test-workflow-${Date.now()}`);
+    // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
+    const tempDir = path.join(process.env.TMPDIR || '/tmp', `specweave-test-workflow-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.mkdir(tempDir, { recursive: true });
 
     try {
