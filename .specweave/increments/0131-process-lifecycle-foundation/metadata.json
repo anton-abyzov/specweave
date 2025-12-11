@@ -18,9 +18,5 @@
   "feature_id": null,
   "epic_id": null,
   "externalLinks": {},
-  "dependencies": [],
-  "relatedIncrements": ["0132-process-lifecycle-integration", "0133-process-lifecycle-testing"],
-  "splitFrom": "0128-process-lifecycle-zombie-prevention",
-  "splitPart": "1 of 3",
   "project": "specweave"
 }

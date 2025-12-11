@@ -1,15 +1,11 @@
 ---
 id: US-001
 feature: FS-138
-title: Fix Auto-Enable Bug During Init (P0)
-status: not_started
+title: "Fix Auto-Enable Bug During Init (P0)"
+status: completed
 priority: P0
 created: 2025-12-10
 project: specweave
-external:
-  github:
-    issue: 890
-    url: https://github.com/anton-abyzov/specweave/issues/890
 ---
 
 # US-001: Fix Auto-Enable Bug During Init (P0)
@@ -24,10 +20,10 @@ external:
 
 ## Acceptance Criteria
 
-- [ ] **AC-US1-01**: `specweave init` creates config with `multiProject.enabled=false`
-- [ ] **AC-US1-02**: Only ONE project in config (from `project.name` field)
-- [ ] **AC-US1-03**: No `multiProject.projects` structure unless explicitly migrated
-- [ ] **AC-US1-04**: Existing single-project repos auto-detect and migrate to `enabled=false`
+- [x] **AC-US1-01**: `specweave init` creates config with `multiProject.enabled=false`
+- [x] **AC-US1-02**: Only ONE project in config (from `project.name` field)
+- [x] **AC-US1-03**: No `multiProject.projects` structure unless explicitly migrated
+- [x] **AC-US1-04**: Existing single-project repos auto-detect and migrate to `enabled=false`
 
 ---
 
@@ -40,4 +36,4 @@ external:
 
 ## Tasks
 
-- [ ] **T-003**: Update init.ts to create single-project config
+- [x] **T-003**: Update init.ts to create single-project config

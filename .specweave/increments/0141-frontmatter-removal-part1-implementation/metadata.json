@@ -1,0 +1,15 @@
+{
+  "id": "0141-frontmatter-removal-part1-implementation",
+  "status": "completed",
+  "type": "refactor",
+  "priority": "P1",
+  "created": "2025-12-10T16:15:00Z",
+  "lastActivity": "2025-12-10T19:00:00Z",
+  "completedAt": "2025-12-10T19:00:00Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "totalACs": 23,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}

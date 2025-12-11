@@ -58,14 +58,14 @@ echo "📋 SpecWeave Status Overview"
 echo ""
 
 # Status display order and icons
+# Note: "planned" is a legacy typo for "planning" - both are handled
 declare -a STATUS_ORDER
-STATUS_ORDER=("active" "planning" "in-progress" "ready_for_review" "paused" "backlog" "completed" "abandoned")
+STATUS_ORDER=("active" "planning" "planned" "ready_for_review" "paused" "backlog" "completed" "abandoned")
 
 status_icon() {
   case "$1" in
     active) echo "🔄" ;;
-    planning) echo "📝" ;;
-    in-progress) echo "⚙️" ;;
+    planning|planned) echo "📝" ;;
     ready_for_review) echo "👀" ;;
     paused) echo "⏸️" ;;
     backlog) echo "📋" ;;

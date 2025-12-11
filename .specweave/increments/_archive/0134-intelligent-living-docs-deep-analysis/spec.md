@@ -5,7 +5,6 @@ type: feature
 priority: P1
 status: planned
 created: 2025-12-09
-project: specweave
 testMode: TDD
 coverageTarget: 95
 dependencies: []

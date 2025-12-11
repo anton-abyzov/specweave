@@ -36,10 +36,13 @@ export interface ACStats {
 
 /**
  * Increment status values
+ *
+ * Note: 'planned' is a legacy typo for 'planning' - both may appear in cache
  */
 export type IncrementStatus =
   | 'backlog'
-  | 'planned'
+  | 'planning'
+  | 'planned'  // Legacy - use 'planning' for new increments
   | 'active'
   | 'paused'
   | 'ready_for_review'
@@ -96,7 +99,7 @@ export interface StatusSummary {
   active: number;
   paused: number;
   backlog: number;
-  planned: number;
+  planning: number;   // Count of 'planning' + 'planned' (legacy)
   ready_for_review: number;
   completed: number;
   abandoned: number;
@@ -219,7 +222,7 @@ export function createEmptyCache(): DashboardCache {
       active: 0,
       paused: 0,
       backlog: 0,
-      planned: 0,
+      planning: 0,
       ready_for_review: 0,
       completed: 0,
       abandoned: 0,

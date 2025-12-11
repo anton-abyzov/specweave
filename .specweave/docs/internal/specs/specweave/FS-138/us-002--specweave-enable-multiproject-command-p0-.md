@@ -1,15 +1,11 @@
 ---
 id: US-002
 feature: FS-138
-title: /specweave:enable-multiproject Command (P0)
-status: not_started
+title: "/specweave:enable-multiproject Command (P0)"
+status: completed
 priority: P0
 created: 2025-12-10
 project: specweave
-external:
-  github:
-    issue: 891
-    url: https://github.com/anton-abyzov/specweave/issues/891
 ---
 
 # US-002: /specweave:enable-multiproject Command (P0)
@@ -24,12 +20,12 @@ external:
 
 ## Acceptance Criteria
 
-- [ ] **AC-US2-01**: Command prompts for confirmation with clear explanation
-- [ ] **AC-US2-02**: Migrates existing `project.name` to `multiProject.projects` structure
-- [ ] **AC-US2-03**: Sets `multiProject.enabled=true` only after user confirms
-- [ ] **AC-US2-04**: Creates project folders in `.specweave/docs/internal/specs/`
-- [ ] **AC-US2-05**: Validates no data loss during migration
-- [ ] **AC-US2-06**: Updates all existing increments with `project:` field if missing
+- [x] **AC-US2-01**: Command prompts for confirmation with clear explanation
+- [x] **AC-US2-02**: Migrates existing `project.name` to `multiProject.projects` structure
+- [x] **AC-US2-03**: Sets `multiProject.enabled=true` only after user confirms
+- [x] **AC-US2-04**: Creates project folders in `.specweave/docs/internal/specs/`
+- [x] **AC-US2-05**: Validates no data loss during migration
+- [x] **AC-US2-06**: Updates all existing increments with `project:` field if missing
 
 ---
 
@@ -42,7 +38,7 @@ external:
 
 ## Tasks
 
-- [ ] **T-004**: Create /specweave:enable-multiproject command
-- [ ] **T-005**: Create project folders during migration
-- [ ] **T-006**: Update existing increments with project field
+- [x] **T-004**: Create /specweave:enable-multiproject command
+- [x] **T-005**: Create project folders during migration
+- [x] **T-006**: Update existing increments with project field
 - [ ] **T-015**: Write integration tests for commands

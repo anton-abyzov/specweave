@@ -83,6 +83,15 @@ for dir in "$INCREMENTS_DIR"/*"$INCREMENT_ID"*/; do
   fi
 done
 
+# Helper to normalize status for counter keys (planned → planning)
+# Defined early so it can be used in removal section
+normalize_status_key() {
+  case "$1" in
+    planned) echo "planning" ;;  # Legacy typo - map to planning counter
+    *) echo "$1" ;;
+  esac
+}
+
 if [[ -z "$INCREMENT_DIR" ]] || [[ ! -d "$INCREMENT_DIR" ]]; then
   # Increment might have been archived or deleted
   # Remove from cache if it exists
@@ -90,18 +99,19 @@ if [[ -z "$INCREMENT_DIR" ]] || [[ ! -d "$INCREMENT_DIR" ]]; then
   if jq -e --arg id "$INCREMENT_ID" '.increments[$id]' "$CACHE_FILE" >/dev/null 2>&1; then
     # Get old status for counter updates
     old_status=$(jq -r --arg id "$INCREMENT_ID" '.increments[$id].status // "backlog"' "$CACHE_FILE")
+    old_status_key=$(normalize_status_key "$old_status")
     old_type=$(jq -r --arg id "$INCREMENT_ID" '.increments[$id].type // "feature"' "$CACHE_FILE")
     old_priority=$(jq -r --arg id "$INCREMENT_ID" '.increments[$id].priority // "P1"' "$CACHE_FILE")
 
-    # Remove increment and update counters
+    # Remove increment and update counters (use normalized status key)
     jq --arg id "$INCREMENT_ID" \
-       --arg old_status "$old_status" \
+       --arg old_status_key "$old_status_key" \
        --arg old_type "$old_type" \
        --arg old_priority "$old_priority" '
       del(.increments[$id]) |
       del(.mtimes[$id]) |
       .summary.total -= 1 |
-      .summary[$old_status] -= 1 |
+      .summary[$old_status_key] -= 1 |
       .summary.byType[$old_type] -= 1 |
       .summary.byPriority[$old_priority] -= 1 |
       .updatedAt = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
@@ -122,6 +132,10 @@ fi
 
 # Read current values
 status=$(jq -r '.status // "backlog"' "$metadata_file" 2>/dev/null)
+# Normalize status for counter keys (planned → planning for backwards compatibility)
+# The raw status is preserved in increment data, but counters use normalized key
+status_key=$(normalize_status_key "$status")
+
 type=$(jq -r '.type // "feature"' "$metadata_file" 2>/dev/null)
 priority=$(jq -r '.priority // "P1"' "$metadata_file" 2>/dev/null)
 title=$(jq -r '.title // ""' "$metadata_file" 2>/dev/null)
@@ -232,36 +246,40 @@ mtime_json=$(jq -n \
 # Apply incremental update
 if [[ "$is_new" == "true" ]]; then
   # New increment - add to cache and increment counters
+  # Note: Use status_key for counter updates (normalizes planned → planning)
   jq --arg id "$INCREMENT_ID" \
      --argjson inc "$increment_json" \
      --argjson mtime "$mtime_json" \
-     --arg status "$status" \
+     --arg status_key "$status_key" \
      --arg type "$type" \
      --arg priority "$priority" '
     .increments[$id] = $inc |
     .mtimes[$id] = $mtime |
     .summary.total += 1 |
-    .summary[$status] += 1 |
+    .summary[$status_key] += 1 |
     .summary.byType[$type] += 1 |
     .summary.byPriority[$priority] += 1 |
     .updatedAt = (now | strftime("%Y-%m-%dT%H:%M:%SZ"))
   ' "$CACHE_FILE" > "$TEMP_FILE"
 else
   # Existing increment - update and adjust counters if status/type/priority changed
+  # Normalize old_status for counter lookup (planned → planning)
+  old_status_key=$(normalize_status_key "$old_status")
+
   jq --arg id "$INCREMENT_ID" \
      --argjson inc "$increment_json" \
      --argjson mtime "$mtime_json" \
-     --arg old_status "$old_status" \
-     --arg new_status "$status" \
+     --arg old_status_key "$old_status_key" \
+     --arg new_status_key "$status_key" \
      --arg old_type "$old_type" \
      --arg new_type "$type" \
      --arg old_priority "$old_priority" \
      --arg new_priority "$priority" '
     .increments[$id] = $inc |
     .mtimes[$id] = $mtime |
-    (if $old_status != $new_status then
-      .summary[$old_status] -= 1 |
-      .summary[$new_status] += 1
+    (if $old_status_key != $new_status_key then
+      .summary[$old_status_key] -= 1 |
+      .summary[$new_status_key] += 1
     else . end) |
     (if $old_type != $new_type then
       .summary.byType[$old_type] -= 1 |

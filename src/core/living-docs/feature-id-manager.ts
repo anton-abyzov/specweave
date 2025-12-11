@@ -137,13 +137,19 @@ export class FeatureIDManager {
           // Normalize feature ID format
           const normalizedId = this.normalizeFeatureId(featureId);
 
+          // v0.34.1: Prioritize per-US **Project**: fields (ADR-0140)
+          const perUSProjects = this.extractPerUSProjects(specContent);
+          const projects = perUSProjects.length > 0
+            ? perUSProjects
+            : (frontmatter.projects || ['default']);
+
           features.push({
             originalId: normalizedId,
             assignedId: '', // Will be assigned later
             title: frontmatter.title || incrementId,
             created,
             incrementId,
-            projects: frontmatter.projects || ['default']
+            projects
           });
         }
       } catch (error) {
@@ -527,5 +533,21 @@ export class FeatureIDManager {
     console.log(`  📎 Allocated ${result.id} for external item ${workItem.externalId} (created: ${workItem.createdAt}, strategy: ${result.strategy})`);
 
     return result.id;
+  }
+
+  /**
+   * Extract project IDs from per-US **Project**: fields
+   * v0.34.1: New method for ADR-0140
+   */
+  private extractPerUSProjects(content: string): string[] {
+    const projects = new Set<string>();
+    const projectPattern = /\*\*Project\*\*:\s*([a-zA-Z0-9-]+)/gi;
+    let match;
+
+    while ((match = projectPattern.exec(content)) !== null) {
+      projects.add(match[1].toLowerCase());
+    }
+
+    return Array.from(projects);
   }
 }

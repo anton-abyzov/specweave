@@ -1,16 +1,11 @@
 ---
 id: FS-138
-title: Single-Project-First Architecture - Fix Auto-Enable Multi-Project Bug
+title: "Single-Project-First Architecture - Fix Auto-Enable Multi-Project Bug"
 type: feature
-status: planned
+status: completed
 priority: P0
 created: 2025-12-10
 lastUpdated: 2025-12-10
-external_tools:
-  github:
-    type: milestone
-    id: 54
-    url: https://github.com/anton-abyzov/specweave/milestone/54
 ---
 
 # Single-Project-First Architecture - Fix Auto-Enable Multi-Project Bug
@@ -19,7 +14,7 @@ external_tools:
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0138-single-project-first-architecture](../../../../increments/0138-single-project-first-architecture/spec.md) | ⏳ planned | 2025-12-10 |
+| [0138-single-project-first-architecture](../../../../increments/0138-single-project-first-architecture/spec.md) | ✅ completed | 2025-12-10 |
 
 ## User Stories
 

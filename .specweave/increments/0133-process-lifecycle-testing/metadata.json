@@ -18,9 +18,5 @@
   "completedTasks": 3,
   "epic_id": null,
   "externalLinks": {},
-  "dependencies": ["0131-process-lifecycle-foundation", "0132-process-lifecycle-integration"],
-  "relatedIncrements": ["0131-process-lifecycle-foundation", "0132-process-lifecycle-integration"],
-  "splitFrom": "0128-process-lifecycle-zombie-prevention",
-  "splitPart": "3 of 3",
   "project": "specweave"
 }
