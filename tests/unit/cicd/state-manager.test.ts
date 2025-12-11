@@ -21,8 +21,9 @@ describe('StateManager', () => {
   let stateManager: StateManager;
 
   beforeEach(async () => {
-    // Create temp directory for testing
-    testDir = path.join(__dirname, '../../tmp', `test-${Date.now()}`);
+    // Create unique temp directory for testing to avoid parallel test collisions
+    const os = await import('os');
+    testDir = path.join(os.tmpdir(), `specweave-state-manager-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
     await fs.ensureDir(testDir);
 
     // Create state manager for test directory
