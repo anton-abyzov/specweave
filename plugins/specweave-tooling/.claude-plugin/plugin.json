@@ -1,5 +1,5 @@
 {
-  "name": "specweave-tooling",
+  "name": "sw-tooling",
   "description": "Plugin development toolkit for SpecWeave. Provides skill creation, validation, packaging, and plugin scaffolding tools. Expert guidance for YAML frontmatter, skill routing, activation patterns, and best practices. Essential for SpecWeave plugin developers.",
   "version": "0.24.0",
   "author": {

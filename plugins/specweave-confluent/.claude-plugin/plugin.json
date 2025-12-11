@@ -1,5 +1,5 @@
 {
-  "name": "specweave-confluent",
+  "name": "sw-confluent",
   "description": "Confluent Cloud integration for SpecWeave - Schema Registry, ksqlDB, Kafka Connect, Flink, stream processing, and enterprise Kafka features",
   "version": "0.22.14",
   "author": {

@@ -1,5 +1,5 @@
 {
-  "name": "specweave-figma",
+  "name": "sw-figma",
   "description": "Comprehensive Figma design-to-code automation. Import Figma designs via API/MCP, convert components to React/Vue/Angular, extract design tokens, generate responsive layouts, and sync design systems. Focus on accelerating frontend development from Figma designs.",
   "version": "0.24.0",
   "author": {

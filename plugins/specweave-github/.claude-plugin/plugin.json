@@ -1,5 +1,5 @@
 {
-  "name": "specweave-github",
+  "name": "sw-github",
   "description": "GitHub Issues integration for SpecWeave increments. Bidirectional sync between SpecWeave increments and GitHub Issues. Automatically creates issues from increments, tracks progress, and closes issues on completion. Uses GitHub CLI (gh) for seamless integration.",
   "version": "0.24.0",
   "author": {
