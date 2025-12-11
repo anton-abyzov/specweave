@@ -44,9 +44,9 @@ This increment handles tasks T-011 through T-035 (25 tasks) from the original in
 
 **Acceptance Criteria**:
 - [x] **AC-US1-01**: `living-docs-sync.ts` updated with tests (T-011)
-- [ ] **AC-US1-02**: `project-detector.ts` frontmatter logic removed (T-012)
-- [ ] **AC-US1-03**: `hierarchy-mapper.ts` frontmatter method removed (T-013)
-- [ ] **AC-US1-04**: `spec-identifier-detector.ts` uses resolution service (T-014)
+- [x] **AC-US1-02**: `project-detector.ts` frontmatter logic removed (T-012)
+- [x] **AC-US1-03**: `hierarchy-mapper.ts` frontmatter method removed (T-013)
+- [x] **AC-US1-04**: `spec-identifier-detector.ts` uses resolution service (T-014)
 - [x] **AC-US1-05**: GitHub sync updated (T-015)
 - [x] **AC-US1-06**: JIRA and ADO sync updated (T-016)
 - [x] **AC-US1-07**: Zero frontmatter references in src/ (T-017) - 19 refs remain as backward-compat fallbacks per ADR-0140

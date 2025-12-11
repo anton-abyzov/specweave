@@ -138,23 +138,23 @@ your-project/
 │   │   ├── translator/
 │   │   └── docs-updater/
 │   ├── commands/             # 22 slash commands (installed from plugins)
-│   │   ├── specweave-increment.md
-│   │   ├── specweave-do.md
-│   │   ├── specweave-progress.md
-│   │   ├── specweave-done.md
-│   │   ├── specweave-validate.md
-│   │   ├── specweave-qa.md
-│   │   ├── specweave-status.md
-│   │   ├── specweave-pause.md
-│   │   ├── specweave-resume.md
-│   │   ├── specweave-abandon.md
-│   │   ├── specweave-sync-docs.md
-│   │   ├── specweave-sync-tasks.md
-│   │   ├── specweave-check-tests.md
-│   │   ├── specweave-costs.md
-│   │   ├── specweave-translate.md
-│   │   ├── specweave-update-scope.md
-│   │   ├── specweave-next.md
+│   │   ├── increment.md
+│   │   ├── do.md
+│   │   ├── progress.md
+│   │   ├── done.md
+│   │   ├── validate.md
+│   │   ├── qa.md
+│   │   ├── status.md
+│   │   ├── pause.md
+│   │   ├── resume.md
+│   │   ├── abandon.md
+│   │   ├── sync-docs.md
+│   │   ├── sync-tasks.md
+│   │   ├── check-tests.md
+│   │   ├── costs.md
+│   │   ├── translate.md
+│   │   ├── update-scope.md
+│   │   ├── next.md
 │   │   └── ... (5 more)
 │   └── hooks/                # 8 automation hooks (installed from plugins)
 │       ├── post-task-completion.sh
@@ -500,10 +500,10 @@ npx specweave init .
 ```bash
 # Verify commands
 ls -la .claude/commands/
-# Should see: specweave-increment.md, specweave-do.md, etc. (22 total)
+# Should see: increment.md, do.md, etc. (22 total)
 
 # Check a specific command
-cat .claude/commands/specweave-increment.md
+cat .claude/commands/increment.md
 
 # If missing, safe reinstall (keeps all your data)
 npx specweave init .
