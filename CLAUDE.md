@@ -77,61 +77,69 @@ MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 // Only succeeds if current status is "ready_for_review"
 ```
 
-### 2c. spec.md MUST Have project: (and board: for 2-level) - RESOLVED VALUES ONLY! (v0.34.0+)
+### 2c. Per-US **Project**: Fields are PRIMARY Source of Truth (ADR-0140, v0.35.0+)
 
-**Increment creation WITHOUT resolved project context = SYNC FAILURE**
+**Frontmatter `project:` and `board:` are OPTIONAL** - per-US fields are now PRIMARY!
 
-**⛔ YOU MUST RUN `specweave context projects` BEFORE GENERATING spec.md!**
-
-```bash
-# MANDATORY FIRST STEP - run this BEFORE generating any spec.md:
-specweave context projects
-
-# Parse the JSON output:
-# 1-level: {"level": 1, "projects": [{"id": "frontend-app"}, {"id": "backend-api"}]}
-# 2-level: {"level": 2, "projects": [...], "boardsByProject": {"project-id": [{"id": "board-1"}]}}
-
-# USE the actual IDs from the output - NEVER use placeholders!
-```
+**Resolution Priority Chain** (ProjectResolutionService):
+1. Per-US `**Project**:` fields (highest priority)
+2. `config.json` → `project.name` (single-project mode)
+3. Intelligent detection (keywords, tech stack)
+4. Ultimate fallback: "default"
 
 ```yaml
-# 1-level structure (RESOLVED values only):
+# NEW (v0.35.0+): Frontmatter project: is OPTIONAL
 ---
 increment: 0001-feature-name
-project: frontend-app        # ← RESOLVED from context API (NOT {{PROJECT_ID}})
----
-
-# 2-level structure (BOTH RESOLVED):
----
-increment: 0001-feature-name
-project: acme-corp           # ← RESOLVED from projects[].id
-board: digital-operations    # ← RESOLVED from boardsByProject[project][].id
+# NOTE: project: field REMOVED per ADR-0140
+# Project is resolved from per-US **Project**: fields or config
 ---
 ```
 
-**Per-US Project/Board (v0.34.0+ MANDATORY):**
+**Per-US Project/Board (PRIMARY SOURCE in spec.md):**
 ```markdown
 ### US-001: Login Form
-**Project**: frontend-app     # ← RESOLVED value, not placeholder!
-**Board**: ui-team            # ← RESOLVED value (2-level only)
+**Project**: frontend-app     # ← PRIMARY source of truth (in spec.md BODY)
+**Board**: ui-team            # ← Required for 2-level structures only
 ```
 
-**VALIDATION RULES (ENFORCED BY HOOK):**
+**CRITICAL: Two File Formats for Project Field**
+
+1. **spec.md** (increment folder): `**Project**:` in BODY of each user story
+2. **us-*.md** (living docs folder): `project:` in FRONTMATTER
+
+When living docs sync runs, it extracts `**Project**:` from spec.md body and places it in us-*.md frontmatter:
+
+```yaml
+# us-001-login-form.md frontmatter (living docs)
+---
+id: US-001
+project: frontend-app    # ← Extracted from spec.md **Project**: field
+---
 ```
-❌ FORBIDDEN: Generating spec.md WITHOUT running "specweave context projects" first
-❌ FORBIDDEN: Using {{PROJECT_ID}}, {{BOARD_ID}}, {{RESOLVED_PROJECT}} placeholders
-❌ FORBIDDEN: Inventing project/board names not in the API response
-❌ FORBIDDEN: User stories without **Project**: field
-❌ FORBIDDEN: User stories in 2-level without **Board**: field
-✅ REQUIRED: Run "specweave context projects" and parse output BEFORE generating
-✅ REQUIRED: Each US has **Project**: with RESOLVED value from API
-✅ REQUIRED: Each US (2-level) has **Board**: with RESOLVED value from API
+
+**Code Implementation Rules:**
+- **Generating GitHub issues**: Read from `frontmatter.project` in us-*.md files
+- **Parsing spec.md**: Extract from `**Project**:` in body using regex
+- **Living docs sync**: Transforms body field → frontmatter field
+
+**VALIDATION RULES (ENFORCED BY HOOKS):**
 ```
+✅ Per-US **Project**: fields are PRIMARY source
+✅ Frontmatter project:/board: are OPTIONAL (deprecated but allowed)
+✅ Single-project mode: auto-resolves from config.project.name
+❌ FORBIDDEN: Using {{...}} placeholders in spec.md
+❌ FORBIDDEN: User stories without **Project**: field (multi-project mode)
+❌ FORBIDDEN: Multiple comma-separated projects per US
+```
+
+**Pre-tool-use hook `spec-project-validator.sh` ALLOWS:**
+- spec.md WITHOUT frontmatter `project:` field (new best practice)
+- spec.md WITHOUT frontmatter `board:` field
 
 **Pre-tool-use hook `spec-project-validator.sh` BLOCKS:**
-- spec.md with `{{...}}` placeholders
-- spec.md without `project:` field
-- spec.md (2-level) without `board:` field
+- spec.md with `{{...}}` unresolved placeholders
+- Frontmatter project: that doesn't match config (if present)
 - User stories with unresolved `**Project**:` or `**Board**:` placeholders
 
 ### 2c-bis. Each User Story MUST Have **Project**: (and **Board**: for 2-level) (v0.34.0+)
@@ -202,9 +210,10 @@ SPECWEAVE_LEGACY_SPEC=1     # Allow legacy specs without per-US fields
 .specweave/docs/internal/specs/{project}/FS-116/FEATURE.md
 ```
 
-**Where `{project}` comes from:**
-1. spec.md YAML frontmatter `project:` field (MANDATORY)
-2. Example: `project: specweave` → `.specweave/docs/internal/specs/specweave/FS-116/`
+**Where `{project}` comes from (ADR-0140 v0.35.0+):**
+1. Per-US `**Project**:` field (PRIMARY - recommended)
+2. `config.json` → `project.name` (single-project mode fallback)
+3. Example: `**Project**: specweave` → `.specweave/docs/internal/specs/specweave/FS-116/`
 
 **Pre-tool-use hook `features-folder-guard.sh` BLOCKS writes to `_features/` (v0.33.0+).**
 
@@ -237,41 +246,60 @@ SPECWEAVE_LEGACY_SPEC=1     # Allow legacy specs without per-US fields
 
 **Pre-tool-use hook `increment-root-guard.sh` BLOCKS non-standard files at root (v0.33.0+).**
 
-### 2f. NEVER Create Duplicate Increment IDs (v0.33.0+)
+### 2f. NEVER Create Duplicate Increment IDs (v0.33.0+, enhanced v0.34.0)
 
 **Increment numbers MUST be unique across ALL directories!**
 
 ```
-❌ FORBIDDEN (Bug pattern from 2025-12-07):
+❌ FORBIDDEN (Bug pattern from 2025-12-07 and 2025-12-10):
 0121-ado-jira-feature-parity-p2-p3/  ← exists
 0121-intelligent-living-docs-content/ ← DUPLICATE!
+
+❌ ALSO FORBIDDEN when splitting increments:
+0141-frontmatter-removal-part1/  ← exists (original split)
+0141-frontmatter-removal-code/   ← DUPLICATE! (created later with same ID)
 
 ❌ ALSO FORBIDDEN (0001 and 0001E share SAME base number):
 0001-internal-feature/
 0001E-external-fix/  ← COLLISION! Same base number!
 ```
 
-**VALIDATION RULES:**
-```
-✅ ALWAYS use IncrementNumberManager.generateUniqueIncrementId()
-✅ ALWAYS use IncrementNumberManager.validateUnique() before creating
-✅ Check ALL directories: active, _archive, _abandoned, _paused
-```
+**MULTI-LAYER PREVENTION (v0.34.0+):**
+1. **Code-level**: `generateIncrementId()` now validates by default
+2. **Hook-level**: `increment-duplicate-guard.sh` blocks Write operations
+3. **Split-level**: Use `validateExplicitId()` when manually specifying IDs
 
-**API (v0.33.0+):**
+**API (v0.34.0+):**
 ```typescript
 import { IncrementNumberManager } from './core/increment/increment-utils.js';
 
-// Safe generation with validation:
-const id = IncrementNumberManager.generateUniqueIncrementId('feature-name');
-// → "0122-feature-name" (guaranteed unique)
+// RECOMMENDED: Auto-generated ID (validates by default)
+const id = IncrementNumberManager.generateIncrementId('feature-name');
+// → "0122-feature-name" (guaranteed unique, throws if duplicate)
 
-// Manual validation:
+// For explicit IDs (e.g., splits): MUST validate first!
+IncrementNumberManager.validateExplicitId('0145-split-part2');
+// → Throws if 0145 already exists!
+
+// Then create folder only if validation passes
+
+// Manual validation (still available):
 IncrementNumberManager.validateUnique('0121-new-name'); // throws if duplicate!
 
 // Find duplicates:
 IncrementNumberManager.findDuplicates('0121');
 // → ["0121-ado-jira-feature (active)", "0121-intelligent-living-docs (active)"]
+```
+
+**CRITICAL: When Splitting Increments:**
+```typescript
+// ❌ WRONG - Manually specifying ID without validation:
+const splitId = '0141-feature-part2';  // May conflict!
+fs.mkdirSync(path.join(incrementsDir, splitId));
+
+// ✅ CORRECT - Validate first:
+IncrementNumberManager.validateExplicitId('0145-feature-part2');  // Throws if exists!
+// Only proceed if no error thrown
 ```
 
 **Pre-tool-use hook `increment-duplicate-guard.sh` BLOCKS duplicate increment creation (v0.33.0+).**

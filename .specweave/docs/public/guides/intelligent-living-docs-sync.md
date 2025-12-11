@@ -174,6 +174,40 @@ Total: 40 → Confidence: 1.0 (capped)
 Result: Project = "backend" ✅
 ```
 
+### Per-User-Story Project Field
+
+**IMPORTANT**: Each user story can specify its own project using the `**Project**:` field in spec.md:
+
+**In spec.md** (increment folder):
+```markdown
+### US-001: Login Form
+**Project**: frontend-app
+
+**As a** user
+**I want** to log in with email
+**So that** I can access my account
+```
+
+**Generated us-*.md** (living docs folder):
+```yaml
+---
+id: US-001
+title: Login Form
+project: frontend-app    # ← Extracted from **Project**: field in spec.md
+---
+```
+
+**How it works**:
+1. Living docs sync reads `**Project**:` from spec.md body (each user story)
+2. Extracts project name using regex: `/\*\*Project\*\*:\s*([a-zA-Z0-9_-]+)/i`
+3. Places extracted value into frontmatter `project:` field of us-*.md file
+4. GitHub/JIRA/ADO sync reads from us-*.md frontmatter (NOT from spec.md)
+
+**Why two formats?**
+- **spec.md**: Human-friendly format in body (`**Project**: name`)
+- **us-*.md**: Machine-friendly format in frontmatter (`project: name`)
+- Living docs sync bridges the gap by transforming body → frontmatter
+
 ## Configuration
 
 ### Basic Configuration
