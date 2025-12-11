@@ -1,4 +1,4 @@
-# /specweave-frontend:frontend-scaffold
+# /sw-frontend:frontend-scaffold
 
 Scaffold a complete frontend project with modern tooling and best practices.
 

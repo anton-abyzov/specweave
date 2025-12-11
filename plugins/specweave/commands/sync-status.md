@@ -14,22 +14,22 @@ This command scans increments for status desyncs where metadata.json and spec.md
 - Commands operating on wrong data
 - User confusion and broken trust
 
-**Incident Reference**: 2025-11-20 - Silent failure in /specweave:done caused increment 0047 to have metadata.json="completed" while spec.md="active", breaking status line.
+**Incident Reference**: 2025-11-20 - Silent failure in /sw:done caused increment 0047 to have metadata.json="completed" while spec.md="active", breaking status line.
 
 ## Usage
 
 ```bash
 # Scan all increments for desyncs
-/specweave:sync-status
+/sw:sync-status
 
 # Check specific increment
-/specweave:sync-status 0047
+/sw:sync-status 0047
 
 # Auto-fix all desyncs (non-interactive)
-/specweave:sync-status --fix
+/sw:sync-status --fix
 
 # Scan and show detailed report
-/specweave:sync-status --verbose
+/sw:sync-status --verbose
 ```
 
 ## Arguments
@@ -80,7 +80,7 @@ This command scans increments for status desyncs where metadata.json and spec.md
       metadata.json: completed
       spec.md:       active
 
-   Fix command: /specweave:sync-status --fix
+   Fix command: /sw:sync-status --fix
 
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
@@ -104,7 +104,7 @@ This command scans increments for status desyncs where metadata.json and spec.md
        }
 
        console.log('');
-       console.log('All desyncs fixed! Run /specweave:sync-status to verify.');
+       console.log('All desyncs fixed! Run /sw:sync-status to verify.');
      }
    }
    ```
@@ -154,7 +154,7 @@ This command scans increments for status desyncs where metadata.json and spec.md
      console.log('');
      console.log('This violates source-of-truth discipline (CLAUDE.md Rule #7)');
      console.log('');
-     console.log(`Fix: /specweave:sync-status ${incrementId} --fix`);
+     console.log(`Fix: /sw:sync-status ${incrementId} --fix`);
      console.log('━'.repeat(80));
    } else {
      console.log(`✅ ${incrementId} - No desync detected`);
@@ -173,7 +173,7 @@ This command scans increments for status desyncs where metadata.json and spec.md
 
    This violates source-of-truth discipline (CLAUDE.md Rule #7)
 
-   Fix: /specweave:sync-status 0047 --fix
+   Fix: /sw:sync-status 0047 --fix
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
 
@@ -275,7 +275,7 @@ After fixing desyncs, the following actions happen automatically:
 3. **Verification**:
    ```bash
    # Verify no desyncs remain
-   /specweave:sync-status
+   /sw:sync-status
    ```
 
 ---
@@ -318,7 +318,7 @@ Check YAML syntax:
    - If spec.md fails, metadata.json is never updated
    - No silent failures
 
-2. ✅ **Added in v0.23.0+**: Desync detection in `/specweave:done`
+2. ✅ **Added in v0.23.0+**: Desync detection in `/sw:done`
    - Validates before closing increment
    - Blocks closure if desync detected
 
@@ -336,9 +336,9 @@ Check YAML syntax:
 
 ## Related Commands
 
-- `/specweave:done` - Close increment (includes desync validation)
-- `/specweave:validate` - Validate increment quality
-- `/specweave:status` - Show increment status overview
+- `/sw:done` - Close increment (includes desync validation)
+- `/sw:validate` - Validate increment quality
+- `/sw:status` - Show increment status overview
 
 ---
 
@@ -353,4 +353,4 @@ Check YAML syntax:
 
 **Important**: This command is part of the incident response to the 2025-11-20 silent failure bug. It ensures source-of-truth discipline is maintained across the entire increment lifecycle.
 
-**Best Practice**: Run `/specweave:sync-status` regularly (weekly or before releases) to catch any desyncs early.
+**Best Practice**: Run `/sw:sync-status` regularly (weekly or before releases) to catch any desyncs early.

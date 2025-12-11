@@ -42,7 +42,7 @@ unset SPECWEAVE_DISABLE_HOOKS
 
 ### "Sync Throttled"
 
-SpecWeave limits API calls to prevent rate limiting. Wait 60 seconds or use `/specweave:sync-progress` to force sync.
+SpecWeave limits API calls to prevent rate limiting. Wait 60 seconds or use `/sw:sync-progress` to force sync.
 
 ## Getting Help
 

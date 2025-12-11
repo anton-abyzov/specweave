@@ -143,7 +143,7 @@ Rationale:
 
 ### 1. Increment Planning
 
-When creating increments (`/specweave:inc`), the Architect agent:
+When creating increments (`/sw:inc`), the Architect agent:
 - Creates ADRs for major decisions
 - References existing architecture patterns
 - Documents design rationale

@@ -18,13 +18,13 @@ SpecWeave **automatically manages** increment status. The system detects blockag
 
 ```bash
 /status                    # View all increments
-/specweave:status          # Explicit namespace form
+/sw:status          # Explicit namespace form
 ```
 
 ## What It Shows
 
 ```bash
-$ /specweave:status
+$ /sw:status
 
 📊 Increment Status Overview
 
@@ -123,19 +123,19 @@ Edit `.specweave/config.json`:
 
 ```bash
 # Before starting new work, check current status
-$ /specweave:status
+$ /sw:status
 
 📊 Increment Status Overview
 ▶️  Active (1): 0007-payment-integration (60% complete)
 
 # WIP limit reached, need to complete or pause current work first
-$ /specweave:do 0007  # Continue current work
+$ /sw:do 0007  # Continue current work
 ```
 
 ### Workflow 2: Monitor Multiple Paused Increments
 
 ```bash
-$ /specweave:status
+$ /sw:status
 
 ⏸️  Paused (3):
   ⏸ 0005-kubernetes [feature] (45 days ago)  ⚠️ Stale!
@@ -143,14 +143,14 @@ $ /specweave:status
   ⏸ 0007-payments [feature] (2 days ago)
 
 # Clean up stale work
-$ /specweave:abandon 0005 --reason "Too old, requirements changed"
-$ /specweave:resume 0007  # Resume most recent
+$ /sw:abandon 0005 --reason "Too old, requirements changed"
+$ /sw:resume 0007  # Resume most recent
 ```
 
 ### Workflow 3: Understand Progress
 
 ```bash
-$ /specweave:status
+$ /sw:status
 
 📈 Overall Progress: 8/15 increments complete (53%)
 
@@ -158,8 +158,8 @@ $ /specweave:status
 ✅ Completed (8): 0001, 0002, 0003, 0004, 0005, 0006, 0007, 0008
 
 # Good progress! Close current and start next
-$ /specweave:done 0009
-$ /specweave:next  # Smart suggestion for what's next
+$ /sw:done 0009
+$ /sw:next  # Smart suggestion for what's next
 ```
 
 ## Automatic Status Management (System Commands)
@@ -225,25 +225,25 @@ SpecWeave **automatically manages** increment status. These commands are primari
 
 **Daily standup**:
 ```bash
-$ /specweave:status
+$ /sw:status
 # Shows: Active work, paused work, completed work
 ```
 
 **Before planning new work**:
 ```bash
-$ /specweave:status
+$ /sw:status
 # Check: Am I at WIP limit? Can I start new increment?
 ```
 
 **Weekly retrospective**:
 ```bash
-$ /specweave:status
+$ /sw:status
 # Review: What's stale? What's blocked? What's shipped?
 ```
 
 **Team collaboration**:
 ```bash
-$ /specweave:status
+$ /sw:status
 # Share: Current focus, blockers, progress
 ```
 
@@ -253,32 +253,32 @@ $ /specweave:status
 
 ```bash
 # Daily standup
-$ /specweave:status
+$ /sw:status
 
 # Before planning new work
-$ /specweave:status
+$ /sw:status
 
 # Weekly retrospective
-$ /specweave:status
+$ /sw:status
 ```
 
 ### 2. Clean Up Stale Work
 
 ```bash
-$ /specweave:status
+$ /sw:status
 
 ⏸️  Paused (3):
   ⏸ 0003 (45 days ago)  ⚠️ Too long!
 
 # Either abandon or prioritize
-$ /specweave:abandon 0003 --reason "Too old, requirements changed"
+$ /sw:abandon 0003 --reason "Too old, requirements changed"
 ```
 
 ### 3. Trust the Automation
 
 ```bash
 # ✅ Let SpecWeave manage status
-$ /specweave:do  # System pauses automatically when blocked
+$ /sw:do  # System pauses automatically when blocked
 
 # ❌ Don't manually pause unless business decision
 ```

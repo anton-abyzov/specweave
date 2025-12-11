@@ -741,9 +741,9 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
       if (shouldCreate) {
         // TODO: Invoke project creation flow
         console.log(chalk.yellow('   ⚠️  Project creation not yet implemented - manual setup required'));
-        console.log(chalk.gray('   → Run: /specweave:project create\n'));
+        console.log(chalk.gray('   → Run: /sw:project create\n'));
       } else {
-        console.log(chalk.gray('   → You can create projects later with: /specweave:project create\n'));
+        console.log(chalk.gray('   → You can create projects later with: /sw:project create\n'));
       }
     } else {
       console.log(chalk.green(`✓ Found ${validation.projectCount} project context(s): ${validation.projects.join(', ')}\n`));

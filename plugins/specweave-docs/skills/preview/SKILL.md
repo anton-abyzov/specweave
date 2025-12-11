@@ -35,7 +35,7 @@ I help you view your SpecWeave living documentation with Docusaurus:
 
 ### View Internal Documentation (Default)
 ```bash
-/specweave-docs:view
+/sw-docs:view
 ```
 
 **What it does:**
@@ -47,7 +47,7 @@ I help you view your SpecWeave living documentation with Docusaurus:
 
 ### View Public Documentation
 ```bash
-/specweave-docs:view --public
+/sw-docs:view --public
 ```
 
 **What it does:**
@@ -59,7 +59,7 @@ I help you view your SpecWeave living documentation with Docusaurus:
 
 ### Build Static Site
 ```bash
-/specweave-docs:build
+/sw-docs:build
 ```
 
 **What it does:**
@@ -84,13 +84,13 @@ I help you view your SpecWeave living documentation with Docusaurus:
 ```
 User: "I want to preview my docs"
 You: "I'll launch the documentation view server."
-     [Run: /specweave-docs:view]
+     [Run: /sw-docs:view]
 ```
 
 ```
 User: "Show me my public documentation"
 You: "I'll launch the public documentation server."
-     [Run: /specweave-docs:view --public]
+     [Run: /sw-docs:view --public]
 ```
 
 ## Port Reference
@@ -115,11 +115,11 @@ lsof -i :3016 && kill -9 $(lsof -t -i :3016)
 ```bash
 # For internal docs
 rm -rf .specweave/cache/docs-site
-# Then run /specweave-docs:view again
+# Then run /sw-docs:view again
 
 # For public docs
 rm -rf .specweave/cache/docs-site-public
-# Then run /specweave-docs:view --public again
+# Then run /sw-docs:view --public again
 ```
 
 ### npm registry issues
@@ -127,7 +127,7 @@ The setup explicitly uses `--registry=https://registry.npmjs.org` to bypass priv
 
 ## See Also
 
-- `/specweave-docs:build` - Build static site for deployment
-- `/specweave-docs:organize` - Organize large folders with themed indexes
-- `/specweave-docs:health` - Documentation health report
-- `/specweave-docs:validate` - Validate documentation before viewing
+- `/sw-docs:build` - Build static site for deployment
+- `/sw-docs:organize` - Organize large folders with themed indexes
+- `/sw-docs:health` - Documentation health report
+- `/sw-docs:validate` - Validate documentation before viewing

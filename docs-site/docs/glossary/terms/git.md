@@ -604,7 +604,7 @@ git log --oneline --no-merges increment/0012-user-auth
 git log --graph --decorate increment/0012-user-auth
 
 # Sync living docs
-/specweave:sync-docs update
+/sw:sync-docs update
 # Results in:
 # - CHANGELOG.md updated with increment summary
 # - Architecture docs updated with implementation details

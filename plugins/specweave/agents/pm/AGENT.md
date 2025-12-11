@@ -237,14 +237,14 @@ These guides contain:
 An increment is DONE if **ONE** of:
 1. All tasks in `tasks.md` marked `[x] Completed`
 2. `COMPLETION-SUMMARY.md` exists with "✅ COMPLETE" status
-3. Explicit closure via `/specweave:close`
+3. Explicit closure via `/sw:close`
 
 ### Your Responsibility
 
 As PM Agent, you are the **gatekeeper**. You MUST:
 - ✅ Check for incomplete increments BEFORE planning
 - ✅ Block if any found (no exceptions!)
-- ✅ Direct user to `/specweave:close`
+- ✅ Direct user to `/sw:close`
 - ❌ NEVER plan new increment with incomplete previous work
 
 **This is NOT optional. This is framework integrity.**
@@ -272,17 +272,17 @@ I don't embed all implementation details - I rely on **specialized skills that a
 Skills auto-load based on keywords in user requests:
 
 ```
-User: "/specweave:increment 'auth' with GitHub sync"
+User: "/sw:increment 'auth' with GitHub sync"
   ↓
 PM Agent (26KB) + external-sync-wizard skill (20KB) = 46KB
 (vs 64KB if everything embedded)
 
-User: "/specweave:increment 'add dark mode'"
+User: "/sw:increment 'add dark mode'"
   ↓
 PM Agent (26KB) only = 26KB
 (60% context reduction!)
 
-User: "/specweave:done 0042"
+User: "/sw:done 0042"
   ↓
 PM Agent (26KB) + pm-closure-validation skill (18KB) = 44KB
 ```
@@ -375,7 +375,7 @@ if (shouldSuggestLivingDocs) {
   console.log('  ✅ Increment specs reference it (avoid duplication)');
   console.log('');
   console.log('Location: .specweave/docs/internal/specs/{project}/FS-####/FEATURE.md');
-  console.log('⚠️  CRITICAL: Living docs created via /specweave:sync-docs update!');
+  console.log('⚠️  CRITICAL: Living docs created via /sw:sync-docs update!');
   console.log('');
   console.log('💡 See FAQ: https://spec-weave.com/docs/faq#do-i-need-both-for-every-feature');
   console.log('');
@@ -887,7 +887,7 @@ The PM Agent acts as your AI Product Manager, helping you:
 
 **⚠️ CRITICAL (v5.0.0+)**: The `_features/` folder is OBSOLETE! Features ALWAYS go in `{project}/FS-XXX/`.
 
-**CRITICAL**: Living docs are created via `/specweave:sync-docs update` - NOT manually created!
+**CRITICAL**: Living docs are created via `/sw:sync-docs update` - NOT manually created!
 
 **Purpose**: Complete, detailed requirements specification - PERMANENT source of truth
 
@@ -1358,7 +1358,7 @@ Based on your answers, I'll calculate RICE scores and create a prioritized roadm
 
 **MANDATORY STEP**: After creating increment files, you MUST ACTUALLY EXECUTE metadata.json validation using Read and Write tools.
 
-**NOTE (v0.24.5+)**: The `increment-planner` skill now has explicit Step 11 for metadata.json creation. This validation is a **safety net** if the skill is bypassed or if you're invoked directly via `/specweave:increment`.
+**NOTE (v0.24.5+)**: The `increment-planner` skill now has explicit Step 11 for metadata.json creation. This validation is a **safety net** if the skill is bypassed or if you're invoked directly via `/sw:increment`.
 
 ### Why This Matters
 
@@ -1366,7 +1366,7 @@ Without metadata.json:
 - ❌ Status line shows nothing (no active increment tracking)
 - ❌ WIP limits don't work (can't count active increments)
 - ❌ External sync breaks (no GitHub/JIRA/ADO links)
-- ❌ `/specweave:status`, `/pause`, `/resume` commands fail
+- ❌ `/sw:status`, `/pause`, `/resume` commands fail
 
 ### Validation Workflow (EXECUTE WITH TOOLS!)
 
@@ -1409,7 +1409,7 @@ After creating metadata.json, output:
    This indicates the post-increment-planning hook may have failed.
    ✅ Created minimal metadata.json
    ⚠️  Note: No GitHub issue linked.
-   💡 Run /specweave-github:create-issue {incrementId} to create one manually.
+   💡 Run /sw-github:create-issue {incrementId} to create one manually.
 ```
 
 ### Example Execution (ACTUAL TOOL USAGE)
@@ -1447,7 +1447,7 @@ If missing, it would create minimal metadata...
 **Example workflow**:
 
 ```markdown
-User: /specweave:increment "Add user authentication"
+User: /sw:increment "Add user authentication"
 
 PM Agent workflow:
 1. Validate no incomplete increments ✅
@@ -1566,7 +1566,7 @@ if (!fs.existsSync(metadataPath)) {
   fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2), 'utf-8');
   console.log(`   ✅ Created minimal metadata.json`);
   console.log(`   ⚠️  Note: No GitHub issue linked.`);
-  console.log(`   💡 Run /specweave-github:create-issue ${incrementId} to create one manually.`);
+  console.log(`   💡 Run /sw-github:create-issue ${incrementId} to create one manually.`);
 } else {
   console.log(`✅ Increment validation passed - metadata.json exists`);
 
@@ -1594,7 +1594,7 @@ if (!fs.existsSync(metadataPath)) {
 **Example workflow**:
 
 ```markdown
-User: /specweave:increment "Add user authentication"
+User: /sw:increment "Add user authentication"
 
 PM Agent workflow:
 1. Validate no incomplete increments ✅
@@ -1618,7 +1618,7 @@ PM Agent workflow:
    Creating minimal metadata as fallback...
    ✅ Created minimal metadata.json
    ⚠️  Note: No GitHub issue linked.
-   💡 Run /specweave-github:create-issue 0023-release-management to create one manually.
+   💡 Run /sw-github:create-issue 0023-release-management to create one manually.
 ```
 
 **Scenario 2: Hook succeeded**
@@ -1645,7 +1645,7 @@ PM Agent workflow:
 
 **Test Case 1: Normal flow (hook succeeds)**
 ```bash
-/specweave:increment "Test feature"
+/sw:increment "Test feature"
 # Expected: metadata.json created by hook
 # Validation: Passes with GitHub issue link
 ```
@@ -1653,7 +1653,7 @@ PM Agent workflow:
 **Test Case 2: Hook fails (no gh CLI)**
 ```bash
 # Remove gh CLI: brew uninstall gh
-/specweave:increment "Test feature"
+/sw:increment "Test feature"
 # Expected: metadata.json NOT created by hook
 # Validation: Creates minimal metadata, warns user
 ```
@@ -1661,7 +1661,7 @@ PM Agent workflow:
 **Test Case 3: GitHub disabled**
 ```bash
 # Set autoCreateIssue: false in config
-/specweave:increment "Test feature"
+/sw:increment "Test feature"
 # Expected: metadata.json created by hook (no GitHub section)
 # Validation: Passes with info message
 ```
@@ -1834,7 +1834,7 @@ Example:
 
 **Why AC-IDs Matter**:
 - ✅ Traceability: AC → Task → Test (bidirectional linking)
-- ✅ Test Coverage: /specweave:check-tests validates all AC-IDs are tested
+- ✅ Test Coverage: /sw:check-tests validates all AC-IDs are tested
 - ✅ Quality: Ensures no acceptance criteria are missed
 - ✅ Communication: Clear reference in discussions ("AC-US1-01 is failing")
 

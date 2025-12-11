@@ -20,21 +20,21 @@ This command allows users to import additional JIRA projects **after** initial S
 
 ```bash
 # Basic import (interactive)
-/specweave-jira:import-projects
+/sw-jira:import-projects
 
 # With filters
-/specweave-jira:import-projects --filter active
-/specweave-jira:import-projects --type agile --lead "john.doe@company.com"
-/specweave-jira:import-projects --jql "project IN (BACKEND, FRONTEND) AND status != Archived"
+/sw-jira:import-projects --filter active
+/sw-jira:import-projects --type agile --lead "john.doe@company.com"
+/sw-jira:import-projects --jql "project IN (BACKEND, FRONTEND) AND status != Archived"
 
 # Dry-run (preview)
-/specweave-jira:import-projects --dry-run
+/sw-jira:import-projects --dry-run
 
 # Resume interrupted import
-/specweave-jira:import-projects --resume
+/sw-jira:import-projects --resume
 
 # Combined
-/specweave-jira:import-projects --filter active --dry-run
+/sw-jira:import-projects --filter active --dry-run
 ```
 
 ## Your Task
@@ -202,7 +202,7 @@ if (args.resume) {
 ## Examples
 
 ### Example 1: Basic Import
-**User**: `/specweave-jira:import-projects`
+**User**: `/sw-jira:import-projects`
 
 **Output**:
 ```
@@ -228,7 +228,7 @@ Current projects:
 ```
 
 ### Example 2: Filter Active Only
-**User**: `/specweave-jira:import-projects --filter active`
+**User**: `/sw-jira:import-projects --filter active`
 
 **Output**:
 ```
@@ -242,7 +242,7 @@ Current projects:
 ```
 
 ### Example 3: Dry-Run
-**User**: `/specweave-jira:import-projects --dry-run`
+**User**: `/sw-jira:import-projects --dry-run`
 
 **Output**:
 ```
@@ -258,7 +258,7 @@ Total: 3 projects would be imported
 ```
 
 ### Example 4: Custom JQL Filter
-**User**: `/specweave-jira:import-projects --jql "project IN (MOBILE, INFRA) AND status != Archived"`
+**User**: `/sw-jira:import-projects --jql "project IN (MOBILE, INFRA) AND status != Archived"`
 
 **Output**:
 ```
@@ -282,9 +282,9 @@ Total: 3 projects would be imported
 
 ## Related Commands
 
-- `/specweave:init` - Initial SpecWeave setup
-- `/specweave-jira:sync` - Sync increments with Jira epics
-- `/specweave-jira:refresh-cache` - Clear cached project data
+- `/sw:init` - Initial SpecWeave setup
+- `/sw-jira:sync` - Sync increments with Jira epics
+- `/sw-jira:refresh-cache` - Clear cached project data
 
 ## Error Handling
 

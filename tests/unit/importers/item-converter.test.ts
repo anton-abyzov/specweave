@@ -760,7 +760,7 @@ describe('ItemConverter', () => {
     it('should NEVER archive items during import (v0.30.12+)', async () => {
       // CRITICAL FIX (v0.30.12): Auto-archiving is DISABLED for external imports!
       // External items should NEVER be auto-archived during import.
-      // Archive is user-initiated only via /specweave:archive --external
+      // Archive is user-initiated only via /sw:archive --external
       const converterWithArchive = new ItemConverter({
         specsDir,
         autoArchiveAfterDays: 30, // This value is now IGNORED and forced to 0

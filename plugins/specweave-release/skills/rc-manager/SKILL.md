@@ -569,26 +569,26 @@ git push origin v1.0.0-rc.3
 
 ```bash
 # 1. Create RC
-/specweave-release:rc create 1.0.0
+/sw-release:rc create 1.0.0
 
 # 2. Deploy to staging
 # (Automated via CI/CD)
 
 # 3. Run tests
-/specweave-release:rc test 1.0.0-rc.1
+/sw-release:rc test 1.0.0-rc.1
 
 # 4. Bug found → iterate
-/specweave-release:rc create 1.0.0 --iteration 2
+/sw-release:rc create 1.0.0 --iteration 2
 
 # 5. All tests pass → promote
-/specweave-release:rc promote 1.0.0-rc.3
+/sw-release:rc promote 1.0.0-rc.3
 ```
 
 ### Multi-Repo RC
 
 ```bash
 # 1. Create coordinated RC
-/specweave-release:rc create-multi product-v3.0.0
+/sw-release:rc create-multi product-v3.0.0
 
 # 2. Tags all repos with rc.1
 # - frontend: v5.0.0-rc.1
@@ -599,7 +599,7 @@ git push origin v1.0.0-rc.3
 # (Coordinated deployment)
 
 # 4. Cross-service E2E tests
-/specweave-release:rc test-multi product-v3.0.0-rc.1
+/sw-release:rc test-multi product-v3.0.0-rc.1
 
 # 5. Issues found → iterate
 # - frontend: rc.2
@@ -607,18 +607,18 @@ git push origin v1.0.0-rc.3
 # - backend: unchanged (rc.1)
 
 # 6. All pass → promote
-/specweave-release:rc promote-multi product-v3.0.0-rc.2
+/sw-release:rc promote-multi product-v3.0.0-rc.2
 ```
 
 ## Commands Integration
 
 Works with release commands:
 
-- `/specweave-release:rc create <version>` - Create new RC
-- `/specweave-release:rc test <rc-version>` - Validate RC
-- `/specweave-release:rc promote <rc-version>` - Promote to production
-- `/specweave-release:rc rollback <rc-version>` - Rollback RC
-- `/specweave-release:rc status <rc-version>` - Show RC status
+- `/sw-release:rc create <version>` - Create new RC
+- `/sw-release:rc test <rc-version>` - Validate RC
+- `/sw-release:rc promote <rc-version>` - Promote to production
+- `/sw-release:rc rollback <rc-version>` - Rollback RC
+- `/sw-release:rc status <rc-version>` - Show RC status
 
 ## Dependencies
 

@@ -79,7 +79,7 @@ if (breakerState.state === 'closed') {
   console.log('   1. Check external service status');
   console.log('   2. Verify network connectivity');
   console.log('   3. Wait for auto-reset (${resetIn} minutes)');
-  console.log('   4. Or manually sync: /specweave:sync-progress');
+  console.log('   4. Or manually sync: /sw:sync-progress');
 } else if (breakerState.state === 'half-open') {
   console.log('⚠️  Automatic sync is TESTING');
   console.log('   Circuit breaker is testing if service recovered');
@@ -128,7 +128,7 @@ console.log('━━━━━━━━━━━━━━━━━━━━━━�
 console.log('');
 console.log('💡 Troubleshooting:');
 console.log('');
-console.log('   • Manual sync: /specweave:sync-progress [increment-id]');
+console.log('   • Manual sync: /sw:sync-progress [increment-id]');
 console.log('   • Reset circuit: (automatic after 5 minutes)');
 console.log('   • Check logs: .specweave/logs/');
 console.log('   • GitHub status: https://www.githubstatus.com/');
@@ -193,7 +193,7 @@ console.log('');
    1. Check external service status
    2. Verify network connectivity
    3. Wait for auto-reset (2 minutes)
-   4. Or manually sync: /specweave:sync-progress
+   4. Or manually sync: /sw:sync-progress
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
@@ -203,7 +203,7 @@ console.log('');
 ### 1. Check Sync Health
 
 ```bash
-/specweave:sync-diagnostics
+/sw:sync-diagnostics
 ```
 
 Quickly see if automatic sync is working or if circuit breaker opened.
@@ -222,6 +222,6 @@ See which increments are active and synced to external tools.
 
 ## See Also
 
-- `/specweave:sync-progress` - Manual sync command
+- `/sw:sync-progress` - Manual sync command
 - ADR-0070 (Hook Consolidation)
 - Circuit Breaker Pattern Documentation

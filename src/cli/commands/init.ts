@@ -619,7 +619,7 @@ export async function initCommand(
             if ('isBackground' in importResult && importResult.isBackground) {
               // Background import started - job will complete asynchronously
               console.log(chalk.cyan('\n🚀 Import running in background'));
-              console.log(chalk.gray(`   Check progress: /specweave:jobs`));
+              console.log(chalk.gray(`   Check progress: /sw:jobs`));
               // Track job ID for living docs dependencies
               if ('jobId' in importResult && importResult.jobId) {
                 pendingJobIds.push(importResult.jobId);
@@ -678,7 +678,7 @@ export async function initCommand(
             } catch (livingDocsError) {
               const errorMsg = livingDocsError instanceof Error ? livingDocsError.message : String(livingDocsError);
               console.log(chalk.yellow(`\n⚠️  Living Docs setup failed: ${errorMsg}`));
-              console.log(chalk.gray('   → You can run /specweave:jobs later to check status'));
+              console.log(chalk.gray('   → You can run /sw:jobs later to check status'));
             }
           }
           wizardStep = 'testing';

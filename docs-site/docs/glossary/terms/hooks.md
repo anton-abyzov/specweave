@@ -35,10 +35,10 @@ sequenceDiagram
 
 | Hook | Event | Purpose |
 |------|-------|---------|
-| **post-increment-planning** | After `/specweave:increment` | Auto-create GitHub issue, translate files |
+| **post-increment-planning** | After `/sw:increment` | Auto-create GitHub issue, translate files |
 | **post-task-completion** | After task marked complete | Sync living docs, update external tools |
-| **post-increment-done** | After `/specweave:done` | Close external issues, final sync |
-| **pre-implementation** | Before `/specweave:do` | Validate environment |
+| **post-increment-done** | After `/sw:done` | Close external issues, final sync |
+| **pre-implementation** | Before `/sw:do` | Validate environment |
 
 ---
 
@@ -95,7 +95,7 @@ Fires after every task is marked complete (via TodoWrite):
 
 ### Post-Increment-Planning
 
-Fires after `/specweave:increment` completes:
+Fires after `/sw:increment` completes:
 
 1. Translate files (if multilingual)
 2. Check autoCreateIssue config
@@ -104,7 +104,7 @@ Fires after `/specweave:increment` completes:
 
 ### Post-Increment-Done
 
-Fires after `/specweave:done` completes:
+Fires after `/sw:done` completes:
 
 1. Final living docs sync
 2. Close external issue (if linked)

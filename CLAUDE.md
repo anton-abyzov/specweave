@@ -15,8 +15,8 @@ For **contributors to SpecWeave itself** (not users).
 
 ```bash
 # Before editing large files outside increment:
-/specweave:pause XXXX → edit → /specweave:resume XXXX
-# OR close completed increments: /specweave:done XXXX
+/sw:pause XXXX → edit → /sw:resume XXXX
+# OR close completed increments: /sw:done XXXX
 ```
 
 ### 1b. Max 25 Tasks Per Increment (SOFT LIMIT)
@@ -65,7 +65,7 @@ Edit("metadata.json", '"status": "active"', '"status": "completed"')
 
 ✅ CORRECT workflow:
 1. All tasks completed → auto-transition to "ready_for_review"
-2. /specweave:done <id> → validates ACs + asks for user confirmation
+2. /sw:done <id> → validates ACs + asks for user confirmation
 3. Only then → status becomes "completed" with approvedAt timestamp
 ```
 
@@ -400,7 +400,7 @@ SPECWEAVE_FORCE_PROJECT=1  # Skip project folder validation (DANGEROUS!)
 
 ```
 DEFAULT: Single-project mode (multiProject.enabled=false)
-OPT-IN:  Multi-project mode (/specweave:enable-multiproject)
+OPT-IN:  Multi-project mode (/sw:enable-multiproject)
 ```
 
 **Why Single-Project-First?**
@@ -461,12 +461,12 @@ specweave init .  # Creates single-project config by default
 **Behavior**:
 - Each increment requires `project:` field in spec.md
 - Living docs distributed across project folders
-- Can switch between projects with `/specweave:switch-project`
+- Can switch between projects with `/sw:switch-project`
 
 **Commands**:
 ```bash
-/specweave:enable-multiproject  # Explicit opt-in with confirmation
-/specweave:switch-project       # Change active project
+/sw:enable-multiproject  # Explicit opt-in with confirmation
+/sw:switch-project       # Change active project
 ```
 
 #### When to Enable Multi-Project?
@@ -485,7 +485,7 @@ specweave init .  # Creates single-project config by default
 # multiProject.enabled = false
 
 # Later, you need multi-project features:
-/specweave:enable-multiproject
+/sw:enable-multiproject
 
 # Prompts for confirmation, then:
 # 1. Migrates project → multiProject.projects
@@ -544,11 +544,11 @@ This fixes the bug where `specweave init` created multi-project configs by defau
 
 **Error**: "board: field not allowed"
 **Cause**: Using `board:` in single-project mode
-**Fix**: Remove `board:` field OR run `/specweave:enable-multiproject`
+**Fix**: Remove `board:` field OR run `/sw:enable-multiproject`
 
 **Error**: "Only folder allowed: my-app"
 **Cause**: Trying to create non-configured project folder
-**Fix**: Check `project.name` in config OR run `/specweave:enable-multiproject`
+**Fix**: Check `project.name` in config OR run `/sw:enable-multiproject`
 
 ### 3. Protected Directories
 
@@ -797,7 +797,7 @@ git add . && git commit -m "feat: feature" && git push origin develop
 ```
 
 **Marketplace**: `bash scripts/refresh-marketplace.sh` (GitHub mode, always use)
-**NPM Release**: `/specweave-release:npm`
+**NPM Release**: `/sw-release:npm`
 
 ---
 
@@ -928,7 +928,7 @@ board: digital-operations     # REQUIRED for 2-level structures
 Use `DuplicateDetector.createWithProtection()`, NEVER `--limit 1` in gh searches
 
 ### AC Presence in spec.md
-**MANDATORY** - even with external living docs. Use `/specweave:embed-acs` if missing.
+**MANDATORY** - even with external living docs. Use `/sw:embed-acs` if missing.
 
 ### Git Provider Abstraction
 Use `getPlatformRegistry().getProvider('github')`. NEVER hardcode platform names/endpoints.
@@ -989,14 +989,14 @@ See ADR-0194 for full architecture decision.
 ## Commands
 
 ```bash
-/specweave:increment "feature"    # Plan new increment
-/specweave:do                     # Execute tasks
-/specweave:done 0002              # Close (validates gates)
-/specweave:progress               # Show status
-/specweave:sync-progress          # Full sync (tasks→docs→GitHub/JIRA/ADO)
-/specweave:validate 0001          # Validate increment
-/specweave:living-docs            # Launch living docs builder (interactive)
-/specweave:living-docs --full-scan # Full deep scan (all phases: repos, org, arch, inconsistencies, strategy)
+/sw:increment "feature"    # Plan new increment
+/sw:do                     # Execute tasks
+/sw:done 0002              # Close (validates gates)
+/sw:progress               # Show status
+/sw:sync-progress          # Full sync (tasks→docs→GitHub/JIRA/ADO)
+/sw:validate 0001          # Validate increment
+/sw:living-docs            # Launch living docs builder (interactive)
+/sw:living-docs --full-scan # Full deep scan (all phases: repos, org, arch, inconsistencies, strategy)
 ```
 
 ---

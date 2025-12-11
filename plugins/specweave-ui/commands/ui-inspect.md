@@ -5,7 +5,7 @@ Inspect web page elements using browser automation tools. Helps identify selecto
 ## Usage
 
 ```
-/specweave-ui:ui-inspect <url> [options]
+/sw-ui:ui-inspect <url> [options]
 ```
 
 ## What I Do
@@ -28,19 +28,19 @@ Inspect web page elements using browser automation tools. Helps identify selecto
 ### Inspect a specific element
 
 ```bash
-/specweave-ui:ui-inspect https://example.com --selector "button.submit"
+/sw-ui:ui-inspect https://example.com --selector "button.submit"
 ```
 
 ### Capture full-page screenshot
 
 ```bash
-/specweave-ui:ui-inspect https://example.com --screenshot
+/sw-ui:ui-inspect https://example.com --screenshot
 ```
 
 ### Inspect with visible browser
 
 ```bash
-/specweave-ui:ui-inspect https://example.com --headless=false
+/sw-ui:ui-inspect https://example.com --headless=false
 ```
 
 ## Output
@@ -66,5 +66,5 @@ Provides:
 
 ## Related Commands
 
-- `/specweave-ui:ui-automate` - Create automated browser workflows
-- `/specweave-testing:e2e-setup` - Set up E2E testing framework
+- `/sw-ui:ui-automate` - Create automated browser workflows
+- `/sw-testing:e2e-setup` - Set up E2E testing framework

@@ -49,7 +49,7 @@ export class PlanValidator {
       errors.push({
         code: PlanErrorCode.SPEC_NOT_FOUND,
         message: `spec.md not found in increment '${incrementId}'`,
-        suggestion: 'Create spec.md first using `/specweave:increment` or manually'
+        suggestion: 'Create spec.md first using `/sw:increment` or manually'
       });
       // Early return - can't proceed without spec
       return { valid: false, errors, warnings };
@@ -99,7 +99,7 @@ export class PlanValidator {
         errors.push({
           code: PlanErrorCode.INVALID_INCREMENT_STATUS,
           message: `Cannot generate plan for ${metadata.status} increment`,
-          suggestion: 'Reopen increment with `/specweave:reopen` first'
+          suggestion: 'Reopen increment with `/sw:reopen` first'
         });
       }
     } catch (error) {

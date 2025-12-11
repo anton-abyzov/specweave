@@ -92,7 +92,7 @@ Each category page follows the **EXACT structure** from `architecture.md`:
 
 ✅ **SpecWeave Integration**
 - Plugin references (specweave-github, specweave-kubernetes, etc.)
-- Command examples (/specweave:inc, /specweave:do, etc.)
+- Command examples (/sw:inc, /sw:do, etc.)
 - Living documentation structure
 - Increment planning workflows
 

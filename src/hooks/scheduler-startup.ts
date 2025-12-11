@@ -114,7 +114,7 @@ export async function checkScheduledJobs(
   appendLog(logFile, `Due sync jobs: ${JSON.stringify(dueJobIds)}`);
 
   return {
-    systemMessage: `Scheduled sync jobs ready to run. Use /specweave:sync-now to execute.`,
+    systemMessage: `Scheduled sync jobs ready to run. Use /sw:sync-now to execute.`,
   };
 }
 

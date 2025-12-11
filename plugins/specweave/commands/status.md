@@ -1,12 +1,12 @@
 ---
 name: specweave:status
 description: Show increment status overview with rich details (active, backlog, paused, completed, abandoned)
-usage: /specweave:status [--active|--backlog|--paused|--completed|--abandoned|--stale]
+usage: /sw:status [--active|--backlog|--paused|--completed|--abandoned|--stale]
 ---
 
 # Increment Status Command
 
-**Usage**: `/specweave:status [filter]`
+**Usage**: `/sw:status [filter]`
 
 ---
 
@@ -28,7 +28,7 @@ Display comprehensive increment status overview:
 ### Default (All Increments)
 
 ```bash
-/specweave:status
+/sw:status
 
 📊 Increment Status Overview
 
@@ -85,30 +85,30 @@ Display comprehensive increment status overview:
   - Resume or abandon 0007 (stale)
 
 Commands:
-  /specweave:do              # Continue current work
-  /specweave:resume 0007     # Resume paused increment
-  /specweave:abandon 0007    # Abandon if obsolete
+  /sw:do              # Continue current work
+  /sw:resume 0007     # Resume paused increment
+  /sw:abandon 0007    # Abandon if obsolete
 ```
 
 ### Filtered Views
 
 ```bash
 # Active only
-/specweave:status --active
+/sw:status --active
 
 🔥 Active Increments (2):
   🚨 0005-payment-hotfix [hotfix] (90% done, 6 hours)
   🔧 0006-i18n [feature] (50% done, 2 days)
 
 # Paused only
-/specweave:status --paused
+/sw:status --paused
 
 ⏸️  Paused Increments (1):
   🔄 0007-stripe [feature] (paused 3 days)
      Reason: Waiting for API keys
 
 # Stale only (paused >7 days OR active >30 days)
-/specweave:status --stale
+/sw:status --stale
 
 ⚠️  Stale Increments (2):
   🔄 0008-experiment [experiment] (paused 10 days)
@@ -214,8 +214,8 @@ Paused >7 days → warning:
      ⚠️  STALE! Review or abandon?
 
 💡 Actions:
-   /specweave:resume 0007  # If unblocked
-   /specweave:abandon 0007 # If no longer needed
+   /sw:resume 0007  # If unblocked
+   /sw:abandon 0007 # If no longer needed
 ```
 
 ### Long-Running Active Increments
@@ -257,7 +257,7 @@ Experiments inactive >14 days → warning:
      🚨 AUTO-ABANDON WARNING
 
 💡 Experiments auto-abandon after 14 days of inactivity
-   To prevent: Update via /specweave:do or /touch 0010
+   To prevent: Update via /sw:do or /touch 0010
 ```
 
 ---
@@ -267,7 +267,7 @@ Experiments inactive >14 days → warning:
 When an increment has user stories targeting multiple projects, show grouped view:
 
 ```bash
-/specweave:status 0125
+/sw:status 0125
 
 📊 Increment Status: 0125-cross-project-targeting
 
@@ -333,7 +333,7 @@ if (isCrossProject) {
 Show only active increments
 
 ```bash
-/specweave:status --active
+/sw:status --active
 
 🔥 Active (2):
   🚨 0005-hotfix [hotfix] (90% done)
@@ -345,7 +345,7 @@ Show only active increments
 Show only backlog increments
 
 ```bash
-/specweave:status --backlog
+/sw:status --backlog
 
 🗂️  Backlog (3):
   📦 0032-feature-a [feature] (in backlog 5 days)
@@ -357,7 +357,7 @@ Show only backlog increments
   📦 0034-feature-c [feature] (in backlog 1 day)
      Reason: Multiple planned ideas
 
-💡 Start work: /specweave:resume <id>
+💡 Start work: /sw:resume <id>
 ```
 
 ### --paused
@@ -365,7 +365,7 @@ Show only backlog increments
 Show only paused increments
 
 ```bash
-/specweave:status --paused
+/sw:status --paused
 
 ⏸️  Paused (2):
   🔄 0007-stripe [feature] (paused 3 days)
@@ -381,7 +381,7 @@ Show only paused increments
 Show only completed increments
 
 ```bash
-/specweave:status --completed
+/sw:status --completed
 
 ✅ Completed (5):
   0001-core-framework (completed 30 days ago)
@@ -396,7 +396,7 @@ Show only completed increments
 Show only abandoned increments
 
 ```bash
-/specweave:status --abandoned
+/sw:status --abandoned
 
 ❌ Abandoned (3):
   0008-old-approach (Requirements changed)
@@ -415,7 +415,7 @@ Show only abandoned increments
 Show only stale increments (paused >7 days OR active >30 days)
 
 ```bash
-/specweave:status --stale
+/sw:status --stale
 
 ⚠️  Stale Increments (3):
   🔄 0007-stripe [feature] (paused 10 days)
@@ -433,12 +433,12 @@ Show only stale increments (paused >7 days OR active >30 days)
 
 ## Related Commands
 
-- `/specweave:do` - Continue work on active increment
-- `/specweave:progress` - Detailed progress for current increment
-- `/specweave:backlog <id>` - Move increment to backlog
-- `/specweave:pause <id>` - Pause active increment
-- `/specweave:resume <id>` - Resume paused or backlog increment
-- `/specweave:abandon <id>` - Abandon increment (move to _abandoned/)
+- `/sw:do` - Continue work on active increment
+- `/sw:progress` - Detailed progress for current increment
+- `/sw:backlog <id>` - Move increment to backlog
+- `/sw:pause <id>` - Pause active increment
+- `/sw:resume <id>` - Resume paused or backlog increment
+- `/sw:abandon <id>` - Abandon increment (move to _abandoned/)
 
 ---
 
@@ -463,7 +463,7 @@ Show only stale increments (paused >7 days OR active >30 days)
 Future enhancement (v0.8.0+):
 
 ```bash
-/specweave:status --analytics
+/sw:status --analytics
 
 📊 Increment Analytics (Last 90 Days):
 
@@ -489,7 +489,7 @@ Recommendations:
 
 ---
 
-**Command**: `/specweave:status`
+**Command**: `/sw:status`
 **Plugin**: specweave (core)
 **Version**: v0.7.0+
 **Part of**: Increment 0007 - Smart Status Management

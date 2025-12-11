@@ -38,8 +38,8 @@ description: "Choose the right model for each task"
 
 **Example commands:**
 ```bash
-/specweave:increment "..."  # Uses Opus for planning
-/specweave:qa 0001          # Uses Opus for analysis
+/sw:increment "..."  # Uses Opus for planning
+/sw:qa 0001          # Uses Opus for analysis
 ```
 
 ### Haiku 4.5
@@ -64,10 +64,10 @@ description: "Choose the right model for each task"
 SpecWeave picks automatically:
 
 ```
-/specweave:increment    → Opus (complex planning)
-/specweave:do           → Sonnet (balanced execution)
-/specweave:qa           → Opus (deep analysis)
-/specweave:sync-progress → Haiku (fast sync)
+/sw:increment    → Opus (complex planning)
+/sw:do           → Sonnet (balanced execution)
+/sw:qa           → Opus (deep analysis)
+/sw:sync-progress → Haiku (fast sync)
 ```
 
 ---
@@ -108,10 +108,10 @@ Step 3: Opus architecture (if needed)
 
 ```bash
 # Cheap exploration with Haiku
-/specweave:do --explore-only
+/sw:do --explore-only
 
 # Then implement with Sonnet
-/specweave:do --continue
+/sw:do --continue
 ```
 
 ---

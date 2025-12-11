@@ -33,12 +33,12 @@ graph TB
 
 **Controls**: Creating and updating work items that SpecWeave creates.
 
-**Flow**: `/specweave:increment` → CREATE GitHub issue → UPDATE as tasks complete
+**Flow**: `/sw:increment` → CREATE GitHub issue → UPDATE as tasks complete
 
 **When true**:
-- GitHub issue auto-created on `/specweave:increment`
+- GitHub issue auto-created on `/sw:increment`
 - Issue updated with task progress
-- Issue closed on `/specweave:done`
+- Issue closed on `/sw:done`
 
 **When false**:
 - No automatic issue creation

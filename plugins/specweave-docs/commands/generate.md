@@ -10,34 +10,34 @@ Generate documentation automatically from TypeScript/JavaScript code, OpenAPI sp
 ## Usage
 
 ```
-/specweave-docs:generate <source-type> <path> [options]
+/sw-docs:generate <source-type> <path> [options]
 ```
 
 ## Source Types
 
 ### 1. TypeScript/JavaScript Code
 ```bash
-/specweave-docs:docs-generate code ./src \
+/sw-docs:docs-generate code ./src \
   --output ./docs/api \
   --format markdown
 ```
 
 ### 2. OpenAPI/Swagger Specs
 ```bash
-/specweave-docs:docs-generate openapi ./api/openapi.yaml \
+/sw-docs:docs-generate openapi ./api/openapi.yaml \
   --output ./docs/api \
   --interactive
 ```
 
 ### 3. GraphQL Schema
 ```bash
-/specweave-docs:docs-generate graphql ./schema.graphql \
+/sw-docs:docs-generate graphql ./schema.graphql \
   --output ./docs/graphql
 ```
 
 ### 4. SpecWeave Living Docs
 ```bash
-/specweave-docs:docs-generate specweave ./.specweave/docs \
+/sw-docs:docs-generate specweave ./.specweave/docs \
   --output ./docs/specs \
   --include features,modules,architecture
 ```
@@ -287,7 +287,7 @@ new {{name}}({{#each constructorParams}}{{name}}: {{type}}{{#unless @last}}, {{/
 
 Auto-regenerate on file changes:
 ```bash
-/specweave-docs:docs-generate code ./src --watch
+/sw-docs:docs-generate code ./src --watch
 ```
 
 ### CI/CD Integration
@@ -311,7 +311,7 @@ jobs:
       - name: Generate API docs
         run: |
           npm install
-          npx claude /specweave-docs:docs-generate code ./src
+          npx claude /sw-docs:docs-generate code ./src
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -357,9 +357,9 @@ export function transformNode(node: DocNode): DocNode {
 
 ```bash
 # Generate from multiple sources
-/specweave-docs:docs-generate code ./src --output ./docs/api
-/specweave-docs:docs-generate openapi ./api/openapi.yaml --output ./docs/api
-/specweave-docs:docs-generate specweave ./.specweave/docs --output ./docs/specs
+/sw-docs:docs-generate code ./src --output ./docs/api
+/sw-docs:docs-generate openapi ./api/openapi.yaml --output ./docs/api
+/sw-docs:docs-generate specweave ./.specweave/docs --output ./docs/specs
 
 # Combine all outputs
 cat ./docs/api/index.md ./docs/specs/index.md > ./docs/complete-reference.md
@@ -369,16 +369,16 @@ cat ./docs/api/index.md ./docs/specs/index.md > ./docs/complete-reference.md
 
 ```bash
 # Generate docs in multiple languages
-/specweave-docs:docs-generate code ./src --output ./docs/en --lang en
-/specweave-docs:docs-generate code ./src --output ./docs/es --lang es
-/specweave-docs:docs-generate code ./src --output ./docs/fr --lang fr
+/sw-docs:docs-generate code ./src --output ./docs/en --lang en
+/sw-docs:docs-generate code ./src --output ./docs/es --lang es
+/sw-docs:docs-generate code ./src --output ./docs/fr --lang fr
 ```
 
 ## Examples
 
 ### Generate TypeScript API Docs
 ```bash
-/specweave-docs:docs-generate code ./src/api \
+/sw-docs:docs-generate code ./src/api \
   --output ./docs/api-reference \
   --exclude "**/*.test.ts" \
   --include-examples
@@ -386,7 +386,7 @@ cat ./docs/api/index.md ./docs/specs/index.md > ./docs/complete-reference.md
 
 ### Generate OpenAPI Docs with Playground
 ```bash
-/specweave-docs:docs-generate openapi ./api/v1/openapi.yaml \
+/sw-docs:docs-generate openapi ./api/v1/openapi.yaml \
   --output ./docs/api/v1 \
   --interactive \
   --group-by tag
@@ -394,7 +394,7 @@ cat ./docs/api/index.md ./docs/specs/index.md > ./docs/complete-reference.md
 
 ### Generate SpecWeave Architecture Docs
 ```bash
-/specweave-docs:docs-generate specweave ./.specweave/docs \
+/sw-docs:docs-generate specweave ./.specweave/docs \
   --output ./docs/architecture \
   --include architecture,modules \
   --format-adrs
@@ -402,14 +402,14 @@ cat ./docs/api/index.md ./docs/specs/index.md > ./docs/complete-reference.md
 
 ### Watch Mode for Development
 ```bash
-/specweave-docs:docs-generate code ./src --watch
+/sw-docs:docs-generate code ./src --watch
 ```
 
 ## Related Commands
 
-- `/specweave-docs:init` - Initialize Docusaurus documentation site
-- `/specweave-docs:view` - View generated documentation
-- `/specweave-docs:build` - Build static site from generated docs
+- `/sw-docs:init` - Initialize Docusaurus documentation site
+- `/sw-docs:view` - View generated documentation
+- `/sw-docs:build` - Build static site from generated docs
 
 ## Requirements
 
@@ -436,7 +436,7 @@ npm install --save-dev typedoc typedoc-plugin-markdown @redocly/cli
 ```bash
 # Increase Node.js memory
 NODE_OPTIONS="--max-old-space-size=4096" \
-  /specweave-docs:docs-generate code ./src
+  /sw-docs:docs-generate code ./src
 ```
 
 ### Broken Links in Generated Docs

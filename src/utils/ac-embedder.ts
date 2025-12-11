@@ -14,7 +14,7 @@ import { Logger, consoleLogger } from './logger.js';
  * **Usage**:
  * - Called by spec generators after creating spec.md
  * - Called by validation hooks to fix missing ACs
- * - Called manually via `/specweave:embed-acs`
+ * - Called manually via `/sw:embed-acs`
  *
  * **See**: ADR-0062 (AC Embedding Architecture)
  */

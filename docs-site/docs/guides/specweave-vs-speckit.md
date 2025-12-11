@@ -73,7 +73,7 @@ In SpecKit, specs are created once and may become stale. In SpecWeave, documenta
 
 ```bash
 # Task completed → Hooks fire → Living docs sync
-/specweave:do
+/sw:do
 
 # What happens automatically:
 # 1. tasks.md updated with completion status
@@ -88,13 +88,13 @@ Real enterprise projects don't live in vacuum — they have JIRA epics, GitHub i
 
 ```bash
 # Bidirectional sync with your tools
-/specweave:sync-progress
+/sw:sync-progress
 
 # Creates GitHub issue from increment
-/specweave-github:create-issue
+/sw-github:create-issue
 
 # Syncs JIRA epic/story hierarchy
-/specweave-jira:sync
+/sw-jira:sync
 ```
 
 ### 3. Multi-Project Support
@@ -106,7 +106,7 @@ Enterprise = multiple repos, multiple teams, one source of truth:
 specweave init . --multiproject
 
 # Work spans frontend, backend, mobile
-/specweave:increment "User authentication"
+/sw:increment "User authentication"
 # → Creates specs mapped to correct repos
 # → Syncs to correct JIRA projects/ADO areas
 ```
@@ -120,10 +120,10 @@ specweave init . --multiproject
 specweave init . --brownfield
 
 # Import from existing tools
-/specweave:import-external --source jira --days 90
+/sw:import-external --source jira --days 90
 
 # Import documentation
-/specweave:import-docs ./legacy-wiki
+/sw:import-docs ./legacy-wiki
 ```
 
 ### 5. Quality Gates
@@ -131,7 +131,7 @@ specweave init . --brownfield
 Nothing ships without validation:
 
 ```bash
-/specweave:done 0042
+/sw:done 0042
 
 # Validates:
 # ✓ All tasks complete

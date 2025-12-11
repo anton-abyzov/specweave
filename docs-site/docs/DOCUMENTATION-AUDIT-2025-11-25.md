@@ -142,7 +142,7 @@ Comprehensive audit of ~1,400 documentation files across internal and public doc
 **Fix**: Update to current version
 
 #### 24. Command Namespace Mixed in Examples
-**Fix**: Ensure all examples use `/specweave:*` namespace
+**Fix**: Ensure all examples use `/sw:*` namespace
 
 ### LOW (2 issues)
 

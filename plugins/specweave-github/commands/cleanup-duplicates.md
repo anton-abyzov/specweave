@@ -31,7 +31,7 @@ justification: |
 ## Usage
 
 ```bash
-/specweave-github:cleanup-duplicates <epic-id> [--dry-run]
+/sw-github:cleanup-duplicates <epic-id> [--dry-run]
 ```
 
 ## What It Does
@@ -50,7 +50,7 @@ justification: |
 ### Dry Run (No Changes)
 
 ```bash
-/specweave-github:cleanup-duplicates FS-031 --dry-run
+/sw-github:cleanup-duplicates FS-031 --dry-run
 ```
 
 **Output**:
@@ -82,7 +82,7 @@ justification: |
 ### Actual Cleanup
 
 ```bash
-/specweave-github:cleanup-duplicates FS-031
+/sw-github:cleanup-duplicates FS-031
 ```
 
 **Output**:
@@ -157,7 +157,7 @@ The original issue (#250) contains the same content and should be used for track
 ```
 ⚠️  WARNING: 10 duplicate(s) detected!
    Run cleanup command to resolve:
-   /specweave-github:cleanup-duplicates FS-031
+   /sw-github:cleanup-duplicates FS-031
 ```
 
 ## Troubleshooting
@@ -193,8 +193,8 @@ The original issue (#250) contains the same content and should be used for track
 
 ## Related Commands
 
-- `/specweave-github:sync` - Sync Feature to GitHub (with duplicate detection)
-- `/specweave:validate` - Validate increment completeness
+- `/sw-github:sync` - Sync Feature to GitHub (with duplicate detection)
+- `/sw:validate` - Validate increment completeness
 - `gh issue list` - View all issues (GitHub CLI)
 
 ## Implementation
@@ -222,7 +222,7 @@ After cleanup:
 
 1. **Verify cleanup**: `gh issue list --search "[FS-031]"`
 2. **Check Feature FEATURE.md**: Verify frontmatter has correct issue numbers
-3. **Re-run sync**: `/specweave-github:sync` (should show no duplicates)
+3. **Re-run sync**: `/sw-github:sync` (should show no duplicates)
 4. **Duplicate detection**: Automatically enabled via DuplicateDetector
 
 ---

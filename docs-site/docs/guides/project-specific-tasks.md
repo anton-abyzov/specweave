@@ -177,7 +177,7 @@ Configure project keywords in `.specweave/config.json`:
 After creating your increment spec and tasks:
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 **What Happens**:
@@ -197,7 +197,7 @@ After creating your increment spec and tasks:
 Create GitHub issues with checkable task lists:
 
 ```bash
-/specweave-github:sync-spec specweave/FS-031
+/sw-github:sync-spec specweave/FS-031
 ```
 
 **Result**: GitHub issues have checkable task lists like this:
@@ -317,7 +317,7 @@ Old user stories (without `## Tasks` section) still work:
 Re-run living docs sync to add `## Tasks` sections:
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 **What Changes**:
@@ -329,7 +329,7 @@ Re-run living docs sync to add `## Tasks` sections:
 
 Tasks are automatically included:
 - Create increment as usual
-- Run `/specweave:sync-docs update`
+- Run `/sw:sync-docs update`
 - User stories generated with `## Tasks` sections
 
 ---
@@ -372,7 +372,7 @@ Tasks are automatically included:
 2. Old GitHub sync code
 
 **Solution**:
-- Re-run `/specweave:sync-docs update`
+- Re-run `/sw:sync-docs update`
 - Update to v0.18.3+
 - Verify user story file has `## Tasks` section
 
@@ -430,7 +430,7 @@ Tasks are automatically included:
 
 **Command**:
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 **Why**: Keeps user story task lists in sync with increment tasks.md.

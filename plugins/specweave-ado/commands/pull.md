@@ -5,7 +5,7 @@ description: Pull latest changes from Azure DevOps (like git pull). Supports inc
 
 # ADO Pull Command
 
-**Usage**: `/specweave-ado:pull [target] [options]`
+**Usage**: `/sw-ado:pull [target] [options]`
 
 **Purpose**: Pull latest changes from Azure DevOps (like `git pull`)
 
@@ -15,19 +15,19 @@ description: Pull latest changes from Azure DevOps (like git pull). Supports inc
 
 ```bash
 # Pull for current/active increment (simple mode)
-/specweave-ado:pull
+/sw-ado:pull
 
 # Pull for specific increment
-/specweave-ado:pull 0005
+/sw-ado:pull 0005
 
 # Pull ALL changes across ALL projects (living docs sync)
-/specweave-ado:pull --all
+/sw-ado:pull --all
 
 # Pull for specific project/board
-/specweave-ado:pull --project clinical-insights
+/sw-ado:pull --project clinical-insights
 
 # Pull specific feature hierarchy (Epic → Feature → User Stories)
-/specweave-ado:pull --feature FS-042
+/sw-ado:pull --feature FS-042
 ```
 
 ---
@@ -36,13 +36,13 @@ description: Pull latest changes from Azure DevOps (like git pull). Supports inc
 
 ### Mode 1: Increment Sync (Default)
 ```bash
-/specweave-ado:pull [increment-id]
+/sw-ado:pull [increment-id]
 ```
 Syncs ONE increment ↔ ONE linked work item.
 
 ### Mode 2: Living Docs Sync (Full)
 ```bash
-/specweave-ado:pull --all [--time-range 1M]
+/sw-ado:pull --all [--time-range 1M]
 ```
 Syncs ALL specs across ALL projects/boards:
 - Discovers all linked specs in `.specweave/docs/internal/specs/`
@@ -52,7 +52,7 @@ Syncs ALL specs across ALL projects/boards:
 
 ### Mode 3: Project-Scoped Sync
 ```bash
-/specweave-ado:pull --project clinical-insights
+/sw-ado:pull --project clinical-insights
 ```
 Syncs all specs within a specific project folder:
 ```
@@ -64,7 +64,7 @@ specs/clinical-insights/
 
 ### Mode 4: Feature Hierarchy Sync
 ```bash
-/specweave-ado:pull --feature FS-042
+/sw-ado:pull --feature FS-042
 ```
 Syncs a specific feature and ALL its children:
 ```
@@ -136,7 +136,7 @@ const metadata = await loadIncrementMetadata(incrementId);
 
 const adoWorkItemId = metadata?.external_sync?.ado?.workItemId;
 if (!adoWorkItemId) {
-  console.log('Not linked to ADO. Run: /specweave-ado:create');
+  console.log('Not linked to ADO. Run: /sw-ado:create');
   return;
 }
 
@@ -220,7 +220,7 @@ async function discoverLinkedSpecs(options) {
 ### Example 1: Pull Single Increment
 
 ```
-User: /specweave-ado:pull 0005
+User: /sw-ado:pull 0005
 
 Claude:
 Pulling from ADO...
@@ -236,7 +236,7 @@ Pull complete!
 ### Example 2: Pull All (Living Docs Sync)
 
 ```
-User: /specweave-ado:pull --all
+User: /sw-ado:pull --all
 
 Claude:
 Discovering linked specs...
@@ -266,7 +266,7 @@ Pull Summary:
 ### Example 3: Pull Specific Project
 
 ```
-User: /specweave-ado:pull --project clinical-insights
+User: /sw-ado:pull --project clinical-insights
 
 Claude:
 Pulling specs/clinical-insights/...
@@ -282,7 +282,7 @@ Pull complete! 2 specs updated.
 ### Example 4: Pull Feature Hierarchy
 
 ```
-User: /specweave-ado:pull --feature FS-042
+User: /sw-ado:pull --feature FS-042
 
 Claude:
 Fetching ADO hierarchy for FS-042...
@@ -323,7 +323,7 @@ This ensures QA and stakeholder decisions in ADO take precedence over local stat
 ### Example 1: Simple Pull
 
 ```
-User: /specweave-ado:pull
+User: /sw-ado:pull
 
 Claude:
 Pulling from ADO...
@@ -339,7 +339,7 @@ Pull complete!
 ### Example 2: No Changes
 
 ```
-User: /specweave-ado:pull 0005
+User: /sw-ado:pull 0005
 
 Claude:
 Pulling from ADO...
@@ -353,12 +353,12 @@ Last synced: 2 minutes ago
 ### Example 3: Not Linked
 
 ```
-User: /specweave-ado:pull 0005
+User: /sw-ado:pull 0005
 
 Claude:
 Increment 0005 not linked to ADO yet.
 
-To link: /specweave-ado:create 0005
+To link: /sw-ado:create 0005
 ```
 
 ---
@@ -445,7 +445,7 @@ To link: /specweave-ado:create 0005
 │    ⚠ FS-042/us-003: ADO item #205 not found (deleted?) │
 │    ⚠ FS-050/us-012: Rate limit hit, skipped            │
 ├─────────────────────────────────────────────────────────┤
-│  Retry failed items: /specweave-ado:pull --retry        │
+│  Retry failed items: /sw-ado:pull --retry        │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -483,7 +483,7 @@ AZURE_DEVOPS_PAT=your-personal-access-token
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-ado:push` | Push local changes to ADO |
-| `/specweave-ado:sync` | Two-way sync (pull + push) |
-| `/specweave-ado:status` | Check sync status |
-| `/specweave-ado:create` | Create ADO work item |
+| `/sw-ado:push` | Push local changes to ADO |
+| `/sw-ado:sync` | Two-way sync (pull + push) |
+| `/sw-ado:status` | Check sync status |
+| `/sw-ado:create` | Create ADO work item |

@@ -4,7 +4,7 @@
  * Prevents silent failures by validating source-of-truth consistency.
  * Critical for maintaining data integrity across increment lifecycle.
  *
- * Incident Reference: 2025-11-20 - Silent failure in /specweave:done caused
+ * Incident Reference: 2025-11-20 - Silent failure in /sw:done caused
  * increment 0047 to have metadata.json="completed" while spec.md="active",
  * breaking status line and user trust.
  *
@@ -296,7 +296,7 @@ export class DesyncDetector {
           `metadata.json: ${result.metadataStatus}\n` +
           `spec.md: ${result.specStatus}\n\n` +
           `This is a source-of-truth violation (CLAUDE.md Rule #7).\n` +
-          `Run: /specweave:sync-status ${incrementId} to fix`
+          `Run: /sw:sync-status ${incrementId} to fix`
       );
     }
   }
@@ -334,7 +334,7 @@ export class DesyncDetector {
         lines.push('');
       });
 
-      lines.push('Fix command: /specweave:sync-status');
+      lines.push('Fix command: /sw:sync-status');
       lines.push('');
     }
 

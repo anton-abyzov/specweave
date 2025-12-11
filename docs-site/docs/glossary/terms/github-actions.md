@@ -705,7 +705,7 @@ After GitHub Actions setup, update docs:
 
 ```bash
 # Sync CI/CD documentation
-/specweave:sync-docs update
+/sw:sync-docs update
 
 # Results in:
 # - README updated with status badges

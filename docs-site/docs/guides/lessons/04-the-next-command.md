@@ -27,7 +27,7 @@ description: "Your workflow compass"
 ### The SpecWeave Way
 
 ```bash
-/specweave:next
+/sw:next
 ```
 
 That's it. The system:
@@ -43,7 +43,7 @@ That's it. The system:
 ## The Decision Tree
 
 ```
-                    /specweave:next
+                    /sw:next
                           │
            ┌──────────────┴──────────────┐
            │                              │
@@ -71,7 +71,7 @@ Suggest next
 **Situation**: Work complete, tests pass, docs updated.
 
 ```bash
-/specweave:next
+/sw:next
 ```
 
 ```
@@ -106,7 +106,7 @@ Found in backlog:
 
 Recommendation: Start 0002
 
-Next: /specweave:do 0002
+Next: /sw:do 0002
 ```
 
 ---
@@ -116,7 +116,7 @@ Next: /specweave:do 0002
 **Situation**: Some tasks incomplete.
 
 ```bash
-/specweave:next
+/sw:next
 ```
 
 ```
@@ -146,7 +146,7 @@ B. Force close with deferrals
    → Move T-011, T-012 to next increment
 
 C. Continue working (no action)
-   → Run /specweave:do to resume
+   → Run /sw:do to resume
 
 What would you like to do? [A/B/C]
 ```
@@ -158,7 +158,7 @@ What would you like to do? [A/B/C]
 **Situation**: No [increment](/docs/glossary/terms/increments) in progress.
 
 ```bash
-/specweave:next
+/sw:next
 ```
 
 ```
@@ -179,9 +179,9 @@ Backlog items:
   2. 0004-dashboard (P2)
 
 Options:
-A. Start 0003 → /specweave:do 0003
-B. Start 0004 → /specweave:do 0004
-C. Create new → /specweave:increment "description"
+A. Start 0003 → /sw:do 0003
+B. Start 0004 → /sw:do 0004
+C. Create new → /sw:increment "description"
 ```
 
 ---
@@ -191,7 +191,7 @@ C. Create new → /specweave:increment "description"
 **Situation**: Multiple increments in progress.
 
 ```bash
-/specweave:next
+/sw:next
 ```
 
 ```
@@ -223,9 +223,9 @@ C. Cancel (continue as-is)
 | "What should I work on?" | ✅ Yes |
 | "Let's move forward" | ✅ Yes |
 | "Just finished that task" | ✅ Yes |
-| "Need to check status" | ❌ Use `/specweave:progress` |
-| "Want to start specific feature" | ❌ Use `/specweave:increment` |
-| "Need to pause work" | ❌ Use `/specweave:pause` |
+| "Need to check status" | ❌ Use `/sw:progress` |
+| "Want to start specific feature" | ❌ Use `/sw:increment` |
+| "Need to pause work" | ❌ Use `/sw:pause` |
 
 ---
 
@@ -244,7 +244,7 @@ It will either:
 
 ```bash
 # Try :next on your current project
-/specweave:next
+/sw:next
 
 # Observe what happens based on your state
 ```

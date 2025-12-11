@@ -183,7 +183,7 @@ function generateNextSteps(state: SetupState): string {
   }
 
   lines.push('   2. Start your first increment:');
-  lines.push('      /specweave:increment "your feature name"');
+  lines.push('      /sw:increment "your feature name"');
   lines.push('');
 
   lines.push('   3. Read documentation:');
@@ -205,7 +205,7 @@ function generateTips(): string {
   lines.push('💡 Tips:');
   lines.push('   • .specweave/ is your source of truth (commit it!)');
   lines.push('   • .env contains secrets (DO NOT commit!)');
-  lines.push('   • Use /specweave:progress to track increment progress');
+  lines.push('   • Use /sw:progress to track increment progress');
   lines.push('   • Increments sync to GitHub automatically');
 
   lines.push('');

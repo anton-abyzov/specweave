@@ -12,7 +12,7 @@ description: Update GitHub issue for user story with proper ACs and tasks
 
 **Usage**:
 ```bash
-/specweave-github:update-user-story FS-031 US-004
+/sw-github:update-user-story FS-031 US-004
 ```
 
 **What It Does**:
@@ -35,7 +35,7 @@ description: Update GitHub issue for user story with proper ACs and tasks
 **Example**:
 ```bash
 # Update US-004 in FS-031
-/specweave-github:update-user-story FS-031 US-004
+/sw-github:update-user-story FS-031 US-004
 
 # Output:
 # 🔍 Finding user story: FS-031/US-004
@@ -109,9 +109,9 @@ Progress: 3/6 tasks complete (50%)
 - ✅ When you want to refresh issue content from living docs
 
 **Related Commands**:
-- `/specweave-github:sync-epic FS-031` - Sync entire epic (all user stories)
-- `/specweave-github:create-issue 0031` - Create issue for increment
-- `/specweave-github:sync 0031` - Two-way sync for increment
+- `/sw-github:sync-epic FS-031` - Sync entire epic (all user stories)
+- `/sw-github:create-issue 0031` - Create issue for increment
+- `/sw-github:sync 0031` - Two-way sync for increment
 
 ---
 

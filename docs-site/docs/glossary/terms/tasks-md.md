@@ -174,7 +174,7 @@ graph LR
 ## Progress Tracking
 
 ```bash
-/specweave:progress
+/sw:progress
 
 📊 Increment 0001: User Authentication
 Progress: 6/8 tasks (75%)

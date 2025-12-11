@@ -1,5 +1,5 @@
 /**
- * E2E Tests for /specweave:fix-duplicates command
+ * E2E Tests for /sw:fix-duplicates command
  *
  * Tests the automatic duplicate resolution workflow including:
  * - Duplicate detection across all folders

@@ -1,4 +1,4 @@
-# /specweave-figma:to-react
+# /sw-figma:to-react
 
 Convert Figma components to production-ready React components with TypeScript, styled-components, and responsive design.
 

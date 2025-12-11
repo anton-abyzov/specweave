@@ -133,7 +133,7 @@ describe('command-integration', () => {
       await printNotificationSummary();
 
       const output = consoleSpy.mock.calls.map(c => c[0]).join('\n');
-      expect(output).toContain('/specweave:notifications');
+      expect(output).toContain('/sw:notifications');
     });
   });
 

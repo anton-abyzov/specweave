@@ -284,9 +284,9 @@ ${typeLines}
 ${priorityLines}
 
 💡 Next Steps:
-   /specweave:discrepancies           → View all pending discrepancies
-   /specweave:discrepancies --module <name> → Filter by module
-   /specweave:discrepancy-to-increment DISC-0001 DISC-0002 → Create increment
+   /sw:discrepancies           → View all pending discrepancies
+   /sw:discrepancies --module <name> → Filter by module
+   /sw:discrepancy-to-increment DISC-0001 DISC-0002 → Create increment
 `.trim();
 }
 
@@ -356,7 +356,7 @@ export async function launchBrownfieldAnalysisJob(
   return {
     success: true,
     jobId,
-    message: `Brownfield analysis job ${jobId} created. Run /specweave:jobs to monitor.`,
+    message: `Brownfield analysis job ${jobId} created. Run /sw:jobs to monitor.`,
   };
 }
 

@@ -1,4 +1,4 @@
-# /specweave-core:code-review
+# /sw-core:code-review
 
 Perform comprehensive code reviews with modern best practices, security analysis, and actionable feedback.
 

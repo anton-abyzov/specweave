@@ -1,4 +1,4 @@
-# /specweave-figma:tokens
+# /sw-figma:tokens
 
 Extract design tokens from Figma and generate token files for theme configuration (CSS variables, JavaScript, JSON, SCSS).
 

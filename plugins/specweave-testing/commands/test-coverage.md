@@ -1,4 +1,4 @@
-# /specweave-testing:test-coverage
+# /sw-testing:test-coverage
 
 Comprehensive test coverage analysis, reporting, and quality metrics for modern test suites.
 

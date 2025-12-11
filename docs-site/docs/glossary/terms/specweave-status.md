@@ -1,12 +1,12 @@
 ---
 id: specweave-status
-title: /specweave:status Command
+title: /sw:status Command
 sidebar_label: specweave:status
 ---
 
-# /specweave:status Command
+# /sw:status Command
 
-The **`/specweave:status`** command shows a comprehensive overview of all [increments](/docs/glossary/terms/increments) with [WIP limits](/docs/glossary/terms/wip-limits) and smart suggestions.
+The **`/sw:status`** command shows a comprehensive overview of all [increments](/docs/glossary/terms/increments) with [WIP limits](/docs/glossary/terms/wip-limits) and smart suggestions.
 
 ## What It Does
 
@@ -23,19 +23,19 @@ The **`/specweave:status`** command shows a comprehensive overview of all [incre
 
 ```bash
 # View all increments
-/specweave:status
+/sw:status
 
 # Verbose mode (detailed)
-/specweave:status --verbose
+/sw:status --verbose
 
 # Filter by type
-/specweave:status --type=feature
+/sw:status --type=feature
 ```
 
 ## Output Example
 
 ```bash
-$ /specweave:status
+$ /sw:status
 
 📊 Increment Status
 
@@ -59,7 +59,7 @@ $ /specweave:status
 📈 WIP Limit:
   ✅ Active increments: 1/1
 
-💡 Continue work with: /specweave:do
+💡 Continue work with: /sw:do
 ```
 
 ## Status Icons
@@ -89,5 +89,5 @@ When exceeding limits:
 
 - [WIP Limits](/docs/glossary/terms/wip-limits) - Work-in-progress limits
 - [Increments](/docs/glossary/terms/increments) - Work units
-- [/specweave:progress](/docs/glossary/terms/specweave-progress) - Detailed progress
+- [/sw:progress](/docs/glossary/terms/specweave-progress) - Detailed progress
 - [Commands: status](/docs/commands/status) - Full documentation

@@ -364,7 +364,7 @@ with track_experiment("feature-engineering-v1", increment="0042") as exp:
 After completing feature engineering:
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 Updates:

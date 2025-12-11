@@ -119,7 +119,7 @@ export async function quickSetup(projectRoot: string): Promise<void> {
     throw new Error(
       'No documentation found.\n' +
         'Create documentation by completing your first increment:\n' +
-        '  /specweave:increment "your feature"'
+        '  /sw:increment "your feature"'
     );
   }
 
@@ -184,7 +184,7 @@ export async function buildStaticSite(projectRoot: string): Promise<void> {
   if (!await isDocusaurusInstalled(targetDir)) {
     throw new Error(
       'Docusaurus not installed.\n' +
-        'Run: /specweave:docs preview (this will install it)'
+        'Run: /sw:docs preview (this will install it)'
     );
   }
 

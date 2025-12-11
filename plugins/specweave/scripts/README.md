@@ -6,15 +6,15 @@ These scripts provide instant (<100ms) output for status queries that don't requ
 
 ## Why These Exist
 
-Status commands (`/specweave:status`, `/specweave:progress`, `/specweave:jobs`) were taking 3+ minutes because they expanded as prompts requiring LLM processing. These commands need NO reasoning - they just read JSON and format output.
+Status commands (`/sw:status`, `/sw:progress`, `/sw:jobs`) were taking 3+ minutes because they expanded as prompts requiring LLM processing. These commands need NO reasoning - they just read JSON and format output.
 
 **Performance comparison:**
 
 | Command | Before | After |
 |---------|--------|-------|
-| `/specweave:status` | 3+ min | <100ms |
-| `/specweave:progress` | 2+ min | <100ms |
-| `/specweave:jobs` | 3+ min | <100ms |
+| `/sw:status` | 3+ min | <100ms |
+| `/sw:progress` | 2+ min | <100ms |
+| `/sw:jobs` | 3+ min | <100ms |
 
 ## Scripts
 
@@ -59,7 +59,7 @@ These scripts work across all contexts through a layered architecture:
 
 | Layer | Context | Speed | How It Works |
 |-------|---------|-------|--------------|
-| **Hook** | Claude Code | <100ms | `UserPromptSubmit` intercepts `/specweave:*`, runs script, blocks prompt |
+| **Hook** | Claude Code | <100ms | `UserPromptSubmit` intercepts `/sw:*`, runs script, blocks prompt |
 | **Skill** | Any LLM | ~2s | Skill instructs LLM to run script via Bash |
 | **CLI** | Terminal | ~500ms | `specweave status` / direct `node scripts/*.js` |
 
@@ -68,7 +68,7 @@ These scripts work across all contexts through a layered architecture:
 In Claude Code, the `UserPromptSubmit` hook automatically intercepts status commands:
 
 ```
-User types: /specweave:status
+User types: /sw:status
 Hook runs: bash plugins/specweave/scripts/read-status.sh
 Output appears instantly (<10ms)
 LLM never processes the prompt
@@ -79,7 +79,7 @@ LLM never processes the prompt
 In Cursor, Windsurf, Copilot, or API usage, the `instant-status` skill provides instructions:
 
 ```
-User types: /specweave:status
+User types: /sw:status
 Skill activates and instructs LLM to run the script
 LLM executes: bash plugins/specweave/scripts/read-status.sh
 Output appears (~2s)
@@ -103,7 +103,7 @@ bash plugins/specweave/scripts/read-progress.sh 0045
 
 | Situation | Recommended Path |
 |-----------|------------------|
-| Quick status check in Claude Code | Just type `/specweave:status` |
+| Quick status check in Claude Code | Just type `/sw:status` |
 | Using Cursor/Windsurf/Copilot | Let skill guide execution |
 | Terminal/scripting | `specweave status` or `node scripts/*.js` |
 | CI/CD pipelines | Direct `node scripts/*.js` |
@@ -145,7 +145,7 @@ DESCRIPTION
   What this command does...
 
 EXECUTION PATHS
-  1. Claude Code:  /specweave:newcmd  (hook intercepts)
+  1. Claude Code:  /sw:newcmd  (hook intercepts)
   2. Any LLM:      Skill instructs to run this script
   3. Terminal:     specweave newcmd
 `);

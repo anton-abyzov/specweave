@@ -244,13 +244,13 @@ SpecWeave integrates with external APIs:
 **GitHub API** (via `specweave-github` plugin):
 ```bash
 # Create GitHub issue from increment
-/specweave-github:create-issue
+/sw-github:create-issue
 ```
 
 **Jira API** (via `specweave-jira` plugin):
 ```bash
 # Sync increment to Jira epic
-/specweave-jira:sync
+/sw-jira:sync
 ```
 
 ### 3. API-First Development

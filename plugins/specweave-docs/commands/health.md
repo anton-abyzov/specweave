@@ -11,16 +11,16 @@ Analyze your documentation for health issues including freshness, coverage, nami
 
 ```bash
 # Full health report
-/specweave-docs:health
+/sw-docs:health
 
 # Include archived documents
-/specweave-docs:health --include-archived
+/sw-docs:health --include-archived
 
 # Output as JSON
-/specweave-docs:health --format json
+/sw-docs:health --format json
 
 # Save report to file
-/specweave-docs:health --output health-report.md
+/sw-docs:health --output health-report.md
 ```
 
 ## Your Task
@@ -188,7 +188,7 @@ Actionable suggestions based on analysis:
 - Add acceptance criteria
 - Fix naming conventions
 - Consolidate duplicates
-- Run `/specweave-docs:organize` for large folders
+- Run `/sw-docs:organize` for large folders
 
 ## Output Example
 
@@ -221,7 +221,7 @@ RECOMMENDATIONS
 • Documentation coverage is limited. Add acceptance criteria to more documents.
 • 8 files use ALL CAPS naming. Rename to lowercase-kebab-case.
 • 3 sets of duplicate documents detected. Consider consolidating.
-• "ADRs" has 147 files. Run /specweave-docs:organize to generate themed indexes.
+• "ADRs" has 147 files. Run /sw-docs:organize to generate themed indexes.
 
 Full report saved to: .specweave/docs/ENTERPRISE-HEALTH.md
 ```
@@ -263,6 +263,6 @@ jobs:
 
 ## See Also
 
-- `/specweave-docs:organize` - Organize large folders with themed indexes
-- `/specweave-docs:view` - View documentation with Docusaurus
-- `/specweave-docs:generate` - Generate docs from code
+- `/sw-docs:organize` - Organize large folders with themed indexes
+- `/sw-docs:view` - View documentation with Docusaurus
+- `/sw-docs:generate` - Generate docs from code

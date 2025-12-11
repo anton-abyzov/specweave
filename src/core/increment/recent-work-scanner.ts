@@ -385,9 +385,9 @@ export class RecentWorkScanner {
     output += `\n💡 Suggested action:\n`;
 
     if (topMatch.type === 'increment') {
-      output += `   /specweave:reopen ${topMatch.incrementId} --reason "Your issue description"`;
+      output += `   /sw:reopen ${topMatch.incrementId} --reason "Your issue description"`;
     } else if (topMatch.type === 'task') {
-      output += `   /specweave:reopen ${topMatch.incrementId} --task ${topMatch.id} --reason "Your issue description"`;
+      output += `   /sw:reopen ${topMatch.incrementId} --task ${topMatch.id} --reason "Your issue description"`;
     }
 
     return output;

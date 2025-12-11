@@ -555,7 +555,7 @@ After Docker implementation, update docs:
 
 ```bash
 # Sync Docker setup to architecture docs
-/specweave:sync-docs update
+/sw:sync-docs update
 
 # Results in:
 # - Updated README with Docker instructions

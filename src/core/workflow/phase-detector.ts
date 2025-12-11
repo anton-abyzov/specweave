@@ -153,38 +153,38 @@ const COMMAND_MAPPINGS: CommandMapping[] = [
   // SPEC_WRITING
   {
     phase: WorkflowPhase.SPEC_WRITING,
-    commandPattern: '/specweave:increment',
+    commandPattern: '/sw:increment',
     weight: 1.2
   },
   {
     phase: WorkflowPhase.SPEC_WRITING,
-    commandPattern: '/specweave:validate',
+    commandPattern: '/sw:validate',
     weight: 0.8
   },
 
   // PLAN_GENERATION
   {
     phase: WorkflowPhase.PLAN_GENERATION,
-    commandPattern: '/specweave:plan',
+    commandPattern: '/sw:plan',
     weight: 1.5
   },
 
   // IMPLEMENTATION
   {
     phase: WorkflowPhase.IMPLEMENTATION,
-    commandPattern: '/specweave:do',
+    commandPattern: '/sw:do',
     weight: 1.5
   },
   {
     phase: WorkflowPhase.IMPLEMENTATION,
-    commandPattern: '/specweave:progress',
+    commandPattern: '/sw:progress',
     weight: 1.0
   },
 
   // TESTING
   {
     phase: WorkflowPhase.TESTING,
-    commandPattern: '/specweave:test',
+    commandPattern: '/sw:test',
     weight: 1.3
   },
   {
@@ -201,21 +201,21 @@ const COMMAND_MAPPINGS: CommandMapping[] = [
   // DOCUMENTATION
   {
     phase: WorkflowPhase.DOCUMENTATION,
-    commandPattern: '/specweave:sync-docs',
+    commandPattern: '/sw:sync-docs',
     weight: 1.4
   },
 
   // REVIEW
   {
     phase: WorkflowPhase.REVIEW,
-    commandPattern: '/specweave:qa',
+    commandPattern: '/sw:qa',
     weight: 1.3
   },
 
   // COMPLETION
   {
     phase: WorkflowPhase.COMPLETION,
-    commandPattern: '/specweave:done',
+    commandPattern: '/sw:done',
     weight: 1.5
   }
 ];
@@ -779,49 +779,49 @@ export class PhaseDetector {
     switch (phase) {
       case WorkflowPhase.SPEC_WRITING:
         return {
-          command: '/specweave:increment',
+          command: '/sw:increment',
           reason: 'Create new increment with spec.md template'
         };
 
       case WorkflowPhase.PLAN_GENERATION:
         return {
-          command: '/specweave:plan',
+          command: '/sw:plan',
           reason: 'Generate implementation plan from spec.md'
         };
 
       case WorkflowPhase.TASK_BREAKDOWN:
         return {
-          command: '/specweave:plan',
+          command: '/sw:plan',
           reason: 'Generate tasks.md with embedded test plans'
         };
 
       case WorkflowPhase.IMPLEMENTATION:
         return {
-          command: '/specweave:do',
+          command: '/sw:do',
           reason: 'Execute tasks from tasks.md'
         };
 
       case WorkflowPhase.TESTING:
         return {
-          command: '/specweave:test',
+          command: '/sw:test',
           reason: 'Run test suite and validate coverage'
         };
 
       case WorkflowPhase.DOCUMENTATION:
         return {
-          command: '/specweave:sync-docs',
+          command: '/sw:sync-docs',
           reason: 'Sync increment to living documentation'
         };
 
       case WorkflowPhase.REVIEW:
         return {
-          command: '/specweave:qa',
+          command: '/sw:qa',
           reason: 'Run quality assessment on increment'
         };
 
       case WorkflowPhase.COMPLETION:
         return {
-          command: '/specweave:done',
+          command: '/sw:done',
           reason: 'Close increment and update status'
         };
 

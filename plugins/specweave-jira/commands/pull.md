@@ -5,7 +5,7 @@ description: Pull latest changes from Jira (like git pull). Imports status, prio
 
 # Jira Pull Command
 
-**Usage**: `/specweave-jira:pull [increment-id]`
+**Usage**: `/sw-jira:pull [increment-id]`
 
 **Purpose**: Pull latest changes from Jira to your local increment (like `git pull`)
 
@@ -15,10 +15,10 @@ description: Pull latest changes from Jira (like git pull). Imports status, prio
 
 ```bash
 # Pull for current/active increment
-/specweave-jira:pull
+/sw-jira:pull
 
 # Pull for specific increment
-/specweave-jira:pull 0005
+/sw-jira:pull 0005
 ```
 
 ---
@@ -66,7 +66,7 @@ const metadata = JSON.parse(await fs.readFile(
 
 const jiraIssueKey = metadata?.external_sync?.jira?.issueKey;
 if (!jiraIssueKey) {
-  console.log(`Not linked to Jira. Link manually or use: /specweave-jira:sync ${incrementId}`);
+  console.log(`Not linked to Jira. Link manually or use: /sw-jira:sync ${incrementId}`);
   return;
 }
 ```
@@ -126,7 +126,7 @@ URL: https://mycompany.atlassian.net/browse/PROJ-123
 ### Example 1: Simple Pull
 
 ```
-User: /specweave-jira:pull
+User: /sw-jira:pull
 
 Claude:
 Pulling from Jira...
@@ -142,7 +142,7 @@ Pull complete!
 ### Example 2: Already Up to Date
 
 ```
-User: /specweave-jira:pull 0005
+User: /sw-jira:pull 0005
 
 Claude:
 Pulling from Jira...
@@ -159,6 +159,6 @@ Last synced: 5 minutes ago
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-jira:push` | Push local changes to Jira |
-| `/specweave-jira:sync` | Two-way sync (pull + push) |
-| `/specweave-jira:import-boards` | Import Jira boards |
+| `/sw-jira:push` | Push local changes to Jira |
+| `/sw-jira:sync` | Two-way sync (pull + push) |
+| `/sw-jira:import-boards` | Import Jira boards |

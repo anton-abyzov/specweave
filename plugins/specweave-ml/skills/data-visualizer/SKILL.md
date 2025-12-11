@@ -415,7 +415,7 @@ visualizer = EDAVisualizer(increment="0042")
 ### Living Docs Integration
 
 ```bash
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 Updates:

@@ -21,7 +21,7 @@ Every increment goes through a predictable lifecycle:
                     │  (planned)  │
                     └──────┬──────┘
                            │
-            /specweave:resume
+            /sw:resume
                            │
                            ▼
 ┌──────────────────────────────────────────────────────────────┐
@@ -31,14 +31,14 @@ Every increment goes through a predictable lifecycle:
 │    └──────────┘    └─────┬──────┘    └─────┬─────┘          │
 │                          │                  │                │
 │                          │                  │                │
-│                    /specweave:pause    /specweave:done      │
+│                    /sw:pause    /sw:done      │
 │                          │                  │                │
 │                          ▼                  ▼                │
 │                    ┌──────────┐      ┌───────────┐          │
 │                    │  PAUSED  │      │ COMPLETED │          │
 │                    └──────────┘      └─────┬─────┘          │
 │                                            │                │
-│                                    /specweave:archive       │
+│                                    /sw:archive       │
 │                                            │                │
 │                                            ▼                │
 │                                     ┌───────────┐           │
@@ -47,7 +47,7 @@ Every increment goes through a predictable lifecycle:
 │                                                              │
 └──────────────────────────────────────────────────────────────┘
                            │
-                    /specweave:abandon
+                    /sw:abandon
                            │
                            ▼
                     ┌───────────┐
@@ -63,7 +63,7 @@ Every increment goes through a predictable lifecycle:
 
 ```bash
 # All increments (active, paused, backlog)
-/specweave:status
+/sw:status
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -91,7 +91,7 @@ COMPLETED THIS WEEK (2)
 
 ```bash
 # Specific increment details
-/specweave:status 0042
+/sw:status 0042
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -136,10 +136,10 @@ Pause an increment when:
 ### Pausing
 
 ```bash
-/specweave:pause 0042
+/sw:pause 0042
 
 # Optional: Provide reason
-/specweave:pause 0042 --reason "Waiting for Stripe API credentials"
+/sw:pause 0042 --reason "Waiting for Stripe API credentials"
 ```
 
 **What happens**:
@@ -151,7 +151,7 @@ Pause an increment when:
 ### Resuming
 
 ```bash
-/specweave:resume 0042
+/sw:resume 0042
 
 # If WIP limit reached:
 # "Cannot resume: 2/2 WIP slots in use. Complete or pause another increment first."
@@ -172,10 +172,10 @@ Pause an increment when:
 For increments you've planned but aren't ready to start:
 
 ```bash
-/specweave:backlog 0044
+/sw:backlog 0044
 
 # Or during creation:
-/specweave:increment "Analytics dashboard" --backlog
+/sw:increment "Analytics dashboard" --backlog
 ```
 
 **Backlog vs Paused**:
@@ -186,7 +186,7 @@ For increments you've planned but aren't ready to start:
 
 ```bash
 # View backlog with priorities
-/specweave:status --backlog
+/sw:status --backlog
 
 # Output:
 BACKLOG (3 items)
@@ -195,7 +195,7 @@ BACKLOG (3 items)
   Priority 3: 0046-performance-tuning   (When time permits)
 
 # Reorder backlog
-/specweave:backlog reorder
+/sw:backlog reorder
 # Interactive: Drag and drop priority
 ```
 
@@ -206,12 +206,12 @@ BACKLOG (3 items)
 ### The Done Command
 
 ```bash
-/specweave:done 0042
+/sw:done 0042
 ```
 
 **What happens**:
 1. **Task validation**: Are all tasks marked complete?
-2. **Quality gate**: Runs `/specweave:qa --gate`
+2. **Quality gate**: Runs `/sw:qa --gate`
 3. **PM validation**: AI reviews against acceptance criteria
 4. **Completion report**: Generated in increment folder
 5. **External sync**: Closes GitHub issue, updates JIRA status
@@ -220,7 +220,7 @@ BACKLOG (3 items)
 ### If Quality Gate Fails
 
 ```
-/specweave:done 0042
+/sw:done 0042
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PM VALIDATION: 0042-user-authentication
@@ -246,7 +246,7 @@ Fix these issues and try again.
 
 ```bash
 # Skip quality gates (hotfix scenario)
-/specweave:done 0042 --expedite
+/sw:done 0042 --expedite
 
 # Requires confirmation:
 # "This will close without validation. Are you sure? (y/N)"
@@ -276,7 +276,7 @@ Over time, completed increments accumulate:
 ### Manual Archive
 
 ```bash
-/specweave:archive 0042
+/sw:archive 0042
 ```
 
 **What happens**:
@@ -289,13 +289,13 @@ Over time, completed increments accumulate:
 
 ```bash
 # Archive all completed increments older than 30 days
-/specweave:archive --completed --older-than 30d
+/sw:archive --completed --older-than 30d
 
 # Archive specific list
-/specweave:archive 0042 0043 0044
+/sw:archive 0042 0043 0044
 
 # Preview what would be archived (dry run)
-/specweave:archive --completed --dry-run
+/sw:archive --completed --dry-run
 ```
 
 ### Archive Best Practices
@@ -306,7 +306,7 @@ Recommended schedule:
   Monthly: Archive all completed increments
 
 Automated (via cron or CI):
-  /specweave:archive --completed --older-than 7d --auto-yes
+  /sw:archive --completed --older-than 7d --auto-yes
 ```
 
 ---
@@ -317,10 +317,10 @@ Need to reference an old increment? Restore it:
 
 ```bash
 # Restore to active folder
-/specweave:restore 0042
+/sw:restore 0042
 
 # Just view without restoring
-/specweave:restore 0042 --view-only
+/sw:restore 0042 --view-only
 ```
 
 ---
@@ -330,10 +330,10 @@ Need to reference an old increment? Restore it:
 For increments that won't be completed (requirements changed, feature cancelled):
 
 ```bash
-/specweave:abandon 0042
+/sw:abandon 0042
 
 # With reason (recommended)
-/specweave:abandon 0042 --reason "Feature cancelled by stakeholder"
+/sw:abandon 0042 --reason "Feature cancelled by stakeholder"
 ```
 
 **What happens**:
@@ -356,7 +356,7 @@ For increments that won't be completed (requirements changed, feature cancelled)
 Fix any status desync between files:
 
 ```bash
-/specweave:sync-status
+/sw:sync-status
 
 # Output:
 Checking status consistency...
@@ -371,7 +371,7 @@ All statuses synced.
 Check for issues:
 
 ```bash
-/specweave:validate --all
+/sw:validate --all
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -393,7 +393,7 @@ Total: 2 valid, 1 warning, 1 error
 If duplicate increments were created:
 
 ```bash
-/specweave:fix-duplicates
+/sw:fix-duplicates
 
 # Output:
 Found duplicates:
@@ -410,7 +410,7 @@ Keep the original (Nov 20) and remove duplicate? (Y/n)
 Track ongoing work:
 
 ```bash
-/specweave:progress
+/sw:progress
 
 # Output for active increment:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -440,7 +440,7 @@ NEXT UP:
 Synchronize everything at once:
 
 ```bash
-/specweave:sync-progress
+/sw:sync-progress
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -471,7 +471,7 @@ All systems synchronized!
 Get intelligent guidance on what to do next:
 
 ```bash
-/specweave:workflow
+/sw:workflow
 
 # Output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -483,9 +483,9 @@ Current State: 0042-user-authentication
 Phase: IMPLEMENTATION (60% complete)
 
 Recommended Actions:
-  1. Continue implementation: /specweave:do
-  2. Check progress: /specweave:progress
-  3. Validate quality: /specweave:qa 0042
+  1. Continue implementation: /sw:do
+  2. Check progress: /sw:progress
+  3. Validate quality: /sw:qa 0042
 
 Blockers Detected: None
 
@@ -504,22 +504,22 @@ Practice lifecycle management:
 
 ```bash
 # 1. Create a test increment
-/specweave:increment "Test lifecycle feature"
+/sw:increment "Test lifecycle feature"
 
 # 2. Check status
-/specweave:status
+/sw:status
 
 # 3. Pause it
-/specweave:pause 0001 --reason "Testing pause"
+/sw:pause 0001 --reason "Testing pause"
 
 # 4. Resume it
-/specweave:resume 0001
+/sw:resume 0001
 
 # 5. Move to backlog
-/specweave:backlog 0001
+/sw:backlog 0001
 
 # 6. Abandon it (cleanup)
-/specweave:abandon 0001 --reason "Test complete"
+/sw:abandon 0001 --reason "Test complete"
 ```
 
 ---
@@ -537,25 +537,25 @@ Practice lifecycle management:
 
 ```bash
 # Add to weekly routine:
-/specweave:archive --completed --older-than 7d
+/sw:archive --completed --older-than 7d
 ```
 
 ### 3. Use Backlog for Future Work
 
 ```bash
 # Don't start what you can't finish
-/specweave:increment "Future feature" --backlog
+/sw:increment "Future feature" --backlog
 ```
 
 ### 4. Always Provide Reasons
 
 ```bash
 # Good:
-/specweave:pause 0042 --reason "Waiting for Stripe API keys"
-/specweave:abandon 0042 --reason "Feature cancelled per PM decision"
+/sw:pause 0042 --reason "Waiting for Stripe API keys"
+/sw:abandon 0042 --reason "Feature cancelled per PM decision"
 
 # Bad:
-/specweave:pause 0042  # Why? No one will remember
+/sw:pause 0042  # Why? No one will remember
 ```
 
 ---
@@ -566,7 +566,7 @@ Practice lifecycle management:
 2. **Pause when blocked**, not when busy with other work
 3. **Archive completed work** to keep workspace clean
 4. **Abandon obsolete increments** rather than leaving them in limbo
-5. **Use /specweave:workflow** for intelligent guidance
+5. **Use /sw:workflow** for intelligent guidance
 
 ---
 

@@ -232,7 +232,7 @@ SpecWeave's **role-orchestrator** skill automatically:
 **Example:**
 
 ```
-User: "/specweave:inc 'Full-stack SaaS with Stripe payments'"
+User: "/sw:inc 'Full-stack SaaS with Stripe payments'"
     ↓
 role-orchestrator activates
     ↓

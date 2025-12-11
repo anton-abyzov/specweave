@@ -9,7 +9,7 @@
  *
  * CRITICAL (v0.35.0+): ACTIVE → READY_FOR_REVIEW auto-transition prevents
  * the auto-completion bug where increments get marked "completed" without
- * user approval. Only /specweave:done can transition READY_FOR_REVIEW → COMPLETED.
+ * user approval. Only /sw:done can transition READY_FOR_REVIEW → COMPLETED.
  *
  * Part of increment 0039: Ultra-Smart Next Command
  */
@@ -63,7 +63,7 @@ export declare function areAllTasksCompleted(incrementId: string): boolean;
  *
  * CRITICAL (v0.35.0+): Rule 4 prevents the auto-completion bug.
  * ACTIVE cannot transition directly to COMPLETED - it MUST go through READY_FOR_REVIEW.
- * Only /specweave:done can transition READY_FOR_REVIEW → COMPLETED with user approval.
+ * Only /sw:done can transition READY_FOR_REVIEW → COMPLETED with user approval.
  *
  * @param incrementId - Increment ID to check
  * @param triggerFile - File that triggered the check (optional, for logging)
@@ -100,7 +100,7 @@ export declare function onFileCreated(incrementId: string, createdFile: string):
 /**
  * Check if increment should auto-transition to ACTIVE
  *
- * Used by /specweave:do command before execution
+ * Used by /sw:do command before execution
  */
 export declare function shouldTransitionToActive(incrementId: string): boolean;
 /**

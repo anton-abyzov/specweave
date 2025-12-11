@@ -58,7 +58,7 @@ graph TD
 
 SpecWeave enforces quality through:
 - **Pre-commit hooks**: Lint and format before commit
-- **Quality gates**: Block `/specweave:done` if quality fails
+- **Quality gates**: Block `/sw:done` if quality fails
 - **QA Agent**: Reviews code against acceptance criteria
 
 ---

@@ -320,7 +320,7 @@ npm test  # ✅ Still passes
 ### 3. Test Validation Command
 
 ```bash
-/specweave:check-tests 0025
+/sw:check-tests 0025
 ```
 
 **Output**:

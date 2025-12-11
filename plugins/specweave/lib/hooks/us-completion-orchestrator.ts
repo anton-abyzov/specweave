@@ -163,7 +163,7 @@ export async function syncCompletedUserStories(incrementId: string): Promise<USS
     // Safety:
     // - fs.writeFile() confirmed to NOT trigger hooks (no infinite loop risk)
     // - SKIP_EXTERNAL_SYNC still guards external tool sync layer
-    // - Users can manually sync if needed: /specweave:sync-progress
+    // - Users can manually sync if needed: /sw:sync-progress
     //
     // Trade-off:
     // - Potential 60s delay for US completion visibility
@@ -177,7 +177,7 @@ export async function syncCompletedUserStories(incrementId: string): Promise<USS
 
       console.log(`⏭️  US sync throttled (last sync ${Math.floor(timeSinceLastSync / 1000)}s ago)`);
       console.log(`   ℹ️  Sync will be available in ${secondsRemaining}s`);
-      console.log(`   💡 Manual sync: /specweave:sync-progress ${incrementId}`);
+      console.log(`   💡 Manual sync: /sw:sync-progress ${incrementId}`);
 
       return {
         success: true,

@@ -641,7 +641,7 @@ File: .specweave/increments/0045-pneumonia-detection/reports/COMPLETION-REPORT.m
 **SpecWeave Solution**:
 ```bash
 # Production release = increment completion
-/specweave:done 0045
+/sw:done 0045
 
 # Generates:
 # - Release notes (what changed, why)
@@ -661,7 +661,7 @@ File: .specweave/increments/0045-pneumonia-detection/reports/COMPLETION-REPORT.m
 **SpecWeave Solution**: Every software update = new increment
 ```bash
 # Bug fix or enhancement = new increment
-/specweave:increment "Fix false positive in pneumonia detection (REQ-002 enhancement)"
+/sw:increment "Fix false positive in pneumonia detection (REQ-002 enhancement)"
 
 # Spec.md documents:
 # - What's changing (AI model retrained)
@@ -684,7 +684,7 @@ File: .specweave/increments/0045-pneumonia-detection/reports/COMPLETION-REPORT.m
 
 ### Complete Traceability: One Command
 
-**SpecWeave Command**: `/specweave:fda-dhf --increment=0045`
+**SpecWeave Command**: `/sw:fda-dhf --increment=0045`
 
 **Output**: Auto-generated Design History File (DHF)
 
@@ -788,7 +788,7 @@ completion report: TEST-002 → PASS (87.2% sensitivity)
 **SpecWeave Solution**: All changes = increments (automatic change control)
 ```bash
 # Bug fix = new increment with full documentation
-/specweave:increment "Fix: Reduce false positives in pneumonia detection"
+/sw:increment "Fix: Reduce false positives in pneumonia detection"
 
 # Documents:
 # - What changed (AI model retrained)
@@ -854,16 +854,16 @@ completion report: TEST-002 → PASS (87.2% sensitivity)
 
 ```bash
 # Generate Design History File (DHF)
-/specweave:fda-dhf --increment=0045 --output=dhf-0045.pdf
+/sw:fda-dhf --increment=0045 --output=dhf-0045.pdf
 
 # Validate traceability (requirements → tests)
-/specweave:fda-traceability --increment=0045
+/sw:fda-traceability --increment=0045
 
 # Generate 510(k) submission package
-/specweave:fda-510k --increment=0045 --output=510k-K250123/
+/sw:fda-510k --increment=0045 --output=510k-K250123/
 
 # Validate IEC 62304 compliance
-/specweave:fda-validate-iec62304 --increment=0045
+/sw:fda-validate-iec62304 --increment=0045
 ```
 
 ---

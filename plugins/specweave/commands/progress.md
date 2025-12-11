@@ -10,7 +10,7 @@ Simple, fast progress check for all active increments.
 ## Usage
 
 ```bash
-/specweave:progress
+/sw:progress
 ```
 
 ## Implementation
@@ -36,14 +36,14 @@ bash "$(dirname "${BASH_SOURCE[0]}")"/../scripts/read-progress.sh "$@"
 🟢 ACTIVE: 0037-project-specific-tasks
    ████████████████████████░░░░░░ 84% (72/85 tasks)
 
-   Next: /specweave:do 0037-project-specific-tasks
+   Next: /sw:do 0037-project-specific-tasks
 
 ============================================================
 Summary:
   Active increments: 1
   Other non-completed: 0
 
-💡 Continue with /specweave:do
+💡 Continue with /sw:do
 ```
 
 ### Enhanced Format (with User Story grouping)
@@ -62,14 +62,14 @@ Summary:
    ├─ US-005: ░░░░░░░░░░░░░░░░░░░░ 0% (0/4)
    ├─ US-006: ░░░░░░░░░░░░░░░░░░░░ 0% (0/3)
 
-   Resume: /specweave:resume 0047-us-task-linkage
+   Resume: /sw:resume 0047-us-task-linkage
 
 ============================================================
 Summary:
   Active increments: 0
   Other non-completed: 1
 
-💡 No active work. Run /specweave:increment to start new work
+💡 No active work. Run /sw:increment to start new work
 ```
 
 ## What It Shows

@@ -15,14 +15,14 @@
  * import { CommandDeduplicator } from './command-deduplicator.js';
  *
  * const dedup = new CommandDeduplicator();
- * const isDuplicate = await dedup.checkDuplicate('/specweave:do', ['0031']);
+ * const isDuplicate = await dedup.checkDuplicate('/sw:do', ['0031']);
  *
  * if (isDuplicate) {
  *   console.log('⚠️  Duplicate invocation blocked!');
  *   return;
  * }
  *
- * await dedup.recordInvocation('/specweave:do', ['0031']);
+ * await dedup.recordInvocation('/sw:do', ['0031']);
  * // ... execute command
  * ```
  *
@@ -40,7 +40,7 @@ export interface InvocationRecord {
   /** Unique fingerprint of command + args */
   fingerprint: string;
 
-  /** Command name (e.g., '/specweave:do') */
+  /** Command name (e.g., '/sw:do') */
   command: string;
 
   /** Command arguments */
@@ -119,7 +119,7 @@ export class CommandDeduplicator {
   /**
    * Check if command invocation is a duplicate
    *
-   * @param command - Command name (e.g., '/specweave:do')
+   * @param command - Command name (e.g., '/sw:do')
    * @param args - Command arguments
    * @returns true if duplicate detected, false otherwise
    */

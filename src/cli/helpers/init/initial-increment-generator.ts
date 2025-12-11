@@ -141,9 +141,9 @@ ${isMultiProject ? `
 ` : ''}
 **Next steps**:
 1. Review this spec and customize it for your project
-2. Run \`/specweave:plan\` to generate implementation tasks
-3. Run \`/specweave:do\` to start working on tasks
-4. Create your first feature with \`/specweave:increment "your-feature"\`
+2. Run \`/sw:plan\` to generate implementation tasks
+3. Run \`/sw:do\` to start working on tasks
+4. Create your first feature with \`/sw:increment "your-feature"\`
 
 **Folder Organization**:
 Keep increment root clean - only these files allowed at root:
@@ -158,7 +158,7 @@ Everything else goes in subfolders:
 
 You can also delete this increment if you prefer to start fresh:
 - Delete \`.specweave/increments/0001-project-setup/\`
-- Create your first real increment with \`/specweave:increment "my-feature"\`
+- Create your first real increment with \`/sw:increment "my-feature"\`
 `;
 }
 
@@ -222,7 +222,7 @@ function generateSingleProjectUserStories(): string {
   - **Priority**: P0 (Critical)
   - **Testable**: Yes
 
-- [ ] **AC-US1-03**: SpecWeave commands available (/specweave:increment, /specweave:do, etc.)
+- [ ] **AC-US1-03**: SpecWeave commands available (/sw:increment, /sw:do, etc.)
   - **Priority**: P0 (Critical)
   - **Testable**: Yes`;
 }
@@ -320,9 +320,9 @@ Next actions:
 1. Customize this increment spec to match your project goals
 2. OR delete this increment and create your first real feature:
    \`\`\`
-   /specweave:increment "user-authentication"
-   /specweave:increment "api-endpoints"
-   /specweave:increment "database-schema"
+   /sw:increment "user-authentication"
+   /sw:increment "api-endpoints"
+   /sw:increment "database-schema"
    \`\`\`
 
 ---
@@ -380,7 +380,7 @@ Ran \`specweave init\` to create project structure, install plugins, and configu
 4. ✅ Created this initial increment (0001-project-setup)
 
 **Test Plan**:
-- **Manual**: Verify \`/specweave:status\` shows active increment
+- **Manual**: Verify \`/sw:status\` shows active increment
 - **Manual**: Verify SpecWeave commands available
 
 **Files Affected**:
@@ -397,14 +397,14 @@ This initial increment is now **COMPLETE**. You have two options:
 Delete this increment and create your first real feature:
 \`\`\`bash
 rm -rf .specweave/increments/0001-project-setup
-/specweave:increment "your-first-feature"
+/sw:increment "your-first-feature"
 \`\`\`
 
 ### Option 2: Customize This Increment
 Keep this increment and add your own tasks:
 \`\`\`bash
-/specweave:plan  # Regenerate tasks based on updated spec.md
-/specweave:do    # Start working on tasks
+/sw:plan  # Regenerate tasks based on updated spec.md
+/sw:do    # Start working on tasks
 \`\`\`
 
 **Folder Organization Tip**:

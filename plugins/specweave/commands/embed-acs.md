@@ -18,7 +18,7 @@ You are helping the user embed Acceptance Criteria from living documentation int
 ## Usage
 
 ```bash
-/specweave:embed-acs <increment-id>
+/sw:embed-acs <increment-id>
 ```
 
 ## Arguments
@@ -30,7 +30,7 @@ You are helping the user embed Acceptance Criteria from living documentation int
 ### Step 1: Parse and Validate Arguments
 
 1. **Extract increment ID**:
-   - Parse from command: `/specweave:embed-acs 0050` → "0050"
+   - Parse from command: `/sw:embed-acs 0050` → "0050"
    - Normalize to 4-digit format: "0050"
    - Support formats: "50", "0050", "0050-feature-name"
 
@@ -47,7 +47,7 @@ Available increments:
   • 0048-external-tool-import-enhancement
   • 0049-cli-first-init-flow
 
-Usage: /specweave:embed-acs <increment-id>
+Usage: /sw:embed-acs <increment-id>
 ```
 
 ### Step 2: Validate Increment Structure
@@ -99,7 +99,7 @@ Usage: /specweave:embed-acs <increment-id>
    This increment may not have living docs, or they're in a different location.
 
    Please specify living docs path manually:
-     /specweave:embed-acs 0050 --living-docs-path <path>
+     /sw:embed-acs 0050 --living-docs-path <path>
    ```
 
 ### Step 4: Extract User Stories from spec.md
@@ -269,8 +269,8 @@ Usage: /specweave:embed-acs <increment-id>
 
    Next steps:
      1. Review embedded ACs in spec.md
-     2. Run: /specweave:validate 0050
-     3. Start work: /specweave:do
+     2. Run: /sw:validate 0050
+     3. Start work: /sw:do
    ```
 
 ## Flags (Optional)
@@ -280,7 +280,7 @@ Usage: /specweave:embed-acs <increment-id>
 Manually specify living docs path if auto-detection fails:
 
 ```bash
-/specweave:embed-acs 0050 --living-docs-path .specweave/docs/internal/specs/specweave/FS-048
+/sw:embed-acs 0050 --living-docs-path .specweave/docs/internal/specs/specweave/FS-048
 ```
 
 ### `--dry-run`
@@ -288,7 +288,7 @@ Manually specify living docs path if auto-detection fails:
 Preview what would be embedded without modifying files:
 
 ```bash
-/specweave:embed-acs 0050 --dry-run
+/sw:embed-acs 0050 --dry-run
 ```
 
 **Output**:
@@ -308,7 +308,7 @@ No files modified.
 Skip confirmation prompts:
 
 ```bash
-/specweave:embed-acs 0050 --force
+/sw:embed-acs 0050 --force
 ```
 
 ## Error Handling
@@ -323,7 +323,7 @@ Found: Directory does not exist
 Possible solutions:
   1. Check if feature_id in spec.md is correct
   2. Manually specify path: --living-docs-path <path>
-  3. Create living docs first: /specweave:sync-docs
+  3. Create living docs first: /sw:sync-docs
 ```
 
 ### No User Stories in spec.md
@@ -365,16 +365,16 @@ Skipping US-005 for now.
 
 This command is referenced by:
 
-1. **`/specweave:validate`**: Suggests running `/specweave:embed-acs` when ACs are missing
-2. **`/specweave:do`**: Pre-start hook suggests this command if validation fails
-3. **`/specweave:increment`**: Should auto-call this when creating `structure: user-stories` increments
+1. **`/sw:validate`**: Suggests running `/sw:embed-acs` when ACs are missing
+2. **`/sw:do`**: Pre-start hook suggests this command if validation fails
+3. **`/sw:increment`**: Should auto-call this when creating `structure: user-stories` increments
 
 ## Examples
 
 ### Example 1: Basic Usage
 
 ```bash
-/specweave:embed-acs 0050
+/sw:embed-acs 0050
 ```
 
 **Output**:
@@ -399,7 +399,7 @@ Extracting ACs...
 ### Example 2: Dry Run
 
 ```bash
-/specweave:embed-acs 0050 --dry-run
+/sw:embed-acs 0050 --dry-run
 ```
 
 **Output**:
@@ -415,7 +415,7 @@ To apply changes, run without --dry-run flag.
 ### Example 3: Manual Path
 
 ```bash
-/specweave:embed-acs 0050 --living-docs-path .specweave/docs/internal/specs/custom/FS-048
+/sw:embed-acs 0050 --living-docs-path .specweave/docs/internal/specs/custom/FS-048
 ```
 
 **Output**:
@@ -429,10 +429,10 @@ Extracting ACs...
 
 ## Related Commands
 
-- `/specweave:increment`: Create new increment (should auto-embed ACs)
-- `/specweave:validate`: Validate increment (checks AC presence)
-- `/specweave:do`: Start increment (pre-start hook validates ACs)
-- `/specweave:sync-docs`: Sync living documentation
+- `/sw:increment`: Create new increment (should auto-embed ACs)
+- `/sw:validate`: Validate increment (checks AC presence)
+- `/sw:do`: Start increment (pre-start hook validates ACs)
+- `/sw:sync-docs`: Sync living documentation
 
 ## Related Documentation
 

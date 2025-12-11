@@ -431,7 +431,7 @@ npm run test:e2e         # 12m
 SpecWeave provides validation for Test Pyramid compliance:
 
 ```bash
-/specweave:validate-pyramid 0008
+/sw:validate-pyramid 0008
 
 # Output:
 📊 Test Pyramid Analysis: Increment 0008
@@ -553,7 +553,7 @@ graph LR
 **SpecWeave enforces Test Pyramid**:
 - Test strategy in `plan.md`
 - Per-task test distribution in `tasks.md`
-- Validation via `/specweave:validate-pyramid`
+- Validation via `/sw:validate-pyramid`
 - Coverage targets per test type
 
 **Key insight**: **Test at the lowest level possible**. Unit tests are your foundation - fast, reliable, and precise. E2E tests are your safety net - slow but comprehensive. Balance is key.

@@ -62,7 +62,7 @@ graph LR
 ## Step 2: Create Hotfix Increment
 
 ```bash
-/specweave:increment "hotfix: fix auth token validation"
+/sw:increment "hotfix: fix auth token validation"
 ```
 
 This creates a lightweight increment:
@@ -295,7 +295,7 @@ Change was not tested with tokens containing dashes.
 npm run deploy:rollback
 
 # Hotfix
-/specweave:increment "hotfix: ..."
+/sw:increment "hotfix: ..."
 ```
 
 ---
@@ -306,10 +306,10 @@ After hotfix is stable:
 
 ```bash
 # Close the hotfix increment
-/specweave:done 0015
+/sw:done 0015
 
 # Sync progress
-/specweave:sync-progress
+/sw:sync-progress
 
 # The hotfix is now documented for future reference
 ```

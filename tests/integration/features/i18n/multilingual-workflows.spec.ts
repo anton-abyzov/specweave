@@ -345,7 +345,7 @@ test.describe('Multilingual Workflows E2E', () => {
     expect(content).toContain('name: specweave:translate');
 
     // Verify command syntax
-    expect(content).toContain('/specweave:translate');
+    expect(content).toContain('/sw:translate');
     expect(content).toContain('target-language');
     expect(content).toContain('--scope');
   });

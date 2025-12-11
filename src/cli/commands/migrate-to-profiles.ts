@@ -184,7 +184,7 @@ export async function migrateToProfiles(
         console.log('✅ Migration completed successfully!');
         console.log('');
         console.log('Next steps:');
-        console.log('  1. Review profiles: /specweave:sync-profile list');
+        console.log('  1. Review profiles: /sw:sync-profile list');
         console.log('  2. Test sync: Use updated sync commands');
         console.log('  3. Keep backup: .specweave/config.json.backup (until confirmed working)');
       } else {

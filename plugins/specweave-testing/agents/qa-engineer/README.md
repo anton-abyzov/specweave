@@ -331,13 +331,13 @@ Fix or quarantine flaky tests immediately.
 
 ## Integration with SpecWeave
 
-### Use with /specweave:increment
+### Use with /sw:increment
 
 When planning a feature increment:
 
 ```bash
 # 1. Plan increment
-/specweave:increment "Implement user authentication with OAuth"
+/sw:increment "Implement user authentication with OAuth"
 
 # 2. Generate test strategy
 Task({
@@ -346,16 +346,16 @@ Task({
 });
 
 # 3. Implement with TDD
-/specweave:do
+/sw:do
 ```
 
-### Use with /specweave:qa
+### Use with /sw:qa
 
 After implementation, validate test coverage:
 
 ```bash
 # Run quality assessment
-/specweave:qa 0123
+/sw:qa 0123
 
 # Agent checks:
 # - Test coverage (lines, branches, functions)

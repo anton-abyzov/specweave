@@ -266,7 +266,7 @@ Quality checks:
 ### ⏸️ **Keep in English**:
 - Framework terms: increment, spec.md, plan.md, tasks.md, COMPLETION-SUMMARY.md
 - File paths: .specweave/, src/, .claude/
-- Commands: /specweave:inc, /specweave:do, /specweave:progress
+- Commands: /sw:inc, /sw:do, /sw:progress
 - Technical terms: TypeScript, npm, git, API, CLI, REST, JSON, HTTP
 - SpecWeave keywords: living docs, context-manifest.yaml, PM gate
 - Code identifiers: function names, class names, variable names
@@ -321,7 +321,7 @@ Discovered Files:
 Total: 39 files
 
 Estimated Time: 30-45 minutes
-Framework Terms Preserved: increment, spec.md, plan.md, tasks.md, /specweave:*
+Framework Terms Preserved: increment, spec.md, plan.md, tasks.md, /sw:*
 
 Proceed with translation? (Y/n)
 ```

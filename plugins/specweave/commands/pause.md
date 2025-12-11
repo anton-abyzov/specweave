@@ -1,12 +1,12 @@
 ---
 name: specweave:pause
 description: Pause an active increment (blocked by external dependency, deprioritized)
-usage: /specweave:pause <increment-id> --reason="<reason>"
+usage: /sw:pause <increment-id> --reason="<reason>"
 ---
 
 # Pause Increment Command
 
-**Usage**: `/specweave:pause <increment-id> --reason="<reason>"`
+**Usage**: `/sw:pause <increment-id> --reason="<reason>"`
 
 ---
 
@@ -29,7 +29,7 @@ Pause an active increment when:
    - `pausedReason`: User-provided reason
    - `pausedAt`: Current timestamp
 4. **Displays** confirmation message
-5. **Suggests** next actions (`/specweave:resume` to continue)
+5. **Suggests** next actions (`/sw:resume` to continue)
 
 ---
 
@@ -37,17 +37,17 @@ Pause an active increment when:
 
 ### Pause with reason
 ```bash
-/specweave:pause 0006 --reason="Waiting for Stripe API keys"
+/sw:pause 0006 --reason="Waiting for Stripe API keys"
 
 ✅ Increment 0006 paused
 📝 Reason: Waiting for Stripe API keys
 ⏸️  No longer counts toward active limit
-💡 Resume with: /specweave:resume 0006
+💡 Resume with: /sw:resume 0006
 ```
 
 ### Pause without reason (prompts)
 ```bash
-/specweave:pause 0006
+/sw:pause 0006
 
 ❓ Why are you pausing this increment?
    1. Blocked by external dependency
@@ -59,7 +59,7 @@ Pause an active increment when:
 
 ✅ Increment 0006 paused
 📝 Reason: Blocked by external dependency
-💡 Resume with: /specweave:resume 0006
+💡 Resume with: /sw:resume 0006
 ```
 
 ---
@@ -68,7 +68,7 @@ Pause an active increment when:
 
 ### Already Paused
 ```bash
-/specweave:pause 0006 --reason="Different reason"
+/sw:pause 0006 --reason="Different reason"
 
 ⚠️  Increment 0006 is already paused
    Previous reason: Waiting for Stripe API keys
@@ -82,7 +82,7 @@ Update reason? [Y/n]: y
 
 ### Cannot Pause Completed
 ```bash
-/specweave:pause 0005
+/sw:pause 0005
 
 ❌ Cannot pause increment 0005
    Status: completed
@@ -91,19 +91,19 @@ Update reason? [Y/n]: y
 
 ### Cannot Pause Abandoned
 ```bash
-/specweave:pause 0008
+/sw:pause 0008
 
 ❌ Cannot pause increment 0008
    Status: abandoned
-   Resume it first: /specweave:resume 0008
+   Resume it first: /sw:resume 0008
 ```
 
 ### Increment Not Found
 ```bash
-/specweave:pause 9999
+/sw:pause 9999
 
 ❌ Increment not found: 9999
-💡 Check available increments: /specweave:status
+💡 Check available increments: /sw:status
 ```
 
 ---
@@ -165,10 +165,10 @@ active ──pause──> paused
 
 ## Warning: Stale Paused Increments
 
-Increments paused for **7+ days** trigger warnings in `/specweave:status`:
+Increments paused for **7+ days** trigger warnings in `/sw:status`:
 
 ```bash
-/specweave:status
+/sw:status
 
 ⏸️  Paused (1):
   🔄 0007-stripe-integration [feature]
@@ -177,13 +177,13 @@ Increments paused for **7+ days** trigger warnings in `/specweave:status`:
      ⚠️  STALE! Review or abandon?
 
 💡 Actions:
-   /specweave:resume 0007  # If unblocked
-   /specweave:abandon 0007 # If no longer needed
+   /sw:resume 0007  # If unblocked
+   /sw:abandon 0007 # If no longer needed
 ```
 
 ---
 
-**Command**: `/specweave:pause`
+**Command**: `/sw:pause`
 **Plugin**: specweave (core)
 **Version**: v0.7.0+
 **Part of**: Increment 0007 - Smart Status Management

@@ -847,7 +847,7 @@ This step uses the existing sync infrastructure to:
 **Run the sync-specs command:**
 
 ```bash
-/specweave:sync-specs {increment-id}
+/sw:sync-specs {increment-id}
 ```
 
 **Expected output:**
@@ -875,7 +875,7 @@ If `canUpsertInternalItems: false` in config:
 External tool sync failures are NON-BLOCKING:
 ```
 ⚠️ External sync failed: Rate limit exceeded
-💡 Run /specweave:sync-specs {increment-id} to retry
+💡 Run /sw:sync-specs {increment-id} to retry
 ```
 
 **Output after sync:**
@@ -885,8 +885,8 @@ External tool sync failures are NON-BLOCKING:
 
 Next steps:
 1. Review the increment plan and docs
-2. Start implementation: /specweave:do {increment-id}
-3. Monitor status: /specweave:status {increment-id}
+2. Start implementation: /sw:do {increment-id}
+3. Monitor status: /sw:status {increment-id}
 ```
 
 ---
@@ -1043,17 +1043,17 @@ node plugins/specweave/skills/increment-planner/scripts/generate-short-name.js "
 
 **GitHub Issues**: After increment creation, optionally sync to GitHub:
 ```bash
-/specweave-github:create-issue 0021
+/sw-github:create-issue 0021
 ```
 
 **Jira Epics**: Sync to Jira:
 ```bash
-/specweave-jira:sync 0021
+/sw-jira:sync 0021
 ```
 
 **Azure DevOps**: Sync to ADO work items:
 ```bash
-/specweave-ado:create-workitem 0021
+/sw-ado:create-workitem 0021
 ```
 
 ---

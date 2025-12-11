@@ -81,7 +81,7 @@ description: Creates implementation plans for SpecWeave increments.
 
 ```mermaid
 graph LR
-    A["/specweave:increment"] --> B[PM Agent spawned]
+    A["/sw:increment"] --> B[PM Agent spawned]
     B --> C[Isolated context]
     C --> D[Generate spec.md]
     D --> E[Return to main context]

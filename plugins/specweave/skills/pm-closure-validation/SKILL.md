@@ -531,10 +531,10 @@ When approving closure, summarize what was delivered:
 - **architect**: Designs technical solution (plan.md)
 
 ### Commands
-- `/specweave:done {increment-id}` - Trigger PM closure validation
-- `/specweave:status {increment-id}` - Check increment status
-- `/specweave:validate {increment-id}` - Run validation checks
-- `/specweave:check-tests {increment-id}` - Validate test coverage
+- `/sw:done {increment-id}` - Trigger PM closure validation
+- `/sw:status {increment-id}` - Check increment status
+- `/sw:validate {increment-id}` - Run validation checks
+- `/sw:check-tests {increment-id}` - Validate test coverage
 
 ---
 

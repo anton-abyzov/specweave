@@ -272,7 +272,7 @@ Acceptance Criteria:
 ```
 
 **SpecWeave Integration**
-- `/specweave:increment "Add wishlist feature"` creates `spec.md`
+- `/sw:increment "Add wishlist feature"` creates `spec.md`
 - PM agent generates user stories with AC-IDs
 - Traceability from requirements to tests
 
@@ -352,7 +352,7 @@ git push origin feature/wishlist-backend
 ```
 
 **SpecWeave Integration**
-- `/specweave:do` executes tasks from `tasks.md`
+- `/sw:do` executes tasks from `tasks.md`
 - Embedded test plans (BDD format)
 - AC-ID traceability (spec → task → test)
 
@@ -405,7 +405,7 @@ graph TB
 - Tests embedded in `tasks.md` (v0.7.0+)
 - BDD format: Given/When/Then
 - Coverage targets per task (80-90%)
-- `/specweave:validate-coverage` checks completeness
+- `/sw:validate-coverage` checks completeness
 
 ### Phase 5: Deployment
 
@@ -1025,7 +1025,7 @@ POST   /refunds (admin only)
 **Phase 1: Planning**
 ```bash
 # PM creates increment
-/specweave:increment "Add wishlist feature"
+/sw:increment "Add wishlist feature"
 
 # Generates spec.md with:
 # - User stories (US-001: Save items to wishlist)
@@ -1052,7 +1052,7 @@ POST   /refunds (admin only)
 # - T-005: Documentation update
 
 # Execute tasks
-/specweave:do
+/sw:do
 
 # Claude Code implements T-001, T-002, etc.
 # After each task: post-task-completion hook syncs living docs
@@ -1061,7 +1061,7 @@ POST   /refunds (admin only)
 **Phase 4: Testing**
 ```bash
 # Validate test coverage
-/specweave:validate-coverage
+/sw:validate-coverage
 
 # Output:
 # ✅ T-001: 92% coverage (target: 90%)
@@ -1171,7 +1171,7 @@ Result: Clear traceability from requirement to test
 **Benefits**
 - Understand test purpose (AC-US1-01 explains why this test exists)
 - Safe refactoring (if requirement changes, update linked tests)
-- Coverage analysis (/specweave:validate-coverage shows AC-ID coverage)
+- Coverage analysis (/sw:validate-coverage shows AC-ID coverage)
 
 ### 4. Living Documentation (Auto-Sync)
 
@@ -1584,14 +1584,14 @@ Deepen your understanding of key concepts:
 
 2. **Create Your First Increment**
    ```bash
-   /specweave:increment "Add user authentication"
+   /sw:increment "Add user authentication"
    ```
 
 3. **Follow the Workflow**
    - PM agent generates `spec.md` (user stories, AC)
    - Architect agent creates `plan.md` (HLD, LLD, ADRs)
    - Tech Lead generates `tasks.md` (embedded tests)
-   - `/specweave:do` executes tasks
+   - `/sw:do` executes tasks
    - Living docs sync automatically
 
 4. **Join the Community**

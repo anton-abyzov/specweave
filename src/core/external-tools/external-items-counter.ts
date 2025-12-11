@@ -4,15 +4,15 @@
  * Three-tier architecture for 1000+ items:
  *
  * TIER 1: getCounts() - Super fast, counts only, 30min cache
- *         Used by: /specweave:status, progress footer
+ *         Used by: /sw:status, progress footer
  *         API calls: 1 per provider (just count)
  *
  * TIER 2: getSummary() - Project breakdown, 15min cache
- *         Used by: /specweave:external overview
+ *         Used by: /sw:external overview
  *         API calls: 1 per provider (count + project grouping)
  *
  * TIER 3: getItems(filter) - Paginated details, on-demand
- *         Used by: /specweave:external --project X --limit 20
+ *         Used by: /sw:external --project X --limit 20
  *         API calls: 1 per request (paginated)
  */
 
@@ -127,7 +127,7 @@ export class ExternalItemsCounter {
 
   /**
    * Get paginated items - on-demand, no cache
-   * Used when user drills down: /specweave:external --limit 20
+   * Used when user drills down: /sw:external --limit 20
    */
   async getItems(filter?: ItemsFilter): Promise<PaginatedItemsResult> {
     const provider = filter?.provider || 'github';

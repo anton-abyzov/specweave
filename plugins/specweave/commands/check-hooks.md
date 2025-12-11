@@ -5,7 +5,7 @@ description: Comprehensive health check for hooks - detects import errors, runti
 
 # Check Hook Health
 
-**Command**: `/specweave:check-hooks`
+**Command**: `/sw:check-hooks`
 
 Runs comprehensive health check on all hooks in the project.
 Detects import errors, runtime failures, performance issues, and provides auto-fix suggestions.
@@ -14,22 +14,22 @@ Detects import errors, runtime failures, performance issues, and provides auto-f
 
 ```bash
 # Check all hooks
-/specweave:check-hooks
+/sw:check-hooks
 
 # Check and auto-fix issues
-/specweave:check-hooks --fix
+/sw:check-hooks --fix
 
 # Check only critical hooks
-/specweave:check-hooks --critical
+/sw:check-hooks --critical
 
 # Verbose output with details
-/specweave:check-hooks --verbose
+/sw:check-hooks --verbose
 
 # Check specific hook
-/specweave:check-hooks update-ac-status
+/sw:check-hooks update-ac-status
 
 # Generate markdown report
-/specweave:check-hooks --format markdown --output report.md
+/sw:check-hooks --format markdown --output report.md
 ```
 
 ## Options
@@ -177,10 +177,10 @@ fi
 ## Troubleshooting
 
 ### "Hook execution timeout"
-Increase timeout: `/specweave:check-hooks --timeout 10000`
+Increase timeout: `/sw:check-hooks --timeout 10000`
 
 ### "Cannot find module"
-Run with auto-fix: `/specweave:check-hooks --fix`
+Run with auto-fix: `/sw:check-hooks --fix`
 
 ### "Permission denied"
 Check hook file permissions: `chmod +x plugins/*/hooks/*.sh`

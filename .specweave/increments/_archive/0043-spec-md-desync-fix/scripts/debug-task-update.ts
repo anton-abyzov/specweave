@@ -36,7 +36,7 @@ async function testUpdateTasksSection() {
 
   // Test replacement
   const mockTasks = `- [ ] **T-013**: Test Status Line Hook Reads Updated spec.md
-- [ ] **T-014**: Test /specweave:done Updates spec.md
+- [ ] **T-014**: Test /sw:done Updates spec.md
 - [ ] **T-020**: Write E2E Test (Full Increment Lifecycle)
 - [ ] **T-023**: Manual Testing Checklist Execution
 - [ ] **T-024**: Update User Guide (Troubleshooting Section)`;

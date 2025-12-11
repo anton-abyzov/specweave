@@ -121,7 +121,7 @@ Best for: Migrating from GitHub-first workflow to SpecWeave
 
 **4. Manual sync only**
 ```
-Use /specweave-github:sync command when needed
+Use /sw-github:sync command when needed
 
 Features:
 - No automatic sync via hooks
@@ -148,7 +148,7 @@ GitHub ↔ Jira
 
 **1. Yes, auto-create (Recommended)**
 ```
-Every /specweave:increment creates a GitHub issue automatically
+Every /sw:increment creates a GitHub issue automatically
 
 Benefits:
 - Immediate team visibility
@@ -161,7 +161,7 @@ Best for: Teams that want automatic GitHub integration
 
 **2. No, manual creation**
 ```
-Use /specweave-github:create-issue manually when needed
+Use /sw-github:create-issue manually when needed
 
 Benefits:
 - Create issues only for important increments
@@ -237,7 +237,7 @@ Best for: Migrating from Jira-first workflow to SpecWeave
 
 **4. Manual sync only**
 ```
-Use /specweave-jira:sync command when needed
+Use /sw-jira:sync command when needed
 
 Features:
 - No automatic sync via hooks
@@ -312,7 +312,7 @@ Best for: Migrating from ADO-first workflow to SpecWeave
 
 **4. Manual sync only**
 ```
-Use /specweave-ado:sync command when needed
+Use /sw-ado:sync command when needed
 
 Features:
 - No automatic sync via hooks
@@ -424,7 +424,7 @@ ADO_PAT=xxx
 **Trigger**: Explicit command
 
 **Flow**:
-1. User runs `/specweave-github:sync [increment-id]`
+1. User runs `/sw-github:sync [increment-id]`
 2. Choose direction: pull, push, or bidirectional
 3. Execute sync operation
 4. Report results to user
@@ -470,7 +470,7 @@ GitHub and Jira do NOT sync with each other. SpecWeave is the hub.
 
 **A**:
 1. Set sync direction: **Import-only**
-2. Run: `/specweave-github:import-all`
+2. Run: `/sw-github:import-all`
 3. SpecWeave creates increments from GitHub issues
 4. Review and adjust as needed
 5. Switch to **Bidirectional** when ready
@@ -479,7 +479,7 @@ GitHub and Jira do NOT sync with each other. SpecWeave is the hub.
 
 **A**: Yes! Use manual sync:
 ```bash
-/specweave-github:sync 0042-auth-feature  # Sync specific increment
+/sw-github:sync 0042-auth-feature  # Sync specific increment
 ```
 
 Auto-sync only affects **active** increments (not completed/abandoned).
@@ -488,7 +488,7 @@ Auto-sync only affects **active** increments (not completed/abandoned).
 
 ## Troubleshooting
 
-### Issue: GitHub issue not created after `/specweave:increment`
+### Issue: GitHub issue not created after `/sw:increment`
 
 **Diagnosis**:
 1. Check GitHub CLI: `gh auth status`
@@ -498,7 +498,7 @@ Auto-sync only affects **active** increments (not completed/abandoned).
 **Fix**:
 ```bash
 # Manual creation
-/specweave-github:create-issue 0042-auth-feature
+/sw-github:create-issue 0042-auth-feature
 ```
 
 ### Issue: Jira epic not updating
@@ -512,7 +512,7 @@ Auto-sync only affects **active** increments (not completed/abandoned).
 **Fix**:
 ```bash
 # Manual sync
-/specweave-jira:sync 0042-auth-feature --force
+/sw-jira:sync 0042-auth-feature --force
 ```
 
 ### Issue: Conflict during bidirectional sync
@@ -587,23 +587,23 @@ When experimenting or testing:
 ## Related Slash Commands
 
 ### GitHub
-- `/specweave-github:sync [increment-id]` - Manual sync
-- `/specweave-github:create-issue [increment-id]` - Create issue
-- `/specweave-github:close-issue [increment-id]` - Close issue
-- `/specweave-github:import-all` - Import all GitHub issues
-- `/specweave-github:status [increment-id]` - Check sync status
+- `/sw-github:sync [increment-id]` - Manual sync
+- `/sw-github:create-issue [increment-id]` - Create issue
+- `/sw-github:close-issue [increment-id]` - Close issue
+- `/sw-github:import-all` - Import all GitHub issues
+- `/sw-github:status [increment-id]` - Check sync status
 
 ### Jira
-- `/specweave-jira:sync [increment-id]` - Manual sync
-- `/specweave-jira:create-epic [increment-id]` - Create epic
-- `/specweave-jira:import-all` - Import all Jira epics
-- `/specweave-jira:status [increment-id]` - Check sync status
+- `/sw-jira:sync [increment-id]` - Manual sync
+- `/sw-jira:create-epic [increment-id]` - Create epic
+- `/sw-jira:import-all` - Import all Jira epics
+- `/sw-jira:status [increment-id]` - Check sync status
 
 ### Azure DevOps
-- `/specweave-ado:sync [increment-id]` - Manual sync
-- `/specweave-ado:create-workitem [increment-id]` - Create work item
-- `/specweave-ado:import-all` - Import all ADO work items
-- `/specweave-ado:status [increment-id]` - Check sync status
+- `/sw-ado:sync [increment-id]` - Manual sync
+- `/sw-ado:create-workitem [increment-id]` - Create work item
+- `/sw-ado:import-all` - Import all ADO work items
+- `/sw-ado:status [increment-id]` - Check sync status
 
 ---
 

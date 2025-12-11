@@ -57,16 +57,16 @@ description: Sync tasks.md with actual completion status (GitHub issue or realit
 
 ```bash
 # Auto-detect and sync
-/specweave:sync-tasks
+/sw:sync-tasks
 
 # Sync specific increment
-/specweave:sync-tasks 0007
+/sw:sync-tasks 0007
 
 # Force sync from GitHub (skip git check)
-/specweave:sync-tasks --source=github
+/sw:sync-tasks --source=github
 
 # Dry run (show what would change)
-/specweave:sync-tasks --dry-run
+/sw:sync-tasks --dry-run
 ```
 
 ---
@@ -212,31 +212,31 @@ Progress recalculated:
 
 ✓ tasks.md synced successfully!
 
-Next: Run /specweave:progress to verify
+Next: Run /sw:progress to verify
 ```
 
 ---
 
 ## Integration with Other Commands
 
-### /specweave:progress
+### /sw:progress
 ```bash
 # Check sync status before showing progress
-/specweave:sync-tasks --validate
+/sw:sync-tasks --validate
 # If out of sync, warn user
 ```
 
-### /specweave:validate
+### /sw:validate
 ```bash
 # Validate tasks.md is in sync
-/specweave:sync-tasks --validate
+/sw:sync-tasks --validate
 # Fail validation if mismatch detected
 ```
 
-### /specweave:done
+### /sw:done
 ```bash
 # Ensure tasks.md is current before closing
-/specweave:sync-tasks --auto
+/sw:sync-tasks --auto
 # Auto-sync if needed, then proceed
 ```
 
@@ -249,7 +249,7 @@ Next: Run /specweave:progress to verify
 - ✅ Syncs from git history (fallback)
 - ✅ Updates progress counters accurately
 - ✅ Commits changes with clear message
-- ✅ Integrates with /specweave:progress, /specweave:validate, /specweave:done
+- ✅ Integrates with /sw:progress, /sw:validate, /sw:done
 
 ---
 

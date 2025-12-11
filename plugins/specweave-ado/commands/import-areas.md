@@ -10,10 +10,10 @@ You are an Azure DevOps integration expert. Help the user import area paths from
 ## Command Usage
 
 ```bash
-/specweave-ado:import-areas                         # Interactive mode (prompts for project)
-/specweave-ado:import-areas --project MyProduct     # Specific ADO project
-/specweave-ado:import-areas --dry-run               # Preview without creating directories
-/specweave-ado:import-areas --include-children      # Include child area paths
+/sw-ado:import-areas                         # Interactive mode (prompts for project)
+/sw-ado:import-areas --project MyProduct     # Specific ADO project
+/sw-ado:import-areas --dry-run               # Preview without creating directories
+/sw-ado:import-areas --include-children      # Include child area paths
 ```
 
 ## Your Task
@@ -226,8 +226,8 @@ Area paths imported:
     Keywords: infrastructure, ci, cd, terraform
 
 💡 Next steps:
-  1. Use /specweave:switch-project fe to switch active project
-  2. Create increment: /specweave:increment "feature name"
+  1. Use /sw:switch-project fe to switch active project
+  2. Create increment: /sw:increment "feature name"
   3. User stories will auto-sync to the correct area path based on keywords
 
 📖 Documentation: .specweave/docs/internal/architecture/adr/0143-jira-ado-multi-level-project-mapping.md
@@ -237,7 +237,7 @@ Area paths imported:
 
 ### Example 1: Interactive Import
 ```
-User: /specweave-ado:import-areas
+User: /sw-ado:import-areas
 
 You:
 🔷 Azure DevOps Area Path Import
@@ -261,7 +261,7 @@ Mapping to SpecWeave projects:
 
 ### Example 2: Dry Run
 ```
-User: /specweave-ado:import-areas --project MyProduct --dry-run
+User: /sw-ado:import-areas --project MyProduct --dry-run
 
 You:
 🔷 Azure DevOps Area Path Import (DRY RUN)
@@ -281,7 +281,7 @@ No changes made (dry run).
 
 ### Example 3: Already Configured
 ```
-User: /specweave-ado:import-areas
+User: /sw-ado:import-areas
 
 You:
 ⚠️  Area path mapping already exists for project MyProduct
@@ -333,7 +333,7 @@ Available projects you have access to:
   - Infrastructure (DevOps & Infrastructure)
   - Legacy (Legacy Systems)
 
-Tip: Use /specweave-ado:import-areas --project MyProduct
+Tip: Use /sw-ado:import-areas --project MyProduct
 ```
 
 **No area paths found:**
@@ -352,7 +352,7 @@ Suggestions:
 
 ## Related Commands
 
-- `/specweave-ado:import-projects` - Import multiple ADO projects
-- `/specweave-ado:sync` - Sync increments with ADO
-- `/specweave:switch-project` - Switch active SpecWeave project
-- `/specweave:init-multiproject` - Initialize multi-project mode
+- `/sw-ado:import-projects` - Import multiple ADO projects
+- `/sw-ado:sync` - Sync increments with ADO
+- `/sw:switch-project` - Switch active SpecWeave project
+- `/sw:init-multiproject` - Initialize multi-project mode

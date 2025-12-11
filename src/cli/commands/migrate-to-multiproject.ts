@@ -183,7 +183,7 @@ export async function autoMigrateSingleToMulti(
     }
 
     console.log(`\n✅ Migration complete! Using flattened specs/${projectId}/ structure`);
-    console.log('💡 Run /specweave:init-multiproject to enable multi-project mode\n');
+    console.log('💡 Run /sw:init-multiproject to enable multi-project mode\n');
 
     result.success = result.errors.length === 0;
     return result;

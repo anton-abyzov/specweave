@@ -5,7 +5,7 @@ description: Close JIRA issue when increment complete
 
 # Close JIRA Issue Command
 
-**Usage**: `/specweave-jira:close <increment-id>`
+**Usage**: `/sw-jira:close <increment-id>`
 
 **Purpose**: Close JIRA issue and add completion summary
 
@@ -113,7 +113,7 @@ if (!issueKey) {
 ⚠️ No JIRA issue linked
 
 This increment is not linked to a JIRA issue.
-First create an issue with: /specweave-jira:create ${incrementId}
+First create an issue with: /sw-jira:create ${incrementId}
 `);
   return;
 }
@@ -178,7 +178,7 @@ This command requires **both** permissions:
 ### Success
 
 ```
-User: /specweave-jira:close 0005-payment-integration
+User: /sw-jira:close 0005-payment-integration
 
 Claude:
 Checking permissions...
@@ -209,7 +209,7 @@ URL: https://company.atlassian.net/browse/MYPROJ-123
 ### Permission Denied
 
 ```
-User: /specweave-jira:close 0005
+User: /sw-jira:close 0005
 
 Claude:
 Checking permissions...
@@ -228,7 +228,7 @@ Update .specweave/config.json to enable these permissions.
 ### Incomplete Increment
 
 ```
-User: /specweave-jira:close 0005
+User: /sw-jira:close 0005
 
 Claude:
 Checking permissions...
@@ -252,7 +252,7 @@ Complete remaining tasks:
 ### No Issue Linked
 
 ```
-User: /specweave-jira:close 0005
+User: /sw-jira:close 0005
 
 Claude:
 Checking linked issue...
@@ -260,7 +260,7 @@ Checking linked issue...
 ⚠️ No JIRA issue linked
 
 This increment is not linked to a JIRA issue.
-First create an issue with: /specweave-jira:create 0005
+First create an issue with: /sw-jira:create 0005
 ```
 
 ---
@@ -290,8 +290,8 @@ After successful closure, the increment's `metadata.json` will be updated:
 
 | Command | Purpose |
 |---------|---------|
-| `/specweave-jira:pull` | Pull changes from JIRA |
-| `/specweave-jira:push` | Push progress to JIRA |
-| `/specweave-jira:sync` | Two-way sync |
-| `/specweave-jira:create` | Create JIRA issue |
-| `/specweave-jira:status` | Check sync status |
+| `/sw-jira:pull` | Pull changes from JIRA |
+| `/sw-jira:push` | Push progress to JIRA |
+| `/sw-jira:sync` | Two-way sync |
+| `/sw-jira:create` | Create JIRA issue |
+| `/sw-jira:status` | Check sync status |
