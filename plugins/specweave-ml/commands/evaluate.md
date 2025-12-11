@@ -1,5 +1,5 @@
 ---
-name: specweave-ml:ml-evaluate
+name: sw-ml:ml-evaluate
 description: Evaluate ML model with comprehensive metrics
 ---
 

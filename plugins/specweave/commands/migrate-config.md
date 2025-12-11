@@ -1,5 +1,5 @@
 ---
-name: specweave:migrate-config
+name: sw:migrate-config
 description: Migrate .env-only configuration to split secrets/config format (v0.24.0+)
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: specweave:done
+name: sw:done
 description: Close increment with PM validation - checks tasks, tests, and docs before closing
 ---
 

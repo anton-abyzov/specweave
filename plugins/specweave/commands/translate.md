@@ -1,5 +1,5 @@
 ---
-name: specweave:translate
+name: sw:translate
 description: Translate SpecWeave project content to target language using LLM-native zero-cost translation
 ---
 

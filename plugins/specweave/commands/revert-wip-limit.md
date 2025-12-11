@@ -1,5 +1,5 @@
 ---
-name: specweave:revert-wip-limit
+name: sw:revert-wip-limit
 description: Revert WIP limit to original value after temporary adjustment
 ---
 

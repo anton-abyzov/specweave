@@ -1,5 +1,5 @@
 ---
-name: specweave:abandon
+name: sw:abandon
 description: Abandon an incomplete increment (requirements changed, obsolete)
 usage: /sw:abandon <increment-id> --reason="<reason>"
 ---

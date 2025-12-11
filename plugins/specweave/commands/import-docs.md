@@ -1,5 +1,5 @@
 ---
-name: specweave:import-docs
+name: sw:import-docs
 description: Import brownfield documentation from Notion exports, Confluence, GitHub Wiki, or any markdown folder. Automatically classifies files as specs, modules, team docs, or legacy.
 ---
 

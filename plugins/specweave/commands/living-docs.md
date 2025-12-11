@@ -1,5 +1,5 @@
 ---
-name: specweave:living-docs
+name: sw:living-docs
 description: Launch or resume Living Docs Builder independently. Generates documentation from codebase analysis with AI-powered insights.
 usage: /sw:living-docs [--resume <jobId>] [--depth <level>] [--priority <modules>] [--sources <folders>] [--depends-on <jobIds>] [--foreground] [--full-scan]
 ---

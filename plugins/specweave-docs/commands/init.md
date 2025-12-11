@@ -1,5 +1,5 @@
 ---
-name: specweave-docs:init
+name: sw-docs:init
 description: Initialize Docusaurus documentation site with spec-driven structure, living docs integration, and SpecWeave-optimized configuration.
 ---
 

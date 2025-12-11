@@ -1,5 +1,5 @@
 ---
-name: specweave-ml:ml-explain
+name: sw-ml:ml-explain
 description: Generate model explainability reports (SHAP, LIME, feature importance)
 ---
 

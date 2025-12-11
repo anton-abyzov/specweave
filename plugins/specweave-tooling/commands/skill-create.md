@@ -1,5 +1,5 @@
 ---
-name: specweave-tooling:skill-create
+name: sw-tooling:skill-create
 description: Create new Claude Code skill with proper YAML frontmatter, directory structure, and activation triggers. Interactive wizard for skill creation with validation and best practices.
 ---
 

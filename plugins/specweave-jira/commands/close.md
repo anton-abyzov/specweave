@@ -1,5 +1,5 @@
 ---
-name: specweave-jira:close
+name: sw-jira:close
 description: Close JIRA issue when increment complete
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: specweave:fix-duplicates
+name: sw:fix-duplicates
 description: Automatically detect and resolve duplicate increments with smart conflict resolution
 ---
 
