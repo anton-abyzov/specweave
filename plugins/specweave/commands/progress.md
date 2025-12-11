@@ -1,5 +1,5 @@
 ---
-name: specweave:progress
+name: sw:progress
 description: Show progress for all active increments with task completion status
 ---
 

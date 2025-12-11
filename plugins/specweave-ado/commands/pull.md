@@ -1,5 +1,5 @@
 ---
-name: specweave-ado:pull
+name: sw-ado:pull
 description: Pull latest changes from Azure DevOps (like git pull). Supports increment, project, or full living docs sync.
 ---
 

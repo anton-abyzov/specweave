@@ -1,5 +1,5 @@
 ---
-name: specweave-ado:create
+name: sw-ado:create
 description: Create Azure DevOps work item from SpecWeave increment
 ---
 

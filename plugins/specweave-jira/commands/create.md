@@ -1,5 +1,5 @@
 ---
-name: specweave-jira:create
+name: sw-jira:create
 description: Create JIRA issue from SpecWeave increment
 ---
 

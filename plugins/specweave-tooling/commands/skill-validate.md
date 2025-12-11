@@ -1,5 +1,5 @@
 ---
-name: specweave-tooling:skill-validate
+name: sw-tooling:skill-validate
 description: Validate Claude Code skill structure, YAML frontmatter, and activation triggers. Comprehensive validation with detailed error reporting and auto-fix suggestions.
 ---
 

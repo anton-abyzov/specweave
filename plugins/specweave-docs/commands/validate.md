@@ -1,5 +1,5 @@
 ---
-name: specweave-docs:validate
+name: sw-docs:validate
 description: Validate documentation before preview/build. Catches YAML, MDX, broken links, and naming issues. Auto-fix available. Run this BEFORE preview or build to prevent cryptic webpack errors.
 ---
 

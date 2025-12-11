@@ -1,5 +1,5 @@
 ---
-name: specweave:update-status
+name: sw:update-status
 description: Force-update status line cache with latest increment status
 ---
 

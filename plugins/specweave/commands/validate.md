@@ -1,5 +1,5 @@
 ---
-name: specweave:validate
+name: sw:validate
 description: Validate SpecWeave increment with rule-based checks and optional AI quality assessment
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: specweave:workflow
+name: sw:workflow
 description: Smart workflow navigator - shows current phase, reviews spec/tasks, suggests next step (validate, close, sync). Shows external tool status.
 ---
 

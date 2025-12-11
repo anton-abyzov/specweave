@@ -1,5 +1,5 @@
 ---
-name: specweave-ml:ml-deploy
+name: sw-ml:ml-deploy
 description: Generate deployment artifacts (API, Docker, monitoring)
 ---
 
