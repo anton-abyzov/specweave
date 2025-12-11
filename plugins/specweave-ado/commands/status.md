@@ -1,5 +1,5 @@
 ---
-name: specweave-ado:status
+name: sw-ado:status
 description: Check Azure DevOps sync status for increment
 ---
 

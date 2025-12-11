@@ -1,5 +1,5 @@
 ---
-name: specweave:backlog
+name: sw:backlog
 description: Move an increment to backlog (planned but not ready to start)
 usage: /sw:backlog <increment-id> --reason="<reason>"
 ---

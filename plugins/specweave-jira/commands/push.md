@@ -1,5 +1,5 @@
 ---
-name: specweave-jira:push
+name: sw-jira:push
 description: Push local progress to Jira (like git push). Updates epic/story with task completion and comments.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: specweave:restore
+name: sw:restore
 description: Restore archived increments back to active folder
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: specweave-tooling:skill-package
+name: sw-tooling:skill-package
 description: Package Claude Code skill for distribution via npm, GitHub, or direct sharing. Creates distributable archives with installation instructions and validation.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: specweave-docs:health
+name: sw-docs:health
 description: Documentation health report - analyzes docs for freshness, coverage, naming violations, duplicates, and provides recommendations.
 ---
 

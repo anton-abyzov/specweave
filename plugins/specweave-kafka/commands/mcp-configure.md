@@ -1,5 +1,5 @@
 ---
-name: specweave-kafka:mcp-configure
+name: sw-kafka:mcp-configure
 description: Configure MCP (Model Context Protocol) server for Kafka integration. Auto-detects and configures kanapuli, tuannvm, Joel-hanson, or Confluent MCP servers.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: specweave:validate-features
+name: sw:validate-features
 description: Validate feature folder consistency across project folders. Detects orphaned features, missing FEATURE.md, and auto-repairs discrepancies. Use for periodic health checks of living docs structure.
 ---
 

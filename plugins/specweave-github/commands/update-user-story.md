@@ -1,5 +1,5 @@
 ---
-name: specweave-github:update-user-story
+name: sw-github:update-user-story
 description: Update GitHub issue for user story with proper ACs and tasks
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: specweave
+name: sw
 description: SpecWeave command reference and help. Shows available commands. DO NOT use routing syntax like '/specweave do' - always use full namespaced commands like '/sw:do' instead.
 ---
 

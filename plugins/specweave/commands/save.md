@@ -1,5 +1,5 @@
 ---
-name: specweave:save
+name: sw:save
 description: SMART save - auto-generates commit messages, handles git pull/merge/rebase automatically, resolves divergent branches, stashes dirty work. Works for single repos and umbrella multi-repo setups. Just run /sw:save with no args for fully automatic save!
 ---
 

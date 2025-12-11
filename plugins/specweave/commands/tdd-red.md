@@ -1,5 +1,5 @@
 ---
-name: specweave:tdd-red
+name: sw:tdd-red
 description: Write comprehensive failing tests following TDD red phase principles. Generates failing tests that properly define expected behavior.
 ---
 

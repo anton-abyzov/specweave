@@ -1,5 +1,5 @@
 ---
-name: specweave-release:npm
+name: sw-release:npm
 description: Bump patch version, auto-commit dirty changes, push to GitHub, build, publish to npmjs.org. Use --quick for save+release (no GH workflow). Use --ci for GitHub Actions publish. Use --only for local publish without git push. Use --only --local for version bump only.
 ---
 

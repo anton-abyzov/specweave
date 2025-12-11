@@ -1,5 +1,5 @@
 ---
-name: specweave-kafka:monitor-setup
+name: sw-kafka:monitor-setup
 description: Set up comprehensive Kafka monitoring with Prometheus + Grafana. Configures JMX exporter, dashboards, and alerting rules.
 ---
 

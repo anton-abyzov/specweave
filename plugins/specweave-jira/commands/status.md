@@ -1,5 +1,5 @@
 ---
-name: specweave-jira:status
+name: sw-jira:status
 description: Check JIRA sync status for SpecWeave increment
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: specweave:resume
+name: sw:resume
 description: Resume a paused or backlog increment
 usage: /sw:resume <increment-id>
 ---

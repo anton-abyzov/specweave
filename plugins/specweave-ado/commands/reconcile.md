@@ -1,5 +1,5 @@
 ---
-name: specweave-ado:reconcile
+name: sw-ado:reconcile
 description: Reconcile Azure DevOps work item states with increment statuses. Fixes drift by closing work items for completed increments and reactivating work items for resumed increments.
 ---
 

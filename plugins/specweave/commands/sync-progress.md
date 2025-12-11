@@ -1,5 +1,5 @@
 ---
-name: specweave:sync-progress
+name: sw:sync-progress
 description: Comprehensive progress sync - tasks.md → living docs → external tools (GitHub/JIRA/ADO). Updates all systems with latest task completion status.
 ---
 

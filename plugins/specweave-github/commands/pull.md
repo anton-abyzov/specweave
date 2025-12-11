@@ -1,5 +1,5 @@
 ---
-name: specweave-github:pull
+name: sw-github:pull
 description: Pull latest changes from GitHub Issues (like git pull). Imports comments, labels, and status changes.
 ---
 

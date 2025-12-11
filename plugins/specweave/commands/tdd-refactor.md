@@ -1,5 +1,5 @@
 ---
-name: specweave:tdd-refactor
+name: sw:tdd-refactor
 description: Refactor code with confidence using comprehensive test safety net. Applies design patterns, improves code quality, and optimizes performance while keeping all tests green.
 ---
 

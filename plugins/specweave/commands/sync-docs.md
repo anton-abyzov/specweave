@@ -1,5 +1,5 @@
 ---
-name: specweave:sync-docs
+name: sw:sync-docs
 description: Strategic documentation sync - review docs before implementation (pull context) OR export learnings after implementation (push to living docs). NOT bidirectional - two separate one-way operations at different phases.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: specweave-infrastructure:monitor-setup
+name: sw-infra:monitor-setup
 description: Set up comprehensive monitoring and observability with Prometheus, Grafana, distributed tracing, and log aggregation
 ---
 

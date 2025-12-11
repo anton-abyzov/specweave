@@ -1,5 +1,5 @@
 ---
-name: specweave-ado:push
+name: sw-ado:push
 description: Push local changes to Azure DevOps (like git push). Supports increment, project, or full living docs sync.
 ---
 

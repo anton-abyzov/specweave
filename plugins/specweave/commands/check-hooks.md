@@ -1,5 +1,5 @@
 ---
-name: specweave:check-hooks
+name: sw:check-hooks
 description: Comprehensive health check for hooks - detects import errors, runtime failures, performance issues, and provides auto-fix suggestions
 ---
 
