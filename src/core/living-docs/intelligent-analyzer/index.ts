@@ -18,6 +18,17 @@ import { EnterpriseGenerator } from '../enterprise/enterprise-generator.js';
 import { DeliveryGenerator } from '../delivery/delivery-generator.js';
 import { OpsGenerator } from '../operations/ops-generator.js';
 import { MermaidGenerator } from '../diagrams/mermaid-generator.js';
+import {
+  detectEcosystems,
+  parsePythonStandards,
+  parseGoStandards,
+  parseJavaStandards,
+  parseFrontendStandards,
+  generateStandardsMarkdown,
+  generateUnifiedSummary,
+  type DetectedEcosystem,
+  type GeneratedFile,
+} from '../governance/index.js';
 import type { OrganizationSynthesisResult } from './organization-synthesizer.js';
 import type { InconsistencyResult } from './inconsistency-detector.js';
 import type {
@@ -41,6 +52,8 @@ export interface IntelligentAnalysisOptions {
   enableDeliveryOps?: boolean;
   /** Enable Mermaid diagram generation (Phase H) */
   enableDiagrams?: boolean;
+  /** Enable governance/standards detection (Phase G.4) */
+  enableGovernance?: boolean;
 }
 
 export interface IntelligentAnalysisResult {
@@ -63,6 +76,7 @@ export async function runIntelligentAnalysis(
     enableEnterprise = true,
     enableDeliveryOps = true,
     enableDiagrams = true,
+    enableGovernance = true,
   } = options;
 
   const savedFiles: string[] = [];
@@ -233,6 +247,18 @@ export async function runIntelligentAnalysis(
       }
     }
 
+    // G.4: Governance/Standards Detection (coding standards for all ecosystems)
+    if (enableGovernance) {
+      try {
+        log('  Detecting coding standards across ecosystems...');
+        const governanceFiles = await generateGovernanceDocs(projectPath, log);
+        savedFiles.push(...governanceFiles);
+        log(`  Generated ${governanceFiles.length} governance docs`);
+      } catch (err) {
+        log(`  Governance generation warning: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+
     checkpoint.enterpriseComplete = true;
     checkpoint.phase = 'H';
     saveCheckpoint(projectPath, checkpoint);
@@ -387,6 +413,110 @@ export function loadCheckpoint(projectPath: string): IntelligentAnalysisCheckpoi
   } catch {
     return null;
   }
+}
+
+/**
+ * Generate governance documentation (coding standards for all ecosystems)
+ * Phase G.4: Detects Python, Go, Java, Frontend standards from config files
+ */
+async function generateGovernanceDocs(
+  projectPath: string,
+  log: (msg: string) => void
+): Promise<string[]> {
+  const savedFiles: string[] = [];
+  const governancePath = path.join(projectPath, '.specweave/docs/internal/governance');
+  const standardsPath = path.join(governancePath, 'standards');
+
+  fs.mkdirSync(standardsPath, { recursive: true });
+
+  // Step 1: Detect all ecosystems
+  const ecosystems = await detectEcosystems(projectPath);
+  log(`    Detected ${ecosystems.length} ecosystems: ${ecosystems.map(e => e.name).join(', ')}`);
+
+  if (ecosystems.length === 0) {
+    // Create placeholder governance doc
+    const placeholderContent = [
+      '# Coding Standards',
+      '',
+      `**Generated**: ${new Date().toISOString().split('T')[0]}`,
+      '',
+      '## No Ecosystems Detected',
+      '',
+      'No recognized technology stacks were detected in this project.',
+      'To generate standards documentation, ensure your project has:',
+      '',
+      '- Python: `pyproject.toml`, `setup.py`, `.flake8`, `ruff.toml`',
+      '- Go: `go.mod`, `.golangci.yml`',
+      '- Java: `pom.xml`, `build.gradle`, `checkstyle.xml`',
+      '- Frontend: `package.json` with React/Vue/Angular/Svelte',
+      '',
+      '*Re-run analysis after adding config files.*',
+    ].join('\n');
+
+    const placeholderFile = path.join(governancePath, 'index.md');
+    fs.writeFileSync(placeholderFile, placeholderContent);
+    savedFiles.push(placeholderFile);
+    return savedFiles;
+  }
+
+  // Step 2: Parse standards for each ecosystem
+  const generatedFiles: GeneratedFile[] = [];
+
+  for (const ecosystem of ecosystems) {
+    let standards: any = null;
+    let markdown = '';
+
+    try {
+      switch (ecosystem.name) {
+        case 'python':
+          standards = await parsePythonStandards(projectPath, ecosystem.configFiles);
+          markdown = generateStandardsMarkdown('python', standards);
+          break;
+
+        case 'go':
+          standards = await parseGoStandards(projectPath, ecosystem.configFiles);
+          markdown = generateStandardsMarkdown('go', standards);
+          break;
+
+        case 'java':
+        case 'kotlin':
+          standards = await parseJavaStandards(projectPath, ecosystem.configFiles);
+          markdown = generateStandardsMarkdown('java', standards);
+          break;
+
+        case 'react':
+        case 'vue':
+        case 'angular':
+          // Frontend parser auto-detects framework, doesn't use configFiles
+          standards = await parseFrontendStandards(projectPath);
+          markdown = generateStandardsMarkdown(ecosystem.name, standards);
+          break;
+
+        default:
+          log(`    Skipping unknown ecosystem: ${ecosystem.name}`);
+          continue;
+      }
+
+      if (markdown) {
+        const relativePath = `standards/${ecosystem.name}.md`;
+        const fullPath = path.join(governancePath, relativePath);
+        fs.writeFileSync(fullPath, markdown);
+        savedFiles.push(fullPath);
+        generatedFiles.push({ path: relativePath, content: markdown });
+        log(`    Generated ${ecosystem.name} standards`);
+      }
+    } catch (err) {
+      log(`    Failed to parse ${ecosystem.name}: ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  // Step 3: Generate unified summary (index.md)
+  const summaryContent = generateUnifiedSummary(ecosystems, generatedFiles);
+  const summaryFile = path.join(governancePath, 'index.md');
+  fs.writeFileSync(summaryFile, summaryContent);
+  savedFiles.push(summaryFile);
+
+  return savedFiles;
 }
 
 // Re-export types

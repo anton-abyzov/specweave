@@ -604,23 +604,29 @@ async function main(): Promise<void> {
     // PHASE 3.5: Intelligent Codebase Analysis (deep-native only)
     // ═══════════════════════════════════════════════════════════════
     const analysisDepth = jobConfig.userInputs.analysisDepth;
-    const hasMultipleRepos = discovery.umbrella?.isUmbrella || discovery.modules.length > 1;
-    if (analysisDepth === 'deep-native' && hasMultipleRepos) {
+    // NOTE: Run for ALL projects (single-repo or umbrella) when deep-native selected!
+    // Previously had `hasMultipleRepos` check which blocked single-repo projects from
+    // getting inconsistencies, tech debt, strategy, governance, and diagrams!
+    if (analysisDepth === 'deep-native') {
       log('');
       log('PHASE: Intelligent Analysis - Deep codebase understanding...');
-      log('  This phase uses LLM to understand each repository\'s purpose,');
-      log('  synthesize organization structure, and detect inconsistencies.');
+      log('  This phase uses LLM to understand the codebase,');
+      log('  detect inconsistencies, tech debt, and generate strategy recommendations.');
       updateProgress('intelligent-analysis', 0, 'Starting intelligent codebase analysis');
 
       try {
-        // Build repo list from umbrella discovery
-        const repos = discovery.umbrella.childRepos?.map((r: any) => ({
-          name: r.name || path.basename(r.path),
-          path: r.path,
-        })) || discovery.modules.map((m: any) => ({
-          name: m.name,
-          path: path.join(projectPath, m.path),
-        }));
+        // Build repo list: umbrella projects have multiple, single-repo creates synthetic entry
+        const isUmbrella = discovery.umbrella?.isUmbrella && discovery.umbrella.childRepos?.length > 0;
+        const repos = isUmbrella
+          ? discovery.umbrella.childRepos.map((r: any) => ({
+              name: r.name || path.basename(r.path),
+              path: r.path,
+            }))
+          : [{
+              // Single-repo project: treat root as the only "repo"
+              name: path.basename(projectPath),
+              path: projectPath,
+            }];
 
         log(`  Analyzing ${repos.length} repositories...`);
 
