@@ -74,37 +74,12 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${BLUE}  SpecWeave Marketplace Refresh (${MODE} mode)${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-
-# Step 1: Remove existing marketplace
-echo -e "${YELLOW}📦 Step 1: Removing existing marketplace...${NC}"
-if claude plugin marketplace remove "$MARKETPLACE_NAME" 2>/dev/null; then
-  echo -e "${GREEN}✓ Marketplace removed${NC}"
-else
-  echo -e "${YELLOW}⚠ Marketplace not found (might already be removed)${NC}"
-fi
+echo -e "${BLUE}ℹ️  Claude CLI automatically refreshes cache on 'marketplace add'${NC}"
+echo -e "${BLUE}   No need to manually remove/clear - just add and it pulls latest!${NC}"
 echo ""
 
-# Step 2: Clear plugin caches
-echo -e "${YELLOW}🧹 Step 2: Clearing plugin caches...${NC}"
-
-# Clear marketplace cache
-if [ -d "$HOME/.claude/plugins/marketplaces/$MARKETPLACE_NAME" ]; then
-  rm -rf "$HOME/.claude/plugins/marketplaces/$MARKETPLACE_NAME"
-  echo -e "${GREEN}✓ Marketplace cache cleared${NC}"
-fi
-
-# Backup and clear installed plugins
-if [ -f "$HOME/.claude/plugins/installed_plugins.json" ]; then
-  TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-  mv "$HOME/.claude/plugins/installed_plugins.json" \
-     "$HOME/.claude/plugins/installed_plugins.json.backup-$TIMESTAMP"
-  echo -e "${GREEN}✓ Installed plugins cache backed up${NC}"
-fi
-
-echo ""
-
-# Step 3: Add marketplace
-echo -e "${YELLOW}📥 Step 3: Adding marketplace...${NC}"
+# Step 1: Add/refresh marketplace (idempotent!)
+echo -e "${YELLOW}📥 Step 1: Adding/refreshing marketplace...${NC}"
 
 if [ "$MODE" = "local" ]; then
   echo -e "${BLUE}Using local development version: $LOCAL_PATH${NC}"
@@ -115,9 +90,15 @@ if [ "$MODE" = "local" ]; then
     exit 1
   fi
 
-  # Add local marketplace
-  if claude plugin marketplace add "$LOCAL_PATH" 2>&1 | tee /tmp/marketplace-add.log; then
-    echo -e "${GREEN}✓ Local marketplace added${NC}"
+  # Add local marketplace (refreshes cache automatically)
+  # NOTE: Returns error if already installed, but cache IS refreshed!
+  claude plugin marketplace add "$LOCAL_PATH" 2>&1 | tee /tmp/marketplace-add.log
+  ADD_EXIT_CODE=${PIPESTATUS[0]}
+
+  if [ $ADD_EXIT_CODE -eq 0 ]; then
+    echo -e "${GREEN}✓ Local marketplace registered${NC}"
+  elif grep -q "already installed" /tmp/marketplace-add.log; then
+    echo -e "${GREEN}✓ Local marketplace refreshed (cache updated)${NC}"
   else
     echo -e "${RED}✗ Failed to add local marketplace${NC}"
     echo -e "${YELLOW}Check /tmp/marketplace-add.log for details${NC}"
@@ -126,9 +107,15 @@ if [ "$MODE" = "local" ]; then
 else
   echo -e "${BLUE}Pulling latest from GitHub: $GITHUB_REPO${NC}"
 
-  # Add GitHub marketplace
-  if claude plugin marketplace add "$GITHUB_REPO" 2>&1 | tee /tmp/marketplace-add.log; then
-    echo -e "${GREEN}✓ GitHub marketplace added${NC}"
+  # Add GitHub marketplace (refreshes cache automatically)
+  # NOTE: Returns error if already installed, but cache IS refreshed!
+  claude plugin marketplace add "$GITHUB_REPO" 2>&1 | tee /tmp/marketplace-add.log
+  ADD_EXIT_CODE=${PIPESTATUS[0]}
+
+  if [ $ADD_EXIT_CODE -eq 0 ]; then
+    echo -e "${GREEN}✓ GitHub marketplace registered${NC}"
+  elif grep -q "already installed" /tmp/marketplace-add.log; then
+    echo -e "${GREEN}✓ GitHub marketplace refreshed (cache updated with latest)${NC}"
   else
     echo -e "${RED}✗ Failed to add GitHub marketplace${NC}"
     echo -e "${YELLOW}Check /tmp/marketplace-add.log for details${NC}"
@@ -138,8 +125,8 @@ fi
 
 echo ""
 
-# Step 4: Get list of plugins from marketplace
-echo -e "${YELLOW}📋 Step 4: Reading plugin list...${NC}"
+# Step 2: Get list of plugins from marketplace
+echo -e "${YELLOW}📋 Step 2: Reading plugin list...${NC}"
 
 # Get marketplace install location from known_marketplaces.json
 KNOWN_MARKETPLACES="$HOME/.claude/plugins/known_marketplaces.json"
@@ -174,8 +161,8 @@ PLUGIN_COUNT=$(echo "$PLUGINS" | wc -l | tr -d ' ')
 echo -e "${GREEN}✓ Found $PLUGIN_COUNT plugins${NC}"
 echo ""
 
-# Step 5: Install all plugins
-echo -e "${YELLOW}⚙️  Step 5: Installing all plugins...${NC}"
+# Step 3: Install all plugins
+echo -e "${YELLOW}⚙️  Step 3: Installing all plugins...${NC}"
 echo ""
 
 SUCCESS_COUNT=0
