@@ -69,14 +69,18 @@ export class JiraImporter implements Importer {
   private email: string;
   private apiToken: string;
   private projectKey?: string;  // Optional: filter to specific project
+  private boardId?: number;      // Optional: board ID for 2-level structure
+  private boardName?: string;    // Optional: board name for 2-level structure
 
   /**
    * @param host - JIRA host URL (e.g., "your-domain.atlassian.net")
    * @param email - JIRA user email
    * @param apiToken - JIRA API token
    * @param projectKey - Optional project key for multi-project mode (e.g., "PROJ")
+   * @param boardId - Optional board ID for board-level grouping
+   * @param boardName - Optional board name for board-level grouping
    */
-  constructor(host: string, email?: string, apiToken?: string, projectKey?: string) {
+  constructor(host: string, email?: string, apiToken?: string, projectKey?: string, boardId?: number, boardName?: string) {
     // Remove trailing slashes and ensure https:// prefix
     // CRITICAL FIX (2025-12-09): new URL() requires full URL with protocol
     // Bug: host="example.atlassian.net" → new URL('/path', host) throws "Invalid URL"
@@ -89,6 +93,8 @@ export class JiraImporter implements Importer {
     this.email = email || process.env.JIRA_EMAIL || '';
     this.apiToken = apiToken || process.env.JIRA_API_TOKEN || '';
     this.projectKey = projectKey;  // Store project key for JQL filtering
+    this.boardId = boardId;        // Store board ID for 2-level structure
+    this.boardName = boardName;    // Store board name for 2-level structure
 
     if (!this.email || !this.apiToken) {
       throw new Error(
@@ -459,6 +465,10 @@ export class JiraImporter implements Importer {
       // TODO: Fetch space information separately if needed (JIRA doesn't expose space in issues)
       jiraProjectKey: jiraProject?.key,
       jiraProjectName: jiraProject?.name,
+      // CRITICAL (v0.35.2): Populate board info for 2-level folder structure
+      // When importer is created per-board, these values enable proper AAC/aac-board/ grouping
+      jiraBoardId: this.boardId,
+      jiraBoardName: this.boardName,
     };
   }
 

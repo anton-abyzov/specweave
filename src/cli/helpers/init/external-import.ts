@@ -410,6 +410,7 @@ function buildJiraConfigFromProjects(jira: JiraConfig): {
         const boardFolder = normalizeToProjectId(boardName);
 
         return {
+          boardId: board.id ? parseInt(board.id, 10) : undefined,  // CRITICAL (v0.35.2): Include board ID!
           boardName: boardName,
           // 2-level: specs/{project}/{board}/FS-XXX/
           specweaveFolder: `${projectFolder}/${boardFolder}`
