@@ -368,7 +368,21 @@ Proceeding with hotfix 0006...
 
 **⛔ THIS STEP MUST BE COMPLETED BEFORE ANY SPEC GENERATION!**
 
-**🚨 YOU MUST USE THE BASH TOOL TO RUN THIS COMMAND:**
+**🧠 ULTRATHINK REQUIRED - ANALYZE ALL AVAILABLE CONTEXT FIRST!**
+
+**0. GATHER CONTEXT BEFORE API CALL:**
+```bash
+# 1. Check existing project folders in living docs
+ls .specweave/docs/internal/specs/
+
+# 2. Check how recent increments assigned projects
+grep -r "^\*\*Project\*\*:" .specweave/increments/*/spec.md | tail -10
+
+# 3. Read config.json for project.name or multiProject.projects
+cat .specweave/config.json | jq '.project.name, .multiProject'
+```
+
+**🚨 NOW RUN THE CONTEXT API (via Bash tool):**
 
 ```bash
 specweave context projects
@@ -391,6 +405,36 @@ specweave context projects
     "acme-corp": [{"id": "digital-ops"}, {"id": "mobile-team"}]
   }
 }
+```
+
+**🧠 ULTRATHINK - SMART PROJECT RESOLUTION (v0.35.0+ CRITICAL!):**
+
+**RESOLUTION PRIORITY (MUST FOLLOW THIS ORDER!):**
+```
+1. ✅ EXACT MATCH: config.project.name or multiProject.projects key → USE IT
+2. ✅ LIVING DOCS: Existing folder in specs/ → USE THAT PROJECT ID
+3. ✅ RECENT PATTERNS: Same feature type in past increments → USE SAME PROJECT
+4. ⚠️  UNCERTAIN: Multiple valid options OR no clear match → ASK USER!
+5. 🔄 FALLBACK: If all else fails → USE "default" (NEVER "specweave"!)
+```
+
+**⚠️ CRITICAL: IF UNCERTAIN - YOU MUST ASK THE USER!**
+```
+I found multiple potential projects for this feature:
+- frontend-app (keywords: UI, form, React)
+- backend-api (keywords: API, endpoint)
+
+Which project should I assign to this feature?
+```
+
+**❌ NEVER DO THIS:**
+- Silently assign to "specweave" (that's the framework name, not user's project!)
+- Guess without analyzing context
+- Skip asking when genuinely uncertain
+
+**✅ CORRECT FALLBACK (when no projects configured):**
+```
+**Project**: default
 ```
 
 **STORE THESE VALUES FOR USE IN STEP 5:**
@@ -516,13 +560,14 @@ Multiple projects within 15% → AUTO-SPLIT across projects
 <50% OR ambiguous → ASK user with ALL options listed
 ```
 
-**RULE 5: FALLBACK TO DEFAULTS**
+**RULE 5: MANDATORY **Project**: FIELD (v0.35.0+)**
 ```
-IF US has explicit **Project**: field → USE IT
-ELSE IF frontmatter has default_project → USE default_project
-ELSE → ASK user (should not happen if flow followed correctly)
+⛔ EVERY US MUST have explicit **Project**: field - NO FALLBACKS!
 
-Same logic applies to **Board**: and default_board for 2-level
+Single-project mode: **Project**: = config.project.name
+Multi-project mode: **Project**: = one of multiProject.projects keys
+
+NEVER generate User Story without **Project**: field!
 ```
 
 ---
@@ -680,23 +725,25 @@ Feature: "Improve system performance"
 
 #### SPEC.MD YAML FORMAT
 
-**1-Level Structure:**
+**spec.md YAML Format (v0.35.0+ - no project/board in frontmatter!):**
 ```yaml
 ---
 increment: 0045-user-auth
 title: "User Authentication"
-default_project: web-app  # Optional default for USs that don't specify
+# NOTE: project: and board: REMOVED from frontmatter!
 ---
 ```
 
-**2-Level Structure:**
-```yaml
----
-increment: 0045-user-auth
-title: "User Authentication"
-default_project: enterprise-corp
-default_board: backend  # Optional defaults
----
+**Per-US Format (MANDATORY):**
+```markdown
+### US-001: Login Form
+**Project**: web-app       # ← MANDATORY (single-project: use config.project.name)
+**As a** user, I want...
+
+### US-002: Auth API
+**Project**: enterprise-corp  # ← MANDATORY (multi-project: pick from config)
+**Board**: backend            # ← MANDATORY for 2-level structures
+**As a** developer, I want...
 ```
 
 **Pass detected/selected values to increment-planner skill!**

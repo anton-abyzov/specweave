@@ -27,7 +27,7 @@ description: Generates comprehensive specifications (spec.md, plan.md, tasks.md 
 - **Bug Fix**: Problem statement, root cause, solution, impact analysis
 - **Refactoring**: Current state, proposed changes, benefits, migration plan
 
-**YAML Frontmatter** (v0.31.0+ MANDATORY):
+**YAML Frontmatter** (v0.35.0+ simplified):
 ```yaml
 ---
 increment: 0001-feature-name
@@ -36,14 +36,14 @@ type: feature
 priority: P1
 status: planned
 created: 2025-12-04
-project: my-project          # REQUIRED - target project for living docs sync
-board: my-board              # REQUIRED for 2-level structures (ADO area paths, JIRA boards)
+# NOTE: project: and board: fields REMOVED from frontmatter!
+# Use per-US **Project**: and **Board**: fields instead (see below)
 ---
 ```
 
-**Detect Structure Level First** (see `src/utils/structure-level-detector.ts`):
-- 1-level: `project:` field REQUIRED
-- 2-level: `project:` AND `board:` fields REQUIRED
+**⛔ CRITICAL RULE: Every User Story MUST have `**Project**:` field!**
+
+This is MANDATORY in BOTH single-project AND multi-project modes.
 
 **Core Sections** (Always Present):
 ```markdown
@@ -66,14 +66,15 @@ board: my-board              # REQUIRED for 2-level structures (ADO area paths, 
 ## User Stories & Acceptance Criteria
 
 <!--
-⚠️ PER-US PROJECT TARGETING (v0.33.0+):
-Each user story MUST have **Project**: (and **Board**: for 2-level) fields.
-The LLM MUST resolve these from context - see RULE 0 in increment-planner.
+⛔ MANDATORY: **Project**: field on EVERY User Story (v0.35.0+)
+- Single-project: Use config.project.name value
+- Multi-project: Use one of multiProject.projects keys
+NEVER generate a User Story without **Project**: field!
 -->
 
 ### US-001: [Title]
-**Project**: [resolved-from-context]    <!-- REQUIRED - actual project ID from config/folders -->
-**Board**: [resolved-from-context]      <!-- REQUIRED for 2-level structures -->
+**Project**: [MANDATORY - use config.project.name or multiProject.projects key]
+**Board**: [MANDATORY for 2-level structures only]
 
 **As a** [user type]
 **I want** [goal]
@@ -90,6 +91,14 @@ The LLM MUST resolve these from context - see RULE 0 in increment-planner.
 **⛔ YOU CANNOT GENERATE spec.md UNTIL YOU COMPLETE THIS STEP!**
 
 **This step is BLOCKING - do not proceed until you have actual project/board IDs.**
+
+**🧠 ULTRATHINK REQUIRED - ANALYZE ALL AVAILABLE CONTEXT FIRST!**
+
+Before assigning ANY project, you MUST analyze:
+1. **Living docs structure**: `ls .specweave/docs/internal/specs/` - what project folders exist?
+2. **Recent increments**: `grep -r "^\*\*Project\*\*:" .specweave/increments/*/spec.md | tail -10`
+3. **config.json**: Read `project.name` (single-project) or `multiProject.projects` (multi-project)
+4. **Feature description**: What does the user want to build? Match to existing projects.
 
 **1. Run the context API command:**
 ```bash
@@ -118,13 +127,43 @@ For 2-level:
 }
 ```
 
-**3. STORE the actual IDs for use in spec.md:**
+**3. 🧠 ULTRATHINK - SMART PROJECT RESOLUTION (v0.35.0+ CRITICAL!):**
+
+**RESOLUTION PRIORITY (MUST FOLLOW THIS ORDER!):**
+```
+1. ✅ EXACT MATCH: config.project.name or multiProject.projects key → USE IT
+2. ✅ LIVING DOCS: Existing folder in specs/ → USE THAT PROJECT ID
+3. ✅ RECENT PATTERNS: Same feature type in past increments → USE SAME PROJECT
+4. ⚠️  UNCERTAIN: Multiple valid options OR no clear match → ASK USER!
+5. 🔄 FALLBACK: If all else fails → USE "default" (NEVER "specweave"!)
+```
+
+**⚠️ CRITICAL: IF UNCERTAIN - YOU MUST ASK THE USER!**
+```
+I found multiple potential projects for this feature:
+- frontend-app (keywords: UI, form, React)
+- backend-api (keywords: API, endpoint)
+
+Which project should I assign to this feature?
+```
+
+**❌ NEVER DO THIS:**
+- Silently assign to "specweave" (that's the framework name, not user's project!)
+- Guess without analyzing context
+- Skip asking when genuinely uncertain
+
+**✅ CORRECT FALLBACK (when no projects configured):**
+```
+**Project**: default
+```
+
+**4. STORE the actual IDs for use in spec.md:**
 ```
 RESOLVED_PROJECT = "frontend-app"  // from projects[].id
 RESOLVED_BOARD = "digital-ops"     // from boardsByProject (2-level only)
 ```
 
-**4. Now generate spec.md using RESOLVED values (NEVER placeholders!)**
+**5. Now generate spec.md using RESOLVED values (NEVER placeholders!)**
 
 ---
 
@@ -522,63 +561,31 @@ spec_generator:
 - Living docs auto-grouped by project
 - External tools (GitHub/JIRA/ADO) receive issues in correct project
 
-### Legacy Project-Scoped User Story Format (Pre-v0.33.0)
+### Multi-Project User Story Format (with **Project**: per US)
 
-**❌ LEGACY (Project prefixes - still works but per-US targeting preferred):**
+**✅ CORRECT Format - Every US has `**Project**:`:**
 ```markdown
 ## User Stories
 
 ### US-001: Thumbnail Upload
-As a content creator, I want to upload thumbnails...
-
-### US-002: CTR Prediction API
-As a system, I want to predict click-through rates...
-```
-
-**✅ LEGACY (Multi-Project Format with prefixes - use per-US targeting instead):**
-```markdown
-## User Stories by Project
-
-### Frontend (sw-thumbnail-ab-fe)
-
-#### US-FE-001: Thumbnail Upload & Comparison (P1)
-**Related Repo**: sw-thumbnail-ab-fe
+**Project**: frontend-app       # ← MANDATORY!
 **As a** content creator
-**I want** to upload multiple thumbnail variants and compare them side-by-side
-**So that** I can visually evaluate my options before testing
+**I want** to upload thumbnails
+**So that** I can test different versions
 
 **Acceptance Criteria**:
-- [ ] **AC-FE-US1-01**: User can drag-and-drop up to 5 thumbnail images (JPG, PNG, WebP)
-- [ ] **AC-FE-US1-02**: Images are validated for YouTube specs (1280x720 min, <2MB)
-- [ ] **AC-FE-US1-03**: Side-by-side comparison view displays all variants
+- [ ] **AC-US1-01**: User can drag-and-drop images
+- [ ] **AC-US1-02**: Images validated for YouTube specs
 
----
-
-### Backend (sw-thumbnail-ab-be)
-
-#### US-BE-001: Thumbnail Analysis API (P1)
-**Related Repo**: sw-thumbnail-ab-be
+### US-002: Thumbnail Analysis API
+**Project**: backend-api        # ← MANDATORY! Different project = different folder
 **As a** frontend application
 **I want** to call POST /predict-ctr endpoint
-**So that** I can get AI-powered click-through rate predictions
+**So that** I can get AI-powered predictions
 
 **Acceptance Criteria**:
-- [ ] **AC-BE-US1-01**: POST /predict-ctr endpoint accepts thumbnail image
-- [ ] **AC-BE-US1-02**: ML model analyzes: face detection, text readability, color psychology
-
----
-
-### Shared Library (sw-thumbnail-ab-shared)
-
-#### US-SHARED-001: Common Types & Validators (P1)
-**Related Repo**: sw-thumbnail-ab-shared
-**As a** developer in FE or BE repos
-**I want** shared TypeScript types and validators
-**So that** API contracts are consistent across projects
-
-**Acceptance Criteria**:
-- [ ] **AC-SHARED-US1-01**: ThumbnailMetadata type exported
-- [ ] **AC-SHARED-US1-02**: Validation schemas for image specs
+- [ ] **AC-US2-01**: POST /predict-ctr endpoint accepts thumbnail image
+- [ ] **AC-US2-02**: ML model returns prediction score
 ```
 
 ### Project Classification Rules

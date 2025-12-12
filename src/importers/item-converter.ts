@@ -474,7 +474,10 @@ export class ItemConverter {
         // Parent tracking for re-import hierarchy updates
         parentId: item.parentId,
         featureId: featureId,
-        isOrphan: !item.parentId,
+        // CRITICAL FIX (v0.35.5): isOrphan based on actual folder placement, not just parentId
+        // Feature-level items (L3 Feature, Epic) without parents are NOT orphans - they ARE containers
+        // Only items that end up in _orphans/ folder are true orphans
+        isOrphan: featureId === '_orphans',
         adoWorkItemType: item.adoWorkItemType,
         adoAreaPath: item.adoAreaPath
       }
@@ -1276,7 +1279,10 @@ Items land here when:
     // CRITICAL FIX (v0.30.3): Also handle epic groups - they need proper titles
     const isAdoFeatureGroup = groupKey.startsWith('feature:');
     const isEpicGroup = groupKey.startsWith('epic:');
-    const isOrphanGroup = groupKey.startsWith('orphan:');
+    // CRITICAL FIX (v0.35.5): Match BOTH 'orphan:' (legacy) and 'orphans:' (current v0.30.6+)
+    // Legacy: 'orphan:${item.id}' - individual orphan folders
+    // Current: 'orphans:all' - grouped orphans folder
+    const isOrphanGroup = groupKey.startsWith('orphan:') || groupKey.startsWith('orphans:');
     // Normalize work item type for consistent lookup
     const adoWitType = normalizeAdoWorkItemType(firstItem.adoWorkItemType);
     const platform = (firstItem.platform as 'ado' | 'jira' | 'github') || 'ado';

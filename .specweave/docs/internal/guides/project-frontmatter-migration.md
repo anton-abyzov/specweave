@@ -17,12 +17,13 @@ This guide helps you migrate existing specs to the new architecture.
 ```yaml
 ---
 increment: 0001-feature-name
-project: my-app          # ← REQUIRED
-board: digital-ops       # ← REQUIRED for 2-level
+project: my-app          # ← Was in frontmatter
+board: digital-ops       # ← Was in frontmatter (2-level)
 ---
 
 ### US-001: Login Form
-**Project**: my-app       # ← Optional (redundant)
+# Note: **Project**: was often missing in old specs!
+**As a** user, I want...
 ```
 
 ### After (v0.35.0+)
@@ -30,13 +31,15 @@ board: digital-ops       # ← REQUIRED for 2-level
 ```yaml
 ---
 increment: 0001-feature-name
-# NOTE: project: and board: fields REMOVED
-# Project resolved from per-US fields or config
+# NOTE: project: and board: fields REMOVED from frontmatter
 ---
 
 ### US-001: Login Form
-**Project**: my-app       # ← PRIMARY source of truth
+**Project**: my-app       # ← MANDATORY! Now the ONLY source of truth
+**As a** user, I want...
 ```
+
+**⛔ CRITICAL**: Every User Story MUST have `**Project**:` field in v0.35.0+!
 
 ## Do I Need to Migrate?
 

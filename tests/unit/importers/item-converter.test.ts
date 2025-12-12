@@ -1391,8 +1391,12 @@ Epic for auth features.
       expect(content).not.toContain('**Orphan**: true'); // Not orphan since has parent
     });
 
-    it('should mark orphan items in metadata', async () => {
+    it('should NOT mark items as orphan when feature allocation disabled (v0.35.5 fix)', async () => {
       // ARRANGE
+      // CRITICAL FIX (v0.35.5): When enableFeatureAllocation: false, there's no concept
+      // of _orphans folder. Items go directly to specs dir without folder structure.
+      // So they should NOT be marked as orphan - orphan flag only applies when items
+      // actually go to the _orphans folder (which requires enableFeatureAllocation: true)
       reimportConverter = new ItemConverter({
         specsDir: reimportSpecsDir,
         enableFeatureAllocation: false,
@@ -1401,11 +1405,11 @@ Epic for auth features.
       const recentDate = new Date();
       recentDate.setDate(recentDate.getDate() - 5);
 
-      const orphanItem: ExternalItem = {
+      const itemWithoutParent: ExternalItem = {
         id: 'ADO-3001',
         type: 'user-story',
-        title: 'True orphan story',
-        description: 'No parent in ADO',
+        title: 'Story without parent',
+        description: 'No parent in ADO, but not orphan without feature allocation',
         status: 'open',
         createdAt: recentDate,
         updatedAt: new Date(),
@@ -1415,18 +1419,19 @@ Epic for auth features.
         adoProjectName: 'TestProject',
         adoAreaPath: 'TestProject\\Area',
         adoWorkItemType: 'User Story',
-        parentId: undefined, // No parent - orphan!
+        parentId: undefined, // No parent
       };
 
       // ACT
-      const converted = await reimportConverter.convertItems([orphanItem]);
+      const converted = await reimportConverter.convertItems([itemWithoutParent]);
 
       // ASSERT
       expect(converted).toHaveLength(1);
       const content = converted[0].markdown;
 
-      // Verify orphan marker is included
-      expect(content).toContain('**Orphan**: true');
+      // CRITICAL (v0.35.5): Without feature allocation, items are NOT marked as orphan
+      // The orphan flag only makes sense when there's a folder structure (_orphans vs FS-XXXE)
+      expect(content).not.toContain('**Orphan**: true');
       expect(content).not.toContain('**Parent ID**:');
     });
   });
