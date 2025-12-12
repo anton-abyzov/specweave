@@ -160,11 +160,15 @@ jobs:
           fi
 
       - name: Create GitHub Release
-        if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.package_version.outputs.version }}
         run: |
+          # Check if release already exists
+          if gh release view "v$VERSION" &>/dev/null; then
+            echo "Release v$VERSION already exists, skipping creation"
+            exit 0
+          fi
           # Check if it's a prerelease (contains -rc, -beta, -alpha)
           if [[ "$VERSION" == *"-rc"* ]] || [[ "$VERSION" == *"-beta"* ]] || [[ "$VERSION" == *"-alpha"* ]]; then
             gh release create "v$VERSION" \
