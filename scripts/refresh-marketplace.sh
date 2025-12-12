@@ -78,48 +78,53 @@ echo -e "${BLUE}ℹ️  Claude CLI automatically refreshes cache on 'marketplace
 echo -e "${BLUE}   No need to manually remove/clear - just add and it pulls latest!${NC}"
 echo ""
 
-# Step 1: Add/refresh marketplace (idempotent!)
-echo -e "${YELLOW}📥 Step 1: Adding/refreshing marketplace...${NC}"
+# Step 1: Ensure marketplace is registered and updated
+echo -e "${YELLOW}📥 Step 1: Checking marketplace status...${NC}"
 
-if [ "$MODE" = "local" ]; then
-  echo -e "${BLUE}Using local development version: $LOCAL_PATH${NC}"
+# Check if marketplace already exists
+if claude plugin marketplace list 2>/dev/null | grep -q "$MARKETPLACE_NAME"; then
+  echo -e "${BLUE}✓ Marketplace '$MARKETPLACE_NAME' already registered${NC}"
+  echo -e "${BLUE}📥 Updating marketplace from source...${NC}"
 
-  # Ensure we're in the right directory
-  if [ ! -f "$LOCAL_PATH/.claude-plugin/marketplace.json" ]; then
-    echo -e "${RED}✗ Error: marketplace.json not found at $LOCAL_PATH${NC}"
-    exit 1
-  fi
-
-  # Add local marketplace (refreshes cache automatically)
-  # NOTE: Returns error if already installed, but cache IS refreshed!
-  claude plugin marketplace add "$LOCAL_PATH" 2>&1 | tee /tmp/marketplace-add.log
-  ADD_EXIT_CODE=${PIPESTATUS[0]}
-
-  if [ $ADD_EXIT_CODE -eq 0 ]; then
-    echo -e "${GREEN}✓ Local marketplace registered${NC}"
-  elif grep -q "already installed" /tmp/marketplace-add.log; then
-    echo -e "${GREEN}✓ Local marketplace refreshed (cache updated)${NC}"
+  # Use UPDATE command (clean, no errors!)
+  if claude plugin marketplace update "$MARKETPLACE_NAME" 2>&1 | tee /tmp/marketplace-update.log; then
+    echo -e "${GREEN}✓ Marketplace updated successfully${NC}"
   else
-    echo -e "${RED}✗ Failed to add local marketplace${NC}"
-    echo -e "${YELLOW}Check /tmp/marketplace-add.log for details${NC}"
+    echo -e "${RED}✗ Failed to update marketplace${NC}"
+    echo -e "${YELLOW}Check /tmp/marketplace-update.log for details${NC}"
     exit 1
   fi
 else
-  echo -e "${BLUE}Pulling latest from GitHub: $GITHUB_REPO${NC}"
+  echo -e "${BLUE}Marketplace not found - adding it now...${NC}"
 
-  # Add GitHub marketplace (refreshes cache automatically)
-  # NOTE: Returns error if already installed, but cache IS refreshed!
-  claude plugin marketplace add "$GITHUB_REPO" 2>&1 | tee /tmp/marketplace-add.log
-  ADD_EXIT_CODE=${PIPESTATUS[0]}
+  if [ "$MODE" = "local" ]; then
+    echo -e "${BLUE}Using local development version: $LOCAL_PATH${NC}"
 
-  if [ $ADD_EXIT_CODE -eq 0 ]; then
-    echo -e "${GREEN}✓ GitHub marketplace registered${NC}"
-  elif grep -q "already installed" /tmp/marketplace-add.log; then
-    echo -e "${GREEN}✓ GitHub marketplace refreshed (cache updated with latest)${NC}"
+    # Ensure we're in the right directory
+    if [ ! -f "$LOCAL_PATH/.claude-plugin/marketplace.json" ]; then
+      echo -e "${RED}✗ Error: marketplace.json not found at $LOCAL_PATH${NC}"
+      exit 1
+    fi
+
+    # Add local marketplace
+    if claude plugin marketplace add "$LOCAL_PATH" 2>&1 | tee /tmp/marketplace-add.log; then
+      echo -e "${GREEN}✓ Local marketplace added${NC}"
+    else
+      echo -e "${RED}✗ Failed to add local marketplace${NC}"
+      echo -e "${YELLOW}Check /tmp/marketplace-add.log for details${NC}"
+      exit 1
+    fi
   else
-    echo -e "${RED}✗ Failed to add GitHub marketplace${NC}"
-    echo -e "${YELLOW}Check /tmp/marketplace-add.log for details${NC}"
-    exit 1
+    echo -e "${BLUE}Adding from GitHub: $GITHUB_REPO${NC}"
+
+    # Add GitHub marketplace
+    if claude plugin marketplace add "$GITHUB_REPO" 2>&1 | tee /tmp/marketplace-add.log; then
+      echo -e "${GREEN}✓ GitHub marketplace added${NC}"
+    else
+      echo -e "${RED}✗ Failed to add GitHub marketplace${NC}"
+      echo -e "${YELLOW}Check /tmp/marketplace-add.log for details${NC}"
+      exit 1
+    fi
   fi
 fi
 

@@ -215,40 +215,56 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
 }
 
 /**
- * Ensure SpecWeave marketplace is registered
+ * Ensure SpecWeave marketplace is registered and updated
  *
- * IMPORTANT: Claude CLI's `marketplace add` behavior:
- * - If marketplace NOT registered → adds it successfully
- * - If marketplace ALREADY registered:
- *   1. Clones fresh from GitHub
- *   2. Updates the cache with latest plugin versions
- *   3. Returns error "already installed"
- *   4. BUT the cache WAS updated with latest!
+ * Uses the proper Claude CLI commands:
+ * 1. First checks if marketplace exists
+ * 2. If not → adds it with `marketplace add`
+ * 3. If yes → updates it with `marketplace update` (clean, no errors!)
  *
- * So we ignore the "already installed" error - the refresh happened anyway.
+ * This is the recommended approach per Claude Code documentation.
  */
 async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void> {
-  spinner.start('Ensuring SpecWeave marketplace is registered...');
+  spinner.start('Checking SpecWeave marketplace...');
 
-  const addResult = execFileNoThrowSync('claude', [
-    'plugin',
-    'marketplace',
-    'add',
-    'anton-abyzov/specweave'
-  ]);
+  // Check if marketplace is already registered
+  const listResult = execFileNoThrowSync('claude', ['plugin', 'marketplace', 'list']);
+  const marketplaceExists = listResult.success &&
+    (listResult.stdout || '').toLowerCase().includes('specweave');
 
-  // Check if it's the "already installed" error - this is OK!
-  // The marketplace cache was refreshed even though it returned an error
-  const alreadyInstalled = addResult.stderr?.includes('already installed') ||
-    addResult.stderr?.includes('Marketplace \'specweave\' is already installed');
+  if (marketplaceExists) {
+    // Marketplace exists - use UPDATE command (clean, no errors)
+    spinner.text = 'Updating SpecWeave marketplace...';
+    const updateResult = execFileNoThrowSync('claude', [
+      'plugin',
+      'marketplace',
+      'update',
+      'specweave'
+    ]);
 
-  if (!addResult.success && !alreadyInstalled) {
-    // Real error (network, permissions, etc.) - not "already installed"
-    throw new Error(`Failed to add marketplace: ${addResult.stderr || addResult.error}`);
+    if (!updateResult.success) {
+      throw new Error(`Failed to update marketplace: ${updateResult.stderr || updateResult.error}`);
+    }
+
+    console.log(chalk.green('   ✔ Marketplace updated (latest from GitHub)'));
+    spinner.succeed('SpecWeave marketplace ready');
+  } else {
+    // Marketplace not registered - use ADD command
+    spinner.text = 'Adding SpecWeave marketplace...';
+    const addResult = execFileNoThrowSync('claude', [
+      'plugin',
+      'marketplace',
+      'add',
+      'anton-abyzov/specweave'
+    ]);
+
+    if (!addResult.success) {
+      throw new Error(`Failed to add marketplace: ${addResult.stderr || addResult.error}`);
+    }
+
+    console.log(chalk.green('   ✔ Marketplace added from GitHub'));
+    spinner.succeed('SpecWeave marketplace ready');
   }
-
-  console.log(chalk.green('   ✔ Marketplace ready (latest from GitHub)'));
-  spinner.succeed('SpecWeave marketplace ready');
 }
 
 /**
