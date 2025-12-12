@@ -19,7 +19,7 @@ function HomepageHeader() {
               ✨ 100% Free & Open Source Forever
             </div>
             <div className={styles.heroTag}>
-              ⚡ Production-Ready AI Development
+              ⚡ v1.0 Release Candidate
             </div>
           </div>
           <Heading as="h1" className={styles.heroTitle}>
@@ -27,78 +27,59 @@ function HomepageHeader() {
             Start <span className={styles.heroHighlight}>Shipping</span>.
           </Heading>
           <p className={styles.heroSubtitle}>
-            SpecWeave gives you <strong>autonomous AI agents that just work</strong>—minimal interaction, maximum productivity.
-            Type one command, get production code with specs, tests, and living docs. <strong>Always free, always open-source.</strong>
+            <strong>One command. Production code.</strong> SpecWeave turns AI into autonomous agents
+            that write specs, tests, and docs—then builds your feature while you review.
+            <br/><strong>Works with Claude, Cursor, Copilot. Any stack. Any team size.</strong>
           </p>
           <div className={styles.heroStats}>
             <div className={styles.stat}>
-              <div className={styles.statNumber}>70%+</div>
-              <div className={styles.statLabel}>Token Reduction</div>
+              <div className={styles.statNumber}>3</div>
+              <div className={styles.statLabel}>Commands to Ship</div>
             </div>
             <div className={styles.stat}>
-              <div className={styles.statNumber}>10+</div>
-              <div className={styles.statLabel}>AI Agents</div>
+              <div className={styles.statNumber}>90%</div>
+              <div className={styles.statLabel}>Less Manual Work</div>
             </div>
             <div className={styles.stat}>
-              <div className={styles.statNumber}>2-3x</div>
-              <div className={styles.statLabel}>Faster with Opus 4.5</div>
+              <div className={styles.statNumber}>60%+</div>
+              <div className={styles.statLabel}>Test Coverage Built-In</div>
             </div>
           </div>
           <div className={styles.buttons}>
             <Link
               className="button button--primary button--lg"
-              to="/docs/guides/getting-started/quickstart">
-              Get Started in 5 Minutes →
+              to="/docs/intro">
+              Get Started Free →
             </Link>
             <Link
               className="button button--outline button--lg"
-              to="/docs/workflows/overview">
-              See How It Works
+              to="#how-it-works">
+              Watch Demo (2 min)
             </Link>
-          </div>
-          <div className={styles.heroNote}>
-            Works with <strong>any tech stack</strong> (TS, Python, Go, Rust, Java, C#) and <strong>any AI tool</strong> (Claude, Cursor, Copilot)
           </div>
         </div>
 
         <div className={styles.heroCode}>
           <div className={styles.codeBlock}>
             <div className={styles.codeHeader}>
-              <span className={styles.codeTitle}>✨ The Magic of /do - Just Three Commands (one of thousands of use cases!)</span>
+              <span className={styles.codeTitle}>✨ Just 3 Commands</span>
             </div>
             <pre className={styles.codePre}>
-              <code>{`# 1. Describe your feature (natural language)
-/specweave:increment "Add real-time chat with typing indicators"
+              <code>{`# 1. Describe what you want
+/sw:increment "Add user authentication with OAuth"
+→ AI creates spec, plan, and 12 tasks with tests
 
-🤖 PM Agent asks: "Who will be chatting? Store messages? Scale?"
-✅ Creates: spec.md (user stories + AC-IDs)
-✅ Creates: plan.md (architecture + test strategy 88%)
-✅ Creates: tasks.md (8 tasks, 45 tests embedded)
-📊 Estimate: 4-6 hours deterministic work, 88% coverage. Proceed? (Y/n)
+# 2. Build it
+/sw:do
+→ Autonomous execution: code, tests, docs update automatically
 
-# 2. Type one command. That's it.
-/specweave:do
-
-⚙️  Working on T-001: ChatService [TDD mode]
-    ✅ Tests created (5 tests)
-    ✅ Implementation complete
-    ✅ Coverage: 92% (target: 90%)
-    ✅ Docs auto-updated (hooks)
-
-⚙️  Working on T-002: MessageRepository...
-    [continues autonomously through all 8 tasks]
-
-# 3. Check status anytime
-/specweave:progress
-📊 Progress: 8/8 tasks (100%)
-✅ Coverage: 90% (target: 88%)
-✅ All tests passing
-🎉 Ready to ship!`}</code>
+# 3. Ship it
+/sw:done 0001
+→ Quality gates verify: tasks ✓ tests ✓ docs ✓`}</code>
             </pre>
           </div>
           <div className={styles.codeCaption}>
-            <strong>That's it.</strong> No back-and-forth messages. No manual test writing. No doc updates. <strong>Just working software.</strong><br/>
-            <em>This is just 1 of thousands of use cases—from microservices to ML pipelines to enterprise apps!</em>
+            <strong>No back-and-forth.</strong> No manual test writing. No stale docs. <strong>Just working software.</strong>
           </div>
         </div>
       </div>
@@ -129,25 +110,25 @@ function DogfoodingBanner(): ReactNode {
     <section className={styles.dogfoodingSection}>
       <div className="container">
         <div className={styles.dogfoodingContent}>
-          <div className={styles.dogfoodingBadge}>🔄 DOGFOODING</div>
-          <Heading as="h2">SpecWeave is Built With SpecWeave</Heading>
+          <div className={styles.dogfoodingBadge}>🔄 REAL-WORLD PROOF</div>
+          <Heading as="h2">Built With SpecWeave, For Real</Heading>
           <p>
-            This isn't just a framework we made — it's the framework we use every day.
-            <strong> 70+ completed increments</strong>, full specs, living docs, and real DORA metrics.
-            Every feature you see was built spec-first.
+            Not a demo project. SpecWeave builds itself using SpecWeave.
+            <strong> 140+ features shipped</strong>, all with full specs, tests, and living docs.
+            Browse our actual codebase—see exactly how it works.
           </p>
           <div className={styles.dogfoodingStats}>
             <Link to="https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments" className={styles.dogfoodingStat}>
-              <span className={styles.dogfoodingNumber}>70+</span>
-              <span className={styles.dogfoodingLabel}>Increments</span>
+              <span className={styles.dogfoodingNumber}>140+</span>
+              <span className={styles.dogfoodingLabel}>Features Shipped</span>
             </Link>
             <Link to="https://spec-weave.com/docs/metrics" className={styles.dogfoodingStat}>
               <span className={styles.dogfoodingNumber}>Live</span>
               <span className={styles.dogfoodingLabel}>DORA Metrics</span>
             </Link>
-            <Link to="https://github.com/anton-abyzov/specweave/tree/develop/.specweave/docs" className={styles.dogfoodingStat}>
-              <span className={styles.dogfoodingNumber}>Auto</span>
-              <span className={styles.dogfoodingLabel}>Living Docs</span>
+            <Link to="https://github.com/anton-abyzov/specweave" className={styles.dogfoodingStat}>
+              <span className={styles.dogfoodingNumber}>24</span>
+              <span className={styles.dogfoodingLabel}>Plugins Included</span>
             </Link>
           </div>
         </div>
@@ -158,66 +139,73 @@ function DogfoodingBanner(): ReactNode {
 
 function FeaturesSection(): ReactNode {
   return (
-    <section className={styles.featuresSection}>
+    <section className={styles.featuresSection} id="how-it-works">
       <div className="container">
         <div className={styles.sectionHeader}>
-          <Heading as="h2">Why SpecWeave?</Heading>
-          <p>Build production software with autonomous AI agents that just work—minimal interaction, maximum productivity.</p>
+          <Heading as="h2">What Makes SpecWeave Different</Heading>
+          <p>Not another AI coding assistant. A complete autonomous development framework.</p>
         </div>
         <div className={styles.featuresGrid}>
-          {/* TIER 1: TRUE DIFFERENTIATORS - What makes SpecWeave unique */}
           <FeatureHighlight
-            icon="🔌"
-            title="70%+ Token Reduction"
-            description="Modular plugin architecture loads only what you need. Active increment + relevant plugin + one agent = ~15K tokens (vs 200K+ monolithic). Measurable AI cost savings."
-          />
-          <FeatureHighlight
-            icon="🏢"
-            title="Brownfield Excellence"
-            description="The hardest problem solved: import existing docs (Notion, Confluence, Wiki), create retroactive specs, generate ADRs and C4 diagrams. Perfect for legacy codebases."
+            icon="🚀"
+            title="Autonomous Execution"
+            description="Type /sw:do and walk away. AI agents write code, tests, and docs—then verify everything passes quality gates before asking for your review."
           />
           <FeatureHighlight
             icon="📚"
-            title="Living Documentation (Auto-Sync)"
-            description="Specs and docs auto-update after every task via hooks. Always in sync with code—no drift, no manual updates, no surprises. Unique hook-based mechanism."
+            title="Living Documentation"
+            description="Specs and docs auto-update after every task. Always in sync with code—no drift, no manual updates, no 'ask John, he knows'."
           />
-          {/* TIER 2: STRONG DIFFERENTIATORS */}
           <FeatureHighlight
             icon="🔗"
-            title="External Tool Sync (GitHub/JIRA/ADO)"
-            description="Push specs to GitHub Issues, JIRA, and Azure DevOps. Read status back automatically. Keep your existing workflow—no tool lock-in."
+            title="Enterprise Integration"
+            description="Sync with GitHub Issues, JIRA, and Azure DevOps out of the box. Your PM sees progress in their tools. No workflow changes required."
           />
           <FeatureHighlight
-            icon="🧪"
-            title="Test Coverage Built-In"
-            description="4-level testing strategy with full traceability—unit, integration, E2E, acceptance tests. Embedded in tasks.md. 85-90% coverage targets enforced."
+            icon="🏢"
+            title="Legacy-Ready"
+            description="Works on 10-year-old codebases. Import existing docs from Notion, Confluence, or wikis. Generate retroactive specs and ADRs automatically."
           />
-          <FeatureHighlight
-            icon="🤖"
-            title="15+ Specialized AI Agents"
-            description="PM, Architect, DevOps, QA, Security, Tech Lead—work in parallel to minimize context usage. Pre-installed, auto-activating, production-ready."
-          />
-          {/* TIER 3: SUPPORTING FEATURES */}
-          <FeatureHighlight
-            icon="📝"
-            title="Specification-First (Source of Truth)"
-            description="Define WHAT and WHY before HOW. Specifications are the source of truth, code follows. Complete traceability from requirements to tests."
-          />
-          <FeatureHighlight
-            icon="⚡"
-            title="Autonomous & Deterministic"
-            description="Type one command, get production code in hours (not days). Auto-resume, auto-close. Minimal interaction, maximum velocity."
-          />
-          <FeatureHighlight
-            icon="🌐"
-            title="Universal Support (Any Stack, Any AI)"
-            description="Works with ANY tech stack (TS, Python, Go, Rust, Java, C#) and ANY AI tool (Claude Code, Cursor, Copilot, Gemini, ChatGPT)."
-          />
-          <FeatureHighlight
-            icon="🔧"
-            title="Extensible Framework"
-            description="Not a locked product—customize everything via CLAUDE.md: custom sync rules for external tools, additional quality gates, lifecycle hooks, agent behavior overrides."
-          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function IntegrationsSection(): ReactNode {
+  return (
+    <section className={styles.integrationsSection}>
+      <div className="container">
+        <div className={styles.sectionHeader}>
+          <Heading as="h2">Works With Your Stack</Heading>
+          <p>SpecWeave integrates with the tools your team already uses.</p>
+        </div>
+        <div className={styles.integrationsGrid}>
+          <div className={styles.integrationCard}>
+            <div className={styles.integrationIcon}>🐙</div>
+            <h3>GitHub</h3>
+            <p>Issues, Milestones, Projects. Bidirectional sync keeps everything in sync.</p>
+          </div>
+          <div className={styles.integrationCard}>
+            <div className={styles.integrationIcon}>📋</div>
+            <h3>JIRA</h3>
+            <p>Epics, Stories, Boards. 1-level and 2-level hierarchy mapping.</p>
+          </div>
+          <div className={styles.integrationCard}>
+            <div className={styles.integrationIcon}>🔷</div>
+            <h3>Azure DevOps</h3>
+            <p>Work Items, Area Paths, Iterations. Full ADO integration.</p>
+          </div>
+          <div className={styles.integrationCard}>
+            <div className={styles.integrationIcon}>🤖</div>
+            <h3>Any AI Tool</h3>
+            <p>Claude, Cursor, Copilot, Gemini. Your team picks their favorite.</p>
+          </div>
+        </div>
+        <div className={styles.integrationsCta}>
+          <Link to="/docs/guides/integrations/external-tools-overview" className="button button--secondary">
+            View Integration Guides →
+          </Link>
         </div>
       </div>
     </section>
@@ -298,8 +286,8 @@ export default function Home(): ReactNode {
       <main>
         <DogfoodingBanner />
         <FeaturesSection />
+        <IntegrationsSection />
         <ComparisonSection />
-        <HomepageFeatures />
         <CTASection />
       </main>
     </Layout>
