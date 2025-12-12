@@ -142,7 +142,7 @@ $ npx vitest run tests/unit/importers/jira-custom-types.test.ts
 - ✅ Standard JIRA types (Epic, Story, Bug, Task)
 - ✅ Custom types ("L3 Feature", "L2 Epic", "Team Feature")
 - ✅ Hierarchy mapping (Epic + Feature → feature-level)
-- ✅ Real-world examples (Farside JIRA)
+- ✅ Real-world custom type examples
 
 ## Expected Behavior After Fix
 

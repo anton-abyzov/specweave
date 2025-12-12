@@ -14,30 +14,6 @@ import { findSourceDir } from './path-utils.js';
 import { cleanupStalePlugins } from '../../../utils/cleanup-stale-plugins.js';
 
 /**
- * Detect if we're running in the SpecWeave framework repository itself.
- * Framework developers need faster cache TTL for plugin iteration.
- */
-function isSpecWeaveFrameworkRepository(dirname: string): boolean {
-  try {
-    // Walk up from dirname to find package.json
-    let currentDir = dirname;
-    for (let i = 0; i < 10; i++) {
-      const packageJsonPath = path.join(currentDir, 'package.json');
-      if (fs.existsSync(packageJsonPath)) {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-        return packageJson.name === 'specweave';
-      }
-      const parentDir = path.dirname(currentDir);
-      if (parentDir === currentDir) break;
-      currentDir = parentDir;
-    }
-  } catch {
-    // Ignore errors, assume not framework repo
-  }
-  return false;
-}
-
-/**
  * Options for plugin installation
  */
 export interface PluginInstallOptions {
