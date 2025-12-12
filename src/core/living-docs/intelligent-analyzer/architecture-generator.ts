@@ -7,6 +7,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { glob } from 'glob';
 import { extractJson, buildJsonPrompt } from '../../../utils/llm-json-extractor.js';
 import type {
   RepoAnalysis,
@@ -23,7 +24,16 @@ export interface ArchitectureResult {
   c4Container: string;
   dataFlow: string;
   detectedAdrs: DetectedADR[];
+  existingAdrs: ExistingADR[];
   confidence: 'high' | 'medium' | 'low';
+}
+
+export interface ExistingADR {
+  file: string;
+  id: string;
+  title: string;
+  status: string;
+  content: string;
 }
 
 export async function generateArchitecture(
@@ -35,13 +45,17 @@ export async function generateArchitecture(
   log: (msg: string) => void
 ): Promise<ArchitectureResult> {
   log('PHASE D: Architecture Generation');
-  onProgress('architecture', 0, 100, 'Generating C4 diagrams');
+  onProgress('architecture', 0, 100, 'Scanning for existing ADRs');
+
+  // Scan for existing ADRs in the codebase FIRST
+  const existingAdrs = await scanForExistingADRs(projectPath, log);
+  log(`  Found ${existingAdrs.length} existing ADR files`);
 
   const context = buildArchitectureContext(repoAnalyses, orgResult);
 
   if (!llmProvider) {
     log('  No LLM provider, using basic diagram generation');
-    return createBasicArchitecture(repoAnalyses, orgResult);
+    return createBasicArchitecture(repoAnalyses, orgResult, existingAdrs);
   }
 
   onProgress('architecture', 20, 100, 'LLM C4 diagram generation');
@@ -58,12 +72,135 @@ export async function generateArchitecture(
       c4Container: c4Result.container,
       dataFlow: c4Result.dataFlow,
       detectedAdrs: adrs,
+      existingAdrs,
       confidence: 'medium',
     };
   } catch (err: any) {
     log(`  Architecture generation error: ${err.message}`);
-    return createBasicArchitecture(repoAnalyses, orgResult);
+    return createBasicArchitecture(repoAnalyses, orgResult, existingAdrs);
   }
+}
+
+/**
+ * Scan the project for existing ADR files
+ * Looks in common ADR locations: docs/adr/, doc/adr/, adr/, architecture/decisions/
+ */
+async function scanForExistingADRs(
+  projectPath: string,
+  log: (msg: string) => void
+): Promise<ExistingADR[]> {
+  const existingAdrs: ExistingADR[] = [];
+
+  // Common ADR file patterns and locations
+  const adrPatterns = [
+    '**/adr/*.md',
+    '**/adrs/*.md',
+    '**/ADR/*.md',
+    '**/docs/adr/*.md',
+    '**/docs/decisions/*.md',
+    '**/doc/adr/*.md',
+    '**/architecture/decisions/*.md',
+    '**/architecture/adr/*.md',
+    '**/*-adr-*.md',
+    '**/adr-*.md',
+  ];
+
+  // Skip SpecWeave's own generated ADRs
+  const ignore = [
+    '**/node_modules/**',
+    '**/.specweave/docs/internal/architecture/adr/**', // Skip generated ADRs
+    '**/dist/**',
+    '**/build/**',
+  ];
+
+  try {
+    for (const pattern of adrPatterns) {
+      const files = await glob(pattern, {
+        cwd: projectPath,
+        ignore,
+        nodir: true,
+        absolute: true,
+      });
+
+      for (const file of files) {
+        try {
+          const content = fs.readFileSync(file, 'utf-8');
+          const adr = parseADRFile(file, content, projectPath);
+          if (adr) {
+            existingAdrs.push(adr);
+          }
+        } catch {
+          // Skip unreadable files
+        }
+      }
+    }
+  } catch (err) {
+    log(`  ADR scan error: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  // Deduplicate by file path
+  const seen = new Set<string>();
+  return existingAdrs.filter(adr => {
+    if (seen.has(adr.file)) return false;
+    seen.add(adr.file);
+    return true;
+  });
+}
+
+/**
+ * Parse an ADR file to extract metadata
+ */
+function parseADRFile(
+  filePath: string,
+  content: string,
+  projectPath: string
+): ExistingADR | null {
+  const relativePath = path.relative(projectPath, filePath);
+
+  // Try to extract ID from filename (e.g., 0001-decision.md, ADR-001-decision.md)
+  const fileName = path.basename(filePath, '.md');
+  const idMatch = fileName.match(/^(\d{3,4}|ADR-\d+)/i);
+  const id = idMatch ? idMatch[1] : fileName;
+
+  // Try to extract title from first heading
+  const titleMatch = content.match(/^#\s+(.+)$/m);
+  const title = titleMatch
+    ? titleMatch[1].replace(/^(ADR-?\d+[:\s]*)/i, '').trim()
+    : fileName;
+
+  // Try to extract status
+  const statusPatterns = [
+    /\*\*Status\*\*[:\s]+(\w+)/i,
+    /^Status[:\s]+(\w+)/mi,
+    /\| Status \| (\w+) \|/i,
+  ];
+  let status = 'Unknown';
+  for (const pattern of statusPatterns) {
+    const match = content.match(pattern);
+    if (match) {
+      status = match[1];
+      break;
+    }
+  }
+
+  // Skip if this doesn't look like an ADR (no recognizable structure)
+  const hasADRStructure =
+    content.toLowerCase().includes('context') ||
+    content.toLowerCase().includes('decision') ||
+    content.toLowerCase().includes('status') ||
+    content.toLowerCase().includes('consequences');
+
+  if (!hasADRStructure && !idMatch) {
+    return null;
+  }
+
+  return {
+    file: relativePath,
+    id,
+    title,
+    status,
+    content: content.substring(0, 500), // First 500 chars for preview
+  };
 }
 
 function buildArchitectureContext(
@@ -308,13 +445,15 @@ async function detectArchitecturalDecisions(
 
 function createBasicArchitecture(
   analyses: Map<string, RepoAnalysis>,
-  org: OrganizationSynthesisResult
+  org: OrganizationSynthesisResult,
+  existingAdrs: ExistingADR[] = []
 ): ArchitectureResult {
   return {
     c4Context: createBasicContextDiagram(),
     c4Container: createBasicContainerDiagram(),
     dataFlow: createBasicDataFlow(),
     detectedAdrs: [],
+    existingAdrs,
     confidence: 'low',
   };
 }
@@ -425,6 +564,48 @@ export async function saveArchitecture(
     fs.writeFileSync(adrFile, content);
     savedFiles.push(adrFile);
   }
+
+  // Create ADR index including BOTH detected and existing ADRs
+  const indexLines = [
+    '# Architecture Decision Records',
+    '',
+    '*Auto-generated by Intelligent Analyzer*',
+    '',
+  ];
+
+  // Section for existing ADRs found in codebase
+  if (result.existingAdrs.length > 0) {
+    indexLines.push('## Existing ADRs (Found in Codebase)', '');
+    indexLines.push('| ID | Title | Status | Location |');
+    indexLines.push('|----|-------|--------|----------|');
+    for (const adr of result.existingAdrs) {
+      const relPath = path.relative(archPath, path.join(projectPath, adr.file));
+      indexLines.push(`| ${adr.id} | ${adr.title} | ${adr.status} | [${adr.file}](${relPath}) |`);
+    }
+    indexLines.push('');
+  }
+
+  // Section for detected ADRs
+  if (result.detectedAdrs.length > 0) {
+    indexLines.push('## Detected ADRs (Auto-Generated)', '');
+    indexLines.push('These ADRs were inferred from patterns detected in the codebase:', '');
+    indexLines.push('| ID | Title | Status | Confidence |');
+    indexLines.push('|----|-------|--------|------------|');
+    for (const adr of result.detectedAdrs) {
+      indexLines.push(`| [${adr.id}](./adr/${adr.id}.md) | ${adr.title} | ${adr.status} | ${adr.confidence} |`);
+    }
+    indexLines.push('');
+  }
+
+  // Summary stats
+  indexLines.push('## Summary', '');
+  indexLines.push(`- **Existing ADRs**: ${result.existingAdrs.length}`);
+  indexLines.push(`- **Detected ADRs**: ${result.detectedAdrs.length}`);
+  indexLines.push(`- **Total**: ${result.existingAdrs.length + result.detectedAdrs.length}`);
+
+  const indexFile = path.join(archPath, 'adr-index.md');
+  fs.writeFileSync(indexFile, indexLines.join('\n'));
+  savedFiles.push(indexFile);
 
   return savedFiles;
 }
