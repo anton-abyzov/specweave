@@ -199,22 +199,25 @@ export interface ItemConverterOptions {
    * External container context for 2-level directory structure
    *
    * When provided, creates 2-level structure:
-   * - JIRA: specs/JIRA-{containerId}/{projectId}/FS-XXX/
-   * - ADO: specs/{containerId}/{projectId}/FS-XXX/ (no ADO- prefix)
+   * - JIRA: specs/{projectKey}/{boardName}/FS-XXX/ (e.g., AAC/aac/)
+   * - ADO: specs/{projectName}/{areaPath}/FS-XXX/
    *
    * When NOT provided (default), creates 1-level structure:
    * - GitHub: specs/{projectId}/FS-XXX/
    *
+   * CRITICAL (v0.35.2): Removed "JIRA-" prefix to match ADO behavior
+   *
    * @example
    * ```typescript
-   * // JIRA board-based setup
+   * // JIRA board-based setup (NO JIRA- prefix!)
    * externalContainer: {
    *   type: 'jira-project',
-   *   containerId: 'CORE',
-   *   containerName: 'Core Project',
-   *   boardId: 123,
-   *   boardName: 'Frontend Board'
+   *   containerId: 'AAC',  // Raw projectKey (uppercase)
+   *   containerName: 'Ancillary Apps - CC',
+   *   boardId: 338,
+   *   boardName: 'Ancillary Apps - CC board'
    * }
+   * // Result: specs/AAC/aac/FS-XXX/
    *
    * // ADO area path setup
    * externalContainer: {
@@ -1182,10 +1185,12 @@ Items land here when:
    * Get base directory for specs, handling both 1-level and 2-level structures
    *
    * Structure patterns:
-   * - 2-level (JIRA): specs/JIRA-{containerId}/{projectId}/
-   * - 2-level (ADO): specs/{containerId}/{projectId}/
+   * - 2-level (JIRA): specs/{projectKey}/{boardName}/ (e.g., AAC/aac/)
+   * - 2-level (ADO): specs/{projectName}/{areaPath}/
    * - 1-level (GitHub): specs/{projectId}/
    * - Legacy: specs/ (no projectId)
+   *
+   * CRITICAL (v0.35.2): JIRA no longer uses "JIRA-" prefix to match ADO behavior
    *
    * IMPORTANT: For 2-level structure, features ALWAYS go in the inner folder (board/area level),
    * even when containerDirName == projectId (e.g., specs/my-project/my-project/).
@@ -1196,15 +1201,12 @@ Items land here when:
 
     if (container) {
       // 2-level structure for JIRA/ADO
-      // JIRA: specs/JIRA-{projectKey}/{boardName}/
+      // JIRA: specs/{projectKey}/{boardName}/ (no JIRA- prefix, matches ADO behavior)
       // ADO: specs/{projectName}/{areaPath}/ (no ADO- prefix per user request)
-      let containerDirName: string;
-      if (container.type === 'jira-project') {
-        containerDirName = `JIRA-${normalizeToProjectId(container.containerId)}`;
-      } else {
-        // ADO: Use project name directly without prefix
-        containerDirName = normalizeToProjectId(container.containerId);
-      }
+      // CRITICAL FIX (v0.35.2): Remove JIRA- prefix to match ADO behavior
+      // Level 1: Use raw projectKey (e.g., "AAC", not "jira-aac")
+      // Level 2: Use normalized board name from mapping (e.g., "aac")
+      const containerDirName = container.containerId; // Use raw containerId (e.g., "AAC")
       const projectId = this.options.projectId || 'default';
 
       return path.join(

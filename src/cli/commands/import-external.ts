@@ -12,6 +12,7 @@ import { ItemConverter, type ConvertedUserStory } from '../../importers/item-con
 import { loadSyncMetadata, getLastImportTimestamp } from '../../sync/sync-metadata.js';
 import { RateLimiter, type RateLimitInfo } from '../../importers/rate-limiter.js';
 import { shouldConfirmLargeImport } from '../../importers/rate-limiter.js';
+import { groupItemsByExternalContainer } from '../helpers/init/external-import-grouping.js';
 import path from 'path';
 import * as fs from '../../utils/fs-native.js';
 import type { ExternalItem } from '../../importers/external-importer.js';
@@ -72,44 +73,6 @@ function getExistingSyncProfiles(projectRoot: string): string[] | null {
     console.warn(chalk.yellow(`   ⚠️  Failed to read sync profiles: ${error instanceof Error ? error.message : String(error)}`));
     return null;
   }
-}
-
-/**
- * Group items by their source repository
- * Items without sourceRepo go into '_default' group
- */
-function groupItemsBySourceRepo(items: ExternalItem[]): Map<string, ExternalItem[]> {
-  const groups = new Map<string, ExternalItem[]>();
-
-  for (const item of items) {
-    // Extract repo name from sourceRepo (e.g., "owner/repo" -> "repo")
-    let repoKey = '_default';
-    if (item.sourceRepo) {
-      const parts = item.sourceRepo.split('/');
-      const rawRepoName = parts.length > 1 ? parts[1] : item.sourceRepo;
-
-      // Sanitize repo name to prevent path injection:
-      // - Allow only alphanumeric, hyphens, underscores
-      // - Trim leading/trailing hyphens
-      // - Limit to 100 chars
-      repoKey = rawRepoName
-        .replace(/[^a-zA-Z0-9-_]/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .slice(0, 100);
-
-      // Fall back to _default if sanitization results in empty string
-      if (!repoKey) {
-        repoKey = '_default';
-      }
-    }
-
-    if (!groups.has(repoKey)) {
-      groups.set(repoKey, []);
-    }
-    groups.get(repoKey)!.push(item);
-  }
-
-  return groups;
 }
 
 /**
@@ -390,31 +353,31 @@ export async function importExternal(projectRoot: string, args: ImportExternalAr
       const conversionSpinner = ora('Converting items to living docs...').start();
 
       try {
-        // Group items by sourceRepo for proper multi-repo folder allocation
-        const itemsByRepo = groupItemsBySourceRepo(allItems);
-        const repoCount = itemsByRepo.size;
+        // CRITICAL FIX (v0.35.2): Use proper grouping for JIRA/ADO 2-level structure
+        // Groups by external container (JIRA project/board, ADO project/area, GitHub repo)
+        const containerGroups = groupItemsByExternalContainer(allItems, projectRoot);
+        const groupCount = containerGroups.length;
         const allConverted: ConvertedUserStory[] = [];
 
-        // Enable global collision detection when multiple repos exist (umbrella mode)
-        const isUmbrellaMode = repoCount > 1;
+        // Enable global collision detection when multiple containers exist (umbrella mode)
+        const isUmbrellaMode = groupCount > 1;
 
-        for (const [repoKey, items] of itemsByRepo.entries()) {
-          // Determine project ID:
-          // - For multi-repo: use repo name (e.g., "sw-thumbnail-ab-be")
-          // - For single-repo/no sourceRepo: use 'parent' (consistent structure)
-          // NOTE: We ALWAYS use a project folder now, never direct to specs/
-          const projectId = repoKey === '_default' ? 'parent' : repoKey;
+        for (const group of containerGroups) {
+          const groupLabel = group.externalContainer
+            ? `${group.externalContainer.containerName || group.containerId}/${group.projectId}`
+            : group.projectId;
 
-          conversionSpinner.text = `Converting items from ${projectId}...`;
+          conversionSpinner.text = `Converting items from ${groupLabel}...`;
 
-          // Create converter for this project/repo
+          // Create converter for this container group
           const converter = new ItemConverter({
             specsDir,
             projectRoot,
             enableFeatureAllocation: true,
             enableDuplicateDetection: true,
-            // Always use project folder - 'parent' for single-repo, repo name for multi-repo
-            projectId,
+            // CRITICAL (v0.35.2): Pass projectId AND externalContainer for 2-level structure
+            projectId: group.projectId,
+            externalContainer: group.externalContainer,
             // CRITICAL: Enable global collision detection in umbrella mode
             // This prevents FS-001 in project-a colliding with FS-001E in project-b
             enableGlobalCollisionDetection: isUmbrellaMode,
@@ -423,17 +386,20 @@ export async function importExternal(projectRoot: string, args: ImportExternalAr
             },
           });
 
-          const converted = await converter.convertItems(items);
+          const converted = await converter.convertItems(group.items);
           allConverted.push(...converted);
         }
 
         convertedCount = allConverted.length;
         skippedCount = allItems.length - convertedCount;
 
-        if (repoCount > 1) {
-          conversionSpinner.succeed(`Converted ${convertedCount} items to living docs (${repoCount} project folders, global collision detection enabled)`);
+        if (groupCount > 1) {
+          conversionSpinner.succeed(`Converted ${convertedCount} items to living docs (${groupCount} container groups)`);
         } else {
-          conversionSpinner.succeed(`Converted ${convertedCount} items to living docs (specs/parent/)`);
+          const groupLabel = containerGroups[0]?.externalContainer
+            ? `${containerGroups[0].containerId}/${containerGroups[0].projectId}`
+            : containerGroups[0]?.projectId || 'unknown';
+          conversionSpinner.succeed(`Converted ${convertedCount} items to living docs (${groupLabel})`);
         }
       } catch (error: any) {
         conversionSpinner.fail(`Conversion failed: ${error.message}`);
