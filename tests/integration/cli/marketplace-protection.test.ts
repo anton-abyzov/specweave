@@ -39,7 +39,7 @@ describe('Marketplace Protection - Source Code Verification', () => {
       expect(functionBody).not.toMatch(/claude.*marketplace.*remove/);
     });
 
-    it('should return early when marketplace exists', async () => {
+    it('should update marketplace when it exists (v0.35.2+)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
       // Extract refreshMarketplace function body
@@ -47,12 +47,13 @@ describe('Marketplace Protection - Source Code Verification', () => {
       const functionEnd = content.indexOf('\n}', functionStart) + 2;
       const functionBody = content.substring(functionStart, functionEnd);
 
-      // Must have early return when marketplace exists
+      // Must check if marketplace exists
       expect(functionBody).toContain('if (marketplaceExists)');
-      expect(functionBody).toContain('return;');
 
-      // Must log that marketplace is already registered
-      expect(functionBody).toContain('already registered');
+      // v0.35.2+: When marketplace exists, UPDATE it (better than early return!)
+      // This ensures users get latest plugins on each init
+      expect(functionBody).toContain("'update'");
+      expect(functionBody).toContain('Marketplace updated');
     });
 
     it('should only add marketplace when it does NOT exist', async () => {
@@ -69,7 +70,7 @@ describe('Marketplace Protection - Source Code Verification', () => {
       expect(functionBody).toContain('anton-abyzov/specweave');
     });
 
-    it('should have CRITICAL FIX documentation', async () => {
+    it('should have proper documentation for marketplace handling', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
       // Extract refreshMarketplace function and its JSDoc
@@ -77,37 +78,38 @@ describe('Marketplace Protection - Source Code Verification', () => {
       const functionEnd = content.indexOf('\n}', content.indexOf('async function refreshMarketplace')) + 2;
       const functionWithDoc = content.substring(docStart, functionEnd);
 
-      // Must document the fix
-      expect(functionWithDoc).toContain('CRITICAL FIX');
-      expect(functionWithDoc).toContain('v0.34.6');
-      expect(functionWithDoc).toContain('Never remove existing marketplace');
+      // Must document the approach (v0.35.2+: simplified, no longer has CRITICAL FIX comment)
+      expect(functionWithDoc).toContain('marketplace');
+      expect(functionWithDoc).toContain('add');
+      expect(functionWithDoc).toContain('update');
     });
   });
 
-  describe('Cache TTL Configuration', () => {
-    it('should use 24-hour cache TTL for users, 5 min for framework devs', async () => {
+  describe('Simplified Marketplace Handling (v0.35.2+)', () => {
+    it('should NOT have manual cache TTL logic (Claude CLI handles it)', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // Must have both TTL constants (conditional)
-      expect(content).toContain('24 * 60 * 60 * 1000'); // 24 hours for users
-      expect(content).toContain('5 * 60 * 1000');       // 5 min for devs
-
-      // Must detect framework repo
-      expect(content).toContain('isSpecWeaveFrameworkRepository');
+      // v0.35.2: Removed manual cache management - Claude CLI handles internally
+      // These patterns should NOT exist anymore (over-engineering removed)
+      expect(content).not.toContain('cacheAge < cacheTTL');
+      expect(content).not.toContain('isSpecWeaveFrameworkRepository');
     });
 
-    it('should use cacheTTL variable in cache comparison', async () => {
+    it('should use marketplace list to check existence', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // Must compare against cacheTTL variable
-      expect(content).toContain('cacheAge < cacheTTL');
+      // Check marketplace via CLI, not manual cache inspection
+      expect(content).toContain("'marketplace', 'list'");
+      expect(content).toContain('marketplaceExists');
     });
 
-    it('should NOT use hardcoded plugin count >= 25', async () => {
+    it('should check core plugin by name when installing', async () => {
       const content = await fs.readFile(pluginInstallerPath, 'utf-8');
 
-      // Must check core plugin existence instead of magic number
-      expect(content).toContain("p.name === 'specweave'");
+      // Must check core plugin by name (for sorting and special handling)
+      // v0.35.2+: Uses pluginName === 'specweave' for sorting and special install
+      expect(content).toContain("pluginName === 'specweave'");
+      expect(content).toContain("a.name === 'specweave'"); // Sort comparison
       expect(content).not.toMatch(/plugins\.length\s*>=\s*25/);
     });
   });
@@ -234,11 +236,13 @@ describe('Marketplace Protection - Behavioral Verification', () => {
 
     // Idempotency is guaranteed by:
     // 1. Checking if marketplace exists first
-    // 2. Returning early if it does
-    // 3. Only adding if it doesn't exist
+    // 2. If exists → UPDATE (v0.35.2+: better than early return, gets latest)
+    // 3. If not exists → ADD
+    // 4. Never remove
 
     expect(functionBody).toContain('marketplaceExists');
-    expect(functionBody).toContain('return;'); // Early return
-    expect(functionBody).toContain("'add'"); // Only add, never remove
+    expect(functionBody).toContain("'update'"); // Update if exists (v0.35.2+)
+    expect(functionBody).toContain("'add'"); // Add if not exists
+    expect(functionBody).not.toContain("'remove'"); // Never remove
   });
 });
