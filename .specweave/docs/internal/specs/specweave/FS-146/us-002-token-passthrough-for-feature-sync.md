@@ -1,11 +1,15 @@
 ---
 id: US-002
 feature: FS-146
-title: "Token Passthrough for Feature Sync"
+title: Token Passthrough for Feature Sync
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
+external:
+  github:
+    issue: 941
+    url: https://github.com/anton-abyzov/specweave/issues/941
 ---
 
 # US-002: Token Passthrough for Feature Sync

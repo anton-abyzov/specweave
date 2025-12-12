@@ -4,8 +4,13 @@ title: "0142: Frontmatter Project Removal - Part 2: Migration & Rollout"
 type: feature
 status: completed
 priority: P1
-created: 2025-12-11
-lastUpdated: 2025-12-11
+created: 2025-12-12
+lastUpdated: 2025-12-12
+external_tools:
+  github:
+    type: milestone
+    id: 58
+    url: https://github.com/anton-abyzov/specweave/milestone/58
 ---
 
 # 0142: Frontmatter Project Removal - Part 2: Migration & Rollout
@@ -18,7 +23,7 @@ lastUpdated: 2025-12-11
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0142-frontmatter-removal-part2-migration](../../../../increments/0142-frontmatter-removal-part2-migration/spec.md) | ✅ completed | 2025-12-11 |
+| [0142-frontmatter-removal-part2-migration](../../../../increments/0142-frontmatter-removal-part2-migration/spec.md) | ✅ completed | 2025-12-12 |
 
 ## User Stories
 

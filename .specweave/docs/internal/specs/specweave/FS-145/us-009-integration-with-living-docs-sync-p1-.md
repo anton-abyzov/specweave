@@ -1,11 +1,15 @@
 ---
 id: US-009
 feature: FS-145
-title: "Integration with Living Docs Sync (P1)"
+title: Integration with Living Docs Sync (P1)
 status: completed
 priority: P1
-created: 2025-12-11
+created: 2025-12-12
 project: specweave
+external:
+  github:
+    issue: 938
+    url: https://github.com/anton-abyzov/specweave/issues/938
 ---
 
 # US-009: Integration with Living Docs Sync (P1)

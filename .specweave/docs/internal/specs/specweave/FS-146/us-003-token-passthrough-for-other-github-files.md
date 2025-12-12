@@ -1,11 +1,15 @@
 ---
 id: US-003
 feature: FS-146
-title: "Token Passthrough for Other GitHub Files"
+title: Token Passthrough for Other GitHub Files
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
+external:
+  github:
+    issue: 942
+    url: https://github.com/anton-abyzov/specweave/issues/942
 ---
 
 # US-003: Token Passthrough for Other GitHub Files

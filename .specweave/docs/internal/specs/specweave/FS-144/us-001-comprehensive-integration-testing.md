@@ -1,11 +1,15 @@
 ---
 id: US-001
 feature: FS-144
-title: "Comprehensive Integration Testing"
+title: Comprehensive Integration Testing
 status: completed
 priority: P1
-created: 2025-12-11
+created: 2025-12-12
 project: specweave
+external:
+  github:
+    issue: 925
+    url: https://github.com/anton-abyzov/specweave/issues/925
 ---
 
 # US-001: Comprehensive Integration Testing
