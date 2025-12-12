@@ -1,11 +1,15 @@
 ---
 id: US-001
 feature: FS-146
-title: "Token Passthrough for GitHub Client"
+title: Token Passthrough for GitHub Client
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
+external:
+  github:
+    issue: 940
+    url: https://github.com/anton-abyzov/specweave/issues/940
 ---
 
 # US-001: Token Passthrough for GitHub Client

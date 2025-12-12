@@ -1,11 +1,15 @@
 ---
 id: US-007
 feature: FS-145
-title: "Migration from config.json (P0)"
+title: Migration from config.json (P0)
 status: completed
 priority: P1
-created: 2025-12-11
+created: 2025-12-12
 project: specweave
+external:
+  github:
+    issue: 936
+    url: https://github.com/anton-abyzov/specweave/issues/936
 ---
 
 # US-007: Migration from config.json (P0)

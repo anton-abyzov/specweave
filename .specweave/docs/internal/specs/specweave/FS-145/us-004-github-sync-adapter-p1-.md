@@ -1,11 +1,15 @@
 ---
 id: US-004
 feature: FS-145
-title: "GitHub Sync Adapter (P1)"
+title: GitHub Sync Adapter (P1)
 status: completed
 priority: P1
-created: 2025-12-11
+created: 2025-12-12
 project: specweave
+external:
+  github:
+    issue: 933
+    url: https://github.com/anton-abyzov/specweave/issues/933
 ---
 
 # US-004: GitHub Sync Adapter (P1)

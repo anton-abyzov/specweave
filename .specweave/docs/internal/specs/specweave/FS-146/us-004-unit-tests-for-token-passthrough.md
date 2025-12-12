@@ -1,11 +1,15 @@
 ---
 id: US-004
 feature: FS-146
-title: "Unit Tests for Token Passthrough"
+title: Unit Tests for Token Passthrough
 status: completed
 priority: P1
 created: 2025-12-11
 project: specweave
+external:
+  github:
+    issue: 943
+    url: https://github.com/anton-abyzov/specweave/issues/943
 ---
 
 # US-004: Unit Tests for Token Passthrough

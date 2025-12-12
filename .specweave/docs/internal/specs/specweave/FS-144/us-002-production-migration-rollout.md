@@ -1,11 +1,15 @@
 ---
 id: US-002
 feature: FS-144
-title: "Production Migration & Rollout"
+title: Production Migration & Rollout
 status: completed
 priority: P1
-created: 2025-12-11
+created: 2025-12-12
 project: specweave
+external:
+  github:
+    issue: 927
+    url: https://github.com/anton-abyzov/specweave/issues/927
 ---
 
 # US-002: Production Migration & Rollout

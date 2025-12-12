@@ -1,11 +1,16 @@
 ---
 id: FS-145
-title: "Project Registry with EDA-Based Synchronization"
+title: Project Registry with EDA-Based Synchronization
 type: feature
 status: completed
 priority: P1
-created: 2025-12-11
-lastUpdated: 2025-12-11
+created: 2025-12-12
+lastUpdated: 2025-12-12
+external_tools:
+  github:
+    type: milestone
+    id: 61
+    url: https://github.com/anton-abyzov/specweave/milestone/61
 ---
 
 # Project Registry with EDA-Based Synchronization
@@ -18,7 +23,7 @@ lastUpdated: 2025-12-11
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0145-project-registry-eda-sync](../../../../increments/0145-project-registry-eda-sync/spec.md) | ✅ completed | 2025-12-11 |
+| [0145-project-registry-eda-sync](../../../../increments/0145-project-registry-eda-sync/spec.md) | ✅ completed | 2025-12-12 |
 
 ## User Stories
 

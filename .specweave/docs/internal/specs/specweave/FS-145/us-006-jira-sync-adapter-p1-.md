@@ -1,11 +1,15 @@
 ---
 id: US-006
 feature: FS-145
-title: "JIRA Sync Adapter (P1)"
+title: JIRA Sync Adapter (P1)
 status: completed
 priority: P1
-created: 2025-12-11
+created: 2025-12-12
 project: specweave
+external:
+  github:
+    issue: 935
+    url: https://github.com/anton-abyzov/specweave/issues/935
 ---
 
 # US-006: JIRA Sync Adapter (P1)

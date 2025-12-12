@@ -1,11 +1,16 @@
 ---
 id: FS-146
-title: "GitHub CLI Token Passthrough Fix"
+title: GitHub CLI Token Passthrough Fix
 type: feature
 status: completed
 priority: P1
 created: 2025-12-11
-lastUpdated: 2025-12-11
+lastUpdated: 2025-12-12
+external_tools:
+  github:
+    type: milestone
+    id: 62
+    url: https://github.com/anton-abyzov/specweave/milestone/62
 ---
 
 # GitHub CLI Token Passthrough Fix
