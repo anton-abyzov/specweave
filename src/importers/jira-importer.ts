@@ -404,14 +404,20 @@ export class JiraImporter implements Importer {
     let type: ExternalItem['type'] = 'task';
     const issueTypeName = issue.fields.issuetype.name.toLowerCase();
 
+    // CRITICAL FIX (v0.35.3): Use flexible matching for JIRA custom types
+    // Many organizations use custom issue types like "L3 Feature", "L2 Epic", etc.
+    // Match by keywords instead of exact string comparison
     if (issueTypeName.includes('story') || issueTypeName === 'user story') {
       type = 'user-story';
-    } else if (issueTypeName === 'epic') {
+    } else if (issueTypeName.includes('epic') || issueTypeName.includes('l2')) {
+      // Match "Epic", "L2 Epic", "Team Epic", etc.
       type = 'epic';
-    } else if (issueTypeName === 'bug') {
-      type = 'bug';
-    } else if (issueTypeName === 'feature') {
+    } else if (issueTypeName.includes('feature') || issueTypeName.includes('l3')) {
+      // Match "Feature", "L3 Feature", "Team Feature", etc.
+      // JIRA Features map to SpecWeave feature-level (FS-XXX folders)
       type = 'feature';
+    } else if (issueTypeName.includes('bug')) {
+      type = 'bug';
     }
 
     // Map JIRA priority to ExternalItem priority

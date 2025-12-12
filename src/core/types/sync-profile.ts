@@ -230,12 +230,16 @@ export const ADO_SCRUM_HIERARCHY_MAPPING: HierarchyMappingConfig = {
 /**
  * Default JIRA hierarchy mapping (3 levels)
  *
- * JIRA: Epic → Story → Sub-task
+ * JIRA: Epic/Feature → Story → Sub-task
  * Maps to: feature → user_story → task
+ *
+ * CRITICAL (v0.35.3): Include 'Feature' to support custom JIRA types
+ * Many organizations use custom types like "L3 Feature", "Team Feature", etc.
+ * Both "Epic" and "Feature" types should create FS-XXX folders (feature-level)
  */
 export const DEFAULT_JIRA_HIERARCHY_MAPPING: HierarchyMappingConfig = {
   epicLevelTypes: [],
-  featureLevelTypes: ['Epic'],
+  featureLevelTypes: ['Epic', 'Feature'],
 };
 
 /**
