@@ -1,7 +1,7 @@
 {
   "name": "sw",
   "description": "SpecWeave framework. Provides increment planning (PM, Architect, Tech Lead agents), specification generation, TDD workflow, living docs sync, and brownfield support. Essential for all SpecWeave projects.",
-  "version": "0.25.0",
+  "version": "1.0.0-rc.1",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"

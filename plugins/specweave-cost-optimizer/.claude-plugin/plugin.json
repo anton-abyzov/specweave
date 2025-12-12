@@ -1,7 +1,7 @@
 {
   "name": "sw-cost",
   "description": "Cloud cost optimization and analysis for AWS, Azure, GCP, and serverless platforms. Provides cost analysis, optimization recommendations, pricing comparisons, budget alerts, and serverless cost modeling with 2024/2025 pricing.",
-  "version": "0.24.0",
+  "version": "1.0.0-rc.1",
   "author": {
     "name": "Anton Abyzov",
     "email": "anton.abyzov@gmail.com"
