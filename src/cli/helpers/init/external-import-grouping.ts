@@ -351,19 +351,17 @@ export function groupNonHierarchyItems(items: ExternalItem[], jiraBoardMappings?
     let externalContainer: ExternalContainerContext | undefined;
 
     // Check for JIRA container context
-    // CRITICAL FIX (v0.34.1): JIRA 2-level structure using config board mappings
-    // - Level 1 (project): JIRA projectKey (e.g., "CORE")
-    // - Level 2 (board): specweaveProject from boardMapping (e.g., "fe", "be")
+    // CRITICAL FIX (v0.35.2): JIRA 2-level structure using board names directly
+    // - Level 1 (project): JIRA projectKey (e.g., "AAC")
+    // - Level 2 (board): normalized boardName (e.g., "ancillary-apps-cc-board")
     if (item.jiraProjectKey) {
       containerType = 'jira';
       containerId = item.jiraProjectKey;
 
-      // CRITICAL FIX (v0.34.1): Use specweaveProject from boardMapping (Level 2)
-      // Map jiraBoardId → specweaveProject using config
-      // Fallback to normalized boardName if mapping not found
-      if (item.jiraBoardId && jiraBoardMappings && jiraBoardMappings.has(item.jiraBoardId)) {
-        projectId = jiraBoardMappings.get(item.jiraBoardId)!;
-      } else if (item.jiraBoardName) {
+      // CRITICAL FIX (v0.35.2): Use normalized boardName directly (Level 2)
+      // For project-per-team strategy, boards don't map to different projects
+      // They're just sub-folders under the project: AAC/board-name/
+      if (item.jiraBoardName) {
         projectId = normalizeToProjectId(item.jiraBoardName) || 'default';
       } else {
         projectId = 'default';

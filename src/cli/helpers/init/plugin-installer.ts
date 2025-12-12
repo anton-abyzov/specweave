@@ -11,6 +11,7 @@ import ora from 'ora';
 import { execFileNoThrowSync } from '../../../utils/execFileNoThrow.js';
 import { detectClaudeCli, getClaudeCliDiagnostic, getClaudeCliSuggestions } from '../../../utils/claude-cli-detector.js';
 import { findSourceDir } from './path-utils.js';
+import { cleanupStalePlugins } from '../../../utils/cleanup-stale-plugins.js';
 
 /**
  * Detect if we're running in the SpecWeave framework repository itself.
@@ -152,6 +153,22 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
 
     console.log(chalk.blue(`   📦 Found ${allPlugins.length} plugins to install`));
     spinner.succeed(`Found ${allPlugins.length} plugins`);
+
+    // CRITICAL FIX (v0.35.2): Clean up stale plugin references
+    // Remove plugins from ~/.claude/settings.json that no longer exist in marketplace
+    // This prevents "Plugin not found" errors for removed/renamed plugins
+    spinner.start('Checking for stale plugin references...');
+    const cleanupResult = await cleanupStalePlugins(marketplaceJsonPath, false);
+
+    if (cleanupResult.removedCount > 0) {
+      console.log(chalk.yellow(`   🧹 Removed ${cleanupResult.removedCount} stale plugin reference(s)`));
+      cleanupResult.removedPlugins.forEach(p => {
+        console.log(chalk.gray(`      - ${p}`));
+      });
+      spinner.succeed('Cleaned up stale plugins');
+    } else {
+      spinner.succeed('No stale plugins found');
+    }
 
     // Install ALL plugins with retry logic
     const result = await installPluginsWithRetry(allPlugins, spinner);
