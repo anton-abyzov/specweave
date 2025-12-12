@@ -100,8 +100,35 @@ const sidebars: SidebarsConfig = {
   integrationsSidebar: [
     {
       type: 'category',
-      label: 'Issue Trackers',
+      label: 'External Tools',
       collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'guides/integrations/external-tools-overview',
+          label: '🔄 Overview',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/github-integration',
+          label: '🐙 GitHub Integration',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/jira-integration',
+          label: '📋 JIRA Integration',
+        },
+        {
+          type: 'doc',
+          id: 'guides/lessons/ado-integration',
+          label: '🔷 Azure DevOps Integration',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Issue Trackers',
+      collapsed: true,
       items: [
         {
           type: 'doc',
