@@ -460,26 +460,24 @@ async function handleSingleProjectSelection(
     spinner.succeed('No boards found (will use project root)');
   }
 
-  // Let user select boards (optional, for 2-level structure)
-  let selectedBoards: Array<{ id: string; name?: string }> = [];
-  if (boards.length > 0) {
-    const boardSelection = await selectBoards(boards, projectKey);
-    selectedBoards = boardSelection || [];
-  }
+  // CRITICAL SIMPLIFICATION (v0.35.3): Remove board selection
+  // JIRA boards are just VIEWS/FILTERS over project data - not organizational units!
+  // Correct mapping: JIRA Project → SpecWeave Project (1:1)
+  // Folder structure: AAC/FS-XXX/ (no board level)
 
-  // Build credentials with single project + boards
+  // Build credentials with single project (NO boards)
   return {
     token,
     email,
     domain,
     instanceType,
-    strategy: 'project-per-team',
+    strategy: 'project-per-team',  // Legacy field (ignored)
     projects: [projectKey],
     projectConfigs: [{
       key: projectKey,
       name: selectedProject?.name,
       id: selectedProject?.id,
-      boards: selectedBoards.length > 0 ? selectedBoards : undefined,
+      // boards: REMOVED (v0.35.3) - boards are views, not organizational structure!
       isDefault: true
     }]
   };
@@ -544,17 +542,15 @@ async function handleMultiProjectSelection(
       spinner.succeed('No boards found (will use project root)');
     }
 
-    let selectedBoards: Array<{ id: string; name?: string }> = [];
-    if (boards.length > 0) {
-      const boardSelection = await selectBoards(boards, projectKey);
-      selectedBoards = boardSelection || [];
-    }
+    // CRITICAL SIMPLIFICATION (v0.35.3): Skip board selection
+    // JIRA boards are views, not organizational units
+    // Use 1-level structure: JIRA Project → SpecWeave Project
 
     projectConfigs.push({
       key: projectKey,
       name: projectInfo?.name,
       id: projectInfo?.id,
-      boards: selectedBoards.length > 0 ? selectedBoards : undefined,
+      // boards: REMOVED (v0.35.3) - not needed for folder structure
       isDefault: i === 0 // First project is default
     });
   }
