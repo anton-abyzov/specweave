@@ -38,7 +38,7 @@ interface JiraIssue {
       id: string;
       key: string;
     };
-    // CRITICAL (v0.34.1+): Project information for proper space/project/board mapping
+    // Project information for 1-level structure mapping
     project?: {
       id: string;
       key: string;
@@ -49,7 +49,7 @@ interface JiraIssue {
 
 interface JiraSearchResponse {
   issues: JiraIssue[];
-  startAt?: number;  // Deprecated in new API
+  startAt?: number;
   maxResults: number;
   total: number;
   // New pagination fields for /rest/api/3/search/jql
@@ -71,8 +71,7 @@ export class JiraImporter implements Importer {
   private projectKey?: string;  // Optional: filter to specific project
 
   /**
-   * CRITICAL SIMPLIFICATION (v0.35.3): 1-level structure only
-   * JIRA Project → SpecWeave Project (no boards)
+   * Create a JIRA importer for 1-level structure (Project → SpecWeave Project)
    *
    * @param host - JIRA host URL (e.g., "your-domain.atlassian.net")
    * @param email - JIRA user email
@@ -81,8 +80,7 @@ export class JiraImporter implements Importer {
    */
   constructor(host: string, email?: string, apiToken?: string, projectKey?: string) {
     // Remove trailing slashes and ensure https:// prefix
-    // CRITICAL FIX (2025-12-09): new URL() requires full URL with protocol
-    // Bug: host="example.atlassian.net" → new URL('/path', host) throws "Invalid URL"
+    // Ensure host has protocol prefix for URL construction
     let normalizedHost = host.replace(/\/+$/, '');
     if (!normalizedHost.startsWith('https://') && !normalizedHost.startsWith('http://')) {
       normalizedHost = `https://${normalizedHost}`;
@@ -169,10 +167,6 @@ export class JiraImporter implements Importer {
       const jql = `key in (${batchKeys.join(',')})`;
 
       try {
-        // CRITICAL FIX (2025-12-09): Use new /rest/api/3/search/jql endpoint
-        // Old /rest/api/3/search was deprecated and removed by Atlassian
-        //
-        // CRITICAL FIX (2025-12-10): fields must be comma-separated string, NOT JSON array!
         const response = await this.makeJiraRequest<JiraSearchResponse>(
           '/rest/api/3/search/jql',
           {
@@ -190,8 +184,8 @@ export class JiraImporter implements Importer {
               'customfield_10016',
               'subtasks',
               'parent',
-              'project',  // CRITICAL (v0.34.1+): Fetch project info for space/project mapping
-            ].join(','),  // MUST be comma-separated string, not array
+              'project',
+            ].join(','),
           }
         );
 
@@ -206,16 +200,12 @@ export class JiraImporter implements Importer {
   }
 
   /**
-   * Paginate through issues using JQL or Board API (50 per page)
+   * Paginate through JIRA issues using JQL search (50 per page)
    *
-   * CRITICAL FIX (v0.35.2): Use JIRA Agile API when boardId is provided
-   * - Board API: /rest/agile/1.0/board/{boardId}/issue
-   * - Search API: /rest/api/3/search/jql (fallback)
-   *
-   * CRITICAL FIX (v0.34.1): Add Phase 3 parent recovery INSIDE paginate()
-   * - Problem: import-coordinator calls paginate() directly, not import()
-   * - Solution: Move Phase 3 parent recovery from import() to paginate()
-   * - This mirrors ADO's implementation where parent recovery happens after all pages
+   * Uses 3-phase import to maintain hierarchy:
+   * - Phase 1: Fetch all items matching JQL query with pagination
+   * - Phase 2: Detect missing parent items (outside time range)
+   * - Phase 3: Fetch missing parents to maintain hierarchy
    */
   async *paginate(config: ImportConfig = {}): AsyncGenerator<ExternalItem[], void, unknown> {
     const {
@@ -226,15 +216,10 @@ export class JiraImporter implements Importer {
       maxItems = Infinity,
     } = config;
 
-    // CRITICAL SIMPLIFICATION (v0.35.3): Always use JQL search (no Board API)
-    // JIRA boards are views, not organizational structure
-    // Fetch all issues from project using JQL for 1-level structure
-
-    // Build JQL query (fallback for non-board imports)
+    // Build JQL query for project-based search
     const jqlParts: string[] = [];
 
-    // CRITICAL FIX (2025-12-09): Filter by project key for multi-project mode
-    // This ensures each importer only fetches issues from its assigned project
+    // Filter by project key (multi-project mode)
     if (this.projectKey) {
       jqlParts.push(`project = "${this.projectKey}"`);
     }
@@ -266,21 +251,15 @@ export class JiraImporter implements Importer {
     let totalFetched = 0;
     let nextPageToken: string | undefined = undefined;
 
-    // CRITICAL FIX (v0.34.1): Collect all items for Phase 3 parent recovery
+    // Collect all items for Phase 3 parent recovery
     const allFetchedItems: ExternalItem[] = [];
     const fetchedIds = new Set<string>();
 
     // Phase 1: Paginated JQL fetch
     while (totalFetched < maxItems) {
       try {
-        // CRITICAL FIX (2025-12-09): Use new /rest/api/3/search/jql endpoint
-        // Old /rest/api/3/search was deprecated and removed by Atlassian
-        // New API uses nextPageToken for pagination instead of startAt
-        //
-        // CRITICAL FIX (2025-12-10): fields must be comma-separated string, NOT JSON array!
-        // The new /search/jql endpoint does NOT accept JSON array format for fields.
-        // Bug: fields=["summary","issuetype"] returns NO field data
-        // Fix: fields=summary,issuetype returns correct field data
+        // Use /rest/api/3/search/jql endpoint with nextPageToken pagination
+        // Note: fields must be comma-separated string (not JSON array)
         const params: Record<string, any> = {
           jql,
           maxResults,
@@ -296,8 +275,8 @@ export class JiraImporter implements Importer {
             'customfield_10016', // Story points
             'subtasks',
             'parent',
-            'project',  // CRITICAL (v0.34.1+): Fetch project info for space/project mapping
-          ].join(','),  // MUST be comma-separated string, not array
+            'project',
+          ].join(','),  // Comma-separated string required by API
         };
 
         // Add nextPageToken for subsequent pages
@@ -313,7 +292,7 @@ export class JiraImporter implements Importer {
         // Convert JIRA issues to ExternalItems
         const items = response.issues.map((issue) => this.convertToExternalItem(issue));
 
-        // CRITICAL FIX (v0.34.1): Store items for Phase 3 parent recovery
+        // Store items for Phase 3 parent recovery
         allFetchedItems.push(...items);
         for (const item of items) {
           fetchedIds.add(item.id);
@@ -346,7 +325,6 @@ export class JiraImporter implements Importer {
     const missingParentKeys = this.findMissingParentKeys(allFetchedItems, fetchedIds);
 
     // Phase 3: Fetch missing parents to maintain hierarchy
-    // CRITICAL FIX (v0.34.1): This fixes "_orphans" folder issue!
     // Items were marked as orphans because their parents weren't fetched.
     // Now we fetch missing parents and yield them as a final page.
     if (missingParentKeys.length > 0) {
@@ -404,17 +382,12 @@ export class JiraImporter implements Importer {
     let type: ExternalItem['type'] = 'task';
     const issueTypeName = issue.fields.issuetype.name.toLowerCase();
 
-    // CRITICAL FIX (v0.35.3): Use flexible matching for JIRA custom types
-    // Many organizations use custom issue types like "L3 Feature", "L2 Epic", etc.
-    // Match by keywords instead of exact string comparison
+    // Flexible type matching to support custom JIRA types (e.g., "L3 Feature", "L2 Epic")
     if (issueTypeName.includes('story') || issueTypeName === 'user story') {
       type = 'user-story';
     } else if (issueTypeName.includes('epic') || issueTypeName.includes('l2')) {
-      // Match "Epic", "L2 Epic", "Team Epic", etc.
       type = 'epic';
     } else if (issueTypeName.includes('feature') || issueTypeName.includes('l3')) {
-      // Match "Feature", "L3 Feature", "Team Feature", etc.
-      // JIRA Features map to SpecWeave feature-level (FS-XXX folders)
       type = 'feature';
     } else if (issueTypeName.includes('bug')) {
       type = 'bug';
@@ -448,13 +421,7 @@ export class JiraImporter implements Importer {
       status = 'completed';
     }
 
-    // CRITICAL (v0.34.1+): Extract JIRA project information
-    // JIRA Structure: Space > Project > Board (3 levels)
-    // SpecWeave Mapping: Space → Project, Project → Board
-    //
-    // NOTE: JIRA API doesn't expose Space directly in issue fields
-    // Space must be inferred from projectKey or fetched separately via /rest/api/3/project/{projectKey}
-    // For now, we use projectKey as both space and project (will be enhanced in future)
+    // Extract JIRA project information for 1-level folder structure
     const jiraProject = issue.fields.project;
 
     return {
@@ -472,13 +439,9 @@ export class JiraImporter implements Importer {
       acceptanceCriteria,
       parentId: issue.fields.parent ? `JIRA-${issue.fields.parent.key}` : undefined,
       platform: 'jira',
-      // CRITICAL (v0.34.1+): Populate JIRA project info for 1-level structure
-      // JIRA Project → SpecWeave Project (no boards)
+      // JIRA project info for 1-level structure (Project → SpecWeave Project)
       jiraProjectKey: jiraProject?.key,
       jiraProjectName: jiraProject?.name,
-      // CRITICAL SIMPLIFICATION (v0.35.3): Board info removed completely
-      // JIRA boards are views, not organizational structure
-      // No jiraBoardId or jiraBoardName - 1-level structure only!
     };
   }
 

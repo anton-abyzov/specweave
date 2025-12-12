@@ -109,8 +109,8 @@ describe('JIRA Custom Type Mapping (v0.35.3)', () => {
   });
 
   describe('Real-World Examples', () => {
-    it('should handle Farside JIRA custom types', () => {
-      // Real-world example from user's JIRA (ID-187: Keycloak POC)
+    it('should handle custom JIRA types', () => {
+      // Real-world example patterns
       expect(mapJiraTypeToExternal('L3 Feature')).toBe('feature');
 
       // Other common patterns

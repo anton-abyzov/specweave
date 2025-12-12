@@ -400,6 +400,24 @@ export class ItemConverter {
   }
 
   /**
+   * Get user-friendly label for JIRA work item type
+   * Maps internal type (epic, feature) to display label (Epic, Feature)
+   */
+  private getJiraWorkItemTypeLabel(item: ExternalItem): string | undefined {
+    if (item.platform !== 'jira') return undefined;
+
+    // Map internal type to display label
+    switch (item.type) {
+      case 'epic':
+        return 'Epic';
+      case 'feature':
+        return 'Feature';
+      default:
+        return undefined;
+    }
+  }
+
+  /**
    * Convert a single external item to a User Story with E suffix
    *
    * @param item - External item to convert
@@ -1259,15 +1277,18 @@ Items land here when:
     const isAdoFeatureGroup = groupKey.startsWith('feature:');
     const isEpicGroup = groupKey.startsWith('epic:');
     const isOrphanGroup = groupKey.startsWith('orphan:');
-    // CRITICAL (v0.30.4): Normalize work item type for plural handling ('Epics' → 'epic')
-    // v0.30.5: Use configurable hierarchy mapping instead of hardcoded types
+    // Normalize work item type for consistent lookup
     const adoWitType = normalizeAdoWorkItemType(firstItem.adoWorkItemType);
-    // CRITICAL FIX (v0.30.3): Include epic groups in feature-level item check
-    // Epic groups create feature folders for their user stories, and should use the epic's title
     const platform = (firstItem.platform as 'ado' | 'jira' | 'github') || 'ado';
-    const isAdoFeatureLevelItem = (isAdoFeatureGroup || isEpicGroup) &&
-      firstItem.platform === 'ado' &&
-      this.isFeatureLevelType(adoWitType || firstItem.type, platform);
+
+    // CRITICAL FIX (v0.35.4): Platform-agnostic feature-level detection
+    // Previously only checked ADO, now supports JIRA Epic/Feature too!
+    // This ensures FEATURE.md gets actual Epic/Feature title from JIRA
+    const itemType = platform === 'ado'
+      ? (adoWitType || firstItem.type)
+      : firstItem.type;
+    const isFeatureLevelItem = (isAdoFeatureGroup || isEpicGroup) &&
+      this.isFeatureLevelType(itemType, platform);
 
     // Generate FEATURE.md content based on item type and platform
     let featureTitle: string;
@@ -1291,9 +1312,11 @@ Items land here when:
         platformLabel = firstItem.platform || 'external tool';
     }
 
-    if (isAdoFeatureLevelItem) {
-      // For ADO Capability/Epic/Feature, use the item's actual info
-      witTypeLabel = firstItem.adoWorkItemType || 'Feature';
+    if (isFeatureLevelItem) {
+      // For feature-level items (ADO Epic/Feature, JIRA Epic/L3 Feature), use actual info
+      // JIRA: Epic/L3 Feature title and description
+      // ADO: Capability/Epic/Feature title and description
+      witTypeLabel = firstItem.adoWorkItemType || this.getJiraWorkItemTypeLabel(firstItem) || 'Feature';
       featureTitle = `${witTypeLabel}: ${firstItem.title}`;
       description = firstItem.description || `This ${witTypeLabel.toLowerCase()} was imported from ${platformLabel}.`;
       externalLink = `[${witTypeLabel} in ${platformLabel}](${firstItem.url})`;
@@ -1321,7 +1344,7 @@ Items land here when:
     }
 
     // Include external metadata for feature-level items and all orphans
-    const includeExternalMetadata = isAdoFeatureLevelItem || isOrphanGroup;
+    const includeExternalMetadata = isFeatureLevelItem || isOrphanGroup;
 
     // CRITICAL (v0.30.3): Build parent Epic reference if available
     // Epic ID is stored as `epic_id` in frontmatter for consistency
