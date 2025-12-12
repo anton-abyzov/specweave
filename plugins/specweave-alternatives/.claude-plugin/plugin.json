@@ -1,6 +1,6 @@
 {
   "name": "sw-alternatives",
-  "version": "0.24.0",
+  "version": "1.0.0-rc.1",
   "description": "Technology stack alternatives analysis using BMAD method - Best, Most Appropriate, Design decisions for architecture choices",
   "author": {
     "name": "Anton Abyzov",

@@ -1,7 +1,7 @@
 {
   "name": "sw-plugin-dev",
   "description": "Claude Code plugin and skill development toolkit. Plugin creation, testing, publishing. Skill creation, validation, packaging. Agent development, CLI command integration, and marketplace publishing.",
-  "version": "0.35.0",
+  "version": "1.0.0-rc.1",
   "author": {
     "name": "Anton Abyzov",
     "email": "anton.abyzov@gmail.com"

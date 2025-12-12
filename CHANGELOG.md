@@ -4,6 +4,30 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.0-rc.1] - 2025-12-12
+
+### 🎉 Major Release Candidate
+
+This is the first release candidate for SpecWeave 1.0.0, marking the framework's graduation from beta to production-ready status.
+
+### ✨ Highlights
+- **140+ completed increments** - Framework fully dogfooded on itself
+- **24 production-ready plugins** - All plugins versioned to 1.0.0-rc.1
+- **Enterprise-grade sync** - JIRA, GitHub, and Azure DevOps bidirectional sync
+- **Living documentation** - Event-driven docs that stay in sync with code
+- **Multi-project support** - Single or multi-repo, single or multi-team
+- **3-gate quality validation** - Tasks, tests (60%+), and documentation gates
+
+### 🔄 Breaking Changes
+- None - Fully backward compatible with 0.x versions
+- Recommended: Run `npm update -g specweave` to upgrade
+
+### 📦 Version Alignment
+- Core framework: 1.0.0-rc.1
+- All 24 plugins: 1.0.0-rc.1
+
+---
+
 ## [0.34.7] - 2025-12-11
 
 ### 🐛 Bug Fixes
