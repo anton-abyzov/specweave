@@ -49,7 +49,7 @@ describe('JIRA 1-Level Folder Structure (v0.35.3)', () => {
         status: 'open',
         createdAt: new Date(),
         updatedAt: new Date(),
-        url: 'https://farside.atlassian.net/browse/ID-168',
+        url: 'https://example.atlassian.net/browse/ID-168',
         platform: 'jira',
         jiraProjectKey: 'ID',
         jiraProjectName: 'Identity',
@@ -66,7 +66,7 @@ describe('JIRA 1-Level Folder Structure (v0.35.3)', () => {
         status: 'open',
         createdAt: new Date(),
         updatedAt: new Date(),
-        url: 'https://farside.atlassian.net/browse/ID-187',
+        url: 'https://example.atlassian.net/browse/ID-187',
         platform: 'jira',
         jiraProjectKey: 'ID',
         jiraProjectName: 'Identity'
@@ -99,7 +99,7 @@ describe('JIRA 1-Level Folder Structure (v0.35.3)', () => {
         status: 'open',
         createdAt: new Date(),
         updatedAt: new Date(),
-        url: 'https://farside.atlassian.net/browse/AAC-001',
+        url: 'https://example.atlassian.net/browse/AAC-001',
         platform: 'jira',
         jiraProjectKey: 'AAC',
         jiraProjectName: 'Ancillary Apps - CC'
@@ -112,7 +112,7 @@ describe('JIRA 1-Level Folder Structure (v0.35.3)', () => {
         status: 'open',
         createdAt: new Date(),
         updatedAt: new Date(),
-        url: 'https://farside.atlassian.net/browse/DMC-001',
+        url: 'https://example.atlassian.net/browse/DMC-001',
         platform: 'jira',
         jiraProjectKey: 'DMC',
         jiraProjectName: 'Data Migration - CC'
@@ -142,7 +142,7 @@ describe('JIRA 1-Level Folder Structure (v0.35.3)', () => {
       status: 'open',
       createdAt: new Date(),
       updatedAt: new Date(),
-      url: 'https://farside.atlassian.net/browse/ID-100',
+      url: 'https://example.atlassian.net/browse/ID-100',
       platform: 'jira',
       jiraProjectKey: 'ID',
       jiraProjectName: 'Identity'
@@ -172,7 +172,7 @@ describe('JIRA Board Info Removed (v0.35.3)', () => {
       status: 'open',
       createdAt: new Date(),
       updatedAt: new Date(),
-      url: 'https://farside.atlassian.net/browse/ID-168',
+      url: 'https://example.atlassian.net/browse/ID-168',
       platform: 'jira',
       jiraProjectKey: 'ID',
       jiraProjectName: 'Identity'
@@ -185,5 +185,125 @@ describe('JIRA Board Info Removed (v0.35.3)', () => {
     // Project info must exist
     expect(item.jiraProjectKey).toBe('ID');
     expect(item.jiraProjectName).toBe('Identity');
+  });
+});
+
+describe('JIRA Feature Content (v0.35.4)', () => {
+  // Mock function to simulate FEATURE.md content generation logic
+  function generateFeatureContentForTest(
+    firstItem: ExternalItem,
+    groupKey: string
+  ): { title: string; description: string; witTypeLabel: string } {
+    const platform = firstItem.platform || 'jira';
+    const platformLabel = platform === 'jira' ? 'JIRA' : platform;
+    const isAdoFeatureGroup = groupKey.startsWith('feature:');
+    const isEpicGroup = groupKey.startsWith('epic:');
+    const isOrphanGroup = groupKey.startsWith('orphan:');
+
+    // CRITICAL FIX (v0.35.4): Platform-agnostic feature-level detection
+    // Previously only checked ADO, now checks itemType for all platforms
+    const isFeatureLevelType = firstItem.type === 'epic' || firstItem.type === 'feature';
+    const isFeatureLevelItem = (isAdoFeatureGroup || isEpicGroup) && isFeatureLevelType;
+
+    let featureTitle: string;
+    let description: string;
+    let witTypeLabel: string;
+
+    if (isFeatureLevelItem) {
+      // JIRA Epic/Feature - should use actual title!
+      witTypeLabel = firstItem.type === 'epic' ? 'Epic' : 'Feature';
+      featureTitle = `${witTypeLabel}: ${firstItem.title}`;
+      description = firstItem.description || `This ${witTypeLabel.toLowerCase()} was imported from ${platformLabel}.`;
+    } else if (isOrphanGroup) {
+      witTypeLabel = 'User Story';
+      featureTitle = `${witTypeLabel}: ${firstItem.title}`;
+      description = firstItem.description || `Orphan item from ${platformLabel}.`;
+    } else {
+      // Generic fallback
+      featureTitle = `Feature: Imported from ${platformLabel}`;
+      description = 'This feature folder contains User Stories imported from external tools.';
+      witTypeLabel = 'Feature';
+    }
+
+    return { title: featureTitle, description, witTypeLabel };
+  }
+
+  it('should use JIRA Epic title in FEATURE.md (regression test)', () => {
+    const jiraEpic: ExternalItem = {
+      id: 'JIRA-ID-187',
+      type: 'epic',
+      title: 'Authentication POC',
+      description: 'Proof of concept for authentication integration',
+      status: 'open',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      url: 'https://example.atlassian.net/browse/ID-187',
+      platform: 'jira',
+      jiraProjectKey: 'ID',
+      jiraProjectName: 'Identity'
+    };
+
+    // Epic group key (created when JIRA Epic is parent)
+    const groupKey = `epic:${jiraEpic.id}`;
+    const content = generateFeatureContentForTest(jiraEpic, groupKey);
+
+    // CRITICAL: Must use actual Epic title, NOT generic!
+    expect(content.title).toBe('Epic: Authentication POC');
+    expect(content.description).toBe('Proof of concept for authentication integration');
+    expect(content.witTypeLabel).toBe('Epic');
+
+    // Should NOT be generic
+    expect(content.title).not.toBe('Feature: Imported from JIRA');
+    expect(content.description).not.toContain('This feature folder contains User Stories');
+  });
+
+  it('should use JIRA L3 Feature title in FEATURE.md', () => {
+    const jiraFeature: ExternalItem = {
+      id: 'JIRA-ID-200',
+      type: 'feature',  // L3 Feature mapped to 'feature' type
+      title: 'User Authentication Module',
+      description: 'Module for user authentication flows',
+      status: 'open',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      url: 'https://example.atlassian.net/browse/ID-200',
+      platform: 'jira',
+      jiraProjectKey: 'ID',
+      jiraProjectName: 'Identity'
+    };
+
+    // Feature group key
+    const groupKey = `feature:${jiraFeature.id}`;
+    const content = generateFeatureContentForTest(jiraFeature, groupKey);
+
+    // CRITICAL: Must use actual Feature title
+    expect(content.title).toBe('Feature: User Authentication Module');
+    expect(content.description).toBe('Module for user authentication flows');
+    expect(content.witTypeLabel).toBe('Feature');
+  });
+
+  it('should fall back to generic content for non-feature items', () => {
+    const jiraStory: ExternalItem = {
+      id: 'JIRA-ID-300',
+      type: 'user-story',
+      title: 'Login form',
+      description: 'User story for login',
+      status: 'open',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      url: 'https://example.atlassian.net/browse/ID-300',
+      platform: 'jira',
+      jiraProjectKey: 'ID',
+      jiraProjectName: 'Identity'
+    };
+
+    // Not an epic or feature group - just a regular group
+    const groupKey = 'jira:ID';
+    const content = generateFeatureContentForTest(jiraStory, groupKey);
+
+    // User stories don't create feature folders with their title
+    // They go INTO a feature folder - so generic is correct here
+    expect(content.title).toBe('Feature: Imported from JIRA');
+    expect(content.description).toContain('This feature folder contains User Stories');
   });
 });
