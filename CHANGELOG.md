@@ -6,25 +6,54 @@ All notable changes to SpecWeave will be documented in this file.
 
 ## [1.0.0-rc.1] - 2025-12-12
 
-### 🎉 Major Release Candidate
+### 🎉 First Release Candidate for SpecWeave 1.0!
 
-This is the first release candidate for SpecWeave 1.0.0, marking the framework's graduation from beta to production-ready status.
+After 140+ increments of dogfooding on itself, SpecWeave is ready for its first release candidate. This marks the framework's transition from beta to **production-ready**.
 
-### ✨ Highlights
-- **140+ completed increments** - Framework fully dogfooded on itself
-- **24 production-ready plugins** - All plugins versioned to 1.0.0-rc.1
-- **Enterprise-grade sync** - JIRA, GitHub, and Azure DevOps bidirectional sync
-- **Living documentation** - Event-driven docs that stay in sync with code
-- **Multi-project support** - Single or multi-repo, single or multi-team
-- **3-gate quality validation** - Tasks, tests (60%+), and documentation gates
+### ✨ What's in 1.0.0-rc.1
 
-### 🔄 Breaking Changes
-- None - Fully backward compatible with 0.x versions
-- Recommended: Run `npm update -g specweave` to upgrade
+#### 🔄 Enterprise External Tool Sync
+- **GitHub Issues** - Bidirectional sync with milestones, issues, and checkboxes
+- **JIRA** - 1-level (project) and 2-level (project/board) hierarchy mapping
+- **Azure DevOps** - Area path and team-based work item sync
+- **Three-gate permissions** - Control what syncs: internal items, external items, status updates
+
+#### 📁 Multi-Project Architecture
+- **Single-project mode** - Simple setup for single-repo projects
+- **Multi-project mode** - Enterprise support for multiple repos/teams
+- **Per-US project targeting** - Each user story can target different projects
+- **Cross-project features** - Features spanning multiple projects auto-linked
+
+#### 📊 Living Documentation
+- **1-level structure** - `specs/{project}/FS-XXX/` for simple setups
+- **2-level structure** - `specs/{project}/{board}/FS-XXX/` for team-based organizations
+- **Auto-sync hooks** - Documentation updates after every task completion
+- **Docusaurus integration** - Preview living docs with real-time updates
+
+#### 🧪 Quality Gates
+- **Task gate** - All tasks must be complete
+- **Test gate** - 60%+ coverage minimum (configurable)
+- **Documentation gate** - Living docs updated automatically
+
+#### 🤖 24 Production-Ready Plugins
+All plugins aligned to version 1.0.0-rc.1
+
+### 🔧 Key Commands
+
+```bash
+/sw:increment "feature"    # Plan new feature
+/sw:do                     # Execute tasks autonomously
+/sw:done 0001              # Complete with quality validation
+/sw:sync-progress          # Sync to GitHub/JIRA/ADO
+```
 
 ### 📦 Version Alignment
 - Core framework: 1.0.0-rc.1
 - All 24 plugins: 1.0.0-rc.1
+
+### 🔄 Migration from 0.x
+
+**Zero breaking changes** - fully backward compatible.
 
 ---
 
