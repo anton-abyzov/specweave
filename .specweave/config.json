@@ -242,7 +242,7 @@
       "generateCrossLinks": true,
       "preserveOriginal": true,
       "classificationConfidenceThreshold": 0.6,
-      "fallbackProject": "specweave"
+      "fallbackProject": "default"
     }
   },
   "hooks": {

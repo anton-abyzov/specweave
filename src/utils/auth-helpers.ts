@@ -277,6 +277,82 @@ export function hasJiraCredentials(): boolean {
 }
 
 /**
+ * Get Jira authentication from project files
+ *
+ * CRITICAL (2025-12-12): This function MUST be used when projectRoot is available.
+ *
+ * Configuration sources (ADR-0194 compliant):
+ * - Domain: config.json → issueTracker.domain (CONFIGURATION, committed)
+ * - Token: .env → JIRA_API_TOKEN (SECRET, gitignored)
+ * - Email: .env → JIRA_EMAIL (SECRET, gitignored)
+ *
+ * @param projectRoot - Path to project root containing .env and .specweave/config.json
+ * @returns Jira authentication or null if not found
+ */
+export function getJiraAuthFromProject(projectRoot: string): JiraAuth | null {
+  let domain = '';
+  let token = '';
+  let email = '';
+
+  // 1. Read DOMAIN from config.json (configuration, not secret)
+  try {
+    const configPath = path.join(projectRoot, '.specweave', 'config.json');
+    if (fs.existsSync(configPath)) {
+      const configContent = fs.readFileSync(configPath, 'utf-8');
+      const config = JSON.parse(configContent);
+      domain = config.issueTracker?.domain || '';
+    }
+  } catch {
+    // Silently fail - config.json is optional
+  }
+
+  // 2. Read SECRETS from .env file (token and email)
+  try {
+    const envPath = path.join(projectRoot, '.env');
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf-8');
+      const envVars = parseEnvFileSimple(content);
+
+      token = envVars.JIRA_API_TOKEN || '';
+      email = envVars.JIRA_EMAIL || '';
+
+      // DEPRECATED: Support JIRA_DOMAIN in .env for backwards compatibility
+      // New projects should use config.json → issueTracker.domain
+      if (!domain && (envVars.JIRA_HOST || envVars.JIRA_DOMAIN)) {
+        domain = envVars.JIRA_HOST || envVars.JIRA_DOMAIN || '';
+      }
+    }
+  } catch {
+    // Silently fail - .env file is optional
+  }
+
+  // 3. Fall back to process.env for secrets (if not found in .env)
+  if (!token) token = process.env.JIRA_API_TOKEN || '';
+  if (!email) email = process.env.JIRA_EMAIL || '';
+  // DEPRECATED: process.env fallback for domain
+  if (!domain) domain = process.env.JIRA_DOMAIN || process.env.JIRA_HOST || '';
+
+  // All three required
+  if (token && email && domain) {
+    return { token, email, domain };
+  }
+
+  return null;
+}
+
+/**
+ * Check if Jira credentials are available (project-aware)
+ * Uses getJiraAuthFromProject() to also check .env file
+ *
+ * @param projectRoot - Path to project root containing .env file
+ * @returns True if credentials are available
+ */
+export function hasJiraCredentialsFromProject(projectRoot: string): boolean {
+  const auth = getJiraAuthFromProject(projectRoot);
+  return auth !== null;
+}
+
+/**
  * Get credential status summary (for debugging)
  */
 export function getCredentialStatus(): {

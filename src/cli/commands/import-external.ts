@@ -16,6 +16,7 @@ import { groupItemsByExternalContainer } from '../helpers/init/external-import-g
 import path from 'path';
 import * as fs from '../../utils/fs-native.js';
 import type { ExternalItem } from '../../importers/external-importer.js';
+import { getGitHubAuthFromProject, getJiraAuthFromProject, getAzureDevOpsAuthFromProject } from '../../utils/auth-helpers.js';
 
 // NOTE: This CLI import command is primarily user-facing output (console.log/console.error).
 // All console.* calls in this file are legitimate user-facing exceptions
@@ -76,20 +77,25 @@ function getExistingSyncProfiles(projectRoot: string): string[] | null {
 }
 
 /**
- * Detect configured external tools from environment
+ * Detect configured external tools from environment and .env file
+ *
+ * CRITICAL FIX (v0.35.6): Now uses project-aware auth helpers to read from .env file
+ * Previously only read from process.env which is empty unless dotenv is explicitly loaded.
+ *
+ * @param projectRoot - Path to project root containing .env file
  */
-function detectConfiguredTools(): {
+function detectConfiguredTools(projectRoot: string): {
   github?: { owner: string; repo: string; token?: string };
   jira?: { host: string; email?: string; apiToken?: string };
   ado?: { orgUrl: string; project: string; pat?: string };
 } {
   const config: any = {};
 
-  // GitHub detection
-  const githubToken = process.env.GITHUB_TOKEN;
-  if (githubToken) {
+  // GitHub detection - use project-aware helper to read from .env
+  const githubAuth = getGitHubAuthFromProject(projectRoot);
+  if (githubAuth.source !== 'none') {
     // Try to parse git remote
-    const gitConfigPath = path.join(process.cwd(), '.git', 'config');
+    const gitConfigPath = path.join(projectRoot, '.git', 'config');
     if (fs.existsSync(gitConfigPath)) {
       const gitConfig = fs.readFileSync(gitConfigPath, 'utf-8');
       const remoteMatch = gitConfig.match(/url\s*=\s*(?:https?:\/\/github\.com\/|git@github\.com:)([^/]+)\/([^.\n]+)/);
@@ -97,33 +103,30 @@ function detectConfiguredTools(): {
         config.github = {
           owner: remoteMatch[1],
           repo: remoteMatch[2],
-          token: githubToken,
+          token: githubAuth.token,
         };
       }
     }
   }
 
-  // JIRA detection
-  const jiraHost = process.env.JIRA_HOST;
-  const jiraEmail = process.env.JIRA_EMAIL;
-  const jiraApiToken = process.env.JIRA_API_TOKEN;
-  if (jiraHost) {
+  // JIRA detection - use project-aware helper to read from .env
+  // CRITICAL FIX (v0.35.6): Now properly reads JIRA_HOST/JIRA_DOMAIN from .env file
+  const jiraAuth = getJiraAuthFromProject(projectRoot);
+  if (jiraAuth) {
     config.jira = {
-      host: jiraHost,
-      email: jiraEmail,
-      apiToken: jiraApiToken,
+      host: jiraAuth.domain,  // domain field contains JIRA_HOST or JIRA_DOMAIN
+      email: jiraAuth.email,
+      apiToken: jiraAuth.token,
     };
   }
 
-  // Azure DevOps detection
-  const adoOrgUrl = process.env.ADO_ORG_URL;
-  const adoProject = process.env.ADO_PROJECT;
-  const adoPat = process.env.ADO_PAT;
-  if (adoOrgUrl && adoProject) {
+  // Azure DevOps detection - use project-aware helper to read from .env
+  const adoAuth = getAzureDevOpsAuthFromProject(projectRoot);
+  if (adoAuth && adoAuth.pat) {
     config.ado = {
-      orgUrl: adoOrgUrl,
-      project: adoProject,
-      pat: adoPat,
+      orgUrl: adoAuth.org ? `https://dev.azure.com/${adoAuth.org}` : '',
+      project: adoAuth.project,
+      pat: adoAuth.pat,
     };
   }
 
@@ -193,8 +196,9 @@ export async function importExternal(projectRoot: string, args: ImportExternalAr
   console.log(chalk.bold('\n📥 Import External Work Items\n'));
 
   try {
-    // Detect configured tools
-    const configuredTools = detectConfiguredTools();
+    // Detect configured tools from .env file and process.env
+    // CRITICAL FIX (v0.35.6): Now reads from .env file in projectRoot
+    const configuredTools = detectConfiguredTools(projectRoot);
 
     // Check for existing sync profiles (multi-repo umbrella setup)
     const existingProfiles = getExistingSyncProfiles(projectRoot);
@@ -243,10 +247,10 @@ export async function importExternal(projectRoot: string, args: ImportExternalAr
     if (!useMultiRepo && !config.github && !config.jira && !config.ado) {
       throw new Error(
         'No external platforms configured.\n\n' +
-          '💡 Ensure one of these is set:\n' +
-          '   - GitHub: GITHUB_TOKEN + .git/config remote\n' +
-          '   - JIRA: JIRA_HOST + JIRA_EMAIL + JIRA_API_TOKEN\n' +
-          '   - Azure DevOps: ADO_ORG_URL + ADO_PROJECT + ADO_PAT'
+          '💡 Configuration required:\n' +
+          '   - GitHub: GITHUB_TOKEN in .env + .git/config remote\n' +
+          '   - JIRA: issueTracker.domain in config.json + JIRA_EMAIL, JIRA_API_TOKEN in .env\n' +
+          '   - Azure DevOps: AZURE_DEVOPS_PAT in .env + issueTracker.organization_ado in config.json'
       );
     }
 

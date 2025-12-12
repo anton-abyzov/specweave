@@ -77,44 +77,61 @@ MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 // Only succeeds if current status is "ready_for_review"
 ```
 
-### 2c. Per-US **Project**: Fields are PRIMARY Source of Truth (ADR-0140, v0.35.0+)
+### 2c. Per-US **Project**: Fields are MANDATORY (ADR-0140, v0.35.0+)
 
-**Frontmatter `project:` and `board:` are OPTIONAL** - per-US fields are now PRIMARY!
+**⛔ EVERY User Story MUST have `**Project**:` field - NO EXCEPTIONS!**
 
-**Resolution Priority Chain** (ProjectResolutionService):
-1. Per-US `**Project**:` fields (highest priority)
-2. `config.json` → `project.name` (single-project mode)
-3. Intelligent detection (keywords, tech stack)
-4. Ultimate fallback: "default"
+This applies to BOTH single-project AND multi-project modes. The field is MANDATORY because:
+1. Living docs sync requires it to place files in correct folders
+2. External tool sync (GitHub/JIRA/ADO) requires it to create issues in correct projects
+3. Without it, the LLM "forgets" to include project context
+
+**🧠 ULTRATHINK REQUIRED FOR PROJECT ASSIGNMENT:**
+
+**RESOLUTION PRIORITY (MUST FOLLOW THIS ORDER!):**
+```
+1. ✅ EXACT MATCH: config.project.name or multiProject.projects key → USE IT
+2. ✅ LIVING DOCS: Existing folder in specs/ → USE THAT PROJECT ID
+3. ✅ RECENT PATTERNS: Same feature type in past increments → USE SAME PROJECT
+4. ⚠️  UNCERTAIN: Multiple valid options OR no clear match → ASK USER!
+5. 🔄 FALLBACK: If all else fails → USE "default" (NEVER "specweave"!)
+```
+
+**❌ NEVER assign "specweave" as project** - that's the framework name, not user's project!
+**✅ When uncertain, ASK the user which project to use!**
+**✅ Fallback to "default" if no projects are configured.**
+
+**Frontmatter `project:` is DEPRECATED** - per-US fields are now the ONLY source of truth!
 
 ```yaml
-# NEW (v0.35.0+): Frontmatter project: is OPTIONAL
+# spec.md frontmatter (v0.35.0+)
 ---
 increment: 0001-feature-name
-# NOTE: project: field REMOVED per ADR-0140
-# Project is resolved from per-US **Project**: fields or config
+# NOTE: project: field REMOVED - use per-US **Project**: fields instead
 ---
 ```
 
-**Per-US Project/Board (PRIMARY SOURCE in spec.md):**
+**Per-US Project/Board (MANDATORY in spec.md body):**
 ```markdown
 ### US-001: Login Form
-**Project**: frontend-app     # ← PRIMARY source of truth (in spec.md BODY)
-**Board**: ui-team            # ← Required for 2-level structures only
+**Project**: my-app           # ← MANDATORY (even in single-project mode!)
+**Board**: ui-team            # ← MANDATORY for 2-level structures only
+
+**As a** user, I want...
 ```
 
 **CRITICAL: Two File Formats for Project Field**
 
-1. **spec.md** (increment folder): `**Project**:` in BODY of each user story
-2. **us-*.md** (living docs folder): `project:` in FRONTMATTER
+1. **spec.md** (increment folder): `**Project**:` in BODY of each user story - MANDATORY!
+2. **us-*.md** (living docs folder): `project:` in FRONTMATTER - auto-generated from spec.md
 
 When living docs sync runs, it extracts `**Project**:` from spec.md body and places it in us-*.md frontmatter:
 
 ```yaml
-# us-001-login-form.md frontmatter (living docs)
+# us-001-login-form.md frontmatter (living docs) - AUTO-GENERATED
 ---
 id: US-001
-project: frontend-app    # ← Extracted from spec.md **Project**: field
+project: my-app    # ← Extracted from spec.md **Project**: field
 ---
 ```
 
@@ -125,21 +142,18 @@ project: frontend-app    # ← Extracted from spec.md **Project**: field
 
 **VALIDATION RULES (ENFORCED BY HOOKS):**
 ```
-✅ Per-US **Project**: fields are PRIMARY source
-✅ Frontmatter project:/board: are OPTIONAL (deprecated but allowed)
-✅ Single-project mode: auto-resolves from config.project.name
+✅ Per-US **Project**: fields are MANDATORY (in ALL modes!)
+✅ Single-project mode: use config.project.name as the value
+✅ Multi-project mode: use appropriate project from multiProject.projects
 ❌ FORBIDDEN: Using {{...}} placeholders in spec.md
-❌ FORBIDDEN: User stories without **Project**: field (multi-project mode)
+❌ FORBIDDEN: User stories WITHOUT **Project**: field (ANY mode!)
 ❌ FORBIDDEN: Multiple comma-separated projects per US
+❌ FORBIDDEN: Frontmatter project: field (use per-US fields instead)
 ```
-
-**Pre-tool-use hook `spec-project-validator.sh` ALLOWS:**
-- spec.md WITHOUT frontmatter `project:` field (new best practice)
-- spec.md WITHOUT frontmatter `board:` field
 
 **Pre-tool-use hook `spec-project-validator.sh` BLOCKS:**
 - spec.md with `{{...}}` unresolved placeholders
-- Frontmatter project: that doesn't match config (if present)
+- User stories missing `**Project**:` field
 - User stories with unresolved `**Project**:` or `**Board**:` placeholders
 
 ### 2c-bis. Each User Story MUST Have **Project**: (and **Board**: for 2-level) (v0.34.0+)
@@ -429,20 +443,14 @@ if (ProjectResolutionService.isExampleProjectName('frontend-app')) {
 
 **Pre-tool-use hook `project-folder-guard.sh` BLOCKS writes to non-configured project folders (v0.35.1 enhanced).**
 
-### 2h. Single-Project-First Architecture (v0.34.0+)
+### 2h. Single-Project vs Multi-Project Architecture (v0.35.0+)
 
-**SpecWeave defaults to single-project mode** for 99% of users. Multi-project is an explicit opt-in.
+**Both modes require `**Project**:` field per User Story - the only difference is where the value comes from.**
 
 ```
-DEFAULT: Single-project mode (multiProject.enabled=false)
-OPT-IN:  Multi-project mode (/sw:enable-multiproject)
+SINGLE-PROJECT: **Project**: uses config.project.name (e.g., "my-app")
+MULTI-PROJECT:  **Project**: uses one of multiProject.projects keys
 ```
-
-**Why Single-Project-First?**
-- **Simplicity**: Most repos have one project → no need for project complexity
-- **No Accidental Folders**: Example user stories don't create random project folders
-- **Clear Migration Path**: Explicit command when you need multi-project features
-- **Backwards Compatible**: Existing multi-project setups unaffected
 
 #### Single-Project Mode (Default)
 
@@ -450,7 +458,7 @@ OPT-IN:  Multi-project mode (/sw:enable-multiproject)
 // config.json - single project
 {
   "project": {
-    "name": "my-app",
+    "name": "my-app",  // ← This value goes in **Project**: field!
     "description": "My Application",
     "techStack": ["TypeScript", "React"]
   },
@@ -461,47 +469,57 @@ OPT-IN:  Multi-project mode (/sw:enable-multiproject)
 ```
 
 **Behavior**:
+- All user stories use `**Project**: my-app` (from config.project.name)
 - All increments go to same project folder
-- No `project:` field required in spec.md (optional)
-- No `board:` field allowed (always blocked)
+- No `board:` field allowed (1-level structure)
 - Living docs auto-use `project.name`
 
-**Commands**:
-```bash
-specweave init .  # Creates single-project config by default
+**spec.md format (Single-Project)**:
+```markdown
+---
+increment: 0001-feature
+---
+
+### US-001: Feature Name
+**Project**: my-app    # ← MANDATORY! Use value from config.project.name
+**As a** user, I want...
 ```
 
 #### Multi-Project Mode (Opt-In)
 
 ```json
-// config.json - multi-project (after migration)
+// config.json - multi-project
 {
   "multiProject": {
     "enabled": true,
-    "activeProject": "frontend-app",
     "projects": {
-      "frontend-app": {
-        "name": "Frontend App",
-        "techStack": ["TypeScript", "React"]
-      },
-      "backend-api": {
-        "name": "Backend API",
-        "techStack": ["Node.js", "Express"]
-      }
+      "frontend-app": { "name": "Frontend App" },
+      "backend-api": { "name": "Backend API" }
     }
   }
 }
 ```
 
-**Behavior**:
-- Each increment requires `project:` field in spec.md
-- Living docs distributed across project folders
-- Can switch between projects with `/sw:switch-project`
+**NOTE**: `activeProject` is DEPRECATED and will be removed. Per-US `**Project**:` fields are now the source of truth.
 
-**Commands**:
-```bash
-/sw:enable-multiproject  # Explicit opt-in with confirmation
-/sw:switch-project       # Change active project
+**Behavior**:
+- Each US specifies which project it belongs to
+- Different USs in same increment can target different projects
+- Living docs distributed across project folders
+
+**spec.md format (Multi-Project)**:
+```markdown
+---
+increment: 0001-feature
+---
+
+### US-001: Login Form
+**Project**: frontend-app  # ← MANDATORY! Pick from multiProject.projects
+**As a** user, I want...
+
+### US-002: Auth API
+**Project**: backend-api   # ← Different project = different folder in living docs
+**As a** developer, I want...
 ```
 
 #### When to Enable Multi-Project?
@@ -509,63 +527,35 @@ specweave init .  # Creates single-project config by default
 | Scenario | Use Single-Project | Use Multi-Project |
 |----------|-------------------|-------------------|
 | One repository, one application | ✅ Default | ❌ Unnecessary |
-| Monorepo with 2-3 services | ✅ Simpler | ⚠️  Optional |
-| 5+ services/teams | ❌ Too simple | ✅ Recommended |
+| Monorepo with 2-3 services | ⚠️  Simpler but limited | ✅ Recommended |
+| 5+ services/teams | ❌ Too simple | ✅ Required |
 | Multi-repo (umbrella) | ❌ Not supported | ✅ Required |
 
-**Migration Example**:
-```bash
-# You start with single-project (default):
-# project.name = "my-app"
-# multiProject.enabled = false
+#### Validation Rules (BOTH MODES!)
 
-# Later, you need multi-project features:
-/sw:enable-multiproject
+**⛔ CRITICAL: `**Project**:` is MANDATORY in BOTH modes!**
 
-# Prompts for confirmation, then:
-# 1. Migrates project → multiProject.projects
-# 2. Sets multiProject.enabled = true
-# 3. Creates project folders
-# 4. Updates existing increments with project: field
-```
-
-#### Validation Rules
-
-**Single-Project Mode**:
 ```markdown
-# spec.md frontmatter
----
-increment: 0001-feature
-project: my-app        # ← OPTIONAL (auto-filled if missing)
----
-
-# User story
+# WRONG - Missing **Project**: field
 ### US-001: Feature Name
-**Project**: my-app    # ← OPTIONAL (ignored in single-project)
-```
+**As a** user, I want...
 
-**Multi-Project Mode**:
-```markdown
-# spec.md frontmatter
----
-increment: 0001-feature
-project: frontend-app  # ← REQUIRED
----
-
-# User story
+# CORRECT - Has **Project**: field
 ### US-001: Feature Name
-**Project**: frontend-app  # ← REQUIRED (validated against config)
+**Project**: my-app           # ← MANDATORY (single-project: use config.project.name)
+**As a** user, I want...
+
+# CORRECT - Multi-project
+### US-001: Frontend Feature
+**Project**: frontend-app     # ← MANDATORY (multi-project: pick from config)
+**As a** user, I want...
 ```
 
-#### Automatic Migration (v0.34.0+)
-
-**SpecWeave auto-detects single-project repos with incorrect config:**
-
-```
-If config.multiProject.enabled = true
-AND only 1 project in multiProject.projects
-THEN auto-migrate to single-project mode
-```
+**Why mandatory in single-project mode?**
+1. Consistency - same format everywhere
+2. Living docs sync works correctly
+3. External tool sync works correctly
+4. No special cases = fewer bugs
 
 This fixes the bug where `specweave init` created multi-project configs by default.
 
@@ -926,19 +916,30 @@ src/cli/helpers/init/
 **ONLY**: `[FS-XXX][US-YYY] User Story Title`
 **PROHIBITED**: `[SP-*]`, `[FS-XXX]` alone, `[undefined][US-XXX]`
 
-### YAML Frontmatter (spec.md)
+### spec.md Format (v0.35.0+)
+
+**Frontmatter** (simplified - NO project/board):
 ```yaml
 ---
 increment: 0001-feature-name  # REQUIRED
-project: my-project           # REQUIRED (v0.31.0+)
-board: digital-operations     # REQUIRED for 2-level structures
+title: "Feature Title"        # REQUIRED
 ---
 ```
+
+**Per-User-Story Fields** (MANDATORY):
+```markdown
+### US-001: Feature Name
+**Project**: my-project       # ← MANDATORY (from config.project.name or multiProject.projects)
+**Board**: digital-ops        # ← MANDATORY for 2-level structures ONLY
+**As a** user, I want...
+```
+
 **NOTE**: `feature_id` is derived from increment number (0001 → FS-001), not stored
 
-**Structure Level Detection**:
-- 1-level: `project:` REQUIRED
-- 2-level (ADO area paths, JIRA boards): `project:` AND `board:` REQUIRED
+**How to Determine Structure Level**:
+1. Run `specweave context projects`
+2. If output has `boardsByProject` → 2-level (include **Board**:)
+3. If output has only `projects` → 1-level (NO **Board**:)
 
 ### ADR Naming
 **Format**: `XXXX-decision-title.md` (4-digit, NO `adr-` prefix)

@@ -49,6 +49,54 @@ Automates creation of increment structure for ANY type of work:
 
 ## Critical Rules
 
+### 0. **Project**: Field is MANDATORY (v0.35.0+ - HIGHEST PRIORITY!)
+
+**⛔ EVERY User Story MUST have `**Project**:` field - NO EXCEPTIONS!**
+
+This applies to BOTH single-project AND multi-project modes:
+- **Single-project**: Use `config.project.name` value (e.g., `**Project**: my-app`)
+- **Multi-project**: Use one of `multiProject.projects` keys (e.g., `**Project**: frontend-app`)
+
+**HOW TO GET THE PROJECT VALUE:**
+1. Run `specweave context projects`
+2. Use project ID from output
+
+**Single-project output:**
+```json
+{ "level": 1, "projects": [{"id": "my-app"}] }
+→ Use: **Project**: my-app
+```
+
+**Multi-project output:**
+```json
+{ "level": 1, "projects": [{"id": "frontend"}, {"id": "backend"}] }
+→ Pick appropriate project per US
+```
+
+**2-level output (ADO/JIRA):**
+```json
+{ "level": 2, "projects": [...], "boardsByProject": {"corp": [{"id": "digital-ops"}]} }
+→ ALSO add: **Board**: digital-ops
+```
+
+**EXAMPLE (v0.35.0+):**
+```markdown
+### US-001: Show Last 2 Git Commits
+**Project**: aac              # ← MANDATORY! Value from config
+**As a** developer, I want to see the last 2 git commits...
+```
+
+**⛔ NEVER GENERATE:**
+```markdown
+### US-001: Feature Name
+**As a** user, I want...      # ← MISSING **Project**: = INVALID!
+```
+
+**EDGE CASES:**
+- **Empty config.project.name**: Run `specweave init` to configure
+- **Empty multiProject.projects**: Invalid config - ask user to configure projects
+- **Project name with special chars**: Only `a-z`, `0-9`, `-` allowed
+
 ### 1. Increment Naming (MANDATORY)
 
 **Format**: `####-descriptive-kebab-case-name`
@@ -182,7 +230,21 @@ echo "Using coverageTarget: $coverageTarget"
 
 **🚨 FAILURE TO COMPLETE THIS STEP = spec.md WILL BE BLOCKED BY VALIDATION HOOK!**
 
+**🧠 ULTRATHINK REQUIRED - ANALYZE ALL AVAILABLE CONTEXT FIRST!**
+
 Before generating ANY spec.md content, you MUST:
+
+**0. ULTRATHINK - Gather context BEFORE running API:**
+```bash
+# 1. Check existing project folders in living docs
+ls .specweave/docs/internal/specs/
+
+# 2. Check how recent increments assigned projects
+grep -r "^\*\*Project\*\*:" .specweave/increments/*/spec.md | tail -10
+
+# 3. Read config.json for project.name or multiProject.projects
+cat .specweave/config.json | jq '.project.name, .multiProject'
+```
 
 **1. RUN THE CONTEXT API (via Bash tool):**
 ```bash
@@ -214,7 +276,37 @@ For 2-level structures (ADO/JIRA boards):
 }
 ```
 
-**3. RESOLVE PROJECT/BOARD FOR EACH USER STORY:**
+**3. 🧠 ULTRATHINK - SMART PROJECT RESOLUTION (v0.35.0+ CRITICAL!):**
+
+**RESOLUTION PRIORITY (MUST FOLLOW THIS ORDER!):**
+```
+1. ✅ EXACT MATCH: config.project.name or multiProject.projects key → USE IT
+2. ✅ LIVING DOCS: Existing folder in specs/ → USE THAT PROJECT ID
+3. ✅ RECENT PATTERNS: Same feature type in past increments → USE SAME PROJECT
+4. ⚠️  UNCERTAIN: Multiple valid options OR no clear match → ASK USER!
+5. 🔄 FALLBACK: If all else fails → USE "default" (NEVER "specweave"!)
+```
+
+**⚠️ CRITICAL: IF UNCERTAIN - YOU MUST ASK THE USER!**
+```
+I found multiple potential projects for this feature:
+- frontend-app (keywords: UI, form, React)
+- backend-api (keywords: API, endpoint)
+
+Which project should I assign to this feature?
+```
+
+**❌ NEVER DO THIS:**
+- Silently assign to "specweave" (that's the framework name, not user's project!)
+- Guess without analyzing context
+- Skip asking when genuinely uncertain
+
+**✅ CORRECT FALLBACK (when no projects configured):**
+```
+**Project**: default
+```
+
+**4. RESOLVE PROJECT/BOARD FOR EACH USER STORY:**
 
 ```
 CONTEXT_OUTPUT = <output from specweave context projects>
@@ -228,7 +320,7 @@ For each US you will generate:
     US.board = select from CONTEXT_OUTPUT.boardsByProject[project][].id
 ```
 
-**4. NOW PROCEED TO STEP 1 (with resolved values stored)**
+**5. NOW PROCEED TO STEP 1 (with resolved values stored)**
 
 ---
 
@@ -240,13 +332,16 @@ For each US you will generate:
 ✅ REQUIRED: project field MUST match one of projects[].id from output
 ✅ REQUIRED: board field (2-level) MUST match one of boardsByProject[project][].id
 ✅ REQUIRED: Each US has **Project**: and **Board**: (2-level) with RESOLVED values
+✅ REQUIRED: ASK USER when uncertain (multiple valid options or no clear match)
 
 ❌ FORBIDDEN: Skipping this step and generating spec.md directly
 ❌ FORBIDDEN: Inventing project names not in the API output
+❌ FORBIDDEN: Using "specweave" as project name (it's the framework, not user's project!)
 ❌ FORBIDDEN: Using folder names as project (e.g., "my-project-folder")
 ❌ FORBIDDEN: Using {{PROJECT_ID}} or {{BOARD_ID}} placeholders
 ❌ FORBIDDEN: Creating spec.md for 2-level without board: field
 ❌ FORBIDDEN: Generating spec.md without running context API first
+❌ FORBIDDEN: Silently guessing project without analyzing context
 ```
 
 **WHY THIS IS BLOCKING:**

@@ -1231,9 +1231,82 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
         return;
       }
 
-      // TODO: Implement JIRA sync
-      this.logger.log('  ⚠️  JIRA sync not yet fully implemented');
-      this.logger.log('  💡 Use /specweave-jira:sync for manual JIRA sync');
+      // Get JIRA config from config.json (domain) and env (secrets)
+      const jiraConfig = config.sync?.jira;
+      if (!jiraConfig?.domain) {
+        this.logger.log('  ⚠️  JIRA domain not configured in config.json (sync.jira.domain)');
+        this.logger.log('  💡 Run: specweave config set sync.jira.domain "your-domain.atlassian.net"');
+        return;
+      }
+
+      // Get issue key from user story
+      // Check multiple possible locations: external_tools.jira.key, external_id
+      const jiraKey = usFile.external_tools?.jira?.key ||
+                      usFile.external_id;
+
+      if (!jiraKey || !String(jiraKey).includes('-')) {
+        this.logger.log(`  ⏭️  ${usFile.id} - No valid JIRA issue key found`);
+        this.logger.log(`     external_id: ${usFile.external_id || 'none'}`);
+        return;
+      }
+
+      this.logger.log(`  📊 JIRA sync → ${jiraKey}`);
+
+      try {
+        // Import JIRA client dynamically to avoid circular deps
+        const { JiraClient } = await import('../integrations/jira/jira-client.js');
+        const jiraClient = new JiraClient();
+
+        // Format completion comment for JIRA (uses ADF format internally)
+        const completionComment = this.formatJiraCompletionComment(usFile, completionData);
+
+        // Idempotency check: Don't post duplicate comments
+        // See: ADR-0051 - Idempotent sync operations
+        const lastComment = await jiraClient.getLastComment(jiraKey);
+        if (lastComment && lastComment.body === completionComment) {
+          this.logger.log(`  ⏭️  Skipping duplicate comment (already posted to ${jiraKey})`);
+          return;
+        }
+
+        await jiraClient.addComment(jiraKey, completionComment);
+
+        this.logger.log(`  ✅ Added progress comment to JIRA issue ${jiraKey}`);
+
+        // STATUS UPDATE: Transition JIRA issue when progress reaches 100%
+        // Only if canUpdateStatus=true (permission gate)
+        const canUpdateStatus = config.sync?.settings?.canUpdateStatus ?? false;
+        if (canUpdateStatus && completionData.progressPercentage === 100) {
+          // Get target status from config or default to "Done"
+          const targetStatus = config.sync?.statusSync?.mappings?.jira?.completed || 'Done';
+
+          // Get current issue status to avoid unnecessary transition
+          const currentIssue = await jiraClient.getIssue(jiraKey);
+          const currentStatus = currentIssue?.fields?.status?.name || '';
+
+          if (currentStatus.toLowerCase() !== targetStatus.toLowerCase()) {
+            this.logger.log(`  🔀 Transitioning JIRA ${jiraKey} to ${targetStatus} (100% complete)`);
+            try {
+              await jiraClient.updateIssue({
+                key: jiraKey,
+                status: targetStatus
+              });
+              this.logger.log(`  ✅ Transitioned ${jiraKey} to ${targetStatus}`);
+            } catch (transitionError) {
+              // Non-blocking: log warning but don't fail the sync
+              this.logger.log(`  ⚠️  Status transition failed: ${transitionError}`);
+              this.logger.log(`     Manual transition may be required`);
+            }
+          } else {
+            this.logger.log(`  ⏭️  ${jiraKey} already in ${targetStatus} status`);
+          }
+        } else if (!canUpdateStatus && completionData.progressPercentage === 100) {
+          this.logger.log(`  ℹ️  Status update skipped (canUpdateStatus=false)`);
+          this.logger.log(`     Enable with: specweave config set sync.settings.canUpdateStatus true`);
+        }
+      } catch (error) {
+        this.logger.error(`  ❌ JIRA sync failed: ${error}`);
+        throw error;
+      }
     } else if (externalSource === 'ado' || externalSource === 'azure-devops') {
       const adoEnabled = config.sync?.ado?.enabled ?? false;
       if (!adoEnabled) {
@@ -1540,6 +1613,55 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       for (const ac of completionData.acceptanceCriteria) {
         const status = ac.satisfied ? '✅' : '⬜';
         lines.push(`- ${status} ${ac.acId}: ${ac.description}`);
+      }
+      lines.push(``);
+    }
+
+    lines.push(`---`);
+    lines.push(`🤖 Auto-synced by SpecWeave`);
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Format completion comment for JIRA issue
+   *
+   * Uses plain text with emoji (not JIRA wiki markup) because JiraClient.addComment()
+   * wraps content in ADF paragraph format where wiki syntax doesn't render.
+   * Emoji checkmarks work in both plain text and ADF contexts.
+   */
+  private formatJiraCompletionComment(
+    usFile: LivingDocsUSFile,
+    completionData: CompletionCommentData
+  ): string {
+    const lines: string[] = [];
+
+    lines.push(`✅ SpecWeave Progress Update`);
+    lines.push(``);
+    lines.push(`User Story: ${usFile.id} - ${usFile.title || 'N/A'}`);
+    lines.push(`Increment: ${this.incrementId}`);
+    lines.push(``);
+
+    // Progress
+    lines.push(`📊 Progress: ${completionData.progressPercentage}%`);
+    lines.push(``);
+
+    // Tasks
+    if (completionData.tasks.length > 0) {
+      lines.push(`📋 Tasks`);
+      for (const task of completionData.tasks) {
+        const status = task.completed ? '✅' : '⬜';
+        lines.push(`  ${status} ${task.taskId}: ${task.title}`);
+      }
+      lines.push(``);
+    }
+
+    // Acceptance Criteria
+    if (completionData.acceptanceCriteria.length > 0) {
+      lines.push(`🎯 Acceptance Criteria`);
+      for (const ac of completionData.acceptanceCriteria) {
+        const status = ac.satisfied ? '✅' : '⬜';
+        lines.push(`  ${status} ${ac.acId}: ${ac.description}`);
       }
       lines.push(``);
     }
