@@ -2,48 +2,28 @@ name: Release & Publish
 
 on:
   push:
-    branches:
-      - develop
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'  # Matches v1.0.0, v1.0.0-rc.1, etc.
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (e.g., 0.7.1, 0.8.0)'
+        description: 'Version to release (e.g., 0.7.1, 0.8.0, 1.0.0-rc.1)'
         required: true
         type: string
       version_type:
-        description: 'Version bump type'
-        required: true
+        description: 'Version bump type (ignored if version contains -rc or -beta)'
+        required: false
         type: choice
+        default: 'patch'
         options:
           - patch
           - minor
           - major
+          - prerelease
 
 jobs:
-  check-tag:
-    runs-on: ubuntu-latest
-    outputs:
-      has_tag: ${{ steps.check.outputs.has_tag }}
-      tag_name: ${{ steps.check.outputs.tag_name }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - id: check
-        run: |
-          TAG=$(git tag --points-at HEAD | grep -E '^v[0-9]+\.[0-9]+' | head -1)
-          if [ -n "$TAG" ]; then
-            echo "has_tag=true" >> $GITHUB_OUTPUT
-            echo "tag_name=$TAG" >> $GITHUB_OUTPUT
-            echo "Found tag: $TAG"
-          else
-            echo "has_tag=false" >> $GITHUB_OUTPUT
-            echo "No version tag found"
-          fi
-
   release:
-    needs: check-tag
-    if: needs.check-tag.outputs.has_tag == 'true' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -73,16 +53,33 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Bump version (manual workflow only)
-        if: github.event_name == 'workflow_dispatch'
-        run: npm version "${{ github.event.inputs.version_type }}" --no-git-tag-version
-
-      - name: Extract version from package.json
+      - name: Extract version
         id: package_version
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # Extract version from tag (remove 'v' prefix)
+            VERSION="${GITHUB_REF#refs/tags/v}"
+            echo "Version from tag: $VERSION"
+          else
+            # Use version from package.json for workflow_dispatch
+            VERSION=$(node -p "require('./package.json').version")
+            echo "Version from package.json: $VERSION"
+          fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Version: $VERSION"
+          echo "Final version: $VERSION"
+
+      - name: Verify package.json version matches tag
+        if: github.event_name == 'push'
+        env:
+          TAG_VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+            echo "Please ensure package.json version matches the tag before creating a release."
+            exit 1
+          fi
+          echo "✅ Version verified: $PKG_VERSION"
 
       - name: Auto-generate CHANGELOG if needed
         env:
@@ -128,36 +125,58 @@ jobs:
           awk "/## \[$VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md > /tmp/release-notes.md
           cat /tmp/release-notes.md
 
-      - name: Commit version bump (manual workflow only)
+      - name: Bump version and commit (workflow_dispatch only)
         if: github.event_name == 'workflow_dispatch'
         env:
-          VERSION: ${{ steps.package_version.outputs.version }}
+          VERSION: ${{ github.event.inputs.version }}
+          VERSION_TYPE: ${{ github.event.inputs.version_type }}
         run: |
+          # If specific version provided, use it; otherwise bump
+          if [ -n "$VERSION" ] && [ "$VERSION" != "" ]; then
+            npm version "$VERSION" --no-git-tag-version
+          else
+            npm version "$VERSION_TYPE" --no-git-tag-version
+          fi
+          NEW_VERSION=$(node -p "require('./package.json').version")
           git add package.json package-lock.json
-          git commit -m "chore: bump version to $VERSION"
-
-      - name: Create and push git tag (manual workflow only)
-        if: github.event_name == 'workflow_dispatch'
-        env:
-          VERSION: ${{ steps.package_version.outputs.version }}
-        run: |
-          git tag "v$VERSION"
-          git push origin "v$VERSION"
+          git commit -m "chore: bump version to $NEW_VERSION"
+          git tag "v$NEW_VERSION"
+          git push origin develop
+          git push origin "v$NEW_VERSION"
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Publish to npm
-        run: npm publish --provenance --access public || npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ steps.package_version.outputs.version }}
+        run: |
+          # Check if it's a prerelease version
+          if [[ "$VERSION" == *"-rc"* ]] || [[ "$VERSION" == *"-beta"* ]] || [[ "$VERSION" == *"-alpha"* ]]; then
+            echo "Publishing prerelease version with 'next' tag..."
+            npm publish --provenance --access public --tag next || npm publish --access public --tag next
+          else
+            echo "Publishing stable version..."
+            npm publish --provenance --access public || npm publish --access public
+          fi
 
       - name: Create GitHub Release
+        if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.package_version.outputs.version }}
         run: |
-          gh release create "v$VERSION" \
-            --title "v$VERSION" \
-            --notes-file /tmp/release-notes.md \
-            --latest
+          # Check if it's a prerelease (contains -rc, -beta, -alpha)
+          if [[ "$VERSION" == *"-rc"* ]] || [[ "$VERSION" == *"-beta"* ]] || [[ "$VERSION" == *"-alpha"* ]]; then
+            gh release create "v$VERSION" \
+              --title "v$VERSION" \
+              --notes-file /tmp/release-notes.md \
+              --prerelease
+          else
+            gh release create "v$VERSION" \
+              --title "v$VERSION" \
+              --notes-file /tmp/release-notes.md \
+              --latest
+          fi
 
       - name: Success notification
         if: success()
