@@ -1,11 +1,15 @@
 ---
 id: US-008
 feature: FS-145
-title: "CLI Commands for Registry (P1)"
+title: CLI Commands for Registry (P1)
 status: completed
 priority: P1
-created: 2025-12-11
+created: 2025-12-12
 project: specweave
+external:
+  github:
+    issue: 937
+    url: https://github.com/anton-abyzov/specweave/issues/937
 ---
 
 # US-008: CLI Commands for Registry (P1)

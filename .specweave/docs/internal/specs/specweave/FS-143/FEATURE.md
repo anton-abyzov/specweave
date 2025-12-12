@@ -4,8 +4,13 @@ title: "0143: Frontmatter Removal - Code, Templates & Tests (Part 1 of 2)"
 type: feature
 status: completed
 priority: P1
-created: 2025-12-11
-lastUpdated: 2025-12-11
+created: 2025-12-12
+lastUpdated: 2025-12-12
+external_tools:
+  github:
+    type: milestone
+    id: 59
+    url: https://github.com/anton-abyzov/specweave/milestone/59
 ---
 
 # 0143: Frontmatter Removal - Code, Templates & Tests (Part 1 of 2)
@@ -18,7 +23,7 @@ lastUpdated: 2025-12-11
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0143-frontmatter-removal-code-templates-tests](../../../../increments/0143-frontmatter-removal-code-templates-tests/spec.md) | ✅ completed | 2025-12-11 |
+| [0143-frontmatter-removal-code-templates-tests](../../../../increments/0143-frontmatter-removal-code-templates-tests/spec.md) | ✅ completed | 2025-12-12 |
 
 ## User Stories
 

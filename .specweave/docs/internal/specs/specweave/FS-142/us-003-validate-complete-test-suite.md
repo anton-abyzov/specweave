@@ -1,11 +1,15 @@
 ---
 id: US-003
 feature: FS-142
-title: "Validate Complete Test Suite"
+title: Validate Complete Test Suite
 status: completed
 priority: P1
-created: 2025-12-11
+created: 2025-12-12
 project: specweave
+external:
+  github:
+    issue: 920
+    url: https://github.com/anton-abyzov/specweave/issues/920
 ---
 
 # US-003: Validate Complete Test Suite

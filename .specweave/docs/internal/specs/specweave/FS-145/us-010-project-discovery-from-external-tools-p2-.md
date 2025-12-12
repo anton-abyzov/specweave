@@ -1,11 +1,15 @@
 ---
 id: US-010
 feature: FS-145
-title: "Project Discovery from External Tools (P2)"
+title: Project Discovery from External Tools (P2)
 status: completed
 priority: P1
-created: 2025-12-11
+created: 2025-12-12
 project: specweave
+external:
+  github:
+    issue: 939
+    url: https://github.com/anton-abyzov/specweave/issues/939
 ---
 
 # US-010: Project Discovery from External Tools (P2)

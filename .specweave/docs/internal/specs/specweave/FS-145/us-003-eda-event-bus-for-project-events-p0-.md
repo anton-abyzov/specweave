@@ -1,11 +1,15 @@
 ---
 id: US-003
 feature: FS-145
-title: "EDA Event Bus for Project Events (P0)"
+title: EDA Event Bus for Project Events (P0)
 status: completed
 priority: P1
-created: 2025-12-11
+created: 2025-12-12
 project: specweave
+external:
+  github:
+    issue: 932
+    url: https://github.com/anton-abyzov/specweave/issues/932
 ---
 
 # US-003: EDA Event Bus for Project Events (P0)

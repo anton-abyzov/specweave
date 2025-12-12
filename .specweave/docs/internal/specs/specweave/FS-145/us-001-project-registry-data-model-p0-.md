@@ -1,11 +1,15 @@
 ---
 id: US-001
 feature: FS-145
-title: "Project Registry Data Model (P0)"
+title: Project Registry Data Model (P0)
 status: completed
 priority: P1
-created: 2025-12-11
+created: 2025-12-12
 project: specweave
+external:
+  github:
+    issue: 930
+    url: https://github.com/anton-abyzov/specweave/issues/930
 ---
 
 # US-001: Project Registry Data Model (P0)

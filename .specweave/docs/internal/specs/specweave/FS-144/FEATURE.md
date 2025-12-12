@@ -4,8 +4,13 @@ title: "0144: Frontmatter Removal - Migration & Rollout (Part 2 of 2)"
 type: feature
 status: completed
 priority: P1
-created: 2025-12-11
-lastUpdated: 2025-12-11
+created: 2025-12-12
+lastUpdated: 2025-12-12
+external_tools:
+  github:
+    type: milestone
+    id: 60
+    url: https://github.com/anton-abyzov/specweave/milestone/60
 ---
 
 # 0144: Frontmatter Removal - Migration & Rollout (Part 2 of 2)
@@ -18,7 +23,7 @@ lastUpdated: 2025-12-11
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0144-frontmatter-removal-migration-rollout](../../../../increments/0144-frontmatter-removal-migration-rollout/spec.md) | ✅ completed | 2025-12-11 |
+| [0144-frontmatter-removal-migration-rollout](../../../../increments/0144-frontmatter-removal-migration-rollout/spec.md) | ✅ completed | 2025-12-12 |
 
 ## User Stories
 
