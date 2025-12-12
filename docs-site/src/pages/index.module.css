@@ -344,6 +344,69 @@
   letter-spacing: 0.5px;
 }
 
+/* Integrations Section */
+.integrationsSection {
+  padding: 5rem 2rem;
+  background: #f9fafb;
+}
+
+.integrationsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+}
+
+.integrationCard {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.integrationCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.integrationIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.integrationCard h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #1e293b;
+}
+
+.integrationCard p {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.integrationsCta {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+@media screen and (max-width: 996px) {
+  .integrationsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .integrationsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* CTA Section */
 .ctaSection {
   padding: 5rem 2rem;
