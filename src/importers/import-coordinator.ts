@@ -205,53 +205,33 @@ export class ImportCoordinator {
       }
     }
 
-    // JIRA importer - supports board-level mode (CRITICAL v0.35.2: one importer per board!)
+    // JIRA importer - 1-level structure: JIRA Project → SpecWeave Project (v0.35.3+)
     if (this.config.jira) {
-      // Check for multi-project configuration (projectMappings with boards)
+      // Check for multi-project configuration
       const projectMappings = this.config.jira.projectMappings;
 
       if (projectMappings && projectMappings.length > 0) {
-        // CRITICAL FIX (v0.35.2): Create one importer PER BOARD (not per project!)
-        // This enables proper 2-level folder structure: AAC/ancillary-apps-cc-board/FS-XXX/
+        // CRITICAL SIMPLIFICATION (v0.35.3): One importer per JIRA project
+        // Folder structure: AAC/FS-XXX/ (no board level)
+        // JIRA boards are views, not organizational structure!
         for (const mapping of projectMappings) {
-          if (mapping.boardMappings && mapping.boardMappings.length > 0) {
-            // For each board in the project, create a separate importer
-            for (const boardMapping of mapping.boardMappings) {
-              try {
-                const importer = new JiraImporter(
-                  this.config.jira.host,
-                  this.config.jira.email,
-                  this.config.jira.apiToken,
-                  mapping.projectKey,         // Pass project key for JQL filtering
-                  boardMapping.boardId,       // Pass board ID for 2-level structure
-                  boardMapping.boardName      // Pass board name for folder naming
-                );
-                const key = `jira:${mapping.projectKey}:${boardMapping.boardId}`;
-                this.jiraProjectImporters.set(key, importer);
-              } catch (error: any) {
-                console.warn(`Failed to initialize JIRA importer for ${mapping.projectKey}/${boardMapping.boardName}: ${error.message}`);
-              }
-            }
-          } else {
-            // No boards configured for this project - create project-level importer (fallback)
-            try {
-              const importer = new JiraImporter(
-                this.config.jira.host,
-                this.config.jira.email,
-                this.config.jira.apiToken,
-                mapping.projectKey  // Pass project key for JQL filtering
-              );
-              const key = `jira:${mapping.projectKey}`;
-              this.jiraProjectImporters.set(key, importer);
-            } catch (error: any) {
-              console.warn(`Failed to initialize JIRA importer for ${mapping.projectKey}: ${error.message}`);
-            }
+          try {
+            const importer = new JiraImporter(
+              this.config.jira.host,
+              this.config.jira.email,
+              this.config.jira.apiToken,
+              mapping.projectKey         // Fetch all issues from this project
+            );
+            const key = `jira:${mapping.projectKey}`;
+            this.jiraProjectImporters.set(key, importer);
+          } catch (error: any) {
+            console.warn(`Failed to initialize JIRA importer for ${mapping.projectKey}: ${error.message}`);
           }
         }
 
         // If we have multi-project importers, don't create single project importer
         if (this.jiraProjectImporters.size > 0) {
-          // Board-level mode active - will be handled in importAll()
+          // Project-level mode active - will be handled in importAll()
         }
       } else {
         // Single project mode (backwards compatible)

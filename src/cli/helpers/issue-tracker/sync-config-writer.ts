@@ -244,12 +244,9 @@ function buildJiraSyncConfig(
     for (const projConfig of jiraCreds.projectConfigs) {
       const profileId = `jira-${projConfig.key.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
 
-      // Deduplicate boards (same as ADO areaPaths deduplication)
-      const dedupedBoards = projConfig.boards?.length
-        ? deduplicateArray(projConfig.boards, (item: any) =>
-            typeof item === 'string' ? item : (item.id || item.name || JSON.stringify(item))
-          )
-        : undefined;
+      // CRITICAL SIMPLIFICATION (v0.35.3): Remove boards from config
+      // JIRA boards are views, not organizational structure
+      // Use 1-level mapping: JIRA Project → SpecWeave Project
 
       profiles[profileId] = {
         provider: 'jira',
@@ -259,8 +256,8 @@ function buildJiraSyncConfig(
           projectKey: projConfig.key,
           projectName: projConfig.name,
           projectId: projConfig.id,
-          ...(dedupedBoards?.length ? { boards: dedupedBoards } : {}),
-          ...(jiraCreds.strategy ? { strategy: jiraCreds.strategy } : {})
+          // boards: REMOVED (v0.35.3) - not needed for 1-level structure
+          // strategy: REMOVED (v0.35.3) - legacy field
         },
         timeRange: {
           default: '1M',
