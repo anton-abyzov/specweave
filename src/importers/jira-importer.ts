@@ -209,7 +209,11 @@ export class JiraImporter implements Importer {
   }
 
   /**
-   * Paginate through issues using JQL (50 per page)
+   * Paginate through issues using JQL or Board API (50 per page)
+   *
+   * CRITICAL FIX (v0.35.2): Use JIRA Agile API when boardId is provided
+   * - Board API: /rest/agile/1.0/board/{boardId}/issue
+   * - Search API: /rest/api/3/search/jql (fallback)
    *
    * CRITICAL FIX (v0.34.1): Add Phase 3 parent recovery INSIDE paginate()
    * - Problem: import-coordinator calls paginate() directly, not import()
@@ -225,7 +229,13 @@ export class JiraImporter implements Importer {
       maxItems = Infinity,
     } = config;
 
-    // Build JQL query
+    // CRITICAL (v0.35.2): Use Board API if boardId is provided
+    if (this.boardId) {
+      yield* this.paginateByBoard(config);
+      return;
+    }
+
+    // Build JQL query (fallback for non-board imports)
     const jqlParts: string[] = [];
 
     // CRITICAL FIX (2025-12-09): Filter by project key for multi-project mode
@@ -351,6 +361,105 @@ export class JiraImporter implements Importer {
       if (parentItems.length > 0) {
         console.log(`   ✅ Recovered ${parentItems.length} parent Epic(s)`);
         // Yield parents as final page so coordinator includes them
+        yield parentItems;
+      }
+    }
+  }
+
+  /**
+   * Paginate through board issues using JIRA Agile API
+   * CRITICAL (v0.35.2): This ensures all items have boardId/boardName populated
+   *
+   * Endpoint: GET /rest/agile/1.0/board/{boardId}/issue
+   * Pagination: Uses startAt/maxResults (not nextPageToken like search API)
+   */
+  private async *paginateByBoard(config: ImportConfig = {}): AsyncGenerator<ExternalItem[], void, unknown> {
+    const {
+      timeRangeMonths = 3,
+      includeClosed = false,
+      maxItems = Infinity,
+    } = config;
+
+    const maxResults = 50; // JIRA Agile API pagination size
+    let startAt = 0;
+    let totalFetched = 0;
+    let hasMore = true;
+
+    const allFetchedItems: ExternalItem[] = [];
+    const fetchedIds = new Set<string>();
+
+    while (hasMore && totalFetched < maxItems) {
+      try {
+        // Build JQL for time range filtering (Agile API supports JQL parameter)
+        const jqlParts: string[] = [];
+        const since = new Date();
+        since.setMonth(since.getMonth() - timeRangeMonths);
+        jqlParts.push(`created >= "${since.toISOString().split('T')[0]}"`);
+
+        if (!includeClosed) {
+          jqlParts.push('statusCategory != Done');
+        }
+
+        const jql = jqlParts.join(' AND ');
+
+        // JIRA Agile API: /rest/agile/1.0/board/{boardId}/issue
+        const response = await this.makeJiraRequest<{
+          startAt: number;
+          maxResults: number;
+          total: number;
+          issues: JiraIssue[];
+        }>(`/rest/agile/1.0/board/${this.boardId}/issue`, {
+          startAt,
+          maxResults,
+          jql,  // Filter by time range and status
+          fields: [
+            'summary',
+            'description',
+            'status',
+            'priority',
+            'issuetype',
+            'created',
+            'updated',
+            'labels',
+            'customfield_10016',
+            'subtasks',
+            'parent',
+            'project',
+          ].join(','),
+        });
+
+        // Convert issues
+        const items = response.issues.map((issue) => this.convertToExternalItem(issue));
+
+        // Track fetched IDs for Phase 3
+        for (const item of items) {
+          fetchedIds.add(item.id);
+        }
+
+        allFetchedItems.push(...items);
+        totalFetched += items.length;
+
+        // Yield current page
+        yield items;
+
+        // Check if more pages exist
+        hasMore = totalFetched < response.total && totalFetched < maxItems;
+        startAt += maxResults;
+
+      } catch (error: any) {
+        console.error(`Failed to fetch board ${this.boardId} issues: ${error.message}`);
+        break;
+      }
+    }
+
+    // Phase 3: Fetch missing parent Epics (same as JQL pagination)
+    const missingParentKeys = this.findMissingParentKeys(allFetchedItems, fetchedIds);
+    if (missingParentKeys.length > 0) {
+      console.log(`📥 Fetching ${missingParentKeys.length} missing parent Epic(s) for board ${this.boardName}...`);
+      const parentItems = await this.fetchIssuesByKeys(missingParentKeys);
+
+      if (parentItems.length > 0) {
+        console.log(`   ✅ Recovered ${parentItems.length} parent Epic(s)`);
         yield parentItems;
       }
     }
