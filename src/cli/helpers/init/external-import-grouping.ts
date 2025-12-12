@@ -351,31 +351,21 @@ export function groupNonHierarchyItems(items: ExternalItem[], jiraBoardMappings?
     let externalContainer: ExternalContainerContext | undefined;
 
     // Check for JIRA container context
-    // CRITICAL FIX (v0.35.2): JIRA 2-level structure using board names directly
-    // - Level 1 (project): JIRA projectKey (e.g., "AAC")
-    // - Level 2 (board): normalized boardName (e.g., "ancillary-apps-cc-board")
+    // CRITICAL SIMPLIFICATION (v0.35.3): JIRA 1-level structure ONLY
+    // - JIRA Project → SpecWeave Project (1:1 mapping)
+    // - NO board level (boards are views, not organizational structure)
     if (item.jiraProjectKey) {
       containerType = 'jira';
       containerId = item.jiraProjectKey;
 
-      // CRITICAL FIX (v0.35.2): Use normalized boardName directly (Level 2)
-      // For project-per-team strategy, boards don't map to different projects
-      // They're just sub-folders under the project: AAC/board-name/
-      if (item.jiraBoardName) {
-        projectId = normalizeToProjectId(item.jiraBoardName) || 'default';
-      } else {
-        projectId = 'default';
-      }
+      // CRITICAL FIX (v0.35.3): Use projectKey directly (NO second level!)
+      // Structure: AAC/FS-XXX/ (not AAC/default/FS-XXX/)
+      projectId = normalizeToProjectId(item.jiraProjectKey) || '_default';
 
-      groupKey = `jira:${containerId}:${projectId}`;
+      groupKey = `jira:${containerId}`;  // No projectId in key!
 
-      externalContainer = {
-        type: 'jira-project',
-        containerId: containerId,
-        containerName: item.jiraProjectName || containerId,
-        boardId: item.jiraBoardId,
-        boardName: item.jiraBoardName
-      };
+      // NO externalContainer for JIRA (1-level structure doesn't need it)
+      externalContainer = undefined;
     }
     // Check for ADO container context (without hierarchy)
     else if (item.adoProjectName) {
