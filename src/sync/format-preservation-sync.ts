@@ -124,12 +124,58 @@ export class FormatPreservationSyncService {
       await externalClient.addComment(workItemId, comment);
     }
 
-    // Conditional status update (only if config allows)
-    if (this.config.canUpdateStatus) {
-      this.logger.log(`  ✅ Status update enabled`);
-      // TODO: Implement status update logic
+    // Conditional status update (only if config allows AND progress is 100%)
+    if (this.config.canUpdateStatus && completionData.progressPercentage === 100) {
+      this.logger.log(`  🔀 Status update enabled (100% complete)`);
+      await this.updateExternalStatus(usFile, 'Done', externalClient);
+    } else if (this.config.canUpdateStatus) {
+      this.logger.log(`  ⏭️  Status update skipped (progress: ${completionData.progressPercentage}% < 100%)`);
     } else {
       this.logger.log(`  ⏭️  Status update skipped (canUpdateStatus=false)`);
+    }
+  }
+
+  /**
+   * Update external tool status to target state
+   *
+   * @param usFile - User story file with external tool info
+   * @param targetStatus - Target status name (e.g., "Done", "Closed")
+   * @param externalClient - External tool client instance
+   */
+  private async updateExternalStatus(
+    usFile: LivingDocsUSFile,
+    targetStatus: string,
+    externalClient: GitHubClientV2 | JiraClient | AdoClient
+  ): Promise<void> {
+    try {
+      if (externalClient instanceof JiraClient) {
+        const issueKey = usFile.external_tools?.jira?.key || usFile.external_id || '';
+        if (issueKey && issueKey.includes('-')) {
+          await externalClient.updateIssue({
+            key: issueKey,
+            status: targetStatus
+          });
+          this.logger.log(`  ✅ Transitioned JIRA ${issueKey} to ${targetStatus}`);
+        }
+      } else if (externalClient instanceof AdoClient) {
+        const workItemId = usFile.external_tools?.ado?.id || parseInt(usFile.external_id || '0', 10);
+        if (workItemId > 0) {
+          await externalClient.updateWorkItem({
+            id: workItemId,
+            state: targetStatus === 'Done' ? 'Closed' : targetStatus
+          });
+          this.logger.log(`  ✅ Updated ADO work item #${workItemId} to ${targetStatus}`);
+        }
+      } else if (externalClient instanceof GitHubClientV2) {
+        const issueNumber = usFile.external_tools?.github?.number || 0;
+        if (issueNumber > 0) {
+          await externalClient.closeIssue(issueNumber, `Closed automatically by SpecWeave (100% complete)`);
+          this.logger.log(`  ✅ Closed GitHub issue #${issueNumber}`);
+        }
+      }
+    } catch (error) {
+      this.logger.log(`  ⚠️  Status update failed: ${error}`);
+      this.logger.log(`     Manual status update may be required`);
     }
   }
 
@@ -177,10 +223,12 @@ export class FormatPreservationSyncService {
         await externalClient.addComment(workItemId, comment);
       }
 
-      // Update status if allowed
-      if (this.config.canUpdateStatus) {
-        this.logger.log(`  ✅ Status update enabled`);
-        // TODO: Implement status update logic
+      // Update status if allowed AND progress is 100%
+      if (this.config.canUpdateStatus && completionData.progressPercentage === 100) {
+        this.logger.log(`  🔀 Status update enabled (100% complete)`);
+        await this.updateExternalStatus(usFile, 'Done', externalClient);
+      } else if (this.config.canUpdateStatus) {
+        this.logger.log(`  ⏭️  Status update skipped (progress: ${completionData.progressPercentage}% < 100%)`);
       }
     } else {
       this.logger.log(`  ⏭️  External updates skipped (canUpdateExternalItems=false)`);

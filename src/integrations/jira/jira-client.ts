@@ -809,6 +809,70 @@ export class JiraClient {
   }
 
   /**
+   * Get last comment on JIRA issue (for idempotency check)
+   *
+   * GET /rest/api/3/issue/{issueIdOrKey}/comment?orderBy=-created&maxResults=1
+   *
+   * Returns the most recent comment body, or null if no comments exist.
+   * Used to prevent posting duplicate progress comments.
+   */
+  public async getLastComment(issueKey: string): Promise<{ body: string; author: string } | null> {
+    const url = `${this.baseUrl}/rest/api/${this.apiVersion}/issue/${issueKey}/comment?orderBy=-created&maxResults=1`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': this.getAuthHeader(),
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        // If error, return null (no comments or API error)
+        return null;
+      }
+
+      const data = await response.json() as any;
+      const comments = data.comments || [];
+
+      if (comments.length === 0) {
+        return null;
+      }
+
+      const lastComment = comments[0];
+
+      // Extract body text from ADF format
+      let bodyText = '';
+      if (lastComment.body?.content) {
+        // ADF format - extract text from paragraphs
+        for (const block of lastComment.body.content) {
+          if (block.type === 'paragraph' && block.content) {
+            for (const inline of block.content) {
+              if (inline.type === 'text') {
+                bodyText += inline.text;
+              }
+            }
+            bodyText += '\n';
+          }
+        }
+        bodyText = bodyText.trim();
+      } else if (typeof lastComment.body === 'string') {
+        // Plain text format (older JIRA versions)
+        bodyText = lastComment.body;
+      }
+
+      return {
+        body: bodyText,
+        author: lastComment.author?.displayName || lastComment.author?.emailAddress || 'unknown'
+      };
+    } catch {
+      // On any error, return null to allow the comment to proceed
+      return null;
+    }
+  }
+
+  /**
    * Add comment to JIRA issue (T-034C)
    *
    * POST /rest/api/3/issue/{issueIdOrKey}/comment
