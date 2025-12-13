@@ -4,19 +4,18 @@
 
 *Drop it into a 10-year-old codebase — it understands everything. Use it on your weekend MVP — specs write themselves. Scale it to 50 teams — JIRA, GitHub, Azure DevOps sync automatically.*
 
-[![NPM Version](https://img.shields.io/npm/v/specweave?color=blue&label=stable)](https://www.npmjs.com/package/specweave)
-[![NPM RC Version](https://img.shields.io/npm/v/specweave/next?color=orange&label=v1.0.0-rc.1)](https://www.npmjs.com/package/specweave/v/1.0.0-rc.1)
+[![NPM Version](https://img.shields.io/npm/v/specweave?color=brightgreen&label=v1.0.1)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UYg4BGJ65V)
 [![YouTube](https://img.shields.io/badge/YouTube-Tutorials-red?logo=youtube&logoColor=white)](https://www.youtube.com/@antonabyzov)
 [![Run in Smithery](https://smithery.ai/badge/skills/anton-abyzov)](https://smithery.ai/skills?ns=anton-abyzov&utm_source=github&utm_medium=badge)
 
-> ### 🚀 v1.0.0 Release Candidate Available!
+> ### 🎉 v1.0.1 — Production Ready!
 > ```bash
-> npm install -g specweave@1.0.0-rc.1
+> npm install -g specweave
 > ```
-> **What's new:** Multi-project support, GitHub/JIRA/Azure DevOps sync, 24 plugins, living docs.
-> [See release notes →](https://github.com/anton-abyzov/specweave/releases/tag/v1.0.0-rc.1)
+> **Highlights:** Multi-project support, GitHub/JIRA/Azure DevOps sync, 24 plugins, living docs, resilient background jobs.
+> [See release notes →](https://github.com/anton-abyzov/specweave/releases/tag/v1.0.1)
 
 ---
 
@@ -102,10 +101,7 @@ Every AI coding tool promises productivity. But after the chat ends:
 ## Quick Start
 
 ```bash
-# Install v1.0.0 Release Candidate (recommended for new projects)
-npm install -g specweave@1.0.0-rc.1
-
-# Or install stable version
+# Install SpecWeave (v1.0.1 — production ready)
 npm install -g specweave
 
 # Initialize your project
