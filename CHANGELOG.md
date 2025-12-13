@@ -4,6 +4,24 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.3] - 2025-12-13
+
+### ✨ UX Optimization
+- **GitHub + GitHub Issues Flow**: Streamlined init flow when using GitHub for both repositories AND issue tracking
+  - **Smart Detection**: Automatically reuses repository configuration from setup phase
+  - **No Duplicate Prompts**: Users no longer asked about repos twice in the same init session
+  - **Parent Repo Selection**: Multi-repo users simply choose which repo hosts issues (instead of re-entering all repos)
+  - **1:1 Auto-Mapping**: Repositories automatically mapped to projects (1-level structure)
+  - **Backward Compatible**: Non-GitHub flows remain unchanged
+  - Implemented in [configureGitHubRepositories](src/cli/helpers/issue-tracker/github.ts#L356-L547)
+  - Full test coverage: 11 unit tests in [github-repo-reuse.test.ts](tests/unit/issue-tracker/github-repo-reuse.test.ts)
+
+### 🧪 Testing
+- Added comprehensive unit tests for GitHub repository reuse optimization
+- All tests passing (11/11)
+
+---
+
 ## [1.0.2] - 2025-12-13
 
 ### 🐛 Critical Bug Fix

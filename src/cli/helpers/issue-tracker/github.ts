@@ -344,8 +344,14 @@ export function showGitHubSetupSkipped(language: SupportedLanguage): void {
 /**
  * Configure GitHub repositories
  *
+ * CRITICAL OPTIMIZATION (v0.36.0+): When GitHub is used for BOTH repositories AND issue tracking,
+ * this function detects existing repository configuration and reuses it instead of asking again.
+ *
  * This is called after credentials are validated to set up repository profiles
- * Enhanced to support repository creation via GitHub API
+ * Enhanced to support:
+ * - Smart detection of existing repo config (GitHub repos + GitHub Issues case)
+ * - Repository creation via GitHub API
+ * - Parent repo selection for multi-repo case
  *
  * @param projectPath - Path to project directory
  * @param language - User's language
@@ -359,6 +365,52 @@ export async function configureGitHubRepositories(
   githubToken?: string,
   repositoryHosting?: string
 ): Promise<{ profiles: any[]; monorepoProjects?: string[] }> {
+  // CRITICAL OPTIMIZATION: If user selected GitHub for repositories, reuse that configuration!
+  // This prevents asking the same questions twice (repos during init, then again for issue tracker)
+  if (repositoryHosting && (repositoryHosting === 'github-single' || repositoryHosting === 'github-multirepo')) {
+    console.log(chalk.cyan('\n📂 Loading Repository Configuration\n'));
+    console.log(chalk.gray('   Detected GitHub repositories from setup phase...\n'));
+
+    // Try to load existing repository configuration from config.json
+    const existingConfig = await loadExistingGitHubRepoConfig(projectPath);
+
+    if (existingConfig && existingConfig.profiles.length > 0) {
+      console.log(chalk.green(`✓ Found ${existingConfig.profiles.length} configured repository(-ies)`));
+
+      // Display repos for user confirmation
+      for (const profile of existingConfig.profiles) {
+        console.log(chalk.gray(`   - ${profile.owner}/${profile.repo}${profile.isDefault ? ' (parent)' : ''}`));
+      }
+      console.log('');
+
+      // For multi-repo case, ask which repo should be the parent (for issues)
+      if (repositoryHosting === 'github-multirepo' && existingConfig.profiles.length > 1) {
+        const parentProfile = await selectParentRepoForIssues(existingConfig.profiles);
+
+        // Mark selected repo as default for issue tracking
+        const updatedProfiles = existingConfig.profiles.map(p => ({
+          ...p,
+          isDefault: p.id === parentProfile.id
+        }));
+
+        console.log(chalk.green(`\n✓ Using ${parentProfile.owner}/${parentProfile.repo} as parent for issue tracking\n`));
+
+        return {
+          profiles: updatedProfiles,
+          monorepoProjects: existingConfig.monorepoProjects
+        };
+      }
+
+      // Single-repo or parent already selected - return as-is
+      return existingConfig;
+    }
+
+    // Config doesn't exist yet (possible in some edge cases) - fall through to manual flow
+    console.log(chalk.yellow('⚠️  No existing repository configuration found'));
+    console.log(chalk.gray('   Proceeding with manual configuration\n'));
+  }
+
+  // LEGACY FLOW: GitHub Issues without GitHub repos, or config not found
   // Import the multi-repo module
   const {
     promptGitHubSetupType,
@@ -406,6 +458,92 @@ export async function configureGitHubRepositories(
     default:
       return { profiles: [] };
   }
+}
+
+/**
+ * Load existing GitHub repository configuration from config.json
+ *
+ * This is used to reuse repository configuration when user selects GitHub
+ * for both repositories (during init) and issue tracking (in the same flow).
+ *
+ * @param projectPath - Path to project root
+ * @returns Existing profiles and monorepo projects, or null if not found
+ */
+async function loadExistingGitHubRepoConfig(
+  projectPath: string
+): Promise<{ profiles: any[]; monorepoProjects?: string[] } | null> {
+  try {
+    const { getConfigManager } = await import('../../../core/config/index.js');
+    const configManager = getConfigManager(projectPath);
+    const config = await configManager.read();
+
+    // Check if GitHub sync profiles exist
+    if (!config.sync?.profiles) {
+      return null;
+    }
+
+    const profiles: any[] = [];
+    let monorepoProjects: string[] | undefined;
+
+    // Extract GitHub profiles from sync config
+    for (const [profileId, profile] of Object.entries(config.sync.profiles)) {
+      if ((profile as any).provider === 'github') {
+        const githubConfig = (profile as any).config;
+
+        profiles.push({
+          id: profileId,
+          displayName: (profile as any).displayName || `${githubConfig.owner}/${githubConfig.repo}`,
+          owner: githubConfig.owner,
+          repo: githubConfig.repo,
+          isDefault: config.sync.defaultProfile === profileId
+        });
+
+        // Extract monorepo projects if present (only from first profile)
+        if (!monorepoProjects && githubConfig.monorepoProjects) {
+          monorepoProjects = githubConfig.monorepoProjects;
+        }
+      }
+    }
+
+    if (profiles.length === 0) {
+      return null;
+    }
+
+    return { profiles, monorepoProjects };
+  } catch {
+    // Config doesn't exist or is malformed - return null
+    return null;
+  }
+}
+
+/**
+ * Select parent repository for GitHub Issues (multi-repo case)
+ *
+ * When user has multiple repos configured, they need to choose which one
+ * will be the "parent" for issue tracking. This is where GitHub Issues
+ * will be created for cross-repo features.
+ *
+ * @param profiles - List of configured repository profiles
+ * @returns Selected parent profile
+ */
+async function selectParentRepoForIssues(profiles: any[]): Promise<any> {
+  console.log(chalk.cyan.bold('📌 Parent Repository Selection\n'));
+  console.log(chalk.gray('For multi-repo setups, choose which repository should host GitHub Issues.\n'));
+  console.log(chalk.gray('This is typically your "parent" or "umbrella" repository.\n'));
+
+  // If one is already marked as default, suggest it
+  const currentDefault = profiles.find(p => p.isDefault);
+
+  const selectedId = await select({
+    message: 'Which repository should host GitHub Issues?',
+    choices: profiles.map(p => ({
+      name: `${p.owner}/${p.repo}${p.id === currentDefault?.id ? ' (current parent)' : ''}`,
+      value: p.id
+    })),
+    default: currentDefault?.id || profiles[0]?.id
+  });
+
+  return profiles.find(p => p.id === selectedId) || profiles[0];
 }
 
 /**
