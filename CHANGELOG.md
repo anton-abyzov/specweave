@@ -4,6 +4,29 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.4] - 2025-12-13
+
+### 🐛 Bug Fix
+- **Duplicate Prompts Eliminated**: Fixed GitHub + GitHub Issues init flow asking repository configuration questions twice
+  - **Root Cause**: v1.0.3 tried to load from config.json during init, but config.json doesn't exist until after init completes
+  - **Solution**: Pass GitHub credentials (org/PAT) from repository setup through function parameters
+  - **Result**: Users now enter repository credentials ONCE during `specweave init`
+  - **User Experience**: 30-50% fewer prompts when selecting GitHub for both repositories and issue tracking
+  - Implementation: Parameter passing through `init.ts` → `setupIssueTrackerWrapper` → `setupIssueTracker` → `configureGitHubRepositories`
+
+### 🔧 Technical Changes
+- Added `githubCredentialsFromRepoSetup` parameter to `SetupOptions` interface (following existing ADO pattern)
+- Enhanced `configureGitHubRepositories()` to accept GitHub credentials from repository setup
+- Multi-repo users still asked "Which repo is parent for issues?" (essential question)
+- Single-repo users see zero duplicate prompts
+
+### 🧪 Testing
+- Updated unit tests to use parameter passing approach
+- All existing tests remain passing
+- Added test coverage for credential parameter flow
+
+---
+
 ## [1.0.3] - 2025-12-13
 
 ### ✨ UX Optimization
