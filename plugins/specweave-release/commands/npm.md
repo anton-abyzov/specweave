@@ -7,6 +7,44 @@ description: Bump patch version, auto-commit dirty changes, push to GitHub, buil
 
 You are the NPM Release Assistant. Your job is to automate the patch version release process.
 
+## CRITICAL: Prerelease Version Handling
+
+**⚠️ NEVER use `npm version patch` on prerelease versions!**
+
+`npm version patch` converts `1.0.0-rc.1` → `1.0.0` (WRONG!)
+
+**CORRECT behavior:**
+- `1.0.0-rc.1` → `1.0.0-rc.2` (increment prerelease)
+- `1.0.0-beta.5` → `1.0.0-beta.6` (increment prerelease)
+- `1.0.0` → `1.0.1` (increment patch - stable version)
+
+**Use `--stable` flag ONLY when intentionally promoting to stable release!**
+
+### Version Detection Algorithm
+
+```bash
+# Get current version
+CURRENT=$(node -p "require('./package.json').version")
+
+# Check if it's a prerelease (contains hyphen: 1.0.0-rc.1, 1.0.0-beta.2, etc.)
+if [[ "$CURRENT" == *"-"* ]]; then
+  IS_PRERELEASE=true
+else
+  IS_PRERELEASE=false
+fi
+```
+
+### Version Bump Command Selection
+
+| Current Version | Flag | Command | Result |
+|-----------------|------|---------|--------|
+| `1.0.0-rc.1` | (none) | `npm version prerelease` | `1.0.0-rc.2` |
+| `1.0.0-rc.5` | `--stable` | `npm version patch` | `1.0.1` |
+| `1.0.0` | (none) | `npm version patch` | `1.0.1` |
+| `1.0.0` | `--stable` | `npm version patch` | `1.0.1` |
+
+**Rule**: If prerelease AND no `--stable` flag → use `npm version prerelease`
+
 ## Command Modes
 
 | Command | Flow | Use Case |
@@ -16,6 +54,7 @@ You are the NPM Release Assistant. Your job is to automate the patch version rel
 | `/sw-release:npm --ci` | Bump → Push → **CI publishes** | Let GitHub Actions handle npm publish |
 | `/sw-release:npm --only` | Bump → Build → **Publish locally** → NO push | Quick local release, push later |
 | `/sw-release:npm --only --local` | **Bump ONLY** → NO build, NO publish, NO git | FASTEST: Local testing only |
+| `/sw-release:npm --stable` | Same as default, but promotes prerelease to stable | **PROMOTE TO STABLE** |
 
 ## Detecting Mode
 
@@ -26,16 +65,18 @@ Check flags in the command invocation:
 --ci           → CI MODE: push to git, GitHub Actions publishes (requires clean working tree)
 --only --local → Version bump ONLY (no build, no publish, no git) - FASTEST
 --only         → Direct publish to npm (bypass CI), no git push
+--stable       → Force promote prerelease to stable (use with any mode)
 (no flags)     → DEFAULT: INSTANT RELEASE (auto-commit, push, build, publish, push tag)
 ```
 
 **Flag Detection Order:**
-1. Check for `--quick` flag → QUICK MODE (save + local publish, NO GH workflow)
-2. Check for `--ci` flag → CI MODE (GitHub Actions publishes)
-3. Check for `--only` flag
-4. If `--only` present, check for `--local` flag → LOCAL MODE (fastest)
-5. If `--only` only → DIRECT MODE
-6. No flags → **DEFAULT: INSTANT RELEASE** (auto-commit dirty, push, build, publish)
+1. Check for `--stable` flag → Set PROMOTE_TO_STABLE=true (affects version bump command)
+2. Check for `--quick` flag → QUICK MODE (save + local publish, NO GH workflow)
+3. Check for `--ci` flag → CI MODE (GitHub Actions publishes)
+4. Check for `--only` flag
+5. If `--only` present, check for `--local` flag → LOCAL MODE (fastest)
+6. If `--only` only → DIRECT MODE
+7. No flags → **DEFAULT: INSTANT RELEASE** (auto-commit dirty, push, build, publish)
 
 **If `--quick`**: Use QUICK MODE (section "Quick Mode Workflow")
 **If `--ci`**: Use CI MODE (section "CI Mode Workflow")
@@ -104,11 +145,36 @@ git push origin develop
 - ✅ No risk of "released but not pushed" state
 - ✅ Clean recovery if anything fails mid-release
 
-### 4. Bump Patch Version
+### 4. Smart Version Bump (Prerelease-Aware!)
+
+**CRITICAL: Detect prerelease and bump correctly!**
 
 ```bash
-npm version patch -m "chore: bump version to %s"
+# Get current version
+CURRENT=$(node -p "require('./package.json').version")
+echo "Current version: $CURRENT"
+
+# Check if prerelease (contains hyphen like 1.0.0-rc.1, 1.0.0-beta.2)
+if [[ "$CURRENT" == *"-"* ]]; then
+  echo "Detected PRERELEASE version"
+  # Check for --stable flag in command args
+  if [[ "--stable flag was passed" ]]; then
+    echo "Promoting to stable (--stable flag)"
+    npm version patch -m "chore: release stable version %s"
+  else
+    echo "Incrementing prerelease number"
+    npm version prerelease -m "chore: bump version to %s"
+  fi
+else
+  echo "Detected STABLE version"
+  npm version patch -m "chore: bump version to %s"
+fi
 ```
+
+**Examples:**
+- `1.0.0-rc.1` → `1.0.0-rc.2` (prerelease increment, DEFAULT)
+- `1.0.0-rc.5` + `--stable` → `1.0.1` (promote to stable, EXPLICIT)
+- `1.0.0` → `1.0.1` (patch increment)
 
 This creates a NEW commit + tag locally.
 
@@ -215,10 +281,20 @@ git commit -m "[auto-generated message based on changed files]"
 git push origin develop
 ```
 
-### 4. Bump Patch Version
+### 4. Smart Version Bump (Prerelease-Aware!)
+
+**CRITICAL: Same logic as Default Mode - detect prerelease!**
 
 ```bash
-npm version patch -m "chore: bump version to %s"
+CURRENT=$(node -p "require('./package.json').version")
+
+if [[ "$CURRENT" == *"-"* ]]; then
+  # Prerelease: bump prerelease number (1.0.0-rc.1 → 1.0.0-rc.2)
+  npm version prerelease -m "chore: bump version to %s"
+else
+  # Stable: bump patch (1.0.0 → 1.0.1)
+  npm version patch -m "chore: bump version to %s"
+fi
 ```
 
 This creates a NEW commit + tag locally.
@@ -303,11 +379,18 @@ node -p "require('./package.json').version"
 - Not on `develop` branch (ask user to switch)
 - Uncommitted changes exist (ask user to commit first)
 
-### 2. Bump Patch Version
+### 2. Smart Version Bump (Prerelease-Aware!)
 
 ```bash
-# This creates commit + tag automatically
-npm version patch -m "chore: bump version to %s"
+CURRENT=$(node -p "require('./package.json').version")
+
+if [[ "$CURRENT" == *"-"* ]]; then
+  # Prerelease: bump prerelease number
+  npm version prerelease -m "chore: bump version to %s"
+else
+  # Stable: bump patch
+  npm version patch -m "chore: bump version to %s"
+fi
 ```
 
 ### 3. Extract New Version
@@ -370,11 +453,18 @@ node -p "require('./package.json').version"
 - Not on `develop` branch (ask user to switch)
 - Uncommitted changes exist (ask user to commit first)
 
-### 2. Bump Patch Version (Same as Default)
+### 2. Smart Version Bump (Prerelease-Aware!)
 
 ```bash
-# This creates commit + tag automatically
-npm version patch -m "chore: bump version to %s"
+CURRENT=$(node -p "require('./package.json').version")
+
+if [[ "$CURRENT" == *"-"* ]]; then
+  # Prerelease: bump prerelease number (1.0.0-rc.1 → 1.0.0-rc.2)
+  npm version prerelease -m "chore: bump version to %s"
+else
+  # Stable: bump patch (1.0.0 → 1.0.1)
+  npm version patch -m "chore: bump version to %s"
+fi
 ```
 
 **What this does**:
@@ -473,15 +563,19 @@ Show the user:
 
 # FASTEST: Version bump only (no publish, no git, no build)
 /sw-release:npm --only --local
+
+# PROMOTE prerelease to stable (1.0.0-rc.5 → 1.0.1)
+/sw-release:npm --stable
 ```
 
-| Scenario | Command | Auto-Commit Dirty? | NPM Published By | Git Pushed | Tag Pushed |
-|----------|---------|-------------------|------------------|------------|------------|
-| **INSTANT RELEASE** | (no flags) | ✅ Yes | You (npmjs.org) | ✅ Yes | ✅ Yes (triggers GH) |
-| **QUICK RELEASE** | `--quick` | ✅ Yes | You (npmjs.org) | ✅ Yes | ❌ No (no GH workflow) |
-| CI release | `--ci` | ❌ STOP | GitHub Actions | ✅ Yes | ✅ Yes |
-| Quick local, push later | `--only` | ❌ STOP | You (npmjs.org) | ❌ No | ❌ No |
-| **FASTEST local test** | `--only --local` | N/A | ❌ None | ❌ No | ❌ No |
+| Scenario | Command | Prerelease Handling | Git Pushed | Tag Pushed |
+|----------|---------|---------------------|------------|------------|
+| **INSTANT RELEASE** | (no flags) | `rc.1`→`rc.2` (smart) | ✅ Yes | ✅ Yes |
+| **QUICK RELEASE** | `--quick` | `rc.1`→`rc.2` (smart) | ✅ Yes | ❌ No |
+| CI release | `--ci` | `rc.1`→`rc.2` (smart) | ✅ Yes | ✅ Yes |
+| Local publish | `--only` | `rc.1`→`rc.2` (smart) | ❌ No | ❌ No |
+| Local bump | `--only --local` | `rc.1`→`rc.2` (smart) | ❌ No | ❌ No |
+| **PROMOTE** | `--stable` | `rc.X`→`X.Y.Z+1` | ✅ Yes | ✅ Yes |
 
 ---
 
@@ -503,16 +597,24 @@ node -p "require('./package.json').version"
 
 **NO git checks** - we're not committing or pushing anything!
 
-### 2. Bump Version (NO git commit, NO tag)
+### 2. Smart Version Bump (NO git commit, NO tag)
 
 ```bash
-# Bump version WITHOUT creating git commit or tag
-npm version patch --no-git-tag-version
+CURRENT=$(node -p "require('./package.json').version")
+
+if [[ "$CURRENT" == *"-"* ]]; then
+  # Prerelease: bump prerelease number (1.0.0-rc.1 → 1.0.0-rc.2)
+  npm version prerelease --no-git-tag-version
+else
+  # Stable: bump patch (1.0.0 → 1.0.1)
+  npm version patch --no-git-tag-version
+fi
 ```
 
 **What this does**:
 - Updates `package.json` version ONLY
 - Updates `package-lock.json` version ONLY
+- Respects prerelease versions!
 - NO git commit created
 - NO git tag created
 - INSTANT (< 1 second)
