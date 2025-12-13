@@ -345,8 +345,8 @@ This project uses SpecWeave for spec-driven development. SpecWeave provides spec
 ### For Claude Code Users
 
 \`\`\`bash
-# Add SpecWeave marketplace
-/plugin marketplace add anton-abyzov/specweave
+# Add SpecWeave marketplace (use HTTPS URL for public repo)
+/plugin marketplace add https://github.com/anton-abyzov/specweave
 
 # Install core framework
 /plugin install specweave

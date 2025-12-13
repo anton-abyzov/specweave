@@ -408,6 +408,48 @@ describe('Stale Plugin Cleanup (v0.35.2)', () => {
   });
 });
 
+describe('HTTPS URL for Public Repos (v0.35.3)', () => {
+  it('should use full HTTPS URL for marketplace add, NOT owner/repo format', async () => {
+    // CRITICAL: Claude CLI converts owner/repo to SSH URL which fails without SSH keys.
+    // We MUST use full HTTPS URL for public repos to work for all users.
+    const sourceFile = path.join(
+      process.cwd(),
+      'src/cli/helpers/init/plugin-installer.ts'
+    );
+
+    if (await fs.pathExists(sourceFile)) {
+      const content = await fs.readFile(sourceFile, 'utf-8');
+
+      // Verify HTTPS URL is used (not owner/repo format)
+      expect(content).toContain('https://github.com/anton-abyzov/specweave');
+
+      // Verify the old format is NOT used
+      expect(content).not.toMatch(/'add',\s*\n\s*'anton-abyzov\/specweave'/);
+
+      // Verify the fix is documented with version
+      expect(content).toContain('v0.35.3');
+      expect(content).toContain('HTTPS URL');
+      expect(content).toContain('SSH');
+    }
+  });
+
+  it('should document why HTTPS is required in comments', async () => {
+    const sourceFile = path.join(
+      process.cwd(),
+      'src/cli/helpers/init/plugin-installer.ts'
+    );
+
+    if (await fs.pathExists(sourceFile)) {
+      const content = await fs.readFile(sourceFile, 'utf-8');
+
+      // Verify the comment explains the issue
+      expect(content).toContain('Claude CLI converts owner/repo to SSH URL');
+      expect(content).toContain('SSH keys');
+      expect(content).toContain('public repo');
+    }
+  });
+});
+
 describe('Regression Prevention', () => {
   it('should document the v0.35.2 fix in source code', async () => {
     const sourceFile = path.join(
