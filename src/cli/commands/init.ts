@@ -600,7 +600,19 @@ export async function initCommand(
 
       // Issue tracker setup
       const isFrameworkRepo = await isSpecWeaveFrameworkRepo(targetDir);
-      await setupIssueTrackerWrapper(targetDir, language, isFrameworkRepo, repoResult.hosting, isCI, repoResult.adoProjectSelection);
+
+      // Extract GitHub repository selection to avoid duplicate prompts (v1.0.4)
+      const githubRepoSelection = repoResult.githubRepoSelection;
+
+      await setupIssueTrackerWrapper(
+        targetDir,
+        language,
+        isFrameworkRepo,
+        repoResult.hosting,
+        isCI,
+        repoResult.adoProjectSelection,
+        githubRepoSelection
+      );
 
       // Multi-project folders
       await createMultiProjectFolders(targetDir);
@@ -860,7 +872,8 @@ async function setupIssueTrackerWrapper(
   isFrameworkRepo: boolean,
   repositoryHosting: RepositoryHosting,
   isCI: boolean,
-  adoProjectSelection?: { org: string; pat: string; projects: string[] }
+  adoProjectSelection?: { org: string; pat: string; projects: string[] },
+  githubCredentialsFromRepoSetup?: { org: string; pat: string }
 ): Promise<void> {
   try {
     const { setupIssueTracker } = await import('../helpers/issue-tracker/index.js');
@@ -898,7 +911,8 @@ async function setupIssueTrackerWrapper(
       maxRetries: 3,
       isFrameworkRepo,
       repositoryHosting,
-      adoCredentialsFromRepoSetup: adoProjectSelection
+      adoCredentialsFromRepoSetup: adoProjectSelection,
+      githubCredentialsFromRepoSetup
     });
   } catch {
     console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));

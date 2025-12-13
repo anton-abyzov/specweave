@@ -363,15 +363,19 @@ export async function configureGitHubRepositories(
   projectPath: string,
   language: SupportedLanguage,
   githubToken?: string,
-  repositoryHosting?: string
+  repositoryHosting?: string,
+  githubCredentialsFromRepoSetup?: { org: string; pat: string }
 ): Promise<{ profiles: any[]; monorepoProjects?: string[] }> {
-  // CRITICAL OPTIMIZATION: If user selected GitHub for repositories, reuse that configuration!
+  // CRITICAL OPTIMIZATION (v1.0.4): If GitHub credentials provided from repository setup, reuse them!
   // This prevents asking the same questions twice (repos during init, then again for issue tracker)
-  if (repositoryHosting && (repositoryHosting === 'github-single' || repositoryHosting === 'github-multirepo')) {
-    console.log(chalk.cyan('\n📂 Loading Repository Configuration\n'));
-    console.log(chalk.gray('   Detected GitHub repositories from setup phase...\n'));
+  if (githubCredentialsFromRepoSetup) {
+    console.log(chalk.cyan('\n📂 Reusing GitHub Repository Configuration\n'));
+    console.log(chalk.gray('   Using credentials from repository setup phase...\n'));
+
+    const { org, pat } = githubCredentialsFromRepoSetup;
 
     // Try to load existing repository configuration from config.json
+    // (repos might already be configured if this is a re-init or if repository setup created config)
     const existingConfig = await loadExistingGitHubRepoConfig(projectPath);
 
     if (existingConfig && existingConfig.profiles.length > 0) {
@@ -405,9 +409,34 @@ export async function configureGitHubRepositories(
       return existingConfig;
     }
 
-    // Config doesn't exist yet (possible in some edge cases) - fall through to manual flow
-    console.log(chalk.yellow('⚠️  No existing repository configuration found'));
-    console.log(chalk.gray('   Proceeding with manual configuration\n'));
+    // Config doesn't exist yet (fresh init) - use provided credentials for minimal prompting
+    console.log(chalk.yellow('ℹ️  No existing repository configuration found'));
+    console.log(chalk.gray('   Will configure using provided credentials\n'));
+
+    // For single-repo: prompt for repo name
+    // For multi-repo: prompt for which repos to track
+    // But use the org/PAT without asking for them again
+    const token = pat || githubToken;
+
+    const { promptGitHubSetupType } = await import('./github-multi-repo.js');
+    const setupResult = await promptGitHubSetupType(projectPath, token, repositoryHosting);
+
+    if (setupResult.profiles) {
+      return {
+        profiles: setupResult.profiles,
+        monorepoProjects: setupResult.monorepoProjects
+      };
+    }
+
+    // Fallback: create single profile from org
+    return {
+      profiles: [{
+        id: '1',
+        owner: org,
+        repo: org,
+        isDefault: true
+      }]
+    };
   }
 
   // LEGACY FLOW: GitHub Issues without GitHub repos, or config not found
