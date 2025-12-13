@@ -102,7 +102,9 @@ echo '{}' > "$HOME/.claude/plugins/known_marketplaces.json"
 print_success "Plugin registry cleared"
 
 print_info "Step 5: Re-registering SpecWeave marketplace from GitHub..."
-claude plugin marketplace add anton-abyzov/specweave
+# CRITICAL: Use full HTTPS URL, NOT owner/repo format!
+# Claude CLI converts owner/repo to SSH URL which fails without SSH keys.
+claude plugin marketplace add https://github.com/anton-abyzov/specweave
 if [ $? -eq 0 ]; then
     print_success "Marketplace registered successfully"
 else
