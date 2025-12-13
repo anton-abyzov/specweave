@@ -172,8 +172,22 @@ export function groupAdoItemsByParentHierarchy(items: ExternalItem[]): Container
   // Create groups for each top-level parent first
   // CRITICAL FIX (v0.30.3): Use area path for projectId, NOT item title
   // This ensures boards like "digital-service-operations" instead of "software-maintenance-..."
+  // CRITICAL FIX (v0.37.0): Normalize containerId to prevent duplicate folders
+  // Bug: "Nova CAD" creates both "Nova CAD/" and "nova-cad/" folders
+  // Root cause: containerId used display name, not normalized form
   for (const [parentId, parentItem] of topLevelParents) {
-    const containerId = parentItem.adoProjectName || 'default';
+    // CRITICAL: Extract PROJECT name (first segment) from area path and normalize
+    // This prevents duplicate folders like "Nova CAD" and "nova-cad"
+    let containerId = 'default';
+    if (parentItem.adoAreaPath) {
+      const segments = parentItem.adoAreaPath.split('\\');
+      // First segment is the ADO Project name - normalize it for folder use
+      const projectSegment = segments[0];
+      containerId = normalizeToProjectId(projectSegment) || 'default';
+    } else if (parentItem.adoProjectName) {
+      // Fallback: normalize the project display name
+      containerId = normalizeToProjectId(parentItem.adoProjectName) || 'default';
+    }
 
     // CRITICAL (v0.30.3): projectId MUST come from area path, not title
     // Area path: "Acme\Digital-Service-Operations" → "digital-service-operations"
@@ -195,7 +209,7 @@ export function groupAdoItemsByParentHierarchy(items: ExternalItem[]): Container
       externalContainer: {
         type: 'ado-project',
         containerId,
-        containerName: containerId,
+        containerName: parentItem.adoProjectName || containerId, // Keep original name for display
         areaPath: parentItem.adoAreaPath
       },
       parentItem
@@ -223,7 +237,17 @@ export function groupAdoItemsByParentHierarchy(items: ExternalItem[]): Container
       // No parent found - group by area path (2-level structure: project/areaPath)
       // This handles orphan items (User Stories with parents outside our dataset)
       // CRITICAL FIX (2025-12-01): Group by area path, NOT by User Story title
-      const containerId = item.adoProjectName || 'default';
+      // CRITICAL FIX (v0.37.0): Normalize containerId to prevent duplicate folders
+      let containerId = 'default';
+      if (item.adoAreaPath) {
+        const segments = item.adoAreaPath.split('\\');
+        // First segment is the ADO Project name - normalize it for folder use
+        const projectSegment = segments[0];
+        containerId = normalizeToProjectId(projectSegment) || 'default';
+      } else if (item.adoProjectName) {
+        // Fallback: normalize the project display name
+        containerId = normalizeToProjectId(item.adoProjectName) || 'default';
+      }
 
       // Extract area path leaf segment for grouping (e.g., "Project\Platform-Engineering" → "platform-engineering")
       let areaFolder = '_default';
@@ -248,7 +272,7 @@ export function groupAdoItemsByParentHierarchy(items: ExternalItem[]): Container
           externalContainer: {
             type: 'ado-project',
             containerId,
-            containerName: containerId,
+            containerName: item.adoProjectName || containerId, // Keep original name for display
             areaPath: item.adoAreaPath
           }
         });
@@ -285,17 +309,27 @@ export function groupNonHierarchyItems(items: ExternalItem[]): ContainerGroup[] 
     let externalContainer: ExternalContainerContext | undefined;
 
     // JIRA: 1-level structure (Project → SpecWeave Project)
+    // CRITICAL FIX (v0.37.0): Normalize containerId to prevent duplicate folders
+    // Even though JIRA keys are typically alphanumeric, normalize for safety
     if (item.jiraProjectKey) {
       containerType = 'jira';
-      containerId = item.jiraProjectKey;
-      projectId = normalizeToProjectId(item.jiraProjectKey) || '_default';
+      containerId = normalizeToProjectId(item.jiraProjectKey) || '_default';
+      projectId = containerId; // Same as containerId for 1-level structure
       groupKey = `jira:${containerId}`;
       externalContainer = undefined;
     }
     // Check for ADO container context (without hierarchy)
+    // CRITICAL FIX (v0.37.0): Normalize containerId to prevent duplicate folders
     else if (item.adoProjectName) {
       containerType = 'ado';
-      containerId = item.adoProjectName;
+
+      // Normalize containerId from area path first segment or project name
+      if (item.adoAreaPath) {
+        const segments = item.adoAreaPath.split('\\');
+        containerId = normalizeToProjectId(segments[0]) || 'default';
+      } else {
+        containerId = normalizeToProjectId(item.adoProjectName) || 'default';
+      }
 
       // Project ID from area path (extract last segment) or default
       if (item.adoAreaPath) {
@@ -311,7 +345,7 @@ export function groupNonHierarchyItems(items: ExternalItem[]): ContainerGroup[] 
       externalContainer = {
         type: 'ado-project',
         containerId: containerId,
-        containerName: containerId,
+        containerName: item.adoProjectName, // Keep original name for display
         areaPath: item.adoAreaPath
       };
     }
