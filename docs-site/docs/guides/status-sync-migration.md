@@ -448,7 +448,7 @@ If you need to revert to old sync:
 
 ### Q: Can I use both old and new sync?
 
-**A**: Yes, but not recommended. Old sync is deprecated and will be removed in v1.0.0.
+**A**: No. Old sync has been removed as of v1.0.0. All increments now use the new sync system.
 
 ### Q: What happens to old sync logs?
 
