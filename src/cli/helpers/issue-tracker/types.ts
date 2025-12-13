@@ -225,6 +225,8 @@ export interface SetupOptions {
   repositoryHosting?: RepositoryHosting; // Repository hosting choice (informs issue tracker defaults)
   /** ADO credentials from repository setup - reused when ADO is also selected for issue tracking */
   adoCredentialsFromRepoSetup?: AdoProjectSelection;
+  /** GitHub credentials from repository setup - reused when GitHub Issues is selected for issue tracking (v1.0.4) */
+  githubCredentialsFromRepoSetup?: { org: string; pat: string };
 }
 
 /**

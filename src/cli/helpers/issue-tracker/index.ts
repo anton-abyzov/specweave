@@ -333,7 +333,7 @@ async function writeSyncConfigHelper(
  * @returns True if setup completed successfully
  */
 export async function setupIssueTracker(options: SetupOptions): Promise<boolean> {
-  const { projectPath, language, maxRetries = 3, repositoryHosting, adoCredentialsFromRepoSetup } = options;
+  const { projectPath, language, maxRetries = 3, repositoryHosting, adoCredentialsFromRepoSetup, githubCredentialsFromRepoSetup } = options;
   const locale = getLocaleManager(language);
 
   // Check if running in CI/non-interactive environment
@@ -472,7 +472,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
             // Pass the GitHub token for repository creation
             const githubToken = (credentials as any).token;
             // Pass repositoryHosting to avoid duplicate prompts
-            const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken, repositoryHosting);
+            const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken, repositoryHosting, githubCredentialsFromRepoSetup);
             repositoryProfiles = repoConfig.profiles;
             monorepoProjects = repoConfig.monorepoProjects;
           } catch (error: any) {
@@ -631,7 +631,7 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
       // Pass the GitHub token for repository creation
       const githubToken = (credentials as any).token;
       // Pass repositoryHosting to avoid duplicate prompts
-      const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken, repositoryHosting);
+      const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken, repositoryHosting, githubCredentialsFromRepoSetup);
       repositoryProfiles = repoConfig.profiles;
       monorepoProjects = repoConfig.monorepoProjects;
     } catch (error: any) {
