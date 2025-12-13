@@ -5,6 +5,13 @@
  * Standalone script that runs repository cloning in a detached process.
  * Survives terminal close - progress tracked via job state file.
  *
+ * CRITICAL BEHAVIOR (v0.34.0+):
+ * - NEVER stops on individual repo failures - always continues to the end!
+ * - Already-cloned repos are automatically skipped (enables easy resume)
+ * - Final status: 'completed' (all success) or 'completed_with_warnings' (any failure)
+ * - NEVER marks as 'failed' unless the entire job crashes
+ * - Failed repos are tracked in result.json with error reasons
+ *
  * Usage:
  *   node clone-worker.js <jobId> <projectPath>
  *
@@ -19,7 +26,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
-import { JOB_SUCCESS_THRESHOLD } from '../../core/background/types.js';
+// NOTE: JOB_SUCCESS_THRESHOLD no longer used for clone jobs (v0.34.0+)
+// Clone jobs NEVER fail - they always complete with warnings if any repos fail
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -166,19 +174,25 @@ async function main(): Promise<void> {
     log('Job manager loaded, starting clone operations...');
 
     // Clone repositories sequentially to avoid overwhelming the system
+    // CRITICAL: NEVER stop on failure - always continue to the end!
     const repos = jobConfig.repositories;
     let completed = 0;
     let succeeded = 0;
     let failed = 0;
+    let skipped = 0;
+    const failedRepos: Array<{ name: string; error: string }> = [];
+
+    log(`Starting clone of ${repos.length} repositories (will NEVER stop on individual failures)`);
 
     for (const repo of repos) {
       const repoPath = path.join(projectPath, repo.path);
 
-      // Skip if already exists
+      // Skip if already exists (enables easy resume by re-running)
       if (fs.existsSync(path.join(repoPath, '.git'))) {
-        log(`Skipping ${repo.name} (already exists)`);
+        log(`Skipping ${repo.name} (already cloned)`);
         completed++;
         succeeded++;
+        skipped++;
         jobManager.updateProgress(jobId, completed, repo.name, repo.name);
         continue;
       }
@@ -198,43 +212,57 @@ async function main(): Promise<void> {
         jobManager.updateProgress(jobId, completed, repo.name, repo.name);
       } else {
         failed++;
+        failedRepos.push({ name: repo.name, error: result.error || 'Unknown error' });
         jobManager.updateProgress(jobId, completed, repo.name, undefined, repo.name);
+        // CRITICAL: Log but CONTINUE - never break the loop!
+        log(`⚠️ Failed to clone ${repo.name}, but CONTINUING to next repo (${repos.length - completed} remaining)`);
       }
 
       // Small delay between clones to be nice to the server
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    // Mark job as complete - use success threshold to determine status
-    // CRITICAL FIX (v0.33.5): 95%+ success = completed_with_warnings (not failed!)
-    // This prevents cascading failures that block living docs and other dependent jobs
+    log(`\n========== CLONE JOB SUMMARY ==========`);
+    log(`Total: ${repos.length} | Succeeded: ${succeeded} | Failed: ${failed} | Skipped (already cloned): ${skipped}`);
+    if (failedRepos.length > 0) {
+      log(`\nFailed repositories:`);
+      failedRepos.forEach(r => log(`  - ${r.name}: ${r.error.split('\n')[0]}`));
+    }
+
+    // Mark job as complete
+    // CRITICAL FIX (v0.34.0): NEVER mark clone jobs as 'failed'!
+    // Clone jobs always complete - either 'completed' (all success) or 'completed_with_warnings' (any failure)
+    // This ensures users can always resume by re-running the command
     const successRate = repos.length > 0 ? (succeeded / repos.length) * 100 : 100;
 
     if (failed === 0) {
       // Perfect success - no error message
+      log('✅ All repositories cloned successfully!');
       jobManager.completeJob(jobId);
-    } else if (successRate >= JOB_SUCCESS_THRESHOLD) {
-      // Partial success - completed with warnings, not failed
-      // Use completeJobWithWarnings to set status to 'completed_with_warnings'
-      jobManager.completeJobWithWarnings(
-        jobId,
-        `${failed} of ${repos.length} repositories failed (${successRate.toFixed(1)}% success rate)`
-      );
     } else {
-      // Too many failures - mark as failed
-      jobManager.completeJob(
-        jobId,
-        `${failed} of ${repos.length} repositories failed (${successRate.toFixed(1)}% success rate - below ${JOB_SUCCESS_THRESHOLD}% threshold)`
-      );
+      // Any failures = completed_with_warnings (NEVER 'failed'!)
+      // This allows easy resume: just run the clone command again
+      const warningMsg = `${failed} of ${repos.length} repositories failed (${successRate.toFixed(1)}% success rate). Run clone command again to retry failed repos.`;
+      log(`⚠️ ${warningMsg}`);
+      jobManager.completeJobWithWarnings(jobId, warningMsg);
     }
 
-    // Write result summary
+    // Write detailed result summary including failed repos for retry
     const resultPath = path.join(projectPath, '.specweave', 'state', 'jobs', jobId, 'result.json');
     fs.writeFileSync(resultPath, JSON.stringify({
       totalCount: repos.length,
       succeeded,
       failed,
-      completedAt: new Date().toISOString()
+      skipped,
+      successRate: successRate.toFixed(1),
+      completedAt: new Date().toISOString(),
+      // Track failed repos with reasons for easy debugging/retry
+      failedRepos: failedRepos.map(r => ({
+        name: r.name,
+        error: r.error.split('\n')[0] // First line only
+      })),
+      // Hint for users
+      resumeHint: failed > 0 ? 'Run /sw-github:clone or /sw-ado:clone again to retry. Already-cloned repos will be skipped.' : null
     }, null, 2));
 
     // Persist umbrella config to config.json (v0.31.0+)
@@ -290,9 +318,9 @@ async function main(): Promise<void> {
     }
 
     log(`Clone job completed: ${succeeded}/${repos.length} succeeded, ${failed} failed (${successRate.toFixed(1)}% success rate)`);
-    // Exit code 0 if success rate >= threshold, 1 otherwise
-    // This allows dependent jobs to proceed when most repos cloned successfully
-    process.exit(successRate >= JOB_SUCCESS_THRESHOLD ? 0 : 1);
+    // ALWAYS exit with code 0 - clone jobs never "fail" (v0.34.0+)
+    // Any failures are tracked as warnings, allowing easy resume
+    process.exit(0);
 
   } catch (error: any) {
     // Log error
