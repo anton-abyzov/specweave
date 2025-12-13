@@ -75,8 +75,8 @@ describe('JIRA 1-Level Grouping (v0.35.3+)', () => {
       const groups = groupItemsByExternalContainer(items, tempDir);
 
       expect(groups).toHaveLength(1);
-      expect(groups[0].projectId).toBe('id'); // Normalized projectKey
-      expect(groups[0].containerId).toBe('ID');
+      expect(groups[0].projectId).toBe('id'); // Normalized projectKey (lowercase)
+      expect(groups[0].containerId).toBe('id'); // containerId also normalized to lowercase
       expect(groups[0].containerType).toBe('jira');
     });
 
@@ -262,8 +262,8 @@ describe('JIRA 1-Level Grouping (v0.35.3+)', () => {
       const groups = groupItemsByExternalContainer(items, tempDir);
 
       // Uses projectKey (clean), not projectName (has special chars)
-      expect(groups[0].projectId).toBe('fe');
-      expect(groups[0].containerId).toBe('FE');
+      expect(groups[0].projectId).toBe('fe'); // Normalized to lowercase
+      expect(groups[0].containerId).toBe('fe'); // containerId also normalized to lowercase
     });
 
     it('should handle hyphenated project keys', () => {
@@ -273,8 +273,8 @@ describe('JIRA 1-Level Grouping (v0.35.3+)', () => {
       })];
       const groups = groupItemsByExternalContainer(items, tempDir);
 
-      expect(groups[0].projectId).toBe('my-project');
-      expect(groups[0].containerId).toBe('MY-PROJECT');
+      expect(groups[0].projectId).toBe('my-project'); // Normalized to lowercase
+      expect(groups[0].containerId).toBe('my-project'); // containerId also normalized to lowercase
     });
   });
 });
