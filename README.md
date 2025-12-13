@@ -4,7 +4,7 @@
 
 *Drop it into a 10-year-old codebase — it understands everything. Use it on your weekend MVP — specs write themselves. Scale it to 50 teams — JIRA, GitHub, Azure DevOps sync automatically.*
 
-[![NPM Version](https://img.shields.io/npm/v/specweave?color=brightgreen&label=v1.0.1)](https://www.npmjs.com/package/specweave)
+[![NPM Version](https://img.shields.io/npm/v/specweave?color=brightgreen&label=v1.0.2)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://github.com/anton-abyzov/specweave/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/anton-abyzov/specweave/actions/workflows/test.yml)
 [![Build](https://github.com/anton-abyzov/specweave/actions/workflows/build.yml/badge.svg?branch=develop)](https://github.com/anton-abyzov/specweave/actions/workflows/build.yml)
@@ -12,12 +12,12 @@
 [![YouTube](https://img.shields.io/badge/YouTube-Tutorials-red?logo=youtube&logoColor=white)](https://www.youtube.com/@antonabyzov)
 [![Run in Smithery](https://smithery.ai/badge/skills/anton-abyzov)](https://smithery.ai/skills?ns=anton-abyzov&utm_source=github&utm_medium=badge)
 
-> ### 🎉 v1.0.1 — Production Ready!
+> ### 🎉 v1.0.2 — Critical Bug Fix!
 > ```bash
 > npm install -g specweave
 > ```
-> **Highlights:** Multi-project support, GitHub/JIRA/Azure DevOps sync, 24 plugins, living docs, resilient background jobs.
-> [See release notes →](https://github.com/anton-abyzov/specweave/releases/tag/v1.0.1)
+> **Critical Fix:** GitHub private repos now properly fetched during init. Pattern matching (starts:, regex) works with private repos.
+> [See release notes →](https://github.com/anton-abyzov/specweave/releases/tag/v1.0.2)
 
 ---
 
