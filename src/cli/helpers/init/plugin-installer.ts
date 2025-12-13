@@ -242,13 +242,17 @@ async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void
     console.log(chalk.green('   ✔ Marketplace updated (latest from GitHub)'));
     spinner.succeed('SpecWeave marketplace ready');
   } else {
-    // Marketplace not registered - use ADD command
+    // Marketplace not registered - use ADD command with HTTPS URL
+    // CRITICAL (v0.35.3): Use full HTTPS URL, NOT owner/repo format!
+    // Claude CLI converts owner/repo to SSH URL (git@github.com:owner/repo.git)
+    // which fails for users without SSH keys configured.
+    // Using full HTTPS URL works for ALL users (public repo).
     spinner.text = 'Adding SpecWeave marketplace...';
     const addResult = execFileNoThrowSync('claude', [
       'plugin',
       'marketplace',
       'add',
-      'anton-abyzov/specweave'
+      'https://github.com/anton-abyzov/specweave'
     ]);
 
     if (!addResult.success) {
