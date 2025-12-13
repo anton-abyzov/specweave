@@ -162,9 +162,10 @@ async function fetchGitHubRepos(
 
         // Handle 404 (org not found) - try user repos instead
         if (response.status === 404) {
-          // Try as user instead of org
+          // CRITICAL: Use /user/repos (singular) to get authenticated user's private + public repos
+          // /users/{username}/repos only returns public repos even with authentication!
           const userResponse = await fetch(
-            `https://api.github.com/users/${encodeURIComponent(org)}/repos?per_page=${perPage}&page=${page}`,
+            `https://api.github.com/user/repos?per_page=${perPage}&page=${page}`,
             {
               headers: {
                 'Authorization': `Bearer ${pat}`,

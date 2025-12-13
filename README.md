@@ -6,6 +6,8 @@
 
 [![NPM Version](https://img.shields.io/npm/v/specweave?color=brightgreen&label=v1.0.1)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://github.com/anton-abyzov/specweave/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/anton-abyzov/specweave/actions/workflows/test.yml)
+[![Build](https://github.com/anton-abyzov/specweave/actions/workflows/build.yml/badge.svg?branch=develop)](https://github.com/anton-abyzov/specweave/actions/workflows/build.yml)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UYg4BGJ65V)
 [![YouTube](https://img.shields.io/badge/YouTube-Tutorials-red?logo=youtube&logoColor=white)](https://www.youtube.com/@antonabyzov)
 [![Run in Smithery](https://smithery.ai/badge/skills/anton-abyzov)](https://smithery.ai/skills?ns=anton-abyzov&utm_source=github&utm_medium=badge)
