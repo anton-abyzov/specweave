@@ -1,6 +1,6 @@
 {
   "name": "specweave-kafka",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Apache Kafka event streaming integration plugin for SpecWeave",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
