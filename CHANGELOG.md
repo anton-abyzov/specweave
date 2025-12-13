@@ -4,6 +4,28 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.2] - 2025-12-13
+
+### 🐛 Critical Bug Fix
+- **GitHub Private Repos**: Fix init failing to fetch private repositories
+  - Changed GitHub API endpoint from `/users/{username}/repos` to `/user/repos`
+  - `/users/{username}/repos` returns ONLY public repos even with authentication
+  - `/user/repos` returns all repos (public + private) for authenticated user
+  - **Impact**: Pattern matching (`starts:ec-`, `^ec-.*$`, etc.) now works with private repos
+  - **Root Cause**: Wrong API endpoint caused private repos to be excluded during multi-repo init
+  - Affects: Multi-repo init with private GitHub repositories
+
+### 🧪 Test Fixes
+- Fixed 3 JIRA grouping tests expecting uppercase `containerId`
+  - Production code correctly normalizes to lowercase via `normalizeToProjectId()`
+  - Updated test assertions to match actual behavior
+
+### 📝 Documentation
+- Added test status badges to README (Tests, Build)
+- Shows CI/CD pipeline health at a glance
+
+---
+
 ## [1.0.0-rc.1] - 2025-12-12
 
 ### 🎉 First Release Candidate for SpecWeave 1.0!
