@@ -19,7 +19,7 @@ function HomepageHeader() {
               ✨ 100% Free & Open Source Forever
             </div>
             <div className={styles.heroTag}>
-              ⚡ v1.0 Release Candidate
+              🚀 v1.0.1 Production Ready
             </div>
           </div>
           <Heading as="h1" className={styles.heroTitle}>
@@ -27,9 +27,9 @@ function HomepageHeader() {
             Start <span className={styles.heroHighlight}>Shipping</span>.
           </Heading>
           <p className={styles.heroSubtitle}>
-            <strong>One command. Production code.</strong> SpecWeave turns AI into autonomous agents
-            that write specs, tests, and docs—then builds your feature while you review.
-            <br/><strong>Works with Claude, Cursor, Copilot. Any stack. Any team size.</strong>
+            <strong>Three commands. Production code.</strong> SpecWeave turns AI into autonomous agents
+            that create specs, write tests, update docs—then build your feature while you review.
+            <br/><strong>Works on 10-year-old legacy AND fresh startups. Claude, Cursor, Copilot. Any stack.</strong>
           </p>
           <div className={styles.heroStats}>
             <div className={styles.stat}>
@@ -234,12 +234,12 @@ function ComparisonSection(): ReactNode {
           <div className={styles.comparisonColumn}>
             <h3>✅ With SpecWeave</h3>
             <ul>
-              <li>Type <code>/specweave:increment "feature"</code></li>
+              <li>Type <code>/sw:increment "feature"</code></li>
               <li>Autonomous agents ask clarifying questions, create spec/plan/tasks, review with you</li>
-              <li>Type <code>/specweave:do</code></li>
+              <li>Type <code>/sw:do</code></li>
               <li>Agents work in parallel, auto-resume, validate at milestones, update docs continuously</li>
-              <li>Type <code>/specweave:progress</code> anytime to see status</li>
-              <li>Type <code>/specweave:increment "next"</code> to seamlessly move forward</li>
+              <li>Type <code>/sw:progress</code> anytime to see status</li>
+              <li>Type <code>/sw:next</code> to seamlessly move forward</li>
             </ul>
             <p className={styles.comparisonResult}>
               <strong>Result:</strong> Minimal interaction, natural flow. Production-ready software with living documentation and full traceability.
