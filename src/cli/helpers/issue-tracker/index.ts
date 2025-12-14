@@ -333,7 +333,7 @@ async function writeSyncConfigHelper(
  * @returns True if setup completed successfully
  */
 export async function setupIssueTracker(options: SetupOptions): Promise<boolean> {
-  const { projectPath, language, maxRetries = 3, repositoryHosting, adoCredentialsFromRepoSetup, githubCredentialsFromRepoSetup } = options;
+  const { projectPath, language, maxRetries = 3, repositoryHosting, adoCredentialsFromRepoSetup, githubCredentialsFromRepoSetup, gitUrlFormat } = options;
   const locale = getLocaleManager(language);
 
   // Check if running in CI/non-interactive environment
@@ -471,8 +471,8 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
             const { configureGitHubRepositories } = await import('./github.js');
             // Pass the GitHub token for repository creation
             const githubToken = (credentials as any).token;
-            // Pass repositoryHosting to avoid duplicate prompts
-            const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken, repositoryHosting, githubCredentialsFromRepoSetup);
+            // Pass repositoryHosting and gitUrlFormat to avoid duplicate prompts (v1.0.8)
+            const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken, repositoryHosting, githubCredentialsFromRepoSetup, gitUrlFormat);
             repositoryProfiles = repoConfig.profiles;
             monorepoProjects = repoConfig.monorepoProjects;
           } catch (error: any) {
@@ -630,8 +630,8 @@ export async function setupIssueTracker(options: SetupOptions): Promise<boolean>
       const { configureGitHubRepositories } = await import('./github.js');
       // Pass the GitHub token for repository creation
       const githubToken = (credentials as any).token;
-      // Pass repositoryHosting to avoid duplicate prompts
-      const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken, repositoryHosting, githubCredentialsFromRepoSetup);
+      // Pass repositoryHosting and gitUrlFormat to avoid duplicate prompts (v1.0.8)
+      const repoConfig = await configureGitHubRepositories(projectPath, language, githubToken, repositoryHosting, githubCredentialsFromRepoSetup, gitUrlFormat);
       repositoryProfiles = repoConfig.profiles;
       monorepoProjects = repoConfig.monorepoProjects;
     } catch (error: any) {
