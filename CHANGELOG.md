@@ -4,6 +4,26 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.14] - 2025-12-14
+
+### 🐛 Critical Bug Fix
+
+#### GitHub Repo Filtering - Exclude Archived and Forked Repos
+- **Bug**: Phantom/stale repos appearing in "Select Parent Repository" dropdown (e.g., `ec-typescript` that doesn't exist)
+  - **Root Cause**: GitHub `/user/repos` API returns ALL repos including archived repos and forks that may no longer exist or be relevant
+  - **Symptom**: User sees repos in selection that are either archived (read-only/stale) or forks they created long ago
+  - **Fix**: Added filtering to exclude `repo.archived === true` and `repo.fork === true` from results
+  - **Impact**: Only active, non-forked repos owned by the target org/user are shown
+
+### 🔧 Technical Changes
+- `github-repo-cloning.ts`: Extended `GitHubRepository` interface with `archived`, `fork`, `private`, and `visibility` fields
+- `github-repo-cloning.ts`: Updated filtering logic to exclude archived and forked repos (v1.0.14 fix)
+- Combined with v1.0.12 owner filter: now filters by owner + not archived + not forked
+
+---
+
+
+
 ## [1.0.12] - 2025-12-14
 
 ### 🐛 Critical Bug Fixes
