@@ -4,6 +4,57 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.12] - 2025-12-14
+
+### 🐛 Critical Bug Fixes
+
+#### Living Docs Builder - Umbrella Project Analysis
+- **Bug #1: Umbrella repos not analyzed** - Fixed critical bug where umbrella/multi-repo projects only analyzed 1 repository instead of all child repos
+  - **Root Cause**: `discovery.umbrella.childRepos` was checked but doesn't exist - only `childRepoCount` exists on that interface
+  - **Symptom**: "Analyzing 1 repositories..." when 17 repos were cloned; empty module docs, no ADRs, sparse living docs
+  - **Fix**: Now correctly uses `discovery.modules` which already contains child repos from `convertReposToModules()`
+  - **Impact**: Umbrella projects now get full deep analysis of ALL child repositories
+
+#### Living Docs Builder - File Sampling Depth
+- **Bug #2: Shallow file sampling in deep-native mode** - Fixed issue where deep-native analysis only sampled 3 files per module
+  - **Root Cause**: Tier-based sampling (large tier = 3 files) was used even for deep analysis
+  - **Symptom**: "Files analyzed: 3" per module even with deep-native; minimal exports/dependencies detected
+  - **Fix**: Deep-native/deep-interactive modes now sample minimum 15 files per module
+  - **Impact**: Deep analysis now produces comprehensive module documentation
+
+#### Living Docs Builder - Duplicate Diagrams Folders
+- **Bug #3: Two separate `/diagrams/` folders** - Consolidated duplicate diagram locations
+  - **Root Cause**: Phase H (MermaidGenerator) created `/internal/diagrams/`, Phase D created `/internal/architecture/diagrams/`
+  - **Symptom**: Confusing folder structure, unclear where to find diagrams
+  - **Fix**: All diagrams now consolidated to `/internal/architecture/diagrams/`
+  - **Impact**: Single source of truth for all Mermaid diagrams
+
+#### ADR Detection - Empty Folder Guidance
+- **Bug #4: Empty ADR folder with no guidance** - Added helpful template when no ADRs detected
+  - **Root Cause**: When no patterns found, ADR folder was created but empty
+  - **Fix**: Now generates helpful index explaining why no ADRs and how to create them manually
+  - **Impact**: Users understand why folder is empty and have clear next steps
+
+### 🐛 Previous Bug Fix (GitHub Repo Cloning)
+- **GitHub Repo Cloning - Cross-Organization Leak**: Fixed phantom repos from other organizations being included during multi-repo init
+  - **Root Cause**: The `/user/repos` API returns ALL repos the user has access to (including repos from other orgs where user is a member)
+  - **Symptom**: Clone job includes repos like `stainless-sdks/ec-typescript` when user only wanted `anton-abyzov/ec-*` repos
+  - **Impact**: Clone failures for repos that don't exist under the target owner; phantom profiles created in config.json
+  - **Solution**: Filter API results to only include repos where `owner.login` matches the target org/user
+  - **Additional Safety**: Clone URLs now use actual repo owner from API response instead of user-provided org name
+  - Affects: Multi-repo init when user has access to repos from multiple GitHub organizations
+
+### 🔧 Technical Changes
+- `living-docs-worker.ts`: Fixed repo list building for intelligent analysis to use `discovery.modules`
+- `living-docs-worker.ts`: Added `effectiveSamplingConfig` with 15 files min for deep modes
+- `mermaid-generator.ts`: Changed output path from `/internal/diagrams/` to `/internal/architecture/diagrams/`
+- `architecture-generator.ts`: Added comprehensive "No ADRs Detected" section with manual creation template
+- Added `owner` field to `GitHubRepository` interface to capture actual repository owner from API
+- Added post-fetch filter: `batch.filter(repo => repo.owner.login.toLowerCase() === org.toLowerCase())`
+- Changed clone URL builder to use `r.owner.login` instead of `org` parameter
+
+---
+
 ## [1.0.5] - 2025-12-13
 
 ### 🐛 Bug Fix (Complete Solution)

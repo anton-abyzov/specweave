@@ -59,12 +59,17 @@ export class MermaidGenerator {
 
   /**
    * Generate all diagrams
+   *
+   * CRITICAL FIX (v1.0.12): Consolidated to single diagrams folder at
+   * /internal/architecture/diagrams/ instead of creating duplicate /internal/diagrams/
+   * This prevents confusion and ensures all diagrams are in one location.
    */
   async generate(): Promise<MermaidGenerationResult> {
     const diagrams: MermaidDiagram[] = [];
     const savedFiles: string[] = [];
 
-    const diagramsPath = path.join(this.options.projectPath, '.specweave/docs/internal/diagrams');
+    // FIXED: Use architecture/diagrams to consolidate with Phase D output
+    const diagramsPath = path.join(this.options.projectPath, '.specweave/docs/internal/architecture/diagrams');
     fs.mkdirSync(diagramsPath, { recursive: true });
 
     // Generate feature hierarchy diagram

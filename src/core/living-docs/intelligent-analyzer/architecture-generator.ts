@@ -603,6 +603,43 @@ export async function saveArchitecture(
   indexLines.push(`- **Detected ADRs**: ${result.detectedAdrs.length}`);
   indexLines.push(`- **Total**: ${result.existingAdrs.length + result.detectedAdrs.length}`);
 
+  // Add helpful guidance when no ADRs detected (v1.0.12)
+  if (result.existingAdrs.length === 0 && result.detectedAdrs.length === 0) {
+    indexLines.push('');
+    indexLines.push('## No ADRs Detected');
+    indexLines.push('');
+    indexLines.push('No architectural decisions were automatically detected. This can happen when:');
+    indexLines.push('');
+    indexLines.push('1. **No consistent patterns** - Patterns need to appear in 2+ repositories or have high confidence');
+    indexLines.push('2. **New project** - Not enough code to infer architectural decisions');
+    indexLines.push('3. **Shallow analysis** - Try running with `--full-scan` for deeper analysis');
+    indexLines.push('');
+    indexLines.push('### Create ADRs Manually');
+    indexLines.push('');
+    indexLines.push('To document architectural decisions, create files in `adr/` following this template:');
+    indexLines.push('');
+    indexLines.push('```markdown');
+    indexLines.push('# 0001-decision-title');
+    indexLines.push('');
+    indexLines.push('**Status**: Accepted | Proposed | Deprecated | Superseded');
+    indexLines.push('**Date**: YYYY-MM-DD');
+    indexLines.push('');
+    indexLines.push('## Context');
+    indexLines.push('What is the issue that we\'re seeing that is motivating this decision?');
+    indexLines.push('');
+    indexLines.push('## Decision');
+    indexLines.push('What is the change that we\'re proposing and/or doing?');
+    indexLines.push('');
+    indexLines.push('## Consequences');
+    indexLines.push('What becomes easier or more difficult because of this change?');
+    indexLines.push('```');
+    indexLines.push('');
+    indexLines.push('Place ADR files in common locations for automatic detection:');
+    indexLines.push('- `docs/adr/`');
+    indexLines.push('- `architecture/decisions/`');
+    indexLines.push('- `adr/`');
+  }
+
   const indexFile = path.join(archPath, 'adr-index.md');
   fs.writeFileSync(indexFile, indexLines.join('\n'));
   savedFiles.push(indexFile);
