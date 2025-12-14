@@ -575,15 +575,20 @@ export async function initCommand(
       }
 
       // GitHub Repository cloning (for multi-repo setups) - v0.32.7+
+      // v1.0.9: Capture cloned repo names for 1:1 project mapping in issue tracker
+      // v1.0.10: Pass gitUrlFormat to use SSH or HTTPS as user selected
+      let githubClonedRepos: string[] = [];
       if (repoResult.githubRepoSelection && repoResult.adoClonePatternResult) {
-        const cloneJobId = await triggerGitHubRepoCloning(
+        const cloningResult = await triggerGitHubRepoCloning(
           targetDir,
           repoResult.githubRepoSelection,
-          repoResult.adoClonePatternResult
+          repoResult.adoClonePatternResult,
+          repoResult.gitUrlFormat || 'https'
         );
-        if (cloneJobId) {
-          pendingJobIds.push(cloneJobId);
+        if (cloningResult.jobId) {
+          pendingJobIds.push(cloningResult.jobId);
         }
+        githubClonedRepos = cloningResult.clonedRepos;
       }
 
       // Bitbucket Repository cloning (for multi-repo setups) - v0.32.7+
@@ -602,7 +607,14 @@ export async function initCommand(
       const isFrameworkRepo = await isSpecWeaveFrameworkRepo(targetDir);
 
       // Extract GitHub repository selection to avoid duplicate prompts (v1.0.4)
-      const githubRepoSelection = repoResult.githubRepoSelection;
+      // v1.0.9: Include cloned repos for 1:1 project mapping (skips "How do you want to configure repositories?")
+      const githubRepoSelection = repoResult.githubRepoSelection
+        ? {
+            org: repoResult.githubRepoSelection.org,
+            pat: repoResult.githubRepoSelection.pat,
+            clonedRepos: githubClonedRepos
+          }
+        : undefined;
 
       await setupIssueTrackerWrapper(
         targetDir,
@@ -874,7 +886,7 @@ async function setupIssueTrackerWrapper(
   repositoryHosting: RepositoryHosting,
   isCI: boolean,
   adoProjectSelection?: { org: string; pat: string; projects: string[] },
-  githubCredentialsFromRepoSetup?: { org: string; pat: string },
+  githubCredentialsFromRepoSetup?: { org: string; pat: string; clonedRepos?: string[] },
   gitUrlFormat?: 'ssh' | 'https'
 ): Promise<void> {
   try {
