@@ -376,9 +376,45 @@ export async function configureGitHubRepositories(
 
     // v1.0.9: If cloned repos are provided, ask for parent repo selection, then create profiles
     // v1.0.10: Added parent repo selection for multi-repo setups (aligned with multi-repo-configurator.ts)
+    // v1.0.11: CRITICAL FIX - Prompt for PAT if missing (SSH flow) since GitHub Issues API requires it
     if (clonedRepos && clonedRepos.length > 0) {
       console.log(chalk.cyan('\n📂 Using Cloned GitHub Repositories\n'));
       console.log(chalk.green(`   ✓ ${clonedRepos.length} repositories cloned`));
+
+      // CRITICAL (v1.0.11): If PAT is missing (SSH flow), prompt for it NOW
+      // GitHub Issues API requires authentication for private repos
+      let effectivePat = pat;
+      if (!effectivePat) {
+        console.log(chalk.yellow('\n⚠️  GitHub Personal Access Token (PAT) Required\n'));
+        console.log(chalk.gray('   You used SSH for cloning, but GitHub Issues API requires a PAT.'));
+        console.log(chalk.gray('   The PAT needs "repo" scope to access issues in private repositories.\n'));
+
+        effectivePat = await password({
+          message: 'GitHub Personal Access Token (PAT):',
+          mask: '*',
+          validate: (val: string) => {
+            if (!val.trim()) return 'PAT is required for GitHub Issues integration';
+            if (val.length < 20) return 'Token appears too short - please check';
+            return true;
+          }
+        });
+
+        // Save PAT to .env file immediately so it persists
+        const { writeEnvFile, readEnvFile, parseEnvFile } = await import('../../../utils/env-file.js');
+        const existingEnv = readEnvFile(projectPath) || '';
+        const parsed = parseEnvFile(existingEnv);
+
+        // Use GH_TOKEN (preferred) if no token exists, or update existing
+        if (!parsed.GH_TOKEN && !parsed.GITHUB_TOKEN) {
+          const updatedEnv = existingEnv.trim()
+            ? `${existingEnv.trim()}\nGH_TOKEN=${effectivePat}\n`
+            : `GH_TOKEN=${effectivePat}\n`;
+          writeEnvFile(projectPath, updatedEnv);
+          console.log(chalk.green('\n   ✓ PAT saved to .env file (GH_TOKEN)\n'));
+        } else {
+          console.log(chalk.gray('\n   ℹ️  Using existing token from .env\n'));
+        }
+      }
 
       // Ask user which repository is the parent (same format as multi-repo-configurator.ts:169-186)
       console.log(chalk.cyan('\n Select Parent Repository\n'));

@@ -1084,7 +1084,7 @@ See ADR-0194 for full architecture decision.
 ```bash
 npm run rebuild     # Clean + build (tsc → dist/, esbuild → hooks)
 npm test            # Smoke tests
-npm run test:all    # All tests (80%+ coverage required)
+npm run test:all    # All tests (30%+ coverage required)
 ```
 
 **Plugin validation**: `bash scripts/validation/validate-marketplace-plugins.sh`
