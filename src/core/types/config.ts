@@ -140,20 +140,31 @@ export interface ProjectConfig {
 
 /**
  * Testing mode options
+ * - TDD: Write tests first (mission-critical systems)
+ * - test-after: Implement first, test later (recommended for most)
+ * - manual: Test when needed, no strict rules (flexible for startups/MVPs)
+ * - none: Skip testing entirely (hackathons, experiments, prototypes)
+ *
+ * NOTE: This setting is advisory - stored in config but NOT strictly enforced
+ * by quality gates (QualityGateDecider has hardcoded thresholds).
+ * Use metadata.json per-increment override for project-specific needs.
  */
-export type TestMode = 'TDD' | 'test-after' | 'manual';
+export type TestMode = 'TDD' | 'test-after' | 'manual' | 'none';
 
 /**
  * Coverage target configuration
+ *
+ * NOTE: These are advisory targets - 0 means "no tracking".
+ * Quality gates have separate hardcoded thresholds (60% fail, 80% concerns).
  */
 export interface CoverageTargets {
-  /** Unit test coverage target (70-95%) */
+  /** Unit test coverage target (0-100%, 0 = no tracking) */
   unit: number;
 
-  /** Integration test coverage target (70-95%) */
+  /** Integration test coverage target (0-100%, 0 = no tracking) */
   integration: number;
 
-  /** E2E test coverage target (70-95%) */
+  /** E2E test coverage target (0-100%, 0 = no tracking) */
   e2e: number;
 }
 
@@ -161,13 +172,20 @@ export interface CoverageTargets {
  * Testing configuration
  *
  * Controls default testing approach and coverage targets for all increments.
- * Can be overridden per-increment via frontmatter.
+ * Can be overridden per-increment via metadata.json or spec.md frontmatter.
+ *
+ * NOTE (Reality Check): These settings are ADVISORY, not enforced:
+ * - QualityGateDecider uses hardcoded thresholds (60% fail, 80% concerns)
+ * - PM Agent reads these to generate metadata.json
+ * - /sw:done validates AC coverage (100% required) but not code coverage
+ *
+ * To actually enforce coverage, configure your CI/CD (jest --coverageThreshold).
  */
 export interface TestingConfig {
   /** Default testing mode for new increments */
   defaultTestMode: TestMode;
 
-  /** Default overall coverage target (70-95%) */
+  /** Default overall coverage target (0-100%, 0 = no tracking) */
   defaultCoverageTarget: number;
 
   /** Specific coverage targets per test type */
@@ -452,11 +470,11 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
   },
   testing: {
     defaultTestMode: 'test-after',
-    defaultCoverageTarget: 80,
+    defaultCoverageTarget: 50,  // Realistic default (v1.0.9+) - 0 = no tracking
     coverageTargets: {
-      unit: 85,
-      integration: 80,
-      e2e: 90,
+      unit: 55,     // Slightly higher for units
+      integration: 50,
+      e2e: 60,      // E2E covers critical paths
     },
   },
   limits: {
