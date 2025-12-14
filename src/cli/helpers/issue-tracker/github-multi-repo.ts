@@ -108,8 +108,12 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
     }
   }
 
-  console.log(chalk.cyan('\n📂 Repository Configuration\n'));
-  console.log(chalk.gray('How should we configure your GitHub repositories?\n'));
+  // CRITICAL (v1.0.5): Skip duplicate messages when architecture is pre-selected
+  // This prevents showing "Repository Configuration" again after user already answered
+  if (!preSelectedArchitecture) {
+    console.log(chalk.cyan('\n📂 Repository Configuration\n'));
+    console.log(chalk.gray('How should we configure your GitHub repositories?\n'));
+  }
 
   // If we have projectPath and token, TRY to use RepoStructureManager for enhanced flow
   // P1-2 FIX: Split large try-catch into granular error handling for better debugging
