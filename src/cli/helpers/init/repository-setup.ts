@@ -119,11 +119,18 @@ export interface BitbucketRepoSelection {
 }
 
 /**
+ * Git URL format type (v1.0.7+)
+ */
+export type GitUrlFormat = 'ssh' | 'https';
+
+/**
  * Result of repository setup
  */
 export interface RepositorySetupResult {
   hosting: RepositoryHosting;
   isMultiRepo: boolean;
+  /** Git URL format preference (SSH or HTTPS) - v1.0.7+ */
+  gitUrlFormat?: GitUrlFormat;
   /** Repo clone pattern for multi-repo (e.g., "sw-*") - works for ADO, GitHub, Bitbucket */
   adoClonePattern?: string;
   /** Clone pattern details */
@@ -448,6 +455,12 @@ function getRepoStrings(language: SupportedLanguage): {
   bitbucketUsernamePrompt: string;
   bitbucketAppPasswordPrompt: string;
   bitbucketSelected: string;
+  // Git URL format prompt (v1.0.7+)
+  gitUrlFormatQuestion: string;
+  gitUrlFormatSsh: string;
+  gitUrlFormatHttps: string;
+  gitUrlFormatSshDesc: string;
+  gitUrlFormatHttpsDesc: string;
 } {
   const strings: Record<SupportedLanguage, ReturnType<typeof getRepoStrings>> = {
     en: {
@@ -509,6 +522,12 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketUsernamePrompt: 'Bitbucket username:',
       bitbucketAppPasswordPrompt: 'Bitbucket App Password:',
       bitbucketSelected: 'Bitbucket workspace "{workspace}" configured for cloning',
+      // Git URL format (v1.0.7+)
+      gitUrlFormatQuestion: 'Git remote URL format?',
+      gitUrlFormatSsh: 'SSH',
+      gitUrlFormatHttps: 'HTTPS',
+      gitUrlFormatSshDesc: 'git@github.com:org/repo.git (requires SSH key)',
+      gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (uses PAT for auth)',
     },
     ru: {
       header: '📦 Хостинг репозитория',
@@ -568,6 +587,12 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketUsernamePrompt: 'Имя пользователя Bitbucket:',
       bitbucketAppPasswordPrompt: 'App Password Bitbucket:',
       bitbucketSelected: 'Workspace Bitbucket "{workspace}" настроен для клонирования',
+      // Git URL format (v1.0.7+)
+      gitUrlFormatQuestion: 'Формат URL Git-репозитория?',
+      gitUrlFormatSsh: 'SSH',
+      gitUrlFormatHttps: 'HTTPS',
+      gitUrlFormatSshDesc: 'git@github.com:org/repo.git (требуется SSH-ключ)',
+      gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (использует PAT для авторизации)',
     },
     es: {
       header: '📦 Alojamiento del repositorio',
@@ -627,6 +652,12 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketUsernamePrompt: 'Nombre de usuario de Bitbucket:',
       bitbucketAppPasswordPrompt: 'Contraseña de aplicación de Bitbucket:',
       bitbucketSelected: 'Workspace de Bitbucket "{workspace}" configurado para clonar',
+      // Git URL format (v1.0.7+)
+      gitUrlFormatQuestion: '¿Formato de URL del repositorio Git?',
+      gitUrlFormatSsh: 'SSH',
+      gitUrlFormatHttps: 'HTTPS',
+      gitUrlFormatSshDesc: 'git@github.com:org/repo.git (requiere clave SSH)',
+      gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (usa PAT para autenticación)',
     },
     zh: {
       header: '📦 仓库托管',
@@ -686,6 +717,12 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketUsernamePrompt: 'Bitbucket 用户名：',
       bitbucketAppPasswordPrompt: 'Bitbucket 应用密码：',
       bitbucketSelected: 'Bitbucket 工作区 "{workspace}" 已配置用于克隆',
+      // Git URL format (v1.0.7+)
+      gitUrlFormatQuestion: 'Git 远程 URL 格式？',
+      gitUrlFormatSsh: 'SSH',
+      gitUrlFormatHttps: 'HTTPS',
+      gitUrlFormatSshDesc: 'git@github.com:org/repo.git（需要 SSH 密钥）',
+      gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git（使用 PAT 进行身份验证）',
     },
     de: {
       header: '📦 Repository-Hosting',
@@ -745,6 +782,12 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketUsernamePrompt: 'Bitbucket-Benutzername:',
       bitbucketAppPasswordPrompt: 'Bitbucket-App-Passwort:',
       bitbucketSelected: 'Bitbucket-Workspace "{workspace}" für Klonen konfiguriert',
+      // Git URL format (v1.0.7+)
+      gitUrlFormatQuestion: 'Git Remote URL Format?',
+      gitUrlFormatSsh: 'SSH',
+      gitUrlFormatHttps: 'HTTPS',
+      gitUrlFormatSshDesc: 'git@github.com:org/repo.git (erfordert SSH-Schlüssel)',
+      gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (verwendet PAT für Auth)',
     },
     fr: {
       header: '📦 Hébergement du dépôt',
@@ -804,6 +847,12 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketUsernamePrompt: 'Nom d\'utilisateur Bitbucket :',
       bitbucketAppPasswordPrompt: 'Mot de passe d\'application Bitbucket :',
       bitbucketSelected: 'Workspace Bitbucket "{workspace}" configuré pour le clonage',
+      // Git URL format (v1.0.7+)
+      gitUrlFormatQuestion: 'Format d\'URL du dépôt Git ?',
+      gitUrlFormatSsh: 'SSH',
+      gitUrlFormatHttps: 'HTTPS',
+      gitUrlFormatSshDesc: 'git@github.com:org/repo.git (nécessite une clé SSH)',
+      gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (utilise PAT pour l\'auth)',
     },
     ja: {
       header: '📦 リポジトリホスティング',
@@ -863,6 +912,12 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketUsernamePrompt: 'Bitbucketユーザー名：',
       bitbucketAppPasswordPrompt: 'Bitbucketアプリパスワード：',
       bitbucketSelected: 'Bitbucketワークスペース "{workspace}" がクローン用に設定されました',
+      // Git URL format (v1.0.7+)
+      gitUrlFormatQuestion: 'GitリモートURLの形式は？',
+      gitUrlFormatSsh: 'SSH',
+      gitUrlFormatHttps: 'HTTPS',
+      gitUrlFormatSshDesc: 'git@github.com:org/repo.git（SSHキーが必要）',
+      gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git（認証にPATを使用）',
     },
     ko: {
       header: '📦 저장소 호스팅',
@@ -922,6 +977,12 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketUsernamePrompt: 'Bitbucket 사용자 이름:',
       bitbucketAppPasswordPrompt: 'Bitbucket 앱 비밀번호:',
       bitbucketSelected: 'Bitbucket 워크스페이스 "{workspace}"이(가) 복제용으로 구성되었습니다',
+      // Git URL format (v1.0.7+)
+      gitUrlFormatQuestion: 'Git 원격 URL 형식?',
+      gitUrlFormatSsh: 'SSH',
+      gitUrlFormatHttps: 'HTTPS',
+      gitUrlFormatSshDesc: 'git@github.com:org/repo.git (SSH 키 필요)',
+      gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (인증에 PAT 사용)',
     },
     pt: {
       header: '📦 Hospedagem do repositório',
@@ -981,6 +1042,12 @@ function getRepoStrings(language: SupportedLanguage): {
       bitbucketUsernamePrompt: 'Nome de usuário do Bitbucket:',
       bitbucketAppPasswordPrompt: 'Senha de aplicativo do Bitbucket:',
       bitbucketSelected: 'Workspace do Bitbucket "{workspace}" configurado para clonagem',
+      // Git URL format (v1.0.7+)
+      gitUrlFormatQuestion: 'Formato de URL do repositório Git?',
+      gitUrlFormatSsh: 'SSH',
+      gitUrlFormatHttps: 'HTTPS',
+      gitUrlFormatSshDesc: 'git@github.com:org/repo.git (requer chave SSH)',
+      gitUrlFormatHttpsDesc: 'https://github.com/org/repo.git (usa PAT para autenticação)',
     },
   };
   return strings[language] || strings.en;
@@ -1154,7 +1221,7 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
     message: strings.providerQuestion,
     choices: [
       {
-        name: `🐙 ${strings.github} ${gitHubRemote ? strings.githubDetected : strings.githubRecommended}`,
+        name: `🐙 ${strings.github}${gitHubRemote ? ` ${strings.githubDetected}` : ''}`,
         value: 'github' as const
       },
       {
@@ -1182,6 +1249,26 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
     repositoryHosting = 'local';
   } else {
     repositoryHosting = `${provider}-${structure}` as RepositoryHosting;
+  }
+
+  // Step 2b: Ask about git URL format (SSH or HTTPS) for remote providers (v1.0.7+)
+  let gitUrlFormat: GitUrlFormat | undefined;
+  if (provider !== 'local' && provider !== 'other') {
+    const urlFormat = await select<GitUrlFormat>({
+      message: strings.gitUrlFormatQuestion,
+      choices: [
+        {
+          name: `🔑 ${strings.gitUrlFormatSsh} ${chalk.gray(`- ${strings.gitUrlFormatSshDesc}`)}`,
+          value: 'ssh' as const
+        },
+        {
+          name: `🔗 ${strings.gitUrlFormatHttps} ${chalk.gray(`- ${strings.gitUrlFormatHttpsDesc}`)}`,
+          value: 'https' as const
+        }
+      ],
+      default: 'ssh'  // SSH is recommended for development
+    });
+    gitUrlFormat = urlFormat;
   }
 
   // Step 3: For multi-repo setups, prompt for pattern selection
@@ -1246,6 +1333,7 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
   return {
     hosting: repositoryHosting,
     isMultiRepo,
+    gitUrlFormat,
     adoClonePattern,
     adoClonePatternResult,
     adoProjectSelection,

@@ -86,8 +86,14 @@ export class RepoStructureManager {
    * Prompt user for repository structure decisions
    *
    * @param preSelectedArchitecture - Optional pre-selected architecture to skip duplicate prompts
+   * @param preSelectedPlatform - Optional pre-selected platform to skip duplicate prompts (v1.0.7)
+   * @param preSelectedUrlType - Optional pre-selected URL type to skip duplicate prompts (v1.0.7)
    */
-  async promptStructure(preSelectedArchitecture?: ArchitectureChoice): Promise<RepoStructureConfig> {
+  async promptStructure(
+    preSelectedArchitecture?: ArchitectureChoice,
+    preSelectedPlatform?: GitPlatformType,
+    preSelectedUrlType?: 'ssh' | 'https'
+  ): Promise<RepoStructureConfig> {
     // CRITICAL (v1.0.5): Skip header when architecture is pre-selected (already shown in repo setup)
     if (!preSelectedArchitecture) {
       console.log(chalk.cyan.bold('\n🏗️  Repository Architecture Setup\n'));
@@ -134,45 +140,70 @@ export class RepoStructureManager {
       });
     }
 
-    // Step 2: Ask about Git hosting platform
+    // Step 2: Ask about Git hosting platform (SKIP if pre-selected - v1.0.7)
     const registry = getPlatformRegistry();
-    const platformOptions = registry.getPlatformOptions(true); // Include unsupported platforms
-    const platformPromptData = getPlatformSelectionPrompt();
+    let platform: GitPlatformType;
+    let provider: GitProvider;
 
-    console.log(chalk.cyan('\n' + platformPromptData.message));
+    if (preSelectedPlatform) {
+      // Platform already selected (e.g., user chose GitHub for repos AND GitHub Issues)
+      platform = preSelectedPlatform;
+      const resolvedProvider = registry.getProvider(platform);
+      if (!resolvedProvider) {
+        throw new Error(`Platform ${platform} is not available. This should not happen!`);
+      }
+      provider = resolvedProvider;
+      console.log(chalk.green(`✓ Using ${provider.config.name} as Git hosting platform\n`));
+    } else {
+      // Ask user for platform choice
+      const platformOptions = registry.getPlatformOptions(true); // Include unsupported platforms
+      const platformPromptData = getPlatformSelectionPrompt();
 
-    const platform = await select({
-      message: platformPromptData.question,
-      choices: platformOptions.map(opt => ({
-        name: opt.disabled
-          ? `${opt.name}\n${chalk.gray(opt.description)}\n${chalk.yellow('⚠️  ' + opt.disabled)}`
-          : `${opt.name}\n${chalk.gray(opt.description)}`,
-        value: opt.value,
-        disabled: opt.disabled ? opt.disabled : false
-      })),
-      default: 'github'
-    });
+      console.log(chalk.cyan('\n' + platformPromptData.message));
 
-    // Get provider instance
-    const provider = registry.getProvider(platform as GitPlatformType);
-    if (!provider) {
-      throw new Error(`Platform ${platform} is not available. This should not happen!`);
+      platform = await select({
+        message: platformPromptData.question,
+        choices: platformOptions.map(opt => ({
+          name: opt.disabled
+            ? `${opt.name}\n${chalk.gray(opt.description)}\n${chalk.yellow('⚠️  ' + opt.disabled)}`
+            : `${opt.name}\n${chalk.gray(opt.description)}`,
+          value: opt.value,
+          disabled: opt.disabled ? opt.disabled : false
+        })),
+        default: 'github'
+      }) as GitPlatformType;
+
+      // Get provider instance
+      const resolvedProvider = registry.getProvider(platform);
+      if (!resolvedProvider) {
+        throw new Error(`Platform ${platform} is not available. This should not happen!`);
+      }
+      provider = resolvedProvider;
+
+      console.log(chalk.green(`\n✓ Using ${provider.config.name} as Git hosting platform\n`));
     }
 
-    console.log(chalk.green(`\n✓ Using ${provider.config.name} as Git hosting platform\n`));
+    // Step 3: Ask about Git remote URL format (SKIP if pre-selected - v1.0.7)
+    let urlType: 'ssh' | 'https';
 
-    // Step 3: Ask about Git remote URL format (SSH vs HTTPS)
-    const urlTypePromptData = getUrlTypePrompt();
-    const urlType = await select({
-      message: urlTypePromptData.question,
-      choices: urlTypePromptData.options.map(opt => ({
-        name: `${opt.label}\n${chalk.gray(opt.description)}`,
-        value: opt.value
-      })),
-      default: urlTypePromptData.default
-    });
+    if (preSelectedUrlType) {
+      // URL type already selected
+      urlType = preSelectedUrlType;
+      console.log(chalk.green(`✓ Using ${urlType.toUpperCase()} remote URLs\n`));
+    } else {
+      // Ask user for URL type choice
+      const urlTypePromptData = getUrlTypePrompt();
+      urlType = await select({
+        message: urlTypePromptData.question,
+        choices: urlTypePromptData.options.map(opt => ({
+          name: `${opt.label}\n${chalk.gray(opt.description)}`,
+          value: opt.value
+        })),
+        default: urlTypePromptData.default
+      }) as 'ssh' | 'https';
 
-    console.log(chalk.green(`\n✓ Using ${urlType.toUpperCase()} remote URLs\n`));
+      console.log(chalk.green(`\n✓ Using ${urlType.toUpperCase()} remote URLs\n`));
+    }
 
     // Map ArchitectureChoice to internal architecture
     const mappedArch = this.mapArchitectureChoice(architecture as ArchitectureChoice);
