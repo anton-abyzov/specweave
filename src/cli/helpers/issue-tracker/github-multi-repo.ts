@@ -123,8 +123,10 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
     // Step 1: Prompt for repository structure
     let config;
     try {
-      // 🔥 FIX: Pass preSelectedArchitecture to avoid duplicate prompts!
-      config = await manager.promptStructure(preSelectedArchitecture);
+      // 🔥 FIX (v1.0.7): Pass preSelectedArchitecture AND platform 'github' to avoid duplicate prompts!
+      // When this function is called from GitHub issue tracker setup, GitHub was already selected as platform
+      // So we pass 'github' as preSelectedPlatform to skip the "Select your Git hosting platform" question
+      config = await manager.promptStructure(preSelectedArchitecture, 'github', undefined);
     } catch (error: any) {
       console.log(chalk.yellow('\n⚠️  Failed to prompt repository structure'));
       console.log(chalk.gray(`   Error: ${error.message || 'Unknown error'}`));

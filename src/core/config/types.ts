@@ -14,6 +14,11 @@ import type { SyncOrchestrationConfig } from '../types/sync-config.js';
 export type RepositoryProvider = 'local' | 'github' | 'bitbucket' | 'ado' | 'gitlab' | 'generic';
 
 /**
+ * Git URL format types (v1.0.7+)
+ */
+export type GitUrlFormat = 'ssh' | 'https';
+
+/**
  * Issue tracker provider types
  */
 export type IssueTrackerProvider = 'none' | 'jira' | 'github' | 'ado';
@@ -69,6 +74,8 @@ export interface RepositoryConfiguration {
   provider: RepositoryProvider;
   organization?: string;
   repos?: RepoConfig[];
+  /** Git URL format preference (SSH or HTTPS) - v1.0.7+ */
+  gitUrlFormat?: GitUrlFormat;
 }
 
 /**
