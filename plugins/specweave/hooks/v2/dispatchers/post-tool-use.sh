@@ -60,6 +60,19 @@ case "$FILE_PATH" in
     ;;
 
   */.specweave/increments/*/tasks.md|*/.specweave/increments/*/spec.md)
+    # ============================================================================
+    # TASK-AC SYNC (v0.35.2+): Sync task completion to spec.md ACs
+    # ============================================================================
+    # When tasks.md is edited, sync completed task ACs to spec.md BEFORE
+    # the us-completion-detector runs (so it sees consistent state)
+    #
+    # Flow: tasks.md edit → task-ac-sync → spec.md updated → us-completion-detector
+    # This ensures ACs in spec.md are always in sync with tasks.md
+    if [[ "$FILE_PATH" == *tasks.md ]]; then
+      SYNC_SCRIPT="$HOOK_DIR/guards/task-ac-sync-guard.sh"
+      [[ -f "$SYNC_SCRIPT" ]] && echo "$INPUT" | bash "$SYNC_SCRIPT" 2>/dev/null
+    fi
+
     # Tasks or spec changed -> check for US completion
     # Events: user-story.completed, user-story.reopened
     bash "$DETECTOR_DIR/us-completion-detector.sh" "$INC_ID" 2>/dev/null &

@@ -77,6 +77,48 @@ MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
 // Only succeeds if current status is "ready_for_review"
 ```
 
+### 2b-bis. Task-AC Auto-Sync (EDA v0.35.2+)
+
+**When you mark a task complete in tasks.md, THREE things are AUTO-UPDATED!**
+
+```
+FLOW (fully automatic via EDA hooks):
+1. Edit tasks.md: **Status**: [ ] pending → **Status**: [x] completed
+2. Hook auto-checks ALL **Acceptance** points in that task: - [ ] → - [x]
+3. Hook extracts AC tags from task: **Satisfies ACs**: AC-US1-01, AC-US1-02
+4. Hook auto-updates spec.md: - [ ] **AC-US1-01** → - [x] **AC-US1-01**
+5. When ALL tasks complete → auto-transitions status to "ready_for_review"
+6. User runs /sw:done → PM validation → status becomes "completed"
+```
+
+**This EDA flow ensures:**
+- ✅ Task **Acceptance** checkboxes auto-checked when task completed
+- ✅ spec.md ACs always match tasks.md completion status
+- ✅ No manual checkbox updates needed (task or spec level)
+- ✅ Auto-transition to `ready_for_review` when all tasks done
+- ✅ Manual `/sw:done` still required for final closure (PM gate preserved)
+
+**Example (automatic transformation):**
+```markdown
+# BEFORE: Mark task complete
+### T-001: Implement Feature
+**Acceptance**:
+- [ ] Code compiles              ← Will be auto-checked!
+- [ ] Tests pass                 ← Will be auto-checked!
+**Status**: [x] completed        ← You only edit this line
+
+# AFTER: Hook runs automatically
+### T-001: Implement Feature
+**Acceptance**:
+- [x] Code compiles              ← Auto-checked by hook
+- [x] Tests pass                 ← Auto-checked by hook
+**Status**: [x] completed
+```
+
+**Hook chain**: `post-tool-use.sh` → `task-ac-sync-guard.sh` → `us-completion-detector.sh`
+
+**Log location**: `.specweave/logs/task-ac-sync.log`
+
 ### 2c. Per-US **Project**: Fields are MANDATORY (ADR-0140, v0.35.0+)
 
 **⛔ EVERY User Story MUST have `**Project**:` field - NO EXCEPTIONS!**
