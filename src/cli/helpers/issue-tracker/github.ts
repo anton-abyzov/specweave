@@ -357,6 +357,8 @@ export function showGitHubSetupSkipped(language: SupportedLanguage): void {
  * @param language - User's language
  * @param githubToken - Optional GitHub token for repository creation
  * @param repositoryHosting - Optional repository hosting choice from init.ts (prevents duplicate prompts)
+ * @param githubCredentialsFromRepoSetup - Optional GitHub credentials from repository setup
+ * @param gitUrlFormat - Optional Git URL format from repository setup (SSH or HTTPS) - v1.0.8+
  * @returns Repository profiles
  */
 export async function configureGitHubRepositories(
@@ -364,7 +366,8 @@ export async function configureGitHubRepositories(
   language: SupportedLanguage,
   githubToken?: string,
   repositoryHosting?: string,
-  githubCredentialsFromRepoSetup?: { org: string; pat: string }
+  githubCredentialsFromRepoSetup?: { org: string; pat: string },
+  gitUrlFormat?: 'ssh' | 'https'
 ): Promise<{ profiles: any[]; monorepoProjects?: string[] }> {
   // CRITICAL OPTIMIZATION (v1.0.5): If GitHub credentials provided from repository setup, reuse them!
   // This prevents asking the same questions twice (repos during init, then again for issue tracker)
@@ -384,7 +387,8 @@ export async function configureGitHubRepositories(
     const token = pat || githubToken;
 
     const { promptGitHubSetupType } = await import('./github-multi-repo.js');
-    const setupResult = await promptGitHubSetupType(projectPath, token, repositoryHosting);
+    // v1.0.8: Pass gitUrlFormat to avoid asking about SSH/HTTPS again
+    const setupResult = await promptGitHubSetupType(projectPath, token, repositoryHosting, 0, gitUrlFormat);
 
     if (setupResult.profiles) {
       // Multi-repo case: if we have multiple profiles, user has already selected parent in RepoStructureManager
@@ -417,8 +421,8 @@ export async function configureGitHubRepositories(
     autoDetectRepositories
   } = await import('./github-multi-repo.js');
 
-  // Pass projectPath, token, and repositoryHosting to avoid duplicate prompts
-  const setupResult = await promptGitHubSetupType(projectPath, githubToken, repositoryHosting);
+  // Pass projectPath, token, repositoryHosting, and gitUrlFormat to avoid duplicate prompts (v1.0.8)
+  const setupResult = await promptGitHubSetupType(projectPath, githubToken, repositoryHosting, 0, gitUrlFormat);
 
   // If RepoStructureManager was used, profiles are already extracted - return them directly
   if (setupResult.profiles) {

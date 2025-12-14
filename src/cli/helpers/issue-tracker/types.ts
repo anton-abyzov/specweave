@@ -227,6 +227,8 @@ export interface SetupOptions {
   adoCredentialsFromRepoSetup?: AdoProjectSelection;
   /** GitHub credentials from repository setup - reused when GitHub Issues is selected for issue tracking (v1.0.4) */
   githubCredentialsFromRepoSetup?: { org: string; pat: string };
+  /** Git URL format preference from repository setup (SSH or HTTPS) - v1.0.8+ */
+  gitUrlFormat?: 'ssh' | 'https';
 }
 
 /**

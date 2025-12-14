@@ -75,9 +75,10 @@ export interface GitHubSetupResult {
  * @param githubToken - Optional GitHub token for API calls
  * @param repositoryHosting - Optional repository hosting choice from init.ts (prevents duplicate prompts)
  * @param recursionDepth - Internal recursion tracking to prevent infinite loops (Issue #5 fix)
+ * @param gitUrlFormat - Optional Git URL format from repository setup (SSH or HTTPS) - v1.0.8+
  * @returns Selected setup type with optional profiles (if RepoStructureManager was used)
  */
-export async function promptGitHubSetupType(projectPath?: string, githubToken?: string, repositoryHosting?: string, recursionDepth: number = 0): Promise<GitHubSetupResult> {
+export async function promptGitHubSetupType(projectPath?: string, githubToken?: string, repositoryHosting?: string, recursionDepth: number = 0, gitUrlFormat?: 'ssh' | 'https'): Promise<GitHubSetupResult> {
   // Issue #5 fix: Prevent infinite recursion
   const MAX_RECURSION_DEPTH = 3;
   if (recursionDepth >= MAX_RECURSION_DEPTH) {
@@ -126,7 +127,8 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
       // 🔥 FIX (v1.0.7): Pass preSelectedArchitecture AND platform 'github' to avoid duplicate prompts!
       // When this function is called from GitHub issue tracker setup, GitHub was already selected as platform
       // So we pass 'github' as preSelectedPlatform to skip the "Select your Git hosting platform" question
-      config = await manager.promptStructure(preSelectedArchitecture, 'github', undefined);
+      // 🔥 FIX (v1.0.8): Also pass gitUrlFormat to avoid asking about SSH/HTTPS again!
+      config = await manager.promptStructure(preSelectedArchitecture, 'github', gitUrlFormat);
     } catch (error: any) {
       console.log(chalk.yellow('\n⚠️  Failed to prompt repository structure'));
       console.log(chalk.gray(`   Error: ${error.message || 'Unknown error'}`));

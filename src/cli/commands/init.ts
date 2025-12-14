@@ -611,7 +611,8 @@ export async function initCommand(
         repoResult.hosting,
         isCI,
         repoResult.adoProjectSelection,
-        githubRepoSelection
+        githubRepoSelection,
+        repoResult.gitUrlFormat  // Pass URL format to avoid duplicate prompts (v1.0.8)
       );
 
       // Multi-project folders
@@ -873,7 +874,8 @@ async function setupIssueTrackerWrapper(
   repositoryHosting: RepositoryHosting,
   isCI: boolean,
   adoProjectSelection?: { org: string; pat: string; projects: string[] },
-  githubCredentialsFromRepoSetup?: { org: string; pat: string }
+  githubCredentialsFromRepoSetup?: { org: string; pat: string },
+  gitUrlFormat?: 'ssh' | 'https'
 ): Promise<void> {
   try {
     const { setupIssueTracker } = await import('../helpers/issue-tracker/index.js');
@@ -912,7 +914,8 @@ async function setupIssueTrackerWrapper(
       isFrameworkRepo,
       repositoryHosting,
       adoCredentialsFromRepoSetup: adoProjectSelection,
-      githubCredentialsFromRepoSetup
+      githubCredentialsFromRepoSetup,
+      gitUrlFormat
     });
   } catch {
     console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
