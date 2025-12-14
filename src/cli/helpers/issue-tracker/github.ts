@@ -366,16 +366,88 @@ export async function configureGitHubRepositories(
   language: SupportedLanguage,
   githubToken?: string,
   repositoryHosting?: string,
-  githubCredentialsFromRepoSetup?: { org: string; pat: string },
+  githubCredentialsFromRepoSetup?: { org: string; pat: string; clonedRepos?: string[] },
   gitUrlFormat?: 'ssh' | 'https'
 ): Promise<{ profiles: any[]; monorepoProjects?: string[] }> {
   // CRITICAL OPTIMIZATION (v1.0.5): If GitHub credentials provided from repository setup, reuse them!
   // This prevents asking the same questions twice (repos during init, then again for issue tracker)
   if (githubCredentialsFromRepoSetup) {
+    const { org, pat, clonedRepos } = githubCredentialsFromRepoSetup;
+
+    // v1.0.9: If cloned repos are provided, ask for parent repo selection, then create profiles
+    // v1.0.10: Added parent repo selection for multi-repo setups (aligned with multi-repo-configurator.ts)
+    if (clonedRepos && clonedRepos.length > 0) {
+      console.log(chalk.cyan('\n📂 Using Cloned GitHub Repositories\n'));
+      console.log(chalk.green(`   ✓ ${clonedRepos.length} repositories cloned`));
+
+      // Ask user which repository is the parent (same format as multi-repo-configurator.ts:169-186)
+      console.log(chalk.cyan('\n Select Parent Repository\n'));
+      console.log(chalk.gray('Choose which repository will be the parent (contains .specweave/ structure)\n'));
+
+      // Build choices: all cloned repos + option to enter manually
+      const parentChoices = [
+        ...clonedRepos.map(repoName => ({
+          name: `${chalk.bold(repoName)}\n${chalk.gray(`${org}/${repoName}`)}`,
+          value: repoName,
+          short: repoName
+        })),
+        {
+          name: `${chalk.yellow(' Enter parent manually')} ${chalk.gray('(not in discovered list)')}`,
+          value: '__manual__',
+          short: 'Enter manually'
+        }
+      ];
+
+      let parentRepoName = await select({
+        message: 'Which repository is the parent?',
+        choices: parentChoices,
+        pageSize: 15
+      });
+
+      // Handle manual entry
+      if (parentRepoName === '__manual__') {
+        parentRepoName = await input({
+          message: 'Enter parent repository name:',
+          validate: (val: string) => {
+            if (!val.trim()) return 'Repository name is required';
+            if (val.length > 100) return 'Repository name too long';
+            return true;
+          }
+        });
+      }
+
+      // Count implementation repos (exclude parent from count)
+      const implRepoCount = clonedRepos.filter(r => r !== parentRepoName).length;
+      console.log(chalk.green(`\n✓ Using repository: ${org}/${parentRepoName}\n`));
+      console.log(chalk.gray(` Implementation repositories: ${implRepoCount}\n`));
+
+      // Create profiles: parent repo first (marked as default), then implementation repos
+      const profiles = clonedRepos.map(repoName => ({
+        id: repoName,
+        displayName: repoName.split('-').map((w: string) =>
+          w.charAt(0).toUpperCase() + w.slice(1)
+        ).join(' '),  // Convert "my-repo-name" to "My Repo Name"
+        owner: org,
+        repo: repoName,
+        isDefault: repoName === parentRepoName  // Parent repo is marked as default
+      }));
+
+      // Move parent to first position for clarity
+      const parentIndex = profiles.findIndex(p => p.isDefault);
+      if (parentIndex > 0) {
+        const [parent] = profiles.splice(parentIndex, 1);
+        profiles.unshift(parent);
+      }
+
+      return {
+        profiles,
+        monorepoProjects: undefined  // Multi-repo, not monorepo
+      };
+    }
+
+    // Legacy flow: credentials provided but no cloned repos list
     console.log(chalk.cyan('\n📂 Reusing GitHub Repository Configuration\n'));
     console.log(chalk.gray('   Using credentials from repository setup phase...\n'));
-
-    const { org, pat } = githubCredentialsFromRepoSetup;
 
     // CRITICAL FIX (v1.0.5): Skip loadExistingGitHubRepoConfig() - it never works during init!
     // Config.json is written AFTER both repository AND issue tracker setup complete.

@@ -252,6 +252,16 @@ async function fetchGitHubRepos(
 }
 
 /**
+ * Result of GitHub repo cloning trigger
+ */
+export interface GitHubCloningResult {
+  /** Job ID for tracking background clone */
+  jobId?: string;
+  /** List of repo names being cloned (for 1:1 project mapping) */
+  clonedRepos: string[];
+}
+
+/**
  * Build HTTPS clone URL with PAT authentication
  *
  * @param owner - Repository owner (org or user)
@@ -259,12 +269,45 @@ async function fetchGitHubRepos(
  * @param pat - Personal Access Token
  * @returns Clone URL with embedded authentication
  */
-function buildGitHubCloneUrl(owner: string, repo: string, pat: string): string {
+function buildGitHubHttpsCloneUrl(owner: string, repo: string, pat: string): string {
   // Format: https://{pat}@github.com/{owner}/{repo}.git
   // URL-encode to handle special characters
   const encodedOwner = encodeURIComponent(owner);
   const encodedRepo = encodeURIComponent(repo);
   return `https://${pat}@github.com/${encodedOwner}/${encodedRepo}.git`;
+}
+
+/**
+ * Build SSH clone URL
+ *
+ * @param owner - Repository owner (org or user)
+ * @param repo - Repository name
+ * @returns SSH clone URL (requires SSH key configured)
+ */
+function buildGitHubSshCloneUrl(owner: string, repo: string): string {
+  // Format: git@github.com:{owner}/{repo}.git
+  return `git@github.com:${owner}/${repo}.git`;
+}
+
+/**
+ * Build clone URL based on user's URL format preference
+ *
+ * @param owner - Repository owner (org or user)
+ * @param repo - Repository name
+ * @param pat - Personal Access Token (only used for HTTPS)
+ * @param gitUrlFormat - User's preference: 'ssh' or 'https'
+ * @returns Clone URL in the requested format
+ */
+function buildGitHubCloneUrl(
+  owner: string,
+  repo: string,
+  pat: string,
+  gitUrlFormat: 'ssh' | 'https' = 'https'
+): string {
+  if (gitUrlFormat === 'ssh') {
+    return buildGitHubSshCloneUrl(owner, repo);
+  }
+  return buildGitHubHttpsCloneUrl(owner, repo, pat);
 }
 
 /**
@@ -279,34 +322,41 @@ function buildGitHubCloneUrl(owner: string, repo: string, pat: string): string {
  * @param projectPath - Target directory for cloning
  * @param githubRepoSelection - GitHub org and PAT
  * @param clonePattern - Clone pattern configuration
- * @returns Job ID for dependency tracking, or undefined if skipped/failed
+ * @param gitUrlFormat - Git URL format preference ('ssh' or 'https') - v1.0.10+
+ * @returns Cloning result with job ID and list of repos being cloned (v1.0.9)
  */
 export async function triggerGitHubRepoCloning(
   projectPath: string,
   githubRepoSelection: GitHubRepoSelection,
-  clonePattern: ClonePatternResult
-): Promise<string | undefined> {
+  clonePattern: ClonePatternResult,
+  gitUrlFormat: 'ssh' | 'https' = 'https'
+): Promise<GitHubCloningResult> {
   // Skip if user chose to skip cloning
   if (clonePattern.strategy === 'skip') {
     console.log(chalk.gray('\n   Skipping repository cloning (can configure later with /specweave-github:clone-repos)\n'));
-    return undefined;
+    return { clonedRepos: [] };
   }
 
   const { org, pat } = githubRepoSelection;
 
   if (!org) {
     console.log(chalk.yellow('\n   No GitHub organization specified for cloning.\n'));
-    return undefined;
+    return { clonedRepos: [] };
   }
 
   if (!pat) {
     console.log(chalk.yellow('\n   No GitHub PAT provided. Cannot clone repositories.\n'));
-    return undefined;
+    return { clonedRepos: [] };
   }
 
-  // Security warning about token visibility
-  console.log(chalk.yellow('\n   ⚠️ Note: PAT will be visible in process list during clone (Git limitation)'));
-  console.log(chalk.gray('   💡 Tip: Use PAT with minimal scope (repo:read) for cloning\n'));
+  // Security warning based on URL format
+  if (gitUrlFormat === 'ssh') {
+    console.log(chalk.green('\n   ✓ Using SSH for cloning (secure, no PAT exposed in process list)'));
+    console.log(chalk.gray('   💡 Make sure your SSH key is configured: ssh -T git@github.com\n'));
+  } else {
+    console.log(chalk.yellow('\n   ⚠️ Note: PAT will be visible in process list during clone (Git limitation)'));
+    console.log(chalk.gray('   💡 Tip: Use PAT with minimal scope (repo:read) for cloning\n'));
+  }
 
   console.log(chalk.blue('\n📦 Fetching GitHub Repositories\n'));
 
@@ -315,7 +365,7 @@ export async function triggerGitHubRepoCloning(
 
   if (fetchResult.error) {
     console.log(chalk.red(`   ❌ ${fetchResult.error}\n`));
-    return undefined;
+    return { clonedRepos: [] };
   }
 
   if (fetchResult.partial) {
@@ -326,7 +376,7 @@ export async function triggerGitHubRepoCloning(
 
   if (allRepos.length === 0) {
     console.log(chalk.yellow('\n   No repositories found in organization.\n'));
-    return undefined;
+    return { clonedRepos: [] };
   }
 
   console.log(chalk.green(`   ✓ Found ${allRepos.length} repositories in ${org}`));
@@ -337,7 +387,7 @@ export async function triggerGitHubRepoCloning(
   if (filteredRepos.length === 0) {
     const patternDesc = clonePattern.pattern ? ` matching "${clonePattern.pattern}"` : '';
     console.log(chalk.yellow(`\n   No repositories${patternDesc} to clone.\n`));
-    return undefined;
+    return { clonedRepos: [] };
   }
 
   console.log(chalk.blue(`\n🔄 Starting background clone for ${filteredRepos.length} repositories...\n`));
@@ -352,12 +402,12 @@ export async function triggerGitHubRepoCloning(
   }
   console.log('');
 
-  // Prepare repositories with clone URLs
+  // Prepare repositories with clone URLs (v1.0.10: respects gitUrlFormat)
   const reposWithUrls = filteredRepos.map(r => ({
     owner: org,
     name: r.name,
     path: r.name, // Clone directly into project path
-    cloneUrl: buildGitHubCloneUrl(org, r.name, pat)
+    cloneUrl: buildGitHubCloneUrl(org, r.name, pat, gitUrlFormat)
   }));
 
   // Launch background clone job
@@ -380,6 +430,10 @@ export async function triggerGitHubRepoCloning(
     console.log(chalk.gray('   Init will block until cloning completes.\n'));
   }
 
-  // Return job ID for dependency tracking
-  return result.job.id;
+  // Return job ID and list of cloned repos (v1.0.9)
+  // Repo names are used for 1:1 project mapping in issue tracker setup
+  return {
+    jobId: result.job.id,
+    clonedRepos: filteredRepos.map(r => r.name)
+  };
 }

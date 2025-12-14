@@ -276,15 +276,20 @@ async function promptAdoProjectSelection(
 /**
  * Prompt user for GitHub organization and PAT for multi-repo cloning
  *
+ * NOTE (v1.0.10): PAT is required for listing repos via GitHub API, even when SSH cloning.
+ * SSH keys authenticate git operations, but GitHub API requires token authentication.
+ *
  * @param targetDir - Target directory (for reading existing .env)
  * @param gitHubRemote - Detected GitHub remote (provides default org)
  * @param strings - Translated strings
+ * @param gitUrlFormat - User's URL format choice ('ssh' or 'https') - affects messaging
  * @returns GitHub selection or null if cancelled
  */
 async function promptGitHubRepoSelection(
   targetDir: string,
   gitHubRemote: { owner: string; repo: string } | null,
-  strings: { githubOrgPrompt: string; githubPatPrompt: string; githubSelected: string }
+  strings: { githubOrgPrompt: string; githubPatPrompt: string; githubSelected: string },
+  gitUrlFormat?: 'ssh' | 'https'
 ): Promise<GitHubRepoSelection | null> {
   // Check for existing credentials in .env or environment
   let existingOrg: string | undefined;
@@ -314,9 +319,19 @@ async function promptGitHubRepoSelection(
     }
   });
 
+  // v1.0.10: Show context-aware message about why PAT is needed
+  if (gitUrlFormat === 'ssh') {
+    console.log(chalk.gray('\n   💡 PAT is required to list repositories via GitHub API.'));
+    console.log(chalk.gray('   Cloning will use SSH (your SSH key handles authentication).\n'));
+  }
+
   // Prompt for PAT
+  const patMessage = gitUrlFormat === 'ssh'
+    ? 'GitHub PAT (for listing repos only):'
+    : strings.githubPatPrompt;
+
   const pat = await password({
-    message: strings.githubPatPrompt,
+    message: patMessage,
     mask: true,
     validate: (value: string) => {
       if (!value.trim()) return 'Personal Access Token is required';
@@ -1294,7 +1309,8 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
       console.log(chalk.blue(`\n${strings.githubMultiRepoHeader}\n`));
       console.log(chalk.gray(`   ${strings.githubMultiRepoDesc}\n`));
 
-      const githubSelection = await promptGitHubRepoSelection(options.targetDir, gitHubRemote, strings);
+      // v1.0.10: Pass gitUrlFormat to show context-aware PAT message
+      const githubSelection = await promptGitHubRepoSelection(options.targetDir, gitHubRemote, strings, gitUrlFormat);
       if (githubSelection) {
         githubRepoSelection = githubSelection;
       }

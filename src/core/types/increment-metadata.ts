@@ -88,9 +88,9 @@ export interface IncrementMetadata {
   lastActivity: string;
 
   /** Testing mode for this increment (defaults to global config) */
-  testMode?: 'TDD' | 'test-after' | 'manual';
+  testMode?: 'TDD' | 'test-after' | 'manual' | 'none';
 
-  /** Coverage target percentage (70-95, defaults to global config) */
+  /** Coverage target percentage (0-100, 0 = no tracking, defaults to global config) */
   coverageTarget?: number;
 
   /** Reason for moving to backlog (only if status = backlog) */

@@ -1,5 +1,5 @@
 /**
- * Unit Tests for GitHub + GitHub Issues Optimization (v1.0.5)
+ * Unit Tests for GitHub + GitHub Issues Optimization (v1.0.5, enhanced v1.0.9)
  *
  * Tests the optimized flow when user selects:
  * 1. GitHub for repository hosting (init.ts)
@@ -8,10 +8,14 @@
  * CRITICAL CHANGE (v1.0.5): We now pass GitHub credentials via parameters,
  * NOT by loading from config.json (which doesn't exist during init).
  *
+ * CRITICAL CHANGE (v1.0.9): When clonedRepos are provided, skip ALL prompts
+ * and create profiles directly with 1:1 repo=project mapping.
+ *
  * Expected behavior:
  * - githubCredentialsFromRepoSetup parameter is passed from init.ts
  * - configureGitHubRepositories reuses org/pat from parameter
- * - promptGitHubSetupType skips duplicate prompts when repositoryHosting is set
+ * - If clonedRepos provided: skip ALL prompts, create profiles directly
+ * - If no clonedRepos: promptGitHubSetupType skips duplicate prompts when repositoryHosting is set
  * - For multi-repo: RepoStructureManager handles parent selection
  * - For single-repo: use org directly
  *
@@ -41,7 +45,8 @@ vi.mock('chalk', () => {
       green: identity,
       yellow: identity,
       red: identity,
-      white: identity
+      white: identity,
+      bold: identity  // Added for v1.0.10 parent repo selection
     }
   };
 });
@@ -76,6 +81,104 @@ describe('GitHub + GitHub Issues Optimization (v1.0.5)', () => {
     }
   });
 
+  describe('v1.0.9: clonedRepos parameter (1:1 mapping)', () => {
+    it('should skip ALL prompts and create profiles directly when clonedRepos provided', async () => {
+      // v1.0.10: Mock select for parent repo selection prompt
+      const { select } = await import('@inquirer/prompts');
+      vi.mocked(select).mockResolvedValue('frontend-app');
+
+      // Import the module under test
+      const githubModule = await import('../../../src/cli/helpers/issue-tracker/github.js');
+      const { promptGitHubSetupType } = await import('../../../src/cli/helpers/issue-tracker/github-multi-repo.js');
+
+      // Call with clonedRepos - should NOT call promptGitHubSetupType!
+      const result = await githubModule.configureGitHubRepositories(
+        tempDir,
+        'en',
+        undefined,
+        'github-multirepo',
+        {
+          org: 'myorg',
+          pat: 'ghp_test_token',
+          clonedRepos: ['frontend-app', 'backend-api', 'shared-lib']  // Cloned repos from repo setup
+        }
+      );
+
+      // Verify profiles created directly from cloned repos
+      expect(result.profiles).toBeDefined();
+      expect(result.profiles.length).toBe(3);
+
+      // Check each profile has correct structure (1:1 mapping)
+      expect(result.profiles[0].id).toBe('frontend-app');
+      expect(result.profiles[0].repo).toBe('frontend-app');
+      expect(result.profiles[0].owner).toBe('myorg');
+      expect(result.profiles[0].displayName).toBe('Frontend App');  // Converted from kebab-case
+      expect(result.profiles[0].isDefault).toBe(true);  // First is default
+
+      expect(result.profiles[1].id).toBe('backend-api');
+      expect(result.profiles[1].repo).toBe('backend-api');
+      expect(result.profiles[1].isDefault).toBe(false);
+
+      expect(result.profiles[2].id).toBe('shared-lib');
+      expect(result.profiles[2].repo).toBe('shared-lib');
+      expect(result.profiles[2].isDefault).toBe(false);
+
+      // CRITICAL: promptGitHubSetupType should NOT have been called!
+      expect(promptGitHubSetupType).not.toHaveBeenCalled();
+    });
+
+    it('should return undefined monorepoProjects when clonedRepos provided (multi-repo, not monorepo)', async () => {
+      // v1.0.10: Mock select for parent repo selection prompt
+      const { select } = await import('@inquirer/prompts');
+      vi.mocked(select).mockResolvedValue('repo-a');
+
+      const githubModule = await import('../../../src/cli/helpers/issue-tracker/github.js');
+
+      const result = await githubModule.configureGitHubRepositories(
+        tempDir,
+        'en',
+        undefined,
+        'github-multirepo',
+        {
+          org: 'myorg',
+          pat: 'ghp_test_token',
+          clonedRepos: ['repo-a', 'repo-b']
+        }
+      );
+
+      // Should be multi-repo, not monorepo
+      expect(result.monorepoProjects).toBeUndefined();
+    });
+
+    it('should fallback to legacy flow when clonedRepos is empty array', async () => {
+      const { promptGitHubSetupType } = await import('../../../src/cli/helpers/issue-tracker/github-multi-repo.js');
+      vi.mocked(promptGitHubSetupType).mockResolvedValue({
+        setupType: 'single',
+        profiles: [
+          { id: '1', owner: 'myorg', repo: 'fallback-repo', displayName: 'Fallback', isDefault: true }
+        ]
+      });
+
+      const githubModule = await import('../../../src/cli/helpers/issue-tracker/github.js');
+
+      const result = await githubModule.configureGitHubRepositories(
+        tempDir,
+        'en',
+        undefined,
+        'github-single',
+        {
+          org: 'myorg',
+          pat: 'ghp_test_token',
+          clonedRepos: []  // Empty array - should trigger legacy flow
+        }
+      );
+
+      // Should fallback to promptGitHubSetupType
+      expect(promptGitHubSetupType).toHaveBeenCalled();
+      expect(result.profiles[0].repo).toBe('fallback-repo');
+    });
+  });
+
   describe('githubCredentialsFromRepoSetup parameter', () => {
     it('should reuse credentials from repository setup (single-repo)', async () => {
       // Mock promptGitHubSetupType to return single-repo profiles
@@ -105,10 +208,13 @@ describe('GitHub + GitHub Issues Optimization (v1.0.5)', () => {
       expect(result.profiles[0].isDefault).toBe(true);
 
       // Verify promptGitHubSetupType was called with the token
+      // v1.0.8+: Now includes recursion depth (0) and gitUrlFormat (undefined)
       expect(promptGitHubSetupType).toHaveBeenCalledWith(
         tempDir,
         'ghp_test_token',
-        'github-single'
+        'github-single',
+        0,  // recursion depth
+        undefined  // gitUrlFormat
       );
     });
 
@@ -223,10 +329,13 @@ describe('GitHub + GitHub Issues Optimization (v1.0.5)', () => {
       );
 
       // Verify repositoryHosting was passed (enables skipping duplicate prompts)
+      // v1.0.8+: Now includes recursion depth (0) and gitUrlFormat (undefined)
       expect(promptGitHubSetupType).toHaveBeenCalledWith(
         tempDir,
         'ghp_test_token',
-        'github-single'  // <-- The key parameter that skips prompts!
+        'github-single',  // <-- The key parameter that skips prompts!
+        0,  // recursion depth
+        undefined  // gitUrlFormat
       );
     });
 
@@ -252,10 +361,13 @@ describe('GitHub + GitHub Issues Optimization (v1.0.5)', () => {
       );
 
       // Verify repositoryHosting was passed
+      // v1.0.8+: Now includes recursion depth (0) and gitUrlFormat (undefined)
       expect(promptGitHubSetupType).toHaveBeenCalledWith(
         tempDir,
         'ghp_test_token',
-        'github-multirepo'  // <-- The key parameter that tells promptGitHubSetupType to skip architecture prompt
+        'github-multirepo',  // <-- The key parameter that tells promptGitHubSetupType to skip architecture prompt
+        0,  // recursion depth
+        undefined  // gitUrlFormat
       );
     });
   });
@@ -338,10 +450,13 @@ describe('GitHub + GitHub Issues Optimization (v1.0.5)', () => {
       );
 
       // Verify the new token was used (from credentials)
+      // v1.0.8+: Now includes recursion depth (0) and gitUrlFormat (undefined)
       expect(promptGitHubSetupType).toHaveBeenCalledWith(
         tempDir,
         'new_token_should_be_used',  // <-- New token used!
-        'github-single'
+        'github-single',
+        0,  // recursion depth
+        undefined  // gitUrlFormat
       );
     });
 

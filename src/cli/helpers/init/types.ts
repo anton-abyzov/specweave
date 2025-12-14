@@ -118,8 +118,12 @@ export interface ADOConfig {
 
 /**
  * Testing mode configuration
+ * - TDD: Write tests first (mission-critical systems)
+ * - test-after: Implement first, test later (recommended for most)
+ * - manual: Test when needed, no strict rules (flexible for startups/MVPs)
+ * - none: Skip testing entirely (hackathons, experiments, prototypes)
  */
-export type TestMode = 'TDD' | 'test-after' | 'manual';
+export type TestMode = 'TDD' | 'test-after' | 'manual' | 'none';
 
 /**
  * Testing configuration for config.json

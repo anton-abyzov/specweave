@@ -21,11 +21,15 @@ function getTestingStrings(language: SupportedLanguage): {
   tddHint: string;
   testAfterHint: string;
   manualHint: string;
+  noneHint: string;
   selectApproach: string;
   tddOption: string;
   testAfterOption: string;
   manualOption: string;
+  noneOption: string;
   selectCoverage: string;
+  coverageNone: string;
+  coverage50: string;
   coverage70: string;
   coverage80: string;
   coverage90: string;
@@ -34,6 +38,7 @@ function getTestingStrings(language: SupportedLanguage): {
   coverageValidation: string;
   selectedTesting: string;
   selectedCoverage: string;
+  noCoverageTarget: string;
   configNotFound: string;
 } {
   const strings: Record<SupportedLanguage, ReturnType<typeof getTestingStrings>> = {
@@ -41,198 +46,243 @@ function getTestingStrings(language: SupportedLanguage): {
       header: '🧪 Testing Configuration',
       subheader: 'Configure your default testing approach and coverage targets',
       guidance: '💡 Quick Guide:',
-      tddHint: '🔴 TDD: Tests first → Better design (production apps)',
+      tddHint: '🔴 TDD: Tests first → Better design (critical systems)',
       testAfterHint: '🔵 Test-After: Code first → Fast iteration (most projects)',
-      manualHint: '🟡 Manual: No tests → Fastest start (prototypes only)',
+      manualHint: '🟡 Manual: Ad-hoc tests → Flexible (startups, MVPs)',
+      noneHint: '⚪ None: No tests → Fastest (hackathons, experiments)',
       selectApproach: 'Select your testing approach:',
-      tddOption: '🔴 TDD - Write tests first (recommended for production apps)',
-      testAfterOption: '🔵 Test-After - Implement first, test later (balanced approach)',
-      manualOption: '🟡 Manual - No automated tests (prototypes only)',
+      tddOption: '🔴 TDD - Write tests first (mission-critical systems)',
+      testAfterOption: '🔵 Test-After - Implement first, test later (recommended)',
+      manualOption: '🟡 Manual - Test when needed, no strict rules (flexible)',
+      noneOption: '⚪ None - Skip testing entirely (hackathons, experiments)',
       selectCoverage: 'Select your coverage target level:',
-      coverage70: '70% - Acceptable (core paths covered)',
-      coverage80: '80% - Good (recommended - most paths covered)',
-      coverage90: '90% - Excellent (comprehensive coverage)',
-      coverageCustom: 'Custom (enter your own value)',
-      enterCustom: 'Enter custom coverage target (70-95):',
-      coverageValidation: 'Coverage target must be between 70% and 95%',
+      coverageNone: '0% - No coverage tracking (fastest iteration)',
+      coverage50: '50% - Minimal (just critical paths)',
+      coverage70: '70% - Moderate (good for most projects)',
+      coverage80: '80% - Good (recommended for production)',
+      coverage90: '90% - High (comprehensive coverage)',
+      coverageCustom: 'Custom (enter your own value 0-100)',
+      enterCustom: 'Enter custom coverage target (0-100):',
+      coverageValidation: 'Coverage target must be between 0% and 100%',
       selectedTesting: '✔ Testing:',
       selectedCoverage: '✔ Coverage Target:',
+      noCoverageTarget: '✔ Coverage: Not tracked',
       configNotFound: '⚠️  config.json not found, cannot update testing configuration',
     },
     ru: {
       header: '🧪 Конфигурация тестирования',
       subheader: 'Настройте подход к тестированию по умолчанию и целевые показатели покрытия',
       guidance: '💡 Краткое руководство:',
-      tddHint: '🔴 TDD: Сначала тесты → Лучший дизайн (production)',
+      tddHint: '🔴 TDD: Сначала тесты → Лучший дизайн (критичные системы)',
       testAfterHint: '🔵 Test-After: Сначала код → Быстрая итерация (большинство проектов)',
-      manualHint: '🟡 Ручное: Без тестов → Самый быстрый старт (только прототипы)',
+      manualHint: '🟡 Ручное: Тесты по необходимости → Гибко (стартапы, MVP)',
+      noneHint: '⚪ Без тестов: Пропустить → Быстро (хакатоны, эксперименты)',
       selectApproach: 'Выберите подход к тестированию:',
-      tddOption: '🔴 TDD - Сначала тесты (рекомендуется для production)',
-      testAfterOption: '🔵 Test-After - Сначала код, потом тесты (сбалансированный)',
-      manualOption: '🟡 Ручное - Без автоматических тестов (только прототипы)',
+      tddOption: '🔴 TDD - Сначала тесты (критичные системы)',
+      testAfterOption: '🔵 Test-After - Сначала код, потом тесты (рекомендуется)',
+      manualOption: '🟡 Ручное - Тесты по необходимости, без строгих правил (гибко)',
+      noneOption: '⚪ Без тестов - Пропустить тестирование (хакатоны, эксперименты)',
       selectCoverage: 'Выберите целевой уровень покрытия:',
-      coverage70: '70% - Приемлемо (основные пути покрыты)',
-      coverage80: '80% - Хорошо (рекомендуется - большинство путей покрыто)',
-      coverage90: '90% - Отлично (полное покрытие)',
-      coverageCustom: 'Свое значение (введите вручную)',
-      enterCustom: 'Введите целевое покрытие (70-95):',
-      coverageValidation: 'Целевое покрытие должно быть между 70% и 95%',
+      coverageNone: '0% - Без отслеживания покрытия (быстрая итерация)',
+      coverage50: '50% - Минимум (только критичные пути)',
+      coverage70: '70% - Умеренно (подходит для большинства проектов)',
+      coverage80: '80% - Хорошо (рекомендуется для production)',
+      coverage90: '90% - Высокое (полное покрытие)',
+      coverageCustom: 'Свое значение (введите 0-100)',
+      enterCustom: 'Введите целевое покрытие (0-100):',
+      coverageValidation: 'Целевое покрытие должно быть между 0% и 100%',
       selectedTesting: '✔ Тестирование:',
       selectedCoverage: '✔ Целевое покрытие:',
+      noCoverageTarget: '✔ Покрытие: Не отслеживается',
       configNotFound: '⚠️  config.json не найден, невозможно обновить конфигурацию тестирования',
     },
     es: {
       header: '🧪 Configuración de pruebas',
       subheader: 'Configure su enfoque de pruebas predeterminado y objetivos de cobertura',
       guidance: '💡 Guía rápida:',
-      tddHint: '🔴 TDD: Pruebas primero → Mejor diseño (producción)',
+      tddHint: '🔴 TDD: Pruebas primero → Mejor diseño (sistemas críticos)',
       testAfterHint: '🔵 Test-After: Código primero → Iteración rápida (mayoría de proyectos)',
-      manualHint: '🟡 Manual: Sin pruebas → Inicio más rápido (solo prototipos)',
+      manualHint: '🟡 Manual: Pruebas ad-hoc → Flexible (startups, MVPs)',
+      noneHint: '⚪ Ninguno: Sin pruebas → Más rápido (hackathons, experimentos)',
       selectApproach: 'Seleccione su enfoque de pruebas:',
-      tddOption: '🔴 TDD - Escribir pruebas primero (recomendado para producción)',
-      testAfterOption: '🔵 Test-After - Implementar primero, probar después (enfoque equilibrado)',
-      manualOption: '🟡 Manual - Sin pruebas automatizadas (solo prototipos)',
+      tddOption: '🔴 TDD - Escribir pruebas primero (sistemas críticos)',
+      testAfterOption: '🔵 Test-After - Implementar primero, probar después (recomendado)',
+      manualOption: '🟡 Manual - Probar cuando sea necesario, sin reglas estrictas (flexible)',
+      noneOption: '⚪ Ninguno - Omitir pruebas completamente (hackathons, experimentos)',
       selectCoverage: 'Seleccione su nivel de cobertura objetivo:',
-      coverage70: '70% - Aceptable (rutas principales cubiertas)',
-      coverage80: '80% - Bueno (recomendado - mayoría de rutas cubiertas)',
-      coverage90: '90% - Excelente (cobertura completa)',
-      coverageCustom: 'Personalizado (ingrese su propio valor)',
-      enterCustom: 'Ingrese cobertura objetivo personalizada (70-95):',
-      coverageValidation: 'La cobertura objetivo debe estar entre 70% y 95%',
+      coverageNone: '0% - Sin seguimiento de cobertura (iteración más rápida)',
+      coverage50: '50% - Mínimo (solo rutas críticas)',
+      coverage70: '70% - Moderado (bueno para la mayoría de proyectos)',
+      coverage80: '80% - Bueno (recomendado para producción)',
+      coverage90: '90% - Alto (cobertura completa)',
+      coverageCustom: 'Personalizado (ingrese valor 0-100)',
+      enterCustom: 'Ingrese cobertura objetivo personalizada (0-100):',
+      coverageValidation: 'La cobertura objetivo debe estar entre 0% y 100%',
       selectedTesting: '✔ Pruebas:',
       selectedCoverage: '✔ Cobertura objetivo:',
+      noCoverageTarget: '✔ Cobertura: No rastreada',
       configNotFound: '⚠️  config.json no encontrado, no se puede actualizar la configuración de pruebas',
     },
     zh: {
       header: '🧪 测试配置',
       subheader: '配置默认测试方法和覆盖率目标',
       guidance: '💡 快速指南:',
-      tddHint: '🔴 TDD: 先测试 → 更好的设计 (生产应用)',
+      tddHint: '🔴 TDD: 先测试 → 更好的设计 (关键系统)',
       testAfterHint: '🔵 后置测试: 先代码 → 快速迭代 (大多数项目)',
-      manualHint: '🟡 手动: 无测试 → 最快启动 (仅原型)',
+      manualHint: '🟡 手动: 按需测试 → 灵活 (初创企业, MVP)',
+      noneHint: '⚪ 无测试: 跳过 → 最快 (黑客马拉松, 实验)',
       selectApproach: '选择您的测试方法：',
-      tddOption: '🔴 TDD - 先写测试（推荐用于生产应用）',
-      testAfterOption: '🔵 后置测试 - 先实现后测试（平衡方法）',
-      manualOption: '🟡 手动 - 无自动化测试（仅限原型）',
+      tddOption: '🔴 TDD - 先写测试（关键系统）',
+      testAfterOption: '🔵 后置测试 - 先实现后测试（推荐）',
+      manualOption: '🟡 手动 - 按需测试，无严格规则（灵活）',
+      noneOption: '⚪ 无测试 - 完全跳过测试（黑客马拉松, 实验）',
       selectCoverage: '选择您的覆盖率目标级别：',
-      coverage70: '70% - 可接受（核心路径已覆盖）',
-      coverage80: '80% - 良好（推荐 - 大多数路径已覆盖）',
-      coverage90: '90% - 优秀（全面覆盖）',
-      coverageCustom: '自定义（输入您自己的值）',
-      enterCustom: '输入自定义覆盖率目标（70-95）：',
-      coverageValidation: '覆盖率目标必须在70%到95%之间',
+      coverageNone: '0% - 不跟踪覆盖率（最快迭代）',
+      coverage50: '50% - 最低限度（仅关键路径）',
+      coverage70: '70% - 中等（适合大多数项目）',
+      coverage80: '80% - 良好（推荐用于生产）',
+      coverage90: '90% - 高（全面覆盖）',
+      coverageCustom: '自定义（输入0-100）',
+      enterCustom: '输入自定义覆盖率目标（0-100）：',
+      coverageValidation: '覆盖率目标必须在0%到100%之间',
       selectedTesting: '✔ 测试：',
       selectedCoverage: '✔ 覆盖率目标：',
+      noCoverageTarget: '✔ 覆盖率：不跟踪',
       configNotFound: '⚠️  未找到config.json，无法更新测试配置',
     },
     de: {
       header: '🧪 Test-Konfiguration',
       subheader: 'Konfigurieren Sie Ihren Standard-Testansatz und Abdeckungsziele',
       guidance: '💡 Kurzanleitung:',
-      tddHint: '🔴 TDD: Tests zuerst → Besseres Design (Produktion)',
+      tddHint: '🔴 TDD: Tests zuerst → Besseres Design (kritische Systeme)',
       testAfterHint: '🔵 Test-After: Code zuerst → Schnelle Iteration (meiste Projekte)',
-      manualHint: '🟡 Manuell: Keine Tests → Schnellster Start (nur Prototypen)',
+      manualHint: '🟡 Manuell: Tests bei Bedarf → Flexibel (Startups, MVPs)',
+      noneHint: '⚪ Keine: Tests überspringen → Am schnellsten (Hackathons, Experimente)',
       selectApproach: 'Wählen Sie Ihren Testansatz:',
-      tddOption: '🔴 TDD - Zuerst Tests schreiben (empfohlen für Produktions-Apps)',
-      testAfterOption: '🔵 Test-After - Erst implementieren, dann testen (ausgewogener Ansatz)',
-      manualOption: '🟡 Manuell - Keine automatisierten Tests (nur Prototypen)',
+      tddOption: '🔴 TDD - Zuerst Tests schreiben (kritische Systeme)',
+      testAfterOption: '🔵 Test-After - Erst implementieren, dann testen (empfohlen)',
+      manualOption: '🟡 Manuell - Testen bei Bedarf, keine strengen Regeln (flexibel)',
+      noneOption: '⚪ Keine - Tests komplett überspringen (Hackathons, Experimente)',
       selectCoverage: 'Wählen Sie Ihr Abdeckungsziel:',
-      coverage70: '70% - Akzeptabel (Kernpfade abgedeckt)',
-      coverage80: '80% - Gut (empfohlen - die meisten Pfade abgedeckt)',
-      coverage90: '90% - Exzellent (umfassende Abdeckung)',
-      coverageCustom: 'Benutzerdefiniert (eigenen Wert eingeben)',
-      enterCustom: 'Geben Sie ein benutzerdefiniertes Abdeckungsziel ein (70-95):',
-      coverageValidation: 'Abdeckungsziel muss zwischen 70% und 95% liegen',
+      coverageNone: '0% - Keine Abdeckungsverfolgung (schnellste Iteration)',
+      coverage50: '50% - Minimal (nur kritische Pfade)',
+      coverage70: '70% - Moderat (gut für die meisten Projekte)',
+      coverage80: '80% - Gut (empfohlen für Produktion)',
+      coverage90: '90% - Hoch (umfassende Abdeckung)',
+      coverageCustom: 'Benutzerdefiniert (Wert 0-100 eingeben)',
+      enterCustom: 'Geben Sie ein benutzerdefiniertes Abdeckungsziel ein (0-100):',
+      coverageValidation: 'Abdeckungsziel muss zwischen 0% und 100% liegen',
       selectedTesting: '✔ Testen:',
       selectedCoverage: '✔ Abdeckungsziel:',
+      noCoverageTarget: '✔ Abdeckung: Nicht verfolgt',
       configNotFound: '⚠️  config.json nicht gefunden, kann Testkonfiguration nicht aktualisieren',
     },
     fr: {
       header: '🧪 Configuration des tests',
       subheader: 'Configurez votre approche de test par défaut et vos objectifs de couverture',
       guidance: '💡 Guide rapide:',
-      tddHint: '🔴 TDD: Tests d\'abord → Meilleur design (production)',
+      tddHint: '🔴 TDD: Tests d\'abord → Meilleur design (systèmes critiques)',
       testAfterHint: '🔵 Test-After: Code d\'abord → Itération rapide (plupart des projets)',
-      manualHint: '🟡 Manuel: Sans tests → Démarrage rapide (prototypes uniquement)',
+      manualHint: '🟡 Manuel: Tests ad-hoc → Flexible (startups, MVPs)',
+      noneHint: '⚪ Aucun: Pas de tests → Plus rapide (hackathons, expériences)',
       selectApproach: 'Sélectionnez votre approche de test :',
-      tddOption: '🔴 TDD - Écrire les tests en premier (recommandé pour la production)',
-      testAfterOption: '🔵 Test-After - Implémenter d\'abord, tester ensuite (approche équilibrée)',
-      manualOption: '🟡 Manuel - Pas de tests automatisés (prototypes uniquement)',
+      tddOption: '🔴 TDD - Écrire les tests en premier (systèmes critiques)',
+      testAfterOption: '🔵 Test-After - Implémenter d\'abord, tester ensuite (recommandé)',
+      manualOption: '🟡 Manuel - Tester quand nécessaire, pas de règles strictes (flexible)',
+      noneOption: '⚪ Aucun - Ignorer les tests complètement (hackathons, expériences)',
       selectCoverage: 'Sélectionnez votre niveau de couverture cible :',
-      coverage70: '70% - Acceptable (chemins principaux couverts)',
-      coverage80: '80% - Bon (recommandé - la plupart des chemins couverts)',
-      coverage90: '90% - Excellent (couverture complète)',
-      coverageCustom: 'Personnalisé (entrez votre propre valeur)',
-      enterCustom: 'Entrez une couverture cible personnalisée (70-95) :',
-      coverageValidation: 'La couverture cible doit être entre 70% et 95%',
+      coverageNone: '0% - Pas de suivi de couverture (itération la plus rapide)',
+      coverage50: '50% - Minimal (seulement les chemins critiques)',
+      coverage70: '70% - Modéré (bon pour la plupart des projets)',
+      coverage80: '80% - Bon (recommandé pour la production)',
+      coverage90: '90% - Élevé (couverture complète)',
+      coverageCustom: 'Personnalisé (entrez une valeur 0-100)',
+      enterCustom: 'Entrez une couverture cible personnalisée (0-100) :',
+      coverageValidation: 'La couverture cible doit être entre 0% et 100%',
       selectedTesting: '✔ Tests :',
       selectedCoverage: '✔ Couverture cible :',
+      noCoverageTarget: '✔ Couverture : Non suivie',
       configNotFound: '⚠️  config.json non trouvé, impossible de mettre à jour la configuration des tests',
     },
     ja: {
       header: '🧪 テスト設定',
       subheader: 'デフォルトのテストアプローチとカバレッジ目標を設定します',
       guidance: '💡 クイックガイド:',
-      tddHint: '🔴 TDD: テスト先行 → 良い設計 (本番アプリ)',
+      tddHint: '🔴 TDD: テスト先行 → 良い設計 (クリティカルシステム)',
       testAfterHint: '🔵 後付け: コード先行 → 高速反復 (ほとんどのプロジェクト)',
-      manualHint: '🟡 手動: テストなし → 最速スタート (プロトタイプのみ)',
+      manualHint: '🟡 手動: 必要時テスト → 柔軟 (スタートアップ, MVP)',
+      noneHint: '⚪ なし: テストスキップ → 最速 (ハッカソン, 実験)',
       selectApproach: 'テストアプローチを選択してください：',
-      tddOption: '🔴 TDD - テストを先に書く（本番アプリに推奨）',
-      testAfterOption: '🔵 テスト後付け - 先に実装、後でテスト（バランスのとれたアプローチ）',
-      manualOption: '🟡 手動 - 自動テストなし（プロトタイプのみ）',
+      tddOption: '🔴 TDD - テストを先に書く（クリティカルシステム）',
+      testAfterOption: '🔵 テスト後付け - 先に実装、後でテスト（推奨）',
+      manualOption: '🟡 手動 - 必要時にテスト、厳格なルールなし（柔軟）',
+      noneOption: '⚪ なし - テストを完全にスキップ（ハッカソン, 実験）',
       selectCoverage: 'カバレッジ目標レベルを選択してください：',
-      coverage70: '70% - 許容範囲（コアパスをカバー）',
-      coverage80: '80% - 良好（推奨 - ほとんどのパスをカバー）',
-      coverage90: '90% - 優秀（包括的カバレッジ）',
-      coverageCustom: 'カスタム（独自の値を入力）',
-      enterCustom: 'カスタムカバレッジ目標を入力（70-95）：',
-      coverageValidation: 'カバレッジ目標は70%から95%の間でなければなりません',
+      coverageNone: '0% - カバレッジ追跡なし（最速反復）',
+      coverage50: '50% - 最小限（クリティカルパスのみ）',
+      coverage70: '70% - 中程度（ほとんどのプロジェクトに適切）',
+      coverage80: '80% - 良好（本番に推奨）',
+      coverage90: '90% - 高い（包括的カバレッジ）',
+      coverageCustom: 'カスタム（0-100の値を入力）',
+      enterCustom: 'カスタムカバレッジ目標を入力（0-100）：',
+      coverageValidation: 'カバレッジ目標は0%から100%の間でなければなりません',
       selectedTesting: '✔ テスト：',
       selectedCoverage: '✔ カバレッジ目標：',
+      noCoverageTarget: '✔ カバレッジ：追跡なし',
       configNotFound: '⚠️  config.jsonが見つかりません。テスト設定を更新できません',
     },
     ko: {
       header: '🧪 테스트 구성',
       subheader: '기본 테스트 접근 방식과 커버리지 목표를 구성합니다',
       guidance: '💡 빠른 가이드:',
-      tddHint: '🔴 TDD: 테스트 먼저 → 더 나은 설계 (프로덕션 앱)',
+      tddHint: '🔴 TDD: 테스트 먼저 → 더 나은 설계 (핵심 시스템)',
       testAfterHint: '🔵 후행: 코드 먼저 → 빠른 반복 (대부분 프로젝트)',
-      manualHint: '🟡 수동: 테스트 없음 → 가장 빠른 시작 (프로토타입만)',
+      manualHint: '🟡 수동: 필요시 테스트 → 유연 (스타트업, MVP)',
+      noneHint: '⚪ 없음: 테스트 건너뛰기 → 가장 빠름 (해커톤, 실험)',
       selectApproach: '테스트 접근 방식을 선택하세요:',
-      tddOption: '🔴 TDD - 테스트 먼저 작성 (프로덕션 앱에 권장)',
-      testAfterOption: '🔵 테스트 후행 - 먼저 구현, 나중에 테스트 (균형 잡힌 접근)',
-      manualOption: '🟡 수동 - 자동화된 테스트 없음 (프로토타입만)',
+      tddOption: '🔴 TDD - 테스트 먼저 작성 (핵심 시스템)',
+      testAfterOption: '🔵 테스트 후행 - 먼저 구현, 나중에 테스트 (권장)',
+      manualOption: '🟡 수동 - 필요시 테스트, 엄격한 규칙 없음 (유연)',
+      noneOption: '⚪ 없음 - 테스트 완전히 건너뛰기 (해커톤, 실험)',
       selectCoverage: '커버리지 목표 수준을 선택하세요:',
-      coverage70: '70% - 허용 가능 (핵심 경로 커버)',
-      coverage80: '80% - 좋음 (권장 - 대부분 경로 커버)',
-      coverage90: '90% - 우수 (포괄적 커버리지)',
-      coverageCustom: '사용자 지정 (직접 값 입력)',
-      enterCustom: '사용자 지정 커버리지 목표 입력 (70-95):',
-      coverageValidation: '커버리지 목표는 70%에서 95% 사이여야 합니다',
+      coverageNone: '0% - 커버리지 추적 없음 (가장 빠른 반복)',
+      coverage50: '50% - 최소 (핵심 경로만)',
+      coverage70: '70% - 중간 (대부분 프로젝트에 적합)',
+      coverage80: '80% - 좋음 (프로덕션에 권장)',
+      coverage90: '90% - 높음 (포괄적 커버리지)',
+      coverageCustom: '사용자 지정 (0-100 값 입력)',
+      enterCustom: '사용자 지정 커버리지 목표 입력 (0-100):',
+      coverageValidation: '커버리지 목표는 0%에서 100% 사이여야 합니다',
       selectedTesting: '✔ 테스트:',
       selectedCoverage: '✔ 커버리지 목표:',
+      noCoverageTarget: '✔ 커버리지: 추적 안 함',
       configNotFound: '⚠️  config.json을 찾을 수 없어 테스트 구성을 업데이트할 수 없습니다',
     },
     pt: {
       header: '🧪 Configuração de Testes',
       subheader: 'Configure sua abordagem de teste padrão e metas de cobertura',
       guidance: '💡 Guia rápido:',
-      tddHint: '🔴 TDD: Testes primeiro → Melhor design (produção)',
+      tddHint: '🔴 TDD: Testes primeiro → Melhor design (sistemas críticos)',
       testAfterHint: '🔵 Test-After: Código primeiro → Iteração rápida (maioria dos projetos)',
-      manualHint: '🟡 Manual: Sem testes → Início mais rápido (apenas protótipos)',
+      manualHint: '🟡 Manual: Testes ad-hoc → Flexível (startups, MVPs)',
+      noneHint: '⚪ Nenhum: Sem testes → Mais rápido (hackathons, experimentos)',
       selectApproach: 'Selecione sua abordagem de teste:',
-      tddOption: '🔴 TDD - Escrever testes primeiro (recomendado para apps de produção)',
-      testAfterOption: '🔵 Test-After - Implementar primeiro, testar depois (abordagem equilibrada)',
-      manualOption: '🟡 Manual - Sem testes automatizados (apenas protótipos)',
+      tddOption: '🔴 TDD - Escrever testes primeiro (sistemas críticos)',
+      testAfterOption: '🔵 Test-After - Implementar primeiro, testar depois (recomendado)',
+      manualOption: '🟡 Manual - Testar quando necessário, sem regras rígidas (flexível)',
+      noneOption: '⚪ Nenhum - Pular testes completamente (hackathons, experimentos)',
       selectCoverage: 'Selecione seu nível de cobertura alvo:',
-      coverage70: '70% - Aceitável (caminhos principais cobertos)',
-      coverage80: '80% - Bom (recomendado - maioria dos caminhos cobertos)',
-      coverage90: '90% - Excelente (cobertura abrangente)',
-      coverageCustom: 'Personalizado (digite seu próprio valor)',
-      enterCustom: 'Digite a cobertura alvo personalizada (70-95):',
-      coverageValidation: 'A cobertura alvo deve estar entre 70% e 95%',
+      coverageNone: '0% - Sem rastreamento de cobertura (iteração mais rápida)',
+      coverage50: '50% - Mínimo (apenas caminhos críticos)',
+      coverage70: '70% - Moderado (bom para maioria dos projetos)',
+      coverage80: '80% - Bom (recomendado para produção)',
+      coverage90: '90% - Alto (cobertura abrangente)',
+      coverageCustom: 'Personalizado (digite valor 0-100)',
+      enterCustom: 'Digite a cobertura alvo personalizada (0-100):',
+      coverageValidation: 'A cobertura alvo deve estar entre 0% e 100%',
       selectedTesting: '✔ Testes:',
       selectedCoverage: '✔ Cobertura Alvo:',
+      noCoverageTarget: '✔ Cobertura: Não rastreada',
       configNotFound: '⚠️  config.json não encontrado, não é possível atualizar a configuração de testes',
     },
   };
@@ -268,15 +318,12 @@ export async function promptTestingConfig(language: SupportedLanguage = 'en'): P
   console.log(chalk.gray('   ' + strings.tddHint));
   console.log(chalk.gray('   ' + strings.testAfterHint));
   console.log(chalk.gray('   ' + strings.manualHint));
+  console.log(chalk.gray('   ' + strings.noneHint));
   console.log('');
 
   const testModeChoice = await select<TestMode | 'back'>({
     message: strings.selectApproach,
     choices: [
-      {
-        name: strings.tddOption,
-        value: 'TDD' as TestMode | 'back',
-      },
       {
         name: strings.testAfterOption,
         value: 'test-after' as TestMode | 'back',
@@ -284,6 +331,14 @@ export async function promptTestingConfig(language: SupportedLanguage = 'en'): P
       {
         name: strings.manualOption,
         value: 'manual' as TestMode | 'back',
+      },
+      {
+        name: strings.tddOption,
+        value: 'TDD' as TestMode | 'back',
+      },
+      {
+        name: strings.noneOption,
+        value: 'none' as TestMode | 'back',
       },
       createGoBackChoice(language) as { name: string; value: TestMode | 'back' },
     ],
@@ -297,13 +352,23 @@ export async function promptTestingConfig(language: SupportedLanguage = 'en'): P
 
   const testMode = testModeChoice as TestMode;
 
-  let coverageTarget = 80;
+  let coverageTarget = 0;
 
-  // Only ask for coverage if not manual testing
-  if (testMode !== 'manual') {
+  // Only ask for coverage if not 'none' or 'manual' testing mode
+  // For 'none' mode: no testing at all, coverage = 0
+  // For 'manual' mode: ad-hoc testing, no strict coverage target, default to 0
+  if (testMode !== 'none' && testMode !== 'manual') {
     const selectedCoverageLevel = await select<number | 'custom'>({
       message: strings.selectCoverage,
       choices: [
+        {
+          name: strings.coverageNone,
+          value: 0 as number | 'custom',
+        },
+        {
+          name: strings.coverage50,
+          value: 50 as number | 'custom',
+        },
         {
           name: strings.coverage70,
           value: 70 as number | 'custom',
@@ -321,16 +386,16 @@ export async function promptTestingConfig(language: SupportedLanguage = 'en'): P
           value: 'custom' as number | 'custom',
         }
       ],
-      default: 80
+      default: 50
     });
 
     if (selectedCoverageLevel === 'custom') {
       const customInput = await input({
         message: strings.enterCustom,
-        default: '80',
+        default: '50',
         validate: (val: string) => {
           const num = parseInt(val, 10);
-          if (isNaN(num) || num < 70 || num > 95) {
+          if (isNaN(num) || num < 0 || num > 100) {
             return strings.coverageValidation;
           }
           return true;
@@ -344,8 +409,12 @@ export async function promptTestingConfig(language: SupportedLanguage = 'en'): P
 
   console.log('');
   console.log(chalk.green(`   ${strings.selectedTesting} ${testMode}`));
-  if (testMode !== 'manual') {
-    console.log(chalk.green(`   ${strings.selectedCoverage} ${coverageTarget}%`));
+  if (testMode !== 'none' && testMode !== 'manual') {
+    if (coverageTarget > 0) {
+      console.log(chalk.green(`   ${strings.selectedCoverage} ${coverageTarget}%`));
+    } else {
+      console.log(chalk.green(`   ${strings.noCoverageTarget}`));
+    }
   }
   console.log('');
 
@@ -376,14 +445,23 @@ export function updateConfigWithTesting(
 
   const config = fs.readJsonSync(configPath);
 
+  // If coverage is 0 or mode is 'none'/'manual', don't track coverage at all
+  const trackCoverage = coverageTarget > 0 && testMode !== 'none';
+
   config.testing = {
     defaultTestMode: testMode,
     defaultCoverageTarget: coverageTarget,
-    coverageTargets: {
-      unit: Math.min(coverageTarget + 5, 95),
-      integration: coverageTarget,
-      e2e: Math.min(coverageTarget + 10, 100)
-    }
+    coverageTargets: trackCoverage
+      ? {
+          unit: Math.min(coverageTarget + 5, 100),
+          integration: coverageTarget,
+          e2e: Math.min(coverageTarget + 10, 100)
+        }
+      : {
+          unit: 0,
+          integration: 0,
+          e2e: 0
+        }
   } satisfies TestingConfig;
 
   fs.writeJsonSync(configPath, config, { spaces: 2 });

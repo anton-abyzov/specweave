@@ -225,8 +225,13 @@ export interface SetupOptions {
   repositoryHosting?: RepositoryHosting; // Repository hosting choice (informs issue tracker defaults)
   /** ADO credentials from repository setup - reused when ADO is also selected for issue tracking */
   adoCredentialsFromRepoSetup?: AdoProjectSelection;
-  /** GitHub credentials from repository setup - reused when GitHub Issues is selected for issue tracking (v1.0.4) */
-  githubCredentialsFromRepoSetup?: { org: string; pat: string };
+  /** GitHub credentials and cloned repos from repository setup - reused when GitHub Issues is selected for issue tracking (v1.0.4, enhanced v1.0.9) */
+  githubCredentialsFromRepoSetup?: {
+    org: string;
+    pat: string;
+    /** List of cloned repo names for 1:1 project mapping (v1.0.9) */
+    clonedRepos?: string[];
+  };
   /** Git URL format preference from repository setup (SSH or HTTPS) - v1.0.8+ */
   gitUrlFormat?: 'ssh' | 'https';
 }
