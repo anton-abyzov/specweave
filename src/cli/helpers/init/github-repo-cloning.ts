@@ -30,6 +30,8 @@ export interface GitHubRepoSelection {
 
 /**
  * Repository info from GitHub API
+ *
+ * @see https://docs.github.com/en/rest/repos/repos#list-repositories-for-the-authenticated-user
  */
 interface GitHubRepository {
   id: number;
@@ -40,6 +42,14 @@ interface GitHubRepository {
   owner: {
     login: string;
   };
+  /** Whether the repository is archived (read-only, may be stale) */
+  archived: boolean;
+  /** Whether the repository is a fork of another repo */
+  fork: boolean;
+  /** Whether the repository is private */
+  private: boolean;
+  /** Visibility: public, private, or internal (GitHub Enterprise) */
+  visibility?: string;
 }
 
 /**
@@ -236,11 +246,28 @@ async function fetchGitHubRepos(
     // The /user/repos endpoint returns ALL repos the user has access to, including repos from
     // other organizations. We must filter to only include repos owned by the target org.
     // See: https://docs.github.com/en/rest/repos/repos#list-repositories-for-the-authenticated-user
-    const ownedRepos = batch.filter(repo =>
-      repo.owner.login.toLowerCase() === org.toLowerCase()
-    );
+    //
+    // CRITICAL FIX (v1.0.14): Also exclude archived and forked repos
+    // - Archived repos: Read-only, often stale/deleted on web but still in API
+    // - Forked repos: User forks that may no longer exist upstream
+    // These "ghost" repos cause confusion in parent repo selection (e.g., ec-typescript)
+    const validRepos = batch.filter(repo => {
+      // Must be owned by the target org/user
+      if (repo.owner.login.toLowerCase() !== org.toLowerCase()) {
+        return false;
+      }
+      // Exclude archived repos (read-only, often stale)
+      if (repo.archived) {
+        return false;
+      }
+      // Exclude forked repos (user forks, may not be "real" org repos)
+      if (repo.fork) {
+        return false;
+      }
+      return true;
+    });
 
-    repos.push(...ownedRepos);
+    repos.push(...validRepos);
 
     // Show progress for large orgs
     if (repos.length >= 100 && repos.length % 100 === 0) {
