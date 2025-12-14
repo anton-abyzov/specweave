@@ -4,6 +4,28 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.5] - 2025-12-13
+
+### 🐛 Bug Fix (Complete Solution)
+- **Duplicate Prompts Eliminated**: Completed fix for GitHub + GitHub Issues init flow asking repository configuration questions twice
+  - **Enhanced from v1.0.4**: Removed unnecessary messages and streamlined the flow
+  - **Removed**: `loadExistingGitHubRepoConfig()` function that never worked during init (config.json doesn't exist yet)
+  - **Added**: Skip duplicate header messages when architecture is pre-selected in `promptGitHubSetupType` and `RepoStructureManager.promptStructure`
+  - **Result**: Zero duplicate prompts for single-repo, only essential parent-selection for multi-repo
+
+### 🔧 Technical Changes
+- Deleted `loadExistingGitHubRepoConfig()` function (introduced in v1.0.3, deprecated in v1.0.4, removed in v1.0.5)
+- Added conditional message skipping in `github-multi-repo.ts:promptGitHubSetupType()` when `preSelectedArchitecture` is set
+- Added conditional header skipping in `repo-structure-manager.ts:promptStructure()` when architecture is pre-selected
+- Streamlined `configureGitHubRepositories()` to directly call `promptGitHubSetupType` without config.json loading attempt
+
+### 🧪 Testing
+- Rewrote unit tests for parameter-passing approach (10 tests)
+- Removed tests for deleted `loadExistingGitHubRepoConfig` function
+- All tests passing
+
+---
+
 ## [1.0.4] - 2025-12-13
 
 ### 🐛 Bug Fix

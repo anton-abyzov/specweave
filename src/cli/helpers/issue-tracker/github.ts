@@ -366,7 +366,7 @@ export async function configureGitHubRepositories(
   repositoryHosting?: string,
   githubCredentialsFromRepoSetup?: { org: string; pat: string }
 ): Promise<{ profiles: any[]; monorepoProjects?: string[] }> {
-  // CRITICAL OPTIMIZATION (v1.0.4): If GitHub credentials provided from repository setup, reuse them!
+  // CRITICAL OPTIMIZATION (v1.0.5): If GitHub credentials provided from repository setup, reuse them!
   // This prevents asking the same questions twice (repos during init, then again for issue tracker)
   if (githubCredentialsFromRepoSetup) {
     console.log(chalk.cyan('\n📂 Reusing GitHub Repository Configuration\n'));
@@ -374,61 +374,28 @@ export async function configureGitHubRepositories(
 
     const { org, pat } = githubCredentialsFromRepoSetup;
 
-    // Try to load existing repository configuration from config.json
-    // (repos might already be configured if this is a re-init or if repository setup created config)
-    const existingConfig = await loadExistingGitHubRepoConfig(projectPath);
+    // CRITICAL FIX (v1.0.5): Skip loadExistingGitHubRepoConfig() - it never works during init!
+    // Config.json is written AFTER both repository AND issue tracker setup complete.
+    // Attempting to load it here always returns null and shows confusing messages.
 
-    if (existingConfig && existingConfig.profiles.length > 0) {
-      console.log(chalk.green(`✓ Found ${existingConfig.profiles.length} configured repository(-ies)`));
-
-      // Display repos for user confirmation
-      for (const profile of existingConfig.profiles) {
-        console.log(chalk.gray(`   - ${profile.owner}/${profile.repo}${profile.isDefault ? ' (parent)' : ''}`));
-      }
-      console.log('');
-
-      // For multi-repo case, ask which repo should be the parent (for issues)
-      if (repositoryHosting === 'github-multirepo' && existingConfig.profiles.length > 1) {
-        const parentProfile = await selectParentRepoForIssues(existingConfig.profiles);
-
-        // Mark selected repo as default for issue tracking
-        const updatedProfiles = existingConfig.profiles.map(p => ({
-          ...p,
-          isDefault: p.id === parentProfile.id
-        }));
-
-        console.log(chalk.green(`\n✓ Using ${parentProfile.owner}/${parentProfile.repo} as parent for issue tracking\n`));
-
-        return {
-          profiles: updatedProfiles,
-          monorepoProjects: existingConfig.monorepoProjects
-        };
-      }
-
-      // Single-repo or parent already selected - return as-is
-      return existingConfig;
-    }
-
-    // Config doesn't exist yet (fresh init) - use provided credentials for minimal prompting
-    console.log(chalk.yellow('ℹ️  No existing repository configuration found'));
-    console.log(chalk.gray('   Will configure using provided credentials\n'));
-
-    // For single-repo: prompt for repo name
-    // For multi-repo: prompt for which repos to track
-    // But use the org/PAT without asking for them again
+    // Use provided credentials directly with minimal prompting
+    // For single-repo: just use the org as owner
+    // For multi-repo: RepoStructureManager will collect repo details (but skip architecture prompt)
     const token = pat || githubToken;
 
     const { promptGitHubSetupType } = await import('./github-multi-repo.js');
     const setupResult = await promptGitHubSetupType(projectPath, token, repositoryHosting);
 
     if (setupResult.profiles) {
+      // Multi-repo case: if we have multiple profiles, user has already selected parent in RepoStructureManager
+      // The default is set by RepoStructureManager based on user's choice
       return {
         profiles: setupResult.profiles,
         monorepoProjects: setupResult.monorepoProjects
       };
     }
 
-    // Fallback: create single profile from org
+    // Fallback for single-repo: create single profile from org
     return {
       profiles: [{
         id: '1',
@@ -486,62 +453,6 @@ export async function configureGitHubRepositories(
 
     default:
       return { profiles: [] };
-  }
-}
-
-/**
- * Load existing GitHub repository configuration from config.json
- *
- * This is used to reuse repository configuration when user selects GitHub
- * for both repositories (during init) and issue tracking (in the same flow).
- *
- * @param projectPath - Path to project root
- * @returns Existing profiles and monorepo projects, or null if not found
- */
-async function loadExistingGitHubRepoConfig(
-  projectPath: string
-): Promise<{ profiles: any[]; monorepoProjects?: string[] } | null> {
-  try {
-    const { getConfigManager } = await import('../../../core/config/index.js');
-    const configManager = getConfigManager(projectPath);
-    const config = await configManager.read();
-
-    // Check if GitHub sync profiles exist
-    if (!config.sync?.profiles) {
-      return null;
-    }
-
-    const profiles: any[] = [];
-    let monorepoProjects: string[] | undefined;
-
-    // Extract GitHub profiles from sync config
-    for (const [profileId, profile] of Object.entries(config.sync.profiles)) {
-      if ((profile as any).provider === 'github') {
-        const githubConfig = (profile as any).config;
-
-        profiles.push({
-          id: profileId,
-          displayName: (profile as any).displayName || `${githubConfig.owner}/${githubConfig.repo}`,
-          owner: githubConfig.owner,
-          repo: githubConfig.repo,
-          isDefault: config.sync.defaultProfile === profileId
-        });
-
-        // Extract monorepo projects if present (only from first profile)
-        if (!monorepoProjects && githubConfig.monorepoProjects) {
-          monorepoProjects = githubConfig.monorepoProjects;
-        }
-      }
-    }
-
-    if (profiles.length === 0) {
-      return null;
-    }
-
-    return { profiles, monorepoProjects };
-  } catch {
-    // Config doesn't exist or is malformed - return null
-    return null;
   }
 }
 

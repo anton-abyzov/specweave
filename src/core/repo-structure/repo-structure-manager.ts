@@ -88,8 +88,11 @@ export class RepoStructureManager {
    * @param preSelectedArchitecture - Optional pre-selected architecture to skip duplicate prompts
    */
   async promptStructure(preSelectedArchitecture?: ArchitectureChoice): Promise<RepoStructureConfig> {
-    console.log(chalk.cyan.bold('\n🏗️  Repository Architecture Setup\n'));
-    console.log(chalk.gray('Let\'s configure your repository structure for optimal organization.\n'));
+    // CRITICAL (v1.0.5): Skip header when architecture is pre-selected (already shown in repo setup)
+    if (!preSelectedArchitecture) {
+      console.log(chalk.cyan.bold('\n🏗️  Repository Architecture Setup\n'));
+      console.log(chalk.gray('Let\'s configure your repository structure for optimal organization.\n'));
+    }
 
     // Check for resumed setup
     const resumedState = await this.stateManager.detectAndResumeSetup();
