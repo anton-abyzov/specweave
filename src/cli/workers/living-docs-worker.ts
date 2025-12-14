@@ -616,17 +616,27 @@ async function main(): Promise<void> {
 
       try {
         // Build repo list: umbrella projects have multiple, single-repo creates synthetic entry
-        const isUmbrella = discovery.umbrella?.isUmbrella && discovery.umbrella.childRepos?.length > 0;
-        const repos = isUmbrella
-          ? discovery.umbrella.childRepos.map((r: any) => ({
-              name: r.name || path.basename(r.path),
-              path: r.path,
-            }))
-          : [{
-              // Single-repo project: treat root as the only "repo"
-              name: path.basename(projectPath),
-              path: projectPath,
-            }];
+        // CRITICAL FIX (v1.0.12): discovery.umbrella only has childRepoCount, not childRepos array!
+        // The actual childRepos array is stored in config.json umbrella section.
+        // We need to load from config.json OR use discovery.modules (which ARE the child repos!)
+        let repos: Array<{ name: string; path: string }> = [];
+
+        if (discovery.umbrella?.isUmbrella && discovery.modules.length > 1) {
+          // Umbrella project: discovery.modules already contains the child repos!
+          // The umbrella-detector.ts converts childRepos to ModuleInfo[] in convertReposToModules()
+          repos = (discovery.modules as Array<{ name: string; path: string }>).map((m) => ({
+            name: m.name,
+            path: m.path,
+          }));
+          log(`  UMBRELLA PROJECT: Using ${repos.length} child repositories from discovery.modules`);
+        } else {
+          // Single-repo project: treat root as the only "repo"
+          repos = [{
+            name: path.basename(projectPath),
+            path: projectPath,
+          }];
+          log(`  SINGLE-REPO PROJECT: Analyzing root directory`);
+        }
 
         log(`  Analyzing ${repos.length} repositories...`);
 
@@ -724,6 +734,17 @@ async function main(): Promise<void> {
       }
       // deep-native, deep-interactive = all modules
 
+      // CRITICAL FIX (v1.0.12): For deep-native mode, increase file sampling!
+      // Default tier-based sampling (3 files for large codebases) is too shallow.
+      // Deep analysis should sample 15-20 files per module for comprehensive coverage.
+      const effectiveSamplingConfig = (analysisDepth === 'deep-native' || analysisDepth === 'deep-interactive')
+        ? {
+            ...discovery.samplingConfig,
+            // Override filesPerDir: minimum 15 for deep analysis (was 3 for large tier)
+            filesPerDir: Math.max(15, typeof discovery.samplingConfig.filesPerDir === 'number' ? discovery.samplingConfig.filesPerDir : 15),
+          }
+        : discovery.samplingConfig;
+
       // Check for resume point
       const resumePoint = getResumePoint(projectPath, jobId);
       let startIndex = 0;
@@ -747,11 +768,11 @@ async function main(): Promise<void> {
         try {
           const workItemMatches = matchResult?.moduleMap?.get(module.name)?.matches || [];
 
-          // Basic Node.js analysis first
+          // Basic Node.js analysis first (using effectiveSamplingConfig for deep modes)
           const analysis = await analyzeModule(
             projectPath,
             module,
-            discovery.samplingConfig,
+            effectiveSamplingConfig,
             workItemMatches,
             (_moduleName: string, _fileIdx: number, _totalFiles: number) => {
               // File-level progress

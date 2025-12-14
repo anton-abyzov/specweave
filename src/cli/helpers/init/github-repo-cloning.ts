@@ -37,6 +37,9 @@ interface GitHubRepository {
   full_name: string;
   clone_url: string;
   html_url: string;
+  owner: {
+    login: string;
+  };
 }
 
 /**
@@ -229,7 +232,15 @@ async function fetchGitHubRepos(
       break;
     }
 
-    repos.push(...batch);
+    // CRITICAL FIX (v1.0.12): Filter repos to only include those owned by the target org/user
+    // The /user/repos endpoint returns ALL repos the user has access to, including repos from
+    // other organizations. We must filter to only include repos owned by the target org.
+    // See: https://docs.github.com/en/rest/repos/repos#list-repositories-for-the-authenticated-user
+    const ownedRepos = batch.filter(repo =>
+      repo.owner.login.toLowerCase() === org.toLowerCase()
+    );
+
+    repos.push(...ownedRepos);
 
     // Show progress for large orgs
     if (repos.length >= 100 && repos.length % 100 === 0) {
@@ -403,11 +414,13 @@ export async function triggerGitHubRepoCloning(
   console.log('');
 
   // Prepare repositories with clone URLs (v1.0.10: respects gitUrlFormat)
+  // v1.0.12: Use actual owner from repo object instead of user-provided org
+  // This ensures we use the correct owner even if filtering missed something
   const reposWithUrls = filteredRepos.map(r => ({
-    owner: org,
+    owner: r.owner.login,
     name: r.name,
     path: r.name, // Clone directly into project path
-    cloneUrl: buildGitHubCloneUrl(org, r.name, pat, gitUrlFormat)
+    cloneUrl: buildGitHubCloneUrl(r.owner.login, r.name, pat, gitUrlFormat)
   }));
 
   // Launch background clone job
