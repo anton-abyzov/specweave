@@ -20,7 +20,7 @@ import { detectAllConfigs } from './config-detection.js';
 import type { ADOConfig, JiraConfig } from './types.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import { parseEnvFile } from '../../../utils/env-file.js';
-import { getGitHubAuthFromProject } from '../../../utils/auth-helpers.js';
+import { getGitHubAuthFromProject, isOAuthToken, isPersonalAccessToken } from '../../../utils/auth-helpers.js';
 import {
   detectJiraStructure,
   confirmJiraMapping,
@@ -640,6 +640,33 @@ export async function promptAndRunExternalImport(
   // Bug: getGitHubAuth() uses process.env which is empty unless dotenv is loaded
   const githubAuth = getGitHubAuthFromProject(targetDir);
   const hasGitHubToken = githubAuth.source !== 'none';
+
+  // CRITICAL WARNING (v1.0.7): OAuth tokens (gho_) typically lack repo scope for private repos!
+  // OAuth tokens from `gh auth login` do NOT have repo scope unless explicitly requested.
+  // This causes 404 errors when trying to access private repositories.
+  if (hasGitHubToken && githubAuth.isOAuthToken) {
+    console.log('');
+    console.log(chalk.yellow('   ⚠️  WARNING: OAuth token detected (gho_ prefix)'));
+    console.log(chalk.yellow('   OAuth tokens from `gh auth login` typically lack repo scope.'));
+    console.log(chalk.yellow('   This means private repositories may return 0 issues (404 error).'));
+    console.log('');
+    console.log(chalk.cyan('   To fix, create a Personal Access Token (PAT) with repo scope:'));
+    console.log(chalk.gray('   1. Go to: https://github.com/settings/tokens'));
+    console.log(chalk.gray('   2. Generate new token (classic) → Select "repo" scope'));
+    console.log(chalk.gray('   3. Add to .env file: GITHUB_TOKEN=ghp_your_token_here'));
+    console.log('');
+
+    // Ask if user wants to continue with OAuth token
+    const continueWithOAuth = await confirm({
+      message: 'Continue with OAuth token? (private repos may fail)',
+      default: false
+    });
+
+    if (!continueWithOAuth) {
+      console.log(chalk.gray('   → Skipping import. Add a PAT to .env and run /sw:import-external'));
+      return emptyResult();
+    }
+  }
 
   // CRITICAL FIX: Use profiles OR git remote detection for GitHub
   // In umbrella mode, hasGitHubProfiles is true even when github is null

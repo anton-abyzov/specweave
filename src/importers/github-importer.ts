@@ -41,6 +41,11 @@ export class GitHubImporter implements Importer {
     const tokenPrefix = effectiveToken ? effectiveToken.slice(0, 8) + '...' : 'none';
     console.log(`   🔑 GitHubImporter: ${owner}/${repo} (token: ${tokenPrefix} from ${tokenSource})`);
 
+    // CRITICAL WARNING (v1.0.7): OAuth tokens (gho_) lack repo scope for private repos!
+    if (effectiveToken && effectiveToken.startsWith('gho_')) {
+      console.log(`   ⚠️  WARNING: OAuth token (gho_*) detected - may lack repo scope for private repos!`);
+    }
+
     this.octokit = new Octokit({
       auth: effectiveToken,
     });
@@ -71,14 +76,22 @@ export class GitHubImporter implements Importer {
       maxItems = Infinity,
     } = config;
 
+    // CRITICAL FIX (v1.0.18): Cap time range to 240 months (20 years)
+    // Bug: timeRangeMonths=999 creates dates like 1942-09-15 which GitHub API
+    // silently returns 0 results for (edge case with very old dates)
+    // GitHub was founded in 2008, so 20 years covers all possible issues
+    const MAX_TIME_RANGE_MONTHS = 240; // 20 years - covers GitHub's entire history
+    const effectiveTimeRange = Math.min(timeRangeMonths, MAX_TIME_RANGE_MONTHS);
+
     // Calculate since date
     const since = new Date();
-    since.setMonth(since.getMonth() - timeRangeMonths);
+    since.setMonth(since.getMonth() - effectiveTimeRange);
 
     // DIAGNOSTIC: Log import parameters (helps debug "only 1 issue" reports)
     console.log(`   📋 GitHub Import: ${this.owner}/${this.repo}`);
     console.log(`      → State: ${includeClosed ? 'all (open + closed)' : 'open only'}`);
-    console.log(`      → Since: ${since.toISOString().split('T')[0]} (${timeRangeMonths} months ago)`);
+    const cappedNote = timeRangeMonths > MAX_TIME_RANGE_MONTHS ? ` (capped from ${timeRangeMonths})` : '';
+    console.log(`      → Since: ${since.toISOString().split('T')[0]} (${effectiveTimeRange} months${cappedNote})`);
     if (labels.length > 0) console.log(`      → Labels: ${labels.join(', ')}`);
 
     let page = 1;
@@ -140,7 +153,12 @@ export class GitHubImporter implements Importer {
           throw new Error(`GitHub rate limit exceeded: ${error.message}`);
         }
         if (error.status === 404) {
-          throw new Error(`Repository not found or no access: ${this.owner}/${this.repo}. Check token permissions for private repos.`);
+          // CRITICAL (v1.0.7): OAuth tokens (gho_) lack repo scope - most common cause!
+          throw new Error(
+            `Repository not found or no access: ${this.owner}/${this.repo}.\n` +
+            `         If using OAuth token (gho_*), it lacks repo scope for private repos.\n` +
+            `         Create a PAT (ghp_*) with repo scope: https://github.com/settings/tokens`
+          );
         }
         if (error.status === 401) {
           throw new Error(`Authentication failed for ${this.owner}/${this.repo}. Token may be invalid or expired.`);

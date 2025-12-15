@@ -13,9 +13,40 @@ import * as os from 'os';
 import * as yaml from 'js-yaml';
 import { execSync } from 'child_process';
 
+/**
+ * Check if a GitHub token is an OAuth token (gho_ prefix)
+ *
+ * OAuth tokens from `gh auth` typically lack `repo` scope for private repositories.
+ * Only PATs (ghp_) or Fine-grained tokens (github_pat_) have explicit repo access.
+ *
+ * Token prefixes:
+ * - gho_ = OAuth App token (from gh auth) - may lack repo scope!
+ * - ghp_ = Classic Personal Access Token - has explicit scopes
+ * - ghs_ = GitHub App server-to-server token
+ * - ghu_ = GitHub App user-to-server token
+ * - github_pat_ = Fine-grained Personal Access Token
+ */
+export function isOAuthToken(token: string): boolean {
+  return token.startsWith('gho_');
+}
+
+/**
+ * Check if a GitHub token is a Personal Access Token (classic or fine-grained)
+ * These tokens have explicit repo scope and work with private repositories.
+ */
+export function isPersonalAccessToken(token: string): boolean {
+  return token.startsWith('ghp_') || token.startsWith('github_pat_');
+}
+
 export interface GitHubAuth {
   token: string;
   source: 'GITHUB_TOKEN' | 'GH_TOKEN' | 'gh-cli' | 'none';
+  /**
+   * Whether this is an OAuth token (gho_ prefix) which may lack repo scope.
+   * OAuth tokens from `gh auth` typically cannot access private repos unless
+   * the user explicitly granted repo scope during authentication.
+   */
+  isOAuthToken?: boolean;
 }
 
 export interface AzureDevOpsAuth {
@@ -81,12 +112,20 @@ export function getGitHubAuthFromProject(projectRoot: string): GitHubAuth {
 
       // Check GITHUB_TOKEN first (standard)
       if (envVars.GITHUB_TOKEN) {
-        return { token: envVars.GITHUB_TOKEN, source: 'GITHUB_TOKEN' };
+        return {
+          token: envVars.GITHUB_TOKEN,
+          source: 'GITHUB_TOKEN',
+          isOAuthToken: isOAuthToken(envVars.GITHUB_TOKEN)
+        };
       }
 
       // Check GH_TOKEN (alternative)
       if (envVars.GH_TOKEN) {
-        return { token: envVars.GH_TOKEN, source: 'GH_TOKEN' };
+        return {
+          token: envVars.GH_TOKEN,
+          source: 'GH_TOKEN',
+          isOAuthToken: isOAuthToken(envVars.GH_TOKEN)
+        };
       }
     }
   } catch {
@@ -107,19 +146,27 @@ export function getGitHubAuthFromProject(projectRoot: string): GitHubAuth {
 export function getGitHubAuth(): GitHubAuth {
   // 1. Check GITHUB_TOKEN (auto-provided in GitHub Actions)
   if (process.env.GITHUB_TOKEN) {
-    return { token: process.env.GITHUB_TOKEN, source: 'GITHUB_TOKEN' };
+    return {
+      token: process.env.GITHUB_TOKEN,
+      source: 'GITHUB_TOKEN',
+      isOAuthToken: isOAuthToken(process.env.GITHUB_TOKEN)
+    };
   }
 
   // 2. Check GH_TOKEN (custom PAT from .env)
   if (process.env.GH_TOKEN) {
-    return { token: process.env.GH_TOKEN, source: 'GH_TOKEN' };
+    return {
+      token: process.env.GH_TOKEN,
+      source: 'GH_TOKEN',
+      isOAuthToken: isOAuthToken(process.env.GH_TOKEN)
+    };
   }
 
   // 3. Try to get token via gh CLI command (works with Keychain, plain-text, etc.)
   try {
     const token = execSync('gh auth token', { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
     if (token && token.length > 0) {
-      return { token, source: 'gh-cli' };
+      return { token, source: 'gh-cli', isOAuthToken: isOAuthToken(token) };
     }
   } catch (error) {
     // gh CLI not installed or not authenticated - silently fail
@@ -133,14 +180,14 @@ export function getGitHubAuth(): GitHubAuth {
       const config = yaml.load(fs.readFileSync(ghConfigPath, 'utf8')) as any;
       const token = config?.['github.com']?.oauth_token;
       if (token) {
-        return { token, source: 'gh-cli' };
+        return { token, source: 'gh-cli', isOAuthToken: isOAuthToken(token) };
       }
     }
   } catch (error) {
     // Silently fail - gh CLI config is optional
   }
 
-  return { token: '', source: 'none' };
+  return { token: '', source: 'none', isOAuthToken: false };
 }
 
 /**
