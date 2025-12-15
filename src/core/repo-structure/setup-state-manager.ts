@@ -19,6 +19,7 @@ import path from 'path';
 
 /**
  * Repository architecture types
+ * v1.0.13: 'parent' is deprecated - kept for backward compatibility with old state files
  */
 export type SetupArchitecture = 'single' | 'multi-repo' | 'parent' | 'monorepo';
 
@@ -39,6 +40,7 @@ export interface RepoConfig {
 
 /**
  * Parent repository configuration
+ * @deprecated v1.0.13 - Parent repo concept removed. Kept for backward compatibility with old state files.
  */
 export interface ParentRepoConfig {
   name: string;
@@ -51,10 +53,12 @@ export interface ParentRepoConfig {
 
 /**
  * Setup state structure
+ * v1.0.13: parentRepo is deprecated but kept for backward compatibility
  */
 export interface SetupState {
   version: string;
   architecture: SetupArchitecture;
+  /** @deprecated v1.0.13 - Parent repo concept removed */
   parentRepo?: ParentRepoConfig;
   repos: RepoConfig[];
   currentStep: string;

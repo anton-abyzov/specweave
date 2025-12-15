@@ -51,18 +51,13 @@ my-project/
       },
       {
         value: 'github-parent',
-        label: '2️⃣  Parent repo + nested repos (ALL on GitHub)',
-        description: 'Parent repo on GitHub + implementation repos (best for teams)',
+        label: '2️⃣  Multiple repositories (microservices/polyrepo)',
+        description: 'Multiple GitHub repos - all equal, first is default for issues',
         example: `
-my-project-parent/         ← Parent repo (PUSHED TO GITHUB)
-├── .specweave/
-├── frontend/
-├── backend/
-├── .env
-└── .gitignore
-
-my-project-frontend/       ← Separate GitHub repo
-my-project-backend/        ← Separate GitHub repo
+my-org/
+├── frontend-app/          ← GitHub repo (default for issues)
+├── backend-api/           ← GitHub repo
+└── shared-lib/            ← GitHub repo
         `.trim()
       }
     ]
@@ -71,18 +66,19 @@ my-project-backend/        ← Separate GitHub repo
 
 /**
  * Get parent folder benefits explanation
- *
+ * @deprecated v1.0.13 - Parent repo concept removed. Kept for backward compatibility.
  * @returns Detailed benefits with examples
  */
 export function getParentRepoBenefits(): string {
+  // v1.0.13: This function is deprecated - all repos are now equal
   return `
-**Why a parent folder?**
-One central .specweave/ for all repos = single source of truth for specs & docs.
+**Multi-Repository Setup**
+Each repository is equal - first one is used as default for issue tracking.
 
-my-parent/                 ← Local folder
-├── .specweave/            ← All specs/docs here (local only)
-├── frontend/              ← GitHub repo
-└── backend/               ← GitHub repo
+my-org/
+├── frontend-app/          ← GitHub repo (default)
+├── backend-api/           ← GitHub repo
+└── shared-lib/            ← GitHub repo
   `.trim();
 }
 

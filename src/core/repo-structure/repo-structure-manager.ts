@@ -3,9 +3,10 @@
  *
  * Handles various repository architectures for SpecWeave projects:
  * - Single repository
- * - Multi-repository (polyrepo/microservices)
+ * - Multi-repository (polyrepo/microservices) - all repos are equal, first is default
  * - Monorepo (single repo with multiple projects)
- * - Parent repository approach (parent folder with .specweave + nested implementation repos)
+ *
+ * v1.0.13: REMOVED parent repo concept - all repos are equal.
  *
  * Provides capabilities to:
  * - Create GitHub repositories via API
@@ -41,6 +42,7 @@ import {
   createSpecWeaveStructure as createSpecWeaveStruct
 } from './repo-initializer.js';
 
+/** v1.0.13: 'parent' is deprecated - kept for backward compatibility */
 export type RepoArchitecture = 'single' | 'multi-repo' | 'monorepo' | 'parent';
 
 export interface RepoStructureConfig {
@@ -48,6 +50,7 @@ export interface RepoStructureConfig {
   urlType: 'ssh' | 'https';  // Git remote URL format (SSH recommended)
   platform: GitPlatformType;  // Git hosting platform (github, gitlab, bitbucket, etc.)
   provider: GitProvider;      // Git provider instance for API operations
+  /** @deprecated v1.0.13 - Parent repo concept removed. Kept for backward compatibility. */
   parentRepo?: {
     name: string;
     owner: string;
@@ -211,14 +214,12 @@ export class RepoStructureManager {
     switch (mappedArch) {
       case 'single':
         return this.configureSingleRepo(urlType, platform as GitPlatformType, provider);
-      case 'parent':
-        // GitHub parent repo (pushed to GitHub)
+      case 'multi-repo':
+        // Multi-repo: all repos are equal, first is default
         return configureMultiRepo({
           projectPath: this.projectPath,
           githubToken: this.githubToken,
           stateManager: this.stateManager,
-          useParent: true,
-          isLocalParent: false,
           urlType,
           platform: platform as GitPlatformType,
           provider
@@ -230,13 +231,14 @@ export class RepoStructureManager {
 
   /**
    * Map ArchitectureChoice to internal RepoArchitecture (2 options)
+   * v1.0.13: github-parent now maps to multi-repo (no parent concept)
    */
   private mapArchitectureChoice(choice: ArchitectureChoice): RepoArchitecture {
     switch (choice) {
       case 'single':
         return 'single';
       case 'github-parent':
-        return 'parent'; // GitHub parent repo (pushed to GitHub)
+        return 'multi-repo'; // v1.0.13: No parent concept, all repos equal
       default:
         return 'single';
     }
@@ -253,7 +255,7 @@ export class RepoStructureManager {
       case 'single':
         return 'Single repository';
       case 'github-parent':
-        return 'Parent repo + nested repos (GitHub)';
+        return 'Multiple repositories (equal, first is default)';
       default:
         return choice;
     }
@@ -271,12 +273,13 @@ export class RepoStructureManager {
     }
 
     // Convert saved state back to config format
+    // v1.0.13: Map old 'parent' architecture to 'multi-repo'
+    const arch = state.architecture === 'parent' ? 'multi-repo' : state.architecture;
     const config: RepoStructureConfig = {
-      architecture: state.architecture as RepoArchitecture,
+      architecture: arch as RepoArchitecture,
       urlType: 'ssh',  // Default to SSH for resumed setups
       platform: 'github',  // Default to GitHub for backward compatibility
       provider: provider,
-      parentRepo: state.parentRepo,
       repositories: state.repos.map(r => ({
         id: r.id,
         name: r.repo,
@@ -285,7 +288,7 @@ export class RepoStructureManager {
         path: r.path || r.id,
         visibility: r.visibility,
         createOnGitHub: r.created !== true,
-        isNested: state.architecture === 'parent'
+        isNested: false
       })),
       monorepoProjects: state.monorepoProjects
     };
@@ -535,33 +538,7 @@ export class RepoStructureManager {
     const created: string[] = [];
     const failed: string[] = [];
 
-    // Create parent repository if needed
-    if (config.parentRepo?.createOnGitHub) {
-      try {
-        await config.provider.createRepository({
-          owner: config.parentRepo.owner,
-          name: config.parentRepo.name,
-          description: config.parentRepo.description,
-          visibility: config.parentRepo.visibility
-        }, this.githubToken);
-        created.push(`${config.parentRepo.owner}/${config.parentRepo.name}`);
-
-        // Save state: parent repo created
-        await this.stateManager.saveState({
-          version: '1.0.0',
-          architecture: config.architecture as SetupArchitecture,
-          parentRepo: { ...config.parentRepo!, url: config.provider.getRemoteUrl(config.parentRepo!.owner, config.parentRepo!.name, config.urlType) },
-          repos: [],
-          currentStep: 'parent-repo-created',
-          timestamp: new Date().toISOString(),
-          envCreated: false
-        });
-      } catch (error: any) {
-        failed.push(`${config.parentRepo.owner}/${config.parentRepo.name}: ${error.message}`);
-      }
-    }
-
-    // Create implementation repositories
+    // Create repositories (v1.0.13: no parent concept, all repos equal)
     for (const repo of config.repositories) {
       if (repo.createOnGitHub) {
         try {
@@ -628,7 +605,6 @@ export class RepoStructureManager {
       await this.stateManager.saveState({
         version: '1.0.0',
         architecture: config.architecture as SetupArchitecture,
-        parentRepo: config.parentRepo,
         repos: config.repositories.map(r => ({
           id: r.id,
           repo: r.name,
@@ -656,7 +632,6 @@ export class RepoStructureManager {
     const state: SetupState = {
       version: '1.0.0',
       architecture: config.architecture as SetupArchitecture,
-      parentRepo: config.parentRepo,
       repos: config.repositories.map(r => ({
         id: r.id,
         repo: r.name,
