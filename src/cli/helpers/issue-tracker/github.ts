@@ -347,11 +347,8 @@ export function showGitHubSetupSkipped(language: SupportedLanguage): void {
  * CRITICAL OPTIMIZATION (v0.36.0+): When GitHub is used for BOTH repositories AND issue tracking,
  * this function detects existing repository configuration and reuses it instead of asking again.
  *
- * This is called after credentials are validated to set up repository profiles
- * Enhanced to support:
- * - Smart detection of existing repo config (GitHub repos + GitHub Issues case)
- * - Repository creation via GitHub API
- * - Parent repo selection for multi-repo case
+ * This is called after credentials are validated to set up repository profiles.
+ * v1.0.13: Simplified - removed parent repo concept. Each repo = 1 project (1:1 mapping).
  *
  * @param projectPath - Path to project directory
  * @param language - User's language
@@ -374,12 +371,12 @@ export async function configureGitHubRepositories(
   if (githubCredentialsFromRepoSetup) {
     const { org, pat, clonedRepos } = githubCredentialsFromRepoSetup;
 
-    // v1.0.9: If cloned repos are provided, ask for parent repo selection, then create profiles
-    // v1.0.10: Added parent repo selection for multi-repo setups (aligned with multi-repo-configurator.ts)
+    // v1.0.9: If cloned repos are provided, create profiles directly (1:1 mapping)
+    // v1.0.13: REMOVED parent repo concept - each repo is equal, first one is default
     // v1.0.11: CRITICAL FIX - Prompt for PAT if missing (SSH flow) since GitHub Issues API requires it
     if (clonedRepos && clonedRepos.length > 0) {
       console.log(chalk.cyan('\n📂 Using Cloned GitHub Repositories\n'));
-      console.log(chalk.green(`   ✓ ${clonedRepos.length} repositories cloned`));
+      console.log(chalk.green(`   ✓ ${clonedRepos.length} repositories → ${clonedRepos.length} projects (1:1 mapping)`));
 
       // CRITICAL (v1.0.11): If PAT is missing (SSH flow), prompt for it NOW
       // GitHub Issues API requires authentication for private repos
@@ -416,64 +413,18 @@ export async function configureGitHubRepositories(
         }
       }
 
-      // Ask user which repository is the parent (same format as multi-repo-configurator.ts:169-186)
-      console.log(chalk.cyan('\n Select Parent Repository\n'));
-      console.log(chalk.gray('Choose which repository will be the parent (contains .specweave/ structure)\n'));
-
-      // Build choices: all cloned repos + option to enter manually
-      const parentChoices = [
-        ...clonedRepos.map(repoName => ({
-          name: `${chalk.bold(repoName)}\n${chalk.gray(`${org}/${repoName}`)}`,
-          value: repoName,
-          short: repoName
-        })),
-        {
-          name: `${chalk.yellow(' Enter parent manually')} ${chalk.gray('(not in discovered list)')}`,
-          value: '__manual__',
-          short: 'Enter manually'
-        }
-      ];
-
-      let parentRepoName = await select({
-        message: 'Which repository is the parent?',
-        choices: parentChoices,
-        pageSize: 15
-      });
-
-      // Handle manual entry
-      if (parentRepoName === '__manual__') {
-        parentRepoName = await input({
-          message: 'Enter parent repository name:',
-          validate: (val: string) => {
-            if (!val.trim()) return 'Repository name is required';
-            if (val.length > 100) return 'Repository name too long';
-            return true;
-          }
-        });
-      }
-
-      // Count implementation repos (exclude parent from count)
-      const implRepoCount = clonedRepos.filter(r => r !== parentRepoName).length;
-      console.log(chalk.green(`\n✓ Using repository: ${org}/${parentRepoName}\n`));
-      console.log(chalk.gray(` Implementation repositories: ${implRepoCount}\n`));
-
-      // Create profiles: parent repo first (marked as default), then implementation repos
-      const profiles = clonedRepos.map(repoName => ({
+      // Create profiles directly - each repo becomes a project (no parent selection needed)
+      const profiles = clonedRepos.map((repoName, index) => ({
         id: repoName,
         displayName: repoName.split('-').map((w: string) =>
           w.charAt(0).toUpperCase() + w.slice(1)
         ).join(' '),  // Convert "my-repo-name" to "My Repo Name"
         owner: org,
         repo: repoName,
-        isDefault: repoName === parentRepoName  // Parent repo is marked as default
+        isDefault: index === 0  // First repo is default (arbitrary, doesn't matter)
       }));
 
-      // Move parent to first position for clarity
-      const parentIndex = profiles.findIndex(p => p.isDefault);
-      if (parentIndex > 0) {
-        const [parent] = profiles.splice(parentIndex, 1);
-        profiles.unshift(parent);
-      }
+      console.log(chalk.gray(`   Skipping repository configuration prompts (already cloned)\n`));
 
       return {
         profiles,
@@ -566,36 +517,6 @@ export async function configureGitHubRepositories(
     default:
       return { profiles: [] };
   }
-}
-
-/**
- * Select parent repository for GitHub Issues (multi-repo case)
- *
- * When user has multiple repos configured, they need to choose which one
- * will be the "parent" for issue tracking. This is where GitHub Issues
- * will be created for cross-repo features.
- *
- * @param profiles - List of configured repository profiles
- * @returns Selected parent profile
- */
-async function selectParentRepoForIssues(profiles: any[]): Promise<any> {
-  console.log(chalk.cyan.bold('📌 Parent Repository Selection\n'));
-  console.log(chalk.gray('For multi-repo setups, choose which repository should host GitHub Issues.\n'));
-  console.log(chalk.gray('This is typically your "parent" or "umbrella" repository.\n'));
-
-  // If one is already marked as default, suggest it
-  const currentDefault = profiles.find(p => p.isDefault);
-
-  const selectedId = await select({
-    message: 'Which repository should host GitHub Issues?',
-    choices: profiles.map(p => ({
-      name: `${p.owner}/${p.repo}${p.id === currentDefault?.id ? ' (current parent)' : ''}`,
-      value: p.id
-    })),
-    default: currentDefault?.id || profiles[0]?.id
-  });
-
-  return profiles.find(p => p.id === selectedId) || profiles[0];
 }
 
 /**
