@@ -54,6 +54,23 @@ rm -rf "$STATE_DIR"/.processor.lock.d 2>/dev/null || true
 rm -rf "$STATE_DIR"/.processor.lock 2>/dev/null || true
 echo "  ✓ Done"
 
+# Clean sync lock directories (v1.0.20+)
+echo "→ Cleaning sync locks..."
+LOCKS_DIR="$STATE_DIR/.locks"
+if [[ -d "$LOCKS_DIR" ]]; then
+  # Remove ALL lock dirs older than 5 minutes (stale threshold is 30-60s, so 5min is safe)
+  # Covers: github-issue-*, github-comment-*, jira-comment-*, ado-comment-*, frontmatter-*
+  STALE_LOCKS=$(find "$LOCKS_DIR" -mindepth 1 -maxdepth 1 -type d -mmin +5 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "$STALE_LOCKS" -gt 0 ]]; then
+    find "$LOCKS_DIR" -mindepth 1 -maxdepth 1 -type d -mmin +5 -exec rm -rf {} + 2>/dev/null || true
+    echo "  ✓ Removed $STALE_LOCKS stale lock(s)"
+  else
+    echo "  ✓ No stale locks"
+  fi
+else
+  echo "  ✓ No locks directory"
+fi
+
 # Clean dedup cache
 echo "→ Cleaning dedup cache..."
 rm -rf "$STATE_DIR"/.dedup-cache/*.lock 2>/dev/null || true
@@ -85,6 +102,15 @@ if [[ "$1" == "--all" ]]; then
   echo "0" > "$STATE_DIR/.hook-circuit-breaker" 2>/dev/null || true
   echo "0" > "$STATE_DIR/.hook-circuit-breaker-pre" 2>/dev/null || true
   echo "  ✓ Done"
+
+  # Full locks cleanup (remove ALL lock dirs, not just stale ones)
+  echo "  → Removing ALL lock directories..."
+  if [[ -d "$STATE_DIR/.locks" ]]; then
+    rm -rf "$STATE_DIR/.locks"
+    echo "  ✓ Done"
+  else
+    echo "  ✓ No locks directory"
+  fi
 
   # Reset status line cache
   echo "  → Resetting status line cache..."
