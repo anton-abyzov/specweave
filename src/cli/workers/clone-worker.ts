@@ -344,13 +344,17 @@ async function main(): Promise<void> {
 
 /**
  * Extract team name from repo path
- * e.g., "acme/inventory-fe" -> "inventory"
+ * v1.0.21: Updated to handle repositories/{org}/{repo} structure
+ * e.g., "repositories/acme/inventory-fe" -> "inventory"
+ * e.g., "acme/inventory-fe" -> "inventory" (legacy)
  */
 function extractTeamFromPath(repoPath: string): string | undefined {
   const parts = repoPath.split('/');
 
+  // v1.0.21: Handle new repositories/{org}/{repo} structure
+  // Path format: repositories/{org}/{repo} -> repo name is the last part
   if (parts.length >= 2) {
-    // Pattern: org/team-suffix -> team
+    // Pattern: repositories/org/team-suffix OR org/team-suffix -> team
     const repoName = parts[parts.length - 1];
     // Remove common suffixes
     const team = repoName

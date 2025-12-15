@@ -29,11 +29,12 @@ describe('BackgroundJobManager', () => {
 
   describe('Job Creation', () => {
     it('should create a clone-repos job', () => {
+      // v1.0.21: repositories/{org}/{repo} structure
       const config: CloneJobConfig = {
         type: 'clone-repos',
         repositories: [
-          { owner: 'test', name: 'repo1', path: 'repo1' },
-          { owner: 'test', name: 'repo2', path: 'repo2' }
+          { owner: 'test', name: 'repo1', path: 'repositories/test/repo1' },
+          { owner: 'test', name: 'repo2', path: 'repositories/test/repo2' }
         ],
         projectPath: testDir
       };
@@ -67,9 +68,10 @@ describe('BackgroundJobManager', () => {
 
   describe('Job Lifecycle', () => {
     it('should start a job', () => {
+      // v1.0.21: repositories/{org}/{repo} structure
       const config: CloneJobConfig = {
         type: 'clone-repos',
-        repositories: [{ owner: 'test', name: 'repo1', path: 'repo1' }],
+        repositories: [{ owner: 'test', name: 'repo1', path: 'repositories/test/repo1' }],
         projectPath: testDir
       };
 
@@ -80,11 +82,12 @@ describe('BackgroundJobManager', () => {
     });
 
     it('should update progress with percentage and rate', () => {
+      // v1.0.21: repositories/{org}/{repo} structure
       const config: CloneJobConfig = {
         type: 'clone-repos',
         repositories: [
-          { owner: 'test', name: 'repo1', path: 'repo1' },
-          { owner: 'test', name: 'repo2', path: 'repo2' }
+          { owner: 'test', name: 'repo1', path: 'repositories/test/repo1' },
+          { owner: 'test', name: 'repo2', path: 'repositories/test/repo2' }
         ],
         projectPath: testDir
       };
@@ -101,9 +104,10 @@ describe('BackgroundJobManager', () => {
     });
 
     it('should complete a job successfully', () => {
+      // v1.0.21: repositories/{org}/{repo} structure
       const config: CloneJobConfig = {
         type: 'clone-repos',
-        repositories: [{ owner: 'test', name: 'repo1', path: 'repo1' }],
+        repositories: [{ owner: 'test', name: 'repo1', path: 'repositories/test/repo1' }],
         projectPath: testDir
       };
 
@@ -158,9 +162,10 @@ describe('BackgroundJobManager', () => {
 
   describe('State Persistence', () => {
     it('should persist job state to disk', () => {
+      // v1.0.21: repositories/{org}/{repo} structure
       const config: CloneJobConfig = {
         type: 'clone-repos',
-        repositories: [{ owner: 'test', name: 'repo1', path: 'repo1' }],
+        repositories: [{ owner: 'test', name: 'repo1', path: 'repositories/test/repo1' }],
         projectPath: testDir
       };
 
@@ -205,9 +210,10 @@ describe('BackgroundJobManager', () => {
   describe('Job Queries', () => {
     it('should get active jobs', () => {
       // Create multiple jobs
+      // v1.0.21: repositories/{org}/{repo} structure
       const config1: CloneJobConfig = {
         type: 'clone-repos',
-        repositories: [{ owner: 'test', name: 'repo1', path: 'repo1' }],
+        repositories: [{ owner: 'test', name: 'repo1', path: 'repositories/test/repo1' }],
         projectPath: testDir
       };
       const config2: ImportJobConfig = {
@@ -230,9 +236,10 @@ describe('BackgroundJobManager', () => {
     });
 
     it('should filter jobs by type', () => {
+      // v1.0.21: repositories/{org}/{repo} structure
       const cloneConfig: CloneJobConfig = {
         type: 'clone-repos',
-        repositories: [{ owner: 'test', name: 'repo1', path: 'repo1' }],
+        repositories: [{ owner: 'test', name: 'repo1', path: 'repositories/test/repo1' }],
         projectPath: testDir
       };
       const importConfig: ImportJobConfig = {
@@ -251,9 +258,10 @@ describe('BackgroundJobManager', () => {
     });
 
     it('should filter jobs by status', () => {
+      // v1.0.21: repositories/{org}/{repo} structure
       const config: CloneJobConfig = {
         type: 'clone-repos',
-        repositories: [{ owner: 'test', name: 'repo1', path: 'repo1' }],
+        repositories: [{ owner: 'test', name: 'repo1', path: 'repositories/test/repo1' }],
         projectPath: testDir
       };
 
@@ -274,9 +282,10 @@ describe('BackgroundJobManager', () => {
 
   describe('Cleanup', () => {
     it('should cleanup old completed jobs (keep last 10)', () => {
+      // v1.0.21: repositories/{org}/{repo} structure
       const config: CloneJobConfig = {
         type: 'clone-repos',
-        repositories: [{ owner: 'test', name: 'repo1', path: 'repo1' }],
+        repositories: [{ owner: 'test', name: 'repo1', path: 'repositories/test/repo1' }],
         projectPath: testDir
       };
 
@@ -296,9 +305,10 @@ describe('BackgroundJobManager', () => {
     });
 
     it('should preserve active jobs during cleanup', () => {
+      // v1.0.21: repositories/{org}/{repo} structure
       const config: CloneJobConfig = {
         type: 'clone-repos',
-        repositories: [{ owner: 'test', name: 'repo1', path: 'repo1' }],
+        repositories: [{ owner: 'test', name: 'repo1', path: 'repositories/test/repo1' }],
         projectPath: testDir
       };
 
