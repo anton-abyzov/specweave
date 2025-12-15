@@ -480,4 +480,134 @@ describe('IncrementNumberManager', () => {
       }).toThrow('Invalid increment ID format');
     });
   });
+
+  describe('T-008: Per-Project Collision Prevention (v1.0.19)', () => {
+    let specsDir: string;
+
+    beforeEach(() => {
+      // Create living docs specs directory structure
+      specsDir = path.join(testProjectRoot, '.specweave', 'docs', 'internal', 'specs');
+      fs.mkdirSync(specsDir, { recursive: true });
+    });
+
+    it('should have getNextIncrementNumberForProject method', () => {
+      expect(IncrementNumberManager.getNextIncrementNumberForProject).toBeDefined();
+      expect(typeof IncrementNumberManager.getNextIncrementNumberForProject).toBe('function');
+    });
+
+    it('should return 0001 when project has no features', () => {
+      const projectDir = path.join(specsDir, 'my-project');
+      fs.mkdirSync(projectDir, { recursive: true });
+
+      const result = IncrementNumberManager.getNextIncrementNumberForProject(testProjectRoot, 'my-project');
+      expect(result).toBe('0001');
+    });
+
+    it('should skip number when FS-ID exists in project', () => {
+      // Create project with FS-001 feature
+      const projectDir = path.join(specsDir, 'my-project');
+      fs.mkdirSync(path.join(projectDir, 'FS-001'), { recursive: true });
+
+      const result = IncrementNumberManager.getNextIncrementNumberForProject(testProjectRoot, 'my-project');
+      // Should skip 0001 because FS-001 exists, return 0002
+      expect(result).toBe('0002');
+    });
+
+    it('should skip number when FS-XXXE (external) exists in project', () => {
+      // Create project with FS-001E external feature (from import)
+      const projectDir = path.join(specsDir, 'my-project');
+      fs.mkdirSync(path.join(projectDir, 'FS-001E'), { recursive: true });
+
+      const result = IncrementNumberManager.getNextIncrementNumberForProject(testProjectRoot, 'my-project');
+      // Should skip 0001 because FS-001E exists (same base number), return 0002
+      expect(result).toBe('0002');
+    });
+
+    it('should find first available number when multiple features exist', () => {
+      // Create project with FS-001, FS-002, FS-004 (gap at 003)
+      const projectDir = path.join(specsDir, 'my-project');
+      fs.mkdirSync(path.join(projectDir, 'FS-001'), { recursive: true });
+      fs.mkdirSync(path.join(projectDir, 'FS-002'), { recursive: true });
+      fs.mkdirSync(path.join(projectDir, 'FS-004'), { recursive: true });
+
+      const result = IncrementNumberManager.getNextIncrementNumberForProject(testProjectRoot, 'my-project');
+      // Should return 0003 (fills gap)
+      expect(result).toBe('0003');
+    });
+
+    it('should prevent collision between internal and external (core scenario)', () => {
+      // SCENARIO: Project ec-web-ui has imported external issue creating FS-001E
+      // User creates internal increment - should skip 0001 to prevent collision
+      const projectDir = path.join(specsDir, 'ec-web-ui');
+      fs.mkdirSync(path.join(projectDir, 'FS-001E'), { recursive: true });
+
+      const result = IncrementNumberManager.getNextIncrementNumberForProject(testProjectRoot, 'ec-web-ui');
+      // Must return 0002, NOT 0001 (which would collide with FS-001E's base number)
+      expect(result).toBe('0002');
+    });
+
+    it('should generateIncrementId with projectId to prevent collision', () => {
+      // Create project with FS-001E (external feature)
+      const projectDir = path.join(specsDir, 'ec-web-ui');
+      fs.mkdirSync(path.join(projectDir, 'FS-001E'), { recursive: true });
+
+      const id = IncrementNumberManager.generateIncrementId('new-feature', {
+        projectRoot: testProjectRoot,
+        projectId: 'ec-web-ui'
+      });
+
+      // Should be 0002-new-feature, NOT 0001-new-feature
+      expect(id).toBe('0002-new-feature');
+    });
+
+    it('should generateIncrementId without projectId to use global (backward compat)', () => {
+      // Create project with FS-001E (external feature)
+      const projectDir = path.join(specsDir, 'ec-web-ui');
+      fs.mkdirSync(path.join(projectDir, 'FS-001E'), { recursive: true });
+
+      // Without projectId, uses global increment numbering (no feature collision check)
+      const id = IncrementNumberManager.generateIncrementId('new-feature', {
+        projectRoot: testProjectRoot
+        // projectId NOT provided - backward compatible behavior
+      });
+
+      // Global behavior: returns 0001 (no check against feature space)
+      expect(id).toBe('0001-new-feature');
+    });
+
+    it('should handle project that does not exist yet', () => {
+      // Project folder doesn't exist - no collision possible
+      const result = IncrementNumberManager.getNextIncrementNumberForProject(testProjectRoot, 'non-existent-project');
+      expect(result).toBe('0001');
+    });
+
+    it('should check archived features for collision', () => {
+      // Create project with archived FS-001
+      const projectDir = path.join(specsDir, 'my-project');
+      fs.mkdirSync(path.join(projectDir, '_archive', 'FS-001'), { recursive: true });
+
+      const result = IncrementNumberManager.getNextIncrementNumberForProject(testProjectRoot, 'my-project');
+      // Should skip 0001 because FS-001 exists in _archive
+      expect(result).toBe('0002');
+    });
+
+    it('should work with multiple projects independently', () => {
+      // Project A has FS-001, FS-002
+      const projectA = path.join(specsDir, 'project-a');
+      fs.mkdirSync(path.join(projectA, 'FS-001'), { recursive: true });
+      fs.mkdirSync(path.join(projectA, 'FS-002'), { recursive: true });
+
+      // Project B has FS-001E (external)
+      const projectB = path.join(specsDir, 'project-b');
+      fs.mkdirSync(path.join(projectB, 'FS-001E'), { recursive: true });
+
+      // Project A: next should be 0003
+      const resultA = IncrementNumberManager.getNextIncrementNumberForProject(testProjectRoot, 'project-a');
+      expect(resultA).toBe('0003');
+
+      // Project B: next should be 0002 (skips 0001 due to FS-001E)
+      const resultB = IncrementNumberManager.getNextIncrementNumberForProject(testProjectRoot, 'project-b');
+      expect(resultB).toBe('0002');
+    });
+  });
 });

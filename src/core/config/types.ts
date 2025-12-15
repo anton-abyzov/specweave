@@ -205,6 +205,22 @@ export interface SyncConfiguration {
    */
   defaultProfile?: string;
 
+  /**
+   * GATE 5: Auto-create external issues on increment creation (v1.0.19+)
+   *
+   * When true, automatically creates GitHub/JIRA/ADO issues when:
+   * - A new increment is created (post-increment-planning hook)
+   * - sync-progress runs and no issue exists
+   *
+   * When false (default), user must manually run:
+   * - /sw-github:create for GitHub
+   * - /sw-jira:create for JIRA
+   * - /sw-ado:create for Azure DevOps
+   *
+   * @default false (opt-in for safety)
+   */
+  autoCreateOnIncrement?: boolean;
+
   settings?: SyncSettings;
   profiles?: Record<string, SyncProfile>;  // Profile configurations
 

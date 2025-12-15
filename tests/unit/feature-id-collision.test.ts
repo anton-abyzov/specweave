@@ -20,7 +20,9 @@ import { tmpdir } from 'os';
 import {
   findNextAvailableInternalId,
   findNextAvailableInternalIdSync,
-  checkFeatureIdCollision
+  checkFeatureIdCollision,
+  getAllProjectFSIds,
+  findNextAvailableIdForProject
 } from '../../src/utils/feature-id-collision.js';
 import { createTestLogger } from '../helpers/test-logger.js';
 
@@ -388,6 +390,179 @@ describe('Feature ID Collision - Real World Scenarios', () => {
     const result = await findNextAvailableInternalId(2, specsPath, projectId, { logger });
 
     expect(result).toBe(5);
+  });
+});
+
+describe('getAllProjectFSIds and findNextAvailableIdForProject (v1.0.19 - 2-level structure)', () => {
+  let testDir: string;
+  let specsPath: string;
+  let logger: ReturnType<typeof createTestLogger>;
+
+  beforeEach(async () => {
+    testDir = await mkdtemp(path.join(tmpdir(), 'specweave-2level-'));
+    specsPath = path.join(testDir, '.specweave/docs/internal/specs');
+    logger = createTestLogger();
+  });
+
+  afterEach(async () => {
+    if (testDir && fs.existsSync(testDir)) {
+      await rm(testDir, { recursive: true, force: true });
+    }
+  });
+
+  describe('getAllProjectFSIds - scans ALL locations for project', () => {
+    it('should find FS-IDs in 1-level structure (specs/project/FS-XXX)', async () => {
+      const projectId = 'my-project';
+      await fs.ensureDir(path.join(specsPath, projectId, 'FS-001'));
+      await fs.ensureDir(path.join(specsPath, projectId, 'FS-002E'));
+      await fs.ensureDir(path.join(specsPath, projectId, 'FS-003'));
+
+      const usedIds = getAllProjectFSIds(specsPath, projectId);
+
+      expect(usedIds.has(1)).toBe(true);
+      expect(usedIds.has(2)).toBe(true);
+      expect(usedIds.has(3)).toBe(true);
+      expect(usedIds.size).toBe(3);
+    });
+
+    it('should find FS-IDs in 2-level structure (specs/board/project/FS-XXX)', async () => {
+      const projectId = 'ec-web-ui';
+      // Create 2-level structure: board/project/FS-XXX
+      await fs.ensureDir(path.join(specsPath, 'jira-board-1', projectId, 'FS-001E'));
+      await fs.ensureDir(path.join(specsPath, 'jira-board-2', projectId, 'FS-003'));
+
+      const usedIds = getAllProjectFSIds(specsPath, projectId);
+
+      expect(usedIds.has(1)).toBe(true);  // from jira-board-1
+      expect(usedIds.has(3)).toBe(true);  // from jira-board-2
+      expect(usedIds.size).toBe(2);
+    });
+
+    it('should find FS-IDs across BOTH 1-level and 2-level structures', async () => {
+      const projectId = 'ec-web-ui';
+      // 1-level: specs/ec-web-ui/FS-005
+      await fs.ensureDir(path.join(specsPath, projectId, 'FS-005'));
+      // 2-level: specs/board-1/ec-web-ui/FS-001E
+      await fs.ensureDir(path.join(specsPath, 'jira-board-1', projectId, 'FS-001E'));
+      // 2-level: specs/board-2/ec-web-ui/FS-003
+      await fs.ensureDir(path.join(specsPath, 'ado-area-2', projectId, 'FS-003'));
+
+      const usedIds = getAllProjectFSIds(specsPath, projectId);
+
+      expect(usedIds.has(1)).toBe(true);  // from board-1
+      expect(usedIds.has(3)).toBe(true);  // from board-2
+      expect(usedIds.has(5)).toBe(true);  // from 1-level
+      expect(usedIds.size).toBe(3);
+    });
+
+    it('should include _archive folder IDs in both structures', async () => {
+      const projectId = 'ec-web-ui';
+      // 1-level with archive
+      await fs.ensureDir(path.join(specsPath, projectId, '_archive', 'FS-002E'));
+      // 2-level with archive
+      await fs.ensureDir(path.join(specsPath, 'board-1', projectId, '_archive', 'FS-004'));
+
+      const usedIds = getAllProjectFSIds(specsPath, projectId);
+
+      expect(usedIds.has(2)).toBe(true);  // from 1-level archive
+      expect(usedIds.has(4)).toBe(true);  // from 2-level archive
+      expect(usedIds.size).toBe(2);
+    });
+
+    it('should return empty set when project has no FS-IDs anywhere', async () => {
+      const usedIds = getAllProjectFSIds(specsPath, 'empty-project');
+
+      expect(usedIds.size).toBe(0);
+    });
+
+    it('should NOT include other projects FS-IDs', async () => {
+      // Create FS-IDs for different projects
+      await fs.ensureDir(path.join(specsPath, 'project-a', 'FS-001'));
+      await fs.ensureDir(path.join(specsPath, 'project-b', 'FS-002'));
+      await fs.ensureDir(path.join(specsPath, 'board-1', 'project-a', 'FS-003E'));
+      await fs.ensureDir(path.join(specsPath, 'board-1', 'project-b', 'FS-004E'));
+
+      const projectAIds = getAllProjectFSIds(specsPath, 'project-a');
+      const projectBIds = getAllProjectFSIds(specsPath, 'project-b');
+
+      expect(projectAIds.has(1)).toBe(true);
+      expect(projectAIds.has(3)).toBe(true);
+      expect(projectAIds.has(2)).toBe(false);  // belongs to project-b
+      expect(projectAIds.has(4)).toBe(false);  // belongs to project-b
+
+      expect(projectBIds.has(2)).toBe(true);
+      expect(projectBIds.has(4)).toBe(true);
+      expect(projectBIds.has(1)).toBe(false);  // belongs to project-a
+      expect(projectBIds.has(3)).toBe(false);  // belongs to project-a
+    });
+  });
+
+  describe('findNextAvailableIdForProject - collision avoidance across ALL locations', () => {
+    it('should skip ID when FS-XXXE exists in 2-level structure', async () => {
+      const projectId = 'ec-web-ui';
+      // External import created FS-001E in a board folder
+      await fs.ensureDir(path.join(specsPath, 'jira-board', projectId, 'FS-001E'));
+
+      const result = findNextAvailableIdForProject(1, specsPath, projectId, { logger });
+
+      expect(result).toBe(2);  // Skips 1 because FS-001E exists
+    });
+
+    it('should skip ID when collision exists in multiple boards', async () => {
+      const projectId = 'ec-web-ui';
+      // FS-001E in board-1, FS-002 in board-2
+      await fs.ensureDir(path.join(specsPath, 'board-1', projectId, 'FS-001E'));
+      await fs.ensureDir(path.join(specsPath, 'board-2', projectId, 'FS-002'));
+
+      const result = findNextAvailableIdForProject(1, specsPath, projectId, { logger });
+
+      expect(result).toBe(3);  // Skips 1 and 2
+    });
+
+    it('should skip ID when collision in 1-level and 2-level combined', async () => {
+      const projectId = 'ec-web-ui';
+      // 1-level: FS-003
+      await fs.ensureDir(path.join(specsPath, projectId, 'FS-003'));
+      // 2-level: FS-001E, FS-002
+      await fs.ensureDir(path.join(specsPath, 'board-1', projectId, 'FS-001E'));
+      await fs.ensureDir(path.join(specsPath, 'board-2', projectId, 'FS-002'));
+
+      const result = findNextAvailableIdForProject(1, specsPath, projectId, { logger });
+
+      expect(result).toBe(4);  // Skips 1, 2, 3
+    });
+
+    it('should return base number when no collisions across any location', async () => {
+      const projectId = 'fresh-project';
+      // No folders exist for this project
+
+      const result = findNextAvailableIdForProject(1, specsPath, projectId, { logger });
+
+      expect(result).toBe(1);  // No collision
+    });
+
+    it('should log warning when collision is avoided', async () => {
+      const projectId = 'ec-web-ui';
+      await fs.ensureDir(path.join(specsPath, 'board-1', projectId, 'FS-001E'));
+
+      findNextAvailableIdForProject(1, specsPath, projectId, { logger });
+
+      expect(logger.warnMessages.length).toBeGreaterThan(0);
+      expect(logger.warnMessages[0]).toContain('collision avoided');
+      expect(logger.warnMessages[0]).toContain('ec-web-ui');
+    });
+
+    it('should handle scenario from user bug report: 0001 and 0001E same project', async () => {
+      // Scenario from user:
+      // - Project ec-web-ui imports GitHub issue → FS-001E in board folder
+      // - User creates internal increment 0001 → should derive to FS-002 NOT FS-001
+      const projectId = 'ec-web-ui';
+      await fs.ensureDir(path.join(specsPath, 'digital-ops', projectId, 'FS-001E'));
+
+      const result = findNextAvailableIdForProject(1, specsPath, projectId, { logger });
+
+      expect(result).toBe(2);
+    });
   });
 });
 

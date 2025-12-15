@@ -21,6 +21,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { findNextAvailableIdForProject } from '../../utils/feature-id-collision.js';
 
 /**
  * Centralized manager for increment number generation and validation.
@@ -82,6 +83,56 @@ export class IncrementNumberManager {
     }
 
     return String(candidate).padStart(4, '0');
+  }
+
+  /**
+   * Get the next available increment number that won't collide in the target project's feature ID space.
+   *
+   * PER-PROJECT COLLISION PREVENTION (v1.0.19+):
+   * - First gets candidate from global increment pool (gap-filling)
+   * - Then checks if that number would collide with existing FS-IDs in the target project
+   * - If collision (FS-XXX or FS-XXXE exists), finds next available number
+   *
+   * This prevents the scenario where:
+   * - Project ec-web-ui has external import FS-001E
+   * - User creates internal increment 0001-feature → would derive to FS-001
+   * - But FS-001 collides with FS-001E (same base number in unified sequence)
+   *
+   * @param projectRoot - Project root directory
+   * @param projectId - Target project ID (from spec.md **Project**: field or config)
+   * @param options - Additional options
+   * @param options.isExternal - If true, checks for external collision (FS-XXXE)
+   * @returns Next increment number as 4-digit string that won't collide in the project
+   *
+   * @example
+   * ```typescript
+   * // Project 'ec-web-ui' has FS-001E (from external import)
+   * const nextId = IncrementNumberManager.getNextIncrementNumberForProject(
+   *   process.cwd(),
+   *   'ec-web-ui'
+   * );
+   * // Returns "0002" (skips 0001 because FS-001E exists)
+   * ```
+   *
+   * @since 1.0.19
+   */
+  static getNextIncrementNumberForProject(
+    projectRoot: string,
+    projectId: string,
+    options: { isExternal?: boolean } = {}
+  ): string {
+    // 1. Get candidate from global increment pool (existing gap-filling logic)
+    const candidate = parseInt(this.getNextIncrementNumber(projectRoot), 10);
+
+    // 2. Check per-project feature ID collision across ALL locations
+    // For 2-level structures (JIRA boards, ADO area paths), this scans:
+    // - specs/{project}/FS-XXX (1-level)
+    // - specs/{board}/{project}/FS-XXX (2-level)
+    // Returns the first available number that doesn't conflict with any existing FS-ID
+    const specsPath = path.join(projectRoot, '.specweave/docs/internal/specs');
+    const safeNumber = findNextAvailableIdForProject(candidate, specsPath, projectId);
+
+    return String(safeNumber).padStart(4, '0');
   }
 
   /**
@@ -296,6 +347,7 @@ export class IncrementNumberManager {
    * @param options - Options for ID generation
    * @param options.isExternal - If true, adds E suffix for external items
    * @param options.projectRoot - Project root directory
+   * @param options.projectId - Target project ID for per-project collision prevention (v1.0.19+)
    * @param options.skipValidation - If true, skips uniqueness validation (DANGEROUS - use only for testing)
    * @returns Full increment folder name (e.g., "0033E-dora-metrics-fix")
    *
@@ -308,16 +360,27 @@ export class IncrementNumberManager {
    * // External increment (GitHub/JIRA/ADO item)
    * const extId = IncrementNumberManager.generateIncrementId('dora-fix', { isExternal: true });
    * // "0033E-dora-fix"
+   *
+   * // With per-project collision prevention (v1.0.19+)
+   * // If project 'ec-web-ui' has FS-001E, this returns "0002-feature" instead of "0001-feature"
+   * const safeId = IncrementNumberManager.generateIncrementId('feature', { projectId: 'ec-web-ui' });
    * ```
    *
    * @since 0.32.0
    */
   static generateIncrementId(
     name: string,
-    options: { isExternal?: boolean; projectRoot?: string; skipValidation?: boolean } = {}
+    options: { isExternal?: boolean; projectRoot?: string; projectId?: string; skipValidation?: boolean } = {}
   ): string {
-    const { isExternal = false, projectRoot = process.cwd(), skipValidation = false } = options;
-    const number = this.getNextIncrementNumber(projectRoot);
+    const { isExternal = false, projectRoot = process.cwd(), projectId, skipValidation = false } = options;
+
+    // PER-PROJECT COLLISION PREVENTION (v1.0.19+):
+    // When projectId is provided, use project-scoped number generation
+    // This checks the target project's FS-ID space and skips colliding numbers
+    const number = projectId
+      ? this.getNextIncrementNumberForProject(projectRoot, projectId, { isExternal })
+      : this.getNextIncrementNumber(projectRoot);
+
     const suffix = isExternal ? 'E' : '';
     const id = `${number}${suffix}-${name}`;
 

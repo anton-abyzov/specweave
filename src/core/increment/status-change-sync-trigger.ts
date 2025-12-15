@@ -20,9 +20,14 @@
  *   └─> StatusChangeSyncTrigger.triggerIfNeeded()
  *         ├─ Is transition sync-worthy?
  *         ├─ Circuit breaker open?
- *         └─> LivingDocsSync.syncIncrement()
- *               └─> GitHub/JIRA/ADO sync
+ *         ├─> Auto-create issues if missing (v1.0.19+)
+ *         ├─> LivingDocsSync.syncIncrement()
+ *         └─> Auto-close issues on completion (v1.0.19+)
  * ```
+ *
+ * v1.0.19 ADDITIONS:
+ * - Auto-create external issues if config.sync.autoCreateOnIncrement = true
+ * - Auto-close external issues when status → completed
  */
 
 import { IncrementStatus } from '../types/increment-metadata.js';
@@ -75,8 +80,8 @@ export class StatusChangeSyncTrigger {
       return;
     }
 
-    // Spawn non-blocking sync
-    this.spawnAsyncSync(incrementId)
+    // Spawn non-blocking sync (pass newStatus for completion handling)
+    this.spawnAsyncSync(incrementId, newStatus)
       .catch(error => {
         this.circuitBreaker.recordFailure();
         this.logger.error(`❌ Auto-sync failed for ${incrementId}:`, error.message);
@@ -172,20 +177,37 @@ export class StatusChangeSyncTrigger {
    * Uses setTimeout(..., 0) to ensure updateStatus() returns immediately.
    * LivingDocsSync will handle GitHub/JIRA/ADO sync based on config.
    *
+   * v1.0.19: Also handles auto-create if issues don't exist
+   *
    * @param incrementId - Increment ID
+   * @param newStatus - Optional new status (for completion handling)
    */
-  private static async spawnAsyncSync(incrementId: string): Promise<void> {
+  private static async spawnAsyncSync(
+    incrementId: string,
+    newStatus?: IncrementStatus
+  ): Promise<void> {
     // Dynamic import to avoid circular dependency
     const { LivingDocsSync } = await import('../living-docs/living-docs-sync.js');
 
     // Non-blocking: Don't await
     setTimeout(async () => {
       try {
-        const sync = new LivingDocsSync(process.cwd(), {
+        const projectRoot = process.cwd();
+
+        // v1.0.19: Check if we need to auto-create external issues
+        await this.autoCreateIfNeeded(projectRoot, incrementId);
+
+        // Run living docs sync
+        const sync = new LivingDocsSync(projectRoot, {
           logger: this.logger
         });
 
         await sync.syncIncrement(incrementId);
+
+        // v1.0.19: Auto-close issues on completion
+        if (newStatus === IncrementStatus.COMPLETED) {
+          await this.autoCloseExternalIssues(projectRoot, incrementId);
+        }
 
         this.circuitBreaker.recordSuccess();
         this.logger.log(`✅ Auto-synced increment ${incrementId} to external tools`);
@@ -194,6 +216,71 @@ export class StatusChangeSyncTrigger {
         throw error;
       }
     }, 0);
+  }
+
+  /**
+   * Auto-create external issues if:
+   * 1. config.sync.autoCreateOnIncrement = true
+   * 2. No external issue linked to this increment
+   *
+   * @since v1.0.19
+   */
+  private static async autoCreateIfNeeded(
+    projectRoot: string,
+    incrementId: string
+  ): Promise<void> {
+    try {
+      // Dynamic import to avoid circular dependency
+      const { autoCreateExternalIssue } = await import(
+        '../../sync/external-issue-auto-creator.js'
+      );
+
+      const result = await autoCreateExternalIssue(projectRoot, incrementId, this.logger);
+
+      if (result.success && !result.skipped) {
+        this.logger.log(
+          `📝 Auto-created ${result.provider} issue for ${incrementId}: ${result.issueNumber}`
+        );
+      }
+    } catch (error) {
+      // Non-blocking - log and continue
+      this.logger.warn(`⚠️  Auto-create check failed (non-blocking): ${error}`);
+    }
+  }
+
+  /**
+   * Auto-close external issues when increment status becomes COMPLETED
+   *
+   * Uses SyncCoordinator for safe closure with proper comments and labels.
+   *
+   * @since v1.0.19
+   */
+  private static async autoCloseExternalIssues(
+    projectRoot: string,
+    incrementId: string
+  ): Promise<void> {
+    try {
+      // Dynamic import to avoid circular dependency
+      const { SyncCoordinator } = await import('../../sync/sync-coordinator.js');
+
+      const coordinator = new SyncCoordinator({
+        projectRoot,
+        incrementId,
+        logger: this.logger,
+      });
+
+      // This will close GitHub/JIRA/ADO issues with proper completion comments
+      const result = await coordinator.syncIncrementCompletion();
+
+      if (result.success) {
+        this.logger.log(
+          `🎉 Auto-closed external issues for ${incrementId} (${result.userStoriesSynced} synced)`
+        );
+      }
+    } catch (error) {
+      // Non-blocking - log and continue
+      this.logger.warn(`⚠️  Auto-close failed (non-blocking): ${error}`);
+    }
   }
 
   /**
