@@ -160,13 +160,15 @@ export async function triggerAdoRepoCloning(
   }
   console.log('');
 
-  // Prepare repositories with clone URLs (organized by project folder)
+  // Prepare repositories with clone URLs (organized by org folder)
+  // v1.0.21: Clone into repositories/{org}/repo-name/ structure
+  // This keeps all cloned repos organized and separate from the main project
+  // NOTE: ADO org replaces the old project-based structure for consistency across providers
   const reposWithUrls = filteredRepos.map(r => {
-    const projectFolder = sanitizeProjectNameForPath(r.project);
     return {
       owner: `${org}/${r.project}`,
       name: r.name,
-      path: `${projectFolder}/${r.name}`, // Clone into project subfolder
+      path: `repositories/${org}/${r.name}`, // Clone into repositories/{org}/{repo}
       cloneUrl: buildAdoCloneUrl(org, r.project, r.name, pat)
     };
   });
@@ -178,7 +180,7 @@ export async function triggerAdoRepoCloning(
   });
 
   // Show progress info
-  console.log(chalk.gray(`   Repositories will be cloned to: ${projectPath}/`));
+  console.log(chalk.gray(`   Repositories will be cloned to: ${projectPath}/repositories/${org}/`));
   console.log(chalk.gray(`   Job ID: ${result.job.id}`));
 
   if (result.isBackground) {

@@ -38,11 +38,12 @@ describe('JobLauncher', () => {
 
   describe('launchCloneJob', () => {
     it('should create a clone job in foreground mode', async () => {
+      // v1.0.21: repositories/{org}/{repo} structure
       const result = await launchCloneJob({
         projectPath: testDir,
         repositories: [
-          { owner: 'org', name: 'repo1', path: 'repos/repo1', cloneUrl: 'https://example.com/repo1.git' },
-          { owner: 'org', name: 'repo2', path: 'repos/repo2', cloneUrl: 'https://example.com/repo2.git' }
+          { owner: 'org', name: 'repo1', path: 'repositories/org/repo1', cloneUrl: 'https://example.com/repo1.git' },
+          { owner: 'org', name: 'repo2', path: 'repositories/org/repo2', cloneUrl: 'https://example.com/repo2.git' }
         ],
         foreground: true
       });
@@ -56,10 +57,11 @@ describe('JobLauncher', () => {
     });
 
     it('should write job config to disk', async () => {
+      // v1.0.21: repositories/{org}/{repo} structure
       const result = await launchCloneJob({
         projectPath: testDir,
         repositories: [
-          { owner: 'org', name: 'repo1', path: 'repos/repo1', cloneUrl: 'https://example.com/repo1.git' }
+          { owner: 'org', name: 'repo1', path: 'repositories/org/repo1', cloneUrl: 'https://example.com/repo1.git' }
         ],
         foreground: true
       });
@@ -86,10 +88,11 @@ describe('JobLauncher', () => {
 
     it('should fallback to foreground when worker not found in background mode', async () => {
       // Background mode but worker won't be found in test environment
+      // v1.0.21: repositories/{org}/{repo} structure
       const result = await launchCloneJob({
         projectPath: testDir,
         repositories: [
-          { owner: 'org', name: 'repo1', path: 'repos/repo1', cloneUrl: 'https://example.com/repo1.git' }
+          { owner: 'org', name: 'repo1', path: 'repositories/org/repo1', cloneUrl: 'https://example.com/repo1.git' }
         ],
         foreground: false
       });
@@ -376,10 +379,11 @@ describe('JobLauncher', () => {
 
       // Simply calling launchCloneJob exercises the findWorkerByName function
       // which uses __dirname internally
+      // v1.0.21: repositories/{org}/{repo} structure
       const result = await launchCloneJob({
         projectPath: testDir,
         repositories: [
-          { owner: 'test', name: 'repo', path: 'repos/repo', cloneUrl: 'https://example.com/repo.git' }
+          { owner: 'test', name: 'repo', path: 'repositories/test/repo', cloneUrl: 'https://example.com/repo.git' }
         ],
         foreground: true
       });
@@ -395,10 +399,11 @@ describe('JobLauncher', () => {
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       try {
+        // v1.0.21: repositories/{org}/{repo} structure
         const result = await launchCloneJob({
           projectPath: testDir,
           repositories: [
-            { owner: 'test', name: 'repo', path: 'repos/repo', cloneUrl: 'https://example.com/repo.git' }
+            { owner: 'test', name: 'repo', path: 'repositories/test/repo', cloneUrl: 'https://example.com/repo.git' }
           ],
           foreground: false // Try background mode
         });
@@ -415,9 +420,10 @@ describe('JobLauncher', () => {
 
   describe('Job Configuration', () => {
     it('should preserve repository clone URLs in config', async () => {
+      // v1.0.21: repositories/{org}/{repo} structure
       const repos = [
-        { owner: 'org/project', name: 'frontend', path: 'repos/frontend', cloneUrl: 'https://pat@dev.azure.com/org/project/_git/frontend' },
-        { owner: 'org/project', name: 'backend', path: 'repos/backend', cloneUrl: 'https://pat@dev.azure.com/org/project/_git/backend' }
+        { owner: 'org/project', name: 'frontend', path: 'repositories/org/frontend', cloneUrl: 'https://pat@dev.azure.com/org/project/_git/frontend' },
+        { owner: 'org/project', name: 'backend', path: 'repositories/org/backend', cloneUrl: 'https://pat@dev.azure.com/org/project/_git/backend' }
       ];
 
       const result = await launchCloneJob({

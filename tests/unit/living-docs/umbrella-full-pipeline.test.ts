@@ -43,10 +43,11 @@ describe('Umbrella Project Full Pipeline', () => {
     fs.mkdirSync(specweaveDir, { recursive: true });
 
     // Create umbrella config
+    // v1.0.21: repositories/{org}/{repo} structure
     const childRepos: any[] = [];
     for (const team of options.teams) {
       for (const repo of team.repos) {
-        const repoPath = path.join(testDir, team.name, repo);
+        const repoPath = path.join(testDir, 'repositories', team.name, repo);
         fs.mkdirSync(repoPath, { recursive: true });
 
         // Create .git directory to mark as repo
@@ -59,9 +60,10 @@ describe('Umbrella Project Full Pipeline', () => {
           `// ${repo} entry point\nexport const ${repo.replace(/-/g, '_')} = {};\n`
         );
 
+        // v1.0.21: repositories/{org}/{repo} structure
         childRepos.push({
           id: `${team.name}-${repo}`,
-          path: `${team.name}/${repo}`,
+          path: `repositories/${team.name}/${repo}`,
           name: repo,
           team: team.name,
           status: 'cloned'
@@ -116,11 +118,12 @@ ${item.areaPath ? `area_path: ${item.areaPath}` : ''}
   function createMockDiscoveryResult(teams: Array<{ name: string; repos: string[] }>): DiscoveryResult {
     const modules: ModuleInfo[] = [];
 
+    // v1.0.21: repositories/{org}/{repo} structure
     for (const team of teams) {
       for (const repo of team.repos) {
         modules.push({
           name: repo,
-          path: `${team.name}/${repo}`,
+          path: `repositories/${team.name}/${repo}`,
           type: repo.endsWith('-fe') ? 'frontend' : repo.endsWith('-be') ? 'backend' : 'api',
           entryFile: 'src/index.ts',
           hasReadme: false,
