@@ -9,11 +9,13 @@
  * - Internal US (origin=internal): Full sync (title, description, status, comments)
  */
 
+import path from 'path';
 import { LivingDocsUSFile, getOrigin } from '../types/living-docs-us-file.js';
 import { GitHubClientV2 } from '../../plugins/specweave-github/lib/github-client-v2.js';
 import { JiraClient } from '../integrations/jira/jira-client.js';
 import { AdoClient } from '../integrations/ado/ado-client.js';
 import { Logger, consoleLogger } from '../utils/logger.js';
+import { LockManager } from '../utils/lock-manager.js';
 
 export interface SyncConfig {
   /** Allow updating external items from SpecWeave (Internal → External) */
@@ -48,10 +50,11 @@ export interface CompletionCommentData {
 export class FormatPreservationSyncService {
   private logger: Logger;
   private config: SyncConfig;
+  private projectRoot: string;
 
   constructor(
     config: SyncConfig = {},
-    options: { logger?: Logger } = {}
+    options: { logger?: Logger; projectRoot?: string } = {}
   ) {
     this.config = {
       canUpdateExternalItems: config.canUpdateExternalItems ?? false,
@@ -59,6 +62,7 @@ export class FormatPreservationSyncService {
       canUpdateStatus: config.canUpdateStatus ?? false
     };
     this.logger = options.logger ?? consoleLogger;
+    this.projectRoot = options.projectRoot ?? process.cwd();
   }
 
   /**
@@ -100,28 +104,51 @@ export class FormatPreservationSyncService {
     // Build completion comment
     const comment = this.buildCompletionComment(completionData);
 
-    // Post comment to external tool with idempotency check
+    // Post comment to external tool with idempotency check + atomic locking
     if (externalClient instanceof GitHubClientV2) {
       // FIX (v0.26.0): Idempotency check to prevent duplicate comments
+      // FIX (v1.0.20): Atomic locking to prevent TOCTOU race condition
       // See: .specweave/increments/0051-*/reports/GITHUB-COMMENT-RECURSION-ROOT-CAUSE-2025-11-24.md
       const issueNumber = usFile.external_tools?.github?.number || 0;
 
-      // Check if we already posted this exact comment
-      const lastComment = await externalClient.getLastComment(issueNumber);
+      // ATOMIC LOCK: Prevent race condition between check and post
+      const lockDir = path.join(
+        this.projectRoot,
+        '.specweave/state/.locks',
+        `github-comment-${issueNumber}`
+      );
+      const lockManager = new LockManager(lockDir, 30, { logger: this.logger }); // 30s stale threshold
 
-      if (lastComment && lastComment.body === comment) {
-        this.logger.log(`  ⏭️  Skipping duplicate comment (already posted)`);
-        return;  // Idempotency: Don't post duplicate!
+      let lockAcquired = false;
+      try {
+        lockAcquired = await lockManager.acquire();
+        if (!lockAcquired) {
+          this.logger.log(`  ⏳ Issue #${issueNumber} - Another comment in progress, skipping`);
+          return;
+        }
+
+        // Check if we already posted this exact comment (within lock)
+        const lastComment = await externalClient.getLastComment(issueNumber);
+
+        if (lastComment && lastComment.body === comment) {
+          this.logger.log(`  ⏭️  Skipping duplicate comment (already posted)`);
+          return;  // Idempotency: Don't post duplicate!
+        }
+
+        await externalClient.addComment(issueNumber, comment);
+        this.logger.log(`  ✅ Posted progress comment to issue #${issueNumber}`);
+      } finally {
+        if (lockAcquired) {
+          await lockManager.release();
+        }
       }
-
-      await externalClient.addComment(issueNumber, comment);
-      this.logger.log(`  ✅ Posted progress comment to issue #${issueNumber}`);
     } else if (externalClient instanceof JiraClient) {
-      const issueKey = usFile.external_id || '';
-      await externalClient.addComment(issueKey, comment);
+      const issueKey = usFile.external_id || usFile.external_tools?.jira?.key || '';
+      await this.postJiraCommentWithIdempotency(externalClient, String(issueKey), comment);
     } else if (externalClient instanceof AdoClient) {
-      const workItemId = parseInt(usFile.external_id || '0', 10);
-      await externalClient.addComment(workItemId, comment);
+      const adoId = usFile.external_id || usFile.external_tools?.ado?.id || '0';
+      const workItemId = parseInt(String(adoId), 10);
+      await this.postAdoCommentWithIdempotency(externalClient, workItemId, comment);
     }
 
     // Conditional status update (only if config allows AND progress is 100%)
@@ -198,29 +225,51 @@ export class FormatPreservationSyncService {
       // Build completion comment
       const comment = this.buildCompletionComment(completionData);
 
-      // Post comment with idempotency check
+      // Post comment with idempotency check + atomic locking
       if (externalClient instanceof GitHubClientV2) {
         // FIX (v0.26.0): Idempotency check to prevent duplicate comments
+        // FIX (v1.0.20): Atomic locking to prevent TOCTOU race condition
         const issueNumber = usFile.external_tools?.github?.number || 0;
 
-        // Check if we already posted this exact comment
-        const lastComment = await externalClient.getLastComment(issueNumber);
+        // ATOMIC LOCK: Prevent race condition between check and post
+        const lockDir = path.join(
+          this.projectRoot,
+          '.specweave/state/.locks',
+          `github-comment-${issueNumber}`
+        );
+        const lockManager = new LockManager(lockDir, 30, { logger: this.logger });
 
-        if (lastComment && lastComment.body === comment) {
-          this.logger.log(`  ⏭️  Skipping duplicate comment (already posted)`);
-        } else {
-          await externalClient.addComment(issueNumber, comment);
-          this.logger.log(`  ✅ Posted progress comment to issue #${issueNumber}`);
+        let lockAcquired = false;
+        try {
+          lockAcquired = await lockManager.acquire();
+          if (!lockAcquired) {
+            this.logger.log(`  ⏳ Issue #${issueNumber} - Another comment in progress, skipping`);
+          } else {
+            // Check if we already posted this exact comment (within lock)
+            const lastComment = await externalClient.getLastComment(issueNumber);
+
+            if (lastComment && lastComment.body === comment) {
+              this.logger.log(`  ⏭️  Skipping duplicate comment (already posted)`);
+            } else {
+              await externalClient.addComment(issueNumber, comment);
+              this.logger.log(`  ✅ Posted progress comment to issue #${issueNumber}`);
+            }
+          }
+        } finally {
+          if (lockAcquired) {
+            await lockManager.release();
+          }
         }
 
         // Update title/description if needed
         // TODO: Implement title/description update logic
       } else if (externalClient instanceof JiraClient) {
-        const issueKey = usFile.external_id || '';
-        await externalClient.addComment(issueKey, comment);
+        const issueKey = usFile.external_id || usFile.external_tools?.jira?.key || '';
+        await this.postJiraCommentWithIdempotency(externalClient, String(issueKey), comment);
       } else if (externalClient instanceof AdoClient) {
-        const workItemId = parseInt(usFile.external_id || '0', 10);
-        await externalClient.addComment(workItemId, comment);
+        const adoId = usFile.external_id || usFile.external_tools?.ado?.id || '0';
+        const workItemId = parseInt(String(adoId), 10);
+        await this.postAdoCommentWithIdempotency(externalClient, workItemId, comment);
       }
 
       // Update status if allowed AND progress is 100%
@@ -302,5 +351,89 @@ export class FormatPreservationSyncService {
   private extractIssueNumber(externalId: string): number {
     const match = externalId.match(/#(\d+)/);
     return match ? parseInt(match[1], 10) : 0;
+  }
+
+  /**
+   * Post JIRA comment with atomic locking to prevent concurrent duplicates
+   * FIX (v1.0.20): Prevent duplicate comments under concurrent load
+   *
+   * Note: JIRA doesn't have a simple getComments API exposed in our client,
+   * so we rely on atomic locking to serialize comment posts per issue.
+   */
+  private async postJiraCommentWithIdempotency(
+    client: JiraClient,
+    issueKey: string,
+    comment: string
+  ): Promise<void> {
+    if (!issueKey) {
+      this.logger.log(`  ⚠️ No JIRA issue key, skipping comment`);
+      return;
+    }
+
+    // ATOMIC LOCK: Serialize comment posts per issue to prevent duplicates
+    const lockDir = path.join(
+      this.projectRoot,
+      '.specweave/state/.locks',
+      `jira-comment-${issueKey}`.toLowerCase().replace(/[^a-z0-9-]/g, '-')
+    );
+    const lockManager = new LockManager(lockDir, 30, { logger: this.logger });
+
+    let lockAcquired = false;
+    try {
+      lockAcquired = await lockManager.acquire();
+      if (!lockAcquired) {
+        this.logger.log(`  ⏳ JIRA ${issueKey} - Another comment in progress, skipping`);
+        return;
+      }
+
+      await client.addComment(issueKey, comment);
+      this.logger.log(`  ✅ Posted progress comment to JIRA ${issueKey}`);
+    } finally {
+      if (lockAcquired) {
+        await lockManager.release();
+      }
+    }
+  }
+
+  /**
+   * Post ADO comment with atomic locking to prevent concurrent duplicates
+   * FIX (v1.0.20): Prevent duplicate comments under concurrent load
+   *
+   * Note: ADO doesn't have a simple getComments API exposed in our client,
+   * so we rely on atomic locking to serialize comment posts per work item.
+   */
+  private async postAdoCommentWithIdempotency(
+    client: AdoClient,
+    workItemId: number,
+    comment: string
+  ): Promise<void> {
+    if (!workItemId) {
+      this.logger.log(`  ⚠️ No ADO work item ID, skipping comment`);
+      return;
+    }
+
+    // ATOMIC LOCK: Serialize comment posts per work item to prevent duplicates
+    const lockDir = path.join(
+      this.projectRoot,
+      '.specweave/state/.locks',
+      `ado-comment-${workItemId}`
+    );
+    const lockManager = new LockManager(lockDir, 30, { logger: this.logger });
+
+    let lockAcquired = false;
+    try {
+      lockAcquired = await lockManager.acquire();
+      if (!lockAcquired) {
+        this.logger.log(`  ⏳ ADO #${workItemId} - Another comment in progress, skipping`);
+        return;
+      }
+
+      await client.addComment(workItemId, comment);
+      this.logger.log(`  ✅ Posted progress comment to ADO #${workItemId}`);
+    } finally {
+      if (lockAcquired) {
+        await lockManager.release();
+      }
+    }
   }
 }

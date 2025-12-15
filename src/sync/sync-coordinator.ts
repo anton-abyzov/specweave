@@ -21,6 +21,7 @@ import { ResolvedAdoProfile } from '../integrations/ado/ado-client-factory.js';
 import { getAdoPat } from '../integrations/ado/ado-pat-provider.js';
 import { deriveFeatureId } from '../utils/feature-id-derivation.js';
 import { ClosureMetrics, createClosureMetrics } from './closure-metrics.js';
+import { LockManager } from '../utils/lock-manager.js';
 
 export interface SyncCoordinatorOptions {
   projectRoot: string;
@@ -163,9 +164,30 @@ export class SyncCoordinator {
         this.logger.log('⚠️  Could not create/get milestone, continuing without it');
       }
 
-      // Create issue for each user story (with idempotency)
+      // Create issue for each user story (with idempotency + atomic locking)
+      // Ensure locks directory exists (once per batch, not per user story)
+      const locksDir = path.join(this.projectRoot, '.specweave/state/.locks');
+      if (!existsSync(locksDir)) {
+        await fs.mkdir(locksDir, { recursive: true });
+      }
+
       for (const usFile of userStories) {
+        // ATOMIC LOCK: Prevent race conditions when multiple syncs run concurrently
+        // Lock is per-user-story to allow parallel processing of different stories
+        const lockDir = path.join(
+          locksDir,
+          `github-issue-${featureId}-${usFile.id}`.toLowerCase().replace(/[^a-z0-9-]/g, '-')
+        );
+        const lockManager = new LockManager(lockDir, 60, { logger: this.logger }); // 60s stale threshold
+
+        let lockAcquired = false;
         try {
+          lockAcquired = await lockManager.acquire();
+          if (!lockAcquired) {
+            this.logger.log(`  ⏳ ${usFile.id} - Another sync in progress, skipping (lock not acquired)`);
+            continue;
+          }
+
           // LAYER 1: Check user story frontmatter for existing GitHub issue
           const cachedIssue = await this.frontmatterUpdater.getGitHubIssueFromFrontmatter(
             this.projectRoot,
@@ -399,6 +421,11 @@ export class SyncCoordinator {
 
         } catch (error) {
           this.logger.error(`  ❌ Failed to create issue for ${usFile.id}:`, error);
+        } finally {
+          // ALWAYS release lock, even on error or early continue
+          if (lockAcquired) {
+            await lockManager.release();
+          }
         }
       }
 
