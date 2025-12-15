@@ -552,3 +552,176 @@ export function findDuplicateIncrementNumbers(
 
   return duplicates;
 }
+
+/**
+ * Get all FS-ID numbers used by a project across ALL locations.
+ *
+ * CRITICAL (v1.0.19): For 2-level structures, a project's features may exist in
+ * multiple board/container folders:
+ *
+ * ```
+ * specs/
+ * ├── jira-board-1/ec-web-ui/FS-001E/   ← Same project in board 1
+ * ├── jira-board-2/ec-web-ui/FS-003/    ← Same project in board 2
+ * └── ec-web-ui/FS-005/                 ← 1-level fallback location
+ * ```
+ *
+ * This function scans ALL locations and returns the set of used FS-ID numbers.
+ *
+ * @param specsPath - Path to .specweave/docs/internal/specs
+ * @param projectId - Project ID to search for (e.g., "ec-web-ui")
+ * @returns Set of used FS-ID numbers (e.g., Set([1, 3, 5]))
+ *
+ * @example
+ * ```typescript
+ * const usedIds = getAllProjectFSIds(specsPath, 'ec-web-ui');
+ * // Returns Set([1, 3, 5]) if FS-001E, FS-003, FS-005 exist for this project
+ * ```
+ *
+ * @since 1.0.19
+ */
+export function getAllProjectFSIds(
+  specsPath: string,
+  projectId: string
+): Set<number> {
+  const usedIds = new Set<number>();
+
+  if (!fs.existsSync(specsPath)) {
+    return usedIds;
+  }
+
+  // Pattern to extract FS-ID number (matches FS-001, FS-001E, FS-1000, etc.)
+  const fsIdPattern = /^FS-(\d{3,})E?$/;
+
+  /**
+   * Scan a folder for FS-ID subfolders and add their numbers to usedIds
+   */
+  function scanFolderForFSIds(folderPath: string): void {
+    if (!fs.existsSync(folderPath)) return;
+
+    try {
+      const entries = fs.readdirSync(folderPath, { withFileTypes: true });
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue;
+
+        const match = entry.name.match(fsIdPattern);
+        if (match) {
+          usedIds.add(parseInt(match[1], 10));
+        }
+
+        // Also scan _archive subfolder
+        if (entry.name === '_archive') {
+          const archivePath = path.join(folderPath, '_archive');
+          try {
+            const archiveEntries = fs.readdirSync(archivePath, { withFileTypes: true });
+            for (const archiveEntry of archiveEntries) {
+              if (!archiveEntry.isDirectory()) continue;
+              const archiveMatch = archiveEntry.name.match(fsIdPattern);
+              if (archiveMatch) {
+                usedIds.add(parseInt(archiveMatch[1], 10));
+              }
+            }
+          } catch {
+            // Ignore archive read errors
+          }
+        }
+      }
+    } catch {
+      // Ignore folder read errors
+    }
+  }
+
+  try {
+    const topLevelEntries = fs.readdirSync(specsPath, { withFileTypes: true });
+
+    for (const entry of topLevelEntries) {
+      if (!entry.isDirectory()) continue;
+
+      // Skip special folders
+      if (entry.name.startsWith('_') || entry.name.startsWith('.')) continue;
+
+      // Case 1: 1-level structure - project folder directly under specs/
+      // e.g., specs/ec-web-ui/FS-001/
+      if (entry.name === projectId) {
+        scanFolderForFSIds(path.join(specsPath, projectId));
+        continue;
+      }
+
+      // Case 2: 2-level structure - board/container folder containing project
+      // e.g., specs/jira-board/ec-web-ui/FS-001/
+      const potentialProjectPath = path.join(specsPath, entry.name, projectId);
+      if (fs.existsSync(potentialProjectPath)) {
+        scanFolderForFSIds(potentialProjectPath);
+      }
+    }
+  } catch {
+    // Error reading specs folder
+  }
+
+  return usedIds;
+}
+
+/**
+ * Find next available FS-ID number for a project across ALL locations.
+ *
+ * Unlike `findNextAvailableInternalIdSync` which checks a single path,
+ * this function scans ALL locations where a project's features might exist
+ * (both 1-level and 2-level structures).
+ *
+ * @param baseNumber - Starting number (typically from increment ID)
+ * @param specsPath - Path to .specweave/docs/internal/specs
+ * @param projectId - Project ID to check (e.g., "ec-web-ui")
+ * @param options - Optional configuration
+ * @returns Next available number that doesn't conflict
+ *
+ * @example
+ * ```typescript
+ * // Project has FS-001E in board-1, FS-002 in board-2
+ * const next = findNextAvailableIdForProject(1, specsPath, 'ec-web-ui');
+ * // Returns 3 (skips 1 and 2)
+ * ```
+ *
+ * @since 1.0.19
+ */
+export function findNextAvailableIdForProject(
+  baseNumber: number,
+  specsPath: string,
+  projectId: string,
+  options: CollisionCheckOptions = {}
+): number {
+  const logger = options.logger ?? consoleLogger;
+  const maxIterations = options.maxIterations ?? 1000;
+
+  // Get ALL used FS-IDs for this project across all locations
+  const usedIds = getAllProjectFSIds(specsPath, projectId);
+
+  // If no IDs used, base number is available
+  if (usedIds.size === 0) {
+    return baseNumber;
+  }
+
+  // Find first available number starting from baseNumber
+  let currentNumber = baseNumber;
+  let iterations = 0;
+
+  while (iterations < maxIterations) {
+    if (!usedIds.has(currentNumber)) {
+      // Found available slot
+      if (currentNumber !== baseNumber) {
+        logger.warn(
+          `⚠️ Feature ID collision avoided for project ${projectId}: ` +
+          `FS-${baseNumber.toString().padStart(3, '0')} in use, ` +
+          `using FS-${currentNumber.toString().padStart(3, '0')} instead`
+        );
+      }
+      return currentNumber;
+    }
+
+    currentNumber++;
+    iterations++;
+  }
+
+  throw new Error(
+    `Unable to find available feature ID for project ${projectId} after ${maxIterations} iterations.`
+  );
+}

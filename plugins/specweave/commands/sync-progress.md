@@ -163,6 +163,98 @@ fi
 
 ---
 
+## STEP 3b: Auto-Create External Issues If Missing (v1.0.19+)
+
+**NEW in v1.0.19**: If external tools are configured but no issues exist for this increment, auto-create them!
+
+This eliminates the need to manually run `/sw-github:create` before syncing.
+
+**Check and auto-create**:
+
+```bash
+echo "🔗 Step 3b/4: Checking if external issues need to be created..."
+
+METADATA="$INCREMENT_DIR/metadata.json"
+AUTO_CREATE_ENABLED=$(jq -r '.sync.autoCreateOnIncrement // false' ".specweave/config.json" 2>/dev/null)
+
+# Check if GitHub is configured but no issue exists
+if [[ " ${EXTERNAL_TOOLS[@]} " =~ " github " ]]; then
+  GITHUB_ISSUE=$(jq -r '.github.issue // .github.issues[0].number // ""' "$METADATA" 2>/dev/null)
+
+  if [ -z "$GITHUB_ISSUE" ] || [ "$GITHUB_ISSUE" = "null" ]; then
+    if [ "$AUTO_CREATE_ENABLED" = "true" ]; then
+      echo "   📝 No GitHub issue linked - auto-creating..."
+
+      # Run auto-create helper
+      if node dist/src/hooks/auto-create-external-issue.js "$INCREMENT_ID"; then
+        echo "   ✅ GitHub issue auto-created"
+      else
+        echo "   ⚠️  GitHub issue creation failed (will continue with sync)"
+      fi
+    else
+      echo "   ⚠️  No GitHub issue linked to this increment"
+      echo "   💡 To enable auto-create: Set sync.autoCreateOnIncrement = true in config.json"
+      echo "   💡 To create manually: /sw-github:create $INCREMENT_ID"
+    fi
+  else
+    echo "   ✅ GitHub issue exists: #$GITHUB_ISSUE"
+  fi
+fi
+
+# Check JIRA
+if [[ " ${EXTERNAL_TOOLS[@]} " =~ " jira " ]]; then
+  JIRA_ISSUE=$(jq -r '.jira.issue // .jira.issues[0].key // ""' "$METADATA" 2>/dev/null)
+
+  if [ -z "$JIRA_ISSUE" ] || [ "$JIRA_ISSUE" = "null" ]; then
+    if [ "$AUTO_CREATE_ENABLED" = "true" ]; then
+      echo "   📝 No JIRA issue linked - auto-creating..."
+
+      if node dist/src/hooks/auto-create-external-issue.js "$INCREMENT_ID"; then
+        echo "   ✅ JIRA issue auto-created"
+      else
+        echo "   ⚠️  JIRA issue creation failed (will continue with sync)"
+      fi
+    else
+      echo "   ⚠️  No JIRA issue linked to this increment"
+      echo "   💡 To enable auto-create: Set sync.autoCreateOnIncrement = true in config.json"
+      echo "   💡 To create manually: /sw-jira:create $INCREMENT_ID"
+    fi
+  else
+    echo "   ✅ JIRA issue exists: $JIRA_ISSUE"
+  fi
+fi
+
+# Check ADO
+if [[ " ${EXTERNAL_TOOLS[@]} " =~ " ado " ]]; then
+  ADO_ITEM=$(jq -r '.ado.workItem // .ado.workItems[0].id // ""' "$METADATA" 2>/dev/null)
+
+  if [ -z "$ADO_ITEM" ] || [ "$ADO_ITEM" = "null" ]; then
+    if [ "$AUTO_CREATE_ENABLED" = "true" ]; then
+      echo "   📝 No ADO work item linked - auto-creating..."
+
+      if node dist/src/hooks/auto-create-external-issue.js "$INCREMENT_ID"; then
+        echo "   ✅ ADO work item auto-created"
+      else
+        echo "   ⚠️  ADO work item creation failed (will continue with sync)"
+      fi
+    else
+      echo "   ⚠️  No ADO work item linked to this increment"
+      echo "   💡 To enable auto-create: Set sync.autoCreateOnIncrement = true in config.json"
+      echo "   💡 To create manually: /sw-ado:create $INCREMENT_ID"
+    fi
+  else
+    echo "   ✅ ADO work item exists: #$ADO_ITEM"
+  fi
+fi
+```
+
+**What this does**:
+- Detects if external tool is configured but no issue linked
+- If `sync.autoCreateOnIncrement = true`, automatically creates issue
+- If disabled, shows helpful message with manual command
+
+---
+
 ## STEP 4: Sync to External Tools
 
 **For each detected external tool, sync progress**:
