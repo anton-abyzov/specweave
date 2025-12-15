@@ -1162,6 +1162,36 @@ rm -rf .specweave/state/.dedup-cache/*.lock
 
 **Prevention**: NEVER use `Bash("cat > file << EOF")` - use `Write` tool instead!
 
+### Marketplace Plugin Desync (v1.0.21+)
+
+**Symptoms**: `/plugin` shows "Plugin 'specweave' not found in marketplace 'specweave'" errors
+**Root Cause**: `npm run rebuild` regenerates local `dist/`, but marketplace cache points to GitHub clone
+
+**Quick Fix:**
+```bash
+# Refresh marketplace from GitHub and reinstall all plugins
+bash scripts/refresh-marketplace.sh
+
+# Verify fix
+npm test
+
+# Restart Claude Code for changes to take effect
+```
+
+**Detection**:
+```bash
+# Check marketplace last update
+cat ~/.claude/plugins/known_marketplaces.json | jq '.specweave.lastUpdated'
+
+# Check installed plugin count (should be 24)
+cat ~/.claude/plugins/installed_plugins.json | jq '.plugins | keys | length'
+```
+
+**Prevention**:
+- Always run `bash scripts/refresh-marketplace.sh` after major changes
+- Push changes to develop branch to keep GitHub marketplace in sync
+- Use `/specweave-validate-status` command to check sync status
+
 ### MCP IDE Connection Drops (v0.32.1+)
 
 **Symptoms**: Session hangs, commands not responding, "Waiting..." forever, UI frozen
