@@ -6,7 +6,7 @@
  * - Single repository
  * - Multiple repositories (microservices/polyrepo)
  * - Monorepo (single repo, multiple projects)
- * - Parent repository approach (for multi-repo)
+ * - Equal multi-repo approach (no parent concept)
  * - Auto-detection from git remotes
  * - GitHub repository creation via API
  *
@@ -160,7 +160,7 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
     // If config was successfully obtained, proceed with setup
     if (config) {
       // Step 2: Create repositories on GitHub (non-fatal - can continue without)
-      if (config.repositories.some(r => r.createOnGitHub) || config.parentRepo?.createOnGitHub) {
+      if (config.repositories.some(r => r.createOnGitHub)) {
         try {
           console.log(chalk.cyan(`\n🚀 Creating ${config.provider.config.name} Repositories\n`));
           await manager.createRepositories(config);
@@ -207,6 +207,7 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
         }
 
         // Success! Extract profiles and return
+        // v1.0.13: Parent repo concept REMOVED - all repos are equal, first is default
         const profiles: GitHubProfile[] = config.repositories.map((repo, index) => ({
           id: repo.id,
           displayName: repo.description || repo.name,
@@ -214,17 +215,6 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
           repo: repo.name,
           isDefault: index === 0  // First repo is default
         }));
-
-        // Add parent repo profile if exists (umbrella-level issue tracking)
-        if (config.parentRepo) {
-          profiles.unshift({
-            id: config.parentRepo.name,
-            displayName: `${config.parentRepo.name} (umbrella)`,
-            owner: config.parentRepo.owner,
-            repo: config.parentRepo.name,
-            isDefault: false  // Implementation repos remain default
-          });
-        }
 
         // Map to setup type
         const setupType: GitHubSetupType =

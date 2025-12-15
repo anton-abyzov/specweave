@@ -830,6 +830,11 @@ export async function promptAndRunExternalImport(
   // Only run in foreground if explicitly requested (options.background === false)
   const useBackground = options.background !== false;
 
+  // CRITICAL FIX (v1.0.7): Pre-create project folders BEFORE import runs
+  // This ensures folders exist even if import finds 0 items
+  // User expectation: "all folders MUST be created for each project, even if there are no work items"
+  await preCreateProjectFolders(targetDir, coordinatorConfig, repoSelectionConfig);
+
   return await runImport(targetDir, coordinatorConfig, {
     background: useBackground,
     estimatedTotal: options.estimatedTotal || 100  // Default estimate for progress tracking
@@ -845,6 +850,116 @@ export async function promptAndRunExternalImport(
 // loadAdoConfigFromSyncProfile moved to ./sync-profile-helpers.ts
 
 // getUmbrellaProjects moved to ./sync-profile-helpers.ts
+
+/**
+ * Pre-create project folders in specs/ directory BEFORE import runs
+ *
+ * CRITICAL FIX (v1.0.7): Ensures folders exist even if import finds 0 items
+ * User expectation: "all folders MUST be created for each project, even if there are no work items"
+ *
+ * Creates folders for:
+ * - GitHub: One folder per repository (e.g., specs/ec-web-ui/)
+ * - ADO: specs/{project}/{areaPath}/ for each area path
+ * - JIRA: specs/{project}/{board}/ for each board
+ *
+ * @param targetDir - Project directory
+ * @param coordinatorConfig - Import coordinator configuration
+ * @param repoSelectionConfig - GitHub repository selection (if any)
+ */
+async function preCreateProjectFolders(
+  targetDir: string,
+  coordinatorConfig: CoordinatorConfig,
+  repoSelectionConfig: RepoSelectionConfig | null
+): Promise<void> {
+  const specsDir = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs');
+  const createdFolders: string[] = [];
+
+  // GitHub repositories - one folder per repo
+  if (coordinatorConfig.githubRepositories && coordinatorConfig.githubRepositories.length > 0) {
+    for (const repo of coordinatorConfig.githubRepositories) {
+      // Normalize repo name to folder name (e.g., "ec-web-ui" → "ec-web-ui")
+      const repoFolder = normalizeToProjectId(repo.repo);
+      const folderPath = path.join(specsDir, repoFolder);
+      if (!fs.existsSync(folderPath)) {
+        fs.mkdirSync(folderPath, { recursive: true });
+        createdFolders.push(repoFolder);
+      }
+    }
+  } else if (repoSelectionConfig?.repositories) {
+    // Fallback to repo selection config if githubRepositories not set
+    for (const fullRepo of repoSelectionConfig.repositories) {
+      const [, repoName] = fullRepo.split('/');
+      if (repoName) {
+        const repoFolder = normalizeToProjectId(repoName);
+        const folderPath = path.join(specsDir, repoFolder);
+        if (!fs.existsSync(folderPath)) {
+          fs.mkdirSync(folderPath, { recursive: true });
+          createdFolders.push(repoFolder);
+        }
+      }
+    }
+  } else if (coordinatorConfig.github) {
+    // Single GitHub repo mode
+    const repoFolder = normalizeToProjectId(coordinatorConfig.github.repo);
+    const folderPath = path.join(specsDir, repoFolder);
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
+      createdFolders.push(repoFolder);
+    }
+  }
+
+  // ADO - specs/{project}/{areaPath}/ structure
+  if (coordinatorConfig.ado?.projectMappings) {
+    for (const pm of coordinatorConfig.ado.projectMappings) {
+      if (pm.areaMappings) {
+        for (const am of pm.areaMappings) {
+          // specweaveFolder is already normalized (e.g., "project-name/area-path")
+          const folderPath = path.join(specsDir, am.specweaveFolder);
+          if (!fs.existsSync(folderPath)) {
+            fs.mkdirSync(folderPath, { recursive: true });
+            createdFolders.push(am.specweaveFolder);
+          }
+        }
+      }
+    }
+  }
+
+  // JIRA - specs/{project}/{board}/ structure
+  if (coordinatorConfig.jira?.projectMappings) {
+    for (const pm of coordinatorConfig.jira.projectMappings) {
+      if (pm.boardMappings) {
+        for (const bm of pm.boardMappings) {
+          // specweaveFolder is already normalized (e.g., "project-key/board-name")
+          const folderPath = path.join(specsDir, bm.specweaveFolder);
+          if (!fs.existsSync(folderPath)) {
+            fs.mkdirSync(folderPath, { recursive: true });
+            createdFolders.push(bm.specweaveFolder);
+          }
+        }
+      } else {
+        // No boards - create project folder directly
+        const projectFolder = normalizeToProjectId(pm.projectKey);
+        const folderPath = path.join(specsDir, projectFolder);
+        if (!fs.existsSync(folderPath)) {
+          fs.mkdirSync(folderPath, { recursive: true });
+          createdFolders.push(projectFolder);
+        }
+      }
+    }
+  }
+
+  // Log created folders
+  if (createdFolders.length > 0) {
+    console.log(chalk.green(`   ✓ Pre-created ${createdFolders.length} project folder(s) in specs/`));
+    for (const folder of createdFolders.slice(0, 5)) {
+      console.log(chalk.gray(`      → ${folder}/`));
+    }
+    if (createdFolders.length > 5) {
+      console.log(chalk.gray(`      → ... and ${createdFolders.length - 5} more`));
+    }
+    console.log('');
+  }
+}
 
 /**
  * Prompt for multi-repository selection
