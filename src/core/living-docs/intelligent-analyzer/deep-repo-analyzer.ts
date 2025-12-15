@@ -31,23 +31,109 @@ export async function analyzeRepo(
   }
 
   const prompt = buildRepoAnalysisPrompt(repoName, samples);
-  log(`  Sending to LLM for deep analysis...`);
 
-  try {
-    const result = await llmProvider.analyze(prompt);
-    if (!result || !result.content) {
+  // ADAPTIVE TIMEOUT CALCULATION (v2 - GENEROUS for thorough analysis)
+  // PHILOSOPHY: For deep analysis mode, we WANT to wait for thorough insights!
+  // Base timeout: 240s (4 min) - generous baseline for quality analysis
+  // Additional time based on complexity factors:
+  // - File count: 5s per file (more files = MORE context to deeply analyze)
+  // - Prompt size: 50ms per 1000 chars (larger prompts need proportional time)
+  // - Domain complexity: Detect regulatory/compliance keywords (+120s = +2min)
+  const baseTimeout = 240000; // 4 minutes (was 3 min)
+  const timeoutPerFile = 5000; // 5 seconds per file (was 2s) - GENEROUS
+  const timeoutPerPromptKB = 50; // 50ms per 1000 chars (was 10ms)
+
+  // Calculate prompt-based timeout
+  const promptSizeTimeout = Math.floor((prompt.length / 1000) * timeoutPerPromptKB);
+
+  // Detect complex domains (regulatory, compliance, financial, healthcare)
+  const complexityKeywords = [
+    'regulatory', 'compliance', 'hipaa', 'gdpr', 'sox', 'pci',
+    'financial', 'healthcare', 'medical', 'governance', 'audit',
+    'stewardship', 'privacy', 'security', 'encryption'
+  ];
+  const isComplexDomain = complexityKeywords.some(kw =>
+    repoName.toLowerCase().includes(kw) ||
+    prompt.toLowerCase().includes(kw)
+  );
+  const complexityBonus = isComplexDomain ? 120000 : 0; // +2 min for complex domains (was +1min)
+
+  // Final adaptive timeout (max 10 minutes for HUGE repos - we can wait!)
+  // Examples:
+  // - Small simple repo (2 files): 240s + 10s = 250s (~4min)
+  // - Large simple repo (20 files): 240s + 100s = 340s (~5.5min)
+  // - Small complex repo (2 files): 240s + 10s + 120s = 370s (~6min)
+  // - HUGE complex repo (20 files): 240s + 100s + 120s = 460s (~7.5min)
+  const adaptiveTimeout = Math.min(
+    baseTimeout + (samples.length * timeoutPerFile) + promptSizeTimeout + complexityBonus,
+    600000 // 10 minutes max (was 5 min) - GENEROUS for thorough analysis!
+  );
+
+  log(`  Sending to LLM for deep analysis... (timeout: ${Math.round(adaptiveTimeout / 1000)}s, files: ${samples.length}, complex: ${isComplexDomain})`);
+
+  // Wrap LLM provider with adaptive timeout and retry logic
+  const maxRetries = 2;
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    // CRITICAL: Track timeout ID to prevent resource leak
+    // If LLM completes before timeout, we MUST cancel the timer
+    // Otherwise timer runs for full 4-10min holding closure memory
+    let timeoutId: NodeJS.Timeout | undefined;
+
+    try {
+      // Create timeout promise with cancellable timer
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(
+          () => reject(new Error(`Claude Code command timed out after ${adaptiveTimeout}ms`)),
+          adaptiveTimeout
+        );
+      });
+
+      // Race between LLM analysis and timeout
+      const result = await Promise.race([
+        llmProvider.analyze(prompt),
+        timeoutPromise
+      ]);
+
+      // SUCCESS: Clear timeout immediately to prevent resource leak
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+        timeoutId = undefined;
+      }
+
+      if (!result || !result.content) {
+        return createBasicAnalysis(repoPath, repoName, samples);
+      }
+      const extraction = extractJson<LLMRepoAnalysisResponse>(result.content, { requiredFields: ['purpose'] });
+      if (extraction.success && extraction.data) {
+        log(`  LLM analysis successful${attempt > 0 ? ` (after ${attempt} retry/retries)` : ''}`);
+        return convertLLMResponse(repoPath, repoName, extraction.data, samples.length);
+      }
       return createBasicAnalysis(repoPath, repoName, samples);
+    } catch (err: any) {
+      // ERROR/TIMEOUT: Clear timeout to prevent resource leak
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+        timeoutId = undefined;
+      }
+
+      lastError = err;
+
+      if (attempt < maxRetries) {
+        // Exponential backoff: 1s, 2s, 4s
+        const delay = Math.min(1000 * Math.pow(2, attempt), 10000);
+        log(`  LLM attempt ${attempt + 1} failed: ${err.message}`);
+        log(`  Retrying in ${delay}ms... (attempt ${attempt + 2}/${maxRetries + 1})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
     }
-    const extraction = extractJson<LLMRepoAnalysisResponse>(result.content, { requiredFields: ['purpose'] });
-    if (extraction.success && extraction.data) {
-      log(`  LLM analysis successful`);
-      return convertLLMResponse(repoPath, repoName, extraction.data, samples.length);
-    }
-    return createBasicAnalysis(repoPath, repoName, samples);
-  } catch (err: any) {
-    log(`  LLM error: ${err.message}`);
-    return createBasicAnalysis(repoPath, repoName, samples);
   }
+
+  // All retries exhausted
+  log(`  LLM error: ${lastError?.message || 'Unknown error'}`);
+  log(`  Falling back to basic analysis (rule-based pattern detection)`);
+  return createBasicAnalysis(repoPath, repoName, samples);
 }
 
 interface LLMRepoAnalysisResponse {
