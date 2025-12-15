@@ -11,12 +11,13 @@
  * - Layer 3: GitHub API query (slow, 500-2000ms)
  */
 
-import { readFile, writeFile, readdir } from 'fs/promises';
+import { readFile, writeFile, readdir, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 import yaml from 'yaml';
 import { Logger, consoleLogger } from '../utils/logger.js';
 import { autoDetectProjectIdSync } from '../utils/project-detection.js';
+import { LockManager } from '../utils/lock-manager.js';
 
 export interface GitHubIssueInfo {
   number: number;
@@ -67,10 +68,33 @@ export class FrontmatterUpdater {
    *
    * CRITICAL: This is Layer 1 backfill for 3-layer idempotency
    * Must be called after GitHub issue creation to cache issue number
+   *
+   * FIX (v1.0.20): Added atomic locking to prevent race conditions when
+   * multiple agents update the same user story frontmatter concurrently.
    */
   async updateUserStoryFrontmatter(options: FrontmatterUpdateOptions): Promise<boolean> {
+    const { projectRoot, featureId, userStoryId, githubIssue } = options;
+
+    // ATOMIC LOCK: Prevent race condition when parallel agents update same file
+    // Lock is per-user-story file to allow parallel updates to different files
+    const locksDir = path.join(projectRoot, '.specweave/state/.locks');
+    if (!existsSync(locksDir)) {
+      await mkdir(locksDir, { recursive: true });
+    }
+
+    const lockDir = path.join(
+      locksDir,
+      `frontmatter-${featureId}-${userStoryId}`.toLowerCase().replace(/[^a-z0-9-]/g, '-')
+    );
+    const lockManager = new LockManager(lockDir, 30, { logger: this.logger }); // 30s stale threshold
+
+    let lockAcquired = false;
     try {
-      const { projectRoot, featureId, userStoryId, githubIssue } = options;
+      lockAcquired = await lockManager.acquire();
+      if (!lockAcquired) {
+        this.logger.log(`  ⏳ ${userStoryId} frontmatter update in progress by another agent, skipping`);
+        return false;
+      }
 
       // Construct user story file path
       const userStoryPath = await this.getUserStoryPath(projectRoot, featureId, userStoryId);
@@ -80,7 +104,7 @@ export class FrontmatterUpdater {
         return false;
       }
 
-      // Read current content
+      // Read current content (within lock)
       const content = await readFile(userStoryPath, 'utf-8');
 
       // Parse frontmatter
@@ -121,7 +145,7 @@ export class FrontmatterUpdater {
         `---\n${newFrontmatter.trim()}\n---`
       );
 
-      // Write back to file
+      // Write back to file (within lock)
       await writeFile(userStoryPath, newContent, 'utf-8');
 
       this.logger.log(`  ✅ Updated ${userStoryId} frontmatter with issue #${githubIssue.number}`);
@@ -132,6 +156,11 @@ export class FrontmatterUpdater {
         error
       );
       return false;
+    } finally {
+      // ALWAYS release lock
+      if (lockAcquired) {
+        await lockManager.release();
+      }
     }
   }
 
