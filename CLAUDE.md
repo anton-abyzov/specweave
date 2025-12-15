@@ -398,6 +398,54 @@ IncrementNumberManager.getNextIncrementNumber(); // "0001" ← Starts from begin
 
 **Details:** See ADR-0142 (`.specweave/docs/internal/architecture/adr/0142-gap-filling-increment-ids.md`)
 
+### 2f-bis. Per-Project Increment ID Collision Prevention (v1.0.19+)
+
+**In multi-project setups, increment IDs are now checked against the target project's feature space!**
+
+**PROBLEM (before v1.0.19):**
+```
+Project ec-web-ui imports external GitHub issue → creates FS-001E
+User creates internal increment → 0001-feature → derives to FS-001
+⚠️ FS-001 and FS-001E share same base number → COLLISION!
+```
+
+**SOLUTION (v1.0.19+):**
+When `projectId` is provided to `generateIncrementId()`, it checks the target project's `specs/{projectId}/` folder for existing FS-IDs and skips colliding numbers:
+
+```typescript
+import { IncrementNumberManager } from './core/increment/increment-utils.js';
+
+// WITHOUT projectId - uses global increment pool (backward compatible)
+const globalId = IncrementNumberManager.generateIncrementId('feature');
+// → "0001-feature" (no project-specific collision check)
+
+// WITH projectId - checks target project's FS-ID space
+const safeId = IncrementNumberManager.generateIncrementId('feature', {
+  projectId: 'ec-web-ui'  // ← Checks specs/ec-web-ui/ for FS-001, FS-001E
+});
+// → "0002-feature" (skipped 0001 because FS-001E exists in ec-web-ui)
+
+// Direct method for project-scoped number
+const nextNum = IncrementNumberManager.getNextIncrementNumberForProject(
+  process.cwd(),
+  'ec-web-ui'
+);
+// → "0002" (skips numbers with existing FS-IDs)
+```
+
+**JIRA/ADO Mappers (v1.0.19+):**
+- `JiraMapper` and `JiraIncrementalMapper` now accept optional `targetProjectId` constructor param
+- When set, uses project-scoped ID generation to prevent collisions
+
+**MULTI-PROJECT INDEPENDENCE:**
+```
+Project A (specs/project-a/): FS-001, FS-002 exist
+Project B (specs/project-b/): FS-001E exists
+
+IncrementNumberManager.getNextIncrementNumberForProject(root, 'project-a'); // "0003"
+IncrementNumberManager.getNextIncrementNumberForProject(root, 'project-b'); // "0002"
+```
+
 ### 2g. NEVER Create Project Folders Without Validation (v0.34.0+, fixed v0.35.1)
 
 **Project folders MUST exist in config.json before creation!**

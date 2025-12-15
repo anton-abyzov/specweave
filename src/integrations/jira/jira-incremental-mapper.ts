@@ -65,6 +65,7 @@ export class JiraIncrementalMapper {
   private projectRoot: string;
   private rfcGenerator: FlexibleRFCGenerator;
   private domain: string;
+  private targetProjectId?: string;
 
   /**
    * Create a JiraIncrementalMapper
@@ -72,12 +73,19 @@ export class JiraIncrementalMapper {
    * @param client - JiraClient instance
    * @param config - Configuration with domain from ConfigManager
    * @param projectRoot - Project root path
+   * @param targetProjectId - Target SpecWeave project ID for per-project collision prevention (v1.0.19+)
    */
-  constructor(client: JiraClient, config: JiraIncrementalMapperConfig, projectRoot: string = process.cwd()) {
+  constructor(
+    client: JiraClient,
+    config: JiraIncrementalMapperConfig,
+    projectRoot: string = process.cwd(),
+    targetProjectId?: string
+  ) {
     this.client = client;
     this.projectRoot = projectRoot;
     this.rfcGenerator = new FlexibleRFCGenerator(projectRoot);
     this.domain = config.domain;
+    this.targetProjectId = targetProjectId;
   }
 
   /**
@@ -554,7 +562,11 @@ export class JiraIncrementalMapper {
   private getNextIncrementId(): string {
     // UPDATED: Use centralized IncrementNumberManager to prevent gaps when increments are archived
     // This now scans ALL directories: main, _archive, _abandoned, _paused
+    // PER-PROJECT COLLISION PREVENTION (v1.0.19+): Use project-scoped generation when targetProjectId is set
     const { IncrementNumberManager } = require('../../core/increment/increment-utils.js');
+    if (this.targetProjectId) {
+      return IncrementNumberManager.getNextIncrementNumberForProject(this.projectRoot, this.targetProjectId);
+    }
     return IncrementNumberManager.getNextIncrementNumber(this.projectRoot, false);
   }
 
