@@ -114,21 +114,21 @@ describe('umbrella-detector', () => {
       const jobDir = path.join(testDir, '.specweave', 'state', 'jobs', jobId);
       fs.mkdirSync(jobDir, { recursive: true });
 
-      // Create job config
+      // Create job config (v1.0.21: repositories/{org}/{repo} structure)
       const jobConfig = {
         jobId,
         projectPath: testDir,
         repositories: [
-          { owner: 'org', name: 'repo-one', path: 'org/repo-one', cloneUrl: 'https://...' },
-          { owner: 'org', name: 'repo-two', path: 'org/repo-two', cloneUrl: 'https://...' },
+          { owner: 'org', name: 'repo-one', path: 'repositories/org/repo-one', cloneUrl: 'https://...' },
+          { owner: 'org', name: 'repo-two', path: 'repositories/org/repo-two', cloneUrl: 'https://...' },
         ],
         startedAt: new Date().toISOString(),
       };
       fs.writeFileSync(path.join(jobDir, 'config.json'), JSON.stringify(jobConfig));
 
-      // Create the repos on disk
-      fs.mkdirSync(path.join(testDir, 'org', 'repo-one'), { recursive: true });
-      fs.mkdirSync(path.join(testDir, 'org', 'repo-two'), { recursive: true });
+      // Create the repos on disk (v1.0.21: repositories/{org}/{repo} structure)
+      fs.mkdirSync(path.join(testDir, 'repositories', 'org', 'repo-one'), { recursive: true });
+      fs.mkdirSync(path.join(testDir, 'repositories', 'org', 'repo-two'), { recursive: true });
 
       const result = await loadFromCloneJob(testDir, jobId);
 
@@ -147,13 +147,13 @@ describe('umbrella-detector', () => {
 
   describe('loadFromUmbrellaConfig', () => {
     it('should load repos from config.json umbrella section', async () => {
-      // Create config.json with umbrella section
+      // Create config.json with umbrella section (v1.0.21: repositories/{org}/{repo} structure)
       const config = {
         umbrella: {
           enabled: true,
           childRepos: [
-            { id: 'repo-one', path: 'org/repo-one', name: 'repo-one' },
-            { id: 'repo-two', path: 'org/repo-two', name: 'repo-two' },
+            { id: 'repo-one', path: 'repositories/org/repo-one', name: 'repo-one' },
+            { id: 'repo-two', path: 'repositories/org/repo-two', name: 'repo-two' },
           ],
         },
       };
@@ -162,9 +162,9 @@ describe('umbrella-detector', () => {
         JSON.stringify(config)
       );
 
-      // Create the repos on disk
-      fs.mkdirSync(path.join(testDir, 'org', 'repo-one'), { recursive: true });
-      fs.mkdirSync(path.join(testDir, 'org', 'repo-two'), { recursive: true });
+      // Create the repos on disk (v1.0.21: repositories/{org}/{repo} structure)
+      fs.mkdirSync(path.join(testDir, 'repositories', 'org', 'repo-one'), { recursive: true });
+      fs.mkdirSync(path.join(testDir, 'repositories', 'org', 'repo-two'), { recursive: true });
 
       const result = await loadFromUmbrellaConfig(testDir);
 
@@ -197,22 +197,22 @@ describe('umbrella-detector', () => {
       const jobDir = path.join(testDir, '.specweave', 'state', 'jobs', jobId);
       fs.mkdirSync(jobDir, { recursive: true });
 
-      // Create job config with 2 repos
+      // Create job config with 2 repos (v1.0.21: repositories/{org}/{repo} structure)
       const jobConfig = {
         jobId,
         projectPath: testDir,
         repositories: [
-          { owner: 'org', name: 'from-job', path: 'org/from-job', cloneUrl: 'https://...' },
+          { owner: 'org', name: 'from-job', path: 'repositories/org/from-job', cloneUrl: 'https://...' },
         ],
         startedAt: new Date().toISOString(),
       };
       fs.writeFileSync(path.join(jobDir, 'config.json'), JSON.stringify(jobConfig));
 
-      // Create repo on disk
-      fs.mkdirSync(path.join(testDir, 'org', 'from-job', '.git'), { recursive: true });
+      // Create repo on disk (v1.0.21: repositories/{org}/{repo} structure)
+      fs.mkdirSync(path.join(testDir, 'repositories', 'org', 'from-job', '.git'), { recursive: true });
 
       // Also create a repo not in job config
-      fs.mkdirSync(path.join(testDir, 'org', 'from-scan', '.git'), { recursive: true });
+      fs.mkdirSync(path.join(testDir, 'repositories', 'org', 'from-scan', '.git'), { recursive: true });
 
       const result = await detectUmbrellaStructure(testDir, jobId);
 
@@ -238,10 +238,11 @@ describe('umbrella-detector', () => {
 
   describe('persistUmbrellaConfig', () => {
     it('should write umbrella config to config.json', async () => {
+      // v1.0.21: repositories/{org}/{repo} structure
       const umbrellaConfig: UmbrellaConfig = {
         enabled: true,
         childRepos: [
-          { id: 'test-repo', path: 'org/test-repo', name: 'test-repo' },
+          { id: 'test-repo', path: 'repositories/org/test-repo', name: 'test-repo' },
         ],
         detectedFrom: 'clone-job',
         detectedAt: new Date().toISOString(),

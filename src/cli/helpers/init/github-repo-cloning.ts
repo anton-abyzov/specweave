@@ -443,10 +443,12 @@ export async function triggerGitHubRepoCloning(
   // Prepare repositories with clone URLs (v1.0.10: respects gitUrlFormat)
   // v1.0.12: Use actual owner from repo object instead of user-provided org
   // This ensures we use the correct owner even if filtering missed something
+  // v1.0.21: Clone into repositories/{org}/repo-name/ structure
+  // This keeps all cloned repos organized and separate from the main project
   const reposWithUrls = filteredRepos.map(r => ({
     owner: r.owner.login,
     name: r.name,
-    path: r.name, // Clone directly into project path
+    path: `repositories/${r.owner.login}/${r.name}`, // Clone into repositories/{org}/{repo}
     cloneUrl: buildGitHubCloneUrl(r.owner.login, r.name, pat, gitUrlFormat)
   }));
 
@@ -457,7 +459,7 @@ export async function triggerGitHubRepoCloning(
   });
 
   // Show progress info
-  console.log(chalk.gray(`   Repositories will be cloned to: ${projectPath}/`));
+  console.log(chalk.gray(`   Repositories will be cloned to: ${projectPath}/repositories/${org}/`));
   console.log(chalk.gray(`   Job ID: ${result.job.id}`));
 
   if (result.isBackground) {

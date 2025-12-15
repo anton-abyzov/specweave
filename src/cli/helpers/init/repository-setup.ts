@@ -437,6 +437,11 @@ function getRepoStrings(language: SupportedLanguage): {
   adoPatternRegexDesc: string;
   adoSkipOption: string;
   adoSkipDesc: string;
+  // v1.0.21: Enhanced skip option with manual placement guidance
+  skipManualReposHeader: string;
+  skipManualReposGuidance: string;
+  skipManualReposPath: string;
+  skipManualReposExample: string;
   adoPatternPrompt: string;
   adoPatternHint: string;
   adoRegexPrompt: string;
@@ -503,7 +508,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternRegex: 'Pattern (regex)',
       adoPatternRegexDesc: 'Regular expression (e.g., "^sw-.*$")',
       adoSkipOption: 'Skip',
-      adoSkipDesc: 'Configure later',
+      adoSkipDesc: 'I have my own repos / configure later',
+      // v1.0.21: Enhanced skip option with manual placement guidance
+      skipManualReposHeader: '📁 Manual Repository Placement',
+      skipManualReposGuidance: 'If you have existing repositories, place them in:',
+      skipManualReposPath: 'repositories/{organization}/',
+      skipManualReposExample: 'Example: repositories/my-org/frontend-app/',
       adoPatternPrompt: 'Enter pattern',
       adoPatternHint: 'Examples: "sw-*", "*-backend", "api-*-service"',
       adoRegexPrompt: 'Enter regex pattern',
@@ -569,7 +579,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternRegex: 'Шаблон (regex)',
       adoPatternRegexDesc: 'Регулярное выражение (напр., "^sw-.*$")',
       adoSkipOption: 'Пропустить',
-      adoSkipDesc: 'Настроить позже',
+      adoSkipDesc: 'У меня свои репо / настроить позже',
+      // v1.0.21: Enhanced skip option with manual placement guidance
+      skipManualReposHeader: '📁 Ручное размещение репозиториев',
+      skipManualReposGuidance: 'Если у вас есть существующие репозитории, разместите их в:',
+      skipManualReposPath: 'repositories/{organization}/',
+      skipManualReposExample: 'Пример: repositories/my-org/frontend-app/',
       adoPatternPrompt: 'Введите шаблон',
       adoPatternHint: 'Примеры: "sw-*", "*-backend", "api-*-service"',
       adoRegexPrompt: 'Введите регулярное выражение',
@@ -634,7 +649,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternRegex: 'Patrón (regex)',
       adoPatternRegexDesc: 'Expresión regular (ej., "^sw-.*$")',
       adoSkipOption: 'Omitir',
-      adoSkipDesc: 'Configurar después',
+      adoSkipDesc: 'Tengo mis propios repos / configurar después',
+      // v1.0.21: Enhanced skip option with manual placement guidance
+      skipManualReposHeader: '📁 Ubicación manual de repositorios',
+      skipManualReposGuidance: 'Si tiene repositorios existentes, colóquelos en:',
+      skipManualReposPath: 'repositories/{organization}/',
+      skipManualReposExample: 'Ejemplo: repositories/my-org/frontend-app/',
       adoPatternPrompt: 'Ingrese patrón',
       adoPatternHint: 'Ejemplos: "sw-*", "*-backend", "api-*-service"',
       adoRegexPrompt: 'Ingrese expresión regular',
@@ -699,7 +719,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternRegex: '模式 (正则)',
       adoPatternRegexDesc: '正则表达式（例如 "^sw-.*$"）',
       adoSkipOption: '跳过',
-      adoSkipDesc: '稍后配置',
+      adoSkipDesc: '我有自己的仓库 / 稍后配置',
+      // v1.0.21: Enhanced skip option with manual placement guidance
+      skipManualReposHeader: '📁 手动放置仓库',
+      skipManualReposGuidance: '如果您有现有仓库，请将它们放在：',
+      skipManualReposPath: 'repositories/{organization}/',
+      skipManualReposExample: '示例：repositories/my-org/frontend-app/',
       adoPatternPrompt: '输入模式',
       adoPatternHint: '示例："sw-*"、"*-backend"、"api-*-service"',
       adoRegexPrompt: '输入正则表达式',
@@ -764,7 +789,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternRegex: 'Muster (regex)',
       adoPatternRegexDesc: 'Regulärer Ausdruck (z.B. "^sw-.*$")',
       adoSkipOption: 'Überspringen',
-      adoSkipDesc: 'Später konfigurieren',
+      adoSkipDesc: 'Ich habe eigene Repos / später konfigurieren',
+      // v1.0.21: Enhanced skip option with manual placement guidance
+      skipManualReposHeader: '📁 Manuelle Repository-Platzierung',
+      skipManualReposGuidance: 'Wenn Sie bereits Repositories haben, platzieren Sie diese in:',
+      skipManualReposPath: 'repositories/{organization}/',
+      skipManualReposExample: 'Beispiel: repositories/my-org/frontend-app/',
       adoPatternPrompt: 'Muster eingeben',
       adoPatternHint: 'Beispiele: "sw-*", "*-backend", "api-*-service"',
       adoRegexPrompt: 'Regex eingeben',
@@ -829,7 +859,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternRegex: 'Modèle (regex)',
       adoPatternRegexDesc: 'Expression régulière (ex., "^sw-.*$")',
       adoSkipOption: 'Ignorer',
-      adoSkipDesc: 'Configurer plus tard',
+      adoSkipDesc: "J'ai mes propres repos / configurer plus tard",
+      // v1.0.21: Enhanced skip option with manual placement guidance
+      skipManualReposHeader: '📁 Placement manuel des dépôts',
+      skipManualReposGuidance: 'Si vous avez des dépôts existants, placez-les dans:',
+      skipManualReposPath: 'repositories/{organization}/',
+      skipManualReposExample: 'Exemple: repositories/my-org/frontend-app/',
       adoPatternPrompt: 'Entrez le modèle',
       adoPatternHint: 'Exemples: "sw-*", "*-backend", "api-*-service"',
       adoRegexPrompt: 'Entrez le regex',
@@ -894,7 +929,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternRegex: 'パターン (正規表現)',
       adoPatternRegexDesc: '正規表現（例: "^sw-.*$"）',
       adoSkipOption: 'スキップ',
-      adoSkipDesc: '後で設定',
+      adoSkipDesc: '自分のリポジトリがある / 後で設定',
+      // v1.0.21: Enhanced skip option with manual placement guidance
+      skipManualReposHeader: '📁 リポジトリの手動配置',
+      skipManualReposGuidance: '既存のリポジトリがある場合は、次の場所に配置してください:',
+      skipManualReposPath: 'repositories/{organization}/',
+      skipManualReposExample: '例: repositories/my-org/frontend-app/',
       adoPatternPrompt: 'パターンを入力',
       adoPatternHint: '例: "sw-*", "*-backend", "api-*-service"',
       adoRegexPrompt: '正規表現を入力',
@@ -959,7 +999,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternRegex: '패턴 (정규식)',
       adoPatternRegexDesc: '정규 표현식 (예: "^sw-.*$")',
       adoSkipOption: '건너뛰기',
-      adoSkipDesc: '나중에 설정',
+      adoSkipDesc: '내 레포가 있음 / 나중에 설정',
+      // v1.0.21: Enhanced skip option with manual placement guidance
+      skipManualReposHeader: '📁 수동 저장소 배치',
+      skipManualReposGuidance: '기존 저장소가 있는 경우 다음 위치에 배치하세요:',
+      skipManualReposPath: 'repositories/{organization}/',
+      skipManualReposExample: '예: repositories/my-org/frontend-app/',
       adoPatternPrompt: '패턴 입력',
       adoPatternHint: '예: "sw-*", "*-backend", "api-*-service"',
       adoRegexPrompt: '정규식 입력',
@@ -1024,7 +1069,12 @@ function getRepoStrings(language: SupportedLanguage): {
       adoPatternRegex: 'Padrão (regex)',
       adoPatternRegexDesc: 'Expressão regular (ex., "^sw-.*$")',
       adoSkipOption: 'Pular',
-      adoSkipDesc: 'Configurar depois',
+      adoSkipDesc: 'Tenho meus próprios repos / configurar depois',
+      // v1.0.21: Enhanced skip option with manual placement guidance
+      skipManualReposHeader: '📁 Posicionamento manual de repositórios',
+      skipManualReposGuidance: 'Se você tiver repositórios existentes, coloque-os em:',
+      skipManualReposPath: 'repositories/{organization}/',
+      skipManualReposExample: 'Exemplo: repositories/my-org/frontend-app/',
       adoPatternPrompt: 'Digite o padrão',
       adoPatternHint: 'Exemplos: "sw-*", "*-backend", "api-*-service"',
       adoRegexPrompt: 'Digite a regex',
@@ -1087,11 +1137,13 @@ export interface MultiRepoPatternResult {
  *
  * @param provider - The git provider ('github' | 'bitbucket' | 'ado')
  * @param strings - Localized strings
+ * @param orgName - Organization/workspace name for skip guidance (v1.0.21+)
  * @returns Selected pattern result
  */
 async function promptMultiRepoPatternSelection(
   provider: 'github' | 'bitbucket' | 'ado',
-  strings: ReturnType<typeof getRepoStrings>
+  strings: ReturnType<typeof getRepoStrings>,
+  orgName?: string
 ): Promise<MultiRepoPatternResult> {
   // Display provider-specific header
   if (provider === 'github') {
@@ -1184,6 +1236,18 @@ async function promptMultiRepoPatternSelection(
 
     case 'skip': {
       console.log(chalk.gray(`   → ${strings.adoCloneSkip}`));
+      // v1.0.21: Show guidance for manual repository placement
+      console.log('');
+      console.log(chalk.blue(`   ${strings.skipManualReposHeader}`));
+      console.log(chalk.gray(`   ${strings.skipManualReposGuidance}`));
+      const pathExample = orgName
+        ? strings.skipManualReposPath.replace('{organization}', orgName)
+        : strings.skipManualReposPath;
+      console.log(chalk.cyan(`   ${pathExample}`));
+      console.log(chalk.gray(`   ${strings.skipManualReposExample}`));
+      console.log('');
+      console.log(chalk.gray('   After placing your repos, living docs will auto-detect them.'));
+      console.log('');
       return { strategy: 'skip' };
     }
   }
@@ -1326,7 +1390,9 @@ export async function setupRepositoryHosting(options: RepositorySetupOptions): P
     }
 
     // Step 3b: Show unified strategy selection (ALL providers)
-    const patternResult = await promptMultiRepoPatternSelection(provider, strings);
+    // v1.0.21: Pass org name for skip guidance
+    const orgName = githubRepoSelection?.org || bitbucketRepoSelection?.workspace || adoProjectSelection?.org;
+    const patternResult = await promptMultiRepoPatternSelection(provider, strings, orgName);
 
     // Map to ADO-style result for backward compatibility
     adoClonePatternResult = {

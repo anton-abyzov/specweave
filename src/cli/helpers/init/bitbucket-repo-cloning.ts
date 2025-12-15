@@ -329,10 +329,12 @@ export async function triggerBitbucketRepoCloning(
   console.log('');
 
   // Prepare repositories with clone URLs
+  // v1.0.21: Clone into repositories/{workspace}/repo-name/ structure
+  // This keeps all cloned repos organized and separate from the main project
   const reposWithUrls = filteredRepos.map(r => ({
     owner: workspace,
     name: r.slug,
-    path: r.slug, // Clone directly into project path
+    path: `repositories/${workspace}/${r.slug}`, // Clone into repositories/{workspace}/{repo}
     cloneUrl: buildBitbucketCloneUrl(workspace, r.slug, username, appPassword)
   }));
 
@@ -343,7 +345,7 @@ export async function triggerBitbucketRepoCloning(
   });
 
   // Show progress info
-  console.log(chalk.gray(`   Repositories will be cloned to: ${projectPath}/`));
+  console.log(chalk.gray(`   Repositories will be cloned to: ${projectPath}/repositories/${workspace}/`));
   console.log(chalk.gray(`   Job ID: ${result.job.id}`));
 
   if (result.isBackground) {

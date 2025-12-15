@@ -47,16 +47,17 @@ describe('getArchitecturePrompt', () => {
 });
 
 describe('getParentRepoBenefits', () => {
-  it('should return markdown with 5 key benefits', () => {
+  it('should return markdown with multi-repository setup explanation', () => {
     // Given: No input
     // When: getParentRepoBenefits is called
     const result = getParentRepoBenefits();
 
-    // Then: Returns markdown explaining parent folder benefits
+    // Then: Returns markdown explaining multi-repository setup
+    // Note: v1.0.13 deprecated parent repo concept - all repos are equal now
     expect(result).toBeDefined();
     expect(typeof result).toBe('string');
-    expect(result).toContain('.specweave');
-    expect(result).toContain('parent');
+    expect(result).toContain('Multi-Repository Setup');
+    expect(result).toContain('GitHub repo');
     expect(result.length).toBeGreaterThan(50);
   });
 });

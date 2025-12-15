@@ -152,13 +152,13 @@ describe('umbrella-discovery-integration', () => {
       const jobDir = path.join(testDir, '.specweave', 'state', 'jobs', jobId);
       fs.mkdirSync(jobDir, { recursive: true });
 
-      // Create job config with specific repos
+      // Create job config with specific repos (v1.0.21: repositories/{org}/{repo} structure)
       const jobConfig = {
         jobId,
         projectPath: testDir,
         repositories: [
-          { owner: 'org', name: 'service-a', path: 'services/service-a', cloneUrl: 'https://...', team: 'platform' },
-          { owner: 'org', name: 'service-b', path: 'services/service-b', cloneUrl: 'https://...', team: 'platform' },
+          { owner: 'org', name: 'service-a', path: 'repositories/org/service-a', cloneUrl: 'https://...', team: 'platform' },
+          { owner: 'org', name: 'service-b', path: 'repositories/org/service-b', cloneUrl: 'https://...', team: 'platform' },
         ],
         startedAt: new Date().toISOString(),
       };
