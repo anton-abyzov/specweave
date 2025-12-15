@@ -176,6 +176,14 @@ export class ImportCoordinator {
       const auth = getGitHubAuthFromProject(this.projectRoot);
       const token = this.config.githubToken || this.config.github?.token || auth.token;
 
+      // DIAGNOSTIC (v1.0.7): Log token resolution for debugging
+      const tokenSource = this.config.githubToken ? 'coordinatorConfig.githubToken' :
+                          this.config.github?.token ? 'coordinatorConfig.github.token' :
+                          auth.token ? `getGitHubAuthFromProject(${auth.source})` : 'none';
+      const tokenPrefix = token ? token.slice(0, 8) + '...' : 'none';
+      console.log(`   🔐 ImportCoordinator token: ${tokenPrefix} (from ${tokenSource})`);
+      console.log(`   📁 projectRoot: ${this.projectRoot}`);
+
       for (const repo of this.config.githubRepositories) {
         try {
           const importer = new GitHubImporter(repo.owner, repo.repo, token);

@@ -34,8 +34,15 @@ export class GitHubImporter implements Importer {
   constructor(owner: string, repo: string, token?: string) {
     this.owner = owner;
     this.repo = repo;
+
+    // DIAGNOSTIC (v1.0.7): Log token presence for debugging import issues
+    const effectiveToken = token || process.env.GITHUB_TOKEN;
+    const tokenSource = token ? 'parameter' : (process.env.GITHUB_TOKEN ? 'GITHUB_TOKEN env' : 'none');
+    const tokenPrefix = effectiveToken ? effectiveToken.slice(0, 8) + '...' : 'none';
+    console.log(`   🔑 GitHubImporter: ${owner}/${repo} (token: ${tokenPrefix} from ${tokenSource})`);
+
     this.octokit = new Octokit({
-      auth: token || process.env.GITHUB_TOKEN,
+      auth: effectiveToken,
     });
   }
 
@@ -126,8 +133,17 @@ export class GitHubImporter implements Importer {
 
         page++;
       } catch (error: any) {
+        // DIAGNOSTIC (v1.0.7): Log all API errors for debugging
+        console.log(`      ❌ API Error: ${error.status || 'unknown'} - ${error.message || error}`);
+
         if (error.status === 403 && error.message.includes('rate limit')) {
           throw new Error(`GitHub rate limit exceeded: ${error.message}`);
+        }
+        if (error.status === 404) {
+          throw new Error(`Repository not found or no access: ${this.owner}/${this.repo}. Check token permissions for private repos.`);
+        }
+        if (error.status === 401) {
+          throw new Error(`Authentication failed for ${this.owner}/${this.repo}. Token may be invalid or expired.`);
         }
         throw error;
       }
