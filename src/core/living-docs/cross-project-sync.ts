@@ -223,7 +223,9 @@ export class CrossProjectSync {
    */
   async ensureSpecsFolder(targetPath: string): Promise<string> {
     // Extract project from path (handles both "project" and "project/board")
-    const projectId = targetPath.split('/')[0];
+    // CRITICAL FIX (v1.0.23): Strip ./ prefix to prevent "." being extracted
+    const normalizedPath = targetPath.replace(/^\.\//, '');
+    const projectId = normalizedPath.split('/')[0];
 
     // Validate project before creating folder
     const validation = await this.projectResolution.validateProjectForFolderCreation(projectId);
@@ -248,7 +250,9 @@ export class CrossProjectSync {
    */
   async ensureFeatureFolder(targetPath: string, featureId: string): Promise<string> {
     // Extract project from path (handles both "project" and "project/board")
-    const projectId = targetPath.split('/')[0];
+    // CRITICAL FIX (v1.0.23): Strip ./ prefix to prevent "." being extracted
+    const normalizedPath = targetPath.replace(/^\.\//, '');
+    const projectId = normalizedPath.split('/')[0];
 
     // Validate project before creating folder
     const validation = await this.projectResolution.validateProjectForFolderCreation(projectId);
@@ -334,18 +338,24 @@ export class CrossProjectSync {
    * Extract project ID from target path
    * "project" -> "project"
    * "project/board" -> "project"
+   * "./project" -> "project" (CRITICAL FIX v1.0.23)
    */
   extractProjectId(targetPath: string): string {
-    return targetPath.split('/')[0];
+    // CRITICAL FIX (v1.0.23): Strip ./ prefix to prevent "." being extracted
+    const normalizedPath = targetPath.replace(/^\.\//, '');
+    return normalizedPath.split('/')[0];
   }
 
   /**
    * Extract board ID from target path (for 2-level structures)
    * "project" -> undefined
    * "project/board" -> "board"
+   * "./project/board" -> "board" (CRITICAL FIX v1.0.23)
    */
   extractBoardId(targetPath: string): string | undefined {
-    const parts = targetPath.split('/');
+    // CRITICAL FIX (v1.0.23): Strip ./ prefix for consistency
+    const normalizedPath = targetPath.replace(/^\.\//, '');
+    const parts = normalizedPath.split('/');
     return parts.length > 1 ? parts[1] : undefined;
   }
 
