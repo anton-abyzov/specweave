@@ -1,8 +1,8 @@
 # SpecWeave
 
-**AI That Builds Production Code. Not Just Generates It.**
+**Finally. A Spec-Driven AI Framework That Works on Legacy, Startup, AND Enterprise.**
 
-*Every feature gets a permanent spec. Every decision gets documented. Every change syncs to your tools.*
+*Drop it into a 10-year-old codebase — it understands everything. Use it on your weekend MVP — specs write themselves. Scale it to 50 teams — JIRA, GitHub, Azure DevOps sync automatically.*
 
 [![NPM Version](https://img.shields.io/npm/v/specweave?color=brightgreen)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
