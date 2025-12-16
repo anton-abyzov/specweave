@@ -221,7 +221,9 @@ export class LivingDocsSync {
         const validGroups = new Map<string, UserStoryData[]>();
         for (const [targetPath, projectStories] of groups) {
           // Extract project from path (handles both "project" and "project/board")
-          const projectIdToValidate = targetPath.split('/')[0];
+          // CRITICAL FIX (v1.0.23): Strip ./ prefix to prevent "." being extracted
+          const normalizedPath = targetPath.replace(/^\.\//, '');
+          const projectIdToValidate = normalizedPath.split('/')[0];
           const validation = await this.projectResolution.validateProjectForFolderCreation(projectIdToValidate);
 
           if (validation.valid) {
@@ -323,7 +325,9 @@ export class LivingDocsSync {
       const featureFile = path.join(projectPath, 'FEATURE.md');
 
       // CRITICAL v0.35.1: Validate project BEFORE creating folder
-      const projectIdToValidate = resolvedProjectPath.split('/')[0];
+      // CRITICAL FIX (v1.0.23): Strip ./ prefix to prevent "." being extracted
+      const normalizedProjectPath = resolvedProjectPath.replace(/^\.\//, '');
+      const projectIdToValidate = normalizedProjectPath.split('/')[0];
       const projectValidation = await this.projectResolution.validateProjectForFolderCreation(projectIdToValidate);
       if (!projectValidation.valid) {
         this.logger.error(`❌ Cannot create folder for invalid project: ${projectIdToValidate}`);
