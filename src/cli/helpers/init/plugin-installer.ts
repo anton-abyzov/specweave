@@ -212,10 +212,20 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
  *
  * Uses the proper Claude CLI commands:
  * 1. First checks if marketplace exists
- * 2. If not → adds it with `marketplace add`
- * 3. If yes → updates it with `marketplace update` (clean, no errors!)
+ * 2. If not → adds it with `marketplace add` (HTTPS URL)
+ * 3. If yes → tries `marketplace update`
+ * 4. If update fails with SSH error → removes and re-adds with HTTPS
  *
  * This is the recommended approach per Claude Code documentation.
+ *
+ * CRITICAL FIX (v0.35.2): Simplified marketplace registration
+ * Just ensure marketplace is registered - Claude CLI handles caching internally.
+ * No need for manual cache management - that was over-engineering!
+ *
+ * CRITICAL FIX (v1.0.24): Handle Windows SSH authentication failures!
+ * Previously registered marketplaces may use SSH URLs that fail on Windows.
+ * When update fails with "SSH authentication failed", we remove the old
+ * registration and re-add with HTTPS URL which works for everyone.
  */
 async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void> {
   spinner.start('Checking SpecWeave marketplace...');
@@ -226,7 +236,7 @@ async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void
     (listResult.stdout || '').toLowerCase().includes('specweave');
 
   if (marketplaceExists) {
-    // Marketplace exists - use UPDATE command (clean, no errors)
+    // Marketplace exists - try UPDATE command first
     spinner.text = 'Updating SpecWeave marketplace...';
     const updateResult = execFileNoThrowSync('claude', [
       'plugin',
@@ -236,7 +246,56 @@ async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void
     ]);
 
     if (!updateResult.success) {
-      throw new Error(`Failed to update marketplace: ${updateResult.stderr || updateResult.error}`);
+      // Convert error to string for pattern matching
+      const errorStr = updateResult.error instanceof Error
+        ? updateResult.error.message
+        : String(updateResult.error || '');
+      const errorMsg = (updateResult.stderr || errorStr).toLowerCase();
+
+      // CRITICAL FIX (v1.0.24): Handle SSH authentication failures on Windows
+      // If the marketplace was previously registered with SSH URL (or owner/repo format
+      // which Claude CLI converts to SSH), the update will fail with SSH auth error.
+      // Solution: Remove the marketplace and re-add with HTTPS URL.
+      if (errorMsg.includes('ssh') ||
+          errorMsg.includes('permission denied') ||
+          errorMsg.includes('publickey') ||
+          errorMsg.includes('authentication failed')) {
+
+        spinner.text = 'Re-registering marketplace with HTTPS...';
+        console.log(chalk.yellow('\n   ⚠️  SSH authentication failed - switching to HTTPS'));
+
+        // Remove the old SSH-based registration
+        const removeResult = execFileNoThrowSync('claude', [
+          'plugin',
+          'marketplace',
+          'remove',
+          'specweave'
+        ]);
+
+        if (!removeResult.success) {
+          // If remove fails, try to add anyway (might work if it's just stale)
+          console.log(chalk.gray('   → Could not remove old registration, attempting fresh add...'));
+        }
+
+        // Re-add with HTTPS URL
+        const addResult = execFileNoThrowSync('claude', [
+          'plugin',
+          'marketplace',
+          'add',
+          'https://github.com/anton-abyzov/specweave'
+        ]);
+
+        if (!addResult.success) {
+          throw new Error(`Failed to re-add marketplace with HTTPS: ${addResult.stderr || addResult.error}`);
+        }
+
+        console.log(chalk.green('   ✔ Marketplace re-registered with HTTPS (works on all platforms)'));
+        spinner.succeed('SpecWeave marketplace ready');
+        return;
+      }
+
+      // Other error - throw as before (use original stderr for clear message)
+      throw new Error(`Failed to update marketplace: ${updateResult.stderr || errorStr}`);
     }
 
     console.log(chalk.green('   ✔ Marketplace updated (latest from GitHub)'));
