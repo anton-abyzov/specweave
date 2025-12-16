@@ -16,7 +16,7 @@ import * as path from 'path';
 import * as os from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
-import { select, input, confirm } from '@inquirer/prompts';
+import { input, confirm } from '@inquirer/prompts';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
 import { AdapterLoader } from '../../adapters/adapter-loader.js';
 import { getDirname } from '../../utils/esm-helpers.js';
@@ -458,23 +458,20 @@ export async function initCommand(
         console.log(chalk.gray('   ' + locale.t('cli', 'init.toolDetection.ciAutoConfirm', { tool: detectedTool })));
         toolName = detectedTool;
       } else {
-        // CRITICAL (v1.0.24): ALWAYS ask user which tool to use!
-        // User must explicitly confirm or select their AI tool.
+        // CRITICAL (v1.0.25): Ask user if they want to use Claude.
+        // If YES → use Claude (CLAUDE.md)
+        // If NO → use generic (AGENTS.md for all non-Claude tools)
+        // No need to ask which specific non-Claude tool - AGENTS.md works for all!
         const confirmTool = await confirm({
           message: locale.t('cli', 'init.toolDetection.confirmPrompt', { tool: detectedTool }),
           default: true
         });
 
         if (!confirmTool) {
-          toolName = await select({
-            message: locale.t('cli', 'init.toolDetection.selectPrompt'),
-            choices: [
-              { name: 'Claude Code (Recommended - Full automation)', value: 'claude' },
-              { name: 'Cursor (Partial - AGENTS.md compilation)', value: 'cursor' },
-              { name: 'Other (Copilot, ChatGPT - Limited)', value: 'generic' }
-            ],
-            default: 'claude'
-          });
+          // User declined Claude → use generic adapter (AGENTS.md)
+          // AGENTS.md is the universal standard for all non-Claude AI tools
+          toolName = 'generic';
+          console.log(chalk.gray('   → Using AGENTS.md (universal format for non-Claude tools)'));
         } else {
           toolName = detectedTool;
         }
@@ -542,229 +539,203 @@ export async function initCommand(
     // Create config.json
     createConfigFile(targetDir, finalProjectName, toolName, language, false);
 
-    // Auto-install plugins for Claude
+    // Auto-install plugins for Claude ONLY
     let autoInstallSucceeded = false;
-    // Track whether import is happening - if so, skip default increment creation
-    // Declared outside claude block so it's accessible from initial increment logic
-    let skipInitialIncrement = false;
-
     if (toolName === 'claude') {
       // CRITICAL FIX (v0.34.6): Skip plugin installation in "continue existing" mode
-      // This prevents marketplace/plugin deregistration on reinit
-      // Users who choose "continue working" expect their plugins to remain intact
       if (continueExisting) {
         console.log(chalk.green('   ✓ Keeping existing plugin configuration'));
-        autoInstallSucceeded = true; // Assume plugins are already installed
+        autoInstallSucceeded = true;
       } else {
         const result = await installAllPlugins({ dirname: __dirname, forceRefresh: options.forceRefresh });
         autoInstallSucceeded = result.success;
       }
+    }
 
-      // Repository hosting setup
-      const gitHubRemote = detectGitHubRemote(targetDir);
-      const repoResult = await setupRepositoryHosting({ targetDir, isCI, gitHubRemote, language });
+    // ========================================================================
+    // COMMON SETUP: Repository, Issue Tracker, Wizard (ALL TOOLS - Claude & Non-Claude)
+    // v1.0.26: Moved outside Claude-only block to ensure consistent init flow
+    // ========================================================================
 
-      // Track background job IDs for living docs dependencies
-      const pendingJobIds: string[] = [];
+    // Track whether import is happening - if so, skip default increment creation
+    let skipInitialIncrement = false;
 
-      // ADO Repository cloning (for multi-repo setups)
-      if (repoResult.adoProjectSelection && repoResult.adoClonePatternResult) {
-        const cloneJobId = await triggerAdoRepoCloning(
-          targetDir,
-          repoResult.adoProjectSelection,
-          repoResult.adoClonePatternResult
-        );
-        if (cloneJobId) {
-          pendingJobIds.push(cloneJobId);
-        }
-      }
+    // Repository hosting setup (MANDATORY for all tools)
+    const gitHubRemote = detectGitHubRemote(targetDir);
+    const repoResult = await setupRepositoryHosting({ targetDir, isCI, gitHubRemote, language });
 
-      // GitHub Repository cloning (for multi-repo setups) - v0.32.7+
-      // v1.0.9: Capture cloned repo names for 1:1 project mapping in issue tracker
-      // v1.0.10: Pass gitUrlFormat to use SSH or HTTPS as user selected
-      let githubClonedRepos: string[] = [];
-      if (repoResult.githubRepoSelection && repoResult.adoClonePatternResult) {
-        const cloningResult = await triggerGitHubRepoCloning(
-          targetDir,
-          repoResult.githubRepoSelection,
-          repoResult.adoClonePatternResult,
-          repoResult.gitUrlFormat || 'https'
-        );
-        if (cloningResult.jobId) {
-          pendingJobIds.push(cloningResult.jobId);
-        }
-        githubClonedRepos = cloningResult.clonedRepos;
-      }
+    // Track background job IDs for living docs dependencies
+    const pendingJobIds: string[] = [];
 
-      // Bitbucket Repository cloning (for multi-repo setups) - v0.32.7+
-      if (repoResult.bitbucketRepoSelection && repoResult.adoClonePatternResult) {
-        const cloneJobId = await triggerBitbucketRepoCloning(
-          targetDir,
-          repoResult.bitbucketRepoSelection,
-          repoResult.adoClonePatternResult
-        );
-        if (cloneJobId) {
-          pendingJobIds.push(cloneJobId);
-        }
-      }
-
-      // Issue tracker setup
-      const isFrameworkRepo = await isSpecWeaveFrameworkRepo(targetDir);
-
-      // Extract GitHub repository selection to avoid duplicate prompts (v1.0.4)
-      // v1.0.9: Include cloned repos for 1:1 project mapping (skips "How do you want to configure repositories?")
-      const githubRepoSelection = repoResult.githubRepoSelection
-        ? {
-            org: repoResult.githubRepoSelection.org,
-            pat: repoResult.githubRepoSelection.pat,
-            clonedRepos: githubClonedRepos
-          }
-        : undefined;
-
-      await setupIssueTrackerWrapper(
+    // ADO Repository cloning (for multi-repo setups)
+    if (repoResult.adoProjectSelection && repoResult.adoClonePatternResult) {
+      const cloneJobId = await triggerAdoRepoCloning(
         targetDir,
-        language,
-        isFrameworkRepo,
-        repoResult.hosting,
-        isCI,
         repoResult.adoProjectSelection,
-        githubRepoSelection,
-        repoResult.gitUrlFormat  // Pass URL format to avoid duplicate prompts (v1.0.8)
+        repoResult.adoClonePatternResult
       );
+      if (cloneJobId) {
+        pendingJobIds.push(cloneJobId);
+      }
+    }
 
-      // Multi-project folders
-      await createMultiProjectFolders(targetDir);
+    // GitHub Repository cloning (for multi-repo setups)
+    let githubClonedRepos: string[] = [];
+    if (repoResult.githubRepoSelection && repoResult.adoClonePatternResult) {
+      const cloningResult = await triggerGitHubRepoCloning(
+        targetDir,
+        repoResult.githubRepoSelection,
+        repoResult.adoClonePatternResult,
+        repoResult.gitUrlFormat || 'https'
+      );
+      if (cloningResult.jobId) {
+        pendingJobIds.push(cloningResult.jobId);
+      }
+      githubClonedRepos = cloningResult.clonedRepos;
+    }
 
-      // Comprehensive wizard loop with "go back" support
-      // Covers: External import → Living Docs → Testing → Translation
-      type WizardStep = 'external-import' | 'living-docs' | 'testing' | 'translation' | 'done';
-      let wizardStep: WizardStep = continueExisting ? 'living-docs' : 'external-import';
+    // Bitbucket Repository cloning (for multi-repo setups)
+    if (repoResult.bitbucketRepoSelection && repoResult.adoClonePatternResult) {
+      const cloneJobId = await triggerBitbucketRepoCloning(
+        targetDir,
+        repoResult.bitbucketRepoSelection,
+        repoResult.adoClonePatternResult
+      );
+      if (cloneJobId) {
+        pendingJobIds.push(cloneJobId);
+      }
+    }
 
-      while (wizardStep !== 'done') {
-        // STEP: External Import
-        if (wizardStep === 'external-import') {
+    // Issue tracker setup (MANDATORY for all tools)
+    const isFrameworkRepo = await isSpecWeaveFrameworkRepo(targetDir);
+    const githubRepoSelection = repoResult.githubRepoSelection
+      ? {
+          org: repoResult.githubRepoSelection.org,
+          pat: repoResult.githubRepoSelection.pat,
+          clonedRepos: githubClonedRepos
+        }
+      : undefined;
+
+    await setupIssueTrackerWrapper(
+      targetDir,
+      language,
+      isFrameworkRepo,
+      repoResult.hosting,
+      isCI,
+      repoResult.adoProjectSelection,
+      githubRepoSelection,
+      repoResult.gitUrlFormat
+    );
+
+    // Multi-project folders
+    await createMultiProjectFolders(targetDir);
+
+    // Wizard loop: External import → Living Docs → Testing → Translation
+    type WizardStep = 'external-import' | 'living-docs' | 'testing' | 'translation' | 'done';
+    let wizardStep: WizardStep = continueExisting ? 'living-docs' : 'external-import';
+
+    while (wizardStep !== 'done') {
+      // STEP: External Import
+      if (wizardStep === 'external-import') {
+        try {
+          const importResult = await promptAndRunExternalImport(targetDir, isCI, language);
+
+          if ('goBack' in importResult && importResult.goBack === WIZARD_BACK) {
+            logGoingBack(language);
+            continue;
+          }
+
+          if ('isBackground' in importResult && importResult.isBackground) {
+            console.log(chalk.cyan('\n🚀 Import running in background'));
+            console.log(chalk.gray(`   Check progress: /sw:jobs`));
+            if ('jobId' in importResult && importResult.jobId) {
+              pendingJobIds.push(importResult.jobId);
+            }
+            skipInitialIncrement = true;
+          } else if ('totalCount' in importResult && importResult.totalCount > 0) {
+            console.log(chalk.green('\n✅ Imported ' + importResult.totalCount + ' items from ' + importResult.platforms.join(', ')));
+            skipInitialIncrement = true;
+          }
+        } catch (importError) {
+          const errorMsg = importError instanceof Error ? importError.message : String(importError);
+          console.log(chalk.yellow(`\n⚠️  External tool import failed: ${errorMsg}`));
+          console.log(chalk.gray('   → You can run /specweave-github:sync later to retry'));
+        }
+        wizardStep = 'living-docs';
+        continue;
+      }
+
+      // STEP: Living Docs
+      if (wizardStep === 'living-docs') {
+        if (!options.noLivingDocs) {
           try {
-            const importResult = await promptAndRunExternalImport(targetDir, isCI, language);
+            const preflightResult = await collectLivingDocsInputs({
+              projectPath: targetDir,
+              language,
+              isCi: isCI,
+              skipLivingDocs: options.noLivingDocs,
+              pendingJobIds,
+            });
 
-            // Handle "go back" signal
-            if ('goBack' in importResult && importResult.goBack === WIZARD_BACK) {
-              // Can't go back from first step - stay here
+            if (preflightResult?.goBack === WIZARD_BACK) {
               logGoingBack(language);
+              wizardStep = continueExisting ? 'living-docs' : 'external-import';
               continue;
             }
 
-            // Handle both sync and async import results
-            if ('isBackground' in importResult && importResult.isBackground) {
-              // Background import started - job will complete asynchronously
-              console.log(chalk.cyan('\n🚀 Import running in background'));
-              console.log(chalk.gray(`   Check progress: /sw:jobs`));
-              // Track job ID for living docs dependencies
-              if ('jobId' in importResult && importResult.jobId) {
-                pendingJobIds.push(importResult.jobId);
-              }
-              // Skip default increment - user is importing real work items
-              skipInitialIncrement = true;
-            } else if ('totalCount' in importResult && importResult.totalCount > 0) {
-              // Sync import completed
-              console.log(chalk.green('\n✅ Imported ' + importResult.totalCount + ' items from ' + importResult.platforms.join(', ')));
-              // Skip default increment - user has imported real work items
-              skipInitialIncrement = true;
-            }
-          } catch (importError) {
-            // Show actual error (was swallowed before) - helps debugging
-            const errorMsg = importError instanceof Error ? importError.message : String(importError);
-            console.log(chalk.yellow(`\n⚠️  External tool import failed: ${errorMsg}`));
-            console.log(chalk.gray('   → You can run /specweave-github:sync later to retry'));
-          }
-          wizardStep = 'living-docs';
-          continue;
-        }
-
-        // STEP: Living Docs
-        if (wizardStep === 'living-docs') {
-          // Living Docs Builder - ALWAYS ask (both brownfield and greenfield)
-          if (!options.noLivingDocs) {
-            try {
-              const preflightResult = await collectLivingDocsInputs({
+            if (preflightResult?.shouldLaunch && preflightResult.isBrownfield) {
+              const launchResult = await launchLivingDocsJob({
                 projectPath: targetDir,
-                language,
-                isCi: isCI,
-                skipLivingDocs: options.noLivingDocs,
-                pendingJobIds, // Pass pending job IDs to treat as "will be brownfield"
+                userInputs: preflightResult.userInputs,
+                dependsOn: pendingJobIds,
               });
-
-              // Handle "go back" signal
-              if (preflightResult?.goBack === WIZARD_BACK) {
-                logGoingBack(language);
-                wizardStep = continueExisting ? 'living-docs' : 'external-import';
-                continue;
-              }
-
-              // Only launch background job for brownfield projects that want it
-              if (preflightResult?.shouldLaunch && preflightResult.isBrownfield) {
-                // Use collected job IDs as dependencies - living docs will wait for them
-                const launchResult = await launchLivingDocsJob({
-                  projectPath: targetDir,
-                  userInputs: preflightResult.userInputs,
-                  dependsOn: pendingJobIds, // Living docs waits for clone/import to complete
-                });
-
-                displayJobScheduled(launchResult.job.id, preflightResult.estimatedDuration, language);
-              }
-              // Greenfield projects: living docs structure already set up, no background job needed
-              // The collectLivingDocsInputs function displays the success message
-            } catch (livingDocsError) {
-              const errorMsg = livingDocsError instanceof Error ? livingDocsError.message : String(livingDocsError);
-              console.log(chalk.yellow(`\n⚠️  Living Docs setup failed: ${errorMsg}`));
-              console.log(chalk.gray('   → You can run /sw:jobs later to check status'));
+              displayJobScheduled(launchResult.job.id, preflightResult.estimatedDuration, language);
             }
+          } catch (livingDocsError) {
+            const errorMsg = livingDocsError instanceof Error ? livingDocsError.message : String(livingDocsError);
+            console.log(chalk.yellow(`\n⚠️  Living Docs setup failed: ${errorMsg}`));
+            console.log(chalk.gray('   → You can run /sw:jobs later to check status'));
           }
-          wizardStep = 'testing';
-          continue;
         }
+        wizardStep = 'testing';
+        continue;
+      }
 
-        // STEP: Testing Configuration
-        if (wizardStep === 'testing') {
-          if (!isCI && !continueExisting) {
-            const testingResult = await promptTestingConfig(language);
+      // STEP: Testing Configuration
+      if (wizardStep === 'testing') {
+        if (!isCI && !continueExisting) {
+          const testingResult = await promptTestingConfig(language);
 
-            // Handle "go back" signal
-            if (testingResult.goBack === WIZARD_BACK) {
-              logGoingBack(language);
-              wizardStep = 'living-docs';
-              continue;
-            }
-
-            updateConfigWithTesting(targetDir, testingResult.testMode, testingResult.coverageTarget, language);
+          if (testingResult.goBack === WIZARD_BACK) {
+            logGoingBack(language);
+            wizardStep = 'living-docs';
+            continue;
           }
-          wizardStep = 'translation';
-          continue;
+
+          updateConfigWithTesting(targetDir, testingResult.testMode, testingResult.coverageTarget, language);
         }
+        wizardStep = 'translation';
+        continue;
+      }
 
-        // STEP: Translation Configuration
-        if (wizardStep === 'translation') {
-          // Translation configuration (CRITICAL: Must ask user - cost implications!)
-          // Language already selected in step 1, now ask about auto-translation scope
-          if (!isCI && !continueExisting && language !== 'en') {
-            // Only ask about translation if non-English language selected
-            const translationResult = await promptTranslationConfig(languageResult);
+      // STEP: Translation Configuration
+      if (wizardStep === 'translation') {
+        if (!isCI && !continueExisting && language !== 'en') {
+          const translationResult = await promptTranslationConfig(languageResult);
 
-            // Handle "go back" signal
-            if ('goBack' in translationResult && translationResult.goBack === WIZARD_BACK) {
-              logGoingBack(language);
-              wizardStep = 'testing';
-              continue;
-            }
-
-            updateConfigWithTranslation(targetDir, translationResult);
-          } else {
-            // English or CI mode: Use defaults (no auto-translation needed)
-            const defaultTranslation = getDefaultTranslationConfig(language);
-            defaultTranslation.keepEnglishOriginals = languageResult.keepEnglishOriginals;
-            updateConfigWithTranslation(targetDir, defaultTranslation);
+          if ('goBack' in translationResult && translationResult.goBack === WIZARD_BACK) {
+            logGoingBack(language);
+            wizardStep = 'testing';
+            continue;
           }
-          wizardStep = 'done';
+
+          updateConfigWithTranslation(targetDir, translationResult);
+        } else {
+          const defaultTranslation = getDefaultTranslationConfig(language);
+          defaultTranslation.keepEnglishOriginals = languageResult.keepEnglishOriginals;
+          updateConfigWithTranslation(targetDir, defaultTranslation);
         }
+        wizardStep = 'done';
       }
     }
 
