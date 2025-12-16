@@ -4,6 +4,30 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.23] - 2025-12-15
+
+### 🐛 Critical Bug Fix
+
+#### Windows Installation Fails on Node.js < 20.12.0
+- **Bug**: `specweave init` fails on Windows (and any platform) with Node.js 20.11.x or earlier
+  - **Error**: `SyntaxError: The requested module 'node:util' does not provide an export named 'styleText'`
+  - **Root Cause**: `@inquirer/prompts@8.x` uses `util.styleText()` which was only added in Node.js 20.12.0
+  - **Fix**: Pinned `@inquirer/prompts` to `^7.6.0` which uses `yoctocolors-cjs` instead
+  - **Impact**: Now works on Node.js 20.12.0+ (all current LTS versions)
+
+### 🔧 Technical Changes
+- `package.json`: Changed `engines.node` from `>=20.0.0` to `>=20.12.0`
+- `package.json`: Pinned `@inquirer/prompts` from `^8.0.1` to `^7.6.0`
+- `README.md`: Updated requirements to specify Node.js 20.12.0+ and clarify AI tool compatibility
+
+### 📚 Documentation
+- Clarified that SpecWeave works with ANY AI coding tool (Claude Code, Cursor, Windsurf, Cline, Aider, etc.)
+- Added note about `util.styleText` API requirement for Node.js version
+
+---
+
+
+
 ## [1.0.14] - 2025-12-14
 
 ### 🐛 Critical Bug Fix

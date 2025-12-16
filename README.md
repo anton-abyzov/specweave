@@ -183,8 +183,8 @@ Three gates before any increment closes:
 
 ## Requirements
 
-- Node.js 20+
-- Claude Code (any model, Opus 4.5 recommended for 2-3x faster development)
+- **Node.js 20.12.0+** (LTS recommended) — Required for `util.styleText` API
+- Any AI coding tool: Claude Code, Cursor, Windsurf, Cline, Aider, etc.
 - Git repository
 
 ---
