@@ -16,7 +16,7 @@ import * as path from 'path';
 import * as os from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
-import { input, confirm } from '@inquirer/prompts';
+import { select, input, confirm } from '@inquirer/prompts';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
 import { AdapterLoader } from '../../adapters/adapter-loader.js';
 import { getDirname } from '../../utils/esm-helpers.js';
@@ -454,9 +454,31 @@ export async function initCommand(
       }
       console.log('');
 
-      // Auto-use detected tool - both CLAUDE.md and AGENTS.md are always created
-      // so no need to ask user which tool to use
-      toolName = detectedTool;
+      if (isCI) {
+        console.log(chalk.gray('   ' + locale.t('cli', 'init.toolDetection.ciAutoConfirm', { tool: detectedTool })));
+        toolName = detectedTool;
+      } else {
+        // CRITICAL (v1.0.24): ALWAYS ask user which tool to use!
+        // User must explicitly confirm or select their AI tool.
+        const confirmTool = await confirm({
+          message: locale.t('cli', 'init.toolDetection.confirmPrompt', { tool: detectedTool }),
+          default: true
+        });
+
+        if (!confirmTool) {
+          toolName = await select({
+            message: locale.t('cli', 'init.toolDetection.selectPrompt'),
+            choices: [
+              { name: 'Claude Code (Recommended - Full automation)', value: 'claude' },
+              { name: 'Cursor (Partial - AGENTS.md compilation)', value: 'cursor' },
+              { name: 'Other (Copilot, ChatGPT - Limited)', value: 'generic' }
+            ],
+            default: 'claude'
+          });
+        } else {
+          toolName = detectedTool;
+        }
+      }
 
       spinner.start('Using ' + toolName + '...');
     }
