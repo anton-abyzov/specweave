@@ -72,114 +72,37 @@ Your project is now configured for ANY AI tool!
 
 WHAT THIS PROVIDES:
 
-- AGENTS.MD (Universal Standard)
-  - GitHub Copilot automatically reads this file
-  - ChatGPT, Gemini, Claude web can also use it
-  - Contains all workflow instructions
-  - Project structure and templates
+- AGENTS.md (Universal Standard)
+  - Works with: GitHub Copilot, ChatGPT, Gemini, Claude web, etc.
+  - Contains all workflow instructions and project structure
   - Following agents.md standard (https://agents.md/)
 
-- 100% Compatibility
-  - GitHub Copilot (best experience with AGENTS.md)
-  - ChatGPT (web), Claude (web), Gemini
-  - Any AI that can read markdown
+HOW TO USE AGENTS.MD:
 
-HOW TO USE AGENTS.MD WITH ANY AI:
+Method 1: Auto-Discovery (Copilot - Recommended)
+  AI reads AGENTS.md → Ask "create increment for payments" → Done!
 
-Method 1: Command Discovery (GitHub Copilot - Recommended!)
-1. AI reads AGENTS.md automatically (Copilot scans project files)
-2. AGENTS.md contains "SpecWeave Commands" section with all 17 commands
-3. Ask: "create increment for payments" or "run /inc payments"
-4. AI reads plugins/specweave/commands/inc.md
-5. AI executes PM-led workflow (market research, spec.md, plan.md, tasks.md)
-6. Increment created - same result as Claude Code!
-
-Available commands AI can execute:
-- /inc "feature" - Plan new increment
-- /do - Execute implementation tasks
-- /done 0001 - Close increment
-- /validate 0001 - Quality validation
-- /progress - Check status
-- /sync-docs - Sync living documentation
-... and 11 more commands!
-
-Method 2: Copy-Paste Workflow (ChatGPT web, Claude web, etc.)
-1. Open AGENTS.md in your browser/editor
-2. Copy relevant section (e.g., "Creating a Feature Increment")
-3. Paste into AI chat (ChatGPT, Claude web, Gemini, etc.)
-4. Ask AI to follow the instructions
-5. AI generates content (spec.md, plan.md, etc.)
-6. Copy AI's response, save to files
+Method 2: Copy-Paste (ChatGPT, Claude web, etc.)
+  Open AGENTS.md → Copy workflow section → Paste to AI → Save output
 
 Method 3: File System Access (AI with file access)
-1. AI automatically reads AGENTS.md
-2. Ask: "Create increment for user authentication"
-3. AI follows AGENTS.md workflow and command execution instructions
-4. AI creates files directly
-
-UNDERSTANDING "MANUAL":
-
-Manual = You Orchestrate, AI Executes
-
-Example workflow:
-1. Read AGENTS.md section "Creating a Feature Increment"
-2. Copy instructions to ChatGPT
-3. ChatGPT generates spec.md content
-4. Save content to .specweave/increments/0001-auth/spec.md
-5. Repeat for plan.md, tasks.md
-
-Manual does not mean harder - just means YOU control each step (no automation).
-Benefit: Works with ANY AI tool!
-
-COMPARISON:
-
-Claude Code (Full): "create increment" -> Done in 30 seconds (auto)
-Cursor (Semi): "create increment" -> Done in 5 minutes (reads AGENTS.md)
-Copilot (Basic): Reads AGENTS.md, suggests content as you type
-Generic (Manual): Copy AGENTS.md instructions to any AI (10-30 min)
-
-Trade-off: Speed vs Compatibility
-- Claude Code: Fast, but requires Claude Code CLI
-- Generic: Slower, but works with EVERY AI tool (even web-based)!
-
-WHEN TO USE:
-
-Use Generic adapter if:
-- You use ChatGPT web, Claude web, Gemini, or other AI
-- You don't have access to Claude Code or Cursor
-- You want maximum compatibility (works with ANYTHING)
-- Simple projects where automation isn't critical
-
-Consider alternatives if:
-- You want automation -> Use Claude Code (full)
-- You have CLI access -> Use Cursor (semi) or Copilot (basic)
-- Large projects -> Manual workflow becomes tedious
+  AI reads AGENTS.md automatically → Ask "Create increment" → Files created
 
 QUICK START:
 
-1. Open AGENTS.md
-   Read the "Common Workflows" section
+1. Open AGENTS.md - read "Common Workflows" section
+2. Use your AI tool: ChatGPT, Claude web, Gemini, Copilot, etc.
+3. Ask AI to follow the workflow instructions
+4. Save generated files to .specweave/increments/
 
-2. Copy workflow to your AI tool:
-   - "Creating a Feature Increment" section
-   - Paste into ChatGPT/Claude/Gemini
-
-3. Follow AI's guidance:
-   - AI generates spec.md content (copy & save)
-   - AI generates plan.md content (copy & save)
-   - AI generates tasks.md content (copy & save)
-
-4. Use any AI tool you prefer:
-   ChatGPT, Claude web, Gemini, Perplexity, etc.
+AVAILABLE COMMANDS (in AGENTS.md):
+/inc "feature" | /do | /done | /validate | /progress | /sync-docs
 
 DOCUMENTATION:
+- AGENTS.md - Workflow instructions (works with any AI!)
+- .specweave/docs/ - Project documentation
 
-- AGENTS.md: Universal workflow instructions (works with any AI!)
-- .specweave/docs/: Project documentation
-
-You're ready to build with SpecWeave using ANY AI tool!
-
-Remember: AGENTS.md is the universal standard - it works everywhere!
+Ready to build with SpecWeave using ANY AI tool!
     `;
   }
 
