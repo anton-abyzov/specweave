@@ -12,6 +12,7 @@
 | Rules | `#essential-rules` | Critical rules, file organization |
 | Commands | `#commands` | All SpecWeave commands |
 | **Hooks** | `#non-claude-tools` | **CRITICAL: Hook behavior to mimic** |
+| **User Story** | `#user-story-format` | **CRITICAL: Project/Board fields** |
 | Sync | `#sync-workflow` | When/how to sync |
 | Context | `#context-loading` | Token savings (70%+) |
 | Troubleshoot | `#troubleshooting` | Common issues |
@@ -20,10 +21,10 @@
 
 ## Quick Start
 
-**Initial Increment**: `0001-project-setup` (`.specweave/increments/0001-project-setup/`)
-
-1. **Start Fresh**: Delete it, run `/sw:increment "your-feature"`
-2. **Customize**: Edit spec.md in the increment folder
+1. **Get Project Context FIRST**: `specweave context projects` (save the output!)
+2. **Create Your First Increment**: `/sw:increment "your-feature"`
+3. **Customize**: Edit spec.md - **EVERY User Story needs `**Project**:` field!**
+4. **Execute**: `/sw:do` to start implementation
 
 ---
 
@@ -36,6 +37,8 @@
 4. All reports/scripts/logs → increment subfolders
 5. metadata.json MUST exist BEFORE spec.md can be created
 6. tasks.md + spec.md = SOURCE OF TRUTH (update after every task!)
+7. ⛔ EVERY User Story MUST have **Project**: field (v0.35.0+)
+8. ⛔ For 2-level structures: EVERY US also needs **Board**: field
 ```
 
 **File Organization**:
@@ -492,10 +495,19 @@ Non-Claude AI Tools simulate skills by:
 **Example** - Creating increment with Cursor:
 ```
 User: "Create an increment for user authentication"
+
+# STEP 0: AI MUST run this first!
+AI: [Runs: specweave context projects]
+AI: [Gets output: {"level":1,"projects":[{"id":"my-app"}]}]
+AI: [Stores: RESOLVED_PROJECT = "my-app"]
+
+# Then follow the skill workflow
 AI: [Reads plugins/specweave/skills/increment-planner/SKILL.md]
 AI: [Follows PM workflow: research → spec → plan → tasks]
-AI: [Creates .specweave/increments/0001-auth/spec.md, plan.md, tasks.md]
+AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app per US!]
 ```
+
+**⛔ CRITICAL**: The AI MUST run `specweave context projects` BEFORE creating spec.md, and use the output values in every `**Project**:` field!
 
 ---
 
@@ -511,16 +523,82 @@ AI: [Creates .specweave/increments/0001-auth/spec.md, plan.md, tasks.md]
 - Given [context] → When [action] → Then [result]
 ```
 
+## User Story Format (CRITICAL for spec.md) {#user-story-format}
+
+**⛔ MANDATORY: Every User Story MUST have `**Project**:` field!**
+
+```markdown
+### US-001: Feature Name
+**Project**: my-app          # ← MANDATORY! Get from: specweave context projects
+**Board**: digital-ops       # ← MANDATORY for 2-level structures ONLY
+
+**As a** user
+**I want** [goal]
+**So that** [benefit]
+
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: [Criterion 1]
+- [ ] **AC-US1-02**: [Criterion 2]
+```
+
+**How to get Project/Board values:**
+```bash
+# Run BEFORE creating any increment:
+specweave context projects
+
+# 1-level output (single project):
+# {"level":1,"projects":[{"id":"my-app"}]}
+# → Use: **Project**: my-app
+
+# 2-level output (multi-project with boards):
+# {"level":2,"projects":[...],"boardsByProject":{"corp":[{"id":"digital-ops"}]}}
+# → Use: **Project**: corp AND **Board**: digital-ops
+```
+
 ---
 
 ## Workflows
 
 ### Creating Increment
+
+**⛔ STEP 0: Get Project Context FIRST (BLOCKING!)**
+```bash
+# YOU CANNOT CREATE spec.md UNTIL YOU COMPLETE THIS STEP!
+specweave context projects
+# Store the output - you'll need project IDs for every User Story
+```
+
+**Main Steps:**
 1. `mkdir -p .specweave/increments/0001-feature`
 2. Create `metadata.json` (increment metadata) - **MUST be FIRST**
-3. Create `spec.md` (WHAT/WHY, user stories, ACs)
+3. Create `spec.md` (WHAT/WHY, user stories, ACs) - **EVERY US needs `**Project**:` field!**
 4. Create `tasks.md` (task checklist with tests)
 5. Optional: Create `plan.md` (HOW, architecture) for complex features
+
+**Example spec.md (CORRECT):**
+```markdown
+---
+increment: 0001-feature-name
+title: "Feature Title"
+---
+
+### US-001: Login Form
+**Project**: my-app              # ← Value from step 0!
+
+**As a** user
+**I want** to log in
+**So that** I can access my account
+
+**Acceptance Criteria**:
+- [ ] **AC-US1-01**: Login form displays username/password fields
+```
+
+**Example spec.md (WRONG - WILL FAIL!):**
+```markdown
+### US-001: Login Form
+**As a** user                     # ← Missing **Project**: = BLOCKED!
+**I want** to log in
+```
 
 ### Completing Tasks
 1. Implement the task
@@ -601,6 +679,29 @@ Or run: `/sw:sync-tasks`
 1. Load only the active increment's spec.md and tasks.md
 2. Reference living docs only when needed for specific tasks
 3. Never load entire `.specweave/docs/` folder at once
+
+### Increment Creation Fails / Missing **Project**: Field
+
+**Symptoms**: Increment creation blocked, validation errors about missing `**Project**:` field
+
+**Cause**: Every User Story in spec.md MUST have `**Project**:` (and `**Board**:` for 2-level structures)
+
+**Fix**:
+```bash
+# 1. Get valid project IDs
+specweave context projects
+
+# 2. Add **Project**: to EVERY user story in spec.md
+### US-001: Feature Name
+**Project**: my-app        # ← Add this line!
+**As a** user...
+
+# 3. For 2-level structures, also add **Board**:
+**Project**: corp
+**Board**: digital-ops     # ← Add for 2-level!
+```
+
+**Why this happens**: Non-Claude tools don't have hooks that auto-detect project context. You MUST run `specweave context projects` BEFORE creating any increment and use those values in every User Story.
 
 ### Skills/Agents Not Activating
 

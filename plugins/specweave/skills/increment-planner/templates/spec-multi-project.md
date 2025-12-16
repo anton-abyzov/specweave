@@ -29,10 +29,16 @@ projects:
 ## User Stories
 
 <!--
-📋 Per-US **Project**: and **Board**: fields (v0.35.0+ - ADR-0140):
-- Each US MUST specify **Project**: field with resolved value
-- For 2-level structures: Each US MUST also specify **Board**: field
-- Run: specweave context projects - to get valid project/board IDs
+⛔ MANDATORY: **Project**: and **Board**: fields on EVERY User Story (v0.35.0+)
+
+BEFORE creating this file, you MUST:
+1. Run: specweave context projects
+2. Get project IDs and board IDs from output
+3. Replace {{RESOLVED_PROJECT}} and {{RESOLVED_BOARD_*}} with actual values
+
+DO NOT leave {{...}} placeholders in the final file!
+DO NOT create User Stories without **Project**: field!
+DO NOT create 2-level User Stories without **Board**: field!
 -->
 
 ### Frontend Stories

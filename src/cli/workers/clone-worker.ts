@@ -65,9 +65,11 @@ async function cloneRepository(
     }
 
     // Spawn git clone process
+    // windowsHide: true prevents console window flash on Windows
     const gitProcess = spawn('git', ['clone', cloneUrl, repoName], {
       cwd: parentDir,
-      stdio: ['ignore', 'pipe', 'pipe']
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true
     });
 
     let stderr = '';
