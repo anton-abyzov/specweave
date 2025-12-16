@@ -41,8 +41,8 @@ src/cli/helpers/init/
 ├── testing-config.ts              - Testing mode prompts (156 lines)
 ├── external-import.ts             - GitHub/JIRA/ADO import (295 lines)
 ├── directory-structure.ts         - .specweave/ creation, templates (223 lines)
-├── next-steps.ts                  - Post-init instructions (86 lines)
-└── initial-increment-generator.ts - Initial increment (308 lines, existing)
+└── next-steps.ts                  - Post-init instructions (86 lines)
+# NOTE: initial-increment-generator.ts deprecated (v1.0.27) - auto increment creation removed
 ```
 
 ### Key Design Decisions
@@ -97,7 +97,7 @@ import {
   copyTemplates,
   createConfigFile,
   showNextSteps,
-  generateInitialIncrement,
+  // generateInitialIncrement removed in v1.0.27 - requires per-US **Project**: field
 } from '../helpers/init/index.js';
 ```
 
