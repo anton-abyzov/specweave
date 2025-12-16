@@ -148,6 +148,7 @@ export async function launchImportJob(options: LaunchOptions): Promise<LaunchRes
     detached: true,
     stdio: 'ignore',
     cwd: projectPath,
+    windowsHide: true, // Prevent console window flash on Windows
     env: {
       ...process.env,
       // Pass any necessary env vars
@@ -306,6 +307,7 @@ export async function launchCloneJob(options: CloneLaunchOptions): Promise<Launc
     detached: true,
     stdio: 'ignore',
     cwd: projectPath,
+    windowsHide: true, // Prevent console window flash on Windows
     env: {
       ...process.env,
       SPECWEAVE_BACKGROUND_JOB: '1'
@@ -424,6 +426,7 @@ export async function launchLivingDocsJob(options: LivingDocsLaunchOptions): Pro
     detached: true,
     stdio: 'ignore',
     cwd: projectPath,
+    windowsHide: true, // Prevent console window flash on Windows
     env: {
       ...process.env,
       SPECWEAVE_BACKGROUND_JOB: '1'

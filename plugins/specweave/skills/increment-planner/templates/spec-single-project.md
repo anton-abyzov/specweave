@@ -21,10 +21,15 @@ coverage_target: {{COVERAGE_TARGET}}
 ## User Stories
 
 <!--
-📋 Per-US **Project**: field (v0.35.0+ - ADR-0140):
-- In single-project mode: **Project**: can use config.project.name (auto-resolved)
-- In multi-project mode: Each US MUST specify its **Project**: field
-- Run: specweave context projects - to get valid project IDs
+⛔ MANDATORY: **Project**: field on EVERY User Story (v0.35.0+)
+
+BEFORE creating this file, you MUST:
+1. Run: specweave context projects
+2. Get the project ID from output (e.g., "my-app")
+3. Replace {{RESOLVED_PROJECT}} with actual value
+
+DO NOT leave {{RESOLVED_PROJECT}} as placeholder!
+DO NOT create User Stories without **Project**: field!
 -->
 
 ### US-001: [Story Title] (P1)

@@ -914,6 +914,23 @@ git add . && git commit -m "feat: feature" && git push origin develop
 **Marketplace**: `bash scripts/refresh-marketplace.sh` (GitHub mode, always use)
 **NPM Release**: `/sw-release:npm`
 
+### No Default Increment on Init (v1.0.27+)
+
+**`specweave init` NO LONGER creates `0001-project-setup` increment automatically!**
+
+**Reason**: Multi-project scenarios REQUIRE `**Project**:` field per User Story, which cannot be determined automatically at init time.
+
+**User workflow (v1.0.27+):**
+```bash
+npx specweave init .           # Creates structure, no increment
+/sw:increment "my-feature"     # User creates increment with proper project context
+```
+
+**Old behavior (removed):**
+```bash
+npx specweave init .           # ❌ Was creating 0001-project-setup with missing **Project**: field!
+```
+
 ---
 
 ## Coding Standards

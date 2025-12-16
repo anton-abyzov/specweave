@@ -24,7 +24,6 @@ import { isLanguageSupported, getSupportedLanguages } from '../../core/i18n/lang
 import { getLocaleManager } from '../../core/i18n/locale-manager.js';
 import type { SupportedLanguage } from '../../core/i18n/types.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
-import { StatusLineUpdater } from '../../core/status-line/status-line-updater.js';
 import { readEnvFile, parseEnvFile } from '../../utils/env-file.js';
 import type { SyncProfile, JiraConfig } from '../../core/types/sync-profile.js';
 
@@ -52,7 +51,6 @@ import {
   copyTemplates,
   createConfigFile,
   showNextSteps,
-  generateInitialIncrement,
   WIZARD_BACK,
   logGoingBack,
 } from '../helpers/init/index.js';
@@ -557,9 +555,6 @@ export async function initCommand(
     // v1.0.26: Moved outside Claude-only block to ensure consistent init flow
     // ========================================================================
 
-    // Track whether import is happening - if so, skip default increment creation
-    let skipInitialIncrement = false;
-
     // Repository hosting setup (MANDATORY for all tools)
     const gitHubRemote = detectGitHubRemote(targetDir);
     const repoResult = await setupRepositoryHosting({ targetDir, isCI, gitHubRemote, language });
@@ -651,10 +646,8 @@ export async function initCommand(
             if ('jobId' in importResult && importResult.jobId) {
               pendingJobIds.push(importResult.jobId);
             }
-            skipInitialIncrement = true;
           } else if ('totalCount' in importResult && importResult.totalCount > 0) {
             console.log(chalk.green('\n✅ Imported ' + importResult.totalCount + ' items from ' + importResult.platforms.join(', ')));
-            skipInitialIncrement = true;
           }
         } catch (importError) {
           const errorMsg = importError instanceof Error ? importError.message : String(importError);
@@ -739,48 +732,10 @@ export async function initCommand(
       }
     }
 
-    // Initial increment - skip for brownfield projects importing external work items
-    const incrementsDir = path.join(targetDir, '.specweave', 'increments');
-    const existingIncrements = fs.existsSync(incrementsDir)
-      ? fs.readdirSync(incrementsDir).filter(dir => {
-          const fullPath = path.join(incrementsDir, dir);
-          return fs.statSync(fullPath).isDirectory() && /^\d{3,4}E?-/.test(dir);
-        })
-      : [];
-
-    // CRITICAL FIX (v0.30.13): Belt-and-suspenders check for brownfield
-    // Even if skipInitialIncrement failed to be set (import exception), check for existing specs
-    // This prevents FS-001 "Project Setup" creation for brownfield projects
-    const specsDir = path.join(targetDir, '.specweave', 'docs', 'internal', 'specs');
-    const hasExistingSpecs = fs.existsSync(specsDir) && fs.readdirSync(specsDir).some(entry => {
-      const fullPath = path.join(specsDir, entry);
-      // Check for any directory that could be a project folder or feature folder
-      return fs.statSync(fullPath).isDirectory() && !entry.startsWith('_') && !entry.startsWith('.');
-    });
-    if (hasExistingSpecs && !skipInitialIncrement) {
-      skipInitialIncrement = true;
-      console.log(chalk.gray('\n📦 Skipping default increment (existing specs detected - brownfield project)'));
-    }
-
-    if (!continueExisting && existingIncrements.length === 0 && !skipInitialIncrement) {
-      console.log(chalk.cyan.bold('\n📦 Creating Initial Increment'));
-      try {
-        const incrementId = await generateInitialIncrement({
-          projectPath: targetDir,
-          projectName: finalProjectName,
-          techStack: options.techStack,
-          language
-        });
-        console.log(chalk.green('   ✔ Created initial increment: ' + incrementId));
-
-        const statusLineUpdater = new StatusLineUpdater(targetDir);
-        await statusLineUpdater.update();
-      } catch {
-        console.log(chalk.yellow('   ⚠️  Could not create initial increment (non-critical)'));
-      }
-    } else if (skipInitialIncrement) {
-      console.log(chalk.gray('\n📦 Skipping default increment (external work items being imported)'));
-    }
+    // v1.0.27: Removed automatic 0001-project-setup increment creation
+    // Reason: Multi-project scenarios REQUIRE **Project**: field per User Story,
+    // which cannot be determined automatically at init time.
+    // Users should create increments explicitly via /sw:increment command.
 
     showNextSteps(finalProjectName, toolName, language, usedDotNotation, toolName === 'claude' ? autoInstallSucceeded : undefined);
   } catch (error) {
