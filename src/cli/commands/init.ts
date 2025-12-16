@@ -16,7 +16,7 @@ import * as path from 'path';
 import * as os from 'os';
 import chalk from 'chalk';
 import ora from 'ora';
-import { select, input, confirm } from '@inquirer/prompts';
+import { input, confirm } from '@inquirer/prompts';
 import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
 import { AdapterLoader } from '../../adapters/adapter-loader.js';
 import { getDirname } from '../../utils/esm-helpers.js';
@@ -376,7 +376,10 @@ export async function initCommand(
     }
 
     targetDir = path.resolve(process.cwd(), projectName);
-    finalProjectName = projectName;
+    // CRITICAL FIX (v1.0.23): Normalize projectName to strip path prefixes like ./
+    // Bug: "specweave init ./my-project" stored "./my-project" in config.json
+    // which later caused split('/')[0] to return "." and fail validation
+    finalProjectName = path.basename(projectName);
 
     if (fs.existsSync(targetDir)) {
       const hasSpecweave = fs.existsSync(path.join(targetDir, '.specweave'));
@@ -451,29 +454,9 @@ export async function initCommand(
       }
       console.log('');
 
-      if (isCI) {
-        console.log(chalk.gray('   ' + locale.t('cli', 'init.toolDetection.ciAutoConfirm', { tool: detectedTool })));
-        toolName = detectedTool;
-      } else {
-        const confirmTool = await confirm({
-          message: locale.t('cli', 'init.toolDetection.confirmPrompt', { tool: detectedTool }),
-          default: true
-        });
-
-        if (!confirmTool) {
-          toolName = await select({
-            message: locale.t('cli', 'init.toolDetection.selectPrompt'),
-            choices: [
-              { name: 'Claude Code (Recommended - Full automation)', value: 'claude' },
-              { name: 'Cursor (Partial - AGENTS.md compilation)', value: 'cursor' },
-              { name: 'Other (Copilot, ChatGPT - Limited)', value: 'generic' }
-            ],
-            default: 'claude'
-          });
-        } else {
-          toolName = detectedTool;
-        }
-      }
+      // Auto-use detected tool - both CLAUDE.md and AGENTS.md are always created
+      // so no need to ask user which tool to use
+      toolName = detectedTool;
 
       spinner.start('Using ' + toolName + '...');
     }
