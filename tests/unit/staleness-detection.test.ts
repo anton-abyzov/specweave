@@ -246,7 +246,9 @@ describe('SessionRegistry - Staleness Detection', () => {
       const content = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
       const oldHeartbeat = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
       content.sessions['session-001'].last_heartbeat = oldHeartbeat;
-      const oldCleanup = content.last_cleanup;
+      // Set last_cleanup to 1 second ago to ensure new timestamp is greater (avoid race condition)
+      const oldCleanup = new Date(Date.now() - 1000).toISOString();
+      content.last_cleanup = oldCleanup;
       fs.writeFileSync(registryPath, JSON.stringify(content, null, 2));
 
       await registry.cleanupOldSessions(24);
