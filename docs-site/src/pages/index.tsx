@@ -23,13 +23,13 @@ function HomepageHeader() {
             </div>
           </div>
           <Heading as="h1" className={styles.heroTitle}>
-            AI That <span className={styles.heroHighlight}>Builds</span> Production Code.<br/>
-            Not Just Generates It.
+            Finally. A <span className={styles.heroHighlight}>Spec-Driven</span> AI Framework.<br/>
+            Legacy. Startup. Enterprise.
           </Heading>
           <p className={styles.heroSubtitle}>
-            Every feature gets a <strong>permanent spec</strong>. Every decision gets <strong>documented</strong>.
-            Every change syncs to <strong>JIRA, GitHub, Azure DevOps</strong>.
-            <br/><strong>After 6 months, search "OAuth" — find exactly why it was built that way.</strong>
+            Drop it into a <strong>10-year-old codebase</strong> — it understands everything.
+            Use it on your <strong>weekend MVP</strong> — specs write themselves.
+            Scale it to <strong>50 teams</strong> — JIRA, GitHub, Azure DevOps sync automatically.
           </p>
           <div className={styles.heroStats}>
             <div className={styles.stat}>
