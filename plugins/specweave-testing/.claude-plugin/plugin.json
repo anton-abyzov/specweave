@@ -1,7 +1,7 @@
 {
   "name": "sw-testing",
   "description": "Comprehensive testing tools for modern web applications. Includes Playwright E2E testing, Vitest unit testing, test generation, and coverage analysis. Focus on test-driven development and quality assurance.",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "author": {
     "name": "Anton Abyzov",
     "email": "anton.abyzov@gmail.com"
