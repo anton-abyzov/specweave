@@ -1343,6 +1343,45 @@ echo '{"decision": "block", "reason": "Error message here"}'
 exit 2
 ```
 
+### Hook Concurrency System (v1.0.30+)
+
+**All hooks use proper concurrency primitives via `fail-fast-wrapper.sh`:**
+
+**Semaphore** (`hooks/lib/semaphore.sh`):
+- Limits concurrent hooks to `HOOK_MAX_CONCURRENT` (default: 15)
+- Graceful degradation when slots unavailable (returns safe default)
+- Auto-cleanup of stale locks (>30s old)
+
+**Circuit Breaker** (`hooks/lib/circuit-breaker.sh`):
+- Per-hook circuit breakers (not global!)
+- States: CLOSED → (5 failures) → OPEN → (30s) → HALF_OPEN → (3 successes) → CLOSED
+- Prevents cascade failures from broken hooks
+
+**Metrics** (`hooks/lib/metrics.sh`):
+- Tracks success/failure/timeout/skipped per hook
+- Calculates latency percentiles (p50, p95, p99)
+- Health score (0-100) per hook
+
+**Configuration:**
+```bash
+HOOK_MAX_CONCURRENT=15     # Max concurrent hooks
+HOOK_TIMEOUT=5             # Hook execution timeout (seconds)
+HOOK_DEBUG=1               # Enable debug logging
+HOOK_ACQUIRE_TIMEOUT_MS=3000  # Semaphore acquire timeout
+```
+
+**Health Dashboard:**
+```bash
+bash plugins/specweave/scripts/hook-health.sh          # Full dashboard
+bash plugins/specweave/scripts/hook-health.sh --status # Quick status
+bash plugins/specweave/scripts/hook-health.sh --reset  # Reset circuit breakers
+```
+
+**Root Cause of Process Storm (Fixed in v1.0.30):**
+The old system detected "process storms" (>25 concurrent processes) and blocked ALL hooks.
+This caused cascading failures where even safe hooks were blocked.
+The new system uses proper semaphore-based concurrency limiting with graceful degradation.
+
 ---
 
 ## Quick Reference
