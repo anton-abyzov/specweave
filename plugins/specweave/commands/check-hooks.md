@@ -185,7 +185,50 @@ Run with auto-fix: `/sw:check-hooks --fix`
 ### "Permission denied"
 Check hook file permissions: `chmod +x plugins/*/hooks/*.sh`
 
+## Quick Health Dashboard
+
+For a quick visual dashboard of hook health, run:
+
+```bash
+bash plugins/specweave/scripts/hook-health.sh
+```
+
+Or use specific views:
+```bash
+bash plugins/specweave/scripts/hook-health.sh --status   # Quick status
+bash plugins/specweave/scripts/hook-health.sh --metrics  # Detailed metrics
+bash plugins/specweave/scripts/hook-health.sh --reset    # Reset circuit breakers
+bash plugins/specweave/scripts/hook-health.sh --clean    # Clean stale state
+```
+
+## Concurrency System (v1.0.30+)
+
+The hook system uses proper concurrency primitives:
+
+### Semaphore
+- Limits concurrent hook execution (default: 15)
+- Graceful degradation when slots unavailable
+- Automatic cleanup of stale locks
+
+### Circuit Breaker
+- Per-hook circuit breakers with 3 states:
+  - CLOSED: Normal operation
+  - OPEN: Too many failures, fail fast
+  - HALF_OPEN: Testing recovery
+
+### Metrics
+- Success/failure/timeout tracking
+- Latency percentiles (p50, p95, p99)
+- Health score calculation
+
+### Configuration
+Environment variables:
+- `HOOK_MAX_CONCURRENT` - Max concurrent hooks (default: 15)
+- `HOOK_TIMEOUT` - Hook execution timeout in seconds (default: 5)
+- `HOOK_DEBUG` - Enable debug logging (1 = enabled)
+
 ## See Also
 
 - Hook Health Check Architecture: `.specweave/increments/0037-project-specific-tasks/architecture/HOOK-HEALTH-CHECK-ARCHITECTURE.md`
 - Hook Development Guide: `.specweave/docs/public/guides/hook-development.md`
+- Concurrency Libraries: `plugins/specweave/hooks/lib/`

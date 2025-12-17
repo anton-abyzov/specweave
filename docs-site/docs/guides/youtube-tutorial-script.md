@@ -34,6 +34,18 @@ draft: true
 >
 > Pain Point 5: **Onboarding Nightmare**. New developers have zero context. Everything is tribal knowledge."
 
+**[PERSONAL STORY - WHY I BUILT THIS]**
+
+> "Now, I didn't just read about these problems — I lived them. For months, I used BMAD and speckit for my AI-assisted development. Great tools. Seriously.
+>
+> But I kept hitting walls. Context would disappear between sessions. Specifications lived in chat history. There was no traceability from requirements to code. Every new project meant rebuilding the same scaffolding.
+>
+> I'd finish a feature on Monday and by Thursday couldn't remember why I made certain decisions. Sound familiar?
+>
+> So I asked myself: what would a framework look like that solves these problems for good? Not just for this project, but for the next ten projects. Something I could rely on for months and years, not just days.
+>
+> That question became SpecWeave."
+
 **[EXCALIDRAW TRANSITION: "Vibe Coding" crossed out → "Spec-Driven Development"]**
 
 > "SpecWeave solves ALL of these. Let me show you how."

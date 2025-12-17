@@ -1,6 +1,6 @@
 {
   "name": "sw-mobile",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "description": "Comprehensive React Native and Expo development support for mobile app development. Includes environment setup, debugging, performance optimization, native modules, and testing strategies.",
   "author": {
     "name": "SpecWeave Team"

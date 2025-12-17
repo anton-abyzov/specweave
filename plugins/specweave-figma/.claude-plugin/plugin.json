@@ -1,7 +1,7 @@
 {
   "name": "sw-figma",
   "description": "Comprehensive Figma design-to-code automation. Import Figma designs via API/MCP, convert components to React/Vue/Angular, extract design tokens, generate responsive layouts, and sync design systems. Focus on accelerating frontend development from Figma designs.",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "author": {
     "name": "Anton Abyzov",
     "email": "anton.abyzov@gmail.com"

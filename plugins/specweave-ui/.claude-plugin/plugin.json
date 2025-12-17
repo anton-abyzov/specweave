@@ -1,6 +1,6 @@
 {
   "name": "sw-ui",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "description": "Browser automation and UI tools - Element inspection, automated testing, Playwright integration",
   "author": {
     "name": "Anton Abyzov",
