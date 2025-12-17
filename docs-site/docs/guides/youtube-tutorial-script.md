@@ -1,59 +1,175 @@
 ---
 sidebar_position: 99
 title: YouTube Tutorial Script
-description: Video script for SpecWeave introduction tutorial
+description: Video script for SpecWeave introduction tutorial - comprehensive walkthrough of spec-weave.com
 draft: true
 ---
 
-# SpecWeave Tutorial - YouTube Video Script
+# SpecWeave Complete Tutorial - YouTube Video Script
 
-**Duration**: ~15-20 minutes
-**Format**: Screen recording of spec-weave.com + terminal demo
-**Diagrams**: Mermaid (embedded in docs) + 2-3 Excalidraw transitions
-
----
-
-## INTRO (0:00 - 1:30)
-
-**[SCREEN: spec-weave.com homepage]**
-
-> "Every AI coding tool promises productivity. But after the chat ends... where does your work go?"
-
-**[SCROLL to "What Makes SpecWeave Different" section]**
-
-> "Your specs disappear into chat history. Your architecture decisions are forgotten. Your tests are 'maybe later.' Your JIRA stays outdated. New team members start from zero.
->
-> I built SpecWeave to solve this. And I didn't just build it — I used it to build itself. 186,000 lines of code. 1,327 commits. 65 releases with zero failures.
->
-> Today I'll show you how it works."
-
-**[EXCALIDRAW TRANSITION: Simple diagram showing "Chat History → Permanent Documentation"]**
+**Duration**: ~25-30 minutes
+**Format**: Screen recording walking through spec-weave.com documentation + terminal demos
+**Diagrams**: Mermaid (already embedded in docs) + 3 Excalidraw transitions
+**Teaching Claude**: This script teaches Claude how SpecWeave works by walking through real docs
 
 ---
 
-## SECTION 1: THE PROBLEM (1:30 - 3:00)
+## INTRO - THE VIBE CODING PROBLEM (0:00 - 2:30)
 
-**[SCREEN: Still on homepage, scroll to mermaid flowchart]**
+**[SCREEN: Navigate to docs/guides/lessons/11-vibe-coding-problem]**
 
-> "Here's the typical AI development workflow..."
+> "Before I show you SpecWeave, let me explain the problem it solves.
+>
+> This is what I call 'Vibe Coding' — and almost everyone does it."
 
-**[Point to the Mermaid diagram showing the flow]**
+**[READ from the page - The 5 Pain Points]**
+
+> "Pain Point 1: **Context Evaporation**. Monday you have a great conversation with Claude about payment architecture. Friday, nobody remembers why you chose idempotency keys.
+>
+> Pain Point 2: **Scattered Implementation**. Each AI request produces isolated code. No shared services. No consistent patterns.
+>
+> Pain Point 3: **No Quality Gates**. Generated code goes straight to production. No tests. No review. No validation.
+>
+> Pain Point 4: **Documentation Debt**. You promise to document later. You never do.
+>
+> Pain Point 5: **Onboarding Nightmare**. New developers have zero context. Everything is tribal knowledge."
+
+**[EXCALIDRAW TRANSITION: "Vibe Coding" crossed out → "Spec-Driven Development"]**
+
+> "SpecWeave solves ALL of these. Let me show you how."
+
+---
+
+## SECTION 1: WHAT IS SPECWEAVE (2:30 - 4:30)
+
+**[SCREEN: Navigate to docs/intro.md - Homepage]**
+
+> "SpecWeave is the AI development framework that doesn't lose your work."
+
+**[SCROLL to the main mermaid flowchart]**
 
 ```
 Your Idea → Spec ✓ → Plan ✓ → Tasks ✓ → Code → Living Docs
 ```
 
-> "See these checkmarks? In SpecWeave, every step creates a permanent file. Not chat history. Not 'I'll document it later.' Permanent, searchable, version-controlled documentation."
+> "See these checkmarks? Every step creates a permanent file. Not chat history. Permanent, version-controlled documentation."
 
 **[SCROLL to "What You Get" comparison table]**
 
 > "Before SpecWeave: specs in chat, manual JIRA updates, tests maybe later, architecture in your head, onboarding takes two weeks.
 >
-> After SpecWeave: permanent searchable specs, auto-sync on every task, tests embedded in your tasks, ADRs captured automatically, onboarding in one day."
+> After SpecWeave: permanent searchable specs, auto-sync on every task, tests embedded in tasks, ADRs captured automatically, onboarding in one day."
+
+**[SCROLL to DORA badges]**
+
+> "And these aren't marketing numbers. SpecWeave builds SpecWeave. 100 deploys per month. Zero failures across 65 releases. We'll come back to this."
 
 ---
 
-## SECTION 2: INSTALLATION (3:00 - 4:30)
+## SECTION 2: CORE PHILOSOPHY (4:30 - 7:00)
+
+**[SCREEN: Navigate to docs/overview/philosophy]**
+
+> "Let me explain the eight principles that guide everything in SpecWeave."
+
+**[READ through principles]**
+
+> "**Principle 1: Specification Before Implementation**. Define WHAT and WHY before HOW. No more jumping straight to code.
+>
+> **Principle 2: Append-Only Snapshots + Living Documentation**. This is revolutionary — most systems make you choose between historical context OR current docs. SpecWeave gives you BOTH."
+
+**[Point to the table explaining increments vs living docs]**
+
+> "Increments are immutable snapshots — like Git commits for features. Living docs are always current, auto-updated by hooks. Both are essential.
+>
+> **Principle 3: Context Precision**. 70% token reduction. Load only what you need.
+>
+> **Principle 4: Test-Validated Features**. Every feature proven through tests. Embedded in your tasks.
+>
+> **Principle 5: Regression Prevention**. Document before you modify brownfield code.
+>
+> **Principle 6: Scalable**. Works for solo developers or 100-person teams.
+>
+> **Principle 7: Auto-Role Routing**. Skills detect what you need automatically. Over 90% routing accuracy.
+>
+> **Principle 8: Closed-Loop Validation**. E2E tests must tell the truth. No false positives."
+
+---
+
+## SECTION 3: THE THREE-FILE STRUCTURE (7:00 - 10:00)
+
+**[SCREEN: Navigate to docs/guides/lessons/02-three-file-structure]**
+
+> "This is the foundation of SpecWeave — three files that replace chaos with clarity."
+
+**[Point to the diagram showing spec.md, plan.md, tasks.md]**
+
+> "**spec.md** is WHAT — owned by PM/Product. Business language. User stories, acceptance criteria.
+>
+> **plan.md** is HOW — owned by Architect. Technical language. Architecture, ADRs, design decisions.
+>
+> **tasks.md** is DO — owned by Developer. Checkboxes, embedded tests, implementation steps."
+
+**[SCROLL to the Click Counter example]**
+
+> "Let's see a real example. Adding a click counter to a homepage."
+
+**[READ the spec.md example]**
+
+> "The spec has user stories — 'As a visitor, I want to click a button that increments a counter.' And acceptance criteria with IDs — AC-US1-01: Button displays 'Click me!', AC-US1-02: Counter starts at 0."
+
+**[READ the tasks.md example]**
+
+> "The tasks reference those AC-IDs. Task T-001 satisfies AC-US1-01 through AC-US1-04. And look — test cases are embedded right in the task. Not 'add tests later.' Tests ARE the task."
+
+**[EXCALIDRAW TRANSITION: Three files connected with AC-ID arrows]**
+
+> "The magic is traceability. AC-IDs connect requirements to tasks to tests. Six months later, you can answer: 'Why did we build it this way?' Just read the increment."
+
+---
+
+## SECTION 4: WHAT IS AN INCREMENT (10:00 - 12:30)
+
+**[SCREEN: Navigate to docs/guides/core-concepts/what-is-an-increment]**
+
+> "An increment is SpecWeave's fundamental unit of work. Think of it as a Git commit for features."
+
+**[Point to the mermaid diagram showing increment sequence]**
+
+> "Each increment contains complete context — spec, plan, tasks, logs, reports. Everything needed to understand why something was built and how."
+
+**[SCROLL to "Anatomy of an Increment"]**
+
+```
+.specweave/increments/0001-user-authentication/
+├── spec.md     # WHAT: Requirements, user stories, AC-IDs
+├── plan.md     # HOW: Architecture + test strategy
+├── tasks.md    # Checklist + embedded tests
+├── logs/       # Execution history
+└── reports/    # Completion summaries
+```
+
+**[SCROLL to "Why Increments?"]**
+
+> "Three reasons:
+>
+> 1. **Complete Context**. Every increment is a snapshot in time with all context preserved.
+>
+> 2. **Traceability**. Clear path from requirements to implementation to tests. Critical for compliance — HIPAA, SOC 2, FDA.
+>
+> 3. **Focused Work**. One increment at a time prevents context switching."
+
+**[SCROLL to "Increment Sizing"]**
+
+> "Golden rule: 5-15 tasks, 1-3 user stories, completable in 1-3 days. Small increments = faster feedback, better AI accuracy, achievable goals."
+
+**[SCROLL to lifecycle state diagram]**
+
+> "Increments have a lifecycle: Planning → Active → Paused/Completed/Abandoned. Each transition has a command."
+
+---
+
+## SECTION 5: INSTALLATION & FIRST INCREMENT (12:30 - 16:00)
 
 **[SCREEN: Navigate to docs/guides/getting-started/quickstart]**
 
@@ -69,313 +185,343 @@ specweave init .
 
 **[Show init wizard running]**
 
-> "The init wizard detects your project type, tech stack, and existing documentation. It's smart enough to work with brownfield projects — not just greenfield."
+> "The init wizard detects your project type, tech stack, existing documentation. It works with greenfield AND brownfield projects."
 
-**[SCREEN: Back to quickstart page, scroll to "What You Get" table]**
+**[SCREEN: Back to quickstart, scroll to "What You Get"]**
 
-> "After init, you get:
-> - 136 auto-activating skills
-> - 68 specialized agents — PM, Architect, DevOps, QA, Security, SRE
-> - 53 slash commands
-> - Event-driven hooks for automation
-> - Your own CLAUDE.md project reference"
+> "After init, you get 136 auto-activating skills, 68 specialized agents, 53 slash commands, event-driven hooks, and your own CLAUDE.md project reference."
 
----
-
-## SECTION 3: YOUR FIRST FEATURE (4:30 - 8:00)
-
-**[TERMINAL: Claude Code open in a project]**
-
-> "Let's build something. I'll add dark mode to an app."
+**[TERMINAL: Create first increment]**
 
 ```bash
 /sw:increment "Add dark mode toggle"
 ```
 
-**[Show the output as SpecWeave creates files]**
+> "Watch what happens. SpecWeave creates a complete specification."
 
-> "Watch what happens. SpecWeave doesn't just take notes — it creates a complete specification."
+**[NAVIGATE to increment folder]**
 
-**[NAVIGATE to the created increment folder]**
+> "Three files created — spec.md, plan.md, tasks.md. Each with proper structure, user stories, acceptance criteria, architecture decisions, implementation tasks with embedded tests."
 
-```
-.specweave/increments/0001-dark-mode/
-├── spec.md    <- WHAT: User stories + acceptance criteria
-├── plan.md    <- HOW: Architecture + tech decisions
-└── tasks.md   <- DO: Tasks with embedded tests
-```
-
-**[OPEN spec.md]**
-
-> "The spec has user stories, acceptance criteria with checkboxes, and clear requirements. This isn't generated fluff — it's actionable specification."
-
-**[EXCALIDRAW TRANSITION: Show the three-file foundation with arrows]**
-
-**[OPEN tasks.md]**
-
-> "Each task is linked to user stories and acceptance criteria. And notice — tests are embedded right in the task. Not 'add tests later.' Tests are part of the definition of done."
-
-**[TERMINAL: Execute the increment]**
+**[TERMINAL: Execute and close]**
 
 ```bash
-/sw:do
+/sw:do        # Autonomous execution
+/sw:done 0001 # Close with quality gates
 ```
 
-> "Now SpecWeave works autonomously. It implements each task, runs tests, and updates documentation automatically."
+> "Quality gates verify: all tasks complete, test coverage above 60%, living docs updated. Only then does it close."
 
-**[Show tasks completing]**
-
-> "When it's done, validate and close:"
+**[SCREEN: Show the :next command section]**
 
 ```bash
-/sw:done 0001
+/sw:next
 ```
 
-> "This runs quality gates — are all tasks complete? Is test coverage above 60%? Are the living docs updated? Only then does it close."
+> "Pro tip: This one command auto-closes completed work and suggests what's next. Just keep clicking 'next'."
 
 ---
 
-## SECTION 4: THE WORKFLOW DIAGRAM (8:00 - 10:00)
+## SECTION 6: THE COMPLETE WORKFLOW (16:00 - 18:00)
 
-**[SCREEN: Navigate back to intro.md, scroll to "The Workflow" mermaid diagram]**
+**[SCREEN: Navigate to docs/workflows/overview]**
 
-> "Let me walk through the full workflow."
+> "Let me show you the complete development journey."
 
-**[Point to each section of the diagram]**
+**[Point to the mermaid diagram showing all phases]**
 
-> "Step 1: You type one command — `/sw:increment 'Add dark mode'`
+> "Seven phases: Concept → Research → Design → Planning → Implementation → Validation → Deployment.
 >
-> Step 2: AI agents kick in. PM Agent creates user stories and acceptance criteria. Architect Agent designs the solution and creates ADRs. Planner Agent breaks it into tasks with tests.
->
-> Step 3: You get three permanent files — spec.md for WHAT, plan.md for HOW, tasks.md for DO.
->
-> Step 4: Build with `/sw:do`. It executes autonomously.
->
-> Step 5: Auto-sync. Your GitHub issues, JIRA epics, Azure DevOps work items — they all update automatically."
+> Each phase has clear inputs, outputs, and SpecWeave commands."
+
+**[SCROLL through each phase briefly]**
+
+> "Research produces user personas and feature lists. Design produces architecture and ADRs. Planning creates the three files. Implementation uses `/sw:do`. Validation runs `/sw:validate`. Deployment is your CI/CD."
+
+**[Point to the phase diagram for Planning → Implementation]**
+
+> "The key transition: `/sw:increment` creates spec + plan + tasks. `/sw:do` builds it. Hooks update living docs after every task."
 
 ---
 
-## SECTION 5: EXTERNAL TOOL SYNC (10:00 - 12:00)
+## SECTION 7: EXTERNAL TOOL SYNC (18:00 - 20:00)
 
-**[SCREEN: Show the External Tool Integration table on intro page]**
+**[SCREEN: Navigate back to intro.md, scroll to External Tool Integration table]**
 
-> "One of the most powerful features — bidirectional sync with your existing tools."
+> "SpecWeave doesn't replace your existing tools — it synchronizes with them."
 
 **[Point to the table]**
 
 > "GitHub Issues: create, update, close, progress sync, checkbox tracking.
 > JIRA: Epic and Story hierarchy, status sync, custom fields.
 > Azure DevOps: Work items, area paths, status sync.
-> Linear coming Q1 2026."
+> Linear: Coming Q1 2026."
 
-**[TERMINAL: Show sync command]**
+**[SCREEN: Navigate to docs/guides/lessons/07-external-tools]**
+
+> "Bidirectional sync means: update status in JIRA, SpecWeave sees it. Complete a task in SpecWeave, your GitHub issue updates."
+
+**[TERMINAL: Show sync commands]**
 
 ```bash
-/sw:sync-progress
+/sw:sync-progress  # Push updates to external tools
+/sw:sync-monitor   # See sync status dashboard
 ```
 
-> "This pushes your local progress to all connected tools. Your JIRA updates. Your GitHub issues update. No manual copying."
-
-**[SCREEN: Navigate to integrations page if available]**
-
-> "And it works both ways. Update status in JIRA? SpecWeave sees it. Someone comments on a GitHub issue? It appears in your increment notes."
+> "Your JIRA updates. Your GitHub issues update. No manual copying. Ever."
 
 ---
 
-## SECTION 6: BROWNFIELD PROJECTS (12:00 - 13:30)
+## SECTION 8: BROWNFIELD PROJECTS (20:00 - 22:00)
 
-**[SCREEN: Navigate to quickstart, scroll to "Joining an Existing Project" section]**
+**[SCREEN: Navigate to docs/workflows/brownfield]**
 
-> "What if you have an existing codebase? SpecWeave handles brownfield projects too."
+> "What about existing codebases? This is the ultimate challenge — and SpecWeave handles it."
+
+**[Point to the brownfield challenge mermaid diagram]**
+
+> "Common problems: no documentation, tribal knowledge, fear of breaking production, scattered docs, unknown architecture decisions, no tests."
+
+**[SCROLL to "The SpecWeave Brownfield Approach"]**
+
+> "Two paths based on project size:
+>
+> **Quick Start** for large projects (50k+ LOC): Document core only, start immediately, docs grow with changes.
+>
+> **Comprehensive** for smaller projects: Full docs, baseline tests, then increments."
+
+**[SCROLL to init command section]**
 
 ```bash
 specweave init .
 # During init, select "Run brownfield analysis"
 ```
 
-> "It analyzes your codebase for documentation gaps, undocumented APIs, missing specs. Then you can turn those gaps into increments."
+> "SpecWeave analyzes your codebase for documentation gaps. Then you turn gaps into increments."
 
 ```bash
 /sw:discrepancies                    # View all documentation gaps
-/sw:discrepancy-to-increment DISC-0001 DISC-0002  # Create increment
+/sw:discrepancy-to-increment DISC-0001  # Create increment from gap
 ```
 
 **[SCREEN: Show import docs section]**
-
-> "You can also import existing documentation:"
 
 ```bash
 /sw:import-docs ~/exports/notion --source=notion
 ```
 
-> "From Notion, Confluence, GitHub Wiki — it classifies docs automatically and creates retroactive specifications."
+> "Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically."
 
 ---
 
-## SECTION 7: DORA METRICS (13:30 - 15:00)
+## SECTION 9: QUALITY GATES & TDD (22:00 - 24:00)
 
-**[SCREEN: Navigate back to intro.md, scroll to DORA badges]**
+**[SCREEN: Navigate to docs/guides/lessons/05-quality-gates]**
 
-> "Here's where it gets interesting. These aren't fake numbers."
+> "SpecWeave enforces quality before shipping. Three gates."
 
-**[Point to each badge]**
+**[READ the three gates]**
 
-> "100 deploys per month — that's multiple times per day.
-> 3.4 hours lead time.
-> 0% change failure rate across 65 releases.
-> Zero mean time to recovery because we haven't needed it."
+> "**Gate 1: Tasks**. All tasks marked complete with checkboxes.
+>
+> **Gate 2: Tests**. Minimum 60% coverage enforced. Tests embedded in tasks, not afterthoughts.
+>
+> **Gate 3: Documentation**. Living docs auto-updated via hooks."
 
-**[Click through to metrics page]**
+**[SCREEN: Navigate to docs/guides/lessons/06-tdd-workflow]**
 
-> "SpecWeave builds SpecWeave using SpecWeave. Every feature, every bug fix went through this workflow. 186,000 lines of code. 1,327 commits over 52 days."
+> "If you want test-first development, SpecWeave has a full TDD workflow."
 
-**[SCREEN: Navigate to dogfooding page if we created it]**
+```bash
+/sw:tdd-cycle  # Full red-green-refactor workflow
+```
 
-> "I spent every weekend on this project. Many sleepless nights debugging edge cases. 26 commits per day on average. 100 commits in a single peak day.
+> "Red: write failing tests. Green: make them pass. Refactor: improve without breaking. SpecWeave guides you through each phase."
+
+---
+
+## SECTION 10: THE LEARNING PATH (24:00 - 26:00)
+
+**[SCREEN: Navigate to docs/guides/lessons/index (SpecWeave Academy)]**
+
+> "If you're new, we have a complete learning path. 16 lessons from beginner to expert."
+
+**[Point to the paths table]**
+
+> "**Path 1: Getting Started** — Lessons 1-3. Install, understand the three files, build your first increment. 90 minutes.
+>
+> **Path 2: Core Workflow** — Lessons 4-5. Master the :next command and quality gates.
+>
+> **Path 3: Testing** — Lesson 6. TDD with SpecWeave.
+>
+> **Path 4: Integration** — Lessons 7-10. External tools, AI model selection, troubleshooting, advanced patterns.
+>
+> **Path 5: Deep Dive** — Lessons 11-16. Vibe coding problem, init deep dive, increment lifecycle, GitHub/JIRA/ADO integrations."
+
+**[SCREEN: Navigate to docs/academy if exists]**
+
+> "For complete beginners to software engineering, we have the full Academy. 14 parts, 44 modules — from single-file scripts to microservices with CI/CD."
+
+---
+
+## SECTION 11: DOGFOODING - REAL METRICS (26:00 - 28:00)
+
+**[SCREEN: Navigate to docs/overview/dogfooding]**
+
+> "Now the proof. SpecWeave builds SpecWeave using SpecWeave."
+
+**[Point to the numbers]**
+
+> "186,719 lines of code. 567 TypeScript files. 581 test files. 4,405 documentation files. 47 CLI commands. 24 plugins. 65 hooks."
+
+**[Point to development activity]**
+
+> "1,327 commits over 52 days. 26 commits per day average. 100 commits in a single peak day.
+>
+> Every weekend. Many sleepless nights. This wasn't a side project — it was an obsession."
+
+**[Point to DORA metrics]**
+
+> "The result:
+> - **Deployment Frequency**: 100/month (Elite tier)
+> - **Lead Time**: 3.4 hours (High tier)
+> - **Change Failure Rate**: 0% across 65 releases (Elite tier)
+> - **MTTR**: N/A because nothing failed"
+
+> "5+ production applications built with SpecWeave — including SpecWeave itself, BizZone mobile app, Event Management SaaS, and more.
 >
 > This isn't a demo framework. It's production-tested — on itself."
 
 ---
 
-## SECTION 8: GETTING STARTED (15:00 - 17:00)
+## OUTRO (28:00 - 29:30)
 
-**[SCREEN: Navigate to quickstart page]**
+**[SCREEN: Navigate back to intro.md]**
 
-> "Ready to try it? Here's the fastest path."
+> "Let me recap. SpecWeave solves the vibe coding problem with:
+>
+> - **Three permanent files** instead of chat history
+> - **Append-only snapshots + living docs** for complete context
+> - **Quality gates** that enforce tests and documentation
+> - **External tool sync** with GitHub, JIRA, Azure DevOps
+> - **Brownfield support** for existing codebases
+> - **16 lessons** to take you from beginner to expert"
 
-**[TERMINAL: Quick demo]**
+**[TERMINAL: Final commands]**
 
 ```bash
-# Install
 npm install -g specweave
-
-# Initialize in your project
 cd your-project
 specweave init .
-
-# Create your first feature
-/sw:increment "Your feature idea"
-
-# Build it
+/sw:increment "Your first feature"
 /sw:do
-
-# Close it
 /sw:done 0001
-```
-
-> "That's the core loop. But here's a pro tip..."
-
-```bash
-/sw:next
-```
-
-> "One command to rule them all. It auto-closes completed work and suggests what's next. Just keep clicking 'next' and reviewing when needed."
-
-**[SCREEN: Scroll to "Essential Commands" table]**
-
-> "Key commands to remember:
-> - `/sw:increment` to create
-> - `/sw:do` to build
-> - `/sw:done` to close with quality gates
-> - `/sw:next` for the full flow
-> - `/sw:progress` to check status
-> - `/sw:sync-progress` to push to external tools"
-
----
-
-## SECTION 9: NEXT STEPS (17:00 - 18:30)
-
-**[SCREEN: Navigate to Academy section]**
-
-> "If you're new to software engineering, we have a complete academy."
-
-**[Scroll through academy paths]**
-
-> "Quick Start path: 2 hours for experienced devs.
-> Beginner path: 4 weeks from zero to coding.
-> Full-Stack: 10 weeks to build complete web apps.
-> Enterprise: 16 weeks for Fortune 500-ready skills.
->
-> 14 parts, 44 modules — from single-file scripts to microservices with CI/CD."
-
-**[SCREEN: Navigate to Discord invite]**
-
-> "Join the community. Ask questions. Share your projects. We're building this together."
-
----
-
-## OUTRO (18:30 - 19:00)
-
-**[SCREEN: Back to intro page]**
-
-> "Stop losing your AI work. Start building permanent knowledge.
->
-> SpecWeave: the AI development framework that doesn't lose your work.
->
-> Install it now:"
-
-```bash
-npm install -g specweave
 ```
 
 **[EXCALIDRAW: Final slide with logo and links]**
 
-> "Links in the description. See you in the Discord.
+> "Stop losing your AI work. Start building permanent knowledge.
+>
+> Links in the description. Join the Discord. Ask questions.
 >
 > Thanks for watching."
 
 ---
 
-## VIDEO NOTES
+## VIDEO PRODUCTION NOTES
 
 ### Excalidraw Diagrams Needed
 
-1. **Intro transition**: "Chat History → Permanent Documentation" (simple arrow diagram)
-2. **Three-file foundation**: spec.md, plan.md, tasks.md with connecting arrows
-3. **Outro slide**: Logo + links (spec-weave.com, Discord, YouTube, GitHub)
+1. **Intro transition**: "Vibe Coding" crossed out → "Spec-Driven Development" (0:00)
+2. **Three-file foundation**: spec.md, plan.md, tasks.md with AC-ID arrows connecting them (10:00)
+3. **Outro slide**: SpecWeave logo + links (spec-weave.com, Discord, YouTube, GitHub) (28:00)
 
-### Mermaid Diagrams (Already in docs)
+### Mermaid Diagrams (Already in docs - no work needed)
 
 - Workflow flowchart (intro.md)
-- Input → Agents → Output → Build → Sync diagram (intro.md)
-- DORA metrics can use the badges
+- Phase-by-phase workflow (workflows/overview.md)
+- Increment lifecycle state diagram (core-concepts/what-is-an-increment.md)
+- Brownfield challenge diagram (workflows/brownfield.md)
+- Three-file structure diagram (lessons/02-three-file-structure.md)
 
-### B-roll Suggestions
+### Screen Recording Checklist
 
-- Terminal showing commands executing
-- VS Code with spec files open
-- GitHub Issues updating automatically
-- JIRA board with synced statuses
+| Timestamp | Page to Show | Key Action |
+|-----------|--------------|------------|
+| 0:00 | lessons/11-vibe-coding-problem | Read pain points |
+| 2:30 | intro.md | Show workflow diagram |
+| 4:30 | overview/philosophy | Scroll through principles |
+| 7:00 | lessons/02-three-file-structure | Show examples |
+| 10:00 | core-concepts/what-is-an-increment | Explain lifecycle |
+| 12:30 | getting-started/quickstart | Terminal demo |
+| 16:00 | workflows/overview | Show complete workflow |
+| 18:00 | intro.md (external tools) | Show sync table |
+| 20:00 | workflows/brownfield | Show brownfield approach |
+| 22:00 | lessons/05-quality-gates | Explain gates |
+| 24:00 | lessons/index | Show learning paths |
+| 26:00 | overview/dogfooding | Show real metrics |
+| 28:00 | intro.md | Final recap |
 
-### Timestamps for Description
+### Terminal Commands to Demo
+
+```bash
+# Installation
+npm install -g specweave
+specweave init .
+
+# Core workflow
+/sw:increment "Add dark mode toggle"
+/sw:do
+/sw:done 0001
+/sw:next
+
+# External sync
+/sw:sync-progress
+/sw:sync-monitor
+
+# Brownfield
+/sw:discrepancies
+/sw:import-docs ~/notion --source=notion
+
+# TDD
+/sw:tdd-cycle
+```
+
+### Timestamps for YouTube Description
 
 ```
-0:00 - Intro: The problem with AI coding tools
-1:30 - Why specs disappear and how to fix it
-3:00 - Installation in 30 seconds
-4:30 - Your first feature with SpecWeave
-8:00 - Understanding the workflow
-10:00 - External tool sync (GitHub, JIRA, ADO)
-12:00 - Working with existing codebases
-13:30 - Real DORA metrics from dogfooding
-15:00 - Getting started walkthrough
-17:00 - Academy and next steps
-18:30 - Outro
+0:00 - The Vibe Coding Problem
+2:30 - What is SpecWeave?
+4:30 - Core Philosophy (8 Principles)
+7:00 - The Three-File Structure (spec.md, plan.md, tasks.md)
+10:00 - What is an Increment?
+12:30 - Installation & Your First Feature
+16:00 - The Complete Workflow
+18:00 - External Tool Sync (GitHub, JIRA, ADO)
+20:00 - Working with Existing Codebases (Brownfield)
+22:00 - Quality Gates & TDD
+24:00 - The Learning Path (16 Lessons)
+26:00 - Dogfooding: Real Metrics (186K LOC, 0% failures)
+28:00 - Recap & Getting Started
 ```
 
-### Description Template
+### YouTube Description Template
 
 ```
 SpecWeave: The AI Development Framework That Doesn't Lose Your Work
 
-Stop losing your AI conversations to chat history. SpecWeave captures every spec,
-architecture decision, and test in permanent, searchable documentation.
+In this tutorial, I walk through the complete spec-weave.com documentation,
+showing you how to go from "vibe coding" to spec-driven development.
 
-In this tutorial, I walk through:
-- Why AI coding tools fail at documentation
-- How SpecWeave creates permanent specs from every feature
-- Live demo: building a feature from scratch
-- Syncing with GitHub, JIRA, and Azure DevOps
+What you'll learn:
+- Why AI coding tools fail (the vibe coding problem)
+- The three-file structure: spec.md, plan.md, tasks.md
+- What increments are and how they preserve context
+- Live demo: building your first feature
+- External tool sync (GitHub, JIRA, Azure DevOps)
+- Working with existing codebases (brownfield)
+- Quality gates and TDD workflow
+- The complete 16-lesson learning path
 - Real metrics from building SpecWeave with SpecWeave
 
 Links:
@@ -384,8 +530,43 @@ Links:
 - Discord: https://discord.gg/UYg4BGJ65V
 - Install: npm install -g specweave
 
-Built with 186,000 lines of code. 1,327 commits. 0% failure rate across 65 releases.
-This isn't a demo — it's production-tested.
+Dogfooding stats:
+- 186,719 lines of code
+- 1,327 commits in 52 days
+- 100 deploys/month (Elite DORA tier)
+- 0% failure rate across 65 releases
+- 5+ production applications
 
-#ai #coding #developer #programming #typescript #nodejs #claude
+This isn't a demo framework — it's production-tested on itself.
+
+#ai #coding #developer #programming #typescript #nodejs #claude #specweave
 ```
+
+### Key Topics Covered
+
+| Topic | Section | Page Referenced |
+|-------|---------|-----------------|
+| Vibe Coding Problem | 0:00 | lessons/11-vibe-coding-problem |
+| Philosophy & Principles | 4:30 | overview/philosophy |
+| Three-File Structure | 7:00 | lessons/02-three-file-structure |
+| What is an Increment | 10:00 | core-concepts/what-is-an-increment |
+| Quick Start | 12:30 | getting-started/quickstart |
+| Complete Workflow | 16:00 | workflows/overview |
+| External Tool Sync | 18:00 | lessons/07-external-tools |
+| Brownfield Projects | 20:00 | workflows/brownfield |
+| Quality Gates | 22:00 | lessons/05-quality-gates |
+| TDD Workflow | 22:00 | lessons/06-tdd-workflow |
+| Learning Path | 24:00 | lessons/index |
+| Dogfooding | 26:00 | overview/dogfooding |
+
+### Brief Mentions (Not Deep Dives)
+
+These topics are mentioned briefly but have full documentation available:
+
+- **16 Expert Lessons** (lessons/01-16)
+- **Full Academy** (14 parts, 44 modules)
+- **Multi-project mode** (covered in advanced patterns)
+- **Cost optimization** (covered in advanced patterns)
+- **AI model selection** (lesson 8)
+- **Troubleshooting** (lesson 9)
+- **Compliance** (reference/compliance-standards)

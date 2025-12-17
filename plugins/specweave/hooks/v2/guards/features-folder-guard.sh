@@ -20,8 +20,9 @@ set +e
 INPUT=$(cat)
 
 # Extract the file_path being written/edited
+# Claude Code passes tool input in .tool_input.file_path format
 if command -v jq &> /dev/null; then
-  FILE_PATH=$(echo "$INPUT" | jq -r '.file_path // empty' 2>/dev/null)
+  FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty' 2>/dev/null)
 else
   FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"\(.*\)"/\1/')
 fi

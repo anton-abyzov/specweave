@@ -15,17 +15,19 @@
 
 set -euo pipefail
 
-TOOL_NAME="$1"
-shift
-TOOL_ARGS="$*"
+# Read stdin for tool input (Claude Code passes JSON via stdin)
+INPUT=$(cat)
+
+# Extract tool name - Claude Code passes it at top level
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null || echo "")
 
 # Only check Write tool operations to specs/ folder
 if [ "$TOOL_NAME" != "Write" ]; then
   exit 0
 fi
 
-# Extract file_path from tool args (JSON format)
-FILE_PATH=$(echo "$TOOL_ARGS" | jq -r '.file_path // empty')
+# Extract file_path from tool_input (correct structure for Claude Code hooks)
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty' 2>/dev/null || echo "")
 
 if [ -z "$FILE_PATH" ]; then
   exit 0

@@ -18,7 +18,12 @@ INPUT=$(cat)
 # Pattern: file_path contains metadata.json AND (new_string OR content) contains "status"..."completed"
 
 # Extract file_path
-FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
+# Claude Code passes tool input in .tool_input.file_path format
+if command -v jq &> /dev/null; then
+  FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty' 2>/dev/null)
+else
+  FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
+fi
 
 # Only care about metadata.json files
 if [[ "$FILE_PATH" != *metadata.json ]]; then
@@ -26,9 +31,14 @@ if [[ "$FILE_PATH" != *metadata.json ]]; then
 fi
 
 # Extract the content being written (new_string for Edit, content for Write)
-NEW_CONTENT=$(echo "$INPUT" | grep -o '"new_string"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1)
-if [[ -z "$NEW_CONTENT" ]]; then
-  NEW_CONTENT=$(echo "$INPUT" | grep -o '"content"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1)
+# Claude Code passes tool input in .tool_input format
+if command -v jq &> /dev/null; then
+  NEW_CONTENT=$(echo "$INPUT" | jq -r '.tool_input.new_string // .tool_input.content // .new_string // .content // empty' 2>/dev/null)
+else
+  NEW_CONTENT=$(echo "$INPUT" | grep -o '"new_string"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1)
+  if [[ -z "$NEW_CONTENT" ]]; then
+    NEW_CONTENT=$(echo "$INPUT" | grep -o '"content"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1)
+  fi
 fi
 
 # Check if trying to set status to "completed" directly
