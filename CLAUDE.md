@@ -1297,6 +1297,54 @@ npm run rebuild
 
 ---
 
+## Hook Development (v1.0.27+)
+
+### Claude Code Hook Input Format
+
+**CRITICAL: PreToolUse hooks receive JSON with `tool_input` wrapper!**
+
+```json
+// PreToolUse:Write/Edit receives:
+{
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "/path/to/file.md",
+    "content": "file content..."
+  }
+}
+
+// PreToolUse:Bash receives (NO tool_input wrapper):
+{
+  "command": "npm install"
+}
+```
+
+**Correct extraction patterns:**
+```bash
+# For Write/Edit tools (nested in tool_input):
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty')
+CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // .tool_input.new_string // empty')
+
+# For Bash tool (direct):
+COMMAND=$(echo "$INPUT" | jq -r '.command // empty')
+
+# ⚠️ WRONG - will fail silently:
+FILE_PATH=$(echo "$INPUT" | jq -r '.file_path // empty')  # Missing tool_input!
+```
+
+**Hook return format (PreToolUse):**
+```bash
+# Allow the tool call:
+echo '{"decision": "allow"}'
+exit 0
+
+# Block the tool call:
+echo '{"decision": "block", "reason": "Error message here"}'
+exit 2
+```
+
+---
+
 ## Quick Reference
 
 | Aspect | Rule |
@@ -1305,6 +1353,7 @@ npm run rebuild
 | **Bash guard** | Hook `bash-file-guard.sh` BLOCKS dangerous patterns (v0.32.1+) |
 | Skills vs Agents | Skills = auto-activate (keywords), Agents = explicit `Task()` |
 | Hook events | PostToolUse, PreToolUse, UserPromptSubmit, Stop, SessionStart/End, etc. |
+| Hook input | Write/Edit use `.tool_input.file_path`, Bash uses `.command` |
 | Cache location | `.specweave/cache/` (24h TTL) |
 | Pre-commit | Blocks 50+ deletions, `rm -rf` on protected dirs |
 | Stuck session | Kill + `pkill -f "cat.*EOF"` + clean locks + restart |
