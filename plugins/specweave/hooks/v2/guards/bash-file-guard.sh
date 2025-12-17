@@ -208,4 +208,5 @@ if [[ $BLOCKED -eq 1 ]]; then
 fi
 
 # All other bash commands are allowed
+echo '{"decision":"allow"}'
 exit 0

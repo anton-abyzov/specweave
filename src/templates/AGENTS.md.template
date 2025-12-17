@@ -5,6 +5,18 @@
 
 ---
 
+> ⛔ **NON-CLAUDE TOOLS (Cursor, Copilot, etc.): READ THIS FIRST!**
+>
+> Before creating ANY increment, you MUST run: `specweave context projects`
+>
+> Then add `**Project**: <value>` to EVERY User Story in spec.md.
+> For 2-level structures, also add `**Board**: <value>`.
+>
+> **Missing this = increment creation will FAIL!**
+> See [#user-story-format](#user-story-format) for details.
+
+---
+
 ## Section Index (Use Ctrl+F to Navigate)
 
 | Section | Search For | Purpose |

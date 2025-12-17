@@ -19,7 +19,12 @@ set +e
 INPUT=$(cat)
 
 # Extract file_path from the tool call
-FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
+# Claude Code passes tool input in .tool_input.file_path format
+if command -v jq &> /dev/null; then
+  FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty' 2>/dev/null)
+else
+  FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
+fi
 
 # Only care about .specweave/increments/ paths
 if [[ "$FILE_PATH" != *.specweave/increments/* ]]; then
