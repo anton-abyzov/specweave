@@ -152,6 +152,7 @@ class GitHubClientV2 {
    * - ✅ CORRECT: "[FS-XXX][US-YYY] Title" (User Story - STANDARD)
    * - ✅ CORRECT: "[FS-XXX] Title" (Feature-level, rare)
    * - ❌ WRONG: "[Increment XXXX] Title" (deprecated old format)
+   * - ❌ WRONG: "[0001] Title" (plain increment ID without FS- prefix)
    * - ❌ WRONG: "[BUG] Title" (type prefixes are labels, not title)
    * - ❌ WRONG: "[HOTFIX] Title" (type prefixes are labels, not title)
    * - ❌ WRONG: "[FEATURE] Title" (type prefixes are labels, not title)
@@ -172,6 +173,32 @@ WHY: Correct data flow is: Increment \u2192 Living Docs \u2192 GitHub
       Living docs are the source of truth for GitHub sync.
 
 FIX: Use /sw:sync-docs to generate living docs, then sync to GitHub.`
+      );
+    }
+    const plainIncrementPattern = /^\[\d{3,4}E?\]\s/;
+    if (plainIncrementPattern.test(title)) {
+      const match = title.match(/^\[(\d{3,4}E?)\]/);
+      const incrementId = match ? match[1] : "XXXX";
+      const num = parseInt(incrementId.replace("E", ""), 10);
+      const isExternal = incrementId.endsWith("E");
+      const properFsId = `FS-${String(num).padStart(3, "0")}${isExternal ? "E" : ""}`;
+      throw new Error(
+        `\u274C INVALID TITLE FORMAT: "${title}"
+
+Plain increment IDs like [${incrementId}] are NOT allowed!
+
+GitHub issues MUST use SpecWeave format:
+  \u2705 CORRECT: "[${properFsId}][US-001] Title" (User Story)
+  \u2705 CORRECT: "[${properFsId}] Title" (Feature-level)
+  \u274C WRONG: "[${incrementId}] Title" (missing FS- prefix)
+
+WHY: FS-XXX format ensures traceability to Feature folders in living docs.
+     Plain increment IDs create duplicates and break the sync architecture.
+
+FIX:
+  1. Use /sw:sync-progress to sync with proper format
+  2. Or use /sw-github:sync to create issues correctly
+  3. Ensure increment has proper spec.md with User Stories`
       );
     }
     const typePrefixPattern = /^\[(BUG|HOTFIX|FEATURE|DOCS|REFACTOR|CHORE|EXPERIMENT|Bug|Hotfix|Feature|Docs|Refactor|Chore|Experiment)\]/i;
@@ -220,9 +247,21 @@ FIX:
   }
   /**
    * Create epic issue (increment-level)
+   *
+   * CRITICAL: Includes duplicate detection to prevent creating duplicate issues
    */
   async createEpicIssue(title, body, milestone, labels = []) {
     this.validateIssueTitle(title);
+    const titlePatternMatch = title.match(/^\[FS-\d{3,}E?\](?:\[US-\d{3,}E?\])?/);
+    if (titlePatternMatch) {
+      const titlePattern = titlePatternMatch[0];
+      const existingIssue = await this.searchIssueByTitle(titlePattern, true);
+      if (existingIssue) {
+        console.log(`\u26A0\uFE0F Issue already exists: #${existingIssue.number} - "${existingIssue.title}"`);
+        console.log(`   Returning existing issue instead of creating duplicate.`);
+        return existingIssue;
+      }
+    }
     const args = [
       "issue",
       "create",
