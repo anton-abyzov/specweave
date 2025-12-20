@@ -742,105 +742,6 @@ find .specweave/docs -name "*.md" -exec sed -i '' 's/target=_blank/target="_blan
 find .specweave/docs -name "*.md" -exec sed -i '' 's/dir=auto/dir="auto"/g' {} \;
 ```
 
-### 9. NEVER Use Bash for File Creation (INFINITE HANG PREVENTION!)
-
-**Bash + heredoc/echo for files = SESSION FREEZE** (shell waits forever for EOF)
-
-```
-❌ FORBIDDEN (Crash pattern from 2025-12-06 - 2 HOUR HANG!):
-Bash("cat > file.md << 'EOF'\nContent here\nEOF")
-Bash("echo 'content' > file.md")
-Bash("printf 'content' > file.md")
-
-→ If heredoc is truncated mid-content, shell waits FOREVER for EOF terminator!
-→ Claude Code session stuck "Marinating..." for hours with no recovery!
-
-✅ MANDATORY - Use Write tool:
-Write({ file_path: "/path/to/file.md", content: "Content here" })
-
-✅ MANDATORY - Use Edit tool for modifications:
-Edit({ file_path: "/path/to/file.md", old_string: "old", new_string: "new" })
-```
-
-**Why heredocs are catastrophically dangerous:**
-1. **Truncation = infinite wait**: Token limits can cut off EOF terminator
-2. **No timeout**: Shell waits forever, bypasses Claude Code's 2-min limit
-3. **No recovery**: Session becomes completely unresponsive
-4. **Silent failure**: No error message, just endless "Waiting..."
-
-**Tool selection rules:**
-| Operation | CORRECT Tool | FORBIDDEN |
-|-----------|--------------|-----------|
-| Create file | `Write` | `Bash cat/echo/printf >` |
-| Edit file | `Edit` | `Bash sed/awk` |
-| Append to file | `Read` + `Write` | `Bash echo >>` |
-| Create directory | `Bash mkdir -p` | ✅ OK |
-
-**Pre-tool-use hook `bash-file-guard.sh` BLOCKS dangerous Bash file patterns (v0.32.1+).**
-This hook automatically blocks: heredoc, echo >, printf >, cat > patterns.
-
-**If session gets stuck ("Marinating..." / "Waiting..."):**
-```bash
-# 1. Kill Claude Code (Ctrl+C or close terminal)
-# 2. Kill zombie shell processes:
-pkill -f "cat.*EOF"
-pkill -f "bash.*heredoc"
-# 3. Clean state:
-rm -f .specweave/state/.processor.lock
-rm -f .specweave/state/.dedup-cache/*.lock
-# 4. Restart Claude Code
-```
-
-### 10. Bash Tool - Terminal Operations ONLY
-
-**Bash is for system commands, NOT file manipulation:**
-
-```
-✅ ALLOWED Bash operations:
-- git commands (status, add, commit, push, diff)
-- npm/pnpm/yarn commands (install, build, test)
-- Directory operations (mkdir, ls, pwd)
-- Process management (ps, kill, pkill)
-- Network tools (curl, wget for APIs)
-- Build tools (make, cmake, cargo)
-
-❌ FORBIDDEN - Use dedicated tools instead:
-- File reading → Read tool
-- File writing → Write tool
-- File editing → Edit tool
-- File searching → Glob tool
-- Content searching → Grep tool
-- Communication → Direct text output
-```
-
-**Mental model**: Bash = "run a program". Write/Edit/Read = "modify files".
-
-### 11. Notifications - MUST Be Non-Alarming AND Non-Blocking (v0.33.4+)
-
-**All notifications are INFORMATIVE only - NEVER alarming!** Every notification MUST:
-1. **WHO** sent it (always start with "SpecWeave:")
-2. **WHAT** happened (specific action, not vague alert)
-3. **ACTION** needed (or "No action needed" if informational)
-4. **NEVER trigger alert icon** - no red/warning badges!
-5. **NEVER block execution** - fire-and-forget pattern ONLY!
-
-```
-❌ FORBIDDEN (alarming):
-Title: "🚨 Zombie Cleanup"           ← Emoji overload
-Sound: "Basso"                       ← Shows RED ALERT ICON - NEVER USE!
-Message: "Cleaned up 5 processes"    ← Too vague
-
-❌ FORBIDDEN (blocking):
-execSync(`osascript -e 'display notification...'`)  ← BLOCKS main thread!
-await exec(`osascript -e 'display notification...'`)  ← BLOCKS cleanup/exit!
-
-✅ CORRECT (explicit, calm, non-blocking):
-Title: "SpecWeave: Cleanup Done"     ← Clear source
-Sound: "Pop" or "Submarine"          ← Neutral sounds ONLY
-Message: "Cleaned up 5 zombie processes. No action needed."
-exec(`osascript...`, (error) => { /* log */ })  ← Fire-and-forget!
-```
-
 **CRITICAL: Fire-and-Forget Pattern (v0.33.6+)**
 
 **⛔ NEVER use `execSync()` or `await exec()` for notifications!**
@@ -1154,91 +1055,6 @@ npm run test:all    # All tests (30%+ coverage required)
 
 **Plugin validation**: `bash scripts/validation/validate-marketplace-plugins.sh`
 
----
-
-## Emergency
-
-### Session Stuck ("Marinating..." for hours)
-
-**Cause**: Heredoc command truncated, shell waiting forever for EOF.
-
-```bash
-# 1. Force quit Claude Code (Ctrl+C multiple times, or close terminal)
-
-# 2. Kill zombie processes:
-pkill -f "cat.*EOF"
-pkill -9 -f "bash.*specweave"
-
-# 3. Clean locks:
-rm -f .specweave/state/.processor.lock
-rm -f .specweave/state/*.lock
-rm -rf .specweave/state/.dedup-cache/*.lock
-
-# 4. Restart Claude Code
-```
-
-**Prevention**: NEVER use `Bash("cat > file << EOF")` - use `Write` tool instead!
-
-### Marketplace Plugin Desync (v1.0.21+)
-
-**Symptoms**: `/plugin` shows "Plugin 'specweave' not found in marketplace 'specweave'" errors
-**Root Cause**: `npm run rebuild` regenerates local `dist/`, but marketplace cache points to GitHub clone
-
-**Quick Fix:**
-```bash
-# Refresh marketplace from GitHub and reinstall all plugins
-bash scripts/refresh-marketplace.sh
-
-# Verify fix
-npm test
-
-# Restart Claude Code for changes to take effect
-```
-
-**Detection**:
-```bash
-# Check marketplace last update
-cat ~/.claude/plugins/known_marketplaces.json | jq '.specweave.lastUpdated'
-
-# Check installed plugin count (should be 24)
-cat ~/.claude/plugins/installed_plugins.json | jq '.plugins | keys | length'
-```
-
-**Prevention**:
-- Always run `bash scripts/refresh-marketplace.sh` after major changes
-- Push changes to develop branch to keep GitHub marketplace in sync
-- Use `/specweave-validate-status` command to check sync status
-
-### MCP IDE Connection Drops (v0.32.1+)
-
-**Symptoms**: Session hangs, commands not responding, "Waiting..." forever, UI frozen
-**Root Cause**: VSCode MCP server WebSocket connection drops after ~2 seconds
-
-**Detection** (check `~/.claude/debug/latest`):
-```
-MCP server "ide": WS-IDE connection dropped after 2s uptime
-MCP server "ide": Connection error: Received a response for an unknown message ID
-```
-
-**Quick Fix:**
-```bash
-# 1. Restart VS Code Extension Host:
-#    Cmd+Shift+P → "Developer: Restart Extension Host"
-
-# 2. Reduce diagnostics payload (close extra tabs/files in VS Code)
-
-# 3. If persists, run Claude Code in plain terminal (not VS Code integrated):
-cd /path/to/project && claude
-
-# 4. Run cleanup script:
-bash plugins/specweave/scripts/cleanup-state.sh
-```
-
-**Prevention:**
-- Keep VS Code file count low (large diagnostics payloads cause drops)
-- Update Claude Code VS Code extension regularly
-- Use terminal mode for long-running sessions
-
 ### Zombie Processes (v0.33.0+ AUTO-CLEANUP)
 
 **Status**: ✅ AUTOMATED - No manual intervention needed!
@@ -1277,71 +1093,12 @@ bash plugins/specweave/scripts/session-watchdog.sh
 - If cleanup fails: Run `bash plugins/specweave/scripts/cleanup-state.sh`
 - For details: See `.specweave/docs/internal/troubleshooting/zombie-processes.md`
 
-### Crash loop / prompt duplication
-
-**Disable hooks FIRST:**
-```bash
-export SPECWEAVE_DISABLE_HOOKS=1   # In terminal before starting Claude
-# OR rename hooks.json:
-mv plugins/specweave/hooks/hooks.json plugins/specweave/hooks/hooks.json.bak
-```
-
-**Then clean state:**
-```bash
-rm -f .specweave/state/.hook-*
-rm -rf .specweave/state/.dedup-cache
-npm run rebuild
-```
-
-**Recovery docs**: `.specweave/docs/internal/emergency-procedures/`
-
----
 
 ## Hook Development (v1.0.27+)
 
 ### Claude Code Hook Input Format
 
-**CRITICAL: PreToolUse hooks receive JSON with `tool_input` wrapper!**
 
-```json
-// PreToolUse:Write/Edit receives:
-{
-  "tool_name": "Write",
-  "tool_input": {
-    "file_path": "/path/to/file.md",
-    "content": "file content..."
-  }
-}
-
-// PreToolUse:Bash receives (NO tool_input wrapper):
-{
-  "command": "npm install"
-}
-```
-
-**Correct extraction patterns:**
-```bash
-# For Write/Edit tools (nested in tool_input):
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty')
-CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // .tool_input.new_string // empty')
-
-# For Bash tool (direct):
-COMMAND=$(echo "$INPUT" | jq -r '.command // empty')
-
-# ⚠️ WRONG - will fail silently:
-FILE_PATH=$(echo "$INPUT" | jq -r '.file_path // empty')  # Missing tool_input!
-```
-
-**Hook return format (PreToolUse):**
-```bash
-# Allow the tool call:
-echo '{"decision": "allow"}'
-exit 0
-
-# Block the tool call:
-echo '{"decision": "block", "reason": "Error message here"}'
-exit 2
-```
 
 ### Hook Concurrency System (v1.0.30+)
 
@@ -1388,14 +1145,11 @@ The new system uses proper semaphore-based concurrency limiting with graceful de
 
 | Aspect | Rule |
 |--------|------|
-| **File ops** | Write/Edit/Read tools ONLY. NEVER Bash heredoc/echo! |
-| **Bash guard** | Hook `bash-file-guard.sh` BLOCKS dangerous patterns (v0.32.1+) |
 | Skills vs Agents | Skills = auto-activate (keywords), Agents = explicit `Task()` |
-| Hook events | PostToolUse, PreToolUse, UserPromptSubmit, Stop, SessionStart/End, etc. |
-| Hook input | Write/Edit use `.tool_input.file_path`, Bash uses `.command` |
-| Cache location | `.specweave/cache/` (24h TTL) |
-| Pre-commit | Blocks 50+ deletions, `rm -rf` on protected dirs |
-| Stuck session | Kill + `pkill -f "cat.*EOF"` + clean locks + restart |
+| Hook events | PostToolUse, PreToolUse, UserPromptSubmit, SessionStart/End |
+| Hook input | Write/Edit: `.tool_input.file_path`, Bash: `.command` |
+| Cache | `.specweave/cache/` (24h TTL) |
+| Stuck session | `pkill -9 -f "bash.*specweave"` + `rm .specweave/state/*.lock` |
 | MCP drops | Restart Extension Host OR use terminal mode |
 
 ---
