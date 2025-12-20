@@ -619,6 +619,99 @@ export class MetadataManager {
         }
         return `Invalid transition: ${from} → ${to}`;
     }
+    // ==========================================================================
+    // Sync Target Methods (v1.0.31+ - ADR-0211)
+    // ==========================================================================
+    /**
+     * Set the external tool sync target for an increment
+     *
+     * This explicitly specifies which sync profile the increment uses.
+     * The sync target provides audit trail and deterministic sync behavior.
+     *
+     * @param incrementId - Increment ID
+     * @param syncTarget - Sync target configuration
+     * @param rootDir - Optional root directory
+     * @returns Updated metadata
+     *
+     * @example
+     * ```typescript
+     * MetadataManager.setSyncTarget('0142-feature', {
+     *   profileId: 'github-frontend',
+     *   provider: 'github',
+     *   derivedFrom: 'project-mapping',
+     *   setAt: new Date().toISOString(),
+     *   sourceProjectId: 'frontend-app'
+     * });
+     * ```
+     */
+    static setSyncTarget(incrementId, syncTarget, rootDir) {
+        const metadata = this.read(incrementId, rootDir);
+        metadata.syncTarget = syncTarget;
+        metadata.lastActivity = new Date().toISOString();
+        this.write(incrementId, metadata, rootDir);
+        this.logger.debug(`Set sync target for ${incrementId}: ${syncTarget.profileId} (${syncTarget.provider})`);
+        return metadata;
+    }
+    /**
+     * Get the sync target for an increment
+     *
+     * @param incrementId - Increment ID
+     * @param rootDir - Optional root directory
+     * @returns Sync target or undefined if not set
+     */
+    static getSyncTarget(incrementId, rootDir) {
+        const metadata = this.read(incrementId, rootDir);
+        return metadata.syncTarget;
+    }
+    /**
+     * Clear the sync target for an increment
+     *
+     * Use this when the external tool configuration changes and
+     * the increment needs to be re-resolved.
+     *
+     * @param incrementId - Increment ID
+     * @param rootDir - Optional root directory
+     * @returns Updated metadata
+     */
+    static clearSyncTarget(incrementId, rootDir) {
+        const metadata = this.read(incrementId, rootDir);
+        delete metadata.syncTarget;
+        metadata.lastActivity = new Date().toISOString();
+        this.write(incrementId, metadata, rootDir);
+        this.logger.debug(`Cleared sync target for ${incrementId}`);
+        return metadata;
+    }
+    /**
+     * Check if increment has a sync target configured
+     *
+     * @param incrementId - Increment ID
+     * @param rootDir - Optional root directory
+     * @returns true if sync target is set
+     */
+    static hasSyncTarget(incrementId, rootDir) {
+        const metadata = this.read(incrementId, rootDir);
+        return !!metadata.syncTarget;
+    }
+    /**
+     * Get all increments with a specific sync provider
+     *
+     * Useful for bulk operations on all GitHub/JIRA/ADO synced increments.
+     *
+     * @param provider - Provider type ('github', 'jira', 'ado')
+     * @returns Array of increments with that provider configured
+     */
+    static getByProvider(provider) {
+        return this.getAll().filter(m => m.syncTarget?.provider === provider);
+    }
+    /**
+     * Get all increments with a specific sync profile
+     *
+     * @param profileId - Profile ID from config.sync.profiles
+     * @returns Array of increments using that profile
+     */
+    static getByProfile(profileId) {
+        return this.getAll().filter(m => m.syncTarget?.profileId === profileId);
+    }
 }
 /**
  * Logger instance (injectable for testing)

@@ -1169,7 +1169,59 @@ EOF_MINIMAL
     log_debug "Spec content sync disabled in config"
   fi
 
-  # 9. Final summary
+  # ============================================================================
+  # STEP 10: SET SYNC TARGET (ADR-0211 - v1.0.31+)
+  # ============================================================================
+  # Resolve and set external tool sync target for the increment.
+  # This ensures the increment knows WHICH tool/profile to sync with.
+  #
+  # Resolution priority:
+  # 1. Project mappings (if **Project**: field exists in spec.md)
+  # 2. Default profile (if configured in config.json)
+  #
+  # @see ADR-0211 (Unified External Tool Configuration)
+  # ============================================================================
+
+  log_info ""
+  log_info "🔧 Setting sync target for increment..."
+
+  # Check if sync profiles are configured
+  local has_sync_profiles=false
+  if [ -f "$CONFIG_FILE" ] && command -v jq >/dev/null 2>&1; then
+    local profile_count=$(jq -r '.sync.profiles // {} | keys | length' "$CONFIG_FILE" 2>/dev/null || echo "0")
+    if [ "$profile_count" -gt 0 ]; then
+      has_sync_profiles=true
+    fi
+  fi
+
+  if [ "$has_sync_profiles" = "true" ]; then
+    # Check if specweave CLI is available
+    if command -v specweave >/dev/null 2>&1; then
+      # Use the CLI command to set sync target
+      if specweave set-sync-target "$increment_id" 2>&1 | while read -r line; do echo "  $line"; done; then
+        log_info "  ✅ Sync target set successfully!"
+      else
+        log_info "  ⚠️  Sync target setting failed (non-blocking)"
+        log_info "  💡 Run: specweave set-sync-target $increment_id"
+      fi
+    elif [ -x "$PROJECT_ROOT/bin/specweave.js" ]; then
+      # Use local development CLI
+      if node "$PROJECT_ROOT/bin/specweave.js" set-sync-target "$increment_id" 2>&1 | while read -r line; do echo "  $line"; done; then
+        log_info "  ✅ Sync target set successfully!"
+      else
+        log_info "  ⚠️  Sync target setting failed (non-blocking)"
+        log_info "  💡 Run: specweave set-sync-target $increment_id"
+      fi
+    else
+      log_info "  ⚠️  specweave CLI not found, skipping sync target setting"
+      log_info "  💡 Run: specweave set-sync-target $increment_id manually"
+    fi
+  else
+    log_info "  ℹ️  No sync profiles configured, skipping sync target"
+    log_info "  💡 To enable: Configure sync.profiles in config.json"
+  fi
+
+  # 11. Final summary
   log_info ""
   local total_translated=$((increment_success_count))
 
