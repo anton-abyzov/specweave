@@ -119,7 +119,48 @@ else
   echo "✅ Structure: Single tasks.md file (no duplicates)"
 fi
 
-# Check 6: Validate frontmatter for 'structure: user-stories' pattern
+# Check 6: Validate external tool sync configuration (ADR-0211)
+# This ensures increment knows which external tool to sync with BEFORE work starts
+PROJECT_ROOT=$(pwd)
+INCREMENT_ID=$(basename "$INCREMENT_PATH")
+
+# Check if sync profiles are configured
+if [ -f "$PROJECT_ROOT/.specweave/config.json" ]; then
+  SYNC_PROFILES=$(jq -r '.sync.profiles // {}' "$PROJECT_ROOT/.specweave/config.json" 2>/dev/null)
+  PROFILE_COUNT=$(echo "$SYNC_PROFILES" | jq 'keys | length' 2>/dev/null || echo "0")
+
+  if [ "$PROFILE_COUNT" -gt 0 ]; then
+    # Check if increment has syncTarget set
+    if [ -f "$INCREMENT_PATH/metadata.json" ]; then
+      SYNC_TARGET=$(jq -r '.syncTarget.profileId // empty' "$INCREMENT_PATH/metadata.json" 2>/dev/null)
+
+      if [ -z "$SYNC_TARGET" ]; then
+        echo "⚠️  WARNING: Increment has no sync target configured"
+        echo "   External tool sync is enabled but this increment has no target."
+        echo ""
+        echo "   💡 SUGGESTED FIX:"
+        echo "      Run: specweave set-sync-target $INCREMENT_ID"
+        echo ""
+        echo "   This will resolve the sync target from:"
+        echo "   1. Project mappings (if **Project**: field exists in spec.md)"
+        echo "   2. Default profile (if configured in config.json)"
+        echo ""
+        # Don't block, just warn (user may want to sync later)
+      else
+        PROVIDER=$(jq -r '.syncTarget.provider // "unknown"' "$INCREMENT_PATH/metadata.json" 2>/dev/null)
+        echo "✅ External Tool: Sync target set to '$SYNC_TARGET' ($PROVIDER)"
+      fi
+    else
+      echo "⚠️  WARNING: metadata.json not found - cannot check sync target"
+    fi
+  else
+    echo "ℹ️  External Tools: No sync profiles configured (skip sync validation)"
+  fi
+else
+  echo "ℹ️  External Tools: No config.json found (skip sync validation)"
+fi
+
+# Check 7: Validate frontmatter for 'structure: user-stories' pattern
 if [ -f "$INCREMENT_PATH/spec.md" ]; then
   if grep -q "structure: user-stories" "$INCREMENT_PATH/spec.md"; then
     if [ "$AC_COUNT" -eq 0 ]; then

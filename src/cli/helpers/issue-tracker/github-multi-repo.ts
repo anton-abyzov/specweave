@@ -91,15 +91,6 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
   let preSelectedArchitecture: 'single' | 'github-parent' | undefined = undefined;
 
   if (repositoryHosting) {
-    // Non-GitHub providers - skip GitHub-specific setup
-    if (repositoryHosting === 'bitbucket-single' || repositoryHosting === 'bitbucket-multirepo' ||
-        repositoryHosting === 'ado-single' || repositoryHosting === 'ado-multirepo' ||
-        repositoryHosting === 'other-single' || repositoryHosting === 'other-multirepo' ||
-        repositoryHosting === 'local') {
-      // Not using GitHub - return none to skip GitHub setup
-      return { setupType: 'none' };
-    }
-
     // GitHub providers - map to architecture for RepoStructureManager
     if (repositoryHosting === 'github-single' || repositoryHosting === 'github') {
       preSelectedArchitecture = 'single';
@@ -107,6 +98,11 @@ export async function promptGitHubSetupType(projectPath?: string, githubToken?: 
       // 🔥 FIX: Don't return early! Pass to RepoStructureManager which has parent repo logic!
       preSelectedArchitecture = 'github-parent';
     }
+    // 🔥 FIX (v1.0.31): For non-GitHub repo hosting (local, bitbucket, ado, other),
+    // DON'T skip GitHub setup! User might host code elsewhere but still want GitHub Issues.
+    // When this function is called, we're in issue tracker setup - GitHub was already chosen.
+    // Let the flow continue to ask for GitHub repo configuration.
+    // Previously this returned { setupType: 'none' } which broke GitHub issue tracking!
   }
 
   // CRITICAL (v1.0.5): Skip duplicate messages when architecture is pre-selected

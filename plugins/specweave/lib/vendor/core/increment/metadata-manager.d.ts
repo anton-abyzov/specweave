@@ -4,7 +4,7 @@
  * Handles CRUD operations for increment metadata (status, type, timestamps).
  * Part of increment 0007: Smart Status Management
  */
-import { IncrementMetadata, IncrementMetadataExtended, IncrementStatus, IncrementType } from '../types/increment-metadata.js';
+import { IncrementMetadata, IncrementMetadataExtended, IncrementMetadataV2, IncrementStatus, IncrementType, SyncTarget } from '../types/increment-metadata.js';
 import { Logger } from '../../utils/logger.js';
 /**
  * Error thrown when metadata operations fail
@@ -163,5 +163,71 @@ export declare class MetadataManager {
      * Get human-readable status transition error message
      */
     static getTransitionError(from: IncrementStatus, to: IncrementStatus): string;
+    /**
+     * Set the external tool sync target for an increment
+     *
+     * This explicitly specifies which sync profile the increment uses.
+     * The sync target provides audit trail and deterministic sync behavior.
+     *
+     * @param incrementId - Increment ID
+     * @param syncTarget - Sync target configuration
+     * @param rootDir - Optional root directory
+     * @returns Updated metadata
+     *
+     * @example
+     * ```typescript
+     * MetadataManager.setSyncTarget('0142-feature', {
+     *   profileId: 'github-frontend',
+     *   provider: 'github',
+     *   derivedFrom: 'project-mapping',
+     *   setAt: new Date().toISOString(),
+     *   sourceProjectId: 'frontend-app'
+     * });
+     * ```
+     */
+    static setSyncTarget(incrementId: string, syncTarget: SyncTarget, rootDir?: string): IncrementMetadataV2;
+    /**
+     * Get the sync target for an increment
+     *
+     * @param incrementId - Increment ID
+     * @param rootDir - Optional root directory
+     * @returns Sync target or undefined if not set
+     */
+    static getSyncTarget(incrementId: string, rootDir?: string): SyncTarget | undefined;
+    /**
+     * Clear the sync target for an increment
+     *
+     * Use this when the external tool configuration changes and
+     * the increment needs to be re-resolved.
+     *
+     * @param incrementId - Increment ID
+     * @param rootDir - Optional root directory
+     * @returns Updated metadata
+     */
+    static clearSyncTarget(incrementId: string, rootDir?: string): IncrementMetadataV2;
+    /**
+     * Check if increment has a sync target configured
+     *
+     * @param incrementId - Increment ID
+     * @param rootDir - Optional root directory
+     * @returns true if sync target is set
+     */
+    static hasSyncTarget(incrementId: string, rootDir?: string): boolean;
+    /**
+     * Get all increments with a specific sync provider
+     *
+     * Useful for bulk operations on all GitHub/JIRA/ADO synced increments.
+     *
+     * @param provider - Provider type ('github', 'jira', 'ado')
+     * @returns Array of increments with that provider configured
+     */
+    static getByProvider(provider: 'github' | 'jira' | 'ado'): IncrementMetadataV2[];
+    /**
+     * Get all increments with a specific sync profile
+     *
+     * @param profileId - Profile ID from config.sync.profiles
+     * @returns Array of increments using that profile
+     */
+    static getByProfile(profileId: string): IncrementMetadataV2[];
 }
 //# sourceMappingURL=metadata-manager.d.ts.map

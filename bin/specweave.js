@@ -516,6 +516,26 @@ program
     });
   });
 
+// Set sync target command - Set external tool sync target for increment (ADR-0211)
+program
+  .command('set-sync-target <increment-id>')
+  .description('Set external tool sync target for an increment (v1.0.31+)')
+  .option('-p, --project <project-id>', 'Project ID for project-based resolution')
+  .option('-v, --verbose', 'Show resolution path and details')
+  .option('--dry-run', 'Show what would be set without making changes')
+  .option('--validate-only', 'Only validate configuration, do not set')
+  .action(async (incrementId, options) => {
+    const { createSetSyncTargetCommand } = await import('../dist/src/cli/commands/set-sync-target.js');
+    const cmd = createSetSyncTargetCommand();
+    // Execute the action by parsing with the increment ID and options
+    const args = ['node', 'set-sync-target', incrementId];
+    if (options.project) args.push('-p', options.project);
+    if (options.verbose) args.push('-v');
+    if (options.dryRun) args.push('--dry-run');
+    if (options.validateOnly) args.push('--validate-only');
+    await cmd.parseAsync(args, { from: 'user' });
+  });
+
 // Help text
 program.on('--help', () => {
   console.log('');
@@ -565,6 +585,9 @@ program.on('--help', () => {
   console.log('  $ specweave docs validate                   # Check for docs errors');
   console.log('  $ specweave docs validate --auto-fix        # Fix common issues automatically');
   console.log('  $ specweave docs kill                       # Stop all docs servers');
+  console.log('  $ specweave set-sync-target 0008            # Set sync target for increment');
+  console.log('  $ specweave set-sync-target 0008 -v         # Show resolution path');
+  console.log('  $ specweave set-sync-target 0008 --validate-only  # Validate only');
   console.log('');
   console.log('Supported AI Tools:');
   console.log('  - Claude Code (full automation) - Native skills, agents, hooks');

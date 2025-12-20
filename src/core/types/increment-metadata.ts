@@ -443,6 +443,93 @@ export interface USExternalRefsMap {
   };
 }
 
+// ============================================================================
+// External Tool Sync Target Types (v1.0.31+ - ADR-0211)
+// ============================================================================
+
+/**
+ * How the sync target was determined
+ * Used for debugging and audit trails
+ */
+export type SyncTargetDerivation =
+  | 'user-selection'    // User explicitly selected profile
+  | 'project-mapping'   // Derived from **Project**: field → projectMappings
+  | 'default-profile'   // Fallback to config.sync.defaultProfile
+  | 'auto-detected';    // Auto-detected from git remote or existing refs
+
+/**
+ * External tool sync target for an increment
+ *
+ * Explicitly specifies which external tool profile this increment syncs with.
+ * Stored in metadata.json to provide audit trail and deterministic sync behavior.
+ *
+ * @since v1.0.31 (ADR-0211)
+ *
+ * @example
+ * ```json
+ * {
+ *   "syncTarget": {
+ *     "profileId": "github-frontend",
+ *     "provider": "github",
+ *     "derivedFrom": "project-mapping",
+ *     "setAt": "2025-12-18T10:30:00Z"
+ *   }
+ * }
+ * ```
+ */
+export interface SyncTarget {
+  /**
+   * Profile ID from config.sync.profiles
+   * This is the key that links to the full profile configuration
+   *
+   * @example "github-frontend", "jira-backend", "ado-main"
+   */
+  profileId: string;
+
+  /**
+   * Provider type for quick filtering without loading full config
+   */
+  provider: 'github' | 'jira' | 'ado';
+
+  /**
+   * How this target was determined (for debugging/audit)
+   */
+  derivedFrom: SyncTargetDerivation;
+
+  /**
+   * Timestamp when target was set (ISO 8601)
+   */
+  setAt: string;
+
+  /**
+   * Optional: Source project ID that led to this target
+   * Useful when derivedFrom is 'project-mapping'
+   */
+  sourceProjectId?: string;
+}
+
+/**
+ * Validation result for external tool configuration
+ *
+ * @since v1.0.31
+ */
+export interface ExternalToolValidationResult {
+  /** Whether the configuration is valid */
+  valid: boolean;
+
+  /** Resolved sync target (if valid) */
+  syncTarget?: SyncTarget;
+
+  /** List of validation errors */
+  errors: string[];
+
+  /** List of validation warnings (non-blocking) */
+  warnings: string[];
+
+  /** Suggested fixes for errors */
+  suggestions?: string[];
+}
+
 /**
  * Extended increment metadata with multi-project support (v0.29.0+)
  *
@@ -470,4 +557,29 @@ export interface IncrementMetadataV2 extends IncrementMetadata {
    * Maps: US-001 → { github: {...}, jira: {...} }
    */
   externalRefs?: USExternalRefsMap;
+
+  /**
+   * External tool sync target (v1.0.31+ - ADR-0211)
+   *
+   * Explicitly specifies which external tool profile this increment syncs with.
+   * Provides deterministic sync behavior and audit trail.
+   *
+   * Resolution priority:
+   * 1. This field (explicit)
+   * 2. **Project**: field in spec.md → config.projectMappings
+   * 3. config.sync.defaultProfile (fallback)
+   *
+   * @example
+   * ```json
+   * {
+   *   "syncTarget": {
+   *     "profileId": "github-frontend",
+   *     "provider": "github",
+   *     "derivedFrom": "project-mapping",
+   *     "setAt": "2025-12-18T10:30:00Z"
+   *   }
+   * }
+   * ```
+   */
+  syncTarget?: SyncTarget;
 }
