@@ -242,12 +242,6 @@ project: my-app    # ← Extracted from spec.md **Project**: field
 ...
 ```
 
-**Pre-tool-use hook `per-us-project-validator.sh` BLOCKS spec.md with:**
-- Missing `**Project**:` field per US
-- Missing `**Board**:` field per US (2-level)
-- Multiple comma-separated projects
-- Multiple comma-separated boards
-
 **Bypass (EMERGENCY ONLY):**
 ```bash
 SPECWEAVE_FORCE_PROJECT=1   # Skip all validation
