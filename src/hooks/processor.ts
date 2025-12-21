@@ -7,10 +7,14 @@
  *
  * Usage: node processor.js [--daemon]
  *
- * Event routing:
- * - increment.created/done/archived/reopened -> living-specs-handler
- * - user-story.completed/reopened -> status-line-handler
+ * Event routing (EDA v2):
+ * - increment.created/done/archived/reopened -> living-specs-handler + status-line-handler + project-bridge-handler
+ * - user-story.completed/reopened -> status-line-handler + project-bridge-handler
  * - task.updated/spec.updated -> living-docs-handler (legacy)
+ * - metadata.changed -> github-sync-handler
+ *
+ * The project-bridge-handler connects increment events to project-level EDA,
+ * enabling automatic sync to GitHub, ADO, and JIRA via ProjectService.
  *
  * Self-terminates after 60s of idle
  *
@@ -239,13 +243,15 @@ async function processEvent(event: QueuedEvent, state: ProcessorState): Promise<
 
   const handlers: { pattern: RegExp; handlers: string[] }[] = [
     // EDA Event Routing (new architecture)
+    // Lifecycle events -> living-specs + status-line + project-bridge
     {
       pattern: /^increment\.(created|done|archived|reopened)$/,
-      handlers: ['living-specs-handler.sh', 'status-line-handler.sh'],
+      handlers: ['living-specs-handler.sh', 'status-line-handler.sh', 'project-bridge-handler.sh'],
     },
+    // User story events -> status-line + project-bridge
     {
       pattern: /^user-story\.(completed|reopened)$/,
-      handlers: ['status-line-handler.sh'],
+      handlers: ['status-line-handler.sh', 'project-bridge-handler.sh'],
     },
     // Legacy event routing (backward compat)
     {

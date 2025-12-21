@@ -4,10 +4,14 @@
 #
 # Usage: processor.sh [--daemon]
 #
-# Event routing:
-# - increment.created/done/archived/reopened -> living-specs-handler
-# - user-story.completed/reopened -> status-line-handler
+# Event routing (EDA v2):
+# - increment.created/done/archived/reopened -> living-specs-handler + status-line-handler + project-bridge-handler
+# - user-story.completed/reopened -> status-line-handler + project-bridge-handler
 # - task.updated/spec.updated -> living-docs-handler (legacy)
+# - metadata.changed -> github-sync-handler
+#
+# The project-bridge-handler connects increment events to project-level EDA,
+# enabling automatic sync to GitHub, ADO, and JIRA via ProjectService.
 #
 # Self-terminates after 60s of idle
 #
@@ -148,16 +152,20 @@ process_event() {
     # EDA Event Routing (new architecture)
     # ========================================
 
-    # Lifecycle events -> living-specs-handler
+    # Lifecycle events -> living-specs-handler + status-line-handler + project-bridge-handler
     increment.created|increment.done|increment.archived|increment.reopened)
       run_handler "$HANDLER_DIR/living-specs-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       # Also update status line on lifecycle changes
       run_handler "$HANDLER_DIR/status-line-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
+      # Bridge to project-level EDA (triggers sync to GitHub/ADO/JIRA)
+      run_handler "$HANDLER_DIR/project-bridge-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       ;;
 
-    # User story events -> status-line-handler
+    # User story events -> status-line-handler + project-bridge-handler
     user-story.completed|user-story.reopened)
       run_handler "$HANDLER_DIR/status-line-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
+      # Bridge to project-level EDA (may trigger issue updates)
+      run_handler "$HANDLER_DIR/project-bridge-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       ;;
 
     # ========================================
