@@ -2,72 +2,63 @@
 # github-metadata-guard.sh - Prevents redundant metadata headers in GitHub issue bodies
 # WHY: GitHub has NATIVE fields (labels, milestones) - metadata belongs there, NOT in body
 # See: .specweave/docs/internal/troubleshooting/CRITICAL-remove-metadata-header-from-github-issues.md
+#
+# SAFETY: Uses set +e to prevent cascading failures
+# Exit 0 = allow, Exit 2 = block (never use exit 1!)
 
-# Activation: PreToolUse event for Write/Edit tools
-# Blocks: Any attempt to add metadata header (Feature, Status, Priority, Project) to GitHub issue body builders
+set +e  # CRITICAL: Never use set -e in hooks (causes cascading failures)
 
-# Exit codes:
-# 0 = Allow operation (no metadata header detected)
-# 1 = Block operation (metadata header detected)
+# Kill switch check
+[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && echo '{"decision":"allow"}' && exit 0
 
-# Only validate Write/Edit operations in GitHub plugin files
+# Read input from stdin (Claude Code passes JSON via stdin)
+INPUT=$(cat 2>/dev/null || echo '{}')
+
+# Extract tool name and input using jq
+if command -v jq >/dev/null 2>&1; then
+  TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null || echo "")
+  FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // ""' 2>/dev/null || echo "")
+  CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // .tool_input.new_string // .content // .new_string // ""' 2>/dev/null || echo "")
+else
+  # Fallback without jq - allow (safer than blocking)
+  echo '{"decision":"allow"}'
+  exit 0
+fi
+
+# Only validate Write/Edit operations
 if [[ "$TOOL_NAME" != "Write" && "$TOOL_NAME" != "Edit" ]]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
 # Only check GitHub issue body builder files
-if [[ ! "$file_path" =~ plugins/specweave-github/lib/.*issue.*builder\.ts$ ]]; then
+if [[ ! "$FILE_PATH" =~ plugins/specweave-github/lib/.*issue.*builder\.ts$ ]]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
-# Get content to check (new_string for Edit, content for Write)
-content_to_check=""
-if [[ "$TOOL_NAME" == "Edit" ]]; then
-  content_to_check="$new_string"
-elif [[ "$TOOL_NAME" == "Write" ]]; then
-  content_to_check="$content"
-fi
-
 # Check for metadata header patterns (case-insensitive)
-if echo "$content_to_check" | grep -qiE '^\*\*Feature\*\*:|^\*\*Status\*\*:|^\*\*Priority\*\*:|^\*\*Project\*\*:'; then
-  echo "❌ BLOCKED: GitHub issue body MUST NOT contain metadata header!" >&2
-  echo "" >&2
-  echo "WHY: GitHub has NATIVE fields for metadata:" >&2
-  echo "  - Feature → Milestone" >&2
-  echo "  - Status → Label (status:*)" >&2
-  echo "  - Priority → Label (p1, p2, p3)" >&2
-  echo "  - Project → Label (project:*)" >&2
-  echo "" >&2
-  echo "Body should contain ONLY actual work content:" >&2
-  echo "  ✅ ## Progress" >&2
-  echo "  ✅ ## User Story" >&2
-  echo "  ✅ ## Acceptance Criteria" >&2
-  echo "  ✅ ## Tasks" >&2
-  echo "" >&2
-  echo "See: .specweave/docs/internal/troubleshooting/CRITICAL-remove-metadata-header-from-github-issues.md" >&2
-  exit 1
+if echo "$CONTENT" | grep -qiE '^\*\*Feature\*\*:|^\*\*Status\*\*:|^\*\*Priority\*\*:|^\*\*Project\*\*:'; then
+  cat << 'BLOCK_EOF'
+{
+  "decision": "block",
+  "reason": "🚫 BLOCKED: GitHub issue body MUST NOT contain metadata header!\n\nWHY: GitHub has NATIVE fields for metadata:\n  - Feature → Milestone\n  - Status → Label (status:*)\n  - Priority → Label (p1, p2, p3)\n  - Project → Label (project:*)\n\nBody should contain ONLY actual work content:\n  ✅ ## Progress\n  ✅ ## User Story\n  ✅ ## Acceptance Criteria\n  ✅ ## Tasks"
+}
+BLOCK_EOF
+  exit 2  # Exit 2 = intentional block (NOT exit 1!)
 fi
 
 # Check for metadata at start of body string assignments
-if echo "$content_to_check" | grep -qE 'body \+= `\*\*(Feature|Status|Priority|Project)\*\*:'; then
-  echo "❌ BLOCKED: Metadata header assignment detected in GitHub issue body builder!" >&2
-  echo "" >&2
-  echo "Detected pattern: body += \`**Feature**:\` or similar" >&2
-  echo "" >&2
-  echo "FORBIDDEN CODE:" >&2
-  echo "  body += \`**Feature**: \${featureId}\`;" >&2
-  echo "  body += \`**Status**: \${status}\`;" >&2
-  echo "  body += \`**Priority**: \${priority}\`;" >&2
-  echo "  body += \`**Project**: \${project}\`;" >&2
-  echo "" >&2
-  echo "Use labels instead:" >&2
-  echo "  labels.push(\`status:\${status}\`);" >&2
-  echo "  labels.push(priority.toLowerCase());" >&2
-  echo "  labels.push(\`project:\${project}\`);" >&2
-  echo "" >&2
-  echo "See: .specweave/docs/internal/troubleshooting/CRITICAL-remove-metadata-header-from-github-issues.md" >&2
-  exit 1
+if echo "$CONTENT" | grep -qE 'body \+= `\*\*(Feature|Status|Priority|Project)\*\*:'; then
+  cat << 'BLOCK_EOF'
+{
+  "decision": "block",
+  "reason": "🚫 BLOCKED: Metadata header assignment detected in GitHub issue body builder!\n\nFORBIDDEN CODE:\n  body += `**Feature**: ${featureId}`;\n  body += `**Status**: ${status}`;\n\nUse labels instead:\n  labels.push(`status:${status}`);\n  labels.push(priority.toLowerCase());"
+}
+BLOCK_EOF
+  exit 2  # Exit 2 = intentional block (NOT exit 1!)
 fi
 
 # Allow operation (no metadata header detected)
+echo '{"decision":"allow"}'
 exit 0

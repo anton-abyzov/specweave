@@ -8,35 +8,55 @@
 #
 # Ref: ADR-0194 - Enforce Config JSON Separation
 #
+# SAFETY: Uses set +e to prevent cascading failures
+# Exit 0 = allow, Exit 2 = block (never use exit 1!)
 
-set -e
+set +e  # CRITICAL: Never use set -e in hooks (causes cascading failures)
 
-# Only run for Write and Edit tools
-if [[ "$TOOL_NAME" != "Write" ]] && [[ "$TOOL_NAME" != "Edit" ]]; then
+# Kill switch check
+[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && echo '{"decision":"allow"}' && exit 0
+
+# Read input from stdin (Claude Code passes JSON via stdin)
+INPUT=$(cat 2>/dev/null || echo '{}')
+
+# Extract tool name and input using jq
+if command -v jq >/dev/null 2>&1; then
+  TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null || echo "")
+  FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // ""' 2>/dev/null || echo "")
+  CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // .tool_input.new_string // .content // .new_string // ""' 2>/dev/null || echo "")
+else
+  # Fallback without jq - allow (safer than blocking)
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
-# Parse tool input
-FILE_PATH=$(echo "$TOOL_INPUT" | jq -r '.file_path // empty')
-CONTENT=$(echo "$TOOL_INPUT" | jq -r '.content // .new_string // empty')
+# Only run for Write and Edit tools
+if [[ "$TOOL_NAME" != "Write" ]] && [[ "$TOOL_NAME" != "Edit" ]]; then
+  echo '{"decision":"allow"}'
+  exit 0
+fi
 
 # Skip if no file path
 if [[ -z "$FILE_PATH" ]]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
 # Only check src/ files (not tests, plugins, etc.)
 if [[ ! "$FILE_PATH" =~ /src/ ]]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
 # Skip test files
 if [[ "$FILE_PATH" =~ \.test\.ts$ ]]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
 # Skip spec files
 if [[ "$FILE_PATH" =~ \.spec\.ts$ ]]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
@@ -60,40 +80,23 @@ for VAR in "${CONFIG_VARS[@]}"; do
   fi
 done
 
-# If violations found, block the operation
+# If violations found, block the operation with proper JSON response
 if [[ -n "$VIOLATIONS" ]]; then
-  echo ""
-  echo "-------------------------------------------------------------------"
-  echo "BLOCKED: Configuration values MUST use ConfigManager, not process.env"
-  echo "-------------------------------------------------------------------"
-  echo ""
-  echo "File: $FILE_PATH"
-  echo ""
-  echo "Violations detected:"
-  echo -e "$VIOLATIONS"
-  echo ""
-  echo "CORRECT PATTERN:"
-  echo "  const config = await this.configManager.read();"
-  echo "  const domain = config.issueTracker?.domain || '';"
-  echo "  const org = config.issueTracker?.organization_ado || '';"
-  echo ""
-  echo "FORBIDDEN PATTERN:"
-  echo "  const domain = process.env.JIRA_DOMAIN;  // VIOLATION!"
-  echo "  const org = process.env.AZURE_DEVOPS_ORG;  // VIOLATION!"
-  echo ""
-  echo "Ref: ADR-0194, CLAUDE.md Configuration section"
-  echo ""
-  echo "To bypass (EMERGENCY ONLY): SPECWEAVE_SKIP_CONFIG_CHECK=1"
-  echo "-------------------------------------------------------------------"
-  echo ""
-
   # Allow bypass for emergencies
   if [[ "$SPECWEAVE_SKIP_CONFIG_CHECK" == "1" ]]; then
-    echo "WARNING: SPECWEAVE_SKIP_CONFIG_CHECK=1 - Bypassing config check!"
+    echo '{"decision":"allow","message":"WARNING: SPECWEAVE_SKIP_CONFIG_CHECK=1 - Bypassing config check!"}'
     exit 0
   fi
 
-  exit 1
+  # Output JSON block response (proper format for Claude Code)
+  cat << 'BLOCK_EOF'
+{
+  "decision": "block",
+  "reason": "🚫 BLOCKED: Configuration values MUST use ConfigManager, not process.env\n\nCORRECT PATTERN:\n  const config = await this.configManager.read();\n  const domain = config.issueTracker?.domain || '';\n\nFORBIDDEN PATTERN:\n  const domain = process.env.JIRA_DOMAIN;  // VIOLATION!\n\nRef: ADR-0194\n\n💡 Bypass: SPECWEAVE_SKIP_CONFIG_CHECK=1"
+}
+BLOCK_EOF
+  exit 2  # Exit 2 = intentional block (NOT exit 1!)
 fi
 
+echo '{"decision":"allow"}'
 exit 0
