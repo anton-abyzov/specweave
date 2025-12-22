@@ -1,9 +1,8 @@
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
-
 /**
  * Hook Scanner Tests
  *
  * Tests hook discovery and metadata extraction.
+ * Updated for EDA v2 architecture (dispatchers, handlers, detectors, guards).
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -37,29 +36,59 @@ describe('HookScanner', () => {
       expect(hooks.length).toBeGreaterThan(0);
     });
 
-    it('should extract hook metadata correctly', async () => {
+    it('should extract hook metadata correctly (v2 architecture)', async () => {
       const hooks = await scanner.scanHooks();
-      const postTaskCompletion = hooks.find(h => h.name === 'post-task-completion');
+      // v2 architecture: look for session-start dispatcher (critical hook)
+      const sessionStartDispatcher = hooks.find(h => h.name === 'session-start');
 
-      expect(postTaskCompletion).toBeDefined();
-      expect(postTaskCompletion?.plugin).toBe('specweave');
-      expect(postTaskCompletion?.trigger).toBe('post-task-completion');
-      expect(postTaskCompletion?.critical).toBe(true);
+      expect(sessionStartDispatcher).toBeDefined();
+      expect(sessionStartDispatcher?.plugin).toBe('specweave');
+      expect(sessionStartDispatcher?.trigger).toBe('session-start');
+      expect(sessionStartDispatcher?.critical).toBe(true);
     });
 
-    it('should identify critical hooks', async () => {
+    it('should identify critical hooks (v2 architecture)', async () => {
       const hooks = await scanner.scanHooks();
       const criticalHooks = hooks.filter(h => h.critical);
 
       expect(criticalHooks.length).toBeGreaterThan(0);
-      expect(criticalHooks.some(h => h.name === 'post-task-completion')).toBe(true);
+      // v2 critical hooks include dispatchers and key handlers
+      expect(criticalHooks.some(h =>
+        h.name === 'session-start' ||
+        h.name === 'post-tool-use' ||
+        h.name === 'lifecycle-detector' ||
+        h.name === 'status-line-handler'
+      )).toBe(true);
     });
 
-    it('should mark hooks as testable', async () => {
+    it('should mark hooks as testable (v2 handlers/guards/detectors)', async () => {
       const hooks = await scanner.scanHooks();
       const testableHooks = hooks.filter(h => h.testable);
 
       expect(testableHooks.length).toBeGreaterThan(0);
+      // v2 handlers, guards, and detectors are testable
+      expect(testableHooks.some(h =>
+        h.name.includes('handler') ||
+        h.name.includes('guard') ||
+        h.name.includes('detector')
+      )).toBe(true);
+    });
+
+    it('should discover v2 EDA components', async () => {
+      const hooks = await scanner.scanHooks();
+
+      // Should find dispatchers
+      expect(hooks.some(h => h.name === 'session-start')).toBe(true);
+      expect(hooks.some(h => h.name === 'post-tool-use')).toBe(true);
+
+      // Should find handlers
+      expect(hooks.some(h => h.name === 'status-line-handler')).toBe(true);
+
+      // Should find detectors
+      expect(hooks.some(h => h.name === 'lifecycle-detector')).toBe(true);
+
+      // Should find guards
+      expect(hooks.some(h => h.name === 'metadata-json-guard')).toBe(true);
     });
   });
 

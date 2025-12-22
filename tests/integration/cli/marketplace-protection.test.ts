@@ -238,11 +238,13 @@ describe('Marketplace Protection - Behavioral Verification', () => {
     // 1. Checking if marketplace exists first
     // 2. If exists → UPDATE (v0.35.2+: better than early return, gets latest)
     // 3. If not exists → ADD
-    // 4. Never remove
+    // 4. Remove ONLY for SSH auth failure recovery (v1.0.24) - then re-add with HTTPS
 
     expect(functionBody).toContain('marketplaceExists');
     expect(functionBody).toContain("'update'"); // Update if exists (v0.35.2+)
     expect(functionBody).toContain("'add'"); // Add if not exists
-    expect(functionBody).not.toContain("'remove'"); // Never remove
+    // v1.0.24: Remove is now allowed in SSH failure recovery path
+    // (remove old SSH-based registration, re-add with HTTPS)
+    expect(functionBody).toContain('SSH authentication failed');
   });
 });
