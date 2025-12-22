@@ -17,6 +17,8 @@
 # - Supports both - and * bullet formats
 #
 # CRITICAL: This hook must be NON-BLOCKING to prevent Claude Code crashes
+# PostToolUse hooks run AFTER the tool completes, so they don't need JSON responses.
+# However, they must NEVER crash or hang.
 set +e
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0

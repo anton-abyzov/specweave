@@ -15,10 +15,10 @@
 
 set +e
 
-[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
+[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && echo '{"decision":"allow"}' && exit 0
 
 # Read stdin for tool input
-INPUT=$(cat)
+INPUT=$(cat 2>/dev/null || echo '{}')
 
 # Extract the file_path being written
 # Claude Code passes tool input in .tool_input.file_path format
@@ -31,6 +31,7 @@ fi
 
 # If no file_path found, allow (safety)
 if [[ -z "$FILE_PATH" ]]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
@@ -48,11 +49,35 @@ if [[ "$FILE_PATH" =~ \.specweave/increments/[0-9]{3,4}E?-[^/]+/([^/]+)$ ]]; the
     exit 0
   fi
 
-  # Block everything else at increment root
+  # Determine the correct subfolder based on file type
+  SUGGESTED_SUBFOLDER="reports"
+  case "$FILENAME" in
+    *.sh|*.bash|*.py|*.js|*.ts)
+      SUGGESTED_SUBFOLDER="scripts"
+      ;;
+    *.log|*.txt)
+      SUGGESTED_SUBFOLDER="logs"
+      ;;
+    *.bak|*.backup|*-backup*)
+      SUGGESTED_SUBFOLDER="backups"
+      ;;
+    COMPLETION*|*REPORT*|*SUMMARY*|*VALIDATION*|*ANALYSIS*)
+      SUGGESTED_SUBFOLDER="reports"
+      ;;
+    README*|CHANGELOG*|NOTES*|*.md)
+      SUGGESTED_SUBFOLDER="docs"
+      ;;
+  esac
+
+  # Extract the increment folder path to build the correct path
+  INCREMENT_PATH=$(echo "$FILE_PATH" | grep -oE '\.specweave/increments/[0-9]{3,4}E?-[^/]+')
+  CORRECT_PATH="${INCREMENT_PATH}/${SUGGESTED_SUBFOLDER}/${FILENAME}"
+
+  # Block and provide the EXACT correct path to use
   cat << EOF
 {
   "decision": "block",
-  "reason": "🚫 BLOCKED: File '$FILENAME' should be in a subfolder, not at increment root\n\n⚠️ CLAUDE.md Folder Structure Rule:\n  Inside increment folders - ONLY at root: spec.md, plan.md, tasks.md, metadata.json\n  Everything else → subfolders: reports/, scripts/, logs/, backups/, docs/\n\n📋 CORRECT structure:\n  .specweave/increments/####-name/reports/COMPLETION_REPORT.md ✅\n  .specweave/increments/####-name/reports/COMPLETION_SUMMARY.md ✅\n  .specweave/increments/####-name/scripts/analyze.sh ✅\n\n❌ WRONG structure:\n  .specweave/increments/####-name/COMPLETION_REPORT.md ❌\n  .specweave/increments/####-name/COMPLETION_SUMMARY.md ❌\n\n🔧 To fix: Create file in reports/ subfolder instead.\nUse: Write({ file_path: \".specweave/increments/####-name/reports/$FILENAME\", ... })\n\nSee: CLAUDE.md section 'Folder Structure'"
+  "reason": "🚫 WRONG PATH - Use this instead:\\n\\n✅ CORRECT: ${CORRECT_PATH}\\n❌ ATTEMPTED: ${FILE_PATH}\\n\\n🔧 IMMEDIATE FIX: Replace your file_path with:\\n   ${CORRECT_PATH}\\n\\nRule: Only spec.md, plan.md, tasks.md, metadata.json allowed at increment root.\\nEverything else → subfolders: reports/, scripts/, logs/, docs/"
 }
 EOF
   exit 2

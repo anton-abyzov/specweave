@@ -10,13 +10,13 @@
 # - 0121-ado-jira-feature-parity-p2-p3
 # - 0121-intelligent-living-docs-content
 #
-# Exit 0 = allow, Exit 2 = block
+# Exit 0 = allow (with JSON), Exit 2 = block (with JSON)
 set +e
 
-[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
+[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && echo '{"decision":"allow"}' && exit 0
 
 # Read stdin for tool input
-INPUT=$(cat)
+INPUT=$(cat 2>/dev/null || echo '{}')
 
 # Extract file_path from the tool call
 # Claude Code passes tool input in .tool_input.file_path format
@@ -28,6 +28,7 @@ fi
 
 # Only care about .specweave/increments/ paths
 if [[ "$FILE_PATH" != *.specweave/increments/* ]]; then
+  echo '{"decision":"allow"}'
   exit 0  # Not an increment file - allow
 fi
 
@@ -43,6 +44,7 @@ INCREMENT_FOLDER=$(echo "$AFTER_INCREMENTS" | cut -d'/' -f1)
 
 # Skip special folders
 if [[ "$INCREMENT_FOLDER" == "_archive" ]] || [[ "$INCREMENT_FOLDER" == "_abandoned" ]] || [[ "$INCREMENT_FOLDER" == "_paused" ]] || [[ "$INCREMENT_FOLDER" == "README.md" ]]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
@@ -50,6 +52,7 @@ fi
 INCREMENT_NUM=$(echo "$INCREMENT_FOLDER" | grep -oE '^[0-9]{3,4}' | head -1)
 
 if [[ -z "$INCREMENT_NUM" ]]; then
+  echo '{"decision":"allow"}'
   exit 0  # Not a standard increment folder pattern - allow
 fi
 
@@ -60,7 +63,9 @@ INCREMENT_NUM=$(printf "%04d" "$((10#$INCREMENT_NUM))")
 INCREMENTS_DIR=$(echo "$FILE_PATH" | grep -o '.*/\.specweave/increments' | head -1)
 
 if [[ ! -d "$INCREMENTS_DIR" ]]; then
-  exit 0  # Increments directory doesn't exist yet - allow (first increment)
+  # Increments directory doesn't exist yet - first increment, allow creation
+  echo '{"decision":"allow"}'
+  exit 0
 fi
 
 # Scan ALL directories for existing increment with the same number
@@ -104,37 +109,30 @@ for DIR in "${DIRS_TO_CHECK[@]}"; do
   done < <(find "$DIR" -maxdepth 1 -type d -name "${INCREMENT_NUM}*" -print0 2>/dev/null)
 done
 
-# If duplicates found, BLOCK the operation
+# If duplicates found, BLOCK the operation and provide the correct number to use
 if [[ ${#FOUND_DUPLICATES[@]} -gt 0 ]]; then
-  echo ""
-  echo "=============================================================================="
-  echo "  BLOCKED: Duplicate increment ID detected (v0.33.0+)"
-  echo "=============================================================================="
-  echo ""
-  echo "You are trying to create increment: $INCREMENT_FOLDER"
-  echo "But increment number $INCREMENT_NUM already exists:"
-  echo ""
+  # Format duplicates for JSON
+  DUP_LIST=""
   for DUP in "${FOUND_DUPLICATES[@]}"; do
-    echo "  - $DUP"
+    DUP_LIST="${DUP_LIST}\\n  - ${DUP}"
   done
-  echo ""
-  echo "IMPORTANT: Increment IDs MUST be unique across all directories:"
-  echo "  - Active increments"
-  echo "  - Archived increments (_archive/)"
-  echo "  - Abandoned increments (_abandoned/)"
-  echo "  - Paused increments (_paused/)"
-  echo ""
-  echo "NOTE: 0001 and 0001E share the SAME base number and cannot coexist!"
-  echo ""
-  echo "TO FIX:"
-  echo "1. Use a different increment number"
-  echo "2. Get the next available number:"
-  echo "   node -e \"import('./dist/core/increment/increment-utils.js').then(m => console.log(m.IncrementNumberManager.getNextIncrementNumber()))\""
-  echo ""
-  echo "=============================================================================="
 
+  # Calculate the next available number using gap-filling strategy
+  EXISTING_NUMS=$(find "$INCREMENTS_DIR" "$INCREMENTS_DIR/_archive" "$INCREMENTS_DIR/_abandoned" "$INCREMENTS_DIR/_paused" -maxdepth 1 -type d -name "[0-9]*-*" 2>/dev/null | xargs -I {} basename {} | grep -oE '^[0-9]{3,4}' | sort -n | uniq)
+  NEXT_NUM=1
+  while echo "$EXISTING_NUMS" | grep -q "^$(printf "%04d" $NEXT_NUM)$\|^$(printf "%03d" $NEXT_NUM)$"; do
+    NEXT_NUM=$((NEXT_NUM + 1))
+  done
+  NEXT_NUM_PADDED=$(printf "%04d" $NEXT_NUM)
+
+  # Extract the name part from the attempted folder
+  FOLDER_NAME_PART=$(echo "$INCREMENT_FOLDER" | sed 's/^[0-9]\{3,4\}E\?-//')
+  SUGGESTED_FOLDER="${NEXT_NUM_PADDED}-${FOLDER_NAME_PART}"
+
+  printf '{"decision":"block","reason":"🚫 DUPLICATE INCREMENT ID - Use this instead:\\n\\n✅ CORRECT: %s\\n❌ ATTEMPTED: %s\\n\\nNumber %s already exists:%s\\n\\n🔧 IMMEDIATE FIX: Replace your file path with:\\n   .specweave/increments/%s/...\\n\\nThe guard calculated the next available number for you."}\n' "$SUGGESTED_FOLDER" "$INCREMENT_FOLDER" "$INCREMENT_NUM" "$DUP_LIST" "$SUGGESTED_FOLDER"
   exit 2  # Block the tool call
 fi
 
 # No duplicates - allow
+echo '{"decision":"allow"}'
 exit 0
