@@ -1,6 +1,6 @@
 ---
 name: sw-release:npm
-description: Bump patch version, auto-commit dirty changes, push to GitHub, build, publish to npmjs.org. Use --quick for save+release (no GH workflow). Use --ci for GitHub Actions publish. Use --only for local publish without git push. Use --only --local for version bump only.
+description: Full patch release - auto-commit, push, build, npm publish, AND GitHub Release creation. Use --quick for save+release (no GH release). Use --ci for GitHub Actions publish. Use --only for local publish without git push. Use --only --local for version bump only.
 ---
 
 # /sw-release:npm - NPM Release Automation
@@ -49,9 +49,9 @@ fi
 
 | Command | Flow | Use Case |
 |---------|------|----------|
-| `/sw-release:npm` | Auto-commit → **PUSH** → Bump → Build → **Publish** → Push tag | **DEFAULT: INSTANT RELEASE** |
-| `/sw-release:npm --quick` | Auto-commit → **PUSH** → Bump → Build → **Publish locally** → NO GH workflow | **QUICK: Save + Local Release** |
-| `/sw-release:npm --ci` | Bump → Push → **CI publishes** | Let GitHub Actions handle npm publish |
+| `/sw-release:npm` | Auto-commit → **PUSH** → Bump → Build → **Publish** → Push tag → **GH Release** | **DEFAULT: FULL RELEASE** |
+| `/sw-release:npm --quick` | Auto-commit → **PUSH** → Bump → Build → **Publish locally** → NO GH release | **QUICK: Save + Local Release** |
+| `/sw-release:npm --ci` | Bump → Push → **CI publishes + GH Release** | Let GitHub Actions handle everything |
 | `/sw-release:npm --only` | Bump → Build → **Publish locally** → NO push | Quick local release, push later |
 | `/sw-release:npm --only --local` | **Bump ONLY** → NO build, NO publish, NO git | FASTEST: Local testing only |
 | `/sw-release:npm --stable` | Same as default, but promotes prerelease to stable | **PROMOTE TO STABLE** |
@@ -198,14 +198,56 @@ npm publish --registry https://registry.npmjs.org
 git push origin develop --follow-tags
 ```
 
-### 8. Report Results
+### 8. Create GitHub Release
+
+```bash
+# Get the new version
+NEW_VERSION=$(node -p "require('./package.json').version")
+
+# Extract release notes from CHANGELOG.md (if available)
+if [ -f CHANGELOG.md ] && grep -q "## \[$NEW_VERSION\]" CHANGELOG.md; then
+  # Extract notes between current version header and next version header
+  awk "/## \[$NEW_VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md > /tmp/release-notes.md
+else
+  # Generate minimal release notes from recent commits
+  echo "## What's Changed" > /tmp/release-notes.md
+  echo "" >> /tmp/release-notes.md
+  LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+  if [ -n "$LAST_TAG" ]; then
+    git log --oneline "$LAST_TAG"..HEAD~1 --no-merges | head -10 | sed 's/^[a-f0-9]* /- /' >> /tmp/release-notes.md
+  else
+    git log --oneline -10 --no-merges | sed 's/^[a-f0-9]* /- /' >> /tmp/release-notes.md
+  fi
+fi
+
+# Create GitHub release (prerelease if version contains -rc, -beta, -alpha)
+if [[ "$NEW_VERSION" == *"-rc"* ]] || [[ "$NEW_VERSION" == *"-beta"* ]] || [[ "$NEW_VERSION" == *"-alpha"* ]]; then
+  gh release create "v$NEW_VERSION" \
+    --title "v$NEW_VERSION" \
+    --notes-file /tmp/release-notes.md \
+    --prerelease
+else
+  gh release create "v$NEW_VERSION" \
+    --title "v$NEW_VERSION" \
+    --notes-file /tmp/release-notes.md \
+    --latest
+fi
+```
+
+**What this does**:
+- Extracts release notes from CHANGELOG.md (or generates from commits)
+- Creates GitHub Release with proper title and notes
+- Marks prereleases appropriately (rc, beta, alpha)
+- Marks stable releases as "latest"
+
+### 9. Report Results
 
 ```markdown
-✅ **Instant release complete!**
+✅ **Full patch release complete!**
 
 📦 **Version**: vX.Y.Z
 🔗 **NPM**: https://www.npmjs.com/package/specweave
-🏷️ **GitHub**: https://github.com/anton-abyzov/specweave/releases/tag/vX.Y.Z
+🏷️ **GitHub Release**: https://github.com/anton-abyzov/specweave/releases/tag/vX.Y.Z
 
 **What happened**:
 - ✅ Dirty changes auto-committed
@@ -214,6 +256,7 @@ git push origin develop --follow-tags
 - ✅ Package built
 - ✅ Published to npmjs.org
 - ✅ Version tag pushed to GitHub
+- ✅ GitHub Release created with release notes
 
 **Verify**: `npm view specweave version --registry https://registry.npmjs.org`
 ```
@@ -227,6 +270,7 @@ git push origin develop --follow-tags
 ✅ Package rebuilt
 ✅ Published to npmjs.org (explicit registry!)
 ✅ Version commit + tag pushed to GitHub
+✅ **GitHub Release created with release notes**
 
 ---
 
@@ -549,10 +593,10 @@ Show the user:
 ## Quick Reference
 
 ```bash
-# DEFAULT: Instant release (auto-commits dirty, publishes, pushes + tag)
+# DEFAULT: Full release (auto-commits dirty, publishes, pushes + tag, GH release)
 /sw-release:npm
 
-# QUICK: Save + local release (auto-commits, pushes, publishes - NO GH workflow)
+# QUICK: Save + local release (auto-commits, pushes, publishes - NO GH release)
 /sw-release:npm --quick
 
 # CI release (GitHub Actions handles npm publish) - requires clean tree
@@ -568,14 +612,14 @@ Show the user:
 /sw-release:npm --stable
 ```
 
-| Scenario | Command | Prerelease Handling | Git Pushed | Tag Pushed |
-|----------|---------|---------------------|------------|------------|
-| **INSTANT RELEASE** | (no flags) | `rc.1`→`rc.2` (smart) | ✅ Yes | ✅ Yes |
-| **QUICK RELEASE** | `--quick` | `rc.1`→`rc.2` (smart) | ✅ Yes | ❌ No |
-| CI release | `--ci` | `rc.1`→`rc.2` (smart) | ✅ Yes | ✅ Yes |
-| Local publish | `--only` | `rc.1`→`rc.2` (smart) | ❌ No | ❌ No |
-| Local bump | `--only --local` | `rc.1`→`rc.2` (smart) | ❌ No | ❌ No |
-| **PROMOTE** | `--stable` | `rc.X`→`X.Y.Z+1` | ✅ Yes | ✅ Yes |
+| Scenario | Command | Prerelease Handling | Git Pushed | Tag Pushed | GH Release |
+|----------|---------|---------------------|------------|------------|------------|
+| **FULL RELEASE** | (no flags) | `rc.1`→`rc.2` (smart) | ✅ Yes | ✅ Yes | ✅ Yes |
+| **QUICK RELEASE** | `--quick` | `rc.1`→`rc.2` (smart) | ✅ Yes | ❌ No | ❌ No |
+| CI release | `--ci` | `rc.1`→`rc.2` (smart) | ✅ Yes | ✅ Yes | ✅ (via CI) |
+| Local publish | `--only` | `rc.1`→`rc.2` (smart) | ❌ No | ❌ No | ❌ No |
+| Local bump | `--only --local` | `rc.1`→`rc.2` (smart) | ❌ No | ❌ No | ❌ No |
+| **PROMOTE** | `--stable` | `rc.X`→`X.Y.Z+1` | ✅ Yes | ✅ Yes | ✅ Yes |
 
 ---
 

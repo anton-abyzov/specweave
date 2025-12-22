@@ -290,6 +290,10 @@ async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void
         }
 
         console.log(chalk.green('   ✔ Marketplace re-registered with HTTPS (works on all platforms)'));
+
+        // Enable auto-update for seamless future updates
+        enableMarketplaceAutoUpdate(spinner);
+
         spinner.succeed('SpecWeave marketplace ready');
         return;
       }
@@ -299,6 +303,10 @@ async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void
     }
 
     console.log(chalk.green('   ✔ Marketplace updated (latest from GitHub)'));
+
+    // Enable auto-update for seamless future updates
+    enableMarketplaceAutoUpdate(spinner);
+
     spinner.succeed('SpecWeave marketplace ready');
   } else {
     // Marketplace not registered - use ADD command with HTTPS URL
@@ -319,7 +327,60 @@ async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void
     }
 
     console.log(chalk.green('   ✔ Marketplace added from GitHub'));
+
+    // Enable auto-update for seamless future updates
+    enableMarketplaceAutoUpdate(spinner);
+
     spinner.succeed('SpecWeave marketplace ready');
+  }
+}
+
+/**
+ * Enable auto-update for the SpecWeave marketplace
+ *
+ * Modifies ~/.claude/plugins/known_marketplaces.json to set autoUpdate: true
+ * for the specweave marketplace. This ensures plugins stay up-to-date automatically
+ * when Claude Code starts.
+ *
+ * FEATURE: Added in Claude Code v2.0.70 - per-marketplace auto-update control
+ * By default, third-party marketplaces have auto-update disabled.
+ * We enable it during init for better UX.
+ */
+function enableMarketplaceAutoUpdate(spinner: ReturnType<typeof ora>): void {
+  const knownMarketplacesPath = path.join(
+    os.homedir(),
+    '.claude/plugins/known_marketplaces.json'
+  );
+
+  try {
+    // Check if file exists
+    if (!fs.existsSync(knownMarketplacesPath)) {
+      // File doesn't exist yet - Claude CLI will create it
+      // Auto-update will be set on next init
+      return;
+    }
+
+    // Read current config
+    const content = fs.readFileSync(knownMarketplacesPath, 'utf-8');
+    const config = JSON.parse(content);
+
+    // Check if specweave marketplace exists and needs auto-update enabled
+    if (config.specweave && config.specweave.autoUpdate !== true) {
+      config.specweave.autoUpdate = true;
+
+      // Write updated config
+      fs.writeFileSync(knownMarketplacesPath, JSON.stringify(config, null, 2));
+      console.log(chalk.green('   ✔ Auto-update enabled for SpecWeave marketplace'));
+    } else if (config.specweave?.autoUpdate === true) {
+      // Already enabled, no action needed
+      // Don't log anything to avoid noise
+    }
+  } catch (error) {
+    // Non-critical - don't fail init if this doesn't work
+    // User can enable manually via /plugin menu
+    if (process.env.DEBUG) {
+      console.log(chalk.gray(`   → Could not enable auto-update: ${error instanceof Error ? error.message : String(error)}`));
+    }
   }
 }
 
