@@ -51,16 +51,6 @@ Mark task complete in tasks.md → Hook auto-checks **Acceptance** points → Ho
 
 Every User Story MUST have `**Project**:` field. Use value from `config.project.name` or `multiProject.projects`.
 
-### 6. NEVER Use Bash for File Creation
-
-**Bash + heredoc/echo = SESSION FREEZE** (shell waits forever for EOF)
-
-```
-❌ FORBIDDEN: Bash("cat > file.md << 'EOF'...")
-✅ MANDATORY: Write({ file_path: "...", content: "..." })
-```
-
-**Pre-tool-use hook `bash-file-guard.sh` BLOCKS dangerous patterns.**
 
 ### 7. Protected Directories
 
@@ -79,9 +69,6 @@ Every User Story MUST have `**Project**:` field. Use value from `config.project.
 ✅ CORRECT: Process files ONE BY ONE, use Edit tool directly
 ```
 
-### 10. NEVER Create Files in _features/ Folder
-
-`_features/` is OBSOLETE. Use: `.specweave/docs/internal/specs/{project}/FS-XXX/`
 
 ### 11. NEVER Create Duplicate Increment IDs
 
