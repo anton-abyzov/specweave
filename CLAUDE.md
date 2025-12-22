@@ -15,6 +15,30 @@ For **contributors to SpecWeave itself** (not users).
 
 ---
 
+## Marketplace Installation (CRITICAL)
+
+**ALWAYS use GitHub marketplace mode. NEVER use local symlinks or directory mode.**
+
+```bash
+# ✅ CORRECT: Install from GitHub (production, stable)
+bash scripts/refresh-marketplace.sh --github
+
+# ❌ FORBIDDEN: Local/symlink mode (causes stale hooks, filesystem coupling)
+# bash scripts/refresh-marketplace.sh --local
+```
+
+**Why GitHub mode is mandatory:**
+- Local mode creates filesystem coupling → stale hooks after changes
+- GitHub mode pulls committed code → stable, production-ready
+- See ADR-0062 for architectural decision rationale
+
+**Quick refresh & install all 24 plugins:**
+```bash
+bash scripts/refresh-marketplace.sh  # Defaults to --github
+```
+
+---
+
 ## Critical Safety Rules
 
 ### 1. Context Management (CRASH PREVENTION)
