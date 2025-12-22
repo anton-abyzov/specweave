@@ -200,6 +200,43 @@ Task({
 
 ---
 
+## Secrets & Service Integration Check (MANDATORY)
+
+**BEFORE using CLI tools that require authentication (gh, jira, az, etc.), ALWAYS check for existing configuration:**
+
+1. **Check `.env` file** for tokens/credentials:
+   ```bash
+   # Look for relevant tokens before running CLI commands
+   grep -E "(GITHUB_TOKEN|JIRA_|AZURE_|ADO_)" .env 2>/dev/null
+   ```
+
+2. **Check `.specweave/config.json`** for service configuration:
+   ```bash
+   # Check sync configuration
+   cat .specweave/config.json | grep -A 10 '"sync"'
+   ```
+
+3. **Check project-specific config files**:
+   - `.github/` for GitHub Actions secrets references
+   - `package.json` for repository URLs
+   - `.specweave/config.json` for external tool settings
+
+**Common patterns**:
+```bash
+# GitHub - check if already authenticated
+gh auth status
+
+# JIRA - check configured domain
+grep JIRA .env .specweave/config.json 2>/dev/null
+
+# Azure DevOps - check org/project
+grep -E "(ADO_|AZURE_DEVOPS)" .env .specweave/config.json 2>/dev/null
+```
+
+**Rule**: NEVER assume CLI tools are unconfigured. Check first, then use existing credentials.
+
+---
+
 ## Coding Standards
 
 - **Logger**: ALL `src/` code uses `logger`, NEVER `console.*`
