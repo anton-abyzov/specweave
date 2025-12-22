@@ -119,6 +119,33 @@ Edit("spec.md", "- [ ] **AC-US1-01**", "- [x] **AC-US1-01**");
 
 ---
 
+<!-- SECTION:secrets required -->
+## Secrets & Service Integration Check
+
+**BEFORE using CLI tools (gh, jira, az, etc.), ALWAYS check for existing configuration:**
+
+```bash
+# Check .env for tokens/credentials
+grep -E "(GITHUB_TOKEN|JIRA_|AZURE_|ADO_)" .env 2>/dev/null
+
+# Check config.json for service settings
+cat .specweave/config.json | grep -A 10 '"sync"'
+
+# Verify GitHub CLI is authenticated
+gh auth status
+```
+
+**Check these locations**:
+- `.env` - API tokens, secrets
+- `.specweave/config.json` - Service URLs, project mappings
+- `package.json` - Repository URLs
+- `.github/` - Actions secrets references
+
+**Rule**: NEVER assume CLI tools are unconfigured. Check existing credentials first.
+<!-- /SECTION -->
+
+---
+
 <!-- SECTION:syncing -->
 ## Automatic Syncing (Hooks)
 
