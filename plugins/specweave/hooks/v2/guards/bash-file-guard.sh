@@ -14,14 +14,19 @@
 #
 # PreToolUse hook for Bash commands - exit 0 allows, exit 2 blocks
 #
+# SAFETY: Uses set +e to prevent cascading failures
+# Exit 0 = allow (with JSON), Exit 2 = block (with JSON)
+#
 # v0.32.1 - Initial implementation based on crash analysis from 2025-12-06
+# v0.32.2 - Fixed to output JSON responses for all exit paths
 
 set +e
 
-[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
+# Kill switch - output JSON before exit
+[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && echo '{"decision":"allow"}' && exit 0
 
 # Read stdin for tool input
-INPUT=$(cat)
+INPUT=$(cat 2>/dev/null || echo '{}')
 
 # Extract the command being executed
 # The Bash tool has a "command" parameter
@@ -35,6 +40,7 @@ fi
 
 # If no command found or empty, allow (safety)
 if [[ -z "$COMMAND" ]]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
@@ -109,6 +115,7 @@ fi
 # === STREAM REDIRECT EXCEPTION ===
 # Allow redirects to /dev/stdout, /dev/stderr, /dev/null (safe stream operations)
 if echo "$COMMAND" | grep -qE ">[[:space:]]*/dev/(stdout|stderr|null)" 2>/dev/null; then
+  echo '{"decision":"allow"}'
   exit 0  # Safe stream redirect, not file creation
 fi
 
@@ -164,46 +171,25 @@ if echo "$COMMAND" | grep -qE "^(curl|wget|git|npm|node|python|pip)[[:space:]].*
   # These are downloading/generating content from commands, not creating from heredoc
   # Only block if also contains heredoc/echo patterns
   if [[ "$PATTERN_NAME" != "heredoc"* ]] && [[ "$PATTERN_NAME" != "echo"* ]] && [[ "$PATTERN_NAME" != "printf"* ]]; then
+    echo '{"decision":"allow"}'
     exit 0  # Allow
   fi
 fi
 
 # === BLOCK DANGEROUS PATTERNS ===
 if [[ $BLOCKED -eq 1 ]]; then
-  echo ""
-  echo "=============================================================================="
-  echo "  🛑 BLOCKED: Bash file creation detected (Infinite Hang Prevention)"
-  echo "=============================================================================="
-  echo ""
-  echo "Pattern detected: $PATTERN_NAME"
-  echo ""
-  echo "WHY THIS IS BLOCKED:"
-  echo "  When using heredoc (cat << EOF) or echo/printf redirects, if the content"
-  echo "  is truncated due to token limits, the shell waits FOREVER for input that"
-  echo "  will never come. This causes Claude Code to hang for hours with no recovery."
-  echo ""
-  echo "  Observed crash: 2+ hour session hang from truncated heredoc (2025-12-06)"
-  echo ""
-  echo "SAFE ALTERNATIVES:"
-  echo "  ┌─────────────────────────────────────────────────────────────────────┐"
-  echo "  │ Instead of:          Use:                                           │"
-  echo "  ├─────────────────────────────────────────────────────────────────────┤"
-  echo "  │ cat > file << EOF    Write tool: Write(file_path, content)          │"
-  echo "  │ echo \"...\" > file    Write tool: Write(file_path, content)          │"
-  echo "  │ printf ... > file    Write tool: Write(file_path, content)          │"
-  echo "  │ Modify existing      Edit tool: Edit(file_path, old, new)           │"
-  echo "  │ Append to file       Read + Write tools                             │"
-  echo "  └─────────────────────────────────────────────────────────────────────┘"
-  echo ""
-  echo "WHAT IS ALLOWED:"
-  echo "  - mkdir -p /path/to/dir    (directory creation)"
-  echo "  - git commit, git push     (version control)"
-  echo "  - npm install, npm run     (package management)"
-  echo "  - curl URL > file          (downloading, not content creation)"
-  echo "  - rm, mv, cp               (file operations)"
-  echo ""
-  echo "=============================================================================="
+  # Try to extract the target file path from the command
+  TARGET_FILE=""
+  if echo "$COMMAND" | grep -qE '>[[:space:]]*([^>[:space:]]+)' 2>/dev/null; then
+    TARGET_FILE=$(echo "$COMMAND" | grep -oE '>[[:space:]]*[^>[:space:]]+' | head -1 | sed 's/>[[:space:]]*//')
+  fi
 
+  # Build a helpful message with the exact Write tool syntax to use
+  if [[ -n "$TARGET_FILE" ]]; then
+    printf '{"decision":"block","reason":"🛑 USE WRITE TOOL INSTEAD\\n\\nPattern detected: %s\\n\\n🔧 IMMEDIATE FIX - Use Write tool:\\n   Write({ file_path: \"%s\", content: \"your content here\" })\\n\\nWHY: Bash heredocs/redirects can hang forever if content gets truncated.\\nThe Write tool is atomic and safe.\\n\\nALLOWED Bash: mkdir, git, npm, curl, rm, mv, cp"}\n' "$PATTERN_NAME" "$TARGET_FILE"
+  else
+    printf '{"decision":"block","reason":"🛑 USE WRITE TOOL INSTEAD\\n\\nPattern detected: %s\\n\\n🔧 IMMEDIATE FIX: Use the Write tool for file creation:\\n   Write({ file_path: \"path/to/file\", content: \"your content\" })\\n\\nWHY: Bash heredocs/redirects can hang forever if content gets truncated.\\nThe Write tool is atomic and safe.\\n\\nALLOWED Bash: mkdir, git, npm, curl, rm, mv, cp"}\n' "$PATTERN_NAME"
+  fi
   exit 2  # Block the tool call
 fi
 
