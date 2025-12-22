@@ -14,10 +14,10 @@
 
 set +e
 
-[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
+[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && echo '{"decision":"allow"}' && exit 0
 
 # Read stdin for tool input
-INPUT=$(cat)
+INPUT=$(cat 2>/dev/null || echo '{}')
 
 # Extract the file_path being written/edited
 # Claude Code passes tool input in .tool_input.file_path format
@@ -29,6 +29,7 @@ fi
 
 # If no file_path found, allow (safety)
 if [[ -z "$FILE_PATH" ]]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
