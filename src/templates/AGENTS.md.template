@@ -17,6 +17,7 @@
 
 ---
 
+<!-- SECTION:index -->
 ## Section Index (Use Ctrl+F to Navigate)
 
 | Section | Search For | Purpose |
@@ -28,18 +29,22 @@
 | Sync | `#sync-workflow` | When/how to sync |
 | Context | `#context-loading` | Token savings (70%+) |
 | Troubleshoot | `#troubleshooting` | Common issues |
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:quickstart required -->
 ## Quick Start
 
 1. **Get Project Context FIRST**: `specweave context projects` (save the output!)
 2. **Create Your First Increment**: `/sw:increment "your-feature"`
 3. **Customize**: Edit spec.md - **EVERY User Story needs `**Project**:` field!**
 4. **Execute**: `/sw:do` to start implementation
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:rules required -->
 ## Essential Rules {#essential-rules}
 
 ```
@@ -62,9 +67,11 @@
 ├── scripts/                       # Helper scripts
 └── logs/                          # Execution logs
 ```
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:commands required -->
 ## Commands Reference {#commands}
 
 ### Core Commands
@@ -86,9 +93,11 @@
 | `/sw-github:sync 0001` | Sync increment to GitHub issue |
 | `/sw-jira:sync 0001` | Sync to Jira |
 | `/sw-ado:sync 0001` | Sync to Azure DevOps |
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:nonclaudetools required -->
 ## Non-Claude Tools (Cursor, Copilot, etc.) {#non-claude-tools}
 
 **CRITICAL**: Claude Code has automatic hooks. Other tools DO NOT.
@@ -339,9 +348,11 @@ cat plugins/specweave/commands/increment.md
 ```
 
 **Without these manual steps, your work won't be tracked!**
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:syncworkflow -->
 ## Sync Workflow {#sync-workflow}
 
 ### Source of Truth Hierarchy
@@ -421,9 +432,11 @@ TASK COMPLETED
 | `PostIncrementDone` | Increment closed | Closes issues, syncs all docs |
 
 **Non-Claude tools**: NO HOOKS EXIST. See "Hook Behavior You Must Mimic" section above.
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:contextloading -->
 ## Context Loading {#context-loading}
 
 ### Efficient Context Management
@@ -441,9 +454,11 @@ Read only what's needed for the current task:
 2. Reference `spec.md` for acceptance criteria
 3. Load living docs only when needed for context
 4. Avoid loading entire documentation trees
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:structure -->
 ## Project Structure
 
 ```
@@ -462,17 +477,21 @@ Read only what's needed for the current task:
 │   └── delivery/         # CI/CD, deployment guides
 └── state/                # Runtime state (active increment, caches)
 ```
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:agents -->
 ## Agents (Roles)
 
 {AGENTS_SECTION}
 
 **Usage**: Adopt role perspective when working on related tasks.
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:skills -->
 ## Skills (Capabilities)
 
 {SKILLS_SECTION}
@@ -520,9 +539,11 @@ AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app pe
 ```
 
 **⛔ CRITICAL**: The AI MUST run `specweave context projects` BEFORE creating spec.md, and use the output values in every `**Project**:` field!
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:taskformat required -->
 ## Task Format
 
 ```markdown
@@ -534,7 +555,11 @@ AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app pe
 **Test Plan** (BDD):
 - Given [context] → When [action] → Then [result]
 ```
+<!-- /SECTION -->
 
+---
+
+<!-- SECTION:usformat required -->
 ## User Story Format (CRITICAL for spec.md) {#user-story-format}
 
 **⛔ MANDATORY: Every User Story MUST have `**Project**:` field!**
@@ -566,9 +591,11 @@ specweave context projects
 # {"level":2,"projects":[...],"boardsByProject":{"corp":[{"id":"digital-ops"}]}}
 # → Use: **Project**: corp AND **Board**: digital-ops
 ```
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:workflows -->
 ## Workflows
 
 ### Creating Increment
@@ -623,9 +650,11 @@ title: "Feature Title"
 2. PM validates 3 gates (tasks, tests, docs)
 3. Living docs synced automatically
 4. GitHub issue closed (if enabled)
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:plugincommands -->
 ## Plugin Commands
 
 | Command | Plugin |
@@ -633,9 +662,11 @@ title: "Feature Title"
 | `/sw-github:sync` | GitHub sync |
 | `/sw-jira:sync` | Jira sync |
 | `/sw-ado:sync` | Azure DevOps |
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:troubleshooting required -->
 ## Troubleshooting {#troubleshooting}
 
 ### Commands Not Working
@@ -738,9 +769,11 @@ npx playwright test
 - Reading skill files manually
 - Following the workflows inside
 - Running `npx` instead of MCP tools (better anyway!)
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:docs -->
 ## Documentation
 
 | Resource | Purpose |
@@ -749,6 +782,7 @@ npx playwright test
 | AGENTS.md | This file (non-Claude tools) |
 | spec-weave.com | Official documentation |
 | .specweave/docs/ | Project-specific docs |
+<!-- /SECTION -->
 
 ---
 

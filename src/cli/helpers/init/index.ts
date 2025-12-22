@@ -107,3 +107,13 @@ export {
   type AnalysisDepth,
   type DetectedDocsLocation,
 } from './brownfield-analysis.js';
+
+// Instruction file merger (CLAUDE.md/AGENTS.md)
+export {
+  mergeInstructionFile,
+  parseTemplateSections,
+  getPackageVersion,
+  type TemplateType,
+  type TemplateSection,
+  type MergeResult,
+} from './instruction-file-merger.js';

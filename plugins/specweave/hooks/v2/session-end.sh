@@ -4,8 +4,10 @@
 #
 # Triggered: When Claude Code session ends normally
 # Purpose: Clean up session registry and child processes
+#
+# v0.35.3 - Fixed: use set +e for hook safety
 
-set -euo pipefail
+set +e  # CRITICAL: Never use set -e in hooks (causes cascading failures)
 
 PROJECT_ROOT="${PWD}"
 LOG_DIR="${PROJECT_ROOT}/.specweave/logs/sessions"

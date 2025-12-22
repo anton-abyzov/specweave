@@ -32,32 +32,12 @@
         ]
       },
       {
-        "matcher": "Write|Edit",
-        "matcher_content": "\\.specweave/docs/internal/specs/_features/",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/features-folder-guard.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"allow\\\"}\")'"
-          }
-        ]
-      },
-      {
         "matcher": "Write",
         "matcher_content": "\\.specweave/increments/\\d{3,4}E?-[^/]+/",
         "hooks": [
           {
             "type": "command",
             "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/v2/guards/increment-duplicate-guard.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"allow\\\"}\")'"
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "matcher_content": "/src/.*\\.ts$",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'W=\"${CLAUDE_PLUGIN_ROOT}/hooks/universal/fail-fast-wrapper.sh\"; S=\"${CLAUDE_PLUGIN_ROOT}/hooks/config-env-separator.sh\"; [[ -x \"$W\" ]] && exec \"$W\" \"$S\" || (cat >/dev/null && printf \"{\\\"decision\\\":\\\"allow\\\"}\")'"
           }
         ]
       }

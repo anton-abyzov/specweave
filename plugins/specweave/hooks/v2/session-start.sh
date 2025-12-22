@@ -4,8 +4,10 @@
 #
 # Triggered: When Claude Code session starts
 # Purpose: Track session for zombie prevention
+#
+# v0.35.3 - Fixed: use set +e for hook safety
 
-set -euo pipefail
+set +e  # CRITICAL: Never use set -e in hooks (causes cascading failures)
 
 PROJECT_ROOT="${PWD}"
 SESSION_ID="session-$$-$(date +%s)"

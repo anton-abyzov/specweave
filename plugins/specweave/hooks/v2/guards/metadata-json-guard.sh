@@ -25,7 +25,7 @@
 #
 # v0.34.0 - Initial implementation based on user project bug analysis
 
-set -e
+set +e  # CRITICAL: Never use set -e in hooks (causes cascading failures)
 
 # Check for force bypass
 if [ "$SPECWEAVE_FORCE_METADATA" = "1" ]; then
@@ -39,10 +39,16 @@ if [ "$SPECWEAVE_DISABLE_HOOKS" = "1" ]; then
   exit 0
 fi
 
-# Read tool input from stdin
-INPUT=$(cat)
+# Read tool input from stdin (safe handling)
+INPUT=$(cat 2>/dev/null || echo '{}')
 
-# Extract tool name
+# Check jq availability - allow if not present
+if ! command -v jq >/dev/null 2>&1; then
+  echo '{"decision": "allow"}'
+  exit 0
+fi
+
+# Extract tool name - with jq fallback
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // .tool_input.tool_name // ""' 2>/dev/null || echo "")
 
 # Only validate Write tool calls

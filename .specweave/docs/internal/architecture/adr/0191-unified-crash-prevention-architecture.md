@@ -27,7 +27,7 @@ Create a **Unified Crash Prevention Runtime** consisting of:
 
 | # | Category | Root Cause | Detection | Prevention |
 |---|----------|------------|-----------|------------|
-| 1 | **Bash Heredoc Hang** | Shell waits forever for truncated EOF | Pattern match `<< EOF` | `bash-file-guard.sh` blocks |
+| 1 | **Bash Heredoc Hang** | Shell waits forever for truncated EOF | Pattern match `<< EOF` | Claude instructions (don't use Bash for file ops) |
 | 2 | **Context Explosion** | >280KB total context | Token estimation | Task limit (25 soft max) |
 | 3 | **Hook Recursion** | Hooks trigger other hooks | File-based guard | `.hook-recursion-guard` |
 | 4 | **Process Storms** | Bulk ops spawn 100+ processes | Process count | Bulk detection + skip |

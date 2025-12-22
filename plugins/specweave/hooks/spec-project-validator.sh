@@ -19,8 +19,13 @@
 # Returns exit code 1 (block) if validation fails, 0 (allow) otherwise.
 #
 # Bypass: Set SPECWEAVE_FORCE_PROJECT=1 to skip validation
+#
+# v0.35.3 - Fixed safety: set +e, stdin error handling, exit codes, kill switch
 
-set -e
+set +e  # CRITICAL: Never use set -e in hooks (causes cascading failures)
+
+# Kill switch check
+[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && echo '{"decision":"allow"}' && exit 0
 
 # Check for force bypass
 if [ "$SPECWEAVE_FORCE_PROJECT" = "1" ]; then
@@ -28,11 +33,17 @@ if [ "$SPECWEAVE_FORCE_PROJECT" = "1" ]; then
   exit 0
 fi
 
-# Read tool input from stdin
-INPUT=$(cat)
+# Read tool input from stdin (safe handling)
+INPUT=$(cat 2>/dev/null || echo '{}')
+
+# Check jq availability - allow if not present
+if ! command -v jq >/dev/null 2>&1; then
+  echo '{"decision": "allow"}'
+  exit 0
+fi
 
 # Extract tool name
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null || echo "")
 
 # Only validate Write tool calls
 if [ "$TOOL_NAME" != "Write" ]; then
@@ -56,7 +67,7 @@ CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // ""')
 # Check if content has YAML frontmatter
 if [[ ! "$CONTENT" =~ ^---$'\n' ]]; then
   echo '{"decision": "block", "reason": "spec.md must have YAML frontmatter (starting with ---)"}'
-  exit 0
+  exit 2  # Exit 2 = intentional block (NOT exit 0 or exit 1!)
 fi
 
 # Extract YAML frontmatter
@@ -65,13 +76,13 @@ FRONTMATTER=$(echo "$CONTENT" | sed -n '/^---$/,/^---$/p' | tail -n +2 | head -n
 # Check for unresolved project placeholder (legacy {{PROJECT_ID}})
 if echo "$FRONTMATTER" | grep -q 'project:\s*{{PROJECT_ID}}'; then
   echo '{"decision": "block", "reason": "spec.md has unresolved placeholder {{PROJECT_ID}}. Run '\''specweave context projects'\'' to get available projects, then select one."}'
-  exit 0
+  exit 2  # Exit 2 = intentional block
 fi
 
 # Check for unresolved board placeholder (legacy {{BOARD_ID}})
 if echo "$FRONTMATTER" | grep -q 'board:\s*{{BOARD_ID}}'; then
   echo '{"decision": "block", "reason": "spec.md has unresolved placeholder {{BOARD_ID}}. Run '\''specweave context boards --project=<id>'\'' to get available boards, then select one."}'
-  exit 0
+  exit 2  # Exit 2 = intentional block
 fi
 
 # Check for ANY unresolved {{...}} placeholder in frontmatter (v0.34.0+)
@@ -79,21 +90,21 @@ fi
 if echo "$FRONTMATTER" | grep -qE '\{\{[A-Z_]+\}\}'; then
   FOUND_PLACEHOLDERS=$(echo "$FRONTMATTER" | grep -oE '\{\{[A-Z_]+\}\}' | tr '\n' ', ' | sed 's/,$//')
   echo "{\"decision\": \"block\", \"reason\": \"spec.md has unresolved placeholders: ${FOUND_PLACEHOLDERS}\\n\\nYOU MUST RESOLVE these BEFORE creating spec.md:\\n1. Run: specweave context projects\\n2. Parse the JSON output to get valid project/board IDs\\n3. Replace placeholders with actual values from step 2\\n\\n❌ FORBIDDEN: Using placeholder templates directly\\n✅ REQUIRED: Resolve ALL placeholders to actual values\"}"
-  exit 0
+  exit 2  # Exit 2 = intentional block
 fi
 
 # Check for ANY unresolved {{...}} placeholder in full content (catches per-US **Project**: {{...}})
 if echo "$CONTENT" | grep -qE '\*\*Project\*\*:\s*\{\{[A-Z_]+\}\}'; then
   FOUND_PLACEHOLDERS=$(echo "$CONTENT" | grep -oE '\*\*Project\*\*:\s*\{\{[A-Z_]+\}\}' | head -1)
   echo "{\"decision\": \"block\", \"reason\": \"spec.md has unresolved **Project**: placeholder\\n\\nFound: ${FOUND_PLACEHOLDERS}\\n\\nEach user story MUST have a resolved **Project**: field.\\n\\n1. Run: specweave context projects\\n2. Get valid project IDs from the JSON output\\n3. Replace the placeholder with an actual project ID\"}"
-  exit 0
+  exit 2  # Exit 2 = intentional block
 fi
 
 # Check for unresolved **Board**: placeholders in full content (2-level structures)
 if echo "$CONTENT" | grep -qE '\*\*Board\*\*:\s*\{\{[A-Z_]+\}\}'; then
   FOUND_PLACEHOLDERS=$(echo "$CONTENT" | grep -oE '\*\*Board\*\*:\s*\{\{[A-Z_]+\}\}' | head -1)
   echo "{\"decision\": \"block\", \"reason\": \"spec.md has unresolved **Board**: placeholder\\n\\nFound: ${FOUND_PLACEHOLDERS}\\n\\nEach user story MUST have a resolved **Board**: field (for 2-level structures).\\n\\n1. Run: specweave context projects\\n2. Get valid board IDs from boardsByProject in the JSON output\\n3. Replace the placeholder with an actual board ID\"}"
-  exit 0
+  exit 2  # Exit 2 = intentional block
 fi
 
 # Extract project and board from frontmatter
@@ -127,13 +138,13 @@ if [ "$MULTI_PROJECT_ENABLED" = "false" ]; then
 
   if [ -n "$PROJECT" ] && [ "$PROJECT" != "null" ] && [ "$PROJECT" != "$CONFIGURED_PROJECT" ]; then
     echo "{\"decision\": \"block\", \"reason\": \"spec.md has project: '${PROJECT}' but config has project.name: '${CONFIGURED_PROJECT}'.\\n\\nIn single-project mode, the project: field MUST match config.project.name OR be omitted.\\n\\nFix:\\n1. Remove project: field (recommended for single-project mode)\\n2. OR change to: project: ${CONFIGURED_PROJECT}\\n3. OR enable multi-project mode: /sw:enable-multiproject\"}"
-    exit 0
+    exit 2  # Exit 2 = intentional block
   fi
 
   # ALWAYS block board: field in single-project mode
   if [ -n "$BOARD" ] && [ "$BOARD" != "null" ]; then
     echo "{\"decision\": \"block\", \"reason\": \"spec.md has board: field but this is a SINGLE-PROJECT repository.\\n\\nThe board: field is ONLY for multi-project mode.\\n\\nFix:\\n1. Remove the board: field\\n2. OR enable multi-project mode: /sw:enable-multiproject\"}"
-    exit 0
+    exit 2  # Exit 2 = intentional block
   fi
 
   # All validations passed for single-project mode
@@ -159,7 +170,7 @@ if [ "$STRUCTURE_LEVEL" = "2" ]; then
 
     if [ -z "$PROJECT_EXISTS" ] && [ -n "$AVAILABLE_PROJECTS" ]; then
       echo "{\"decision\": \"block\", \"reason\": \"Frontmatter project '${PROJECT}' not found in configuration.\\n\\nAvailable projects: ${AVAILABLE_PROJECTS}\\n\\nFix:\\n1. Remove project: field (recommended - use per-US **Project**: instead)\\n2. OR update to a valid project\\n3. OR set SPECWEAVE_FORCE_PROJECT=1 to bypass\"}"
-      exit 0
+      exit 2  # Exit 2 = intentional block
     fi
   fi
 
@@ -168,7 +179,7 @@ if [ "$STRUCTURE_LEVEL" = "2" ]; then
     # Need project to validate board
     if [ -z "$PROJECT" ] || [ "$PROJECT" = "null" ]; then
       echo "{\"decision\": \"block\", \"reason\": \"Frontmatter has board: '${BOARD}' but no project: field.\\n\\nIf using board: you must also specify project:.\\n\\nRecommended: Remove both and use per-US **Project**: and **Board**: fields instead.\"}"
-      exit 0
+      exit 2  # Exit 2 = intentional block
     fi
 
     BOARDS_OUTPUT=$(specweave context boards --project="$PROJECT" 2>/dev/null || echo '{"boards": []}')
@@ -183,7 +194,7 @@ if [ "$STRUCTURE_LEVEL" = "2" ]; then
 
     if [ -z "$BOARD_EXISTS" ] && [ -n "$AVAILABLE_BOARDS" ]; then
       echo "{\"decision\": \"block\", \"reason\": \"Frontmatter board '${BOARD}' not found under project '${PROJECT}'.\\n\\nAvailable boards: ${AVAILABLE_BOARDS}\\n\\nFix:\\n1. Remove board: field (recommended - use per-US **Board**: instead)\\n2. OR update to a valid board\\n3. OR set SPECWEAVE_FORCE_PROJECT=1 to bypass\"}"
-      exit 0
+      exit 2  # Exit 2 = intentional block
     fi
   fi
 
@@ -200,7 +211,7 @@ else
 
     if [ -z "$PROJECT_EXISTS" ]; then
       echo "{\"decision\": \"block\", \"reason\": \"Frontmatter project '${PROJECT}' not found in configuration.\\n\\nAvailable projects: ${AVAILABLE_PROJECTS}\\n\\nFix:\\n1. Remove project: field (recommended - use per-US **Project**: instead)\\n2. OR update to a valid project\\n3. OR set SPECWEAVE_FORCE_PROJECT=1 to bypass\"}"
-      exit 0
+      exit 2  # Exit 2 = intentional block
     fi
   fi
 fi
