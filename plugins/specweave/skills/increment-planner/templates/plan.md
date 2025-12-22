@@ -48,3 +48,17 @@
 ### Challenge 1: [Description]
 **Solution**: [Approach]
 **Risk**: [Mitigation]
+
+## Recommended Agents
+
+> **Tip**: Use specialized agents for domain expertise. See `plugins/PLUGINS-INDEX.md` for full catalog.
+
+| Domain | Agent | When to Use |
+|--------|-------|-------------|
+| Architecture | `specweave:architect:architect` | System design, ADRs |
+| Frontend | `specweave-frontend:frontend-architect:frontend-architect` | React/Vue/Next.js |
+| Backend | `specweave-backend:database-optimizer:database-optimizer` | API, database |
+| K8s | `specweave-kubernetes:kubernetes-architect:kubernetes-architect` | Manifests, GitOps |
+| Infra | `specweave-infrastructure:devops:devops` | Terraform, CI/CD |
+| Testing | `specweave-testing:qa-engineer:qa-engineer` | E2E, test strategy |
+| Security | `specweave:security:security` | Security review |

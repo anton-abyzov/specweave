@@ -31,8 +31,9 @@
 # - SPECWEAVE_LEGACY_SPEC=1 - Allow specs without per-US project (legacy mode)
 #
 # v0.34.0 - Fixed to handle all US ID formats (US-001, US-FE-001, etc.)
+# v0.35.3 - Fixed safety: set +e, stdin error handling, exit codes
 
-set -e
+set +e  # CRITICAL: Never use set -e in hooks (causes cascading failures)
 
 # Source common utilities if available
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -57,11 +58,20 @@ if [ "$SPECWEAVE_LEGACY_SPEC" = "1" ]; then
   exit 0
 fi
 
-# Read tool input from stdin
-INPUT=$(cat)
+# Kill switch check
+[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && echo '{"decision":"allow"}' && exit 0
+
+# Read tool input from stdin (safe handling)
+INPUT=$(cat 2>/dev/null || echo '{}')
+
+# Check jq availability - allow if not present
+if ! command -v jq >/dev/null 2>&1; then
+  echo '{"decision": "allow"}'
+  exit 0
+fi
 
 # Extract tool name
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""')
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null || echo "")
 
 # Only validate Write tool calls (Edit doesn't provide full content)
 if [ "$TOOL_NAME" != "Write" ]; then
@@ -326,7 +336,7 @@ if [ -n "$ERRORS" ]; then
   REASON=$(echo -e "$ERRORS" | jq -Rs .)
 
   echo "{\"decision\": \"block\", \"reason\": $REASON}"
-  exit 0
+  exit 2  # Exit 2 = intentional block (NOT exit 0 or exit 1!)
 fi
 
 # All validations passed
