@@ -12,17 +12,24 @@
 # - acme-corp, my-app, myapp (placeholder names)
 # - Comma-separated values like "frontend-app, backend-api"
 # - Placeholder patterns like {{PROJECT_ID}}
+#
+# SAFETY: Uses set +e to prevent cascading failures
+# Exit 0 = allow, Exit 2 = block (never use exit 1!)
 
-set -euo pipefail
+set +e  # CRITICAL: Never use set -e or pipefail in hooks (causes cascading failures)
+
+# Kill switch check
+[[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && echo '{"decision":"allow"}' && exit 0
 
 # Read stdin for tool input (Claude Code passes JSON via stdin)
-INPUT=$(cat)
+INPUT=$(cat 2>/dev/null || echo '{}')
 
 # Extract tool name - Claude Code passes it at top level
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // ""' 2>/dev/null || echo "")
 
 # Only check Write tool operations to specs/ folder
 if [ "$TOOL_NAME" != "Write" ]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
@@ -30,11 +37,13 @@ fi
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty' 2>/dev/null || echo "")
 
 if [ -z "$FILE_PATH" ]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
 # Check if writing to specs folder
 if [[ ! "$FILE_PATH" =~ \.specweave/docs/internal/specs/([^/]+)/ ]]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
@@ -43,40 +52,26 @@ PROJECT_NAME="${BASH_REMATCH[1]}"
 
 # Skip validation for README.md in specs root
 if [ "$PROJECT_NAME" = "README.md" ]; then
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
 # CRITICAL v0.35.1: Check for template placeholders like {{PROJECT_ID}}
 if [[ "$PROJECT_NAME" =~ \{\{.*\}\} ]]; then
-  echo "❌ BLOCKED: Unresolved placeholder detected: '$PROJECT_NAME'"
-  echo ""
-  echo "   Project name contains template placeholder syntax: {{ ... }}"
-  echo "   This is NOT a valid project name."
-  echo ""
-  echo "   🔧 Edit spec.md and replace {{...}} with your actual project name"
-  exit 1
+  printf '{"decision":"block","reason":"🚫 BLOCKED: Unresolved placeholder detected: %s\\n\\nProject name contains template placeholder syntax: {{ ... }}\\nThis is NOT a valid project name.\\n\\n🔧 Edit spec.md and replace {{...}} with your actual project name"}\n' "$PROJECT_NAME"
+  exit 2
 fi
 
 # CRITICAL v0.35.1: Check for comma-separated values (invalid format)
 if [[ "$PROJECT_NAME" =~ , ]]; then
-  echo "❌ BLOCKED: Comma-separated project names detected: '$PROJECT_NAME'"
-  echo ""
-  echo "   Each User Story must have exactly ONE project."
-  echo "   Multiple comma-separated projects are NOT allowed."
-  echo ""
-  echo "   🔧 Split into separate User Stories, one per project"
-  exit 1
+  printf '{"decision":"block","reason":"🚫 BLOCKED: Comma-separated project names detected: %s\\n\\nEach User Story must have exactly ONE project.\\nMultiple comma-separated projects are NOT allowed.\\n\\n🔧 Split into separate User Stories, one per project"}\n' "$PROJECT_NAME"
+  exit 2
 fi
 
 # CRITICAL v0.35.1: Check for parentheses (often seen in examples)
 if [[ "$PROJECT_NAME" =~ \( || "$PROJECT_NAME" =~ \) ]]; then
-  echo "❌ BLOCKED: Invalid characters in project name: '$PROJECT_NAME'"
-  echo ""
-  echo "   Project names cannot contain parentheses."
-  echo "   This looks like an example/documentation string."
-  echo ""
-  echo "   🔧 Use a valid kebab-case project name (e.g., my-project)"
-  exit 1
+  printf '{"decision":"block","reason":"🚫 BLOCKED: Invalid characters in project name: %s\\n\\nProject names cannot contain parentheses.\\nThis looks like an example/documentation string.\\n\\n🔧 Use a valid kebab-case project name (e.g., my-project)"}\n' "$PROJECT_NAME"
+  exit 2
 fi
 
 # CRITICAL v0.35.1: Check ProjectRegistry FIRST (.specweave/state/projects.json)
@@ -116,6 +111,7 @@ if [ -f "$REGISTRY_FILE" ]; then
 
     if [ "$PROJECT_IN_REGISTRY" = "true" ]; then
       # Project exists in registry - ALLOW
+      echo '{"decision":"allow"}'
       exit 0
     fi
 
@@ -123,38 +119,19 @@ if [ -f "$REGISTRY_FILE" ]; then
     VALID_PROJECTS=$(echo "$REGISTRY_PROJECTS" | tr '\n' ', ' | sed 's/,$//')
 
     if [ "$IS_EXAMPLE" = "true" ]; then
-      echo "❌ BLOCKED: Example project name detected: '$PROJECT_NAME'"
-      echo ""
-      echo "   '$PROJECT_NAME' is a common example/placeholder name used in documentation."
-      echo "   It was likely extracted from example User Stories in spec.md."
-      echo ""
-      echo "   ⚠️  This is NOT a real project - it's a documentation example!"
-      echo ""
-      echo "   Registered projects: $VALID_PROJECTS"
-      echo ""
-      echo "   🔧 How to fix:"
-      echo "   1. Edit the spec.md file and update **Project**: fields"
-      echo "   2. Replace example names with a registered project"
-      echo "   3. Re-run the sync command"
+      printf '{"decision":"block","reason":"🚫 BLOCKED: Example project name detected: %s\\n\\n%s is a common example/placeholder name used in documentation.\\nIt was likely extracted from example User Stories in spec.md.\\n\\n⚠️ This is NOT a real project - it is a documentation example!\\n\\nRegistered projects: %s\\n\\n🔧 How to fix:\\n1. Edit the spec.md file and update **Project**: fields\\n2. Replace example names with a registered project\\n3. Re-run the sync command"}\n' "$PROJECT_NAME" "$PROJECT_NAME" "$VALID_PROJECTS"
     else
-      echo "❌ BLOCKED: Project '$PROJECT_NAME' not in registry"
-      echo ""
-      echo "   Project '$PROJECT_NAME' is NOT registered in .specweave/state/projects.json"
-      echo ""
-      echo "   Registered projects: $VALID_PROJECTS"
-      echo ""
-      echo "   🔧 To add this project:"
-      echo "   specweave project add $PROJECT_NAME --name \"Project Display Name\""
+      printf '{"decision":"block","reason":"🚫 BLOCKED: Project %s not in registry\\n\\nProject %s is NOT registered in .specweave/state/projects.json\\n\\nRegistered projects: %s\\n\\n🔧 To add this project:\\nspecweave project add %s --name Project Display Name"}\n' "$PROJECT_NAME" "$PROJECT_NAME" "$VALID_PROJECTS" "$PROJECT_NAME"
     fi
-    exit 1
+    exit 2
   fi
 fi
 
 # FALLBACK: Check config.json if registry doesn't exist or is empty
 if [ ! -f "$CONFIG_FILE" ]; then
-  echo "❌ ERROR: Neither projects.json nor config.json found"
-  echo "   Cannot validate project folder creation without configuration"
-  exit 1
+  # Allow if no config found (safer than blocking)
+  echo '{"decision":"allow","message":"WARNING: Neither projects.json nor config.json found - allowing operation"}'
+  exit 0
 fi
 
 # Check if multi-project mode is enabled
@@ -167,45 +144,14 @@ if [ "$MULTI_PROJECT_ENABLED" != "true" ]; then
   if [ "$PROJECT_NAME" != "$ALLOWED_PROJECT" ]; then
     # Special message for example projects
     if [ "$IS_EXAMPLE" = "true" ]; then
-      echo "❌ BLOCKED: Example project name detected: '$PROJECT_NAME'"
-      echo ""
-      echo "   '$PROJECT_NAME' is a common example/placeholder name used in documentation."
-      echo "   It was likely extracted from example User Stories in spec.md."
-      echo ""
-      echo "   ⚠️  This is NOT a real project - it's a documentation example!"
-      echo ""
-      echo "   🔧 How to fix:"
-      echo "   1. Edit the spec.md file and update **Project**: fields"
-      echo "   2. Replace example names with: $ALLOWED_PROJECT"
-      echo "   3. Re-run the sync command"
-      echo ""
-      echo "   📋 Example fix in spec.md:"
-      echo "   BEFORE: **Project**: $PROJECT_NAME  ← EXAMPLE (WRONG)"
-      echo "   AFTER:  **Project**: $ALLOWED_PROJECT  ← Your actual project"
-      echo ""
+      printf '{"decision":"block","reason":"🚫 BLOCKED: Example project name detected: %s\\n\\n%s is a common example/placeholder name used in documentation.\\nIt was likely extracted from example User Stories in spec.md.\\n\\n⚠️ This is NOT a real project - it is a documentation example!\\n\\n🔧 How to fix:\\n1. Edit the spec.md file and update **Project**: fields\\n2. Replace example names with: %s\\n3. Re-run the sync command"}\n' "$PROJECT_NAME" "$PROJECT_NAME" "$ALLOWED_PROJECT"
     else
-      echo "❌ BLOCKED: Project folder creation for '$PROJECT_NAME'"
-      echo ""
-      echo "   This repository is in SINGLE-PROJECT mode."
-      echo "   Only folder allowed: $ALLOWED_PROJECT"
-      echo ""
-      echo "   Current config (.specweave/config.json):"
-      echo "   {"
-      echo "     \"project\": { \"name\": \"$ALLOWED_PROJECT\" },"
-      echo "     \"multiProject\": { \"enabled\": false }"
-      echo "   }"
-      echo ""
-      echo "   ⚠️  If '$PROJECT_NAME' is an example/placeholder in spec.md, update it to:"
-      echo "   **Project**: $ALLOWED_PROJECT"
-      echo ""
-      echo "   💡 To add new projects:"
-      echo "   1. Run: specweave config set multiProject.enabled true"
-      echo "   2. Run: specweave config set multiProject.projects.$PROJECT_NAME.id \"$PROJECT_NAME\""
-      echo "   3. Re-run your command"
+      printf '{"decision":"block","reason":"🚫 BLOCKED: Project folder creation for %s\\n\\nThis repository is in SINGLE-PROJECT mode.\\nOnly folder allowed: %s\\n\\n💡 To add new projects:\\n1. Run: specweave config set multiProject.enabled true\\n2. Run: specweave config set multiProject.projects.%s.id %s\\n3. Re-run your command"}\n' "$PROJECT_NAME" "$ALLOWED_PROJECT" "$PROJECT_NAME" "$PROJECT_NAME"
     fi
-    exit 1
+    exit 2
   fi
 
+  echo '{"decision":"allow"}'
   exit 0
 fi
 
@@ -222,53 +168,13 @@ if [ "$PROJECT_EXISTS" = "false" ]; then
 
   # Special message for example projects
   if [ "$IS_EXAMPLE" = "true" ]; then
-    echo "❌ BLOCKED: Example project name detected: '$PROJECT_NAME'"
-    echo ""
-    echo "   '$PROJECT_NAME' is a common example/placeholder name used in documentation."
-    echo "   It was likely extracted from example User Stories in spec.md."
-    echo ""
-    echo "   ⚠️  This is NOT a real project - it's a documentation example!"
-    echo ""
-    if [ -n "$VALID_PROJECTS" ]; then
-      echo "   Valid projects: $VALID_PROJECTS"
-      echo ""
-    fi
-    echo "   🔧 How to fix:"
-    echo "   1. Edit the spec.md file and update **Project**: fields"
-    echo "   2. Replace example names with a configured project"
-    echo "   3. Re-run the sync command"
-    echo ""
+    printf '{"decision":"block","reason":"🚫 BLOCKED: Example project name detected: %s\\n\\n%s is a common example/placeholder name used in documentation.\\nIt was likely extracted from example User Stories in spec.md.\\n\\n⚠️ This is NOT a real project - it is a documentation example!\\n\\nValid projects: %s\\n\\n🔧 How to fix:\\n1. Edit the spec.md file and update **Project**: fields\\n2. Replace example names with a configured project\\n3. Re-run the sync command"}\n' "$PROJECT_NAME" "$PROJECT_NAME" "$VALID_PROJECTS"
   else
-    echo "❌ BLOCKED: Project folder creation for '$PROJECT_NAME'"
-    echo ""
-    echo "   Project '$PROJECT_NAME' is NOT configured in .specweave/config.json"
-    echo ""
-    if [ -n "$VALID_PROJECTS" ]; then
-      echo "   Valid projects: $VALID_PROJECTS"
-      echo ""
-    fi
-    echo "   ⚠️  Common causes:"
-    echo "   1. Example/placeholder project in spec.md User Stories"
-    echo "   2. Typo in **Project**: field (e.g., 'MyApp (3 repos)' instead of real project)"
-    echo "   3. Missing project configuration"
-    echo ""
-    echo "   🔧 How to fix:"
-    if [ -n "$VALID_PROJECTS" ]; then
-      echo "   • If this is an EXAMPLE in spec.md, update to a real project:"
-      echo "     **Project**: ${VALID_PROJECTS%%,*}  # Use first valid project"
-      echo ""
-    fi
-    echo "   • If this is a NEW project, add it to config:"
-    echo "     specweave config set multiProject.projects.$PROJECT_NAME.id \"$PROJECT_NAME\""
-    echo "     specweave config set multiProject.projects.$PROJECT_NAME.name \"Project Display Name\""
-    echo ""
-    echo "   • Check spec.md for placeholder User Stories like:"
-    echo "     **Project**: frontend-app, backend-api  ← FORBIDDEN (comma-separated)"
-    echo "     **Project**: MyApp (3 repos)  ← FORBIDDEN (parentheses not allowed)"
-    echo ""
+    printf '{"decision":"block","reason":"🚫 BLOCKED: Project folder creation for %s\\n\\nProject %s is NOT configured in .specweave/config.json\\n\\nValid projects: %s\\n\\n🔧 How to fix:\\n• If this is a NEW project, add it to config:\\n  specweave config set multiProject.projects.%s.id %s"}\n' "$PROJECT_NAME" "$PROJECT_NAME" "$VALID_PROJECTS" "$PROJECT_NAME" "$PROJECT_NAME"
   fi
-  exit 1
+  exit 2
 fi
 
 # Project exists - allow creation
+echo '{"decision":"allow"}'
 exit 0
