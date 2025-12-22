@@ -8,8 +8,10 @@
 #
 # Usage: bash hook-wrapper.sh <hook-type>
 # Where hook-type is: session-start, post-tool-use, completion-guard
+#
+# v0.35.3 - Fixed: use set +e for hook safety
 
-set -e
+set +e  # CRITICAL: Never use set -e in hooks (causes cascading failures)
 
 HOOK_TYPE="${1:-unknown}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

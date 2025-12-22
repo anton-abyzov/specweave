@@ -12,7 +12,7 @@
  *   - session-start
  *   - post-tool-use
  *   - completion-guard
- *   - bash-file-guard
+ *   - increment-duplicate-guard
  *
  * @module hooks/universal/dispatcher
  */
@@ -322,10 +322,9 @@ async function main() {
         await fallbackToBash('completion-guard.sh', 'guards');
         break;
 
-      case 'bash-file-guard':
-        // CRITICAL: Prevents infinite hangs from heredoc/echo file creation
-        // See CLAUDE.md Rule 9 for why this is essential
-        await fallbackToBash('bash-file-guard.sh', 'guards');
+      case 'increment-duplicate-guard':
+        // Prevents duplicate increment IDs
+        await fallbackToBash('increment-duplicate-guard.sh', 'guards');
         break;
 
       default:

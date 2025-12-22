@@ -5,6 +5,7 @@
 
 ---
 
+<!-- SECTION:rules required -->
 ## Critical Rules
 
 ### 1. File Organization
@@ -37,9 +38,11 @@ Edit("spec.md", "- [ ] **AC-US1-01**", "- [x] **AC-US1-01**");
 **Rules:** `READ: limit:50 | EDIT: 1/response | AGENTS: none | FLOW: "Done. Next?"`
 
 **Phrase:** `EMERGENCY MODE. 1 edit. 50 lines max. No agents.`
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:workflow required -->
 ## Core Workflow
 
 ```
@@ -58,9 +61,11 @@ Edit("spec.md", "- [ ] **AC-US1-01**", "- [x] **AC-US1-01**");
 - `/sw-github:sync` - Sync to GitHub Issues
 - `/sw-jira:sync` - Sync to Jira
 - `/sw-ado:sync` - Sync to Azure DevOps
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:structure -->
 ## Project Structure
 
 ```
@@ -79,9 +84,11 @@ Edit("spec.md", "- [ ] **AC-US1-01**", "- [x] **AC-US1-01**");
 │   └── operations/          # Runbooks, SLOs
 └── config.json              # Project configuration
 ```
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:taskformat required -->
 ## Task Format (Mandatory)
 
 ```markdown
@@ -93,9 +100,11 @@ Edit("spec.md", "- [ ] **AC-US1-01**", "- [x] **AC-US1-01**");
 **Test Plan** (BDD):
 - **Given** [context] → **When** [action] → **Then** [result]
 ```
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:incrementfiles -->
 ## Increment Files
 
 **Required files** for every increment:
@@ -106,9 +115,11 @@ Edit("spec.md", "- [ ] **AC-US1-01**", "- [x] **AC-US1-01**");
 **Optional**:
 - `plan.md` - Technical design (for complex features only)
 - `reports/` - Completion reports, analyses
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:syncing -->
 ## Automatic Syncing (Hooks)
 
 After **EVERY task completion**, hooks automatically:
@@ -127,9 +138,11 @@ After **EVERY task completion**, hooks automatically:
   }
 }
 ```
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:githubsync -->
 ## GitHub Sync Mapping
 
 | SpecWeave | GitHub |
@@ -139,9 +152,11 @@ After **EVERY task completion**, hooks automatically:
 | Task (T-XXX) | Checkbox |
 
 **Issue Title Format**: `[FS-XXX][US-YYY] User Story Title`
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:techstack -->
 ## Tech Stack
 
 **Type**: {MONOREPO_OR_SINGLE}
@@ -157,9 +172,11 @@ After **EVERY task completion**, hooks automatically:
 - {SERVICE_1_NAME}: {SERVICE_1_LANGUAGE} ({SERVICE_1_PATH}/)
 - {SERVICE_2_NAME}: {SERVICE_2_LANGUAGE} ({SERVICE_2_PATH}/)
 {#ENDIF}
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:testing -->
 ## Testing
 
 **Test-Aware Planning**: Tests embedded in `tasks.md` (BDD format)
@@ -168,15 +185,19 @@ After **EVERY task completion**, hooks automatically:
 - E2E tests: When UI exists
 
 **Test Files**: `.test.ts` (Vitest), NOT `.spec.ts`
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:filesize -->
 ## File Size
 
 **Max 1500 lines/file**. Over 1000 → extract before adding code.
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:troubleshooting required -->
 ## Troubleshooting
 
 | Issue | Solution |
@@ -186,14 +207,17 @@ After **EVERY task completion**, hooks automatically:
 | Root polluted | Move files to increment folders |
 | Tasks out of sync | `/sw:sync-tasks` |
 | Can't find increment | `/sw:status` |
+<!-- /SECTION -->
 
 ---
 
+<!-- SECTION:docs -->
 ## Documentation
 
 - **Quick Reference**: This file
 - **Full Docs**: https://spec-weave.com
 - **Project Docs**: `.specweave/docs/internal/`
+<!-- /SECTION -->
 
 ---
 
