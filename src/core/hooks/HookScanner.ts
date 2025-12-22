@@ -48,6 +48,13 @@ export class HookScanner {
 
   /**
    * Scan hooks in a specific plugin directory
+   *
+   * Handles both legacy flat structure and v2 EDA architecture:
+   * - Top-level hooks: user-prompt-submit.sh, etc.
+   * - v2/dispatchers: session-start.sh, post-tool-use.sh
+   * - v2/handlers: status-line-handler.sh, living-specs-handler.sh
+   * - v2/detectors: lifecycle-detector.sh, us-completion-detector.sh
+   * - v2/guards: metadata-json-guard.sh, etc.
    */
   private async scanPluginHooks(hooksDir: string, pluginName: string): Promise<HookDefinition[]> {
     const hooks: HookDefinition[] = [];
@@ -58,7 +65,12 @@ export class HookScanner {
       const stat = fs.statSync(filePath);
 
       if (stat.isDirectory()) {
-        // Skip subdirectories (lib/, etc.)
+        // Scan v2 EDA architecture subdirectories
+        if (file === 'v2') {
+          const v2Hooks = await this.scanV2Hooks(filePath, pluginName);
+          hooks.push(...v2Hooks);
+        }
+        // Skip other subdirectories (lib/, universal/, etc.)
         continue;
       }
 
@@ -74,6 +86,124 @@ export class HookScanner {
     }
 
     return hooks;
+  }
+
+  /**
+   * Scan v2 EDA architecture hooks
+   * Structure: v2/{dispatchers,handlers,detectors,guards,queue}/*.sh
+   */
+  private async scanV2Hooks(v2Dir: string, pluginName: string): Promise<HookDefinition[]> {
+    const hooks: HookDefinition[] = [];
+    const v2Subdirs = ['dispatchers', 'handlers', 'detectors', 'guards', 'queue'];
+
+    for (const subdir of v2Subdirs) {
+      const subdirPath = path.join(v2Dir, subdir);
+      if (!fs.existsSync(subdirPath)) {
+        continue;
+      }
+
+      const files = fs.readdirSync(subdirPath);
+      for (const file of files) {
+        if (!file.endsWith('.sh') || file.endsWith('.test.sh')) {
+          continue;
+        }
+
+        const filePath = path.join(subdirPath, file);
+        const hook = await this.parseV2HookFile(filePath, pluginName, subdir);
+        if (hook) {
+          hooks.push(hook);
+        }
+      }
+    }
+
+    return hooks;
+  }
+
+  /**
+   * Parse v2 hook file with EDA-aware metadata extraction
+   */
+  private async parseV2HookFile(
+    filePath: string,
+    pluginName: string,
+    category: string
+  ): Promise<HookDefinition | null> {
+    const filename = path.basename(filePath);
+    const hookName = filename.replace(/\.sh$/, '');
+    const trigger = this.extractV2Trigger(hookName, category);
+
+    const fileType = this.getFileType(filename);
+    const dependencies = await this.extractDependencies(filePath, fileType);
+    const critical = this.isV2CriticalHook(hookName, category);
+    const testable = this.isV2TestableHook(hookName, category);
+
+    return {
+      name: hookName,
+      plugin: pluginName,
+      path: filePath,
+      type: fileType,
+      dependencies,
+      trigger: trigger || 'post-tool-use', // Default for handlers
+      testable,
+      critical,
+      expectedDuration: this.getV2ExpectedDuration(hookName, category)
+    };
+  }
+
+  /**
+   * Extract trigger type for v2 hooks based on category
+   */
+  private extractV2Trigger(hookName: string, category: string): HookTrigger | null {
+    // Map v2 categories to triggers
+    if (category === 'dispatchers') {
+      if (hookName.includes('session-start')) return 'session-start' as HookTrigger;
+      if (hookName.includes('post-tool-use')) return 'post-tool-use' as HookTrigger;
+    }
+    if (category === 'handlers') {
+      return 'post-tool-use' as HookTrigger; // Handlers are post-tool-use
+    }
+    if (category === 'detectors') {
+      return 'post-tool-use' as HookTrigger; // Detectors run on file changes
+    }
+    if (category === 'guards') {
+      return 'pre-tool-use' as HookTrigger; // Guards are pre-tool-use
+    }
+    return null;
+  }
+
+  /**
+   * Check if v2 hook is critical
+   */
+  private isV2CriticalHook(hookName: string, category: string): boolean {
+    // Dispatchers and key handlers are critical
+    if (category === 'dispatchers') return true;
+    if (hookName === 'status-line-handler') return true;
+    if (hookName === 'living-specs-handler') return true;
+    if (hookName === 'lifecycle-detector') return true;
+    return false;
+  }
+
+  /**
+   * Check if v2 hook is testable
+   */
+  private isV2TestableHook(hookName: string, category: string): boolean {
+    // Guards and handlers with .test.sh files are testable
+    // Detectors are testable
+    return category === 'guards' || category === 'handlers' || category === 'detectors';
+  }
+
+  /**
+   * Get expected duration for v2 hooks
+   */
+  private getV2ExpectedDuration(hookName: string, category: string): number {
+    // Detectors should be fast (<10ms)
+    if (category === 'detectors') return 10;
+    // Guards should be fast (<20ms)
+    if (category === 'guards') return 20;
+    // Handlers can take longer (async)
+    if (category === 'handlers') return 100;
+    // Dispatchers coordinate - medium
+    if (category === 'dispatchers') return 50;
+    return 100;
   }
 
   /**

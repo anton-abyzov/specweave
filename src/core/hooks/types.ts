@@ -9,12 +9,24 @@
 
 /**
  * Trigger event that causes a hook to execute
+ *
+ * Updated for EDA v2 architecture:
+ * - session-start: Session initialization hooks
+ * - session-end: Session cleanup hooks
+ * - post-tool-use: Primary trigger for most v2 hooks (via PostToolUse dispatcher)
+ * - pre-tool-use: Guard hooks that run before tool execution
+ *
+ * Legacy triggers (for backward compatibility):
+ * - user-prompt-submit, post-task-completion, post-increment-change, etc.
  */
 export type HookTrigger =
+  | 'session-start'
+  | 'session-end'
   | 'user-prompt-submit'
   | 'post-task-completion'
   | 'post-increment-change'
   | 'pre-tool-use'
+  | 'post-tool-use'
   | 'post-write'
   | 'post-edit';
 
