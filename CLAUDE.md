@@ -1,3 +1,181 @@
+<!-- SW:META template="claude" version="1.0.33" sections="header,start,autodetect,metarule,rules,workflow,structure,taskformat,secrets,syncing,mapping,testing,limits,troubleshooting,principles,linking,docs" -->
+
+<!-- SW:SECTION:header version="1.0.33" -->
+**Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
+<!-- SW:END:header -->
+
+<!-- SW:SECTION:start version="1.0.33" -->
+## Getting Started
+
+**Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
+
+**Options**:
+1. **Start fresh**: `rm -rf .specweave/increments/0001-project-setup` → `/sw:increment "your-feature"`
+2. **Customize**: Edit spec.md and use for setup tasks
+<!-- SW:END:start -->
+
+<!-- SW:SECTION:autodetect version="1.0.33" -->
+## Auto-Detection
+
+SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
+
+**Signals** (5+ = auto-route): Project name | Features list (3+) | Tech stack | Timeline/MVP | Problem statement | Business model
+
+**Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
+<!-- SW:END:autodetect -->
+
+<!-- SW:SECTION:metarule version="1.0.33" -->
+## Meta-Rule: Think-Before-Act
+
+**Satisfy dependencies BEFORE dependent operations.**
+
+```
+❌ node script.js → Error → npm run build
+✅ npm run build → node script.js → Success
+```
+<!-- SW:END:metarule -->
+
+<!-- SW:SECTION:rules version="1.0.33" -->
+## Rules
+
+1. **Files** → `.specweave/increments/####-name/` (spec.md, plan.md, tasks.md at root; reports/, scripts/, logs/ subfolders)
+2. **Update immediately**: `Edit("tasks.md", "[ ] pending", "[x] completed")` + `Edit("spec.md", "[ ] AC-", "[x] AC-")`
+3. **Unique IDs**: Check `ls .specweave/increments/ | grep "^[0-9]" | tail -5`
+4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
+5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders
+<!-- SW:END:rules -->
+
+<!-- SW:SECTION:workflow version="1.0.33" -->
+## Workflow
+
+`/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
+
+| Cmd | Action |
+|-----|--------|
+| `/sw:increment` | Plan feature |
+| `/sw:do` | Execute |
+| `/sw:validate` | Quality check |
+| `/sw:done` | Close |
+| `/sw-github:sync` | GitHub sync |
+| `/sw-jira:sync` | Jira sync |
+
+**Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done`
+<!-- SW:END:workflow -->
+
+<!-- SW:SECTION:structure version="1.0.33" -->
+## Structure
+
+```
+.specweave/
+├── increments/####-name/     # metadata.json, spec.md, tasks.md
+├── docs/internal/
+│   ├── specs/{project}/      # Living docs
+│   ├── architecture/adr/     # ADRs
+│   └── operations/           # Runbooks
+└── config.json
+```
+
+**Multi-repo**: Clone to `/repositories`, not root → `repositories/backend/src/...`
+<!-- SW:END:structure -->
+
+<!-- SW:SECTION:taskformat version="1.0.33" -->
+## Task Format
+
+```markdown
+### T-001: Title
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-01 | **Status**: [x] completed
+**Test**: Given [X] → When [Y] → Then [Z]
+```
+<!-- SW:END:taskformat -->
+
+<!-- SW:SECTION:secrets version="1.0.33" -->
+## Secrets Check
+
+**BEFORE CLI tools**: Check existing config first!
+```bash
+grep -E "(GITHUB_TOKEN|JIRA_|ADO_)" .env 2>/dev/null
+cat .specweave/config.json | grep -A5 '"sync"'
+gh auth status
+```
+<!-- SW:END:secrets -->
+
+<!-- SW:SECTION:syncing version="1.0.33" -->
+## Auto-Sync (Hooks)
+
+Post-task: updates tasks.md → living docs → external trackers (if configured)
+
+Config: `.specweave/config.json` → `hooks.post_task_completion`
+<!-- SW:END:syncing -->
+
+<!-- SW:SECTION:mapping version="1.0.33" -->
+## GitHub Mapping
+
+| SpecWeave | GitHub |
+|-----------|--------|
+| Feature FS-XXX | Milestone |
+| Story US-XXX | Issue `[FS-XXX][US-YYY] Title` |
+| Task T-XXX | Checkbox |
+<!-- SW:END:mapping -->
+
+<!-- SW:SECTION:testing version="1.0.33" -->
+## Testing
+
+BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
+
+```typescript
+// Vitest pattern: vi.fn() not jest.fn(), import not require
+import { vi } from 'vitest';
+vi.mock('fs', () => ({ readFile: vi.fn() }));
+```
+<!-- SW:END:testing -->
+
+<!-- SW:SECTION:limits version="1.0.33" -->
+## Limits
+
+**Max 1500 lines/file** — extract before adding
+<!-- SW:END:limits -->
+
+<!-- SW:SECTION:troubleshooting version="1.0.33" -->
+## Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| Skills missing | Restart Claude Code |
+| Commands gone | `/plugin list --installed` |
+| Out of sync | `/sw:sync-tasks` |
+| Find increment | `/sw:status` |
+| Root polluted | Move files to `.specweave/increments/####/reports/` |
+| Duplicate IDs | `/sw:fix-duplicates` |
+| External not syncing | Check `config.json` → `external_tracker_sync: true` |
+<!-- SW:END:troubleshooting -->
+
+<!-- SW:SECTION:principles version="1.0.33" -->
+## Principles
+
+1. **Spec-first**: `/sw:increment` before coding
+2. **Docs = truth**: Specs guide implementation
+3. **Incremental**: Small, validated increments
+4. **Traceable**: All work → specs → ACs
+5. **Clean**: All files in increment folders
+<!-- SW:END:principles -->
+
+<!-- SW:SECTION:linking version="1.0.33" -->
+## Bidirectional Linking
+
+Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
+
+Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
+<!-- SW:END:linking -->
+
+<!-- SW:SECTION:docs version="1.0.33" -->
+## Docs
+
+[spec-weave.com](https://spec-weave.com) | `.specweave/docs/internal/`
+<!-- SW:END:docs -->
+
+---
+<!-- ↓ ORIGINAL ↓ -->
+
 # SpecWeave Development Guide
 
 **Project**: SpecWeave - Spec-Driven Development Framework
@@ -370,3 +548,4 @@ npm run rebuild
 - **Internal Docs**: `.specweave/docs/internal/`
 - **ADRs**: `.specweave/docs/internal/architecture/adr/`
 - **Troubleshooting**: `.specweave/docs/internal/troubleshooting/`
+

@@ -762,7 +762,67 @@ node plugins/specweave/skills/increment-planner/scripts/feature-utils.js check-i
 mkdir -p .specweave/increments/0021-feature-name
 ```
 
-### STEP 4: Create spec.md Template
+### STEP 4: Create metadata.json FIRST (MANDATORY - CRITICAL ORDER!)
+
+**🚨 CRITICAL: metadata.json MUST be created BEFORE spec.md!**
+
+The `metadata-json-guard.sh` hook BLOCKS spec.md creation if metadata.json doesn't exist.
+This prevents broken increments that lack proper tracking.
+
+**IMPORTANT**: Read `testMode` and `coverageTarget` from `.specweave/config.json`:
+
+```bash
+# Read config to get defaultTestMode and defaultCoverageTarget
+cat .specweave/config.json | jq -r '.testing.defaultTestMode // "TDD"'
+cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 95'
+```
+
+Create `.specweave/increments/0021-feature-name/metadata.json`:
+
+```json
+{
+  "id": "0021-feature-name",
+  "status": "planned",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2025-11-24T12:00:00Z",
+  "lastActivity": "2025-11-24T12:00:00Z",
+  "testMode": "<VALUE FROM config.testing.defaultTestMode OR 'TDD'>",
+  "coverageTarget": <VALUE FROM config.testing.defaultCoverageTarget OR 95>,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {}
+}
+```
+
+**Use Write tool to create this file IMMEDIATELY after creating directory.**
+
+**Example Logic**:
+```javascript
+// Read config
+const config = JSON.parse(fs.readFileSync('.specweave/config.json', 'utf8'));
+const testMode = config?.testing?.defaultTestMode || 'TDD';
+const coverageTarget = config?.testing?.defaultCoverageTarget || 95;
+
+// Create metadata with config values
+const metadata = {
+  id: "0021-feature-name",
+  status: "planned",
+  type: "feature",
+  priority: "P1",
+  created: new Date().toISOString(),
+  lastActivity: new Date().toISOString(),
+  testMode: testMode,  // ← FROM CONFIG!
+  coverageTarget: coverageTarget,  // ← FROM CONFIG!
+  feature_id: null,
+  epic_id: null,
+  externalLinks: {}
+};
+```
+
+### STEP 5: Create spec.md Template
+
+**⚠️ This step REQUIRES metadata.json to exist (created in STEP 4)!**
 
 Create `.specweave/increments/0021-feature-name/spec.md`:
 
@@ -770,7 +830,7 @@ Create `.specweave/increments/0021-feature-name/spec.md`:
 
 **⚠️ IMPORTANT: Use the correct template based on STEP 0 detection!**
 
-#### 4A: Single-Project Template (1-level structure)
+#### 5A: Single-Project Template (1-level structure)
 
 **Template File**: `templates/spec-single-project.md`
 
@@ -779,7 +839,7 @@ Replace placeholders:
 - `{{TEST_MODE}}`, `{{COVERAGE_TARGET}}`
 - **`{{PROJECT_ID}}`** ← MANDATORY (from STEP 0B)
 
-#### 4B: Multi-Project Template (2-level structure) - USE THIS!
+#### 5B: Multi-Project Template (2-level structure) - USE THIS!
 
 **Template File**: `templates/spec-multi-project.md`
 
@@ -812,7 +872,7 @@ Replace placeholders:
 - User stories (2-level) without `**Board**:` field
 - Using unresolved placeholders like `{{PROJECT_ID}}`
 
-### STEP 5: Create plan.md Template
+### STEP 6: Create plan.md Template (OPTIONAL)
 
 Create `.specweave/increments/0021-feature-name/plan.md`:
 
@@ -820,19 +880,19 @@ Create `.specweave/increments/0021-feature-name/plan.md`:
 
 Replace `{{FEATURE_TITLE}}` placeholder. plan.md is OPTIONAL - create only for complex features with architecture decisions.
 
-### STEP 6: Create tasks.md Template
+### STEP 7: Create tasks.md Template
 
 Create `.specweave/increments/0021-feature-name/tasks.md`:
 
 **⚠️ IMPORTANT: Use the correct template based on STEP 0 detection!**
 
-#### 6A: Single-Project Template
+#### 7A: Single-Project Template
 
 **Template File**: `templates/tasks-single-project.md`
 
 Replace `{{FEATURE_TITLE}}` placeholder.
 
-#### 6B: Multi-Project Template (umbrella.enabled: true) - USE THIS!
+#### 7B: Multi-Project Template (umbrella.enabled: true) - USE THIS!
 
 **Template File**: `templates/tasks-multi-project.md`
 
@@ -844,59 +904,6 @@ Replace placeholders: `{{FEATURE_TITLE}}`, `{{PROJECT_FE_ID}}`, `{{PROJECT_BE_ID
 3. **Group tasks by project/phase** (Shared first, then BE, then FE)
 4. **Test file paths MUST include project folder**: `sw-app-be/tests/`, `sw-app-fe/tests/`
 5. **Dependencies between projects should be explicit**
-
-### STEP 7: Create metadata.json (MANDATORY)
-
-**IMPORTANT**: Read `testMode` and `coverageTarget` from `.specweave/config.json`:
-
-```bash
-# Read config to get defaultTestMode and defaultCoverageTarget
-cat .specweave/config.json | jq -r '.testing.defaultTestMode // "TDD"'
-cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 95'
-```
-
-Create `.specweave/increments/0021-feature-name/metadata.json`:
-
-```json
-{
-  "id": "0021-feature-name",
-  "status": "planned",
-  "type": "feature",
-  "priority": "P1",
-  "created": "2025-11-24T12:00:00Z",
-  "lastActivity": "2025-11-24T12:00:00Z",
-  "testMode": "<VALUE FROM config.testing.defaultTestMode OR 'TDD'>",
-  "coverageTarget": <VALUE FROM config.testing.defaultCoverageTarget OR 95>,
-  "feature_id": null,
-  "epic_id": null,
-  "externalLinks": {}
-}
-```
-
-**Use Write tool to create this file immediately after creating increment.**
-
-**Example Logic**:
-```javascript
-// Read config
-const config = JSON.parse(fs.readFileSync('.specweave/config.json', 'utf8'));
-const testMode = config?.testing?.defaultTestMode || 'TDD';
-const coverageTarget = config?.testing?.defaultCoverageTarget || 95;
-
-// Create metadata with config values
-const metadata = {
-  id: "0021-feature-name",
-  status: "planned",
-  type: "feature",
-  priority: "P1",
-  created: new Date().toISOString(),
-  lastActivity: new Date().toISOString(),
-  testMode: testMode,  // ← FROM CONFIG!
-  coverageTarget: coverageTarget,  // ← FROM CONFIG!
-  feature_id: null,
-  epic_id: null,
-  externalLinks: {}
-};
-```
 
 ### STEP 8: Guide User to Complete Planning
 
@@ -1085,9 +1092,11 @@ node plugins/specweave/skills/increment-planner/scripts/generate-short-name.js "
 **Process**:
 1. Get next number: `0015`
 2. Generate short name: `user-authentication`
-3. Create: `.specweave/increments/0015-user-authentication/`
-4. Create templates (spec.md, plan.md, tasks.md, metadata.json)
-5. Guide user to complete in main conversation
+3. Create directory: `.specweave/increments/0015-user-authentication/`
+4. Create **metadata.json FIRST** (required before spec.md)
+5. Create spec.md (now allowed - metadata.json exists)
+6. Create tasks.md (plan.md optional for simple features)
+7. Guide user to complete in main conversation
 
 ### Pattern 2: Critical Hotfix
 
@@ -1116,6 +1125,9 @@ node plugins/specweave/skills/increment-planner/scripts/generate-short-name.js "
 ---
 
 ## Troubleshooting
+
+**Issue**: spec.md Write BLOCKED by guard
+**Solution**: Create metadata.json FIRST! The `metadata-json-guard.sh` hook blocks spec.md creation until metadata.json exists. Always follow the order: directory → metadata.json → spec.md → tasks.md
 
 **Issue**: Feature number conflict
 **Solution**: Always run duplicate check before creating increment
