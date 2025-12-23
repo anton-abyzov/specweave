@@ -290,8 +290,27 @@ describe('IncrementNumberManager', () => {
       fs.mkdirSync(path.join(incrementsDir, '0010E-external-fix'));
 
       const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
-      // Gap-filling: 0010E exists → first gap is 0001
+      // Gap-filling: 0010E exists (base 10) → first gap is 0001
       expect(result).toBe('0001');
+    });
+
+    it('should return 0002 when 0001E exists (CRITICAL collision prevention)', () => {
+      // When external increment 0001E exists, generating new internal should return 0002
+      // This is the CORE collision prevention scenario
+      fs.mkdirSync(path.join(incrementsDir, '0001E-external-item'));
+
+      const result = IncrementNumberManager.getNextIncrementNumber(testProjectRoot);
+      // 0001E uses base number 1 → next available is 0002
+      expect(result).toBe('0002');
+    });
+
+    it('should return 0002E when 0001 exists (CRITICAL collision prevention)', () => {
+      // When internal increment 0001 exists, generating new external should return 0002E
+      fs.mkdirSync(path.join(incrementsDir, '0001-internal-item'));
+
+      const result = IncrementNumberManager.getNextExternalIncrementNumber(testProjectRoot);
+      // 0001 uses base number 1 → next available is 0002 → returns 0002E
+      expect(result).toBe('0002E');
     });
 
     it('should handle mixed internal and external increments with gap-filling', () => {
