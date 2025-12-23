@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.37] - 2025-12-22
+
+### 🔧 Implementation Updates
+
+- Updated structure level detector for improved project detection
+- Enhanced spec validation guard
+- Updated increment planner templates for multi-project support
+- Improved PM agent configuration
+
+---
+
 ## [1.0.35] - 2025-12-22
 
 ### 📚 Documentation Updates
