@@ -88,8 +88,11 @@ interface ConfigSubset {
   sync?: {
     profiles?: Record<string, {
       provider?: string;
+      displayName?: string;
       config?: {
         project?: string;
+        owner?: string;
+        repo?: string;
         areaPaths?: string[];
         areaPathMapping?: {
           project: string;
@@ -280,7 +283,32 @@ export function detectStructureLevel(projectRoot: string = process.cwd()): Struc
     }
   }
 
-  // Check 3: Umbrella with teams (2-level structure)
+  // Check 3: GitHub sync profiles (1-level structure)
+  // For GitHub-based umbrellas, each sync profile = a project (no boards)
+  // This takes precedence over umbrella team detection for GitHub
+  if (config.sync?.profiles) {
+    const githubProfiles = Object.entries(config.sync.profiles)
+      .filter(([, profile]) => profile.provider === 'github');
+
+    if (githubProfiles.length > 0) {
+      // GitHub profiles = 1-level structure (each repo is a project)
+      const projects: ProjectInfo[] = githubProfiles.map(([id, profile]) => ({
+        id: normalizeId(id),
+        name: profile.displayName || profile.config?.repo || id,
+        externalId: profile.config?.repo
+      }));
+
+      return {
+        level: 1,
+        projects,
+        detectionReason: 'GitHub sync profiles configured',
+        source: 'multi-project'
+      };
+    }
+  }
+
+  // Check 4: Umbrella with teams (2-level structure)
+  // Only triggers for NON-GitHub setups (ADO/JIRA with team hierarchy)
   if (config.umbrella?.enabled && config.umbrella?.childRepos?.length) {
     const repos = config.umbrella.childRepos;
     const teams = new Set(repos.filter(r => r.team).map(r => r.team!));
@@ -312,6 +340,19 @@ export function detectStructureLevel(projectRoot: string = process.cwd()): Struc
         source: 'umbrella-teams'
       };
     }
+
+    // Umbrella with single team or no teams = 1-level (each repo is a project)
+    const projects: ProjectInfo[] = repos.map(r => ({
+      id: normalizeId(r.id),
+      name: r.name || r.id
+    }));
+
+    return {
+      level: 1,
+      projects,
+      detectionReason: 'Umbrella repos (single team)',
+      source: 'multi-project'
+    };
   }
 
   // Check 4: multiProject.projects (1-level structure)
