@@ -1,5 +1,7 @@
 /**
  * Directory structure creation and template copying
+ *
+ * Enhanced with smart scaffolding for living docs (v0.35.0+)
  */
 
 import * as fs from '../../../utils/fs-native.js';
@@ -11,34 +13,131 @@ import { getLocaleManager } from '../../../core/i18n/locale-manager.js';
 import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import type { TestMode } from './types.js';
 import { findSourceDir, findPackageRoot } from './path-utils.js';
+import { mergeInstructionFile, parseTemplateSections, getPackageVersion } from './instruction-file-merger.js';
+import {
+  LivingDocsScaffold,
+  scanExistingDocs,
+  findSimilarFolders,
+  type ScaffoldResult,
+  type DetectedDoc,
+} from '../../../core/living-docs/scaffolding/index.js';
+import { consoleLogger } from '../../../utils/logger.js';
 
 /**
  * Create the .specweave directory structure
  *
+ * Enhanced with smart living docs scaffolding:
+ * - Creates full docs structure with README files
+ * - Detects project ID from git remote
+ * - Scans for existing documentation to merge
+ *
  * @param targetDir - Target directory
  * @param _adapterName - Adapter name (unused, kept for API compatibility)
+ * @param options - Optional scaffolding options
  */
-export function createDirectoryStructure(targetDir: string, _adapterName: string): void {
-  const directories = [
-    // Core increment structure
+export function createDirectoryStructure(
+  targetDir: string,
+  _adapterName: string,
+  options?: { projectName?: string; scanExistingDocs?: boolean }
+): void {
+  // Core directories (created synchronously for backward compatibility)
+  const coreDirectories = [
     '.specweave/increments',
-    '.specweave/cache',                       // External tool cache (24-hour TTL)
+    '.specweave/cache',
+    '.specweave/state',
+  ];
 
-    // 6-pillar documentation structure
-    '.specweave/docs/internal/strategy',      // Business specs (WHAT, WHY)
-    '.specweave/docs/internal/specs',         // Feature specifications (detailed requirements)
-    '.specweave/docs/internal/architecture',  // Technical design (HOW)
-    '.specweave/docs/internal/architecture/adr',      // Architecture Decision Records
-    '.specweave/docs/internal/architecture/diagrams', // Architecture diagrams
-    '.specweave/docs/internal/delivery',      // Roadmap, CI/CD, guides
-    '.specweave/docs/internal/operations',    // Runbooks, SLOs
-    '.specweave/docs/internal/governance',    // Security, compliance
-    '.specweave/docs/public',                 // Published documentation
+  coreDirectories.forEach((dir) => {
+    fs.mkdirSync(path.join(targetDir, dir), { recursive: true });
+  });
+
+  // Use smart scaffolding for living docs structure
+  const scaffold = new LivingDocsScaffold({
+    projectPath: targetDir,
+    projectName: options?.projectName,
+    logger: consoleLogger,
+    overwrite: false,
+  });
+
+  // Run scaffold synchronously (we need to block until done)
+  scaffold.scaffold().then((result: ScaffoldResult) => {
+    if (result.success) {
+      console.log(chalk.green('   ✓ Living docs structure created'));
+      if (result.dirsCreated.length > 0) {
+        console.log(chalk.gray(`     ${result.dirsCreated.length} directories created`));
+      }
+    } else {
+      console.log(chalk.yellow('   ⚠ Living docs scaffolding had errors:'));
+      result.errors.forEach(err => console.log(chalk.gray('     ' + err)));
+    }
+  }).catch(() => {
+    // Fallback to basic structure if scaffolding fails
+    console.log(chalk.yellow('   ⚠ Smart scaffolding failed, using basic structure'));
+    createBasicDocsStructure(targetDir);
+  });
+}
+
+/**
+ * Fallback: Create basic docs structure without scaffolding
+ */
+function createBasicDocsStructure(targetDir: string): void {
+  const directories = [
+    '.specweave/docs/internal/strategy',
+    '.specweave/docs/internal/specs',
+    '.specweave/docs/internal/architecture',
+    '.specweave/docs/internal/architecture/adr',
+    '.specweave/docs/internal/architecture/diagrams',
+    '.specweave/docs/internal/delivery',
+    '.specweave/docs/internal/operations',
+    '.specweave/docs/internal/governance',
+    '.specweave/docs/internal/modules',
+    '.specweave/docs/internal/organization',
+    '.specweave/docs/public',
+    '.specweave/docs/public/overview',
+    '.specweave/docs/public/api',
+    '.specweave/docs/public/guides',
   ];
 
   directories.forEach((dir) => {
     fs.mkdirSync(path.join(targetDir, dir), { recursive: true });
   });
+}
+
+/**
+ * Scan for existing documentation and suggest merges
+ *
+ * Call this after createDirectoryStructure to detect existing docs
+ * that could be imported into living docs.
+ *
+ * @param targetDir - Target directory
+ * @returns Detected documentation files with merge suggestions
+ */
+export async function scanAndSuggestMerges(targetDir: string): Promise<{
+  detected: DetectedDoc[];
+  suggestions: Map<string, DetectedDoc[]>;
+  similarFolders: Map<string, string[]>;
+}> {
+  const detected = await scanExistingDocs({
+    projectPath: targetDir,
+    recursive: true,
+    maxDepth: 5,
+    minConfidence: 0.3,
+    logger: consoleLogger,
+  });
+
+  const similarFolders = findSimilarFolders(targetDir, detected);
+
+  // Group by suggested target
+  const suggestions = new Map<string, DetectedDoc[]>();
+  for (const doc of detected) {
+    const target = doc.suggestedTarget;
+    if (!suggestions.has(target)) {
+      suggestions.set(target, []);
+    }
+    suggestions.get(target)!.push(doc);
+  }
+
+  return { detected, suggestions, similarFolders };
 }
 
 /**
@@ -86,31 +185,92 @@ export async function copyTemplates(
     fs.writeFileSync(path.join(targetDir, 'README.md'), readme);
   }
 
-  // Generate CLAUDE.md
-  const skillsDir = findSourceDir('skills', templatesDir);
-  const agentsDir = findSourceDir('agents', templatesDir);
-  const commandsDir = findSourceDir('commands', templatesDir);
-
+  // Generate/Merge CLAUDE.md with smart preservation of user content
+  const claudeMdPath = path.join(targetDir, 'CLAUDE.md');
   const claudeMdTemplatePath = path.normalize(path.join(templatesDir, 'CLAUDE.md.template'));
-  const claudeGen = new ClaudeMdGenerator(skillsDir, agentsDir, commandsDir);
-  const claudeMd = await claudeGen.generate({
-    projectName,
-    projectPath: targetDir,
-    templatePath: fs.existsSync(claudeMdTemplatePath) ? claudeMdTemplatePath : undefined
-  });
 
-  fs.writeFileSync(path.join(targetDir, 'CLAUDE.md'), claudeMd);
+  if (fs.existsSync(claudeMdTemplatePath)) {
+    const templateContent = fs.readFileSync(claudeMdTemplatePath, 'utf-8');
+    const sections = parseTemplateSections(templateContent);
+    const existingContent = fs.existsSync(claudeMdPath)
+      ? fs.readFileSync(claudeMdPath, 'utf-8')
+      : null;
 
-  // Generate AGENTS.md
+    const mergeResult = mergeInstructionFile(
+      existingContent,
+      sections,
+      'claude',
+      getPackageVersion(),
+      projectName
+    );
+
+    fs.writeFileSync(claudeMdPath, mergeResult.content);
+
+    // Log merge action for user visibility
+    if (mergeResult.action === 'merged') {
+      console.log(chalk.blue('   ✓ CLAUDE.md merged (preserved ' + mergeResult.preserved + ' user sections)'));
+      if (mergeResult.updated.length > 0) {
+        console.log(chalk.gray('     Updated: ' + mergeResult.updated.join(', ')));
+      }
+      if (mergeResult.warnings.length > 0) {
+        mergeResult.warnings.forEach(w => console.log(chalk.yellow('     ⚠ ' + w)));
+      }
+    } else if (mergeResult.action === 'created') {
+      console.log(chalk.green('   ✓ CLAUDE.md created'));
+    }
+  } else {
+    // Fallback to old generator if template not found
+    const skillsDir = findSourceDir('skills', templatesDir);
+    const agentsDir = findSourceDir('agents', templatesDir);
+    const commandsDir = findSourceDir('commands', templatesDir);
+    const claudeGen = new ClaudeMdGenerator(skillsDir, agentsDir, commandsDir);
+    const claudeMd = await claudeGen.generate({
+      projectName,
+      projectPath: targetDir,
+      templatePath: undefined
+    });
+    fs.writeFileSync(claudeMdPath, claudeMd);
+  }
+
+  // Generate/Merge AGENTS.md with smart preservation of user content
+  const agentsMdPath = path.join(targetDir, 'AGENTS.md');
   const agentsMdTemplatePath = path.normalize(path.join(templatesDir, 'AGENTS.md.template'));
-  const agentsGen = new AgentsMdGenerator(skillsDir, agentsDir, commandsDir);
-  const agentsMd = await agentsGen.generate({
-    projectName,
-    projectPath: targetDir,
-    templatePath: fs.existsSync(agentsMdTemplatePath) ? agentsMdTemplatePath : undefined
-  });
 
-  fs.writeFileSync(path.join(targetDir, 'AGENTS.md'), agentsMd);
+  if (fs.existsSync(agentsMdTemplatePath)) {
+    const templateContent = fs.readFileSync(agentsMdTemplatePath, 'utf-8');
+    const sections = parseTemplateSections(templateContent);
+    const existingContent = fs.existsSync(agentsMdPath)
+      ? fs.readFileSync(agentsMdPath, 'utf-8')
+      : null;
+
+    const mergeResult = mergeInstructionFile(
+      existingContent,
+      sections,
+      'agents',
+      getPackageVersion(),
+      projectName
+    );
+
+    fs.writeFileSync(agentsMdPath, mergeResult.content);
+
+    if (mergeResult.action === 'merged') {
+      console.log(chalk.blue('   ✓ AGENTS.md merged (preserved ' + mergeResult.preserved + ' user sections)'));
+    } else if (mergeResult.action === 'created') {
+      console.log(chalk.green('   ✓ AGENTS.md created'));
+    }
+  } else {
+    // Fallback to old generator
+    const skillsDir = findSourceDir('skills', templatesDir);
+    const agentsDir = findSourceDir('agents', templatesDir);
+    const commandsDir = findSourceDir('commands', templatesDir);
+    const agentsGen = new AgentsMdGenerator(skillsDir, agentsDir, commandsDir);
+    const agentsMd = await agentsGen.generate({
+      projectName,
+      projectPath: targetDir,
+      templatePath: undefined
+    });
+    fs.writeFileSync(agentsMdPath, agentsMd);
+  }
 
   // Copy .gitignore
   const gitignoreTemplate = path.join(templatesDir, '.gitignore.template');

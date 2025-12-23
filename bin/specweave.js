@@ -235,6 +235,17 @@ program
     console.log(statusLine);
   });
 
+// Update instructions command - Smart merge CLAUDE.md/AGENTS.md
+program
+  .command('update-instructions')
+  .description('Update CLAUDE.md and AGENTS.md with smart merge (preserves user content)')
+  .option('--dry-run', 'Preview changes without writing')
+  .option('-v, --verbose', 'Show detailed merge information')
+  .action(async (options) => {
+    const { updateInstructionsCommand } = await import('../dist/src/cli/commands/update-instructions.js');
+    await updateInstructionsCommand(options);
+  });
+
 // Check discipline command - Validate increment discipline
 program
   .command('check-discipline')
