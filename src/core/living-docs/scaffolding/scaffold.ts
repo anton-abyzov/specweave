@@ -38,6 +38,13 @@ export interface ScaffoldOptions {
 
   /** Additional template context variables */
   additionalContext?: Record<string, unknown>;
+
+  /**
+   * Skip creating parent project folder in specs/
+   * Set to true for GitHub multi-repo setups where each repo = separate project folder
+   * The child repo folders will be created during /sw:increment or sync
+   */
+  skipParentProjectFolder?: boolean;
 }
 
 /**
@@ -165,6 +172,7 @@ export class LivingDocsScaffold {
   private templateEngine: TemplateEngine;
   private overwrite: boolean;
   private dryRun: boolean;
+  private skipParentProjectFolder: boolean;
   private context: TemplateContext;
 
   constructor(options: ScaffoldOptions) {
@@ -174,6 +182,7 @@ export class LivingDocsScaffold {
     this.templateEngine = new TemplateEngine({ logger: this.logger });
     this.overwrite = options.overwrite ?? false;
     this.dryRun = options.dryRun ?? false;
+    this.skipParentProjectFolder = options.skipParentProjectFolder ?? false;
 
     // Create context
     this.context = {
@@ -235,7 +244,12 @@ export class LivingDocsScaffold {
       await this.createStructure(docsBase, DOCS_STRUCTURE, result);
 
       // Create project-specific specs folder
-      await this.createProjectSpecsFolder(docsBase, result);
+      // Skip for multi-repo GitHub setups where each repo creates its own folder
+      if (!this.skipParentProjectFolder) {
+        await this.createProjectSpecsFolder(docsBase, result);
+      } else {
+        this.logger.info('  Skipping parent project folder (multi-repo mode)');
+      }
 
       // Create SUGGESTIONS.md placeholder
       await this.createSuggestionsFile(docsBase, result);
