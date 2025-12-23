@@ -1,13 +1,94 @@
 ---
 name: performance-optimization
-description: Expert in React Native performance optimization including bundle size reduction, memory management, rendering optimization, image optimization, list performance, navigation optimization, startup time, FlatList, memoization, React.memo, useMemo, useCallback, lazy loading, code splitting. Activates for performance, slow app, lag, memory leak, bundle size, optimization, flatlist performance, re-render, fps, jank, startup time, app size.
+description: Expert in React Native 0.83+ performance optimization including Hermes V1, React 19.2 concurrent features, Intersection Observer, Web Performance APIs, bundle size reduction, memory management, rendering optimization, FlashList, expo-image v2, memoization, lazy loading, code splitting. Activates for performance, slow app, lag, memory leak, bundle size, optimization, flatlist performance, re-render, fps, jank, startup time, app size, hermes, concurrent rendering.
 ---
 
-# Performance Optimization Expert
+# Performance Optimization Expert (RN 0.83+)
 
-Specialized in optimizing React Native and Expo applications for production. Expert in reducing bundle size, improving render performance, optimizing memory usage, and eliminating jank.
+Specialized in optimizing React Native 0.83+ and Expo SDK 54+ applications for production. Expert in Hermes V1, React 19.2 concurrent features, Intersection Observer API, Web Performance APIs, and modern optimization strategies.
 
 ## What I Know
+
+### React Native 0.83 Performance Features
+
+**Hermes V1 (Experimental)**
+- Next-generation JavaScript engine
+- Improved garbage collection
+- Better startup performance
+- Enhanced debugging with DevTools
+- Enable in metro.config.js:
+
+```javascript
+// metro.config.js
+module.exports = {
+  transformer: {
+    hermesParser: true, // Enable Hermes V1 parser
+  },
+};
+```
+
+**React 19.2 Concurrent Features**
+- Activity component for state preservation
+- useEffectEvent for stable event handlers
+- Improved concurrent rendering
+- Better memory management during transitions
+
+```typescript
+// Preserve state while hidden (React 19.2)
+import { Activity } from 'react';
+
+function TabContent({ isActive, children }) {
+  return (
+    <Activity mode={isActive ? 'visible' : 'hidden'}>
+      {children}
+    </Activity>
+  );
+}
+```
+
+**Intersection Observer API (Canary)**
+- Web-like lazy loading for React Native
+- Visibility detection without scroll events
+- More efficient than manual scroll tracking
+
+```typescript
+import { IntersectionObserver } from 'react-native';
+
+// Lazy load when element enters viewport
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      loadContent();
+    }
+  });
+});
+```
+
+**Web Performance APIs (Stable)**
+- performance.now() for precise timing
+- User Timing API for custom marks
+- PerformanceObserver for monitoring
+
+```typescript
+// Performance measurement
+const start = performance.now();
+await heavyOperation();
+const duration = performance.now() - start;
+
+// User Timing API
+performance.mark('loadStart');
+await loadData();
+performance.mark('loadEnd');
+performance.measure('dataLoad', 'loadStart', 'loadEnd');
+
+// PerformanceObserver
+const observer = new PerformanceObserver((list) => {
+  list.getEntries().forEach((entry) => {
+    console.log(`${entry.name}: ${entry.duration}ms`);
+  });
+});
+observer.observe({ entryTypes: ['measure'] });
+```
 
 ### Bundle Size Optimization
 
@@ -28,19 +109,20 @@ npx react-native-bundle-visualizer
 ```
 
 **Reducing Bundle Size**
-- Remove unused dependencies
-- Use Hermes engine (Android)
+- Remove unused dependencies with depcheck
+- Use Hermes V1 for smaller bytecode
 - Enable code minification and obfuscation
 - Tree shaking for unused code elimination
 - Lazy load heavy screens and components
 - Optimize asset sizes (images, fonts)
+- Use expo-image instead of react-native-fast-image
 
-**Hermes Configuration**
+**Hermes Configuration (RN 0.83)**
 ```javascript
-// app.json (Expo)
+// app.json (Expo SDK 54+)
 {
   "expo": {
-    "jsEngine": "hermes", // Faster startup, smaller bundle
+    "jsEngine": "hermes", // Default in SDK 54
     "ios": {
       "jsEngine": "hermes"
     },
@@ -49,6 +131,14 @@ npx react-native-bundle-visualizer
     }
   }
 }
+
+// For Hermes V1 experimental
+// metro.config.js
+module.exports = {
+  transformer: {
+    hermesParser: true,
+  },
+};
 ```
 
 ### Rendering Performance
@@ -189,10 +279,85 @@ function SuperFastList({ data }) {
 }
 ```
 
+**Intersection Observer for Lazy Loading (RN 0.83 Canary)**
+```typescript
+import { useRef, useEffect, useState } from 'react';
+import { View } from 'react-native';
+
+function LazyLoadItem({ onVisible, children }) {
+  const ref = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (!ref.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isVisible) {
+          setIsVisible(true);
+          onVisible?.();
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <View ref={ref}>
+      {isVisible ? children : <Placeholder />}
+    </View>
+  );
+}
+```
+
 ### Image Optimization
 
-**Fast Image for Better Performance**
+**expo-image v2 (Recommended for Expo SDK 54+)**
+```typescript
+// expo-image is the recommended solution for Expo projects
+import { Image, useImage } from 'expo-image';
+
+// Basic usage with blurhash placeholder
+function OptimizedImage({ uri, blurhash }) {
+  return (
+    <Image
+      source={{ uri }}
+      placeholder={{ blurhash }}
+      contentFit="cover"
+      transition={200}
+      style={{ width: 100, height: 100 }}
+      cachePolicy="memory-disk" // Aggressive caching
+    />
+  );
+}
+
+// Imperative loading with useImage hook (v2)
+function PreloadedImage({ uri }) {
+  const image = useImage(uri, {
+    onError: (error) => console.error('Image load failed:', error),
+  });
+
+  if (!image) {
+    return <ActivityIndicator />;
+  }
+
+  return (
+    <Image
+      source={image}
+      style={{ width: image.width / 2, height: image.height / 2 }}
+      contentFit="cover"
+    />
+  );
+}
+```
+
+**Fast Image for Bare RN Projects**
 ```javascript
+// For bare React Native projects without Expo
 // Install: npm install react-native-fast-image
 import FastImage from 'react-native-fast-image';
 
@@ -202,8 +367,8 @@ function ProfilePicture({ uri }) {
       style={{ width: 100, height: 100 }}
       source={{
         uri: uri,
-        priority: FastImage.priority.normal,  // high, normal, low
-        cache: FastImage.cacheControl.immutable  // Aggressive caching
+        priority: FastImage.priority.normal,
+        cache: FastImage.cacheControl.immutable
       }}
       resizeMode={FastImage.resizeMode.cover}
     />
@@ -222,12 +387,14 @@ function ProfilePicture({ uri }) {
 // Use local images when possible (bundled)
 <Image source={require('./assets/logo.png')} />
 
-// Progressive loading
-import { Image } from 'react-native';
+// Progressive loading with blurhash
+import { Image } from 'expo-image';
 
 <Image
   source={{ uri: imageUrl }}
-  defaultSource={require('./placeholder.png')}  // iOS only
+  placeholder={{ blurhash: 'LGF5]+Yk^6#M@-5c,1J5@[or[Q6.' }}
+  contentFit="cover"
+  transition={300}
   style={{ width: 200, height: 200 }}
 />
 ```
@@ -429,6 +596,11 @@ Ask me when you need help with:
 - Analyzing performance bottlenecks
 - Using React.memo, useMemo, useCallback effectively
 - Implementing 60fps animations
+- **Configuring Hermes V1 for better performance**
+- **Using React 19.2 Activity component for state preservation**
+- **Implementing Intersection Observer for lazy loading**
+- **Using Web Performance APIs for profiling**
+- **Migrating to expo-image v2**
 
 ## Performance Monitoring
 

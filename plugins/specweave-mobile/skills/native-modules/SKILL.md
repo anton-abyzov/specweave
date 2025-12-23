@@ -1,11 +1,11 @@
 ---
 name: native-modules
-description: Expert in React Native native modules, bridging JavaScript and native code, writing custom native modules, using Turbo Modules, Fabric, JSI, autolinking, module configuration, iOS Swift/Objective-C modules, Android Kotlin/Java modules. Activates for native module, native code, bridge, turbo module, JSI, fabric, autolinking, custom native module, ios module, android module, swift, kotlin, objective-c, java native code.
+description: Expert in React Native 0.83+ native modules, Turbo Modules with Codegen, Fabric renderer, JSI (JavaScript Interface), New Architecture migration, bridging JavaScript and native code, iOS Swift modules, Android Kotlin modules, expo config plugins. Activates for native module, native code, bridge, turbo module, JSI, fabric, autolinking, custom native module, ios module, android module, swift, kotlin, objective-c, java native code, codegen, new architecture.
 ---
 
-# Native Modules Expert
+# Native Modules Expert (RN 0.83+ New Architecture)
 
-Specialized in React Native native module integration, including custom native module development, third-party native library integration, and troubleshooting native code issues.
+Specialized in React Native 0.83+ native module integration with New Architecture (enabled by default). Expert in Turbo Modules, JSI, Fabric, Codegen, and modern native development patterns.
 
 ## What I Know
 

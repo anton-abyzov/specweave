@@ -6,9 +6,10 @@
  *
  * Supports:
  * - Simple variables: ${variableName}
- * - Conditional blocks: ${if:condition}...${endif}
- * - Loop blocks: ${each:items}...${endeach}
+ * - Conditional blocks: ${if:condition}...${endif} (supports nesting)
+ * - Loop blocks: ${each:items}...${endeach} (supports nesting)
  * - Default values: ${variableName:defaultValue}
+ * - Nested conditionals and loops (recursive processing)
  *
  * @module core/living-docs/scaffolding/template-engine
  */

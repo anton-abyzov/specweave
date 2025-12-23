@@ -34,13 +34,14 @@ import { consoleLogger } from '../../../utils/logger.js';
  * @param targetDir - Target directory
  * @param _adapterName - Adapter name (unused, kept for API compatibility)
  * @param options - Optional scaffolding options
+ * @returns Promise that resolves when scaffolding is complete
  */
-export function createDirectoryStructure(
+export async function createDirectoryStructure(
   targetDir: string,
   _adapterName: string,
   options?: { projectName?: string; scanExistingDocs?: boolean }
-): void {
-  // Core directories (created synchronously for backward compatibility)
+): Promise<void> {
+  // Core directories (created first for immediate availability)
   const coreDirectories = [
     '.specweave/increments',
     '.specweave/cache',
@@ -59,8 +60,10 @@ export function createDirectoryStructure(
     overwrite: false,
   });
 
-  // Run scaffold synchronously (we need to block until done)
-  scaffold.scaffold().then((result: ScaffoldResult) => {
+  try {
+    // Properly await scaffold completion
+    const result: ScaffoldResult = await scaffold.scaffold();
+
     if (result.success) {
       console.log(chalk.green('   ✓ Living docs structure created'));
       if (result.dirsCreated.length > 0) {
@@ -70,11 +73,11 @@ export function createDirectoryStructure(
       console.log(chalk.yellow('   ⚠ Living docs scaffolding had errors:'));
       result.errors.forEach(err => console.log(chalk.gray('     ' + err)));
     }
-  }).catch(() => {
+  } catch {
     // Fallback to basic structure if scaffolding fails
     console.log(chalk.yellow('   ⚠ Smart scaffolding failed, using basic structure'));
     createBasicDocsStructure(targetDir);
-  });
+  }
 }
 
 /**

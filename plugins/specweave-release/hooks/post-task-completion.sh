@@ -8,9 +8,8 @@
 
 # CRITICAL (v0.25.2): NEVER use 'set -e' in hooks - causes Claude Code crashes
 # See: CLAUDE.md Section 9a (Hook Safety Checklist), ADR-0060 (Hook Performance)
-set +e  # Allow commands to fail without terminating script
-set -u  # Fail on undefined variables
-set -o pipefail  # Fail if any command in pipeline fails
+# v1.0.33 - Fixed: removed set -o pipefail for hook safety
+set +e  # CRITICAL: Never use set -e or pipefail in hooks (causes cascading failures)
 
 # Constants
 SPECWEAVE_ROOT="${SPECWEAVE_ROOT:-$(pwd)}"

@@ -312,7 +312,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         check_session_health "$PROJECT_ROOT"
       else
         echo "Not in a SpecWeave project"
-        exit 1
+        exit 0  # SAFETY: Never use exit 1 in hooks (causes Claude Code failures)
       fi
       ;;
     cleanup)
@@ -321,7 +321,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
         emergency_cleanup "$PROJECT_ROOT"
       else
         echo "Not in a SpecWeave project"
-        exit 1
+        exit 0  # SAFETY: Never use exit 1 in hooks (causes Claude Code failures)
       fi
       ;;
     kill-zombies)
@@ -330,7 +330,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
       ;;
     *)
       echo "Usage: $0 {health|cleanup|kill-zombies}"
-      exit 1
+      exit 0  # SAFETY: Never use exit 1 in hooks (causes Claude Code failures)
       ;;
   esac
 fi
