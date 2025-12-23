@@ -14,8 +14,6 @@
 npm install -g specweave
 ```
 
-> **v1.0.22** — [Changelog](https://github.com/anton-abyzov/specweave/releases)
-
 ---
 
 ## The Problem With AI Coding Tools
