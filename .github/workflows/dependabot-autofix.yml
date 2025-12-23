@@ -14,6 +14,7 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  id-token: write
 
 jobs:
   autofix:
@@ -112,7 +113,6 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          timeout_minutes: 10
           prompt: |
             A Dependabot PR is failing CI. Analyze and fix automatically.
 

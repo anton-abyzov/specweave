@@ -1,19 +1,65 @@
 /**
  * Generator utilities for Living Docs Sync
  * Generates markdown files for features, READMEs, and user stories
+ *
+ * IMPORTANT: All generators are PROJECT-AGNOSTIC
+ * They work for ANY user project, not just SpecWeave itself.
+ *
  * @module core/living-docs/sync-helpers/generators
  */
 
 import type { ParsedSpec, UserStoryData } from '../types.js';
 
 /**
+ * Generator context - provides project-specific information
+ * for template generation without hardcoding paths.
+ */
+export interface GeneratorContext {
+  /** Project ID (e.g., "my-app", "backend-service") */
+  projectId: string;
+
+  /** Project name for display (e.g., "My Application") */
+  projectName?: string;
+
+  /** Relative path from feature folder to increments folder */
+  incrementsRelativePath?: string;
+
+  /** Whether to use relative links (default: true) */
+  useRelativeLinks?: boolean;
+}
+
+/**
+ * Default context for backward compatibility
+ */
+const DEFAULT_CONTEXT: GeneratorContext = {
+  projectId: 'default',
+  projectName: 'Project',
+  incrementsRelativePath: '../../../../increments',
+  useRelativeLinks: true,
+};
+
+/**
+ * Merge user context with defaults
+ */
+function resolveContext(context?: Partial<GeneratorContext>): GeneratorContext {
+  return { ...DEFAULT_CONTEXT, ...context };
+}
+
+/**
  * Generate FEATURE.md content
+ *
+ * @param featureId - Feature ID (e.g., "FS-001")
+ * @param parsed - Parsed spec content
+ * @param incrementId - Increment ID (e.g., "0001-feature-name")
+ * @param context - Optional generator context for project-specific paths
  */
 export function generateFeatureFile(
   featureId: string,
   parsed: ParsedSpec,
-  incrementId: string
+  incrementId: string,
+  context?: Partial<GeneratorContext>
 ): string {
+  const ctx = resolveContext(context);
   const lines: string[] = [];
 
   lines.push('---');
@@ -24,6 +70,9 @@ export function generateFeatureFile(
   lines.push('priority: ' + parsed.priority);
   lines.push('created: ' + parsed.created);
   lines.push('lastUpdated: ' + new Date().toISOString().split('T')[0]);
+  if (ctx.projectId !== 'default') {
+    lines.push('project: ' + ctx.projectId);
+  }
   lines.push('---');
   lines.push('');
   lines.push('# ' + parsed.title);
@@ -41,7 +90,13 @@ export function generateFeatureFile(
   lines.push('| Increment | Status | Completion Date |');
   lines.push('|-----------|--------|----------------|');
   const statusEmoji = parsed.status === 'completed' ? '✅' : '⏳';
-  lines.push('| [' + incrementId + '](../../../../increments/' + incrementId + '/spec.md) | ' + statusEmoji + ' ' + parsed.status + ' | ' + parsed.created + ' |');
+
+  // Use context-aware path for increment link
+  const incrementLink = ctx.useRelativeLinks
+    ? `${ctx.incrementsRelativePath}/${incrementId}/spec.md`
+    : `/.specweave/increments/${incrementId}/spec.md`;
+
+  lines.push('| [' + incrementId + '](' + incrementLink + ') | ' + statusEmoji + ' ' + parsed.status + ' | ' + parsed.created + ' |');
   lines.push('');
 
   if (parsed.userStories.length > 0) {
@@ -49,7 +104,8 @@ export function generateFeatureFile(
     lines.push('');
     for (const story of parsed.userStories) {
       const storySlug = story.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      const storyFile = '../../specweave/' + featureId + '/' + story.id.toLowerCase() + '-' + storySlug + '.md';
+      // User story files are in the SAME directory as FEATURE.md - use relative path
+      const storyFile = './' + story.id.toLowerCase() + '-' + storySlug + '.md';
       lines.push('- [' + story.id + ': ' + story.title + '](' + storyFile + ')');
     }
     lines.push('');
@@ -60,19 +116,30 @@ export function generateFeatureFile(
 
 /**
  * Generate README.md content
+ *
+ * @param featureId - Feature ID (e.g., "FS-001")
+ * @param parsed - Parsed spec content
+ * @param _incrementId - Increment ID (unused but kept for signature compatibility)
+ * @param context - Optional generator context for project-specific content
  */
 export function generateReadmeFile(
   featureId: string,
   parsed: ParsedSpec,
-  _incrementId: string
+  _incrementId: string,
+  context?: Partial<GeneratorContext>
 ): string {
+  const ctx = resolveContext(context);
   const lines: string[] = [];
 
+  // Use project ID from context, not hardcoded "specweave"
+  const projectSuffix = ctx.projectId !== 'default' ? `-${ctx.projectId}` : '';
+  const projectDisplay = ctx.projectName || ctx.projectId;
+
   lines.push('---');
-  lines.push('id: ' + featureId + '-specweave');
-  lines.push('title: "' + parsed.title + ' - SpecWeave Implementation"');
+  lines.push('id: ' + featureId + projectSuffix);
+  lines.push('title: "' + parsed.title + ' - ' + projectDisplay + ' Implementation"');
   lines.push('feature: ' + featureId);
-  lines.push('project: specweave');
+  lines.push('project: ' + ctx.projectId);
   lines.push('type: feature-context');
   lines.push('status: ' + parsed.status);
   lines.push('---');
@@ -103,10 +170,19 @@ export function generateReadmeFile(
 export interface UserStoryFileOptions {
   /** All projects in cross-project increment (for related_projects frontmatter) */
   allProjects?: string[];
+
+  /** Generator context for project-specific paths */
+  context?: Partial<GeneratorContext>;
 }
 
 /**
  * Generate user story file content
+ *
+ * @param story - User story data
+ * @param featureId - Feature ID (e.g., "FS-001")
+ * @param incrementId - Increment ID (e.g., "0001-feature-name")
+ * @param parsed - Parsed spec content
+ * @param options - Generation options including context
  */
 export function generateUserStoryFile(
   story: UserStoryData,
@@ -115,6 +191,7 @@ export function generateUserStoryFile(
   parsed: ParsedSpec,
   options?: UserStoryFileOptions
 ): string {
+  const ctx = resolveContext(options?.context);
   const lines: string[] = [];
 
   lines.push('---');
@@ -126,8 +203,10 @@ export function generateUserStoryFile(
   lines.push('created: ' + parsed.created);
 
   // Cross-project targeting (v0.33.0+)
-  if (story.project) {
-    lines.push('project: ' + story.project);
+  // Use story.project if available, otherwise use context project
+  const projectId = story.project || ctx.projectId;
+  if (projectId && projectId !== 'default') {
+    lines.push('project: ' + projectId);
   }
   if (story.board) {
     lines.push('board: ' + story.board);
@@ -201,7 +280,13 @@ export function generateUserStoryFile(
   lines.push('');
   lines.push('## Implementation');
   lines.push('');
-  lines.push('**Increment**: [' + incrementId + '](../../../../increments/' + incrementId + '/spec.md)');
+
+  // Use context-aware path for increment link
+  const incrementLink = ctx.useRelativeLinks
+    ? `${ctx.incrementsRelativePath}/${incrementId}/spec.md`
+    : `/.specweave/increments/${incrementId}/spec.md`;
+
+  lines.push('**Increment**: [' + incrementId + '](' + incrementLink + ')');
   lines.push('');
   lines.push('**Tasks**: See increment tasks.md for implementation details.');
   lines.push('');
