@@ -165,7 +165,7 @@ export async function configureMultiRepo(options: MultiRepoConfigOptions): Promi
           name: repo.name,
           owner: repo.owner,
           description: repo.description || `${repo.name} service`,
-          path: repo.name,
+          path: `repositories/${repo.owner}/${repo.name}`,
           visibility: repo.private ? 'private' : 'public',
           createOnGitHub: false,
           isNested: false
@@ -308,7 +308,7 @@ export async function configureMultiRepo(options: MultiRepoConfigOptions): Promi
       name: repoName,
       owner: owner,
       description: repoDescription,
-      path: repoName,
+      path: `repositories/${owner}/${repoName}`,
       visibility: visibility,
       createOnGitHub: repoCreateOnGitHub,
       isNested: false
