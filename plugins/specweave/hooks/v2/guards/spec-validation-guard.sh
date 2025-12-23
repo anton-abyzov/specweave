@@ -87,6 +87,7 @@ if [[ "$HOOK_FILE_PATH" =~ \.specweave/increments/[0-9]{3,4}E?-[^/]+/spec\.md$ ]
   # Check structure level to validate **Board**: fields
   # For 1-level structures (GitHub), **Board**: should NOT be present
   # For 2-level structures (ADO/JIRA with boards), **Board**: is required
+  # NOTE: This is a WARNING only - do NOT block spec writes!
   PROJECT_ROOT="${HOOK_FILE_PATH%%/.specweave/*}"
   BOARD_COUNT=$(echo "$HOOK_CONTENT" | grep -cE '^\*\*Board\*\*:' 2>/dev/null || echo "0")
   BOARD_COUNT="${BOARD_COUNT//[^0-9]/}"
@@ -108,9 +109,10 @@ if [[ "$HOOK_FILE_PATH" =~ \.specweave/increments/[0-9]{3,4}E?-[^/]+/spec\.md$ ]
       fi
     fi
 
+    # WARN only - never block spec.md writes (too disruptive)
     if [[ "$IS_2LEVEL" != "true" ]]; then
-      printf '{"decision":"block","reason":"🚫 **Board**: FIELDS NOT ALLOWED FOR 1-LEVEL STRUCTURE\\n\\nThis project uses GitHub sync (1-level structure).\\nEach sync profile = 1 project (no boards).\\n\\n🔧 FIX: Remove all **Board**: lines from spec.md\\n\\n**Board**: is only valid for:\\n- ADO with area path mapping\\n- JIRA with multiple boards\\n- Umbrella with multiple teams"}\n'
-      exit 2
+      echo '{"decision":"allow","message":"⚠️ WARNING: **Board**: fields found but this is a 1-level structure (GitHub). Board fields are only needed for ADO/JIRA with multiple boards. Consider removing **Board**: lines."}'
+      exit 0
     fi
   fi
 
