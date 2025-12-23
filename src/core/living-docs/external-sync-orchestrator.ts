@@ -15,6 +15,7 @@ import type { UserStoryData } from './types.js';
 import type { USExternalRef, USExternalRefsMap } from '../types/increment-metadata.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 import { pathExists, readJson } from './sync-helpers/file-utils.js';
+import type { ToolRegistry, ToolSearchResult, LoadedTool } from '../tools/index.js';
 
 /**
  * Project mapping configuration
@@ -79,10 +80,85 @@ export class ExternalSyncOrchestrator {
   private projectRoot: string;
   private logger: Logger;
   private projectMappings: Record<string, ProjectMapping> = {};
+  private toolRegistry?: ToolRegistry;
 
-  constructor(projectRoot: string, options: { logger?: Logger } = {}) {
+  constructor(projectRoot: string, options: { logger?: Logger; toolRegistry?: ToolRegistry } = {}) {
     this.projectRoot = projectRoot;
     this.logger = options.logger ?? consoleLogger;
+    this.toolRegistry = options.toolRegistry;
+  }
+
+  /**
+   * Set the tool registry for intelligent tool selection
+   */
+  setToolRegistry(registry: ToolRegistry): void {
+    this.toolRegistry = registry;
+  }
+
+  /**
+   * Search for best sync tool matching project configuration
+   *
+   * Uses Tool Search Registry to find the optimal sync tool based on
+   * project mapping (github, jira, ado).
+   *
+   * @param projectId - Project ID to find sync tool for
+   * @returns Best matching tool result or null
+   */
+  async findSyncTool(projectId: string): Promise<ToolSearchResult | null> {
+    if (!this.toolRegistry) {
+      return null;
+    }
+
+    const mapping = this.projectMappings[projectId];
+    if (!mapping) {
+      return null;
+    }
+
+    // Build query based on configured providers
+    const providers: string[] = [];
+    if (mapping.github) providers.push('github');
+    if (mapping.jira) providers.push('jira');
+    if (mapping.ado) providers.push('azure devops', 'ado');
+
+    if (providers.length === 0) {
+      return null;
+    }
+
+    const query = `sync ${providers.join(' ')} issues`;
+    const result = await this.toolRegistry.findBestMatch(query);
+
+    if (result && result.score > 0.3) {
+      this.toolRegistry.recordToolSelection(
+        result.tool.id,
+        query,
+        result.score,
+        `project:${projectId}`
+      );
+      return result;
+    }
+
+    return null;
+  }
+
+  /**
+   * Get loaded sync tool for a project
+   *
+   * Combines findSyncTool with lazy loading to get full tool content.
+   *
+   * @param projectId - Project ID
+   * @returns Loaded tool with content or null
+   */
+  async getLoadedSyncTool(projectId: string): Promise<LoadedTool | null> {
+    if (!this.toolRegistry) {
+      return null;
+    }
+
+    const result = await this.findSyncTool(projectId);
+    if (!result) {
+      return null;
+    }
+
+    return this.toolRegistry.getLoadedTool(result.tool.id);
   }
 
   /**
