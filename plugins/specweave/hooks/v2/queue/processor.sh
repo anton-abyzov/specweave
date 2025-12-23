@@ -5,13 +5,16 @@
 # Usage: processor.sh [--daemon]
 #
 # Event routing (EDA v2):
-# - increment.created/done/archived/reopened -> living-specs-handler + status-line-handler + project-bridge-handler
+# - increment.created/done/archived/reopened -> living-specs-handler + status-line-handler + project-bridge-handler + github-sync-handler
 # - user-story.completed/reopened -> status-line-handler + project-bridge-handler
-# - task.updated/spec.updated -> living-docs-handler (legacy)
+# - spec.updated -> living-docs-handler + ac-validation-handler + github-sync-handler (creates GitHub issues for User Stories)
+# - task.updated -> living-docs-handler + ac-validation-handler (legacy)
 # - metadata.changed -> github-sync-handler
 #
 # The project-bridge-handler connects increment events to project-level EDA,
 # enabling automatic sync to GitHub, ADO, and JIRA via ProjectService.
+#
+# The github-sync-handler creates GitHub issues for User Stories when spec.md is updated.
 #
 # Self-terminates after 60s of idle
 #
@@ -152,13 +155,16 @@ process_event() {
     # EDA Event Routing (new architecture)
     # ========================================
 
-    # Lifecycle events -> living-specs-handler + status-line-handler + project-bridge-handler
+    # Lifecycle events -> living-specs + status-line + project-bridge + github-sync
+    # Note: github-sync-handler added to ensure GitHub issues are created for User Stories
     increment.created|increment.done|increment.archived|increment.reopened)
       run_handler "$HANDLER_DIR/living-specs-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       # Also update status line on lifecycle changes
       run_handler "$HANDLER_DIR/status-line-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       # Bridge to project-level EDA (triggers sync to GitHub/ADO/JIRA)
       run_handler "$HANDLER_DIR/project-bridge-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
+      # Sync to GitHub (creates issues for User Stories)
+      run_handler "$HANDLER_DIR/github-sync-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       ;;
 
     # User story events -> status-line-handler + project-bridge-handler
@@ -168,10 +174,18 @@ process_event() {
       run_handler "$HANDLER_DIR/project-bridge-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       ;;
 
-    # ========================================
-    # Legacy event routing (backward compat)
-    # ========================================
-    task.updated|spec.updated)
+    # Spec updated -> sync to living docs + validate ACs + sync to GitHub
+    # CRITICAL: spec.updated fires AFTER spec.md has User Stories defined
+    # This is the key event that triggers GitHub issue creation for USs
+    spec.updated)
+      run_handler "$HANDLER_DIR/living-docs-handler.sh" "" "$EVENT_DATA"
+      run_handler "$HANDLER_DIR/ac-validation-handler.sh" "" "$EVENT_DATA"
+      # Sync to GitHub (creates issues for User Stories when spec has USs)
+      run_handler "$HANDLER_DIR/github-sync-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
+      ;;
+
+    # Legacy task.updated event (backward compat)
+    task.updated)
       # Legacy: don't update status line on every task edit
       # That causes race conditions and flickering
       run_handler "$HANDLER_DIR/living-docs-handler.sh" "" "$EVENT_DATA"

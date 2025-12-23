@@ -300,6 +300,25 @@ export class LivingDocsSync {
           }
         }
 
+        // Step: Sync to external tools for cross-project increments
+        // CRITICAL FIX (2025-12-23): Cross-project increments were skipping external sync!
+        // Bug: Early return at line 319 bypassed syncToExternalTools() entirely
+        // Fix: Add external sync for each project in the cross-project scenario
+        const skipExternalSync = ['true', '1', 'yes'].includes(
+          (process.env.SKIP_EXTERNAL_SYNC || '').toLowerCase().trim()
+        );
+
+        if (!options.dryRun && !skipExternalSync) {
+          // For cross-project, sync external tools for EACH project's feature folder
+          for (const [targetPath, _projectStories] of validGroups) {
+            const crossProjectFeaturePath = path.join(basePath, targetPath, featureId);
+            await this.syncToExternalTools(incrementId, featureId, crossProjectFeaturePath);
+          }
+        } else if (skipExternalSync) {
+          this.logger.log(`   ⏭️  External tool sync skipped (SKIP_EXTERNAL_SYNC=${process.env.SKIP_EXTERNAL_SYNC})`);
+          this.logger.log(`   ℹ️  Run /sw:sync-progress to manually sync when ready`);
+        }
+
         // Cross-project sync complete - skip single-project logic
         result.success = true;
         this.crossProjectSync.logSyncSummary({
