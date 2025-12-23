@@ -79,9 +79,9 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 
 **Multi-repo permissions**: In `.claude/settings.json`:
 ```json
-{"permissions":{"allow":["Write(**)","Edit(//**)"],"defaultMode":"bypassPermissions"}}
+{"permissions":{"allow":["Write(//**)","Edit(//**)"],"additionalDirectories":["repositories"],"defaultMode":"bypassPermissions"}}
 ```
-**Path syntax**: `//` = absolute path | `/` = relative to settings file | `**` = recursive
+**Path syntax**: `//path` = absolute | `/path` = relative to settings file | `**` = recursive | `additionalDirectories` = explicit working dirs
 <!-- /SECTION -->
 
 <!-- SECTION:taskformat required -->
@@ -166,8 +166,8 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | GitHub not syncing | Run `/sw-github:sync {id}` explicitly |
 | Permission denied | Set `canUpsertInternalItems: true` in config.json |
 | No GITHUB_TOKEN | Check `.env` file or run `gh auth login` |
-| Edits blocked in repositories/ | Add `Write(**)`, `Edit(//**)` to `.claude/settings.json` |
-| Path patterns not working | Claude Code: `//path` = absolute, `/path` = relative to settings file |
+| Edits blocked in repositories/ | Add `"additionalDirectories":["repositories"]` + `Write(//**)`, `Edit(//**)` to `.claude/settings.json` |
+| Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
 <!-- /SECTION -->
 
 <!-- SECTION:principles -->
