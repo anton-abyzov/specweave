@@ -1,3 +1,5 @@
+hello
+
 # SpecWeave Development Guide
 
 **Project**: SpecWeave - Spec-Driven Development Framework
