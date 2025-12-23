@@ -203,7 +203,7 @@ case "${1:-}" in
   transfer)
     if [[ $# -ne 3 ]]; then
       echo "Usage: $0 transfer <source_increment> <target_increment>"
-      exit 1
+      exit 0  # SAFETY: Never use exit 1 in hooks
     fi
     transfer_work "$2" "$3"
     ;;
@@ -211,7 +211,7 @@ case "${1:-}" in
   adjust-wip)
     if [[ $# -ne 2 ]]; then
       echo "Usage: $0 adjust-wip <new_limit>"
-      exit 1
+      exit 0  # SAFETY: Never use exit 1 in hooks
     fi
     adjust_wip_limit "$2"
     ;;
@@ -219,7 +219,7 @@ case "${1:-}" in
   force-close)
     if [[ $# -ne 2 ]]; then
       echo "Usage: $0 force-close <increment_id>"
-      exit 1
+      exit 0  # SAFETY: Never use exit 1 in hooks
     fi
     force_close "$2"
     ;;
@@ -227,7 +227,7 @@ case "${1:-}" in
   count-incomplete)
     if [[ $# -ne 2 ]]; then
       echo "Usage: $0 count-incomplete <increment_id>"
-      exit 1
+      exit 0  # SAFETY: Never use exit 1 in hooks
     fi
     count_incomplete_tasks "$2"
     ;;
@@ -240,6 +240,6 @@ case "${1:-}" in
     echo "  $0 adjust-wip <limit>             # Adjust WIP limit temporarily"
     echo "  $0 force-close <increment>        # Force-close increment"
     echo "  $0 count-incomplete <increment>   # Count incomplete tasks"
-    exit 1
+    exit 0  # SAFETY: Never use exit 1 in hooks
     ;;
 esac
