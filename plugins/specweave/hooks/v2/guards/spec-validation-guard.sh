@@ -10,7 +10,11 @@
 # - tool_name: Write
 # - file_path matches: .specweave/increments/*/spec.md OR .specweave/docs/internal/specs/*/
 #
-# Exit 0 = allow (with JSON), Exit 2 = block (with JSON)
+# v1.0.37+: CRITICAL CHANGE - All validations now WARN instead of BLOCK!
+# User feedback: "you MUST NEVER block such operations... do at least warning"
+# Business logic and validation should be in scripts/agents, not hard blocks.
+#
+# Exit 0 = allow (with JSON warning message if validation fails)
 #
 # Bypasses:
 # - SPECWEAVE_DISABLE_HOOKS=1 - Disable all hooks
@@ -53,11 +57,11 @@ fi
 # ============================================================================
 if [[ "$HOOK_FILE_PATH" =~ \.specweave/increments/[0-9]{3,4}E?-[^/]+/spec\.md$ ]]; then
 
-  # Check for unresolved {{...}} placeholders
+  # Check for unresolved {{...}} placeholders - WARN only (v1.0.37)
   if echo "$HOOK_CONTENT" | grep -qE '\{\{[A-Z_]+\}\}'; then
     PLACEHOLDERS=$(echo "$HOOK_CONTENT" | grep -oE '\{\{[A-Z_]+\}\}' | sort -u | tr '\n' ', ' | sed 's/,$//')
-    printf '{"decision":"block","reason":"🚫 UNRESOLVED PLACEHOLDERS\\n\\nFound: %s\\n\\n🔧 FIX: Replace placeholders with actual values.\\nRun: specweave context projects\\nThen use values from the JSON output."}\n' "$PLACEHOLDERS"
-    exit 2
+    printf '{"decision":"allow","message":"⚠️ UNRESOLVED PLACEHOLDERS DETECTED\\n\\nFound: %s\\n\\n🔧 FIX: Replace placeholders with actual values.\\nRun: specweave context projects\\nThen use values from the JSON output.\\n\\nOperation ALLOWED - proceeding anyway."}\n' "$PLACEHOLDERS"
+    exit 0
   fi
 
   # Check for **Project**: field in User Stories (soft validation - warn, don't block)
@@ -78,10 +82,10 @@ if [[ "$HOOK_FILE_PATH" =~ \.specweave/increments/[0-9]{3,4}E?-[^/]+/spec\.md$ ]
     exit 0
   fi
 
-  # Check for comma-separated projects (forbidden - 1:1 mapping required)
+  # Check for comma-separated projects (1:1 mapping required) - WARN only (v1.0.37)
   if echo "$HOOK_CONTENT" | grep -qE '^\*\*Project\*\*:.*,'; then
-    printf '{"decision":"block","reason":"🚫 MULTIPLE PROJECTS IN ONE US\\n\\nEach User Story MUST map to exactly ONE project.\\n\\n🔧 FIX: Split cross-project features into separate User Stories:\\n\\nWRONG:\\n### US-001: OAuth Implementation\\n**Project**: frontend, backend\\n\\nCORRECT:\\n### US-001: OAuth Login Form\\n**Project**: frontend\\n\\n### US-002: OAuth API\\n**Project**: backend"}\n'
-    exit 2
+    printf '{"decision":"allow","message":"⚠️ MULTIPLE PROJECTS IN ONE US DETECTED\\n\\nEach User Story should map to exactly ONE project.\\n\\n💡 RECOMMENDATION: Split cross-project features into separate User Stories:\\n\\nWRONG:\\n### US-001: OAuth Implementation\\n**Project**: frontend, backend\\n\\nCORRECT:\\n### US-001: OAuth Login Form\\n**Project**: frontend\\n\\n### US-002: OAuth API\\n**Project**: backend\\n\\nOperation ALLOWED - proceeding anyway."}\n'
+    exit 0
   fi
 
   # Check structure level to validate **Board**: fields
@@ -131,19 +135,19 @@ if [[ "$HOOK_FILE_PATH" =~ \.specweave/docs/internal/specs/([^/]+)/ ]]; then
   [[ "$PROJECT_NAME" == "_features" ]] && echo '{"decision":"allow"}' && exit 0
   [[ "$PROJECT_NAME" == "_archive" ]] && echo '{"decision":"allow"}' && exit 0
 
-  # Check for template placeholders
+  # Check for template placeholders - WARN only (v1.0.37)
   if [[ "$PROJECT_NAME" =~ \{\{.*\}\} ]]; then
-    printf '{"decision":"block","reason":"🚫 UNRESOLVED PLACEHOLDER: %s\\n\\n🔧 FIX: Replace {{...}} with actual project name"}\n' "$PROJECT_NAME"
-    exit 2
+    printf '{"decision":"allow","message":"⚠️ UNRESOLVED PLACEHOLDER: %s\\n\\n🔧 FIX: Replace {{...}} with actual project name\\n\\nOperation ALLOWED - proceeding anyway."}\n' "$PROJECT_NAME"
+    exit 0
   fi
 
-  # Check for comma-separated (invalid)
+  # Check for comma-separated (invalid) - WARN only (v1.0.37)
   if [[ "$PROJECT_NAME" =~ , ]]; then
-    printf '{"decision":"block","reason":"🚫 COMMA-SEPARATED PROJECTS: %s\\n\\nEach User Story = ONE project folder.\\n\\n🔧 FIX: Split into separate specs"}\n' "$PROJECT_NAME"
-    exit 2
+    printf '{"decision":"allow","message":"⚠️ COMMA-SEPARATED PROJECTS: %s\\n\\nEach User Story should have ONE project folder.\\n\\n💡 RECOMMENDATION: Split into separate specs\\n\\nOperation ALLOWED - proceeding anyway."}\n' "$PROJECT_NAME"
+    exit 0
   fi
 
-  # Check for common example/placeholder names
+  # Check for common example/placeholder names - WARN only (v1.0.37)
   EXAMPLE_NAMES="frontend-app|backend-api|mobile-app|shared-lib|acme-corp|my-app|myapp|example-project|test-project"
   if [[ "$PROJECT_NAME" =~ ^($EXAMPLE_NAMES)$ ]]; then
     # Try to get valid projects from config
@@ -156,8 +160,8 @@ if [[ "$HOOK_FILE_PATH" =~ \.specweave/docs/internal/specs/([^/]+)/ ]]; then
 
       if [[ "$IS_CONFIGURED" != "true" ]]; then
         VALID_PROJECTS=$(jq -r '.multiProject.projects | keys | join(", ") // .project.name // "specweave"' "$CONFIG_FILE" 2>/dev/null || echo "specweave")
-        printf '{"decision":"block","reason":"🚫 EXAMPLE PROJECT NAME: %s\\n\\nThis looks like a placeholder/example name from documentation.\\n\\nConfigured projects: %s\\n\\n🔧 FIX: Edit spec.md and use a real project name"}\n' "$PROJECT_NAME" "$VALID_PROJECTS"
-        exit 2
+        printf '{"decision":"allow","message":"⚠️ EXAMPLE PROJECT NAME DETECTED: %s\\n\\nThis looks like a placeholder/example name from documentation.\\n\\nConfigured projects: %s\\n\\n💡 RECOMMENDATION: Edit spec.md and use a real project name\\n\\nOperation ALLOWED - proceeding anyway."}\n' "$PROJECT_NAME" "$VALID_PROJECTS"
+        exit 0
       fi
     fi
   fi

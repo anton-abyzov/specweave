@@ -2,8 +2,8 @@
 #
 # metadata-json-guard.sh
 #
-# Pre-tool-use hook that ensures metadata.json exists BEFORE spec.md can be created.
-# This prevents increments from being created without proper metadata.
+# Pre-tool-use hook that WARNS (not blocks) if metadata.json is missing before spec.md creation.
+# This helps ensure proper increment creation workflow.
 #
 # ROOT CAUSE: When Claude creates increments via user prompt (not /sw:increment),
 # metadata.json may be forgotten, causing:
@@ -12,18 +12,23 @@
 # - External sync fails (GitHub/Jira/ADO)
 # - All increment commands fail
 #
-# SOLUTION: Block spec.md creation if metadata.json doesn't exist in same increment folder.
-# Claude MUST create metadata.json FIRST, then spec.md.
+# v1.0.37+: CRITICAL CHANGE - Now WARNS instead of BLOCKING!
+# User feedback: "you MUST NEVER block such operations... do at least warning"
+# Business logic and validation should be in scripts/agents, not hard blocks.
+#
+# SOLUTION: WARN if spec.md is created without metadata.json, but ALLOW the operation.
+# The warning prompts Claude to create metadata.json immediately after.
 #
 # Activation:
 # - tool_name: Write
 # - file_path matches: .specweave/increments/*/spec.md
 #
-# Returns exit code 2 (block) if metadata.json missing, 0 (allow) otherwise.
+# Returns exit 0 (allow) with warning message if metadata.json missing
 #
 # Bypass: Set SPECWEAVE_FORCE_METADATA=1 to skip validation
 #
 # v0.34.0 - Initial implementation based on user project bug analysis
+# v1.0.37 - Changed from BLOCK to WARN (allow with warning message)
 
 set +e  # CRITICAL: Never use set -e in hooks (causes cascading failures)
 
@@ -80,14 +85,14 @@ if [ -f "$METADATA_PATH" ]; then
   exit 0
 fi
 
-# metadata.json doesn't exist - BLOCK spec.md creation
+# metadata.json doesn't exist - WARN but ALLOW spec.md creation (v1.0.37)
 NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-cat << BLOCK_EOF
+cat << WARN_EOF
 {
-  "decision": "block",
-  "reason": "🚫 BLOCKED: Cannot create spec.md without metadata.json\n\n⚠️ CRITICAL RULE: metadata.json MUST be created FIRST!\n\nWithout metadata.json:\n  - ❌ Status tracking broken\n  - ❌ WIP limits don't work\n  - ❌ External sync fails (GitHub/Jira/ADO)\n  - ❌ All increment commands fail\n\n📋 CORRECT WORKFLOW:\n1. Create metadata.json FIRST:\n   Write({\n     file_path: \"${METADATA_PATH}\",\n     content: {\n       \"id\": \"${INCREMENT_ID}\",\n       \"status\": \"planned\",\n       \"type\": \"feature\",\n       \"priority\": \"P1\",\n       \"created\": \"${NOW}\",\n       \"lastActivity\": \"${NOW}\",\n       \"testMode\": \"TDD\",\n       \"coverageTarget\": 95,\n       \"feature_id\": null,\n       \"epic_id\": null,\n       \"externalLinks\": {}\n     }\n   })\n\n2. THEN create spec.md\n\n📖 See: CLAUDE.md section '3. metadata.json is MANDATORY'\n\n💡 Bypass: Set SPECWEAVE_FORCE_METADATA=1 to skip this validation"
+  "decision": "allow",
+  "message": "⚠️ WARNING: metadata.json MISSING - Creating spec.md without it!\n\n🚨 IMMEDIATE ACTION REQUIRED:\nCreate metadata.json NOW for this increment to work properly.\n\nWithout metadata.json:\n  - ❌ Status tracking broken\n  - ❌ WIP limits don't work\n  - ❌ External sync fails (GitHub/Jira/ADO)\n  - ❌ All increment commands fail\n\n📋 CREATE metadata.json:\n   Write({\n     file_path: \"${METADATA_PATH}\",\n     content: {\n       \"id\": \"${INCREMENT_ID}\",\n       \"status\": \"planned\",\n       \"type\": \"feature\",\n       \"priority\": \"P1\",\n       \"created\": \"${NOW}\",\n       \"lastActivity\": \"${NOW}\",\n       \"testMode\": \"TDD\",\n       \"coverageTarget\": 95,\n       \"feature_id\": null,\n       \"epic_id\": null,\n       \"externalLinks\": {}\n     }\n   })\n\nOperation ALLOWED - proceeding with spec.md write."
 }
-BLOCK_EOF
+WARN_EOF
 
-exit 2
+exit 0
