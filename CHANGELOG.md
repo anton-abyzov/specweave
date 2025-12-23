@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.35] - 2025-12-22
+
+### 📚 Documentation Updates
+
+- Updated documentation and skills
+- Improved role orchestrator skill configuration
+
+---
+
 ## [1.0.33] - 2025-12-22
 
 ### 🔧 Maintenance Release
