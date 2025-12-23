@@ -362,6 +362,130 @@ describe('structure-level-detector', () => {
       });
     });
 
+    describe('GitHub sync profiles (1-level)', () => {
+      it('should detect 1-level structure from GitHub sync profiles', () => {
+        // GitHub is ALWAYS 1-level: each sync profile = 1 project (no boards)
+        createConfig({
+          sync: {
+            profiles: {
+              'sw-app-api': {
+                provider: 'github',
+                displayName: 'SW App API',
+                config: {
+                  owner: 'myorg',
+                  repo: 'sw-app-api'
+                }
+              },
+              'sw-app-web': {
+                provider: 'github',
+                displayName: 'SW App Web',
+                config: {
+                  owner: 'myorg',
+                  repo: 'sw-app-web'
+                }
+              },
+              'sw-app-worker': {
+                provider: 'github',
+                displayName: 'SW App Worker',
+                config: {
+                  owner: 'myorg',
+                  repo: 'sw-app-worker'
+                }
+              }
+            }
+          }
+        });
+
+        const result = detectStructureLevel(tempDir);
+
+        expect(result.level).toBe(1);
+        expect(result.source).toBe('multi-project');
+        expect(result.detectionReason).toBe('GitHub sync profiles configured');
+        expect(result.projects).toHaveLength(3);
+        expect(result.projects.map(p => p.id)).toContain('sw-app-api');
+        expect(result.projects.map(p => p.id)).toContain('sw-app-web');
+        expect(result.projects.map(p => p.id)).toContain('sw-app-worker');
+        // NO boards for GitHub!
+        expect(result.boardsByProject).toBeUndefined();
+      });
+
+      it('should prioritize GitHub sync profiles over umbrella teams', () => {
+        // Even if umbrella has multiple teams, GitHub profiles take precedence
+        createConfig({
+          sync: {
+            profiles: {
+              'repo-a': {
+                provider: 'github',
+                config: { owner: 'org', repo: 'repo-a' }
+              },
+              'repo-b': {
+                provider: 'github',
+                config: { owner: 'org', repo: 'repo-b' }
+              }
+            }
+          },
+          umbrella: {
+            enabled: true,
+            childRepos: [
+              { id: 'repo-a', name: 'Repo A', team: 'Team A' },
+              { id: 'repo-b', name: 'Repo B', team: 'Team B' }
+            ]
+          }
+        });
+
+        const result = detectStructureLevel(tempDir);
+
+        // GitHub profiles should win -> 1-level, not umbrella teams (2-level)
+        expect(result.level).toBe(1);
+        expect(result.detectionReason).toBe('GitHub sync profiles configured');
+        expect(result.boardsByProject).toBeUndefined();
+      });
+    });
+
+    describe('Umbrella single team (1-level)', () => {
+      it('should detect 1-level structure from umbrella with single team', () => {
+        createConfig({
+          umbrella: {
+            enabled: true,
+            childRepos: [
+              { id: 'app-fe', name: 'Frontend App', team: 'Product Team' },
+              { id: 'app-be', name: 'Backend App', team: 'Product Team' },
+              { id: 'shared-lib', name: 'Shared Library', team: 'Product Team' }
+            ]
+          }
+        });
+
+        const result = detectStructureLevel(tempDir);
+
+        expect(result.level).toBe(1);
+        expect(result.source).toBe('multi-project');
+        expect(result.detectionReason).toBe('Umbrella repos (single team)');
+        expect(result.projects).toHaveLength(3);
+        expect(result.projects.map(p => p.id)).toContain('app-fe');
+        expect(result.projects.map(p => p.id)).toContain('app-be');
+        expect(result.projects.map(p => p.id)).toContain('shared-lib');
+        // NO boards for single team umbrella
+        expect(result.boardsByProject).toBeUndefined();
+      });
+
+      it('should detect 1-level structure from umbrella with no teams', () => {
+        createConfig({
+          umbrella: {
+            enabled: true,
+            childRepos: [
+              { id: 'app-fe', name: 'Frontend App' },
+              { id: 'app-be', name: 'Backend App' }
+            ]
+          }
+        });
+
+        const result = detectStructureLevel(tempDir);
+
+        expect(result.level).toBe(1);
+        expect(result.projects).toHaveLength(2);
+      });
+    });
+
     describe('multiProject (1-level)', () => {
       it('should detect 1-level structure from multiProject configuration', () => {
         createConfig({
