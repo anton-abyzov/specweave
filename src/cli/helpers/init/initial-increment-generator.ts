@@ -61,19 +61,9 @@ export async function generateInitialIncrement(options: InitialIncrementOptions)
   // Create increment directory
   fs.ensureDirSync(incrementPath);
 
-  // Generate spec.md (pass testMode, coverageTarget, and multi-project detection)
-  const specContent = generateSpecMd(projectName, techStack, testMode, coverageTarget, multiProjectDetection);
-  fs.writeFileSync(path.join(incrementPath, 'spec.md'), specContent, 'utf-8');
-
-  // Generate plan.md
-  const planContent = generatePlanMd(projectName);
-  fs.writeFileSync(path.join(incrementPath, 'plan.md'), planContent, 'utf-8');
-
-  // Generate tasks.md
-  const tasksContent = generateTasksMd(projectName, techStack);
-  fs.writeFileSync(path.join(incrementPath, 'tasks.md'), tasksContent, 'utf-8');
-
-  // Generate metadata.json (use values from config)
+  // CRITICAL: Generate metadata.json FIRST!
+  // The metadata-json-guard.sh hook blocks spec.md creation if metadata.json doesn't exist.
+  // This prevents broken increments that lack proper tracking.
   const metadata: IncrementMetadata = {
     id: incrementId,
     type: IncrementType.FEATURE,
@@ -86,6 +76,18 @@ export async function generateInitialIncrement(options: InitialIncrementOptions)
 
   // Write metadata using explicit rootDir parameter (no process.chdir needed!)
   MetadataManager.write(incrementId, metadata, projectPath);
+
+  // Generate spec.md (now allowed - metadata.json exists)
+  const specContent = generateSpecMd(projectName, techStack, testMode, coverageTarget, multiProjectDetection);
+  fs.writeFileSync(path.join(incrementPath, 'spec.md'), specContent, 'utf-8');
+
+  // Generate plan.md
+  const planContent = generatePlanMd(projectName);
+  fs.writeFileSync(path.join(incrementPath, 'plan.md'), planContent, 'utf-8');
+
+  // Generate tasks.md
+  const tasksContent = generateTasksMd(projectName, techStack);
+  fs.writeFileSync(path.join(incrementPath, 'tasks.md'), tasksContent, 'utf-8');
 
   return incrementId;
 }
