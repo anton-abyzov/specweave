@@ -285,7 +285,11 @@ export class RepoStructureManager {
         name: r.repo,
         owner: r.owner,
         description: '', // Not saved in state
-        path: r.path || r.id,
+        // For multi-repo, path should include repositories/ prefix
+        // Fallback to constructed path if state.path is missing (legacy state files)
+        path: r.path || (state.architecture === 'multi-repo' || state.architecture === 'parent'
+          ? `repositories/${r.owner}/${r.repo}`
+          : r.id),
         visibility: r.visibility,
         createOnGitHub: r.created !== true,
         isNested: false
