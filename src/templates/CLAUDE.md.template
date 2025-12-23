@@ -100,11 +100,22 @@ gh auth status
 <!-- /SECTION -->
 
 <!-- SECTION:syncing -->
-## Auto-Sync (Hooks)
+## External Sync (GitHub/JIRA/ADO)
 
-Post-task: updates tasks.md → living docs → external trackers (if configured)
+**After increment creation**: Run `/sw-github:sync {id}` to create issues!
 
-Config: `.specweave/config.json` → `hooks.post_task_completion`
+Living docs sync ≠ External sync. They are separate:
+1. `/sw:sync-specs` → Living docs only
+2. `/sw-github:sync` → GitHub issues (MUST run explicitly!)
+
+**Required config** (`.specweave/config.json`):
+```json
+"sync": {
+  "settings": { "canUpsertInternalItems": true }
+}
+```
+
+**Verify tokens**: `grep GITHUB_TOKEN .env` | `gh auth status`
 <!-- /SECTION -->
 
 <!-- SECTION:mapping -->
@@ -146,7 +157,9 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | Find increment | `/sw:status` |
 | Root polluted | Move files to `.specweave/increments/####/reports/` |
 | Duplicate IDs | `/sw:fix-duplicates` |
-| External not syncing | Check `config.json` → `external_tracker_sync: true` |
+| GitHub not syncing | Run `/sw-github:sync {id}` explicitly |
+| Permission denied | Set `canUpsertInternalItems: true` in config.json |
+| No GITHUB_TOKEN | Check `.env` file or run `gh auth login` |
 <!-- /SECTION -->
 
 <!-- SECTION:principles -->
