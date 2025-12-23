@@ -54,6 +54,8 @@
 │   └── operations/           # Runbooks
 └── config.json
 ```
+
+**Multi-repo**: Clone to `/repositories`, not root → `repositories/backend/src/...`
 <!-- /SECTION -->
 
 <!-- SECTION:taskformat required -->
