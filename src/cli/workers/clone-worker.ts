@@ -314,6 +314,25 @@ async function main(): Promise<void> {
 
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
       log(`Umbrella config saved: ${mergedRepos.length} repos (${newChildRepos.length} from this job)`);
+
+      // CRITICAL FIX (v1.0.37): Remove parent project folder from specs/ for GitHub multi-repo
+      // The scaffold creates specs/{parent-project}/ but for umbrella repos each child creates its own folder
+      // The parent folder is incorrect and should be removed
+      const projectName = config?.project?.name as string | undefined;
+      if (projectName) {
+        const parentSpecsFolder = path.join(projectPath, '.specweave', 'docs', 'internal', 'specs', projectName.toLowerCase());
+        if (fs.existsSync(parentSpecsFolder)) {
+          // Check if folder is empty or only has README.md
+          const contents = fs.readdirSync(parentSpecsFolder);
+          const isEmptyOrReadmeOnly = contents.length === 0 ||
+            (contents.length === 1 && contents[0] === 'README.md');
+
+          if (isEmptyOrReadmeOnly) {
+            fs.rmSync(parentSpecsFolder, { recursive: true, force: true });
+            log(`Removed parent project folder: specs/${projectName.toLowerCase()}/ (umbrella mode - child repos create their own folders)`);
+          }
+        }
+      }
     } catch (umbrellaError: any) {
       log(`Warning: Failed to persist umbrella config: ${umbrellaError.message}`);
       // Non-fatal: continue with job completion

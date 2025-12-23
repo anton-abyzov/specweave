@@ -9,6 +9,7 @@
 
 import chalk from 'chalk';
 import { execSync } from 'child_process';
+import * as fs from 'fs';
 import * as path from 'path';
 import { getConfigManager } from '../../../core/config/index.js';
 import { Logger, consoleLogger } from '../../../utils/logger.js';
@@ -95,12 +96,93 @@ export async function writeSyncConfig(
   // Write config using ConfigManager
   await configManager.write(config);
 
+  // CRITICAL FIX (v1.0.37): Remove parent project folder for GitHub multi-repo setups
+  // During init, scaffold creates specs/{projectName}/ folder before we know the repo structure.
+  // For GitHub multi-repo, each repo should be a separate project folder at specs/ root level,
+  // NOT nested under a parent umbrella folder.
+  if (tracker === 'github' && repositoryProfiles && repositoryProfiles.length > 1) {
+    await cleanupParentProjectFolder(projectPath, config, repositoryProfiles, logger);
+  }
+
   logger.log(chalk.green(`✓ Sync config written to .specweave/config.json`));
   logger.log(chalk.gray(`   Provider: ${tracker}`));
   logger.log(chalk.gray(`   Auto-sync: enabled`));
   logger.log(chalk.gray(`   Status sync: ${syncSettings.includeStatus ? 'enabled' : 'disabled'}`));
   logger.log(chalk.gray(`   Auto-labeling: ${syncSettings.autoApplyLabels ? 'enabled' : 'disabled'}`));
   logger.log(chalk.gray(`   Hooks: post_task_completion, post_increment_planning`));
+}
+
+/**
+ * Clean up parent project folder for GitHub multi-repo setups
+ *
+ * CRITICAL FIX (v1.0.37): For GitHub multi-repo setups, the scaffold creates
+ * a parent folder (specs/{projectName}/) during init before we know the structure.
+ * For GitHub multi-repo, each repo should be a top-level folder in specs/, NOT
+ * nested under a parent umbrella folder.
+ *
+ * This function removes the parent folder if:
+ * 1. We're setting up multiple GitHub repos (multi-repo)
+ * 2. The parent folder exists
+ * 3. The parent folder is empty or only contains README.md
+ *
+ * @param projectPath - Path to project root
+ * @param config - Current config object
+ * @param repositoryProfiles - Array of repository profiles
+ * @param logger - Logger instance
+ */
+async function cleanupParentProjectFolder(
+  projectPath: string,
+  config: any,
+  repositoryProfiles: any[],
+  logger: Logger
+): Promise<void> {
+  try {
+    // Get the parent project name from config
+    const parentProjectName = config.project?.name;
+    if (!parentProjectName) {
+      return;
+    }
+
+    // Normalize to lowercase for folder matching
+    const normalizedParentName = parentProjectName.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+
+    // Check if parent folder exists in specs/
+    const specsPath = path.join(projectPath, '.specweave', 'docs', 'internal', 'specs');
+    const parentFolderPath = path.join(specsPath, normalizedParentName);
+
+    if (!fs.existsSync(parentFolderPath)) {
+      return; // No parent folder to clean up
+    }
+
+    // Check if any repository profile matches the parent folder name
+    // If so, this is a valid repo folder, not a parent umbrella folder
+    const isRepoFolder = repositoryProfiles.some(p => {
+      const repoName = (p.repo || p.id || '').toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      return repoName === normalizedParentName;
+    });
+
+    if (isRepoFolder) {
+      return; // This is a valid repo folder, don't remove
+    }
+
+    // Check if parent folder is empty or only contains README.md
+    const contents = fs.readdirSync(parentFolderPath);
+    const isEmptyOrReadmeOnly = contents.length === 0 ||
+      (contents.length === 1 && contents[0] === 'README.md');
+
+    if (isEmptyOrReadmeOnly) {
+      // Safe to remove - it's just the scaffold placeholder
+      fs.rmSync(parentFolderPath, { recursive: true, force: true });
+      logger.log(chalk.gray(`   ✓ Removed parent folder: specs/${normalizedParentName}/ (multi-repo mode)`));
+    } else {
+      // Has content - warn but don't remove
+      logger.log(chalk.yellow(`   ⚠️  Parent folder specs/${normalizedParentName}/ has content - not removed`));
+      logger.log(chalk.gray(`      Consider moving files to individual repo folders`));
+    }
+  } catch (error) {
+    // Non-blocking - log warning but continue
+    logger.log(chalk.gray(`   Note: Could not clean up parent folder: ${error}`));
+  }
 }
 
 /**
