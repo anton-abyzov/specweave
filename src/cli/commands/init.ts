@@ -480,7 +480,7 @@ export async function initCommand(
 
     // Create directory structure
     if (!continueExisting) {
-      createDirectoryStructure(targetDir, toolName);
+      await createDirectoryStructure(targetDir, toolName);
       spinner.text = 'Directory structure created...';
     } else {
       spinner.text = 'Using existing directory structure...';

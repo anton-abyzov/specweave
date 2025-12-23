@@ -1,5 +1,3 @@
-hello
-
 # SpecWeave Development Guide
 
 **Project**: SpecWeave - Spec-Driven Development Framework
@@ -257,10 +255,10 @@ grep -E "(ADO_|AZURE_DEVOPS)" .env .specweave/config.json 2>/dev/null
 
 ## Coding Standards
 
-- **Logger**: ALL `src/` code uses `logger`, NEVER `console.*`
-- **Imports**: ALWAYS `.js` extensions
+- **Logger**: Prefer `logger` over `console.*` in new code (legacy migration ongoing)
+- **Imports**: ALWAYS `.js` extensions (enforced)
 - **Tests**: `.test.ts` files, `vi.fn()` (not jest), `os.tmpdir()` (not cwd)
-- **Filesystem**: Native `fs` only (NEVER `fs-extra`)
+- **Filesystem**: Prefer native `fs` (fs-extra only in legacy utils)
 - **Config vs Secrets**: Config in `config.json`, secrets in `.env`
 
 ---
@@ -371,4 +369,4 @@ npm run rebuild
 
 - **Internal Docs**: `.specweave/docs/internal/`
 - **ADRs**: `.specweave/docs/internal/architecture/adr/`
-- **Emergency**: `.specweave/docs/internal/emergency-procedures/`
+- **Troubleshooting**: `.specweave/docs/internal/troubleshooting/`
