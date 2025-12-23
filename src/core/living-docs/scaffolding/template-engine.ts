@@ -100,7 +100,11 @@ export class TemplateEngine {
     const conditionalPattern = /\$\{if:(\w+)\}([\s\S]*?)\$\{endif\}/g;
     return template.replace(conditionalPattern, (_match, varName, content) => {
       const value = this.getContextValue(context, varName);
-      const isTruthy = value !== undefined && value !== null && value !== '' &&
+      // Truthy check: exists, not false, not empty string, not empty array
+      const isTruthy = value !== undefined &&
+                       value !== null &&
+                       value !== false &&
+                       value !== '' &&
                        !(Array.isArray(value) && value.length === 0);
       return isTruthy ? content : '';
     });

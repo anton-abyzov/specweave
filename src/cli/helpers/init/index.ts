@@ -87,6 +87,7 @@ export {
   createDirectoryStructure,
   copyTemplates,
   createConfigFile,
+  scanAndSuggestMerges,
 } from './directory-structure.js';
 
 // Next steps
