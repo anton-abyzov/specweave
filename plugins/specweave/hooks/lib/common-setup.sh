@@ -77,24 +77,6 @@ guard_allow() {
   exit 0
 }
 
-# Block the tool call with reason (DEPRECATED v1.0.37 - use guard_warn instead)
-# NOTE: Blocking is discouraged. Use guard_warn for most cases.
-guard_block() {
-  local reason="$1"
-  reason=$(echo "$reason" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-  printf '{"decision":"block","reason":"%s"}\n' "$reason"
-  exit 2
-}
-
-# Warn but ALLOW the tool call (v1.0.37+)
-# This is the PREFERRED approach - never block operations, always allow with warnings.
-guard_warn() {
-  local message="$1"
-  message=$(echo "$message" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-  printf '{"decision":"allow","message":"%s"}\n' "$message"
-  exit 0
-}
-
 # ============================================================================
 # SIMPLE LOGGING (optional, writes to .specweave/logs/hooks.log)
 # ============================================================================
