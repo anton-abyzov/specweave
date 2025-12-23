@@ -4,6 +4,15 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.40] - 2025-12-23
+
+### 🔧 Maintenance
+
+- Updated sync metadata and documentation
+- Minor improvements to save command
+
+---
+
 ## [1.0.38] - 2025-12-23
 
 ### 🔧 Bug Fixes
