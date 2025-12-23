@@ -45,8 +45,8 @@ LOGS_DIR="$PROJECT_ROOT/.specweave/logs"
 DEBUG_LOG="$LOGS_DIR/task-ac-sync.log"
 mkdir -p "$LOGS_DIR" 2>/dev/null || true
 
-# Read stdin for tool input
-INPUT=$(cat)
+# Read stdin for tool input (with safe fallback to prevent hanging)
+INPUT=$(cat 2>/dev/null || echo '{}')
 
 # Extract file_path from tool input
 FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)"/\1/')

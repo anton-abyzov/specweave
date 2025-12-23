@@ -102,15 +102,19 @@ get_hook_name() {
 # Critical: stdin can block forever if not handled properly
 read_stdin_with_timeout() {
   local stdin_content=""
+  local line_count=0
+  local max_lines=1000  # Safety limit to prevent infinite loops
 
   # Use read with timeout (integer seconds for bash compatibility)
-  if read -t 1 -r line; then
-    stdin_content="$line"
-    # Continue reading remaining lines (no timeout - stdin should be closed)
-    while IFS= read -r line; do
+  # ALL reads have 1 second timeout to prevent blocking
+  while read -t 1 -r line && [[ $line_count -lt $max_lines ]]; do
+    if [[ -z "$stdin_content" ]]; then
+      stdin_content="$line"
+    else
       stdin_content="${stdin_content}"$'\n'"${line}"
-    done
-  fi
+    fi
+    line_count=$((line_count + 1))
+  done
 
   echo "$stdin_content"
 }

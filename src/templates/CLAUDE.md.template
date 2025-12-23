@@ -4,6 +4,17 @@
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- /SECTION -->
 
+<!-- SECTION:metarule required -->
+## Meta-Rule: Think-Before-Act
+
+**Satisfy dependencies BEFORE dependent operations.**
+
+```
+❌ node script.js → Error → npm run build
+✅ npm run build → node script.js → Success
+```
+<!-- /SECTION -->
+
 <!-- SECTION:rules required -->
 ## Rules
 
@@ -11,6 +22,7 @@
 2. **Update immediately**: `Edit("tasks.md", "[ ] pending", "[x] completed")` + `Edit("spec.md", "[ ] AC-", "[x] AC-")`
 3. **Unique IDs**: Check `ls .specweave/increments/ | grep "^[0-9]" | tail -5`
 4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
+5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders
 <!-- /SECTION -->
 
 <!-- SECTION:workflow required -->
@@ -26,6 +38,8 @@
 | `/sw:done` | Close |
 | `/sw-github:sync` | GitHub sync |
 | `/sw-jira:sync` | Jira sync |
+
+**Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done`
 <!-- /SECTION -->
 
 <!-- SECTION:structure -->
@@ -85,6 +99,12 @@ Config: `.specweave/config.json` → `hooks.post_task_completion`
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
+
+```typescript
+// Vitest pattern: vi.fn() not jest.fn(), import not require
+import { vi } from 'vitest';
+vi.mock('fs', () => ({ readFile: vi.fn() }));
+```
 <!-- /SECTION -->
 
 <!-- SECTION:limits -->
@@ -102,6 +122,27 @@ BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
 | Commands gone | `/plugin list --installed` |
 | Out of sync | `/sw:sync-tasks` |
 | Find increment | `/sw:status` |
+| Root polluted | Move files to `.specweave/increments/####/reports/` |
+| Duplicate IDs | `/sw:fix-duplicates` |
+| External not syncing | Check `config.json` → `external_tracker_sync: true` |
+<!-- /SECTION -->
+
+<!-- SECTION:principles -->
+## Principles
+
+1. **Spec-first**: `/sw:increment` before coding
+2. **Docs = truth**: Specs guide implementation
+3. **Incremental**: Small, validated increments
+4. **Traceable**: All work → specs → ACs
+5. **Clean**: All files in increment folders
+<!-- /SECTION -->
+
+<!-- SECTION:linking -->
+## Bidirectional Linking
+
+Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
+
+Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- /SECTION -->
 
 <!-- SECTION:docs -->

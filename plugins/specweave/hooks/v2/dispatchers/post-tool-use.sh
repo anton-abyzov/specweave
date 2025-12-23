@@ -26,8 +26,8 @@ while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
 done
 [[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
 
-# Read stdin (tool result JSON)
-INPUT=$(cat)
+# Read stdin (tool result JSON) - with safe fallback to prevent hanging
+INPUT=$(cat 2>/dev/null || echo '{}')
 
 # Extract file path (fast grep, no jq)
 FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/')

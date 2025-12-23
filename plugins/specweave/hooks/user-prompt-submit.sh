@@ -18,7 +18,7 @@ set +e
 # ==============================================================================
 # ULTRA-FAST EARLY EXIT (before ANY processing)
 # ==============================================================================
-INPUT=$(cat)
+INPUT=$(cat 2>/dev/null || echo '{}')
 
 # Use jq if available (10x faster than node), fallback to simple grep
 if command -v jq >/dev/null 2>&1; then
