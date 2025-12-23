@@ -99,14 +99,27 @@ mkdir -p ${incrementPath}logs/
 mkdir -p ${incrementPath}scripts/
 mkdir -p ${incrementPath}reports/
 
-// 4. Create placeholder files
+// 4. Create placeholder files (ORDER MATTERS!)
+// metadata.json MUST be created FIRST (metadata-json-guard.sh blocks spec.md otherwise)
+write ${incrementPath}metadata.json (MANDATORY - CREATE FIRST!)
 write ${incrementPath}spec.md (basic template)
 write ${incrementPath}plan.md (basic template)
 write ${incrementPath}tasks.md (basic template)
-write ${incrementPath}metadata.json (MANDATORY)
 ```
 
-**spec.md template**:
+**metadata.json template** (CREATE FIRST!):
+```json
+{
+  "id": "0001-project-name",
+  "status": "planned",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2025-11-24T12:00:00Z",
+  "lastActivity": "2025-11-24T12:00:00Z"
+}
+```
+
+**spec.md template** (create AFTER metadata.json):
 ```yaml
 ---
 increment: 0001-project-name
@@ -124,18 +137,6 @@ created: 2025-11-24
 
 ## User Stories
 (To be filled by PM Agent)
-```
-
-**metadata.json template**:
-```json
-{
-  "id": "0001-project-name",
-  "status": "planned",
-  "type": "feature",
-  "priority": "P1",
-  "created": "2025-11-24T12:00:00Z",
-  "lastActivity": "2025-11-24T12:00:00Z"
-}
 ```
 
 ### Phase 1: Guide User Through Agent Workflow
