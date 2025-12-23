@@ -1,13 +1,24 @@
 #!/bin/bash
-# github-sync-handler.sh - Sync increment status to GitHub issue
+# github-sync-handler.sh - Sync increment to GitHub (create issues for User Stories)
 # Called async by processor, non-blocking, error-tolerant
+#
+# Argument formats supported:
+# 1. (event_type, increment_id) - from lifecycle/spec.updated events
+# 2. (increment_id) - from metadata.changed events (legacy)
 #
 # IMPORTANT: Never crash Claude, always exit 0
 set +e
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
 
+# Support both argument formats:
+# - Called from increment.created/spec.updated: $1 = event_type, $2 = increment_id
+# - Called from metadata.changed: $1 = increment_id
 INC_ID="${1:-}"
+if [[ "$INC_ID" == increment.* ]] || [[ "$INC_ID" == spec.* ]] || [[ "$INC_ID" == metadata.* ]]; then
+  # First arg is event type, second is increment ID
+  INC_ID="${2:-}"
+fi
 [[ -z "$INC_ID" ]] && exit 0
 
 # Find project root

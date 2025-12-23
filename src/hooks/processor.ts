@@ -8,13 +8,16 @@
  * Usage: node processor.js [--daemon]
  *
  * Event routing (EDA v2):
- * - increment.created/done/archived/reopened -> living-specs-handler + status-line-handler + project-bridge-handler
+ * - increment.created/done/archived/reopened -> living-specs-handler + status-line-handler + project-bridge-handler + github-sync-handler
  * - user-story.completed/reopened -> status-line-handler + project-bridge-handler
- * - task.updated/spec.updated -> living-docs-handler (legacy)
+ * - spec.updated -> living-docs-handler + ac-validation-handler + github-sync-handler (creates GitHub issues for User Stories)
+ * - task.updated -> living-docs-handler + ac-validation-handler (legacy)
  * - metadata.changed -> github-sync-handler
  *
  * The project-bridge-handler connects increment events to project-level EDA,
  * enabling automatic sync to GitHub, ADO, and JIRA via ProjectService.
+ *
+ * The github-sync-handler creates GitHub issues for User Stories when spec.md is updated.
  *
  * Self-terminates after 60s of idle
  *
@@ -243,19 +246,27 @@ async function processEvent(event: QueuedEvent, state: ProcessorState): Promise<
 
   const handlers: { pattern: RegExp; handlers: string[] }[] = [
     // EDA Event Routing (new architecture)
-    // Lifecycle events -> living-specs + status-line + project-bridge
+    // Lifecycle events -> living-specs + status-line + project-bridge + github-sync
+    // Note: github-sync-handler added to ensure GitHub issues are created for User Stories
     {
       pattern: /^increment\.(created|done|archived|reopened)$/,
-      handlers: ['living-specs-handler.sh', 'status-line-handler.sh', 'project-bridge-handler.sh'],
+      handlers: ['living-specs-handler.sh', 'status-line-handler.sh', 'project-bridge-handler.sh', 'github-sync-handler.sh'],
     },
     // User story events -> status-line + project-bridge
     {
       pattern: /^user-story\.(completed|reopened)$/,
       handlers: ['status-line-handler.sh', 'project-bridge-handler.sh'],
     },
-    // Legacy event routing (backward compat)
+    // Spec updated -> sync to living docs + validate ACs + sync to GitHub
+    // CRITICAL: spec.updated fires AFTER spec.md has User Stories defined
+    // This is the key event that triggers GitHub issue creation for USs
     {
-      pattern: /^(task|spec)\.updated$/,
+      pattern: /^spec\.updated$/,
+      handlers: ['living-docs-handler.sh', 'ac-validation-handler.sh', 'github-sync-handler.sh'],
+    },
+    // Legacy event routing (backward compat) - task.updated only
+    {
+      pattern: /^task\.updated$/,
       handlers: ['living-docs-handler.sh', 'ac-validation-handler.sh'],
     },
     {
