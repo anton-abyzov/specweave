@@ -309,12 +309,11 @@ export class ProjectService {
         break;
 
       case 'increment.created':
-        // New increment - may want to create project labels/areas
-        // Only sync if this is a new project
-        const project = await this.registry.getProject(projectId);
-        if (project && !project.external?.github?.lastSynced) {
-          await this.registry.requestSync(projectId, ['github']);
-        }
+        // New increment created - always sync to GitHub to create issues for User Stories
+        // Note: increment.created fires when metadata.json is first written, which may be
+        // before spec.md has User Stories. The github-sync-handler will also trigger on
+        // spec.updated events to ensure issues are created after USs are defined.
+        await this.registry.requestSync(projectId, ['github']);
         break;
 
       case 'increment.archived':
