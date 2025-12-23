@@ -12,6 +12,8 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 
 import { AdapterLoader } from '../../src/adapters/adapter-loader.js';
 import { CursorAdapter } from '../../src/adapters/cursor/adapter.js';
+import { GeminiAdapter } from '../../src/adapters/gemini/adapter.js';
+import { CodexAdapter } from '../../src/adapters/codex/adapter.js';
 import * as claudeCliDetector from '../../src/utils/claude-cli-detector.js';
 
 describe('AdapterLoader', () => {
@@ -72,8 +74,10 @@ describe('AdapterLoader', () => {
         platform: 'darwin',
       });
 
-      // No other adapters detected
+      // No other adapters detected - must mock ALL adapters in detection order
       vi.spyOn(CursorAdapter.prototype, 'detect').mockResolvedValue(false);
+      vi.spyOn(GeminiAdapter.prototype, 'detect').mockResolvedValue(false);
+      vi.spyOn(CodexAdapter.prototype, 'detect').mockResolvedValue(false);
 
       const detected = await adapterLoader.detectTool();
 
