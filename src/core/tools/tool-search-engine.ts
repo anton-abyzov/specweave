@@ -194,7 +194,9 @@ export class ToolSearchEngine {
     if (matchedKeywords.length === 0) return tool.description.slice(0, 100);
     let snippet = tool.description;
     for (const keyword of matchedKeywords) {
-      const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+      // Escape regex special characters to prevent injection
+      const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escaped}\\b`, 'gi');
       snippet = snippet.replace(regex, `**${keyword}**`);
     }
     return snippet.slice(0, 150);

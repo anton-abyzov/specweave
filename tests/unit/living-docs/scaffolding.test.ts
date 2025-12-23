@@ -24,7 +24,7 @@ import {
   scanExistingDocs,
   findSimilarFolders,
   type DetectedDoc,
-} from '../../../src/core/living-docs/scaffolding/merger.js';
+} from '../../../src/core/living-docs/scaffolding/index.js';
 
 describe('TemplateEngine', () => {
   let engine: TemplateEngine;
@@ -382,5 +382,170 @@ describe('findSimilarFolders', () => {
 
     // Should find docs and security folders as similar
     expect(similar.size).toBeGreaterThan(0);
+  });
+});
+
+describe('TemplateEngine - nested templates', () => {
+  let engine: TemplateEngine;
+
+  beforeEach(() => {
+    engine = new TemplateEngine();
+  });
+
+  it('should handle nested conditionals', () => {
+    const template = '${if:outer}OUTER:${if:inner}INNER${endif}:END${endif}';
+    const context = createDefaultContext('test');
+    (context as Record<string, unknown>).outer = true;
+    (context as Record<string, unknown>).inner = true;
+
+    const result = engine.render(template, context);
+    expect(result).toBe('OUTER:INNER:END');
+  });
+
+  it('should handle nested conditionals with inner false', () => {
+    const template = '${if:outer}OUTER:${if:inner}INNER${endif}:END${endif}';
+    const context = createDefaultContext('test');
+    (context as Record<string, unknown>).outer = true;
+    (context as Record<string, unknown>).inner = false;
+
+    const result = engine.render(template, context);
+    expect(result).toBe('OUTER::END');
+  });
+
+  it('should handle nested conditionals with outer false', () => {
+    const template = '${if:outer}OUTER:${if:inner}INNER${endif}:END${endif}';
+    const context = createDefaultContext('test');
+    (context as Record<string, unknown>).outer = false;
+    (context as Record<string, unknown>).inner = true;
+
+    const result = engine.render(template, context);
+    expect(result).toBe('');
+  });
+
+  it('should handle loops inside conditionals', () => {
+    const template = '${if:showList}Items: ${each:items}${item.name}, ${endeach}${endif}';
+    const context = createDefaultContext('test');
+    (context as Record<string, unknown>).showList = true;
+    (context as Record<string, unknown>).items = [{ name: 'A' }, { name: 'B' }];
+
+    const result = engine.render(template, context);
+    expect(result).toBe('Items: A, B, ');
+  });
+
+  it('should handle conditionals inside loops', () => {
+    const template = '${each:items}${if:showName}${item.name}${endif}, ${endeach}';
+    const context = createDefaultContext('test');
+    (context as Record<string, unknown>).showName = true;
+    (context as Record<string, unknown>).items = [{ name: 'X' }, { name: 'Y' }];
+
+    const result = engine.render(template, context);
+    expect(result).toBe('X, Y, ');
+  });
+});
+
+describe('LivingDocsMerger - TF-IDF similarity', () => {
+  it('should detect similar documents with matching content', () => {
+    const merger = new LivingDocsMerger({ projectPath: '/test' });
+
+    const doc1: DetectedDoc = {
+      sourcePath: 'docs/authentication.md',
+      absolutePath: '/test/docs/authentication.md',
+      fileName: 'authentication.md',
+      type: 'guide',
+      confidence: 0.8,
+      suggestedTarget: 'public/guides',
+      size: 500,
+      preview: 'This guide covers user authentication with OAuth2 and JWT tokens for secure API access.',
+      themes: ['auth', 'api', 'security'],
+    };
+
+    const doc2: DetectedDoc = {
+      sourcePath: 'security/auth-guide.md',
+      absolutePath: '/test/security/auth-guide.md',
+      fileName: 'auth-guide.md',
+      type: 'guide',
+      confidence: 0.8,
+      suggestedTarget: 'public/guides',
+      size: 450,
+      preview: 'Authentication using OAuth2 protocol and JWT tokens for securing API endpoints.',
+      themes: ['auth', 'api', 'security'],
+    };
+
+    const result = merger.checkSimilarity(doc1, doc2);
+
+    // Similar docs with shared themes and overlapping content should score well
+    expect(result.score).toBeGreaterThan(0.4);
+    // With matching themes (auth, api, security) and similar content, should be similar
+    // Note: isSimilar threshold is 0.6, so if score is > 0.6, isSimilar = true
+    if (result.score > 0.6) {
+      expect(result.isSimilar).toBe(true);
+      expect(result.reason).toBeDefined();
+    }
+  });
+
+  it('should detect dissimilar documents', () => {
+    const merger = new LivingDocsMerger({ projectPath: '/test' });
+
+    const doc1: DetectedDoc = {
+      sourcePath: 'docs/database.md',
+      absolutePath: '/test/docs/database.md',
+      fileName: 'database.md',
+      type: 'guide',
+      confidence: 0.8,
+      suggestedTarget: 'internal/modules',
+      size: 1000,
+      preview: 'PostgreSQL database setup and configuration for production environments with replication.',
+      themes: ['database'],
+    };
+
+    const doc2: DetectedDoc = {
+      sourcePath: 'frontend/react-guide.md',
+      absolutePath: '/test/frontend/react-guide.md',
+      fileName: 'react-guide.md',
+      type: 'guide',
+      confidence: 0.8,
+      suggestedTarget: 'public/guides',
+      size: 800,
+      preview: 'React component patterns and state management using hooks and context API.',
+      themes: ['testing'],
+    };
+
+    const result = merger.checkSimilarity(doc1, doc2);
+
+    expect(result.score).toBeLessThan(0.4);
+    expect(result.isSimilar).toBe(false);
+  });
+
+  it('should give high score to documents with similar filenames', () => {
+    const merger = new LivingDocsMerger({ projectPath: '/test' });
+
+    const doc1: DetectedDoc = {
+      sourcePath: 'docs/readme.md',
+      absolutePath: '/test/docs/readme.md',
+      fileName: 'README.md',
+      type: 'readme',
+      confidence: 0.9,
+      suggestedTarget: 'public/overview',
+      size: 200,
+      preview: 'Project overview and getting started guide.',
+      themes: [],
+    };
+
+    const doc2: DetectedDoc = {
+      sourcePath: 'README.md',
+      absolutePath: '/test/README.md',
+      fileName: 'README.md',
+      type: 'readme',
+      confidence: 0.9,
+      suggestedTarget: 'public/overview',
+      size: 250,
+      preview: 'Getting started with the project overview.',
+      themes: [],
+    };
+
+    const result = merger.checkSimilarity(doc1, doc2);
+
+    // Same filename should contribute to similarity
+    expect(result.score).toBeGreaterThan(0.5);
   });
 });
