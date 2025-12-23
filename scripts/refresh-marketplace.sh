@@ -215,6 +215,26 @@ else
 fi
 
 echo ""
+
+# Step 4: Update instruction files (CLAUDE.md, AGENTS.md)
+echo -e "${YELLOW}📄 Step 4: Updating instruction files...${NC}"
+
+# Check if we're in a SpecWeave project
+if [ -f ".specweave/config.json" ]; then
+  if command -v npx &> /dev/null; then
+    if npx specweave update-instructions 2>&1 | tee /tmp/update-instructions.log; then
+      echo -e "${GREEN}✓ Instruction files updated${NC}"
+    else
+      echo -e "${YELLOW}⚠ Could not update instruction files (run manually: npx specweave update-instructions)${NC}"
+    fi
+  else
+    echo -e "${YELLOW}⚠ npx not found - run manually: npx specweave update-instructions${NC}"
+  fi
+else
+  echo -e "${BLUE}ℹ Not in a SpecWeave project - skipping instruction file update${NC}"
+fi
+
+echo ""
 echo -e "${BLUE}Next steps:${NC}"
 echo -e "  1. Restart Claude Code for changes to take effect"
 echo -e "  2. Run ${YELLOW}/plugin${NC} to verify all plugins loaded"

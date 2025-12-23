@@ -21,10 +21,10 @@ set +e  # EMERGENCY FIX: Changed from set -euo pipefail to prevent Claude Code c
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 
-# Input validation
+# Input validation - exit 0 for safety (never exit 1 in hooks)
 if [ $# -lt 1 ]; then
   echo "Usage: $0 <spec-path>" >&2
-  exit 1
+  exit 0  # SAFETY: Never use exit 1 in hooks
 fi
 
 SPEC_PATH="$1"
@@ -32,7 +32,7 @@ SPEC_PATH="$1"
 # Validate spec file exists
 if [ ! -f "$SPEC_PATH" ]; then
   echo "❌ Spec file not found: $SPEC_PATH" >&2
-  exit 1
+  exit 0  # SAFETY: Never use exit 1 in hooks
 fi
 
 # Check if sync is enabled
@@ -105,7 +105,7 @@ fi
 # Validate provider
 if [[ ! "$PROVIDER" =~ ^(github|jira|ado)$ ]]; then
   echo "❌ Invalid provider: $PROVIDER (must be github, jira, or ado)" >&2
-  exit 1
+  exit 0  # SAFETY: Never use exit 1 in hooks
 fi
 
 # Check if sync CLI command exists
@@ -119,7 +119,7 @@ fi
 # Check if Node.js is available
 if ! command -v node &> /dev/null; then
   echo "❌ Node.js not found, cannot sync spec content" >&2
-  exit 1
+  exit 0  # SAFETY: Never use exit 1 in hooks
 fi
 
 echo ""

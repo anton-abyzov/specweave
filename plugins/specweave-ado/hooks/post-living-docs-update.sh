@@ -327,7 +327,7 @@ main() {
 
     if [ -z "$spec_path" ]; then
         log_error "No spec path provided"
-        exit 1
+        exit 0  # SAFETY: Never use exit 1 in hooks - causes Claude Code failures
     fi
 
     # Detect external tool

@@ -23,8 +23,9 @@
 #
 # v0.33.0 - Enhanced with crash prevention integration
 # v1.0.30 - Complete rewrite with proper concurrency primitives
+# v1.0.33 - Fixed: removed set -o pipefail for hook safety
 
-set -o pipefail
+set +e  # CRITICAL: Never use set -e or pipefail in hooks (causes cascading failures)
 
 # === Configuration ===
 HOOK_TIMEOUT="${HOOK_TIMEOUT:-5}"  # 5 seconds - more than enough for any hook
