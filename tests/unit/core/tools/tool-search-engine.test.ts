@@ -146,4 +146,32 @@ describe('ToolSearchEngine', () => {
       expect(lower).toEqual(upper);
     });
   });
+
+  describe('generateSnippet (regex safety)', () => {
+    it('should handle keywords with regex special characters', () => {
+      // Test tool with regex special chars in description
+      const toolWithSpecialChars: IndexedTool = {
+        id: 'test:skill:regex-test',
+        name: 'regex-test',
+        type: 'skill',
+        pluginName: 'test',
+        description: 'Handle C++ code and .NET framework with regex patterns like .*+?',
+        keywords: ['c++', '.net', '.*'],
+        relativePath: 'test/SKILL.md',
+        loaded: false,
+        indexedAt: new Date().toISOString(),
+      };
+
+      engine.buildIndex([toolWithSpecialChars]);
+
+      // This should not throw even with regex special chars in keywords
+      expect(() => {
+        engine.search('c++');
+      }).not.toThrow();
+
+      expect(() => {
+        engine.search('.net framework');
+      }).not.toThrow();
+    });
+  });
 });

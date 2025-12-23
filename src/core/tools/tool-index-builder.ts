@@ -62,17 +62,33 @@ export class ToolIndexBuilder {
 
       const targetPlugins = options.plugins ?? pluginDirs;
 
-      for (const pluginName of targetPlugins) {
+      // Parallel plugin scanning for better performance with many plugins
+      const pluginPromises = targetPlugins.map(async (pluginName) => {
         const pluginPath = path.join(pluginsDir, pluginName);
         if (!fs.existsSync(pluginPath)) {
-          warnings.push(`Plugin not found: ${pluginName}`);
-          continue;
+          return { status: 'warning' as const, pluginName, message: `Plugin not found: ${pluginName}` };
         }
         try {
           const tools = await this.indexPlugin(pluginPath, pluginName);
-          this.indexedTools.push(...tools);
+          return { status: 'success' as const, pluginName, tools };
         } catch (error) {
-          errors.push(`Failed to index plugin ${pluginName}: ${error}`);
+          return { status: 'error' as const, pluginName, message: `Failed to index plugin ${pluginName}: ${error}` };
+        }
+      });
+
+      const results = await Promise.allSettled(pluginPromises);
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          const value = result.value;
+          if (value.status === 'success') {
+            this.indexedTools.push(...value.tools);
+          } else if (value.status === 'warning') {
+            warnings.push(value.message);
+          } else if (value.status === 'error') {
+            errors.push(value.message);
+          }
+        } else {
+          errors.push(`Unexpected error: ${result.reason}`);
         }
       }
 
