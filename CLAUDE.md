@@ -136,6 +136,22 @@ Use `IncrementNumberManager.generateIncrementId()` - it validates automatically.
 
 Skills spawning content-generating agents = CRASH (context explosion)
 
+### 11. Repository Locations (Multi-Repo)
+
+**Clone to `/repositories`, NEVER project root.**
+
+```
+project-root/
+├── repositories/           # All repos here
+│   ├── frontend/
+│   ├── backend/
+│   └── shared/
+├── .specweave/             # Config at umbrella level
+└── CLAUDE.md
+```
+
+**Path refs in specs**: `repositories/backend/src/...`
+
 ---
 
 ## Proactive Agent Usage (USE THE EXPERTS!)
