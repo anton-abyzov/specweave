@@ -32,36 +32,38 @@ describe('Template Validation Tests', () => {
       expect(claudeContent.length).toBeGreaterThan(0);
     });
 
-    test('should contain Critical Rules section', () => {
-      expect(claudeContent).toContain('## Critical Rules');
+    test('should contain Rules section', () => {
+      expect(claudeContent).toContain('## Rules');
     });
 
     test('should contain Troubleshooting section', () => {
       expect(claudeContent).toContain('## Troubleshooting');
     });
 
-    test('should contain Core Workflow section', () => {
-      expect(claudeContent).toContain('## Core Workflow');
+    test('should contain Workflow section', () => {
+      expect(claudeContent).toContain('## Workflow');
     });
 
-    test('should contain File Organization rules', () => {
-      expect(claudeContent).toContain('File Organization');
+    test('should contain file organization rules in Rules section', () => {
+      // File organization is part of Rules section (Root clean rule)
+      expect(claudeContent).toMatch(/Root clean.*NEVER/);
     });
 
     test('should contain command table', () => {
-      expect(claudeContent).toMatch(/Command.*Purpose/);
+      expect(claudeContent).toMatch(/Cmd.*Action/);
     });
 
     test('should have troubleshooting table', () => {
-      expect(claudeContent).toMatch(/Issue.*Solution/);
+      expect(claudeContent).toMatch(/Issue.*Fix/);
     });
 
     test('should contain critical file organization rule', () => {
-      expect(claudeContent).toContain('NEVER pollute project root');
+      expect(claudeContent).toMatch(/NEVER create.*project root|Root clean/);
     });
 
-    test('should contain Source of Truth section', () => {
-      expect(claudeContent).toContain('Source of Truth');
+    test('should contain Truth reference in header', () => {
+      // Header contains "Truth: spec.md + tasks.md"
+      expect(claudeContent).toMatch(/Truth.*spec\.md.*tasks\.md/);
     });
 
     test('should contain Task Format section', () => {
@@ -88,8 +90,9 @@ describe('Template Validation Tests', () => {
       expect(claudeContent).toContain('/sw:done');
     });
 
-    test('should contain Emergency Minimal Mode section', () => {
-      expect(claudeContent).toContain('Emergency Minimal Mode');
+    test('should contain Emergency rule', () => {
+      // Emergency rule is part of Rules section
+      expect(claudeContent).toMatch(/Emergency.*emergency mode/);
     });
   });
 
@@ -165,9 +168,11 @@ describe('Template Validation Tests', () => {
       const claudeContent = fs.readFileSync(CLAUDE_TEMPLATE, 'utf-8');
       const agentsContent = fs.readFileSync(AGENTS_TEMPLATE, 'utf-8');
 
-      // Both should mention file organization rules
-      expect(claudeContent).toMatch(/NEVER pollute project root/i);
-      expect(agentsContent).toMatch(/NEVER pollute project root/i);
+      // Both should mention file organization rules (different wording but same intent)
+      // CLAUDE: "Root clean: NEVER create .md/reports/scripts in project root"
+      // AGENTS: "NEVER pollute project root"
+      expect(claudeContent).toMatch(/NEVER.*project root|Root clean/i);
+      expect(agentsContent).toMatch(/NEVER.*project root/i);
     });
 
     test('should reference increment folder structure', () => {
