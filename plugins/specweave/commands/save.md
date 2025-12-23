@@ -897,6 +897,34 @@ Summary:
   Saved: 1/1 repository
 ```
 
+### No Remote Configured (Single Repo or Parent Project)
+
+If operating in single-repo mode and no git remote is configured, prompt the user with the **EXACT project name** in the question:
+
+```markdown
+⚠️  No remote repository configured for 'sw-content-repurposer' (parent project).
+
+How would you like to proceed?
+  1. 📝 Enter URL manually - I'll provide the GitHub/GitLab URL for this repository
+  2. ⏭️  Skip push (commit only) - Just commit locally, I'll set up remote later
+  3. ❌ Cancel - Don't commit or push anything right now
+```
+
+**IMPORTANT**: Always include the project/repository name in the dialog so the user knows WHICH repository is missing the remote. For umbrella setups, this helps distinguish between:
+- Parent project (the umbrella root directory)
+- Child repositories (cloned into `repositories/` folder)
+
+**Check for pending clone jobs**: If `umbrella.childRepos` is empty but a clone job is running (check `/sw:jobs`), inform the user:
+
+```markdown
+ℹ️  Repository cloning is in progress (job: a84e4fe5).
+
+The child repositories are being cloned in the background. Options:
+  1. ⏳ Wait for cloning to complete (run `/sw:jobs` to check status)
+  2. 💾 Save parent project only (commit .specweave/ changes)
+  3. ❌ Cancel and retry later
+```
+
 ## Flags and Options
 
 | Flag | Description |
