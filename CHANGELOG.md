@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.38] - 2025-12-23
+
+### 🔧 Bug Fixes
+
+- Enhanced spec validation guard with additional checks
+- Fixed sync config writer for issue tracker
+- Improved clone worker reliability
+- Updated scaffolding for living docs
+
+---
+
 ## [1.0.37] - 2025-12-22
 
 ### 🔧 Implementation Updates
