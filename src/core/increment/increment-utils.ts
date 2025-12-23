@@ -201,6 +201,13 @@ export class IncrementNumberManager {
   /**
    * Get all existing increment numbers across all directories.
    *
+   * CRITICAL COLLISION PREVENTION (v1.0.42):
+   * Both internal (0001-xxx) and external (0001E-xxx) increments share
+   * the SAME numeric namespace. This function extracts the BASE number
+   * from both variants to ensure:
+   * - If 0001E-external exists → 0001-internal is BLOCKED (returns 0002)
+   * - If 0001-internal exists → 0001E-external is BLOCKED (returns 0002E)
+   *
    * Returns a Set of all increment numbers found in:
    * 1. .specweave/increments/ (main)
    * 2. .specweave/increments/_archive/
@@ -208,7 +215,8 @@ export class IncrementNumberManager {
    * 4. .specweave/increments/_paused/
    *
    * @param incrementsDir - Path to .specweave/increments directory
-   * @returns Set of increment numbers (e.g., Set([1, 2, 4, 5]))
+   * @returns Set of BASE increment numbers (e.g., Set([1, 2, 4, 5]))
+   *          Note: Both 0001-xxx and 0001E-xxx contribute "1" to this set
    * @private
    * @since 0.33.1
    */
@@ -234,6 +242,7 @@ export class IncrementNumberManager {
           if (!entry.isDirectory()) continue;
 
           // Match pattern: 0032-name, 032-name, or 0032E-name (external)
+          // CRITICAL: Extract BASE number - both 0001 and 0001E → 1
           const match = entry.name.match(/^(\d{3,4})E?-/);
           if (match) {
             const number = parseInt(match[1], 10);
