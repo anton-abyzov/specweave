@@ -1065,6 +1065,79 @@ Next steps:
 3. Monitor external tool status: /sw:status {increment-id}
 ```
 
+**🚨 Step 11: MANDATORY - Sync to External Tools (GitHub/JIRA/ADO)**
+
+After living docs sync, you MUST explicitly trigger external tool sync if configured:
+
+```bash
+# Check if GitHub sync is configured
+if grep -q '"github"' .specweave/config.json 2>/dev/null || \
+   grep -q 'provider.*github' .specweave/config.json 2>/dev/null || \
+   [ -n "$(grep GITHUB_TOKEN .env 2>/dev/null)" ]; then
+    echo "📡 GitHub sync configured - triggering sync..."
+fi
+```
+
+**⚠️ CRITICAL: External sync requires explicit command!**
+
+Living docs sync does NOT automatically create GitHub issues. You MUST run:
+
+```
+/sw-github:sync {increment-id}
+```
+
+**Why this is separate?**
+- External sync requires different permissions (`canUpsertInternalItems: true`)
+- Rate limiting considerations (GitHub API limits)
+- User may want to review increment before creating issues
+- Multi-repo setups need profile selection
+
+**Expected output after `/sw-github:sync`:**
+
+```
+🔄 Syncing increment 0001-feature to GitHub...
+
+✅ GitHub sync complete:
+   📋 Created: 3 issues (US-001, US-002, US-003)
+   🔗 Milestone: [FS-001] Feature Name
+   📊 Issues linked in metadata.json
+```
+
+**If permissions not configured:**
+
+```
+⚠️ GitHub sync skipped - canUpsertInternalItems is disabled
+💡 Enable in .specweave/config.json:
+   "sync": {
+     "settings": {
+       "canUpsertInternalItems": true
+     }
+   }
+```
+
+**Final completion output:**
+
+```
+✅ Increment 0001-feature-name created successfully!
+
+📁 Files:
+   └─ .specweave/increments/0001-feature-name/
+      ├─ spec.md (3 User Stories, 12 ACs)
+      ├─ plan.md (Technical Architecture)
+      ├─ tasks.md (18 Tasks)
+      └─ metadata.json
+
+📚 Living Docs:
+   └─ .specweave/docs/internal/specs/project-name/FS-001/
+      ├─ FEATURE.md
+      └─ us-*.md (3 files)
+
+📡 External Tools:
+   └─ GitHub: 3 issues created (#42, #43, #44)
+
+🚀 Ready for implementation: /sw:do 0001
+```
+
 ## Frontmatter Format (spec.md):
 
 **IMPORTANT**: Tech stack is AUTO-DETECTED from project files (package.json, requirements.txt, etc.), NOT hardcoded!
