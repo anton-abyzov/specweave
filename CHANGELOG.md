@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.33] - 2025-12-22
+
+### 🔧 Maintenance Release
+
+- Bug fixes and infrastructure improvements
+- Removed deprecated libraries
+- Simplified hook infrastructure
+- Enhanced scaffolding merger and tool search with tests
+
+---
+
 ## [1.0.23] - 2025-12-15
 
 ### 🐛 Critical Bug Fix
