@@ -23,8 +23,9 @@
 #   - Request queuing with FIFO ordering
 #
 # v1.0.0 - Initial implementation (2025-12-17)
+# v1.0.33 - Fixed: removed set -o pipefail for hook safety
 
-set -o pipefail
+set +e  # CRITICAL: Never use set -e or pipefail in hooks (causes cascading failures)
 
 # === Configuration ===
 SEMAPHORE_DIR="${SPECWEAVE_STATE_DIR:-.specweave/state}/semaphores"

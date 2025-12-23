@@ -1,20 +1,36 @@
 ---
 name: expo-workflow
-description: Expert in Expo development workflows, EAS Build, EAS Update, Expo Go, dev clients, expo-cli commands, app configuration, and deployment strategies. Activates for expo, expo go, eas build, eas update, expo config, app.json, eas.json, expo dev client, expo prebuild, expo eject, over-the-air updates, expo doctor, expo install, managed workflow, bare workflow.
+description: Expert in Expo SDK 54+ development workflows, EAS Build, EAS Update, native tabs, Expo Router v6, expo-video, expo-audio, dev clients, expo-cli commands, app configuration, and deployment strategies. Activates for expo, expo go, eas build, eas update, expo config, app.json, eas.json, expo dev client, expo prebuild, expo eject, over-the-air updates, expo doctor, expo install, managed workflow, bare workflow, expo router, native tabs, liquid glass.
 ---
 
-# Expo Workflow Expert
+# Expo Workflow Expert (SDK 54+)
 
-Comprehensive expertise in Expo development workflows, EAS (Expo Application Services), and optimization strategies for rapid mobile development. Specializes in modern Expo SDK features, development builds, and deployment pipelines.
+Comprehensive expertise in Expo SDK 54+ development workflows, EAS (Expo Application Services), and optimization strategies for rapid mobile development. Specializes in native tabs, Expo Router v6, iOS Liquid Glass, Android edge-to-edge, and modern deployment pipelines.
 
 ## What I Know
+
+### Expo SDK 54 Features (August 2025)
+
+**What's New in SDK 54**
+- **Native Tab Bar Navigation**: True native tabs via React Navigation 7
+- **iOS Liquid Glass Support**: Translucent glass effects (iOS 26+)
+- **Android Edge-to-Edge**: Default immersive display
+- **expo-video & expo-audio**: New media APIs replacing expo-av
+- **expo-image v2**: useImage hook for imperative loading
+- **React Native 0.81**: Foundation with New Architecture
+- **Improved Developer Experience**: Faster builds, better error messages
+
+**Breaking Changes from SDK 53**
+- `expo-av` deprecated → use `expo-video` and `expo-audio`
+- Tab navigation API changes for native tabs
+- Android edge-to-edge now default (adjust padding)
 
 ### Expo Fundamentals
 
 **Managed vs Bare Workflow**
 - Managed workflow: Full Expo SDK, minimal native code
 - Bare workflow: Full native code access with Expo modules
-- When to use each approach
+- **CNG (Continuous Native Generation)**: Best of both worlds
 - Migration strategies between workflows
 
 **Expo Go vs Development Builds**
@@ -24,10 +40,10 @@ Comprehensive expertise in Expo development workflows, EAS (Expo Application Ser
 - Creating custom dev clients with EAS Build
 
 **Expo SDK & Modules**
-- Core Expo modules (expo-camera, expo-location, etc.)
+- Core Expo modules (expo-camera, expo-location, expo-video, expo-audio)
 - Third-party native module compatibility
-- Module installation best practices
-- Autolinking and manual linking
+- Module installation: `npx expo install <package>`
+- Autolinking handles native setup automatically
 
 ### EAS Build (Cloud Builds)
 
@@ -134,7 +150,7 @@ Comprehensive expertise in Expo development workflows, EAS (Expo Application Ser
 ## When to Use This Skill
 
 Ask me when you need help with:
-- Setting up Expo development workflow
+- Setting up Expo SDK 54+ development workflow
 - Creating development builds with EAS Build
 - Configuring app.json or eas.json
 - Setting up over-the-air updates with EAS Update
@@ -144,9 +160,14 @@ Ask me when you need help with:
 - Configuring deep linking and URL schemes
 - Setting up CI/CD pipelines for Expo apps
 - Deploying to App Store or Play Store
-- Understanding Expo SDK capabilities
+- Understanding Expo SDK 54 capabilities
 - Migrating from Expo Go to dev client
 - Handling native modules in Expo projects
+- **Implementing native tab navigation**
+- **Setting up iOS Liquid Glass effects**
+- **Configuring Android edge-to-edge display**
+- **Migrating from expo-av to expo-video/expo-audio**
+- **Using Expo Router v6 file-based routing**
 
 ## Essential Expo Commands
 
@@ -415,6 +436,202 @@ eas build --profile development --platform all
 
 # Continue using EAS Update for JS changes
 eas update --branch development
+```
+
+### 9. Native Tab Navigation (SDK 54+)
+
+Enable true native tab bars with Expo Router v6:
+
+```typescript
+// app/(tabs)/_layout.tsx
+import { Tabs } from 'expo-router';
+import { Platform } from 'react-native';
+
+export default function TabLayout() {
+  return (
+    <Tabs
+      screenOptions={{
+        // Enable native tabs (iOS has translucent effect by default)
+        tabBarStyle: Platform.select({
+          ios: { position: 'absolute' }, // For Liquid Glass
+          default: {},
+        }),
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{ title: 'Home', tabBarIcon: ({ color }) => <HomeIcon color={color} /> }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{ title: 'Profile', tabBarIcon: ({ color }) => <ProfileIcon color={color} /> }}
+      />
+    </Tabs>
+  );
+}
+```
+
+### 10. iOS Liquid Glass (SDK 54+ / iOS 26+)
+
+Create beautiful translucent effects:
+
+```typescript
+// components/GlassCard.tsx
+import { View, StyleSheet, Platform } from 'react-native';
+import { BlurView } from 'expo-blur';
+
+export function GlassCard({ children }) {
+  if (Platform.OS === 'ios' && parseInt(Platform.Version, 10) >= 26) {
+    return (
+      <BlurView
+        style={styles.card}
+        intensity={60}
+        tint="systemMaterial" // Liquid Glass tint
+      >
+        {children}
+      </BlurView>
+    );
+  }
+
+  return <View style={[styles.card, styles.fallback]}>{children}</View>;
+}
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  fallback: {
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+  },
+});
+```
+
+### 11. Android Edge-to-Edge (SDK 54+)
+
+Handle immersive display properly:
+
+```typescript
+// app/_layout.tsx
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View, StyleSheet, Platform } from 'react-native';
+
+export default function RootLayout() {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View
+      style={[
+        styles.container,
+        {
+          // Account for edge-to-edge on Android 15+
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        },
+      ]}
+    >
+      <Slot />
+    </View>
+  );
+}
+```
+
+```javascript
+// app.json - enable edge-to-edge
+{
+  "expo": {
+    "android": {
+      "edgeToEdge": true  // SDK 54 default
+    }
+  }
+}
+```
+
+### 12. expo-video (Replacing expo-av)
+
+Modern video playback:
+
+```typescript
+// components/VideoPlayer.tsx
+import { useVideoPlayer, VideoView } from 'expo-video';
+import { useEvent } from 'expo';
+import { StyleSheet, View } from 'react-native';
+
+export function VideoPlayer({ source }: { source: string }) {
+  const player = useVideoPlayer(source, (player) => {
+    player.loop = true;
+    player.play();
+  });
+
+  useEvent(player, 'statusChange', ({ status }) => {
+    console.log('Player status:', status);
+  });
+
+  return (
+    <View style={styles.container}>
+      <VideoView
+        style={styles.video}
+        player={player}
+        allowsFullscreen
+        allowsPictureInPicture
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  video: { width: '100%', aspectRatio: 16 / 9 },
+});
+```
+
+### 13. expo-audio (Replacing expo-av)
+
+Modern audio handling:
+
+```typescript
+// hooks/useAudio.ts
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+
+export function useAudio(source: string) {
+  const player = useAudioPlayer(source);
+  const status = useAudioPlayerStatus(player);
+
+  return {
+    play: () => player.play(),
+    pause: () => player.pause(),
+    seek: (position: number) => player.seekTo(position),
+    isPlaying: status.playing,
+    position: status.currentTime,
+    duration: status.duration,
+  };
+}
+```
+
+### 14. expo-image v2 with useImage
+
+Imperative image loading:
+
+```typescript
+import { useImage, Image } from 'expo-image';
+
+export function PreloadedImage({ uri }: { uri: string }) {
+  const image = useImage(uri, {
+    onError: (error) => console.error('Failed to load image:', error),
+  });
+
+  if (!image) {
+    return <ActivityIndicator />;
+  }
+
+  return (
+    <Image
+      source={image}
+      style={{ width: image.width, height: image.height }}
+      contentFit="cover"
+    />
+  );
+}
 ```
 
 ## Integration with SpecWeave

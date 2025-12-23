@@ -373,3 +373,61 @@ hook_exit_with_failure() {
   release_recursion_guard
   exit 0  # Still exit 0 to not break Claude
 }
+
+# ============================================================================
+# 11. PRE-TOOL-USE GUARD HELPERS (v0.35.4+)
+# ============================================================================
+# Reduce boilerplate in PreToolUse guards (~15 lines → 1 function call)
+
+# Global variables set by init_pretool_guard
+HOOK_INPUT=""
+HOOK_TOOL_NAME=""
+HOOK_FILE_PATH=""
+HOOK_CONTENT=""
+
+# Initialize PreToolUse guard environment
+# Returns 1 if hook should exit early (kill switch, no jq, etc.)
+# Sets: HOOK_INPUT, HOOK_TOOL_NAME, HOOK_FILE_PATH, HOOK_CONTENT
+init_pretool_guard() {
+  # Kill switch check
+  if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
+    echo '{"decision":"allow"}'
+    return 1
+  fi
+
+  # Read stdin safely
+  HOOK_INPUT=$(cat 2>/dev/null || echo '{}')
+
+  # Check jq availability
+  if ! command -v jq >/dev/null 2>&1; then
+    echo '{"decision":"allow"}'
+    return 1
+  fi
+
+  # Extract common fields
+  HOOK_TOOL_NAME=$(echo "$HOOK_INPUT" | jq -r '.tool_name // ""' 2>/dev/null || echo "")
+  HOOK_FILE_PATH=$(echo "$HOOK_INPUT" | jq -r '.tool_input.file_path // .file_path // ""' 2>/dev/null || echo "")
+  HOOK_CONTENT=$(echo "$HOOK_INPUT" | jq -r '.tool_input.content // .tool_input.new_string // ""' 2>/dev/null || echo "")
+
+  return 0
+}
+
+# Allow the tool call with optional message
+guard_allow() {
+  local message="${1:-}"
+  if [[ -n "$message" ]]; then
+    printf '{"decision":"allow","message":"%s"}\n' "$message"
+  else
+    echo '{"decision":"allow"}'
+  fi
+  exit 0
+}
+
+# Block the tool call with reason
+guard_block() {
+  local reason="$1"
+  # Escape special characters for JSON
+  reason=$(echo "$reason" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+  printf '{"decision":"block","reason":"%s"}\n' "$reason"
+  exit 2
+}
