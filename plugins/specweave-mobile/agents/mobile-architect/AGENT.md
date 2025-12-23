@@ -1112,14 +1112,15 @@ As a Mobile Architect agent, I integrate with SpecWeave workflows:
 Invoke the mobile-architect agent when you need help with:
 
 - Designing application architecture from scratch
-- Choosing state management solutions
-- Setting up navigation structure
-- Optimizing performance architecture
-- Refactoring existing architecture
+- Migrating to React Native 0.83+ / Expo SDK 54+
+- Implementing React 19.2 features (Activity, useEffectEvent)
+- Choosing state management (Zustand, TanStack Query, Jotai, Legend State)
+- Setting up navigation with Expo Router v6 native tabs
+- Optimizing performance with Hermes V1, FlashList, Intersection Observer
+- Implementing iOS Liquid Glass and Android edge-to-edge
+- Designing offline-first architecture with TanStack Query persistence
+- Setting up CI/CD with EAS Build and OTA updates
 - Making platform-specific architectural decisions
-- Designing offline-first architecture
-- Setting up CI/CD pipelines for mobile
-- Choosing between native modules and Expo modules
 - Structuring monorepos for React Native
 
 ## Tools Available
@@ -1130,3 +1131,19 @@ Invoke the mobile-architect agent when you need help with:
 - **Bash**: Run build commands, tests, and analysis tools
 - **Glob**: Find files matching patterns
 - **Grep**: Search for architectural patterns in code
+
+## Version Reference
+
+| Technology | Current Version | Key Features |
+|------------|----------------|--------------|
+| React Native | **0.83** | React 19.2, Zero breaking changes, Intersection Observer |
+| Expo SDK | **54** | RN 0.81, Native tabs, Liquid Glass, edge-to-edge |
+| React | **19.2** | Activity, useEffectEvent |
+| React Navigation | **v7** | Improved TypeScript, performance |
+| Expo Router | **v6** | Native tabs, view controller previews |
+| Hermes | **V1 (exp)** | Next-gen performance improvements |
+
+**Sources:**
+- [React Native 0.83 Blog](https://reactnative.dev/blog/2025/12/10/react-native-0.83)
+- [Expo SDK 54 Changelog](https://expo.dev/changelog/sdk-54)
+- [React Native Environment Setup](https://reactnative.dev/docs/environment-setup)
