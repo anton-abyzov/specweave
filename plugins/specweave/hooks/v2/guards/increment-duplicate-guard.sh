@@ -1,16 +1,16 @@
 #!/bin/bash
-# increment-duplicate-guard.sh - Block creation of duplicate increment IDs
+# increment-duplicate-guard.sh - WARN (not block) on duplicate increment IDs
 #
-# v0.33.0+: Prevents duplicate increment numbers (0121 and 0121 both existing)
-# Also prevents 0001 and 0001E collisions (they share the same base number)
+# v0.33.0+: Detects duplicate increment numbers (0121 and 0121 both existing)
+# Also detects 0001 and 0001E collisions (they share the same base number)
 #
-# PreToolUse hook for Write tool - BLOCKS the tool call if duplicate detected
+# v1.0.37+: CRITICAL CHANGE - Now WARNS instead of BLOCKING!
+# User feedback: "you MUST NEVER block such operations... do at least warning"
+# Business logic and validation should be in scripts/agents, not hard blocks.
 #
-# CRITICAL: This guards against the BUG where two increments get the same ID:
-# - 0121-ado-jira-feature-parity-p2-p3
-# - 0121-intelligent-living-docs-content
+# PreToolUse hook for Write tool - WARNS but ALLOWS the tool call
 #
-# Exit 0 = allow (with JSON), Exit 2 = block (with JSON)
+# Exit 0 = allow (with JSON warning message if duplicate detected)
 set +e
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && echo '{"decision":"allow"}' && exit 0
@@ -30,6 +30,15 @@ fi
 if [[ "$FILE_PATH" != *.specweave/increments/* ]]; then
   echo '{"decision":"allow"}'
   exit 0  # Not an increment file - allow
+fi
+
+# CRITICAL FIX (v1.0.37): ALWAYS allow metadata.json writes!
+# metadata.json is the FIRST file created for any increment - it MUST succeed.
+# Duplicate detection only makes sense for the INCREMENT FOLDER, not individual files.
+# Once the folder exists, any file writes within it should be allowed.
+if [[ "$FILE_PATH" == *metadata.json ]]; then
+  echo '{"decision":"allow","message":"metadata.json write allowed (increment creation)"}'
+  exit 0
 fi
 
 # Extract the increment folder name from the path
@@ -109,7 +118,7 @@ for DIR in "${DIRS_TO_CHECK[@]}"; do
   done < <(find "$DIR" -maxdepth 1 -type d -name "${INCREMENT_NUM}*" -print0 2>/dev/null)
 done
 
-# If duplicates found, BLOCK the operation and provide the correct number to use
+# If duplicates found, WARN but ALLOW the operation (v1.0.37+: no blocking!)
 if [[ ${#FOUND_DUPLICATES[@]} -gt 0 ]]; then
   # Format duplicates for JSON
   DUP_LIST=""
@@ -129,8 +138,10 @@ if [[ ${#FOUND_DUPLICATES[@]} -gt 0 ]]; then
   FOLDER_NAME_PART=$(echo "$INCREMENT_FOLDER" | sed 's/^[0-9]\{3,4\}E\?-//')
   SUGGESTED_FOLDER="${NEXT_NUM_PADDED}-${FOLDER_NAME_PART}"
 
-  printf '{"decision":"block","reason":"🚫 DUPLICATE INCREMENT ID - Use this instead:\\n\\n✅ CORRECT: %s\\n❌ ATTEMPTED: %s\\n\\nNumber %s already exists:%s\\n\\n🔧 IMMEDIATE FIX: Replace your file path with:\\n   .specweave/increments/%s/...\\n\\nThe guard calculated the next available number for you."}\n' "$SUGGESTED_FOLDER" "$INCREMENT_FOLDER" "$INCREMENT_NUM" "$DUP_LIST" "$SUGGESTED_FOLDER"
-  exit 2  # Block the tool call
+  # v1.0.37: ALLOW with WARNING instead of blocking
+  # User can still proceed - the warning provides guidance
+  printf '{"decision":"allow","message":"⚠️ DUPLICATE INCREMENT ID DETECTED\\n\\n✅ SUGGESTED: %s\\n⚠️ CURRENT: %s\\n\\nNumber %s already exists:%s\\n\\n💡 RECOMMENDATION: Consider using .specweave/increments/%s/ instead.\\n\\nOperation ALLOWED - proceeding with current path."}\n' "$SUGGESTED_FOLDER" "$INCREMENT_FOLDER" "$INCREMENT_NUM" "$DUP_LIST" "$SUGGESTED_FOLDER"
+  exit 0  # ALLOW with warning (v1.0.37: no blocking!)
 fi
 
 # No duplicates - allow
