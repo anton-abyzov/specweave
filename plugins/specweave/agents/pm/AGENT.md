@@ -636,36 +636,65 @@ With project-scoped stories:
 
 ---
 
-## 🌐 Multi-Project User Stories (v0.29.0+ - JIRA Boards/ADO Area Paths)
+## 🌐 Multi-Project User Stories - Structure Level Detection (v0.35.4+)
 
-**⚠️ CRITICAL: User Stories MUST Consider ALL Relevant Projects!**
+**⚠️ CRITICAL: Detect Structure Level BEFORE Generating User Stories!**
 
-When working with enterprise setups where JIRA boards or ADO area paths map to SpecWeave projects, a single user story often spans MULTIPLE projects.
+### STEP 0C: Detect Structure Level (1-LEVEL vs 2-LEVEL)
 
-### STEP 0C: Detect Multi-Project Mode (Board/Area Path Mapping)
-
-**YOU MUST CHECK THIS BEFORE WRITING ANY USER STORIES:**
+**THIS IS MANDATORY - Run before writing ANY user stories:**
 
 ```bash
-# Check for JIRA board mapping
-cat .specweave/config.json | jq '.sync.profiles[].config.boardMapping'
-
-# Check for ADO area path mapping
-cat .specweave/config.json | jq '.sync.profiles[].config.areaPathMapping'
-
-# Check for 2-level spec structure
-ls -la .specweave/docs/internal/specs/JIRA-*/
-ls -la .specweave/docs/internal/specs/ADO-*/
+specweave context projects
 ```
 
-**Decision Flow:**
+**Interpret the output:**
+
+| `level` | Config Type | `**Board**:` Field |
+|---------|-------------|--------------------|
+| **1** | GitHub sync profiles, single project, umbrella (single team) | ❌ **FORBIDDEN** |
+| **2** | ADO areaPathMapping, JIRA boardMapping (2+ boards), umbrella (multi-team) | ✅ **REQUIRED** |
+
+**Example 1-level output (GitHub multi-repo):**
+```json
+{
+  "level": 1,
+  "projects": [
+    {"id": "sw-app-api", "name": "Sw App Api"},
+    {"id": "sw-app-web", "name": "Sw App Web"}
+  ],
+  "detectionReason": "GitHub sync profiles configured"
+}
 ```
-Is boardMapping or areaPathMapping configured?
-  → YES → MUST use multi-project-aware user stories
-         Each US must list ALL affected projects with scope
-  → NO → Check for umbrella mode (see Step 0)
-         Use standard or project-scoped user stories
+→ **DO NOT add `**Board**:` field!** Each sync profile = 1 project.
+
+**Example 2-level output (ADO/JIRA):**
+```json
+{
+  "level": 2,
+  "projects": [{"id": "acme-corp", "name": "ACME Corp"}],
+  "boardsByProject": {
+    "acme-corp": [
+      {"id": "frontend-team", "name": "Frontend Team"},
+      {"id": "backend-team", "name": "Backend Team"}
+    ]
+  }
+}
 ```
+→ **MUST add `**Board**:` field on each US!**
+
+### ⛔ VALIDATION RULES (ENFORCED BY HOOK!)
+
+```
+✅ 1-level: **Project**: required, NO **Board**:
+✅ 2-level: **Project**: AND **Board**: both required
+❌ FORBIDDEN: **Board**: on 1-level structure → spec-validation-guard.sh BLOCKS
+❌ FORBIDDEN: Missing **Board**: on 2-level → sync will fail
+```
+
+---
+
+## 🏢 Enterprise Multi-Project (2-Level: JIRA Boards/ADO Area Paths)
 
 ### Multi-Project User Story Format (v0.29.0+)
 

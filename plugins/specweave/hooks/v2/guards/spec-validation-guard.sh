@@ -84,6 +84,36 @@ if [[ "$HOOK_FILE_PATH" =~ \.specweave/increments/[0-9]{3,4}E?-[^/]+/spec\.md$ ]
     exit 2
   fi
 
+  # Check structure level to validate **Board**: fields
+  # For 1-level structures (GitHub), **Board**: should NOT be present
+  # For 2-level structures (ADO/JIRA with boards), **Board**: is required
+  PROJECT_ROOT="${HOOK_FILE_PATH%%/.specweave/*}"
+  BOARD_COUNT=$(echo "$HOOK_CONTENT" | grep -cE '^\*\*Board\*\*:' 2>/dev/null || echo "0")
+  BOARD_COUNT="${BOARD_COUNT//[^0-9]/}"
+  [[ -z "$BOARD_COUNT" ]] && BOARD_COUNT=0
+
+  if [[ "$BOARD_COUNT" -gt 0 ]]; then
+    # Has **Board**: fields - check if this is a 2-level structure
+    CONFIG_FILE="$PROJECT_ROOT/.specweave/config.json"
+    IS_2LEVEL="false"
+
+    if [[ -f "$CONFIG_FILE" ]]; then
+      # 2-level indicators: ADO areaPathMapping, JIRA boardMapping with multiple boards
+      HAS_AREA_MAPPING=$(jq -r '.sync.profiles | to_entries[] | select(.value.provider == "ado") | .value.config.areaPathMapping.mappings | length > 0' "$CONFIG_FILE" 2>/dev/null | grep -c "true" || echo "0")
+      HAS_BOARD_MAPPING=$(jq -r '.sync.profiles | to_entries[] | select(.value.provider == "jira") | .value.config.boardMapping.boards | length > 1' "$CONFIG_FILE" 2>/dev/null | grep -c "true" || echo "0")
+      HAS_MULTI_TEAMS=$(jq -r '.umbrella.childRepos | map(.team) | unique | length > 1' "$CONFIG_FILE" 2>/dev/null || echo "false")
+
+      if [[ "$HAS_AREA_MAPPING" -gt 0 ]] || [[ "$HAS_BOARD_MAPPING" -gt 0 ]] || [[ "$HAS_MULTI_TEAMS" == "true" ]]; then
+        IS_2LEVEL="true"
+      fi
+    fi
+
+    if [[ "$IS_2LEVEL" != "true" ]]; then
+      printf '{"decision":"block","reason":"🚫 **Board**: FIELDS NOT ALLOWED FOR 1-LEVEL STRUCTURE\\n\\nThis project uses GitHub sync (1-level structure).\\nEach sync profile = 1 project (no boards).\\n\\n🔧 FIX: Remove all **Board**: lines from spec.md\\n\\n**Board**: is only valid for:\\n- ADO with area path mapping\\n- JIRA with multiple boards\\n- Umbrella with multiple teams"}\n'
+      exit 2
+    fi
+  fi
+
   echo '{"decision":"allow"}'
   exit 0
 fi

@@ -830,47 +830,74 @@ Create `.specweave/increments/0021-feature-name/spec.md`:
 
 **⚠️ IMPORTANT: Use the correct template based on STEP 0 detection!**
 
-#### 5A: Single-Project Template (1-level structure)
+#### 5A: 1-Level Structure (GitHub, Single Project, Multi-Repo without ADO/JIRA)
 
-**Template File**: `templates/spec-single-project.md`
+**USE THIS WHEN**: `specweave context projects` returns `level: 1`
 
-Replace placeholders:
-- `{{INCREMENT_ID}}`, `{{FEATURE_TITLE}}`, `{{TYPE}}`, `{{PRIORITY}}`, `{{DATE}}`
-- `{{TEST_MODE}}`, `{{COVERAGE_TARGET}}`
-- **`{{PROJECT_ID}}`** ← MANDATORY (from STEP 0B)
+**Examples of 1-level**:
+- GitHub sync profiles (each repo = project)
+- Single project mode
+- Umbrella repos WITHOUT multiple teams
 
-#### 5B: Multi-Project Template (2-level structure) - USE THIS!
+**Template Rules for 1-level:**
+- Each User Story has `**Project**:` field
+- **NO `**Board**:` field** - GitHub doesn't have boards!
+- User story IDs: `US-001`, `US-002` (or `US-API-001`, `US-WEB-001` for multi-repo)
+- AC-IDs: `AC-US1-01` (or `AC-API-US1-01` for multi-repo)
 
-**Template File**: `templates/spec-multi-project.md`
+**Example 1-level spec.md:**
+```markdown
+### US-API-001: Create Auth API
+**Project**: sw-content-repurposer-api
 
-Replace placeholders:
-- `{{INCREMENT_ID}}`, `{{FEATURE_TITLE}}`, `{{TYPE}}`, `{{PRIORITY}}`, `{{DATE}}`
-- **`{{PROJECT_ID}}`** ← MANDATORY (from STEP 0B)
-- **`{{BOARD_ID}}`** ← MANDATORY for 2-level (from STEP 0B)
-- `{{PROJECT_FE_ID}}`, `{{PROJECT_BE_ID}}`, `{{PROJECT_SHARED_ID}}` (for multi-repo)
+**As a** frontend, I want auth endpoints...
+
+**Acceptance Criteria**:
+- [ ] **AC-API-US1-01**: POST /auth/login returns JWT
+```
+
+**⚠️ CRITICAL: Do NOT add `**Board**:` for 1-level structures!**
+
+#### 5B: 2-Level Structure (ADO Area Paths, JIRA Boards, Multi-Team Umbrella)
+
+**USE THIS WHEN**: `specweave context projects` returns `level: 2`
+
+**Examples of 2-level**:
+- ADO with `areaPathMapping`
+- JIRA with multiple `boardMapping.boards`
+- Umbrella repos with multiple teams
+
+**Template Rules for 2-level:**
+- Each User Story has BOTH `**Project**:` AND `**Board**:` fields
+- User story IDs: `US-FE-001`, `US-BE-001` (with project prefix)
+- AC-IDs: `AC-FE-US1-01`, `AC-BE-US1-01` (with project prefix)
+
+**Example 2-level spec.md:**
+```markdown
+### US-FE-001: Create Login Form
+**Project**: acme-corp
+**Board**: frontend-team
+
+**As a** user, I want a login form...
+
+**Acceptance Criteria**:
+- [ ] **AC-FE-US1-01**: Login form displays email/password fields
+```
 
 **Key Rules for spec.md (ADR-0140: v0.35.0+):**
 1. **`project:` field REMOVED from YAML frontmatter** - now resolved from per-US fields
 2. **`board:` field REMOVED from YAML frontmatter** (2-level) - now in per-US fields
 3. **Each User Story MUST have `**Project**:` field** - source of truth for project
-4. **Each User Story (2-level) MUST have `**Board**:` field** - source of truth for board
-5. **User story IDs have project prefix**: `US-FE-001`, `US-BE-001` (multi-project)
-6. **AC-IDs have project prefix**: `AC-FE-US1-01`, `AC-BE-US1-01` (multi-project)
+4. **Each User Story (2-level ONLY) MUST have `**Board**:` field** - source of truth for board
 
-**VALIDATION (per-US fields - v0.35.0+):**
-```markdown
-### US-001: Feature Name
-**Project**: digital-operations    # ← REQUIRED (resolved from config)
-
-### US-001: Feature Name (2-level)
-**Project**: acme-corp             # ← REQUIRED
-**Board**: digital-operations      # ← REQUIRED for 2-level
+**⚠️ VALIDATION RULES:**
 ```
-
-**⚠️ FORBIDDEN:**
-- User stories without `**Project**:` field
-- User stories (2-level) without `**Board**:` field
-- Using unresolved placeholders like `{{PROJECT_ID}}`
+✅ 1-level: **Project**: required, NO **Board**:
+✅ 2-level: **Project**: AND **Board**: both required
+❌ FORBIDDEN: **Board**: on 1-level structure → hook will BLOCK
+❌ FORBIDDEN: Missing **Board**: on 2-level → sync will fail
+❌ FORBIDDEN: Unresolved placeholders like {{PROJECT_ID}}
+```
 
 ### STEP 6: Create plan.md Template (OPTIONAL)
 
