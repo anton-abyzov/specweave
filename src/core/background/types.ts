@@ -5,7 +5,7 @@
  * that can run in background while user continues working.
  */
 
-export type JobType = 'clone-repos' | 'import-issues' | 'sync-external' | 'brownfield-analysis' | 'living-docs-builder';
+export type JobType = 'clone-repos' | 'import-issues' | 'sync-external' | 'brownfield-analysis' | 'living-docs-builder' | 'codebase-rescan';
 
 export type JobStatus = 'pending' | 'running' | 'paused' | 'completed' | 'completed_with_warnings' | 'failed';
 
@@ -193,7 +193,44 @@ export interface LivingDocsJobConfig {
   checkpoint?: LivingDocsCheckpoint;
 }
 
-export type JobConfig = CloneJobConfig | ImportJobConfig | SyncJobConfig | BrownfieldJobConfig | LivingDocsJobConfig;
+/**
+ * Codebase rescan phases - triggered when increment closes
+ * Rescans actual source code to update living docs with implementation reality
+ */
+export type CodebaseRescanPhase =
+  | 'discovery'           // Scan codebase structure
+  | 'code-analysis'       // Analyze source files affected by increment
+  | 'doc-reconciliation'  // Compare code reality with living docs
+  | 'update'              // Update living docs based on actual code
+  | 'reporting';          // Generate sync report
+
+/**
+ * Codebase rescan job configuration
+ *
+ * Triggered automatically when an increment closes to ensure living docs
+ * reflect the ACTUAL code implementation (code as source of truth).
+ */
+export interface CodebaseRescanJobConfig {
+  type: 'codebase-rescan';
+  projectPath: string;
+  /** The closed increment that triggered this rescan */
+  closedIncrementId: string;
+  /** Feature ID associated with the increment */
+  featureId?: string;
+  /** Specific paths/modules to focus on (derived from increment scope) */
+  scopePaths?: string[];
+  /** Whether to do deep analysis or quick sync */
+  depth: 'quick' | 'full';
+  /** Checkpoint for resume support */
+  checkpoint?: {
+    phase: CodebaseRescanPhase;
+    filesProcessed: number;
+    totalFiles: number;
+    lastProcessedPath: string;
+  };
+}
+
+export type JobConfig = CloneJobConfig | ImportJobConfig | SyncJobConfig | BrownfieldJobConfig | LivingDocsJobConfig | CodebaseRescanJobConfig;
 
 export interface JobState {
   jobs: BackgroundJob[];

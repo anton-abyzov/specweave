@@ -1,10 +1,10 @@
-<!-- SW:META template="claude" version="1.0.44" sections="header,start,autodetect,metarule,rules,workflow,structure,taskformat,secrets,syncing,mapping,testing,limits,troubleshooting,principles,linking,docs" -->
+<!-- SW:META template="claude" version="1.0.46" sections="header,start,autodetect,metarule,rules,workflow,structure,taskformat,secrets,syncing,mapping,testing,limits,troubleshooting,principles,linking,docs" -->
 
-<!-- SW:SECTION:header version="1.0.44" -->
+<!-- SW:SECTION:header version="1.0.46" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
-<!-- SW:SECTION:start version="1.0.44" -->
+<!-- SW:SECTION:start version="1.0.46" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -14,7 +14,7 @@
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.44" -->
+<!-- SW:SECTION:autodetect version="1.0.46" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -24,7 +24,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.44" -->
+<!-- SW:SECTION:metarule version="1.0.46" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -35,7 +35,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.44" -->
+<!-- SW:SECTION:rules version="1.0.46" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (spec.md, plan.md, tasks.md at root; reports/, scripts/, logs/ subfolders)
@@ -45,7 +45,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.44" -->
+<!-- SW:SECTION:workflow version="1.0.46" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -62,7 +62,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:structure version="1.0.44" -->
+<!-- SW:SECTION:structure version="1.0.46" -->
 ## Structure
 
 ```
@@ -84,7 +84,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Path syntax**: `//path` = absolute | `/path` = relative to settings file | `**` = recursive | `additionalDirectories` = explicit working dirs
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.44" -->
+<!-- SW:SECTION:taskformat version="1.0.46" -->
 ## Task Format
 
 ```markdown
@@ -94,7 +94,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.44" -->
+<!-- SW:SECTION:secrets version="1.0.46" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -105,7 +105,7 @@ gh auth status
 ```
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.44" -->
+<!-- SW:SECTION:syncing version="1.0.46" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **After increment creation**: Run `/sw-github:sync {id}` to create issues!
@@ -117,14 +117,23 @@ Living docs sync ≠ External sync. They are separate:
 **Required config** (`.specweave/config.json`):
 ```json
 "sync": {
-  "settings": { "canUpsertInternalItems": true }
+  "settings": {
+    "canUpsertInternalItems": true,
+    "canUpdateExternalItems": true,
+    "autoSyncOnCompletion": true
+  },
+  "github": {
+    "enabled": true,
+    "owner": "your-org",
+    "repo": "your-repo"
+  }
 }
 ```
 
 **Verify tokens**: `grep GITHUB_TOKEN .env` | `gh auth status`
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:mapping version="1.0.44" -->
+<!-- SW:SECTION:mapping version="1.0.46" -->
 ## GitHub Mapping
 
 | SpecWeave | GitHub |
@@ -134,7 +143,7 @@ Living docs sync ≠ External sync. They are separate:
 | Task T-XXX | Checkbox |
 <!-- SW:END:mapping -->
 
-<!-- SW:SECTION:testing version="1.0.44" -->
+<!-- SW:SECTION:testing version="1.0.46" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -146,13 +155,13 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:limits version="1.0.44" -->
+<!-- SW:SECTION:limits version="1.0.46" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.44" -->
+<!-- SW:SECTION:troubleshooting version="1.0.46" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -163,14 +172,15 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | Find increment | `/sw:status` |
 | Root polluted | Move files to `.specweave/increments/####/reports/` |
 | Duplicate IDs | `/sw:fix-duplicates` |
-| GitHub not syncing | Run `/sw-github:sync {id}` explicitly |
-| Permission denied | Set `canUpsertInternalItems: true` in config.json |
+| GitHub not syncing | Check `sync.github.enabled: true` AND `canUpdateExternalItems: true` in config.json |
+| GitHub issues not updating | Run `/sw-github:sync {id}` explicitly; check `.specweave/logs/throttle.log` |
+| Permission denied | Set `canUpsertInternalItems: true` AND `canUpdateExternalItems: true` in config.json |
 | No GITHUB_TOKEN | Check `.env` file or run `gh auth login` |
 | Edits blocked in repositories/ | Add `"additionalDirectories":["repositories"]` + `Write(//**)`, `Edit(//**)` to `.claude/settings.json` |
 | Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:principles version="1.0.44" -->
+<!-- SW:SECTION:principles version="1.0.46" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -180,7 +190,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 5. **Clean**: All files in increment folders
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.44" -->
+<!-- SW:SECTION:linking version="1.0.46" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -188,7 +198,7 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:docs version="1.0.44" -->
+<!-- SW:SECTION:docs version="1.0.46" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com) | `.specweave/docs/internal/`

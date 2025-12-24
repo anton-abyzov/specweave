@@ -1,3 +1,8 @@
+---
+name: sw:discrepancy-to-increment
+description: Convert brownfield discrepancies into a new increment for systematic documentation improvement. Groups by module, generates spec with ACs, and tracks resolution.
+---
+
 # Discrepancy to Increment Command
 
 Convert one or more brownfield discrepancies into a new increment for systematic documentation improvement.

@@ -149,6 +149,41 @@ case "$EVENT" in
       # Run closure sync in background (can take 10-30s for multiple issues)
       run_with_timeout 60 node "$CLOSURE_SCRIPT" "$INC_ID" >> "$LOG_FILE" 2>&1 &
     fi
+
+    # ========================================================================
+    # CODEBASE RESCAN (v1.0.47): Update living docs based on actual code
+    # ========================================================================
+    # When an increment closes, we MUST rescan the actual source code to ensure
+    # living docs reflect implementation reality (code as source of truth).
+    #
+    # This launches a background job that:
+    # 1. Scans files modified since increment started
+    # 2. Extracts implementation details (exports, functions, classes)
+    # 3. Updates living docs with actual code structure
+    # 4. Generates implementation summary report
+    #
+    # The job runs asynchronously to not block increment closure.
+    RESCAN_SCRIPT=""
+    for path in \
+      "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/launch-codebase-rescan.js" \
+      "$PROJECT_ROOT/plugins/specweave/lib/hooks/launch-codebase-rescan.js" \
+      "${CLAUDE_PLUGIN_ROOT:-}/lib/hooks/launch-codebase-rescan.js"; do
+      [[ -f "$path" ]] && { RESCAN_SCRIPT="$path"; break; }
+    done
+
+    if [[ -n "$RESCAN_SCRIPT" ]]; then
+      cd "$PROJECT_ROOT" || exit 0
+      FEATURE_ID=$(get_feature_id "$SPEC_FILE")
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] Launching codebase rescan job for $INC_ID (feature: ${FEATURE_ID:-none})" >> "$LOG_FILE" 2>/dev/null
+      # Run rescan in background - non-blocking, fire-and-forget
+      if [[ -n "$FEATURE_ID" ]]; then
+        run_with_timeout 10 node "$RESCAN_SCRIPT" "$INC_ID" "$FEATURE_ID" >> "$LOG_FILE" 2>&1 &
+      else
+        run_with_timeout 10 node "$RESCAN_SCRIPT" "$INC_ID" >> "$LOG_FILE" 2>&1 &
+      fi
+    else
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] Codebase rescan script not found, skipping" >> "$LOG_FILE" 2>/dev/null
+    fi
     ;;
 
   increment.archived)

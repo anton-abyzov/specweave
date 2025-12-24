@@ -46,8 +46,61 @@ CONFIG_FILE="$PROJECT_ROOT/.specweave/config.json"
 [[ ! -f "$CONFIG_FILE" ]] && exit 0
 
 # Check if GitHub sync is enabled
-GITHUB_ENABLED=$(grep -o '"enabled"[[:space:]]*:[[:space:]]*true' "$CONFIG_FILE" | head -1)
-[[ -z "$GITHUB_ENABLED" ]] && exit 0
+# FIXED (v1.0.46): Support BOTH config formats:
+#
+# FORMAT 1 - PROFILES (current, multi-project):
+#   sync.profiles["sw-content-repurposer-api"]: { provider: "github", config: {...} }
+#   + sync.settings.canUpdateExternalItems: true
+#
+# FORMAT 2 - LEGACY (direct github section):
+#   sync.github: { enabled: true, owner, repo }
+#
+# FORMAT 3 - LEGACY (provider field):
+#   sync: { enabled: true, provider: "github" }
+#
+# NOTE: The actual permission gates (canUpdateExternalItems, etc.) are checked
+# downstream by GitHubFeatureSync, which respects the full permission model.
+GITHUB_ENABLED=""
+
+# Method 1: Check for PROFILES format (sync.profiles with provider: "github")
+# This is the current recommended format for multi-project setups
+if grep -q '"profiles"[[:space:]]*:' "$CONFIG_FILE" 2>/dev/null; then
+  # Check if ANY profile has provider: "github"
+  if grep -q '"provider"[[:space:]]*:[[:space:]]*"github"' "$CONFIG_FILE" 2>/dev/null; then
+    # Also check if canUpdateExternalItems is true (required for GitHub sync)
+    if grep -q '"canUpdateExternalItems"[[:space:]]*:[[:space:]]*true' "$CONFIG_FILE" 2>/dev/null; then
+      GITHUB_ENABLED="true"
+    else
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] WARNING: GitHub profile found but canUpdateExternalItems=false" >> "$THROTTLE_LOG" 2>/dev/null
+    fi
+  fi
+fi
+
+# Method 2: Check for explicit sync.github.enabled (legacy direct style)
+if [[ -z "$GITHUB_ENABLED" ]]; then
+  if grep -q '"github"[[:space:]]*:' "$CONFIG_FILE" 2>/dev/null; then
+    if grep -A5 '"github"[[:space:]]*:' "$CONFIG_FILE" 2>/dev/null | grep -q '"enabled"[[:space:]]*:[[:space:]]*true'; then
+      GITHUB_ENABLED="true"
+    fi
+  fi
+fi
+
+# Method 3: Check for provider: github with sync.enabled (legacy style)
+if [[ -z "$GITHUB_ENABLED" ]]; then
+  # Only check this if there are NO profiles (pure legacy config)
+  if ! grep -q '"profiles"[[:space:]]*:' "$CONFIG_FILE" 2>/dev/null; then
+    if grep -q '"provider"[[:space:]]*:[[:space:]]*"github"' "$CONFIG_FILE" 2>/dev/null; then
+      if grep -q '"sync"' "$CONFIG_FILE" && grep -A2 '"sync"' "$CONFIG_FILE" | grep -q '"enabled"[[:space:]]*:[[:space:]]*true'; then
+        GITHUB_ENABLED="true"
+      fi
+    fi
+  fi
+fi
+
+if [[ -z "$GITHUB_ENABLED" ]]; then
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] SKIPPED: No GitHub config found or canUpdateExternalItems=false" >> "$THROTTLE_LOG" 2>/dev/null
+  exit 0
+fi
 
 # Throttle configuration:
 # - Full sync (increment lifecycle): 5 minutes (creates all issues)
@@ -98,22 +151,55 @@ run_with_timeout() {
 # Load GitHub token
 GITHUB_TOKEN=""
 [[ -f "$PROJECT_ROOT/.env" ]] && GITHUB_TOKEN=$(grep -E "^GITHUB_TOKEN=" "$PROJECT_ROOT/.env" | cut -d'=' -f2- | tr -d '"'"'")
-[[ -z "$GITHUB_TOKEN" ]] && exit 0
+
+if [[ -z "$GITHUB_TOKEN" ]]; then
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] ERROR: GITHUB_TOKEN not found in $PROJECT_ROOT/.env" >> "$THROTTLE_LOG" 2>/dev/null
+  exit 0
+fi
+
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] Token found (length: ${#GITHUB_TOKEN})" >> "$THROTTLE_LOG" 2>/dev/null
 
 # Find sync script
+# FIXED (v1.0.45): Added marketplace installation paths
+# Priority order:
+# 1. Local development (project has dist/)
+# 2. Marketplace installation (~/.claude/plugins/)
+# 3. Legacy CLAUDE_PLUGIN_ROOT
 SYNC_SCRIPT=""
 for path in \
   "$PROJECT_ROOT/dist/plugins/specweave-github/lib/github-feature-sync-cli.js" \
-  "${CLAUDE_PLUGIN_ROOT:-/specweave-github}/lib/github-feature-sync-cli.js"; do
+  "$PROJECT_ROOT/plugins/specweave-github/lib/github-feature-sync-cli.js" \
+  "$HOME/.claude/plugins/specweave-github/lib/github-feature-sync-cli.js" \
+  "${CLAUDE_PLUGIN_ROOT:-}/lib/github-feature-sync-cli.js"; do
   [[ -f "$path" ]] && { SYNC_SCRIPT="$path"; break; }
 done
-[[ -z "$SYNC_SCRIPT" ]] && exit 0
 
-# Extract feature ID
+if [[ -z "$SYNC_SCRIPT" ]]; then
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] ERROR: github-feature-sync-cli.js not found" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "   Searched paths:" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "   - $PROJECT_ROOT/dist/plugins/specweave-github/lib/github-feature-sync-cli.js" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "   - $PROJECT_ROOT/plugins/specweave-github/lib/github-feature-sync-cli.js" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "   - $HOME/.claude/plugins/specweave-github/lib/github-feature-sync-cli.js" >> "$THROTTLE_LOG" 2>/dev/null
+  exit 0
+fi
+
+# Extract feature ID from spec.md frontmatter
+# FIXED (v1.0.45): Also look for feature_id/epic in YAML frontmatter (indented)
 SPEC_FILE="$PROJECT_ROOT/.specweave/increments/$INC_ID/spec.md"
 FEATURE_ID=""
-[[ -f "$SPEC_FILE" ]] && FEATURE_ID=$(grep -E "^(epic|feature_id):" "$SPEC_FILE" | head -1 | sed 's/.*:[[:space:]]*//' | tr -d '"'"'")
-[[ -z "$FEATURE_ID" ]] && exit 0
+if [[ -f "$SPEC_FILE" ]]; then
+  # Try both: start-of-line (markdown) and indented (YAML frontmatter)
+  FEATURE_ID=$(grep -E "^(epic|feature_id|feature):" "$SPEC_FILE" | head -1 | sed 's/.*:[[:space:]]*//' | tr -d '"'"'" | tr -d ' ')
+  # Also try YAML frontmatter style (indented)
+  if [[ -z "$FEATURE_ID" ]]; then
+    FEATURE_ID=$(grep -E "^[[:space:]]*(epic|feature_id|feature):" "$SPEC_FILE" | head -1 | sed 's/.*:[[:space:]]*//' | tr -d '"'"'" | tr -d ' ')
+  fi
+fi
+
+if [[ -z "$FEATURE_ID" ]]; then
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] WARNING: No feature ID found in $SPEC_FILE" >> "$THROTTLE_LOG" 2>/dev/null
+  exit 0
+fi
 
 # Run sync (timeout 60s)
 # The github-feature-sync-cli.js script will:

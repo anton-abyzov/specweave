@@ -11,7 +11,7 @@ import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { getJobManager } from './job-manager.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
-import type { BackgroundJob, JobType, ImportJobConfig, CloneJobConfig, LivingDocsJobConfig, LivingDocsUserInputs } from './types.js';
+import type { BackgroundJob, JobType, ImportJobConfig, CloneJobConfig, LivingDocsJobConfig, LivingDocsUserInputs, CodebaseRescanJobConfig } from './types.js';
 
 /**
  * Module logger - can be replaced for testing
@@ -453,6 +453,123 @@ export async function launchLivingDocsJob(options: LivingDocsLaunchOptions): Pro
   };
 }
 
+export interface CodebaseRescanLaunchOptions {
+  /** Project path */
+  projectPath: string;
+  /** The closed increment that triggered this rescan */
+  closedIncrementId: string;
+  /** Feature ID associated with the increment */
+  featureId?: string;
+  /** Specific paths/modules to focus on (derived from increment scope) */
+  scopePaths?: string[];
+  /** Whether to do deep analysis or quick sync */
+  depth?: 'quick' | 'full';
+  /** Run in foreground (blocking) instead of background */
+  foreground?: boolean;
+}
+
+/**
+ * Launch a codebase rescan job
+ *
+ * Triggered automatically when an increment closes to ensure living docs
+ * reflect the ACTUAL code implementation (code as source of truth).
+ *
+ * @param options Launch configuration
+ * @returns Job info and process details
+ */
+export async function launchCodebaseRescanJob(options: CodebaseRescanLaunchOptions): Promise<LaunchResult> {
+  const {
+    projectPath,
+    closedIncrementId,
+    featureId,
+    scopePaths,
+    depth = 'quick',
+    foreground = false
+  } = options;
+
+  // Create job via job manager
+  const jobManager = getJobManager(projectPath);
+
+  const jobConfig: CodebaseRescanJobConfig = {
+    type: 'codebase-rescan',
+    projectPath,
+    closedIncrementId,
+    featureId,
+    scopePaths,
+    depth
+  };
+
+  // Create job with initial estimate
+  const job = jobManager.createJob('codebase-rescan', jobConfig, 100);
+
+  // Create job-specific directory for config and logs
+  const jobDir = path.join(projectPath, '.specweave', 'state', 'jobs', job.id);
+  fs.ensureDirSync(jobDir);
+
+  // Write worker config
+  const configPath = path.join(jobDir, 'config.json');
+  fs.writeFileSync(configPath, JSON.stringify({
+    jobId: job.id,
+    projectPath,
+    closedIncrementId,
+    featureId,
+    scopePaths,
+    depth,
+    startedAt: new Date().toISOString()
+  }, null, 2));
+
+  // If foreground mode, return job without spawning worker
+  if (foreground) {
+    return {
+      job,
+      isBackground: false
+    };
+  }
+
+  // Find codebase-rescan worker script path
+  const workerPath = findCodebaseRescanWorkerPath();
+
+  if (!workerPath) {
+    // Fallback to foreground if worker not found
+    moduleLogger.warn('Codebase rescan worker not found, will run in foreground');
+    return {
+      job,
+      isBackground: false
+    };
+  }
+
+  // Spawn detached process
+  const child = spawn('node', [workerPath, job.id, projectPath], {
+    detached: true,
+    stdio: 'ignore',
+    cwd: projectPath,
+    windowsHide: true,
+    env: {
+      ...process.env,
+      SPECWEAVE_BACKGROUND_JOB: '1'
+    }
+  });
+
+  // Unref to allow parent to exit independently
+  child.unref();
+
+  // Validate worker actually started before reporting success
+  await validateWorkerStarted(projectPath, job.id, child.pid);
+
+  // Update job with PID
+  const updatedJob = jobManager.getJob(job.id);
+  if (updatedJob) {
+    (updatedJob as any).pid = child.pid;
+    (updatedJob as any).isBackground = true;
+  }
+
+  return {
+    job: updatedJob || job,
+    pid: child.pid,
+    isBackground: true
+  };
+}
+
 /**
  * Check if a background job is still running
  */
@@ -557,6 +674,13 @@ function findCloneWorkerPath(): string | null {
  */
 function findLivingDocsWorkerPath(): string | null {
   return findWorkerByName('living-docs-worker.js');
+}
+
+/**
+ * Find the codebase-rescan worker script path
+ */
+function findCodebaseRescanWorkerPath(): string | null {
+  return findWorkerByName('codebase-rescan-worker.js');
 }
 
 /**

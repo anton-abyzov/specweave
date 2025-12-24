@@ -210,6 +210,31 @@ export class ExternalToolResolver {
       warnings.push(`Default profile '${syncConfig.defaultProfile}' not found`);
     }
 
+    // Step 4 (v1.0.46 FIX): Fallback to first available profile if no defaultProfile set
+    // This matches GitHubProfileManager.getDefaultProfile() behavior
+    if (syncConfig?.profiles) {
+      const profileIds = Object.keys(syncConfig.profiles);
+      if (profileIds.length > 0) {
+        const firstProfileId = profileIds[0];
+        const firstProfile = syncConfig.profiles[firstProfileId];
+        resolutionPath.push(`fallback to first profile → ${firstProfileId}`);
+
+        const syncTarget: SyncTarget = {
+          profileId: firstProfileId,
+          provider: firstProfile.provider,
+          derivedFrom: 'default-profile', // Still counts as default since it's auto-selected
+          setAt: new Date().toISOString(),
+        };
+
+        return {
+          syncTarget,
+          profile: firstProfile,
+          resolutionPath,
+          warnings,
+        };
+      }
+    }
+
     // No resolution possible
     resolutionPath.push('no external tool configured');
     return {

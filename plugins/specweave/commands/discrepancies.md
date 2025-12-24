@@ -1,3 +1,8 @@
+---
+name: sw:discrepancies
+description: View and manage code-to-spec discrepancies. Detects API changes, function signature mismatches, and documentation gaps. Supports brownfield analysis and code-spec comparison.
+---
+
 # Discrepancies Command
 
 View and manage documentation discrepancies. Supports two modes:

@@ -41,6 +41,35 @@ export interface SyncResult {
   errors: string[];
 }
 
+/**
+ * Check if a provider is enabled in config (supports BOTH formats)
+ *
+ * v1.0.46 FIX: Supports two config formats:
+ * 1. PROFILES format: sync.profiles[name].provider === provider
+ * 2. LEGACY format: sync.[provider].enabled === true
+ *
+ * @param config - Project config object
+ * @param provider - Provider to check ('github', 'jira', 'ado')
+ * @returns true if provider is enabled in either format
+ */
+export function isProviderEnabled(config: any, provider: 'github' | 'jira' | 'ado'): boolean {
+  // Check LEGACY format first (sync.github.enabled, sync.jira.enabled, sync.ado.enabled)
+  if (config.sync?.[provider]?.enabled === true) {
+    return true;
+  }
+
+  // Check PROFILES format (sync.profiles with provider field)
+  if (config.sync?.profiles) {
+    for (const profile of Object.values(config.sync.profiles)) {
+      if ((profile as any)?.provider === provider) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 export class SyncCoordinator {
   private projectRoot: string;
   private incrementId: string;
@@ -814,7 +843,8 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
 
       // Check gates (same as syncIncrementCompletion)
       const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems ?? false;
-      const githubEnabled = config.sync?.github?.enabled ?? false;
+      // v1.0.46 FIX: Use isProviderEnabled() to support BOTH profiles and legacy formats
+      const githubEnabled = isProviderEnabled(config, 'github');
       const autoSync = config.sync?.settings?.autoSyncOnCompletion ?? true;
 
       if (!canUpdateExternal) {
@@ -835,8 +865,9 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       }
 
       // Check which external tools are enabled
-      const jiraEnabled = config.sync?.jira?.enabled ?? false;
-      const adoEnabled = config.sync?.ado?.enabled ?? false;
+      // v1.0.46 FIX: Use isProviderEnabled() to support BOTH profiles and legacy formats
+      const jiraEnabled = isProviderEnabled(config, 'jira');
+      const adoEnabled = isProviderEnabled(config, 'ado');
 
       if (!githubEnabled && !jiraEnabled && !adoEnabled) {
         this.logger.log('ℹ️  No external tools enabled (GitHub/JIRA/ADO all disabled)');
@@ -1143,9 +1174,10 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
           this.logger.log('✅ Automatic external sync enabled (autoSyncOnCompletion=true)');
 
           // GATE 4: Check if GitHub sync is enabled (tool-specific gate)
-          const githubEnabled = config.sync?.github?.enabled ?? false;
+          // v1.0.46 FIX: Use isProviderEnabled() to support BOTH profiles and legacy formats
+          const githubEnabled = isProviderEnabled(config, 'github');
           if (githubEnabled) {
-            this.logger.log('✅ GitHub sync enabled (sync.github.enabled=true)');
+            this.logger.log('✅ GitHub sync enabled (detected from profiles or sync.github.enabled)');
             this.logger.log('\n🔹 Creating GitHub issues for user stories...');
             try {
               await this.createGitHubIssuesForUserStories(config);
@@ -1155,8 +1187,8 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
               // Continue with rest of sync even if GitHub fails
             }
           } else {
-            this.logger.log('ℹ️  GitHub sync disabled (sync.github.enabled=false)');
-            this.logger.log('   Set sync.github.enabled=true to enable automatic GitHub issue creation');
+            this.logger.log('ℹ️  GitHub sync disabled (no GitHub profile or sync.github.enabled)');
+            this.logger.log('   Configure sync.profiles with provider: "github" or set sync.github.enabled=true');
             result.syncMode = 'external-disabled';
           }
         }
@@ -1234,10 +1266,11 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
     const externalSource = usFile.external_source || 'github'; // Default to GitHub
 
     // GATE 4: Check if the specific tool is enabled
+    // v1.0.46 FIX: Use isProviderEnabled() to support BOTH profiles and legacy formats
     if (externalSource === 'github') {
-      const githubEnabled = config.sync?.github?.enabled ?? false;
+      const githubEnabled = isProviderEnabled(config, 'github');
       if (!githubEnabled) {
-        this.logger.log('  ⏭️  GitHub sync SKIPPED (sync.github.enabled = false)');
+        this.logger.log('  ⏭️  GitHub sync SKIPPED (no GitHub profile or sync.github.enabled)');
         return;
       }
 
@@ -1252,9 +1285,10 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       const client = GitHubClientV2.fromRepo(repoInfo.owner, repoInfo.repo);
       await syncService.syncUserStory(usFile, completionData, client);
     } else if (externalSource === 'jira') {
-      const jiraEnabled = config.sync?.jira?.enabled ?? false;
+      // v1.0.46 FIX: Use isProviderEnabled() to support BOTH profiles and legacy formats
+      const jiraEnabled = isProviderEnabled(config, 'jira');
       if (!jiraEnabled) {
-        this.logger.log('  ⏭️  JIRA sync SKIPPED (sync.jira.enabled = false)');
+        this.logger.log('  ⏭️  JIRA sync SKIPPED (no JIRA profile or sync.jira.enabled)');
         return;
       }
 
@@ -1335,9 +1369,10 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
         throw error;
       }
     } else if (externalSource === 'ado' || externalSource === 'azure-devops') {
-      const adoEnabled = config.sync?.ado?.enabled ?? false;
+      // v1.0.46 FIX: Use isProviderEnabled() to support BOTH profiles and legacy formats
+      const adoEnabled = isProviderEnabled(config, 'ado');
       if (!adoEnabled) {
-        this.logger.log('  ⏭️  Azure DevOps sync SKIPPED (sync.ado.enabled = false)');
+        this.logger.log('  ⏭️  Azure DevOps sync SKIPPED (no ADO profile or sync.ado.enabled)');
         return;
       }
 
