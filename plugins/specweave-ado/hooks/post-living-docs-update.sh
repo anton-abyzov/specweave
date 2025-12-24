@@ -349,12 +349,19 @@ main() {
         log_info "=== Sync completed successfully ==="
     else
         log_error "=== Sync failed with exit code: $exit_code ==="
+        # Log warning but DON'T exit with error - hooks must be non-blocking
+        echo ""
+        echo "  [Hook Warning] ADO sync failed (exit $exit_code)"
+        echo "  (Operation continues - hooks are non-blocking)"
+        echo ""
     fi
 
-    exit $exit_code
+    # Return status for logging but function should NOT exit
+    return $exit_code
 }
 
-# Run main function
-main "$@"
+# Run main function (errors logged, not propagated)
+main "$@" || true
+
 # ALWAYS exit 0 - NEVER let hook errors crash Claude Code
 exit 0
