@@ -6,10 +6,14 @@
 #
 # Event routing (EDA v2):
 # - increment.created/done/archived/reopened -> living-specs-handler + status-line-handler + project-bridge-handler + github-sync-handler
-# - user-story.completed/reopened -> status-line-handler + project-bridge-handler
+# - user-story.completed/reopened -> status-line-handler + project-bridge-handler + github-sync-handler (v1.0.45+: CRITICAL FIX)
 # - spec.updated -> living-docs-handler + ac-validation-handler + github-sync-handler (creates GitHub issues for User Stories)
 # - task.updated -> living-docs-handler + ac-validation-handler (legacy)
 # - metadata.changed -> github-sync-handler
+#
+# CRITICAL FIX (v1.0.45): user-story.completed now triggers github-sync-handler!
+# Root cause: GitHub issues were CREATED but NEVER UPDATED when User Stories completed.
+# Result: Issues stayed OPEN forever even after all tasks/ACs were marked complete.
 #
 # The project-bridge-handler connects increment events to project-level EDA,
 # enabling automatic sync to GitHub, ADO, and JIRA via ProjectService.
@@ -167,11 +171,15 @@ process_event() {
       run_handler "$HANDLER_DIR/github-sync-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       ;;
 
-    # User story events -> status-line-handler + project-bridge-handler
+    # User story events -> status-line-handler + project-bridge-handler + github-sync-handler
+    # CRITICAL FIX (v1.0.45): Added github-sync-handler to update GitHub issues when US completes
+    # Root cause: user-story.completed was NOT triggering GitHub sync → issues stayed open!
     user-story.completed|user-story.reopened)
       run_handler "$HANDLER_DIR/status-line-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       # Bridge to project-level EDA (may trigger issue updates)
       run_handler "$HANDLER_DIR/project-bridge-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
+      # Sync to GitHub (updates User Story issue status when US completes/reopens)
+      run_handler "$HANDLER_DIR/github-sync-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       ;;
 
     # Spec updated -> sync to living docs + validate ACs + sync to GitHub
