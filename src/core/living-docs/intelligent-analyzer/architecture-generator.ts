@@ -64,7 +64,8 @@ export async function generateArchitecture(
     const c4Result = await generateC4Diagrams(context, llmProvider, log);
     onProgress('architecture', 50, 100, 'Detecting architectural patterns');
 
-    const adrs = await detectArchitecturalDecisions(repoAnalyses, llmProvider, log);
+    // FIX (v1.0.48): Pass existing ADRs to ensure unique ID generation
+    const adrs = await detectArchitecturalDecisions(repoAnalyses, llmProvider, log, existingAdrs);
     onProgress('architecture', 80, 100, 'Finalizing architecture docs');
 
     return {
@@ -351,10 +352,35 @@ function toKebabCase(title: string): string {
     .substring(0, 50);
 }
 
+/**
+ * Find the maximum ADR ID number from a list of existing ADRs
+ * Handles formats: "0001", "0123", "ADR-001", "ADR-0123"
+ *
+ * FIX (v1.0.48): Added to prevent duplicate ADR IDs when generating new ADRs.
+ * Previously, detected ADRs always started from 0001, causing collisions.
+ */
+function findMaxADRId(existingAdrs: ExistingADR[]): number {
+  let maxId = 0;
+
+  for (const adr of existingAdrs) {
+    // Extract numeric part from ID (handles "0001", "0123", "ADR-001", etc.)
+    const numMatch = adr.id.match(/(\d+)/);
+    if (numMatch) {
+      const num = parseInt(numMatch[1], 10);
+      if (num > maxId) {
+        maxId = num;
+      }
+    }
+  }
+
+  return maxId;
+}
+
 async function detectArchitecturalDecisions(
   analyses: Map<string, RepoAnalysis>,
   llmProvider: LLMProvider,
-  log: (msg: string) => void
+  log: (msg: string) => void,
+  existingAdrs: ExistingADR[] = []
 ): Promise<DetectedADR[]> {
   const patternMap = new Map<string, { repos: string[]; evidence: string[]; highConfidenceCount: number }>();
 
@@ -374,7 +400,12 @@ async function detectArchitecturalDecisions(
   }
 
   const adrs: DetectedADR[] = [];
-  let adrNum = 1;
+
+  // FIX (v1.0.48): Start numbering AFTER the highest existing ADR ID
+  // This prevents duplicate IDs like 0001-existing-decision and 0001-detected-pattern
+  const maxExistingId = findMaxADRId(existingAdrs);
+  let adrNum = maxExistingId + 1;
+  log(`  Starting ADR numbering from ${String(adrNum).padStart(4, '0')} (found ${existingAdrs.length} existing ADRs, max ID: ${maxExistingId})`);
 
   // Sort patterns by adoption (repos count DESC) for better ADR numbering
   const sortedPatterns = Array.from(patternMap.entries())
@@ -489,6 +520,54 @@ function createBasicDataFlow(): string {
   C --> D[Database]`;
 }
 
+/**
+ * Scan the generated ADR folder for existing ADR files
+ * These are ADRs that were previously generated and saved
+ *
+ * FIX (v1.0.48): Added to track BOTH source-code ADRs and previously-generated ADRs
+ * to ensure globally unique IDs across all sources.
+ */
+function scanGeneratedADRFolder(adrPath: string): ExistingADR[] {
+  const existingAdrs: ExistingADR[] = [];
+
+  if (!fs.existsSync(adrPath)) {
+    return existingAdrs;
+  }
+
+  try {
+    const files = fs.readdirSync(adrPath);
+    for (const file of files) {
+      if (!file.endsWith('.md') || file === 'index.md' || file === 'README.md') {
+        continue;
+      }
+
+      const filePath = path.join(adrPath, file);
+      try {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const fileName = path.basename(file, '.md');
+
+        // Extract ID from filename (e.g., 0001-decision.md)
+        const idMatch = fileName.match(/^(\d{3,4})/);
+        if (idMatch) {
+          existingAdrs.push({
+            file,
+            id: idMatch[1],
+            title: fileName.replace(/^\d+-/, '').replace(/-/g, ' '),
+            status: 'Generated',
+            content: content.substring(0, 200),
+          });
+        }
+      } catch {
+        // Skip unreadable files
+      }
+    }
+  } catch {
+    // Skip if folder is unreadable
+  }
+
+  return existingAdrs;
+}
+
 export async function saveArchitecture(
   projectPath: string,
   result: ArchitectureResult
@@ -500,6 +579,19 @@ export async function saveArchitecture(
 
   fs.mkdirSync(diagramsPath, { recursive: true });
   fs.mkdirSync(adrPath, { recursive: true });
+
+  // FIX (v1.0.48): Check for existing ADRs in the generated folder too
+  // This prevents duplicate IDs when regenerating docs
+  const generatedAdrs = scanGeneratedADRFolder(adrPath);
+  const allExistingIds = new Set<string>();
+
+  // Collect all existing IDs (from source code + previously generated)
+  for (const adr of [...result.existingAdrs, ...generatedAdrs]) {
+    const numMatch = adr.id.match(/(\d+)/);
+    if (numMatch) {
+      allExistingIds.add(numMatch[1].padStart(4, '0'));
+    }
+  }
 
   const contextFile = path.join(diagramsPath, 'c4-context.md');
   fs.writeFileSync(contextFile, [
@@ -538,6 +630,18 @@ export async function saveArchitecture(
   savedFiles.push(dataFlowFile);
 
   for (const adr of result.detectedAdrs) {
+    // FIX (v1.0.48): Extract numeric ID and check if it already exists
+    const adrIdMatch = adr.id.match(/^(\d+)/);
+    if (adrIdMatch) {
+      const paddedId = adrIdMatch[1].padStart(4, '0');
+      if (allExistingIds.has(paddedId)) {
+        // Skip writing this ADR - it would create a duplicate
+        // This shouldn't happen if detectArchitecturalDecisions was passed existing ADRs,
+        // but acts as a safety net for edge cases
+        continue;
+      }
+    }
+
     const adrFile = path.join(adrPath, `${adr.id}.md`);
     const content = [
       `# ${adr.id}: ${adr.title}`,
@@ -640,9 +744,22 @@ export async function saveArchitecture(
     indexLines.push('- `adr/`');
   }
 
-  const indexFile = path.join(archPath, 'adr-index.md');
+  // FIX (v1.0.48): Save index INSIDE the adr/ folder as index.md
+  // Previously saved as architecture/adr-index.md which created duplicate sidebar entries
+  // (one for adr-index.md and one for adr/ folder)
+  const indexFile = path.join(adrPath, 'index.md');
   fs.writeFileSync(indexFile, indexLines.join('\n'));
   savedFiles.push(indexFile);
+
+  // Clean up old adr-index.md if it exists (migration from old location)
+  const oldIndexFile = path.join(archPath, 'adr-index.md');
+  if (fs.existsSync(oldIndexFile)) {
+    try {
+      fs.unlinkSync(oldIndexFile);
+    } catch {
+      // Ignore cleanup errors
+    }
+  }
 
   return savedFiles;
 }

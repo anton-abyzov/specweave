@@ -150,5 +150,121 @@ describe('deep-repo-analyzer', () => {
       expect(results.size).toBe(1);
       expect(results.has('repo2')).toBe(true);
     });
+
+    it('should include enterprise enhancements (v1.0.48)', async () => {
+      const repo = path.join(testDir, 'repo-with-jsdoc');
+      fs.mkdirSync(repo);
+      fs.writeFileSync(path.join(repo, 'package.json'), JSON.stringify({
+        name: 'test-repo',
+        dependencies: { express: '^4.0.0' },
+      }));
+      fs.writeFileSync(path.join(repo, 'index.ts'), `
+/**
+ * Creates a new user in the system.
+ * @param {string} name - The user's name
+ * @param {string} email - The user's email address
+ * @returns {Promise<User>} The created user object
+ * @example
+ * const user = await createUser('John', 'john@example.com');
+ */
+export async function createUser(name: string, email: string): Promise<User> {
+  return { name, email };
+}
+      `);
+
+      const repos = [{ name: 'repo-with-jsdoc', path: repo }];
+      const log = vi.fn();
+      const onProgress = vi.fn();
+      const results = await analyzeAllRepos(repos, null, onProgress, log);
+
+      const analysis = results.get('repo-with-jsdoc');
+      expect(analysis).toBeDefined();
+
+      // Should have JSDoc entries
+      expect(analysis!.jsdocEntries).toBeDefined();
+      expect(analysis!.jsdocEntries!.length).toBeGreaterThan(0);
+
+      const createUserEntry = analysis!.jsdocEntries!.find(e => e.name === 'createUser');
+      expect(createUserEntry).toBeDefined();
+      expect(createUserEntry!.description).toContain('Creates a new user');
+      expect(createUserEntry!.params).toHaveLength(2);
+      expect(createUserEntry!.exported).toBe(true);
+
+      // Should have code health
+      expect(analysis!.codeHealth).toBeDefined();
+      expect(analysis!.codeHealth!.linesOfCode).toBeGreaterThan(0);
+
+      // Should have dependency audit
+      expect(analysis!.dependencyAudit).toBeDefined();
+      expect(analysis!.dependencyAudit!.directDependencies).toBe(1);
+    });
+  });
+
+  describe('API extraction from entry points', () => {
+    it('should extract exports from index.ts entry point', async () => {
+      // Basic API extraction requires index.ts (entry point pattern)
+      fs.writeFileSync(path.join(testDir, 'index.ts'), `
+/**
+ * Add two numbers.
+ * @param {number} a - First number
+ * @param {number} b - Second number
+ */
+export function add(a: number, b: number) {
+  return a + b;
+}
+
+export function subtract(a: number, b: number) {
+  return a - b;
+}
+      `);
+
+      const log = vi.fn();
+      const analysis = await analyzeRepo(testDir, 'math-lib', null, log);
+
+      // index.ts is an entry point, so exports should be detected
+      expect(analysis.mainApis.some(a => a.name === 'add')).toBe(true);
+      expect(analysis.mainApis.some(a => a.name === 'subtract')).toBe(true);
+    });
+
+    it('should extract class exports from entry point', async () => {
+      fs.writeFileSync(path.join(testDir, 'index.ts'), `
+/**
+ * User service for managing users.
+ */
+export class UserService {
+  /**
+   * Find a user by email.
+   */
+  findByEmail(email: string) {}
+}
+
+export class AuthService {
+  login() {}
+}
+      `);
+
+      const log = vi.fn();
+      const analysis = await analyzeRepo(testDir, 'services', null, log);
+
+      const classApi = analysis.mainApis.find(a => a.name === 'UserService');
+      expect(classApi).toBeDefined();
+      expect(classApi!.type).toBe('class');
+
+      const authApi = analysis.mainApis.find(a => a.name === 'AuthService');
+      expect(authApi).toBeDefined();
+    });
+
+    it('should not extract from non-entry files (no index.ts)', async () => {
+      // Files that don't match entry point patterns are NOT scanned for APIs
+      fs.writeFileSync(path.join(testDir, 'utils.ts'), `
+export function helper() {}
+      `);
+
+      const log = vi.fn();
+      const analysis = await analyzeRepo(testDir, 'utils-only', null, log);
+
+      // utils.ts is not an entry point, so no APIs extracted
+      expect(analysis.mainApis.length).toBe(0);
+    });
   });
 });

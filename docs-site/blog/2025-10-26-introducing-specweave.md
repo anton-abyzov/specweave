@@ -57,18 +57,20 @@ npx specweave install --detect
 
 **60% token reduction** on agents!
 
-### 3. Context Manifests
+### 3. Progressive Disclosure
 
-```yaml
-# .specweave/increments/0001-auth/context-manifest.yaml
-spec_sections:
-  - .specweave/docs/internal/strategy/auth/
-documentation:
-  - .specweave/docs/internal/architecture/auth-system.md
-max_context_tokens: 10000
+```bash
+# Claude's native progressive disclosure - no infrastructure needed
+# SKILL.md metadata loads first (~75 tokens per skill)
+# Full content loads only when relevant
+
+# Example: Search living docs for context
+grep -ril "auth" .specweave/docs/internal/
+# → Finds specs, ADRs, architecture docs
+# → Claude reads exactly what's needed
 ```
 
-Load exactly what's needed - **70%+ token savings**.
+Load exactly what's needed - **70%+ token savings** with zero infrastructure.
 
 ### 4. Increment Lifecycle
 

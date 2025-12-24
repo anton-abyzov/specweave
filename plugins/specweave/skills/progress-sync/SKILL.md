@@ -1,6 +1,6 @@
 ---
 name: progress-sync
-description: Comprehensive progress synchronization expert. Explains when and how to use /sw:sync-progress for multi-system sync (tasks → docs → external tools). Activates for sync progress, update progress, sync everything, sync all systems, sync to GitHub, sync to JIRA, how to sync, progress synchronization, multi-system sync.
+description: Comprehensive progress synchronization expert. Explains when and how to use /sw:sync-progress for multi-system sync (tasks → docs → external tools). AUTO-CREATES missing external issues. Activates for sync progress, update progress, sync everything, sync all systems, sync to GitHub, sync to JIRA, how to sync, progress synchronization, multi-system sync, create github issue, no github issue linked.
 ---
 
 # Progress Sync Expert
@@ -11,16 +11,18 @@ I'm the comprehensive progress synchronization expert for SpecWeave. I help you 
 
 ## What is /sw:sync-progress?
 
-**The "single button" to sync progress across all systems**:
+**The TRUE "single button" to sync progress across all systems**:
 
 ```
-tasks.md → spec.md ACs → living docs → external tools (GitHub/JIRA/ADO)
+tasks.md → spec.md ACs → living docs → AUTO-CREATE external issues → sync external tools (GitHub/JIRA/ADO)
 ```
 
-**One command, complete synchronization**:
+**One command does EVERYTHING - including creating missing external issues!**
 ```bash
 /sw:sync-progress
 ```
+
+**No more "No GitHub issue linked" errors!** The command auto-creates missing issues.
 
 ---
 
@@ -28,24 +30,27 @@ tasks.md → spec.md ACs → living docs → external tools (GitHub/JIRA/ADO)
 
 ### ✅ Use /sw:sync-progress when:
 
-1. **After completing tasks**: You've marked tasks as done in tasks.md and want to sync everywhere
-2. **Before closing increment**: Final sync before `/sw:done` to ensure all systems in sync
-3. **Progress check**: Want to update status line and external tools with latest progress
-4. **After bulk task completion**: Completed multiple tasks, sync all at once
-5. **Manual sync trigger**: Hooks didn't fire or you want to force a sync
+1. **First-time sync (no external issue yet)**: Just created increment, want to sync → auto-creates GitHub/JIRA/ADO issues!
+2. **After completing tasks**: You've marked tasks as done in tasks.md and want to sync everywhere
+3. **Before closing increment**: Final sync before `/sw:done` to ensure all systems in sync
+4. **Progress check**: Want to update status line and external tools with latest progress
+5. **After bulk task completion**: Completed multiple tasks, sync all at once
+6. **Manual sync trigger**: Hooks didn't fire or you want to force a sync
+7. **"No GitHub issue linked" error**: This command fixes that by auto-creating the issue!
 
 ### ❌ Don't use when:
 
 1. **Only want to sync ACs**: Use `/sw:sync-acs` instead (faster, more targeted)
 2. **Only want to sync docs**: Use `/sw:sync-specs` instead
-3. **Only want to sync GitHub**: Use `/sw-github:sync` instead
+3. **Only want to sync GitHub (issue already exists)**: Use `/sw-github:sync` instead
 4. **Increment not started**: No tasks to sync yet
+5. **Don't want auto-create**: Use `--no-create` flag or manual commands
 
 ---
 
 ## How It Works
 
-**Multi-Phase Orchestration**:
+**Multi-Phase Orchestration (v1.0.48+)**:
 
 ```
 Phase 1: Tasks → ACs (spec.md)
@@ -59,12 +64,18 @@ Phase 2: Spec → Living Docs (User Stories)
   └─ Updates user story completion status
   └─ Generates/updates feature ID if needed
 
-Phase 3: Living Docs → External Tools
-  ├─ GitHub: Closes completed user story issues, updates epic checklist
-  ├─ JIRA: Updates story status, transitions workflow
-  └─ Azure DevOps: Updates work item state, comments
+Phase 3: AUTO-CREATE External Issues (NEW!)
+  ├─ Checks each configured external tool for linked issues
+  ├─ If no issue exists → AUTO-CREATE via /sw-github:create, /sw-jira:create, /sw-ado:create
+  ├─ Respects permissions (canUpsertInternalItems, canUpdateExternalItems)
+  └─ Skip with --no-create flag if needed
 
-Phase 4: Status Line Cache
+Phase 4: Sync to External Tools (Two-Way)
+  ├─ GitHub: Two-way sync (push progress, pull team changes)
+  ├─ JIRA: Two-way sync (push tasks, pull status)
+  └─ Azure DevOps: Two-way sync (push comments, pull updates)
+
+Phase 5: Status Line Cache
   └─ Updates status line with latest completion %
 ```
 
@@ -72,9 +83,27 @@ Phase 4: Status Line Cache
 
 ## Usage Examples
 
-### Example 1: After Completing Tasks (Typical Workflow)
+### Example 1: First-Time Sync (No GitHub Issue Yet) ⭐
 
-**Scenario**: You completed 5 tasks and marked them in tasks.md. Now sync everywhere.
+**Scenario**: Just created increment, completed tasks, never created a GitHub issue. Want to sync.
+
+```bash
+# Single command does EVERYTHING
+/sw:sync-progress
+```
+
+**What happens**:
+1. ✅ Tasks → ACs marked complete in spec.md
+2. ✅ User stories synced to living docs
+3. ✅ **GitHub issue AUTO-CREATED** (#123)
+4. ✅ GitHub issue synced with task progress
+5. ✅ Status line shows completion %
+
+**No more "No GitHub issue linked" errors!**
+
+### Example 2: After Completing Tasks (Issue Exists)
+
+**Scenario**: You completed 5 tasks and marked them in tasks.md. GitHub issue already exists.
 
 ```bash
 # Single command syncs everything
@@ -84,13 +113,11 @@ Phase 4: Status Line Cache
 **What happens**:
 1. ✅ 5 tasks → 12 ACs marked complete in spec.md
 2. ✅ 2 user stories marked complete in living docs
-3. ✅ 2 GitHub issues closed
+3. ✅ GitHub issue #123 detected, synced with progress
 4. ✅ Epic issue checklist updated (5/37 tasks complete)
 5. ✅ Status line shows 68% → 85% completion
 
----
-
-### Example 2: Before Closing Increment
+### Example 3: Before Closing Increment
 
 **Scenario**: All 37 tasks complete, ready to close. Ensure final sync.
 
@@ -108,9 +135,7 @@ Phase 4: Status Line Cache
 - All GitHub issues closed
 - Status line shows 100%
 
----
-
-### Example 3: Dry-Run (Preview Mode)
+### Example 4: Dry-Run (Preview Mode)
 
 **Scenario**: Want to see what will be synced before executing.
 
@@ -132,9 +157,7 @@ Would sync:
 Run without --dry-run to execute sync.
 ```
 
----
-
-### Example 4: Local-Only Sync (No External Tools)
+### Example 5: Local-Only Sync (No External Tools)
 
 **Scenario**: Offline work, don't want to sync to GitHub/JIRA yet.
 
@@ -156,6 +179,7 @@ Run without --dry-run to execute sync.
 | Flag | Purpose | Example |
 |------|---------|---------|
 | `--dry-run` | Preview without executing | `--dry-run` |
+| `--no-create` | Skip auto-creation of missing issues | `--no-create` |
 | `--no-github` | Skip GitHub sync | `--no-github` |
 | `--no-jira` | Skip JIRA sync | `--no-jira` |
 | `--no-ado` | Skip Azure DevOps sync | `--no-ado` |
@@ -163,6 +187,12 @@ Run without --dry-run to execute sync.
 
 **Combine flags**:
 ```bash
+# Full sync with auto-create (DEFAULT - just works!)
+/sw:sync-progress
+
+# Sync only, don't create missing issues
+/sw:sync-progress 0053 --no-create
+
 # Dry-run with no external tools
 /sw:sync-progress --dry-run --no-github
 
@@ -174,16 +204,18 @@ Run without --dry-run to execute sync.
 
 ## Comparison with Other Sync Commands
 
-| Command | Scope | When to Use |
-|---------|-------|-------------|
-| `/sw:sync-acs` | Tasks → ACs only | Quick AC update |
-| `/sw:sync-specs` | Spec → Docs only | After spec changes |
-| `/sw-github:sync` | Docs → GitHub only | GitHub-only sync |
-| `/sw:sync-progress` | **Tasks → Docs → External** | **Complete sync** ✅ |
+| Command | Scope | Auto-Create? | When to Use |
+|---------|-------|--------------|-------------|
+| `/sw:sync-acs` | Tasks → ACs only | ❌ | Quick AC update |
+| `/sw:sync-specs` | Spec → Docs only | ❌ | After spec changes |
+| `/sw-github:create` | Create GitHub issue | ✅ | Manual issue creation |
+| `/sw-github:sync` | Docs → GitHub only | ❌ | GitHub-only sync (issue must exist) |
+| `/sw:sync-progress` | **Tasks → Docs → Create → Sync** | ✅ | **Complete sync** ✅ (RECOMMENDED!) |
 
 **Rule of thumb**:
+- Need **complete sync** (just works) → Use `/sw:sync-progress` ✅
 - Need **targeted sync** → Use specific command (`sync-acs`, `sync-specs`)
-- Need **complete sync** → Use `/sw:sync-progress` ✅
+- Need **sync only** (no auto-create) → Use `/sw:sync-progress --no-create`
 
 ---
 

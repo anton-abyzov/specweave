@@ -45,6 +45,10 @@ done
 CONFIG_FILE="$PROJECT_ROOT/.specweave/config.json"
 [[ ! -f "$CONFIG_FILE" ]] && exit 0
 
+# Initialize throttle log early (used throughout the script for diagnostics)
+THROTTLE_LOG="$PROJECT_ROOT/.specweave/logs/throttle.log"
+mkdir -p "$(dirname "$THROTTLE_LOG")" 2>/dev/null
+
 # Check if GitHub sync is enabled
 # FIXED (v1.0.46): Support BOTH config formats:
 #
@@ -105,8 +109,7 @@ fi
 # Throttle configuration:
 # - Full sync (increment lifecycle): 5 minutes (creates all issues)
 # - US completion sync: 60 seconds (more targeted, less aggressive)
-THROTTLE_LOG="$PROJECT_ROOT/.specweave/logs/throttle.log"
-mkdir -p "$(dirname "$THROTTLE_LOG")" 2>/dev/null
+# Note: THROTTLE_LOG already initialized above (line 49)
 
 if [[ -n "$US_ID" ]]; then
   # Per-US throttle (60 seconds) - more frequent for targeted updates
