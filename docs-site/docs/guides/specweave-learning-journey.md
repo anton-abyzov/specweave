@@ -1342,22 +1342,23 @@ With SpecWeave:
 
 **How SpecWeave Achieves 70%+ Reduction:**
 
-1. **Progressive Loading**
-   - Skills load only when keywords match
-   - Plugins load on-demand
-   - Context manifests specify dependencies
+1. **Progressive Disclosure (Native Claude)**
+   - Skills metadata loads first (~75 tokens per skill)
+   - Full skill content loads only when relevant
+   - Living docs loaded on-demand via grep searches
 
-2. **Context Optimizer**
+2. **Selective Context Loading**
    ```bash
-   /sw:optimize-context
+   /sw:context authentication
 
-   Analyzing loaded context...
-   Removing irrelevant:
-     - 5 plugins (not needed for this task)
-     - 12 skill files (not matching keywords)
-     - 3 archived increments
+   Searching living docs...
+   Found 3 relevant files:
+     - specs/us-001-authentication.md
+     - architecture/adr/0001-jwt-auth.md
+     - architecture/auth-flow.md
 
-   Tokens saved: 45,000 (73% reduction)
+   Loading into context...
+   Tokens used: ~2,500 (vs 45,000 if loading all docs)
    ```
 
 3. **Sub-Agent Isolation**

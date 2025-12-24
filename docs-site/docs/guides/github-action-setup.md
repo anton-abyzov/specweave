@@ -399,11 +399,10 @@ integrations:
 1. Reads issue title and description
 2. Activates `increment-planner` skill
 3. Generates complete increment structure:
-   - `.specweave/increments/00001-feature-name/spec.md`
-   - `.specweave/increments/00001-feature-name/plan.md`
-   - `.specweave/increments/00001-feature-name/tasks.md`
-   - `.specweave/increments/00001-feature-name/tests.md`
-   - `.specweave/increments/00001-feature-name/context-manifest.yaml`
+   - `.specweave/increments/0001-feature-name/spec.md`
+   - `.specweave/increments/0001-feature-name/plan.md`
+   - `.specweave/increments/0001-feature-name/tasks.md`
+   - `.specweave/increments/0001-feature-name/metadata.json`
 4. Creates branch `feature/0001-feature-name`
 5. Commits files
 6. Creates draft PR
@@ -417,12 +416,11 @@ Issue: "Add user authentication with OAuth2"
 Label: feature
 
 → Auto-generates:
-  features/0003-user-authentication/
+  .specweave/increments/0003-user-authentication/
   ├── spec.md (WHAT/WHY)
   ├── plan.md (HOW)
-  ├── tasks.md (checklist)
-  ├── tests.md (TC-0001 through TC-0010)
-  └── context-manifest.yaml
+  ├── tasks.md (checklist with embedded tests)
+  └── metadata.json (status, timestamps)
 
 → Creates: PR #15 (draft)
 → Comments: "Feature structure created! Review PR #15"
@@ -435,8 +433,8 @@ Label: feature
 **Trigger**: PR opened or updated
 
 **What it does**:
-1. Loads feature's `context-manifest.yaml`
-2. Loads referenced specs from `docs/internal/strategy/`
+1. Reads increment's spec.md and tasks.md
+2. Searches living docs in `.specweave/docs/internal/` for related context
 3. Validates:
    - ✅ Spec exists for changes
    - ✅ Code aligns with spec
@@ -651,8 +649,8 @@ None ✅
 **Verify**:
 ```bash
 # Check increment folder
-ls features/0001-dark-mode/
-# Should see: spec.md, plan.md, tasks.md, tests.md, context-manifest.yaml
+ls .specweave/increments/0001-dark-mode/
+# Should see: spec.md, plan.md, tasks.md, metadata.json
 
 # Check branch
 git fetch
@@ -797,15 +795,15 @@ cat .specweave/docs/changelog/2025-10.md
    - Check: Actions tab → Filter by workflow
    - Fix: Adjust triggers in YAML
 
-4. **Not using context manifests**
-   - Check: Features have context-manifest.yaml
-   - Fix: Create manifests to reduce context
+4. **Not using progressive disclosure**
+   - Check: Skills have clear descriptions with keywords
+   - Fix: Ensure CLAUDE.md references living docs locations
 
 **Cost optimization tips**:
-- Use context manifests (70%+ reduction)
+- Use progressive disclosure (70%+ reduction via on-demand skill loading)
 - Set reasonable max_tokens (8000-16000)
 - Use Haiku for simple tasks
-- Cache frequently-used context
+- Use `/sw:context` to load only relevant living docs
 
 ---
 

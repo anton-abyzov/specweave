@@ -68,9 +68,9 @@ Specification → Architecture → Implementation → Testing
 **Load only what's needed (70%+ token reduction).**
 
 Loading entire specifications wastes tokens and money. SpecWeave uses:
-- **Selective loading**: Load specific sections
-- **Context manifests**: Declare required context
-- **Cache-friendly**: Reuse frequently-loaded context
+- **Progressive disclosure**: Skills metadata loads first (~75 tokens), full content on-demand
+- **CLAUDE.md guidance**: Teaches Claude WHERE to look and HOW to search living docs
+- **Explicit loading**: `/sw:context <topic>` loads relevant docs into conversation
 - **Scalable**: Works with 10 pages or 1000+ pages
 
 ### 4. Test-Validated Features

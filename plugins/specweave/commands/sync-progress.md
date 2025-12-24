@@ -1,6 +1,6 @@
 ---
 name: sw:sync-progress
-description: Comprehensive progress sync - tasks.md → living docs → external tools (GitHub/JIRA/ADO). Updates all systems with latest task completion status.
+description: Comprehensive progress sync - tasks.md → living docs → external tools (GitHub/JIRA/ADO). AUTO-CREATES missing external issues. Updates all systems with latest task completion status. TRUE single-button sync.
 ---
 
 # Sync Progress (Comprehensive Multi-System Sync)
@@ -9,7 +9,9 @@ You are executing the SpecWeave comprehensive progress synchronization command. 
 
 **tasks.md (source of truth) → living docs (ACs, user stories) → external tools (GitHub, JIRA, ADO)**
 
-This is the **"single button"** to sync all progress across the entire SpecWeave ecosystem.
+This is the **TRUE "single button"** to sync all progress across the entire SpecWeave ecosystem.
+
+**KEY BEHAVIOR**: This command AUTO-CREATES missing external issues. No manual `/sw-github:create` required!
 
 ---
 
@@ -21,7 +23,7 @@ Arguments provided: [user's arguments]
 
 **Parse the input**:
 - Check for increment ID: `0053`, `0001`, etc., or none (auto-detect from active state)
-- Check for flags: `--dry-run`, `--no-github`, `--no-jira`, `--no-ado`, `--force`
+- Check for flags: `--dry-run`, `--no-github`, `--no-jira`, `--no-ado`, `--force`, `--no-create`
 
 **Auto-detect active increment**:
 
@@ -76,7 +78,7 @@ echo "✅ Found increment: $INCREMENT_ID"
 Use the existing AC sync mechanism (post-task-completion hook logic):
 
 ```bash
-echo "📝 Step 1/4: Syncing ACs from tasks.md to spec.md..."
+echo "📝 Step 1/5: Syncing ACs from tasks.md to spec.md..."
 
 # Run AC sync (same logic as post-task-completion.sh hook)
 bash plugins/specweave/hooks/post-task-completion.sh "$INCREMENT_DIR"
@@ -99,7 +101,7 @@ fi
 Call the existing `/sw:sync-specs` command:
 
 ```bash
-echo "📚 Step 2/4: Syncing increment to living docs..."
+echo "📚 Step 2/5: Syncing increment to living docs..."
 
 # Sync increment specs to living docs structure
 npx specweave sync-specs "$INCREMENT_ID"
@@ -120,32 +122,52 @@ fi
 
 ---
 
-## STEP 3: Detect External Tool Configuration
+## STEP 3: Detect External Tool Configuration and Permissions
 
-**Check which external tools are configured**:
+**Check which external tools are configured AND their permissions**:
 
 ```bash
-echo "🔧 Step 3/4: Detecting external tool configuration..."
+echo "🔧 Step 3/5: Detecting external tool configuration..."
 
 CONFIG_FILE=".specweave/config.json"
 EXTERNAL_TOOLS=()
+GITHUB_PROFILES=()
+JIRA_PROFILES=()
+ADO_PROFILES=()
 
-# Check GitHub
-if grep -q '"provider":\s*"github"' "$CONFIG_FILE" 2>/dev/null; then
+# Read config
+CONFIG_CONTENT=$(cat "$CONFIG_FILE" 2>/dev/null)
+
+# Check permissions (CRITICAL for external operations)
+CAN_UPSERT=$(echo "$CONFIG_CONTENT" | jq -r '.sync.settings.canUpsertInternalItems // false')
+CAN_UPDATE_EXTERNAL=$(echo "$CONFIG_CONTENT" | jq -r '.sync.settings.canUpdateExternalItems // false')
+
+echo "   📋 Permissions:"
+echo "      canUpsertInternalItems: $CAN_UPSERT"
+echo "      canUpdateExternalItems: $CAN_UPDATE_EXTERNAL"
+
+# Check GitHub profiles
+GITHUB_PROFILE_COUNT=$(echo "$CONFIG_CONTENT" | jq -r '[.sync.profiles // {} | to_entries[] | select(.value.provider == "github")] | length')
+if [ "$GITHUB_PROFILE_COUNT" -gt 0 ]; then
   EXTERNAL_TOOLS+=("github")
-  echo "   ✅ GitHub integration detected"
+  GITHUB_PROFILES=$(echo "$CONFIG_CONTENT" | jq -r '[.sync.profiles // {} | to_entries[] | select(.value.provider == "github") | .key] | join(", ")')
+  echo "   ✅ GitHub integration detected ($GITHUB_PROFILE_COUNT profiles: $GITHUB_PROFILES)"
 fi
 
-# Check JIRA
-if grep -q '"provider":\s*"jira"' "$CONFIG_FILE" 2>/dev/null; then
+# Check JIRA profiles
+JIRA_PROFILE_COUNT=$(echo "$CONFIG_CONTENT" | jq -r '[.sync.profiles // {} | to_entries[] | select(.value.provider == "jira")] | length')
+if [ "$JIRA_PROFILE_COUNT" -gt 0 ]; then
   EXTERNAL_TOOLS+=("jira")
-  echo "   ✅ JIRA integration detected"
+  JIRA_PROFILES=$(echo "$CONFIG_CONTENT" | jq -r '[.sync.profiles // {} | to_entries[] | select(.value.provider == "jira") | .key] | join(", ")')
+  echo "   ✅ JIRA integration detected ($JIRA_PROFILE_COUNT profiles: $JIRA_PROFILES)"
 fi
 
-# Check Azure DevOps
-if grep -q '"provider":\s*"azure-devops"' "$CONFIG_FILE" 2>/dev/null; then
+# Check ADO profiles
+ADO_PROFILE_COUNT=$(echo "$CONFIG_CONTENT" | jq -r '[.sync.profiles // {} | to_entries[] | select(.value.provider == "ado" or .value.provider == "azure-devops")] | length')
+if [ "$ADO_PROFILE_COUNT" -gt 0 ]; then
   EXTERNAL_TOOLS+=("ado")
-  echo "   ✅ Azure DevOps integration detected"
+  ADO_PROFILES=$(echo "$CONFIG_CONTENT" | jq -r '[.sync.profiles // {} | to_entries[] | select(.value.provider == "ado" or .value.provider == "azure-devops") | .key] | join(", ")')
+  echo "   ✅ Azure DevOps integration detected ($ADO_PROFILE_COUNT profiles: $ADO_PROFILES)"
 fi
 
 if [ ${#EXTERNAL_TOOLS[@]} -eq 0 ]; then
@@ -155,175 +177,287 @@ fi
 
 **Output**:
 ```
-🔧 Step 3/4: Detecting external tool configuration...
-   ✅ GitHub integration detected
+🔧 Step 3/5: Detecting external tool configuration...
+   📋 Permissions:
+      canUpsertInternalItems: true
+      canUpdateExternalItems: true
+   ✅ GitHub integration detected (3 profiles: api, web, worker)
    ℹ️  No JIRA integration
    ℹ️  No Azure DevOps integration
 ```
 
 ---
 
-## STEP 3b: Auto-Create External Issues If Missing (v1.0.19+)
+## STEP 4: AUTO-CREATE Missing External Issues (ALWAYS - Unless --no-create)
 
-**NEW in v1.0.19**: If external tools are configured but no issues exist for this increment, auto-create them!
+**CRITICAL BEHAVIOR CHANGE (v1.0.48+)**: This command **ALWAYS auto-creates missing external issues** unless `--no-create` flag is passed. No config flag required!
 
-This eliminates the need to manually run `/sw-github:create` before syncing.
+**Philosophy**: `/sw:sync-progress` is the "single button" - it should JUST WORK. If GitHub is configured and no issue exists, CREATE IT.
 
 **Check and auto-create**:
 
 ```bash
-echo "🔗 Step 3b/4: Checking if external issues need to be created..."
+echo "🔗 Step 4/5: Ensuring external issues exist (auto-create if missing)..."
 
 METADATA="$INCREMENT_DIR/metadata.json"
-AUTO_CREATE_ENABLED=$(jq -r '.sync.autoCreateOnIncrement // false' ".specweave/config.json" 2>/dev/null)
+NO_CREATE_FLAG="${NO_CREATE:-false}"  # --no-create flag disables auto-create
 
-# Check if GitHub is configured but no issue exists
-if [[ " ${EXTERNAL_TOOLS[@]} " =~ " github " ]]; then
-  GITHUB_ISSUE=$(jq -r '.github.issue // .github.issues[0].number // ""' "$METADATA" 2>/dev/null)
+# ══════════════════════════════════════════════════════════════════
+# GITHUB: Check and auto-create missing issues
+# ══════════════════════════════════════════════════════════════════
+if [[ " ${EXTERNAL_TOOLS[@]} " =~ " github " ]] && [ "$NO_GITHUB" != "true" ]; then
+  echo ""
+  echo "   🐙 GitHub:"
 
-  if [ -z "$GITHUB_ISSUE" ] || [ "$GITHUB_ISSUE" = "null" ]; then
-    if [ "$AUTO_CREATE_ENABLED" = "true" ]; then
-      echo "   📝 No GitHub issue linked - auto-creating..."
+  # Check if canUpsertInternalItems is true (required for creating issues)
+  if [ "$CAN_UPSERT" != "true" ] && [ "$CAN_UPDATE_EXTERNAL" != "true" ]; then
+    echo "      ⚠️  Permission denied: canUpsertInternalItems=false AND canUpdateExternalItems=false"
+    echo "      💡 Enable in config.json: sync.settings.canUpsertInternalItems = true"
+  else
+    # Check for existing GitHub issue in metadata
+    GITHUB_ISSUE=$(jq -r '
+      .github.issue //
+      .github.issues[0].number //
+      .external_sync.github.issueNumber //
+      ""
+    ' "$METADATA" 2>/dev/null)
 
-      # Run auto-create helper
-      if node dist/src/hooks/auto-create-external-issue.js "$INCREMENT_ID"; then
-        echo "   ✅ GitHub issue auto-created"
+    if [ -z "$GITHUB_ISSUE" ] || [ "$GITHUB_ISSUE" = "null" ]; then
+      if [ "$NO_CREATE_FLAG" = "true" ]; then
+        echo "      ⚠️  No GitHub issue linked (--no-create flag set, skipping auto-create)"
+        echo "      💡 To create manually: /sw-github:create $INCREMENT_ID"
       else
-        echo "   ⚠️  GitHub issue creation failed (will continue with sync)"
+        echo "      📝 No GitHub issue linked - AUTO-CREATING..."
+
+        # Use the github-manager agent to create the issue
+        # This handles multi-project configs properly
+        echo "      ⏳ Creating GitHub issue via /sw-github:create..."
+
+        # INVOKE: /sw-github:create $INCREMENT_ID
+        # The skill invocation will:
+        # 1. Read spec.md to generate issue body
+        # 2. Detect profile from increment's Project field or use active profile
+        # 3. Create issue with proper format: [FS-XXX][US-YYY] Title
+        # 4. Update metadata.json with issue number
+        # 5. Apply labels (specweave, increment)
+
+        # Execute the create command
+        /sw-github:create "$INCREMENT_ID"
+
+        if [ $? -eq 0 ]; then
+          # Re-read metadata to get created issue number
+          GITHUB_ISSUE=$(jq -r '.github.issue // .github.issues[0].number // .external_sync.github.issueNumber // ""' "$METADATA" 2>/dev/null)
+          echo "      ✅ GitHub issue auto-created: #$GITHUB_ISSUE"
+        else
+          echo "      ⚠️  GitHub issue creation failed (will continue with sync)"
+          echo "      💡 Debug: Check GITHUB_TOKEN in .env or run 'gh auth status'"
+        fi
       fi
     else
-      echo "   ⚠️  No GitHub issue linked to this increment"
-      echo "   💡 To enable auto-create: Set sync.autoCreateOnIncrement = true in config.json"
-      echo "   💡 To create manually: /sw-github:create $INCREMENT_ID"
+      echo "      ✅ GitHub issue exists: #$GITHUB_ISSUE"
     fi
-  else
-    echo "   ✅ GitHub issue exists: #$GITHUB_ISSUE"
   fi
 fi
 
-# Check JIRA
-if [[ " ${EXTERNAL_TOOLS[@]} " =~ " jira " ]]; then
-  JIRA_ISSUE=$(jq -r '.jira.issue // .jira.issues[0].key // ""' "$METADATA" 2>/dev/null)
+# ══════════════════════════════════════════════════════════════════
+# JIRA: Check and auto-create missing issues
+# ══════════════════════════════════════════════════════════════════
+if [[ " ${EXTERNAL_TOOLS[@]} " =~ " jira " ]] && [ "$NO_JIRA" != "true" ]; then
+  echo ""
+  echo "   📋 JIRA:"
 
-  if [ -z "$JIRA_ISSUE" ] || [ "$JIRA_ISSUE" = "null" ]; then
-    if [ "$AUTO_CREATE_ENABLED" = "true" ]; then
-      echo "   📝 No JIRA issue linked - auto-creating..."
+  if [ "$CAN_UPSERT" != "true" ] && [ "$CAN_UPDATE_EXTERNAL" != "true" ]; then
+    echo "      ⚠️  Permission denied: canUpsertInternalItems=false AND canUpdateExternalItems=false"
+    echo "      💡 Enable in config.json: sync.settings.canUpsertInternalItems = true"
+  else
+    JIRA_ISSUE=$(jq -r '
+      .jira.issue //
+      .jira.issues[0].key //
+      .external_sync.jira.issueKey //
+      ""
+    ' "$METADATA" 2>/dev/null)
 
-      if node dist/src/hooks/auto-create-external-issue.js "$INCREMENT_ID"; then
-        echo "   ✅ JIRA issue auto-created"
+    if [ -z "$JIRA_ISSUE" ] || [ "$JIRA_ISSUE" = "null" ]; then
+      if [ "$NO_CREATE_FLAG" = "true" ]; then
+        echo "      ⚠️  No JIRA issue linked (--no-create flag set, skipping auto-create)"
+        echo "      💡 To create manually: /sw-jira:create $INCREMENT_ID"
       else
-        echo "   ⚠️  JIRA issue creation failed (will continue with sync)"
+        echo "      📝 No JIRA issue linked - AUTO-CREATING..."
+        echo "      ⏳ Creating JIRA issue via /sw-jira:create..."
+
+        # INVOKE: /sw-jira:create $INCREMENT_ID
+        /sw-jira:create "$INCREMENT_ID"
+
+        if [ $? -eq 0 ]; then
+          JIRA_ISSUE=$(jq -r '.jira.issue // .jira.issues[0].key // .external_sync.jira.issueKey // ""' "$METADATA" 2>/dev/null)
+          echo "      ✅ JIRA issue auto-created: $JIRA_ISSUE"
+        else
+          echo "      ⚠️  JIRA issue creation failed (will continue with sync)"
+          echo "      💡 Debug: Check JIRA credentials in .env"
+        fi
       fi
     else
-      echo "   ⚠️  No JIRA issue linked to this increment"
-      echo "   💡 To enable auto-create: Set sync.autoCreateOnIncrement = true in config.json"
-      echo "   💡 To create manually: /sw-jira:create $INCREMENT_ID"
+      echo "      ✅ JIRA issue exists: $JIRA_ISSUE"
     fi
-  else
-    echo "   ✅ JIRA issue exists: $JIRA_ISSUE"
   fi
 fi
 
-# Check ADO
-if [[ " ${EXTERNAL_TOOLS[@]} " =~ " ado " ]]; then
-  ADO_ITEM=$(jq -r '.ado.workItem // .ado.workItems[0].id // ""' "$METADATA" 2>/dev/null)
+# ══════════════════════════════════════════════════════════════════
+# ADO: Check and auto-create missing work items
+# ══════════════════════════════════════════════════════════════════
+if [[ " ${EXTERNAL_TOOLS[@]} " =~ " ado " ]] && [ "$NO_ADO" != "true" ]; then
+  echo ""
+  echo "   🔷 Azure DevOps:"
 
-  if [ -z "$ADO_ITEM" ] || [ "$ADO_ITEM" = "null" ]; then
-    if [ "$AUTO_CREATE_ENABLED" = "true" ]; then
-      echo "   📝 No ADO work item linked - auto-creating..."
+  if [ "$CAN_UPSERT" != "true" ] && [ "$CAN_UPDATE_EXTERNAL" != "true" ]; then
+    echo "      ⚠️  Permission denied: canUpsertInternalItems=false AND canUpdateExternalItems=false"
+    echo "      💡 Enable in config.json: sync.settings.canUpsertInternalItems = true"
+  else
+    ADO_ITEM=$(jq -r '
+      .ado.workItem //
+      .ado.workItems[0].id //
+      .external_sync.ado.workItemId //
+      ""
+    ' "$METADATA" 2>/dev/null)
 
-      if node dist/src/hooks/auto-create-external-issue.js "$INCREMENT_ID"; then
-        echo "   ✅ ADO work item auto-created"
+    if [ -z "$ADO_ITEM" ] || [ "$ADO_ITEM" = "null" ]; then
+      if [ "$NO_CREATE_FLAG" = "true" ]; then
+        echo "      ⚠️  No ADO work item linked (--no-create flag set, skipping auto-create)"
+        echo "      💡 To create manually: /sw-ado:create $INCREMENT_ID"
       else
-        echo "   ⚠️  ADO work item creation failed (will continue with sync)"
+        echo "      📝 No ADO work item linked - AUTO-CREATING..."
+        echo "      ⏳ Creating ADO work item via /sw-ado:create..."
+
+        # INVOKE: /sw-ado:create $INCREMENT_ID
+        /sw-ado:create "$INCREMENT_ID"
+
+        if [ $? -eq 0 ]; then
+          ADO_ITEM=$(jq -r '.ado.workItem // .ado.workItems[0].id // .external_sync.ado.workItemId // ""' "$METADATA" 2>/dev/null)
+          echo "      ✅ ADO work item auto-created: #$ADO_ITEM"
+        else
+          echo "      ⚠️  ADO work item creation failed (will continue with sync)"
+          echo "      💡 Debug: Check AZURE_DEVOPS_PAT in .env"
+        fi
       fi
     else
-      echo "   ⚠️  No ADO work item linked to this increment"
-      echo "   💡 To enable auto-create: Set sync.autoCreateOnIncrement = true in config.json"
-      echo "   💡 To create manually: /sw-ado:create $INCREMENT_ID"
+      echo "      ✅ ADO work item exists: #$ADO_ITEM"
     fi
-  else
-    echo "   ✅ ADO work item exists: #$ADO_ITEM"
   fi
 fi
+
+echo ""
 ```
 
 **What this does**:
-- Detects if external tool is configured but no issue linked
-- If `sync.autoCreateOnIncrement = true`, automatically creates issue
-- If disabled, shows helpful message with manual command
+- Checks each configured external tool for existing linked issues
+- **AUTO-CREATES missing issues by invoking the respective create commands**
+- Respects permissions (canUpsertInternalItems, canUpdateExternalItems)
+- Skip creation with `--no-create` flag if user wants sync-only behavior
+- Updates metadata.json with created issue numbers
 
 ---
 
-## STEP 4: Sync to External Tools
+## STEP 5: Sync to External Tools (Full Two-Way Sync)
 
-**For each detected external tool, sync progress**:
+**For each configured external tool, perform full two-way sync**:
 
-### 4.1: Sync to GitHub (if enabled)
+### 5.1: Sync to GitHub (if configured)
 
 ```bash
 if [[ " ${EXTERNAL_TOOLS[@]} " =~ " github " ]] && [ "$NO_GITHUB" != "true" ]; then
-  echo "🔗 Step 4/4: Syncing to GitHub..."
+  echo "🔄 Step 5/5: Syncing to external tools..."
+  echo ""
+  echo "   🐙 GitHub sync:"
 
-  # Run GitHub sync command
-  if [ "$DRY_RUN" = "true" ]; then
-    echo "   [DRY-RUN] Would sync to GitHub"
+  # Re-check if issue exists now (may have been auto-created)
+  GITHUB_ISSUE=$(jq -r '.github.issue // .github.issues[0].number // .external_sync.github.issueNumber // ""' "$METADATA" 2>/dev/null)
+
+  if [ -z "$GITHUB_ISSUE" ] || [ "$GITHUB_ISSUE" = "null" ]; then
+    echo "      ⚠️  No GitHub issue linked - skipping sync"
+    echo "      💡 Create issue first: /sw-github:create $INCREMENT_ID"
   else
-    /sw-github:sync "$INCREMENT_ID"
-
-    if [ $? -eq 0 ]; then
-      echo "   ✅ GitHub sync complete"
+    if [ "$DRY_RUN" = "true" ]; then
+      echo "      [DRY-RUN] Would sync to GitHub issue #$GITHUB_ISSUE"
     else
-      echo "   ⚠️  GitHub sync had warnings (check logs)"
+      echo "      ⏳ Syncing to GitHub issue #$GITHUB_ISSUE..."
+
+      # INVOKE: /sw-github:sync $INCREMENT_ID (two-way by default)
+      /sw-github:sync "$INCREMENT_ID"
+
+      if [ $? -eq 0 ]; then
+        echo "      ✅ GitHub sync complete"
+      else
+        echo "      ⚠️  GitHub sync had warnings (check logs)"
+      fi
     fi
   fi
-else
-  echo "🔗 Step 4/4: Skipping GitHub sync (--no-github or not configured)"
 fi
 ```
 
 **What GitHub sync does**:
-- Reads completed user stories from living docs
-- Closes GitHub issues for completed user stories
-- Updates epic issue checklist with task progress
-- Posts completion comments with stats
-- Updates issue labels (in-progress → completed)
+- Two-way sync (pull changes from GitHub + push changes to GitHub)
+- Updates task checklist in issue body
+- Posts progress comments
+- Updates labels based on status
+- Pulls external changes (comments, status changes from team)
 
-### 4.2: Sync to JIRA (if enabled)
+### 5.2: Sync to JIRA (if configured)
 
 ```bash
 if [[ " ${EXTERNAL_TOOLS[@]} " =~ " jira " ]] && [ "$NO_JIRA" != "true" ]; then
-  echo "🔗 Syncing to JIRA..."
+  echo ""
+  echo "   📋 JIRA sync:"
 
-  if [ "$DRY_RUN" = "true" ]; then
-    echo "   [DRY-RUN] Would sync to JIRA"
+  JIRA_ISSUE=$(jq -r '.jira.issue // .jira.issues[0].key // .external_sync.jira.issueKey // ""' "$METADATA" 2>/dev/null)
+
+  if [ -z "$JIRA_ISSUE" ] || [ "$JIRA_ISSUE" = "null" ]; then
+    echo "      ⚠️  No JIRA issue linked - skipping sync"
+    echo "      💡 Create issue first: /sw-jira:create $INCREMENT_ID"
   else
-    /sw-jira:sync "$INCREMENT_ID"
-
-    if [ $? -eq 0 ]; then
-      echo "   ✅ JIRA sync complete"
+    if [ "$DRY_RUN" = "true" ]; then
+      echo "      [DRY-RUN] Would sync to JIRA issue $JIRA_ISSUE"
     else
-      echo "   ⚠️  JIRA sync had warnings"
+      echo "      ⏳ Syncing to JIRA issue $JIRA_ISSUE..."
+
+      # INVOKE: /sw-jira:sync $INCREMENT_ID (two-way by default)
+      /sw-jira:sync "$INCREMENT_ID"
+
+      if [ $? -eq 0 ]; then
+        echo "      ✅ JIRA sync complete"
+      else
+        echo "      ⚠️  JIRA sync had warnings"
+      fi
     fi
   fi
 fi
 ```
 
-### 4.3: Sync to Azure DevOps (if enabled)
+### 5.3: Sync to Azure DevOps (if configured)
 
 ```bash
 if [[ " ${EXTERNAL_TOOLS[@]} " =~ " ado " ]] && [ "$NO_ADO" != "true" ]; then
-  echo "🔗 Syncing to Azure DevOps..."
+  echo ""
+  echo "   🔷 Azure DevOps sync:"
 
-  if [ "$DRY_RUN" = "true" ]; then
-    echo "   [DRY-RUN] Would sync to ADO"
+  ADO_ITEM=$(jq -r '.ado.workItem // .ado.workItems[0].id // .external_sync.ado.workItemId // ""' "$METADATA" 2>/dev/null)
+
+  if [ -z "$ADO_ITEM" ] || [ "$ADO_ITEM" = "null" ]; then
+    echo "      ⚠️  No ADO work item linked - skipping sync"
+    echo "      💡 Create work item first: /sw-ado:create $INCREMENT_ID"
   else
-    /sw-ado:sync "$INCREMENT_ID"
-
-    if [ $? -eq 0 ]; then
-      echo "   ✅ ADO sync complete"
+    if [ "$DRY_RUN" = "true" ]; then
+      echo "      [DRY-RUN] Would sync to ADO work item #$ADO_ITEM"
     else
-      echo "   ⚠️  ADO sync had warnings"
+      echo "      ⏳ Syncing to ADO work item #$ADO_ITEM..."
+
+      # INVOKE: /sw-ado:sync $INCREMENT_ID (two-way by default)
+      /sw-ado:sync "$INCREMENT_ID"
+
+      if [ $? -eq 0 ]; then
+        echo "      ✅ ADO sync complete"
+      else
+        echo "      ⚠️  ADO sync had warnings"
+      fi
     fi
   fi
 fi
@@ -331,12 +465,12 @@ fi
 
 ---
 
-## STEP 5: Update Status Line Cache
+## STEP 6: Update Status Line Cache
 
 **Refresh status line with latest completion data**:
 
 ```bash
-echo "📊 Updating status line cache..."
+echo "📊 Step 6/6: Updating status line cache..."
 
 # Force update status line cache
 /sw:update-status
@@ -346,7 +480,7 @@ echo "   ✅ Status line updated"
 
 ---
 
-## STEP 6: Generate Comprehensive Report
+## STEP 7: Generate Comprehensive Report
 
 **Show detailed sync summary**:
 
@@ -362,13 +496,22 @@ echo "✅ Synced:"
 echo "   • Tasks → ACs (spec.md)"
 echo "   • Spec → Living docs (user stories)"
 if [[ " ${EXTERNAL_TOOLS[@]} " =~ " github " ]]; then
-  echo "   • Living docs → GitHub issues"
+  if [ -n "$GITHUB_CREATED" ]; then
+    echo "   • GitHub issue AUTO-CREATED: #$GITHUB_ISSUE"
+  fi
+  echo "   • Living docs → GitHub issue #$GITHUB_ISSUE"
 fi
 if [[ " ${EXTERNAL_TOOLS[@]} " =~ " jira " ]]; then
-  echo "   • Living docs → JIRA stories"
+  if [ -n "$JIRA_CREATED" ]; then
+    echo "   • JIRA issue AUTO-CREATED: $JIRA_ISSUE"
+  fi
+  echo "   • Living docs → JIRA story $JIRA_ISSUE"
 fi
 if [[ " ${EXTERNAL_TOOLS[@]} " =~ " ado " ]]; then
-  echo "   • Living docs → Azure DevOps work items"
+  if [ -n "$ADO_CREATED" ]; then
+    echo "   • ADO work item AUTO-CREATED: #$ADO_ITEM"
+  fi
+  echo "   • Living docs → ADO work item #$ADO_ITEM"
 fi
 echo "   • Status line cache"
 echo ""
@@ -497,6 +640,7 @@ fi
 **Supported flags**:
 
 - `--dry-run`: Preview sync without executing (shows what would be synced)
+- `--no-create`: Skip auto-creation of missing external issues (sync existing issues only)
 - `--no-github`: Skip GitHub sync (even if configured)
 - `--no-jira`: Skip JIRA sync (even if configured)
 - `--no-ado`: Skip Azure DevOps sync (even if configured)
@@ -505,26 +649,50 @@ fi
 **Examples**:
 
 ```bash
+# Full sync with auto-create (DEFAULT - just works!)
+/sw:sync-progress
+
 # Dry-run mode (preview only)
 /sw:sync-progress 0053 --dry-run
+
+# Sync only, don't create missing issues
+/sw:sync-progress 0053 --no-create
 
 # Skip GitHub sync
 /sw:sync-progress 0053 --no-github
 
-# Skip all external tools
+# Skip all external tools (local sync only)
 /sw:sync-progress 0053 --no-github --no-jira --no-ado
 
-# Auto-detect active increment
-/sw:sync-progress
+# Explicit increment ID
+/sw:sync-progress 0053
 ```
 
 ---
 
 ## Use Cases
 
-### Use Case 1: After Completing Tasks
+### Use Case 1: First-Time Sync (No GitHub Issue Yet) ⭐ NEW DEFAULT BEHAVIOR
 
-**Scenario**: You've completed 5 tasks and marked them as done in tasks.md. Now you want to sync progress everywhere.
+**Scenario**: You've created an increment with `/sw:increment`, completed some tasks, but never created a GitHub issue. Now you want to sync.
+
+```bash
+# Single command does EVERYTHING
+/sw:sync-progress
+```
+
+**What happens**:
+1. ✅ ACs in spec.md marked complete (based on completed tasks)
+2. ✅ Living docs user stories updated
+3. ✅ **GitHub issue AUTO-CREATED** (detects missing issue, creates it)
+4. ✅ GitHub issue synced with task progress
+5. ✅ Status line shows updated completion %
+
+**No more "No GitHub issue linked" errors!** The command just works.
+
+### Use Case 2: After Completing Tasks (Issue Already Exists)
+
+**Scenario**: You've completed 5 tasks and marked them as done in tasks.md. GitHub issue already exists.
 
 ```bash
 # Single command syncs everything
@@ -532,13 +700,13 @@ fi
 ```
 
 **What happens**:
-1. ✅ ACs in spec.md marked complete (based on completed tasks)
+1. ✅ ACs in spec.md marked complete
 2. ✅ Living docs user stories updated
-3. ✅ GitHub issues closed for completed user stories
-4. ✅ Epic issue checklist updated with task progress
+3. ✅ GitHub issue #123 detected, synced with task progress
+4. ✅ Epic issue checklist updated
 5. ✅ Status line shows updated completion %
 
-### Use Case 2: Before Closing Increment
+### Use Case 3: Before Closing Increment
 
 **Scenario**: All tasks complete, ready to close increment. Want to ensure all systems are in sync.
 
@@ -550,7 +718,7 @@ fi
 /sw:done 0053
 ```
 
-### Use Case 3: Preview Sync (Dry-Run)
+### Use Case 4: Preview Sync (Dry-Run)
 
 **Scenario**: Want to see what will be synced before executing.
 
@@ -566,11 +734,12 @@ fi
 Would sync:
    • 37 completed tasks → 70 ACs in spec.md
    • spec.md → 6 user stories in living docs
-   • Living docs → 6 GitHub issues (would close completed)
+   • GitHub issue: Would AUTO-CREATE (none exists)
+   • Living docs → GitHub issue (would sync after creation)
    • Status line cache (would update completion %)
 ```
 
-### Use Case 4: Local-Only Sync (No External Tools)
+### Use Case 5: Local-Only Sync (No External Tools)
 
 **Scenario**: Want to sync tasks → docs but NOT to GitHub/JIRA (offline work).
 
@@ -579,46 +748,65 @@ Would sync:
 /sw:sync-progress 0053 --no-github --no-jira --no-ado
 ```
 
+### Use Case 6: Sync Only (Don't Create Missing Issues)
+
+**Scenario**: External issues should be created manually via team workflow. Only sync existing issues.
+
+```bash
+# Sync existing issues only, don't auto-create
+/sw:sync-progress 0053 --no-create
+```
+
+**What happens**:
+- If GitHub issue exists → sync it
+- If GitHub issue doesn't exist → show warning, skip (no auto-create)
+
 ---
 
 ## Architecture
 
-**Multi-System Sync Flow**:
+**Multi-System Sync Flow (v1.0.48+)**:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                   /sw:sync-progress                  │
-│                  (Single Orchestrator Command)              │
+│                   /sw:sync-progress                         │
+│              (TRUE Single-Button Orchestrator)              │
 └────────────────────────┬────────────────────────────────────┘
                          │
-         ┌───────────────┼───────────────┐
-         │               │               │
-    ┌────▼────┐    ┌────▼────┐    ┌────▼────┐
-    │ Tasks   │    │ Living  │    │ External│
-    │ → ACs   │    │ Docs    │    │ Tools   │
-    │(spec.md)│    │(stories)│    │ (sync)  │
-    └────┬────┘    └────┬────┘    └────┬────┘
-         │               │               │
-         │               │        ┌──────┼──────┐
-         │               │        │      │      │
-         │               │   ┌────▼─┐ ┌─▼──┐ ┌─▼──┐
-         │               │   │GitHub│ │JIRA│ │ADO │
-         │               │   └──────┘ └────┘ └────┘
-         │               │
-    ┌────▼───────────────▼────┐
-    │   Status Line Cache     │
-    │  (Auto-Update Display)  │
-    └─────────────────────────┘
+    Step 1-2             │            Step 4-5
+    ┌────────────────────┼────────────────────┐
+    │                    │                    │
+┌───▼───┐          ┌─────▼─────┐         ┌───▼────┐
+│Tasks  │          │ External  │         │External│
+│→ ACs  │          │AUTO-CREATE│         │ SYNC   │
+│→ Docs │          │(if needed)│         │(2-way) │
+└───┬───┘          └─────┬─────┘         └───┬────┘
+    │                    │                   │
+    │              ┌─────┼─────┐       ┌─────┼─────┐
+    │              │     │     │       │     │     │
+    │           ┌──▼─┐ ┌─▼─┐ ┌─▼─┐  ┌──▼─┐ ┌─▼─┐ ┌─▼─┐
+    │           │ GH │ │JRA│ │ADO│  │ GH │ │JRA│ │ADO│
+    │           │NEW │ │NEW│ │NEW│  │sync│ │sync│ │sync│
+    │           └────┘ └───┘ └───┘  └────┘ └───┘ └───┘
+    │                    │                   │
+    └────────────────────┼───────────────────┘
+                         │
+                   ┌─────▼─────┐
+                   │  Status   │
+                   │  Update   │
+                   └───────────┘
 ```
 
 **Key Design Principles**:
 
-1. **Single Command, Multi-System**: One command orchestrates all sync operations
-2. **Graceful Degradation**: External tool failures don't block core sync
-3. **Dry-Run Support**: Preview changes before executing
-4. **Selective Sync**: Flags to skip specific external tools
-5. **Auto-Detection**: Finds active increment automatically
-6. **Comprehensive Reporting**: Shows exactly what was synced
+1. **TRUE Single Button**: Auto-creates missing external issues, then syncs
+2. **Just Works**: No manual `/sw-github:create` required - command handles everything
+3. **Graceful Degradation**: External tool failures don't block core sync
+4. **Permission-Aware**: Respects `canUpsertInternalItems` and `canUpdateExternalItems`
+5. **Dry-Run Support**: Preview changes (including auto-create) before executing
+6. **Selective Sync**: Flags to skip specific tools or auto-create (`--no-create`)
+7. **Auto-Detection**: Finds active increment automatically
+8. **Comprehensive Reporting**: Shows created issues, synced items, completion stats
 
 ---
 
@@ -644,6 +832,45 @@ Would sync:
 ---
 
 ## Troubleshooting
+
+### Issue: GitHub issue auto-create failed
+
+**Error**:
+```
+⚠️  GitHub issue creation failed (will continue with sync)
+💡 Debug: Check GITHUB_TOKEN in .env or run 'gh auth status'
+```
+
+**Fix**:
+```bash
+# Check GitHub authentication
+gh auth status
+
+# Check token in .env
+grep GITHUB_TOKEN .env
+
+# Manually create if needed
+/sw-github:create 0053
+```
+
+### Issue: Permission denied for external operations
+
+**Error**:
+```
+⚠️  Permission denied: canUpsertInternalItems=false AND canUpdateExternalItems=false
+```
+
+**Fix**: Enable permissions in `.specweave/config.json`:
+```json
+{
+  "sync": {
+    "settings": {
+      "canUpsertInternalItems": true,
+      "canUpdateExternalItems": true
+    }
+  }
+}
+```
 
 ### Issue: AC sync warnings
 
@@ -681,6 +908,14 @@ Would sync:
 ```bash
 # Provide increment ID explicitly
 /sw:sync-progress 0053
+```
+
+### Issue: Don't want auto-create (team workflow requires manual issue creation)
+
+**Solution**: Use `--no-create` flag:
+```bash
+# Sync only, don't auto-create missing issues
+/sw:sync-progress 0053 --no-create
 ```
 
 ---
