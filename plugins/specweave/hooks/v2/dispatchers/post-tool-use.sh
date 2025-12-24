@@ -1,41 +1,186 @@
 #!/bin/bash
 # post-tool-use.sh - Single dispatcher for ALL PostToolUse events
-# Replaces: post-task-edit, post-metadata-change, post-increment-planning, etc.
+#
+# v1.0.43+: FULLY NON-BLOCKING - all hook errors become warnings
+#
+# CRITICAL DESIGN PRINCIPLE:
+#   - Tool operations ALWAYS succeed (Edit/Write never blocked by hooks)
+#   - All hook errors become visible warnings to user
+#   - Logs captured for debugging
+#   - Background processes for heavy work
 #
 # Architecture (EDA v2):
-# - Detectors run synchronously (fast, detect state transitions)
+# - Detectors run asynchronously (don't block tool results)
 # - Detectors emit events to queue
-# - Handlers process events asynchronously from queue
+# - Handlers process events from queue
 #
 # Event flow:
 # 1. metadata.json change -> lifecycle-detector -> increment.* events
 # 2. tasks.md/spec.md change -> us-completion-detector -> user-story.* events
 # 3. Events queued -> processor routes to handlers
 #
-# Goal: <10ms execution, all heavy work through event queue
-#
-# IMPORTANT: Never crash Claude, always exit 0
-set +e
+# Goal: Never crash Claude, always exit 0, warn on errors
+
+set +e  # CRITICAL: Never exit on error
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
 
-# Find project root
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+HOOK_NAME="post-tool-use"
+HOOK_VERSION="1.0.43"
+
+# ============================================================================
+# PROJECT ROOT DETECTION
+# ============================================================================
+
 PROJECT_ROOT="$PWD"
 while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
   PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
 done
 [[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
 
-# Read stdin (tool result JSON) - with safe fallback to prevent hanging
-INPUT=$(cat 2>/dev/null || echo '{}')
+# ============================================================================
+# LOGGING INFRASTRUCTURE
+# ============================================================================
 
-# Extract file path (fast grep, no jq)
+LOGS_DIR="$PROJECT_ROOT/.specweave/logs"
+DEBUG_LOG="$LOGS_DIR/post-tool-use.log"
+WARNING_LOG="$LOGS_DIR/hook-warnings.log"
+mkdir -p "$LOGS_DIR" 2>/dev/null || true
+
+log_debug() {
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$HOOK_NAME] $*" >> "$DEBUG_LOG" 2>/dev/null || true
+}
+
+log_warning() {
+  local message="$1"
+  local details="${2:-}"
+
+  # Always log to file
+  {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARNING [$HOOK_NAME]: $message"
+    [[ -n "$details" ]] && echo "  Details: $details"
+  } >> "$WARNING_LOG" 2>/dev/null || true
+
+  # Show to user so they know something went wrong
+  echo ""
+  echo "  [Hook Warning] $HOOK_NAME: $message"
+  [[ -n "$details" ]] && echo "  $details"
+  echo "  (Tool operation succeeded - hook issue only)"
+  echo ""
+}
+
+# ============================================================================
+# SAFE EXECUTION HELPERS
+# ============================================================================
+
+# Run a hook script safely in background (never blocks, logs errors)
+safe_run_background() {
+  local script="$1"
+  local context="$2"
+  shift 2
+
+  if [[ ! -f "$script" ]]; then
+    log_debug "Script not found (skipping): $script"
+    return 0
+  fi
+
+  if [[ ! -x "$script" ]] && [[ ! "$script" == *.sh ]]; then
+    log_debug "Script not executable (skipping): $script"
+    return 0
+  fi
+
+  # Run in background, capture errors to log
+  (
+    set +e
+    local output
+    local exit_code
+
+    output=$(bash "$script" "$@" 2>&1)
+    exit_code=$?
+
+    if [[ $exit_code -ne 0 ]]; then
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] BACKGROUND ERROR [$context]: exit $exit_code" >> "$WARNING_LOG" 2>/dev/null || true
+      echo "  Output: $output" >> "$WARNING_LOG" 2>/dev/null || true
+    fi
+  ) &
+
+  return 0
+}
+
+# Run a hook script safely in foreground (for sync guards)
+safe_run_sync() {
+  local script="$1"
+  local context="$2"
+  local input="$3"
+
+  if [[ ! -f "$script" ]]; then
+    log_debug "Script not found (skipping): $script"
+    return 0
+  fi
+
+  local output
+  local exit_code
+
+  # Run with timeout protection (5 second max)
+  if command -v gtimeout >/dev/null 2>&1; then
+    output=$(echo "$input" | gtimeout --kill-after=2 5 bash "$script" 2>&1)
+    exit_code=$?
+  elif command -v timeout >/dev/null 2>&1; then
+    output=$(echo "$input" | timeout --kill-after=2 5 bash "$script" 2>&1)
+    exit_code=$?
+  else
+    output=$(echo "$input" | bash "$script" 2>&1)
+    exit_code=$?
+  fi
+
+  # Log errors but don't fail
+  if [[ $exit_code -ne 0 ]]; then
+    if [[ $exit_code -eq 124 ]] || [[ $exit_code -eq 137 ]]; then
+      log_warning "Hook timed out: $context" "Script: $script"
+    else
+      log_debug "Hook exited with code $exit_code: $context"
+    fi
+  fi
+
+  # Output any non-error output (for status messages, etc.)
+  if [[ -n "$output" ]] && [[ "$output" != *"ERROR"* ]] && [[ "$output" != *"error"* ]]; then
+    echo "$output"
+  fi
+
+  return 0  # Always succeed
+}
+
+# ============================================================================
+# INPUT PARSING (with safe fallbacks)
+# ============================================================================
+
+# Read stdin (tool result JSON) - with safe fallback and timeout
+INPUT=""
+if command -v gtimeout >/dev/null 2>&1; then
+  INPUT=$(gtimeout 1 cat 2>/dev/null || echo '{}')
+elif command -v timeout >/dev/null 2>&1; then
+  INPUT=$(timeout 1 cat 2>/dev/null || echo '{}')
+else
+  INPUT=$(cat 2>/dev/null || echo '{}')
+fi
+
+# Extract file path (fast grep, no jq required)
 FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
 [[ -z "$FILE_PATH" ]] && exit 0
 
 # Extract increment ID from path
 INC_ID=$(echo "$FILE_PATH" | grep -o '[0-9][0-9][0-9][0-9]-[^/]*' | head -1)
 [[ -z "$INC_ID" ]] && exit 0
+
+log_debug "Processing: $FILE_PATH (increment: $INC_ID)"
+
+# ============================================================================
+# SETUP PATHS
+# ============================================================================
 
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PLUGIN_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
@@ -44,56 +189,53 @@ SCRIPTS_DIR="$PLUGIN_ROOT/scripts"
 
 # ============================================================================
 # EDA DISPATCHER: Route to detectors based on file type
-# Detectors detect state transitions and emit events to queue
-# All heavy work is done by handlers processing the queue
+# All errors become warnings, never block the tool operation
 # ============================================================================
 
 case "$FILE_PATH" in
   */.specweave/increments/*/metadata.json)
-    # Metadata changed -> check for lifecycle transitions
-    # Events: increment.created, increment.done, increment.archived, increment.reopened
-    bash "$DETECTOR_DIR/lifecycle-detector.sh" "$INC_ID" 2>/dev/null &
+    log_debug "Metadata change detected"
 
-    # Update dashboard cache (v0.34.0 - instant status commands)
-    [[ -f "$SCRIPTS_DIR/update-dashboard-cache.sh" ]] && \
-      bash "$SCRIPTS_DIR/update-dashboard-cache.sh" "$INC_ID" metadata 2>/dev/null &
+    # Metadata changed -> check for lifecycle transitions (background)
+    safe_run_background "$DETECTOR_DIR/lifecycle-detector.sh" "lifecycle-detector" "$INC_ID"
+
+    # Update dashboard cache (background)
+    safe_run_background "$SCRIPTS_DIR/update-dashboard-cache.sh" "dashboard-cache" "$INC_ID" "metadata"
     ;;
 
   */.specweave/increments/*/tasks.md|*/.specweave/increments/*/spec.md)
-    # ============================================================================
+    log_debug "Tasks/spec change detected"
+
+    # ========================================================================
     # TASK-AC SYNC (v0.35.2+): Sync task completion to spec.md ACs
-    # ============================================================================
-    # When tasks.md is edited, sync completed task ACs to spec.md BEFORE
-    # the us-completion-detector runs (so it sees consistent state)
-    #
-    # Flow: tasks.md edit → task-ac-sync → spec.md updated → us-completion-detector
-    # This ensures ACs in spec.md are always in sync with tasks.md
+    # ========================================================================
+    # When tasks.md is edited, sync completed task ACs to spec.md
+    # This runs SYNCHRONOUSLY but is NON-BLOCKING (never fails)
     if [[ "$FILE_PATH" == *tasks.md ]]; then
       SYNC_SCRIPT="$HOOK_DIR/guards/task-ac-sync-guard.sh"
-      [[ -f "$SYNC_SCRIPT" ]] && echo "$INPUT" | bash "$SYNC_SCRIPT" 2>/dev/null
+      if [[ -f "$SYNC_SCRIPT" ]]; then
+        log_debug "Running task-ac-sync guard"
+        safe_run_sync "$SYNC_SCRIPT" "task-ac-sync" "$INPUT"
+      fi
     fi
 
-    # Tasks or spec changed -> check for US completion
-    # Events: user-story.completed, user-story.reopened
-    bash "$DETECTOR_DIR/us-completion-detector.sh" "$INC_ID" 2>/dev/null &
+    # Tasks or spec changed -> check for US completion (background)
+    safe_run_background "$DETECTOR_DIR/us-completion-detector.sh" "us-completion-detector" "$INC_ID"
 
-    # Also queue legacy event for backward compatibility
+    # Queue events for backward compatibility (background)
     if [[ "$FILE_PATH" == *tasks.md ]]; then
-      bash "$HOOK_DIR/queue/enqueue.sh" "task.updated" "$INC_ID" 2>/dev/null &
-      # Update dashboard cache (v0.34.0 - instant status commands)
-      [[ -f "$SCRIPTS_DIR/update-dashboard-cache.sh" ]] && \
-        bash "$SCRIPTS_DIR/update-dashboard-cache.sh" "$INC_ID" tasks 2>/dev/null &
+      safe_run_background "$HOOK_DIR/queue/enqueue.sh" "enqueue-task" "task.updated" "$INC_ID"
+      safe_run_background "$SCRIPTS_DIR/update-dashboard-cache.sh" "dashboard-cache" "$INC_ID" "tasks"
     else
-      bash "$HOOK_DIR/queue/enqueue.sh" "spec.updated" "$INC_ID" 2>/dev/null &
-      # Update dashboard cache (v0.34.0 - instant status commands)
-      [[ -f "$SCRIPTS_DIR/update-dashboard-cache.sh" ]] && \
-        bash "$SCRIPTS_DIR/update-dashboard-cache.sh" "$INC_ID" spec 2>/dev/null &
+      safe_run_background "$HOOK_DIR/queue/enqueue.sh" "enqueue-spec" "spec.updated" "$INC_ID"
+      safe_run_background "$SCRIPTS_DIR/update-dashboard-cache.sh" "dashboard-cache" "$INC_ID" "spec"
     fi
     ;;
 
   */.specweave/increments/*/plan.md)
-    # Plan updated (for future use, currently no special handling)
-    bash "$HOOK_DIR/queue/enqueue.sh" "plan.updated" "$INC_ID" 2>/dev/null &
+    log_debug "Plan change detected"
+    # Queue plan update event (background)
+    safe_run_background "$HOOK_DIR/queue/enqueue.sh" "enqueue-plan" "plan.updated" "$INC_ID"
     ;;
 
   *)
@@ -102,14 +244,10 @@ case "$FILE_PATH" in
     ;;
 esac
 
-# NOTE: Removed synchronous status-update.sh call
-# Status line updates are now EVENT-DRIVEN:
-# - Updated on user-story.completed/reopened events
-# - Updated on increment lifecycle events
-# - NOT updated on every file edit (reduces flickering, race conditions)
+# ============================================================================
+# ENSURE PROCESSOR IS RUNNING (non-blocking)
+# ============================================================================
 
-# Ensure processor is running to handle queued events
-# (Processor may have timed out from idle after 60s)
 PROCESSOR="$HOOK_DIR/queue/processor.sh"
 PID_FILE="$PROJECT_ROOT/.specweave/state/.processor.pid"
 
@@ -117,11 +255,20 @@ PID_FILE="$PROJECT_ROOT/.specweave/state/.processor.pid"
 if [[ -f "$PID_FILE" ]]; then
   PROC_PID=$(cat "$PID_FILE" 2>/dev/null)
   if [[ -n "$PROC_PID" ]] && kill -0 "$PROC_PID" 2>/dev/null; then
-    exit 0  # Processor running, events will be processed
+    log_debug "Processor already running (PID: $PROC_PID)"
+    exit 0
   fi
 fi
 
-# Start processor in background (non-daemon mode for quick processing)
-[[ -f "$PROCESSOR" ]] && nohup bash "$PROCESSOR" > /dev/null 2>&1 &
+# Start processor in background (non-blocking)
+if [[ -f "$PROCESSOR" ]]; then
+  log_debug "Starting event processor"
+  nohup bash "$PROCESSOR" > /dev/null 2>&1 &
+fi
 
+# ============================================================================
+# ALWAYS EXIT SUCCESS
+# ============================================================================
+
+log_debug "Dispatcher completed successfully"
 exit 0
