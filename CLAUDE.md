@@ -1,4 +1,4 @@
-<!-- SW:META template="claude" version="1.0.46" sections="header,start,autodetect,metarule,rules,workflow,structure,taskformat,secrets,syncing,mapping,testing,limits,troubleshooting,principles,linking,docs" -->
+<!-- SW:META template="claude" version="1.0.47" sections="header,start,autodetect,metarule,rules,workflow,context,structure,taskformat,secrets,syncing,mapping,testing,limits,troubleshooting,principles,linking,docs" -->
 
 <!-- SW:SECTION:header version="1.0.46" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
@@ -62,6 +62,20 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done`
 <!-- SW:END:workflow -->
 
+<!-- SW:SECTION:context version="1.0.47" -->
+## Living Docs Context
+
+**Before implementing**: Check existing docs for patterns and decisions.
+
+```bash
+grep -ril "keyword" .specweave/docs/internal/  # Search for related docs
+```
+
+**Key locations**: `specs/` (features) | `architecture/adr/` (decisions) | `architecture/` (design)
+
+**Always check ADRs** before design decisions. Use `/sw:context <topic>` to load context.
+<!-- SW:END:context -->
+
 <!-- SW:SECTION:structure version="1.0.46" -->
 ## Structure
 
@@ -69,8 +83,8 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 .specweave/
 ├── increments/####-name/     # metadata.json, spec.md, tasks.md
 ├── docs/internal/
-│   ├── specs/{project}/      # Living docs
-│   ├── architecture/adr/     # ADRs
+│   ├── specs/{project}/      # Living docs (check before implementing!)
+│   ├── architecture/adr/     # ADRs (check before design decisions!)
 │   └── operations/           # Runbooks
 └── config.json
 ```

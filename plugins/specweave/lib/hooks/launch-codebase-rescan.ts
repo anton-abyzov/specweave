@@ -14,6 +14,57 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/**
+ * Dynamically resolve and import the job launcher module.
+ * Searches multiple possible locations to handle different installation contexts:
+ * 1. Local development (relative from this file)
+ * 2. Compiled dist/ output
+ * 3. Marketplace/cache installation
+ * 4. CLAUDE_PLUGIN_ROOT environment variable
+ */
+async function importJobLauncher(projectPath: string, log: (msg: string) => void): Promise<typeof import('../../../../src/core/background/job-launcher.js')> {
+  const candidatePaths = [
+    // Local development - relative from this plugin file
+    path.resolve(__dirname, '../../../../src/core/background/job-launcher.js'),
+    // Compiled dist output - from project root
+    path.join(projectPath, 'dist/src/core/background/job-launcher.js'),
+    // Project src - from project root (for tsx/ts-node)
+    path.join(projectPath, 'src/core/background/job-launcher.ts'),
+    // Marketplace cache - glob pattern requires manual resolution
+    ...(process.env.HOME ? [
+      path.join(process.env.HOME, '.claude/plugins/cache/specweave/sw/latest/dist/src/core/background/job-launcher.js'),
+    ] : []),
+    // CLAUDE_PLUGIN_ROOT - if set
+    ...(process.env.CLAUDE_PLUGIN_ROOT ? [
+      path.join(process.env.CLAUDE_PLUGIN_ROOT, 'dist/src/core/background/job-launcher.js'),
+      path.join(process.env.CLAUDE_PLUGIN_ROOT, 'src/core/background/job-launcher.js'),
+    ] : []),
+  ];
+
+  log(`Searching for job-launcher module...`);
+  for (const candidatePath of candidatePaths) {
+    log(`  Checking: ${candidatePath}`);
+    if (fs.existsSync(candidatePath)) {
+      log(`  Found: ${candidatePath}`);
+      try {
+        // Convert to file:// URL for ESM import
+        const moduleUrl = `file://${candidatePath}`;
+        const module = await import(moduleUrl);
+        return module;
+      } catch (importErr: any) {
+        log(`  Import failed: ${importErr.message}`);
+        // Continue to next candidate
+      }
+    }
+  }
+
+  throw new Error(`Could not find job-launcher module. Searched:\n${candidatePaths.map(p => `  - ${p}`).join('\n')}`);
+}
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -49,10 +100,11 @@ async function main(): Promise<void> {
   log(`Starting codebase rescan for increment: ${incrementId}`);
   log(`Feature ID: ${featureId || 'not specified'}`);
   log(`Project path: ${projectPath}`);
+  log(`Script location: ${__filename}`);
 
   try {
-    // Dynamically import the job launcher
-    const { launchCodebaseRescanJob } = await import('../../../../src/core/background/job-launcher.js');
+    // Dynamically import the job launcher with path resolution
+    const { launchCodebaseRescanJob } = await importJobLauncher(projectPath, log);
 
     const result = await launchCodebaseRescanJob({
       projectPath,

@@ -27,7 +27,6 @@ const __dirname = path.dirname(__filename);
 
 // Dynamically loaded modules
 let getJobManager: any;
-let runDiscovery: any;
 
 interface CodebaseRescanJobConfig {
   jobId: string;
@@ -48,6 +47,21 @@ interface RescanResult {
   discrepanciesFound: number;
   discrepanciesFixed: number;
   timestamp: string;
+}
+
+interface Discrepancy {
+  type: 'undocumented_export' | 'undocumented_class' | 'missing_in_code' | 'signature_mismatch';
+  file: string;
+  name: string;
+  details: string;
+  severity: 'low' | 'medium' | 'high';
+}
+
+interface ReconciliationResult {
+  discrepancies: Discrepancy[];
+  documentedItems: number;
+  codeItems: number;
+  matchedItems: number;
 }
 
 /**
@@ -268,6 +282,147 @@ async function extractImplementationDetails(
 
   log(`  Extracted implementation details from ${implementations.size} files`);
   return implementations;
+}
+
+/**
+ * Deep reconciliation - compare code reality with living docs
+ * Checks for undocumented exports, missing code items, and signature mismatches
+ */
+async function performDeepReconciliation(
+  projectPath: string,
+  incrementId: string,
+  featureId: string | undefined,
+  implementations: Map<string, any>,
+  log: (msg: string) => void
+): Promise<ReconciliationResult> {
+  const discrepancies: Discrepancy[] = [];
+  let documentedItems = 0;
+  let codeItems = 0;
+  let matchedItems = 0;
+
+  // Count total code items (exports, classes, functions)
+  for (const [, details] of implementations) {
+    codeItems += (details.exports?.length || 0) +
+                 (details.classes?.length || 0) +
+                 (details.functions?.length || 0);
+  }
+
+  // Find living docs for this feature
+  const specsDir = path.join(projectPath, '.specweave/docs/internal/specs');
+  if (!fs.existsSync(specsDir) || !featureId) {
+    log('  No living docs found for reconciliation');
+    return { discrepancies, documentedItems, codeItems, matchedItems };
+  }
+
+  // Find FEATURE.md and any related documentation
+  const documentedSymbols = new Set<string>();
+
+  try {
+    // Search for feature folder
+    const projectDirs = fs.readdirSync(specsDir, { withFileTypes: true })
+      .filter(d => d.isDirectory() && !d.name.startsWith('_'));
+
+    for (const projectDir of projectDirs) {
+      const featurePath = path.join(specsDir, projectDir.name, featureId);
+      if (fs.existsSync(featurePath)) {
+        // Read all markdown files in the feature folder
+        const featureFiles = fs.readdirSync(featurePath)
+          .filter(f => f.endsWith('.md'));
+
+        for (const mdFile of featureFiles) {
+          const mdPath = path.join(featurePath, mdFile);
+          const content = fs.readFileSync(mdPath, 'utf-8');
+
+          // Extract documented items (code references in backticks)
+          const codeRefs = content.match(/`([A-Z][a-zA-Z0-9_]*)`/g);
+          if (codeRefs) {
+            for (const ref of codeRefs) {
+              const name = ref.replace(/`/g, '');
+              documentedSymbols.add(name);
+              documentedItems++;
+            }
+          }
+
+          // Extract items from API sections (## API, ### Functions, etc.)
+          const apiMatches = content.match(/###?\s+(?:API|Functions|Classes|Exports|Methods)\s*\n([\s\S]*?)(?=\n##|\n#|$)/gi);
+          if (apiMatches) {
+            for (const section of apiMatches) {
+              // Look for function/class names in lists
+              const itemMatches = section.match(/[-*]\s+`?([A-Z][a-zA-Z0-9_]*)`?/g);
+              if (itemMatches) {
+                for (const item of itemMatches) {
+                  const name = item.replace(/[-*\s`]/g, '');
+                  documentedSymbols.add(name);
+                }
+              }
+            }
+          }
+        }
+        break; // Found the feature folder
+      }
+    }
+  } catch (err) {
+    log(`  Error reading living docs: ${err}`);
+  }
+
+  log(`  Found ${documentedSymbols.size} documented symbols in living docs`);
+
+  // Compare code with documentation
+  for (const [filePath, details] of implementations) {
+    // Check exports
+    for (const exportName of (details.exports || [])) {
+      if (documentedSymbols.has(exportName)) {
+        matchedItems++;
+      } else if (exportName.length > 2 && /^[A-Z]/.test(exportName)) {
+        // Only flag significant exports (capitalized, not single letters)
+        discrepancies.push({
+          type: 'undocumented_export',
+          file: filePath,
+          name: exportName,
+          details: `Export '${exportName}' is not documented in living docs`,
+          severity: 'medium'
+        });
+      }
+    }
+
+    // Check classes
+    for (const className of (details.classes || [])) {
+      if (documentedSymbols.has(className)) {
+        matchedItems++;
+      } else if (className.length > 2) {
+        discrepancies.push({
+          type: 'undocumented_class',
+          file: filePath,
+          name: className,
+          details: `Class '${className}' is not documented in living docs`,
+          severity: 'high' // Classes are important to document
+        });
+      }
+    }
+  }
+
+  // Check for documented items missing in code
+  const allCodeSymbols = new Set<string>();
+  for (const [, details] of implementations) {
+    for (const name of [...(details.exports || []), ...(details.classes || []), ...(details.functions || [])]) {
+      allCodeSymbols.add(name);
+    }
+  }
+
+  for (const documented of documentedSymbols) {
+    if (!allCodeSymbols.has(documented) && documented.length > 3) {
+      discrepancies.push({
+        type: 'missing_in_code',
+        file: 'living-docs',
+        name: documented,
+        details: `Documented symbol '${documented}' not found in scanned code`,
+        severity: 'low' // Could be from other modules not scanned
+      });
+    }
+  }
+
+  log(`  Reconciliation complete: ${matchedItems} matched, ${discrepancies.length} discrepancies`);
+  return { discrepancies, documentedItems, codeItems, matchedItems };
 }
 
 /**
@@ -605,13 +760,33 @@ async function main(): Promise<void> {
     log('PHASE 3: Doc Reconciliation - Comparing with living docs...');
     updateProgress('doc-reconciliation', 0, 'Comparing code with living docs');
 
-    // For quick mode, skip deep reconciliation
+    // Perform reconciliation based on depth
+    let reconciliationResult: ReconciliationResult | null = null;
+
     if (jobConfig.depth === 'full') {
       log('  Full reconciliation mode - checking for discrepancies...');
-      // TODO: Implement deep reconciliation logic
-      // - Compare exported functions with documented API
-      // - Check for undocumented classes
-      // - Verify implementation matches spec
+      reconciliationResult = await performDeepReconciliation(
+        projectPath,
+        jobConfig.closedIncrementId,
+        jobConfig.featureId,
+        implementations,
+        log
+      );
+
+      result.discrepanciesFound = reconciliationResult.discrepancies.length;
+      log(`  Code items: ${reconciliationResult.codeItems}`);
+      log(`  Documented items: ${reconciliationResult.documentedItems}`);
+      log(`  Matched items: ${reconciliationResult.matchedItems}`);
+      log(`  Discrepancies: ${reconciliationResult.discrepancies.length}`);
+
+      // Log discrepancy breakdown by type
+      const byType = new Map<string, number>();
+      for (const d of reconciliationResult.discrepancies) {
+        byType.set(d.type, (byType.get(d.type) || 0) + 1);
+      }
+      for (const [type, count] of byType) {
+        log(`    - ${type}: ${count}`);
+      }
     } else {
       log('  Quick mode - basic reconciliation only');
     }
@@ -644,7 +819,7 @@ async function main(): Promise<void> {
     log('PHASE 5: Reporting - Generating sync report...');
     updateProgress('reporting', 0, 'Generating sync report');
 
-    const report = [
+    const reportSections: string[] = [
       '# Codebase Rescan Report',
       '',
       `**Increment**: ${jobConfig.closedIncrementId}`,
@@ -658,7 +833,52 @@ async function main(): Promise<void> {
       `- **Files Analyzed**: ${result.filesModified}`,
       `- **Docs Updated**: ${result.docsUpdated.length}`,
       `- **Discrepancies Found**: ${result.discrepanciesFound}`,
-      '',
+      ''
+    ];
+
+    // Add reconciliation details for full mode
+    if (reconciliationResult && jobConfig.depth === 'full') {
+      reportSections.push(
+        '## Reconciliation Results',
+        '',
+        `- **Code Items Found**: ${reconciliationResult.codeItems}`,
+        `- **Documented Items**: ${reconciliationResult.documentedItems}`,
+        `- **Matched Items**: ${reconciliationResult.matchedItems}`,
+        `- **Match Rate**: ${reconciliationResult.codeItems > 0 ? Math.round((reconciliationResult.matchedItems / reconciliationResult.codeItems) * 100) : 0}%`,
+        ''
+      );
+
+      if (reconciliationResult.discrepancies.length > 0) {
+        reportSections.push('### Discrepancies', '');
+
+        // Group by severity
+        const bySeverity = new Map<string, Discrepancy[]>();
+        for (const d of reconciliationResult.discrepancies) {
+          if (!bySeverity.has(d.severity)) {
+            bySeverity.set(d.severity, []);
+          }
+          bySeverity.get(d.severity)!.push(d);
+        }
+
+        // High severity first
+        for (const severity of ['high', 'medium', 'low']) {
+          const items = bySeverity.get(severity) || [];
+          if (items.length > 0) {
+            reportSections.push(`#### ${severity.charAt(0).toUpperCase() + severity.slice(1)} Severity`, '');
+            for (const d of items.slice(0, 20)) { // Limit to 20 per severity
+              reportSections.push(`- **${d.type}**: \`${d.name}\` in \`${d.file}\``);
+              reportSections.push(`  ${d.details}`);
+            }
+            if (items.length > 20) {
+              reportSections.push(`  *...and ${items.length - 20} more*`);
+            }
+            reportSections.push('');
+          }
+        }
+      }
+    }
+
+    reportSections.push(
       '## Updated Documents',
       '',
       ...result.docsUpdated.map(doc => `- \`${path.relative(projectPath, doc)}\``),
@@ -667,7 +887,9 @@ async function main(): Promise<void> {
       '',
       ...allScopePaths.map(p => `- \`${p}\``),
       ''
-    ].join('\n');
+    );
+
+    const report = reportSections.join('\n');
 
     const reportPath = path.join(
       projectPath,

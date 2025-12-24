@@ -222,7 +222,7 @@ export class ExternalToolResolver {
         const syncTarget: SyncTarget = {
           profileId: firstProfileId,
           provider: firstProfile.provider,
-          derivedFrom: 'default-profile', // Still counts as default since it's auto-selected
+          derivedFrom: 'first-profile-fallback', // v1.0.46: Explicit fallback type for first profile
           setAt: new Date().toISOString(),
         };
 

@@ -160,49 +160,130 @@ fi
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] Token found (length: ${#GITHUB_TOKEN})" >> "$THROTTLE_LOG" 2>/dev/null
 
 # Find sync script
-# FIXED (v1.0.45): Added marketplace installation paths
+# FIXED (v1.0.46): Support compiled JS AND TypeScript with tsx
 # Priority order:
-# 1. Local development (project has dist/)
-# 2. Marketplace installation (~/.claude/plugins/)
-# 3. Legacy CLAUDE_PLUGIN_ROOT
+# 1. Local development dist/ (compiled JS)
+# 2. Local plugins/ source (TypeScript via tsx)
+# 3. Marketplace cache (compiled JS)
+# 4. Marketplace source (TypeScript via tsx)
+# 5. Legacy CLAUDE_PLUGIN_ROOT
+#
+# Note: Marketplace installations often have .ts source only, not compiled .js
+# We detect this and use tsx (fast TypeScript runner) when available
+
 SYNC_SCRIPT=""
-for path in \
-  "$PROJECT_ROOT/dist/plugins/specweave-github/lib/github-feature-sync-cli.js" \
-  "$PROJECT_ROOT/plugins/specweave-github/lib/github-feature-sync-cli.js" \
-  "$HOME/.claude/plugins/specweave-github/lib/github-feature-sync-cli.js" \
-  "${CLAUDE_PLUGIN_ROOT:-}/lib/github-feature-sync-cli.js"; do
-  [[ -f "$path" ]] && { SYNC_SCRIPT="$path"; break; }
+NEEDS_TSX=false
+
+# Paths to check - JS files first, then TS files
+JS_PATHS=(
+  "$PROJECT_ROOT/dist/plugins/specweave-github/lib/github-feature-sync-cli.js"
+  "$HOME/.claude/plugins/cache/specweave/sw-github/*/lib/github-feature-sync-cli.js"
+  "${CLAUDE_PLUGIN_ROOT:-}/lib/github-feature-sync-cli.js"
+)
+
+TS_PATHS=(
+  "$PROJECT_ROOT/plugins/specweave-github/lib/github-feature-sync-cli.ts"
+  "$HOME/.claude/plugins/marketplaces/specweave/plugins/specweave-github/lib/github-feature-sync-cli.ts"
+  "$HOME/.claude/plugins/cache/specweave/sw-github/*/lib/github-feature-sync-cli.ts"
+)
+
+# Try JS files first (no tsx needed)
+for pattern in "${JS_PATHS[@]}"; do
+  # Handle glob patterns
+  for path in $pattern; do
+    if [[ -f "$path" ]]; then
+      SYNC_SCRIPT="$path"
+      break 2
+    fi
+  done
 done
 
+# If no JS found, try TS files (need tsx)
 if [[ -z "$SYNC_SCRIPT" ]]; then
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] ERROR: github-feature-sync-cli.js not found" >> "$THROTTLE_LOG" 2>/dev/null
-  echo "   Searched paths:" >> "$THROTTLE_LOG" 2>/dev/null
-  echo "   - $PROJECT_ROOT/dist/plugins/specweave-github/lib/github-feature-sync-cli.js" >> "$THROTTLE_LOG" 2>/dev/null
-  echo "   - $PROJECT_ROOT/plugins/specweave-github/lib/github-feature-sync-cli.js" >> "$THROTTLE_LOG" 2>/dev/null
-  echo "   - $HOME/.claude/plugins/specweave-github/lib/github-feature-sync-cli.js" >> "$THROTTLE_LOG" 2>/dev/null
+  for pattern in "${TS_PATHS[@]}"; do
+    for path in $pattern; do
+      if [[ -f "$path" ]]; then
+        SYNC_SCRIPT="$path"
+        NEEDS_TSX=true
+        break 2
+      fi
+    done
+  done
+fi
+
+if [[ -z "$SYNC_SCRIPT" ]]; then
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] ERROR: github-feature-sync-cli not found" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "   Searched JS paths:" >> "$THROTTLE_LOG" 2>/dev/null
+  for p in "${JS_PATHS[@]}"; do echo "   - $p" >> "$THROTTLE_LOG" 2>/dev/null; done
+  echo "   Searched TS paths:" >> "$THROTTLE_LOG" 2>/dev/null
+  for p in "${TS_PATHS[@]}"; do echo "   - $p" >> "$THROTTLE_LOG" 2>/dev/null; done
   exit 0
 fi
 
-# Extract feature ID from spec.md frontmatter
-# FIXED (v1.0.45): Also look for feature_id/epic in YAML frontmatter (indented)
+# Verify tsx is available if needed
+if [[ "$NEEDS_TSX" == "true" ]]; then
+  if ! command -v tsx >/dev/null 2>&1 && ! command -v npx >/dev/null 2>&1; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] ERROR: Found TS file but tsx/npx not available" >> "$THROTTLE_LOG" 2>/dev/null
+    echo "   Install tsx: npm install -g tsx" >> "$THROTTLE_LOG" 2>/dev/null
+    exit 0
+  fi
+fi
+
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] Found sync script: $SYNC_SCRIPT (tsx=$NEEDS_TSX)" >> "$THROTTLE_LOG" 2>/dev/null
+
+# Extract feature ID - check multiple locations in priority order
+# FIXED (v1.0.46): Check metadata.json FIRST (canonical source), then spec.md as fallback
+#
+# Priority order:
+# 1. metadata.json: feature_id field (canonical, set by PM agent)
+# 2. metadata.json: epic_id field (for external/brownfield increments)
+# 3. spec.md YAML frontmatter: feature_id: or epic: (legacy/explicit)
+# 4. spec.md markdown: Feature ID: FS-XXX (display format, last resort)
+#
+META_FILE="$PROJECT_ROOT/.specweave/increments/$INC_ID/metadata.json"
 SPEC_FILE="$PROJECT_ROOT/.specweave/increments/$INC_ID/spec.md"
 FEATURE_ID=""
-if [[ -f "$SPEC_FILE" ]]; then
-  # Try both: start-of-line (markdown) and indented (YAML frontmatter)
+
+# Method 1: Check metadata.json (canonical source)
+if [[ -f "$META_FILE" ]]; then
+  # Try feature_id first
+  FEATURE_ID=$(grep -o '"feature_id"[[:space:]]*:[[:space:]]*"[^"]*"' "$META_FILE" | head -1 | sed 's/.*:[[:space:]]*"\([^"]*\)".*/\1/')
+  # Fall back to epic_id
+  if [[ -z "$FEATURE_ID" ]] || [[ "$FEATURE_ID" == "null" ]]; then
+    FEATURE_ID=$(grep -o '"epic_id"[[:space:]]*:[[:space:]]*"[^"]*"' "$META_FILE" | head -1 | sed 's/.*:[[:space:]]*"\([^"]*\)".*/\1/')
+  fi
+  # Check for non-null string value (metadata.json may have feature_id: null)
+  [[ "$FEATURE_ID" == "null" ]] && FEATURE_ID=""
+fi
+
+# Method 2: Check spec.md YAML frontmatter
+if [[ -z "$FEATURE_ID" ]] && [[ -f "$SPEC_FILE" ]]; then
+  # Try start-of-line format: feature_id: FS-001 or epic: FS-001
   FEATURE_ID=$(grep -E "^(epic|feature_id|feature):" "$SPEC_FILE" | head -1 | sed 's/.*:[[:space:]]*//' | tr -d '"'"'" | tr -d ' ')
-  # Also try YAML frontmatter style (indented)
+  # Also try indented YAML frontmatter style
   if [[ -z "$FEATURE_ID" ]]; then
     FEATURE_ID=$(grep -E "^[[:space:]]*(epic|feature_id|feature):" "$SPEC_FILE" | head -1 | sed 's/.*:[[:space:]]*//' | tr -d '"'"'" | tr -d ' ')
   fi
 fi
 
+# Method 3: Check spec.md markdown display format (last resort)
+# PM agent sometimes outputs "Feature ID: FS-001" in markdown body
+if [[ -z "$FEATURE_ID" ]] && [[ -f "$SPEC_FILE" ]]; then
+  FEATURE_ID=$(grep -E "^[*#]*[[:space:]]*(Feature ID|Epic)[[:space:]]*:" "$SPEC_FILE" | head -1 | sed 's/.*:[[:space:]]*//' | tr -d '*#' | tr -d ' ')
+fi
+
 if [[ -z "$FEATURE_ID" ]]; then
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] WARNING: No feature ID found in $SPEC_FILE" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] WARNING: No feature ID found" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "   Checked metadata.json: $META_FILE" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "   Checked spec.md: $SPEC_FILE" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "   Hint: Ensure PM agent sets feature_id in metadata.json or spec.md frontmatter" >> "$THROTTLE_LOG" 2>/dev/null
   exit 0
 fi
 
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] Found feature_id=$FEATURE_ID" >> "$THROTTLE_LOG" 2>/dev/null
+
 # Run sync (timeout 60s)
-# The github-feature-sync-cli.js script will:
+# The github-feature-sync-cli script will:
 # 1. Find all User Stories in the feature
 # 2. For each US, call updateUserStoryIssue() which:
 #    - Updates issue body with latest content
@@ -210,8 +291,23 @@ fi
 #    - CLOSES the issue if ALL ACs and tasks are verified complete
 #    - Updates status labels (status:complete, status:active, status:not_started)
 cd "$PROJECT_ROOT" || exit 0
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] Running: node $SYNC_SCRIPT $FEATURE_ID" >> "$THROTTLE_LOG" 2>/dev/null
-GITHUB_TOKEN="$GITHUB_TOKEN" run_with_timeout 60 node "$SYNC_SCRIPT" "$FEATURE_ID" >> "$THROTTLE_LOG" 2>&1
+
+# Build the run command based on file type
+if [[ "$NEEDS_TSX" == "true" ]]; then
+  # TypeScript file - use tsx or npx tsx
+  if command -v tsx >/dev/null 2>&1; then
+    RUN_CMD="tsx"
+  else
+    RUN_CMD="npx tsx"
+  fi
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] Running: $RUN_CMD $SYNC_SCRIPT $FEATURE_ID" >> "$THROTTLE_LOG" 2>/dev/null
+  GITHUB_TOKEN="$GITHUB_TOKEN" run_with_timeout 60 $RUN_CMD "$SYNC_SCRIPT" "$FEATURE_ID" >> "$THROTTLE_LOG" 2>&1
+else
+  # JavaScript file - use node directly
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] Running: node $SYNC_SCRIPT $FEATURE_ID" >> "$THROTTLE_LOG" 2>/dev/null
+  GITHUB_TOKEN="$GITHUB_TOKEN" run_with_timeout 60 node "$SYNC_SCRIPT" "$FEATURE_ID" >> "$THROTTLE_LOG" 2>&1
+fi
+
 SYNC_EXIT=$?
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] COMPLETED $INC_ID ($SYNC_TYPE) exit=$SYNC_EXIT" >> "$THROTTLE_LOG" 2>/dev/null
 exit 0
