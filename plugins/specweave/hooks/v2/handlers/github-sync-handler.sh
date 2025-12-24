@@ -1,24 +1,38 @@
 #!/bin/bash
-# github-sync-handler.sh - Sync increment to GitHub (create issues for User Stories)
+# github-sync-handler.sh - Sync increment to GitHub (create/update issues for User Stories)
 # Called async by processor, non-blocking, error-tolerant
 #
 # Argument formats supported:
 # 1. (event_type, increment_id) - from lifecycle/spec.updated events
-# 2. (increment_id) - from metadata.changed events (legacy)
+# 2. (event_type, INC_ID:US_ID) - from user-story.completed/reopened events (v1.0.45+)
+# 3. (increment_id) - from metadata.changed events (legacy)
+#
+# CRITICAL FIX (v1.0.45): Added user-story.completed/reopened support
+# Root cause: GitHub issues were created but NEVER UPDATED when User Stories completed!
 #
 # IMPORTANT: Never crash Claude, always exit 0
 set +e
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
 
-# Support both argument formats:
-# - Called from increment.created/spec.updated: $1 = event_type, $2 = increment_id
-# - Called from metadata.changed: $1 = increment_id
-INC_ID="${1:-}"
-if [[ "$INC_ID" == increment.* ]] || [[ "$INC_ID" == spec.* ]] || [[ "$INC_ID" == metadata.* ]]; then
-  # First arg is event type, second is increment ID
-  INC_ID="${2:-}"
+# Parse arguments - support multiple formats
+EVENT_TYPE="${1:-}"
+EVENT_DATA="${2:-}"
+INC_ID=""
+US_ID=""
+
+if [[ "$EVENT_TYPE" == user-story.* ]]; then
+  # user-story.completed/reopened: $2 = INC_ID:US_ID
+  INC_ID="${EVENT_DATA%%:*}"
+  US_ID="${EVENT_DATA##*:}"
+elif [[ "$EVENT_TYPE" == increment.* ]] || [[ "$EVENT_TYPE" == spec.* ]] || [[ "$EVENT_TYPE" == metadata.* ]]; then
+  # Lifecycle events: $2 = increment_id
+  INC_ID="$EVENT_DATA"
+else
+  # Legacy format: $1 = increment_id directly
+  INC_ID="$EVENT_TYPE"
 fi
+
 [[ -z "$INC_ID" ]] && exit 0
 
 # Find project root
@@ -35,11 +49,23 @@ CONFIG_FILE="$PROJECT_ROOT/.specweave/config.json"
 GITHUB_ENABLED=$(grep -o '"enabled"[[:space:]]*:[[:space:]]*true' "$CONFIG_FILE" | head -1)
 [[ -z "$GITHUB_ENABLED" ]] && exit 0
 
-# Throttle: max once per 5 minutes per increment
-THROTTLE_FILE="$PROJECT_ROOT/.specweave/state/.github-sync-$INC_ID"
+# Throttle configuration:
+# - Full sync (increment lifecycle): 5 minutes (creates all issues)
+# - US completion sync: 60 seconds (more targeted, less aggressive)
 THROTTLE_LOG="$PROJECT_ROOT/.specweave/logs/throttle.log"
-THROTTLE_WINDOW=300  # 5 minutes
 mkdir -p "$(dirname "$THROTTLE_LOG")" 2>/dev/null
+
+if [[ -n "$US_ID" ]]; then
+  # Per-US throttle (60 seconds) - more frequent for targeted updates
+  THROTTLE_FILE="$PROJECT_ROOT/.specweave/state/.github-sync-$INC_ID-$US_ID"
+  THROTTLE_WINDOW=60
+  SYNC_TYPE="US:$US_ID"
+else
+  # Per-increment throttle (5 minutes) - less frequent for full sync
+  THROTTLE_FILE="$PROJECT_ROOT/.specweave/state/.github-sync-$INC_ID"
+  THROTTLE_WINDOW=300
+  SYNC_TYPE="increment"
+fi
 
 if [[ -f "$THROTTLE_FILE" ]]; then
   if [[ "$(uname)" == "Darwin" ]]; then
@@ -49,12 +75,12 @@ if [[ -f "$THROTTLE_FILE" ]]; then
   fi
   if [[ $AGE -lt $THROTTLE_WINDOW ]]; then
     REMAINING=$((THROTTLE_WINDOW - AGE))
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] THROTTLED $INC_ID (wait ${REMAINING}s, use /sw:sync-progress to bypass)" >> "$THROTTLE_LOG" 2>/dev/null
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] THROTTLED $INC_ID ($SYNC_TYPE, wait ${REMAINING}s)" >> "$THROTTLE_LOG" 2>/dev/null
     exit 0
   fi
 fi
 touch "$THROTTLE_FILE"
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] EXECUTING $INC_ID" >> "$THROTTLE_LOG" 2>/dev/null
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] EXECUTING $INC_ID ($SYNC_TYPE) event=$EVENT_TYPE" >> "$THROTTLE_LOG" 2>/dev/null
 
 # Cross-platform timeout wrapper
 run_with_timeout() {
@@ -90,6 +116,16 @@ FEATURE_ID=""
 [[ -z "$FEATURE_ID" ]] && exit 0
 
 # Run sync (timeout 60s)
+# The github-feature-sync-cli.js script will:
+# 1. Find all User Stories in the feature
+# 2. For each US, call updateUserStoryIssue() which:
+#    - Updates issue body with latest content
+#    - Calculates completion via CompletionCalculator (verifies [x] checkboxes)
+#    - CLOSES the issue if ALL ACs and tasks are verified complete
+#    - Updates status labels (status:complete, status:active, status:not_started)
 cd "$PROJECT_ROOT" || exit 0
-GITHUB_TOKEN="$GITHUB_TOKEN" run_with_timeout 60 node "$SYNC_SCRIPT" "$FEATURE_ID" >/dev/null 2>&1
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] Running: node $SYNC_SCRIPT $FEATURE_ID" >> "$THROTTLE_LOG" 2>/dev/null
+GITHUB_TOKEN="$GITHUB_TOKEN" run_with_timeout 60 node "$SYNC_SCRIPT" "$FEATURE_ID" >> "$THROTTLE_LOG" 2>&1
+SYNC_EXIT=$?
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] COMPLETED $INC_ID ($SYNC_TYPE) exit=$SYNC_EXIT" >> "$THROTTLE_LOG" 2>/dev/null
 exit 0
