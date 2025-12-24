@@ -5,9 +5,30 @@ description: Synchronize SpecWeave increment with GitHub issue (Multi-Project Su
 
 # Sync Increment with GitHub Issue (Multi-Project)
 
-## ⚠️ CRITICAL: Sync Routing (Read First!)
+## ⚠️ CRITICAL: Pre-Sync Requirements (Read First!)
 
-**Before executing ANY sync, you MUST determine the correct sync path:**
+### ⛔ MANDATORY: Sync Living Docs BEFORE GitHub Sync
+
+**GitHub sync reads FROM living docs.** If living docs are stale, GitHub issues will have outdated content.
+
+**You MUST run `/sw:sync-specs` (or ensure it ran) BEFORE this command:**
+
+```bash
+# STEP 1: Ensure living docs are current (MANDATORY)
+/sw:sync-specs <increment-id>
+
+# STEP 2: Then sync to GitHub
+/sw-github:sync <increment-id>
+```
+
+**Why?**
+- GitHub issues are generated FROM `.specweave/docs/internal/specs/FS-XXX/`
+- If you skip sync-specs, GitHub will show stale user stories/ACs
+- `/sw:sync-progress` calls sync-specs automatically, but `/sw-github:sync` does NOT
+
+**If you're calling this directly (not via /sw:sync-progress), run sync-specs first!**
+
+---
 
 ### Step 0: Detect Project Structure
 

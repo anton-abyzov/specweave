@@ -7,6 +7,29 @@ description: Close GitHub issue for completed SpecWeave increment. Posts complet
 
 Close the GitHub issue associated with a completed SpecWeave increment.
 
+## ⛔ MANDATORY: Sync Living Docs BEFORE Closing
+
+**GitHub issue content is generated FROM living docs.** If living docs are stale, the closing summary will have outdated information.
+
+**You MUST run `/sw:sync-specs` BEFORE closing (unless using /sw:sync-progress):**
+
+```bash
+# STEP 1: Ensure living docs reflect final state
+/sw:sync-specs <increment-id>
+
+# STEP 2: Then close GitHub issue
+/sw-github:close <increment-id>
+```
+
+**Why?**
+- Closing comment includes final stats from living docs
+- User story completion status read from living docs
+- AC checkboxes reflect living docs state
+
+**Note:** `/sw:done` and `/sw:sync-progress` call sync-specs automatically.
+
+---
+
 **Usage**: `/sw-github:close <increment-id>`
 
 ```bash
