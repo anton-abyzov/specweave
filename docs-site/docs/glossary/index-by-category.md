@@ -212,7 +212,7 @@ SpecWeave-specific concepts and features.
 
 ### Sync & Integration
 - [Data Flow Architecture](/docs/glossary/terms/data-flow-architecture) - Two one-way flows: Publish (out) and Import (in as reference)
-- [Three-Permission Architecture](/docs/glossary/terms/three-permission-architecture) - Granular sync control (v0.24.0+)
+- [Three-Permission Architecture](/docs/glossary/terms/three-permission-architecture) - Granular sync control
 - [Profile-Based Sync](/docs/glossary/terms/profile-based-sync) - Multi-repo sync configuration
 - [Split-Source Sync](/docs/glossary/terms/split-source-sync) - Content flows out, status flows in (not true bidirectional)
 
@@ -225,7 +225,7 @@ SpecWeave-specific concepts and features.
 - [Strategic Init](/docs/glossary/terms/strategic-init) - 6-phase AI-powered project initialization
 
 ### Intelligent Features
-- [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Smart content distribution (v0.18.0+)
+- [Intelligent Living Docs Sync](/docs/glossary/terms/intelligent-living-docs-sync) - Smart content distribution
 - [Content Classification](/docs/glossary/terms/content-classification) - 9-category automatic classification
 - [Project Detection](/docs/glossary/terms/project-detection) - Auto-detect backend/frontend/mobile
 - [Cross-Linking](/docs/glossary/terms/cross-linking) - Automatic bidirectional document linking

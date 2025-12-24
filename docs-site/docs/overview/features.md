@@ -36,7 +36,7 @@ Professional planning with slash commands and multi-agent coordination:
 # PM, Architect, QA agents create:
 # ✅ spec.md (requirements with AC-IDs)
 # ✅ plan.md (architecture + test strategy)
-# ✅ tasks.md with embedded tests (v0.7.0+)
+# ✅ tasks.md with embedded tests
 
 /sw:do
 # Implement with hooks auto-updating docs
@@ -60,7 +60,7 @@ Professional planning with slash commands and multi-agent coordination:
 ├── 0001-user-authentication/
 │   ├── spec.md              # What was planned (AC-IDs)
 │   ├── plan.md              # How it was built + test strategy
-│   ├── tasks.md             # What was done + embedded tests (v0.7.0+)
+│   ├── tasks.md             # What was done + embedded tests
 │   └── logs/                # Execution history
 ├── 0002-oauth-integration/  # Extends/modifies 0001
 └── 0003-password-reset/     # Related feature
@@ -181,7 +181,7 @@ User: "Create authentication system"
 
 ## 🧪 Test-Validated Development
 
-### Test-Aware Planning (v0.7.0+)
+### Test-Aware Planning
 
 1. **Specification Acceptance Criteria** (AC-ID format: AC-US1-01)
    - Business-level acceptance criteria in spec.md
@@ -267,7 +267,7 @@ SpecWeave detects your tech stack from:
 ├── 0001-user-authentication/
 │   ├── spec.md              # What and Why (with AC-IDs)
 │   ├── plan.md              # How (architecture + test strategy)
-│   ├── tasks.md             # Checklist + embedded tests (v0.7.0+)
+│   ├── tasks.md             # Checklist + embedded tests
 │   ├── logs/                # Execution logs
 │   ├── scripts/             # Helper scripts
 │   └── reports/             # Completion reports
@@ -639,7 +639,7 @@ All commands adapt to detected tech stack.
 
 ### ✅ Already Implemented
 
-- **Multi-language support**: Work in 11 languages with FREE LLM-native translation (v0.6.0+)
+- **Multi-language support**: Work in 11 languages with FREE LLM-native translation
   - Supports: English, Russian, Spanish, Chinese, German, French, Japanese, Korean, Portuguese
   - Auto-translates specs, plans, tasks, and living docs to English
   - Zero translation costs (uses same LLM session)

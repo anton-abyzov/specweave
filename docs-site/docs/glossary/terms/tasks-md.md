@@ -27,7 +27,7 @@ The **tasks.md** file is the implementation checklist for a SpecWeave [increment
 └── metadata.json
 ```
 
-## Structure (v0.7.0+)
+## Structure
 
 ```markdown
 ---
@@ -141,7 +141,7 @@ coverage_target: 88%
 - `[ ] pending` - Not started
 - `[x] completed` - Done and tested
 
-## Embedded Tests (v0.7.0+)
+## Embedded Tests
 
 Tasks include **embedded test plans** using [BDD](/docs/glossary/terms/bdd) format:
 

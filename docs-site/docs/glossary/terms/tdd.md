@@ -123,7 +123,7 @@ sequenceDiagram
 
 ## TDD in SpecWeave
 
-SpecWeave supports TDD workflow in **v0.7.0+** via `tasks.md` configuration:
+SpecWeave supports TDD workflow via `tasks.md` configuration:
 
 ### Enabling TDD Mode
 

@@ -525,7 +525,7 @@ REQ-004 → confidence_calculator.py
 
 **FDA Requires**: Testing that design outputs meet design inputs
 
-**SpecWeave Solution** (v0.7.0+ with embedded tests):
+**SpecWeave Solution** (with embedded tests):
 ```markdown
 File: .specweave/increments/0045-pneumonia-detection/tasks.md
 

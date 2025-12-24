@@ -8,15 +8,14 @@ keywords: [tasks, user stories, project isolation, github sync, traceability]
 
 # Project-Specific Tasks
 
-**Version**: 0.18.3+
 **Status**: Production-Ready
 **Last Updated**: 2025-11-15
 
 ## Overview
 
-**NEW in v0.18.3**: User stories now include their own **project-specific checkable task lists** instead of just links to increment tasks.
+User stories include their own **project-specific checkable task lists** instead of just links to increment tasks.
 
-### Before (v0.18.2 and earlier)
+### Before
 
 User stories only had LINKS to increment tasks:
 
@@ -37,7 +36,7 @@ User stories only had LINKS to increment tasks:
 - ❌ No checkable task lists in GitHub issues
 - ❌ Hard to track progress per project
 
-### After (v0.18.3+)
+### After
 
 User stories have their OWN checkable task lists:
 
@@ -373,7 +372,7 @@ Tasks are automatically included:
 
 **Solution**:
 - Re-run `/sw:sync-docs update`
-- Update to v0.18.3+
+- Update to the latest version
 - Verify user story file has `## Tasks` section
 
 ---
