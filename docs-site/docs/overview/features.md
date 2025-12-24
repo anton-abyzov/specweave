@@ -112,24 +112,42 @@ Living documentation organized by purpose:
 
 ## 🧠 Context Precision (70%+ Token Reduction)
 
-### Selective Loading
-- **Context Manifests**: Each increment declares what it needs
-- **Section Anchors**: Load specific sections, not entire files
-- **Glob Patterns**: Match multiple related files
-- **Cache-Friendly**: Reuse frequently-loaded context
+### Progressive Disclosure (Native Claude)
 
-### Example Manifest
+SpecWeave uses Claude's native progressive disclosure mechanism - no RAG or vector databases needed:
 
-\`\`\`yaml
-spec_sections:
-  - .specweave/docs/internal/strategy/auth/login-spec.md
-  - .specweave/docs/internal/strategy/auth/oauth.md#token-flow
-documentation:
-  - .specweave/docs/internal/architecture/adr/0001-auth-method.md
-max_context_tokens: 10000
-\`\`\`
+- **CLAUDE.md**: Always visible reference with living docs locations
+- **Skills**: Metadata loads first (~75 tokens), full content on-demand
+- **Living Docs Navigator**: Built-in skill that teaches Claude WHERE to look and HOW to search
+- **Explicit Loading**: `/sw:context <topic>` loads relevant docs into conversation
+
+### How It Works
+
+```
+User: "Implement user authentication"
+         ↓
+Claude reads CLAUDE.md (always loaded)
+         ↓
+Sees: "Before implementing: Check existing docs"
+         ↓
+Searches: grep -ril "auth" .specweave/docs/internal/
+         ↓
+Finds: ADRs, specs, architecture docs
+         ↓
+Reads only relevant files
+         ↓
+Implements with full context
+```
+
+**Why Not RAG?** Progressive disclosure is simpler, cheaper, and more accurate:
+- No vector DB infrastructure
+- No embedding approximations - reads actual content
+- No index staleness - always current files
+- Zero cost - native Claude capability
 
 **Result**: Load exactly what's needed, save 70%+ on AI costs.
+
+See [Who Benefits from Living Docs](/docs/guides/core-concepts/who-benefits-from-living-docs) for details.
 
 ## 🤖 AI Agents & Skills
 

@@ -53,12 +53,46 @@ You are helping the user implement a SpecWeave increment by executing tasks from
    - Read `tasks.md` - Understand implementation steps
    - Read `tests.md` - Understand test strategy
 
-3. **Verify readiness**:
+3. **🔄 Load Living Docs Context (NEW - v1.0.47+)**:
+
+   **Optional but recommended**: Load relevant living documentation context.
+
+   ```bash
+   # Extract topic keywords from spec.md title/user stories
+   TOPIC=$(grep -m1 "^#" spec.md | sed 's/# //' | tr '[:upper:]' '[:lower:]')
+
+   # Check if related living docs exist
+   LIVING_DOCS_ROOT=".specweave/docs/internal"
+   RELATED_DOCS=$(find "$LIVING_DOCS_ROOT" -name "*${TOPIC}*" -o -name "*${KEYWORD}*" 2>/dev/null)
+   ```
+
+   **If related living docs found**:
+   - Read relevant ADRs from `.specweave/docs/internal/architecture/adr/`
+   - Read relevant specs from `.specweave/docs/internal/specs/`
+   - Read relevant architecture docs from `.specweave/docs/internal/architecture/`
+
+   **Why This Helps**:
+   - Ensures implementation follows established patterns
+   - Avoids contradicting existing ADRs
+   - Provides historical context for design decisions
+   - References related features for consistency
+
+   **Example output**:
+   ```
+   📚 Living Docs Context Loaded:
+      • ADR-0023: Database Connection Pooling (relevant)
+      • spec-005: User Management (related feature)
+      • architecture/auth-flow.md (pattern to follow)
+   ```
+
+   **Skip if**: Living docs don't exist or no relevant docs found
+
+4. **Verify readiness**:
    - Check status is "planned" (not already in-progress or completed)
    - Check no blocking dependencies
    - Check tasks.md has tasks to execute
 
-4. **🚨 CRITICAL: Task Count Validation (CRASH PREVENTION!)**:
+5. **🚨 CRITICAL: Task Count Validation (CRASH PREVENTION!)**:
 
    **MANDATORY**: Count tasks in tasks.md before proceeding.
 
@@ -90,7 +124,7 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 
    **If TASK_COUNT <= 25**: Proceed to next step
 
-5. **🚨 CRITICAL: Validate AC Presence (v0.24.0+)**:
+6. **🚨 CRITICAL: Validate AC Presence (v0.24.0+)**:
 
    **MANDATORY**: Run pre-increment-start validation hook to verify spec.md contains ACs.
 

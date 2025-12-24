@@ -62,6 +62,26 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done`
 <!-- /SECTION -->
 
+<!-- SECTION:context -->
+## Living Docs Context
+
+**Before implementing features**: Check existing docs for patterns and decisions.
+
+```bash
+# Search for related docs
+grep -ril "keyword" .specweave/docs/internal/
+
+# Key locations
+.specweave/docs/internal/specs/       # Feature specifications
+.specweave/docs/internal/architecture/adr/  # Architecture decisions (ADRs)
+.specweave/docs/internal/architecture/      # System design
+```
+
+**Always check ADRs** before making design decisions to avoid contradicting past choices.
+
+**Use `/sw:context <topic>`** to load relevant living docs into conversation.
+<!-- /SECTION -->
+
 <!-- SECTION:structure -->
 ## Structure
 
@@ -69,8 +89,8 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 .specweave/
 ├── increments/####-name/     # metadata.json, spec.md, tasks.md
 ├── docs/internal/
-│   ├── specs/{project}/      # Living docs
-│   ├── architecture/adr/     # ADRs
+│   ├── specs/{project}/      # Living docs (check before implementing!)
+│   ├── architecture/adr/     # ADRs (check before design decisions!)
 │   └── operations/           # Runbooks
 └── config.json
 ```

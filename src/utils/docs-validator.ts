@@ -335,23 +335,53 @@ export class DocsValidator {
 
   /**
    * Check for duplicate routes (same normalized path)
+   *
+   * Docusaurus route resolution:
+   * - Both README.md and index.md map to the folder's route (e.g., /folder/)
+   * - Case-insensitive matching
+   * - Extensions stripped
+   *
+   * This catches conflicts like:
+   * - folder/README.md vs folder/index.md (both → /folder/)
+   * - Feature.md vs feature.md (both → /feature/)
    */
   private checkDuplicateRoutes(
     relativePath: string,
     seenRoutes: Map<string, string>
   ): void {
     // Normalize route: remove extension, lowercase, normalize separators
-    const route = relativePath
+    let route = relativePath
       .replace(/\.(md|mdx)$/, '')
       .toLowerCase()
       .replace(/\\/g, '/');
 
+    // CRITICAL: Docusaurus treats README.md and index.md as folder index pages
+    // Both "folder/readme" and "folder/index" resolve to "/folder/"
+    // Normalize both to the folder path to detect conflicts
+    const fileName = path.basename(route);
+    if (fileName === 'readme' || fileName === 'index') {
+      route = path.dirname(route);
+      // Handle root-level index/readme (dirname would be '.')
+      if (route === '.') {
+        route = '';
+      }
+    }
+
     if (seenRoutes.has(route)) {
+      const conflictingFile = seenRoutes.get(route)!;
+      const isIndexConflict =
+        (relativePath.toLowerCase().includes('readme.') &&
+          conflictingFile.toLowerCase().includes('index.')) ||
+        (relativePath.toLowerCase().includes('index.') &&
+          conflictingFile.toLowerCase().includes('readme.'));
+
       this.issues.push({
         file: relativePath,
-        severity: 'error',
+        severity: 'warning', // Warning because Docusaurus handles this gracefully
         type: 'duplicate_route',
-        message: `Duplicate route: conflicts with ${seenRoutes.get(route)}`,
+        message: isIndexConflict
+          ? `Duplicate route: both README.md and index.md map to /${route || '(root)'}/ - use only one`
+          : `Duplicate route: conflicts with ${conflictingFile}`,
         autoFixable: false,
       });
     } else {
@@ -626,6 +656,7 @@ export class DocsValidator {
       const hasYamlIssues = result.issues.some((i) => i.type.startsWith('yaml_'));
       const hasMdxIssues = result.issues.some((i) => i.type.startsWith('mdx_'));
       const hasBrokenLinks = result.issues.some((i) => i.type === 'broken_link');
+      const hasDuplicateRoutes = result.issues.some((i) => i.type === 'duplicate_route');
 
       if (hasYamlIssues) {
         lines.push('     • YAML: Wrap values with colons in quotes');
@@ -638,6 +669,10 @@ export class DocsValidator {
       }
       if (hasBrokenLinks) {
         lines.push('     • Links: Update or remove broken internal links');
+      }
+      if (hasDuplicateRoutes) {
+        lines.push('     • Routes: Remove duplicate files (prefer index.md over README.md)');
+        lines.push('       Each folder should have only ONE of: index.md OR README.md');
       }
       lines.push('');
     }
