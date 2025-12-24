@@ -452,10 +452,11 @@ export interface USExternalRefsMap {
  * Used for debugging and audit trails
  */
 export type SyncTargetDerivation =
-  | 'user-selection'    // User explicitly selected profile
-  | 'project-mapping'   // Derived from **Project**: field → projectMappings
-  | 'default-profile'   // Fallback to config.sync.defaultProfile
-  | 'auto-detected';    // Auto-detected from git remote or existing refs
+  | 'user-selection'        // User explicitly selected profile
+  | 'project-mapping'       // Derived from **Project**: field → projectMappings
+  | 'default-profile'       // Fallback to config.sync.defaultProfile
+  | 'first-profile-fallback' // Fallback to first available profile (no explicit default set)
+  | 'auto-detected';        // Auto-detected from git remote or existing refs
 
 /**
  * External tool sync target for an increment

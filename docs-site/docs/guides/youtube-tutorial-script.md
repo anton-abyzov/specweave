@@ -7,7 +7,7 @@ draft: true
 
 # SpecWeave Complete Tutorial - YouTube Video Script
 
-**Duration**: ~25-30 minutes
+**Duration**: ~30-32 minutes
 **Format**: Screen recording walking through spec-weave.com documentation + terminal demos
 **Diagrams**: Mermaid (already embedded in docs) + 3 Excalidraw transitions
 **Teaching Claude**: This script teaches Claude how SpecWeave works by walking through real docs
@@ -234,7 +234,56 @@ specweave init .
 
 ---
 
-## SECTION 6: THE COMPLETE WORKFLOW (16:00 - 18:00)
+## SECTION 6: LIVING DOCS FOR AI CONTEXT (16:00 - 17:30)
+
+**[SCREEN: Navigate to docs/guides/core-concepts/who-benefits-from-living-docs]**
+
+> "Here's something most people miss — living docs aren't just for humans. They're context for AI."
+
+**[SCROLL to the Progressive Disclosure section]**
+
+> "SpecWeave uses Claude's native progressive disclosure. No RAG. No vector databases. Just smart file organization and grep searches.
+>
+> Here's how it works."
+
+**[Point to the flow diagram]**
+
+> "When you ask Claude to implement something, three mechanisms kick in:
+>
+> 1. **CLAUDE.md** is always loaded. It tells Claude: 'Before implementing, check existing docs.'
+>
+> 2. **The living-docs-navigator skill** activates. It's a built-in skill that shows Claude WHERE to look and HOW to search.
+>
+> 3. Claude uses grep — yes, plain grep — to search your living docs for relevant specs and ADRs."
+
+**[TERMINAL: Show the flow]**
+
+```bash
+# Claude internally runs:
+grep -ril "auth" .specweave/docs/internal/
+
+# Finds:
+# - specs/us-001-authentication.md
+# - architecture/adr/0001-jwt-auth.md
+# - architecture/auth-flow.md
+```
+
+> "Then Claude reads exactly those files. Not everything. Just what's relevant."
+
+**[SCROLL to "Why Not RAG?"]**
+
+> "Why not RAG or vector databases?
+>
+> Progressive disclosure is simpler — no infrastructure.
+> More accurate — reads actual files, not embeddings.
+> Always current — no index to update.
+> Zero cost — it's native Claude.
+>
+> Your living docs automatically become AI context. No extra work."
+
+---
+
+## SECTION 7: THE COMPLETE WORKFLOW (17:30 - 19:30)
 
 **[SCREEN: Navigate to docs/workflows/overview]**
 
@@ -256,7 +305,7 @@ specweave init .
 
 ---
 
-## SECTION 7: EXTERNAL TOOL SYNC (18:00 - 20:00)
+## SECTION 8: EXTERNAL TOOL SYNC (19:30 - 21:30)
 
 **[SCREEN: Navigate back to intro.md, scroll to External Tool Integration table]**
 
@@ -284,7 +333,7 @@ specweave init .
 
 ---
 
-## SECTION 8: BROWNFIELD PROJECTS (20:00 - 22:00)
+## SECTION 9: BROWNFIELD PROJECTS (21:30 - 23:30)
 
 **[SCREEN: Navigate to docs/workflows/brownfield]**
 
@@ -326,7 +375,7 @@ specweave init .
 
 ---
 
-## SECTION 9: QUALITY GATES & TDD (22:00 - 24:00)
+## SECTION 10: QUALITY GATES & TDD (23:30 - 25:30)
 
 **[SCREEN: Navigate to docs/guides/lessons/05-quality-gates]**
 
@@ -352,7 +401,7 @@ specweave init .
 
 ---
 
-## SECTION 10: THE LEARNING PATH (24:00 - 26:00)
+## SECTION 11: THE LEARNING PATH (25:30 - 27:30)
 
 **[SCREEN: Navigate to docs/guides/lessons/index (SpecWeave Academy)]**
 
@@ -376,7 +425,7 @@ specweave init .
 
 ---
 
-## SECTION 11: DOGFOODING - REAL METRICS (26:00 - 28:00)
+## SECTION 12: DOGFOODING - REAL METRICS (27:30 - 29:30)
 
 **[SCREEN: Navigate to docs/overview/dogfooding]**
 
@@ -406,7 +455,7 @@ specweave init .
 
 ---
 
-## OUTRO (28:00 - 29:30)
+## OUTRO (29:30 - 31:00)
 
 **[SCREEN: Navigate back to intro.md]**
 
@@ -414,6 +463,7 @@ specweave init .
 >
 > - **Three permanent files** instead of chat history
 > - **Append-only snapshots + living docs** for complete context
+> - **Living docs as AI context** — progressive disclosure, not RAG
 > - **Quality gates** that enforce tests and documentation
 > - **External tool sync** with GitHub, JIRA, Azure DevOps
 > - **Brownfield support** for existing codebases
@@ -466,13 +516,14 @@ specweave init .
 | 7:00 | lessons/02-three-file-structure | Show examples |
 | 10:00 | core-concepts/what-is-an-increment | Explain lifecycle |
 | 12:30 | getting-started/quickstart | Terminal demo |
-| 16:00 | workflows/overview | Show complete workflow |
-| 18:00 | intro.md (external tools) | Show sync table |
-| 20:00 | workflows/brownfield | Show brownfield approach |
-| 22:00 | lessons/05-quality-gates | Explain gates |
-| 24:00 | lessons/index | Show learning paths |
-| 26:00 | overview/dogfooding | Show real metrics |
-| 28:00 | intro.md | Final recap |
+| 16:00 | core-concepts/who-benefits-from-living-docs | Living docs for AI |
+| 17:30 | workflows/overview | Show complete workflow |
+| 19:30 | intro.md (external tools) | Show sync table |
+| 21:30 | workflows/brownfield | Show brownfield approach |
+| 23:30 | lessons/05-quality-gates | Explain gates |
+| 25:30 | lessons/index | Show learning paths |
+| 27:30 | overview/dogfooding | Show real metrics |
+| 29:30 | intro.md | Final recap |
 
 ### Terminal Commands to Demo
 
@@ -486,6 +537,10 @@ specweave init .
 /sw:do
 /sw:done 0001
 /sw:next
+
+# Living docs context
+/sw:context authentication   # Load relevant docs
+grep -ril "auth" .specweave/docs/internal/  # Search docs
 
 # External sync
 /sw:sync-progress
@@ -508,13 +563,14 @@ specweave init .
 7:00 - The Three-File Structure (spec.md, plan.md, tasks.md)
 10:00 - What is an Increment?
 12:30 - Installation & Your First Feature
-16:00 - The Complete Workflow
-18:00 - External Tool Sync (GitHub, JIRA, ADO)
-20:00 - Working with Existing Codebases (Brownfield)
-22:00 - Quality Gates & TDD
-24:00 - The Learning Path (16 Lessons)
-26:00 - Dogfooding: Real Metrics (186K LOC, 0% failures)
-28:00 - Recap & Getting Started
+16:00 - Living Docs for AI Context (Progressive Disclosure)
+17:30 - The Complete Workflow
+19:30 - External Tool Sync (GitHub, JIRA, ADO)
+21:30 - Working with Existing Codebases (Brownfield)
+23:30 - Quality Gates & TDD
+25:30 - The Learning Path (16 Lessons)
+27:30 - Dogfooding: Real Metrics (186K LOC, 0% failures)
+29:30 - Recap & Getting Started
 ```
 
 ### YouTube Description Template
@@ -530,6 +586,7 @@ What you'll learn:
 - The three-file structure: spec.md, plan.md, tasks.md
 - What increments are and how they preserve context
 - Live demo: building your first feature
+- Living docs as AI context (progressive disclosure, not RAG)
 - External tool sync (GitHub, JIRA, Azure DevOps)
 - Working with existing codebases (brownfield)
 - Quality gates and TDD workflow
@@ -563,13 +620,14 @@ This isn't a demo framework — it's production-tested on itself.
 | Three-File Structure | 7:00 | lessons/02-three-file-structure |
 | What is an Increment | 10:00 | core-concepts/what-is-an-increment |
 | Quick Start | 12:30 | getting-started/quickstart |
-| Complete Workflow | 16:00 | workflows/overview |
-| External Tool Sync | 18:00 | lessons/07-external-tools |
-| Brownfield Projects | 20:00 | workflows/brownfield |
-| Quality Gates | 22:00 | lessons/05-quality-gates |
-| TDD Workflow | 22:00 | lessons/06-tdd-workflow |
-| Learning Path | 24:00 | lessons/index |
-| Dogfooding | 26:00 | overview/dogfooding |
+| Living Docs for AI | 16:00 | core-concepts/who-benefits-from-living-docs |
+| Complete Workflow | 17:30 | workflows/overview |
+| External Tool Sync | 19:30 | lessons/07-external-tools |
+| Brownfield Projects | 21:30 | workflows/brownfield |
+| Quality Gates | 23:30 | lessons/05-quality-gates |
+| TDD Workflow | 23:30 | lessons/06-tdd-workflow |
+| Learning Path | 25:30 | lessons/index |
+| Dogfooding | 27:30 | overview/dogfooding |
 
 ### Brief Mentions (Not Deep Dives)
 

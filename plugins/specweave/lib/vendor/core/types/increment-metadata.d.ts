@@ -277,7 +277,7 @@ export interface USExternalRefsMap {
  * How the sync target was determined
  * Used for debugging and audit trails
  */
-export type SyncTargetDerivation = 'user-selection' | 'project-mapping' | 'default-profile' | 'auto-detected';
+export type SyncTargetDerivation = 'user-selection' | 'project-mapping' | 'default-profile' | 'first-profile-fallback' | 'auto-detected';
 /**
  * External tool sync target for an increment
  *
