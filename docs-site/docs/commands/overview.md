@@ -81,6 +81,38 @@ graph LR
 
 ---
 
+### `/sw:context` - Load Living Docs Context ⭐ NEW
+
+**Load relevant context before implementing** - Uses progressive disclosure.
+
+```bash
+/sw:context authentication    # Load auth-related docs
+/sw:context "payment flow"    # Load payment-related docs
+/sw:context                   # Show available topics
+```
+
+**What it does**:
+- 🔍 Searches living docs in `.specweave/docs/internal/`
+- 📋 Loads relevant specs, ADRs, and architecture docs
+- 💡 Injects context into current conversation
+- 🎯 No RAG needed - uses Claude's native file reading
+
+**Use cases**:
+- Before implementing a feature (check existing patterns)
+- When making architecture decisions (check existing ADRs)
+- When onboarding (understand current system)
+
+**How it works**:
+```bash
+# Internally runs:
+grep -ril "auth" .specweave/docs/internal/
+# Finds relevant files, reads them, synthesizes context
+```
+
+**See also**: [Who Benefits from Living Docs](/docs/guides/core-concepts/who-benefits-from-living-docs)
+
+---
+
 ## 3. Quality Assurance Commands
 
 ### `/sw:validate` - Rule-Based Validation
