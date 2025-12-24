@@ -7,6 +7,30 @@ description: Create a GitHub issue for a SpecWeave increment. Generates issue fr
 
 Create a GitHub issue for the specified SpecWeave increment.
 
+## ⛔ MANDATORY: Sync Living Docs BEFORE Creating Issue
+
+**GitHub issue content is generated FROM living docs.** If living docs don't exist or are stale, the issue will be incomplete.
+
+**You MUST run `/sw:sync-specs` BEFORE creating (unless using /sw:sync-progress):**
+
+```bash
+# STEP 1: Ensure living docs exist and are current
+/sw:sync-specs <increment-id>
+
+# STEP 2: Then create GitHub issue
+/sw-github:create <increment-id>
+```
+
+**Why?**
+- Issue body is generated from `.specweave/docs/internal/specs/FS-XXX/`
+- User stories and ACs come from living docs
+- Task checklist reflects living docs structure
+- Without sync-specs, issue will be created from raw increment spec.md (less structured)
+
+**Note:** `/sw:sync-progress` calls sync-specs automatically before creating issues.
+
+---
+
 **Usage**: `/sw-github:create <increment-id>`
 
 ```bash
