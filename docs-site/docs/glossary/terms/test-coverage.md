@@ -179,7 +179,7 @@ npm run test:coverage -- --coverage-html
 
 ## Test Coverage in SpecWeave
 
-SpecWeave tracks coverage **per task** in `tasks.md` (v0.7.0+):
+SpecWeave tracks coverage **per task** in `tasks.md`:
 
 ### Example Task with Coverage
 
@@ -538,7 +538,7 @@ coverage html
 
 ## SpecWeave Coverage Validation
 
-SpecWeave provides `/sw:validate-coverage` command (v0.7.0+):
+SpecWeave provides `/sw:validate-coverage` command:
 
 ```bash
 # Validate coverage for increment

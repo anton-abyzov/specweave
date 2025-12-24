@@ -484,23 +484,23 @@ Active: 0007-user-authentication
 /sw:do 0007
 # → Auto-resumes from last task, hooks fire after each completion
 
-# 5. Check progress
+# 6. Check progress
 /sw:progress 0007
 # → See completion status
 
-# 6. Validate quality
+# 7. Validate quality
 /sw:qa 0007 --gate
 # → Comprehensive quality gate check
 
-# 7. Check test coverage
+# 8. Check test coverage
 /sw:check-tests 0007
 # → Validate all AC-IDs are tested
 
-# 8. Close increment
+# 9. Close increment
 /sw:done 0007
 # → PM validates and closes
 
-# 9. Update living docs
+# 10. Update living docs
 /sw:sync-docs update
 # → Sync learnings to strategic docs
 ```

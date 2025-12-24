@@ -2032,7 +2032,7 @@ test('responsive design at different viewports', async ({ page }) => {
 
 ## How SpecWeave Enforces Testing
 
-### Test-Aware Planning (v0.7.0+)
+### Test-Aware Planning
 
 **SpecWeave embeds tests directly in tasks**:
 
@@ -2432,7 +2432,7 @@ All files                  |   87.45 |    82.33 |   91.67 |   87.12 |
 
 ### SpecWeave Testing Resources
 
-- **Test-Aware Planning**: v0.7.0+ embeds tests in tasks.md
+- **Test-Aware Planning**: Embeds tests in tasks.md
 - **BDD Format**: Given/When/Then for test plans
 - **AC-ID Traceability**: spec.md → tasks.md → tests
 - **Coverage Targets**: 80-90% per task, validated via `/sw:check-tests`

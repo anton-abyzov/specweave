@@ -63,4 +63,4 @@ SpecWeave uses a two-tier model strategy:
 
 ---
 
-*Last updated: 2025-10-31 | SpecWeave v0.4.0*
+*Last updated: 2025-10-31*
