@@ -10,9 +10,16 @@
     "defaultProfile": "main",
 
     "settings": {
-      "canUpsertInternalItems": false,
-      "canUpdateExternalItems": false,
-      "canUpdateStatus": false
+      "canUpsertInternalItems": true,
+      "canUpdateExternalItems": true,
+      "canUpdateStatus": true,
+      "autoSyncOnCompletion": true
+    },
+
+    "github": {
+      "enabled": true,
+      "owner": "your-org",
+      "repo": "your-repo"
     },
 
     "profiles": {

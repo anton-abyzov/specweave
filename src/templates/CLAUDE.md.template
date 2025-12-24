@@ -117,7 +117,16 @@ Living docs sync ≠ External sync. They are separate:
 **Required config** (`.specweave/config.json`):
 ```json
 "sync": {
-  "settings": { "canUpsertInternalItems": true }
+  "settings": {
+    "canUpsertInternalItems": true,
+    "canUpdateExternalItems": true,
+    "autoSyncOnCompletion": true
+  },
+  "github": {
+    "enabled": true,
+    "owner": "your-org",
+    "repo": "your-repo"
+  }
 }
 ```
 
@@ -163,8 +172,9 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | Find increment | `/sw:status` |
 | Root polluted | Move files to `.specweave/increments/####/reports/` |
 | Duplicate IDs | `/sw:fix-duplicates` |
-| GitHub not syncing | Run `/sw-github:sync {id}` explicitly |
-| Permission denied | Set `canUpsertInternalItems: true` in config.json |
+| GitHub not syncing | Check `sync.github.enabled: true` AND `canUpdateExternalItems: true` in config.json |
+| GitHub issues not updating | Run `/sw-github:sync {id}` explicitly; check `.specweave/logs/throttle.log` |
+| Permission denied | Set `canUpsertInternalItems: true` AND `canUpdateExternalItems: true` in config.json |
 | No GITHUB_TOKEN | Check `.env` file or run `gh auth login` |
 | Edits blocked in repositories/ | Add `"additionalDirectories":["repositories"]` + `Write(//**)`, `Edit(//**)` to `.claude/settings.json` |
 | Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |

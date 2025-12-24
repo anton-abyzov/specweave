@@ -27,75 +27,130 @@ All SpecWeave commands are namespaced for brownfield safety and follow a consist
   ```
 - **Usage**: `/sw:increment` (ONLY form, no shortcuts)
 
-## All Available Commands
+## All Available Commands (54 total)
 
-### Core Lifecycle (7 commands)
-1. `increment.md` - Create increment → `/sw:increment`
-2. `do.md` - Execute tasks → `/sw:do`
-3. `done.md` - Close increment → `/sw:done`
-4. `next.md` - Smart transition → `/sw:next`
-5. `progress.md` - Current progress → `/sw:progress`
-6. `validate.md` - Validate quality → `/sw:validate`
-7. `sync-docs.md` - Sync documentation → `/sw:sync-docs`
+### Core Lifecycle (8 commands)
+1. `increment.md` - Plan new Product Increment → `/sw:increment`
+2. `plan.md` - Generate plan.md and tasks.md using Architect Agent → `/sw:plan`
+3. `do.md` - Execute increment tasks → `/sw:do`
+4. `done.md` - Close increment with PM validation → `/sw:done`
+5. `next.md` - Smart workflow transition (auto-close + suggest next) → `/sw:next`
+6. `progress.md` - Show increment progress → `/sw:progress`
+7. `validate.md` - Validate increment quality → `/sw:validate`
+8. `workflow.md` - Smart workflow navigator → `/sw:workflow`
 
-### Status & Reporting (4 commands)
-8. `status.md` - All increments overview → `/sw:status`
-9. `costs.md` - AI cost dashboard → `/sw:costs`
-10. `update-scope.md` - Update completion report → `/sw:update-scope`
-11. `qa.md` - Quality assessment → `/sw:qa`
+### Status & Reporting (5 commands)
+9. `status.md` - Show all increments overview → `/sw:status`
+10. `update-scope.md` - Update living completion report → `/sw:update-scope`
+11. `qa.md` - Quality assessment with risk scoring → `/sw:qa`
+12. `judge-llm.md` - Ultrathink LLM-as-Judge validation → `/sw:judge-llm`
+13. `jobs.md` - Show background jobs and increment status → `/sw:jobs`
 
-### State Management (3 commands)
-12. `pause.md` - Pause increment → `/sw:pause`
-13. `resume.md` - Resume increment → `/sw:resume`
-14. `abandon.md` - Abandon increment → `/sw:abandon`
+### State Management (5 commands)
+14. `pause.md` - Pause active increment → `/sw:pause`
+15. `resume.md` - Resume paused/backlog increment → `/sw:resume`
+16. `abandon.md` - Abandon incomplete increment → `/sw:abandon`
+17. `backlog.md` - Move increment to backlog → `/sw:backlog`
+18. `reopen.md` - Reopen completed increment → `/sw:reopen`
 
-### Testing & Quality (2 commands)
-15. `check-tests.md` - Validate test coverage → `/sw:check-tests`
-16. `sync-tasks.md` - Sync tasks with GitHub → `/sw:sync-tasks`
+### Testing & Quality (3 commands)
+19. `check-tests.md` - Validate test coverage → `/sw:check-tests`
+20. `sync-tasks.md` - Sync tasks with external tools → `/sw:sync-tasks`
+21. `check-hooks.md` - Health check for hooks → `/sw:check-hooks`
 
 ### TDD Workflow (4 commands)
-17. `tdd-red.md` - Write failing tests → `/sw:tdd-red`
-18. `tdd-green.md` - Make tests pass → `/sw:tdd-green`
-19. `tdd-refactor.md` - Refactor code → `/sw:tdd-refactor`
-20. `tdd-cycle.md` - Full TDD cycle → `/sw:tdd-cycle`
+22. `tdd-red.md` - Write failing tests (TDD red phase) → `/sw:tdd-red`
+23. `tdd-green.md` - Make tests pass (TDD green phase) → `/sw:tdd-green`
+24. `tdd-refactor.md` - Refactor with test safety net → `/sw:tdd-refactor`
+25. `tdd-cycle.md` - Full TDD red-green-refactor cycle → `/sw:tdd-cycle`
 
 ### Archiving & Cleanup (6 commands)
-21. `archive.md` - Archive increments → `/sw:archive`
-22. `restore.md` - Restore from archive → `/sw:restore`
-23. `archive-features.md` - Archive features/epics → `/sw:archive-features`
-24. `restore-feature.md` - Restore features/epics → `/sw:restore-feature`
-25. `fix-duplicates.md` - Resolve duplicate increments → `/sw:fix-duplicates`
-26. `backlog.md` - Move to backlog → `/sw:backlog`
+26. `archive.md` - Archive completed increments → `/sw:archive`
+27. `restore.md` - Restore archived increments → `/sw:restore`
+28. `archive-features.md` - Archive features/epics → `/sw:archive-features`
+29. `restore-feature.md` - Restore features/epics → `/sw:restore-feature`
+30. `fix-duplicates.md` - Resolve duplicate increments → `/sw:fix-duplicates`
+31. `revert-wip-limit.md` - Revert WIP limit after adjustment → `/sw:revert-wip-limit`
 
-### Utilities (2 commands)
-27. `translate.md` - Batch translation → `/sw:translate`
-28. `sw.md` - Master router → `/sw`
+### Sync & Monitoring (10 commands)
+32. `sync-docs.md` - Strategic documentation sync → `/sw:sync-docs`
+33. `sync-specs.md` - Sync specs to living docs → `/sw:sync-specs`
+34. `sync-progress.md` - Full progress sync to external tools → `/sw:sync-progress`
+35. `sync-acs.md` - Sync AC checkbox status → `/sw:sync-acs`
+36. `sync-status.md` - Fix metadata/spec status desyncs → `/sw:sync-status`
+37. `sync-monitor.md` - Sync orchestration dashboard → `/sw:sync-monitor`
+38. `sync-logs.md` - Query sync audit logs → `/sw:sync-logs`
+39. `sync-diagnostics.md` - Sync circuit breaker diagnostics → `/sw:sync-diagnostics`
+40. `update-status.md` - Force-update status line cache → `/sw:update-status`
+41. `notifications.md` - View sync notifications → `/sw:notifications`
 
-**Total**: 28 commands (6 new archiving/cleanup commands added in v0.18.3)
+### Brownfield & Documentation (7 commands)
+42. `discrepancies.md` - View code-to-spec discrepancies → `/sw:discrepancies`
+43. `discrepancy-to-increment.md` - Convert discrepancy to increment → `/sw:discrepancy-to-increment`
+44. `import-docs.md` - Import brownfield documentation → `/sw:import-docs`
+45. `import-external.md` - Import external work items → `/sw:import-external`
+46. `living-docs.md` - Launch Living Docs Builder → `/sw:living-docs`
+47. `organize-docs.md` - Smart documentation organization → `/sw:organize-docs`
+48. `validate-features.md` - Validate feature folder consistency → `/sw:validate-features`
+
+### External Tools (2 commands)
+49. `external.md` - View external items dashboard → `/sw:external`
+50. `embed-acs.md` - Embed ACs from living docs into spec.md → `/sw:embed-acs`
+
+### Utilities (4 commands)
+51. `translate.md` - Batch translation → `/sw:translate`
+52. `save.md` - Smart git save across repos → `/sw:save`
+53. `migrate-config.md` - Migrate config format → `/sw:migrate-config`
+54. `sw.md` - Master command reference → `/sw:sw`
+
+**Total**: 54 commands in the core SpecWeave plugin
 
 ## Command Categories
 
-- **ESSENTIAL**: increment, do, done, next, progress, validate, sync-docs
-- **IMPORTANT**: status, qa, check-tests, update-scope, costs, translate
-- **STATE MANAGEMENT**: pause, resume, abandon, backlog
+**By Frequency of Use**:
+- **ESSENTIAL**: increment, do, done, next, progress, validate, sync-docs, save
+- **IMPORTANT**: status, qa, check-tests, update-scope, workflow, sync-specs
+- **STATE MANAGEMENT**: pause, resume, abandon, backlog, reopen
 - **ARCHIVING**: archive, restore, archive-features, restore-feature, fix-duplicates
-- **OPTIONAL**: TDD workflow commands, sync-tasks
+- **SYNC & MONITORING**: sync-monitor, sync-logs, sync-progress, sync-acs, sync-status, notifications
+- **BROWNFIELD**: discrepancies, discrepancy-to-increment, import-docs, import-external, living-docs
+- **TDD**: tdd-red, tdd-green, tdd-refactor, tdd-cycle
+- **ADVANCED**: judge-llm, check-hooks, embed-acs, validate-features, organize-docs
+
+## Plugin Commands
+
+SpecWeave plugins provide additional namespaced commands:
+
+| Plugin | Prefix | Commands |
+|--------|--------|----------|
+| **GitHub** | `/sw-github:*` | sync, create, push, pull, close, status, reconcile, clone |
+| **JIRA** | `/sw-jira:*` | sync, create, push, pull, close, status, reconcile |
+| **Azure DevOps** | `/sw-ado:*` | sync, create, push, pull, close, status, reconcile |
+| **Release** | `/sw-release:*` | init, align, rc, platform, npm |
+| **Docs** | `/sw-docs:*` | init, generate, build, view, validate, organize |
+| **Frontend** | `/sw-frontend:*` | component-generate, design-system-init, frontend-scaffold |
+| **Backend** | `/sw-backend:*` | api-scaffold, crud-generate, migration-generate |
+| **Kubernetes** | `/sw-kubernetes:*` | cluster-setup, deployment-generate, helm-scaffold |
+| **Testing** | `/sw-testing:*` | e2e-setup, test-coverage, test-generate, test-init |
+| **Infrastructure** | `/sw-infra:*` | monitor-setup, slo-implement |
+| **Kafka** | `/sw-kafka:*` | deploy, dev-env, monitor-setup, mcp-configure |
+| **Mobile** | `/sw-mobile:*` | app-scaffold, build-config, screen-generate |
+| **ML** | `/sw-ml:*` | deploy, evaluate, explain, pipeline |
+| **Payments** | `/sw-payments:*` | subscription-manage, webhook-setup |
+| **Diagrams** | `/sw-diagrams:*` | diagrams-generate |
 
 ## Removed/Deprecated Commands
 
-**Duplicates removed** (v0.7.0 refactoring):
+**Duplicates removed** (v0.7.0):
 - ❌ `inc.md` → Use `/sw:increment`
-- ❌ `status.md` → Use `/sw:status`
-- ❌ `pause.md` → Use `/sw:pause`
-- ❌ `resume.md` → Use `/sw:resume`
-- ❌ `abandon.md` → Use `/sw:abandon`
 
 **Deprecated commands**:
-- ❌ `validate-coverage.md` → Use `/sw:check-tests` (NEW format)
+- ❌ `validate-coverage.md` → Use `/sw:check-tests`
 - ❌ `specweave-validate-coverage.md` → Use `/sw:check-tests`
+- ❌ `list-increments.md` → Use `/sw:status`
 
-**Redundant commands**:
-- ❌ `list-increments.md` → Use `/sw:status` (same functionality)
+**Removed in v1.0.47**:
+- ❌ `costs.md` - Cost tracking infrastructure not wired up
 
 ## Brownfield Safety
 
@@ -103,24 +158,32 @@ All commands are namespaced to prevent collisions with existing project commands
 - ✅ **Namespace form**: `/sw:increment` (ONLY way, always safe)
 - ❌ **No shortcuts**: Do NOT use `/inc`, `/do`, `/pause`, `/resume` etc.
 
-## Command Usage Philosophy
+## Quick Reference
 
-**Correct usage** (namespace prefix required):
 ```bash
-/sw:increment "feature"   # Create increment
-/sw:do                    # Execute tasks
-/sw:status                # Check progress
-/sw:qa 0007               # Quality check
-/sw:done 0007             # Close increment
-```
+# Core workflow
+/sw:increment "feature"    # Plan new increment
+/sw:do                     # Execute tasks
+/sw:progress               # Check status
+/sw:qa 0007                # Quality check
+/sw:done 0007              # Close increment
+/sw:save                   # Commit & push changes
 
-**Incorrect usage** (DO NOT USE):
-```bash
-/inc "feature"       # ❌ Conflicts with Claude Code native commands
-/do                  # ❌ Conflicts with Claude Code native commands
-/status              # ❌ Conflicts with Claude Code native commands
-/pause 0007          # ❌ Conflicts with Claude Code native commands
-/resume 0007         # ❌ Conflicts with Claude Code native commands
+# Sync to external tools
+/sw-github:sync 0007       # Sync to GitHub
+/sw-jira:sync 0007         # Sync to JIRA
+/sw-ado:sync 0007          # Sync to Azure DevOps
+
+# State management
+/sw:pause 0007             # Pause increment
+/sw:resume 0007            # Resume increment
+/sw:backlog 0007           # Move to backlog
+/sw:abandon 0007           # Abandon increment
+
+# Documentation
+/sw:sync-docs update       # Sync to living docs
+/sw:living-docs            # Launch docs builder
+/sw:import-docs            # Import brownfield docs
 ```
 
 ## See Also

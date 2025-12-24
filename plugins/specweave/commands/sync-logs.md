@@ -1,3 +1,8 @@
+---
+name: sw:sync-logs
+description: Query and export sync audit logs. Filter by date range, platform (github/jira/ado), and result (success/denied/error). Export to JSON, CSV, or JSONL.
+---
+
 # Sync Logs Command
 
 Query and export sync audit logs. Supports date range, platform, and result filtering.
