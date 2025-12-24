@@ -47,17 +47,35 @@ if [ -z "$INCREMENT_ID" ]; then
 fi
 ```
 
-**Validate increment exists**:
+**Validate increment exists** (check active AND archive directories):
 
 ```bash
 INCREMENT_DIR=".specweave/increments/$INCREMENT_ID"
-if [ ! -d "$INCREMENT_DIR" ]; then
-  echo "❌ Increment $INCREMENT_ID not found at $INCREMENT_DIR"
-  exit 1
-fi
+INCREMENT_STATUS="active"
 
-echo "✅ Found increment: $INCREMENT_ID"
+if [ ! -d "$INCREMENT_DIR" ]; then
+  # Check archive directory for completed increments
+  ARCHIVE_DIR=".specweave/increments/_archive/$INCREMENT_ID"
+  if [ -d "$ARCHIVE_DIR" ]; then
+    INCREMENT_DIR="$ARCHIVE_DIR"
+    INCREMENT_STATUS="completed"
+    echo "📦 Found ARCHIVED increment: $INCREMENT_ID (status: completed)"
+  else
+    echo "❌ Increment $INCREMENT_ID not found in active or archive"
+    exit 1
+  fi
+else
+  echo "✅ Found increment: $INCREMENT_ID"
+fi
 ```
+
+### ⚠️ IMPORTANT: DO NOT SKIP SYNC FOR COMPLETED/ARCHIVED INCREMENTS
+
+**Even if INCREMENT_STATUS="completed", you MUST proceed with ALL sync steps:**
+- ✅ Still create missing GitHub issues (critical for historical tracking)
+- ✅ Still sync to living docs
+- ✅ Still close issues if they were just created
+- ❌ DO NOT print "no sync needed" for completed increments
 
 **Output**:
 ```
@@ -65,6 +83,12 @@ echo "✅ Found increment: $INCREMENT_ID"
 ✅ Found increment: 0053-safe-feature-deletion
 
 📊 Starting comprehensive progress sync...
+```
+
+**OR for archived/completed**:
+```
+📦 Found ARCHIVED increment: 0001-content-repurposer-mvp (status: completed)
+📊 Syncing COMPLETED increment (will create/close GitHub issues)...
 ```
 
 ---
@@ -96,29 +120,42 @@ fi
 - Updates spec.md to mark ACs as complete: `- [ ]` → `- [x]`
 - Updates metadata.json with AC completion count
 
-### 2.2: Sync to Living Docs (User Stories)
+### 2.2: Sync to Living Docs (User Stories) - MANDATORY BEFORE EXTERNAL SYNC
 
-Call the existing `/sw:sync-specs` command:
+### ⚠️ CRITICAL: THIS STEP IS MANDATORY AND MUST COMPLETE BEFORE ANY EXTERNAL TOOL OPERATIONS
+
+**Why?** External tools (GitHub, JIRA, ADO) sync FROM living docs. If you skip this step:
+- External issues will have stale/outdated content
+- User stories won't reflect completed status
+- AC checkboxes in GitHub issues won't be checked
+
+**You MUST invoke the `/sw:sync-specs` command:**
 
 ```bash
 echo "📚 Step 2/5: Syncing increment to living docs..."
+echo "   ⚠️  THIS MUST COMPLETE BEFORE EXTERNAL TOOL SYNC"
 
-# Sync increment specs to living docs structure
+# MANDATORY: Sync increment specs to living docs structure
+# This populates .specweave/docs/internal/specs/{project}/FS-XXX/
 npx specweave sync-specs "$INCREMENT_ID"
 
 if [ $? -eq 0 ]; then
   echo "   ✅ Living docs sync complete"
+  echo "   📁 Updated: .specweave/docs/internal/specs/{project}/FS-XXX/"
 else
-  echo "   ❌ Living docs sync failed"
+  echo "   ❌ Living docs sync failed - BLOCKING external sync"
   exit 1
 fi
 ```
 
 **What this does**:
-- Syncs spec.md → living docs user stories
+- Syncs spec.md → living docs user stories in `.specweave/docs/internal/specs/`
 - Updates user story completion status
 - Generates/updates feature ID if needed
 - Updates README.md in feature folder
+- **Creates the content that external tools will sync FROM**
+
+### ⛔ DO NOT PROCEED TO STEP 3 UNTIL THIS COMPLETES SUCCESSFULLY
 
 ---
 
@@ -193,6 +230,15 @@ fi
 **CRITICAL BEHAVIOR CHANGE (v1.0.48+)**: This command **ALWAYS auto-creates missing external issues** unless `--no-create` flag is passed. No config flag required!
 
 **Philosophy**: `/sw:sync-progress` is the "single button" - it should JUST WORK. If GitHub is configured and no issue exists, CREATE IT.
+
+### ⚠️ CRITICAL RULE: DO NOT SKIP FOR COMPLETED INCREMENTS
+
+**You MUST create GitHub issues even for COMPLETED increments!**
+
+- ❌ WRONG: "Increment already completed - no sync needed" → SKIP creation
+- ✅ CORRECT: Create issues regardless of status, then sync/close them
+
+**Why?** Users need GitHub issues for historical tracking, team visibility, and compliance. A completed increment without a GitHub issue is an incomplete record.
 
 **Check and auto-create**:
 
@@ -389,6 +435,13 @@ if [[ " ${EXTERNAL_TOOLS[@]} " =~ " github " ]] && [ "$NO_GITHUB" != "true" ]; t
       else
         echo "      ⚠️  GitHub sync had warnings (check logs)"
       fi
+
+      # SPECIAL CASE: For completed/archived increments, also CLOSE the issue
+      if [ "$INCREMENT_STATUS" = "completed" ]; then
+        echo "      🔒 Closing GitHub issue (increment is completed)..."
+        /sw-github:close "$INCREMENT_ID"
+        echo "      ✅ GitHub issue closed"
+      fi
     fi
   fi
 fi
@@ -400,6 +453,11 @@ fi
 - Posts progress comments
 - Updates labels based on status
 - Pulls external changes (comments, status changes from team)
+
+**SPECIAL CASE: Completed/Archived Increments**:
+- If `INCREMENT_STATUS="completed"` and issue was just created → ALSO close the issue
+- Use `/sw-github:close $INCREMENT_ID` to close with completion comment
+- This provides complete historical tracking
 
 ### 5.2: Sync to JIRA (if configured)
 
@@ -540,7 +598,7 @@ echo "   • Run /sw:done $INCREMENT_ID when ready to close"
 echo ""
 ```
 
-**Example Output**:
+**Example Output (Active Increment)**:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -563,6 +621,34 @@ Next steps:
    • Check external tools (GitHub/JIRA/ADO) for synced updates
    • Run /sw:validate 0053 to validate quality
    • Run /sw:done 0053 when ready to close
+```
+
+**Example Output (COMPLETED/Archived Increment)**:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✅ PROGRESS SYNC COMPLETE (ARCHIVED INCREMENT)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 Increment: 0001-content-repurposer-mvp
+📊 Status: completed (archived)
+
+✅ Synced:
+   • Tasks → ACs (spec.md)          54/54 ACs ✓
+   • Spec → Living docs             10/10 user stories ✓
+   • Status line cache              100% complete ✓
+
+🔗 External Tools:
+   • GitHub issue AUTO-CREATED: #123
+   • GitHub issue CLOSED: #123 (increment complete)
+
+📊 Completion:
+   • Tasks: 35/35 (100%)
+   • ACs: 54/54 (100%)
+   • User Stories: 10/10 (100%)
+
+ℹ️  Archived increment synced successfully!
+   GitHub issues created and closed for historical tracking.
 ```
 
 ---
