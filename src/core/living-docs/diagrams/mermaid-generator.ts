@@ -36,6 +36,8 @@ export interface MermaidDiagram {
   type: DiagramType;
   content: string;
   description: string;
+  /** Actual filename (without path) - used for consistent link generation */
+  filename?: string;
 }
 
 export type DiagramType =
@@ -75,17 +77,20 @@ export class MermaidGenerator {
     // Generate feature hierarchy diagram
     if (this.options.features && this.options.features.length > 0) {
       const featureHierarchy = this.generateFeatureHierarchy();
+      featureHierarchy.filename = 'feature-hierarchy.md';
       diagrams.push(featureHierarchy);
-      const featurePath = path.join(diagramsPath, 'feature-hierarchy.md');
+      const featurePath = path.join(diagramsPath, featureHierarchy.filename);
       fs.writeFileSync(featurePath, this.wrapDiagram(featureHierarchy));
       savedFiles.push(featurePath);
     }
 
     // Generate team org chart
+    // FIX (v1.0.48): Ensure filename matches what's used in index generation
     if (this.options.teams && this.options.teams.length > 0) {
       const orgChart = this.generateTeamOrgChart();
+      orgChart.filename = 'team-organization.md'; // Match display name for consistent links
       diagrams.push(orgChart);
-      const orgPath = path.join(diagramsPath, 'team-org-chart.md');
+      const orgPath = path.join(diagramsPath, orgChart.filename);
       fs.writeFileSync(orgPath, this.wrapDiagram(orgChart));
       savedFiles.push(orgPath);
     }
@@ -93,8 +98,9 @@ export class MermaidGenerator {
     // Generate module dependencies
     if (this.options.relationships) {
       const moduleDeps = this.generateModuleDependencies();
+      moduleDeps.filename = 'module-dependencies.md';
       diagrams.push(moduleDeps);
-      const modulePath = path.join(diagramsPath, 'module-dependencies.md');
+      const modulePath = path.join(diagramsPath, moduleDeps.filename);
       fs.writeFileSync(modulePath, this.wrapDiagram(moduleDeps));
       savedFiles.push(modulePath);
     }
@@ -102,8 +108,9 @@ export class MermaidGenerator {
     // Generate project timeline
     if (this.options.timeline) {
       const timelineChart = this.generateProjectTimeline();
+      timelineChart.filename = 'project-timeline.md';
       diagrams.push(timelineChart);
-      const timelinePath = path.join(diagramsPath, 'project-timeline.md');
+      const timelinePath = path.join(diagramsPath, timelineChart.filename);
       fs.writeFileSync(timelinePath, this.wrapDiagram(timelineChart));
       savedFiles.push(timelinePath);
     }
@@ -111,8 +118,9 @@ export class MermaidGenerator {
     // Generate system architecture (C4)
     if (this.options.repoAnalyses && this.options.repoAnalyses.size > 0) {
       const systemArch = this.generateSystemArchitecture();
+      systemArch.filename = 'system-architecture.md';
       diagrams.push(systemArch);
-      const archPath = path.join(diagramsPath, 'system-architecture.md');
+      const archPath = path.join(diagramsPath, systemArch.filename);
       fs.writeFileSync(archPath, this.wrapDiagram(systemArch));
       savedFiles.push(archPath);
     }
@@ -120,8 +128,9 @@ export class MermaidGenerator {
     // Generate feature status pie chart
     if (this.options.features && this.options.features.length > 0) {
       const statusPie = this.generateFeatureStatusPie();
+      statusPie.filename = 'feature-status.md';
       diagrams.push(statusPie);
-      const piePath = path.join(diagramsPath, 'feature-status.md');
+      const piePath = path.join(diagramsPath, statusPie.filename);
       fs.writeFileSync(piePath, this.wrapDiagram(statusPie));
       savedFiles.push(piePath);
     }
@@ -129,8 +138,9 @@ export class MermaidGenerator {
     // Generate team-to-feature ownership diagram
     if (this.options.relationships && this.options.teams) {
       const teamFeatures = this.generateTeamFeatureOwnership();
+      teamFeatures.filename = 'team-feature-ownership.md';
       diagrams.push(teamFeatures);
-      const teamFeatPath = path.join(diagramsPath, 'team-feature-ownership.md');
+      const teamFeatPath = path.join(diagramsPath, teamFeatures.filename);
       fs.writeFileSync(teamFeatPath, this.wrapDiagram(teamFeatures));
       savedFiles.push(teamFeatPath);
     }
@@ -531,6 +541,10 @@ export class MermaidGenerator {
 
   /**
    * Generate index file for all diagrams
+   *
+   * FIX (v1.0.48): Use explicit filename from diagram when available to ensure
+   * links match actual saved files. Previously derived filename from display name
+   * causing 404s (e.g., "Team Organization" → "team-organization.md" but file was "team-org-chart.md")
    */
   private generateIndex(diagrams: MermaidDiagram[]): string {
     const lines = [
@@ -545,7 +559,8 @@ export class MermaidGenerator {
     ];
 
     for (const diagram of diagrams) {
-      const filename = diagram.name.toLowerCase().replace(/\s+/g, '-') + '.md';
+      // Use explicit filename if set, otherwise derive from name (backward compatible)
+      const filename = diagram.filename || (diagram.name.toLowerCase().replace(/\s+/g, '-') + '.md');
       lines.push(`| [${diagram.name}](./${filename}) | ${diagram.type} | ${diagram.description} |`);
     }
 

@@ -5,6 +5,9 @@
  * key concepts, APIs, and patterns.
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
+import { execSync } from 'child_process';
 import { sampleRepoFiles, formatSamplesForPrompt } from './file-sampler.js';
 import { extractJson, buildJsonPrompt } from '../../../utils/llm-json-extractor.js';
 import type {
@@ -14,6 +17,12 @@ import type {
   LLMProvider,
   ProgressCallback,
   FileSample,
+  JSDocEntry,
+  CodeHealthIndicators,
+  DependencyAuditResult,
+  DependencyVulnerability,
+  OutdatedPackage,
+  LicenseIssue,
 } from './types.js';
 
 export async function analyzeRepo(
@@ -342,8 +351,385 @@ export async function analyzeAllRepos(repos: Array<{ name: string; path: string 
     if (completed.has(repo.name)) { log(`  Skipping ${repo.name} (done)`); continue; }
     onProgress('deep-analysis', i + 1, repos.length, `Analyzing ${repo.name}`);
     log(`Analyzing ${i + 1}/${repos.length}: ${repo.name}`);
-    results.set(repo.name, await analyzeRepo(repo.path, repo.name, llmProvider, log));
+    const analysis = await analyzeRepo(repo.path, repo.name, llmProvider, log);
+
+    // Enterprise enhancements (v1.0.48): Add JSDoc, code health, and dependency audit
+    try {
+      analysis.jsdocEntries = extractJSDocEntries(repo.path, log);
+      analysis.codeHealth = await extractCodeHealth(repo.path, log);
+      analysis.dependencyAudit = await runDependencyAudit(repo.path, log);
+    } catch (err: any) {
+      log(`  Enterprise enhancements skipped: ${err.message}`);
+    }
+
+    results.set(repo.name, analysis);
     if (llmProvider && i < repos.length - 1) await new Promise(r => setTimeout(r, 1000));
   }
   return results;
+}
+
+// =============================================================================
+// ENTERPRISE ENHANCEMENTS (v1.0.48)
+// JSDoc extraction, code health indicators, dependency audit
+// =============================================================================
+
+/**
+ * Extract JSDoc/TSDoc entries from TypeScript/JavaScript files
+ * Parses /** comments to build API documentation
+ */
+function extractJSDocEntries(repoPath: string, log: (msg: string) => void): JSDocEntry[] {
+  const entries: JSDocEntry[] = [];
+  const maxEntries = 50; // Limit for performance
+
+  try {
+    // Find TypeScript/JavaScript files
+    const files = findSourceFiles(repoPath, ['.ts', '.tsx', '.js', '.jsx']);
+
+    for (const file of files.slice(0, 30)) { // Limit files scanned
+      if (entries.length >= maxEntries) break;
+
+      try {
+        const content = fs.readFileSync(file, 'utf-8');
+        const relativePath = path.relative(repoPath, file);
+
+        // Extract JSDoc blocks with their following declarations
+        const jsdocRegex = /\/\*\*[\s\S]*?\*\/\s*(export\s+)?(async\s+)?(function|class|const|interface|type|enum)\s+(\w+)/g;
+        let match;
+
+        while ((match = jsdocRegex.exec(content)) !== null && entries.length < maxEntries) {
+          const jsdocBlock = match[0];
+          const exported = !!match[1];
+          const rawKind = match[3]; // 'function' | 'class' | 'const' | 'interface' | 'type' | 'enum'
+          const name = match[4];
+
+          // Map regex-captured kinds to JSDocEntry kinds
+          // 'const' -> 'constant', 'enum' -> 'type' (closest semantic match)
+          const kind: JSDocEntry['kind'] =
+            rawKind === 'const' ? 'constant' :
+            rawKind === 'enum' ? 'type' :
+            rawKind as JSDocEntry['kind'];
+
+          // Parse JSDoc content
+          const description = extractJSDocDescription(jsdocBlock);
+          const params = extractJSDocParams(jsdocBlock);
+          const returns = extractJSDocReturns(jsdocBlock);
+          const examples = extractJSDocExamples(jsdocBlock);
+          const deprecated = extractJSDocTag(jsdocBlock, 'deprecated');
+          const since = extractJSDocTag(jsdocBlock, 'since');
+
+          if (description || params.length > 0) {
+            entries.push({
+              name,
+              kind, // Already converted above
+              description: description || `${kind} ${name}`,
+              params: params.length > 0 ? params : undefined,
+              returns: returns || undefined,
+              examples: examples.length > 0 ? examples : undefined,
+              deprecated: deprecated || undefined,
+              since: since || undefined,
+              location: relativePath,
+              exported,
+            });
+          }
+        }
+      } catch {
+        // Skip unreadable files
+      }
+    }
+
+    log(`  Extracted ${entries.length} JSDoc entries`);
+  } catch (err: any) {
+    log(`  JSDoc extraction error: ${err.message}`);
+  }
+
+  return entries;
+}
+
+function extractJSDocDescription(block: string): string {
+  // Get text between /** and first @tag (or */)
+  const match = block.match(/\/\*\*\s*([\s\S]*?)(?:@|\*\/)/);
+  if (!match) return '';
+
+  return match[1]
+    .split('\n')
+    .map(line => line.replace(/^\s*\*\s?/, '').trim())
+    .filter(line => line && !line.startsWith('@'))
+    .join(' ')
+    .trim();
+}
+
+function extractJSDocParams(block: string): Array<{ name: string; type: string; description: string; optional?: boolean }> {
+  const params: Array<{ name: string; type: string; description: string; optional?: boolean }> = [];
+  const paramRegex = /@param\s+(?:\{([^}]+)\}\s+)?(\[?\w+\]?)\s*[-:]?\s*(.*)/g;
+  let match;
+
+  while ((match = paramRegex.exec(block)) !== null) {
+    const isOptional = match[2].startsWith('[');
+    const name = match[2].replace(/[\[\]]/g, '');
+    params.push({
+      name,
+      type: match[1] || 'any',
+      description: match[3]?.trim() || '',
+      optional: isOptional || undefined,
+    });
+  }
+
+  return params;
+}
+
+function extractJSDocReturns(block: string): { type: string; description: string } | null {
+  const match = block.match(/@returns?\s+(?:\{([^}]+)\}\s*)?(.*)/);
+  if (!match) return null;
+  return {
+    type: match[1] || 'any',
+    description: match[2]?.trim() || '',
+  };
+}
+
+function extractJSDocExamples(block: string): string[] {
+  const examples: string[] = [];
+  const exampleRegex = /@example\s*([\s\S]*?)(?=@\w|$|\*\/)/g;
+  let match;
+
+  while ((match = exampleRegex.exec(block)) !== null) {
+    const example = match[1]
+      .split('\n')
+      .map(line => line.replace(/^\s*\*\s?/, ''))
+      .join('\n')
+      .trim();
+    if (example) examples.push(example);
+  }
+
+  return examples;
+}
+
+function extractJSDocTag(block: string, tag: string): string | null {
+  const regex = new RegExp(`@${tag}\\s+(.*)`, 'i');
+  const match = block.match(regex);
+  return match ? match[1].trim() : null;
+}
+
+function findSourceFiles(dir: string, extensions: string[], maxDepth = 5, currentDepth = 0): string[] {
+  const files: string[] = [];
+  if (currentDepth > maxDepth) return files;
+
+  const skipDirs = new Set(['node_modules', '.git', 'dist', 'build', 'coverage', '.specweave']);
+
+  try {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory() && !skipDirs.has(entry.name) && !entry.name.startsWith('.')) {
+        files.push(...findSourceFiles(path.join(dir, entry.name), extensions, maxDepth, currentDepth + 1));
+      } else if (entry.isFile() && extensions.some(ext => entry.name.endsWith(ext))) {
+        files.push(path.join(dir, entry.name));
+      }
+    }
+  } catch {
+    // Skip unreadable directories
+  }
+
+  return files;
+}
+
+/**
+ * Extract code health indicators from repository
+ */
+async function extractCodeHealth(repoPath: string, log: (msg: string) => void): Promise<CodeHealthIndicators> {
+  const health: CodeHealthIndicators = {};
+
+  try {
+    // Try to get test coverage from common coverage report locations
+    const coveragePaths = [
+      path.join(repoPath, 'coverage/coverage-summary.json'),
+      path.join(repoPath, 'coverage/lcov-report/index.html'),
+      path.join(repoPath, '.nyc_output/coverage-summary.json'),
+    ];
+
+    for (const coveragePath of coveragePaths) {
+      if (fs.existsSync(coveragePath) && coveragePath.endsWith('.json')) {
+        try {
+          const coverage = JSON.parse(fs.readFileSync(coveragePath, 'utf-8'));
+          if (coverage.total?.lines?.pct !== undefined) {
+            health.testCoverage = Math.round(coverage.total.lines.pct);
+          }
+          break;
+        } catch {
+          // Skip invalid coverage files
+        }
+      }
+    }
+
+    // Get git info if available
+    if (fs.existsSync(path.join(repoPath, '.git'))) {
+      try {
+        // Last modified
+        const lastCommit = execSync('git log -1 --format=%cI', { cwd: repoPath, encoding: 'utf-8', timeout: 5000 }).trim();
+        if (lastCommit) health.lastModified = lastCommit;
+
+        // Contributor count
+        const contributors = execSync('git shortlog -sn --all | wc -l', { cwd: repoPath, encoding: 'utf-8', timeout: 5000 }).trim();
+        if (contributors) health.contributorCount = parseInt(contributors, 10);
+      } catch {
+        // Git commands failed, skip
+      }
+    }
+
+    // Count lines of code (rough estimate)
+    const sourceFiles = findSourceFiles(repoPath, ['.ts', '.tsx', '.js', '.jsx', '.py', '.go', '.rs', '.java']);
+    let totalLines = 0;
+    for (const file of sourceFiles.slice(0, 100)) { // Limit for performance
+      try {
+        const content = fs.readFileSync(file, 'utf-8');
+        const lines = content.split('\n').filter(line => {
+          const trimmed = line.trim();
+          return trimmed && !trimmed.startsWith('//') && !trimmed.startsWith('/*') && !trimmed.startsWith('*');
+        });
+        totalLines += lines.length;
+      } catch {
+        // Skip unreadable files
+      }
+    }
+    health.linesOfCode = totalLines;
+
+    log(`  Code health: ${health.testCoverage || 'N/A'}% coverage, ${health.linesOfCode} LOC`);
+  } catch (err: any) {
+    log(`  Code health extraction error: ${err.message}`);
+  }
+
+  return health;
+}
+
+/**
+ * Run dependency audit to find vulnerabilities and outdated packages
+ */
+async function runDependencyAudit(repoPath: string, log: (msg: string) => void): Promise<DependencyAuditResult> {
+  const result: DependencyAuditResult = {
+    totalDependencies: 0,
+    directDependencies: 0,
+    vulnerabilities: [],
+    outdatedPackages: [],
+    licenseIssues: [],
+    auditedAt: new Date().toISOString(),
+  };
+
+  const packageJsonPath = path.join(repoPath, 'package.json');
+  if (!fs.existsSync(packageJsonPath)) {
+    return result;
+  }
+
+  try {
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+    const deps = packageJson.dependencies || {};
+    const devDeps = packageJson.devDependencies || {};
+
+    result.directDependencies = Object.keys(deps).length + Object.keys(devDeps).length;
+
+    // Try npm audit (if npm is available and node_modules exists)
+    const nodeModulesPath = path.join(repoPath, 'node_modules');
+    if (fs.existsSync(nodeModulesPath)) {
+      try {
+        const auditOutput = execSync('npm audit --json 2>/dev/null || true', {
+          cwd: repoPath,
+          encoding: 'utf-8',
+          timeout: 30000,
+          maxBuffer: 10 * 1024 * 1024,
+        });
+
+        if (auditOutput.trim()) {
+          const audit = JSON.parse(auditOutput);
+          result.totalDependencies = audit.metadata?.totalDependencies || result.directDependencies;
+
+          // Extract vulnerabilities
+          if (audit.vulnerabilities) {
+            for (const [pkg, vuln] of Object.entries(audit.vulnerabilities as Record<string, any>)) {
+              if (result.vulnerabilities.length >= 20) break; // Limit
+              result.vulnerabilities.push({
+                package: pkg,
+                version: vuln.range || 'unknown',
+                severity: vuln.severity || 'medium',
+                title: vuln.title || vuln.name || 'Vulnerability detected',
+                fixedIn: vuln.fixAvailable?.version,
+              });
+            }
+          }
+        }
+      } catch {
+        // npm audit failed, continue with basic analysis
+      }
+
+      // Try npm outdated
+      try {
+        const outdatedOutput = execSync('npm outdated --json 2>/dev/null || true', {
+          cwd: repoPath,
+          encoding: 'utf-8',
+          timeout: 30000,
+        });
+
+        if (outdatedOutput.trim() && outdatedOutput.trim() !== '{}') {
+          const outdated = JSON.parse(outdatedOutput);
+          for (const [pkg, info] of Object.entries(outdated as Record<string, any>)) {
+            if (result.outdatedPackages.length >= 20) break; // Limit
+            const current = info.current || 'unknown';
+            const latest = info.latest || 'unknown';
+
+            // Determine update type
+            let updateType: 'major' | 'minor' | 'patch' = 'patch';
+            if (current !== 'unknown' && latest !== 'unknown') {
+              const currentMajor = parseInt(current.split('.')[0], 10);
+              const latestMajor = parseInt(latest.split('.')[0], 10);
+              const currentMinor = parseInt(current.split('.')[1], 10);
+              const latestMinor = parseInt(latest.split('.')[1], 10);
+
+              if (latestMajor > currentMajor) updateType = 'major';
+              else if (latestMinor > currentMinor) updateType = 'minor';
+            }
+
+            result.outdatedPackages.push({ package: pkg, current, latest, updateType });
+          }
+        }
+      } catch {
+        // npm outdated failed, continue
+      }
+    }
+
+    // Check for license issues (basic analysis)
+    const restrictedLicenses = ['GPL', 'AGPL', 'LGPL', 'SSPL', 'CPAL'];
+    for (const [pkg] of Object.entries(deps)) {
+      try {
+        const pkgPath = path.join(repoPath, 'node_modules', pkg, 'package.json');
+        if (fs.existsSync(pkgPath)) {
+          const pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+          const license = pkgJson.license || 'UNKNOWN';
+
+          if (license === 'UNKNOWN' || license === 'UNLICENSED') {
+            result.licenseIssues.push({
+              package: pkg,
+              license,
+              issue: 'unknown',
+              risk: 'medium',
+            });
+          } else if (restrictedLicenses.some(l => license.toUpperCase().includes(l))) {
+            result.licenseIssues.push({
+              package: pkg,
+              license,
+              issue: 'copyleft',
+              risk: 'high',
+            });
+          }
+
+          if (result.licenseIssues.length >= 10) break; // Limit
+        }
+      } catch {
+        // Skip packages we can't read
+      }
+    }
+
+    const vulnCount = result.vulnerabilities.length;
+    const outdatedCount = result.outdatedPackages.length;
+    log(`  Dependency audit: ${vulnCount} vulnerabilities, ${outdatedCount} outdated`);
+  } catch (err: any) {
+    log(`  Dependency audit error: ${err.message}`);
+  }
+
+  return result;
 }

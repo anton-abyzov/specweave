@@ -37,24 +37,146 @@ export interface IntelligentAnalysisCheckpoint {
 export interface RepoAnalysis {
   name: string;
   path: string;
-  
+
   // LLM-generated understanding
   purpose: string;
   keyConcepts: string[];
   mainApis: ApiSurface[];
   patternsUsed: PatternUsage[];
-  
+
   // Dependencies
   internalDependencies: string[];
   externalDependencies: string[];
-  
+
   // Metadata
   filesAnalyzed: number;
   confidence: 'high' | 'medium' | 'low';
   analyzedAt: string;
-  
+
   // Raw observations for clustering
   observations: string[];
+
+  // Enterprise-level enhancements (v1.0.48)
+  /** JSDoc-extracted documentation entries */
+  jsdocEntries?: JSDocEntry[];
+  /** Code health indicators */
+  codeHealth?: CodeHealthIndicators;
+  /** Dependency audit results */
+  dependencyAudit?: DependencyAuditResult;
+}
+
+/**
+ * JSDoc/TSDoc extracted documentation entry
+ * Provides enterprise-grade API documentation from code comments
+ */
+export interface JSDocEntry {
+  /** Function/class/method name */
+  name: string;
+  /** Type: function, class, method, interface, type */
+  kind: 'function' | 'class' | 'method' | 'interface' | 'type' | 'constant';
+  /** Description from JSDoc @description or first line */
+  description: string;
+  /** Parameters with types and descriptions */
+  params?: Array<{ name: string; type: string; description: string; optional?: boolean }>;
+  /** Return type and description */
+  returns?: { type: string; description: string };
+  /** @example code blocks */
+  examples?: string[];
+  /** @deprecated notice */
+  deprecated?: string;
+  /** @since version */
+  since?: string;
+  /** File location */
+  location: string;
+  /** Export visibility */
+  exported: boolean;
+}
+
+/**
+ * Code health indicators for enterprise documentation
+ * Provides at-a-glance quality metrics per module
+ */
+export interface CodeHealthIndicators {
+  /** Test coverage percentage (if available from coverage reports) */
+  testCoverage?: number;
+  /** Cyclomatic complexity average */
+  avgComplexity?: number;
+  /** Files with high complexity (>10) count */
+  highComplexityFiles?: number;
+  /** Lines of code (excluding comments/blanks) */
+  linesOfCode?: number;
+  /** Last modified date from git */
+  lastModified?: string;
+  /** Number of contributors from git */
+  contributorCount?: number;
+  /** Open issues/bugs count (if linked) */
+  openIssues?: number;
+  /** Technical debt score (0-100, higher = more debt) */
+  techDebtScore?: number;
+}
+
+/**
+ * Dependency audit result for security and compliance
+ */
+export interface DependencyAuditResult {
+  /** Total dependencies count */
+  totalDependencies: number;
+  /** Direct vs transitive breakdown */
+  directDependencies: number;
+  /** Security vulnerabilities */
+  vulnerabilities: DependencyVulnerability[];
+  /** Outdated packages */
+  outdatedPackages: OutdatedPackage[];
+  /** License compliance issues */
+  licenseIssues: LicenseIssue[];
+  /** Last audit timestamp */
+  auditedAt: string;
+}
+
+/**
+ * Security vulnerability in a dependency
+ */
+export interface DependencyVulnerability {
+  /** Package name */
+  package: string;
+  /** Installed version */
+  version: string;
+  /** Severity: critical, high, medium, low */
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  /** CVE ID if available */
+  cveId?: string;
+  /** Vulnerability title */
+  title: string;
+  /** Fix available in version */
+  fixedIn?: string;
+}
+
+/**
+ * Outdated package information
+ */
+export interface OutdatedPackage {
+  /** Package name */
+  package: string;
+  /** Currently installed version */
+  current: string;
+  /** Latest available version */
+  latest: string;
+  /** Semver update type: major, minor, patch */
+  updateType: 'major' | 'minor' | 'patch';
+}
+
+/**
+ * License compliance issue
+ */
+export interface LicenseIssue {
+  /** Package name */
+  package: string;
+  /** Detected license */
+  license: string;
+  /** Issue type: unknown, copyleft, restricted */
+  issue: 'unknown' | 'copyleft' | 'restricted' | 'deprecated';
+  /** Risk level */
+  risk: 'high' | 'medium' | 'low';
 }
 
 /**
