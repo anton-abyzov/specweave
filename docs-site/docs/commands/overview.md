@@ -385,6 +385,7 @@ Active: 0007-user-authentication
 
 ### Essential Workflow (Use These!)
 - `/sw:increment` - Plan new increment ⭐ **START HERE**
+- `/sw:context` - Load living docs context ⭐ **CONTEXT** (NEW)
 - `/sw:do` - Execute tasks ⭐ **MAIN WORK**
 - `/sw:next` - Smart workflow transition ⭐ **FLOW COMMAND** (auto-close + suggest next)
 - `/sw:progress` - Check status ⭐ **VISIBILITY**
@@ -467,15 +468,19 @@ Active: 0007-user-authentication
 /sw:increment "User authentication"
 # → Creates: spec.md, plan.md, tasks.md
 
-# 2. Review docs (optional)
+# 2. Load context (recommended)
+/sw:context authentication
+# → Loads existing auth specs, ADRs, patterns
+
+# 3. Review docs (optional)
 /sw:sync-docs review
 # → Review strategic docs before starting
 
-# 3. Pre-check quality (optional)
+# 4. Pre-check quality (optional)
 /sw:qa 0007 --pre
 # → Pre-implementation quality check
 
-# 4. Implement tasks
+# 5. Implement tasks
 /sw:do 0007
 # → Auto-resumes from last task, hooks fire after each completion
 
