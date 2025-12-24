@@ -63,15 +63,46 @@ After all 3 increments complete:
 
 ### Which one is the source of truth?
 
-**Living Docs Spec** = Source of truth (if it exists)
+**Important Distinction**: There are TWO different "source of truth" concepts:
 
-**Decision Tree**:
+1. **Requirements Truth**: What SHOULD be built (specs)
+2. **Reality Truth**: What ACTUALLY exists (code)
+
+```mermaid
+graph TB
+    subgraph "Requirements (Intent)"
+        A[Living Docs Spec] --> B[Increment Spec]
+        B --> C[tasks.md]
+    end
+
+    subgraph "Reality (What Exists)"
+        D[Code] --> E[Running System]
+        E --> F[Actual Behavior]
+    end
+
+    C -.->|"implements"| D
+
+    style A fill:#90EE90
+    style D fill:#87CEEB
+    style F fill:#FFB6C1
+```
+
+**For Requirements** (what should we build?):
+- **Living Docs Spec** = Source of truth (if it exists)
+- Otherwise → Increment Spec is source of truth
+
+**For Reality** (what actually works?):
+- **Code** = Source of truth (always)
+- Tests verify code matches requirements
+- When specs and code disagree → you have either a **bug** (code wrong) or **spec drift** (spec outdated)
+
+**Decision Tree for Spec Selection**:
 
 ```mermaid
 graph TD
-    A[Which spec is source of truth?] --> B{Does living docs<br/>spec exist?}
-    B -->|Yes| C[Living Docs Spec<br/>is source of truth]
-    B -->|No| D[Increment Spec<br/>is source of truth]
+    A[Which spec defines<br/>requirements?] --> B{Does living docs<br/>spec exist?}
+    B -->|Yes| C[Living Docs Spec<br/>defines requirements]
+    B -->|No| D[Increment Spec<br/>defines requirements]
 
     C --> E[Increment spec<br/>references it]
     D --> F[Increment spec<br/>is standalone]
@@ -80,17 +111,26 @@ graph TD
     style D fill:#87CEEB
 ```
 
-**Examples**:
+**Practical Examples**:
+
+| Scenario | Requirements Truth | Reality Truth |
+|----------|-------------------|---------------|
+| New feature planning | Living Docs / Increment Spec | N/A (not built yet) |
+| During implementation | Spec defines expected behavior | Code defines current state |
+| Bug found | Spec says X, code does Y → fix code | Code is wrong |
+| Spec outdated | Code does Z (correctly), spec says X → update spec | Code is right |
 
 **With Living Docs Spec** (major feature):
-- **Source of Truth**: `.specweave/docs/internal/specs/spec-0005-authentication/spec.md`
+- **Requirements Truth**: `.specweave/docs/internal/specs/spec-0005-authentication/spec.md`
 - **Increment Reference**: "See SPEC-0005 for complete requirements"
-- **Relationship**: Living docs = complete, increment = subset
+- **Relationship**: Living docs = complete requirements, increment = current scope
 
 **Without Living Docs Spec** (simple feature):
-- **Source of Truth**: `.specweave/increments/0009-add-dark-mode/spec.md`
+- **Requirements Truth**: `.specweave/increments/0009-add-dark-mode/spec.md`
 - **No Reference**: Standalone specification
-- **Relationship**: Increment spec = complete
+- **Relationship**: Increment spec = complete requirements
+
+**Key Insight**: Specs define INTENT, code defines REALITY. Both matter, but for different questions.
 
 ---
 
@@ -370,7 +410,7 @@ monorepo/
         └── 0008-mobile-basic-login/
 ```
 
-**2. [Microservices](/docs/glossary/terms/[microservices](/docs/glossary/terms/microservices)) (Multiple Repos)**:
+**2. [Microservices](/docs/glossary/terms/microservices) (Multiple Repos)**:
 ```
 parent-folder/                     ← Create parent folder
 ├── .specweave/                    ← One SpecWeave for entire system
@@ -600,4 +640,4 @@ See `/docs/auth-design.md` for existing system details.
 
 ---
 
-**Last Updated**: 2025-11-04 (v0.7.0)
+**Last Updated**: 2025-12-24 (v1.0.46)
