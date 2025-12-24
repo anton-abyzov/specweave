@@ -11,7 +11,19 @@ You are executing the SpecWeave comprehensive progress synchronization command. 
 
 This is the **TRUE "single button"** to sync all progress across the entire SpecWeave ecosystem.
 
-**KEY BEHAVIOR**: This command AUTO-CREATES missing external issues. No manual `/sw-github:create` required!
+## ⚠️ CRITICAL MANDATORY BEHAVIOR - AUTO-CREATE EXTERNAL ISSUES
+
+**You MUST use the Skill tool to invoke `/sw-github:create` (or JIRA/ADO equivalent) when:**
+1. GitHub is configured in config.json (`sync.github.enabled: true` OR profiles with `provider: "github"`)
+2. No GitHub issue is linked to this increment (check metadata.json for `github.issue` field)
+3. The `--no-create` flag was NOT passed
+
+**THIS IS NOT OPTIONAL. If these conditions are met, you MUST call:**
+```
+Skill({ skill: "sw-github:create", args: "<increment-id>" })
+```
+
+**DO NOT just report "No issues linked" and suggest manual creation. AUTO-CREATE is the DEFAULT behavior.**
 
 ---
 
@@ -227,216 +239,84 @@ fi
 
 ## STEP 4: External Issues - ALWAYS Create If Missing, Then Sync/Close
 
-**CRITICAL BEHAVIOR (v1.0.50+)**: ALWAYS create missing issues, regardless of status:
+**⚠️ THIS STEP REQUIRES YOU TO ACTUALLY INVOKE THE SKILL TOOL - NOT JUST REPORT STATUS!**
+
+### MANDATORY AUTO-CREATE BEHAVIOR
 
 | INCREMENT_STATUS | Issue EXISTS | Action |
 |------------------|--------------|--------|
-| `active` | No | ✅ AUTO-CREATE new issue |
+| `active` | No | ✅ **MUST invoke** `Skill({ skill: "sw-github:create", args: "<id>" })` |
 | `active` | Yes | ✅ SYNC (update progress) |
-| `completed` | No | ✅ AUTO-CREATE + IMMEDIATELY CLOSE (historical tracking) |
+| `completed` | No | ✅ **MUST invoke** create skill + THEN close |
 | `completed` | Yes | ✅ CLOSE the existing issue |
 
-### ✅ CRITICAL RULE: ALWAYS CREATE IF MISSING
+### 🚨 GITHUB AUTO-CREATE (MANDATORY ACTION)
 
-**For ALL increments (active OR completed):**
-- ✅ If NO issue exists → AUTO-CREATE the issue
-- ✅ If completed → CREATE then immediately CLOSE (for historical tracking)
+**When GitHub is configured AND no issue exists AND `--no-create` not passed:**
 
-**Why?** Historical tracking is important. Completed work should have GitHub issues for:
-- Team visibility
-- Sprint retrospectives
-- Release notes generation
-- Audit trails
+1. **READ** the metadata.json to check for `github.issue` field
+2. **IF** no issue exists:
+   - **Log**: "📝 No GitHub issue linked - AUTO-CREATING..."
+   - **INVOKE THE SKILL**: You MUST use the Skill tool:
+     ```
+     Skill({ skill: "sw-github:create", args: "<increment-id>" })
+     ```
+   - **WAIT** for the skill to complete
+   - **LOG** the result: "✅ GitHub issue auto-created: #<number>"
+3. **IF** issue exists:
+   - **Log**: "✅ GitHub issue exists: #<number>"
 
-**For completed increments:**
-- ✅ AUTO-CREATE if no issue exists (historical tracking)
-- ✅ Then IMMEDIATELY CLOSE the created issue (since work is done)
+**YOU MUST ACTUALLY CALL THE SKILL TOOL. DO NOT SKIP THIS.**
 
-**Check and handle based on status**:
+### Permission Check (Before Auto-Create)
 
-```bash
-echo "🔗 Step 4/5: Handling external issues based on increment status..."
+Read `.specweave/config.json` and check:
+- `sync.settings.canUpsertInternalItems` OR `sync.settings.canUpdateExternalItems` should be `true`
+- If BOTH are `false`, log permission denied warning and skip creation
 
-METADATA="$INCREMENT_DIR/metadata.json"
-NO_CREATE_FLAG="${NO_CREATE:-false}"  # --no-create flag disables auto-create
+### Pseudo-code (you must execute, not just read):
 
-# ══════════════════════════════════════════════════════════════════
-# GITHUB: Check and handle based on INCREMENT_STATUS
-# ══════════════════════════════════════════════════════════════════
-if [[ " ${EXTERNAL_TOOLS[@]} " =~ " github " ]] && [ "$NO_GITHUB" != "true" ]; then
-  echo ""
-  echo "   🐙 GitHub:"
+```
+IF github configured AND no issue linked AND --no-create NOT set:
+    IF permissions allow:
+        LOG "📝 No GitHub issue linked - AUTO-CREATING..."
 
-  # Check if canUpsertInternalItems is true (required for creating issues)
-  if [ "$CAN_UPSERT" != "true" ] && [ "$CAN_UPDATE_EXTERNAL" != "true" ]; then
-    echo "      ⚠️  Permission denied: canUpsertInternalItems=false AND canUpdateExternalItems=false"
-    echo "      💡 Enable in config.json: sync.settings.canUpsertInternalItems = true"
-  else
-    # Check for existing GitHub issue in metadata
-    GITHUB_ISSUE=$(jq -r '
-      .github.issue //
-      .github.issues[0].number //
-      .external_sync.github.issueNumber //
-      ""
-    ' "$METADATA" 2>/dev/null)
+        >>> ACTUALLY INVOKE: Skill({ skill: "sw-github:create", args: incrementId })
 
-    if [ -z "$GITHUB_ISSUE" ] || [ "$GITHUB_ISSUE" = "null" ]; then
-      # NO ISSUE EXISTS - ALWAYS create (v1.0.50+)
-      if [ "$NO_CREATE_FLAG" = "true" ]; then
-        echo "      ⚠️  No GitHub issue linked (--no-create flag set, skipping auto-create)"
-        echo "      💡 To create manually: /sw-github:create $INCREMENT_ID"
-      else
-        # ALWAYS AUTO-CREATE issue (active OR completed)
-        if [ "$INCREMENT_STATUS" = "completed" ]; then
-          echo "      📝 No GitHub issue linked - AUTO-CREATING for historical tracking..."
-          echo "      📋 (Completed increment - will create AND close immediately)"
-        else
-          echo "      📝 No GitHub issue linked - AUTO-CREATING..."
-        fi
-        echo "      ⏳ Creating GitHub issue via /sw-github:create..."
-
-        # INVOKE: /sw-github:create $INCREMENT_ID
-        /sw-github:create "$INCREMENT_ID"
-
-        if [ $? -eq 0 ]; then
-          # Re-read metadata to get created issue number
-          GITHUB_ISSUE=$(jq -r '.github.issue // .github.issues[0].number // .external_sync.github.issueNumber // ""' "$METADATA" 2>/dev/null)
-          echo "      ✅ GitHub issue auto-created: #$GITHUB_ISSUE"
-          GITHUB_CREATED="true"  # Mark as newly created
-        else
-          echo "      ⚠️  GitHub issue creation failed (will continue with sync)"
-          echo "      💡 Debug: Check GITHUB_TOKEN in .env or run 'gh auth status'"
-        fi
-      fi
-    else
-      # ISSUE EXISTS - will sync/close in STEP 5
-      echo "      ✅ GitHub issue exists: #$GITHUB_ISSUE"
-      if [ "$INCREMENT_STATUS" = "completed" ]; then
-        echo "      📋 Will close issue in STEP 5 (increment is archived)"
-      fi
-    fi
-  fi
-fi
-
-# ══════════════════════════════════════════════════════════════════
-# JIRA: Check and handle based on INCREMENT_STATUS
-# ══════════════════════════════════════════════════════════════════
-if [[ " ${EXTERNAL_TOOLS[@]} " =~ " jira " ]] && [ "$NO_JIRA" != "true" ]; then
-  echo ""
-  echo "   📋 JIRA:"
-
-  if [ "$CAN_UPSERT" != "true" ] && [ "$CAN_UPDATE_EXTERNAL" != "true" ]; then
-    echo "      ⚠️  Permission denied: canUpsertInternalItems=false AND canUpdateExternalItems=false"
-    echo "      💡 Enable in config.json: sync.settings.canUpsertInternalItems = true"
-  else
-    JIRA_ISSUE=$(jq -r '
-      .jira.issue //
-      .jira.issues[0].key //
-      .external_sync.jira.issueKey //
-      ""
-    ' "$METADATA" 2>/dev/null)
-
-    if [ -z "$JIRA_ISSUE" ] || [ "$JIRA_ISSUE" = "null" ]; then
-      # NO ISSUE EXISTS - ALWAYS create (v1.0.50+)
-      if [ "$NO_CREATE_FLAG" = "true" ]; then
-        echo "      ⚠️  No JIRA issue linked (--no-create flag set, skipping auto-create)"
-        echo "      💡 To create manually: /sw-jira:create $INCREMENT_ID"
-      else
-        # ALWAYS AUTO-CREATE issue (active OR completed)
-        if [ "$INCREMENT_STATUS" = "completed" ]; then
-          echo "      📝 No JIRA issue linked - AUTO-CREATING for historical tracking..."
-          echo "      📋 (Completed increment - will create AND transition to Done)"
-        else
-          echo "      📝 No JIRA issue linked - AUTO-CREATING..."
-        fi
-        echo "      ⏳ Creating JIRA issue via /sw-jira:create..."
-
-        # INVOKE: /sw-jira:create $INCREMENT_ID
-        /sw-jira:create "$INCREMENT_ID"
-
-        if [ $? -eq 0 ]; then
-          JIRA_ISSUE=$(jq -r '.jira.issue // .jira.issues[0].key // .external_sync.jira.issueKey // ""' "$METADATA" 2>/dev/null)
-          echo "      ✅ JIRA issue auto-created: $JIRA_ISSUE"
-          JIRA_CREATED="true"  # Mark as newly created
-        else
-          echo "      ⚠️  JIRA issue creation failed (will continue with sync)"
-          echo "      💡 Debug: Check JIRA credentials in .env"
-        fi
-      fi
-    else
-      # ISSUE EXISTS - will sync/close in STEP 5
-      echo "      ✅ JIRA issue exists: $JIRA_ISSUE"
-      if [ "$INCREMENT_STATUS" = "completed" ]; then
-        echo "      📋 Will transition to 'Done' in STEP 5 (increment is archived)"
-      fi
-    fi
-  fi
-fi
-
-# ══════════════════════════════════════════════════════════════════
-# ADO: Check and handle based on INCREMENT_STATUS
-# ══════════════════════════════════════════════════════════════════
-if [[ " ${EXTERNAL_TOOLS[@]} " =~ " ado " ]] && [ "$NO_ADO" != "true" ]; then
-  echo ""
-  echo "   🔷 Azure DevOps:"
-
-  if [ "$CAN_UPSERT" != "true" ] && [ "$CAN_UPDATE_EXTERNAL" != "true" ]; then
-    echo "      ⚠️  Permission denied: canUpsertInternalItems=false AND canUpdateExternalItems=false"
-    echo "      💡 Enable in config.json: sync.settings.canUpsertInternalItems = true"
-  else
-    ADO_ITEM=$(jq -r '
-      .ado.workItem //
-      .ado.workItems[0].id //
-      .external_sync.ado.workItemId //
-      ""
-    ' "$METADATA" 2>/dev/null)
-
-    if [ -z "$ADO_ITEM" ] || [ "$ADO_ITEM" = "null" ]; then
-      # NO WORK ITEM EXISTS - ALWAYS create (v1.0.50+)
-      if [ "$NO_CREATE_FLAG" = "true" ]; then
-        echo "      ⚠️  No ADO work item linked (--no-create flag set, skipping auto-create)"
-        echo "      💡 To create manually: /sw-ado:create $INCREMENT_ID"
-      else
-        # ALWAYS AUTO-CREATE work item (active OR completed)
-        if [ "$INCREMENT_STATUS" = "completed" ]; then
-          echo "      📝 No ADO work item linked - AUTO-CREATING for historical tracking..."
-          echo "      📋 (Completed increment - will create AND transition to Closed)"
-        else
-          echo "      📝 No ADO work item linked - AUTO-CREATING..."
-        fi
-        echo "      ⏳ Creating ADO work item via /sw-ado:create..."
-
-        # INVOKE: /sw-ado:create $INCREMENT_ID
-        /sw-ado:create "$INCREMENT_ID"
-
-        if [ $? -eq 0 ]; then
-          ADO_ITEM=$(jq -r '.ado.workItem // .ado.workItems[0].id // .external_sync.ado.workItemId // ""' "$METADATA" 2>/dev/null)
-          echo "      ✅ ADO work item auto-created: #$ADO_ITEM"
-          ADO_CREATED="true"  # Mark as newly created
-        else
-          echo "      ⚠️  ADO work item creation failed (will continue with sync)"
-          echo "      💡 Debug: Check AZURE_DEVOPS_PAT in .env"
-        fi
-      fi
-    else
-      # WORK ITEM EXISTS - will sync/close in STEP 5
-      echo "      ✅ ADO work item exists: #$ADO_ITEM"
-      if [ "$INCREMENT_STATUS" = "completed" ]; then
-        echo "      📋 Will transition to 'Closed' in STEP 5 (increment is archived)"
-      fi
-    fi
-  fi
-fi
-
-echo ""
+        THEN re-read metadata.json to get issue number
+        LOG "✅ GitHub issue auto-created: #<number>"
+    ELSE:
+        LOG "⚠️ Permission denied - enable canUpsertInternalItems in config"
+ELSE IF issue exists:
+    LOG "✅ GitHub issue exists: #<number>"
 ```
 
-**What this does**:
-- Checks each configured external tool for existing linked issues
-- **AUTO-CREATES missing issues by invoking the respective create commands**
-- Respects permissions (canUpsertInternalItems, canUpdateExternalItems)
-- Skip creation with `--no-create` flag if user wants sync-only behavior
-- Updates metadata.json with created issue numbers
+### 🚨 JIRA AUTO-CREATE (If JIRA configured)
+
+**Same mandatory pattern as GitHub:**
+- Check metadata.json for `jira.issue` field
+- If no issue AND permissions allow AND `--no-create` not set:
+  - **INVOKE**: `Skill({ skill: "sw-jira:create", args: "<increment-id>" })`
+
+### 🚨 ADO AUTO-CREATE (If Azure DevOps configured)
+
+**Same mandatory pattern as GitHub:**
+- Check metadata.json for `ado.workItem` field
+- If no work item AND permissions allow AND `--no-create` not set:
+  - **INVOKE**: `Skill({ skill: "sw-ado:create", args: "<increment-id>" })`
+
+---
+
+**Summary of STEP 4 Actions:**
+
+For EACH configured external tool (GitHub, JIRA, ADO):
+1. Read metadata.json to check if issue/work item exists
+2. If NO issue exists AND auto-create allowed:
+   - **MUST INVOKE** the corresponding create skill
+   - Wait for completion
+   - Log success/failure
+3. If issue exists:
+   - Log that it exists, proceed to STEP 5 for sync
 
 ---
 
