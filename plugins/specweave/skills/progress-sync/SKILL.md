@@ -24,12 +24,22 @@ tasks.md → spec.md ACs → living docs → AUTO-CREATE external issues → syn
 
 **No more "No GitHub issue linked" errors!** The command auto-creates missing issues.
 
-### ⚠️ CRITICAL: Works on COMPLETED/ARCHIVED Increments Too!
+### ✅ Archived Increment Behavior (v1.0.50+)
 
-**This command MUST create and sync GitHub issues even for completed increments:**
-- Creates issues for historical tracking
-- Closes issues immediately after creation (since increment is complete)
-- Never skips with "no sync needed" for completed increments
+**For archived/completed increments, this command ALWAYS creates issues for historical tracking:**
+
+| Situation | Action |
+|-----------|--------|
+| Issue EXISTS | ✅ Sync final state + Close/Transition |
+| NO issue linked | ✅ AUTO-CREATE + IMMEDIATELY CLOSE (historical tracking) |
+
+**Why?** Historical tracking is important! Completed work should have external issues for:
+- Team visibility
+- Sprint retrospectives
+- Release notes generation
+- Audit trails
+
+**For all increments (active or completed)**: Auto-creates issues if missing (the "single button" philosophy)
 
 ---
 

@@ -225,31 +225,43 @@ fi
 
 ---
 
-## STEP 4: AUTO-CREATE Missing External Issues (ALWAYS - Unless --no-create)
+## STEP 4: External Issues - ALWAYS Create If Missing, Then Sync/Close
 
-**CRITICAL BEHAVIOR CHANGE (v1.0.48+)**: This command **ALWAYS auto-creates missing external issues** unless `--no-create` flag is passed. No config flag required!
+**CRITICAL BEHAVIOR (v1.0.50+)**: ALWAYS create missing issues, regardless of status:
 
-**Philosophy**: `/sw:sync-progress` is the "single button" - it should JUST WORK. If GitHub is configured and no issue exists, CREATE IT.
+| INCREMENT_STATUS | Issue EXISTS | Action |
+|------------------|--------------|--------|
+| `active` | No | ✅ AUTO-CREATE new issue |
+| `active` | Yes | ✅ SYNC (update progress) |
+| `completed` | No | ✅ AUTO-CREATE + IMMEDIATELY CLOSE (historical tracking) |
+| `completed` | Yes | ✅ CLOSE the existing issue |
 
-### ⚠️ CRITICAL RULE: DO NOT SKIP FOR COMPLETED INCREMENTS
+### ✅ CRITICAL RULE: ALWAYS CREATE IF MISSING
 
-**You MUST create GitHub issues even for COMPLETED increments!**
+**For ALL increments (active OR completed):**
+- ✅ If NO issue exists → AUTO-CREATE the issue
+- ✅ If completed → CREATE then immediately CLOSE (for historical tracking)
 
-- ❌ WRONG: "Increment already completed - no sync needed" → SKIP creation
-- ✅ CORRECT: Create issues regardless of status, then sync/close them
+**Why?** Historical tracking is important. Completed work should have GitHub issues for:
+- Team visibility
+- Sprint retrospectives
+- Release notes generation
+- Audit trails
 
-**Why?** Users need GitHub issues for historical tracking, team visibility, and compliance. A completed increment without a GitHub issue is an incomplete record.
+**For completed increments:**
+- ✅ AUTO-CREATE if no issue exists (historical tracking)
+- ✅ Then IMMEDIATELY CLOSE the created issue (since work is done)
 
-**Check and auto-create**:
+**Check and handle based on status**:
 
 ```bash
-echo "🔗 Step 4/5: Ensuring external issues exist (auto-create if missing)..."
+echo "🔗 Step 4/5: Handling external issues based on increment status..."
 
 METADATA="$INCREMENT_DIR/metadata.json"
 NO_CREATE_FLAG="${NO_CREATE:-false}"  # --no-create flag disables auto-create
 
 # ══════════════════════════════════════════════════════════════════
-# GITHUB: Check and auto-create missing issues
+# GITHUB: Check and handle based on INCREMENT_STATUS
 # ══════════════════════════════════════════════════════════════════
 if [[ " ${EXTERNAL_TOOLS[@]} " =~ " github " ]] && [ "$NO_GITHUB" != "true" ]; then
   echo ""
@@ -269,44 +281,45 @@ if [[ " ${EXTERNAL_TOOLS[@]} " =~ " github " ]] && [ "$NO_GITHUB" != "true" ]; t
     ' "$METADATA" 2>/dev/null)
 
     if [ -z "$GITHUB_ISSUE" ] || [ "$GITHUB_ISSUE" = "null" ]; then
+      # NO ISSUE EXISTS - ALWAYS create (v1.0.50+)
       if [ "$NO_CREATE_FLAG" = "true" ]; then
         echo "      ⚠️  No GitHub issue linked (--no-create flag set, skipping auto-create)"
         echo "      💡 To create manually: /sw-github:create $INCREMENT_ID"
       else
-        echo "      📝 No GitHub issue linked - AUTO-CREATING..."
-
-        # Use the github-manager agent to create the issue
-        # This handles multi-project configs properly
+        # ALWAYS AUTO-CREATE issue (active OR completed)
+        if [ "$INCREMENT_STATUS" = "completed" ]; then
+          echo "      📝 No GitHub issue linked - AUTO-CREATING for historical tracking..."
+          echo "      📋 (Completed increment - will create AND close immediately)"
+        else
+          echo "      📝 No GitHub issue linked - AUTO-CREATING..."
+        fi
         echo "      ⏳ Creating GitHub issue via /sw-github:create..."
 
         # INVOKE: /sw-github:create $INCREMENT_ID
-        # The skill invocation will:
-        # 1. Read spec.md to generate issue body
-        # 2. Detect profile from increment's Project field or use active profile
-        # 3. Create issue with proper format: [FS-XXX][US-YYY] Title
-        # 4. Update metadata.json with issue number
-        # 5. Apply labels (specweave, increment)
-
-        # Execute the create command
         /sw-github:create "$INCREMENT_ID"
 
         if [ $? -eq 0 ]; then
           # Re-read metadata to get created issue number
           GITHUB_ISSUE=$(jq -r '.github.issue // .github.issues[0].number // .external_sync.github.issueNumber // ""' "$METADATA" 2>/dev/null)
           echo "      ✅ GitHub issue auto-created: #$GITHUB_ISSUE"
+          GITHUB_CREATED="true"  # Mark as newly created
         else
           echo "      ⚠️  GitHub issue creation failed (will continue with sync)"
           echo "      💡 Debug: Check GITHUB_TOKEN in .env or run 'gh auth status'"
         fi
       fi
     else
+      # ISSUE EXISTS - will sync/close in STEP 5
       echo "      ✅ GitHub issue exists: #$GITHUB_ISSUE"
+      if [ "$INCREMENT_STATUS" = "completed" ]; then
+        echo "      📋 Will close issue in STEP 5 (increment is archived)"
+      fi
     fi
   fi
 fi
 
 # ══════════════════════════════════════════════════════════════════
-# JIRA: Check and auto-create missing issues
+# JIRA: Check and handle based on INCREMENT_STATUS
 # ══════════════════════════════════════════════════════════════════
 if [[ " ${EXTERNAL_TOOLS[@]} " =~ " jira " ]] && [ "$NO_JIRA" != "true" ]; then
   echo ""
@@ -324,11 +337,18 @@ if [[ " ${EXTERNAL_TOOLS[@]} " =~ " jira " ]] && [ "$NO_JIRA" != "true" ]; then
     ' "$METADATA" 2>/dev/null)
 
     if [ -z "$JIRA_ISSUE" ] || [ "$JIRA_ISSUE" = "null" ]; then
+      # NO ISSUE EXISTS - ALWAYS create (v1.0.50+)
       if [ "$NO_CREATE_FLAG" = "true" ]; then
         echo "      ⚠️  No JIRA issue linked (--no-create flag set, skipping auto-create)"
         echo "      💡 To create manually: /sw-jira:create $INCREMENT_ID"
       else
-        echo "      📝 No JIRA issue linked - AUTO-CREATING..."
+        # ALWAYS AUTO-CREATE issue (active OR completed)
+        if [ "$INCREMENT_STATUS" = "completed" ]; then
+          echo "      📝 No JIRA issue linked - AUTO-CREATING for historical tracking..."
+          echo "      📋 (Completed increment - will create AND transition to Done)"
+        else
+          echo "      📝 No JIRA issue linked - AUTO-CREATING..."
+        fi
         echo "      ⏳ Creating JIRA issue via /sw-jira:create..."
 
         # INVOKE: /sw-jira:create $INCREMENT_ID
@@ -337,19 +357,24 @@ if [[ " ${EXTERNAL_TOOLS[@]} " =~ " jira " ]] && [ "$NO_JIRA" != "true" ]; then
         if [ $? -eq 0 ]; then
           JIRA_ISSUE=$(jq -r '.jira.issue // .jira.issues[0].key // .external_sync.jira.issueKey // ""' "$METADATA" 2>/dev/null)
           echo "      ✅ JIRA issue auto-created: $JIRA_ISSUE"
+          JIRA_CREATED="true"  # Mark as newly created
         else
           echo "      ⚠️  JIRA issue creation failed (will continue with sync)"
           echo "      💡 Debug: Check JIRA credentials in .env"
         fi
       fi
     else
+      # ISSUE EXISTS - will sync/close in STEP 5
       echo "      ✅ JIRA issue exists: $JIRA_ISSUE"
+      if [ "$INCREMENT_STATUS" = "completed" ]; then
+        echo "      📋 Will transition to 'Done' in STEP 5 (increment is archived)"
+      fi
     fi
   fi
 fi
 
 # ══════════════════════════════════════════════════════════════════
-# ADO: Check and auto-create missing work items
+# ADO: Check and handle based on INCREMENT_STATUS
 # ══════════════════════════════════════════════════════════════════
 if [[ " ${EXTERNAL_TOOLS[@]} " =~ " ado " ]] && [ "$NO_ADO" != "true" ]; then
   echo ""
@@ -367,11 +392,18 @@ if [[ " ${EXTERNAL_TOOLS[@]} " =~ " ado " ]] && [ "$NO_ADO" != "true" ]; then
     ' "$METADATA" 2>/dev/null)
 
     if [ -z "$ADO_ITEM" ] || [ "$ADO_ITEM" = "null" ]; then
+      # NO WORK ITEM EXISTS - ALWAYS create (v1.0.50+)
       if [ "$NO_CREATE_FLAG" = "true" ]; then
         echo "      ⚠️  No ADO work item linked (--no-create flag set, skipping auto-create)"
         echo "      💡 To create manually: /sw-ado:create $INCREMENT_ID"
       else
-        echo "      📝 No ADO work item linked - AUTO-CREATING..."
+        # ALWAYS AUTO-CREATE work item (active OR completed)
+        if [ "$INCREMENT_STATUS" = "completed" ]; then
+          echo "      📝 No ADO work item linked - AUTO-CREATING for historical tracking..."
+          echo "      📋 (Completed increment - will create AND transition to Closed)"
+        else
+          echo "      📝 No ADO work item linked - AUTO-CREATING..."
+        fi
         echo "      ⏳ Creating ADO work item via /sw-ado:create..."
 
         # INVOKE: /sw-ado:create $INCREMENT_ID
@@ -380,13 +412,18 @@ if [[ " ${EXTERNAL_TOOLS[@]} " =~ " ado " ]] && [ "$NO_ADO" != "true" ]; then
         if [ $? -eq 0 ]; then
           ADO_ITEM=$(jq -r '.ado.workItem // .ado.workItems[0].id // .external_sync.ado.workItemId // ""' "$METADATA" 2>/dev/null)
           echo "      ✅ ADO work item auto-created: #$ADO_ITEM"
+          ADO_CREATED="true"  # Mark as newly created
         else
           echo "      ⚠️  ADO work item creation failed (will continue with sync)"
           echo "      💡 Debug: Check AZURE_DEVOPS_PAT in .env"
         fi
       fi
     else
+      # WORK ITEM EXISTS - will sync/close in STEP 5
       echo "      ✅ ADO work item exists: #$ADO_ITEM"
+      if [ "$INCREMENT_STATUS" = "completed" ]; then
+        echo "      📋 Will transition to 'Closed' in STEP 5 (increment is archived)"
+      fi
     fi
   fi
 fi
@@ -470,7 +507,9 @@ if [[ " ${EXTERNAL_TOOLS[@]} " =~ " jira " ]] && [ "$NO_JIRA" != "true" ]; then
 
   if [ -z "$JIRA_ISSUE" ] || [ "$JIRA_ISSUE" = "null" ]; then
     echo "      ⚠️  No JIRA issue linked - skipping sync"
-    echo "      💡 Create issue first: /sw-jira:create $INCREMENT_ID"
+    if [ "$INCREMENT_STATUS" != "completed" ]; then
+      echo "      💡 Create issue first: /sw-jira:create $INCREMENT_ID"
+    fi
   else
     if [ "$DRY_RUN" = "true" ]; then
       echo "      [DRY-RUN] Would sync to JIRA issue $JIRA_ISSUE"
@@ -484,6 +523,13 @@ if [[ " ${EXTERNAL_TOOLS[@]} " =~ " jira " ]] && [ "$NO_JIRA" != "true" ]; then
         echo "      ✅ JIRA sync complete"
       else
         echo "      ⚠️  JIRA sync had warnings"
+      fi
+
+      # SPECIAL CASE: For completed/archived increments, transition to 'Done'
+      if [ "$INCREMENT_STATUS" = "completed" ]; then
+        echo "      🔒 Transitioning JIRA issue to 'Done' (increment is completed)..."
+        /sw-jira:close "$INCREMENT_ID"
+        echo "      ✅ JIRA issue transitioned to Done"
       fi
     fi
   fi
@@ -501,7 +547,9 @@ if [[ " ${EXTERNAL_TOOLS[@]} " =~ " ado " ]] && [ "$NO_ADO" != "true" ]; then
 
   if [ -z "$ADO_ITEM" ] || [ "$ADO_ITEM" = "null" ]; then
     echo "      ⚠️  No ADO work item linked - skipping sync"
-    echo "      💡 Create work item first: /sw-ado:create $INCREMENT_ID"
+    if [ "$INCREMENT_STATUS" != "completed" ]; then
+      echo "      💡 Create work item first: /sw-ado:create $INCREMENT_ID"
+    fi
   else
     if [ "$DRY_RUN" = "true" ]; then
       echo "      [DRY-RUN] Would sync to ADO work item #$ADO_ITEM"
@@ -515,6 +563,13 @@ if [[ " ${EXTERNAL_TOOLS[@]} " =~ " ado " ]] && [ "$NO_ADO" != "true" ]; then
         echo "      ✅ ADO sync complete"
       else
         echo "      ⚠️  ADO sync had warnings"
+      fi
+
+      # SPECIAL CASE: For completed/archived increments, transition to 'Closed'
+      if [ "$INCREMENT_STATUS" = "completed" ]; then
+        echo "      🔒 Transitioning ADO work item to 'Closed' (increment is completed)..."
+        /sw-ado:close "$INCREMENT_ID"
+        echo "      ✅ ADO work item transitioned to Closed"
       fi
     fi
   fi
@@ -623,7 +678,7 @@ Next steps:
    • Run /sw:done 0053 when ready to close
 ```
 
-**Example Output (COMPLETED/Archived Increment)**:
+**Example Output (COMPLETED/Archived Increment - WITH linked issue)**:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -639,8 +694,8 @@ Next steps:
    • Status line cache              100% complete ✓
 
 🔗 External Tools:
-   • GitHub issue AUTO-CREATED: #123
-   • GitHub issue CLOSED: #123 (increment complete)
+   • GitHub issue #123 SYNCED (final state)
+   • GitHub issue #123 CLOSED (increment complete)
 
 📊 Completion:
    • Tasks: 35/35 (100%)
@@ -648,7 +703,35 @@ Next steps:
    • User Stories: 10/10 (100%)
 
 ℹ️  Archived increment synced successfully!
-   GitHub issues created and closed for historical tracking.
+   Existing linked issues updated and closed.
+```
+
+**Example Output (COMPLETED/Archived Increment - NO linked issue - NOW CREATES!)**:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✅ PROGRESS SYNC COMPLETE (ARCHIVED INCREMENT)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 Increment: 0001-content-repurposer-mvp
+📊 Status: completed (archived)
+
+✅ Synced:
+   • Tasks → ACs (spec.md)          54/54 ACs ✓
+   • Spec → Living docs             10/10 user stories ✓
+   • Status line cache              100% complete ✓
+
+🔗 External Tools:
+   📝 GitHub issue AUTO-CREATED: #456 (historical tracking)
+   🔒 GitHub issue #456 CLOSED (increment already complete)
+
+📊 Completion:
+   • Tasks: 35/35 (100%)
+   • ACs: 54/54 (100%)
+   • User Stories: 10/10 (100%)
+
+✅ Archived increment synced with historical tracking!
+   External issues created and closed for audit trail.
 ```
 
 ---
