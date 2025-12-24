@@ -233,4 +233,4 @@ await reporter.exportToCSV('0003', 'cost-history.csv');
 
 ---
 
-*Last updated: 2025-10-31 | SpecWeave v0.4.0*
+*Last updated: 2025-10-31*

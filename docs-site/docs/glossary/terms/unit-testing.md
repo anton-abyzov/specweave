@@ -219,7 +219,7 @@ test('should log errors to monitoring service', () => {
 
 ## Unit Testing in SpecWeave
 
-SpecWeave embeds unit test plans in `tasks.md` (v0.7.0+):
+SpecWeave embeds unit test plans in `tasks.md`:
 
 ### Example Task with Unit Tests
 

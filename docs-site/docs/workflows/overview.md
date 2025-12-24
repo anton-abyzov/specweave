@@ -433,7 +433,7 @@ Solution: Let hooks auto-update living docs
 ```
 Problem: Write tests as afterthought
 Result: Poor coverage, bugs in production
-Solution: Define test strategy in plan.md (v0.7.0+)
+Solution: Define test strategy in plan.md
 ```
 
 ### ❌ Mistake 5: Ignoring Validation

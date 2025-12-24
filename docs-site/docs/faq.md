@@ -690,4 +690,4 @@ See `/docs/auth-design.md` for existing system details.
 
 ---
 
-**Last Updated**: 2025-12-24 (v1.0.46)
+**Last Updated**: 2025-12-24

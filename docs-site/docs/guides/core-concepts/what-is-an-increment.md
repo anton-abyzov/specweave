@@ -21,7 +21,7 @@ graph LR
 **Each increment contains:**
 - 📋 **spec.md** - What and Why (requirements, user stories, acceptance criteria)
 - 🏗️ **plan.md** - How (architecture, test strategy, implementation approach)
-- ✅ **tasks.md** - Checklist with embedded tests (v0.7.0+)
+- ✅ **tasks.md** - Checklist with embedded tests
 - 📊 **logs/** - Execution history
 - 📝 **reports/** - Completion summaries, scope changes
 
@@ -39,7 +39,7 @@ graph LR
 │                        # - Database schema
 │                        # - Test coverage targets (85% unit, 80% integration)
 │
-├── tasks.md             # Checklist + embedded tests (v0.7.0+)
+├── tasks.md             # Checklist + embedded tests
 │                        # - T-001: AuthService [in_progress]
 │                        # - T-002: Login endpoint [pending]
 │                        # - Each task has BDD test plan

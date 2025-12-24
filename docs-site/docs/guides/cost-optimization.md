@@ -406,4 +406,4 @@ Since we store NO personal data:
 
 ---
 
-*Last updated: 2025-10-31 | SpecWeave v0.4.0*
+*Last updated: 2025-10-31*

@@ -193,7 +193,7 @@ interface Chat {
 }
 ```
 
-## Test Strategy (v0.7.0+)
+## Test Strategy
 
 ### Coverage Targets
 - **Unit Tests**: 90% coverage

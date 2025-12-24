@@ -4,7 +4,7 @@
 
 ## Overview
 
-The new status synchronization system (v0.20.0+) provides:
+The status synchronization system provides:
 
 ✅ **Bidirectional sync** - Changes flow both ways (SpecWeave ↔ External)
 ✅ **Conflict resolution** - Smart handling of simultaneous changes
@@ -22,7 +22,7 @@ The new status synchronization system (v0.20.0+) provides:
 specweave --version
 ```
 
-If < v0.20.0, upgrade first:
+If using an older version, upgrade first:
 
 ```bash
 npm install -g specweave@latest
@@ -64,7 +64,7 @@ cp -r .specweave/increments .specweave/increments.backup
 }
 ```
 
-**New Config** (v0.20.0+):
+**New Config**:
 
 ```json
 {
@@ -253,7 +253,7 @@ If you trust the mappings, enable auto-sync:
 
 No conflict detection - last write always won (silently).
 
-### New Behavior (v0.20.0+)
+### New Behavior
 
 Conflicts detected and resolved based on strategy:
 

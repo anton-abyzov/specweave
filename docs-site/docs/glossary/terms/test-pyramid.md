@@ -189,7 +189,7 @@ graph LR
 
 ## The Test Pyramid in SpecWeave
 
-SpecWeave enforces the Test Pyramid in `plan.md` and `tasks.md` (v0.7.0+):
+SpecWeave enforces the Test Pyramid in `plan.md` and `tasks.md`:
 
 ### Test Strategy in plan.md
 

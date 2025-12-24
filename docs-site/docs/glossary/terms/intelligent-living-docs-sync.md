@@ -1,4 +1,4 @@
-# Intelligent Living Docs Sync (v0.18.0+)
+# Intelligent Living Docs Sync
 
 **Intelligent Living Docs Sync** is SpecWeave's advanced synchronization system that automatically parses, classifies, and distributes increment specifications into organized, cross-linked documentation. Unlike simple mode (one file → one file), intelligent mode uses a 9-category classification system with project detection, Docusaurus frontmatter generation, and automatic cross-linking.
 

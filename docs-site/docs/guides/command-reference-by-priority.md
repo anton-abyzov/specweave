@@ -1,7 +1,6 @@
 # SpecWeave Command Reference - By Priority
 
 **Last Updated**: 2025-11-14
-**Version**: v0.19.0
 
 This guide organizes all SpecWeave commands by priority, from essential daily workflow to specialized features.
 
@@ -21,7 +20,7 @@ These are the essential commands you'll use every day. Master these first!
 | `/sw:progress` | Check current progress | `/sw:progress` |
 | `/sw:status` | Show all increments status | `/sw:status` |
 
-### New! Reopen Functionality (v0.19.0)
+### Reopen Functionality
 
 | Command | Description | Example |
 |---------|-------------|---------|
@@ -271,7 +270,7 @@ If you're new to SpecWeave, start with these 5 commands:
 
 ---
 
-## New in v0.19.0: Smart Reopen
+## Smart Reopen
 
 **Breaking News**: COMPLETED is no longer terminal! You can now reopen work when issues are discovered.
 
@@ -434,4 +433,3 @@ Options:
 
 **Last Updated**: 2025-11-14
 **Total Commands**: 62 across 10 plugins
-**New in v0.19.0**: Smart Reopen Functionality ⭐

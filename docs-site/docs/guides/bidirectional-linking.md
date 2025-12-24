@@ -1,6 +1,6 @@
 # Bidirectional Task ↔ User Story Linking
 
-**Status**: Production Ready (v0.18.0+)
+**Status**: Production Ready
 **Feature**: Automatic bidirectional traceability between tasks and user stories
 
 ---
@@ -524,5 +524,4 @@ node -e "import('./dist/src/core/living-docs/spec-distributor.js').then(async ({
 ---
 
 **Last Updated**: 2025-11-13
-**Version**: v0.18.0+
 **Status**: Production Ready

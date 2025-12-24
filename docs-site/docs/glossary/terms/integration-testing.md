@@ -262,7 +262,7 @@ describe('Order Processing Integration', () => {
 
 ## Integration Testing in SpecWeave
 
-SpecWeave embeds integration test strategy in `tasks.md` (v0.7.0+):
+SpecWeave embeds integration test strategy in `tasks.md`:
 
 ### Example Task with Integration Tests
 
