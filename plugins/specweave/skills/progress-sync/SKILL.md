@@ -9,6 +9,19 @@ I'm the comprehensive progress synchronization expert for SpecWeave. I help you 
 
 ---
 
+## ⚠️ CRITICAL: AUTO-CREATE IS MANDATORY
+
+**When `/sw:sync-progress` is executed and no external issue exists, it MUST automatically create the issue using the Skill tool.**
+
+The command MUST invoke:
+- `Skill({ skill: "sw-github:create", args: "<increment-id>" })` for GitHub
+- `Skill({ skill: "sw-jira:create", args: "<increment-id>" })` for JIRA
+- `Skill({ skill: "sw-ado:create", args: "<increment-id>" })` for Azure DevOps
+
+**DO NOT just report "No issues linked" - ACTUALLY CREATE THE ISSUE.**
+
+---
+
 ## What is /sw:sync-progress?
 
 **The TRUE "single button" to sync progress across all systems**:
@@ -24,7 +37,7 @@ tasks.md → spec.md ACs → living docs → AUTO-CREATE external issues → syn
 
 **No more "No GitHub issue linked" errors!** The command auto-creates missing issues.
 
-### ✅ Archived Increment Behavior (v1.0.50+)
+### ✅ Archived Increment Behavior
 
 **For archived/completed increments, this command ALWAYS creates issues for historical tracking:**
 
