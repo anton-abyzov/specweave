@@ -365,15 +365,66 @@ Active: 0007-user-authentication
 - `/sw:sync-progress` - Sync to external tools ⭐ **EXTERNAL SYNC**
 - `/sw:save` - Save & push to all repos ⭐ **MULTI-REPO GIT**
 - `/sw:workflow` - Dashboard view ⭐ **NAVIGATION**
-- `/sw:validate-status` - Fix status line ⭐ **STATUS FIX**
+
+### State Management
+- `/sw:pause` - Pause active increment
+- `/sw:resume` - Resume paused/backlog increment
+- `/sw:abandon` - Abandon incomplete increment
+- `/sw:backlog` - Move increment to backlog
+- `/sw:reopen` - Reopen completed increment
+
+### Status & Monitoring
+- `/sw:status` - Show all increments overview
+- `/sw:jobs` - Show background jobs and increment status
+- `/sw:sync-monitor` - Sync orchestration dashboard
+- `/sw:sync-logs` - Query sync audit logs
+- `/sw:notifications` - View sync notifications
+- `/sw:sync-status` - Fix metadata/spec status desyncs
+- `/sw:update-status` - Force-update status line cache
+
+### TDD Workflow
+- `/sw:tdd-red` - Write failing tests (TDD red phase)
+- `/sw:tdd-green` - Make tests pass (TDD green phase)
+- `/sw:tdd-refactor` - Refactor with test safety net
+- `/sw:tdd-cycle` - Full TDD red-green-refactor cycle
+
+### Brownfield & Documentation
+- `/sw:discrepancies` - View code-to-spec discrepancies
+- `/sw:discrepancy-to-increment` - Convert discrepancy to increment
+- `/sw:import-docs` - Import brownfield documentation
+- `/sw:import-external` - Import external work items
+- `/sw:living-docs` - Launch Living Docs Builder
+- `/sw:organize-docs` - Smart documentation organization
+- `/sw:validate-features` - Validate feature folder consistency
+
+### Archiving & Cleanup
+- `/sw:archive` - Archive completed increments
+- `/sw:restore` - Restore archived increments
+- `/sw:archive-features` - Archive features/epics
+- `/sw:restore-feature` - Restore features/epics
+- `/sw:fix-duplicates` - Resolve duplicate increments
+
+### Advanced Commands
+- `/sw:judge-llm` - Ultrathink LLM-as-Judge validation
+- `/sw:check-hooks` - Health check for hooks
+- `/sw:embed-acs` - Embed ACs from living docs into spec.md
+- `/sw:plan` - Generate plan.md using Architect Agent
+- `/sw:translate` - Batch translation
+- `/sw:migrate-config` - Migrate config format
 
 ### External Tool Sync (Git-Style)
 - `/sw-github:pull` - Pull changes from GitHub ⭐ **GIT-STYLE**
 - `/sw-github:push` - Push progress to GitHub ⭐ **GIT-STYLE**
+- `/sw-github:sync` - Two-way sync with GitHub
+- `/sw-github:create` - Create GitHub issue from increment
+- `/sw-github:close` - Close GitHub issue when done
+- `/sw-github:status` - Check GitHub sync status
 - `/sw-ado:pull` - Pull changes from Azure DevOps ⭐ **GIT-STYLE**
 - `/sw-ado:push` - Push progress to Azure DevOps ⭐ **GIT-STYLE**
+- `/sw-ado:sync` - Two-way sync with Azure DevOps
 - `/sw-jira:pull` - Pull changes from JIRA ⭐ **GIT-STYLE**
 - `/sw-jira:push` - Push progress to JIRA ⭐ **GIT-STYLE**
+- `/sw-jira:sync` - Two-way sync with JIRA
 
 ---
 

@@ -67,6 +67,20 @@ async function loadGitHubConfig(): Promise<GitHubConfig | null> {
           repo = profile.config.repo;
         }
       }
+      // Method 4 (v1.0.46): First GitHub profile if no defaultProfile is set
+      // This handles the common case where user has profiles but forgot to set defaultProfile
+      else if (config.sync?.profiles) {
+        const profileNames = Object.keys(config.sync.profiles);
+        for (const name of profileNames) {
+          const profile = config.sync.profiles[name];
+          if (profile?.provider === 'github' && profile?.config?.owner && profile?.config?.repo) {
+            owner = profile.config.owner;
+            repo = profile.config.repo;
+            console.log(`ℹ️  Using first GitHub profile: ${name}`);
+            break;
+          }
+        }
+      }
     } catch (error) {
       console.error('⚠️  Failed to parse config.json:', error);
     }
