@@ -182,10 +182,10 @@ feature_id: FS-049
     await coordinator.syncIncrementCompletion();
 
     expect(mockLogger.log).toHaveBeenCalledWith(
-      expect.stringContaining('GitHub sync disabled (sync.github.enabled=false)')
+      expect.stringContaining('GitHub sync disabled (no GitHub profile or sync.github.enabled)')
     );
     expect(mockLogger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Set sync.github.enabled=true')
+      expect.stringContaining('Configure sync.profiles with provider: "github" or set sync.github.enabled=true')
     );
   });
 
