@@ -79,7 +79,7 @@ jobs:
 
             if [ "$DAYS_DIFF" -gt 30 ]; then
               STALE_PLATFORMS="${STALE_PLATFORMS}${PLATFORM_NAME} (${DAYS_DIFF} days old)\n"
-              ((STALE_COUNT++))
+              STALE_COUNT=$((STALE_COUNT + 1))
             fi
           done
 
