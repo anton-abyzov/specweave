@@ -1,4 +1,4 @@
-#!/usr/bin/env ts-node
+#!/usr/bin/env node
 /**
  * Validation script for serverless platform knowledge base
  *
@@ -10,7 +10,7 @@
  * 5. Startup programs validation
  *
  * Usage:
- *   npx ts-node scripts/validate-platforms.ts
+ *   node scripts/validation/validate-platforms.js
  *   npm run validate:platforms
  */
 
@@ -21,67 +21,13 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const platformsDir = path.join(__dirname, '../plugins/specweave/knowledge-base/serverless/platforms');
-
-interface FreeTier {
-  requests: number;
-  computeGbSeconds: number;
-  dataTransferGb: number;
-}
-
-interface PayAsYouGo {
-  requestsPer1M: number;
-  computePerGbSecond: number;
-  dataTransferPerGb: number;
-}
-
-interface Pricing {
-  freeTier: FreeTier;
-  payAsYouGo: PayAsYouGo;
-}
-
-interface Features {
-  runtimes: string[];
-  coldStartMs: number;
-  maxExecutionMinutes: number;
-  maxMemoryMb: number;
-}
-
-interface Ecosystem {
-  integrations: string[];
-  sdks: string[];
-  communitySize: string;
-}
-
-interface LockIn {
-  portability: string;
-  migrationComplexity: string;
-  vendorLockIn: string;
-}
-
-interface StartupProgram {
-  name: string;
-  credits: number;
-  duration: string;
-}
-
-interface Platform {
-  id: string;
-  name: string;
-  provider: string;
-  pricing: Pricing;
-  features: Features;
-  ecosystem: Ecosystem;
-  lockIn: LockIn;
-  startupPrograms: StartupProgram[];
-  lastVerified: string;
-}
+const platformsDir = path.join(__dirname, '../../plugins/specweave/knowledge-base/serverless/platforms');
 
 /**
  * Validate platform data structure
  */
-function validatePlatformStructure(platform: any, filename: string): string[] {
-  const errors: string[] = [];
+function validatePlatformStructure(platform, filename) {
+  const errors = [];
 
   // Required top-level fields
   const requiredFields = ['id', 'name', 'provider', 'pricing', 'features', 'ecosystem', 'lockIn', 'startupPrograms', 'lastVerified'];
@@ -170,7 +116,7 @@ function validatePlatformStructure(platform: any, filename: string): string[] {
   if (!Array.isArray(platform.startupPrograms)) {
     errors.push('  - StartupPrograms must be an array');
   } else {
-    platform.startupPrograms.forEach((program: any, idx: number) => {
+    platform.startupPrograms.forEach((program, idx) => {
       if (!program.name || typeof program.name !== 'string') {
         errors.push(`  - StartupPrograms[${idx}].name must be a non-empty string`);
       }
@@ -193,15 +139,28 @@ function validatePlatformStructure(platform: any, filename: string): string[] {
   return errors;
 }
 
+// Check if platforms directory exists
+if (!fs.existsSync(platformsDir)) {
+  console.error(`\n❌ Platforms directory not found: ${platformsDir}`);
+  console.error('   Please ensure the knowledge base is properly set up.\n');
+  process.exit(1);
+}
+
 // Get all platform files
 const platformFiles = fs.readdirSync(platformsDir).filter(f => f.endsWith('.json')).sort();
+
+if (platformFiles.length === 0) {
+  console.warn('\n⚠️  No platform JSON files found in:', platformsDir);
+  console.warn('   Validation skipped.\n');
+  process.exit(0);
+}
 
 // Validation statistics
 let totalPlatforms = 0;
 let passedValidation = 0;
 let failedValidation = 0;
-let stalePlatforms: string[] = [];
-let validationErrors: { file: string; errors: string[] }[] = [];
+const stalePlatforms = [];
+const validationErrors = [];
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const today = new Date();
@@ -214,11 +173,11 @@ console.log('╚═════════════════════�
 for (const file of platformFiles) {
   const filePath = path.join(platformsDir, file);
   totalPlatforms++;
-  let errors: string[] = [];
+  let errors = [];
 
   try {
     const platformData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-    const platform = platformData as Platform;
+    const platform = platformData;
 
     // 1. Validate platform structure (schema validation)
     errors = validatePlatformStructure(platform, file);
