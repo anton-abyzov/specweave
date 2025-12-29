@@ -403,6 +403,29 @@ program
     await syncCmd.parseAsync(['node', 'sync-scheduled', ...process.argv.slice(3)], { from: 'user' });
   });
 
+// Sync-progress command - Comprehensive progress sync with auto-create
+program
+  .command('sync-progress [increment-id]')
+  .description('Comprehensive progress sync: tasks → ACs → living docs → AUTO-CREATE external issues → sync')
+  .option('--dry-run', 'Preview without making changes')
+  .option('--no-create', 'Skip auto-creating external issues')
+  .option('--no-github', 'Skip GitHub sync')
+  .option('--no-jira', 'Skip JIRA sync')
+  .option('--no-ado', 'Skip Azure DevOps sync')
+  .option('--force', 'Force sync even if no changes detected')
+  .action(async (incrementId, options) => {
+    const { syncProgress } = await import('../dist/src/cli/commands/sync-progress.js');
+    const args = [];
+    if (incrementId) args.push(incrementId);
+    if (options.dryRun) args.push('--dry-run');
+    if (!options.create) args.push('--no-create');
+    if (!options.github) args.push('--no-github');
+    if (!options.jira) args.push('--no-jira');
+    if (!options.ado) args.push('--no-ado');
+    if (options.force) args.push('--force');
+    await syncProgress(args);
+  });
+
 // Docs command - Documentation preview, build, validation
 const docsCmd = program
   .command('docs')

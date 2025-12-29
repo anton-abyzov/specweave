@@ -1,4 +1,4 @@
-<!-- SW:META template="claude" version="1.0.47" sections="header,start,autodetect,metarule,rules,workflow,context,structure,taskformat,secrets,syncing,mapping,testing,limits,troubleshooting,principles,linking,docs" -->
+<!-- SW:META template="claude" version="1.0.48" sections="header,start,autodetect,metarule,rules,workflow,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,limits,troubleshooting,principles,linking,docs" -->
 
 <!-- SW:SECTION:header version="1.0.46" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
@@ -75,6 +75,25 @@ grep -ril "keyword" .specweave/docs/internal/  # Search for related docs
 
 **Always check ADRs** before design decisions. Use `/sw:context <topic>` to load context.
 <!-- SW:END:context -->
+
+<!-- SW:SECTION:lsp version="1.0.1" -->
+## LSP-Enhanced Exploration (DEFAULT - Claude Code 2.0.74+)
+
+**LSP is ENABLED BY DEFAULT** - 100x faster than grep for symbol resolution.
+
+**LSP Operations** (used automatically):
+| Operation | Purpose | Use Case |
+|-----------|---------|----------|
+| `goToDefinition` | Jump to symbol definition | Find function/class definitions |
+| `findReferences` | All usages across codebase | Refactoring impact analysis |
+| `documentSymbol` | File structure/hierarchy | Understand module organization |
+| `hover` | Type info & documentation | Check inferred types |
+| `getDiagnostics` | Errors, warnings, hints | Real-time code quality |
+
+**Living Docs & Init use LSP automatically**. Disable with `--no-lsp` (not recommended).
+
+**Install Language Servers**: `npm i -g typescript-language-server` | `pip install python-lsp-server`
+<!-- SW:END:lsp -->
 
 <!-- SW:SECTION:structure version="1.0.46" -->
 ## Structure
