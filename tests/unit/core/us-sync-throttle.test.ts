@@ -156,15 +156,17 @@ describe('USSyncThrottle', () => {
 
   describe('getTimeSinceLastSync()', () => {
     it('returns time difference for synced increment', () => {
-      const realNow = Date.now();
+      const baseTime = 1000000000000; // Fixed base time to avoid timing flakiness
+
+      // Mock Date.now() to return fixed time for recordSync
+      vi.spyOn(Date, 'now').mockReturnValue(baseTime);
       throttle.recordSync('0053-safe-feature-deletion');
 
       // Mock Date.now() to return time 5 seconds later
-      vi.spyOn(Date, 'now').mockReturnValue(realNow + 5000);
+      vi.spyOn(Date, 'now').mockReturnValue(baseTime + 5000);
 
       const timeSince = throttle.getTimeSinceLastSync('0053-safe-feature-deletion');
-      expect(timeSince).toBeGreaterThanOrEqual(5000);
-      expect(timeSince).toBeLessThan(6000); // Allow for small timing variance
+      expect(timeSince).toBe(5000); // Exact match since we control both timestamps
 
       vi.restoreAllMocks();
     });
