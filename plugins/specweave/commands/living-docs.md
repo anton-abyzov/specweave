@@ -1,7 +1,7 @@
 ---
 name: sw:living-docs
-description: Launch or resume Living Docs Builder independently. Generates comprehensive enterprise documentation from codebase analysis with AI-powered insights.
-usage: /sw:living-docs [--resume <jobId>] [--depth <level>] [--priority <modules>] [--sources <folders>] [--depends-on <jobIds>] [--foreground] [--full-scan]
+description: Launch or resume Living Docs Builder independently. Generates comprehensive enterprise documentation from codebase analysis with AI-powered insights. LSP-enhanced by default for accurate API extraction.
+usage: /sw:living-docs [--resume <jobId>] [--depth <level>] [--priority <modules>] [--sources <folders>] [--depends-on <jobIds>] [--foreground] [--full-scan] [--no-lsp]
 ---
 
 # Living Docs Builder (Standalone)
@@ -21,6 +21,41 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 
 ---
 
+## LSP-Enhanced Analysis (DEFAULT - Claude Code 2.0.74+)
+
+**LSP is ENABLED BY DEFAULT** for all living docs operations. This dramatically improves documentation accuracy:
+
+| Without LSP (--no-lsp) | With LSP (DEFAULT) |
+|------------------------|-------------------|
+| Grep-based symbol search (~45s) | Semantic symbol resolution (~50ms) |
+| Text-based import parsing | Accurate dependency graphs |
+| Limited type inference | Full type hierarchy |
+| May miss indirect references | Complete reference tracking |
+
+**LSP runs automatically** - just ensure language servers are installed:
+```bash
+# Full scan (LSP enabled by default)
+/sw:living-docs --full-scan
+
+# Install language servers for your stack:
+npm install -g typescript-language-server typescript  # TypeScript/JS
+pip install python-lsp-server                          # Python
+go install golang.org/x/tools/gopls@latest            # Go
+rustup component add rust-analyzer                     # Rust
+
+# Disable LSP only if needed (not recommended):
+/sw:living-docs --full-scan --no-lsp
+```
+
+**LSP provides** (automatically):
+- **Accurate API surface extraction** - All exports, types, signatures with full type info
+- **Semantic dependency graphs** - Based on actual symbol resolution, not text patterns
+- **Dead code detection** - Identifies unreferenced symbols across codebase
+- **Type hierarchy maps** - Interface implementations, class inheritance
+- **Cross-module relationships** - Precise "used by" and "depends on" mappings
+
+---
+
 ## Command Options
 
 | Option | Description |
@@ -34,6 +69,7 @@ Launch the Living Docs Builder independently of `specweave init`. This is essent
 | `--foreground` | Run in current session instead of background |
 | `--force` | Force run even for greenfield projects |
 | `--full-scan` | **Force full enterprise scan** - All 8 phases including enterprise KB, delivery/ops docs, diagrams |
+| `--no-lsp` | **Disable LSP analysis** - Falls back to grep-based symbol search (not recommended, use only if language servers unavailable) |
 
 ---
 
