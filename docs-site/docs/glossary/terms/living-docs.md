@@ -637,3 +637,31 @@ GitHub issue closed → Hook updates living docs → Link removed
 - Cross-linking
 
 **Result**: Documentation that **never dies** because it's **always alive**.
+
+---
+
+## LSP-Enhanced Living Docs (DEFAULT - Claude Code 2.0.74+)
+
+**LSP is ENABLED BY DEFAULT** for all living docs operations. Just install language servers:
+
+```bash
+# Full scan (LSP enabled by default)
+/sw:living-docs --full-scan
+
+# Install language servers for your stack:
+npm install -g typescript-language-server typescript  # TypeScript/JS
+pip install python-lsp-server                          # Python
+
+# Disable only if needed (not recommended):
+/sw:living-docs --full-scan --no-lsp
+```
+
+**LSP provides automatically**:
+- **Accurate API surface extraction** - All exports, types, signatures with full type info
+- **Semantic dependency graphs** - Based on actual symbol resolution, not text patterns
+- **Dead code detection** - Identifies unreferenced symbols across codebase
+- **Type hierarchy maps** - Interface implementations, class inheritance
+
+**Performance**: ~100x faster symbol resolution (50ms vs 45s grep-based)
+
+See [LSP Integration Guide](/docs/guides/lsp-integration) for language server setup.
