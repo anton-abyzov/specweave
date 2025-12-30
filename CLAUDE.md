@@ -1,10 +1,10 @@
-<!-- SW:META template="claude" version="1.0.62" sections="header,start,autodetect,metarule,rules,workflow,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,principles,linking,mcp,autoexecute,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.60" sections="header,start,autodetect,metarule,rules,workflow,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,principles,linking,mcp,autoexecute,auto,docs" -->
 
-<!-- SW:SECTION:header version="1.0.56" -->
+<!-- SW:SECTION:header version="1.0.60" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
-<!-- SW:SECTION:start version="1.0.56" -->
+<!-- SW:SECTION:start version="1.0.60" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -14,7 +14,7 @@
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.56" -->
+<!-- SW:SECTION:autodetect version="1.0.60" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -24,7 +24,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.56" -->
+<!-- SW:SECTION:metarule version="1.0.60" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -35,7 +35,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.56" -->
+<!-- SW:SECTION:rules version="1.0.60" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (spec.md, plan.md, tasks.md at root; reports/, scripts/, logs/ subfolders)
@@ -45,7 +45,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.58" -->
+<!-- SW:SECTION:workflow version="1.0.60" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -65,7 +65,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:context version="1.0.56" -->
+<!-- SW:SECTION:context version="1.0.60" -->
 ## Living Docs Context
 
 **Before implementing features**: Check existing docs for patterns and decisions.
@@ -85,7 +85,7 @@ grep -ril "keyword" .specweave/docs/internal/
 **Use `/sw:context <topic>`** to load relevant living docs into conversation.
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:lsp version="1.0.56" -->
+<!-- SW:SECTION:lsp version="1.0.60" -->
 ## LSP-Enhanced Exploration (DEFAULT - Claude Code 2.0.74+)
 
 **LSP is ENABLED BY DEFAULT** for all SpecWeave operations - 100x faster than grep for symbol resolution.
@@ -150,7 +150,7 @@ rustup component add rust-analyzer
 - Combine with Explore agent for comprehensive codebase understanding
 <!-- SW:END:lsp -->
 
-<!-- SW:SECTION:structure version="1.0.59" -->
+<!-- SW:SECTION:structure version="1.0.60" -->
 ## Structure
 
 ```
@@ -206,7 +206,7 @@ The implementation path is ALWAYS: `repositories/my-api/` (NOT `my-api/` in root
 **Path syntax**: `//path` = absolute | `/path` = relative to settings file | `**` = recursive | `additionalDirectories` = explicit working dirs
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.56" -->
+<!-- SW:SECTION:taskformat version="1.0.60" -->
 ## Task Format
 
 ```markdown
@@ -216,7 +216,7 @@ The implementation path is ALWAYS: `repositories/my-api/` (NOT `my-api/` in root
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.56" -->
+<!-- SW:SECTION:secrets version="1.0.60" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -227,7 +227,7 @@ gh auth status
 ```
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.56" -->
+<!-- SW:SECTION:syncing version="1.0.60" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **After increment creation**: Run `/sw-github:sync {id}` to create issues!
@@ -255,7 +255,7 @@ Living docs sync ≠ External sync. They are separate:
 **Verify tokens**: `grep GITHUB_TOKEN .env` | `gh auth status`
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:mapping version="1.0.56" -->
+<!-- SW:SECTION:mapping version="1.0.60" -->
 ## GitHub Mapping
 
 | SpecWeave | GitHub |
@@ -265,7 +265,7 @@ Living docs sync ≠ External sync. They are separate:
 | Task T-XXX | Checkbox |
 <!-- SW:END:mapping -->
 
-<!-- SW:SECTION:testing version="1.0.56" -->
+<!-- SW:SECTION:testing version="1.0.60" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -277,7 +277,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:api version="1.0.61" -->
+<!-- SW:SECTION:api version="1.0.60" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** Skip this section if your project has no REST/GraphQL endpoints.
@@ -314,21 +314,21 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 |-----------|-----------------|-------|
 | **NestJS** | `@nestjs/swagger` | Decorators auto-generate OpenAPI |
 | **FastAPI** | Built-in | Auto-generates at `/openapi.json` |
-| **Express** | `swagger-jsdoc` | JSDoc comments -> OpenAPI |
+| **Express** | `swagger-jsdoc` | JSDoc comments → OpenAPI |
 | **Spring Boot** | `springdoc-openapi` | Annotations auto-generate |
-| **Go/Gin** | `swag` | Comments -> OpenAPI |
+| **Go/Gin** | `swag` | Comments → OpenAPI |
 
 ### Workflow
 
 ```
-Code (decorators/annotations)
-        |
-        v (auto-generated or manual)
-openapi.yaml (SOURCE OF TRUTH - version controlled)
-        |
-        v (derived on /sw:done or /sw:api-docs)
-├── postman-collection.json (requests with {{baseUrl}} variables)
-└── postman-environment.json (variables from .env, secrets marked)
+┌─────────────────────────────────────────────────────────────┐
+│ Code (decorators/annotations)                                │
+│         ↓ (auto-generated or manual)                         │
+│ openapi.yaml (SOURCE OF TRUTH - version controlled)         │
+│         ↓ (derived on /sw:done or /sw:api-docs)             │
+│ ├── postman-collection.json (requests with {{baseUrl}})     │
+│ └── postman-environment.json (variables from .env)          │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ### Commands
@@ -350,7 +350,7 @@ openapi.yaml (SOURCE OF TRUTH - version controlled)
 /sw:api-docs --validate
 
 # Generate on increment close (automatic if enabled)
-/sw:done 0001  # -> triggers API doc generation
+/sw:done 0001  # → triggers API doc generation
 ```
 
 ### Postman Import
@@ -370,13 +370,13 @@ After generation:
 | `manual` | Only via `/sw:api-docs` command |
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.56" -->
+<!-- SW:SECTION:limits version="1.0.60" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.56" -->
+<!-- SW:SECTION:troubleshooting version="1.0.60" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -395,7 +395,7 @@ After generation:
 | Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:principles version="1.0.56" -->
+<!-- SW:SECTION:principles version="1.0.60" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -405,7 +405,7 @@ After generation:
 5. **Clean**: All files in increment folders
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.56" -->
+<!-- SW:SECTION:linking version="1.0.60" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -413,366 +413,93 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.62" -->
-## External Service Connection (CLI-First, Smart Fallbacks)
+<!-- SW:SECTION:mcp version="1.0.60" -->
+## External Service Connection (MCP + Smart Fallbacks)
 
-**Core principle: CLIs are LLM-native. Use them when authenticated.**
+**Core principle: Never fight connection issues. Use the path of least resistance.**
 
-### Connection Priority
+### Connection Priority (ALWAYS follow this order)
 
 ```
-Authenticated CLI → REST API → MCP Server → SDK/Client
-        ↑                                        ↓
-  MOST EFFICIENT                              FALLBACK
+MCP Server → REST API → SDK/Client → CLI → Direct Connection
+     ↑                                              ↓
+   BEST                                          WORST
 ```
 
-**Why CLI-first?** LLMs can invoke CLIs directly, parse output, handle errors, and chain commands efficiently.
+### Service Connection Matrix
 
-### Pre-Flight Check (MANDATORY)
+| Service | BEST Method | Fallback | AVOID |
+|---------|-------------|----------|-------|
+| **Supabase** | MCP Server | REST API / JS Client | Direct `psql` (IPv6 issues) |
+| **Cloudflare** | `wrangler` + OAuth | REST API | Manual curl |
+| **PostgreSQL** | MCP / Pooler (6543) | `psql` with pooler | Direct port 5432 |
+| **MongoDB** | Atlas Data API | MCP / Driver | Direct connection |
+| **Redis** | Upstash REST | MCP | `redis-cli` (TCP issues) |
+| **AWS** | CLI with SSO | SDK | Hardcoded keys |
+| **Vercel** | CLI with OAuth | REST API | Manual deploys |
 
-**Run this BEFORE any external service operation:**
+### Quick Setup Commands
 
 ```bash
-# Check all CLI auth at once
-supabase projects list 2>/dev/null && echo "✓ Supabase"
-wrangler whoami 2>/dev/null && echo "✓ Cloudflare"
-gh auth status 2>/dev/null && echo "✓ GitHub"
-vercel whoami 2>/dev/null && echo "✓ Vercel"
-aws sts get-caller-identity 2>/dev/null && echo "✓ AWS"
-
-# Check .env for API keys
-grep -E "(SUPABASE_|GITHUB_TOKEN|CF_|VERCEL_|AWS_)" .env 2>/dev/null
-```
-
----
-
-### Supabase
-
-**Credentials needed:**
-
-| Credential | Where to find | Format |
-|------------|---------------|--------|
-| **Project Ref** | Dashboard → Settings → General → "Reference ID" | `abcdefghijkl` (12 chars) |
-| **Access Token** | Dashboard → Account (top-right) → Access Tokens → Generate | `sbp_xxxxxxxxxxxxxxxx` |
-| **Org ID** (optional) | Dashboard → Org Settings → General | `org-xxxxx` |
-| **Database Password** | Dashboard → Settings → Database → Connection string | In the URI |
-| **API URL** | Dashboard → Settings → API → "Project URL" | `https://xxx.supabase.co` |
-| **Anon Key** | Dashboard → Settings → API → "anon public" | `eyJhbGc...` (JWT) |
-| **Service Role Key** | Dashboard → Settings → API → "service_role" (secret!) | `eyJhbGc...` (JWT) |
-
-**CLI Setup (PREFERRED):**
-```bash
-# 1. Login (one-time, opens browser)
-supabase login
-
-# 2. Link project (in your project directory)
-supabase link --project-ref <PROJECT_REF>
-# Optional: --password <DB_PASSWORD> to skip prompt
-
-# 3. Verify
-supabase projects list
-```
-
-**CLI Operations (once linked):**
-```bash
-supabase db push                      # Apply migrations
-supabase db pull                      # Pull remote schema
-supabase db reset                     # Reset to migrations
-supabase functions deploy <name>      # Deploy edge function
-supabase secrets set KEY=value        # Set secrets
-supabase gen types typescript         # Generate types
-supabase migration new <name>         # Create migration
-```
-
-**If CLI has network issues, use Access Token:**
-```bash
-SUPABASE_ACCESS_TOKEN=sbp_xxx supabase db push
-```
-
-**REST API Fallback (.env):**
-```bash
-SUPABASE_URL=https://xxx.supabase.co
-SUPABASE_ANON_KEY=eyJhbGc...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGc...  # For admin operations
-```
-
-**Direct DB (use pooler port 6543, NOT 5432):**
-```bash
-DATABASE_URL="postgresql://postgres.PROJECT_REF:PASSWORD@aws-0-REGION.pooler.supabase.com:6543/postgres"
-```
-
----
-
-### Cloudflare (Wrangler)
-
-**Credentials needed:**
-
-| Credential | Where to find | Format |
-|------------|---------------|--------|
-| **Account ID** | Dashboard → any domain → Overview → right sidebar | `32-char hex` |
-| **API Token** | Dashboard → My Profile → API Tokens → Create | `xxxxx` (40+ chars) |
-| **Zone ID** (per domain) | Dashboard → domain → Overview → right sidebar | `32-char hex` |
-
-**CLI Setup (PREFERRED - uses OAuth):**
-```bash
-# Login via browser (recommended)
-wrangler login
-
-# Verify
-wrangler whoami
-```
-
-**CLI Operations:**
-```bash
-wrangler deploy                           # Deploy worker
-wrangler dev                              # Local dev server
-wrangler kv namespace list                # List KV namespaces
-wrangler kv key put --binding=KV k "v"    # KV write
-wrangler d1 list                          # List D1 databases
-wrangler d1 execute DB --command "SQL"    # D1 query
-wrangler r2 bucket list                   # List R2 buckets
-echo "secret" | wrangler secret put NAME  # Set secret (non-interactive)
-wrangler tail                             # Live logs
-wrangler pages deploy ./dist              # Deploy Pages
-```
-
-**API Token Fallback (.env):**
-```bash
-CLOUDFLARE_API_TOKEN=xxxxx
-CLOUDFLARE_ACCOUNT_ID=xxxxx
-# Per-domain operations:
-CLOUDFLARE_ZONE_ID=xxxxx
-```
-
-**wrangler.toml (project config):**
-```toml
-name = "my-worker"
-main = "src/index.ts"
-compatibility_date = "2024-01-01"
-account_id = "YOUR_ACCOUNT_ID"  # Optional if logged in
-
-[[kv_namespaces]]
-binding = "KV"
-id = "xxxxx"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "my-db"
-database_id = "xxxxx"
-```
-
----
-
-### GitHub (gh CLI)
-
-**Credentials needed:**
-
-| Credential | Where to find | Format |
-|------------|---------------|--------|
-| **Personal Access Token** | Settings → Developer settings → Personal access tokens → Fine-grained | `github_pat_xxx` |
-| **Classic Token** | Same location, "Tokens (classic)" | `ghp_xxxxx` |
-
-**CLI Setup (PREFERRED):**
-```bash
-# Interactive login (opens browser)
-gh auth login
-
-# Or with token
-gh auth login --with-token < token.txt
-# Or: export GITHUB_TOKEN=ghp_xxx && gh auth status
-
-# Verify
-gh auth status
-```
-
-**CLI Operations:**
-```bash
-gh repo clone owner/repo                  # Clone
-gh issue list                             # List issues
-gh issue create --title "X" --body "Y"    # Create issue
-gh pr create --fill                       # Create PR
-gh pr merge --auto --squash               # Auto-merge
-gh workflow list                          # List workflows
-gh workflow run deploy.yml                # Trigger workflow
-gh api repos/{owner}/{repo}/issues        # Raw API call
-gh release create v1.0.0                  # Create release
-```
-
-**Token Fallback (.env):**
-```bash
-GITHUB_TOKEN=ghp_xxxxx
-# Or for GitHub Apps:
-GITHUB_APP_ID=xxxxx
-GITHUB_PRIVATE_KEY="-----BEGIN RSA..."
-```
-
----
-
-### Vercel
-
-**Credentials needed:**
-
-| Credential | Where to find | Format |
-|------------|---------------|--------|
-| **Token** | Settings → Tokens → Create | `xxxxx` |
-| **Org ID** | Settings → General → "Vercel ID" | `team_xxxxx` |
-| **Project ID** | Project → Settings → General | `prj_xxxxx` |
-
-**CLI Setup (PREFERRED):**
-```bash
-# Login via browser
-vercel login
-
-# Or with token
-vercel login --token xxxxx
-
-# Verify
-vercel whoami
-```
-
-**CLI Operations:**
-```bash
-vercel                                    # Deploy (interactive)
-vercel --prod                             # Production deploy
-vercel env pull .env.local                # Pull env vars
-vercel env add SECRET production          # Add env var
-vercel logs                               # View logs
-vercel domains ls                         # List domains
-vercel link                               # Link to project
-```
-
-**Token Fallback (.env):**
-```bash
-VERCEL_TOKEN=xxxxx
-VERCEL_ORG_ID=team_xxxxx
-VERCEL_PROJECT_ID=prj_xxxxx
-```
-
----
-
-### AWS
-
-**Credentials needed:**
-
-| Credential | Where to find | Format |
-|------------|---------------|--------|
-| **Access Key ID** | IAM → Users → Security credentials → Create access key | `AKIA...` (20 chars) |
-| **Secret Access Key** | Same (shown once at creation) | `xxxxx` (40 chars) |
-| **Region** | Choose based on location | `us-east-1`, `eu-west-1`, etc. |
-| **SSO Start URL** | AWS SSO config (if using SSO) | `https://xxx.awsapps.com/start` |
-
-**CLI Setup:**
-```bash
-# Option 1: Configure with keys
-aws configure
-# Prompts for: Access Key, Secret Key, Region, Output format
-
-# Option 2: SSO (recommended for orgs)
-aws configure sso
-# Prompts for: SSO start URL, SSO region, account, role
-
-# Login (SSO)
-aws sso login --profile your-profile
-
-# Verify
-aws sts get-caller-identity
-```
-
-**CLI Operations:**
-```bash
-aws s3 ls                                 # List buckets
-aws s3 cp file.txt s3://bucket/           # Upload
-aws lambda list-functions                 # List Lambdas
-aws lambda invoke --function-name X out   # Invoke Lambda
-aws logs tail /aws/lambda/X --follow      # Tail logs
-aws secretsmanager get-secret-value --secret-id X  # Get secret
-aws ecr get-login-password | docker login # ECR login
-```
-
-**Credentials Fallback (.env):**
-```bash
-AWS_ACCESS_KEY_ID=AKIA...
-AWS_SECRET_ACCESS_KEY=xxxxx
-AWS_REGION=us-east-1
-# Or for assumed roles:
-AWS_ROLE_ARN=arn:aws:iam::xxx:role/xxx
-```
-
----
-
-### MongoDB Atlas
-
-**Credentials needed:**
-
-| Credential | Where to find | Format |
-|------------|---------------|--------|
-| **Connection String** | Cluster → Connect → Drivers | `mongodb+srv://user:pass@cluster.xxx.mongodb.net/` |
-| **Data API Key** | Data API → Create API Key | `xxxxx` |
-| **App ID** | Data API → App ID | `data-xxxxx` |
-
-**Data API (.env):**
-```bash
-MONGODB_DATA_API_KEY=xxxxx
-MONGODB_APP_ID=data-xxxxx
-MONGODB_CLUSTER=Cluster0
-MONGODB_DATABASE=mydb
-```
-
----
-
-### Upstash Redis
-
-**Credentials needed:**
-
-| Credential | Where to find | Format |
-|------------|---------------|--------|
-| **REST URL** | Database → REST API → UPSTASH_REDIS_REST_URL | `https://xxx.upstash.io` |
-| **REST Token** | Same section → UPSTASH_REDIS_REST_TOKEN | `AXxx...` |
-
-**REST API (.env):**
-```bash
-UPSTASH_REDIS_REST_URL=https://xxx.upstash.io
-UPSTASH_REDIS_REST_TOKEN=AXxx...
-```
-
----
-
-### When to Use MCP
-
-Use MCP servers when CLI is unavailable or you need structured responses:
-
-```bash
+# MCP Servers (one-time, restart Claude Code after)
 npx @anthropic-ai/claude-code-mcp add supabase
 npx @anthropic-ai/claude-code-mcp add postgres
-# Restart Claude Code after adding
+
+# CLI Auth (persistent OAuth sessions)
+wrangler login        # Cloudflare
+vercel login          # Vercel
+aws configure sso     # AWS
+supabase login        # Supabase CLI
+
+# Verify auth status
+wrangler whoami && vercel whoami && aws sts get-caller-identity
 ```
 
----
+### Supabase (Most Common Issues)
 
-### Smart Credential Request Template
+```bash
+# ❌ DON'T: Direct psql or supabase db push (IPv6 fails)
+supabase db push  # Often fails with connection errors
 
-**When credentials are missing, ask specifically:**
+# ✅ DO: Use REST API or MCP
+# REST API works everywhere - no network issues
+curl "${SUPABASE_URL}/rest/v1/table" \
+  -H "apikey: ${SUPABASE_ANON_KEY}"
 
-```markdown
-🔐 **[Service] Setup Needed**
-
-I need to connect to your [Service]. Please provide:
-
-| What I need | Where to find it |
-|-------------|------------------|
-| **[Credential 1]** | [Exact path in dashboard] |
-| **[Credential 2]** | [Exact path in dashboard] |
-
-**Or run:** `[cli login command]`
-
-[I'll configure and execute automatically]
+# For migrations: Use Supabase Dashboard SQL Editor
+# OR use connection pooler (port 6543, NOT 5432)
+DATABASE_URL="postgresql://postgres.[ref]:[pass]@aws-0-region.pooler.supabase.com:6543/postgres"
 ```
+
+### Cloudflare Workers
+
+```bash
+# One-time login (saves OAuth session)
+wrangler login
+
+# All operations then work:
+wrangler deploy                          # Deploy worker
+echo "value" | wrangler secret put KEY   # Set secret
+wrangler kv:key put --binding=KV k v     # KV operations
+wrangler d1 execute DB --command "SQL"   # D1 database
+```
+
+### Auto-Detection (Run Before External Ops)
+
+```bash
+# Check configured services
+grep -E "SUPABASE_|DATABASE_URL|MONGODB|UPSTASH|CF_API" .env 2>/dev/null
+wrangler whoami 2>/dev/null
+aws sts get-caller-identity 2>/dev/null
+```
+
+**Full reference**: See `/sw:service-connect` skill for complete patterns.
 <!-- SW:END:mcp -->
 
 <!-- SW:SECTION:autoexecute version="1.0.60" -->
 ## Auto-Execute Rule (CRITICAL)
 
-**NEVER output "Manual Step Required" or "Next Steps" when CLI tools are available.**
+**NEVER output "Manual Step Required" or "Next Steps" when credentials are available.**
 
 ### The Golden Rule
 
@@ -780,97 +507,68 @@ I need to connect to your [Service]. Please provide:
 ❌ FORBIDDEN: "Manual Step Required: Open Supabase SQL Editor..."
 ❌ FORBIDDEN: "Next Steps: 1. Run wrangler deploy..."
 ❌ FORBIDDEN: "Execute this SQL in your database console..."
-❌ FORBIDDEN: "Please run this command manually..."
 
-✅ REQUIRED: Use CLI tools directly when authenticated
-✅ REQUIRED: Ask for specific credentials if missing, then execute
+✅ REQUIRED: Execute commands directly using available credentials
 ```
 
 ### Decision Tree
 
 ```
-CLI authenticated? ──YES──→ EXECUTE via CLI
+Credentials in .env? ──YES──→ EXECUTE IMMEDIATELY
          │
          NO
          │
          ▼
-.env has credentials? ──YES──→ EXECUTE via API/CLI
-         │
-         NO
+ASK for credentials (don't show manual steps!)
          │
          ▼
-ASK for SPECIFIC credentials needed
-         │
-         ▼
-User provides → Save if needed → EXECUTE IMMEDIATELY
+Save to .env → EXECUTE IMMEDIATELY → Continue
 ```
 
-### Pre-Flight Check (Run BEFORE any external operation)
+### Credential Lookup (MANDATORY before any external operation)
 
 ```bash
-# Check ALL potentially relevant CLI tools at once
-echo "=== CLI Auth Status ===" && \
-supabase projects list 2>/dev/null && echo "✓ Supabase" || echo "✗ Supabase" && \
-wrangler whoami 2>/dev/null && echo "✓ Wrangler" || echo "✗ Wrangler" && \
-gh auth status 2>/dev/null && echo "✓ GitHub" || echo "✗ GitHub" && \
-vercel whoami 2>/dev/null && echo "✓ Vercel" || echo "✗ Vercel" && \
-aws sts get-caller-identity 2>/dev/null && echo "✓ AWS" || echo "✗ AWS"
+# 1. Check .env
+grep -E "(SUPABASE_|DATABASE_URL|CF_API_|GITHUB_TOKEN)" .env 2>/dev/null
 
-# Check .env for API keys/tokens
-grep -E "(SUPABASE_|DATABASE_URL|GITHUB_TOKEN|OPENAI_|ANTHROPIC_)" .env 2>/dev/null
+# 2. Check CLI auth
+supabase status 2>/dev/null     # Supabase
+wrangler whoami 2>/dev/null     # Cloudflare
+gh auth status 2>/dev/null      # GitHub
+aws sts get-caller-identity 2>/dev/null  # AWS
+
+# 3. Use MCP server if available
+# MCP servers provide direct API access
 ```
 
 ### Auto-Execute Examples
 
 ```bash
-# Supabase - prefer CLI when linked
-if supabase projects list 2>/dev/null; then
-  supabase db push  # ✅ CLI handles auth automatically
-else
-  # Fallback to REST API with tokens
-  curl "${SUPABASE_URL}/rest/v1/..." -H "apikey: ${SUPABASE_ANON_KEY}"
+# Supabase SQL execution
+if [ -n "$DATABASE_URL" ]; then
+  psql "$DATABASE_URL" -f schema.sql  # ✅ Execute directly
 fi
 
-# Cloudflare - wrangler handles everything
+# Wrangler secrets
 if wrangler whoami 2>/dev/null; then
-  wrangler deploy                          # ✅ Deploy
-  echo "$SECRET" | wrangler secret put KEY # ✅ Set secret
-  wrangler d1 execute DB --command "SQL"   # ✅ Database
-fi
-
-# GitHub - gh CLI is extremely capable
-if gh auth status 2>/dev/null; then
-  gh issue create --title "..." --body "..."
-  gh pr create --fill
-  gh api repos/{owner}/{repo}/actions/workflows
+  echo "$SECRET" | wrangler secret put MY_SECRET  # ✅ Execute directly
+  wrangler deploy  # ✅ Deploy directly
 fi
 ```
 
-### If Credentials Missing → ASK Specifically
-
-**Don't ask vaguely. Ask for EXACTLY what you need:**
+### If Credentials Missing → ASK, Don't Show Manual Steps
 
 ```markdown
-🔐 **Supabase Connection Needed**
+🔐 **Credential Required**
 
-To push migrations, I need your Supabase project linked. Either:
+I need your DATABASE_URL to execute the migration.
 
-**Option A** (Recommended): Run these commands:
-\`\`\`bash
-supabase login
-supabase link --project-ref YOUR_PROJECT_REF
-\`\`\`
-Your project ref is at: Dashboard → Settings → General
-
-**Option B**: Provide credentials for .env:
-- SUPABASE_URL: `____________`
-- SUPABASE_SERVICE_ROLE_KEY: `____________`
-
-Which would you prefer?
+**Paste your connection string:**
+[I will save to .env and execute automatically]
 ```
 <!-- SW:END:autoexecute -->
 
-<!-- SW:SECTION:auto version="1.0.57" -->
+<!-- SW:SECTION:auto version="1.0.60" -->
 ## Auto Mode (Autonomous Execution)
 
 **Auto mode enables continuous autonomous execution** until all tasks are complete.
@@ -884,11 +582,10 @@ Which would you prefer?
 - Click buttons in UIs
 
 **If you need external access:**
-1. Check CLI auth status FIRST (`supabase projects list`, `wrangler whoami`, `gh auth status`)
-2. Use authenticated CLI tools directly - they're most efficient for LLMs
-3. Fallback to `.env` credentials + REST API if CLI not available
-4. Use MCP servers only when CLI/API aren't options
-5. If credentials missing → ASK for them, save to `.env`, then EXECUTE
+1. Check for credentials in `.env`
+2. Use CLI tools (`supabase`, `wrangler`, `gh`, `aws`)
+3. Use MCP servers for direct API access
+4. If credentials missing → ASK for them, save to `.env`, then EXECUTE
 
 ### 🧪 Test Execution Loop (MANDATORY)
 
@@ -1007,152 +704,57 @@ test.use({ storageState: 'playwright/.auth/user.json' });
 
 ### 🔐 E2E Authentication (CRITICAL - Avoid Flaky Tests!)
 
-**Auth is the #1 cause of flaky E2E tests. Be ULTRASMART about it:**
+**Auth is the #1 cause of flaky E2E tests. Be ULTRASMART:**
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ E2E AUTH STRATEGY (in order of preference):                  │
-├─────────────────────────────────────────────────────────────┤
-│ 1. BEST: Reuse auth state (storageState)                    │
-│    - Login ONCE in global setup                              │
-│    - Reuse session across all tests                          │
-│    - 10x faster, zero flakiness                              │
-│                                                              │
-│ 2. GOOD: API-based auth (bypass UI)                         │
-│    - Call auth API directly                                  │
-│    - Set cookies/tokens programmatically                     │
-│    - Faster than UI login                                    │
-│                                                              │
-│ 3. AVOID: UI login per test                                 │
-│    - Slow (3-5s per test)                                   │
-│    - Flaky (timing, captcha, rate limits)                   │
-│    - Only for testing login flow itself                      │
-└─────────────────────────────────────────────────────────────┘
-```
+| Strategy | Speed | Reliability | Use When |
+|----------|-------|-------------|----------|
+| **storageState** | ⚡⚡⚡ | ⭐⭐⭐ | Default - login ONCE, reuse |
+| **API auth** | ⚡⚡ | ⭐⭐⭐ | When UI is unstable |
+| **UI login per test** | ⚡ | ⭐ | Only testing login flow |
 
-**Playwright Auth Setup (MANDATORY pattern):**
+**Playwright Auth Setup (MANDATORY):**
 
 ```typescript
-// playwright/auth.setup.ts - Global setup, runs ONCE
+// playwright/auth.setup.ts - Global setup
 import { test as setup } from '@playwright/test';
 
-const authFile = 'playwright/.auth/user.json';
-
 setup('authenticate', async ({ page }) => {
-  // Option 1: UI login (only in setup, not per test!)
   await page.goto('/login');
   await page.fill('[name="email"]', 'test@example.com');
   await page.fill('[name="password"]', 'testpass123');
   await page.click('button[type="submit"]');
   await page.waitForURL('/dashboard');
-
-  // Save auth state for reuse
-  await page.context().storageState({ path: authFile });
-});
-
-// Option 2: API-based auth (PREFERRED - faster, more reliable)
-setup('authenticate via API', async ({ request }) => {
-  const response = await request.post('/api/auth/login', {
-    data: { email: 'test@example.com', password: 'testpass123' }
-  });
-
-  // Extract and save cookies/tokens
-  await request.storageState({ path: authFile });
+  await page.context().storageState({ path: 'playwright/.auth/user.json' });
 });
 ```
 
 ```typescript
-// playwright.config.ts
-export default defineConfig({
-  projects: [
-    // Setup project - runs first
-    { name: 'setup', testMatch: /.*\.setup\.ts/ },
-
-    // Tests use auth state from setup
-    {
-      name: 'chromium',
-      use: {
-        storageState: 'playwright/.auth/user.json',
-      },
-      dependencies: ['setup'],
-    },
-  ],
-});
+// playwright.config.ts - Reuse auth state
+projects: [
+  { name: 'setup', testMatch: /.*\.setup\.ts/ },
+  {
+    name: 'chromium',
+    use: { storageState: 'playwright/.auth/user.json' },
+    dependencies: ['setup'],
+  },
+]
 ```
 
-```typescript
-// tests/dashboard.spec.ts - NO LOGIN CODE NEEDED!
-test('user can view dashboard', async ({ page }) => {
-  // Already authenticated via storageState!
-  await page.goto('/dashboard');
-  await expect(page.locator('h1')).toContainText('Dashboard');
-});
-```
-
-**Handling Auth Edge Cases:**
-
-```typescript
-// For tests that need DIFFERENT users:
-test.describe('admin features', () => {
-  test.use({ storageState: 'playwright/.auth/admin.json' });
-
-  test('admin can delete users', async ({ page }) => {
-    // Uses admin auth state
-  });
-});
-
-// For tests that need NO auth (login page testing):
-test.describe('login flow', () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
-
-  test('shows login form', async ({ page }) => {
-    await page.goto('/login');
-    // Test the actual login UI
-  });
-});
-```
-
-**Common Auth Flakiness Fixes:**
+**Common Auth Fixes:**
 
 | Problem | Solution |
 |---------|----------|
-| Session expires mid-test | Increase token TTL for test env, or refresh in setup |
-| Rate limited on login | Use API auth, not UI; seed test users with known creds |
-| Captcha blocks tests | Disable captcha in test env, or use bypass token |
-| OAuth redirect fails | Mock OAuth provider, or use test-specific flow |
-| Token not persisted | Wait for storage to complete before saving state |
-| Different auth per test | Use separate storageState files per user role |
-
-**Test Database Strategy:**
-
-```typescript
-// global-setup.ts - Seed ONCE before all tests
-async function globalSetup() {
-  // 1. Reset test database to known state
-  await resetTestDatabase();
-
-  // 2. Seed test users (with KNOWN passwords!)
-  await seedTestUsers([
-    { email: 'user@test.local', password: 'Test123!', role: 'user' },
-    { email: 'admin@test.local', password: 'Admin123!', role: 'admin' },
-  ]);
-
-  // 3. Seed test data
-  await seedTestData();
-}
-
-// DON'T create users per test - use seeded users!
-```
+| Session expires | Increase TTL for test env |
+| Rate limited | Use API auth, seed users |
+| Captcha blocks | Disable in test env |
+| OAuth fails | Mock provider |
 
 **Auto Mode E2E Checklist:**
 ```
-Before running E2E tests in auto mode:
-✅ Test users seeded in database with known passwords
-✅ Auth state files generated (user.json, admin.json)
-✅ playwright.config.ts uses storageState
-✅ Individual tests DON'T login (except login flow tests)
-✅ Test env has relaxed rate limits
-✅ Captcha/2FA disabled or bypassed in test env
+✅ Test users seeded with known passwords
+✅ Auth state files generated
+✅ Tests DON'T login (except login flow tests)
+✅ Captcha/2FA disabled in test env
 ```
 
 ### 🔄 Continuous Refactoring (Part of Auto Loop)
@@ -1303,7 +905,7 @@ done
 **Circuit Breaker Pattern**: If external API (GitHub, JIRA) fails 3+ times, queue operations and continue.
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.56" -->
+<!-- SW:SECTION:docs version="1.0.60" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com) | `.specweave/docs/internal/`
