@@ -182,6 +182,171 @@ Pure Ralph Wiggum behavior:
 - **Max Hours**: Time boxing
 - **stop_hook_active**: Prevents infinite continuation loops
 
+## 🔐 Auto-Execute with Credentials (MANDATORY)
+
+**In auto mode, ALL agents MUST follow the auto-execute skill rules:**
+
+### The Golden Rule
+
+```
+❌ FORBIDDEN: "Next Steps: Run wrangler deploy"
+❌ FORBIDDEN: "Execute the schema in Supabase SQL Editor"
+❌ FORBIDDEN: "Set secret via: wrangler secret put..."
+
+✅ REQUIRED: Execute commands DIRECTLY using available credentials
+```
+
+### Credential Lookup Order
+
+Before ANY deployment task, check for credentials:
+
+1. **`.env` file** - Primary credential storage
+2. **Environment variables** - Already loaded in session
+3. **CLI tool auth** - `wrangler whoami`, `gh auth status`, etc.
+4. **Config files** - `wrangler.toml`, `.specweave/config.json`
+
+### If Credentials Found → AUTO-EXECUTE
+
+```bash
+# Example: Supabase migration
+if grep -q "DATABASE_URL" .env; then
+  source .env
+  psql "$DATABASE_URL" -f schema.sql
+fi
+
+# Example: Wrangler deployment
+if wrangler whoami 2>/dev/null; then
+  wrangler deploy
+fi
+```
+
+### If Credentials Missing → ASK, Don't Show Manual Steps
+
+```markdown
+🔐 **Credential Required for Auto-Execution**
+
+I need your Supabase database URL to execute the migration.
+
+**Please paste your DATABASE_URL:**
+[I will save to .env and continue automatically]
+```
+
+**After user provides credential:**
+1. Save to `.env`
+2. EXECUTE immediately
+3. Continue auto mode
+
+See: `plugins/specweave/skills/auto-execute/SKILL.md` for full details.
+
+---
+
+## 🎯 Self-Assessment Scoring (Ralph-Loop Pattern)
+
+**Auto mode uses self-assessment scoring to guide continuation decisions:**
+
+### Confidence Scoring
+
+After each task/iteration, Claude self-assesses execution quality:
+
+```json
+{
+  "iteration": 5,
+  "task": "T-003",
+  "confidence": {
+    "execution_quality": 0.92,     // How well was the task executed?
+    "test_coverage": 0.85,         // Are tests adequate?
+    "spec_alignment": 0.95,        // Does implementation match spec?
+    "credential_success": 1.0,     // Were all deployments successful?
+    "overall": 0.93                // Weighted average
+  },
+  "concerns": [],
+  "blockers": []
+}
+```
+
+### Score Thresholds
+
+| Overall Score | Action |
+|---------------|--------|
+| ≥ 0.90 | ✅ Continue confidently |
+| 0.70-0.89 | ⚠️ Continue with caution, log concerns |
+| 0.50-0.69 | 🟡 Pause for self-review before continuing |
+| < 0.50 | 🔴 Stop and request human review |
+
+### Self-Assessment Prompt (Internal)
+
+After completing each task, evaluate:
+
+```markdown
+<self-assessment>
+Task: T-003 - Implement user authentication
+Status: completed
+
+Execution Quality (0.0-1.0): 0.92
+- ✅ All acceptance criteria met
+- ✅ Tests pass
+- ⚠️ Minor edge case not covered (low impact)
+
+Test Coverage (0.0-1.0): 0.85
+- ✅ Unit tests: 12/12 pass
+- ✅ Integration tests: 5/5 pass
+- ⚠️ E2E test coverage: 75% (target: 80%)
+
+Spec Alignment (0.0-1.0): 0.95
+- ✅ All ACs addressed
+- ✅ Architecture matches plan.md
+
+Credential Success (0.0-1.0): 1.0
+- ✅ Database migration executed successfully
+- ✅ Secrets deployed to Cloudflare
+
+Overall: 0.93 → CONTINUE
+</self-assessment>
+```
+
+### Integration with Stop Hook
+
+The stop hook (`plugins/specweave/hooks/stop-auto.sh`) reads this scoring:
+
+```bash
+# Check self-assessment in transcript
+SCORE=$(grep -oP 'Overall:\s*\K[0-9.]+' "$TRANSCRIPT_PATH" 2>/dev/null | tail -1)
+
+if [ -n "$SCORE" ] && [ "$(echo "$SCORE < 0.50" | bc)" -eq 1 ]; then
+    # Score too low, stop for human review
+    approve "Low confidence score ($SCORE), requesting human review"
+fi
+```
+
+### Test Execution Integration
+
+**Auto mode MUST run tests after completing testable tasks:**
+
+```bash
+# After task completion, if task affects testable code:
+if [[ "$TASK_TYPE" == *"implement"* ]] || [[ "$TASK_TYPE" == *"fix"* ]]; then
+    npm test 2>&1 | tee test-output.log
+
+    if [ $? -ne 0 ]; then
+        # Tests failed - attempt fix
+        echo "🔴 Tests failed, attempting fix..."
+        # Self-healing loop (max 3 attempts)
+    fi
+fi
+```
+
+### Quality Gate Before Continue
+
+Before moving to next task, verify:
+
+1. ✅ Current task marked complete in tasks.md
+2. ✅ Corresponding ACs checked in spec.md
+3. ✅ Tests pass (if applicable)
+4. ✅ No deployment errors (if applicable)
+5. ✅ Self-assessment score ≥ 0.70
+
+---
+
 ## Execution
 
 When this command is invoked:
