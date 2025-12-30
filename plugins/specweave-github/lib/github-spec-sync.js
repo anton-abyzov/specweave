@@ -349,7 +349,6 @@ ${spec.metadata.userStories?.length || 0} user stories tracked in this project.
 
 ---
 
-\u{1F916} **Auto-synced from SpecWeave**
 Last updated: ${(/* @__PURE__ */ new Date()).toISOString()}
 `.trim();
   }
@@ -371,8 +370,6 @@ ${acList}
 
 **Priority**: ${us.priority}
 **Status**: ${us.status}
-
-\u{1F916} **Auto-synced from SpecWeave**
 `.trim();
   }
   /**

@@ -192,6 +192,28 @@ echo ""
 echo "────────────────────────────────────────"
 
 # ============================================================================
+# SECTION 1.5: Auto Session Status (if running)
+# ============================================================================
+
+AUTO_SESSION="$PROJECT_ROOT/.specweave/state/auto-session.json"
+if [[ -f "$AUTO_SESSION" ]] && jq -e '.status == "running"' "$AUTO_SESSION" >/dev/null 2>&1; then
+  ITER=$(jq -r '.iteration // 0' "$AUTO_SESSION")
+  MAX_ITER=$(jq -r '.maxIterations // 100' "$AUTO_SESSION")
+  CURRENT_INC=$(jq -r '.currentIncrement // "unknown"' "$AUTO_SESSION")
+  SESSION_ID=$(jq -r '.sessionId // "unknown"' "$AUTO_SESSION")
+  echo ""
+  echo "🤖 Auto Mode: RUNNING"
+  echo "   Session: $SESSION_ID"
+  echo "   Iteration: $ITER / $MAX_ITER"
+  echo "   Current: $CURRENT_INC"
+  echo ""
+  echo "   Details: /sw:auto-status"
+  echo "   Cancel: /sw:cancel-auto"
+  echo ""
+  echo "────────────────────────────────────────"
+fi
+
+# ============================================================================
 # SECTION 2: Background Jobs
 # ============================================================================
 

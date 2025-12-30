@@ -495,21 +495,31 @@ All tests pass locally. Where should I deploy?
 
 ## Execution
 
+**CRITICAL: You MUST execute the setup script FIRST before any other action!**
+
 When this command is invoked:
 
-1. **Check for existing session**:
-   ```bash
-   if [ -f ".specweave/state/auto-session.json" ]; then
-       # Check status, warn if already running
-   fi
-   ```
+### Step 1: MANDATORY - Run setup-auto.sh (DO THIS FIRST!)
 
-2. **Run setup script**:
-   ```bash
-   bash plugins/specweave/scripts/setup-auto.sh [args]
-   ```
+**Execute this IMMEDIATELY when /sw:auto is invoked:**
 
-3. **Start execution**:
+```bash
+bash plugins/specweave/scripts/setup-auto.sh [args]
+```
+
+Pass any arguments from the user (increment IDs, --max-iterations, --simple, etc.)
+
+**If setup fails, STOP and report the error. Do NOT proceed without session creation.**
+
+### Step 2: Verify session was created
+
+```bash
+cat .specweave/state/auto-session.json | jq -r '.sessionId'
+```
+
+**If file doesn't exist, the setup failed - investigate and fix before continuing.**
+
+### Step 3: Start execution:
    ```
    Now starting autonomous execution...
 

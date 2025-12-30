@@ -385,8 +385,7 @@ ${SpecParser.extractOverview(spec.markdown).replace(/\n/g, '<br>')}
 
 <hr>
 
-<p>🤖 <strong>Auto-synced from SpecWeave</strong><br>
-Last updated: ${new Date().toISOString()}</p>
+<p>Last updated: ${new Date().toISOString()}</p>
 `.trim();
   }
 
@@ -413,8 +412,6 @@ ${acList}
 
 <p><strong>Priority</strong>: ${us.priority}</p>
 <p><strong>Status</strong>: ${us.status}</p>
-
-<p>🤖 <strong>Auto-synced from SpecWeave</strong></p>
 `.trim();
   }
 

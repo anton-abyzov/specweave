@@ -45,9 +45,61 @@ if [ ! -f "$SESSION_FILE" ]; then
     if [ "$JSON_OUTPUT" = "true" ]; then
         echo '{"active": false, "message": "No auto session found"}'
     else
-        echo "ℹ️ No auto session active"
+        echo "Auto Session: Not Active"
         echo ""
-        echo "Start one with: /sw:auto [increment-id]"
+
+        # Check for last session in logs
+        LAST_LOG=$(ls -t "$PROJECT_ROOT/.specweave/logs/auto-"*"-summary.md" 2>/dev/null | head -1)
+        if [ -n "$LAST_LOG" ] && [ -f "$LAST_LOG" ]; then
+            LAST_ID=$(basename "$LAST_LOG" | sed 's/-summary.md$//')
+            echo "Last Session: $LAST_ID"
+            # Show first 3 lines of summary if available
+            head -3 "$LAST_LOG" 2>/dev/null | sed 's/^/  /'
+            echo ""
+        fi
+
+        # Check for active increments that could be auto'd
+        # Priority: active/in-progress > planning > ready_for_review > backlog
+        ACTIVE_INC=""
+        PLANNING_INC=""
+        REVIEW_INC=""
+        for dir in "$INCREMENTS_DIR"/[0-9][0-9][0-9][0-9]-*/; do
+            if [ -d "$dir" ]; then
+                META_FILE="$dir/metadata.json"
+                if [ -f "$META_FILE" ]; then
+                    INC_STATUS=$(jq -r '.status' "$META_FILE" 2>/dev/null || echo "")
+                    case "$INC_STATUS" in
+                        active|in-progress)
+                            ACTIVE_INC=$(basename "$dir")
+                            break
+                            ;;
+                        planning)
+                            [ -z "$PLANNING_INC" ] && PLANNING_INC=$(basename "$dir")
+                            ;;
+                        ready_for_review)
+                            [ -z "$REVIEW_INC" ] && REVIEW_INC=$(basename "$dir")
+                            ;;
+                    esac
+                fi
+            fi
+        done
+        # Fall back to planning or review if no active
+        [ -z "$ACTIVE_INC" ] && [ -n "$PLANNING_INC" ] && ACTIVE_INC="$PLANNING_INC"
+        [ -z "$ACTIVE_INC" ] && [ -n "$REVIEW_INC" ] && ACTIVE_INC="$REVIEW_INC"
+
+        if [ -n "$ACTIVE_INC" ]; then
+            echo "Available increment: $ACTIVE_INC"
+            echo ""
+            echo "Start auto mode:"
+            echo "  /sw:auto              # Use this increment"
+            echo "  /sw:auto $ACTIVE_INC  # Explicit"
+        else
+            echo "No workable increments found."
+            echo ""
+            echo "Start auto mode:"
+            echo "  /sw:auto <increment-id>"
+            echo "  /sw:auto --all-backlog"
+        fi
     fi
     exit 0
 fi
@@ -108,8 +160,8 @@ if [ -n "$PENDING_GATE" ] && [ "$PENDING_GATE" != "null" ]; then
     GATE_OPERATION=$(echo "$PENDING_GATE" | jq -r '.operation // "unknown"')
 fi
 
-# Check circuit breakers
-OPEN_BREAKERS=$(echo "$SESSION" | jq '[.circuitBreakers | to_entries[] | select(.value.state == "open")] | length')
+# Check circuit breakers (handle missing field)
+OPEN_BREAKERS=$(echo "$SESSION" | jq 'if .circuitBreakers then [.circuitBreakers | to_entries[] | select(.value.state == "open")] | length else 0 end')
 
 # JSON output
 if [ "$JSON_OUTPUT" = "true" ]; then
