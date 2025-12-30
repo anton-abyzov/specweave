@@ -11,6 +11,7 @@ import { ConfirmationManager } from './confirmation-manager.js';
 import { DeletionTransaction } from './deletion-transaction.js';
 import { FeatureDeletionGitHubService } from './github-service.js';
 import { FeatureDeletionAuditLogger } from './audit-logger.js';
+import { getProjectRoot } from '../../utils/find-project-root.js';
 
 /**
  * Feature Deleter - Orchestrates safe feature deletion workflow
@@ -24,7 +25,9 @@ export class FeatureDeleter {
   private auditLogger: FeatureDeletionAuditLogger;
 
   constructor(options: FeatureDeleterOptions = {}) {
-    this.projectRoot = options.projectRoot || process.cwd();
+    // CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
+    // accessing wrong .specweave folder when CWD != project root.
+    this.projectRoot = options.projectRoot || getProjectRoot();
     this.logger = options.logger || consoleLogger;
 
     this.validator = new FeatureValidator({

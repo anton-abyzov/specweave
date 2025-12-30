@@ -256,31 +256,37 @@ fi
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] Found sync script: $SYNC_SCRIPT (tsx=$NEEDS_TSX)" >> "$THROTTLE_LOG" 2>/dev/null
 
 # Extract feature ID - check multiple locations in priority order
-# FIXED (v1.0.46): Check metadata.json FIRST (canonical source), then spec.md as fallback
+# FIXED (v1.0.58): Per ADR-0140, feature_id was REMOVED from metadata.json in v0.29.0
+# Feature ID is now DERIVED from increment ID: 0149-... → FS-149
 #
-# Priority order:
-# 1. metadata.json: feature_id field (canonical, set by PM agent)
+# Priority order (v1.0.58):
+# 1. DERIVE from increment ID (PRIMARY - per ADR-0140)
 # 2. metadata.json: epic_id field (for external/brownfield increments)
-# 3. spec.md YAML frontmatter: feature_id: or epic: (legacy/explicit)
-# 4. spec.md markdown: Feature ID: FS-XXX (display format, last resort)
+# 3. spec.md YAML frontmatter: feature_id: or epic: (explicit override)
 #
 META_FILE="$PROJECT_ROOT/.specweave/increments/$INC_ID/metadata.json"
 SPEC_FILE="$PROJECT_ROOT/.specweave/increments/$INC_ID/spec.md"
 FEATURE_ID=""
 
-# Method 1: Check metadata.json (canonical source)
-if [[ -f "$META_FILE" ]]; then
-  # Try feature_id first
-  FEATURE_ID=$(grep -o '"feature_id"[[:space:]]*:[[:space:]]*"[^"]*"' "$META_FILE" | head -1 | sed 's/.*:[[:space:]]*"\([^"]*\)".*/\1/')
-  # Fall back to epic_id
-  if [[ -z "$FEATURE_ID" ]] || [[ "$FEATURE_ID" == "null" ]]; then
-    FEATURE_ID=$(grep -o '"epic_id"[[:space:]]*:[[:space:]]*"[^"]*"' "$META_FILE" | head -1 | sed 's/.*:[[:space:]]*"\([^"]*\)".*/\1/')
-  fi
-  # Check for non-null string value (metadata.json may have feature_id: null)
+# Method 0 (v1.0.58): DERIVE from increment ID (PRIMARY method per ADR-0140)
+# Extract leading digits and optional E suffix, format as FS-XXX
+# Examples: 0149-usage-analytics → FS-149, 0111E-external → FS-111E
+INC_NUMBER=$(echo "$INC_ID" | grep -oE '^[0-9]+')
+INC_EXTERNAL=$(echo "$INC_ID" | grep -oE '^[0-9]+E' | grep -o 'E$' || echo "")
+if [[ -n "$INC_NUMBER" ]]; then
+  # Remove leading zeros for numeric value, then pad to 3 digits
+  INC_NUM_CLEAN=$((10#$INC_NUMBER))  # Force decimal interpretation
+  FEATURE_ID=$(printf "FS-%03d%s" "$INC_NUM_CLEAN" "$INC_EXTERNAL")
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] Derived feature_id=$FEATURE_ID from increment $INC_ID" >> "$THROTTLE_LOG" 2>/dev/null
+fi
+
+# Method 1: Check metadata.json for epic_id (external/brownfield increments only)
+if [[ -z "$FEATURE_ID" ]] && [[ -f "$META_FILE" ]]; then
+  FEATURE_ID=$(grep -o '"epic_id"[[:space:]]*:[[:space:]]*"[^"]*"' "$META_FILE" | head -1 | sed 's/.*:[[:space:]]*"\([^"]*\)".*/\1/')
   [[ "$FEATURE_ID" == "null" ]] && FEATURE_ID=""
 fi
 
-# Method 2: Check spec.md YAML frontmatter
+# Method 2: Check spec.md YAML frontmatter (explicit override)
 if [[ -z "$FEATURE_ID" ]] && [[ -f "$SPEC_FILE" ]]; then
   # Try start-of-line format: feature_id: FS-001 or epic: FS-001
   FEATURE_ID=$(grep -E "^(epic|feature_id|feature):" "$SPEC_FILE" | head -1 | sed 's/.*:[[:space:]]*//' | tr -d '"'"'" | tr -d ' ')
@@ -290,17 +296,10 @@ if [[ -z "$FEATURE_ID" ]] && [[ -f "$SPEC_FILE" ]]; then
   fi
 fi
 
-# Method 3: Check spec.md markdown display format (last resort)
-# PM agent sometimes outputs "Feature ID: FS-001" in markdown body
-if [[ -z "$FEATURE_ID" ]] && [[ -f "$SPEC_FILE" ]]; then
-  FEATURE_ID=$(grep -E "^[*#]*[[:space:]]*(Feature ID|Epic)[[:space:]]*:" "$SPEC_FILE" | head -1 | sed 's/.*:[[:space:]]*//' | tr -d '*#' | tr -d ' ')
-fi
-
 if [[ -z "$FEATURE_ID" ]]; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] WARNING: No feature ID found" >> "$THROTTLE_LOG" 2>/dev/null
-  echo "   Checked metadata.json: $META_FILE" >> "$THROTTLE_LOG" 2>/dev/null
-  echo "   Checked spec.md: $SPEC_FILE" >> "$THROTTLE_LOG" 2>/dev/null
-  echo "   Hint: Ensure PM agent sets feature_id in metadata.json or spec.md frontmatter" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "   Increment ID: $INC_ID" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "   This should not happen - derivation from increment ID should always work" >> "$THROTTLE_LOG" 2>/dev/null
   exit 0
 fi
 

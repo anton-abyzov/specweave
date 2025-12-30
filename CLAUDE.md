@@ -1,4 +1,4 @@
-<!-- SW:META template="claude" version="1.0.58" sections="header,start,autodetect,metarule,rules,workflow,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,principles,linking,mcp,autoexecute,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.60" sections="header,start,autodetect,metarule,rules,workflow,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,principles,linking,mcp,autoexecute,auto,docs" -->
 
 <!-- SW:SECTION:header version="1.0.56" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
@@ -45,7 +45,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.56" -->
+<!-- SW:SECTION:workflow version="1.0.58" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -53,13 +53,16 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 | Cmd | Action |
 |-----|--------|
 | `/sw:increment` | Plan feature |
-| `/sw:do` | Execute |
+| `/sw:do` | Execute tasks |
+| `/sw:auto` | Autonomous execution |
+| `/sw:auto-status` | Check auto session |
+| `/sw:cancel-auto` | Cancel auto session |
 | `/sw:validate` | Quality check |
 | `/sw:done` | Close |
 | `/sw-github:sync` | GitHub sync |
 | `/sw-jira:sync` | Jira sync |
 
-**Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done`
+**Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
 <!-- SW:SECTION:context version="1.0.56" -->
@@ -147,7 +150,7 @@ rustup component add rust-analyzer
 - Combine with Explore agent for comprehensive codebase understanding
 <!-- SW:END:lsp -->
 
-<!-- SW:SECTION:structure version="1.0.56" -->
+<!-- SW:SECTION:structure version="1.0.59" -->
 ## Structure
 
 ```
@@ -160,7 +163,41 @@ rustup component add rust-analyzer
 └── config.json
 ```
 
-**Multi-repo**: Clone to `/repositories`, not root → `repositories/backend/src/...`
+### ⚠️ CRITICAL: Multi-Repo Project Paths (MANDATORY)
+
+**ALL multi-project repositories MUST be created in `repositories/` folder - NEVER in project root!**
+
+```
+❌ FORBIDDEN (pollutes root):
+my-project/
+├── frontend/        ← WRONG!
+├── backend/         ← WRONG!
+├── shared/          ← WRONG!
+└── .specweave/
+
+✅ REQUIRED (clean structure):
+my-project/
+├── repositories/
+│   ├── frontend/    ← CORRECT!
+│   ├── backend/     ← CORRECT!
+│   └── shared/      ← CORRECT!
+└── .specweave/
+```
+
+**This applies to ALL cases:**
+- GitHub multi-repo → `repositories/`
+- Azure DevOps multi-repo → `repositories/`
+- Bitbucket multi-repo → `repositories/`
+- **Local git multi-repo → `repositories/`** ← Same rule!
+- Monorepo with multiple packages → `repositories/` or `packages/`
+
+**When spec.md has `projects:` array:**
+```yaml
+projects:
+  - id: my-api
+    scope: "Backend API"
+```
+The implementation path is ALWAYS: `repositories/my-api/` (NOT `my-api/` in root!)
 
 **Multi-repo permissions**: In `.claude/settings.json`:
 ```json
@@ -240,12 +277,12 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:api version="1.0.58" -->
+<!-- SW:SECTION:api version="1.0.61" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** Skip this section if your project has no REST/GraphQL endpoints.
 
-**Use OpenAPI as the source of truth for API documentation.** Postman collections are derived from OpenAPI.
+**Use OpenAPI as the source of truth for API documentation.** Postman collections and environments are derived from OpenAPI and .env.
 
 ### Configuration (`.specweave/config.json`)
 
@@ -256,11 +293,20 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
     "openApiPath": "openapi.yaml",
     "generatePostman": true,
     "postmanPath": "postman-collection.json",
+    "postmanEnvPath": "postman-environment.json",
     "generateOn": "on-increment-done",
     "baseUrl": "http://localhost:3000"
   }
 }
 ```
+
+### Generated Artifacts
+
+| File | Purpose | Source |
+|------|---------|--------|
+| `openapi.yaml` | API specification (source of truth) | Framework decorators/annotations |
+| `postman-collection.json` | API requests for testing | Derived from OpenAPI |
+| `postman-environment.json` | Variables (baseUrl, tokens, etc.) | Derived from .env |
 
 ### OpenAPI Generation by Framework
 
@@ -281,28 +327,39 @@ Code (decorators/annotations)
 openapi.yaml (SOURCE OF TRUTH - version controlled)
         |
         v (derived on /sw:done or /sw:api-docs)
-postman-collection.json (for manual testing)
+├── postman-collection.json (requests with {{baseUrl}} variables)
+└── postman-environment.json (variables from .env, secrets marked)
 ```
 
 ### Commands
 
 ```bash
-# Generate/update API docs (OpenAPI + Postman)
-/sw:api-docs
+# Generate all API docs (OpenAPI + Postman collection + environment)
+/sw:api-docs --all
+
+# Generate only OpenAPI
+/sw:api-docs --openapi
+
+# Generate only Postman collection from existing OpenAPI
+/sw:api-docs --postman
+
+# Generate only environment file from .env
+/sw:api-docs --env
+
+# Validate existing OpenAPI spec
+/sw:api-docs --validate
 
 # Generate on increment close (automatic if enabled)
 /sw:done 0001  # -> triggers API doc generation
 ```
 
-### Manual Generation (if config disabled)
+### Postman Import
 
-```bash
-# Generate Postman from existing OpenAPI
-npx @postman/openapi-to-postmanv2 -s openapi.yaml -o postman-collection.json
-
-# Generate OpenAPI for Express
-npx swagger-jsdoc -d swagger-config.js -o openapi.yaml
-```
+After generation:
+1. Postman → Import → `postman-collection.json`
+2. Postman → Environments → Import → `postman-environment.json`
+3. Fill in secret values (marked as secret type, values empty)
+4. Select environment from dropdown
 
 ### When Docs Update
 
@@ -356,46 +413,87 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.56" -->
-## MCP Servers (External Service Integration)
+<!-- SW:SECTION:mcp version="1.0.59" -->
+## External Service Connection (MCP + Smart Fallbacks)
 
-**MCP servers extend Claude Code's capabilities for external services.** Install them for autonomous operations.
+**Core principle: Never fight connection issues. Use the path of least resistance.**
 
-### Recommended MCP Servers
+### Connection Priority (ALWAYS follow this order)
 
-| Service | Install | Purpose |
-|---------|---------|---------|
-| **Supabase** | `npx @anthropic/claude-code-mcp-setup add supabase` | Database, Auth, Edge Functions |
-| **GitHub** | Built-in via `gh` CLI | Issues, PRs, Repos |
-| **Postgres** | `npx @anthropic/claude-code-mcp-setup add postgres` | Direct DB access |
-
-### Supabase MCP Setup
-
-```bash
-# Add to Claude Code MCP config
-npx @anthropic/claude-code-mcp-setup add supabase
-
-# Or manual config in .claude/settings.local.json:
-{
-  "mcpServers": {
-    "supabase": {
-      "type": "http",
-      "url": "https://mcp.supabase.com/mcp"
-    }
-  }
-}
+```
+MCP Server → REST API → SDK/Client → CLI → Direct Connection
+     ↑                                              ↓
+   BEST                                          WORST
 ```
 
-### Auto-Install Rule
+### Service Connection Matrix
 
-**If credentials exist for a service, Claude SHOULD auto-install the MCP server:**
+| Service | BEST Method | Fallback | AVOID |
+|---------|-------------|----------|-------|
+| **Supabase** | MCP Server | REST API / JS Client | Direct `psql` (IPv6 issues) |
+| **Cloudflare** | `wrangler` + OAuth | REST API | Manual curl |
+| **PostgreSQL** | MCP / Pooler (6543) | `psql` with pooler | Direct port 5432 |
+| **MongoDB** | Atlas Data API | MCP / Driver | Direct connection |
+| **Redis** | Upstash REST | MCP | `redis-cli` (TCP issues) |
+| **AWS** | CLI with SSO | SDK | Hardcoded keys |
+| **Vercel** | CLI with OAuth | REST API | Manual deploys |
+
+### Quick Setup Commands
 
 ```bash
-# If SUPABASE_URL exists → suggest/install Supabase MCP
-if grep -q "SUPABASE_URL" .env 2>/dev/null; then
-  npx @anthropic/claude-code-mcp-setup add supabase
-fi
+# MCP Servers (one-time, restart Claude Code after)
+npx @anthropic-ai/claude-code-mcp add supabase
+npx @anthropic-ai/claude-code-mcp add postgres
+
+# CLI Auth (persistent OAuth sessions)
+wrangler login        # Cloudflare
+vercel login          # Vercel
+aws configure sso     # AWS
+supabase login        # Supabase CLI
+
+# Verify auth status
+wrangler whoami && vercel whoami && aws sts get-caller-identity
 ```
+
+### Supabase (Most Common Issues)
+
+```bash
+# ❌ DON'T: Direct psql or supabase db push (IPv6 fails)
+supabase db push  # Often fails with connection errors
+
+# ✅ DO: Use REST API or MCP
+# REST API works everywhere - no network issues
+curl "${SUPABASE_URL}/rest/v1/table" \
+  -H "apikey: ${SUPABASE_ANON_KEY}"
+
+# For migrations: Use Supabase Dashboard SQL Editor
+# OR use connection pooler (port 6543, NOT 5432)
+DATABASE_URL="postgresql://postgres.[ref]:[pass]@aws-0-region.pooler.supabase.com:6543/postgres"
+```
+
+### Cloudflare Workers
+
+```bash
+# One-time login (saves OAuth session)
+wrangler login
+
+# All operations then work:
+wrangler deploy                          # Deploy worker
+echo "value" | wrangler secret put KEY   # Set secret
+wrangler kv:key put --binding=KV k v     # KV operations
+wrangler d1 execute DB --command "SQL"   # D1 database
+```
+
+### Auto-Detection (Run Before External Ops)
+
+```bash
+# Check configured services
+grep -E "SUPABASE_|DATABASE_URL|MONGODB|UPSTASH|CF_API" .env 2>/dev/null
+wrangler whoami 2>/dev/null
+aws sts get-caller-identity 2>/dev/null
+```
+
+**Full reference**: See `/sw:service-connect` skill for complete patterns.
 <!-- SW:END:mcp -->
 
 <!-- SW:SECTION:autoexecute version="1.0.56" -->

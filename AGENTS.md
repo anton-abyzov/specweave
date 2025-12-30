@@ -288,6 +288,7 @@ const testUsers = {
     "enabled": true,
     "openApiPath": "openapi.yaml",
     "generatePostman": true,
+    "postmanEnvPath": "postman-environment.json",
     "generateOn": "on-increment-done"
   }
 }
@@ -295,8 +296,15 @@ const testUsers = {
 
 **Workflow:**
 ```
-Code (decorators) → openapi.yaml (source of truth) → postman-collection.json
+Code (decorators) → openapi.yaml (source of truth) → postman-collection.json + postman-environment.json
 ```
+
+**Generated Files:**
+| File | Purpose |
+|------|---------|
+| `openapi.yaml` | API spec (source of truth) |
+| `postman-collection.json` | Requests with `{{baseUrl}}` variables |
+| `postman-environment.json` | Variables from .env (secrets marked) |
 
 **Framework Support:**
 | Framework | OpenAPI Generation |
@@ -308,7 +316,8 @@ Code (decorators) → openapi.yaml (source of truth) → postman-collection.json
 
 **Commands:**
 ```bash
-/sw:api-docs           # Generate OpenAPI + Postman
+/sw:api-docs --all     # Generate OpenAPI + Postman + environment
+/sw:api-docs --env     # Generate environment file only
 /sw:done 0001          # Auto-generates if enabled
 ```
 

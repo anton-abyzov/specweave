@@ -279,6 +279,13 @@ export interface ApiDocsConfig {
   postmanPath?: string;
 
   /**
+   * Postman environment output path (relative to project root)
+   * Generated from .env file with API-relevant variables
+   * @default "postman-environment.json"
+   */
+  postmanEnvPath?: string;
+
+  /**
    * When to regenerate API docs:
    * - 'on-increment-done': Generate when closing increment (recommended)
    * - 'on-api-change': Generate when API files change (via hook)
@@ -584,6 +591,7 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
     autoGenerateOpenApi: true,     // Auto-generate from decorators if framework supports
     generatePostman: true,         // Generate Postman collection from OpenAPI
     postmanPath: 'postman-collection.json',
+    postmanEnvPath: 'postman-environment.json', // Environment file from .env
     generateOn: 'on-increment-done', // When to regenerate (recommended: on increment close)
     watchPatterns: [               // API file patterns for change detection
       '**/routes/**',

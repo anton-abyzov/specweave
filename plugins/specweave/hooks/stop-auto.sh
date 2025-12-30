@@ -183,15 +183,56 @@ if [ -n "$CURRENT_INCREMENT" ]; then
 
         if [ "$TOTAL_TASKS" -gt 0 ] && [ "$COMPLETED_TASKS" -ge "$TOTAL_TASKS" ]; then
             # All tasks completed for current increment
+            # CRITICAL: Check if tests were actually executed before allowing completion
+            # Look for test execution evidence in transcript
+            TESTS_RUN=false
+            if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
+                # Check for various test execution patterns
+                if grep -qE "(npm test|npx vitest|npx jest|npx playwright|pytest|cargo test|go test|dotnet test|Tests:.*passed|PASS.*spec|✓.*tests?)" "$TRANSCRIPT_PATH" 2>/dev/null; then
+                    TESTS_RUN=true
+                fi
+            fi
+
+            # Check for test files that should have been run
+            HAS_UNIT_TESTS=false
+            HAS_E2E_TESTS=false
+            if [ -d "$PROJECT_ROOT/tests" ] || [ -d "$PROJECT_ROOT/src" ]; then
+                # Check for unit test files
+                if find "$PROJECT_ROOT" -name "*.test.ts" -o -name "*.spec.ts" -o -name "*.test.js" -o -name "*.spec.js" -o -name "test_*.py" -o -name "*_test.go" 2>/dev/null | head -1 | grep -q .; then
+                    HAS_UNIT_TESTS=true
+                fi
+                # Check for E2E test files (Playwright, Cypress)
+                if [ -f "$PROJECT_ROOT/playwright.config.ts" ] || [ -f "$PROJECT_ROOT/playwright.config.js" ] || [ -d "$PROJECT_ROOT/e2e" ] || [ -d "$PROJECT_ROOT/cypress" ]; then
+                    HAS_E2E_TESTS=true
+                fi
+            fi
+
+            # If tests exist but weren't run, block and require test execution
+            if [ "$HAS_UNIT_TESTS" = true ] && [ "$TESTS_RUN" = false ]; then
+                block "Tasks complete but TESTS NOT RUN" "🧪 MANDATORY: All tasks marked complete but NO TEST EXECUTION detected. You MUST run tests before completion. Execute: npm test (unit/integration) and npx playwright test (E2E if applicable). Continue with /sw:do and run all tests."
+            fi
+
+            # If E2E tests exist, check for E2E execution
+            E2E_RUN=false
+            if [ "$HAS_E2E_TESTS" = true ] && [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
+                if grep -qE "(playwright test|cypress run|npx playwright|Running.*E2E|e2e.*passed)" "$TRANSCRIPT_PATH" 2>/dev/null; then
+                    E2E_RUN=true
+                fi
+            fi
+
+            if [ "$HAS_E2E_TESTS" = true ] && [ "$E2E_RUN" = false ]; then
+                block "Tasks complete but E2E TESTS NOT RUN" "🎭 MANDATORY: E2E tests exist but were NOT executed. You MUST run E2E tests for user-facing features. Execute: npx playwright test (or cypress run). Continue with /sw:do and complete E2E testing."
+            fi
+
             # Check if there are more increments in queue
             QUEUE_LENGTH=$(echo "$SESSION" | jq '.incrementQueue | length')
 
             if [ "$QUEUE_LENGTH" -le 1 ]; then
-                # Last increment completed
+                # Last increment completed and tests were run
                 echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
                     '.status = "completed" | .endTime = $now | .endReason = "all_tasks_complete"' \
                     > "$SESSION_FILE"
-                approve "All tasks completed"
+                approve "All tasks completed and tests passed"
             fi
 
             # More increments in queue, continue to next

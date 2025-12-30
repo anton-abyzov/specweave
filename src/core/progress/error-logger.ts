@@ -14,6 +14,7 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { mkdirpSync } from '../../utils/fs-native.js';
+import { getProjectRoot } from '../../utils/find-project-root.js';
 
 /**
  * Error log entry
@@ -54,7 +55,7 @@ export async function logError(
   error: Error | string,
   options: ErrorLoggerOptions = {}
 ): Promise<void> {
-  const projectRoot = options.projectRoot ?? process.cwd();
+  const projectRoot = options.projectRoot ?? getProjectRoot();
   const logFile = options.logFile ?? getDefaultLogPath(projectRoot);
   const logDir = join(projectRoot, '.specweave', 'logs');
 
@@ -82,7 +83,7 @@ export async function logError(
  * @returns Array of error log entries
  */
 export async function readErrorLog(options: ErrorLoggerOptions = {}): Promise<ErrorLogEntry[]> {
-  const projectRoot = options.projectRoot ?? process.cwd();
+  const projectRoot = options.projectRoot ?? getProjectRoot();
   const logFile = options.logFile ?? getDefaultLogPath(projectRoot);
 
   if (!existsSync(logFile)) {
@@ -117,7 +118,7 @@ export async function readErrorLog(options: ErrorLoggerOptions = {}): Promise<Er
  * @param options Logger options
  */
 export async function clearErrorLog(options: ErrorLoggerOptions = {}): Promise<void> {
-  const projectRoot = options.projectRoot ?? process.cwd();
+  const projectRoot = options.projectRoot ?? getProjectRoot();
   const logFile = options.logFile ?? getDefaultLogPath(projectRoot);
 
   if (existsSync(logFile)) {

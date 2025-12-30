@@ -22,8 +22,8 @@ description: Start autonomous execution session with stop hook integration. Work
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--max-iterations N` | Maximum iterations before stopping | 100 |
-| `--max-hours N` | Maximum hours to run | None |
+| `--max-iterations N` | Maximum iterations before stopping | 500 |
+| `--max-hours N` | Maximum hours to run | 120 (5 days) |
 | `--simple` | Pure Ralph mode (minimal context) | false |
 | `--dry-run` | Preview without starting | false |
 | `--all-backlog` | Process all backlog items | false |
@@ -138,8 +138,8 @@ In `.specweave/config.json`:
 {
   "auto": {
     "enabled": true,
-    "maxIterations": 100,
-    "maxHours": 24,
+    "maxIterations": 500,
+    "maxHours": 120,
     "testCommand": "npm test",
     "coverageThreshold": 80,
     "enforceTestFirst": false,
@@ -151,16 +151,22 @@ In `.specweave/config.json`:
 }
 ```
 
+**Note**: The stop hook will NOT allow completion until tests are actually executed. If test files exist (`.test.ts`, `.spec.ts`, `playwright.config.ts`, etc.), auto mode will block exit and require test runs.
+
 ## Completion Signals
 
 The session ends when ANY of these occur:
 
-1. **All tasks complete** - tasks.md has all `[x]` checkboxes
+1. **All tasks complete + tests passed** - tasks.md has all `[x]` AND tests were executed
 2. **Completion promise** - Output contains `<auto-complete>DONE</auto-complete>`
-3. **Max iterations** - Reached configured limit
-4. **Max hours** - Time limit exceeded
+3. **Max iterations** - Reached configured limit (default: 500)
+4. **Max hours** - Time limit exceeded (default: 120 hours / 5 days)
 5. **User cancellation** - `/sw:cancel-auto`
 6. **Human gate timeout** - Gate pending too long
+
+**⚠️ IMPORTANT**: Auto mode will NOT complete just because tasks are marked done. If test files exist in the project, the stop hook ENFORCES test execution. You'll see messages like:
+- "🧪 MANDATORY: All tasks marked complete but NO TEST EXECUTION detected"
+- "🎭 MANDATORY: E2E tests exist but were NOT executed"
 
 ## Simple Mode (--simple)
 

@@ -441,6 +441,27 @@ graph TD
 
 **⚠️ CRITICAL - MANDATORY CHECK BEFORE GENERATING ANY SPEC.MD!**
 
+### ⛔ IRON RULE: All Projects → `repositories/` Folder
+
+**NEVER create project folders in root! ALL multi-project repos go in `repositories/`:**
+
+```
+❌ FORBIDDEN:
+my-project/
+├── frontend/        ← WRONG!
+├── backend/         ← WRONG!
+└── .specweave/
+
+✅ REQUIRED:
+my-project/
+├── repositories/
+│   ├── frontend/    ← CORRECT!
+│   └── backend/     ← CORRECT!
+└── .specweave/
+```
+
+**This applies to ALL hosting providers** (GitHub, ADO, Bitbucket, **LOCAL GIT**).
+
 ### STEP 0: Multi-Project Detection (RUN FIRST!)
 
 **YOU MUST CHECK THIS BEFORE WRITING ANY USER STORIES:**
@@ -760,6 +781,8 @@ specweave context projects
 
 ### spec.md Frontmatter for Multi-Project US
 
+**⚠️ CRITICAL PATH RULE**: When generating `projects:` array, ALL projects are created in `repositories/` folder!
+
 ```yaml
 ---
 increment: 0001-oauth-implementation
@@ -770,16 +793,17 @@ status: active
 # project: BE
 
 # Multi-project user story (v0.29.0+)
+# ⚠️ Implementation paths are ALWAYS: repositories/{id}/
 projects:
-  - id: BE
+  - id: BE               # → repositories/BE/
     scope: "OAuth API endpoints, token validation, session management"
     keywords: ["api", "oauth", "token", "session"]
     effort_percentage: 50
-  - id: FE
+  - id: FE               # → repositories/FE/
     scope: "Login UI with OIDC, token storage, logout flow"
     keywords: ["ui", "login", "oidc", "logout"]
     effort_percentage: 35
-  - id: Shared
+  - id: Shared           # → repositories/Shared/
     scope: "Common auth types, interfaces, JWT utilities"
     keywords: ["types", "interfaces", "jwt"]
     effort_percentage: 15
@@ -799,6 +823,10 @@ sync_strategy: linked  # 'linked' | 'primary-only' | 'all'
 primary_project: BE    # Which project owns the main issue
 ---
 ```
+
+**NEVER create projects in root!** Implementation files go in:
+- ❌ `my-project/BE/src/...` (WRONG!)
+- ✅ `my-project/repositories/BE/src/...` (CORRECT!)
 
 ### Sync Behavior for Multi-Project US
 

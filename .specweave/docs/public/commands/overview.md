@@ -6,19 +6,19 @@ sidebar_position: 1
 
 SpecWeave provides slash commands for every stage of your development workflow. This page covers the **main workflow commands** you'll use daily.
 
-:::warning No Shortcuts
-All commands MUST use the `/specweave:*` namespace prefix. Shortcuts like `/inc`, `/do`, `/pause`, `/resume` (without the namespace) conflict with Claude Code's native commands and other repositories.
+:::info Command Prefix
+All SpecWeave commands use the `/sw:*` namespace prefix. For example: `/sw:increment`, `/sw:do`, `/sw:auto`.
 :::
 
 ## The Core Workflow
 
 ```mermaid
 graph LR
-    A["/specweave:increment"] --> B["/specweave:do"]
-    B --> C["/specweave:progress"]
-    C --> D["/specweave:validate or /specweave:qa"]
-    D --> E["/specweave:done"]
-    E --> F["/specweave:sync-docs"]
+    A["/sw:increment"] --> B["/sw:do"]
+    B --> C["/sw:progress"]
+    C --> D["/sw:validate or /sw:qa"]
+    D --> E["/sw:done"]
+    E --> F["/sw:sync-docs"]
     F --> A
 
     style A fill:#a8e6cf
@@ -29,16 +29,18 @@ graph LR
     style F fill:#d4a5ff
 ```
 
+---
+
 ## 1. Planning Commands
 
-### `/specweave:increment` - Create New Increment
+### `/sw:increment` - Create New Increment
 
 **Most frequently used command** - Start every new feature here.
 
 ```bash
-/specweave:increment "User authentication with JWT"
-/specweave:increment "Payment processing with Stripe"
-/specweave:increment "Real-time notifications"
+/sw:increment "User authentication with JWT"
+/sw:increment "Payment processing with Stripe"
+/sw:increment "Real-time notifications"
 ```
 
 **What it does**:
@@ -50,19 +52,17 @@ graph LR
 
 **See**: [ADR](/docs/glossary/terms/adr) (Architecture Decision Records) for design decisions made during planning.
 
-<!-- TODO: Add dedicated increment command documentation -->
-
 ---
 
 ## 2. Implementation Commands
 
-### `/specweave:do` - Execute Tasks
+### `/sw:do` - Execute Tasks
 
 **Smart auto-resume** - Continue from where you left off.
 
 ```bash
-/specweave:do           # Auto-finds active increment
-/specweave:do 0007      # Specific increment
+/sw:do           # Auto-finds active increment
+/sw:do 0007      # Specific increment
 ```
 
 **What it does**:
@@ -77,20 +77,76 @@ graph LR
 - **Automatic hooks**: Runs after EVERY task completion
 - **Living docs sync**: Updates `.specweave/docs/` after all tasks complete
 
-<!-- TODO: Add dedicated do command documentation -->
+**See**: [/sw:do Documentation](./do)
+
+---
+
+### `/sw:auto` - Autonomous Execution ⭐ NEW
+
+**Full autonomous mode** - Work until all tasks complete.
+
+```bash
+/sw:auto                        # Current increment
+/sw:auto 0001 0002 0003         # Multiple increments
+/sw:auto --max-iterations 50    # With limits
+/sw:auto --all-backlog          # All backlog items
+```
+
+**What it does**:
+- 🤖 Continuous execution until all tasks complete
+- 🔄 Stop hook prevents exit (Ralph Wiggum pattern)
+- 🧪 Self-healing test loop (max 3 attempts)
+- 📊 Self-assessment scoring (pauses on low confidence)
+- ⚡ Auto-execute with credentials (no manual steps)
+
+**Safety Features**:
+- Max iterations limit (default: 100)
+- Max hours limit (optional)
+- Human gates for sensitive operations
+- Circuit breakers for external services
+- Low confidence score pauses for review
+
+**See**: [/sw:auto Documentation](./auto)
+
+---
+
+### `/sw:auto-status` - Session Status
+
+Check auto session progress.
+
+```bash
+/sw:auto-status           # Full status
+/sw:auto-status --json    # JSON output
+```
+
+**See**: [/sw:auto-status Documentation](./auto-status)
+
+---
+
+### `/sw:cancel-auto` - Cancel Session
+
+Cancel running auto session.
+
+```bash
+/sw:cancel-auto                                    # Interactive
+/sw:cancel-auto --force                            # No confirmation
+/sw:cancel-auto --reason "Switching to bug fix"    # With reason
+```
+
+**See**: [/sw:cancel-auto Documentation](./cancel-auto)
 
 ---
 
 ## 3. Quality Assurance Commands
 
-### `/specweave:validate` - Rule-Based Validation
+### `/sw:validate` - Rule-Based Validation
 
 **120+ checks** - Fast, free validation.
 
 ```bash
-/specweave:validate 0007
-/specweave:validate 0007 --quality        # Include AI assessment
-/specweave:validate 0007 --export         # Export suggestions to tasks.md
+/sw:validate 0007
+/sw:validate 0007 --quality        # Include AI assessment
+/sw:validate 0007 --export         # Export suggestions to tasks.md
 ```
 
 **What it validates**:
@@ -99,19 +155,17 @@ graph LR
 - ✅ Quality (testable criteria, actionable tasks)
 - ✅ Traceability (AC-IDs, ADR references)
 
-<!-- TODO: Add dedicated validate command documentation -->
-
 ---
 
-### `/specweave:qa` - Quality Assessment with Risk Scoring
+### `/sw:qa` - Quality Assessment with Risk Scoring
 
 **Comprehensive quality gate** - AI-powered assessment with BMAD risk scoring.
 
 ```bash
-/specweave:qa 0007                    # Quick mode (default)
-/specweave:qa 0007 --pre             # Before starting work
-/specweave:qa 0007 --gate            # Before closing increment
-/specweave:qa 0007 --export          # Export blockers to tasks.md
+/sw:qa 0007                    # Quick mode (default)
+/sw:qa 0007 --pre             # Before starting work
+/sw:qa 0007 --gate            # Before closing increment
+/sw:qa 0007 --export          # Export blockers to tasks.md
 ```
 
 **7 Quality Dimensions**:
@@ -128,20 +182,12 @@ graph LR
 - 🟡 **CONCERNS** - Should fix before release
 - 🔴 **FAIL** - Must fix before proceeding
 
-**Risk Scoring** (BMAD pattern):
-- CRITICAL (≥9.0) - Immediate action required
-- HIGH (6.0-8.9) - Address before release
-- MEDIUM (3.0-5.9) - Monitor
-- LOW (\&lt;3.0) - Acceptable
-
-<!-- TODO: Add dedicated qa command documentation -->
-
 ---
 
-### `/specweave:check-tests` - Test Coverage Check
+### `/sw:check-tests` - Test Coverage Check
 
 ```bash
-/specweave:check-tests 0007
+/sw:check-tests 0007
 ```
 
 **What it checks**:
@@ -154,32 +200,30 @@ graph LR
 
 ## 4. Completion Commands
 
-### `/specweave:done` - Close Increment
+### `/sw:done` - Close Increment
 
 **PM validation before closing** - Ensures quality gates pass.
 
 ```bash
-/specweave:done 0007
+/sw:done 0007
 ```
 
 **What it does**:
 - ✅ Validates all tasks complete
-- ✅ Runs `/specweave:qa --gate` (quality gate check)
+- ✅ Runs `/sw:qa --gate` (quality gate check)
 - ✅ PM agent validates completion
 - ✅ Creates completion report
 - 🔗 Closes GitHub issues (if plugin enabled)
 
-<!-- TODO: Add dedicated done command documentation -->
-
 ---
 
-### `/specweave:sync-docs` - Synchronize Living Documentation
+### `/sw:sync-docs` - Synchronize Living Documentation
 
 **Bidirectional sync** - Keep strategic docs and implementation in sync.
 
 ```bash
-/specweave:sync-docs review          # Before implementation (review strategic docs)
-/specweave:sync-docs update          # After implementation (update with learnings)
+/sw:sync-docs review          # Before implementation (review strategic docs)
+/sw:sync-docs update          # After implementation (update with learnings)
 ```
 
 **What it syncs**:
@@ -188,17 +232,15 @@ graph LR
 - 📖 [API](/docs/glossary/terms/api) documentation (contracts → endpoints)
 - 📋 Feature lists (planned → completed)
 
-<!-- TODO: Add dedicated sync-docs command documentation -->
-
 ---
 
 ## 5. Monitoring Commands
 
-### `/specweave:progress` - Check Increment Progress
+### `/sw:progress` - Check Increment Progress
 
 ```bash
-/specweave:progress
-/specweave:progress 0007
+/sw:progress
+/sw:progress 0007
 ```
 
 **What it shows**:
@@ -210,16 +252,16 @@ graph LR
 
 ---
 
-### `/specweave:jobs` - Background Jobs Monitor
+### `/sw:jobs` - Background Jobs Monitor
 
 Monitor long-running operations that continue even after closing Claude.
 
 ```bash
-/specweave:jobs                    # Show active jobs
-/specweave:jobs --follow ae362dfe  # Follow progress live
-/specweave:jobs --logs ae362dfe    # View worker logs
-/specweave:jobs --kill ae362dfe    # Stop running job
-/specweave:jobs --resume ae362dfe  # Resume paused job
+/sw:jobs                    # Show active jobs
+/sw:jobs --follow ae362dfe  # Follow progress live
+/sw:jobs --logs ae362dfe    # View worker logs
+/sw:jobs --kill ae362dfe    # Stop running job
+/sw:jobs --resume ae362dfe  # Resume paused job
 ```
 
 **Job types**:
@@ -227,32 +269,77 @@ Monitor long-running operations that continue even after closing Claude.
 - `import-issues` - Large issue imports (10-60 min)
 - `sync-external` - Bidirectional sync (1-10 min)
 
-**Example output**:
-```
-Running (1):
-| Job ID   | Type        | Progress      | Current Item              | Rate  | ETA     |
-|----------|-------------|---------------|---------------------------|-------|---------|
-| ae362dfe | clone-repos | 154/245 (63%) | infrastructure-apo-platform | 0.1/s | ~15 min |
+**See**: [Full /sw:jobs Documentation](./jobs) | [Background Jobs Concepts](/docs/guides/core-concepts/background-jobs)
 
-Cloned: 154 repositories | Failed: 1 (infrastructure-adp)
+---
+
+## 6. Status Management Commands
+
+### `/sw:pause` - Pause Increment
+
+```bash
+/sw:pause 0007
+/sw:pause 0007 --reason "Blocked by external API"
 ```
 
-**See**: [Full /specweave:jobs Documentation](/docs/commands/jobs) | [Background Jobs Concepts](/docs/guides/core-concepts/background-jobs)
+**See**: [/sw:pause Documentation](./pause)
+
+---
+
+### `/sw:resume` - Resume Increment
+
+```bash
+/sw:resume 0007
+```
+
+**See**: [/sw:resume Documentation](./resume)
+
+---
+
+### `/sw:abandon` - Abandon Increment
+
+```bash
+/sw:abandon 0007
+/sw:abandon 0007 --reason "Requirements changed"
+```
+
+**See**: [/sw:abandon Documentation](./abandon)
 
 ---
 
 ## All Available Commands
 
 ### Essential Workflow (Use These!)
-- `/specweave:increment` - Plan new increment ⭐ **START HERE**
-- `/specweave:do` - Execute tasks ⭐ **MAIN WORK**
-- `/specweave:progress` - Check status ⭐ **VISIBILITY**
-- `/specweave:jobs` - Monitor background jobs ⭐ **LONG OPERATIONS**
-- `/specweave:validate` - Quick validation ⭐ **PRE-CHECK**
-- `/specweave:qa` - Quality assessment ⭐ **QUALITY GATE**
-- `/specweave:check-tests` - Test coverage check ⭐ **TEST VALIDATION**
-- `/specweave:done` - Close increment ⭐ **FINISH**
-- `/specweave:sync-docs` - Synchronize living docs ⭐ **KEEP DOCS CURRENT**
+
+| Command | Purpose | Priority |
+|---------|---------|----------|
+| `/sw:increment` | Plan new increment | ⭐ **START HERE** |
+| `/sw:do` | Execute tasks | ⭐ **MAIN WORK** |
+| `/sw:auto` | Autonomous execution | ⭐ **HANDS-FREE** |
+| `/sw:progress` | Check status | ⭐ **VISIBILITY** |
+| `/sw:jobs` | Monitor background jobs | ⭐ **LONG OPS** |
+| `/sw:validate` | Quick validation | ⭐ **PRE-CHECK** |
+| `/sw:qa` | Quality assessment | ⭐ **QUALITY GATE** |
+| `/sw:check-tests` | Test coverage check | ⭐ **TEST VALIDATION** |
+| `/sw:done` | Close increment | ⭐ **FINISH** |
+| `/sw:sync-docs` | Synchronize living docs | ⭐ **KEEP CURRENT** |
+
+### Auto Mode Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/sw:auto` | Start autonomous execution |
+| `/sw:auto-status` | Check session status |
+| `/sw:cancel-auto` | Cancel running session |
+
+### Status Management
+
+| Command | Purpose |
+|---------|---------|
+| `/sw:pause` | Pause increment (blocked/deprioritized) |
+| `/sw:resume` | Resume paused increment |
+| `/sw:abandon` | Abandon incomplete increment |
+| `/sw:status` | Show increment status overview |
 
 ---
 
@@ -260,60 +347,96 @@ Cloned: 154 repositories | Failed: 1 (infrastructure-adp)
 
 ```bash
 # 1. Plan new feature
-/specweave:increment "User authentication"
+/sw:increment "User authentication"
 # → Creates: spec.md, plan.md, tasks.md
 
 # 2. Review docs (optional)
-/specweave:sync-docs review
+/sw:sync-docs review
 # → Review strategic docs before starting
 
 # 3. Pre-check quality (optional)
-/specweave:qa 0007 --pre
+/sw:qa 0007 --pre
 # → Pre-implementation quality check
 
-# 4. Implement tasks
-/specweave:do 0007
-# → Auto-resumes from last task, hooks fire after each completion
+# 4. Implement tasks (choose one)
+/sw:do 0007                 # Manual execution
+/sw:auto 0007               # Autonomous execution
 
 # 5. Check progress
-/specweave:progress 0007
+/sw:progress 0007
 # → See completion status
 
 # 6. Validate quality
-/specweave:qa 0007 --gate
+/sw:qa 0007 --gate
 # → Comprehensive quality gate check
 
 # 7. Check test coverage
-/specweave:check-tests 0007
+/sw:check-tests 0007
 # → Validate all AC-IDs are tested
 
 # 8. Close increment
-/specweave:done 0007
+/sw:done 0007
 # → PM validates and closes
 
 # 9. Update living docs
-/specweave:sync-docs update
+/sw:sync-docs update
 # → Sync learnings to strategic docs
+```
+
+---
+
+## Workflow Example: Autonomous Execution
+
+```bash
+# 1. Plan feature
+/sw:increment "Payment processing"
+
+# 2. Start autonomous execution
+/sw:auto 0008 --max-hours 8
+# → Works until all tasks complete (max 8 hours)
+
+# 3. Check status anytime
+/sw:auto-status
+# → See iteration, progress, any gates pending
+
+# 4. Cancel if needed
+/sw:cancel-auto --reason "Need to pivot"
+# → Generates summary, preserves progress
+
+# 5. Resume work anytime
+/sw:do
+# → Continues from where auto left off
 ```
 
 ---
 
 ## Integration with External Tools
 
-### GitHub Issues (via specweave-github plugin)
+### GitHub Issues (via sw-github plugin)
 
 ```bash
-# Create GitHub issue from increment
-/github-create-issue 0007
+# Sync increment to GitHub
+/sw-github:sync 0007
 
-# Sync progress to GitHub
-/github-sync 0007
-
-# Close GitHub issue when done
-/github-close-issue 0007
+# View sync status
+/sw-github:reconcile
 ```
 
-**Automatic sync**: When GitHub plugin enabled, `/specweave:do` and `/specweave:done` automatically sync to GitHub.
+**Automatic sync**: When GitHub plugin enabled, `/sw:do` and `/sw:done` automatically sync to GitHub.
+
+### JIRA Integration (via sw-jira plugin)
+
+```bash
+# Sync to JIRA
+/sw-jira:sync 0007
+```
+
+### Azure DevOps (via sw-ado plugin)
+
+```bash
+# Sync to Azure DevOps
+/sw-ado:sync 0007
+```
 
 ---
 
@@ -322,35 +445,42 @@ Cloned: 154 repositories | Failed: 1 (infrastructure-adp)
 ### 1. Follow the Core Flow
 
 Always use the standard workflow for best results:
-1. `/specweave:increment` - Plan (START HERE)
-2. `/specweave:do` - Implement (MAIN WORK)
-3. `/specweave:progress` - Check status (VISIBILITY)
-4. `/specweave:qa` - Validate quality (QUALITY GATE)
-5. `/specweave:done` - Close (FINISH)
-6. `/specweave:sync-docs` - Update docs (KEEP CURRENT)
+1. `/sw:increment` - Plan (START HERE)
+2. `/sw:do` or `/sw:auto` - Implement (MAIN WORK)
+3. `/sw:progress` - Check status (VISIBILITY)
+4. `/sw:qa` - Validate quality (QUALITY GATE)
+5. `/sw:done` - Close (FINISH)
+6. `/sw:sync-docs` - Update docs (KEEP CURRENT)
 
-### 2. Validate Early and Often
+### 2. Use Auto Mode for Larger Increments
+
+For increments with 10+ tasks, `/sw:auto` is more efficient:
+- No need to keep checking progress
+- Self-healing test loops fix issues automatically
+- Human gates still require approval
+
+### 3. Validate Early and Often
 
 ```bash
 # Before starting work
-/specweave:qa 0007 --pre
+/sw:qa 0007 --pre
 
 # Before closing
-/specweave:qa 0007 --gate
+/sw:qa 0007 --gate
 ```
 
-### 3. Check Test Coverage
+### 4. Check Test Coverage
 
 ```bash
 # Always validate tests before closing
-/specweave:check-tests 0007
+/sw:check-tests 0007
 ```
 
-### 4. Keep Living Docs Current
+### 5. Keep Living Docs Current
 
 ```bash
 # After completing increment
-/specweave:sync-docs update
+/sw:sync-docs update
 ```
 
 ---
@@ -365,16 +495,22 @@ All commands respect `.specweave/config.json`:
     "maxActiveIncrements": 1,
     "hardCap": 2
   },
+  "auto": {
+    "enabled": true,
+    "maxIterations": 100,
+    "maxHours": 24,
+    "testCommand": "npm test",
+    "coverageThreshold": 80,
+    "humanGated": {
+      "patterns": ["deploy", "migrate", "publish"],
+      "timeout": 1800
+    }
+  },
   "validation": {
     "quality_judge": {
       "enabled": true,
       "always_run": false
     }
-  },
-  "language": "en",
-  "translation": {
-    "enabled": true,
-    "autoTranslateInternalDocs": true
   }
 }
 ```
@@ -404,6 +540,7 @@ Understanding SpecWeave terminology:
 - **Getting Started**: [Quick Start Guide](/docs/guides/getting-started)
 - **Workflow Guide**: [Complete Development Workflow](/docs/guides/workflow)
 - **Quality Gates**: [Quality Assurance Guide](/docs/guides/quality-gates)
+- **Auto Mode**: [/sw:auto Documentation](./auto)
 - **GitHub Integration**: [GitHub Sync Guide](/docs/guides/github-sync)
 
 ---
