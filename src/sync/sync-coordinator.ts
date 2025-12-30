@@ -1108,12 +1108,6 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       parts.push('');
     }
 
-    parts.push('This issue was auto-created by SpecWeave.');
-    parts.push('');
-    parts.push('---');
-    parts.push('');
-    parts.push('🤖 **Auto-synced from SpecWeave**');
-    parts.push('');
     parts.push('For detailed acceptance criteria, tasks, and technical specifications, see the living docs in the repository.');
 
     return parts.join('\n');
@@ -1732,5 +1726,221 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
     lines.push(`🤖 Auto-synced by SpecWeave`);
 
     return lines.join('\n');
+  }
+
+  /**
+   * Sync AC checkbox status to GitHub issues (v1.0.59)
+   *
+   * CRITICAL FIX: Updates AC checkboxes in GitHub issue bodies when tasks are completed.
+   * Handles both bold (**AC-US5-01**:) and plain (AC-US5-01:) formats.
+   *
+   * CONCURRENCY-SAFE: Uses atomic issue body updates via Octokit.
+   *
+   * @param config - Project configuration
+   * @param addComment - If true, also adds a progress comment
+   * @returns Summary of synced ACs
+   */
+  async syncACCheckboxesToGitHub(
+    config: any,
+    options: { addComment?: boolean } = {}
+  ): Promise<{ success: boolean; updated: number; issues: number[] }> {
+    const result = { success: true, updated: 0, issues: [] as number[] };
+
+    try {
+      // Check if GitHub sync is enabled
+      const githubEnabled = isProviderEnabled(config, 'github');
+      if (!githubEnabled) {
+        this.logger.log('ℹ️  GitHub sync disabled - skipping AC checkbox sync');
+        return result;
+      }
+
+      const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems ?? false;
+      if (!canUpdateExternal) {
+        this.logger.log('ℹ️  External update disabled (canUpdateExternalItems=false)');
+        return result;
+      }
+
+      // Load user stories
+      const userStories = await this.loadUserStoriesForIncrement();
+      if (userStories.length === 0) {
+        this.logger.log('ℹ️  No user stories found for this increment');
+        return result;
+      }
+
+      // Get GitHub repo info
+      const githubConfig = config.sync?.github || {};
+      const repoInfo = await this.detectGitHubRepo(githubConfig);
+      if (!repoInfo) {
+        this.logger.log('⚠️  GitHub repository not configured');
+        return result;
+      }
+
+      const client = GitHubClientV2.fromRepo(repoInfo.owner, repoInfo.repo);
+
+      this.logger.log(`\n📊 Syncing AC checkboxes to GitHub issues...`);
+      this.logger.log(`   Repository: ${repoInfo.owner}/${repoInfo.repo}`);
+
+      // Load spec.md to get current AC status
+      const specPath = path.join(
+        this.projectRoot,
+        '.specweave/increments',
+        this.incrementId,
+        'spec.md'
+      );
+
+      if (!existsSync(specPath)) {
+        this.logger.log('⚠️  spec.md not found');
+        return result;
+      }
+
+      const specContent = await fs.readFile(specPath, 'utf-8');
+
+      // Parse AC status from spec.md
+      const acStatus = this.parseACStatusFromSpec(specContent);
+      this.logger.log(`   Found ${acStatus.size} ACs in spec.md`);
+
+      // Process each user story with a GitHub issue
+      for (const usFile of userStories) {
+        // Find GitHub issue number from frontmatter
+        const issueNumber = usFile.external_tools?.github?.number ||
+                            usFile.external_id ||
+                            (usFile.external_tools?.github as any)?.issue_number;
+
+        if (!issueNumber) {
+          this.logger.log(`   ⏭️  ${usFile.id} - No GitHub issue linked`);
+          continue;
+        }
+
+        // Filter ACs that belong to this user story
+        const usAcStatus = new Map<string, boolean>();
+        for (const [acId, completed] of acStatus) {
+          // AC format: AC-US5-01 → belongs to US-005/US5/US-5
+          const acUsMatch = acId.match(/AC-US?(\d+)-\d+/i);
+          if (acUsMatch) {
+            const acUsNum = acUsMatch[1];
+            const usNum = usFile.id.match(/US-?(\d+)/i)?.[1] || '';
+            // Remove leading zeros for comparison
+            if (parseInt(acUsNum) === parseInt(usNum)) {
+              usAcStatus.set(acId, completed);
+            }
+          }
+        }
+
+        if (usAcStatus.size === 0) {
+          this.logger.log(`   ⏭️  ${usFile.id} - No ACs to sync`);
+          continue;
+        }
+
+        try {
+          // Fetch and update issue
+          const issue = await client.getIssue(Number(issueNumber));
+          if (!issue) {
+            this.logger.log(`   ⚠️  ${usFile.id} - Issue #${issueNumber} not found`);
+            continue;
+          }
+
+          let body = issue.body || '';
+          const originalBody = body;
+          let updatedCount = 0;
+
+          // Update each AC checkbox
+          for (const [acId, completed] of usAcStatus) {
+            const checkboxState = completed ? 'x' : ' ';
+            const escapedAcId = acId.replace(/-/g, '\\-');
+
+            // Pattern 1: Bold format `- [ ] **AC-US5-01**: Description`
+            const boldRegex = new RegExp(`(- \\[)[ x](\\] \\*\\*${escapedAcId}\\*\\*:)`, 'g');
+
+            // Pattern 2: Plain format `- [ ] AC-US5-01: Description`
+            const plainRegex = new RegExp(`(- \\[)[ x](\\] ${escapedAcId}:)`, 'g');
+
+            const beforeUpdate = body;
+            body = body.replace(boldRegex, `$1${checkboxState}$2`);
+            body = body.replace(plainRegex, `$1${checkboxState}$2`);
+
+            if (body !== beforeUpdate) {
+              updatedCount++;
+            }
+          }
+
+          if (body === originalBody) {
+            this.logger.log(`   ⏭️  ${usFile.id} #${issueNumber} - No checkbox changes`);
+            continue;
+          }
+
+          // Update issue body
+          await client.updateIssueBody(Number(issueNumber), body);
+          result.updated += updatedCount;
+          result.issues.push(Number(issueNumber));
+          this.logger.log(`   ✅ ${usFile.id} #${issueNumber} - Updated ${updatedCount} AC checkbox(es)`);
+
+          // Optionally add progress comment
+          if (options.addComment) {
+            const completedCount = [...usAcStatus.values()].filter(v => v).length;
+            const totalCount = usAcStatus.size;
+            const percentage = Math.round((completedCount / totalCount) * 100);
+
+            const commentBody = `## 📊 Progress Update
+
+**Acceptance Criteria**: ${completedCount}/${totalCount} (${percentage}%)
+
+${[...usAcStatus.entries()].map(([id, done]) =>
+  `- ${done ? '✅' : '⬜'} ${id}`
+).join('\n')}
+
+---
+🤖 Auto-updated by SpecWeave AC Completion Gate`;
+
+            await client.addComment(Number(issueNumber), commentBody);
+            this.logger.log(`   💬 Added progress comment`);
+          }
+        } catch (error) {
+          this.logger.log(`   ⚠️  ${usFile.id} - Failed to update #${issueNumber}: ${error}`);
+          result.success = false;
+        }
+      }
+
+      this.logger.log(`\n📊 AC Checkbox Sync Complete`);
+      this.logger.log(`   Updated: ${result.updated} checkbox(es) across ${result.issues.length} issue(s)`);
+
+      return result;
+    } catch (error) {
+      this.logger.error('❌ AC checkbox sync failed:', error);
+      result.success = false;
+      return result;
+    }
+  }
+
+  /**
+   * Parse AC checkbox status from spec.md content
+   *
+   * Handles both formats:
+   * - `- [x] **AC-US5-01**: Description` (SpecWeave standard)
+   * - `- [x] AC-US5-01: Description` (legacy)
+   */
+  private parseACStatusFromSpec(specContent: string): Map<string, boolean> {
+    const acStatus = new Map<string, boolean>();
+    const lines = specContent.split('\n');
+
+    // Bold format: - [x] **AC-US5-01**: Description
+    const boldRegex = /^- \[([ x])\] \*\*(AC-[A-Z0-9]+-\d+)\*\*:/;
+
+    // Plain format: - [x] AC-US5-01: Description
+    const plainRegex = /^- \[([ x])\] (AC-[A-Z0-9]+-\d+):/;
+
+    for (const line of lines) {
+      let match = line.match(boldRegex);
+      if (!match) {
+        match = line.match(plainRegex);
+      }
+
+      if (match) {
+        const completed = match[1] === 'x';
+        const acId = match[2];
+        acStatus.set(acId, completed);
+      }
+    }
+
+    return acStatus;
   }
 }

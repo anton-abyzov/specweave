@@ -1,0 +1,20 @@
+{
+  "id": "0150-auto-mode-world-class-testing",
+  "status": "active",
+  "type": "feature",
+  "priority": "P0",
+  "created": "2025-12-30T08:00:00Z",
+  "lastActivity": "2025-12-30T08:00:00Z",
+  "testMode": "test-first",
+  "coverageTarget": 85,
+  "feature_id": "FS-150",
+  "epic_id": null,
+  "tags": [
+    "auto-mode",
+    "testing",
+    "self-healing",
+    "e2e",
+    "world-class",
+    "quality-gates"
+  ]
+}

@@ -357,16 +357,28 @@ export class ThreeLayerSyncManager {
 
   /**
    * Extract ACs from GitHub issue body
+   *
+   * CRITICAL FIX (v1.0.59): Handle multiple checkbox formats:
+   * - Bold format: `- [ ] **AC-US5-01**: Description` (SpecWeave standard)
+   * - Plain format: `- [ ] AC-US5-01: Description` (legacy/external)
    */
   private extractAcsFromIssue(body: string): AcceptanceCriterion[] {
     const acs: AcceptanceCriterion[] = [];
     const lines = body.split('\n');
 
-    // Match lines like: - [x] AC-US1-01: Description
-    const acRegex = /^- \[([ x])\] (AC-[A-Z0-9]+-\d+):\s*(.+)$/;
+    // Pattern 1: Bold format `- [x] **AC-US5-01**: Description` (SpecWeave standard)
+    const boldAcRegex = /^- \[([ x])\] \*\*(AC-[A-Z0-9]+-\d+)\*\*:\s*(.+)$/;
+
+    // Pattern 2: Plain format `- [x] AC-US5-01: Description` (legacy)
+    const plainAcRegex = /^- \[([ x])\] (AC-[A-Z0-9]+-\d+):\s*(.+)$/;
 
     for (const line of lines) {
-      const match = line.match(acRegex);
+      // Try bold format first (more common in SpecWeave)
+      let match = line.match(boldAcRegex);
+      if (!match) {
+        match = line.match(plainAcRegex);
+      }
+
       if (match) {
         const completed = match[1] === 'x';
         const id = match[2];
@@ -391,16 +403,28 @@ export class ThreeLayerSyncManager {
 
   /**
    * Extract Tasks from GitHub issue body
+   *
+   * CRITICAL FIX (v1.0.59): Handle multiple checkbox formats:
+   * - Bold format: `- [ ] **T-001**: Description` (SpecWeave standard)
+   * - Plain format: `- [ ] T-001: Description` (legacy/external)
    */
   private extractTasksFromIssue(body: string): Task[] {
     const tasks: Task[] = [];
     const lines = body.split('\n');
 
-    // Match lines like: - [x] T-001: Description
-    const taskRegex = /^- \[([ x])\] (T-\d+):\s*(.+)$/;
+    // Pattern 1: Bold format `- [x] **T-001**: Description` (SpecWeave standard)
+    const boldTaskRegex = /^- \[([ x])\] \*\*(T-\d+)\*\*:\s*(.+)$/;
+
+    // Pattern 2: Plain format `- [x] T-001: Description` (legacy)
+    const plainTaskRegex = /^- \[([ x])\] (T-\d+):\s*(.+)$/;
 
     for (const line of lines) {
-      const match = line.match(taskRegex);
+      // Try bold format first
+      let match = line.match(boldTaskRegex);
+      if (!match) {
+        match = line.match(plainTaskRegex);
+      }
+
       if (match) {
         const completed = match[1] === 'x';
         const id = match[2];
@@ -420,15 +444,28 @@ export class ThreeLayerSyncManager {
 
   /**
    * Parse ACs from spec.md
+   *
+   * CRITICAL FIX (v1.0.59): Handle multiple checkbox formats in spec.md:
+   * - Bold format: `- [x] **AC-US5-01**: Description` (SpecWeave standard)
+   * - Plain format: `- [x] AC-US5-01: Description` (legacy)
    */
   private parseAcceptanceCriteria(specContent: string): AcceptanceCriterion[] {
     const acs: AcceptanceCriterion[] = [];
     const lines = specContent.split('\n');
 
-    const acRegex = /^- \[([ x])\] (AC-[A-Z0-9]+-\d+):\s*(.+)$/;
+    // Pattern 1: Bold format `- [x] **AC-US5-01**: Description` (SpecWeave standard)
+    const boldAcRegex = /^- \[([ x])\] \*\*(AC-[A-Z0-9]+-\d+)\*\*:\s*(.+)$/;
+
+    // Pattern 2: Plain format `- [x] AC-US5-01: Description` (legacy)
+    const plainAcRegex = /^- \[([ x])\] (AC-[A-Z0-9]+-\d+):\s*(.+)$/;
 
     for (const line of lines) {
-      const match = line.match(acRegex);
+      // Try bold format first (SpecWeave standard)
+      let match = line.match(boldAcRegex);
+      if (!match) {
+        match = line.match(plainAcRegex);
+      }
+
       if (match) {
         const completed = match[1] === 'x';
         const id = match[2];
@@ -768,6 +805,12 @@ export class ThreeLayerSyncManager {
 
   /**
    * Update GitHub issue with ACs and Tasks
+   *
+   * CRITICAL FIX (v1.0.59): Handle multiple checkbox formats in GitHub issues:
+   * - Bold format: `- [ ] **AC-US5-01**: Description` (SpecWeave standard)
+   * - Plain format: `- [ ] AC-US5-01: Description` (legacy/external)
+   *
+   * The regex must match BOTH formats to correctly sync checkboxes.
    */
   private async updateGitHubIssue(issueNumber: number, acs: AcceptanceCriterion[], tasks: Task[]): Promise<void> {
     // Fetch current issue
@@ -779,31 +822,76 @@ export class ThreeLayerSyncManager {
       'body'
     ], { env: this.getGhEnv() });
 
-    const { body } = JSON.parse(result.stdout);
-
-    // Update AC checkboxes
-    let updatedBody = body;
-    for (const ac of acs) {
-      const checkboxState = ac.completed ? 'x' : ' ';
-      const regex = new RegExp(`(- \\[)[ x](\\] ${ac.id}:)`, 'g');
-      updatedBody = updatedBody.replace(regex, `$1${checkboxState}$2`);
+    if (result.stderr || !result.stdout) {
+      console.warn(`⚠️  Could not fetch GitHub issue #${issueNumber}: ${result.stderr}`);
+      return;
     }
 
-    // Update Task checkboxes
+    const { body } = JSON.parse(result.stdout);
+    if (!body) {
+      console.warn(`⚠️  GitHub issue #${issueNumber} has no body`);
+      return;
+    }
+
+    // Update AC checkboxes - handle BOTH bold and plain formats
+    let updatedBody = body;
+    let changesCount = 0;
+
+    for (const ac of acs) {
+      const checkboxState = ac.completed ? 'x' : ' ';
+      // Escape AC ID for use in regex (handle hyphens)
+      const escapedAcId = ac.id.replace(/-/g, '\\-');
+
+      // Pattern 1: Bold format `- [ ] **AC-US5-01**: Description` (SpecWeave standard)
+      const boldRegex = new RegExp(`(- \\[)[ x](\\] \\*\\*${escapedAcId}\\*\\*:)`, 'g');
+
+      // Pattern 2: Plain format `- [ ] AC-US5-01: Description` (legacy)
+      const plainRegex = new RegExp(`(- \\[)[ x](\\] ${escapedAcId}:)`, 'g');
+
+      const beforeLength = updatedBody.length;
+      updatedBody = updatedBody.replace(boldRegex, `$1${checkboxState}$2`);
+      updatedBody = updatedBody.replace(plainRegex, `$1${checkboxState}$2`);
+
+      if (updatedBody.length !== beforeLength || updatedBody !== body) {
+        changesCount++;
+      }
+    }
+
+    // Update Task checkboxes - handle BOTH bold and plain formats
     for (const task of tasks) {
       const checkboxState = task.completed ? 'x' : ' ';
-      const regex = new RegExp(`(- \\[)[ x](\\] ${task.id}:)`, 'g');
-      updatedBody = updatedBody.replace(regex, `$1${checkboxState}$2`);
+      const escapedTaskId = task.id.replace(/-/g, '\\-');
+
+      // Pattern 1: Bold format `- [ ] **T-001**: Description`
+      const boldRegex = new RegExp(`(- \\[)[ x](\\] \\*\\*${escapedTaskId}\\*\\*:)`, 'g');
+
+      // Pattern 2: Plain format `- [ ] T-001: Description`
+      const plainRegex = new RegExp(`(- \\[)[ x](\\] ${escapedTaskId}:)`, 'g');
+
+      updatedBody = updatedBody.replace(boldRegex, `$1${checkboxState}$2`);
+      updatedBody = updatedBody.replace(plainRegex, `$1${checkboxState}$2`);
+    }
+
+    // Only update if there are changes
+    if (updatedBody === body) {
+      console.log(`   ⏭️  No checkbox changes for issue #${issueNumber}`);
+      return;
     }
 
     // Update issue via gh CLI
-    await execFileNoThrow('gh', [
+    const updateResult = await execFileNoThrow('gh', [
       'issue',
       'edit',
       String(issueNumber),
       '--body',
       updatedBody
     ], { env: this.getGhEnv() });
+
+    if (updateResult.stderr) {
+      console.warn(`⚠️  Failed to update GitHub issue #${issueNumber}: ${updateResult.stderr}`);
+    } else {
+      console.log(`   ✅ Updated checkboxes in GitHub issue #${issueNumber}`);
+    }
   }
 
   /**

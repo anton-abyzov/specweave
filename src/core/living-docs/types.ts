@@ -170,11 +170,27 @@ export interface ParsedSpec {
   frontmatter: Record<string, any>;
 }
 
+/**
+ * Acceptance Criterion with full description (for external sync)
+ * @since v1.0.59
+ */
+export interface ACWithDescription {
+  id: string;
+  description: string;
+  completed: boolean;
+}
+
 export interface UserStoryData {
   id: string;
   title: string;
   description: string;
+  /** AC IDs only (backward compatible) */
   acceptanceCriteria: string[];
+  /**
+   * Full AC data with descriptions for external sync (JIRA/ADO/GitHub)
+   * @since v1.0.59 - Added for proper AC description sync
+   */
+  acceptanceCriteriaFull?: ACWithDescription[];
   phase?: string;
   status?: string;
   format_preservation?: boolean;
