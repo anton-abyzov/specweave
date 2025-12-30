@@ -1,6 +1,6 @@
 {
-  "id": "0148-autonomous-execution-autopilot",
-  "status": "active",
+  "id": "0148-autonomous-execution-auto",
+  "status": "ready_for_review",
   "type": "feature",
   "priority": "P1",
   "created": "2025-12-29T10:30:00Z",
@@ -11,5 +11,11 @@
   "feature_id": "FS-148",
   "epic_id": null,
   "externalLinks": {},
-  "tags": ["autonomous", "stop-hook", "autopilot", "multi-increment"]
+  "tags": [
+    "autonomous",
+    "stop-hook",
+    "auto",
+    "multi-increment"
+  ],
+  "updated": "2025-12-30T01:29:17.000Z"
 }

@@ -283,6 +283,63 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- /SECTION -->
 
+<!-- SECTION:auto -->
+## Auto Mode (Autonomous Execution)
+
+**Auto mode enables continuous autonomous execution** until all tasks are complete.
+
+### For Claude Code Users
+
+Auto mode uses Claude Code's Stop Hook to create a feedback loop:
+- `/sw:do` continues until all tasks complete
+- `/sw:auto-status` shows session progress
+- `/sw:cancel-auto` stops autonomous execution
+
+Session state stored in `.specweave/state/auto-session.json`.
+
+### For Non-Claude AI Systems
+
+If using SpecWeave with other AI systems (GPT, Gemini, etc.), implement this loop pattern:
+
+```bash
+# Bash loop for autonomous execution
+while true; do
+    # Check if all tasks complete
+    TOTAL=$(grep -c "^### T-" .specweave/increments/*/tasks.md 2>/dev/null || echo "0")
+    DONE=$(grep -c '\[x\].*completed' .specweave/increments/*/tasks.md 2>/dev/null || echo "0")
+
+    if [ "$TOTAL" -gt 0 ] && [ "$DONE" -ge "$TOTAL" ]; then
+        echo "All tasks complete!"
+        break
+    fi
+
+    # Feed prompt to your AI
+    cat PROMPT.md | your-ai-cli
+
+    # Safety: max iterations
+    ITER=$((ITER + 1))
+    if [ "$ITER" -ge 100 ]; then
+        echo "Max iterations reached"
+        break
+    fi
+done
+```
+
+**Key Concepts**:
+- **Completion Detection**: Check tasks.md for `[x] completed` status
+- **Completion Tag**: Output `<auto-complete>DONE</auto-complete>` when finished
+- **Max Iterations**: Always set a limit (default: 100)
+- **Human Gates**: Pause for sensitive ops (deploy, publish, force-push)
+
+**Human-Gated Operations** (require manual approval):
+- `npm publish`, `git push --force`, `rm -rf /`
+- Any `production` deployment
+- API key or credential changes
+- Database migrations (`drop`, `delete from`, `migrate`)
+
+**Circuit Breaker Pattern**: If external API (GitHub, JIRA) fails 3+ times, queue operations and continue.
+<!-- /SECTION -->
+
 <!-- SECTION:docs -->
 ## Docs
 

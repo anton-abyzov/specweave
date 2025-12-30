@@ -16,7 +16,7 @@ external:
 
 ## User Story
 
-**As a** developer, I want autopilot to handle external service failures gracefully with circuit breaker patterns, so that temporary outages don't cause cascade failures.
+**As a** developer, I want auto to handle external service failures gracefully with circuit breaker patterns, so that temporary outages don't cause cascade failures.
 
 ## Background
 
@@ -30,5 +30,5 @@ GitHub API, JIRA, ADO, and other external services may experience rate limits or
 - [ ] **AC-US8-04**: Circuit auto-closes after 5 minutes of no failures (half-open state test)
 - [ ] **AC-US8-05**: Rate limit detection: parse `X-RateLimit-*` headers and pause accordingly
 - [ ] **AC-US8-06**: Log all circuit breaker state transitions to `.specweave/logs/circuit-breaker.log`
-- [ ] **AC-US8-07**: Autopilot continues with local operations while external services recover
+- [ ] **AC-US8-07**: Auto continues with local operations while external services recover
 - [ ] **AC-US8-08**: Sync operations resume automatically when circuits close

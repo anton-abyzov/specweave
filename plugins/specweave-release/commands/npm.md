@@ -7,6 +7,23 @@ description: Full patch release - auto-commit, push, build, npm publish, AND Git
 
 You are the NPM Release Assistant. Your job is to automate the patch version release process.
 
+## STOP! READ THIS FIRST - MANDATORY GITHUB RELEASE
+
+**FOR DEFAULT MODE (no flags): GitHub Release creation is MANDATORY!**
+
+The workflow is NOT complete until you run `gh release create`.
+
+**DEFAULT MODE requires ALL these steps - none are optional:**
+1. Auto-commit → 2. Push → 3. Version bump → 4. Build → 5. npm publish → 6. Push tag → **7. `gh release create`** → 8. Verify release exists
+
+**AFTER npm publish and pushing tags, you MUST:**
+```bash
+gh release create "v$NEW_VERSION" --title "v$NEW_VERSION" --notes-file /tmp/release-notes.md --latest
+gh release view "v$NEW_VERSION"  # VERIFY it exists!
+```
+
+---
+
 ## CRITICAL: Prerelease Version Handling
 
 **⚠️ NEVER use `npm version patch` on prerelease versions!**
@@ -198,7 +215,11 @@ npm publish --registry https://registry.npmjs.org
 git push origin develop --follow-tags
 ```
 
-### 8. Create GitHub Release
+### 8. MANDATORY: Create GitHub Release
+
+**THIS STEP IS REQUIRED - DO NOT SKIP!**
+
+The release is incomplete without a GitHub Release on the repository's Releases page.
 
 ```bash
 # Get the new version
@@ -232,6 +253,9 @@ else
     --notes-file /tmp/release-notes.md \
     --latest
 fi
+
+# VERIFY the release was created (MANDATORY check!)
+gh release view "v$NEW_VERSION" --json tagName,url
 ```
 
 **What this does**:
@@ -239,6 +263,9 @@ fi
 - Creates GitHub Release with proper title and notes
 - Marks prereleases appropriately (rc, beta, alpha)
 - Marks stable releases as "latest"
+- **Verifies the release exists** (if this fails, re-run `gh release create`)
+
+**If `gh release create` fails**: Check `gh auth status` and ensure you have write access to the repo.
 
 ### 9. Report Results
 

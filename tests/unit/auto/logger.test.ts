@@ -1,21 +1,21 @@
 /**
- * Autopilot Logger Tests
+ * Auto Logger Tests
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { AutopilotLogger } from '../../../src/core/autopilot/logger.js';
+import { AutoLogger } from '../../../src/core/auto/logger.js';
 
-describe('AutopilotLogger', () => {
+describe('AutoLogger', () => {
   let tempDir: string;
-  let logger: AutopilotLogger;
+  let logger: AutoLogger;
   const testSessionId = 'auto-2025-12-29-abc123';
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'autopilot-logger-test-'));
-    logger = new AutopilotLogger(tempDir, testSessionId);
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'auto-logger-test-'));
+    logger = new AutoLogger(tempDir, testSessionId);
   });
 
   afterEach(() => {
@@ -100,7 +100,7 @@ describe('AutopilotLogger', () => {
       logger.logIteration(1, '0001');
 
       // Create new logger instance
-      const newLogger = new AutopilotLogger(tempDir, testSessionId);
+      const newLogger = new AutoLogger(tempDir, testSessionId);
       const loaded = newLogger.loadFromFile();
 
       expect(loaded).toBe(true);
@@ -108,7 +108,7 @@ describe('AutopilotLogger', () => {
     });
 
     it('should return false when file does not exist', () => {
-      const newLogger = new AutopilotLogger(tempDir, 'nonexistent');
+      const newLogger = new AutoLogger(tempDir, 'nonexistent');
       const loaded = newLogger.loadFromFile();
 
       expect(loaded).toBe(false);
@@ -219,7 +219,7 @@ describe('AutopilotLogger', () => {
       expect(fs.existsSync(summaryPath)).toBe(true);
 
       const content = fs.readFileSync(summaryPath, 'utf-8');
-      expect(content).toContain('# Autopilot Session Summary');
+      expect(content).toContain('# Auto Session Summary');
       expect(content).toContain(testSessionId);
     });
   });
