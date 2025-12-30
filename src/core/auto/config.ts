@@ -1,25 +1,25 @@
 /**
- * Autopilot Configuration Loader
- * Loads autopilot settings from .specweave/config.json with sensible defaults
+ * Auto Configuration Loader
+ * Loads auto settings from .specweave/config.json with sensible defaults
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { AutopilotConfig, DEFAULT_AUTOPILOT_CONFIG } from './types.js';
+import { AutoConfig, DEFAULT_AUTO_CONFIG } from './types.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
 
 const CONFIG_PATH = '.specweave/config.json';
 
 export interface ConfigLoadResult {
-  config: AutopilotConfig;
+  config: AutoConfig;
   source: 'file' | 'defaults' | 'merged';
   warnings: string[];
 }
 
 /**
- * Load autopilot configuration from project config file
+ * Load auto configuration from project config file
  */
-export function loadAutopilotConfig(projectRoot: string): ConfigLoadResult {
+export function loadAutoConfig(projectRoot: string): ConfigLoadResult {
   const configPath = path.join(projectRoot, CONFIG_PATH);
   const warnings: string[] = [];
 
@@ -27,7 +27,7 @@ export function loadAutopilotConfig(projectRoot: string): ConfigLoadResult {
   if (!fs.existsSync(configPath)) {
     logger.debug('No config file found, using defaults');
     return {
-      config: { ...DEFAULT_AUTOPILOT_CONFIG },
+      config: { ...DEFAULT_AUTO_CONFIG },
       source: 'defaults',
       warnings: [],
     };
@@ -41,7 +41,7 @@ export function loadAutopilotConfig(projectRoot: string): ConfigLoadResult {
     if (!fullConfig.auto) {
       logger.debug('No auto config section, using defaults');
       return {
-        config: { ...DEFAULT_AUTOPILOT_CONFIG },
+        config: { ...DEFAULT_AUTO_CONFIG },
         source: 'defaults',
         warnings: [],
       };
@@ -58,15 +58,15 @@ export function loadAutopilotConfig(projectRoot: string): ConfigLoadResult {
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Failed to load autopilot config: ${message}`);
+    throw new Error(`Failed to load auto config: ${message}`);
   }
 }
 
 /**
  * Merge user config with defaults, validating values
  */
-function mergeConfig(userConfig: Partial<AutopilotConfig>, warnings: string[]): AutopilotConfig {
-  const config: AutopilotConfig = { ...DEFAULT_AUTOPILOT_CONFIG };
+function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoConfig {
+  const config: AutoConfig = { ...DEFAULT_AUTO_CONFIG };
 
   // Boolean fields
   if (typeof userConfig.enabled === 'boolean') {
@@ -166,11 +166,11 @@ function mergeConfig(userConfig: Partial<AutopilotConfig>, warnings: string[]): 
 }
 
 /**
- * Save autopilot configuration to project config file
+ * Save auto configuration to project config file
  */
-export function saveAutopilotConfig(
+export function saveAutoConfig(
   projectRoot: string,
-  autopilotConfig: Partial<AutopilotConfig>
+  autoConfig: Partial<AutoConfig>
 ): void {
   const configPath = path.join(projectRoot, CONFIG_PATH);
   let fullConfig: Record<string, unknown> = {};
@@ -185,10 +185,10 @@ export function saveAutopilotConfig(
     }
   }
 
-  // Merge autopilot config
+  // Merge auto config
   fullConfig.auto = {
     ...(fullConfig.auto as object || {}),
-    ...autopilotConfig,
+    ...autoConfig,
   };
 
   // Ensure directory exists
@@ -199,18 +199,18 @@ export function saveAutopilotConfig(
 
   // Write config
   fs.writeFileSync(configPath, JSON.stringify(fullConfig, null, 2), 'utf-8');
-  logger.info('Saved autopilot configuration');
+  logger.info('Saved auto configuration');
 }
 
 /**
- * Check if autopilot is enabled in config
+ * Check if auto is enabled in config
  */
-export function isAutopilotEnabled(projectRoot: string): boolean {
+export function isAutoEnabled(projectRoot: string): boolean {
   try {
-    const { config } = loadAutopilotConfig(projectRoot);
+    const { config } = loadAutoConfig(projectRoot);
     return config.enabled;
   } catch {
-    return DEFAULT_AUTOPILOT_CONFIG.enabled;
+    return DEFAULT_AUTO_CONFIG.enabled;
   }
 }
 
@@ -221,7 +221,7 @@ export function getEffectiveMode(
   projectRoot: string,
   flags: { auto?: boolean; manual?: boolean; simple?: boolean }
 ): { mode: 'auto' | 'manual'; simple: boolean } {
-  const { config } = loadAutopilotConfig(projectRoot);
+  const { config } = loadAutoConfig(projectRoot);
 
   // Flags override config
   if (flags.manual) {

@@ -6,7 +6,7 @@ status: active
 priority: P1
 created: 2025-12-29
 lastUpdated: 2025-12-29
-increment: 0148-autonomous-execution-autopilot
+increment: 0148-autonomous-execution-auto
 external_tools:
   github:
     type: milestone
@@ -50,15 +50,15 @@ external_tools:
 | ID | Title | Status |
 |----|-------|--------|
 | [US-001](./us-001-stop-hook-based-continuation-loop.md) | Stop Hook-Based Continuation Loop | Planned |
-| [US-002](./us-002-autopilot-command-implementation.md) | Auto Mode as Default in /sw:increment | Planned |
-| [US-003](./us-003-cancel-autopilot-command.md) | Leverage Claude Code's Built-in Session Recovery | Planned |
+| [US-002](./us-002-auto-command-implementation.md) | Auto Mode as Default in /sw:increment | Planned |
+| [US-003](./us-003-cancel-auto-command.md) | Leverage Claude Code's Built-in Session Recovery | Planned |
 | [US-004](./us-004-multi-increment-orchestration.md) | Multi-Increment Orchestration | Planned |
 | [US-005](./us-005-test-driven-validation-gates.md) | Test-Driven Validation Gates | Planned |
 | [US-006](./us-006-human-gated-sensitive-operations.md) | Human-Gated Sensitive Operations | Planned |
 | [US-007](./us-007-integration-with-existing-workflow.md) | Auto-Aware Existing Workflow Commands | Planned |
 | [US-008](./us-008-circuit-breaker-patterns.md) | Circuit Breaker Patterns for External Services | Planned |
 | [US-009](./us-009-living-docs-sync-at-checkpoints.md) | Living Docs and External Tool Sync at Checkpoints | Planned |
-| [US-010](./us-010-autopilot-status-command.md) | Intelligent "Ask User When Stuck" Behavior | Planned |
+| [US-010](./us-010-auto-status-command.md) | Intelligent "Ask User When Stuck" Behavior | Planned |
 | [US-011](./us-011-tdd-enforcement-for-auto-mode.md) | TDD Enforcement for Auto Mode | Planned |
 | [US-012](./us-012-two-level-structure-support.md) | 2-Level Structure Support (Projects/Boards) | Planned |
 
@@ -67,11 +67,11 @@ external_tools:
 ### Stop Hook Integration Flow
 
 ```
-User runs /sw:autopilot "Build my app" --max-iterations 50
+User runs /sw:auto "Build my app" --max-iterations 50
                     │
                     ▼
         ┌─────────────────────────┐
-        │  setup-autopilot.sh     │
+        │  setup-auto.sh     │
         │  Creates session state  │
         └───────────┬─────────────┘
                     │
@@ -83,7 +83,7 @@ User runs /sw:autopilot "Build my app" --max-iterations 50
                     │
                     ▼ Claude tries to exit
         ┌─────────────────────────┐
-        │  stop-autopilot.sh      │
+        │  stop-auto.sh      │
         │  (Stop Hook)            │
         │  1. Check session state │
         │  2. Check completion    │
@@ -103,13 +103,13 @@ User runs /sw:autopilot "Build my app" --max-iterations 50
 
 - [ADR-0175: Workflow Orchestration Architecture](../../architecture/adr/0175-workflow-orchestration-architecture.md)
 - [ADR-0177: Autonomous Mode Safety](../../architecture/adr/0177-autonomous-mode-safety.md)
-- ADR-0178: Stop Hook-Based Autopilot Architecture (to be created)
+- ADR-0178: Stop Hook-Based Auto Architecture (to be created)
 
 ## Success Metrics
 
 | Metric | Target |
 |--------|--------|
-| Autopilot completion rate | > 80% |
+| Auto completion rate | > 80% |
 | False positive human gates | < 5% |
 | Crash recovery success | > 95% |
 | Time savings vs manual | > 50% |

@@ -1,15 +1,15 @@
 /**
  * Session State Manager
- * Manages autopilot session state persistence and recovery
+ * Manages auto session state persistence and recovery
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { AutopilotSession, AutopilotSessionStatus, CircuitBreakerStatus } from './types.js';
+import { AutoSession, AutoSessionStatus, CircuitBreakerStatus } from './types.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
 
 const STATE_DIR = '.specweave/state';
-const SESSION_FILE = 'autopilot-session.json';
+const SESSION_FILE = 'auto-session.json';
 const LOCK_FILE = 'active-session.lock';
 
 export class SessionStateManager {
@@ -35,15 +35,15 @@ export class SessionStateManager {
   }
 
   /**
-   * Create a new autopilot session
+   * Create a new auto session
    */
   createSession(options: {
     incrementQueue: string[];
     maxIterations?: number;
     maxHours?: number;
     simple?: boolean;
-  }): AutopilotSession {
-    const session: AutopilotSession = {
+  }): AutoSession {
+    const session: AutoSession = {
       sessionId: SessionStateManager.generateSessionId(),
       status: 'running',
       startTime: new Date().toISOString(),
@@ -83,15 +83,15 @@ export class SessionStateManager {
   /**
    * Save session state to disk
    */
-  save(session: AutopilotSession): boolean {
+  save(session: AutoSession): boolean {
     try {
       this.ensureStateDir();
       const json = JSON.stringify(session, null, 2);
       fs.writeFileSync(this.sessionPath, json, 'utf-8');
-      logger.debug(`Saved autopilot session: ${session.sessionId}`);
+      logger.debug(`Saved auto session: ${session.sessionId}`);
       return true;
     } catch (error) {
-      logger.error(`Failed to save autopilot session: ${error}`);
+      logger.error(`Failed to save auto session: ${error}`);
       return false;
     }
   }
@@ -99,16 +99,16 @@ export class SessionStateManager {
   /**
    * Load session state from disk
    */
-  load(): AutopilotSession | null {
+  load(): AutoSession | null {
     try {
       if (!fs.existsSync(this.sessionPath)) {
         return null;
       }
       const json = fs.readFileSync(this.sessionPath, 'utf-8');
-      const session = JSON.parse(json) as AutopilotSession;
+      const session = JSON.parse(json) as AutoSession;
       return session;
     } catch (error) {
-      logger.error(`Failed to load autopilot session: ${error}`);
+      logger.error(`Failed to load auto session: ${error}`);
       return null;
     }
   }
@@ -124,7 +124,7 @@ export class SessionStateManager {
   /**
    * Get active session or null
    */
-  getActiveSession(): AutopilotSession | null {
+  getActiveSession(): AutoSession | null {
     const session = this.load();
     if (session && session.status === 'running') {
       return session;
@@ -135,7 +135,7 @@ export class SessionStateManager {
   /**
    * Update session status
    */
-  updateStatus(status: AutopilotSessionStatus, reason?: string): boolean {
+  updateStatus(status: AutoSessionStatus, reason?: string): boolean {
     const session = this.load();
     if (!session) {
       return false;

@@ -6,15 +6,15 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { SessionStateManager } from '../../../src/core/autopilot/session-state.js';
-import { AutopilotSession } from '../../../src/core/autopilot/types.js';
+import { SessionStateManager } from '../../../src/core/auto/session-state.js';
+import { AutoSession } from '../../../src/core/auto/types.js';
 
 describe('SessionStateManager', () => {
   let tempDir: string;
   let manager: SessionStateManager;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'autopilot-test-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'auto-test-'));
     manager = new SessionStateManager(tempDir);
   });
 
@@ -72,7 +72,7 @@ describe('SessionStateManager', () => {
       const result = manager.save(session);
       expect(result).toBe(true);
 
-      const statePath = path.join(tempDir, '.specweave/state/autopilot-session.json');
+      const statePath = path.join(tempDir, '.specweave/state/auto-session.json');
       expect(fs.existsSync(statePath)).toBe(true);
     });
 
@@ -96,7 +96,7 @@ describe('SessionStateManager', () => {
     it('should return null for corrupted state file', () => {
       const stateDir = path.join(tempDir, '.specweave/state');
       fs.mkdirSync(stateDir, { recursive: true });
-      fs.writeFileSync(path.join(stateDir, 'autopilot-session.json'), 'invalid json{', 'utf-8');
+      fs.writeFileSync(path.join(stateDir, 'auto-session.json'), 'invalid json{', 'utf-8');
 
       const loaded = manager.load();
       expect(loaded).toBeNull();
