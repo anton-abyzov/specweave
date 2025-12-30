@@ -15,9 +15,8 @@
  * @since 1.0.60
  */
 
-import { Command } from 'commander';
 import chalk from 'chalk';
-import { execSync, spawnSync } from 'child_process';
+import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import os from 'os';
@@ -104,7 +103,7 @@ function installPlugin(pluginName: string): PluginResult {
   return { name: pluginName, success: false, error: result.output };
 }
 
-export async function refreshMarketplaceCommand(options: RefreshOptions): Promise<void> {
+export async function refreshMarketplaceCommand(options: RefreshOptions = {}): Promise<void> {
   // Determine mode - GitHub is default per CLAUDE.md rules
   const mode = options.local ? 'local' : 'github';
 
@@ -267,17 +266,3 @@ export async function refreshMarketplaceCommand(options: RefreshOptions): Promis
   console.log('');
 }
 
-// Standalone execution
-const program = new Command();
-
-program
-  .name('refresh-marketplace')
-  .description('Refresh SpecWeave marketplace and install all plugins')
-  .option('--local', 'Use local development version (ONLY for active dev)')
-  .option('--github', 'Pull latest from GitHub (default, recommended)')
-  .option('-v, --verbose', 'Show detailed error messages')
-  .action(async (options: RefreshOptions) => {
-    await refreshMarketplaceCommand(options);
-  });
-
-program.parse();
