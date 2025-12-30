@@ -1,8 +1,8 @@
 {
   "id": "0149-usage-analytics",
-  "status": "active",
+  "status": "ready_for_review",
   "type": "feature",
   "priority": "P1",
   "created": "2025-12-30T00:45:00.000Z",
-  "lastActivity": "2025-12-30T00:45:00.000Z"
+  "lastActivity": "2025-12-30T06:03:00.000Z"
 }
