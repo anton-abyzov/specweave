@@ -16,6 +16,16 @@ set -euo pipefail
 STUCK_THRESHOLD_SECONDS="${STUCK_THRESHOLD:-300}"  # 5 minutes
 CHECK_INTERVAL="${CHECK_INTERVAL:-60}"             # 1 minute
 SPECWEAVE_ROOT="${SPECWEAVE_ROOT:-.specweave}"
+
+# CRITICAL: Verify .specweave directory EXISTS before proceeding
+# This prevents creating .specweave folders in non-project directories
+# when the watchdog is invoked with default SPECWEAVE_ROOT
+if [[ ! -d "$SPECWEAVE_ROOT" ]]; then
+  # Don't output anything - just exit silently
+  # The caller should have set SPECWEAVE_ROOT to an existing directory
+  exit 0
+fi
+
 SIGNAL_FILE="${SPECWEAVE_ROOT}/state/.session-stuck"
 DIAGNOSTICS_FILE="${SPECWEAVE_ROOT}/state/.watchdog-diagnostics.json"
 DAEMON_MODE=false
