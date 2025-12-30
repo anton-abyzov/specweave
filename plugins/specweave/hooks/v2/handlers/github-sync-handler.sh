@@ -151,12 +151,33 @@ run_with_timeout() {
   fi
 }
 
-# Load GitHub token
+# Load GitHub token - fallback chain mirrors auth-helpers.ts:
+# 1. .env GITHUB_TOKEN (explicit config)
+# 2. .env GH_TOKEN (alternative name)
+# 3. gh auth token (gh CLI - most common for local dev!)
+# FIXED (v1.0.57): Added GH_TOKEN and gh auth fallback - critical for local development!
 GITHUB_TOKEN=""
-[[ -f "$PROJECT_ROOT/.env" ]] && GITHUB_TOKEN=$(grep -E "^GITHUB_TOKEN=" "$PROJECT_ROOT/.env" | cut -d'=' -f2- | tr -d '"'"'")
+
+# Try .env GITHUB_TOKEN first
+if [[ -f "$PROJECT_ROOT/.env" ]]; then
+  GITHUB_TOKEN=$(grep -E "^GITHUB_TOKEN=" "$PROJECT_ROOT/.env" | cut -d'=' -f2- | tr -d '"'"'")
+  # Try GH_TOKEN as alternative
+  [[ -z "$GITHUB_TOKEN" ]] && GITHUB_TOKEN=$(grep -E "^GH_TOKEN=" "$PROJECT_ROOT/.env" | cut -d'=' -f2- | tr -d '"'"'")
+fi
+
+# Fallback to gh CLI (most common for local development!)
+if [[ -z "$GITHUB_TOKEN" ]] && command -v gh >/dev/null 2>&1; then
+  GITHUB_TOKEN=$(gh auth token 2>/dev/null || true)
+  if [[ -n "$GITHUB_TOKEN" ]]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] Using token from gh auth (not .env)" >> "$THROTTLE_LOG" 2>/dev/null
+  fi
+fi
 
 if [[ -z "$GITHUB_TOKEN" ]]; then
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] ERROR: GITHUB_TOKEN not found in $PROJECT_ROOT/.env" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync] ERROR: No GitHub token found" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync]   Checked: $PROJECT_ROOT/.env (GITHUB_TOKEN, GH_TOKEN)" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync]   Checked: gh auth token (gh CLI not authenticated?)" >> "$THROTTLE_LOG" 2>/dev/null
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [github-sync]   Fix: Run 'gh auth login' OR add GITHUB_TOKEN to .env" >> "$THROTTLE_LOG" 2>/dev/null
   exit 0
 fi
 

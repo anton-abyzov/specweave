@@ -296,6 +296,9 @@ If already "in-progress", keep existing metadata.
      - Public API changes
      - Breaking changes
      - New features
+   - **Update API docs if task is API-related** (only if `apiDocs.enabled` in config):
+     - New endpoint → Update openapi.yaml (or regenerate from decorators)
+     - On increment close → Generate postman-collection.json from OpenAPI
 
    **Step D: Continue to next task**:
    - Do NOT call `/sw:sync-docs` yet (wait until all tasks complete)

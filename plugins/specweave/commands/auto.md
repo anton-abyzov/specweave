@@ -318,21 +318,97 @@ if [ -n "$SCORE" ] && [ "$(echo "$SCORE < 0.50" | bc)" -eq 1 ]; then
 fi
 ```
 
-### Test Execution Integration
+### Test Execution Integration (MANDATORY)
 
-**Auto mode MUST run tests after completing testable tasks:**
+**Auto mode MUST run tests after completing testable tasks in a self-healing loop:**
 
 ```bash
-# After task completion, if task affects testable code:
-if [[ "$TASK_TYPE" == *"implement"* ]] || [[ "$TASK_TYPE" == *"fix"* ]]; then
-    npm test 2>&1 | tee test-output.log
+# Test execution loop (Ralph Loop pattern)
+MAX_ATTEMPTS=3
+ATTEMPT=0
 
-    if [ $? -ne 0 ]; then
-        # Tests failed - attempt fix
-        echo "🔴 Tests failed, attempting fix..."
-        # Self-healing loop (max 3 attempts)
+while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+    ATTEMPT=$((ATTEMPT + 1))
+
+    # 1. Run unit/integration tests
+    npm test 2>&1 | tee test-output.log
+    UNIT_RESULT=$?
+
+    # 2. Run E2E tests if UI exists
+    if [ -f "playwright.config.ts" ] || [ -f "playwright.config.js" ]; then
+        npx playwright test --reporter=list 2>&1 | tee e2e-output.log
+        E2E_RESULT=$?
+    else
+        E2E_RESULT=0
     fi
-fi
+
+    # 3. Check results
+    if [ $UNIT_RESULT -eq 0 ] && [ $E2E_RESULT -eq 0 ]; then
+        echo "✅ All tests passed!"
+        break
+    fi
+
+    if [ $ATTEMPT -lt $MAX_ATTEMPTS ]; then
+        echo "🔴 Tests failed (attempt $ATTEMPT/$MAX_ATTEMPTS), analyzing and fixing..."
+        # AI analyzes failure, fixes code, continues loop
+    else
+        echo "❌ Tests failed after $MAX_ATTEMPTS attempts, stopping for review"
+        exit 1
+    fi
+done
+```
+
+### E2E Testing with Playwright (when UI exists)
+
+**ALWAYS execute E2E tests for user-facing features:**
+
+```bash
+# Install browsers if needed (first run)
+npx playwright install --with-deps chromium
+
+# Run E2E tests
+npx playwright test
+
+# On failure, run with trace for debugging
+npx playwright test --trace on
+
+# Run specific test file
+npx playwright test tests/auth.spec.ts
+
+# Run in headed mode for debugging
+npx playwright test --headed
+```
+
+**MVP Critical Path Tests (MUST implement):**
+1. **Auth flows**: Login, logout, registration, password reset
+2. **Core CRUD**: Create, read, update, delete main entities
+3. **Business transactions**: Checkout, payment, order flow
+4. **Data validation**: Form submissions, error states
+
+### Continuous Refactoring (Part of Auto Loop)
+
+**Every 3-5 tasks, proactively refactor:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ REFACTORING TRIGGERS (check after every 3-5 tasks):         │
+├─────────────────────────────────────────────────────────────┤
+│ • Test file > 200 lines    → Split by feature               │
+│ • Source file > 300 lines  → Extract module                 │
+│ • Duplicate code 3+ times  → Extract utility/helper         │
+│ • Same test setup repeated → Extract to fixtures            │
+│ • Imports > 15 lines       → Consolidate, barrel exports    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Refactoring actions in auto mode:**
+```bash
+# After completing task batch, review and refactor:
+1. Check test organization → Group by feature
+2. Extract shared fixtures → tests/fixtures/
+3. Extract utilities → src/utils/ or src/lib/
+4. Update imports → Use barrel exports (index.ts)
+5. Run tests again → Ensure refactoring didn't break anything
 ```
 
 ### Quality Gate Before Continue
@@ -341,9 +417,73 @@ Before moving to next task, verify:
 
 1. ✅ Current task marked complete in tasks.md
 2. ✅ Corresponding ACs checked in spec.md
-3. ✅ Tests pass (if applicable)
-4. ✅ No deployment errors (if applicable)
-5. ✅ Self-assessment score ≥ 0.70
+3. ✅ Unit tests pass
+4. ✅ E2E tests pass (if UI task)
+5. ✅ No deployment errors (if applicable)
+6. ✅ Self-assessment score ≥ 0.70
+7. ✅ Refactoring done if triggers met
+
+### 📊 Test Status Reporting (MANDATORY)
+
+**After EVERY task in auto mode, output test status report:**
+
+```markdown
+## 🧪 Test Status Report (after T-003)
+
+| Type | Status | Pass/Total | Coverage |
+|------|--------|------------|----------|
+| Unit | ✅ | 42/42 | 87% |
+| Integration | ✅ | 12/12 | - |
+| E2E | ⚠️ | 8/10 | - |
+
+**Failing tests:**
+- `auth.spec.ts:45` - Login redirect not working (fixing now)
+
+**Overall:** 62/64 tests passing (97%)
+```
+
+**This report MUST be shown to user after every task completion in auto mode!**
+
+### 🏠 Local-First Development
+
+**If no deployment instructions provided:**
+
+1. **Build locally first** - implement all features
+2. **Run ALL tests** - unit, integration, E2E
+3. **Verify everything works** - manual smoke test if needed
+4. **THEN ask user** - "Where do you want to deploy?"
+
+**Don't assume deployment target!** Present options:
+```markdown
+🚀 **Ready for Deployment**
+
+All tests pass locally. Where should I deploy?
+- Vercel Cron (serverless)
+- Railway (always-on)
+- GitHub Actions (CI-based)
+- Local cron
+```
+
+### 🔧 Infrastructure Decision-Making
+
+**For scrapers, cron jobs, integrations - ULTRATHINK first:**
+
+| Component | Options (by frequency/scale) |
+|-----------|------------------------------|
+| **Cron < 1/hr** | Vercel Cron, GitHub Actions, Cloudflare Workers |
+| **Cron ≥ 1/hr** | Railway, Render, dedicated server |
+| **Heavy compute** | Dedicated VM, Docker, Kubernetes |
+| **Real-time** | Always-on server, WebSocket |
+| **Simple KV** | Upstash Redis, Vercel KV |
+| **Relational DB** | Supabase, PlanetScale, Neon |
+| **File storage** | Cloudflare R2, S3, Backblaze B2 |
+
+**When implementing scrapers/cron jobs:**
+1. **Ultrathink** on best hosting given requirements
+2. **Research** rate limits, costs, reliability
+3. **Propose** 2-3 options with trade-offs
+4. **Build locally first** with comprehensive tests
+5. **Deploy** only after user confirms target
 
 ---
 

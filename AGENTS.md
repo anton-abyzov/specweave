@@ -1,11 +1,12 @@
-<!-- SW:META template="agents" version="1.0.46" sections="index,quickstart,rules,commands,nonclaudetools,syncworkflow,contextloading,structure,agents,skills,taskformat,usformat,workflows,plugincommands,troubleshooting,docs" -->
+<!-- SW:META template="agents" version="1.0.58" sections="index,quickstart,rules,autoexecute,commands,nonclaudetools,syncworkflow,contextloading,structure,agents,skills,taskformat,usformat,workflows,plugincommands,troubleshooting,docs" -->
 
-<!-- SW:SECTION:index version="1.0.46" -->
+<!-- SW:SECTION:index version="1.0.57" -->
 ## Section Index (Use Ctrl+F to Navigate)
 
 | Section | Search For | Purpose |
 |---------|------------|---------|
 | Rules | `#essential-rules` | Critical rules, file organization |
+| **Auto-Execute** | `#auto-execute` | **CRITICAL: NEVER output manual steps!** |
 | Commands | `#commands` | All SpecWeave commands |
 | **Hooks** | `#non-claude-tools` | **CRITICAL: Hook behavior to mimic** |
 | **User Story** | `#user-story-format` | **CRITICAL: Project/Board fields** |
@@ -14,7 +15,7 @@
 | Troubleshoot | `#troubleshooting` | Common issues |
 <!-- SW:END:index -->
 
-<!-- SW:SECTION:quickstart version="1.0.46" -->
+<!-- SW:SECTION:quickstart version="1.0.56" -->
 ## Quick Start
 
 1. **Get Project Context FIRST**: `specweave context projects` (save the output!)
@@ -23,7 +24,7 @@
 4. **Execute**: `/sw:do` to start implementation
 <!-- SW:END:quickstart -->
 
-<!-- SW:SECTION:rules version="1.0.46" -->
+<!-- SW:SECTION:rules version="1.0.56" -->
 ## Essential Rules {#essential-rules}
 
 ```
@@ -48,7 +49,276 @@
 ```
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:commands version="1.0.46" -->
+<!-- SW:SECTION:autoexecute version="1.0.57" -->
+## Auto-Execute Rule (CRITICAL) {#auto-execute}
+
+**NEVER output "Manual Step Required" or "Next Steps" when credentials are available.**
+
+### The Golden Rule
+
+```
+❌ FORBIDDEN: "Manual Step Required: Open Supabase SQL Editor..."
+❌ FORBIDDEN: "Next Steps: 1. Run wrangler deploy..."
+❌ FORBIDDEN: "Execute this SQL in your database console..."
+❌ FORBIDDEN: "Paste (Cmd+V) the SQL and click Run"
+
+✅ REQUIRED: Execute commands directly using available credentials
+```
+
+### Decision Tree
+
+```
+Credentials in .env? ──YES──→ EXECUTE IMMEDIATELY (psql, supabase, wrangler, etc.)
+         │
+         NO
+         │
+         ▼
+ASK for credentials (don't show manual steps!)
+         │
+         ▼
+Save to .env → EXECUTE IMMEDIATELY → Continue
+```
+
+### Credential Lookup (MANDATORY before any external operation)
+
+```bash
+# 1. Check .env file for secrets
+grep -E "(SUPABASE_|DATABASE_URL|CF_API_|GITHUB_TOKEN)" .env 2>/dev/null
+
+# 2. Check CLI tool authentication
+supabase status 2>/dev/null     # Supabase CLI
+wrangler whoami 2>/dev/null     # Cloudflare Wrangler
+gh auth status 2>/dev/null      # GitHub CLI
+aws sts get-caller-identity 2>/dev/null  # AWS CLI
+
+# 3. Check appsettings.json for C#/.NET projects
+cat appsettings.json 2>/dev/null | grep -i "connection"
+```
+
+### Auto-Execute Examples
+
+```bash
+# Supabase SQL execution (if DATABASE_URL exists)
+source .env && psql "$DATABASE_URL" -f schema.sql
+
+# Supabase CLI (if logged in)
+supabase db push
+
+# Cloudflare Wrangler
+wrangler secret put MY_SECRET <<< "$SECRET_VALUE"
+wrangler deploy
+
+# GitHub CLI
+gh issue create --title "Title" --body "Body"
+```
+
+### If Credentials Missing → ASK, Don't Show Manual Steps
+
+```markdown
+🔐 **Credential Required**
+
+I need your DATABASE_URL to execute the migration.
+
+**Paste your connection string:**
+[I will save to .env and execute automatically]
+```
+
+**Key difference**: After user provides credential → SAVE to .env AND EXECUTE. NEVER say "now run these commands manually".
+
+### 🧪 Test Execution Loop (MANDATORY)
+
+**After EVERY implementation task, run tests in a self-healing loop:**
+
+```bash
+# Test Loop Pattern (Ralph Loop)
+MAX_ATTEMPTS=3
+
+for attempt in 1 2 3; do
+    # 1. Run unit tests
+    npm test
+
+    # 2. Run E2E if UI exists
+    if [ -f "playwright.config.ts" ]; then
+        npx playwright test
+    fi
+
+    # 3. If pass → continue to next task
+    # 4. If fail → FIX → retry (max 3 attempts)
+done
+```
+
+**E2E with Playwright (when UI exists):**
+```bash
+npx playwright install --with-deps chromium  # First time
+npx playwright test                          # Run tests
+npx playwright test --trace on               # Debug failures
+```
+
+**🔐 E2E Authentication (CRITICAL - Avoid Flaky Tests!):**
+
+Auth is #1 cause of flaky E2E tests. Use `storageState` pattern:
+
+| Strategy | Speed | Reliability | Use When |
+|----------|-------|-------------|----------|
+| **storageState** | ⚡⚡⚡ | ⭐⭐⭐ | Default - login ONCE, reuse |
+| **API auth** | ⚡⚡ | ⭐⭐⭐ | When UI is unstable |
+| **UI login per test** | ⚡ | ⭐ | Only testing login flow |
+
+```typescript
+// playwright/auth.setup.ts - Global setup, runs ONCE
+import { test as setup } from '@playwright/test';
+
+setup('authenticate', async ({ page }) => {
+  await page.goto('/login');
+  await page.fill('[name="email"]', 'test@example.com');
+  await page.fill('[name="password"]', 'testpass123');
+  await page.click('button[type="submit"]');
+  await page.waitForURL('/dashboard');
+  await page.context().storageState({ path: 'playwright/.auth/user.json' });
+});
+```
+
+```typescript
+// playwright.config.ts - Reuse auth state
+projects: [
+  { name: 'setup', testMatch: /.*\.setup\.ts/ },
+  {
+    name: 'chromium',
+    use: { storageState: 'playwright/.auth/user.json' },
+    dependencies: ['setup'],
+  },
+]
+```
+
+**Common Auth Fixes:**
+| Problem | Solution |
+|---------|----------|
+| Session expires | Increase TTL for test env |
+| Rate limited | Use API auth, seed users |
+| Captcha blocks | Disable in test env |
+
+**MVP Critical Paths (MUST test):**
+- Authentication flows (login, logout, register)
+- Core CRUD operations
+- Business transactions (checkout, payment)
+
+### ⚠️ Pragmatic Completion (NOT 100% Blindly!)
+
+**Don't blindly complete all planned tasks!** Be pragmatic:
+
+| Priority | Complete? | Examples |
+|----------|-----------|----------|
+| **MUST** | Always | MVP paths, security, data integrity |
+| **SHOULD** | Aim for | Edge cases, optimizations |
+| **CAN SKIP** | If blocking | Conflicting specs, obsolete tasks |
+
+**When to STOP and ask user:**
+- Spec conflicts with another spec
+- Task seems unnecessary now
+- Edge case requires major refactoring
+
+### 🧑‍🤝‍🧑 Smart Test Users
+
+**Create users strategically:**
+- Multiple users: RBAC, subscription tiers, multi-user interactions
+- One user enough: Basic CRUD, form validation, component tests
+
+```typescript
+// Use fixtures, not per-test creation
+const testUsers = {
+  admin: { email: 'admin@test.local', role: 'admin' },
+  user: { email: 'user@test.local', role: 'user' },
+};
+```
+
+### 🔄 Continuous Refactoring
+
+**Every 3-5 tasks, check for refactoring needs:**
+
+| Trigger | Action |
+|---------|--------|
+| Test file > 200 lines | Split by feature |
+| Source file > 300 lines | Extract module |
+| Duplicate code 3+ times | Extract utility |
+| Same test setup repeated | Extract fixtures |
+
+### 📊 Test Status Reporting (MANDATORY in Auto Mode)
+
+**After EVERY task, report test status:**
+
+```markdown
+## 🧪 Test Status Report
+
+| Type | Status | Pass/Total |
+|------|--------|------------|
+| Unit | ✅ | 42/42 |
+| Integration | ✅ | 12/12 |
+| E2E | ⚠️ | 8/10 |
+
+**Overall:** 62/64 tests passing (97%)
+```
+
+### 🏠 Local-First Development
+
+**If no deployment instructions → BUILD LOCALLY FIRST:**
+1. Implement feature
+2. Run ALL tests
+3. THEN ask user about deployment target
+
+### 🔧 Infrastructure Decisions
+
+**For scrapers/cron jobs - THINK FIRST:**
+
+| Use Case | Best Options |
+|----------|--------------|
+| Cron < 1/hr | Vercel, GitHub Actions |
+| Cron ≥ 1/hr | Railway, Render |
+| Heavy compute | Dedicated VM, Docker |
+| Simple KV | Upstash, Vercel KV |
+| Relational | Supabase, PlanetScale |
+
+### 📡 API Projects - OpenAPI-First Documentation
+
+**For API projects only** (auto-detected or manually enabled in config):
+
+```json
+// .specweave/config.json
+{
+  "apiDocs": {
+    "enabled": true,
+    "openApiPath": "openapi.yaml",
+    "generatePostman": true,
+    "generateOn": "on-increment-done"
+  }
+}
+```
+
+**Workflow:**
+```
+Code (decorators) → openapi.yaml (source of truth) → postman-collection.json
+```
+
+**Framework Support:**
+| Framework | OpenAPI Generation |
+|-----------|-------------------|
+| NestJS | `@nestjs/swagger` decorators |
+| FastAPI | Built-in `/openapi.json` |
+| Express | `swagger-jsdoc` comments |
+| Spring Boot | `springdoc-openapi` |
+
+**Commands:**
+```bash
+/sw:api-docs           # Generate OpenAPI + Postman
+/sw:done 0001          # Auto-generates if enabled
+```
+
+**Manual (if no framework support):**
+```bash
+npx @postman/openapi-to-postmanv2 -s openapi.yaml -o postman-collection.json
+```
+<!-- SW:END:autoexecute -->
+
+<!-- SW:SECTION:commands version="1.0.56" -->
 ## Commands Reference {#commands}
 
 ### Core Commands
@@ -72,7 +342,7 @@
 | `/sw-ado:sync 0001` | Sync to Azure DevOps |
 <!-- SW:END:commands -->
 
-<!-- SW:SECTION:nonclaudetools version="1.0.46" -->
+<!-- SW:SECTION:nonclaudetools version="1.0.56" -->
 ## Non-Claude Tools (Cursor, Copilot, etc.) {#non-claude-tools}
 
 **CRITICAL**: Claude Code has automatic hooks. Other tools DO NOT.
@@ -325,7 +595,7 @@ cat plugins/specweave/commands/increment.md
 **Without these manual steps, your work won't be tracked!**
 <!-- SW:END:nonclaudetools -->
 
-<!-- SW:SECTION:syncworkflow version="1.0.46" -->
+<!-- SW:SECTION:syncworkflow version="1.0.56" -->
 ## Sync Workflow {#sync-workflow}
 
 ### Source of Truth Hierarchy
@@ -407,7 +677,7 @@ TASK COMPLETED
 **Non-Claude tools**: NO HOOKS EXIST. See "Hook Behavior You Must Mimic" section above.
 <!-- SW:END:syncworkflow -->
 
-<!-- SW:SECTION:contextloading version="1.0.46" -->
+<!-- SW:SECTION:contextloading version="1.0.56" -->
 ## Context Loading {#context-loading}
 
 ### Efficient Context Management
@@ -427,7 +697,7 @@ Read only what's needed for the current task:
 4. Avoid loading entire documentation trees
 <!-- SW:END:contextloading -->
 
-<!-- SW:SECTION:structure version="1.0.46" -->
+<!-- SW:SECTION:structure version="1.0.56" -->
 ## Project Structure
 
 ```
@@ -448,7 +718,7 @@ Read only what's needed for the current task:
 ```
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:agents version="1.0.46" -->
+<!-- SW:SECTION:agents version="1.0.56" -->
 ## Agents (Roles)
 
 {AGENTS_SECTION}
@@ -456,7 +726,7 @@ Read only what's needed for the current task:
 **Usage**: Adopt role perspective when working on related tasks.
 <!-- SW:END:agents -->
 
-<!-- SW:SECTION:skills version="1.0.46" -->
+<!-- SW:SECTION:skills version="1.0.56" -->
 ## Skills (Capabilities)
 
 {SKILLS_SECTION}
@@ -506,7 +776,7 @@ AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app pe
 **⛔ CRITICAL**: The AI MUST run `specweave context projects` BEFORE creating spec.md, and use the output values in every `**Project**:` field!
 <!-- SW:END:skills -->
 
-<!-- SW:SECTION:taskformat version="1.0.46" -->
+<!-- SW:SECTION:taskformat version="1.0.56" -->
 ## Task Format
 
 ```markdown
@@ -520,7 +790,7 @@ AI: [Creates .specweave/increments/0001-auth/spec.md with **Project**: my-app pe
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:usformat version="1.0.46" -->
+<!-- SW:SECTION:usformat version="1.0.56" -->
 ## User Story Format (CRITICAL for spec.md) {#user-story-format}
 
 **⛔ MANDATORY: Every User Story MUST have `**Project**:` field!**
@@ -554,7 +824,7 @@ specweave context projects
 ```
 <!-- SW:END:usformat -->
 
-<!-- SW:SECTION:workflows version="1.0.46" -->
+<!-- SW:SECTION:workflows version="1.0.56" -->
 ## Workflows
 
 ### Creating Increment
@@ -611,7 +881,7 @@ title: "Feature Title"
 4. GitHub issue closed (if enabled)
 <!-- SW:END:workflows -->
 
-<!-- SW:SECTION:plugincommands version="1.0.46" -->
+<!-- SW:SECTION:plugincommands version="1.0.56" -->
 ## Plugin Commands
 
 | Command | Plugin |
@@ -621,7 +891,7 @@ title: "Feature Title"
 | `/sw-ado:sync` | Azure DevOps |
 <!-- SW:END:plugincommands -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.46" -->
+<!-- SW:SECTION:troubleshooting version="1.0.56" -->
 ## Troubleshooting {#troubleshooting}
 
 ### Commands Not Working
@@ -726,7 +996,7 @@ npx playwright test
 - Running `npx` instead of MCP tools (better anyway!)
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:docs version="1.0.46" -->
+<!-- SW:SECTION:docs version="1.0.56" -->
 ## Documentation
 
 | Resource | Purpose |

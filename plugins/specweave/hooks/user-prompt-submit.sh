@@ -132,6 +132,19 @@ if echo "$PROMPT" | grep -qE "^/sw:costs($| )"; then
   exit 0
 fi
 
+# /sw:analytics → Execute read-analytics.sh (pure bash, ~50ms)
+if echo "$PROMPT" | grep -qE "^/sw:analytics($| )"; then
+  ARGS=$(echo "$PROMPT" | sed 's|^/sw:analytics\s*||')
+  if [[ -f "$SCRIPTS_DIR/read-analytics.sh" ]]; then
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-analytics.sh" $ARGS 2>&1)
+  else
+    OUTPUT="❌ No analytics script available"
+  fi
+  OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+  printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+  exit 0
+fi
+
 # ==============================================================================
 # TASK COUNT GUARD: Block /sw:do for oversized increments (v0.32.2+)
 # ==============================================================================
@@ -458,6 +471,18 @@ if [[ -n "$ACTIVE_INCREMENT" ]] && [[ -d "$SPECWEAVE_DIR" ]]; then
   HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   # Run async (non-blocking!) - update-status-line.sh has its own TTL/mtime guards
   bash "$HOOK_DIR/lib/update-status-line.sh" 2>/dev/null &
+fi
+
+# ==============================================================================
+# ANALYTICS TRACKING: Track /sw:* command invocations (v0.35.0+)
+# ==============================================================================
+# Non-blocking, runs in background. Tracks command usage for /sw:analytics.
+
+if echo "$PROMPT" | grep -qE "^/sw:[a-z]"; then
+  COMMAND_NAME=$(echo "$PROMPT" | grep -oE "^/sw:[a-z0-9:-]+" | head -1)
+  if [[ -n "$COMMAND_NAME" ]] && [[ -f "$SCRIPTS_DIR/track-analytics.sh" ]]; then
+    bash "$SCRIPTS_DIR/track-analytics.sh" command "$COMMAND_NAME" --plugin specweave --increment "$ACTIVE_INCREMENT" 2>/dev/null &
+  fi
 fi
 
 # ==============================================================================

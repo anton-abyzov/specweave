@@ -244,6 +244,63 @@ export interface ArchivingConfig {
 }
 
 /**
+ * API Documentation Configuration (v1.0.58+)
+ *
+ * Controls API documentation generation strategy.
+ * OpenAPI is the source of truth; Postman/other formats are derived.
+ */
+export interface ApiDocsConfig {
+  /** Enable API documentation features (default: false, auto-enabled for API projects) */
+  enabled?: boolean;
+
+  /**
+   * OpenAPI spec location (relative to project root)
+   * @default "openapi.yaml" or "openapi.json"
+   */
+  openApiPath?: string;
+
+  /**
+   * Auto-generate OpenAPI from code decorators/annotations
+   * Supported frameworks: NestJS, FastAPI, Express+swagger-jsdoc, Spring Boot
+   * @default true (if framework detected)
+   */
+  autoGenerateOpenApi?: boolean;
+
+  /**
+   * Generate Postman collection from OpenAPI
+   * @default true
+   */
+  generatePostman?: boolean;
+
+  /**
+   * Postman collection output path (relative to project root)
+   * @default "postman-collection.json"
+   */
+  postmanPath?: string;
+
+  /**
+   * When to regenerate API docs:
+   * - 'on-increment-done': Generate when closing increment (recommended)
+   * - 'on-api-change': Generate when API files change (via hook)
+   * - 'manual': Only generate on explicit command
+   * @default 'on-increment-done'
+   */
+  generateOn?: 'on-increment-done' | 'on-api-change' | 'manual';
+
+  /**
+   * API file patterns to watch for changes (when generateOn='on-api-change')
+   * @default ['routes', 'controllers', 'api']
+   */
+  watchPatterns?: string[];
+
+  /**
+   * Base URL for the API (used in Postman collection)
+   * @default "http://localhost:3000"
+   */
+  baseUrl?: string;
+}
+
+/**
  * Living Docs Configuration
  *
  * Controls how Living Documentation is generated and synced
@@ -424,6 +481,9 @@ export interface SpecweaveConfig {
   /** Living docs configuration (v0.21.4+) */
   livingDocs?: LivingDocsConfig;
 
+  /** API documentation configuration (v1.0.58+) */
+  apiDocs?: ApiDocsConfig;
+
   /** Umbrella repository configuration (v0.31.0+) */
   umbrella?: UmbrellaConfig;
 
@@ -517,6 +577,21 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
       enabled: true,               // Three-layer sync (increment → living docs → external)
       autoSync: true,              // Auto-sync after task completion
     },
+  },
+  apiDocs: {
+    enabled: false,                // v1.0.58+: Opt-in, auto-enabled for detected API projects
+    openApiPath: 'openapi.yaml',   // OpenAPI spec location
+    autoGenerateOpenApi: true,     // Auto-generate from decorators if framework supports
+    generatePostman: true,         // Generate Postman collection from OpenAPI
+    postmanPath: 'postman-collection.json',
+    generateOn: 'on-increment-done', // When to regenerate (recommended: on increment close)
+    watchPatterns: [               // API file patterns for change detection
+      '**/routes/**',
+      '**/controllers/**',
+      '**/api/**',
+      '**/endpoints/**',
+    ],
+    baseUrl: 'http://localhost:3000',
   },
   hooks: {
     post_task_completion: {

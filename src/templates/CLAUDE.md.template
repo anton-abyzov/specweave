@@ -240,6 +240,79 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 ```
 <!-- /SECTION -->
 
+<!-- SECTION:api -->
+## API Development (OpenAPI-First)
+
+**For API projects only.** Skip this section if your project has no REST/GraphQL endpoints.
+
+**Use OpenAPI as the source of truth for API documentation.** Postman collections are derived from OpenAPI.
+
+### Configuration (`.specweave/config.json`)
+
+```json
+{
+  "apiDocs": {
+    "enabled": true,
+    "openApiPath": "openapi.yaml",
+    "generatePostman": true,
+    "postmanPath": "postman-collection.json",
+    "generateOn": "on-increment-done",
+    "baseUrl": "http://localhost:3000"
+  }
+}
+```
+
+### OpenAPI Generation by Framework
+
+| Framework | Auto-Generation | Setup |
+|-----------|-----------------|-------|
+| **NestJS** | `@nestjs/swagger` | Decorators auto-generate OpenAPI |
+| **FastAPI** | Built-in | Auto-generates at `/openapi.json` |
+| **Express** | `swagger-jsdoc` | JSDoc comments → OpenAPI |
+| **Spring Boot** | `springdoc-openapi` | Annotations auto-generate |
+| **Go/Gin** | `swag` | Comments → OpenAPI |
+
+### Workflow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Code (decorators/annotations)                                │
+│         ↓ (auto-generated or manual)                         │
+│ openapi.yaml (SOURCE OF TRUTH - version controlled)         │
+│         ↓ (derived on /sw:done or /sw:api-docs)             │
+│ postman-collection.json (for manual testing)                 │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Commands
+
+```bash
+# Generate/update API docs (OpenAPI + Postman)
+/sw:api-docs
+
+# Generate on increment close (automatic if enabled)
+/sw:done 0001  # → triggers API doc generation
+```
+
+### Manual Generation (if config disabled)
+
+```bash
+# Generate Postman from existing OpenAPI
+npx @postman/openapi-to-postmanv2 -s openapi.yaml -o postman-collection.json
+
+# Generate OpenAPI for Express
+npx swagger-jsdoc -d swagger-config.js -o openapi.yaml
+```
+
+### When Docs Update
+
+| `generateOn` Setting | When API Docs Regenerate |
+|---------------------|--------------------------|
+| `on-increment-done` | When closing increment (recommended) |
+| `on-api-change` | When API files change (hook-based) |
+| `manual` | Only via `/sw:api-docs` command |
+<!-- /SECTION -->
+
 <!-- SECTION:limits -->
 ## Limits
 
@@ -283,10 +356,404 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- /SECTION -->
 
+<!-- SECTION:mcp -->
+## MCP Servers (External Service Integration)
+
+**MCP servers extend Claude Code's capabilities for external services.** Install them for autonomous operations.
+
+### Recommended MCP Servers
+
+| Service | Install | Purpose |
+|---------|---------|---------|
+| **Supabase** | `npx @anthropic/claude-code-mcp-setup add supabase` | Database, Auth, Edge Functions |
+| **GitHub** | Built-in via `gh` CLI | Issues, PRs, Repos |
+| **Postgres** | `npx @anthropic/claude-code-mcp-setup add postgres` | Direct DB access |
+
+### Supabase MCP Setup
+
+```bash
+# Add to Claude Code MCP config
+npx @anthropic/claude-code-mcp-setup add supabase
+
+# Or manual config in .claude/settings.local.json:
+{
+  "mcpServers": {
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp"
+    }
+  }
+}
+```
+
+### Auto-Install Rule
+
+**If credentials exist for a service, Claude SHOULD auto-install the MCP server:**
+
+```bash
+# If SUPABASE_URL exists → suggest/install Supabase MCP
+if grep -q "SUPABASE_URL" .env 2>/dev/null; then
+  npx @anthropic/claude-code-mcp-setup add supabase
+fi
+```
+<!-- /SECTION -->
+
+<!-- SECTION:autoexecute -->
+## Auto-Execute Rule (CRITICAL)
+
+**NEVER output "Manual Step Required" or "Next Steps" when credentials are available.**
+
+### The Golden Rule
+
+```
+❌ FORBIDDEN: "Manual Step Required: Open Supabase SQL Editor..."
+❌ FORBIDDEN: "Next Steps: 1. Run wrangler deploy..."
+❌ FORBIDDEN: "Execute this SQL in your database console..."
+
+✅ REQUIRED: Execute commands directly using available credentials
+```
+
+### Decision Tree
+
+```
+Credentials in .env? ──YES──→ EXECUTE IMMEDIATELY
+         │
+         NO
+         │
+         ▼
+ASK for credentials (don't show manual steps!)
+         │
+         ▼
+Save to .env → EXECUTE IMMEDIATELY → Continue
+```
+
+### Credential Lookup (MANDATORY before any external operation)
+
+```bash
+# 1. Check .env
+grep -E "(SUPABASE_|DATABASE_URL|CF_API_|GITHUB_TOKEN)" .env 2>/dev/null
+
+# 2. Check CLI auth
+supabase status 2>/dev/null     # Supabase
+wrangler whoami 2>/dev/null     # Cloudflare
+gh auth status 2>/dev/null      # GitHub
+aws sts get-caller-identity 2>/dev/null  # AWS
+
+# 3. Use MCP server if available
+# MCP servers provide direct API access
+```
+
+### Auto-Execute Examples
+
+```bash
+# Supabase SQL execution
+if [ -n "$DATABASE_URL" ]; then
+  psql "$DATABASE_URL" -f schema.sql  # ✅ Execute directly
+fi
+
+# Wrangler secrets
+if wrangler whoami 2>/dev/null; then
+  echo "$SECRET" | wrangler secret put MY_SECRET  # ✅ Execute directly
+  wrangler deploy  # ✅ Deploy directly
+fi
+```
+
+### If Credentials Missing → ASK, Don't Show Manual Steps
+
+```markdown
+🔐 **Credential Required**
+
+I need your DATABASE_URL to execute the migration.
+
+**Paste your connection string:**
+[I will save to .env and execute automatically]
+```
+<!-- /SECTION -->
+
 <!-- SECTION:auto -->
 ## Auto Mode (Autonomous Execution)
 
 **Auto mode enables continuous autonomous execution** until all tasks are complete.
+
+### 🚨 CRITICAL: Zero Manual Steps in Auto Mode
+
+**Auto mode MUST be fully autonomous. NEVER ask user to:**
+- Open a web dashboard (Supabase, AWS Console, etc.)
+- Copy/paste SQL into an editor
+- Run commands manually
+- Click buttons in UIs
+
+**If you need external access:**
+1. Check for credentials in `.env`
+2. Use CLI tools (`supabase`, `wrangler`, `gh`, `aws`)
+3. Use MCP servers for direct API access
+4. If credentials missing → ASK for them, save to `.env`, then EXECUTE
+
+### 🧪 Test Execution Loop (MANDATORY)
+
+**After EVERY implementation task, run tests in a self-healing loop:**
+
+```bash
+# 1. Run unit/integration tests
+npm test  # or: npx vitest run
+
+# 2. If UI exists, run E2E tests
+npx playwright test
+
+# 3. If tests fail → FIX → RE-RUN (max 3 attempts)
+```
+
+**Test Loop Pattern (Ralph Loop):**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ IMPLEMENT → TEST → FAIL? → FIX → TEST → PASS → NEXT TASK   │
+│                     ↑________________↓                       │
+│                    (max 3 iterations)                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**E2E Test Execution (when UI exists):**
+```bash
+# Install Playwright browsers if needed
+npx playwright install --with-deps chromium
+
+# Run E2E tests with proper reporting
+npx playwright test --reporter=list
+
+# On failure, capture screenshot/trace
+npx playwright test --trace on
+```
+
+**Focus on MVP Critical Paths:**
+1. **Authentication flows** (login, logout, register)
+2. **Core business transactions** (create, update, delete)
+3. **Payment/checkout flows** (if applicable)
+4. **Data integrity scenarios**
+
+### ⚠️ Pragmatic Completion (NOT 100% Blindly!)
+
+**Don't blindly follow 100% completion rules!** Reality:
+- Specs have bugs, ambiguities, conflicts
+- Requirements change mid-implementation
+- Some planned tasks become irrelevant
+- Edge cases may not be worth the effort
+
+**Smart Completion Criteria:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ MUST COMPLETE (block release):                               │
+│ • MVP critical paths (auth, core CRUD, payments)            │
+│ • Security-sensitive flows                                   │
+│ • Data integrity operations                                  │
+│ • User-facing error handling                                 │
+├─────────────────────────────────────────────────────────────┤
+│ SHOULD COMPLETE (aim for, but pragmatic):                    │
+│ • Edge case handling                                         │
+│ • Performance optimizations                                  │
+│ • Nice-to-have features                                      │
+├─────────────────────────────────────────────────────────────┤
+│ CAN SKIP/DEFER (if blocking progress):                       │
+│ • Conflicting requirements (flag and ask user)              │
+│ • Over-engineered edge cases                                 │
+│ • Tasks made obsolete by other changes                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**When to STOP and ask user:**
+- Spec conflicts with another spec
+- Task seems unnecessary given implementation
+- Edge case would require major refactoring
+- Requirement is ambiguous
+
+### 🧑‍🤝‍🧑 Smart Test User Strategy
+
+**Create test users strategically, not blindly:**
+
+```typescript
+// Good: Create users with specific roles/states
+const testUsers = {
+  admin: { email: 'admin@test.com', role: 'admin' },
+  regularUser: { email: 'user@test.com', role: 'user' },
+  premiumUser: { email: 'premium@test.com', plan: 'premium' },
+  blockedUser: { email: 'blocked@test.com', status: 'blocked' },
+};
+
+// When to create multiple test users:
+// ✅ Testing role-based access control
+// ✅ Testing subscription tiers
+// ✅ Testing user states (active, blocked, pending)
+// ✅ Testing multi-user interactions (sharing, permissions)
+
+// When ONE test user is enough:
+// ✅ Basic CRUD operations
+// ✅ Form validation
+// ✅ UI component tests
+// ✅ API endpoint tests (mocked auth)
+```
+
+**E2E Test User Setup:**
+```typescript
+// playwright/fixtures/users.ts
+export const testUsers = {
+  // Seeded in database before tests
+  admin: { id: 'test-admin-001', email: 'admin@test.local' },
+  user: { id: 'test-user-001', email: 'user@test.local' },
+};
+
+// Use fixtures, don't create users per test!
+test.use({ storageState: 'playwright/.auth/user.json' });
+```
+
+### 🔐 E2E Authentication (CRITICAL - Avoid Flaky Tests!)
+
+**Auth is the #1 cause of flaky E2E tests. Be ULTRASMART:**
+
+| Strategy | Speed | Reliability | Use When |
+|----------|-------|-------------|----------|
+| **storageState** | ⚡⚡⚡ | ⭐⭐⭐ | Default - login ONCE, reuse |
+| **API auth** | ⚡⚡ | ⭐⭐⭐ | When UI is unstable |
+| **UI login per test** | ⚡ | ⭐ | Only testing login flow |
+
+**Playwright Auth Setup (MANDATORY):**
+
+```typescript
+// playwright/auth.setup.ts - Global setup
+import { test as setup } from '@playwright/test';
+
+setup('authenticate', async ({ page }) => {
+  await page.goto('/login');
+  await page.fill('[name="email"]', 'test@example.com');
+  await page.fill('[name="password"]', 'testpass123');
+  await page.click('button[type="submit"]');
+  await page.waitForURL('/dashboard');
+  await page.context().storageState({ path: 'playwright/.auth/user.json' });
+});
+```
+
+```typescript
+// playwright.config.ts - Reuse auth state
+projects: [
+  { name: 'setup', testMatch: /.*\.setup\.ts/ },
+  {
+    name: 'chromium',
+    use: { storageState: 'playwright/.auth/user.json' },
+    dependencies: ['setup'],
+  },
+]
+```
+
+**Common Auth Fixes:**
+
+| Problem | Solution |
+|---------|----------|
+| Session expires | Increase TTL for test env |
+| Rate limited | Use API auth, seed users |
+| Captcha blocks | Disable in test env |
+| OAuth fails | Mock provider |
+
+**Auto Mode E2E Checklist:**
+```
+✅ Test users seeded with known passwords
+✅ Auth state files generated
+✅ Tests DON'T login (except login flow tests)
+✅ Captcha/2FA disabled in test env
+```
+
+### 🔄 Continuous Refactoring (Part of Auto Loop)
+
+**As tests grow, REFACTOR proactively:**
+
+```
+After every 3-5 tasks:
+1. Review test organization → Extract shared fixtures
+2. Review code duplication → Extract utilities
+3. Review file sizes → Split if >300 lines
+4. Review imports → Consolidate, remove unused
+```
+
+**Refactoring Triggers:**
+- Test file > 200 lines → Split by feature
+- Duplicate test setup → Extract to fixtures
+- Same assertion pattern 3+ times → Create helper
+- Source file > 300 lines → Extract module
+
+### 📊 Test Status Reporting (MANDATORY in Auto Mode)
+
+**After EVERY task, report test status to user:**
+
+```markdown
+## 🧪 Test Status Report
+
+| Type | Status | Pass/Total | Coverage |
+|------|--------|------------|----------|
+| Unit | ✅ | 42/42 | 87% |
+| Integration | ✅ | 12/12 | - |
+| E2E | ⚠️ | 8/10 | - |
+
+**Failing tests:**
+- `auth.spec.ts:45` - Login redirect not working
+- `checkout.spec.ts:112` - Payment timeout
+
+**Next:** Fixing E2E failures before continuing...
+```
+
+### 🏠 Local-First Development
+
+**If no deployment instructions provided, BUILD AND TEST LOCALLY FIRST:**
+
+```
+1. Implement feature locally
+2. Run ALL tests (unit, integration, E2E)
+3. Verify everything works
+4. THEN ask user about deployment preferences
+```
+
+**Don't assume deployment target!** Ask user:
+```markdown
+🚀 **Deployment Options**
+
+Your scraper is ready and all tests pass locally.
+
+**Where would you like to deploy?**
+- Vercel Cron (serverless, free tier available)
+- Railway (always-on, $5/mo)
+- GitHub Actions (CI-based, free)
+- Local cron (self-hosted)
+- Other?
+```
+
+### 🔧 Infrastructure Decision-Making
+
+**For scrapers, cron jobs, background tasks - ULTRATHINK on best approach:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ INFRASTRUCTURE DECISION TREE                                 │
+├─────────────────────────────────────────────────────────────┤
+│ Scraper/Cron Job:                                           │
+│ ├─ Frequency < 1/hour → Vercel Cron, GitHub Actions         │
+│ ├─ Frequency ≥ 1/hour → Railway, Render, dedicated server   │
+│ ├─ Heavy compute → Dedicated VM, Docker container           │
+│ └─ Real-time → Always-on server, WebSocket                  │
+│                                                              │
+│ Data Storage:                                                │
+│ ├─ Simple KV → Upstash Redis, Vercel KV                     │
+│ ├─ Relational → Supabase, PlanetScale, Neon                 │
+│ ├─ Document → MongoDB Atlas, Supabase                       │
+│ └─ Time-series → TimescaleDB, InfluxDB                      │
+│                                                              │
+│ File Storage:                                                │
+│ ├─ Static assets → Cloudflare R2, S3                        │
+│ └─ Large files → S3, GCS, Backblaze B2                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**When implementing scrapers/cron jobs:**
+1. **Ultrathink** on best hosting options given requirements
+2. **Research** rate limits, costs, reliability
+3. **Propose** 2-3 options with trade-offs
+4. **Build locally first** with tests
+5. **Deploy** only after user confirms target
 
 ### For Claude Code Users
 

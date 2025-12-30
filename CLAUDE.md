@@ -1,10 +1,10 @@
-<!-- SW:META template="claude" version="1.0.48" sections="header,start,autodetect,metarule,rules,workflow,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,limits,troubleshooting,principles,linking,docs" -->
+<!-- SW:META template="claude" version="1.0.58" sections="header,start,autodetect,metarule,rules,workflow,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,principles,linking,mcp,autoexecute,auto,docs" -->
 
-<!-- SW:SECTION:header version="1.0.46" -->
+<!-- SW:SECTION:header version="1.0.56" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
-<!-- SW:SECTION:start version="1.0.46" -->
+<!-- SW:SECTION:start version="1.0.56" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -14,7 +14,7 @@
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.46" -->
+<!-- SW:SECTION:autodetect version="1.0.56" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -24,7 +24,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.46" -->
+<!-- SW:SECTION:metarule version="1.0.56" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -35,7 +35,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.46" -->
+<!-- SW:SECTION:rules version="1.0.56" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (spec.md, plan.md, tasks.md at root; reports/, scripts/, logs/ subfolders)
@@ -45,7 +45,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.46" -->
+<!-- SW:SECTION:workflow version="1.0.56" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -62,40 +62,92 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:context version="1.0.47" -->
+<!-- SW:SECTION:context version="1.0.56" -->
 ## Living Docs Context
 
-**Before implementing**: Check existing docs for patterns and decisions.
+**Before implementing features**: Check existing docs for patterns and decisions.
 
 ```bash
-grep -ril "keyword" .specweave/docs/internal/  # Search for related docs
+# Search for related docs
+grep -ril "keyword" .specweave/docs/internal/
+
+# Key locations
+.specweave/docs/internal/specs/       # Feature specifications
+.specweave/docs/internal/architecture/adr/  # Architecture decisions (ADRs)
+.specweave/docs/internal/architecture/      # System design
 ```
 
-**Key locations**: `specs/` (features) | `architecture/adr/` (decisions) | `architecture/` (design)
+**Always check ADRs** before making design decisions to avoid contradicting past choices.
 
-**Always check ADRs** before design decisions. Use `/sw:context <topic>` to load context.
+**Use `/sw:context <topic>`** to load relevant living docs into conversation.
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:lsp version="1.0.1" -->
+<!-- SW:SECTION:lsp version="1.0.56" -->
 ## LSP-Enhanced Exploration (DEFAULT - Claude Code 2.0.74+)
 
-**LSP is ENABLED BY DEFAULT** - 100x faster than grep for symbol resolution.
+**LSP is ENABLED BY DEFAULT** for all SpecWeave operations - 100x faster than grep for symbol resolution.
 
 **LSP Operations** (used automatically):
-| Operation | Purpose | Use Case |
-|-----------|---------|----------|
-| `goToDefinition` | Jump to symbol definition | Find function/class definitions |
+| Operation | Purpose | Example Use |
+|-----------|---------|-------------|
+| `goToDefinition` | Jump to symbol definition | Find where a function/class is defined |
 | `findReferences` | All usages across codebase | Refactoring impact analysis |
 | `documentSymbol` | File structure/hierarchy | Understand module organization |
-| `hover` | Type info & documentation | Check inferred types |
-| `getDiagnostics` | Errors, warnings, hints | Real-time code quality |
+| `hover` | Type info & documentation | Check inferred types, JSDoc |
+| `getDiagnostics` | Errors, warnings, hints | Real-time code quality check |
 
-**Living Docs & Init use LSP automatically**. Disable with `--no-lsp` (not recommended).
+**Living Docs & Init use LSP automatically**:
+```bash
+# Full scan (LSP enabled by default)
+/sw:living-docs --full-scan
 
-**Install Language Servers**: `npm i -g typescript-language-server` | `pip install python-lsp-server`
+# Init also uses LSP for accurate codebase analysis
+specweave init
+
+# LSP provides automatically:
+# - Accurate API surface extraction (all exports, types, signatures)
+# - Cross-module dependency graphs (semantic, not just imports)
+# - Dead code detection (unreferenced symbols)
+# - Type hierarchy and inheritance maps
+
+# Disable only if language servers unavailable (not recommended):
+/sw:living-docs --full-scan --no-lsp
+```
+
+**Install Language Servers** (required for LSP):
+```bash
+# TypeScript/JavaScript (most common)
+npm install -g typescript-language-server typescript
+
+# Python
+pip install python-lsp-server
+
+# Go
+go install golang.org/x/tools/gopls@latest
+
+# Rust
+rustup component add rust-analyzer
+```
+
+**Configuration** (optional, `.lsp.json` in project root):
+```json
+{
+  "vtsls": {
+    "command": "typescript-language-server",
+    "args": ["--stdio"],
+    "extensionToLanguage": { ".ts": "typescript", ".tsx": "typescriptreact", ".js": "javascript" }
+  }
+}
+```
+
+**Best Practices**:
+- Install language servers before running `specweave init` or `/sw:living-docs`
+- LSP runs automatically - no flags needed
+- Use `findReferences` before refactoring to understand impact
+- Combine with Explore agent for comprehensive codebase understanding
 <!-- SW:END:lsp -->
 
-<!-- SW:SECTION:structure version="1.0.46" -->
+<!-- SW:SECTION:structure version="1.0.56" -->
 ## Structure
 
 ```
@@ -117,7 +169,7 @@ grep -ril "keyword" .specweave/docs/internal/  # Search for related docs
 **Path syntax**: `//path` = absolute | `/path` = relative to settings file | `**` = recursive | `additionalDirectories` = explicit working dirs
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.46" -->
+<!-- SW:SECTION:taskformat version="1.0.56" -->
 ## Task Format
 
 ```markdown
@@ -127,7 +179,7 @@ grep -ril "keyword" .specweave/docs/internal/  # Search for related docs
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.46" -->
+<!-- SW:SECTION:secrets version="1.0.56" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -138,7 +190,7 @@ gh auth status
 ```
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.46" -->
+<!-- SW:SECTION:syncing version="1.0.56" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **After increment creation**: Run `/sw-github:sync {id}` to create issues!
@@ -166,7 +218,7 @@ Living docs sync ≠ External sync. They are separate:
 **Verify tokens**: `grep GITHUB_TOKEN .env` | `gh auth status`
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:mapping version="1.0.46" -->
+<!-- SW:SECTION:mapping version="1.0.56" -->
 ## GitHub Mapping
 
 | SpecWeave | GitHub |
@@ -176,7 +228,7 @@ Living docs sync ≠ External sync. They are separate:
 | Task T-XXX | Checkbox |
 <!-- SW:END:mapping -->
 
-<!-- SW:SECTION:testing version="1.0.46" -->
+<!-- SW:SECTION:testing version="1.0.56" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -188,13 +240,86 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:limits version="1.0.46" -->
+<!-- SW:SECTION:api version="1.0.58" -->
+## API Development (OpenAPI-First)
+
+**For API projects only.** Skip this section if your project has no REST/GraphQL endpoints.
+
+**Use OpenAPI as the source of truth for API documentation.** Postman collections are derived from OpenAPI.
+
+### Configuration (`.specweave/config.json`)
+
+```json
+{
+  "apiDocs": {
+    "enabled": true,
+    "openApiPath": "openapi.yaml",
+    "generatePostman": true,
+    "postmanPath": "postman-collection.json",
+    "generateOn": "on-increment-done",
+    "baseUrl": "http://localhost:3000"
+  }
+}
+```
+
+### OpenAPI Generation by Framework
+
+| Framework | Auto-Generation | Setup |
+|-----------|-----------------|-------|
+| **NestJS** | `@nestjs/swagger` | Decorators auto-generate OpenAPI |
+| **FastAPI** | Built-in | Auto-generates at `/openapi.json` |
+| **Express** | `swagger-jsdoc` | JSDoc comments -> OpenAPI |
+| **Spring Boot** | `springdoc-openapi` | Annotations auto-generate |
+| **Go/Gin** | `swag` | Comments -> OpenAPI |
+
+### Workflow
+
+```
+Code (decorators/annotations)
+        |
+        v (auto-generated or manual)
+openapi.yaml (SOURCE OF TRUTH - version controlled)
+        |
+        v (derived on /sw:done or /sw:api-docs)
+postman-collection.json (for manual testing)
+```
+
+### Commands
+
+```bash
+# Generate/update API docs (OpenAPI + Postman)
+/sw:api-docs
+
+# Generate on increment close (automatic if enabled)
+/sw:done 0001  # -> triggers API doc generation
+```
+
+### Manual Generation (if config disabled)
+
+```bash
+# Generate Postman from existing OpenAPI
+npx @postman/openapi-to-postmanv2 -s openapi.yaml -o postman-collection.json
+
+# Generate OpenAPI for Express
+npx swagger-jsdoc -d swagger-config.js -o openapi.yaml
+```
+
+### When Docs Update
+
+| `generateOn` Setting | When API Docs Regenerate |
+|---------------------|--------------------------|
+| `on-increment-done` | When closing increment (recommended) |
+| `on-api-change` | When API files change (hook-based) |
+| `manual` | Only via `/sw:api-docs` command |
+<!-- SW:END:api -->
+
+<!-- SW:SECTION:limits version="1.0.56" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.46" -->
+<!-- SW:SECTION:troubleshooting version="1.0.56" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -213,7 +338,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:principles version="1.0.46" -->
+<!-- SW:SECTION:principles version="1.0.56" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -223,7 +348,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 5. **Clean**: All files in increment folders
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.46" -->
+<!-- SW:SECTION:linking version="1.0.56" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -231,7 +356,553 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:docs version="1.0.46" -->
+<!-- SW:SECTION:mcp version="1.0.56" -->
+## MCP Servers (External Service Integration)
+
+**MCP servers extend Claude Code's capabilities for external services.** Install them for autonomous operations.
+
+### Recommended MCP Servers
+
+| Service | Install | Purpose |
+|---------|---------|---------|
+| **Supabase** | `npx @anthropic/claude-code-mcp-setup add supabase` | Database, Auth, Edge Functions |
+| **GitHub** | Built-in via `gh` CLI | Issues, PRs, Repos |
+| **Postgres** | `npx @anthropic/claude-code-mcp-setup add postgres` | Direct DB access |
+
+### Supabase MCP Setup
+
+```bash
+# Add to Claude Code MCP config
+npx @anthropic/claude-code-mcp-setup add supabase
+
+# Or manual config in .claude/settings.local.json:
+{
+  "mcpServers": {
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp"
+    }
+  }
+}
+```
+
+### Auto-Install Rule
+
+**If credentials exist for a service, Claude SHOULD auto-install the MCP server:**
+
+```bash
+# If SUPABASE_URL exists → suggest/install Supabase MCP
+if grep -q "SUPABASE_URL" .env 2>/dev/null; then
+  npx @anthropic/claude-code-mcp-setup add supabase
+fi
+```
+<!-- SW:END:mcp -->
+
+<!-- SW:SECTION:autoexecute version="1.0.56" -->
+## Auto-Execute Rule (CRITICAL)
+
+**NEVER output "Manual Step Required" or "Next Steps" when credentials are available.**
+
+### The Golden Rule
+
+```
+❌ FORBIDDEN: "Manual Step Required: Open Supabase SQL Editor..."
+❌ FORBIDDEN: "Next Steps: 1. Run wrangler deploy..."
+❌ FORBIDDEN: "Execute this SQL in your database console..."
+
+✅ REQUIRED: Execute commands directly using available credentials
+```
+
+### Decision Tree
+
+```
+Credentials in .env? ──YES──→ EXECUTE IMMEDIATELY
+         │
+         NO
+         │
+         ▼
+ASK for credentials (don't show manual steps!)
+         │
+         ▼
+Save to .env → EXECUTE IMMEDIATELY → Continue
+```
+
+### Credential Lookup (MANDATORY before any external operation)
+
+```bash
+# 1. Check .env
+grep -E "(SUPABASE_|DATABASE_URL|CF_API_|GITHUB_TOKEN)" .env 2>/dev/null
+
+# 2. Check CLI auth
+supabase status 2>/dev/null     # Supabase
+wrangler whoami 2>/dev/null     # Cloudflare
+gh auth status 2>/dev/null      # GitHub
+aws sts get-caller-identity 2>/dev/null  # AWS
+
+# 3. Use MCP server if available
+# MCP servers provide direct API access
+```
+
+### Auto-Execute Examples
+
+```bash
+# Supabase SQL execution
+if [ -n "$DATABASE_URL" ]; then
+  psql "$DATABASE_URL" -f schema.sql  # ✅ Execute directly
+fi
+
+# Wrangler secrets
+if wrangler whoami 2>/dev/null; then
+  echo "$SECRET" | wrangler secret put MY_SECRET  # ✅ Execute directly
+  wrangler deploy  # ✅ Deploy directly
+fi
+```
+
+### If Credentials Missing → ASK, Don't Show Manual Steps
+
+```markdown
+🔐 **Credential Required**
+
+I need your DATABASE_URL to execute the migration.
+
+**Paste your connection string:**
+[I will save to .env and execute automatically]
+```
+<!-- SW:END:autoexecute -->
+
+<!-- SW:SECTION:auto version="1.0.57" -->
+## Auto Mode (Autonomous Execution)
+
+**Auto mode enables continuous autonomous execution** until all tasks are complete.
+
+### 🚨 CRITICAL: Zero Manual Steps in Auto Mode
+
+**Auto mode MUST be fully autonomous. NEVER ask user to:**
+- Open a web dashboard (Supabase, AWS Console, etc.)
+- Copy/paste SQL into an editor
+- Run commands manually
+- Click buttons in UIs
+
+**If you need external access:**
+1. Check for credentials in `.env`
+2. Use CLI tools (`supabase`, `wrangler`, `gh`, `aws`)
+3. Use MCP servers for direct API access
+4. If credentials missing → ASK for them, save to `.env`, then EXECUTE
+
+### 🧪 Test Execution Loop (MANDATORY)
+
+**After EVERY implementation task, run tests in a self-healing loop:**
+
+```bash
+# 1. Run unit/integration tests
+npm test  # or: npx vitest run
+
+# 2. If UI exists, run E2E tests
+npx playwright test
+
+# 3. If tests fail → FIX → RE-RUN (max 3 attempts)
+```
+
+**Test Loop Pattern (Ralph Loop):**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ IMPLEMENT → TEST → FAIL? → FIX → TEST → PASS → NEXT TASK   │
+│                     ↑________________↓                       │
+│                    (max 3 iterations)                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**E2E Test Execution (when UI exists):**
+```bash
+# Install Playwright browsers if needed
+npx playwright install --with-deps chromium
+
+# Run E2E tests with proper reporting
+npx playwright test --reporter=list
+
+# On failure, capture screenshot/trace
+npx playwright test --trace on
+```
+
+**Focus on MVP Critical Paths:**
+1. **Authentication flows** (login, logout, register)
+2. **Core business transactions** (create, update, delete)
+3. **Payment/checkout flows** (if applicable)
+4. **Data integrity scenarios**
+
+### ⚠️ Pragmatic Completion (NOT 100% Blindly!)
+
+**Don't blindly follow 100% completion rules!** Reality:
+- Specs have bugs, ambiguities, conflicts
+- Requirements change mid-implementation
+- Some planned tasks become irrelevant
+- Edge cases may not be worth the effort
+
+**Smart Completion Criteria:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ MUST COMPLETE (block release):                               │
+│ • MVP critical paths (auth, core CRUD, payments)            │
+│ • Security-sensitive flows                                   │
+│ • Data integrity operations                                  │
+│ • User-facing error handling                                 │
+├─────────────────────────────────────────────────────────────┤
+│ SHOULD COMPLETE (aim for, but pragmatic):                    │
+│ • Edge case handling                                         │
+│ • Performance optimizations                                  │
+│ • Nice-to-have features                                      │
+├─────────────────────────────────────────────────────────────┤
+│ CAN SKIP/DEFER (if blocking progress):                       │
+│ • Conflicting requirements (flag and ask user)              │
+│ • Over-engineered edge cases                                 │
+│ • Tasks made obsolete by other changes                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**When to STOP and ask user:**
+- Spec conflicts with another spec
+- Task seems unnecessary given implementation
+- Edge case would require major refactoring
+- Requirement is ambiguous
+
+### 🧑‍🤝‍🧑 Smart Test User Strategy
+
+**Create test users strategically, not blindly:**
+
+```typescript
+// Good: Create users with specific roles/states
+const testUsers = {
+  admin: { email: 'admin@test.com', role: 'admin' },
+  regularUser: { email: 'user@test.com', role: 'user' },
+  premiumUser: { email: 'premium@test.com', plan: 'premium' },
+  blockedUser: { email: 'blocked@test.com', status: 'blocked' },
+};
+
+// When to create multiple test users:
+// ✅ Testing role-based access control
+// ✅ Testing subscription tiers
+// ✅ Testing user states (active, blocked, pending)
+// ✅ Testing multi-user interactions (sharing, permissions)
+
+// When ONE test user is enough:
+// ✅ Basic CRUD operations
+// ✅ Form validation
+// ✅ UI component tests
+// ✅ API endpoint tests (mocked auth)
+```
+
+**E2E Test User Setup:**
+```typescript
+// playwright/fixtures/users.ts
+export const testUsers = {
+  // Seeded in database before tests
+  admin: { id: 'test-admin-001', email: 'admin@test.local' },
+  user: { id: 'test-user-001', email: 'user@test.local' },
+};
+
+// Use fixtures, don't create users per test!
+test.use({ storageState: 'playwright/.auth/user.json' });
+```
+
+### 🔐 E2E Authentication (CRITICAL - Avoid Flaky Tests!)
+
+**Auth is the #1 cause of flaky E2E tests. Be ULTRASMART about it:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ E2E AUTH STRATEGY (in order of preference):                  │
+├─────────────────────────────────────────────────────────────┤
+│ 1. BEST: Reuse auth state (storageState)                    │
+│    - Login ONCE in global setup                              │
+│    - Reuse session across all tests                          │
+│    - 10x faster, zero flakiness                              │
+│                                                              │
+│ 2. GOOD: API-based auth (bypass UI)                         │
+│    - Call auth API directly                                  │
+│    - Set cookies/tokens programmatically                     │
+│    - Faster than UI login                                    │
+│                                                              │
+│ 3. AVOID: UI login per test                                 │
+│    - Slow (3-5s per test)                                   │
+│    - Flaky (timing, captcha, rate limits)                   │
+│    - Only for testing login flow itself                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Playwright Auth Setup (MANDATORY pattern):**
+
+```typescript
+// playwright/auth.setup.ts - Global setup, runs ONCE
+import { test as setup } from '@playwright/test';
+
+const authFile = 'playwright/.auth/user.json';
+
+setup('authenticate', async ({ page }) => {
+  // Option 1: UI login (only in setup, not per test!)
+  await page.goto('/login');
+  await page.fill('[name="email"]', 'test@example.com');
+  await page.fill('[name="password"]', 'testpass123');
+  await page.click('button[type="submit"]');
+  await page.waitForURL('/dashboard');
+
+  // Save auth state for reuse
+  await page.context().storageState({ path: authFile });
+});
+
+// Option 2: API-based auth (PREFERRED - faster, more reliable)
+setup('authenticate via API', async ({ request }) => {
+  const response = await request.post('/api/auth/login', {
+    data: { email: 'test@example.com', password: 'testpass123' }
+  });
+
+  // Extract and save cookies/tokens
+  await request.storageState({ path: authFile });
+});
+```
+
+```typescript
+// playwright.config.ts
+export default defineConfig({
+  projects: [
+    // Setup project - runs first
+    { name: 'setup', testMatch: /.*\.setup\.ts/ },
+
+    // Tests use auth state from setup
+    {
+      name: 'chromium',
+      use: {
+        storageState: 'playwright/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
+  ],
+});
+```
+
+```typescript
+// tests/dashboard.spec.ts - NO LOGIN CODE NEEDED!
+test('user can view dashboard', async ({ page }) => {
+  // Already authenticated via storageState!
+  await page.goto('/dashboard');
+  await expect(page.locator('h1')).toContainText('Dashboard');
+});
+```
+
+**Handling Auth Edge Cases:**
+
+```typescript
+// For tests that need DIFFERENT users:
+test.describe('admin features', () => {
+  test.use({ storageState: 'playwright/.auth/admin.json' });
+
+  test('admin can delete users', async ({ page }) => {
+    // Uses admin auth state
+  });
+});
+
+// For tests that need NO auth (login page testing):
+test.describe('login flow', () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  test('shows login form', async ({ page }) => {
+    await page.goto('/login');
+    // Test the actual login UI
+  });
+});
+```
+
+**Common Auth Flakiness Fixes:**
+
+| Problem | Solution |
+|---------|----------|
+| Session expires mid-test | Increase token TTL for test env, or refresh in setup |
+| Rate limited on login | Use API auth, not UI; seed test users with known creds |
+| Captcha blocks tests | Disable captcha in test env, or use bypass token |
+| OAuth redirect fails | Mock OAuth provider, or use test-specific flow |
+| Token not persisted | Wait for storage to complete before saving state |
+| Different auth per test | Use separate storageState files per user role |
+
+**Test Database Strategy:**
+
+```typescript
+// global-setup.ts - Seed ONCE before all tests
+async function globalSetup() {
+  // 1. Reset test database to known state
+  await resetTestDatabase();
+
+  // 2. Seed test users (with KNOWN passwords!)
+  await seedTestUsers([
+    { email: 'user@test.local', password: 'Test123!', role: 'user' },
+    { email: 'admin@test.local', password: 'Admin123!', role: 'admin' },
+  ]);
+
+  // 3. Seed test data
+  await seedTestData();
+}
+
+// DON'T create users per test - use seeded users!
+```
+
+**Auto Mode E2E Checklist:**
+```
+Before running E2E tests in auto mode:
+✅ Test users seeded in database with known passwords
+✅ Auth state files generated (user.json, admin.json)
+✅ playwright.config.ts uses storageState
+✅ Individual tests DON'T login (except login flow tests)
+✅ Test env has relaxed rate limits
+✅ Captcha/2FA disabled or bypassed in test env
+```
+
+### 🔄 Continuous Refactoring (Part of Auto Loop)
+
+**As tests grow, REFACTOR proactively:**
+
+```
+After every 3-5 tasks:
+1. Review test organization → Extract shared fixtures
+2. Review code duplication → Extract utilities
+3. Review file sizes → Split if >300 lines
+4. Review imports → Consolidate, remove unused
+```
+
+**Refactoring Triggers:**
+- Test file > 200 lines → Split by feature
+- Duplicate test setup → Extract to fixtures
+- Same assertion pattern 3+ times → Create helper
+- Source file > 300 lines → Extract module
+
+### 📊 Test Status Reporting (MANDATORY in Auto Mode)
+
+**After EVERY task, report test status to user:**
+
+```markdown
+## 🧪 Test Status Report
+
+| Type | Status | Pass/Total | Coverage |
+|------|--------|------------|----------|
+| Unit | ✅ | 42/42 | 87% |
+| Integration | ✅ | 12/12 | - |
+| E2E | ⚠️ | 8/10 | - |
+
+**Failing tests:**
+- `auth.spec.ts:45` - Login redirect not working
+- `checkout.spec.ts:112` - Payment timeout
+
+**Next:** Fixing E2E failures before continuing...
+```
+
+### 🏠 Local-First Development
+
+**If no deployment instructions provided, BUILD AND TEST LOCALLY FIRST:**
+
+```
+1. Implement feature locally
+2. Run ALL tests (unit, integration, E2E)
+3. Verify everything works
+4. THEN ask user about deployment preferences
+```
+
+**Don't assume deployment target!** Ask user:
+```markdown
+🚀 **Deployment Options**
+
+Your scraper is ready and all tests pass locally.
+
+**Where would you like to deploy?**
+- Vercel Cron (serverless, free tier available)
+- Railway (always-on, $5/mo)
+- GitHub Actions (CI-based, free)
+- Local cron (self-hosted)
+- Other?
+```
+
+### 🔧 Infrastructure Decision-Making
+
+**For scrapers, cron jobs, background tasks - ULTRATHINK on best approach:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ INFRASTRUCTURE DECISION TREE                                 │
+├─────────────────────────────────────────────────────────────┤
+│ Scraper/Cron Job:                                           │
+│ ├─ Frequency < 1/hour → Vercel Cron, GitHub Actions         │
+│ ├─ Frequency ≥ 1/hour → Railway, Render, dedicated server   │
+│ ├─ Heavy compute → Dedicated VM, Docker container           │
+│ └─ Real-time → Always-on server, WebSocket                  │
+│                                                              │
+│ Data Storage:                                                │
+│ ├─ Simple KV → Upstash Redis, Vercel KV                     │
+│ ├─ Relational → Supabase, PlanetScale, Neon                 │
+│ ├─ Document → MongoDB Atlas, Supabase                       │
+│ └─ Time-series → TimescaleDB, InfluxDB                      │
+│                                                              │
+│ File Storage:                                                │
+│ ├─ Static assets → Cloudflare R2, S3                        │
+│ └─ Large files → S3, GCS, Backblaze B2                      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**When implementing scrapers/cron jobs:**
+1. **Ultrathink** on best hosting options given requirements
+2. **Research** rate limits, costs, reliability
+3. **Propose** 2-3 options with trade-offs
+4. **Build locally first** with tests
+5. **Deploy** only after user confirms target
+
+### For Claude Code Users
+
+Auto mode uses Claude Code's Stop Hook to create a feedback loop:
+- `/sw:do` continues until all tasks complete
+- `/sw:auto-status` shows session progress
+- `/sw:cancel-auto` stops autonomous execution
+
+Session state stored in `.specweave/state/auto-session.json`.
+
+### For Non-Claude AI Systems
+
+If using SpecWeave with other AI systems (GPT, Gemini, etc.), implement this loop pattern:
+
+```bash
+# Bash loop for autonomous execution
+while true; do
+    # Check if all tasks complete
+    TOTAL=$(grep -c "^### T-" .specweave/increments/*/tasks.md 2>/dev/null || echo "0")
+    DONE=$(grep -c '\[x\].*completed' .specweave/increments/*/tasks.md 2>/dev/null || echo "0")
+
+    if [ "$TOTAL" -gt 0 ] && [ "$DONE" -ge "$TOTAL" ]; then
+        echo "All tasks complete!"
+        break
+    fi
+
+    # Feed prompt to your AI
+    cat PROMPT.md | your-ai-cli
+
+    # Safety: max iterations
+    ITER=$((ITER + 1))
+    if [ "$ITER" -ge 100 ]; then
+        echo "Max iterations reached"
+        break
+    fi
+done
+```
+
+**Key Concepts**:
+- **Completion Detection**: Check tasks.md for `[x] completed` status
+- **Completion Tag**: Output `<auto-complete>DONE</auto-complete>` when finished
+- **Max Iterations**: Always set a limit (default: 100)
+- **Human Gates**: Pause for sensitive ops (deploy, publish, force-push)
+
+**Human-Gated Operations** (require manual approval):
+- `npm publish`, `git push --force`, `rm -rf /`
+- Any `production` deployment
+- API key or credential changes
+- Database migrations (`drop`, `delete from`, `migrate`)
+
+**Circuit Breaker Pattern**: If external API (GitHub, JIRA) fails 3+ times, queue operations and continue.
+<!-- SW:END:auto -->
+
+<!-- SW:SECTION:docs version="1.0.56" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com) | `.specweave/docs/internal/`
