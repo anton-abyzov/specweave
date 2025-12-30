@@ -1,5 +1,5 @@
 ---
-increment: 0148-autonomous-execution-autopilot
+increment: 0148-autonomous-execution-auto
 title: "Autonomous Execution Engine - Technical Architecture"
 phases:
   - foundation
@@ -15,7 +15,7 @@ estimated_weeks: 3-4
 
 ## Overview
 
-This increment implements the Autopilot feature for SpecWeave, enabling Claude Code to work autonomously for extended periods using the Stop Hook mechanism.
+This increment implements the Auto feature for SpecWeave, enabling Claude Code to work autonomously for extended periods using the Stop Hook mechanism.
 
 **Core Insight**: Claude Code's Stop Hook can block session exit and re-feed a prompt, creating a feedback loop. By combining this with SpecWeave's existing workflow commands (`/sw:do`, `/sw:done`, `/sw:next`), we create an autonomous execution engine.
 
@@ -25,10 +25,10 @@ This increment implements the Autopilot feature for SpecWeave, enabling Claude C
 
 ### 1.1 Session State Management
 
-**File**: `src/core/autopilot/session-state.ts`
+**File**: `src/core/auto/session-state.ts`
 
 ```typescript
-interface AutopilotSession {
+interface AutoSession {
   sessionId: string;
   status: 'initializing' | 'running' | 'paused' | 'needs_human' | 'completed' | 'failed';
   startTime: string;
@@ -47,27 +47,27 @@ class SessionStateManager {
   private statePath: string;
 
   constructor(projectRoot: string) {
-    this.statePath = path.join(projectRoot, '.specweave/state/autopilot-session.json');
+    this.statePath = path.join(projectRoot, '.specweave/state/auto-session.json');
   }
 
-  async load(): Promise<AutopilotSession | null>;
-  async save(session: AutopilotSession): Promise<void>;
+  async load(): Promise<AutoSession | null>;
+  async save(session: AutoSession): Promise<void>;
   async clear(): Promise<void>;
-  async checkpoint(session: AutopilotSession): Promise<void>;
-  async recover(): Promise<AutopilotSession | null>;
+  async checkpoint(session: AutoSession): Promise<void>;
+  async recover(): Promise<AutoSession | null>;
 }
 ```
 
 ### 1.2 Configuration Schema
 
-**File**: `src/core/autopilot/config.ts`
+**File**: `src/core/auto/config.ts`
 
 ```typescript
-interface AutopilotConfig {
+interface AutoConfig {
   enabled: boolean;
   maxIterations: number;        // Default: 100
   maxHours: number;             // Default: 24
-  completionPromise: string;    // Default: "AUTOPILOT_COMPLETE"
+  completionPromise: string;    // Default: "AUTO_COMPLETE"
   testCommand: string;          // Default: "npm test"
   coverageThreshold: number;    // Default: 80
   humanGated: HumanGatedConfig;
@@ -76,15 +76,15 @@ interface AutopilotConfig {
 }
 
 // Load from .specweave/config.json with sensible defaults
-function loadAutopilotConfig(projectRoot: string): AutopilotConfig;
+function loadAutoConfig(projectRoot: string): AutoConfig;
 ```
 
 ### 1.3 Logging Infrastructure
 
-**File**: `src/core/autopilot/logger.ts`
+**File**: `src/core/auto/logger.ts`
 
 ```typescript
-class AutopilotLogger {
+class AutoLogger {
   constructor(sessionId: string);
 
   logIteration(iteration: number, phase: string, details: object): void;
@@ -92,7 +92,7 @@ class AutopilotLogger {
   logTest(result: TestResult): void;
   logSync(tool: string, result: SyncResult): void;
   logCircuitBreaker(service: string, state: CircuitState): void;
-  generateSummary(): AutopilotSummary;
+  generateSummary(): AutoSummary;
 }
 ```
 
@@ -102,26 +102,26 @@ class AutopilotLogger {
 
 ### 2.1 Stop Hook Script
 
-**File**: `plugins/specweave/hooks/stop-autopilot.sh`
+**File**: `plugins/specweave/hooks/stop-auto.sh`
 
 ```bash
 #!/usr/bin/env bash
 #
-# Autopilot Stop Hook - Creates feedback loop for autonomous execution
+# Auto Stop Hook - Creates feedback loop for autonomous execution
 #
 # Triggered: When Claude Code tries to exit
-# Behavior: Blocks exit if autopilot session is active, re-feeds prompt
+# Behavior: Blocks exit if auto session is active, re-feeds prompt
 #
 
 set -e
 
 PROJECT_ROOT="${PWD}"
-STATE_FILE="${PROJECT_ROOT}/.specweave/state/autopilot-session.json"
+STATE_FILE="${PROJECT_ROOT}/.specweave/state/auto-session.json"
 LOG_DIR="${PROJECT_ROOT}/.specweave/logs"
 
-# Check if autopilot session exists
+# Check if auto session exists
 if [[ ! -f "$STATE_FILE" ]]; then
-    # No autopilot session - allow normal exit
+    # No auto session - allow normal exit
     echo '{"decision": "approve"}'
     exit 0
 fi
@@ -146,7 +146,7 @@ if [[ "$ITERATION" -ge "$MAX_ITERATIONS" ]]; then
     jq '.status = "completed" | .endReason = "max_iterations"' "$STATE_FILE" > "$STATE_FILE.tmp"
     mv "$STATE_FILE.tmp" "$STATE_FILE"
 
-    echo '{"decision": "approve", "reason": "Max iterations reached. Autopilot session complete."}'
+    echo '{"decision": "approve", "reason": "Max iterations reached. Auto session complete."}'
     exit 0
 fi
 
@@ -156,12 +156,12 @@ if [[ -f "$TRANSCRIPT_PATH" ]]; then
     # Extract last assistant message
     LAST_MESSAGE=$(tail -1 "$TRANSCRIPT_PATH" | jq -r '.content // ""')
 
-    if echo "$LAST_MESSAGE" | grep -q "<autopilot-complete>$COMPLETION_PROMISE</autopilot-complete>"; then
+    if echo "$LAST_MESSAGE" | grep -q "<auto-complete>$COMPLETION_PROMISE</auto-complete>"; then
         # Completion promise detected - allow exit
         jq '.status = "completed" | .endReason = "completion_promise"' "$STATE_FILE" > "$STATE_FILE.tmp"
         mv "$STATE_FILE.tmp" "$STATE_FILE"
 
-        echo '{"decision": "approve", "reason": "Autopilot complete! All work finished."}'
+        echo '{"decision": "approve", "reason": "Auto complete! All work finished."}'
         exit 0
     fi
 fi
@@ -170,7 +170,7 @@ fi
 PENDING_GATE=$(echo "$SESSION" | jq -r '.humanGates.pending // null')
 if [[ "$PENDING_GATE" != "null" ]]; then
     # Human gate pending - pause and wait
-    echo "{\"decision\": \"block\", \"reason\": \"Human approval required for: $PENDING_GATE. Please approve or deny.\", \"systemMessage\": \"AUTOPILOT PAUSED: Awaiting human approval\"}"
+    echo "{\"decision\": \"block\", \"reason\": \"Human approval required for: $PENDING_GATE. Please approve or deny.\", \"systemMessage\": \"AUTO PAUSED: Awaiting human approval\"}"
     exit 0
 fi
 
@@ -180,16 +180,16 @@ jq ".iteration = $NEXT_ITERATION" "$STATE_FILE" > "$STATE_FILE.tmp"
 mv "$STATE_FILE.tmp" "$STATE_FILE"
 
 # Log iteration
-echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] Iteration $NEXT_ITERATION started" >> "${LOG_DIR}/autopilot-iterations.log"
+echo "[$(date -u +"%Y-%m-%dT%H:%M:%SZ")] Iteration $NEXT_ITERATION started" >> "${LOG_DIR}/auto-iterations.log"
 
 # Block exit and re-feed prompt
-CONTEXT="Autopilot iteration $NEXT_ITERATION of $MAX_ITERATIONS. Continue working on: $ORIGINAL_PROMPT"
+CONTEXT="Auto iteration $NEXT_ITERATION of $MAX_ITERATIONS. Continue working on: $ORIGINAL_PROMPT"
 
 cat <<EOF
 {
   "decision": "block",
   "reason": "$CONTEXT",
-  "systemMessage": "AUTOPILOT ACTIVE: Iteration $NEXT_ITERATION/$MAX_ITERATIONS"
+  "systemMessage": "AUTO ACTIVE: Iteration $NEXT_ITERATION/$MAX_ITERATIONS"
 }
 EOF
 ```
@@ -206,7 +206,7 @@ EOF
         "hooks": [
           {
             "type": "command",
-            "command": "bash plugins/specweave/hooks/stop-autopilot.sh $TRANSCRIPT_PATH"
+            "command": "bash plugins/specweave/hooks/stop-auto.sh $TRANSCRIPT_PATH"
           }
         ]
       }
@@ -219,30 +219,30 @@ EOF
 
 ## Phase 3: Command Implementation (Week 2)
 
-### 3.1 Autopilot Command
+### 3.1 Auto Command
 
-**File**: `plugins/specweave/commands/autopilot.md`
+**File**: `plugins/specweave/commands/auto.md`
 
 ```yaml
 ---
-name: sw:autopilot
+name: sw:auto
 description: Start autonomous execution session. Claude works continuously until completion promise or max iterations.
 ---
 
-# Autopilot - Autonomous Execution
+# Auto - Autonomous Execution
 
-**Usage**: /sw:autopilot "<task>" [--max-iterations N] [--max-hours N] [--increments id1,id2]
+**Usage**: /sw:auto "<task>" [--max-iterations N] [--max-hours N] [--increments id1,id2]
 ```
 
-**Implementation**: `plugins/specweave/scripts/setup-autopilot.sh`
+**Implementation**: `plugins/specweave/scripts/setup-auto.sh`
 
 ### 3.2 Cancel Command
 
-**File**: `plugins/specweave/commands/cancel-autopilot.md`
+**File**: `plugins/specweave/commands/cancel-auto.md`
 
 ### 3.3 Status Command
 
-**File**: `plugins/specweave/commands/autopilot-status.md`
+**File**: `plugins/specweave/commands/auto-status.md`
 
 ---
 
@@ -250,11 +250,11 @@ description: Start autonomous execution session. Claude works continuously until
 
 ### 4.1 Increment Queue Manager
 
-**File**: `src/core/autopilot/increment-queue.ts`
+**File**: `src/core/auto/increment-queue.ts`
 
 ```typescript
 class IncrementQueueManager {
-  constructor(private session: AutopilotSession);
+  constructor(private session: AutoSession);
 
   async getCurrentIncrement(): Promise<Increment | null>;
   async moveToNext(): Promise<Increment | null>;
@@ -278,7 +278,7 @@ class IncrementQueueManager {
 
 ### 5.1 Test Gate Enforcement
 
-**File**: `src/core/autopilot/test-gate.ts`
+**File**: `src/core/auto/test-gate.ts`
 
 ```typescript
 interface TestGateResult {
@@ -291,7 +291,7 @@ interface TestGateResult {
 }
 
 class TestGate {
-  constructor(private config: AutopilotConfig);
+  constructor(private config: AutoConfig);
 
   async runGate(): Promise<TestGateResult>;
   async attemptFix(failures: TestFailure[]): Promise<boolean>;
@@ -311,7 +311,7 @@ class TestGate {
 
 ### 6.1 Gate Detection
 
-**File**: `src/core/autopilot/human-gate.ts`
+**File**: `src/core/auto/human-gate.ts`
 
 ```typescript
 class HumanGateDetector {
@@ -345,7 +345,7 @@ const DEFAULT_HUMAN_GATE_PATTERNS = [
 
 ### 7.1 Circuit Breaker Implementation
 
-**File**: `src/core/autopilot/circuit-breaker.ts`
+**File**: `src/core/auto/circuit-breaker.ts`
 
 ```typescript
 enum CircuitState {
@@ -381,7 +381,7 @@ class CircuitBreaker {
 
 ### 8.1 Checkpoint Sync
 
-**File**: `src/core/autopilot/sync-checkpoint.ts`
+**File**: `src/core/auto/sync-checkpoint.ts`
 
 ```typescript
 class SyncCheckpoint {
@@ -408,19 +408,19 @@ class SyncCheckpoint {
 ```
 plugins/specweave/
 ├── commands/
-│   ├── autopilot.md           # /sw:autopilot command
-│   ├── cancel-autopilot.md    # /sw:cancel-autopilot command
-│   └── autopilot-status.md    # /sw:autopilot-status command
+│   ├── auto.md           # /sw:auto command
+│   ├── cancel-auto.md    # /sw:cancel-auto command
+│   └── auto-status.md    # /sw:auto-status command
 ├── hooks/
-│   └── stop-autopilot.sh      # Stop hook implementation
+│   └── stop-auto.sh      # Stop hook implementation
 └── scripts/
-    └── setup-autopilot.sh     # Session initialization
+    └── setup-auto.sh     # Session initialization
 
-src/core/autopilot/
+src/core/auto/
 ├── index.ts                   # Main exports
 ├── session-state.ts           # Session state management
 ├── config.ts                  # Configuration loading
-├── logger.ts                  # Autopilot logging
+├── logger.ts                  # Auto logging
 ├── increment-queue.ts         # Multi-increment orchestration
 ├── test-gate.ts               # Test-driven gates
 ├── human-gate.ts              # Human approval gates
@@ -429,17 +429,17 @@ src/core/autopilot/
 
 tests/
 ├── unit/
-│   └── autopilot/
+│   └── auto/
 │       ├── session-state.test.ts
 │       ├── circuit-breaker.test.ts
 │       ├── test-gate.test.ts
 │       └── human-gate.test.ts
 ├── integration/
-│   └── autopilot/
+│   └── auto/
 │       ├── stop-hook.test.ts
 │       └── increment-transition.test.ts
 └── e2e/
-    └── autopilot/
+    └── auto/
         └── full-workflow.spec.ts
 ```
 
@@ -477,7 +477,7 @@ None required - using existing Node.js and TypeScript stack.
 
 ### E2E Tests
 
-- Full autopilot workflow (3 small tasks)
+- Full auto workflow (3 small tasks)
 - Human gate approval flow
 - Crash recovery scenario
 

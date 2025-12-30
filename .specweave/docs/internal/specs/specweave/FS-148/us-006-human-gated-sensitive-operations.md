@@ -16,7 +16,7 @@ external:
 
 ## User Story
 
-**As a** developer, I want autopilot to pause and ask for explicit approval before performing sensitive operations, so that I maintain control over critical actions.
+**As a** developer, I want auto to pause and ask for explicit approval before performing sensitive operations, so that I maintain control over critical actions.
 
 ## Background
 
@@ -24,9 +24,9 @@ Some operations (deployments, API key usage, database migrations, etc.) should N
 
 ## Acceptance Criteria
 
-- [ ] **AC-US6-01**: Define sensitive operation patterns in `.specweave/config.json` under `autopilot.humanGated`
+- [ ] **AC-US6-01**: Define sensitive operation patterns in `.specweave/config.json` under `auto.humanGated`
 - [ ] **AC-US6-02**: Default gates: `deploy`, `migrate`, `publish`, `push --force`, `rm -rf`, API key requests
-- [ ] **AC-US6-03**: When gate triggered, autopilot pauses and outputs clear approval request
+- [ ] **AC-US6-03**: When gate triggered, auto pauses and outputs clear approval request
 - [ ] **AC-US6-04**: User must explicitly type "yes" or approve via UI to continue
 - [ ] **AC-US6-05**: Timeout for human response: configurable (default: 30 minutes), then pause session
 - [ ] **AC-US6-06**: All gated operations logged with timestamps and approval status

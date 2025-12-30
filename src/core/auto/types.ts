@@ -1,9 +1,9 @@
 /**
- * Autopilot Types
+ * Auto Types
  * Core type definitions for the autonomous execution engine
  */
 
-export type AutopilotSessionStatus = 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
+export type AutoSessionStatus = 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
 
 export type CircuitBreakerState = 'closed' | 'open' | 'half-open';
 
@@ -30,9 +30,9 @@ export interface HumanGateRequest {
   context?: string;
 }
 
-export interface AutopilotSession {
+export interface AutoSession {
   sessionId: string;
-  status: AutopilotSessionStatus;
+  status: AutoSessionStatus;
   startTime: string;
   endTime?: string;
   iteration: number;
@@ -49,7 +49,7 @@ export interface AutopilotSession {
   simple?: boolean; // Pure Ralph mode - no session state, queues, circuit breakers
 }
 
-export interface AutopilotConfig {
+export interface AutoConfig {
   enabled: boolean;
   maxIterations: number;
   maxHours?: number;
@@ -72,7 +72,7 @@ export interface AutopilotConfig {
   warnOnParallelSession: boolean;
 }
 
-export interface AutopilotLogEntry {
+export interface AutoLogEntry {
   timestamp: string;
   iteration: number;
   sessionId: string;
@@ -130,7 +130,7 @@ export interface SessionSummary {
   endReason: string;
 }
 
-export const DEFAULT_AUTOPILOT_CONFIG: AutopilotConfig = {
+export const DEFAULT_AUTO_CONFIG: AutoConfig = {
   enabled: true,
   maxIterations: 100,
   maxHours: 24,

@@ -1,5 +1,5 @@
 /**
- * Autopilot Configuration Tests
+ * Auto Configuration Tests
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -7,30 +7,30 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import {
-  loadAutopilotConfig,
-  saveAutopilotConfig,
-  isAutopilotEnabled,
+  loadAutoConfig,
+  saveAutoConfig,
+  isAutoEnabled,
   getEffectiveMode,
-} from '../../../src/core/autopilot/config.js';
-import { DEFAULT_AUTOPILOT_CONFIG } from '../../../src/core/autopilot/types.js';
+} from '../../../src/core/auto/config.js';
+import { DEFAULT_AUTO_CONFIG } from '../../../src/core/auto/types.js';
 
-describe('Autopilot Config', () => {
+describe('Auto Config', () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'autopilot-config-test-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'auto-config-test-'));
   });
 
   afterEach(() => {
     fs.rmSync(tempDir, { recursive: true, force: true });
   });
 
-  describe('loadAutopilotConfig', () => {
+  describe('loadAutoConfig', () => {
     it('should return defaults when no config file exists', () => {
-      const result = loadAutopilotConfig(tempDir);
+      const result = loadAutoConfig(tempDir);
 
       expect(result.source).toBe('defaults');
-      expect(result.config).toEqual(DEFAULT_AUTOPILOT_CONFIG);
+      expect(result.config).toEqual(DEFAULT_AUTO_CONFIG);
       expect(result.warnings).toHaveLength(0);
     });
 
@@ -39,7 +39,7 @@ describe('Autopilot Config', () => {
       fs.mkdirSync(path.dirname(configPath), { recursive: true });
       fs.writeFileSync(configPath, JSON.stringify({ project: { name: 'test' } }), 'utf-8');
 
-      const result = loadAutopilotConfig(tempDir);
+      const result = loadAutoConfig(tempDir);
 
       expect(result.source).toBe('defaults');
       expect(result.config.enabled).toBe(true);
@@ -59,7 +59,7 @@ describe('Autopilot Config', () => {
         'utf-8'
       );
 
-      const result = loadAutopilotConfig(tempDir);
+      const result = loadAutoConfig(tempDir);
 
       expect(result.source).toBe('merged');
       expect(result.config.maxIterations).toBe(50);
@@ -80,7 +80,7 @@ describe('Autopilot Config', () => {
         'utf-8'
       );
 
-      const result = loadAutopilotConfig(tempDir);
+      const result = loadAutoConfig(tempDir);
 
       expect(result.warnings).toContain('maxIterations must be >= 1, using default (100)');
       expect(result.config.maxIterations).toBe(100);
@@ -99,7 +99,7 @@ describe('Autopilot Config', () => {
         'utf-8'
       );
 
-      const result = loadAutopilotConfig(tempDir);
+      const result = loadAutoConfig(tempDir);
 
       expect(result.warnings).toContain('maxIterations exceeds 1000, capping at 1000');
       expect(result.config.maxIterations).toBe(1000);
@@ -110,7 +110,7 @@ describe('Autopilot Config', () => {
       fs.mkdirSync(path.dirname(configPath), { recursive: true });
       fs.writeFileSync(configPath, 'invalid json{', 'utf-8');
 
-      expect(() => loadAutopilotConfig(tempDir)).toThrow('Failed to load autopilot config');
+      expect(() => loadAutoConfig(tempDir)).toThrow('Failed to load auto config');
     });
 
     it('should merge humanGated config', () => {
@@ -129,7 +129,7 @@ describe('Autopilot Config', () => {
         'utf-8'
       );
 
-      const result = loadAutopilotConfig(tempDir);
+      const result = loadAutoConfig(tempDir);
 
       expect(result.config.humanGated.patterns).toEqual(['custom-deploy', 'danger']);
       expect(result.config.humanGated.timeout).toBe(3600);
@@ -151,16 +151,16 @@ describe('Autopilot Config', () => {
         'utf-8'
       );
 
-      const result = loadAutopilotConfig(tempDir);
+      const result = loadAutoConfig(tempDir);
 
       expect(result.config.circuitBreakers.failureThreshold).toBe(5);
       expect(result.config.circuitBreakers.resetTimeout).toBe(600);
     });
   });
 
-  describe('saveAutopilotConfig', () => {
+  describe('saveAutoConfig', () => {
     it('should create config file when none exists', () => {
-      saveAutopilotConfig(tempDir, { maxIterations: 75 });
+      saveAutoConfig(tempDir, { maxIterations: 75 });
 
       const configPath = path.join(tempDir, '.specweave/config.json');
       expect(fs.existsSync(configPath)).toBe(true);
@@ -181,7 +181,7 @@ describe('Autopilot Config', () => {
         'utf-8'
       );
 
-      saveAutopilotConfig(tempDir, { maxIterations: 75 });
+      saveAutoConfig(tempDir, { maxIterations: 75 });
 
       const content = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
       expect(content.project.name).toBe('test');
@@ -190,9 +190,9 @@ describe('Autopilot Config', () => {
     });
   });
 
-  describe('isAutopilotEnabled', () => {
+  describe('isAutoEnabled', () => {
     it('should return true by default', () => {
-      expect(isAutopilotEnabled(tempDir)).toBe(true);
+      expect(isAutoEnabled(tempDir)).toBe(true);
     });
 
     it('should return false when disabled in config', () => {
@@ -204,7 +204,7 @@ describe('Autopilot Config', () => {
         'utf-8'
       );
 
-      expect(isAutopilotEnabled(tempDir)).toBe(false);
+      expect(isAutoEnabled(tempDir)).toBe(false);
     });
   });
 
