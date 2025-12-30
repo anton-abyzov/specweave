@@ -13,6 +13,7 @@ import { promises as fs } from 'fs';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { mkdirpSync } from '../../utils/fs-native.js';
+import { getProjectRoot } from '../../utils/find-project-root.js';
 
 /**
  * Import error record
@@ -51,10 +52,13 @@ export interface ImportState {
 /**
  * Get import state file path
  *
+ * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
+ * accessing wrong .specweave folder when CWD != project root.
+ *
  * @param projectRoot Project root directory
  * @returns Path to import-state.json
  */
-function getStateFilePath(projectRoot: string = process.cwd()): string {
+function getStateFilePath(projectRoot: string = getProjectRoot()): string {
   return join(projectRoot, '.specweave', 'cache', 'import-state.json');
 }
 
@@ -66,7 +70,7 @@ function getStateFilePath(projectRoot: string = process.cwd()): string {
  */
 export async function saveImportState(
   state: ImportState,
-  projectRoot: string = process.cwd()
+  projectRoot: string = getProjectRoot()
 ): Promise<void> {
   const stateFilePath = getStateFilePath(projectRoot);
   const cacheDir = join(projectRoot, '.specweave', 'cache');
@@ -92,7 +96,7 @@ export async function saveImportState(
  * @returns Import state if valid, null if expired or missing
  */
 export async function loadImportState(
-  projectRoot: string = process.cwd(),
+  projectRoot: string = getProjectRoot(),
   ttlMs: number = 24 * 60 * 60 * 1000 // 24 hours
 ): Promise<ImportState | null> {
   const stateFilePath = getStateFilePath(projectRoot);
@@ -127,7 +131,7 @@ export async function loadImportState(
  *
  * @param projectRoot Project root directory
  */
-export async function deleteImportState(projectRoot: string = process.cwd()): Promise<void> {
+export async function deleteImportState(projectRoot: string = getProjectRoot()): Promise<void> {
   const stateFilePath = getStateFilePath(projectRoot);
 
   if (existsSync(stateFilePath)) {
@@ -141,7 +145,7 @@ export async function deleteImportState(projectRoot: string = process.cwd()): Pr
  * @param projectRoot Project root directory
  * @returns true if state file exists
  */
-export function hasImportState(projectRoot: string = process.cwd()): boolean {
+export function hasImportState(projectRoot: string = getProjectRoot()): boolean {
   const stateFilePath = getStateFilePath(projectRoot);
   return existsSync(stateFilePath);
 }

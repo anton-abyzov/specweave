@@ -10,6 +10,7 @@ import * as fs from '../../utils/fs-native.js';
 import path from 'path';
 import { execSync } from 'child_process';
 import { ParsedSpec } from './content-parser.js';
+import { getProjectRoot } from '../../utils/find-project-root.js';
 
 /**
  * Project context with confidence score
@@ -55,8 +56,10 @@ export class ProjectDetector {
     // ✅ FIX: Use repo name as fallback instead of "default" for GitHub integration
     const detectedFallback = options.fallbackProject || this.detectRepoName() || 'default';
 
+    // CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
+    // accessing wrong .specweave folder when CWD != project root.
     this.options = {
-      configPath: options.configPath || path.join(process.cwd(), '.specweave', 'config.json'),
+      configPath: options.configPath || path.join(getProjectRoot(), '.specweave', 'config.json'),
       fallbackProject: detectedFallback,
       confidenceThreshold: options.confidenceThreshold || 0.7,
     };
@@ -74,7 +77,7 @@ export class ProjectDetector {
     try {
       // Get git remote URL
       const remoteUrl = execSync('git config --get remote.origin.url', {
-        cwd: process.cwd(),
+        cwd: getProjectRoot(),
         encoding: 'utf-8',
         stdio: ['pipe', 'pipe', 'ignore'] // Suppress stderr
       }).trim();
@@ -320,7 +323,7 @@ export class ProjectDetector {
     }
 
     // Default: .specweave/docs/internal/specs/{projectId}
-    return path.join(process.cwd(), '.specweave', 'docs', 'internal', 'specs', projectId);
+    return path.join(getProjectRoot(), '.specweave', 'docs', 'internal', 'specs', projectId);
   }
 
   /**
@@ -392,7 +395,7 @@ export class ProjectDetector {
    * Get folder path for a category
    */
   getCategoryFolder(category: string, projectId?: string): string {
-    const basePath = path.join(process.cwd(), '.specweave', 'docs', 'internal');
+    const basePath = path.join(getProjectRoot(), '.specweave', 'docs', 'internal');
 
     // Categories that don't use project folders
     const globalCategories = ['architecture', 'operations', 'delivery', 'strategy', 'governance'];
@@ -434,7 +437,7 @@ export class ProjectDetector {
     valid: boolean;
     missing: string[];
   }> {
-    const basePath = path.join(process.cwd(), '.specweave', 'docs', 'internal');
+    const basePath = path.join(getProjectRoot(), '.specweave', 'docs', 'internal');
     const requiredFolders = [
       path.join(basePath, 'specs', projectId),
     ];
@@ -457,7 +460,7 @@ export class ProjectDetector {
    * Create project structure if missing
    */
   async createProjectStructure(projectId: string): Promise<void> {
-    const basePath = path.join(process.cwd(), '.specweave', 'docs', 'internal');
+    const basePath = path.join(getProjectRoot(), '.specweave', 'docs', 'internal');
     const folders = [
       path.join(basePath, 'specs', projectId),
       // Add more project-specific folders as needed

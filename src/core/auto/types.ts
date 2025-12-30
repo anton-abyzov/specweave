@@ -132,8 +132,8 @@ export interface SessionSummary {
 
 export const DEFAULT_AUTO_CONFIG: AutoConfig = {
   enabled: true,
-  maxIterations: 100,
-  maxHours: 24,
+  maxIterations: 500,
+  maxHours: 120,
   testCommand: 'npm test',
   coverageThreshold: 80,
   enforceTestFirst: false,

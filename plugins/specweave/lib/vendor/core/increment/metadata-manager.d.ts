@@ -32,10 +32,16 @@ export declare class MetadataManager {
     static setLogger(logger: Logger): void;
     /**
      * Get metadata file path for increment
+     *
+     * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
+     * creating/accessing .specweave in wrong location when CWD != project root.
      */
     private static getMetadataPath;
     /**
      * Get increment directory path
+     *
+     * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
+     * creating/accessing .specweave in wrong location when CWD != project root.
      */
     private static getIncrementPath;
     /**
@@ -103,6 +109,9 @@ export declare class MetadataManager {
     static touch(incrementId: string): IncrementMetadata;
     /**
      * Get all increments
+     *
+     * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
+     * accessing wrong .specweave folder when CWD != project root.
      */
     static getAll(): IncrementMetadata[];
     /**
