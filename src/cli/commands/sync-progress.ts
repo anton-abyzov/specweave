@@ -16,6 +16,7 @@ import { Logger, consoleLogger } from '../../utils/logger.js';
 import { autoCreateExternalIssue, AutoCreateResult } from '../../sync/external-issue-auto-creator.js';
 import { ConfigManager } from '../../core/config/config-manager.js';
 import { ActiveIncrementManager } from '../../core/increment/active-increment-manager.js';
+import { SyncCoordinator } from '../../sync/sync-coordinator.js';
 import { existsSync } from 'fs';
 
 export interface SyncProgressArgs {
@@ -201,26 +202,46 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
       logger.log('   ⏭️  Skipping auto-create: --no-create flag set');
     }
 
-    // Step 6: Sync to external tools (if issues exist)
+    // Step 6: Sync AC checkboxes to external tools (CRITICAL FIX v1.0.59)
     logger.log('');
-    logger.log('🔄 Step 5/5: Syncing to external tools...');
+    logger.log('🔄 Step 5/5: Syncing AC checkboxes to external tools...');
 
     if (!parsedArgs.dryRun) {
       result.externalSyncResult = {};
 
-      if (githubConfigured && !parsedArgs.noGithub) {
-        const hasGitHubIssue = await checkExistingGitHubIssue(incrementPath);
-        if (hasGitHubIssue) {
-          logger.log('   🐙 GitHub: Syncing...');
-          // GitHub sync would be triggered here
-          // For now, we log that it should happen
-          logger.log('   ✅ GitHub sync triggered (via living docs sync cascade)');
-        } else {
-          logger.log('   ⚠️  GitHub: No issue linked, skipping sync');
+      if (githubConfigured && !parsedArgs.noGithub && permissionsOk) {
+        logger.log('   🐙 GitHub: Syncing AC checkboxes...');
+        try {
+          // Use SyncCoordinator to sync AC checkboxes to GitHub issues
+          const syncCoordinator = new SyncCoordinator({
+            projectRoot,
+            incrementId,
+            logger
+          });
+          const acSyncResult = await syncCoordinator.syncACCheckboxesToGitHub(config, {
+            addComment: true  // Add progress comment
+          });
+
+          result.externalSyncResult.github = {
+            success: acSyncResult.success,
+            issueNumber: acSyncResult.issues[0]
+          };
+
+          if (acSyncResult.updated > 0) {
+            logger.log(`   ✅ GitHub: Updated ${acSyncResult.updated} AC checkbox(es) in ${acSyncResult.issues.length} issue(s)`);
+          } else {
+            logger.log('   ℹ️  GitHub: No AC checkbox changes needed');
+          }
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          result.warnings.push(`GitHub AC sync failed: ${errorMsg}`);
+          logger.log(`   ⚠️  GitHub AC sync failed: ${errorMsg}`);
         }
+      } else if (!permissionsOk) {
+        logger.log('   ⚠️  GitHub: Skipping (canUpdateExternalItems=false)');
       }
     } else {
-      logger.log('   [DRY-RUN] Would sync to external tools');
+      logger.log('   [DRY-RUN] Would sync AC checkboxes to external tools');
     }
 
     // Step 7: Update status line cache

@@ -199,41 +199,69 @@ export async function parseSpecContent(
     // Parse user stories
     const userStories: SpecUserStory[] = [];
 
+    // Flexible AC pattern for all strategies
+    // Supports: AC-US1-01, AC-API-US2-01, AC-US-FE-001-01, etc.
+    const extractACsForUserStory = (usId: string, searchContent: string): SpecAcceptanceCriterion[] => {
+      const acceptanceCriteria: SpecAcceptanceCriterion[] = [];
+
+      // Build a flexible pattern that matches this US's ACs
+      // Extract the core part: US-001 → "001" or "1", US-API-001 → "API-001" or "API-1"
+      const usIdPattern = usId.replace('US-', '');
+
+      // Try multiple AC patterns for this user story
+      // Pattern 1: AC-US{number}-{seq} (legacy)
+      // Pattern 2: AC-{prefix}-US{number}-{seq} (e.g., AC-API-US2-01)
+      // Pattern 3: AC-US-{prefix}-{number}-{seq} (e.g., AC-US-FE-001-01)
+      const patterns = [
+        // Legacy: AC-US1-01, AC-US001-01 → matches US-001
+        new RegExp(`- \\[([ x])\\] \\*\\*AC-US0*(${usIdPattern.replace(/^0+/, '')})-(\\d+)\\*\\*:\\s*([^(\\n]+)(?:\\(([^)]+)\\))?`, 'g'),
+        // Prefixed: AC-API-US2-01 → matches US-API-002
+        new RegExp(`- \\[([ x])\\] \\*\\*AC-([A-Z]+)-US0*(${usIdPattern.replace(/^[A-Z]+-0*/, '')})-(\\d+)\\*\\*:\\s*([^(\\n]+)(?:\\(([^)]+)\\))?`, 'g'),
+        // Full match for flexible IDs
+        new RegExp(`- \\[([ x])\\] \\*\\*AC-(?:[A-Z]+-)?US(?:[A-Z]*)?-?0*${usIdPattern.replace(/^[A-Z]+-0*/, '')}-(\\d+)\\*\\*:\\s*([^(\\n]+)(?:\\(([^)]+)\\))?`, 'g'),
+      ];
+
+      for (const acRegex of patterns) {
+        const acMatches = [...searchContent.matchAll(acRegex)];
+
+        for (const acMatch of acMatches) {
+          const completed = acMatch[1] === 'x';
+          // Different capture groups depending on pattern
+          const acNumber = acMatch[3] || acMatch[2];
+          const acDescription = (acMatch[5] || acMatch[4] || acMatch[3] || '').trim();
+          const acMetadata = acMatch[6] || acMatch[5] || acMatch[4] || '';
+
+          // Skip if this is actually capturing the description
+          if (!acNumber || acNumber.length > 4) continue;
+
+          const acId = `AC-${usId.replace('US-', 'US')}-${acNumber.padStart(2, '0')}`;
+
+          // Avoid duplicates
+          if (!acceptanceCriteria.some(ac => ac.id === acId)) {
+            acceptanceCriteria.push({
+              id: acId,
+              description: acDescription,
+              completed,
+              priority: acMetadata.includes('P1') ? 'P1' : acMetadata.includes('P2') ? 'P2' : undefined,
+              testable: acMetadata.includes('testable'),
+            });
+          }
+        }
+      }
+
+      return acceptanceCriteria;
+    };
+
     // STRATEGY 1: Try inline format first (backward compatibility)
-    // Match user story patterns: **US-001**: Title
-    const userStoryRegex = /\*\*US-(\d+)\*\*:\s*(.+)/g;
+    // Match user story patterns: **US-001**: Title or **US-API-001**: Title
+    // Flexible: supports US-001, US-API-001, US-FE-001, etc.
+    const userStoryRegex = /\*\*(US-(?:[A-Z]+-)?(?:\d+))\*\*:\s*(.+)/g;
     const usMatches = [...content.matchAll(userStoryRegex)];
 
     for (const usMatch of usMatches) {
-      const usNumber = usMatch[1];
-      const usId = `US-${usNumber}`;
+      const usId = usMatch[1];
       const usTitle = usMatch[2].trim();
-
-      // Find acceptance criteria for this user story
-      // Support both AC-US001-01 and AC-US1-01 formats
-      const usNumberPattern = usNumber.replace(/^0+/, ''); // Remove leading zeros
-      const acRegex = new RegExp(
-        `- \\[([ x])\\] \\*\\*AC-US0*${usNumberPattern}-(\\d+)\\*\\*:\\s*([^(]+)(?:\\(([^)]+)\\))?`,
-        'g'
-      );
-
-      const acceptanceCriteria: SpecAcceptanceCriterion[] = [];
-      const acMatches = [...content.matchAll(acRegex)];
-
-      for (const acMatch of acMatches) {
-        const completed = acMatch[1] === 'x';
-        const acNumber = acMatch[2];
-        const acDescription = acMatch[3].trim();
-        const acMetadata = acMatch[4] || '';
-
-        acceptanceCriteria.push({
-          id: `AC-US${usNumber}-${acNumber}`,
-          description: acDescription,
-          completed,
-          priority: acMetadata.includes('P1') ? 'P1' : acMetadata.includes('P2') ? 'P2' : undefined,
-          testable: acMetadata.includes('testable'),
-        });
-      }
+      const acceptanceCriteria = extractACsForUserStory(usId, content);
 
       userStories.push({
         id: usId,
@@ -243,14 +271,13 @@ export async function parseSpecContent(
     }
 
     // STRATEGY 2: If no inline USs found, look for linked US files
-    // Match: - [US-001: Title](path/to/file.md)
+    // Match: - [US-001: Title](path/to/file.md) or - [US-API-001: Title](path/to/file.md)
     if (userStories.length === 0) {
-      const linkedUsRegex = /- \[US-(\d+):\s*([^\]]+)\]\(([^)]+)\)/g;
+      const linkedUsRegex = /- \[(US-(?:[A-Z]+-)?(?:\d+)):\s*([^\]]+)\]\(([^)]+)\)/g;
       const linkedUsMatches = [...content.matchAll(linkedUsRegex)];
 
       for (const linkedMatch of linkedUsMatches) {
-        const usNumber = linkedMatch[1];
-        const usId = `US-${usNumber}`;
+        const usId = linkedMatch[1];
         const usTitle = linkedMatch[2].trim();
         const relativePath = linkedMatch[3];
 
@@ -290,41 +317,15 @@ export async function parseSpecContent(
       }
     }
 
-    // STRATEGY 3: If still no USs found, look for heading format: ### US-001: Title
+    // STRATEGY 3: If still no USs found, look for heading format: ### US-001: Title or ### US-API-001: Title
     if (userStories.length === 0) {
-      const headingUsRegex = /^###\s+US-(\d+):\s*(.+)$/gm;
+      const headingUsRegex = /^###\s+(US-(?:[A-Z]+-)?(?:\d+)):\s*(.+)$/gm;
       const headingUsMatches = [...content.matchAll(headingUsRegex)];
 
       for (const headingMatch of headingUsMatches) {
-        const usNumber = headingMatch[1];
-        const usId = `US-${usNumber}`;
+        const usId = headingMatch[1];
         const usTitle = headingMatch[2].trim();
-
-        // Find acceptance criteria for this user story
-        // Support both AC-US001-01 and AC-US1-01 formats
-        const usNumberPattern = usNumber.replace(/^0+/, ''); // Remove leading zeros
-        const acRegex = new RegExp(
-          `- \\[([ x])\\] \\*\\*AC-US0*${usNumberPattern}-(\\d+)\\*\\*:\\s*([^(\\n]+)(?:\\(([^)]+)\\))?`,
-          'g'
-        );
-
-        const acceptanceCriteria: SpecAcceptanceCriterion[] = [];
-        const acMatches = [...content.matchAll(acRegex)];
-
-        for (const acMatch of acMatches) {
-          const completed = acMatch[1] === 'x';
-          const acNumber = acMatch[2];
-          const acDescription = acMatch[3].trim();
-          const acMetadata = acMatch[4] || '';
-
-          acceptanceCriteria.push({
-            id: `AC-US${usNumber}-${acNumber}`,
-            description: acDescription,
-            completed,
-            priority: acMetadata.includes('P1') ? 'P1' : acMetadata.includes('P2') ? 'P2' : undefined,
-            testable: acMetadata.includes('testable'),
-          });
-        }
+        const acceptanceCriteria = extractACsForUserStory(usId, content);
 
         userStories.push({
           id: usId,

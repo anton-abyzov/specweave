@@ -2,11 +2,10 @@
 id: FS-148
 title: Autonomous Execution Engine with Stop Hook Integration
 type: feature
-status: active
+status: ready_for_review
 priority: P1
 created: 2025-12-29
-lastUpdated: 2025-12-29
-increment: 0148-autonomous-execution-auto
+lastUpdated: 2025-12-30
 external_tools:
   github:
     type: milestone
@@ -14,103 +13,25 @@ external_tools:
     url: https://github.com/anton-abyzov/specweave/milestone/64
 ---
 
-# FS-148: Autonomous Execution Engine with Stop Hook Integration
+# Autonomous Execution Engine with Stop Hook Integration
 
-## Overview
+## Implementation History
 
-**Auto mode is the DEFAULT** - SpecWeave commands automatically continue working until completion using Claude Code's Stop Hook. No special commands needed.
-
-**Key Value Proposition**: "Ship features while you sleep" - autonomous end-to-end delivery with safety guardrails.
-
-**Design Philosophy**:
-- `/sw:increment` auto-detects project complexity and splits into multiple increments with dependencies
-- `/sw:do` continues until all tasks complete (stop hook loop)
-- `/sw:next` auto-transitions to next increment in queue
-- `/sw:progress` and `/sw:status` show auto session info when active
-- Only `/sw:cancel-auto` is a new command (to opt-out of running session)
-- Use `--manual` flag to opt-OUT of auto behavior (not `--auto` to opt-in)
-
-**Optimized for Claude Code MAX Plan**: Subscription-based, no API key needed, no token cost tracking.
-
-## LLM Judge Evaluation (Ralph Wiggum Alignment)
-
-**Score: 4.3/5.0 - PASS**
-
-| Ralph Wiggum Pattern | SpecWeave Alignment |
-|---------------------|---------------------|
-| `while :; do cat PROMPT.md \| claude ; done` | Stop Hook `{"decision": "block"}` ✅ |
-| `--completion-promise "string"` | tasks.md `[x]` + completion tag ✅ |
-| `--max-iterations N` | `auto.maxIterations: 100` ✅ |
-| `stop_hook_active` prevents loops | Checked in hook ✅ |
-
-**Verdict**: Core Ralph pattern implemented. Enterprise features (circuit breakers, human gates, multi-increment) are additive, not replacements. `--simple` mode available for pure Ralph behavior.
+| Increment | Status | Completion Date |
+|-----------|--------|----------------|
+| [0148-autonomous-execution-auto](../../../../increments/0148-autonomous-execution-auto/spec.md) | ⏳ ready_for_review | 2025-12-29 |
 
 ## User Stories
 
-| ID | Title | Status |
-|----|-------|--------|
-| [US-001](./us-001-stop-hook-based-continuation-loop.md) | Stop Hook-Based Continuation Loop | Planned |
-| [US-002](./us-002-auto-command-implementation.md) | Auto Mode as Default in /sw:increment | Planned |
-| [US-003](./us-003-cancel-auto-command.md) | Leverage Claude Code's Built-in Session Recovery | Planned |
-| [US-004](./us-004-multi-increment-orchestration.md) | Multi-Increment Orchestration | Planned |
-| [US-005](./us-005-test-driven-validation-gates.md) | Test-Driven Validation Gates | Planned |
-| [US-006](./us-006-human-gated-sensitive-operations.md) | Human-Gated Sensitive Operations | Planned |
-| [US-007](./us-007-integration-with-existing-workflow.md) | Auto-Aware Existing Workflow Commands | Planned |
-| [US-008](./us-008-circuit-breaker-patterns.md) | Circuit Breaker Patterns for External Services | Planned |
-| [US-009](./us-009-living-docs-sync-at-checkpoints.md) | Living Docs and External Tool Sync at Checkpoints | Planned |
-| [US-010](./us-010-auto-status-command.md) | Intelligent "Ask User When Stuck" Behavior | Planned |
-| [US-011](./us-011-tdd-enforcement-for-auto-mode.md) | TDD Enforcement for Auto Mode | Planned |
-| [US-012](./us-012-two-level-structure-support.md) | 2-Level Structure Support (Projects/Boards) | Planned |
-
-## Technical Architecture
-
-### Stop Hook Integration Flow
-
-```
-User runs /sw:auto "Build my app" --max-iterations 50
-                    │
-                    ▼
-        ┌─────────────────────────┐
-        │  setup-auto.sh     │
-        │  Creates session state  │
-        └───────────┬─────────────┘
-                    │
-                    ▼
-        ┌─────────────────────────┐
-        │  Claude works on task   │
-        │  Executes /sw:do, etc   │
-        └───────────┬─────────────┘
-                    │
-                    ▼ Claude tries to exit
-        ┌─────────────────────────┐
-        │  stop-auto.sh      │
-        │  (Stop Hook)            │
-        │  1. Check session state │
-        │  2. Check completion    │
-        │  3. Block + re-feed OR  │
-        │     Allow exit          │
-        └───────────┬─────────────┘
-                    │
-        ┌───────────┴───────────┐
-        │                       │
-        ▼                       ▼
-   Incomplete              Complete
-   "decision": "block"     "decision": "approve"
-   re-feed prompt          session ends
-```
-
-## Related ADRs
-
-- [ADR-0175: Workflow Orchestration Architecture](../../architecture/adr/0175-workflow-orchestration-architecture.md)
-- [ADR-0177: Autonomous Mode Safety](../../architecture/adr/0177-autonomous-mode-safety.md)
-- ADR-0178: Stop Hook-Based Auto Architecture (to be created)
-
-## Success Metrics
-
-| Metric | Target |
-|--------|--------|
-| Auto completion rate | > 80% |
-| False positive human gates | < 5% |
-| Crash recovery success | > 95% |
-| Time savings vs manual | > 50% |
-| Test gate enforcement | 100% |
+- [US-001: Stop Hook-Based Continuation Loop](./us-001-stop-hook-based-continuation-loop.md)
+- [US-002: Auto Mode as Default in /sw:increment](./us-002-auto-mode-as-default-in-sw-increment.md)
+- [US-003: Leverage Claude Code's Built-in Session Recovery](./us-003-leverage-claude-code-s-built-in-session-recovery.md)
+- [US-004: Multi-Increment Orchestration](./us-004-multi-increment-orchestration.md)
+- [US-005: Test-Driven Validation Gates](./us-005-test-driven-validation-gates.md)
+- [US-006: Human-Gated Sensitive Operations](./us-006-human-gated-sensitive-operations.md)
+- [US-007: Auto-Aware Existing Workflow Commands](./us-007-auto-aware-existing-workflow-commands.md)
+- [US-008: Circuit Breaker Patterns for External Services](./us-008-circuit-breaker-patterns-for-external-services.md)
+- [US-009: Living Docs and External Tool Sync at Checkpoints](./us-009-living-docs-and-external-tool-sync-at-checkpoints.md)
+- [US-010: Intelligent "Ask User When Stuck" Behavior](./us-010-intelligent-ask-user-when-stuck-behavior.md)
+- [US-011: TDD Enforcement for Auto Mode](./us-011-tdd-enforcement-for-auto-mode.md)
+- [US-012: 2-Level Structure Support (Projects/Boards)](./us-012-2-level-structure-support-projects-boards-.md)

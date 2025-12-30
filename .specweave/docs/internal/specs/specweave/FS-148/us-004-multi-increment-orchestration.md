@@ -1,34 +1,44 @@
 ---
 id: US-004
 feature: FS-148
-title: Multi-Increment Orchestration
-status: planned
+title: "Multi-Increment Orchestration"
+status: completed
 priority: P1
 created: 2025-12-29
 project: specweave
-external:
-  github:
-    issue: 954
-    url: https://github.com/anton-abyzov/specweave/issues/954
 ---
 
 # US-004: Multi-Increment Orchestration
 
-## User Story
+**Feature**: [FS-148](./FEATURE.md)
 
-**As a** developer, I want auto to work across multiple increments sequentially, so that I can plan an entire project and let Claude execute it over time.
-
-## Background
-
-Users may want to generate specs for multiple features upfront, then let auto execute them one by one respecting dependencies.
+---
 
 ## Acceptance Criteria
 
-- [ ] **AC-US4-01**: Auto session state tracks `incrementQueue: string[]` (ordered list of increment IDs)
-- [ ] **AC-US4-02**: After completing increment N, automatically transitions to increment N+1
-- [ ] **AC-US4-03**: Respects WIP limits from config (default: 1 active increment)
-- [ ] **AC-US4-04**: Validates dependencies before starting each increment
-- [ ] **AC-US4-05**: Option `--increments <id1,id2,id3>` specifies explicit queue
-- [ ] **AC-US4-06**: Option `--all-backlog` processes all backlog items in priority order
-- [ ] **AC-US4-07**: Generates per-increment completion reports
-- [ ] **AC-US4-08**: Saves overall session summary with cost, duration, and outcomes
+- [x] **AC-US4-01**: Auto session state tracks `incrementQueue: string[]` (ordered list of increment IDs)
+- [x] **AC-US4-02**: After completing increment N, automatically transitions to increment N+1
+- [x] **AC-US4-03**: Respects WIP limits from config (default: 1 active increment)
+- [x] **AC-US4-04**: Validates dependencies before starting each increment
+- [x] **AC-US4-05**: Option `--increments <id1,id2,id3>` specifies explicit queue
+- [x] **AC-US4-06**: Option `--all-backlog` processes all backlog items in priority order
+- [x] **AC-US4-07**: Generates per-increment completion reports
+- [x] **AC-US4-08**: Saves overall session summary with cost, duration, and outcomes
+
+---
+
+## Implementation
+
+**Increment**: [0148-autonomous-execution-auto](../../../../increments/0148-autonomous-execution-auto/spec.md)
+
+**Tasks**: See increment tasks.md for implementation details.
+
+
+## Tasks
+
+- [x] **T-018**: Create increment queue manager
+- [x] **T-019**: Implement dependency validation
+- [x] **T-020**: Implement WIP limit checking
+- [x] **T-021**: Implement --increments option
+- [x] **T-022**: Implement --all-backlog option
+- [x] **T-023**: Generate per-increment completion reports
