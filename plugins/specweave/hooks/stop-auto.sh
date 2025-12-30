@@ -122,6 +122,51 @@ if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
             > "$SESSION_FILE"
         approve "Completion promise detected"
     fi
+
+    # Check self-assessment score (Ralph-Loop pattern)
+    # Look for <self-assessment>...Overall: X.XX...</self-assessment> in transcript
+    SELF_SCORE=$(grep -oE 'Overall:\s*[0-9]+\.[0-9]+' "$TRANSCRIPT_PATH" 2>/dev/null | tail -1 | grep -oE '[0-9]+\.[0-9]+')
+
+    if [ -n "$SELF_SCORE" ]; then
+        # Log the score
+        echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"self_assessment\",\"score\":$SELF_SCORE,\"increment\":\"$CURRENT_INCREMENT\"}" >> "$LOGS_DIR/auto-iterations.log"
+
+        # Check if score is critically low (< 0.50) - requires human review
+        if [ "$(echo "$SELF_SCORE < 0.50" | bc 2>/dev/null || echo "0")" -eq 1 ]; then
+            echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg score "$SELF_SCORE" \
+                '.status = "paused" | .pauseTime = $now | .pauseReason = "low_confidence_score" | .lastScore = ($score | tonumber)' \
+                > "$SESSION_FILE"
+            approve "Low confidence score ($SELF_SCORE < 0.50), requesting human review"
+        fi
+
+        # Check if score indicates concern (0.50-0.69) - log but continue
+        if [ "$(echo "$SELF_SCORE >= 0.50 && $SELF_SCORE < 0.70" | bc 2>/dev/null || echo "0")" -eq 1 ]; then
+            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"caution\",\"score\":$SELF_SCORE,\"message\":\"Moderate confidence, self-review recommended\"}" >> "$LOGS_DIR/auto-iterations.log"
+        fi
+    fi
+
+    # Check for failed tests in transcript (hard stop)
+    if grep -q "Tests failed\|FAIL\|npm ERR!" "$TRANSCRIPT_PATH" 2>/dev/null; then
+        FAIL_COUNT=$(grep -c "FAIL\|npm ERR!" "$TRANSCRIPT_PATH" 2>/dev/null | tr -d '[:space:]' || echo "0")
+        # Only stop if multiple failures (single failure might be fixed in next iteration)
+        if [ "$FAIL_COUNT" -gt 3 ]; then
+            echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+                '.status = "paused" | .pauseTime = $now | .pauseReason = "repeated_test_failures"' \
+                > "$SESSION_FILE"
+            approve "Multiple test failures detected ($FAIL_COUNT), requesting human review"
+        fi
+    fi
+
+    # Check for deployment/credential errors (auto-execute integration)
+    if grep -qE "wrangler.*error|supabase.*error|terraform.*error|aws.*error|Error:.*credential|Error:.*secret|Error:.*token" "$TRANSCRIPT_PATH" 2>/dev/null; then
+        CRED_ERRORS=$(grep -cE "credential|secret|token" "$TRANSCRIPT_PATH" 2>/dev/null | tr -d '[:space:]' || echo "0")
+        if [ "$CRED_ERRORS" -gt 2 ]; then
+            echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+                '.status = "paused" | .pauseTime = $now | .pauseReason = "credential_errors"' \
+                > "$SESSION_FILE"
+            approve "Multiple credential/deployment errors, requesting credential check"
+        fi
+    fi
 fi
 
 # Check tasks.md for completion (primary completion signal)

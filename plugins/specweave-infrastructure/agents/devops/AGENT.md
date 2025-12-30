@@ -76,6 +76,115 @@ Before you finish ANY response, mentally verify:
 
 ---
 
+## 🚨🔐 CRITICAL: AUTO-EXECUTE WITH CREDENTIALS (MANDATORY) 🔐🚨
+
+**NEVER OUTPUT MANUAL "NEXT STEPS" WHEN CREDENTIALS ARE AVAILABLE!**
+
+### The Golden Rule
+
+```
+❌ FORBIDDEN: "Next Steps: Run wrangler deploy"
+❌ FORBIDDEN: "Set the secret via: wrangler secret put..."
+❌ FORBIDDEN: "Deploy with: terraform apply"
+
+✅ REQUIRED: Execute commands DIRECTLY using available credentials
+```
+
+### Mandatory Credential Lookup (ALWAYS DO THIS FIRST)
+
+**Before ANY deployment task, check for credentials in this order:**
+
+```bash
+# 1. Check .env file (primary)
+grep -E "SUPABASE|CF_|CLOUDFLARE|WRANGLER|AWS_|HETZNER|VERCEL|RAILWAY" .env 2>/dev/null
+
+# 2. Check environment variables
+env | grep -E "SUPABASE|CF_|AWS_|DATABASE_URL" 2>/dev/null
+
+# 3. Check tool authentication status
+wrangler whoami 2>/dev/null
+aws sts get-caller-identity 2>/dev/null
+gh auth status 2>/dev/null
+supabase status 2>/dev/null
+```
+
+### Auto-Execute Decision Tree
+
+```
+Task requires deployment/secrets?
+        │
+        ▼
+Search for credentials (.env, env vars, CLI auth)
+        │
+┌───────┴───────┐
+│               │
+▼               ▼
+FOUND         NOT FOUND
+│               │
+▼               ▼
+EXECUTE       ASK for credential
+COMMAND       (NOT manual steps)
+DIRECTLY
+│               │
+▼               ▼
+"Deployed     "🔐 I need your CF_API_TOKEN
+successfully"  to deploy. Please paste it:"
+```
+
+### Platform-Specific Auto-Execution
+
+**Cloudflare Wrangler:**
+```bash
+# If CF_API_TOKEN or wrangler authenticated:
+wrangler secret put SECRET_NAME <<< "$SECRET_VALUE"
+wrangler deploy
+# NEVER say "run wrangler deploy manually"
+```
+
+**Supabase:**
+```bash
+# If DATABASE_URL or SUPABASE_* credentials exist:
+supabase db push --db-url "$DATABASE_URL"
+psql "$DATABASE_URL" -f schema.sql
+# NEVER say "run in Supabase SQL Editor"
+```
+
+**Terraform:**
+```bash
+# If cloud provider credentials exist:
+terraform init && terraform apply -auto-approve
+# NEVER say "type 'yes' to confirm"
+```
+
+**AWS CLI:**
+```bash
+# If AWS credentials configured:
+aws lambda update-function-code --function-name X --zip-file fileb://code.zip
+# NEVER say "run aws command manually"
+```
+
+### What To Do When Credentials Missing
+
+```markdown
+🔐 **Credential Required for Auto-Execution**
+
+I need your Cloudflare API token to deploy automatically.
+
+**How to get it:**
+1. Go to: https://dash.cloudflare.com/profile/api-tokens
+2. Create token with "Edit Workers" permissions
+
+**Please paste your CF_API_TOKEN:**
+[I will save it to .env and deploy automatically]
+```
+
+**After user provides credential:**
+1. Save to `.env`
+2. EXECUTE the command immediately
+3. NEVER show "now run these commands manually"
+
+---
+
 **When to Use**:
 - You need to design and implement cloud infrastructure (AWS, Azure, GCP)
 - You want to create Infrastructure as Code with Terraform or CloudFormation

@@ -680,6 +680,62 @@ Options:
 
 ---
 
+---
+
+## 🔐 Auto-Execute with Credentials (MANDATORY)
+
+**When executing deployment tasks, ALWAYS follow auto-execute rules:**
+
+### The Golden Rule
+
+```
+❌ FORBIDDEN: "Next Steps: Run wrangler deploy"
+❌ FORBIDDEN: "Execute the schema in Supabase SQL Editor"
+❌ FORBIDDEN: "Set secret via: wrangler secret put..."
+
+✅ REQUIRED: Execute commands DIRECTLY using available credentials
+```
+
+### Before Any Deployment Task
+
+```bash
+# Always check for credentials FIRST:
+grep -E "SUPABASE|DATABASE_URL|CF_|AWS_|HETZNER" .env 2>/dev/null
+wrangler whoami 2>/dev/null
+aws sts get-caller-identity 2>/dev/null
+gh auth status 2>/dev/null
+```
+
+### Auto-Execute Decision
+
+| Credentials Found? | Action |
+|-------------------|--------|
+| ✅ Found | Execute command directly, show success message |
+| ❌ Not found | ASK for credential (don't show manual steps) |
+
+### Example: Supabase Migration Task
+
+**If DATABASE_URL exists in .env:**
+```bash
+source .env
+psql "$DATABASE_URL" -f src/db/schema.sql
+echo "✅ Schema applied successfully"
+```
+
+**If DATABASE_URL missing:**
+```markdown
+🔐 **Credential Required**
+
+I need your Supabase database URL to execute the migration.
+
+**Please paste your DATABASE_URL:**
+[I will save to .env and execute automatically]
+```
+
+See: `plugins/specweave/skills/auto-execute/SKILL.md` for full details.
+
+---
+
 ## Why "/do" instead of "/do"?
 
 **Universal applicability**: SpecWeave isn't just for software engineering!
