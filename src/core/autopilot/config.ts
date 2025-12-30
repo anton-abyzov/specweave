@@ -1,0 +1,240 @@
+/**
+ * Autopilot Configuration Loader
+ * Loads autopilot settings from .specweave/config.json with sensible defaults
+ */
+
+import * as fs from 'fs';
+import * as path from 'path';
+import { AutopilotConfig, DEFAULT_AUTOPILOT_CONFIG } from './types.js';
+import { consoleLogger as logger } from '../../utils/logger.js';
+
+const CONFIG_PATH = '.specweave/config.json';
+
+export interface ConfigLoadResult {
+  config: AutopilotConfig;
+  source: 'file' | 'defaults' | 'merged';
+  warnings: string[];
+}
+
+/**
+ * Load autopilot configuration from project config file
+ */
+export function loadAutopilotConfig(projectRoot: string): ConfigLoadResult {
+  const configPath = path.join(projectRoot, CONFIG_PATH);
+  const warnings: string[] = [];
+
+  // Check if config file exists
+  if (!fs.existsSync(configPath)) {
+    logger.debug('No config file found, using defaults');
+    return {
+      config: { ...DEFAULT_AUTOPILOT_CONFIG },
+      source: 'defaults',
+      warnings: [],
+    };
+  }
+
+  try {
+    const configContent = fs.readFileSync(configPath, 'utf-8');
+    const fullConfig = JSON.parse(configContent);
+
+    // Check if auto section exists
+    if (!fullConfig.auto) {
+      logger.debug('No auto config section, using defaults');
+      return {
+        config: { ...DEFAULT_AUTOPILOT_CONFIG },
+        source: 'defaults',
+        warnings: [],
+      };
+    }
+
+    // Merge with defaults
+    const autoConfig = fullConfig.auto;
+    const mergedConfig = mergeConfig(autoConfig, warnings);
+
+    return {
+      config: mergedConfig,
+      source: 'merged',
+      warnings,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to load autopilot config: ${message}`);
+  }
+}
+
+/**
+ * Merge user config with defaults, validating values
+ */
+function mergeConfig(userConfig: Partial<AutopilotConfig>, warnings: string[]): AutopilotConfig {
+  const config: AutopilotConfig = { ...DEFAULT_AUTOPILOT_CONFIG };
+
+  // Boolean fields
+  if (typeof userConfig.enabled === 'boolean') {
+    config.enabled = userConfig.enabled;
+  }
+  if (typeof userConfig.enforceTestFirst === 'boolean') {
+    config.enforceTestFirst = userConfig.enforceTestFirst;
+  }
+  if (typeof userConfig.warnOnParallelSession === 'boolean') {
+    config.warnOnParallelSession = userConfig.warnOnParallelSession;
+  }
+
+  // Numeric fields with validation
+  if (typeof userConfig.maxIterations === 'number') {
+    if (userConfig.maxIterations < 1) {
+      warnings.push('maxIterations must be >= 1, using default (100)');
+    } else if (userConfig.maxIterations > 1000) {
+      warnings.push('maxIterations exceeds 1000, capping at 1000');
+      config.maxIterations = 1000;
+    } else {
+      config.maxIterations = userConfig.maxIterations;
+    }
+  }
+
+  if (typeof userConfig.maxHours === 'number') {
+    if (userConfig.maxHours < 0.5) {
+      warnings.push('maxHours must be >= 0.5, using default');
+    } else if (userConfig.maxHours > 168) {
+      warnings.push('maxHours exceeds 168 (1 week), capping at 168');
+      config.maxHours = 168;
+    } else {
+      config.maxHours = userConfig.maxHours;
+    }
+  }
+
+  if (typeof userConfig.coverageThreshold === 'number') {
+    if (userConfig.coverageThreshold < 0 || userConfig.coverageThreshold > 100) {
+      warnings.push('coverageThreshold must be 0-100, using default (80)');
+    } else {
+      config.coverageThreshold = userConfig.coverageThreshold;
+    }
+  }
+
+  // String fields
+  if (typeof userConfig.testCommand === 'string' && userConfig.testCommand.trim()) {
+    config.testCommand = userConfig.testCommand.trim();
+  }
+
+  // Human gated config
+  if (userConfig.humanGated && typeof userConfig.humanGated === 'object') {
+    const hg = userConfig.humanGated;
+
+    if (Array.isArray(hg.patterns)) {
+      config.humanGated.patterns = hg.patterns.filter(
+        (p): p is string => typeof p === 'string'
+      );
+    }
+
+    if (typeof hg.timeout === 'number' && hg.timeout >= 60) {
+      config.humanGated.timeout = Math.min(hg.timeout, 7200); // Max 2 hours
+    }
+
+    if (Array.isArray(hg.neverAutoApprove)) {
+      config.humanGated.neverAutoApprove = hg.neverAutoApprove.filter(
+        (p): p is string => typeof p === 'string'
+      );
+    }
+  }
+
+  // Circuit breaker config
+  if (userConfig.circuitBreakers && typeof userConfig.circuitBreakers === 'object') {
+    const cb = userConfig.circuitBreakers;
+
+    if (typeof cb.failureThreshold === 'number' && cb.failureThreshold >= 1) {
+      config.circuitBreakers.failureThreshold = Math.min(cb.failureThreshold, 10);
+    }
+
+    if (typeof cb.resetTimeout === 'number' && cb.resetTimeout >= 60) {
+      config.circuitBreakers.resetTimeout = Math.min(cb.resetTimeout, 3600); // Max 1 hour
+    }
+  }
+
+  // Sync config
+  if (userConfig.sync && typeof userConfig.sync === 'object') {
+    const sync = userConfig.sync;
+
+    if (typeof sync.batchInterval === 'number' && sync.batchInterval >= 60) {
+      config.sync.batchInterval = Math.min(sync.batchInterval, 1800); // Max 30 min
+    }
+
+    if (typeof sync.forceOnComplete === 'boolean') {
+      config.sync.forceOnComplete = sync.forceOnComplete;
+    }
+  }
+
+  return config;
+}
+
+/**
+ * Save autopilot configuration to project config file
+ */
+export function saveAutopilotConfig(
+  projectRoot: string,
+  autopilotConfig: Partial<AutopilotConfig>
+): void {
+  const configPath = path.join(projectRoot, CONFIG_PATH);
+  let fullConfig: Record<string, unknown> = {};
+
+  // Load existing config if present
+  if (fs.existsSync(configPath)) {
+    try {
+      const content = fs.readFileSync(configPath, 'utf-8');
+      fullConfig = JSON.parse(content);
+    } catch {
+      logger.warn('Failed to parse existing config, creating new');
+    }
+  }
+
+  // Merge autopilot config
+  fullConfig.auto = {
+    ...(fullConfig.auto as object || {}),
+    ...autopilotConfig,
+  };
+
+  // Ensure directory exists
+  const configDir = path.dirname(configPath);
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true });
+  }
+
+  // Write config
+  fs.writeFileSync(configPath, JSON.stringify(fullConfig, null, 2), 'utf-8');
+  logger.info('Saved autopilot configuration');
+}
+
+/**
+ * Check if autopilot is enabled in config
+ */
+export function isAutopilotEnabled(projectRoot: string): boolean {
+  try {
+    const { config } = loadAutopilotConfig(projectRoot);
+    return config.enabled;
+  } catch {
+    return DEFAULT_AUTOPILOT_CONFIG.enabled;
+  }
+}
+
+/**
+ * Get effective mode based on config and flags
+ */
+export function getEffectiveMode(
+  projectRoot: string,
+  flags: { auto?: boolean; manual?: boolean; simple?: boolean }
+): { mode: 'auto' | 'manual'; simple: boolean } {
+  const { config } = loadAutopilotConfig(projectRoot);
+
+  // Flags override config
+  if (flags.manual) {
+    return { mode: 'manual', simple: false };
+  }
+
+  if (flags.auto) {
+    return { mode: 'auto', simple: flags.simple ?? false };
+  }
+
+  // Use config default
+  return {
+    mode: config.enabled ? 'auto' : 'manual',
+    simple: flags.simple ?? false,
+  };
+}

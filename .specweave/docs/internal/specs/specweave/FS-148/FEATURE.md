@@ -18,24 +18,49 @@ external_tools:
 
 ## Overview
 
-Implement `/sw:autopilot` command that enables Claude Code to work autonomously for extended periods (hours/days) on SpecWeave projects. Uses Claude Code Stop Hook to create a feedback loop that prevents session exit until all specified work is completed.
+**Auto mode is the DEFAULT** - SpecWeave commands automatically continue working until completion using Claude Code's Stop Hook. No special commands needed.
 
 **Key Value Proposition**: "Ship features while you sleep" - autonomous end-to-end delivery with safety guardrails.
+
+**Design Philosophy**:
+- `/sw:increment` auto-detects project complexity and splits into multiple increments with dependencies
+- `/sw:do` continues until all tasks complete (stop hook loop)
+- `/sw:next` auto-transitions to next increment in queue
+- `/sw:progress` and `/sw:status` show auto session info when active
+- Only `/sw:cancel-auto` is a new command (to opt-out of running session)
+- Use `--manual` flag to opt-OUT of auto behavior (not `--auto` to opt-in)
+
+**Optimized for Claude Code MAX Plan**: Subscription-based, no API key needed, no token cost tracking.
+
+## LLM Judge Evaluation (Ralph Wiggum Alignment)
+
+**Score: 4.3/5.0 - PASS**
+
+| Ralph Wiggum Pattern | SpecWeave Alignment |
+|---------------------|---------------------|
+| `while :; do cat PROMPT.md \| claude ; done` | Stop Hook `{"decision": "block"}` ✅ |
+| `--completion-promise "string"` | tasks.md `[x]` + completion tag ✅ |
+| `--max-iterations N` | `auto.maxIterations: 100` ✅ |
+| `stop_hook_active` prevents loops | Checked in hook ✅ |
+
+**Verdict**: Core Ralph pattern implemented. Enterprise features (circuit breakers, human gates, multi-increment) are additive, not replacements. `--simple` mode available for pure Ralph behavior.
 
 ## User Stories
 
 | ID | Title | Status |
 |----|-------|--------|
 | [US-001](./us-001-stop-hook-based-continuation-loop.md) | Stop Hook-Based Continuation Loop | Planned |
-| [US-002](./us-002-autopilot-command-implementation.md) | Autopilot Command Implementation | Planned |
-| [US-003](./us-003-cancel-autopilot-command.md) | Cancel Autopilot Command | Planned |
+| [US-002](./us-002-autopilot-command-implementation.md) | Auto Mode as Default in /sw:increment | Planned |
+| [US-003](./us-003-cancel-autopilot-command.md) | Leverage Claude Code's Built-in Session Recovery | Planned |
 | [US-004](./us-004-multi-increment-orchestration.md) | Multi-Increment Orchestration | Planned |
 | [US-005](./us-005-test-driven-validation-gates.md) | Test-Driven Validation Gates | Planned |
 | [US-006](./us-006-human-gated-sensitive-operations.md) | Human-Gated Sensitive Operations | Planned |
-| [US-007](./us-007-integration-with-existing-workflow.md) | Integration with Existing Workflow Commands | Planned |
+| [US-007](./us-007-integration-with-existing-workflow.md) | Auto-Aware Existing Workflow Commands | Planned |
 | [US-008](./us-008-circuit-breaker-patterns.md) | Circuit Breaker Patterns for External Services | Planned |
 | [US-009](./us-009-living-docs-sync-at-checkpoints.md) | Living Docs and External Tool Sync at Checkpoints | Planned |
-| [US-010](./us-010-autopilot-status-command.md) | Autopilot Status Command | Planned |
+| [US-010](./us-010-autopilot-status-command.md) | Intelligent "Ask User When Stuck" Behavior | Planned |
+| [US-011](./us-011-tdd-enforcement-for-auto-mode.md) | TDD Enforcement for Auto Mode | Planned |
+| [US-012](./us-012-two-level-structure-support.md) | 2-Level Structure Support (Projects/Boards) | Planned |
 
 ## Technical Architecture
 
