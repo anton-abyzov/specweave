@@ -82,18 +82,18 @@ describe('Auto Config', () => {
 
       const result = loadAutoConfig(tempDir);
 
-      expect(result.warnings).toContain('maxIterations must be >= 1, using default (100)');
-      expect(result.config.maxIterations).toBe(100);
+      expect(result.warnings).toContain('maxIterations must be >= 1, using default (500)');
+      expect(result.config.maxIterations).toBe(500);
     });
 
-    it('should cap maxIterations at 1000', () => {
+    it('should cap maxIterations at 5000', () => {
       const configPath = path.join(tempDir, '.specweave/config.json');
       fs.mkdirSync(path.dirname(configPath), { recursive: true });
       fs.writeFileSync(
         configPath,
         JSON.stringify({
           auto: {
-            maxIterations: 5000,
+            maxIterations: 10000,
           },
         }),
         'utf-8'
@@ -101,8 +101,8 @@ describe('Auto Config', () => {
 
       const result = loadAutoConfig(tempDir);
 
-      expect(result.warnings).toContain('maxIterations exceeds 1000, capping at 1000');
-      expect(result.config.maxIterations).toBe(1000);
+      expect(result.warnings).toContain('maxIterations exceeds 5000, capping at 5000');
+      expect(result.config.maxIterations).toBe(5000);
     });
 
     it('should throw for invalid JSON', () => {

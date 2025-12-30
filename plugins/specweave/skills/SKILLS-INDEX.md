@@ -2,7 +2,7 @@
 
 **Purpose**: Lightweight skill manifest for lazy loading. Load SKILL.md only when triggers match.
 
-**Total Skills**: 27 | **Last Updated**: 2025-11-24
+**Total Skills**: 28 | **Last Updated**: 2025-12-30
 
 ---
 
@@ -71,6 +71,7 @@
 |-------|----------|----------|
 | **serverless-recommender** | serverless, AWS Lambda, Azure Functions, GCP Cloud Functions, Firebase, Supabase, which platform, serverless cost | `skills/serverless-recommender/SKILL.md` |
 | **compliance-architecture** | compliance, HIPAA, SOC2, SOC 2, GDPR, PCI-DSS, regulatory, healthcare data, payment card, audit, security standards | `skills/compliance-architecture/SKILL.md` |
+| **service-connect** | connect database, supabase connection, cloudflare workers, wrangler, postgres connection, mongodb atlas, redis cache, MCP setup, service integration, connection failed, IPv6, database setup | `skills/service-connect/SKILL.md` |
 
 ---
 
@@ -88,6 +89,8 @@
 | "AWS vs Azure vs GCP" | `serverless-recommender` |
 | "SOC2/HIPAA compliance" | `compliance-architecture` |
 | "Review my code" | `code-reviewer` |
+| "Connect to Supabase/DB" | `service-connect` |
+| "Connection failed" | `service-connect` |
 
 ---
 

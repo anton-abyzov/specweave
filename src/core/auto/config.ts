@@ -82,10 +82,10 @@ function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoC
   // Numeric fields with validation
   if (typeof userConfig.maxIterations === 'number') {
     if (userConfig.maxIterations < 1) {
-      warnings.push('maxIterations must be >= 1, using default (100)');
-    } else if (userConfig.maxIterations > 1000) {
-      warnings.push('maxIterations exceeds 1000, capping at 1000');
-      config.maxIterations = 1000;
+      warnings.push('maxIterations must be >= 1, using default (500)');
+    } else if (userConfig.maxIterations > 5000) {
+      warnings.push('maxIterations exceeds 5000, capping at 5000');
+      config.maxIterations = 5000;
     } else {
       config.maxIterations = userConfig.maxIterations;
     }
@@ -94,9 +94,9 @@ function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoC
   if (typeof userConfig.maxHours === 'number') {
     if (userConfig.maxHours < 0.5) {
       warnings.push('maxHours must be >= 0.5, using default');
-    } else if (userConfig.maxHours > 168) {
-      warnings.push('maxHours exceeds 168 (1 week), capping at 168');
-      config.maxHours = 168;
+    } else if (userConfig.maxHours > 720) {
+      warnings.push('maxHours exceeds 720 (30 days), capping at 720');
+      config.maxHours = 720;
     } else {
       config.maxHours = userConfig.maxHours;
     }

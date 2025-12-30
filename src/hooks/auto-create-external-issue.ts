@@ -18,6 +18,7 @@
 
 import { autoCreateExternalIssue, AutoCreateResult } from '../sync/external-issue-auto-creator.js';
 import { consoleLogger } from '../utils/logger.js';
+import { findProjectRoot } from './platform.js';
 
 async function main(): Promise<void> {
   const incrementId = process.argv[2];
@@ -30,7 +31,16 @@ async function main(): Promise<void> {
 
   console.log(`\n🔗 Auto-creating external issue for ${incrementId}...`);
 
-  const projectRoot = process.cwd();
+  // CRITICAL FIX: Use findProjectRoot() to find the actual project root
+  // This prevents creating .specweave in the wrong location when the hook
+  // is executed from a different working directory (e.g., by CI/CD or parent scripts)
+  const projectRoot = findProjectRoot() || process.cwd();
+
+  if (!findProjectRoot()) {
+    console.warn('⚠️  Warning: Could not find .specweave directory. Using current working directory.');
+    console.warn('   This may cause issues if not running from the project root.');
+  }
+
   const result = await autoCreateExternalIssue(projectRoot, incrementId, consoleLogger);
 
   printResult(result);

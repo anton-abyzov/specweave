@@ -20,6 +20,7 @@ import {
   type Config as MigrationConfig
 } from './single-project-migrator.js';
 import { consoleLogger, type Logger } from '../../utils/logger.js';
+import { getProjectRoot } from '../../utils/find-project-root.js';
 
 /**
  * Configuration file path
@@ -38,10 +39,13 @@ export class ConfigManager {
   /**
    * Create a new ConfigManager
    *
-   * @param projectRoot - Path to project root (default: process.cwd())
+   * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
+   * creating/accessing .specweave in wrong location when CWD != project root.
+   *
+   * @param projectRoot - Path to project root (default: auto-detected via getProjectRoot())
    * @param logger - Logger instance (default: consoleLogger)
    */
-  constructor(projectRoot: string = process.cwd(), logger: Logger = consoleLogger) {
+  constructor(projectRoot: string = getProjectRoot(), logger: Logger = consoleLogger) {
     this.projectRoot = projectRoot;
     this.configPath = path.join(projectRoot, '.specweave', CONFIG_FILE_NAME);
     this.logger = logger;

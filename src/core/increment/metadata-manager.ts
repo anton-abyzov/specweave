@@ -24,6 +24,7 @@ import { ActiveIncrementManager } from './active-increment-manager.js';
 import { detectDuplicatesByNumber } from './duplicate-detector.js';
 import { SpecFrontmatterUpdater } from './spec-frontmatter-updater.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { getProjectRoot } from '../../utils/find-project-root.js';
 
 /**
  * Error thrown when metadata operations fail
@@ -57,17 +58,23 @@ export class MetadataManager {
 
   /**
    * Get metadata file path for increment
+   *
+   * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
+   * creating/accessing .specweave in wrong location when CWD != project root.
    */
   private static getMetadataPath(incrementId: string, rootDir?: string): string {
-    const specweavePath = path.join(rootDir || process.cwd(), '.specweave');
+    const specweavePath = path.join(rootDir || getProjectRoot(), '.specweave');
     return path.join(specweavePath, 'increments', incrementId, 'metadata.json');
   }
 
   /**
    * Get increment directory path
+   *
+   * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
+   * creating/accessing .specweave in wrong location when CWD != project root.
    */
   private static getIncrementPath(incrementId: string, rootDir?: string): string {
-    const specweavePath = path.join(rootDir || process.cwd(), '.specweave');
+    const specweavePath = path.join(rootDir || getProjectRoot(), '.specweave');
     return path.join(specweavePath, 'increments', incrementId);
   }
 
@@ -551,9 +558,12 @@ export class MetadataManager {
 
   /**
    * Get all increments
+   *
+   * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
+   * accessing wrong .specweave folder when CWD != project root.
    */
   static getAll(): IncrementMetadata[] {
-    const incrementsPath = path.join(process.cwd(), '.specweave', 'increments');
+    const incrementsPath = path.join(getProjectRoot(), '.specweave', 'increments');
 
     if (!fs.existsSync(incrementsPath)) {
       return [];

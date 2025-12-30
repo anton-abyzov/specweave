@@ -74,6 +74,12 @@
 | **specweave-docs** | documentation, README, API docs, technical writing, docs site, Docusaurus, preview, build docs | Documentation generation and preview |
 | **specweave-release** | release, version, npm publish, changelog, RC | Release management |
 
+## API Documentation
+
+| Plugin | Triggers | Description |
+|--------|----------|-------------|
+| **specweave:api-docs** | OpenAPI, Postman, API documentation, swagger, REST API, api-docs | Generate OpenAPI spec, Postman collection, and environment files |
+
 ## Specialized Plugins
 
 | Plugin | Triggers | Description |
