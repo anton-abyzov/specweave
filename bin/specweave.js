@@ -550,6 +550,18 @@ program
     });
   });
 
+// Refresh marketplace command - Update marketplace and install all plugins
+program
+  .command('refresh-marketplace')
+  .description('Refresh SpecWeave marketplace and install all plugins')
+  .option('--local', 'Use local development version (ONLY for active dev)')
+  .option('--github', 'Pull latest from GitHub (default, recommended)')
+  .option('-v, --verbose', 'Show detailed error messages')
+  .action(async (options) => {
+    const { refreshMarketplaceCommand } = await import('../dist/src/cli/commands/refresh-marketplace.js');
+    await refreshMarketplaceCommand(options);
+  });
+
 // Set sync target command - Set external tool sync target for increment (ADR-0211)
 program
   .command('set-sync-target <increment-id>')
@@ -622,6 +634,8 @@ program.on('--help', () => {
   console.log('  $ specweave set-sync-target 0008            # Set sync target for increment');
   console.log('  $ specweave set-sync-target 0008 -v         # Show resolution path');
   console.log('  $ specweave set-sync-target 0008 --validate-only  # Validate only');
+  console.log('  $ specweave refresh-marketplace             # Refresh marketplace (GitHub)');
+  console.log('  $ specweave refresh-marketplace --local     # Use local dev version');
   console.log('');
   console.log('Supported AI Tools:');
   console.log('  - Claude Code (full automation) - Native skills, agents, hooks');
