@@ -13,6 +13,8 @@
 #   --skip-gates G1,G2   Pre-approve specific gates
 #   --no-increment       Skip auto-creation of increments (work on existing only)
 #   --no-inc             Alias for --no-increment (short form)
+#   --prompt "text"      Analyze prompt and create increments (intelligent chunking)
+#   --yes                Auto-approve increment plan (skip user approval)
 #   -h, --help           Show this help
 
 set -e
@@ -26,6 +28,8 @@ INCREMENT_IDS=()
 ALL_BACKLOG=false
 SKIP_GATES=""
 NO_INCREMENT=false
+PROMPT=""
+AUTO_APPROVE=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -62,6 +66,14 @@ while [[ $# -gt 0 ]]; do
             NO_INCREMENT=true
             shift
             ;;
+        --prompt)
+            PROMPT="$2"
+            shift 2
+            ;;
+        --yes|-y)
+            AUTO_APPROVE=true
+            shift
+            ;;
         -h|--help)
             grep '^#' "$0" | grep -v '!/bin/bash' | sed 's/^# //'
             exit 0
@@ -96,6 +108,60 @@ if [ -f "$SESSION_FILE" ]; then
         echo "  1. Cancel it: /sw:cancel-auto"
         echo "  2. Check status: /sw:auto-status"
         echo "  3. Let it continue (close this tab)"
+        exit 1
+    fi
+fi
+
+# Handle --prompt (intelligent chunking)
+if [ -n "$PROMPT" ]; then
+    echo "🧠 Analyzing prompt for intelligent chunking..."
+    echo ""
+
+    # Find the chunk-prompt.js script
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    CHUNK_SCRIPT="$SCRIPT_DIR/chunk-prompt.js"
+
+    if [ ! -f "$CHUNK_SCRIPT" ]; then
+        echo "❌ chunk-prompt.js not found at $CHUNK_SCRIPT"
+        exit 1
+    fi
+
+    # Run the chunking analysis
+    CHUNK_ARGS=("$PROMPT")
+    if [ "$AUTO_APPROVE" = "true" ]; then
+        CHUNK_ARGS+=("--yes")
+    fi
+    CHUNK_ARGS+=("--project-path" "$PROJECT_ROOT")
+
+    if ! node "$CHUNK_SCRIPT" "${CHUNK_ARGS[@]}"; then
+        echo "❌ Prompt chunking failed"
+        exit 1
+    fi
+
+    # Read generated increment IDs
+    CHUNKED_IDS_FILE="$STATE_DIR/chunked-increments.txt"
+    if [ -f "$CHUNKED_IDS_FILE" ]; then
+        echo ""
+        echo "📋 Plan saved. The increments will be created during execution."
+        echo ""
+
+        # If auto-approve, signal that increments need to be created
+        if [ "$AUTO_APPROVE" = "true" ]; then
+            echo '{"needsIncrementCreation": true, "fromChunking": true, "autoApproved": true, "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > "$STATE_DIR/auto-needs-increment.json"
+            echo "✅ Plan auto-approved. Ready to create increments."
+        else
+            echo '{"needsIncrementCreation": true, "fromChunking": true, "autoApproved": false, "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > "$STATE_DIR/auto-needs-increment.json"
+            echo ""
+            echo "💡 To proceed:"
+            echo "   1. Review the plan above"
+            echo "   2. Run /sw:auto again to start execution"
+            echo "   3. Or use --yes to auto-approve"
+        fi
+
+        # Exit with code 2 to signal LLM should create increments
+        exit 2
+    else
+        echo "❌ No increments generated from prompt"
         exit 1
     fi
 fi

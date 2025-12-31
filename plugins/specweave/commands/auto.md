@@ -40,6 +40,8 @@ description: Start autonomous execution session with stop hook integration. Work
 | `--all-backlog` | Process all backlog items | false |
 | `--skip-gates G1,G2` | Pre-approve specific gates | None |
 | `--no-increment`, `--no-inc` | Skip auto-creation (require existing increments) | false |
+| `--prompt "text"` | Analyze prompt and create increments (intelligent chunking) | None |
+| `--yes`, `-y` | Auto-approve increment plan (skip user approval) | false |
 
 ## Intelligent Increment Creation (NEW!)
 
@@ -101,6 +103,90 @@ The LLM will analyze the context and decide:
 # User says: "Just work on what's already planned"
 /sw:auto --no-increment  # or --no-inc
 # → ERROR if no active increment (strict mode)
+```
+
+## Prompt-Based Chunking (--prompt)
+
+**Use `--prompt` to provide a feature description for intelligent chunking:**
+
+```bash
+# Analyze prompt and show increment plan for approval
+/sw:auto --prompt "Build e-commerce with auth, products, cart, checkout"
+
+# Auto-approve plan and start execution
+/sw:auto --prompt "Build e-commerce with auth, products, cart, checkout" --yes
+```
+
+### What Happens
+
+1. **Prompt Analysis**: The chunker extracts discrete features from your description
+2. **Plan Generation**: Features are grouped into right-sized increments (5-15 tasks each)
+3. **Dependency Detection**: Auth before checkout, database before API, etc.
+4. **User Approval**: Plan shown for review (unless `--yes` flag used)
+5. **Increment Creation**: Increments created via `/sw:increment`
+6. **Session Start**: Auto mode begins with the increment queue
+
+### Example Output
+
+```
+📋 Increment Plan
+══════════════════════════════════════════════════
+
+Total Features: 4
+Total Tasks: ~34
+Estimated Duration: 1-2 days
+Increments: 3
+
+Increments:
+--------------------------------------------------
+  1. User Authentication
+     ID: 0001-user-authentication
+     Tasks: ~12
+     Features: auth
+     Depends on: (none)
+
+  2. Product Catalog
+     ID: 0002-product-catalog
+     Tasks: ~10
+     Features: products
+
+  3. Shopping Cart & Checkout
+     ID: 0003-shopping-cart-checkout
+     Tasks: ~12
+     Features: cart, checkout
+     Depends on: 0001-user-authentication, 0002-product-catalog
+
+💡 Review the plan above.
+
+Options:
+  1. Approve - Start execution with this plan
+  2. Modify  - Adjust increment structure
+  3. Cancel  - Abort and return to prompt
+
+To skip this prompt in future: use --yes flag
+```
+
+### Plan Approval Flow
+
+```
+/sw:auto --prompt "..."
+     │
+     ▼
+Analyze & Show Plan
+     │
+     ├─ --yes flag? ──YES──> Auto-approve
+     │       │
+     │       ▼
+     │    Create Increments → Start Session
+     │
+     └─ No --yes flag
+            │
+            ▼
+       Wait for User
+            │
+            ├─ Approve → Create Increments → Start Session
+            ├─ Modify  → LLM adjusts plan → Re-show
+            └─ Cancel  → Exit
 ```
 
 ## How It Works

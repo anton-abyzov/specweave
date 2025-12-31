@@ -7,8 +7,63 @@
 #
 # v0.35.3 - Fixed: use set +e for hook safety
 # v0.35.x - Fixed: Don't create .specweave in non-project directories
+# v1.0.71 - Fixed: Use specweave package location, not PROJECT_ROOT/dist
 
 set +e  # CRITICAL: Never use set -e in hooks (causes cascading failures)
+
+# =============================================================================
+# CRITICAL FIX: Resolve specweave package location for CLI scripts
+# =============================================================================
+# Problem: Hooks referenced ${PROJECT_ROOT}/dist/src/cli/*.js which doesn't
+# exist on user machines - they only have npm-installed specweave package.
+#
+# Solution: Find the specweave package via:
+# 1. This hook's own location (hooks are inside the package)
+# 2. Global npm root as fallback
+# =============================================================================
+
+# Get the directory where this hook script lives
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Resolve specweave package root (hooks are at plugins/specweave/hooks/v2/)
+# Walk up: v2 -> hooks -> specweave -> plugins -> package_root
+resolve_specweave_package() {
+  local hook_dir="$1"
+
+  # From hooks/v2/ go up 4 levels to package root
+  local package_root="$(cd "$hook_dir/../../../.." 2>/dev/null && pwd)"
+
+  # Verify it's a valid specweave package (has dist/src/cli/)
+  if [[ -d "$package_root/dist/src/cli" ]]; then
+    echo "$package_root"
+    return 0
+  fi
+
+  # Fallback: Try global npm installation
+  local npm_root
+  npm_root="$(npm root -g 2>/dev/null)"
+  if [[ -d "$npm_root/specweave/dist/src/cli" ]]; then
+    echo "$npm_root/specweave"
+    return 0
+  fi
+
+  # Fallback: Try npx resolution
+  local npx_path
+  npx_path="$(which specweave 2>/dev/null)"
+  if [[ -n "$npx_path" ]]; then
+    # specweave binary is at package/bin/specweave.js, go up one level
+    local bin_dir="$(dirname "$npx_path")"
+    local pkg_dir="$(cd "$bin_dir/.." 2>/dev/null && pwd)"
+    if [[ -d "$pkg_dir/dist/src/cli" ]]; then
+      echo "$pkg_dir"
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+SPECWEAVE_PKG="$(resolve_specweave_package "$HOOK_DIR")"
 
 # Find project root by searching upward for .specweave/ directory
 find_specweave_root() {
@@ -53,13 +108,21 @@ is_ci_mode() {
 # Main execution
 {
   log "SessionStart hook triggered (PID: $$)"
+  log "SPECWEAVE_PKG resolved to: ${SPECWEAVE_PKG:-NOT_FOUND}"
+
+  # If specweave package not found, skip session tracking (non-fatal)
+  if [[ -z "$SPECWEAVE_PKG" ]]; then
+    log "WARNING: Could not resolve specweave package location - skipping session tracking"
+    echo '{"continue": true}'
+    exit 0
+  fi
 
   # Check if CI mode
   if is_ci_mode; then
     log "CI/non-interactive mode detected - using simplified tracking"
 
     # Register session but skip background processes
-    if node "${PROJECT_ROOT}/dist/src/cli/register-session.js" "$SESSION_ID" $$ "claude-code" >> "$LOG_FILE" 2>&1; then
+    if node "${SPECWEAVE_PKG}/dist/src/cli/register-session.js" "$SESSION_ID" $$ "claude-code" >> "$LOG_FILE" 2>&1; then
       log "Session registered (CI mode): $SESSION_ID"
     else
       log "WARNING: Failed to register session (non-fatal)"
@@ -74,14 +137,15 @@ is_ci_mode() {
   log "Interactive mode detected - full session tracking enabled"
 
   # Register session in registry
-  if node "${PROJECT_ROOT}/dist/src/cli/register-session.js" "$SESSION_ID" $$ "claude-code" >> "$LOG_FILE" 2>&1; then
+  if node "${SPECWEAVE_PKG}/dist/src/cli/register-session.js" "$SESSION_ID" $$ "claude-code" >> "$LOG_FILE" 2>&1; then
     log "Session registered: $SESSION_ID"
   else
     log "WARNING: Failed to register session (non-fatal)"
   fi
 
   # Start heartbeat process in background (detached)
-  nohup bash "${PROJECT_ROOT}/plugins/specweave/scripts/heartbeat.sh" "$SESSION_ID" \
+  # Use SPECWEAVE_PKG for the heartbeat script location
+  nohup bash "${SPECWEAVE_PKG}/plugins/specweave/scripts/heartbeat.sh" "$SESSION_ID" \
     > "${PROJECT_ROOT}/.specweave/logs/heartbeat-${SESSION_ID}.log" 2>&1 &
 
   HEARTBEAT_PID=$!
@@ -89,7 +153,7 @@ is_ci_mode() {
 
   # Add heartbeat PID to session's child PIDs
   if [ -n "$HEARTBEAT_PID" ]; then
-    node "${PROJECT_ROOT}/dist/src/cli/add-child-pid.js" "$SESSION_ID" "$HEARTBEAT_PID" >> "$LOG_FILE" 2>&1 || true
+    node "${SPECWEAVE_PKG}/dist/src/cli/add-child-pid.js" "$SESSION_ID" "$HEARTBEAT_PID" >> "$LOG_FILE" 2>&1 || true
   fi
 
   log "SessionStart hook completed successfully"

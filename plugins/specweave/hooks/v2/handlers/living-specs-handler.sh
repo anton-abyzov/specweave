@@ -6,6 +6,7 @@
 # It is called by the event processor, NOT directly by post-tool-use.
 #
 # IMPORTANT: This script must be fast (<100ms) and never crash Claude
+# v1.0.71 - Fixed: Use specweave package location, not PROJECT_ROOT/dist
 set +e
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
@@ -23,6 +24,10 @@ while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
 done
 [[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
 
+# Resolve specweave package location
+HANDLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$HANDLER_DIR/../../lib/resolve-package.sh" 2>/dev/null || true
+
 # Throttle: max once per 60 seconds per increment
 STATE_DIR="$PROJECT_ROOT/.specweave/state"
 THROTTLE_FILE="$STATE_DIR/.living-specs-$INC_ID"
@@ -38,12 +43,14 @@ if [[ -f "$THROTTLE_FILE" ]]; then
 fi
 touch "$THROTTLE_FILE"
 
-# Find the sync script
+# Find the sync script (check SPECWEAVE_PKG first, then fallbacks)
 SYNC_SCRIPT=""
 for path in \
-  "$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-living-docs.js" \
+  "${SPECWEAVE_PKG:-}/dist/plugins/specweave/lib/hooks/sync-living-docs.js" \
+  "${SPECWEAVE_PKG:-}/plugins/specweave/lib/hooks/sync-living-docs.js" \
+  "${CLAUDE_PLUGIN_ROOT:-}/lib/hooks/sync-living-docs.js" \
   "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-living-docs.js" \
-  "${CLAUDE_PLUGIN_ROOT:-}/lib/hooks/sync-living-docs.js"; do
+  "$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-living-docs.js"; do
   [[ -f "$path" ]] && { SYNC_SCRIPT="$path"; break; }
 done
 
@@ -137,9 +144,11 @@ case "$EVENT" in
     # See: GitHub Issues #817-#822 (increment 0136) stayed open until manual fix
     CLOSURE_SCRIPT=""
     for path in \
-      "$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-increment-closure.js" \
+      "${SPECWEAVE_PKG:-}/dist/plugins/specweave/lib/hooks/sync-increment-closure.js" \
+      "${SPECWEAVE_PKG:-}/plugins/specweave/lib/hooks/sync-increment-closure.js" \
+      "${CLAUDE_PLUGIN_ROOT:-}/lib/hooks/sync-increment-closure.js" \
       "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-increment-closure.js" \
-      "${CLAUDE_PLUGIN_ROOT:-}/lib/hooks/sync-increment-closure.js"; do
+      "$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-increment-closure.js"; do
       [[ -f "$path" ]] && { CLOSURE_SCRIPT="$path"; break; }
     done
 
@@ -165,9 +174,11 @@ case "$EVENT" in
     # The job runs asynchronously to not block increment closure.
     RESCAN_SCRIPT=""
     for path in \
+      "${SPECWEAVE_PKG:-}/dist/plugins/specweave/lib/hooks/launch-codebase-rescan.js" \
+      "${SPECWEAVE_PKG:-}/plugins/specweave/lib/hooks/launch-codebase-rescan.js" \
+      "${CLAUDE_PLUGIN_ROOT:-}/lib/hooks/launch-codebase-rescan.js" \
       "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/launch-codebase-rescan.js" \
-      "$PROJECT_ROOT/plugins/specweave/lib/hooks/launch-codebase-rescan.js" \
-      "${CLAUDE_PLUGIN_ROOT:-}/lib/hooks/launch-codebase-rescan.js"; do
+      "$PROJECT_ROOT/plugins/specweave/lib/hooks/launch-codebase-rescan.js"; do
       [[ -f "$path" ]] && { RESCAN_SCRIPT="$path"; break; }
     done
 
