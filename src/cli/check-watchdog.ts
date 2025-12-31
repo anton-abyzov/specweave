@@ -10,6 +10,8 @@
  * Output:
  *   - PID of active watchdog (if exists)
  *   - Empty string (if no active watchdog)
+ *
+ * Note: Will exit silently (exit 0) if not a SpecWeave project
  */
 
 import { SessionRegistry } from '../utils/session-registry.js';
@@ -17,6 +19,11 @@ import { consoleLogger } from '../utils/logger.js';
 
 async function main() {
   const registry = new SessionRegistry(process.cwd(), { logger: consoleLogger });
+
+  // If not a valid SpecWeave project, exit silently
+  if (!registry.isValidProject()) {
+    process.exit(0);
+  }
 
   try {
     const sessions = await registry.getAllSessions();

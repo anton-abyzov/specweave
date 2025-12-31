@@ -27,14 +27,38 @@ if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
 fi
 
 # ============================================================================
+# PROJECT ROOT DETECTION (MUST BE FIRST - before any mkdir!)
+# ============================================================================
+
+# Find project root by searching upward for .specweave/ directory
+find_project_root() {
+  local dir="$1"
+  while [ "$dir" != "/" ]; do
+    if [ -d "$dir/.specweave" ]; then
+      echo "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+  return 1  # NOT FOUND - return error, do NOT fallback to pwd
+}
+
+PROJECT_ROOT="$(find_project_root "$(pwd)")"
+if [[ -z "$PROJECT_ROOT" ]]; then
+  # NOT a SpecWeave project - exit silently (no .specweave pollution!)
+  exit 0
+fi
+cd "$PROJECT_ROOT" 2>/dev/null || exit 0
+
+# ============================================================================
 # CIRCUIT BREAKER & FILE LOCKING
 # ============================================================================
 
 # CIRCUIT BREAKER: Auto-disable after consecutive failures
-CIRCUIT_BREAKER_FILE=".specweave/state/.hook-circuit-breaker-github"
+CIRCUIT_BREAKER_FILE="$PROJECT_ROOT/.specweave/state/.hook-circuit-breaker-github"
 CIRCUIT_BREAKER_THRESHOLD=3
 
-mkdir -p ".specweave/state" 2>/dev/null || true
+mkdir -p "$PROJECT_ROOT/.specweave/state" 2>/dev/null || true
 
 if [[ -f "$CIRCUIT_BREAKER_FILE" ]]; then
   FAILURE_COUNT=$(cat "$CIRCUIT_BREAKER_FILE" 2>/dev/null || echo 0)
@@ -45,7 +69,7 @@ if [[ -f "$CIRCUIT_BREAKER_FILE" ]]; then
 fi
 
 # FILE LOCK: Only allow 1 GitHub sync hook at a time
-LOCK_FILE=".specweave/state/.hook-github-sync.lock"
+LOCK_FILE="$PROJECT_ROOT/.specweave/state/.hook-github-sync.lock"
 LOCK_TIMEOUT=15  # seconds (GitHub sync can take longer)
 
 LOCK_ACQUIRED=false
@@ -73,30 +97,7 @@ if [[ "$LOCK_ACQUIRED" == "false" ]]; then
   exit 0
 fi
 
-# ============================================================================
-# PROJECT ROOT DETECTION
-# ============================================================================
-
-# Find project root by searching upward for .specweave/ directory
-find_project_root() {
-  local dir="$1"
-  while [ "$dir" != "/" ]; do
-    if [ -d "$dir/.specweave" ]; then
-      echo "$dir"
-      return 0
-    fi
-    dir="$(dirname "$dir")"
-  done
-  # Fallback: try current directory
-  if [ -d "$(pwd)/.specweave" ]; then
-    pwd
-  else
-    echo "$(pwd)"
-  fi
-}
-
-PROJECT_ROOT="$(find_project_root "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
-cd "$PROJECT_ROOT" 2>/dev/null || true
+# NOTE: PROJECT_ROOT already detected at top of script (before any mkdir)
 
 # ============================================================================
 # CONFIGURATION

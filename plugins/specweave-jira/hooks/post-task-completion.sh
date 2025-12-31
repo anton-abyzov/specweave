@@ -21,7 +21,7 @@ if [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]]; then
 fi
 
 # ============================================================================
-# PROJECT ROOT DETECTION
+# PROJECT ROOT DETECTION (CRITICAL - must NOT fallback to pwd!)
 # ============================================================================
 
 # Find project root by searching upward for .specweave/ directory
@@ -34,16 +34,15 @@ find_project_root() {
     fi
     dir="$(dirname "$dir")"
   done
-  # Fallback: try current directory
-  if [ -d "$(pwd)/.specweave" ]; then
-    pwd
-  else
-    echo "$(pwd)"
-  fi
+  return 1  # NOT FOUND - do NOT fallback to pwd (prevents .specweave pollution)
 }
 
-PROJECT_ROOT="$(find_project_root "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)")"
-cd "$PROJECT_ROOT" 2>/dev/null || true
+PROJECT_ROOT="$(find_project_root "$(pwd)")"
+if [[ -z "$PROJECT_ROOT" ]]; then
+  # NOT a SpecWeave project - exit silently without creating any files
+  exit 0
+fi
+cd "$PROJECT_ROOT" 2>/dev/null || exit 0
 
 # ============================================================================
 # CONFIGURATION

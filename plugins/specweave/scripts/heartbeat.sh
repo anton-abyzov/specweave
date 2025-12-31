@@ -13,8 +13,33 @@
 #
 # Background Usage:
 #   nohup bash heartbeat.sh <session-id> > .specweave/logs/heartbeat-<session-id>.log 2>&1 &
+#
+# v0.35.x - Fixed: Don't create .specweave in non-project directories
 
 set -euo pipefail
+
+# ============================================================================
+# Project Root Detection (MUST BE FIRST)
+# ============================================================================
+
+# Find project root by searching upward for .specweave/ directory
+find_specweave_root() {
+  local dir="$1"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -d "$dir/.specweave" ]]; then
+      echo "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+  return 1  # NOT FOUND - do NOT fallback to pwd
+}
+
+PROJECT_ROOT="$(find_specweave_root "$PWD")"
+if [[ -z "$PROJECT_ROOT" ]]; then
+  # NOT a SpecWeave project - exit silently
+  exit 0
+fi
 
 # ============================================================================
 # Configuration
@@ -22,7 +47,6 @@ set -euo pipefail
 
 SESSION_ID="${1:-}"
 INTERVAL=5  # Heartbeat interval in seconds
-PROJECT_ROOT="${PWD}"
 REGISTRY_FILE="${PROJECT_ROOT}/.specweave/state/.session-registry.json"
 LOG_FILE="${PROJECT_ROOT}/.specweave/logs/heartbeat-${SESSION_ID}.log"
 
@@ -36,7 +60,7 @@ if [[ -z "$SESSION_ID" ]]; then
   exit 1
 fi
 
-# Ensure logs directory exists
+# Ensure logs directory exists (safe - PROJECT_ROOT validated)
 mkdir -p "$(dirname "$LOG_FILE")"
 
 # ============================================================================

@@ -6,10 +6,30 @@
 # Purpose: Clean up session registry and child processes
 #
 # v0.35.3 - Fixed: use set +e for hook safety
+# v0.35.x - Fixed: Don't create .specweave in non-project directories
 
 set +e  # CRITICAL: Never use set -e in hooks (causes cascading failures)
 
-PROJECT_ROOT="${PWD}"
+# Find project root by searching upward for .specweave/ directory
+find_specweave_root() {
+  local dir="$1"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -d "$dir/.specweave" ]]; then
+      echo "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+  return 1  # NOT FOUND - do NOT fallback to pwd
+}
+
+PROJECT_ROOT="$(find_specweave_root "$PWD")"
+if [[ -z "$PROJECT_ROOT" ]]; then
+  # NOT a SpecWeave project - exit silently
+  echo '{"continue": true}'
+  exit 0
+fi
+
 LOG_DIR="${PROJECT_ROOT}/.specweave/logs/sessions"
 
 # Find session by current PID
