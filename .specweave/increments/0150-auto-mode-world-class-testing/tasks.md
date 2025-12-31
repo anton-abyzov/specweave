@@ -257,7 +257,7 @@
 ### T-014: Add manifest check to stop hook
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-05, AC-US4-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Stop hook blocks completion if E2E coverage manifest is incomplete.
@@ -265,11 +265,11 @@
 **Test**: Given manifest with 3/5 routes tested → When checking → Then blocks with coverage gap
 
 **Acceptance**:
-- [ ] Load manifest from .specweave/state/
-- [ ] Calculate coverage percentage
-- [ ] Block if coverage < threshold (configurable, default 80%)
-- [ ] Include untested routes in block message
-- [ ] Skip check if no manifest (non-UI project)
+- [x] Load manifest from .specweave/state/
+- [x] Calculate coverage percentage
+- [x] Block if coverage < threshold (configurable, default 80%)
+- [x] Include untested routes in block message
+- [x] Skip check if no manifest (non-UI project)
 
 ---
 
