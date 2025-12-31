@@ -31,7 +31,7 @@ import { isClaudeCodeAvailable, getClaudeCodeStatus, getAvailableProviders } fro
 
 export interface LivingDocsOptions {
   resume?: string;
-  depth?: 'quick' | 'standard' | 'deep-native' | 'deep-interactive';
+  depth?: 'quick' | 'standard' | 'deep-native';
   priority?: string;
   sources?: string;
   dependsOn?: string;
@@ -328,21 +328,19 @@ async function collectConfiguration(
   // Analysis depth
   const claudeCodeStatus = await getClaudeCodeStatus();
 
-  type DepthChoice = 'quick' | 'standard' | 'deep-native' | 'deep-interactive';
+  type DepthChoice = 'quick' | 'standard' | 'deep-native';
 
   const depthChoices: Array<{ value: DepthChoice; name: string; disabled?: string | false }> = [
     { value: 'quick', name: 'Quick - Structure scan + tech detection + imports + basic inconsistencies + diagrams' },
     { value: 'standard', name: 'Standard - Module analysis + dependencies + team detection + relationships + full diagrams' },
     {
       value: 'deep-native',
-      name: '⭐ Deep - Background (Claude MAX) - AI-powered analysis, org synthesis, enterprise KB - NO EXTRA COST!',
+      name: claudeCodeStatus.available
+        ? '⭐ Deep - Background (Claude MAX) - AI-powered analysis, org synthesis, enterprise KB - NO EXTRA COST! (Recommended)'
+        : 'Deep - Background (Claude MAX) - AI-powered analysis, org synthesis, enterprise KB - NO EXTRA COST!',
       disabled: !claudeCodeStatus.available
         ? (claudeCodeStatus.error || 'Claude Code not available')
         : false,
-    },
-    {
-      value: 'deep-interactive',
-      name: 'Deep - Interactive (this session) - Full enterprise KB in current session (checkpoint/resume)',
     },
   ];
 
