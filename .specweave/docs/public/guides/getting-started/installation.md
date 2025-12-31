@@ -522,6 +522,70 @@ nvm use 18
 # See: https://nodejs.org/
 ```
 
+### ⚠️ CRITICAL: Global packages lost after Node upgrade (nvm)
+
+**If you use nvm and upgrade Node versions, all global packages are LOST!**
+
+This is the most common issue users face. When you switch from Node 18 to Node 22, your `specweave` and `claude` commands will disappear.
+
+**Symptoms:**
+```bash
+$ nvm use 22
+# Now using node v22.0.0
+
+$ specweave --version
+bash: specweave: command not found
+
+$ claude --version
+bash: claude: command not found
+```
+
+**Solution 1: Reinstall packages (Quick Fix)**
+```bash
+# After switching to new Node version
+nvm use 22
+
+# Reinstall global packages
+npm install -g specweave
+npm install -g @anthropic-ai/claude-code
+
+# Verify
+specweave --version
+claude --version
+```
+
+**Solution 2: Auto-copy during upgrade (Recommended)**
+```bash
+# Copy all global packages from Node 18 to Node 22
+nvm install 22 --reinstall-packages-from=18
+
+# Or after install:
+nvm use 22
+nvm reinstall-packages 18
+```
+
+**Solution 3: Backup/restore script (Best Practice)**
+```bash
+# BEFORE switching (save current globals)
+npm list -g --depth=0 --parseable | sed '1d' | awk '{gsub(/.*\//,"",$1); print}' > ~/.nvm-global-packages.txt
+
+# AFTER switching (restore globals)
+nvm use 22
+cat ~/.nvm-global-packages.txt | xargs npm install -g
+```
+
+**Why this happens:**
+
+Each Node version managed by nvm has its own separate `node_modules` directory:
+```
+~/.nvm/versions/node/
+├── v18.20.0/lib/node_modules/  ← Node 18 globals
+├── v20.11.0/lib/node_modules/  ← Node 20 globals (empty!)
+└── v22.0.0/lib/node_modules/   ← Node 22 globals (empty!)
+```
+
+**See detailed guide:** [Node Version Management Runbook](../../internal/operations/runbook-node-version-management.md)
+
 ### npm version too old
 
 ```bash

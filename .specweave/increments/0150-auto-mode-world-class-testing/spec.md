@@ -36,9 +36,9 @@ Current `/sw:auto` has critical gaps that prevent it from delivering world-class
 **So that** I get proper planning before execution starts
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: When prompt describes 3+ features, auto creates separate increments
-- [ ] **AC-US1-02**: Each increment is 5-15 tasks (sweet spot)
-- [ ] **AC-US1-03**: Dependencies between increments are identified
+- [x] **AC-US1-01**: When prompt describes 3+ features, auto creates separate increments
+- [x] **AC-US1-02**: Each increment is 5-15 tasks (sweet spot)
+- [x] **AC-US1-03**: Dependencies between increments are identified
 - [ ] **AC-US1-04**: User is shown increment plan before execution starts
 - [ ] **AC-US1-05**: User can approve/modify plan before auto continues
 
