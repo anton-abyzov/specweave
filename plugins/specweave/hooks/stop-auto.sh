@@ -415,6 +415,56 @@ if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
 fi
 
 # ============================================================================
+# E2E COVERAGE MANIFEST CHECK (NEW - v2.0)
+# Verifies route/viewport coverage before allowing completion
+# ============================================================================
+
+# Check E2E coverage manifest and return gap report
+check_e2e_coverage() {
+    local manifest_file="$STATE_DIR/e2e-manifest.json"
+
+    # No manifest = non-UI project, skip check
+    if [ ! -f "$manifest_file" ]; then
+        echo '{"hasManifest":false,"coverage":{"routes":0,"viewports":0},"gaps":[]}'
+        return
+    fi
+
+    # Read manifest
+    local manifest=$(cat "$manifest_file")
+
+    # Extract coverage stats
+    local route_coverage=$(echo "$manifest" | jq -r '.coverage.routes // 0')
+    local viewport_coverage=$(echo "$manifest" | jq -r '.coverage.viewports // 0')
+
+    # Get untested routes
+    local untested_routes=$(echo "$manifest" | jq -c '[.routes | to_entries[] | select(.value.tested == false) | .key]')
+    local untested_count=$(echo "$untested_routes" | jq 'length')
+
+    # Get routes with missing viewports
+    local incomplete_viewports=$(echo "$manifest" | jq -c '[.routes | to_entries[] | select(.value.tested == true and (.value.viewports | length) < 3) | {route: .key, missing: (["mobile","tablet","desktop"] - .value.viewports)}]')
+
+    # Get viewport coverage flags
+    local mobile=$(echo "$manifest" | jq -r '.viewportsCovered.mobile // false')
+    local tablet=$(echo "$manifest" | jq -r '.viewportsCovered.tablet // false')
+    local desktop=$(echo "$manifest" | jq -r '.viewportsCovered.desktop // false')
+
+    # Build gaps array
+    local gaps="[]"
+    if [ "$untested_count" -gt 0 ]; then
+        gaps=$(echo "$untested_routes" | jq 'map({type: "untested_route", route: .})')
+    fi
+
+    # Add missing viewports to gaps
+    local incomplete_count=$(echo "$incomplete_viewports" | jq 'length')
+    if [ "$incomplete_count" -gt 0 ]; then
+        local viewport_gaps=$(echo "$incomplete_viewports" | jq 'map({type: "missing_viewports", route: .route, missing: .missing})')
+        gaps=$(echo "[$gaps, $viewport_gaps]" | jq 'add')
+    fi
+
+    echo "{\"hasManifest\":true,\"coverage\":{\"routes\":$route_coverage,\"viewports\":$viewport_coverage},\"gaps\":$gaps,\"viewports\":{\"mobile\":$mobile,\"tablet\":$tablet,\"desktop\":$desktop},\"untestedCount\":$untested_count}"
+}
+
+# ============================================================================
 # TASK COMPLETION CHECK
 # ============================================================================
 

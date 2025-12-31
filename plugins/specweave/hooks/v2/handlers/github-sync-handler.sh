@@ -11,9 +11,14 @@
 # Root cause: GitHub issues were created but NEVER UPDATED when User Stories completed!
 #
 # IMPORTANT: Never crash Claude, always exit 0
+# v1.0.71 - Fixed: Use specweave package location, not PROJECT_ROOT/dist
 set +e
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
+
+# Resolve specweave package location (do this early, before PROJECT_ROOT)
+HANDLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$HANDLER_DIR/../../lib/resolve-package.sh" 2>/dev/null || true
 
 # Parse arguments - support multiple formats
 EVENT_TYPE="${1:-}"
@@ -199,13 +204,16 @@ SYNC_SCRIPT=""
 NEEDS_TSX=false
 
 # Paths to check - JS files first, then TS files
+# SPECWEAVE_PKG takes priority (resolved from npm package location)
 JS_PATHS=(
+  "${SPECWEAVE_PKG:-}/dist/plugins/specweave-github/lib/github-feature-sync-cli.js"
   "$PROJECT_ROOT/dist/plugins/specweave-github/lib/github-feature-sync-cli.js"
   "$HOME/.claude/plugins/cache/specweave/sw-github/*/lib/github-feature-sync-cli.js"
   "${CLAUDE_PLUGIN_ROOT:-}/lib/github-feature-sync-cli.js"
 )
 
 TS_PATHS=(
+  "${SPECWEAVE_PKG:-}/plugins/specweave-github/lib/github-feature-sync-cli.ts"
   "$PROJECT_ROOT/plugins/specweave-github/lib/github-feature-sync-cli.ts"
   "$HOME/.claude/plugins/marketplaces/specweave/plugins/specweave-github/lib/github-feature-sync-cli.ts"
   "$HOME/.claude/plugins/cache/specweave/sw-github/*/lib/github-feature-sync-cli.ts"

@@ -180,7 +180,7 @@
 ### T-010: Add user approval step for increment plan
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-04, AC-US1-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Before creating increments, show plan to user and get approval.
@@ -188,18 +188,18 @@
 **Test**: Given increment plan → When showing to user → Then waits for approval/modification
 
 **Acceptance**:
-- [ ] Display plan with increment names and task estimates
-- [ ] Show dependencies between increments
-- [ ] Allow user to approve, modify, or cancel
-- [ ] Support --yes flag to skip approval
-- [ ] Log approved plan
+- [x] Display plan with increment names and task estimates
+- [x] Show dependencies between increments
+- [x] Allow user to approve, modify, or cancel
+- [x] Support --yes flag to skip approval
+- [x] Log approved plan
 
 ---
 
 ### T-011: Integrate chunking into /sw:auto command
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01, AC-US1-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Update auto.md command and setup-auto.sh to use chunking when big prompt provided.
@@ -207,11 +207,11 @@
 **Test**: Given /sw:auto "big feature" → When executing → Then chunks before setup
 
 **Acceptance**:
-- [ ] Detect when prompt (not increment ID) is provided
-- [ ] Call prompt-chunker for analysis
-- [ ] Create increments via /sw:increment
-- [ ] Queue created increments in session
-- [ ] Update auto.md documentation
+- [x] Detect when prompt (not increment ID) is provided
+- [x] Call prompt-chunker for analysis
+- [x] Create increments via /sw:increment
+- [x] Queue created increments in session
+- [x] Update auto.md documentation
 
 ---
 
@@ -220,7 +220,7 @@
 ### T-012: Create E2E coverage manifest generator
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-01, AC-US4-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Auto-generate manifest from project routes (Next.js, React Router, etc.).
@@ -228,18 +228,18 @@
 **Test**: Given Next.js app with /pages → When generating → Then manifest includes all routes
 
 **Acceptance**:
-- [ ] Detect framework (Next.js pages/app, React Router, etc.)
-- [ ] Extract all routes from file structure
-- [ ] Create .specweave/state/e2e-manifest.json
-- [ ] Mark routes as tested: false initially
-- [ ] Support manual routes.json override
+- [x] Detect framework (Next.js pages/app, React Router, etc.)
+- [x] Extract all routes from file structure
+- [x] Create .specweave/state/e2e-manifest.json
+- [x] Mark routes as tested: false initially
+- [x] Support manual routes.json override
 
 ---
 
 ### T-013: Track route coverage during test runs
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-02, AC-US4-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Update manifest as E2E tests execute and visit routes.
@@ -247,10 +247,10 @@
 **Test**: Given E2E test visiting /login → When parsing output → Then manifest marks /login as tested
 
 **Acceptance**:
-- [ ] Parse playwright output for page.goto() calls
-- [ ] Update manifest with tested routes
-- [ ] Track which viewports tested each route
-- [ ] Persist updated manifest
+- [x] Parse playwright output for page.goto() calls
+- [x] Update manifest with tested routes
+- [x] Track which viewports tested each route
+- [x] Persist updated manifest
 
 ---
 

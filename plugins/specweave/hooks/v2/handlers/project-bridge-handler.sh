@@ -22,6 +22,7 @@
 #                              Adapter           Adapter         Adapter
 #
 # IMPORTANT: Never crash Claude, always exit 0
+# v1.0.71 - Fixed: Use specweave package location, not PROJECT_ROOT/dist
 set +e
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
@@ -38,6 +39,10 @@ while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
   PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
 done
 [[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
+
+# Resolve specweave package location
+HANDLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$HANDLER_DIR/../../lib/resolve-package.sh" 2>/dev/null || true
 
 # Throttle: max once per 2 minutes per increment for project sync
 # (More aggressive throttle since this triggers external API calls)
@@ -62,12 +67,14 @@ LOG_FILE="$PROJECT_ROOT/.specweave/logs/hooks.log"
 mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] project-bridge-handler: $EVENT_TYPE $EVENT_DATA" >> "$LOG_FILE" 2>/dev/null
 
-# Find the bridge script
+# Find the bridge script (check SPECWEAVE_PKG first)
 BRIDGE_SCRIPT=""
 for path in \
+  "${SPECWEAVE_PKG:-}/dist/plugins/specweave/lib/hooks/project-bridge.js" \
+  "${SPECWEAVE_PKG:-}/plugins/specweave/lib/hooks/project-bridge.js" \
+  "${CLAUDE_PLUGIN_ROOT:-}/lib/hooks/project-bridge.js" \
   "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/project-bridge.js" \
-  "$PROJECT_ROOT/plugins/specweave/lib/hooks/project-bridge.js" \
-  "${CLAUDE_PLUGIN_ROOT:-}/lib/hooks/project-bridge.js"; do
+  "$PROJECT_ROOT/plugins/specweave/lib/hooks/project-bridge.js"; do
   [[ -f "$path" ]] && { BRIDGE_SCRIPT="$path"; break; }
 done
 
