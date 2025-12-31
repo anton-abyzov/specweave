@@ -535,6 +535,7 @@ export async function initCommand(
 
     // Auto-install plugins for Claude ONLY
     let autoInstallSucceeded = false;
+    let marketplaceOnly = false;
     if (toolName === 'claude') {
       // CRITICAL FIX (v0.34.6): Skip plugin installation in "continue existing" mode
       if (continueExisting) {
@@ -543,6 +544,7 @@ export async function initCommand(
       } else {
         const result = await installAllPlugins({ dirname: __dirname, forceRefresh: options.forceRefresh });
         autoInstallSucceeded = result.success;
+        marketplaceOnly = result.marketplaceOnly || false;
       }
     }
 
@@ -733,7 +735,7 @@ export async function initCommand(
     // which cannot be determined automatically at init time.
     // Users should create increments explicitly via /sw:increment command.
 
-    showNextSteps(finalProjectName, toolName, language, usedDotNotation, toolName === 'claude' ? autoInstallSucceeded : undefined);
+    showNextSteps(finalProjectName, toolName, language, usedDotNotation, toolName === 'claude' ? { pluginAutoInstalled: autoInstallSucceeded, marketplaceOnly } : undefined);
   } catch (error) {
     spinner.fail('Failed to create project');
     console.error(chalk.red('\n' + locale.t('cli', 'init.genericError')), error);
