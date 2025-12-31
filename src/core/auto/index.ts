@@ -92,3 +92,18 @@ export {
   type SyncResult,
   type CheckpointResult,
 } from './sync-checkpoint.js';
+
+// Prompt Chunking (Intelligent Auto Mode)
+export {
+  extractFeatures,
+  analyzePrompt,
+  type Feature,
+  type PromptAnalysis,
+} from './prompt-chunker.js';
+
+// Increment Planning (Auto Mode)
+export {
+  planIncrements,
+  type IncrementPlan,
+  type PlanningResult,
+} from './increment-planner.js';
