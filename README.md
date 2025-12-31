@@ -1,8 +1,8 @@
 # SpecWeave
 
-**Finally. A Spec-Driven AI Framework That Works on Legacy, Startup, AND Enterprise.**
+**The AI Development Framework That Can Run for Hours Autonomously.**
 
-*Drop it into a 10-year-old codebase — it understands everything. Use it on your weekend MVP — specs write themselves. Scale it to 50 teams — JIRA, GitHub, Azure DevOps sync automatically.*
+*Ship features while you sleep. `/sw:auto` executes tasks, runs tests, fixes failures, and syncs to GitHub/JIRA — completely hands-off. Mobile apps, microservices, multi-repo architectures — one framework handles it all.*
 
 [![NPM Version](https://img.shields.io/npm/v/specweave?color=brightgreen)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -13,6 +13,8 @@
 ```bash
 npm install -g specweave
 ```
+
+> **New in v1.0.62**: Auto mode can now run for hours — tested and proven. Mobile app generation, multi-repo coordination, E2E tests running automatically.
 
 ---
 
@@ -32,11 +34,17 @@ Every AI coding tool promises productivity. But after the chat ends:
 
 ---
 
-## SpecWeave: AI Decisions Become Permanent Documentation
+## SpecWeave: AI That Works While You Sleep
 
 ```bash
 /sw:increment "Add OAuth authentication"  # Creates spec + plan + tasks
-/sw:do                                     # AI builds autonomously
+/sw:auto                                   # 🚀 Autonomous execution for HOURS
+# ↑ This can run for hours, executing tasks, running tests, fixing failures
+```
+
+**Or step-by-step control:**
+```bash
+/sw:do                                     # Execute one task at a time
 /sw:done 0001                              # Validates: tests pass, docs updated
 ```
 
@@ -53,19 +61,21 @@ Every AI coding tool promises productivity. But after the chat ends:
 
 ---
 
-## Why Not BMAD or SpecKit?
+## Why SpecWeave vs BMAD, SpecKit, Cursor Rules?
 
-| | [BMAD](https://github.com/bmad-code-org/BMAD-METHOD) | [SpecKit](https://github.com/github/spec-kit) | **SpecWeave** |
-|---|---|---|---|
-| **Status** | Alpha (v6) | Stable | **Production (v1.0.22)** |
-| **Lifecycle** | Manual agent switching | Single-use specs | **Full increment lifecycle** |
-| **External Sync** | None | None | **GitHub/JIRA/ADO bidirectional** |
-| **Brownfield** | Limited | Greenfield only | **10-year legacy? Fine.** |
-| **Documentation** | Manual | Snapshot (static) | **Living docs (auto-update)** |
-| **Quality Gates** | Not built-in | None | **3-gate (tasks/tests 60%+/docs)** |
-| **Dogfooding** | Unknown | Unknown | **140+ self-built features** |
+| | [BMAD](https://github.com/bmad-code-org/BMAD-METHOD) | [SpecKit](https://github.com/github/spec-kit) | Cursor Rules | **SpecWeave** |
+|---|---|---|---|---|
+| **Status** | Alpha (v6) | Stable | Built-in | **Production (v1.0.62)** |
+| **Autonomous** | ❌ Manual steps | ❌ One-shot | ❌ Per-request | **✅ Hours of autonomous work** |
+| **Multi-Repo** | ❌ Single repo | ❌ Single repo | ❌ Single repo | **✅ Coordinate multiple repos** |
+| **Mobile Apps** | ❌ No agents | ❌ No agents | ❌ No agents | **✅ React Native/Expo specialist** |
+| **External Sync** | ❌ None | ❌ None | ❌ None | **✅ GitHub/JIRA/ADO bidirectional** |
+| **Brownfield** | Limited | Greenfield only | Any | **✅ 10-year legacy? Fine.** |
+| **Quality Gates** | Not built-in | None | None | **✅ 3-gate (tasks/tests/docs)** |
+| **Living Docs** | Manual | Snapshot | None | **✅ Auto-update on every task** |
+| **Dogfooding** | Unknown | Unknown | N/A | **✅ 140+ self-built features** |
 
-**The math**: SpecKit output = ONE SpecWeave increment. SpecWeave = N increments + lifecycle + sync + hooks.
+**The math**: SpecKit output = ONE SpecWeave increment. SpecWeave = N increments + lifecycle + sync + hooks + **autonomous execution**.
 
 ---
 
@@ -100,8 +110,19 @@ specweave init .
 Then in Claude Code:
 ```bash
 /sw:increment "Add dark mode"  # AI creates spec + plan + tasks
-/sw:do                         # Autonomous implementation
+/sw:auto                       # 🚀 Ship while you sleep (hours of autonomous work)
+```
+
+**Or step-by-step:**
+```bash
+/sw:do                         # Execute tasks one at a time
 /sw:done 0001                  # Quality-validated completion
+```
+
+**Troubleshooting** - if commands/skills stop working:
+```bash
+specweave refresh-marketplace   # Reinstall all plugins from GitHub
+specweave update-instructions   # Regenerate CLAUDE.md
 ```
 
 **[Full Quickstart Guide →](https://spec-weave.com/docs/guides/getting-started/quickstart)**
@@ -161,9 +182,12 @@ Three gates before any increment closes:
 | Command | Purpose |
 |---------|---------|
 | `/sw:increment "feature"` | Create spec + plan + tasks |
-| `/sw:do` | Execute autonomously |
+| `/sw:auto` | 🚀 **Ship while you sleep** - hours of autonomous work |
+| `/sw:do` | Execute one task at a time |
 | `/sw:done 0001` | Close with quality validation |
 | `/sw:sync-progress` | Push to GitHub/JIRA/ADO |
+| `/sw:auto-status` | Check autonomous session progress |
+| `/sw:cancel-auto` | Stop autonomous session |
 
 **[53 total commands →](https://spec-weave.com/docs/commands/overview)**
 

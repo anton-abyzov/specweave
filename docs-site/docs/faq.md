@@ -506,6 +506,30 @@ See [ADR-0140](/docs/architecture/adr/0140-code-over-mcp) for the full technical
 
 ---
 
+## Installation Issues
+
+### "SyntaxError: Unexpected token 'with'"
+
+**Your Node.js version is too old.** SpecWeave requires **Node.js 20.12.0 or higher** (we recommend Node.js 22 LTS).
+
+**Quick check:**
+```bash
+node --version
+# If below v20.12.0, you need to upgrade
+```
+
+**Solution**: See [detailed upgrade instructions](/docs/guides/troubleshooting/common-errors#node-version-error) for all platforms (macOS, Linux, Windows) and version managers (nvm, fnm, Volta, asdf, Homebrew).
+
+**Quick fix for nvm users:**
+```bash
+nvm install 22
+nvm use 22
+nvm alias default 22
+npm install -g specweave
+```
+
+---
+
 ## Getting Started
 
 ### I'm new to SpecWeave. Where do I start?
@@ -513,7 +537,7 @@ See [ADR-0140](/docs/architecture/adr/0140-code-over-mcp) for the full technical
 **Quick Start** (5 minutes):
 
 ```bash
-# 1. Install SpecWeave
+# 1. Install SpecWeave (requires Node.js 20.12.0+)
 npm install -g specweave
 
 # 2. Initialize your project
@@ -674,6 +698,108 @@ See `/docs/auth-design.md` for existing system details.
 
 ---
 
+---
+
+## Troubleshooting & Recovery
+
+### Commands not working? Skills not loading?
+
+**Quick Fix** - Run these two commands to recover from most issues:
+
+```bash
+# Refresh plugins and skills from GitHub marketplace
+specweave refresh-marketplace
+
+# Update CLAUDE.md with latest instructions
+specweave update-instructions
+```
+
+**When to use these commands:**
+- ✅ Claude Code was updated and skills stopped working
+- ✅ Commands like `/sw:increment` not recognized
+- ✅ Hooks not firing properly
+- ✅ Agents not spawning or behaving unexpectedly
+- ✅ After upgrading SpecWeave version
+
+**What they do:**
+- `specweave refresh-marketplace` - Pulls latest plugins from GitHub, reinstalls all 24 plugins with 136 skills, 68 agents, 53 commands
+- `specweave update-instructions` - Regenerates CLAUDE.md with current SpecWeave version instructions
+
+### Auto Mode Issues
+
+**Session stuck or not completing?**
+```bash
+# Check session status
+/sw:auto-status
+
+# Cancel current session
+/sw:cancel-auto
+
+# Resume with fresh session
+/sw:auto
+```
+
+**Tests not running in auto mode?**
+
+Auto mode requires tests to actually execute before completion. If you see:
+- "All tasks marked complete but NO TEST EXECUTION detected"
+- "E2E tests exist but were NOT executed"
+
+Run tests explicitly, then auto mode will complete:
+```bash
+npm test
+npx playwright test
+```
+
+### Skills not activating?
+```bash
+ls -la .claude/skills/
+# Should see 17+ SpecWeave skills
+
+# If missing, reinstall:
+specweave refresh-marketplace
+```
+
+### Commands not found?
+```bash
+ls -la .claude/commands/
+# Should see 22+ command files
+
+# If missing:
+specweave refresh-marketplace
+```
+
+### Hooks not firing?
+
+```bash
+# Check hooks are installed
+ls -la .claude/hooks/
+
+# Verify hook output
+cat .specweave/logs/hook*.log
+
+# Reinstall hooks:
+specweave init .
+# Select: "Continue working"
+```
+
+### Errors during Bash or Edit tool calls?
+
+**Install latest SpecWeave:**
+```bash
+npm install -g specweave@latest
+specweave refresh-marketplace
+specweave update-instructions
+```
+
+**Clear stale state:**
+```bash
+rm -f .specweave/state/*.lock
+rm -rf .specweave/state/.dedup-cache
+```
+
+---
+
 ## Still Have Questions?
 
 **Resources**:
@@ -681,13 +807,14 @@ See `/docs/auth-design.md` for existing system details.
 - **GitHub Sync**: [GitHub Integration](./guides/github-sync)
 - **Architecture**: [System Architecture](./architecture/overview)
 - **GitHub Issues**: [Ask a Question](https://github.com/anton-abyzov/specweave/issues/new)
-- **Discord**: [Join Community](https://discord.gg/specweave) *(coming soon)*
+- **Discord**: [Join Community](https://discord.gg/UYg4BGJ65V)
 
 **Common Follow-Ups**:
 - "How do I sync with Jira?" → See [Jira Plugin](./plugins/jira-sync)
 - "Can I use SpecWeave with Cursor?" → See [Tool Support](./guides/tool-support)
 - "What's the increment lifecycle?" → See [Increment Guide](./guides/increment-lifecycle)
+- "How do I use auto mode?" → See [Auto Mode Guide](#auto-mode-issues) above
 
 ---
 
-**Last Updated**: 2025-12-24
+**Last Updated**: 2025-12-30

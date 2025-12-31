@@ -12,6 +12,132 @@ When you encounter an error, search for it here first.
 
 ## Command Line Errors
 
+### "SyntaxError: Unexpected token 'with'" {#node-version-error}
+
+**Cause**: Your Node.js version is too old. SpecWeave requires **Node.js 20.12.0 or higher**.
+
+This error occurs because SpecWeave uses modern JavaScript features (Import Attributes syntax) that are only available in newer Node.js versions.
+
+**Full error looks like**:
+```
+import spinners from './spinners.json' with {type: 'json'};
+                                       ^^^^
+SyntaxError: Unexpected token 'with'
+```
+
+**Solution**:
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+  <TabItem value="nvm" label="nvm (Recommended)" default>
+
+```bash
+# Install nvm if you don't have it
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+
+# Restart your terminal, then:
+nvm install 22
+nvm use 22
+nvm alias default 22
+
+# Verify
+node --version  # Should show v22.x.x
+```
+
+  </TabItem>
+  <TabItem value="fnm" label="fnm (Fast Node Manager)">
+
+```bash
+# Install fnm
+curl -fsSL https://fnm.vercel.app/install | bash
+
+# Restart your terminal, then:
+fnm install 22
+fnm use 22
+fnm default 22
+
+# Verify
+node --version
+```
+
+  </TabItem>
+  <TabItem value="volta" label="Volta">
+
+```bash
+# Install Volta
+curl https://get.volta.sh | bash
+
+# Restart your terminal, then:
+volta install node@22
+
+# Verify
+node --version
+```
+
+  </TabItem>
+  <TabItem value="brew" label="Homebrew (macOS)">
+
+```bash
+# Install or upgrade Node.js
+brew install node@22
+
+# Link it
+brew link node@22 --force --overwrite
+
+# Verify
+node --version
+```
+
+  </TabItem>
+  <TabItem value="windows" label="Windows">
+
+```powershell
+# Option 1: Using nvm-windows
+# Download from: https://github.com/coreybutler/nvm-windows/releases
+nvm install 22
+nvm use 22
+
+# Option 2: Direct download
+# Download from: https://nodejs.org/en/download/
+# Choose "LTS" version (22.x)
+
+# Verify
+node --version
+```
+
+  </TabItem>
+  <TabItem value="linux" label="Linux (apt/yum)">
+
+```bash
+# Ubuntu/Debian using NodeSource
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# RHEL/CentOS/Fedora
+curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
+sudo yum install -y nodejs
+
+# Verify
+node --version
+```
+
+  </TabItem>
+</Tabs>
+
+**After upgrading**, reinstall SpecWeave:
+```bash
+npm install -g specweave
+specweave init .
+```
+
+:::tip Why Node.js 22?
+We recommend Node.js 22 (current LTS) for best performance and compatibility. Node.js 20.12.0+ also works but 22 is preferred.
+:::
+
+---
+
 ### "command not found: node"
 
 **Cause**: Node.js is not installed or not in PATH.
@@ -25,8 +151,8 @@ brew install node
 choco install nodejs
 
 # Linux (using nvm - recommended)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-nvm install --lts
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+nvm install 22
 
 # Verify installation
 node --version
@@ -406,16 +532,33 @@ npm run migrate
 
 ## SpecWeave Errors
 
+### Quick Recovery (Most Common Issues)
+
+**Commands, skills, or hooks stopped working?**
+
+Run these two commands to recover from most issues:
+```bash
+specweave refresh-marketplace   # Reinstall all plugins from GitHub
+specweave update-instructions   # Regenerate CLAUDE.md
+```
+
+**When to use:**
+- After Claude Code updates
+- Skills not activating
+- Commands not recognized
+- Hooks not firing
+- Agents not spawning
+
 ### "specweave: command not found"
 
 **Cause**: SpecWeave not installed globally.
 
-**Note**: SpecWeave runs through Claude Code, not as a CLI command.
+**Solution**:
+```bash
+npm install -g specweave
+```
 
-**Solution**: Use SpecWeave commands within Claude Code:
-```
-/sw:increment "feature name"
-```
+Note: SpecWeave slash commands (`/sw:increment`, etc.) run through Claude Code, not as direct CLI commands.
 
 ### "No active increment found"
 
@@ -462,12 +605,52 @@ export GITHUB_TOKEN=ghp_xxxx
 echo "GITHUB_TOKEN=ghp_xxxx" >> .env
 ```
 
+### Auto Mode Issues
+
+**Session stuck or not completing?**
+```bash
+/sw:auto-status   # Check what's happening
+/sw:cancel-auto   # Cancel if needed
+/sw:auto          # Resume with fresh session
+```
+
+**Tests not running in auto mode?**
+
+Auto mode requires tests to actually execute before completion. If you see:
+- "All tasks marked complete but NO TEST EXECUTION detected"
+- "E2E tests exist but were NOT executed"
+
+Run tests explicitly:
+```bash
+npm test
+npx playwright test
+```
+
+### Errors during Bash or Edit tool calls
+
+**Cause**: Stale plugins or outdated instructions.
+
+**Solution**:
+```bash
+npm install -g specweave@latest
+specweave refresh-marketplace
+specweave update-instructions
+```
+
+**Clear stale state:**
+```bash
+rm -f .specweave/state/*.lock
+rm -rf .specweave/state/.dedup-cache
+```
+
 ---
 
 ## Quick Fixes Summary
 
 | Error | Quick Fix |
 |-------|-----------|
+| SpecWeave skills/commands broken | `specweave refresh-marketplace && specweave update-instructions` |
+| Auto mode stuck | `/sw:auto-status` then `/sw:cancel-auto` |
 | "command not found" | Install the tool |
 | "permission denied" | Use nvm or fix npm permissions |
 | "ERESOLVE" | `npm install --legacy-peer-deps` |

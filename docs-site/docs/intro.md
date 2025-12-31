@@ -4,12 +4,18 @@ sidebar_position: 1
 
 # SpecWeave
 
-**The AI Development Framework That Doesn't Lose Your Work**
+**The AI Development Framework That Can Run for Hours Autonomously**
+
+*Ship features while you sleep. Mobile apps, microservices, multi-repo architectures — one framework handles it all.*
 
 [![NPM Version](https://img.shields.io/npm/v/specweave?color=blue)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UYg4BGJ65V)
 [![YouTube](https://img.shields.io/badge/YouTube-Tutorials-red?logo=youtube&logoColor=white)](https://www.youtube.com/@antonabyzov)
+
+:::tip New in v1.0.62 — Autonomous Execution!
+`/sw:auto` can now run for **hours** — executing tasks, running tests, fixing failures, and syncing to GitHub/JIRA automatically. Tested and proven on mobile apps, multi-repo microservices, and E2E test suites.
+:::
 
 ---
 
@@ -67,14 +73,27 @@ specweave init .
 Then in Claude Code:
 ```bash
 /sw:increment "Add dark mode toggle"  # AI creates spec + plan + tasks
-/sw:do                                # Autonomous implementation
+/sw:auto                              # 🚀 Ship while you sleep (hours of autonomous work)
+```
+
+**Or step-by-step control:**
+```bash
+/sw:do                                # Execute one task at a time
 /sw:done 0001                         # Quality-validated completion
 ```
 
 **Pro tip**: Use `/sw:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
 
 :::tip Keep Increments Small — 2-3x Faster with Opus 4.5!
-**5-15 tasks, 1-3 user stories, completable in 1-3 days.** With **Claude Opus 4.5**, development speed increases **2-3x** (some report **5-10x**!). Small increments + Opus 4.5 = almost **no manual interaction**. Just define requirements, run `/sw:do`, and review what's done.
+**5-15 tasks, 1-3 user stories, completable in 1-3 days.** With **Claude Opus 4.5**, development speed increases **2-3x** (some report **5-10x**!). Small increments + Opus 4.5 = almost **no manual interaction**. Just define requirements, run `/sw:auto`, and review what's done.
+:::
+
+:::info Troubleshooting
+If commands/skills stop working after a Claude Code update:
+```bash
+specweave refresh-marketplace   # Reinstall all plugins from GitHub
+specweave update-instructions   # Regenerate CLAUDE.md
+```
 :::
 
 :::caution Prevent Claude Code Crashes
@@ -266,11 +285,14 @@ Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically an
 | Command | Purpose |
 |---------|---------|
 | `/sw:increment "feature"` | Plan new increment (PM -> Architect -> Tasks) |
-| `/sw:do` | Execute all tasks autonomously |
+| `/sw:auto` | 🚀 **Ship while you sleep** - hours of autonomous work |
+| `/sw:do` | Execute one task at a time |
 | `/sw:done 0001` | Complete with quality gate validation |
 | `/sw:progress` | Show real-time status |
 | `/sw:validate 0001` | Run quality checks |
 | `/sw:sync-progress` | Sync to GitHub/JIRA/ADO |
+| `/sw:auto-status` | Check autonomous session progress |
+| `/sw:cancel-auto` | Stop autonomous session |
 | `/sw:tdd-cycle` | Full red-green-refactor workflow |
 
 **[Full Command Reference](./reference/commands/overview)**
@@ -279,9 +301,13 @@ Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically an
 
 ## Requirements
 
-- Node.js 20+
+- **Node.js 20.12.0+** (we recommend Node.js 22 LTS) — [upgrade guide](/docs/guides/troubleshooting/common-errors#node-version-error)
 - Claude Code with **Claude Opus 4.5** (recommended) — [released Nov 2025](https://www.anthropic.com/news/claude-opus-4-5)
 - Git repository
+
+:::caution Node.js Version
+If you see `SyntaxError: Unexpected token 'with'`, your Node.js is too old. Run `node --version` — you need **20.12.0 or higher**. See [upgrade instructions](/docs/guides/troubleshooting/common-errors#node-version-error).
+:::
 
 ---
 
