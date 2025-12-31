@@ -529,6 +529,77 @@ Continue with /sw:do to start the next increment."
     fi
 fi
 
+# ============================================================================
+# LIVING DOCS UPDATE CHECK
+# ============================================================================
+
+LIVING_DOCS_CHECKPOINT="$STATE_DIR/living-docs-checkpoint.json"
+
+if [ -f "$LIVING_DOCS_CHECKPOINT" ]; then
+    CURRENT_PHASE=$(jq -r '.currentPhase // "unknown"' "$LIVING_DOCS_CHECKPOINT")
+    COMPLETED_PHASES=$(jq -r '.completedPhases | length' "$LIVING_DOCS_CHECKPOINT")
+    TOTAL_PHASES=$(jq -r '.totalPhases // 8' "$LIVING_DOCS_CHECKPOINT")
+    PHASE_NAMES=("A:Discovery" "B:Deep Analysis" "C:Org Synthesis" "D:Architecture" "E:Inconsistencies" "F:Strategy" "G:Enterprise" "H:Diagrams")
+
+    if [ "$COMPLETED_PHASES" -lt "$TOTAL_PHASES" ]; then
+        # Map phase letter to name
+        case "$CURRENT_PHASE" in
+            A) PHASE_NAME="Discovery" ;;
+            B) PHASE_NAME="Deep Analysis" ;;
+            C) PHASE_NAME="Org Synthesis" ;;
+            D) PHASE_NAME="Architecture" ;;
+            E) PHASE_NAME="Inconsistencies" ;;
+            F) PHASE_NAME="Strategy" ;;
+            G) PHASE_NAME="Enterprise" ;;
+            H) PHASE_NAME="Diagrams" ;;
+            *) PHASE_NAME="Unknown" ;;
+        esac
+
+        PROGRESS_PCT=$((COMPLETED_PHASES * 100 / TOTAL_PHASES))
+
+        # Build phase status list
+        PHASE_STATUS=""
+        for i in {0..7}; do
+            PHASE_LETTER=$(echo "${PHASE_NAMES[$i]}" | cut -d: -f1)
+            PHASE_LABEL=$(echo "${PHASE_NAMES[$i]}" | cut -d: -f2)
+            if [ $i -lt "$COMPLETED_PHASES" ]; then
+                PHASE_STATUS="${PHASE_STATUS}  ✅ Phase $PHASE_LETTER: $PHASE_LABEL\n"
+            elif [ "$PHASE_LETTER" = "$CURRENT_PHASE" ]; then
+                PHASE_STATUS="${PHASE_STATUS}  🔄 Phase $PHASE_LETTER: $PHASE_LABEL (in progress)\n"
+            else
+                PHASE_STATUS="${PHASE_STATUS}  ⏳ Phase $PHASE_LETTER: $PHASE_LABEL\n"
+            fi
+        done
+
+        # Log living docs progress
+        echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"living_docs_progress\",\"phase\":\"$CURRENT_PHASE\",\"completed\":$COMPLETED_PHASES,\"total\":$TOTAL_PHASES}" >> "$LOGS_DIR/auto-iterations.log"
+
+        block "Living docs update in progress" "📚 LIVING DOCS UPDATE ($PROGRESS_PCT% complete)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Current Phase: $PHASE_NAME
+Progress: $COMPLETED_PHASES/$TOTAL_PHASES phases complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Phase Status:
+$(echo -e "$PHASE_STATUS")
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Continue with /sw:do to proceed with living docs update.
+This will run for multiple iterations until all phases complete.
+
+💡 Living docs runs in chunked mode (2 hours/iteration) and saves
+   checkpoints after each phase. Safe to interrupt anytime!"
+    fi
+
+    # All phases complete - clean up and allow exit
+    if [ "$COMPLETED_PHASES" -eq "$TOTAL_PHASES" ]; then
+        rm -f "$LIVING_DOCS_CHECKPOINT"
+        echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"living_docs_complete\",\"phases\":$TOTAL_PHASES}" >> "$LOGS_DIR/auto-iterations.log"
+        # Don't approve exit here - let normal task completion flow handle it
+    fi
+fi
+
 # Check for human gate pending
 PENDING_GATE=$(echo "$SESSION" | jq -r '.humanGates.pending // null')
 if [ "$PENDING_GATE" != "null" ]; then

@@ -70,12 +70,7 @@ try {
 
 const jobs = state.jobs || [];
 
-if (jobs.length === 0) {
-  console.log('No background jobs found.');
-  process.exit(0);
-}
-
-// If specific job requested
+// If specific job requested, check before general empty check
 if (specificId) {
   const job = jobs.find(j => j.id === specificId || j.id.startsWith(specificId));
   if (!job) {
@@ -89,13 +84,21 @@ if (specificId) {
   console.log(`Started: ${job.startedAt}`);
   console.log(`Updated: ${job.updatedAt}`);
   
-  const p = job.progress;
-  const pct = p.total > 0 ? Math.round((p.current / p.total) * 100) : 0;
-  console.log(`Progress: ${p.current}/${p.total} (${pct}%)`);
-  
+  const p = job.progress || {};
+  const current = p.current ?? 0;
+  const total = p.total ?? 0;
+  const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+  console.log(`Progress: ${current}/${total} (${pct}%)`);
+
   if (job.error) {
     console.log(`Error: ${job.error}`);
   }
+  process.exit(0);
+}
+
+// General empty check (only if no specific ID was requested)
+if (jobs.length === 0) {
+  console.log('No background jobs found.');
   process.exit(0);
 }
 
@@ -111,12 +114,14 @@ console.log('\n📋 Background Jobs\n');
 if (running.length > 0) {
   console.log(`🔄 Running (${running.length}):`);
   for (const job of running) {
-    const p = job.progress;
-    const pct = p.total > 0 ? Math.round((p.current / p.total) * 100) : 0;
+    const p = job.progress || {};
+    const current = p.current ?? 0;
+    const total = p.total ?? 0;
+    const pct = total > 0 ? Math.round((current / total) * 100) : 0;
     const elapsed = (Date.now() - new Date(job.startedAt).getTime()) / 1000;
-    const rate = elapsed > 0 ? (p.current / elapsed).toFixed(1) : '0';
+    const rate = elapsed > 0 ? (current / elapsed).toFixed(1) : '0';
     console.log(`  [${job.id.slice(0,8)}] ${job.type}`);
-    console.log(`     Progress: ${p.current}/${p.total} (${pct}%) | Rate: ${rate}/s`);
+    console.log(`     Progress: ${current}/${total} (${pct}%) | Rate: ${rate}/s`);
   }
   console.log('');
 }
@@ -125,8 +130,10 @@ if (running.length > 0) {
 if (paused.length > 0) {
   console.log(`⏸️  Paused (${paused.length}):`);
   for (const job of paused) {
-    const p = job.progress;
-    const pct = p.total > 0 ? Math.round((p.current / p.total) * 100) : 0;
+    const p = job.progress || {};
+    const current = p.current ?? 0;
+    const total = p.total ?? 0;
+    const pct = total > 0 ? Math.round((current / total) * 100) : 0;
     console.log(`  [${job.id.slice(0,8)}] ${job.type} - ${pct}%`);
   }
   console.log('');
