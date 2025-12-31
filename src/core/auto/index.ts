@@ -107,3 +107,46 @@ export {
   type IncrementPlan,
   type PlanningResult,
 } from './increment-planner.js';
+
+// Plan Approval (Auto Mode)
+export {
+  formatPlanDisplay,
+  generateApprovalPrompt,
+  validatePlan,
+  logApprovedPlan,
+  savePlanToState,
+  loadPlanFromState,
+  clearPlanFromState,
+  applyPlanModification,
+  type ApprovalConfig,
+  type ApprovalResult,
+  type PlanDisplayOptions,
+} from './plan-approval.js';
+
+// E2E Coverage Manifest (Auto Mode)
+export {
+  detectFramework,
+  extractRoutes,
+  loadManualRoutes,
+  generateCoverageManifest,
+  saveManifest,
+  loadManifest,
+  updateRouteCoverage,
+  calculateCoverage,
+  getUntestedRoutes,
+  getRoutesWithMissingViewports,
+  parseRouteVisits,
+  matchRouteToManifest,
+  trackRouteCoverage,
+  parseViewportFromProject,
+  generateCoverageReport,
+  DEFAULT_VIEWPORTS,
+  type RouteEntry,
+  type ActionEntry,
+  type ViewportsCovered,
+  type CoverageStats,
+  type E2ECoverageManifest,
+  type FrameworkType,
+  type RouteVisit,
+  type RouteTrackingResult,
+} from './e2e-coverage.js';

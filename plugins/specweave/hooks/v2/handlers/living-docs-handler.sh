@@ -3,6 +3,7 @@
 # Called async by processor, non-blocking, error-tolerant
 #
 # IMPORTANT: Never crash Claude, always exit 0
+# v1.0.71 - Fixed: Use specweave package location, not PROJECT_ROOT/dist
 set +e
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
@@ -16,6 +17,10 @@ while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
   PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
 done
 [[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
+
+# Resolve specweave package location
+HANDLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$HANDLER_DIR/../../lib/resolve-package.sh" 2>/dev/null || true
 
 # Throttle: max once per minute per increment
 THROTTLE_FILE="$PROJECT_ROOT/.specweave/state/.living-docs-$INC_ID"
@@ -51,12 +56,14 @@ run_with_timeout() {
   fi
 }
 
-# Find sync script
+# Find sync script (check SPECWEAVE_PKG first)
 SYNC_SCRIPT=""
 for path in \
-  "$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-living-docs.js" \
+  "${SPECWEAVE_PKG:-}/dist/plugins/specweave/lib/hooks/sync-living-docs.js" \
+  "${SPECWEAVE_PKG:-}/plugins/specweave/lib/hooks/sync-living-docs.js" \
+  "${CLAUDE_PLUGIN_ROOT:-}/lib/hooks/sync-living-docs.js" \
   "$PROJECT_ROOT/dist/plugins/specweave/lib/hooks/sync-living-docs.js" \
-  "${CLAUDE_PLUGIN_ROOT:-}/lib/hooks/sync-living-docs.js"; do
+  "$PROJECT_ROOT/plugins/specweave/lib/hooks/sync-living-docs.js"; do
   [[ -f "$path" ]] && { SYNC_SCRIPT="$path"; break; }
 done
 [[ -z "$SYNC_SCRIPT" ]] && exit 0

@@ -39,8 +39,8 @@ Current `/sw:auto` has critical gaps that prevent it from delivering world-class
 - [x] **AC-US1-01**: When prompt describes 3+ features, auto creates separate increments
 - [x] **AC-US1-02**: Each increment is 5-15 tasks (sweet spot)
 - [x] **AC-US1-03**: Dependencies between increments are identified
-- [ ] **AC-US1-04**: User is shown increment plan before execution starts
-- [ ] **AC-US1-05**: User can approve/modify plan before auto continues
+- [x] **AC-US1-04**: User is shown increment plan before execution starts
+- [x] **AC-US1-05**: User can approve/modify plan before auto continues
 
 ### US-002: Test Result Parsing (Not Just Execution)
 **Project**: specweave
@@ -76,8 +76,8 @@ Current `/sw:auto` has critical gaps that prevent it from delivering world-class
 **So that** I know my E2E coverage is comprehensive
 
 **Acceptance Criteria**:
-- [ ] **AC-US4-01**: Auto-generates manifest from routes (Next.js, React Router, etc.)
-- [ ] **AC-US4-02**: Tracks which routes have E2E tests
+- [x] **AC-US4-01**: Auto-generates manifest from routes (Next.js, React Router, etc.)
+- [x] **AC-US4-02**: Tracks which routes have E2E tests
 - [ ] **AC-US4-03**: Tracks critical buttons/actions tested
 - [ ] **AC-US4-04**: Tracks viewports tested (mobile 375px, tablet 768px, desktop 1280px)
 - [ ] **AC-US4-05**: Stop hook blocks if coverage manifest incomplete

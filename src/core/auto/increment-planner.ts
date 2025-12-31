@@ -143,7 +143,13 @@ function topologicalSort(features: Feature[]): Feature[] {
 function createIncrement(id: number, features: Feature[]): IncrementPlan {
   const paddedId = String(id).padStart(4, '0');
   const name = generateIncrementName(features);
-  const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+  // Clean slug: lowercase, replace spaces with dashes, remove non-alphanumeric, collapse multiple dashes
+  const slug = name
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-') // Collapse multiple dashes
+    .replace(/^-|-$/g, ''); // Remove leading/trailing dashes
   const description = features.map((f) => f.name).join(', ');
   const estimatedTasks = features.reduce((sum, f) => sum + f.estimatedTasks, 0);
 

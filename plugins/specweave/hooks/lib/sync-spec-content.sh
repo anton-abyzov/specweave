@@ -14,11 +14,51 @@
 # Usage:
 #   sync-spec-content.sh <spec-path>
 #
+# v1.0.71 - Fixed: Use specweave package location, not PROJECT_ROOT/dist
 
 set +e  # EMERGENCY FIX: Changed from set -euo pipefail to prevent Claude Code crashes
 
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# =============================================================================
+# CRITICAL FIX: Resolve specweave package location for CLI scripts
+# =============================================================================
+resolve_specweave_package() {
+  local script_dir="$1"
+
+  # From hooks/lib/ go up to package root (lib -> hooks -> specweave -> plugins -> root)
+  local package_root="$(cd "$script_dir/../../.." 2>/dev/null && pwd)"
+
+  if [[ -d "$package_root/dist/src/cli" ]]; then
+    echo "$package_root"
+    return 0
+  fi
+
+  # Fallback: Try global npm installation
+  local npm_root
+  npm_root="$(npm root -g 2>/dev/null)"
+  if [[ -d "$npm_root/specweave/dist/src/cli" ]]; then
+    echo "$npm_root/specweave"
+    return 0
+  fi
+
+  # Fallback: Try which specweave
+  local npx_path
+  npx_path="$(which specweave 2>/dev/null)"
+  if [[ -n "$npx_path" ]]; then
+    local bin_dir="$(dirname "$npx_path")"
+    local pkg_dir="$(cd "$bin_dir/.." 2>/dev/null && pwd)"
+    if [[ -d "$pkg_dir/dist/src/cli" ]]; then
+      echo "$pkg_dir"
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+SPECWEAVE_PKG="$(resolve_specweave_package "$SCRIPT_DIR")"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 
 # Input validation - exit 0 for safety (never exit 1 in hooks)
@@ -109,10 +149,14 @@ if [[ ! "$PROVIDER" =~ ^(github|jira|ado)$ ]]; then
 fi
 
 # Check if sync CLI command exists
-SYNC_CLI="$PROJECT_ROOT/dist/src/cli/commands/sync-spec-content.js"
+if [[ -z "$SPECWEAVE_PKG" ]]; then
+  echo "ℹ️  SpecWeave package not found, skipping spec content sync" >&2
+  exit 0
+fi
+
+SYNC_CLI="$SPECWEAVE_PKG/dist/src/cli/commands/sync-spec-content.js"
 if [ ! -f "$SYNC_CLI" ]; then
-  echo "ℹ️  Sync CLI not built, skipping spec content sync" >&2
-  echo "   Run: npm run build" >&2
+  echo "ℹ️  Sync CLI not found at $SYNC_CLI, skipping spec content sync" >&2
   exit 0
 fi
 
