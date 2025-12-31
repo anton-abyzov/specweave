@@ -16,7 +16,10 @@ description: Start autonomous execution session with stop hook integration. Work
 ## Arguments
 
 - `INCREMENT_IDS`: One or more increment IDs to process (e.g., `0001`, `0001-feature`)
-  - If omitted, uses current in-progress increment
+  - **NEW BEHAVIOR**: If omitted, auto mode will:
+    1. Check for active/in-progress increments
+    2. If none found, **intelligently create increments** based on user context/prompt
+    3. Match existing planned increments to user intent OR extend them
 
 ## Options
 
@@ -28,11 +31,74 @@ description: Start autonomous execution session with stop hook integration. Work
 | `--dry-run` | Preview without starting | false |
 | `--all-backlog` | Process all backlog items | false |
 | `--skip-gates G1,G2` | Pre-approve specific gates | None |
+| `--no-increment`, `--no-inc` | Skip auto-creation (require existing increments) | false |
+
+## Intelligent Increment Creation (NEW!)
+
+**Auto mode now creates increments automatically when none exist!**
+
+### Decision Flow
+
+```
+/sw:auto invoked
+     │
+     ▼
+Are INCREMENT_IDS specified? ──YES──> Use specified increments
+     │
+     NO
+     ▼
+Active increment exists? ──YES──> Use active increment
+     │
+     NO
+     ▼
+--no-increment/--no-inc flag? ──YES──> ERROR: No increments found
+     │
+     NO (DEFAULT)
+     ▼
+🧠 INTELLIGENT INCREMENT CREATION
+     │
+     ├─> Analyze user context/prompt
+     ├─> Check for matching planned/backlog increments
+     ├─> Match existing OR create new increment(s)
+     │
+     ▼
+Auto mode starts with new/matched increment(s)
+```
+
+### Intelligence Patterns
+
+The LLM will analyze the context and decide:
+
+1. **Match Existing**: If user says "continue the auth feature" → finds `0002-user-authentication`
+2. **Extend Existing**: If user says "add password reset" → extends auth increment with new tasks
+3. **Create New**: If user says "build a payment system" → creates `0003-payment-integration`
+4. **Multiple Increments**: If user says "finish all pending features" → creates queue from backlog
+5. **Ask User**: If ambiguous, LLM will ask clarifying questions before creating
+
+### Examples
+
+```bash
+# User says: "Let's ship the dashboard feature"
+/sw:auto
+# → LLM finds 0004-dashboard in backlog, activates it
+
+# User says: "Build a user profile page with avatar upload"
+/sw:auto
+# → LLM creates 0005-user-profile-page with spec + tasks
+
+# User says: "I want to work on auth and notifications"
+/sw:auto
+# → LLM creates queue: [0001-authentication, 0002-notifications]
+
+# User says: "Just work on what's already planned"
+/sw:auto --no-increment  # or --no-inc
+# → ERROR if no active increment (strict mode)
+```
 
 ## How It Works
 
 ```
-1. User runs /sw:auto 0001
+1. User runs /sw:auto (with or without IDs)
            │
            ▼
 2. setup-auto.sh creates session state
@@ -509,9 +575,88 @@ bash plugins/specweave/scripts/setup-auto.sh [args]
 
 Pass any arguments from the user (increment IDs, --max-iterations, --simple, etc.)
 
-**If setup fails, STOP and report the error. Do NOT proceed without session creation.**
+**Handle exit codes:**
+- `0`: Success, session created → proceed to Step 3
+- `1`: Error (no increments found with --no-increment/--no-inc) → STOP
+- `2`: **Increment creation needed** → proceed to Step 2
 
-### Step 2: Verify session was created
+### Step 2: INTELLIGENT INCREMENT CREATION (if setup-auto.sh exits with code 2)
+
+**When setup script signals increment creation needed:**
+
+1. **Check marker file:**
+   ```bash
+   cat .specweave/state/auto-needs-increment.json
+   ```
+
+2. **Analyze context** (ULTRATHINK):
+   - Read recent conversation history
+   - Check user prompt for feature descriptions
+   - Scan `.specweave/increments/` for planned/backlog items
+   - Look for patterns: "build X", "implement Y", "add Z feature"
+
+3. **Make intelligent decision:**
+
+   **A. Match existing increment:**
+   ```bash
+   # User said: "work on the login feature"
+   # Found: .specweave/increments/0002-user-login-system (status: planned)
+   # Action: Activate it and run setup-auto.sh again with 0002
+   /sw:resume 0002
+   bash plugins/specweave/scripts/setup-auto.sh 0002 [other-args]
+   ```
+
+   **B. Extend existing increment:**
+   ```bash
+   # User said: "add password reset to auth"
+   # Found: .specweave/increments/0001-authentication (status: active, incomplete)
+   # Action: Add tasks to existing increment, use it for auto mode
+   # Edit tasks.md to add new tasks
+   bash plugins/specweave/scripts/setup-auto.sh 0001 [other-args]
+   ```
+
+   **C. Create new increment(s):**
+   ```bash
+   # User said: "build a payment integration with Stripe"
+   # No matching increments found
+   # Action: Create new increment via /sw:increment
+   /sw:increment "Payment integration with Stripe - support card payments, webhooks, and subscription management"
+   # Then run setup-auto.sh with the new increment ID
+   bash plugins/specweave/scripts/setup-auto.sh 0003-payment-integration [other-args]
+   ```
+
+   **D. Multiple increments:**
+   ```bash
+   # User said: "finish all pending features"
+   # Found: multiple backlog/planned increments
+   # Action: Create queue
+   bash plugins/specweave/scripts/setup-auto.sh 0002-dashboard 0003-reports 0004-export [other-args]
+   ```
+
+   **E. Ask user (if ambiguous):**
+   ```markdown
+   🤔 I found several potential matches for your request:
+
+   1. **0002-user-authentication** (planned) - Add auth system
+   2. **0005-oauth-integration** (backlog) - Third-party auth
+
+   Which would you like to work on?
+   - Both (in sequence)
+   - Just authentication
+   - Just OAuth
+   - Something else (please describe)
+   ```
+
+4. **Clean up marker:**
+   ```bash
+   rm -f .specweave/state/auto-needs-increment.json
+   ```
+
+5. **Proceed to Step 3** with increment(s) resolved
+
+### Step 3: Verify session and start execution
+
+**Verify session was created:**
 
 ```bash
 cat .specweave/state/auto-session.json | jq -r '.sessionId'
@@ -519,7 +664,7 @@ cat .specweave/state/auto-session.json | jq -r '.sessionId'
 
 **If file doesn't exist, the setup failed - investigate and fix before continuing.**
 
-### Step 3: Start execution:
+**Start execution:
    ```
    Now starting autonomous execution...
 
