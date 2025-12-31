@@ -393,6 +393,7 @@ After generation:
 | No GITHUB_TOKEN | Check `.env` file or run `gh auth login` |
 | Edits blocked in repositories/ | Add `"additionalDirectories":["repositories"]` + `Write(//**)`, `Edit(//**)` to `.claude/settings.json` |
 | Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
+| **specweave/claude not found after Node upgrade** | **nvm users**: Global packages are lost when switching Node versions! Fix: `nvm reinstall-packages <old-version>` OR `npm install -g specweave @anthropic-ai/claude-code`. See [Node Version Management](/.specweave/docs/internal/operations/runbook-node-version-management.md) |
 <!-- SW:END:troubleshooting -->
 
 <!-- SW:SECTION:principles version="1.0.60" -->
