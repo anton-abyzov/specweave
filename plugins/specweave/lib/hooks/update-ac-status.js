@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 import { ACStatusManager } from "../vendor/core/increment/ac-status-manager.js";
+import { SyncCoordinator } from "../../../../dist/src/sync/sync-coordinator.js";
+import { consoleLogger } from "../vendor/utils/logger.js";
+import { readFileSync, existsSync } from "fs";
+import * as path from "path";
 async function updateACStatus(incrementId) {
   try {
     const projectRoot = process.cwd();
@@ -25,6 +29,7 @@ async function updateACStatus(incrementId) {
         console.log("\n\u{1F4DD} Changes:");
         result.changes.forEach((change) => console.log(`   ${change}`));
       }
+      await syncACsToGitHub(projectRoot, incrementId);
     } else if (result.synced) {
       console.log("\u2705 All ACs already in sync (no changes needed)");
     } else {
@@ -32,6 +37,51 @@ async function updateACStatus(incrementId) {
     }
   } catch (error) {
     console.error("\u274C Error updating AC status:", error);
+  }
+}
+async function syncACsToGitHub(projectRoot, incrementId) {
+  try {
+    const configPath = path.join(projectRoot, ".specweave/config.json");
+    if (!existsSync(configPath)) {
+      console.log("\u2139\uFE0F  No config.json found, skipping GitHub sync");
+      return;
+    }
+    const configContent = readFileSync(configPath, "utf-8");
+    const config = JSON.parse(configContent);
+    const isGitHubEnabled = config.sync?.github?.enabled || config.sync?.profiles && Object.values(config.sync.profiles).some(
+      (p) => p?.provider === "github"
+    ) || config.sync?.provider === "github";
+    if (!isGitHubEnabled) {
+      console.log("\u2139\uFE0F  GitHub sync not enabled, skipping");
+      return;
+    }
+    const canUpdateExternal = config.sync?.settings?.canUpdateExternalItems !== false;
+    if (!canUpdateExternal) {
+      console.log("\u2139\uFE0F  canUpdateExternalItems=false, skipping GitHub sync");
+      return;
+    }
+    console.log("\n\u{1F517} Syncing AC checkboxes to GitHub...");
+    const coordinator = new SyncCoordinator({
+      projectRoot,
+      incrementId,
+      logger: consoleLogger
+    });
+    const syncResult = await coordinator.syncACCheckboxesToGitHub(config, {
+      addComment: false
+      // Don't add comment on every AC update (prevent spam)
+    });
+    if (syncResult.success && syncResult.updated > 0) {
+      console.log(`   \u2705 Updated ${syncResult.updated} AC(s) in GitHub issues`);
+      if (syncResult.issues.length > 0) {
+        console.log(`   \u{1F4DD} Issues updated: ${syncResult.issues.join(", ")}`);
+      }
+    } else if (syncResult.success) {
+      console.log("   \u2139\uFE0F  No GitHub updates needed");
+    } else {
+      console.log("   \u26A0\uFE0F  GitHub sync had errors (non-blocking)");
+    }
+  } catch (error) {
+    console.log(`   \u26A0\uFE0F  GitHub sync failed: ${error.message}`);
   }
 }
 const isMainModule = import.meta.url === `file://${process.argv[1]}`;

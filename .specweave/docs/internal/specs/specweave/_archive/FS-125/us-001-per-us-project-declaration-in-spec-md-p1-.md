@@ -6,7 +6,7 @@ status: completed
 priority: P1
 created: 2025-12-08
 project: specweave
-board: ` per user story in spec.md
+board: "per-user-story"
 related_projects: [frontend-app]
 ---
 
