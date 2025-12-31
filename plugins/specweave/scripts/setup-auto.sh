@@ -11,6 +11,8 @@
 #   --increments A,B,C   Explicit increment queue
 #   --all-backlog        Process all backlog items
 #   --skip-gates G1,G2   Pre-approve specific gates
+#   --no-increment       Skip auto-creation of increments (work on existing only)
+#   --no-inc             Alias for --no-increment (short form)
 #   -h, --help           Show this help
 
 set -e
@@ -23,6 +25,7 @@ DRY_RUN=false
 INCREMENT_IDS=()
 ALL_BACKLOG=false
 SKIP_GATES=""
+NO_INCREMENT=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -54,6 +57,10 @@ while [[ $# -gt 0 ]]; do
         --skip-gates)
             SKIP_GATES="$2"
             shift 2
+            ;;
+        --no-increment|--no-inc)
+            NO_INCREMENT=true
+            shift
             ;;
         -h|--help)
             grep '^#' "$0" | grep -v '!/bin/bash' | sed 's/^# //'
@@ -134,11 +141,28 @@ if [ ${#INCREMENT_IDS[@]} -eq 0 ]; then
 fi
 
 if [ ${#INCREMENT_IDS[@]} -eq 0 ]; then
-    echo "❌ No increments specified and no active increment found"
-    echo ""
-    echo "Usage: setup-auto.sh [INCREMENT_IDS...]"
-    echo "       setup-auto.sh --all-backlog"
-    exit 1
+    if [ "$NO_INCREMENT" = "true" ]; then
+        echo "❌ No increments specified and no active increment found"
+        echo ""
+        echo "Usage: setup-auto.sh [INCREMENT_IDS...]"
+        echo "       setup-auto.sh --all-backlog"
+        exit 1
+    else
+        # Signal to Claude that increment creation is needed
+        echo "🤔 No increments found. Auto mode will analyze context and create increments as needed."
+        echo ""
+        echo "💡 The LLM will:"
+        echo "   1. Analyze user prompt and project context"
+        echo "   2. Match existing increments OR create new ones"
+        echo "   3. Start autonomous execution"
+        echo ""
+        echo "To skip auto-creation and require existing increments: use --no-increment"
+        echo ""
+        # Create a marker file to signal increment creation needed
+        echo '{"needsIncrementCreation": true, "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}' > "$STATE_DIR/auto-needs-increment.json"
+        # Exit with special code to signal LLM should create increment
+        exit 2
+    fi
 fi
 
 # Validate increments exist
