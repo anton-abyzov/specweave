@@ -20,7 +20,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Find project root
+# Find project root (CRITICAL: must NOT fallback to pwd!)
 find_project_root() {
   local dir="$PWD"
   while [[ "$dir" != "/" ]]; do
@@ -30,10 +30,15 @@ find_project_root() {
     fi
     dir=$(dirname "$dir")
   done
-  echo "$PWD"
+  # Return empty - NOT pwd (prevents .specweave pollution)
+  return 1
 }
 
 PROJECT_ROOT=$(find_project_root)
+if [[ -z "$PROJECT_ROOT" ]]; then
+  echo -e "${GREEN}✅ Not a SpecWeave project - skipping check${NC}"
+  exit 0
+fi
 INCREMENTS_DIR="$PROJECT_ROOT/.specweave/increments"
 
 echo ""

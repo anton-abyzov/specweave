@@ -31,7 +31,7 @@ HOOK_NAME="task-ac-sync"
 HOOK_VERSION="1.0.43"
 
 # ============================================================================
-# PROJECT ROOT DETECTION
+# PROJECT ROOT DETECTION (CRITICAL: must NOT fallback to pwd!)
 # ============================================================================
 
 find_project_root() {
@@ -43,10 +43,12 @@ find_project_root() {
     fi
     dir=$(dirname "$dir")
   done
-  echo "$PWD"
+  # Return empty - NOT pwd (prevents .specweave pollution)
+  return 1
 }
 
 PROJECT_ROOT=$(find_project_root)
+[[ -z "$PROJECT_ROOT" ]] && exit 0
 [[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
 
 # ============================================================================
