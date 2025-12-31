@@ -101,20 +101,80 @@ export async function livingDocsCommand(options: LivingDocsOptions): Promise<voi
     ? options.dependsOn.split(',').map(s => s.trim())
     : undefined;
 
-  // Launch job
-  try {
-    const { job, pid, isBackground } = await launchLivingDocsJob({
-      projectPath,
-      userInputs,
-      dependsOn,
-      foreground: options.foreground,
-    });
+  // Check if running in auto mode
+  const autoSessionPath = path.join(projectPath, '.specweave/state/auto-session.json');
+  const isAutoMode = fs.existsSync(autoSessionPath);
 
-    displayLaunchSuccess(job, pid, isBackground, userInputs);
-  } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(chalk.red(`\nFailed to launch Living Docs Builder: ${errorMessage}`));
-    process.exit(1);
+  if (isAutoMode) {
+    // Auto mode: Use chunked execution
+    try {
+      await runChunkedLivingDocs(projectPath, userInputs);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`\nFailed to execute living docs chunk: ${errorMessage}`));
+      process.exit(1);
+    }
+  } else {
+    // Traditional mode: Launch background job
+    try {
+      const { job, pid, isBackground } = await launchLivingDocsJob({
+        projectPath,
+        userInputs,
+        dependsOn,
+        foreground: options.foreground,
+      });
+
+      displayLaunchSuccess(job, pid, isBackground, userInputs);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`\nFailed to launch Living Docs Builder: ${errorMessage}`));
+      process.exit(1);
+    }
+  }
+}
+
+/**
+ * Run living docs in chunked mode for auto mode integration
+ */
+async function runChunkedLivingDocs(
+  projectPath: string,
+  userInputs: LivingDocsUserInputs
+): Promise<void> {
+  const { executeLivingDocsChunk, getProgressSummary, loadLivingDocsCheckpoint } =
+    await import('../../core/background/living-docs-executor.js');
+
+  console.log(chalk.blue('\n🔄 Running Living Docs in Auto Mode (Chunked Execution)\n'));
+
+  // Load existing checkpoint or create new one
+  const checkpoint = loadLivingDocsCheckpoint(projectPath);
+
+  if (checkpoint) {
+    console.log(chalk.gray('Resuming from checkpoint...'));
+    console.log(chalk.gray(getProgressSummary(checkpoint)));
+    console.log('');
+  }
+
+  // Execute one chunk (2 hours max)
+  const result = await executeLivingDocsChunk({
+    projectPath,
+    maxDuration: 2 * 60 * 60 * 1000, // 2 hours
+    checkpoint: checkpoint || undefined,
+    stopOnPhaseComplete: true, // Yield control after each phase
+  });
+
+  // Display result
+  if (result.status === 'all_complete') {
+    console.log(chalk.green('\n✅ All Living Docs Phases Complete!\n'));
+    console.log(chalk.gray('All 8 phases of living docs update have been completed.'));
+    console.log(chalk.gray('Check .specweave/docs/internal/ for generated documentation.\n'));
+  } else if (result.status === 'phase_complete') {
+    console.log(chalk.green(`\n✅ Phase ${result.currentPhase} Complete!\n`));
+    console.log(chalk.gray(`Next: Phase ${result.nextPhase}`));
+    console.log(chalk.gray('Stop hook will continue execution in next iteration.\n'));
+  } else if (result.status === 'time_limit') {
+    console.log(chalk.yellow('\n⏰ Time Limit Reached (2 hours)\n'));
+    console.log(chalk.gray(`Phase ${result.currentPhase} in progress...`));
+    console.log(chalk.gray('Checkpoint saved. Will resume in next iteration.\n'));
   }
 }
 

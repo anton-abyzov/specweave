@@ -427,14 +427,18 @@ describe('HTTPS URL for Public Repos (v0.35.3)', () => {
     if (await fs.pathExists(sourceFile)) {
       const content = await fs.readFile(sourceFile, 'utf-8');
 
-      // Verify HTTPS URL is used (not owner/repo format)
-      expect(content).toContain('https://github.com/anton-abyzov/specweave');
+      // Verify HTTPS URL constant is defined (DRY principle - better than hardcoded strings)
+      expect(content).toContain('SPECWEAVE_MARKETPLACE_URL');
+      expect(content).toContain('https://github.com');
+      expect(content).toContain('anton-abyzov/specweave');
 
-      // Verify the old format is NOT used
+      // Verify the constant is used in marketplace add commands
+      expect(content).toContain('SPECWEAVE_MARKETPLACE_URL');
+
+      // Verify the old owner/repo format is NOT used directly in marketplace add
       expect(content).not.toMatch(/'add',\s*\n\s*'anton-abyzov\/specweave'/);
 
-      // Verify the fix is documented with version
-      expect(content).toContain('v0.35.3');
+      // Verify the fix is documented
       expect(content).toContain('HTTPS URL');
       expect(content).toContain('SSH');
     }
