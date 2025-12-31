@@ -65,21 +65,35 @@ function getNextStepsStrings(language: SupportedLanguage) {
 }
 
 /**
+ * Options for showNextSteps
+ */
+export interface ShowNextStepsOptions {
+  /** Whether plugins were auto-installed (Claude only) */
+  pluginAutoInstalled?: boolean;
+  /** Whether only marketplace was registered (plugins need manual install) */
+  marketplaceOnly?: boolean;
+}
+
+/**
  * Show next steps after initialization
  *
  * @param projectName - Project name
  * @param adapterName - Adapter name (claude, cursor, generic)
  * @param language - Language for i18n
  * @param usedDotNotation - Whether user used "." for current directory
- * @param pluginAutoInstalled - Whether plugins were auto-installed (Claude only)
+ * @param options - Additional options for plugin/marketplace status
  */
 export function showNextSteps(
   projectName: string,
   adapterName: string,
   language: SupportedLanguage,
   usedDotNotation: boolean = false,
-  pluginAutoInstalled: boolean = false
+  options: boolean | ShowNextStepsOptions = false
 ): void {
+  // Support legacy boolean parameter or new options object
+  const opts: ShowNextStepsOptions = typeof options === 'boolean'
+    ? { pluginAutoInstalled: options }
+    : options;
   const locale = getLocaleManager(language);
   const strings = getNextStepsStrings(language);
 
@@ -98,15 +112,24 @@ export function showNextSteps(
 
   // Adapter-specific instructions
   if (adapterName === 'claude') {
-    // Only show manual install warning if auto-install failed
-    if (!pluginAutoInstalled) {
+    // Three states:
+    // 1. pluginAutoInstalled=true, marketplaceOnly=false → All plugins ready
+    // 2. pluginAutoInstalled=true, marketplaceOnly=true → Marketplace registered only
+    // 3. pluginAutoInstalled=false → Manual install needed
+    if (opts.marketplaceOnly) {
+      // Marketplace registered but plugins need manual install
+      console.log(`   ${stepNumber}. ${chalk.green('✔')} ${chalk.white(strings.marketplaceReady)}`);
+      console.log('');
+      stepNumber++;
+    } else if (!opts.pluginAutoInstalled) {
+      // Full failure - show manual install warning
       console.log(`   ${stepNumber}. ${chalk.yellow.bold('⚠️  ' + locale.t('cli', 'init.nextSteps.claude.step2'))}`);
       console.log(`      ${chalk.cyan.bold(locale.t('cli', 'init.nextSteps.claude.installCore'))}`);
       console.log(`      ${chalk.gray(strings.slashCommandsHint)}`);
       console.log('');
       stepNumber++;
     } else {
-      // Consolidated single-line plugin status
+      // Full success - all plugins installed
       console.log(`   ${stepNumber}. ${chalk.green('✔')} ${chalk.white(strings.pluginsReady)}`);
       console.log('');
       stepNumber++;
