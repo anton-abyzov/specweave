@@ -7,7 +7,7 @@ draft: true
 
 # SpecWeave Complete Tutorial - YouTube Video Script
 
-**Duration**: ~30-32 minutes
+**Duration**: ~31-32 minutes
 **Format**: Screen recording walking through spec-weave.com documentation + terminal demos
 **Diagrams**: Mermaid (already embedded in docs) + 3 Excalidraw transitions
 **Teaching Claude**: This script teaches Claude how SpecWeave works by walking through real docs
@@ -425,7 +425,7 @@ specweave init .
 
 ---
 
-## SECTION 12: DOGFOODING - REAL METRICS (27:30 - 29:30)
+## SECTION 12: DOGFOODING - REAL METRICS (27:30 - 30:00)
 
 **[SCREEN: Navigate to docs/overview/dogfooding]**
 
@@ -451,11 +451,15 @@ specweave init .
 
 > "5+ production applications built with SpecWeave — including SpecWeave itself, BizZone mobile app, Event Management SaaS, and more.
 >
-> This isn't a demo framework. It's production-tested — on itself."
+> This isn't a demo framework. It's production-tested — on itself.
+>
+> And speaking of real-world AI automation — Boris Cherny, the creator of Claude Code at Anthropic, recently shared something remarkable: he didn't open his IDE even once for an entire month. Every commit — 259 pull requests, 497 commits, 40,000 lines added — was written entirely by Claude Code using autonomous execution with stop hooks.
+>
+> We're living in an era where AI tools don't just assist with coding — they execute standard procedures, write production code, and run for hours or days at a time without human intervention. SpecWeave is built for this new reality. It gives AI the structure it needs to work autonomously while maintaining quality, traceability, and team alignment."
 
 ---
 
-## OUTRO (29:30 - 31:00)
+## OUTRO (30:00 - 31:30)
 
 **[SCREEN: Navigate back to intro.md]**
 
@@ -496,7 +500,7 @@ specweave init .
 
 1. **Intro transition**: "Vibe Coding" crossed out → "Spec-Driven Development" (0:00)
 2. **Three-file foundation**: spec.md, plan.md, tasks.md with AC-ID arrows connecting them (10:00)
-3. **Outro slide**: SpecWeave logo + links (spec-weave.com, Discord, YouTube, GitHub) (28:00)
+3. **Outro slide**: SpecWeave logo + links (spec-weave.com, Discord, YouTube, GitHub) (30:00)
 
 ### Mermaid Diagrams (Already in docs - no work needed)
 
