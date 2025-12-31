@@ -102,6 +102,14 @@ specweave update-instructions   # Regenerate CLAUDE.md
 
 **[Full Quickstart Guide](./guides/getting-started/quickstart)**
 
+:::info 🎯 Claude Code's Game-Changing Updates
+**Compact Command** — VSCode users can now use `compact` mode to keep Claude Code inside your editor window. Work continuously for **hours** in the same session without context switching. No more jumping between terminal and editor!
+
+**STOP Hooks with Subagents** — Stop hooks now work with spawned subagents, enabling autonomous quality gates at every level. SpecWeave's `/sw:auto` uses this to validate tests and completion criteria automatically.
+
+Learn more: [Boris Cherny's autonomous coding demo](https://x.com/bcherny/status/2004916410687050167) — 259 PRs, 497 commits, 40,000 lines added in one month without opening an IDE.
+:::
+
 ---
 
 ## The Workflow
