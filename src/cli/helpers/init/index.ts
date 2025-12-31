@@ -93,6 +93,7 @@ export {
 // Next steps
 export {
   showNextSteps,
+  type ShowNextStepsOptions,
 } from './next-steps.js';
 
 // v1.0.27: Removed initial-increment-generator exports
