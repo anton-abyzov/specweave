@@ -33,6 +33,7 @@ export class ProjectRegistry {
   private eventBus: ProjectEventBus;
   private logger: Logger;
   private initialized = false;
+  private isValid: boolean;
 
   constructor(
     projectRoot: string,
@@ -42,9 +43,28 @@ export class ProjectRegistry {
     } = {}
   ) {
     this.projectRoot = projectRoot;
-    this.registryPath = path.join(projectRoot, '.specweave', 'state', REGISTRY_FILENAME);
     this.logger = options.logger ?? consoleLogger;
     this.eventBus = options.eventBus ?? new ProjectEventBus({ logger: this.logger });
+
+    // CRITICAL: Only operate on valid SpecWeave projects
+    const specweaveDir = path.join(projectRoot, '.specweave');
+    if (!fs.existsSync(specweaveDir)) {
+      // NOT a SpecWeave project - mark as invalid and DON'T create any directories
+      this.logger.warn(`Not a SpecWeave project: ${projectRoot} - project registry disabled`);
+      this.isValid = false;
+      this.registryPath = '';
+      return;
+    }
+
+    this.isValid = true;
+    this.registryPath = path.join(specweaveDir, 'state', REGISTRY_FILENAME);
+  }
+
+  /**
+   * Checks if this registry instance is valid (project has .specweave dir)
+   */
+  public isValidProject(): boolean {
+    return this.isValid;
   }
 
   /**
@@ -60,6 +80,10 @@ export class ProjectRegistry {
    * Load registry from disk
    */
   async load(): Promise<void> {
+    if (!this.isValid) {
+      return;
+    }
+
     try {
       if (fs.existsSync(this.registryPath)) {
         const content = fs.readFileSync(this.registryPath, 'utf-8');
@@ -86,8 +110,12 @@ export class ProjectRegistry {
    * Save registry to disk
    */
   async save(): Promise<void> {
+    if (!this.isValid) {
+      return;
+    }
+
     try {
-      // Ensure directory exists
+      // Ensure directory exists (safe - .specweave validated in constructor)
       const stateDir = path.dirname(this.registryPath);
       if (!fs.existsSync(stateDir)) {
         fs.mkdirSync(stateDir, { recursive: true });
