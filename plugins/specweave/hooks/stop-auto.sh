@@ -544,6 +544,75 @@ You MUST run E2E tests for user-facing features:
 Test EVERY route, EVERY button click, on mobile AND desktop viewports.
 Continue with /sw:do and complete E2E testing."
                 fi
+
+                # ================================================================
+                # E2E COVERAGE MANIFEST CHECK
+                # Block if routes/viewports not fully covered
+                # ================================================================
+                E2E_COVERAGE=$(check_e2e_coverage)
+                E2E_HAS_MANIFEST=$(echo "$E2E_COVERAGE" | jq -r '.hasManifest')
+
+                if [ "$E2E_HAS_MANIFEST" = "true" ]; then
+                    E2E_ROUTE_COVERAGE=$(echo "$E2E_COVERAGE" | jq -r '.coverage.routes')
+                    E2E_VIEWPORT_COVERAGE=$(echo "$E2E_COVERAGE" | jq -r '.coverage.viewports')
+                    E2E_UNTESTED_COUNT=$(echo "$E2E_COVERAGE" | jq -r '.untestedCount')
+                    E2E_MOBILE=$(echo "$E2E_COVERAGE" | jq -r '.viewports.mobile')
+                    E2E_TABLET=$(echo "$E2E_COVERAGE" | jq -r '.viewports.tablet')
+                    E2E_DESKTOP=$(echo "$E2E_COVERAGE" | jq -r '.viewports.desktop')
+
+                    # Log coverage check
+                    echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"e2e_coverage_check\",\"routes\":$E2E_ROUTE_COVERAGE,\"viewports\":$E2E_VIEWPORT_COVERAGE,\"untested\":$E2E_UNTESTED_COUNT}" >> "$LOGS_DIR/auto-iterations.log"
+
+                    # Get configurable threshold (default 80%)
+                    E2E_THRESHOLD=$(echo "$SESSION" | jq -r '.e2eCoverageThreshold // 80')
+
+                    # Block if coverage below threshold
+                    if [ "$E2E_ROUTE_COVERAGE" -lt "$E2E_THRESHOLD" ]; then
+                        # Build untested routes list
+                        UNTESTED_LIST=$(echo "$E2E_COVERAGE" | jq -r '[.gaps[] | select(.type == "untested_route") | .route] | join("\n  - ")' | sed 's/^/  - /')
+
+                        block "E2E coverage incomplete ($E2E_ROUTE_COVERAGE%)" "📊 E2E COVERAGE BELOW THRESHOLD
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COVERAGE REPORT:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📈 Route Coverage: $E2E_ROUTE_COVERAGE% (threshold: $E2E_THRESHOLD%)
+📱 Viewport Coverage: $E2E_VIEWPORT_COVERAGE%
+  - Mobile:  $([ \"$E2E_MOBILE\" = \"true\" ] && echo '✅' || echo '❌')
+  - Tablet:  $([ \"$E2E_TABLET\" = \"true\" ] && echo '✅' || echo '❌')
+  - Desktop: $([ \"$E2E_DESKTOP\" = \"true\" ] && echo '✅' || echo '❌')
+
+❌ UNTESTED ROUTES ($E2E_UNTESTED_COUNT):
+$UNTESTED_LIST
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INSTRUCTIONS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Add E2E tests for the untested routes above.
+Each test should visit the route and verify key functionality.
+
+Example for a login route:
+  test('login page loads', async ({ page }) => {
+    await page.goto('/login');
+    await expect(page.getByRole('heading')).toContainText('Login');
+  });
+
+Continue with /sw:do and add missing E2E tests."
+                    fi
+
+                    # Warn about incomplete viewport coverage (don't block)
+                    if [ "$E2E_VIEWPORT_COVERAGE" -lt 100 ]; then
+                        # Get missing viewport details
+                        MISSING_VIEWPORTS=""
+                        [ "$E2E_MOBILE" = "false" ] && MISSING_VIEWPORTS="$MISSING_VIEWPORTS mobile"
+                        [ "$E2E_TABLET" = "false" ] && MISSING_VIEWPORTS="$MISSING_VIEWPORTS tablet"
+                        [ "$E2E_DESKTOP" = "false" ] && MISSING_VIEWPORTS="$MISSING_VIEWPORTS desktop"
+
+                        echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"viewport_coverage_warning\",\"missing\":\"$MISSING_VIEWPORTS\"}" >> "$LOGS_DIR/auto-iterations.log"
+                    fi
+                fi
             fi
 
             # Check queue for more increments
