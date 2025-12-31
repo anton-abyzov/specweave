@@ -30,14 +30,21 @@ Open Claude Code and run:
 └── tasks.md   <- DO: Tasks with embedded tests
 ```
 
-Then build it:
+### Ship While You Sleep (Auto Mode)
+
+For autonomous execution that can run for **hours**:
 ```bash
-/sw:do
+/sw:auto
 ```
 
-When done, validate and close:
+Auto mode executes tasks, runs tests, fixes failures, and syncs to GitHub/JIRA — completely hands-off. Check progress with `/sw:auto-status` or stop with `/sw:cancel-auto`.
+
+### Step-by-Step Control
+
+For manual control:
 ```bash
-/sw:done 0001
+/sw:do           # Execute one task
+/sw:done 0001    # Quality-validated completion
 ```
 
 **Pro tip**: Use `/sw:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
@@ -106,10 +113,13 @@ After `specweave init .`:
 | Command | Purpose |
 |---------|---------|
 | `/sw:increment "..."` | Create new feature with AI agents |
-| `/sw:do` | Execute all tasks autonomously |
+| `/sw:auto` | 🚀 **Ship while you sleep** - hours of autonomous work |
+| `/sw:do` | Execute one task at a time |
 | `/sw:done <id>` | Complete with quality gates |
 | `/sw:next` | Auto-close + suggest next (one-click flow) |
 | `/sw:progress` | Check status |
+| `/sw:auto-status` | Check autonomous session progress |
+| `/sw:cancel-auto` | Stop autonomous session |
 | `/sw:sync-progress` | Sync to GitHub/JIRA/ADO |
 | `/sw:sync-monitor` | Dashboard: jobs, notifications |
 | `/sw:discrepancies` | View code-to-spec drift |
@@ -248,7 +258,15 @@ After completing a task:
 
 ## Requirements
 
-- **[Node.js](/docs/glossary/terms/nodejs) 20+** (`node --version`)
+:::caution Node.js Version Required
+SpecWeave requires **Node.js 20.12.0 or higher** (we recommend Node.js 22 LTS).
+
+Check your version: `node --version`
+
+If you see an error like `SyntaxError: Unexpected token 'with'`, your Node.js is too old. See [how to upgrade](/docs/guides/troubleshooting/common-errors#node-version-error).
+:::
+
+- **[Node.js](/docs/glossary/terms/nodejs) 20.12.0+** (`node --version`) — [upgrade instructions](/docs/guides/troubleshooting/common-errors#node-version-error)
 - **npm 9+** (`npm --version`)
 - **Claude Code** (recommended) or any AI tool
 - **[Git](/docs/glossary/terms/git)** (for version control)
@@ -257,22 +275,48 @@ After completing a task:
 
 ## Troubleshooting
 
+### Quick Recovery (Most Issues)
+
+If commands, skills, or hooks stop working after a Claude Code update:
+```bash
+specweave refresh-marketplace   # Reinstall all plugins from GitHub
+specweave update-instructions   # Regenerate CLAUDE.md
+```
+
+### Auto Mode Issues
+
+Session stuck or not completing?
+```bash
+/sw:auto-status   # Check what's happening
+/sw:cancel-auto   # Cancel if needed
+/sw:auto          # Resume with fresh session
+```
+
 ### Skills not activating?
 ```bash
 ls -la .claude/skills/
-# Should see 17 SpecWeave skills
-```
+# Should see 17+ SpecWeave skills
 
-If missing, safe reinstall:
-```bash
-specweave init .
-# Select: "Continue working"
+# If missing:
+specweave refresh-marketplace
 ```
 
 ### Commands not found?
 ```bash
 ls -la .claude/commands/
-# Should see 22 command files
+# Should see 22+ command files
+
+# If missing:
+specweave refresh-marketplace
+```
+
+### Errors during Bash or Edit tool calls?
+
+Install latest and refresh:
+```bash
+npm install -g specweave@latest
+specweave refresh-marketplace
+specweave update-instructions
 ```
 
 ---

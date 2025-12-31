@@ -8,6 +8,7 @@
     "specweave": "./bin/specweave.js"
   },
   "scripts": {
+    "preinstall": "node scripts/check-node-version.js || exit 0",
     "clean": "rm -rf dist/",
     "build": "tsc && npm run copy:locales && npm run copy:plugins && npm run copy:hook-deps && npm run copy:adapters",
     "copy:adapters": "node scripts/build/copy-adapters.js",
@@ -75,6 +76,7 @@
   "files": [
     "dist",
     "bin",
+    "scripts/check-node-version.js",
     ".claude-plugin",
     "plugins",
     "src/templates",
