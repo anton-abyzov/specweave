@@ -14,6 +14,13 @@ import { findSourceDir } from './path-utils.js';
 import { cleanupStalePlugins } from '../../../utils/cleanup-stale-plugins.js';
 
 /**
+ * SpecWeave marketplace GitHub repository
+ * Used for both CLI-based and fallback registration
+ */
+const SPECWEAVE_MARKETPLACE_REPO = 'anton-abyzov/specweave';
+const SPECWEAVE_MARKETPLACE_URL = `https://github.com/${SPECWEAVE_MARKETPLACE_REPO}`;
+
+/**
  * Options for plugin installation
  */
 export interface PluginInstallOptions {
@@ -29,6 +36,8 @@ export interface PluginInstallResult {
   successCount: number;
   failCount: number;
   failedPlugins: string[];
+  /** True if only marketplace was registered (plugins need manual install) */
+  marketplaceOnly?: boolean;
 }
 
 /**
@@ -61,7 +70,7 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
       console.log('');
 
       // Return partial success - marketplace registered but plugins not installed
-      return { success: true, successCount: 0, failCount: 0, failedPlugins: [] };
+      return { success: true, successCount: 0, failCount: 0, failedPlugins: [], marketplaceOnly: true };
     }
 
     // Fallback also failed - show original diagnostics
@@ -453,7 +462,7 @@ async function registerMarketplaceFallback(): Promise<{ success: boolean; error?
       config.specweave = {
         source: {
           source: 'github',
-          repo: 'anton-abyzov/specweave'
+          repo: SPECWEAVE_MARKETPLACE_REPO
         },
         installLocation: path.join(pluginsDir, 'marketplaces', 'specweave'),
         lastUpdated: new Date().toISOString(),

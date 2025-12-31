@@ -573,6 +573,41 @@ I need your DATABASE_URL to execute the migration.
 
 **Auto mode enables continuous autonomous execution** until all tasks are complete.
 
+### 🆕 Intelligent Increment Creation (NEW!)
+
+**Auto mode now auto-creates increments when none exist!**
+
+**Default behavior**: `/sw:auto` with no arguments will:
+1. Check for active/in-progress increments → use if found
+2. If none found → **intelligently create increments** based on user context
+3. Match existing planned/backlog increments OR create new ones
+4. Ask user if ambiguous
+
+**Strict mode**: Use `--no-increment` or `--no-inc` flag to require existing increments (no auto-creation)
+
+**Examples:**
+```bash
+# User says: "Let's build the dashboard feature"
+/sw:auto
+# → Finds 0004-dashboard in backlog OR creates it
+
+# User says: "Work on auth and notifications"
+/sw:auto
+# → Creates queue: [0001-auth, 0002-notifications]
+
+# Strict mode (no auto-creation) - both forms work
+/sw:auto --no-increment
+/sw:auto --no-inc
+# → ERROR if no active increment
+```
+
+**Intelligence patterns:**
+- **Match**: "continue auth" → finds `0002-authentication`
+- **Extend**: "add password reset" → adds tasks to active auth increment
+- **Create**: "build payment system" → creates `0003-payment-integration`
+- **Queue**: "finish all pending" → processes all backlog items
+- **Ask**: If ambiguous → present options to user
+
 ### 🚨 CRITICAL: Zero Manual Steps in Auto Mode
 
 **Auto mode MUST be fully autonomous. NEVER ask user to:**
