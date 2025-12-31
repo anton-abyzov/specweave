@@ -80,7 +80,7 @@ interface LivingDocsJobConfig {
     additionalSources: string[];
     priorityAreas: string[];
     knownPainPoints: string[];
-    analysisDepth: 'quick' | 'standard' | 'deep-native' | 'deep-interactive';
+    analysisDepth: 'quick' | 'standard' | 'deep-native';
   };
   startedAt: string;
 }
@@ -732,12 +732,12 @@ async function main(): Promise<void> {
         // Top 10
         modulesToAnalyze = modulesToAnalyze.slice(0, 10);
       }
-      // deep-native, deep-interactive = all modules
+      // deep-native = all modules
 
       // CRITICAL FIX (v1.0.12): For deep-native mode, increase file sampling!
       // Default tier-based sampling (3 files for large codebases) is too shallow.
       // Deep analysis should sample 15-20 files per module for comprehensive coverage.
-      const effectiveSamplingConfig = (analysisDepth === 'deep-native' || analysisDepth === 'deep-interactive')
+      const effectiveSamplingConfig = (analysisDepth === 'deep-native')
         ? {
             ...discovery.samplingConfig,
             // Override filesPerDir: minimum 15 for deep analysis (was 3 for large tier)

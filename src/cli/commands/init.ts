@@ -486,12 +486,8 @@ export async function initCommand(
       spinner.text = 'Using existing directory structure...';
     }
 
-    // Configure GitHub marketplace for Claude Code
-    if (toolName === 'claude') {
-      spinner.text = 'Configuring GitHub marketplace...';
-      spinner.succeed('GitHub marketplace configured');
-      console.log(chalk.gray('   ✓ Marketplace: github.com/anton-abyzov/specweave/.claude-plugin'));
-    }
+    // Note: Marketplace registration happens in installAllPlugins or via fallback
+    // No fake success message here - actual registration is done below
 
     // Copy templates
     if (!continueExisting) {

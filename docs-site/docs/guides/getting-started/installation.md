@@ -7,8 +7,22 @@ Comprehensive installation guide for all scenarios.
 Before installing SpecWeave, ensure you have:
 
 **Required:**
-- [Node.js](/docs/glossary/terms/nodejs) 18+ - Check with `node --version`
+- **[Node.js](/docs/glossary/terms/nodejs) 20.12.0+** (we recommend Node.js 22 LTS) - Check with `node --version`
 - npm 9+ - Check with `npm --version`
+
+:::danger Node.js Version Critical
+SpecWeave requires **Node.js 20.12.0 or higher**. If you see `SyntaxError: Unexpected token 'with'`, your Node.js is too old.
+
+```bash
+# Check your version
+node --version
+
+# If below v20.12.0, upgrade:
+nvm install 22 && nvm use 22 && nvm alias default 22
+```
+
+See [detailed upgrade instructions](/docs/guides/troubleshooting/common-errors#node-version-error) for all platforms.
+:::
 
 **Recommended:**
 - Claude Code (best experience)
@@ -526,20 +540,24 @@ ls -la .claude/hooks/
 ./.claude/hooks/post-task-completion.sh
 ```
 
-### Node.js version too old
+### Node.js version too old / "SyntaxError: Unexpected token 'with'"
+
+SpecWeave requires **Node.js 20.12.0 or higher** (we recommend Node.js 22 LTS).
 
 ```bash
 # Check version
 node --version
 
-# If < 18, upgrade using nvm (recommended)
-# Install nvm: https://github.com/nvm-sh/nvm
-nvm install 18
-nvm use 18
+# If below v20.12.0, upgrade using nvm (recommended):
+nvm install 22
+nvm use 22
+nvm alias default 22
 
-# Or upgrade Node.js directly
-# See: https://nodejs.org/
+# Verify
+node --version  # Should show v22.x.x
 ```
+
+**Other upgrade methods:** See [detailed upgrade instructions](/docs/guides/troubleshooting/common-errors#node-version-error) for all platforms (macOS, Linux, Windows) and version managers (nvm, fnm, Volta, asdf, Homebrew).
 
 ### npm version too old
 
@@ -645,4 +663,4 @@ Need help? We've got you covered:
 
 **SpecWeave** - Spec-Driven Development Framework
 
-🚀 **Install now:** `npm install -g specweave`
+🚀 **Install now:** `npm install -g specweave` (requires Node.js 20.12.0+)

@@ -51,8 +51,6 @@ interface PreflightStrings {
   depthDeepNative: string;
   depthDeepNativeDesc: string;
   depthDeepNativeNote: string;
-  depthDeepInteractive: string;
-  depthDeepInteractiveDesc: string;
   depthDeepApi: string;
   depthDeepApiDesc: string;
   depthDeepApiNote: string;
@@ -93,8 +91,6 @@ function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
       depthDeepNative: 'Deep - Background (Claude MAX)',
       depthDeepNativeDesc: 'AI-powered org synthesis + enterprise KB - NO EXTRA COST!',
       depthDeepNativeNote: 'Runs across sessions. Large projects may take days/weeks. Monitor: /sw:jobs',
-      depthDeepInteractive: 'Deep - Interactive (this session)',
-      depthDeepInteractiveDesc: 'Full enterprise KB with checkpoint/resume (for large projects)',
       depthDeepApi: 'Deep - Background (API key)',
       depthDeepApiDesc: 'For CI/CD or non-Claude tools (requires API key in .env)',
       depthDeepApiNote: 'Supports: Anthropic, OpenAI, Azure, Ollama, Bedrock, Vertex AI',
@@ -132,8 +128,6 @@ function getPreflightStrings(language: SupportedLanguage): PreflightStrings {
       depthDeepNative: 'Глубокий - Фоновый (Claude MAX)',
       depthDeepNativeDesc: 'ИИ-анализ через вашу подписку MAX - БЕЗ ДОПЛАТЫ!',
       depthDeepNativeNote: 'Использует claude --print в фоне. Следить: /sw:jobs',
-      depthDeepInteractive: 'Глубокий - Интерактивный (эта сессия)',
-      depthDeepInteractiveDesc: 'ИИ-анализ в текущей сессии Claude Code (пауза/продолжение)',
       depthDeepApi: 'Глубокий - Фоновый (API ключ)',
       depthDeepApiDesc: 'Для CI/CD или других инструментов (требуется API ключ в .env)',
       depthDeepApiNote: 'Поддержка: Anthropic, OpenAI, Azure, Ollama, Bedrock, Vertex AI',
@@ -242,7 +236,7 @@ export function detectExistingDocs(projectPath: string): string[] {
 /**
  * Analysis depth type - supports basic and AI-powered modes
  */
-export type AnalysisDepth = 'quick' | 'standard' | 'deep-native' | 'deep-interactive';
+export type AnalysisDepth = 'quick' | 'standard' | 'deep-native';
 
 /**
  * Estimate duration based on codebase size
@@ -283,10 +277,6 @@ export function estimateDuration(
   // Show progress bar, not time estimates (can take hours for large codebases)
   if (depth === 'deep-native') {
     return 'Background (FREE with MAX) - monitor: /sw:jobs';
-  }
-
-  if (depth === 'deep-interactive') {
-    return 'In-session (pause/resume supported)';
   }
 
   return 'Progress-based';
@@ -487,8 +477,8 @@ export async function collectLivingDocsInputs(
     .map(s => s.trim())
     .filter(s => s.length > 0);
 
-  // Analysis depth - now with 4 options including AI-powered deep modes
-  type AnalysisDepthValue = 'quick' | 'standard' | 'deep-native' | 'deep-interactive';
+  // Analysis depth - now with 3 options including AI-powered deep mode
+  type AnalysisDepthValue = 'quick' | 'standard' | 'deep-native';
 
   // Check what's available for AI analysis
   const claudeCodeStatus = await getClaudeCodeStatus();
@@ -514,13 +504,11 @@ export async function collectLivingDocsInputs(
       },
       {
         value: 'deep-native',
-        name: `⭐ ${strings.depthDeepNative} - ${strings.depthDeepNativeDesc}`,
+        name: claudeCodeStatus.available
+          ? `⭐ ${strings.depthDeepNative} - ${strings.depthDeepNativeDesc} (Recommended)`
+          : `${strings.depthDeepNative} - ${strings.depthDeepNativeDesc}`,
         description: strings.depthDeepNativeNote,
         disabled: deepNativeDisabledReason,
-      },
-      {
-        value: 'deep-interactive',
-        name: `${strings.depthDeepInteractive} - ${strings.depthDeepInteractiveDesc}`,
       },
     ],
     default: claudeCodeStatus.available ? 'deep-native' : 'quick',
