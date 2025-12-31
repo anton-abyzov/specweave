@@ -67,7 +67,10 @@ describe('Marketplace Protection - Source Code Verification', () => {
       // Must have marketplace add command
       expect(functionBody).toContain("'marketplace'");
       expect(functionBody).toContain("'add'");
-      expect(functionBody).toContain('anton-abyzov/specweave');
+      // v1.0.24+: Uses SPECWEAVE_MARKETPLACE_URL constant instead of inline string
+      expect(functionBody).toContain('SPECWEAVE_MARKETPLACE_URL');
+      // Verify the constant is defined correctly at file level
+      expect(content).toContain("const SPECWEAVE_MARKETPLACE_REPO = 'anton-abyzov/specweave'");
     });
 
     it('should have proper documentation for marketplace handling', async () => {

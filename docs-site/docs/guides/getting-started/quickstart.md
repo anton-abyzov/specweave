@@ -51,6 +51,18 @@ For manual control:
 
 **Your specs, architecture, and tests are now permanent documentation.**
 
+:::tip 💡 VSCode Users: Use Compact Mode!
+Claude Code now supports **compact mode** — keep the AI assistant inside your editor window instead of a separate terminal.
+
+```
+Just type: compact
+```
+
+This lets you work **continuously for hours** in the same VSCode window without context switching. Combined with `/sw:auto`, you can ship entire features while focusing on other work.
+
+**Bonus**: Stop hooks now work with subagents, so SpecWeave's quality gates validate every level of autonomous execution automatically.
+:::
+
 ---
 
 ## Two Approaches

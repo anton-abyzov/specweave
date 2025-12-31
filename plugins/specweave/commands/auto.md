@@ -13,6 +13,14 @@ description: Start autonomous execution session with stop hook integration. Work
 /sw:auto [INCREMENT_IDS...] [OPTIONS]
 ```
 
+:::tip 🚀 Claude Code's Game-Changing Features for Auto Mode
+**Compact Command (VSCode)** — Use `compact` mode to keep Claude Code inside your VSCode window. Work continuously for **hours** in the same session without context switching between terminal and editor. Perfect for long auto mode sessions!
+
+**STOP Hooks with Subagents** — Stop hooks now work with spawned subagents! This means `/sw:auto` can validate quality gates at EVERY level of execution. When auto mode spawns specialized agents (QA, Security, Performance), the stop hook validates their results before allowing the session to continue.
+
+**Real-world proof**: Boris Cherny (Claude Code creator) shipped 259 PRs, 497 commits, 40,000 lines in one month without opening an IDE — using autonomous execution with stop hooks. [See demo](https://x.com/bcherny/status/2004916410687050167)
+:::
+
 ## Arguments
 
 - `INCREMENT_IDS`: One or more increment IDs to process (e.g., `0001`, `0001-feature`)

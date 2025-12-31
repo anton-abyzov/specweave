@@ -455,7 +455,13 @@ specweave init .
 >
 > And speaking of real-world AI automation — Boris Cherny, the creator of Claude Code at Anthropic, recently shared something remarkable: he didn't open his IDE even once for an entire month. Every commit — 259 pull requests, 497 commits, 40,000 lines added — was written entirely by Claude Code using autonomous execution with stop hooks.
 >
-> We're living in an era where AI tools don't just assist with coding — they execute standard procedures, write production code, and run for hours or days at a time without human intervention. SpecWeave is built for this new reality. It gives AI the structure it needs to work autonomously while maintaining quality, traceability, and team alignment."
+> But here's what's really exciting: Claude Code itself has made massive leaps forward recently. Two game-changing features:
+>
+> **First, the compact command** — this is huge for VSCode users. Before, you'd have to keep switching between terminal and editor windows, constantly losing context. Now with compact mode, Claude Code lives right inside your VSCode window. You can work continuously for hours, even days, without context switching. It's the same persistent session, the same window, zero interruptions.
+>
+> **Second, STOP hooks** — and they work with subagents too. This means you can set up autonomous workflows where Claude spawns specialized agents, those agents do their work, and your stop hooks validate the results before allowing the session to complete. It's quality gates at every level of execution.
+>
+> We're living in an era where AI tools don't just assist with coding — they execute standard procedures, write production code, and run for hours or days at a time without human intervention. With these new Claude Code capabilities, that future is here now. SpecWeave is built for this new reality. It gives AI the structure it needs to work autonomously while maintaining quality, traceability, and team alignment."
 
 ---
 

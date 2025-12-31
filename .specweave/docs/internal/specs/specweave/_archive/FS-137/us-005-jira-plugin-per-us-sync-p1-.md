@@ -6,7 +6,7 @@ status: completed
 priority: P0
 created: 2025-12-09
 project: specweave
-related_projects: [acme-corp, per, {{PROJECT_ID}}` placeholders - no hook catches this, frontend-app, backend-api, mobile-app, shared-lib, frontend-app, backend-api, mobile-app  ← ❌ FORBIDDEN]
+related_projects: []
 ---
 
 # US-005: JIRA Plugin Per-US Sync (P1)
