@@ -19,6 +19,7 @@ set +e
 
 # ============================================================================
 # PROJECT ROOT (FAST - cached in env if available)
+# CRITICAL: Must NOT fallback to pwd (prevents .specweave pollution)
 # ============================================================================
 if [[ -n "$SPECWEAVE_PROJECT_ROOT" ]] && [[ -d "$SPECWEAVE_PROJECT_ROOT/.specweave" ]]; then
   PROJECT_ROOT="$SPECWEAVE_PROJECT_ROOT"
@@ -27,8 +28,10 @@ else
   while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
     PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
   done
-  [[ ! -d "$PROJECT_ROOT/.specweave" ]] && PROJECT_ROOT="$PWD"
 fi
+
+# No .specweave? Exit immediately BEFORE any variable init (prevents pollution)
+[[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
 
 # ============================================================================
 # ULTRA-FAST EXITS
@@ -37,9 +40,6 @@ STATE_DIR="$PROJECT_ROOT/.specweave/state"
 CACHE_FILE="$STATE_DIR/status-line.json"
 INCREMENTS_DIR="$PROJECT_ROOT/.specweave/increments"
 LOCK_FILE="$STATE_DIR/.status-update.lock"
-
-# No .specweave? Exit immediately
-[[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
 
 # Recursion guard
 [[ -f "$STATE_DIR/.hook-recursion-guard" ]] && exit 0

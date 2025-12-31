@@ -33,19 +33,39 @@ export class SessionRegistry {
   private registryPath: string;
   private lockPath: string;
   private logger: Logger;
+  private isValid: boolean;
 
   constructor(projectRoot: string, options: { logger?: Logger } = {}) {
     this.logger = options.logger ?? consoleLogger;
 
-    const stateDir = path.join(projectRoot, '.specweave', 'state');
+    // CRITICAL: Only operate on valid SpecWeave projects
+    const specweaveDir = path.join(projectRoot, '.specweave');
+    if (!fs.existsSync(specweaveDir)) {
+      // NOT a SpecWeave project - mark as invalid and DON'T create any directories
+      this.logger.warn(`Not a SpecWeave project: ${projectRoot} - session registry disabled`);
+      this.isValid = false;
+      this.registryPath = '';
+      this.lockPath = '';
+      return;
+    }
 
-    // Ensure state directory exists
+    this.isValid = true;
+    const stateDir = path.join(specweaveDir, 'state');
+
+    // Ensure state directory exists (safe - we confirmed .specweave exists)
     if (!fs.existsSync(stateDir)) {
       fs.mkdirSync(stateDir, { recursive: true });
     }
 
     this.registryPath = path.join(stateDir, REGISTRY_FILENAME);
     this.lockPath = path.join(stateDir, `${REGISTRY_FILENAME}.lock`);
+  }
+
+  /**
+   * Checks if this registry instance is valid (project has .specweave dir)
+   */
+  public isValidProject(): boolean {
+    return this.isValid;
   }
 
   /**
@@ -57,6 +77,10 @@ export class SessionRegistry {
    * @returns true if lock acquired, false if timeout
    */
   private async acquireLock(): Promise<boolean> {
+    if (!this.isValid) {
+      return false;
+    }
+
     const startTime = Date.now();
 
     while (Date.now() - startTime < LOCK_TIMEOUT_MS) {
@@ -111,6 +135,10 @@ export class SessionRegistry {
    * @returns The current registry state
    */
   private readRegistry(): ISessionRegistry {
+    if (!this.isValid) {
+      return this.createEmptyRegistry();
+    }
+
     // If registry doesn't exist, create empty one
     if (!fs.existsSync(this.registryPath)) {
       return this.createEmptyRegistry();
@@ -157,6 +185,10 @@ export class SessionRegistry {
    * @param registry - The registry state to write
    */
   private writeRegistry(registry: ISessionRegistry): void {
+    if (!this.isValid) {
+      return;
+    }
+
     const tempPath = `${this.registryPath}.tmp.${process.pid}`;
 
     try {

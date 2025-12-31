@@ -11,6 +11,8 @@
  *   session-id: Unique session identifier
  *   pid: Process ID
  *   type: Session type (claude-code | watchdog | heartbeat | processor)
+ *
+ * Note: Will exit silently (exit 0) if not a SpecWeave project
  */
 
 import { SessionRegistry } from '../utils/session-registry.js';
@@ -34,6 +36,12 @@ async function main() {
   }
 
   const registry = new SessionRegistry(process.cwd(), { logger: consoleLogger });
+
+  // If not a valid SpecWeave project, exit silently (don't create any directories)
+  if (!registry.isValidProject()) {
+    console.log(`Session registration skipped (not a SpecWeave project)`);
+    process.exit(0);
+  }
 
   try {
     const success = await registry.registerSession(sessionId, pid, { type });
