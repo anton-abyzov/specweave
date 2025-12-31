@@ -526,8 +526,8 @@ specweave init .
 | 21:30 | workflows/brownfield | Show brownfield approach |
 | 23:30 | lessons/05-quality-gates | Explain gates |
 | 25:30 | lessons/index | Show learning paths |
-| 27:30 | overview/dogfooding | Show real metrics |
-| 29:30 | intro.md | Final recap |
+| 27:30 | overview/dogfooding | Show real metrics + Boris Cherny example |
+| 30:00 | intro.md | Final recap |
 
 ### Terminal Commands to Demo
 
@@ -573,8 +573,8 @@ grep -ril "auth" .specweave/docs/internal/  # Search docs
 21:30 - Working with Existing Codebases (Brownfield)
 23:30 - Quality Gates & TDD
 25:30 - The Learning Path (16 Lessons)
-27:30 - Dogfooding: Real Metrics (186K LOC, 0% failures)
-29:30 - Recap & Getting Started
+27:30 - Dogfooding: Real Metrics (186K LOC, 0% failures, AI automation era)
+30:00 - Recap & Getting Started
 ```
 
 ### YouTube Description Template
