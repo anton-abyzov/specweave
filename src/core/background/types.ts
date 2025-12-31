@@ -91,16 +91,14 @@ export type BrownfieldPhase =
  * Analysis depth options
  * - quick/standard: Basic Node.js file scanning (no AI)
  * - deep-native: Uses Claude Code CLI with MAX subscription (FREE!)
- * - deep-interactive: Uses Claude Code agents in current session
  *
  * NOTE: Duration varies by project size. For enterprise projects (50+ repos),
- * deep modes may run across multiple sessions spanning days or weeks.
+ * deep mode may run across multiple sessions spanning days or weeks.
  */
 export type AnalysisDepth =
   | 'quick'           // Core analysis: structure + imports + inconsistencies + basic diagrams
   | 'standard'        // Full module analysis + dependencies + team detection + relationships + diagrams
-  | 'deep-native'     // Claude Code CLI (MAX subscription) - AI-powered org synthesis, enterprise KB
-  | 'deep-interactive'; // In-session Claude Code agents - Full enterprise KB with checkpoint/resume
+  | 'deep-native';    // Claude Code CLI (MAX subscription) - AI-powered org synthesis, enterprise KB
 
 export interface BrownfieldJobConfig {
   type: 'brownfield-analysis';

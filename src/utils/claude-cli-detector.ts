@@ -3,15 +3,26 @@
  *
  * Provides robust detection of Claude Code CLI with comprehensive validation.
  * Goes beyond checking if 'claude' exists - verifies it can actually run plugin commands.
+ *
+ * IMPORTANT: This detector handles multiple scenarios:
+ * 1. Claude installed globally via npm (binary in PATH)
+ * 2. Claude defined as shell function in .zshrc/.bashrc
+ * 3. Claude defined as shell alias
+ *
+ * Shell functions/aliases are only visible in interactive shells, so we use
+ * multiple detection strategies to find Claude regardless of how it's installed.
  */
 
-import { execFileNoThrowSync } from './execFileNoThrow.js';
+import { execFileNoThrowSync, execFileNoThrow } from './execFileNoThrow.js';
+import * as path from 'path';
+import * as os from 'os';
+import * as fs from './fs-native.js';
 
 export interface ClaudeCliStatus {
   /** Whether Claude CLI is available and working */
   available: boolean;
 
-  /** Whether the claude command exists in PATH */
+  /** Whether the claude command exists (binary, function, or alias) */
   commandExists: boolean;
 
   /** Whether plugin commands work */
@@ -26,8 +37,11 @@ export interface ClaudeCliStatus {
   /** Error message for debugging */
   errorMessage?: string;
 
-  /** Full path to claude command */
+  /** Full path to claude command (if binary) */
   commandPath?: string;
+
+  /** How claude was found: 'binary', 'function', 'alias', or 'npm-global' */
+  detectionMethod?: 'binary' | 'function' | 'alias' | 'npm-global';
 
   /** Exit code from failed command */
   exitCode?: number;
@@ -40,15 +54,19 @@ export interface ClaudeCliStatus {
 
   /** Platform information */
   platform: NodeJS.Platform;
+
+  /** Whether CLI is installed but detection was via shell workaround */
+  shellWorkaround?: boolean;
 }
 
 /**
  * Robustly detect if Claude CLI is available and working
  *
- * Unlike simple `which claude` checks, this function:
- * 1. Checks if 'claude' command exists in PATH
- * 2. Verifies it can run --version (basic sanity check)
- * 3. Verifies plugin commands are supported (claude plugin --help)
+ * This function uses multiple detection strategies:
+ * 1. Check if 'claude' binary exists in PATH (which/where)
+ * 2. Check common npm global install locations directly
+ * 3. Try running 'claude --version' via shell (catches shell functions/aliases)
+ * 4. Verify plugin commands are supported
  *
  * @returns Detailed status about Claude CLI availability
  *
@@ -74,84 +92,129 @@ export function detectClaudeCli(): ClaudeCliStatus {
 
   const isDebug = process.env.DEBUG === 'true' || process.env.SPECWEAVE_DEBUG === 'true';
 
-  // Step 1: Check if 'claude' command exists using which/where
+  if (isDebug) {
+    console.error('\n[DEBUG] Claude CLI Detection:');
+    console.error(`  Platform: ${process.platform}`);
+  }
+
+  // Strategy 1: Check if 'claude' command exists using which/where
   const whichCommand = process.platform === 'win32' ? 'where' : 'which';
   const whichResult = execFileNoThrowSync(whichCommand, ['claude']);
 
   if (isDebug) {
-    console.error('\n[DEBUG] Claude CLI Detection:');
-    console.error(`  Platform: ${process.platform}`);
-    console.error(`  Which command: ${whichCommand}`);
-    console.error(`  Which result: ${whichResult.success ? 'found' : 'not found'}`);
+    console.error(`\n  Strategy 1: ${whichCommand} claude`);
+    console.error(`    Result: ${whichResult.success ? 'found' : 'not found'}`);
     if (whichResult.success) {
-      console.error(`  Path: ${whichResult.stdout.trim()}`);
+      console.error(`    Path: ${whichResult.stdout.trim()}`);
     }
   }
 
-  if (!whichResult.success) {
+  if (whichResult.success) {
+    status.commandExists = true;
+    status.commandPath = whichResult.stdout.trim().split('\n')[0];
+    status.detectionMethod = 'binary';
+  }
+
+  // Strategy 2: Check common npm global locations directly (fallback)
+  if (!status.commandExists && process.platform !== 'win32') {
+    const npmGlobalPaths = getNpmGlobalPaths();
+
+    if (isDebug) {
+      console.error(`\n  Strategy 2: Check npm global paths`);
+      console.error(`    Paths to check: ${npmGlobalPaths.join(', ')}`);
+    }
+
+    for (const npmPath of npmGlobalPaths) {
+      const claudePath = path.join(npmPath, 'claude');
+      if (fs.existsSync(claudePath)) {
+        status.commandExists = true;
+        status.commandPath = claudePath;
+        status.detectionMethod = 'npm-global';
+        if (isDebug) {
+          console.error(`    Found at: ${claudePath}`);
+        }
+        break;
+      }
+    }
+  }
+
+  // Strategy 3: Try running claude via interactive shell (catches functions/aliases)
+  // This is the KEY fix for shell functions defined in .zshrc/.bashrc
+  if (!status.commandExists && process.platform !== 'win32') {
+    if (isDebug) {
+      console.error(`\n  Strategy 3: Try via interactive shell (zsh -ic / bash -ic)`);
+    }
+
+    const shellResult = tryClaudeViaInteractiveShell(isDebug);
+    if (shellResult.success) {
+      status.commandExists = true;
+      status.detectionMethod = shellResult.method;
+      status.shellWorkaround = true;
+      status.version = shellResult.version;
+
+      if (isDebug) {
+        console.error(`    Found via ${shellResult.method}!`);
+        console.error(`    Version: ${shellResult.version}`);
+      }
+    }
+  }
+
+  // If command not found after all strategies, return early
+  if (!status.commandExists) {
     status.error = 'command_not_found';
-    status.errorMessage = 'claude command not found in PATH';
+    status.errorMessage = 'claude command not found (checked: PATH, npm global, shell functions)';
     status.debugStdout = whichResult.stdout;
     status.debugStderr = whichResult.stderr;
     status.exitCode = whichResult.exitCode;
     return status;
   }
 
-  status.commandExists = true;
-  status.commandPath = whichResult.stdout.trim().split('\n')[0]; // First line if multiple paths
-
   // Step 2: Verify we can run the command (--version check)
-  const versionResult = execFileNoThrowSync('claude', ['--version'], {
-    timeout: 10000, // Increased to 10 seconds for slow systems
-  });
+  // If we already got version via shell workaround, skip this
+  if (!status.version) {
+    const versionResult = status.shellWorkaround
+      ? runViaInteractiveShell('claude --version', isDebug)
+      : execFileNoThrowSync('claude', ['--version'], { timeout: 10000 });
 
-  if (isDebug) {
-    console.error(`\n  Version check (claude --version):`);
-    console.error(`    Success: ${versionResult.success}`);
-    console.error(`    Exit code: ${versionResult.exitCode}`);
-    console.error(`    Stdout: "${versionResult.stdout}"`);
-    console.error(`    Stderr: "${versionResult.stderr}"`);
-    if (versionResult.error) {
-      console.error(`    Error code: ${(versionResult.error as any).code}`);
-      console.error(`    Error message: ${versionResult.error.message}`);
-    }
-  }
-
-  if (!versionResult.success) {
-    // Capture full diagnostic info
-    status.debugStdout = versionResult.stdout;
-    status.debugStderr = versionResult.stderr;
-    status.exitCode = versionResult.exitCode;
-
-    // Classify the error
-    const errorStr = `${versionResult.stderr} ${versionResult.stdout}`.toLowerCase();
-
-    if (errorStr.includes('eacces') || errorStr.includes('permission')) {
-      status.error = 'permission_denied';
-      status.errorMessage = 'Permission denied when running claude command';
-    } else if (errorStr.includes('enoent') || errorStr.includes('not found')) {
-      status.error = 'command_not_found';
-      status.errorMessage = 'claude command exists in PATH but cannot be executed';
-    } else if (versionResult.exitCode === 127) {
-      status.error = 'command_not_found';
-      status.errorMessage = 'Command not found (exit code 127)';
-    } else if (!versionResult.stdout && !versionResult.stderr) {
-      status.error = 'version_check_failed';
-      status.errorMessage = `claude --version produced no output (exit code: ${versionResult.exitCode})`;
-    } else {
-      status.error = 'version_check_failed';
-      status.errorMessage = `claude --version failed with exit code ${versionResult.exitCode}`;
+    if (isDebug) {
+      console.error(`\n  Version check (claude --version):`);
+      console.error(`    Success: ${versionResult.success}`);
+      console.error(`    Exit code: ${versionResult.exitCode}`);
+      console.error(`    Stdout: "${versionResult.stdout}"`);
+      console.error(`    Stderr: "${versionResult.stderr}"`);
     }
 
-    return status;
-  }
+    if (!versionResult.success) {
+      status.debugStdout = versionResult.stdout;
+      status.debugStderr = versionResult.stderr;
+      status.exitCode = versionResult.exitCode;
 
-  status.version = versionResult.stdout.trim();
+      const errorStr = `${versionResult.stderr} ${versionResult.stdout}`.toLowerCase();
+
+      if (errorStr.includes('eacces') || errorStr.includes('permission')) {
+        status.error = 'permission_denied';
+        status.errorMessage = 'Permission denied when running claude command';
+      } else if (errorStr.includes('enoent') || errorStr.includes('not found')) {
+        status.error = 'command_not_found';
+        status.errorMessage = 'claude command exists but cannot be executed';
+      } else if (versionResult.exitCode === 127) {
+        status.error = 'command_not_found';
+        status.errorMessage = 'Command not found (exit code 127)';
+      } else {
+        status.error = 'version_check_failed';
+        status.errorMessage = `claude --version failed with exit code ${versionResult.exitCode}`;
+      }
+
+      return status;
+    }
+
+    status.version = versionResult.stdout.trim();
+  }
 
   // Step 3: Verify plugin commands are supported
-  const pluginHelpResult = execFileNoThrowSync('claude', ['plugin', '--help'], {
-    timeout: 10000,
-  });
+  const pluginHelpResult = status.shellWorkaround
+    ? runViaInteractiveShell('claude plugin --help', isDebug)
+    : execFileNoThrowSync('claude', ['plugin', '--help'], { timeout: 10000 });
 
   if (isDebug) {
     console.error(`\n  Plugin check (claude plugin --help):`);
@@ -175,10 +238,152 @@ export function detectClaudeCli(): ClaudeCliStatus {
   status.available = true;
 
   if (isDebug) {
-    console.error(`\n  ✅ All checks passed! Claude CLI is ready.\n`);
+    console.error(`\n  ✅ All checks passed! Claude CLI is ready.`);
+    if (status.shellWorkaround) {
+      console.error(`  ℹ️  Note: Detected via shell ${status.detectionMethod} (not direct binary)`);
+    }
+    console.error('');
   }
 
   return status;
+}
+
+/**
+ * Get common npm global bin paths for the current platform
+ */
+function getNpmGlobalPaths(): string[] {
+  const paths: string[] = [];
+  const home = os.homedir();
+
+  if (process.platform === 'darwin') {
+    // macOS: Common locations for npm global installs
+    paths.push('/usr/local/bin');
+    paths.push('/opt/homebrew/bin');
+    paths.push(path.join(home, '.npm-global', 'bin'));
+    paths.push(path.join(home, '.nvm', 'versions', 'node')); // Will need to search subdirs
+    // Check nvm current version
+    const nvmDir = path.join(home, '.nvm', 'versions', 'node');
+    if (fs.existsSync(nvmDir)) {
+      try {
+        const versions = fs.readdirSync(nvmDir);
+        for (const version of versions) {
+          paths.push(path.join(nvmDir, version, 'bin'));
+        }
+      } catch {
+        // Ignore read errors
+      }
+    }
+  } else if (process.platform === 'linux') {
+    paths.push('/usr/local/bin');
+    paths.push('/usr/bin');
+    paths.push(path.join(home, '.npm-global', 'bin'));
+    paths.push(path.join(home, '.local', 'bin'));
+    // nvm paths
+    const nvmDir = path.join(home, '.nvm', 'versions', 'node');
+    if (fs.existsSync(nvmDir)) {
+      try {
+        const versions = fs.readdirSync(nvmDir);
+        for (const version of versions) {
+          paths.push(path.join(nvmDir, version, 'bin'));
+        }
+      } catch {
+        // Ignore read errors
+      }
+    }
+  }
+
+  return paths;
+}
+
+/**
+ * Try to run claude via interactive shell to detect shell functions/aliases
+ */
+function tryClaudeViaInteractiveShell(isDebug: boolean): {
+  success: boolean;
+  method?: 'function' | 'alias';
+  version?: string;
+} {
+  // Determine user's shell
+  const userShell = process.env.SHELL || '/bin/bash';
+  const isZsh = userShell.includes('zsh');
+
+  // Try zsh first if it's the user's shell, otherwise bash
+  const shells = isZsh ? ['zsh', 'bash'] : ['bash', 'zsh'];
+
+  for (const shell of shells) {
+    // Use -i for interactive (loads .zshrc/.bashrc) and -c for command
+    // Note: Some systems may not have zsh, so we fall back
+    const result = execFileNoThrowSync(shell, ['-ic', 'claude --version'], {
+      timeout: 15000, // Longer timeout for interactive shell startup
+      env: {
+        ...process.env,
+        // Prevent shell from printing welcome messages
+        BASH_SILENCE_DEPRECATION_WARNING: '1',
+      },
+    });
+
+    if (isDebug) {
+      console.error(`    ${shell} -ic 'claude --version': ${result.success ? 'OK' : 'FAIL'}`);
+      if (result.success) {
+        console.error(`      Version: ${result.stdout.trim()}`);
+      } else {
+        console.error(`      Exit code: ${result.exitCode}`);
+        console.error(`      Stderr: ${result.stderr.substring(0, 100)}`);
+      }
+    }
+
+    if (result.success && result.stdout.includes('claude')) {
+      // It works! Now determine if it's a function or alias
+      const typeResult = execFileNoThrowSync(shell, ['-ic', 'type claude'], {
+        timeout: 5000,
+      });
+
+      let method: 'function' | 'alias' = 'function';
+      if (typeResult.success) {
+        const typeOutput = typeResult.stdout.toLowerCase();
+        if (typeOutput.includes('alias')) {
+          method = 'alias';
+        } else if (typeOutput.includes('function')) {
+          method = 'function';
+        }
+      }
+
+      return {
+        success: true,
+        method,
+        version: result.stdout.trim(),
+      };
+    }
+  }
+
+  return { success: false };
+}
+
+/**
+ * Run a command via interactive shell (for when claude is a shell function)
+ */
+function runViaInteractiveShell(
+  command: string,
+  isDebug: boolean
+): { success: boolean; stdout: string; stderr: string; exitCode: number; error?: Error } {
+  const userShell = process.env.SHELL || '/bin/bash';
+  const isZsh = userShell.includes('zsh');
+  const shell = isZsh ? 'zsh' : 'bash';
+
+  const result = execFileNoThrowSync(shell, ['-ic', command], {
+    timeout: 15000,
+    env: {
+      ...process.env,
+      BASH_SILENCE_DEPRECATION_WARNING: '1',
+    },
+  });
+
+  if (isDebug) {
+    console.error(`    Running via ${shell} -ic: ${command}`);
+    console.error(`    Success: ${result.success}, Exit: ${result.exitCode}`);
+  }
+
+  return result;
 }
 
 /**
@@ -276,11 +481,17 @@ export function getClaudeCliSuggestions(status: ClaudeCliStatus): string[] {
 
   switch (status.error) {
     case 'command_not_found':
-      suggestions.push('Install Claude Code CLI via npm:');
+      suggestions.push('Claude Code CLI not found.');
+      suggestions.push('');
+      suggestions.push('Install globally via npm:');
       suggestions.push('  → npm install -g @anthropic-ai/claude-code');
       suggestions.push('');
       suggestions.push('Or download from:');
       suggestions.push('  → https://claude.com/code');
+      suggestions.push('');
+      suggestions.push('NOTE: If you have a shell function/alias for "claude" in .zshrc/.bashrc,');
+      suggestions.push('the actual binary must also be installed for SpecWeave to use it.');
+      suggestions.push('Shell functions wrap the binary but don\'t replace it.');
       break;
 
     case 'permission_denied':

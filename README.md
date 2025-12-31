@@ -11,10 +11,11 @@
 [![YouTube](https://img.shields.io/badge/YouTube-Tutorials-red?logo=youtube&logoColor=white)](https://www.youtube.com/@antonabyzov)
 
 ```bash
+# Requires Node.js 20.12.0+ (we recommend Node.js 22 LTS)
 npm install -g specweave
 ```
 
-> **New in v1.0.62**: Auto mode can now run for hours — tested and proven. Mobile app generation, multi-repo coordination, E2E tests running automatically.
+> **New in v1.0.63**: Auto mode can now run for hours — tested and proven. Mobile app generation, multi-repo coordination, E2E tests running automatically.
 
 ---
 
@@ -100,6 +101,22 @@ Every AI coding tool promises productivity. But after the chat ends:
 ---
 
 ## Quick Start
+
+### Prerequisites
+
+**Node.js 20.12.0 or higher is required** (we recommend Node.js 22 LTS).
+
+```bash
+# Check your version
+node --version
+
+# If below v20.12.0, upgrade using nvm:
+nvm install 22 && nvm use 22 && nvm alias default 22
+```
+
+> ⚠️ **Getting `SyntaxError: Unexpected token 'with'`?** Your Node.js is too old. See [upgrade instructions](https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error).
+
+### Installation
 
 ```bash
 npm install -g specweave
@@ -205,9 +222,11 @@ Three gates before any increment closes:
 
 ## Requirements
 
-- **Node.js 20.12.0+** (LTS recommended) — Required for `util.styleText` API
+- **Node.js 20.12.0+** (we recommend Node.js 22 LTS) — [upgrade guide](https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error)
 - Any AI coding tool: Claude Code, Cursor, Windsurf, Cline, Aider, etc.
 - Git repository
+
+> 💡 **Why Node.js 20.12.0+?** SpecWeave uses modern JavaScript features (ES2022 Import Attributes) that require Node.js 20.12.0 or higher. If you see `SyntaxError: Unexpected token 'with'`, you need to upgrade Node.js.
 
 ---
 
