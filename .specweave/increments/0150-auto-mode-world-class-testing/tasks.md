@@ -142,7 +142,7 @@
 ### T-008: Create prompt-chunker module
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Create TypeScript module that analyzes prompts and extracts discrete features.
@@ -150,18 +150,18 @@
 **Test**: Given "Build e-commerce with auth, products, cart, checkout" → When analyzing → Then extracts 4 features
 
 **Acceptance**:
-- [ ] Create src/core/auto/prompt-chunker.ts
-- [ ] Implement extractFeatures() using NLP patterns
-- [ ] Identify feature boundaries (and, with, including, etc.)
-- [ ] Estimate complexity per feature
-- [ ] Export for use in setup-auto.sh
+- [x] Create src/core/auto/prompt-chunker.ts
+- [x] Implement extractFeatures() using NLP patterns
+- [x] Identify feature boundaries (and, with, including, etc.)
+- [x] Estimate complexity per feature
+- [x] Export for use in setup-auto.sh
 
 ---
 
 ### T-009: Implement increment planning algorithm
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-02, AC-US1-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Group features into right-sized increments (5-15 tasks) with dependency tracking.
@@ -169,11 +169,11 @@
 **Test**: Given 4 features with varying complexity → When planning → Then creates 2-4 increments
 
 **Acceptance**:
-- [ ] Target 5-15 tasks per increment
-- [ ] Prefer single deliverable per increment
-- [ ] Identify dependencies (auth before checkout)
-- [ ] Order increments by dependency
-- [ ] Return IncrementPlan[] with descriptions
+- [x] Target 5-15 tasks per increment
+- [x] Prefer single deliverable per increment
+- [x] Identify dependencies (auth before checkout)
+- [x] Order increments by dependency
+- [x] Return IncrementPlan[] with descriptions
 
 ---
 
