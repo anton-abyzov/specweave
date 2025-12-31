@@ -18,7 +18,7 @@
 
 set +e  # EMERGENCY FIX: Changed from set -euo pipefail to prevent Claude Code crashes
 
-# Find project root
+# Find project root (CRITICAL: must NOT fallback to pwd!)
 find_project_root() {
   local dir="$PWD"
   while [[ "$dir" != "/" ]]; do
@@ -28,10 +28,18 @@ find_project_root() {
     fi
     dir=$(dirname "$dir")
   done
-  echo "$PWD"
+  # Return empty - NOT pwd (prevents .specweave pollution)
+  return 1
 }
 
 PROJECT_ROOT=$(find_project_root)
+
+# Exit early if not a SpecWeave project (prevents .specweave pollution)
+if [[ -z "$PROJECT_ROOT" ]] || [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
+  echo "Not a SpecWeave project - skipping validation"
+  exit 0
+fi
+
 INCREMENTS_DIR="$PROJECT_ROOT/.specweave/increments"
 
 # Valid IncrementStatus enum values (from src/core/types/increment-metadata.ts)

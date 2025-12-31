@@ -6,14 +6,34 @@
 # Purpose: Track session for zombie prevention
 #
 # v0.35.3 - Fixed: use set +e for hook safety
+# v0.35.x - Fixed: Don't create .specweave in non-project directories
 
 set +e  # CRITICAL: Never use set -e in hooks (causes cascading failures)
 
-PROJECT_ROOT="${PWD}"
+# Find project root by searching upward for .specweave/ directory
+find_specweave_root() {
+  local dir="$1"
+  while [[ "$dir" != "/" ]]; do
+    if [[ -d "$dir/.specweave" ]]; then
+      echo "$dir"
+      return 0
+    fi
+    dir="$(dirname "$dir")"
+  done
+  return 1  # NOT FOUND - do NOT fallback to pwd
+}
+
+PROJECT_ROOT="$(find_specweave_root "$PWD")"
+if [[ -z "$PROJECT_ROOT" ]]; then
+  # NOT a SpecWeave project - exit silently without creating any files
+  echo '{"continue": true}'
+  exit 0
+fi
+
 SESSION_ID="session-$$-$(date +%s)"
 LOG_DIR="${PROJECT_ROOT}/.specweave/logs/sessions"
 
-# Ensure log directory exists
+# Ensure log directory exists (now safe - PROJECT_ROOT is validated)
 mkdir -p "$LOG_DIR"
 
 # Log file for this session

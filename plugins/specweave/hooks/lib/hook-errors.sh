@@ -22,7 +22,7 @@ set +e
 
 HOOK_ERRORS_VERSION="1.0.0"
 
-# Find project root
+# Find project root (CRITICAL: must NOT fallback to pwd!)
 _find_hook_project_root() {
   local dir="${1:-$PWD}"
   while [[ "$dir" != "/" ]]; do
@@ -32,14 +32,28 @@ _find_hook_project_root() {
     fi
     dir=$(dirname "$dir")
   done
-  echo "$PWD"
+  # Return empty string - NOT pwd (prevents .specweave pollution)
+  return 1
 }
 
 _HOOK_PROJECT_ROOT=$(_find_hook_project_root)
+
+# Exit early if not a SpecWeave project (prevents .specweave pollution)
+if [[ -z "$_HOOK_PROJECT_ROOT" ]] || [[ ! -d "$_HOOK_PROJECT_ROOT/.specweave" ]]; then
+  # Define no-op functions so sourcing scripts don't fail
+  log_hook_warning() { :; }
+  log_hook_error() { :; }
+  log_hook_debug() { :; }
+  reset_hook_errors() { :; }
+  count_hook_errors() { echo "0"; }
+  output_hook_warnings() { :; }
+  return 0 2>/dev/null || exit 0
+fi
+
 _HOOK_LOGS_DIR="$_HOOK_PROJECT_ROOT/.specweave/logs"
 _HOOK_STATE_DIR="$_HOOK_PROJECT_ROOT/.specweave/state"
 
-# Ensure directories exist
+# Ensure directories exist (safe - project root validated above)
 mkdir -p "$_HOOK_LOGS_DIR" 2>/dev/null || true
 mkdir -p "$_HOOK_STATE_DIR" 2>/dev/null || true
 

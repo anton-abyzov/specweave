@@ -26,18 +26,23 @@ export interface LanguageSelectionResult {
 
 /**
  * Get language display info with native names
+ *
+ * NOTE: Uses text identifiers instead of emoji flags for cross-platform stability.
+ * Flag emojis (🇬🇧, 🇪🇸, etc.) render as 2-letter codes (GB, ES) on many terminals,
+ * especially on Windows, older Linux terminals, and some IDE integrated terminals.
+ * Text identifiers work consistently across all platforms.
  */
 function getLanguageChoices(): Array<{ name: string; value: SupportedLanguage }> {
   return [
-    { name: '🇬🇧 English', value: 'en' },
-    { name: '🇪🇸 Español (Spanish)', value: 'es' },
-    { name: '🇨🇳 中文 (Chinese)', value: 'zh' },
-    { name: '🇩🇪 Deutsch (German)', value: 'de' },
-    { name: '🇷🇺 Русский (Russian)', value: 'ru' },
-    { name: '🇫🇷 Français (French)', value: 'fr' },
-    { name: '🇯🇵 日本語 (Japanese)', value: 'ja' },
-    { name: '🇰🇷 한국어 (Korean)', value: 'ko' },
-    { name: '🇧🇷 Português (Portuguese)', value: 'pt' },
+    { name: 'English', value: 'en' },
+    { name: 'Español (Spanish)', value: 'es' },
+    { name: '中文 (Chinese)', value: 'zh' },
+    { name: 'Deutsch (German)', value: 'de' },
+    { name: 'Русский (Russian)', value: 'ru' },
+    { name: 'Français (French)', value: 'fr' },
+    { name: '日本語 (Japanese)', value: 'ja' },
+    { name: '한국어 (Korean)', value: 'ko' },
+    { name: 'Português (Portuguese)', value: 'pt' },
   ];
 }
 

@@ -22,7 +22,7 @@ HOOK_TIMEOUT="${HOOK_TIMEOUT:-5}"
 WRAPPER_VERSION="1.0.43"
 
 # ============================================================================
-# PROJECT ROOT DETECTION (for logging)
+# PROJECT ROOT DETECTION (for logging) - CRITICAL: must NOT fallback to pwd!
 # ============================================================================
 
 find_project_root() {
@@ -34,10 +34,19 @@ find_project_root() {
     fi
     dir=$(dirname "$dir")
   done
-  echo "$PWD"
+  # Return empty - NOT pwd (prevents .specweave pollution)
+  return 1
 }
 
 PROJECT_ROOT=$(find_project_root)
+
+# Exit early if not a SpecWeave project (prevents .specweave pollution)
+if [[ -z "$PROJECT_ROOT" ]] || [[ ! -d "$PROJECT_ROOT/.specweave" ]]; then
+  # Not a SpecWeave project - output success JSON and exit
+  echo '{"continue": true}'
+  exit 0
+fi
+
 LOGS_DIR="$PROJECT_ROOT/.specweave/logs"
 WARNING_LOG="$LOGS_DIR/hook-warnings.log"
 mkdir -p "$LOGS_DIR" 2>/dev/null || true
