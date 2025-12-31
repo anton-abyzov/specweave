@@ -310,7 +310,7 @@ async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void
           'plugin',
           'marketplace',
           'add',
-          'https://github.com/anton-abyzov/specweave'
+          SPECWEAVE_MARKETPLACE_URL
         ]);
 
         if (!addResult.success) {
@@ -347,7 +347,7 @@ async function refreshMarketplace(spinner: ReturnType<typeof ora>): Promise<void
       'plugin',
       'marketplace',
       'add',
-      'https://github.com/anton-abyzov/specweave'
+      SPECWEAVE_MARKETPLACE_URL
     ]);
 
     if (!addResult.success) {
