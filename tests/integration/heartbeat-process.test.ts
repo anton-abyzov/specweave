@@ -18,6 +18,8 @@ describe('Heartbeat Process - Integration', () => {
 
   beforeEach(() => {
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'heartbeat-integration-'));
+    // Create .specweave directory - required for SessionRegistry to be valid
+    fs.mkdirSync(path.join(testDir, '.specweave'), { recursive: true });
     registry = new SessionRegistry(testDir);
 
     // Ensure logs directory exists

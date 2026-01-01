@@ -17,6 +17,8 @@ describe('SessionRegistry - Atomicity Tests', () => {
 
   beforeEach(() => {
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'session-registry-atomicity-'));
+    // Create .specweave directory - required for SessionRegistry to be valid
+    fs.mkdirSync(path.join(testDir, '.specweave'), { recursive: true });
     registry = new SessionRegistry(testDir);
   });
 

@@ -19,6 +19,8 @@ describe('SessionRegistry', () => {
   beforeEach(() => {
     // Create unique temp directory for each test
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'session-registry-test-'));
+    // Create .specweave directory - required for SessionRegistry to be valid
+    fs.mkdirSync(path.join(testDir, '.specweave'), { recursive: true });
     registry = new SessionRegistry(testDir);
   });
 

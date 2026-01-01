@@ -17,6 +17,8 @@ describe('Cleanup Logging - Integration', () => {
 
   beforeEach(() => {
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cleanup-logging-'));
+    // Create .specweave directory - required for SessionRegistry to be valid
+    fs.mkdirSync(path.join(testDir, '.specweave'), { recursive: true });
     registry = new SessionRegistry(testDir);
     logsDir = path.join(testDir, '.specweave', 'logs');
 
