@@ -17,6 +17,8 @@ describe('Cleanup Service - Integration', () => {
 
   beforeEach(() => {
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cleanup-service-'));
+    // Create .specweave directory - required for SessionRegistry to be valid
+    fs.mkdirSync(path.join(testDir, '.specweave'), { recursive: true });
     registry = new SessionRegistry(testDir);
   });
 
