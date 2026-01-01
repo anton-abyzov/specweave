@@ -77,7 +77,7 @@ jobs:
 
       - name: Upload Test Results on Failure
         if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: smoke-test-failure-${{ github.run_number }}
           path: |
@@ -174,7 +174,7 @@ jobs:
   #
   #     - name: Upload Artifacts
   #       if: always()
-  #       uses: actions/upload-artifact@v5
+  #       uses: actions/upload-artifact@v6
   #       with:
   #         name: generated-project-${{ matrix.scenario.name }}-${{ github.run_number }}
   #         path: |
