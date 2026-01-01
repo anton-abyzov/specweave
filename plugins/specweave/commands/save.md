@@ -27,12 +27,35 @@ description: SMART save - auto-generates commit messages, handles git pull/merge
 
 ## What This Command Does (In Order)
 
-1. **Detect repos** - Current repo OR all umbrella child repos
+1. **Detect repos** - Uses smart detection (see below)
 2. **Pre-flight check** - Check remote status BEFORE anything else
 3. **Smart sync** - Auto-pull/rebase if behind remote (with stash if needed)
 4. **Auto-commit message** - Generate from changes if not provided
 5. **Push** - Push to remote with auto-retry on recoverable errors
 6. **Report** - Show what was done
+
+### Repository Detection (Auto-Discovery)
+
+The `/sw:save` command uses a **three-tier detection strategy**:
+
+1. **Umbrella Config (priority)** - If `umbrella.childRepos` is configured in `.specweave/config.json`, uses that list
+2. **Git-Scan Fallback (auto-discovery)** - Automatically scans for nested `.git` directories (up to 3 levels deep)
+   - Discovers repos in `repositories/`, `packages/`, `services/`, etc.
+   - Works for microservices architectures without explicit configuration
+3. **Parent Project** - Always includes the root project if it has `.git`
+
+**Example: Microservices without config**
+
+```
+my-project/                    # ← Parent repo (included)
+├── repositories/
+│   ├── frontend/              # ← Auto-discovered
+│   ├── backend/               # ← Auto-discovered
+│   └── shared-lib/            # ← Auto-discovered
+└── .specweave/
+```
+
+Running `/sw:save` will detect and commit+push to **all 4 repositories** automatically!
 
 ## Usage
 

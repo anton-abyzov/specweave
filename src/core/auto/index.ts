@@ -139,8 +139,22 @@ export {
   matchRouteToManifest,
   trackRouteCoverage,
   parseViewportFromProject,
+  parsePlaywrightConfig,
+  getRequiredViewports,
+  checkViewportCoverage,
   generateCoverageReport,
   DEFAULT_VIEWPORTS,
+  // Accessibility Audit (Phase 6)
+  hasAxeInstalled,
+  parseAccessibilityResults,
+  shouldBlockOnAccessibility,
+  generateAccessibilityReport,
+  // Console Error Detection (Phase 6)
+  parseConsoleErrors,
+  shouldBlockOnConsoleErrors,
+  // UI State Coverage (Phase 6)
+  parseUIStateCoverage,
+  generateUIStateReport,
   type RouteEntry,
   type ActionEntry,
   type ViewportsCovered,
@@ -149,4 +163,15 @@ export {
   type FrameworkType,
   type RouteVisit,
   type RouteTrackingResult,
+  type PlaywrightViewportConfig,
+  type PlaywrightProject,
+  // Accessibility types
+  type A11yViolationSeverity,
+  type A11yViolation,
+  type A11yAuditResult,
+  // Console error types
+  type ConsoleError,
+  type ConsoleErrorResult,
+  // UI state types
+  type UIStateCoverage,
 } from './e2e-coverage.js';

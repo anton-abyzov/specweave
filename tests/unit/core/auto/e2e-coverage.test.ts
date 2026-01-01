@@ -21,7 +21,21 @@ import {
   matchRouteToManifest,
   trackRouteCoverage,
   parseViewportFromProject,
+  parsePlaywrightConfig,
+  getRequiredViewports,
+  checkViewportCoverage,
   generateCoverageReport,
+  // Phase 6 - Accessibility
+  hasAxeInstalled,
+  parseAccessibilityResults,
+  shouldBlockOnAccessibility,
+  generateAccessibilityReport,
+  // Phase 6 - Console Errors
+  parseConsoleErrors,
+  shouldBlockOnConsoleErrors,
+  // Phase 6 - UI State Coverage
+  parseUIStateCoverage,
+  generateUIStateReport,
 } from '../../../../src/core/auto/e2e-coverage.js';
 
 describe('e2e-coverage', () => {
@@ -666,6 +680,667 @@ describe('e2e-coverage', () => {
 
       expect(report).toContain('Incomplete Viewport Coverage');
       expect(report).toContain('missing: tablet, desktop');
+    });
+  });
+
+  describe('parsePlaywrightConfig', () => {
+    it('should parse config with explicit viewport widths', () => {
+      fs.writeFileSync(
+        path.join(testDir, 'playwright.config.ts'),
+        `
+        export default {
+          projects: [
+            { name: 'Mobile Chrome', use: { viewport: { width: 375, height: 667 } } },
+            { name: 'Tablet', use: { viewport: { width: 768, height: 1024 } } },
+            { name: 'Desktop', use: { viewport: { width: 1280, height: 720 } } },
+          ]
+        };
+        `
+      );
+
+      const config = parsePlaywrightConfig(testDir);
+
+      expect(config.viewports.mobile).toBe(true);
+      expect(config.viewports.tablet).toBe(true);
+      expect(config.viewports.desktop).toBe(true);
+      expect(config.projects).toHaveLength(3);
+    });
+
+    it('should parse config with device names', () => {
+      fs.writeFileSync(
+        path.join(testDir, 'playwright.config.ts'),
+        `
+        import { devices } from '@playwright/test';
+        export default {
+          projects: [
+            { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+            { name: 'mobile', use: { ...devices['iPhone 12'] } },
+          ]
+        };
+        `
+      );
+
+      const config = parsePlaywrightConfig(testDir);
+
+      expect(config.viewports.desktop).toBe(true);
+      expect(config.viewports.mobile).toBe(true);
+    });
+
+    it('should parse config with project names indicating viewport', () => {
+      fs.writeFileSync(
+        path.join(testDir, 'playwright.config.js'),
+        `
+        module.exports = {
+          projects: [
+            { name: 'chromium' },
+            { name: 'webkit' },
+            { name: 'firefox' },
+          ]
+        };
+        `
+      );
+
+      const config = parsePlaywrightConfig(testDir);
+
+      expect(config.viewports.desktop).toBe(true);
+      expect(config.viewports.mobile).toBe(true); // webkit = mobile
+    });
+
+    it('should return empty config when no playwright config exists', () => {
+      const config = parsePlaywrightConfig(testDir);
+
+      expect(config.projects).toHaveLength(0);
+      expect(config.viewports.mobile).toBe(false);
+      expect(config.viewports.tablet).toBe(false);
+      expect(config.viewports.desktop).toBe(false);
+    });
+  });
+
+  describe('getRequiredViewports', () => {
+    it('should return viewports from playwright config', () => {
+      fs.writeFileSync(
+        path.join(testDir, 'playwright.config.ts'),
+        `
+        export default {
+          projects: [
+            { name: 'Mobile', use: { viewport: { width: 375, height: 667 } } },
+            { name: 'Desktop', use: { viewport: { width: 1280, height: 720 } } },
+          ]
+        };
+        `
+      );
+
+      const required = getRequiredViewports(testDir);
+
+      expect(required).toContain('mobile');
+      expect(required).toContain('desktop');
+      expect(required).not.toContain('tablet');
+    });
+
+    it('should return all viewports as default when no config', () => {
+      const required = getRequiredViewports(testDir);
+
+      expect(required).toEqual(['mobile', 'tablet', 'desktop']);
+    });
+  });
+
+  describe('checkViewportCoverage', () => {
+    it('should report complete coverage', () => {
+      fs.writeFileSync(
+        path.join(testDir, 'playwright.config.ts'),
+        `
+        export default {
+          projects: [
+            { name: 'Mobile', use: { viewport: { width: 375, height: 667 } } },
+            { name: 'Desktop', use: { viewport: { width: 1280, height: 720 } } },
+          ]
+        };
+        `
+      );
+
+      const manifest = generateCoverageManifest(testDir);
+      manifest.viewportsCovered = { mobile: true, tablet: false, desktop: true };
+
+      const result = checkViewportCoverage(manifest, testDir);
+
+      expect(result.complete).toBe(true);
+      expect(result.covered).toEqual(['mobile', 'desktop']);
+      expect(result.missing).toHaveLength(0);
+    });
+
+    it('should report missing viewports', () => {
+      fs.writeFileSync(
+        path.join(testDir, 'playwright.config.ts'),
+        `
+        export default {
+          projects: [
+            { name: 'Mobile', use: { viewport: { width: 375, height: 667 } } },
+            { name: 'Tablet', use: { viewport: { width: 768, height: 1024 } } },
+            { name: 'Desktop', use: { viewport: { width: 1280, height: 720 } } },
+          ]
+        };
+        `
+      );
+
+      const manifest = generateCoverageManifest(testDir);
+      manifest.viewportsCovered = { mobile: true, tablet: false, desktop: false };
+
+      const result = checkViewportCoverage(manifest, testDir);
+
+      expect(result.complete).toBe(false);
+      expect(result.missing).toContain('tablet');
+      expect(result.missing).toContain('desktop');
+    });
+  });
+
+  // =========================================================================
+  // Phase 6 - Accessibility Audit Tests
+  // =========================================================================
+
+  describe('hasAxeInstalled', () => {
+    it('should detect @axe-core/playwright', () => {
+      fs.writeFileSync(
+        path.join(testDir, 'package.json'),
+        JSON.stringify({
+          devDependencies: {
+            '@axe-core/playwright': '^4.0.0',
+          },
+        })
+      );
+
+      expect(hasAxeInstalled(testDir)).toBe(true);
+    });
+
+    it('should detect jest-axe', () => {
+      fs.writeFileSync(
+        path.join(testDir, 'package.json'),
+        JSON.stringify({
+          devDependencies: {
+            'jest-axe': '^8.0.0',
+          },
+        })
+      );
+
+      expect(hasAxeInstalled(testDir)).toBe(true);
+    });
+
+    it('should detect axe-core in dependencies', () => {
+      fs.writeFileSync(
+        path.join(testDir, 'package.json'),
+        JSON.stringify({
+          dependencies: {
+            'axe-core': '^4.0.0',
+          },
+        })
+      );
+
+      expect(hasAxeInstalled(testDir)).toBe(true);
+    });
+
+    it('should return false when no axe packages installed', () => {
+      fs.writeFileSync(
+        path.join(testDir, 'package.json'),
+        JSON.stringify({
+          dependencies: {
+            react: '^18.0.0',
+          },
+        })
+      );
+
+      expect(hasAxeInstalled(testDir)).toBe(false);
+    });
+
+    it('should return false when no package.json', () => {
+      expect(hasAxeInstalled(testDir)).toBe(false);
+    });
+  });
+
+  describe('parseAccessibilityResults', () => {
+    it('should detect axe-core audit ran', () => {
+      const output = `
+        Running accessibility check with axe-core
+        2 accessibility violations found
+      `;
+
+      const result = parseAccessibilityResults(output);
+
+      expect(result.auditRan).toBe(true);
+    });
+
+    it('should parse impact levels from violations', () => {
+      const output = `
+        axe-core audit results:
+        impact: critical, description: Images must have alternate text
+        impact: serious, description: Document must have lang attribute
+        impact: moderate, description: Landmarks should have unique roles
+      `;
+
+      const result = parseAccessibilityResults(output);
+
+      // At least 3 violations parsed from the impact patterns
+      expect(result.violations.length).toBeGreaterThanOrEqual(3);
+      expect(result.summary.critical).toBeGreaterThanOrEqual(1);
+      expect(result.summary.serious).toBeGreaterThanOrEqual(1);
+      expect(result.summary.moderate).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should detect common violation messages', () => {
+      const output = `
+        Error: Images must have alt text
+        Color contrast ratio is insufficient
+        Form elements must have labels
+      `;
+
+      const result = parseAccessibilityResults(output);
+
+      expect(result.violations.find((v) => v.id === 'image-alt')).toBeDefined();
+      expect(result.violations.find((v) => v.id === 'color-contrast')).toBeDefined();
+      expect(result.violations.find((v) => v.id === 'label')).toBeDefined();
+    });
+
+    it('should parse Playwright accessibility assertion', () => {
+      const output = `
+        expected page to have no accessibility violations
+        but found 3 violations
+      `;
+
+      const result = parseAccessibilityResults(output);
+
+      expect(result.auditRan).toBe(true);
+    });
+
+    it('should count passes', () => {
+      const output = `
+        axe-core results: 45 checks passed, 2 failed
+      `;
+
+      const result = parseAccessibilityResults(output);
+
+      expect(result.passes).toBe(45);
+    });
+
+    it('should return empty results when no audit ran', () => {
+      const output = `
+        Running unit tests...
+        5 passed, 0 failed
+      `;
+
+      const result = parseAccessibilityResults(output);
+
+      expect(result.auditRan).toBe(false);
+      expect(result.violations).toHaveLength(0);
+    });
+  });
+
+  describe('shouldBlockOnAccessibility', () => {
+    it('should block on critical violations by default', () => {
+      const result = {
+        hasAxe: true,
+        auditRan: true,
+        violations: [{ id: 'image-alt', impact: 'critical' as const, description: 'Missing alt' }],
+        passes: 10,
+        summary: { critical: 1, serious: 0, moderate: 0, minor: 0, total: 1 },
+      };
+
+      const blockResult = shouldBlockOnAccessibility(result);
+
+      expect(blockResult.block).toBe(true);
+      expect(blockResult.reason).toContain('critical');
+    });
+
+    it('should block on serious violations by default', () => {
+      const result = {
+        hasAxe: true,
+        auditRan: true,
+        violations: [{ id: 'color-contrast', impact: 'serious' as const, description: 'Low contrast' }],
+        passes: 10,
+        summary: { critical: 0, serious: 1, moderate: 0, minor: 0, total: 1 },
+      };
+
+      const blockResult = shouldBlockOnAccessibility(result);
+
+      expect(blockResult.block).toBe(true);
+      expect(blockResult.reason).toContain('serious');
+    });
+
+    it('should not block on moderate/minor by default', () => {
+      const result = {
+        hasAxe: true,
+        auditRan: true,
+        violations: [{ id: 'region', impact: 'moderate' as const, description: 'Landmark issue' }],
+        passes: 10,
+        summary: { critical: 0, serious: 0, moderate: 1, minor: 0, total: 1 },
+      };
+
+      const blockResult = shouldBlockOnAccessibility(result);
+
+      expect(blockResult.block).toBe(false);
+    });
+
+    it('should not block when no audit ran', () => {
+      const result = {
+        hasAxe: false,
+        auditRan: false,
+        violations: [],
+        passes: 0,
+        summary: { critical: 0, serious: 0, moderate: 0, minor: 0, total: 0 },
+      };
+
+      const blockResult = shouldBlockOnAccessibility(result);
+
+      expect(blockResult.block).toBe(false);
+    });
+
+    it('should respect blockOnSerious=false config', () => {
+      const result = {
+        hasAxe: true,
+        auditRan: true,
+        violations: [{ id: 'color-contrast', impact: 'serious' as const, description: 'Low contrast' }],
+        passes: 10,
+        summary: { critical: 0, serious: 1, moderate: 0, minor: 0, total: 1 },
+      };
+
+      const blockResult = shouldBlockOnAccessibility(result, { blockOnSerious: false });
+
+      expect(blockResult.block).toBe(false);
+    });
+  });
+
+  describe('generateAccessibilityReport', () => {
+    it('should generate report with violations', () => {
+      const result = {
+        hasAxe: true,
+        auditRan: true,
+        violations: [
+          { id: 'image-alt', impact: 'critical' as const, description: 'Images need alt text' },
+          { id: 'color-contrast', impact: 'serious' as const, description: 'Contrast too low' },
+        ],
+        passes: 45,
+        summary: { critical: 1, serious: 1, moderate: 0, minor: 0, total: 2 },
+      };
+
+      const report = generateAccessibilityReport(result);
+
+      expect(report).toContain('Accessibility Audit Report');
+      expect(report).toContain('Critical: 1');
+      expect(report).toContain('Serious:  1');
+      expect(report).toContain('MUST FIX');
+      expect(report).toContain('image-alt');
+      expect(report).toContain('FAILED');
+    });
+
+    it('should show instructions when no audit ran', () => {
+      const result = {
+        hasAxe: false,
+        auditRan: false,
+        violations: [],
+        passes: 0,
+        summary: { critical: 0, serious: 0, moderate: 0, minor: 0, total: 0 },
+      };
+
+      const report = generateAccessibilityReport(result);
+
+      expect(report).toContain('No accessibility audit detected');
+      expect(report).toContain('@axe-core/playwright');
+      expect(report).toContain('injectAxe');
+    });
+
+    it('should show passed status when no critical/serious issues', () => {
+      const result = {
+        hasAxe: true,
+        auditRan: true,
+        violations: [{ id: 'region', impact: 'minor' as const, description: 'Minor issue' }],
+        passes: 50,
+        summary: { critical: 0, serious: 0, moderate: 0, minor: 1, total: 1 },
+      };
+
+      const report = generateAccessibilityReport(result);
+
+      expect(report).toContain('PASSED');
+    });
+  });
+
+  // =========================================================================
+  // Phase 6 - Console Error Detection Tests
+  // =========================================================================
+
+  describe('parseConsoleErrors', () => {
+    it('should parse console.error patterns', () => {
+      const output = `
+        [chromium] › tests/app.spec.ts
+        console.error: Failed to fetch user data
+        console.error: Network timeout
+      `;
+
+      const result = parseConsoleErrors(output);
+
+      expect(result.errors).toHaveLength(2);
+      expect(result.errors[0].message).toContain('Failed to fetch user data');
+    });
+
+    it('should parse uncaught exceptions', () => {
+      const output = `
+        Uncaught TypeError: Cannot read property 'map' of undefined
+            at Component.render
+      `;
+
+      const result = parseConsoleErrors(output);
+
+      expect(result.uncaughtExceptions).toHaveLength(1);
+      expect(result.uncaughtExceptions[0].message).toContain('Cannot read property');
+    });
+
+    it('should exclude React DevTools message', () => {
+      const output = `
+        console.error: Download the React DevTools for a better development experience
+      `;
+
+      const result = parseConsoleErrors(output);
+
+      expect(result.errors).toHaveLength(0);
+    });
+
+    it('should exclude HMR messages', () => {
+      const output = `
+        console.warn: [HMR] Waiting for update signal
+        console.error: [HMR] Something happened
+      `;
+
+      const result = parseConsoleErrors(output);
+
+      expect(result.errors).toHaveLength(0);
+      expect(result.warnings).toHaveLength(0);
+    });
+
+    it('should respect custom exclusions', () => {
+      const output = `
+        console.error: Expected test error for validation
+        console.error: Real error that matters
+      `;
+
+      const result = parseConsoleErrors(output, [/Expected test error/i]);
+
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0].message).toContain('Real error');
+    });
+
+    it('should calculate total correctly', () => {
+      const output = `
+        console.error: Error 1
+        console.error: Error 2
+        Uncaught Error: Exception 1
+      `;
+
+      const result = parseConsoleErrors(output);
+
+      expect(result.total).toBe(3);
+    });
+  });
+
+  describe('shouldBlockOnConsoleErrors', () => {
+    it('should block on uncaught exceptions by default', () => {
+      const result = {
+        errors: [],
+        warnings: [],
+        uncaughtExceptions: [{ type: 'uncaught' as const, message: 'Uncaught error' }],
+        total: 1,
+      };
+
+      const blockResult = shouldBlockOnConsoleErrors(result);
+
+      expect(blockResult.block).toBe(true);
+      expect(blockResult.reason).toContain('uncaught');
+    });
+
+    it('should block on console errors by default', () => {
+      const result = {
+        errors: [{ type: 'error' as const, message: 'Console error' }],
+        warnings: [],
+        uncaughtExceptions: [],
+        total: 1,
+      };
+
+      const blockResult = shouldBlockOnConsoleErrors(result);
+
+      expect(blockResult.block).toBe(true);
+      expect(blockResult.reason).toContain('console error');
+    });
+
+    it('should not block when no errors', () => {
+      const result = {
+        errors: [],
+        warnings: [{ type: 'warn' as const, message: 'Warning' }],
+        uncaughtExceptions: [],
+        total: 0,
+      };
+
+      const blockResult = shouldBlockOnConsoleErrors(result);
+
+      expect(blockResult.block).toBe(false);
+    });
+
+    it('should respect blockOnErrors=false', () => {
+      const result = {
+        errors: [{ type: 'error' as const, message: 'Error' }],
+        warnings: [],
+        uncaughtExceptions: [],
+        total: 1,
+      };
+
+      const blockResult = shouldBlockOnConsoleErrors(result, { blockOnErrors: false });
+
+      expect(blockResult.block).toBe(false);
+    });
+  });
+
+  // =========================================================================
+  // Phase 6 - UI State Coverage Tests
+  // =========================================================================
+
+  describe('parseUIStateCoverage', () => {
+    it('should detect loading state patterns', () => {
+      const output = `
+        await page.getByRole('status').waitFor();
+        expect(page.locator('.spinner')).toBeVisible();
+        expect(skeleton).toBeInTheDocument();
+      `;
+
+      const result = parseUIStateCoverage(output);
+
+      expect(result.loadingStates.detected).toBe(true);
+    });
+
+    it('should detect error state patterns', () => {
+      const output = `
+        expect(page.locator('.error-boundary')).toBeVisible();
+        await page.goto('/404');
+        expect(errorMessage).toHaveText('Something went wrong');
+      `;
+
+      const result = parseUIStateCoverage(output);
+
+      expect(result.errorStates.detected).toBe(true);
+    });
+
+    it('should detect empty state patterns', () => {
+      const output = `
+        expect(page.locator('.empty-state')).toBeVisible();
+        expect(noResults).toHaveText('No items found');
+      `;
+
+      const result = parseUIStateCoverage(output);
+
+      expect(result.emptyStates.detected).toBe(true);
+    });
+
+    it('should detect tested states (with assertions)', () => {
+      const output = `
+        expect(page.locator('.loading')).toBeVisible();
+        expect(spinner).toBe(true);
+      `;
+
+      const result = parseUIStateCoverage(output);
+
+      expect(result.loadingStates.tested).toBe(true);
+    });
+
+    it('should differentiate detected vs tested', () => {
+      const output = `
+        // Code has loading state
+        const loading = true;
+        setLoading(false);
+        // But no expect/assert on it
+      `;
+
+      const result = parseUIStateCoverage(output);
+
+      expect(result.loadingStates.detected).toBe(true);
+      expect(result.loadingStates.tested).toBe(false);
+    });
+  });
+
+  describe('generateUIStateReport', () => {
+    it('should show tested states with checkmarks', () => {
+      const coverage = {
+        loadingStates: { detected: true, tested: true, examples: [] },
+        errorStates: { detected: true, tested: true, examples: [] },
+        emptyStates: { detected: true, tested: true, examples: [] },
+      };
+
+      const report = generateUIStateReport(coverage);
+
+      expect(report).toContain('✅ Loading States');
+      expect(report).toContain('✅ Error States');
+      expect(report).toContain('✅ Empty States');
+      expect(report).toContain('looks good');
+    });
+
+    it('should show warnings for detected but not tested', () => {
+      const coverage = {
+        loadingStates: { detected: true, tested: false, examples: [] },
+        errorStates: { detected: true, tested: false, examples: [] },
+        emptyStates: { detected: false, tested: false, examples: [] },
+      };
+
+      const report = generateUIStateReport(coverage);
+
+      expect(report).toContain('⚠️ Loading States');
+      expect(report).toContain('Detected but not tested');
+      expect(report).toContain('Recommendations');
+      expect(report).toContain('loading states');
+    });
+
+    it('should show question mark for not detected', () => {
+      const coverage = {
+        loadingStates: { detected: false, tested: false, examples: [] },
+        errorStates: { detected: false, tested: false, examples: [] },
+        emptyStates: { detected: false, tested: false, examples: [] },
+      };
+
+      const report = generateUIStateReport(coverage);
+
+      expect(report).toContain('❓ Loading States');
+      expect(report).toContain('Not detected');
     });
   });
 });

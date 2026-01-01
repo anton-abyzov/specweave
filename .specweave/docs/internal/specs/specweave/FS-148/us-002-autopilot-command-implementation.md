@@ -1,11 +1,15 @@
 ---
 id: US-002
 feature: FS-148
-title: "Auto Mode as Default in /sw:increment"
+title: Auto Mode as Default in /sw:increment
 status: completed
 priority: P1
 created: 2025-12-29
 project: specweave
+external:
+  github:
+    issue: 952
+    url: https://github.com/anton-abyzov/specweave/issues/952
 ---
 
 # US-002: Auto Mode as Default in /sw:increment

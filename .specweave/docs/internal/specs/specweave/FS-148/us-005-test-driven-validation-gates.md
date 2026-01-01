@@ -1,7 +1,7 @@
 ---
 id: US-005
 feature: FS-148
-title: "Test-Driven Validation Gates"
+title: Test-Driven Validation Gates
 status: completed
 priority: P1
 created: 2025-12-29
@@ -9,6 +9,10 @@ project: specweave
 external_tools:
   github:
     number: 955
+    url: https://github.com/anton-abyzov/specweave/issues/955
+external:
+  github:
+    issue: 955
     url: https://github.com/anton-abyzov/specweave/issues/955
 ---
 

@@ -3,7 +3,7 @@ increment: 0149-usage-analytics
 title: "Usage Analytics - Command & Plugin Tracking"
 type: feature
 priority: P1
-status: ready_for_review
+status: completed
 ---
 
 # Usage Analytics - Command & Plugin Tracking

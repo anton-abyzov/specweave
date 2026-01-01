@@ -55,10 +55,12 @@ PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SCRIPTS_DIR="$PLUGIN_ROOT/scripts"
 
 # Helper: Escape output for JSON (handles newlines, quotes, backslashes)
+# Uses jq for proper JSON string escaping (required dependency for instant commands)
 escape_json() {
   local input="$1"
-  # Escape backslashes, then quotes, then newlines
-  echo "$input" | sed 's/\\/\\\\/g; s/"/\\"/g' | awk '{printf "%s\\n", $0}' | sed 's/\\n$//'
+  # jq -Rs properly escapes all special characters including newlines
+  # We strip the surrounding quotes since we add them in the printf
+  printf '%s' "$input" | jq -Rs '.' | sed 's/^"//; s/"$//'
 }
 
 # /sw:jobs → Execute read-jobs.sh (pure bash, ~2ms)

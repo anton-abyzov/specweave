@@ -348,6 +348,116 @@ Pure Ralph Wiggum behavior:
 - **Max Hours**: Time boxing
 - **stop_hook_active**: Prevents infinite continuation loops
 
+## ♿ UI/UX Quality Gates (NEW!)
+
+Auto mode now includes comprehensive UI/UX quality gates that run automatically when E2E tests are detected.
+
+### Accessibility Audit
+
+When `@axe-core/playwright` or similar accessibility testing tools are detected, auto mode:
+- Parses accessibility audit results from test output
+- **Blocks** on critical and serious violations (WCAG Level A/AA)
+- **Warns** on moderate and minor violations
+- Shows detailed violation report with fix suggestions
+
+**Violation Severity Handling:**
+
+| Severity | Action | Example |
+|----------|--------|---------|
+| Critical | **BLOCKS** completion | Missing alt text, form without labels |
+| Serious | **BLOCKS** completion | Color contrast, missing document lang |
+| Moderate | Warning only | Landmark regions |
+| Minor | Warning only | Empty headings |
+
+**Enable in your tests:**
+```typescript
+import { injectAxe, checkA11y } from '@axe-core/playwright';
+
+test('page is accessible', async ({ page }) => {
+  await page.goto('/');
+  await injectAxe(page);
+  await checkA11y(page);
+});
+```
+
+### Console Error Detection
+
+Auto mode parses E2E test output for console errors:
+- **Blocks** on uncaught exceptions
+- **Blocks** on `console.error` from application code
+- **Excludes** expected dev tool messages (React DevTools, HMR, etc.)
+
+**Automatic exclusions:**
+- React/Apollo DevTools prompts
+- HMR messages
+- Vite dev server messages
+- Favicon loading failures
+
+**Add custom exclusions in config:**
+```json
+{
+  "auto": {
+    "consoleErrors": {
+      "excludePatterns": ["Expected test error"]
+    }
+  }
+}
+```
+
+### UI State Coverage
+
+Auto mode detects and reports on UI state test coverage:
+
+| State | Detection | Recommendation |
+|-------|-----------|----------------|
+| Loading | Spinners, skeletons, `aria-busy` | Test loading/skeleton states |
+| Error | Error boundaries, 404/500 pages | Test error handling |
+| Empty | No data, no results | Test empty state displays |
+
+Shows ⚠️ warning if states are detected but not explicitly tested.
+
+## 🔄 Increment Queue Transition (NEW!)
+
+Auto mode now handles multi-increment queues with smooth transitions.
+
+### Completion Summary
+
+When an increment completes, auto mode shows:
+```
+✅ INCREMENT COMPLETE: 0001-user-auth
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SUMMARY:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📋 Tasks: 15/15 | Duration: 45m
+  🧪 Tests: 42 passed, 0 failed
+  ✅ Status: All acceptance criteria met
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NEXT INCREMENT: 0002-notifications
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📊 Queue: 2 increment(s) remaining
+```
+
+### Skip Failed Increments
+
+If an increment fails after 3 retry attempts, you can skip it:
+
+```bash
+/sw:skip-increment
+```
+
+This will:
+1. Mark the increment as "skipped" (not failed, not completed)
+2. Log failure details for later review
+3. Move to the next increment in queue
+4. Continue auto mode execution
+
+**Use when:**
+- A blocking issue requires external resolution
+- You want to prioritize other work
+- The issue needs human investigation
+
 ## 🔐 Auto-Execute with Credentials (MANDATORY)
 
 **In auto mode, ALL agents MUST follow the auto-execute skill rules:**
@@ -800,5 +910,6 @@ cat .specweave/state/auto-session.json | jq -r '.sessionId'
 |---------|---------|
 | `/sw:auto-status` | Check session status |
 | `/sw:cancel-auto` | Cancel session |
+| `/sw:skip-increment` | Skip failed increment and continue queue |
 | `/sw:do` | Execute tasks (also works standalone) |
 | `/sw:progress` | Show increment progress |

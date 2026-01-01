@@ -1,8 +1,9 @@
 # ADR-0140: Code Execution Over Direct MCP Tool Calls
 
-**Status**: Accepted
+**Status**: Accepted (Partially Superseded)
 **Date**: 2025-11-25
 **Decision Makers**: SpecWeave Core Team
+**Note**: LSP operations are EXEMPT - see [ADR-0222](./0222-smart-lsp-integration.md)
 
 ## Context
 
@@ -44,6 +45,28 @@ SpecWeave adopts a **"Code First, Tools Second"** architecture:
 2. **Progressive loading**: Skills activate on keyword match, not all upfront
 3. **Local execution**: Data processing happens in execution environment
 4. **Sub-agent isolation**: Each agent has isolated context (no accumulation)
+
+## Exception: LSP Operations
+
+**LSP (Language Server Protocol) operations are EXEMPT from this ADR.**
+
+LSP is fundamentally different from generic MCP tools:
+
+| Generic MCP Tools | LSP Operations |
+|------------------|----------------|
+| Large tool definitions | Zero overhead (built-in) |
+| Bulk data transfer | Minimal responses (~100-5000 bytes) |
+| Unpredictable result size | Predictable, small responses |
+| Context explosion risk | No bloat risk |
+
+**LSP operations to USE actively:**
+- `goToDefinition` - Navigate to implementations
+- `findReferences` - Impact analysis for refactoring
+- `documentSymbol` - Map file structure
+- `hover` - Extract type signatures
+- `getDiagnostics` - Code quality checks
+
+See [ADR-0222: Smart LSP Integration](./0222-smart-lsp-integration.md) for full details.
 
 ## Consequences
 
