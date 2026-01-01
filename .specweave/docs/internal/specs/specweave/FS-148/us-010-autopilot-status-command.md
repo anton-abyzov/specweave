@@ -1,11 +1,15 @@
 ---
 id: US-010
 feature: FS-148
-title: 'Intelligent "Ask User When Stuck" Behavior'
+title: Intelligent "Ask User When Stuck" Behavior
 status: completed
 priority: P1
 created: 2025-12-29
 project: specweave
+external:
+  github:
+    issue: 960
+    url: https://github.com/anton-abyzov/specweave/issues/960
 ---
 
 # US-010: Intelligent "Ask User When Stuck" Behavior

@@ -263,15 +263,47 @@ INSTRUCTIONS:
 
         block "Test failure - self-healing retry $new_retry/3" "$fix_prompt"
     else
-        # 3 retries exhausted - escalate to human gate
-        echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            '.status = "paused" | .pauseTime = $now | .pauseReason = "test_failures_exhausted" | .testRetryCount = 0' \
-            > "$SESSION_FILE"
+        # 3 retries exhausted - check for skip option
+        local queue_length=$(echo "$SESSION" | jq '.incrementQueue | length')
 
-        # Log exhaustion
-        echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"retry_exhausted\",\"task\":\"$current_task\",\"file\":\"$fail_file\"}" >> "$LOGS_DIR/auto-iterations.log"
+        # If there are more increments in queue, offer skip option
+        if [ "$queue_length" -gt 1 ]; then
+            local next_increment=$(echo "$SESSION" | jq -r '.incrementQueue[1] // null')
 
-        approve "Tests failed 3x in a row - human review required. File: $fail_file, Error: $fail_error"
+            # Store failure info for potential skip
+            echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+                --arg file "$fail_file" --arg error "$fail_error" \
+                '.status = "paused" | .pauseTime = $now | .pauseReason = "test_failures_exhausted" | .testRetryCount = 0 | .pendingSkip = {"increment": .currentIncrement, "reason": "test_failures", "file": $file, "error": $error}' \
+                > "$SESSION_FILE"
+
+            # Log exhaustion
+            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"retry_exhausted\",\"task\":\"$current_task\",\"file\":\"$fail_file\",\"skipAvailable\":true}" >> "$LOGS_DIR/auto-iterations.log"
+
+            approve "Tests failed 3x - human review required.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FAILED: $CURRENT_INCREMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  File: $fail_file
+  Error: $fail_error
+
+OPTIONS:
+1. Fix the issue and run /sw:auto to continue
+2. Skip this increment: /sw:skip-increment (moves to next in queue)
+   → Next: $next_increment ($((queue_length - 1)) remaining)
+
+The failed increment will be logged for later review."
+        else
+            # No more increments - just pause
+            echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+                '.status = "paused" | .pauseTime = $now | .pauseReason = "test_failures_exhausted" | .testRetryCount = 0' \
+                > "$SESSION_FILE"
+
+            # Log exhaustion
+            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"retry_exhausted\",\"task\":\"$current_task\",\"file\":\"$fail_file\",\"skipAvailable\":false}" >> "$LOGS_DIR/auto-iterations.log"
+
+            approve "Tests failed 3x in a row - human review required. File: $fail_file, Error: $fail_error"
+        fi
     fi
 }
 
@@ -618,8 +650,61 @@ Continue with /sw:do and add missing E2E tests."
             # Check queue for more increments
             QUEUE_LENGTH=$(echo "$SESSION" | jq '.incrementQueue | length')
 
+            # Generate transition summary for completed increment
+            generate_increment_summary() {
+                local inc_id="$1"
+                local tasks_file="$PROJECT_ROOT/.specweave/increments/$inc_id/tasks.md"
+                local summary=""
+
+                if [ -f "$tasks_file" ]; then
+                    local total=$(grep -c "^### T-" "$tasks_file" 2>/dev/null | tr -d '[:space:]' || echo "0")
+                    local completed=$(grep -c '\[x\].*completed' "$tasks_file" 2>/dev/null | tr -d '[:space:]' || echo "0")
+                    summary="Tasks: $completed/$total"
+                else
+                    summary="Tasks: unknown"
+                fi
+
+                # Calculate duration if start time available
+                local inc_start=$(echo "$SESSION" | jq -r ".incrementStartTimes[\"$inc_id\"] // null")
+                if [ "$inc_start" != "null" ]; then
+                    local start_epoch=$(date -d "$inc_start" "+%s" 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$inc_start" "+%s" 2>/dev/null || echo "0")
+                    local now_epoch=$(date "+%s")
+                    if [ "$start_epoch" -gt 0 ]; then
+                        local duration_mins=$(( (now_epoch - start_epoch) / 60 ))
+                        summary="$summary | Duration: ${duration_mins}m"
+                    fi
+                fi
+
+                echo "$summary"
+            }
+
+            # Save increment summary to logs
+            save_increment_summary() {
+                local inc_id="$1"
+                local summary_file="$LOGS_DIR/increment-$inc_id-summary.json"
+                local summary_data="{
+                    \"incrementId\": \"$inc_id\",
+                    \"completedAt\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+                    \"tasksCompleted\": ${COMPLETED_TASKS:-0},
+                    \"tasksTotal\": ${TOTAL_TASKS:-0},
+                    \"testsRun\": ${TESTS_RUN:-false},
+                    \"testsPassed\": ${TESTS_PASSED:-0},
+                    \"testsFailed\": ${TESTS_FAILED:-0}
+                }"
+                echo "$summary_data" > "$summary_file"
+
+                # Log to iterations log
+                echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"increment_complete\",\"increment\":\"$inc_id\",\"tasks\":${COMPLETED_TASKS:-0},\"tests\":${TESTS_PASSED:-0}}" >> "$LOGS_DIR/auto-iterations.log"
+            }
+
             if [ "$QUEUE_LENGTH" -le 1 ]; then
                 # Final completion - all tests passed, all tasks done
+                save_increment_summary "$CURRENT_INCREMENT"
+
+                # Generate final session summary
+                COMPLETED_COUNT=$(echo "$SESSION" | jq '.completedIncrements | length')
+                FAILED_COUNT=$(echo "$SESSION" | jq '.failedIncrements | length')
+
                 echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
                     --argjson passed "${TESTS_PASSED:-0}" --argjson failed "${TESTS_FAILED:-0}" \
                     '.status = "completed" | .endTime = $now | .endReason = "all_tasks_complete" | .finalTestResults = {"passed": $passed, "failed": $failed}' \
@@ -629,17 +714,32 @@ Continue with /sw:do and add missing E2E tests."
                 # More increments in queue - transition to next
                 NEXT_INCREMENT=$(echo "$SESSION" | jq -r '.incrementQueue[1] // null')
                 if [ "$NEXT_INCREMENT" != "null" ]; then
-                    # Update session for next increment
+                    # Save summary of completed increment
+                    save_increment_summary "$CURRENT_INCREMENT"
+                    INCREMENT_SUMMARY=$(generate_increment_summary "$CURRENT_INCREMENT")
+
+                    # Get remaining increments count
+                    REMAINING=$((QUEUE_LENGTH - 1))
+
+                    # Track start time for next increment
                     echo "$SESSION" | jq --arg next "$NEXT_INCREMENT" --arg completed "$CURRENT_INCREMENT" \
-                        '.currentIncrement = $next | .completedIncrements += [$completed] | .incrementQueue = .incrementQueue[1:] | .testRetryCount = 0' \
+                        --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+                        '.currentIncrement = $next | .completedIncrements += [$completed] | .incrementQueue = .incrementQueue[1:] | .testRetryCount = 0 | .incrementStartTimes[$next] = $now' \
                         > "$SESSION_FILE"
 
-                    block "Increment complete, starting next" "✅ Increment $CURRENT_INCREMENT COMPLETE!
-Tests: $TESTS_PASSED passed, 0 failed
+                    block "Increment complete, starting next" "✅ INCREMENT COMPLETE: $CURRENT_INCREMENT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SUMMARY:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📋 $INCREMENT_SUMMARY
+  🧪 Tests: $TESTS_PASSED passed, 0 failed
+  ✅ Status: All acceptance criteria met
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 NEXT INCREMENT: $NEXT_INCREMENT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📊 Queue: $REMAINING increment(s) remaining
 
 Continue with /sw:do to start the next increment."
                 fi

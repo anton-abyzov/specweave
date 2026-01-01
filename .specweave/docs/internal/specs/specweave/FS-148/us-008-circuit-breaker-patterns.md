@@ -1,11 +1,15 @@
 ---
 id: US-008
 feature: FS-148
-title: "Circuit Breaker Patterns for External Services"
+title: Circuit Breaker Patterns for External Services
 status: completed
 priority: P1
 created: 2025-12-29
 project: specweave
+external:
+  github:
+    issue: 958
+    url: https://github.com/anton-abyzov/specweave/issues/958
 ---
 
 # US-008: Circuit Breaker Patterns for External Services
