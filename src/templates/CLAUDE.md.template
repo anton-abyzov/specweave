@@ -86,40 +86,46 @@ grep -ril "keyword" .specweave/docs/internal/
 <!-- /SECTION -->
 
 <!-- SECTION:lsp -->
-## LSP-Enhanced Exploration (DEFAULT - Claude Code 2.0.74+)
+## LSP-Enhanced Exploration (ACTIVE - Claude Code 2.0.74+)
 
-**LSP is ENABLED BY DEFAULT** for all SpecWeave operations - 100x faster than grep for symbol resolution.
+**LSP is POWERFUL - USE IT ACTIVELY** for semantic code understanding. 100x faster and more accurate than grep.
 
-**LSP Operations** (used automatically):
-| Operation | Purpose | Example Use |
-|-----------|---------|-------------|
-| `goToDefinition` | Jump to symbol definition | Find where a function/class is defined |
-| `findReferences` | All usages across codebase | Refactoring impact analysis |
-| `documentSymbol` | File structure/hierarchy | Understand module organization |
-| `hover` | Type info & documentation | Check inferred types, JSDoc |
-| `getDiagnostics` | Errors, warnings, hints | Real-time code quality check |
+**WHEN to use LSP (PROACTIVE):**
 
-**Living Docs & Init use LSP automatically**:
+| Scenario | LSP Operation | Why Use It |
+|----------|---------------|------------|
+| Before refactoring | `findReferences` | Know ALL usages before changing |
+| Navigate to source | `goToDefinition` | Jump directly to implementation |
+| Understand module | `documentSymbol` | See complete structure/hierarchy |
+| Check types | `hover` | Get accurate signatures, JSDoc |
+| Code quality | `getDiagnostics` | Errors, warnings before commit |
+
+**ACTIVE Usage Examples:**
 ```bash
-# Full scan (LSP enabled by default)
-/sw:living-docs --full-scan
+# Before renaming a function - find ALL references
+"Use LSP findReferences to find all usages of calculateTax"
 
-# Init also uses LSP for accurate codebase analysis
-specweave init
+# Navigate to implementation instead of grep
+"Use goToDefinition to find where PaymentService is defined"
 
-# LSP provides automatically:
-# - Accurate API surface extraction (all exports, types, signatures)
-# - Cross-module dependency graphs (semantic, not just imports)
-# - Dead code detection (unreferenced symbols)
-# - Type hierarchy and inheritance maps
+# Get accurate type signature
+"Use hover to check the type of processOrder function"
 
-# Disable only if language servers unavailable (not recommended):
-/sw:living-docs --full-scan --no-lsp
+# Check for errors before suggesting changes
+"Use getDiagnostics on this file to check for issues"
+
+# Understand module structure
+"Use documentSymbol to map the API surface of auth.ts"
 ```
 
-**Install Language Servers** (required for LSP):
+**Smart Integration (ADR-0222):**
+- LSP is EXEMPT from "Code First, Tools Second" rule
+- LSP responses are small (~100-5000 bytes), no context bloat
+- Use LSP for precision, code execution for bulk processing
+
+**Install Language Servers** (required):
 ```bash
-# TypeScript/JavaScript (most common)
+# TypeScript/JavaScript
 npm install -g typescript-language-server typescript
 
 # Python
@@ -128,8 +134,8 @@ pip install python-lsp-server
 # Go
 go install golang.org/x/tools/gopls@latest
 
-# Rust
-rustup component add rust-analyzer
+# C#
+brew install omnisharp  # or: dotnet tool install -g omnisharp
 ```
 
 **Configuration** (optional, `.lsp.json` in project root):
@@ -144,10 +150,11 @@ rustup component add rust-analyzer
 ```
 
 **Best Practices**:
-- Install language servers before running `specweave init` or `/sw:living-docs`
-- LSP runs automatically - no flags needed
-- Use `findReferences` before refactoring to understand impact
-- Combine with Explore agent for comprehensive codebase understanding
+- **ALWAYS use findReferences** before any refactoring
+- **ALWAYS use goToDefinition** instead of grep for navigation
+- **Use documentSymbol** to understand module organization
+- **Use hover** to verify type signatures before changes
+- Combine with Explore agent for comprehensive understanding
 <!-- /SECTION -->
 
 <!-- SECTION:structure -->

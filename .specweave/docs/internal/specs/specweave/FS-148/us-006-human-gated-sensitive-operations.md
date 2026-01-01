@@ -1,11 +1,15 @@
 ---
 id: US-006
 feature: FS-148
-title: "Human-Gated Sensitive Operations"
+title: Human-Gated Sensitive Operations
 status: completed
 priority: P1
 created: 2025-12-29
 project: specweave
+external:
+  github:
+    issue: 956
+    url: https://github.com/anton-abyzov/specweave/issues/956
 ---
 
 # US-006: Human-Gated Sensitive Operations

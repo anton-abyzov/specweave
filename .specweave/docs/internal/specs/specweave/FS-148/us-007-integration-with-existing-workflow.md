@@ -1,11 +1,15 @@
 ---
 id: US-007
 feature: FS-148
-title: "Auto-Aware Existing Workflow Commands"
+title: Auto-Aware Existing Workflow Commands
 status: completed
 priority: P1
 created: 2025-12-29
 project: specweave
+external:
+  github:
+    issue: 957
+    url: https://github.com/anton-abyzov/specweave/issues/957
 ---
 
 # US-007: Auto-Aware Existing Workflow Commands

@@ -875,6 +875,199 @@ export function parseViewportFromProject(projectName: string): string {
  * @param manifest - E2E coverage manifest
  * @returns Formatted coverage report
  */
+/**
+ * Playwright project/viewport configuration
+ */
+export interface PlaywrightViewportConfig {
+  projects: PlaywrightProject[];
+  viewports: {
+    mobile: boolean;
+    tablet: boolean;
+    desktop: boolean;
+  };
+  configPath?: string;
+}
+
+export interface PlaywrightProject {
+  name: string;
+  viewport: string;
+  width?: number;
+  height?: number;
+}
+
+/**
+ * Parse Playwright config to extract viewport/project configuration
+ *
+ * @param projectPath - Project root path
+ * @returns Parsed viewport configuration
+ *
+ * @example
+ * ```typescript
+ * const config = parsePlaywrightConfig('/path/to/project');
+ * console.log(config.viewports.mobile); // true if mobile viewport configured
+ * ```
+ */
+export function parsePlaywrightConfig(projectPath: string): PlaywrightViewportConfig {
+  const projects: PlaywrightProject[] = [];
+  const viewports = { mobile: false, tablet: false, desktop: false };
+
+  // Try different config file names
+  const configNames = [
+    'playwright.config.ts',
+    'playwright.config.js',
+    'playwright.config.mjs',
+  ];
+
+  let configPath: string | undefined;
+  let configContent: string | undefined;
+
+  for (const name of configNames) {
+    const fullPath = path.join(projectPath, name);
+    if (fs.existsSync(fullPath)) {
+      configPath = fullPath;
+      configContent = fs.readFileSync(fullPath, 'utf-8');
+      break;
+    }
+  }
+
+  if (!configContent) {
+    return { projects, viewports };
+  }
+
+  // Parse projects array from config
+  // Pattern: projects: [ { name: '...', use: { viewport: { width: X, height: Y } } } ]
+  const projectPattern = /name:\s*['"`]([^'"`]+)['"`][^}]*viewport:\s*\{[^}]*width:\s*(\d+)/gi;
+
+  let match;
+  while ((match = projectPattern.exec(configContent)) !== null) {
+    const name = match[1];
+    const width = parseInt(match[2], 10);
+
+    // Categorize by width
+    let viewport: string;
+    if (width <= 480) {
+      viewport = 'mobile';
+      viewports.mobile = true;
+    } else if (width <= 768) {
+      viewport = 'tablet';
+      viewports.tablet = true;
+    } else {
+      viewport = 'desktop';
+      viewports.desktop = true;
+    }
+
+    projects.push({ name, viewport, width });
+  }
+
+  // Alternative pattern: devices like 'iPhone 12', 'iPad Pro', etc.
+  const devicePattern = /devices\s*\[\s*['"`]([^'"`]+)['"`]\s*\]/gi;
+  while ((match = devicePattern.exec(configContent)) !== null) {
+    const device = match[1];
+    let viewport: string;
+
+    if (/iphone|pixel|android|mobile/i.test(device)) {
+      viewport = 'mobile';
+      viewports.mobile = true;
+    } else if (/ipad|tablet/i.test(device)) {
+      viewport = 'tablet';
+      viewports.tablet = true;
+    } else {
+      viewport = 'desktop';
+      viewports.desktop = true;
+    }
+
+    projects.push({ name: device, viewport });
+  }
+
+  // Check for common project names
+  const projectNamePattern = /name:\s*['"`](mobile|tablet|desktop|Mobile\s*\w+|Desktop\s*\w+|chromium|webkit|firefox)['"`]/gi;
+  while ((match = projectNamePattern.exec(configContent)) !== null) {
+    const name = match[1].toLowerCase();
+
+    if (name.includes('mobile') || name === 'webkit') {
+      viewports.mobile = true;
+      if (!projects.find((p) => p.name.toLowerCase() === name)) {
+        projects.push({ name: match[1], viewport: 'mobile' });
+      }
+    } else if (name.includes('tablet')) {
+      viewports.tablet = true;
+      if (!projects.find((p) => p.name.toLowerCase() === name)) {
+        projects.push({ name: match[1], viewport: 'tablet' });
+      }
+    } else if (name.includes('desktop') || name === 'chromium' || name === 'firefox') {
+      viewports.desktop = true;
+      if (!projects.find((p) => p.name.toLowerCase() === name)) {
+        projects.push({ name: match[1], viewport: 'desktop' });
+      }
+    }
+  }
+
+  // If we found chromium/firefox/webkit but no explicit viewports, default to desktop
+  if (projects.length > 0 && !viewports.mobile && !viewports.tablet && !viewports.desktop) {
+    viewports.desktop = true;
+  }
+
+  return { projects, viewports, configPath };
+}
+
+/**
+ * Get required viewports from config or defaults
+ *
+ * @param projectPath - Project root path
+ * @returns Array of required viewport names
+ */
+export function getRequiredViewports(projectPath: string): string[] {
+  const config = parsePlaywrightConfig(projectPath);
+
+  // If config has explicit viewports, use those
+  if (config.projects.length > 0) {
+    const viewports = new Set<string>();
+    for (const project of config.projects) {
+      viewports.add(project.viewport);
+    }
+    return Array.from(viewports);
+  }
+
+  // Default: require all three viewports
+  return ['mobile', 'tablet', 'desktop'];
+}
+
+/**
+ * Check if viewport coverage meets requirements
+ *
+ * @param manifest - E2E coverage manifest
+ * @param projectPath - Project root path
+ * @returns Coverage check result
+ */
+export function checkViewportCoverage(
+  manifest: E2ECoverageManifest,
+  projectPath: string
+): {
+  complete: boolean;
+  required: string[];
+  covered: string[];
+  missing: string[];
+} {
+  const required = getRequiredViewports(projectPath);
+  const covered: string[] = [];
+  const missing: string[] = [];
+
+  for (const viewport of required) {
+    if (manifest.viewportsCovered[viewport as keyof ViewportsCovered]) {
+      covered.push(viewport);
+    } else {
+      missing.push(viewport);
+    }
+  }
+
+  return {
+    complete: missing.length === 0,
+    required,
+    covered,
+    missing,
+  };
+}
+
 export function generateCoverageReport(manifest: E2ECoverageManifest): string {
   const lines: string[] = [];
   const coverage = calculateCoverage(manifest);
@@ -916,6 +1109,675 @@ export function generateCoverageReport(manifest: E2ECoverageManifest): string {
   lines.push(`  📱 Mobile:  ${manifest.viewportsCovered.mobile ? '✅' : '❌'}`);
   lines.push(`  📱 Tablet:  ${manifest.viewportsCovered.tablet ? '✅' : '❌'}`);
   lines.push(`  🖥️ Desktop: ${manifest.viewportsCovered.desktop ? '✅' : '❌'}`);
+
+  return lines.join('\n');
+}
+
+// ============================================================================
+// ACCESSIBILITY AUDIT (Phase 6 - UI/UX Quality Gates)
+// ============================================================================
+
+/**
+ * Accessibility violation severity levels
+ */
+export type A11yViolationSeverity = 'critical' | 'serious' | 'moderate' | 'minor';
+
+/**
+ * Accessibility violation from axe-core or similar tool
+ */
+export interface A11yViolation {
+  id: string;
+  impact: A11yViolationSeverity;
+  description: string;
+  helpUrl?: string;
+  nodes?: number;
+  tags?: string[];
+}
+
+/**
+ * Result of accessibility audit parsing
+ */
+export interface A11yAuditResult {
+  hasAxe: boolean;
+  auditRan: boolean;
+  violations: A11yViolation[];
+  passes: number;
+  summary: {
+    critical: number;
+    serious: number;
+    moderate: number;
+    minor: number;
+    total: number;
+  };
+}
+
+/**
+ * Detect if @axe-core/playwright is installed in the project
+ *
+ * @param projectPath - Project root path
+ * @returns True if axe-core is installed
+ */
+export function hasAxeInstalled(projectPath: string): boolean {
+  const packageJsonPath = path.join(projectPath, 'package.json');
+
+  if (!fs.existsSync(packageJsonPath)) {
+    return false;
+  }
+
+  try {
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+    const deps = {
+      ...packageJson.dependencies,
+      ...packageJson.devDependencies,
+    };
+
+    // Check for common axe packages
+    return !!(
+      deps['@axe-core/playwright'] ||
+      deps['@axe-core/react'] ||
+      deps['axe-core'] ||
+      deps['jest-axe'] ||
+      deps['vitest-axe'] ||
+      deps['cypress-axe']
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Parse accessibility audit results from test output
+ *
+ * Looks for patterns from axe-core output:
+ * - "X accessibility violations found"
+ * - violation objects with impact levels
+ * - WCAG references
+ *
+ * @param output - Test output (stdout/stderr combined)
+ * @returns Parsed accessibility audit results
+ *
+ * @example
+ * ```typescript
+ * const result = parseAccessibilityResults(testOutput);
+ * if (result.summary.critical > 0) {
+ *   console.log('Critical accessibility issues found!');
+ * }
+ * ```
+ */
+export function parseAccessibilityResults(output: string): A11yAuditResult {
+  const violations: A11yViolation[] = [];
+  let auditRan = false;
+  let passes = 0;
+
+  // Check if accessibility test ran
+  const axePatterns = [
+    /axe[.-]core/i,
+    /accessibility violations/i,
+    /a11y\s+(violations?|issues?|errors?)/i,
+    /checkA11y/i,
+    /injectAxe/i,
+    /expect.*toHaveNoViolations/i,
+  ];
+
+  for (const pattern of axePatterns) {
+    if (pattern.test(output)) {
+      auditRan = true;
+      break;
+    }
+  }
+
+  // Pattern 1: "X accessibility violations found"
+  const violationCountMatch = output.match(/(\d+)\s+accessibility\s+violations?\s+(?:found|detected)/i);
+
+  // Pattern 2: Parse individual violations from axe output
+  // Format: "impact: critical, description: Images must have alternate text"
+  const impactPattern = /impact[:\s]+["']?(critical|serious|moderate|minor)["']?[,\s]*(?:description|help)[:\s]+["']?([^"'\n]+)["']?/gi;
+
+  let match;
+  while ((match = impactPattern.exec(output)) !== null) {
+    const impact = match[1].toLowerCase() as A11yViolationSeverity;
+    const description = match[2].trim();
+
+    // Avoid duplicates
+    if (!violations.find((v) => v.description === description)) {
+      violations.push({
+        id: `a11y-${violations.length + 1}`,
+        impact,
+        description,
+      });
+    }
+  }
+
+  // Pattern 3: Look for axe rule IDs like "image-alt", "color-contrast", etc.
+  const ruleIdPattern = /rule[:\s]+["']?([\w-]+)["']?.*?impact[:\s]+["']?(critical|serious|moderate|minor)["']?/gi;
+  while ((match = ruleIdPattern.exec(output)) !== null) {
+    const id = match[1];
+    const impact = match[2].toLowerCase() as A11yViolationSeverity;
+
+    if (!violations.find((v) => v.id === id)) {
+      violations.push({
+        id,
+        impact,
+        description: `Accessibility rule violation: ${id}`,
+      });
+    }
+  }
+
+  // Pattern 4: Common axe violation messages
+  const commonViolations: { pattern: RegExp; id: string; impact: A11yViolationSeverity }[] = [
+    { pattern: /image[s]?\s+must\s+have\s+alt(ernate)?\s+text/i, id: 'image-alt', impact: 'critical' },
+    { pattern: /color\s+contrast\s+ratio/i, id: 'color-contrast', impact: 'serious' },
+    { pattern: /form\s+elements?\s+must\s+have\s+label/i, id: 'label', impact: 'critical' },
+    { pattern: /document\s+must\s+have.+lang/i, id: 'html-has-lang', impact: 'serious' },
+    { pattern: /link[s]?\s+must\s+have\s+discernible\s+text/i, id: 'link-name', impact: 'serious' },
+    { pattern: /button[s]?\s+must\s+have\s+discernible\s+text/i, id: 'button-name', impact: 'critical' },
+    { pattern: /heading[s]?\s+must\s+not\s+be\s+empty/i, id: 'empty-heading', impact: 'minor' },
+    { pattern: /skip.*link|bypass.*block/i, id: 'bypass', impact: 'serious' },
+    { pattern: /aria-?\s*(label|describedby|hidden)/i, id: 'aria-valid', impact: 'serious' },
+    { pattern: /landmark|region/i, id: 'region', impact: 'moderate' },
+    { pattern: /focus.*order|tab.*index/i, id: 'focus-order', impact: 'serious' },
+    { pattern: /keyboard.*accessible/i, id: 'keyboard', impact: 'critical' },
+  ];
+
+  for (const { pattern, id, impact } of commonViolations) {
+    if (pattern.test(output) && !violations.find((v) => v.id === id)) {
+      const descMatch = output.match(new RegExp(`(${pattern.source}[^.\\n]{0,100})`, 'i'));
+      violations.push({
+        id,
+        impact,
+        description: descMatch?.[1]?.trim() || `${id} violation`,
+      });
+    }
+  }
+
+  // Pattern 5: Playwright-specific accessibility output
+  // Example: "expected page to have no accessibility violations"
+  if (/expected.*page.*to.*have.*no.*(?:accessibility|a11y).*violations/i.test(output)) {
+    auditRan = true;
+  }
+
+  // Pattern 6: Count passes if available
+  const passesMatch = output.match(/(\d+)\s+(?:accessibility\s+)?(?:checks?\s+)?pass(?:ed|es)?/i);
+  if (passesMatch) {
+    passes = parseInt(passesMatch[1], 10);
+  }
+
+  // Build summary
+  const summary = {
+    critical: violations.filter((v) => v.impact === 'critical').length,
+    serious: violations.filter((v) => v.impact === 'serious').length,
+    moderate: violations.filter((v) => v.impact === 'moderate').length,
+    minor: violations.filter((v) => v.impact === 'minor').length,
+    total: violations.length,
+  };
+
+  // Infer audit ran if we found violations
+  if (violations.length > 0) {
+    auditRan = true;
+  }
+
+  return {
+    hasAxe: auditRan,
+    auditRan,
+    violations,
+    passes,
+    summary,
+  };
+}
+
+/**
+ * Check if accessibility audit should block completion
+ *
+ * @param result - Accessibility audit result
+ * @param config - Configuration for blocking thresholds
+ * @returns Whether to block and reason
+ */
+export function shouldBlockOnAccessibility(
+  result: A11yAuditResult,
+  config: {
+    blockOnCritical?: boolean;
+    blockOnSerious?: boolean;
+    maxViolations?: number;
+  } = {}
+): { block: boolean; reason: string } {
+  const { blockOnCritical = true, blockOnSerious = true, maxViolations = 0 } = config;
+
+  if (!result.auditRan) {
+    return { block: false, reason: 'No accessibility audit ran' };
+  }
+
+  if (blockOnCritical && result.summary.critical > 0) {
+    return {
+      block: true,
+      reason: `${result.summary.critical} critical accessibility violation(s) found`,
+    };
+  }
+
+  if (blockOnSerious && result.summary.serious > 0) {
+    return {
+      block: true,
+      reason: `${result.summary.serious} serious accessibility violation(s) found`,
+    };
+  }
+
+  if (maxViolations > 0 && result.summary.total > maxViolations) {
+    return {
+      block: true,
+      reason: `${result.summary.total} accessibility violations exceed limit of ${maxViolations}`,
+    };
+  }
+
+  return { block: false, reason: 'Accessibility audit passed' };
+}
+
+/**
+ * Generate accessibility report
+ *
+ * @param result - Accessibility audit result
+ * @returns Formatted report string
+ */
+export function generateAccessibilityReport(result: A11yAuditResult): string {
+  const lines: string[] = [];
+
+  lines.push('♿ Accessibility Audit Report');
+  lines.push('═'.repeat(50));
+  lines.push('');
+
+  if (!result.auditRan) {
+    lines.push('⚠️ No accessibility audit detected in test output.');
+    lines.push('');
+    lines.push('To enable accessibility testing, install @axe-core/playwright:');
+    lines.push('  npm install -D @axe-core/playwright');
+    lines.push('');
+    lines.push('Then add to your tests:');
+    lines.push("  import { injectAxe, checkA11y } from '@axe-core/playwright';");
+    lines.push('  await injectAxe(page);');
+    lines.push('  await checkA11y(page);');
+    return lines.join('\n');
+  }
+
+  // Summary
+  lines.push('Summary:');
+  lines.push(`  🔴 Critical: ${result.summary.critical}`);
+  lines.push(`  🟠 Serious:  ${result.summary.serious}`);
+  lines.push(`  🟡 Moderate: ${result.summary.moderate}`);
+  lines.push(`  🟢 Minor:    ${result.summary.minor}`);
+  lines.push(`  ─────────────`);
+  lines.push(`  📊 Total:    ${result.summary.total}`);
+  if (result.passes > 0) {
+    lines.push(`  ✅ Passed:   ${result.passes}`);
+  }
+  lines.push('');
+
+  // Critical violations (always show)
+  const critical = result.violations.filter((v) => v.impact === 'critical');
+  if (critical.length > 0) {
+    lines.push('🔴 Critical Violations (MUST FIX):');
+    for (const violation of critical) {
+      lines.push(`  • [${violation.id}] ${violation.description}`);
+      if (violation.helpUrl) {
+        lines.push(`    Learn more: ${violation.helpUrl}`);
+      }
+    }
+    lines.push('');
+  }
+
+  // Serious violations
+  const serious = result.violations.filter((v) => v.impact === 'serious');
+  if (serious.length > 0) {
+    lines.push('🟠 Serious Violations (Should Fix):');
+    for (const violation of serious) {
+      lines.push(`  • [${violation.id}] ${violation.description}`);
+    }
+    lines.push('');
+  }
+
+  // Moderate/minor as summary
+  const other = result.violations.filter((v) => v.impact === 'moderate' || v.impact === 'minor');
+  if (other.length > 0) {
+    lines.push(`⚠️ ${other.length} moderate/minor violations (see full report for details)`);
+    lines.push('');
+  }
+
+  // Status
+  if (result.summary.critical === 0 && result.summary.serious === 0) {
+    lines.push('✅ Accessibility audit PASSED (no critical or serious issues)');
+  } else {
+    lines.push('❌ Accessibility audit FAILED - fix critical/serious issues before release');
+  }
+
+  return lines.join('\n');
+}
+
+// ============================================================================
+// CONSOLE ERROR DETECTION (Phase 6 - UI/UX Quality Gates)
+// ============================================================================
+
+/**
+ * Console error detected in E2E test output
+ */
+export interface ConsoleError {
+  type: 'error' | 'warn' | 'uncaught';
+  message: string;
+  source?: string;
+  line?: number;
+}
+
+/**
+ * Result of console error parsing
+ */
+export interface ConsoleErrorResult {
+  errors: ConsoleError[];
+  warnings: ConsoleError[];
+  uncaughtExceptions: ConsoleError[];
+  total: number;
+}
+
+/**
+ * Parse console errors from E2E test output
+ *
+ * Looks for patterns like:
+ * - "console.error: ..."
+ * - "Uncaught Error: ..."
+ * - "Error: ..." in page console
+ *
+ * @param output - Test output (stdout/stderr combined)
+ * @param excludePatterns - Patterns to exclude (expected errors)
+ * @returns Parsed console errors
+ */
+export function parseConsoleErrors(
+  output: string,
+  excludePatterns: RegExp[] = []
+): ConsoleErrorResult {
+  const errors: ConsoleError[] = [];
+  const warnings: ConsoleError[] = [];
+  const uncaughtExceptions: ConsoleError[] = [];
+
+  // Default exclusions for expected/handled errors
+  const defaultExclusions = [
+    /Download the React DevTools/i,
+    /React does not recognize the/i,
+    /Warning: Each child in a list should have/i,
+    /Failed to load resource.*favicon/i,
+    /Source map warning/i,
+    /\[HMR\]/i,
+    /hot.*reload/i,
+    /@fs/i, // Vite dev server
+    /WebSocket connection/i, // Dev server
+    /Compiled successfully/i,
+    /Download the Apollo DevTools/i,
+  ];
+
+  const allExclusions = [...defaultExclusions, ...excludePatterns];
+
+  const isExcluded = (msg: string): boolean => {
+    return allExclusions.some((pattern) => pattern.test(msg));
+  };
+
+  // Pattern 1: Playwright console listener output
+  // Format: console.error: Error message here
+  // Or: console.error Error message here
+  const lines = output.split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // console.error pattern
+    const errorMatch = trimmed.match(/^console\.error[:\s]+(.+)/i);
+    if (errorMatch) {
+      const message = errorMatch[1].trim();
+      if (!isExcluded(message) && !errors.find((e) => e.message === message)) {
+        errors.push({ type: 'error', message });
+      }
+    }
+
+    // console.warn pattern
+    const warnMatch = trimmed.match(/^console\.warn[:\s]+(.+)/i);
+    if (warnMatch) {
+      const message = warnMatch[1].trim();
+      if (!isExcluded(message) && !warnings.find((w) => w.message === message)) {
+        warnings.push({ type: 'warn', message });
+      }
+    }
+
+    // Uncaught exception pattern
+    const uncaughtMatch = trimmed.match(/^(?:Uncaught|unhandled)\s+(?:Error|Exception|TypeError|ReferenceError)[:\s]+(.+)/i);
+    if (uncaughtMatch) {
+      const message = uncaughtMatch[1].trim();
+      if (!isExcluded(message) && !uncaughtExceptions.find((e) => e.message === message)) {
+        uncaughtExceptions.push({ type: 'uncaught', message });
+      }
+    }
+  }
+
+  let match;
+
+  // Pattern 4: Page error event (Playwright)
+  const pageErrorPattern = /page\.on\(['"](?:page)?error['"]\).*?[:\s]+(.+?)(?=\n|$)/gi;
+  while ((match = pageErrorPattern.exec(output)) !== null) {
+    const message = match[1].trim();
+    if (!isExcluded(message)) {
+      errors.push({ type: 'error', message, source: 'page' });
+    }
+  }
+
+  // Pattern 5: React error boundaries
+  const errorBoundaryPattern = /Error\s+caught\s+by\s+(?:Error\s*)?Boundary[:\s]+(.+?)(?=\n|$)/gi;
+  while ((match = errorBoundaryPattern.exec(output)) !== null) {
+    const message = match[1].trim();
+    if (!isExcluded(message)) {
+      errors.push({ type: 'error', message, source: 'ErrorBoundary' });
+    }
+  }
+
+  // Pattern 6: General "Error:" in page console (Playwright traces)
+  const traceErrorPattern = /\[page\].*?Error:\s*(.+?)(?=\n|$)/gi;
+  while ((match = traceErrorPattern.exec(output)) !== null) {
+    const message = match[1].trim();
+    if (!isExcluded(message) && !errors.find((e) => e.message === message)) {
+      errors.push({ type: 'error', message, source: 'page' });
+    }
+  }
+
+  return {
+    errors,
+    warnings,
+    uncaughtExceptions,
+    total: errors.length + uncaughtExceptions.length,
+  };
+}
+
+/**
+ * Check if console errors should block completion
+ *
+ * @param result - Console error parsing result
+ * @param config - Configuration
+ * @returns Whether to block and reason
+ */
+export function shouldBlockOnConsoleErrors(
+  result: ConsoleErrorResult,
+  config: {
+    blockOnErrors?: boolean;
+    blockOnUncaught?: boolean;
+    maxErrors?: number;
+  } = {}
+): { block: boolean; reason: string } {
+  const { blockOnErrors = true, blockOnUncaught = true, maxErrors = 0 } = config;
+
+  if (blockOnUncaught && result.uncaughtExceptions.length > 0) {
+    return {
+      block: true,
+      reason: `${result.uncaughtExceptions.length} uncaught exception(s) in browser console`,
+    };
+  }
+
+  if (blockOnErrors && result.errors.length > 0) {
+    return {
+      block: true,
+      reason: `${result.errors.length} console error(s) in browser`,
+    };
+  }
+
+  if (maxErrors > 0 && result.total > maxErrors) {
+    return {
+      block: true,
+      reason: `${result.total} console errors exceed limit of ${maxErrors}`,
+    };
+  }
+
+  return { block: false, reason: 'No blocking console errors' };
+}
+
+// ============================================================================
+// UI STATE COVERAGE (Phase 6 - UI/UX Quality Gates)
+// ============================================================================
+
+/**
+ * UI state coverage tracking
+ */
+export interface UIStateCoverage {
+  loadingStates: { detected: boolean; tested: boolean; examples: string[] };
+  errorStates: { detected: boolean; tested: boolean; examples: string[] };
+  emptyStates: { detected: boolean; tested: boolean; examples: string[] };
+}
+
+/**
+ * Parse test output for UI state coverage
+ *
+ * Detects if tests cover:
+ * - Loading states (spinners, skeletons)
+ * - Error states (error boundaries, 404, 500)
+ * - Empty states (no data, no results)
+ *
+ * @param output - Test output
+ * @returns UI state coverage analysis
+ */
+export function parseUIStateCoverage(output: string): UIStateCoverage {
+  // Loading state patterns
+  const loadingPatterns = [
+    /loading|spinner|skeleton|shimmer/i,
+    /isLoading|isLoaded|setLoading/i,
+    /getByRole\(['"]?status['"]?\)/i,
+    /aria-busy/i,
+    /Suspense|lazy/i,
+  ];
+
+  // Error state patterns
+  const errorPatterns = [
+    /error.?boundary|error.?state|error.?message/i,
+    /404|not.?found/i,
+    /500|server.?error|internal.?server/i,
+    /something.?went.?wrong/i,
+    /try.?again/i,
+    /onError|handleError|catchError/i,
+  ];
+
+  // Empty state patterns
+  const emptyPatterns = [
+    /empty.?state|no.?data|no.?results/i,
+    /nothing.?here|nothing.?found/i,
+    /no.?items|no.?entries/i,
+    /list.?is.?empty/i,
+    /get.?started|add.?first/i,
+  ];
+
+  const findExamples = (patterns: RegExp[]): string[] => {
+    const examples: string[] = [];
+    for (const pattern of patterns) {
+      const match = output.match(new RegExp(`(.{0,30}${pattern.source}.{0,30})`, 'gi'));
+      if (match) {
+        examples.push(...match.slice(0, 2).map((m) => m.trim()));
+      }
+    }
+    return [...new Set(examples)].slice(0, 3);
+  };
+
+  const hasPattern = (patterns: RegExp[]): boolean => {
+    return patterns.some((p) => p.test(output));
+  };
+
+  // Check if patterns appear in test assertions (vs just code)
+  const isInTest = (patterns: RegExp[]): boolean => {
+    const testContext = /expect|assert|should|toBe|toEqual|toContain|toHave/i;
+    const lines = output.split('\n');
+    return lines.some((line) => {
+      const hasTestAssertion = testContext.test(line);
+      const hasPattern = patterns.some((p) => p.test(line));
+      return hasTestAssertion && hasPattern;
+    });
+  };
+
+  return {
+    loadingStates: {
+      detected: hasPattern(loadingPatterns),
+      tested: isInTest(loadingPatterns),
+      examples: findExamples(loadingPatterns),
+    },
+    errorStates: {
+      detected: hasPattern(errorPatterns),
+      tested: isInTest(errorPatterns),
+      examples: findExamples(errorPatterns),
+    },
+    emptyStates: {
+      detected: hasPattern(emptyPatterns),
+      tested: isInTest(emptyPatterns),
+      examples: findExamples(emptyPatterns),
+    },
+  };
+}
+
+/**
+ * Generate UI state coverage report
+ *
+ * @param coverage - UI state coverage data
+ * @returns Formatted report (warnings only, doesn't block)
+ */
+export function generateUIStateReport(coverage: UIStateCoverage): string {
+  const lines: string[] = [];
+  const warnings: string[] = [];
+
+  lines.push('🎨 UI State Coverage');
+  lines.push('─'.repeat(40));
+
+  // Loading states
+  const loadingStatus =
+    coverage.loadingStates.tested ? '✅'
+    : coverage.loadingStates.detected ? '⚠️'
+    : '❓';
+  lines.push(`${loadingStatus} Loading States: ${coverage.loadingStates.tested ? 'Tested' : coverage.loadingStates.detected ? 'Detected but not tested' : 'Not detected'}`);
+  if (!coverage.loadingStates.tested && coverage.loadingStates.detected) {
+    warnings.push('Consider adding tests for loading states (spinners, skeletons)');
+  }
+
+  // Error states
+  const errorStatus =
+    coverage.errorStates.tested ? '✅'
+    : coverage.errorStates.detected ? '⚠️'
+    : '❓';
+  lines.push(`${errorStatus} Error States:   ${coverage.errorStates.tested ? 'Tested' : coverage.errorStates.detected ? 'Detected but not tested' : 'Not detected'}`);
+  if (!coverage.errorStates.tested && coverage.errorStates.detected) {
+    warnings.push('Consider adding tests for error states (404, 500, error boundaries)');
+  }
+
+  // Empty states
+  const emptyStatus =
+    coverage.emptyStates.tested ? '✅'
+    : coverage.emptyStates.detected ? '⚠️'
+    : '❓';
+  lines.push(`${emptyStatus} Empty States:   ${coverage.emptyStates.tested ? 'Tested' : coverage.emptyStates.detected ? 'Detected but not tested' : 'Not detected'}`);
+  if (!coverage.emptyStates.tested && coverage.emptyStates.detected) {
+    warnings.push('Consider adding tests for empty states (no data, no results)');
+  }
+
+  lines.push('');
+
+  if (warnings.length > 0) {
+    lines.push('💡 Recommendations:');
+    for (const warning of warnings) {
+      lines.push(`   • ${warning}`);
+    }
+  } else {
+    lines.push('✅ UI state coverage looks good!');
+  }
 
   return lines.join('\n');
 }

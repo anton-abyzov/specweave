@@ -6,11 +6,16 @@ description: LSP is enabled by default for enterprise documentation and codebase
 
 # LSP Integration Guide
 
-Claude Code 2.0.74+ includes native **Language Server Protocol (LSP)** support, which is **ENABLED BY DEFAULT** in SpecWeave for all operations including `specweave init` and `/sw:living-docs`.
+Claude Code 2.0.74+ includes native **Language Server Protocol (LSP)** support. **USE LSP ACTIVELY** - it's 100x faster and more accurate than grep for semantic code understanding.
 
-## LSP is the Default
+## Smart LSP Integration (ADR-0222)
 
-**You don't need to enable LSP** - it runs automatically. Just install the language servers for your stack.
+**LSP is EXEMPT from the "Code First, Tools Second" rule** (ADR-0140) because:
+- LSP responses are small (~100-5000 bytes) - no context bloat
+- LSP provides semantic precision that regex cannot match
+- LSP is built into Claude Code - zero tool definition overhead
+
+**Use LSP for precision, code execution for bulk processing.**
 
 | Without LSP (--no-lsp) | With LSP (DEFAULT) |
 |------------------------|-------------------|
@@ -21,6 +26,20 @@ Claude Code 2.0.74+ includes native **Language Server Protocol (LSP)** support, 
 | Pattern matching for APIs | Precise API surface extraction |
 
 **Performance gain**: ~100x faster symbol resolution with semantic accuracy.
+
+## When to Use LSP (PROACTIVE)
+
+**Don't wait for LSP to "activate automatically" - USE IT ACTIVELY:**
+
+| Scenario | LSP Operation | Command Example |
+|----------|---------------|-----------------|
+| Before refactoring | `findReferences` | "Use LSP findReferences to find all usages of calculateTax" |
+| Navigate to source | `goToDefinition` | "Use goToDefinition to find where PaymentService is defined" |
+| Understand module | `documentSymbol` | "Use documentSymbol to map the API surface of auth.ts" |
+| Check types | `hover` | "Use hover to check the type of processOrder function" |
+| Code quality | `getDiagnostics` | "Use getDiagnostics on this file to check for issues" |
+
+**ALWAYS use findReferences before any refactoring operation.**
 
 ## LSP Operations
 

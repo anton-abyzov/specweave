@@ -1,11 +1,15 @@
 ---
 id: US-011
 feature: FS-148
-title: "TDD Enforcement for Auto Mode"
+title: TDD Enforcement for Auto Mode
 status: completed
 priority: P1
 created: 2025-12-29
 project: specweave
+external:
+  github:
+    issue: 961
+    url: https://github.com/anton-abyzov/specweave/issues/961
 ---
 
 # US-011: TDD Enforcement for Auto Mode

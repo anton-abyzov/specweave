@@ -278,7 +278,7 @@
 ### T-015: Detect viewport configuration
 **User Story**: US-005
 **Satisfies ACs**: AC-US5-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Parse playwright.config.ts to detect configured viewports/projects.
@@ -286,17 +286,17 @@
 **Test**: Given config with mobile, tablet, desktop → When parsing → Then returns viewport list
 
 **Acceptance**:
-- [ ] Parse playwright.config.ts/js
-- [ ] Extract projects with viewport settings
-- [ ] Identify mobile (<=480), tablet (<=768), desktop (>768)
-- [ ] Cache results for stop hook
+- [x] Parse playwright.config.ts/js
+- [x] Extract projects with viewport settings
+- [x] Identify mobile (<=480), tablet (<=768), desktop (>768)
+- [x] Cache results for stop hook
 
 ---
 
 ### T-016: Verify viewport coverage in stop hook
 **User Story**: US-005
 **Satisfies ACs**: AC-US5-02, AC-US5-03, AC-US5-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Stop hook verifies tests ran on all required viewports.
@@ -304,10 +304,10 @@
 **Test**: Given config with 3 viewports but only 2 tested → When checking → Then blocks
 
 **Acceptance**:
-- [ ] Parse test output for viewport indicators
-- [ ] Compare against required viewports
-- [ ] Block if any viewport missing
-- [ ] Include missing viewports in block message
+- [x] Parse test output for viewport indicators
+- [x] Compare against required viewports
+- [x] Block if any viewport missing
+- [x] Include missing viewports in block message
 
 ---
 
@@ -316,7 +316,7 @@
 ### T-017: Add accessibility audit to completion check
 **User Story**: US-006
 **Satisfies ACs**: AC-US6-01, AC-US6-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Run axe-core audit and block on critical accessibility violations.
@@ -324,18 +324,18 @@
 **Test**: Given page with missing alt text → When auditing → Then blocks with violation
 
 **Acceptance**:
-- [ ] Detect if @axe-core/playwright installed
-- [ ] Parse accessibility results from output
-- [ ] Block on "critical" or "serious" violations
-- [ ] Allow "moderate" and "minor" with warning
-- [ ] Include violation details in block message
+- [x] Detect if @axe-core/playwright installed
+- [x] Parse accessibility results from output
+- [x] Block on "critical" or "serious" violations
+- [x] Allow "moderate" and "minor" with warning
+- [x] Include violation details in block message
 
 ---
 
 ### T-018: Check for console errors in E2E output
 **User Story**: US-006
 **Satisfies ACs**: AC-US6-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Parse E2E test output for console errors and block if found.
@@ -343,18 +343,18 @@
 **Test**: Given E2E output with console.error → When checking → Then blocks
 
 **Acceptance**:
-- [ ] Parse for "console.error" patterns
-- [ ] Parse for uncaught exceptions
-- [ ] Exclude expected/handled errors
-- [ ] Block on unexpected console errors
-- [ ] Include error messages in block
+- [x] Parse for "console.error" patterns
+- [x] Parse for uncaught exceptions
+- [x] Exclude expected/handled errors
+- [x] Block on unexpected console errors
+- [x] Include error messages in block
 
 ---
 
 ### T-019: Verify loading/error/empty states tested
 **User Story**: US-006
 **Satisfies ACs**: AC-US6-04, AC-US6-05, AC-US6-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Check that E2E tests cover loading, error, and empty states.
@@ -362,11 +362,11 @@
 **Test**: Given E2E tests → When analyzing → Then verifies state coverage
 
 **Acceptance**:
-- [ ] Detect loading state tests (skeleton, spinner)
-- [ ] Detect error state tests (error boundary, 404, 500)
-- [ ] Detect empty state tests (no data, no results)
-- [ ] Warn if states not tested (not block)
-- [ ] Include in coverage report
+- [x] Detect loading state tests (skeleton, spinner)
+- [x] Detect error state tests (error boundary, 404, 500)
+- [x] Detect empty state tests (no data, no results)
+- [x] Warn if states not tested (not block)
+- [x] Include in coverage report
 
 ---
 
@@ -375,7 +375,7 @@
 ### T-020: Implement increment completion transition
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-01, AC-US7-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: When current increment completes, auto-transition to next in queue.
@@ -383,18 +383,18 @@
 **Test**: Given queue [0001, 0002] with 0001 complete → When transitioning → Then starts 0002
 
 **Acceptance**:
-- [ ] Detect all tasks complete for current increment
-- [ ] Move current to completedIncrements array
-- [ ] Pop next from incrementQueue
-- [ ] Update currentIncrement
-- [ ] Log transition
+- [x] Detect all tasks complete for current increment
+- [x] Move current to completedIncrements array
+- [x] Pop next from incrementQueue
+- [x] Update currentIncrement
+- [x] Log transition
 
 ---
 
 ### T-021: Add transition summary to stop hook
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Include summary of completed increment when transitioning.
@@ -402,18 +402,18 @@
 **Test**: Given completed increment → When transitioning → Then shows summary
 
 **Acceptance**:
-- [ ] Count completed tasks
-- [ ] Count passed tests
-- [ ] Calculate duration
-- [ ] Include in block message for next increment
-- [ ] Save summary to logs
+- [x] Count completed tasks
+- [x] Count passed tests
+- [x] Calculate duration
+- [x] Include in block message for next increment
+- [x] Save summary to logs
 
 ---
 
 ### T-022: Handle failed increment without blocking queue
 **User Story**: US-007
 **Satisfies ACs**: AC-US7-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: If increment fails (human gate), allow skipping to continue queue.
@@ -421,11 +421,11 @@
 **Test**: Given failed increment → When user approves skip → Then continues to next
 
 **Acceptance**:
-- [ ] Add skip option to human gate
-- [ ] Move failed to failedIncrements array
-- [ ] Continue to next in queue
-- [ ] Log failure reason
-- [ ] Include failed summary in final report
+- [x] Add skip option to human gate
+- [x] Move failed to failedIncrements array
+- [x] Continue to next in queue
+- [x] Log failure reason
+- [x] Include failed summary in final report
 
 ---
 
@@ -434,7 +434,7 @@
 ### T-023: Add integration tests for test result parsing
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Create comprehensive tests for all test framework outputs.
@@ -442,19 +442,19 @@
 **Test**: Given sample outputs from all frameworks → When parsing → Then accurate results
 
 **Acceptance**:
-- [ ] Test vitest output parsing
-- [ ] Test jest output parsing
-- [ ] Test playwright output parsing
-- [ ] Test pytest output parsing
-- [ ] Test go test output parsing
-- [ ] Test mixed/complex outputs
+- [x] Test vitest output parsing
+- [x] Test jest output parsing
+- [x] Test playwright output parsing
+- [x] Test pytest output parsing
+- [x] Test go test output parsing
+- [x] Test mixed/complex outputs
 
 ---
 
 ### T-024: Add integration tests for self-healing loop
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-01 to AC-US3-06
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Test full self-healing loop behavior.
@@ -462,28 +462,28 @@
 **Test**: Given failing tests → When loop runs 3x → Then escalates to human
 
 **Acceptance**:
-- [ ] Test retry counter increment
-- [ ] Test failure prompt generation
-- [ ] Test human gate after 3 failures
-- [ ] Test retry counter reset on success
-- [ ] Test multiple tasks with different retry counts
+- [x] Test retry counter increment
+- [x] Test failure prompt generation
+- [x] Test human gate after 3 failures
+- [x] Test retry counter reset on success
+- [x] Test multiple tasks with different retry counts
 
 ---
 
 ### T-025: Update auto.md documentation
 **User Story**: US-001
 **Satisfies ACs**: AC-US1-01 to AC-US1-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Update command documentation with new features.
 
 **Acceptance**:
-- [ ] Document intelligent chunking behavior
-- [ ] Document self-healing loop
-- [ ] Document E2E coverage manifest
-- [ ] Document quality gates
-- [ ] Add examples for each feature
+- [x] Document intelligent chunking behavior
+- [x] Document self-healing loop
+- [x] Document E2E coverage manifest
+- [x] Document quality gates
+- [x] Add examples for each feature
 
 ---
 

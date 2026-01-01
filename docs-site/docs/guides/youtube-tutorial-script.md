@@ -7,9 +7,9 @@ draft: true
 
 # SpecWeave Complete Tutorial - YouTube Video Script
 
-**Duration**: ~31-32 minutes
+**Duration**: ~35-36 minutes
 **Format**: Screen recording walking through spec-weave.com documentation + terminal demos
-**Diagrams**: Mermaid (already embedded in docs) + 3 Excalidraw transitions
+**Diagrams**: Mermaid (already embedded in docs) + 5 Excalidraw transitions
 **Teaching Claude**: This script teaches Claude how SpecWeave works by walking through real docs
 
 ---
@@ -465,7 +465,118 @@ specweave init .
 
 ---
 
-## OUTRO (30:00 - 31:30)
+## SECTION 12.5: DEPLOYMENT PLATFORMS (30:00 - 33:00)
+
+**[SCREEN: Navigate to docs/guides/deployment-platforms]**
+
+> "Your increment is complete. Tests pass. Docs updated. Now — where do you deploy?"
+
+**[Point to the Quick Decision flowchart]**
+
+> "Two platforms dominate modern deployment: Vercel and Cloudflare. Both are excellent. Let me help you choose."
+
+**[EXCALIDRAW: Side-by-side comparison visual]**
+
+```
+┌─────────────────┬─────────────────┐
+│     VERCEL      │   CLOUDFLARE    │
+├─────────────────┼─────────────────┤
+│  Next.js Native │  Unlimited BW   │
+│  Best DX        │  100K/day APIs  │
+│  $20/user       │  $20/team       │
+│  100GB/mo       │  Commercial OK  │
+└─────────────────┴─────────────────┘
+```
+
+**[SCROLL to Free Tier Comparison table]**
+
+> "Look at the free tiers.
+>
+> Vercel: 100GB bandwidth, 100K serverless calls per MONTH.
+> Cloudflare: UNLIMITED bandwidth, 100K calls per DAY.
+>
+> If you're building high-traffic APIs or need commercial use on free tier — Cloudflare.
+> If you want zero-config Next.js with best developer experience — Vercel."
+
+**[Point to Decision Matrix]**
+
+> "Here's how I decide:
+>
+> - Next.js solo project? Vercel.
+> - High-traffic API? Cloudflare Workers.
+> - Team bigger than 2? Cloudflare — they charge per account, not per user.
+> - Startup that needs commercial use? Cloudflare free tier allows it."
+
+**[SCROLL to Cloudflare Serverless Ecosystem section]**
+
+> "But here's where Cloudflare gets really interesting — it's not just hosting. It's a complete serverless stack."
+
+**[EXCALIDRAW: Cloudflare ecosystem diagram]**
+
+```
+┌─────────────────────────────────────────────────────┐
+│              CLOUDFLARE EDGE (200+ locations)        │
+├─────────────────────────────────────────────────────┤
+│                                                      │
+│   ┌──────────┐    ┌──────────┐    ┌──────────┐      │
+│   │ Workers  │    │    D1    │    │    KV    │      │
+│   │ Compute  │◄──►│  SQLite  │    │Key-Value │      │
+│   └────┬─────┘    └──────────┘    └──────────┘      │
+│        │                                             │
+│        │          ┌──────────┐                       │
+│        └─────────►│    R2    │                       │
+│                   │ Storage  │                       │
+│                   │ $0 egress│                       │
+│                   └──────────┘                       │
+└─────────────────────────────────────────────────────┘
+```
+
+> "Four primitives that let you build complete apps:
+>
+> **Workers** — your code runs at the edge, 200+ locations, sub-millisecond cold starts. Write TypeScript, deploy globally.
+>
+> **D1** — SQLite at the edge. A real SQL database, no server to manage. 5GB free, 5 million reads per day.
+>
+> **KV** — key-value store for sessions, feature flags, cached data. 100K reads per day free.
+>
+> **R2** — S3-compatible object storage with ZERO egress fees. Store files, images, backups. No bandwidth charges ever.
+>
+> Think about that — database, storage, compute, all at the edge, all on free tier. You can build a complete SaaS without paying a cent until you scale."
+
+**[Point to the "When to Use Each" table]**
+
+> "Quick mental model:
+> - Need to store user data? D1.
+> - Need fast session lookups? KV.
+> - Need to store files? R2.
+> - Need to run code? Workers.
+>
+> They all work together. One `wrangler.toml` file configures everything."
+
+**[TERMINAL: Quick deploy commands]**
+
+```bash
+# After /sw:done completes...
+
+# Vercel (auto-detects framework)
+vercel
+
+# Cloudflare Pages
+wrangler pages deploy dist
+
+# Cloudflare Workers (with D1, KV, R2)
+wrangler deploy
+```
+
+> "Both integrate with GitHub. Push your increment, deployment happens automatically."
+
+**[Point to the deployment flow diagram]**
+
+> "Notice the pattern: `/sw:done` validates quality gates, pushes to git, webhook triggers deployment. Your code ships only after SpecWeave confirms it's ready."
+
+---
+
+## OUTRO (33:00 - 35:00)
 
 **[SCREEN: Navigate back to intro.md]**
 
@@ -506,7 +617,9 @@ specweave init .
 
 1. **Intro transition**: "Vibe Coding" crossed out → "Spec-Driven Development" (0:00)
 2. **Three-file foundation**: spec.md, plan.md, tasks.md with AC-ID arrows connecting them (10:00)
-3. **Outro slide**: SpecWeave logo + links (spec-weave.com, Discord, YouTube, GitHub) (30:00)
+3. **Deployment comparison**: Vercel vs Cloudflare side-by-side with key metrics (30:00)
+4. **Cloudflare ecosystem**: Workers + D1 + KV + R2 at the edge (31:00)
+5. **Outro slide**: SpecWeave logo + links (spec-weave.com, Discord, YouTube, GitHub) (33:00)
 
 ### Mermaid Diagrams (Already in docs - no work needed)
 
@@ -515,6 +628,9 @@ specweave init .
 - Increment lifecycle state diagram (core-concepts/what-is-an-increment.md)
 - Brownfield challenge diagram (workflows/brownfield.md)
 - Three-file structure diagram (lessons/02-three-file-structure.md)
+- Deployment decision flowchart (guides/deployment-platforms.md)
+- Deployment flow sequence diagram (guides/deployment-platforms.md)
+- Cloudflare serverless ecosystem diagram (guides/deployment-platforms.md)
 
 ### Screen Recording Checklist
 
@@ -533,7 +649,9 @@ specweave init .
 | 23:30 | lessons/05-quality-gates | Explain gates |
 | 25:30 | lessons/index | Show learning paths |
 | 27:30 | overview/dogfooding | Show real metrics + Boris Cherny example |
-| 30:00 | intro.md | Final recap |
+| 30:00 | guides/deployment-platforms | Vercel vs Cloudflare comparison |
+| 31:00 | guides/deployment-platforms | Cloudflare serverless ecosystem (D1, R2, KV) |
+| 33:00 | intro.md | Final recap |
 
 ### Terminal Commands to Demo
 
@@ -562,6 +680,11 @@ grep -ril "auth" .specweave/docs/internal/  # Search docs
 
 # TDD
 /sw:tdd-cycle
+
+# Deployment
+vercel                           # Deploy to Vercel
+wrangler deploy                  # Deploy to Cloudflare Workers
+wrangler pages deploy dist       # Deploy to Cloudflare Pages
 ```
 
 ### Timestamps for YouTube Description
@@ -580,7 +703,9 @@ grep -ril "auth" .specweave/docs/internal/  # Search docs
 23:30 - Quality Gates & TDD
 25:30 - The Learning Path (16 Lessons)
 27:30 - Dogfooding: Real Metrics (186K LOC, 0% failures, AI automation era)
-30:00 - Recap & Getting Started
+30:00 - Deployment Platforms (Vercel vs Cloudflare)
+31:00 - Cloudflare Serverless Stack (Workers, D1, KV, R2)
+33:00 - Recap & Getting Started
 ```
 
 ### YouTube Description Template
@@ -600,6 +725,7 @@ What you'll learn:
 - External tool sync (GitHub, JIRA, Azure DevOps)
 - Working with existing codebases (brownfield)
 - Quality gates and TDD workflow
+- Deployment platforms: Vercel vs Cloudflare (free tier comparison)
 - The complete 16-lesson learning path
 - Real metrics from building SpecWeave with SpecWeave
 
@@ -638,6 +764,7 @@ This isn't a demo framework — it's production-tested on itself.
 | TDD Workflow | 23:30 | lessons/06-tdd-workflow |
 | Learning Path | 25:30 | lessons/index |
 | Dogfooding | 27:30 | overview/dogfooding |
+| Deployment Platforms | 30:00 | guides/deployment-platforms |
 
 ### Brief Mentions (Not Deep Dives)
 

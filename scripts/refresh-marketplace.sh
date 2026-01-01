@@ -235,6 +235,50 @@ else
 fi
 
 echo ""
+
+# Step 5: Generate skill triggers index
+echo -e "${YELLOW}🔍 Step 5: Generating skill triggers index...${NC}"
+
+# Check if we're in the SpecWeave development directory or a project with plugins
+if [ -d "plugins" ] && [ -d "src/core/plugins" ]; then
+  # SpecWeave development mode - use TypeScript directly
+  if command -v npx &> /dev/null; then
+    # Try to run the index generator
+    if npx tsx -e "
+import { SkillTriggerIndexManager } from './src/core/plugins/skill-trigger-index.js';
+
+async function main() {
+  const manager = new SkillTriggerIndexManager('$PWD');
+  const { index, path } = await manager.generateAndSave();
+  console.log('Skills indexed: ' + index.skillCount);
+  console.log('Keywords indexed: ' + index.keywordCount);
+  console.log('Saved to: ' + path);
+}
+
+main().catch(console.error);
+" 2>&1 | tee /tmp/skill-index.log; then
+      echo -e "${GREEN}✓ Skill triggers index generated${NC}"
+    else
+      echo -e "${YELLOW}⚠ Could not generate skill triggers index${NC}"
+      echo -e "${YELLOW}  This is optional - skills will still work via description matching${NC}"
+    fi
+  else
+    echo -e "${YELLOW}⚠ npx not found - skill triggers index not generated${NC}"
+  fi
+elif [ -f ".specweave/config.json" ]; then
+  # User project - use installed specweave CLI
+  if command -v npx &> /dev/null; then
+    if npx specweave generate-skill-index 2>&1 | tee /tmp/skill-index.log; then
+      echo -e "${GREEN}✓ Skill triggers index generated${NC}"
+    else
+      echo -e "${YELLOW}⚠ Could not generate skill triggers index (optional)${NC}"
+    fi
+  fi
+else
+  echo -e "${BLUE}ℹ Not in a SpecWeave project - skipping skill index generation${NC}"
+fi
+
+echo ""
 echo -e "${BLUE}Next steps:${NC}"
 echo -e "  1. Restart Claude Code for changes to take effect"
 echo -e "  2. Run ${YELLOW}/plugin${NC} to verify all plugins loaded"

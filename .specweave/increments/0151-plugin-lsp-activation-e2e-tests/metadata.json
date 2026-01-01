@@ -1,0 +1,9 @@
+{
+  "id": "0151-plugin-lsp-activation-e2e-tests",
+  "incrementNumber": 151,
+  "title": "Plugin/LSP Activation E2E Tests and Fixes",
+  "status": "active",
+  "createdAt": "2025-12-31T20:00:00Z",
+  "updatedAt": "2025-12-31T20:00:00Z",
+  "project": "specweave"
+}

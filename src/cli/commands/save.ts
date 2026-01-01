@@ -15,6 +15,7 @@ import { execFileNoThrow } from '../../utils/execFileNoThrow.js';
 import { ConfigManager } from '../../core/config/config-manager.js';
 import { getCurrentBranch, detectRepository, isWorkingDirectoryClean } from '../../utils/git-utils.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { scanForChildRepos } from '../../core/living-docs/umbrella-detector.js';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -292,6 +293,11 @@ export async function executeSave(options: SaveOptions = {}): Promise<void> {
 
 /**
  * Detect all repositories (single or umbrella)
+ *
+ * Detection order:
+ * 1. Umbrella config (explicit childRepos in config.json)
+ * 2. Git-scan fallback (auto-discover nested .git directories like repositories/)
+ * 3. Single repo mode (current directory only)
  */
 async function detectRepositories(
   projectRoot: string,
@@ -303,9 +309,9 @@ async function detectRepositories(
 
   const repos: RepoInfo[] = [];
 
-  // Check if umbrella mode
+  // Strategy 1: Check if umbrella mode is explicitly configured
   if (config.umbrella?.enabled && config.umbrella?.childRepos?.length) {
-    logger.log(`Umbrella mode: ${config.umbrella.childRepos.length} child repos`);
+    logger.log(`Umbrella mode: ${config.umbrella.childRepos.length} child repos (from config)`);
 
     for (const childRepo of config.umbrella.childRepos) {
       const repoPath = path.resolve(projectRoot, childRepo.path);
@@ -319,11 +325,32 @@ async function detectRepositories(
       }
     }
   } else {
-    // Single repo mode
-    const repoInfo = await getRepoInfo('main', path.basename(projectRoot), projectRoot, undefined, logger);
+    // Strategy 2: Auto-detect nested git repositories (repositories/ folder, etc.)
+    const scanResult = await scanForChildRepos(projectRoot, 3);
 
-    if (repoInfo) {
-      repos.push(repoInfo);
+    if (scanResult.isUmbrella && scanResult.config?.childRepos?.length) {
+      logger.log(`Auto-detected ${scanResult.config.childRepos.length} nested repositories`);
+
+      for (const childRepo of scanResult.config.childRepos) {
+        const repoPath = path.resolve(projectRoot, childRepo.path);
+        const repoInfo = await getRepoInfo(childRepo.id, childRepo.name, repoPath, undefined, logger);
+
+        if (repoInfo) {
+          repos.push(repoInfo);
+        }
+      }
+    }
+
+    // Strategy 3: Also include parent project if it has git (single repo or umbrella parent)
+    const parentRepoInfo = await getRepoInfo('main', path.basename(projectRoot), projectRoot, undefined, logger);
+
+    if (parentRepoInfo) {
+      // If we found child repos, parent is "umbrella-parent", otherwise it's "single repo"
+      if (repos.length > 0) {
+        parentRepoInfo.id = 'umbrella-parent';
+        parentRepoInfo.name = `${path.basename(projectRoot)} (parent)`;
+      }
+      repos.unshift(parentRepoInfo); // Add parent first
     }
   }
 

@@ -1,11 +1,15 @@
 ---
 id: US-003
 feature: FS-148
-title: "Leverage Claude Code's Built-in Session Recovery"
+title: Leverage Claude Code's Built-in Session Recovery
 status: completed
 priority: P1
 created: 2025-12-29
 project: specweave
+external:
+  github:
+    issue: 953
+    url: https://github.com/anton-abyzov/specweave/issues/953
 ---
 
 # US-003: Leverage Claude Code's Built-in Session Recovery

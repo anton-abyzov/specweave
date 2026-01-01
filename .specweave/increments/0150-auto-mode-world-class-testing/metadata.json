@@ -1,6 +1,6 @@
 {
   "id": "0150-auto-mode-world-class-testing",
-  "status": "active",
+  "status": "ready_for_review",
   "type": "feature",
   "priority": "P0",
   "created": "2025-12-30T08:00:00Z",
@@ -16,5 +16,6 @@
     "e2e",
     "world-class",
     "quality-gates"
-  ]
+  ],
+  "updated": "2025-12-31T20:27:36.000Z"
 }

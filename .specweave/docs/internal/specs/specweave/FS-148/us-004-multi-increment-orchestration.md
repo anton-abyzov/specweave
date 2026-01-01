@@ -1,11 +1,15 @@
 ---
 id: US-004
 feature: FS-148
-title: "Multi-Increment Orchestration"
+title: Multi-Increment Orchestration
 status: completed
 priority: P1
 created: 2025-12-29
 project: specweave
+external:
+  github:
+    issue: 954
+    url: https://github.com/anton-abyzov/specweave/issues/954
 ---
 
 # US-004: Multi-Increment Orchestration
