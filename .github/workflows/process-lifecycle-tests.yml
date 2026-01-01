@@ -1,6 +1,7 @@
 name: Process Lifecycle Tests
 
 on:
+  workflow_dispatch:
   push:
     branches: [develop, main]
     paths:
@@ -17,6 +18,11 @@ on:
       - 'plugins/specweave/scripts/heartbeat.sh'
       - 'plugins/specweave/hooks/v2/session-start.sh'
       - 'plugins/specweave/hooks/v2/session-end.sh'
+      - 'tests/unit/session-registry*.ts'
+      - 'tests/unit/staleness-detection.test.ts'
+      - 'tests/integration/cleanup-*.test.ts'
+      - 'tests/integration/heartbeat-*.test.ts'
+      - 'tests/integration/watchdog-*.test.ts'
       - '.github/workflows/process-lifecycle-tests.yml'
   pull_request:
     branches: [develop, main]
@@ -28,6 +34,11 @@ on:
       - 'src/cli/**'
       - 'plugins/specweave/scripts/**'
       - 'plugins/specweave/hooks/**'
+      - 'tests/unit/session-registry*.ts'
+      - 'tests/unit/staleness-detection.test.ts'
+      - 'tests/integration/cleanup-*.test.ts'
+      - 'tests/integration/heartbeat-*.test.ts'
+      - 'tests/integration/watchdog-*.test.ts'
 
 jobs:
   test-cross-platform:
