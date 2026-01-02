@@ -348,6 +348,149 @@ Pure Ralph Wiggum behavior:
 - **Max Hours**: Time boxing
 - **stop_hook_active**: Prevents infinite continuation loops
 
+## 🔧 v2.1 Reliability Improvements (NEW!)
+
+Auto mode v2.1 includes critical improvements for reliable long-running sessions:
+
+### Context Management
+
+**Auto mode now monitors context size and triggers compaction when needed:**
+
+- Estimates context size from transcript file (~4 chars/token)
+- Triggers compaction warning at ~150k tokens (~600KB transcript)
+- Saves checkpoint before compaction for safe state recovery
+- Logs `context_near_limit` events to `auto-iterations.log`
+
+**Configuration:**
+```json
+{
+  "auto": {
+    "contextThreshold": 150000  // tokens before compaction warning
+  }
+}
+```
+
+### Heartbeat & Watchdog Mechanism
+
+**Detects and logs stale sessions (zombie detection):**
+
+- Heartbeat file updated on every stop hook invocation
+- Watchdog detects sessions with no heartbeat for >5 minutes
+- Stale sessions logged with `stale_heartbeat_detected` event
+- Heartbeat stored in `.specweave/state/heartbeat.json`
+
+**Heartbeat format:**
+```json
+{
+  "timestamp": "2026-01-02T08:00:00Z",
+  "sessionId": "auto-2026-01-02-abc123",
+  "pid": 12345,
+  "iteration": 42
+}
+```
+
+### Xcode/iOS Test Support
+
+**Full support for Apple platform testing:**
+
+| Framework | Detection Pattern |
+|-----------|------------------|
+| xcodebuild test | `Executed X tests, with Y failures` |
+| Swift PM (swift test) | `Test Suite passed/failed` |
+| Xcode build | `BUILD FAILED`, `xcodebuild: error:` |
+
+**Features:**
+- Parses passed/failed counts from Xcode output
+- Distinguishes build failures from test failures
+- Extracts failure details (file, line, message)
+- Framework auto-detection from output patterns
+
+### Generic Test Framework Detection
+
+**Works with ANY test framework via exit codes and patterns:**
+
+| Pattern Type | Examples |
+|-------------|----------|
+| Exit code | Non-zero = failure |
+| Universal failure | `FAIL`, `ERROR`, `FAILED`, `failed` |
+| Universal success | `All tests passed`, `SUCCESS`, `OK` |
+
+**Fallback chain:**
+1. Try specific framework detection (Jest, Vitest, Pytest, etc.)
+2. Try Xcode/Swift detection
+3. Fall back to exit code + universal patterns
+
+### Intelligent Failure Classification
+
+**Failures are classified into categories with different handling:**
+
+| Category | Patterns | Handling |
+|----------|----------|----------|
+| **Transient** | Network errors, timeouts, flaky tests | Immediate retry |
+| **Fixable** | Assertion errors, type errors | AI analysis + fix |
+| **Structural** | Import errors, syntax errors | Deeper analysis |
+| **External** | Missing files, env config | Pause + alert |
+| **Unfixable** | Permission denied, external service | Log + skip |
+
+**Example classifications:**
+- `ECONNREFUSED` → transient
+- `expect(received).toEqual(expected)` → fixable
+- `Module not found` → structural
+- `ENOENT: no such file` → external
+
+### Task-Level Checkpoints
+
+**Progress preserved at task boundaries for crash recovery:**
+
+- Checkpoint created when context limit approached
+- Contains: task ID, increment ID, timestamp, status
+- Stored in `.specweave/state/task-checkpoint.json`
+- Incomplete checkpoints detected on resume
+
+**Checkpoint format:**
+```json
+{
+  "taskId": "T-003",
+  "incrementId": "0001-feature",
+  "timestamp": "2026-01-02T08:00:00Z",
+  "status": "in_progress",
+  "contextTokens": 145000
+}
+```
+
+### Command Timeout Handling
+
+**Graceful handling of hung commands:**
+
+- Default timeout: 10 minutes for test commands
+- Configurable per command type
+- SIGTERM first, SIGKILL after 30s
+- Timeout events logged with context
+
+**Configuration:**
+```json
+{
+  "auto": {
+    "timeouts": {
+      "test": 600,      // 10 minutes
+      "build": 300,     // 5 minutes
+      "deploy": 600     // 10 minutes
+    }
+  }
+}
+```
+
+### Reliability Logs
+
+All reliability events logged to `.specweave/logs/auto-iterations.log`:
+
+```json
+{"timestamp":"2026-01-02T08:00:00Z","event":"iteration","iteration":42,...}
+{"timestamp":"2026-01-02T08:01:00Z","event":"context_near_limit","tokens":152000}
+{"timestamp":"2026-01-02T08:02:00Z","event":"stale_heartbeat_detected","age":"320s"}
+{"timestamp":"2026-01-02T08:03:00Z","event":"failure_classified","category":"transient"}
+```
+
 ## ♿ UI/UX Quality Gates (NEW!)
 
 Auto mode now includes comprehensive UI/UX quality gates that run automatically when E2E tests are detected.
