@@ -402,7 +402,7 @@ approve() {
 
 # Helper: Output block decision with system message
 # Properly escapes JSON strings with newlines
-# Also displays stop criteria prominently to stderr (NEW - v2.2)
+# Also displays stop criteria prominently to stderr (NEW - v2.2, enhanced v2.3)
 block() {
     local reason="$1"
     local system_message="$2"
@@ -411,27 +411,27 @@ block() {
     local tdd_mode=$(is_tdd_strict_mode)
     local stop_criteria=""
 
-    # Build stop criteria message
+    # Build stop criteria message - MORE PROMINENT (v2.3)
     if [ "$tdd_mode" = "true" ]; then
-        stop_criteria="🔴 TDD MODE: ALL tests MUST pass"
+        stop_criteria="🔴 TDD MODE: ALL tasks [x] + ALL tests GREEN (0 failures)"
     else
-        stop_criteria="✅ All tasks completed + tests passing"
+        stop_criteria="✅ ALL tasks [x] completed + tests passing"
     fi
 
-    # Display stop criteria and continuation reason to STDERR (v2.2)
+    # Display stop criteria and continuation reason to STDERR (v2.3 enhanced)
     {
         echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "🔄 AUTO MODE CONTINUING"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "Why blocked: $reason"
-        echo "Iteration: ${ITERATION:-0}/${MAX_ITERATIONS:-500}"
-        [ -n "$CURRENT_INCREMENT" ] && echo "Increment: $CURRENT_INCREMENT"
-        echo ""
-        echo "📋 STOP CRITERIA: $stop_criteria"
-        [ "${TESTS_RUN:-false}" = "true" ] && echo "   Tests: ${TESTS_PASSED:-0} passed, ${TESTS_FAILED:-0} failed"
-        [ "$tdd_mode" = "true" ] && echo "   TDD Source: $(get_tdd_source)"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "╔══════════════════════════════════════════════════════════════╗"
+        echo "║  🔄 AUTO MODE CONTINUING - Agent will keep working           ║"
+        echo "╠══════════════════════════════════════════════════════════════╣"
+        echo "║  Reason: $(printf '%-50s' "$reason")║"
+        echo "║  Iteration: $(printf '%-47s' "${ITERATION:-0}/${MAX_ITERATIONS:-2500}")║"
+        [ -n "$CURRENT_INCREMENT" ] && echo "║  Increment: $(printf '%-47s' "$CURRENT_INCREMENT")║"
+        echo "╠══════════════════════════════════════════════════════════════╣"
+        echo "║  🎯 STOP CONDITION: $stop_criteria"
+        [ "${TESTS_RUN:-false}" = "true" ] && echo "║     Tests: ${TESTS_PASSED:-0} passed, ${TESTS_FAILED:-0} failed"
+        [ "$tdd_mode" = "true" ] && echo "║     TDD Source: $(get_tdd_source)"
+        echo "╚══════════════════════════════════════════════════════════════╝"
         echo ""
     } >&2
 
