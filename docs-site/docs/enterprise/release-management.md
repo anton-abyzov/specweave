@@ -464,7 +464,7 @@ Communication:
 /sw:release dashboard --period last-quarter
 
 # Output:
-📊 Release Dashboard (Q4 2025)
+📊 Release Dashboard (Q4 2026)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Releases Deployed: 12 releases
