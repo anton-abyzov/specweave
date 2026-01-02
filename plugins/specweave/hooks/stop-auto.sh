@@ -34,6 +34,203 @@ LOGS_DIR="$PROJECT_ROOT/.specweave/logs"
 # Ensure logs directory exists
 mkdir -p "$LOGS_DIR"
 
+# ============================================================================
+# CONTEXT SIZE ESTIMATION & COMPACTION (NEW - v2.1)
+# Estimates context size from transcript and triggers /compact when needed
+# ============================================================================
+
+CONTEXT_THRESHOLD_TOKENS=150000  # Trigger compaction at ~150k tokens
+BYTES_PER_TOKEN=4                # Rough estimate: 4 chars/bytes per token
+
+# Estimate context size in tokens from transcript file size
+estimate_context_size() {
+    local transcript="$1"
+
+    if [ ! -f "$transcript" ]; then
+        echo "0"
+        return
+    fi
+
+    local file_size=$(stat -f%z "$transcript" 2>/dev/null || stat -c%s "$transcript" 2>/dev/null || echo "0")
+    local estimated_tokens=$((file_size / BYTES_PER_TOKEN))
+
+    echo "$estimated_tokens"
+}
+
+# Check if context is approaching limit
+check_context_limit() {
+    local transcript="$1"
+    local estimated_tokens=$(estimate_context_size "$transcript")
+
+    if [ "$estimated_tokens" -gt "$CONTEXT_THRESHOLD_TOKENS" ]; then
+        echo "near_limit"
+    else
+        echo "ok"
+    fi
+}
+
+# ============================================================================
+# HEARTBEAT MECHANISM (NEW - v2.1)
+# Updates heartbeat timestamp for watchdog detection
+# ============================================================================
+
+HEARTBEAT_FILE="$STATE_DIR/heartbeat.json"
+HEARTBEAT_STALE_MINUTES=5  # Session is stale if no heartbeat for 5 minutes
+
+# Update heartbeat timestamp
+update_heartbeat() {
+    local timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    local session_id="${SESSION_ID:-unknown}"
+
+    cat > "$HEARTBEAT_FILE" << EOF
+{
+  "timestamp": "$timestamp",
+  "sessionId": "$session_id",
+  "pid": $$,
+  "iteration": ${ITERATION:-0}
+}
+EOF
+}
+
+# Check if heartbeat is stale
+check_heartbeat_stale() {
+    if [ ! -f "$HEARTBEAT_FILE" ]; then
+        echo "no_heartbeat"
+        return
+    fi
+
+    local last_heartbeat=$(jq -r '.timestamp' "$HEARTBEAT_FILE" 2>/dev/null)
+    if [ -z "$last_heartbeat" ] || [ "$last_heartbeat" = "null" ]; then
+        echo "invalid"
+        return
+    fi
+
+    # Parse timestamp and check age
+    local now_epoch=$(date "+%s")
+    local heartbeat_epoch
+
+    # Try different date parsing methods
+    heartbeat_epoch=$(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$last_heartbeat" "+%s" 2>/dev/null) || \
+    heartbeat_epoch=$(date -d "$last_heartbeat" "+%s" 2>/dev/null) || \
+    heartbeat_epoch=$(python3 -c "import datetime; print(int(datetime.datetime.fromisoformat('$last_heartbeat'.replace('Z','+00:00')).timestamp()))" 2>/dev/null) || \
+    heartbeat_epoch=0
+
+    if [ "$heartbeat_epoch" -eq 0 ]; then
+        echo "parse_error"
+        return
+    fi
+
+    local age_seconds=$((now_epoch - heartbeat_epoch))
+    local stale_threshold=$((HEARTBEAT_STALE_MINUTES * 60))
+
+    if [ "$age_seconds" -gt "$stale_threshold" ]; then
+        echo "stale:${age_seconds}s"
+    else
+        echo "ok:${age_seconds}s"
+    fi
+}
+
+# ============================================================================
+# TASK-LEVEL CHECKPOINTS (NEW - v2.1)
+# Save/restore progress at task boundaries
+# ============================================================================
+
+CHECKPOINT_FILE="$STATE_DIR/task-checkpoint.json"
+
+# Save checkpoint before starting task
+save_task_checkpoint() {
+    local task_id="$1"
+    local increment_id="$2"
+    local timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+    cat > "$CHECKPOINT_FILE" << EOF
+{
+  "taskId": "$task_id",
+  "incrementId": "$increment_id",
+  "timestamp": "$timestamp",
+  "status": "in_progress",
+  "iteration": ${ITERATION:-0}
+}
+EOF
+
+    echo "{\"timestamp\":\"$timestamp\",\"event\":\"checkpoint_saved\",\"task\":\"$task_id\"}" >> "$LOGS_DIR/auto-iterations.log"
+}
+
+# Load checkpoint if exists
+load_task_checkpoint() {
+    if [ -f "$CHECKPOINT_FILE" ]; then
+        cat "$CHECKPOINT_FILE"
+    else
+        echo '{"taskId":null,"status":"none"}'
+    fi
+}
+
+# Clear checkpoint on task completion
+clear_task_checkpoint() {
+    if [ -f "$CHECKPOINT_FILE" ]; then
+        local task_id=$(jq -r '.taskId' "$CHECKPOINT_FILE" 2>/dev/null)
+        rm -f "$CHECKPOINT_FILE"
+        echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"checkpoint_cleared\",\"task\":\"$task_id\"}" >> "$LOGS_DIR/auto-iterations.log"
+    fi
+}
+
+# Check for incomplete checkpoint (crash recovery)
+check_incomplete_checkpoint() {
+    if [ -f "$CHECKPOINT_FILE" ]; then
+        local status=$(jq -r '.status' "$CHECKPOINT_FILE" 2>/dev/null)
+        if [ "$status" = "in_progress" ]; then
+            echo "incomplete"
+            return
+        fi
+    fi
+    echo "none"
+}
+
+# ============================================================================
+# COMMAND TIMEOUT WRAPPER (NEW - v2.1)
+# Wraps commands with timeout to prevent hangs
+# ============================================================================
+
+DEFAULT_COMMAND_TIMEOUT=600  # 10 minutes default
+TEST_COMMAND_TIMEOUT=600     # 10 minutes for tests
+BUILD_COMMAND_TIMEOUT=1200   # 20 minutes for builds
+
+# Get timeout for command type
+get_command_timeout() {
+    local cmd="$1"
+
+    # Check for test commands
+    if echo "$cmd" | grep -qE '(npm test|npx vitest|npx jest|npx playwright|pytest|go test|xcodebuild.*test|swift test)'; then
+        echo "$TEST_COMMAND_TIMEOUT"
+        return
+    fi
+
+    # Check for build commands
+    if echo "$cmd" | grep -qE '(npm run build|xcodebuild|gradle|maven|cargo build|go build)'; then
+        echo "$BUILD_COMMAND_TIMEOUT"
+        return
+    fi
+
+    echo "$DEFAULT_COMMAND_TIMEOUT"
+}
+
+# Check if a command appears to have timed out in transcript
+detect_command_timeout() {
+    local transcript="$1"
+
+    if [ ! -f "$transcript" ]; then
+        echo "false"
+        return
+    fi
+
+    # Look for timeout indicators
+    if grep -qiE '(command timed out|timeout|killed|signal 9|SIGKILL|SIGTERM|operation timed out)' "$transcript" 2>/dev/null; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
 # Helper: Output approve decision
 approve() {
     local reason="${1:-Session complete}"
@@ -121,12 +318,108 @@ parse_test_results() {
         failed=$(grep -cE '--- FAIL:' "$transcript" 2>/dev/null || echo "0")
     fi
 
+    # ========================================================================
+    # XCODE / iOS TEST SUPPORT (NEW - v2.1)
+    # Formats:
+    #   - "Executed 10 tests, with 2 failures (0 unexpected) in 5.123 seconds"
+    #   - "Test Suite 'All tests' passed at 2024-01-01"
+    #   - "Test Suite 'MyTests' failed at 2024-01-01"
+    #   - "** TEST SUCCEEDED **" or "** TEST FAILED **"
+    # ========================================================================
+    if grep -qE '(xcodebuild.*test|Executed [0-9]+ tests?|Test Suite|TEST SUCCEEDED|TEST FAILED)' "$transcript" 2>/dev/null && [ "$framework" = "unknown" ]; then
+        framework="xcode"
+
+        # Check for build failure FIRST (not test failure)
+        if grep -qE '(BUILD FAILED|xcodebuild:.*error:|Compile.*error:|error:.*Build input file)' "$transcript" 2>/dev/null; then
+            # Build failed - different from test failure
+            echo '{"passed":0,"failed":1,"total":1,"framework":"xcode-build","testsRun":false,"buildFailed":true}'
+            return
+        fi
+
+        # Parse "Executed X tests, with Y failures (Z unexpected) in N.NNN seconds"
+        local xcode_summary=$(grep -oE 'Executed [0-9]+ tests?, with [0-9]+ failures?' "$transcript" 2>/dev/null | tail -1)
+        if [ -n "$xcode_summary" ]; then
+            total=$(echo "$xcode_summary" | grep -oE 'Executed [0-9]+' | grep -oE '[0-9]+')
+            failed=$(echo "$xcode_summary" | grep -oE 'with [0-9]+' | grep -oE '[0-9]+')
+            passed=$((total - failed))
+        else
+            # Fallback: count Test Suite pass/fail
+            local suite_passed=$(grep -cE "Test Suite '.*' passed" "$transcript" 2>/dev/null || echo "0")
+            local suite_failed=$(grep -cE "Test Suite '.*' failed" "$transcript" 2>/dev/null || echo "0")
+            passed=${suite_passed:-0}
+            failed=${suite_failed:-0}
+        fi
+
+        # Check for overall test result
+        if grep -qE '\*\* TEST SUCCEEDED \*\*' "$transcript" 2>/dev/null; then
+            failed=0
+        elif grep -qE '\*\* TEST FAILED \*\*' "$transcript" 2>/dev/null && [ "$failed" -eq 0 ]; then
+            failed=1
+        fi
+    fi
+
+    # ========================================================================
+    # SWIFT PACKAGE MANAGER TEST SUPPORT (NEW - v2.1)
+    # Format: "Test Suite 'PackageTests' passed at..." or swift test output
+    # ========================================================================
+    if grep -qE '(swift test|SwiftPM|Test Suite.*swift)' "$transcript" 2>/dev/null && [ "$framework" = "unknown" ]; then
+        framework="swift"
+
+        # Similar to Xcode but from swift test command
+        local swift_summary=$(grep -oE 'Executed [0-9]+ tests?, with [0-9]+ failures?' "$transcript" 2>/dev/null | tail -1)
+        if [ -n "$swift_summary" ]; then
+            total=$(echo "$swift_summary" | grep -oE 'Executed [0-9]+' | grep -oE '[0-9]+')
+            failed=$(echo "$swift_summary" | grep -oE 'with [0-9]+' | grep -oE '[0-9]+')
+            passed=$((total - failed))
+        fi
+    fi
+
+    # ========================================================================
+    # GENERIC EXIT CODE DETECTION (NEW - v2.1)
+    # Fallback for unknown frameworks - detect failure from exit codes and patterns
+    # ========================================================================
+    if [ "$framework" = "unknown" ]; then
+        # Check for explicit exit codes in transcript
+        local exit_code_match=$(grep -oE '(exit code|exited with|returned|Exit code:?)\s*[0-9]+' "$transcript" 2>/dev/null | tail -1)
+        local exit_code=""
+        if [ -n "$exit_code_match" ]; then
+            exit_code=$(echo "$exit_code_match" | grep -oE '[0-9]+$')
+        fi
+
+        # Check for universal failure patterns (case insensitive)
+        local has_failure_pattern=false
+        if grep -qiE '(FAIL[^U]|FAILED|ERROR:|FAILURE:|BUILD FAILED|COMPILATION ERROR|tests? failed)' "$transcript" 2>/dev/null; then
+            has_failure_pattern=true
+        fi
+
+        # Check for universal success patterns
+        local has_success_pattern=false
+        if grep -qiE '(PASS[^W]|PASSED|SUCCESS|SUCCEEDED|All tests passed|tests? passed)' "$transcript" 2>/dev/null; then
+            has_success_pattern=true
+        fi
+
+        # Determine result
+        if [ -n "$exit_code" ] && [ "$exit_code" != "0" ]; then
+            framework="generic"
+            failed=1
+            passed=0
+        elif [ "$has_failure_pattern" = true ]; then
+            framework="generic"
+            failed=1
+            passed=0
+        elif [ "$has_success_pattern" = true ]; then
+            framework="generic"
+            failed=0
+            passed=1
+        fi
+    fi
+
     # Calculate total
     total=$((passed + failed))
 
     # Determine if tests were actually run
     local tests_run="false"
-    if [ "$total" -gt 0 ] || grep -qE '(npm test|npx vitest|npx jest|npx playwright|pytest|go test|cargo test)' "$transcript" 2>/dev/null; then
+    if [ "$total" -gt 0 ] || grep -qE '(npm test|npx vitest|npx jest|npx playwright|pytest|go test|cargo test|xcodebuild.*test|swift test|xctest)' "$transcript" 2>/dev/null; then
         tests_run="true"
     fi
 
@@ -164,7 +457,43 @@ extract_failure_details() {
     # Extract first few failures with context
     local failure_blocks=$(grep -B 2 -A 10 -E '(FAIL|Error:|AssertionError|expect\(.*\)\.(to|toBe|toEqual|toHaveText))' "$transcript" 2>/dev/null | head -60)
 
-    if [ -n "$failure_blocks" ]; then
+    # ========================================================================
+    # XCODE FAILURE EXTRACTION (NEW - v2.1)
+    # Patterns:
+    #   - "/path/to/File.swift:42: error: -[TestClass testMethod] : XCTAssertEqual failed"
+    #   - "Test Case '-[TestClass testMethod]' failed (0.001 seconds)"
+    # ========================================================================
+    local xcode_failure_blocks=""
+    if grep -qE '(xcodebuild|XCTest|XCTAssert|Test Case.*failed)' "$transcript" 2>/dev/null; then
+        xcode_failure_blocks=$(grep -B 2 -A 5 -E '(XCTAssert.*failed|Test Case.*failed|error:.*XCT|\.swift:[0-9]+:.*error)' "$transcript" 2>/dev/null | head -60)
+    fi
+
+    if [ -n "$xcode_failure_blocks" ]; then
+        # Xcode format: /path/File.swift:42: error: message
+        local file_line=$(echo "$xcode_failure_blocks" | grep -oE '[a-zA-Z0-9_/-]+\.swift:[0-9]+' | head -1)
+
+        # Extract test method name: -[TestClass testMethod]
+        local test_name=$(echo "$xcode_failure_blocks" | grep -oE '\-\[[^\]]+\]' | head -1)
+
+        # Extract XCTAssert error
+        local error_msg=$(echo "$xcode_failure_blocks" | grep -oE 'XCTAssert[^:]+:[^\n]+' | head -1)
+        if [ -z "$error_msg" ]; then
+            error_msg=$(echo "$xcode_failure_blocks" | grep -oE 'error:[^\n]+' | head -1)
+        fi
+
+        failures=$(cat <<EOF
+[{
+  "file": "${file_line:-unknown.swift}",
+  "testName": "${test_name:-unknown test}",
+  "error": "${error_msg:-XCTest assertion failed}",
+  "expected": "",
+  "received": "",
+  "framework": "xcode",
+  "context": $(echo "$xcode_failure_blocks" | head -20 | jq -Rs .)
+}]
+EOF
+)
+    elif [ -n "$failure_blocks" ]; then
         # Extract file:line from stack traces or test output
         local file_line=$(echo "$failure_blocks" | grep -oE '[a-zA-Z0-9_/-]+\.(ts|js|tsx|jsx|spec|test)\.[tj]sx?:[0-9]+' | head -1)
 
@@ -195,11 +524,91 @@ EOF
 }
 
 # ============================================================================
-# SELF-HEALING LOOP (NEW - v2.0)
-# Retries failed tests up to 3 times with specific fix prompts
+# FAILURE CLASSIFICATION SYSTEM (NEW - v2.1)
+# Intelligently categorize failures for appropriate handling
+# Categories:
+#   - transient: Network, timing, flaky - retry immediately
+#   - fixable: Code error - needs fix then retry
+#   - structural: Architecture issue - needs planning
+#   - external: Env/config issue - needs human intervention
+#   - unfixable: Beyond scope - skip or abort
 # ============================================================================
 
-# Handle test failure with self-healing retry
+classify_failure() {
+    local error_msg="$1"
+    local context="$2"
+
+    # TRANSIENT: Network, timeout, flaky test patterns
+    if echo "$error_msg" | grep -qiE '(ECONNREFUSED|ECONNRESET|ETIMEDOUT|timeout|timed out|connection refused|network|socket hang up|ENOTFOUND|DNS|flaky|intermittent|race condition)'; then
+        echo "transient"
+        return
+    fi
+
+    # EXTERNAL: Environment, configuration, missing dependencies
+    if echo "$error_msg" | grep -qiE '(ENOENT|no such file|file not found|command not found|not installed|missing dependency|permission denied|EACCES|env var|environment variable|config|configuration|credentials|secret|token|API key|authentication failed|unauthorized|forbidden)'; then
+        echo "external"
+        return
+    fi
+
+    # STRUCTURAL: Architecture, design, major refactoring needed
+    if echo "$error_msg" | grep -qiE '(circular dependency|import cycle|incompatible|breaking change|deprecated|type mismatch|interface.*not implemented|abstract|override|inheritance|polymorphism)'; then
+        echo "structural"
+        return
+    fi
+
+    # UNFIXABLE: Out of scope or requires external action
+    if echo "$error_msg" | grep -qiE '(rate limit|quota exceeded|billing|payment|license|subscription|third-party|external service|API limit|429|503|service unavailable)'; then
+        echo "unfixable"
+        return
+    fi
+
+    # XCODE-SPECIFIC: Build vs runtime errors
+    if echo "$error_msg" | grep -qiE '(linker error|undefined symbol|duplicate symbol|framework not found|module not found|cannot find.*in scope)'; then
+        echo "structural"
+        return
+    fi
+
+    if echo "$error_msg" | grep -qiE '(provisioning profile|code signing|certificate|entitlement|bundle identifier)'; then
+        echo "external"
+        return
+    fi
+
+    # DEFAULT: Assume fixable (assertion failures, logic errors, etc.)
+    echo "fixable"
+}
+
+# Get recommended action for failure type
+get_failure_action() {
+    local failure_type="$1"
+
+    case "$failure_type" in
+        transient)
+            echo "retry_immediately"
+            ;;
+        fixable)
+            echo "analyze_and_fix"
+            ;;
+        structural)
+            echo "pause_for_planning"
+            ;;
+        external)
+            echo "alert_user"
+            ;;
+        unfixable)
+            echo "skip_and_log"
+            ;;
+        *)
+            echo "analyze_and_fix"
+            ;;
+    esac
+}
+
+# ============================================================================
+# SELF-HEALING LOOP (ENHANCED - v2.1)
+# Now uses failure classification for smarter retry behavior
+# ============================================================================
+
+# Handle test failure with intelligent self-healing
 # Args: $1 = failure details JSON
 handle_test_failure() {
     local failure_json="$1"
@@ -215,18 +624,108 @@ handle_test_failure() {
     local fail_received=$(echo "$first_failure" | jq -r '.received // ""')
     local fail_context=$(echo "$first_failure" | jq -r '.context // ""')
 
-    if [ "$retry_count" -lt 3 ]; then
-        # Increment retry counter
-        local new_retry=$((retry_count + 1))
-        echo "$SESSION" | jq --argjson retry "$new_retry" --arg task "$current_task" \
-            '.testRetryCount = $retry | .lastFailedTask = $task' \
-            > "$SESSION_FILE"
+    # CLASSIFY THE FAILURE (NEW - v2.1)
+    local failure_type=$(classify_failure "$fail_error" "$fail_context")
+    local failure_action=$(get_failure_action "$failure_type")
 
-        # Log the retry attempt
-        echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"test_retry\",\"attempt\":$new_retry,\"task\":\"$current_task\",\"file\":\"$fail_file\",\"error\":\"$fail_error\"}" >> "$LOGS_DIR/auto-iterations.log"
+    # Log classification
+    echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"failure_classified\",\"type\":\"$failure_type\",\"action\":\"$failure_action\",\"error\":\"$fail_error\"}" >> "$LOGS_DIR/auto-iterations.log"
 
-        # Build fix prompt with specific failure details
-        local fix_prompt="🔴 TESTS FAILED - FIX AND RETRY (attempt $new_retry/3)
+    # Handle based on failure type
+    case "$failure_action" in
+        retry_immediately)
+            # Transient failure - retry without incrementing retry counter
+            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"transient_retry\",\"task\":\"$current_task\",\"error\":\"$fail_error\"}" >> "$LOGS_DIR/auto-iterations.log"
+
+            block "Transient failure - retrying immediately" "⚡ TRANSIENT FAILURE DETECTED - Auto-retrying
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This appears to be a transient failure (network/timing):
+  Error: $fail_error
+
+Re-running tests immediately without code changes.
+If this persists, it will be escalated to fixable."
+            ;;
+
+        alert_user)
+            # External failure - requires user intervention
+            echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg reason "external_failure" \
+                '.status = "paused" | .pauseTime = $now | .pauseReason = $reason' \
+                > "$SESSION_FILE"
+
+            approve "⚠️ EXTERNAL CONFIGURATION REQUIRED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This failure requires external action (env/config/permissions):
+  File: $fail_file
+  Error: $fail_error
+
+ACTION NEEDED:
+Check environment variables, credentials, file permissions,
+or external service configuration.
+
+Run /sw:auto to resume after fixing."
+            ;;
+
+        pause_for_planning)
+            # Structural failure - needs architectural review
+            echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg reason "structural_failure" \
+                '.status = "paused" | .pauseTime = $now | .pauseReason = $reason' \
+                > "$SESSION_FILE"
+
+            approve "🏗️ STRUCTURAL ISSUE - Planning Required
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This failure indicates an architectural/design issue:
+  File: $fail_file
+  Error: $fail_error
+
+This requires careful planning before fixing.
+Consider updating the spec or plan.md.
+
+Run /sw:auto to resume after planning."
+            ;;
+
+        skip_and_log)
+            # Unfixable - log and skip
+            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"unfixable_skipped\",\"task\":\"$current_task\",\"error\":\"$fail_error\"}" >> "$LOGS_DIR/auto-iterations.log"
+
+            # Check if more increments in queue
+            local queue_length=$(echo "$SESSION" | jq '.incrementQueue | length')
+            if [ "$queue_length" -gt 1 ]; then
+                block "Unfixable issue - skipping to next work" "⏭️ UNFIXABLE ISSUE - Skipping
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This issue cannot be fixed automatically:
+  Error: $fail_error
+
+This may be due to rate limits, external service issues,
+or subscription/licensing problems.
+
+Logging and moving to next task/increment."
+            else
+                approve "⏭️ UNFIXABLE ISSUE - Session paused
+
+This issue cannot be fixed automatically.
+Error: $fail_error"
+            fi
+            ;;
+
+        analyze_and_fix|*)
+            # Default: Standard fix and retry flow
+            if [ "$retry_count" -lt 3 ]; then
+                # Increment retry counter
+                local new_retry=$((retry_count + 1))
+                echo "$SESSION" | jq --argjson retry "$new_retry" --arg task "$current_task" \
+                    '.testRetryCount = $retry | .lastFailedTask = $task' \
+                    > "$SESSION_FILE"
+
+                # Log the retry attempt
+                echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"test_retry\",\"attempt\":$new_retry,\"task\":\"$current_task\",\"file\":\"$fail_file\",\"error\":\"$fail_error\",\"classification\":\"$failure_type\"}" >> "$LOGS_DIR/auto-iterations.log"
+
+                # Build fix prompt with specific failure details
+                local fix_prompt="🔴 TESTS FAILED - FIX AND RETRY (attempt $new_retry/3)
+🏷️ Classification: $failure_type
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FAILURE DETAILS:
@@ -236,17 +735,17 @@ FAILURE DETAILS:
 🧪 Test: $fail_test
 ❌ Error: $fail_error"
 
-        if [ -n "$fail_expected" ] && [ "$fail_expected" != "" ]; then
-            fix_prompt="$fix_prompt
+                if [ -n "$fail_expected" ] && [ "$fail_expected" != "" ]; then
+                    fix_prompt="$fix_prompt
 ✓ Expected: $fail_expected"
-        fi
+                fi
 
-        if [ -n "$fail_received" ] && [ "$fail_received" != "" ]; then
-            fix_prompt="$fix_prompt
+                if [ -n "$fail_received" ] && [ "$fail_received" != "" ]; then
+                    fix_prompt="$fix_prompt
 ✗ Received: $fail_received"
-        fi
+                fi
 
-        fix_prompt="$fix_prompt
+                fix_prompt="$fix_prompt
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 INSTRUCTIONS:
@@ -259,27 +758,27 @@ INSTRUCTIONS:
 5. VERIFY all tests pass before continuing
 
 ⚠️ DO NOT skip this failure. DO NOT mark task complete until tests pass.
-⚠️ After $new_retry more failure(s), session will pause for human review."
+⚠️ After $((3 - new_retry)) more failure(s), session will pause for human review."
 
-        block "Test failure - self-healing retry $new_retry/3" "$fix_prompt"
-    else
-        # 3 retries exhausted - check for skip option
-        local queue_length=$(echo "$SESSION" | jq '.incrementQueue | length')
+                block "Test failure - self-healing retry $new_retry/3" "$fix_prompt"
+            else
+                # 3 retries exhausted - check for skip option
+                local queue_length=$(echo "$SESSION" | jq '.incrementQueue | length')
 
-        # If there are more increments in queue, offer skip option
-        if [ "$queue_length" -gt 1 ]; then
-            local next_increment=$(echo "$SESSION" | jq -r '.incrementQueue[1] // null')
+                # If there are more increments in queue, offer skip option
+                if [ "$queue_length" -gt 1 ]; then
+                    local next_increment=$(echo "$SESSION" | jq -r '.incrementQueue[1] // null')
 
-            # Store failure info for potential skip
-            echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-                --arg file "$fail_file" --arg error "$fail_error" \
-                '.status = "paused" | .pauseTime = $now | .pauseReason = "test_failures_exhausted" | .testRetryCount = 0 | .pendingSkip = {"increment": .currentIncrement, "reason": "test_failures", "file": $file, "error": $error}' \
-                > "$SESSION_FILE"
+                    # Store failure info for potential skip
+                    echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+                        --arg file "$fail_file" --arg error "$fail_error" \
+                        '.status = "paused" | .pauseTime = $now | .pauseReason = "test_failures_exhausted" | .testRetryCount = 0 | .pendingSkip = {"increment": .currentIncrement, "reason": "test_failures", "file": $file, "error": $error}' \
+                        > "$SESSION_FILE"
 
-            # Log exhaustion
-            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"retry_exhausted\",\"task\":\"$current_task\",\"file\":\"$fail_file\",\"skipAvailable\":true}" >> "$LOGS_DIR/auto-iterations.log"
+                    # Log exhaustion
+                    echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"retry_exhausted\",\"task\":\"$current_task\",\"file\":\"$fail_file\",\"skipAvailable\":true}" >> "$LOGS_DIR/auto-iterations.log"
 
-            approve "Tests failed 3x - human review required.
+                    approve "Tests failed 3x - human review required.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FAILED: $CURRENT_INCREMENT
@@ -293,18 +792,20 @@ OPTIONS:
    → Next: $next_increment ($((queue_length - 1)) remaining)
 
 The failed increment will be logged for later review."
-        else
-            # No more increments - just pause
-            echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-                '.status = "paused" | .pauseTime = $now | .pauseReason = "test_failures_exhausted" | .testRetryCount = 0' \
-                > "$SESSION_FILE"
+                else
+                    # No more increments - just pause
+                    echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+                        '.status = "paused" | .pauseTime = $now | .pauseReason = "test_failures_exhausted" | .testRetryCount = 0' \
+                        > "$SESSION_FILE"
 
-            # Log exhaustion
-            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"retry_exhausted\",\"task\":\"$current_task\",\"file\":\"$fail_file\",\"skipAvailable\":false}" >> "$LOGS_DIR/auto-iterations.log"
+                    # Log exhaustion
+                    echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"retry_exhausted\",\"task\":\"$current_task\",\"file\":\"$fail_file\",\"skipAvailable\":false}" >> "$LOGS_DIR/auto-iterations.log"
 
-            approve "Tests failed 3x in a row - human review required. File: $fail_file, Error: $fail_error"
-        fi
-    fi
+                    approve "Tests failed 3x in a row - human review required. File: $fail_file, Error: $fail_error"
+                fi
+            fi
+            ;;
+    esac
 }
 
 # Reset retry counter (call when tests pass or task changes)
@@ -344,6 +845,76 @@ TEST_RETRY_COUNT=$(echo "$SESSION" | jq -r '.testRetryCount // 0')
 # Check if session is not running
 if [ "$STATUS" != "running" ]; then
     approve "Session status is $STATUS, not running"
+fi
+
+# ============================================================================
+# HEARTBEAT & WATCHDOG (NEW - v2.1)
+# Check for stale sessions BEFORE updating heartbeat
+# ============================================================================
+
+# Check for stale heartbeat BEFORE updating (watchdog detection)
+HEARTBEAT_STATUS=$(check_heartbeat_stale)
+
+# Update heartbeat timestamp (this refreshes it for next iteration)
+update_heartbeat
+if echo "$HEARTBEAT_STATUS" | grep -q "^stale:"; then
+    STALE_AGE=$(echo "$HEARTBEAT_STATUS" | cut -d: -f2)
+    echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"stale_heartbeat_detected\",\"age\":\"$STALE_AGE\"}" >> "$LOGS_DIR/auto-iterations.log"
+    # Note: We don't pause here because the stop hook running means the session is active
+    # This is more for external watchdog processes to detect
+fi
+
+# ============================================================================
+# CONTEXT SIZE CHECK (NEW - v2.1)
+# Trigger compaction when context is approaching limits
+# ============================================================================
+
+if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
+    CONTEXT_STATUS=$(check_context_limit "$TRANSCRIPT_PATH")
+    ESTIMATED_TOKENS=$(estimate_context_size "$TRANSCRIPT_PATH")
+
+    if [ "$CONTEXT_STATUS" = "near_limit" ]; then
+        echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"context_near_limit\",\"tokens\":$ESTIMATED_TOKENS}" >> "$LOGS_DIR/auto-iterations.log"
+
+        # Save checkpoint before compaction
+        if [ -n "$CURRENT_INCREMENT" ]; then
+            CURRENT_TASK=$(echo "$SESSION" | jq -r '.currentTaskId // "unknown"')
+            save_task_checkpoint "$CURRENT_TASK" "$CURRENT_INCREMENT"
+        fi
+
+        # Request compaction
+        block "Context size approaching limit" "📊 CONTEXT MANAGEMENT - Compaction Recommended
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTEXT SIZE: ~$ESTIMATED_TOKENS tokens (threshold: $CONTEXT_THRESHOLD_TOKENS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Context is approaching the limit. To continue working effectively:
+
+1. Run /compact to summarize the conversation
+2. Then run /sw:do to continue
+
+Checkpoint saved - your progress is preserved.
+
+Current increment: $CURRENT_INCREMENT
+Iteration: $ITERATION/$MAX_ITERATIONS"
+    fi
+fi
+
+# ============================================================================
+# CHECKPOINT RECOVERY CHECK (NEW - v2.1)
+# Detect and resume from incomplete checkpoints
+# ============================================================================
+
+CHECKPOINT_STATUS=$(check_incomplete_checkpoint)
+if [ "$CHECKPOINT_STATUS" = "incomplete" ]; then
+    CHECKPOINT_DATA=$(load_task_checkpoint)
+    CHECKPOINT_TASK=$(echo "$CHECKPOINT_DATA" | jq -r '.taskId')
+    CHECKPOINT_INCREMENT=$(echo "$CHECKPOINT_DATA" | jq -r '.incrementId')
+
+    echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"incomplete_checkpoint_found\",\"task\":\"$CHECKPOINT_TASK\"}" >> "$LOGS_DIR/auto-iterations.log"
+
+    # Don't block - just log and continue. The task may have completed.
 fi
 
 # Check max iterations
