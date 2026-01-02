@@ -219,7 +219,7 @@ specweave init . --brownfield
 **When**: Scheduled releases
 
 ```markdown
-Q1 2025 Release Train:
+Q1 2026 Release Train:
 ├── 0001-authentication     ✅ Complete
 ├── 0002-payments           ✅ Complete
 ├── 0003-notifications      🔄 In Progress

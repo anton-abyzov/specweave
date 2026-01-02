@@ -310,7 +310,7 @@ Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically an
 ## Requirements
 
 - **Node.js 20.12.0+** (we recommend Node.js 22 LTS) — [upgrade guide](/docs/guides/troubleshooting/common-errors#node-version-error)
-- Claude Code with **Claude Opus 4.5** (recommended) — [released Nov 2025](https://www.anthropic.com/news/claude-opus-4-5)
+- Claude Code with **Claude Opus 4.5** (recommended) — [released Nov 2026](https://www.anthropic.com/news/claude-opus-4-5)
 - Git repository
 
 :::caution Node.js Version

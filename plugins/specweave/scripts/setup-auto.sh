@@ -15,13 +15,18 @@
 #   --no-inc             Alias for --no-increment (short form)
 #   --prompt "text"      Analyze prompt and create increments (intelligent chunking)
 #   --yes                Auto-approve increment plan (skip user approval)
+#   --tdd                Enable TDD strict mode (ALL tests must pass)
+#   --strict             Alias for --tdd
 #   -h, --help           Show this help
 
 set -e
 
-# Defaults
-MAX_ITERATIONS=100
-MAX_HOURS=""
+# Defaults - v2.3 enhanced for ultra-long sessions
+# IMPORTANT: Iteration limits are safety nets, NOT primary completion criteria
+# Primary completion = tests passing + tasks complete (Ralph Wiggum pattern)
+# NOTE: Stop hook runs PER AGENT - each spawned subagent gets its own hook invocation
+MAX_ITERATIONS=2500     # 5x increase from 500 for ultra-long sessions
+MAX_HOURS="600"         # 25 days default (5x increase from 120 hours)
 SIMPLE_MODE=false
 DRY_RUN=false
 INCREMENT_IDS=()
@@ -30,6 +35,7 @@ SKIP_GATES=""
 NO_INCREMENT=false
 PROMPT=""
 AUTO_APPROVE=false
+TDD_MODE=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -72,6 +78,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --yes|-y)
             AUTO_APPROVE=true
+            shift
+            ;;
+        --tdd|--strict)
+            TDD_MODE=true
             shift
             ;;
         -h|--help)
@@ -289,7 +299,8 @@ SESSION_JSON=$(cat <<EOF
     "ado": { "state": "closed", "failures": 0 }
   },
   "lastActivity": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "simple": $SIMPLE_MODE
+  "simple": $SIMPLE_MODE,
+  "tddMode": $TDD_MODE
 }
 EOF
 )
@@ -317,6 +328,12 @@ echo "Session ID: $SESSION_ID"
 echo "Max Iterations: $MAX_ITERATIONS"
 [ -n "$MAX_HOURS" ] && echo "Max Hours: $MAX_HOURS"
 echo "Simple Mode: $SIMPLE_MODE"
+if [ "$TDD_MODE" = "true" ]; then
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🔴 TDD STRICT MODE: ENABLED"
+    echo "   ALL tests MUST pass before auto mode can complete"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+fi
 echo ""
 echo "Increment Queue (${#INCREMENT_IDS[@]}):"
 for INC_ID in "${INCREMENT_IDS[@]}"; do
@@ -326,7 +343,8 @@ echo ""
 echo "Current: ${INCREMENT_IDS[0]}"
 echo ""
 echo "The session will continue until:"
-echo "  • All tasks complete"
+echo "  • All tasks complete AND tests pass"
+[ "$TDD_MODE" = "true" ] && echo "  • (TDD MODE: 100% tests GREEN required)"
 echo "  • Max iterations ($MAX_ITERATIONS) reached"
 [ -n "$MAX_HOURS" ] && echo "  • Max hours ($MAX_HOURS) exceeded"
 echo "  • You run /sw:cancel-auto"

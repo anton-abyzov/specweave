@@ -12,6 +12,13 @@
 # - Extracts specific failure details for fix prompts
 # - Blocks on ANY test failure (not just >3)
 #
+# IMPORTANT (v2.3): Stop hook runs PER AGENT
+# - Each spawned subagent (Task tool) gets its own stop hook invocation
+# - Iteration count is SHARED across all agents via session file
+# - Parent agent's exit triggers hook, subagent exits do NOT by default
+# - This means iteration count reflects MAIN agent loops, not subagent work
+# - Subagents with stop hooks enabled will ALSO trigger this hook
+#
 # Claude Code Stop Hook receives:
 # - stdin: JSON with transcript_path, stop_hook_active, etc.
 # - Expected output: JSON with decision (approve/block) and optional reason/systemMessage
@@ -195,6 +202,141 @@ DEFAULT_COMMAND_TIMEOUT=600  # 10 minutes default
 TEST_COMMAND_TIMEOUT=600     # 10 minutes for tests
 BUILD_COMMAND_TIMEOUT=1200   # 20 minutes for builds
 
+# ============================================================================
+# TDD MODE & STRICT TEST REQUIREMENTS (NEW - v2.2)
+# When TDD mode is enabled, tests MUST be green before allowing completion
+# ============================================================================
+
+CONFIG_FILE="$PROJECT_ROOT/.specweave/config.json"
+
+# Get TDD/testing mode from config
+get_test_mode() {
+    if [ -f "$CONFIG_FILE" ]; then
+        local mode=$(jq -r '.testing.defaultTestMode // "test-after"' "$CONFIG_FILE" 2>/dev/null)
+        echo "$mode"
+    else
+        echo "test-after"
+    fi
+}
+
+# Get TDD mode from increment-specific config (NEW - v2.2)
+# Priority: 1. Increment metadata.json 2. Increment config.json 3. Session 4. Global config
+get_increment_tdd_mode() {
+    local increment_id="$1"
+    local increment_dir="$PROJECT_ROOT/.specweave/increments/$increment_id"
+
+    # 1. Check increment metadata.json first (highest priority)
+    local inc_metadata="$increment_dir/metadata.json"
+    if [ -f "$inc_metadata" ]; then
+        local inc_tdd=$(jq -r '.tddMode // null' "$inc_metadata" 2>/dev/null)
+        if [ "$inc_tdd" != "null" ] && [ -n "$inc_tdd" ]; then
+            echo "$inc_tdd"
+            return
+        fi
+
+        # Also check testMode field
+        local inc_test_mode=$(jq -r '.testMode // null' "$inc_metadata" 2>/dev/null)
+        if [ "$inc_test_mode" = "tdd" ] || [ "$inc_test_mode" = "test-first" ]; then
+            echo "true"
+            return
+        fi
+    fi
+
+    # 2. Check increment-specific config.json
+    local inc_config="$increment_dir/config.json"
+    if [ -f "$inc_config" ]; then
+        local inc_tdd=$(jq -r '.tddMode // null' "$inc_config" 2>/dev/null)
+        if [ "$inc_tdd" != "null" ] && [ -n "$inc_tdd" ]; then
+            echo "$inc_tdd"
+            return
+        fi
+
+        local inc_test_mode=$(jq -r '.testing.mode // null' "$inc_config" 2>/dev/null)
+        if [ "$inc_test_mode" = "tdd" ] || [ "$inc_test_mode" = "test-first" ]; then
+            echo "true"
+            return
+        fi
+    fi
+
+    # 3. Check spec.md frontmatter for tdd: true
+    local spec_file="$increment_dir/spec.md"
+    if [ -f "$spec_file" ]; then
+        # Extract YAML frontmatter and check for tdd flag
+        local spec_tdd=$(sed -n '/^---$/,/^---$/p' "$spec_file" 2>/dev/null | grep -E '^tdd:\s*true' | head -1)
+        if [ -n "$spec_tdd" ]; then
+            echo "true"
+            return
+        fi
+    fi
+
+    # Return empty - let caller check session/global
+    echo ""
+}
+
+# Get TDD strict mode from session or config
+# Priority: Increment > Session > Global config
+is_tdd_strict_mode() {
+    # 1. Check increment-specific config FIRST (NEW - v2.2)
+    if [ -n "$CURRENT_INCREMENT" ]; then
+        local inc_tdd=$(get_increment_tdd_mode "$CURRENT_INCREMENT")
+        if [ "$inc_tdd" = "true" ]; then
+            echo "true"
+            return
+        elif [ "$inc_tdd" = "false" ]; then
+            echo "false"
+            return
+        fi
+    fi
+
+    # 2. Check session (--tdd flag from setup-auto.sh)
+    local session_tdd=$(echo "$SESSION" 2>/dev/null | jq -r '.tddMode // false')
+    if [ "$session_tdd" = "true" ]; then
+        echo "true"
+        return
+    fi
+
+    # 3. Check global config
+    local config_mode=$(get_test_mode)
+    if [ "$config_mode" = "tdd" ] || [ "$config_mode" = "test-first" ]; then
+        echo "true"
+        return
+    fi
+
+    echo "false"
+}
+
+# Get coverage targets from config
+get_coverage_targets() {
+    if [ -f "$CONFIG_FILE" ]; then
+        local unit=$(jq -r '.testing.coverageTargets.unit // 80' "$CONFIG_FILE" 2>/dev/null)
+        local integration=$(jq -r '.testing.coverageTargets.integration // 80' "$CONFIG_FILE" 2>/dev/null)
+        local e2e=$(jq -r '.testing.coverageTargets.e2e // 80' "$CONFIG_FILE" 2>/dev/null)
+        echo "{\"unit\":$unit,\"integration\":$integration,\"e2e\":$e2e}"
+    else
+        echo '{"unit":80,"integration":80,"e2e":80}'
+    fi
+}
+
+# ============================================================================
+# STOP REASON TRACKING (NEW - v2.2)
+# Clear logging of WHY auto mode stops
+# ============================================================================
+
+log_stop_reason() {
+    local reason="$1"
+    local details="$2"
+    local is_success="${3:-false}"
+
+    local timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+    # Log to iterations log
+    echo "{\"timestamp\":\"$timestamp\",\"event\":\"session_stop\",\"reason\":\"$reason\",\"details\":\"$details\",\"success\":$is_success,\"iteration\":${ITERATION:-0},\"increment\":\"${CURRENT_INCREMENT:-none}\"}" >> "$LOGS_DIR/auto-iterations.log"
+
+    # Also log to dedicated stop log
+    mkdir -p "$LOGS_DIR"
+    echo "{\"timestamp\":\"$timestamp\",\"sessionId\":\"${SESSION_ID:-unknown}\",\"reason\":\"$reason\",\"details\":\"$details\",\"success\":$is_success,\"iteration\":${ITERATION:-0},\"increment\":\"${CURRENT_INCREMENT:-none}\",\"testsRun\":${TESTS_RUN:-false},\"testsPassed\":${TESTS_PASSED:-0},\"testsFailed\":${TESTS_FAILED:-0}}" >> "$LOGS_DIR/auto-stop-reasons.log"
+}
+
 # Get timeout for command type
 get_command_timeout() {
     local cmd="$1"
@@ -232,17 +374,67 @@ detect_command_timeout() {
 }
 
 # Helper: Output approve decision
+# ALWAYS log why we're stopping for debugging
 approve() {
     local reason="${1:-Session complete}"
+    local is_success="${2:-false}"
+
+    # Log the stop reason
+    log_stop_reason "$reason" "approve_called" "$is_success"
+
+    # Display the stop reason prominently to STDERR (not stdout, which is for JSON)
+    {
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🛑 AUTO MODE STOPPING"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "Reason: $reason"
+        echo "Iteration: ${ITERATION:-0}/${MAX_ITERATIONS:-100}"
+        [ -n "$CURRENT_INCREMENT" ] && echo "Increment: $CURRENT_INCREMENT"
+        [ "${TESTS_RUN:-false}" = "true" ] && echo "Tests: ${TESTS_PASSED:-0} passed, ${TESTS_FAILED:-0} failed"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+    } >&2
+
     echo "{\"decision\": \"approve\", \"reason\": \"$reason\"}"
     exit 0
 }
 
 # Helper: Output block decision with system message
 # Properly escapes JSON strings with newlines
+# Also displays stop criteria prominently to stderr (NEW - v2.2)
 block() {
     local reason="$1"
     local system_message="$2"
+
+    # Get current stop criteria for display
+    local tdd_mode=$(is_tdd_strict_mode)
+    local stop_criteria=""
+
+    # Build stop criteria message
+    if [ "$tdd_mode" = "true" ]; then
+        stop_criteria="🔴 TDD MODE: ALL tests MUST pass"
+    else
+        stop_criteria="✅ All tasks completed + tests passing"
+    fi
+
+    # Display stop criteria and continuation reason to STDERR (v2.2)
+    {
+        echo ""
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🔄 AUTO MODE CONTINUING"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "Why blocked: $reason"
+        echo "Iteration: ${ITERATION:-0}/${MAX_ITERATIONS:-500}"
+        [ -n "$CURRENT_INCREMENT" ] && echo "Increment: $CURRENT_INCREMENT"
+        echo ""
+        echo "📋 STOP CRITERIA: $stop_criteria"
+        [ "${TESTS_RUN:-false}" = "true" ] && echo "   Tests: ${TESTS_PASSED:-0} passed, ${TESTS_FAILED:-0} failed"
+        [ "$tdd_mode" = "true" ] && echo "   TDD Source: $(get_tdd_source)"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+    } >&2
+
     if [ -n "$system_message" ]; then
         # Escape special characters for JSON
         local escaped_message=$(echo "$system_message" | jq -Rs .)
@@ -251,6 +443,200 @@ block() {
         echo "{\"decision\": \"block\", \"reason\": \"$reason\"}"
     fi
     exit 0
+}
+
+# Helper: Get source of TDD mode for debugging
+get_tdd_source() {
+    if [ -n "$CURRENT_INCREMENT" ]; then
+        local inc_dir="$PROJECT_ROOT/.specweave/increments/$CURRENT_INCREMENT"
+
+        # Check increment metadata.json
+        if [ -f "$inc_dir/metadata.json" ]; then
+            local inc_tdd=$(jq -r '.tddMode // null' "$inc_dir/metadata.json" 2>/dev/null)
+            if [ "$inc_tdd" = "true" ] || [ "$inc_tdd" = "false" ]; then
+                echo "increment metadata.json"
+                return
+            fi
+            local inc_test_mode=$(jq -r '.testMode // null' "$inc_dir/metadata.json" 2>/dev/null)
+            if [ "$inc_test_mode" = "tdd" ] || [ "$inc_test_mode" = "test-first" ]; then
+                echo "increment metadata.json (testMode)"
+                return
+            fi
+        fi
+
+        # Check increment config.json
+        if [ -f "$inc_dir/config.json" ]; then
+            local inc_tdd=$(jq -r '.tddMode // null' "$inc_dir/config.json" 2>/dev/null)
+            if [ "$inc_tdd" = "true" ] || [ "$inc_tdd" = "false" ]; then
+                echo "increment config.json"
+                return
+            fi
+        fi
+
+        # Check spec.md frontmatter
+        if [ -f "$inc_dir/spec.md" ]; then
+            if sed -n '/^---$/,/^---$/p' "$inc_dir/spec.md" 2>/dev/null | grep -qE '^tdd:\s*true'; then
+                echo "spec.md frontmatter"
+                return
+            fi
+        fi
+    fi
+
+    # Check session
+    local session_tdd=$(echo "$SESSION" 2>/dev/null | jq -r '.tddMode // false')
+    if [ "$session_tdd" = "true" ]; then
+        echo "--tdd flag (session)"
+        return
+    fi
+
+    # Check global config
+    if [ -f "$CONFIG_FILE" ]; then
+        local config_mode=$(jq -r '.testing.defaultTestMode // "test-after"' "$CONFIG_FILE" 2>/dev/null)
+        if [ "$config_mode" = "tdd" ] || [ "$config_mode" = "test-first" ]; then
+            echo "global config.json"
+            return
+        fi
+    fi
+
+    echo "default (test-after)"
+}
+
+# ============================================================================
+# TEST COMMAND DISCOVERY (NEW - v2.2)
+# Auto-detect available test commands for each project/technology
+# ============================================================================
+
+# Discover test commands for the current project
+# Returns JSON with available test commands for each technology
+discover_test_commands() {
+    local test_commands="[]"
+
+    # Node.js/JavaScript/TypeScript projects
+    if [ -f "$PROJECT_ROOT/package.json" ]; then
+        local pkg_test=$(jq -r '.scripts.test // null' "$PROJECT_ROOT/package.json" 2>/dev/null)
+        local pkg_test_unit=$(jq -r '.scripts["test:unit"] // null' "$PROJECT_ROOT/package.json" 2>/dev/null)
+        local pkg_test_e2e=$(jq -r '.scripts["test:e2e"] // null' "$PROJECT_ROOT/package.json" 2>/dev/null)
+
+        if [ "$pkg_test" != "null" ] && [ -n "$pkg_test" ]; then
+            test_commands=$(echo "$test_commands" | jq --arg cmd "npm test" --arg type "unit" '. + [{"command": $cmd, "type": $type, "framework": "npm"}]')
+        fi
+        if [ "$pkg_test_unit" != "null" ] && [ -n "$pkg_test_unit" ]; then
+            test_commands=$(echo "$test_commands" | jq --arg cmd "npm run test:unit" --arg type "unit" '. + [{"command": $cmd, "type": $type, "framework": "npm"}]')
+        fi
+        if [ "$pkg_test_e2e" != "null" ] && [ -n "$pkg_test_e2e" ]; then
+            test_commands=$(echo "$test_commands" | jq --arg cmd "npm run test:e2e" --arg type "e2e" '. + [{"command": $cmd, "type": $type, "framework": "npm"}]')
+        fi
+
+        # Detect Vitest
+        if [ -f "$PROJECT_ROOT/vitest.config.ts" ] || [ -f "$PROJECT_ROOT/vitest.config.js" ] || grep -q '"vitest"' "$PROJECT_ROOT/package.json" 2>/dev/null; then
+            test_commands=$(echo "$test_commands" | jq '. + [{"command": "npx vitest run", "type": "unit", "framework": "vitest"}]')
+        fi
+
+        # Detect Jest
+        if [ -f "$PROJECT_ROOT/jest.config.js" ] || [ -f "$PROJECT_ROOT/jest.config.ts" ] || grep -q '"jest"' "$PROJECT_ROOT/package.json" 2>/dev/null; then
+            test_commands=$(echo "$test_commands" | jq '. + [{"command": "npx jest", "type": "unit", "framework": "jest"}]')
+        fi
+
+        # Detect Playwright
+        if [ -f "$PROJECT_ROOT/playwright.config.ts" ] || [ -f "$PROJECT_ROOT/playwright.config.js" ]; then
+            test_commands=$(echo "$test_commands" | jq '. + [{"command": "npx playwright test", "type": "e2e", "framework": "playwright"}]')
+        fi
+
+        # Detect Cypress
+        if [ -f "$PROJECT_ROOT/cypress.config.ts" ] || [ -f "$PROJECT_ROOT/cypress.config.js" ] || [ -d "$PROJECT_ROOT/cypress" ]; then
+            test_commands=$(echo "$test_commands" | jq '. + [{"command": "npx cypress run", "type": "e2e", "framework": "cypress"}]')
+        fi
+
+        # Detect Detox (React Native)
+        if [ -f "$PROJECT_ROOT/.detoxrc.js" ] || [ -f "$PROJECT_ROOT/.detoxrc.json" ] || grep -q '"detox"' "$PROJECT_ROOT/package.json" 2>/dev/null; then
+            test_commands=$(echo "$test_commands" | jq '. + [{"command": "npx detox test", "type": "e2e", "framework": "detox"}]')
+        fi
+    fi
+
+    # Python projects
+    if [ -f "$PROJECT_ROOT/pyproject.toml" ] || [ -f "$PROJECT_ROOT/setup.py" ] || [ -f "$PROJECT_ROOT/requirements.txt" ]; then
+        # Pytest
+        if [ -f "$PROJECT_ROOT/pytest.ini" ] || [ -f "$PROJECT_ROOT/pyproject.toml" ] || [ -d "$PROJECT_ROOT/tests" ]; then
+            test_commands=$(echo "$test_commands" | jq '. + [{"command": "pytest", "type": "unit", "framework": "pytest"}]')
+        fi
+    fi
+
+    # Go projects
+    if [ -f "$PROJECT_ROOT/go.mod" ]; then
+        test_commands=$(echo "$test_commands" | jq '. + [{"command": "go test ./...", "type": "unit", "framework": "go"}]')
+    fi
+
+    # Rust projects
+    if [ -f "$PROJECT_ROOT/Cargo.toml" ]; then
+        test_commands=$(echo "$test_commands" | jq '. + [{"command": "cargo test", "type": "unit", "framework": "cargo"}]')
+    fi
+
+    # iOS/macOS projects (Xcode)
+    if find "$PROJECT_ROOT" -maxdepth 2 -name "*.xcodeproj" -o -name "*.xcworkspace" 2>/dev/null | head -1 | grep -q .; then
+        # Find scheme name
+        local xc_project=$(find "$PROJECT_ROOT" -maxdepth 2 -name "*.xcodeproj" 2>/dev/null | head -1)
+        local xc_workspace=$(find "$PROJECT_ROOT" -maxdepth 2 -name "*.xcworkspace" 2>/dev/null | head -1)
+
+        if [ -n "$xc_workspace" ]; then
+            test_commands=$(echo "$test_commands" | jq --arg ws "$(basename "$xc_workspace")" '. + [{"command": "xcodebuild test -workspace " + $ws + " -scheme <SCHEME> -destination \"platform=iOS Simulator,name=iPhone 15\"", "type": "unit", "framework": "xcode"}]')
+        elif [ -n "$xc_project" ]; then
+            test_commands=$(echo "$test_commands" | jq --arg proj "$(basename "$xc_project")" '. + [{"command": "xcodebuild test -project " + $proj + " -scheme <SCHEME> -destination \"platform=iOS Simulator,name=iPhone 15\"", "type": "unit", "framework": "xcode"}]')
+        fi
+    fi
+
+    # Swift Package Manager
+    if [ -f "$PROJECT_ROOT/Package.swift" ]; then
+        test_commands=$(echo "$test_commands" | jq '. + [{"command": "swift test", "type": "unit", "framework": "swift"}]')
+    fi
+
+    # Android projects (Gradle)
+    if [ -f "$PROJECT_ROOT/build.gradle" ] || [ -f "$PROJECT_ROOT/build.gradle.kts" ]; then
+        test_commands=$(echo "$test_commands" | jq '. + [{"command": "./gradlew test", "type": "unit", "framework": "gradle"}]')
+        test_commands=$(echo "$test_commands" | jq '. + [{"command": "./gradlew connectedAndroidTest", "type": "e2e", "framework": "gradle"}]')
+    fi
+
+    # Maestro (cross-platform mobile E2E)
+    if [ -f "$PROJECT_ROOT/maestro.yaml" ] || [ -d "$PROJECT_ROOT/.maestro" ]; then
+        test_commands=$(echo "$test_commands" | jq '. + [{"command": "maestro test", "type": "e2e", "framework": "maestro"}]')
+    fi
+
+    echo "$test_commands"
+}
+
+# Format test commands for LLM instruction
+format_test_instructions() {
+    local test_commands=$(discover_test_commands)
+    local cmd_count=$(echo "$test_commands" | jq 'length')
+
+    if [ "$cmd_count" -eq 0 ]; then
+        echo "No test framework detected. Look for test configuration files and package.json scripts."
+        return
+    fi
+
+    local instructions="AVAILABLE TEST COMMANDS FOR THIS PROJECT:
+"
+    # Unit tests
+    local unit_cmds=$(echo "$test_commands" | jq -r '[.[] | select(.type == "unit")] | .[] | "  • " + .command + " (" + .framework + ")"')
+    if [ -n "$unit_cmds" ]; then
+        instructions="${instructions}
+Unit/Integration Tests:
+${unit_cmds}"
+    fi
+
+    # E2E tests
+    local e2e_cmds=$(echo "$test_commands" | jq -r '[.[] | select(.type == "e2e")] | .[] | "  • " + .command + " (" + .framework + ")"')
+    if [ -n "$e2e_cmds" ]; then
+        instructions="${instructions}
+
+E2E Tests:
+${e2e_cmds}"
+    fi
+
+    instructions="${instructions}
+
+PRIORITY: Run ALL tests BEFORE marking tasks complete!"
+
+    echo "$instructions"
 }
 
 # ============================================================================
@@ -371,6 +757,48 @@ parse_test_results() {
             total=$(echo "$swift_summary" | grep -oE 'Executed [0-9]+' | grep -oE '[0-9]+')
             failed=$(echo "$swift_summary" | grep -oE 'with [0-9]+' | grep -oE '[0-9]+')
             passed=$((total - failed))
+        fi
+    fi
+
+    # ========================================================================
+    # DETOX (React Native) TEST SUPPORT (NEW - v2.2)
+    # Format: "detox[XXXX] ✓ test name" or "X passing (Xs)"
+    # ========================================================================
+    if grep -qE '(detox\[|detox test|react-native.*test)' "$transcript" 2>/dev/null && [ "$framework" = "unknown" ]; then
+        framework="detox"
+
+        # Count passing tests (✓ or ✔ checkmarks)
+        passed=$(grep -cE '(detox\[[0-9]+\]\s*[✓✔]|✓.*test|passed)' "$transcript" 2>/dev/null || echo "0")
+        # Count failing tests (✗ or ✘)
+        failed=$(grep -cE '(detox\[[0-9]+\]\s*[✗✘]|✗.*test|failed)' "$transcript" 2>/dev/null || echo "0")
+
+        # Alternative: "X passing (Xs)" format
+        local detox_summary=$(grep -oE '[0-9]+\s+passing' "$transcript" 2>/dev/null | tail -1)
+        if [ -n "$detox_summary" ]; then
+            passed=$(echo "$detox_summary" | grep -oE '^[0-9]+')
+        fi
+        local detox_failed=$(grep -oE '[0-9]+\s+failing' "$transcript" 2>/dev/null | tail -1)
+        if [ -n "$detox_failed" ]; then
+            failed=$(echo "$detox_failed" | grep -oE '^[0-9]+')
+        fi
+    fi
+
+    # ========================================================================
+    # MAESTRO (Mobile UI Testing) SUPPORT (NEW - v2.2)
+    # Format: "Flow: flow.yaml - PASSED" or "Passed: X, Failed: X"
+    # ========================================================================
+    if grep -qE '(maestro test|maestro\.yaml|Flow:.*PASSED|Flow:.*FAILED)' "$transcript" 2>/dev/null && [ "$framework" = "unknown" ]; then
+        framework="maestro"
+
+        # Count passed/failed flows
+        passed=$(grep -cE 'Flow:.*PASSED' "$transcript" 2>/dev/null || echo "0")
+        failed=$(grep -cE 'Flow:.*FAILED' "$transcript" 2>/dev/null || echo "0")
+
+        # Alternative summary format
+        local maestro_summary=$(grep -oE 'Passed:\s*[0-9]+,\s*Failed:\s*[0-9]+' "$transcript" 2>/dev/null | tail -1)
+        if [ -n "$maestro_summary" ]; then
+            passed=$(echo "$maestro_summary" | grep -oE 'Passed:\s*[0-9]+' | grep -oE '[0-9]+')
+            failed=$(echo "$maestro_summary" | grep -oE 'Failed:\s*[0-9]+' | grep -oE '[0-9]+')
         fi
     fi
 
@@ -959,7 +1387,7 @@ if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
         echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
             '.status = "completed" | .endTime = $now | .endReason = "completion_promise"' \
             > "$SESSION_FILE"
-        approve "Completion promise detected"
+        approve "Completion promise detected" "true"
     fi
 
     # Check self-assessment score
@@ -1083,6 +1511,16 @@ if [ -n "$CURRENT_INCREMENT" ]; then
         if [ "$TOTAL_TASKS" -gt 0 ] && [ "$COMPLETED_TASKS" -ge "$TOTAL_TASKS" ]; then
             # All tasks marked complete - but verify tests actually passed
 
+            # ================================================================
+            # TDD STRICT MODE CHECK (NEW - v2.2)
+            # In TDD mode, tests MUST pass - no exceptions
+            # ================================================================
+            TDD_MODE=$(is_tdd_strict_mode)
+            TEST_MODE=$(get_test_mode)
+
+            # Log TDD mode status
+            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"completion_check\",\"tddMode\":$TDD_MODE,\"testMode\":\"$TEST_MODE\",\"tasksComplete\":$COMPLETED_TASKS,\"totalTasks\":$TOTAL_TASKS}" >> "$LOGS_DIR/auto-iterations.log"
+
             # Check for test files in project
             HAS_UNIT_TESTS=false
             HAS_E2E_TESTS=false
@@ -1107,7 +1545,29 @@ if [ -n "$CURRENT_INCREMENT" ]; then
             # Verify tests were run AND passed
             if [ "$HAS_UNIT_TESTS" = true ]; then
                 if [ "$TESTS_RUN" != "true" ]; then
-                    block "Tasks complete but TESTS NOT RUN" "🧪 MANDATORY: All tasks marked complete but NO TEST EXECUTION detected.
+                    # TDD mode is even stricter
+                    if [ "$TDD_MODE" = "true" ]; then
+                        block "TDD MODE: Tests MANDATORY before completion" "🔴 TDD STRICT MODE ACTIVE - TESTS REQUIRED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ ALL TESTS MUST BE GREEN BEFORE AUTO MODE CAN COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tasks are marked complete but NO TESTS WERE RUN!
+
+In TDD mode, this is a BLOCKING requirement:
+1. Write/verify tests exist for all implemented features
+2. Run ALL tests: npm test && npx vitest run
+3. Verify 100% of tests pass (0 failures)
+4. Only then can auto mode complete
+
+Current status:
+  Tasks: $COMPLETED_TASKS/$TOTAL_TASKS complete
+  Tests: NOT EXECUTED ❌
+
+Run your tests NOW with: npm test"
+                    else
+                        block "Tasks complete but TESTS NOT RUN" "🧪 MANDATORY: All tasks marked complete but NO TEST EXECUTION detected.
 
 You MUST run tests before completion:
   npm test          (unit/integration)
@@ -1115,16 +1575,63 @@ You MUST run tests before completion:
   npx playwright test (E2E if applicable)
 
 Continue with /sw:do and run ALL tests. Verify 0 failures before proceeding."
+                    fi
                 fi
 
                 if [ "$TESTS_FAILED" -gt 0 ]; then
-                    # This shouldn't happen as we handle failures above, but safety check
-                    block "Tasks complete but TESTS FAILING" "🔴 CRITICAL: All tasks marked complete but $TESTS_FAILED tests are FAILING!
+                    # TDD mode - even stricter message
+                    if [ "$TDD_MODE" = "true" ]; then
+                        block "TDD MODE: $TESTS_FAILED tests FAILING - CANNOT COMPLETE" "🔴 TDD STRICT MODE - TESTS MUST BE GREEN
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❌ $TESTS_FAILED TEST(S) FAILING - AUTO MODE BLOCKED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TDD Mode requires ALL tests to pass. No exceptions.
+
+Current status:
+  Tests passed: $TESTS_PASSED ✅
+  Tests failed: $TESTS_FAILED ❌
+  Framework: $TEST_FRAMEWORK
+
+YOU CANNOT SKIP THIS. Auto mode will NOT complete until:
+1. ALL $TESTS_FAILED failing tests are fixed
+2. Re-run tests: npm test
+3. Verify 0 failures
+
+This is by design. TDD discipline = quality."
+                    else
+                        # Standard mode - still blocks but less strict message
+                        block "Tasks complete but TESTS FAILING" "🔴 CRITICAL: All tasks marked complete but $TESTS_FAILED tests are FAILING!
 
 You claimed completion but tests are not passing. This is not acceptable.
 
 FIX the failing tests before marking tasks complete.
 Re-run: npm test or npx vitest run"
+                    fi
+                fi
+
+                # TDD MODE: Additional check - require MINIMUM test count
+                if [ "$TDD_MODE" = "true" ] && [ "$TESTS_PASSED" -eq 0 ]; then
+                    block "TDD MODE: No tests passed - suspicious" "🔴 TDD STRICT MODE - SUSPICIOUS STATE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ 0 TESTS PASSED - SOMETHING IS WRONG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You have $COMPLETED_TASKS tasks marked complete but 0 tests passed.
+
+This suggests:
+1. Tests exist but weren't actually run
+2. Test detection isn't working
+3. Test output wasn't captured
+
+In TDD mode, you MUST have passing tests for completed work.
+
+Actions:
+1. Run tests explicitly: npm test
+2. Verify test output shows passed count
+3. Check test files exist for implemented features"
                 fi
             fi
 
@@ -1280,7 +1787,7 @@ Continue with /sw:do and add missing E2E tests."
                     --argjson passed "${TESTS_PASSED:-0}" --argjson failed "${TESTS_FAILED:-0}" \
                     '.status = "completed" | .endTime = $now | .endReason = "all_tasks_complete" | .finalTestResults = {"passed": $passed, "failed": $failed}' \
                     > "$SESSION_FILE"
-                approve "All tasks completed, all tests passed ($TESTS_PASSED passed, 0 failed)"
+                approve "All tasks completed, all tests passed ($TESTS_PASSED passed, 0 failed)" "true"
             else
                 # More increments in queue - transition to next
                 NEXT_INCREMENT=$(echo "$SESSION" | jq -r '.incrementQueue[1] // null')
@@ -1402,10 +1909,13 @@ echo "$SESSION" | jq --argjson iter "$NEXT_ITERATION" --arg now "$(date -u +%Y-%
     '.iteration = $iter | .lastActivity = $now' \
     > "$SESSION_FILE"
 
-# Build context message
+# Build context message with test instructions (v2.2)
 if [ "$SIMPLE_MODE" = "true" ]; then
     CONTEXT="Continue working. Iteration $NEXT_ITERATION/$MAX_ITERATIONS."
 else
+    # Get TDD mode status
+    TDD_MODE=$(is_tdd_strict_mode)
+
     PROGRESS=""
     if [ -n "$CURRENT_INCREMENT" ] && [ -f "$TASKS_FILE" ]; then
         PROGRESS="Tasks: $COMPLETED_TASKS/$TOTAL_TASKS completed."
@@ -1418,9 +1928,57 @@ else
         else
             TEST_STATUS="Tests: ⚠️ $TESTS_PASSED passed, $TESTS_FAILED FAILED."
         fi
+    else
+        # Tests not run - add warning
+        TEST_STATUS="Tests: ⚠️ NOT RUN YET!"
     fi
 
-    CONTEXT="AUTO ACTIVE: Iteration $NEXT_ITERATION/$MAX_ITERATIONS. $PROGRESS $TEST_STATUS Continue with /sw:do to complete remaining tasks."
+    # Get test instructions for this project (NEW - v2.2)
+    TEST_INSTRUCTIONS=$(format_test_instructions)
+
+    # Build stop criteria message - MUST be clear for each agent
+    STOP_CRITERIA=""
+    if [ "$TDD_MODE" = "true" ]; then
+        STOP_CRITERIA="
+╔══════════════════════════════════════════════════════════════╗
+║  🎯 AGENT STOP CONDITION (TDD STRICT MODE)                   ║
+╠══════════════════════════════════════════════════════════════╣
+║  ✅ ALL tasks in tasks.md marked [x] completed               ║
+║  ✅ ALL tests pass (0 failures required)                     ║
+║  ✅ Test execution detected in output                        ║
+╠══════════════════════════════════════════════════════════════╣
+║  Source: $(printf '%-45s' "$(get_tdd_source)")║
+╚══════════════════════════════════════════════════════════════╝"
+    else
+        STOP_CRITERIA="
+╔══════════════════════════════════════════════════════════════╗
+║  🎯 AGENT STOP CONDITION                                     ║
+╠══════════════════════════════════════════════════════════════╣
+║  ✅ ALL tasks in tasks.md marked [x] completed               ║
+║  ✅ Tests executed and passing                               ║
+╚══════════════════════════════════════════════════════════════╝"
+    fi
+
+    # Build full context message
+    CONTEXT="🤖 AUTO MODE ACTIVE - Iteration $NEXT_ITERATION/$MAX_ITERATIONS
+$STOP_CRITERIA
+
+📊 CURRENT PROGRESS:
+  $PROGRESS
+  $TEST_STATUS
+
+$TEST_INSTRUCTIONS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 REQUIRED ACTIONS (do these in order):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Review remaining tasks in tasks.md
+2. Implement next incomplete task
+3. RUN TESTS via CLI (mandatory - see commands above)
+4. Verify tests pass before marking task complete
+5. Continue with /sw:do
+
+⚠️ This agent will NOT stop until the STOP CONDITION above is met!"
 fi
 
 # Log iteration

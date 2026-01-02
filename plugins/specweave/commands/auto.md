@@ -33,8 +33,8 @@ description: Start autonomous execution session with stop hook integration. Work
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--max-iterations N` | Maximum iterations before stopping | 500 |
-| `--max-hours N` | Maximum hours to run | 120 (5 days) |
+| `--max-iterations N` | Maximum iterations (safety net, not primary stop) | **2500** (v2.3) |
+| `--max-hours N` | Maximum hours to run | **600 hours** (25 days, v2.3) |
 | `--simple` | Pure Ralph mode (minimal context) | false |
 | `--dry-run` | Preview without starting | false |
 | `--all-backlog` | Process all backlog items | false |
@@ -42,6 +42,13 @@ description: Start autonomous execution session with stop hook integration. Work
 | `--no-increment`, `--no-inc` | Skip auto-creation (require existing increments) | false |
 | `--prompt "text"` | Analyze prompt and create increments (intelligent chunking) | None |
 | `--yes`, `-y` | Auto-approve increment plan (skip user approval) | false |
+| `--tdd`, `--strict` | **NEW v2.2**: Enable TDD strict mode - ALL tests must pass | false |
+
+:::warning v2.3 - Iteration limits are SAFETY NETS
+The primary completion criteria is **tests passing + tasks complete**. Iteration limits (2500 iterations, 600 hours) are backup safety nets. Per the Ralph Wiggum pattern, completion should be detected through **external verification** (test results), not self-assessment.
+
+**IMPORTANT: Stop hook runs PER AGENT** - Each spawned subagent gets its own hook invocation. Iteration count is shared via session file, reflecting main agent loops.
+:::
 
 ## Intelligent Increment Creation (NEW!)
 
@@ -344,9 +351,58 @@ Pure Ralph Wiggum behavior:
 
 - **Human Gates**: Sensitive operations require approval
 - **Circuit Breakers**: External service failures handled gracefully
-- **Max Iterations**: Prevents runaway loops
-- **Max Hours**: Time boxing
+- **Max Iterations**: Prevents runaway loops (2500 default)
+- **Max Hours**: Time boxing (600 hours / 25 days default)
 - **stop_hook_active**: Prevents infinite continuation loops
+
+## 🔧 v2.3 Per-Agent Stop Hook Behavior (NEW!)
+
+**CRITICAL: The stop hook runs PER AGENT, not globally!**
+
+### How It Works
+
+```
+Main Agent (Claude Code)
+    │
+    ├── Stop hook invoked when main agent tries to exit
+    │
+    ├── Spawns Subagent A (Task tool)
+    │   └── Subagent A completes → returns to main agent
+    │       (NO stop hook for subagent exit by default)
+    │
+    ├── Spawns Subagent B (Task tool with stop_hooks enabled)
+    │   └── Stop hook CAN be invoked if configured
+    │
+    └── Main agent tries to exit → Stop hook invoked
+```
+
+### Key Implications
+
+1. **Iteration count = main agent loops**: When you see "Iteration 42/2500", that's 42 times the MAIN agent tried to exit, not subagent work.
+
+2. **Subagent work is "free"**: Spawning specialized agents (QA, Security, etc.) doesn't consume iterations from the main loop.
+
+3. **Shared session state**: All agents (main + sub) share the same `auto-session.json`, so task completion is tracked globally.
+
+4. **Test validation at main level**: The stop hook validates test results when the MAIN agent tries to complete, ensuring all subagent work is verified.
+
+### Configuration
+
+To enable stop hooks for subagents (advanced):
+```typescript
+// In Task tool call
+{
+  "stop_hooks": true,  // Enable stop hook for this subagent
+  "inherit_session": true  // Share session state with parent
+}
+```
+
+### Best Practices
+
+- Let subagents do specialized work without worrying about iterations
+- Main agent orchestrates and validates via stop hook
+- Use `--max-iterations` as a safety net, not a target
+- Primary completion = tests pass + tasks complete
 
 ## 🔧 v2.1 Reliability Improvements (NEW!)
 
@@ -489,6 +545,170 @@ All reliability events logged to `.specweave/logs/auto-iterations.log`:
 {"timestamp":"2026-01-02T08:01:00Z","event":"context_near_limit","tokens":152000}
 {"timestamp":"2026-01-02T08:02:00Z","event":"stale_heartbeat_detected","age":"320s"}
 {"timestamp":"2026-01-02T08:03:00Z","event":"failure_classified","category":"transient"}
+```
+
+## 🔧 v2.2 TDD Strict Mode & Stop Reason Tracking (NEW!)
+
+### TDD Strict Mode
+
+**Enable TDD strict mode to enforce ALL tests passing before completion:**
+
+```bash
+/sw:auto --tdd 0001-feature
+# or
+/sw:auto --strict 0001-feature
+```
+
+**TDD Mode Requirements:**
+- ALL unit tests must pass (0 failures)
+- ALL E2E tests must pass
+- Test execution must be detected in transcript
+- At least 1 passing test required per completed task (suspicious if 0)
+
+### Per-Increment TDD Configuration (NEW v2.2)
+
+**TDD mode can be configured at multiple levels with priority:**
+
+1. **Increment metadata.json** (highest priority)
+2. **Increment config.json**
+3. **spec.md frontmatter**
+4. **Session (`--tdd` flag)**
+5. **Global config.json** (lowest priority)
+
+**Example: Enable TDD for a specific increment:**
+
+```json
+// .specweave/increments/0001-feature/metadata.json
+{
+  "tddMode": true,
+  "testMode": "tdd"
+}
+```
+
+**Or via spec.md frontmatter:**
+
+```markdown
+---
+increment: 0001-feature
+title: "Critical Payment Feature"
+tdd: true
+---
+```
+
+**Console output shows TDD source:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 AUTO MODE CONTINUING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 STOP CRITERIA: 🔴 TDD MODE: ALL tests MUST pass
+   TDD Source: increment metadata.json
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Global Configuration (`.specweave/config.json`):**
+```json
+{
+  "testing": {
+    "defaultTestMode": "tdd",    // "tdd", "test-first", or "test-after"
+    "coverageTargets": {
+      "unit": 85,
+      "integration": 80,
+      "e2e": 90
+    }
+  }
+}
+```
+
+### Automatic Test Command Discovery (NEW v2.2)
+
+**Auto mode now discovers and displays available test commands for your project:**
+
+The stop hook scans for test frameworks and shows you exactly what commands to run:
+
+```
+AVAILABLE TEST COMMANDS FOR THIS PROJECT:
+
+Unit/Integration Tests:
+  • npm test (npm)
+  • npx vitest run (vitest)
+
+E2E Tests:
+  • npx playwright test (playwright)
+
+PRIORITY: Run ALL tests BEFORE marking tasks complete!
+```
+
+**Supported frameworks detected automatically:**
+
+| Framework | Detection Method |
+|-----------|-----------------|
+| npm scripts | `package.json` scripts.test |
+| Vitest | `vitest.config.ts/js` or dependency |
+| Jest | `jest.config.ts/js` or dependency |
+| Playwright | `playwright.config.ts/js` |
+| Cypress | `cypress.config.ts/js` or `/cypress` dir |
+| Detox | `.detoxrc.js/json` or dependency |
+| Pytest | `pytest.ini` or `pyproject.toml` |
+| Go test | `go.mod` |
+| Cargo test | `Cargo.toml` |
+| Xcode | `*.xcodeproj` or `*.xcworkspace` |
+| Swift test | `Package.swift` |
+| Gradle | `build.gradle(.kts)` |
+| Maestro | `maestro.yaml` or `.maestro/` |
+
+### Stop Reason Tracking
+
+**v2.2 now logs EXACTLY why auto mode stops:**
+
+All stop reasons logged to `.specweave/logs/auto-stop-reasons.log`:
+
+```json
+{
+  "timestamp": "2026-01-02T08:00:00Z",
+  "sessionId": "auto-2026-01-02-abc123",
+  "reason": "All tasks completed, all tests passed (42 passed, 0 failed)",
+  "success": true,
+  "iteration": 15,
+  "increment": "0001-feature",
+  "testsRun": true,
+  "testsPassed": 42,
+  "testsFailed": 0
+}
+```
+
+**Stop reasons categorized:**
+| Category | Success | Example |
+|----------|---------|---------|
+| `all_tasks_complete` | ✅ | All tests pass, all tasks done |
+| `completion_promise` | ✅ | `<auto-complete>DONE</auto-complete>` detected |
+| `max_iterations_reached` | ❌ | Safety limit hit (not ideal) |
+| `max_hours_exceeded` | ❌ | Time limit hit |
+| `test_failures_exhausted` | ❌ | 3 retry attempts failed |
+| `external_failure` | ❌ | Environment/config issue |
+| `human_gate_pending` | ⏸️ | Waiting for user approval |
+
+### Mobile App Testing Support
+
+**For iOS/Android projects, auto mode detects:**
+
+| Framework | Detection | Command |
+|-----------|-----------|---------|
+| Xcode (iOS) | `xcodebuild test` output | `xcodebuild -scheme X test` |
+| Swift PM | `swift test` output | `swift test` |
+| Detox (RN) | `detox test` output | `detox test -c ios.sim.debug` |
+| Maestro | `maestro test` output | `maestro test flow.yaml` |
+| Appium | Test framework output | Framework-specific |
+
+**Best Practice for Mobile Apps:**
+1. Set up automated tests (XCTest, Detox, Maestro)
+2. Run tests as part of task completion
+3. Auto mode blocks until all mobile tests pass
+4. Use `--tdd` for strictest enforcement
+
+**Example mobile test detection:**
+```
+Executed 15 tests, with 0 failures (0 unexpected) in 12.345 seconds
+** TEST SUCCEEDED **
 ```
 
 ## ♿ UI/UX Quality Gates (NEW!)

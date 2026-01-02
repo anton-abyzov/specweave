@@ -41,24 +41,24 @@ Delivery plans connect **business strategy** to **execution timeline**:
 **Naming**: `{year}-{quarter}-{theme}.md` or `{year}-{month}-{theme}.md`
 
 **Examples**:
-- `2025-q4-platform.md` - Q4 2025 platform modernization
-- `2026-q1-features.md` - Q1 2026 feature releases
-- `2025-11-sprint-23.md` - Sprint 23 (November 2025)
+- `2026-q4-platform.md` - Q4 2026 platform modernization
+- `2027-q1-features.md` - Q1 2027 feature releases
+- `2026-11-sprint-23.md` - Sprint 23 (November 2026)
 
 **Template**:
 
 ```yaml
 ---
-id: delivery-2025-q4
-title: "Q4 2025 Platform Modernization"
-timeline: "Oct 1 - Dec 31, 2025"
+id: delivery-2026-q4
+title: "Q4 2026 Platform Modernization"
+timeline: "Oct 1 - Dec 31, 2026"
 status: "in-progress"
 external_tools:
   ado_plan:
-    name: "Q4 2025 Platform"
+    name: "Q4 2026 Platform"
     url: "https://dev.azure.com/org/project/_plans/planId=123"
   jira_roadmap:
-    name: "2025 Product Roadmap"
+    name: "2026 Product Roadmap"
     url: "https://company.atlassian.net/jira/plans/456"
   github_project:
     name: "Platform Modernization"
@@ -79,10 +79,10 @@ teams:
     focus: [FS-001, FS-031]
 ---
 
-# Q4 2025 Platform Modernization
+# Q4 2026 Platform Modernization
 
 ## Overview
-Strategic goals for Q4 2025...
+Strategic goals for Q4 2026...
 
 ## Timeline
 
@@ -95,7 +95,7 @@ Strategic goals for Q4 2025...
 - **FS-031**: External Tool Status Sync
   - Status: 🚧 In Progress
   - Depends on: FS-001
-  - Target: Dec 31, 2025
+  - Target: Dec 31, 2026
 
 ## External Plans
 - [ADO Delivery Plan](https://dev.azure.com/org/project/_plans/planId=123)
@@ -131,9 +131,9 @@ graph LR
 id: FS-031
 title: "External Tool Status Sync"
 delivery:
-  plan: "delivery-2025-q4"
-  plan_file: "../../delivery/plans/2025-q4-platform.md"
-  timeline: "Dec 1-31, 2025"
+  plan: "delivery-2026-q4"
+  plan_file: "../../delivery/plans/2026-q4-platform.md"
+  timeline: "Dec 1-31, 2026"
 external_tools:
   ado:
     plan_url: "https://dev.azure.com/.../plans/456"
@@ -145,11 +145,11 @@ external_tools:
 **Delivery plan** lists epics:
 
 ```yaml
-# .specweave/docs/internal/delivery/plans/2025-q4-platform.md
+# .specweave/docs/internal/delivery/plans/2026-q4-platform.md
 epics:
   - id: FS-031
     title: "External Tool Status Sync"
-    timeline: "Dec 2025"
+    timeline: "Dec 2026"
     depends_on: [FS-001]
 ```
 
@@ -206,14 +206,14 @@ epics:
 
 ### Small Teams (2-5)
 **Quarterly plans** - One delivery plan per quarter:
-- `2025-q4-platform.md` - Q4 goals
+- `2026-q4-platform.md` - Q4 goals
 - Link epics to plan
 - Update monthly
 
 ### Enterprise Teams (5+)
 **Quarterly + Sprint plans** - Two-level planning:
-- **Quarterly**: `2025-q4-platform.md` (strategic)
-- **Sprint**: `2025-11-sprint-23.md` (tactical)
+- **Quarterly**: `2026-q4-platform.md` (strategic)
+- **Sprint**: `2026-11-sprint-23.md` (tactical)
 - Sync with ADO/JIRA/GitHub tools
 
 ---

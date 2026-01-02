@@ -2,7 +2,7 @@
 
 ## Current Status: Beta (v0.1.0-beta.1)
 
-### Completed (Q4 2024 - Q1 2025)
+### Completed (Q4 2025 - Q1 2026)
 
 **✅ Increment 0001: Core Framework**
 - Skills system (detector, router, loader, planner)
@@ -14,7 +14,7 @@
 - Factory pattern (selective installation)
 - Brownfield support (analyzer, onboarder)
 
-### In Progress (Q1 2025)
+### In Progress (Q1 2026)
 
 **🚧 Increment 0002: Multi-Tool Support**
 - Completion: 85%
@@ -22,26 +22,26 @@
 - Documentation improvements
 - Testing enhancements
 
-### Planned (Q1-Q2 2025)
+### Planned (Q1-Q2 2026)
 
-**📋 Q1 2025**
+**📋 Q1 2026**
 - Increment 0003: JIRA Integration
 - Increment 0004: GitHub Sync (bidirectional)
 - Increment 0005: Azure DevOps Integration
 
-**📋 Q2 2025**
+**📋 Q2 2026**
 - Increment 0006: Figma-to-Code Pipeline
 - Increment 0007: Performance Optimization
 - Increment 0008: Enterprise Features (SSO, RBAC)
 
-### Long-term Vision (2025+)
+### Long-term Vision (2026+)
 
-**🔮 Q3 2025**
+**🔮 Q3 2026**
 - Multi-language support (framework detects ANY tech stack)
 - Visual Studio Code extension
 - IntelliJ IDEA plugin
 
-**🔮 Q4 2025**
+**🔮 Q4 2026**
 - SpecWeave Cloud (hosted specs, collaboration)
 - Team features (shared context, approval workflows)
 - Compliance packs (SOC 2, HIPAA, GDPR templates)

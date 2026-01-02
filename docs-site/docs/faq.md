@@ -817,4 +817,4 @@ rm -rf .specweave/state/.dedup-cache
 
 ---
 
-**Last Updated**: 2025-12-30
+**Last Updated**: 2026-01-02
