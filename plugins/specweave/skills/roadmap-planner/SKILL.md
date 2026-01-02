@@ -85,7 +85,7 @@ Higher RICE = Higher Priority
 
 **Example**:
 ```markdown
-## Feature Prioritization (Q1 2025 MVP)
+## Feature Prioritization (Q1 2026 MVP)
 
 ### Must Have (P1)
 | Feature | Reason |
@@ -107,9 +107,9 @@ Higher RICE = Higher Priority
 | Custom Themes | Requested by enterprise customers, can wait for v2 |
 
 ### Won't Have (This Release)
-- Mobile apps (Q2 2025 roadmap)
-- Advanced analytics dashboard (Q3 2025)
-- API for third-party integrations (Q4 2025)
+- Mobile apps (Q2 2026 roadmap)
+- Advanced analytics dashboard (Q3 2026)
+- API for third-party integrations (Q4 2026)
 - Offline mode (technical complexity too high for MVP)
 ```
 
@@ -183,9 +183,9 @@ Higher RICE = Higher Priority
 
 **Example**:
 ```markdown
-# Product Roadmap 2025
+# Product Roadmap 2026
 
-## Q1 2025: Foundation (MVP)
+## Q1 2026: Foundation (MVP)
 **Theme**: Core Task Management
 **Goal**: Launch with 100 beta users
 **Team Focus**: Backend + Frontend (1:1 split)
@@ -230,7 +230,7 @@ Higher RICE = Higher Priority
 
 ---
 
-## Q2 2025: Collaboration
+## Q2 2026: Collaboration
 **Theme**: Team Features
 **Goal**: 1K paying customers, $50K MRR
 **Team Focus**: Backend + Frontend + Mobile (2:2:1 split)
@@ -250,7 +250,7 @@ Higher RICE = Higher Priority
 
 ---
 
-## Q3 2025: Integrations
+## Q3 2026: Integrations
 **Theme**: Workflow Automation
 **Goal**: 5K customers, $200K MRR
 
@@ -269,7 +269,7 @@ Higher RICE = Higher Priority
 
 ---
 
-## Q4 2025: Enterprise
+## Q4 2026: Enterprise
 **Theme**: Scale & Compliance
 **Goal**: 10K customers, $500K MRR
 
@@ -303,28 +303,28 @@ key_results:
     target: "70% of registered users"
     measurement: "Track unique logins per day (Mixpanel)"
     current: "52%"
-    target_date: "2025-Q2"
+    target_date: "2026-Q2"
 
   KR2:
     metric: "Feature Adoption - Real-time Collaboration"
     target: "50% of teams use real-time editing within first week"
     measurement: "Track WebSocket connections per team"
     current: "0% (feature not launched)"
-    target_date: "2025-Q1"
+    target_date: "2026-Q1"
 
   KR3:
     metric: "Customer Satisfaction (NPS)"
     target: "NPS > 40"
     measurement: "In-app survey after 1 week of use"
     current: "28"
-    target_date: "2025-Q3"
+    target_date: "2026-Q3"
 
   KR4:
     metric: "Revenue Growth"
     target: "$200K MRR by end of Q3"
     measurement: "Stripe dashboard (MRR)"
     current: "$15K MRR"
-    target_date: "2025-Q3"
+    target_date: "2026-Q3"
 ```
 
 ### Metric Categories
@@ -435,7 +435,7 @@ We're proposing a shift from our current monolithic architecture to microservice
 - **Payback Period**: 18 months for 3x ROI
 
 **Recommendation**: Approve for Q3 implementation
-**Timeline**: 8 weeks (Q3 2025)
+**Timeline**: 8 weeks (Q3 2026)
 **Team**: 3 backend engineers, 1 DevOps engineer
 **Risk Level**: Medium (well-established pattern, many success stories)
 ```

@@ -1,25 +1,25 @@
 ---
-id: delivery-2025-q4
-title: "Q4 2025 Platform Modernization"
-sidebar_label: "Q4 2025 Platform"
-description: "Q4 2025 delivery plan covering Core Framework, External Tool Status Sync, and Frontend Component Library"
-timeline: "Oct 1 - Dec 31, 2025"
+id: delivery-2026-q4
+title: "Q4 2026 Platform Modernization"
+sidebar_label: "Q4 2026 Platform"
+description: "Q4 2026 delivery plan covering Core Framework, External Tool Status Sync, and Frontend Component Library"
+timeline: "Oct 1 - Dec 31, 2026"
 status: "in-progress"
-tags: ["delivery", "platform", "q4-2025"]
+tags: ["delivery", "platform", "q4-2026"]
 ---
 
-# Q4 2025 Platform Modernization
+# Q4 2026 Platform Modernization
 
 ## Metadata
 
-**Timeline**: Oct 1 - Dec 31, 2025
+**Timeline**: Oct 1 - Dec 31, 2026
 **Status**: 🚧 In Progress
 **Teams**: Platform Team (3 engineers), Frontend Team (2 engineers)
 **Epics**: FS-001 (✅ Complete), FS-031 (🚧 In Progress), FS-032 (🚧 In Progress)
 
 **External Tool Links**:
-- **Azure DevOps**: [Q4 2025 Platform Plan](https://dev.azure.com/org/project/_plans/planId=123)
-- **JIRA**: [2025 Product Roadmap](https://company.atlassian.net/jira/plans/456)
+- **Azure DevOps**: [Q4 2026 Platform Plan](https://dev.azure.com/org/project/_plans/planId=123)
+- **JIRA**: [2026 Product Roadmap](https://company.atlassian.net/jira/plans/456)
 - **GitHub**: [Platform Modernization](https://github.com/orgs/company/projects/10)
 
 ---
@@ -34,7 +34,7 @@ tags: ["delivery", "platform", "q4-2025"]
 - Establish foundation for living documentation system
 
 **Success Metrics**:
-- All 3 epics shipped by Dec 31, 2025
+- All 3 epics shipped by Dec 31, 2026
 - 100% bidirectional sync working (local ↔ external tools)
 - Zero regressions in existing functionality
 
@@ -45,7 +45,7 @@ tags: ["delivery", "platform", "q4-2025"]
 ### October-November: Foundation (Weeks 1-8)
 
 #### FS-001: Core Framework Architecture ✅ COMPLETE
-- **Status**: ✅ Completed (Nov 15, 2025)
+- **Status**: ✅ Completed (Nov 15, 2026)
 - **Team**: Platform Team
 - **Delivered**:
   - Increment lifecycle enforcement (WIP limits, smart transitions)
@@ -58,7 +58,7 @@ tags: ["delivery", "platform", "q4-2025"]
 #### FS-032: Frontend Component Library 🚧 IN PROGRESS
 - **Status**: 🚧 In Progress (60% complete)
 - **Team**: Frontend Team
-- **Timeline**: Oct 15 - Dec 15, 2025
+- **Timeline**: Oct 15 - Dec 15, 2026
 - **Dependencies**: None (independent track)
 - **Delivered**:
   - React component library with Storybook
@@ -70,7 +70,7 @@ tags: ["delivery", "platform", "q4-2025"]
 #### FS-031: External Tool Status Sync 🚧 IN PROGRESS
 - **Status**: 🚧 In Progress (planning phase)
 - **Team**: Platform Team
-- **Timeline**: Dec 1 - Dec 31, 2025
+- **Timeline**: Dec 1 - Dec 31, 2026
 - **Dependencies**: FS-001 (COMPLETE ✅)
 - **Deliverables**:
   - Bidirectional status sync (local ↔ ADO/JIRA/GitHub)
@@ -104,7 +104,7 @@ graph LR
 ## External Tool Links
 
 ### Azure DevOps Delivery Plan
-🔗 [Q4 2025 Platform Plan](https://dev.azure.com/org/project/_plans/planId=123)
+🔗 [Q4 2026 Platform Plan](https://dev.azure.com/org/project/_plans/planId=123)
 
 **What It Shows**:
 - Epic timeline across sprints
@@ -112,7 +112,7 @@ graph LR
 - Dependencies visualization
 
 ### JIRA Roadmap
-🔗 [2025 Product Roadmap](https://company.atlassian.net/jira/plans/456)
+🔗 [2026 Product Roadmap](https://company.atlassian.net/jira/plans/456)
 
 **What It Shows**:
 - Strategic initiative timeline
@@ -163,7 +163,7 @@ graph LR
 - **Impact**: Medium (delays Q1 features)
 - **Mitigation**:
   - Focus on P1 components only (buttons, forms, tables)
-  - Defer P2 components to Q1 2026
+  - Defer P2 components to Q1 2027
   - Have design system tokens ready early
 
 ### 🟢 LOW RISK: FS-001 Dependency Chain
@@ -182,7 +182,7 @@ graph LR
 **What Could Be Improved**:
 - TBD (fill in after Dec 31)
 
-**Action Items for Q1 2026**:
+**Action Items for Q1 2027**:
 - TBD (fill in after Dec 31)
 
 ---
@@ -204,5 +204,5 @@ graph LR
 
 ---
 
-**Last Updated**: 2025-11-13 (reviewed during increment 0031 planning)
-**Next Review**: 2025-12-01 (mid-quarter check-in)
+**Last Updated**: 2026-01-02 (reviewed during increment 0031 planning)
+**Next Review**: 2026-12-01 (mid-quarter check-in)
