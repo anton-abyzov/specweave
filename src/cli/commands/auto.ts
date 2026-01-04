@@ -17,6 +17,7 @@ import * as fs from 'fs';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { SessionStateManager } from '../../core/auto/session-state.js';
+import { CompletionCondition } from '../../core/auto/types.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
 
 export interface AutoCommandOptions {
@@ -34,6 +35,15 @@ export interface AutoCommandOptions {
   y?: boolean;
   tdd?: boolean;
   strict?: boolean;
+  // Completion condition flags
+  build?: boolean;
+  tests?: boolean;
+  e2e?: boolean;
+  lint?: boolean;
+  types?: boolean;
+  cov?: string;
+  e2eCov?: string;
+  cmd?: string;
 }
 
 export function createAutoCommand(): Command {
@@ -54,6 +64,15 @@ export function createAutoCommand(): Command {
     .option('-y', 'Alias for --yes')
     .option('--tdd', 'Enable TDD strict mode - ALL tests must pass')
     .option('--strict', 'Alias for --tdd')
+    // Completion condition flags (v0.4.0+)
+    .option('--build', 'Build must pass before completion')
+    .option('--tests', 'Tests must pass before completion (unit + integration)')
+    .option('--e2e', 'E2E tests must pass before completion')
+    .option('--lint', 'Linting must pass before completion')
+    .option('--types', 'Type-checking must pass before completion')
+    .option('--cov <n>', 'Code coverage must meet threshold (%)', '80')
+    .option('--e2e-cov <n>', 'E2E coverage must meet threshold (%)', '70')
+    .option('--cmd <command>', 'Custom command must pass before completion')
     .action(async (incrementIds: string[], options: AutoCommandOptions) => {
       const projectPath = process.cwd();
 
@@ -109,6 +128,77 @@ async function handleAutoCommand(
   const prompt = options.prompt;
   const autoApprove = options.yes || options.y || false;
   const tddMode = options.tdd || options.strict || false;
+
+  // Parse completion conditions (v0.4.0+)
+  const completionConditions: CompletionCondition[] = [];
+
+  if (options.build) {
+    completionConditions.push({
+      type: 'build',
+      autoHeal: true,
+      maxRetries: 3,
+    });
+  }
+
+  if (options.tests || tddMode) {
+    completionConditions.push({
+      type: 'tests',
+      autoHeal: false, // Tests must be fixed manually
+    });
+  }
+
+  if (options.e2e) {
+    completionConditions.push({
+      type: 'e2e',
+      autoHeal: false, // E2E tests must be fixed manually
+    });
+  }
+
+  if (options.lint) {
+    completionConditions.push({
+      type: 'lint',
+      autoHeal: true,
+      maxRetries: 3,
+    });
+  }
+
+  if (options.types) {
+    completionConditions.push({
+      type: 'types',
+      autoHeal: true,
+      maxRetries: 3,
+    });
+  }
+
+  if (options.cov) {
+    const threshold = parseInt(options.cov, 10);
+    if (threshold > 0 && threshold <= 100) {
+      completionConditions.push({
+        type: 'coverage',
+        threshold,
+        autoHeal: false,
+      });
+    }
+  }
+
+  if (options.e2eCov) {
+    const threshold = parseInt(options.e2eCov, 10);
+    if (threshold > 0 && threshold <= 100) {
+      completionConditions.push({
+        type: 'e2e-coverage',
+        threshold,
+        autoHeal: false,
+      });
+    }
+  }
+
+  if (options.cmd) {
+    completionConditions.push({
+      type: 'command',
+      cmd: options.cmd,
+      autoHeal: false, // Custom commands must pass as-is
+    });
+  }
 
   // Parse increment IDs from args or --increments option
   let finalIncrementIds = [...incrementIds];
@@ -210,7 +300,12 @@ async function handleAutoCommand(
 
   // Add TDD mode to session if enabled
   if (tddMode) {
-    (session as any).tddMode = true;
+    session.tddMode = true;
+  }
+
+  // Add completion conditions if provided (v0.4.0+)
+  if (completionConditions.length > 0) {
+    session.completionConditions = completionConditions;
   }
 
   // Add skip gates if provided
@@ -258,6 +353,46 @@ async function handleAutoCommand(
     console.log(chalk.red('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
   }
 
+  // Display completion conditions (v0.4.0+)
+  if (completionConditions.length > 0) {
+    console.log('');
+    console.log(chalk.yellow('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+    console.log(chalk.yellow('⚙️  COMPLETION CONDITIONS'));
+    console.log(chalk.yellow('   Auto mode will NOT stop until ALL conditions pass:'));
+    console.log('');
+    for (const condition of completionConditions) {
+      let description = '';
+      switch (condition.type) {
+        case 'build':
+          description = '🔨 Build must pass (auto-heal enabled, max 3 retries)';
+          break;
+        case 'tests':
+          description = '✅ Tests must pass (unit + integration)';
+          break;
+        case 'e2e':
+          description = '🎭 E2E tests must pass';
+          break;
+        case 'lint':
+          description = '🧹 Linting must pass (auto-heal enabled, max 3 retries)';
+          break;
+        case 'types':
+          description = '📘 Type-checking must pass (auto-heal enabled, max 3 retries)';
+          break;
+        case 'coverage':
+          description = `📊 Code coverage must be ≥${condition.threshold}%`;
+          break;
+        case 'e2e-coverage':
+          description = `🎯 E2E coverage must be ≥${condition.threshold}%`;
+          break;
+        case 'command':
+          description = `⚡ Command must pass: ${condition.cmd}`;
+          break;
+      }
+      console.log('   • ' + description);
+    }
+    console.log(chalk.yellow('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+  }
+
   console.log('');
   console.log(`Increment Queue (${finalIncrementIds.length}):`);
   for (const incId of finalIncrementIds) {
@@ -270,6 +405,9 @@ async function handleAutoCommand(
   console.log('  • All tasks complete AND tests pass');
   if (tddMode) {
     console.log(chalk.red('  • (TDD MODE: 100% tests GREEN required)'));
+  }
+  if (completionConditions.length > 0) {
+    console.log(chalk.yellow(`  • ALL ${completionConditions.length} completion conditions pass`));
   }
   console.log(`  • Max iterations (${maxIterations}) reached`);
   if (maxHours) {
