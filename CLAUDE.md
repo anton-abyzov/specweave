@@ -1017,6 +1017,8 @@ For **contributors to SpecWeave itself** (not users).
 
 ## Marketplace Installation (CRITICAL)
 
+### For SpecWeave Contributors (Development)
+
 **ALWAYS use GitHub marketplace mode. NEVER use local symlinks or directory mode.**
 
 ```bash
@@ -1035,6 +1037,32 @@ bash scripts/refresh-marketplace.sh --github
 **Quick refresh & install all 24 plugins:**
 ```bash
 bash scripts/refresh-marketplace.sh  # Defaults to --github
+```
+
+### For End Users (Production)
+
+**Users install SpecWeave globally and use CLI commands:**
+
+```bash
+# Install SpecWeave globally
+npm install -g specweave
+
+# Initialize project (first time)
+specweave init .
+
+# Update marketplace plugins (gets latest from GitHub)
+specweave refresh-marketplace
+
+# Update instruction files (CLAUDE.md, AGENTS.md)
+specweave update-instructions
+```
+
+**After marketplace updates**: Restart Claude Code for changes to take effect.
+
+**Verify installation**:
+```bash
+specweave --version              # Check SpecWeave version
+/plugin list --installed         # In Claude Code - check plugins loaded
 ```
 
 ---

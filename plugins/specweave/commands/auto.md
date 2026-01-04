@@ -358,43 +358,24 @@ Pure Ralph Wiggum behavior:
 
 ## 🔔 Sound Notifications (NEW in v2.6!)
 
-**Auto mode now plays sounds when Claude stops working, so you know when to check back!**
+**Auto mode plays a satisfying sound when work completes successfully!**
 
-### When Sounds Play
+### When Sound Plays
 
 | Event | Sound | Platforms | Meaning |
 |-------|-------|-----------|---------|
-| **Session Complete (Success)** | Glass.aiff (macOS)<br>complete.oga (Linux)<br>Windows Notify (Windows) | All | ✅ All tasks done, tests passing |
-| **Session Stopped (Needs Attention)** | Ping.aiff (macOS)<br>bell.oga (Linux)<br>System beep (Windows) | All | ⚠️ Claude stopped, check why |
-| **Block (Continuing)** | Ping.aiff (macOS)<br>bell.oga (Linux)<br>System beep (Windows) | All | 🔄 Session continuing (informational) |
+| **Session Complete (Success)** ✅ | Glass.aiff (macOS)<br>complete.oga (Linux)<br>Windows Notify (Windows) | All | All tasks done, tests passing - work finished! |
+
+**Sound plays ONLY on complete success** - when all tasks are done AND all tests pass. This way you know when to check back without being interrupted during ongoing work.
 
 ### Cross-Platform Support
 
-**macOS** (default):
-- Uses `afplay` with system sounds
-- Glass.aiff for success (satisfying chime)
-- Ping.aiff for attention (gentle alert)
+The sound notification works automatically on:
+- **macOS**: Glass.aiff (satisfying chime)
+- **Linux**: PulseAudio/ALSA/speaker-test fallbacks
+- **Windows**: PowerShell beeps
 
-**Linux**:
-- Tries multiple sound systems automatically:
-  1. PulseAudio (`paplay`) - most common on modern Linux
-  2. ALSA (`aplay`) - fallback for older systems
-  3. `speaker-test` - last resort system beep
-
-**Windows** (Git Bash, WSL, Cygwin):
-- PowerShell beeps via `[console]::beep`
-- Windows system notification sounds where available
-
-### Silent Systems
-
-If your system doesn't have sound support or you prefer silence:
-- Sounds fail gracefully (no errors)
-- All sound commands use `2>/dev/null &` to avoid blocking
-- Auto mode continues normally even if sounds can't play
-
-### For Subagents
-
-Sound notifications ONLY play for the **main orchestrator agent**, not for spawned subagents. This prevents notification spam when using specialized agents.
+Sounds fail gracefully on systems without audio support.
 
 ## 🔧 v2.3 Per-Agent Stop Hook Behavior (NEW!)
 
