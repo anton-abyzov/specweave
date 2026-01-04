@@ -692,14 +692,13 @@ approve() {
             echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 
             # ================================================================
-            # SOUND NOTIFICATION ON APPROVE (v2.6 - Enhanced)
-            # Play sound when auto session stops (success OR needs attention)
+            # SOUND NOTIFICATION ON SUCCESS (v2.6)
+            # Play sound ONLY when session completes successfully
+            # This lets users know they can check back - work is done!
             # Cross-platform support via helper function
             # ================================================================
             if [ "$is_success" = "true" ]; then
                 play_notification_sound "success"
-            else
-                play_notification_sound "attention"
             fi
         else
             # Subagent stopping - this is a RETURN TO PARENT
@@ -792,15 +791,8 @@ block() {
         echo ""
     } >&2
 
-    # ================================================================
-    # SOUND NOTIFICATION ON BLOCK (NEW - v2.6)
-    # Play notification sound when stopping Claude (needs attention)
-    # Cross-platform support via helper function
-    # Only play for orchestrator (main session), not subagents
-    # ================================================================
-    if [ "$agent_type" = "orchestrator" ]; then
-        play_notification_sound "attention"
-    fi
+    # NOTE: No sound notification on block - sounds only play on SUCCESS
+    # When Claude is continuing work, user doesn't need to be notified
 
     if [ -n "$system_message" ]; then
         # Escape special characters for JSON
