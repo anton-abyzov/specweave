@@ -30,6 +30,30 @@ export interface HumanGateRequest {
   context?: string;
 }
 
+/**
+ * Completion condition types for auto mode
+ * Determines when auto mode can complete
+ */
+export type CompletionConditionType =
+  | 'build'          // Build must pass
+  | 'tests'          // Tests must pass (unit + integration)
+  | 'e2e'            // E2E tests must pass
+  | 'lint'           // Linting must pass
+  | 'types'          // Type-checking must pass
+  | 'coverage'       // Code coverage must meet threshold
+  | 'e2e-coverage'   // E2E coverage must meet threshold
+  | 'command';       // Custom command must pass
+
+export interface CompletionCondition {
+  type: CompletionConditionType;
+  threshold?: number;      // For coverage conditions (percentage)
+  cmd?: string;            // For custom command conditions
+  autoHeal?: boolean;      // Auto-fix and retry on failure (default: true for build/lint, false for tests)
+  maxRetries?: number;     // Max retry attempts for auto-heal (default: 3)
+  framework?: string;      // Detected framework (npm, pytest, go, cargo, etc.)
+  detectedCommand?: string; // Auto-detected command to run
+}
+
 export interface AutoSession {
   sessionId: string;
   status: AutoSessionStatus;
@@ -47,6 +71,8 @@ export interface AutoSession {
   lastActivity: string;
   endReason?: string;
   simple?: boolean; // Pure Ralph mode - no session state, queues, circuit breakers
+  completionConditions?: CompletionCondition[]; // Conditions that must be met before auto mode can complete
+  tddMode?: boolean; // Legacy TDD flag (equivalent to --tests flag)
 }
 
 export interface AutoConfig {

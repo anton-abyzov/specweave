@@ -43,12 +43,232 @@ description: Start autonomous execution session with stop hook integration. Work
 | `--prompt "text"` | Analyze prompt and create increments (intelligent chunking) | None |
 | `--yes`, `-y` | Auto-approve increment plan (skip user approval) | false |
 | `--tdd`, `--strict` | **NEW v2.2**: Enable TDD strict mode - ALL tests must pass | false |
+| **`--build`** | **NEW v0.4.0**: Build must pass before completion (auto-heal: 3 retries) | false |
+| **`--tests`** | **NEW v0.4.0**: Tests must pass before completion (unit + integration) | false |
+| **`--e2e`** | **NEW v0.4.0**: E2E tests must pass before completion | false |
+| **`--lint`** | **NEW v0.4.0**: Linting must pass before completion (auto-heal: 3 retries) | false |
+| **`--types`** | **NEW v0.4.0**: Type-checking must pass before completion (auto-heal: 3 retries) | false |
+| **`--cov <n>`** | **NEW v0.4.0**: Code coverage must meet threshold (%) | 80 |
+| **`--e2e-cov <n>`** | **NEW v0.4.0**: E2E coverage must meet threshold (%) | 70 |
+| **`--cmd "<command>"`** | **NEW v0.4.0**: Custom command must pass before completion | None |
 
 :::warning v2.3 - Iteration limits are SAFETY NETS
 The primary completion criteria is **tests passing + tasks complete**. Iteration limits (2500 iterations, 600 hours) are backup safety nets. Per the Ralph Wiggum pattern, completion should be detected through **external verification** (test results), not self-assessment.
 
 **IMPORTANT: Stop hook runs PER AGENT** - Each spawned subagent gets its own hook invocation. Iteration count is shared via session file, reflecting main agent loops.
 :::
+
+## Completion Conditions (v0.4.0+)
+
+**Auto mode will NOT stop until ALL specified conditions pass.**
+
+### What Are Completion Conditions?
+
+Completion conditions are **quality gates** that prevent auto mode from completing until specific checks pass:
+
+- **`--build`**: Build must succeed (auto-heal enabled, max 3 retries)
+- **`--tests`**: All tests must pass (unit + integration tests)
+- **`--e2e`**: E2E tests must pass (Playwright, Cypress, etc.)
+- **`--lint`**: Linting must pass (ESLint, Black, Clippy, etc.)
+- **`--types`**: Type-checking must pass (TypeScript, mypy, etc.)
+- **`--cov N`**: Code coverage must meet threshold (e.g., `--cov 80` = 80% minimum)
+- **`--e2e-cov N`**: E2E coverage must meet threshold
+- **`--cmd "..."`**: Custom command must pass (e.g., `--cmd "make verify"`)
+
+### Auto-Heal vs Manual Fix
+
+| Condition | Auto-Heal? | Behavior |
+|-----------|-----------|----------|
+| `--build` | ✅ Yes (3 retries) | Build failures auto-fixed by LLM |
+| `--lint` | ✅ Yes (3 retries) | Lint errors auto-fixed by LLM |
+| `--types` | ✅ Yes (3 retries) | Type errors auto-fixed by LLM |
+| `--tests` | ❌ No | Tests must be fixed manually by LLM |
+| `--e2e` | ❌ No | E2E tests must be fixed manually |
+| `--cov` | ❌ No | Must write more tests to meet threshold |
+| `--cmd` | ❌ No | Custom commands run as-is |
+
+**Auto-heal** means the hook will:
+1. Run the command
+2. If it fails, ask LLM to fix the issue
+3. Retry up to 3 times
+4. Block completion if still failing after 3 attempts
+
+**Manual fix** means:
+1. Run the command
+2. If it fails, BLOCK immediately
+3. LLM must fix the issue manually
+4. Re-run to validate
+
+### Framework Auto-Detection
+
+Commands are auto-detected based on your project structure:
+
+**TypeScript/Node:**
+```bash
+# Detected from package.json, jest.config.js, vitest.config.ts
+build: npm run build
+tests: npm test OR npx vitest run
+e2e: npx playwright test OR npx cypress run
+lint: npm run lint OR npx eslint .
+types: npx tsc --noEmit
+```
+
+**Python:**
+```bash
+# Detected from requirements.txt, pyproject.toml, pytest.ini
+build: python -m build
+tests: pytest
+e2e: (none)
+lint: black --check . OR flake8
+types: mypy .
+```
+
+**Go:**
+```bash
+# Detected from go.mod
+build: go build ./...
+tests: go test ./...
+lint: golangci-lint run
+```
+
+**Rust:**
+```bash
+# Detected from Cargo.toml
+build: cargo build
+tests: cargo test
+lint: cargo clippy
+```
+
+### Example Usage
+
+**Basic - Build + Tests:**
+```bash
+/sw:auto --build --tests
+# → Auto mode will NOT stop until build passes AND all tests pass
+```
+
+**Strict Quality:**
+```bash
+/sw:auto --build --tests --e2e --lint --types --cov 80
+# → ALL conditions must pass:
+#   ✅ Build succeeds
+#   ✅ Tests pass
+#   ✅ E2E tests pass
+#   ✅ Lint passes
+#   ✅ Type-check passes
+#   ✅ Coverage ≥80%
+```
+
+**Custom Command:**
+```bash
+/sw:auto --cmd "make verify"
+# → Auto mode will run `make verify` before completion
+```
+
+**Combined with Other Flags:**
+```bash
+/sw:auto --prompt "Build auth system" --yes --build --tests --cov 85
+# → Intelligent chunking + auto-approve + quality gates
+```
+
+### Session Output
+
+When you start auto mode with completion conditions, you'll see:
+
+```
+🚀 Auto Session Started
+
+Session ID: auto-2026-01-04-abc123
+Max Iterations: 2500
+Max Hours: 600
+Simple Mode: false
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚙️  COMPLETION CONDITIONS
+   Auto mode will NOT stop until ALL conditions pass:
+
+   • 🔨 Build must pass (auto-heal enabled, max 3 retries)
+   • ✅ Tests must pass (unit + integration)
+   • 🎭 E2E tests must pass
+   • 📊 Code coverage must be ≥80%
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Increment Queue (1):
+  • 0001-auth-system
+
+Current: 0001-auth-system
+
+The session will continue until:
+  • All tasks complete AND tests pass
+  • ALL 4 completion conditions pass
+  • Max iterations (2500) reached
+  • Max hours (600) exceeded
+  • You run specweave cancel-auto
+  • A human gate requires approval
+```
+
+### Stop Hook Validation
+
+The stop hook (`stop-auto.sh`) validates completion conditions:
+
+1. **Before allowing completion**, the hook runs:
+   ```bash
+   plugins/specweave/hooks/validate-completion-conditions.sh
+   ```
+
+2. **For each condition**:
+   - Auto-detects the framework-specific command
+   - Runs the command
+   - Parses the output
+   - If auto-heal enabled, retries on failure (max 3x)
+   - BLOCKS completion if ANY condition fails
+
+3. **Only when ALL conditions pass**:
+   - Hook approves completion
+   - Auto mode stops successfully
+   - Celebration sound plays 🎉
+
+### Per-Increment Override
+
+You can override completion conditions per increment in `metadata.json`:
+
+```json
+{
+  "increment": "0001-auth-system",
+  "autoCompletion": {
+    "conditions": [
+      { "type": "build" },
+      { "type": "tests" },
+      { "type": "coverage", "threshold": 90 }
+    ],
+    "override": true
+  }
+}
+```
+
+When `override: true`, the increment-specific conditions replace the session-level conditions.
+
+### Troubleshooting
+
+**Issue**: "Build command not detected"
+- **Fix**: Add `scripts.build` to `package.json` OR use `--cmd "your-build-cmd"`
+
+**Issue**: "Tests pass but coverage below threshold"
+- **Fix**: Write more tests to cover untested code paths
+
+**Issue**: "Auto-heal keeps retrying but failing"
+- **Fix**: After 3 retries, the hook will BLOCK. Fix the issue manually, then resume.
+
+**Issue**: "E2E tests not detected"
+- **Fix**: Ensure `playwright.config.ts` or `cypress.config.js` exists
+
+### Best Practices
+
+1. **Start Simple**: Use `--build --tests` for basic quality gates
+2. **Add Coverage Gradually**: Start with `--cov 70`, increase to 80-90 over time
+3. **Use Auto-Heal**: Let build/lint/types auto-fix (saves manual work)
+4. **Don't Skip E2E**: Use `--e2e` for user-facing features
+5. **Custom Commands**: Use `--cmd` for project-specific checks (e.g., security scans)
 
 ## Intelligent Increment Creation (NEW!)
 
@@ -1159,10 +1379,12 @@ When this command is invoked:
 **Execute this IMMEDIATELY when /sw:auto is invoked:**
 
 ```bash
-bash plugins/specweave/scripts/setup-auto.sh [args]
+specweave auto [INCREMENT_IDS...] [OPTIONS]
 ```
 
-Pass any arguments from the user (increment IDs, --max-iterations, --simple, etc.)
+**IMPORTANT**: The command is executed via the globally-installed `specweave` CLI, NOT bash scripts. This ensures cross-platform compatibility (Windows, macOS, Linux).
+
+Pass any arguments from the user (increment IDs, completion conditions, --max-iterations, --simple, etc.)
 
 **Handle exit codes:**
 - `0`: Success, session created → proceed to Step 3
@@ -1190,9 +1412,9 @@ Pass any arguments from the user (increment IDs, --max-iterations, --simple, etc
    ```bash
    # User said: "work on the login feature"
    # Found: .specweave/increments/0002-user-login-system (status: planned)
-   # Action: Activate it and run setup-auto.sh again with 0002
+   # Action: Activate it and run specweave auto with 0002
    /sw:resume 0002
-   bash plugins/specweave/scripts/setup-auto.sh 0002 [other-args]
+   specweave auto 0002 [other-args]
    ```
 
    **B. Extend existing increment:**
@@ -1201,7 +1423,7 @@ Pass any arguments from the user (increment IDs, --max-iterations, --simple, etc
    # Found: .specweave/increments/0001-authentication (status: active, incomplete)
    # Action: Add tasks to existing increment, use it for auto mode
    # Edit tasks.md to add new tasks
-   bash plugins/specweave/scripts/setup-auto.sh 0001 [other-args]
+   specweave auto 0001 [other-args]
    ```
 
    **C. Create new increment(s):**
@@ -1210,8 +1432,8 @@ Pass any arguments from the user (increment IDs, --max-iterations, --simple, etc
    # No matching increments found
    # Action: Create new increment via /sw:increment
    /sw:increment "Payment integration with Stripe - support card payments, webhooks, and subscription management"
-   # Then run setup-auto.sh with the new increment ID
-   bash plugins/specweave/scripts/setup-auto.sh 0003-payment-integration [other-args]
+   # Then run specweave auto with the new increment ID
+   specweave auto 0003-payment-integration [other-args]
    ```
 
    **D. Multiple increments:**
@@ -1219,7 +1441,7 @@ Pass any arguments from the user (increment IDs, --max-iterations, --simple, etc
    # User said: "finish all pending features"
    # Found: multiple backlog/planned increments
    # Action: Create queue
-   bash plugins/specweave/scripts/setup-auto.sh 0002-dashboard 0003-reports 0004-export [other-args]
+   specweave auto 0002-dashboard 0003-reports 0004-export [other-args]
    ```
 
    **E. Ask user (if ambiguous):**
