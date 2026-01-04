@@ -80,7 +80,7 @@ describe('stop-auto.sh hook', () => {
   });
 
   describe('approve() Function - Sound Integration', () => {
-    it('should call play_notification_sound in approve()', async () => {
+    it('should call play_notification_sound ONLY on success', async () => {
       const hookContent = await fs.readFile(hookPath, 'utf-8');
 
       // Find approve() function
@@ -89,13 +89,14 @@ describe('stop-auto.sh hook', () => {
 
       const approveFn = approveMatch![0];
 
-      // Should call play_notification_sound
+      // Should call play_notification_sound on success
       expect(approveFn).toContain('play_notification_sound');
-
-      // Should distinguish success vs attention
       expect(approveFn).toMatch(/if \[ "\$is_success" = "true" \]/);
       expect(approveFn).toContain('play_notification_sound "success"');
-      expect(approveFn).toContain('play_notification_sound "attention"');
+
+      // Should NOT play sound on non-success (count occurrences)
+      const soundCalls = (approveFn.match(/play_notification_sound/g) || []).length;
+      expect(soundCalls).toBe(1); // Only one call - on success
     });
 
     it('should only play sound for orchestrator, not subagents', async () => {
@@ -111,7 +112,7 @@ describe('stop-auto.sh hook', () => {
   });
 
   describe('block() Function - Sound Integration', () => {
-    it('should call play_notification_sound in block()', async () => {
+    it('should NOT play sound in block() (success-only policy)', async () => {
       const hookContent = await fs.readFile(hookPath, 'utf-8');
 
       // Find block() function (after approve)
@@ -120,18 +121,18 @@ describe('stop-auto.sh hook', () => {
 
       const blockFn = blockMatch![0];
 
-      // Should call play_notification_sound with "attention"
-      expect(blockFn).toContain('play_notification_sound "attention"');
+      // Should NOT call play_notification_sound (block = continuing work)
+      expect(blockFn).not.toContain('play_notification_sound');
     });
 
-    it('should only play sound for orchestrator in block()', async () => {
+    it('should have comment explaining no sound on block', async () => {
       const hookContent = await fs.readFile(hookPath, 'utf-8');
 
       const blockMatch = hookContent.match(/^block\(\) \{([\s\S]*?)^}/m);
       const blockFn = blockMatch![0];
 
-      // Should check agent type
-      expect(blockFn).toMatch(/if \[ "\$agent_type" = "orchestrator" \]/);
+      // Should have explanatory comment
+      expect(blockFn).toMatch(/NOTE:.*No sound.*SUCCESS/i);
     });
   });
 
