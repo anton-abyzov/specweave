@@ -117,6 +117,36 @@ Core hooks automate SpecWeave's fundamental workflows:
 
 ---
 
+### 5. `stop-auto.sh` (Auto Mode)
+**Triggers**: When Claude tries to exit during autonomous execution (`/sw:auto`)
+
+**Actions**:
+1. Checks if all tasks are complete
+2. Validates test execution (unit + E2E)
+3. Verifies completion criteria met
+4. Blocks exit if work incomplete
+5. Re-feeds prompt to continue iteration
+
+**Configuration**: Registered in `hooks/hooks.json`:
+```json
+{
+  "hooks": {
+    "Stop": [{
+      "hooks": [{
+        "type": "command",
+        "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-auto.sh"
+      }]
+    }]
+  }
+}
+```
+
+**Use case**: Enables autonomous execution loops. Claude works until ALL tasks complete and tests pass, then gracefully exits.
+
+**See**: `/sw:auto` command documentation for full auto mode details.
+
+---
+
 ## How Hooks Work (Claude Code Native)
 
 **CRITICAL**: Hooks are **NOT copied** to `.claude/hooks/`. They stay in `plugins/specweave/hooks/` and Claude Code discovers them automatically.
