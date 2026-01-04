@@ -475,7 +475,8 @@ detect_subagent_activity() {
     fi
 
     # Count Task tool invocations
-    local task_count=$(grep -c 'Task tool\|subagent_type\|<invoke name="Task">' "$transcript" 2>/dev/null || echo "0")
+    local task_count
+    task_count=$(grep -c 'Task tool\|subagent_type\|<invoke name="Task">' "$transcript" 2>/dev/null) || task_count=0
 
     # Extract unique agent types
     local agent_types=$(grep -oE 'subagent_type["\x27]*:\s*["\x27]?[a-zA-Z0-9_:-]+' "$transcript" 2>/dev/null | \
@@ -2222,14 +2223,14 @@ Continue with /sw:do and add missing E2E tests."
                     > "$SESSION_FILE"
 
                 # Build detailed completion reason with test breakdown (NEW - v2.5)
-                local completion_reason="All tasks completed"
-                local test_breakdown=$(get_test_type_breakdown "$TRANSCRIPT_PATH")
+                completion_reason="All tasks completed"
+                test_breakdown=$(get_test_type_breakdown "$TRANSCRIPT_PATH")
                 if [ -n "$test_breakdown" ] && [ "$test_breakdown" != "{}" ]; then
-                    local unit_p=$(echo "$test_breakdown" | jq -r '.unit.passed // 0')
-                    local int_p=$(echo "$test_breakdown" | jq -r '.integration.passed // 0')
-                    local e2e_p=$(echo "$test_breakdown" | jq -r '.e2e.passed // 0')
+                    unit_p=$(echo "$test_breakdown" | jq -r '.unit.passed // 0')
+                    int_p=$(echo "$test_breakdown" | jq -r '.integration.passed // 0')
+                    e2e_p=$(echo "$test_breakdown" | jq -r '.e2e.passed // 0')
 
-                    local test_details=""
+                    test_details=""
                     [ "$unit_p" -gt 0 ] && test_details="${test_details}${unit_p} unit"
                     [ "$int_p" -gt 0 ] && test_details="${test_details}${test_details:+, }${int_p} integration"
                     [ "$e2e_p" -gt 0 ] && test_details="${test_details}${test_details:+, }${e2e_p} E2E"
