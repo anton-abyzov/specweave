@@ -7,4 +7,20 @@ allowed-tools: Bash(bash:*)
 
 # Background Jobs Monitor
 
-!`bash "${CLAUDE_PLUGIN_ROOT}/scripts/read-jobs.sh" $ARGUMENTS`
+**Show current work status and background jobs.**
+
+You are helping the user check the status of their SpecWeave increments and background jobs.
+
+## Execution
+
+When this command is invoked, immediately run:
+
+```bash
+bash plugins/specweave/scripts/read-jobs.sh $ARGUMENTS
+```
+
+**IMPORTANT**:
+- Use the Bash tool to execute the script directly
+- Pass through any arguments the user provided (--all, --id, etc.)
+- The script will handle all formatting and display
+- Do NOT add any explanation before or after - just run the script and show its output
