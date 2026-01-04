@@ -2,9 +2,12 @@
   "id": "0098-umbrella-workitem-matching",
   "title": "Umbrella Work Item Matching & Job Integration",
   "type": "feature",
-  "status": "active",
+  "status": "completed",
   "priority": "high",
   "createdAt": "2024-12-03T00:00:00.000Z",
   "updatedAt": "2024-12-03T00:00:00.000Z",
-  "dependsOn": ["0097-umbrella-module-detection"]
+  "dependsOn": [
+    "0097-umbrella-module-detection"
+  ],
+  "completedAt": "2026-01-04T09:06:07Z"
 }
