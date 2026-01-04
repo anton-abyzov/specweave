@@ -2,7 +2,7 @@
 
 **Purpose**: Lightweight skill manifest for lazy loading. Load SKILL.md only when triggers match.
 
-**Total Skills**: 28 | **Last Updated**: 2025-12-30
+**Total Skills**: 29 | **Last Updated**: 2026-01-04
 
 ---
 
@@ -69,6 +69,7 @@
 
 | Skill | Triggers | Location |
 |-------|----------|----------|
+| **deploy-router** | deploy, vercel vs cloudflare, where to deploy, cloudflare workers, cloudflare pages, vercel deployment, edge deployment, SSR deployment, static site deployment, which hosting, deployment recommendation | `../../specweave-infrastructure/skills/deploy-router/SKILL.md` |
 | **serverless-recommender** | serverless, AWS Lambda, Azure Functions, GCP Cloud Functions, Firebase, Supabase, which platform, serverless cost | `skills/serverless-recommender/SKILL.md` |
 | **compliance-architecture** | compliance, HIPAA, SOC2, SOC 2, GDPR, PCI-DSS, regulatory, healthcare data, payment card, audit, security standards | `skills/compliance-architecture/SKILL.md` |
 | **service-connect** | connect database, supabase connection, cloudflare workers, wrangler, postgres connection, mongodb atlas, redis cache, MCP setup, service integration, connection failed, IPv6, database setup | `skills/service-connect/SKILL.md` |
@@ -86,6 +87,7 @@
 | "Sync to GitHub/JIRA" | `external-sync-wizard` |
 | "Archive old increments" | `archive-increments` |
 | "Bug/issue/broken" | `smart-reopen-detector` |
+| "Where to deploy?" / "Vercel vs Cloudflare" | `deploy-router` |
 | "AWS vs Azure vs GCP" | `serverless-recommender` |
 | "SOC2/HIPAA compliance" | `compliance-architecture` |
 | "Review my code" | `code-reviewer` |
