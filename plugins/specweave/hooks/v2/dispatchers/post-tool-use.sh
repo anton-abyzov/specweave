@@ -42,6 +42,8 @@ while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
 done
 [[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
 
+STATE_DIR="$PROJECT_ROOT/.specweave/state"
+
 # ============================================================================
 # LOGGING INFRASTRUCTURE
 # ============================================================================
@@ -155,6 +157,46 @@ safe_run_sync() {
 }
 
 # ============================================================================
+# TASK COMPLETION SOUND (plays when task marked [x])
+# ============================================================================
+
+play_task_completion_sound() {
+  local tasks_file="$1"
+  local state_file="$STATE_DIR/.last-task-completion"
+
+  # Extract current completion count
+  local current_count=$(grep -c '\*\*Status\*\*:.*\[x\]' "$tasks_file" 2>/dev/null || echo "0")
+
+  # Read previous count
+  local previous_count="0"
+  if [[ -f "$state_file" ]]; then
+    previous_count=$(cat "$state_file" 2>/dev/null || echo "0")
+  fi
+
+  # If count increased, a task was just completed
+  if [[ "$current_count" -gt "$previous_count" ]]; then
+    # Save new count
+    echo "$current_count" > "$state_file" 2>/dev/null
+
+    # Play completion sound (background, never blocks)
+    (
+      if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS - use Glass.aiff for pleasant completion sound
+        afplay /System/Library/Sounds/Glass.aiff 2>/dev/null &
+      elif command -v paplay >/dev/null 2>&1; then
+        # Linux with PulseAudio
+        paplay /usr/share/sounds/freedesktop/stereo/complete.oga 2>/dev/null &
+      elif command -v aplay >/dev/null 2>&1; then
+        # Linux with ALSA
+        aplay /usr/share/sounds/alsa/Front_Center.wav 2>/dev/null &
+      fi
+    ) &
+
+    log_debug "Task completion sound played (count: $previous_count → $current_count)"
+  fi
+}
+
+# ============================================================================
 # INPUT PARSING (with safe fallbacks)
 # ============================================================================
 
@@ -217,6 +259,9 @@ case "$FILE_PATH" in
         log_debug "Running task-ac-sync guard"
         safe_run_sync "$SYNC_SCRIPT" "task-ac-sync" "$INPUT"
       fi
+
+      # Play completion sound if task was marked complete (v1.0.77+)
+      play_task_completion_sound "$FILE_PATH"
     fi
 
     # Tasks or spec changed -> check for US completion (background)
