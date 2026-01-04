@@ -407,6 +407,71 @@ program
     console.log(statusLine);
   });
 
+// Auto mode commands - Autonomous execution with Ralph Wiggum pattern
+program
+  .command('auto [incrementIds...]')
+  .description('Start autonomous execution session (Ralph Wiggum pattern + stop hooks)')
+  .option('--max-iterations <n>', 'Maximum iterations (safety net)', '2500')
+  .option('--max-hours <n>', 'Maximum hours to run', '600')
+  .option('--simple', 'Pure Ralph mode (minimal context)')
+  .option('--dry-run', 'Preview without starting')
+  .option('--increments <ids>', 'Comma-separated increment IDs')
+  .option('--all-backlog', 'Process all backlog items')
+  .option('--skip-gates <gates>', 'Pre-approve specific gates (comma-separated)')
+  .option('--no-increment', 'Skip auto-creation (require existing increments)')
+  .option('--no-inc', 'Alias for --no-increment')
+  .option('--prompt <text>', 'Analyze prompt and create increments (intelligent chunking)')
+  .option('--yes', 'Auto-approve increment plan (skip user approval)')
+  .option('-y', 'Alias for --yes')
+  .option('--tdd', 'Enable TDD strict mode - ALL tests must pass')
+  .option('--strict', 'Alias for --tdd')
+  .action(async (incrementIds, options) => {
+    const { createAutoCommand } = await import('../dist/src/cli/commands/auto.js');
+    const autoCmd = createAutoCommand();
+    // Re-parse with increment IDs
+    const args = ['node', 'auto', ...incrementIds];
+    // Add options
+    if (options.maxIterations) args.push('--max-iterations', options.maxIterations);
+    if (options.maxHours) args.push('--max-hours', options.maxHours);
+    if (options.simple) args.push('--simple');
+    if (options.dryRun) args.push('--dry-run');
+    if (options.increments) args.push('--increments', options.increments);
+    if (options.allBacklog) args.push('--all-backlog');
+    if (options.skipGates) args.push('--skip-gates', options.skipGates);
+    if (options.noIncrement) args.push('--no-increment');
+    if (options.noInc) args.push('--no-inc');
+    if (options.prompt) args.push('--prompt', options.prompt);
+    if (options.yes || options.y) args.push('--yes');
+    if (options.tdd || options.strict) args.push('--tdd');
+    await autoCmd.parseAsync(args, { from: 'user' });
+  });
+
+program
+  .command('auto-status')
+  .description('Check auto session status and progress')
+  .option('--verbose', 'Show detailed information')
+  .option('--json', 'Output as JSON')
+  .action(async (options) => {
+    const { createAutoStatusCommand } = await import('../dist/src/cli/commands/auto-status.js');
+    const statusCmd = createAutoStatusCommand();
+    const args = ['node', 'auto-status'];
+    if (options.verbose) args.push('--verbose');
+    if (options.json) args.push('--json');
+    await statusCmd.parseAsync(args, { from: 'user' });
+  });
+
+program
+  .command('cancel-auto')
+  .description('Cancel running auto session')
+  .option('--force', 'Force cancel without confirmation')
+  .action(async (options) => {
+    const { createCancelAutoCommand } = await import('../dist/src/cli/commands/cancel-auto.js');
+    const cancelCmd = createCancelAutoCommand();
+    const args = ['node', 'cancel-auto'];
+    if (options.force) args.push('--force');
+    await cancelCmd.parseAsync(args, { from: 'user' });
+  });
+
 // Update instructions command - Smart merge CLAUDE.md/AGENTS.md
 program
   .command('update-instructions')
