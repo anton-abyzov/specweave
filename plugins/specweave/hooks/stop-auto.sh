@@ -570,6 +570,54 @@ detect_command_timeout() {
     fi
 }
 
+# ================================================================
+# SOUND NOTIFICATION HELPER (v2.6)
+# Cross-platform sound notification for user awareness
+# ================================================================
+play_notification_sound() {
+    local sound_type="${1:-attention}"  # "success" or "attention"
+
+    # Detect OS and play appropriate sound
+    case "$(uname -s)" in
+        Darwin)
+            # macOS - use afplay with system sounds
+            if [ "$sound_type" = "success" ]; then
+                afplay /System/Library/Sounds/Glass.aiff 2>/dev/null &
+            else
+                afplay /System/Library/Sounds/Ping.aiff 2>/dev/null &
+            fi
+            ;;
+        Linux)
+            # Linux - try multiple sound systems (paplay, aplay, speaker-test)
+            if command -v paplay >/dev/null 2>&1; then
+                # PulseAudio (most common on modern Linux)
+                if [ "$sound_type" = "success" ]; then
+                    paplay /usr/share/sounds/freedesktop/stereo/complete.oga 2>/dev/null &
+                else
+                    paplay /usr/share/sounds/freedesktop/stereo/bell.oga 2>/dev/null &
+                fi
+            elif command -v aplay >/dev/null 2>&1; then
+                # ALSA fallback
+                aplay /usr/share/sounds/alsa/Front_Center.wav 2>/dev/null &
+            elif command -v speaker-test >/dev/null 2>&1; then
+                # Last resort - system beep
+                speaker-test -t sine -f 1000 -l 1 >/dev/null 2>&1 &
+            fi
+            ;;
+        MINGW*|MSYS*|CYGWIN*)
+            # Windows (Git Bash, WSL, Cygwin)
+            if command -v powershell.exe >/dev/null 2>&1; then
+                # Use PowerShell to play sound
+                if [ "$sound_type" = "success" ]; then
+                    powershell.exe -c "(New-Object Media.SoundPlayer 'C:\Windows\Media\Windows Notify System Generic.wav').PlaySync();" 2>/dev/null &
+                else
+                    powershell.exe -c "[console]::beep(800, 300)" 2>/dev/null &
+                fi
+            fi
+            ;;
+    esac
+}
+
 # Helper: Output approve decision
 # ALWAYS log why we're stopping for debugging
 # Enhanced v2.4: Agent-aware labeling with clear hierarchy
@@ -644,12 +692,14 @@ approve() {
             echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 
             # ================================================================
-            # SUCCESS SOUND NOTIFICATION (NEW - v2.5)
-            # Play a satisfying sound when auto session completes successfully
-            # Glass.aiff is a clean, satisfying completion sound on macOS
+            # SOUND NOTIFICATION ON APPROVE (v2.6 - Enhanced)
+            # Play sound when auto session stops (success OR needs attention)
+            # Cross-platform support via helper function
             # ================================================================
             if [ "$is_success" = "true" ]; then
-                afplay /System/Library/Sounds/Glass.aiff 2>/dev/null &
+                play_notification_sound "success"
+            else
+                play_notification_sound "attention"
             fi
         else
             # Subagent stopping - this is a RETURN TO PARENT
@@ -741,6 +791,16 @@ block() {
         fi
         echo ""
     } >&2
+
+    # ================================================================
+    # SOUND NOTIFICATION ON BLOCK (NEW - v2.6)
+    # Play notification sound when stopping Claude (needs attention)
+    # Cross-platform support via helper function
+    # Only play for orchestrator (main session), not subagents
+    # ================================================================
+    if [ "$agent_type" = "orchestrator" ]; then
+        play_notification_sound "attention"
+    fi
 
     if [ -n "$system_message" ]; then
         # Escape special characters for JSON
