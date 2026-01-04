@@ -13,14 +13,24 @@ You are helping the user check the status of their SpecWeave increments and back
 
 ## Execution
 
-When this command is invoked, immediately run:
+When this command is invoked, you MUST find and execute the script from the plugin cache.
+
+**Step 1: Locate the script**
 
 ```bash
-bash plugins/specweave/scripts/read-jobs.sh $ARGUMENTS
+# Find the installed plugin path
+PLUGIN_PATH=$(find ~/.claude/plugins/cache -name "read-jobs.sh" -path "*/specweave/sw/*/scripts/*" 2>/dev/null | head -1)
+```
+
+**Step 2: Execute the script**
+
+```bash
+bash "$PLUGIN_PATH" $ARGUMENTS
 ```
 
 **IMPORTANT**:
-- Use the Bash tool to execute the script directly
+- The script MUST be found in ~/.claude/plugins/cache/specweave/sw/
 - Pass through any arguments the user provided (--all, --id, etc.)
 - The script will handle all formatting and display
 - Do NOT add any explanation before or after - just run the script and show its output
+- If script not found, tell user to run: specweave refresh-marketplace
