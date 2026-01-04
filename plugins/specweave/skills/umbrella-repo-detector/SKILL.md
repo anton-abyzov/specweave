@@ -271,11 +271,24 @@ Use `/sw:save` to commit and push changes across all repos at once:
 ```
 
 **Features:**
+- **Auto-discovers nested repos** - Scans `repositories/`, `packages/`, `services/`, `apps/`, `libs/` for `.git` directories (up to 4 levels deep)
 - Auto-detects repos with changes
 - Sets up remotes if missing (prompts for URL or uses umbrella config)
 - Commits with same message to all repos
 - Pushes to origin
 - Skips repos with no changes
+
+**Auto-Discovery (No Config Required):**
+Even without umbrella config, `/sw:save` automatically finds all nested repos:
+```
+my-project/
+├── repositories/
+│   ├── frontend/.git    # ← Auto-discovered
+│   ├── backend/.git     # ← Auto-discovered
+│   └── shared/.git      # ← Auto-discovered
+└── .git                 # ← Parent repo included
+```
+All 4 repos will be committed and pushed with a single `/sw:save` command!
 
 ## Important Notes
 

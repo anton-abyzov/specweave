@@ -155,18 +155,22 @@ Before you finish ANY response, mentally verify:
 **MANDATORY subfolder organization**:
 ```
 .specweave/increments/####-name/
+├── metadata.json        # ✅ Core file (auto-managed)
 ├── spec.md              # ✅ ONLY core file 1
 ├── plan.md              # ✅ ONLY core file 2
 ├── tasks.md             # ✅ ONLY core file 3
 ├── reports/             # ✅ ALL reports here
 │   ├── PM-VALIDATION-REPORT.md
 │   ├── COMPLETION-SUMMARY.md
-│   ├── SESSION-NOTES.md
-│   └── ANALYSIS-*.md
+│   ├── qa-post-closure.md
+│   └── validation-report.md
 ├── scripts/             # ✅ ALL scripts here
 │   └── helper-*.sh
-└── logs/                # ✅ ALL logs here
-    └── execution.log
+├── logs/                # ✅ ALL logs here
+│   └── {YYYY-MM-DD}/session.md
+├── docs/                # ✅ Additional documentation
+│   └── domain/          # Domain models (brownfield)
+└── backups/             # ✅ Backup files
 ```
 
 **When writing ANY file**:
@@ -174,6 +178,7 @@ Before you finish ANY response, mentally verify:
 - ✅ **ALWAYS** write reports to `reports/` subfolder
 - ✅ **ALWAYS** write scripts to `scripts/` subfolder
 - ✅ **ALWAYS** write logs to `logs/` subfolder
+- ✅ **ALWAYS** write additional docs to `docs/` subfolder
 
 **Example correct paths**:
 - ✅ `.specweave/increments/0001-auth/reports/PM-VALIDATION-REPORT.md`

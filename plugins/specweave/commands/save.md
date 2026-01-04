@@ -44,18 +44,115 @@ The `/sw:save` command uses a **three-tier detection strategy**:
    - Works for microservices architectures without explicit configuration
 3. **Parent Project** - Always includes the root project if it has `.git`
 
+#### Git-Scan Algorithm (CRITICAL for Microservices)
+
+**MANDATORY: When no umbrella config exists, ALWAYS scan for nested repos:**
+
+```bash
+# Step 1: Find all nested .git directories (excluding .git itself and node_modules)
+find . -maxdepth 4 -type d -name ".git" \
+  -not -path "./.git" \
+  -not -path "*/node_modules/*" \
+  -not -path "*/.specweave/*" \
+  2>/dev/null
+
+# Step 2: For each .git found, the parent directory is a repo
+# Example output:
+#   ./repositories/frontend/.git    → repositories/frontend is a repo
+#   ./repositories/backend/.git     → repositories/backend is a repo
+#   ./packages/shared/.git          → packages/shared is a repo
+```
+
+**Priority scan paths** (check these first for performance):
+1. `repositories/*/`  - Standard SpecWeave multi-repo layout
+2. `packages/*/`      - Monorepo packages
+3. `services/*/`      - Microservices
+4. `apps/*/`          - App directories
+5. `libs/*/`          - Library directories
+
+**Full discovery example:**
+
+```bash
+# Discovery script that /sw:save internally executes
+REPOS=()
+
+# 1. Check umbrella config first
+if [ -f ".specweave/config.json" ]; then
+  UMBRELLA_REPOS=$(jq -r '.umbrella.childRepos[]?.path // empty' .specweave/config.json 2>/dev/null)
+  if [ -n "$UMBRELLA_REPOS" ]; then
+    while IFS= read -r repo; do
+      [ -d "$repo/.git" ] && REPOS+=("$repo")
+    done <<< "$UMBRELLA_REPOS"
+  fi
+fi
+
+# 2. If no umbrella config OR it's empty, scan for nested repos
+if [ ${#REPOS[@]} -eq 0 ]; then
+  # Scan priority paths first
+  for dir in repositories packages services apps libs; do
+    if [ -d "$dir" ]; then
+      for repo in "$dir"/*/; do
+        [ -d "${repo}.git" ] && REPOS+=("${repo%/}")
+      done
+    fi
+  done
+
+  # Full recursive scan if nothing found in priority paths
+  if [ ${#REPOS[@]} -eq 0 ]; then
+    while IFS= read -r git_dir; do
+      REPOS+=("$(dirname "$git_dir")")
+    done < <(find . -maxdepth 4 -type d -name ".git" -not -path "./.git" -not -path "*/node_modules/*" 2>/dev/null)
+  fi
+fi
+
+# 3. Always include parent project if it has .git
+[ -d ".git" ] && REPOS+=(".")
+
+# Result: REPOS array contains all repositories to process
+echo "Discovered repos: ${REPOS[*]}"
+```
+
 **Example: Microservices without config**
 
 ```
-my-project/                    # ← Parent repo (included)
+my-project/                    # ← Parent repo (included via tier 3)
 ├── repositories/
-│   ├── frontend/              # ← Auto-discovered
-│   ├── backend/               # ← Auto-discovered
-│   └── shared-lib/            # ← Auto-discovered
+│   ├── frontend/              # ← Auto-discovered via tier 2
+│   │   └── .git
+│   ├── backend/               # ← Auto-discovered via tier 2
+│   │   └── .git
+│   └── shared-lib/            # ← Auto-discovered via tier 2
+│       └── .git
 └── .specweave/
 ```
 
 Running `/sw:save` will detect and commit+push to **all 4 repositories** automatically!
+
+**Microservices in `services/` folder:**
+```
+my-platform/
+├── services/
+│   ├── auth-service/          # ← Auto-discovered
+│   │   └── .git
+│   ├── payment-service/       # ← Auto-discovered
+│   │   └── .git
+│   └── notification-service/  # ← Auto-discovered
+│       └── .git
+└── .specweave/
+```
+
+**Monorepo with `packages/`:**
+```
+my-monorepo/
+├── packages/
+│   ├── frontend/              # ← Auto-discovered
+│   │   └── .git
+│   ├── backend/               # ← Auto-discovered
+│   │   └── .git
+│   └── shared/                # ← Auto-discovered
+│       └── .git
+└── .git                       # ← Parent repo also included
+```
 
 ## Usage
 

@@ -762,6 +762,24 @@ node plugins/specweave/skills/increment-planner/scripts/feature-utils.js check-i
 mkdir -p .specweave/increments/0021-feature-name
 ```
 
+**⚠️ CRITICAL: Increment Folder Structure Rules**
+
+**ONLY these files allowed at increment ROOT:**
+- `metadata.json` - Increment state (auto-managed)
+- `spec.md` - Specification
+- `plan.md` - Implementation plan
+- `tasks.md` - Task list
+
+**ALL other files MUST go in subfolders:**
+```
+.specweave/increments/####-name/
+├── reports/     # Validation reports, QA, completion summaries
+├── logs/        # Debug logs, session traces
+├── scripts/     # Helper scripts
+├── docs/        # Additional documentation, domain knowledge
+└── backups/     # Backup files
+```
+
 ### STEP 4: Create metadata.json FIRST (MANDATORY - CRITICAL ORDER!)
 
 **🚨 CRITICAL: metadata.json MUST be created BEFORE spec.md!**
