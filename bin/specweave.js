@@ -425,6 +425,15 @@ program
   .option('-y', 'Alias for --yes')
   .option('--tdd', 'Enable TDD strict mode - ALL tests must pass')
   .option('--strict', 'Alias for --tdd')
+  // Completion condition flags (v0.4.0+)
+  .option('--build', 'Build must pass before completion')
+  .option('--tests', 'Tests must pass before completion (unit + integration)')
+  .option('--e2e', 'E2E tests must pass before completion')
+  .option('--lint', 'Linting must pass before completion')
+  .option('--types', 'Type-checking must pass before completion')
+  .option('--cov <n>', 'Code coverage must meet threshold (%)', '80')
+  .option('--e2e-cov <n>', 'E2E coverage must meet threshold (%)', '70')
+  .option('--cmd <command>', 'Custom command must pass before completion')
   .action(async (incrementIds, options) => {
     const { createAutoCommand } = await import('../dist/src/cli/commands/auto.js');
     const autoCmd = createAutoCommand();
@@ -443,6 +452,15 @@ program
     if (options.prompt) args.push('--prompt', options.prompt);
     if (options.yes || options.y) args.push('--yes');
     if (options.tdd || options.strict) args.push('--tdd');
+    // Completion conditions
+    if (options.build) args.push('--build');
+    if (options.tests) args.push('--tests');
+    if (options.e2e) args.push('--e2e');
+    if (options.lint) args.push('--lint');
+    if (options.types) args.push('--types');
+    if (options.cov) args.push('--cov', options.cov);
+    if (options.e2eCov) args.push('--e2e-cov', options.e2eCov);
+    if (options.cmd) args.push('--cmd', options.cmd);
     await autoCmd.parseAsync(args, { from: 'user' });
   });
 
