@@ -124,8 +124,14 @@ export interface NotificationContext {
 
 /**
  * Get appropriate sound for notification type
+ *
+ * NOTE: Sounds are currently disabled - returns undefined for all types
+ * to prevent audio notifications. Remove the early return to re-enable.
  */
-export function getSoundForType(type: NotificationType): string {
+export function getSoundForType(type: NotificationType): string | undefined {
+  // Sounds disabled - return undefined to suppress all notification sounds
+  return undefined;
+
   switch (type) {
     case 'cleanup':
     case 'job_complete':

@@ -576,16 +576,23 @@ detect_command_timeout() {
 # Cross-platform sound notification for user awareness
 # ================================================================
 play_notification_sound() {
+    # DISABLED: Sounds are currently turned off
+    # Remove this return statement to re-enable notification sounds
+    return 0
+
     local sound_type="${1:-attention}"  # "success" or "attention"
 
     # Detect OS and play appropriate sound
+    # NOTE: We use `nohup ... &` and disown to ensure the sound plays even after
+    # the script exits. Without this, the background process may be killed.
     case "$(uname -s)" in
         Darwin)
             # macOS - use afplay with system sounds
+            # nohup + disown ensures sound continues after script exit
             if [ "$sound_type" = "success" ]; then
-                afplay /System/Library/Sounds/Glass.aiff 2>/dev/null &
+                ( nohup afplay /System/Library/Sounds/Glass.aiff >/dev/null 2>&1 & )
             else
-                afplay /System/Library/Sounds/Ping.aiff 2>/dev/null &
+                ( nohup afplay /System/Library/Sounds/Ping.aiff >/dev/null 2>&1 & )
             fi
             ;;
         Linux)
@@ -593,22 +600,22 @@ play_notification_sound() {
             if command -v paplay >/dev/null 2>&1; then
                 # PulseAudio (most common on modern Linux)
                 if [ "$sound_type" = "success" ]; then
-                    paplay /usr/share/sounds/freedesktop/stereo/complete.oga 2>/dev/null &
+                    ( nohup paplay /usr/share/sounds/freedesktop/stereo/complete.oga >/dev/null 2>&1 & )
                 else
-                    paplay /usr/share/sounds/freedesktop/stereo/bell.oga 2>/dev/null &
+                    ( nohup paplay /usr/share/sounds/freedesktop/stereo/bell.oga >/dev/null 2>&1 & )
                 fi
             elif command -v aplay >/dev/null 2>&1; then
                 # ALSA fallback
-                aplay /usr/share/sounds/alsa/Front_Center.wav 2>/dev/null &
+                ( nohup aplay /usr/share/sounds/alsa/Front_Center.wav >/dev/null 2>&1 & )
             elif command -v speaker-test >/dev/null 2>&1; then
                 # Last resort - system beep
-                speaker-test -t sine -f 1000 -l 1 >/dev/null 2>&1 &
+                ( nohup speaker-test -t sine -f 1000 -l 1 >/dev/null 2>&1 & )
             fi
             ;;
         MINGW*|MSYS*|CYGWIN*)
             # Windows (Git Bash, WSL, Cygwin)
             if command -v powershell.exe >/dev/null 2>&1; then
-                # Use PowerShell to play sound
+                # Use PowerShell to play sound (sync is OK here, short sounds)
                 if [ "$sound_type" = "success" ]; then
                     powershell.exe -c "(New-Object Media.SoundPlayer 'C:\Windows\Media\Windows Notify System Generic.wav').PlaySync();" 2>/dev/null &
                 else
@@ -693,9 +700,12 @@ approve() {
             echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
 
             # ================================================================
-            # SOUND NOTIFICATION ON SUCCESS (v2.6)
-            # Play sound ONLY when session completes successfully
-            # This lets users know they can check back - work is done!
+            # SOUND NOTIFICATION (v2.6)
+            # Play sound ONLY when session completes SUCCESSFULLY
+            # This lets users know they can check back - all work is done!
+            #
+            # NO sound on pause/block - prevents duplicate sounds during
+            # self-healing retries and keeps session quiet until truly done.
             # Cross-platform support via helper function
             # ================================================================
             if [ "$is_success" = "true" ]; then
