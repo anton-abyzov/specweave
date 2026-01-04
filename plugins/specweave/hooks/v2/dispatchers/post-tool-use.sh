@@ -163,6 +163,17 @@ safe_run_sync() {
 play_task_completion_sound() {
   local tasks_file="$1"
   local state_file="$STATE_DIR/.last-task-completion"
+  local session_file="$STATE_DIR/auto-session.json"
+
+  # CRITICAL: Skip sound if auto mode is active
+  # Auto mode has its own completion sound via Stop hook (plays once at END)
+  if [[ -f "$session_file" ]]; then
+    local auto_status=$(jq -r '.status // "unknown"' "$session_file" 2>/dev/null || echo "unknown")
+    if [[ "$auto_status" == "active" ]] || [[ "$auto_status" == "running" ]]; then
+      log_debug "Auto mode active - skipping task completion sound (Stop hook will handle it)"
+      return 0
+    fi
+  fi
 
   # Extract current completion count
   local current_count=$(grep -c '\*\*Status\*\*:.*\[x\]' "$tasks_file" 2>/dev/null || echo "0")
