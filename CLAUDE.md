@@ -43,6 +43,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 3. **Unique IDs**: Check `ls .specweave/increments/ | grep "^[0-9]" | tail -5`
 4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
 5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders
+6. **⛔ Increment cleanliness**: ONLY 4 files at increment root (metadata.json, spec.md, plan.md, tasks.md). ALL other .md files → `reports/`, logs → `logs/`, scripts → `scripts/`
 <!-- SW:END:rules -->
 
 <!-- SW:SECTION:workflow version="1.0.80" -->
@@ -113,8 +114,51 @@ go install golang.org/x/tools/gopls@latest  # Go
 └── config.json
 ```
 
-**Increment folders - ONLY at root**: metadata.json, spec.md, plan.md, tasks.md
-**Everything else → subfolders**: reports/ (validation, QA) | logs/{YYYY-MM-DD}/ | scripts/ | docs/domain/ | backups/
+### ⛔ INCREMENT FOLDER ORGANIZATION (CRITICAL!)
+
+**Increment folders MUST stay clean. NEVER pollute them with random files!**
+
+**ONLY these 4 files at increment root**:
+- `metadata.json` (required)
+- `spec.md` (required)
+- `plan.md` (optional)
+- `tasks.md` (required)
+
+**EVERYTHING ELSE → subfolders**:
+| File Type | Destination Folder |
+|-----------|-------------------|
+| Reports, analysis, summaries (*.md) | `reports/` |
+| Validation reports, QA reports | `reports/` |
+| Session reports, completion reports | `reports/` |
+| Logs, execution output | `logs/{YYYY-MM-DD}/` |
+| Helper scripts, automation | `scripts/` |
+| Domain-specific docs | `docs/domain/` |
+| Backup files | `backups/` |
+
+**Examples**:
+```bash
+# ✅ CORRECT
+.specweave/increments/0021-feature/
+├── metadata.json
+├── spec.md
+├── tasks.md
+├── reports/
+│   ├── validation-report.md
+│   ├── completion-report.md
+│   └── auto-session-summary.md
+└── logs/
+    └── 2026-01-04/
+        └── execution.log
+
+# ❌ WRONG - polluted increment folder!
+.specweave/increments/0021-feature/
+├── metadata.json
+├── spec.md
+├── tasks.md
+├── completion-report.md      # WRONG! → reports/
+├── auto-session-summary.md   # WRONG! → reports/
+└── analysis.md               # WRONG! → reports/
+```
 
 **Multi-repo projects**: Create in `repositories/` folder (NEVER project root!)
 ```
