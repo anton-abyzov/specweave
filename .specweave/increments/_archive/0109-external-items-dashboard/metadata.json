@@ -1,11 +1,23 @@
 {
   "id": "0109-external-items-dashboard",
   "title": "External Items Dashboard",
-  "status": "active",
+  "status": "completed",
   "type": "feature",
   "created": "2025-12-05T11:00:00Z",
   "lastActivity": "2025-12-05T12:50:00Z",
   "project": "specweave",
-  "userStories": ["US-001", "US-002", "US-003", "US-004"],
-  "tags": ["dashboard", "external-tools", "github", "jira", "ado"]
+  "userStories": [
+    "US-001",
+    "US-002",
+    "US-003",
+    "US-004"
+  ],
+  "tags": [
+    "dashboard",
+    "external-tools",
+    "github",
+    "jira",
+    "ado"
+  ],
+  "completedAt": "2026-01-04T09:06:07Z"
 }
