@@ -12,7 +12,14 @@
 # - Extracts specific failure details for fix prompts
 # - Blocks on ANY test failure (not just >3)
 #
-# IMPORTANT (v2.3): Stop hook runs PER AGENT
+# AGENT HIERARCHY LABELS (v2.4):
+# - Detects agent type: MAIN ORCHESTRATOR vs SUBAGENT
+# - Clear session stop/continue labels with box art
+# - Shows "WHEN WILL SESSION STOP?" criteria prominently
+# - Subagents show "Returns to: Main Orchestrator" on completion
+# - Tracks subagent spawns in session stats
+#
+# IMPORTANT (v2.3+): Stop hook runs PER AGENT
 # - Each spawned subagent (Task tool) gets its own stop hook invocation
 # - Iteration count is SHARED across all agents via session file
 # - Parent agent's exit triggers hook, subagent exits do NOT by default
@@ -318,6 +325,196 @@ get_coverage_targets() {
 }
 
 # ============================================================================
+# AGENT TYPE DETECTION & HIERARCHY (NEW - v2.4)
+# Distinguishes main orchestrator from subagents for clear labeling
+# ============================================================================
+
+# Agent type constants
+AGENT_TYPE_ORCHESTRATOR="orchestrator"
+AGENT_TYPE_SUBAGENT="subagent"
+
+# Detect if this is main orchestrator or a subagent
+# Returns: "orchestrator" or "subagent:<type>"
+detect_agent_type() {
+    local transcript="$1"
+
+    # No transcript = assume orchestrator
+    if [ -z "$transcript" ] || [ ! -f "$transcript" ]; then
+        echo "$AGENT_TYPE_ORCHESTRATOR"
+        return
+    fi
+
+    # Check for /sw:auto command - indicates main orchestrator
+    if grep -qE '(/sw:auto|/specweave:auto|setup-auto\.sh)' "$transcript" 2>/dev/null; then
+        echo "$AGENT_TYPE_ORCHESTRATOR"
+        return
+    fi
+
+    # Check for subagent invocation patterns in transcript
+    # Subagents are spawned via Task tool with subagent_type parameter
+    local subagent_pattern='subagent_type.*?["\x27]([^"\x27]+)["\x27]'
+    local subagent_match=$(grep -oE 'subagent_type["\x27]*:\s*["\x27]?[a-zA-Z0-9_:-]+' "$transcript" 2>/dev/null | tail -1)
+
+    if [ -n "$subagent_match" ]; then
+        # Extract the type name
+        local agent_name=$(echo "$subagent_match" | sed 's/.*["\x27]\([^"\x27]*\)["\x27].*/\1/' | sed 's/subagent_type["\x27]*:\s*["\x27]*//')
+        if [ -n "$agent_name" ] && [ "$agent_name" != "subagent_type" ]; then
+            echo "$AGENT_TYPE_SUBAGENT:$agent_name"
+            return
+        fi
+    fi
+
+    # Check for specialized agent prompts (subagent indicators)
+    if grep -qE '(You are a specialized agent|Task tool|subagent|Agent type:)' "$transcript" 2>/dev/null; then
+        # Try to extract agent type from common patterns
+        local agent_desc=$(grep -oE '(architect|qa-engineer|security|devops|frontend|backend|ml-engineer|data-scientist|sre|tech-lead|docs-writer)' "$transcript" 2>/dev/null | head -1)
+        if [ -n "$agent_desc" ]; then
+            echo "$AGENT_TYPE_SUBAGENT:$agent_desc"
+            return
+        fi
+        echo "$AGENT_TYPE_SUBAGENT:unknown"
+        return
+    fi
+
+    # Default to orchestrator if no subagent patterns found
+    echo "$AGENT_TYPE_ORCHESTRATOR"
+}
+
+# Get human-readable agent display name
+# Input: agent type from detect_agent_type()
+# Output: formatted display name
+get_agent_display_name() {
+    local agent_type="$1"
+
+    case "$agent_type" in
+        orchestrator)
+            echo "🤖 MAIN ORCHESTRATOR"
+            ;;
+        subagent:*)
+            local subtype="${agent_type#subagent:}"
+            # Format common agent types nicely
+            case "$subtype" in
+                sw:architect:architect|architect)
+                    echo "🏗️  SUBAGENT: System Architect"
+                    ;;
+                sw:tech-lead:tech-lead|tech-lead)
+                    echo "👨‍💻 SUBAGENT: Tech Lead"
+                    ;;
+                sw:qa-lead:qa-lead|qa-lead|qa-engineer)
+                    echo "🧪 SUBAGENT: QA Engineer"
+                    ;;
+                sw:security:security|security)
+                    echo "🔐 SUBAGENT: Security Engineer"
+                    ;;
+                sw-infra:devops:devops|devops)
+                    echo "🚀 SUBAGENT: DevOps Engineer"
+                    ;;
+                sw-frontend:frontend-architect:*|frontend*)
+                    echo "🎨 SUBAGENT: Frontend Architect"
+                    ;;
+                sw-backend:*|backend*)
+                    echo "⚙️  SUBAGENT: Backend Engineer"
+                    ;;
+                sw-ml:ml-engineer:*|ml-engineer)
+                    echo "🧠 SUBAGENT: ML Engineer"
+                    ;;
+                sw-ml:data-scientist:*|data-scientist)
+                    echo "📊 SUBAGENT: Data Scientist"
+                    ;;
+                sw-infra:sre:sre|sre)
+                    echo "🔧 SUBAGENT: SRE"
+                    ;;
+                sw:docs-writer:*|docs-writer)
+                    echo "📝 SUBAGENT: Docs Writer"
+                    ;;
+                Explore|explore)
+                    echo "🔍 SUBAGENT: Explorer"
+                    ;;
+                Plan|plan)
+                    echo "📋 SUBAGENT: Planner"
+                    ;;
+                unknown)
+                    echo "🔧 SUBAGENT: Specialized Agent"
+                    ;;
+                *)
+                    echo "🔧 SUBAGENT: $subtype"
+                    ;;
+            esac
+            ;;
+        *)
+            echo "🤖 AGENT: $agent_type"
+            ;;
+    esac
+}
+
+# Get short agent type for JSON logging
+get_agent_type_short() {
+    local agent_type="$1"
+
+    case "$agent_type" in
+        orchestrator)
+            echo "main"
+            ;;
+        subagent:*)
+            echo "${agent_type#subagent:}"
+            ;;
+        *)
+            echo "$agent_type"
+            ;;
+    esac
+}
+
+# Detect recent subagent activity from transcript
+# Returns JSON with subagent stats
+detect_subagent_activity() {
+    local transcript="$1"
+
+    if [ -z "$transcript" ] || [ ! -f "$transcript" ]; then
+        echo '{"spawned":0,"types":[]}'
+        return
+    fi
+
+    # Count Task tool invocations
+    local task_count=$(grep -c 'Task tool\|subagent_type\|<invoke name="Task">' "$transcript" 2>/dev/null || echo "0")
+
+    # Extract unique agent types
+    local agent_types=$(grep -oE 'subagent_type["\x27]*:\s*["\x27]?[a-zA-Z0-9_:-]+' "$transcript" 2>/dev/null | \
+        sed 's/subagent_type["\x27]*:\s*["\x27]*//' | \
+        sort -u | \
+        head -10 | \
+        jq -R -s 'split("\n") | map(select(length > 0))' 2>/dev/null || echo '[]')
+
+    echo "{\"spawned\":$task_count,\"types\":$agent_types}"
+}
+
+# Track subagent in session (called when subagent activity detected)
+track_subagent_spawn() {
+    local agent_type="$1"
+    local short_type=$(get_agent_type_short "$agent_type")
+
+    if [ -f "$SESSION_FILE" ]; then
+        local updated=$(cat "$SESSION_FILE" | jq \
+            --arg type "$short_type" \
+            --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '.subagentStats.totalSpawned = ((.subagentStats.totalSpawned // 0) + 1) |
+             .subagentStats.lastSpawned = $type |
+             .subagentStats.lastSpawnTime = $now |
+             .subagentStats.history = ((.subagentStats.history // []) + [{"type": $type, "time": $now}]) |
+             .subagentStats.history = (.subagentStats.history | if length > 20 then .[-20:] else . end)')
+        echo "$updated" > "$SESSION_FILE"
+    fi
+}
+
+# Get subagent stats from session
+get_subagent_stats() {
+    if [ -f "$SESSION_FILE" ]; then
+        jq -r '.subagentStats // {"totalSpawned":0,"history":[]}' "$SESSION_FILE"
+    else
+        echo '{"totalSpawned":0,"history":[]}'
+    fi
+}
+
+# ============================================================================
 # STOP REASON TRACKING (NEW - v2.2)
 # Clear logging of WHY auto mode stops
 # ============================================================================
@@ -375,72 +572,182 @@ detect_command_timeout() {
 
 # Helper: Output approve decision
 # ALWAYS log why we're stopping for debugging
+# Enhanced v2.4: Agent-aware labeling with clear hierarchy
 approve() {
     local reason="${1:-Session complete}"
     local is_success="${2:-false}"
 
-    # Log the stop reason
-    log_stop_reason "$reason" "approve_called" "$is_success"
+    # Detect agent type for proper labeling
+    local agent_type=$(detect_agent_type "$TRANSCRIPT_PATH")
+    local agent_display=$(get_agent_display_name "$agent_type")
+    local agent_short=$(get_agent_type_short "$agent_type")
+
+    # Get subagent stats for summary
+    local subagent_stats=$(get_subagent_stats)
+    local subagents_spawned=$(echo "$subagent_stats" | jq -r '.totalSpawned // 0')
+
+    # Log the stop reason with agent info
+    log_stop_reason "$reason" "approve_called:$agent_short" "$is_success"
+
+    # Get test breakdown by type if available (NEW - v2.5)
+    local test_breakdown=$(get_test_type_breakdown "$TRANSCRIPT_PATH")
 
     # Display the stop reason prominently to STDERR (not stdout, which is for JSON)
     {
         echo ""
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "🛑 AUTO MODE STOPPING"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-        echo "Reason: $reason"
-        echo "Iteration: ${ITERATION:-0}/${MAX_ITERATIONS:-100}"
-        [ -n "$CURRENT_INCREMENT" ] && echo "Increment: $CURRENT_INCREMENT"
-        [ "${TESTS_RUN:-false}" = "true" ] && echo "Tests: ${TESTS_PASSED:-0} passed, ${TESTS_FAILED:-0} failed"
-        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        if [ "$agent_type" = "orchestrator" ]; then
+            # Main orchestrator stopping - this is a SESSION END
+            if [ "$is_success" = "true" ]; then
+                echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+                echo "┃  ✅ AUTO SESSION COMPLETE                                   ┃"
+                echo "┃  $agent_display                                  ┃"
+                echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+                echo "┃  Status: SUCCESS - All work completed                       ┃"
+            else
+                echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+                echo "┃  🛑 AUTO SESSION STOPPING                                   ┃"
+                echo "┃  $agent_display                                  ┃"
+                echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+                echo "┃  Status: STOPPED - Requires attention                       ┃"
+            fi
+            echo "┃  Reason: $(printf '%-48s' "$reason")┃"
+            echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+            echo "┃  📊 SESSION SUMMARY                                         ┃"
+            echo "┃  ├─ Iterations: ${ITERATION:-0}/${MAX_ITERATIONS:-100}                                       ┃"
+            [ -n "$CURRENT_INCREMENT" ] && echo "┃  ├─ Increment: $(printf '%-42s' "$CURRENT_INCREMENT")┃"
+            [ "$subagents_spawned" -gt 0 ] && echo "┃  ├─ Subagents spawned: $(printf '%-35s' "$subagents_spawned")┃"
+            if [ "${TESTS_RUN:-false}" = "true" ]; then
+                if [ -n "$test_breakdown" ] && [ "$test_breakdown" != "{}" ]; then
+                    # Show detailed breakdown by test type (NEW - v2.5)
+                    echo "┃  └─ Tests (detailed breakdown):                             ┃"
+                    local unit_passed=$(echo "$test_breakdown" | jq -r '.unit.passed // 0')
+                    local unit_failed=$(echo "$test_breakdown" | jq -r '.unit.failed // 0')
+                    local integration_passed=$(echo "$test_breakdown" | jq -r '.integration.passed // 0')
+                    local integration_failed=$(echo "$test_breakdown" | jq -r '.integration.failed // 0')
+                    local e2e_passed=$(echo "$test_breakdown" | jq -r '.e2e.passed // 0')
+                    local e2e_failed=$(echo "$test_breakdown" | jq -r '.e2e.failed // 0')
+
+                    if [ "$unit_passed" -gt 0 ] || [ "$unit_failed" -gt 0 ]; then
+                        echo "┃     • Unit: ${unit_passed} passed, ${unit_failed} failed                              ┃"
+                    fi
+                    if [ "$integration_passed" -gt 0 ] || [ "$integration_failed" -gt 0 ]; then
+                        echo "┃     • Integration: ${integration_passed} passed, ${integration_failed} failed                      ┃"
+                    fi
+                    if [ "$e2e_passed" -gt 0 ] || [ "$e2e_failed" -gt 0 ]; then
+                        echo "┃     • E2E: ${e2e_passed} passed, ${e2e_failed} failed                                  ┃"
+                    fi
+                else
+                    # Fallback to simple summary
+                    echo "┃  └─ Tests: ${TESTS_PASSED:-0} passed, ${TESTS_FAILED:-0} failed                            ┃"
+                fi
+            fi
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+
+            # ================================================================
+            # SUCCESS SOUND NOTIFICATION (NEW - v2.5)
+            # Play a satisfying sound when auto session completes successfully
+            # Glass.aiff is a clean, satisfying completion sound on macOS
+            # ================================================================
+            if [ "$is_success" = "true" ]; then
+                afplay /System/Library/Sounds/Glass.aiff 2>/dev/null &
+            fi
+        else
+            # Subagent stopping - this is a RETURN TO PARENT
+            echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
+            echo "┃  ↩️  SUBAGENT COMPLETE - Returning to parent               ┃"
+            echo "┃  $agent_display                                  ┃"
+            echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
+            echo "┃  Result: $(printf '%-49s' "$reason")┃"
+            echo "┃  ↩️  Control returning to: 🤖 Main Orchestrator            ┃"
+            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+        fi
         echo ""
     } >&2
 
-    echo "{\"decision\": \"approve\", \"reason\": \"$reason\"}"
+    echo "{\"decision\": \"approve\", \"reason\": \"$reason\", \"agentType\": \"$agent_short\"}"
     exit 0
 }
 
 # Helper: Output block decision with system message
 # Properly escapes JSON strings with newlines
-# Also displays stop criteria prominently to stderr (NEW - v2.2, enhanced v2.3)
+# Enhanced v2.4: Agent-aware labeling with clear hierarchy and stop conditions
 block() {
     local reason="$1"
     local system_message="$2"
 
+    # Detect agent type for proper labeling
+    local agent_type=$(detect_agent_type "$TRANSCRIPT_PATH")
+    local agent_display=$(get_agent_display_name "$agent_type")
+    local agent_short=$(get_agent_type_short "$agent_type")
+
     # Get current stop criteria for display
     local tdd_mode=$(is_tdd_strict_mode)
     local stop_criteria=""
+    local stop_criteria_detail=""
 
-    # Build stop criteria message - MORE PROMINENT (v2.3)
+    # Build stop criteria message - MORE PROMINENT (v2.4)
     if [ "$tdd_mode" = "true" ]; then
-        stop_criteria="🔴 TDD MODE: ALL tasks [x] + ALL tests GREEN (0 failures)"
+        stop_criteria="TDD STRICT MODE"
+        stop_criteria_detail="ALL tasks [x] + ALL tests GREEN (0 failures)"
     else
-        stop_criteria="✅ ALL tasks [x] completed + tests passing"
+        stop_criteria="STANDARD MODE"
+        stop_criteria_detail="ALL tasks [x] completed + tests passing"
     fi
 
-    # Display stop criteria and continuation reason to STDERR (v2.3 enhanced)
+    # Get subagent activity for display
+    local subagent_stats=$(get_subagent_stats)
+    local subagents_spawned=$(echo "$subagent_stats" | jq -r '.totalSpawned // 0')
+
+    # Display stop criteria and continuation reason to STDERR (v2.4 enhanced)
     {
         echo ""
-        echo "╔══════════════════════════════════════════════════════════════╗"
-        echo "║  🔄 AUTO MODE CONTINUING - Agent will keep working           ║"
-        echo "╠══════════════════════════════════════════════════════════════╣"
-        echo "║  Reason: $(printf '%-50s' "$reason")║"
-        echo "║  Iteration: $(printf '%-47s' "${ITERATION:-0}/${MAX_ITERATIONS:-2500}")║"
-        [ -n "$CURRENT_INCREMENT" ] && echo "║  Increment: $(printf '%-47s' "$CURRENT_INCREMENT")║"
-        echo "╠══════════════════════════════════════════════════════════════╣"
-        echo "║  🎯 STOP CONDITION: $stop_criteria"
-        [ "${TESTS_RUN:-false}" = "true" ] && echo "║     Tests: ${TESTS_PASSED:-0} passed, ${TESTS_FAILED:-0} failed"
-        [ "$tdd_mode" = "true" ] && echo "║     TDD Source: $(get_tdd_source)"
-        echo "╚══════════════════════════════════════════════════════════════╝"
+        if [ "$agent_type" = "orchestrator" ]; then
+            # Main orchestrator continuing - SESSION CONTINUES
+            echo "╔══════════════════════════════════════════════════════════════╗"
+            echo "║  🔄 AUTO SESSION CONTINUING                                  ║"
+            echo "║  $agent_display                                  ║"
+            echo "╠══════════════════════════════════════════════════════════════╣"
+            echo "║  Why: $(printf '%-52s' "$reason")║"
+            echo "║  Iteration: $(printf '%-47s' "${ITERATION:-0}/${MAX_ITERATIONS:-2500}")║"
+            [ -n "$CURRENT_INCREMENT" ] && echo "║  Increment: $(printf '%-47s' "$CURRENT_INCREMENT")║"
+            [ "$subagents_spawned" -gt 0 ] && echo "║  Subagents used: $(printf '%-42s' "$subagents_spawned")║"
+            echo "╠══════════════════════════════════════════════════════════════╣"
+            echo "║  🎯 WHEN WILL SESSION STOP?                                  ║"
+            echo "║  ├─ Mode: $(printf '%-48s' "$stop_criteria")║"
+            echo "║  └─ Criteria: $(printf '%-44s' "$stop_criteria_detail")║"
+            if [ "${TESTS_RUN:-false}" = "true" ]; then
+                if [ "${TESTS_FAILED:-0}" -gt 0 ]; then
+                    echo "║  ⚠️  Tests: ${TESTS_PASSED:-0} passed, ${TESTS_FAILED:-0} FAILED (blocking!)             ║"
+                else
+                    echo "║  ✅ Tests: ${TESTS_PASSED:-0} passed, 0 failed                             ║"
+                fi
+            else
+                echo "║  ⏳ Tests: NOT YET RUN                                       ║"
+            fi
+            [ "$tdd_mode" = "true" ] && echo "║  📋 TDD Source: $(printf '%-42s' "$(get_tdd_source)")║"
+            echo "╚══════════════════════════════════════════════════════════════╝"
+        else
+            # Subagent continuing - SUBAGENT KEEPS WORKING
+            echo "╔══════════════════════════════════════════════════════════════╗"
+            echo "║  🔧 SUBAGENT CONTINUING WORK                                 ║"
+            echo "║  $agent_display                                  ║"
+            echo "╠══════════════════════════════════════════════════════════════╣"
+            echo "║  Task: $(printf '%-51s' "$reason")║"
+            echo "╠══════════════════════════════════════════════════════════════╣"
+            echo "║  🎯 WHEN WILL SUBAGENT RETURN?                               ║"
+            echo "║  └─ When assigned task is complete                           ║"
+            echo "║  ↩️  Returns to: 🤖 Main Orchestrator                         ║"
+            echo "╚══════════════════════════════════════════════════════════════╝"
+        fi
         echo ""
     } >&2
 
     if [ -n "$system_message" ]; then
         # Escape special characters for JSON
         local escaped_message=$(echo "$system_message" | jq -Rs .)
-        echo "{\"decision\": \"block\", \"reason\": \"$reason\", \"systemMessage\": $escaped_message}"
+        echo "{\"decision\": \"block\", \"reason\": \"$reason\", \"systemMessage\": $escaped_message, \"agentType\": \"$agent_short\"}"
     else
-        echo "{\"decision\": \"block\", \"reason\": \"$reason\"}"
+        echo "{\"decision\": \"block\", \"reason\": \"$reason\", \"agentType\": \"$agent_short\"}"
     fi
     exit 0
 }
@@ -857,6 +1164,80 @@ parse_test_results() {
     total=${total:-0}
 
     echo "{\"passed\":$passed,\"failed\":$failed,\"total\":$total,\"framework\":\"$framework\",\"testsRun\":$tests_run}"
+}
+
+# ============================================================================
+# TEST TYPE BREAKDOWN (NEW - v2.5)
+# Categorizes test results by type (unit/integration/E2E) for detailed summary
+# ============================================================================
+
+# Get test type breakdown from transcript
+# Returns: JSON with {unit: {passed, failed}, integration: {passed, failed}, e2e: {passed, failed}}
+get_test_type_breakdown() {
+    local transcript="$1"
+
+    if [ ! -f "$transcript" ]; then
+        echo "{}"
+        return
+    fi
+
+    local unit_passed=0
+    local unit_failed=0
+    local integration_passed=0
+    local integration_failed=0
+    local e2e_passed=0
+    local e2e_failed=0
+
+    # Check for test command patterns to categorize
+    # Unit tests: vitest, jest, pytest, go test
+    if grep -qE '(npm.*test:unit|npx vitest|npx jest|pytest|go test|cargo test)' "$transcript" 2>/dev/null; then
+        # Parse unit test results
+        local unit_result=$(grep -oE 'Tests?\s+[0-9]+\s+passed' "$transcript" 2>/dev/null | tail -1)
+        if [ -n "$unit_result" ]; then
+            unit_passed=$(echo "$unit_result" | grep -oE '[0-9]+' | head -1)
+            local unit_failed_match=$(grep -oE '[0-9]+\s+failed' "$transcript" 2>/dev/null | tail -1 | grep -oE '[0-9]+' || echo "0")
+            unit_failed=${unit_failed_match:-0}
+        fi
+    fi
+
+    # Integration tests: usually named test:integration
+    if grep -qE 'npm.*test:integration' "$transcript" 2>/dev/null; then
+        # Parse integration test results (same format as unit)
+        local int_result=$(grep -oE 'Tests?\s+[0-9]+\s+passed' "$transcript" 2>/dev/null | tail -1)
+        if [ -n "$int_result" ]; then
+            integration_passed=$(echo "$int_result" | grep -oE '[0-9]+' | head -1)
+            local int_failed_match=$(grep -oE '[0-9]+\s+failed' "$transcript" 2>/dev/null | tail -1 | grep -oE '[0-9]+' || echo "0")
+            integration_failed=${int_failed_match:-0}
+        fi
+    fi
+
+    # E2E tests: Playwright, Cypress, Detox, Maestro
+    if grep -qE '(npx playwright|npx cypress|npx detox|maestro test|test:e2e)' "$transcript" 2>/dev/null; then
+        # Parse E2E test results
+        local e2e_passed_match=$(grep -oE '[0-9]+\s+passed' "$transcript" 2>/dev/null | tail -1 | grep -oE '[0-9]+')
+        local e2e_failed_match=$(grep -oE '[0-9]+\s+failed' "$transcript" 2>/dev/null | tail -1 | grep -oE '[0-9]+')
+
+        e2e_passed=${e2e_passed_match:-0}
+        e2e_failed=${e2e_failed_match:-0}
+    fi
+
+    # Return JSON with breakdown
+    cat <<EOF
+{
+  "unit": {
+    "passed": $unit_passed,
+    "failed": $unit_failed
+  },
+  "integration": {
+    "passed": $integration_passed,
+    "failed": $integration_failed
+  },
+  "e2e": {
+    "passed": $e2e_passed,
+    "failed": $e2e_failed
+  }
+}
+EOF
 }
 
 # Extract detailed failure information from transcript
@@ -1787,7 +2168,30 @@ Continue with /sw:do and add missing E2E tests."
                     --argjson passed "${TESTS_PASSED:-0}" --argjson failed "${TESTS_FAILED:-0}" \
                     '.status = "completed" | .endTime = $now | .endReason = "all_tasks_complete" | .finalTestResults = {"passed": $passed, "failed": $failed}' \
                     > "$SESSION_FILE"
-                approve "All tasks completed, all tests passed ($TESTS_PASSED passed, 0 failed)" "true"
+
+                # Build detailed completion reason with test breakdown (NEW - v2.5)
+                local completion_reason="All tasks completed"
+                local test_breakdown=$(get_test_type_breakdown "$TRANSCRIPT_PATH")
+                if [ -n "$test_breakdown" ] && [ "$test_breakdown" != "{}" ]; then
+                    local unit_p=$(echo "$test_breakdown" | jq -r '.unit.passed // 0')
+                    local int_p=$(echo "$test_breakdown" | jq -r '.integration.passed // 0')
+                    local e2e_p=$(echo "$test_breakdown" | jq -r '.e2e.passed // 0')
+
+                    local test_details=""
+                    [ "$unit_p" -gt 0 ] && test_details="${test_details}${unit_p} unit"
+                    [ "$int_p" -gt 0 ] && test_details="${test_details}${test_details:+, }${int_p} integration"
+                    [ "$e2e_p" -gt 0 ] && test_details="${test_details}${test_details:+, }${e2e_p} E2E"
+
+                    if [ -n "$test_details" ]; then
+                        completion_reason="$completion_reason, tests passed: $test_details"
+                    else
+                        completion_reason="$completion_reason, all tests passed ($TESTS_PASSED passed, 0 failed)"
+                    fi
+                else
+                    completion_reason="$completion_reason, all tests passed ($TESTS_PASSED passed, 0 failed)"
+                fi
+
+                approve "$completion_reason" "true"
             else
                 # More increments in queue - transition to next
                 NEXT_INCREMENT=$(echo "$SESSION" | jq -r '.incrementQueue[1] // null')
@@ -1909,7 +2313,15 @@ echo "$SESSION" | jq --argjson iter "$NEXT_ITERATION" --arg now "$(date -u +%Y-%
     '.iteration = $iter | .lastActivity = $now' \
     > "$SESSION_FILE"
 
-# Build context message with test instructions (v2.2)
+# Build context message with test instructions (v2.4 enhanced with agent hierarchy)
+# Detect agent type for context message
+AGENT_TYPE=$(detect_agent_type "$TRANSCRIPT_PATH")
+AGENT_DISPLAY=$(get_agent_display_name "$AGENT_TYPE")
+
+# Get subagent activity for context
+SUBAGENT_ACTIVITY=$(detect_subagent_activity "$TRANSCRIPT_PATH")
+SUBAGENT_COUNT=$(echo "$SUBAGENT_ACTIVITY" | jq -r '.spawned // 0')
+
 if [ "$SIMPLE_MODE" = "true" ]; then
     CONTEXT="Continue working. Iteration $NEXT_ITERATION/$MAX_ITERATIONS."
 else
@@ -1936,36 +2348,75 @@ else
     # Get test instructions for this project (NEW - v2.2)
     TEST_INSTRUCTIONS=$(format_test_instructions)
 
-    # Build stop criteria message - MUST be clear for each agent
+    # Build agent header based on type (NEW - v2.4)
+    AGENT_HEADER=""
+    if [ "$AGENT_TYPE" = "orchestrator" ]; then
+        AGENT_HEADER="
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  $AGENT_DISPLAY                                  ┃
+┃  AUTO SESSION - Iteration $NEXT_ITERATION/$MAX_ITERATIONS                          ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+    else
+        AGENT_HEADER="
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  $AGENT_DISPLAY                                  ┃
+┃  Working under: 🤖 Main Orchestrator                       ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+    fi
+
+    # Build stop criteria message - MUST be clear for each agent (v2.4)
     STOP_CRITERIA=""
-    if [ "$TDD_MODE" = "true" ]; then
-        STOP_CRITERIA="
+    if [ "$AGENT_TYPE" = "orchestrator" ]; then
+        # Main orchestrator stop criteria
+        if [ "$TDD_MODE" = "true" ]; then
+            STOP_CRITERIA="
 ╔══════════════════════════════════════════════════════════════╗
-║  🎯 AGENT STOP CONDITION (TDD STRICT MODE)                   ║
+║  🎯 SESSION STOP CONDITION (TDD STRICT MODE)                 ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  ✅ ALL tasks in tasks.md marked [x] completed               ║
 ║  ✅ ALL tests pass (0 failures required)                     ║
 ║  ✅ Test execution detected in output                        ║
 ╠══════════════════════════════════════════════════════════════╣
-║  Source: $(printf '%-45s' "$(get_tdd_source)")║
+║  TDD Source: $(printf '%-42s' "$(get_tdd_source)")║
 ╚══════════════════════════════════════════════════════════════╝"
-    else
-        STOP_CRITERIA="
+        else
+            STOP_CRITERIA="
 ╔══════════════════════════════════════════════════════════════╗
-║  🎯 AGENT STOP CONDITION                                     ║
+║  🎯 SESSION STOP CONDITION                                   ║
 ╠══════════════════════════════════════════════════════════════╣
 ║  ✅ ALL tasks in tasks.md marked [x] completed               ║
 ║  ✅ Tests executed and passing                               ║
 ╚══════════════════════════════════════════════════════════════╝"
+        fi
+    else
+        # Subagent stop criteria - simpler, just complete the task
+        STOP_CRITERIA="
+╔══════════════════════════════════════════════════════════════╗
+║  🎯 SUBAGENT STOP CONDITION                                  ║
+╠══════════════════════════════════════════════════════════════╣
+║  ✅ Complete the assigned task                               ║
+║  ↩️  Then return control to Main Orchestrator                ║
+╚══════════════════════════════════════════════════════════════╝"
     fi
 
-    # Build full context message
-    CONTEXT="🤖 AUTO MODE ACTIVE - Iteration $NEXT_ITERATION/$MAX_ITERATIONS
+    # Build subagent info if any were spawned (NEW - v2.4)
+    SUBAGENT_INFO=""
+    if [ "$SUBAGENT_COUNT" -gt 0 ] && [ "$AGENT_TYPE" = "orchestrator" ]; then
+        SUBAGENT_TYPES=$(echo "$SUBAGENT_ACTIVITY" | jq -r '.types | join(", ")' 2>/dev/null || echo "various")
+        SUBAGENT_INFO="
+📦 SUBAGENT ACTIVITY (this session):
+  ├─ Spawned: $SUBAGENT_COUNT subagent(s)
+  └─ Types: $SUBAGENT_TYPES"
+    fi
+
+    # Build full context message (v2.4)
+    CONTEXT="$AGENT_HEADER
 $STOP_CRITERIA
 
 📊 CURRENT PROGRESS:
   $PROGRESS
   $TEST_STATUS
+$SUBAGENT_INFO
 
 $TEST_INSTRUCTIONS
 
@@ -1981,8 +2432,9 @@ $TEST_INSTRUCTIONS
 ⚠️ This agent will NOT stop until the STOP CONDITION above is met!"
 fi
 
-# Log iteration
-echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"iteration\",\"iteration\":$NEXT_ITERATION,\"increment\":\"$CURRENT_INCREMENT\",\"testsRun\":$TESTS_RUN,\"testsPassed\":${TESTS_PASSED:-0},\"testsFailed\":${TESTS_FAILED:-0}}" >> "$LOGS_DIR/auto-iterations.log"
+# Log iteration with agent info (v2.4)
+AGENT_SHORT=$(get_agent_type_short "$AGENT_TYPE")
+echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"iteration\",\"iteration\":$NEXT_ITERATION,\"increment\":\"$CURRENT_INCREMENT\",\"agentType\":\"$AGENT_SHORT\",\"subagentsSpawned\":$SUBAGENT_COUNT,\"testsRun\":$TESTS_RUN,\"testsPassed\":${TESTS_PASSED:-0},\"testsFailed\":${TESTS_FAILED:-0}}" >> "$LOGS_DIR/auto-iterations.log"
 
 # Block exit and re-feed prompt
 block "Work incomplete, continuing..." "$CONTEXT"

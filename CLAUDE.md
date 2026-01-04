@@ -157,7 +157,7 @@ brew install omnisharp  # or: dotnet tool install -g omnisharp
 - Combine with Explore agent for comprehensive understanding
 <!-- SW:END:lsp -->
 
-<!-- SW:SECTION:structure version="1.0.60" -->
+<!-- SW:SECTION:structure version="1.0.61" -->
 ## Structure
 
 ```
@@ -168,6 +168,47 @@ brew install omnisharp  # or: dotnet tool install -g omnisharp
 │   ├── architecture/adr/     # ADRs (check before design decisions!)
 │   └── operations/           # Runbooks
 └── config.json
+```
+
+### ⚠️ CRITICAL: Increment Folder Organization (MANDATORY)
+
+**ONLY these files allowed at increment ROOT:**
+```
+.specweave/increments/####-name/
+├── metadata.json    # Increment state
+├── spec.md          # Specification
+├── plan.md          # Implementation plan
+└── tasks.md         # Task list
+```
+
+**ALL other files MUST go in subfolders:**
+```
+.specweave/increments/####-name/
+├── reports/         # Validation reports, QA reports, completion summaries
+│   └── *.md         # PM-VALIDATION-REPORT.md, qa-post-closure.md, etc.
+├── logs/            # Debug logs, execution traces, session logs
+│   └── {YYYY-MM-DD}/ # Daily logs with assets/
+├── scripts/         # Helper scripts, automation tools
+├── docs/            # Additional documentation, domain knowledge
+│   └── domain/      # Domain models for brownfield analysis
+└── backups/         # Backup files
+```
+
+**File Routing Rules:**
+| File Type | Folder | Examples |
+|-----------|--------|----------|
+| Validation reports | `reports/` | `PM-VALIDATION-REPORT.md`, `validation-report.md` |
+| QA assessments | `reports/` | `qa-post-closure.md`, `COMPLETION-SUMMARY.md` |
+| Session logs | `logs/{date}/` | `session.md`, `assets/` |
+| Domain analysis | `docs/domain/` | `appointments/domain-model.md` |
+| Helper scripts | `scripts/` | `migrate.sh`, `validate.js` |
+
+**FORBIDDEN - Files that pollute increment root:**
+```
+❌ .specweave/increments/0001/PM-VALIDATION-REPORT.md    # → reports/
+❌ .specweave/increments/0001/completion-report.md       # → reports/
+❌ .specweave/increments/0001/domain-model.md            # → docs/domain/
+❌ .specweave/increments/0001/helper.sh                  # → scripts/
 ```
 
 ### ⚠️ CRITICAL: Multi-Repo Project Paths (MANDATORY)
