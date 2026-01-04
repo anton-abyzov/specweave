@@ -354,6 +354,47 @@ Pure Ralph Wiggum behavior:
 - **Max Iterations**: Prevents runaway loops (2500 default)
 - **Max Hours**: Time boxing (600 hours / 25 days default)
 - **stop_hook_active**: Prevents infinite continuation loops
+- **Sound Notifications** (v2.6): Audible alerts when Claude stops working
+
+## 🔔 Sound Notifications (NEW in v2.6!)
+
+**Auto mode now plays sounds when Claude stops working, so you know when to check back!**
+
+### When Sounds Play
+
+| Event | Sound | Platforms | Meaning |
+|-------|-------|-----------|---------|
+| **Session Complete (Success)** | Glass.aiff (macOS)<br>complete.oga (Linux)<br>Windows Notify (Windows) | All | ✅ All tasks done, tests passing |
+| **Session Stopped (Needs Attention)** | Ping.aiff (macOS)<br>bell.oga (Linux)<br>System beep (Windows) | All | ⚠️ Claude stopped, check why |
+| **Block (Continuing)** | Ping.aiff (macOS)<br>bell.oga (Linux)<br>System beep (Windows) | All | 🔄 Session continuing (informational) |
+
+### Cross-Platform Support
+
+**macOS** (default):
+- Uses `afplay` with system sounds
+- Glass.aiff for success (satisfying chime)
+- Ping.aiff for attention (gentle alert)
+
+**Linux**:
+- Tries multiple sound systems automatically:
+  1. PulseAudio (`paplay`) - most common on modern Linux
+  2. ALSA (`aplay`) - fallback for older systems
+  3. `speaker-test` - last resort system beep
+
+**Windows** (Git Bash, WSL, Cygwin):
+- PowerShell beeps via `[console]::beep`
+- Windows system notification sounds where available
+
+### Silent Systems
+
+If your system doesn't have sound support or you prefer silence:
+- Sounds fail gracefully (no errors)
+- All sound commands use `2>/dev/null &` to avoid blocking
+- Auto mode continues normally even if sounds can't play
+
+### For Subagents
+
+Sound notifications ONLY play for the **main orchestrator agent**, not for spawned subagents. This prevents notification spam when using specialized agents.
 
 ## 🔧 v2.3 Per-Agent Stop Hook Behavior (NEW!)
 
