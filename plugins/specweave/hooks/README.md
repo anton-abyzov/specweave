@@ -8,10 +8,11 @@
 ## Purpose
 
 Core hooks automate SpecWeave's fundamental workflows:
-- **Sound notifications** when tasks complete or input is needed
+- **Sound notifications** when tasks complete (v1.0.77+: plays when task marked `[x]` in tasks.md)
 - **Living docs sync** after task completion
 - **Translation** of non-English documentation
 - **Self-reflection** for AI-driven quality improvements
+- **Auto mode loops** for autonomous execution
 
 **Note**: External tool sync (GitHub, JIRA, Azure DevOps) has been moved to respective plugin hooks as of v0.13.0. See "Architecture Changes" section below.
 
@@ -144,6 +145,25 @@ Core hooks automate SpecWeave's fundamental workflows:
 **Use case**: Enables autonomous execution loops. Claude works until ALL tasks complete and tests pass, then gracefully exits.
 
 **See**: `/sw:auto` command documentation for full auto mode details.
+
+---
+
+### 🔊 Task Completion Sound (v1.0.77+)
+
+**Triggers**: Automatically when any task is marked `[x]` in tasks.md
+
+**How It Works**:
+- Monitors task completion count in `.specweave/state/.last-task-completion`
+- Plays pleasant sound (Glass.aiff) when count increases
+- Runs in background (never blocks or delays hook execution)
+- Works in **both normal and auto mode** (not just `/sw:auto`)
+
+**Platforms**:
+- macOS: `Glass.aiff` (built-in system sound)
+- Linux (PulseAudio): `/usr/share/sounds/freedesktop/stereo/complete.oga`
+- Linux (ALSA): `/usr/share/sounds/alsa/Front_Center.wav`
+
+**Implementation**: Integrated into `PostToolUse` hook dispatcher (`v2/dispatchers/post-tool-use.sh`)
 
 ---
 
