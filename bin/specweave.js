@@ -435,33 +435,28 @@ program
   .option('--e2e-cov <n>', 'E2E coverage must meet threshold (%)', '70')
   .option('--cmd <command>', 'Custom command must pass before completion')
   .action(async (incrementIds, options) => {
-    const { createAutoCommand } = await import('../dist/src/cli/commands/auto.js');
-    const autoCmd = createAutoCommand();
-    // Re-parse with increment IDs
-    const args = ['node', 'auto', ...incrementIds];
-    // Add options
-    if (options.maxIterations) args.push('--max-iterations', options.maxIterations);
-    if (options.maxHours) args.push('--max-hours', options.maxHours);
-    if (options.simple) args.push('--simple');
-    if (options.dryRun) args.push('--dry-run');
-    if (options.increments) args.push('--increments', options.increments);
-    if (options.allBacklog) args.push('--all-backlog');
-    if (options.skipGates) args.push('--skip-gates', options.skipGates);
-    if (options.noIncrement) args.push('--no-increment');
-    if (options.noInc) args.push('--no-inc');
-    if (options.prompt) args.push('--prompt', options.prompt);
-    if (options.yes || options.y) args.push('--yes');
-    if (options.tdd || options.strict) args.push('--tdd');
-    // Completion conditions
-    if (options.build) args.push('--build');
-    if (options.tests) args.push('--tests');
-    if (options.e2e) args.push('--e2e');
-    if (options.lint) args.push('--lint');
-    if (options.types) args.push('--types');
-    if (options.cov) args.push('--cov', options.cov);
-    if (options.e2eCov) args.push('--e2e-cov', options.e2eCov);
-    if (options.cmd) args.push('--cmd', options.cmd);
-    await autoCmd.parseAsync(args, { from: 'user' });
+    // Import and execute the auto command handler directly
+    const path = await import('path');
+    const fs = await import('fs');
+    const projectPath = process.cwd();
+
+    // Check if SpecWeave is initialized
+    const specweavePath = path.join(projectPath, '.specweave');
+    if (!fs.existsSync(specweavePath)) {
+      console.log(chalk.yellow('No SpecWeave project found in current directory.'));
+      console.log(chalk.gray('Run `specweave init` to initialize a project.'));
+      return;
+    }
+
+    try {
+      const { handleAutoCommand } = await import('../dist/src/cli/commands/auto.js');
+      // Call handleAutoCommand directly with all options
+      await handleAutoCommand(projectPath, incrementIds, options);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`Error: ${errorMessage}`));
+      process.exit(1);
+    }
   });
 
 program

@@ -98,8 +98,9 @@ export function createAutoCommand(): Command {
 
 /**
  * Main auto command handler
+ * Exported for use by bin/specweave.js proxy
  */
-async function handleAutoCommand(
+export async function handleAutoCommand(
   projectPath: string,
   incrementIds: string[],
   options: AutoCommandOptions
