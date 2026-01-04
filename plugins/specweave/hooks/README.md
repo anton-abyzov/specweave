@@ -156,7 +156,11 @@ Core hooks automate SpecWeave's fundamental workflows:
 - Monitors task completion count in `.specweave/state/.last-task-completion`
 - Plays pleasant sound (Glass.aiff) when count increases
 - Runs in background (never blocks or delays hook execution)
-- Works in **both normal and auto mode** (not just `/sw:auto`)
+- **Smart auto mode detection**: Skips during `/sw:auto` (Stop hook plays ONE sound at END)
+
+**Behavior by Mode**:
+- **Normal mode**: Sound plays after EACH task completion
+- **Auto mode** (`/sw:auto`): NO sounds during execution, ONE completion sound when main orchestrator finishes
 
 **Platforms**:
 - macOS: `Glass.aiff` (built-in system sound)
