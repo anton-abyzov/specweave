@@ -4,6 +4,18 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.92] - 2026-01-04
+
+### 🎯 Improvements
+
+- **`/sw:jobs` now shows all jobs by default** (including completed ones)
+  - Changed default behavior from showing only active jobs to showing all jobs
+  - Users no longer need to remember `--all` flag
+  - Better UX: see completed job history immediately
+  - Files changed: `plugins/specweave/scripts/read-jobs.sh`, `src/cli/commands/jobs.ts`
+
+---
+
 ## [1.0.91] - 2026-01-04
 
 ### 🔧 Bug Fixes

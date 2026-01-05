@@ -66,7 +66,7 @@ export async function jobsCommand(options: JobsCommandOptions = {}): Promise<voi
     } else if (options.id) {
       await handleJobDetails(projectPath, options.id);
     } else {
-      await handleListJobs(projectPath, options.all);
+      await handleListJobs(projectPath, options.all ?? true); // Default: show all jobs
     }
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
