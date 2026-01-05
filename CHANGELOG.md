@@ -4,6 +4,27 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.91] - 2026-01-04
+
+### 🔧 Bug Fixes
+
+**ULTIMATE FIX**: Resolved dual root causes preventing `/sw:jobs`, `/sw:status`, and `/sw:progress` from working in VSCode extension
+
+1. **VSCode Hook Blocking Issue** (Primary fix):
+   - Added VSCode environment detection via `CLAUDE_CODE_ENTRYPOINT=claude-vscode`
+   - Hook now returns `{"decision":"approve"}` in VSCode mode, allowing fallback to execute
+   - Hook still returns `{"decision":"block","reason":"..."}` in CLI mode for instant execution
+   - Fixes all 6 instant commands: `/sw:jobs`, `/sw:status`, `/sw:progress`, `/sw:workflow`, `/sw:costs`, `/sw:analytics`
+
+2. **CLI Double-Parsing Bug**:
+   - Refactored `src/cli/commands/jobs.ts` to export `jobsCommand(options)` function
+   - Replaced double `parseAsync()` antipattern in `bin/specweave.js` with direct function call
+   - Matches pattern used by working commands (status, progress)
+
+**Impact**: Commands now work in **BOTH** CLI and VSCode environments!
+
+---
+
 ## [1.0.90] - 2026-01-04
 
 ### 🔧 Bug Fixes
