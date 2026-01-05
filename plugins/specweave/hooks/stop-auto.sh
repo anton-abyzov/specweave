@@ -49,6 +49,19 @@ LOGS_DIR="$PROJECT_ROOT/.specweave/logs"
 mkdir -p "$LOGS_DIR"
 
 # ============================================================================
+# REFLECT HOOK INTEGRATION (v2.7)
+# Source the reflect hook for auto-learning on session completion
+# ============================================================================
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REFLECT_HOOK="$SCRIPT_DIR/reflect-stop-hook.sh"
+
+# Source reflect hook functions (if available)
+if [ -f "$REFLECT_HOOK" ]; then
+    source "$REFLECT_HOOK" 2>/dev/null || true
+fi
+
+# ============================================================================
 # CONTEXT SIZE ESTIMATION & COMPACTION (NEW - v2.1)
 # Estimates context size from transcript and triggers /compact when needed
 # ============================================================================
@@ -710,6 +723,15 @@ approve() {
             # ================================================================
             if [ "$is_success" = "true" ]; then
                 play_notification_sound "success"
+
+                # ================================================================
+                # AUTO-REFLECTION (v2.7)
+                # Extract learnings from session on successful completion
+                # Runs async to not block session exit
+                # ================================================================
+                if type run_auto_reflection >/dev/null 2>&1; then
+                    run_auto_reflection "$TRANSCRIPT_PATH" "${SESSION_ID:-unknown}"
+                fi
             fi
         else
             # Subagent stopping - this is a RETURN TO PARENT

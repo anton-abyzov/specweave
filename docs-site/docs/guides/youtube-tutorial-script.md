@@ -465,7 +465,121 @@ specweave init .
 
 ---
 
-## SECTION 12.5: DEPLOYMENT PLATFORMS (30:00 - 33:00)
+## SECTION 12.5: SELF-IMPROVING SKILLS (30:00 - 32:00)
+
+**[SCREEN: Navigate to docs/guides/self-improving-skills]**
+
+> "Now here's something truly game-changing — and I saved the best for almost last. Self-improving skills."
+
+**[EXCALIDRAW: The Memory Problem diagram]**
+
+```
+┌─────────────────────────────────────────────────────┐
+│              THE MEMORY PROBLEM                      │
+├─────────────────────────────────────────────────────┤
+│                                                      │
+│   Monday: "Don't use that button, use our component"│
+│                      ↓                               │
+│   Tuesday: [Same mistake]                            │
+│                      ↓                               │
+│   Wednesday: [Same correction]                       │
+│                      ↓                               │
+│   Forever: Repeating yourself                        │
+│                                                      │
+└─────────────────────────────────────────────────────┘
+```
+
+> "Every LLM session starts from zero. Monday you correct Claude about button usage. Tuesday, same mistake. Wednesday, same correction. Without memory, you're repeating yourself forever.
+>
+> This isn't a Claude problem — it's every AI tool. Naming conventions, logging patterns, component usage — you correct once, but tomorrow it forgets."
+
+**[SCROLL to How It Works section]**
+
+> "SpecWeave's Reflect system solves this with a deceptively simple approach."
+
+**[READ the flow]**
+
+> "When you make a correction during a session — 'No, always use our Button component' — Reflect detects that signal. It extracts the learning, categorizes it, and saves it to a skill memory file.
+>
+> Next session, when that skill loads, Claude reads both the SKILL.md AND the MEMORY.md. Your correction is now permanent knowledge."
+
+**[TERMINAL: Show commands]**
+
+```bash
+# Enable auto-learning
+/sw:reflect-on
+
+# Manual reflection after any session
+/sw:reflect
+
+# Check what Claude has learned
+/sw:reflect-status
+```
+
+**[Point to the memory file example]**
+
+```markdown
+# frontend Skill Memory
+
+### component-usage
+
+#### LRN-2026-01-05-abc (High Confidence)
+**Context**: User corrected button component usage
+**Learning**: Always use `<Button variant='primary'>` for primary actions
+**Triggers**: button, primary, action
+```
+
+> "This is just markdown. No embeddings, no vector databases, no complex infrastructure. Plain text files that Claude reads naturally.
+>
+> And here's the beautiful part — these files are version controlled. You can see how your AI evolves over time, roll back wrong learnings, share team knowledge."
+
+**[EXCALIDRAW: Categories diagram]**
+
+```
+┌───────────────────────────────────────────────────────┐
+│                 LEARNING CATEGORIES                    │
+├───────────────────────────────────────────────────────┤
+│                                                        │
+│  🎨 component-usage    →  UI patterns, design system  │
+│  🔌 api-patterns       →  REST, GraphQL, error codes  │
+│  🧪 testing            →  Vitest, Playwright, mocks   │
+│  🚀 deployment         →  Wrangler, Vercel, Supabase  │
+│  🔐 security           →  Auth, validation, secrets   │
+│  🗄️ database           →  Queries, schema, migrations │
+│  📝 naming             →  Conventions, file structure │
+│  🏗️ architecture       →  Patterns, design decisions  │
+│                                                        │
+└───────────────────────────────────────────────────────┘
+```
+
+> "Learnings are automatically categorized. Button corrections go to component-usage. API feedback goes to api-patterns. Test corrections go to testing.
+>
+> Each category maps to a skill, and each skill has its own memory file."
+
+**[Point to Auto Mode integration]**
+
+> "The magic happens when you combine this with auto mode. You run `/sw:auto`, Claude works autonomously. When the session ends, the stop hook triggers Reflect automatically. Any corrections you made during the session become permanent learning.
+>
+> Correct once, never again. That's the promise — and SpecWeave delivers."
+
+**[TERMINAL: Show git integration]**
+
+```bash
+# See learning history
+git log --oneline .specweave/skills/frontend/MEMORY.md
+
+# View recent learnings
+git diff HEAD~1 .specweave/skills/frontend/MEMORY.md
+
+# Rollback a wrong learning
+git checkout HEAD~1 -- .specweave/skills/frontend/MEMORY.md
+```
+
+> "Git integration means full traceability. You can see exactly when and why Claude learned something. If a learning was wrong, roll it back."
+
+---
+
+## SECTION 12.75: DEPLOYMENT PLATFORMS (32:00 - 35:00)
 
 **[SCREEN: Navigate to docs/guides/deployment-platforms]**
 

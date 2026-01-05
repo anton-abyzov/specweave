@@ -27,6 +27,55 @@ find_project_root() {
 }
 
 # ============================================================================
+# SPECWEAVE INITIALIZATION GUARD
+# ============================================================================
+# CRITICAL RULE: .specweave/ folders must ONLY exist in project roots where
+# `specweave init` was explicitly run. This function validates that config.json
+# exists, proving explicit initialization.
+#
+# Usage: if is_specweave_initialized "$project_root"; then ... fi
+# ============================================================================
+
+is_specweave_initialized() {
+  local project_root="${1:-$(pwd)}"
+  local config_file="$project_root/.specweave/config.json"
+  [[ -f "$config_file" ]]
+}
+
+# Find the nearest initialized SpecWeave project root
+# Returns empty string if not found (use with: root=$(find_initialized_specweave_root) && ...)
+find_initialized_specweave_root() {
+  local dir="${1:-$(pwd)}"
+  while [[ "$dir" != "/" ]]; do
+    if is_specweave_initialized "$dir"; then
+      echo "$dir"
+      return 0
+    fi
+    dir=$(dirname "$dir")
+  done
+  return 1
+}
+
+# Ensure a directory exists ONLY if SpecWeave is initialized
+# Returns 1 (failure) if not initialized - do NOT create directories in non-projects!
+ensure_specweave_dir() {
+  local dir_path="$1"
+  local project_root="${2:-}"
+
+  # Auto-detect project root if not provided
+  if [[ -z "$project_root" ]]; then
+    project_root=$(find_initialized_specweave_root) || return 1
+  fi
+
+  if ! is_specweave_initialized "$project_root"; then
+    return 1  # NOT initialized - refuse to create directories
+  fi
+
+  mkdir -p "$dir_path" 2>/dev/null
+  return $?
+}
+
+# ============================================================================
 # KILL SWITCH
 # ============================================================================
 
@@ -86,8 +135,10 @@ log_hook() {
   shift
   local msg="$*"
   local project_root
-  project_root=$(find_project_root) || return
+  # Use find_initialized_specweave_root to ensure we only log to initialized projects
+  project_root=$(find_initialized_specweave_root) || return
   local log_file="$project_root/.specweave/logs/hooks.log"
-  mkdir -p "$(dirname "$log_file")" 2>/dev/null
+  # Use ensure_specweave_dir to create logs directory only if initialized
+  ensure_specweave_dir "$(dirname "$log_file")" "$project_root" || return
   echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] [$level] $msg" >> "$log_file" 2>/dev/null
 }

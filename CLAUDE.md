@@ -44,6 +44,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
 5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders
 6. **⛔ Increment cleanliness**: ONLY 4 files at increment root (metadata.json, spec.md, plan.md, tasks.md). ALL other .md files → `reports/`, logs → `logs/`, scripts → `scripts/`
+7. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run. NEVER create `.specweave/` in parent, nested, or unrelated directories. Check `config.json` exists before creating ANY `.specweave/` subfolders.
 <!-- SW:END:rules -->
 
 <!-- SW:SECTION:workflow version="1.0.90" -->
@@ -57,7 +58,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 | `/sw:do` | Execute tasks |
 | `/sw:auto` | Autonomous execution |
 | `/sw:auto-status` | Check auto session |
-| `/sw:cancel-auto` | Cancel auto session |
+| `/sw:cancel-auto` | ⚠️ EMERGENCY ONLY manual cancel |
 | `/sw:validate` | Quality check |
 | `/sw:done` | Close |
 | `/sw-github:sync` | GitHub sync |
@@ -413,7 +414,11 @@ wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 
 ### Implementation
 
-**Claude Code**: `/sw:auto` (autonomous mode) | `/sw:auto-status` (progress) | `/sw:cancel-auto` (stop)
+**Claude Code**: `/sw:auto` (autonomous mode) | `/sw:auto-status` (progress)
+
+**To pause**: Just close Claude Code session, resume with `/sw:do`
+
+**Emergency cancel**: `/sw:cancel-auto` (rarely needed - prefer closing session)
 
 **Main Flags**:
 - `--build`: Run build after every task (e.g., `npm run build`, `npm run typecheck`)

@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { AutoLogEntry, SessionSummary, IncrementCompletionReport } from './types.js';
 import { consoleLogger as baseLogger } from '../../utils/logger.js';
+import { isSpecWeaveInitialized, ensureSpecWeaveDir } from '../../utils/fs-native.js';
 
 const LOGS_DIR = '.specweave/logs';
 
@@ -16,19 +17,24 @@ export class AutoLogger {
   private sessionId: string;
   private logFile: string;
   private entries: AutoLogEntry[] = [];
+  private loggingEnabled: boolean;
 
   constructor(projectRoot: string, sessionId: string) {
     this.projectRoot = projectRoot;
     this.logsDir = path.join(projectRoot, LOGS_DIR);
     this.sessionId = sessionId;
     this.logFile = path.join(this.logsDir, `auto-${sessionId}.json`);
-    this.ensureLogsDir();
+    // Only enable logging if SpecWeave is initialized (has config.json)
+    this.loggingEnabled = this.ensureLogsDir();
   }
 
-  private ensureLogsDir(): void {
-    if (!fs.existsSync(this.logsDir)) {
-      fs.mkdirSync(this.logsDir, { recursive: true });
+  private ensureLogsDir(): boolean {
+    // CRITICAL: Only create logs dir if SpecWeave is properly initialized
+    if (!isSpecWeaveInitialized(this.projectRoot)) {
+      baseLogger.warn('AutoLogger: SpecWeave not initialized, logging disabled');
+      return false;
     }
+    return ensureSpecWeaveDir(this.logsDir, this.projectRoot);
   }
 
   /**
@@ -193,6 +199,9 @@ export class AutoLogger {
    * Append entry to log file
    */
   private appendToFile(entry: AutoLogEntry): void {
+    if (!this.loggingEnabled) {
+      return; // Skip file logging if SpecWeave not initialized
+    }
     try {
       const line = JSON.stringify(entry) + '\n';
       fs.appendFileSync(this.logFile, line, 'utf-8');
@@ -371,6 +380,10 @@ export class AutoLogger {
    * Write summary to markdown file
    */
   writeSummaryMarkdown(summary: SessionSummary): string {
+    if (!this.loggingEnabled) {
+      baseLogger.info('AutoLogger: Summary not written (SpecWeave not initialized)');
+      return '';
+    }
     const summaryPath = path.join(this.logsDir, `auto-${this.sessionId}-summary.md`);
 
     const durationStr = formatDuration(summary.duration);

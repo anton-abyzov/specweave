@@ -131,6 +131,37 @@ export declare function move(src: string, dest: string, options?: {
 export declare function moveSync(src: string, dest: string, options?: {
     overwrite?: boolean;
 }): void;
+/**
+ * Check if SpecWeave is properly initialized in a directory.
+ *
+ * CRITICAL RULE: .specweave/ folders must ONLY be created in project roots
+ * where `specweave init` was explicitly run. This function validates that
+ * config.json exists, proving explicit initialization.
+ *
+ * @param projectRoot - The directory to check (defaults to cwd)
+ * @returns true if SpecWeave is initialized (has config.json), false otherwise
+ */
+export declare function isSpecWeaveInitialized(projectRoot?: string): boolean;
+/**
+ * Find the nearest SpecWeave project root by walking up the directory tree.
+ *
+ * @param startDir - Starting directory (defaults to cwd)
+ * @returns The project root path, or null if not found
+ */
+export declare function findSpecWeaveRoot(startDir?: string): string | null;
+/**
+ * Ensure a directory exists within a SpecWeave project.
+ * ONLY creates the directory if SpecWeave is initialized.
+ *
+ * @param dirPath - The directory path to ensure
+ * @param projectRoot - Optional project root (auto-detected from dirPath if not provided)
+ * @returns true if directory was created/exists, false if SpecWeave not initialized
+ */
+export declare function ensureSpecWeaveDir(dirPath: string, projectRoot?: string): boolean;
+/**
+ * Async version of ensureSpecWeaveDir
+ */
+export declare function ensureSpecWeaveDirAsync(dirPath: string, projectRoot?: string): Promise<boolean>;
 export declare const readFile: typeof fsPromises.readFile, writeFile: typeof fsPromises.writeFile, appendFile: typeof fsPromises.appendFile, stat: typeof fsPromises.stat, lstat: typeof fsPromises.lstat, readdir: typeof fsPromises.readdir, access: typeof fsPromises.access, unlink: typeof fsPromises.unlink, rmdir: typeof fsPromises.rmdir, rename: typeof fsPromises.rename, chmod: typeof fsPromises.chmod, copyFile: typeof fsPromises.copyFile, mkdtemp: typeof fsPromises.mkdtemp, mkdir: typeof fsPromises.mkdir, symlink: typeof fsPromises.symlink, readlink: typeof fsPromises.readlink;
 export declare const renameSync: typeof fsRenameSync;
 export declare const mkdtempSync: typeof fsMkdtempSync;
@@ -178,6 +209,10 @@ declare const _default: {
     copyFileSync: typeof copyFileSync;
     renameSync: typeof fsRenameSync;
     mkdtempSync: typeof fsMkdtempSync;
+    isSpecWeaveInitialized: typeof isSpecWeaveInitialized;
+    findSpecWeaveRoot: typeof findSpecWeaveRoot;
+    ensureSpecWeaveDir: typeof ensureSpecWeaveDir;
+    ensureSpecWeaveDirAsync: typeof ensureSpecWeaveDirAsync;
 };
 export default _default;
 //# sourceMappingURL=fs-native.d.ts.map
