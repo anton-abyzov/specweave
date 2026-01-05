@@ -8,10 +8,12 @@ usage: /sw:jobs [--all] [--id <job-id>]
 
 **NOTE**: This command is normally intercepted by the UserPromptSubmit hook for instant execution (<100ms). If the hook output isn't displayed, execute the CLI fallback below.
 
-When this command is invoked, immediately execute via CLI:
+When this command is invoked, extract any arguments from the user's prompt and execute:
 
 ```bash
-specweave jobs $ARGUMENTS
+specweave jobs
 ```
+
+If the user provided arguments (e.g., `/sw:jobs --all`), pass them to the command.
 
 **CRITICAL**: Execute the command directly with NO commentary before or after. Show the output to the user.
