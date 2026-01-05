@@ -269,7 +269,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.90" -->
+<!-- SW:SECTION:troubleshooting version="1.0.93" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -280,6 +280,9 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | Find increment | `/sw:status` |
 | Root polluted | Move files to `.specweave/increments/####/reports/` |
 | Duplicate IDs | `/sw:fix-duplicates` |
+| `/sw:jobs`, `/sw:status`, `/sw:progress` not working | VSCode: Restart Claude Code | CLI: `npm install -g specweave@latest` |
+| Instant commands showing "blocked by hook" | Restart Claude Code (VSCode) or update to v1.0.91+ |
+| Jobs command showing incomplete output | Update to v1.0.93+ for timestamps and full details |
 | GitHub not syncing | Check `sync.github.enabled: true` AND `canUpdateExternalItems: true` in config.json |
 | GitHub issues not updating | Run `/sw-github:sync {id}` explicitly; check `.specweave/logs/throttle.log` |
 | Permission denied | Set `canUpsertInternalItems: true` AND `canUpdateExternalItems: true` in config.json |
@@ -410,7 +413,14 @@ wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 
 ### Implementation
 
-**Claude Code**: `/sw:do` (continues till done) | `/sw:auto-status` (progress) | `/sw:cancel-auto` (stop)
+**Claude Code**: `/sw:auto` (autonomous mode) | `/sw:auto-status` (progress) | `/sw:cancel-auto` (stop)
+
+**Main Flags**:
+- `--build`: Run build after every task (e.g., `npm run build`, `npm run typecheck`)
+- `--e2e`: Run E2E tests after every task (e.g., `npx playwright test`)
+- `--tests`: Run unit tests after every task (e.g., `npm test`, `vitest`)
+
+**Example**: `/sw:auto --build --e2e` → Build + E2E after EVERY task completion
 
 **Other AI**: Loop check tasks.md `[x]` status → Max 100 iter → Human gates for: publish, force-push, prod deploy, migrations
 

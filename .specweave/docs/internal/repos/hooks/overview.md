@@ -46,3 +46,5 @@ Cross-platform hooks module for SpecWeave that provides platform-independent hoo
 - Development vs production mode detected by checking node_modules vs local dist paths
 - All hooks return JSON to stdout following Claude Code hook protocol
 - Environment variable SPECWEAVE_BACKGROUND_PROCESS marks spawned background processes
+- **VSCode Detection Pattern** (v1.0.91+): Hooks detect VSCode via `CLAUDE_CODE_ENTRYPOINT=claude-vscode` and return `{"decision":"approve"}` instead of `{"decision":"block"}` to allow fallback command execution
+- Instant commands (jobs, status, progress, workflow, costs, analytics) use hook-based execution in CLI (<100ms) and fallback to CLI commands in VSCode
