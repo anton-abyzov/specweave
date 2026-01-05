@@ -183,6 +183,7 @@ flowchart TB
 - **3-Gate Quality Validation** — Tasks, tests (60%+), and docs verified before closing
 - **15+ Specialized Agents** — PM, Architect, Tech Lead, QA, Security, DevOps work autonomously
 - **Living Documentation** — Specs auto-update after every task via hooks
+- **🧠 Self-Improving Skills (NEW!)** — [Claude learns from corrections](/docs/guides/self-improving-skills), applies patterns automatically in future sessions
 
 ---
 

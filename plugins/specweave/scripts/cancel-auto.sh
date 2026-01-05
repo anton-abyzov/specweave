@@ -1,17 +1,18 @@
 #!/bin/bash
-# cancel-auto.sh - Cancel Auto Session
+# cancel-auto.sh - EMERGENCY Cancel Auto Session
+#
+# ⚠️  EMERGENCY USE ONLY - For manual cancellation only.
+# Auto mode runs until completion. Just close Claude Code to pause.
 #
 # Usage: cancel-auto.sh [OPTIONS]
 #
 # Options:
 #   --force     Force cancel without confirmation
-#   --reason    Reason for cancellation
 #   -h, --help  Show this help
 
 set -e
 
 FORCE=false
-REASON=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -19,16 +20,14 @@ while [[ $# -gt 0 ]]; do
             FORCE=true
             shift
             ;;
-        --reason)
-            REASON="$2"
-            shift 2
-            ;;
         -h|--help)
             grep '^#' "$0" | grep -v '!/bin/bash' | sed 's/^# //'
             exit 0
             ;;
         *)
-            shift
+            echo "❌ Unknown option: $1"
+            echo "Run with -h for help"
+            exit 1
             ;;
     esac
 done
@@ -95,9 +94,8 @@ if [ "$FORCE" != "true" ]; then
 fi
 
 # Update session status
-CANCEL_REASON="${REASON:-user_cancelled}"
-echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg reason "$CANCEL_REASON" \
-    '.status = "cancelled" | .endTime = $now | .endReason = $reason' \
+echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    '.status = "cancelled" | .endTime = $now | .endReason = "User manually cancelled"' \
     > "$SESSION_FILE"
 
 # Remove lock
@@ -105,7 +103,7 @@ rm -f "$LOCK_FILE"
 
 # Log cancellation
 mkdir -p "$LOGS_DIR"
-echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"session_cancel\",\"sessionId\":\"$SESSION_ID\",\"reason\":\"$CANCEL_REASON\",\"iterations\":$ITERATION}" >> "$LOGS_DIR/auto-sessions.log"
+echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"session_cancel\",\"sessionId\":\"$SESSION_ID\",\"reason\":\"user_manual_cancel\",\"iterations\":$ITERATION}" >> "$LOGS_DIR/auto-sessions.log"
 
 # Generate summary report
 SUMMARY_FILE="$LOGS_DIR/auto-$SESSION_ID-summary.md"
@@ -114,8 +112,8 @@ cat > "$SUMMARY_FILE" << EOF
 # Auto Session Summary
 
 **Session ID**: $SESSION_ID
-**Status**: ❌ Cancelled
-**End Reason**: $CANCEL_REASON
+**Status**: ❌ Manually Cancelled
+**End Reason**: User manually cancelled session
 
 ## Timeline
 

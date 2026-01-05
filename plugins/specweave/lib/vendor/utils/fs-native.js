@@ -266,6 +266,69 @@ export function moveSync(src, dest, options) {
         }
     }
 }
+// ============================================================================
+// SpecWeave Initialization Guard
+// ============================================================================
+/**
+ * Check if SpecWeave is properly initialized in a directory.
+ *
+ * CRITICAL RULE: .specweave/ folders must ONLY be created in project roots
+ * where `specweave init` was explicitly run. This function validates that
+ * config.json exists, proving explicit initialization.
+ *
+ * @param projectRoot - The directory to check (defaults to cwd)
+ * @returns true if SpecWeave is initialized (has config.json), false otherwise
+ */
+export function isSpecWeaveInitialized(projectRoot) {
+    const root = projectRoot || process.cwd();
+    const configPath = path.join(root, '.specweave', 'config.json');
+    return existsSync(configPath);
+}
+/**
+ * Find the nearest SpecWeave project root by walking up the directory tree.
+ *
+ * @param startDir - Starting directory (defaults to cwd)
+ * @returns The project root path, or null if not found
+ */
+export function findSpecWeaveRoot(startDir) {
+    let dir = startDir || process.cwd();
+    while (dir !== path.dirname(dir)) { // Stop at filesystem root
+        if (isSpecWeaveInitialized(dir)) {
+            return dir;
+        }
+        dir = path.dirname(dir);
+    }
+    return null;
+}
+/**
+ * Ensure a directory exists within a SpecWeave project.
+ * ONLY creates the directory if SpecWeave is initialized.
+ *
+ * @param dirPath - The directory path to ensure
+ * @param projectRoot - Optional project root (auto-detected from dirPath if not provided)
+ * @returns true if directory was created/exists, false if SpecWeave not initialized
+ */
+export function ensureSpecWeaveDir(dirPath, projectRoot) {
+    // Auto-detect project root from dirPath if not provided
+    const root = projectRoot || findSpecWeaveRoot(path.dirname(dirPath));
+    if (!root || !isSpecWeaveInitialized(root)) {
+        // SpecWeave not initialized - do NOT create any directories
+        return false;
+    }
+    ensureDirSync(dirPath);
+    return true;
+}
+/**
+ * Async version of ensureSpecWeaveDir
+ */
+export async function ensureSpecWeaveDirAsync(dirPath, projectRoot) {
+    const root = projectRoot || findSpecWeaveRoot(path.dirname(dirPath));
+    if (!root || !isSpecWeaveInitialized(root)) {
+        return false;
+    }
+    await ensureDir(dirPath);
+    return true;
+}
 // Re-export common fs/promises methods for convenience
 export const { readFile, writeFile, appendFile, stat, lstat, // Added for symlink detection
 readdir, access, unlink, rmdir, rename, chmod, copyFile, mkdtemp, mkdir, // Added for test compatibility
@@ -324,5 +387,10 @@ export default {
     copyFileSync,
     renameSync,
     mkdtempSync,
+    // SpecWeave guards
+    isSpecWeaveInitialized,
+    findSpecWeaveRoot,
+    ensureSpecWeaveDir,
+    ensureSpecWeaveDirAsync,
 };
 //# sourceMappingURL=fs-native.js.map
