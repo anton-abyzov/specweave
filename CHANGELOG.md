@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.89] - 2026-01-04
+
+### 🔧 Bug Fixes
+
+- Fixed `/sw:jobs`, `/sw:status`, and `/sw:progress` commands not working in VSCode
+- Changed command fallbacks from bash scripts to globally-available CLI commands
+- Hook output now properly falls back to `specweave jobs/status/progress $ARGUMENTS`
+- Resolved `${CLAUDE_PLUGIN_ROOT}` variable not being set in Claude's execution context
+
+---
+
 ## [1.0.40] - 2025-12-23
 
 ### 🔧 Maintenance
