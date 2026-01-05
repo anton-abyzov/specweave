@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.90] - 2026-01-04
+
+### 🔧 Bug Fixes
+
+- **CRITICAL FIX**: Removed `$ARGUMENTS` placeholder from command fallbacks that was causing "too many arguments" errors
+- Commands now instruct Claude to explicitly extract and pass arguments from the user's prompt
+- This fully fixes `/sw:jobs`, `/sw:status`, and `/sw:progress` commands in all execution contexts
+
+---
+
 ## [1.0.89] - 2026-01-04
 
 ### 🔧 Bug Fixes
