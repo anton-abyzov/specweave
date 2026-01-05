@@ -4,6 +4,18 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.93] - 2026-01-04
+
+### 🔧 Bug Fixes
+
+- **`/sw:jobs` output improvements**:
+  - Now shows completed job timestamps ("3 days ago", "5 hours ago")
+  - Removed contradictory "use --all to see" message when jobs are already displayed
+  - Fixed incomplete output where job details weren't showing
+  - Better user experience with complete job history at a glance
+
+---
+
 ## [1.0.92] - 2026-01-04
 
 ### 🎯 Improvements
