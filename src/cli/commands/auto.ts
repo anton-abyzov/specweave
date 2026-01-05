@@ -19,6 +19,7 @@ import { Command } from 'commander';
 import { SessionStateManager } from '../../core/auto/session-state.js';
 import { CompletionCondition } from '../../core/auto/types.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
+import { isSpecWeaveInitialized, ensureSpecWeaveDir } from '../../utils/fs-native.js';
 
 export interface AutoCommandOptions {
   maxIterations?: string | number;
@@ -76,9 +77,8 @@ export function createAutoCommand(): Command {
     .action(async (incrementIds: string[], options: AutoCommandOptions) => {
       const projectPath = process.cwd();
 
-      // Check if SpecWeave is initialized
-      const specweavePath = path.join(projectPath, '.specweave');
-      if (!fs.existsSync(specweavePath)) {
+      // Check if SpecWeave is properly initialized (must have config.json)
+      if (!isSpecWeaveInitialized(projectPath)) {
         console.log(chalk.yellow('No SpecWeave project found in current directory.'));
         console.log(chalk.gray('Run `specweave init` to initialize a project.'));
         return;
@@ -110,13 +110,9 @@ export async function handleAutoCommand(
   const incrementsDir = path.join(projectPath, '.specweave/increments');
   const logsDir = path.join(projectPath, '.specweave/logs');
 
-  // Ensure directories exist
-  if (!fs.existsSync(stateDir)) {
-    fs.mkdirSync(stateDir, { recursive: true });
-  }
-  if (!fs.existsSync(logsDir)) {
-    fs.mkdirSync(logsDir, { recursive: true });
-  }
+  // Ensure directories exist (using guarded function)
+  ensureSpecWeaveDir(stateDir, projectPath);
+  ensureSpecWeaveDir(logsDir, projectPath);
 
   // Parse options
   const maxIterations = parseInt(options.maxIterations?.toString() || '2500', 10);

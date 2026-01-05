@@ -44,6 +44,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
 5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders
 6. **⛔ Increment cleanliness**: ONLY 4 files at increment root (metadata.json, spec.md, plan.md, tasks.md). ALL other .md files → `reports/`, logs → `logs/`, scripts → `scripts/`
+7. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run. NEVER create `.specweave/` in parent, nested, or unrelated directories. Check `config.json` exists before creating ANY `.specweave/` subfolders.
 <!-- /SECTION -->
 
 <!-- SECTION:workflow required -->
@@ -57,13 +58,57 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 | `/sw:do` | Execute tasks |
 | `/sw:auto` | Autonomous execution |
 | `/sw:auto-status` | Check auto session |
-| `/sw:cancel-auto` | Cancel auto session |
+| `/sw:cancel-auto` | ⚠️ EMERGENCY ONLY manual cancel |
 | `/sw:validate` | Quality check |
 | `/sw:done` | Close |
 | `/sw-github:sync` | GitHub sync |
 | `/sw-jira:sync` | Jira sync |
 
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
+<!-- /SECTION -->
+
+<!-- SECTION:reflect -->
+## Self-Improving Skills (Reflect)
+
+**Learn once, never repeat.** Claude learns from corrections and patterns across sessions.
+
+| Cmd | Action |
+|-----|--------|
+| `/sw:reflect` | Analyze session, extract learnings |
+| `/sw:reflect-on` | Enable auto-reflection on session end |
+| `/sw:reflect-off` | Disable auto-reflection |
+| `/sw:reflect-status` | Show memory status |
+
+**How it works**:
+1. User corrects Claude → Reflect captures learning
+2. Learning saved to centralized memory files (by category)
+3. Future sessions apply learned patterns automatically
+
+**CRITICAL - Memory Loading**: Before starting work, **check centralized memory** for learned patterns:
+```bash
+# Check if memory exists and read relevant categories
+ls .specweave/memory/*.md 2>/dev/null && cat .specweave/memory/*.md
+# Also check global memory
+ls ~/.specweave/memory/*.md 2>/dev/null
+```
+
+**Centralized Memory Files** (no skill copies needed!):
+```
+.specweave/memory/                  # Project learnings
+├── component-usage.md              # UI patterns
+├── api-patterns.md                 # API patterns
+├── testing.md                      # Test patterns
+├── deployment.md                   # Deploy patterns
+└── general.md                      # Misc patterns
+
+~/.specweave/memory/                # Global learnings (all projects)
+```
+
+**Signals detected**:
+- **Corrections** (high confidence): "No, use X instead", "Wrong, always do Y"
+- **Approvals** (medium confidence): "Perfect!", "That's exactly right"
+
+**Enable auto-learning**: `/sw:reflect-on` → Stop hook analyzes sessions automatically
 <!-- /SECTION -->
 
 <!-- SECTION:context -->
@@ -410,7 +455,11 @@ wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 
 ### Implementation
 
-**Claude Code**: `/sw:do` (continues till done) | `/sw:auto-status` (progress) | `/sw:cancel-auto` (stop)
+**Claude Code**: `/sw:auto` (autonomous mode) | `/sw:auto-status` (progress)
+
+**To pause**: Just close Claude Code session, resume with `/sw:do`
+
+**Emergency cancel**: `/sw:cancel-auto` (rarely needed - prefer closing session)
 
 **Other AI**: Loop check tasks.md `[x]` status → Max 100 iter → Human gates for: publish, force-push, prod deploy, migrations
 
