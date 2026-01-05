@@ -63,8 +63,22 @@ escape_json() {
   printf '%s' "$input" | jq -Rs '.' | sed 's/^"//; s/"$//'
 }
 
+# Helper: Check if running in VSCode extension
+# VSCode sets CLAUDE_CODE_ENTRYPOINT=claude-vscode
+# Returns 0 (true) if VSCode, 1 (false) if CLI
+is_vscode() {
+  [[ -n "${CLAUDE_CODE_ENTRYPOINT}" ]] && [[ "${CLAUDE_CODE_ENTRYPOINT}" == "claude-vscode" ]]
+}
+
 # /sw:jobs → Execute read-jobs.sh (pure bash, ~2ms)
 if echo "$PROMPT" | grep -qE "^/sw:jobs($| )"; then
+  # VSCode mode: Skip hook execution, let command file handle it (fixes blocked UI issue)
+  if is_vscode; then
+    echo '{"decision":"approve"}'
+    exit 0
+  fi
+
+  # CLI mode: Execute instantly and block with output
   ARGS=$(echo "$PROMPT" | sed 's|^/sw:jobs\s*||')
   if [[ -f "$SCRIPTS_DIR/read-jobs.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-jobs.sh" $ARGS 2>&1)
@@ -80,6 +94,13 @@ fi
 
 # /sw:progress → Execute read-progress.sh (pure bash, ~30ms)
 if echo "$PROMPT" | grep -qE "^/sw:progress($| )"; then
+  # VSCode mode: Skip hook execution, let command file handle it (fixes blocked UI issue)
+  if is_vscode; then
+    echo '{"decision":"approve"}'
+    exit 0
+  fi
+
+  # CLI mode: Execute instantly and block with output
   ARGS=$(echo "$PROMPT" | sed 's|^/sw:progress\s*||')
   if [[ -f "$SCRIPTS_DIR/read-progress.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-progress.sh" $ARGS 2>&1)
@@ -95,6 +116,13 @@ fi
 
 # /sw:status → Execute read-status.sh (pure bash, ~150ms)
 if echo "$PROMPT" | grep -qE "^/sw:status($| )"; then
+  # VSCode mode: Skip hook execution, let command file handle it (fixes blocked UI issue)
+  if is_vscode; then
+    echo '{"decision":"approve"}'
+    exit 0
+  fi
+
+  # CLI mode: Execute instantly and block with output
   ARGS=$(echo "$PROMPT" | sed 's|^/sw:status\s*||')
   if [[ -f "$SCRIPTS_DIR/read-status.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-status.sh" $ARGS 2>&1)
@@ -110,6 +138,13 @@ fi
 
 # /sw:workflow → Execute read-workflow.sh (pure bash, ~100ms)
 if echo "$PROMPT" | grep -qE "^/sw:workflow($| )"; then
+  # VSCode mode: Skip hook execution, let command file handle it (fixes blocked UI issue)
+  if is_vscode; then
+    echo '{"decision":"approve"}'
+    exit 0
+  fi
+
+  # CLI mode: Execute instantly and block with output
   ARGS=$(echo "$PROMPT" | sed 's|^/sw:workflow\s*||')
   if [[ -f "$SCRIPTS_DIR/read-workflow.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-workflow.sh" $ARGS 2>&1)
@@ -123,6 +158,13 @@ fi
 
 # /sw:costs → Execute read-costs.sh (pure bash, ~50ms)
 if echo "$PROMPT" | grep -qE "^/sw:costs($| )"; then
+  # VSCode mode: Skip hook execution, let command file handle it (fixes blocked UI issue)
+  if is_vscode; then
+    echo '{"decision":"approve"}'
+    exit 0
+  fi
+
+  # CLI mode: Execute instantly and block with output
   ARGS=$(echo "$PROMPT" | sed 's|^/sw:costs\s*||')
   if [[ -f "$SCRIPTS_DIR/read-costs.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-costs.sh" $ARGS 2>&1)
@@ -136,6 +178,13 @@ fi
 
 # /sw:analytics → Execute read-analytics.sh (pure bash, ~50ms)
 if echo "$PROMPT" | grep -qE "^/sw:analytics($| )"; then
+  # VSCode mode: Skip hook execution, let command file handle it (fixes blocked UI issue)
+  if is_vscode; then
+    echo '{"decision":"approve"}'
+    exit 0
+  fi
+
+  # CLI mode: Execute instantly and block with output
   ARGS=$(echo "$PROMPT" | sed 's|^/sw:analytics\s*||')
   if [[ -f "$SCRIPTS_DIR/read-analytics.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-analytics.sh" $ARGS 2>&1)

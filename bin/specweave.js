@@ -578,25 +578,8 @@ program
   .option('--kill <jobId>', 'Kill running background job')
   .option('--resume <jobId>', 'Resume paused job')
   .action(async (options) => {
-    const { createJobsCommand } = await import('../dist/src/cli/commands/jobs.js');
-    const jobsCmd = createJobsCommand();
-    // Execute the action directly with options
-    const projectPath = process.cwd();
-    const path = await import('path');
-    const fs = await import('../dist/src/utils/fs-native.js');
-
-    // Check if SpecWeave is initialized
-    const specweavePath = path.join(projectPath, '.specweave');
-    if (!fs.existsSync(specweavePath)) {
-      console.log(chalk.yellow('No SpecWeave project found in current directory.'));
-      console.log(chalk.gray('Run `specweave init` to initialize a project.'));
-      return;
-    }
-
-    // Import and use the handlers
-    const jobsModule = await import('../dist/src/cli/commands/jobs.js');
-    // Re-run the action
-    await jobsCmd.parseAsync(['node', 'jobs', ...process.argv.slice(3)], { from: 'user' });
+    const { jobsCommand } = await import('../dist/src/cli/commands/jobs.js');
+    await jobsCommand(options);
   });
 
 // Living-docs command - Launch or resume Living Docs Builder independently

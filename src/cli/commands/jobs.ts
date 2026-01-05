@@ -30,6 +30,51 @@ import {
 import type { BackgroundJob, ImportJobConfig, SyncJobConfig } from '../../core/background/types.js';
 import * as fs from '../../utils/fs-native.js';
 
+interface JobsCommandOptions {
+  all?: boolean;
+  id?: string;
+  logs?: string;
+  follow?: string;
+  kill?: string;
+  resume?: string;
+}
+
+/**
+ * Execute jobs command logic
+ * Exported for use in bin/specweave.js
+ */
+export async function jobsCommand(options: JobsCommandOptions = {}): Promise<void> {
+  const projectPath = process.cwd();
+
+  // Check if SpecWeave is initialized
+  const specweavePath = path.join(projectPath, '.specweave');
+  if (!fs.existsSync(specweavePath)) {
+    console.log(chalk.yellow('No SpecWeave project found in current directory.'));
+    console.log(chalk.gray('Run `specweave init` to initialize a project.'));
+    return;
+  }
+
+  try {
+    if (options.kill) {
+      await handleKill(projectPath, options.kill);
+    } else if (options.resume) {
+      await handleResume(projectPath, options.resume);
+    } else if (options.logs) {
+      await handleLogs(projectPath, options.logs);
+    } else if (options.follow) {
+      await handleFollow(projectPath, options.follow);
+    } else if (options.id) {
+      await handleJobDetails(projectPath, options.id);
+    } else {
+      await handleListJobs(projectPath, options.all);
+    }
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(chalk.red(`Error: ${errorMessage}`));
+    process.exit(1);
+  }
+}
+
 export function createJobsCommand(): Command {
   const cmd = new Command('jobs')
     .description('Monitor and manage background jobs (imports, cloning, sync)')
@@ -40,35 +85,7 @@ export function createJobsCommand(): Command {
     .option('--kill <jobId>', 'Kill running background job')
     .option('--resume <jobId>', 'Resume paused job')
     .action(async (options) => {
-      const projectPath = process.cwd();
-
-      // Check if SpecWeave is initialized
-      const specweavePath = path.join(projectPath, '.specweave');
-      if (!fs.existsSync(specweavePath)) {
-        console.log(chalk.yellow('No SpecWeave project found in current directory.'));
-        console.log(chalk.gray('Run `specweave init` to initialize a project.'));
-        return;
-      }
-
-      try {
-        if (options.kill) {
-          await handleKill(projectPath, options.kill);
-        } else if (options.resume) {
-          await handleResume(projectPath, options.resume);
-        } else if (options.logs) {
-          await handleLogs(projectPath, options.logs);
-        } else if (options.follow) {
-          await handleFollow(projectPath, options.follow);
-        } else if (options.id) {
-          await handleJobDetails(projectPath, options.id);
-        } else {
-          await handleListJobs(projectPath, options.all);
-        }
-      } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(chalk.red(`Error: ${errorMessage}`));
-        process.exit(1);
-      }
+      await jobsCommand(options);
     });
 
   return cmd;
