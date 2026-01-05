@@ -11,7 +11,7 @@
 set -e
 
 # Parse arguments
-SHOW_ALL=false
+SHOW_ALL=true  # Changed: Show all jobs by default (including completed)
 SPECIFIC_ID=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
