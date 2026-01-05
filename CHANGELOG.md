@@ -14,6 +14,16 @@ All notable changes to SpecWeave will be documented in this file.
   - Fixed incomplete output where job details weren't showing
   - Better user experience with complete job history at a glance
 
+### 📚 Documentation
+
+- **Comprehensive documentation updates for instant command fixes**:
+  - Updated [CLAUDE.md](CLAUDE.md) troubleshooting section with instant command fixes
+  - Added auto mode flags documentation (`--build`, `--e2e`, `--tests`)
+  - Created [ADR-0223](docs/internal/architecture/adr/0223-vscode-hook-detection-pattern.md) documenting VSCode hook detection architecture
+  - Updated [hooks overview](docs/internal/repos/hooks/overview.md) with VSCode detection pattern
+  - Updated [CLI overview](docs/internal/repos/cli/overview.md) with direct function invocation pattern
+  - Created [instant commands troubleshooting guide](docs/internal/troubleshooting/instant-commands-not-working.md) with complete fix history
+
 ---
 
 ## [1.0.92] - 2026-01-04
