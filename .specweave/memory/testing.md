@@ -4,3 +4,4 @@
 
 - → use vi.fn() for mocks in Vitest, never jest.fn()
 - → use os.tmpdir() for test temp files, not project cwd
+- ✗→✓ Always specify registry to avoid ~/
