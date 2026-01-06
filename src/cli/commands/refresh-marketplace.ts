@@ -5,7 +5,8 @@
  * Automates the complete marketplace refresh process:
  * 1. Updates or adds marketplace (GitHub or local)
  * 2. Installs all plugins from marketplace
- * 3. Updates instruction files (CLAUDE.md, AGENTS.md)
+ * 3. Merges skill memories (preserves user learnings)
+ * 4. Updates instruction files (CLAUDE.md, AGENTS.md)
  *
  * Usage:
  *   specweave refresh-marketplace
@@ -20,6 +21,7 @@ import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import os from 'os';
+import { mergeSkillMemoriesOnRefresh } from './merge-skill-memories.js';
 
 // Configuration
 const MARKETPLACE_NAME = 'specweave';
@@ -240,8 +242,34 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
 
   console.log('');
 
-  // Step 4: Update instruction files
-  console.log(chalk.yellow('📄 Step 4: Updating instruction files...'));
+  // Step 4: Merge skill memories (preserves user learnings)
+  console.log(chalk.yellow('🧠 Step 4: Merging skill memories...'));
+
+  try {
+    const memoryResult = await mergeSkillMemoriesOnRefresh(marketplacePath, options.verbose);
+
+    if (memoryResult.skillsProcessed > 0) {
+      console.log(chalk.green(`✓ Merged ${memoryResult.skillsProcessed} skill memories`));
+      if (memoryResult.learningsPreserved > 0) {
+        console.log(chalk.gray(`  Preserved ${memoryResult.learningsPreserved} user learnings`));
+      }
+      if (memoryResult.learningsAdded > 0) {
+        console.log(chalk.gray(`  Added ${memoryResult.learningsAdded} new default learnings`));
+      }
+    } else {
+      console.log(chalk.blue('ℹ No skill memories to merge'));
+    }
+  } catch (error) {
+    console.log(chalk.yellow('⚠ Could not merge skill memories'));
+    if (options.verbose) {
+      console.log(chalk.gray(`  ${error}`));
+    }
+  }
+
+  console.log('');
+
+  // Step 5: Update instruction files
+  console.log(chalk.yellow('📄 Step 5: Updating instruction files...'));
 
   const configPath = path.join(process.cwd(), '.specweave/config.json');
 
