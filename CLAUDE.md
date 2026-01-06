@@ -1,10 +1,10 @@
-<!-- SW:META template="claude" version="1.0.98" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,principles,linking,mcp,autoexecute,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.99" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,principles,linking,mcp,autoexecute,auto,docs" -->
 
-<!-- SW:SECTION:header version="1.0.98" -->
+<!-- SW:SECTION:header version="1.0.99" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
-<!-- SW:SECTION:start version="1.0.98" -->
+<!-- SW:SECTION:start version="1.0.99" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -14,7 +14,7 @@
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.98" -->
+<!-- SW:SECTION:autodetect version="1.0.99" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -24,7 +24,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.98" -->
+<!-- SW:SECTION:metarule version="1.0.99" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -35,7 +35,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.98" -->
+<!-- SW:SECTION:rules version="1.0.99" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (spec.md, plan.md, tasks.md at root; reports/, scripts/, logs/ subfolders)
@@ -45,9 +45,10 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders
 6. **⛔ Increment cleanliness**: ONLY 4 files at increment root (metadata.json, spec.md, plan.md, tasks.md). ALL other .md files → `reports/`, logs → `logs/`, scripts → `scripts/`
 7. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run. NEVER create `.specweave/` in parent, nested, or unrelated directories. Check `config.json` exists before creating ANY `.specweave/` subfolders.
+8. **⛔ Marketplace refresh**: ALWAYS use `specweave refresh-marketplace` CLI command. NEVER suggest `scripts/refresh-marketplace.sh` - end users don't have the scripts folder (npm global install).
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.98" -->
+<!-- SW:SECTION:workflow version="1.0.99" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -67,7 +68,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:reflect version="1.0.98" -->
+<!-- SW:SECTION:reflect version="1.0.99" -->
 ## Self-Improving Skills (Reflect)
 
 **Learn once, never repeat.** Claude learns from corrections and patterns across sessions.
@@ -111,7 +112,7 @@ ls ~/.specweave/memory/*.md 2>/dev/null
 **Enable auto-learning**: `/sw:reflect-on` → Stop hook analyzes sessions automatically
 <!-- SW:END:reflect -->
 
-<!-- SW:SECTION:context version="1.0.98" -->
+<!-- SW:SECTION:context version="1.0.99" -->
 ## Living Docs Context
 
 **Before implementing features**: Check existing docs for patterns and decisions.
@@ -131,7 +132,7 @@ grep -ril "keyword" .specweave/docs/internal/
 **Use `/sw:context <topic>`** to load relevant living docs into conversation.
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:lsp version="1.0.98" -->
+<!-- SW:SECTION:lsp version="1.0.99" -->
 ## LSP-Enhanced Exploration
 
 **USE LSP ACTIVELY** for semantic code understanding (100x faster than grep).
@@ -148,7 +149,7 @@ go install golang.org/x/tools/gopls@latest  # Go
 **Best Practices**: ALWAYS use `findReferences` before refactoring | Use `goToDefinition` instead of grep | Combine with Explore agent
 <!-- SW:END:lsp -->
 
-<!-- SW:SECTION:structure version="1.0.98" -->
+<!-- SW:SECTION:structure version="1.0.99" -->
 ## Structure
 
 ```
@@ -218,7 +219,7 @@ my-project/
 ```
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.98" -->
+<!-- SW:SECTION:taskformat version="1.0.99" -->
 ## Task Format
 
 ```markdown
@@ -228,7 +229,7 @@ my-project/
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.98" -->
+<!-- SW:SECTION:secrets version="1.0.99" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -239,7 +240,7 @@ gh auth status
 ```
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.98" -->
+<!-- SW:SECTION:syncing version="1.0.99" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **After increment creation**: Run `/sw-github:sync {id}` to create issues!
@@ -267,7 +268,7 @@ Living docs sync ≠ External sync. They are separate:
 **Verify tokens**: `grep GITHUB_TOKEN .env` | `gh auth status`
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:mapping version="1.0.98" -->
+<!-- SW:SECTION:mapping version="1.0.99" -->
 ## GitHub Mapping
 
 | SpecWeave | GitHub |
@@ -277,7 +278,7 @@ Living docs sync ≠ External sync. They are separate:
 | Task T-XXX | Checkbox |
 <!-- SW:END:mapping -->
 
-<!-- SW:SECTION:testing version="1.0.98" -->
+<!-- SW:SECTION:testing version="1.0.99" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -289,7 +290,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:api version="1.0.98" -->
+<!-- SW:SECTION:api version="1.0.99" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** OpenAPI = source of truth → Postman derived from it.
@@ -308,18 +309,19 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 **Import**: Postman → Import collection + env → Fill secrets → Select env
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.98" -->
+<!-- SW:SECTION:limits version="1.0.99" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.98" -->
+<!-- SW:SECTION:troubleshooting version="1.0.99" -->
 ## Troubleshooting
 
 | Issue | Fix |
 |-------|-----|
 | Skills missing | Restart Claude Code |
+| Plugins outdated | `specweave refresh-marketplace` (NEVER use `scripts/refresh-marketplace.sh` - that's for contributors only!) |
 | Commands gone | `/plugin list --installed` |
 | Out of sync | `/sw:sync-tasks` |
 | Find increment | `/sw:status` |
@@ -333,7 +335,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:principles version="1.0.98" -->
+<!-- SW:SECTION:principles version="1.0.99" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -343,7 +345,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 5. **Clean**: All files in increment folders
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.98" -->
+<!-- SW:SECTION:linking version="1.0.99" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -351,7 +353,7 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.98" -->
+<!-- SW:SECTION:mcp version="1.0.99" -->
 ## External Service Connection
 
 **Priority**: MCP Server → REST API → CLI → Direct Connection
@@ -375,7 +377,7 @@ wrangler whoami 2>/dev/null
 ```
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:autoexecute version="1.0.98" -->
+<!-- SW:SECTION:autoexecute version="1.0.99" -->
 ## Auto-Execute Rule
 
 **NEVER** output "Manual Step Required" when credentials exist. **EXECUTE DIRECTLY.**
@@ -389,7 +391,7 @@ wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 ```
 <!-- SW:END:autoexecute -->
 
-<!-- SW:SECTION:auto version="1.0.98" -->
+<!-- SW:SECTION:auto version="1.0.99" -->
 ## Auto Mode (Autonomous Execution)
 
 **Continuous execution until all tasks complete.**
@@ -466,7 +468,7 @@ wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 **Circuit Breaker**: External API fails 3x? Queue & continue
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.98" -->
+<!-- SW:SECTION:docs version="1.0.99" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com) | `.specweave/docs/internal/`
@@ -667,65 +669,71 @@ project-root/
 
 ---
 
-## Proactive Agent Usage (USE THE EXPERTS!)
+## Skills vs Agents (Automatic vs Explicit)
 
-**SpecWeave has 40+ specialized agents. USE THEM instead of doing domain work directly!**
+**SpecWeave provides expertise through Skills (auto-activate) and Agents (explicit spawn).**
 
-When the user's request involves specialized domains, **spawn the appropriate agent** via Task tool:
+### Skills (Auto-Activate)
 
-### Agent Quick Reference
+Skills activate automatically based on keywords in user prompts. No action needed.
+
+| Domain | Skill | Auto-Activates For |
+|--------|-------|-------------------|
+| **Architecture** | `sw:architect` | system design, ADR, technical design, patterns |
+| **Tech Lead** | `sw:tech-lead` | code review, best practices, refactoring |
+| **QA Lead** | `sw:qa-lead` | test strategy, QA, quality gates |
+| **Security** | `sw:security` | security review, OWASP, auth, vulnerabilities |
+| **Docs** | `sw:docs-writer` | documentation, README, API docs |
+| **Infrastructure** | `sw:infrastructure` | Terraform IaC, serverless, cloud setup |
+| **Performance** | `sw:performance` | optimization, profiling, caching |
+| **TDD** | `sw:tdd-orchestrator` | TDD, red-green-refactor, test-first |
+| **PM** | `sw:pm` | product planning, roadmap, requirements |
+
+### Agents (Task Tool Spawn)
+
+For complex, isolated tasks requiring specialized plugins, spawn via Task tool:
 
 | Domain | Agent (`subagent_type`) | Triggers |
 |--------|-------------------------|----------|
-| **Architecture** | `specweave:architect:architect` | system design, ADR, technical design, patterns |
-| **Frontend** | `specweave-frontend:frontend-architect:frontend-architect` | React, Vue, Next.js, components, UI |
-| **Backend** | `specweave-backend:database-optimizer:database-optimizer` | API, database, microservices, SQL |
-| **Kubernetes** | `specweave-kubernetes:kubernetes-architect:kubernetes-architect` | K8s, EKS, AKS, GKE, pods, helm, GitOps |
-| **Infrastructure** | `specweave-infrastructure:devops:devops` | Terraform, Docker, CI/CD, AWS, Azure, GCP |
-| **Kafka** | `specweave-kafka:kafka-architect:kafka-architect` | Kafka, topics, event streaming, MSK |
-| **Confluent** | `specweave-confluent:confluent-architect:confluent-architect` | Confluent Cloud, Schema Registry, ksqlDB |
-| **Mobile** | `specweave-mobile:mobile-architect:mobile-architect` | React Native, iOS, Android |
-| **ML/AI** | `specweave-ml:ml-engineer:ml-engineer` | ML, model, training, MLOps |
-| **Data Science** | `specweave-ml:data-scientist:data-scientist` | data analysis, notebooks, pandas |
-| **Testing/QA** | `specweave-testing:qa-engineer:qa-engineer` | E2E, Playwright, Vitest, Jest, QA |
-| **Security** | `specweave:security:security` | security review, OWASP, auth, vulnerabilities |
-| **Performance** | `specweave-infrastructure:performance-engineer:performance-engineer` | optimization, profiling, caching |
-| **Observability** | `specweave-infrastructure:observability-engineer:observability-engineer` | monitoring, Prometheus, Grafana, SLOs |
-| **SRE** | `specweave-infrastructure:sre:sre` | incidents, outages, production debugging |
-| **Network** | `specweave-infrastructure:network-engineer:network-engineer` | networking, VPC, DNS, load balancing |
-| **Diagrams** | `specweave-diagrams:diagrams-architect:diagrams-architect` | Mermaid, C4, architecture diagrams |
-| **Payments** | `specweave-payments:payment-integration:payment-integration` | Stripe, PayPal, checkout, PCI |
-| **Docs** | `specweave:docs-writer:docs-writer` | documentation, README, API docs |
-| **Release** | `specweave-release:release-manager:release-manager` | release, version, changelog, npm publish |
-| **GitHub** | `specweave-github:github-manager:github-manager` | GitHub issues, PRs, sync |
-| **JIRA** | `specweave-jira:jira-manager:jira-manager` | JIRA, epics, stories, sync |
-| **ADO** | `specweave-ado:ado-manager:ado-manager` | Azure DevOps, work items |
+| **Frontend** | `sw-frontend:frontend-architect` | React, Vue, Next.js, components, UI |
+| **Backend** | `sw-backend:database-optimizer` | API, database, microservices, SQL |
+| **Kubernetes** | `sw-k8s:kubernetes-architect` | K8s, EKS, AKS, GKE, pods, helm, GitOps |
+| **DevOps** | `sw-infra:devops` | Terraform, Docker, CI/CD, AWS, Azure, GCP |
+| **Kafka** | `sw-kafka:kafka-architect` | Kafka, topics, event streaming, MSK |
+| **Confluent** | `sw-confluent:confluent-architect` | Confluent Cloud, Schema Registry, ksqlDB |
+| **Mobile** | `sw-mobile:mobile-architect` | React Native, iOS, Android |
+| **ML/AI** | `sw-ml:ml-engineer` | ML, model, training, MLOps |
+| **Data Science** | `sw-ml:data-scientist` | data analysis, notebooks, pandas |
+| **Testing/QA** | `sw-testing:qa-engineer` | E2E, Playwright, Vitest, Jest, QA |
+| **Observability** | `sw-infra:observability-engineer` | monitoring, Prometheus, Grafana, SLOs |
+| **SRE** | `sw-infra:sre` | incidents, outages, production debugging |
+| **Network** | `sw-infra:network-engineer` | networking, VPC, DNS, load balancing |
+| **Diagrams** | `sw-diagrams:diagrams-architect` | Mermaid, C4, architecture diagrams |
+| **Payments** | `sw-payments:payment-integration` | Stripe, PayPal, checkout, PCI |
+| **Release** | `sw-release:release-manager` | release, version, changelog, npm publish |
+| **GitHub** | `sw-github:github-manager` | GitHub issues, PRs, sync |
+| **JIRA** | `sw-jira:jira-manager` | JIRA, epics, stories, sync |
+| **ADO** | `sw-ado:ado-manager` | Azure DevOps, work items |
 
 ### Usage Pattern
 
 ```typescript
-// ❌ WRONG: Doing K8s/infra/frontend work directly
-"Let me write the Kubernetes manifests..."
+// Skills auto-activate - just describe what you need:
+"Design the authentication system architecture"  // → sw:architect activates
+"Review my code for security issues"             // → sw:security activates
 
-// ✅ CORRECT: Spawn the expert agent
+// Agents spawn for isolated complex tasks:
 Task({
-  subagent_type: "specweave-kubernetes:kubernetes-architect:kubernetes-architect",
+  subagent_type: "sw-k8s:kubernetes-architect",
   prompt: "Create K8s manifests for a 3-tier web app with Ingress",
   description: "K8s manifests design"
 })
 ```
 
-### When to Use Agents
+### When to Use What
 
-- **ANY architecture decisions** → `specweave:architect:architect`
-- **Infrastructure/DevOps code** → `specweave-infrastructure:devops:devops`
-- **K8s manifests/GitOps** → `specweave-kubernetes:kubernetes-architect:kubernetes-architect`
-- **Frontend components** → `specweave-frontend:frontend-architect:frontend-architect`
-- **Test strategy/E2E** → `specweave-testing:qa-engineer:qa-engineer`
-- **Security review** → `specweave:security:security`
-- **Performance tuning** → `specweave-infrastructure:performance-engineer:performance-engineer`
-
-**Rule**: If a plugin/agent exists for the domain, USE IT. Don't reinvent expertise.
+- **Skills** (auto): Architecture decisions, code review, security review, documentation
+- **Agents** (Task tool): Complex K8s/infra, frontend architecture, ML pipelines, external syncs
 
 **Reference**: See `plugins/PLUGINS-INDEX.md` for full plugin catalog with triggers.
 

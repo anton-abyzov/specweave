@@ -3,5 +3,4 @@
 > Max 30 rules, auto-deduplicated.
 
 - ✗→✓ always use environment variables for configuration
-- ✗→✓ should use X\" (correction pattern)\n 144→ rule=$(echo \"$context\" | grep -oiE \"should (use|be) [^
-- ✗→✓ use X instead\"` - example text from SKILL
+- ✗→✓ NEVER suggest scripts/refresh-marketplace.sh to end users - ALWAYS use `specweave refresh-marketplace` CLI command (end users don't have scripts folder)
