@@ -4,6 +4,28 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.101] - 2026-01-06
+
+### 📚 Documentation
+
+- **Docusaurus documentation updates**:
+  - Added `/sw:auto` command documentation with comprehensive guide
+  - Added quick start guide for new users
+  - Added examples directory with initial examples
+  - Updated intro page and YouTube tutorial script
+  - Improved documentation navigation and content
+- **Updated project memory rules** in `.specweave/memory/general.md`
+
+---
+
+## [1.0.100] - 2026-01-06
+
+### 📚 Documentation
+
+- Documentation improvements and minor updates
+
+---
+
 ## [1.0.93] - 2026-01-04
 
 ### 🔧 Bug Fixes
