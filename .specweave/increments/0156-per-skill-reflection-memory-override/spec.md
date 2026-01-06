@@ -47,11 +47,11 @@ Implement comprehensive per-skill reflection system with:
 **So that** learnings are stored with the skill they apply to
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: Each skill has `MEMORY.md` in its directory (e.g., `skills/pm/MEMORY.md`)
-- [ ] **AC-US1-02**: MEMORY.md format matches reflect skill documentation (LRN-YYYYMMDD-XXXX IDs)
-- [ ] **AC-US1-03**: Reflection system detects skill from learning context
-- [ ] **AC-US1-04**: Skills load their MEMORY.md on activation
-- [ ] **AC-US1-05**: Centralized memory (`.specweave/memory/*.md`) still supported as fallback
+- [x] **AC-US1-01**: Each skill has `MEMORY.md` in its directory (e.g., `skills/pm/MEMORY.md`)
+- [x] **AC-US1-02**: MEMORY.md format matches reflect skill documentation (LRN-YYYYMMDD-XXXX IDs)
+- [x] **AC-US1-03**: Reflection system detects skill from learning context
+- [x] **AC-US1-04**: Skills load their MEMORY.md on activation
+- [x] **AC-US1-05**: Centralized memory (`.specweave/memory/*.md`) still supported as fallback
 
 ### US-002: SpecWeave Project Detection
 **Project**: specweave
@@ -60,10 +60,10 @@ Implement comprehensive per-skill reflection system with:
 **So that** learnings update SKILL.md directly (not MEMORY.md)
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Detect SpecWeave project by checking `package.json` name field
-- [ ] **AC-US2-02**: When in SpecWeave project, update `SKILL.md` with learnings
-- [ ] **AC-US2-03**: When in user project, update `MEMORY.md` with learnings
-- [ ] **AC-US2-04**: Clear logging shows which mode is active
+- [x] **AC-US2-01**: Detect SpecWeave project by checking `package.json` name field
+- [x] **AC-US2-02**: When in SpecWeave project, update `SKILL.md` with learnings
+- [x] **AC-US2-03**: When in user project, update `MEMORY.md` with learnings
+- [x] **AC-US2-04**: Clear logging shows which mode is active
 
 ### US-003: Smart Marketplace Merge System
 **Project**: specweave
@@ -72,11 +72,11 @@ Implement comprehensive per-skill reflection system with:
 **So that** I don't lose corrections and patterns I've taught
 
 **Acceptance Criteria**:
-- [ ] **AC-US3-01**: `bin/install-skills.sh` detects existing MEMORY.md files
-- [ ] **AC-US3-02**: Backup created before merge (`.memory-backups/MEMORY-YYYY-MM-DD.md`)
-- [ ] **AC-US3-03**: User learnings merged with new defaults (deduplicated)
-- [ ] **AC-US3-04**: Merge script removes duplicate learnings (>50% content overlap)
-- [ ] **AC-US3-05**: Merge preserves user learning timestamps and sources
+- [x] **AC-US3-01**: `bin/install-skills.sh` detects existing MEMORY.md files
+- [x] **AC-US3-02**: Backup created before merge (`.memory-backups/MEMORY-YYYY-MM-DD.md`)
+- [x] **AC-US3-03**: User learnings merged with new defaults (deduplicated)
+- [x] **AC-US3-04**: Merge script removes duplicate learnings (>50% content overlap)
+- [x] **AC-US3-05**: Merge preserves user learning timestamps and sources
 
 ### US-004: Silent Reflection Workflow
 **Project**: specweave
@@ -85,12 +85,12 @@ Implement comprehensive per-skill reflection system with:
 **So that** learning is seamless and non-intrusive
 
 **Acceptance Criteria**:
-- [ ] **AC-US4-01**: Stop hook detects reflection opportunities (corrections, approvals)
-- [ ] **AC-US4-02**: Confidence levels calculated: HIGH (>80%), MEDIUM (50-80%), LOW (<50%)
-- [ ] **AC-US4-03**: HIGH confidence learnings auto-commit to MEMORY.md
-- [ ] **AC-US4-04**: MEDIUM/LOW learnings queued for user review
-- [ ] **AC-US4-05**: Silent notification via jq system message (no interruption)
-- [ ] **AC-US4-06**: `/sw:reflect-status` shows pending and committed learnings
+- [x] **AC-US4-01**: Stop hook detects reflection opportunities (corrections, approvals)
+- [x] **AC-US4-02**: Confidence levels calculated: HIGH (>80%), MEDIUM (50-80%), LOW (<50%)
+- [x] **AC-US4-03**: HIGH confidence learnings auto-commit to MEMORY.md
+- [x] **AC-US4-04**: MEDIUM/LOW learnings queued for user review
+- [x] **AC-US4-05**: Silent notification via jq system message (no interruption)
+- [x] **AC-US4-06**: `/sw:reflect-status` shows pending and committed learnings
 
 ### US-005: Confidence-Based Detection
 **Project**: specweave
@@ -99,11 +99,11 @@ Implement comprehensive per-skill reflection system with:
 **So that** strong corrections are learned immediately
 
 **Acceptance Criteria**:
-- [ ] **AC-US5-01**: HIGH confidence: Explicit corrections ("No, use X", "Never do Y")
-- [ ] **AC-US5-02**: HIGH confidence: Explicit rules ("Always do X")
-- [ ] **AC-US5-03**: MEDIUM confidence: Approvals ("Perfect!", "That's right")
-- [ ] **AC-US5-04**: LOW confidence: Observations (patterns that worked)
-- [ ] **AC-US5-05**: Confidence calculation based on keyword matching
+- [x] **AC-US5-01**: HIGH confidence: Explicit corrections ("No, use X", "Never do Y")
+- [x] **AC-US5-02**: HIGH confidence: Explicit rules ("Always do X")
+- [x] **AC-US5-03**: MEDIUM confidence: Approvals ("Perfect!", "That's right")
+- [x] **AC-US5-04**: LOW confidence: Observations (patterns that worked)
+- [x] **AC-US5-05**: Confidence calculation based on keyword matching
 
 ### US-006: LSP Integration Examples for Skills
 **Project**: specweave
