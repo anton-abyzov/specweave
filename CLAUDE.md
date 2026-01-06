@@ -1,10 +1,10 @@
-<!-- SW:META template="claude" version="1.0.97" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,principles,linking,mcp,autoexecute,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.98" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,principles,linking,mcp,autoexecute,auto,docs" -->
 
-<!-- SW:SECTION:header version="1.0.97" -->
+<!-- SW:SECTION:header version="1.0.98" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
-<!-- SW:SECTION:start version="1.0.97" -->
+<!-- SW:SECTION:start version="1.0.98" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -14,7 +14,7 @@
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.97" -->
+<!-- SW:SECTION:autodetect version="1.0.98" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -24,7 +24,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.97" -->
+<!-- SW:SECTION:metarule version="1.0.98" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -35,7 +35,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.97" -->
+<!-- SW:SECTION:rules version="1.0.98" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (spec.md, plan.md, tasks.md at root; reports/, scripts/, logs/ subfolders)
@@ -47,7 +47,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 7. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run. NEVER create `.specweave/` in parent, nested, or unrelated directories. Check `config.json` exists before creating ANY `.specweave/` subfolders.
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.97" -->
+<!-- SW:SECTION:workflow version="1.0.98" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -67,7 +67,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:reflect version="1.0.97" -->
+<!-- SW:SECTION:reflect version="1.0.98" -->
 ## Self-Improving Skills (Reflect)
 
 **Learn once, never repeat.** Claude learns from corrections and patterns across sessions.
@@ -111,7 +111,7 @@ ls ~/.specweave/memory/*.md 2>/dev/null
 **Enable auto-learning**: `/sw:reflect-on` → Stop hook analyzes sessions automatically
 <!-- SW:END:reflect -->
 
-<!-- SW:SECTION:context version="1.0.97" -->
+<!-- SW:SECTION:context version="1.0.98" -->
 ## Living Docs Context
 
 **Before implementing features**: Check existing docs for patterns and decisions.
@@ -131,7 +131,7 @@ grep -ril "keyword" .specweave/docs/internal/
 **Use `/sw:context <topic>`** to load relevant living docs into conversation.
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:lsp version="1.0.97" -->
+<!-- SW:SECTION:lsp version="1.0.98" -->
 ## LSP-Enhanced Exploration
 
 **USE LSP ACTIVELY** for semantic code understanding (100x faster than grep).
@@ -148,7 +148,7 @@ go install golang.org/x/tools/gopls@latest  # Go
 **Best Practices**: ALWAYS use `findReferences` before refactoring | Use `goToDefinition` instead of grep | Combine with Explore agent
 <!-- SW:END:lsp -->
 
-<!-- SW:SECTION:structure version="1.0.97" -->
+<!-- SW:SECTION:structure version="1.0.98" -->
 ## Structure
 
 ```
@@ -218,7 +218,7 @@ my-project/
 ```
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.97" -->
+<!-- SW:SECTION:taskformat version="1.0.98" -->
 ## Task Format
 
 ```markdown
@@ -228,7 +228,7 @@ my-project/
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.97" -->
+<!-- SW:SECTION:secrets version="1.0.98" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -239,7 +239,7 @@ gh auth status
 ```
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.97" -->
+<!-- SW:SECTION:syncing version="1.0.98" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **After increment creation**: Run `/sw-github:sync {id}` to create issues!
@@ -267,7 +267,7 @@ Living docs sync ≠ External sync. They are separate:
 **Verify tokens**: `grep GITHUB_TOKEN .env` | `gh auth status`
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:mapping version="1.0.97" -->
+<!-- SW:SECTION:mapping version="1.0.98" -->
 ## GitHub Mapping
 
 | SpecWeave | GitHub |
@@ -277,7 +277,7 @@ Living docs sync ≠ External sync. They are separate:
 | Task T-XXX | Checkbox |
 <!-- SW:END:mapping -->
 
-<!-- SW:SECTION:testing version="1.0.97" -->
+<!-- SW:SECTION:testing version="1.0.98" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -289,7 +289,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:api version="1.0.97" -->
+<!-- SW:SECTION:api version="1.0.98" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** OpenAPI = source of truth → Postman derived from it.
@@ -308,13 +308,13 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 **Import**: Postman → Import collection + env → Fill secrets → Select env
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.97" -->
+<!-- SW:SECTION:limits version="1.0.98" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.97" -->
+<!-- SW:SECTION:troubleshooting version="1.0.98" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -333,7 +333,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:principles version="1.0.97" -->
+<!-- SW:SECTION:principles version="1.0.98" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -343,7 +343,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 5. **Clean**: All files in increment folders
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.97" -->
+<!-- SW:SECTION:linking version="1.0.98" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -351,7 +351,7 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.97" -->
+<!-- SW:SECTION:mcp version="1.0.98" -->
 ## External Service Connection
 
 **Priority**: MCP Server → REST API → CLI → Direct Connection
@@ -375,7 +375,7 @@ wrangler whoami 2>/dev/null
 ```
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:autoexecute version="1.0.97" -->
+<!-- SW:SECTION:autoexecute version="1.0.98" -->
 ## Auto-Execute Rule
 
 **NEVER** output "Manual Step Required" when credentials exist. **EXECUTE DIRECTLY.**
@@ -389,7 +389,7 @@ wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 ```
 <!-- SW:END:autoexecute -->
 
-<!-- SW:SECTION:auto version="1.0.97" -->
+<!-- SW:SECTION:auto version="1.0.98" -->
 ## Auto Mode (Autonomous Execution)
 
 **Continuous execution until all tasks complete.**
@@ -466,7 +466,7 @@ wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 **Circuit Breaker**: External API fails 3x? Queue & continue
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.97" -->
+<!-- SW:SECTION:docs version="1.0.98" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com) | `.specweave/docs/internal/`
