@@ -760,7 +760,7 @@ Then returns true
 **Satisfies ACs**: AC-US3-04
 **Priority**: P1
 **Model**: 💎 Opus
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Implementation**:
 - Create `plugins/specweave/lib/signal-patterns.ts`
@@ -801,7 +801,7 @@ Then matches approval pattern
 **Satisfies ACs**: AC-US3-01, AC-US3-02, AC-US3-03
 **Priority**: P1
 **Model**: 💎 Opus
-**Status**: [ ] pending
+**Status**: [x] completed
 **Dependencies**: T-020
 
 **Implementation**:
@@ -845,7 +845,7 @@ Then outputs "low"
 **Satisfies ACs**: AC-US3-05
 **Priority**: P1
 **Model**: 💎 Opus
-**Status**: [ ] pending
+**Status**: [x] completed
 **Dependencies**: T-021, T-006
 
 **Implementation**:
@@ -884,7 +884,7 @@ Then learnings are saved to SKILL.md files
 **Satisfies ACs**: AC-US3-06
 **Priority**: P2
 **Model**: ⚡ Haiku
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Implementation**:
 - Create `plugins/specweave/lib/queue-learning.js`
@@ -918,7 +918,7 @@ Then queue has 3 learnings total
 **Satisfies ACs**: AC-US3-07
 **Priority**: P1
 **Model**: 💎 Opus
-**Status**: [ ] pending
+**Status**: [x] completed
 **Dependencies**: T-021, T-022, T-023
 
 **Implementation**:
@@ -959,7 +959,7 @@ And jq notification: "💡 Learning queued for review"
 **Satisfies ACs**: AC-US3-08
 **Priority**: P2
 **Model**: ⚡ Haiku
-**Status**: [ ] pending
+**Status**: [x] completed
 
 **Implementation**:
 - Create skill `plugins/specweave/skills/reflect-on/SKILL.md`
@@ -991,7 +991,7 @@ Then skill activates automatically
 **Satisfies ACs**: AC-US5-01, AC-US5-02, AC-US5-03
 **Priority**: P2
 **Model**: ⚡ Haiku
-**Status**: [ ] pending
+**Status**: [x] completed
 **Dependencies**: T-023
 
 **Implementation**:
@@ -1026,7 +1026,7 @@ Then displays all stats correctly
 **Satisfies ACs**: AC-US7-05
 **Priority**: P1
 **Model**: ⚡ Haiku
-**Status**: [ ] pending
+**Status**: [x] completed
 **Dependencies**: T-024
 
 **Implementation**:
