@@ -52,6 +52,24 @@ export async function createDirectoryStructure(
     fs.mkdirSync(path.join(targetDir, dir), { recursive: true });
   });
 
+  // Create reflect-config.json with auto-reflect enabled by default (v1.0.96+)
+  // This enables the self-improving AI feature where learnings are extracted
+  // from user corrections and approvals during sessions
+  const reflectConfigPath = path.join(targetDir, '.specweave', 'state', 'reflect-config.json');
+  if (!fs.existsSync(reflectConfigPath)) {
+    const reflectConfig = {
+      enabled: true,
+      autoReflect: true,
+      enabledAt: new Date().toISOString(),
+      confidenceThreshold: 'medium',
+      maxLearningsPerSession: 10,
+      gitCommit: false,  // Don't auto-commit by default, let user decide
+      gitPush: false
+    };
+    fs.writeJsonSync(reflectConfigPath, reflectConfig, { spaces: 2 });
+    console.log(chalk.green('   ✓ Auto-reflection enabled (self-improving AI)'));
+  }
+
   // Use smart scaffolding for living docs structure
   const scaffold = new LivingDocsScaffold({
     projectPath: targetDir,

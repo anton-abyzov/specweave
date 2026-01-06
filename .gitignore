@@ -55,6 +55,29 @@ api_keys.json
 .specweave/feedback/
 .specweave/logs/
 .specweave/docs-site-internal/
+
+# SpecWeave runtime state (auto mode, hooks, sessions)
+# This directory contains:
+#   - auto-session.json       # Active /sw:auto session state
+#   - heartbeat.json          # Session liveness detection (pid, timestamp)
+#   - task-checkpoint.json    # Crash recovery checkpoints
+#   - active-session.lock     # Session lock to prevent concurrent runs
+#   - active-increment.json   # Currently active increment
+#   - dashboard.json          # Status dashboard cache
+#   - status-line.json        # Status line cache for performance
+#   - background-jobs.json    # Background job tracking
+#   - *.pid                   # Process ID files (watchdog, processor)
+#   - .*.lock / .*.lock.d/    # Lock files and directories
+#   - event-queue/            # Hook event queue (async processing)
+#   - metrics/                # Hook performance metrics
+#   - analytics/              # Usage analytics (events.jsonl)
+#   - jobs/                   # Background job state
+#   - semaphores/             # Hook semaphores
+#   - .github-sync-*          # GitHub sync throttle files
+#   - .living-specs-*         # Living specs sync state
+#   - .us-completion-*        # User story completion tracking
+#   - .prev-status-*          # Previous status for change detection
+#   - .project-bridge-*       # Multi-project bridge state
 .specweave/state/
 
 # Increment logs (inside each increment folder)
