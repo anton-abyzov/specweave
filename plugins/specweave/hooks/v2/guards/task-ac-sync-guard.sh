@@ -116,17 +116,16 @@ if [[ ! -f "$FILE_PATH" ]]; then
 fi
 
 # ============================================================================
-# STEP 0: Check if this is a task completion edit
+# STEP 0: Check if any task is marked complete
 # ============================================================================
 
-NEW_CONTENT=$(echo "$INPUT" | grep -o '"new_string"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1)
-
-if ! echo "$NEW_CONTENT" | grep -qE '\[x\].*completed'; then
-  log_debug "Not a task completion edit, skipping"
+# Check if tasks.md has any completed tasks (check actual file, not edit input)
+if ! grep -qE '^\*\*Status\*\*:[[:space:]]*\[x\]' "$FILE_PATH" 2>/dev/null; then
+  log_debug "No completed tasks found, skipping"
   exit 0
 fi
 
-log_debug "Task completion detected!"
+log_debug "Completed tasks detected - syncing ACs..."
 
 # ============================================================================
 # STEP 1: Mark task's **Acceptance** checkboxes as complete (NON-BLOCKING)
