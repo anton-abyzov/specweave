@@ -1,10 +1,10 @@
 {
   "id": "0156-per-skill-reflection-memory-override",
-  "status": "planned",
+  "status": "completed",
   "type": "refactor",
   "priority": "P1",
   "created": "2026-01-06T20:15:00.000Z",
-  "lastActivity": "2026-01-06T20:20:00.000Z",
+  "lastActivity": "2026-01-06T22:54:22.294Z",
   "testMode": "test-after",
   "coverageTarget": 80,
   "feature_id": null,
@@ -12,5 +12,6 @@
   "externalLinks": {},
   "planningComplete": true,
   "totalTasks": 42,
-  "completedTasks": 0
+  "completedTasks": 42,
+  "completedAt": "2026-01-06T22:55:59.025Z"
 }
