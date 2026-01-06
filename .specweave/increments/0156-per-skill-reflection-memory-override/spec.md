@@ -2,7 +2,7 @@
 increment: 0156-per-skill-reflection-memory-override
 title: "Per-Skill Reflection with MEMORY.md Override System"
 priority: P1
-status: planned
+status: completed
 created: 2026-01-06
 dependencies: []
 structure: user-stories
