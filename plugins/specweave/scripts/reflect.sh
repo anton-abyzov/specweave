@@ -127,26 +127,64 @@ is_actionable() {
 }
 
 # Extract the actual rule from a correction context
+# PRIORITY: Extract the "do Y instead" part, not the "don't X" part
 extract_rule() {
     local context="$1"
-
-    # Try to find the "do Y instead" part
     local rule=""
 
-    # Pattern: "No, don't X. Use Y instead" -> "Use Y"
-    rule=$(echo "$context" | grep -oiE "(use|prefer|always)[^.!?]*" | head -1)
-    [ -n "$rule" ] && echo "$rule" && return
+    # PRIORITY 1: Look for "Use X instead" pattern
+    # Captures "Use logger.info() instead" - allows alphanumeric, dots, parens before "instead"
+    rule=$(echo "$context" | grep -oiE "[Uu]se [a-zA-Z0-9_.()/]+(\s+[a-zA-Z0-9_.()/]+)*\s+instead" | head -1)
+    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+        return
+    fi
 
-    # Pattern: "Should be X" -> "Should be X"
-    rule=$(echo "$context" | grep -oiE "should (be|use)[^.!?]*" | head -1)
-    [ -n "$rule" ] && echo "$rule" && return
+    # PRIORITY 2: Look for "should use X" (correction pattern)
+    rule=$(echo "$context" | grep -oiE "should (use|be) [^.!?]+" | head -1)
+    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+        return
+    fi
 
-    # Pattern: "Never X, always Y" -> "Always Y"
-    rule=$(echo "$context" | grep -oiE "always[^.!?]*" | head -1)
-    [ -n "$rule" ] && echo "$rule" && return
+    # PRIORITY 3: Look for sentence after "Wrong!" or "No,"
+    # Extract the sentence that comes after the negation marker
+    rule=$(echo "$context" | grep -oiE "(Wrong!?|No,) [^.!?]+" | sed 's/^[Ww]rong!*[[:space:]]*//;s/^[Nn]o,[[:space:]]*//' | head -1)
+    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+        return
+    fi
 
-    # Fallback: return cleaned context
-    echo "$context" | cut -c1-100
+    # PRIORITY 4: "Always X" (explicit rule)
+    rule=$(echo "$context" | grep -oiE "[Aa]lways [^.!?]+" | head -1)
+    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+        return
+    fi
+
+    # PRIORITY 5: "Never X" (prohibition rule)
+    rule=$(echo "$context" | grep -oiE "[Nn]ever [^.!?]+" | head -1)
+    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+        return
+    fi
+
+    # PRIORITY 6: "In this project/codebase, use X"
+    rule=$(echo "$context" | grep -oiE "[Ii]n this (project|codebase)[^.!?]+" | head -1)
+    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+        return
+    fi
+
+    # PRIORITY 7: "prefer X" or "use X not Y"
+    rule=$(echo "$context" | grep -oiE "(prefer|use) [^.!?]+ (not|instead|over) [^.!?]+" | head -1)
+    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+        return
+    fi
+
+    # Fallback: return cleaned context (last resort, but apply quality filter in add_rule)
+    echo "$context" | sed 's/^[[:space:]]*//;s/^[Uu]ser:[[:space:]]*//' | cut -c1-100
 }
 
 # Detect high-value signals in transcript
@@ -205,25 +243,51 @@ detect_signals() {
 # DEDUPLICATION
 # ============================================================================
 
-# Check if a similar rule already exists (by key words)
+# Check if a similar rule already exists
+# STRICT DEDUPLICATION: Exact substring match OR high keyword overlap
 rule_exists() {
     local file="$1"
     local new_rule="$2"
 
     [ ! -f "$file" ] && return 1
 
-    # Extract key words from new rule (nouns, verbs)
-    local keywords=$(echo "$new_rule" | tr '[:upper:]' '[:lower:]' | grep -oE '\b[a-z]{4,}\b' | sort -u | head -5 | tr '\n' ' ')
+    # Normalize rule for comparison (lowercase, trim, collapse spaces)
+    local normalized=$(echo "$new_rule" | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/[[:space:]]\+/ /g')
 
-    # Check if 3+ keywords match any existing rule
-    local match_count=0
-    for kw in $keywords; do
-        if grep -qi "\b$kw\b" "$file" 2>/dev/null; then
-            match_count=$((match_count + 1))
-        fi
-    done
+    # STRICT CHECK 1: Exact substring match (catches same rule with different prefix)
+    if grep -qi "$normalized" "$file" 2>/dev/null; then
+        return 0
+    fi
 
-    [ "$match_count" -ge 3 ] && return 0
+    # STRICT CHECK 2: Rule already contains the key phrase
+    # Extract core action phrase (verb + object)
+    local core_phrase=$(echo "$normalized" | grep -oE "(use|prefer|always|never) [a-z]+( [a-z]+)?" | head -1)
+    if [ -n "$core_phrase" ] && grep -qi "$core_phrase" "$file" 2>/dev/null; then
+        return 0
+    fi
+
+    # STRICT CHECK 3: High keyword overlap (at least 50% of words must match a single existing rule)
+    local keywords=$(echo "$normalized" | grep -oE '\b[a-z]{4,}\b' | sort -u | tr '\n' ' ')
+    local keyword_count=$(echo "$keywords" | wc -w | tr -d ' ')
+
+    # For each existing rule, check overlap
+    while IFS= read -r existing_rule; do
+        [ -z "$existing_rule" ] && continue
+        local existing_lower=$(echo "$existing_rule" | tr '[:upper:]' '[:lower:]')
+        local match_count=0
+
+        for kw in $keywords; do
+            if echo "$existing_lower" | grep -q "\b$kw\b" 2>/dev/null; then
+                match_count=$((match_count + 1))
+            fi
+        done
+
+        # If more than 50% of keywords match ONE existing rule, it's a duplicate
+        local threshold=$((keyword_count / 2))
+        [ "$threshold" -lt 2 ] && threshold=2
+        [ "$match_count" -ge "$threshold" ] && return 0
+    done < <(grep "^- " "$file" 2>/dev/null)
+
     return 1
 }
 
@@ -236,13 +300,16 @@ categorize() {
     local lower=$(echo "$text" | tr '[:upper:]' '[:lower:]')
 
     case "$lower" in
-        *component*|*button*|*ui*|*style*|*css*|*react*|*vue*|*html*) echo "frontend" ;;
-        *api*|*endpoint*|*route*|*rest*|*graphql*|*server*) echo "backend" ;;
-        *test*|*spec*|*mock*|*assert*|*expect*) echo "testing" ;;
-        *deploy*|*docker*|*k8s*|*ci*|*terraform*|*aws*) echo "devops" ;;
-        *auth*|*security*|*token*|*password*|*secret*) echo "security" ;;
-        *query*|*database*|*sql*|*schema*|*table*) echo "database" ;;
-        *file*|*path*|*import*|*export*|*module*) echo "structure" ;;
+        *component*|*button*|*ui*|*style*|*css*|*react*|*vue*|*html*|*tailwind*) echo "frontend" ;;
+        *api*|*endpoint*|*route*|*rest*|*graphql*|*server*|*backend*) echo "backend" ;;
+        *test*|*spec*|*mock*|*assert*|*expect*|*vitest*|*jest*|*playwright*) echo "testing" ;;
+        *deploy*|*docker*|*k8s*|*ci*|*terraform*|*aws*|*gcp*|*azure*) echo "devops" ;;
+        *auth*|*security*|*token*|*password*|*secret*|*encryption*) echo "security" ;;
+        *query*|*database*|*sql*|*schema*|*table*|*prisma*|*drizzle*) echo "database" ;;
+        *file*|*path*|*import*|*export*|*module*|*require*) echo "structure" ;;
+        *logger*|*log*|*console*|*debug*|*error*|*warn*) echo "logging" ;;
+        *type*|*interface*|*typescript*|*generic*|*enum*) echo "types" ;;
+        *git*|*commit*|*branch*|*merge*|*rebase*) echo "git" ;;
         *) echo "general" ;;
     esac
 }
@@ -273,14 +340,35 @@ add_rule() {
 
     local file=$(ensure_memory_file "$category")
 
-    # Skip if similar rule exists
-    if rule_exists "$file" "$rule"; then
-        log "info" "Skipped duplicate: $rule"
+    # Clean and format FIRST
+    # Remove "User:" prefix, extra whitespace, and limit length
+    local clean=$(echo "$rule" | tr -d '\n\r' | sed 's/  */ /g' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sed 's/^[Uu]ser:[[:space:]]*//' | cut -c1-100)
+
+    # QUALITY GATE 1: Minimum length (too short = useless)
+    if [ ${#clean} -lt 15 ]; then
+        log "info" "Skipped too short: $clean"
         return 1
     fi
 
-    # Clean and format
-    local clean=$(echo "$rule" | tr -d '\n\r' | sed 's/  */ /g' | cut -c1-100)
+    # QUALITY GATE 2: Must contain actionable verb
+    if ! echo "$clean" | grep -qiE "(use|prefer|always|never|should|avoid|don't|must|do not)"; then
+        log "info" "Skipped non-actionable: $clean"
+        return 1
+    fi
+
+    # QUALITY GATE 3: Must have specific subject (not just a verb phrase)
+    local word_count=$(echo "$clean" | wc -w | tr -d ' ')
+    if [ "$word_count" -lt 3 ]; then
+        log "info" "Skipped too vague: $clean"
+        return 1
+    fi
+
+    # Skip if similar rule exists
+    if rule_exists "$file" "$clean"; then
+        log "info" "Skipped duplicate: $clean"
+        return 1
+    fi
+
     local marker="→"
     [ "$type" = "CORRECTION" ] && marker="✗→✓"
 
