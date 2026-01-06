@@ -622,9 +622,125 @@ play_notification_sound() {
     esac
 }
 
+# Helper: Build status label for visual display
+# Returns label as string (no STDERR output)
+# NEW v2.9: Used by both approve() and block() for consistent labeling
+build_status_label() {
+    local label_type="$1"  # "approve_success", "approve_stop", "approve_subagent", "block_continue", "block_subagent"
+    local reason="$2"
+    local agent_display="$3"
+    local subagents_spawned="${4:-0}"
+    local stop_criteria="${5:-}"
+    local stop_criteria_detail="${6:-}"
+    local tdd_mode="${7:-false}"
+
+    local label=""
+
+    case "$label_type" in
+        approve_success)
+            label="┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  ✅ AUTO SESSION COMPLETE                                   ┃
+┃  $agent_display                                  ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃  Status: SUCCESS - All work completed                       ┃
+┃  Reason: $(printf '%-48s' "$reason")┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃  📊 SESSION SUMMARY                                         ┃
+┃  ├─ Iterations: ${ITERATION:-0}/${MAX_ITERATIONS:-100}                                       ┃"
+            [ -n "$CURRENT_INCREMENT" ] && label="$label
+┃  ├─ Increment: $(printf '%-42s' "$CURRENT_INCREMENT")┃"
+            [ "$subagents_spawned" -gt 0 ] && label="$label
+┃  ├─ Subagents spawned: $(printf '%-35s' "$subagents_spawned")┃"
+            if [ "${TESTS_RUN:-false}" = "true" ]; then
+                label="$label
+┃  └─ Tests: ${TESTS_PASSED:-0} passed, ${TESTS_FAILED:-0} failed                            ┃"
+            fi
+            label="$label
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            ;;
+
+        approve_stop)
+            label="┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  🛑 AUTO SESSION STOPPING                                   ┃
+┃  $agent_display                                  ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃  Status: STOPPED - Requires attention                       ┃
+┃  Reason: $(printf '%-48s' "$reason")┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃  📊 SESSION SUMMARY                                         ┃
+┃  ├─ Iterations: ${ITERATION:-0}/${MAX_ITERATIONS:-100}                                       ┃"
+            [ -n "$CURRENT_INCREMENT" ] && label="$label
+┃  ├─ Increment: $(printf '%-42s' "$CURRENT_INCREMENT")┃"
+            [ "$subagents_spawned" -gt 0 ] && label="$label
+┃  ├─ Subagents spawned: $(printf '%-35s' "$subagents_spawned")┃"
+            label="$label
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            ;;
+
+        approve_subagent)
+            label="┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃  ↩️  SUBAGENT COMPLETE - Returning to parent               ┃
+┃  $agent_display                                  ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃  Result: $(printf '%-49s' "$reason")┃
+┃  ↩️  Control returning to: 🤖 Main Orchestrator            ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            ;;
+
+        block_continue)
+            label="╔══════════════════════════════════════════════════════════════╗
+║  🔄 AUTO SESSION CONTINUING                                  ║
+║  $agent_display                                  ║
+╠══════════════════════════════════════════════════════════════╣
+║  Why: $(printf '%-52s' "$reason")║
+║  Iteration: $(printf '%-47s' "${ITERATION:-0}/${MAX_ITERATIONS:-2500}")║"
+            [ -n "$CURRENT_INCREMENT" ] && label="$label
+║  Increment: $(printf '%-47s' "$CURRENT_INCREMENT")║"
+            [ "$subagents_spawned" -gt 0 ] && label="$label
+║  Subagents used: $(printf '%-42s' "$subagents_spawned")║"
+            label="$label
+╠══════════════════════════════════════════════════════════════╣
+║  🎯 WHEN WILL SESSION STOP?                                  ║
+║  ├─ Mode: $(printf '%-48s' "$stop_criteria")║
+║  └─ Criteria: $(printf '%-44s' "$stop_criteria_detail")║"
+            if [ "${TESTS_RUN:-false}" = "true" ]; then
+                if [ "${TESTS_FAILED:-0}" -gt 0 ]; then
+                    label="$label
+║  ⚠️  Tests: ${TESTS_PASSED:-0} passed, ${TESTS_FAILED:-0} FAILED (blocking!)             ║"
+                else
+                    label="$label
+║  ✅ Tests: ${TESTS_PASSED:-0} passed, 0 failed                             ║"
+                fi
+            else
+                label="$label
+║  ⏳ Tests: NOT YET RUN                                       ║"
+            fi
+            [ "$tdd_mode" = "true" ] && label="$label
+║  📋 TDD Source: $(printf '%-42s' "$(get_tdd_source)")║"
+            label="$label
+╚══════════════════════════════════════════════════════════════╝"
+            ;;
+
+        block_subagent)
+            label="╔══════════════════════════════════════════════════════════════╗
+║  🔧 SUBAGENT CONTINUING WORK                                 ║
+║  $agent_display                                  ║
+╠══════════════════════════════════════════════════════════════╣
+║  Task: $(printf '%-51s' "$reason")║
+╠══════════════════════════════════════════════════════════════╣
+║  🎯 WHEN WILL SUBAGENT RETURN?                               ║
+║  └─ When assigned task is complete                           ║
+║  ↩️  Returns to: 🤖 Main Orchestrator                         ║
+╚══════════════════════════════════════════════════════════════╝"
+            ;;
+    esac
+
+    echo "$label"
+}
+
 # Helper: Output approve decision
 # ALWAYS log why we're stopping for debugging
-# Enhanced v2.4: Agent-aware labeling with clear hierarchy
+# Enhanced v2.9: Labels now visible via systemMessage for user visibility
 approve() {
     local reason="${1:-Session complete}"
     local is_success="${2:-false}"
@@ -641,97 +757,41 @@ approve() {
     # Log the stop reason with agent info
     log_stop_reason "$reason" "approve_called:$agent_short" "$is_success"
 
-    # Get test breakdown by type if available (NEW - v2.5)
-    local test_breakdown=$(get_test_type_breakdown "$TRANSCRIPT_PATH")
-
-    # Display the stop reason prominently to STDERR (not stdout, which is for JSON)
-    {
-        echo ""
-        if [ "$agent_type" = "orchestrator" ]; then
-            # Main orchestrator stopping - this is a SESSION END
-            if [ "$is_success" = "true" ]; then
-                echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-                echo "┃  ✅ AUTO SESSION COMPLETE                                   ┃"
-                echo "┃  $agent_display                                  ┃"
-                echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
-                echo "┃  Status: SUCCESS - All work completed                       ┃"
-            else
-                echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-                echo "┃  🛑 AUTO SESSION STOPPING                                   ┃"
-                echo "┃  $agent_display                                  ┃"
-                echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
-                echo "┃  Status: STOPPED - Requires attention                       ┃"
-            fi
-            echo "┃  Reason: $(printf '%-48s' "$reason")┃"
-            echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
-            echo "┃  📊 SESSION SUMMARY                                         ┃"
-            echo "┃  ├─ Iterations: ${ITERATION:-0}/${MAX_ITERATIONS:-100}                                       ┃"
-            [ -n "$CURRENT_INCREMENT" ] && echo "┃  ├─ Increment: $(printf '%-42s' "$CURRENT_INCREMENT")┃"
-            [ "$subagents_spawned" -gt 0 ] && echo "┃  ├─ Subagents spawned: $(printf '%-35s' "$subagents_spawned")┃"
-            if [ "${TESTS_RUN:-false}" = "true" ]; then
-                if [ -n "$test_breakdown" ] && [ "$test_breakdown" != "{}" ]; then
-                    # Show detailed breakdown by test type (NEW - v2.5)
-                    echo "┃  └─ Tests (detailed breakdown):                             ┃"
-                    local unit_passed=$(echo "$test_breakdown" | jq -r '.unit.passed // 0')
-                    local unit_failed=$(echo "$test_breakdown" | jq -r '.unit.failed // 0')
-                    local integration_passed=$(echo "$test_breakdown" | jq -r '.integration.passed // 0')
-                    local integration_failed=$(echo "$test_breakdown" | jq -r '.integration.failed // 0')
-                    local e2e_passed=$(echo "$test_breakdown" | jq -r '.e2e.passed // 0')
-                    local e2e_failed=$(echo "$test_breakdown" | jq -r '.e2e.failed // 0')
-
-                    if [ "$unit_passed" -gt 0 ] || [ "$unit_failed" -gt 0 ]; then
-                        echo "┃     • Unit: ${unit_passed} passed, ${unit_failed} failed                              ┃"
-                    fi
-                    if [ "$integration_passed" -gt 0 ] || [ "$integration_failed" -gt 0 ]; then
-                        echo "┃     • Integration: ${integration_passed} passed, ${integration_failed} failed                      ┃"
-                    fi
-                    if [ "$e2e_passed" -gt 0 ] || [ "$e2e_failed" -gt 0 ]; then
-                        echo "┃     • E2E: ${e2e_passed} passed, ${e2e_failed} failed                                  ┃"
-                    fi
-                else
-                    # Fallback to simple summary
-                    echo "┃  └─ Tests: ${TESTS_PASSED:-0} passed, ${TESTS_FAILED:-0} failed                            ┃"
-                fi
-            fi
-            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
-
-            # ================================================================
-            # SOUND NOTIFICATION (v2.6)
-            # Play sound ONLY when session completes SUCCESSFULLY
-            # This lets users know they can check back - all work is done!
-            #
-            # NO sound on pause/block - prevents duplicate sounds during
-            # self-healing retries and keeps session quiet until truly done.
-            # Cross-platform support via helper function
-            # ================================================================
-            if [ "$is_success" = "true" ]; then
-                play_notification_sound "success"
-
-                # ================================================================
-                # AUTO-REFLECTION - REMOVED (v2.8)
-                # Now handled by stop-reflect.sh via stop-dispatcher.sh
-                # ================================================================
-            fi
+    # Build status label for display
+    local label_type=""
+    if [ "$agent_type" = "orchestrator" ]; then
+        if [ "$is_success" = "true" ]; then
+            label_type="approve_success"
         else
-            # Subagent stopping - this is a RETURN TO PARENT
-            echo "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓"
-            echo "┃  ↩️  SUBAGENT COMPLETE - Returning to parent               ┃"
-            echo "┃  $agent_display                                  ┃"
-            echo "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫"
-            echo "┃  Result: $(printf '%-49s' "$reason")┃"
-            echo "┃  ↩️  Control returning to: 🤖 Main Orchestrator            ┃"
-            echo "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛"
+            label_type="approve_stop"
         fi
-        echo ""
-    } >&2
+    else
+        label_type="approve_subagent"
+    fi
 
-    echo "{\"decision\": \"approve\", \"reason\": \"$reason\", \"agentType\": \"$agent_short\"}"
+    local status_label=$(build_status_label "$label_type" "$reason" "$agent_display" "$subagents_spawned")
+
+    # Display label to STDERR (for terminal/logs)
+    echo "$status_label" >&2
+
+    # ================================================================
+    # SOUND NOTIFICATION (v2.6)
+    # Play sound ONLY when session completes SUCCESSFULLY
+    # ================================================================
+    if [ "$agent_type" = "orchestrator" ] && [ "$is_success" = "true" ]; then
+        play_notification_sound "success"
+    fi
+
+    # NEW v2.9: Include label in JSON output via systemMessage
+    # This makes labels visible to Claude and the user!
+    local escaped_label=$(echo "$status_label" | jq -Rs .)
+    echo "{\"decision\": \"approve\", \"reason\": \"$reason\", \"agentType\": \"$agent_short\", \"systemMessage\": $escaped_label}"
     exit 0
 }
 
 # Helper: Output block decision with system message
 # Properly escapes JSON strings with newlines
-# Enhanced v2.4: Agent-aware labeling with clear hierarchy and stop conditions
+# Enhanced v2.9: Labels now visible via systemMessage for user visibility
 block() {
     local reason="$1"
     local system_message="$2"
@@ -746,7 +806,7 @@ block() {
     local stop_criteria=""
     local stop_criteria_detail=""
 
-    # Build stop criteria message - MORE PROMINENT (v2.4)
+    # Build stop criteria message
     if [ "$tdd_mode" = "true" ]; then
         stop_criteria="TDD STRICT MODE"
         stop_criteria_detail="ALL tasks [x] + ALL tests GREEN (0 failures)"
@@ -759,60 +819,39 @@ block() {
     local subagent_stats=$(get_subagent_stats)
     local subagents_spawned=$(echo "$subagent_stats" | jq -r '.totalSpawned // 0')
 
-    # Display stop criteria and continuation reason to STDERR (v2.4 enhanced)
-    {
-        echo ""
-        if [ "$agent_type" = "orchestrator" ]; then
-            # Main orchestrator continuing - SESSION CONTINUES
-            echo "╔══════════════════════════════════════════════════════════════╗"
-            echo "║  🔄 AUTO SESSION CONTINUING                                  ║"
-            echo "║  $agent_display                                  ║"
-            echo "╠══════════════════════════════════════════════════════════════╣"
-            echo "║  Why: $(printf '%-52s' "$reason")║"
-            echo "║  Iteration: $(printf '%-47s' "${ITERATION:-0}/${MAX_ITERATIONS:-2500}")║"
-            [ -n "$CURRENT_INCREMENT" ] && echo "║  Increment: $(printf '%-47s' "$CURRENT_INCREMENT")║"
-            [ "$subagents_spawned" -gt 0 ] && echo "║  Subagents used: $(printf '%-42s' "$subagents_spawned")║"
-            echo "╠══════════════════════════════════════════════════════════════╣"
-            echo "║  🎯 WHEN WILL SESSION STOP?                                  ║"
-            echo "║  ├─ Mode: $(printf '%-48s' "$stop_criteria")║"
-            echo "║  └─ Criteria: $(printf '%-44s' "$stop_criteria_detail")║"
-            if [ "${TESTS_RUN:-false}" = "true" ]; then
-                if [ "${TESTS_FAILED:-0}" -gt 0 ]; then
-                    echo "║  ⚠️  Tests: ${TESTS_PASSED:-0} passed, ${TESTS_FAILED:-0} FAILED (blocking!)             ║"
-                else
-                    echo "║  ✅ Tests: ${TESTS_PASSED:-0} passed, 0 failed                             ║"
-                fi
-            else
-                echo "║  ⏳ Tests: NOT YET RUN                                       ║"
-            fi
-            [ "$tdd_mode" = "true" ] && echo "║  📋 TDD Source: $(printf '%-42s' "$(get_tdd_source)")║"
-            echo "╚══════════════════════════════════════════════════════════════╝"
-        else
-            # Subagent continuing - SUBAGENT KEEPS WORKING
-            echo "╔══════════════════════════════════════════════════════════════╗"
-            echo "║  🔧 SUBAGENT CONTINUING WORK                                 ║"
-            echo "║  $agent_display                                  ║"
-            echo "╠══════════════════════════════════════════════════════════════╣"
-            echo "║  Task: $(printf '%-51s' "$reason")║"
-            echo "╠══════════════════════════════════════════════════════════════╣"
-            echo "║  🎯 WHEN WILL SUBAGENT RETURN?                               ║"
-            echo "║  └─ When assigned task is complete                           ║"
-            echo "║  ↩️  Returns to: 🤖 Main Orchestrator                         ║"
-            echo "╚══════════════════════════════════════════════════════════════╝"
-        fi
-        echo ""
-    } >&2
+    # Build status label for display
+    local label_type=""
+    if [ "$agent_type" = "orchestrator" ]; then
+        label_type="block_continue"
+    else
+        label_type="block_subagent"
+    fi
+
+    local status_label=$(build_status_label "$label_type" "$reason" "$agent_display" "$subagents_spawned" "$stop_criteria" "$stop_criteria_detail" "$tdd_mode")
+
+    # Display label to STDERR (for terminal/logs)
+    echo "$status_label" >&2
 
     # NOTE: No sound notification on block - sounds only play on SUCCESS
     # When Claude is continuing work, user doesn't need to be notified
 
+    # NEW v2.9: Prepend label to system message for visibility
+    local full_message=""
     if [ -n "$system_message" ]; then
-        # Escape special characters for JSON
-        local escaped_message=$(echo "$system_message" | jq -Rs .)
-        echo "{\"decision\": \"block\", \"reason\": \"$reason\", \"systemMessage\": $escaped_message, \"agentType\": \"$agent_short\"}"
+        # Combine label + existing system message
+        full_message="$status_label
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+$system_message"
     else
-        echo "{\"decision\": \"block\", \"reason\": \"$reason\", \"agentType\": \"$agent_short\"}"
+        # Just the label
+        full_message="$status_label"
     fi
+
+    # Escape and output JSON
+    local escaped_message=$(echo "$full_message" | jq -Rs .)
+    echo "{\"decision\": \"block\", \"reason\": \"$reason\", \"systemMessage\": $escaped_message, \"agentType\": \"$agent_short\"}"
     exit 0
 }
 

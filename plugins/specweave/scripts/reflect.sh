@@ -1,5 +1,10 @@
 #!/bin/bash
-# reflect.sh - Self-Improving Skills Reflection System (v3.0)
+# reflect.sh - Self-Improving Skills Reflection System (v4.0)
+#
+# NEW IN v4.0: Skill-specific memory routing
+# - Learnings can be routed to specific skills (e.g., /reflect architect)
+# - Cross-platform support (Claude Code vs non-Claude)
+# - Merges with marketplace updates (preserves user learnings)
 #
 # PHILOSOPHY: Only store HIGH-VALUE learnings that contain actionable rules.
 # Most sessions produce NO learnings - that's correct behavior.
@@ -19,7 +24,7 @@
 #   EXAMPLE: [one concrete example if helpful]
 #
 # LIMITS:
-# - 30 rules max per category (quality over quantity)
+# - 30 rules max per category/skill (quality over quantity)
 # - ~100 chars per rule (compact)
 # - Deduplication by keyword similarity
 
@@ -35,6 +40,32 @@ REFLECT_CONFIG="$STATE_DIR/reflect-config.json"
 LOGS_DIR="$PROJECT_ROOT/.specweave/logs/reflect"
 MEMORY_DIR="$PROJECT_ROOT/.specweave/memory"
 
+# Skill-specific memory paths (v4.0)
+# Claude Code: ~/.claude/plugins/marketplaces/specweave/plugins/specweave/skills/
+# Non-Claude: .specweave/plugins/specweave/skills/
+get_skills_dir() {
+    # Check for Claude Code environment
+    local claude_dir=""
+    case "$(uname -s)" in
+        Darwin|Linux) claude_dir="$HOME/.claude" ;;
+        MINGW*|MSYS*|CYGWIN*) claude_dir="${APPDATA:-$USERPROFILE/.claude}/Claude" ;;
+        *) claude_dir="$HOME/.claude" ;;
+    esac
+
+    local marketplace_skills="$claude_dir/plugins/marketplaces/specweave/plugins/specweave/skills"
+
+    # Prefer Claude marketplace location if it exists
+    if [ -d "$marketplace_skills" ]; then
+        echo "$marketplace_skills"
+        return
+    fi
+
+    # Fall back to project-local skills
+    echo "$PROJECT_ROOT/.specweave/plugins/specweave/skills"
+}
+
+SKILLS_DIR=$(get_skills_dir)
+
 # Conservative limits - quality over quantity
 MAX_RULES_PER_CATEGORY=30
 MAX_LOG_LINES=50
@@ -49,6 +80,7 @@ MAX_RULE_OUTPUT_LENGTH=100 # Max chars to output per rule
 KEYWORD_MIN_LENGTH=4       # Minimum keyword length for dedup matching
 MIN_KEYWORD_THRESHOLD=2    # Minimum keyword overlap for duplicate detection
 TRANSCRIPT_MAX_AGE_MIN=5   # Max age in minutes for auto-transcript detection
+MAX_LEARNINGS_LIMIT=100    # Maximum --max value for safety
 
 # Shared doc/JSON artifact patterns (CONSOLIDATED - update in one place!)
 # These patterns catch corrupted data from parsing docs, code examples, or JSON
@@ -58,6 +90,16 @@ LINE_NUMBER_PATTERN='[0-9]+→'
 # Multiple backtick code examples
 MULTI_BACKTICK_PATTERN='`[^`]+`.*`[^`]+`'
 
+# Cleanup function for temp files (called on EXIT)
+cleanup_temp() {
+    rm -f "${TMPDIR:-/tmp}/reflect_rules_$$" 2>/dev/null
+    rm -f "$STATE_DIR/reflect-signals.txt" 2>/dev/null
+}
+
+# Set trap for cleanup on script exit
+trap cleanup_temp EXIT INT TERM
+
+>>>>>>> df087427 (feat(auto): make stop hook labels visible via systemMessage (v2.9))
 # ============================================================================
 # LOGGING (with rotation)
 # ============================================================================
@@ -289,7 +331,8 @@ rule_exists() {
 
     # STRICT CHECK 1: Exact substring match (catches same rule with different prefix)
     # Use -F for fixed-string match to avoid regex injection from user input
-    if grep -Fqi "$normalized" "$file" 2>/dev/null; then
+    # The -- prevents patterns starting with - from being interpreted as options
+    if grep -Fqi -- "$normalized" "$file" 2>/dev/null; then
         return 0
     fi
 
@@ -297,7 +340,7 @@ rule_exists() {
     # Extract core action phrase (verb + object)
     local core_phrase=$(echo "$normalized" | grep -oE "(use|prefer|always|never) [a-z]+( [a-z]+)?" | head -1)
     # Use -F for fixed-string match to avoid periods/special chars being treated as regex
-    if [ -n "$core_phrase" ] && grep -Fqi "$core_phrase" "$file" 2>/dev/null; then
+    if [ -n "$core_phrase" ] && grep -Fqi -- "$core_phrase" "$file" 2>/dev/null; then
         return 0
     fi
 
@@ -317,7 +360,8 @@ rule_exists() {
 
         for kw in $keywords; do
             # Use -F for fixed-string to avoid regex metacharacters in keywords
-            if echo "$existing_lower" | grep -Fq "$kw" 2>/dev/null; then
+            # The -- prevents keywords starting with - from being interpreted as options
+            if echo "$existing_lower" | grep -Fq -- "$kw" 2>/dev/null; then
                 match_count=$((match_count + 1))
             fi
         done
@@ -338,6 +382,133 @@ rule_exists() {
 # ============================================================================
 # MEMORY MANAGEMENT
 # ============================================================================
+
+# Detect skill from content (v4.0)
+# Returns skill name if detected, empty string otherwise
+detect_skill() {
+    local text="$1"
+    local lower=$(echo "$text" | tr '[:upper:]' '[:lower:]')
+
+    # Skill keyword mappings (most specific first)
+    # Use grep for multi-word matches to avoid bash case pattern limitations
+    case "$lower" in
+        *architecture*|*adr*|*microservices*|*ddd*|*cqrs*)
+            echo "architect" ;;
+        *refactoring*|*solid*)
+            echo "tech-lead" ;;
+        *qa*|*regression*)
+            echo "qa-lead" ;;
+        *security*|*owasp*|*auth*|*xss*|*injection*|*csrf*)
+            echo "security" ;;
+        *terraform*|*iac*|*cloudformation*|*serverless*)
+            echo "infrastructure" ;;
+        *documentation*|*readme*|*docusaurus*)
+            echo "docs-writer" ;;
+        *performance*|*optimization*|*profiling*|*caching*)
+            echo "performance" ;;
+        *tdd*)
+            echo "tdd-orchestrator" ;;
+        *product*|*requirements*|*roadmap*|*mvp*)
+            echo "pm" ;;
+        *)
+            # Check multi-word patterns with grep
+            if echo "$lower" | grep -qE "system design|tech lead|code review|clean code|test strategy|quality gate|acceptance|api docs|test-driven|red-green|test first|user stories"; then
+                case "$lower" in
+                    *"system design"*) echo "architect" ;;
+                    *"tech lead"*|*"code review"*|*"clean code"*) echo "tech-lead" ;;
+                    *"test strategy"*|*"quality gate"*|*"acceptance"*) echo "qa-lead" ;;
+                    *"api docs"*) echo "docs-writer" ;;
+                    *"test-driven"*|*"red-green"*|*"test first"*) echo "tdd-orchestrator" ;;
+                    *"user stories"*) echo "pm" ;;
+                    *) echo "" ;;
+                esac
+            else
+                echo ""  # No skill detected, use category instead
+            fi
+            ;;
+    esac
+}
+
+# Check if a skill exists
+skill_exists() {
+    local skill_name="$1"
+    [ -d "$SKILLS_DIR/$skill_name" ] && [ -f "$SKILLS_DIR/$skill_name/SKILL.md" ]
+}
+
+# Get skill memory file path
+get_skill_memory_path() {
+    local skill_name="$1"
+    echo "$SKILLS_DIR/$skill_name/MEMORY.md"
+}
+
+# Ensure skill memory file exists with header
+ensure_skill_memory() {
+    local skill_name="$1"
+    local memory_file=$(get_skill_memory_path "$skill_name")
+
+    if [ ! -d "$SKILLS_DIR/$skill_name" ]; then
+        return 1
+    fi
+
+    if [ ! -f "$memory_file" ]; then
+        local skill_title=$(echo "$skill_name" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)} 1')
+        cat > "$memory_file" << EOF
+# $skill_title Memory
+
+> Auto-generated by SpecWeave Reflect. User learnings are preserved across updates.
+> Last updated: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+## Learned Patterns
+
+EOF
+    fi
+
+    echo "$memory_file"
+}
+
+# Add rule to skill memory
+add_skill_rule() {
+    local skill_name="$1"
+    local type="$2"
+    local rule="$3"
+
+    local memory_file=$(ensure_skill_memory "$skill_name")
+    [ -z "$memory_file" ] && return 1
+
+    # Clean rule
+    local clean=$(echo "$rule" | tr -d '\n\r' | sed 's/  */ /g' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH")
+
+    # Quality gates (same as add_rule)
+    [ ${#clean} -lt "$MIN_RULE_LENGTH" ] && return 1
+    echo "$clean" | grep -qiE "(use|prefer|always|never|should|avoid|don't|must|do not)" || return 1
+
+    # Dedup check
+    if rule_exists "$memory_file" "$clean"; then
+        log "info" "Skipped duplicate in $skill_name: $clean"
+        return 1
+    fi
+
+    # Generate learning ID
+    local learning_id="LRN-$(date +%Y%m%d)-$(head /dev/urandom | tr -dc 'A-Z0-9' | head -c 4)"
+    local confidence="High"
+    [ "$type" = "RULE" ] && confidence="Medium"
+
+    # Append structured learning
+    cat >> "$memory_file" << EOF
+#### $learning_id ($confidence Confidence)
+**Learning**: $clean
+**Added**: $(date +%Y-%m-%d)
+**Source**: session:$(date +%Y-%m-%d)
+
+EOF
+
+    # Update timestamp in header
+    sed -i.bak "s/^> Last updated:.*/> Last updated: $(date -u +%Y-%m-%dT%H:%M:%SZ)/" "$memory_file" 2>/dev/null || true
+    rm -f "$memory_file.bak"
+
+    log "info" "Added to skill $skill_name: $clean"
+    return 0
+}
 
 categorize() {
     local text="$1"
@@ -447,6 +618,7 @@ reflect_session() {
     local transcript="$1"
     local dry_run="${2:-false}"
     local max="${3:-$DEFAULT_MAX_LEARNINGS}"
+    local target_skill="${4:-}"  # Optional: force routing to specific skill
 
     ensure_dirs
 
@@ -462,24 +634,55 @@ reflect_session() {
 
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "🧠 REFLECT: $total actionable signals"
+    if [ -n "$target_skill" ]; then
+        echo "   Target: skill/$target_skill"
+    fi
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
     local added=0
+    local skill_adds=0
+    local category_adds=0
 
     while IFS='|' read -r type rule; do
         [ "$added" -ge "$max" ] && break
         [ -z "$rule" ] && continue
 
-        local category=$(categorize "$rule")
+        # Determine target: explicit skill > detected skill > category
+        local skill=""
+        local category=""
 
-        echo "  [$category] $type"
+        if [ -n "$target_skill" ]; then
+            # Force routing to specified skill
+            skill="$target_skill"
+        else
+            # Auto-detect skill from content
+            skill=$(detect_skill "$rule")
+        fi
 
-        if [ "$dry_run" = "false" ]; then
-            if add_rule "$category" "$type" "$rule"; then
+        if [ -n "$skill" ] && skill_exists "$skill"; then
+            echo "  [skill:$skill] $type"
+
+            if [ "$dry_run" = "false" ]; then
+                if add_skill_rule "$skill" "$type" "$rule"; then
+                    added=$((added + 1))
+                    skill_adds=$((skill_adds + 1))
+                fi
+            else
                 added=$((added + 1))
             fi
         else
-            added=$((added + 1))
+            # Fall back to category-based routing
+            category=$(categorize "$rule")
+            echo "  [category:$category] $type"
+
+            if [ "$dry_run" = "false" ]; then
+                if add_rule "$category" "$type" "$rule"; then
+                    added=$((added + 1))
+                    category_adds=$((category_adds + 1))
+                fi
+            else
+                added=$((added + 1))
+            fi
         fi
     done < "$signals_file"
 
@@ -489,6 +692,8 @@ reflect_session() {
         echo "🔍 DRY RUN - would add $added rules"
     else
         echo "✅ Added $added rules"
+        [ "$skill_adds" -gt 0 ] && echo "   Skills: $skill_adds"
+        [ "$category_adds" -gt 0 ] && echo "   Categories: $category_adds"
     fi
 
     rm -f "$signals_file"
@@ -587,6 +792,68 @@ cmd_show() {
 # MAIN
 # ============================================================================
 
+cmd_skill() {
+    local skill_name="$1"
+
+    if [ -z "$skill_name" ]; then
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo "🧠 AVAILABLE SKILLS"
+        echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        echo ""
+        echo "Skills directory: $SKILLS_DIR"
+        echo ""
+
+        if [ ! -d "$SKILLS_DIR" ]; then
+            echo "No skills directory found."
+            return 1
+        fi
+
+        local found=0
+        for skill_dir in "$SKILLS_DIR"/*/; do
+            [ -d "$skill_dir" ] || continue
+            local skill=$(basename "$skill_dir")
+            if [ -f "$skill_dir/SKILL.md" ]; then
+                local memory_file="$skill_dir/MEMORY.md"
+                local count=0
+                if [ -f "$memory_file" ]; then
+                    count=$(grep -c "^####" "$memory_file" 2>/dev/null || echo 0)
+                fi
+                printf "  %-25s %d learnings\n" "$skill" "$count"
+                found=$((found + 1))
+            fi
+        done
+
+        if [ "$found" -eq 0 ]; then
+            echo "No skills found."
+        fi
+
+        echo ""
+        echo "Usage: reflect.sh skill <skill-name>"
+        return 0
+    fi
+
+    # Show specific skill memory
+    if ! skill_exists "$skill_name"; then
+        echo "Skill '$skill_name' not found in $SKILLS_DIR"
+        return 1
+    fi
+
+    local memory_file=$(get_skill_memory_path "$skill_name")
+
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🧠 SKILL MEMORY: $skill_name"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    if [ -f "$memory_file" ]; then
+        cat "$memory_file"
+    else
+        echo "No learnings yet for skill '$skill_name'."
+        echo ""
+        echo "Add learnings with:"
+        echo "  reflect.sh reflect --skill $skill_name --transcript <file>"
+    fi
+}
+
 main() {
     local cmd="${1:-reflect}"; shift || true
 
@@ -596,18 +863,30 @@ main() {
         status) cmd_status ;;
         clear) cmd_clear "$@" ;;
         show) cmd_show "$@" ;;
+        skill) cmd_skill "$@" ;;
         reflect|analyze)
-            local transcript="" dry_run="false" max="$DEFAULT_MAX_LEARNINGS"
+            local transcript="" dry_run="false" max="$DEFAULT_MAX_LEARNINGS" target_skill=""
             while [ $# -gt 0 ]; do
                 case "$1" in
                     --transcript) transcript="$2"; shift 2 ;;
                     --dry-run) dry_run="true"; shift ;;
+                    --skill)
+                        # Route all learnings to specific skill
+                        target_skill="$2"
+                        if ! skill_exists "$target_skill"; then
+                            echo "Error: Skill '$target_skill' not found"
+                            echo "Available skills:"
+                            cmd_skill
+                            return 1
+                        fi
+                        shift 2
+                        ;;
                     --max)
-                        # Validate --max is a positive integer
-                        if echo "$2" | grep -qE '^[0-9]+$' && [ "$2" -gt 0 ] && [ "$2" -le 100 ]; then
+                        # Validate --max is a positive integer (uses constant MAX_LEARNINGS_LIMIT)
+                        if echo "$2" | grep -qE '^[0-9]+$' && [ "$2" -gt 0 ] && [ "$2" -le "$MAX_LEARNINGS_LIMIT" ]; then
                             max="$2"
                         else
-                            echo "Error: --max must be a positive integer between 1 and 100"
+                            echo "Error: --max must be a positive integer between 1 and $MAX_LEARNINGS_LIMIT"
                             return 1
                         fi
                         shift 2
@@ -643,9 +922,33 @@ main() {
                 log "info" "Auto-detected transcript: $transcript"
             fi
 
-            reflect_session "$transcript" "$dry_run" "$max"
+            reflect_session "$transcript" "$dry_run" "$max" "$target_skill"
             ;;
-        *) echo "Usage: reflect.sh [on|off|status|clear|show|reflect]" ;;
+        *)
+            echo "reflect.sh - Self-Improving Skills Reflection System (v4.0)"
+            echo ""
+            echo "Usage: reflect.sh <command> [options]"
+            echo ""
+            echo "Commands:"
+            echo "  reflect     Analyze transcript and extract learnings"
+            echo "  on          Enable auto-reflection on session end"
+            echo "  off         Disable auto-reflection"
+            echo "  status      Show reflection status and memory stats"
+            echo "  show [cat]  Show learnings (all or by category)"
+            echo "  clear [cat] Clear learnings (all or by category)"
+            echo "  skill [name] List skills or show skill memory"
+            echo ""
+            echo "Options for 'reflect':"
+            echo "  --transcript <file>  Transcript file to analyze"
+            echo "  --skill <name>       Route all learnings to specific skill"
+            echo "  --dry-run            Preview without saving"
+            echo "  --max <n>            Max learnings to add (default: 5)"
+            echo ""
+            echo "Examples:"
+            echo "  reflect.sh reflect --skill architect"
+            echo "  reflect.sh skill architect"
+            echo "  reflect.sh status"
+            ;;
     esac
 }
 
