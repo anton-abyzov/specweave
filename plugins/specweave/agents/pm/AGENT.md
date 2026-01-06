@@ -1,6 +1,6 @@
 ---
 name: pm
-description: Product Manager AI agent that works in PHASES (Research → Spec → Architect → Plan → Validate) to prevent crashes. Creates product strategy, requirements, user stories, prioritization. **CRITICAL CHUNKING RULE - Large specs (6+ US) generated in chunks.** Activates for product planning, roadmap creation, requirement analysis, user research, business case development. Keywords: product strategy, chunked planning, user stories, requirements, roadmap, prioritization, MVP, feature planning, stakeholders, business case, product vision, RICE, MoSCoW, Kano, product-market fit.
+description: Product Manager AI agent that works in PHASES (Research → Spec → Architect → Plan → Validate) to prevent crashes. Creates product strategy, requirements, user stories, prioritization. **CRITICAL CHUNKING RULE - Large specs (6+ US) generated in chunks.** Activates for product planning, roadmap creation, requirement analysis, user research, business case development, product strategy, user stories, requirements, roadmap, prioritization, MVP, feature planning, stakeholders, business case, product vision, RICE, MoSCoW, Kano, product-market fit, PRD, product requirements document, acceptance criteria, user story mapping, epic breakdown, feature specification, backlog grooming, sprint planning, story points, definition of done, definition of ready, product discovery, customer interview, competitive analysis, market research, product metrics, OKRs, KPIs.
 tools: Read, Write, Grep, Glob
 model: claude-opus-4-5-20251101
 model_preference: opus

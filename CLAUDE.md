@@ -1,10 +1,10 @@
-<!-- SW:META template="claude" version="1.0.90" sections="header,start,autodetect,metarule,rules,workflow,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,principles,linking,mcp,autoexecute,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.97" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,principles,linking,mcp,autoexecute,auto,docs" -->
 
-<!-- SW:SECTION:header version="1.0.90" -->
+<!-- SW:SECTION:header version="1.0.97" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
-<!-- SW:SECTION:start version="1.0.90" -->
+<!-- SW:SECTION:start version="1.0.97" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -14,7 +14,7 @@
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.90" -->
+<!-- SW:SECTION:autodetect version="1.0.97" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -24,7 +24,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.90" -->
+<!-- SW:SECTION:metarule version="1.0.97" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -35,7 +35,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.90" -->
+<!-- SW:SECTION:rules version="1.0.97" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (spec.md, plan.md, tasks.md at root; reports/, scripts/, logs/ subfolders)
@@ -47,7 +47,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 7. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run. NEVER create `.specweave/` in parent, nested, or unrelated directories. Check `config.json` exists before creating ANY `.specweave/` subfolders.
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.90" -->
+<!-- SW:SECTION:workflow version="1.0.97" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -67,7 +67,51 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:context version="1.0.90" -->
+<!-- SW:SECTION:reflect version="1.0.97" -->
+## Self-Improving Skills (Reflect)
+
+**Learn once, never repeat.** Claude learns from corrections and patterns across sessions.
+
+| Cmd | Action |
+|-----|--------|
+| `/sw:reflect` | Analyze session, extract learnings |
+| `/sw:reflect-on` | Enable auto-reflection on session end |
+| `/sw:reflect-off` | Disable auto-reflection |
+| `/sw:reflect-status` | Show memory status |
+
+**How it works**:
+1. User corrects Claude → Reflect captures learning
+2. Learning saved to centralized memory files (by category)
+3. Future sessions apply learned patterns automatically
+
+**CRITICAL - Memory Loading**: Before starting work, **check centralized memory** for learned patterns:
+```bash
+# Check if memory exists and read relevant categories
+ls .specweave/memory/*.md 2>/dev/null && cat .specweave/memory/*.md
+# Also check global memory
+ls ~/.specweave/memory/*.md 2>/dev/null
+```
+
+**Centralized Memory Files** (no skill copies needed!):
+```
+.specweave/memory/                  # Project learnings
+├── component-usage.md              # UI patterns
+├── api-patterns.md                 # API patterns
+├── testing.md                      # Test patterns
+├── deployment.md                   # Deploy patterns
+└── general.md                      # Misc patterns
+
+~/.specweave/memory/                # Global learnings (all projects)
+```
+
+**Signals detected**:
+- **Corrections** (high confidence): "No, use X instead", "Wrong, always do Y"
+- **Approvals** (medium confidence): "Perfect!", "That's exactly right"
+
+**Enable auto-learning**: `/sw:reflect-on` → Stop hook analyzes sessions automatically
+<!-- SW:END:reflect -->
+
+<!-- SW:SECTION:context version="1.0.97" -->
 ## Living Docs Context
 
 **Before implementing features**: Check existing docs for patterns and decisions.
@@ -87,7 +131,7 @@ grep -ril "keyword" .specweave/docs/internal/
 **Use `/sw:context <topic>`** to load relevant living docs into conversation.
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:lsp version="1.0.90" -->
+<!-- SW:SECTION:lsp version="1.0.97" -->
 ## LSP-Enhanced Exploration
 
 **USE LSP ACTIVELY** for semantic code understanding (100x faster than grep).
@@ -104,7 +148,7 @@ go install golang.org/x/tools/gopls@latest  # Go
 **Best Practices**: ALWAYS use `findReferences` before refactoring | Use `goToDefinition` instead of grep | Combine with Explore agent
 <!-- SW:END:lsp -->
 
-<!-- SW:SECTION:structure version="1.0.90" -->
+<!-- SW:SECTION:structure version="1.0.97" -->
 ## Structure
 
 ```
@@ -174,7 +218,7 @@ my-project/
 ```
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.90" -->
+<!-- SW:SECTION:taskformat version="1.0.97" -->
 ## Task Format
 
 ```markdown
@@ -184,7 +228,7 @@ my-project/
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.90" -->
+<!-- SW:SECTION:secrets version="1.0.97" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -195,7 +239,7 @@ gh auth status
 ```
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.90" -->
+<!-- SW:SECTION:syncing version="1.0.97" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **After increment creation**: Run `/sw-github:sync {id}` to create issues!
@@ -223,7 +267,7 @@ Living docs sync ≠ External sync. They are separate:
 **Verify tokens**: `grep GITHUB_TOKEN .env` | `gh auth status`
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:mapping version="1.0.90" -->
+<!-- SW:SECTION:mapping version="1.0.97" -->
 ## GitHub Mapping
 
 | SpecWeave | GitHub |
@@ -233,7 +277,7 @@ Living docs sync ≠ External sync. They are separate:
 | Task T-XXX | Checkbox |
 <!-- SW:END:mapping -->
 
-<!-- SW:SECTION:testing version="1.0.90" -->
+<!-- SW:SECTION:testing version="1.0.97" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -245,7 +289,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:api version="1.0.90" -->
+<!-- SW:SECTION:api version="1.0.97" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** OpenAPI = source of truth → Postman derived from it.
@@ -264,13 +308,13 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 **Import**: Postman → Import collection + env → Fill secrets → Select env
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.90" -->
+<!-- SW:SECTION:limits version="1.0.97" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.93" -->
+<!-- SW:SECTION:troubleshooting version="1.0.97" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -281,9 +325,6 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | Find increment | `/sw:status` |
 | Root polluted | Move files to `.specweave/increments/####/reports/` |
 | Duplicate IDs | `/sw:fix-duplicates` |
-| `/sw:jobs`, `/sw:status`, `/sw:progress` not working | VSCode: Restart Claude Code | CLI: `npm install -g specweave@latest` |
-| Instant commands showing "blocked by hook" | Restart Claude Code (VSCode) or update to v1.0.91+ |
-| Jobs command showing incomplete output | Update to v1.0.93+ for timestamps and full details |
 | GitHub not syncing | Check `sync.github.enabled: true` AND `canUpdateExternalItems: true` in config.json |
 | GitHub issues not updating | Run `/sw-github:sync {id}` explicitly; check `.specweave/logs/throttle.log` |
 | Permission denied | Set `canUpsertInternalItems: true` AND `canUpdateExternalItems: true` in config.json |
@@ -292,7 +333,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:principles version="1.0.90" -->
+<!-- SW:SECTION:principles version="1.0.97" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -302,7 +343,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 5. **Clean**: All files in increment folders
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.90" -->
+<!-- SW:SECTION:linking version="1.0.97" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -310,7 +351,7 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.90" -->
+<!-- SW:SECTION:mcp version="1.0.97" -->
 ## External Service Connection
 
 **Priority**: MCP Server → REST API → CLI → Direct Connection
@@ -334,7 +375,7 @@ wrangler whoami 2>/dev/null
 ```
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:autoexecute version="1.0.90" -->
+<!-- SW:SECTION:autoexecute version="1.0.97" -->
 ## Auto-Execute Rule
 
 **NEVER** output "Manual Step Required" when credentials exist. **EXECUTE DIRECTLY.**
@@ -348,7 +389,7 @@ wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 ```
 <!-- SW:END:autoexecute -->
 
-<!-- SW:SECTION:auto version="1.0.90" -->
+<!-- SW:SECTION:auto version="1.0.97" -->
 ## Auto Mode (Autonomous Execution)
 
 **Continuous execution until all tasks complete.**
@@ -420,19 +461,12 @@ wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 
 **Emergency cancel**: `/sw:cancel-auto` (rarely needed - prefer closing session)
 
-**Main Flags**:
-- `--build`: Run build after every task (e.g., `npm run build`, `npm run typecheck`)
-- `--e2e`: Run E2E tests after every task (e.g., `npx playwright test`)
-- `--tests`: Run unit tests after every task (e.g., `npm test`, `vitest`)
-
-**Example**: `/sw:auto --build --e2e` → Build + E2E after EVERY task completion
-
 **Other AI**: Loop check tasks.md `[x]` status → Max 100 iter → Human gates for: publish, force-push, prod deploy, migrations
 
 **Circuit Breaker**: External API fails 3x? Queue & continue
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.90" -->
+<!-- SW:SECTION:docs version="1.0.97" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com) | `.specweave/docs/internal/`

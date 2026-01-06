@@ -1,6 +1,6 @@
 ---
 name: frontend
-description: Expert frontend developer for React, Vue, Angular, and modern web development. Covers components, hooks, state management, routing, forms, TypeScript, performance optimization, and best practices. Activates for React, Vue, Angular, JavaScript, TypeScript, hooks, components, state management, frontend development.
+description: Expert frontend developer for React, Vue, Angular, and modern web development. Covers components, hooks, state management, routing, forms, TypeScript, performance optimization, and best practices. Activates for React, Vue, Angular, JavaScript, TypeScript, hooks, components, state management, frontend development, page design, UI styling, CSS, Tailwind, make pretty, UI/UX, web page, landing page, form design, button styling, responsive design, mobile-first, flexbox, grid layout, animations, transitions, hover effects, dark mode, light mode, color scheme, typography, spacing, shadows, borders, rounded corners, gradient, glassmorphism, neumorphism.
 ---
 
 # Frontend Development Expert
