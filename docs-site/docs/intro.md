@@ -13,8 +13,10 @@ sidebar_position: 1
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UYg4BGJ65V)
 [![YouTube](https://img.shields.io/badge/YouTube-Tutorials-red?logo=youtube&logoColor=white)](https://www.youtube.com/@antonabyzov)
 
-:::tip New in v1.0.62 — Autonomous Execution!
-`/sw:auto` can now run for **hours** — executing tasks, running tests, fixing failures, and syncing to GitHub/JIRA automatically. Tested and proven on mobile apps, multi-repo microservices, and E2E test suites.
+::::tip New in v2.9 — Now You Can SEE Auto Mode Working!
+`/sw:auto` runs for **hours** autonomously, and now you get **real-time visual labels** showing exactly what's happening! See iteration counts, test status, and stop criteria as your features build themselves.
+
+[Learn about Label Visibility →](/docs/commands/auto#new-in-v29-label-visibility)
 :::
 
 ---
@@ -43,6 +45,31 @@ Every AI coding tool promises productivity. But after the chat ends:
 - **New team members start from zero**
 
 **SpecWeave is the only framework where AI decisions become permanent, searchable documentation.**
+
+### See Auto Mode in Action (v2.9)
+
+When `/sw:auto` runs autonomously, you now see **real-time progress labels** in your conversation:
+
+```
+╔══════════════════════════════════════════════════════════════╗
+║  🔄 AUTO SESSION CONTINUING                                  ║
+║  🤖 Main Orchestrator                                        ║
+╠══════════════════════════════════════════════════════════════╣
+║  Why: Work incomplete, continuing...                         ║
+║  Iteration: 42/2500                                         ║
+║  Increment: 0001-user-auth                                  ║
+║  Subagents used: 3                                          ║
+╠══════════════════════════════════════════════════════════════╣
+║  🎯 WHEN WILL SESSION STOP?                                  ║
+║  ├─ Mode: STANDARD MODE                                     ║
+║  └─ Criteria: ALL tasks [x] completed + tests passing       ║
+║  ✅ Tests: 42 passed, 0 failed                              ║
+╚══════════════════════════════════════════════════════════════╝
+```
+
+No more wondering "is it still working?" — you see **exactly** what's happening, iteration counts, test status, and stop criteria in real-time.
+
+**[Learn about autonomous execution →](./commands/auto)**
 
 ```mermaid
 flowchart LR
@@ -100,7 +127,7 @@ specweave update-instructions   # Regenerate CLAUDE.md
 **Keep files small**: Target **600-800 lines max**. Files over 1K lines = crash risk. Split large files into modules before adding code.
 :::
 
-**[Full Quickstart Guide](./guides/getting-started/quickstart)**
+**[Full Quickstart Guide →](./quick-start)** | **[Real Examples →](./examples/)**
 
 :::info 🎯 Claude Code's Game-Changing Updates
 **Compact Command** — VSCode users can now use `compact` mode to keep Claude Code inside your editor window. Work continuously for **hours** in the same session without context switching. No more jumping between terminal and editor!
@@ -176,14 +203,24 @@ flowchart TB
 
 ## Key Strengths
 
+### 🚀 Autonomous Execution (NEW v2.9!)
+Run `/sw:auto` and watch **real-time labels** show progress, test results, and stop criteria. Can run for **hours** autonomously with self-healing when tests fail.
+
+**[See auto mode in action →](./commands/auto)**
+
+### 📚 Permanent Knowledge
 - **[Brownfield](/docs/glossary/terms/brownfield) + [Greenfield](/docs/glossary/terms/greenfield)** — Works with existing codebases, not just new projects
+- **Living Documentation** — Specs auto-update after every task via hooks
+- **🧠 Self-Improving Skills** — [Claude learns from corrections](/docs/guides/self-improving-skills), applies patterns automatically in future sessions
+
+### ⚡ Performance & Scale
 - **70%+ Token Reduction** — Progressive loading, context optimizer, sub-agent isolation
 - **Multi-Project Mode** — Manage multiple repos with shared specs and cross-project sync
-- **External Tool Sync** — Push specs to GitHub/JIRA/ADO, read status back automatically
-- **3-Gate Quality Validation** — Tasks, tests (60%+), and docs verified before closing
 - **15+ Specialized Agents** — PM, Architect, Tech Lead, QA, Security, DevOps work autonomously
-- **Living Documentation** — Specs auto-update after every task via hooks
-- **🧠 Self-Improving Skills (NEW!)** — [Claude learns from corrections](/docs/guides/self-improving-skills), applies patterns automatically in future sessions
+
+### 🔄 External Integration
+- **Auto-Sync** — Push specs to GitHub/JIRA/ADO, read status back automatically
+- **3-Gate Quality Validation** — Tasks, tests (60%+), and docs verified before closing
 
 ---
 
@@ -344,18 +381,51 @@ If you see `SyntaxError: Unexpected token 'with'`, your Node.js is too old. Run 
 
 ---
 
-## Next Steps
+## Real-World Proof
 
-- **[Quickstart Guide](./guides/getting-started/quickstart)** - Get running in 30 seconds
-- **[Core Concepts](./guides/core-concepts/specifications)** - Understand the fundamentals
-- **[Key Features](./overview/features)** - Deep dive into capabilities
-- **[Philosophy](./overview/philosophy)** - Why spec-driven development
-- **[Academy](./academy/)** - Complete software engineering curriculum
+SpecWeave isn't theory — it's **production-tested** across multiple use cases:
+
+| Use Case | Duration | Result |
+|----------|----------|--------|
+| **Mobile App (React Native)** | 2.5 hours | 3,200 LOC, 42 tests, full offline sync |
+| **Microservices (3 repos)** | 1.2 hours | Payment webhooks, 67 tests, 3 PRs created |
+| **Brownfield Docs** | 3 hours | 450k LOC analyzed, 127 pages generated |
+| **Large Refactor** | 1.8 hours | 52 files migrated, 186 tests maintained |
+
+**[See detailed examples →](./examples/)**
 
 ---
 
-**Stop losing your AI work. Start building permanent knowledge.**
+## Next Steps
+
+### 🎯 Get Started (5 minutes)
+**[Quick Start Guide →](./quick-start)** - Install, init, run your first increment
+
+### 📖 Learn the Fundamentals
+- **[Core Concepts](./guides/core-concepts/specifications)** - Understand specs, plans, and tasks
+- **[Autonomous Execution](./commands/auto)** - Ship while you sleep with `/sw:auto`
+- **[External Sync](./guides/external-sync/github)** - Keep GitHub/JIRA/ADO updated
+
+### 🚀 Advanced Usage
+- **[Multi-Repo Projects](./guides/multi-repo)** - Coordinate across microservices
+- **[Self-Improving Skills](./guides/self-improving-skills)** - Claude learns from your corrections
+- **[API Documentation](./guides/api-docs)** - OpenAPI + Postman auto-generation
+
+### 🎓 Complete Curriculum
+**[Software Engineering Academy](./academy/)** - From beginner to Fortune 500 enterprise developer (14 parts, 44 modules)
+
+---
+
+**Ready to ship features while you sleep?**
 
 ```bash
 npm install -g specweave
+cd your-project
+specweave init .
+# Then in Claude Code: /sw:increment "your feature"
 ```
+
+**Join the community:**
+- **[Discord](https://discord.gg/UYg4BGJ65V)** - Get help, share success stories
+- **[YouTube](https://www.youtube.com/@antonabyzov)** - Video tutorials
+- **[GitHub](https://github.com/anton-abyzov/specweave)** - Star the repo, contribute

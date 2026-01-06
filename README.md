@@ -15,7 +15,7 @@
 npm install -g specweave
 ```
 
-> **New in v1.0.63**: Auto mode can now run for hours — tested and proven. Mobile app generation, multi-repo coordination, E2E tests running automatically.
+> **New in v1.0.100**: Auto mode now shows live labels in your terminal — see exactly what SpecWeave is doing: `[Planning]`, `[Implementing]`, `[Testing]`, `[Fixing]`. Hours of autonomous execution with full visibility.
 
 ---
 
@@ -39,8 +39,19 @@ Every AI coding tool promises productivity. But after the chat ends:
 
 ```bash
 /sw:increment "Add OAuth authentication"  # Creates spec + plan + tasks
-/sw:auto                                   # 🚀 Autonomous execution for HOURS
-# ↑ This can run for hours, executing tasks, running tests, fixing failures
+/sw:auto                                   # Autonomous execution for HOURS
+# ↑ Watch live: [Planning] → [Implementing] → [Testing] → [Fixing] → [Done]
+```
+
+**What happens during `/sw:auto`:**
+```
+[08:23:41] [Planning]      Analyzing T-003: Implement refresh token rotation
+[08:24:12] [Implementing]  Writing src/auth/token-manager.ts (127 lines)
+[08:25:33] [Testing]       Running npm test -- token-manager.test.ts
+[08:25:47] [Fixing]        Test failed: Expected 401, got 403. Adjusting...
+[08:26:15] [Testing]       Re-running tests... PASSED
+[08:26:18] [Syncing]       Updating tasks.md, pushing to GitHub
+[08:26:22] [Done]          T-003 complete. Moving to T-004...
 ```
 
 **Or step-by-step control:**
@@ -53,30 +64,32 @@ Every AI coding tool promises productivity. But after the chat ends:
 
 ```
 .specweave/increments/0001-oauth/
-├── spec.md    ← WHAT: User stories, acceptance criteria
-├── plan.md    ← HOW: Architecture decisions, tech choices
-└── tasks.md   ← DO: Implementation tasks with embedded tests
+├── spec.md    <- WHAT: User stories, acceptance criteria
+├── plan.md    <- HOW: Architecture decisions, tech choices
+└── tasks.md   <- DO: Implementation tasks with embedded tests
 ```
 
-**After 6 months**: Search "OAuth" → find exact decisions, who approved, why it was built that way.
+**After 6 months**: Search "OAuth" -> find exact decisions, who approved, why it was built that way.
 
 ---
 
 ## Why SpecWeave vs BMAD, SpecKit, Cursor Rules?
 
-| | [BMAD](https://github.com/bmad-code-org/BMAD-METHOD) | [SpecKit](https://github.com/github/spec-kit) | Cursor Rules | **SpecWeave** |
+| Capability | [BMAD](https://github.com/bmad-code-org/BMAD-METHOD) | [SpecKit](https://github.com/github/spec-kit) | Cursor Rules | **SpecWeave** |
 |---|---|---|---|---|
-| **Status** | Alpha (v6) | Stable | Built-in | **Production (v1.0.62)** |
-| **Autonomous** | ❌ Manual steps | ❌ One-shot | ❌ Per-request | **✅ Hours of autonomous work** |
-| **Multi-Repo** | ❌ Single repo | ❌ Single repo | ❌ Single repo | **✅ Coordinate multiple repos** |
-| **Mobile Apps** | ❌ No agents | ❌ No agents | ❌ No agents | **✅ React Native/Expo specialist** |
-| **External Sync** | ❌ None | ❌ None | ❌ None | **✅ GitHub/JIRA/ADO bidirectional** |
-| **Brownfield** | Limited | Greenfield only | Any | **✅ 10-year legacy? Fine.** |
-| **Quality Gates** | Not built-in | None | None | **✅ 3-gate (tasks/tests/docs)** |
-| **Living Docs** | Manual | Snapshot | None | **✅ Auto-update on every task** |
-| **Dogfooding** | Unknown | Unknown | N/A | **✅ 140+ self-built features** |
+| **Maturity** | Alpha (v6) | Stable | Built-in | **Production (v1.0.100)** |
+| **Autonomous Work** | Manual steps required | One-shot generation | Per-request only | **Hours unattended** |
+| **Live Status** | None | None | None | **Terminal labels** |
+| **Multi-Repo** | Single repo | Single repo | Single repo | **Coordinate N repos** |
+| **Mobile Apps** | No agents | No agents | No agents | **React Native/Expo** |
+| **External Sync** | None | None | None | **GitHub/JIRA/ADO** |
+| **Brownfield** | Limited | Greenfield only | Any | **10-year legacy? Fine.** |
+| **Quality Gates** | Not built-in | None | None | **3-gate validation** |
+| **Living Docs** | Manual | Snapshot | None | **Auto-update** |
+| **Self-Learning** | None | None | None | **Reflects on mistakes** |
+| **Dogfooding** | Unknown | Unknown | N/A | **140+ self-built features** |
 
-**The math**: SpecKit output = ONE SpecWeave increment. SpecWeave = N increments + lifecycle + sync + hooks + **autonomous execution**.
+**The math**: SpecKit output = ONE SpecWeave increment. SpecWeave = N increments + lifecycle + sync + hooks + **hours of autonomous execution**.
 
 ---
 
@@ -96,7 +109,7 @@ Every AI coding tool promises productivity. But after the chat ends:
 | DORA metrics | Live tracking |
 | Test coverage | 60%+ enforced |
 
-**[Browse our increments →](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)**
+**[Browse our increments ->](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)**
 
 ---
 
@@ -114,7 +127,7 @@ node --version
 nvm install 22 && nvm use 22 && nvm alias default 22
 ```
 
-> ⚠️ **Getting `SyntaxError: Unexpected token 'with'`?** Your Node.js is too old. See [upgrade instructions](https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error).
+> **Getting `SyntaxError: Unexpected token 'with'`?** Your Node.js is too old. See [upgrade instructions](https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error).
 
 ### Installation
 
@@ -127,7 +140,7 @@ specweave init .
 Then in Claude Code:
 ```bash
 /sw:increment "Add dark mode"  # AI creates spec + plan + tasks
-/sw:auto                       # 🚀 Ship while you sleep (hours of autonomous work)
+/sw:auto                       # Ship while you sleep (hours of autonomous work)
 ```
 
 **Or step-by-step:**
@@ -142,11 +155,29 @@ specweave refresh-marketplace   # Reinstall all plugins from GitHub
 specweave update-instructions   # Regenerate CLAUDE.md
 ```
 
-**[Full Quickstart Guide →](https://spec-weave.com/docs/guides/getting-started/quickstart)**
+**[Full Quickstart Guide ->](https://spec-weave.com/docs/guides/getting-started/quickstart)**
 
 ---
 
 ## Key Features
+
+### Autonomous Execution (v2.9)
+
+Run for hours without intervention. See exactly what's happening:
+
+```bash
+/sw:auto                  # Start autonomous mode
+/sw:auto-status           # Check progress anytime
+/sw:cancel-auto           # Emergency stop (rarely needed)
+```
+
+**What you see in terminal:**
+- `[Planning]` - Analyzing task requirements
+- `[Implementing]` - Writing code
+- `[Testing]` - Running test suites
+- `[Fixing]` - Auto-correcting failures
+- `[Syncing]` - Updating docs and external tools
+- `[Done]` - Task complete, moving to next
 
 ### External Tool Integration
 
@@ -199,14 +230,14 @@ Three gates before any increment closes:
 | Command | Purpose |
 |---------|---------|
 | `/sw:increment "feature"` | Create spec + plan + tasks |
-| `/sw:auto` | 🚀 **Ship while you sleep** - hours of autonomous work |
+| `/sw:auto` | **Ship while you sleep** - hours of autonomous work |
+| `/sw:auto-status` | Check autonomous session progress |
 | `/sw:do` | Execute one task at a time |
 | `/sw:done 0001` | Close with quality validation |
 | `/sw:sync-progress` | Push to GitHub/JIRA/ADO |
-| `/sw:auto-status` | Check autonomous session progress |
 | `/sw:cancel-auto` | Stop autonomous session |
 
-**[53 total commands →](https://spec-weave.com/docs/commands/overview)**
+**[53 total commands ->](https://spec-weave.com/docs/commands/overview)**
 
 ---
 
@@ -214,9 +245,9 @@ Three gates before any increment closes:
 
 | Scenario | What You Do |
 |----------|-------------|
-| **10-year legacy codebase** | `specweave init .` → brownfield analysis detects doc gaps |
-| **Weekend MVP** | `specweave init .` → `/sw:increment "Build auth"` |
-| **50-team enterprise** | `specweave init .` → `/sw:enable-multiproject` → maps to JIRA/ADO |
+| **10-year legacy codebase** | `specweave init .` -> brownfield analysis detects doc gaps |
+| **Weekend MVP** | `specweave init .` -> `/sw:increment "Build auth"` |
+| **50-team enterprise** | `specweave init .` -> `/sw:enable-multiproject` -> maps to JIRA/ADO |
 
 ---
 
@@ -226,7 +257,7 @@ Three gates before any increment closes:
 - Any AI coding tool: Claude Code, Cursor, Windsurf, Cline, Aider, etc.
 - Git repository
 
-> 💡 **Why Node.js 20.12.0+?** SpecWeave uses modern JavaScript features (ES2022 Import Attributes) that require Node.js 20.12.0 or higher. If you see `SyntaxError: Unexpected token 'with'`, you need to upgrade Node.js.
+> **Why Node.js 20.12.0+?** SpecWeave uses modern JavaScript features (ES2022 Import Attributes) that require Node.js 20.12.0 or higher. If you see `SyntaxError: Unexpected token 'with'`, you need to upgrade Node.js.
 
 ---
 
