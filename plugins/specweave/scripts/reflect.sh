@@ -1,24 +1,29 @@
 #!/bin/bash
-# reflect.sh - Self-Improving Skills Reflection System (v2.0 - Simplified)
+# reflect.sh - Self-Improving Skills Reflection System (v3.0)
 #
-# Analyzes session transcripts and extracts learnings to memory files.
-# Designed to be lightweight, robust, and context-window friendly.
+# PHILOSOPHY: Only store HIGH-VALUE learnings that contain actionable rules.
+# Most sessions produce NO learnings - that's correct behavior.
 #
-# KEY DESIGN DECISIONS:
-# - Max 20 learnings per category (auto-prunes oldest)
-# - Max 5KB per memory file (prevents context bloat)
-# - Log rotation: keeps last 100 entries
-# - Compact learning format (no verbose metadata)
+# What we capture:
+# - Direct corrections with both WRONG and RIGHT: "No, don't X. Do Y instead."
+# - Explicit rules: "Always use X" / "Never use Y" / "In this project, use X"
+# - Project-specific patterns that differ from defaults
 #
-# Usage:
-#   reflect.sh [on|off|status|reflect] [options]
+# What we SKIP:
+# - Generic praise ("Perfect!", "Great!")
+# - Vague approval ("That's right") - no actionable info
+# - Things already in CLAUDE.md
 #
-# Exit codes:
-#   0 - Success
-#   1 - No learnings found
-#   2 - Configuration error
+# FORMAT: Test-like rules with optional example
+#   RULE: When [context], [always|never] [action]
+#   EXAMPLE: [one concrete example if helpful]
+#
+# LIMITS:
+# - 30 rules max per category (quality over quantity)
+# - ~100 chars per rule (compact)
+# - Deduplication by keyword similarity
 
-set +e  # Don't exit on error (hook safety)
+set +e
 
 # ============================================================================
 # CONFIGURATION
@@ -30,187 +35,218 @@ REFLECT_CONFIG="$STATE_DIR/reflect-config.json"
 LOGS_DIR="$PROJECT_ROOT/.specweave/logs/reflect"
 MEMORY_DIR="$PROJECT_ROOT/.specweave/memory"
 
-# Limits to prevent bloat
-MAX_LEARNINGS_PER_CATEGORY=20
-MAX_LOG_LINES=100
-MAX_MEMORY_FILE_KB=5
-
-# Defaults
-DEFAULT_CONFIDENCE="medium"
-DEFAULT_MAX_LEARNINGS=10
+# Conservative limits - quality over quantity
+MAX_RULES_PER_CATEGORY=30
+MAX_LOG_LINES=50
+DEFAULT_CONFIDENCE="high"  # Only high-confidence by default
+DEFAULT_MAX_LEARNINGS=5    # Max 5 per session (most sessions = 0)
 
 # ============================================================================
-# UTILITY FUNCTIONS
+# LOGGING (with rotation)
 # ============================================================================
 
 log() {
-    local level="$1"
-    shift
-    local timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    local level="$1"; shift
     mkdir -p "$LOGS_DIR"
-
-    # Log rotation - keep only last MAX_LOG_LINES
     local log_file="$LOGS_DIR/reflect.log"
+
+    # Rotate if needed
     if [ -f "$log_file" ]; then
-        local line_count=$(wc -l < "$log_file" 2>/dev/null || echo "0")
-        if [ "$line_count" -gt "$MAX_LOG_LINES" ]; then
-            tail -n $((MAX_LOG_LINES / 2)) "$log_file" > "$log_file.tmp" && mv "$log_file.tmp" "$log_file"
+        local lines=$(wc -l < "$log_file" 2>/dev/null || echo 0)
+        [ "$lines" -gt "$MAX_LOG_LINES" ] && tail -n 25 "$log_file" > "$log_file.tmp" && mv "$log_file.tmp" "$log_file"
+    fi
+
+    echo "[$(date +%H:%M:%S)] $level: $*" >> "$log_file"
+}
+
+ensure_dirs() { mkdir -p "$LOGS_DIR" "$MEMORY_DIR" "$STATE_DIR"; }
+
+get_config() {
+    local key="$1" default="$2"
+    [ -f "$REFLECT_CONFIG" ] && jq -r ".$key // \"$default\"" "$REFLECT_CONFIG" 2>/dev/null || echo "$default"
+}
+
+# ============================================================================
+# HIGH-VALUE SIGNAL DETECTION
+# ============================================================================
+
+# Patterns that indicate a CORRECTION with actionable info
+# Must have both "don't do X" AND "do Y instead" to be valuable
+CORRECTION_PATTERNS=(
+    "No,? don.t.*instead"
+    "No,? use.*not"
+    "Wrong.*should be"
+    "Never.*always"
+    "Don.t.*use.*instead"
+    "That.s incorrect.*correct"
+    "Actually,?.*should"
+    "Stop using.*use"
+)
+
+# Patterns for explicit rules (no correction needed, just a rule)
+RULE_PATTERNS=(
+    "Always use"
+    "Never use"
+    "In this (project|codebase|repo)"
+    "The convention (here|is)"
+    "We always"
+    "We never"
+    "The rule is"
+    "Remember to always"
+)
+
+# Patterns to SKIP (generic praise with no actionable info)
+SKIP_PATTERNS=(
+    "^Perfect!?$"
+    "^Great!?$"
+    "^Exactly!?$"
+    "^That.s right\.?$"
+    "^Well done\.?$"
+    "^Good job\.?$"
+    "^Correct\.?$"
+)
+
+# Check if context contains actionable info (not just praise)
+is_actionable() {
+    local text="$1"
+
+    # Skip if it's just generic praise
+    for pattern in "${SKIP_PATTERNS[@]}"; do
+        if echo "$text" | grep -qiE "$pattern"; then
+            return 1
         fi
-    fi
+    done
 
-    echo "{\"ts\":\"$timestamp\",\"lvl\":\"$level\",\"msg\":\"$*\"}" >> "$log_file"
+    # Must be longer than 20 chars to have real content
+    [ ${#text} -lt 20 ] && return 1
+
+    # Must contain some actionable verb
+    echo "$text" | grep -qiE "(use|don.t|never|always|should|must|avoid|prefer)" || return 1
+
+    return 0
 }
 
-ensure_dirs() {
-    mkdir -p "$LOGS_DIR" "$MEMORY_DIR" "$STATE_DIR"
+# Extract the actual rule from a correction context
+extract_rule() {
+    local context="$1"
+
+    # Try to find the "do Y instead" part
+    local rule=""
+
+    # Pattern: "No, don't X. Use Y instead" -> "Use Y"
+    rule=$(echo "$context" | grep -oiE "(use|prefer|always)[^.!?]*" | head -1)
+    [ -n "$rule" ] && echo "$rule" && return
+
+    # Pattern: "Should be X" -> "Should be X"
+    rule=$(echo "$context" | grep -oiE "should (be|use)[^.!?]*" | head -1)
+    [ -n "$rule" ] && echo "$rule" && return
+
+    # Pattern: "Never X, always Y" -> "Always Y"
+    rule=$(echo "$context" | grep -oiE "always[^.!?]*" | head -1)
+    [ -n "$rule" ] && echo "$rule" && return
+
+    # Fallback: return cleaned context
+    echo "$context" | cut -c1-100
 }
 
-get_config_value() {
-    local key="$1"
-    local default="$2"
-
-    if [ -f "$REFLECT_CONFIG" ]; then
-        local value=$(jq -r ".$key // \"$default\"" "$REFLECT_CONFIG" 2>/dev/null)
-        echo "${value:-$default}"
-    else
-        echo "$default"
-    fi
-}
-
-is_reflect_enabled() {
-    local enabled=$(get_config_value "enabled" "true")
-    [ "$enabled" = "true" ]
-}
-
-is_auto_reflect_enabled() {
-    local auto=$(get_config_value "autoReflect" "false")
-    [ "$auto" = "true" ]
-}
-
-# ============================================================================
-# SIGNAL DETECTION (Simplified)
-# ============================================================================
-
-# Correction patterns (user says "no", "wrong", etc.)
-CORRECTION_REGEX="(No,? don.t|No,? use|Wrong|That.s incorrect|Actually,? you should|Never use|Always use|Stop using|The correct way)"
-
-# Approval patterns (user says "perfect", "correct", etc.)
-APPROVAL_REGEX="(Perfect!|That.s right|That.s correct|Exactly!|Well done|Great job|Good pattern|Keep doing this)"
-
-# Detect signals and extract context
+# Detect high-value signals in transcript
 detect_signals() {
     local transcript="$1"
-
-    if [ ! -f "$transcript" ]; then
-        log "warn" "Transcript not found: $transcript"
-        return 1
-    fi
-
     local signals_file="$STATE_DIR/reflect-signals.txt"
-    > "$signals_file"  # Clear file
 
-    # Find corrections with context (using process substitution to avoid subshell)
-    local matches
-    matches=$(grep -inE "$CORRECTION_REGEX" "$transcript" 2>/dev/null | head -5) || true
-    if [ -n "$matches" ]; then
-        echo "$matches" | while read -r match; do
-            local linenum=$(echo "$match" | cut -d: -f1)
-            local start=$((linenum > 3 ? linenum - 2 : 1))
-            local end=$((linenum + 2))
-            local context=$(sed -n "${start},${end}p" "$transcript" 2>/dev/null | tr '\n' ' ' | cut -c1-300)
-            echo "CORRECTION|$context"
-        done >> "$signals_file"
-    fi
+    [ ! -f "$transcript" ] && return 1
+    > "$signals_file"
 
-    # Find approvals with context
-    matches=$(grep -inE "$APPROVAL_REGEX" "$transcript" 2>/dev/null | head -5) || true
-    if [ -n "$matches" ]; then
-        echo "$matches" | while read -r match; do
-            local linenum=$(echo "$match" | cut -d: -f1)
-            local start=$((linenum > 3 ? linenum - 2 : 1))
-            local end=$((linenum + 2))
-            local context=$(sed -n "${start},${end}p" "$transcript" 2>/dev/null | tr '\n' ' ' | cut -c1-300)
-            echo "APPROVAL|$context"
-        done >> "$signals_file"
-    fi
+    # Look for corrections (high value)
+    for pattern in "${CORRECTION_PATTERNS[@]}"; do
+        local matches=$(grep -inE "$pattern" "$transcript" 2>/dev/null | head -3) || true
+        if [ -n "$matches" ]; then
+            echo "$matches" | while read -r match; do
+                local linenum=$(echo "$match" | cut -d: -f1)
+                local start=$((linenum > 2 ? linenum - 1 : 1))
+                local end=$((linenum + 1))
+                local context=$(sed -n "${start},${end}p" "$transcript" 2>/dev/null | tr '\n' ' ' | sed 's/  */ /g')
 
-    local corrections
-    local approvals
-    corrections=$(grep -c "^CORRECTION|" "$signals_file" 2>/dev/null) || corrections=0
-    approvals=$(grep -c "^APPROVAL|" "$signals_file" 2>/dev/null) || approvals=0
+                # Only add if actionable
+                if is_actionable "$context"; then
+                    local rule=$(extract_rule "$context")
+                    echo "CORRECTION|$rule" >> "$signals_file"
+                fi
+            done
+        fi
+    done
 
-    log "info" "Detected $corrections corrections, $approvals approvals"
+    # Look for explicit rules (medium value)
+    for pattern in "${RULE_PATTERNS[@]}"; do
+        local matches=$(grep -inE "$pattern" "$transcript" 2>/dev/null | head -2) || true
+        if [ -n "$matches" ]; then
+            echo "$matches" | while read -r match; do
+                local linenum=$(echo "$match" | cut -d: -f1)
+                local context=$(sed -n "${linenum}p" "$transcript" 2>/dev/null | tr '\n' ' ')
 
-    local total=$((corrections + approvals))
-    if [ "$total" -eq 0 ]; then
-        return 1
-    fi
+                if is_actionable "$context"; then
+                    local rule=$(extract_rule "$context")
+                    echo "RULE|$rule" >> "$signals_file"
+                fi
+            done
+        fi
+    done
+
+    local count=$(wc -l < "$signals_file" 2>/dev/null || echo 0)
+    count=$(echo "$count" | tr -d ' ')
+
+    log "info" "Found $count actionable signals"
+    [ "$count" -eq 0 ] && return 1
 
     echo "$signals_file"
 }
 
 # ============================================================================
-# LEARNING EXTRACTION
+# DEDUPLICATION
 # ============================================================================
 
-# Generate compact learning ID
-generate_learning_id() {
-    echo "L$(date +%m%d)-$(head -c 2 /dev/urandom | od -An -tx1 | tr -d ' ')"
+# Check if a similar rule already exists (by key words)
+rule_exists() {
+    local file="$1"
+    local new_rule="$2"
+
+    [ ! -f "$file" ] && return 1
+
+    # Extract key words from new rule (nouns, verbs)
+    local keywords=$(echo "$new_rule" | tr '[:upper:]' '[:lower:]' | grep -oE '\b[a-z]{4,}\b' | sort -u | head -5 | tr '\n' ' ')
+
+    # Check if 3+ keywords match any existing rule
+    local match_count=0
+    for kw in $keywords; do
+        if grep -qi "\b$kw\b" "$file" 2>/dev/null; then
+            match_count=$((match_count + 1))
+        fi
+    done
+
+    [ "$match_count" -ge 3 ] && return 0
+    return 1
 }
 
-# Categorize based on keywords
-categorize_learning() {
-    local context="$1"
-    local lower=$(echo "$context" | tr '[:upper:]' '[:lower:]')
+# ============================================================================
+# MEMORY MANAGEMENT
+# ============================================================================
+
+categorize() {
+    local text="$1"
+    local lower=$(echo "$text" | tr '[:upper:]' '[:lower:]')
 
     case "$lower" in
-        *button*|*component*|*ui*|*style*|*css*|*react*|*vue*) echo "frontend" ;;
-        *api*|*endpoint*|*route*|*rest*|*graphql*|*backend*) echo "backend" ;;
-        *test*|*spec*|*mock*|*playwright*|*vitest*|*jest*) echo "testing" ;;
-        *deploy*|*docker*|*k8s*|*ci*|*cd*|*terraform*) echo "devops" ;;
-        *auth*|*security*|*token*|*password*|*encrypt*) echo "security" ;;
-        *query*|*database*|*sql*|*schema*|*postgres*) echo "database" ;;
+        *component*|*button*|*ui*|*style*|*css*|*react*|*vue*|*html*) echo "frontend" ;;
+        *api*|*endpoint*|*route*|*rest*|*graphql*|*server*) echo "backend" ;;
+        *test*|*spec*|*mock*|*assert*|*expect*) echo "testing" ;;
+        *deploy*|*docker*|*k8s*|*ci*|*terraform*|*aws*) echo "devops" ;;
+        *auth*|*security*|*token*|*password*|*secret*) echo "security" ;;
+        *query*|*database*|*sql*|*schema*|*table*) echo "database" ;;
+        *file*|*path*|*import*|*export*|*module*) echo "structure" ;;
         *) echo "general" ;;
     esac
 }
 
-# Prune memory file to max learnings
-prune_memory_file() {
-    local file="$1"
-
-    if [ ! -f "$file" ]; then
-        return
-    fi
-
-    # Count learnings (lines starting with "- ")
-    local count=$(grep -c "^- L[0-9]" "$file" 2>/dev/null || echo "0")
-
-    if [ "$count" -gt "$MAX_LEARNINGS_PER_CATEGORY" ]; then
-        log "info" "Pruning $file: $count > $MAX_LEARNINGS_PER_CATEGORY"
-
-        # Keep header and last N learnings
-        local header=$(head -5 "$file")
-        local learnings=$(grep "^- L[0-9]" "$file" | tail -n "$MAX_LEARNINGS_PER_CATEGORY")
-
-        echo "$header" > "$file"
-        echo "" >> "$file"
-        echo "$learnings" >> "$file"
-    fi
-
-    # Also check file size
-    local size_kb=$(du -k "$file" 2>/dev/null | cut -f1)
-    if [ "${size_kb:-0}" -gt "$MAX_MEMORY_FILE_KB" ]; then
-        log "warn" "Memory file too large: ${size_kb}KB > ${MAX_MEMORY_FILE_KB}KB, pruning"
-        # Keep only last half of learnings
-        local header=$(head -5 "$file")
-        local learnings=$(grep "^- L[0-9]" "$file" | tail -n $((MAX_LEARNINGS_PER_CATEGORY / 2)))
-        echo "$header" > "$file"
-        echo "" >> "$file"
-        echo "$learnings" >> "$file"
-    fi
-}
-
-# Ensure memory file exists with header
 ensure_memory_file() {
     local category="$1"
     local file="$MEMORY_DIR/${category}.md"
@@ -218,227 +254,181 @@ ensure_memory_file() {
     mkdir -p "$MEMORY_DIR"
 
     if [ ! -f "$file" ]; then
-        # POSIX-compatible capitalize first letter
-        local cap_category=$(echo "$category" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')
+        local cap=$(echo "$category" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')
         cat > "$file" << EOF
-# $cap_category Memory
-> SpecWeave learnings - auto-pruned to $MAX_LEARNINGS_PER_CATEGORY entries
-> Updated: $(date +%Y-%m-%d)
+# $cap Rules
+> Project-specific patterns learned from corrections.
+> Max $MAX_RULES_PER_CATEGORY rules, auto-deduplicated.
 
-## Learnings
 EOF
     fi
 
     echo "$file"
 }
 
-# Add learning (compact format)
-add_learning() {
+add_rule() {
     local category="$1"
-    local confidence="$2"
-    local context="$3"
+    local type="$2"  # CORRECTION or RULE
+    local rule="$3"
 
     local file=$(ensure_memory_file "$category")
-    local id=$(generate_learning_id)
 
-    # Compact format: - ID (conf): context
-    local conf_short=$(echo "$confidence" | cut -c1 | tr '[:lower:]' '[:upper:]')
-    local clean_context=$(echo "$context" | tr -d '\n\r' | sed 's/  */ /g' | cut -c1-200)
+    # Skip if similar rule exists
+    if rule_exists "$file" "$rule"; then
+        log "info" "Skipped duplicate: $rule"
+        return 1
+    fi
 
-    echo "- $id ($conf_short): $clean_context" >> "$file"
+    # Clean and format
+    local clean=$(echo "$rule" | tr -d '\n\r' | sed 's/  */ /g' | cut -c1-100)
+    local marker="→"
+    [ "$type" = "CORRECTION" ] && marker="✗→✓"
 
-    # Update timestamp in header
-    sed -i.bak "s/^> Updated:.*/> Updated: $(date +%Y-%m-%d)/" "$file" 2>/dev/null
-    rm -f "${file}.bak"
+    echo "- $marker $clean" >> "$file"
 
-    # Prune if needed
-    prune_memory_file "$file"
+    # Prune if over limit (keep newest, they're at bottom)
+    local count=$(grep -c "^- " "$file" 2>/dev/null || echo 0)
+    if [ "$count" -gt "$MAX_RULES_PER_CATEGORY" ]; then
+        local header=$(head -4 "$file")
+        local rules=$(grep "^- " "$file" | tail -n "$MAX_RULES_PER_CATEGORY")
+        echo "$header" > "$file"
+        echo "$rules" >> "$file"
+        log "info" "Pruned $category to $MAX_RULES_PER_CATEGORY rules"
+    fi
 
-    log "info" "Added $id to $category"
+    log "info" "Added to $category: $clean"
+    return 0
 }
 
 # ============================================================================
-# MAIN REFLECTION LOGIC
+# MAIN REFLECTION
 # ============================================================================
 
 reflect_session() {
     local transcript="$1"
     local dry_run="${2:-false}"
-    local confidence_threshold="${3:-$DEFAULT_CONFIDENCE}"
-    local max_learnings="${4:-$DEFAULT_MAX_LEARNINGS}"
+    local max="${3:-$DEFAULT_MAX_LEARNINGS}"
 
     ensure_dirs
 
-    # Detect signals
     local signals_file=$(detect_signals "$transcript")
 
     if [ -z "$signals_file" ] || [ ! -f "$signals_file" ]; then
-        echo "No signals detected in session."
-        return 1
+        echo "No actionable signals found (this is normal)."
+        return 0
     fi
 
-    local total=$(wc -l < "$signals_file" 2>/dev/null || echo "0")
+    local total=$(wc -l < "$signals_file" 2>/dev/null || echo 0)
+    total=$(echo "$total" | tr -d ' ')
 
-    if [ "$total" -eq 0 ]; then
-        echo "No corrections or approvals found."
-        return 1
-    fi
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🧠 REFLECT: $total actionable signals"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "🧠 REFLECT: Found $total signals"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    local added=0
 
-    local learnings_created=0
+    while IFS='|' read -r type rule; do
+        [ "$added" -ge "$max" ] && break
+        [ -z "$rule" ] && continue
 
-    # Process each signal
-    while IFS='|' read -r type context; do
-        if [ "$learnings_created" -ge "$max_learnings" ]; then
-            break
-        fi
+        local category=$(categorize "$rule")
 
-        local category=$(categorize_learning "$context")
-        local confidence="medium"
-        [ "$type" = "CORRECTION" ] && confidence="high"
-
-        # Skip low confidence if threshold is high
-        if [ "$confidence_threshold" = "high" ] && [ "$confidence" != "high" ]; then
-            continue
-        fi
-
-        echo "  📝 [$category] $confidence confidence"
+        echo "  [$category] $type"
 
         if [ "$dry_run" = "false" ]; then
-            add_learning "$category" "$confidence" "$context"
+            if add_rule "$category" "$type" "$rule"; then
+                added=$((added + 1))
+            fi
+        else
+            added=$((added + 1))
         fi
-
-        learnings_created=$((learnings_created + 1))
     done < "$signals_file"
 
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
     if [ "$dry_run" = "true" ]; then
-        echo "🔍 DRY RUN - no changes saved"
+        echo "🔍 DRY RUN - would add $added rules"
     else
-        echo "✅ Saved $learnings_created learnings"
+        echo "✅ Added $added rules"
     fi
 
-    # Cleanup
     rm -f "$signals_file"
-
     return 0
 }
 
 # ============================================================================
-# COMMAND HANDLERS
+# COMMANDS
 # ============================================================================
 
-cmd_reflect_on() {
+cmd_on() {
     ensure_dirs
-
     cat > "$REFLECT_CONFIG" << EOF
 {
   "enabled": true,
   "autoReflect": true,
   "enabledAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "confidenceThreshold": "$DEFAULT_CONFIDENCE",
-  "maxLearningsPerSession": $DEFAULT_MAX_LEARNINGS,
-  "gitCommit": false,
-  "gitPush": false
+  "confidenceThreshold": "high",
+  "maxLearningsPerSession": $DEFAULT_MAX_LEARNINGS
 }
 EOF
-
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "🧠 REFLECT: Auto-mode ENABLED"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    echo "Sessions will now extract learnings on exit."
-    echo "Limits: $MAX_LEARNINGS_PER_CATEGORY per category, ${MAX_MEMORY_FILE_KB}KB max"
-    echo ""
-    echo "To disable: /sw:reflect-off"
-
-    log "info" "Auto-reflection enabled"
+    echo "🧠 Auto-reflection ENABLED (high-value only)"
+    echo "   Max $DEFAULT_MAX_LEARNINGS rules/session, $MAX_RULES_PER_CATEGORY per category"
 }
 
-cmd_reflect_off() {
+cmd_off() {
     ensure_dirs
-
-    if [ -f "$REFLECT_CONFIG" ]; then
-        jq '.autoReflect = false' "$REFLECT_CONFIG" > "$REFLECT_CONFIG.tmp" && mv "$REFLECT_CONFIG.tmp" "$REFLECT_CONFIG"
-    else
-        cat > "$REFLECT_CONFIG" << EOF
-{
-  "enabled": true,
-  "autoReflect": false,
-  "disabledAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-}
-EOF
-    fi
-
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "🧠 REFLECT: Auto-mode DISABLED"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo ""
-    echo "Manual /sw:reflect still works."
-    echo "To re-enable: /sw:reflect-on"
-
-    log "info" "Auto-reflection disabled"
+    [ -f "$REFLECT_CONFIG" ] && jq '.autoReflect = false' "$REFLECT_CONFIG" > "$REFLECT_CONFIG.tmp" && mv "$REFLECT_CONFIG.tmp" "$REFLECT_CONFIG"
+    echo "🧠 Auto-reflection DISABLED"
 }
 
-cmd_reflect_status() {
+cmd_status() {
     ensure_dirs
+    local auto=$(get_config "autoReflect" "false")
 
-    local enabled=$(get_config_value "enabled" "true")
-    local auto_reflect=$(get_config_value "autoReflect" "false")
-
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "🧠 REFLECT: Status"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "🧠 REFLECT STATUS"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    [ "$auto" = "true" ] && echo "  Auto: ✅ ON" || echo "  Auto: ❌ OFF"
+    echo "  Max/session: $DEFAULT_MAX_LEARNINGS"
+    echo "  Max/category: $MAX_RULES_PER_CATEGORY"
     echo ""
 
-    [ "$enabled" = "true" ] && echo "  Reflection:   ✅ Enabled" || echo "  Reflection:   ❌ Disabled"
-    [ "$auto_reflect" = "true" ] && echo "  Auto-reflect: ✅ On" || echo "  Auto-reflect: ❌ Off"
-    echo "  Max/category: $MAX_LEARNINGS_PER_CATEGORY"
-    echo "  Max file:     ${MAX_MEMORY_FILE_KB}KB"
-    echo ""
-
-    # Count learnings
     local total=0
     if [ -d "$MEMORY_DIR" ]; then
-        echo "  📚 Memory files:"
         for f in "$MEMORY_DIR"/*.md; do
-            if [ -f "$f" ]; then
-                local name=$(basename "$f" .md)
-                local count=$(grep -c "^- L[0-9]" "$f" 2>/dev/null || echo "0")
-                local size=$(du -k "$f" 2>/dev/null | cut -f1)
-                echo "     $name: $count learnings (${size}KB)"
-                total=$((total + count))
-            fi
+            [ -f "$f" ] || continue
+            local name=$(basename "$f" .md)
+            local count=$(grep -c "^- " "$f" 2>/dev/null || echo 0)
+            echo "  📁 $name: $count rules"
+            total=$((total + count))
         done
     fi
 
     echo ""
-    echo "  Total: $total learnings"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  Total: $total rules"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 }
 
-cmd_reflect_clear() {
-    local category="${1:-all}"
-
-    if [ "$category" = "all" ]; then
-        echo "Clearing all memory files..."
-        rm -rf "$MEMORY_DIR"/*.md
-        echo "✅ All learnings cleared"
+cmd_clear() {
+    local cat="${1:-all}"
+    if [ "$cat" = "all" ]; then
+        rm -f "$MEMORY_DIR"/*.md
+        echo "✅ Cleared all rules"
     else
-        local file="$MEMORY_DIR/${category}.md"
-        if [ -f "$file" ]; then
-            rm -f "$file"
-            echo "✅ Cleared $category learnings"
-        else
-            echo "⚠️ No $category memory file found"
-        fi
+        rm -f "$MEMORY_DIR/${cat}.md"
+        echo "✅ Cleared $cat rules"
     fi
+}
 
-    log "info" "Cleared learnings: $category"
+cmd_show() {
+    local cat="${1:-all}"
+    if [ "$cat" = "all" ]; then
+        for f in "$MEMORY_DIR"/*.md; do
+            [ -f "$f" ] && cat "$f" && echo ""
+        done
+    else
+        [ -f "$MEMORY_DIR/${cat}.md" ] && cat "$MEMORY_DIR/${cat}.md" || echo "No $cat rules"
+    fi
 }
 
 # ============================================================================
@@ -446,59 +436,34 @@ cmd_reflect_clear() {
 # ============================================================================
 
 main() {
-    local command="${1:-reflect}"
-    shift || true
+    local cmd="${1:-reflect}"; shift || true
 
-    case "$command" in
-        on|enable)
-            cmd_reflect_on
-            ;;
-        off|disable)
-            cmd_reflect_off
-            ;;
-        status)
-            cmd_reflect_status
-            ;;
-        clear)
-            cmd_reflect_clear "$@"
-            ;;
+    case "$cmd" in
+        on|enable) cmd_on ;;
+        off|disable) cmd_off ;;
+        status) cmd_status ;;
+        clear) cmd_clear "$@" ;;
+        show) cmd_show "$@" ;;
         reflect|analyze)
-            local transcript=""
-            local dry_run="false"
-            local confidence="$DEFAULT_CONFIDENCE"
-            local max="$DEFAULT_MAX_LEARNINGS"
-
+            local transcript="" dry_run="false" max="$DEFAULT_MAX_LEARNINGS"
             while [ $# -gt 0 ]; do
                 case "$1" in
                     --transcript) transcript="$2"; shift 2 ;;
                     --dry-run) dry_run="true"; shift ;;
-                    --confidence) confidence="$2"; shift 2 ;;
                     --max) max="$2"; shift 2 ;;
                     *) shift ;;
                 esac
             done
 
-            # Auto-detect transcript if not provided
             if [ -z "$transcript" ]; then
-                local tmp="${TMPDIR:-/tmp}"
-                transcript=$(find "$tmp" -name "*.md" -mmin -5 2>/dev/null | head -1)
-
-                if [ -z "$transcript" ]; then
-                    echo "⚠️ No transcript found. Use --transcript <path>"
-                    return 1
-                fi
+                transcript=$(find "${TMPDIR:-/tmp}" -name "*.md" -mmin -5 2>/dev/null | head -1)
+                [ -z "$transcript" ] && echo "No transcript found" && return 1
             fi
 
-            reflect_session "$transcript" "$dry_run" "$confidence" "$max"
+            reflect_session "$transcript" "$dry_run" "$max"
             ;;
-        *)
-            echo "Usage: reflect.sh [on|off|status|clear|reflect] [options]"
-            return 1
-            ;;
+        *) echo "Usage: reflect.sh [on|off|status|clear|show|reflect]" ;;
     esac
 }
 
-# Run if executed directly
-if [ "${BASH_SOURCE[0]}" = "$0" ]; then
-    main "$@"
-fi
+[ "${BASH_SOURCE[0]}" = "$0" ] && main "$@"
