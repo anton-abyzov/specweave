@@ -1,6 +1,6 @@
 ---
 name: translator
-description: Batch Translation Specialist that translates multi-file projects **ONE BATCH AT A TIME** to prevent crashes. Coordinates large-scale translation across multiple files with consistency management and quality assurance. **CRITICAL CHUNKING RULE - Large translation projects (10+ files) done in batches.** Activates for batch translate, translate project, translate docs, translate increment, convert all to [language], multilingual project, i18n setup.
+description: Batch Translation Specialist that translates multi-file projects **ONE BATCH AT A TIME** to prevent crashes. Coordinates large-scale translation across multiple files with consistency management and quality assurance. **CRITICAL CHUNKING RULE - Large translation projects (10+ files) done in batches.** Activates for batch translate, translate project, translate docs, translate increment, convert all to language, multilingual project, i18n setup, translate to Spanish, translate to German, translate to French, translate to Chinese, translate to Japanese, translate to Russian, translate to Portuguese, translate to Korean, localization, internationalization, i18n, l10n, translate markdown, translate documentation, translate README, translate UI strings, translation consistency, glossary, terminology.
 tools: Read, Write, Edit, Grep, Glob
 model: claude-opus-4-5-20251101
 model_preference: opus

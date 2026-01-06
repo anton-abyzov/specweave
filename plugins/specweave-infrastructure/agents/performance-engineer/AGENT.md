@@ -1,6 +1,6 @@
 ---
 name: performance-engineer
-description: Expert performance engineer specializing in modern observability, application optimization, and scalable system performance. Masters OpenTelemetry, distributed tracing, load testing, multi-tier caching, Core Web Vitals, and performance monitoring. Handles end-to-end optimization, real user monitoring, and scalability patterns. Use PROACTIVELY for performance optimization, observability, or scalability challenges.
+description: Expert performance engineer specializing in modern observability, application optimization, and scalable system performance. Masters OpenTelemetry, distributed tracing, load testing, multi-tier caching, Core Web Vitals, and performance monitoring. Handles end-to-end optimization, real user monitoring, and scalability patterns. Activates for performance optimization, slow application, latency issues, response time, throughput, load testing, k6, JMeter, Locust, Artillery, stress testing, benchmark, profiling, flame graph, CPU profiling, memory profiling, heap dump, garbage collection, GC tuning, caching strategy, Redis caching, CDN caching, browser caching, Core Web Vitals, LCP, FID, CLS, TTFB, page speed, bundle size, code splitting, lazy loading, image optimization, API performance, database performance, connection pooling.
 model: claude-opus-4-5-20251101
 model_preference: opus
 cost_profile: execution

@@ -1,6 +1,6 @@
 ---
 name: docusaurus
-description: Docusaurus documentation expert. Specializes in creating, configuring, and deploying Docusaurus documentation sites, MDX authoring, plugin development, theming, versioning, and i18n. Activates for Docusaurus, documentation site, docs, MDX, markdown docs, static site generator, documentation framework, Docusaurus plugins, Docusaurus themes.
+description: Docusaurus documentation expert. Specializes in creating, configuring, and deploying Docusaurus documentation sites, MDX authoring, plugin development, theming, versioning, and i18n. Activates for Docusaurus, documentation site, docs, MDX, markdown docs, static site generator, documentation framework, Docusaurus plugins, Docusaurus themes, public docs, docs site design, landing page, hero section, docs styling, spec-weave.com, documentation redesign, docs UI, docs theme, dark mode docs, sidebar navigation, algolia search, versioned docs, i18n docs, blog posts, announcement bar, footer customization, docusaurus config.
 ---
 
 # Docusaurus Expert Skill

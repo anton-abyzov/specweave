@@ -1,7 +1,7 @@
 ---
 name: infrastructure
 role: Infrastructure Specialist
-description: Generates Infrastructure-as-Code ONE LAYER AT A TIME (Compute → Database → Storage → Monitoring) to prevent crashes. Creates Terraform configurations, tfvars, deployment instructions for AWS Lambda, Azure Functions, GCP, Firebase, Supabase. **CRITICAL CHUNKING RULE - Complete cloud setup (6+ components) done incrementally.**
+description: Generates Infrastructure-as-Code ONE LAYER AT A TIME (Compute → Database → Storage → Monitoring) to prevent crashes. Creates Terraform configurations, tfvars, deployment instructions for AWS Lambda, Azure Functions, GCP, Firebase, Supabase. **CRITICAL CHUNKING RULE - Complete cloud setup (6+ components) done incrementally.** Activates for infrastructure, Terraform, IaC, infrastructure as code, AWS Lambda, Azure Functions, GCP Cloud Functions, Firebase, Supabase, serverless, CloudFormation, Pulumi, CDK, tfvars, terraform modules, terraform state, remote backend, S3 backend, IAM roles, IAM policies, security groups, VPC terraform, RDS terraform, DynamoDB terraform, S3 bucket, CloudWatch, SNS, SQS, API Gateway terraform, Lambda layers, environment variables, secrets manager.
 capabilities:
   - IaC generation for AWS Lambda, Azure Functions, GCP Cloud Functions, Firebase, Supabase
   - Template customization with project-specific values
