@@ -49,120 +49,35 @@ LOGS_DIR="$PROJECT_ROOT/.specweave/logs"
 mkdir -p "$LOGS_DIR"
 
 # ============================================================================
-# REFLECT HOOK INTEGRATION (v2.7)
-# Source the reflect hook for auto-learning on session completion
+# REFLECT HOOK INTEGRATION - REMOVED (v2.8)
+# ============================================================================
+# Reflect is now handled by stop-reflect.sh via stop-dispatcher.sh
+# This ensures reflect runs on ALL sessions, not just auto mode.
+# See: stop-dispatcher.sh for the new architecture.
 # ============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REFLECT_HOOK="$SCRIPT_DIR/reflect-stop-hook.sh"
-
-# Source reflect hook functions (if available)
-if [ -f "$REFLECT_HOOK" ]; then
-    source "$REFLECT_HOOK" 2>/dev/null || true
-fi
 
 # ============================================================================
-# CONTEXT SIZE ESTIMATION & COMPACTION (v2.3 - Iterative Strategy)
-# Gradual compaction hints that get stronger over time
-# - Level 1 (160k): Gentle hint - "be concise"
-# - Level 2 (175k): Moderate - "summarize where possible"
-# - Level 3 (185k): Strong - "focus on essentials only"
-# - Level 4 (195k): Critical - "run /compact soon"
-# Non-blocking at all levels, with 10-iteration cooldown between hints
+# CONTEXT SIZE MANAGEMENT - REMOVED (v2.4)
 # ============================================================================
-
-# Token thresholds for iterative hints (escalating)
-CONTEXT_LEVEL1_TOKENS=160000  # Gentle hint
-CONTEXT_LEVEL2_TOKENS=175000  # Moderate hint
-CONTEXT_LEVEL3_TOKENS=185000  # Strong hint
-CONTEXT_LEVEL4_TOKENS=195000  # Critical - suggest /compact
-BYTES_PER_TOKEN=4             # Rough estimate: 4 chars/bytes per token
-CONTEXT_HINT_COOLDOWN_ITERS=10  # Show hint every 10 iterations max
-
-# Estimate context size in tokens from transcript file size
-estimate_context_size() {
-    local transcript="$1"
-
-    if [ ! -f "$transcript" ]; then
-        echo "0"
-        return
-    fi
-
-    local file_size=$(stat -f%z "$transcript" 2>/dev/null || stat -c%s "$transcript" 2>/dev/null || echo "0")
-    local estimated_tokens=$((file_size / BYTES_PER_TOKEN))
-
-    echo "$estimated_tokens"
-}
-
-# Get the last iteration when we showed a context hint
-get_last_context_hint_iteration() {
-    local hint_file="$STATE_DIR/.context-hint-iteration"
-    if [ -f "$hint_file" ]; then
-        cat "$hint_file" 2>/dev/null || echo "0"
-    else
-        echo "0"
-    fi
-}
-
-# Record when we showed a context hint
-record_context_hint() {
-    local hint_file="$STATE_DIR/.context-hint-iteration"
-    echo "${ITERATION:-0}" > "$hint_file" 2>/dev/null
-}
-
-# Check if we're in cooldown for context hints (iteration-based)
-context_hint_in_cooldown() {
-    local last_hint_iter=$(get_last_context_hint_iteration)
-    local current_iter="${ITERATION:-0}"
-    local elapsed=$((current_iter - last_hint_iter))
-
-    if [ "$elapsed" -lt "$CONTEXT_HINT_COOLDOWN_ITERS" ]; then
-        return 0  # In cooldown
-    fi
-    return 1  # Cooldown expired
-}
-
-# Get context level (0-4) based on token count
-# Returns: 0 (ok), 1 (gentle), 2 (moderate), 3 (strong), 4 (critical)
-get_context_level() {
-    local estimated_tokens="$1"
-
-    if [ "$estimated_tokens" -gt "$CONTEXT_LEVEL4_TOKENS" ]; then
-        echo "4"
-    elif [ "$estimated_tokens" -gt "$CONTEXT_LEVEL3_TOKENS" ]; then
-        echo "3"
-    elif [ "$estimated_tokens" -gt "$CONTEXT_LEVEL2_TOKENS" ]; then
-        echo "2"
-    elif [ "$estimated_tokens" -gt "$CONTEXT_LEVEL1_TOKENS" ]; then
-        echo "1"
-    else
-        echo "0"
-    fi
-}
-
-# Get appropriate hint message for context level
-get_context_hint_message() {
-    local level="$1"
-    local tokens="$2"
-
-    case "$level" in
-        1)
-            echo "💡 Context growing (~${tokens} tokens). Tip: Keep responses concise."
-            ;;
-        2)
-            echo "📊 Context at ~${tokens} tokens. Summarize explanations where possible."
-            ;;
-        3)
-            echo "⚠️ Context high (~${tokens} tokens). Focus on essentials only, skip verbose output."
-            ;;
-        4)
-            echo "🔴 Context critical (~${tokens} tokens)! Consider /compact soon. Use minimal explanations."
-            ;;
-        *)
-            echo ""
-            ;;
-    esac
-}
+# Previously we had custom context size tracking and warnings here.
+# REMOVED because Claude Code v2.0.64+ has excellent native auto-compact:
+#
+# - Instant auto-compacting at smart thresholds (~64-75%)
+# - Completion buffer prevents mid-operation interrupts
+# - PreCompact hook available for custom logic if needed
+# - 3x memory optimization for large conversations
+# - Real-time context window % shown in status line
+#
+# Our custom tracking was:
+# - Redundant (duplicated native behavior)
+# - Inaccurate (estimated from file size vs actual tokens)
+# - Noisy (added warnings without benefit)
+#
+# Trust Claude Code's native context management instead.
+# See: https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+# ============================================================================
 
 # ============================================================================
 # HEARTBEAT MECHANISM (NEW - v2.1)
@@ -793,13 +708,9 @@ approve() {
                 play_notification_sound "success"
 
                 # ================================================================
-                # AUTO-REFLECTION (v2.7)
-                # Extract learnings from session on successful completion
-                # Runs async to not block session exit
+                # AUTO-REFLECTION - REMOVED (v2.8)
+                # Now handled by stop-reflect.sh via stop-dispatcher.sh
                 # ================================================================
-                if type run_auto_reflection >/dev/null 2>&1; then
-                    run_auto_reflection "$TRANSCRIPT_PATH" "${SESSION_ID:-unknown}"
-                fi
             fi
         else
             # Subagent stopping - this is a RETURN TO PARENT
@@ -815,18 +726,6 @@ approve() {
     } >&2
 
     echo "{\"decision\": \"approve\", \"reason\": \"$reason\", \"agentType\": \"$agent_short\"}"
-    exit 0
-}
-
-# Helper: Output approve with advisory system message (non-blocking)
-# Used for context warnings - continues execution but informs the model
-approve_with_message() {
-    local system_message="$1"
-
-    # Escape the message for JSON (handle newlines)
-    local escaped_msg=$(printf '%s' "$system_message" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n' ' ')
-
-    echo "{\"decision\": \"approve\", \"systemMessage\": \"$escaped_msg\"}"
     exit 0
 }
 
@@ -1839,51 +1738,11 @@ if echo "$HEARTBEAT_STATUS" | grep -q "^stale:"; then
 fi
 
 # ============================================================================
-# CONTEXT SIZE CHECK (v2.3 - Iterative Compaction Hints)
-# Gradual hints that get stronger as context grows
-# Non-blocking at ALL levels - just provides guidance to the model
-# Uses iteration-based cooldown (every 10 iterations) not time-based
+# CONTEXT SIZE CHECK - REMOVED (v2.4)
 # ============================================================================
-
-if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
-    ESTIMATED_TOKENS=$(estimate_context_size "$TRANSCRIPT_PATH")
-    CONTEXT_LEVEL=$(get_context_level "$ESTIMATED_TOKENS")
-
-    if [ "$CONTEXT_LEVEL" -gt 0 ]; then
-        # We have a context hint to show
-
-        # Level 4 (critical) bypasses cooldown - always show
-        # Lower levels respect the 10-iteration cooldown
-        SHOULD_SHOW_HINT=false
-
-        if [ "$CONTEXT_LEVEL" -eq 4 ]; then
-            SHOULD_SHOW_HINT=true  # Critical always shows
-        elif ! context_hint_in_cooldown; then
-            SHOULD_SHOW_HINT=true  # Not in cooldown
-        fi
-
-        if [ "$SHOULD_SHOW_HINT" = "true" ]; then
-            # Log the event
-            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"context_hint\",\"level\":$CONTEXT_LEVEL,\"tokens\":$ESTIMATED_TOKENS,\"iteration\":${ITERATION:-0}}" >> "$LOGS_DIR/auto-iterations.log"
-
-            # Record hint iteration for cooldown
-            record_context_hint
-
-            # Save checkpoint at level 3+ for safety
-            if [ "$CONTEXT_LEVEL" -ge 3 ] && [ -n "$CURRENT_INCREMENT" ]; then
-                CURRENT_TASK=$(echo "$SESSION" | jq -r '.currentTaskId // "unknown"')
-                save_task_checkpoint "$CURRENT_TASK" "$CURRENT_INCREMENT"
-            fi
-
-            # Get the appropriate hint message
-            HINT_MESSAGE=$(get_context_hint_message "$CONTEXT_LEVEL" "$ESTIMATED_TOKENS")
-
-            # Non-blocking advisory - continue execution with hint
-            approve_with_message "$HINT_MESSAGE"
-        fi
-        # If in cooldown for non-critical levels, silently continue
-    fi
-fi
+# Removed: Claude Code v2.0.64+ handles context management natively.
+# See comment at top of file for details.
+# ============================================================================
 
 # ============================================================================
 # CHECKPOINT RECOVERY CHECK (NEW - v2.1)

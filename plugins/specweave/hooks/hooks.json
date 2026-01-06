@@ -37,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-auto.sh"
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-dispatcher.sh"
           }
         ]
       }
