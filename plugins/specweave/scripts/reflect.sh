@@ -123,6 +123,22 @@ is_actionable() {
     # Must contain some actionable verb
     echo "$text" | grep -qiE "(use|don.t|never|always|should|must|avoid|prefer)" || return 1
 
+    # QUALITY GATE: Skip documentation examples (markdown formatting, line numbers, JSON)
+    # These patterns indicate the text came from docs/examples, not actual user corrections
+    if echo "$text" | grep -qE '^\s*[0-9]+→|^\s*[0-9]+\s*\||```|\*\*|\\n|\\"|":[[:space:]]|"sessionId"|"userType"|"cwd"'; then
+        return 1
+    fi
+
+    # QUALITY GATE: Skip content that looks like code examples with backticks
+    if echo "$text" | grep -qE '`[^`]+`.*`[^`]+`'; then
+        return 1
+    fi
+
+    # QUALITY GATE: Skip content with escaped quotes (JSON/code artifacts)
+    if echo "$text" | grep -qE '\\"|\\".*\\"'; then
+        return 1
+    fi
+
     return 0
 }
 
@@ -360,6 +376,13 @@ add_rule() {
     local word_count=$(echo "$clean" | wc -w | tr -d ' ')
     if [ "$word_count" -lt 3 ]; then
         log "info" "Skipped too vague: $clean"
+        return 1
+    fi
+
+    # QUALITY GATE 4: Skip documentation/JSON artifacts
+    # These patterns indicate corrupted data from parsing docs or code
+    if echo "$clean" | grep -qE '\\n|\\"|":|→|```|\*\*|sessionId|userType|"cwd"'; then
+        log "info" "Skipped doc/JSON artifact: $clean"
         return 1
     fi
 
