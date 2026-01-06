@@ -510,6 +510,14 @@ grep -ril "auth" .specweave/docs/internal/
 > Always current — no index to update.
 > Zero cost — it's native Claude.
 >
+> And here's a performance trick SpecWeave uses — **LSP integration**.
+>
+> LSP — Language Server Protocol — gives Claude semantic code understanding. Instead of grepping for text, Claude asks the LSP: 'Where is this function defined?' 'Show me all references to this class.' 'What's the type signature?'
+>
+> Speed comparison: Finding all references to a function across 500 files — grep takes 2-3 seconds, LSP returns in 50 milliseconds. That's **50x faster** with perfect accuracy.
+>
+> SpecWeave's living-docs-navigator skill uses LSP automatically for TypeScript, JavaScript, Python, Go, Rust. Semantic search instead of text search.
+>
 > Your living docs automatically become AI context. No extra work."
 
 ---
