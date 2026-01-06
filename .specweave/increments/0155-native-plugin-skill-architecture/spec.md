@@ -1,7 +1,7 @@
 ---
 increment: 0155-native-plugin-skill-architecture
 title: "Native Claude Code Plugin/Skill Architecture"
-status: active
+status: completed
 priority: P0
 type: refactor
 created: 2026-01-06
@@ -43,10 +43,10 @@ SpecWeave's 24 plugins with ~40 agents are **NOT activating** in user projects b
 **So that** I get product management guidance without explicit invocation
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: PM moved from `agents/pm/` to `skills/pm/SKILL.md`
-- [ ] **AC-US1-02**: Description contains activation keywords for semantic matching
-- [ ] **AC-US1-03**: Large content split into progressive disclosure files
-- [ ] **AC-US1-04**: Skill activates when user mentions "product planning", "user stories", etc.
+- [x] **AC-US1-01**: PM moved from `agents/pm/` to `skills/pm/SKILL.md`
+- [x] **AC-US1-02**: Description contains activation keywords for semantic matching
+- [x] **AC-US1-03**: Large content split into progressive disclosure files
+- [x] **AC-US1-04**: Skill activates when user mentions "product planning", "user stories", etc.
 
 ### US-002: Convert Architect Agent to Skill
 **Project**: specweave
@@ -55,10 +55,10 @@ SpecWeave's 24 plugins with ~40 agents are **NOT activating** in user projects b
 **So that** I get architecture guidance automatically
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Architect moved from `agents/architect/` to `skills/architect/SKILL.md`
-- [ ] **AC-US2-02**: Description optimized for activation keywords
-- [ ] **AC-US2-03**: ADR templates moved to progressive disclosure
-- [ ] **AC-US2-04**: Skill activates for "architecture", "design", "ADR" prompts
+- [x] **AC-US2-01**: Architect moved from `agents/architect/` to `skills/architect/SKILL.md`
+- [x] **AC-US2-02**: Description optimized for activation keywords
+- [x] **AC-US2-03**: ADR templates moved to progressive disclosure
+- [x] **AC-US2-04**: Skill activates for "architecture", "design", "ADR" prompts
 
 ### US-003: Convert Tech-Lead Agent to Skill
 **Project**: specweave
@@ -67,10 +67,10 @@ SpecWeave's 24 plugins with ~40 agents are **NOT activating** in user projects b
 **So that** I get code review guidance automatically
 
 **Acceptance Criteria**:
-- [ ] **AC-US3-01**: Tech-Lead moved from `agents/tech-lead/` to `skills/tech-lead/SKILL.md`
-- [ ] **AC-US3-02**: Description optimized for "code review", "best practices"
-- [ ] **AC-US3-03**: Review checklists in progressive disclosure
-- [ ] **AC-US3-04**: Skill activates for code quality prompts
+- [x] **AC-US3-01**: Tech-Lead moved from `agents/tech-lead/` to `skills/tech-lead/SKILL.md`
+- [x] **AC-US3-02**: Description optimized for "code review", "best practices"
+- [x] **AC-US3-03**: Review checklists in progressive disclosure
+- [x] **AC-US3-04**: Skill activates for code quality prompts
 
 ### US-004: Flatten TRUE Agents
 **Project**: specweave
@@ -79,10 +79,10 @@ SpecWeave's 24 plugins with ~40 agents are **NOT activating** in user projects b
 **So that** I can spawn isolated sub-agents correctly
 
 **Acceptance Criteria**:
-- [ ] **AC-US4-01**: Any remaining true agents are flat files `agents/name.md`
-- [ ] **AC-US4-02**: Agent names are simple (no `sw:` prefix)
-- [ ] **AC-US4-03**: Task tool can spawn agents with `subagent_type: "name"`
-- [ ] **AC-US4-04**: AGENTS-INDEX.md updated with native format
+- [x] **AC-US4-01**: Any remaining true agents are flat files `agents/name.md`
+- [x] **AC-US4-02**: Agent names are simple (no `sw:` prefix)
+- [x] **AC-US4-03**: Task tool can spawn agents with `subagent_type: "name"`
+- [x] **AC-US4-04**: AGENTS-INDEX.md updated with native format
 
 ### US-005: Update CLAUDE.md Template
 **Project**: specweave
@@ -91,10 +91,10 @@ SpecWeave's 24 plugins with ~40 agents are **NOT activating** in user projects b
 **So that** Claude Code understands the instructions
 
 **Acceptance Criteria**:
-- [ ] **AC-US5-01**: Remove all `sw:pm:pm` style references
-- [ ] **AC-US5-02**: Update agent table to simple names
-- [ ] **AC-US5-03**: Document skills auto-activate (no Task call needed)
-- [ ] **AC-US5-04**: Document agents need explicit Task invocation
+- [x] **AC-US5-01**: Remove all `sw:pm:pm` style references
+- [x] **AC-US5-02**: Update agent table to simple names
+- [x] **AC-US5-03**: Document skills auto-activate (no Task call needed)
+- [x] **AC-US5-04**: Document agents need explicit Task invocation
 
 ### US-006: Tests for Skill Activation
 **Project**: specweave
@@ -103,10 +103,10 @@ SpecWeave's 24 plugins with ~40 agents are **NOT activating** in user projects b
 **So that** I can verify the refactor works
 
 **Acceptance Criteria**:
-- [ ] **AC-US6-01**: Unit test for PM skill description matching
-- [ ] **AC-US6-02**: Unit test for Architect skill description matching
-- [ ] **AC-US6-03**: Integration test for flat agent discovery
-- [ ] **AC-US6-04**: All existing tests still pass
+- [x] **AC-US6-01**: Unit test for PM skill description matching
+- [x] **AC-US6-02**: Unit test for Architect skill description matching
+- [x] **AC-US6-03**: Integration test for flat agent discovery
+- [x] **AC-US6-04**: All existing tests still pass
 
 ## Technical Notes
 
