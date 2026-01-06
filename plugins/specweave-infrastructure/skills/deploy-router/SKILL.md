@@ -1,12 +1,12 @@
 ---
 name: deploy-router
-description: Smart deployment platform router for Vercel vs Cloudflare. Analyzes project structure, framework, SEO needs, and runtime requirements to recommend optimal deployment target. Routes to Vercel for Node.js SSR/dynamic SEO, Cloudflare for edge-first/static/cost-sensitive deployments. Activates for deploy, vercel vs cloudflare, where to deploy, cloudflare workers, cloudflare pages, vercel deployment, edge deployment, SSR deployment, static site deployment, which hosting, deployment recommendation.
+description: Smart deployment platform router for Vercel vs Cloudflare vs GitHub Pages. Analyzes project structure, framework, SEO needs, runtime requirements, AND repository visibility (private/public). Routes to Cloudflare for private repos (GitHub Pages requires paid plan), Vercel for dynamic SEO, GitHub Pages only for public repos. Activates for deploy, vercel vs cloudflare, where to deploy, cloudflare workers, cloudflare pages, vercel deployment, edge deployment, SSR deployment, static site deployment, which hosting, deployment recommendation, github pages, private repo deployment.
 allowed-tools: Read, Grep, Glob, Bash
 ---
 
-# Deploy Router - Vercel vs Cloudflare Decision Engine
+# Deploy Router - Vercel vs Cloudflare vs GitHub Pages Decision Engine
 
-I intelligently route your deployment to the optimal platform based on project analysis.
+I intelligently route your deployment to the optimal platform based on project analysis, **including repository visibility** (private vs public).
 
 ## When to Use This Skill
 
@@ -16,6 +16,70 @@ Ask me when you need help with:
 - **SEO-Aware Routing**: "I need dynamic SEO for my Next.js app"
 - **Cost Optimization**: "What's the cheapest deployment option?"
 - **Edge-First**: "I want global edge deployment"
+- **Private Repo Deployment**: "Where can I deploy my private repo for free?"
+
+---
+
+## 🚨 CRITICAL: Repository Visibility Check (ALWAYS DO FIRST)
+
+**GitHub Pages has a major limitation**: Free GitHub accounts can ONLY deploy GitHub Pages from **public repositories**. Private repo deployment requires GitHub Pro, Team, or Enterprise.
+
+### Priority Decision Based on Visibility
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│           STEP 0: CHECK REPOSITORY VISIBILITY                   │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+              ┌───────────────────────────────┐
+              │  Is the repository PRIVATE?   │
+              └───────────────────────────────┘
+                   │                    │
+                  YES                   NO (Public)
+                   │                    │
+                   ▼                    ▼
+     ┌─────────────────────────┐  ┌─────────────────────────────┐
+     │  ❌ GitHub Pages FREE   │  │  ✅ All platforms available │
+     │  ✅ Cloudflare Pages    │  │  GitHub Pages is an option  │
+     │  ✅ Vercel              │  │  for static public sites    │
+     │  ✅ Netlify             │  └─────────────────────────────┘
+     └─────────────────────────┘
+```
+
+### How to Detect Repository Visibility
+
+```bash
+# Check if git remote exists and get repo visibility
+REMOTE_URL=$(git remote get-url origin 2>/dev/null)
+if [[ "$REMOTE_URL" =~ github.com[:/]([^/]+)/([^/.]+) ]]; then
+  OWNER="${BASH_REMATCH[1]}"
+  REPO="${BASH_REMATCH[2]}"
+
+  # Use GitHub CLI to check visibility
+  VISIBILITY=$(gh repo view "$OWNER/$REPO" --json visibility -q '.visibility' 2>/dev/null)
+
+  if [[ "$VISIBILITY" == "PRIVATE" ]]; then
+    echo "⚠️  PRIVATE REPOSITORY DETECTED"
+    echo "   GitHub Pages requires GitHub Pro/Team/Enterprise for private repos"
+    echo "   → Recommended: Cloudflare Pages (free for private repos)"
+    echo "   → Alternative: Vercel (free tier available)"
+  else
+    echo "✅ PUBLIC REPOSITORY - All deployment options available"
+  fi
+fi
+```
+
+### Platform Availability by Repo Visibility
+
+| Platform | Private Repo (Free) | Public Repo (Free) | Notes |
+|----------|--------------------|--------------------|-------|
+| **Cloudflare Pages** | ✅ Yes | ✅ Yes | **Best for private repos** - No visibility restrictions |
+| **Vercel** | ✅ Yes | ✅ Yes | Free tier works for both |
+| **Netlify** | ✅ Yes | ✅ Yes | Free tier works for both |
+| **GitHub Pages** | ❌ No (requires Pro) | ✅ Yes | **BLOCKED** for free private repos |
+
+---
 
 ## Decision Matrix
 
@@ -86,17 +150,67 @@ Ask me when you need help with:
 - [ ] Global edge distribution priority
 - [ ] Simple auth (JWT, sessions without DB)
 
-### Step 3: SEO Requirements
+### Step 3: SEO Requirements (Vercel Wins for Dynamic SEO)
 
-| SEO Need | Vercel | Cloudflare |
-|----------|--------|------------|
-| Static meta tags | ✅ | ✅ |
-| Dynamic meta from DB | ✅ (SSR) | ⚠️ (ISR/Edge only) |
-| Per-page dynamic OG | ✅ (best) | ⚠️ (limited) |
-| Sitemap generation | ✅ | ✅ |
-| robots.txt | ✅ | ✅ |
-| Structured data | ✅ | ✅ |
-| Real-time content SEO | ✅ (SSR) | ❌ (stale cache) |
+**When SEO matters most, choose carefully:**
+
+| SEO Need | Vercel | Cloudflare | GitHub Pages |
+|----------|--------|------------|--------------|
+| Static meta tags | ✅ | ✅ | ✅ |
+| Dynamic meta from DB | ✅ (SSR) **BEST** | ⚠️ (ISR/Edge only) | ❌ (static only) |
+| Per-page dynamic OG | ✅ **BEST** | ⚠️ (limited) | ❌ |
+| Real-time product data | ✅ (SSR) **BEST** | ⚠️ (stale cache) | ❌ |
+| Sitemap generation | ✅ | ✅ | ✅ (manual) |
+| robots.txt | ✅ | ✅ | ✅ |
+| Structured data (JSON-LD) | ✅ (dynamic) | ✅ (static) | ✅ (static) |
+| Core Web Vitals | ✅ (optimized) | ✅ (fast edge) | ✅ (fast static) |
+| SSR/ISR for freshness | ✅ **BEST** | ⚠️ (edge-limited) | ❌ |
+
+### SEO Tier Recommendations
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                  SEO REQUIREMENTS ROUTING                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  TIER 1 - Critical SEO (choose VERCEL):                         │
+│  ├─ E-commerce product pages (prices change, inventory)         │
+│  ├─ News/content sites (freshness matters for Google)           │
+│  ├─ SaaS landing pages with dynamic pricing                     │
+│  ├─ Marketplace listings (real-time availability)               │
+│  └─ Any page where DB-driven meta tags are required             │
+│                                                                 │
+│  TIER 2 - Good SEO (CLOUDFLARE works):                          │
+│  ├─ Blogs with static content                                   │
+│  ├─ Documentation sites                                         │
+│  ├─ Marketing pages (rarely changing)                           │
+│  ├─ Portfolio sites                                             │
+│  └─ ISR with revalidation (1-hour stale OK)                     │
+│                                                                 │
+│  TIER 3 - Basic SEO (any platform):                             │
+│  ├─ Internal tools (SEO doesn't matter)                         │
+│  ├─ Admin dashboards                                            │
+│  ├─ Private apps                                                │
+│  └─ Prototypes/MVPs                                             │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Why Vercel Wins for Dynamic SEO
+
+1. **True SSR**: Every request can fetch fresh data from database
+2. **ISR with on-demand revalidation**: `revalidateTag()` and `revalidatePath()`
+3. **Dynamic OG images**: `@vercel/og` generates images server-side
+4. **Edge + Node.js hybrid**: Edge for speed, Node.js for data fetching
+5. **Built-in image optimization**: Automatic WebP/AVIF conversion
+6. **Preview deployments**: Test SEO before going live
+
+### When Cloudflare is SEO-Acceptable
+
+- **Static blogs**: Meta tags baked at build time
+- **Documentation**: Content rarely changes
+- **ISR with Workers**: If 1-hour stale data is acceptable
+- **Hybrid approach**: Cloudflare Pages + external API for dynamic data
 
 ## Platform Comparison
 
@@ -130,6 +244,7 @@ Ask me when you need help with:
 - Simple API routes
 - Global CDN distribution
 - Cloudflare ecosystem (R2, D1, KV)
+- **🔒 PRIVATE REPOS** (works with free tier!)
 
 **Pricing** (2025):
 - Workers Free: 100K requests/day
@@ -143,9 +258,80 @@ Ask me when you need help with:
 - Memory: 128MB
 - No native modules (Sharp, Prisma binary, etc.)
 
+**Why Cloudflare for Private Repos**:
+- ✅ No repository visibility restrictions
+- ✅ Connect private GitHub repos directly
+- ✅ Automatic deployments from private branches
+- ✅ Preview deployments for PRs
+- ✅ Free tier is generous
+
+### GitHub Pages
+
+**Best For**:
+- **PUBLIC repositories only** (free tier)
+- Open-source documentation
+- Public project sites
+- Static Jekyll/Hugo/Astro sites
+- When source code visibility is intentional
+
+**Pricing** (2025):
+- Free for public repos
+- **Requires GitHub Pro/Team/Enterprise for private repos** ($4-21/user/month)
+- 1GB storage limit
+- 100GB bandwidth/month
+
+**Limitations**:
+- ❌ **NO PRIVATE REPO SUPPORT** on free accounts
+- No server-side rendering
+- No API routes
+- No dynamic content
+- Build time limit: 10 minutes
+- No environment variables at runtime
+
+**When to Use GitHub Pages**:
+```
+✅ DO use GitHub Pages when:
+   - Repository is PUBLIC
+   - Content is 100% static
+   - You want zero deployment config
+   - Open-source project docs
+
+❌ DO NOT use GitHub Pages when:
+   - Repository is PRIVATE (use Cloudflare Pages instead!)
+   - You need SSR/dynamic content
+   - You need API routes
+   - You need environment variables
+```
+
 ## Analysis Workflow
 
-When user asks "where should I deploy?", I:
+When user asks "where should I deploy?", I follow this order:
+
+### 0. Check Repository Visibility (FIRST!)
+
+```bash
+# CRITICAL: Check if repo is private BEFORE anything else
+REMOTE_URL=$(git remote get-url origin 2>/dev/null)
+if [[ "$REMOTE_URL" =~ github.com[:/]([^/]+)/([^/.]+) ]]; then
+  OWNER="${BASH_REMATCH[1]}"
+  REPO="${BASH_REMATCH[2]}"
+
+  # Check visibility with GitHub CLI
+  VISIBILITY=$(gh repo view "$OWNER/$REPO" --json visibility -q '.visibility' 2>/dev/null)
+
+  if [[ "$VISIBILITY" == "PRIVATE" ]]; then
+    echo "🔒 PRIVATE REPO - GitHub Pages NOT available on free tier"
+    echo "   Recommended: Cloudflare Pages or Vercel"
+    GITHUB_PAGES_AVAILABLE=false
+  else
+    echo "✅ PUBLIC REPO - All platforms available"
+    GITHUB_PAGES_AVAILABLE=true
+  fi
+else
+  echo "⚠️  No GitHub remote detected - assuming private"
+  GITHUB_PAGES_AVAILABLE=false
+fi
+```
 
 ### 1. Scan Project Structure
 
@@ -181,6 +367,9 @@ grep -r "generateMetadata\|Head.*title\|meta.*content" --include="*.tsx" --inclu
 
 # Database calls in metadata
 grep -rB5 "generateMetadata" --include="*.tsx" | grep -E "prisma|db\.|fetch\("
+
+# Check for e-commerce/content patterns that need fresh SEO
+grep -rE "product|price|inventory|article|news" --include="*.tsx" | head -10
 ```
 
 ### 4. Generate Recommendation
@@ -222,18 +411,47 @@ If you need [opposite platform features], consider:
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  QUICK DECISION                                                 │
+│  MASTER DECISION TREE (Check in order!)                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  STEP 1: Is repo PRIVATE?                                       │
+│  ├─ YES → ❌ Eliminate GitHub Pages                             │
+│  │        → Go to Step 2                                        │
+│  └─ NO  → GitHub Pages is an option (static only)               │
+│                                                                 │
+│  STEP 2: Do you need dynamic SEO?                               │
+│  ├─ YES → ✅ VERCEL (SSR, real-time meta, OG images)            │
+│  └─ NO  → Go to Step 3                                          │
+│                                                                 │
+│  STEP 3: Do you need Node.js runtime?                           │
+│  ├─ YES → ✅ VERCEL (Prisma, Sharp, fs, crypto)                 │
+│  └─ NO  → Go to Step 4                                          │
+│                                                                 │
+│  STEP 4: Is it a static site?                                   │
+│  ├─ YES, Private repo  → ✅ CLOUDFLARE Pages                    │
+│  ├─ YES, Public repo   → ✅ CLOUDFLARE or GitHub Pages          │
+│  └─ NO  → Go to Step 5                                          │
+│                                                                 │
+│  STEP 5: Do you need edge performance + cost savings?           │
+│  ├─ YES → ✅ CLOUDFLARE (Workers/Pages)                         │
+│  └─ NO  → ✅ VERCEL (default choice for Next.js)                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│  PLATFORM QUICK REFERENCE                                       │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  Use VERCEL when:                                               │
+│  ├─ Dynamic SEO is critical (e-commerce, news, marketplaces)    │
 │  ├─ Next.js with Server Components + DB                         │
-│  ├─ Dynamic SEO (meta from database)                            │
-│  ├─ Image optimization needed                                   │
-│  ├─ Native Node.js modules (Sharp, Prisma)                      │
+│  ├─ Native Node.js modules (Sharp, Prisma, Puppeteer)           │
+│  ├─ Real-time OG image generation                               │
 │  ├─ WebSockets/real-time features                               │
 │  └─ Team wants easiest DX                                       │
 │                                                                 │
 │  Use CLOUDFLARE when:                                           │
+│  ├─ 🔒 PRIVATE REPO (GitHub Pages blocked on free tier!)        │
 │  ├─ Static site (Astro, Hugo, plain HTML)                       │
 │  ├─ Edge-first, low latency priority                            │
 │  ├─ Cost-sensitive (Cloudflare is cheaper)                      │
@@ -241,10 +459,16 @@ If you need [opposite platform features], consider:
 │  ├─ Already using Cloudflare ecosystem (R2, D1, KV)             │
 │  └─ Global CDN distribution priority                            │
 │                                                                 │
+│  Use GITHUB PAGES when:                                         │
+│  ├─ Repository is PUBLIC (required for free tier!)              │
+│  ├─ 100% static content (no SSR, no API)                        │
+│  ├─ Open-source project documentation                           │
+│  └─ Zero deployment configuration needed                        │
+│                                                                 │
 │  HYBRID approach:                                               │
-│  ├─ Frontend on Cloudflare Pages                                │
-│  ├─ API/backend on Vercel Functions                             │
-│  └─ Best of both: edge speed + Node.js power                    │
+│  ├─ Frontend on Cloudflare Pages (edge speed)                   │
+│  ├─ API/backend on Vercel Functions (Node.js power)             │
+│  └─ Best of both: edge speed + Node.js + full SEO               │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```

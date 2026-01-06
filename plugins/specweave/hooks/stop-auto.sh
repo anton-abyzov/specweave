@@ -62,12 +62,22 @@ if [ -f "$REFLECT_HOOK" ]; then
 fi
 
 # ============================================================================
-# CONTEXT SIZE ESTIMATION & COMPACTION (NEW - v2.1)
-# Estimates context size from transcript and triggers /compact when needed
+# CONTEXT SIZE ESTIMATION & COMPACTION (v2.3 - Iterative Strategy)
+# Gradual compaction hints that get stronger over time
+# - Level 1 (160k): Gentle hint - "be concise"
+# - Level 2 (175k): Moderate - "summarize where possible"
+# - Level 3 (185k): Strong - "focus on essentials only"
+# - Level 4 (195k): Critical - "run /compact soon"
+# Non-blocking at all levels, with 10-iteration cooldown between hints
 # ============================================================================
 
-CONTEXT_THRESHOLD_TOKENS=150000  # Trigger compaction at ~150k tokens
-BYTES_PER_TOKEN=4                # Rough estimate: 4 chars/bytes per token
+# Token thresholds for iterative hints (escalating)
+CONTEXT_LEVEL1_TOKENS=160000  # Gentle hint
+CONTEXT_LEVEL2_TOKENS=175000  # Moderate hint
+CONTEXT_LEVEL3_TOKENS=185000  # Strong hint
+CONTEXT_LEVEL4_TOKENS=195000  # Critical - suggest /compact
+BYTES_PER_TOKEN=4             # Rough estimate: 4 chars/bytes per token
+CONTEXT_HINT_COOLDOWN_ITERS=10  # Show hint every 10 iterations max
 
 # Estimate context size in tokens from transcript file size
 estimate_context_size() {
@@ -84,16 +94,74 @@ estimate_context_size() {
     echo "$estimated_tokens"
 }
 
-# Check if context is approaching limit
-check_context_limit() {
-    local transcript="$1"
-    local estimated_tokens=$(estimate_context_size "$transcript")
-
-    if [ "$estimated_tokens" -gt "$CONTEXT_THRESHOLD_TOKENS" ]; then
-        echo "near_limit"
+# Get the last iteration when we showed a context hint
+get_last_context_hint_iteration() {
+    local hint_file="$STATE_DIR/.context-hint-iteration"
+    if [ -f "$hint_file" ]; then
+        cat "$hint_file" 2>/dev/null || echo "0"
     else
-        echo "ok"
+        echo "0"
     fi
+}
+
+# Record when we showed a context hint
+record_context_hint() {
+    local hint_file="$STATE_DIR/.context-hint-iteration"
+    echo "${ITERATION:-0}" > "$hint_file" 2>/dev/null
+}
+
+# Check if we're in cooldown for context hints (iteration-based)
+context_hint_in_cooldown() {
+    local last_hint_iter=$(get_last_context_hint_iteration)
+    local current_iter="${ITERATION:-0}"
+    local elapsed=$((current_iter - last_hint_iter))
+
+    if [ "$elapsed" -lt "$CONTEXT_HINT_COOLDOWN_ITERS" ]; then
+        return 0  # In cooldown
+    fi
+    return 1  # Cooldown expired
+}
+
+# Get context level (0-4) based on token count
+# Returns: 0 (ok), 1 (gentle), 2 (moderate), 3 (strong), 4 (critical)
+get_context_level() {
+    local estimated_tokens="$1"
+
+    if [ "$estimated_tokens" -gt "$CONTEXT_LEVEL4_TOKENS" ]; then
+        echo "4"
+    elif [ "$estimated_tokens" -gt "$CONTEXT_LEVEL3_TOKENS" ]; then
+        echo "3"
+    elif [ "$estimated_tokens" -gt "$CONTEXT_LEVEL2_TOKENS" ]; then
+        echo "2"
+    elif [ "$estimated_tokens" -gt "$CONTEXT_LEVEL1_TOKENS" ]; then
+        echo "1"
+    else
+        echo "0"
+    fi
+}
+
+# Get appropriate hint message for context level
+get_context_hint_message() {
+    local level="$1"
+    local tokens="$2"
+
+    case "$level" in
+        1)
+            echo "💡 Context growing (~${tokens} tokens). Tip: Keep responses concise."
+            ;;
+        2)
+            echo "📊 Context at ~${tokens} tokens. Summarize explanations where possible."
+            ;;
+        3)
+            echo "⚠️ Context high (~${tokens} tokens). Focus on essentials only, skip verbose output."
+            ;;
+        4)
+            echo "🔴 Context critical (~${tokens} tokens)! Consider /compact soon. Use minimal explanations."
+            ;;
+        *)
+            echo ""
+            ;;
+    esac
 }
 
 # ============================================================================
@@ -747,6 +815,18 @@ approve() {
     } >&2
 
     echo "{\"decision\": \"approve\", \"reason\": \"$reason\", \"agentType\": \"$agent_short\"}"
+    exit 0
+}
+
+# Helper: Output approve with advisory system message (non-blocking)
+# Used for context warnings - continues execution but informs the model
+approve_with_message() {
+    local system_message="$1"
+
+    # Escape the message for JSON (handle newlines)
+    local escaped_msg=$(printf '%s' "$system_message" | sed 's/\\/\\\\/g; s/"/\\"/g' | tr '\n' ' ')
+
+    echo "{\"decision\": \"approve\", \"systemMessage\": \"$escaped_msg\"}"
     exit 0
 }
 
@@ -1759,39 +1839,49 @@ if echo "$HEARTBEAT_STATUS" | grep -q "^stale:"; then
 fi
 
 # ============================================================================
-# CONTEXT SIZE CHECK (NEW - v2.1)
-# Trigger compaction when context is approaching limits
+# CONTEXT SIZE CHECK (v2.3 - Iterative Compaction Hints)
+# Gradual hints that get stronger as context grows
+# Non-blocking at ALL levels - just provides guidance to the model
+# Uses iteration-based cooldown (every 10 iterations) not time-based
 # ============================================================================
 
 if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
-    CONTEXT_STATUS=$(check_context_limit "$TRANSCRIPT_PATH")
     ESTIMATED_TOKENS=$(estimate_context_size "$TRANSCRIPT_PATH")
+    CONTEXT_LEVEL=$(get_context_level "$ESTIMATED_TOKENS")
 
-    if [ "$CONTEXT_STATUS" = "near_limit" ]; then
-        echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"context_near_limit\",\"tokens\":$ESTIMATED_TOKENS}" >> "$LOGS_DIR/auto-iterations.log"
+    if [ "$CONTEXT_LEVEL" -gt 0 ]; then
+        # We have a context hint to show
 
-        # Save checkpoint before compaction
-        if [ -n "$CURRENT_INCREMENT" ]; then
-            CURRENT_TASK=$(echo "$SESSION" | jq -r '.currentTaskId // "unknown"')
-            save_task_checkpoint "$CURRENT_TASK" "$CURRENT_INCREMENT"
+        # Level 4 (critical) bypasses cooldown - always show
+        # Lower levels respect the 10-iteration cooldown
+        SHOULD_SHOW_HINT=false
+
+        if [ "$CONTEXT_LEVEL" -eq 4 ]; then
+            SHOULD_SHOW_HINT=true  # Critical always shows
+        elif ! context_hint_in_cooldown; then
+            SHOULD_SHOW_HINT=true  # Not in cooldown
         fi
 
-        # Request compaction
-        block "Context size approaching limit" "📊 CONTEXT MANAGEMENT - Compaction Recommended
+        if [ "$SHOULD_SHOW_HINT" = "true" ]; then
+            # Log the event
+            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"context_hint\",\"level\":$CONTEXT_LEVEL,\"tokens\":$ESTIMATED_TOKENS,\"iteration\":${ITERATION:-0}}" >> "$LOGS_DIR/auto-iterations.log"
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CONTEXT SIZE: ~$ESTIMATED_TOKENS tokens (threshold: $CONTEXT_THRESHOLD_TOKENS)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            # Record hint iteration for cooldown
+            record_context_hint
 
-Context is approaching the limit. To continue working effectively:
+            # Save checkpoint at level 3+ for safety
+            if [ "$CONTEXT_LEVEL" -ge 3 ] && [ -n "$CURRENT_INCREMENT" ]; then
+                CURRENT_TASK=$(echo "$SESSION" | jq -r '.currentTaskId // "unknown"')
+                save_task_checkpoint "$CURRENT_TASK" "$CURRENT_INCREMENT"
+            fi
 
-1. Run /compact to summarize the conversation
-2. Then run /sw:do to continue
+            # Get the appropriate hint message
+            HINT_MESSAGE=$(get_context_hint_message "$CONTEXT_LEVEL" "$ESTIMATED_TOKENS")
 
-Checkpoint saved - your progress is preserved.
-
-Current increment: $CURRENT_INCREMENT
-Iteration: $ITERATION/$MAX_ITERATIONS"
+            # Non-blocking advisory - continue execution with hint
+            approve_with_message "$HINT_MESSAGE"
+        fi
+        # If in cooldown for non-critical levels, silently continue
     fi
 fi
 
