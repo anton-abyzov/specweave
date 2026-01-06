@@ -112,14 +112,14 @@ Implement comprehensive per-skill reflection system with:
 **So that** skills can leverage semantic code understanding
 
 **Acceptance Criteria**:
-- [ ] **AC-US6-01**: Examples for .NET (OmniSharp, Roslyn)
-- [ ] **AC-US6-02**: Examples for Node.js/TypeScript (typescript-language-server)
-- [ ] **AC-US6-03**: Examples for JavaScript (typescript-language-server with allowJs)
-- [ ] **AC-US6-04**: Examples for Python (python-lsp-server, Pylance)
-- [ ] **AC-US6-05**: Examples for Java (jdtls)
-- [ ] **AC-US6-06**: Examples for Scala (metals)
-- [ ] **AC-US6-07**: Examples for Swift (sourcekit-lsp)
-- [ ] **AC-US6-08**: Each example shows: setup, common operations, error handling
+- [x] **AC-US6-01**: Examples for .NET (OmniSharp, Roslyn)
+- [x] **AC-US6-02**: Examples for Node.js/TypeScript (typescript-language-server)
+- [x] **AC-US6-03**: Examples for JavaScript (typescript-language-server with allowJs)
+- [x] **AC-US6-04**: Examples for Python (python-lsp-server, Pylance)
+- [x] **AC-US6-05**: Examples for Java (jdtls)
+- [x] **AC-US6-06**: Examples for Scala (metals)
+- [x] **AC-US6-07**: Examples for Swift (sourcekit-lsp)
+- [x] **AC-US6-08**: Each example shows: setup, common operations, error handling
 
 ### US-007: Enhanced Docusaurus Homepage
 **Project**: specweave
@@ -128,14 +128,14 @@ Implement comprehensive per-skill reflection system with:
 **So that** I understand value proposition immediately
 
 **Acceptance Criteria**:
-- [ ] **AC-US7-01**: Hero section with clear value proposition
-- [ ] **AC-US7-02**: Feature cards with icons and descriptions
-- [ ] **AC-US7-03**: Quick start section with installation commands
-- [ ] **AC-US7-04**: Comparison with traditional workflows
-- [ ] **AC-US7-05**: Testimonial or use case section
-- [ ] **AC-US7-06**: Call-to-action buttons (Get Started, GitHub)
-- [ ] **AC-US7-07**: Responsive design (mobile, tablet, desktop)
-- [ ] **AC-US7-08**: Dark mode support
+- [x] **AC-US7-01**: Hero section with clear value proposition
+- [x] **AC-US7-02**: Feature cards with icons and descriptions
+- [x] **AC-US7-03**: Quick start section with installation commands
+- [x] **AC-US7-04**: Comparison with traditional workflows
+- [x] **AC-US7-05**: Testimonial or use case section
+- [x] **AC-US7-06**: Call-to-action buttons (Get Started, GitHub)
+- [x] **AC-US7-07**: Responsive design (mobile, tablet, desktop)
+- [x] **AC-US7-08**: Dark mode support
 
 ## Technical Notes
 
