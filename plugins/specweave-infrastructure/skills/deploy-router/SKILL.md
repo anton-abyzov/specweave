@@ -511,6 +511,10 @@ This skill activates for:
 - static site deployment, JAMstack deployment
 - which hosting, best hosting for
 - deployment recommendation, deployment decision
+- **github pages** (⚠️ will check visibility first!)
+- **private repo deployment**, private repository hosting
+- **SEO hosting**, best SEO platform, dynamic SEO deployment
+- e-commerce deployment, product page SEO
 
 ## Examples
 
@@ -564,6 +568,74 @@ Recommendation: VERCEL
 - Server-side rendering for SEO
 - Product pages need fresh data for Google
 - Cloudflare would require ISR which may show stale prices
+```
+
+### Example 4: Private Repo Static Site (🔒 IMPORTANT!)
+
+```
+User: "Where should I deploy my private Astro documentation site?"
+
+Analysis:
+- Framework: Astro (static-first)
+- Repository: PRIVATE ⚠️
+- SEO: Static meta tags only
+- Content: Internal documentation
+
+Step 0 - Visibility Check:
+🔒 PRIVATE REPO DETECTED
+❌ GitHub Pages: NOT AVAILABLE (requires GitHub Pro/Team)
+✅ Cloudflare Pages: Available (free tier)
+✅ Vercel: Available (free tier)
+
+Recommendation: CLOUDFLARE PAGES
+- Private repo works with free tier
+- Static site = perfect fit for edge deployment
+- Fast global CDN
+- 500 builds/month free
+- No Node.js needed
+
+Alternative: Vercel (also works, but Cloudflare is cheaper for static)
+
+⚠️ DO NOT recommend GitHub Pages for private repos!
+```
+
+### Example 5: High-SEO E-commerce (Vercel wins)
+
+```
+User: "I need the best SEO possible for my product catalog with 10,000+ products"
+
+Analysis:
+- Framework: Next.js 14 with App Router
+- Products: 10,000+ items with prices, inventory, reviews
+- SEO Requirements: CRITICAL
+  - Dynamic meta tags per product
+  - Real-time pricing in structured data
+  - Fresh inventory status for Google
+  - Dynamic OG images showing product photos
+
+SEO Analysis Results:
+| Requirement | Vercel | Cloudflare | GitHub Pages |
+|-------------|--------|------------|--------------|
+| Dynamic meta from DB | ✅ SSR | ⚠️ ISR (stale) | ❌ |
+| Real-time prices | ✅ | ⚠️ (1hr delay) | ❌ |
+| Dynamic OG images | ✅ @vercel/og | ⚠️ Limited | ❌ |
+| Inventory freshness | ✅ SSR | ⚠️ Cache | ❌ |
+
+Recommendation: VERCEL (STRONG)
+- SSR ensures Google sees fresh data every crawl
+- `generateMetadata()` with database calls
+- `@vercel/og` for product OG images
+- ISR with on-demand revalidation for cache-then-fresh
+- Image optimization built-in
+
+Why NOT Cloudflare:
+- ISR cache means Google might see stale prices
+- No native OG image generation
+- Edge runtime can't run Prisma directly
+
+Cost consideration:
+- Vercel Pro ($20/month) vs Cloudflare (free)
+- For critical SEO sites, Vercel Pro is worth it
 ```
 
 ## Migration Paths
