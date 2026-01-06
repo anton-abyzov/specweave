@@ -154,9 +154,10 @@ User: ${APPROVAL_SIGNALS[0]}
                     }
                 );
 
-                expect(result).toContain('No corrections or approvals detected');
+                // Script outputs "No actionable signals found" when nothing to learn (normal behavior)
+                expect(result).toContain('No actionable signals found');
             } catch (error: any) {
-                // Expected - no signals found
+                // Exit with status 1 is also acceptable - means no signals found
                 expect(error.status).toBe(1);
             }
         });

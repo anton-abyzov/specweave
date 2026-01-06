@@ -41,6 +41,23 @@ MAX_LOG_LINES=50
 DEFAULT_CONFIDENCE="high"  # Only high-confidence by default
 DEFAULT_MAX_LEARNINGS=5    # Max 5 per session (most sessions = 0)
 
+# Quality gate thresholds (avoid magic numbers)
+MIN_RULE_LENGTH=15         # Minimum characters for a valid rule
+MIN_ACTIONABLE_LENGTH=20   # Minimum chars for actionable context
+MIN_WORD_COUNT=3           # Minimum words for a valid rule
+MAX_RULE_OUTPUT_LENGTH=100 # Max chars to output per rule
+KEYWORD_MIN_LENGTH=4       # Minimum keyword length for dedup matching
+MIN_KEYWORD_THRESHOLD=2    # Minimum keyword overlap for duplicate detection
+TRANSCRIPT_MAX_AGE_MIN=5   # Max age in minutes for auto-transcript detection
+
+# Shared doc/JSON artifact patterns (CONSOLIDATED - update in one place!)
+# These patterns catch corrupted data from parsing docs, code examples, or JSON
+DOC_ARTIFACT_COMMON='```|\*\*|\\n|\\"|":[[:space:]]|sessionId|userType|"cwd"'
+# Line number patterns from Read tool output (e.g., "123→ code")
+LINE_NUMBER_PATTERN='[0-9]+→'
+# Multiple backtick code examples
+MULTI_BACKTICK_PATTERN='`[^`]+`.*`[^`]+`'
+
 # ============================================================================
 # LOGGING (with rotation)
 # ============================================================================
@@ -117,25 +134,25 @@ is_actionable() {
         fi
     done
 
-    # Must be longer than 20 chars to have real content
-    [ ${#text} -lt 20 ] && return 1
+    # Must be longer than MIN_ACTIONABLE_LENGTH chars to have real content
+    [ ${#text} -lt "$MIN_ACTIONABLE_LENGTH" ] && return 1
 
     # Must contain some actionable verb
     echo "$text" | grep -qiE "(use|don.t|never|always|should|must|avoid|prefer)" || return 1
 
-    # QUALITY GATE: Skip documentation examples (markdown formatting, line numbers, JSON)
-    # These patterns indicate the text came from docs/examples, not actual user corrections
-    if echo "$text" | grep -qE '^\s*[0-9]+→|^\s*[0-9]+\s*\||```|\*\*|\\n|\\"|":[[:space:]]|"sessionId"|"userType"|"cwd"'; then
+    # QUALITY GATE: Skip documentation examples (uses shared patterns from config)
+    # Line numbers at start (Read tool output) + common doc artifacts
+    if echo "$text" | grep -qE "^\s*${LINE_NUMBER_PATTERN}|^\s*[0-9]+\s*\||${DOC_ARTIFACT_COMMON}"; then
         return 1
     fi
 
     # QUALITY GATE: Skip content that looks like code examples with backticks
-    if echo "$text" | grep -qE '`[^`]+`.*`[^`]+`'; then
+    if echo "$text" | grep -qE "$MULTI_BACKTICK_PATTERN"; then
         return 1
     fi
 
     # QUALITY GATE: Skip content with escaped quotes (JSON/code artifacts)
-    if echo "$text" | grep -qE '\\"|\\".*\\"'; then
+    if echo "$text" | grep -qE '\\"'; then
         return 1
     fi
 
@@ -151,56 +168,56 @@ extract_rule() {
     # PRIORITY 1: Look for "Use X instead" pattern
     # Captures "Use logger.info() instead" - allows alphanumeric, dots, parens before "instead"
     rule=$(echo "$context" | grep -oiE "[Uu]se [a-zA-Z0-9_.()/]+(\s+[a-zA-Z0-9_.()/]+)*\s+instead" | head -1)
-    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
-        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+    if [ -n "$rule" ] && [ ${#rule} -gt "$MIN_RULE_LENGTH" ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH"
         return
     fi
 
     # PRIORITY 2: Look for "should use X" (correction pattern)
     rule=$(echo "$context" | grep -oiE "should (use|be) [^.!?]+" | head -1)
-    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
-        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+    if [ -n "$rule" ] && [ ${#rule} -gt "$MIN_RULE_LENGTH" ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH"
         return
     fi
 
     # PRIORITY 3: Look for sentence after "Wrong!" or "No,"
     # Extract the sentence that comes after the negation marker
     rule=$(echo "$context" | grep -oiE "(Wrong!?|No,) [^.!?]+" | sed 's/^[Ww]rong!*[[:space:]]*//;s/^[Nn]o,[[:space:]]*//' | head -1)
-    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
-        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+    if [ -n "$rule" ] && [ ${#rule} -gt "$MIN_RULE_LENGTH" ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH"
         return
     fi
 
     # PRIORITY 4: "Always X" (explicit rule)
     rule=$(echo "$context" | grep -oiE "[Aa]lways [^.!?]+" | head -1)
-    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
-        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+    if [ -n "$rule" ] && [ ${#rule} -gt "$MIN_RULE_LENGTH" ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH"
         return
     fi
 
     # PRIORITY 5: "Never X" (prohibition rule)
     rule=$(echo "$context" | grep -oiE "[Nn]ever [^.!?]+" | head -1)
-    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
-        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+    if [ -n "$rule" ] && [ ${#rule} -gt "$MIN_RULE_LENGTH" ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH"
         return
     fi
 
     # PRIORITY 6: "In this project/codebase, use X"
     rule=$(echo "$context" | grep -oiE "[Ii]n this (project|codebase)[^.!?]+" | head -1)
-    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
-        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+    if [ -n "$rule" ] && [ ${#rule} -gt "$MIN_RULE_LENGTH" ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH"
         return
     fi
 
     # PRIORITY 7: "prefer X" or "use X not Y"
     rule=$(echo "$context" | grep -oiE "(prefer|use) [^.!?]+ (not|instead|over) [^.!?]+" | head -1)
-    if [ -n "$rule" ] && [ ${#rule} -gt 15 ]; then
-        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-100
+    if [ -n "$rule" ] && [ ${#rule} -gt "$MIN_RULE_LENGTH" ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH"
         return
     fi
 
     # Fallback: return cleaned context (last resort, but apply quality filter in add_rule)
-    echo "$context" | sed 's/^[[:space:]]*//;s/^[Uu]ser:[[:space:]]*//' | cut -c1-100
+    echo "$context" | sed 's/^[[:space:]]*//;s/^[Uu]ser:[[:space:]]*//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH"
 }
 
 # Detect high-value signals in transcript
@@ -271,39 +288,50 @@ rule_exists() {
     local normalized=$(echo "$new_rule" | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//;s/[[:space:]]\+/ /g')
 
     # STRICT CHECK 1: Exact substring match (catches same rule with different prefix)
-    if grep -qi "$normalized" "$file" 2>/dev/null; then
+    # Use -F for fixed-string match to avoid regex injection from user input
+    if grep -Fqi "$normalized" "$file" 2>/dev/null; then
         return 0
     fi
 
     # STRICT CHECK 2: Rule already contains the key phrase
     # Extract core action phrase (verb + object)
     local core_phrase=$(echo "$normalized" | grep -oE "(use|prefer|always|never) [a-z]+( [a-z]+)?" | head -1)
-    if [ -n "$core_phrase" ] && grep -qi "$core_phrase" "$file" 2>/dev/null; then
+    # Use -F for fixed-string match to avoid periods/special chars being treated as regex
+    if [ -n "$core_phrase" ] && grep -Fqi "$core_phrase" "$file" 2>/dev/null; then
         return 0
     fi
 
     # STRICT CHECK 3: High keyword overlap (at least 50% of words must match a single existing rule)
-    local keywords=$(echo "$normalized" | grep -oE '\b[a-z]{4,}\b' | sort -u | tr '\n' ' ')
+    local keywords=$(echo "$normalized" | grep -oE "\b[a-z]{${KEYWORD_MIN_LENGTH},}\b" | sort -u | tr '\n' ' ')
     local keyword_count=$(echo "$keywords" | wc -w | tr -d ' ')
 
     # For each existing rule, check overlap
+    # POSIX-compatible: use temp file instead of process substitution
+    local temp_rules="${TMPDIR:-/tmp}/reflect_rules_$$"
+    grep "^- " "$file" 2>/dev/null > "$temp_rules" || true
+
     while IFS= read -r existing_rule; do
         [ -z "$existing_rule" ] && continue
         local existing_lower=$(echo "$existing_rule" | tr '[:upper:]' '[:lower:]')
         local match_count=0
 
         for kw in $keywords; do
-            if echo "$existing_lower" | grep -q "\b$kw\b" 2>/dev/null; then
+            # Use -F for fixed-string to avoid regex metacharacters in keywords
+            if echo "$existing_lower" | grep -Fq "$kw" 2>/dev/null; then
                 match_count=$((match_count + 1))
             fi
         done
 
         # If more than 50% of keywords match ONE existing rule, it's a duplicate
         local threshold=$((keyword_count / 2))
-        [ "$threshold" -lt 2 ] && threshold=2
-        [ "$match_count" -ge "$threshold" ] && return 0
-    done < <(grep "^- " "$file" 2>/dev/null)
+        [ "$threshold" -lt "$MIN_KEYWORD_THRESHOLD" ] && threshold="$MIN_KEYWORD_THRESHOLD"
+        if [ "$match_count" -ge "$threshold" ]; then
+            rm -f "$temp_rules"
+            return 0
+        fi
+    done < "$temp_rules"
 
+    rm -f "$temp_rules"
     return 1
 }
 
@@ -358,10 +386,10 @@ add_rule() {
 
     # Clean and format FIRST
     # Remove "User:" prefix, extra whitespace, and limit length
-    local clean=$(echo "$rule" | tr -d '\n\r' | sed 's/  */ /g' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sed 's/^[Uu]ser:[[:space:]]*//' | cut -c1-100)
+    local clean=$(echo "$rule" | tr -d '\n\r' | sed 's/  */ /g' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sed 's/^[Uu]ser:[[:space:]]*//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH")
 
     # QUALITY GATE 1: Minimum length (too short = useless)
-    if [ ${#clean} -lt 15 ]; then
+    if [ ${#clean} -lt "$MIN_RULE_LENGTH" ]; then
         log "info" "Skipped too short: $clean"
         return 1
     fi
@@ -374,14 +402,14 @@ add_rule() {
 
     # QUALITY GATE 3: Must have specific subject (not just a verb phrase)
     local word_count=$(echo "$clean" | wc -w | tr -d ' ')
-    if [ "$word_count" -lt 3 ]; then
+    if [ "$word_count" -lt "$MIN_WORD_COUNT" ]; then
         log "info" "Skipped too vague: $clean"
         return 1
     fi
 
-    # QUALITY GATE 4: Skip documentation/JSON artifacts
-    # These patterns indicate corrupted data from parsing docs or code
-    if echo "$clean" | grep -qE '\\n|\\"|":|→|```|\*\*|sessionId|userType|"cwd"'; then
+    # QUALITY GATE 4: Skip documentation/JSON artifacts (uses shared patterns)
+    # Uses LINE_NUMBER_PATTERN instead of bare → to avoid filtering legitimate rules
+    if echo "$clean" | grep -qE "${LINE_NUMBER_PATTERN}|${DOC_ARTIFACT_COMMON}"; then
         log "info" "Skipped doc/JSON artifact: $clean"
         return 1
     fi
@@ -488,7 +516,20 @@ EOF
 
 cmd_off() {
     ensure_dirs
-    [ -f "$REFLECT_CONFIG" ] && jq '.autoReflect = false' "$REFLECT_CONFIG" > "$REFLECT_CONFIG.tmp" && mv "$REFLECT_CONFIG.tmp" "$REFLECT_CONFIG"
+    if [ -f "$REFLECT_CONFIG" ]; then
+        # Safely update config with error handling to prevent corruption
+        local tmp_file="${REFLECT_CONFIG}.tmp.$$"
+        if jq '.autoReflect = false' "$REFLECT_CONFIG" > "$tmp_file" 2>/dev/null; then
+            # jq succeeded - safely move temp to config
+            mv "$tmp_file" "$REFLECT_CONFIG"
+        else
+            # jq failed - clean up and warn
+            rm -f "$tmp_file"
+            log "error" "Failed to update config, keeping existing"
+            echo "⚠️  Warning: Could not update config file"
+            return 1
+        fi
+    fi
     echo "🧠 Auto-reflection DISABLED"
 }
 
@@ -561,14 +602,45 @@ main() {
                 case "$1" in
                     --transcript) transcript="$2"; shift 2 ;;
                     --dry-run) dry_run="true"; shift ;;
-                    --max) max="$2"; shift 2 ;;
+                    --max)
+                        # Validate --max is a positive integer
+                        if echo "$2" | grep -qE '^[0-9]+$' && [ "$2" -gt 0 ] && [ "$2" -le 100 ]; then
+                            max="$2"
+                        else
+                            echo "Error: --max must be a positive integer between 1 and 100"
+                            return 1
+                        fi
+                        shift 2
+                        ;;
                     *) shift ;;
                 esac
             done
 
             if [ -z "$transcript" ]; then
-                transcript=$(find "${TMPDIR:-/tmp}" -name "*.md" -mmin -5 2>/dev/null | head -1)
-                [ -z "$transcript" ] && echo "No transcript found" && return 1
+                # Auto-detect transcript with safer patterns
+                # Look for Claude-specific transcript patterns first, then generic .md
+                # Use -mmin for age limit to avoid picking stale files
+                local tmpdir="${TMPDIR:-/tmp}"
+
+                # Priority 1: Claude conversation transcripts (most likely)
+                transcript=$(find "$tmpdir" -maxdepth 2 -name "*transcript*.md" -mmin -"$TRANSCRIPT_MAX_AGE_MIN" -type f 2>/dev/null | head -1)
+
+                # Priority 2: Claude session files
+                if [ -z "$transcript" ]; then
+                    transcript=$(find "$tmpdir" -maxdepth 2 -name "*claude*.md" -mmin -"$TRANSCRIPT_MAX_AGE_MIN" -type f 2>/dev/null | head -1)
+                fi
+
+                # Priority 3: Any recent .md (fallback, less reliable)
+                if [ -z "$transcript" ]; then
+                    transcript=$(find "$tmpdir" -maxdepth 2 -name "*.md" -mmin -"$TRANSCRIPT_MAX_AGE_MIN" -type f 2>/dev/null | head -1)
+                fi
+
+                if [ -z "$transcript" ]; then
+                    echo "No transcript found in $tmpdir (max age: ${TRANSCRIPT_MAX_AGE_MIN}min)"
+                    return 1
+                fi
+
+                log "info" "Auto-detected transcript: $transcript"
             fi
 
             reflect_session "$transcript" "$dry_run" "$max"

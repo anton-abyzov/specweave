@@ -1,0 +1,10 @@
+{
+  "increment": "0155-native-plugin-skill-architecture",
+  "title": "Native Claude Code Plugin/Skill Architecture",
+  "status": "ready_for_review",
+  "priority": "P0",
+  "type": "refactor",
+  "created": "2026-01-06",
+  "tddMode": false,
+  "updated": "2026-01-06T07:19:25.000Z"
+}
