@@ -1,0 +1,9 @@
+{
+  "id": "0154-auto-completion-flags",
+  "status": "abandoned",
+  "type": "feature",
+  "created": "2026-01-05T00:21:31.740Z",
+  "lastActivity": "2026-01-05T00:21:31.740Z",
+  "abandonedAt": "2026-01-06T14:01:45.000Z",
+  "abandonedReason": "Broken increment - missing spec.md and tasks.md files"
+}
