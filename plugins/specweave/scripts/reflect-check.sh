@@ -21,13 +21,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REFLECT_SCRIPT="$SCRIPT_DIR/reflect.sh"
 HOOK_SCRIPT="$SCRIPT_DIR/../hooks/stop-reflect.sh"
 
-# Colors for output (fallback if tput unavailable)
-if command -v tput >/dev/null 2>&1; then
-    GREEN=$(tput setaf 2)
-    RED=$(tput setaf 1)
-    YELLOW=$(tput setaf 3)
-    BLUE=$(tput setaf 4)
-    RESET=$(tput sgr0)
+# Colors for output (fallback if tput unavailable or no TERM)
+if command -v tput >/dev/null 2>&1 && [ -n "$TERM" ]; then
+    GREEN=$(tput setaf 2 2>/dev/null || echo "")
+    RED=$(tput setaf 1 2>/dev/null || echo "")
+    YELLOW=$(tput setaf 3 2>/dev/null || echo "")
+    BLUE=$(tput setaf 4 2>/dev/null || echo "")
+    RESET=$(tput sgr0 2>/dev/null || echo "")
 else
     GREEN="" RED="" YELLOW="" BLUE="" RESET=""
 fi
@@ -225,8 +225,9 @@ main() {
             if [ -f "$f" ]; then
                 local name=$(basename "$f" .md)
                 local count=$(grep -c "^- " "$f" 2>/dev/null || echo 0)
+                count=$(echo "$count" | tr -d '\n' | tr -d ' ')  # Remove whitespace
 
-                if [ "$count" -gt 0 ]; then
+                if [ "$count" -gt 0 ] 2>/dev/null; then
                     check_result "info" "$name.md: $count learnings"
                 else
                     check_result "info" "$name.md: 0 learnings (empty)"
