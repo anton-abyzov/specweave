@@ -17,16 +17,17 @@ ALLOWED_FILES=(
   "IMPLEMENTATION-COMPLETE.md"
 )
 
-# Get staged markdown files in root (not in subdirectories)
-STAGED_ROOT_MD=$(git diff --cached --name-only --diff-filter=A | grep '^[^/]*\.md$' || true)
+# Get staged markdown and log files in root (not in subdirectories)
+# Check both newly added (A) and modified (M) files
+STAGED_ROOT_FILES=$(git diff --cached --name-only --diff-filter=AM | grep -E '^[^/]*\.(md|log)$' || true)
 
-if [ -z "$STAGED_ROOT_MD" ]; then
+if [ -z "$STAGED_ROOT_FILES" ]; then
   exit 0
 fi
 
 VIOLATIONS=""
 
-for file in $STAGED_ROOT_MD; do
+for file in $STAGED_ROOT_FILES; do
   # Check if file is in allowed list
   is_allowed=0
   for allowed in "${ALLOWED_FILES[@]}"; do
@@ -47,7 +48,7 @@ if [ -n "$VIOLATIONS" ]; then
   echo "🚨  ERROR: Root Folder Pollution Detected!"
   echo "🚨 ═══════════════════════════════════════════════════════════════"
   echo ""
-  echo "  The following markdown files violate CLAUDE.md Rule #5:"
+  echo "  The following files violate CLAUDE.md Rule #5:"
   echo -e "$VIOLATIONS"
   echo ""
   echo "  📋 CLAUDE.md Rule #5:"
