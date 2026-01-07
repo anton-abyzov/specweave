@@ -634,7 +634,7 @@ describe('CacheVersionDetector', () => {
 ## Phase 4: Cache Invalidator
 
 ### T-011: Implement skill memory backup
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-03 | **Status**: [ ] pending
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-03 | **Status**: [x] completed
 **Model**: 💎 Opus
 
 Backup skill memory files before cache invalidation.
@@ -673,7 +673,7 @@ describe('backupSkillMemories', () => {
 ---
 
 ### T-012: Implement soft invalidation
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-01 | **Status**: [ ] pending
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-01 | **Status**: [x] completed
 **Model**: ⚡ Haiku
 
 Mark cache as stale in metadata (non-destructive).
@@ -724,7 +724,7 @@ describe('invalidatePlugin - soft', () => {
 ---
 
 ### T-013: Implement hard invalidation
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-02, AC-US4-06 | **Status**: [ ] pending
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-02, AC-US4-06 | **Status**: [x] completed
 **Model**: 💎 Opus
 
 Delete cache after creating backup, trigger marketplace refresh.
@@ -781,7 +781,7 @@ describe('invalidatePlugin - hard', () => {
 ---
 
 ### T-014: Create CacheInvalidator orchestrator
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-04, AC-US4-05 | **Status**: [ ] pending
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-04, AC-US4-05 | **Status**: [x] completed
 **Model**: 💎 Opus
 
 Orchestrate invalidation strategies with memory preservation.

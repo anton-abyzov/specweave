@@ -1858,32 +1858,167 @@ if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
     fi
 
     # ========================================================================
-    # CRITICAL: Parse actual test RESULTS (not just execution)
+    # COMPLETION CONDITIONS VALIDATION (v0.4.0+)
+    # New flexible framework that validates build, tests, lint, types, etc.
+    # with per-condition autoHeal and maxRetries configuration
     # ========================================================================
-    TEST_RESULTS=$(parse_test_results "$TRANSCRIPT_PATH")
-    TESTS_PASSED=$(echo "$TEST_RESULTS" | jq -r '.passed')
-    TESTS_FAILED=$(echo "$TEST_RESULTS" | jq -r '.failed')
-    TESTS_TOTAL=$(echo "$TEST_RESULTS" | jq -r '.total')
-    TEST_FRAMEWORK=$(echo "$TEST_RESULTS" | jq -r '.framework')
-    TESTS_RUN=$(echo "$TEST_RESULTS" | jq -r '.testsRun')
 
-    # If tests were run and ANY failed, trigger self-healing loop
-    if [ "$TESTS_RUN" = "true" ] && [ "$TESTS_FAILED" -gt 0 ]; then
-        # Log test failure
-        echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"test_failure\",\"passed\":$TESTS_PASSED,\"failed\":$TESTS_FAILED,\"framework\":\"$TEST_FRAMEWORK\"}" >> "$LOGS_DIR/auto-iterations.log"
+    # Check if session has completionConditions defined
+    HAS_CONDITIONS=$(jq -r 'has("completionConditions")' "$SESSION_FILE" 2>/dev/null || echo "false")
+    CONDITIONS_COUNT=$(jq -r '.completionConditions | length' "$SESSION_FILE" 2>/dev/null || echo "0")
 
-        # Extract failure details
-        FAILURE_DETAILS=$(extract_failure_details "$TRANSCRIPT_PATH")
+    if [ "$HAS_CONDITIONS" = "true" ] && [ "$CONDITIONS_COUNT" -gt 0 ]; then
+        # ====================================================================
+        # NEW PATH: Use completion conditions validator
+        # ====================================================================
 
-        # Trigger self-healing loop
-        handle_test_failure "$FAILURE_DETAILS"
+        VALIDATOR_SCRIPT="$SCRIPT_DIR/validate-completion-conditions.sh"
+
+        if [ -x "$VALIDATOR_SCRIPT" ]; then
+            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"completion_conditions_check\",\"conditions\":$CONDITIONS_COUNT}" >> "$LOGS_DIR/auto-iterations.log"
+
+            # Run validator and capture output
+            VALIDATOR_OUTPUT=$(bash "$VALIDATOR_SCRIPT" "$SESSION_FILE" "$TRANSCRIPT_PATH" 2>&1)
+            VALIDATOR_EXIT=$?
+
+            if [ $VALIDATOR_EXIT -ne 0 ]; then
+                # Validation failed - parse which condition failed
+                FAILED_CONDITION=$(echo "$VALIDATOR_OUTPUT" | grep "^BLOCK:" | head -1 | sed 's/^BLOCK://')
+
+                # Determine condition type from failure message
+                CONDITION_TYPE=""
+                if echo "$FAILED_CONDITION" | grep -qi "build"; then
+                    CONDITION_TYPE="build"
+                elif echo "$FAILED_CONDITION" | grep -qi "test"; then
+                    CONDITION_TYPE="tests"
+                elif echo "$FAILED_CONDITION" | grep -qi "lint"; then
+                    CONDITION_TYPE="lint"
+                elif echo "$FAILED_CONDITION" | grep -qi "type"; then
+                    CONDITION_TYPE="types"
+                elif echo "$FAILED_CONDITION" | grep -qi "coverage"; then
+                    CONDITION_TYPE="coverage"
+                elif echo "$FAILED_CONDITION" | grep -qi "e2e"; then
+                    CONDITION_TYPE="e2e"
+                else
+                    CONDITION_TYPE="command"
+                fi
+
+                # Check if auto-heal is enabled for this condition
+                AUTO_HEAL=$(jq -r ".completionConditions[] | select(.type == \"$CONDITION_TYPE\") | .autoHeal // false" "$SESSION_FILE" 2>/dev/null)
+                MAX_RETRIES=$(jq -r ".completionConditions[] | select(.type == \"$CONDITION_TYPE\") | .maxRetries // 3" "$SESSION_FILE" 2>/dev/null)
+
+                # Get current retry count for this condition type
+                RETRY_COUNT=$(echo "$SESSION" | jq -r ".conditionRetries[\"$CONDITION_TYPE\"] // 0")
+
+                echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"condition_failed\",\"condition\":\"$CONDITION_TYPE\",\"autoHeal\":$AUTO_HEAL,\"retryCount\":$RETRY_COUNT,\"maxRetries\":$MAX_RETRIES}" >> "$LOGS_DIR/auto-iterations.log"
+
+                if [ "$AUTO_HEAL" = "true" ] && [ "$RETRY_COUNT" -lt "$MAX_RETRIES" ]; then
+                    # Auto-heal enabled and retries remaining - trigger self-healing
+                    NEW_RETRY=$((RETRY_COUNT + 1))
+
+                    # Update retry count in session
+                    echo "$SESSION" | jq --arg type "$CONDITION_TYPE" --argjson retry "$NEW_RETRY" \
+                        '.conditionRetries[$type] = $retry' \
+                        > "$SESSION_FILE"
+
+                    # Build fix prompt based on condition type
+                    FIX_PROMPT="🔴 COMPLETION CONDITION FAILED - AUTO-HEAL RETRY $NEW_RETRY/$MAX_RETRIES
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONDITION: $CONDITION_TYPE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+$FAILED_CONDITION
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AUTO-HEAL INSTRUCTIONS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. ANALYZE the $CONDITION_TYPE failure above
+2. FIX the underlying issue
+3. RE-RUN the validation command
+4. VERIFY it passes before continuing
+
+⚠️ Retries remaining: $((MAX_RETRIES - NEW_RETRY))
+⚠️ After exhausting retries, session will pause for human review"
+
+                    block "Completion condition failed - auto-heal retry $NEW_RETRY/$MAX_RETRIES" "$FIX_PROMPT"
+
+                elif [ "$AUTO_HEAL" = "true" ] && [ "$RETRY_COUNT" -ge "$MAX_RETRIES" ]; then
+                    # Retries exhausted
+                    echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg type "$CONDITION_TYPE" \
+                        '.status = "paused" | .pauseTime = $now | .pauseReason = "completion_condition_retries_exhausted" | .conditionRetries[$type] = 0' \
+                        > "$SESSION_FILE"
+
+                    approve "Completion condition '$CONDITION_TYPE' failed after $MAX_RETRIES retries - human review required.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FAILURE: $FAILED_CONDITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Auto-healing exhausted. Please fix manually and run /sw:auto to continue."
+
+                else
+                    # Auto-heal disabled - block immediately
+                    echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" --arg type "$CONDITION_TYPE" \
+                        '.status = "paused" | .pauseTime = $now | .pauseReason = "completion_condition_failed_no_autoheal"' \
+                        > "$SESSION_FILE"
+
+                    approve "Completion condition '$CONDITION_TYPE' failed - auto-heal disabled, human intervention required.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FAILURE: $FAILED_CONDITION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Auto-healing is DISABLED for this condition type.
+Please fix manually and run /sw:auto to continue."
+                fi
+            else
+                # All conditions passed - reset retry counters
+                echo "$SESSION" | jq '.conditionRetries = {}' > "$SESSION_FILE"
+                echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"completion_conditions_passed\",\"conditions\":$CONDITIONS_COUNT}" >> "$LOGS_DIR/auto-iterations.log"
+            fi
+        else
+            # Validator script not executable - fallback to legacy logic
+            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"validator_not_found\",\"fallback\":true}" >> "$LOGS_DIR/auto-iterations.log"
+            HAS_CONDITIONS="false"  # Force fallback
+        fi
     fi
 
-    # If tests passed, reset retry counter
-    if [ "$TESTS_RUN" = "true" ] && [ "$TESTS_FAILED" -eq 0 ] && [ "$TESTS_PASSED" -gt 0 ]; then
-        if [ "$TEST_RETRY_COUNT" -gt 0 ]; then
-            reset_retry_counter
-            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"tests_passed_after_retry\",\"passed\":$TESTS_PASSED}" >> "$LOGS_DIR/auto-iterations.log"
+    # ========================================================================
+    # LEGACY PATH: Fallback for sessions without completionConditions
+    # This ensures backward compatibility with existing auto sessions
+    # ========================================================================
+
+    if [ "$HAS_CONDITIONS" != "true" ] || [ "$CONDITIONS_COUNT" -eq 0 ]; then
+        # ====================================================================
+        # CRITICAL: Parse actual test RESULTS (not just execution)
+        # ====================================================================
+        TEST_RESULTS=$(parse_test_results "$TRANSCRIPT_PATH")
+        TESTS_PASSED=$(echo "$TEST_RESULTS" | jq -r '.passed')
+        TESTS_FAILED=$(echo "$TEST_RESULTS" | jq -r '.failed')
+        TESTS_TOTAL=$(echo "$TEST_RESULTS" | jq -r '.total')
+        TEST_FRAMEWORK=$(echo "$TEST_RESULTS" | jq -r '.framework')
+        TESTS_RUN=$(echo "$TEST_RESULTS" | jq -r '.testsRun')
+
+        # If tests were run and ANY failed, trigger self-healing loop
+        if [ "$TESTS_RUN" = "true" ] && [ "$TESTS_FAILED" -gt 0 ]; then
+            # Log test failure
+            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"test_failure\",\"passed\":$TESTS_PASSED,\"failed\":$TESTS_FAILED,\"framework\":\"$TEST_FRAMEWORK\",\"legacy\":true}" >> "$LOGS_DIR/auto-iterations.log"
+
+            # Extract failure details
+            FAILURE_DETAILS=$(extract_failure_details "$TRANSCRIPT_PATH")
+
+            # Trigger self-healing loop (legacy always has auto-heal enabled)
+            handle_test_failure "$FAILURE_DETAILS"
+        fi
+
+        # If tests passed, reset retry counter
+        if [ "$TESTS_RUN" = "true" ] && [ "$TESTS_FAILED" -eq 0 ] && [ "$TESTS_PASSED" -gt 0 ]; then
+            if [ "$TEST_RETRY_COUNT" -gt 0 ]; then
+                reset_retry_counter
+                echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"tests_passed_after_retry\",\"passed\":$TESTS_PASSED,\"legacy\":true}" >> "$LOGS_DIR/auto-iterations.log"
+            fi
         fi
     fi
 
