@@ -42,10 +42,10 @@ Optimize SpecWeave's skill routing to prevent confusion between `/sw:increment` 
 - [x] **AC-US1-01**: Detect SpecWeave repo by checking `package.json` name field equals "specweave"
 - [x] **AC-US1-02**: Detect SpecWeave repo by checking for `src/cli/commands` directory existence
 - [x] **AC-US1-03**: Detect SpecWeave repo by checking for `plugins/specweave` directory existence
-- [ ] **AC-US1-04**: When detected, display warning: "⚠️ Running in SpecWeave repository itself!"
-- [ ] **AC-US1-05**: Prompt user to confirm: "Creating increment FOR SpecWeave development" vs "Testing with example"
-- [ ] **AC-US1-06**: Provide options: Continue, Cancel, or Suggest examples/ directory for tests
-- [ ] **AC-US1-07**: Add `--force-specweave-dev` flag to bypass warning for CI/automation
+- [x] **AC-US1-04**: When detected, display warning: "⚠️ Running in SpecWeave repository itself!"
+- [x] **AC-US1-05**: Prompt user to confirm: "Creating increment FOR SpecWeave development" vs "Testing with example"
+- [x] **AC-US1-06**: Provide options: Continue, Cancel, or Suggest examples/ directory for tests
+- [x] **AC-US1-07**: Add `--force-specweave-dev` flag to bypass warning for CI/automation
 
 ### US-002: Fix Skill Routing Logic
 **Project**: specweave-dev
