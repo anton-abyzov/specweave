@@ -149,18 +149,18 @@ describe('CacheMetadataManager', () => {
         '1.0.0'
       );
 
-      const result = manager.getPluginCachePath('sw', '1.0.0');
+      const result = CacheMetadataManager.getPluginCachePath('sw', '1.0.0');
       expect(result).toBe(expectedPath);
     });
 
     it('should handle different plugin names', () => {
-      const result = manager.getPluginCachePath('sw-github', '2.0.0');
+      const result = CacheMetadataManager.getPluginCachePath('sw-github', '2.0.0');
       expect(result).toContain('sw-github');
       expect(result).toContain('2.0.0');
     });
 
     it('should handle version with special characters', () => {
-      const result = manager.getPluginCachePath('sw', '1.0.0-beta.1');
+      const result = CacheMetadataManager.getPluginCachePath('sw', '1.0.0-beta.1');
       expect(result).toContain('1.0.0-beta.1');
     });
   });

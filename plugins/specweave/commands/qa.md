@@ -167,11 +167,21 @@ If `--export` flag provided:
 
 **When user runs `/qa <increment-id>`**:
 
-1. **Parse arguments**
+1. **Parse and normalize arguments**
    ```typescript
-   const incrementId = args[0]; // e.g., "0008"
+   let incrementId = args[0]; // e.g., "0008" or "0008-feature-name"
+
+   // Normalize increment ID
+   if (incrementId.includes('-')) {
+     // Extract numeric portion: "0008-feature-name" → "0008"
+     incrementId = incrementId.split('-')[0];
+   }
+   // Convert to 4-digit format: "8" → "0008"
+   incrementId = incrementId.padStart(4, '0');
+
    const options = parseOptions(args.slice(1));
    ```
+   Both formats work: `/sw:qa 0153` or `/sw:qa 0153-feature-name`
 
 2. **Invoke CLI command via Bash tool**
    ```bash

@@ -81,8 +81,11 @@ Contributors working on SpecWeave itself need different mindset than users build
 ### Step 1: Load Context
 
 1. **Find increment directory**:
-   - Normalize ID to 4-digit format (e.g., "1" → "0001")
-   - Find `.specweave/increments/0001-name/`
+   - **Normalize increment ID**:
+     - If ID contains dash (e.g., "0153-feature-name"), extract numeric portion before first dash → "0153"
+     - Convert to 4-digit format (e.g., "1" → "0001", "153" → "0153")
+     - Both formats work: `/sw:do 0153` or `/sw:do 0153-feature-name`
+   - Find matching directory: `.specweave/increments/0001-*/` (matches by prefix)
    - Verify increment exists
 
 2. **Load specification and plan**:

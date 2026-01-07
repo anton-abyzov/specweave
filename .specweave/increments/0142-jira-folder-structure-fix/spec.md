@@ -1,7 +1,7 @@
 ---
 increment: 0142-jira-folder-structure-fix
 title: "JIRA 1-Level Folder Structure Fix"
-status: active
+status: completed
 type: feature
 created: 2025-12-13
 total_acceptance_criteria: 6

@@ -150,12 +150,12 @@ Implement comprehensive SEO improvements for spec-weave.com to enhance search en
 **Background**: Docusaurus generates tag archive pages (/blog/tags/*) that duplicate blog post content, potentially causing search engines to flag duplicate content and dilute page authority.
 
 **Acceptance Criteria**:
-- [ ] **AC-US6-01**: Custom BlogTagsPostsPage component created via swizzling (@theme/BlogTagsPostsPage)
-- [ ] **AC-US6-02**: Component adds `<meta name="robots" content="noindex, follow" />` to tag archive pages
-- [ ] **AC-US6-03**: Noindex meta tag renders on all /blog/tags/* pages
-- [ ] **AC-US6-04**: Original blog posts remain indexed (do NOT have noindex)
+- [x] **AC-US6-01**: Custom BlogTagsPostsPage component created via swizzling (@theme/BlogTagsPostsPage)
+- [x] **AC-US6-02**: Component adds `<meta name="robots" content="noindex, follow" />` to tag archive pages
+- [x] **AC-US6-03**: Noindex meta tag renders on all /blog/tags/* pages
+- [x] **AC-US6-04**: Original blog posts remain indexed (do NOT have noindex)
 - [ ] **AC-US6-05**: Google Search Console confirms tag pages are not indexed after next crawl
-- [ ] **AC-US6-06**: Blog pagination pages also include noindex to prevent duplicate content
+- [x] **AC-US6-06**: Blog pagination pages also include noindex to prevent duplicate content
 
 **Priority**: P2 - Prevents SEO penalties
 

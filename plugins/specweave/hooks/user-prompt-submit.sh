@@ -26,6 +26,14 @@ set +e
 # ==============================================================================
 INPUT=$(cat 2>/dev/null || echo '{}')
 
+# EMERGENCY DEBUG - Always log to home directory (bypasses CWD issues)
+EMERGENCY_LOG="$HOME/claude-hook-debug-progress.log"
+echo "=== $(date '+%Y-%m-%d %H:%M:%S') ===" >> "$EMERGENCY_LOG" 2>/dev/null || true
+echo "INPUT: $INPUT" >> "$EMERGENCY_LOG" 2>/dev/null || true
+echo "PWD: $(pwd)" >> "$EMERGENCY_LOG" 2>/dev/null || true
+echo "CWD: $PWD" >> "$EMERGENCY_LOG" 2>/dev/null || true
+echo "---" >> "$EMERGENCY_LOG" 2>/dev/null || true
+
 # CRITICAL DEBUG LOGGING (v1.0.104+)
 DEBUG_LOG=".specweave/logs/hooks/user-prompt-submit-debug.log"
 mkdir -p "$(dirname "$DEBUG_LOG")" 2>/dev/null || true
