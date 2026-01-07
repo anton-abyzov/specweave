@@ -263,6 +263,67 @@ Route learnings directly to a skill:
 cat ~/.claude/plugins/marketplaces/specweave/plugins/specweave/skills/frontend/MEMORY.md
 ```
 
+### Status Dashboard Output (for `/sw:reflect-status`)
+
+When generating the reflect status dashboard, follow this enhanced format:
+
+#### Section 1: Configuration (as before)
+Show reflection enabled status, auto-reflect, dates, thresholds.
+
+#### Section 2: 🎯 LEARNING FOCUS - What Reflection Learns
+
+**CRITICAL**: This section must clearly show **WHAT** each category learns.
+
+For each memory file in `.specweave/memory/`:
+1. **Count learnings** (lines starting with `- ` or `- ✗→✓`)
+2. **Calculate percentage** of total learnings
+3. **Generate visual bar** (10 blocks: `■` for filled, `□` for empty)
+4. **Add description** explaining what this category captures
+
+**Format**:
+```
+Project Skills (.specweave/memory/):
+  • general.md         12 learnings  ■■■■■■□□□□ 40%
+    └─ Project conventions, file organization, tooling preferences
+
+  • testing.md          8 learnings  ■■■■□□□□□□ 27%
+    └─ Test patterns, mocking, framework usage (Vitest, Playwright)
+```
+
+**Category Descriptions** (use these exact descriptions):
+
+| File | Description |
+|------|-------------|
+| `general.md` | Project conventions, file organization, tooling preferences |
+| `testing.md` | Test patterns, mocking, framework usage (Vitest, Playwright) |
+| `api-patterns.md` | API design, endpoint patterns, REST/GraphQL conventions |
+| `database.md` | Query patterns, schema design, ORM usage, migrations |
+| `git.md` | Commit messages, branching, Git workflows |
+| `logging.md` | Logger usage, log levels, structured logging |
+| `component-usage.md` | UI component patterns, styling, component composition |
+| `deployment.md` | Deploy commands, CI/CD, service configuration |
+| `security.md` | Auth patterns, validation, secrets management |
+| `structure.md` | File/module organization, import patterns |
+
+#### Section 3: Recent Activity
+
+Show last modified file and extract recent learnings with confidence levels.
+
+#### Section 4: Commands
+
+Show available commands with context-aware hints (e.g., "already on" when enabled).
+
+#### Section 5: Summary Paragraph
+
+End with a plain English summary like:
+```
+The reflection system is actively learning from your corrections. Auto-reflection
+is enabled, so learnings will be automatically captured when you end sessions.
+
+You have 30 learnings across 5 categories with recent activity in general
+project rules and API patterns.
+```
+
 ### Automatic Reflection
 
 Enable auto-reflection on session end:

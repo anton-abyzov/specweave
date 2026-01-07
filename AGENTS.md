@@ -35,9 +35,6 @@
 6. tasks.md + spec.md = SOURCE OF TRUTH (update after every task!)
 7. ⛔ EVERY User Story MUST have **Project**: field (v0.35.0+)
 8. ⛔ For 2-level structures: EVERY US also needs **Board**: field
-9. ⛔ Self-awareness (v1.0.102+): Use repository-detector.ts to detect SpecWeave repo vs user projects
-10. ⛔ Error formatting (v1.0.102+): Use error-formatter.ts for consistent error messages
-11. ⛔ Increment validation (v1.0.102+): Use increment-validator.ts to warn about non-sequential numbers
 ```
 
 ### ⛔ INCREMENT FOLDER CLEANLINESS (CRITICAL!)

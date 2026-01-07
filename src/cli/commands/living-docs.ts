@@ -89,11 +89,23 @@ export async function livingDocsCommand(options: LivingDocsOptions): Promise<voi
     return;
   }
 
-  // Collect configuration
-  const userInputs = await collectConfiguration(projectPath, options);
+  // Try to load saved config from init (NEW v1.0.103+)
+  let userInputs = loadSavedLivingDocsConfig(projectPath);
+
+  // If no saved config, collect interactively
   if (!userInputs) {
-    console.log(chalk.gray('Cancelled.'));
-    return;
+    userInputs = await collectConfiguration(projectPath, options);
+    if (!userInputs) {
+      console.log(chalk.gray('Cancelled.'));
+      return;
+    }
+  } else {
+    console.log(chalk.green('✓ Using configuration from init'));
+    console.log(chalk.gray(`  Depth: ${userInputs.analysisDepth}`));
+    if (userInputs.priorityAreas.length > 0) {
+      console.log(chalk.gray(`  Priority: ${userInputs.priorityAreas.join(', ')}`));
+    }
+    console.log('');
   }
 
   // Parse depends-on
@@ -115,13 +127,19 @@ export async function livingDocsCommand(options: LivingDocsOptions): Promise<voi
       process.exit(1);
     }
   } else {
-    // Traditional mode: Launch background job
+    // NEW v1.0.103+: ALWAYS run in foreground (interactive mode)
+    // No background jobs, no detached processes
     try {
+      console.log(chalk.blue('\n🔄 Starting Living Docs Builder (Interactive Mode)\n'));
+      console.log(chalk.gray('  This will run in the foreground - you can monitor progress in real-time'));
+      console.log(chalk.gray('  To pause: Close this conversation window'));
+      console.log(chalk.gray('  To resume: Reopen and run /sw:living-docs again\n'));
+
       const { job, pid, isBackground } = await launchLivingDocsJob({
         projectPath,
         userInputs,
         dependsOn,
-        foreground: options.foreground,
+        foreground: true,  // CRITICAL: Always foreground in v1.0.103+
       });
 
       displayLaunchSuccess(job, pid, isBackground, userInputs);
@@ -501,4 +519,27 @@ function getTimeAgo(dateStr: string | Date): string {
   if (seconds < 3600) return `${Math.floor(seconds / 60)} mins ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
   return `${Math.floor(seconds / 86400)} days ago`;
+}
+
+/**
+ * Load saved living docs config from init
+ * (NEW v1.0.103+: Config saved during init for interactive mode)
+ */
+function loadSavedLivingDocsConfig(projectPath: string): LivingDocsUserInputs | null {
+  const configPath = path.join(projectPath, '.specweave', 'state', 'living-docs-config.json');
+
+  if (!fs.existsSync(configPath)) {
+    return null;
+  }
+
+  try {
+    const data = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+    // Delete config file after loading (one-time use)
+    fs.unlinkSync(configPath);
+
+    return data.userInputs;
+  } catch {
+    return null;
+  }
 }

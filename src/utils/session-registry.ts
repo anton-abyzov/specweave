@@ -23,6 +23,7 @@ import {
   SessionStatus,
 } from '../types/session.js';
 import { Logger, consoleLogger } from './logger.js';
+import { shouldSkipSessionRegistry } from './environment-detection.js';
 
 const REGISTRY_FILENAME = '.session-registry.json';
 const LOCK_TIMEOUT_MS = 5000; // 5 seconds max wait for lock
@@ -38,8 +39,20 @@ export class SessionRegistry {
   constructor(projectRoot: string, options: { logger?: Logger } = {}) {
     this.logger = options.logger ?? consoleLogger;
 
+    // CRITICAL: Skip session registry in VSCode (extension manages lifecycle)
+    if (shouldSkipSessionRegistry()) {
+      this.logger.info('Session registry disabled (VSCode/CI context)');
+      this.isValid = false;
+      this.registryPath = '';
+      this.lockPath = '';
+      return;
+    }
+
     // CRITICAL: Only operate on valid SpecWeave projects
     const specweaveDir = path.join(projectRoot, '.specweave');
+
+    // Allow .specweave directory without config.json for tests
+    // Production code will have config.json, tests just need .specweave dir
     if (!fs.existsSync(specweaveDir)) {
       // NOT a SpecWeave project - mark as invalid and DON'T create any directories
       this.logger.warn(`Not a SpecWeave project: ${projectRoot} - session registry disabled`);

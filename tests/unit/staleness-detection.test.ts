@@ -10,12 +10,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { SessionRegistry } from '../../src/utils/session-registry.js';
+import { forceEnableLocksForTest, restoreEnvironment, type OriginalEnv } from '../helpers/force-enable-locks.js';
 
 describe('SessionRegistry - Staleness Detection', () => {
   let testDir: string;
   let registry: SessionRegistry;
+  let originalEnv: OriginalEnv;
 
   beforeEach(() => {
+    // CRITICAL: Force enable locks for tests (bypass VSCode/CI auto-skip)
+    originalEnv = forceEnableLocksForTest();
+
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'staleness-test-'));
     // Create .specweave directory - required for SessionRegistry to be valid
     fs.mkdirSync(path.join(testDir, '.specweave'), { recursive: true });
@@ -26,6 +31,9 @@ describe('SessionRegistry - Staleness Detection', () => {
     if (fs.existsSync(testDir)) {
       fs.rmSync(testDir, { recursive: true, force: true });
     }
+
+    // Restore original environment
+    restoreEnvironment(originalEnv);
   });
 
   describe('getStaleSessions()', () => {
