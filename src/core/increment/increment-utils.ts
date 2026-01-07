@@ -241,12 +241,31 @@ export class IncrementNumberManager {
         for (const entry of entries) {
           if (!entry.isDirectory()) continue;
 
+          // **CRITICAL VALIDATION (v1.0.103)**: Reject invalid increment IDs
+          // 1. Must start with digits (XXXX-name format)
+          // 2. Cannot be 0000 (must be positive: 0001+)
+          // 3. No non-numeric prefixes (reject .specweave, _templates, etc.)
+
           // Match pattern: 0032-name, 032-name, or 0032E-name (external)
           // CRITICAL: Extract BASE number - both 0001 and 0001E → 1
           const match = entry.name.match(/^(\d{3,4})E?-/);
           if (match) {
             const number = parseInt(match[1], 10);
+
+            // **VALIDATION**: Reject 0000 - increment numbers must be positive (0001+)
+            if (number === 0) {
+              console.warn(`⚠️  INVALID INCREMENT ID: ${entry.name} - Increment numbers must start from 0001, not 0000`);
+              continue; // Skip this invalid increment
+            }
+
             numbers.add(number);
+          } else {
+            // **VALIDATION**: Warn about non-standard increment folder names
+            // Valid: XXXX-name, XXXE-name
+            // Invalid: .specweave, _templates, 0000-adhoc, etc.
+            if (!entry.name.startsWith('_')) { // Ignore system folders like _archive
+              console.warn(`⚠️  NON-STANDARD INCREMENT FOLDER: ${entry.name} - Must follow XXXX-name format (4 digits + hyphen + name)`);
+            }
           }
         }
       } catch (error) {
