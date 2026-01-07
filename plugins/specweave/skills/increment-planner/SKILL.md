@@ -159,6 +159,12 @@ Every increment MUST have `metadata.json` or:
 
 **NOTE**: Always read `testMode` and `coverageTarget` from config, don't hardcode!
 
+**TDD ENFORCEMENT** (v1.0.102+):
+- **Default**: `testMode: "TDD"` - Tests MUST be written first for all implementations
+- **Override per-increment**: Only when explicitly justified (experiments, POCs, migrations)
+- **Quality Gates**: `/sw:done` validates test coverage meets targets
+- **Test Types Required**: Unit (>85%), Integration (>80%), E2E (>90%) - see config.testing.coverageTargets
+
 ### 4. Increment Structure
 
 **Directory structure**:
@@ -747,6 +753,50 @@ Or manually scan:
 ```bash
 ls -1 .specweave/increments/ | grep -E '^[0-9]{4}-' | sort | tail -1
 # Get highest number, add 1
+```
+
+### STEP 1.5: Validate Increment Number (v1.0.102+)
+
+**Warn if non-sequential number is requested.**
+
+```typescript
+import { validateIncrementNumber, logValidationResult } from './src/core/increment-validator.js';
+
+// Get all existing increments (including archived/paused)
+const existingIncrements = [
+  ...fs.readdirSync('.specweave/increments/'),
+  ...fs.readdirSync('.specweave/increments/_archive/').map(f => `_archive/${f}`),
+  ...fs.readdirSync('.specweave/increments/_paused/').map(f => `_paused/${f}`)
+].filter(f => /^\d{4}-/.test(f));
+
+// Validate requested number
+const result = validateIncrementNumber(requestedNumber, existingIncrements);
+
+// Log warnings and suggestions
+logValidationResult(result);
+
+// If invalid, STOP
+if (!result.isValid) {
+  throw new Error('Invalid increment number. See warnings above.');
+}
+
+// If valid but has warnings, prompt user to confirm
+if (result.warnings.length > 0) {
+  const proceed = await promptUser(`Continue with ${requestedNumber}? (Y/n)`);
+  if (!proceed) {
+    throw new Error('Increment creation cancelled by user.');
+  }
+}
+```
+
+**Example output for non-sequential number:**
+```
+⚠️  Increment Number Warning
+   ⚠️  Skipping 2 number(s): 0158 to 0159
+   💡 Consider using 0158 for sequential tracking.
+   💡 Non-sequential numbers can make it harder to track increment history.
+
+Continue with 0160? (Y/n)
 ```
 
 ### STEP 2: Check for Duplicates
