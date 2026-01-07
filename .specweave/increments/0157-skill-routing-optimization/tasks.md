@@ -263,7 +263,7 @@ Modify skill loader to parse and store visibility fields.
 ---
 
 ### T-010: Implement Skill Invocation Guards
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-01, AC-US4-02, AC-US4-05 | **Status**: [ ] pending | **Model**: 💎 Opus
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-01, AC-US4-02, AC-US4-05 | **Status**: [x] completed | **Model**: 💎 Opus
 
 Add enforcement logic to skill invoker to respect visibility controls.
 
@@ -302,7 +302,7 @@ describe('skill invocation guards', () => {
 ---
 
 ### T-011: Mark increment-planner as Internal
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-03, AC-US4-04 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-03, AC-US4-04 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Update increment-planner manifest to mark it as internal.
 
@@ -321,7 +321,7 @@ Update increment-planner manifest to mark it as internal.
 ---
 
 ### T-012: Filter Internal Skills in /plugin list
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-06, AC-US4-07 | **Status**: [ ] pending | **Model**: 💎 Opus
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-06, AC-US4-07 | **Status**: [x] completed | **Model**: 💎 Opus
 
 Update `/plugin list` command to hide internal skills by default.
 
@@ -345,7 +345,7 @@ Update `/plugin list` command to hide internal skills by default.
 ## Phase 5: Error Messages (US-005)
 
 ### T-013: Create Error Formatter Utility
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-01, AC-US5-02, AC-US5-03, AC-US5-05 | **Status**: [ ] pending | **Model**: 💎 Opus
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-01, AC-US5-02, AC-US5-03, AC-US5-05 | **Status**: [x] completed | **Model**: 💎 Opus
 
 Implement standardized error message formatting.
 
@@ -385,7 +385,7 @@ describe('error formatter', () => {
 ---
 
 ### T-014: Apply Formatter to /sw:plan Command
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-01, AC-US5-04 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-01, AC-US5-04 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Update /sw:plan error handling to use formatter.
 
@@ -404,7 +404,7 @@ Update /sw:plan error handling to use formatter.
 ---
 
 ### T-015: Apply Formatter to Other Commands
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-05 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-05 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Apply error formatter to remaining commands for consistency.
 
@@ -424,7 +424,7 @@ Apply error formatter to remaining commands for consistency.
 ## Phase 6: Documentation (US-006)
 
 ### T-016: Update /sw:increment Documentation
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-01 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-01 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Ensure /sw:increment docs accurately reflect correct workflow.
 
@@ -442,7 +442,7 @@ Ensure /sw:increment docs accurately reflect correct workflow.
 ---
 
 ### T-017: Update /sw:plan Documentation
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-02 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-02 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Clarify that /sw:plan is for existing increments only.
 
@@ -460,7 +460,7 @@ Clarify that /sw:plan is for existing increments only.
 ---
 
 ### T-018: Add Workflow Diagram to CLAUDE.md
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-03 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-03 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Create visual workflow diagram for increment creation.
 
@@ -478,7 +478,7 @@ Create visual workflow diagram for increment creation.
 ---
 
 ### T-019: Document increment-planner Skill
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-04 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-04 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Add comprehensive documentation to increment-planner skill.
 
@@ -496,7 +496,7 @@ Add comprehensive documentation to increment-planner skill.
 ---
 
 ### T-020: Update Workflow Examples in CLAUDE.md
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-05 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-05 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Update all workflow examples in CLAUDE.md to use correct commands.
 
@@ -516,7 +516,7 @@ Update all workflow examples in CLAUDE.md to use correct commands.
 ## Testing Phase
 
 ### T-021: Write Unit Tests
-**User Story**: All | **Satisfies ACs**: All | **Status**: [ ] pending | **Model**: 💎 Opus
+**User Story**: All | **Satisfies ACs**: All | **Status**: [x] completed | **Model**: 💎 Opus
 
 Create comprehensive unit test suite for all new components.
 

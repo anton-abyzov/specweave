@@ -40,6 +40,29 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
    - Increment is not COMPLETED/ABANDONED
    - plan.md/tasks.md don't exist (unless --force)
 
+   **Error Handling (v1.0.102+):**
+   ```typescript
+   import { ERROR_MESSAGES, formatError } from './src/utils/error-formatter.js';
+
+   // If spec.md not found
+   if (!specExists) {
+     formatError(ERROR_MESSAGES.SPEC_NOT_FOUND(incrementId));
+     return;
+   }
+
+   // If increment not found
+   if (!incrementExists) {
+     formatError(ERROR_MESSAGES.INCREMENT_NOT_FOUND(incrementId));
+     return;
+   }
+
+   // If user tries to use /sw:plan for NEW increments
+   if (userIsCreatingNew) {
+     formatError(ERROR_MESSAGES.WRONG_COMMAND_FOR_NEW_INCREMENT());
+     return;
+   }
+   ```
+
 3. **Generate plan.md** (via Architect Agent):
    - Technical approach
    - Architecture design

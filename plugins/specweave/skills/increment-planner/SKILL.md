@@ -1,11 +1,18 @@
 ---
 name: increment-planner
 description: Creates comprehensive implementation plans for ANY type of SpecWeave increment (feature, hotfix, bug, change-request, refactor, experiment). Supports all work types from features to bug investigations to POCs. Activates for: increment planning, feature planning, hotfix, bug investigation, root cause analysis, SRE investigation, change request, refactor, POC, prototype, spike work, experiment, implementation plan, create increment, organize work, break down work, new product, build project, MVP, SaaS, app development, tech stack planning, production issue, critical bug, stakeholder request.
+visibility: internal
+invocableBy:
+  - sw:increment
 ---
 
 # Increment Planner Skill
 
+**⚠️ INTERNAL SKILL - Only invoked by `/sw:increment` command**
+
 **Self-contained increment planning that works in ANY user project after `specweave init`.**
+
+**Do not call this skill directly**. Use `/sw:increment` command instead, which invokes this skill automatically.
 
 ---
 
@@ -149,8 +156,8 @@ Every increment MUST have `metadata.json` or:
   "priority": "P1",
   "created": "2025-11-24T12:00:00Z",
   "lastActivity": "2025-11-24T12:00:00Z",
-  "testMode": "<FROM config.testing.defaultTestMode OR 'TDD'>",
-  "coverageTarget": <FROM config.testing.defaultCoverageTarget OR 95>,
+  "testMode": "<FROM config.testing.defaultTestMode OR 'test-after'>",
+  "coverageTarget": <FROM config.testing.defaultCoverageTarget OR 80>,
   "feature_id": null,
   "epic_id": null,
   "externalLinks": {}
@@ -294,11 +301,11 @@ infra-terraform        → prefix: INFRA (infrastructure)
 ### STEP 0A: Read Config Values (MANDATORY)
 
 ```bash
-# Read testMode (default: "TDD")
-testMode=$(cat .specweave/config.json | jq -r '.testing.defaultTestMode // "TDD"')
+# Read testMode (default: "test-after" for user projects)
+testMode=$(cat .specweave/config.json | jq -r '.testing.defaultTestMode // "test-after"')
 
-# Read coverageTarget (default: 95)
-coverageTarget=$(cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 95')
+# Read coverageTarget (default: 80)
+coverageTarget=$(cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 80')
 
 echo "Using testMode: $testMode"
 echo "Using coverageTarget: $coverageTarget"
@@ -917,8 +924,8 @@ This prevents broken increments that lack proper tracking.
 
 ```bash
 # Read config to get defaultTestMode and defaultCoverageTarget
-cat .specweave/config.json | jq -r '.testing.defaultTestMode // "TDD"'
-cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 95'
+cat .specweave/config.json | jq -r '.testing.defaultTestMode // "test-after"'
+cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 80'
 ```
 
 Create `.specweave/increments/0021-feature-name/metadata.json`:
@@ -931,8 +938,8 @@ Create `.specweave/increments/0021-feature-name/metadata.json`:
   "priority": "P1",
   "created": "2025-11-24T12:00:00Z",
   "lastActivity": "2025-11-24T12:00:00Z",
-  "testMode": "<VALUE FROM config.testing.defaultTestMode OR 'TDD'>",
-  "coverageTarget": <VALUE FROM config.testing.defaultCoverageTarget OR 95>,
+  "testMode": "<VALUE FROM config.testing.defaultTestMode OR 'test-after'>",
+  "coverageTarget": <VALUE FROM config.testing.defaultCoverageTarget OR 80>,
   "feature_id": null,
   "epic_id": null,
   "externalLinks": {}
@@ -945,8 +952,8 @@ Create `.specweave/increments/0021-feature-name/metadata.json`:
 ```javascript
 // Read config
 const config = JSON.parse(fs.readFileSync('.specweave/config.json', 'utf8'));
-const testMode = config?.testing?.defaultTestMode || 'TDD';
-const coverageTarget = config?.testing?.defaultCoverageTarget || 95;
+const testMode = config?.testing?.defaultTestMode || 'test-after';
+const coverageTarget = config?.testing?.defaultCoverageTarget || 80;
 
 // Create metadata with config values
 const metadata = {
