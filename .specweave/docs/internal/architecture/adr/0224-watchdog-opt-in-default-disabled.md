@@ -1,9 +1,10 @@
-# ADR-0224: Watchdog Opt-In (Default Disabled)
+# ADR-0224: Watchdog Complete Removal
 
 **Status**: Accepted
 **Date**: 2026-01-07
 **Deciders**: Anton Abyzov, Claude Code
 **Context**: ADR-0141 (Session Registry), ADR-0159 (VSCode Extension)
+**Update**: Initially disabled by default, now completely removed
 
 ---
 
@@ -52,38 +53,22 @@ antonabyzov  91239  bash .../session-watchdog.sh --daemon
 
 ## Decision
 
-**Make watchdog OPT-IN ONLY** (default disabled).
+**Completely remove watchdog** from the codebase.
 
-### Implementation
+### Files Removed
 
-1. **Wrap watchdog startup in environment check**:
-   ```bash
-   # plugins/specweave/hooks/v2/dispatchers/session-start.sh
-   if [[ "${SPECWEAVE_ENABLE_WATCHDOG:-0}" == "1" ]]; then
-     # Start watchdog daemon
-   fi
-   ```
-
-2. **Skip session registry in VSCode/CI contexts**:
-   ```typescript
-   // src/utils/session-registry.ts
-   if (shouldSkipSessionRegistry()) {
-     this.isValid = false; // Don't create .specweave/state
-     return;
-   }
-   ```
-
-3. **Document opt-in for power users**:
-   ```bash
-   # Enable watchdog for CLI multi-process scenarios
-   export SPECWEAVE_ENABLE_WATCHDOG=1
-   ```
+1. **Watchdog daemon**: `plugins/specweave/scripts/session-watchdog.sh`
+2. **CLI tools**: `src/cli/check-watchdog.ts`, `src/cli/register-session.ts`
+3. **Session registry**: `src/utils/session-registry.ts`, `src/types/session.ts`
+4. **Environment detection**: `src/utils/environment-detection.ts`
+5. **Tests**: All watchdog-related test files
+6. **Cleanup scripts**: `.specweave/scripts/cleanup-existing-zombies.sh`
+7. **Hook integration**: Removed from `plugins/specweave/hooks/v2/dispatchers/session-start.sh`
 
 ### Migration Path
 
-**Existing users**: Watchdog automatically disabled on next session start.
-**Power users**: Can opt-in via environment variable if needed.
-**VSCode users**: No action needed (extension handles lifecycle).
+**All users**: Watchdog completely removed - no daemons, no opt-in, no configuration.
+**Stuck sessions**: Use VSCode Extension Host restart (Cmd+Shift+P → "Restart Extension Host")
 
 ---
 
@@ -99,14 +84,11 @@ antonabyzov  91239  bash .../session-watchdog.sh --daemon
 
 ### Negative
 
-❌ **No automatic stuck session detection** - Users must manually check `/sw:jobs`
-❌ **Power users need opt-in** - Extra step for CLI multi-process scenarios
+❌ **No automatic stuck session detection** - Users restart Extension Host manually
 
 ### Neutral
 
-🔄 **Session registry still exists** - Used for `/sw:jobs` status display
-🔄 **Cleanup scripts still available** - Manual recovery when needed
-🔄 **Watchdog code preserved** - Can be re-enabled for specific use cases
+🔄 **VSCode handles everything** - No user action needed for normal operation
 
 ---
 
@@ -116,7 +98,7 @@ antonabyzov  91239  bash .../session-watchdog.sh --daemon
 **Rejected** - Adds complexity (PID tracking, auto-termination logic) for minimal value.
 
 ### Alternative 2: Remove Watchdog Entirely
-**Deferred** - Keep code available for power users, but disable by default.
+**ACCEPTED** - Complete removal is simpler and eliminates all maintenance burden.
 
 ### Alternative 3: VSCode-Only Disabling
 **Rejected** - CLI users also don't need persistent daemons in most scenarios.
@@ -135,25 +117,23 @@ antonabyzov  91239  bash .../session-watchdog.sh --daemon
 ## Verification
 
 ```bash
-# Before fix: 8 zombie watchdog processes
+# Before removal: 8 zombie watchdog processes
 $ ps aux | grep watchdog | wc -l
 8
 
-# After fix: 0 watchdog processes (disabled by default)
+# After removal: Code doesn't exist
+$ ls plugins/specweave/scripts/session-watchdog.sh
+# No such file or directory
+
+# No watchdog processes possible
 $ ps aux | grep watchdog | wc -l
 0
-
-# Opt-in still works for power users
-$ export SPECWEAVE_ENABLE_WATCHDOG=1
-$ # Start Claude Code session
-$ ps aux | grep watchdog | wc -l
-1  # Single watchdog daemon as expected
 ```
 
 ---
 
 ## Notes
 
-**VSCode users (99% of users)**: Extension manages lifecycle → Watchdog unnecessary.
-**CLI users (1% of users)**: Can opt-in if multi-process monitoring needed.
-**Default behavior**: Clean, simple, no daemons → Users control their environment.
+**All users**: VSCode extension manages lifecycle → No watchdog needed.
+**Code removed**: Eliminates maintenance burden, prevents accidental re-enabling.
+**Result**: Zero daemons, zero pollution, zero complexity.
