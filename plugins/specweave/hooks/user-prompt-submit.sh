@@ -1,17 +1,23 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v0.33.0 - SCRIPT DELEGATION)
+# SpecWeave UserPromptSubmit Hook (v0.33.1 - INSTANT EXECUTION)
 # Fires BEFORE user's command executes (prompt-based hook)
-# Purpose: Discipline validation, context injection, command suggestions
+# Purpose: Discipline validation, context injection, instant command execution
 #
 # FEATURES:
-# - v0.33.0: Script delegation - status commands bypass LLM entirely (<1s)
+# - v0.33.1: Unified instant execution - scripts run in hook for both CLI and VSCode
+# - v0.33.0: Script delegation pattern (now deprecated in favor of systemMessage)
 # - v0.26.13: jq for JSON parsing (10x faster than node -e)
 # - Single active increment detection (cached, not 4x!)
 # - Deferred heavy checks (SpecSyncManager only when needed)
 # - Ultra-fast early exits
 #
-# Performance: Status commands <1s (was 3+ min), other prompts <10ms
+# Performance: Status commands <100ms (was 3+ min), other prompts <10ms
+#
+# ARCHITECTURE:
+# - CLI: Uses "block" decision to display output and stop execution
+# - VSCode: Uses "approve" + "systemMessage" to display output without blocking
+# - Both paths execute scripts in hook - NO LLM involvement for instant commands
 
 set +e
 
@@ -72,14 +78,9 @@ is_vscode() {
 
 # /sw:jobs → Execute read-jobs.sh (pure bash, ~2ms)
 if echo "$PROMPT" | grep -qE "^/sw:jobs($| )"; then
-  # VSCode mode: Skip hook execution, let command file handle it (fixes blocked UI issue)
-  if is_vscode; then
-    echo '{"decision":"approve"}'
-    exit 0
-  fi
-
-  # CLI mode: Execute instantly and block with output
   ARGS=$(echo "$PROMPT" | sed 's|^/sw:jobs\s*||')
+
+  # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-jobs.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-jobs.sh" $ARGS 2>&1)
   elif [[ -f "$SCRIPTS_DIR/jobs.js" ]] && command -v node >/dev/null 2>&1; then
@@ -87,6 +88,15 @@ if echo "$PROMPT" | grep -qE "^/sw:jobs($| )"; then
   else
     OUTPUT="❌ No jobs script available"
   fi
+
+  # VSCode mode: Use systemMessage to display output without blocking execution
+  if is_vscode; then
+    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+    printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
+    exit 0
+  fi
+
+  # CLI mode: Use block decision
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
@@ -94,14 +104,9 @@ fi
 
 # /sw:progress → Execute read-progress.sh (pure bash, ~30ms)
 if echo "$PROMPT" | grep -qE "^/sw:progress($| )"; then
-  # VSCode mode: Skip hook execution, let command file handle it (fixes blocked UI issue)
-  if is_vscode; then
-    echo '{"decision":"approve"}'
-    exit 0
-  fi
-
-  # CLI mode: Execute instantly and block with output
   ARGS=$(echo "$PROMPT" | sed 's|^/sw:progress\s*||')
+
+  # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-progress.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-progress.sh" $ARGS 2>&1)
   elif [[ -f "$SCRIPTS_DIR/progress.js" ]] && command -v node >/dev/null 2>&1; then
@@ -109,6 +114,16 @@ if echo "$PROMPT" | grep -qE "^/sw:progress($| )"; then
   else
     OUTPUT="❌ No progress script available"
   fi
+
+  # VSCode mode: Use systemMessage to display output without blocking execution
+  # (block decision stops execution entirely in VSCode)
+  if is_vscode; then
+    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+    printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
+    exit 0
+  fi
+
+  # CLI mode: Use block decision (works correctly in CLI)
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
@@ -116,14 +131,9 @@ fi
 
 # /sw:status → Execute read-status.sh (pure bash, ~150ms)
 if echo "$PROMPT" | grep -qE "^/sw:status($| )"; then
-  # VSCode mode: Skip hook execution, let command file handle it (fixes blocked UI issue)
-  if is_vscode; then
-    echo '{"decision":"approve"}'
-    exit 0
-  fi
-
-  # CLI mode: Execute instantly and block with output
   ARGS=$(echo "$PROMPT" | sed 's|^/sw:status\s*||')
+
+  # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-status.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-status.sh" $ARGS 2>&1)
   elif [[ -f "$SCRIPTS_DIR/status.js" ]] && command -v node >/dev/null 2>&1; then
@@ -131,6 +141,15 @@ if echo "$PROMPT" | grep -qE "^/sw:status($| )"; then
   else
     OUTPUT="❌ No status script available"
   fi
+
+  # VSCode mode: Use systemMessage to display output without blocking execution
+  if is_vscode; then
+    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+    printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
+    exit 0
+  fi
+
+  # CLI mode: Use block decision
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
@@ -138,19 +157,23 @@ fi
 
 # /sw:workflow → Execute read-workflow.sh (pure bash, ~100ms)
 if echo "$PROMPT" | grep -qE "^/sw:workflow($| )"; then
-  # VSCode mode: Skip hook execution, let command file handle it (fixes blocked UI issue)
-  if is_vscode; then
-    echo '{"decision":"approve"}'
-    exit 0
-  fi
-
-  # CLI mode: Execute instantly and block with output
   ARGS=$(echo "$PROMPT" | sed 's|^/sw:workflow\s*||')
+
+  # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-workflow.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-workflow.sh" $ARGS 2>&1)
   else
     OUTPUT="❌ No workflow script available"
   fi
+
+  # VSCode mode: Use systemMessage to display output without blocking execution
+  if is_vscode; then
+    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+    printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
+    exit 0
+  fi
+
+  # CLI mode: Use block decision
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
@@ -158,19 +181,23 @@ fi
 
 # /sw:costs → Execute read-costs.sh (pure bash, ~50ms)
 if echo "$PROMPT" | grep -qE "^/sw:costs($| )"; then
-  # VSCode mode: Skip hook execution, let command file handle it (fixes blocked UI issue)
-  if is_vscode; then
-    echo '{"decision":"approve"}'
-    exit 0
-  fi
-
-  # CLI mode: Execute instantly and block with output
   ARGS=$(echo "$PROMPT" | sed 's|^/sw:costs\s*||')
+
+  # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-costs.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-costs.sh" $ARGS 2>&1)
   else
     OUTPUT="❌ No costs script available"
   fi
+
+  # VSCode mode: Use systemMessage to display output without blocking execution
+  if is_vscode; then
+    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+    printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
+    exit 0
+  fi
+
+  # CLI mode: Use block decision
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
@@ -178,19 +205,23 @@ fi
 
 # /sw:analytics → Execute read-analytics.sh (pure bash, ~50ms)
 if echo "$PROMPT" | grep -qE "^/sw:analytics($| )"; then
-  # VSCode mode: Skip hook execution, let command file handle it (fixes blocked UI issue)
-  if is_vscode; then
-    echo '{"decision":"approve"}'
-    exit 0
-  fi
-
-  # CLI mode: Execute instantly and block with output
   ARGS=$(echo "$PROMPT" | sed 's|^/sw:analytics\s*||')
+
+  # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-analytics.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-analytics.sh" $ARGS 2>&1)
   else
     OUTPUT="❌ No analytics script available"
   fi
+
+  # VSCode mode: Use systemMessage to display output without blocking execution
+  if is_vscode; then
+    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+    printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
+    exit 0
+  fi
+
+  # CLI mode: Use block decision
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
