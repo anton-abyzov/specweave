@@ -877,6 +877,21 @@ Wait for the skill to complete. Do NOT continue to Step 7 until the increment-pl
 **Self-Awareness Check (SpecWeave Contributors):**
 If you are working in the SpecWeave repository itself (detected via package.json name === 'specweave'), you should see warnings reminding you that changes affect the framework itself, not a user project.
 
+**Error Handling (v1.0.102+):**
+If errors occur, use standardized error messages for consistent UX:
+```typescript
+import { ERROR_MESSAGES, formatError } from './src/utils/error-formatter.js';
+
+// If user tries to plan existing increment with /sw:increment
+formatError(ERROR_MESSAGES.WRONG_COMMAND_FOR_EXISTING_INCREMENT(incrementId));
+
+// If invalid increment number format
+formatError(ERROR_MESSAGES.INVALID_INCREMENT_NUMBER(provided, expected));
+
+// If duplicate increment
+formatError(ERROR_MESSAGES.DUPLICATE_INCREMENT(incrementId));
+```
+
 ### Step 7: Alternative Approach (ONLY IF SKILL FAILS)
 
 **Only use this if Skill tool is unavailable or fails:**
