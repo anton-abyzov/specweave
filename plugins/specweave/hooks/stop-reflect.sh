@@ -86,16 +86,46 @@ run_reflection_async() {
     local transcript="$1"
     local reflect_script="$SCRIPT_DIR/../scripts/reflect.sh"
 
+    # ============================================
+    # PRE-FLIGHT VALIDATION (prevents silent failures)
+    # Following ADR-0189: validate BEFORE background spawn
+    # ============================================
+
+    # Check 1: Script exists
     if [ ! -f "$reflect_script" ]; then
-        log_reflect "warn" "Reflect script not found: $reflect_script"
-        return 0
+        log_reflect "error" "Reflect script not found: $reflect_script"
+        return 1
     fi
+
+    # Check 2: Script has valid bash syntax (CRITICAL - catches merge conflicts, syntax errors)
+    if ! bash -n "$reflect_script" 2>/dev/null; then
+        log_reflect "error" "Reflect script has syntax errors - reflection disabled"
+        log_reflect "error" "Run 'bash -n $reflect_script' to see errors"
+        log_reflect "error" "Check for unresolved merge conflicts or bash syntax issues"
+        return 1
+    fi
+
+    # Check 3: Transcript is readable
+    if [ ! -r "$transcript" ]; then
+        log_reflect "warn" "Transcript not readable: $transcript"
+        return 1
+    fi
+
+    # Check 4: jq is available (required for config parsing)
+    if ! command -v jq >/dev/null 2>&1; then
+        log_reflect "error" "jq not found - cannot parse reflect config"
+        return 1
+    fi
+
+    # ============================================
+    # BACKGROUND EXECUTION (validated, ready to run)
+    # ============================================
 
     # Get config values
     local confidence=$(jq -r '.confidenceThreshold // "medium"' "$REFLECT_CONFIG" 2>/dev/null || echo "medium")
     local max_learnings=$(jq -r '.maxLearningsPerSession // 10' "$REFLECT_CONFIG" 2>/dev/null || echo "10")
 
-    log_reflect "info" "Starting async reflection"
+    log_reflect "info" "Starting async reflection (pre-flight checks passed)"
 
     # Run in background - don't wait
     (
@@ -105,10 +135,12 @@ run_reflection_async() {
             --max "$max_learnings" \
             >> "$LOGS_DIR/auto-reflect.log" 2>&1
 
-        if [ $? -eq 0 ]; then
+        local exit_code=$?
+
+        if [ $exit_code -eq 0 ]; then
             log_reflect "info" "Reflection completed successfully"
         else
-            log_reflect "info" "Reflection completed with no new learnings"
+            log_reflect "warn" "Reflection exited with code $exit_code (check auto-reflect.log for details)"
         fi
     ) &
 

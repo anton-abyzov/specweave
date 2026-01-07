@@ -21,7 +21,7 @@ graph LR
 
 **Command**: `/sw:do`
 
-**Magic**: Auto-resumes from next incomplete task, updates docs automatically, validates continuously
+**Magic**: Auto-resumes from next incomplete task, **hooks update docs automatically**, validates continuously via quality gates
 
 ## The /sw:do Command: Just Works!
 
@@ -56,9 +56,10 @@ sequenceDiagram
 
 **Key features:**
 - ✅ **Smart resume**: Picks up where you left off
-- ✅ **Auto-doc update**: Hooks fire after each task
+- ✅ **Auto-doc update**: Hooks fire after each task (critical for quality!)
 - ✅ **Progress tracking**: Always know what's next
-- ✅ **Quality validation**: Tests run automatically
+- ✅ **Quality validation**: Tests run automatically via hooks
+- ✅ **Self-improving**: Reflect learns from corrections (enable with `/sw:reflect-on`)
 
 ## Step-by-Step Flow
 

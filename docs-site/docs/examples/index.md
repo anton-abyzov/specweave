@@ -10,7 +10,7 @@ keywords: [examples, use cases, real-world, production, mobile, microservices, b
 See how SpecWeave handles real production scenarios - from mobile apps to microservices to brownfield documentation.
 
 :::tip All Examples Are Real
-These aren't toy examples. They're based on actual SpecWeave increments from production projects, including SpecWeave itself (155+ features built with SpecWeave).
+These aren't toy examples. They're based on actual SpecWeave increments from production projects, including SpecWeave itself (150+ features built with SpecWeave).
 :::
 
 ---

@@ -207,10 +207,21 @@ You just experienced **spec-driven development**:
 - [Microservices Architecture](./examples/microservices.md) - Multi-repo coordination
 - [Brownfield Documentation](./examples/brownfield.md) - Document existing code
 
+### Power Features to Explore Next
+
+**Self-Improving AI (Reflect)**
+```bash
+/sw:reflect-on    # Enable automatic learning from corrections
+```
+Claude will learn your patterns and preferences, getting smarter over time. [Learn more →](./guides/self-improving-skills.md)
+
+**Hooks System**
+Customize behavior at every phase — session start, prompt submit, tool calls, and session end. Hooks enable autonomous validation and quality gates. [Learn more →](./guides/hooks.md)
+
 ### Join the Community
 
 - **Discord**: [Join our community](https://discord.gg/UYg4BGJ65V)
-- **GitHub**: [Browse 155+ increments](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)
+- **GitHub**: [Browse 150+ increments](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments) (dogfooding!)
 - **YouTube**: [Video tutorials](https://www.youtube.com/@antonabyzov)
 
 ---
@@ -311,10 +322,11 @@ JIRA_TOKEN=xxxxx          # For JIRA sync (optional)
 | **Autonomous Execution** | Hours of work autonomously | Manual or one-shot |
 | **Traceability** | Every line → requirement | Chat history only |
 | **Test Validation** | Embedded + auto-run | Maybe later |
-| **Living Docs** | Auto-updated | Manual or none |
+| **Living Docs** | Auto-updated via hooks | Manual or none |
+| **Self-Improving AI** | Learns from corrections (Reflect) | Starts from zero every session |
 | **Multi-Repo** | Native support | Single repo only |
 | **External Sync** | GitHub/JIRA bidirectional | Manual updates |
-| **Proven at Scale** | 155+ features self-built | Unknown |
+| **Proven at Scale** | 150+ features self-built | Unknown |
 
 ---
 

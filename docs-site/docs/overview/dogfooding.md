@@ -190,7 +190,8 @@ pie title Code Distribution by Module
 1. **[GitHub Repository](https://github.com/anton-abyzov/specweave)** — Every commit visible
 2. **[DORA Metrics](/docs/metrics)** — Real-time dashboard
 3. **[Changelog](/changelog)** — 65+ releases documented
-4. **[ADR Archive](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/docs/internal/architecture/adr)** — 140+ architectural decisions
+4. **[ADR Archive](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/docs/internal/architecture/adr)** — 150+ architectural decisions
+5. **[Increments Archive](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments)** — 150+ features built with SpecWeave
 
 ---
 

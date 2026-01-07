@@ -28,7 +28,7 @@ sidebar_position: 1
 [![Change Failure Rate](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.changeFailureRate.value&label=Change%20Failure%20Rate&suffix=%25&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
 [![MTTR](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.mttr.value&label=MTTR&suffix=min&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
 
-**SpecWeave builds SpecWeave using SpecWeave.** These are real metrics from our own development.
+**SpecWeave builds SpecWeave using SpecWeave.** These are real metrics from our own development — **150+ increments** and counting!
 
 **[Live Dashboard](https://spec-weave.com/docs/metrics)** | **[Detailed Report](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/metrics/dora-report.md)**
 
@@ -210,8 +210,9 @@ Run `/sw:auto` and watch **real-time labels** show progress, test results, and s
 
 ### 📚 Permanent Knowledge
 - **[Brownfield](/docs/glossary/terms/brownfield) + [Greenfield](/docs/glossary/terms/greenfield)** — Works with existing codebases, not just new projects
-- **Living Documentation** — Specs auto-update after every task via hooks
-- **🧠 Self-Improving Skills** — [Claude learns from corrections](/docs/guides/self-improving-skills), applies patterns automatically in future sessions
+- **Living Documentation** — Specs auto-update after every task via hooks (critical for quality)
+- **🧠 Self-Improving Skills** — [Claude learns from corrections](/docs/guides/self-improving-skills) with `/sw:reflect`, applies patterns automatically in future sessions
+- **🪝 Powerful Hooks System** — Customize behavior at every phase (start, prompt submit, tool calls, session end)
 
 ### ⚡ Performance & Scale
 - **70%+ Token Reduction** — Progressive loading, context optimizer, sub-agent isolation
@@ -274,13 +275,30 @@ As a user, I want to toggle dark mode so that I can reduce eye strain at night.
 - **Security Agent**: Threat modeling, OWASP, vulnerability assessment
 - **DevOps Agent**: [IaC](/docs/glossary/terms/iac), [Kubernetes](/docs/glossary/terms/kubernetes), [CI/CD](/docs/glossary/terms/ci-cd) pipelines
 
-### Living Documentation
+### Living Documentation & Hooks
 
-Documentation updates **after every task** via hooks:
-- Strategic specs sync to `.specweave/docs/`
-- ADRs captured automatically
-- Runbooks and SLOs generated
-- No manual doc updates ever
+Documentation updates **after every task** via the powerful hooks system:
+- **Strategic specs sync** to `.specweave/docs/` automatically
+- **ADRs captured** during architectural decisions
+- **Runbooks and SLOs** generated from operations work
+- **Custom hooks** at session start, prompt submit, tool calls, and session end
+- **No manual doc updates** — hooks ensure docs are always current
+
+**Hooks are critical to SpecWeave's quality system.** They enable autonomous validation, test execution, and quality gates that make `/sw:auto` reliable for multi-hour sessions.
+
+### Self-Improving AI with Reflect
+
+**Correct once, never again.** SpecWeave's Reflect system enables Claude to learn from your corrections:
+
+- **Pattern Learning**: Claude remembers naming conventions, architectural decisions, and code patterns
+- **Automatic Application**: Learned patterns apply in future sessions without reminders
+- **Centralized Memory**: Knowledge stored in `.specweave/memory/*.md` files (project and global)
+- **Signal Detection**: High-confidence corrections and approvals automatically extracted
+- **Compounding Knowledge**: AI gets smarter over time as it learns your preferences
+
+Enable with `/sw:reflect-on` for automatic learning, or `/sw:reflect` to manually capture session learnings.
+
+**[Learn more about Reflect →](/docs/guides/self-improving-skills)**
 
 ### [Quality Gates](/docs/glossary/terms/quality-gate)
 
@@ -348,8 +366,12 @@ Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically an
 ## Requirements
 
 - **Node.js 20.12.0+** (we recommend Node.js 22 LTS) — [upgrade guide](/docs/guides/troubleshooting/common-errors#node-version-error)
-- Claude Code with **Claude Opus 4.5** (recommended) — [released Nov 2026](https://www.anthropic.com/news/claude-opus-4-5)
+- **Claude Code** (VSCode extension or CLI) with **Claude Opus 4.5** (recommended) — [released Nov 2026](https://www.anthropic.com/news/claude-opus-4-5)
 - Git repository
+
+:::tip Best Tool for SpecWeave
+**Claude Code is the best AI tool for SpecWeave** — native hooks support, task management, and multi-hour autonomous sessions. While SpecWeave works with other AI tools (see `md.template` instructions), Claude Code + SpecWeave provides the optimal experience with autonomous execution, stop hooks, and quality gates.
+:::
 
 :::caution Node.js Version
 If you see `SyntaxError: Unexpected token 'with'`, your Node.js is too old. Run `node --version` — you need **20.12.0 or higher**. See [upgrade instructions](/docs/guides/troubleshooting/common-errors#node-version-error).

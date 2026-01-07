@@ -1405,7 +1405,7 @@ ls .specweave/increments/ | head -30
 0155-reflect-enhancement/
 ```
 
-> "155 increments. Every single feature in SpecWeave was built using SpecWeave.
+> "150+ increments and counting. Every single feature in SpecWeave was built using SpecWeave.
 >
 > The CLI? Increment 0002. The hook system? Increment 0027. The GitHub sync? Increment 0089.
 >
@@ -2000,7 +2000,7 @@ Links:
 
 Dogfooding stats:
 - 186,719 lines of code
-- 155+ increments built with SpecWeave
+- 150+ increments built with SpecWeave (and counting!)
 - 74 Architecture Decision Records
 - 100 deploys/month (Elite DORA tier)
 - 0% failure rate across 65 releases

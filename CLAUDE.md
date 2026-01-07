@@ -46,8 +46,6 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 6. **⛔ Increment cleanliness**: ONLY 4 files at increment root (metadata.json, spec.md, plan.md, tasks.md). ALL other .md files → `reports/`, logs → `logs/`, scripts → `scripts/`
 7. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run. NEVER create `.specweave/` in parent, nested, or unrelated directories. Check `config.json` exists before creating ANY `.specweave/` subfolders.
 8. **⛔ Marketplace refresh**: ALWAYS use `specweave refresh-marketplace` CLI command. NEVER suggest `scripts/refresh-marketplace.sh` - end users don't have the scripts folder (npm global install).
-9. **⛔ Self-awareness (v1.0.102+)**: SpecWeave detects when running in its own repository. Commands show contextual warnings for framework development vs user projects. See `src/utils/repository-detector.ts` for 3-signal detection.
-10. **⛔ Error formatting (v1.0.102+)**: Use standardized error messages via `src/utils/error-formatter.ts` for consistent UX. Import `ERROR_MESSAGES` and `formatError()` in command implementations.
 <!-- SW:END:rules -->
 
 <!-- SW:SECTION:workflow version="1.0.102" -->
@@ -335,9 +333,6 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | No GITHUB_TOKEN | Check `.env` file or run `gh auth login` |
 | Edits blocked in repositories/ | Add `"additionalDirectories":["repositories"]` + `Write(//**)`, `Edit(//**)` to `.claude/settings.json` |
 | Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
-| Wrong skill called for new increment | Use `/sw:increment` (calls `increment-planner`), NOT `/sw:plan` (for existing increments only) |
-| Non-sequential increment numbers | Check validation warnings, use suggested sequential number, or confirm intentional skip |
-| Internal skill called directly | Don't call `increment-planner` directly - use `/sw:increment` command which invokes it |
 <!-- SW:END:troubleshooting -->
 
 <!-- SW:SECTION:principles version="1.0.102" -->
