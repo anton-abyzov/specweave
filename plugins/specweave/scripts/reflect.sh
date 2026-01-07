@@ -99,7 +99,6 @@ cleanup_temp() {
 # Set trap for cleanup on script exit
 trap cleanup_temp EXIT INT TERM
 
->>>>>>> df087427 (feat(auto): make stop hook labels visible via systemMessage (v2.9))
 # ============================================================================
 # LOGGING (with rotation)
 # ============================================================================
