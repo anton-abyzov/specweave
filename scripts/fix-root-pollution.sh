@@ -71,13 +71,25 @@ ACTIVE_INCREMENT=$(ls -1 .specweave/increments/ 2>/dev/null | grep "^[0-9]" | so
 if [ -n "$ACTIVE_INCREMENT" ]; then
   TARGET_DIR=".specweave/increments/$ACTIVE_INCREMENT/reports"
   echo -e "${BLUE}📁 Detected active increment: $ACTIVE_INCREMENT${NC}"
-else
-  TARGET_DIR=".specweave/increments/0000-adhoc/reports"
-  echo -e "${BLUE}📁 Using adhoc increment (no active increment found)${NC}"
-fi
 
-# Create target directory if it doesn't exist
-mkdir -p "$TARGET_DIR"
+  # Create reports directory if it doesn't exist
+  mkdir -p "$TARGET_DIR"
+else
+  # 🚨 CRITICAL FIX (v1.0.104): If no active increment exists, EXIT with clear instructions
+  # NEVER create adhoc increments automatically - user must create them explicitly
+  echo -e "${RED}❌ ERROR: No active increment found!${NC}"
+  echo -e "${YELLOW}⚠️  Root pollution files cannot be automatically moved without an active increment.${NC}"
+  echo ""
+  echo -e "${BLUE}Please create an increment first, then re-run this script:${NC}"
+  echo -e "  ${GREEN}1.${NC} Create a new increment:  ${BLUE}specweave increment \"your-feature-name\"${NC}"
+  echo -e "  ${GREEN}2.${NC} Or use an existing one: ${BLUE}specweave list${NC}"
+  echo -e "  ${GREEN}3.${NC} Then run this script:    ${BLUE}bash scripts/fix-root-pollution.sh${NC}"
+  echo ""
+  echo -e "${YELLOW}💡 TIP: You can also manually move files to any increment's reports folder:${NC}"
+  echo -e "   ${BLUE}mv FILE.md .specweave/increments/0001-project-setup/reports/${NC}"
+  echo ""
+  exit 1
+fi
 
 echo -e "${YELLOW}🎯 Target directory: $TARGET_DIR${NC}"
 echo ""

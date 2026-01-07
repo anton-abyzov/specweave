@@ -369,6 +369,43 @@ export class IncrementNumberManager {
   }
 
   /**
+   * Validate that an increment number is valid (must be >= 0001, never 0000).
+   *
+   * CRITICAL VALIDATION (v1.0.104):
+   * Increment numbers MUST start from 0001. 0000 is PERMANENTLY FORBIDDEN.
+   * This prevents structural violations and invalid increment creation.
+   *
+   * @param number - Increment number to validate (4-digit string)
+   * @throws Error if number is 0000
+   *
+   * @example
+   * ```typescript
+   * IncrementNumberManager.validateIncrementNumber('0001'); // OK
+   * IncrementNumberManager.validateIncrementNumber('0042'); // OK
+   * IncrementNumberManager.validateIncrementNumber('0000'); // THROWS ERROR
+   * ```
+   *
+   * @since 1.0.104
+   * @private
+   */
+  private static validateIncrementNumber(number: string): void {
+    const numericValue = parseInt(number, 10);
+    if (numericValue === 0) {
+      throw new Error(
+        `🚨 INVALID INCREMENT NUMBER: 0000 is FORBIDDEN!\n\n` +
+        `Increment numbers MUST start from 0001, never 0000.\n\n` +
+        `REASON: 0000 violates SpecWeave increment structure requirements.\n` +
+        `  - Increments must have spec.md, tasks.md, and metadata.json\n` +
+        `  - 0000 is reserved and should never be created\n` +
+        `  - All increments must follow sequential numbering from 0001+\n\n` +
+        `FIX: The next available increment number will be used automatically.\n` +
+        `If you're seeing this error from a script, the script needs to be fixed\n` +
+        `to use proper increment creation APIs instead of raw filesystem operations.`
+      );
+    }
+  }
+
+  /**
    * Generate a full increment folder name.
    *
    * @param name - Kebab-case increment name (e.g., "dora-metrics-fix")
@@ -408,6 +445,9 @@ export class IncrementNumberManager {
     const number = projectId
       ? this.getNextIncrementNumberForProject(projectRoot, projectId, { isExternal })
       : this.getNextIncrementNumber(projectRoot);
+
+    // 🚨 CRITICAL VALIDATION (v1.0.104): Block 0000 at creation time
+    this.validateIncrementNumber(number);
 
     const suffix = isExternal ? 'E' : '';
     const id = `${number}${suffix}-${name}`;
@@ -450,6 +490,9 @@ export class IncrementNumberManager {
         `Expected format: "XXXX-name" (e.g., "0141-my-feature") or "XXXXE-name" for external items.`
       );
     }
+
+    // 🚨 CRITICAL VALIDATION (v1.0.104): Block 0000 at validation time
+    this.validateIncrementNumber(number);
 
     const duplicates = this.findDuplicates(number, projectRoot);
 
