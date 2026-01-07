@@ -110,16 +110,16 @@ Implement intelligent project type detection and smart completion conditions for
 **As a** developer building a web app, I want E2E coverage tracked automatically so that I know which routes/viewports are untested.
 
 **Acceptance Criteria**:
-- [ ] **AC-US5-01**: Generate `.e2e-coverage.json` manifest on first E2E test run
-- [ ] **AC-US5-02**: Auto-detect framework (Playwright, Cypress, Detox, Maestro)
-- [ ] **AC-US5-03**: Track route coverage (which routes tested)
-- [ ] **AC-US5-04**: Track viewport coverage (mobile, tablet, desktop)
-- [ ] **AC-US5-05**: Track action coverage (clicks, forms, navigation)
-- [ ] **AC-US5-06**: Update manifest automatically via custom reporter
-- [ ] **AC-US5-07**: Calculate coverage percentage (routes tested / total routes)
-- [ ] **AC-US5-08**: Block completion if coverage below threshold (default: 70%)
-- [ ] **AC-US5-09**: Show untested routes in stop hook output
-- [ ] **AC-US5-10**: Warn about missing viewport coverage (non-blocking)
+- [x] **AC-US5-01**: Generate `.e2e-coverage.json` manifest on first E2E test run
+- [x] **AC-US5-02**: Auto-detect framework (Playwright, Cypress, Detox, Maestro)
+- [x] **AC-US5-03**: Track route coverage (which routes tested)
+- [x] **AC-US5-04**: Track viewport coverage (mobile, tablet, desktop)
+- [x] **AC-US5-05**: Track action coverage (clicks, forms, navigation)
+- [x] **AC-US5-06**: Update manifest automatically via custom reporter
+- [x] **AC-US5-07**: Calculate coverage percentage (routes tested / total routes)
+- [x] **AC-US5-08**: Block completion if coverage below threshold (default: 70%)
+- [x] **AC-US5-09**: Show untested routes in stop hook output
+- [x] **AC-US5-10**: Warn about missing viewport coverage (non-blocking)
 
 ### US-006: Configuration & Overrides
 **Project**: specweave-dev
@@ -127,16 +127,16 @@ Implement intelligent project type detection and smart completion conditions for
 **As a** developer, I want to configure smart defaults globally or per-increment so that I can customize enforcement for specific projects.
 
 **Acceptance Criteria**:
-- [ ] **AC-US6-01**: Add `auto.completionConditions` section to `.specweave/config.json`
-- [ ] **AC-US6-02**: Support `enforceDefaults: true/false` (default: true after v1.1.0)
-- [ ] **AC-US6-03**: Support `overrideMode: "replace" | "add-only" | "merge"` (default: merge)
-- [ ] **AC-US6-04**: Support `projectType: "auto" | <explicit-type>` (default: auto)
-- [ ] **AC-US6-05**: Support `customConditions: []` for additional user-defined conditions
-- [ ] **AC-US6-06**: Increment-specific overrides in `metadata.json`
-- [ ] **AC-US6-07**: CLI flags have highest precedence (override config)
-- [ ] **AC-US6-08**: Config validation on load (reject invalid types/thresholds)
-- [ ] **AC-US6-09**: Merge logic preserves mandatory flag (user can't remove mandatory conditions)
-- [ ] **AC-US6-10**: Show effective conditions in `/sw:auto-status`
+- [x] **AC-US6-01**: Add `auto.completionConditions` section to `.specweave/config.json`
+- [x] **AC-US6-02**: Support `enforceDefaults: true/false` (default: true after v1.1.0)
+- [x] **AC-US6-03**: Support `overrideMode: "replace" | "add-only" | "merge"` (default: merge)
+- [x] **AC-US6-04**: Support `projectType: "auto" | <explicit-type>` (default: auto)
+- [x] **AC-US6-05**: Support `customConditions: []` for additional user-defined conditions
+- [x] **AC-US6-06**: Increment-specific overrides in `metadata.json`
+- [x] **AC-US6-07**: CLI flags have highest precedence (override config)
+- [x] **AC-US6-08**: Config validation on load (reject invalid types/thresholds)
+- [x] **AC-US6-09**: Merge logic preserves mandatory flag (user can't remove mandatory conditions)
+- [x] **AC-US6-10**: Show effective conditions in `/sw:auto-status`
 
 ### US-007: Completion Reporting
 **Project**: specweave-dev
@@ -144,16 +144,16 @@ Implement intelligent project type detection and smart completion conditions for
 **As a** developer, I want detailed completion reports showing which conditions passed/failed so that I understand why auto mode is blocked or completed.
 
 **Acceptance Criteria**:
-- [ ] **AC-US7-01**: Generate completion report on session end (`.specweave/logs/auto-{sessionId}-summary.md`)
-- [ ] **AC-US7-02**: Show detected project type and confidence score
-- [ ] **AC-US7-03**: Show all completion conditions with pass/fail status
-- [ ] **AC-US7-04**: Show test execution stats (passed/failed counts by type)
-- [ ] **AC-US7-05**: Show E2E coverage stats (route %, viewport %, untested list)
-- [ ] **AC-US7-06**: Show auto-heal summary (attempts, successes, failures)
-- [ ] **AC-US7-07**: Show quality metrics (code coverage %, E2E coverage %)
-- [ ] **AC-US7-08**: Include recommendations for future improvements
-- [ ] **AC-US7-09**: Export to JSON format (machine-readable)
-- [ ] **AC-US7-10**: Include timeline of major events (session start, condition checks, completion)
+- [x] **AC-US7-01**: Generate completion report on session end (`.specweave/logs/auto-{sessionId}-summary.md`)
+- [x] **AC-US7-02**: Show detected project type and confidence score
+- [x] **AC-US7-03**: Show all completion conditions with pass/fail status
+- [x] **AC-US7-04**: Show test execution stats (passed/failed counts by type)
+- [x] **AC-US7-05**: Show E2E coverage stats (route %, viewport %, untested list)
+- [x] **AC-US7-06**: Show auto-heal summary (attempts, successes, failures)
+- [x] **AC-US7-07**: Show quality metrics (code coverage %, E2E coverage %)
+- [x] **AC-US7-08**: Include recommendations for future improvements
+- [x] **AC-US7-09**: Export to JSON format (machine-readable)
+- [x] **AC-US7-10**: Include timeline of major events (session start, condition checks, completion)
 
 ## Functional Requirements
 
