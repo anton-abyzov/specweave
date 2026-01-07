@@ -250,7 +250,7 @@ Fix these tests and re-run: npx playwright test
 ## Phase 5: E2E Coverage Enhancements (5 tasks)
 
 ### T-025: Enhance E2E coverage manifest generation
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-01 to AC-US5-03 | **Status**: [ ] pending
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-01 to AC-US5-03 | **Status**: [x] completed
 **Test**: Given first E2E run → When complete → Then .e2e-coverage.json created
 
 - Auto-detect framework from config files
@@ -259,7 +259,7 @@ Fix these tests and re-run: npx playwright test
 - Track generation timestamp
 
 ### T-026: Implement Playwright custom reporter
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-06 | **Status**: [ ] pending
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-06 | **Status**: [x] completed
 **Test**: Given Playwright test run → When tests complete → Then manifest updated
 
 - Create `@specweave/playwright-coverage-reporter`
@@ -268,7 +268,7 @@ Fix these tests and re-run: npx playwright test
 - Update manifest atomically
 
 ### T-027: Implement route and viewport tracking
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-03, AC-US5-04 | **Status**: [ ] pending
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-03, AC-US5-04 | **Status**: [x] completed
 **Test**: Given test visits route on mobile → When complete → Then manifest shows mobile viewport covered
 
 - Track which routes tested (from page.goto() calls)
@@ -277,7 +277,7 @@ Fix these tests and re-run: npx playwright test
 - Warn about missing viewports (non-blocking)
 
 ### T-028: Add untested route detection to stop hook
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-09 | **Status**: [ ] pending
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-09 | **Status**: [x] completed
 **Test**: Given 45% coverage → When stop hook → Then shows untested route list and blocks
 
 ```
@@ -294,7 +294,7 @@ Add E2E tests for these routes to continue.
 ```
 
 ### T-029: Write E2E coverage tracking tests
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-01 to AC-US5-10 | **Status**: [ ] pending
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-01 to AC-US5-10 | **Status**: [x] completed
 **Test**: Given E2E tests → When run with reporter → Then coverage calculated correctly
 
 - Test manifest generation
@@ -305,7 +305,7 @@ Add E2E tests for these routes to continue.
 ## Phase 6: Comprehensive Testing (3 tasks)
 
 ### T-030: Write unit tests for all modules
-**User Story**: US-007 | **Satisfies ACs**: AC-US7-01 to AC-US7-10 | **Status**: [ ] pending
+**User Story**: US-007 | **Satisfies ACs**: AC-US7-01 to AC-US7-10 | **Status**: [x] completed
 **Test**: Given test suite → When run → Then >90% code coverage
 
 - Test project-detector.ts (all project types)
@@ -314,7 +314,7 @@ Add E2E tests for these routes to continue.
 - Use fixtures for realistic project structures
 
 ### T-031: Write integration tests for auto mode
-**User Story**: US-007 | **Satisfies ACs**: AC-US7-01 to AC-US7-10 | **Status**: [ ] pending
+**User Story**: US-007 | **Satisfies ACs**: AC-US7-01 to AC-US7-10 | **Status**: [x] completed
 **Test**: Given auto session → When conditions enforced → Then session completes only when all pass
 
 - Test web project: blocks without E2E
@@ -323,7 +323,7 @@ Add E2E tests for these routes to continue.
 - Test auto-heal for build failures
 
 ### T-032: Write E2E tests (dogfooding)
-**User Story**: US-007 | **Satisfies ACs**: AC-US7-01 to AC-US7-10 | **Status**: [ ] pending
+**User Story**: US-007 | **Satisfies ACs**: AC-US7-01 to AC-US7-10 | **Status**: [x] completed
 **Test**: Given SpecWeave project → When auto mode used for this feature → Then all conditions enforced
 
 - Use `/sw:auto --e2e --e2e-cov 70` for this increment
@@ -334,7 +334,7 @@ Add E2E tests for these routes to continue.
 ## Phase 7: Documentation & Migration (3 tasks)
 
 ### T-033: Update auto command documentation
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-01 to AC-US6-10 | **Status**: [ ] pending
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-01 to AC-US6-10 | **Status**: [x] completed
 **Test**: Given docs → When user reads → Then understands smart defaults and configuration
 
 - Update `plugins/specweave/commands/auto.md`
@@ -344,7 +344,7 @@ Add E2E tests for these routes to continue.
 - Add troubleshooting section
 
 ### T-034: Write migration guide
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-01 to AC-US6-10 | **Status**: [ ] pending
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-01 to AC-US6-10 | **Status**: [x] completed
 **Test**: Given existing auto users → When read guide → Then successfully migrate to v1.1.0
 
 - Create `MIGRATION-V1.1.0.md`
@@ -354,7 +354,7 @@ Add E2E tests for these routes to continue.
 - Explain how to opt-out (with warnings)
 
 ### T-035: Update CLAUDE.md and internal docs
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-01 to AC-US6-10 | **Status**: [ ] pending
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-01 to AC-US6-10 | **Status**: [x] completed
 **Test**: Given CLAUDE.md → When Claude reads → Then uses smart defaults correctly
 
 - Update auto mode section with smart defaults
