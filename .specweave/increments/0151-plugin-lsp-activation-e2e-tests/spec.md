@@ -1,10 +1,11 @@
 ---
 increment: 0151-plugin-lsp-activation-e2e-tests
 title: "Plugin/LSP Activation E2E Tests and Fixes"
-status: active
+status: completed
 priority: P0
 type: feature
 created: 2025-12-31
+completed: 2026-01-07
 ---
 
 # Plugin/LSP Activation E2E Tests and Fixes
@@ -59,11 +60,11 @@ Two critical issues prevent SpecWeave from leveraging its full capabilities:
 **So that** living docs and code understanding are accurate
 
 **Acceptance Criteria**:
-- [ ] **AC-US3-01**: TypeScript/JavaScript LSP integration works (goToDefinition, findReferences)
-- [ ] **AC-US3-02**: Python LSP integration works (pylsp or pyright)
-- [ ] **AC-US3-03**: LSP initialization occurs on living-docs commands
-- [ ] **AC-US3-04**: Fallback to grep when LSP unavailable
-- [ ] **AC-US3-05**: E2E test proves LSP finds symbols faster than grep
+- [x] **AC-US3-01**: TypeScript/JavaScript LSP integration works (goToDefinition, findReferences)
+- [x] **AC-US3-02**: Python LSP integration works (pylsp or pyright)
+- [x] **AC-US3-03**: LSP initialization occurs on living-docs commands
+- [x] **AC-US3-04**: Fallback to grep when LSP unavailable
+- [x] **AC-US3-05**: E2E test proves LSP finds symbols faster than grep
 
 ### US-004: Plugin Activation Debugging
 **Project**: specweave
@@ -72,10 +73,10 @@ Two critical issues prevent SpecWeave from leveraging its full capabilities:
 **So that** I can understand why a skill isn't activating
 
 **Acceptance Criteria**:
-- [ ] **AC-US4-01**: `/sw:plugin-status` shows loaded plugins and their activation status
-- [ ] **AC-US4-02**: `/sw:skill-match "prompt"` tests a prompt against skill triggers
-- [ ] **AC-US4-03**: Debug mode logs skill matching decisions
-- [ ] **AC-US4-04**: Activation failures are logged with reasons
+- [x] **AC-US4-01**: `/sw:plugin-status` shows loaded plugins and their activation status
+- [x] **AC-US4-02**: `/sw:skill-match "prompt"` tests a prompt against skill triggers
+- [x] **AC-US4-03**: Debug mode logs skill matching decisions
+- [x] **AC-US4-04**: Activation failures are logged with reasons
 
 ## Out of Scope
 
