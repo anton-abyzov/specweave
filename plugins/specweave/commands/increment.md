@@ -817,11 +817,24 @@ Would you like to enable these plugins? (Y/n)
 
 **DO NOT** manually create files. **DO NOT** skip this step. **DO NOT** write spec.md or plan.md directly.
 
+**⚠️ COMMON MISTAKE - DO NOT CALL `/sw:plan`:**
+- `/sw:plan` is for EXISTING increments (with spec.md already created)
+- `/sw:increment` creates NEW increments from scratch
+- For NEW increments, use `increment-planner` skill (NOT `/sw:plan`)
+
 You MUST invoke the increment-planner skill to orchestrate the full PM-led workflow:
 
 ```
 Use the Skill tool:
 command: "increment-planner"
+```
+
+**Example of correct invocation:**
+```typescript
+Skill({
+  skill: "increment-planner",
+  args: "--id=0157-feature --description=\"...\" --project=my-project"
+});
 ```
 
 The increment-planner skill will:
@@ -848,11 +861,21 @@ The increment-planner skill will:
 **BEFORE PROCEEDING, USE THE SKILL TOOL:**
 
 You must literally call the Skill tool like this:
-```
-Skill(command: "increment-planner")
+```typescript
+// ✅ CORRECT - Use increment-planner skill
+Skill({
+  skill: "increment-planner",
+  args: "--id=XXXX-name --description=\"...\" --project=my-project"
+});
+
+// ❌ WRONG - DO NOT call /sw:plan for new increments
+Skill({ skill: "sw:plan" });  // This is for EXISTING increments only!
 ```
 
 Wait for the skill to complete. Do NOT continue to Step 7 until the increment-planner skill returns.
+
+**Self-Awareness Check (SpecWeave Contributors):**
+If you are working in the SpecWeave repository itself (detected via package.json name === 'specweave'), you should see warnings reminding you that changes affect the framework itself, not a user project.
 
 ### Step 7: Alternative Approach (ONLY IF SKILL FAILS)
 

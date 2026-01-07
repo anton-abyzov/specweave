@@ -5,6 +5,19 @@ description: Generate plan.md and tasks.md for PLANNING increment using Architec
 
 # /sw:plan - Generate Implementation Plan
 
+**⚠️ FOR EXISTING INCREMENTS ONLY - NOT for creating new increments!**
+
+**When to use `/sw:plan`:**
+- You already have `spec.md` created
+- Increment status is PLANNING or ACTIVE
+- You need to generate/regenerate `plan.md` and `tasks.md`
+
+**When NOT to use `/sw:plan`:**
+- Creating a brand new increment from scratch → Use `/sw:increment` instead
+- No `spec.md` exists yet → Use `/sw:increment` instead
+
+---
+
 Generate `plan.md` and `tasks.md` for an increment using Architect Agent and test-aware-planner.
 
 ## Usage
