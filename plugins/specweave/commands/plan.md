@@ -90,6 +90,39 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
 # Please specify: /sw:plan 0040
 ```
 
+## Self-Awareness Check (v1.0.102+)
+
+**🎯 OPTIONAL**: Detect if planning for SpecWeave framework increment.
+
+Before generating plan.md, check repository context:
+
+```typescript
+import { detectSpecWeaveRepository } from './src/utils/repository-detector.js';
+
+const repoInfo = detectSpecWeaveRepository(process.cwd());
+
+if (repoInfo.isSpecWeaveRepo) {
+  console.log('ℹ️  Planning for SpecWeave framework increment');
+  console.log('');
+  console.log('   💡 Framework Planning Considerations:');
+  console.log('      • Design for backward compatibility');
+  console.log('      • Consider impact on existing user projects');
+  console.log('      • Plan for migration guides if breaking');
+  console.log('      • Document new patterns in CLAUDE.md');
+  console.log('      • Add ADR for significant architectural changes');
+  console.log('');
+}
+```
+
+**Why This Helps**:
+Planning for framework features requires different considerations than user apps:
+- Backward compatibility is critical
+- Changes affect ALL SpecWeave users
+- Architecture decisions need ADRs
+- Workflow changes need CLAUDE.md updates
+
+---
+
 ## Workflow Integration
 
 **Typical workflow**:

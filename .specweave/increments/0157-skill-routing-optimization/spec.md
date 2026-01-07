@@ -67,9 +67,9 @@ Optimize SpecWeave's skill routing to prevent confusion between `/sw:increment` 
 **Acceptance Criteria**:
 - [x] **AC-US3-01**: Detect when requested number != next available number
 - [x] **AC-US3-02**: Show warning: "Requested 0001 but next available is 0157"
-- [ ] **AC-US3-03**: Offer options: Use next (0157), Force requested (0001), Cancel
-- [ ] **AC-US3-04**: When forcing non-sequential, log warning to metadata
-- [ ] **AC-US3-05**: Suggest use case for non-sequential: "Only for examples/tests"
+- [x] **AC-US3-03**: Offer options: Use next (0157), Force requested (0001), Cancel
+- [x] **AC-US3-04**: When forcing non-sequential, log warning to metadata
+- [x] **AC-US3-05**: Suggest use case for non-sequential: "Only for examples/tests"
 
 ### US-004: Skill Visibility Controls
 **Project**: specweave-dev

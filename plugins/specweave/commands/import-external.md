@@ -36,7 +36,32 @@ Import work items from GitHub (issues/milestones), JIRA (epics/stories), or Azur
 
 1. **Detects configured external tools** (GitHub, JIRA, ADO) from environment/config
 2. **Fetches work items** based on time range filter (since last import by default)
-3. **Assigns IDs** with E suffix (US-001E, T-001E) to indicate external origin
+3. **Assigns IDs with E suffix and validation** (v1.0.102+)
+   - IDs have E suffix to indicate external origin (US-001E, T-001E, FS-042E)
+   - **Validates FS (Feature) IDs** to avoid conflicts:
+     ```typescript
+     import { validateIncrementNumber, logValidationResult } from './src/core/increment-validator.js';
+
+     // Get all existing feature IDs (including E-suffix ones)
+     const existingFeatures = [
+       ...fs.readdirSync('.specweave/docs/internal/specs/'),
+       ...fs.readdirSync('.specweave/increments/').map(parseFeatureId),
+     ].filter(f => /^FS-\d{3}E?$/.test(f));
+
+     // For external feature FS-042E, validate base number 042
+     const baseNumber = featureId.replace('E', '').replace('FS-', '');
+     const result = validateIncrementNumber(baseNumber, existingFeatures);
+
+     // Log warnings if non-sequential
+     if (result.warnings.length > 0) {
+       console.log('ℹ️  External feature ID validation:');
+       logValidationResult(result);
+       console.log('   This is normal for external imports (IDs from external system)');
+     }
+     ```
+   - Note: External IDs may be non-sequential (they come from external systems)
+   - Validation ensures awareness of gaps, not enforcement
+
 4. **Creates living docs files** in `.specweave/docs/internal/specs/FS-XXXE/`
 5. **Updates sync metadata** (`.specweave/sync-metadata.json`) with import timestamp
 6. **Skips duplicates** automatically (checks existing external IDs)
