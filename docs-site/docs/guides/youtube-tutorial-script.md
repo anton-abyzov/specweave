@@ -78,6 +78,16 @@ draft: true
 >
 > Without SpecWeave, I'd still be on app number two, trying to remember why I chose one authentication pattern over another."
 
+**[BRIEF NOTE - OUT OF SCOPE]**
+
+> "Now, you might be wondering about the marketing side of these apps — how do I create ad creatives, test them, optimize conversion rates? That's a whole separate video.
+>
+> We're talking about generating production-ready video ads using the latest AI tools — not just 5-second clips, but full ad sequences that reference previous frames for continuity. Then running A/B tests through Meta Ads, analyzing the usage stats, and automatically choosing the best performing creative out of 5 AI-generated variants.
+>
+> It's a complete chain from generation to deployment to optimization. But that's not what this video is about. Leave a comment if you want to see that workflow — I'll make a dedicated video on AI-powered marketing automation.
+>
+> For now, let's focus on what matters for developers: building the actual products. Not marketing them — building them."
+
 **[EXCALIDRAW TRANSITION: "Vibe Coding" crossed out → "Spec-Driven Development"]**
 
 > "SpecWeave solves ALL of these. Let me show you how."
