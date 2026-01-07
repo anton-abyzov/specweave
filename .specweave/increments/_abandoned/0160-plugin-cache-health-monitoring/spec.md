@@ -96,12 +96,12 @@ Implement a comprehensive plugin cache health monitoring system that detects sta
 **As a** developer, I want smart cache invalidation strategies so that broken caches can be refreshed while preserving skill memories.
 
 **Acceptance Criteria**:
-- [ ] **AC-US4-01**: Soft invalidation: mark cache as stale in metadata (non-destructive)
-- [ ] **AC-US4-02**: Hard invalidation: delete cache directory after creating backup
-- [ ] **AC-US4-03**: Backup skill memories before invalidation to `~/.specweave/backups/`
-- [ ] **AC-US4-04**: Restore skill memories after marketplace refresh completes
-- [ ] **AC-US4-05**: `invalidatePlugin()` accepts strategy ('soft'|'hard') and options (preserveMemories, backupFirst)
-- [ ] **AC-US4-06**: Validate backup completed successfully before deletion
+- [x] **AC-US4-01**: Soft invalidation: mark cache as stale in metadata (non-destructive)
+- [x] **AC-US4-02**: Hard invalidation: delete cache directory after creating backup
+- [x] **AC-US4-03**: Backup skill memories before invalidation to `~/.specweave/backups/`
+- [x] **AC-US4-04**: Restore skill memories after marketplace refresh completes
+- [x] **AC-US4-05**: `invalidatePlugin()` accepts strategy ('soft'|'hard') and options (preserveMemories, backupFirst)
+- [x] **AC-US4-06**: Validate backup completed successfully before deletion
 
 **Dependencies**:
 - Uses existing `mergeSkillMemoriesOnRefresh()` from refresh-marketplace.ts

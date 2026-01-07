@@ -85,7 +85,7 @@ export class CacheMetadataManager {
    * @param version - Plugin version (e.g., "1.0.0")
    * @returns Absolute path to plugin cache directory
    */
-  getPluginCachePath(pluginName: string, version: string): string {
+  static getPluginCachePath(pluginName: string, version: string): string {
     return path.join(
       os.homedir(),
       '.claude',

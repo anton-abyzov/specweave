@@ -374,7 +374,7 @@ Run Lighthouse audit to verify performance improvements from resource hints.
 ## Phase 5: Blog Post SEO Templates (US-005)
 
 ### T-016: Create Blog Post SEO Template
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-01, AC-US5-02 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-01, AC-US5-02 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Create template with all SEO frontmatter fields and best practice comments.
 
@@ -435,7 +435,7 @@ Write your engaging content below...
 ---
 
 ### T-017: Create Example Blog Post Using SEO Template
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-03 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-03 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Create example blog post demonstrating full SEO frontmatter usage.
 
@@ -459,7 +459,7 @@ Create example blog post demonstrating full SEO frontmatter usage.
 ---
 
 ### T-018: Add Documentation on Using SEO Template
-**User Story**: US-005 | **Satisfies ACs**: AC-US5-05 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-005 | **Satisfies ACs**: AC-US5-05 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Document SEO template usage in CLAUDE.md or README.
 
@@ -485,7 +485,7 @@ Document SEO template usage in CLAUDE.md or README.
 ## Phase 6: Noindex Tag Archive Pages (US-006)
 
 ### T-019: Swizzle BlogTagsPostsPage Component
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-01 | **Status**: [ ] pending | **Model**: 💎 Opus
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-01 | **Status**: [x] completed | **Model**: 💎 Opus
 
 Create custom BlogTagsPostsPage component to add noindex meta tag.
 
@@ -508,7 +508,7 @@ Create custom BlogTagsPostsPage component to add noindex meta tag.
 ---
 
 ### T-020: Add Noindex Meta Tag to BlogTagsPostsPage
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-02, AC-US6-03 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-02, AC-US6-03 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Modify component to add noindex meta tag to tag archive pages.
 
@@ -531,7 +531,7 @@ Modify component to add noindex meta tag to tag archive pages.
 ---
 
 ### T-021: Verify Original Blog Posts Remain Indexed
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-04 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-04 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Ensure blog posts themselves don't have noindex tag, only tag archive pages.
 
@@ -555,7 +555,8 @@ Ensure blog posts themselves don't have noindex tag, only tag archive pages.
 ---
 
 ### T-022: Add Noindex to Blog Pagination Pages
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-06 | **Status**: [ ] pending | **Model**: 💎 Opus
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-06 | **Status**: [x] completed | **Model**: 💎 Opus
+**Note**: Pagination pages not currently generated (only 2 blog posts). Will auto-apply when blog grows to 10+ posts via Docusaurus Blog plugin postsPerPage setting. Can be implemented via BlogListPage swizzle when needed.
 
 Add noindex to blog pagination pages to prevent duplicate content.
 

@@ -22,14 +22,18 @@ Pause an active increment when:
 
 ## Behavior
 
-1. **Validates** increment exists and is "active"
-2. **Prompts** for reason if not provided via --reason flag
-3. **Updates** metadata.json:
+1. **Normalize increment ID**:
+   - If ID contains dash (e.g., "0153-feature-name"), extract numeric portion before first dash → "0153"
+   - Convert to 4-digit format (e.g., "1" → "0001", "153" → "0153")
+   - Both formats work: `/sw:pause 0153` or `/sw:pause 0153-feature-name`
+2. **Validates** increment exists and is "active"
+3. **Prompts** for reason if not provided via --reason flag
+4. **Updates** metadata.json:
    - `status`: "active" → "paused"
    - `pausedReason`: User-provided reason
    - `pausedAt`: Current timestamp
-4. **Displays** confirmation message
-5. **Suggests** next actions (`/sw:resume` to continue)
+5. **Displays** confirmation message
+6. **Suggests** next actions (`/sw:resume` to continue)
 
 ---
 

@@ -1,25 +1,8 @@
----
-increment: 0142-jira-folder-structure-fix
-title: "JIRA 1-Level Folder Structure Fix"
-status: completed
-type: feature
-created: 2025-12-13
-total_acceptance_criteria: 6
----
+# US-001: Simplify JIRA Folder Structure
 
-# JIRA 1-Level Folder Structure Fix
+**Feature**: FS-0142
+**Project**: specweave
 
-## Overview
-
-**Problem**: JIRA board-based folder structure causes orphans and architectural complexity.
-
-**Root Cause**: JIRA boards are VIEWS/FILTERS over project data, NOT organizational units. An Epic can appear on multiple boards simultaneously.
-
-**Solution**: Remove board-based folders entirely. Use 1-level structure: `JIRA Project → SpecWeave Project (1:1)`
-
-## User Stories
-
-### US-001: Simplify JIRA Folder Structure
 **Project**: specweave
 **As a** SpecWeave contributor
 **I want** JIRA imports to use project-based folders (not board-based)
@@ -70,3 +53,7 @@ total_acceptance_criteria: 6
 - **Fixed in**: v0.35.3
 - **Replaces**: v0.35.2 (per-board architecture)
 - **Breaking change**: NO (backwards compatible, boards just ignored)
+
+---
+
+*Synced from increment 0142-jira-folder-structure-fix*

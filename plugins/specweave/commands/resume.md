@@ -22,9 +22,13 @@ Resume a paused or backlog increment when:
 
 ## Behavior
 
-1. **Validates** increment exists and is "paused" or "backlog"
-2. **Calculates** pause/backlog duration (days, hours)
-3. **Updates** metadata.json:
+1. **Normalize increment ID**:
+   - If ID contains dash (e.g., "0153-feature-name"), extract numeric portion before first dash → "0153"
+   - Convert to 4-digit format (e.g., "1" → "0001", "153" → "0153")
+   - Both formats work: `/sw:resume 0153` or `/sw:resume 0153-feature-name`
+2. **Validates** increment exists and is "paused" or "backlog"
+3. **Calculates** pause/backlog duration (days, hours)
+4. **Updates** metadata.json:
    - `status`: "paused" or "backlog" → "active"
    - Clears `pausedReason` and `pausedAt` (if paused)
    - Clears `backlogReason` and `backlogAt` (if backlog)

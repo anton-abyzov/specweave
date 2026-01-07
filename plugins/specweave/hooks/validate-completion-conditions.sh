@@ -236,12 +236,17 @@ validate_build() {
 }
 
 validate_tests() {
+    local auto_heal="${1:-false}"
+    local max_retries="${2:-1}"
     local cmd=$(detect_command "tests")
 
-    echo "  ✅ Running tests: $cmd" >&2
+    echo "  🧪 Running tests: $cmd" >&2
 
+    # Note: Tests don't auto-retry within this script
+    # Auto-heal logic is handled by stop-auto.sh's self-healing mechanism
+    # This just validates if tests pass or fail
     if ! eval "$cmd" >/dev/null 2>&1; then
-        echo "BLOCK:Tests failed"
+        echo "BLOCK:Tests failed - check test output for details"
         return 1
     fi
 
@@ -393,7 +398,7 @@ for i in $(seq 0 $((CONDITION_COUNT - 1))); do
             fi
             ;;
         tests)
-            if ! validate_tests; then
+            if ! validate_tests "$AUTO_HEAL" "$MAX_RETRIES"; then
                 FAILED_CONDITIONS+=("tests")
             fi
             ;;
