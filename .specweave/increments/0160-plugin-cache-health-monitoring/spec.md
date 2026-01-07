@@ -1,19 +1,19 @@
 ---
 increment: 0160-plugin-cache-health-monitoring
-title: "Plugin Cache Health Monitoring System"
+title: Plugin Cache Health Monitoring System
 priority: P0
-status: planning
-created: 2026-01-07
+status: abandoned
+created: 2026-01-07T00:00:00.000Z
 dependencies: []
 structure: user-stories
 tech_stack:
-  detected_from: "package.json"
-  language: "typescript"
-  framework: "node-cli"
-  database: "filesystem"
-  orm: "none"
-platform: "local"
-estimated_cost: "$0/month"
+  detected_from: package.json
+  language: typescript
+  framework: node-cli
+  database: filesystem
+  orm: none
+platform: local
+estimated_cost: $0/month
 ---
 
 # Plugin Cache Health Monitoring System
@@ -57,12 +57,12 @@ Implement a comprehensive plugin cache health monitoring system that detects sta
 **As a** developer, I want the system to validate cached files for corruption and conflicts so that broken plugins are detected before they cause failures.
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Detect merge conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) in all cached files
-- [ ] **AC-US2-02**: Validate shell script syntax using `bash -n` for all `.sh` files
-- [ ] **AC-US2-03**: Compute and validate SHA256 checksums against metadata
-- [ ] **AC-US2-04**: Detect missing files that should exist based on metadata
-- [ ] **AC-US2-05**: Return structured `CacheHealthIssue[]` with severity, type, file, message, suggestion
-- [ ] **AC-US2-06**: Categorize severity: critical (merge conflict, syntax error), medium (checksum mismatch), low (missing optional file)
+- [x] **AC-US2-01**: Detect merge conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`) in all cached files
+- [x] **AC-US2-02**: Validate shell script syntax using `bash -n` for all `.sh` files
+- [x] **AC-US2-03**: Compute and validate SHA256 checksums against metadata
+- [x] **AC-US2-04**: Detect missing files that should exist based on metadata
+- [x] **AC-US2-05**: Return structured `CacheHealthIssue[]` with severity, type, file, message, suggestion
+- [x] **AC-US2-06**: Categorize severity: critical (merge conflict, syntax error), medium (checksum mismatch), low (missing optional file)
 
 **Technical Requirements**:
 - Use native `crypto` module for SHA256 hashing
@@ -76,13 +76,13 @@ Implement a comprehensive plugin cache health monitoring system that detects sta
 **As a** developer, I want the system to compare cached plugin versions with GitHub source so that stale caches are automatically detected.
 
 **Acceptance Criteria**:
-- [ ] **AC-US3-01**: Fetch latest commit SHA for plugin path from GitHub API
-- [ ] **AC-US3-02**: Compare cached commit SHA with GitHub HEAD
-- [ ] **AC-US3-03**: Identify changed files between commits using GitHub compare API
-- [ ] **AC-US3-04**: Return `StalenessResult` with: stale boolean, reason, cacheCommit, githubCommit, affectedFiles[], severity
-- [ ] **AC-US3-05**: Implement 5-minute local cache for GitHub API responses (avoid rate limits)
-- [ ] **AC-US3-06**: Handle rate limiting: check remaining quota, wait if needed
-- [ ] **AC-US3-07**: Graceful offline fallback: use cached metadata if GitHub API unavailable
+- [x] **AC-US3-01**: Fetch latest commit SHA for plugin path from GitHub API
+- [x] **AC-US3-02**: Compare cached commit SHA with GitHub HEAD
+- [x] **AC-US3-03**: Identify changed files between commits using GitHub compare API
+- [x] **AC-US3-04**: Return `StalenessResult` with: stale boolean, reason, cacheCommit, githubCommit, affectedFiles[], severity
+- [x] **AC-US3-05**: Implement 5-minute local cache for GitHub API responses (avoid rate limits)
+- [x] **AC-US3-06**: Handle rate limiting: check remaining quota, wait if needed
+- [x] **AC-US3-07**: Graceful offline fallback: use cached metadata if GitHub API unavailable
 
 **Technical Requirements**:
 - Use native `fetch()` API (no @octokit/rest dependency)
