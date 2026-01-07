@@ -1,11 +1,21 @@
 ---
 name: sw:auto
 description: Start autonomous execution session with stop hook integration. Works until all tasks complete or max iterations reached. Uses Ralph Wiggum pattern with SpecWeave workflow integration. Activates for: auto, autonomous, auto mode, ship while sleeping.
+argument-hint: "[INCREMENT_IDS...] [OPTIONS]"
+allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-auto.sh:*)"]
 ---
 
 # Auto Command
 
 **Start autonomous execution session using Claude Code's Stop Hook.**
+
+Execute the setup script to initialize auto mode:
+
+```!
+"${CLAUDE_PLUGIN_ROOT}/scripts/setup-auto.sh" $ARGUMENTS
+```
+
+Now work on the increment tasks. When you try to exit, the stop hook will check completion conditions and feed the next task back to you. Continue until all tasks are complete and quality gates pass.
 
 ## Usage
 
