@@ -42,9 +42,9 @@ external:
 ## Tasks
 
 - [x] **T-004**: Implement confidence calculation
-- [x] **T-020**: Create signal detection patterns
-- [x] **T-021**: Create confidence calculator
-- [x] **T-022**: Create auto-reflect script
-- [x] **T-023**: Create learning queue
-- [x] **T-024**: Update stop-session hook
-- [x] **T-025**: Create /sw:reflect-on command
+- [ ] **T-020**: Create signal detection patterns
+- [ ] **T-021**: Create confidence calculator
+- [ ] **T-022**: Create auto-reflect script
+- [ ] **T-023**: Create learning queue
+- [ ] **T-024**: Update stop-session hook
+- [ ] **T-025**: Create /sw:reflect-on command
