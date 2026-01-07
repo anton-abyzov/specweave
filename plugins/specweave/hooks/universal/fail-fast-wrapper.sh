@@ -63,32 +63,49 @@ log_warning() {
   local script_name
   script_name=$(basename "$script" 2>/dev/null || echo "unknown")
 
-  # Log to file
+  # Log to file only (v1.0.102+: warnings now in JSON response)
   {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARNING [fail-fast-wrapper]: $message"
     echo "  Script: $script_name"
     [[ -n "$details" ]] && echo "  Details: $details"
   } >> "$WARNING_LOG" 2>/dev/null || true
 
-  # Show to user (always - this is important)
-  echo ""
-  echo "  [Hook Warning] $script_name: $message"
-  [[ -n "$details" ]] && echo "  $details"
-  echo "  (Operation continues - hooks are non-blocking)"
-  echo ""
+  # NOTE: No console output - warnings are in JSON response
 }
 
 # ============================================================================
 # SAFE OUTPUT GENERATION
 # ============================================================================
 
-# Safe output based on hook type
+# Safe output with warnings (v1.0.102+)
+get_safe_output_with_warnings() {
+  local script="$1"
+  local severity="$2"
+  local message="$3"
+  local recommendation="$4"
+
+  local script_name
+  script_name=$(basename "$script" 2>/dev/null || echo "unknown")
+
+  # Build JSON with warnings array
+  if [[ "$script" == *"guard"* ]] || [[ "$script" == *"validator"* ]]; then
+    cat <<EOF
+{"decision":"allow","warnings":[{"severity":"${severity}","message":"${script_name}: ${message}","recommendation":"${recommendation}"}]}
+EOF
+  else
+    cat <<EOF
+{"continue":true,"warnings":[{"severity":"${severity}","message":"${script_name}: ${message}","recommendation":"${recommendation}"}]}
+EOF
+  fi
+}
+
+# Safe output without warnings (success case)
 get_safe_output() {
   local script="$1"
   if [[ "$script" == *"guard"* ]] || [[ "$script" == *"validator"* ]]; then
-    echo '{"decision":"allow"}'
+    echo '{"decision":"allow","warnings":[]}'
   else
-    echo '{"continue":true}'
+    echo '{"continue":true,"warnings":[]}'
   fi
 }
 
@@ -105,10 +122,10 @@ if [[ -z "$script" ]]; then
   exit 0
 fi
 
-# Script doesn't exist = safe default (log warning)
+# Script doesn't exist = safe default with warning
 if [[ ! -f "$script" ]]; then
   log_warning "$script" "Script not found (may be refreshing)" "Path: $script"
-  echo '{"continue":true}'
+  get_safe_output_with_warnings "$script" "WARNING" "Script not found (may be refreshing)" "Run 'specweave refresh-marketplace' to update plugins"
   exit 0
 fi
 
@@ -145,7 +162,7 @@ rm -f "$tmp_out" "$tmp_err" 2>/dev/null
 # Handle different exit scenarios
 case $exit_code in
   0)
-    # Success - return output or safe default
+    # Success - return output or safe default with empty warnings
     if [[ -n "$output" ]]; then
       echo "$output"
     else
@@ -156,22 +173,20 @@ case $exit_code in
   124|137)
     # Timeout (124 = timeout, 137 = SIGKILL)
     log_warning "$script" "Hook timed out after ${HOOK_TIMEOUT}s" "Consider optimizing or increasing HOOK_TIMEOUT"
-    get_safe_output "$script"
+    get_safe_output_with_warnings "$script" "WARNING" "Hook timed out after ${HOOK_TIMEOUT}s" "Consider optimizing or increasing HOOK_TIMEOUT"
     ;;
 
   *)
     # Other error
-    if [[ -n "$errors" ]]; then
-      log_warning "$script" "Hook failed (exit $exit_code)" "$errors"
-    else
-      log_warning "$script" "Hook failed (exit $exit_code)"
-    fi
+    local error_msg="Hook failed (exit $exit_code)"
+    local recommendation="Run 'specweave check-hooks' to diagnose issues"
 
-    # Still return output if there was any (partial success)
-    if [[ -n "$output" ]]; then
-      echo "$output"
+    if [[ -n "$errors" ]]; then
+      log_warning "$script" "$error_msg" "$errors"
+      get_safe_output_with_warnings "$script" "ERROR" "$error_msg: $errors" "$recommendation"
     else
-      get_safe_output "$script"
+      log_warning "$script" "$error_msg"
+      get_safe_output_with_warnings "$script" "ERROR" "$error_msg" "$recommendation"
     fi
     ;;
 esac

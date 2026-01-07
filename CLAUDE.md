@@ -633,8 +633,13 @@ Every User Story SHOULD have `**Project**:` field for proper sync:
 ❌ FORBIDDEN: Write({ file_path: "SESSION-SUMMARY.md", content: "..." })
 ❌ FORBIDDEN: Write({ file_path: "AUTO-COMMAND-SPEC.md", content: "..." })
 ✅ CORRECT:   Write({ file_path: ".specweave/increments/0158/reports/analysis.md", content: "..." })
-✅ CORRECT:   Write({ file_path: ".specweave/increments/0000-adhoc/reports/session-summary.md", content: "..." })
+✅ CORRECT:   Write({ file_path: ".specweave/increments/0161/reports/session-summary.md", content: "..." })
 ```
+
+**⚠️ CRITICAL: Increment numbers MUST start from 0001, NEVER 0000!**
+- ❌ FORBIDDEN: `.specweave/increments/0000-adhoc/`
+- ❌ FORBIDDEN: `.specweave/increments/0000-anything/`
+- ✅ CORRECT: Use existing active increment or create new one with proper number (0001+)
 
 **Allowed root files ONLY**:
 - `README.md`, `CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`
@@ -643,10 +648,10 @@ Every User Story SHOULD have `**Project**:` field for proper sync:
 - `package.json`, `tsconfig*.json`, config files
 
 **Everything else → increment folders**:
-- Analysis/reports → `.specweave/increments/####/reports/`
+- Analysis/reports → `.specweave/increments/####/reports/` (where #### is 0001 or higher, NEVER 0000)
 - Session logs → `.specweave/increments/####/logs/`
 - Scripts → `.specweave/increments/####/scripts/`
-- Ad-hoc work → `.specweave/increments/0000-adhoc/reports/`
+- Ad-hoc work → Create proper increment OR use existing active increment
 
 **Enforcement**: Pre-commit hook #13 blocks staging root pollution files
 

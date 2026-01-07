@@ -106,25 +106,40 @@ fi
 if echo "$PROMPT" | grep -qE "^/sw:progress($| )"; then
   ARGS=$(echo "$PROMPT" | sed 's|^/sw:progress\s*||')
 
+  # DEBUG: Log execution
+  DEBUG_LOG=".specweave/logs/hooks/progress-debug.log"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] /sw:progress detected - executing script" >> "$DEBUG_LOG"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ARGS: '$ARGS'" >> "$DEBUG_LOG"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] SCRIPTS_DIR: $SCRIPTS_DIR" >> "$DEBUG_LOG"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] VSCode mode: $(is_vscode && echo 'true' || echo 'false')" >> "$DEBUG_LOG"
+
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-progress.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-progress.sh" $ARGS 2>&1)
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Script: read-progress.sh" >> "$DEBUG_LOG"
   elif [[ -f "$SCRIPTS_DIR/progress.js" ]] && command -v node >/dev/null 2>&1; then
     OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/progress.js" $ARGS 2>&1)
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Script: progress.js" >> "$DEBUG_LOG"
   else
     OUTPUT="❌ No progress script available"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR: No script found" >> "$DEBUG_LOG"
   fi
+
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Output length: ${#OUTPUT} chars" >> "$DEBUG_LOG"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Exit code: $?" >> "$DEBUG_LOG"
 
   # VSCode mode: Use systemMessage to display output without blocking execution
   # (block decision stops execution entirely in VSCode)
   if is_vscode; then
     OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Returning VSCode response (systemMessage)" >> "$DEBUG_LOG"
     printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
     exit 0
   fi
 
   # CLI mode: Use block decision (works correctly in CLI)
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Returning CLI response (block)" >> "$DEBUG_LOG"
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
 fi
