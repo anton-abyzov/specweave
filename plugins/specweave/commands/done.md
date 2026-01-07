@@ -29,6 +29,45 @@ You are acting as the Product Manager to validate increment completion before cl
 
 ## Workflow
 
+### Step 0: Self-Awareness Check (v1.0.102+)
+
+**🎯 OPTIONAL BUT INFORMATIVE**: Check if closing a SpecWeave framework increment.
+
+When closing increments in the SpecWeave repository itself, provide additional context about the impact:
+
+```typescript
+import { detectSpecWeaveRepository } from './src/utils/repository-detector.js';
+
+const repoInfo = detectSpecWeaveRepository(process.cwd());
+
+if (repoInfo.isSpecWeaveRepo) {
+  console.log('ℹ️  Closing SpecWeave framework increment');
+  console.log('');
+  console.log('   📋 Post-Closure Checklist:');
+  console.log('      • Update CHANGELOG.md if user-facing change');
+  console.log('      • Update CLAUDE.md if workflow changed');
+  console.log('      • Consider version bump (patch/minor/major)');
+  console.log('      • Run: npm test && npm run rebuild');
+  console.log('      • Check for breaking changes');
+  console.log('');
+}
+```
+
+**When to Show This**:
+- Only when closing increments (not on validation failures)
+- Skip if already shown recently in session
+
+**Why This Helps**:
+Contributors closing SpecWeave features need reminders about:
+- Documentation updates (CHANGELOG, CLAUDE.md)
+- Version implications
+- Testing framework changes
+- Breaking change considerations
+
+**Note**: This is informational only, not blocking. The closure proceeds normally after showing reminders.
+
+---
+
 ### Step 0.5: Status Validation (NEW - v0.28.63+)
 
 **🔥 CRITICAL: Only `ready_for_review` or `active` increments can be closed!**
