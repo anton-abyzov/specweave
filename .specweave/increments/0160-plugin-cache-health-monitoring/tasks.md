@@ -169,7 +169,7 @@ describe('CacheMetadataManager', () => {
 ## Phase 2: Cache Health Monitor
 
 ### T-003: Implement merge conflict detector
-**User Story**: US-002 | **Satisfies ACs**: AC-US2-01 | **Status**: [ ] pending
+**User Story**: US-002 | **Satisfies ACs**: AC-US2-01 | **Status**: [x] completed
 **Model**: ⚡ Haiku
 
 Detect merge conflict markers in any file using regex pattern matching.
@@ -219,7 +219,7 @@ describe('detectMergeConflicts', () => {
 ---
 
 ### T-004: Implement bash syntax validator
-**User Story**: US-002 | **Satisfies ACs**: AC-US2-02 | **Status**: [ ] pending
+**User Story**: US-002 | **Satisfies ACs**: AC-US2-02 | **Status**: [x] completed
 **Model**: 💎 Opus
 
 Validate shell scripts using `bash -n` with timeout and error capture.
@@ -268,7 +268,7 @@ describe('validateBashSyntax', () => {
 ---
 
 ### T-005: Implement checksum validator
-**User Story**: US-002 | **Satisfies ACs**: AC-US2-03 | **Status**: [ ] pending
+**User Story**: US-002 | **Satisfies ACs**: AC-US2-03 | **Status**: [x] completed
 **Model**: ⚡ Haiku
 
 Compute SHA256 checksums and compare against metadata.
@@ -326,7 +326,7 @@ describe('validateChecksums', () => {
 ---
 
 ### T-006: Create CacheHealthMonitor orchestrator
-**User Story**: US-002 | **Satisfies ACs**: AC-US2-05, AC-US2-06 | **Status**: [ ] pending
+**User Story**: US-002 | **Satisfies ACs**: AC-US2-05, AC-US2-06 | **Status**: [x] completed
 **Model**: 💎 Opus
 
 Orchestrate all validation checks and return structured health report.
@@ -397,7 +397,7 @@ describe('CacheHealthMonitor', () => {
 ## Phase 3: GitHub Version Detector
 
 ### T-007: Implement GitHub API client with rate limiting
-**User Story**: US-003 | **Satisfies ACs**: AC-US3-05, AC-US3-06 | **Status**: [ ] pending
+**User Story**: US-003 | **Satisfies ACs**: AC-US3-05, AC-US3-06 | **Status**: [x] completed
 **Model**: 💎 Opus
 
 Create GitHub API wrapper with rate limit checking and local caching.
@@ -472,7 +472,7 @@ describe('GitHubAPIClient', () => {
 ---
 
 ### T-008: Implement commit SHA fetcher
-**User Story**: US-003 | **Satisfies ACs**: AC-US3-01 | **Status**: [ ] pending
+**User Story**: US-003 | **Satisfies ACs**: AC-US3-01 | **Status**: [x] completed
 **Model**: ⚡ Haiku
 
 Fetch latest commit SHA for plugin path from GitHub.
@@ -528,7 +528,7 @@ describe('getGitHubLatestCommit', () => {
 ---
 
 ### T-009: Implement commit comparison
-**User Story**: US-003 | **Satisfies ACs**: AC-US3-03 | **Status**: [ ] pending
+**User Story**: US-003 | **Satisfies ACs**: AC-US3-03 | **Status**: [x] completed
 **Model**: ⚡ Haiku
 
 Compare two commits and identify changed files using GitHub compare API.
@@ -573,7 +573,7 @@ describe('compareCommits', () => {
 ---
 
 ### T-010: Create CacheVersionDetector orchestrator
-**User Story**: US-003 | **Satisfies ACs**: AC-US3-02, AC-US3-04, AC-US3-07 | **Status**: [ ] pending
+**User Story**: US-003 | **Satisfies ACs**: AC-US3-02, AC-US3-04, AC-US3-07 | **Status**: [x] completed
 **Model**: 💎 Opus
 
 Orchestrate staleness checks with graceful fallbacks.
