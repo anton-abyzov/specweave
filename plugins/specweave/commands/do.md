@@ -40,6 +40,44 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 
 ## Workflow
 
+### Step 0: Self-Awareness Check (v1.0.102+)
+
+**🎯 OPTIONAL BUT RECOMMENDED**: Check if running in SpecWeave repository itself.
+
+This step is particularly useful when implementing SpecWeave features vs user projects, as it provides context for:
+- Understanding if changes affect the framework
+- Being careful with breaking changes
+- Considering backward compatibility
+
+```typescript
+import { detectSpecWeaveRepository } from './src/utils/repository-detector.js';
+
+const repoInfo = detectSpecWeaveRepository(process.cwd());
+
+if (repoInfo.isSpecWeaveRepo) {
+  console.log('ℹ️  Working on SpecWeave framework increment');
+  console.log(`   Confidence: ${repoInfo.confidence}`);
+  console.log('');
+  console.log('   💡 Reminders:');
+  console.log('      • Test changes don\'t break existing user projects');
+  console.log('      • Consider backward compatibility');
+  console.log('      • Update CLAUDE.md if workflow changes');
+  console.log('');
+}
+```
+
+**When to Show This**:
+- On first task execution for the increment
+- Skip on subsequent tasks (user already knows context)
+
+**Why This Helps**:
+Contributors working on SpecWeave itself need different mindset than users building apps:
+- Framework changes affect ALL users
+- Breaking changes need deprecation warnings
+- Documentation updates are critical
+
+---
+
 ### Step 1: Load Context
 
 1. **Find increment directory**:

@@ -159,11 +159,12 @@ Every increment MUST have `metadata.json` or:
 
 **NOTE**: Always read `testMode` and `coverageTarget` from config, don't hardcode!
 
-**TDD ENFORCEMENT** (v1.0.102+):
-- **Default**: `testMode: "TDD"` - Tests MUST be written first for all implementations
-- **Override per-increment**: Only when explicitly justified (experiments, POCs, migrations)
+**Testing Mode Configuration**:
+- **User Projects**: Default `testMode: "test-after"` (init wizard default, fast iteration)
+- **SpecWeave Core**: `testMode: "TDD"` required (mission-critical framework)
+- **Override per-increment**: Can be changed in metadata.json for specific needs
 - **Quality Gates**: `/sw:done` validates test coverage meets targets
-- **Test Types Required**: Unit (>85%), Integration (>80%), E2E (>90%) - see config.testing.coverageTargets
+- **Coverage Targets**: Unit (>85%), Integration (>80%), E2E (>90%) - see config.testing.coverageTargets
 
 ### 4. Increment Structure
 
@@ -183,6 +184,81 @@ Every increment MUST have `metadata.json` or:
 ---
 
 ## Workflow (Safe, Self-Contained)
+
+### STEP 0-Prime: Self-Awareness Check (v1.0.102+)
+
+**🚨 CRITICAL: Detect if running in SpecWeave repository itself!**
+
+**Purpose**: Prevent pollution of SpecWeave's own increment history with test examples or confusion between framework development vs user project work.
+
+**Implementation**:
+
+```typescript
+import { detectSpecWeaveRepository, logRepositoryWarnings } from './src/utils/repository-detector.js';
+
+// Detect if this is SpecWeave's own repository
+const repoInfo = detectSpecWeaveRepository(process.cwd());
+
+// Log warnings if SpecWeave repo detected
+logRepositoryWarnings(repoInfo);
+
+// If SpecWeave repo detected, prompt user
+if (repoInfo.isSpecWeaveRepo) {
+  console.log('⚠️  You are running in the SpecWeave framework repository itself!');
+  console.log('');
+  console.log('   This increment will be created in SpecWeave\'s own .specweave/ folder.');
+  console.log('');
+  console.log('   Please confirm your intent:');
+  console.log('');
+  console.log('   1️⃣  SpecWeave Development - Working on the framework itself');
+  console.log('      Example: "Add new skill routing validator"');
+  console.log('');
+  console.log('   2️⃣  Testing/Example - Creating test increment for examples');
+  console.log('      💡 Consider using examples/ folder instead');
+  console.log('');
+  console.log('   3️⃣  Cancel - Not what I intended');
+  console.log('');
+
+  // In interactive Claude session, ASK user to choose
+  // In CI/automation, check for --force-specweave-dev flag
+
+  const choice = await promptUser('Your choice (1, 2, or 3): ');
+
+  if (choice === '3') {
+    throw new Error('Increment creation cancelled by user.');
+  }
+
+  if (choice === '2') {
+    console.log('');
+    console.log('💡 Recommendation: Create test examples in separate directory:');
+    console.log('   mkdir -p examples/0001-todo-api');
+    console.log('   cd examples/0001-todo-api');
+    console.log('   specweave init .');
+    console.log('');
+    const proceed = await promptUser('Proceed anyway in SpecWeave repo? (y/N): ');
+    if (proceed.toLowerCase() !== 'y') {
+      throw new Error('Increment creation cancelled. Please use examples/ folder for tests.');
+    }
+  }
+
+  // If choice === '1', continue with SpecWeave development
+  console.log('✅ Proceeding with SpecWeave framework development');
+  console.log('');
+}
+```
+
+**When to Skip**:
+- `--force-specweave-dev` flag provided (CI/automation)
+- Not running in SpecWeave repo (normal user project)
+
+**Why This Matters**:
+The triggering bug (0001-todo-api test example created in SpecWeave repo) happened because there was NO distinction between:
+- Testing SpecWeave with an example → Should use examples/ folder
+- Developing SpecWeave features → Should use .specweave/ folder
+
+This guard makes the distinction explicit and prevents confusion.
+
+---
 
 ### STEP 0: Detect Multi-Project Mode (MANDATORY FIRST!)
 

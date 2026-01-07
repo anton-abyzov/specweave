@@ -62,7 +62,7 @@ describe('detectSpecWeaveRepository', () => {
 ---
 
 ### T-002: Add Self-Awareness Prompt to increment.md
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-04, AC-US1-05, AC-US1-06 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-04, AC-US1-05, AC-US1-06 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Update `/sw:increment` command documentation to include self-awareness check.
 
@@ -81,7 +81,7 @@ Update `/sw:increment` command documentation to include self-awareness check.
 ---
 
 ### T-003: Implement Self-Awareness in increment-planner Skill
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-04, AC-US1-05, AC-US1-06, AC-US1-07 | **Status**: [ ] pending | **Model**: 💎 Opus
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-04, AC-US1-05, AC-US1-06, AC-US1-07 | **Status**: [x] completed | **Model**: 💎 Opus
 
 Add self-awareness check to increment-planner skill before creating any files.
 
