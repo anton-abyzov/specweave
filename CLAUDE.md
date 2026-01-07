@@ -616,7 +616,7 @@ Every User Story SHOULD have `**Project**:` field for proper sync:
 
 **Each User Story = ONE Project** (and ONE Board for 2-level structures)
 
-### 6. File Operations
+### 6. File Operations & Root Folder Protection
 
 **Use Write/Edit tools for file creation. NEVER use Bash heredoc/echo redirects.**
 
@@ -625,6 +625,30 @@ Every User Story SHOULD have `**Project**:` field for proper sync:
 ❌ FORBIDDEN: Bash("echo '...' > file.md")
 ✅ CORRECT:   Write({ file_path: "...", content: "..." })
 ```
+
+**CRITICAL: NEVER Write files directly to project root!**
+
+```
+❌ FORBIDDEN: Write({ file_path: "ANALYSIS-REPORT.md", content: "..." })
+❌ FORBIDDEN: Write({ file_path: "SESSION-SUMMARY.md", content: "..." })
+❌ FORBIDDEN: Write({ file_path: "AUTO-COMMAND-SPEC.md", content: "..." })
+✅ CORRECT:   Write({ file_path: ".specweave/increments/0158/reports/analysis.md", content: "..." })
+✅ CORRECT:   Write({ file_path: ".specweave/increments/0000-adhoc/reports/session-summary.md", content: "..." })
+```
+
+**Allowed root files ONLY**:
+- `README.md`, `CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`
+- `LICENSE`, `CODE_OF_CONDUCT.md`, `SECURITY.md`
+- `IMPLEMENTATION-SUMMARY.md`, `IMPLEMENTATION-COMPLETE.md` (project docs only)
+- `package.json`, `tsconfig*.json`, config files
+
+**Everything else → increment folders**:
+- Analysis/reports → `.specweave/increments/####/reports/`
+- Session logs → `.specweave/increments/####/logs/`
+- Scripts → `.specweave/increments/####/scripts/`
+- Ad-hoc work → `.specweave/increments/0000-adhoc/reports/`
+
+**Enforcement**: Pre-commit hook #13 blocks staging root pollution files
 
 ### 7. Protected Directories
 
