@@ -15,8 +15,17 @@ import { SessionStatus } from '../../src/types/session.js';
 describe('SessionRegistry', () => {
   let testDir: string;
   let registry: SessionRegistry;
+  let originalEnv: NodeJS.ProcessEnv;
 
   beforeEach(() => {
+    // Save original environment
+    originalEnv = { ...process.env };
+
+    // CRITICAL: Force enable session registry for tests
+    // Tests need to validate registry behavior regardless of execution context
+    process.env.SPECWEAVE_FORCE_SESSION_REGISTRY = '1';
+    process.env.SPECWEAVE_FORCE_LOCKS = '1';
+
     // Create unique temp directory for each test
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'session-registry-test-'));
     // Create .specweave directory - required for SessionRegistry to be valid
@@ -25,6 +34,9 @@ describe('SessionRegistry', () => {
   });
 
   afterEach(() => {
+    // Restore original environment
+    process.env = originalEnv;
+
     // Clean up test directory
     if (fs.existsSync(testDir)) {
       fs.rmSync(testDir, { recursive: true, force: true });

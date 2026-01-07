@@ -64,8 +64,19 @@ if [[ -f "$REBUILD_SCRIPT" ]]; then
   fi
 fi
 
-# Launch queue processor in background (daemon mode)
-if [[ -f "$PROCESSOR" ]]; then
+# === Queue Processor (DISABLED BY DEFAULT) ===
+# Background processor daemon is now OPT-IN ONLY
+# Reason: Most hooks execute synchronously, making async queue unnecessary in VSCode
+# To enable: export SPECWEAVE_ENABLE_PROCESSOR=1
+#
+# PROCESSOR DISABLED - Removed to eliminate:
+# - Background daemon processes consuming resources
+# - Complex async execution model when synchronous works fine
+# - Lock contention between processor and hook execution
+#
+# Event handlers now execute directly in hooks (synchronous, simpler)
+
+if [[ "${SPECWEAVE_ENABLE_PROCESSOR:-0}" == "1" ]] && [[ -f "$PROCESSOR" ]]; then
   nohup bash "$PROCESSOR" --daemon > /dev/null 2>&1 &
   disown 2>/dev/null
 fi
@@ -75,38 +86,54 @@ if [[ -f "$SCHEDULER_STARTUP" ]]; then
   bash "$SCHEDULER_STARTUP" 2>/dev/null || true
 fi
 
-# === LAYER 2: Auto-Start Session Watchdog ===
-# Start the watchdog daemon to detect stuck sessions
-# Uses short interval (30s) and threshold (120s) for fast detection
-WATCHDOG_SCRIPT=""
-if [[ -f "$SESSION_WATCHDOG" ]]; then
-  WATCHDOG_SCRIPT="$SESSION_WATCHDOG"
-elif [[ -f "$SCRIPTS_WATCHDOG" ]]; then
-  WATCHDOG_SCRIPT="$SCRIPTS_WATCHDOG"
-fi
+# === LAYER 2: Session Watchdog (DISABLED BY DEFAULT) ===
+# Watchdog daemon is now OPT-IN ONLY via environment variable
+# Reason: VSCode extension handles session lifecycle, making watchdog redundant
+# To enable: export SPECWEAVE_ENABLE_WATCHDOG=1
+#
+# WATCHDOG DISABLED - Removed to eliminate:
+# - Indefinite daemon processes preventing .specweave folder deletion
+# - False positive alerts for normal long-running operations
+# - Unnecessary resource consumption in VSCode-managed environments
+#
+# Users experiencing stuck sessions should:
+# 1. Close Claude Code session (VSCode handles cleanup)
+# 2. Restart VSCode Extension Host if needed (Cmd+Shift+P)
+# 3. Run: bash plugins/specweave/scripts/cleanup-state.sh if issues persist
+#
+# Advanced users can re-enable if needed for CLI multi-process scenarios
 
-if [[ -n "$WATCHDOG_SCRIPT" ]]; then
-  # Check if watchdog is already running
-  WATCHDOG_PID_FILE="$PROJECT_ROOT/.specweave/state/.watchdog.pid"
-  if [[ -f "$WATCHDOG_PID_FILE" ]]; then
-    EXISTING_PID=$(cat "$WATCHDOG_PID_FILE" 2>/dev/null)
-    if ! kill -0 "$EXISTING_PID" 2>/dev/null; then
-      # Stale PID file, clean it up
-      rm -f "$WATCHDOG_PID_FILE"
-    fi
+if [[ "${SPECWEAVE_ENABLE_WATCHDOG:-0}" == "1" ]]; then
+  WATCHDOG_SCRIPT=""
+  if [[ -f "$SESSION_WATCHDOG" ]]; then
+    WATCHDOG_SCRIPT="$SESSION_WATCHDOG"
+  elif [[ -f "$SCRIPTS_WATCHDOG" ]]; then
+    WATCHDOG_SCRIPT="$SCRIPTS_WATCHDOG"
   fi
 
-  # Start watchdog if not already running
-  if [[ ! -f "$WATCHDOG_PID_FILE" ]] || ! kill -0 "$(cat "$WATCHDOG_PID_FILE" 2>/dev/null)" 2>/dev/null; then
-    mkdir -p "$PROJECT_ROOT/.specweave/state"
-    (
-      export STUCK_THRESHOLD=120  # 2 minutes - faster detection
-      export CHECK_INTERVAL=30    # Check every 30 seconds
-      export SPECWEAVE_ROOT="$PROJECT_ROOT/.specweave"
-      nohup bash "$WATCHDOG_SCRIPT" --daemon > /dev/null 2>&1 &
-      echo $! > "$WATCHDOG_PID_FILE"
-    )
-    disown 2>/dev/null
+  if [[ -n "$WATCHDOG_SCRIPT" ]]; then
+    # Check if watchdog is already running
+    WATCHDOG_PID_FILE="$PROJECT_ROOT/.specweave/state/.watchdog.pid"
+    if [[ -f "$WATCHDOG_PID_FILE" ]]; then
+      EXISTING_PID=$(cat "$WATCHDOG_PID_FILE" 2>/dev/null)
+      if ! kill -0 "$EXISTING_PID" 2>/dev/null; then
+        # Stale PID file, clean it up
+        rm -f "$WATCHDOG_PID_FILE"
+      fi
+    fi
+
+    # Start watchdog if not already running
+    if [[ ! -f "$WATCHDOG_PID_FILE" ]] || ! kill -0 "$(cat "$WATCHDOG_PID_FILE" 2>/dev/null)" 2>/dev/null; then
+      mkdir -p "$PROJECT_ROOT/.specweave/state"
+      (
+        export STUCK_THRESHOLD=120  # 2 minutes - faster detection
+        export CHECK_INTERVAL=30    # Check every 30 seconds
+        export SPECWEAVE_ROOT="$PROJECT_ROOT/.specweave"
+        nohup bash "$WATCHDOG_SCRIPT" --daemon > /dev/null 2>&1 &
+        echo $! > "$WATCHDOG_PID_FILE"
+      )
+      disown 2>/dev/null
+    fi
   fi
 fi
 

@@ -8,6 +8,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Logger, consoleLogger } from './logger.js';
+import { shouldSkipLocks } from './environment-detection.js';
 
 const DEFAULT_STALE_THRESHOLD_SECONDS = 300; // 5 minutes
 const LOCK_RETRY_DELAY_MS = 100;
@@ -17,6 +18,7 @@ export class LockManager {
   private lockDir: string;
   private staleThresholdSeconds: number;
   private logger: Logger;
+  private skipLocks: boolean;
 
   constructor(
     lockDir: string,
@@ -26,6 +28,11 @@ export class LockManager {
     this.lockDir = lockDir;
     this.staleThresholdSeconds = staleThresholdSeconds;
     this.logger = options.logger ?? consoleLogger;
+    this.skipLocks = shouldSkipLocks();
+
+    if (this.skipLocks) {
+      this.logger.debug('Lock manager disabled (VSCode/CI context)');
+    }
   }
 
   /**
@@ -34,6 +41,11 @@ export class LockManager {
    * @returns true if lock acquired, false if failed
    */
   async acquire(): Promise<boolean> {
+    // Skip locking in VSCode/CI
+    if (this.skipLocks) {
+      return true;
+    }
+
     const startTime = Date.now();
 
     while (Date.now() - startTime < LOCK_TIMEOUT_MS) {
@@ -82,6 +94,11 @@ export class LockManager {
    * Releases the lock
    */
   async release(): Promise<void> {
+    // Skip locking in VSCode/CI
+    if (this.skipLocks) {
+      return;
+    }
+
     try {
       if (!fs.existsSync(this.lockDir)) {
         return;

@@ -59,9 +59,7 @@ import { triggerGitHubRepoCloning } from '../helpers/init/github-repo-cloning.js
 import { triggerBitbucketRepoCloning } from '../helpers/init/bitbucket-repo-cloning.js';
 import {
   collectLivingDocsInputs,
-  displayJobScheduled,
 } from '../helpers/init/living-docs-preflight.js';
-import { launchLivingDocsJob } from '../../core/background/job-launcher.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -674,18 +672,19 @@ export async function initCommand(
               continue;
             }
 
+            // NEW FLOW (v1.0.103+): Save config but DON'T spawn background job
+            // User will run /sw:living-docs in separate Claude Code window
             if (preflightResult?.shouldLaunch && preflightResult.isBrownfield) {
-              const launchResult = await launchLivingDocsJob({
-                projectPath: targetDir,
-                userInputs: preflightResult.userInputs,
-                dependsOn: pendingJobIds,
-              });
-              displayJobScheduled(launchResult.job.id, preflightResult.estimatedDuration, language);
+              // Save living docs config to state for later use
+              saveLivingDocsConfig(targetDir, preflightResult.userInputs);
+
+              // Display instructions to run /sw:living-docs interactively
+              displayLivingDocsInstructions(preflightResult.estimatedDuration, language);
             }
           } catch (livingDocsError) {
             const errorMsg = livingDocsError instanceof Error ? livingDocsError.message : String(livingDocsError);
             console.log(chalk.yellow(`\n⚠️  Living Docs setup failed: ${errorMsg}`));
-            console.log(chalk.gray('   → You can run /sw:jobs later to check status'));
+            console.log(chalk.gray('   → You can run /sw:living-docs to configure later'));
           }
         }
         wizardStep = 'testing';
@@ -861,4 +860,54 @@ async function setupIssueTrackerWrapper(
   } catch {
     console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
   }
+}
+
+/**
+ * Save living docs configuration to state for later use
+ * (NEW v1.0.103+: No background job spawning during init)
+ */
+function saveLivingDocsConfig(
+  targetDir: string,
+  userInputs: import('../../core/background/types.js').LivingDocsUserInputs
+): void {
+  const stateDir = path.join(targetDir, '.specweave', 'state');
+  fs.ensureDirSync(stateDir);
+
+  const configPath = path.join(stateDir, 'living-docs-config.json');
+  fs.writeFileSync(
+    configPath,
+    JSON.stringify(
+      {
+        userInputs,
+        savedAt: new Date().toISOString(),
+      },
+      null,
+      2
+    )
+  );
+}
+
+/**
+ * Display instructions to run /sw:living-docs interactively
+ * (NEW v1.0.103+: Interactive mode instead of background job)
+ */
+function displayLivingDocsInstructions(
+  estimatedDuration: string,
+  language: SupportedLanguage = 'en'
+): void {
+  console.log('');
+  console.log(chalk.green('  ✓ Living Docs configuration saved'));
+  console.log('');
+  console.log(chalk.cyan('  📚 Next: Build Living Documentation'));
+  console.log(chalk.gray(`     Estimated: ${estimatedDuration}`));
+  console.log('');
+  console.log(chalk.white('  To start the Living Docs builder:'));
+  console.log(chalk.cyan('  1. Open a NEW Claude Code window (separate conversation)'));
+  console.log(chalk.cyan('  2. Run: /sw:living-docs'));
+  console.log('');
+  console.log(chalk.gray('  💡 Why a separate window?'));
+  console.log(chalk.gray('     - You can monitor real-time progress'));
+  console.log(chalk.gray('     - Pause/resume by closing/reopening the window'));
+  console.log(chalk.gray('     - No background processes or orphaned jobs'));
+  console.log('');
 }
