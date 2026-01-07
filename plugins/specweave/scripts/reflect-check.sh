@@ -143,6 +143,19 @@ main() {
         check_result "warn" "stop-reflect.sh hook not found"
     fi
 
+    # Check cached marketplace version
+    local cached_script="$HOME/.claude/plugins/cache/specweave/sw/1.0.0/hooks/../scripts/reflect.sh"
+    if [ -f "$cached_script" ]; then
+        if bash -n "$cached_script" 2>/dev/null; then
+            check_result "pass" "Cached marketplace version valid"
+        else
+            check_result "warn" "Cached marketplace version has syntax errors"
+            add_recommendation "Restart Claude Code to refresh marketplace cache"
+        fi
+    else
+        check_result "info" "Cached version not found (will be loaded on next restart)"
+    fi
+
     echo ""
 
     # ========================================
@@ -200,12 +213,33 @@ main() {
     fi
 
     if [ -f "$LOGS_DIR/auto-reflect.log" ]; then
-        local errors=$(grep -i "error\|syntax" "$LOGS_DIR/auto-reflect.log" 2>/dev/null | tail -3)
-        if [ -n "$errors" ]; then
-            echo ""
-            echo "   ${RED}Recent errors in auto-reflect.log:${RESET}"
-            echo "$errors" | sed 's/^/   /'
-            add_recommendation "Check full log: $LOGS_DIR/auto-reflect.log"
+        # Check if marketplace cache is fresh (refreshed today)
+        local cached_script="$HOME/.claude/plugins/cache/specweave/sw/1.0.0/hooks/../scripts/reflect.sh"
+        local cache_is_fresh=false
+
+        if [ -f "$cached_script" ]; then
+            # Check if cached script was modified in last hour (indicates recent refresh)
+            if find "$cached_script" -mmin -60 2>/dev/null | grep -q .; then
+                cache_is_fresh=true
+            fi
+        fi
+
+        # Check for errors in the log
+        local all_errors=$(grep -i "syntax error" "$LOGS_DIR/auto-reflect.log" 2>/dev/null | tail -3)
+
+        if [ -n "$all_errors" ]; then
+            if [ "$cache_is_fresh" = "true" ]; then
+                echo ""
+                echo "   ${YELLOW}ℹ️  Historical errors (before marketplace refresh):${RESET}"
+                echo "$all_errors" | sed 's/^/   /' | head -1
+                echo "   ${GREEN}✓ Marketplace cache refreshed - errors should not recur${RESET}"
+            else
+                echo ""
+                echo "   ${RED}⚠️  Syntax errors in auto-reflect.log:${RESET}"
+                echo "$all_errors" | sed 's/^/   /'
+                add_recommendation "Errors detected. Run 'bash scripts/refresh-marketplace.sh --github' to update cache"
+                add_recommendation "Restart Claude Code after marketplace refresh"
+            fi
         fi
     fi
 
