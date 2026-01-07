@@ -42,7 +42,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 2. **Update immediately**: `Edit("tasks.md", "[ ] pending", "[x] completed")` + `Edit("spec.md", "[ ] AC-", "[x] AC-")`
 3. **Unique IDs**: Check `ls .specweave/increments/ | grep "^[0-9]" | tail -5`
 4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
-5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders (enforced by pre-commit hook #13)
+5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders
 6. **⛔ Increment cleanliness**: ONLY 4 files at increment root (metadata.json, spec.md, plan.md, tasks.md). ALL other .md files → `reports/`, logs → `logs/`, scripts → `scripts/`
 7. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run. NEVER create `.specweave/` in parent, nested, or unrelated directories. Check `config.json` exists before creating ANY `.specweave/` subfolders.
 8. **⛔ Marketplace refresh**: ALWAYS use `specweave refresh-marketplace` CLI command. NEVER suggest `scripts/refresh-marketplace.sh` - end users don't have the scripts folder (npm global install).

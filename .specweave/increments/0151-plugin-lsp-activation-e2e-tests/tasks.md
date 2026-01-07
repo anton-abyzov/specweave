@@ -197,7 +197,7 @@
 ### T-011: Create LSP client wrapper
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Create TypeScript wrapper for LSP operations.
@@ -205,18 +205,18 @@
 **Test**: Given TypeScript file → When calling goToDefinition → Then returns definition location
 
 **Acceptance**:
-- [ ] Create src/core/lsp/lsp-client.ts
-- [ ] Implement initialize() method
-- [ ] Implement goToDefinition() method
-- [ ] Implement findReferences() method
-- [ ] Handle server lifecycle (start/stop)
+- [x] Create src/core/lsp/lsp-client.ts
+- [x] Implement initialize() method
+- [x] Implement goToDefinition() method
+- [x] Implement findReferences() method
+- [x] Handle server lifecycle (start/stop)
 
 ---
 
 ### T-012: TypeScript/JavaScript LSP integration
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Integrate with typescript-language-server for TS/JS projects.
@@ -224,18 +224,18 @@
 **Test**: Given TS project → When finding references → Then accurate results returned
 
 **Acceptance**:
-- [ ] Auto-detect TypeScript projects (tsconfig.json)
-- [ ] Initialize typescript-language-server
-- [ ] Map file URIs correctly
-- [ ] Parse LSP responses
-- [ ] Return structured results
+- [x] Auto-detect TypeScript projects (tsconfig.json)
+- [x] Initialize typescript-language-server
+- [x] Map file URIs correctly
+- [x] Parse LSP responses
+- [x] Return structured results
 
 ---
 
 ### T-013: Python LSP integration
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Integrate with python-lsp-server for Python projects.
@@ -243,18 +243,18 @@
 **Test**: Given Python project → When finding definition → Then accurate result returned
 
 **Acceptance**:
-- [ ] Auto-detect Python projects (pyproject.toml, setup.py, *.py)
-- [ ] Initialize python-lsp-server (or pyright)
-- [ ] Handle Python-specific URI schemes
-- [ ] Parse Python LSP responses
-- [ ] Return structured results
+- [x] Auto-detect Python projects (pyproject.toml, setup.py, *.py)
+- [x] Initialize python-lsp-server (or pyright)
+- [x] Handle Python-specific URI schemes
+- [x] Parse Python LSP responses
+- [x] Return structured results
 
 ---
 
 ### T-014: Integrate LSP into living-docs
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-03
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Use LSP in living-docs command for semantic analysis.
@@ -262,18 +262,18 @@
 **Test**: Given /sw:living-docs → When analyzing → Then LSP is invoked
 
 **Acceptance**:
-- [ ] Check for LSP availability before use
-- [ ] Use LSP for export/symbol extraction
-- [ ] Use LSP for cross-file reference resolution
-- [ ] Log LSP usage for debugging
-- [ ] Track performance improvement
+- [x] Check for LSP availability before use
+- [x] Use LSP for export/symbol extraction
+- [x] Use LSP for cross-file reference resolution
+- [x] Log LSP usage for debugging
+- [x] Track performance improvement
 
 ---
 
 ### T-015: Grep fallback when LSP unavailable
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Gracefully fallback to grep-based analysis when LSP is unavailable.
@@ -281,18 +281,18 @@
 **Test**: Given no LSP → When analyzing → Then grep is used with warning
 
 **Acceptance**:
-- [ ] Detect when LSP server not installed
-- [ ] Log warning about degraded analysis
-- [ ] Use existing grep-based parsing
-- [ ] Continue without error
-- [ ] Track which method was used
+- [x] Detect when LSP server not installed
+- [x] Log warning about degraded analysis
+- [x] Use existing grep-based parsing
+- [x] Continue without error
+- [x] Track which method was used
 
 ---
 
 ### T-016: E2E test for LSP vs grep performance
 **User Story**: US-003
 **Satisfies ACs**: AC-US3-05
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Prove LSP is faster than grep for symbol resolution.
@@ -300,11 +300,11 @@
 **Test**: Given large codebase → When comparing LSP vs grep → Then LSP is significantly faster
 
 **Acceptance**:
-- [ ] Set up test with real TypeScript codebase
-- [ ] Measure grep-based symbol search time
-- [ ] Measure LSP-based symbol resolution time
-- [ ] Assert LSP is at least 10x faster
-- [ ] Log performance comparison
+- [x] Set up test with real TypeScript codebase
+- [x] Measure grep-based symbol search time
+- [x] Measure LSP-based symbol resolution time
+- [x] Assert LSP is at least 10x faster
+- [x] Log performance comparison
 
 ---
 
@@ -313,7 +313,7 @@
 ### T-017: Create /sw:plugin-status command
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-01
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Create command to show loaded plugins and activation status.
@@ -321,18 +321,18 @@
 **Test**: Given /sw:plugin-status → When executing → Then shows plugin status table
 
 **Acceptance**:
-- [ ] List all installed plugins
-- [ ] Show skill count per plugin
-- [ ] Show last activation timestamp
-- [ ] Show trigger keyword sample
-- [ ] Format as readable table
+- [x] List all installed plugins
+- [x] Show skill count per plugin
+- [x] Show last activation timestamp
+- [x] Show trigger keyword sample
+- [x] Format as readable table
 
 ---
 
 ### T-018: Create /sw:skill-match command
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-02
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Test a prompt against skill triggers to see what would match.
@@ -340,18 +340,18 @@
 **Test**: Given /sw:skill-match "deploy to EKS" → When executing → Then shows matched skills
 
 **Acceptance**:
-- [ ] Accept prompt as argument
-- [ ] Load skill trigger index
-- [ ] Match prompt keywords against triggers
-- [ ] Show matched skills ranked by relevance
-- [ ] Include match explanation
+- [x] Accept prompt as argument
+- [x] Load skill trigger index
+- [x] Match prompt keywords against triggers
+- [x] Show matched skills ranked by relevance
+- [x] Include match explanation
 
 ---
 
 ### T-019: Add activation debug logging
 **User Story**: US-004
 **Satisfies ACs**: AC-US4-03, AC-US4-04
-**Status**: [ ] pending
+**Status**: [x] completed
 **Model**: opus
 
 **Description**: Log skill matching decisions for debugging.
@@ -359,11 +359,11 @@
 **Test**: Given DEBUG=skills → When matching → Then decisions logged
 
 **Acceptance**:
-- [ ] Add SPECWEAVE_DEBUG_SKILLS env var
-- [ ] Log when skill matching occurs
-- [ ] Log matched and rejected skills
-- [ ] Log reasons for rejection
-- [ ] Write to .specweave/logs/skill-activation.log
+- [x] Add SPECWEAVE_DEBUG_SKILLS env var
+- [x] Log when skill matching occurs
+- [x] Log matched and rejected skills
+- [x] Log reasons for rejection
+- [x] Write to .specweave/logs/skill-activation.log
 
 ---
 

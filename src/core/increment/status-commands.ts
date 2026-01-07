@@ -272,7 +272,12 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
     }
 
     // Group by status
-    const active = increments.filter(m => m.status === IncrementStatus.ACTIVE);
+    // CRITICAL: "active" includes planning, active, and ready_for_review (all count towards WIP limits)
+    const active = increments.filter(m =>
+      m.status === IncrementStatus.PLANNING ||
+      m.status === IncrementStatus.ACTIVE ||
+      m.status === IncrementStatus.READY_FOR_REVIEW
+    );
     const paused = increments.filter(m => m.status === IncrementStatus.PAUSED);
     const completed = increments.filter(m => m.status === IncrementStatus.COMPLETED);
     const abandoned = increments.filter(m => m.status === IncrementStatus.ABANDONED);

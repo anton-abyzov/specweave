@@ -38,6 +38,7 @@ export type CompletionConditionType =
   | 'build'          // Build must pass
   | 'tests'          // Tests must pass (unit + integration)
   | 'e2e'            // E2E tests must pass
+  | 'integration'    // Integration tests must pass (API endpoints, service-to-service)
   | 'lint'           // Linting must pass
   | 'types'          // Type-checking must pass
   | 'coverage'       // Code coverage must meet threshold
@@ -50,6 +51,7 @@ export interface CompletionCondition {
   cmd?: string;            // For custom command conditions
   autoHeal?: boolean;      // Auto-fix and retry on failure (default: true for build/lint, false for tests)
   maxRetries?: number;     // Max retry attempts for auto-heal (default: 3)
+  mandatory?: boolean;     // Condition cannot be removed by user (project-type specific)
   framework?: string;      // Detected framework (npm, pytest, go, cargo, etc.)
   detectedCommand?: string; // Auto-detected command to run
 }
