@@ -2,7 +2,7 @@
 id: US-003
 feature: FS-156
 title: Smart Marketplace Merge System
-status: not_started
+status: completed
 priority: P1
 created: 2026-01-06
 project: specweave
@@ -24,11 +24,11 @@ external:
 
 ## Acceptance Criteria
 
-- [ ] **AC-US3-01**: `bin/install-skills.sh` detects existing MEMORY.md files
-- [ ] **AC-US3-02**: Backup created before merge (`.memory-backups/MEMORY-YYYY-MM-DD.md`)
-- [ ] **AC-US3-03**: User learnings merged with new defaults (deduplicated)
-- [ ] **AC-US3-04**: Merge script removes duplicate learnings (>50% content overlap)
-- [ ] **AC-US3-05**: Merge preserves user learning timestamps and sources
+- [x] **AC-US3-01**: `bin/install-skills.sh` detects existing MEMORY.md files
+- [x] **AC-US3-02**: Backup created before merge (`.memory-backups/MEMORY-YYYY-MM-DD.md`)
+- [x] **AC-US3-03**: User learnings merged with new defaults (deduplicated)
+- [x] **AC-US3-04**: Merge script removes duplicate learnings (>50% content overlap)
+- [x] **AC-US3-05**: Merge preserves user learning timestamps and sources
 
 ---
 
@@ -41,10 +41,10 @@ external:
 
 ## Tasks
 
-- [ ] **T-004**: Implement confidence calculation
-- [ ] **T-020**: Create signal detection patterns
-- [ ] **T-021**: Create confidence calculator
-- [ ] **T-022**: Create auto-reflect script
-- [ ] **T-023**: Create learning queue
-- [ ] **T-024**: Update stop-session hook
-- [ ] **T-025**: Create /sw:reflect-on command
+- [x] **T-004**: Implement confidence calculation
+- [x] **T-020**: Create signal detection patterns
+- [x] **T-021**: Create confidence calculator
+- [x] **T-022**: Create auto-reflect script
+- [x] **T-023**: Create learning queue
+- [x] **T-024**: Update stop-session hook
+- [x] **T-025**: Create /sw:reflect-on command

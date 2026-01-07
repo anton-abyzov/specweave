@@ -2,7 +2,7 @@
 id: US-005
 feature: FS-156
 title: Confidence-Based Detection
-status: not_started
+status: completed
 priority: P1
 created: 2026-01-06
 project: specweave
@@ -24,11 +24,11 @@ external:
 
 ## Acceptance Criteria
 
-- [ ] **AC-US5-01**: HIGH confidence: Explicit corrections ("No, use X", "Never do Y")
-- [ ] **AC-US5-02**: HIGH confidence: Explicit rules ("Always do X")
-- [ ] **AC-US5-03**: MEDIUM confidence: Approvals ("Perfect!", "That's right")
-- [ ] **AC-US5-04**: LOW confidence: Observations (patterns that worked)
-- [ ] **AC-US5-05**: Confidence calculation based on keyword matching
+- [x] **AC-US5-01**: HIGH confidence: Explicit corrections ("No, use X", "Never do Y")
+- [x] **AC-US5-02**: HIGH confidence: Explicit rules ("Always do X")
+- [x] **AC-US5-03**: MEDIUM confidence: Approvals ("Perfect!", "That's right")
+- [x] **AC-US5-04**: LOW confidence: Observations (patterns that worked)
+- [x] **AC-US5-05**: Confidence calculation based on keyword matching
 
 ---
 
@@ -41,4 +41,4 @@ external:
 
 ## Tasks
 
-- [ ] **T-026**: Create /sw:reflect-status command
+- [x] **T-026**: Create /sw:reflect-status command
