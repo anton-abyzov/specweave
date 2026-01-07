@@ -153,12 +153,23 @@ coverage/
 /*-COMPLETE*.md
 /*-GUIDE*.md
 /*-FIX*.md
+/*-CLEANUP*.md
+/*-VALIDATION*.md
+/*-MODE*.md
 /SESSION-*.md
 /IMPLEMENTATION-*.md
 /PHASE-*.md
+/AUTO-*.md
+/AUTO-*.txt
+/JUDGE-*.md
+/LIVING-*.md
+/LOCK-*.md
+/ULTRATHINK-*.md
+/INIT-*.md
 /*.md.backup*
 /test-*.js
 /debug-*.js
+/build-output.log
 
 # MCP/Playwright test artifacts (screenshots, traces, etc.)
 .playwright-mcp/
