@@ -2,7 +2,7 @@
 increment: 0158-smart-completion-conditions
 title: "Smart Completion Conditions with Project Type Detection"
 priority: P0
-status: planning
+status: completed
 created: 2026-01-07
 dependencies: []
 structure: user-stories
