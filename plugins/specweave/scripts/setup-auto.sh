@@ -17,6 +17,12 @@
 #   --yes                Auto-approve increment plan (skip user approval)
 #   --tdd                Enable TDD strict mode (ALL tests must pass)
 #   --strict             Alias for --tdd
+#   --require-tests      Don't stop until all tests pass (mandatory)
+#   --require-e2e        Don't stop until E2E tests pass (mandatory)
+#   --require-build      Don't stop until build succeeds (mandatory)
+#   --require-coverage N Don't stop until coverage ≥N% (mandatory)
+#   --require-judge      Don't stop until LLM judge approves quality (mandatory)
+#   --no-smart-defaults  Bypass project type detection
 #   -h, --help           Show this help
 
 set -e
@@ -275,6 +281,55 @@ if [ "$DRY_RUN" = "true" ]; then
     exit 0
 fi
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# PROJECT TYPE DETECTION AND SMART DEFAULTS (v1.1.0)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Detect project type using AST-based detector
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DETECT_SCRIPT="$SCRIPT_DIR/detect-project-type.js"
+GET_CONDITIONS_SCRIPT="$SCRIPT_DIR/get-default-conditions.js"
+
+# Run project detection
+if [ -f "$DETECT_SCRIPT" ]; then
+    DETECTION_JSON=$(node "$DETECT_SCRIPT" "$PROJECT_ROOT" 2>/dev/null)
+
+    if [ $? -eq 0 ] && [ -n "$DETECTION_JSON" ]; then
+        PROJECT_TYPE=$(echo "$DETECTION_JSON" | jq -r '.type')
+        PROJECT_CONFIDENCE=$(echo "$DETECTION_JSON" | jq -r '.confidence')
+        PROJECT_FRAMEWORKS=$(echo "$DETECTION_JSON" | jq -r '.frameworks | join(", ")')
+        PROJECT_TEST_FRAMEWORKS=$(echo "$DETECTION_JSON" | jq -r '.testFrameworks | join(", ")')
+
+        # Get default completion conditions for this project type
+        if [ -f "$GET_CONDITIONS_SCRIPT" ]; then
+            COMPLETION_CONDITIONS=$(node "$GET_CONDITIONS_SCRIPT" "$PROJECT_TYPE" 2>/dev/null)
+
+            if [ $? -ne 0 ] || [ -z "$COMPLETION_CONDITIONS" ]; then
+                # Fallback to empty conditions
+                COMPLETION_CONDITIONS="[]"
+            fi
+        else
+            COMPLETION_CONDITIONS="[]"
+        fi
+    else
+        # Detection failed, use generic defaults
+        PROJECT_TYPE="generic"
+        PROJECT_CONFIDENCE="0"
+        PROJECT_FRAMEWORKS=""
+        PROJECT_TEST_FRAMEWORKS=""
+        COMPLETION_CONDITIONS="[]"
+    fi
+else
+    # Script not found, skip detection
+    PROJECT_TYPE="generic"
+    PROJECT_CONFIDENCE="0"
+    PROJECT_FRAMEWORKS=""
+    PROJECT_TEST_FRAMEWORKS=""
+    COMPLETION_CONDITIONS="[]"
+fi
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 # Build session JSON
 SESSION_JSON=$(cat <<EOF
 {
@@ -300,7 +355,10 @@ SESSION_JSON=$(cat <<EOF
   },
   "lastActivity": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "simple": $SIMPLE_MODE,
-  "tddMode": $TDD_MODE
+  "tddMode": $TDD_MODE,
+  "projectType": "$PROJECT_TYPE",
+  "projectConfidence": $PROJECT_CONFIDENCE,
+  "completionConditions": $COMPLETION_CONDITIONS
 }
 EOF
 )
@@ -328,7 +386,28 @@ echo "Session ID: $SESSION_ID"
 echo "Max Iterations: $MAX_ITERATIONS"
 [ -n "$MAX_HOURS" ] && echo "Max Hours: $MAX_HOURS"
 echo "Simple Mode: $SIMPLE_MODE"
+
+# Display project detection results
+if [ "$PROJECT_TYPE" != "generic" ] && [ "$PROJECT_CONFIDENCE" != "0" ]; then
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "📦 PROJECT DETECTION"
+    echo "   Type: $PROJECT_TYPE (confidence: $(echo "$PROJECT_CONFIDENCE * 100" | bc | cut -d. -f1)%)"
+    [ -n "$PROJECT_FRAMEWORKS" ] && echo "   Frameworks: $PROJECT_FRAMEWORKS"
+    [ -n "$PROJECT_TEST_FRAMEWORKS" ] && echo "   Test Frameworks: $PROJECT_TEST_FRAMEWORKS"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+fi
+
+# Display completion conditions
+CONDITION_COUNT=$(echo "$COMPLETION_CONDITIONS" | jq 'length')
+if [ "$CONDITION_COUNT" -gt 0 ]; then
+    echo ""
+    echo "✅ COMPLETION CONDITIONS ($CONDITION_COUNT):"
+    echo "$COMPLETION_CONDITIONS" | jq -r '.[] | "  • \(.type)\(if .threshold then " (≥\(.threshold)%)" else "" end)\(if .mandatory then " [MANDATORY]" else "" end)\(if .autoHeal then " (auto-heal)" else "" end)"'
+fi
+
 if [ "$TDD_MODE" = "true" ]; then
+    echo ""
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "🔴 TDD STRICT MODE: ENABLED"
     echo "   ALL tests MUST pass before auto mode can complete"
