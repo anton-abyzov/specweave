@@ -2,7 +2,7 @@
 id: US-002
 feature: FS-156
 title: SpecWeave Project Detection
-status: not_started
+status: completed
 priority: P1
 created: 2026-01-06
 project: specweave
@@ -24,10 +24,10 @@ external:
 
 ## Acceptance Criteria
 
-- [ ] **AC-US2-01**: Detect SpecWeave project by checking `package.json` name field
-- [ ] **AC-US2-02**: When in SpecWeave project, update `SKILL.md` with learnings
-- [ ] **AC-US2-03**: When in user project, update `MEMORY.md` with learnings
-- [ ] **AC-US2-04**: Clear logging shows which mode is active
+- [x] **AC-US2-01**: Detect SpecWeave project by checking `package.json` name field
+- [x] **AC-US2-02**: When in SpecWeave project, update `SKILL.md` with learnings
+- [x] **AC-US2-03**: When in user project, update `MEMORY.md` with learnings
+- [x] **AC-US2-04**: Clear logging shows which mode is active
 
 ---
 
@@ -40,5 +40,5 @@ external:
 
 ## Tasks
 
-- [ ] **T-005**: Implement SpecWeave project detection
-- [ ] **T-006**: Route learnings to skill MEMORY.md or SKILL.md
+- [x] **T-005**: Implement SpecWeave project detection
+- [x] **T-006**: Route learnings to skill MEMORY.md or SKILL.md
