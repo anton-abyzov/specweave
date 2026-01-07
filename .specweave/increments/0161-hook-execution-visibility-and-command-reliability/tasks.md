@@ -114,7 +114,7 @@ describe('WarningFormatter', () => {
 ---
 
 ### T-003: Update fail-fast-wrapper.sh to output warnings
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-04 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-04 | **Status**: [x] completed
 **Model**: 💎 Opus
 
 Modify fail-fast-wrapper.sh to output JSON with warnings array instead of silent `{"continue":true}`.

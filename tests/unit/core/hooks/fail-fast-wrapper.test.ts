@@ -37,10 +37,9 @@ describe('fail-fast-wrapper.sh with warnings', () => {
     }
   });
 
-  it.skip('should return warnings array for timeout failures', async () => {
-    // NOTE: Skipped because macOS doesn't have gtimeout/timeout by default
-    // Install with: brew install coreutils
-    // This test would verify that hooks timing out return WARNING severity warnings
+  it('should return warnings array for timeout failures', async () => {
+    // v1.0.102+: Now works on macOS via Perl fallback (no coreutils needed!)
+    // This test verifies that hooks timing out return WARNING severity warnings
 
     // Given: A script that times out (doesn't produce output before timeout)
     const slowScript = path.join(testDir, 'slow-hook.sh');
