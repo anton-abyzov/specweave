@@ -51,7 +51,7 @@ created: 2026-01-07
 - [x] **AC-US2-02**: Each hook execution logs: timestamp, hook name, status (success/warning/error), duration
 - [x] **AC-US2-03**: Failed hooks log: error message, stack trace (if available), retry attempts
 - [x] **AC-US2-04**: Logs rotate daily to prevent unbounded growth
-- [ ] **AC-US2-05**: Log viewer command `specweave logs hooks --tail=50 --follow`
+- [x] **AC-US2-05**: Log viewer command `specweave logs hooks --tail=50 --follow`
 - [x] **AC-US2-06**: Logs include request ID for correlation across multiple hook calls
 
 ---
