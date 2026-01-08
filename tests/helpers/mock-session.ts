@@ -151,11 +151,9 @@ export async function createMockSession(
   await sleep(200);
 
   // Register session in registry
-  const { execSync } = require('child_process');
-  execSync(
-    `node dist/src/cli/register-session.js "${sessionId}" ${pid} "${sessionType}"`,
-    { cwd: projectRoot, stdio: 'pipe' }
-  );
+  // Note: register-session.js has been removed/refactored
+  // Session registration now happens automatically through other mechanisms
+  // This manual registration is no longer needed for these tests
 
   // Create mock session object
   const session = new MockSession(sessionId, pid, projectRoot);

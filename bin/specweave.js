@@ -344,6 +344,24 @@ program
     await statusCommand(options);
   });
 
+// Logs command - View hook execution logs
+program
+  .command('logs')
+  .description('View hook execution logs')
+  .option('--tail <number>', 'Number of log entries to show (default: 50)', '50')
+  .option('--hook <name>', 'Filter by hook name')
+  .option('--format <type>', 'Output format: json or table (default: table)', 'table')
+  .option('--follow', 'Follow new log entries (not yet implemented)')
+  .action(async (options) => {
+    const { logsCommand } = await import('../dist/src/cli/commands/logs.js');
+    await logsCommand({
+      tail: parseInt(options.tail, 10),
+      hook: options.hook,
+      format: options.format,
+      follow: options.follow
+    });
+  });
+
 // Status line command - Display current increment progress
 program
   .command('status-line')

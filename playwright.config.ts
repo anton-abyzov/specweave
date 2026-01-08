@@ -3,6 +3,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   testMatch: '**/*.spec.ts',
+  testIgnore: '**/e2e/**',  // E2E tests use Vitest, not Playwright
   timeout: 30000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
@@ -21,10 +22,6 @@ export default defineConfig({
     {
       name: 'integration',
       testMatch: '**/integration/**/*.spec.ts',
-    },
-    {
-      name: 'e2e',
-      testMatch: '**/e2e/**/*.spec.ts',
     },
   ],
 });
