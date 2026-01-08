@@ -158,13 +158,15 @@ export class CacheInvalidator {
         }
       }
 
-      // Write backup metadata
+      // Write backup metadata (only include actual files, not directories)
       const metadata: BackupMetadata = {
         pluginName,
         version,
         timestamp: new Date().toISOString(),
         fileCount,
-        files: files.filter(f => typeof f === 'string') as string[]
+        files: files
+          .filter(f => typeof f === 'string')
+          .filter(f => fs.statSync(path.join(skillsPath, f as string)).isFile()) as string[]
       };
 
       fs.writeFileSync(
@@ -246,9 +248,13 @@ export class CacheInvalidator {
         fs.readFileSync(metadataPath, 'utf8')
       );
 
-      // Check if all files from backup metadata exist
+      // Check if all files from backup metadata exist (skip directories for older backups)
       for (const file of metadata.files) {
         const backupFilePath = path.join(backupPath, file);
+        // Skip directory entries (for backwards compatibility with older backups)
+        if (fs.existsSync(backupFilePath) && !fs.statSync(backupFilePath).isFile()) {
+          continue;
+        }
         if (!fs.existsSync(backupFilePath) && !file.includes('.backup-metadata.json')) {
           logger.warn(`Missing file in backup: ${file}`);
           return false;
@@ -270,10 +276,18 @@ export class CacheInvalidator {
           }
         }
 
-        // Check if file contents match
+        // Check if file contents match (only for actual files, skip directories)
         for (const file of metadata.files) {
           const originalPath = path.join(skillsPath, file);
           const backupFilePath = path.join(backupPath, file);
+
+          // Skip if either path is a directory (defensive check for older backups)
+          if (fs.existsSync(originalPath) && !fs.statSync(originalPath).isFile()) {
+            continue;
+          }
+          if (fs.existsSync(backupFilePath) && !fs.statSync(backupFilePath).isFile()) {
+            continue;
+          }
 
           if (fs.existsSync(originalPath) && fs.existsSync(backupFilePath)) {
             const originalContent = fs.readFileSync(originalPath, 'utf8');
