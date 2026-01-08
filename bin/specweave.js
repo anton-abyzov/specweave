@@ -485,6 +485,78 @@ program
     await cancelCmd.parseAsync(args, { from: 'user' });
   });
 
+// Go mode commands - Pure Ralph Wiggum pattern (simpler than auto mode)
+program
+  .command('go <prompt>')
+  .description('Start go session (Ralph Wiggum pattern) - simple autonomous iteration')
+  .option('--max-iterations <n>', 'Maximum iterations (safety net)', '100')
+  .option('--completion-promise <text>', 'Exact phrase that signals completion')
+  .option('--build', 'Build must pass before completion')
+  .option('--tests', 'Tests must pass before completion')
+  .option('--e2e', 'E2E tests must pass before completion')
+  .option('--lint', 'Linting must pass before completion')
+  .option('--types', 'Type-checking must pass before completion')
+  .option('--dry-run', 'Preview without starting')
+  .action(async (prompt, options) => {
+    const path = await import('path');
+    const fs = await import('fs');
+    const projectPath = process.cwd();
+
+    // Check if SpecWeave is initialized
+    const specweavePath = path.join(projectPath, '.specweave');
+    if (!fs.existsSync(specweavePath)) {
+      console.log(chalk.yellow('No SpecWeave project found in current directory.'));
+      console.log(chalk.gray('Run `specweave init` to initialize a project.'));
+      return;
+    }
+
+    try {
+      const { handleGoCommand } = await import('../dist/src/cli/commands/go.js');
+      await handleGoCommand(projectPath, prompt, options);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`Error: ${errorMessage}`));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('go-status')
+  .description('Check go session status')
+  .option('--verbose', 'Show detailed information')
+  .option('--json', 'Output as JSON')
+  .action(async (options) => {
+    const path = await import('path');
+    const projectPath = process.cwd();
+
+    try {
+      const { handleGoStatusCommand } = await import('../dist/src/cli/commands/go-status.js');
+      await handleGoStatusCommand(projectPath, options);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`Error: ${errorMessage}`));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('cancel-go')
+  .description('Cancel running go session')
+  .option('--force', 'Force cancel without confirmation')
+  .action(async (options) => {
+    const path = await import('path');
+    const projectPath = process.cwd();
+
+    try {
+      const { handleCancelGoCommand } = await import('../dist/src/cli/commands/cancel-go.js');
+      await handleCancelGoCommand(projectPath, options);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`Error: ${errorMessage}`));
+      process.exit(1);
+    }
+  });
+
 // Update instructions command - Smart merge CLAUDE.md/AGENTS.md
 program
   .command('update-instructions')
