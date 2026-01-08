@@ -65,6 +65,7 @@ is_auto_reflect_enabled() {
 }
 
 # Check for reflection-worthy signals in transcript
+# v4.1: Supports both plain text and JSONL (Claude Code) transcript formats
 has_reflection_signals() {
     local transcript="$1"
 
@@ -72,10 +73,23 @@ has_reflection_signals() {
         return 1
     fi
 
-    # Quick grep for correction/approval patterns
-    # Uses POSIX grep -E for cross-platform compatibility
-    if grep -qiE "(No, don't|No, use|Wrong|That's incorrect|Always use|Never use|The correct way|Perfect!|That's right|That's correct|Exactly!|Well done)" "$transcript" 2>/dev/null; then
-        return 0
+    # Pattern for correction/approval detection
+    local SIGNAL_PATTERN="(No, don't|No, use|Wrong[,!]|That's incorrect|Always use|Never use|The correct way|Perfect!|That's right|That's correct|Exactly!|Well done)"
+
+    # Check file extension and content type
+    if [[ "$transcript" == *.jsonl ]] || head -1 "$transcript" 2>/dev/null | grep -q '^{'; then
+        # JSONL format (Claude Code transcripts)
+        # Extract user message text content and search for signals
+        # Only look at user messages (role: user) to catch corrections
+        if jq -r 'select(.message.role == "user") | .message.content[]? | select(.text) | .text' "$transcript" 2>/dev/null | \
+           grep -qiE "$SIGNAL_PATTERN"; then
+            return 0
+        fi
+    else
+        # Plain text format (fallback)
+        if grep -qiE "$SIGNAL_PATTERN" "$transcript" 2>/dev/null; then
+            return 0
+        fi
     fi
 
     return 1
@@ -128,7 +142,8 @@ queue_reflection() {
     local timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date +%Y-%m-%dT%H:%M:%SZ)
 
     # Create queue entry (JSONL format for atomic append)
-    local queue_entry=$(jq -n \
+    # v4.1: Validate JSON before writing to prevent corruption
+    local queue_entry=$(jq -n -c \
         --arg transcript "$transcript" \
         --arg confidence "$confidence" \
         --arg max "$max_learnings" \
@@ -142,9 +157,25 @@ queue_reflection() {
             status: $status
         }')
 
-    # Atomic append to queue (JSONL = one JSON object per line)
-    echo "$queue_entry" >> "$queue_file" 2>/dev/null || {
-        log_reflect "error" "Failed to write to queue file: $queue_file"
+    # Validate the generated JSON before writing
+    if ! echo "$queue_entry" | jq empty 2>/dev/null; then
+        log_reflect "error" "Failed to create valid JSON queue entry"
+        return 1
+    fi
+
+    # Use a temporary file and atomic move to prevent partial writes
+    local temp_queue="${queue_file}.tmp.$$"
+    if [ -f "$queue_file" ]; then
+        cp "$queue_file" "$temp_queue" 2>/dev/null || true
+    fi
+    echo "$queue_entry" >> "$temp_queue" 2>/dev/null || {
+        log_reflect "error" "Failed to write to temp queue file"
+        rm -f "$temp_queue"
+        return 1
+    }
+    mv "$temp_queue" "$queue_file" 2>/dev/null || {
+        log_reflect "error" "Failed to atomically update queue file: $queue_file"
+        rm -f "$temp_queue"
         return 1
     }
 

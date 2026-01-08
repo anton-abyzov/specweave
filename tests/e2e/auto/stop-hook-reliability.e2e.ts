@@ -464,8 +464,8 @@ describe('Stop Hook Reliability (v2.1)', () => {
     });
   });
 
-  describe('Stop Hook Active Prevention', () => {
-    it('should approve exit when stop_hook_active is true', () => {
+  describe('Stop Hook Active - Ralph Wiggum Pattern', () => {
+    it('should continue evaluating completion when stop_hook_active is true with incomplete tasks', () => {
       createSessionFile({
         sessionId: 'test-session',
         status: 'running',
@@ -475,6 +475,14 @@ describe('Stop Hook Reliability (v2.1)', () => {
         currentIncrement: '0001-test',
       });
 
+      // Create incomplete tasks
+      const incDir = path.join(tempDir, '.specweave', 'increments', '0001-test');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'tasks.md'),
+        '### T-001: Test task\n**Status**: [ ] pending'
+      );
+
       const transcript = createTranscript('Test output');
 
       const result = runStopHook({
@@ -483,8 +491,41 @@ describe('Stop Hook Reliability (v2.1)', () => {
       });
 
       const response = JSON.parse(result.stdout);
+      // FIXED: stop_hook_active should NOT cause immediate exit
+      // The hook should still check completion conditions
+      expect(response.decision).toBe('block');
+      expect(response.reason).toContain('incomplete');
+    });
+
+    it('should approve exit when stop_hook_active is true AND tasks are complete', () => {
+      createSessionFile({
+        sessionId: 'test-session',
+        status: 'running',
+        iteration: 0,
+        maxIterations: 100,
+        incrementQueue: ['0001-test'],
+        currentIncrement: '0001-test',
+      });
+
+      // Create completed tasks
+      const incDir = path.join(tempDir, '.specweave', 'increments', '0001-test');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'tasks.md'),
+        '### T-001: Test task\n**Status**: [x] completed'
+      );
+
+      const transcript = createTranscript('Test output');
+
+      const result = runStopHook({
+        transcript_path: transcript,
+        stop_hook_active: true,
+      });
+
+      const response = JSON.parse(result.stdout);
+      // Should approve because tasks ARE complete (not because of stop_hook_active)
       expect(response.decision).toBe('approve');
-      expect(response.reason).toContain('prevent loop');
+      expect(response.reason).toContain('All tasks completed');
     });
   });
 
