@@ -273,7 +273,7 @@ describe('LogRotation', () => {
 ---
 
 ### T-006: Add log viewer command
-**User Story**: US-002 | **Satisfies ACs**: AC-US2-05 | **Status**: [ ] pending
+**User Story**: US-002 | **Satisfies ACs**: AC-US2-05 | **Status**: [x] completed
 **Model**: 💎 Opus
 
 Create `specweave logs hooks` command with tail and follow options.
