@@ -50,17 +50,25 @@ export interface ValidationOptions {
  */
 export class CacheHealthMonitor {
   private metadataManager: CacheMetadataManager;
-  private static readonly MERGE_CONFLICT_PATTERN = /<{7}|={7}|>{7}/;
 
   constructor() {
     this.metadataManager = new CacheMetadataManager();
   }
 
   /**
-   * Detect merge conflict markers in a file
+   * Detect actual merge conflict markers in a file
+   *
+   * A real merge conflict has:
+   * 1. All three markers present: <<<<<<<, =======, >>>>>>>
+   * 2. Markers appear at line start (possibly with leading whitespace)
+   * 3. Markers are NOT inside code fences (documentation examples)
+   *
+   * This avoids false positives from:
+   * - Documentation showing conflict examples (inside code blocks)
+   * - Comment dividers using repeated characters
    *
    * @param filePath - Absolute path to file
-   * @returns True if merge conflict markers detected
+   * @returns True if real merge conflict markers detected
    */
   detectMergeConflicts(filePath: string): boolean {
     if (!fs.existsSync(filePath)) {
@@ -68,7 +76,56 @@ export class CacheHealthMonitor {
     }
 
     const content = fs.readFileSync(filePath, 'utf8');
-    return CacheHealthMonitor.MERGE_CONFLICT_PATTERN.test(content);
+
+    // Check if all 3 marker types are present (required for a real conflict)
+    // <<<<<<< followed by space/branch name at line start
+    const hasOpenMarker = /^<{7}\s/m.test(content);
+    // ======= on its own line
+    const hasMidMarker = /^={7}$/m.test(content);
+    // >>>>>>> followed by space/branch name at line start
+    const hasCloseMarker = /^>{7}\s/m.test(content);
+
+    if (!hasOpenMarker || !hasMidMarker || !hasCloseMarker) {
+      return false; // Not all markers present = not a real conflict
+    }
+
+    // All 3 present - now check they're not inside code fences
+    return this.hasMarkersOutsideCodeFences(content);
+  }
+
+  /**
+   * Check if merge conflict markers exist outside of code fences
+   *
+   * Code fences (``` blocks) often contain documentation examples
+   * showing what conflicts look like. These should not be flagged.
+   *
+   * @param content - File content to analyze
+   * @returns True if conflict markers found outside code fences
+   */
+  private hasMarkersOutsideCodeFences(content: string): boolean {
+    const lines = content.split('\n');
+    let inCodeFence = false;
+    let foundOpenMarker = false;
+    let foundMidMarker = false;
+    let foundCloseMarker = false;
+
+    for (const line of lines) {
+      // Track code fence state (``` at line start, with optional language)
+      if (/^```/.test(line.trim())) {
+        inCodeFence = !inCodeFence;
+        continue;
+      }
+
+      // Only check for markers outside code fences
+      if (!inCodeFence) {
+        if (/^<{7}\s/.test(line)) foundOpenMarker = true;
+        if (/^={7}$/.test(line)) foundMidMarker = true;
+        if (/^>{7}\s/.test(line)) foundCloseMarker = true;
+      }
+    }
+
+    // Return true if all markers found outside code fences (real conflict)
+    return foundOpenMarker && foundMidMarker && foundCloseMarker;
   }
 
   /**
