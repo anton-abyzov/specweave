@@ -294,6 +294,29 @@ done
 # Generate session ID
 SESSION_ID="auto-$(date +%Y-%m-%d)-$(head -c 4 /dev/urandom | xxd -p)"
 
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# TDD MODE AUTO-DETECTION FROM INCREMENT METADATA (v1.0.105)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# If --tdd flag not provided, check if first increment has testMode: "TDD"
+# This ensures TDD enforcement is automatic when working on TDD increments
+
+if [ "$TDD_MODE" = "false" ] && [ ${#INCREMENT_IDS[@]} -gt 0 ]; then
+    FIRST_INC="${INCREMENT_IDS[0]}"
+    FIRST_INC_DIR="$INCREMENTS_DIR/$FIRST_INC"
+
+    if [ -d "$FIRST_INC_DIR" ]; then
+        META_FILE="$FIRST_INC_DIR/metadata.json"
+        if [ -f "$META_FILE" ]; then
+            INC_TEST_MODE=$(jq -r '.testMode // "test-after"' "$META_FILE" 2>/dev/null || echo "test-after")
+
+            if [ "$INC_TEST_MODE" = "TDD" ]; then
+                TDD_MODE=true
+                echo "🔴 TDD Mode auto-enabled from increment metadata (testMode: TDD)"
+            fi
+        fi
+    fi
+fi
+
 # Dry run output
 if [ "$DRY_RUN" = "true" ]; then
     echo "🔍 Dry Run - Session Preview"
@@ -412,6 +435,7 @@ SESSION_JSON=$(cat <<EOF
   "lastActivity": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "simple": $SIMPLE_MODE,
   "tddMode": $TDD_MODE,
+  "tddGuidance": $(if [ "$TDD_MODE" = "true" ]; then echo '"Follow RED-GREEN-REFACTOR: 1) [RED] Write failing test FIRST, 2) [GREEN] Make test pass with minimal code, 3) [REFACTOR] Improve while keeping tests green. NEVER skip the RED phase!"'; else echo 'null'; fi),
   "projectType": "$PROJECT_TYPE",
   "projectConfidence": $PROJECT_CONFIDENCE,
   "completionConditions": $COMPLETION_CONDITIONS

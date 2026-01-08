@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v0.34.0 - UNIFIED INSTANT EXECUTION)
+# SpecWeave UserPromptSubmit Hook (v1.0.105 - IDE METADATA FIX)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Discipline validation, context injection, instant command execution
 #
 # FEATURES:
+# - v1.0.105: Fix ARGS extraction for prompts with IDE metadata prefix (<ide_opened_file>)
 # - v0.34.0: Unified "block" decision for both CLI and VSCode (systemMessage not supported in UserPromptSubmit)
 # - v0.33.1: Unified instant execution - scripts run in hook for both CLI and VSCode
 # - v0.33.0: Script delegation pattern (now deprecated in favor of block decision)
@@ -98,9 +99,31 @@ is_vscode() {
   [[ -n "${CLAUDE_CODE_ENTRYPOINT}" ]] && [[ "${CLAUDE_CODE_ENTRYPOINT}" == "claude-vscode" ]]
 }
 
+# Helper: Extract command line and args from multi-line prompt (v1.0.105+)
+# When prompts contain IDE metadata (e.g., <ide_opened_file>...</ide_opened_file>)
+# the command may be on a subsequent line. This function:
+# 1. Finds the line containing the command
+# 2. Extracts args from that specific line
+# Usage: extract_command_args "PROMPT" "command_pattern" (e.g., "/sw:progress")
+# Returns args on stdout, or empty string if no args
+extract_command_args() {
+  local prompt="$1"
+  local cmd_pattern="$2"
+
+  # Find the line containing the command and extract args from it
+  # The grep -oE gets just the matching line, sed removes the command prefix
+  local cmd_line
+  cmd_line=$(echo "$prompt" | grep -E "^${cmd_pattern}($| )" | head -1)
+
+  if [[ -n "$cmd_line" ]]; then
+    # Remove the command pattern from the line to get args
+    echo "$cmd_line" | sed "s|^${cmd_pattern}[[:space:]]*||"
+  fi
+}
+
 # /sw:jobs → Execute read-jobs.sh (pure bash, ~2ms)
 if echo "$PROMPT" | grep -qE "^/sw:jobs($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/sw:jobs\s*||')
+  ARGS=$(extract_command_args "$PROMPT" "/sw:jobs")
 
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-jobs.sh" ]]; then
@@ -125,7 +148,7 @@ mkdir -p "$(dirname "$PROGRESS_DEBUG_LOG")" 2>/dev/null || true
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] Checking for /sw:progress in prompt: '$PROMPT'" >> "$PROGRESS_DEBUG_LOG"
 
 if echo "$PROMPT" | grep -qE "^/sw:progress($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/sw:progress\s*||')
+  ARGS=$(extract_command_args "$PROMPT" "/sw:progress")
 
   # DEBUG: Log execution
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] /sw:progress detected - executing script" >> "$PROGRESS_DEBUG_LOG"
@@ -161,7 +184,7 @@ fi
 
 # /sw:status → Execute read-status.sh (pure bash, ~150ms)
 if echo "$PROMPT" | grep -qE "^/sw:status($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/sw:status\s*||')
+  ARGS=$(extract_command_args "$PROMPT" "/sw:status")
 
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-status.sh" ]]; then
@@ -181,7 +204,7 @@ fi
 
 # /sw:workflow → Execute read-workflow.sh (pure bash, ~100ms)
 if echo "$PROMPT" | grep -qE "^/sw:workflow($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/sw:workflow\s*||')
+  ARGS=$(extract_command_args "$PROMPT" "/sw:workflow")
 
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-workflow.sh" ]]; then
@@ -199,7 +222,7 @@ fi
 
 # /sw:costs → Execute read-costs.sh (pure bash, ~50ms)
 if echo "$PROMPT" | grep -qE "^/sw:costs($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/sw:costs\s*||')
+  ARGS=$(extract_command_args "$PROMPT" "/sw:costs")
 
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-costs.sh" ]]; then
@@ -217,7 +240,7 @@ fi
 
 # /sw:analytics → Execute read-analytics.sh (pure bash, ~50ms)
 if echo "$PROMPT" | grep -qE "^/sw:analytics($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/sw:analytics\s*||')
+  ARGS=$(extract_command_args "$PROMPT" "/sw:analytics")
 
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-analytics.sh" ]]; then

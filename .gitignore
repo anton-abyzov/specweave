@@ -170,6 +170,16 @@ coverage/
 /test-*.js
 /debug-*.js
 /build-output.log
+/build-*.log
+/*.log
+
+# Empty temporary directories in root
+/static/
+/test-fixtures/
+
+# Legacy documentation (moved to docs-site/legacy/)
+/MESSAGE_TO_USER.md
+/NVM_GLOBAL_PACKAGES_SOLUTION.md
 
 # MCP/Playwright test artifacts (screenshots, traces, etc.)
 .playwright-mcp/

@@ -271,6 +271,17 @@ case "$FILE_PATH" in
         safe_run_sync "$SYNC_SCRIPT" "task-ac-sync" "$INPUT"
       fi
 
+      # ========================================================================
+      # TDD ENFORCEMENT (v1.0.105+): Warn on TDD discipline violations
+      # ========================================================================
+      # When tasks.md is edited in TDD mode, check for violations
+      # WARNING-ONLY: educates users, never blocks
+      TDD_GUARD="$HOOK_DIR/guards/tdd-enforcement-guard.sh"
+      if [[ -f "$TDD_GUARD" ]]; then
+        log_debug "Running TDD enforcement guard"
+        safe_run_background "$TDD_GUARD" "tdd-enforcement" "$PROJECT_ROOT" "$FILE_PATH" "Edit"
+      fi
+
       # Play completion sound if task was marked complete (v1.0.77+)
       play_task_completion_sound "$FILE_PATH"
     fi

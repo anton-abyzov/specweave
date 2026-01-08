@@ -51,6 +51,7 @@ import {
   copyTemplates,
   createConfigFile,
   showNextSteps,
+  installGitHooks,
   WIZARD_BACK,
   logGoingBack,
 } from '../helpers/init/index.js';
@@ -488,8 +489,8 @@ export async function initCommand(
     // No fake success message here - actual registration is done below
 
     // Copy templates
+    const templatesDir = findSourceDir('templates', __dirname);
     if (!continueExisting) {
-      const templatesDir = findSourceDir('templates', __dirname);
       await copyTemplates(templatesDir, targetDir, finalProjectName, language);
       spinner.text = 'Base templates copied...';
     }
@@ -733,6 +734,43 @@ export async function initCommand(
     // Reason: Multi-project scenarios REQUIRE **Project**: field per User Story,
     // which cannot be determined automatically at init time.
     // Users should create increments explicitly via /sw:increment command.
+
+    // FINAL STEP: Git Hooks Installation (optional)
+    // Only prompt if this is a git repository
+    const isGitRepo = fs.existsSync(path.join(targetDir, '.git'));
+    if (isGitRepo && !isCI) {
+      console.log('');
+      console.log(chalk.bold('🪝 Git Hooks'));
+      console.log('');
+      console.log(chalk.gray('  SpecWeave can install pre-commit hooks to enforce best practices:'));
+      console.log(chalk.gray('   • Blocks .md files in project root (keeps it clean)'));
+      console.log(chalk.gray('   • Enforces increment folder organization'));
+      console.log(chalk.gray('   • Prevents duplicate increment IDs'));
+      console.log(chalk.gray('   • Validates YAML in spec.md files'));
+      console.log(chalk.gray('   • Protects against mass deletions'));
+      console.log('');
+
+      const shouldInstallHooks = await confirm({
+        message: locale.t('cli', 'init.gitHooks.prompt', { default: 'Install git hooks for quality enforcement?' }),
+        default: true
+      });
+
+      if (shouldInstallHooks) {
+        console.log('');
+        installGitHooks(targetDir, templatesDir);
+        console.log('');
+        console.log(chalk.gray('  To bypass hooks: git commit --no-verify'));
+        console.log(chalk.gray('  To remove hooks: rm .git/hooks/pre-commit'));
+      } else {
+        console.log('');
+        console.log(chalk.gray('  Skipped. Install later with: specweave install-hooks'));
+      }
+    } else if (!isGitRepo && !usedDotNotation) {
+      // Only show this message if we created a new directory (not using ".")
+      console.log('');
+      console.log(chalk.yellow('  ℹ Not a git repository - git hooks not installed'));
+      console.log(chalk.gray('    Run: git init && specweave install-hooks'));
+    }
 
     showNextSteps(finalProjectName, toolName, language, usedDotNotation, toolName === 'claude' ? { pluginAutoInstalled: autoInstallSucceeded, marketplaceOnly } : undefined);
   } catch (error) {

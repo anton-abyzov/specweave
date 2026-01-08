@@ -1731,10 +1731,28 @@ reset_retry_counter() {
 # MAIN HOOK LOGIC
 # ============================================================================
 
-# CRITICAL: Check if stop_hook_active flag is set
-# This prevents infinite continuation loops
+# NOTE: stop_hook_active flag indicates Claude is continuing after a previous block.
+# We do NOT immediately exit when this is true - that would defeat the Ralph Wiggum
+# pattern which requires continuous looping until tasks are complete.
+#
+# The flag is informational only. We rely on:
+# 1. Max iterations (line ~1802) as the safety net for runaway loops
+# 2. Task completion + test pass as the primary exit condition
+# 3. Completion promise detection for explicit done signals
+#
+# Previous behavior (buggy): if stop_hook_active=true, immediately approve exit
+# New behavior: continue evaluating completion conditions regardless of flag
+#
+# See: https://docs.anthropic.com/en/docs/claude-code/hooks - Stop hooks section
+# "stop_hook_active is true when Claude Code is already continuing as a result of
+# a stop hook. Check this value or process the transcript to prevent Claude Code
+# from running indefinitely."
+#
+# We use iteration count (MAX_ITERATIONS) to prevent infinite loops, not this flag.
+
 if [ "$STOP_HOOK_ACTIVE" = "true" ]; then
-    approve "Stop hook already active, allowing exit to prevent loop"
+    # Log continuation event for debugging - do NOT approve exit here
+    echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"stop_hook_continuation\",\"note\":\"Evaluating completion conditions (not auto-exiting)\"}" >> "$LOGS_DIR/auto-iterations.log" 2>/dev/null || true
 fi
 
 # Check if session file exists
@@ -2682,7 +2700,29 @@ $TEST_INSTRUCTIONS
 2. Implement next incomplete task
 3. RUN TESTS via CLI (mandatory - see commands above)
 4. Verify tests pass before marking task complete
-5. Continue with /sw:do
+5. Continue with /sw:do"
+
+    # Add TDD workflow guidance if in TDD mode (v1.0.105)
+    if [ "$TDD_MODE" = "true" ]; then
+        TDD_GUIDANCE=$(echo "$SESSION" | jq -r '.tddGuidance // null' 2>/dev/null)
+        if [ "$TDD_GUIDANCE" != "null" ] && [ -n "$TDD_GUIDANCE" ]; then
+            CONTEXT="$CONTEXT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔴 TDD WORKFLOW (MANDATORY):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+$TDD_GUIDANCE
+
+For each feature/task, follow this strict order:
+  1. 🔴 [RED] Write a FAILING test first - test MUST fail
+  2. 🟢 [GREEN] Write MINIMAL code to make test pass
+  3. 🔵 [REFACTOR] Improve code quality, keep tests green
+
+⚠️ NEVER skip the RED phase! Tests first, implementation second."
+        fi
+    fi
+
+    CONTEXT="$CONTEXT
 
 ⚠️ This agent will NOT stop until the STOP CONDITION above is met!"
 fi

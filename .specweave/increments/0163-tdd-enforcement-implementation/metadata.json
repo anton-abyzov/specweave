@@ -1,0 +1,14 @@
+{
+  "id": "0163-tdd-enforcement-implementation",
+  "status": "ready_for_review",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-01-07T12:00:00Z",
+  "lastActivity": "2026-01-07T12:00:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {},
+  "updated": "2026-01-08T02:09:10.000Z"
+}
