@@ -12,7 +12,7 @@ allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-auto.sh:*)"]
 Execute the setup script to initialize auto mode:
 
 ```!
-"${CLAUDE_PLUGIN_ROOT}/scripts/setup-auto.sh" $ARGUMENTS
+"${CLAUDE_PLUGIN_ROOT}/scripts/setup-auto.sh" "$ARGUMENTS"
 ```
 
 Now work on the increment tasks. When you try to exit, the stop hook will check completion conditions and feed the next task back to you. Continue until all tasks are complete and quality gates pass.
