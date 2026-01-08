@@ -2,7 +2,7 @@
 name: sw:auto
 description: Start autonomous execution session with stop hook integration. Works until all tasks complete or max iterations reached. Uses Ralph Wiggum pattern with SpecWeave workflow integration. Activates for: auto, autonomous, auto mode, ship while sleeping.
 argument-hint: "[INCREMENT_IDS...] [OPTIONS]"
-allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-auto.sh:*)"]
+allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-auto.sh *)"]
 ---
 
 # Auto Command
