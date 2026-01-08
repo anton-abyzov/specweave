@@ -1198,6 +1198,112 @@ When creating tasks, assign optimal models:
 
 ---
 
+## TDD Task Generation (v1.0.105+)
+
+**When `testMode: "TDD"` is set in metadata.json, tasks MUST follow RED-GREEN-REFACTOR triplet pattern!**
+
+### TDD Task Structure
+
+For each feature, generate tasks in triplets:
+
+```markdown
+### T-001: [RED] Write failing test for user authentication
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01
+**Status**: [ ] pending
+**Phase**: RED
+**Model**: 💎 opus
+
+**Test**: Given [invalid credentials] → When [login attempted] → Then [authentication fails]
+
+**Guidance**:
+- Write test BEFORE implementation
+- Test MUST fail initially (no production code yet)
+- Focus on behavior, not implementation details
+
+---
+
+### T-002: [GREEN] Implement user authentication
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01
+**Status**: [ ] pending
+**Phase**: GREEN
+**Model**: 💎 opus
+**Depends On**: T-001
+
+**Test**: Make T-001 tests pass with minimal code
+
+**Guidance**:
+- Write MINIMAL code to make tests pass
+- Don't over-engineer or optimize yet
+- Keep it simple and working
+
+---
+
+### T-003: [REFACTOR] Improve authentication code quality
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01
+**Status**: [ ] pending
+**Phase**: REFACTOR
+**Model**: 💎 opus
+**Depends On**: T-002
+
+**Test**: All tests from T-001 must still pass after refactoring
+
+**Guidance**:
+- Clean up code without changing behavior
+- Extract helpers, improve naming
+- Tests MUST stay green throughout
+```
+
+### TDD Phase Markers
+
+**CRITICAL**: Use phase markers in task titles:
+
+| Phase | Marker | Purpose |
+|-------|--------|---------|
+| RED | `[RED]` | Write failing test first |
+| GREEN | `[GREEN]` | Make test pass with minimal code |
+| REFACTOR | `[REFACTOR]` | Improve code, keep tests green |
+
+### TDD Enforcement Hook
+
+When tasks.md is edited, the `tdd-enforcement-guard.sh` hook:
+1. Detects if `testMode: "TDD"` in metadata.json
+2. Checks task completion order
+3. **WARNS** (non-blocking) if:
+   - GREEN task completed before RED task
+   - REFACTOR task completed before GREEN task
+
+**Example warning:**
+```
+⚠️  TDD DISCIPLINE WARNING
+   Your increment is configured for TDD mode (testMode: TDD)
+
+   Potential violations detected:
+   • T-002 (GREEN) completed but T-001 (RED) not found or not completed
+
+   💡 TDD Best Practice: RED → GREEN → REFACTOR
+      1. 🔴 Write failing test FIRST
+      2. 🟢 Make test pass with minimal code
+      3. 🔵 Refactor while keeping tests green
+```
+
+### Coverage Validation
+
+During `/sw:done`, coverage validation checks:
+1. If `coverageTarget > 0` and `testMode != "none"`
+2. Searches for coverage data (Istanbul, c8, Jest, lcov, Cobertura)
+3. **WARNS** if coverage below target (non-blocking)
+
+Supported coverage file locations:
+- `coverage/coverage-summary.json` (Istanbul)
+- `.c8/coverage-summary.json` (c8)
+- `coverage/lcov.info` (lcov)
+- `coverage/cobertura-coverage.xml` (Cobertura)
+
+---
+
 ## Validation Checklist
 
 Before marking increment planning complete, verify:
@@ -1229,6 +1335,8 @@ Before marking increment planning complete, verify:
 - [ ] All AC-IDs from spec covered by tasks
 - [ ] Model hints assigned (⚡🧠💎)
 - [ ] Dependencies explicitly stated
+- [ ] **If TDD mode**: Tasks follow RED-GREEN-REFACTOR triplets
+- [ ] **If TDD mode**: Phase markers used ([RED], [GREEN], [REFACTOR])
 
 **metadata.json Content**:
 - [ ] Valid JSON syntax

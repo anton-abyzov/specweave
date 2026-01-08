@@ -58,7 +58,21 @@ if [ -f "$AUTO_SESSION" ] && [ -x "$AUTO_HOOK" ]; then
 
     if [ "$SESSION_STATUS" = "running" ]; then
         # Run auto hook and capture result
-        AUTO_RESULT=$(echo "$INPUT" | bash "$AUTO_HOOK" 2>/dev/null || echo '{"decision":"approve"}')
+        # Note: We log stderr to a temp file for debugging but don't suppress it entirely
+        AUTO_STDERR_LOG=$(mktemp 2>/dev/null || echo "/tmp/auto-hook-stderr-$$")
+        AUTO_RESULT=$(echo "$INPUT" | bash "$AUTO_HOOK" 2>"$AUTO_STDERR_LOG")
+        AUTO_EXIT_CODE=$?
+
+        # If hook failed, log it but fall back to approve to prevent stuck sessions
+        if [ $AUTO_EXIT_CODE -ne 0 ] || [ -z "$AUTO_RESULT" ]; then
+            # Log the error for debugging
+            if [ -f "$AUTO_STDERR_LOG" ] && [ -s "$AUTO_STDERR_LOG" ]; then
+                echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"auto_hook_error\",\"exitCode\":$AUTO_EXIT_CODE,\"stderr\":\"$(head -c 500 "$AUTO_STDERR_LOG" | tr '\n' ' ')\"}" >> "$PROJECT_ROOT/.specweave/logs/hook-errors.log" 2>/dev/null || true
+            fi
+            rm -f "$AUTO_STDERR_LOG" 2>/dev/null || true
+            AUTO_RESULT='{"decision":"approve","reason":"Auto hook failed, allowing exit"}'
+        fi
+        rm -f "$AUTO_STDERR_LOG" 2>/dev/null || true
 
         # Parse auto hook decision
         AUTO_DECISION=$(echo "$AUTO_RESULT" | jq -r '.decision // "approve"' 2>/dev/null)
@@ -79,9 +93,16 @@ fi
 # ============================================================================
 
 if [ -n "$SYSTEM_MESSAGE" ]; then
-    # Escape system message for JSON
-    ESCAPED_MSG=$(echo "$SYSTEM_MESSAGE" | jq -Rs '.' | sed 's/^"//;s/"$//')
-    echo "{\"decision\":\"$FINAL_DECISION\",\"reason\":\"$FINAL_REASON\",\"systemMessage\":\"$ESCAPED_MSG\"}"
+    # Use jq to properly construct JSON with escaped strings
+    # This avoids manual escaping which can break on special characters
+    jq -n \
+        --arg decision "$FINAL_DECISION" \
+        --arg reason "$FINAL_REASON" \
+        --arg systemMessage "$SYSTEM_MESSAGE" \
+        '{decision: $decision, reason: $reason, systemMessage: $systemMessage}'
 else
-    echo "{\"decision\":\"$FINAL_DECISION\",\"reason\":\"$FINAL_REASON\"}"
+    jq -n \
+        --arg decision "$FINAL_DECISION" \
+        --arg reason "$FINAL_REASON" \
+        '{decision: $decision, reason: $reason}'
 fi
