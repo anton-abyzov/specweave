@@ -22,6 +22,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import os from 'os';
 import { mergeSkillMemoriesOnRefresh } from './merge-skill-memories.js';
+import { CacheHealthMonitor } from '../../core/plugin-cache/cache-health-monitor.js';
+import { CacheInvalidator } from '../../core/plugin-cache/cache-invalidator.js';
+import { consoleLogger as logger } from '../../utils/logger.js';
 
 // Configuration
 const MARKETPLACE_NAME = 'specweave';
@@ -105,6 +108,87 @@ function installPlugin(pluginName: string): PluginResult {
   return { name: pluginName, success: false, error: result.output };
 }
 
+/**
+ * Check plugin cache health before refresh and auto-invalidate critical issues
+ */
+async function preRefreshCacheCheck(verbose: boolean = false): Promise<void> {
+  const basePath = path.join(os.homedir(), '.claude', 'plugins', 'cache', 'specweave');
+
+  if (!fs.existsSync(basePath)) {
+    logger.debug('No plugin cache found - skipping pre-refresh check');
+    return;
+  }
+
+  console.log(chalk.yellow('🔍 Checking cache health before refresh...'));
+
+  const monitor = new CacheHealthMonitor();
+  const invalidator = new CacheInvalidator();
+
+  const pluginNames = fs.readdirSync(basePath).filter(name => {
+    const pluginPath = path.join(basePath, name);
+    return fs.statSync(pluginPath).isDirectory();
+  });
+
+  let criticalCount = 0;
+  const criticalPlugins: string[] = [];
+
+  for (const pluginName of pluginNames) {
+    const pluginPath = path.join(basePath, pluginName);
+    const versions = fs.readdirSync(pluginPath).filter(v => {
+      const versionPath = path.join(pluginPath, v);
+      return fs.statSync(versionPath).isDirectory();
+    });
+
+    if (versions.length === 0) continue;
+
+    const version = versions.sort().reverse()[0];
+    const versionPath = path.join(pluginPath, version);
+
+    const issues = monitor.checkPluginHealth(versionPath, version);
+    const hasCritical = issues.some(i => i.severity === 'critical');
+
+    if (hasCritical) {
+      criticalCount++;
+      criticalPlugins.push(pluginName);
+
+      if (verbose) {
+        console.log(chalk.red(`  ❌ ${pluginName}: Critical issues detected`));
+        for (const issue of issues.filter(i => i.severity === 'critical')) {
+          console.log(chalk.gray(`     - ${issue.message}`));
+        }
+      }
+
+      // Auto-invalidate critical issues
+      try {
+        await invalidator.invalidatePlugin(
+          pluginName,
+          version,
+          {
+            strategy: 'hard',
+            preserveMemories: true,
+            backupFirst: true
+          }
+        );
+
+        if (verbose) {
+          console.log(chalk.green(`  ✓ ${pluginName}: Cache invalidated (will be refreshed)`));
+        }
+      } catch (error) {
+        logger.warn(`Failed to invalidate ${pluginName}: ${error}`);
+      }
+    }
+  }
+
+  if (criticalCount > 0) {
+    console.log(chalk.yellow(`⚠️  Found ${criticalCount} plugin(s) with critical issues - auto-invalidated`));
+    console.log(chalk.gray(`   Plugins: ${criticalPlugins.join(', ')}`));
+  } else {
+    console.log(chalk.green('✓ Cache health check passed'));
+  }
+
+  console.log('');
+}
+
 export async function refreshMarketplaceCommand(options: RefreshOptions = {}): Promise<void> {
   // Determine mode - GitHub is default per CLAUDE.md rules
   const mode = options.local ? 'local' : 'github';
@@ -168,6 +252,9 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
   }
 
   console.log('');
+
+  // Step 1.5: Pre-refresh cache health check
+  await preRefreshCacheCheck(options.verbose);
 
   // Step 2: Get plugin list
   console.log(chalk.yellow('📋 Step 2: Reading plugin list...'));

@@ -218,10 +218,6 @@ const config: Config = {
               label: 'Commands',
               to: '/docs/commands/status-management',
             },
-            {
-              label: 'API Reference',
-              to: '/docs/api',
-            },
           ],
         },
         {

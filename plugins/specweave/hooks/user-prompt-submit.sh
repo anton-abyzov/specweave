@@ -1,12 +1,13 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v0.33.1 - INSTANT EXECUTION)
+# SpecWeave UserPromptSubmit Hook (v0.34.0 - UNIFIED INSTANT EXECUTION)
 # Fires BEFORE user's command executes (prompt-based hook)
 # Purpose: Discipline validation, context injection, instant command execution
 #
 # FEATURES:
+# - v0.34.0: Unified "block" decision for both CLI and VSCode (systemMessage not supported in UserPromptSubmit)
 # - v0.33.1: Unified instant execution - scripts run in hook for both CLI and VSCode
-# - v0.33.0: Script delegation pattern (now deprecated in favor of systemMessage)
+# - v0.33.0: Script delegation pattern (now deprecated in favor of block decision)
 # - v0.26.13: jq for JSON parsing (10x faster than node -e)
 # - Single active increment detection (cached, not 4x!)
 # - Deferred heavy checks (SpecSyncManager only when needed)
@@ -15,9 +16,9 @@
 # Performance: Status commands <100ms (was 3+ min), other prompts <10ms
 #
 # ARCHITECTURE:
-# - CLI: Uses "block" decision to display output and stop execution
-# - VSCode: Uses "approve" + "systemMessage" to display output without blocking
-# - Both paths execute scripts in hook - NO LLM involvement for instant commands
+# - Both CLI and VSCode: Uses "block" decision with "reason" field to display output and stop execution
+# - Scripts execute in hook - NO LLM involvement for instant commands
+# - systemMessage only works in Stop hooks (not UserPromptSubmit), so we use block uniformly
 
 set +e
 
@@ -110,14 +111,8 @@ if echo "$PROMPT" | grep -qE "^/sw:jobs($| )"; then
     OUTPUT="❌ No jobs script available"
   fi
 
-  # VSCode mode: Use systemMessage to display output without blocking execution
-  if is_vscode; then
-    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-    printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
-    exit 0
-  fi
-
-  # CLI mode: Use block decision
+  # Unified response for both CLI and VSCode
+  # block decision with reason works in both environments
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
@@ -136,7 +131,7 @@ if echo "$PROMPT" | grep -qE "^/sw:progress($| )"; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] /sw:progress detected - executing script" >> "$PROGRESS_DEBUG_LOG"
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] ARGS: '$ARGS'" >> "$PROGRESS_DEBUG_LOG"
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] SCRIPTS_DIR: $SCRIPTS_DIR" >> "$PROGRESS_DEBUG_LOG"
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] VSCode mode: $(is_vscode && echo 'true' || echo 'false')" >> "$PROGRESS_DEBUG_LOG"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Environment: $(is_vscode && echo 'VSCode' || echo 'CLI')" >> "$PROGRESS_DEBUG_LOG"
 
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-progress.sh" ]]; then
@@ -153,18 +148,10 @@ if echo "$PROMPT" | grep -qE "^/sw:progress($| )"; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Output length: ${#OUTPUT} chars" >> "$PROGRESS_DEBUG_LOG"
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] Exit code: $?" >> "$PROGRESS_DEBUG_LOG"
 
-  # VSCode mode: Use systemMessage to display output without blocking execution
-  # (block decision stops execution entirely in VSCode)
-  if is_vscode; then
-    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Returning VSCode response (systemMessage)" >> "$PROGRESS_DEBUG_LOG"
-    printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
-    exit 0
-  fi
-
-  # CLI mode: Use block decision (works correctly in CLI)
+  # Unified response for both CLI and VSCode (v0.34.0)
+  # block decision with reason works in both environments
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Returning CLI response (block)" >> "$PROGRESS_DEBUG_LOG"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Returning unified block response (works in both CLI and VSCode)" >> "$PROGRESS_DEBUG_LOG"
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
 else
@@ -185,14 +172,8 @@ if echo "$PROMPT" | grep -qE "^/sw:status($| )"; then
     OUTPUT="❌ No status script available"
   fi
 
-  # VSCode mode: Use systemMessage to display output without blocking execution
-  if is_vscode; then
-    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-    printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
-    exit 0
-  fi
-
-  # CLI mode: Use block decision
+  # Unified response for both CLI and VSCode
+  # block decision with reason works in both environments
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
@@ -209,14 +190,8 @@ if echo "$PROMPT" | grep -qE "^/sw:workflow($| )"; then
     OUTPUT="❌ No workflow script available"
   fi
 
-  # VSCode mode: Use systemMessage to display output without blocking execution
-  if is_vscode; then
-    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-    printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
-    exit 0
-  fi
-
-  # CLI mode: Use block decision
+  # Unified response for both CLI and VSCode
+  # block decision with reason works in both environments
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
@@ -233,14 +208,8 @@ if echo "$PROMPT" | grep -qE "^/sw:costs($| )"; then
     OUTPUT="❌ No costs script available"
   fi
 
-  # VSCode mode: Use systemMessage to display output without blocking execution
-  if is_vscode; then
-    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-    printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
-    exit 0
-  fi
-
-  # CLI mode: Use block decision
+  # Unified response for both CLI and VSCode
+  # block decision with reason works in both environments
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
@@ -257,14 +226,8 @@ if echo "$PROMPT" | grep -qE "^/sw:analytics($| )"; then
     OUTPUT="❌ No analytics script available"
   fi
 
-  # VSCode mode: Use systemMessage to display output without blocking execution
-  if is_vscode; then
-    OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-    printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
-    exit 0
-  fi
-
-  # CLI mode: Use block decision
+  # Unified response for both CLI and VSCode
+  # block decision with reason works in both environments
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0

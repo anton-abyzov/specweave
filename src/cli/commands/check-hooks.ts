@@ -14,6 +14,10 @@ import { HealthReporter } from '../../core/hooks/HealthReporter.js';
 import { HookAutoFixer } from '../../core/hooks/HookAutoFixer.js';
 import { ReportFormat } from '../../core/hooks/types.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { CacheHealthMonitor } from '../../core/plugin-cache/cache-health-monitor.js';
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
 
 // NOTE: This CLI check-hooks command is primarily user-facing output (console.log/console.error).
 // All console.* calls in this file are legitimate user-facing exceptions
@@ -29,6 +33,7 @@ interface CommandOptions {
   timeout: number;
   failOnWarnings: boolean;
   hookName?: string;
+  includeCache?: boolean;
 }
 
 /**
@@ -69,6 +74,9 @@ function parseArgs(args: string[]): CommandOptions {
       case '--fail-on-warnings':
         options.failOnWarnings = true;
         break;
+      case '--include-cache':
+        options.includeCache = true;
+        break;
       default:
         // Assume it's a hook name
         if (!arg.startsWith('--')) {
@@ -78,6 +86,72 @@ function parseArgs(args: string[]): CommandOptions {
   }
 
   return options;
+}
+
+/**
+ * Check plugin cache health
+ */
+export async function checkCacheHealth(verbose: boolean = false): Promise<void> {
+  console.log('\n🔍 Checking plugin cache health...\n');
+
+  const basePath = path.join(os.homedir(), '.claude', 'plugins', 'cache', 'specweave');
+
+  if (!fs.existsSync(basePath)) {
+    console.log('   No plugin cache found.\n');
+    return;
+  }
+
+  const monitor = new CacheHealthMonitor();
+  const pluginNames = fs.readdirSync(basePath).filter(name => {
+    const pluginPath = path.join(basePath, name);
+    return fs.statSync(pluginPath).isDirectory();
+  });
+
+  let healthyCount = 0;
+  let criticalCount = 0;
+
+  for (const pluginName of pluginNames) {
+    const pluginPath = path.join(basePath, pluginName);
+    const versions = fs.readdirSync(pluginPath).filter(v => {
+      const versionPath = path.join(pluginPath, v);
+      return fs.statSync(versionPath).isDirectory();
+    });
+
+    if (versions.length === 0) continue;
+
+    const version = versions.sort().reverse()[0];
+    const versionPath = path.join(pluginPath, version);
+
+    const issues = monitor.checkPluginHealth(versionPath, version);
+    const hasCritical = issues.some(i => i.severity === 'critical');
+
+    if (issues.length === 0) {
+      healthyCount++;
+      console.log(`   ✅ ${pluginName} (${version}): Healthy`);
+    } else if (hasCritical) {
+      criticalCount++;
+      console.log(`   ❌ ${pluginName} (${version}): Critical issues`);
+      if (verbose) {
+        for (const issue of issues.filter(i => i.severity === 'critical')) {
+          console.log(`      - ${issue.message} (${issue.file})`);
+        }
+      }
+    } else {
+      console.log(`   ⚠️  ${pluginName} (${version}): ${issues.length} warnings`);
+      if (verbose) {
+        for (const issue of issues) {
+          console.log(`      - ${issue.message} (${issue.file})`);
+        }
+      }
+    }
+  }
+
+  console.log(`\n   Summary: ${healthyCount} healthy, ${criticalCount} critical\n`);
+
+  if (criticalCount > 0) {
+    console.log('   💡 Run: specweave cache-status for details\n');
+    console.log('   💡 Run: specweave cache-refresh --force to fix\n');
+  }
 }
 
 /**
@@ -154,6 +228,11 @@ async function main() {
       console.log(`\n✅ Report written to: ${options.output}`);
     }
 
+    // Check plugin cache health if requested
+    if (options.includeCache) {
+      await checkCacheHealth(options.verbose);
+    }
+
     // Exit with appropriate code
     process.exit(getExitCode(result, options.failOnWarnings));
   } catch (error) {
@@ -182,7 +261,8 @@ function getExitCode(result: any, failOnWarnings: boolean): number {
 }
 
 // Run if called directly (check if module is main)
-const isMainModule = require.main === module || process.argv[1]?.includes('check-hooks');
+// ES module check: import.meta.url contains this file path
+const isMainModule = process.argv[1]?.includes('check-hooks') || false;
 if (isMainModule) {
   main();
 }
