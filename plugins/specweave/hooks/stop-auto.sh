@@ -1854,12 +1854,62 @@ fi
 # ============================================================================
 
 if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
-    # Check for completion promise
-    if grep -q "<auto-complete>DONE</auto-complete>" "$TRANSCRIPT_PATH" 2>/dev/null; then
-        echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            '.status = "completed" | .endTime = $now | .endReason = "completion_promise"' \
-            > "$SESSION_FILE"
-        approve "Completion promise detected" "true"
+    # Check for completion promise (v2.10 - STRICTER VALIDATION)
+    # Only accept completion promise if:
+    # 1. Promise is in the LAST 100 lines of transcript (fresh, not legacy)
+    # 2. All tasks are marked complete
+    # 3. Tests pass OR no tests exist
+    if tail -100 "$TRANSCRIPT_PATH" 2>/dev/null | grep -q "<auto-complete>DONE</auto-complete>"; then
+        # Verify tasks are actually complete before accepting promise
+        TASKS_FILE=""
+        if [ -n "$CURRENT_INCREMENT" ] && [ "$CURRENT_INCREMENT" != "null" ]; then
+            TASKS_FILE="$PROJECT_ROOT/.specweave/increments/$CURRENT_INCREMENT/tasks.md"
+        fi
+
+        PROMISE_VALID="true"
+        PROMISE_BLOCK_REASON=""
+
+        if [ -f "$TASKS_FILE" ]; then
+            # Use subshell to prevent || echo from appending extra output
+            TOTAL_TASKS=$(grep -c "^### T-" "$TASKS_FILE" 2>/dev/null) || TOTAL_TASKS="0"
+            COMPLETED_TASKS=$(grep -c '\[x\].*completed' "$TASKS_FILE" 2>/dev/null) || COMPLETED_TASKS="0"
+            # Ensure clean integers (trim whitespace/newlines)
+            TOTAL_TASKS=$(echo "$TOTAL_TASKS" | tr -d '[:space:]')
+            COMPLETED_TASKS=$(echo "$COMPLETED_TASKS" | tr -d '[:space:]')
+            TOTAL_TASKS=${TOTAL_TASKS:-0}
+            COMPLETED_TASKS=${COMPLETED_TASKS:-0}
+
+            if [ "$TOTAL_TASKS" -gt 0 ] && [ "$COMPLETED_TASKS" -lt "$TOTAL_TASKS" ]; then
+                PROMISE_VALID="false"
+                PROMISE_BLOCK_REASON="Completion promise rejected: $COMPLETED_TASKS/$TOTAL_TASKS tasks complete"
+            fi
+        fi
+
+        # Also check for test failures in recent transcript
+        if [ "$PROMISE_VALID" = "true" ]; then
+            # Check last 200 lines for test failures
+            TEST_FAILURES_DETECTED=$(tail -200 "$TRANSCRIPT_PATH" 2>/dev/null | grep -cE "(FAIL|failed|❌|✗).*test") || TEST_FAILURES_DETECTED="0"
+            TEST_PASSES_DETECTED=$(tail -200 "$TRANSCRIPT_PATH" 2>/dev/null | grep -cE "(PASS|passed|✓|✔)") || TEST_PASSES_DETECTED="0"
+            TEST_FAILURES_DETECTED=$(echo "$TEST_FAILURES_DETECTED" | tr -d '[:space:]')
+            TEST_PASSES_DETECTED=$(echo "$TEST_PASSES_DETECTED" | tr -d '[:space:]')
+            TEST_FAILURES_DETECTED=${TEST_FAILURES_DETECTED:-0}
+            TEST_PASSES_DETECTED=${TEST_PASSES_DETECTED:-0}
+
+            if [ "$TEST_FAILURES_DETECTED" -gt 0 ] && [ "$TEST_PASSES_DETECTED" -eq 0 ]; then
+                PROMISE_VALID="false"
+                PROMISE_BLOCK_REASON="Completion promise rejected: test failures detected in recent output"
+            fi
+        fi
+
+        if [ "$PROMISE_VALID" = "true" ]; then
+            echo "$SESSION" | jq --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+                '.status = "completed" | .endTime = $now | .endReason = "completion_promise"' \
+                > "$SESSION_FILE"
+            approve "Completion promise detected (validated)" "true"
+        else
+            # Log rejected promise
+            echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"completion_promise_rejected\",\"reason\":\"$PROMISE_BLOCK_REASON\"}" >> "$LOGS_DIR/auto-iterations.log"
+        fi
     fi
 
     # Check self-assessment score

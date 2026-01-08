@@ -30,11 +30,13 @@ if [[ -f "$CLAUDE_DEBUG" ]]; then
 fi
 
 # Background processor paths (HOOK_DIR already defined above)
+# HOOK_DIR is hooks/v2/dispatchers (where this script is)
+# Need to go up THREE levels to reach plugin root: dispatchers -> v2 -> hooks -> plugin
 PROCESSOR="$HOOK_DIR/../queue/processor.sh"
-SCHEDULER_STARTUP="$HOOK_DIR/../../lib/scheduler-startup.sh"
+SCHEDULER_STARTUP="$HOOK_DIR/../../../lib/scheduler-startup.sh"
 SESSION_WATCHDOG="$PROJECT_ROOT/plugins/specweave/scripts/session-watchdog.sh"
-SCRIPTS_WATCHDOG="$(dirname "$HOOK_DIR")/../../scripts/session-watchdog.sh"
-PLUGIN_ROOT="$(dirname "$HOOK_DIR")/.."
+SCRIPTS_WATCHDOG="$HOOK_DIR/../../../scripts/session-watchdog.sh"
+PLUGIN_ROOT="$(cd "$HOOK_DIR/../../.." && pwd)"
 SCRIPTS_DIR="$PLUGIN_ROOT/scripts"
 
 # === Dashboard Cache Validation (v0.34.0 - Instant Status Commands) ===
