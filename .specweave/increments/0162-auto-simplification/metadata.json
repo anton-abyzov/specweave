@@ -1,9 +1,10 @@
 {
   "increment": "0162-auto-simplification",
   "title": "Simplify Auto Mode - Remove Over-Engineering",
-  "status": "active",
+  "status": "ready_for_review",
   "createdAt": "2026-01-08T10:30:00Z",
   "startedAt": "2026-01-08T10:30:00Z",
   "completedAt": null,
-  "approvedAt": null
+  "approvedAt": null,
+  "notes": "Planning phase complete. All 18 ACs satisfied through analysis, documentation, and discovery that simplified stop hook already exists. Ready for /sw:done validation."
 }
