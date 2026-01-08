@@ -9,11 +9,17 @@ allowed-tools: ["Bash(specweave auto *)"]
 
 **Start autonomous execution session using Claude Code's Stop Hook.**
 
-Execute the auto command to initialize auto mode:
+## How to Use
 
-```!
-specweave auto $ARGUMENTS
-```
+When user says "auto" or "autonomous" or "keep working" or provides a task description, you should:
+
+1. **Understand the user's intent**: What do they want to work on?
+2. **Find or create the increment**: Check for active increments, or create new ones if needed
+3. **Execute the command**:
+   ```bash
+   specweave auto [INCREMENT_IDS] [OPTIONS]
+   ```
+4. **Start working**: Execute /sw:do on tasks, mark them complete, let framework hooks handle sync
 
 Now work on the increment tasks. When you try to exit, the stop hook will check completion conditions and feed the next task back to you. Continue until all tasks are complete and quality gates pass.
 
