@@ -116,11 +116,6 @@ After implementing these optimizations:
 
 SEO for developer docs isn't just about rankings—it's about making your content discoverable and accessible. These five improvements took ~20 hours but deliver long-term value.
 
-Want to implement similar optimizations? Check out our [SEO implementation guide](/docs/guides/seo-optimization).
-
 ---
 
-**Related:**
-- [Documentation Best Practices](/docs/guides/documentation)
-- [Performance Optimization](/docs/guides/performance)
-- [Schema.org for SaaS](/blog/schema-org-saas)
+**Want to learn more?** Explore the [SpecWeave Documentation](https://spec-weave.com/docs/overview/introduction) for comprehensive guides on spec-driven development and AI-powered workflows.

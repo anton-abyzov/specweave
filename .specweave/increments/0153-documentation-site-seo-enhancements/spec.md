@@ -171,11 +171,11 @@ Implement comprehensive SEO improvements for spec-weave.com to enhance search en
 **Background**: Build output shows 30+ broken markdown link warnings. These create poor user experience and negative SEO signals.
 
 **Acceptance Criteria**:
-- [ ] **AC-US7-01**: All broken links identified in build warnings are cataloged (run `npm run build` and capture warnings)
-- [ ] **AC-US7-02**: Broken links to missing files are fixed by either creating the target file or updating the link to correct path
-- [ ] **AC-US7-03**: Broken links to external files (plugin READMEs) are fixed by using correct relative paths or removing invalid references
-- [ ] **AC-US7-04**: Build completes with zero "Markdown link couldn't be resolved" warnings
-- [ ] **AC-US7-05**: Manual testing confirms all fixed links navigate to correct destinations
+- [x] **AC-US7-01**: All broken links identified in build warnings are cataloged (run `npm run build` and capture warnings)
+- [x] **AC-US7-02**: Broken links to missing files are fixed by either creating the target file or updating the link to correct path
+- [x] **AC-US7-03**: Broken links to external files (plugin READMEs) are fixed by using correct relative paths or removing invalid references
+- [x] **AC-US7-04**: Build completes with zero "Markdown link couldn't be resolved" warnings
+- [x] **AC-US7-05**: Manual testing confirms all fixed links navigate to correct destinations
 - [ ] **AC-US7-06**: docusaurus.config.ts onBrokenMarkdownLinks set to 'warn' or 'throw' to prevent future broken links
 
 **Priority**: P1 - Poor UX and SEO impact

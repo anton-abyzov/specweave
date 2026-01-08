@@ -237,6 +237,16 @@ if [ -f "scripts/validation/validate-changelog-version.sh" ]; then
   fi
 fi
 
+# 13. Check for root folder pollution (CRITICAL - prevents workflow breakage)
+# Incident Reference: Multiple sessions - Claude repeatedly creates analysis.md, reports.md in root
+# Related: CLAUDE.md Rule #5 - "Root clean: NEVER create .md/reports/scripts in project root"
+# Enforcement: Blocks staging .md files in project root (except allowed list)
+if [ -f "scripts/pre-commit-root-pollution-check.sh" ]; then
+  if ! bash scripts/pre-commit-root-pollution-check.sh; then
+    exit 1
+  fi
+fi
+
 echo "✅ Pre-commit checks passed"
 exit 0
 EOF
@@ -271,6 +281,7 @@ echo "    - No increment references (prevents circular dependencies - ADR-0061)"
 echo "    - GitHub issue format validation (blocks deprecated SP- prefix - ADR-0032)"
 echo "    - Hook variable initialization order (CRITICAL - prevents recursion guard bypass)"
 echo "    - CHANGELOG entry validation (CRITICAL - prevents release failures)"
+echo "    - Root folder pollution detection (CRITICAL - blocks .md files in project root)"
 echo ""
 echo "  🏷️  PRE-PUSH (runs when pushing tags):"
 echo "    - Blocks version tags (vX.Y.Z) if CHANGELOG entry missing"
