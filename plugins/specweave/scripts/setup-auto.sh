@@ -126,9 +126,22 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         *)
-            # Assume it's an increment ID
-            INCREMENT_IDS+=("$1")
-            shift
+            # Check if it looks like an increment ID (4+ digits followed by dash)
+            # or if it's a free-text prompt
+            if [[ "$1" =~ ^[0-9]{4,}- ]]; then
+                # Looks like an increment ID (e.g., 0001-feature-name)
+                INCREMENT_IDS+=("$1")
+                shift
+            elif [[ "$1" =~ ^[0-9]{4}$ ]]; then
+                # Just a 4-digit number (increment prefix)
+                INCREMENT_IDS+=("$1")
+                shift
+            else
+                # Doesn't look like an increment ID - treat remaining args as prompt
+                # Join all remaining arguments as a single prompt
+                PROMPT="$*"
+                break
+            fi
             ;;
     esac
 done
