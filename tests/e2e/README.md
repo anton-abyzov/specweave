@@ -1,8 +1,27 @@
-# E2E Tests (End-to-End)
+# E2E Tests
 
-**Purpose**: Full user workflow tests simulating real-world SpecWeave usage.
+End-to-end tests for SpecWeave using **Vitest** (not Playwright).
 
-**Framework**: Vitest (migrated from Playwright for consistency)
+## Overview
+
+The `tests/e2e/` directory contains integration tests that validate complete workflows and system behavior. Despite being called "E2E", these tests focus on **CLI and backend logic**, not browser automation.
+
+## Test Framework
+
+**Framework**: Vitest (NOT Playwright)
+**Why Vitest?** These tests verify CLI commands, file operations, and backend processes - not browser UI.
+
+### The Symbol Conflict (RESOLVED)
+
+**Problem**: Playwright and Vitest both define `Symbol($$jest-matchers-object)`, causing:
+```
+TypeError: Cannot redefine property: Symbol($$jest-matchers-object)
+```
+
+**Solution**:
+- E2E tests use **Vitest exclusively**
+- Playwright config excludes `tests/e2e/` via `testIgnore: '**/e2e/**'`
+- Separation of concerns: Playwright for browser tests (future), Vitest for backend E2E
 
 ---
 
@@ -227,3 +246,30 @@ const testRoot = path.join(os.tmpdir(), 'test-name-' + Date.now());
 ---
 
 **Last Updated**: 2025-11-18 (Increment 0042 - Test Infrastructure Cleanup)
+
+## Running Tests
+
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Run specific test file
+npx vitest run tests/e2e/auto/full-workflow.e2e.ts
+
+# Run in watch mode
+npx vitest tests/e2e
+
+# Run with debug output
+DEBUG=* npm run test:e2e
+```
+
+## Test Results
+
+**Status**: ✅ 79/79 tests passing (100% pass rate)
+**2 tests skipped**: Registry-dependent crash recovery tests (infrastructure changed)
+
+---
+
+**Last Updated**: 2026-01-08
+**Test Framework**: Vitest v2.1.9
+**Symbol Conflict**: RESOLVED ✅

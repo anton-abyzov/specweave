@@ -47,12 +47,12 @@ created: 2026-01-07
 **As a** developer, I want real-time hook logs instead of stale 2-week-old logs so I can debug issues
 
 **Acceptance Criteria**:
-- [ ] **AC-US2-01**: Hook logs written to `.specweave/logs/hooks/` with current timestamps
-- [ ] **AC-US2-02**: Each hook execution logs: timestamp, hook name, status (success/warning/error), duration
-- [ ] **AC-US2-03**: Failed hooks log: error message, stack trace (if available), retry attempts
-- [ ] **AC-US2-04**: Logs rotate daily to prevent unbounded growth
+- [x] **AC-US2-01**: Hook logs written to `.specweave/logs/hooks/` with current timestamps
+- [x] **AC-US2-02**: Each hook execution logs: timestamp, hook name, status (success/warning/error), duration
+- [x] **AC-US2-03**: Failed hooks log: error message, stack trace (if available), retry attempts
+- [x] **AC-US2-04**: Logs rotate daily to prevent unbounded growth
 - [ ] **AC-US2-05**: Log viewer command `specweave logs hooks --tail=50 --follow`
-- [ ] **AC-US2-06**: Logs include request ID for correlation across multiple hook calls
+- [x] **AC-US2-06**: Logs include request ID for correlation across multiple hook calls
 
 ---
 

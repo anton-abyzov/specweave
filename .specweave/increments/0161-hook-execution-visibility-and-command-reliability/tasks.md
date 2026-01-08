@@ -156,7 +156,7 @@ test_syntax_error_produces_error_warning() {
 ## Phase 2: Real-Time Hook Logging (US-002)
 
 ### T-004: Create hook logger module
-**User Story**: US-002 | **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-06 | **Status**: [ ] pending
+**User Story**: US-002 | **Satisfies ACs**: AC-US2-01, AC-US2-02, AC-US2-03, AC-US2-06 | **Status**: [x] completed
 **Model**: 💎 Opus
 
 Create centralized hook logging system with structured output.
@@ -233,7 +233,7 @@ describe('HookLogger', () => {
 ---
 
 ### T-005: Implement log rotation
-**User Story**: US-002 | **Satisfies ACs**: AC-US2-04 | **Status**: [ ] pending
+**User Story**: US-002 | **Satisfies ACs**: AC-US2-04 | **Status**: [x] completed
 **Model**: ⚡ Haiku
 
 Add daily log rotation to prevent unbounded growth.
