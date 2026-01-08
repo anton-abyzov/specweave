@@ -42,6 +42,13 @@ NO_INCREMENT=false
 PROMPT=""
 AUTO_APPROVE=false
 TDD_MODE=false
+REQUIRE_TESTS=false
+REQUIRE_E2E=false
+REQUIRE_BUILD=false
+REQUIRE_COVERAGE=""
+REQUIRE_JUDGE=false
+NO_SMART_DEFAULTS=false
+USER_CONDITIONS=()
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -88,6 +95,30 @@ while [[ $# -gt 0 ]]; do
             ;;
         --tdd|--strict)
             TDD_MODE=true
+            shift
+            ;;
+        --require-tests)
+            REQUIRE_TESTS=true
+            shift
+            ;;
+        --require-e2e)
+            REQUIRE_E2E=true
+            shift
+            ;;
+        --require-build)
+            REQUIRE_BUILD=true
+            shift
+            ;;
+        --require-coverage)
+            REQUIRE_COVERAGE="$2"
+            shift 2
+            ;;
+        --require-judge)
+            REQUIRE_JUDGE=true
+            shift
+            ;;
+        --no-smart-defaults)
+            NO_SMART_DEFAULTS=true
             shift
             ;;
         -h|--help)
@@ -301,7 +332,11 @@ if [ -f "$DETECT_SCRIPT" ]; then
         PROJECT_TEST_FRAMEWORKS=$(echo "$DETECTION_JSON" | jq -r '.testFrameworks | join(", ")')
 
         # Get default completion conditions for this project type
-        if [ -f "$GET_CONDITIONS_SCRIPT" ]; then
+        if [ "$NO_SMART_DEFAULTS" = "true" ]; then
+            # User explicitly disabled smart defaults
+            COMPLETION_CONDITIONS="[]"
+            echo "⚠️  Smart defaults bypassed (--no-smart-defaults)" >&2
+        elif [ -f "$GET_CONDITIONS_SCRIPT" ]; then
             COMPLETION_CONDITIONS=$(node "$GET_CONDITIONS_SCRIPT" "$PROJECT_TYPE" 2>/dev/null)
 
             if [ $? -ne 0 ] || [ -z "$COMPLETION_CONDITIONS" ]; then
@@ -310,6 +345,27 @@ if [ -f "$DETECT_SCRIPT" ]; then
             fi
         else
             COMPLETION_CONDITIONS="[]"
+        fi
+
+        # Apply user-specified overrides from CLI flags
+        if [ "$REQUIRE_TESTS" = "true" ]; then
+            COMPLETION_CONDITIONS=$(echo "$COMPLETION_CONDITIONS" | jq '. + [{"type": "tests", "mandatory": true}]')
+        fi
+
+        if [ "$REQUIRE_E2E" = "true" ]; then
+            COMPLETION_CONDITIONS=$(echo "$COMPLETION_CONDITIONS" | jq '. + [{"type": "e2e", "mandatory": true}]')
+        fi
+
+        if [ "$REQUIRE_BUILD" = "true" ]; then
+            COMPLETION_CONDITIONS=$(echo "$COMPLETION_CONDITIONS" | jq '. + [{"type": "build", "mandatory": true, "autoHeal": true, "maxRetries": 3}]')
+        fi
+
+        if [ -n "$REQUIRE_COVERAGE" ]; then
+            COMPLETION_CONDITIONS=$(echo "$COMPLETION_CONDITIONS" | jq --arg threshold "$REQUIRE_COVERAGE" '. + [{"type": "coverage", "threshold": ($threshold | tonumber), "mandatory": true}]')
+        fi
+
+        if [ "$REQUIRE_JUDGE" = "true" ]; then
+            COMPLETION_CONDITIONS=$(echo "$COMPLETION_CONDITIONS" | jq '. + [{"type": "llm-judge", "mandatory": true}]')
         fi
     else
         # Detection failed, use generic defaults

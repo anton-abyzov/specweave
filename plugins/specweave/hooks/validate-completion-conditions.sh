@@ -426,6 +426,22 @@ for i in $(seq 0 $((CONDITION_COUNT - 1))); do
             # Similar to coverage
             echo "  🎯 E2E coverage validation - NOT YET IMPLEMENTED" >&2
             ;;
+        llm-judge)
+            # LLM Judge quality assessment
+            echo "  🤖 Running LLM Judge quality assessment..." >&2
+
+            JUDGE_SCRIPT="$(dirname "$0")/llm-judge-validator.sh"
+            if [ -f "$JUDGE_SCRIPT" ]; then
+                # Extract increment ID from session
+                CURRENT_INCREMENT=$(jq -r '.currentIncrement // ""' "$SESSION_FILE")
+
+                if ! "$JUDGE_SCRIPT" "$CURRENT_INCREMENT" "$TRANSCRIPT_PATH" 2>&1; then
+                    FAILED_CONDITIONS+=("llm-judge")
+                fi
+            else
+                echo "  ⚠️  LLM judge script not found - skipping" >&2
+            fi
+            ;;
         command)
             if ! validate_custom_command "$CMD"; then
                 FAILED_CONDITIONS+=("command:$CMD")

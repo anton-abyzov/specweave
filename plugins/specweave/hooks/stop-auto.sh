@@ -2399,6 +2399,53 @@ Continue with /sw:do and add missing E2E tests."
                     completion_reason="$completion_reason, all tests passed ($TESTS_PASSED passed, 0 failed)"
                 fi
 
+                # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                # VALIDATE COMPLETION CONDITIONS (v1.1.0)
+                # Run comprehensive validation BEFORE approving session completion
+                # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                VALIDATOR_SCRIPT="$(dirname "$0")/validate-completion-conditions.sh"
+                if [ -f "$VALIDATOR_SCRIPT" ]; then
+                    echo "" >&2
+                    echo "🔍 Validating completion conditions..." >&2
+
+                    # Run validator with session file and transcript
+                    if ! "$VALIDATOR_SCRIPT" "$SESSION_FILE" "$TRANSCRIPT_PATH" 2>&1 | tee -a "$LOGS_DIR/auto-iterations.log"; then
+                        # Validation FAILED - extract failure details
+                        VALIDATION_OUTPUT=$("$VALIDATOR_SCRIPT" "$SESSION_FILE" "$TRANSCRIPT_PATH" 2>&1 || true)
+
+                        # Extract failed conditions
+                        FAILED_CONDITIONS=$(echo "$VALIDATION_OUTPUT" | grep "^BLOCK:" | sed 's/^BLOCK://' | paste -sd ", " -)
+
+                        if [ -z "$FAILED_CONDITIONS" ]; then
+                            FAILED_CONDITIONS="Unknown validation failure"
+                        fi
+
+                        # HARD BLOCK - conditions not met
+                        block "❌ COMPLETION CONDITIONS NOT MET
+
+$VALIDATION_OUTPUT
+
+The auto session cannot complete until ALL mandatory conditions pass.
+
+🔧 Next Steps:
+  1. Review the failed conditions above
+  2. Fix the issues identified
+  3. Re-run the validation
+  4. Session will continue automatically
+
+⚠️  This is a HARD BLOCK - mandatory conditions cannot be bypassed.
+Tasks are marked [x] but quality gates have not been met.
+
+Run /sw:progress to check current status.
+Run /sw:validate to see detailed validation results." "validation_failed:$FAILED_CONDITIONS"
+                    fi
+
+                    echo "✅ All completion conditions passed!" >&2
+                fi
+
+                # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
                 approve "$completion_reason" "true"
             else
                 # More increments in queue - transition to next

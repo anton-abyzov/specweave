@@ -182,10 +182,8 @@ export function detectProjectType(projectRoot: string): ProjectDetection {
   for (const rule of DETECTION_RULES) {
     const indicators: Indicator[] = [];
     let score = 0;
-    let maxScore = 0;
 
     for (const indicatorDef of rule.indicators) {
-      maxScore += indicatorDef.weight;
       const found = checkIndicator(projectRoot, indicatorDef, packageJson);
 
       indicators.push({
@@ -198,12 +196,14 @@ export function detectProjectType(projectRoot: string): ProjectDetection {
       }
     }
 
-    const confidence = maxScore > 0 ? score / maxScore : 0;
+    // Confidence is simply the total score (weights sum to 1.0 for strong match)
+    // A score of 0.7+ indicates strong project type match
+    const confidence = score;
 
     results.push({
       type: rule.type,
       score,
-      maxScore,
+      maxScore: score,
       confidence,
       indicators,
       mandatoryConditions: rule.mandatoryConditions,
@@ -219,10 +219,14 @@ export function detectProjectType(projectRoot: string): ProjectDetection {
   // Check if confidence meets threshold
   if (best.confidence >= CONFIDENCE_THRESHOLD) {
     // Count how many indicators matched (for multi-factor validation)
-    const matchedCount = best.indicators.filter((i) => i.found).length;
+    const matchedIndicators = best.indicators.filter((i) => i.found);
+    const matchedCount = matchedIndicators.length;
+    const hasStrongIndicator = matchedIndicators.some((i) => i.weight >= 0.8);
 
-    if (matchedCount >= 2) {
-      // Valid detection with multiple factors
+    // Valid detection if:
+    // - Multiple factors (2+ indicators), OR
+    // - Single strong indicator (weight >= 0.8)
+    if (matchedCount >= 2 || hasStrongIndicator) {
       const elapsedMs = Date.now() - startTime;
 
       return {
@@ -262,10 +266,12 @@ function checkIndicator(
       return fs.existsSync(path.join(projectRoot, indicator.name));
 
     case 'directory':
-      return (
-        fs.existsSync(path.join(projectRoot, indicator.name)) &&
-        fs.statSync(path.join(projectRoot, indicator.name)).isDirectory()
-      );
+      try {
+        const dirPath = path.join(projectRoot, indicator.name);
+        return fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory();
+      } catch {
+        return false;
+      }
 
     case 'dependency':
       if (!packageJson) return false;

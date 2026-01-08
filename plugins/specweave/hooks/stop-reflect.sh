@@ -81,68 +81,90 @@ has_reflection_signals() {
     return 1
 }
 
-# Run reflection in background
-run_reflection_async() {
+# Queue reflection for async processing
+# Following Ralph plugin best practice: Don't spawn background processes in hooks
+# Instead, queue work and let external processor handle it (session-start hook or cron)
+queue_reflection() {
     local transcript="$1"
-    local reflect_script="$SCRIPT_DIR/../scripts/reflect.sh"
+    local queue_file="$STATE_DIR/reflect-queue.jsonl"
 
     # ============================================
     # PRE-FLIGHT VALIDATION (prevents silent failures)
-    # Following ADR-0189: validate BEFORE background spawn
+    # Following ADR-0189: validate BEFORE queueing
     # ============================================
 
-    # Check 1: Script exists
+    # Check 1: Reflect script exists and has valid syntax
+    local reflect_script="$SCRIPT_DIR/../scripts/reflect.sh"
     if [ ! -f "$reflect_script" ]; then
         log_reflect "error" "Reflect script not found: $reflect_script"
         return 1
     fi
 
-    # Check 2: Script has valid bash syntax (CRITICAL - catches merge conflicts, syntax errors)
     if ! bash -n "$reflect_script" 2>/dev/null; then
         log_reflect "error" "Reflect script has syntax errors - reflection disabled"
         log_reflect "error" "Run 'bash -n $reflect_script' to see errors"
-        log_reflect "error" "Check for unresolved merge conflicts or bash syntax issues"
         return 1
     fi
 
-    # Check 3: Transcript is readable
+    # Check 2: Transcript is readable
     if [ ! -r "$transcript" ]; then
         log_reflect "warn" "Transcript not readable: $transcript"
         return 1
     fi
 
-    # Check 4: jq is available (required for config parsing)
+    # Check 3: jq is available (required for config parsing)
     if ! command -v jq >/dev/null 2>&1; then
         log_reflect "error" "jq not found - cannot parse reflect config"
         return 1
     fi
 
     # ============================================
-    # BACKGROUND EXECUTION (validated, ready to run)
+    # QUEUE WORK (non-blocking, fast)
     # ============================================
 
     # Get config values
     local confidence=$(jq -r '.confidenceThreshold // "medium"' "$REFLECT_CONFIG" 2>/dev/null || echo "medium")
     local max_learnings=$(jq -r '.maxLearningsPerSession // 10' "$REFLECT_CONFIG" 2>/dev/null || echo "10")
+    local timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date +%Y-%m-%dT%H:%M:%SZ)
 
-    log_reflect "info" "Starting async reflection (pre-flight checks passed)"
+    # Create queue entry (JSONL format for atomic append)
+    local queue_entry=$(jq -n \
+        --arg transcript "$transcript" \
+        --arg confidence "$confidence" \
+        --arg max "$max_learnings" \
+        --arg ts "$timestamp" \
+        --arg status "queued" \
+        '{
+            transcript: $transcript,
+            confidence: $confidence,
+            maxLearnings: $max,
+            queuedAt: $ts,
+            status: $status
+        }')
 
-    # Run in background - don't wait
+    # Atomic append to queue (JSONL = one JSON object per line)
+    echo "$queue_entry" >> "$queue_file" 2>/dev/null || {
+        log_reflect "error" "Failed to write to queue file: $queue_file"
+        return 1
+    }
+
+    log_reflect "info" "Reflection queued for async processing (transcript: $transcript)"
+
+    # ============================================
+    # IMMEDIATE PROCESSING ATTEMPT
+    # ============================================
+    # Try to process immediately via detached process (fire-and-forget)
+    # If this fails, session-start hook will pick it up next time
+
     (
-        bash "$reflect_script" reflect \
-            --transcript "$transcript" \
-            --confidence "$confidence" \
-            --max "$max_learnings" \
-            >> "$LOGS_DIR/auto-reflect.log" 2>&1
-
-        local exit_code=$?
-
-        if [ $exit_code -eq 0 ]; then
-            log_reflect "info" "Reflection completed successfully"
-        else
-            log_reflect "warn" "Reflection exited with code $exit_code (check auto-reflect.log for details)"
-        fi
+        # Double-fork pattern: Parent exits immediately, child is reparented to init
+        # This prevents zombie processes and ensures clean detachment
+        nohup bash "$SCRIPT_DIR/process-reflect-queue.sh" \
+            >> "$LOGS_DIR/queue-processor.log" 2>&1 &
     ) &
+
+    # Disown to prevent job control messages
+    disown 2>/dev/null || true
 
     return 0
 }
@@ -171,10 +193,10 @@ main() {
         exit 0
     fi
 
-    # Run reflection async (don't block session exit)
-    run_reflection_async "$TRANSCRIPT_PATH"
+    # Queue reflection for async processing (don't block session exit)
+    queue_reflection "$TRANSCRIPT_PATH"
 
-    # Always approve
+    # Always approve - session can exit immediately
     echo "$approve_response"
     exit 0
 }

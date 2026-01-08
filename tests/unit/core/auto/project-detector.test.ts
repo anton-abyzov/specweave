@@ -456,12 +456,19 @@ describe('project-detector', () => {
     });
 
     it('should handle invalid package.json', () => {
-      vi.mocked(fs.existsSync).mockReturnValue(true);
+      // Mock only package.json exists (invalid content), no other files
+      vi.mocked(fs.existsSync).mockImplementation((filePath: any) => {
+        const pathStr = String(filePath);
+        return pathStr.includes('package.json');
+      });
       vi.mocked(fs.readFileSync).mockReturnValue('{ invalid json }');
+      vi.mocked(fs.statSync).mockImplementation(() => {
+        throw new Error('ENOENT: no such file or directory');
+      });
 
       const result = detectProjectType('/test-project');
 
-      // Should not crash, fallback to generic
+      // Should not crash, fallback to generic (no valid indicators found)
       expect(result.type).toBe('generic');
     });
 

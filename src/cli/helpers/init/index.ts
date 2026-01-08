@@ -96,6 +96,13 @@ export {
   type ShowNextStepsOptions,
 } from './next-steps.js';
 
+// Git hooks installation
+export {
+  installGitHooks,
+  uninstallGitHooks,
+  areGitHooksInstalled,
+} from './git-hooks-installer.js';
+
 // v1.0.27: Removed initial-increment-generator exports
 // Reason: Automatic increment creation removed - requires **Project**: field per US
 // File kept for reference but no longer used
