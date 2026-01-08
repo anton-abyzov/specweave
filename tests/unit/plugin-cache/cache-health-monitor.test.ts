@@ -25,7 +25,7 @@ describe('CacheHealthMonitor', () => {
   });
 
   describe('detectMergeConflicts', () => {
-    it('should detect <<<<<<< conflict marker', () => {
+    it('should detect complete merge conflict with all 3 markers', () => {
       const scriptPath = path.join(testPluginPath, 'script.sh');
       const content = `#!/bin/bash
 <<<<<<< HEAD
@@ -39,7 +39,7 @@ echo "version 2"
       expect(result).toBe(true);
     });
 
-    it('should detect ======= conflict marker', () => {
+    it('should NOT detect partial conflict (missing close marker)', () => {
       const scriptPath = path.join(testPluginPath, 'script.sh');
       const content = `#!/bin/bash
 <<<<<<< HEAD
@@ -49,10 +49,10 @@ echo "new"`;
       fs.writeFileSync(scriptPath, content);
 
       const result = monitor.detectMergeConflicts(scriptPath);
-      expect(result).toBe(true);
+      expect(result).toBe(false); // Not a complete conflict
     });
 
-    it('should detect >>>>>>> conflict marker', () => {
+    it('should NOT detect single marker only', () => {
       const scriptPath = path.join(testPluginPath, 'script.sh');
       const content = `#!/bin/bash
 echo "new"
@@ -60,7 +60,7 @@ echo "new"
       fs.writeFileSync(scriptPath, content);
 
       const result = monitor.detectMergeConflicts(scriptPath);
-      expect(result).toBe(true);
+      expect(result).toBe(false); // Missing other markers
     });
 
     it('should return false for clean file', () => {
@@ -81,6 +81,57 @@ echo "output" >> file.log`;
 
       const result = monitor.detectMergeConflicts(scriptPath);
       expect(result).toBe(false);
+    });
+
+    it('should NOT flag documentation examples in code fences', () => {
+      const mdPath = path.join(testPluginPath, 'docs.md');
+      const content = `# How to resolve conflicts
+
+Here is an example:
+
+\`\`\`
+<<<<<<< HEAD
+maxRetries: 5
+=======
+maxRetries: 3
+>>>>>>> upstream
+\`\`\`
+
+The above shows a merge conflict.`;
+      fs.writeFileSync(mdPath, content);
+
+      const result = monitor.detectMergeConflicts(mdPath);
+      expect(result).toBe(false); // Inside code fence
+    });
+
+    it('should NOT flag comment dividers with repeated characters', () => {
+      const tfPath = path.join(testPluginPath, 'main.tf');
+      const content = `# ========================================
+# Section Header
+# ========================================
+
+resource "aws_instance" "example" {}`;
+      fs.writeFileSync(tfPath, content);
+
+      const result = monitor.detectMergeConflicts(tfPath);
+      expect(result).toBe(false); // Missing other markers
+    });
+
+    it('should detect conflict outside code fences even if docs have examples', () => {
+      const mdPath = path.join(testPluginPath, 'conflicted.md');
+      const content = `# Documentation
+
+<<<<<<< HEAD
+Real conflict here
+=======
+Another version
+>>>>>>> main
+
+This file has an actual unresolved conflict.`;
+      fs.writeFileSync(mdPath, content);
+
+      const result = monitor.detectMergeConflicts(mdPath);
+      expect(result).toBe(true); // Outside code fence
     });
 
     it('should throw error for non-existent file', () => {
@@ -145,9 +196,15 @@ echo "output" >> file.log`;
   });
 
   describe('checkPluginHealth', () => {
-    it('should detect merge conflict issue', () => {
+    it('should detect merge conflict issue with complete markers', () => {
       const scriptPath = path.join(testPluginPath, 'conflict.sh');
-      fs.writeFileSync(scriptPath, '#!/bin/bash\n>>>>>>> branch');
+      const content = `#!/bin/bash
+<<<<<<< HEAD
+echo "local"
+=======
+echo "remote"
+>>>>>>> branch`;
+      fs.writeFileSync(scriptPath, content);
 
       const issues = monitor.checkPluginHealth(testPluginPath, '1.0.0');
 
@@ -156,6 +213,17 @@ echo "output" >> file.log`;
       expect(conflictIssue).toBeDefined();
       expect(conflictIssue?.severity).toBe('critical');
       expect(conflictIssue?.file).toContain('conflict.sh');
+    });
+
+    it('should NOT flag partial merge conflict markers', () => {
+      const scriptPath = path.join(testPluginPath, 'partial.sh');
+      fs.writeFileSync(scriptPath, '#!/bin/bash\n>>>>>>> branch'); // Only one marker
+
+      const issues = monitor.checkPluginHealth(testPluginPath, '1.0.0');
+
+      // Should have syntax error but NOT merge conflict
+      const conflictIssue = issues.find(i => i.type === 'merge_conflict');
+      expect(conflictIssue).toBeUndefined();
     });
 
     it('should detect syntax error issue', () => {
@@ -227,7 +295,14 @@ echo "output" >> file.log`;
       const hooksDir = path.join(testPluginPath, 'hooks');
       fs.mkdirSync(hooksDir);
       const conflictPath = path.join(hooksDir, 'stop.sh');
-      fs.writeFileSync(conflictPath, '#!/bin/bash\n<<<<<<< HEAD');
+      // Complete merge conflict to trigger detection
+      const content = `#!/bin/bash
+<<<<<<< HEAD
+echo "local"
+=======
+echo "remote"
+>>>>>>> origin`;
+      fs.writeFileSync(conflictPath, content);
 
       const issues = monitor.checkPluginHealth(testPluginPath, '1.0.0');
 
@@ -253,9 +328,15 @@ echo "output" >> file.log`;
 
   describe('generateHealthReport', () => {
     it('should generate report with all issue categories', () => {
-      // Create mixed issues
+      // Create complete merge conflict
       const conflictPath = path.join(testPluginPath, 'conflict.sh');
-      fs.writeFileSync(conflictPath, '#!/bin/bash\n>>>>>>> branch');
+      const conflictContent = `#!/bin/bash
+<<<<<<< HEAD
+echo "local"
+=======
+echo "remote"
+>>>>>>> branch`;
+      fs.writeFileSync(conflictPath, conflictContent);
 
       const syntaxPath = path.join(testPluginPath, 'syntax.sh');
       fs.writeFileSync(syntaxPath, '#!/bin/bash\nif [');
