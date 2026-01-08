@@ -5,6 +5,7 @@ import { parseTasksWithUSLinks } from '../../generators/spec/task-parser.js';
 import type { Logger } from '../../utils/logger.js';
 import { consoleLogger } from '../../utils/logger.js';
 import { ExternalToolDriftDetector } from '../../utils/external-tool-drift-detector.js';
+import { validateCoverage, type TestMode } from '../qa/coverage-validator.js';
 
 /**
  * Validation result for increment completion
@@ -37,6 +38,10 @@ export class IncrementCompletionValidator {
    *    - Warns if external tools (GitHub/JIRA/ADO) not synced in >24h
    *    - Blocks closure if drift >7 days (critical staleness)
    *    - Prevents "completed locally but external tools never updated" scenarios
+   * 6. NEW (v1.0.105): Test coverage validation
+   *    - Validates coverage meets target when coverageTarget > 0
+   *    - Warns (non-blocking) if coverage is below target
+   *    - Supports Istanbul, c8, Jest, lcov, Cobertura formats
    *
    * @param incrementId - The increment ID to validate
    * @param options - Validation options
@@ -168,6 +173,52 @@ export class IncrementCompletionValidator {
     } catch (error) {
       logger.warn(`Drift detection failed: ${error instanceof Error ? error.message : String(error)}`);
       warnings.push('External tool drift detection skipped due to error');
+    }
+
+    // NEW (v1.0.105): Test coverage validation for TDD increments
+    // Validates that coverage meets target when testMode != 'none' and coverageTarget > 0
+    // See: ADR-0163 (TDD Enforcement Implementation)
+    try {
+      const metadataPath = path.join(incrementPath, 'metadata.json');
+      if (await fs.pathExists(metadataPath)) {
+        const metadataContent = await fs.readFile(metadataPath, 'utf-8');
+        const metadata = JSON.parse(metadataContent);
+
+        const testMode = (metadata.testMode || 'test-after') as TestMode;
+        const coverageTarget = metadata.coverageTarget ?? 0;
+
+        // Only validate if coverage target is set and testMode is not 'none'
+        if (coverageTarget > 0 && testMode !== 'none') {
+          const coverageResult = await validateCoverage({
+            projectRoot: process.cwd(),
+            coverageTarget,
+            testMode,
+          });
+
+          if (coverageResult.skipped) {
+            logger.info(`Coverage validation skipped: ${coverageResult.reason}`);
+          } else if (!coverageResult.passed) {
+            // Coverage below target - WARNING only, not blocking
+            const details = coverageResult.details;
+            let detailsStr = '';
+            if (details) {
+              detailsStr = `\n    Lines: ${details.lines.toFixed(1)}% | Functions: ${details.functions.toFixed(1)}% | Branches: ${details.branches.toFixed(1)}%`;
+            }
+            warnings.push(
+              `⚠️  Test coverage below target (${coverageResult.actual.toFixed(1)}% < ${coverageTarget}%)${detailsStr}\n` +
+              `    ${coverageResult.reason}\n` +
+              `    File: ${coverageResult.coverageFile || 'not found'}\n\n` +
+              `  Consider running tests with --coverage and improving coverage before closing.`
+            );
+          } else {
+            // Coverage passed - log success
+            logger.info(`✓ Coverage validation passed: ${coverageResult.actual.toFixed(1)}% >= ${coverageTarget}%`);
+          }
+        }
+      }
+    } catch (error) {
+      logger.warn(`Coverage validation failed: ${error instanceof Error ? error.message : String(error)}`);
+      warnings.push('Coverage validation skipped due to error');
     }
 
     return {
