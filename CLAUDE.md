@@ -46,7 +46,6 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 6. **⛔ Increment cleanliness**: ONLY 4 files at increment root (metadata.json, spec.md, plan.md, tasks.md). ALL other .md files → `reports/`, logs → `logs/`, scripts → `scripts/`
 7. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run. NEVER create `.specweave/` in parent, nested, or unrelated directories. Check `config.json` exists before creating ANY `.specweave/` subfolders.
 8. **⛔ Marketplace refresh**: ALWAYS use `specweave refresh-marketplace` CLI command. NEVER suggest `scripts/refresh-marketplace.sh` - end users don't have the scripts folder (npm global install).
-9. **⛔ Command syntax**: When creating skills with ```! auto-execution, NEVER use for commands accepting freeform text. Use instruction pattern instead (see troubleshooting). Commands like /sw:auto interpret user intent first, then construct correct CLI commands.
 <!-- SW:END:rules -->
 
 <!-- SW:SECTION:workflow version="1.0.109" -->
@@ -328,8 +327,6 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | Find increment | `/sw:status` |
 | Root polluted | Move files to `.specweave/increments/####/reports/` |
 | Duplicate IDs | `/sw:fix-duplicates` |
-| /sw:auto fails with "Bash command failed" | Command was trying to execute freeform text (e.g., "fix e2e tests") as CLI args. Fixed in v1.0.109+. Restart Claude Code to pick up fix. |
-| Commands with freeform text fail | Skills using ```! auto-execution break with natural language. Use instruction pattern instead (see Rule #9). |
 | GitHub not syncing | Check `sync.github.enabled: true` AND `canUpdateExternalItems: true` in config.json |
 | GitHub issues not updating | Run `/sw-github:sync {id}` explicitly; check `.specweave/logs/throttle.log` |
 | Permission denied | Set `canUpsertInternalItems: true` AND `canUpdateExternalItems: true` in config.json |
