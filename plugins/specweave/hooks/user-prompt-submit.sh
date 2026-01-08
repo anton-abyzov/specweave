@@ -106,9 +106,9 @@ if echo "$PROMPT" | grep -qE "^/sw:jobs($| )"; then
 
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-jobs.sh" ]]; then
-    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-jobs.sh" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-jobs.sh" "$ARGS" 2>&1)
   elif [[ -f "$SCRIPTS_DIR/jobs.js" ]] && command -v node >/dev/null 2>&1; then
-    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/jobs.js" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/jobs.js" "$ARGS" 2>&1)
   else
     OUTPUT="❌ No jobs script available"
   fi
@@ -126,9 +126,9 @@ if echo "$PROMPT" | grep -qE "^/sw:progress($| )"; then
 
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-progress.sh" ]]; then
-    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-progress.sh" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-progress.sh" "$ARGS" 2>&1)
   elif [[ -f "$SCRIPTS_DIR/progress.js" ]] && command -v node >/dev/null 2>&1; then
-    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/progress.js" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/progress.js" "$ARGS" 2>&1)
   else
     OUTPUT="❌ No progress script available"
   fi
@@ -146,9 +146,9 @@ if echo "$PROMPT" | grep -qE "^/sw:status($| )"; then
 
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-status.sh" ]]; then
-    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-status.sh" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-status.sh" "$ARGS" 2>&1)
   elif [[ -f "$SCRIPTS_DIR/status.js" ]] && command -v node >/dev/null 2>&1; then
-    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/status.js" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/status.js" "$ARGS" 2>&1)
   else
     OUTPUT="❌ No status script available"
   fi
@@ -166,7 +166,7 @@ if echo "$PROMPT" | grep -qE "^/sw:workflow($| )"; then
 
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-workflow.sh" ]]; then
-    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-workflow.sh" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-workflow.sh" "$ARGS" 2>&1)
   else
     OUTPUT="❌ No workflow script available"
   fi
@@ -184,7 +184,7 @@ if echo "$PROMPT" | grep -qE "^/sw:costs($| )"; then
 
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-costs.sh" ]]; then
-    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-costs.sh" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-costs.sh" "$ARGS" 2>&1)
   else
     OUTPUT="❌ No costs script available"
   fi
@@ -202,7 +202,7 @@ if echo "$PROMPT" | grep -qE "^/sw:analytics($| )"; then
 
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-analytics.sh" ]]; then
-    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-analytics.sh" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-analytics.sh" "$ARGS" 2>&1)
   else
     OUTPUT="❌ No analytics script available"
   fi

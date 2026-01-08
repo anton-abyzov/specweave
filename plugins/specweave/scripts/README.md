@@ -75,7 +75,7 @@ allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/read-jobs.sh)"]
 ---
 
 ```!
-bash "${CLAUDE_PLUGIN_ROOT}/scripts/read-jobs.sh" $ARGUMENTS
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/read-jobs.sh" "$ARGUMENTS"
 ```
 ```
 
@@ -129,7 +129,7 @@ To add a new instant command:
    ---
 
    ```!
-   bash "${CLAUDE_PLUGIN_ROOT}/scripts/newcmd.sh" $ARGUMENTS
+   bash "${CLAUDE_PLUGIN_ROOT}/scripts/newcmd.sh" "$ARGUMENTS"
    ```
    ```
 4. (Optional) Add to hook dispatcher in `plugins/specweave/hooks/user-prompt-submit.sh`
