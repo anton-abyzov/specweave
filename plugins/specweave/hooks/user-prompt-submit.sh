@@ -28,21 +28,6 @@ set +e
 # ==============================================================================
 INPUT=$(cat 2>/dev/null || echo '{}')
 
-# EMERGENCY DEBUG - Always log to home directory (bypasses CWD issues)
-EMERGENCY_LOG="$HOME/claude-hook-debug-progress.log"
-echo "=== $(date '+%Y-%m-%d %H:%M:%S') ===" >> "$EMERGENCY_LOG" 2>/dev/null || true
-echo "INPUT: $INPUT" >> "$EMERGENCY_LOG" 2>/dev/null || true
-echo "PWD: $(pwd)" >> "$EMERGENCY_LOG" 2>/dev/null || true
-echo "CWD: $PWD" >> "$EMERGENCY_LOG" 2>/dev/null || true
-echo "---" >> "$EMERGENCY_LOG" 2>/dev/null || true
-
-# CRITICAL DEBUG LOGGING (v1.0.104+)
-DEBUG_LOG=".specweave/logs/hooks/user-prompt-submit-debug.log"
-mkdir -p "$(dirname "$DEBUG_LOG")" 2>/dev/null || true
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] === NEW PROMPT ===" >> "$DEBUG_LOG"
-echo "$INPUT" | head -10 >> "$DEBUG_LOG"
-echo "---" >> "$DEBUG_LOG"
-
 # Use jq if available (10x faster than node), fallback to simple grep
 if command -v jq >/dev/null 2>&1; then
   PROMPT=$(echo "$INPUT" | jq -r '.prompt // ""' 2>/dev/null || echo "")
@@ -51,18 +36,12 @@ else
   PROMPT=$(echo "$INPUT" | grep -oP '"prompt"\s*:\s*"\K[^"]*' 2>/dev/null || echo "")
 fi
 
-# Log extracted prompt for debugging
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] Extracted prompt: '$PROMPT'" >> "$DEBUG_LOG"
-
 # CRITICAL: Exit immediately for non-SpecWeave prompts
 # This covers 90%+ of prompts with <5ms overhead
 if ! echo "$PROMPT" | grep -qE "(specweave|/sw:|increment|add|create|implement|build|develop)"; then
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Early exit - not a SpecWeave prompt" >> "$DEBUG_LOG"
   echo '{"decision":"approve"}'
   exit 0
 fi
-
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] SpecWeave prompt detected, continuing" >> "$DEBUG_LOG"
 
 # ==============================================================================
 # EARLY EXIT FOR NON-SPECWEAVE PROJECTS (T-006 - v0.26.15)
@@ -142,44 +121,23 @@ if echo "$PROMPT" | grep -qE "^/sw:jobs($| )"; then
 fi
 
 # /sw:progress → Execute read-progress.sh (pure bash, ~30ms)
-# DEBUG: Log before checking (v1.0.104+)
-PROGRESS_DEBUG_LOG=".specweave/logs/hooks/progress-debug.log"
-mkdir -p "$(dirname "$PROGRESS_DEBUG_LOG")" 2>/dev/null || true
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] Checking for /sw:progress in prompt: '$PROMPT'" >> "$PROGRESS_DEBUG_LOG"
-
 if echo "$PROMPT" | grep -qE "^/sw:progress($| )"; then
   ARGS=$(extract_command_args "$PROMPT" "/sw:progress")
-
-  # DEBUG: Log execution
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] /sw:progress detected - executing script" >> "$PROGRESS_DEBUG_LOG"
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] ARGS: '$ARGS'" >> "$PROGRESS_DEBUG_LOG"
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] SCRIPTS_DIR: $SCRIPTS_DIR" >> "$PROGRESS_DEBUG_LOG"
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Environment: $(is_vscode && echo 'VSCode' || echo 'CLI')" >> "$PROGRESS_DEBUG_LOG"
 
   # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-progress.sh" ]]; then
     OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-progress.sh" $ARGS 2>&1)
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Script: read-progress.sh" >> "$PROGRESS_DEBUG_LOG"
   elif [[ -f "$SCRIPTS_DIR/progress.js" ]] && command -v node >/dev/null 2>&1; then
     OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/progress.js" $ARGS 2>&1)
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Script: progress.js" >> "$PROGRESS_DEBUG_LOG"
   else
     OUTPUT="❌ No progress script available"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR: No script found" >> "$PROGRESS_DEBUG_LOG"
   fi
-
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Output length: ${#OUTPUT} chars" >> "$PROGRESS_DEBUG_LOG"
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Exit code: $?" >> "$PROGRESS_DEBUG_LOG"
 
   # Unified response for both CLI and VSCode (v0.34.0)
   # block decision with reason works in both environments
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] Returning unified block response (works in both CLI and VSCode)" >> "$PROGRESS_DEBUG_LOG"
   printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
-else
-  # Log when command is NOT detected (v1.0.104+)
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] /sw:progress NOT detected in prompt" >> "$PROGRESS_DEBUG_LOG"
 fi
 
 # /sw:status → Execute read-status.sh (pure bash, ~150ms)
