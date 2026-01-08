@@ -262,22 +262,44 @@ extract_rule() {
 }
 
 # Detect high-value signals in transcript
+# v4.1: Supports both plain text and JSONL (Claude Code) transcript formats
 detect_signals() {
     local transcript="$1"
     local signals_file="$STATE_DIR/reflect-signals.txt"
+    local extracted_text="${TMPDIR:-/tmp}/reflect_extracted_$$"
 
     [ ! -f "$transcript" ] && return 1
     > "$signals_file"
 
+    # ========================================================================
+    # JSONL HANDLING (v4.1)
+    # Claude Code transcripts are JSONL - extract user text for analysis
+    # ========================================================================
+    local is_jsonl="false"
+    if [[ "$transcript" == *.jsonl ]] || head -1 "$transcript" 2>/dev/null | grep -q '^{'; then
+        is_jsonl="true"
+        # Extract only USER messages text content (where corrections would be)
+        jq -r 'select(.message.role == "user") | .message.content[]? | select(.text) | .text' "$transcript" 2>/dev/null > "$extracted_text" || true
+    else
+        # Plain text - use directly
+        cp "$transcript" "$extracted_text" 2>/dev/null || true
+    fi
+
+    # Bail if no text extracted
+    if [ ! -s "$extracted_text" ]; then
+        rm -f "$extracted_text"
+        return 1
+    fi
+
     # Look for corrections (high value)
     for pattern in "${CORRECTION_PATTERNS[@]}"; do
-        local matches=$(grep -inE "$pattern" "$transcript" 2>/dev/null | head -3) || true
+        local matches=$(grep -inE "$pattern" "$extracted_text" 2>/dev/null | head -3) || true
         if [ -n "$matches" ]; then
             echo "$matches" | while read -r match; do
                 local linenum=$(echo "$match" | cut -d: -f1)
                 local start=$((linenum > 2 ? linenum - 1 : 1))
                 local end=$((linenum + 1))
-                local context=$(sed -n "${start},${end}p" "$transcript" 2>/dev/null | tr '\n' ' ' | sed 's/  */ /g')
+                local context=$(sed -n "${start},${end}p" "$extracted_text" 2>/dev/null | tr '\n' ' ' | sed 's/  */ /g')
 
                 # Only add if actionable
                 if is_actionable "$context"; then
@@ -290,11 +312,11 @@ detect_signals() {
 
     # Look for explicit rules (medium value)
     for pattern in "${RULE_PATTERNS[@]}"; do
-        local matches=$(grep -inE "$pattern" "$transcript" 2>/dev/null | head -2) || true
+        local matches=$(grep -inE "$pattern" "$extracted_text" 2>/dev/null | head -2) || true
         if [ -n "$matches" ]; then
             echo "$matches" | while read -r match; do
                 local linenum=$(echo "$match" | cut -d: -f1)
-                local context=$(sed -n "${linenum}p" "$transcript" 2>/dev/null | tr '\n' ' ')
+                local context=$(sed -n "${linenum}p" "$extracted_text" 2>/dev/null | tr '\n' ' ')
 
                 if is_actionable "$context"; then
                     local rule=$(extract_rule "$context")
@@ -303,6 +325,9 @@ detect_signals() {
             done
         fi
     done
+
+    # Cleanup
+    rm -f "$extracted_text"
 
     local count=$(wc -l < "$signals_file" 2>/dev/null || echo 0)
     count=$(echo "$count" | tr -d ' ')

@@ -52,16 +52,42 @@ describe('Stop Hook Integration', () => {
   });
 
   describe('stop_hook_active flag', () => {
-    it('should approve when stop_hook_active is true', () => {
-      // Create a session
+    it('should still evaluate completion when stop_hook_active is true (Ralph Wiggum pattern)', () => {
+      // Create a session with incomplete tasks
       const manager = new SessionStateManager(tempDir);
-      const session = manager.createSession({ incrementQueue: ['0001'] });
+      const session = manager.createSession({ incrementQueue: ['0001-test'] });
+      session.currentIncrement = '0001-test';
       manager.save(session);
+
+      // Create tasks.md with incomplete tasks
+      const tasksPath = path.join(tempDir, '.specweave/increments/0001-test/tasks.md');
+      fs.writeFileSync(tasksPath, '### T-001: Task 1\n**Status**: [ ] pending');
+
+      // FIXED: stop_hook_active should NOT cause immediate approval
+      // The hook should still check if tasks are complete
+      const result = runHook({ transcript_path: '', stop_hook_active: true });
+
+      // Should block because tasks are incomplete, regardless of stop_hook_active
+      expect(result.decision).toBe('block');
+      expect(result.reason).toContain('incomplete');
+    });
+
+    it('should approve when stop_hook_active is true AND tasks are complete', () => {
+      // Create a session with completed tasks
+      const manager = new SessionStateManager(tempDir);
+      const session = manager.createSession({ incrementQueue: ['0001-test'] });
+      session.currentIncrement = '0001-test';
+      manager.save(session);
+
+      // Create tasks.md with all tasks completed
+      const tasksPath = path.join(tempDir, '.specweave/increments/0001-test/tasks.md');
+      fs.writeFileSync(tasksPath, '### T-001: Task 1\n**Status**: [x] completed');
 
       const result = runHook({ transcript_path: '', stop_hook_active: true });
 
+      // Should approve because tasks are complete (not because of stop_hook_active)
       expect(result.decision).toBe('approve');
-      expect(result.reason).toContain('Stop hook already active');
+      expect(result.reason).toContain('All tasks completed');
     });
   });
 
@@ -88,10 +114,30 @@ describe('Stop Hook Integration', () => {
   });
 
   describe('completion promise', () => {
-    it('should approve when completion promise found in transcript', () => {
+    it('should approve when completion promise found in transcript (no tasks)', () => {
       const manager = new SessionStateManager(tempDir);
       const session = manager.createSession({ incrementQueue: ['0001'] });
       manager.save(session);
+
+      // Create transcript with completion promise (in last 100 lines)
+      const transcriptPath = path.join(tempDir, 'transcript.txt');
+      fs.writeFileSync(transcriptPath, 'Some output\n<auto-complete>DONE</auto-complete>\nMore output');
+
+      const result = runHook({ transcript_path: transcriptPath, stop_hook_active: false });
+
+      expect(result.decision).toBe('approve');
+      expect(result.reason).toContain('Completion promise detected');
+    });
+
+    it('should approve when completion promise found AND all tasks complete', () => {
+      const manager = new SessionStateManager(tempDir);
+      const session = manager.createSession({ incrementQueue: ['0001-test'] });
+      session.currentIncrement = '0001-test';
+      manager.save(session);
+
+      // Create completed tasks
+      const tasksPath = path.join(tempDir, '.specweave/increments/0001-test/tasks.md');
+      fs.writeFileSync(tasksPath, '### T-001: Task 1\n**Status**: [x] completed');
 
       // Create transcript with completion promise
       const transcriptPath = path.join(tempDir, 'transcript.txt');
@@ -101,6 +147,49 @@ describe('Stop Hook Integration', () => {
 
       expect(result.decision).toBe('approve');
       expect(result.reason).toContain('Completion promise detected');
+    });
+
+    it('should reject completion promise when tasks are incomplete (stricter v2.10)', () => {
+      const manager = new SessionStateManager(tempDir);
+      const session = manager.createSession({ incrementQueue: ['0001-test'] });
+      session.currentIncrement = '0001-test';
+      manager.save(session);
+
+      // Create INCOMPLETE tasks
+      const tasksPath = path.join(tempDir, '.specweave/increments/0001-test/tasks.md');
+      fs.writeFileSync(tasksPath, '### T-001: Task 1\n**Status**: [ ] pending');
+
+      // Create transcript with completion promise (should be rejected!)
+      const transcriptPath = path.join(tempDir, 'transcript.txt');
+      fs.writeFileSync(transcriptPath, 'Some output\n<auto-complete>DONE</auto-complete>\nMore output');
+
+      const result = runHook({ transcript_path: transcriptPath, stop_hook_active: false });
+
+      // Should block because tasks are incomplete, despite completion promise
+      expect(result.decision).toBe('block');
+      expect(result.reason).toContain('incomplete');
+    });
+
+    it('should ignore completion promise if not in last 100 lines (legacy)', () => {
+      const manager = new SessionStateManager(tempDir);
+      const session = manager.createSession({ incrementQueue: ['0001-test'] });
+      session.currentIncrement = '0001-test';
+      manager.save(session);
+
+      // Create incomplete tasks
+      const tasksPath = path.join(tempDir, '.specweave/increments/0001-test/tasks.md');
+      fs.writeFileSync(tasksPath, '### T-001: Task 1\n**Status**: [ ] pending');
+
+      // Create transcript with OLD completion promise (> 100 lines ago)
+      const transcriptPath = path.join(tempDir, 'transcript.txt');
+      const oldContent = '<auto-complete>DONE</auto-complete>\n' + 'line\n'.repeat(120);
+      fs.writeFileSync(transcriptPath, oldContent);
+
+      const result = runHook({ transcript_path: transcriptPath, stop_hook_active: false });
+
+      // Should block - old promise is ignored
+      expect(result.decision).toBe('block');
+      expect(result.reason).toContain('incomplete');
     });
 
     it('should block when no completion promise', () => {

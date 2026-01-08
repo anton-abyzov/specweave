@@ -235,8 +235,11 @@ log_debug "Processing: $FILE_PATH (increment: $INC_ID)"
 # SETUP PATHS
 # ============================================================================
 
+# Script is at: hooks/v2/dispatchers/post-tool-use.sh
+# HOOK_DIR should be: hooks/v2 (one level up from dispatchers)
+# PLUGIN_ROOT should be: plugin root (TWO levels up from hooks/v2)
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PLUGIN_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
+PLUGIN_ROOT="$(cd "$HOOK_DIR/../.." && pwd)"
 DETECTOR_DIR="$HOOK_DIR/detectors"
 SCRIPTS_DIR="$PLUGIN_ROOT/scripts"
 
