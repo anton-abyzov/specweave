@@ -3,11 +3,7 @@
     "allow": [
       "Write(//**)",
       "Edit(//**)",
-      "Bash(mkdir:*)",
-      "Bash(mv:*)",
-      "Bash(rm:*)",
-      "Bash(cp:*)",
-      "Bash(*/scripts/setup-auto.sh:*)"
+      "Bash"
     ],
     "defaultMode": "bypassPermissions"
   }
