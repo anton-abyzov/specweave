@@ -2,17 +2,17 @@
 name: sw:auto
 description: Start autonomous execution session with stop hook integration. Works until all tasks complete or max iterations reached. Uses Ralph Wiggum pattern with SpecWeave workflow integration. Activates for: auto, autonomous, auto mode, ship while sleeping.
 argument-hint: "[INCREMENT_IDS...] [OPTIONS]"
-allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/setup-auto.sh:*)"]
+allowed-tools: ["Bash(specweave auto *)"]
 ---
 
 # Auto Command
 
 **Start autonomous execution session using Claude Code's Stop Hook.**
 
-Execute the setup script to initialize auto mode:
+Execute the auto command to initialize auto mode:
 
 ```!
-"${CLAUDE_PLUGIN_ROOT}/scripts/setup-auto.sh" "$ARGUMENTS"
+specweave auto $ARGUMENTS
 ```
 
 Now work on the increment tasks. When you try to exit, the stop hook will check completion conditions and feed the next task back to you. Continue until all tasks are complete and quality gates pass.
@@ -432,7 +432,7 @@ Analyze & Show Plan
 1. User runs /sw:auto (with or without IDs)
            │
            ▼
-2. setup-auto.sh creates session state
+2. specweave auto command creates session state
    └─ .specweave/state/auto-session.json
            │
            ▼
@@ -1384,7 +1384,7 @@ All tests pass locally. Where should I deploy?
 
 When this command is invoked:
 
-### Step 1: MANDATORY - Run setup-auto.sh (DO THIS FIRST!)
+### Step 1: MANDATORY - Run specweave auto (DO THIS FIRST!)
 
 **Execute this IMMEDIATELY when /sw:auto is invoked:**
 
@@ -1401,9 +1401,9 @@ Pass any arguments from the user (increment IDs, completion conditions, --max-it
 - `1`: Error (no increments found with --no-increment/--no-inc) → STOP
 - `2`: **Increment creation needed** → proceed to Step 2
 
-### Step 2: INTELLIGENT INCREMENT CREATION (if setup-auto.sh exits with code 2)
+### Step 2: INTELLIGENT INCREMENT CREATION (if specweave auto exits with code 2)
 
-**When setup script signals increment creation needed:**
+**When specweave auto signals increment creation needed:**
 
 1. **Check marker file:**
    ```bash
