@@ -16,7 +16,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { SessionStateManager } from '../../core/auto/session-state.js';
 import { CompletionCondition } from '../../core/auto/types.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
 import { isSpecWeaveInitialized, ensureSpecWeaveDir } from '../../utils/fs-native.js';
@@ -97,6 +96,15 @@ export function createAutoCommand(): Command {
 }
 
 /**
+ * Generate unique session ID
+ */
+function generateSessionId(): string {
+  const date = new Date().toISOString().split('T')[0];
+  const random = Math.random().toString(36).substring(2, 8);
+  return `auto-${date}-${random}`;
+}
+
+/**
  * Main auto command handler
  * Exported for use by bin/specweave.js proxy
  */
@@ -105,7 +113,6 @@ export async function handleAutoCommand(
   incrementIds: string[],
   options: AutoCommandOptions
 ): Promise<void> {
-  const sessionManager = new SessionStateManager(projectPath);
   const stateDir = path.join(projectPath, '.specweave/state');
   const incrementsDir = path.join(projectPath, '.specweave/increments');
   const logsDir = path.join(projectPath, '.specweave/logs');
@@ -203,16 +210,24 @@ export async function handleAutoCommand(
     finalIncrementIds = [...finalIncrementIds, ...options.increments.split(',').map(id => id.trim())];
   }
 
-  // Check for existing active session
-  if (sessionManager.hasActiveSession()) {
-    const activeSession = sessionManager.getActiveSession();
-    console.log(chalk.red(`❌ Auto session already active: ${activeSession?.sessionId}`));
-    console.log('');
-    console.log('Options:');
-    console.log('  1. Cancel it: ' + chalk.cyan('specweave cancel-auto'));
-    console.log('  2. Check status: ' + chalk.cyan('specweave auto-status'));
-    console.log('  3. Let it continue (close this tab)');
-    process.exit(1);
+  // Check for existing active session (simplified - just check file)
+  const sessionPath = path.join(stateDir, 'auto-session.json');
+  if (fs.existsSync(sessionPath)) {
+    try {
+      const sessionData = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
+      if (sessionData.status === 'running') {
+        console.log(chalk.red(`❌ Auto session already active: ${sessionData.sessionId}`));
+        console.log('');
+        console.log('Options:');
+        console.log('  1. Cancel it: ' + chalk.cyan('specweave cancel-auto'));
+        console.log('  2. Check status: ' + chalk.cyan('specweave auto-status'));
+        console.log('  3. Let it continue (close this tab)');
+        process.exit(1);
+      }
+    } catch (error) {
+      // Invalid session file, proceed
+      logger.debug('Invalid session file, proceeding with new session');
+    }
   }
 
   // Handle --prompt (intelligent chunking)
@@ -287,38 +302,46 @@ export async function handleAutoCommand(
     return;
   }
 
-  // Create session
-  const session = sessionManager.createSession({
-    incrementQueue: finalIncrementIds,
+  // Create session (simplified - minimal state)
+  const sessionId = generateSessionId();
+  const session = {
+    sessionId,
+    status: 'running',
+    startTime: new Date().toISOString(),
+    iteration: 0,
     maxIterations,
     maxHours,
+    incrementQueue: finalIncrementIds,
+    currentIncrement: finalIncrementIds[0] ?? null,
+    completedIncrements: [] as string[],
+    failedIncrements: [] as string[],
+    humanGates: {
+      pending: null as any,
+      approved: skipGates,
+      blocked: [] as string[],
+    },
+    lastActivity: new Date().toISOString(),
     simple: simpleMode,
-  });
+    tddMode: tddMode || false,
+    completionConditions: completionConditions.length > 0 ? completionConditions : undefined,
+  };
 
-  // Add TDD mode to session if enabled
-  if (tddMode) {
-    session.tddMode = true;
-  }
-
-  // Add completion conditions if provided (v0.4.0+)
-  if (completionConditions.length > 0) {
-    session.completionConditions = completionConditions;
-  }
-
-  // Add skip gates if provided
-  if (skipGates.length > 0) {
-    session.humanGates.approved = skipGates;
-  }
-
-  // Save session
-  if (!sessionManager.save(session)) {
+  // Save session to disk
+  try {
+    fs.writeFileSync(sessionPath, JSON.stringify(session, null, 2), 'utf-8');
+  } catch (error) {
     console.log(chalk.red('❌ Failed to create session'));
+    logger.error(`Session save error: ${error}`);
     process.exit(1);
   }
 
-  // Acquire lock
-  if (!sessionManager.acquireLock()) {
+  // Create lock file
+  const lockPath = path.join(stateDir, 'active-session.lock');
+  try {
+    fs.writeFileSync(lockPath, sessionId, 'utf-8');
+  } catch (error) {
     console.log(chalk.red('❌ Failed to acquire session lock'));
+    logger.error(`Lock acquisition error: ${error}`);
     process.exit(1);
   }
 
@@ -541,7 +564,7 @@ function printDryRunPreview(
   maxHours: number | undefined,
   simpleMode: boolean
 ): void {
-  const sessionId = SessionStateManager.generateSessionId();
+  const sessionId = generateSessionId();
 
   console.log(chalk.blue('🔍 Dry Run - Session Preview'));
   console.log('');

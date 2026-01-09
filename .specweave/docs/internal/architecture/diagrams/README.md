@@ -1,23 +1,66 @@
 # SpecWeave Architecture Diagrams
 
-**Date**: 2025-12-03
-**Status**: Consolidated and streamlined
+**Date**: 2026-01-08
+**Status**: Expanded with C4 Model diagrams
 
 ---
 
 ## Overview
 
-This folder contains **7 essential Mermaid diagrams** for SpecWeave architecture. Each diagram is independent and can be:
-- Rendered individually as SVG
-- Referenced in documentation
-- Used in presentations
-- Combined for comprehensive explanations
+This folder contains comprehensive Mermaid diagrams for SpecWeave architecture. Organized into:
+- **C4 Model Diagrams**: System context, container, component, deployment
+- **Flow Diagrams**: Sequence diagrams for key workflows
+- **State Diagrams**: State machines for lifecycle management
+- **Legacy Diagrams**: Original workflow and plugin detection diagrams
 
 **Change Log**:
+- **2026-01-08**: Added C4 Model diagrams (8 new diagrams), organized into subfolders
 - **2025-12-03**: Command syntax audit - all commands now use full `/specweave:` prefix (no shortcuts!)
 - **2025-11-10**: Major consolidation - removed redundant delivery guide diagrams, renamed brownfield workflow for clarity
 - **2025-10-31**: Plugin architecture diagrams (product v0.4.0)
 - **Initial**: First diagram set
+
+---
+
+## C4 Model Diagrams (NEW)
+
+### System Level (C4-1 & C4-2)
+
+| Diagram | Description | Location |
+|---------|-------------|----------|
+| **System Context** | SpecWeave in ecosystem with external systems | `system-context.mmd` |
+| **Container** | Major components: CLI, Core, Plugins, Sync, Hooks | `system-container.mmd` |
+
+### Component Level (C4-3)
+
+| Diagram | Description | Location |
+|---------|-------------|----------|
+| **Core Framework** | MetadataManager, ConfigManager, LivingDocsSync | `core/component-core-framework.mmd` |
+| **Plugin System** | PluginLoader, registries, hook system | `plugins/component-plugin-system.mmd` |
+
+### Deployment (C4-4)
+
+| Diagram | Description | Location |
+|---------|-------------|----------|
+| **Deployment Overview** | Dev machine, npm, GitHub, cloud services | `deployment/deployment-overview.mmd` |
+
+### Flow Diagrams (Sequence)
+
+| Diagram | Description | Location |
+|---------|-------------|----------|
+| **Increment Creation** | /sw:increment command flow with agents | `flows/increment-creation-flow.mmd` |
+| **Task Completion** | Event-driven AC sync and status transitions | `flows/task-completion-flow.mmd` |
+| **Auto Mode** | Ralph Wiggum pattern with stop hooks | `flows/auto-mode-flow.mmd` |
+
+### State Diagrams
+
+| Diagram | Description | Location |
+|---------|-------------|----------|
+| **Increment Lifecycle** | Status transitions: PLANNING to COMPLETED | `state/increment-lifecycle.mmd` |
+
+---
+
+## Legacy Diagrams (Original)
 
 ---
 

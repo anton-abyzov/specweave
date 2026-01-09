@@ -324,7 +324,7 @@ describe('specweave logs hooks', () => {
 ## Phase 3: Hook Status Dashboard (US-003)
 
 ### T-007: Create hook health tracker
-**User Story**: US-003 | **Satisfies ACs**: AC-US3-02, AC-US3-04, AC-US3-05 | **Status**: [ ] pending
+**User Story**: US-003 | **Satisfies ACs**: AC-US3-02, AC-US3-04, AC-US3-05 | **Status**: [x] completed
 **Model**: 💎 Opus
 
 Implement health tracking logic analyzing last 24h of hook executions.

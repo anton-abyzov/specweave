@@ -12,7 +12,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { SessionStateManager } from '../../core/auto/session-state.js';
 
 export interface CancelAutoOptions {
   force?: boolean;
@@ -52,11 +51,20 @@ async function handleCancelAuto(
   projectPath: string,
   options: CancelAutoOptions
 ): Promise<void> {
-  const sessionManager = new SessionStateManager(projectPath);
-  const session = sessionManager.load();
+  const stateDir = path.join(projectPath, '.specweave/state');
+  const sessionPath = path.join(stateDir, 'auto-session.json');
 
-  if (!session) {
+  // Load session
+  if (!fs.existsSync(sessionPath)) {
     console.log(chalk.yellow('No auto session found'));
+    return;
+  }
+
+  let session: any;
+  try {
+    session = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
+  } catch (error) {
+    console.log(chalk.yellow('Invalid auto session file'));
     return;
   }
 
@@ -92,15 +100,26 @@ async function handleCancelAuto(
   const durationMinutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
 
   // Update session status
-  const success = sessionManager.updateStatus('cancelled', 'User requested cancellation');
+  session.status = 'cancelled';
+  session.endTime = new Date().toISOString();
+  session.endReason = 'User requested cancellation';
 
-  if (!success) {
+  try {
+    fs.writeFileSync(sessionPath, JSON.stringify(session, null, 2), 'utf-8');
+  } catch (error) {
     console.log(chalk.red('❌ Failed to cancel session'));
     return;
   }
 
   // Release lock
-  sessionManager.releaseLock();
+  const lockPath = path.join(stateDir, 'active-session.lock');
+  try {
+    if (fs.existsSync(lockPath)) {
+      fs.unlinkSync(lockPath);
+    }
+  } catch (error) {
+    // Ignore lock release errors
+  }
 
   // Generate summary report
   const logsDir = path.join(projectPath, '.specweave/logs');

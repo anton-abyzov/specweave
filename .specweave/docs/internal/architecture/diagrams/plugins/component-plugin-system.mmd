@@ -1,0 +1,66 @@
+C4Component
+  title Plugin System Component Diagram
+
+  Container_Boundary(plugins, "Plugin System") {
+    Component(loader, "PluginLoader", "TypeScript Class", "Loads plugins from filesystem, validates plugin.json manifest")
+
+    Component(discovery, "ComponentDiscovery", "TypeScript Module", "Discovers skills/agents/commands by scanning directories")
+
+    Component(skillreg, "Skill Registry", "In-Memory Map", "Maps skill names to YAML definitions, auto-activation triggers")
+
+    Component(agentreg, "Agent Registry", "In-Memory Map", "Maps agent types to YAML definitions, Task tool invocation")
+
+    Component(cmdreg, "Command Registry", "In-Memory Map", "Maps /sw: commands to handler functions")
+
+    Component(hookreg, "Hook Registry", "Directory Scan", "Discovers start/stop hooks from plugins/*/hooks/")
+
+    Component(manifest, "ManifestValidator", "TypeScript Module", "Validates plugin.json required fields: name, version, author")
+
+    Component(progressive, "Progressive Loader", "TypeScript Module", "Loads PLUGINS-INDEX.md first, then loads matched plugins on demand")
+  }
+
+  Container_Boundary(plugindir, "Plugin Directory Structure") {
+    Component(pluginjson, "plugin.json", "JSON", "Plugin metadata: name, version, author, keywords")
+
+    Component(skills, "skills/", "YAML Files", "Skill definitions with system prompts and auto-triggers")
+
+    Component(agents, "agents/", "YAML Files", "Agent definitions with system prompts and test cases")
+
+    Component(commands, "commands/", "TypeScript", "Command handlers for /sw: slash commands")
+
+    Component(hooks, "hooks/", "Bash Scripts", "start-*.sh and stop-*.sh hook scripts")
+
+    Component(refs, "references/", "Markdown", "Reference documentation loaded into agent context")
+
+    Component(templates, "templates/", "Handlebars", "Templates for spec.md, plan.md, tasks.md generation")
+  }
+
+  System_Ext(claude, "Claude Code", "AI coding assistant")
+
+  Rel(loader, manifest, "Validates")
+  Rel(loader, discovery, "Scans directories")
+  Rel(loader, pluginjson, "Reads manifest")
+
+  Rel(discovery, skills, "Scans for *.yaml")
+  Rel(discovery, agents, "Scans for *.yaml")
+  Rel(discovery, commands, "Scans for *.ts")
+  Rel(discovery, hooks, "Scans for *.sh")
+
+  Rel(loader, skillreg, "Populates")
+  Rel(loader, agentreg, "Populates")
+  Rel(loader, cmdreg, "Populates")
+  Rel(loader, hookreg, "Populates")
+
+  Rel(progressive, skillreg, "On-demand loading")
+  Rel(progressive, agentreg, "On-demand loading")
+
+  Rel(skillreg, skills, "Loads YAML content")
+  Rel(agentreg, agents, "Loads YAML content")
+  Rel(agentreg, refs, "Loads reference docs")
+
+  BiRel(claude, skillreg, "Auto-activates skills based on keywords")
+  BiRel(claude, agentreg, "Spawns agents via Task tool")
+  BiRel(claude, cmdreg, "Executes /sw: commands")
+  BiRel(claude, hookreg, "Triggers start/stop hooks")
+
+  UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="2")
