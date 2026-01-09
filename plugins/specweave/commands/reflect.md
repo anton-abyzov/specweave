@@ -38,15 +38,42 @@ description: Analyze current session and extract learnings to skill memory files
 
 ## How It Works
 
-### Step 1: Signal Detection
+### Step 1: Signal Detection (ENHANCED v4.1)
 
-Scans conversation for two signal types:
+Scans conversation for signals and **captures FULL context**:
+
+**⚠️ CRITICAL: Context Must Include the PROBLEM, Not Just the Fix**
+
+When a user explains a problem like:
+```
+User: "When I use voice control, it always gives me 'command not recognized'"
+```
+
+You MUST capture:
+- **CONTEXT**: "When using voice control with skill commands" (the circumstance)
+- **LEARNING**: "Voice dictation can mangle command syntax - type commands or use clipboard" (the fix)
+- **SKILL**: If a skill name is mentioned (e.g., "the detector skill"), route to that skill
+
+**DO NOT** store just: `"always command not recognized"` ← This loses all meaning!
+
+---
 
 **Corrections (High Confidence)**
 ```
 User: "No, don't use that button. Use our <Button variant='primary'>"
       → Detected: CORRECTION
-      → Category: component-usage
+      → Context: User corrected button component usage in settings page
+      → Learning: Always use Button component with variant='primary' from design system
+      → Confidence: high
+```
+
+**Problem Reports (High Confidence) - NEW!**
+```
+User: "The detector skill doesn't recognize commands when I use voice input"
+      → Detected: PROBLEM REPORT
+      → Context: Voice dictation causes command parsing issues
+      → Learning: Voice input mangles command syntax - recommend typing or clipboard
+      → Skill: detector (explicit skill name detected!)
       → Confidence: high
 ```
 
@@ -54,25 +81,29 @@ User: "No, don't use that button. Use our <Button variant='primary'>"
 ```
 User: "Perfect! That's exactly how our API should look."
       → Detected: APPROVAL
-      → Category: api-patterns
+      → Context: User approved API response structure pattern
+      → Learning: Continue using API pattern with status, data, error fields
       → Confidence: medium
 ```
 
 ### Step 2: Learning Extraction
 
-Each detected signal is structured:
+Each detected signal is structured with FULL context:
 
 ```json
 {
   "id": "LRN-2026-01-05-001",
   "type": "correction",
   "confidence": "high",
-  "category": "component-usage",
-  "learning": "Always use <Button variant='primary'> for primary actions",
-  "triggers": ["button", "primary", "action"],
-  "skill": "frontend"
+  "content": "Always use <Button variant='primary'> for primary actions from design system",
+  "context": "User corrected button component usage when implementing settings page",
+  "triggers": ["button", "primary", "action", "component"],
+  "skill": "frontend",
+  "source": "session:2026-01-05"
 }
 ```
+
+**Note**: The `context` field captures WHY and WHEN, not just WHAT.
 
 ### Step 3: Skill Matching
 

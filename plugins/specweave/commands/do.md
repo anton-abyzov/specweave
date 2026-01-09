@@ -215,6 +215,59 @@ Contributors working on SpecWeave itself need different mindset than users build
 🎯 Ready to execute!
 ```
 
+### Step 1.5: Check TDD Mode (v1.0.111+)
+
+**Read testMode from metadata.json:**
+
+```bash
+INCREMENT_PATH=".specweave/increments/<id>"
+TEST_MODE=$(cat "$INCREMENT_PATH/metadata.json" | jq -r '.testMode // "test-after"')
+```
+
+**If TEST_MODE == "TDD", display TDD reminder banner:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  🔴 TDD MODE ACTIVE                                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  This increment uses Test-Driven Development.               │
+│                                                             │
+│  WORKFLOW:                                                  │
+│  1. [RED]      Write failing test FIRST                     │
+│  2. [GREEN]    Minimal code to make test pass               │
+│  3. [REFACTOR] Improve code, keep tests green               │
+│                                                             │
+│  ⚠️  GREEN tasks depend on their RED counterpart!           │
+│  💡 Tip: Use /sw:tdd-cycle for guided workflow              │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**When executing tasks, detect and display current phase:**
+
+```bash
+CURRENT_TASK_TITLE="T-001: [RED] Write failing test for login"
+
+if [[ "$CURRENT_TASK_TITLE" == *"[RED]"* ]]; then
+  PHASE="🔴 RED - Writing failing test"
+elif [[ "$CURRENT_TASK_TITLE" == *"[GREEN]"* ]]; then
+  PHASE="🟢 GREEN - Making test pass"
+elif [[ "$CURRENT_TASK_TITLE" == *"[REFACTOR]"* ]]; then
+  PHASE="🔵 REFACTOR - Improving code quality"
+else
+  PHASE=""  # Not a TDD task
+fi
+
+if [ -n "$PHASE" ]; then
+  echo "Current Phase: $PHASE"
+fi
+```
+
+**Skip TDD banner if**:
+- `testMode` is not "TDD"
+- Already showed banner in current session
+
 ### Step 2: Smart Resume - Find Next Incomplete Task
 
 **🎯 CRITICAL: Auto-resume functionality** - no need to remember which task you were on!
@@ -743,8 +796,8 @@ Options:
 ### Before Any Deployment Task
 
 ```bash
-# Always check for credentials FIRST:
-grep -E "SUPABASE|DATABASE_URL|CF_|AWS_|HETZNER" .env 2>/dev/null
+# Always check for credentials FIRST (presence only - never display values!):
+grep -qE "SUPABASE|DATABASE_URL|CF_|AWS_|HETZNER" .env 2>/dev/null && echo "Credentials found in .env"
 wrangler whoami 2>/dev/null
 aws sts get-caller-identity 2>/dev/null
 gh auth status 2>/dev/null

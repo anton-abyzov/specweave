@@ -95,11 +95,11 @@ Before you finish ANY response, mentally verify:
 **Before ANY deployment task, check for credentials in this order:**
 
 ```bash
-# 1. Check .env file (primary)
-grep -E "SUPABASE|CF_|CLOUDFLARE|WRANGLER|AWS_|HETZNER|VERCEL|RAILWAY" .env 2>/dev/null
+# 1. Check .env file (primary) - presence only, never display values!
+grep -qE "SUPABASE|CF_|CLOUDFLARE|WRANGLER|AWS_|HETZNER|VERCEL|RAILWAY" .env 2>/dev/null && echo "Credentials found in .env"
 
-# 2. Check environment variables
-env | grep -E "SUPABASE|CF_|AWS_|DATABASE_URL" 2>/dev/null
+# 2. Check environment variables (presence only)
+env | grep -qE "SUPABASE|CF_|AWS_|DATABASE_URL" 2>/dev/null && echo "Credentials found in environment"
 
 # 3. Check tool authentication status
 wrangler whoami 2>/dev/null

@@ -2,7 +2,7 @@
 increment: 0164-e2e-test-infrastructure-fix
 title: "E2E Test Infrastructure Fix"
 priority: P0
-status: planned
+status: completed
 created: 2026-01-08
 type: hotfix
 project: specweave-dev

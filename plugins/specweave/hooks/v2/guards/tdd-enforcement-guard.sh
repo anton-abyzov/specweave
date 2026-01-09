@@ -88,6 +88,36 @@ if [ "$TEST_MODE" != "TDD" ]; then
 fi
 
 # ============================================================================
+# READ ENFORCEMENT LEVEL FROM CONFIG (v1.0.111+)
+# ============================================================================
+
+TDD_ENFORCEMENT="warn"  # Default: warn but allow
+
+CONFIG_FILE="$PROJECT_ROOT/.specweave/config.json"
+if [ -f "$CONFIG_FILE" ]; then
+  if command -v jq >/dev/null 2>&1; then
+    TDD_ENFORCEMENT=$(jq -r '.testing.tddEnforcement // "warn"' "$CONFIG_FILE" 2>/dev/null || echo "warn")
+  else
+    # Fallback: grep parsing
+    TDD_ENFORCEMENT=$(grep '"tddEnforcement"' "$CONFIG_FILE" 2>/dev/null | sed 's/.*"tddEnforcement"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' || echo "warn")
+  fi
+fi
+
+# Validate enforcement level
+case "$TDD_ENFORCEMENT" in
+  strict|warn|off) ;;
+  *) TDD_ENFORCEMENT="warn" ;;
+esac
+
+log_debug "tddEnforcement level: $TDD_ENFORCEMENT"
+
+# Skip if enforcement is off
+if [ "$TDD_ENFORCEMENT" = "off" ]; then
+  log_debug "TDD enforcement is off, skipping"
+  exit 0
+fi
+
+# ============================================================================
 # PARSE TASKS FOR TDD VIOLATIONS (macOS-compatible, no associative arrays)
 # ============================================================================
 
@@ -188,28 +218,51 @@ done < "$COMPLETED_TASKS_FILE"
 # ============================================================================
 
 if [ "$VIOLATION_COUNT" -gt 0 ]; then
-  echo ""
-  echo "⚠️  TDD DISCIPLINE WARNING"
-  echo "   ────────────────────────"
-  echo "   Your increment is configured for TDD mode (testMode: TDD)"
-  echo ""
-  echo "   Potential violations detected:$VIOLATIONS"
-  echo ""
-  echo "   💡 TDD Best Practice: RED → GREEN → REFACTOR"
-  echo "      1. 🔴 Write failing test FIRST"
-  echo "      2. 🟢 Make test pass with minimal code"
-  echo "      3. 🔵 Refactor while keeping tests green"
-  echo ""
-
   # Log violations
   {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] TDD violations in $(basename "$INC_DIR"):"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] TDD violations in $(basename "$INC_DIR") (enforcement: $TDD_ENFORCEMENT):"
     echo "$VIOLATIONS" | while IFS= read -r v; do
       [ -n "$v" ] && echo "  -$v"
     done
     echo ""
   } >> "$VIOLATION_LOG" 2>/dev/null || true
+
+  # Handle based on enforcement level
+  if [ "$TDD_ENFORCEMENT" = "strict" ]; then
+    echo ""
+    echo "❌ TDD ENFORCEMENT BLOCKED"
+    echo "   ────────────────────────"
+    echo "   Your increment is configured for TDD mode with STRICT enforcement."
+    echo ""
+    echo "   Violations detected:$VIOLATIONS"
+    echo ""
+    echo "   💡 TDD Discipline: RED → GREEN → REFACTOR"
+    echo "      1. 🔴 Complete RED (test) task FIRST"
+    echo "      2. 🟢 Then complete GREEN (implementation) task"
+    echo "      3. 🔵 Finally complete REFACTOR task"
+    echo ""
+    echo "   To bypass: Set testing.tddEnforcement: \"warn\" in .specweave/config.json"
+    echo ""
+    log_debug "BLOCKING due to TDD violations (strict mode)"
+    exit 1  # BLOCK in strict mode
+  else
+    # warn mode
+    echo ""
+    echo "⚠️  TDD DISCIPLINE WARNING"
+    echo "   ────────────────────────"
+    echo "   Your increment is configured for TDD mode (testMode: TDD)"
+    echo ""
+    echo "   Potential violations detected:$VIOLATIONS"
+    echo ""
+    echo "   💡 TDD Best Practice: RED → GREEN → REFACTOR"
+    echo "      1. 🔴 Write failing test FIRST"
+    echo "      2. 🟢 Make test pass with minimal code"
+    echo "      3. 🔵 Refactor while keeping tests green"
+    echo ""
+    echo "   💡 To enforce strictly: Set testing.tddEnforcement: \"strict\" in config.json"
+    echo ""
+  fi
 fi
 
-# Always exit 0 - this is a warning-only hook
+# Exit 0 for warn mode (allow), exit 1 for strict mode (handled above)
 exit 0

@@ -1,6 +1,6 @@
 ---
 increment: 0157-skill-routing-optimization
-status: planning
+status: completed
 dependencies: []
 phases:
   - phase-1-repository-detection
@@ -225,7 +225,7 @@ Add validation prompt to increment-planner before creating directory.
 ## Phase 4: Skill Visibility Controls (US-004)
 
 ### T-008: Extend Skill Manifest Schema
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-01, AC-US4-02 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-01, AC-US4-02 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Add visibility and invocableBy fields to skill manifest TypeScript types.
 
@@ -243,7 +243,7 @@ Add visibility and invocableBy fields to skill manifest TypeScript types.
 ---
 
 ### T-009: Update Skill Loader
-**User Story**: US-004 | **Satisfies ACs**: AC-US4-01, AC-US4-02 | **Status**: [ ] pending | **Model**: 💎 Opus
+**User Story**: US-004 | **Satisfies ACs**: AC-US4-01, AC-US4-02 | **Status**: [x] completed | **Model**: 💎 Opus
 
 Modify skill loader to parse and store visibility fields.
 
@@ -535,7 +535,7 @@ Create comprehensive unit test suite for all new components.
 ---
 
 ### T-022: Write Integration Tests
-**User Story**: All | **Satisfies ACs**: All | **Status**: [ ] pending | **Model**: 💎 Opus
+**User Story**: All | **Satisfies ACs**: All | **Status**: [x] completed | **Model**: 💎 Opus
 
 Create integration tests for full workflow.
 
@@ -571,7 +571,7 @@ describe('increment creation workflow', () => {
 ---
 
 ### T-023: Manual E2E Testing
-**User Story**: All | **Satisfies ACs**: All | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: All | **Satisfies ACs**: All | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Perform end-to-end manual testing of all scenarios.
 
@@ -591,7 +591,7 @@ Perform end-to-end manual testing of all scenarios.
 ---
 
 ### T-024: Update Test Documentation
-**User Story**: US-006 | **Satisfies ACs**: AC-US6-05 | **Status**: [ ] pending | **Model**: ⚡ Haiku
+**User Story**: US-006 | **Satisfies ACs**: AC-US6-05 | **Status**: [x] completed | **Model**: ⚡ Haiku
 
 Document testing procedures for this feature.
 

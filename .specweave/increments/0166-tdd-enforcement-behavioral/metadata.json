@@ -1,0 +1,14 @@
+{
+  "id": "0166-tdd-enforcement-behavioral",
+  "status": "ready_for_review",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-01-09T10:00:00Z",
+  "lastActivity": "2026-01-09T11:00:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {},
+  "notes": "Phases 1-4 complete (template generation, /sw:do awareness, configurable enforcement). Phases 5-6 deferred (auto mode, docs)."
+}

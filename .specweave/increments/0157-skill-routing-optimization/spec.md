@@ -2,7 +2,7 @@
 increment: 0157-skill-routing-optimization
 title: "Skill Routing Optimization and Self-Awareness Guards"
 priority: P1
-status: planning
+status: completed
 created: 2026-01-07
 dependencies: []
 structure: user-stories
