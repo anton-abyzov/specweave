@@ -234,10 +234,13 @@ my-project/
 
 **BEFORE CLI tools**: Check existing config first!
 ```bash
-grep -E "(GITHUB_TOKEN|JIRA_|ADO_)" .env 2>/dev/null
+# Check if credentials EXIST (never display values!)
+grep -qE "(GITHUB_TOKEN|JIRA_|ADO_)" .env 2>/dev/null && echo "Credentials found in .env"
 cat .specweave/config.json | grep -A5 '"sync"'
 gh auth status
 ```
+
+**SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- /SECTION -->
 
 <!-- SECTION:syncing -->
@@ -265,7 +268,7 @@ Living docs sync ≠ External sync. They are separate:
 }
 ```
 
-**Verify tokens**: `grep GITHUB_TOKEN .env` | `gh auth status`
+**Verify tokens**: `grep -q GITHUB_TOKEN .env && echo "Token configured"` | `gh auth status`
 <!-- /SECTION -->
 
 <!-- SECTION:mapping -->
@@ -372,7 +375,8 @@ wrangler login && vercel login && supabase login
 
 **Check credentials before ops**:
 ```bash
-grep -E "SUPABASE_|DATABASE_URL|CF_API" .env 2>/dev/null
+# Check presence only (never display values!)
+grep -qE "SUPABASE_|DATABASE_URL|CF_API" .env 2>/dev/null && echo "Credentials found"
 wrangler whoami 2>/dev/null
 ```
 <!-- /SECTION -->
@@ -386,7 +390,8 @@ wrangler whoami 2>/dev/null
 
 **Check before ops**:
 ```bash
-grep -E "(SUPABASE_|DATABASE_URL|CF_API_|GITHUB_TOKEN)" .env 2>/dev/null
+# Check presence only (never display credential values!)
+grep -qE "(SUPABASE_|DATABASE_URL|CF_API_|GITHUB_TOKEN)" .env 2>/dev/null && echo "Credentials configured"
 wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 ```
 <!-- /SECTION -->

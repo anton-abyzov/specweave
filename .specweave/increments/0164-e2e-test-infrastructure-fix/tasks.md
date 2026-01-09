@@ -1,6 +1,6 @@
 ---
 increment: 0164-e2e-test-infrastructure-fix
-status: active
+status: completed
 phases:
   - audit
   - fix-conflict

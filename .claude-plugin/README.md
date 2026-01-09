@@ -150,13 +150,13 @@ SpecWeave's marketplace.json follows Claude's official schema format. Here's the
 
 **Skills**:
 - `increment-planner` - PM-led planning workflow
+- `increment-work-router` - Smart work continuation
 - `spec-generator` - Specification creation
 - `context-loader` - Context management
 - `brownfield-analyzer` - Existing project analysis
 - `brownfield-onboarder` - Onboard existing docs
 - `increment-quality-judge` - Quality assessment
 - `context-optimizer` - Context optimization
-- `project-kickstarter` - New project setup
 
 **Agents**:
 - `pm` - Product Manager
