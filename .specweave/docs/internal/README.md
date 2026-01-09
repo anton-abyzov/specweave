@@ -1,8 +1,43 @@
-# Internal Documentation
+# SpecWeave Internal Documentation
+
+**Last Updated**: 2026-01-08
+**Version**: 1.0.109
+
+Welcome to the SpecWeave internal documentation! This is your comprehensive guide to understanding the SpecWeave framework from a technical perspective.
 
 **This documentation is NOT published publicly.** It contains the internal Product & Engineering Playbook.
 
-**Last Updated**: 2025-11-26
+---
+
+## 🚀 NEW: Technical Documentation
+
+### Quick Start for Learning SpecWeave
+
+**New to SpecWeave?** Start with our comprehensive technical guides:
+
+1. **[LEARNING-GUIDE.md](LEARNING-GUIDE.md)** - 4-week structured learning path
+   - Phase 1: Foundation (Week 1) - Core concepts and basic workflow
+   - Phase 2: Core Components (Week 2) - Increment management, specs, hooks
+   - Phase 3: Advanced Features (Week 3) - Sync, plugins, auto mode
+   - Phase 4: Expert Topics (Week 4) - Living docs, multi-agent system
+
+2. **[architecture/TECHNICAL-OVERVIEW.md](architecture/TECHNICAL-OVERVIEW.md)** - High-level architecture
+   - System context and container diagrams
+   - Core components overview (215K+ lines of code)
+   - Key design patterns and data structures
+   - Performance, security, and scalability model
+
+3. **[architecture/COMPONENT-CATALOG.md](architecture/COMPONENT-CATALOG.md)** - Component reference
+   - All modules, classes, and methods documented
+   - Type definitions and interfaces
+   - Plugin components (25+ specialized plugins)
+   - Utility modules and common patterns
+
+4. **[architecture/diagrams/](architecture/diagrams/)** - Visual architecture diagrams
+   - 9 comprehensive Mermaid diagrams following C4 Model
+   - System context, containers, components
+   - Sequence flows for key operations
+   - State machines and deployment views
 
 ---
 
