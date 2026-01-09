@@ -13,8 +13,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { SessionStateManager } from '../../core/auto/session-state.js';
-import { AutoSession } from '../../core/auto/types.js';
 
 export interface AutoStatusOptions {
   verbose?: boolean;
@@ -56,13 +54,21 @@ async function handleAutoStatus(
   projectPath: string,
   options: AutoStatusOptions
 ): Promise<void> {
-  const sessionManager = new SessionStateManager(projectPath);
-  const session = sessionManager.load();
+  const sessionPath = path.join(projectPath, '.specweave/state/auto-session.json');
 
-  if (!session) {
+  // Load session
+  if (!fs.existsSync(sessionPath)) {
     console.log(chalk.yellow('No auto session found'));
     console.log('');
     console.log('Start a new session with: ' + chalk.cyan('specweave auto [INCREMENT_IDS...]'));
+    return;
+  }
+
+  let session: any;
+  try {
+    session = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
+  } catch (error) {
+    console.log(chalk.yellow('Invalid auto session file'));
     return;
   }
 
@@ -170,23 +176,26 @@ async function handleAutoStatus(
   }
 
   // Circuit breakers
-  const openBreakers = Object.entries(session.circuitBreakers).filter(
-    ([_, status]) => status.state === 'open'
-  );
+  if (session.circuitBreakers) {
+    const openBreakers = Object.entries(session.circuitBreakers).filter(
+      ([_, status]: [string, any]) => status.state === 'open'
+    );
 
-  if (openBreakers.length > 0) {
-    console.log('');
-    console.log(chalk.bold('CIRCUIT BREAKERS'));
-    console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-    console.log('');
-    for (const [service, status] of openBreakers) {
-      console.log(`${service}:`.padEnd(15) + chalk.red('OPEN'));
-      console.log('  Failures:   ' + chalk.yellow(status.failures.toString()));
-      if (status.lastFailure) {
-        console.log('  Last:       ' + chalk.gray(status.lastFailure));
-      }
-      if (status.nextRetry) {
-        console.log('  Next Retry: ' + chalk.gray(status.nextRetry));
+    if (openBreakers.length > 0) {
+      console.log('');
+      console.log(chalk.bold('CIRCUIT BREAKERS'));
+      console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+      console.log('');
+      for (const [service, status] of openBreakers) {
+        const s = status as any;
+        console.log(`${service}:`.padEnd(15) + chalk.red('OPEN'));
+        console.log('  Failures:   ' + chalk.yellow(s.failures.toString()));
+        if (s.lastFailure) {
+          console.log('  Last:       ' + chalk.gray(s.lastFailure));
+        }
+        if (s.nextRetry) {
+          console.log('  Next Retry: ' + chalk.gray(s.nextRetry));
+        }
       }
     }
   }

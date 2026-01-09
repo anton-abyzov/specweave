@@ -3,7 +3,7 @@
 #
 # Chains multiple stop hooks in order:
 # 1. stop-reflect.sh (always runs, extracts learnings)
-# 2. stop-auto.sh (only if auto session active)
+# 2. stop-auto-simple.sh (only if auto session active)
 #
 # Design:
 # - Each hook runs independently
@@ -47,7 +47,7 @@ fi
 # ============================================================================
 
 AUTO_SESSION="$STATE_DIR/auto-session.json"
-AUTO_HOOK="$SCRIPT_DIR/stop-auto.sh"
+AUTO_HOOK="$SCRIPT_DIR/stop-auto-simple.sh"
 
 # Only run auto hook if:
 # 1. Auto session file exists

@@ -30,38 +30,36 @@ TypeError: Cannot redefine property: Symbol($$jest-matchers-object)
 ```
 tests/e2e/
 ├── README.md                          # This file
-├── *.test.ts                          # Top-level E2E tests
-├── brownfield/                        # Brownfield project workflows
-├── i18n/                              # Internationalization workflows
-├── increments/                        # Increment lifecycle tests
-├── multi-project/                     # Multi-project workflows
-├── serverless/                        # Serverless platform tests
-├── status-sync/                       # Status synchronization tests
-└── sync/                              # Full sync tests (all permissions)
+├── *.spec.ts, *.e2e.ts, *.test.ts    # Top-level E2E tests (all patterns supported)
+├── auto/                              # Auto mode workflow tests
+├── lsp/                               # LSP integration tests
+├── plugin-activation/                 # Plugin and skill activation tests
+└── reflection/                        # Self-reflection system tests
 ```
+
+**Note**: Currently supports mixed naming (.spec.ts, .e2e.ts, .test.ts) - Vitest discovers all patterns.
 
 ---
 
 ## Test Naming Convention
 
-**✅ REQUIRED**: All E2E tests MUST use `.test.ts` extension
+**CURRENT STATE**: Mixed naming conventions supported (.spec.ts, .e2e.ts, .test.ts)
 
 ```bash
-# ✅ CORRECT:
-tests/e2e/my-workflow.test.ts
-tests/e2e/serverless/platform-recommendations.test.ts
-
-# ❌ WRONG (deprecated):
-tests/e2e/my-workflow.spec.ts
+# All patterns work:
+tests/e2e/ac-to-github-sync-flow.spec.ts       # Playwright-style
+tests/e2e/auto/full-workflow.e2e.ts            # E2E semantic naming
+tests/e2e/project-cli.test.ts                  # Vitest-style
 ```
 
-**Why `.test.ts` only?**
-- Consistency with unit and integration tests
-- Simpler glob patterns (`**/*.test.ts` vs `**/*.{test,spec}.ts`)
-- Aligned with Vitest conventions
-- Easier test discovery and tooling configuration
+**Vitest Discovery**: Configured to discover all patterns in tests/e2e/
 
-**Standardized**: 2025-11-18 (all 40 E2E tests now use `.test.ts`)
+**Why Mixed Naming?**
+- `.e2e.ts` - Semantic distinction (end-to-end workflows)
+- `.spec.ts` - Specification/behavior tests
+- `.test.ts` - Standard Vitest convention
+
+All patterns are valid and discovered correctly.
 
 ---
 
@@ -263,13 +261,36 @@ npx vitest tests/e2e
 DEBUG=* npm run test:e2e
 ```
 
+## Available npm Scripts
+
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Run in watch mode (development)
+npm run test:e2e:watch          # Coming soon - use: npx vitest tests/e2e --watch
+
+# Run with debug output
+npm run test:e2e:debug           # Coming soon - use: DEBUG=* npm run test:e2e
+
+# Run headed mode (if UI tests added)
+npm run test:e2e:headed          # Coming soon - for future Playwright browser tests
+```
+
 ## Test Results
 
-**Status**: ✅ 79/79 tests passing (100% pass rate)
-**2 tests skipped**: Registry-dependent crash recovery tests (infrastructure changed)
+**Current Status** (as of 2026-01-08):
+- 74 tests discovered
+- 55 passing (74%)
+- 17 failing (hook infrastructure issues)
+- 2 skipped (registry-dependent)
+
+**Known Issues**:
+- stop-auto.sh hook missing (being migrated)
+- Some tests fail due to hook path changes
 
 ---
 
-**Last Updated**: 2026-01-08
+**Last Updated**: 2026-01-08 (Increment 0164)
 **Test Framework**: Vitest v2.1.9
 **Symbol Conflict**: RESOLVED ✅

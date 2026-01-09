@@ -1,0 +1,103 @@
+stateDiagram-v2
+    title Increment Lifecycle State Machine
+
+    [*] --> PLANNING : specweave init / /sw:increment
+
+    state "PLANNING" as planning {
+        note right of planning
+            Spec/plan/tasks being created
+            Does NOT count toward WIP limits
+            Auto-transitions when tasks.md created
+        end note
+    }
+
+    state "BACKLOG" as backlog {
+        note right of backlog
+            Planned but not ready to start
+            Does NOT count toward WIP limits
+            Can be prioritized later
+        end note
+    }
+
+    state "ACTIVE" as active {
+        note right of active
+            Currently being worked on
+            Counts toward WIP limits
+            Max 2 features active (configurable)
+        end note
+    }
+
+    state "PAUSED" as paused {
+        note right of paused
+            Temporarily stopped
+            Counts toward WIP limits
+            Stale after 7 days
+        end note
+    }
+
+    state "READY_FOR_REVIEW" as review {
+        note right of review
+            All tasks completed
+            Awaiting user approval
+            Counts toward WIP limits
+            Must run /sw:done to close
+        end note
+    }
+
+    state "COMPLETED" as completed {
+        note right of completed
+            User approved completion
+            Does NOT count toward WIP limits
+            Can be reopened if issues found
+        end note
+    }
+
+    state "ABANDONED" as abandoned {
+        note right of abandoned
+            Work cancelled
+            Does NOT count toward WIP limits
+            Experiments auto-abandon after 14 days
+        end note
+    }
+
+    planning --> active : tasks.md created
+    planning --> backlog : /sw:pause --backlog
+    planning --> abandoned : /sw:abandon
+
+    backlog --> planning : Resume planning
+    backlog --> active : /sw:resume
+    backlog --> abandoned : /sw:abandon
+
+    active --> backlog : /sw:pause --backlog
+    active --> paused : /sw:pause
+    active --> review : All tasks [x] completed
+    active --> abandoned : /sw:abandon
+
+    paused --> active : /sw:resume
+    paused --> review : Mark done while paused
+    paused --> abandoned : /sw:abandon
+
+    review --> completed : /sw:done (user approves)
+    review --> active : More work needed
+    review --> abandoned : Requirements changed
+
+    completed --> active : Reopen for fixes
+    completed --> abandoned : Mark as failed
+
+    abandoned --> active : Un-abandon (rare)
+
+    completed --> [*]
+    abandoned --> [*]
+
+    note right of [*]
+        WIP-counted statuses:
+        - ACTIVE
+        - PAUSED
+        - READY_FOR_REVIEW
+
+        Non-WIP statuses:
+        - PLANNING
+        - BACKLOG
+        - COMPLETED
+        - ABANDONED
+    end note

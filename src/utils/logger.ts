@@ -3,7 +3,11 @@
  *
  * Abstraction for logging to enable silent testing and flexible log output.
  * Prevents test output pollution from expected error conditions.
+ *
+ * SECURITY: All loggers automatically mask credentials using credential-masker utility.
  */
+
+import { maskCredentials, maskCredentialsInData } from './credential-masker.js';
 
 /**
  * Logger interface for dependency injection
@@ -39,19 +43,51 @@ export interface Logger {
  * Console logger (default production logger)
  *
  * Logs to console.log/error/warn
+ * SECURITY: Automatically masks all credentials before logging
  */
 export const consoleLogger: Logger = {
-  log: (message: string, ...args: any[]) => console.log(message, ...args),
-  info: (message: string, ...args: any[]) => console.log(message, ...args),
+  log: (message: string, ...args: any[]) => {
+    const maskedMsg = maskCredentials(message);
+    const maskedArgs = args.map(arg =>
+      typeof arg === 'string' ? maskCredentials(arg) : arg
+    );
+    console.log(maskedMsg, ...maskedArgs);
+  },
+
+  info: (message: string, ...args: any[]) => {
+    const maskedMsg = maskCredentials(message);
+    const maskedArgs = args.map(arg =>
+      typeof arg === 'string' ? maskCredentials(arg) : arg
+    );
+    console.log(maskedMsg, ...maskedArgs);
+  },
+
   error: (message: string, error?: any) => {
-    if (error) {
-      console.error(message, error);
+    const maskedMsg = maskCredentials(message);
+    let maskedError = error;
+
+    if (error && typeof error === 'object') {
+      maskedError = maskCredentialsInData(error);
+    } else if (typeof error === 'string') {
+      maskedError = maskCredentials(error);
+    }
+
+    if (maskedError) {
+      console.error(maskedMsg, maskedError);
     } else {
-      console.error(message);
+      console.error(maskedMsg);
     }
   },
-  warn: (message: string) => console.warn(message),
-  debug: (message: string) => console.log(message)
+
+  warn: (message: string) => {
+    const maskedMsg = maskCredentials(message);
+    console.warn(maskedMsg);
+  },
+
+  debug: (message: string) => {
+    const maskedMsg = maskCredentials(message);
+    console.log(maskedMsg);
+  }
 };
 
 /**
@@ -73,16 +109,59 @@ export const silentLogger: Logger = {
  *
  * @param minLevel - Minimum level to log (debug=0, log=1, warn=2, error=3)
  * @returns Logger instance
+ * SECURITY: Automatically masks all credentials before logging
  */
 export function createFilteredLogger(minLevel: 'debug' | 'log' | 'warn' | 'error' = 'log'): Logger {
   const levels = { debug: 0, log: 1, info: 1, warn: 2, error: 3 };
   const threshold = levels[minLevel];
 
   return {
-    log: (msg, ...args) => levels.log >= threshold && console.log(msg, ...args),
-    info: (msg, ...args) => levels.info >= threshold && console.log(msg, ...args),
-    error: (msg, err) => levels.error >= threshold && (err ? console.error(msg, err) : console.error(msg)),
-    warn: (msg) => levels.warn >= threshold && console.warn(msg),
-    debug: (msg) => levels.debug >= threshold && console.log(msg)
+    log: (msg, ...args) => {
+      if (levels.log < threshold) return;
+      const maskedMsg = maskCredentials(msg);
+      const maskedArgs = args.map(arg =>
+        typeof arg === 'string' ? maskCredentials(arg) : arg
+      );
+      console.log(maskedMsg, ...maskedArgs);
+    },
+
+    info: (msg, ...args) => {
+      if (levels.info < threshold) return;
+      const maskedMsg = maskCredentials(msg);
+      const maskedArgs = args.map(arg =>
+        typeof arg === 'string' ? maskCredentials(arg) : arg
+      );
+      console.log(maskedMsg, ...maskedArgs);
+    },
+
+    error: (msg, err) => {
+      if (levels.error < threshold) return;
+      const maskedMsg = maskCredentials(msg);
+      let maskedErr = err;
+
+      if (err && typeof err === 'object') {
+        maskedErr = maskCredentialsInData(err);
+      } else if (typeof err === 'string') {
+        maskedErr = maskCredentials(err);
+      }
+
+      if (maskedErr) {
+        console.error(maskedMsg, maskedErr);
+      } else {
+        console.error(maskedMsg);
+      }
+    },
+
+    warn: (msg) => {
+      if (levels.warn < threshold) return;
+      const maskedMsg = maskCredentials(msg);
+      console.warn(maskedMsg);
+    },
+
+    debug: (msg) => {
+      if (levels.debug < threshold) return;
+      const maskedMsg = maskCredentials(msg);
+      console.log(maskedMsg);
+    }
   };
 }
