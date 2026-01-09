@@ -58,7 +58,7 @@ if [ -n "$VIOLATIONS" ]; then
   echo "     - Analysis files     → .specweave/increments/####/reports/"
   echo "     - Session reports    → .specweave/increments/####/reports/"
   echo "     - Implementation docs → .specweave/increments/####/reports/"
-  echo "     - Ad-hoc work files  → .specweave/increments/0000-adhoc/reports/"
+  echo "     - Ad-hoc work files  → Create increment first (IDs start from 0001, NOT 0000)"
   echo ""
   echo "  🤖 AUTO-FIX AVAILABLE:"
   echo "     bash scripts/fix-root-pollution.sh"

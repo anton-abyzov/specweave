@@ -189,18 +189,61 @@ export class PluginLoader {
           const content = await fs.readFile(skillMdPath, 'utf-8');
           const description = this.extractDescription(content);
           const testCases = await this.loadTestCases(skillPath);
+          const { visibility, invocableBy } = this.extractSkillVisibility(content);
 
           skills.push({
             name: entry.name,
             path: skillPath,
             description,
-            testCases
+            testCases,
+            visibility,
+            invocableBy
           });
         }
       }
     }
 
     return skills;
+  }
+
+  /**
+   * Extract visibility and invocableBy from SKILL.md frontmatter
+   *
+   * @param content - SKILL.md file content
+   * @returns Object with visibility and invocableBy fields
+   */
+  private extractSkillVisibility(content: string): {
+    visibility?: 'public' | 'internal';
+    invocableBy?: string[];
+  } {
+    // Extract YAML frontmatter
+    const frontmatterMatch = content.match(/^---\n([\s\S]+?)\n---/);
+    if (!frontmatterMatch) {
+      return {};
+    }
+
+    const frontmatter = frontmatterMatch[1];
+
+    // Extract visibility field
+    const visibilityMatch = frontmatter.match(/^visibility:\s*(\w+)/m);
+    const visibility = visibilityMatch?.[1] as 'public' | 'internal' | undefined;
+
+    // Extract invocableBy field (YAML array)
+    const invocableByMatch = frontmatter.match(/^invocableBy:\s*\n((?:\s+-\s*.+\n?)+)/m);
+    let invocableBy: string[] | undefined;
+
+    if (invocableByMatch) {
+      // Parse YAML array items
+      invocableBy = invocableByMatch[1]
+        .split('\n')
+        .map(line => line.match(/^\s+-\s*(.+)$/)?.[1]?.trim())
+        .filter((item): item is string => !!item);
+    }
+
+    return {
+      visibility: visibility === 'internal' ? 'internal' : visibility === 'public' ? 'public' : undefined,
+      invocableBy
+    };
   }
 
   /**

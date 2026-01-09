@@ -106,11 +106,45 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
 
 /**
  * Detect which skill a learning is most relevant to
+ *
+ * Uses priority-based detection (v4.1):
+ * 1. Explicit skill name mention (highest priority)
+ * 2. Keyword-based detection
+ * 3. Returns null for category fallback
  */
 export function detectSkill(content: string, context?: string): string | null {
   const text = `${content} ${context || ''}`.toLowerCase();
 
-  // Score each skill by keyword matches
+  // Priority 1: Check for explicit skill name mentions
+  // Patterns: "the X skill", "X skill", "X command", "X agent", hyphenated names followed by problem words
+  const explicitPatterns = [
+    /(?:the\s+)?([a-z][-a-z0-9]*)\s+skill/gi,
+    /(?:the\s+)?([a-z][-a-z0-9]*)\s+command/gi,
+    /(?:the\s+)?([a-z][-a-z0-9]*)\s+agent/gi,
+    /\/sw:([a-z][-a-z0-9]*)/gi, // Slash command format
+    // Hyphenated skill names followed by problem/status words (increment-planner has a bug)
+    /\b([a-z]+-[a-z][-a-z0-9]*)\s+(?:has|is|doesn'?t|won'?t|can'?t|isn'?t|failed|fails|broken|not working)/gi,
+  ];
+
+  for (const pattern of explicitPatterns) {
+    const matches = [...text.matchAll(pattern)];
+    for (const match of matches) {
+      const skillName = match[1];
+      // Verify this is an actual skill (not a common word like "that skill" or "this command")
+      if (skillName && skillName.length > 2 && !['the', 'this', 'that', 'some', 'any'].includes(skillName)) {
+        // Check if skill exists in our known skills or the skill directory
+        if (SKILL_KEYWORDS[skillName] || Object.keys(SKILL_KEYWORDS).includes(skillName)) {
+          return skillName;
+        }
+        // Also return if it looks like a valid skill name (contains hyphen or is specific)
+        if (skillName.includes('-') || skillName.length > 5) {
+          return skillName;
+        }
+      }
+    }
+  }
+
+  // Priority 2: Score each skill by keyword matches
   const scores: Map<string, number> = new Map();
 
   for (const [skill, keywords] of Object.entries(SKILL_KEYWORDS)) {

@@ -895,8 +895,8 @@ Would sync:
 # Check GitHub authentication
 gh auth status
 
-# Check token in .env
-grep GITHUB_TOKEN .env
+# Check token in .env (presence only - never display value!)
+grep -q GITHUB_TOKEN .env && echo "GITHUB_TOKEN found"
 
 # Manually create if needed
 /sw-github:create 0053

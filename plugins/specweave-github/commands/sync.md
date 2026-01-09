@@ -53,8 +53,8 @@ fi
 Use the Increment Sync CLI directly:
 
 ```bash
-# Set token
-export GITHUB_TOKEN=$(grep GITHUB_TOKEN .env | cut -d'=' -f2)
+# Set token (read from .env without displaying value)
+export GITHUB_TOKEN=$(grep -oP '(?<=^GITHUB_TOKEN=).+' .env 2>/dev/null || grep '^GITHUB_TOKEN=' .env | cut -d'=' -f2-)
 
 # Run increment sync
 node dist/plugins/specweave-github/lib/github-increment-sync-cli.js <increment-id>

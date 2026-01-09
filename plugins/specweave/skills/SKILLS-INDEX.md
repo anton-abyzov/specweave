@@ -2,7 +2,7 @@
 
 **Purpose**: Lightweight skill manifest for lazy loading. Load SKILL.md only when triggers match.
 
-**Total Skills**: 29 | **Last Updated**: 2026-01-04
+**Total Skills**: 28 | **Last Updated**: 2026-01-08
 
 ---
 
@@ -23,7 +23,6 @@
 | **increment-planner** | increment, feature, plan, create increment, new feature, organize work, MVP, SaaS, product, build project, tech stack | `skills/increment-planner/SKILL.md` |
 | **increment-work-router** | implement, complete, build, develop, work on, continue, resume, finish, fix, resolve, let's implement, start working | `skills/increment-work-router/SKILL.md` |
 | **spec-generator** | specification, spec.md, plan.md, tasks.md, generate spec, create tasks, requirements, acceptance criteria | `skills/spec-generator/SKILL.md` |
-| **project-kickstarter** | project, product, SaaS, app, MVP, build, new project, features, I want to build, let's build, quick build | `skills/project-kickstarter/SKILL.md` |
 | **roadmap-planner** | roadmap, prioritization, RICE, MoSCoW, Kano, product planning, feature ranking, KPIs, Q1 Q2 Q3 Q4, release planning | `skills/roadmap-planner/SKILL.md` |
 | **role-orchestrator** | multi-agent, orchestrate, coordinate roles, complex project, end-to-end, full implementation, build product | `skills/role-orchestrator/SKILL.md` |
 

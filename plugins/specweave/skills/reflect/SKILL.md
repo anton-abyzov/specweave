@@ -128,14 +128,31 @@ Reflect analyzes sessions and persists learnings in **skill-specific MEMORY.md f
 
 ## How It Works
 
-### 1. Signal Detection
+### 1. Signal Detection (ENHANCED - v4.1)
 
-Reflect identifies signals in conversation:
+Reflect identifies signals in conversation and **captures FULL context**:
+
+**⚠️ CRITICAL: Context Must Include the PROBLEM, Not Just the Fix**
+
+When a user explains a problem like:
+```
+User: "When I use voice control, it always gives me 'command not recognized'"
+```
+
+The system MUST capture:
+- **CONTEXT**: "When using voice control with skill commands" (the circumstance)
+- **LEARNING**: "Voice dictation can mangle command syntax - type commands or use clipboard" (the fix)
+- **SKILL**: If a skill name is mentioned (e.g., "the detector skill"), route there
+
+**DO NOT** store just: `"always command not recognized"` ← This loses all meaning!
+
+---
 
 **Corrections (High Confidence)**
 ```
 User: "No, don't use that button. Use our <Button variant='primary'> component."
-      → LEARNING: Always use Button component with variant='primary'
+      → CONTEXT: User corrected button component usage in settings page
+      → LEARNING: Always use Button component with variant='primary' from design system
       → SKILL: frontend (auto-detected)
       → CONFIDENCE: high
 ```
@@ -143,22 +160,46 @@ User: "No, don't use that button. Use our <Button variant='primary'> component."
 **Rules (High Confidence)**
 ```
 User: "Always use the logger module instead of console.log"
-      → LEARNING: Use logger module for all logging
+      → CONTEXT: User established logging convention for the project
+      → LEARNING: Use logger module for all logging, never console.log
       → SKILL: tech-lead (auto-detected)
+      → CONFIDENCE: high
+```
+
+**Problem Reports (High Confidence) - NEW!**
+```
+User: "The detector skill doesn't recognize commands when I use voice input"
+      → CONTEXT: Voice dictation causes command parsing issues
+      → LEARNING: Voice input mangles command syntax - recommend typing or clipboard
+      → SKILL: detector (explicit skill name detected!)
       → CONFIDENCE: high
 ```
 
 **Approvals (Medium Confidence)**
 ```
 User: "Perfect! That's exactly how our API patterns should look."
-      → LEARNING: Continue using this API pattern structure
+      → CONTEXT: User approved API response structure pattern
+      → LEARNING: Continue using this API pattern structure with status, data, error fields
       → SKILL: backend (auto-detected)
       → CONFIDENCE: medium
 ```
 
-### 2. Skill Auto-Detection
+### 2. Skill Auto-Detection (ENHANCED - v4.1)
 
-Learnings are automatically routed to the most relevant skill:
+Learnings are routed using a **priority-based detection system**:
+
+#### Priority 1: Explicit Skill Name Mention (Highest Priority)
+If the user mentions a skill by name, route directly to that skill:
+```
+"the detector skill doesn't work" → detector skill
+"increment-planner has a bug" → increment-planner skill
+"service-connect is failing" → service-connect skill
+```
+
+**Detection pattern**: `(the\s+)?(\w+[-\w]*)\s+(skill|command|agent)`
+
+#### Priority 2: Keyword-Based Detection
+If no explicit skill is mentioned, use keyword matching:
 
 | Skill | Keywords |
 |-------|----------|
@@ -174,6 +215,9 @@ Learnings are automatically routed to the most relevant skill:
 | `infrastructure` | terraform, iac, aws, azure, gcp, serverless |
 | `performance` | performance, optimization, profiling, caching, latency |
 | `docs-writer` | documentation, readme, api docs, technical writing |
+
+#### Priority 3: Category Fallback
+If no skill matches, route to category memory (`.specweave/memory/{category}.md`)
 
 ### 3. Learning Format
 

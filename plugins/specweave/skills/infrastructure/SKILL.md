@@ -53,8 +53,8 @@ Load phases as needed:
 **If credentials missing → ASK, then execute**
 
 ```bash
-# Check credentials FIRST
-grep -E "SUPABASE|DATABASE_URL|CF_|AWS_" .env 2>/dev/null
+# Check credentials FIRST (presence only - never display values!)
+grep -qE "SUPABASE|DATABASE_URL|CF_|AWS_" .env 2>/dev/null && echo "Credentials found in .env"
 wrangler whoami 2>/dev/null
 aws sts get-caller-identity 2>/dev/null
 ```

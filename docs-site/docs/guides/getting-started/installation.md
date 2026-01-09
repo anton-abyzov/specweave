@@ -138,7 +138,6 @@ your-project/
 │   │   ├── spec-generator/
 │   │   ├── context-loader/
 │   │   ├── tdd-workflow/
-│   │   ├── project-kickstarter/
 │   │   ├── brownfield-analyzer/
 │   │   ├── brownfield-onboarder/
 │   │   ├── increment-quality-judge/

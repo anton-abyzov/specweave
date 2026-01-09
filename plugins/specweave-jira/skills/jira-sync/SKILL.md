@@ -140,10 +140,10 @@ echo "✅ Created .env.example for team (commit this)"
 ### Step 5: Use Credentials in Sync
 
 ```bash
-# Export for JIRA API calls
-export JIRA_API_TOKEN=$(grep JIRA_API_TOKEN .env | cut -d '=' -f2)
-export JIRA_EMAIL=$(grep JIRA_EMAIL .env | cut -d '=' -f2)
-export JIRA_DOMAIN=$(grep JIRA_DOMAIN .env | cut -d '=' -f2)
+# Export for JIRA API calls (read from .env without displaying values)
+export JIRA_API_TOKEN=$(grep '^JIRA_API_TOKEN=' .env | cut -d '=' -f2-)
+export JIRA_EMAIL=$(grep '^JIRA_EMAIL=' .env | cut -d '=' -f2-)
+export JIRA_DOMAIN=$(grep '^JIRA_DOMAIN=' .env | cut -d '=' -f2-)
 
 # Create Basic Auth header (JIRA uses email:token)
 AUTH=$(echo -n "$JIRA_EMAIL:$JIRA_API_TOKEN" | base64)

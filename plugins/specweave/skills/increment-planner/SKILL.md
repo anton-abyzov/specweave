@@ -307,11 +307,27 @@ testMode=$(cat .specweave/config.json | jq -r '.testing.defaultTestMode // "test
 # Read coverageTarget (default: 80)
 coverageTarget=$(cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 80')
 
+# NEW (v1.0.111+): Select template based on testMode
+if [ "$testMode" = "TDD" ]; then
+  TASK_TEMPLATE="tasks-tdd-single-project.md"
+  INCLUDE_TDD_CONTRACT=true
+  echo "🔴 TDD MODE: Using TDD task template with RED-GREEN-REFACTOR triplets"
+else
+  TASK_TEMPLATE="tasks-single-project.md"
+  INCLUDE_TDD_CONTRACT=false
+fi
+
 echo "Using testMode: $testMode"
 echo "Using coverageTarget: $coverageTarget"
+echo "Using task template: $TASK_TEMPLATE"
 ```
 
 **Store these values for use in STEP 4 and STEP 7!**
+
+**TDD Template Selection (v1.0.111+)**:
+- When `testMode: "TDD"` → Use `tasks-tdd-single-project.md` with TDD triplet structure
+- When `testMode: "test-after"` (default) → Use standard `tasks-single-project.md`
+- TDD mode also injects `## TDD Contract` section into spec.md
 
 ### STEP 0B: Get Project Context (MANDATORY - BLOCKING!)
 
@@ -1062,12 +1078,26 @@ Replace `{{FEATURE_TITLE}}` placeholder. plan.md is OPTIONAL - create only for c
 
 Create `.specweave/increments/0021-feature-name/tasks.md`:
 
-**⚠️ IMPORTANT: Use the correct template based on STEP 0 detection!**
+**⚠️ IMPORTANT: Use the correct template based on STEP 0A testMode detection!**
 
-#### 7A: Single-Project Template
+#### 7-TDD: TDD Mode Template (testMode: "TDD") - v1.0.111+
+
+**Template File**: `templates/tasks-tdd-single-project.md`
+
+Use this when `$TASK_TEMPLATE = "tasks-tdd-single-project.md"` (set in STEP 0A).
+
+This template generates tasks in RED-GREEN-REFACTOR triplets:
+- T-001 [RED]: Write failing test
+- T-002 [GREEN]: Implement to pass test (depends on T-001)
+- T-003 [REFACTOR]: Improve code quality (depends on T-002)
+
+**Dependency markers are CRITICAL** - they enable TDD enforcement hooks.
+
+#### 7A: Single-Project Template (Standard)
 
 **Template File**: `templates/tasks-single-project.md`
 
+Use this when `testMode != "TDD"` (default for most user projects).
 Replace `{{FEATURE_TITLE}}` placeholder.
 
 #### 7B: Multi-Project Template (umbrella.enabled: true) - USE THIS!

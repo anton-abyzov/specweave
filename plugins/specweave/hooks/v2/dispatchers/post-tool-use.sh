@@ -165,6 +165,13 @@ play_task_completion_sound() {
   local state_file="$STATE_DIR/.last-task-completion"
   local session_file="$STATE_DIR/auto-session.json"
 
+  # DISABLED: Sound notifications are disabled by default
+  # To re-enable, set SPECWEAVE_SOUND_ENABLED=1 in environment
+  if [[ "${SPECWEAVE_SOUND_ENABLED:-0}" != "1" ]]; then
+    log_debug "Sound disabled (set SPECWEAVE_SOUND_ENABLED=1 to enable)"
+    return 0
+  fi
+
   # CRITICAL: Skip sound if auto mode is active
   # Auto mode has its own completion sound via Stop hook (plays once at END)
   if [[ -f "$session_file" ]]; then

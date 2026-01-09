@@ -181,6 +181,19 @@ export interface CoverageTargets {
  *
  * To actually enforce coverage, configure your CI/CD (jest --coverageThreshold).
  */
+/**
+ * TDD Enforcement Level
+ *
+ * Controls how strictly TDD discipline is enforced when testMode: "TDD"
+ *
+ * - `strict`: BLOCKS completing GREEN task before RED task (recommended for teams)
+ * - `warn`: Shows warning but allows (default - gradual adoption)
+ * - `off`: No enforcement (TDD is purely self-discipline)
+ *
+ * @since 1.0.111
+ */
+export type TDDEnforcement = 'strict' | 'warn' | 'off';
+
 export interface TestingConfig {
   /** Default testing mode for new increments */
   defaultTestMode: TestMode;
@@ -190,6 +203,18 @@ export interface TestingConfig {
 
   /** Specific coverage targets per test type */
   coverageTargets: CoverageTargets;
+
+  /**
+   * TDD enforcement level (only applies when testMode: "TDD")
+   *
+   * - `strict`: BLOCKS completing GREEN before RED
+   * - `warn`: Warns but allows (default)
+   * - `off`: No enforcement
+   *
+   * @default "warn"
+   * @since 1.0.111
+   */
+  tddEnforcement?: TDDEnforcement;
 }
 
 /**

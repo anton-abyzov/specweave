@@ -54,7 +54,7 @@ This skill activates when user expresses **implementation/continuation intent**:
 ### Don't Activate For
 
 **Planning/Discussion** (let other skills handle):
-- "What should we build?" → project-kickstarter
+- "What should we build?" → increment-planner
 - "How does X work?" → Regular conversation
 - "Should we use Y?" → Technical discussion
 - "Plan a new feature" → increment-planner
@@ -214,7 +214,7 @@ increment-work-router (detects intent)
 
 **Called By:**
 - Automatically when implementation intent detected
-- Works alongside `project-kickstarter` (projects) and `increment-planner` (planning)
+- Works alongside `increment-planner` (planning) and `detector` (context checking)
 
 ## Decision Matrix
 
@@ -448,19 +448,17 @@ Users can override auto-routing with explicit instructions:
 - ✅ Detects unrelated requests and prevents scope creep
 - ✅ No "which increment?" confusion (auto-handles single active)
 - ✅ Clear choices when ambiguous (multiple active or unrelated)
-- ✅ Seamless integration with existing skills (project-kickstarter, increment-planner)
+- ✅ Seamless integration with existing skills (increment-planner, detector)
 
 ## Related Skills
 
-- **project-kickstarter**: For NEW project descriptions (complements, doesn't overlap)
-- **increment-planner**: For creating increment structure (invoked by this skill)
+- **increment-planner**: For creating increment structure (invoked by this skill for new projects)
 - **detector**: For checking SpecWeave context
 
 ---
 
 **Key Distinction:**
-- `project-kickstarter` = "I want to BUILD a new product" (project-level)
+- `increment-planner` = "PLAN this increment" or "I want to BUILD a new product" (planning-level)
 - `increment-work-router` = "IMPLEMENT this feature/task" (execution-level)
-- `increment-planner` = "PLAN this increment" (planning-level)
 
 This skill bridges planning → execution by auto-detecting implementation intent.

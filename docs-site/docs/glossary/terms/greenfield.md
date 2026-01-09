@@ -255,11 +255,11 @@ sequenceDiagram
 
 ## SpecWeave for Greenfield Projects
 
-SpecWeave is **optimized for greenfield development** with project kickstarter capabilities.
+SpecWeave is **optimized for greenfield development** with smart increment planning.
 
-### Project Kickstarter Skill
+### Increment Planner Skill
 
-**Location**: `plugins/specweave/skills/project-kickstarter/SKILL.md`
+The `increment-planner` skill automatically detects product descriptions and routes to increment planning.
 
 **Capabilities**:
 - Generate project structure from business requirements
@@ -585,7 +585,7 @@ Use SpecWeave's living docs system:
 - Technical Debt - Understanding and managing debt
 - [Architecture Decision Records](/docs/glossary/terms/adr) - Documenting decisions
 - [Migration Strategies](/docs/glossary/terms/migration) - Moving from brownfield to greenfield
-- [SpecWeave Project Kickstarter](../../guides/project-kickstarter) - Greenfield setup guide
+- [SpecWeave Quick Start](../../guides/getting-started/quickstart) - Greenfield setup guide
 
 ---
 
