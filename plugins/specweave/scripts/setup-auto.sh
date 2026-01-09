@@ -472,54 +472,78 @@ echo "$SESSION_JSON" | jq . > "$SESSION_FILE"
 # Log session start
 echo "{\"timestamp\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"event\":\"session_start\",\"sessionId\":\"$SESSION_ID\",\"increments\":${#INCREMENT_IDS[@]}}" >> "$LOGS_DIR/auto-sessions.log"
 
-# Output
-echo "🚀 Auto Session Started"
+# Output - Session Start Banner
 echo ""
-echo "Session ID: $SESSION_ID"
-echo "Max Iterations: $MAX_ITERATIONS"
-[ -n "$MAX_HOURS" ] && echo "Max Hours: $MAX_HOURS"
-echo "Simple Mode: $SIMPLE_MODE"
+echo "╔══════════════════════════════════════════════════════════════════════════════╗"
+echo "║                         🚀 AUTO SESSION STARTED                              ║"
+echo "╚══════════════════════════════════════════════════════════════════════════════╝"
+echo ""
+echo "  Session ID: $SESSION_ID"
+echo "  Started:    $(date '+%Y-%m-%d %H:%M:%S')"
+echo ""
 
-# Display project detection results
-if [ "$PROJECT_TYPE" != "generic" ] && [ "$PROJECT_CONFIDENCE" != "0" ]; then
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "📦 PROJECT DETECTION"
-    echo "   Type: $PROJECT_TYPE (confidence: $(echo "$PROJECT_CONFIDENCE * 100" | bc | cut -d. -f1)%)"
-    [ -n "$PROJECT_FRAMEWORKS" ] && echo "   Frameworks: $PROJECT_FRAMEWORKS"
-    [ -n "$PROJECT_TEST_FRAMEWORKS" ] && echo "   Test Frameworks: $PROJECT_TEST_FRAMEWORKS"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-fi
+# Display increment queue
+echo "┌─────────────────────────────────────────────────────────────────────────────┐"
+echo "│  📋 INCREMENTS TO PROCESS                                                   │"
+echo "├─────────────────────────────────────────────────────────────────────────────┤"
+for INC_ID in "${INCREMENT_IDS[@]}"; do
+    printf "│  %-73s │\n" "• $INC_ID"
+done
+echo "└─────────────────────────────────────────────────────────────────────────────┘"
+echo ""
 
-# Display completion conditions
+# ═══════════════════════════════════════════════════════════════════════════════════
+# CRITICAL: WHEN WILL SESSION STOP - Box Art for Visibility
+# ═══════════════════════════════════════════════════════════════════════════════════
+echo "╔══════════════════════════════════════════════════════════════════════════════╗"
+echo "║              ⏹️  WHEN WILL THIS SESSION STOP?                                ║"
+echo "╠══════════════════════════════════════════════════════════════════════════════╣"
+echo "║                                                                              ║"
+echo "║  SESSION WILL STOP WHEN:                                                     ║"
+echo "║  ─────────────────────────────────────────────────────────────────────────── ║"
+echo "║                                                                              ║"
+echo "║    ✅ SUCCESS CONDITIONS (all must be true):                                 ║"
+echo "║       • All tasks in increment marked [x] complete                           ║"
+echo "║       • No active increments remaining                                       ║"
+
+# Add completion conditions if any
 CONDITION_COUNT=$(echo "$COMPLETION_CONDITIONS" | jq 'length')
 if [ "$CONDITION_COUNT" -gt 0 ]; then
-    echo ""
-    echo "✅ COMPLETION CONDITIONS ($CONDITION_COUNT):"
-    echo "$COMPLETION_CONDITIONS" | jq -r '.[] | "  • \(.type)\(if .threshold then " (≥\(.threshold)%)" else "" end)\(if .mandatory then " [MANDATORY]" else "" end)\(if .autoHeal then " (auto-heal)" else "" end)"'
+    echo "$COMPLETION_CONDITIONS" | jq -r '.[] | "║       • \(.type)\(if .threshold then " ≥\(.threshold)%" else "" end)\(if .mandatory then " [REQUIRED]" else "" end)                                             "' | while read line; do
+        printf "%-78s║\n" "$line"
+    done
 fi
 
 if [ "$TDD_MODE" = "true" ]; then
-    echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "🔴 TDD STRICT MODE: ENABLED"
-    echo "   ALL tests MUST pass before auto mode can complete"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "║       • 🔴 TDD MODE: ALL tests must be GREEN                                ║"
 fi
+
+echo "║                                                                              ║"
+echo "║    ⚠️  SAFETY LIMITS (will stop if reached):                                 ║"
+printf "║       • Max iterations: %-50s ║\n" "$MAX_ITERATIONS"
+if [ -n "$MAX_HOURS" ]; then
+    printf "║       • Max hours: %-54s ║\n" "$MAX_HOURS"
+fi
+echo "║                                                                              ║"
+echo "║    🛑 MANUAL STOP OPTIONS:                                                   ║"
+echo "║       • Close this tab (pauses session)                                      ║"
+echo "║       • Run /sw:cancel-auto (terminates session)                             ║"
+echo "║       • Human gate requires approval                                         ║"
+echo "║                                                                              ║"
+echo "╚══════════════════════════════════════════════════════════════════════════════╝"
 echo ""
-echo "Increment Queue (${#INCREMENT_IDS[@]}):"
-for INC_ID in "${INCREMENT_IDS[@]}"; do
-    echo "  • $INC_ID"
-done
+
+# Display project detection results (optional info)
+if [ "$PROJECT_TYPE" != "generic" ] && [ "$PROJECT_CONFIDENCE" != "0" ]; then
+    echo "┌─────────────────────────────────────────────────────────────────────────────┐"
+    echo "│  📦 PROJECT DETECTION                                                       │"
+    printf "│  Type: %-68s │\n" "$PROJECT_TYPE (confidence: $(echo "$PROJECT_CONFIDENCE * 100" | bc 2>/dev/null | cut -d. -f1 || echo "?")%)"
+    [ -n "$PROJECT_FRAMEWORKS" ] && printf "│  Frameworks: %-61s │\n" "$PROJECT_FRAMEWORKS"
+    [ -n "$PROJECT_TEST_FRAMEWORKS" ] && printf "│  Test Frameworks: %-56s │\n" "$PROJECT_TEST_FRAMEWORKS"
+    echo "└─────────────────────────────────────────────────────────────────────────────┘"
+    echo ""
+fi
+
+echo "💡 The stop hook will check these conditions on EVERY exit attempt."
+echo "   You'll see a status update each time the session continues."
 echo ""
-echo "Current: ${INCREMENT_IDS[0]}"
-echo ""
-echo "The session will continue until:"
-echo "  • All tasks complete AND tests pass"
-[ "$TDD_MODE" = "true" ] && echo "  • (TDD MODE: 100% tests GREEN required)"
-echo "  • Max iterations ($MAX_ITERATIONS) reached"
-[ -n "$MAX_HOURS" ] && echo "  • Max hours ($MAX_HOURS) exceeded"
-echo "  • You run /sw:cancel-auto"
-echo "  • A human gate requires approval"
-echo ""
-echo "💡 Tip: Close this tab anytime to pause. Resume with /sw:do"
