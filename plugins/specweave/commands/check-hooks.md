@@ -30,6 +30,12 @@ Detects import errors, runtime failures, performance issues, and provides auto-f
 
 # Generate markdown report
 /sw:check-hooks --format markdown --output report.md
+
+# Check reflect hook health (self-improving AI)
+/sw:check-hooks --reflect
+
+# Check reflect with verbose details
+/sw:check-hooks --reflect --verbose
 ```
 
 ## Options
@@ -41,6 +47,8 @@ Detects import errors, runtime failures, performance issues, and provides auto-f
 - `--output <file>` - Write report to file
 - `--timeout <ms>` - Hook execution timeout (default: 5000ms)
 - `--fail-on-warnings` - Exit with error code if warnings detected
+- `--reflect` - Check reflect hook health (stop-reflect.sh, jq, memory dirs)
+- `--include-cache` - Also check plugin cache health
 
 ## What It Checks
 
