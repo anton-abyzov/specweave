@@ -65,7 +65,7 @@ is_auto_reflect_enabled() {
 }
 
 # Check for reflection-worthy signals in transcript
-# v4.1: Supports both plain text and JSONL (Claude Code) transcript formats
+# v4.2: Enhanced JSONL parsing with format version detection and graceful fallback (GAP-006)
 has_reflection_signals() {
     local transcript="$1"
 
@@ -76,14 +76,56 @@ has_reflection_signals() {
     # Pattern for correction/approval detection
     local SIGNAL_PATTERN="(No, don't|No, use|Wrong[,!]|That's incorrect|Always use|Never use|The correct way|Perfect!|That's right|That's correct|Exactly!|Well done)"
 
-    # Check file extension and content type
-    if [[ "$transcript" == *.jsonl ]] || head -1 "$transcript" 2>/dev/null | grep -q '^{'; then
+    # Determine file format
+    local is_jsonl="false"
+    local first_line=""
+
+    # Check file extension first (fast path)
+    if [[ "$transcript" == *.jsonl ]]; then
+        is_jsonl="true"
+    else
+        # Check first line content (slower but more accurate)
+        first_line=$(head -1 "$transcript" 2>/dev/null || echo "")
+        if echo "$first_line" | grep -q '^{' 2>/dev/null; then
+            is_jsonl="true"
+        fi
+    fi
+
+    if [ "$is_jsonl" = "true" ]; then
         # JSONL format (Claude Code transcripts)
-        # Extract user message text content and search for signals
-        # Only look at user messages (role: user) to catch corrections
-        if jq -r 'select(.message.role == "user") | .message.content[]? | select(.text) | .text' "$transcript" 2>/dev/null | \
-           grep -qiE "$SIGNAL_PATTERN"; then
-            return 0
+        # v4.2: Try multiple extraction patterns for format resilience
+
+        # Strategy 1: Current Claude Code format (message.role, message.content[].text)
+        local result=""
+        result=$(jq -r 'select(.message.role == "user") | .message.content[]? | select(.text) | .text' "$transcript" 2>/dev/null) || true
+
+        if [ -n "$result" ]; then
+            if echo "$result" | grep -qiE "$SIGNAL_PATTERN"; then
+                return 0
+            fi
+        else
+            # Strategy 2: Alternative format (role at root level)
+            result=$(jq -r 'select(.role == "user") | .content[]? | select(.text) | .text' "$transcript" 2>/dev/null) || true
+
+            if [ -n "$result" ] && echo "$result" | grep -qiE "$SIGNAL_PATTERN"; then
+                return 0
+            fi
+
+            # Strategy 3: Simple text extraction (content as string)
+            result=$(jq -r 'select(.role == "user" or .message.role == "user") | .content // .message.content // empty' "$transcript" 2>/dev/null) || true
+
+            if [ -n "$result" ] && echo "$result" | grep -qiE "$SIGNAL_PATTERN"; then
+                return 0
+            fi
+
+            # Strategy 4: Raw text search as ultimate fallback
+            # This catches edge cases where jq parsing fails but signals exist
+            if grep -qiE "$SIGNAL_PATTERN" "$transcript" 2>/dev/null; then
+                log_reflect "warn" "Used raw text fallback for signal detection (jq parsing failed)"
+                return 0
+            fi
+
+            log_reflect "debug" "No signals found after trying all extraction strategies"
         fi
     else
         # Plain text format (fallback)
