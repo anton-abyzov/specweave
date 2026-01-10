@@ -10,7 +10,6 @@ import type {
   AnalyzeOptions,
   AnalyzeResult,
   StructuredOptions,
-  ModelPricing,
 } from '../types.js';
 import { MODEL_PRICING } from '../types.js';
 import { Logger, consoleLogger } from '../../../utils/logger.js';

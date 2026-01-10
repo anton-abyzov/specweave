@@ -1,7 +1,6 @@
 import * as path from 'path';
 import chalk from 'chalk';
-import { HookLogger } from '../../core/hooks/hook-logger.js';
-import { HookLogEntry } from '../../core/hooks/hook-logger.js';
+import { HookLogger, HookLogEntry } from '../../core/hooks/hook-logger.js';
 
 export interface LogsCommandOptions {
   tail?: number;
@@ -30,43 +29,35 @@ export async function logsCommand(options: LogsCommandOptions = {}): Promise<voi
 
   try {
     if (follow) {
-      // Follow mode not implemented in this task (would require file watching)
-      console.log(chalk.yellow('Follow mode not yet implemented. Showing current logs...'));
-      console.log('');
+      console.log(chalk.yellow('Follow mode not yet implemented. Showing current logs...\n'));
     }
 
     let allEntries: HookLogEntry[] = [];
 
     if (hook) {
-      // Filter by specific hook
-      const entries = await logger.readLogs(hook, tail);
-      allEntries = entries;
+      allEntries = await logger.readLogs(hook, tail);
     } else {
       // Show logs from all hooks
       const hooks = await logger.listHooks();
 
       if (hooks.length === 0) {
-        console.log(chalk.yellow('No hook logs found.'));
-        console.log('');
+        console.log(chalk.yellow('No hook logs found.\n'));
         console.log(chalk.dim(`Logs directory: ${logsDir}`));
         return;
       }
 
       // Collect logs from all hooks
       const entriesPerHook = await Promise.all(
-        hooks.map(async (hookName) => {
-          const entries = await logger.readLogs(hookName, tail);
-          return entries;
-        })
+        hooks.map(hookName => logger.readLogs(hookName, tail))
       );
 
-      // Flatten and sort by timestamp
+      // Flatten and sort by timestamp (most recent first)
       allEntries = entriesPerHook
         .flat()
         .sort((a, b) => {
           const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
           const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-          return timeB - timeA; // Most recent first
+          return timeB - timeA;
         })
         .slice(0, tail);
     }
@@ -90,8 +81,6 @@ export async function logsCommand(options: LogsCommandOptions = {}): Promise<voi
 
 /**
  * Display log entries as a formatted table
- *
- * @param entries - Log entries to display
  */
 function displayTable(entries: HookLogEntry[]): void {
   if (entries.length === 0) {
@@ -99,10 +88,7 @@ function displayTable(entries: HookLogEntry[]): void {
     return;
   }
 
-  // Table header
-  console.log('');
-  console.log(chalk.bold.underline('Hook Execution Logs'));
-  console.log('');
+  console.log('\n' + chalk.bold.underline('Hook Execution Logs') + '\n');
   console.log(
     chalk.bold(
       pad('Timestamp', 22) +
@@ -114,79 +100,46 @@ function displayTable(entries: HookLogEntry[]): void {
   );
   console.log(chalk.dim('─'.repeat(120)));
 
-  // Table rows
   for (const entry of entries) {
     const timestamp = entry.timestamp
       ? new Date(entry.timestamp).toLocaleString()
       : 'N/A';
-
-    const status = formatStatus(entry.status);
     const duration = entry.duration ? `${entry.duration}ms` : 'N/A';
-
-    let details = '';
-    if (entry.error) {
-      details = chalk.red(truncate(entry.error, 40));
-    } else if (entry.warnings && entry.warnings.length > 0) {
-      details = chalk.yellow(truncate(entry.warnings[0].message, 40));
-    }
+    const details = entry.error
+      ? chalk.red(truncate(entry.error, 40))
+      : entry.warnings?.length
+        ? chalk.yellow(truncate(entry.warnings[0].message, 40))
+        : '';
 
     console.log(
       pad(timestamp, 22) +
       pad(entry.hookName, 25) +
-      pad(status, 12) +
+      pad(formatStatus(entry.status), 12) +
       pad(duration, 12) +
       details
     );
   }
 
-  console.log('');
-  console.log(chalk.dim(`Showing ${entries.length} entries`));
-  console.log('');
+  console.log('\n' + chalk.dim(`Showing ${entries.length} entries`) + '\n');
 }
 
-/**
- * Format status with color
- *
- * @param status - Status string
- * @returns Colored status string
- */
+/** Format status with color */
 function formatStatus(status: string): string {
-  switch (status) {
-    case 'success':
-      return chalk.green('✓ success');
-    case 'warning':
-      return chalk.yellow('⚠ warning');
-    case 'error':
-      return chalk.red('✗ error');
-    default:
-      return status;
-  }
+  const statusMap: Record<string, string> = {
+    success: chalk.green('✓ success'),
+    warning: chalk.yellow('⚠ warning'),
+    error: chalk.red('✗ error'),
+  };
+  return statusMap[status] ?? status;
 }
 
-/**
- * Pad string to fixed width
- *
- * @param str - String to pad
- * @param width - Target width
- * @returns Padded string
- */
+/** Pad string to fixed width (ANSI-aware) */
 function pad(str: string, width: number): string {
-  // Remove ANSI color codes for length calculation
   const cleanStr = str.replace(/\x1b\[[0-9;]*m/g, '');
-  const padding = Math.max(0, width - cleanStr.length);
-  return str + ' '.repeat(padding);
+  return str + ' '.repeat(Math.max(0, width - cleanStr.length));
 }
 
-/**
- * Truncate string to max length
- *
- * @param str - String to truncate
- * @param maxLen - Maximum length
- * @returns Truncated string
- */
+/** Truncate string to max length */
 function truncate(str: string, maxLen: number): string {
-  if (str.length <= maxLen) {
-    return str;
-  }
-  return str.substring(0, maxLen - 3) + '...';
+  return str.length <= maxLen ? str : str.substring(0, maxLen - 3) + '...';
 }

@@ -132,7 +132,7 @@ export async function launchImportJob(options: LaunchOptions): Promise<LaunchRes
   }
 
   // Find worker script path
-  const workerPath = findWorkerPath();
+  const workerPath = findWorkerByName('import-worker.js');
 
   if (!workerPath) {
     // Fallback to foreground if worker not found
@@ -291,7 +291,7 @@ export async function launchCloneJob(options: CloneLaunchOptions): Promise<Launc
   }
 
   // Find clone worker script path
-  const workerPath = findCloneWorkerPath();
+  const workerPath = findWorkerByName('clone-worker.js');
 
   if (!workerPath) {
     // Fallback to foreground if worker not found
@@ -410,7 +410,7 @@ export async function launchLivingDocsJob(options: LivingDocsLaunchOptions): Pro
   }
 
   // Find living-docs worker script path
-  const workerPath = findLivingDocsWorkerPath();
+  const workerPath = findWorkerByName('living-docs-worker.js');
 
   if (!workerPath) {
     // Fallback to foreground if worker not found
@@ -527,7 +527,7 @@ export async function launchCodebaseRescanJob(options: CodebaseRescanLaunchOptio
   }
 
   // Find codebase-rescan worker script path
-  const workerPath = findCodebaseRescanWorkerPath();
+  const workerPath = findWorkerByName('codebase-rescan-worker.js');
 
   if (!workerPath) {
     // Fallback to foreground if worker not found
@@ -655,56 +655,33 @@ export function getJobResult(projectPath: string, jobId: string): any | null {
   }
 }
 
-/**
- * Find the import worker script path
- */
-function findWorkerPath(): string | null {
-  return findWorkerByName('import-worker.js');
-}
-
-/**
- * Find the clone worker script path
- */
-function findCloneWorkerPath(): string | null {
-  return findWorkerByName('clone-worker.js');
-}
-
-/**
- * Find the living-docs worker script path
- */
-function findLivingDocsWorkerPath(): string | null {
-  return findWorkerByName('living-docs-worker.js');
-}
-
-/**
- * Find the codebase-rescan worker script path
- */
-function findCodebaseRescanWorkerPath(): string | null {
-  return findWorkerByName('codebase-rescan-worker.js');
-}
+const WORKER_PATHS = [
+  '../../cli/workers',           // From dist/src/core/background (compiled)
+  '../../../dist/src/cli/workers', // From src/core/background (dev)
+  '../../../../cli/workers',     // Global install
+];
 
 /**
  * Find a worker script by name
  */
 function findWorkerByName(workerName: string): string | null {
-  // Try relative paths from different locations
-  const possiblePaths = [
-    // From dist/src/core/background (compiled)
-    path.join(__dirname, '../../cli/workers', workerName),
-    // From src/core/background (dev)
-    path.join(__dirname, '../../../dist/src/cli/workers', workerName),
-    // Global install
-    path.join(__dirname, '../../../../cli/workers', workerName),
-  ];
-
-  for (const p of possiblePaths) {
-    const resolved = path.resolve(p);
+  for (const basePath of WORKER_PATHS) {
+    const resolved = path.resolve(path.join(__dirname, basePath, workerName));
     if (fs.existsSync(resolved)) {
       return resolved;
     }
   }
-
   return null;
+}
+
+/**
+ * Get orphaned jobs without modifying them (for display)
+ */
+export function getOrphanedJobs(projectPath: string): BackgroundJob[] {
+  const jobManager = getJobManager(projectPath);
+  return jobManager.getActiveJobs().filter(
+    job => job.status === 'running' && !isJobRunning(projectPath, job.id)
+  );
 }
 
 /**
@@ -715,56 +692,29 @@ function findWorkerByName(workerName: string): string | null {
  */
 export function detectOrphanedJobs(projectPath: string): BackgroundJob[] {
   const jobManager = getJobManager(projectPath);
-  const activeJobs = jobManager.getActiveJobs();
-  const orphaned: BackgroundJob[] = [];
+  const orphaned = getOrphanedJobs(projectPath);
 
-  for (const job of activeJobs) {
-    if (job.status === 'running') {
-      // Check if worker is actually running
-      if (!isJobRunning(projectPath, job.id)) {
-        // Worker is dead but job is marked running - orphaned
-        orphaned.push(job);
+  for (const job of orphaned) {
+    // Mark job as failed with explanation
+    jobManager.completeJob(
+      job.id,
+      'Worker process died unexpectedly. Job was orphaned and needs manual restart.'
+    );
 
-        // Mark job as failed with explanation
-        jobManager.completeJob(
-          job.id,
-          'Worker process died unexpectedly. Job was orphaned and needs manual restart.'
-        );
-
-        // Clean up stale PID file if exists
-        const pidFile = path.join(projectPath, '.specweave', 'state', 'jobs', job.id, 'worker.pid');
-        if (fs.existsSync(pidFile)) {
-          try {
-            fs.unlinkSync(pidFile);
-          } catch {
-            // Ignore cleanup errors
-          }
-        }
-      }
+    // Clean up stale PID file if exists
+    const pidFile = path.join(projectPath, '.specweave', 'state', 'jobs', job.id, 'worker.pid');
+    try {
+      fs.unlinkSync(pidFile);
+    } catch {
+      // Ignore cleanup errors
     }
   }
 
   return orphaned;
 }
 
-/**
- * Get orphaned jobs without modifying them (for display)
- */
-export function getOrphanedJobs(projectPath: string): BackgroundJob[] {
-  const jobManager = getJobManager(projectPath);
-  const activeJobs = jobManager.getActiveJobs();
-  const orphaned: BackgroundJob[] = [];
-
-  for (const job of activeJobs) {
-    if (job.status === 'running') {
-      if (!isJobRunning(projectPath, job.id)) {
-        orphaned.push(job);
-      }
-    }
-  }
-
-  return orphaned;
-}
+const DELETABLE_STATUSES = ['completed', 'completed_with_warnings', 'failed'];
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 /**
  * Clean up old job directories
@@ -776,24 +726,21 @@ export function cleanupOldJobs(projectPath: string, keepDays: number = 7): void 
     return;
   }
 
-  const cutoff = Date.now() - keepDays * 24 * 60 * 60 * 1000;
+  const cutoff = Date.now() - keepDays * MS_PER_DAY;
+  const jobManager = getJobManager(projectPath);
 
   try {
-    const entries = fs.readdirSync(jobsDir);
-
-    for (const entry of entries) {
+    for (const entry of fs.readdirSync(jobsDir)) {
       const jobDir = path.join(jobsDir, entry);
       const stat = fs.statSync(jobDir);
 
-      if (stat.isDirectory() && stat.mtimeMs < cutoff) {
-        // Check job status before deleting
-        const jobManager = getJobManager(projectPath);
-        const job = jobManager.getJob(entry);
+      if (!stat.isDirectory() || stat.mtimeMs >= cutoff) {
+        continue;
+      }
 
-        // Only delete completed/failed/completed_with_warnings jobs
-        if (!job || job.status === 'completed' || job.status === 'completed_with_warnings' || job.status === 'failed') {
-          fs.rmSync(jobDir, { recursive: true, force: true });
-        }
+      const job = jobManager.getJob(entry);
+      if (!job || DELETABLE_STATUSES.includes(job.status)) {
+        fs.rmSync(jobDir, { recursive: true, force: true });
       }
     }
   } catch {

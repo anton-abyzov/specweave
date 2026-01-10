@@ -34,14 +34,13 @@ export class CacheMetadataManager {
       const content = fs.readFileSync(metadataPath, 'utf8');
       const metadata = JSON.parse(content) as CacheMetadata;
 
-      // Validate required fields
-      if (
-        !metadata.pluginName ||
-        !metadata.version ||
-        !metadata.commitSha ||
-        !metadata.lastUpdated ||
-        !metadata.checksums
-      ) {
+      const hasRequiredFields = metadata.pluginName
+        && metadata.version
+        && metadata.commitSha
+        && metadata.lastUpdated
+        && metadata.checksums;
+
+      if (!hasRequiredFields) {
         logger.warn(`Invalid metadata file at ${metadataPath}: missing required fields`);
         return null;
       }

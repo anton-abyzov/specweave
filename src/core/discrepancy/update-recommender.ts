@@ -108,54 +108,36 @@ export class UpdateRecommender {
   }
 
   private mapSeverityToRecommendation(severity: DiscrepancySeverity): DiscrepancyRecommendation {
-    switch (severity) {
-      case 'trivial':
-        return 'auto-update';
-      case 'minor':
-        return 'review-required';
-      case 'major':
-        return 'notify';
-      case 'breaking':
-        return 'alert';
-    }
+    const actionMap: Record<DiscrepancySeverity, DiscrepancyRecommendation> = {
+      trivial: 'auto-update',
+      minor: 'review-required',
+      major: 'notify',
+      breaking: 'alert',
+    };
+    return actionMap[severity];
   }
 
   private generateExplanation(discrepancy: Discrepancy, recommendation: DiscrepancyRecommendation): string {
-    const parts: string[] = [];
+    const typeLabel = discrepancy.type.replace('-', ' ');
 
-    // Category explanation
-    switch (discrepancy.category) {
-      case 'added':
-        parts.push(`New ${discrepancy.type.replace('-', ' ')} found in code that is not documented.`);
-        break;
-      case 'removed':
-        parts.push(`Documented ${discrepancy.type.replace('-', ' ')} no longer exists in code.`);
-        break;
-      case 'modified':
-        parts.push(`${discrepancy.type.replace('-', ' ')} has changed from documented version.`);
-        break;
-    }
+    const categoryMessages: Record<string, string> = {
+      added: `New ${typeLabel} found in code that is not documented.`,
+      removed: `Documented ${typeLabel} no longer exists in code.`,
+      modified: `${typeLabel} has changed from documented version.`,
+    };
 
-    // Code is source of truth reminder
-    parts.push('Code is the source of truth - specs should be updated to match.');
+    const recommendationMessages: Record<DiscrepancyRecommendation, string> = {
+      'auto-update': 'This is a trivial change that can be safely auto-updated.',
+      'review-required': 'Please review the change before updating documentation.',
+      notify: 'This is a significant change that should be communicated to stakeholders.',
+      alert: 'This is a breaking change! Consumers may be affected.',
+    };
 
-    // Recommendation explanation
-    switch (recommendation) {
-      case 'auto-update':
-        parts.push('This is a trivial change that can be safely auto-updated.');
-        break;
-      case 'review-required':
-        parts.push('Please review the change before updating documentation.');
-        break;
-      case 'notify':
-        parts.push('This is a significant change that should be communicated to stakeholders.');
-        break;
-      case 'alert':
-        parts.push('⚠️ This is a breaking change! Consumers may be affected.');
-        break;
-    }
-
-    return parts.join(' ');
+    return [
+      categoryMessages[discrepancy.category],
+      'Code is the source of truth - specs should be updated to match.',
+      recommendationMessages[recommendation],
+    ].join(' ');
   }
 
   private assessRisk(discrepancy: Discrepancy): 'low' | 'medium' | 'high' {
@@ -188,22 +170,15 @@ export class UpdateRecommender {
   }
 
   private shouldGeneratePatch(discrepancy: Discrepancy, recommendation: DiscrepancyRecommendation): boolean {
-    // Don't generate patches for alerts (need manual handling)
+    // Alerts need manual handling - no patches
     if (recommendation === 'alert') {
       return false;
     }
 
-    // Generate patches for auto-update and review-required
-    if (recommendation === 'auto-update' || recommendation === 'review-required') {
-      return true;
-    }
-
-    // Generate patches for notify if it's an addition
-    if (recommendation === 'notify' && discrepancy.category === 'added') {
-      return true;
-    }
-
-    return false;
+    // Generate patches for auto-update, review-required, or notify with additions
+    return recommendation === 'auto-update' ||
+           recommendation === 'review-required' ||
+           (recommendation === 'notify' && discrepancy.category === 'added');
   }
 
   private generateApiRoutePatch(discrepancy: Discrepancy): UpdatePatch | undefined {

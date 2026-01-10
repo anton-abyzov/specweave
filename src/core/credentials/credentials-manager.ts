@@ -62,6 +62,14 @@ export class CredentialsManager {
     this.loadFromEnv();
   }
 
+  /**
+   * Parse comma-separated string into array of trimmed, non-empty strings
+   */
+  private parseCommaSeparated(value: string | undefined): string[] {
+    if (!value) return [];
+    return value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  }
+
   public static getInstance(): CredentialsManager {
     if (!CredentialsManager.instance) {
       CredentialsManager.instance = new CredentialsManager();
@@ -91,90 +99,47 @@ export class CredentialsManager {
     // NOTE: organization and project should come from config.json via ConfigManager
     if (process.env.AZURE_DEVOPS_PAT) {
       const singleTeam = process.env.AZURE_DEVOPS_TEAM || '';
-      const multiTeams = process.env.AZURE_DEVOPS_TEAMS || '';
-
-      // Parse comma-separated teams
-      const teams = multiTeams
-        ? multiTeams.split(',').map(t => t.trim()).filter(t => t.length > 0)
-        : (singleTeam ? [singleTeam] : []);
-
-      // NOTE: org and project should come from config.json via ConfigManager
-      const org = process.env.AZURE_DEVOPS_ORG || '';
-      const project = process.env.AZURE_DEVOPS_PROJECT || '';
+      const teams = this.parseCommaSeparated(process.env.AZURE_DEVOPS_TEAMS);
+      const effectiveTeams = teams.length > 0 ? teams : (singleTeam ? [singleTeam] : []);
 
       this.credentials.ado = {
         pat: process.env.AZURE_DEVOPS_PAT,
-        organization: org,
-        project: project,
-        team: singleTeam || teams[0],  // Use first team for backward compatibility
-        teams: teams.length > 1 ? teams : undefined  // Multiple teams (optional)
+        organization: process.env.AZURE_DEVOPS_ORG || '',
+        project: process.env.AZURE_DEVOPS_PROJECT || '',
+        team: singleTeam || effectiveTeams[0],
+        teams: effectiveTeams.length > 1 ? effectiveTeams : undefined,
       };
     }
 
     // Load Jira credentials (SECRETS only - token, email)
     // NOTE: domain should come from config.json via ConfigManager
     if (process.env.JIRA_API_TOKEN) {
-      const strategy = (process.env.JIRA_STRATEGY as any) || undefined;
       const singleProject = process.env.JIRA_PROJECT || '';
-      const multiProjects = process.env.JIRA_PROJECTS || '';
-      const componentsStr = process.env.JIRA_COMPONENTS || '';
-      const boardsStr = process.env.JIRA_BOARDS || '';
-
-      // Parse comma-separated values
-      const projects = multiProjects
-        ? multiProjects.split(',').map(p => p.trim()).filter(p => p.length > 0)
-        : (singleProject ? [singleProject] : []);
-
-      const components = componentsStr
-        ? componentsStr.split(',').map(c => c.trim()).filter(c => c.length > 0)
-        : [];
-
-      const boards = boardsStr
-        ? boardsStr.split(',').map(b => b.trim()).filter(b => b.length > 0)
-        : [];
-
-      // NOTE: domain should come from config.json via ConfigManager
-      const domain = process.env.JIRA_DOMAIN || '';
+      const projects = this.parseCommaSeparated(process.env.JIRA_PROJECTS);
+      const effectiveProjects = projects.length > 0 ? projects : (singleProject ? [singleProject] : []);
+      const components = this.parseCommaSeparated(process.env.JIRA_COMPONENTS);
+      const boards = this.parseCommaSeparated(process.env.JIRA_BOARDS);
 
       this.credentials.jira = {
         apiToken: process.env.JIRA_API_TOKEN,
-        email: process.env.JIRA_EMAIL || '',  // SECRET - stays in .env
-        domain: domain,
-        strategy,
-
-        // Strategy 1: Project-per-team
-        projects: projects.length > 0 ? projects : undefined,
-
-        // Strategy 2: Component-based
+        email: process.env.JIRA_EMAIL || '',
+        domain: process.env.JIRA_DOMAIN || '',
+        strategy: (process.env.JIRA_STRATEGY as JiraCredentials['strategy']) || undefined,
+        projects: effectiveProjects.length > 0 ? effectiveProjects : undefined,
         project: singleProject,
         components: components.length > 0 ? components : undefined,
-
-        // Strategy 3: Board-based
-        boards: boards.length > 0 ? boards : undefined
+        boards: boards.length > 0 ? boards : undefined,
       };
     }
 
     // Load GitHub credentials
     if (process.env.GH_TOKEN || process.env.GITHUB_TOKEN) {
-      const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN || '';
-      const strategy = (process.env.GITHUB_STRATEGY as any) || undefined;
-      const owner = process.env.GITHUB_OWNER || '';
-      const reposStr = process.env.GITHUB_REPOS || '';
-      const singleRepo = process.env.GITHUB_REPO || '';
-      const teamsStr = process.env.GITHUB_TEAMS || '';
-      const teamRepoMappingStr = process.env.GITHUB_TEAM_REPO_MAPPING || '';
-
-      // Parse comma-separated values
-      const repos = reposStr
-        ? reposStr.split(',').map(r => r.trim()).filter(r => r.length > 0)
-        : [];
-
-      const teams = teamsStr
-        ? teamsStr.split(',').map(t => t.trim()).filter(t => t.length > 0)
-        : [];
+      const repos = this.parseCommaSeparated(process.env.GITHUB_REPOS);
+      const teams = this.parseCommaSeparated(process.env.GITHUB_TEAMS);
 
       // Parse JSON mapping
       let teamRepoMapping: Record<string, string[]> | undefined;
+      const teamRepoMappingStr = process.env.GITHUB_TEAM_REPO_MAPPING;
       if (teamRepoMappingStr) {
         try {
           teamRepoMapping = JSON.parse(teamRepoMappingStr);
@@ -184,19 +149,13 @@ export class CredentialsManager {
       }
 
       this.credentials.github = {
-        token,
-        strategy,
-        owner,
-
-        // Strategy 1: Repository-per-team
+        token: process.env.GH_TOKEN || process.env.GITHUB_TOKEN || '',
+        strategy: (process.env.GITHUB_STRATEGY as GitHubCredentials['strategy']) || undefined,
+        owner: process.env.GITHUB_OWNER || '',
         repos: repos.length > 0 ? repos : undefined,
-
-        // Strategy 2: Team-based
-        repo: singleRepo,
+        repo: process.env.GITHUB_REPO || '',
         teams: teams.length > 0 ? teams : undefined,
-
-        // Strategy 3: Team-multi-repo
-        teamRepoMapping
+        teamRepoMapping,
       };
     }
 

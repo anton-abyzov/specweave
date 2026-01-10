@@ -96,6 +96,8 @@ export class RiskCalculator {
     return totalWeight > 0 ? weightedSum / totalWeight : 0;
   }
 
+  private static readonly CATEGORIES: readonly RiskCategory[] = ['security', 'technical', 'implementation', 'operational'];
+
   /**
    * Group risks by category and calculate category scores
    *
@@ -109,15 +111,11 @@ export class RiskCalculator {
    * ```
    */
   static groupRisksByCategory(risks: Risk[]): Record<RiskCategory, number> {
-    const categories: RiskCategory[] = ['security', 'technical', 'implementation', 'operational'];
-    const result: Record<RiskCategory, number> = {} as Record<RiskCategory, number>;
-
-    for (const category of categories) {
+    return this.CATEGORIES.reduce((result, category) => {
       const categoryRisks = risks.filter((r) => r.category === category);
       result[category] = this.calculateOverallRisk(categoryRisks);
-    }
-
-    return result;
+      return result;
+    }, {} as Record<RiskCategory, number>);
   }
 
   /**

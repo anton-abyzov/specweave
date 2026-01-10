@@ -171,14 +171,13 @@ export function formatReport(result: {
     lines.push('');
 
     for (const desync of result.desyncs) {
-      const severityColor =
-        desync.severity === DesyncSeverity.CRITICAL
-          ? chalk.red
-          : desync.severity === DesyncSeverity.HIGH
-            ? chalk.yellow
-            : desync.severity === DesyncSeverity.MEDIUM
-              ? chalk.blue
-              : chalk.gray;
+      const severityColors: Record<DesyncSeverity, typeof chalk.red> = {
+        [DesyncSeverity.CRITICAL]: chalk.red,
+        [DesyncSeverity.HIGH]: chalk.yellow,
+        [DesyncSeverity.MEDIUM]: chalk.blue,
+        [DesyncSeverity.LOW]: chalk.gray,
+      };
+      const severityColor = severityColors[desync.severity];
 
       lines.push(`Increment: ${chalk.bold(desync.incrementId)}`);
       lines.push(`  Severity: ${severityColor(desync.severity)}`);

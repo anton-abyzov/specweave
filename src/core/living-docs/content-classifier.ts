@@ -368,9 +368,13 @@ export class ContentClassifier {
       }
 
       case ContentCategory.Architecture: {
-        const isHLD = /high-?level|hld|system/i.test(section.heading);
-        const isLLD = /low-?level|lld|component/i.test(section.heading);
-        const prefix = isHLD ? 'hld' : isLLD ? 'lld' : 'design';
+        const heading = section.heading;
+        let prefix = 'design';
+        if (/high-?level|hld|system/i.test(heading)) {
+          prefix = 'hld';
+        } else if (/low-?level|lld|component/i.test(heading)) {
+          prefix = 'lld';
+        }
         return {
           filename: `${prefix}-${slug}.md`,
           path: 'architecture',
@@ -386,9 +390,13 @@ export class ContentClassifier {
       }
 
       case ContentCategory.Operations: {
-        const isRunbook = /runbook/i.test(section.heading);
-        const isSLO = /slo|sli/i.test(section.heading);
-        const prefix = isRunbook ? 'runbook' : isSLO ? 'slo' : 'ops';
+        const heading = section.heading;
+        let prefix = 'ops';
+        if (/runbook/i.test(heading)) {
+          prefix = 'runbook';
+        } else if (/slo|sli/i.test(heading)) {
+          prefix = 'slo';
+        }
         return {
           filename: `${prefix}-${slug}.md`,
           path: 'operations',
@@ -396,9 +404,13 @@ export class ContentClassifier {
       }
 
       case ContentCategory.Delivery: {
-        const isRoadmap = /roadmap/i.test(section.heading);
-        const isTestStrategy = /test.*strategy/i.test(section.heading);
-        const prefix = isRoadmap ? 'roadmap' : isTestStrategy ? 'test-strategy' : 'delivery';
+        const heading = section.heading;
+        let prefix = 'delivery';
+        if (/roadmap/i.test(heading)) {
+          prefix = 'roadmap';
+        } else if (/test.*strategy/i.test(heading)) {
+          prefix = 'test-strategy';
+        }
         return {
           filename: `${prefix}-${slug}.md`,
           path: 'delivery',
@@ -415,13 +427,13 @@ export class ContentClassifier {
       }
 
       case ContentCategory.Governance: {
-        const isSecurity = /security/i.test(section.heading);
-        const isCompliance = /compliance/i.test(section.heading);
-        const prefix = isSecurity
-          ? 'security'
-          : isCompliance
-          ? 'compliance'
-          : 'governance';
+        const heading = section.heading;
+        let prefix = 'governance';
+        if (/security/i.test(heading)) {
+          prefix = 'security';
+        } else if (/compliance/i.test(heading)) {
+          prefix = 'compliance';
+        }
         return {
           filename: `${prefix}-${slug}.md`,
           path: 'governance',

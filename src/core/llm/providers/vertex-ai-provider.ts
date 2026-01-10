@@ -140,18 +140,11 @@ Return ONLY the JSON object, no markdown.`;
   }
 
   estimateCost(inputTokens: number, outputTokens: number): number {
-    // Gemini 1.5 Pro pricing
-    const model = this.defaultModel;
+    const pricing = this.defaultModel.includes('gemini-1.5-flash')
+      ? { input: 0.075, output: 0.3 }
+      : { input: 1.25, output: 5 }; // Default to Pro pricing
 
-    if (model.includes('gemini-1.5-pro')) {
-      // Under 128k context
-      return (inputTokens / 1_000_000) * 1.25 + (outputTokens / 1_000_000) * 5;
-    }
-    if (model.includes('gemini-1.5-flash')) {
-      return (inputTokens / 1_000_000) * 0.075 + (outputTokens / 1_000_000) * 0.3;
-    }
-
-    return (inputTokens / 1_000_000) * 1.25 + (outputTokens / 1_000_000) * 5;
+    return (inputTokens / 1_000_000) * pricing.input + (outputTokens / 1_000_000) * pricing.output;
   }
 
   async isAvailable(): Promise<boolean> {

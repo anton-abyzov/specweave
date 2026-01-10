@@ -18,80 +18,53 @@ interface AnalyticsCommandOptions {
   plugin?: string;
 }
 
-/**
- * Format a number with commas
- */
+/** Format a number with commas */
 function formatNumber(n: number): string {
   return n.toLocaleString();
 }
 
-/**
- * Pad string to fixed width
- */
+/** Pad string to fixed width */
 function pad(str: string, width: number, padChar = ' '): string {
-  if (str.length >= width) return str.slice(0, width);
-  return str + padChar.repeat(width - str.length);
+  return str.length >= width ? str.slice(0, width) : str + padChar.repeat(width - str.length);
 }
 
-/**
- * Create a progress bar
- */
+/** Create a progress bar */
 function progressBar(value: number, max: number, width = 10): string {
   const filled = Math.round((value / max) * width);
-  const empty = width - filled;
-  return '█'.repeat(filled) + '░'.repeat(empty);
+  return '█'.repeat(filled) + '░'.repeat(width - filled);
 }
 
-/**
- * Format success rate with color indicator
- */
+/** Format success rate as percentage */
 function formatSuccessRate(successCount: number, total: number): string {
-  if (total === 0) return '-';
-  const rate = Math.round((successCount / total) * 100);
-  return `${rate}%`;
+  return total === 0 ? '-' : `${Math.round((successCount / total) * 100)}%`;
 }
 
-/**
- * Render the analytics dashboard
- */
+/** Render the analytics dashboard */
 function renderDashboard(summary: AnalyticsSummary): void {
   const line = '═'.repeat(68);
   const thinLine = '─'.repeat(68);
 
-  console.log('');
-  console.log('📊 SpecWeave Usage Analytics');
-  console.log(line);
-  console.log('');
+  console.log('\n📊 SpecWeave Usage Analytics');
+  console.log(line + '\n');
 
   // Period info
-  const sinceDate = summary.since.split('T')[0];
-  const untilDate = summary.until.split('T')[0];
-  console.log(`Period: ${sinceDate} to ${untilDate}`);
-  console.log(`Total Events: ${formatNumber(summary.totalEvents)} | Success Rate: ${summary.successRate}%`);
-  console.log('');
+  console.log(`Period: ${summary.since.split('T')[0]} to ${summary.until.split('T')[0]}`);
+  console.log(`Total Events: ${formatNumber(summary.totalEvents)} | Success Rate: ${summary.successRate}%\n`);
 
-  // Top Commands
-  if (summary.topCommands.length > 0) {
-    console.log('TOP COMMANDS                          Count    Success   Avg(ms)');
-    console.log(thinLine);
-    renderTopList(summary.topCommands);
-    console.log('');
-  }
+  // Render sections
+  const sections = [
+    { title: 'TOP COMMANDS                          Count    Success   Avg(ms)', items: summary.topCommands, showPlugin: false },
+    { title: 'TOP SKILLS                            Count    Success   Plugin', items: summary.topSkills, showPlugin: true },
+    { title: 'TOP AGENTS                            Count    Success   Plugin', items: summary.topAgents, showPlugin: true },
+  ];
 
-  // Top Skills
-  if (summary.topSkills.length > 0) {
-    console.log('TOP SKILLS                            Count    Success   Plugin');
-    console.log(thinLine);
-    renderTopList(summary.topSkills, true);
-    console.log('');
-  }
-
-  // Top Agents
-  if (summary.topAgents.length > 0) {
-    console.log('TOP AGENTS                            Count    Success   Plugin');
-    console.log(thinLine);
-    renderTopList(summary.topAgents, true);
-    console.log('');
+  for (const section of sections) {
+    if (section.items.length > 0) {
+      console.log(section.title);
+      console.log(thinLine);
+      renderTopList(section.items, section.showPlugin);
+      console.log('');
+    }
   }
 
   // Activity chart (last 7 days)
@@ -103,46 +76,33 @@ function renderDashboard(summary: AnalyticsSummary): void {
   }
 
   if (summary.totalEvents === 0) {
-    console.log('No analytics data recorded yet.');
-    console.log('');
-    console.log('Analytics will be collected as you use SpecWeave commands.');
-    console.log('');
+    console.log('No analytics data recorded yet.\n');
+    console.log('Analytics will be collected as you use SpecWeave commands.\n');
   }
 }
 
-/**
- * Render a top list of items
- */
+/** Render a top list of items */
 function renderTopList(items: UsageCount[], showPlugin = false): void {
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
+  items.forEach((item, i) => {
     const num = `${i + 1}.`;
     const name = pad(item.name, 35, '.');
     const count = pad(String(item.count), 8);
     const success = pad(formatSuccessRate(item.successCount, item.count), 9);
-
-    if (showPlugin) {
-      const plugin = item.plugin || '-';
-      console.log(`${num} ${name} ${count} ${success} ${plugin}`);
-    } else {
-      const duration = item.avgDuration !== undefined ? formatNumber(item.avgDuration) : '-';
-      console.log(`${num} ${name} ${count} ${success} ${duration}`);
-    }
-  }
+    const extra = showPlugin
+      ? (item.plugin || '-')
+      : (item.avgDuration !== undefined ? formatNumber(item.avgDuration) : '-');
+    console.log(`${num} ${name} ${count} ${success} ${extra}`);
+  });
 }
 
-/**
- * Render activity chart
- */
+/** Render activity chart */
 function renderActivityChart(dailySummaries: DailySummary[]): void {
   if (dailySummaries.length === 0) return;
 
-  const maxEvents = Math.max(...dailySummaries.map((d) => d.totalEvents));
-
+  const maxEvents = Math.max(...dailySummaries.map(d => d.totalEvents));
   for (const day of dailySummaries) {
     const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' });
-    const bar = progressBar(day.totalEvents, maxEvents);
-    console.log(`${dayName}: ${bar} ${day.totalEvents}`);
+    console.log(`${dayName}: ${progressBar(day.totalEvents, maxEvents)} ${day.totalEvents}`);
   }
 }
 

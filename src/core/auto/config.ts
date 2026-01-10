@@ -63,43 +63,46 @@ export function loadAutoConfig(projectRoot: string): ConfigLoadResult {
 }
 
 /**
+ * Clamp a number within a range, returning undefined if out of bounds (for warning)
+ */
+function clampWithWarning(
+  value: number,
+  min: number,
+  max: number,
+  fieldName: string,
+  warnings: string[]
+): number | undefined {
+  if (value < min) {
+    warnings.push(`${fieldName} must be >= ${min}, using default`);
+    return undefined;
+  }
+  if (value > max) {
+    warnings.push(`${fieldName} exceeds ${max}, capping at ${max}`);
+    return max;
+  }
+  return value;
+}
+
+/**
  * Merge user config with defaults, validating values
  */
 function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoConfig {
   const config: AutoConfig = { ...DEFAULT_AUTO_CONFIG };
 
-  // Boolean fields
-  if (typeof userConfig.enabled === 'boolean') {
-    config.enabled = userConfig.enabled;
-  }
-  if (typeof userConfig.enforceTestFirst === 'boolean') {
-    config.enforceTestFirst = userConfig.enforceTestFirst;
-  }
-  if (typeof userConfig.warnOnParallelSession === 'boolean') {
-    config.warnOnParallelSession = userConfig.warnOnParallelSession;
-  }
+  // Boolean fields - direct assignment if valid type
+  if (typeof userConfig.enabled === 'boolean') config.enabled = userConfig.enabled;
+  if (typeof userConfig.enforceTestFirst === 'boolean') config.enforceTestFirst = userConfig.enforceTestFirst;
+  if (typeof userConfig.warnOnParallelSession === 'boolean') config.warnOnParallelSession = userConfig.warnOnParallelSession;
 
   // Numeric fields with validation
   if (typeof userConfig.maxIterations === 'number') {
-    if (userConfig.maxIterations < 1) {
-      warnings.push('maxIterations must be >= 1, using default (500)');
-    } else if (userConfig.maxIterations > 5000) {
-      warnings.push('maxIterations exceeds 5000, capping at 5000');
-      config.maxIterations = 5000;
-    } else {
-      config.maxIterations = userConfig.maxIterations;
-    }
+    const clamped = clampWithWarning(userConfig.maxIterations, 1, 5000, 'maxIterations', warnings);
+    if (clamped !== undefined) config.maxIterations = clamped;
   }
 
   if (typeof userConfig.maxHours === 'number') {
-    if (userConfig.maxHours < 0.5) {
-      warnings.push('maxHours must be >= 0.5, using default');
-    } else if (userConfig.maxHours > 720) {
-      warnings.push('maxHours exceeds 720 (30 days), capping at 720');
-      config.maxHours = 720;
-    } else {
-      config.maxHours = userConfig.maxHours;
-    }
+    const clamped = clampWithWarning(userConfig.maxHours, 0.5, 720, 'maxHours', warnings);
+    if (clamped !== undefined) config.maxHours = clamped;
   }
 
   if (typeof userConfig.coverageThreshold === 'number') {
@@ -116,47 +119,36 @@ function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoC
   }
 
   // Human gated config
-  if (userConfig.humanGated && typeof userConfig.humanGated === 'object') {
-    const hg = userConfig.humanGated;
-
+  const hg = userConfig.humanGated;
+  if (hg && typeof hg === 'object') {
     if (Array.isArray(hg.patterns)) {
-      config.humanGated.patterns = hg.patterns.filter(
-        (p): p is string => typeof p === 'string'
-      );
+      config.humanGated.patterns = hg.patterns.filter((p): p is string => typeof p === 'string');
     }
-
     if (typeof hg.timeout === 'number' && hg.timeout >= 60) {
-      config.humanGated.timeout = Math.min(hg.timeout, 7200); // Max 2 hours
+      config.humanGated.timeout = Math.min(hg.timeout, 7200);
     }
-
     if (Array.isArray(hg.neverAutoApprove)) {
-      config.humanGated.neverAutoApprove = hg.neverAutoApprove.filter(
-        (p): p is string => typeof p === 'string'
-      );
+      config.humanGated.neverAutoApprove = hg.neverAutoApprove.filter((p): p is string => typeof p === 'string');
     }
   }
 
   // Circuit breaker config
-  if (userConfig.circuitBreakers && typeof userConfig.circuitBreakers === 'object') {
-    const cb = userConfig.circuitBreakers;
-
+  const cb = userConfig.circuitBreakers;
+  if (cb && typeof cb === 'object') {
     if (typeof cb.failureThreshold === 'number' && cb.failureThreshold >= 1) {
       config.circuitBreakers.failureThreshold = Math.min(cb.failureThreshold, 10);
     }
-
     if (typeof cb.resetTimeout === 'number' && cb.resetTimeout >= 60) {
-      config.circuitBreakers.resetTimeout = Math.min(cb.resetTimeout, 3600); // Max 1 hour
+      config.circuitBreakers.resetTimeout = Math.min(cb.resetTimeout, 3600);
     }
   }
 
   // Sync config
-  if (userConfig.sync && typeof userConfig.sync === 'object') {
-    const sync = userConfig.sync;
-
+  const sync = userConfig.sync;
+  if (sync && typeof sync === 'object') {
     if (typeof sync.batchInterval === 'number' && sync.batchInterval >= 60) {
-      config.sync.batchInterval = Math.min(sync.batchInterval, 1800); // Max 30 min
+      config.sync.batchInterval = Math.min(sync.batchInterval, 1800);
     }
-
     if (typeof sync.forceOnComplete === 'boolean') {
       config.sync.forceOnComplete = sync.forceOnComplete;
     }

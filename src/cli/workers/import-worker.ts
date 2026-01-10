@@ -17,15 +17,11 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 
 // Worker-specific imports (loaded dynamically to reduce startup time)
 let ImportCoordinator: any;
 let getJobManager: any;
 let ItemConverter: any;
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 interface WorkerJobConfig {
   jobId: string;
@@ -206,16 +202,13 @@ async function main(): Promise<void> {
         totalEstimate > 0 ? totalEstimate : undefined  // newTotal (atomic)
       );
 
-      // P3 FIX: Log every 100 items, on page changes, OR on final item
-      // The final item check prevents "stuck at 96%" UX where last log was at 1,200
-      // but job completes at 1,245 items
+      // Log every 100 items, on page changes, or on final item
       const isLastItem = totalEstimate > 0 && currentCount >= totalEstimate;
-      const shouldLog = isLastItem ||
-                        (info.page && info.page !== lastLoggedPage) ||
-                        (currentCount % 100 === 0) ||
-                        (info.percentage && info.percentage % 10 === 0);
+      const isPageChange = info.page && info.page !== lastLoggedPage;
+      const isPercentMilestone = info.percentage && info.percentage % 10 === 0;
+      const shouldLog = isLastItem || isPageChange || currentCount % 100 === 0 || isPercentMilestone;
 
-      if (shouldLog || info.page !== lastLoggedPage) {
+      if (shouldLog) {
         lastLoggedPage = info.page || lastLoggedPage;
         const parts: string[] = [];
         if (info.page) parts.push(`page ${info.page}`);
@@ -375,10 +368,6 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 }
-
-// REFACTOR (v0.34.1): Removed duplicate groupItemsByExternalContainer()
-// Now uses shared implementation from external-import-grouping.ts
-// This eliminates code duplication and ensures consistency across code paths
 
 // Run worker
 main().catch((error) => {

@@ -12,6 +12,18 @@ import * as fs from 'fs';
 import * as path from 'path';
 import os from 'os';
 
+/**
+ * Path segments for the Claude Code marketplace installation.
+ * Used consistently across all path construction functions.
+ */
+export const CLAUDE_MARKETPLACE_PATH = ['plugins', 'marketplaces', 'specweave'] as const;
+
+/**
+ * The OLD (broken) path pattern that was incorrectly used before the fix.
+ * Used for migration detection.
+ */
+export const LEGACY_MEMORY_PATH = ['specweave', 'memory'] as const;
+
 export interface SkillPaths {
   /** Base directory where skills are located */
   skillsDir: string;
@@ -70,7 +82,7 @@ export function isClaudeCodeEnvironment(): boolean {
 
   // Method 2: Check for Claude marketplace installation
   const claudeDir = getClaudeUserDir();
-  const marketplacePath = path.join(claudeDir, 'plugins', 'marketplaces', 'specweave');
+  const marketplacePath = path.join(claudeDir, ...CLAUDE_MARKETPLACE_PATH);
   if (fs.existsSync(marketplacePath)) {
     return true;
   }
@@ -110,7 +122,7 @@ export function getSkillsDirectory(projectRoot?: string): string {
   // No projectRoot provided - detect environment
   if (isClaudeCodeEnvironment()) {
     const claudeDir = getClaudeUserDir();
-    return path.join(claudeDir, 'plugins', 'marketplaces', 'specweave', 'plugins', 'specweave', 'skills');
+    return path.join(claudeDir, ...CLAUDE_MARKETPLACE_PATH, 'plugins', 'specweave', 'skills');
   }
 
   // Fallback: use current working directory
@@ -123,16 +135,15 @@ export function getSkillsDirectory(projectRoot?: string): string {
 export function listSkills(projectRoot?: string): string[] {
   const skillsDir = getSkillsDirectory(projectRoot);
 
-  if (!fs.existsSync(skillsDir)) {
-    return [];
-  }
-
   try {
+    if (!fs.existsSync(skillsDir)) {
+      return [];
+    }
+
     return fs
       .readdirSync(skillsDir, { withFileTypes: true })
-      .filter((dirent) => dirent.isDirectory())
       .filter((dirent) => {
-        // Check for SKILL.md to validate it's a real skill
+        if (!dirent.isDirectory()) return false;
         const skillFile = path.join(skillsDir, dirent.name, 'SKILL.md');
         return fs.existsSync(skillFile);
       })
@@ -250,8 +261,8 @@ export function getGlobalMemoryDir(projectRoot?: string): string {
   // No projectRoot provided - detect environment
   if (isClaudeCodeEnvironment()) {
     const claudeDir = getClaudeUserDir();
-    // Match the path structure used by getSkillsDirectory: plugins/marketplaces/specweave/
-    return path.join(claudeDir, 'plugins', 'marketplaces', 'specweave', 'memory');
+    // Use shared constant for consistency with getSkillsDirectory
+    return path.join(claudeDir, ...CLAUDE_MARKETPLACE_PATH, 'memory');
   }
 
   // Fallback: use current working directory
@@ -266,4 +277,191 @@ export function ensureSkillMemoryDir(skillName: string, projectRoot?: string): v
   if (!fs.existsSync(skillDir)) {
     fs.mkdirSync(skillDir, { recursive: true });
   }
+}
+
+/**
+ * Migration result for memory files from legacy location
+ */
+export interface MemoryMigrationResult {
+  /** Whether migration was needed */
+  migrationNeeded: boolean;
+  /** Whether migration was successful */
+  success: boolean;
+  /** Number of files migrated */
+  filesMigrated: number;
+  /** Source path (legacy location) */
+  sourcePath: string;
+  /** Target path (correct location) */
+  targetPath: string;
+  /** Files that were migrated */
+  migratedFiles: string[];
+  /** Any errors encountered */
+  errors: string[];
+}
+
+/**
+ * Get the legacy (incorrect) memory path that was used before the fix.
+ * This is ~/.claude/specweave/memory/ instead of the correct
+ * ~/.claude/plugins/marketplaces/specweave/memory/
+ */
+export function getLegacyMemoryDir(): string {
+  const claudeDir = getClaudeUserDir();
+  return path.join(claudeDir, ...LEGACY_MEMORY_PATH);
+}
+
+/**
+ * Check if there are memory files at the legacy (incorrect) location
+ * that need to be migrated.
+ */
+export function hasLegacyMemoryFiles(): boolean {
+  const legacyPath = getLegacyMemoryDir();
+
+  try {
+    return fs.existsSync(legacyPath) && fs.readdirSync(legacyPath).some((f) => f.endsWith('.md'));
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Migrate memory files from the legacy location to the correct location.
+ *
+ * Legacy location: ~/.claude/specweave/memory/
+ * Correct location: ~/.claude/plugins/marketplaces/specweave/memory/
+ *
+ * This function:
+ * 1. Checks if legacy files exist
+ * 2. Creates the correct directory if needed
+ * 3. Copies files (with merge if target exists)
+ * 4. Removes legacy files after successful copy
+ * 5. Removes empty legacy directories
+ *
+ * @param dryRun If true, only check what would be migrated without making changes
+ * @returns Migration result with details
+ */
+export function migrateMemoryFiles(dryRun = false): MemoryMigrationResult {
+  const legacyPath = getLegacyMemoryDir();
+  const correctPath = getGlobalMemoryDir(); // Called without projectRoot to get Claude Code path
+  const claudeDir = getClaudeUserDir();
+
+  const result: MemoryMigrationResult = {
+    migrationNeeded: false,
+    success: true,
+    filesMigrated: 0,
+    sourcePath: legacyPath,
+    targetPath: correctPath,
+    migratedFiles: [],
+    errors: [],
+  };
+
+  // Check if legacy location exists
+  if (!fs.existsSync(legacyPath)) {
+    return result;
+  }
+
+  // Get files to migrate
+  let files: string[];
+  try {
+    files = fs.readdirSync(legacyPath).filter((f) => f.endsWith('.md'));
+  } catch (err) {
+    result.success = false;
+    result.errors.push(`Failed to read legacy directory: ${err}`);
+    return result;
+  }
+
+  if (files.length === 0) {
+    return result;
+  }
+
+  result.migrationNeeded = true;
+
+  if (dryRun) {
+    result.migratedFiles = files;
+    result.filesMigrated = files.length;
+    return result;
+  }
+
+  // Create target directory if needed
+  try {
+    if (!fs.existsSync(correctPath)) {
+      fs.mkdirSync(correctPath, { recursive: true });
+    }
+  } catch (err) {
+    result.success = false;
+    result.errors.push(`Failed to create target directory: ${err}`);
+    return result;
+  }
+
+  // Migrate each file
+  for (const file of files) {
+    const sourcePath = path.join(legacyPath, file);
+    const targetPath = path.join(correctPath, file);
+
+    try {
+      // Read source content
+      const sourceContent = fs.readFileSync(sourcePath, 'utf-8');
+
+      if (fs.existsSync(targetPath)) {
+        // Target exists - append source learnings to target
+        // (simple append, assuming both are valid MEMORY.md format)
+        const targetContent = fs.readFileSync(targetPath, 'utf-8');
+        const mergedContent = mergeMemoryContent(targetContent, sourceContent);
+        fs.writeFileSync(targetPath, mergedContent);
+      } else {
+        // Target doesn't exist - just copy
+        fs.writeFileSync(targetPath, sourceContent);
+      }
+
+      // Remove source file after successful copy
+      fs.unlinkSync(sourcePath);
+      result.migratedFiles.push(file);
+      result.filesMigrated++;
+    } catch (err) {
+      result.errors.push(`Failed to migrate ${file}: ${err}`);
+      result.success = false;
+    }
+  }
+
+  // Try to remove empty legacy directories
+  try {
+    const remainingFiles = fs.readdirSync(legacyPath);
+    if (remainingFiles.length === 0) {
+      fs.rmdirSync(legacyPath);
+
+      // Also try to remove parent specweave dir if empty
+      const parentDir = path.join(claudeDir, 'specweave');
+      if (fs.existsSync(parentDir)) {
+        const parentFiles = fs.readdirSync(parentDir);
+        if (parentFiles.length === 0) {
+          fs.rmdirSync(parentDir);
+        }
+      }
+    }
+  } catch {
+    // Non-critical - directory cleanup failed but migration succeeded
+  }
+
+  return result;
+}
+
+/**
+ * Merge two MEMORY.md contents, avoiding duplicate learnings.
+ */
+function mergeMemoryContent(targetContent: string, sourceContent: string): string {
+  const learningIdPattern = /^####\s+(LRN-[\w-]+)/gm;
+  const targetIds = new Set([...targetContent.matchAll(learningIdPattern)].map((m) => m[1]));
+
+  const sourceLearnings = sourceContent
+    .split(/(?=^####\s+LRN-)/m)
+    .filter((block) => {
+      const idMatch = block.match(/^####\s+(LRN-[\w-]+)/);
+      return idMatch && !targetIds.has(idMatch[1]);
+    })
+    .map((block) => block.trim());
+
+  if (sourceLearnings.length === 0) {
+    return targetContent;
+  }
+
+  return targetContent.trimEnd() + '\n\n' + sourceLearnings.join('\n\n') + '\n';
 }

@@ -115,7 +115,7 @@ export class AreaPathMapper {
       path,
       level,
       parentPath: parentPath || undefined,
-      hasChildren: Boolean(node.hasChildren === true || (node.children && node.children.length > 0))
+      hasChildren: node.hasChildren === true || (Array.isArray(node.children) && node.children.length > 0)
     };
 
     // Recursively parse children

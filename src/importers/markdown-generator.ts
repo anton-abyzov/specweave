@@ -218,11 +218,6 @@ export class MarkdownGenerator {
 
   /**
    * Generate FEATURE.md content for a feature folder
-   *
-   * @param featureId - Feature ID (e.g., "FS-001E")
-   * @param firstItem - First item in the group (used for metadata)
-   * @param groupKey - Group key for determining type
-   * @param options - Additional options
    */
   generateFeatureMarkdown(
     featureId: string,
@@ -235,98 +230,156 @@ export class MarkdownGenerator {
   ): string {
     const { isOrphanGroup, isAdoFeatureLevelItem, parentEpicId } = options;
 
-    // Platform-specific labels
-    let platformLabel: string;
-    switch (firstItem.platform) {
-      case 'ado':
-        platformLabel = 'Azure DevOps';
-        break;
-      case 'jira':
-        platformLabel = 'JIRA';
-        break;
-      case 'github':
-        platformLabel = 'GitHub';
-        break;
-      default:
-        platformLabel = firstItem.platform || 'external tool';
-    }
-
-    // Determine title and description based on item type
-    let featureTitle: string;
-    let description: string;
-    let externalLink: string;
-    let witTypeLabel: string;
-
-    if (isAdoFeatureLevelItem) {
-      witTypeLabel = firstItem.adoWorkItemType || 'Feature';
-      featureTitle = `${witTypeLabel}: ${firstItem.title}`;
-      description = firstItem.description || `This ${witTypeLabel.toLowerCase()} was imported from ${platformLabel}.`;
-      externalLink = `[${witTypeLabel} in ${platformLabel}](${firstItem.url})`;
-    } else if (isOrphanGroup) {
-      witTypeLabel = firstItem.adoWorkItemType || 'User Story';
-      featureTitle = `${witTypeLabel}: ${firstItem.title}`;
-      description = firstItem.description ||
-        `This ${witTypeLabel.toLowerCase()} was imported from ${platformLabel} without a parent Epic/Feature.`;
-      externalLink = firstItem.url ? `[${witTypeLabel} in ${platformLabel}](${firstItem.url})` : '';
-    } else if (firstItem.sourceRepo) {
-      featureTitle = `Feature: ${firstItem.sourceRepo} External Items`;
-      description = 'This feature folder contains User Stories imported from external tools.';
-      externalLink = '';
-      witTypeLabel = 'Feature';
-    } else {
-      featureTitle = `Feature: Imported from ${platformLabel}`;
-      description = 'This feature folder contains User Stories imported from external tools.';
-      externalLink = '';
-      witTypeLabel = 'Feature';
-    }
+    const platformLabel = this.getPlatformLabel(firstItem.platform);
+    const { featureTitle, description, externalLink, witTypeLabel } = this.getFeatureMetadata(
+      firstItem,
+      platformLabel,
+      isAdoFeatureLevelItem,
+      isOrphanGroup
+    );
 
     const includeExternalMetadata = isAdoFeatureLevelItem || isOrphanGroup;
     const hasParentEpic = parentEpicId !== undefined;
-    const parentEpicLink = hasParentEpic
-      ? `[${parentEpicId}](../_epics/${parentEpicId}/EPIC.md)`
-      : '';
 
-    return `---
-id: ${featureId}
-title: ${featureTitle}
-origin: external
-source: ${firstItem.platform}
-${firstItem.sourceRepo ? `source_repo: ${firstItem.sourceRepo}` : ''}
-${firstItem.adoProjectName ? `ado_project: ${firstItem.adoProjectName}` : ''}
-${firstItem.adoAreaPath ? `ado_area_path: ${firstItem.adoAreaPath}` : ''}
-${includeExternalMetadata ? `work_item_type: ${witTypeLabel}` : ''}
-${includeExternalMetadata ? `external_id: ${firstItem.id}` : ''}
-${hasParentEpic ? `parent_epic: ${parentEpicId}` : ''}
-${isOrphanGroup ? `orphan: true` : ''}
-created: ${new Date().toISOString()}
----
+    return this.buildFeatureMarkdown({
+      featureId,
+      featureTitle,
+      description,
+      externalLink,
+      witTypeLabel,
+      platformLabel,
+      firstItem,
+      includeExternalMetadata,
+      hasParentEpic,
+      parentEpicId,
+      isOrphanGroup,
+    });
+  }
 
-# ${featureTitle}
+  private getPlatformLabel(platform: string): string {
+    const labels: Record<string, string> = {
+      'ado': 'Azure DevOps',
+      'jira': 'JIRA',
+      'github': 'GitHub',
+    };
+    return labels[platform] || platform || 'external tool';
+  }
 
-**Origin**: 🔗 ${externalLink || `Imported from ${platformLabel}`}
-${hasParentEpic ? `\n**Parent Epic**: ${parentEpicLink}` : ''}
+  private getFeatureMetadata(
+    item: ExternalItem,
+    platformLabel: string,
+    isAdoFeatureLevelItem?: boolean,
+    isOrphanGroup?: boolean
+  ): { featureTitle: string; description: string; externalLink: string; witTypeLabel: string } {
+    if (isAdoFeatureLevelItem) {
+      const witTypeLabel = item.adoWorkItemType || 'Feature';
+      return {
+        witTypeLabel,
+        featureTitle: `${witTypeLabel}: ${item.title}`,
+        description: item.description || `This ${witTypeLabel.toLowerCase()} was imported from ${platformLabel}.`,
+        externalLink: `[${witTypeLabel} in ${platformLabel}](${item.url})`,
+      };
+    }
 
-## Description
+    if (isOrphanGroup) {
+      const witTypeLabel = item.adoWorkItemType || 'User Story';
+      return {
+        witTypeLabel,
+        featureTitle: `${witTypeLabel}: ${item.title}`,
+        description: item.description || `This ${witTypeLabel.toLowerCase()} was imported from ${platformLabel} without a parent Epic/Feature.`,
+        externalLink: item.url ? `[${witTypeLabel} in ${platformLabel}](${item.url})` : '',
+      };
+    }
 
-${description}
+    if (item.sourceRepo) {
+      return {
+        witTypeLabel: 'Feature',
+        featureTitle: `Feature: ${item.sourceRepo} External Items`,
+        description: 'This feature folder contains User Stories imported from external tools.',
+        externalLink: '',
+      };
+    }
 
-${firstItem.sourceRepo ? `**Source Repository**: ${firstItem.sourceRepo}` : ''}
-${firstItem.adoAreaPath ? `**Area Path**: ${firstItem.adoAreaPath}` : ''}
-${hasParentEpic ? `\n> **Hierarchy**: This feature belongs to Epic ${parentEpicId} (Capability in Azure DevOps).` : ''}
-${isOrphanGroup ? `\n> **Note**: This feature was created from an orphan item (no parent Epic/Feature in ${platformLabel} or parent not imported).` : ''}
+    return {
+      witTypeLabel: 'Feature',
+      featureTitle: `Feature: Imported from ${platformLabel}`,
+      description: 'This feature folder contains User Stories imported from external tools.',
+      externalLink: '',
+    };
+  }
 
-## User Stories
+  private buildFeatureMarkdown(params: {
+    featureId: string;
+    featureTitle: string;
+    description: string;
+    externalLink: string;
+    witTypeLabel: string;
+    platformLabel: string;
+    firstItem: ExternalItem;
+    includeExternalMetadata: boolean;
+    hasParentEpic: boolean;
+    parentEpicId?: string;
+    isOrphanGroup?: boolean;
+  }): string {
+    const {
+      featureId, featureTitle, description, externalLink, witTypeLabel, platformLabel,
+      firstItem, includeExternalMetadata, hasParentEpic, parentEpicId, isOrphanGroup
+    } = params;
 
-User stories in this ${witTypeLabel.toLowerCase()} will be listed here.
+    const lines: string[] = ['---'];
+    lines.push(`id: ${featureId}`);
+    lines.push(`title: ${featureTitle}`);
+    lines.push('origin: external');
+    lines.push(`source: ${firstItem.platform}`);
+    if (firstItem.sourceRepo) lines.push(`source_repo: ${firstItem.sourceRepo}`);
+    if (firstItem.adoProjectName) lines.push(`ado_project: ${firstItem.adoProjectName}`);
+    if (firstItem.adoAreaPath) lines.push(`ado_area_path: ${firstItem.adoAreaPath}`);
+    if (includeExternalMetadata) {
+      lines.push(`work_item_type: ${witTypeLabel}`);
+      lines.push(`external_id: ${firstItem.id}`);
+    }
+    if (hasParentEpic) lines.push(`parent_epic: ${parentEpicId}`);
+    if (isOrphanGroup) lines.push('orphan: true');
+    lines.push(`created: ${new Date().toISOString()}`);
+    lines.push('---');
+    lines.push('');
+    lines.push(`# ${featureTitle}`);
+    lines.push('');
+    lines.push(`**Origin**: ${externalLink || `Imported from ${platformLabel}`}`);
+    if (hasParentEpic) {
+      lines.push('');
+      lines.push(`**Parent Epic**: [${parentEpicId}](../_epics/${parentEpicId}/EPIC.md)`);
+    }
+    lines.push('');
+    lines.push('## Description');
+    lines.push('');
+    lines.push(description);
+    lines.push('');
+    if (firstItem.sourceRepo) lines.push(`**Source Repository**: ${firstItem.sourceRepo}`);
+    if (firstItem.adoAreaPath) lines.push(`**Area Path**: ${firstItem.adoAreaPath}`);
+    if (hasParentEpic) {
+      lines.push('');
+      lines.push(`> **Hierarchy**: This feature belongs to Epic ${parentEpicId} (Capability in Azure DevOps).`);
+    }
+    if (isOrphanGroup) {
+      lines.push('');
+      lines.push(`> **Note**: This feature was created from an orphan item (no parent Epic/Feature in ${platformLabel} or parent not imported).`);
+    }
+    lines.push('');
+    lines.push('## User Stories');
+    lines.push('');
+    lines.push(`User stories in this ${witTypeLabel.toLowerCase()} will be listed here.`);
+    lines.push('');
+    lines.push('## Status');
+    lines.push('');
+    lines.push(`- **Created**: ${new Date().toISOString()}`);
+    lines.push(`- **Source**: ${platformLabel}`);
+    if (includeExternalMetadata) lines.push(`- **External ID**: ${firstItem.id}`);
+    if (hasParentEpic) lines.push(`- **Parent Epic**: ${parentEpicId}`);
+    if (isOrphanGroup) lines.push('- **Type**: Orphan (no parent Epic)');
+    lines.push('');
 
-## Status
-
-- **Created**: ${new Date().toISOString()}
-- **Source**: ${platformLabel}
-${includeExternalMetadata ? `- **External ID**: ${firstItem.id}` : ''}
-${hasParentEpic ? `- **Parent Epic**: ${parentEpicId}` : ''}
-${isOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
-`;
+    return lines.join('\n');
   }
 }
 

@@ -145,11 +145,7 @@ export class HookExecutor {
    * Get command to execute hook
    */
   private getHookCommand(hook: HookDefinition): string {
-    if (hook.type === 'shell') {
-      return 'bash';
-    } else {
-      return 'node';
-    }
+    return hook.type === 'shell' ? 'bash' : 'node';
   }
 
   /**
@@ -230,22 +226,13 @@ export class HookExecutor {
     const missingModule = moduleMatch[1];
     const hasExtension = missingModule.endsWith('.js');
 
-    let suggestion = '';
-    let fixable = false;
-
-    if (!hasExtension) {
-      suggestion = `Add .js extension: import from '${missingModule}.js'`;
-      fixable = true;
-    } else {
-      suggestion = `Verify module exists at path: ${missingModule}`;
-      fixable = false;
-    }
-
     return {
       type: 'import',
       message: `Cannot find module '${missingModule}'`,
-      suggestion,
-      fixable
+      suggestion: hasExtension
+        ? `Verify module exists at path: ${missingModule}`
+        : `Add .js extension: import from '${missingModule}.js'`,
+      fixable: !hasExtension
     };
   }
 
@@ -284,15 +271,10 @@ export class HookExecutor {
   }
 
   /**
-   * Check if hook has performance issues
+   * Check if hook has performance issues (>2x expected duration)
    */
   private checkPerformance(executionTime: number, hook: HookDefinition): boolean {
-    if (!hook.expectedDuration) {
-      return false;
-    }
-
-    // Performance issue if >2x expected duration
-    return executionTime > hook.expectedDuration * 2;
+    return hook.expectedDuration !== undefined && executionTime > hook.expectedDuration * 2;
   }
 
   /**
@@ -309,23 +291,16 @@ export class HookExecutor {
     const modulePath = moduleMatch[1];
     const importingFile = importingMatch ? importingMatch[1] : hookPath;
 
-    // Check if .js extension is missing
     const hasExtension = modulePath.endsWith('.js');
-    const suggestedPath = hasExtension ? modulePath : `${modulePath}.js`;
-
-    // Determine fix confidence
-    let fixConfidence: 'high' | 'medium' | 'low' = 'medium';
-    if (!hasExtension && !modulePath.includes('node_modules')) {
-      fixConfidence = 'high'; // High confidence for relative imports missing .js
-    }
+    const isRelativeImport = !hasExtension && !modulePath.includes('node_modules');
 
     return {
       modulePath,
       importingFile,
       importStatement: '', // Would need to parse file to get exact statement
       hasExtension,
-      suggestedPath,
-      fixConfidence
+      suggestedPath: hasExtension ? modulePath : `${modulePath}.js`,
+      fixConfidence: isRelativeImport ? 'high' : 'medium'
     };
   }
 

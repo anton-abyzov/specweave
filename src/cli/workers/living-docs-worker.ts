@@ -15,10 +15,6 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Dynamically loaded modules
 let checkDependencies: any;
@@ -196,12 +192,21 @@ ${exportsSummary}`;
 }
 
 /**
- * Generate a correction prompt for retry after failed JSON extraction
+ * Generate a correction prompt for retry after failed JSON extraction.
  */
 function generateCorrectionPrompt(originalPrompt: string, failedResponse: string): string {
-  const preview = failedResponse.slice(0, 200);
+  const MAX_PREVIEW_LENGTH = 200;
+  const preview = failedResponse.slice(0, MAX_PREVIEW_LENGTH);
+  const ellipsis = failedResponse.length > MAX_PREVIEW_LENGTH ? '...' : '';
+
+  // Extract module context from original prompt if available
+  const moduleIndex = originalPrompt.indexOf('Module:');
+  const moduleContext = moduleIndex >= 0
+    ? originalPrompt.slice(moduleIndex, moduleIndex + 300)
+    : '';
+
   return `Your previous response was not valid JSON. I received:
-"${preview}${failedResponse.length > 200 ? '...' : ''}"
+"${preview}${ellipsis}"
 
 CRITICAL: Respond with ONLY a JSON object. No explanations, no "Based on...", no markdown.
 
@@ -215,7 +220,7 @@ Required format (copy this structure exactly):
   "architecturalNotes": "..."
 }
 
-${originalPrompt.includes('Module:') ? originalPrompt.slice(originalPrompt.indexOf('Module:'), originalPrompt.indexOf('Module:') + 300) : ''}`;
+${moduleContext}`;
 }
 
 /**
@@ -258,19 +263,24 @@ async function main(): Promise<void> {
   }
 
   // Cleanup on exit
-  const cleanup = () => {
+  function cleanup(): void {
     try {
       if (fs.existsSync(pidFile)) {
         fs.unlinkSync(pidFile);
       }
     } catch {
-      // Ignore
+      // Ignore cleanup errors
     }
-  };
+  }
+
+  function cleanupAndExit(): void {
+    cleanup();
+    process.exit(0);
+  }
 
   process.on('exit', cleanup);
-  process.on('SIGTERM', () => { cleanup(); process.exit(0); });
-  process.on('SIGINT', () => { cleanup(); process.exit(0); });
+  process.on('SIGTERM', cleanupAndExit);
+  process.on('SIGINT', cleanupAndExit);
 
   // Setup logging
   // NOTE: Must match path in job-launcher.ts: .specweave/state/jobs/{jobId}/

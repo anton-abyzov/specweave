@@ -31,12 +31,11 @@ async function main(): Promise<void> {
 
   console.log(`\n🔗 Auto-creating external issue for ${incrementId}...`);
 
-  // CRITICAL FIX: Use findProjectRoot() to find the actual project root
-  // This prevents creating .specweave in the wrong location when the hook
-  // is executed from a different working directory (e.g., by CI/CD or parent scripts)
-  const projectRoot = findProjectRoot() || process.cwd();
+  // Find project root, warn if not found
+  const foundRoot = findProjectRoot();
+  const projectRoot = foundRoot || process.cwd();
 
-  if (!findProjectRoot()) {
+  if (!foundRoot) {
     console.warn('⚠️  Warning: Could not find .specweave directory. Using current working directory.');
     console.warn('   This may cause issues if not running from the project root.');
   }

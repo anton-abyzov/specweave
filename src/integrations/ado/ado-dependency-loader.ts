@@ -277,11 +277,10 @@ export class AdoDependencyLoader {
     // Initialize CancelationHandler
     let succeeded = 0;
     let failed = 0;
-    let loadedProjects: string[] = [];
 
     const cancelHandler = new CancelationHandler({
       onSaveState: async () => {
-        this.logger.log(`\nPartial preload saved: ${loadedProjects.length}/${total} projects cached`);
+        this.logger.log(`\nPartial preload saved: ${succeeded}/${total} projects cached`);
         this.logger.log(`Success: ${succeeded}, Failed: ${failed}`);
       },
       logger: this.logger
@@ -303,7 +302,6 @@ export class AdoDependencyLoader {
 
       try {
         await this.loadProjectDependencies(projectName);
-        loadedProjects.push(projectName);
         succeeded++;
 
         // Update progress

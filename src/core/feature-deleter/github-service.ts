@@ -61,17 +61,9 @@ export class FeatureDeletionGitHubService {
    * T-025, T-028, T-029: Close GitHub issues with retry logic
    */
   async deleteIssues(issues: GitHubIssue[]): Promise<{ closed: number; failed: number }> {
-    let closed = 0;
-    let failed = 0;
-
-    for (const issue of issues) {
-      const success = await this.closeIssueWithRetry(issue);
-      if (success) {
-        closed++;
-      } else {
-        failed++;
-      }
-    }
+    const results = await Promise.all(issues.map(issue => this.closeIssueWithRetry(issue)));
+    const closed = results.filter(Boolean).length;
+    const failed = results.length - closed;
 
     this.logger.log(`GitHub cleanup: ${closed} closed, ${failed} failed`);
     return { closed, failed };

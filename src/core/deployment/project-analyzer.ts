@@ -82,10 +82,72 @@ const EDGE_DB_CLIENTS = [
 ];
 
 /**
+ * Common source directories to scan
+ */
+const SOURCE_DIRS = ['src', 'app', 'pages', 'lib', 'utils', 'components'];
+
+/**
+ * Check if a file is a TypeScript/JavaScript source file
+ */
+function isSourceFile(filename: string): boolean {
+  return /\.(ts|tsx|js|jsx)$/.test(filename);
+}
+
+/**
+ * Safely read and parse package.json
+ */
+function readPackageJson(projectPath: string): Record<string, unknown> | null {
+  const packageJsonPath = path.join(projectPath, 'package.json');
+  if (!fs.existsSync(packageJsonPath)) return null;
+
+  try {
+    return JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get all dependencies from package.json
+ */
+function getAllDependencies(pkg: Record<string, unknown>): Record<string, string> {
+  const deps = (pkg.dependencies || {}) as Record<string, string>;
+  const devDeps = (pkg.devDependencies || {}) as Record<string, string>;
+  return { ...deps, ...devDeps };
+}
+
+/**
+ * Scan source files in a directory and apply a visitor function
+ */
+function scanSourceFiles(
+  dirPath: string,
+  visitor: (content: string, filePath: string) => void
+): void {
+  if (!fs.existsSync(dirPath)) return;
+
+  try {
+    const files = fs.readdirSync(dirPath, { recursive: true }) as string[];
+
+    for (const file of files) {
+      if (!isSourceFile(file)) continue;
+
+      const filePath = path.join(dirPath, file);
+      if (!fs.statSync(filePath).isFile()) continue;
+
+      const content = fs.readFileSync(filePath, 'utf-8');
+      visitor(content, filePath);
+    }
+  } catch {
+    // Ignore errors during scanning
+  }
+}
+
+/**
  * Detect framework from project structure
  */
 export function detectFramework(projectPath: string): FrameworkDetection {
-  const frameworks: Framework[] = [
+  // Check config-based frameworks first
+  const configBasedFrameworks: Framework[] = [
     'nextjs',
     'remix',
     'astro',
@@ -95,34 +157,34 @@ export function detectFramework(projectPath: string): FrameworkDetection {
     'vite',
   ];
 
-  for (const framework of frameworks) {
+  for (const framework of configBasedFrameworks) {
     const configs = FRAMEWORK_CONFIGS[framework];
     for (const config of configs) {
-      const configPath = path.join(projectPath, config);
-      if (fs.existsSync(configPath)) {
-        const version = getFrameworkVersion(projectPath, framework);
-        return { framework, version, configFile: config };
+      if (fs.existsSync(path.join(projectPath, config))) {
+        return {
+          framework,
+          version: getFrameworkVersion(projectPath, framework),
+          configFile: config,
+        };
       }
     }
   }
 
   // Check for CRA via package.json
-  const packageJsonPath = path.join(projectPath, 'package.json');
-  if (fs.existsSync(packageJsonPath)) {
-    try {
-      const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-      if (pkg.dependencies?.['react-scripts'] || pkg.devDependencies?.['react-scripts']) {
-        return { framework: 'cra', version: pkg.dependencies?.['react-scripts'] };
-      }
-    } catch {
-      // Ignore JSON parse errors
+  const pkg = readPackageJson(projectPath);
+  if (pkg) {
+    const allDeps = getAllDependencies(pkg);
+    if (allDeps['react-scripts']) {
+      return { framework: 'cra', version: allDeps['react-scripts'] };
     }
   }
 
-  // Check for static site (just index.html)
-  const indexHtmlPath = path.join(projectPath, 'index.html');
-  const publicIndexPath = path.join(projectPath, 'public', 'index.html');
-  if (fs.existsSync(indexHtmlPath) || fs.existsSync(publicIndexPath)) {
+  // Check for static site (index.html in root or public)
+  const hasIndexHtml =
+    fs.existsSync(path.join(projectPath, 'index.html')) ||
+    fs.existsSync(path.join(projectPath, 'public', 'index.html'));
+
+  if (hasIndexHtml) {
     return { framework: 'static' };
   }
 
@@ -130,34 +192,35 @@ export function detectFramework(projectPath: string): FrameworkDetection {
 }
 
 /**
+ * Framework to package name mapping
+ */
+const FRAMEWORK_PACKAGES: Record<Framework, string[]> = {
+  nextjs: ['next'],
+  remix: ['@remix-run/react', 'remix'],
+  astro: ['astro'],
+  nuxt: ['nuxt'],
+  sveltekit: ['@sveltejs/kit'],
+  vite: ['vite'],
+  cra: ['react-scripts'],
+  gatsby: ['gatsby'],
+  static: [],
+  unknown: [],
+};
+
+/**
  * Get framework version from package.json
  */
 function getFrameworkVersion(projectPath: string, framework: Framework): string | undefined {
-  const packageJsonPath = path.join(projectPath, 'package.json');
-  if (!fs.existsSync(packageJsonPath)) return undefined;
+  const pkg = readPackageJson(projectPath);
+  if (!pkg) return undefined;
 
-  try {
-    const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-    const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+  const deps = getAllDependencies(pkg);
+  const packages = FRAMEWORK_PACKAGES[framework];
 
-    const frameworkPackages: Record<Framework, string[]> = {
-      nextjs: ['next'],
-      remix: ['@remix-run/react', 'remix'],
-      astro: ['astro'],
-      nuxt: ['nuxt'],
-      sveltekit: ['@sveltejs/kit'],
-      vite: ['vite'],
-      cra: ['react-scripts'],
-      gatsby: ['gatsby'],
-      static: [],
-      unknown: [],
-    };
-
-    for (const pkg of frameworkPackages[framework]) {
-      if (deps[pkg]) return deps[pkg];
+  for (const packageName of packages) {
+    if (deps[packageName]) {
+      return deps[packageName];
     }
-  } catch {
-    // Ignore errors
   }
 
   return undefined;
@@ -176,12 +239,9 @@ export function analyzeNodeDependencies(projectPath: string): NodeDependencyAnal
     dbClients: [],
   };
 
-  const packageJsonPath = path.join(projectPath, 'package.json');
-  if (!fs.existsSync(packageJsonPath)) return result;
-
-  try {
-    const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-    const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
+  const pkg = readPackageJson(projectPath);
+  if (pkg) {
+    const allDeps = getAllDependencies(pkg);
 
     // Check for native modules
     for (const pattern of NATIVE_MODULE_PATTERNS) {
@@ -199,28 +259,46 @@ export function analyzeNodeDependencies(projectPath: string): NodeDependencyAnal
       }
     }
 
-    // Check for edge-compatible DB clients (these don't require Node.js)
+    // Check for edge-compatible DB clients
     for (const client of EDGE_DB_CLIENTS) {
       if (allDeps[client]) {
         result.dbClients.push(`${client} (edge-compatible)`);
       }
     }
-  } catch {
-    // Ignore errors
   }
 
   // Scan source files for fs/crypto usage
-  const srcDirs = ['src', 'app', 'pages', 'lib', 'utils'];
-  for (const dir of srcDirs) {
+  for (const dir of SOURCE_DIRS) {
     const dirPath = path.join(projectPath, dir);
-    if (fs.existsSync(dirPath)) {
-      const usages = scanForNodeUsage(dirPath);
-      result.hasFileSystemUsage = result.hasFileSystemUsage || usages.fs;
-      result.hasCryptoUsage = result.hasCryptoUsage || usages.crypto;
-    }
+    const usages = scanForNodeUsage(dirPath);
+    result.hasFileSystemUsage = result.hasFileSystemUsage || usages.fs;
+    result.hasCryptoUsage = result.hasCryptoUsage || usages.crypto;
   }
 
   return result;
+}
+
+/**
+ * Check if content imports the fs module
+ */
+function hasFsImport(content: string): boolean {
+  return (
+    /require\s*\(\s*['"]fs['"]\s*\)/.test(content) ||
+    /from\s+['"]fs['"]/.test(content) ||
+    /from\s+['"]node:fs['"]/.test(content) ||
+    /import\s+.*\s+from\s+['"]fs/.test(content)
+  );
+}
+
+/**
+ * Check if content imports the crypto module
+ */
+function hasCryptoImport(content: string): boolean {
+  return (
+    /require\s*\(\s*['"]crypto['"]\s*\)/.test(content) ||
+    /from\s+['"]crypto['"]/.test(content) ||
+    /from\s+['"]node:crypto['"]/.test(content)
+  );
 }
 
 /**
@@ -229,41 +307,26 @@ export function analyzeNodeDependencies(projectPath: string): NodeDependencyAnal
 function scanForNodeUsage(dirPath: string): { fs: boolean; crypto: boolean } {
   const result = { fs: false, crypto: false };
 
-  try {
-    const files = fs.readdirSync(dirPath, { recursive: true }) as string[];
-
-    for (const file of files) {
-      if (!/\.(ts|tsx|js|jsx)$/.test(file)) continue;
-
-      const filePath = path.join(dirPath, file);
-      if (!fs.statSync(filePath).isFile()) continue;
-
-      const content = fs.readFileSync(filePath, 'utf-8');
-
-      // Check for fs usage
-      if (
-        /require\s*\(\s*['"]fs['"]\s*\)/.test(content) ||
-        /from\s+['"]fs['"]/.test(content) ||
-        /from\s+['"]node:fs['"]/.test(content) ||
-        /import\s+.*\s+from\s+['"]fs/.test(content)
-      ) {
-        result.fs = true;
-      }
-
-      // Check for crypto usage
-      if (
-        /require\s*\(\s*['"]crypto['"]\s*\)/.test(content) ||
-        /from\s+['"]crypto['"]/.test(content) ||
-        /from\s+['"]node:crypto['"]/.test(content)
-      ) {
-        result.crypto = true;
-      }
-    }
-  } catch {
-    // Ignore errors
-  }
+  scanSourceFiles(dirPath, (content) => {
+    if (hasFsImport(content)) result.fs = true;
+    if (hasCryptoImport(content)) result.crypto = true;
+  });
 
   return result;
+}
+
+/**
+ * Check for API routes in common locations
+ */
+function hasApiRoutes(projectPath: string): boolean {
+  const apiDirs = [
+    path.join(projectPath, 'pages', 'api'),
+    path.join(projectPath, 'app', 'api'),
+    path.join(projectPath, 'src', 'pages', 'api'),
+    path.join(projectPath, 'src', 'app', 'api'),
+  ];
+
+  return apiDirs.some((dir) => fs.existsSync(dir));
 }
 
 /**
@@ -276,157 +339,112 @@ export function analyzeSSR(projectPath: string): SSRAnalysis {
     hasGetServerSideProps: false,
     hasGenerateMetadata: false,
     hasDynamicRoutes: false,
-    hasApiRoutes: false,
+    hasApiRoutes: hasApiRoutes(projectPath),
   };
 
-  const srcDirs = ['src', 'app', 'pages', 'lib'];
+  const ssrDirs = ['src', 'app', 'pages', 'lib'];
 
-  for (const dir of srcDirs) {
+  for (const dir of ssrDirs) {
     const dirPath = path.join(projectPath, dir);
-    if (!fs.existsSync(dirPath)) continue;
 
-    try {
-      const files = fs.readdirSync(dirPath, { recursive: true }) as string[];
+    scanSourceFiles(dirPath, (content, filePath) => {
+      const hasUseServer = /['"]use server['"]/.test(content);
 
-      for (const file of files) {
-        if (!/\.(ts|tsx|js|jsx)$/.test(file)) continue;
-
-        const filePath = path.join(dirPath, file);
-        if (!fs.statSync(filePath).isFile()) continue;
-
-        const content = fs.readFileSync(filePath, 'utf-8');
-
-        // Check for Server Components (Next.js 13+)
-        if (/['"]use server['"]/.test(content)) {
-          result.hasServerComponents = true;
-        }
-
-        // Check for Server Actions
-        if (/['"]use server['"]/.test(content) && /async\s+function/.test(content)) {
+      if (hasUseServer) {
+        result.hasServerComponents = true;
+        if (/async\s+function/.test(content)) {
           result.hasServerActions = true;
         }
-
-        // Check for getServerSideProps (Next.js pages)
-        if (/export\s+(async\s+)?function\s+getServerSideProps/.test(content)) {
-          result.hasGetServerSideProps = true;
-        }
-
-        // Check for generateMetadata (Next.js 13+)
-        if (/export\s+(async\s+)?function\s+generateMetadata/.test(content)) {
-          result.hasGenerateMetadata = true;
-        }
-
-        // Check for dynamic routes
-        if (/\[.*\]/.test(file)) {
-          result.hasDynamicRoutes = true;
-        }
       }
-    } catch {
-      // Ignore errors
-    }
-  }
 
-  // Check for API routes
-  const apiDirs = [
-    path.join(projectPath, 'pages', 'api'),
-    path.join(projectPath, 'app', 'api'),
-    path.join(projectPath, 'src', 'pages', 'api'),
-    path.join(projectPath, 'src', 'app', 'api'),
-  ];
+      if (/export\s+(async\s+)?function\s+getServerSideProps/.test(content)) {
+        result.hasGetServerSideProps = true;
+      }
 
-  for (const apiDir of apiDirs) {
-    if (fs.existsSync(apiDir)) {
-      result.hasApiRoutes = true;
-      break;
-    }
+      if (/export\s+(async\s+)?function\s+generateMetadata/.test(content)) {
+        result.hasGenerateMetadata = true;
+      }
+
+      if (/\[.*\]/.test(path.basename(filePath))) {
+        result.hasDynamicRoutes = true;
+      }
+    });
   }
 
   return result;
 }
 
 /**
+ * Check if sitemap exists in public or app directories
+ */
+function hasSitemap(projectPath: string): boolean {
+  const publicSitemap = path.join(projectPath, 'public', 'sitemap.xml');
+  if (fs.existsSync(publicSitemap)) return true;
+
+  const appDirs = [
+    path.join(projectPath, 'app'),
+    path.join(projectPath, 'src', 'app'),
+  ];
+
+  const sitemapFiles = ['sitemap.ts', 'sitemap.js', 'sitemap.xml'];
+
+  for (const appDir of appDirs) {
+    for (const sitemapFile of sitemapFiles) {
+      if (fs.existsSync(path.join(appDir, sitemapFile))) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Check if content uses database for metadata generation
+ */
+function hasDbMetadata(content: string): boolean {
+  return (
+    /generateMetadata/.test(content) &&
+    /prisma|db\.|fetch\s*\(|supabase|mongoose/.test(content)
+  );
+}
+
+/**
  * Analyze SEO requirements
  */
 export function analyzeSEO(projectPath: string): SEOAnalysis {
+  const publicDir = path.join(projectPath, 'public');
+
   const result: SEOAnalysis = {
     hasDynamicMeta: false,
     hasStaticMeta: false,
-    hasSitemap: false,
-    hasRobotsTxt: false,
+    hasSitemap: hasSitemap(projectPath),
+    hasRobotsTxt: fs.existsSync(path.join(publicDir, 'robots.txt')),
     hasStructuredData: false,
     metaSourcesFromDB: false,
   };
 
-  // Check for sitemap and robots.txt
-  const publicDir = path.join(projectPath, 'public');
-  if (fs.existsSync(publicDir)) {
-    if (fs.existsSync(path.join(publicDir, 'sitemap.xml'))) {
-      result.hasSitemap = true;
-    }
-    if (fs.existsSync(path.join(publicDir, 'robots.txt'))) {
-      result.hasRobotsTxt = true;
-    }
-  }
+  const seoDirs = ['src', 'app', 'pages', 'components'];
 
-  // Check for sitemap generation in app
-  const appDir = path.join(projectPath, 'app');
-  const srcAppDir = path.join(projectPath, 'src', 'app');
-  const sitemapFiles = ['sitemap.ts', 'sitemap.js', 'sitemap.xml'];
-
-  for (const sitemapFile of sitemapFiles) {
-    if (
-      fs.existsSync(path.join(appDir, sitemapFile)) ||
-      fs.existsSync(path.join(srcAppDir, sitemapFile))
-    ) {
-      result.hasSitemap = true;
-      break;
-    }
-  }
-
-  // Scan for meta patterns
-  const srcDirs = ['src', 'app', 'pages', 'components'];
-
-  for (const dir of srcDirs) {
+  for (const dir of seoDirs) {
     const dirPath = path.join(projectPath, dir);
-    if (!fs.existsSync(dirPath)) continue;
 
-    try {
-      const files = fs.readdirSync(dirPath, { recursive: true }) as string[];
-
-      for (const file of files) {
-        if (!/\.(ts|tsx|js|jsx)$/.test(file)) continue;
-
-        const filePath = path.join(dirPath, file);
-        if (!fs.statSync(filePath).isFile()) continue;
-
-        const content = fs.readFileSync(filePath, 'utf-8');
-
-        // Check for generateMetadata with DB calls
-        if (/generateMetadata/.test(content)) {
-          result.hasDynamicMeta = true;
-
-          // Check if metadata comes from database
-          if (
-            /prisma|db\.|fetch\s*\(|supabase|mongoose/.test(content) &&
-            /generateMetadata/.test(content)
-          ) {
-            result.metaSourcesFromDB = true;
-          }
-        }
-
-        // Check for static Head/meta
-        if (/<Head>|<meta/.test(content)) {
-          result.hasStaticMeta = true;
-        }
-
-        // Check for structured data (JSON-LD)
-        if (/application\/ld\+json|@type.*Product|@type.*Article/.test(content)) {
-          result.hasStructuredData = true;
+    scanSourceFiles(dirPath, (content) => {
+      if (/generateMetadata/.test(content)) {
+        result.hasDynamicMeta = true;
+        if (hasDbMetadata(content)) {
+          result.metaSourcesFromDB = true;
         }
       }
-    } catch {
-      // Ignore errors
-    }
+
+      if (/<Head>|<meta/.test(content)) {
+        result.hasStaticMeta = true;
+      }
+
+      if (/application\/ld\+json|@type.*Product|@type.*Article/.test(content)) {
+        result.hasStructuredData = true;
+      }
+    });
   }
 
   return result;

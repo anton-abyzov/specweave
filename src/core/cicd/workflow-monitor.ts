@@ -8,12 +8,7 @@
 
 import { Octokit } from '@octokit/rest';
 import { StateManager } from './state-manager.js';
-import {
-  WorkflowRun,
-  FailureRecord,
-  WorkflowStatus,
-  WorkflowConclusion
-} from './types.js';
+import { FailureRecord, WorkflowStatus } from './types.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 
 /**
@@ -119,21 +114,16 @@ export class WorkflowMonitor {
       return;
     }
 
-    this.log('Starting monitor...');
     this.isPolling = true;
+    this.log('Starting monitor...');
 
-    // Initial poll
-    this.poll().catch((error) => {
-      console.error('Initial poll failed:', error);
-    });
+    // Initial poll + schedule recurring polls
+    const runPoll = (): void => {
+      this.poll().catch((error) => console.error('Poll failed:', error));
+    };
 
-    // Schedule recurring polls
-    this.pollingTimer = setInterval(() => {
-      this.poll().catch((error) => {
-        console.error('Poll failed:', error);
-      });
-    }, this.config.pollInterval);
-
+    runPoll();
+    this.pollingTimer = setInterval(runPoll, this.config.pollInterval);
     this.log(`Monitor started (polling every ${this.config.pollInterval}ms)`);
   }
 
@@ -145,8 +135,6 @@ export class WorkflowMonitor {
       this.log('Monitor not running');
       return;
     }
-
-    this.log('Stopping monitor...');
 
     if (this.pollingTimer) {
       clearInterval(this.pollingTimer);
@@ -221,24 +209,19 @@ export class WorkflowMonitor {
 
       this.log(`Found ${failedRuns.length} failed runs (of ${response.data.workflow_runs.length} total)`);
 
-      // Process failures
+      // Load state once to check for duplicates
+      const state = await this.stateManager.loadState();
       let newFailures = 0;
       let duplicates = 0;
 
       for (const run of failedRuns) {
-        const failure = this.extractFailureRecord(run);
-
-        // Check if already tracked
-        const state = await this.stateManager.loadState();
         if (state.failures[run.id]) {
           duplicates++;
           continue;
         }
 
-        // Add new failure
-        await this.stateManager.addFailure(failure);
+        await this.stateManager.addFailure(this.extractFailureRecord(run));
         newFailures++;
-
         this.log(`New failure detected: ${run.name} (run #${run.run_number})`);
       }
 

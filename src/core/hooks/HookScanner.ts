@@ -149,61 +149,54 @@ export class HookScanner {
     };
   }
 
+  private static readonly V2_CATEGORY_TRIGGERS: Record<string, HookTrigger> = {
+    handlers: 'post-tool-use',
+    detectors: 'post-tool-use',
+    guards: 'pre-tool-use'
+  };
+
   /**
    * Extract trigger type for v2 hooks based on category
    */
   private extractV2Trigger(hookName: string, category: string): HookTrigger | null {
-    // Map v2 categories to triggers
     if (category === 'dispatchers') {
-      if (hookName.includes('session-start')) return 'session-start' as HookTrigger;
-      if (hookName.includes('post-tool-use')) return 'post-tool-use' as HookTrigger;
+      if (hookName.includes('session-start')) return 'session-start';
+      if (hookName.includes('post-tool-use')) return 'post-tool-use';
+      return null;
     }
-    if (category === 'handlers') {
-      return 'post-tool-use' as HookTrigger; // Handlers are post-tool-use
-    }
-    if (category === 'detectors') {
-      return 'post-tool-use' as HookTrigger; // Detectors run on file changes
-    }
-    if (category === 'guards') {
-      return 'pre-tool-use' as HookTrigger; // Guards are pre-tool-use
-    }
-    return null;
+    return HookScanner.V2_CATEGORY_TRIGGERS[category] ?? null;
   }
+
+  private static readonly CRITICAL_V2_HOOKS = ['status-line-handler', 'living-specs-handler', 'lifecycle-detector'];
 
   /**
    * Check if v2 hook is critical
    */
   private isV2CriticalHook(hookName: string, category: string): boolean {
-    // Dispatchers and key handlers are critical
-    if (category === 'dispatchers') return true;
-    if (hookName === 'status-line-handler') return true;
-    if (hookName === 'living-specs-handler') return true;
-    if (hookName === 'lifecycle-detector') return true;
-    return false;
+    return category === 'dispatchers' || HookScanner.CRITICAL_V2_HOOKS.includes(hookName);
   }
+
+  private static readonly TESTABLE_V2_CATEGORIES = ['guards', 'handlers', 'detectors'];
 
   /**
    * Check if v2 hook is testable
    */
-  private isV2TestableHook(hookName: string, category: string): boolean {
-    // Guards and handlers with .test.sh files are testable
-    // Detectors are testable
-    return category === 'guards' || category === 'handlers' || category === 'detectors';
+  private isV2TestableHook(_hookName: string, category: string): boolean {
+    return HookScanner.TESTABLE_V2_CATEGORIES.includes(category);
   }
+
+  private static readonly V2_CATEGORY_DURATIONS: Record<string, number> = {
+    detectors: 10,
+    guards: 20,
+    dispatchers: 50,
+    handlers: 100
+  };
 
   /**
    * Get expected duration for v2 hooks
    */
-  private getV2ExpectedDuration(hookName: string, category: string): number {
-    // Detectors should be fast (<10ms)
-    if (category === 'detectors') return 10;
-    // Guards should be fast (<20ms)
-    if (category === 'guards') return 20;
-    // Handlers can take longer (async)
-    if (category === 'handlers') return 100;
-    // Dispatchers coordinate - medium
-    if (category === 'dispatchers') return 50;
-    return 100;
+  private getV2ExpectedDuration(_hookName: string, category: string): number {
+    return HookScanner.V2_CATEGORY_DURATIONS[category] ?? 100;
   }
 
   /**
@@ -261,18 +254,18 @@ export class HookScanner {
     return triggerMap[hookName] || null;
   }
 
+  private static readonly EXTENSION_TO_TYPE: Record<string, HookType> = {
+    '.sh': 'shell',
+    '.ts': 'typescript',
+    '.js': 'javascript'
+  };
+
   /**
    * Get file type from extension
    */
   private getFileType(filename: string): HookType {
-    if (filename.endsWith('.sh')) {
-      return 'shell';
-    } else if (filename.endsWith('.ts')) {
-      return 'typescript';
-    } else if (filename.endsWith('.js')) {
-      return 'javascript';
-    }
-    return 'shell'; // Default
+    const ext = Object.keys(HookScanner.EXTENSION_TO_TYPE).find(e => filename.endsWith(e));
+    return ext ? HookScanner.EXTENSION_TO_TYPE[ext] : 'shell';
   }
 
   /**
@@ -300,52 +293,43 @@ export class HookScanner {
     return dependencies;
   }
 
+  private static readonly CRITICAL_HOOKS = ['post-task-completion', 'user-prompt-submit'];
+
   /**
    * Determine if hook is critical (failure blocks workflow)
    */
   private isCriticalHook(hookName: string): boolean {
-    const criticalHooks = [
-      'post-task-completion', // AC sync, living docs sync
-      'user-prompt-submit'     // Input validation
-    ];
-    return criticalHooks.includes(hookName);
+    return HookScanner.CRITICAL_HOOKS.includes(hookName);
   }
+
+  private static readonly TESTABLE_SHELL_HOOKS = ['post-task-completion', 'post-increment-change'];
 
   /**
    * Determine if hook is testable in isolation
    */
   private isTestableHook(hookName: string, fileType: HookType): boolean {
-    // Shell hooks that call Node.js scripts are testable
-    // TypeScript/JavaScript hooks are directly testable
     if (fileType === 'typescript' || fileType === 'javascript') {
       return true;
     }
-
-    // Some bash hooks are wrappers that call Node.js - testable
-    const testableShellHooks = [
-      'post-task-completion',
-      'post-increment-change'
-    ];
-
-    return testableShellHooks.includes(hookName);
+    return HookScanner.TESTABLE_SHELL_HOOKS.includes(hookName);
   }
+
+  private static readonly HOOK_DURATIONS: Record<string, number> = {
+    'update-ac-status': 100,
+    'auto-transition': 50,
+    'sync-living-docs': 200,
+    'translate-living-docs': 150,
+    'update-tasks-md': 80,
+    'update-status-line': 50,
+    'prepare-reflection-context': 60,
+    'invoke-translator-skill': 40
+  };
 
   /**
    * Get expected execution duration for hook (ms)
    */
   private getExpectedDuration(hookName: string): number {
-    const durationMap: Record<string, number> = {
-      'update-ac-status': 100,           // 100ms
-      'auto-transition': 50,              // 50ms
-      'sync-living-docs': 200,            // 200ms
-      'translate-living-docs': 150,       // 150ms
-      'update-tasks-md': 80,              // 80ms
-      'update-status-line': 50,           // 50ms
-      'prepare-reflection-context': 60,   // 60ms
-      'invoke-translator-skill': 40       // 40ms
-    };
-
-    return durationMap[hookName] || 100; // Default 100ms
+    return HookScanner.HOOK_DURATIONS[hookName] ?? 100;
   }
 
   /**

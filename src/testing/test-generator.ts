@@ -434,32 +434,35 @@ export class TestGenerator {
   }
 
   /**
+   * Capitalize words in skill name
+   */
+  private capitalizeWords(skillName: string): string[] {
+    return skillName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1));
+  }
+
+  /**
    * Format skill name for display
    */
   private formatSkillName(skillName: string): string {
-    return skillName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    return this.capitalizeWords(skillName).join(' ');
   }
 
   /**
    * Format class name
    */
   private formatClassName(skillName: string): string {
-    return skillName.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+    return this.capitalizeWords(skillName).join('');
   }
 
   /**
    * Convert to camelCase - sanitizes all special characters
    */
   private camelCase(str: string): string {
-    return str
-      .replace(/[^a-zA-Z0-9\s]+/g, ' ')  // Replace all special chars with spaces
-      .trim()                             // Remove leading/trailing spaces
-      .split(/\s+/)                       // Split on whitespace
-      .map((word, index) => {
-        if (index === 0) {
-          return word.charAt(0).toLowerCase() + word.slice(1).toLowerCase();
-        }
-        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    const words = str.replace(/[^a-zA-Z0-9\s]+/g, ' ').trim().split(/\s+/);
+    return words
+      .map((word, i) => {
+        const lower = word.toLowerCase();
+        return i === 0 ? lower : lower.charAt(0).toUpperCase() + lower.slice(1);
       })
       .join('');
   }

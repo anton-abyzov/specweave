@@ -448,6 +448,13 @@ function getSelectionStrings(language: SupportedLanguage): SelectionStrings {
 // Pattern Utilities
 // ============================================================================
 
+/** Shortcut patterns and their glob transformations */
+const PATTERN_SHORTCUTS: Array<{ pattern: RegExp; transform: (match: string) => string }> = [
+  { pattern: /^starts?:\s*(.+)$/i, transform: (m) => `${m}*` },
+  { pattern: /^ends?:\s*(.+)$/i, transform: (m) => `*${m}` },
+  { pattern: /^contains?:\s*(.+)$/i, transform: (m) => `*${m}*` },
+];
+
 /**
  * Parse pattern shortcuts into glob/regex patterns
  *
@@ -463,23 +470,13 @@ function getSelectionStrings(language: SupportedLanguage): SelectionStrings {
 export function parsePatternShortcut(input: string): string {
   const trimmed = input.trim();
 
-  // Check for shortcuts (case-insensitive)
-  const startsMatch = trimmed.match(/^starts?:\s*(.+)$/i);
-  if (startsMatch) {
-    return `${startsMatch[1].trim()}*`;
+  for (const { pattern, transform } of PATTERN_SHORTCUTS) {
+    const match = trimmed.match(pattern);
+    if (match) {
+      return transform(match[1].trim());
+    }
   }
 
-  const endsMatch = trimmed.match(/^ends?:\s*(.+)$/i);
-  if (endsMatch) {
-    return `*${endsMatch[1].trim()}`;
-  }
-
-  const containsMatch = trimmed.match(/^contains?:\s*(.+)$/i);
-  if (containsMatch) {
-    return `*${containsMatch[1].trim()}*`;
-  }
-
-  // No shortcut, return as-is
   return trimmed;
 }
 

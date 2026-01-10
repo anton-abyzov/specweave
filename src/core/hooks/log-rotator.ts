@@ -46,53 +46,39 @@ export class LogRotator {
     return path.join(this.logDir, `${hookName}-${today}.log`);
   }
 
+  private static readonly DATE_PATTERN = /(\d{4}-\d{2}-\d{2})\.log$/;
+  private static readonly MS_PER_DAY = 24 * 60 * 60 * 1000;
+
   /**
    * Clean up log files older than retention period
-   *
    * Only removes files matching pattern: *-YYYY-MM-DD.log
-   * Skips non-log files and logs without date suffix.
-   *
-   * @param retentionDays - Number of days to keep logs
    */
   async cleanOldLogs(retentionDays: number): Promise<void> {
     if (!fs.existsSync(this.logDir)) {
       return;
     }
 
-    const now = Date.now();
-    const retentionMs = retentionDays * 24 * 60 * 60 * 1000;
-    const cutoffDate = now - retentionMs;
+    const cutoffDate = Date.now() - retentionDays * LogRotator.MS_PER_DAY;
 
-    const files = fs.readdirSync(this.logDir);
-
-    for (const file of files) {
-      // Only process .log files
+    for (const file of fs.readdirSync(this.logDir)) {
       if (!file.endsWith('.log')) {
         continue;
       }
 
-      // Extract date from filename (format: hookname-YYYY-MM-DD.log)
-      const dateMatch = file.match(/(\d{4}-\d{2}-\d{2})\.log$/);
+      const dateMatch = file.match(LogRotator.DATE_PATTERN);
       if (!dateMatch) {
-        // Skip files without date suffix
         continue;
       }
 
-      const dateStr = dateMatch[1];
-      const fileDate = new Date(dateStr).getTime();
-
-      // Delete if older than retention period
+      const fileDate = new Date(dateMatch[1]).getTime();
       if (fileDate < cutoffDate) {
-        const filePath = path.join(this.logDir, file);
-        fs.unlinkSync(filePath);
+        fs.unlinkSync(path.join(this.logDir, file));
       }
     }
   }
 
   /**
    * Get all dated log files for a specific hook
-   *
-   * @param hookName - Name of the hook
    * @returns Array of log file paths, sorted by date (newest first)
    */
   async getLogFiles(hookName: string): Promise<string[]> {
@@ -100,17 +86,12 @@ export class LogRotator {
       return [];
     }
 
-    const files = fs.readdirSync(this.logDir);
     const pattern = new RegExp(`^${hookName}-(\\d{4}-\\d{2}-\\d{2})\\.log$`);
 
-    const matchingFiles = files
+    return fs.readdirSync(this.logDir)
       .filter(file => pattern.test(file))
-      .map(file => ({
-        path: path.join(this.logDir, file),
-        date: file.match(pattern)![1]
-      }))
-      .sort((a, b) => b.date.localeCompare(a.date)); // Newest first
-
-    return matchingFiles.map(f => f.path);
+      .map(file => ({ path: path.join(this.logDir, file), date: file.match(pattern)![1] }))
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .map(f => f.path);
   }
 }

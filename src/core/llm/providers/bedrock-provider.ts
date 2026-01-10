@@ -159,24 +159,19 @@ Return ONLY the JSON object.`;
   }
 
   estimateCost(inputTokens: number, outputTokens: number, model?: string): number {
-    // Bedrock Claude pricing (slightly higher than direct)
     const modelId = model || this.defaultModel;
 
-    if (modelId.includes('claude-opus-4')) {
-      return (inputTokens / 1_000_000) * 15 + (outputTokens / 1_000_000) * 75;
-    }
-    if (modelId.includes('claude-sonnet-4') || modelId.includes('claude-3-5-sonnet')) {
-      return (inputTokens / 1_000_000) * 3 + (outputTokens / 1_000_000) * 15;
-    }
-    if (modelId.includes('claude-3-haiku') || modelId.includes('claude-haiku')) {
-      return (inputTokens / 1_000_000) * 0.25 + (outputTokens / 1_000_000) * 1.25;
-    }
-    if (modelId.includes('titan')) {
-      return (inputTokens / 1_000_000) * 0.8 + (outputTokens / 1_000_000) * 1.6;
-    }
+    // Model pricing per 1M tokens (input, output)
+    const pricing = this.getPricing(modelId);
+    return (inputTokens / 1_000_000) * pricing.input + (outputTokens / 1_000_000) * pricing.output;
+  }
 
-    // Default to opus pricing
-    return (inputTokens / 1_000_000) * 15 + (outputTokens / 1_000_000) * 75;
+  private getPricing(modelId: string): { input: number; output: number } {
+    if (modelId.includes('claude-opus-4')) return { input: 15, output: 75 };
+    if (modelId.includes('claude-sonnet-4') || modelId.includes('claude-3-5-sonnet')) return { input: 3, output: 15 };
+    if (modelId.includes('claude-3-haiku') || modelId.includes('claude-haiku')) return { input: 0.25, output: 1.25 };
+    if (modelId.includes('titan')) return { input: 0.8, output: 1.6 };
+    return { input: 15, output: 75 }; // Default to opus
   }
 
   async isAvailable(): Promise<boolean> {

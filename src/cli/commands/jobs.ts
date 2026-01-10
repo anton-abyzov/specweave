@@ -541,43 +541,32 @@ function findJobByPrefix(jobs: BackgroundJob[], prefix: string): BackgroundJob |
 }
 
 function formatStatus(status: string): string {
-  switch (status) {
-    case 'running':
-      return chalk.green('running');
-    case 'paused':
-      return chalk.yellow('paused');
-    case 'completed':
-      return chalk.gray('completed');
-    case 'completed_with_warnings':
-      return chalk.yellow('completed with warnings');
-    case 'failed':
-      return chalk.red('failed');
-    default:
-      return status;
-  }
+  const statusMap: Record<string, string> = {
+    running: chalk.green('running'),
+    paused: chalk.yellow('paused'),
+    completed: chalk.gray('completed'),
+    completed_with_warnings: chalk.yellow('completed with warnings'),
+    failed: chalk.red('failed'),
+  };
+  return statusMap[status] ?? status;
 }
 
 function createProgressBar(percentage: number, width = 20): string {
   const filled = Math.round((percentage / 100) * width);
-  const empty = width - filled;
-  return `[${'█'.repeat(filled)}${'░'.repeat(empty)}]`;
+  return `[${'█'.repeat(filled)}${'░'.repeat(width - filled)}]`;
 }
 
 function formatDuration(seconds: number): string {
   if (seconds <= 0) return 'calculating...';
   if (seconds < 60) return `${seconds}s`;
   const minutes = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  if (minutes < 60) return `${minutes}m ${secs}s`;
+  if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
   const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${hours}h ${mins}m`;
+  return `${hours}h ${minutes % 60}m`;
 }
 
 function getTimeAgo(dateStr: string | Date): string {
-  const date = new Date(dateStr);
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
   if (seconds < 60) return 'just now';
   if (seconds < 3600) return `${Math.floor(seconds / 60)} mins ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;

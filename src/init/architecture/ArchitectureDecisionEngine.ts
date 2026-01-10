@@ -137,22 +137,15 @@ export class ArchitectureDecisionEngine {
    * Generate architecture decisions based on approach
    */
   private generateDecisions(approach: string, input: ArchitectureInput): ArchitectureDecision[] {
-    switch (approach) {
-      case 'serverless':
-        return this.getServerlessDecisions(input);
+    const decisionGenerators: Record<string, (input: ArchitectureInput) => ArchitectureDecision[]> = {
+      serverless: (i) => this.getServerlessDecisions(i),
+      traditional: (i) => this.getTraditionalDecisions(i),
+      hybrid: (i) => this.getHybridDecisions(i),
+      learning: (i) => this.getLearningDecisions(i)
+    };
 
-      case 'traditional':
-        return this.getTraditionalDecisions(input);
-
-      case 'hybrid':
-        return this.getHybridDecisions(input);
-
-      case 'learning':
-        return this.getLearningDecisions(input);
-
-      default:
-        return this.getTraditionalDecisions(input);
-    }
+    const generator = decisionGenerators[approach] || decisionGenerators.traditional;
+    return generator(input);
   }
 
   /**
@@ -354,24 +347,15 @@ export class ArchitectureDecisionEngine {
   private calculateCostEstimates(approach: string, input: ArchitectureInput): CostEstimate[] {
     const scales = [1000, 10000, 100000, 1000000];
 
-    return scales.map(users => {
-      switch (approach) {
-        case 'serverless':
-          return this.estimateServerlessCost(users);
+    const costEstimators: Record<string, (users: number) => CostEstimate> = {
+      serverless: (users) => this.estimateServerlessCost(users),
+      traditional: (users) => this.estimateTraditionalCost(users, input.expectedServices),
+      hybrid: (users) => this.estimateHybridCost(users, input.expectedServices),
+      learning: (users) => this.estimateLearningCost(users)
+    };
 
-        case 'traditional':
-          return this.estimateTraditionalCost(users, input.expectedServices);
-
-        case 'hybrid':
-          return this.estimateHybridCost(users, input.expectedServices);
-
-        case 'learning':
-          return this.estimateLearningCost(users);
-
-        default:
-          return this.estimateTraditionalCost(users, input.expectedServices);
-      }
-    });
+    const estimator = costEstimators[approach] || costEstimators.traditional;
+    return scales.map(estimator);
   }
 
   private estimateServerlessCost(users: number): CostEstimate {
@@ -451,40 +435,44 @@ export class ArchitectureDecisionEngine {
    * Generate rationale for architecture recommendation
    */
   private generateRationale(approach: string, input: ArchitectureInput): { rationale: string; confidence: number } {
-    switch (approach) {
-      case 'serverless':
-        return {
-          rationale: `Serverless recommended: ${input.viralPotential ? 'Viral potential requires instant scaling. ' : ''}Bootstrapped budget benefits from pay-per-use pricing. Est. $${this.calculateCostEstimates(approach, input)[0].monthlyCost.toFixed(0)}/month at 1K users.`,
-          confidence: 0.9
-        };
+    const costAt1K = this.calculateCostEstimates(approach, input)[0].monthlyCost.toFixed(0);
 
-      case 'traditional':
-        const complianceReason = input.complianceStandards.length > 0
-          ? `${input.complianceStandards.slice(0, 2).join(', ')} compliance requires traditional infrastructure for audit controls. `
-          : '';
-        return {
-          rationale: `Traditional architecture recommended: ${complianceReason}Scale (${input.expectedUsers.toLocaleString()} users, ${input.expectedServices} services) justifies dedicated infrastructure. Est. $${this.calculateCostEstimates(approach, input)[0].monthlyCost.toFixed(0)}/month at 1K users.`,
-          confidence: 0.85
-        };
-
-      case 'hybrid':
-        return {
-          rationale: `Hybrid approach recommended: Balance between serverless agility and traditional control. ${input.expectedServices} services benefit from mixed infrastructure. Est. $${this.calculateCostEstimates(approach, input)[0].monthlyCost.toFixed(0)}/month at 1K users.`,
-          confidence: 0.75
-        };
-
-      case 'learning':
-        return {
-          rationale: 'Learning project: Focus on fundamentals with free-tier tools. Start simple (SQLite, JWT), upgrade as you learn. Est. $0/month at 1K users (free tiers).',
-          confidence: 0.95
-        };
-
-      default:
-        return {
-          rationale: 'Traditional architecture for stability and control.',
-          confidence: 0.7
-        };
+    if (approach === 'serverless') {
+      const viralNote = input.viralPotential ? 'Viral potential requires instant scaling. ' : '';
+      return {
+        rationale: `Serverless recommended: ${viralNote}Bootstrapped budget benefits from pay-per-use pricing. Est. $${costAt1K}/month at 1K users.`,
+        confidence: 0.9
+      };
     }
+
+    if (approach === 'traditional') {
+      const complianceNote = input.complianceStandards.length > 0
+        ? `${input.complianceStandards.slice(0, 2).join(', ')} compliance requires traditional infrastructure for audit controls. `
+        : '';
+      return {
+        rationale: `Traditional architecture recommended: ${complianceNote}Scale (${input.expectedUsers.toLocaleString()} users, ${input.expectedServices} services) justifies dedicated infrastructure. Est. $${costAt1K}/month at 1K users.`,
+        confidence: 0.85
+      };
+    }
+
+    if (approach === 'hybrid') {
+      return {
+        rationale: `Hybrid approach recommended: Balance between serverless agility and traditional control. ${input.expectedServices} services benefit from mixed infrastructure. Est. $${costAt1K}/month at 1K users.`,
+        confidence: 0.75
+      };
+    }
+
+    if (approach === 'learning') {
+      return {
+        rationale: 'Learning project: Focus on fundamentals with free-tier tools. Start simple (SQLite, JWT), upgrade as you learn. Est. $0/month at 1K users (free tiers).',
+        confidence: 0.95
+      };
+    }
+
+    return {
+      rationale: 'Traditional architecture for stability and control.',
+      confidence: 0.7
+    };
   }
 
   /**

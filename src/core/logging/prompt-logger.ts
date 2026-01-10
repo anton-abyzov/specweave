@@ -162,8 +162,8 @@ ${location}
    */
   private getTypePrefix(type: string): string {
     if (type.startsWith('image/')) return 'screenshot';
-    if (type === 'application/pdf') return 'document';
     if (type.startsWith('text/')) return 'text';
+    if (type === 'application/pdf') return 'document';
     return 'file';
   }
 

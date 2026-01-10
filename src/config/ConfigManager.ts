@@ -41,12 +41,7 @@ export class ConfigManager {
   static async load(configPath: string = ConfigManager.CONFIG_PATH): Promise<SpecWeaveConfig> {
     try {
       const content = await fs.readFile(configPath, 'utf-8');
-      const parsed = JSON.parse(content);
-
-      // Validate with Zod schema
-      const config = SpecWeaveConfigSchema.parse(parsed);
-
-      return config;
+      return SpecWeaveConfigSchema.parse(JSON.parse(content));
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         throw new Error(`Config file not found: ${configPath}`);

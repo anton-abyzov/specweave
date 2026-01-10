@@ -28,59 +28,29 @@ export class GitHubProvider extends BaseGitProvider {
     });
   }
 
-  /**
-   * Validate if a repository exists on GitHub
-   */
   async validateRepository(
     owner: string,
     repo: string,
     token?: string
   ): Promise<RepoValidationResult> {
+    const headers: Record<string, string> = { 'Accept': 'application/vnd.github.v3+json' };
+    if (token) {
+      headers['Authorization'] = `token ${token}`;
+    }
+
     try {
-      const headers: Record<string, string> = {
-        'Accept': 'application/vnd.github.v3+json'
-      };
-
-      if (token) {
-        headers['Authorization'] = `token ${token}`;
-      }
-
-      const response = await fetch(
-        this.getApiUrl(`/repos/${owner}/${repo}`),
-        { headers }
-      );
+      const response = await fetch(this.getApiUrl(`/repos/${owner}/${repo}`), { headers });
 
       if (response.status === 404) {
-        // Repository does not exist (good for creation)
         return { exists: false, valid: true };
       }
 
       if (response.status === 200) {
-        // Repository already exists
         const data: any = await response.json();
-        return {
-          exists: true,
-          valid: true,
-          url: data.html_url
-        };
+        return { exists: true, valid: true, url: data.html_url };
       }
 
-      if (response.status === 401 || response.status === 403) {
-        // Authentication or permission error
-        const apiError: GitApiError = {
-          status: response.status,
-          message: response.statusText,
-          platform: 'github',
-          operation: 'validate_repo',
-          resourceType: 'repository',
-          resourceName: `${owner}/${repo}`
-        };
-
-        const actionable = getActionableError(apiError);
-        return { exists: false, valid: false, error: formatActionableError(actionable) };
-      }
-
-      // Other error
+      // Handle all error cases uniformly
       const apiError: GitApiError = {
         status: response.status,
         message: response.statusText,
@@ -90,13 +60,7 @@ export class GitHubProvider extends BaseGitProvider {
         resourceName: `${owner}/${repo}`
       };
 
-      const actionable = getActionableError(apiError);
-      return {
-        exists: false,
-        valid: false,
-        error: formatActionableError(actionable)
-      };
-
+      return { exists: false, valid: false, error: formatActionableError(getActionableError(apiError)) };
     } catch (error) {
       return {
         exists: false,
@@ -106,39 +70,26 @@ export class GitHubProvider extends BaseGitProvider {
     }
   }
 
-  /**
-   * Validate if a GitHub owner (user or organization) exists
-   */
   async validateOwner(
     owner: string,
     token?: string
   ): Promise<OwnerValidationResult> {
-    const headers: Record<string, string> = {
-      'Accept': 'application/vnd.github.v3+json'
-    };
-
+    const headers: Record<string, string> = { 'Accept': 'application/vnd.github.v3+json' };
     if (token) {
       headers['Authorization'] = `token ${token}`;
     }
 
     try {
-      // Try as user first
-      const userResponse = await fetch(
-        this.getApiUrl(`/users/${owner}`),
-        { headers }
-      );
+      // Try as user first (covers both users and organizations)
+      const userResponse = await fetch(this.getApiUrl(`/users/${owner}`), { headers });
 
       if (userResponse.status === 200) {
         const data: any = await userResponse.json();
-        const type = data.type === 'Organization' ? 'organization' : 'user';
-        return { valid: true, type };
+        return { valid: true, type: data.type === 'Organization' ? 'organization' : 'user' };
       }
 
-      // Try as organization
-      const orgResponse = await fetch(
-        this.getApiUrl(`/orgs/${owner}`),
-        { headers }
-      );
+      // Try as organization if user endpoint failed
+      const orgResponse = await fetch(this.getApiUrl(`/orgs/${owner}`), { headers });
 
       if (orgResponse.status === 200) {
         return { valid: true, type: 'organization' };
@@ -154,9 +105,7 @@ export class GitHubProvider extends BaseGitProvider {
         resourceName: owner
       };
 
-      const actionable = getActionableError(apiError);
-      return { valid: false, error: formatActionableError(actionable) };
-
+      return { valid: false, error: formatActionableError(getActionableError(apiError)) };
     } catch (error) {
       return {
         valid: false,
@@ -222,23 +171,14 @@ export class GitHubProvider extends BaseGitProvider {
     return data.html_url;
   }
 
-  /**
-   * Check if an account is an organization
-   */
   async isOrganization(account: string, token?: string): Promise<boolean> {
+    const headers: Record<string, string> = { 'Accept': 'application/vnd.github.v3+json' };
+    if (token) {
+      headers['Authorization'] = `token ${token}`;
+    }
+
     try {
-      const headers: Record<string, string> = {
-        'Accept': 'application/vnd.github.v3+json'
-      };
-
-      if (token) {
-        headers['Authorization'] = `token ${token}`;
-      }
-
-      const response = await fetch(
-        this.getApiUrl(`/users/${account}`),
-        { headers }
-      );
+      const response = await fetch(this.getApiUrl(`/users/${account}`), { headers });
 
       if (response.ok) {
         const data: any = await response.json();

@@ -9,9 +9,9 @@
  *   specweave hooks install
  */
 
+import * as path from 'path';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import * as path from 'path';
 import { getDirname } from '../../utils/esm-helpers.js';
 import { installGitHooks, areGitHooksInstalled } from '../helpers/init/git-hooks-installer.js';
 import { consoleLogger } from '../../utils/logger.js';

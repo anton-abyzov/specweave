@@ -290,16 +290,20 @@ export class CacheHealthMonitor {
   /**
    * Extract plugin name from cache path
    *
+   * Path format: ~/.claude/plugins/cache/specweave/{pluginName}/{version}
+   *
    * @param pluginPath - Plugin cache path
-   * @returns Plugin name
+   * @returns Plugin name or 'sw' as fallback
    */
   private extractPluginName(pluginPath: string): string {
-    // Path format: ~/.claude/plugins/cache/specweave/{pluginName}/{version}
     const parts = pluginPath.split(path.sep);
     const cacheIndex = parts.lastIndexOf('cache');
-    if (cacheIndex >= 0 && cacheIndex + 2 < parts.length) {
-      return parts[cacheIndex + 2]; // Skip "specweave", get plugin name
+    const pluginNameIndex = cacheIndex + 2;
+
+    if (cacheIndex >= 0 && pluginNameIndex < parts.length) {
+      return parts[pluginNameIndex];
     }
-    return 'sw'; // Fallback
+
+    return 'sw';
   }
 }

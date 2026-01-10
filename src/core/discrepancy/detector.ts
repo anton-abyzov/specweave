@@ -137,7 +137,7 @@ export class DiscrepancyDetector {
     }
 
     // Find routes in code but not in spec (added)
-    for (const [key, route] of Array.from(routeMap.entries())) {
+    for (const [key, route] of routeMap.entries()) {
       if (!specMap.has(key)) {
         // Check if there's a similar route (same method, different path)
         const similarSpec = this.findSimilarRoute(route, specs);
@@ -175,7 +175,7 @@ export class DiscrepancyDetector {
     }
 
     // Find routes in spec but not in code (removed)
-    for (const [key, spec] of Array.from(specMap.entries())) {
+    for (const [key, spec] of specMap.entries()) {
       if (!routeMap.has(key)) {
         // Check if route moved
         const movedRoute = this.findMovedRoute(spec, routes);
@@ -218,7 +218,7 @@ export class DiscrepancyDetector {
     }
 
     // Find functions in code but not in spec (added)
-    for (const [name, func] of Array.from(funcMap.entries())) {
+    for (const [name, func] of funcMap.entries()) {
       if (!specMap.has(name)) {
         discrepancies.push(this.createDiscrepancy({
           type: 'function-signature',
@@ -236,7 +236,7 @@ export class DiscrepancyDetector {
     }
 
     // Find functions in spec but not in code (removed)
-    for (const [name, spec] of Array.from(specMap.entries())) {
+    for (const [name, spec] of specMap.entries()) {
       if (!funcMap.has(name)) {
         discrepancies.push(this.createDiscrepancy({
           type: 'function-signature',
@@ -291,7 +291,7 @@ export class DiscrepancyDetector {
     }
 
     // Find types in code but not in spec (added)
-    for (const [name, type] of Array.from(typeMap.entries())) {
+    for (const [name, type] of typeMap.entries()) {
       if (!specMap.has(name)) {
         discrepancies.push(this.createDiscrepancy({
           type: 'type-definition',
@@ -309,7 +309,7 @@ export class DiscrepancyDetector {
     }
 
     // Find types in spec but not in code (removed)
-    for (const [name, spec] of Array.from(specMap.entries())) {
+    for (const [name, spec] of specMap.entries()) {
       if (!typeMap.has(name)) {
         discrepancies.push(this.createDiscrepancy({
           type: 'type-definition',
@@ -429,36 +429,26 @@ export class DiscrepancyDetector {
     };
   }
 
-  private classifySeverity(category: DiscrepancyCategory, type: DiscrepancyType): DiscrepancySeverity {
-    // Removed items are breaking (might break consumers)
-    if (category === 'removed') {
-      return 'breaking';
+  private classifySeverity(category: DiscrepancyCategory, _type: DiscrepancyType): DiscrepancySeverity {
+    switch (category) {
+      case 'removed':
+        return 'breaking';
+      case 'added':
+        return 'major';
+      case 'modified':
+      default:
+        return 'minor';
     }
-
-    // Added items are major (new functionality)
-    if (category === 'added') {
-      return 'major';
-    }
-
-    // Modified items depend on what changed
-    if (category === 'modified') {
-      return 'minor';
-    }
-
-    return 'minor';
   }
 
   private recommendAction(severity: DiscrepancySeverity): DiscrepancyRecommendation {
-    switch (severity) {
-      case 'trivial':
-        return 'auto-update';
-      case 'minor':
-        return 'review-required';
-      case 'major':
-        return 'notify';
-      case 'breaking':
-        return 'alert';
-    }
+    const actionMap: Record<DiscrepancySeverity, DiscrepancyRecommendation> = {
+      trivial: 'auto-update',
+      minor: 'review-required',
+      major: 'notify',
+      breaking: 'alert',
+    };
+    return actionMap[severity];
   }
 
   private calculateSummary(discrepancies: Discrepancy[]): DetectionResult['summary'] {

@@ -28,58 +28,28 @@ export class TemplateGenerator {
    * Register custom Handlebars helpers
    */
   private registerHelpers(): void {
-    // Uppercase helper
-    this.handlebars.registerHelper('uppercase', (str: string) => {
-      return str ? str.toUpperCase() : '';
-    });
+    // String helpers
+    this.handlebars.registerHelper('uppercase', (str: string) => str?.toUpperCase() ?? '');
+    this.handlebars.registerHelper('lowercase', (str: string) => str?.toLowerCase() ?? '');
+    this.handlebars.registerHelper('snakeCase', (str: string) =>
+      str ? str.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '') : ''
+    );
 
-    // Lowercase helper
-    this.handlebars.registerHelper('lowercase', (str: string) => {
-      return str ? str.toLowerCase() : '';
-    });
-
-    // Snake case helper (camelCase -> snake_case)
-    this.handlebars.registerHelper('snakeCase', (str: string) => {
-      if (!str) return '';
-      return str
-        .replace(/([A-Z])/g, '_$1')
-        .toLowerCase()
-        .replace(/^_/, '');
-    });
-
-    // Terraform list helper (array -> ["item1", "item2"])
+    // Terraform list helper (handles string, array, or null)
     this.handlebars.registerHelper('tfList', (arr: any) => {
       if (!arr) return '[]';
       if (typeof arr === 'string') {
-        try {
-          arr = JSON.parse(arr);
-        } catch {
-          return `["${arr}"]`;
-        }
+        try { arr = JSON.parse(arr); } catch { return `["${arr}"]`; }
       }
-      if (!Array.isArray(arr)) return '[]';
-      return `[${arr.map(item => `"${item}"`).join(', ')}]`;
+      return Array.isArray(arr) ? `[${arr.map(item => `"${item}"`).join(', ')}]` : '[]';
     });
 
-    // Conditional equality helper (if arg1 == arg2)
-    this.handlebars.registerHelper('ifEquals', function(
-      this: any,
-      arg1: any,
-      arg2: any,
-      options: Handlebars.HelperOptions
-    ) {
-      return arg1 === arg2 ? options.fn(this) : options.inverse(this);
+    // Comparison helpers
+    this.handlebars.registerHelper('ifEquals', function(this: any, a: any, b: any, options: Handlebars.HelperOptions) {
+      return a === b ? options.fn(this) : options.inverse(this);
     });
-
-    // Inline equality helper (for expressions like {{#if eq var "value"}})
-    this.handlebars.registerHelper('eq', (arg1: any, arg2: any) => {
-      return arg1 === arg2;
-    });
-
-    // JSON stringify helper (for complex values)
-    this.handlebars.registerHelper('json', (obj: any) => {
-      return JSON.stringify(obj, null, 2);
-    });
+    this.handlebars.registerHelper('eq', (a: any, b: any) => a === b);
+    this.handlebars.registerHelper('json', (obj: any) => JSON.stringify(obj, null, 2));
   }
 
   /**
