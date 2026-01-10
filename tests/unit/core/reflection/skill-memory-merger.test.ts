@@ -119,7 +119,8 @@ describe('skill-memory-merger', () => {
 
       expect(result).not.toBeNull();
       expect(result.learnings[0].context).toBeUndefined();
-      expect(result.learnings[0].triggers).toEqual([]);
+      // triggers is optional - when not provided in MEMORY.md, it's undefined
+      expect(result.learnings[0].triggers).toBeUndefined();
     });
   });
 
