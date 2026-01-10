@@ -840,7 +840,11 @@ cmd_skill() {
                 local memory_file="$skill_dir/MEMORY.md"
                 local count=0
                 if [ -f "$memory_file" ]; then
-                    count=$(grep -c "^####" "$memory_file" 2>/dev/null || echo 0)
+                    local raw_count
+                    raw_count=$(grep -c "^####" "$memory_file" 2>/dev/null || echo "0")
+                    # Ensure count is a valid integer (handle newlines/whitespace)
+                    count=$(echo "$raw_count" | tr -d '[:space:]' | grep -E '^[0-9]+$' || echo "0")
+                    [ -z "$count" ] && count=0
                 fi
                 printf "  %-25s %d learnings\n" "$skill" "$count"
                 found=$((found + 1))
