@@ -363,10 +363,80 @@ export function mergeMemoryFiles(userMemory: MemoryFile | null, defaultMemory: M
 }
 
 /**
- * Add a learning to a memory file
- * Handles deduplication automatically
+ * Rate limiting configuration (GAP-007)
  */
-export function addLearning(memory: MemoryFile, learning: Learning): { added: boolean; reason?: string } {
+export interface RateLimitConfig {
+  /** Maximum learnings per day per skill/category */
+  maxPerDay: number;
+  /** Maximum learnings per week per skill/category */
+  maxPerWeek: number;
+  /** Maximum total learnings per skill/category */
+  maxTotal: number;
+}
+
+/** Default rate limits */
+export const DEFAULT_RATE_LIMITS: RateLimitConfig = {
+  maxPerDay: 10,
+  maxPerWeek: 30,
+  maxTotal: 100,
+};
+
+/**
+ * Check if rate limits would be exceeded (GAP-007)
+ */
+export function checkRateLimits(
+  memory: MemoryFile,
+  limits: RateLimitConfig = DEFAULT_RATE_LIMITS
+): { allowed: boolean; reason?: string } {
+  const now = new Date();
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  // Count learnings in time windows
+  let todayCount = 0;
+  let weekCount = 0;
+
+  for (const learning of memory.learnings) {
+    const learningDate = new Date(learning.timestamp);
+    if (learningDate >= oneDayAgo) {
+      todayCount++;
+    }
+    if (learningDate >= oneWeekAgo) {
+      weekCount++;
+    }
+  }
+
+  // Check limits
+  if (todayCount >= limits.maxPerDay) {
+    return { allowed: false, reason: `Daily limit reached (${limits.maxPerDay}/day)` };
+  }
+
+  if (weekCount >= limits.maxPerWeek) {
+    return { allowed: false, reason: `Weekly limit reached (${limits.maxPerWeek}/week)` };
+  }
+
+  if (memory.learnings.length >= limits.maxTotal) {
+    return { allowed: false, reason: `Total limit reached (${limits.maxTotal} learnings)` };
+  }
+
+  return { allowed: true };
+}
+
+/**
+ * Add a learning to a memory file
+ * Handles deduplication and rate limiting automatically (GAP-007)
+ */
+export function addLearning(
+  memory: MemoryFile,
+  learning: Learning,
+  rateLimits?: RateLimitConfig
+): { added: boolean; reason?: string } {
+  // Check rate limits first (GAP-007)
+  const limitCheck = checkRateLimits(memory, rateLimits);
+  if (!limitCheck.allowed) {
+    return { added: false, reason: limitCheck.reason };
+  }
+
   // Check for duplicates
   for (const existing of memory.learnings) {
     if (areLearningsDuplicate(existing, learning)) {

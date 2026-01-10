@@ -104,12 +104,61 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
   general: [], // fallback
 };
 
+// Common false positive words that should never be detected as skills (GAP-008)
+const SKILL_FALSE_POSITIVES = new Set([
+  'the',
+  'this',
+  'that',
+  'some',
+  'any',
+  'a',
+  'an',
+  'one',
+  'new',
+  'old',
+  'same',
+  'other',
+  'first',
+  'last',
+  'next',
+  'only',
+  'main',
+  'basic',
+  'simple',
+  'good',
+  'bad',
+  'right',
+  'wrong',
+  'great',
+  'my',
+  'your',
+  'our',
+]);
+
+// Generic words that need additional context to be valid skills (GAP-008)
+const SKILL_AMBIGUOUS_WORDS = new Set([
+  'test',
+  'build',
+  'run',
+  'start',
+  'stop',
+  'check',
+  'fix',
+  'update',
+  'create',
+  'delete',
+  'add',
+  'remove',
+  'get',
+  'set',
+]);
+
 /**
  * Detect which skill a learning is most relevant to
  *
- * Uses priority-based detection (v4.1):
+ * Uses priority-based detection (v4.2 - GAP-008):
  * 1. Explicit skill name mention (highest priority)
- * 2. Keyword-based detection
+ * 2. Keyword-based detection with improved accuracy
  * 3. Returns null for category fallback
  */
 export function detectSkill(content: string, context?: string): string | null {
@@ -130,16 +179,34 @@ export function detectSkill(content: string, context?: string): string | null {
     const matches = [...text.matchAll(pattern)];
     for (const match of matches) {
       const skillName = match[1];
-      // Verify this is an actual skill (not a common word like "that skill" or "this command")
-      if (skillName && skillName.length > 2 && !['the', 'this', 'that', 'some', 'any'].includes(skillName)) {
-        // Check if skill exists in our known skills or the skill directory
+
+      // GAP-008: Enhanced validation to reduce false positives
+      if (!skillName || skillName.length < 3) continue;
+
+      // Skip known false positives
+      if (SKILL_FALSE_POSITIVES.has(skillName)) continue;
+
+      // For ambiguous words, require them to be in our known skills list
+      if (SKILL_AMBIGUOUS_WORDS.has(skillName)) {
         if (SKILL_KEYWORDS[skillName] || Object.keys(SKILL_KEYWORDS).includes(skillName)) {
           return skillName;
         }
-        // Also return if it looks like a valid skill name (contains hyphen or is specific)
-        if (skillName.includes('-') || skillName.length > 5) {
-          return skillName;
-        }
+        continue; // Skip ambiguous word if not a known skill
+      }
+
+      // Check if skill exists in our known skills or the skill directory
+      if (SKILL_KEYWORDS[skillName] || Object.keys(SKILL_KEYWORDS).includes(skillName)) {
+        return skillName;
+      }
+
+      // For hyphenated names, be more permissive (likely actual skill names)
+      if (skillName.includes('-') && skillName.length > 5) {
+        return skillName;
+      }
+
+      // For non-hyphenated names, require length > 5 AND not a common word
+      if (skillName.length > 5 && !SKILL_AMBIGUOUS_WORDS.has(skillName)) {
+        return skillName;
       }
     }
   }
@@ -212,8 +279,13 @@ export function generateLearningId(prefix = 'LRN'): string {
 
 /**
  * Add a learning to the appropriate skill or category
+ *
+ * GAP-002: Enhanced to work in non-Claude environments by:
+ * 1. Gracefully falling back to category when skills unavailable
+ * 2. Creating memory directories if they don't exist
+ * 3. Providing clear routing information for debugging
  */
-export function routeLearning(signal: DetectedSignal, projectRoot?: string): { target: string; added: boolean; reason?: string } {
+export function routeLearning(signal: DetectedSignal, projectRoot?: string): { target: string; added: boolean; reason?: string; fallback?: boolean } {
   const learning: Learning = {
     id: generateLearningId(),
     timestamp: new Date().toISOString(),
@@ -226,13 +298,35 @@ export function routeLearning(signal: DetectedSignal, projectRoot?: string): { t
   };
 
   // Determine target: skill or category
-  const isSkillTarget = signal.skill && skillExists(signal.skill, projectRoot);
+  // GAP-002: Check if skill exists, fall back to category if not
+  let isSkillTarget = signal.skill && skillExists(signal.skill, projectRoot);
+  let fallback = false;
+
+  // If skill was detected but doesn't exist, mark as fallback
+  if (signal.skill && !isSkillTarget) {
+    fallback = true;
+    // Try to find a matching category based on the skill name
+    const matchingCategory = Object.keys(CATEGORY_KEYWORDS).find(
+      (cat) => signal.skill!.toLowerCase().includes(cat) || cat.includes(signal.skill!.toLowerCase())
+    );
+    if (matchingCategory) {
+      // Use matching category as fallback
+      isSkillTarget = false;
+    }
+  }
+
   const targetName = isSkillTarget ? signal.skill! : detectCategory(signal.content, signal.context);
   const targetType = isSkillTarget ? 'skill' : 'category';
 
   const memoryPath = isSkillTarget
     ? getSkillMemoryPath(signal.skill!, projectRoot)
     : path.join(getGlobalMemoryDir(projectRoot), `${targetName}.md`);
+
+  // GAP-002: Ensure directory exists before writing
+  const memoryDir = path.dirname(memoryPath);
+  if (!fs.existsSync(memoryDir)) {
+    fs.mkdirSync(memoryDir, { recursive: true });
+  }
 
   const memory = readMemoryFile(memoryPath) || createEmptyMemory(targetName);
   const result = addLearning(memory, learning);
@@ -241,7 +335,12 @@ export function routeLearning(signal: DetectedSignal, projectRoot?: string): { t
     writeMemoryFile(memoryPath, memory);
   }
 
-  return { target: `${targetType}:${targetName}`, added: result.added, reason: result.reason };
+  return {
+    target: `${targetType}:${targetName}`,
+    added: result.added,
+    reason: result.reason,
+    fallback,
+  };
 }
 
 /**
@@ -437,4 +536,145 @@ export function getReflectionStats(projectRoot?: string): {
   const totalLearnings = [...skills, ...categories].reduce((sum, item) => sum + item.learningCount, 0);
 
   return { skills, categories, totalLearnings, isClaudeCode: isClaudeCodeEnvironment() };
+}
+
+/**
+ * Verbose signal analysis result for --dry-run --verbose mode (GAP-005)
+ */
+export interface VerboseSignalAnalysis {
+  /** Original signal content */
+  content: string;
+  /** Why this was detected as a signal */
+  detectionReason: string;
+  /** Signal type that was detected */
+  signalType: 'correction' | 'rule' | 'approval';
+  /** Confidence level */
+  confidence: 'high' | 'medium' | 'low';
+  /** Detected skill (or null for category) */
+  detectedSkill: string | null;
+  /** Skill detection reason */
+  skillDetectionReason: string;
+  /** Target location where it would be stored */
+  targetPath: string;
+  /** Whether this would be a duplicate */
+  isDuplicate: boolean;
+  /** Extracted triggers */
+  triggers: string[];
+}
+
+/**
+ * Simulate reflection for --dry-run --verbose mode (GAP-005)
+ *
+ * Provides detailed analysis of what would be detected and where it would be routed,
+ * without actually writing to memory files.
+ */
+export function simulateReflection(
+  signals: DetectedSignal[],
+  projectRoot?: string
+): VerboseSignalAnalysis[] {
+  const analyses: VerboseSignalAnalysis[] = [];
+
+  for (const signal of signals) {
+    // Detect skill if not specified
+    const detectedSkill = signal.skill || detectSkill(signal.content, signal.context);
+    const triggers = signal.triggers?.length ? signal.triggers : extractTriggers(signal.content);
+
+    // Determine target
+    const isSkillTarget = detectedSkill && skillExists(detectedSkill, projectRoot);
+    const targetName = isSkillTarget ? detectedSkill! : detectCategory(signal.content, signal.context);
+    const targetType = isSkillTarget ? 'skill' : 'category';
+
+    // Get target path
+    const targetPath = isSkillTarget
+      ? getSkillMemoryPath(detectedSkill!, projectRoot)
+      : path.join(getGlobalMemoryDir(projectRoot), `${targetName}.md`);
+
+    // Check for duplicate
+    let isDuplicate = false;
+    const existingMemory = readMemoryFile(targetPath);
+    if (existingMemory) {
+      // Simple duplicate check by content similarity
+      isDuplicate = existingMemory.learnings.some(
+        (l) => l.content.toLowerCase().includes(signal.content.toLowerCase().slice(0, 50))
+      );
+    }
+
+    // Build detection reason
+    let detectionReason = '';
+    const contentLower = signal.content.toLowerCase();
+    if (contentLower.includes("don't") || contentLower.includes('wrong') || contentLower.includes('instead')) {
+      detectionReason = 'Correction pattern detected ("don\'t/wrong/instead")';
+    } else if (contentLower.includes('always') || contentLower.includes('never')) {
+      detectionReason = 'Rule pattern detected ("always/never")';
+    } else if (contentLower.includes('perfect') || contentLower.includes('exactly')) {
+      detectionReason = 'Strong approval pattern detected';
+    } else {
+      detectionReason = 'Contextual signal detection';
+    }
+
+    // Build skill detection reason
+    let skillDetectionReason = '';
+    if (detectedSkill) {
+      // Check if explicit mention
+      if (signal.content.toLowerCase().includes(`${detectedSkill} skill`)) {
+        skillDetectionReason = `Explicit skill mention: "${detectedSkill} skill"`;
+      } else if (signal.content.toLowerCase().includes(`/sw:${detectedSkill}`)) {
+        skillDetectionReason = `Slash command mention: /sw:${detectedSkill}`;
+      } else {
+        const matchedKeywords = SKILL_KEYWORDS[detectedSkill]?.filter((k) =>
+          signal.content.toLowerCase().includes(k)
+        );
+        skillDetectionReason = matchedKeywords?.length
+          ? `Keyword match: ${matchedKeywords.slice(0, 3).join(', ')}`
+          : 'Skill name pattern match';
+      }
+    } else {
+      skillDetectionReason = 'No skill detected → Category fallback';
+    }
+
+    analyses.push({
+      content: signal.content.slice(0, 100) + (signal.content.length > 100 ? '...' : ''),
+      detectionReason,
+      signalType: signal.type,
+      confidence: signal.confidence,
+      detectedSkill,
+      skillDetectionReason,
+      targetPath,
+      isDuplicate,
+      triggers,
+    });
+  }
+
+  return analyses;
+}
+
+/**
+ * Format verbose analysis for console output (GAP-005)
+ */
+export function formatVerboseAnalysis(analyses: VerboseSignalAnalysis[]): string {
+  if (analyses.length === 0) {
+    return '  No signals detected in this session.\n  Tip: Make explicit corrections like "No, use X instead of Y"';
+  }
+
+  const lines: string[] = [];
+  lines.push(`\n  📊 Detected ${analyses.length} signal(s):\n`);
+
+  for (let i = 0; i < analyses.length; i++) {
+    const a = analyses[i];
+    lines.push(`  ─────────────────────────────────────────`);
+    lines.push(`  [${i + 1}] ${a.signalType.toUpperCase()} (${a.confidence} confidence)`);
+    lines.push(`      Content: "${a.content}"`);
+    lines.push(`      Detection: ${a.detectionReason}`);
+    lines.push(`      Skill: ${a.detectedSkill || 'none'} (${a.skillDetectionReason})`);
+    lines.push(`      Target: ${a.targetPath}`);
+    lines.push(`      Triggers: ${a.triggers.slice(0, 5).join(', ') || 'none'}`);
+    lines.push(`      Duplicate: ${a.isDuplicate ? '⚠️ YES (would be skipped)' : '✅ No'}`);
+  }
+
+  lines.push(`\n  ─────────────────────────────────────────`);
+  const wouldAdd = analyses.filter((a) => !a.isDuplicate).length;
+  const wouldSkip = analyses.filter((a) => a.isDuplicate).length;
+  lines.push(`  Summary: ${wouldAdd} would be added, ${wouldSkip} would be skipped (duplicates)`);
+
+  return lines.join('\n');
 }

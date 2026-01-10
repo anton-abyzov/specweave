@@ -272,14 +272,39 @@ detect_signals() {
     > "$signals_file"
 
     # ========================================================================
-    # JSONL HANDLING (v4.1)
+    # JSONL HANDLING (v4.2 - GAP-006: Enhanced format resilience)
     # Claude Code transcripts are JSONL - extract user text for analysis
+    # Supports multiple format variations for future-proofing
     # ========================================================================
     local is_jsonl="false"
     if [[ "$transcript" == *.jsonl ]] || head -1 "$transcript" 2>/dev/null | grep -q '^{'; then
         is_jsonl="true"
-        # Extract only USER messages text content (where corrections would be)
+
+        # Strategy 1: Current Claude Code format (message.role, message.content[].text)
         jq -r 'select(.message.role == "user") | .message.content[]? | select(.text) | .text' "$transcript" 2>/dev/null > "$extracted_text" || true
+
+        # Check if extraction succeeded
+        if [ ! -s "$extracted_text" ]; then
+            log "debug" "Strategy 1 failed, trying alternative format..."
+
+            # Strategy 2: Alternative format (role at root level)
+            jq -r 'select(.role == "user") | .content[]? | select(.text) | .text' "$transcript" 2>/dev/null > "$extracted_text" || true
+        fi
+
+        if [ ! -s "$extracted_text" ]; then
+            log "debug" "Strategy 2 failed, trying simple content extraction..."
+
+            # Strategy 3: Simple text extraction (content as string)
+            jq -r 'select(.role == "user" or .message.role == "user") | .content // .message.content // empty' "$transcript" 2>/dev/null > "$extracted_text" || true
+        fi
+
+        if [ ! -s "$extracted_text" ]; then
+            log "warn" "All jq strategies failed, using raw text fallback"
+
+            # Strategy 4: Raw grep - last resort
+            # Just copy raw content for pattern matching
+            grep -v '^\s*{' "$transcript" 2>/dev/null > "$extracted_text" || cp "$transcript" "$extracted_text" 2>/dev/null || true
+        fi
     else
         # Plain text - use directly
         cp "$transcript" "$extracted_text" 2>/dev/null || true

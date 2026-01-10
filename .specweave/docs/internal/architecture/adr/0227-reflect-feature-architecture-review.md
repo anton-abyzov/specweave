@@ -166,14 +166,14 @@ Project-local: .specweave/plugins/ NOT CREATED ❌
 ---
 
 #### GAP-003: Global Memory Directory Path Inconsistency
-**Severity**: MEDIUM
+**Severity**: MEDIUM → **RESOLVED**
 **Impact**: Learnings may be written to unexpected location
 
-**Documentation says**: `~/.specweave/memory/`
+**Documentation previously said**: `~/.specweave/memory/`
 **Code creates**: `~/.claude/plugins/marketplaces/specweave/memory/` (Claude Code)
                   `.specweave/memory/` (project-local)
 
-**Note**: Migration command exists (`specweave migrate-memory`) for legacy path, but the documentation is outdated.
+**Resolution**: Documentation updated to reflect correct paths. Migration command (`specweave migrate-memory`) handles legacy paths automatically. Init now detects legacy files and prompts for migration.
 
 ---
 

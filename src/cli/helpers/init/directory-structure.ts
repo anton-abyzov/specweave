@@ -22,6 +22,7 @@ import {
   type DetectedDoc,
 } from '../../../core/living-docs/scaffolding/index.js';
 import { consoleLogger } from '../../../utils/logger.js';
+import { hasLegacyMemoryFiles, getLegacyMemoryDir, isClaudeCodeEnvironment } from '../../../core/reflection/skill-memory-paths.js';
 
 /**
  * Create the .specweave directory structure
@@ -46,6 +47,8 @@ export async function createDirectoryStructure(
     '.specweave/increments',
     '.specweave/cache',
     '.specweave/state',
+    '.specweave/memory',  // For category-based learnings (reflect feature)
+    '.specweave/logs/reflect',  // For reflection logs
   ];
 
   coreDirectories.forEach((dir) => {
@@ -68,6 +71,15 @@ export async function createDirectoryStructure(
     };
     fs.writeJsonSync(reflectConfigPath, reflectConfig, { spaces: 2 });
     console.log(chalk.green('   ✓ Auto-reflection enabled (self-improving AI)'));
+  }
+
+  // Check for legacy memory files that need migration (GAP-009)
+  // Only check in Claude Code environment where legacy files might exist
+  if (isClaudeCodeEnvironment() && hasLegacyMemoryFiles()) {
+    const legacyPath = getLegacyMemoryDir();
+    console.log(chalk.yellow('   ⚠ Legacy memory files detected at: ' + legacyPath));
+    console.log(chalk.yellow('     Run: specweave migrate-memory'));
+    console.log(chalk.gray('     This will move learnings to the correct location'));
   }
 
   // Use smart scaffolding for living docs structure
