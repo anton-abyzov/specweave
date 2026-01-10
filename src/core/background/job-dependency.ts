@@ -6,7 +6,6 @@
  */
 
 import { getJobManager, BackgroundJobManager } from './job-manager.js';
-import type { BackgroundJob } from './types.js';
 
 export interface DependencyStatus {
   /** Whether all dependencies are satisfied */
@@ -19,6 +18,8 @@ export interface DependencyStatus {
   completedDeps: string[];
 }
 
+const EMPTY_STATUS: DependencyStatus = { ready: true, waitingFor: [], failedDeps: [], completedDeps: [] };
+
 /**
  * Check the status of job dependencies
  */
@@ -27,7 +28,7 @@ export function checkDependencies(
   dependsOn: string[] | undefined
 ): DependencyStatus {
   if (!dependsOn || dependsOn.length === 0) {
-    return { ready: true, waitingFor: [], failedDeps: [], completedDeps: [] };
+    return EMPTY_STATUS;
   }
 
   const waitingFor: string[] = [];
@@ -45,15 +46,12 @@ export function checkDependencies(
 
     switch (job.status) {
       case 'completed':
-      case 'completed_with_warnings': // Treat partial success as completed (v0.33.5)
+      case 'completed_with_warnings':
         completedDeps.push(depId);
         break;
       case 'failed':
         failedDeps.push(depId);
         break;
-      case 'pending':
-      case 'running':
-      case 'paused':
       default:
         waitingFor.push(depId);
     }

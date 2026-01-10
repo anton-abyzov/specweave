@@ -67,32 +67,26 @@ export class SkillActivationLogger {
    * Format log entry
    */
   private formatLogEntry(event: SkillActivationEvent): string {
-    const lines: string[] = [];
+    const sections: string[] = [
+      `[${event.timestamp}] Skill Activation`,
+      `Prompt: "${event.prompt}"`
+    ];
 
-    lines.push(`[${event.timestamp}] Skill Activation`);
-    lines.push(`Prompt: "${event.prompt}"`);
-    lines.push('');
-
-    // Matched skills
     if (event.matchedSkills.length > 0) {
-      lines.push('✅ Matched Skills:');
-      event.matchedSkills.forEach(skill => {
-        lines.push(`  - ${skill.fqn} (score: ${Math.round(skill.score * 100)}%)`);
-        lines.push(`    Keywords: ${skill.matchedKeywords.join(', ')}`);
-      });
-      lines.push('');
+      const matchedLines = event.matchedSkills.map(skill =>
+        `  - ${skill.fqn} (score: ${Math.round(skill.score * 100)}%)\n    Keywords: ${skill.matchedKeywords.join(', ')}`
+      );
+      sections.push('', '✅ Matched Skills:', ...matchedLines);
     }
 
-    // Rejected skills
     if (event.rejectedSkills.length > 0) {
-      lines.push('❌ Rejected Skills:');
-      event.rejectedSkills.forEach(skill => {
-        lines.push(`  - ${skill.fqn}: ${skill.reason}`);
-      });
-      lines.push('');
+      const rejectedLines = event.rejectedSkills.map(skill =>
+        `  - ${skill.fqn}: ${skill.reason}`
+      );
+      sections.push('', '❌ Rejected Skills:', ...rejectedLines);
     }
 
-    return lines.join('\n');
+    return sections.join('\n');
   }
 
   /**
@@ -129,11 +123,11 @@ let globalLogger: SkillActivationLogger | null = null;
  * Get or create global logger
  */
 export function getSkillActivationLogger(projectRoot?: string): SkillActivationLogger {
-  if (!globalLogger && projectRoot) {
-    globalLogger = new SkillActivationLogger(projectRoot);
-  }
   if (!globalLogger) {
-    throw new Error('Skill activation logger not initialized');
+    if (!projectRoot) {
+      throw new Error('Skill activation logger not initialized');
+    }
+    globalLogger = new SkillActivationLogger(projectRoot);
   }
   return globalLogger;
 }
@@ -147,14 +141,13 @@ export function logSkillActivation(
   rejectedSkills: Array<{ fqn: string; reason: string }> = []
 ): void {
   try {
-    const logger = getSkillActivationLogger(process.cwd());
-    logger.logActivation({
+    getSkillActivationLogger(process.cwd()).logActivation({
       timestamp: new Date().toISOString(),
       prompt,
       matchedSkills,
       rejectedSkills
     });
-  } catch (error) {
+  } catch {
     // Silently fail if logger not initialized
   }
 }

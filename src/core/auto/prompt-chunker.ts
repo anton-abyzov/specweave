@@ -22,20 +22,6 @@ export interface PromptAnalysis {
 }
 
 /**
- * Feature boundary keywords that indicate separation
- */
-const FEATURE_SEPARATORS = [
-  'and',
-  'with',
-  'including',
-  'also',
-  'plus',
-  'as well as',
-  ',',
-  ';',
-];
-
-/**
  * Common architectural features that usually need to come first
  */
 const FOUNDATIONAL_FEATURES = [
@@ -153,30 +139,29 @@ function splitByFeatureSeparators(prompt: string): string[] {
   return result.map((s) => s.trim()).filter((s) => s.length > 0);
 }
 
+/** Task estimates by complexity level */
+const TASK_ESTIMATES: Record<Feature['complexity'], number> = {
+  simple: 3,
+  medium: 7,
+  complex: 12,
+};
+
 /**
  * Analyze a segment to extract feature details
  */
 function analyzeSegment(segment: string): Feature | null {
-  // Extract feature name (usually the main noun/action)
   const name = extractFeatureName(segment);
   if (!name) return null;
 
-  // Determine complexity
   const complexity = estimateComplexity(segment);
-
-  // Estimate task count based on complexity
-  const estimatedTasks = complexity === 'simple' ? 3 : complexity === 'medium' ? 7 : 12;
-
-  // Extract keywords
-  const keywords = segment.split(/\s+/).filter((word) => word.length > 3);
 
   return {
     name,
     description: segment,
     complexity,
-    estimatedTasks,
+    estimatedTasks: TASK_ESTIMATES[complexity],
     dependencies: [],
-    keywords,
+    keywords: segment.split(/\s+/).filter((word) => word.length > 3),
   };
 }
 
@@ -205,17 +190,10 @@ function extractFeatureName(segment: string): string {
  */
 function estimateComplexity(segment: string): 'simple' | 'medium' | 'complex' {
   const lower = segment.toLowerCase();
+  const hasIndicator = (indicators: string[]): boolean => indicators.some((i) => lower.includes(i));
 
-  // Check for complex indicators
-  for (const indicator of COMPLEXITY_INDICATORS.complex) {
-    if (lower.includes(indicator)) return 'complex';
-  }
-
-  // Check for medium indicators
-  for (const indicator of COMPLEXITY_INDICATORS.medium) {
-    if (lower.includes(indicator)) return 'medium';
-  }
-
+  if (hasIndicator(COMPLEXITY_INDICATORS.complex)) return 'complex';
+  if (hasIndicator(COMPLEXITY_INDICATORS.medium)) return 'medium';
   return 'simple';
 }
 

@@ -1132,6 +1132,47 @@ Invoke the mobile-architect agent when you need help with:
 - **Glob**: Find files matching patterns
 - **Grep**: Search for architectural patterns in code
 
+## Recommended Claude Code Plugins
+
+For enhanced mobile development experience, install these official Claude Code plugins:
+
+### LSP Plugins (Code Intelligence)
+
+| Plugin | Platform | Installation | Benefits |
+|--------|----------|--------------|----------|
+| **swift-lsp** | iOS | Xcode or `brew install swift` | Go-to-definition, find-references, diagnostics for Swift native modules |
+| **kotlin-lsp** | Android | `brew install JetBrains/utils/kotlin-lsp` | Code intelligence for Kotlin native modules |
+| **typescript-lsp** | Cross-platform | `npm i -g typescript-language-server typescript` | React Native TypeScript support |
+
+### When to Use LSP
+
+- **Native Module Development**: Use `swift-lsp` for iOS and `kotlin-lsp` for Android when writing Turbo Modules, JSI bindings, or native UI components
+- **Refactoring**: Use `findReferences` before renaming native code to catch all usages
+- **Navigation**: Use `goToDefinition` to jump between TypeScript and native code
+
+### Installation
+
+```bash
+# TypeScript (React Native code)
+npm install -g typescript-language-server typescript
+
+# Swift (iOS native modules)
+# macOS: Included with Xcode, or:
+brew install swift
+
+# Kotlin (Android native modules)
+brew install JetBrains/utils/kotlin-lsp
+```
+
+### Other Recommended Plugins
+
+| Plugin | Purpose |
+|--------|---------|
+| `hookify` | Safety rails - block dangerous operations |
+| `playwright` | E2E testing integration |
+
+See [ADR-0226](../../architecture/adr/0226-claude-code-official-plugin-integration.md) for full plugin integration strategy.
+
 ## Version Reference
 
 | Technology | Current Version | Key Features |
@@ -1147,3 +1188,4 @@ Invoke the mobile-architect agent when you need help with:
 - [React Native 0.83 Blog](https://reactnative.dev/blog/2025/12/10/react-native-0.83)
 - [Expo SDK 54 Changelog](https://expo.dev/changelog/sdk-54)
 - [React Native Environment Setup](https://reactnative.dev/docs/environment-setup)
+- [Claude Plugins Official](https://github.com/anthropics/claude-plugins-official)

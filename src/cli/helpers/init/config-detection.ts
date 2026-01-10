@@ -9,6 +9,37 @@ import { parseEnvFile } from '../../../utils/env-file.js';
 import type { GitHubRemote, JiraConfig, ADOConfig } from './types.js';
 
 /**
+ * Get environment variable from process.env or .env file
+ */
+function getEnvVar(targetDir: string, ...varNames: string[]): string | undefined {
+  // Check process.env first
+  for (const name of varNames) {
+    if (process.env[name]) {
+      return process.env[name];
+    }
+  }
+
+  // Check .env file
+  const envPath = path.join(targetDir, '.env');
+  if (!fs.existsSync(envPath)) {
+    return undefined;
+  }
+
+  try {
+    const envVars = parseEnvFile(fs.readFileSync(envPath, 'utf-8'));
+    for (const name of varNames) {
+      if (envVars[name]) {
+        return envVars[name];
+      }
+    }
+  } catch {
+    // Ignore parse errors
+  }
+
+  return undefined;
+}
+
+/**
  * Detect GitHub repository owner and name from git remote
  * Parses .git/config to extract GitHub remote URL
  *
@@ -51,35 +82,15 @@ export function detectGitHubRemote(targetDir: string): GitHubRemote | null {
  * @returns JIRA config or null if not detected
  */
 export function detectJiraConfig(targetDir: string): JiraConfig | null {
-  try {
-    // Check environment variables first
-    const envHost = process.env.JIRA_HOST;
-    const envEmail = process.env.JIRA_EMAIL;
-    const envToken = process.env.JIRA_API_TOKEN;
+  const host = getEnvVar(targetDir, 'JIRA_HOST');
+  const email = getEnvVar(targetDir, 'JIRA_EMAIL');
+  const apiToken = getEnvVar(targetDir, 'JIRA_API_TOKEN');
 
-    if (envHost && envEmail && envToken) {
-      return { host: envHost, email: envEmail, apiToken: envToken };
-    }
-
-    // Check .env file
-    const envPath = path.join(targetDir, '.env');
-    if (fs.existsSync(envPath)) {
-      const envContent = fs.readFileSync(envPath, 'utf-8');
-      const envVars = parseEnvFile(envContent);
-
-      const fileHost = envVars.JIRA_HOST;
-      const fileEmail = envVars.JIRA_EMAIL;
-      const fileToken = envVars.JIRA_API_TOKEN;
-
-      if (fileHost && fileEmail && fileToken) {
-        return { host: fileHost, email: fileEmail, apiToken: fileToken };
-      }
-    }
-
-    return null;
-  } catch {
-    return null;
+  if (host && email && apiToken) {
+    return { host, email, apiToken };
   }
+
+  return null;
 }
 
 /**
@@ -99,19 +110,9 @@ export function detectJiraConfig(targetDir: string): JiraConfig | null {
 export function detectADOConfig(targetDir: string): ADOConfig | null {
   try {
     // 1. Get PAT from environment or .env (secret)
-    let pat = process.env.AZURE_DEVOPS_PAT || process.env.ADO_PAT;
-
+    const pat = getEnvVar(targetDir, 'AZURE_DEVOPS_PAT', 'ADO_PAT');
     if (!pat) {
-      const envPath = path.join(targetDir, '.env');
-      if (fs.existsSync(envPath)) {
-        const envContent = fs.readFileSync(envPath, 'utf-8');
-        const envVars = parseEnvFile(envContent);
-        pat = envVars.AZURE_DEVOPS_PAT || envVars.ADO_PAT;
-      }
-    }
-
-    if (!pat) {
-      return null; // No PAT = no ADO config
+      return null;
     }
 
     // 2. Get org/project from config.json (non-secrets)
@@ -181,9 +182,9 @@ export function detectADOConfig(targetDir: string): ADOConfig | null {
     }
 
     // 3. Fallback: Check env vars (AZURE_DEVOPS_* and ADO_* patterns)
-    const orgUrl = process.env.AZURE_DEVOPS_ORG_URL || process.env.ADO_ORG_URL || process.env.AZURE_DEVOPS_ORG;
-    const project = process.env.AZURE_DEVOPS_PROJECT || process.env.ADO_PROJECT;
-    const projects = process.env.AZURE_DEVOPS_PROJECTS || process.env.ADO_PROJECTS;
+    const orgUrl = getEnvVar(targetDir, 'AZURE_DEVOPS_ORG_URL', 'ADO_ORG_URL', 'AZURE_DEVOPS_ORG');
+    const project = getEnvVar(targetDir, 'AZURE_DEVOPS_PROJECT', 'ADO_PROJECT');
+    const projects = getEnvVar(targetDir, 'AZURE_DEVOPS_PROJECTS', 'ADO_PROJECTS');
 
     if (orgUrl && (project || projects)) {
       // Parse org name from URL if needed (https://dev.azure.com/ORG -> ORG)

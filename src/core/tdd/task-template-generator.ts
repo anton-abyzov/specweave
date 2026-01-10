@@ -65,11 +65,7 @@ export const TDD_TEMPLATES = {
 } as const;
 
 /** Model emoji mappings for task display */
-const MODEL_EMOJI: Record<string, string> = {
-  opus: '💎',
-  sonnet: '🧠',
-  haiku: '⚡',
-};
+const MODEL_EMOJI: Record<string, string> = { opus: '💎', sonnet: '🧠', haiku: '⚡' };
 
 /**
  * Generate tasks based on test mode configuration
@@ -109,13 +105,8 @@ function generateTDDModeTasks(
 
   for (const userStory of userStories) {
     for (const ac of userStory.acceptanceCriteria) {
-      const triplet = generateTaskTriplet({
-        featureName: extractFeatureName(featureDescription, ac.description),
-        userStory,
-        acId: ac.id,
-        startingTaskNumber: taskNumber,
-      });
-
+      const featureName = extractFeatureName(featureDescription, ac.description);
+      const triplet = generateTaskTriplet({ featureName, userStory, acId: ac.id, startingTaskNumber: taskNumber });
       triplets.push(triplet);
       tasks.push(triplet.redTask, triplet.greenTask, triplet.refactorTask);
       taskNumber += 3;
@@ -368,7 +359,7 @@ export function formatTaskAsMarkdown(task: TDDTask): string {
   }
 
   lines.push(`**Priority**: ${task.priority}`);
-  lines.push(`**Model**: ${getModelEmoji(task.model)} ${capitalizeFirst(task.model)}`);
+  lines.push(`**Model**: ${getModelEmoji(task.model)} ${task.model.charAt(0).toUpperCase()}${task.model.slice(1)}`);
 
   if (task.dependencies.length > 0) {
     lines.push(`**Dependency**: ${task.dependencies[0]} MUST be completed first`);
@@ -466,8 +457,4 @@ function extractFeatureName(featureDescription: string, acDescription: string): 
 
 function getModelEmoji(model: string): string {
   return MODEL_EMOJI[model] ?? MODEL_EMOJI.opus;
-}
-
-function capitalizeFirst(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
 }

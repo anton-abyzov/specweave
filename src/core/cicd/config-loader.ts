@@ -47,36 +47,35 @@ function loadFromEnv(): Partial<MonitorServiceConfig> {
   const token = process.env.GITHUB_TOKEN;
   const owner = process.env.GITHUB_OWNER;
   const repo = process.env.GITHUB_REPO;
-  const pollInterval = process.env.CICD_POLL_INTERVAL
-    ? parseInt(process.env.CICD_POLL_INTERVAL, 10)
-    : undefined;
-  const channels = process.env.CICD_NOTIFICATION_CHANNELS
-    ? process.env.CICD_NOTIFICATION_CHANNELS.split(',').map((c) => c.trim())
-    : undefined;
+  const pollIntervalStr = process.env.CICD_POLL_INTERVAL;
+  const channelsStr = process.env.CICD_NOTIFICATION_CHANNELS;
   const webhookUrl = process.env.CICD_WEBHOOK_URL;
-  const autoNotify = process.env.CICD_AUTO_NOTIFY === 'true';
 
   const config: Partial<MonitorServiceConfig> = {};
 
-  if (token || owner || repo || pollInterval) {
+  // Build monitor config if any GitHub-related env vars are set
+  if (token || owner || repo || pollIntervalStr) {
     config.monitor = {
       token: token || '',
       owner: owner || '',
       repo: repo || '',
-      pollInterval: pollInterval || 60000
+      pollInterval: pollIntervalStr ? parseInt(pollIntervalStr, 10) : 60000
     };
   }
 
-  if (channels || webhookUrl) {
+  // Build notifier config if notification env vars are set
+  if (channelsStr || webhookUrl) {
+    const channels = channelsStr?.split(',').map((c) => c.trim()) as NotificationChannel[];
     config.notifier = {
-      channels: (channels as NotificationChannel[]) || ['console'],
+      channels: channels || ['console'],
       webhookUrl,
       logFile: undefined
     };
   }
 
-  if (autoNotify !== undefined) {
-    config.autoNotify = autoNotify;
+  // Auto-notify defaults to false unless explicitly set to 'true'
+  if (process.env.CICD_AUTO_NOTIFY !== undefined) {
+    config.autoNotify = process.env.CICD_AUTO_NOTIFY === 'true';
   }
 
   return config;

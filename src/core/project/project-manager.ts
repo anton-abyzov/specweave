@@ -31,51 +31,40 @@ export class ProjectManager {
    * @returns ProjectContext
    */
   getActiveProject(): ProjectContext {
-    // Return cached project if available
     if (this.cachedProject) {
       return this.cachedProject;
     }
 
     const config = this.configManager.load();
 
-    // Single project mode → return auto-detected project
+    // Single project mode
     if (!config.multiProject?.enabled) {
-      // Auto-detect project ID (git remote, sync config, or "default")
       const projectId = autoDetectProjectIdSync(this.projectRoot, { silent: true });
-
-      this.cachedProject = {
-        projectId: projectId,
-        projectName: config.project?.name || formatProjectName(projectId),
-        projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', projectId),
-        keywords: [],
-        techStack: config.project?.techStack || []
-      };
+      this.cachedProject = this.createProjectContext(
+        projectId,
+        config.project?.name || formatProjectName(projectId),
+        [],
+        config.project?.techStack || []
+      );
       return this.cachedProject;
     }
 
-    // Multi-project mode → return first available project
-    // NOTE (v0.33.0): activeProject REMOVED - per-US project targeting replaces it
-    // In multi-project mode, we use the first project as default context
-    // Individual USs can target specific projects via **Project**: field
+    // Multi-project mode - use first project as default
     const projectIds = Object.keys(config.multiProject.projects || {});
     if (projectIds.length === 0) {
       throw new Error('Multi-project mode enabled but no projects defined in config');
     }
 
-    const activeProjectId = projectIds[0];  // Use first project as default
+    const activeProjectId = projectIds[0];
     const projectConfig = config.multiProject.projects![activeProjectId];
 
-    // Convert ProjectConfig to ProjectContext
-    const project: ProjectContext = {
-      projectId: activeProjectId,
-      projectName: projectConfig.name,
-      projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', activeProjectId),
-      keywords: projectConfig.keywords || [],
-      techStack: projectConfig.techStack || []
-    };
-
-    this.cachedProject = project;
-    return project;
+    this.cachedProject = this.createProjectContext(
+      activeProjectId,
+      projectConfig.name,
+      projectConfig.keywords || [],
+      projectConfig.techStack || []
+    );
+    return this.cachedProject;
   }
 
   /**
@@ -87,31 +76,41 @@ export class ProjectManager {
     const config = this.configManager.load();
 
     if (!config.multiProject?.enabled) {
-      // Auto-detect project ID for single project mode
       const projectId = autoDetectProjectIdSync(this.projectRoot, { silent: true });
-
-      return [{
-        projectId: projectId,
-        projectName: config.project?.name || formatProjectName(projectId),
-        projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', projectId),
-        keywords: [],
-        techStack: config.project?.techStack || []
-      }];
+      return [this.createProjectContext(
+        projectId,
+        config.project?.name || formatProjectName(projectId),
+        [],
+        config.project?.techStack || []
+      )];
     }
 
-    // Convert Record<string, ProjectConfig> to ProjectContext[]
-    const projects: ProjectContext[] = [];
-    for (const [projectId, projectConfig] of Object.entries(config.multiProject.projects)) {
-      projects.push({
-        projectId: projectId,
-        projectName: projectConfig.name,
-        projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', projectId),
-        keywords: projectConfig.keywords || [],
-        techStack: projectConfig.techStack || []
-      });
-    }
+    return Object.entries(config.multiProject.projects).map(([projectId, projectConfig]) =>
+      this.createProjectContext(
+        projectId,
+        projectConfig.name,
+        projectConfig.keywords || [],
+        projectConfig.techStack || []
+      )
+    );
+  }
 
-    return projects;
+  /**
+   * Create a ProjectContext from individual properties
+   */
+  private createProjectContext(
+    projectId: string,
+    projectName: string,
+    keywords: string[],
+    techStack: string[]
+  ): ProjectContext {
+    return {
+      projectId,
+      projectName,
+      projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', projectId),
+      keywords,
+      techStack
+    };
   }
 
   /**

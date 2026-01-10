@@ -394,72 +394,42 @@ async function findIncrementPath(projectRoot: string, incrementId: string): Prom
 }
 
 /**
- * Check if GitHub is configured
+ * Check if a provider is configured
  */
-function isGitHubConfigured(config: any): boolean {
+function isProviderConfigured(config: any, provider: string, aliases: string[] = []): boolean {
+  const providers = [provider, ...aliases];
+
   // Check explicit enablement
-  if (config.sync?.github?.enabled === true) {
+  if (config.sync?.[provider]?.enabled === true) {
     return true;
   }
 
   // Check profiles
   const profiles = config.sync?.profiles || {};
   for (const profile of Object.values(profiles) as any[]) {
-    if (profile.provider === 'github') {
+    if (providers.includes(profile.provider)) {
       return true;
     }
   }
 
   // Check issueTracker
-  if (config.issueTracker?.provider === 'github') {
+  if (providers.includes(config.issueTracker?.provider)) {
     return true;
   }
 
   return false;
 }
 
-/**
- * Check if JIRA is configured
- */
+function isGitHubConfigured(config: any): boolean {
+  return isProviderConfigured(config, 'github');
+}
+
 function isJiraConfigured(config: any): boolean {
-  if (config.sync?.jira?.enabled === true) {
-    return true;
-  }
-
-  const profiles = config.sync?.profiles || {};
-  for (const profile of Object.values(profiles) as any[]) {
-    if (profile.provider === 'jira') {
-      return true;
-    }
-  }
-
-  if (config.issueTracker?.provider === 'jira') {
-    return true;
-  }
-
-  return false;
+  return isProviderConfigured(config, 'jira');
 }
 
-/**
- * Check if Azure DevOps is configured
- */
 function isAdoConfigured(config: any): boolean {
-  if (config.sync?.ado?.enabled === true) {
-    return true;
-  }
-
-  const profiles = config.sync?.profiles || {};
-  for (const profile of Object.values(profiles) as any[]) {
-    if (profile.provider === 'ado' || profile.provider === 'azure-devops') {
-      return true;
-    }
-  }
-
-  if (config.issueTracker?.provider === 'ado') {
-    return true;
-  }
-
-  return false;
+  return isProviderConfigured(config, 'ado', ['azure-devops']);
 }
 
 /**

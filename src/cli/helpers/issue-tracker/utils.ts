@@ -44,13 +44,8 @@ export function detectDefaultTracker(projectPath: string): { tracker: IssueTrack
  *
  * @returns True if gh CLI is installed and in PATH
  */
-export async function isGhCliAvailable(): Promise<boolean> {
-  try {
-    const result = execFileNoThrowSync('gh', ['--version']);
-    return result.success;
-  } catch {
-    return false;
-  }
+export function isGhCliAvailable(): boolean {
+  return execFileNoThrowSync('gh', ['--version']).success;
 }
 
 /**
@@ -72,35 +67,24 @@ export function isClaudeCliAvailable(): boolean {
  * @returns True if installed, false otherwise
  */
 export function isPluginInstalled(pluginName: string): boolean {
+  const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+  const pluginsFilePath = path.join(homeDir, '.claude', 'plugins', 'installed_plugins.json');
+
+  if (!fs.existsSync(pluginsFilePath)) {
+    return false;
+  }
+
   try {
-    // Check the installed plugins file
-    const pluginsFilePath = path.join(
-      process.env.HOME || process.env.USERPROFILE || '',
-      '.claude',
-      'plugins',
-      'installed_plugins.json'
-    );
-
-    if (!fs.existsSync(pluginsFilePath)) {
-      return false;
-    }
-
     const installedPlugins = JSON.parse(fs.readFileSync(pluginsFilePath, 'utf-8'));
+    const plugins = installedPlugins?.plugins;
 
-    if (!installedPlugins || !installedPlugins.plugins) {
+    if (!plugins) {
       return false;
     }
 
-    // Check if plugin exists in the plugins object
-    // Plugins are stored as "pluginName@marketplaceName" keys
-    const pluginKeys = Object.keys(installedPlugins.plugins);
-    return pluginKeys.some(key => {
-      // Match either exact name or name@marketplace format
-      const [name] = key.split('@');
-      return name === pluginName;
-    });
-  } catch (error) {
-    // If reading file fails, assume plugin is not installed
+    // Check if plugin exists (stored as "pluginName@marketplaceName" keys)
+    return Object.keys(plugins).some(key => key.split('@')[0] === pluginName);
+  } catch {
     return false;
   }
 }
@@ -161,16 +145,17 @@ export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/** Base delay for exponential backoff (1 second) */
+const BACKOFF_BASE_MS = 1000;
+
 /**
- * Exponential backoff for rate limiting
+ * Exponential backoff for rate limiting (1s, 2s, 4s, 8s, 16s...)
  *
  * @param attempt - Current attempt number (0-indexed)
  * @returns Milliseconds to wait
  */
 export function getBackoffDelay(attempt: number): number {
-  // Exponential backoff: 1s, 2s, 4s, 8s, 16s
-  const baseDelay = 1000;
-  return baseDelay * Math.pow(2, attempt);
+  return BACKOFF_BASE_MS * Math.pow(2, attempt);
 }
 
 /**

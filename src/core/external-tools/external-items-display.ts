@@ -11,20 +11,15 @@ import chalk from 'chalk';
 import {
   ExternalItemsCounts,
   ExternalItemsSummary,
-  ExternalItem,
   PaginatedItemsResult,
-  STALE_THRESHOLD_DAYS,
 } from './types.js';
 
 /**
  * Format large numbers compactly (1234 -> "1.2k")
  */
 function formatCount(n: number): string {
-  if (n >= 1000000) {
-    return `${(n / 1000000).toFixed(1)}M`;
-  } else if (n >= 1000) {
-    return `${(n / 1000).toFixed(1)}k`;
-  }
+  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
   return String(n);
 }
 

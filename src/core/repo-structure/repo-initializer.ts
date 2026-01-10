@@ -126,26 +126,23 @@ export async function cloneOrInitRepository(
  */
 export function createBasicRepoStructure(repoPath: string, projectId: string): void {
   // Create basic directories (NO docs/ - documentation lives in .specweave/)
-  const dirs = ['src', 'tests'];
-  for (const dir of dirs) {
+  for (const dir of ['src', 'tests']) {
     const dirPath = path.join(repoPath, dir);
     if (!existsSync(dirPath)) {
       mkdirSync(dirPath, { recursive: true });
     }
   }
 
-  // Create README.md
+  // Create README.md if missing
   const readmePath = path.join(repoPath, 'README.md');
   if (!existsSync(readmePath)) {
-    const readmeContent = `# ${projectId}\n\n${projectId} service/component.\n\nPart of SpecWeave multi-repository project.\n`;
-    writeFileSync(readmePath, readmeContent);
+    writeFileSync(readmePath, `# ${projectId}\n\n${projectId} service/component.\n\nPart of SpecWeave multi-repository project.\n`);
   }
 
-  // Create .gitignore
+  // Create .gitignore if missing
   const gitignorePath = path.join(repoPath, '.gitignore');
   if (!existsSync(gitignorePath)) {
-    const gitignoreContent = `node_modules/\ndist/\n.env\n.DS_Store\n*.log\n`;
-    writeFileSync(gitignorePath, gitignoreContent);
+    writeFileSync(gitignorePath, `node_modules/\ndist/\n.env\n.DS_Store\n*.log\n`);
   }
 }
 
@@ -185,10 +182,9 @@ export async function initializeLocalRepos(
   }
 
   // Create directory structure based on architecture
-  if (config.architecture === 'parent') {
-    // Parent repo approach: ROOT-LEVEL cloning (not services/!)
-    // Initialize parent repo at root
-    if (!existsSync(path.join(projectPath, '.git'))) {
+  if (config.architecture === 'parent' || config.architecture === 'multi-repo') {
+    // For parent: initialize parent repo at root
+    if (config.architecture === 'parent' && !existsSync(path.join(projectPath, '.git'))) {
       execFileNoThrowSync('git', ['init'], { cwd: projectPath });
 
       if (config.parentRepo) {
@@ -197,7 +193,7 @@ export async function initializeLocalRepos(
       }
     }
 
-    // Initialize implementation repos at ROOT LEVEL
+    // Clone/init each repository
     let processed = 0;
     for (const repo of config.repositories) {
       processed++;
@@ -205,39 +201,13 @@ export async function initializeLocalRepos(
 
       const repoPath = path.join(projectPath, repo.path);
 
-      // Clone or initialize repository
       await cloneOrInitRepository(repoPath, repo.owner, repo.name, repo.createOnGitHub, config.urlType, config.provider, githubToken);
 
-      // Create basic structure (only if repo was just initialized, not cloned)
+      // Create basic structure only if repo was just initialized, not cloned
       if (!repo.createOnGitHub || !await repositoryExistsOnGitHub(repo.owner, repo.name, githubToken)) {
         createBasicRepoStructure(repoPath, repo.id);
       }
 
-      // Update background job progress
-      if (jobManager && jobId) {
-        jobManager.updateProgress(jobId, processed, repo.name, repo.name);
-      }
-
-      spinner.text = `Cloned ${processed}/${totalRepos}: ${repo.name}`;
-    }
-  } else if (config.architecture === 'multi-repo') {
-    // Standard multi-repo: repos as subdirectories
-    let processed = 0;
-    for (const repo of config.repositories) {
-      processed++;
-      spinner.text = `Cloning repositories... (${processed}/${totalRepos}) -> ${repo.name}`;
-
-      const repoPath = path.join(projectPath, repo.path);
-
-      // Clone or initialize repository
-      await cloneOrInitRepository(repoPath, repo.owner, repo.name, repo.createOnGitHub, config.urlType, config.provider, githubToken);
-
-      // Create basic structure (only if repo was just initialized, not cloned)
-      if (!repo.createOnGitHub || !await repositoryExistsOnGitHub(repo.owner, repo.name, githubToken)) {
-        createBasicRepoStructure(repoPath, repo.id);
-      }
-
-      // Update background job progress
       if (jobManager && jobId) {
         jobManager.updateProgress(jobId, processed, repo.name, repo.name);
       }

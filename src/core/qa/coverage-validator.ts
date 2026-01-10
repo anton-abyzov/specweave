@@ -265,44 +265,45 @@ function parseJsonCoverage(content: string): CoverageMetrics {
   };
 }
 
+/** lcov prefix to metric field mapping */
+const LCOV_PREFIXES: ReadonlyArray<{ prefix: string; field: 'lines' | 'functions' | 'branches'; type: 'total' | 'covered' }> = [
+  { prefix: 'LF:', field: 'lines', type: 'total' },
+  { prefix: 'LH:', field: 'lines', type: 'covered' },
+  { prefix: 'FNF:', field: 'functions', type: 'total' },
+  { prefix: 'FNH:', field: 'functions', type: 'covered' },
+  { prefix: 'BRF:', field: 'branches', type: 'total' },
+  { prefix: 'BRH:', field: 'branches', type: 'covered' },
+];
+
 /**
  * Parse lcov.info format.
  */
 function parseLcovCoverage(content: string): CoverageMetrics {
-  let totalLines = 0;
-  let coveredLines = 0;
-  let totalFunctions = 0;
-  let coveredFunctions = 0;
-  let totalBranches = 0;
-  let coveredBranches = 0;
+  const counts = {
+    lines: { total: 0, covered: 0 },
+    functions: { total: 0, covered: 0 },
+    branches: { total: 0, covered: 0 },
+  };
 
-  const lines = content.split('\n');
-
-  for (const line of lines) {
-    if (line.startsWith('LF:')) {
-      totalLines += parseInt(line.substring(3), 10);
-    } else if (line.startsWith('LH:')) {
-      coveredLines += parseInt(line.substring(3), 10);
-    } else if (line.startsWith('FNF:')) {
-      totalFunctions += parseInt(line.substring(4), 10);
-    } else if (line.startsWith('FNH:')) {
-      coveredFunctions += parseInt(line.substring(4), 10);
-    } else if (line.startsWith('BRF:')) {
-      totalBranches += parseInt(line.substring(4), 10);
-    } else if (line.startsWith('BRH:')) {
-      coveredBranches += parseInt(line.substring(4), 10);
+  for (const line of content.split('\n')) {
+    for (const { prefix, field, type } of LCOV_PREFIXES) {
+      if (line.startsWith(prefix)) {
+        counts[field][type] += parseInt(line.substring(prefix.length), 10);
+        break;
+      }
     }
   }
 
-  const linesPct = totalLines > 0 ? (coveredLines / totalLines) * 100 : 0;
-  const funcPct = totalFunctions > 0 ? (coveredFunctions / totalFunctions) * 100 : 0;
-  const branchPct = totalBranches > 0 ? (coveredBranches / totalBranches) * 100 : 0;
+  const calcPct = (c: { total: number; covered: number }): number =>
+    c.total > 0 ? (c.covered / c.total) * 100 : 0;
+
+  const linesPct = calcPct(counts.lines);
 
   return {
     lines: linesPct,
-    statements: linesPct, // lcov doesn't distinguish statements from lines
-    functions: funcPct,
-    branches: branchPct,
+    statements: linesPct,
+    functions: calcPct(counts.functions),
+    branches: calcPct(counts.branches),
     overall: linesPct,
   };
 }

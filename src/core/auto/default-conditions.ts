@@ -198,6 +198,19 @@ export function validateUserConditions(
   return { valid: warnings.length === 0, warnings };
 }
 
+/** Condition display metadata: [icon, description template] */
+const CONDITION_DISPLAY: Record<string, [string, string]> = {
+  build: ['🔨', 'Build must pass'],
+  tests: ['✅', 'Tests must pass (unit + integration)'],
+  e2e: ['🎭', 'E2E tests must pass'],
+  'e2e-coverage': ['📊', 'E2E coverage must be ≥{threshold}%'],
+  coverage: ['📊', 'Test coverage must be ≥{threshold}%'],
+  types: ['🔍', 'Type-check must pass'],
+  integration: ['🔗', 'Integration tests must pass'],
+  lint: ['📋', 'Linting must pass'],
+  command: ['📋', 'Custom command must pass'],
+};
+
 /**
  * Generate human-readable description of conditions
  * Used for CLI output when auto mode starts
@@ -206,73 +219,15 @@ export function validateUserConditions(
  * @returns Array of human-readable descriptions (one per condition)
  */
 export function describeConditions(conditions: CompletionCondition[]): string[] {
-  const lines: string[] = [];
+  return conditions.map((condition) => {
+    const [icon, template] = CONDITION_DISPLAY[condition.type] || ['📋', `${condition.type} check`];
+    const description = template.replace('{threshold}', String(condition.threshold ?? ''));
 
-  for (const condition of conditions) {
-    let line = `  • `;
+    const modifiers: string[] = [];
+    if (condition.mandatory) modifiers.push('MANDATORY');
+    if (condition.autoHeal) modifiers.push(`auto-heal: ${condition.maxRetries || 3} retries`);
 
-    // Icon
-    switch (condition.type) {
-      case 'build':
-        line += '🔨 ';
-        break;
-      case 'tests':
-        line += '✅ ';
-        break;
-      case 'e2e':
-        line += '🎭 ';
-        break;
-      case 'coverage':
-      case 'e2e-coverage':
-        line += '📊 ';
-        break;
-      case 'types':
-        line += '🔍 ';
-        break;
-      case 'integration':
-        line += '🔗 ';
-        break;
-      default:
-        line += '📋 ';
-    }
-
-    // Description
-    switch (condition.type) {
-      case 'build':
-        line += `Build must pass`;
-        break;
-      case 'tests':
-        line += `Tests must pass (unit + integration)`;
-        break;
-      case 'e2e':
-        line += `E2E tests must pass`;
-        break;
-      case 'e2e-coverage':
-        line += `E2E coverage must be ≥${condition.threshold}%`;
-        break;
-      case 'coverage':
-        line += `Test coverage must be ≥${condition.threshold}%`;
-        break;
-      case 'types':
-        line += `Type-check must pass`;
-        break;
-      case 'integration':
-        line += `Integration tests must pass`;
-        break;
-      default:
-        line += `${condition.type} check`;
-    }
-
-    // Modifiers
-    if (condition.mandatory) {
-      line += ` (MANDATORY)`;
-    }
-    if (condition.autoHeal) {
-      line += ` (auto-heal: ${condition.maxRetries || 3} retries)`;
-    }
-
-    lines.push(line);
-  }
-
-  return lines;
+    const suffix = modifiers.length > 0 ? ` (${modifiers.join(', ')})` : '';
+    return `  • ${icon} ${description}${suffix}`;
+  });
 }

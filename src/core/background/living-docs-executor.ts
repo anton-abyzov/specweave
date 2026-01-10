@@ -37,32 +37,38 @@ export interface ChunkResult {
   progress?: Record<string, any>;
 }
 
-const PHASE_NAMES: Record<Phase, string> = {
-  'A': 'Discovery',
-  'B': 'Deep Analysis',
-  'C': 'Org Synthesis',
-  'D': 'Architecture',
-  'E': 'Inconsistencies',
-  'F': 'Strategy',
-  'G': 'Enterprise',
-  'H': 'Diagrams',
-};
+const PHASES: { id: Phase; name: string }[] = [
+  { id: 'A', name: 'Discovery' },
+  { id: 'B', name: 'Deep Analysis' },
+  { id: 'C', name: 'Org Synthesis' },
+  { id: 'D', name: 'Architecture' },
+  { id: 'E', name: 'Inconsistencies' },
+  { id: 'F', name: 'Strategy' },
+  { id: 'G', name: 'Enterprise' },
+  { id: 'H', name: 'Diagrams' },
+];
 
-const PHASE_ORDER: Phase[] = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+const PHASE_ORDER: Phase[] = PHASES.map(p => p.id);
+const PHASE_NAMES: Record<Phase, string> = Object.fromEntries(
+  PHASES.map(p => [p.id, p.name])
+) as Record<Phase, string>;
+
+function getCheckpointPath(projectPath: string): string {
+  return path.join(projectPath, '.specweave/state/living-docs-checkpoint.json');
+}
 
 /**
  * Load checkpoint from filesystem
  */
 export function loadLivingDocsCheckpoint(projectPath: string): LivingDocsCheckpoint | null {
-  const checkpointPath = path.join(projectPath, '.specweave/state/living-docs-checkpoint.json');
+  const checkpointPath = getCheckpointPath(projectPath);
 
   if (!fs.existsSync(checkpointPath)) {
     return null;
   }
 
   try {
-    const content = fs.readFileSync(checkpointPath, 'utf-8');
-    return JSON.parse(content);
+    return JSON.parse(fs.readFileSync(checkpointPath, 'utf-8'));
   } catch (error) {
     logger.warn(`Failed to load living docs checkpoint: ${error}`);
     return null;
@@ -76,13 +82,8 @@ export function saveLivingDocsCheckpoint(
   projectPath: string,
   checkpoint: LivingDocsCheckpoint
 ): void {
-  const statePath = path.join(projectPath, '.specweave/state');
-  const checkpointPath = path.join(statePath, 'living-docs-checkpoint.json');
-
-  // Ensure state directory exists
-  if (!fs.existsSync(statePath)) {
-    fs.mkdirSync(statePath, { recursive: true });
-  }
+  const checkpointPath = getCheckpointPath(projectPath);
+  fs.mkdirSync(path.dirname(checkpointPath), { recursive: true });
 
   try {
     fs.writeFileSync(checkpointPath, JSON.stringify(checkpoint, null, 2));
@@ -251,16 +252,20 @@ async function executePhase(
  * Clean up checkpoint after completion
  */
 export function cleanupCheckpoint(projectPath: string): void {
-  const checkpointPath = path.join(projectPath, '.specweave/state/living-docs-checkpoint.json');
+  const checkpointPath = getCheckpointPath(projectPath);
 
-  if (fs.existsSync(checkpointPath)) {
-    try {
-      fs.unlinkSync(checkpointPath);
-      logger.info('Living docs checkpoint cleaned up');
-    } catch (error) {
-      logger.warn(`Failed to cleanup checkpoint: ${error}`);
-    }
+  try {
+    fs.unlinkSync(checkpointPath);
+    logger.info('Living docs checkpoint cleaned up');
+  } catch {
+    // File doesn't exist or can't be deleted - ignore
   }
+}
+
+function getPhaseIcon(phase: Phase, checkpoint: LivingDocsCheckpoint): string {
+  if (checkpoint.completedPhases.includes(phase)) return '✅';
+  if (phase === checkpoint.currentPhase) return '🔄';
+  return '⏳';
 }
 
 /**
@@ -268,17 +273,13 @@ export function cleanupCheckpoint(projectPath: string): void {
  */
 export function getProgressSummary(checkpoint: LivingDocsCheckpoint): string {
   const completedCount = checkpoint.completedPhases.length;
-  const totalCount = checkpoint.totalPhases;
-  const percentage = Math.round((completedCount / totalCount) * 100);
+  const percentage = Math.round((completedCount / checkpoint.totalPhases) * 100);
 
-  const phaseList = PHASE_ORDER.map((phase) => {
-    const isComplete = checkpoint.completedPhases.includes(phase);
-    const isCurrent = phase === checkpoint.currentPhase;
-    const icon = isComplete ? '✅' : isCurrent ? '🔄' : '⏳';
-    return `  ${icon} Phase ${phase}: ${getPhaseName(phase)}`;
-  }).join('\n');
+  const phaseList = PHASE_ORDER
+    .map(phase => `  ${getPhaseIcon(phase, checkpoint)} Phase ${phase}: ${getPhaseName(phase)}`)
+    .join('\n');
 
-  return `Living Docs Progress: ${completedCount}/${totalCount} phases (${percentage}%)
+  return `Living Docs Progress: ${completedCount}/${checkpoint.totalPhases} phases (${percentage}%)
 
 ${phaseList}
 

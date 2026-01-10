@@ -216,7 +216,6 @@ export class PluginLoader {
     visibility?: 'public' | 'internal';
     invocableBy?: string[];
   } {
-    // Extract YAML frontmatter
     const frontmatterMatch = content.match(/^---\n([\s\S]+?)\n---/);
     if (!frontmatterMatch) {
       return {};
@@ -224,26 +223,21 @@ export class PluginLoader {
 
     const frontmatter = frontmatterMatch[1];
 
-    // Extract visibility field
+    // Extract visibility field - only accept 'public' or 'internal'
     const visibilityMatch = frontmatter.match(/^visibility:\s*(\w+)/m);
-    const visibility = visibilityMatch?.[1] as 'public' | 'internal' | undefined;
+    const rawVisibility = visibilityMatch?.[1];
+    const visibility = rawVisibility === 'public' || rawVisibility === 'internal'
+      ? rawVisibility
+      : undefined;
 
     // Extract invocableBy field (YAML array)
     const invocableByMatch = frontmatter.match(/^invocableBy:\s*\n((?:\s+-\s*.+\n?)+)/m);
-    let invocableBy: string[] | undefined;
+    const invocableBy = invocableByMatch?.[1]
+      .split('\n')
+      .map(line => line.match(/^\s+-\s*(.+)$/)?.[1]?.trim())
+      .filter((item): item is string => !!item);
 
-    if (invocableByMatch) {
-      // Parse YAML array items
-      invocableBy = invocableByMatch[1]
-        .split('\n')
-        .map(line => line.match(/^\s+-\s*(.+)$/)?.[1]?.trim())
-        .filter((item): item is string => !!item);
-    }
-
-    return {
-      visibility: visibility === 'internal' ? 'internal' : visibility === 'public' ? 'public' : undefined,
-      invocableBy
-    };
+    return { visibility, invocableBy };
   }
 
   /**
@@ -318,110 +312,6 @@ export class PluginLoader {
   }
 
   /**
-   * Load skills from plugin
-   *
-   * @param pluginPath - Path to plugin directory
-   * @param skillNames - Skill names from manifest
-   * @returns Array of loaded skills
-   */
-  private async loadSkills(pluginPath: string, skillNames: string[]): Promise<Skill[]> {
-    const skills: Skill[] = [];
-    const skillsDir = path.join(pluginPath, 'skills');
-
-    for (const skillName of skillNames) {
-      const skillPath = path.join(skillsDir, skillName);
-      const skillMdPath = path.join(skillPath, 'SKILL.md');
-
-      if (await fs.pathExists(skillMdPath)) {
-        const content = await fs.readFile(skillMdPath, 'utf-8');
-        const description = this.extractDescription(content);
-
-        // Load test cases if they exist
-        const testCases = await this.loadTestCases(skillPath);
-
-        skills.push({
-          name: skillName,
-          path: skillPath,
-          description,
-          testCases
-        });
-      } else {
-        console.warn(`Skill ${skillName} not found at ${skillMdPath}`);
-      }
-    }
-
-    return skills;
-  }
-
-  /**
-   * Load agents from plugin
-   *
-   * @param pluginPath - Path to plugin directory
-   * @param agentNames - Agent names from manifest
-   * @returns Array of loaded agents
-   */
-  private async loadAgents(pluginPath: string, agentNames: string[]): Promise<Agent[]> {
-    const agents: Agent[] = [];
-    const agentsDir = path.join(pluginPath, 'agents');
-
-    for (const agentName of agentNames) {
-      const agentPath = path.join(agentsDir, agentName);
-      const agentMdPath = path.join(agentPath, 'AGENT.md');
-
-      if (await fs.pathExists(agentMdPath)) {
-        const content = await fs.readFile(agentMdPath, 'utf-8');
-        const systemPrompt = content; // Full content is the system prompt
-        const capabilities = this.extractCapabilities(content);
-
-        agents.push({
-          name: agentName,
-          path: agentPath,
-          systemPrompt,
-          capabilities
-        });
-      } else {
-        console.warn(`Agent ${agentName} not found at ${agentMdPath}`);
-      }
-    }
-
-    return agents;
-  }
-
-  /**
-   * Load commands from plugin
-   *
-   * @param pluginPath - Path to plugin directory
-   * @param commandNames - Command names from manifest
-   * @returns Array of loaded commands
-   */
-  private async loadCommands(pluginPath: string, commandNames: string[]): Promise<Command[]> {
-    const commands: Command[] = [];
-    const commandsDir = path.join(pluginPath, 'commands');
-
-    for (const commandName of commandNames) {
-      // Convert specweave.github.sync → github-sync.md
-      const fileName = commandName.replace('specweave.', '').replace(/\./g, '-') + '.md';
-      const commandPath = path.join(commandsDir, fileName);
-
-      if (await fs.pathExists(commandPath)) {
-        const content = await fs.readFile(commandPath, 'utf-8');
-        const description = this.extractDescription(content);
-
-        commands.push({
-          name: commandName,
-          path: commandPath,
-          description,
-          prompt: content
-        });
-      } else {
-        console.warn(`Command ${commandName} not found at ${commandPath}`);
-      }
-    }
-
-    return commands;
-  }
-
-  /**
    * Load test cases from skill directory
    *
    * @param skillPath - Path to skill directory
@@ -489,78 +379,16 @@ export class PluginLoader {
    * @returns Array of capability strings
    */
   private extractCapabilities(content: string): string[] {
-    const capabilities: string[] = [];
-
-    // Look for "Capabilities" or "Can do" section
     const capabilitiesMatch = content.match(/##\s*Capabilities\s*\n([\s\S]+?)(?=\n##|$)/i);
-    if (capabilitiesMatch) {
-      const lines = capabilitiesMatch[1].split('\n');
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
-          capabilities.push(trimmed.substring(1).trim());
-        }
-      }
+    if (!capabilitiesMatch) {
+      return [];
     }
 
-    return capabilities;
+    return capabilitiesMatch[1]
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.startsWith('-') || line.startsWith('*'))
+      .map(line => line.substring(1).trim());
   }
 
-  /**
-   * Verify plugin integrity
-   *
-   * Checks that all declared skills/agents/commands exist
-   *
-   * @param plugin - Plugin to verify
-   * @returns True if plugin is intact
-   */
-  async verifyPlugin(plugin: Plugin): Promise<boolean> {
-    const { manifest, skills, agents, commands } = plugin;
-
-    // Check skills
-    if (skills.length !== manifest.provides.skills.length) {
-      console.warn(`Plugin ${manifest.name}: Expected ${manifest.provides.skills.length} skills, found ${skills.length}`);
-      return false;
-    }
-
-    // Check agents
-    if (agents.length !== manifest.provides.agents.length) {
-      console.warn(`Plugin ${manifest.name}: Expected ${manifest.provides.agents.length} agents, found ${agents.length}`);
-      return false;
-    }
-
-    // Check commands
-    if (commands.length !== manifest.provides.commands.length) {
-      console.warn(`Plugin ${manifest.name}: Expected ${manifest.provides.commands.length} commands, found ${commands.length}`);
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
-   * Get plugin metadata (lightweight, without loading full plugin)
-   *
-   * @param pluginPath - Path to plugin directory
-   * @returns Plugin metadata
-   */
-  async getMetadata(pluginPath: string): Promise<{
-    name: string;
-    version: string;
-    description: string;
-    skillCount: number;
-    agentCount: number;
-    commandCount: number;
-  }> {
-    const manifest = await this.loadManifest(pluginPath);
-
-    return {
-      name: manifest.name,
-      version: manifest.version,
-      description: manifest.description,
-      skillCount: manifest.provides.skills.length,
-      agentCount: manifest.provides.agents.length,
-      commandCount: manifest.provides.commands.length
-    };
-  }
 }

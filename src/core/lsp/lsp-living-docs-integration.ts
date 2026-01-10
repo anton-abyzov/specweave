@@ -63,28 +63,13 @@ export class LSPLivingDocsAnalyzer {
    */
   async analyzeFiles(files: string[]): Promise<CodeAnalysisResult> {
     const startTime = Date.now();
-    const symbols: SymbolInfo[] = [];
-    let usedLSP = false;
+    if (!this.lspManager) await this.initialize();
 
-    if (!this.lspManager) {
-      await this.initialize();
-    }
+    const allResults = await Promise.all(files.map(file => this.analyzeFile(file)));
+    const symbols = allResults.flatMap(r => r.symbols);
+    const usedLSP = allResults.some(r => r.usedLSP);
 
-    for (const file of files) {
-      const fileSymbols = await this.analyzeFile(file);
-      symbols.push(...fileSymbols.symbols);
-      if (fileSymbols.usedLSP) {
-        usedLSP = true;
-      }
-    }
-
-    const analysisTimeMs = Date.now() - startTime;
-
-    return {
-      symbols,
-      usedLSP,
-      analysisTimeMs
-    };
+    return { symbols, usedLSP, analysisTimeMs: Date.now() - startTime };
   }
 
   /**
@@ -94,20 +79,12 @@ export class LSPLivingDocsAnalyzer {
     const startTime = Date.now();
 
     // Try LSP first
-    if (this.lspManager && this.lspManager.isAvailableForFile(filePath)) {
+    if (this.lspManager?.isAvailableForFile(filePath)) {
       try {
-        const symbols = await this.lspManager.findSymbols(filePath);
-        if (symbols.length > 0) {
-          return {
-            symbols: symbols.map(name => ({
-              name,
-              kind: 'unknown' as const,
-              filePath,
-              line: 0
-            })),
-            usedLSP: true,
-            analysisTimeMs: Date.now() - startTime
-          };
+        const lspSymbols = await this.lspManager.findSymbols(filePath);
+        if (lspSymbols.length > 0) {
+          const symbols = lspSymbols.map(name => ({ name, kind: 'unknown' as const, filePath, line: 0 }));
+          return { symbols, usedLSP: true, analysisTimeMs: Date.now() - startTime };
         }
       } catch (error) {
         logger.debug(`LSP analysis failed for ${filePath}, falling back to grep: ${error}`);
@@ -116,11 +93,7 @@ export class LSPLivingDocsAnalyzer {
 
     // Fallback to grep-based analysis
     const symbols = await this.grepAnalyzeFile(filePath);
-    return {
-      symbols,
-      usedLSP: false,
-      analysisTimeMs: Date.now() - startTime
-    };
+    return { symbols, usedLSP: false, analysisTimeMs: Date.now() - startTime };
   }
 
   /**
@@ -128,82 +101,46 @@ export class LSPLivingDocsAnalyzer {
    */
   private async grepAnalyzeFile(filePath: string): Promise<SymbolInfo[]> {
     const symbols: SymbolInfo[] = [];
+    const ext = path.extname(filePath);
 
     try {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const lines = content.split('\n');
-      const ext = path.extname(filePath);
+      const lines = fs.readFileSync(filePath, 'utf-8').split('\n');
+      const patterns = this.getPatternsForExtension(ext);
 
-      // TypeScript/JavaScript
-      if (['.ts', '.tsx', '.js', '.jsx'].includes(ext)) {
-        lines.forEach((line, idx) => {
-          // Functions
-          const funcMatch = line.match(/^export\s+(async\s+)?function\s+(\w+)/);
-          if (funcMatch) {
-            symbols.push({
-              name: funcMatch[2],
-              kind: 'function',
-              filePath,
-              line: idx + 1
-            });
+      lines.forEach((line, idx) => {
+        for (const { regex, kind } of patterns) {
+          const match = line.match(regex);
+          if (match) {
+            symbols.push({ name: match[1], kind, filePath, line: idx + 1 });
           }
-
-          // Classes
-          const classMatch = line.match(/^export\s+(class|interface)\s+(\w+)/);
-          if (classMatch) {
-            symbols.push({
-              name: classMatch[2],
-              kind: classMatch[1] === 'class' ? 'class' : 'interface',
-              filePath,
-              line: idx + 1
-            });
-          }
-
-          // Types
-          const typeMatch = line.match(/^export\s+type\s+(\w+)/);
-          if (typeMatch) {
-            symbols.push({
-              name: typeMatch[1],
-              kind: 'type',
-              filePath,
-              line: idx + 1
-            });
-          }
-        });
-      }
-
-      // Python
-      if (ext === '.py') {
-        lines.forEach((line, idx) => {
-          // Functions
-          const funcMatch = line.match(/^def\s+(\w+)/);
-          if (funcMatch) {
-            symbols.push({
-              name: funcMatch[1],
-              kind: 'function',
-              filePath,
-              line: idx + 1
-            });
-          }
-
-          // Classes
-          const classMatch = line.match(/^class\s+(\w+)/);
-          if (classMatch) {
-            symbols.push({
-              name: classMatch[1],
-              kind: 'class',
-              filePath,
-              line: idx + 1
-            });
-          }
-        });
-      }
-
+        }
+      });
     } catch (error) {
       logger.error(`Failed to analyze file ${filePath}: ${error}`);
     }
 
     return symbols;
+  }
+
+  /**
+   * Get regex patterns for file extension
+   */
+  private getPatternsForExtension(ext: string): Array<{ regex: RegExp; kind: SymbolInfo['kind'] }> {
+    if (['.ts', '.tsx', '.js', '.jsx'].includes(ext)) {
+      return [
+        { regex: /^export\s+(?:async\s+)?function\s+(\w+)/, kind: 'function' },
+        { regex: /^export\s+class\s+(\w+)/, kind: 'class' },
+        { regex: /^export\s+interface\s+(\w+)/, kind: 'interface' },
+        { regex: /^export\s+type\s+(\w+)/, kind: 'type' },
+      ];
+    }
+    if (ext === '.py') {
+      return [
+        { regex: /^def\s+(\w+)/, kind: 'function' },
+        { regex: /^class\s+(\w+)/, kind: 'class' },
+      ];
+    }
+    return [];
   }
 
   /**

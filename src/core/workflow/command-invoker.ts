@@ -151,28 +151,21 @@ export class CommandInvoker {
 
   /**
    * Classify error severity
-   *
-   * @param result - Command result
-   * @returns Error severity level
    */
   classifyError(result: InvokeResult): ErrorSeverity {
     const error = result.error || result.stderr || '';
 
-    // Critical errors (don't retry)
-    if (error.includes('ENOENT') || error.includes('command not found')) {
+    const CRITICAL_PATTERNS = ['ENOENT', 'command not found', 'permission denied', 'EACCES'];
+    const TRANSIENT_PATTERNS = ['ECONNREFUSED', 'ETIMEDOUT'];
+
+    if (CRITICAL_PATTERNS.some(pattern => error.includes(pattern))) {
       return ErrorSeverity.CRITICAL;
     }
 
-    if (error.includes('permission denied') || error.includes('EACCES')) {
-      return ErrorSeverity.CRITICAL;
-    }
-
-    // Transient errors (retry)
-    if (error.includes('ECONNREFUSED') || error.includes('ETIMEDOUT')) {
+    if (TRANSIENT_PATTERNS.some(pattern => error.includes(pattern))) {
       return ErrorSeverity.WARNING;
     }
 
-    // Default to error
     return ErrorSeverity.ERROR;
   }
 

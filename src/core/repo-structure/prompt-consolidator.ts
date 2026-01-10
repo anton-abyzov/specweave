@@ -224,19 +224,11 @@ ${scopes.map(s => `• ${s}`).join('\n')}
   `.trim();
 }
 
-/**
- * Format architecture choice for display
- *
- * @param choice - Architecture choice
- * @returns Human-readable format
- */
+const ARCHITECTURE_LABELS: Record<ArchitectureChoice, string> = {
+  'single': 'Single repository',
+  'github-parent': 'Parent repo + nested repos (GitHub)'
+};
+
 export function formatArchitectureChoice(choice: ArchitectureChoice): string {
-  switch (choice) {
-    case 'single':
-      return 'Single repository';
-    case 'github-parent':
-      return 'Parent repo + nested repos (GitHub)';
-    default:
-      return choice;
-  }
+  return ARCHITECTURE_LABELS[choice] ?? choice;
 }

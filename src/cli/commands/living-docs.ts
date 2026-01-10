@@ -222,16 +222,13 @@ function getRunningLivingDocsJob(projectPath: string): BackgroundJob | null {
   return null;
 }
 
-/**
- * Prompt user to resume an orphaned job
- */
+/** Prompt user to resume an orphaned job */
 async function promptResumeOrphanedJob(orphanedJobs: BackgroundJob[]): Promise<string | null> {
   console.log(chalk.yellow('\nFound orphaned Living Docs job(s):'));
 
   for (const job of orphanedJobs) {
-    const progress = job.progress;
-    const percentage = progress.total > 0
-      ? Math.round((progress.current / progress.total) * 100)
+    const percentage = job.progress.total > 0
+      ? Math.round((job.progress.current / job.progress.total) * 100)
       : 0;
     console.log(chalk.gray(`  [${job.id.slice(0, 8)}] ${percentage}% complete - ${getTimeAgo(job.updatedAt)}`));
   }
@@ -239,26 +236,16 @@ async function promptResumeOrphanedJob(orphanedJobs: BackgroundJob[]): Promise<s
   console.log('');
 
   const choices = [
-    ...orphanedJobs.map(j => ({
-      value: j.id,
-      name: `Resume ${j.id.slice(0, 8)} (${Math.round((j.progress.current / j.progress.total) * 100)}% complete)`,
-    })),
+    ...orphanedJobs.map(j => {
+      const pct = Math.round((j.progress.current / j.progress.total) * 100);
+      return { value: j.id, name: `Resume ${j.id.slice(0, 8)} (${pct}% complete)` };
+    }),
     { value: 'new', name: 'Start fresh (ignore orphaned jobs)' },
     { value: 'cancel', name: 'Cancel' },
   ];
 
-  const answer = await select({
-    message: 'What would you like to do?',
-    choices,
-  });
-
-  if (answer === 'cancel') {
-    return null;
-  }
-  if (answer === 'new') {
-    return null;
-  }
-  return answer as string;
+  const answer = await select({ message: 'What would you like to do?', choices });
+  return answer === 'cancel' || answer === 'new' ? null : answer as string;
 }
 
 /**
@@ -512,9 +499,7 @@ function findJobByPrefix(jobs: BackgroundJob[], prefix: string): BackgroundJob |
 }
 
 function getTimeAgo(dateStr: string | Date): string {
-  const date = new Date(dateStr);
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
   if (seconds < 60) return 'just now';
   if (seconds < 3600) return `${Math.floor(seconds / 60)} mins ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;

@@ -37,40 +37,31 @@ export class StartupChecker {
    */
   static async quickCheck(): Promise<void> {
     try {
-      // Check throttle
-      if (!(await this.shouldRunCheck())) {
+      if (!this.shouldRunCheck()) {
         return;
       }
 
-      // Get all installed plugin paths
       const pluginPaths = this.getPluginPaths();
       const issues: string[] = [];
 
-      // Quick checks on all plugins
       for (const pluginPath of pluginPaths) {
-        // Check for merge conflicts in shell scripts
         const scripts = this.findShellScripts(pluginPath);
         for (const script of scripts) {
           if (this.hasMergeConflict(script)) {
             issues.push(`Merge conflict in ${path.basename(script)}`);
           }
-
-          // Check bash syntax (fast check)
           if (!this.validateBashSyntax(script)) {
             issues.push(`Syntax error in ${path.basename(script)}`);
           }
         }
       }
 
-      // Update throttle timestamp
       this.updateThrottle();
 
-      // Alert if critical issues found
       if (issues.length > 0) {
-        console.warn('⚠️  Plugin cache issues detected. Run: specweave cache-status');
+        console.warn('Plugin cache issues detected. Run: specweave cache-status');
       }
     } catch (error) {
-      // Fail silently (non-blocking startup)
       logger.debug(`Startup check failed (non-critical): ${error}`);
     }
   }
@@ -80,7 +71,7 @@ export class StartupChecker {
    *
    * @returns True if check should run
    */
-  static async shouldRunCheck(): Promise<boolean> {
+  private static shouldRunCheck(): boolean {
     try {
       if (!fs.existsSync(this.THROTTLE_FILE)) {
         return true;
@@ -90,8 +81,7 @@ export class StartupChecker {
       const elapsed = Date.now() - lastCheckTime;
 
       return elapsed > this.THROTTLE_MS;
-    } catch (error) {
-      // If throttle file is corrupted, allow check
+    } catch {
       return true;
     }
   }
@@ -120,23 +110,18 @@ export class StartupChecker {
         return [];
       }
 
-      const paths: string[] = [];
       const pluginNames = fs.readdirSync(this.PLUGIN_CACHE_BASE);
 
-      for (const pluginName of pluginNames) {
+      return pluginNames.flatMap((pluginName) => {
         const pluginDir = path.join(this.PLUGIN_CACHE_BASE, pluginName);
-        if (!fs.statSync(pluginDir).isDirectory()) continue;
-
-        const versions = fs.readdirSync(pluginDir);
-        for (const version of versions) {
-          const versionDir = path.join(pluginDir, version);
-          if (fs.statSync(versionDir).isDirectory()) {
-            paths.push(versionDir);
-          }
+        if (!fs.statSync(pluginDir).isDirectory()) {
+          return [];
         }
-      }
 
-      return paths;
+        return fs.readdirSync(pluginDir)
+          .map((version) => path.join(pluginDir, version))
+          .filter((versionDir) => fs.statSync(versionDir).isDirectory());
+      });
     } catch (error) {
       logger.debug(`Failed to get plugin paths: ${error}`);
       return [];
@@ -151,20 +136,13 @@ export class StartupChecker {
    */
   private static findShellScripts(dir: string): string[] {
     try {
-      const scripts: string[] = [];
       const entries = fs.readdirSync(dir, { recursive: true });
 
-      for (const entry of entries) {
-        if (typeof entry !== 'string') continue;
-
-        const fullPath = path.join(dir, entry);
-        if (fs.statSync(fullPath).isFile() && entry.endsWith('.sh')) {
-          scripts.push(fullPath);
-        }
-      }
-
-      return scripts;
-    } catch (error) {
+      return entries
+        .filter((entry): entry is string => typeof entry === 'string' && entry.endsWith('.sh'))
+        .map((entry) => path.join(dir, entry))
+        .filter((fullPath) => fs.statSync(fullPath).isFile());
+    } catch {
       return [];
     }
   }
@@ -179,7 +157,7 @@ export class StartupChecker {
     try {
       const content = fs.readFileSync(filePath, 'utf8');
       return /<{7}|={7}|>{7}/.test(content);
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -194,7 +172,7 @@ export class StartupChecker {
     try {
       execSync(`bash -n "${scriptPath}"`, { stdio: 'pipe' });
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

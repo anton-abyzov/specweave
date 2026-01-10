@@ -47,51 +47,35 @@ function getInstalledSkillsDir(): string | null {
   return fs.existsSync(projectSkillsDir) ? projectSkillsDir : null;
 }
 
-/**
- * Get skill names from a skills directory
- */
+/** Get skill names from a skills directory */
 function getSkillNames(skillsDir: string): string[] {
-  if (!fs.existsSync(skillsDir)) {
-    return [];
-  }
+  if (!fs.existsSync(skillsDir)) return [];
 
   return fs
     .readdirSync(skillsDir, { withFileTypes: true })
-    .filter((dirent) => dirent.isDirectory())
-    .filter((dirent) => {
-      // Must have SKILL.md to be a valid skill
-      const skillFile = path.join(skillsDir, dirent.name, 'SKILL.md');
-      return fs.existsSync(skillFile);
-    })
-    .map((dirent) => dirent.name);
+    .filter(dirent => dirent.isDirectory())
+    .filter(dirent => fs.existsSync(path.join(skillsDir, dirent.name, 'SKILL.md')))
+    .map(dirent => dirent.name);
 }
 
-/**
- * Backup existing memory files before merge
- */
+/** Backup existing memory files before merge (keeps last 5) */
 function backupMemoryFile(memoryPath: string): void {
   if (!fs.existsSync(memoryPath)) return;
 
   const backupDir = path.join(path.dirname(memoryPath), '.memory-backups');
-  if (!fs.existsSync(backupDir)) {
-    fs.mkdirSync(backupDir, { recursive: true });
-  }
+  fs.mkdirSync(backupDir, { recursive: true });
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const backupPath = path.join(backupDir, `MEMORY-${timestamp}.md`);
+  fs.copyFileSync(memoryPath, path.join(backupDir, `MEMORY-${timestamp}.md`));
 
-  fs.copyFileSync(memoryPath, backupPath);
-
-  // Keep only last 5 backups
+  // Prune old backups (keep last 5)
   const backups = fs
     .readdirSync(backupDir)
-    .filter((f) => f.startsWith('MEMORY-'))
+    .filter(f => f.startsWith('MEMORY-'))
     .sort()
     .reverse();
 
-  for (let i = 5; i < backups.length; i++) {
-    fs.unlinkSync(path.join(backupDir, backups[i]));
-  }
+  backups.slice(5).forEach(f => fs.unlinkSync(path.join(backupDir, f)));
 }
 
 /**

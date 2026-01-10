@@ -62,33 +62,18 @@ export class ToolIndexBuilder {
 
       const targetPlugins = options.plugins ?? pluginDirs;
 
-      // Parallel plugin scanning for better performance with many plugins
-      const pluginPromises = targetPlugins.map(async (pluginName) => {
-        const pluginPath = path.join(pluginsDir, pluginName);
-        if (!fs.existsSync(pluginPath)) {
-          return { status: 'warning' as const, pluginName, message: `Plugin not found: ${pluginName}` };
-        }
-        try {
-          const tools = await this.indexPlugin(pluginPath, pluginName);
-          return { status: 'success' as const, pluginName, tools };
-        } catch (error) {
-          return { status: 'error' as const, pluginName, message: `Failed to index plugin ${pluginName}: ${error}` };
-        }
-      });
+      // Parallel plugin scanning
+      const pluginResults = await Promise.all(
+        targetPlugins.map((pluginName) => this.tryIndexPlugin(pluginsDir, pluginName))
+      );
 
-      const results = await Promise.allSettled(pluginPromises);
-      for (const result of results) {
-        if (result.status === 'fulfilled') {
-          const value = result.value;
-          if (value.status === 'success') {
-            this.indexedTools.push(...value.tools);
-          } else if (value.status === 'warning') {
-            warnings.push(value.message);
-          } else if (value.status === 'error') {
-            errors.push(value.message);
-          }
-        } else {
-          errors.push(`Unexpected error: ${result.reason}`);
+      for (const result of pluginResults) {
+        if (result.tools) {
+          this.indexedTools.push(...result.tools);
+        } else if (result.error) {
+          errors.push(result.error);
+        } else if (result.warning) {
+          warnings.push(result.warning);
         }
       }
 
@@ -110,25 +95,37 @@ export class ToolIndexBuilder {
     }
   }
 
+  private async tryIndexPlugin(
+    pluginsDir: string,
+    pluginName: string
+  ): Promise<{ tools?: IndexedTool[]; warning?: string; error?: string }> {
+    const pluginPath = path.join(pluginsDir, pluginName);
+    if (!fs.existsSync(pluginPath)) {
+      return { warning: `Plugin not found: ${pluginName}` };
+    }
+    try {
+      const tools = await this.indexPlugin(pluginPath, pluginName);
+      return { tools };
+    } catch (error) {
+      return { error: `Failed to index plugin ${pluginName}: ${error}` };
+    }
+  }
+
   async indexPlugin(pluginPath: string, pluginName: string): Promise<IndexedTool[]> {
-    const tools: IndexedTool[] = [];
+    const toolDirs: Array<{ subdir: string; indexer: (p: string, n: string) => Promise<IndexedTool[]> }> = [
+      { subdir: 'skills', indexer: (p, n) => this.indexSkills(p, n) },
+      { subdir: 'agents', indexer: (p, n) => this.indexAgents(p, n) },
+      { subdir: 'commands', indexer: (p, n) => this.indexCommands(p, n) },
+    ];
 
-    const skillsPath = path.join(pluginPath, 'skills');
-    if (fs.existsSync(skillsPath)) {
-      tools.push(...await this.indexSkills(skillsPath, pluginName));
-    }
+    const results = await Promise.all(
+      toolDirs.map(async ({ subdir, indexer }): Promise<IndexedTool[]> => {
+        const fullPath = path.join(pluginPath, subdir);
+        return fs.existsSync(fullPath) ? indexer(fullPath, pluginName) : [];
+      })
+    );
 
-    const agentsPath = path.join(pluginPath, 'agents');
-    if (fs.existsSync(agentsPath)) {
-      tools.push(...await this.indexAgents(agentsPath, pluginName));
-    }
-
-    const commandsPath = path.join(pluginPath, 'commands');
-    if (fs.existsSync(commandsPath)) {
-      tools.push(...await this.indexCommands(commandsPath, pluginName));
-    }
-
-    return tools;
+    return results.flat();
   }
 
   private async indexSkills(skillsPath: string, pluginName: string): Promise<IndexedTool[]> {

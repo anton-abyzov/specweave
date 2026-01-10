@@ -158,9 +158,8 @@ export class SkillTriggerExtractor {
     // 5. Look for "When to Use" sections in content
     const whenToUseMatch = content.match(/##\s*When to Use[^\n]*\n([\s\S]+?)(?:\n##|$)/i);
     if (whenToUseMatch) {
-      const techTerms = this.extractTechnologyTerms(whenToUseMatch[1]);
-      // Only add strong technology terms from this section
-      techTerms.filter(t => this.isStrongTechnologyTerm(t)).forEach(t => triggers.add(t));
+      const whenToUseTerms = this.extractTechnologyTerms(whenToUseMatch[1]);
+      whenToUseTerms.filter(t => this.isStrongTechnologyTerm(t)).forEach(t => triggers.add(t));
     }
 
     return Array.from(triggers).filter(t => t.length >= 2);
@@ -307,20 +306,47 @@ export class SkillTriggerExtractor {
   }
 
   /**
+   * Scan a component directory (skills or agents) and extract triggers
+   */
+  private async scanComponentDir(
+    componentDir: string,
+    pluginName: string,
+    type: 'skill' | 'agent',
+    fileName: string
+  ): Promise<ExtractedTriggers[]> {
+    const triggers: ExtractedTriggers[] = [];
+
+    if (!(await fs.pathExists(componentDir))) {
+      return triggers;
+    }
+
+    const entries = await fs.readdir(componentDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+
+      const filePath = path.join(componentDir, entry.name, fileName);
+      if (await fs.pathExists(filePath)) {
+        const content = await fs.readFile(filePath, 'utf-8');
+        triggers.push(this.extractFromContent(content, entry.name, pluginName, type, filePath));
+      }
+    }
+
+    return triggers;
+  }
+
+  /**
    * Scan all plugins and extract triggers
    *
    * @param pluginsDir - Path to plugins directory
    * @returns Array of extracted triggers
    */
   async scanAllPlugins(pluginsDir: string): Promise<ExtractedTriggers[]> {
-    const allTriggers: ExtractedTriggers[] = [];
-
-    // Get all plugin directories
     if (!(await fs.pathExists(pluginsDir))) {
-      return allTriggers;
+      return [];
     }
 
     const entries = await fs.readdir(pluginsDir, { withFileTypes: true });
+    const allTriggers: ExtractedTriggers[] = [];
 
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
@@ -328,49 +354,12 @@ export class SkillTriggerExtractor {
       const pluginPath = path.join(pluginsDir, entry.name);
       const pluginName = entry.name;
 
-      // Scan skills
-      const skillsDir = path.join(pluginPath, 'skills');
-      if (await fs.pathExists(skillsDir)) {
-        const skillEntries = await fs.readdir(skillsDir, { withFileTypes: true });
-        for (const skillEntry of skillEntries) {
-          if (!skillEntry.isDirectory()) continue;
+      const [skillTriggers, agentTriggers] = await Promise.all([
+        this.scanComponentDir(path.join(pluginPath, 'skills'), pluginName, 'skill', 'SKILL.md'),
+        this.scanComponentDir(path.join(pluginPath, 'agents'), pluginName, 'agent', 'AGENT.md')
+      ]);
 
-          const skillPath = path.join(skillsDir, skillEntry.name, 'SKILL.md');
-          if (await fs.pathExists(skillPath)) {
-            const content = await fs.readFile(skillPath, 'utf-8');
-            const triggers = this.extractFromContent(
-              content,
-              skillEntry.name,
-              pluginName,
-              'skill',
-              skillPath
-            );
-            allTriggers.push(triggers);
-          }
-        }
-      }
-
-      // Scan agents
-      const agentsDir = path.join(pluginPath, 'agents');
-      if (await fs.pathExists(agentsDir)) {
-        const agentEntries = await fs.readdir(agentsDir, { withFileTypes: true });
-        for (const agentEntry of agentEntries) {
-          if (!agentEntry.isDirectory()) continue;
-
-          const agentPath = path.join(agentsDir, agentEntry.name, 'AGENT.md');
-          if (await fs.pathExists(agentPath)) {
-            const content = await fs.readFile(agentPath, 'utf-8');
-            const triggers = this.extractFromContent(
-              content,
-              agentEntry.name,
-              pluginName,
-              'agent',
-              agentPath
-            );
-            allTriggers.push(triggers);
-          }
-        }
-      }
+      allTriggers.push(...skillTriggers, ...agentTriggers);
     }
 
     return allTriggers;

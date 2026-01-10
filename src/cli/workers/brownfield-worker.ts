@@ -13,6 +13,7 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import type { AnalysisDepth } from '../../core/background/types.js';
 import {
   BrownfieldJobConfig,
   BrownfieldPhase,
@@ -75,8 +76,6 @@ interface DocInfo {
   lastModified: Date;
   wordCount: number;
 }
-
-import type { AnalysisDepth } from '../../core/background/types.js';
 
 /**
  * Analysis context shared across phases
@@ -704,9 +703,15 @@ Only include issues with confidence > 70. Return empty array [] if no issues fou
   ): 'critical' | 'high' | 'medium' | 'low' {
     const ratio = undocumentedCount / totalCount;
 
-    if (ratio > 0.8 && undocumentedCount > 5) return 'critical';
-    if (ratio > 0.5 && undocumentedCount > 3) return 'high';
-    if (ratio > 0.3) return 'medium';
+    if (ratio > 0.8 && undocumentedCount > 5) {
+      return 'critical';
+    }
+    if (ratio > 0.5 && undocumentedCount > 3) {
+      return 'high';
+    }
+    if (ratio > 0.3) {
+      return 'medium';
+    }
     return 'low';
   }
 

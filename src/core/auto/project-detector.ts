@@ -156,100 +156,60 @@ const CONFIDENCE_THRESHOLD = 0.7;
  * Detect project type based on files, directories, and dependencies
  */
 export function detectProjectType(projectRoot: string): ProjectDetection {
-  const startTime = Date.now();
-
-  // Check for package.json (Node.js projects)
+  // Load package.json if available
   const packageJsonPath = path.join(projectRoot, 'package.json');
   let packageJson: any = null;
   if (fs.existsSync(packageJsonPath)) {
     try {
       packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-    } catch (error) {
+    } catch {
       // Invalid package.json, continue without it
     }
   }
 
-  // Evaluate each project type
-  const results: Array<{
-    type: ProjectType;
-    score: number;
-    maxScore: number;
-    confidence: number;
-    indicators: Indicator[];
-    mandatoryConditions: string[];
-  }> = [];
+  // Evaluate each project type and find best match
+  const results = DETECTION_RULES.map((rule) => {
+    const indicators = rule.indicators.map((def) => ({
+      ...def,
+      found: checkIndicator(projectRoot, def, packageJson),
+    }));
 
-  for (const rule of DETECTION_RULES) {
-    const indicators: Indicator[] = [];
-    let score = 0;
+    const score = indicators
+      .filter((i) => i.found)
+      .reduce((sum, i) => sum + i.weight, 0);
 
-    for (const indicatorDef of rule.indicators) {
-      const found = checkIndicator(projectRoot, indicatorDef, packageJson);
-
-      indicators.push({
-        ...indicatorDef,
-        found,
-      });
-
-      if (found) {
-        score += indicatorDef.weight;
-      }
-    }
-
-    // Confidence is simply the total score (weights sum to 1.0 for strong match)
-    // A score of 0.7+ indicates strong project type match
-    const confidence = score;
-
-    results.push({
+    return {
       type: rule.type,
-      score,
-      maxScore: score,
-      confidence,
+      confidence: score,
       indicators,
       mandatoryConditions: rule.mandatoryConditions,
-    });
-  }
+    };
+  }).sort((a, b) => b.confidence - a.confidence);
 
-  // Sort by confidence (descending)
-  results.sort((a, b) => b.confidence - a.confidence);
-
-  // Get best match
   const best = results[0];
+  const matchedIndicators = best.indicators.filter((i) => i.found);
+  const hasStrongIndicator = matchedIndicators.some((i) => i.weight >= 0.8);
 
-  // Check if confidence meets threshold
-  if (best.confidence >= CONFIDENCE_THRESHOLD) {
-    // Count how many indicators matched (for multi-factor validation)
-    const matchedIndicators = best.indicators.filter((i) => i.found);
-    const matchedCount = matchedIndicators.length;
-    const hasStrongIndicator = matchedIndicators.some((i) => i.weight >= 0.8);
-
-    // Valid detection if:
-    // - Multiple factors (2+ indicators), OR
-    // - Single strong indicator (weight >= 0.8)
-    if (matchedCount >= 2 || hasStrongIndicator) {
-      const elapsedMs = Date.now() - startTime;
-
-      return {
-        type: best.type,
-        confidence: best.confidence,
-        indicators: best.indicators.filter((i) => i.found),
-        frameworks: detectFrameworks(packageJson),
-        testFrameworks: detectTestFrameworks(projectRoot, packageJson),
-        mandatoryConditions: best.mandatoryConditions,
-      };
-    }
+  // Valid detection: confidence threshold met AND (multiple factors OR strong indicator)
+  if (best.confidence >= CONFIDENCE_THRESHOLD && (matchedIndicators.length >= 2 || hasStrongIndicator)) {
+    return {
+      type: best.type,
+      confidence: best.confidence,
+      indicators: matchedIndicators,
+      frameworks: detectFrameworks(packageJson),
+      testFrameworks: detectTestFrameworks(projectRoot, packageJson),
+      mandatoryConditions: best.mandatoryConditions,
+    };
   }
 
   // Fallback to generic
-  const elapsedMs = Date.now() - startTime;
-
   return {
     type: 'generic',
     confidence: 0,
     indicators: [],
     frameworks: detectFrameworks(packageJson),
     testFrameworks: detectTestFrameworks(projectRoot, packageJson),
-    mandatoryConditions: ['tests'], // Minimal enforcement for generic projects
+    mandatoryConditions: ['tests'],
   };
 }
 

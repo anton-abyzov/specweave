@@ -174,29 +174,27 @@ function analyzePricingModel(
 ): void {
   const cheapest = platformCosts[0];
 
-  // Compare compute pricing
-  const computePrices = platformCosts.map(
-    (pc) => pc.platform.pricing.payAsYouGo.computePerGbSecond
-  );
-  const maxComputePrice = Math.max(...computePrices);
-  const minComputePrice = Math.min(...computePrices);
-
-  if (maxComputePrice > minComputePrice * 2) {
-    differences.push(
-      `Compute pricing varies significantly: ${cheapest.platform.name} charges $${minComputePrice.toFixed(8)}/GB-second vs. $${maxComputePrice.toFixed(8)}/GB-second for the most expensive`
-    );
+  // Helper to check and report significant price variance
+  function reportPriceVariance(
+    prices: number[],
+    label: string,
+    unit: string,
+    decimals: number
+  ): void {
+    const maxPrice = Math.max(...prices);
+    const minPrice = Math.min(...prices);
+    if (maxPrice > minPrice * 2) {
+      differences.push(
+        `${label} pricing varies significantly: ${cheapest.platform.name} charges $${minPrice.toFixed(decimals)}${unit} vs. $${maxPrice.toFixed(decimals)}${unit} for the most expensive`
+      );
+    }
   }
 
-  // Compare request pricing
+  const computePrices = platformCosts.map((pc) => pc.platform.pricing.payAsYouGo.computePerGbSecond);
+  reportPriceVariance(computePrices, 'Compute', '/GB-second', 8);
+
   const requestPrices = platformCosts.map((pc) => pc.platform.pricing.payAsYouGo.requestsPer1M);
-  const maxRequestPrice = Math.max(...requestPrices);
-  const minRequestPrice = Math.min(...requestPrices);
-
-  if (maxRequestPrice > minRequestPrice * 2) {
-    differences.push(
-      `Request pricing varies: ${cheapest.platform.name} charges $${minRequestPrice.toFixed(2)}/1M requests vs. $${maxRequestPrice.toFixed(2)}/1M for the most expensive`
-    );
-  }
+  reportPriceVariance(requestPrices, 'Request', '/1M requests', 2);
 }
 
 /**
@@ -236,27 +234,30 @@ function analyzeFreeTier(
  * Analyze cost breakdown differences
  */
 function analyzeBreakdown(platformCosts: PlatformCostComparison[], differences: string[]): void {
-  // Find which cost category dominates
   const cheapest = platformCosts[0];
   const { breakdown } = cheapest;
 
-  const totalBeforeFreeTier = breakdown.total;
-  if (totalBeforeFreeTier === 0) return;
+  if (breakdown.total === 0 || cheapest.totalCost === 0) {
+    return;
+  }
 
   const computePercent = (breakdown.compute / cheapest.totalCost) * 100;
   const requestPercent = (breakdown.requests / cheapest.totalCost) * 100;
   const dataTransferPercent = (breakdown.dataTransfer / cheapest.totalCost) * 100;
 
+  // Cost factor dominance threshold
+  const DOMINANCE_THRESHOLD = 60;
+
   // Identify the dominant cost factor
-  if (computePercent > 60) {
+  if (computePercent > DOMINANCE_THRESHOLD) {
     differences.push(
-      `Compute costs dominate (${computePercent.toFixed(0)}%). Platforms with lower compute rates (like Firebase at $0.0000025/GB-second) will be cheaper.`
+      `Compute costs dominate (${computePercent.toFixed(0)}%). Platforms with lower compute rates will be cheaper.`
     );
-  } else if (requestPercent > 60) {
+  } else if (requestPercent > DOMINANCE_THRESHOLD) {
     differences.push(
-      `Request costs dominate (${requestPercent.toFixed(0)}%). Platforms with lower request rates (like AWS Lambda at $0.20/1M) will be cheaper.`
+      `Request costs dominate (${requestPercent.toFixed(0)}%). Platforms with lower request rates will be cheaper.`
     );
-  } else if (dataTransferPercent > 60) {
+  } else if (dataTransferPercent > DOMINANCE_THRESHOLD) {
     differences.push(
       `Data transfer costs dominate (${dataTransferPercent.toFixed(0)}%). Consider using a CDN or compression to reduce transfer costs.`
     );

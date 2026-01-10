@@ -119,19 +119,23 @@ export function detectContext(
 
   // Determine context based on highest score
   const maxScore = Math.max(scores['pet-project'], scores.startup, scores.enterprise);
-  const context: ProjectContext =
-    maxScore === scores.enterprise
-      ? 'enterprise'
-      : maxScore === scores.startup
-      ? 'startup'
-      : 'pet-project';
+  let context: ProjectContext = 'pet-project';
+  if (maxScore === scores.enterprise) {
+    context = 'enterprise';
+  } else if (maxScore === scores.startup) {
+    context = 'startup';
+  }
 
   // Calculate confidence score (0-100)
   const totalScore = scores['pet-project'] + scores.startup + scores.enterprise;
   const confidenceScore = totalScore > 0 ? Math.min(100, (maxScore / totalScore) * 100) : 30;
 
-  const confidenceLevel: ConfidenceLevel =
-    confidenceScore >= 70 ? 'high' : confidenceScore >= 40 ? 'medium' : 'low';
+  let confidenceLevel: ConfidenceLevel = 'low';
+  if (confidenceScore >= 70) {
+    confidenceLevel = 'high';
+  } else if (confidenceScore >= 40) {
+    confidenceLevel = 'medium';
+  }
 
   // Collect signals (keywords that matched)
   const signals: string[] = [];

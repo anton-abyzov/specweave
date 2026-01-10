@@ -43,6 +43,18 @@ export function findPackageRoot(startDir: string): string | null {
 }
 
 /**
+ * Find first existing path from candidates
+ */
+function findExistingPath(candidates: string[]): string | null {
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+/**
  * Find the source directory, trying multiple possible locations
  * Handles both development and installed package scenarios
  * Windows-compatible with proper path normalization
@@ -52,50 +64,28 @@ export function findPackageRoot(startDir: string): string | null {
  * @returns Absolute path to the source directory
  */
 export function findSourceDir(relativePath: string, dirname: string): string {
-  // First, try to find package root by walking up from dirname
   const packageRoot = findPackageRoot(dirname);
 
   if (packageRoot) {
-    // Try directly in package root FIRST (for plugins/, .claude-plugin/)
-    // This is critical because package.json includes these folders for npm publish
-    const rootPath = path.normalize(path.join(packageRoot, relativePath));
-    if (fs.existsSync(rootPath)) {
-      return rootPath;
-    }
-
-    // Try src/ directory (for templates/, utils/, etc.)
-    const srcPath = path.normalize(path.join(packageRoot, 'src', relativePath));
-    if (fs.existsSync(srcPath)) {
-      return srcPath;
-    }
-
-    // Try dist/ directory (fallback for compiled outputs)
-    const distPath = path.normalize(path.join(packageRoot, 'dist', relativePath));
-    if (fs.existsSync(distPath)) {
-      return distPath;
-    }
+    // Try package root subdirectories: root, src/, dist/
+    const candidates = [
+      path.normalize(path.join(packageRoot, relativePath)),
+      path.normalize(path.join(packageRoot, 'src', relativePath)),
+      path.normalize(path.join(packageRoot, 'dist', relativePath)),
+    ];
+    const found = findExistingPath(candidates);
+    if (found) return found;
   }
 
   // Fallback: Try multiple possible locations relative to dirname
-  const possiblePaths = [
-    // Development: dist/cli/commands -> src/
+  const fallbackPaths = [
     path.normalize(path.join(dirname, '../../..', relativePath)),
-    // Installed: node_modules/specweave/dist/cli/commands -> node_modules/specweave/src/
     path.normalize(path.join(dirname, '../../../src', relativePath)),
-    // Alternative: go up from dist/ to package root, then to src/
     path.normalize(path.join(dirname, '../../..', 'src', relativePath)),
-    // Absolute from package root (for global installs)
     path.resolve(dirname, '../../../src', relativePath),
   ];
 
-  for (const testPath of possiblePaths) {
-    if (fs.existsSync(testPath)) {
-      return testPath;
-    }
-  }
-
-  // If nothing found, return the first path and let the caller handle the error
-  return possiblePaths[0];
+  return findExistingPath(fallbackPaths) ?? fallbackPaths[0];
 }
 
 /**

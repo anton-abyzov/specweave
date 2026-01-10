@@ -109,16 +109,14 @@ export class ProjectContextManager {
    * Get all projects
    */
   async getAllProjects(): Promise<Record<string, ProjectContext>> {
-    const config = await this.load();
-    return config.projects || {};
+    return (await this.load()).projects ?? {};
   }
 
   /**
    * Get a specific project by ID
    */
   async getProject(projectId: string): Promise<ProjectContext | null> {
-    const config = await this.load();
-    return config.projects?.[projectId] || null;
+    return (await this.load()).projects?.[projectId] ?? null;
   }
 
   /**
@@ -221,19 +219,12 @@ export class ProjectContextManager {
 
   /**
    * Detect project from increment description
-   *
-   * @param description Increment description text
-   * @returns Detection result with matched project and confidence score
    */
   async detectProject(description: string): Promise<ProjectDetectionResult> {
-    const config = await this.load();
-    const projects = config.projects || {};
+    const projects = (await this.load()).projects ?? {};
 
     if (Object.keys(projects).length === 0) {
-      return {
-        confidence: 0,
-        matchedKeywords: [],
-      };
+      return { confidence: 0, matchedKeywords: [] };
     }
 
     const lowerDesc = description.toLowerCase();
@@ -245,19 +236,16 @@ export class ProjectContextManager {
       let score = 0;
       const matchedKeywords: string[] = [];
 
-      // Check project name
       if (lowerDesc.includes(project.name.toLowerCase())) {
         score += 10;
         matchedKeywords.push(project.name);
       }
 
-      // Check team name
       if (project.team && lowerDesc.includes(project.team.toLowerCase())) {
         score += 5;
         matchedKeywords.push(project.team);
       }
 
-      // Check keywords
       for (const keyword of project.keywords) {
         if (lowerDesc.includes(keyword.toLowerCase())) {
           score += 3;
@@ -265,7 +253,6 @@ export class ProjectContextManager {
         }
       }
 
-      // Update best match
       if (score > bestScore) {
         bestScore = score;
         bestMatch = project;
@@ -273,21 +260,14 @@ export class ProjectContextManager {
       }
     }
 
-    // Calculate confidence (0-1)
     const confidence = bestScore > 0 ? Math.min(bestScore / 10, 1) : 0;
 
-    const result: ProjectDetectionResult = {
+    return {
       project: bestMatch,
       confidence,
       matchedKeywords: bestKeywords,
+      suggestedProfile: bestMatch?.defaultSyncProfile,
     };
-
-    // Add suggested profile if project has default
-    if (bestMatch?.defaultSyncProfile) {
-      result.suggestedProfile = bestMatch.defaultSyncProfile;
-    }
-
-    return result;
   }
 
   /**
@@ -430,24 +410,16 @@ ${project.increments && project.increments.length > 0
     totalIncrements: number;
     projectsByTeam: Record<string, number>;
   }> {
-    const config = await this.load();
-    const projects = config.projects || {};
+    const projects = (await this.load()).projects ?? {};
+    const projectList = Object.values(projects);
 
-    const stats = {
-      totalProjects: Object.keys(projects).length,
-      totalIncrements: 0,
-      projectsByTeam: {} as Record<string, number>,
+    return {
+      totalProjects: projectList.length,
+      totalIncrements: projectList.reduce((sum, p) => sum + (p.increments?.length ?? 0), 0),
+      projectsByTeam: projectList.reduce((acc, p) => {
+        if (p.team) acc[p.team] = (acc[p.team] ?? 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
     };
-
-    for (const project of Object.values(projects)) {
-      stats.totalIncrements += project.increments?.length || 0;
-
-      if (project.team) {
-        stats.projectsByTeam[project.team] =
-          (stats.projectsByTeam[project.team] || 0) + 1;
-      }
-    }
-
-    return stats;
   }
 }

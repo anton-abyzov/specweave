@@ -95,8 +95,7 @@ export class CostEstimator {
     const breakdown: CostBreakdown[] = [];
     let totalCost = 0;
 
-    // Planning phase: 2 AI calls (Architect + test-aware-planner)
-    const planningCost = this.estimatePlanning(incrementPath);
+    const planningCost = this.estimatePlanning();
     breakdown.push(planningCost);
     totalCost += planningCost.cost;
 
@@ -131,10 +130,9 @@ export class CostEstimator {
   }
 
   /**
-   * Estimate planning cost
+   * Estimate planning cost (Architect + test-aware-planner = 2 calls)
    */
-  private estimatePlanning(incrementPath: string): CostBreakdown {
-    // Planning = Architect + test-aware-planner = 2 calls
+  private estimatePlanning(): CostBreakdown {
     return {
       phase: 'Planning',
       aiCalls: 2,
@@ -227,33 +225,23 @@ export class CostEstimator {
    * Determine risk level based on total cost
    */
   private determineRiskLevel(cost: number): RiskLevel {
-    if (cost < this.lowThreshold) {
-      return RiskLevel.LOW;
-    } else if (cost < this.mediumThreshold) {
-      return RiskLevel.MEDIUM;
-    } else if (cost < this.highThreshold) {
-      return RiskLevel.HIGH;
-    } else {
-      return RiskLevel.CRITICAL;
-    }
+    if (cost < this.lowThreshold) return RiskLevel.LOW;
+    if (cost < this.mediumThreshold) return RiskLevel.MEDIUM;
+    if (cost < this.highThreshold) return RiskLevel.HIGH;
+    return RiskLevel.CRITICAL;
   }
 
   /**
-   * Calculate confidence in estimate
+   * Calculate confidence in estimate based on available files
    */
   private async calculateConfidence(incrementPath: string): Promise<number> {
-    // Higher confidence if tasks.md exists
     const tasksExists = await fs.pathExists(path.join(incrementPath, 'tasks.md'));
     const planExists = await fs.pathExists(path.join(incrementPath, 'plan.md'));
     const specExists = await fs.pathExists(path.join(incrementPath, 'spec.md'));
 
-    if (tasksExists && planExists) {
-      return 0.9; // High confidence (tasks are defined)
-    } else if (specExists) {
-      return 0.6; // Medium confidence (only spec exists)
-    } else {
-      return 0.3; // Low confidence (estimating blindly)
-    }
+    if (tasksExists && planExists) return 0.9;
+    if (specExists) return 0.6;
+    return 0.3;
   }
 
   /**
