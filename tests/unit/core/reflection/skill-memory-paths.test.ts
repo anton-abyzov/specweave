@@ -19,6 +19,7 @@ import {
   getSkillDefinitionPath,
   getGlobalMemoryDir,
   ensureSkillMemoryDir,
+  getClaudeUserDir,
 } from '../../../../src/core/reflection/skill-memory-paths.js';
 
 describe('skill-memory-paths', () => {
@@ -65,6 +66,31 @@ describe('skill-memory-paths', () => {
     it('should return project path when given projectRoot', () => {
       const result = getSkillsDirectory(testDir);
       expect(result).toBe(path.join(testDir, '.specweave', 'plugins', 'specweave', 'skills'));
+    });
+
+    it('should return Claude Code path when NO projectRoot provided and in Claude environment', () => {
+      // Set up Claude Code environment
+      process.env.CLAUDE_CODE = '1';
+
+      // Call WITHOUT projectRoot to trigger Claude Code path
+      const result = getSkillsDirectory();
+
+      // Should use ~/.claude/plugins/marketplaces/specweave/plugins/specweave/skills pattern
+      expect(result).toContain('plugins');
+      expect(result).toContain('marketplaces');
+      expect(result).toContain('specweave');
+      expect(result).toContain('skills');
+    });
+
+    it('should respect explicit projectRoot even when Claude Code env is set', () => {
+      // Even with Claude Code env set, explicit projectRoot should be used
+      process.env.CLAUDE_CODE = '1';
+
+      const result = getSkillsDirectory(testDir);
+
+      // Should use project-local path, NOT Claude Code path
+      expect(result).toBe(path.join(testDir, '.specweave', 'plugins', 'specweave', 'skills'));
+      expect(result).not.toContain('.claude');
     });
   });
 
@@ -127,6 +153,39 @@ describe('skill-memory-paths', () => {
       const result = getGlobalMemoryDir(testDir);
       expect(result).toBe(path.join(testDir, '.specweave', 'memory'));
     });
+
+    it('should return Claude Code path when NO projectRoot provided and in Claude environment', () => {
+      // Set up Claude Code environment
+      process.env.CLAUDE_CODE = '1';
+
+      // Call WITHOUT projectRoot to trigger Claude Code path
+      const result = getGlobalMemoryDir();
+
+      // Should use ~/.claude/plugins/marketplaces/specweave/memory pattern
+      // NOT ~/.claude/specweave/memory (old broken pattern)
+      expect(result).toContain('plugins');
+      expect(result).toContain('marketplaces');
+      expect(result).toContain('specweave');
+      expect(result).toContain('memory');
+      expect(result).not.toMatch(/\.claude[\/\\]specweave[\/\\]memory$/);
+
+      // Verify the full path structure
+      const expectedPathParts = ['plugins', 'marketplaces', 'specweave', 'memory'];
+      for (const part of expectedPathParts) {
+        expect(result).toContain(part);
+      }
+    });
+
+    it('should respect explicit projectRoot even when Claude Code env is set', () => {
+      // Even with Claude Code env set, explicit projectRoot should be used
+      process.env.CLAUDE_CODE = '1';
+
+      const result = getGlobalMemoryDir(testDir);
+
+      // Should use project-local path, NOT Claude Code path
+      expect(result).toBe(path.join(testDir, '.specweave', 'memory'));
+      expect(result).not.toContain('.claude');
+    });
   });
 
   describe('ensureSkillMemoryDir', () => {
@@ -147,6 +206,47 @@ describe('skill-memory-paths', () => {
       ensureSkillMemoryDir('frontend', testDir);
 
       expect(fs.existsSync(existingDir)).toBe(true);
+    });
+  });
+
+  describe('Claude Code path consistency', () => {
+    it('should use consistent base path for skills and global memory in Claude Code', () => {
+      process.env.CLAUDE_CODE = '1';
+
+      // Call WITHOUT projectRoot to trigger Claude Code paths
+      const skillsPath = getSkillsDirectory();
+      const memoryPath = getGlobalMemoryDir();
+      const claudeDir = getClaudeUserDir();
+
+      // Both should be under the same plugins/marketplaces/specweave base
+      const basePathPart = path.join(claudeDir, 'plugins', 'marketplaces', 'specweave');
+
+      expect(skillsPath.startsWith(basePathPart)).toBe(true);
+      expect(memoryPath.startsWith(basePathPart)).toBe(true);
+
+      // Memory should be directly under specweave/memory
+      expect(memoryPath).toBe(path.join(basePathPart, 'memory'));
+
+      // Skills should be under specweave/plugins/specweave/skills
+      expect(skillsPath).toBe(path.join(basePathPart, 'plugins', 'specweave', 'skills'));
+    });
+
+    it('should NOT use the old broken ~/.claude/specweave/memory path', () => {
+      process.env.CLAUDE_CODE = '1';
+
+      // Call WITHOUT projectRoot to trigger Claude Code path
+      const memoryPath = getGlobalMemoryDir();
+      const claudeDir = getClaudeUserDir();
+
+      // The OLD broken path was: ~/.claude/specweave/memory
+      const brokenPath = path.join(claudeDir, 'specweave', 'memory');
+
+      expect(memoryPath).not.toBe(brokenPath);
+
+      // Should NOT be directly under claudeDir/specweave
+      const brokenPattern = path.join(claudeDir, 'specweave');
+      // The path can contain 'specweave' but NOT as direct child of claudeDir
+      expect(memoryPath.indexOf(brokenPattern + path.sep + 'memory')).toBe(-1);
     });
   });
 });

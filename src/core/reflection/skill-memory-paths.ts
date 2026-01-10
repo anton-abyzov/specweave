@@ -94,18 +94,27 @@ export function isClaudeCodeEnvironment(): boolean {
 /**
  * Get the skills directory for the current environment
  *
- * Claude Code: ~/.claude/plugins/marketplaces/specweave/plugins/specweave/skills/
- * Non-Claude: {projectRoot}/.specweave/plugins/specweave/skills/
+ * When projectRoot is explicitly provided, use project-local skills directory.
+ * Otherwise, detect Claude Code environment and use marketplace location.
+ *
+ * Claude Code (no projectRoot): ~/.claude/plugins/marketplaces/specweave/plugins/specweave/skills/
+ * Project-local: {projectRoot}/.specweave/plugins/specweave/skills/
  */
 export function getSkillsDirectory(projectRoot?: string): string {
+  // If projectRoot is explicitly provided, always use project-local path
+  // This ensures tests work correctly and allows explicit project targeting
+  if (projectRoot) {
+    return path.join(projectRoot, '.specweave', 'plugins', 'specweave', 'skills');
+  }
+
+  // No projectRoot provided - detect environment
   if (isClaudeCodeEnvironment()) {
     const claudeDir = getClaudeUserDir();
     return path.join(claudeDir, 'plugins', 'marketplaces', 'specweave', 'plugins', 'specweave', 'skills');
   }
 
-  // Non-Claude: use project root
-  const root = projectRoot || process.cwd();
-  return path.join(root, '.specweave', 'plugins', 'specweave', 'skills');
+  // Fallback: use current working directory
+  return path.join(process.cwd(), '.specweave', 'plugins', 'specweave', 'skills');
 }
 
 /**
@@ -224,15 +233,29 @@ export function resolveSkillPaths(skillName: string, projectRoot?: string): Skil
 /**
  * Get global memory directory (for non-skill-specific learnings)
  * These are general learnings that don't map to a specific skill.
+ *
+ * When projectRoot is explicitly provided, use project-local memory directory.
+ * Otherwise, detect Claude Code environment and use marketplace location.
+ *
+ * Claude Code (no projectRoot): ~/.claude/plugins/marketplaces/specweave/memory/
+ * Project-local: {projectRoot}/.specweave/memory/
  */
 export function getGlobalMemoryDir(projectRoot?: string): string {
-  if (isClaudeCodeEnvironment()) {
-    const claudeDir = getClaudeUserDir();
-    return path.join(claudeDir, 'specweave', 'memory');
+  // If projectRoot is explicitly provided, always use project-local path
+  // This ensures tests work correctly and allows explicit project targeting
+  if (projectRoot) {
+    return path.join(projectRoot, '.specweave', 'memory');
   }
 
-  const root = projectRoot || process.cwd();
-  return path.join(root, '.specweave', 'memory');
+  // No projectRoot provided - detect environment
+  if (isClaudeCodeEnvironment()) {
+    const claudeDir = getClaudeUserDir();
+    // Match the path structure used by getSkillsDirectory: plugins/marketplaces/specweave/
+    return path.join(claudeDir, 'plugins', 'marketplaces', 'specweave', 'memory');
+  }
+
+  // Fallback: use current working directory
+  return path.join(process.cwd(), '.specweave', 'memory');
 }
 
 /**
