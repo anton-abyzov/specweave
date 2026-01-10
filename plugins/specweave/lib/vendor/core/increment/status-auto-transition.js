@@ -23,8 +23,6 @@ import { MetadataManager } from './metadata-manager.js';
 const TRANSITION_TRIGGERS = {
     /** spec.md existence indicates planning started */
     SPEC_FILE: 'spec.md',
-    /** plan.md existence indicates detailed planning */
-    PLAN_FILE: 'plan.md',
     /** tasks.md existence indicates ready for active work */
     TASKS_FILE: 'tasks.md'
 };

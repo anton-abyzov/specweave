@@ -50,25 +50,18 @@ export interface ServiceStatus {
 /**
  * MonitorService - Orchestrates CI/CD monitoring components
  *
- * Features:
- * - Coordinates WorkflowMonitor, StateManager, and Notifier
- * - Automatic failure notifications
- * - Service status and health checks
- * - Graceful startup and shutdown
- * - Event-driven architecture
+ * Coordinates WorkflowMonitor, StateManager, and Notifier for
+ * automatic failure detection and notification.
  */
 export class MonitorService {
-  private config: Required<MonitorServiceConfig>;
-  private monitor: WorkflowMonitor;
-  private stateManager: StateManager;
-  private notifier: Notifier;
+  private readonly config: Required<MonitorServiceConfig>;
+  private readonly monitor: WorkflowMonitor;
+  private readonly stateManager: StateManager;
+  private readonly notifier: Notifier;
   private startTime: number | null = null;
-  private pollCallback: (() => Promise<void>) | null = null;
 
   /**
    * Create monitor service
-   *
-   * @param config - Service configuration
    */
   constructor(config: MonitorServiceConfig) {
     this.config = {
@@ -77,7 +70,6 @@ export class MonitorService {
       autoNotify: config.autoNotify ?? true
     };
 
-    // Initialize components
     this.stateManager = new StateManager(this.config.rootDir);
     this.notifier = new Notifier(this.config.notifier);
     this.monitor = new WorkflowMonitor(this.config.monitor, this.stateManager);
@@ -91,29 +83,14 @@ export class MonitorService {
       throw new Error('Service already running');
     }
 
-    console.log('🚀 Starting CI/CD Monitor Service...');
-
-    // Record start time
+    console.log('Starting CI/CD Monitor Service...');
     this.startTime = Date.now();
-
-    // Set up poll callback for notifications
-    if (this.config.autoNotify) {
-      this.pollCallback = async () => {
-        await this.checkForNewFailures();
-      };
-
-      // Register callback (executed after each poll)
-      // Note: WorkflowMonitor doesn't have callback support yet, but this demonstrates the pattern
-      // In production, we'd extend WorkflowMonitor to support event listeners
-    }
-
-    // Start monitor
     this.monitor.start();
 
-    console.log('✅ Service started');
-    console.log(`   Repository: ${this.config.monitor.owner}/${this.config.monitor.repo}`);
-    console.log(`   Poll interval: ${this.config.monitor.pollInterval}ms`);
-    console.log(`   Notifications: ${this.config.notifier.channels.join(', ')}`);
+    console.log('Service started');
+    console.log(`  Repository: ${this.config.monitor.owner}/${this.config.monitor.repo}`);
+    console.log(`  Poll interval: ${this.config.monitor.pollInterval}ms`);
+    console.log(`  Notifications: ${this.config.notifier.channels.join(', ')}`);
   }
 
   /**
@@ -124,16 +101,10 @@ export class MonitorService {
       throw new Error('Service not running');
     }
 
-    console.log('⏹️  Stopping CI/CD Monitor Service...');
-
-    // Stop monitor
+    console.log('Stopping CI/CD Monitor Service...');
     this.monitor.stop();
-
-    // Clear start time
     this.startTime = null;
-    this.pollCallback = null;
-
-    console.log('✅ Service stopped');
+    console.log('Service stopped');
   }
 
   /**

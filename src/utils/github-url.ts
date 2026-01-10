@@ -11,6 +11,18 @@ export interface GitHubUrlOptions {
 }
 
 /**
+ * Clean a local path for use in GitHub URLs
+ * Removes leading ./ and ensures .specweave prefix if needed
+ */
+function cleanLocalPath(localPath: string): string {
+  let cleanPath = localPath.replace(/^\.\//, '');
+  if (!cleanPath.startsWith('.specweave')) {
+    cleanPath = `.specweave/${cleanPath}`;
+  }
+  return cleanPath;
+}
+
+/**
  * Convert local file path to GitHub URL
  *
  * @param localPath - Local file path (can start with ./ or be absolute)
@@ -29,15 +41,7 @@ export interface GitHubUrlOptions {
  */
 export function toGitHubUrl(localPath: string, options: GitHubUrlOptions): string {
   const { owner, repo, branch = 'develop' } = options;
-
-  // Remove leading ./ but keep .specweave folder name
-  let cleanPath = localPath.replace(/^\.\//, '');
-
-  // If path doesn't start with .specweave, add it
-  if (!cleanPath.startsWith('.specweave')) {
-    cleanPath = `.specweave/${cleanPath}`;
-  }
-
+  const cleanPath = cleanLocalPath(localPath);
   return `https://github.com/${owner}/${repo}/blob/${branch}/${cleanPath}`;
 }
 
@@ -60,15 +64,7 @@ export function toGitHubUrl(localPath: string, options: GitHubUrlOptions): strin
  */
 export function toGitHubTreeUrl(localPath: string, options: GitHubUrlOptions): string {
   const { owner, repo, branch = 'develop' } = options;
-
-  // Remove leading ./ but keep .specweave folder name
-  let cleanPath = localPath.replace(/^\.\//, '');
-
-  // If path doesn't start with .specweave, add it
-  if (!cleanPath.startsWith('.specweave')) {
-    cleanPath = `.specweave/${cleanPath}`;
-  }
-
+  const cleanPath = cleanLocalPath(localPath);
   return `https://github.com/${owner}/${repo}/tree/${branch}/${cleanPath}`;
 }
 

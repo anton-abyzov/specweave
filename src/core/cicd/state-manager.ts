@@ -55,27 +55,21 @@ export class StateManager implements IStateManager {
   }
 
   /**
-   * Load state from disk
+   * Load state from disk (read-only, no locking)
    *
-   * @returns Current state (or default if file doesn't exist)
+   * @returns Current state (or default if file doesn't exist/invalid)
    */
   async loadState(): Promise<CICDMonitorState> {
     try {
-      // Ensure directory exists
       await fs.ensureDir(path.dirname(this.statePath));
 
-      // Check if state file exists
       if (!(await fs.pathExists(this.statePath))) {
-        // Initialize with default state
-        await this.saveState(DEFAULT_STATE);
         return { ...DEFAULT_STATE };
       }
 
-      // Read and parse state
       const content = await fs.readFile(this.statePath, 'utf-8');
       const state = JSON.parse(content) as CICDMonitorState;
 
-      // Validate state structure
       if (!state.failures || !state.version) {
         console.warn('Invalid state file, resetting to default');
         return { ...DEFAULT_STATE };
@@ -94,56 +88,19 @@ export class StateManager implements IStateManager {
    * @param state - State to save
    */
   async saveState(state: CICDMonitorState): Promise<void> {
-    // Acquire lock
     await this.acquireLock();
-
     try {
-      await this.saveStateWithoutLock(state);
+      await this.writeState(state);
     } finally {
-      // Always release lock
       await this.releaseLock();
     }
   }
 
   /**
-   * Load state without acquiring lock (for internal use when lock already held)
+   * Write state to disk (internal, assumes lock is held)
    */
-  private async loadStateWithoutLock(): Promise<CICDMonitorState> {
-    try {
-      // Ensure directory exists
-      await fs.ensureDir(path.dirname(this.statePath));
-
-      // Check if state file exists
-      if (!(await fs.pathExists(this.statePath))) {
-        // Return default state (don't save yet)
-        return { ...DEFAULT_STATE };
-      }
-
-      // Read and parse state
-      const content = await fs.readFile(this.statePath, 'utf-8');
-      const state = JSON.parse(content) as CICDMonitorState;
-
-      // Validate state structure
-      if (!state.failures || !state.version) {
-        console.warn('Invalid state file, resetting to default');
-        return { ...DEFAULT_STATE };
-      }
-
-      return state;
-    } catch (error) {
-      console.error('Error loading state:', error);
-      return { ...DEFAULT_STATE };
-    }
-  }
-
-  /**
-   * Save state without acquiring lock (for internal use when lock already held)
-   */
-  private async saveStateWithoutLock(state: CICDMonitorState): Promise<void> {
-    // Ensure directory exists
+  private async writeState(state: CICDMonitorState): Promise<void> {
     await fs.ensureDir(path.dirname(this.statePath));
-
-    // Write state atomically (write to temp, then rename)
     const tempPath = `${this.statePath}.tmp`;
     await fs.writeFile(tempPath, JSON.stringify(state, null, 2), 'utf-8');
     await fs.rename(tempPath, this.statePath);
@@ -189,27 +146,19 @@ export class StateManager implements IStateManager {
    * @param failure - Failure record to add
    */
   async addFailure(failure: FailureRecord): Promise<void> {
-    // Acquire lock for entire read-modify-write operation
     await this.acquireLock();
-
     try {
-      // Load state (without acquiring lock again since we already have it)
-      const state = await this.loadStateWithoutLock();
+      const state = await this.loadState();
 
-      // Check for duplicate
       if (state.failures[failure.runId]) {
         console.log(`Failure ${failure.runId} already tracked, skipping`);
         return;
       }
 
-      // Add failure
       state.failures[failure.runId] = failure;
       state.totalFailures++;
-
-      // Save state (without acquiring lock again since we already have it)
-      await this.saveStateWithoutLock(state);
+      await this.writeState(state);
     } finally {
-      // Always release lock
       await this.releaseLock();
     }
   }

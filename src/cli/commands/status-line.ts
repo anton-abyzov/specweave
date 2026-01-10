@@ -26,23 +26,16 @@ export function registerStatusLineCommand(program: Command): void {
       try {
         const rootDir = process.cwd();
 
-        // Load config if specified
+        // Load config from specified path or default location
+        const configPath = options.config
+          ? path.resolve(options.config)
+          : path.join(rootDir, '.specweave/config.json');
+
         let config = {};
-        if (options.config) {
-          const configPath = path.resolve(options.config);
-          if (fs.existsSync(configPath)) {
-            const configContent = fs.readFileSync(configPath, 'utf8');
-            const fullConfig = JSON.parse(configContent);
-            config = fullConfig.statusLine || {};
-          }
-        } else {
-          // Try default config location
-          const defaultConfigPath = path.join(rootDir, '.specweave/config.json');
-          if (fs.existsSync(defaultConfigPath)) {
-            const configContent = fs.readFileSync(defaultConfigPath, 'utf8');
-            const fullConfig = JSON.parse(configContent);
-            config = fullConfig.statusLine || {};
-          }
+        if (fs.existsSync(configPath)) {
+          const configContent = fs.readFileSync(configPath, 'utf8');
+          const fullConfig = JSON.parse(configContent);
+          config = fullConfig.statusLine || {};
         }
 
         const manager = new StatusLineManager(rootDir, config);

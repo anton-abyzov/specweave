@@ -157,7 +157,6 @@ export class AdoClient {
   private credentials: AdoCredentials;
   private baseUrl: string;
   private apiVersion = '7.0';
-  private useMcp = false; // Will be set based on MCP availability
 
   /**
    * Create ADO client
@@ -181,10 +180,6 @@ export class AdoClient {
       this.credentials = credentialsManager.getAdoCredentials();
     }
     this.baseUrl = `https://dev.azure.com/${this.credentials.organization}/${this.credentials.project}`;
-
-    // TODO: Detect MCP server availability
-    // For now, default to REST API
-    this.useMcp = false;
   }
 
   /**
@@ -193,6 +188,17 @@ export class AdoClient {
   private getAuthHeader(): string {
     const auth = Buffer.from(`:${this.credentials.pat}`).toString('base64');
     return `Basic ${auth}`;
+  }
+
+  /**
+   * Check if response text looks like HTML (error page)
+   */
+  private looksLikeHtml(text: string, contentType?: string): boolean {
+    const trimmed = text.trim();
+    return trimmed.startsWith('<!DOCTYPE') ||
+           trimmed.startsWith('<html') ||
+           trimmed.startsWith('<HTML') ||
+           (contentType !== undefined && !contentType.includes('application/json') && text.includes('<'));
   }
 
   /**
@@ -212,13 +218,7 @@ export class AdoClient {
     const contentType = response.headers.get('content-type') || '';
     const responseText = await response.text();
 
-    // Check if response looks like HTML
-    const looksLikeHtml = responseText.trim().startsWith('<!DOCTYPE') ||
-                          responseText.trim().startsWith('<html') ||
-                          responseText.trim().startsWith('<HTML') ||
-                          (!contentType.includes('application/json') && responseText.includes('<'));
-
-    if (looksLikeHtml) {
+    if (this.looksLikeHtml(responseText, contentType)) {
       const possibleCauses = [
         'Invalid or expired Personal Access Token (PAT)',
         `Incorrect organization name "${this.credentials.organization}"`,
@@ -235,10 +235,9 @@ export class AdoClient {
       );
     }
 
-    // Try to parse as JSON
     try {
       return JSON.parse(responseText) as T;
-    } catch (parseError) {
+    } catch {
       const preview = responseText.substring(0, 200);
       throw new Error(
         `Azure DevOps returned invalid JSON.\n` +
@@ -256,10 +255,8 @@ export class AdoClient {
    */
   private async handleErrorResponse(response: Response, context: string): Promise<never> {
     const errorText = await response.text();
-    const looksLikeHtml = errorText.trim().startsWith('<!DOCTYPE') ||
-                          errorText.trim().startsWith('<html');
 
-    if (looksLikeHtml) {
+    if (this.looksLikeHtml(errorText)) {
       throw new Error(
         `ADO API Error (${response.status}) while ${context}.\n` +
         `Azure DevOps returned an HTML error page, which typically indicates:\n` +

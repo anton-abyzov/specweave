@@ -27,9 +27,6 @@ export interface AvailabilityMessage {
  * Get user-friendly availability message based on Claude status
  */
 export function getAvailabilityMessage(status: ClaudeAvailabilityInfo): AvailabilityMessage {
-  const platform = os.platform();
-
-  // Case 1: Claude available - all good
   if (status.available) {
     return {
       title: 'Claude Code Ready',
@@ -40,17 +37,16 @@ export function getAvailabilityMessage(status: ClaudeAvailabilityInfo): Availabi
     };
   }
 
-  // Case 2: CLI not installed
+  const platform = os.platform();
+
   if (!status.cliInstalled) {
     return getNotInstalledMessage(platform);
   }
 
-  // Case 3: CLI installed but auth missing or failed
   if (!status.authExists) {
     return getAuthMissingMessage(platform);
   }
 
-  // Case 4: Other error (timeout, network, etc.)
   return getGenericErrorMessage(status.error || 'Unknown error', platform);
 }
 
@@ -114,9 +110,7 @@ function getNotInstalledMessage(platform: string): AvailabilityMessage {
  * Get message for authentication missing
  */
 function getAuthMissingMessage(platform: string): AvailabilityMessage {
-  const authDir = platform === 'win32'
-    ? '%USERPROFILE%\\.claude\\'
-    : '~/.claude/';
+  const authDir = platform === 'win32' ? '%USERPROFILE%\\.claude\\' : '~/.claude/';
 
   return {
     title: 'Claude Code Not Authenticated',

@@ -50,10 +50,8 @@ export class CacheInvalidator {
     }
 
     if (options.strategy === 'soft') {
-      // Soft invalidation: mark as stale in metadata
       await this.softInvalidate(actualCachePath);
-    } else if (options.strategy === 'hard') {
-      // Hard invalidation: backup, delete, restore memories
+    } else {
       await this.hardInvalidate(pluginName, version, actualCachePath, options);
     }
   }
@@ -158,15 +156,14 @@ export class CacheInvalidator {
         }
       }
 
-      // Write backup metadata (only include actual files, not directories)
       const metadata: BackupMetadata = {
         pluginName,
         version,
         timestamp: new Date().toISOString(),
         fileCount,
         files: files
-          .filter(f => typeof f === 'string')
-          .filter(f => fs.statSync(path.join(skillsPath, f as string)).isFile()) as string[]
+          .filter((f): f is string => typeof f === 'string')
+          .filter((f) => fs.statSync(path.join(skillsPath, f)).isFile())
       };
 
       fs.writeFileSync(
@@ -244,59 +241,55 @@ export class CacheInvalidator {
         return false;
       }
 
-      const metadata: BackupMetadata = JSON.parse(
-        fs.readFileSync(metadataPath, 'utf8')
-      );
+      const metadata: BackupMetadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
 
-      // Check if all files from backup metadata exist (skip directories for older backups)
+      // Verify all backup metadata files exist
       for (const file of metadata.files) {
         const backupFilePath = path.join(backupPath, file);
-        // Skip directory entries (for backwards compatibility with older backups)
-        if (fs.existsSync(backupFilePath) && !fs.statSync(backupFilePath).isFile()) {
+        const isDirectory = fs.existsSync(backupFilePath) && !fs.statSync(backupFilePath).isFile();
+
+        if (isDirectory) {
           continue;
         }
-        if (!fs.existsSync(backupFilePath) && !file.includes('.backup-metadata.json')) {
+        if (!fs.existsSync(backupFilePath)) {
           logger.warn(`Missing file in backup: ${file}`);
           return false;
         }
       }
 
-      // Check if backup is complete (all current cache files are in backup)
+      // Validate against current cache if it exists
       const skillsPath = path.join(cachePath, 'skills');
-      if (fs.existsSync(skillsPath)) {
-        // Get all current files in cache
-        const currentFiles = fs.readdirSync(skillsPath, { recursive: true })
-          .filter(f => typeof f === 'string' && fs.statSync(path.join(skillsPath, f as string)).isFile()) as string[];
+      if (!fs.existsSync(skillsPath)) {
+        return true;
+      }
 
-        // Check if all current files exist in backup metadata
-        for (const file of currentFiles) {
-          if (!metadata.files.includes(file)) {
-            logger.warn(`File ${file} exists in cache but not in backup`);
-            return false;
-          }
+      const currentFiles = fs.readdirSync(skillsPath, { recursive: true })
+        .filter((f): f is string => typeof f === 'string')
+        .filter((f) => fs.statSync(path.join(skillsPath, f)).isFile());
+
+      // Ensure all current files are in backup
+      for (const file of currentFiles) {
+        if (!metadata.files.includes(file)) {
+          logger.warn(`File ${file} exists in cache but not in backup`);
+          return false;
         }
+      }
 
-        // Check if file contents match (only for actual files, skip directories)
-        for (const file of metadata.files) {
-          const originalPath = path.join(skillsPath, file);
-          const backupFilePath = path.join(backupPath, file);
+      // Verify content matches for files that exist in both locations
+      for (const file of metadata.files) {
+        const originalPath = path.join(skillsPath, file);
+        const backupFilePath = path.join(backupPath, file);
 
-          // Skip if either path is a directory (defensive check for older backups)
-          if (fs.existsSync(originalPath) && !fs.statSync(originalPath).isFile()) {
-            continue;
-          }
-          if (fs.existsSync(backupFilePath) && !fs.statSync(backupFilePath).isFile()) {
-            continue;
-          }
+        const originalIsFile = fs.existsSync(originalPath) && fs.statSync(originalPath).isFile();
+        const backupIsFile = fs.existsSync(backupFilePath) && fs.statSync(backupFilePath).isFile();
 
-          if (fs.existsSync(originalPath) && fs.existsSync(backupFilePath)) {
-            const originalContent = fs.readFileSync(originalPath, 'utf8');
-            const backupContent = fs.readFileSync(backupFilePath, 'utf8');
+        if (originalIsFile && backupIsFile) {
+          const originalContent = fs.readFileSync(originalPath, 'utf8');
+          const backupContent = fs.readFileSync(backupFilePath, 'utf8');
 
-            if (originalContent !== backupContent) {
-              logger.warn(`Content mismatch for ${file}`);
-              return false;
-            }
+          if (originalContent !== backupContent) {
+            logger.warn(`Content mismatch for ${file}`);
+            return false;
           }
         }
       }

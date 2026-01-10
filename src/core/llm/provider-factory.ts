@@ -121,16 +121,21 @@ async function createClaudeCodeProvider(
 }
 
 /**
+ * Get API key from config or environment
+ */
+function getApiKey(config: LLMConfig, defaultEnvVar: string): string | undefined {
+  return config.apiKeyEnv ? process.env[config.apiKeyEnv] : process.env[defaultEnvVar];
+}
+
+/**
  * Create Anthropic provider (lazy load SDK)
  */
 async function createAnthropicProvider(
   config: LLMConfig,
   logger: Logger
 ): Promise<LLMProvider> {
-  // Dynamic import to avoid requiring SDK if not used
   const { AnthropicProvider } = await import('./providers/anthropic-provider.js');
-
-  const apiKey = config.apiKeyEnv ? process.env[config.apiKeyEnv] : process.env.ANTHROPIC_API_KEY;
+  const apiKey = getApiKey(config, 'ANTHROPIC_API_KEY');
 
   if (!apiKey) {
     throw new Error(
@@ -155,8 +160,7 @@ async function createOpenAIProvider(
   logger: Logger
 ): Promise<LLMProvider> {
   const { OpenAIProvider } = await import('./providers/openai-provider.js');
-
-  const apiKey = config.apiKeyEnv ? process.env[config.apiKeyEnv] : process.env.OPENAI_API_KEY;
+  const apiKey = getApiKey(config, 'OPENAI_API_KEY');
 
   if (!apiKey) {
     throw new Error(
@@ -181,10 +185,7 @@ async function createAzureOpenAIProvider(
   logger: Logger
 ): Promise<LLMProvider> {
   const { AzureOpenAIProvider } = await import('./providers/azure-openai-provider.js');
-
-  const apiKey = config.apiKeyEnv
-    ? process.env[config.apiKeyEnv]
-    : process.env.AZURE_OPENAI_API_KEY;
+  const apiKey = getApiKey(config, 'AZURE_OPENAI_API_KEY');
 
   if (!apiKey) {
     throw new Error(

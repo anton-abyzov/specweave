@@ -278,33 +278,13 @@ export class LogAggregator {
    * Check if an entry matches the query filters
    */
   private matchesQuery(entry: AuditLogEntry, query: LogQuery): boolean {
-    // Date range filter
-    if (query.since) {
-      const entryTime = new Date(entry.timestamp).getTime();
-      const sinceTime = query.since.getTime();
-      if (entryTime < sinceTime) return false;
-    }
+    const entryTime = new Date(entry.timestamp).getTime();
 
-    if (query.until) {
-      const entryTime = new Date(entry.timestamp).getTime();
-      const untilTime = query.until.getTime();
-      if (entryTime > untilTime) return false;
-    }
-
-    // Platform filter
-    if (query.platform && entry.platform !== query.platform) {
-      return false;
-    }
-
-    // Operation filter
-    if (query.operation && entry.operation !== query.operation) {
-      return false;
-    }
-
-    // Result filter
-    if (query.result && entry.result !== query.result) {
-      return false;
-    }
+    if (query.since && entryTime < query.since.getTime()) return false;
+    if (query.until && entryTime > query.until.getTime()) return false;
+    if (query.platform && entry.platform !== query.platform) return false;
+    if (query.operation && entry.operation !== query.operation) return false;
+    if (query.result && entry.result !== query.result) return false;
 
     return true;
   }

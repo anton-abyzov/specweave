@@ -437,60 +437,38 @@ async function saveState(specweavePath: string, state: DiscrepancyState): Promis
   await fs.writeFile(statePath, JSON.stringify(state, null, 2), 'utf-8');
 }
 
-/**
- * Format a discrepancy for list display
- */
+/** Format a discrepancy for list display */
 function formatDiscrepancyLine(disc: Discrepancy): string {
-  const id = disc.id.padEnd(12);
-  const emoji = SEVERITY_EMOJI[disc.severity];
-  const severity = disc.severity.toUpperCase().padEnd(8);
-  const type = disc.type.padEnd(20);
-  const description = truncate(disc.description, 30);
-
-  return `${id}  ${emoji} ${severity}  ${type}  ${description}`;
+  return `${disc.id.padEnd(12)}  ${SEVERITY_EMOJI[disc.severity]} ${disc.severity.toUpperCase().padEnd(8)}  ${disc.type.padEnd(20)}  ${truncate(disc.description, 30)}`;
 }
 
-/**
- * Format recommendation for display
- */
+/** Format recommendation for display */
 function formatRecommendation(rec: string): string {
-  switch (rec) {
-    case 'auto-update':
-      return '✅ auto-update (safe to apply)';
-    case 'review-required':
-      return '👀 review-required (check before applying)';
-    case 'notify':
-      return '📢 notify (communicate to stakeholders)';
-    case 'alert':
-      return '⚠️ alert (breaking change - handle manually)';
-    default:
-      return rec;
-  }
+  const recommendations: Record<string, string> = {
+    'auto-update': '✅ auto-update (safe to apply)',
+    'review-required': '👀 review-required (check before applying)',
+    'notify': '📢 notify (communicate to stakeholders)',
+    'alert': '⚠️ alert (breaking change - handle manually)',
+  };
+  return recommendations[rec] ?? rec;
 }
 
-/**
- * Format time relative to now
- */
+/** Format time relative to now */
 function formatRelativeTime(isoDate: string): string {
-  const timestamp = new Date(isoDate).getTime();
-  const now = Date.now();
-  const diffMs = now - timestamp;
-
-  if (diffMs < 60 * 1000) return 'just now';
-  const minutes = Math.floor(diffMs / (60 * 1000));
-  if (minutes < 60) return `${minutes}m ago`;
+  const diffMs = Date.now() - new Date(isoDate).getTime();
+  const minutes = Math.floor(diffMs / 60000);
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
+
+  if (minutes < 1) return 'just now';
+  if (hours < 1) return `${minutes}m ago`;
+  if (days < 1) return `${hours}h ago`;
   return `${days}d ago`;
 }
 
-/**
- * Truncate text to fit width
- */
+/** Truncate text to fit width */
 function truncate(text: string, maxWidth: number): string {
-  if (text.length <= maxWidth) return text;
-  return text.slice(0, maxWidth - 3) + '...';
+  return text.length <= maxWidth ? text : text.slice(0, maxWidth - 3) + '...';
 }
 
 // Export for testing

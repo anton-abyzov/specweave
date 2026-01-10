@@ -22,34 +22,26 @@ function formatDate(date: Date | string): string {
   });
 }
 
-/**
- * Get tier emoji
- */
+const TIER_EMOJIS: Record<string, string> = {
+  Elite: '🏆',
+  High: '⭐',
+  Medium: '📊',
+  Low: '⚠️',
+};
+
+const STATUS_EMOJIS: Record<string, string> = {
+  Elite: '✅',
+  High: '✅',
+  Medium: '⚠️',
+  Low: '❌',
+};
+
 function getTierEmoji(tier: string): string {
-  switch (tier) {
-    case 'Elite': return '🏆';
-    case 'High': return '⭐';
-    case 'Medium': return '📊';
-    case 'Low': return '⚠️';
-    default: return '⚪';
-  }
+  return TIER_EMOJIS[tier] ?? '⚪';
 }
 
-/**
- * Get status emoji
- */
 function getStatusEmoji(tier: string): string {
-  switch (tier) {
-    case 'Elite':
-    case 'High':
-      return '✅';
-    case 'Medium':
-      return '⚠️';
-    case 'Low':
-      return '❌';
-    default:
-      return 'ℹ️';
-  }
+  return STATUS_EMOJIS[tier] ?? 'ℹ️';
 }
 
 /**

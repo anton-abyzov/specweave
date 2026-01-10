@@ -301,26 +301,25 @@ export function areLearningsDuplicate(a: Learning, b: Learning): boolean {
 
 /**
  * Merge two memory files, preserving user learnings
- *
- * @param userMemory - Existing user memory (has user learnings)
- * @param defaultMemory - New default memory (shipped with update)
- * @returns Merged memory with user learnings preserved
  */
 export function mergeMemoryFiles(userMemory: MemoryFile | null, defaultMemory: MemoryFile | null): MergeResult {
-  // If no user memory, just return defaults
-  if (!userMemory && defaultMemory) {
+  // Handle cases where one or both memories are null
+  if (!userMemory && !defaultMemory) {
+    return { success: true, content: '', added: 0, preserved: 0, deduped: 0, warnings: [] };
+  }
+
+  if (!userMemory) {
     return {
       success: true,
-      content: generateMemoryContent(defaultMemory),
-      added: defaultMemory.learnings.length,
+      content: generateMemoryContent(defaultMemory!),
+      added: defaultMemory!.learnings.length,
       preserved: 0,
       deduped: 0,
       warnings: [],
     };
   }
 
-  // If no default memory, preserve user as-is
-  if (userMemory && !defaultMemory) {
+  if (!defaultMemory) {
     return {
       success: true,
       content: generateMemoryContent(userMemory),
@@ -331,31 +330,13 @@ export function mergeMemoryFiles(userMemory: MemoryFile | null, defaultMemory: M
     };
   }
 
-  // If neither exists, return empty
-  if (!userMemory && !defaultMemory) {
-    return {
-      success: true,
-      content: '',
-      added: 0,
-      preserved: 0,
-      deduped: 0,
-      warnings: [],
-    };
-  }
-
-  // Both exist - merge!
-  const user = userMemory!;
-  const defaults = defaultMemory!;
-
-  const merged: Learning[] = [...user.learnings];
+  // Both exist - merge
+  const merged: Learning[] = [...userMemory.learnings];
   let added = 0;
   let deduped = 0;
 
-  // Add default learnings that aren't duplicates
-  for (const defaultLearning of defaults.learnings) {
-    const isDuplicate = merged.some((existing) => areLearningsDuplicate(existing, defaultLearning));
-
-    if (isDuplicate) {
+  for (const defaultLearning of defaultMemory.learnings) {
+    if (merged.some((existing) => areLearningsDuplicate(existing, defaultLearning))) {
       deduped++;
     } else {
       merged.push(defaultLearning);
@@ -364,18 +345,18 @@ export function mergeMemoryFiles(userMemory: MemoryFile | null, defaultMemory: M
   }
 
   const result: MemoryFile = {
-    skillName: user.skillName,
-    version: defaults.version || user.version,
+    skillName: userMemory.skillName,
+    version: defaultMemory.version || userMemory.version,
     lastUpdated: new Date().toISOString(),
     learnings: merged,
-    userNotes: user.userNotes, // Always preserve user notes
+    userNotes: userMemory.userNotes,
   };
 
   return {
     success: true,
     content: generateMemoryContent(result),
     added,
-    preserved: user.learnings.length,
+    preserved: userMemory.learnings.length,
     deduped,
     warnings: [],
   };
@@ -422,13 +403,9 @@ export function removeLearning(memory: MemoryFile, learningId: string): boolean 
  * Read and parse memory file from disk
  */
 export function readMemoryFile(filePath: string): MemoryFile | null {
-  if (!fs.existsSync(filePath)) {
-    return null;
-  }
-
   try {
-    const content = fs.readFileSync(filePath, 'utf-8');
-    return parseMemoryFile(content);
+    if (!fs.existsSync(filePath)) return null;
+    return parseMemoryFile(fs.readFileSync(filePath, 'utf-8'));
   } catch {
     return null;
   }

@@ -82,29 +82,14 @@ export class GitHubVersionDetector {
     }
 
     const cacheKey = `compare:${baseCommit}:${headCommit}`;
+    let comparison = this.getCached<any>(cacheKey);
 
-    // Check cache
-    const cached = this.getCached<any>(cacheKey);
-    if (cached) {
-      const changedFiles = cached.files
-        .map((f: any) => f.filename)
-        .filter((f: string) => !filterPath || f.startsWith(filterPath));
-
-      return {
-        different: cached.status !== 'identical',
-        baseCommit,
-        headCommit,
-        changedFiles,
-        commitsBehind: cached.ahead_by || 0
-      };
+    if (!comparison) {
+      const url = `${GitHubVersionDetector.GITHUB_API_BASE}/repos/${GitHubVersionDetector.GITHUB_OWNER}/${GitHubVersionDetector.GITHUB_REPO}/compare/${baseCommit}...${headCommit}`;
+      const response = await this.fetchGitHub(url);
+      comparison = await response.json();
+      this.setCached(cacheKey, comparison);
     }
-
-    const url = `${GitHubVersionDetector.GITHUB_API_BASE}/repos/${GitHubVersionDetector.GITHUB_OWNER}/${GitHubVersionDetector.GITHUB_REPO}/compare/${baseCommit}...${headCommit}`;
-
-    const response = await this.fetchGitHub(url);
-    const comparison = await response.json();
-
-    this.setCached(cacheKey, comparison);
 
     const changedFiles = (comparison.files || [])
       .map((f: any) => f.filename)

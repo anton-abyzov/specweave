@@ -598,40 +598,29 @@ async function analyzeChanges(repo: RepoInfo, logger: Logger): Promise<FileChang
  * Categorize file by type
  */
 function categorizeFile(filePath: string): string {
-  if (filePath.match(/\.(md|txt|rst)$/i) || filePath.includes('docs/') || filePath.includes('README')) {
-    return 'docs';
-  }
+  const patterns: Array<{ pattern: RegExp | ((p: string) => boolean); category: string }> = [
+    { pattern: /\.(md|txt|rst)$/i, category: 'docs' },
+    { pattern: (p) => p.includes('docs/') || p.includes('README'), category: 'docs' },
+    { pattern: /\.(test|spec)\.(ts|js|tsx|jsx)$/i, category: 'tests' },
+    { pattern: (p) => p.includes('tests/') || p.includes('__tests__/'), category: 'tests' },
+    { pattern: /package(-lock)?\.json|yarn\.lock|.*\.config\.(ts|js)|tsconfig/i, category: 'config' },
+    { pattern: (p) => p.includes('.github/') || p.includes('.gitlab-ci') || p.includes('Jenkinsfile'), category: 'ci' },
+    { pattern: (p) => p.includes('dist/') || p.includes('build/'), category: 'build' },
+    { pattern: (p) => p.includes('.specweave/increments/'), category: 'increment' },
+    { pattern: /\.(css|scss|less|sass)$/i, category: 'styles' },
+    { pattern: (p) => p.includes('scripts/') || p.includes('bin/'), category: 'scripts' },
+    { pattern: /\.(ts|js|tsx|jsx|py|go|rs|java|c|cpp|cs)$/i, category: 'source' },
+  ];
 
-  if (filePath.match(/\.(test|spec)\.(ts|js|tsx|jsx)$/i) || filePath.includes('tests/') || filePath.includes('__tests__/')) {
-    return 'tests';
-  }
-
-  if (filePath.match(/\.(ts|js|tsx|jsx|py|go|rs|java|c|cpp|cs)$/i) && !filePath.includes('.test.') && !filePath.includes('.spec.')) {
-    return 'source';
-  }
-
-  if (filePath.match(/package(-lock)?\.json|yarn\.lock|.*\.config\.(ts|js)|tsconfig/i)) {
-    return 'config';
-  }
-
-  if (filePath.includes('.github/') || filePath.includes('.gitlab-ci') || filePath.includes('Jenkinsfile')) {
-    return 'ci';
-  }
-
-  if (filePath.includes('dist/') || filePath.includes('build/')) {
-    return 'build';
-  }
-
-  if (filePath.includes('.specweave/increments/')) {
-    return 'increment';
-  }
-
-  if (filePath.match(/\.(css|scss|less|sass)$/i)) {
-    return 'styles';
-  }
-
-  if (filePath.includes('scripts/') || filePath.includes('bin/')) {
-    return 'scripts';
+  for (const { pattern, category } of patterns) {
+    const matches = typeof pattern === 'function' ? pattern(filePath) : pattern.test(filePath);
+    if (matches) {
+      // Special case: source files that are tests should be categorized as tests
+      if (category === 'source' && (filePath.includes('.test.') || filePath.includes('.spec.'))) {
+        return 'tests';
+      }
+      return category;
+    }
   }
 
   return 'other';

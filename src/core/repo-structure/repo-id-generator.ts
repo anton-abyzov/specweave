@@ -43,32 +43,31 @@ export function normalizeRepoName(repoName: string): string {
  * - Lowercase letters, numbers, hyphens only
  * - Must start with a letter
  * - Length 1-50 characters
- * - No commas, spaces, or special characters
  */
 export function validateRepoId(id: string): { valid: boolean; error?: string } {
   if (!id?.trim()) {
     return { valid: false, error: 'Repository ID cannot be empty' };
   }
+
   if (id.length > 50) {
     return { valid: false, error: 'Repository ID exceeds maximum length (50 characters)' };
   }
-  if (id.includes(',')) {
-    return { valid: false, error: 'Repository ID cannot contain commas' };
-  }
-  if (id.includes(' ')) {
-    return { valid: false, error: 'Repository ID cannot contain spaces' };
-  }
-  if (id !== id.toLowerCase()) {
-    return { valid: false, error: 'Repository ID must be lowercase' };
-  }
-  if (!/^[a-z]/.test(id)) {
-    return { valid: false, error: 'Repository ID must start with a letter' };
-  }
+
+  // Single regex validates all rules: starts with letter, only lowercase/numbers/hyphens
   if (!/^[a-z][a-z0-9-]*$/.test(id)) {
+    if (id !== id.toLowerCase()) {
+      return { valid: false, error: 'Repository ID must be lowercase' };
+    }
+    if (!/^[a-z]/.test(id)) {
+      return { valid: false, error: 'Repository ID must start with a letter' };
+    }
     return { valid: false, error: 'Repository ID must contain only lowercase letters, numbers, and hyphens' };
   }
+
   return { valid: true };
 }
+
+const REPO_TYPE_PATTERNS = ['frontend', 'backend', 'mobile', 'api', 'infra', 'shared', 'worker', 'admin', 'docs', 'analytics'];
 
 /**
  * Suggest repository name for multi-repo setup.
@@ -78,7 +77,6 @@ export function validateRepoId(id: string): { valid: boolean; error?: string } {
  * suggestRepoName('my-saas', 1, 3)  // 'my-saas-backend'
  */
 export function suggestRepoName(projectName: string, repoIndex: number, _totalRepos: number): string {
-  const patterns = ['frontend', 'backend', 'mobile', 'api', 'infra', 'shared', 'worker', 'admin', 'docs', 'analytics'];
-  const repoType = repoIndex < patterns.length ? patterns[repoIndex] : `service-${repoIndex + 1}`;
+  const repoType = REPO_TYPE_PATTERNS[repoIndex] ?? `service-${repoIndex + 1}`;
   return `${projectName}-${repoType}`;
 }

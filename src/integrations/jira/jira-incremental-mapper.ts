@@ -274,11 +274,17 @@ export class JiraIncrementalMapper {
 
   private mapJiraTypeToWorkItemType(jiraType: string): 'story' | 'bug' | 'task' | 'epic' {
     const typeLower = jiraType.toLowerCase();
-    if (typeLower.includes('story')) return 'story';
-    if (typeLower.includes('bug')) return 'bug';
-    if (typeLower.includes('task') || typeLower.includes('sub-task')) return 'task';
-    if (typeLower.includes('epic')) return 'epic';
-    return 'task'; // Default
+
+    if (typeLower.includes('epic')) {
+      return 'epic';
+    }
+    if (typeLower.includes('story')) {
+      return 'story';
+    }
+    if (typeLower.includes('bug')) {
+      return 'bug';
+    }
+    return 'task';
   }
 
   private createWorkItemFromIssue(
@@ -302,9 +308,12 @@ export class JiraIncrementalMapper {
       else if (itemType === 'task') count = existing.tasks.length + 1;
     }
 
-    const prefix = itemType === 'story' ? 'US' :
-                   itemType === 'bug' ? 'BUG' :
-                   'TASK';
+    let prefix: string;
+    switch (itemType) {
+      case 'story': prefix = 'US'; break;
+      case 'bug': prefix = 'BUG'; break;
+      default: prefix = 'TASK';
+    }
 
     return {
       type: itemType,
@@ -607,17 +616,28 @@ export class JiraIncrementalMapper {
 
   private mapJiraStatusToSpecWeave(jiraStatus: string): 'planning' | 'in-progress' | 'completed' {
     const statusLower = jiraStatus.toLowerCase();
-    if (statusLower.includes('to do') || statusLower.includes('backlog')) return 'planning';
-    if (statusLower.includes('in progress')) return 'in-progress';
-    if (statusLower.includes('done')) return 'completed';
+
+    if (statusLower.includes('done')) {
+      return 'completed';
+    }
+    if (statusLower.includes('in progress')) {
+      return 'in-progress';
+    }
     return 'planning';
   }
 
   private mapJiraPriorityToSpecWeave(jiraPriority: string | undefined): 'P1' | 'P2' | 'P3' {
-    if (!jiraPriority) return 'P3';
+    if (!jiraPriority) {
+      return 'P3';
+    }
+
     const priorityLower = jiraPriority.toLowerCase();
-    if (priorityLower.includes('highest') || priorityLower.includes('critical')) return 'P1';
-    if (priorityLower.includes('high')) return 'P2';
+    if (priorityLower.includes('highest') || priorityLower.includes('critical')) {
+      return 'P1';
+    }
+    if (priorityLower.includes('high')) {
+      return 'P2';
+    }
     return 'P3';
   }
 

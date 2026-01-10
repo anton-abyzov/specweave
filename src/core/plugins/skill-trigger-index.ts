@@ -34,23 +34,23 @@ export class SkillTriggerIndexManager {
   }
 
   /**
+   * Resolve a path relative to project root, or use default if not provided
+   */
+  private resolvePath(relativePath: string | undefined, defaultPath: string): string {
+    const pathToResolve = relativePath ?? defaultPath;
+    return path.isAbsolute(pathToResolve) ? pathToResolve : path.join(this.projectRoot, pathToResolve);
+  }
+
+  /**
    * Generate the skill triggers index from all plugins
    *
    * @param pluginsDir - Path to plugins directory (relative or absolute)
    * @returns Generated index
    */
   async generateIndex(pluginsDir?: string): Promise<SkillTriggersIndex> {
-    const resolvedPluginsDir = pluginsDir
-      ? path.isAbsolute(pluginsDir) ? pluginsDir : path.join(this.projectRoot, pluginsDir)
-      : path.join(this.projectRoot, DEFAULT_PLUGINS_DIR);
-
-    // Scan all plugins
+    const resolvedPluginsDir = this.resolvePath(pluginsDir, DEFAULT_PLUGINS_DIR);
     const triggers = await this.extractor.scanAllPlugins(resolvedPluginsDir);
-
-    // Build index
-    const index = this.extractor.buildIndex(triggers);
-
-    return index;
+    return this.extractor.buildIndex(triggers);
   }
 
   /**
@@ -60,16 +60,9 @@ export class SkillTriggerIndexManager {
    * @param indexPath - Path to save index (relative or absolute)
    */
   async saveIndex(index: SkillTriggersIndex, indexPath?: string): Promise<string> {
-    const resolvedPath = indexPath
-      ? path.isAbsolute(indexPath) ? indexPath : path.join(this.projectRoot, indexPath)
-      : path.join(this.projectRoot, DEFAULT_INDEX_PATH);
-
-    // Ensure directory exists
+    const resolvedPath = this.resolvePath(indexPath, DEFAULT_INDEX_PATH);
     await fs.ensureDir(path.dirname(resolvedPath));
-
-    // Write index
     await fs.writeJSON(resolvedPath, index, { spaces: 2 });
-
     return resolvedPath;
   }
 
@@ -80,9 +73,7 @@ export class SkillTriggerIndexManager {
    * @returns Loaded index or null if not found
    */
   async loadIndex(indexPath?: string): Promise<SkillTriggersIndex | null> {
-    const resolvedPath = indexPath
-      ? path.isAbsolute(indexPath) ? indexPath : path.join(this.projectRoot, indexPath)
-      : path.join(this.projectRoot, DEFAULT_INDEX_PATH);
+    const resolvedPath = this.resolvePath(indexPath, DEFAULT_INDEX_PATH);
 
     if (!(await fs.pathExists(resolvedPath))) {
       return null;

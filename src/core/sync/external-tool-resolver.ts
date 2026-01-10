@@ -570,22 +570,20 @@ export class ExternalToolResolver {
    * Load increment metadata
    */
   private async loadIncrementMetadata(incrementId: string): Promise<IncrementMetadataV2 | null> {
-    // Try main increments folder
+    const basePath = path.join(this.projectRoot, '.specweave', 'increments');
     const paths = [
-      path.join(this.projectRoot, '.specweave', 'increments', incrementId, 'metadata.json'),
-      path.join(this.projectRoot, '.specweave', 'increments', '_archive', incrementId, 'metadata.json'),
-      path.join(this.projectRoot, '.specweave', 'increments', '_paused', incrementId, 'metadata.json'),
+      path.join(basePath, incrementId, 'metadata.json'),
+      path.join(basePath, '_archive', incrementId, 'metadata.json'),
+      path.join(basePath, '_paused', incrementId, 'metadata.json'),
     ];
 
     for (const metadataPath of paths) {
       try {
-        const content = await fs.readFile(metadataPath, 'utf-8');
-        return JSON.parse(content) as IncrementMetadataV2;
+        return JSON.parse(await fs.readFile(metadataPath, 'utf-8')) as IncrementMetadataV2;
       } catch {
         // Try next path
       }
     }
-
     return null;
   }
 
@@ -593,8 +591,7 @@ export class ExternalToolResolver {
    * Get profile by ID
    */
   private async getProfileById(profileId: string): Promise<SyncProfile | null> {
-    const syncConfig = await this.getSyncConfig();
-    return syncConfig?.profiles?.[profileId] || null;
+    return (await this.getSyncConfig())?.profiles?.[profileId] ?? null;
   }
 
   /**
@@ -679,21 +676,15 @@ export class ExternalToolResolver {
    */
   async hasExternalToolConfigured(): Promise<boolean> {
     const syncConfig = await this.getSyncConfig();
-    return !!(syncConfig?.profiles && Object.keys(syncConfig.profiles).length > 0);
+    return Object.keys(syncConfig?.profiles ?? {}).length > 0;
   }
 
   /**
    * Get all configured providers
    */
   async getConfiguredProviders(): Promise<SyncProvider[]> {
-    const syncConfig = await this.getSyncConfig();
-    if (!syncConfig?.profiles) return [];
-
-    const providers = new Set<SyncProvider>();
-    for (const profile of Object.values(syncConfig.profiles)) {
-      providers.add(profile.provider);
-    }
-    return Array.from(providers);
+    const profiles = (await this.getSyncConfig())?.profiles ?? {};
+    return [...new Set(Object.values(profiles).map((p) => p.provider))];
   }
 
   /**
@@ -708,17 +699,12 @@ export class ExternalToolResolver {
   }> {
     const syncConfig = await this.getSyncConfig();
     const mappings = await this.getProjectMappings();
-
-    const profiles = syncConfig?.profiles || {};
-    const providers = new Set<SyncProvider>();
-    for (const profile of Object.values(profiles)) {
-      providers.add(profile.provider);
-    }
+    const profiles = Object.values(syncConfig?.profiles ?? {});
 
     return {
-      hasConfig: Object.keys(profiles).length > 0,
-      providers: Array.from(providers),
-      profileCount: Object.keys(profiles).length,
+      hasConfig: profiles.length > 0,
+      providers: [...new Set(profiles.map((p) => p.provider))],
+      profileCount: profiles.length,
       defaultProfile: syncConfig?.defaultProfile,
       projectMappingCount: Object.keys(mappings).length,
     };

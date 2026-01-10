@@ -96,23 +96,7 @@ export class SeverityClassifier {
       };
     }
 
-    // Check if it's a significant removal
-    if (change.itemType === 'api-route') {
-      return {
-        severity: 'breaking',
-        reason: `API route removed: ${change.specValue}`,
-        confidence: 'high',
-      };
-    }
-
-    if (change.itemType === 'function-signature') {
-      return {
-        severity: 'breaking',
-        reason: `Exported function removed: ${change.specValue}`,
-        confidence: 'high',
-      };
-    }
-
+    // Type definitions are major, all other removals are breaking
     if (change.itemType === 'type-definition') {
       return {
         severity: 'major',
@@ -121,33 +105,21 @@ export class SeverityClassifier {
       };
     }
 
+    const itemLabels: Record<ItemType, string> = {
+      'api-route': 'API route',
+      'function-signature': 'Exported function',
+      'type-definition': 'Type definition',
+    };
+
     return {
-      severity: 'major',
-      reason: 'Item removed from codebase',
-      confidence: 'low',
+      severity: 'breaking',
+      reason: `${itemLabels[change.itemType]} removed: ${change.specValue}`,
+      confidence: 'high',
     };
   }
 
   private classifyAddition(change: ChangeDetails): ClassificationResult {
-    // New API routes are major (new functionality)
-    if (change.itemType === 'api-route') {
-      return {
-        severity: 'major',
-        reason: `New API route not documented: ${change.codeValue}`,
-        confidence: 'high',
-      };
-    }
-
-    // New exported functions are major
-    if (change.itemType === 'function-signature') {
-      return {
-        severity: 'major',
-        reason: `New exported function not documented: ${change.codeValue}`,
-        confidence: 'high',
-      };
-    }
-
-    // New types are minor (usually supporting types)
+    // Types are minor (usually supporting types), all others are major
     if (change.itemType === 'type-definition') {
       return {
         severity: 'minor',
@@ -156,10 +128,16 @@ export class SeverityClassifier {
       };
     }
 
+    const itemLabels: Record<ItemType, string> = {
+      'api-route': 'API route',
+      'function-signature': 'exported function',
+      'type-definition': 'type definition',
+    };
+
     return {
-      severity: 'minor',
-      reason: 'New item added to codebase',
-      confidence: 'low',
+      severity: 'major',
+      reason: `New ${itemLabels[change.itemType]} not documented: ${change.codeValue}`,
+      confidence: 'high',
     };
   }
 
@@ -203,21 +181,13 @@ export class SeverityClassifier {
   }
 
   private isTrivialChange(specValue: string, codeValue: string, description: string): boolean {
-    // Normalize and compare
-    const normalizedSpec = this.normalize(specValue);
-    const normalizedCode = this.normalize(codeValue);
-
     // If normalized values are same, it's just formatting
-    if (normalizedSpec === normalizedCode) {
+    if (this.normalize(specValue) === this.normalize(codeValue)) {
       return true;
     }
 
     // Check for typo indicators in description
-    if (description.includes('typo') || description.includes('whitespace')) {
-      return true;
-    }
-
-    return false;
+    return description.includes('typo') || description.includes('whitespace');
   }
 
   private normalize(value: string): string {
@@ -263,15 +233,11 @@ export class SeverityClassifier {
   private getBreakingChangeReason(change: ChangeDetails): string {
     const description = change.description ?? '';
 
-    if (description.includes('return type')) {
-      return `Breaking: ${description}`;
-    }
-
     if (description.includes('required param')) {
-      return `Breaking: New required parameter added`;
+      return 'Breaking: New required parameter added';
     }
 
-    if (description.includes('parameter count')) {
+    if (description.includes('return type') || description.includes('parameter count')) {
       return `Breaking: ${description}`;
     }
 
@@ -347,16 +313,13 @@ export class SeverityClassifier {
     const specVersion = specPath.match(versionPattern);
     const codeVersion = codePath.match(versionPattern);
 
-    if (specVersion && codeVersion) {
-      return specVersion[1] !== codeVersion[1];
-    }
-
     // New version added where none existed
     if (!specVersion && codeVersion) {
       return true;
     }
 
-    return false;
+    // Both have versions - check if different
+    return specVersion !== null && codeVersion !== null && specVersion[1] !== codeVersion[1];
   }
 
   private isPathStructureChange(specPath: string, codePath: string): boolean {
@@ -375,15 +338,12 @@ export class SeverityClassifier {
    * Map severity to recommended action.
    */
   getRecommendation(severity: DiscrepancySeverity): 'auto-update' | 'review-required' | 'notify' | 'alert' {
-    switch (severity) {
-      case 'trivial':
-        return 'auto-update';
-      case 'minor':
-        return 'review-required';
-      case 'major':
-        return 'notify';
-      case 'breaking':
-        return 'alert';
-    }
+    const actionMap: Record<DiscrepancySeverity, 'auto-update' | 'review-required' | 'notify' | 'alert'> = {
+      trivial: 'auto-update',
+      minor: 'review-required',
+      major: 'notify',
+      breaking: 'alert',
+    };
+    return actionMap[severity];
   }
 }

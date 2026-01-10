@@ -137,7 +137,7 @@ export async function promptFilterCriteria(provider: FilterProvider): Promise<Fi
   const criteria: FilterCriteria = { provider };
 
   // Step 1: Filter type
-  const filterTypeResult = await select<'none' | 'query' | 'keys'>({
+  const filterType = await select<'none' | 'query' | 'keys'>({
     message: 'How would you like to filter projects?',
     default: 'none',
     choices: [
@@ -155,9 +155,8 @@ export async function promptFilterCriteria(provider: FilterProvider): Promise<Fi
       }
     ]
   });
-  const filterType = { type: filterTypeResult };
 
-  if (filterType.type === 'query') {
+  if (filterType === 'query') {
     // Custom query
     const query = await input({
       message: `Enter ${provider === 'jira' ? 'JQL' : 'WIQL'} query:`,
@@ -172,7 +171,7 @@ export async function promptFilterCriteria(provider: FilterProvider): Promise<Fi
 
     criteria.query = query;
 
-  } else if (filterType.type === 'keys') {
+  } else if (filterType === 'keys') {
     // Specific project keys
     const keys = await input({
       message: 'Enter project keys (comma-separated):',
@@ -235,14 +234,14 @@ export function applyFilters(projects: any[], criteria: FilterCriteria): FilterR
     );
   }
 
-  // Exclude archived
+  // Exclude archived (p.archived is falsy or explicitly false)
   if (criteria.excludeArchived) {
-    filtered = filtered.filter(p => !p.archived && p.archived !== true);
+    filtered = filtered.filter(p => !p.archived);
   }
 
-  // Exclude deleted
+  // Exclude deleted (p.deleted is falsy or explicitly false)
   if (criteria.excludeDeleted) {
-    filtered = filtered.filter(p => !p.deleted && p.deleted !== true);
+    filtered = filtered.filter(p => !p.deleted);
   }
 
   // Only active

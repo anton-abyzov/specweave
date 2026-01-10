@@ -91,16 +91,14 @@ export class CacheManager {
 
       // Check TTL
       if (!this.isValid(cached)) {
-        const age = Date.now() - cached.timestamp;
-        const ageHours = (age / (1000 * 60 * 60)).toFixed(1);
-        this.logger.log(`Cache expired: ${key} (age: ${ageHours}h, TTL: ${cached.ttl / (1000 * 60 * 60)}h)`);
+        const ageHours = this.msToHours(Date.now() - cached.timestamp);
+        this.logger.log(`Cache expired: ${key} (age: ${ageHours}h, TTL: ${this.msToHours(cached.ttl)}h)`);
         // Don't delete expired cache immediately - might be used as stale fallback
         return null;
       }
 
       const remaining = cached.timestamp + cached.ttl - Date.now();
-      const remainingHours = (remaining / (1000 * 60 * 60)).toFixed(1);
-      this.logger.log(`Cache hit: ${key} (TTL remaining: ${remainingHours}h)`);
+      this.logger.log(`Cache hit: ${key} (TTL remaining: ${this.msToHours(remaining)}h)`);
 
       return cached.data;
     } catch (error: any) {
@@ -140,10 +138,9 @@ export class CacheManager {
         return null;
       }
 
-      const age = Date.now() - cached.timestamp;
-      const ageHours = (age / (1000 * 60 * 60)).toFixed(1);
-      const ttlHours = cached.ttl / (1000 * 60 * 60);
-      const expiredHoursAgo = (parseFloat(ageHours) - ttlHours).toFixed(1);
+      const ageHours = this.msToHours(Date.now() - cached.timestamp);
+      const ttlHours = this.msToHours(cached.ttl);
+      const expiredHoursAgo = (parseFloat(ageHours) - parseFloat(ttlHours)).toFixed(1);
       this.logger.warn(
         `Using stale cache: ${key} (age: ${ageHours}h, expired ${expiredHoursAgo}h ago)`
       );
@@ -183,7 +180,7 @@ export class CacheManager {
       // Rename temp file to final name (atomic operation)
       await fs.rename(tempPath, filePath);
 
-      this.logger.log(`Cache set: ${key} (TTL: ${cached.ttl / (1000 * 60 * 60)}h)`);
+      this.logger.log(`Cache set: ${key} (TTL: ${this.msToHours(cached.ttl)}h)`);
     } catch (error: any) {
       this.logger.error(`Failed to write cache for ${key}: ${error.message}`);
 
@@ -282,7 +279,7 @@ export class CacheManager {
 
     if (oldestFile) {
       stats.oldestCache = oldestFile;
-      stats.oldestCacheAge = (Date.now() - oldestTimestamp) / (1000 * 60 * 60); // hours
+      stats.oldestCacheAge = parseFloat(this.msToHours(Date.now() - oldestTimestamp));
     }
 
     return stats;
@@ -332,9 +329,14 @@ export class CacheManager {
    * Check if cached data is still valid (within TTL)
    */
   private isValid(cached: CachedData<any>): boolean {
-    const now = Date.now();
-    const age = now - cached.timestamp;
-    return age < cached.ttl;
+    return Date.now() - cached.timestamp < cached.ttl;
+  }
+
+  /**
+   * Convert milliseconds to hours (formatted to 1 decimal place)
+   */
+  private msToHours(ms: number): string {
+    return (ms / (1000 * 60 * 60)).toFixed(1);
   }
 
   /**

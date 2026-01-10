@@ -65,6 +65,13 @@ export const DEFAULT_VIEWPORTS = {
 };
 
 /**
+ * Check if any of the given files exist
+ */
+function anyFileExists(projectPath: string, files: string[]): boolean {
+  return files.some((file) => fs.existsSync(path.join(projectPath, file)));
+}
+
+/**
  * Detect which frontend framework is being used
  *
  * @param projectPath - Project root path
@@ -72,42 +79,15 @@ export const DEFAULT_VIEWPORTS = {
  */
 export function detectFramework(projectPath: string): FrameworkType {
   // Check for Next.js
-  const nextConfigPath = path.join(projectPath, 'next.config.js');
-  const nextConfigMjsPath = path.join(projectPath, 'next.config.mjs');
-  const nextConfigTsPath = path.join(projectPath, 'next.config.ts');
-
-  if (
-    fs.existsSync(nextConfigPath) ||
-    fs.existsSync(nextConfigMjsPath) ||
-    fs.existsSync(nextConfigTsPath)
-  ) {
-    // Check for App Router vs Pages Router
-    const appDir = path.join(projectPath, 'app');
-    const srcAppDir = path.join(projectPath, 'src/app');
-    if (fs.existsSync(appDir) || fs.existsSync(srcAppDir)) {
-      return 'nextjs-app';
-    }
-    return 'nextjs-pages';
+  if (anyFileExists(projectPath, ['next.config.js', 'next.config.mjs', 'next.config.ts'])) {
+    const hasAppRouter = anyFileExists(projectPath, ['app', 'src/app']);
+    return hasAppRouter ? 'nextjs-app' : 'nextjs-pages';
   }
 
-  // Check for Remix
-  const remixConfig = path.join(projectPath, 'remix.config.js');
-  if (fs.existsSync(remixConfig)) {
-    return 'remix';
-  }
-
-  // Check for SvelteKit
-  const svelteConfig = path.join(projectPath, 'svelte.config.js');
-  if (fs.existsSync(svelteConfig)) {
-    return 'svelte-kit';
-  }
-
-  // Check for Vue Router (nuxt or vue-router)
-  const nuxtConfig = path.join(projectPath, 'nuxt.config.js');
-  const nuxtConfigTs = path.join(projectPath, 'nuxt.config.ts');
-  if (fs.existsSync(nuxtConfig) || fs.existsSync(nuxtConfigTs)) {
-    return 'vue-router';
-  }
+  // Check for other frameworks by config file
+  if (fs.existsSync(path.join(projectPath, 'remix.config.js'))) return 'remix';
+  if (fs.existsSync(path.join(projectPath, 'svelte.config.js'))) return 'svelte-kit';
+  if (anyFileExists(projectPath, ['nuxt.config.js', 'nuxt.config.ts'])) return 'vue-router';
 
   // Check package.json for React Router
   const packageJsonPath = path.join(projectPath, 'package.json');
@@ -1738,35 +1718,31 @@ export function generateUIStateReport(coverage: UIStateCoverage): string {
   lines.push('🎨 UI State Coverage');
   lines.push('─'.repeat(40));
 
-  // Loading states
-  const loadingStatus =
-    coverage.loadingStates.tested ? '✅'
-    : coverage.loadingStates.detected ? '⚠️'
-    : '❓';
-  lines.push(`${loadingStatus} Loading States: ${coverage.loadingStates.tested ? 'Tested' : coverage.loadingStates.detected ? 'Detected but not tested' : 'Not detected'}`);
-  if (!coverage.loadingStates.tested && coverage.loadingStates.detected) {
-    warnings.push('Consider adding tests for loading states (spinners, skeletons)');
+  // Helper to format state status
+  function formatStateStatus(
+    state: { tested: boolean; detected: boolean },
+    name: string,
+    hint: string
+  ): void {
+    let status: string;
+    let label: string;
+    if (state.tested) {
+      status = '✅';
+      label = 'Tested';
+    } else if (state.detected) {
+      status = '⚠️';
+      label = 'Detected but not tested';
+      warnings.push(hint);
+    } else {
+      status = '❓';
+      label = 'Not detected';
+    }
+    lines.push(`${status} ${name}: ${label}`);
   }
 
-  // Error states
-  const errorStatus =
-    coverage.errorStates.tested ? '✅'
-    : coverage.errorStates.detected ? '⚠️'
-    : '❓';
-  lines.push(`${errorStatus} Error States:   ${coverage.errorStates.tested ? 'Tested' : coverage.errorStates.detected ? 'Detected but not tested' : 'Not detected'}`);
-  if (!coverage.errorStates.tested && coverage.errorStates.detected) {
-    warnings.push('Consider adding tests for error states (404, 500, error boundaries)');
-  }
-
-  // Empty states
-  const emptyStatus =
-    coverage.emptyStates.tested ? '✅'
-    : coverage.emptyStates.detected ? '⚠️'
-    : '❓';
-  lines.push(`${emptyStatus} Empty States:   ${coverage.emptyStates.tested ? 'Tested' : coverage.emptyStates.detected ? 'Detected but not tested' : 'Not detected'}`);
-  if (!coverage.emptyStates.tested && coverage.emptyStates.detected) {
-    warnings.push('Consider adding tests for empty states (no data, no results)');
-  }
+  formatStateStatus(coverage.loadingStates, 'Loading States', 'Consider adding tests for loading states (spinners, skeletons)');
+  formatStateStatus(coverage.errorStates, 'Error States  ', 'Consider adding tests for error states (404, 500, error boundaries)');
+  formatStateStatus(coverage.emptyStates, 'Empty States  ', 'Consider adding tests for empty states (no data, no results)');
 
   lines.push('');
 

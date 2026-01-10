@@ -20,10 +20,6 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Dynamically loaded modules
 let getJobManager: any;
@@ -591,19 +587,24 @@ async function main(): Promise<void> {
   }
 
   // Cleanup on exit
-  const cleanup = () => {
+  function cleanup(): void {
     try {
       if (fs.existsSync(pidFile)) {
         fs.unlinkSync(pidFile);
       }
     } catch {
-      // Ignore
+      // Ignore cleanup errors
     }
-  };
+  }
+
+  function cleanupAndExit(): void {
+    cleanup();
+    process.exit(0);
+  }
 
   process.on('exit', cleanup);
-  process.on('SIGTERM', () => { cleanup(); process.exit(0); });
-  process.on('SIGINT', () => { cleanup(); process.exit(0); });
+  process.on('SIGTERM', cleanupAndExit);
+  process.on('SIGINT', cleanupAndExit);
 
   // Setup logging
   const logDir = path.join(projectPath, '.specweave', 'state', 'jobs', jobId);

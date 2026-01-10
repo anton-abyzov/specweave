@@ -672,24 +672,37 @@ export class JiraMapper {
 
   private mapJiraStatusToSpecWeave(jiraStatus: string): 'planned' | 'in-progress' | 'completed' | 'cancelled' {
     const statusLower = jiraStatus.toLowerCase();
-    if (statusLower.includes('to do') || statusLower.includes('backlog')) return 'planned';
-    if (statusLower.includes('in progress')) return 'in-progress';
-    if (statusLower.includes('done') || statusLower.includes('complete')) return 'completed';
+
+    if (statusLower.includes('done') || statusLower.includes('complete')) {
+      return 'completed';
+    }
+    if (statusLower.includes('in progress')) {
+      return 'in-progress';
+    }
     return 'planned';
   }
 
   private mapJiraPriorityToSpecWeave(jiraPriority: string | undefined): 'P1' | 'P2' | 'P3' {
-    if (!jiraPriority) return 'P3';
+    if (!jiraPriority) {
+      return 'P3';
+    }
+
     const priorityLower = jiraPriority.toLowerCase();
-    if (priorityLower.includes('highest') || priorityLower.includes('critical')) return 'P1';
-    if (priorityLower.includes('high')) return 'P2';
+    if (priorityLower.includes('highest') || priorityLower.includes('critical')) {
+      return 'P1';
+    }
+    if (priorityLower.includes('high')) {
+      return 'P2';
+    }
     return 'P3';
   }
 
   private mapPriorityToJira(priority: string): string {
-    if (priority === 'P1') return 'Highest';
-    if (priority === 'P2') return 'High';
-    return 'Medium';
+    switch (priority) {
+      case 'P1': return 'Highest';
+      case 'P2': return 'High';
+      default: return 'Medium';
+    }
   }
 
   private slugify(text: string): string {

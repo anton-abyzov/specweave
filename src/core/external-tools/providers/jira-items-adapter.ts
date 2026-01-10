@@ -17,6 +17,9 @@ import {
   STALE_THRESHOLD_DAYS,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
+  calculateAgeDays,
+  emptyPaginatedResult,
+  filterByStale,
 } from '../types.js';
 import { Logger, consoleLogger } from '../../../utils/logger.js';
 
@@ -112,7 +115,7 @@ export class JiraItemsAdapter implements ExternalItemsProvider {
    */
   async getOpenItems(filter?: ItemsFilter): Promise<PaginatedItemsResult> {
     if (!await this.isConfigured()) {
-      return this.emptyResult(1, DEFAULT_PAGE_SIZE);
+      return emptyPaginatedResult(1, DEFAULT_PAGE_SIZE);
     }
 
     const limit = Math.min(filter?.limit || DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
@@ -124,10 +127,9 @@ export class JiraItemsAdapter implements ExternalItemsProvider {
         ? `project = "${this.projectKey}" AND status NOT IN (Done, Closed) ORDER BY created DESC`
         : 'status NOT IN (Done, Closed) ORDER BY created DESC';
 
-      const encodedJql = encodeURIComponent(jql);
-      const url = `${this.baseUrl}/rest/api/3/search?jql=${encodedJql}&startAt=${offset}&maxResults=${limit}&fields=key,summary,created,labels,status`;
-
+      const url = `${this.baseUrl}/rest/api/3/search?jql=${encodeURIComponent(jql)}&startAt=${offset}&maxResults=${limit}&fields=key,summary,created,labels,status`;
       const authString = Buffer.from(`${this.email}:${this.apiToken}`).toString('base64');
+
       const response = await fetch(url, {
         headers: {
           'Authorization': `Basic ${authString}`,
@@ -137,7 +139,7 @@ export class JiraItemsAdapter implements ExternalItemsProvider {
 
       if (!response.ok) {
         this.logger.error(`JIRA API error: ${response.status} ${response.statusText}`);
-        return this.emptyResult(page, limit);
+        return emptyPaginatedResult(page, limit);
       }
 
       const data = await response.json() as {
@@ -153,15 +155,11 @@ export class JiraItemsAdapter implements ExternalItemsProvider {
         }>;
       };
 
-      const now = Date.now();
       const total = data.total;
       const totalPages = Math.ceil(total / limit);
 
       const items: ExternalItem[] = data.issues.map(issue => {
-        const createdDate = new Date(issue.fields.created).getTime();
-        const ageMs = now - createdDate;
-        const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
-
+        const ageDays = calculateAgeDays(issue.fields.created);
         return {
           id: issue.key,
           title: issue.fields.summary,
@@ -176,13 +174,8 @@ export class JiraItemsAdapter implements ExternalItemsProvider {
         };
       });
 
-      // Filter stale if requested
-      const filteredItems = filter?.staleOnly
-        ? items.filter(i => i.isStale)
-        : items;
-
       return {
-        items: filteredItems,
+        items: filterByStale(items, filter?.staleOnly),
         total,
         page,
         pageSize: limit,
@@ -191,18 +184,7 @@ export class JiraItemsAdapter implements ExternalItemsProvider {
       };
     } catch (error) {
       this.logger.error(`Failed to fetch JIRA issues: ${error}`);
-      return this.emptyResult(page, limit);
+      return emptyPaginatedResult(page, limit);
     }
-  }
-
-  private emptyResult(page: number, pageSize: number): PaginatedItemsResult {
-    return {
-      items: [],
-      total: 0,
-      page,
-      pageSize,
-      totalPages: 0,
-      hasMore: false,
-    };
   }
 }

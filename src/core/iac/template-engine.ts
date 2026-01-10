@@ -69,85 +69,40 @@ export class TerraformTemplateEngine {
    * Register custom Handlebars helpers
    */
   private registerHelpers(): void {
-    // Helper: Convert to snake_case (Terraform naming convention)
-    this.handlebars.registerHelper('snakeCase', (str: string) => {
-      if (!str) return '';
-      return str
-        .replace(/([A-Z])/g, '_$1')
-        .toLowerCase()
-        .replace(/^_/, '');
-    });
+    // String transformation helpers
+    this.handlebars.registerHelper('snakeCase', (str: string) =>
+      str ? str.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '') : ''
+    );
+    this.handlebars.registerHelper('kebabCase', (str: string) =>
+      str ? str.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '') : ''
+    );
+    this.handlebars.registerHelper('uppercase', (str: string) => str?.toUpperCase() ?? '');
+    this.handlebars.registerHelper('lowercase', (str: string) => str?.toLowerCase() ?? '');
 
-    // Helper: Convert to kebab-case
-    this.handlebars.registerHelper('kebabCase', (str: string) => {
-      if (!str) return '';
-      return str
-        .replace(/([A-Z])/g, '-$1')
-        .toLowerCase()
-        .replace(/^-/, '');
-    });
+    // Comparison and logic helpers
+    this.handlebars.registerHelper('eq', (a: any, b: any) => a === b);
+    this.handlebars.registerHelper('or', (...args: any[]) => args.slice(0, -1).some(v => !!v));
 
-    // Helper: Uppercase
-    this.handlebars.registerHelper('uppercase', (str: string) => {
-      if (!str) return '';
-      return str.toUpperCase();
-    });
+    // Math helpers (remove options object which is last arg)
+    this.handlebars.registerHelper('multiply', (...args: any[]) =>
+      args.slice(0, -1).reduce((acc, val) => acc * (parseFloat(val) || 0), 1)
+    );
+    this.handlebars.registerHelper('add', (...args: any[]) =>
+      args.slice(0, -1).reduce((acc, val) => acc + (parseFloat(val) || 0), 0)
+    );
 
-    // Helper: Lowercase
-    this.handlebars.registerHelper('lowercase', (str: string) => {
-      if (!str) return '';
-      return str.toLowerCase();
-    });
+    // Utility helpers
+    this.handlebars.registerHelper('currentDate', () => new Date().toISOString().split('T')[0]);
+    this.handlebars.registerHelper('json', (obj: any) => JSON.stringify(obj, null, 2));
 
-    // Helper: Conditional equality check
-    this.handlebars.registerHelper('eq', (a: any, b: any) => {
-      return a === b;
-    });
-
-    // Helper: Multiply numbers (for cost calculations)
-    this.handlebars.registerHelper('multiply', (...args: any[]) => {
-      // Remove the options object (last argument)
-      const numbers = args.slice(0, -1);
-      return numbers.reduce((acc, val) => acc * (parseFloat(val) || 0), 1);
-    });
-
-    // Helper: Add numbers (for cost calculations)
-    this.handlebars.registerHelper('add', (...args: any[]) => {
-      // Remove the options object (last argument)
-      const numbers = args.slice(0, -1);
-      return numbers.reduce((acc, val) => acc + (parseFloat(val) || 0), 0);
-    });
-
-    // Helper: Get current date (for documentation generation)
-    this.handlebars.registerHelper('currentDate', () => {
-      return new Date().toISOString().split('T')[0];
-    });
-
-    // Helper: Conditional OR
-    this.handlebars.registerHelper('or', function (...args: any[]) {
-      // Remove the last argument (Handlebars options object)
-      const values = args.slice(0, -1);
-      return values.some((v) => !!v);
-    });
-
-    // Helper: JSON stringify with indentation
-    this.handlebars.registerHelper('json', (obj: any) => {
-      return JSON.stringify(obj, null, 2);
-    });
-
-    // Helper: Format list as Terraform list
+    // Terraform formatting helpers
     this.handlebars.registerHelper('tfList', (arr: any[]) => {
       if (!Array.isArray(arr) || arr.length === 0) return '[]';
-      const items = arr.map((item) => `"${item}"`).join(', ');
-      return `[${items}]`;
+      return `[${arr.map(item => `"${item}"`).join(', ')}]`;
     });
-
-    // Helper: Format map as Terraform map
     this.handlebars.registerHelper('tfMap', (obj: Record<string, any>) => {
       if (!obj || Object.keys(obj).length === 0) return '{}';
-      const entries = Object.entries(obj)
-        .map(([key, value]) => `  ${key} = "${value}"`)
-        .join('\n');
+      const entries = Object.entries(obj).map(([k, v]) => `  ${k} = "${v}"`).join('\n');
       return `{\n${entries}\n}`;
     });
   }

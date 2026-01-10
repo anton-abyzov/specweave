@@ -108,45 +108,35 @@ export class HookLogger {
     }
 
     const content = fs.readFileSync(logFile, 'utf8');
-    const lines = content.trim().split('\n').filter(line => line.length > 0);
+    const lines = content.trim().split('\n').filter(Boolean);
 
-    // Parse JSON lines
     const entries = lines
       .map(line => {
         try {
           return JSON.parse(line) as HookLogEntry;
-        } catch (error) {
-          // Skip malformed lines
+        } catch {
           return null;
         }
       })
       .filter((entry): entry is HookLogEntry => entry !== null);
 
-    // Return most recent entries first
     return entries.slice(-limit).reverse();
   }
 
   /**
    * List all hooks that have log files
-   *
-   * @returns Array of hook names
    */
   async listHooks(): Promise<string[]> {
     if (!fs.existsSync(this.logDir)) {
       return [];
     }
-
-    const files = fs.readdirSync(this.logDir);
-
-    return files
+    return fs.readdirSync(this.logDir)
       .filter(file => file.endsWith('.log'))
       .map(file => file.replace('.log', ''));
   }
 
   /**
    * Clear logs for a specific hook or all hooks
-   *
-   * @param hookName - Optional hook name. If not provided, clears all logs.
    */
   async clearLogs(hookName?: string): Promise<void> {
     if (hookName) {
@@ -154,15 +144,16 @@ export class HookLogger {
       if (fs.existsSync(logFile)) {
         fs.unlinkSync(logFile);
       }
-    } else {
-      // Clear all logs
-      if (fs.existsSync(this.logDir)) {
-        const files = fs.readdirSync(this.logDir);
-        for (const file of files) {
-          if (file.endsWith('.log')) {
-            fs.unlinkSync(path.join(this.logDir, file));
-          }
-        }
+      return;
+    }
+
+    if (!fs.existsSync(this.logDir)) {
+      return;
+    }
+
+    for (const file of fs.readdirSync(this.logDir)) {
+      if (file.endsWith('.log')) {
+        fs.unlinkSync(path.join(this.logDir, file));
       }
     }
   }

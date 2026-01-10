@@ -477,68 +477,62 @@ export class ProjectRegistry {
 
     const tools: SyncStatus[] = [];
 
-    // GitHub status
+    // Helper to determine sync status from mapping
+    const getStatus = (mapping: { lastSynced?: string; syncError?: string }): SyncStatus['status'] => {
+      if (mapping.syncError) return 'error';
+      if (mapping.lastSynced) return 'synced';
+      return 'never';
+    };
+
     if (project.external?.github) {
       tools.push({
         tool: 'github',
         lastSynced: project.external.github.lastSynced,
-        status: project.external.github.syncError
-          ? 'error'
-          : project.external.github.lastSynced
-            ? 'synced'
-            : 'never',
+        status: getStatus(project.external.github),
         error: project.external.github.syncError,
       });
     }
 
-    // ADO status
     if (project.external?.ado) {
       tools.push({
         tool: 'ado',
         lastSynced: project.external.ado.lastSynced,
-        status: project.external.ado.syncError
-          ? 'error'
-          : project.external.ado.lastSynced
-            ? 'synced'
-            : 'never',
+        status: getStatus(project.external.ado),
         error: project.external.ado.syncError,
       });
     }
 
-    // JIRA status
     if (project.external?.jira) {
       tools.push({
         tool: 'jira',
         lastSynced: project.external.jira.lastSynced,
-        status: project.external.jira.syncError
-          ? 'error'
-          : project.external.jira.lastSynced
-            ? 'synced'
-            : 'never',
+        status: getStatus(project.external.jira),
         error: project.external.jira.syncError,
       });
     }
 
     // Calculate overall status
-    let overallStatus: ProjectSyncStatus['overallStatus'] = 'never';
-    if (tools.length > 0) {
-      const hasErrors = tools.some((t) => t.status === 'error');
-      const allSynced = tools.every((t) => t.status === 'synced');
+    const overallStatus = this.calculateOverallStatus(tools);
 
-      if (hasErrors) {
-        overallStatus = 'error';
-      } else if (allSynced) {
-        overallStatus = 'synced';
-      } else if (tools.some((t) => t.status === 'synced')) {
-        overallStatus = 'partial';
-      }
-    }
+    return { projectId: id, overallStatus, tools };
+  }
 
-    return {
-      projectId: id,
-      overallStatus,
-      tools,
-    };
+  /**
+   * Calculate overall sync status from individual tool statuses
+   */
+  private calculateOverallStatus(tools: SyncStatus[]): ProjectSyncStatus['overallStatus'] {
+    if (tools.length === 0) return 'never';
+
+    const hasErrors = tools.some((t) => t.status === 'error');
+    if (hasErrors) return 'error';
+
+    const allSynced = tools.every((t) => t.status === 'synced');
+    if (allSynced) return 'synced';
+
+    const hasSomeSynced = tools.some((t) => t.status === 'synced');
+    if (hasSomeSynced) return 'partial';
+
+    return 'never';
   }
 
   /**

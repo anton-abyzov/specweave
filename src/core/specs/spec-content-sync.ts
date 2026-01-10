@@ -72,62 +72,55 @@ async function parseUserStoryFile(
     const content = await fs.readFile(usFilePath, 'utf-8');
     const { data: frontmatter } = matter(content);
 
-    // Extract title from frontmatter or heading
-    let title = frontmatter.title || '';
-    if (!title) {
-      const titleMatch = content.match(/^#\s+US-\d+:\s*(.+)$/m);
-      title = titleMatch ? titleMatch[1].trim() : '';
-    }
-
-    // Remove "Priority: XX" suffix from title if present
-    title = title.replace(/\s*\(Priority:.*?\)\s*$/, '').trim();
-
-    const acceptanceCriteria: SpecAcceptanceCriterion[] = [];
-
-    // Extract US number from ID (US-001 → 001, US-1 → 1)
     const usNumberMatch = usId.match(/US-(\d+)/);
-    if (!usNumberMatch) {
-      return null;
-    }
-    const usNumber = usNumberMatch[1];
-    const usNumberPattern = usNumber.replace(/^0+/, ''); // Remove leading zeros
+    if (!usNumberMatch) return null;
 
-    // Find acceptance criteria section
-    const acSectionMatch = content.match(/##\s+Acceptance Criteria\s*\n([\s\S]*?)(?=\n##|\n---|\z)/);
-    if (acSectionMatch) {
-      const acSection = acSectionMatch[1];
+    const title = extractUSTitle(content, frontmatter);
+    const usNumberPattern = usNumberMatch[1].replace(/^0+/, '');
+    const acceptanceCriteria = extractACsFromSection(content, usNumberPattern, frontmatter.priority);
 
-      // Match ACs: - [x] **AC-US1-01**: Description
-      const acRegex = new RegExp(
-        `- \\[([ x])\\] \\*\\*AC-US0*${usNumberPattern}-(\\d+)\\*\\*:\\s*([^\\n]+)`,
-        'g'
-      );
-
-      const acMatches = [...acSection.matchAll(acRegex)];
-      for (const acMatch of acMatches) {
-        const completed = acMatch[1] === 'x';
-        const acNumber = acMatch[2];
-        const acDescription = acMatch[3].trim();
-
-        acceptanceCriteria.push({
-          id: `AC-US${usNumberPattern}-${acNumber}`,  // Use normalized pattern without leading zeros
-          description: acDescription,
-          completed,
-          priority: frontmatter.priority || undefined,
-          testable: true, // Assume testable by default
-        });
-      }
-    }
-
-    return {
-      id: usId,
-      title,
-      acceptanceCriteria,
-    };
+    return { id: usId, title, acceptanceCriteria };
   } catch (error: any) {
     logger.error(`Failed to parse US file ${usFilePath}:`, error);
     return null;
   }
+}
+
+/**
+ * Extract user story title from content or frontmatter
+ */
+function extractUSTitle(content: string, frontmatter: Record<string, any>): string {
+  let title = frontmatter.title || '';
+  if (!title) {
+    const titleMatch = content.match(/^#\s+US-\d+:\s*(.+)$/m);
+    title = titleMatch ? titleMatch[1].trim() : '';
+  }
+  return title.replace(/\s*\(Priority:.*?\)\s*$/, '').trim();
+}
+
+/**
+ * Extract acceptance criteria from AC section
+ */
+function extractACsFromSection(
+  content: string,
+  usNumberPattern: string,
+  priority?: string
+): SpecAcceptanceCriterion[] {
+  const acSectionMatch = content.match(/##\s+Acceptance Criteria\s*\n([\s\S]*?)(?=\n##|\n---|\z)/);
+  if (!acSectionMatch) return [];
+
+  const acRegex = new RegExp(
+    `- \\[([ x])\\] \\*\\*AC-US0*${usNumberPattern}-(\\d+)\\*\\*:\\s*([^\\n]+)`,
+    'g'
+  );
+
+  return [...acSectionMatch[1].matchAll(acRegex)].map(acMatch => ({
+    id: `AC-US${usNumberPattern}-${acMatch[2]}`,
+    description: acMatch[3].trim(),
+    completed: acMatch[1] === 'x',
+    priority,
+    testable: true
+  }));
 }
 
 /**
@@ -355,37 +348,24 @@ export async function parseSpecContent(
  */
 export function detectContentChanges(
   localSpec: SpecContent,
-  externalContent: {
-    title: string;
-    description: string;
-    userStoryCount: number;
-  }
-): {
-  hasChanges: boolean;
-  changes: string[];
-} {
+  externalContent: { title: string; description: string; userStoryCount: number }
+): { hasChanges: boolean; changes: string[] } {
   const changes: string[] = [];
+  const normalizeDesc = (str: string) => str.replace(/\s+/g, ' ').trim();
 
-  // Title changed
   if (localSpec.title !== externalContent.title) {
     changes.push(`title: "${externalContent.title}" → "${localSpec.title}"`);
   }
 
-  // Description changed (normalize whitespace for comparison)
-  const normalizeDesc = (str: string) => str.replace(/\s+/g, ' ').trim();
   if (normalizeDesc(localSpec.description) !== normalizeDesc(externalContent.description)) {
     changes.push('description updated');
   }
 
-  // User stories changed
   if (localSpec.userStories.length !== externalContent.userStoryCount) {
     changes.push(`user stories: ${externalContent.userStoryCount} → ${localSpec.userStories.length}`);
   }
 
-  return {
-    hasChanges: changes.length > 0,
-    changes,
-  };
+  return { hasChanges: changes.length > 0, changes };
 }
 
 /**
@@ -435,22 +415,14 @@ export async function hasExternalLink(
   try {
     const content = await fs.readFile(specPath, 'utf-8');
 
-    switch (provider) {
-      case 'github':
-        const githubMatch = content.match(/\*\*GitHub Project\*\*:\s*(.+)/);
-        return githubMatch ? githubMatch[1].trim() : null;
+    const patterns: Record<string, RegExp> = {
+      github: /\*\*GitHub Project\*\*:\s*(.+)/,
+      jira: /\*\*JIRA Epic\*\*:\s*([A-Z]+-\d+)/,
+      ado: /\*\*ADO Feature\*\*:\s*#?(\d+)/
+    };
 
-      case 'jira':
-        const jiraMatch = content.match(/\*\*JIRA Epic\*\*:\s*([A-Z]+-\d+)/);
-        return jiraMatch ? jiraMatch[1] : null;
-
-      case 'ado':
-        const adoMatch = content.match(/\*\*ADO Feature\*\*:\s*#?(\d+)/);
-        return adoMatch ? adoMatch[1] : null;
-
-      default:
-        return null;
-    }
+    const match = content.match(patterns[provider]);
+    return match ? match[1].trim() : null;
   } catch {
     return null;
   }
@@ -468,31 +440,25 @@ export async function updateSpecWithExternalLink(
   try {
     let content = await fs.readFile(specPath, 'utf-8');
 
-    const linkText = {
+    const linkTexts: Record<string, string> = {
       github: `**GitHub Project**: ${externalUrl}`,
       jira: `**JIRA Epic**: ${externalId}`,
-      ado: `**ADO Feature**: #${externalId}`,
-    }[provider];
+      ado: `**ADO Feature**: #${externalId}`
+    };
+    const linkText = linkTexts[provider];
+    const linkPrefix = linkText.split(':')[0];
 
-    // Add link after title if not present
-    if (!content.includes(linkText.split(':')[0])) {
-      // Find first heading
-      const titleMatch = content.match(/^(#\s+.+\n)/m);
-      if (titleMatch) {
-        const insertPos = titleMatch.index! + titleMatch[0].length;
-        content =
-          content.slice(0, insertPos) +
-          '\n' +
-          linkText +
-          '\n' +
-          content.slice(insertPos);
-      } else {
-        // Add at top
-        content = linkText + '\n\n' + content;
-      }
+    if (content.includes(linkPrefix)) return;
 
-      await fs.writeFile(specPath, content);
+    const titleMatch = content.match(/^(#\s+.+\n)/m);
+    if (titleMatch) {
+      const insertPos = titleMatch.index! + titleMatch[0].length;
+      content = content.slice(0, insertPos) + '\n' + linkText + '\n' + content.slice(insertPos);
+    } else {
+      content = linkText + '\n\n' + content;
     }
+
+    await fs.writeFile(specPath, content);
   } catch (error: any) {
     console.error(`Failed to update spec with external link: ${error.message}`);
   }
@@ -513,10 +479,7 @@ export async function wasSpecModifiedSinceSync(
   specPath: string,
   lastSyncTime?: Date
 ): Promise<boolean> {
-  if (!lastSyncTime) {
-    return true; // No previous sync
-  }
-
+  if (!lastSyncTime) return true;
   const modTime = await getSpecModificationTime(specPath);
   return modTime > lastSyncTime;
 }

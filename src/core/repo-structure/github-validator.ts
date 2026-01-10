@@ -35,9 +35,6 @@ export interface OwnerValidationResult {
   error?: string;
 }
 
-/**
- * Retry configuration
- */
 interface RetryConfig {
   maxAttempts: number;
   baseDelay: number;
@@ -45,7 +42,7 @@ interface RetryConfig {
 
 const DEFAULT_RETRY_CONFIG: RetryConfig = {
   maxAttempts: 3,
-  baseDelay: 1000 // 1 second
+  baseDelay: 1000
 };
 
 /**
@@ -61,50 +58,27 @@ export async function validateRepository(
   repo: string,
   token?: string
 ): Promise<ValidationResult> {
+  const headers: Record<string, string> = {
+    'Accept': 'application/vnd.github.v3+json'
+  };
+
+  if (token) {
+    headers['Authorization'] = `token ${token}`;
+  }
+
   try {
-    const headers: Record<string, string> = {
-      'Accept': 'application/vnd.github.v3+json'
-    };
-
-    if (token) {
-      headers['Authorization'] = `token ${token}`;
-    }
-
-    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
-      headers
-    });
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
 
     if (response.status === 404) {
-      // Repository does not exist (good for creation)
       return { exists: false, valid: true };
     }
 
     if (response.status === 200) {
-      // Repository already exists
       const data: any = await response.json();
-      return {
-        exists: true,
-        valid: true,
-        url: data.html_url
-      };
+      return { exists: true, valid: true, url: data.html_url };
     }
 
-    if (response.status === 401 || response.status === 403) {
-      // Authentication or permission error - use actionable error handler
-      const apiError: GitApiError = {
-        status: response.status,
-        message: response.statusText,
-        platform: 'github',
-        operation: 'validate_repo',
-        resourceType: 'repository',
-        resourceName: `${owner}/${repo}`
-      };
-
-      const actionable = getActionableError(apiError);
-      return { exists: false, valid: false, error: formatActionableError(actionable) };
-    }
-
-    // Other error - use actionable error handler
+    // Handle all error cases uniformly
     const apiError: GitApiError = {
       status: response.status,
       message: response.statusText,
@@ -114,13 +88,11 @@ export async function validateRepository(
       resourceName: `${owner}/${repo}`
     };
 
-    const actionable = getActionableError(apiError);
     return {
       exists: false,
       valid: false,
-      error: formatActionableError(actionable)
+      error: formatActionableError(getActionableError(apiError))
     };
-
   } catch (error) {
     return {
       exists: false,
@@ -150,27 +122,22 @@ export async function validateOwner(
   }
 
   try {
-    // Try as user first
-    const userResponse = await fetch(`https://api.github.com/users/${owner}`, {
-      headers
-    });
+    // Try as user first (covers both users and organizations)
+    const userResponse = await fetch(`https://api.github.com/users/${owner}`, { headers });
 
     if (userResponse.status === 200) {
       const data: any = await userResponse.json();
-      const type = data.type === 'Organization' ? 'org' : 'user';
-      return { valid: true, type };
+      return { valid: true, type: data.type === 'Organization' ? 'org' : 'user' };
     }
 
-    // Try as organization
-    const orgResponse = await fetch(`https://api.github.com/orgs/${owner}`, {
-      headers
-    });
+    // Try as organization if user endpoint failed
+    const orgResponse = await fetch(`https://api.github.com/orgs/${owner}`, { headers });
 
     if (orgResponse.status === 200) {
       return { valid: true, type: 'org' };
     }
 
-    // Not found - use actionable error handler
+    // Not found
     const apiError: GitApiError = {
       status: 404,
       message: 'Not Found',
@@ -180,9 +147,7 @@ export async function validateOwner(
       resourceName: owner
     };
 
-    const actionable = getActionableError(apiError);
-    return { valid: false, error: formatActionableError(actionable) };
-
+    return { valid: false, error: formatActionableError(getActionableError(apiError)) };
   } catch (error) {
     return {
       valid: false,
@@ -221,12 +186,6 @@ export async function validateWithRetry<T>(
   throw lastError || new Error('Validation failed');
 }
 
-/**
- * Check GitHub API rate limit
- *
- * @param token - GitHub personal access token (optional)
- * @returns Rate limit info
- */
 export async function checkRateLimit(token?: string): Promise<{
   remaining: number;
   resetAt: Date;
@@ -240,10 +199,7 @@ export async function checkRateLimit(token?: string): Promise<{
   }
 
   try {
-    const response = await fetch('https://api.github.com/rate_limit', {
-      headers
-    });
-
+    const response = await fetch('https://api.github.com/rate_limit', { headers });
     const data: any = await response.json();
     const core = data.resources.core;
 

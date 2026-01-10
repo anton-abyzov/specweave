@@ -232,6 +232,30 @@ function getConfidenceLevel(scores: { vercel: number; cloudflare: number }): Con
 }
 
 /**
+ * Determine winning platform based on scores and edge compatibility
+ */
+function determinePlatform(
+  scores: { vercel: number; cloudflare: number },
+  isEdgeCompatible: boolean
+): DeploymentPlatform {
+  // Edge blockers override any score-based preference for Cloudflare
+  if (!isEdgeCompatible) {
+    return 'vercel';
+  }
+
+  if (scores.vercel > scores.cloudflare) {
+    return 'vercel';
+  }
+
+  if (scores.cloudflare > scores.vercel) {
+    return 'cloudflare';
+  }
+
+  // Tie-breaker: prefer Cloudflare for cost when edge compatible
+  return 'cloudflare';
+}
+
+/**
  * Generate reasoning text
  */
 function generateReasoning(
@@ -366,21 +390,7 @@ export function routeDeployment(
   const scores = calculateScores(factors);
   const confidence = getConfidenceLevel(scores);
 
-  // Determine winning platform
-  let platform: DeploymentPlatform;
-  if (scores.vercel > scores.cloudflare) {
-    platform = 'vercel';
-  } else if (scores.cloudflare > scores.vercel) {
-    platform = 'cloudflare';
-  } else {
-    // Tie-breaker: if edge compatible, prefer Cloudflare for cost
-    platform = analysis.edge.isEdgeCompatible ? 'cloudflare' : 'vercel';
-  }
-
-  // Check for blockers that override scoring
-  if (!analysis.edge.isEdgeCompatible && platform === 'cloudflare') {
-    platform = 'vercel';
-  }
+  const platform = determinePlatform(scores, analysis.edge.isEdgeCompatible);
 
   const reasoning = generateReasoning(platform, analysis, factors);
   const alternative = generateAlternative(platform, analysis);
@@ -397,12 +407,39 @@ export function routeDeployment(
 }
 
 /**
+ * Get confidence indicator emoji
+ */
+function getConfidenceEmoji(confidence: ConfidenceLevel): string {
+  switch (confidence) {
+    case 'high':
+      return '🟢';
+    case 'medium':
+      return '🟡';
+    case 'low':
+      return '🔴';
+  }
+}
+
+/**
+ * Get human-readable impact label
+ */
+function getImpactLabel(impact: 'vercel' | 'cloudflare' | 'neutral'): string {
+  switch (impact) {
+    case 'vercel':
+      return '→ Vercel';
+    case 'cloudflare':
+      return '→ Cloudflare';
+    case 'neutral':
+      return 'Neutral';
+  }
+}
+
+/**
  * Format recommendation as markdown
  */
 export function formatRecommendation(rec: DeploymentRecommendation): string {
   const platformName = rec.platform === 'vercel' ? 'Vercel' : 'Cloudflare';
-  const confidenceEmoji =
-    rec.confidence === 'high' ? '🟢' : rec.confidence === 'medium' ? '🟡' : '🔴';
+  const confidenceEmoji = getConfidenceEmoji(rec.confidence);
 
   let output = `## 🚀 Deployment Recommendation\n\n`;
   output += `**Platform**: ${platformName}\n`;
@@ -414,12 +451,7 @@ export function formatRecommendation(rec: DeploymentRecommendation): string {
   output += `|--------|---------|--------|\n`;
 
   for (const factor of rec.factors) {
-    const impactArrow =
-      factor.impact === 'vercel'
-        ? '→ Vercel'
-        : factor.impact === 'cloudflare'
-          ? '→ Cloudflare'
-          : 'Neutral';
+    const impactArrow = getImpactLabel(factor.impact);
     output += `| ${factor.name} | ${factor.finding} | ${impactArrow} |\n`;
   }
 

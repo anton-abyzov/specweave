@@ -385,17 +385,12 @@ function formatSyncStatus(status: ProjectSyncStatus | null): string {
 }
 
 function formatOverallStatus(status: ProjectSyncStatus['overallStatus']): string {
-  switch (status) {
-    case 'synced':
-      return chalk.green('All synced');
-    case 'partial':
-      return chalk.yellow('Partially synced');
-    case 'error':
-      return chalk.red('Sync errors');
-    case 'never':
-    default:
-      return chalk.gray('Never synced');
-  }
+  const statusMap: Record<string, string> = {
+    synced: chalk.green('All synced'),
+    partial: chalk.yellow('Partially synced'),
+    error: chalk.red('Sync errors'),
+  };
+  return statusMap[status] || chalk.gray('Never synced');
 }
 
 function formatDate(isoDate: string): string {

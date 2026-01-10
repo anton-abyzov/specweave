@@ -173,6 +173,37 @@ interface LearningPathsKnowledgeBase {
 // ============================================================================
 
 /**
+ * Skill level keyword configuration
+ */
+const SKILL_KEYWORDS: Record<SkillLevel, { keywords: string[]; weight: number; highThreshold: number }> = {
+  beginner: {
+    keywords: [
+      'new to', 'first time', 'never used', 'just getting started', 'learning',
+      'basics', 'beginner', 'noob', 'what is', 'how do i', 'no experience',
+    ],
+    weight: 2,
+    highThreshold: 2,
+  },
+  intermediate: {
+    keywords: [
+      'worked with', 'familiar with', 'experienced', 'built', 'deployed',
+      'integration', 'api', 'database', 'ci/cd', 'testing',
+    ],
+    weight: 1,
+    highThreshold: 3,
+  },
+  advanced: {
+    keywords: [
+      'production', 'performance optimization', 'cold start', 'concurrent execution',
+      'distributed', 'scaling', 'advanced', 'expert', 'complex architecture',
+      'migration', 'multi-region', 'enterprise', 'vpc', 'reserved capacity',
+    ],
+    weight: 3,
+    highThreshold: 6,
+  },
+};
+
+/**
  * Detect user skill level from natural language input
  *
  * Analyzes keywords and patterns to determine if user is beginner/intermediate/advanced
@@ -182,100 +213,35 @@ interface LearningPathsKnowledgeBase {
 export function detectSkillLevel(userInput: string): SkillDetectionResult {
   const input = userInput.toLowerCase();
   const signals: string[] = [];
+  const scores: Record<SkillLevel, number> = { beginner: 0, intermediate: 0, advanced: 0 };
 
-  // Beginner indicators
-  const beginnerKeywords = [
-    'new to',
-    'first time',
-    'never used',
-    'just getting started',
-    'learning',
-    'basics',
-    'beginner',
-    'noob',
-    'what is',
-    'how do i',
-    'no experience',
-  ];
-
-  // Advanced indicators
-  const advancedKeywords = [
-    'production',
-    'performance optimization',
-    'cold start',
-    'concurrent execution',
-    'distributed',
-    'scaling',
-    'advanced',
-    'expert',
-    'complex architecture',
-    'migration',
-    'multi-region',
-    'enterprise',
-    'vpc',
-    'reserved capacity',
-  ];
-
-  // Intermediate indicators
-  const intermediateKeywords = [
-    'worked with',
-    'familiar with',
-    'experienced',
-    'built',
-    'deployed',
-    'integration',
-    'api',
-    'database',
-    'ci/cd',
-    'testing',
-  ];
-
-  let beginnerScore = 0;
-  let advancedScore = 0;
-  let intermediateScore = 0;
-
-  for (const keyword of beginnerKeywords) {
-    if (input.includes(keyword)) {
-      beginnerScore += 2;
-      signals.push(`Beginner keyword: "${keyword}"`);
+  // Calculate scores for each skill level
+  for (const [level, config] of Object.entries(SKILL_KEYWORDS) as [SkillLevel, typeof SKILL_KEYWORDS[SkillLevel]][]) {
+    for (const keyword of config.keywords) {
+      if (input.includes(keyword)) {
+        scores[level] += config.weight;
+        signals.push(`${level.charAt(0).toUpperCase() + level.slice(1)} keyword: "${keyword}"`);
+      }
     }
   }
 
-  for (const keyword of advancedKeywords) {
-    if (input.includes(keyword)) {
-      advancedScore += 3;
-      signals.push(`Advanced keyword: "${keyword}"`);
-    }
-  }
+  // Determine skill level based on highest score
+  const entries = Object.entries(scores) as [SkillLevel, number][];
+  entries.sort((a, b) => b[1] - a[1]);
+  const [topLevel, topScore] = entries[0];
+  const secondScore = entries[1][1];
 
-  for (const keyword of intermediateKeywords) {
-    if (input.includes(keyword)) {
-      intermediateScore += 1;
-      signals.push(`Intermediate keyword: "${keyword}"`);
-    }
-  }
+  // Default to beginner if no clear signals
+  const skillLevel: SkillLevel = topScore > secondScore ? topLevel : 'beginner';
+  const config = SKILL_KEYWORDS[skillLevel];
 
-  // Determine skill level based on scores
-  let skillLevel: SkillLevel = 'beginner';
+  // Determine confidence
   let confidence: 'low' | 'medium' | 'high' = 'medium';
-  let justification = '';
-
-  if (advancedScore > beginnerScore && advancedScore > intermediateScore) {
-    skillLevel = 'advanced';
-    confidence = advancedScore >= 6 ? 'high' : 'medium';
-    justification = `Detected ${advancedScore} advanced signals`;
-  } else if (intermediateScore > beginnerScore && intermediateScore > advancedScore) {
-    skillLevel = 'intermediate';
-    confidence = intermediateScore >= 3 ? 'high' : 'medium';
-    justification = `Detected ${intermediateScore} intermediate signals`;
-  } else {
-    skillLevel = 'beginner';
-    confidence = beginnerScore >= 2 ? 'high' : 'low';
-    justification = `Detected ${beginnerScore} beginner signals`;
-  }
-
-  // Adjust confidence if input is very short
   if (userInput.length < 20) {
+    confidence = 'low';
+  } else if (scores[skillLevel] >= config.highThreshold) {
+    confidence = 'high';
+  } else if (skillLevel === 'beginner' && scores.beginner < 2) {
     confidence = 'low';
   }
 
@@ -283,7 +249,7 @@ export function detectSkillLevel(userInput: string): SkillDetectionResult {
     skillLevel,
     confidence,
     signals,
-    justification,
+    justification: `Detected ${scores[skillLevel]} ${skillLevel} signals`,
   };
 }
 
@@ -545,6 +511,19 @@ export function getStalePlatforms(maxStaleDays: number = 60): string[] {
 }
 
 /**
+ * Resource type to property name mapping
+ */
+const RESOURCE_TYPE_MAP: Record<ResourceType, keyof LearningPathsKnowledgeBase['platforms'][string]['resources'] | null> = {
+  tutorial: 'tutorials',
+  documentation: 'documentation',
+  video: 'videos',
+  course: 'courses',
+  'sample-project': 'sampleProjects',
+  'blog-post': null,
+  webinar: null,
+};
+
+/**
  * Get learning resources for a specific category and platform
  */
 export function getResourcesByType(
@@ -559,29 +538,13 @@ export function getResourcesByType(
     throw new Error(`Platform '${platformId}' not found`);
   }
 
-  let resources: LearningResource[] = [];
-
-  switch (resourceType) {
-    case 'tutorial':
-      resources = platformData.resources.tutorials;
-      break;
-    case 'documentation':
-      resources = platformData.resources.documentation;
-      break;
-    case 'video':
-      resources = platformData.resources.videos;
-      break;
-    case 'course':
-      resources = platformData.resources.courses;
-      break;
-    case 'sample-project':
-      resources = platformData.resources.sampleProjects;
-      break;
-    default:
-      resources = [];
+  const resourceKey = RESOURCE_TYPE_MAP[resourceType];
+  if (!resourceKey) {
+    return [];
   }
 
-  // Filter by skill level if specified
+  let resources = platformData.resources[resourceKey] as LearningResource[];
+
   if (skillLevel) {
     resources = resources.filter((r) => r.skillLevel === skillLevel);
   }

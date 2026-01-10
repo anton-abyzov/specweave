@@ -368,15 +368,12 @@ export class ItemConverter {
    * Get default hierarchy mapping for a platform
    */
   private getDefaultMapping(platform: 'ado' | 'jira' | 'github'): HierarchyMappingConfig {
-    switch (platform) {
-      case 'jira':
-        return DEFAULT_JIRA_HIERARCHY_MAPPING;
-      case 'github':
-        return DEFAULT_GITHUB_HIERARCHY_MAPPING;
-      case 'ado':
-      default:
-        return DEFAULT_ADO_HIERARCHY_MAPPING;
-    }
+    const mappings: Record<string, HierarchyMappingConfig> = {
+      'jira': DEFAULT_JIRA_HIERARCHY_MAPPING,
+      'github': DEFAULT_GITHUB_HIERARCHY_MAPPING,
+      'ado': DEFAULT_ADO_HIERARCHY_MAPPING,
+    };
+    return mappings[platform] || DEFAULT_ADO_HIERARCHY_MAPPING;
   }
 
   /**
@@ -401,20 +398,11 @@ export class ItemConverter {
 
   /**
    * Get user-friendly label for JIRA work item type
-   * Maps internal type (epic, feature) to display label (Epic, Feature)
    */
   private getJiraWorkItemTypeLabel(item: ExternalItem): string | undefined {
     if (item.platform !== 'jira') return undefined;
-
-    // Map internal type to display label
-    switch (item.type) {
-      case 'epic':
-        return 'Epic';
-      case 'feature':
-        return 'Feature';
-      default:
-        return undefined;
-    }
+    const labelMap: Record<string, string> = { 'epic': 'Epic', 'feature': 'Feature' };
+    return labelMap[item.type];
   }
 
   /**
@@ -1178,27 +1166,12 @@ Items land here when:
 
   /**
    * Check if ALL items in a group should be archived
-   * CRITICAL FIX (2025-12-01): Prevents duplicate folder creation
-   *
-   * If ALL items are old (should be archived), the feature folder itself
-   * should be created in _archive/ to avoid having an empty FS-XXX/ folder
-   * in the main location while all content is in _archive/FS-XXX/
-   *
-   * @param items - All items in the feature group
-   * @returns True if ALL items should be archived
    */
   private shouldArchiveEntireGroup(items: ExternalItem[]): boolean {
-    if (items.length === 0) {
-      return false;
-    }
-
-    // Check if auto-archiving is disabled
+    if (items.length === 0) return false;
     const threshold = this.options.autoArchiveAfterDays;
-    if (!threshold || threshold <= 0) {
-      return false;
-    }
+    if (!threshold || threshold <= 0) return false;
 
-    // ALL items must be old enough to archive the entire group
     return items.every(item => this.shouldAutoArchive(item.createdAt));
   }
 
@@ -1415,21 +1388,12 @@ ${isOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
 
   /**
    * Check if an item should be auto-archived based on creation date
-   *
-   * @param createdAt - Item creation date
-   * @returns True if item is older than autoArchiveAfterDays threshold
    */
   private shouldAutoArchive(createdAt: Date): boolean {
     const threshold = this.options.autoArchiveAfterDays;
+    if (!threshold || threshold <= 0) return false;
 
-    // Disabled if threshold is 0 or undefined
-    if (!threshold || threshold <= 0) {
-      return false;
-    }
-
-    const ageMs = Date.now() - createdAt.getTime();
-    const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
-
+    const ageDays = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
     return ageDays >= threshold;
   }
 

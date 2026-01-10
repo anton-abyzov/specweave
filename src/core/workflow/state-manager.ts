@@ -83,10 +83,7 @@ export class StateManager {
   }
 
   /**
-   * Load checkpoints for increment
-   *
-   * @param incrementId - Increment ID
-   * @returns Array of checkpoints (sorted by timestamp, newest first)
+   * Load checkpoints for increment (sorted by timestamp, newest first)
    */
   async loadCheckpoints(incrementId: string): Promise<Checkpoint[]> {
     if (!await fs.pathExists(this.checkpointDir)) {
@@ -103,25 +100,20 @@ export class StateManager {
       try {
         const checkpoint = await fs.readJson(path.join(this.checkpointDir, file));
         checkpoints.push(checkpoint);
-      } catch (error) {
-        // Skip corrupted checkpoints
-        console.warn(`Failed to load checkpoint ${file}:`, error);
+      } catch {
+        console.warn(`Failed to load checkpoint ${file}`);
       }
     }
 
-    // Sort by timestamp (newest first)
     return checkpoints.sort((a, b) => b.timestamp - a.timestamp);
   }
 
   /**
    * Get latest checkpoint for increment
-   *
-   * @param incrementId - Increment ID
-   * @returns Latest checkpoint or null
    */
   async getLatestCheckpoint(incrementId: string): Promise<Checkpoint | null> {
     const checkpoints = await this.loadCheckpoints(incrementId);
-    return checkpoints[0] || null;
+    return checkpoints[0] ?? null;
   }
 
   /**
@@ -159,24 +151,13 @@ export class StateManager {
   }
 
   /**
-   * Detect infinite loop in phase history
-   *
-   * Checks if the same phase has been visited too many times in a row.
-   *
-   * @param phaseHistory - Recent phase history
-   * @param threshold - Max same-phase repetitions (default: 3)
-   * @returns True if loop detected
+   * Detect infinite loop (same phase repeated threshold times consecutively)
    */
   detectLoop(phaseHistory: WorkflowPhase[], threshold: number = 3): boolean {
-    if (phaseHistory.length < threshold) {
-      return false;
-    }
+    if (phaseHistory.length < threshold) return false;
 
-    // Check if last N phases are all the same
     const recentPhases = phaseHistory.slice(-threshold);
-    const uniquePhases = new Set(recentPhases);
-
-    return uniquePhases.size === 1;
+    return new Set(recentPhases).size === 1;
   }
 
   /**

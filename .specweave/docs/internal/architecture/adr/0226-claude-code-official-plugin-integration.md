@@ -1,0 +1,158 @@
+# ADR-0226: Claude Code Official Plugin Integration Strategy
+
+**Status**: Accepted
+**Date**: 2026-01-10
+**Decision Makers**: SpecWeave Core Team
+**Category**: Integration
+
+## Context
+
+SpecWeave provides specialized skills and agents for various domains (mobile, frontend, backend, DevOps, etc.). Claude Code offers an official plugin ecosystem with high-quality integrations for:
+
+1. **Language Server Protocol (LSP) plugins** - Code intelligence for 11+ languages
+2. **Developer tools** - Code review, hookify, frontend-design
+3. **External integrations** - Greptile, Vercel, Stripe, Supabase, etc.
+
+Currently, SpecWeave skills operate independently without leveraging these official plugins. This creates missed opportunities for:
+- Enhanced code intelligence during skill execution
+- Safety rails via hookify
+- Faster codebase search via Greptile for large repos
+- Platform-specific integrations (Vercel for frontend, Stripe for payments)
+
+## Decision
+
+**Integrate Claude Code official plugins into SpecWeave skills through documented recommendations and optional dependencies.**
+
+### Integration Levels
+
+| Level | Description | Implementation |
+|-------|-------------|----------------|
+| **Recommended** | Document in skill/agent files | Add "Recommended Plugins" section |
+| **Enhanced** | Better experience with plugin | Detect plugin availability, adjust behavior |
+| **Required** | Skill requires plugin | Validate plugin presence, fail gracefully |
+
+### Plugin Mappings
+
+#### LSP Plugins (Language Intelligence)
+
+| SpecWeave Skill/Agent | Recommended LSP | Benefit |
+|-----------------------|-----------------|---------|
+| `sw-mobile:mobile-architect` | `swift-lsp`, `kotlin-lsp` | Native iOS/Android code intelligence |
+| `sw-mobile:native-modules` | `swift-lsp`, `kotlin-lsp` | Turbo Module/JSI development |
+| `sw-frontend:frontend-architect` | `typescript-lsp` | React/Vue/Angular intelligence |
+| `sw-backend:database-optimizer` | `pyright-lsp`, `gopls-lsp`, `jdtls-lsp` | Backend language support |
+| `sw-infra:devops` | `gopls-lsp`, `pyright-lsp` | IaC and automation scripts |
+| `sw-ml:ml-engineer` | `pyright-lsp` | Python ML code intelligence |
+| `sw-kafka:kafka-architect` | `jdtls-lsp`, `gopls-lsp` | Kafka client development |
+
+#### Developer Tools
+
+| SpecWeave Skill/Agent | Plugin | Benefit |
+|-----------------------|--------|---------|
+| **ALL skills** | `hookify` | Safety rails for destructive operations |
+| `sw-testing:qa-engineer` | `hookify` | Enforce test-before-commit patterns |
+| `sw-frontend:frontend-architect` | `frontend-design` | Production-grade UI aesthetics |
+| `/code-review` (built-in) | `code-review` | Multi-agent PR review with confidence scoring |
+
+#### External Integrations
+
+| SpecWeave Skill/Agent | Plugin | Benefit |
+|-----------------------|--------|---------|
+| Living Docs Sync | `greptile` | AI-powered semantic codebase search |
+| `sw-frontend:frontend-architect` | `vercel` MCP | Deployment, logs, project management |
+| `sw-payments:payment-integration` | `stripe` | Native Stripe API access |
+| `sw-backend` | `supabase`, `firebase` | Backend service integration |
+| `sw-testing:qa-engineer` | `playwright` | E2E test automation |
+
+### Hookify Integration (Critical)
+
+Hookify provides safety rails via markdown configuration. SpecWeave should ship recommended hookify rules:
+
+```yaml
+# .claude/hookify.block-direct-metadata-edit.local.md
+---
+name: block-direct-metadata-edit
+enabled: true
+event: file
+action: block
+conditions:
+  - field: file_path
+    operator: regex_match
+    pattern: metadata\.json$
+  - field: new_text
+    operator: contains
+    pattern: '"status":\s*"completed"'
+---
+Use /sw:done to close increments, not direct metadata.json edits!
+```
+
+### Greptile for Living Docs (Performance)
+
+For large codebases (>100k lines), recommend Greptile over grep-based search:
+
+- **Traditional**: `grep` + `glob` = O(n) file scanning
+- **Greptile**: Semantic graph search = O(log n) with context awareness
+
+Integration point: `/sw:living-docs` can detect Greptile availability and use it for brownfield analysis.
+
+## Consequences
+
+### Positive
+
+1. **Enhanced Code Intelligence**: LSP plugins provide go-to-definition, find-references, diagnostics
+2. **Safety Rails**: Hookify prevents dangerous operations (rm -rf, force push, direct metadata edits)
+3. **Performance**: Greptile accelerates large codebase analysis
+4. **Platform Integration**: Direct access to Vercel, Stripe, Supabase APIs
+
+### Negative
+
+1. **Optional Dependencies**: Users must install plugins separately
+2. **Documentation Overhead**: Must maintain plugin recommendations per skill
+3. **Version Coupling**: Plugin updates may affect skill behavior
+
+### Neutral
+
+1. **Graceful Degradation**: Skills work without plugins, just with reduced capability
+2. **User Choice**: Recommendations, not requirements (except for specialized use cases)
+
+## Implementation
+
+### Phase 1: Documentation (This ADR)
+- Document plugin recommendations in CLAUDE.md
+- Create reference document in living docs
+
+### Phase 2: Skill Updates
+- Add "Recommended Plugins" section to key AGENT.md/SKILL.md files
+- Start with mobile-architect (swift-lsp, kotlin-lsp)
+
+### Phase 3: Hookify Templates
+- Create `.claude/hookify.*.local.md` templates
+- Ship with SpecWeave marketplace plugin
+
+### Phase 4: Enhanced Integration (Future)
+- Detect plugin availability at runtime
+- Adjust skill behavior based on available plugins
+- Greptile integration for `/sw:living-docs`
+
+## References
+
+- [Claude Plugins Official Repository](https://github.com/anthropics/claude-plugins-official)
+- [Vercel MCP Documentation](https://vercel.com/docs/mcp/vercel-mcp)
+- [Greptile AI Code Review](https://www.greptile.com/code-context)
+- [Hookify Plugin README](https://github.com/anthropics/claude-plugins-official/blob/main/plugins/hookify/README.md)
+
+## Appendix: Complete LSP Plugin Reference
+
+| Plugin | Languages | Installation | Files |
+|--------|-----------|--------------|-------|
+| `typescript-lsp` | TS, JS, TSX, JSX, MTS, CTS, MJS, CJS | `npm i -g typescript-language-server typescript` | `.ts`, `.tsx`, `.js`, `.jsx` |
+| `swift-lsp` | Swift | Xcode or `brew install swift` | `.swift` |
+| `kotlin-lsp` | Kotlin, KTS | `brew install JetBrains/utils/kotlin-lsp` | `.kt`, `.kts` |
+| `gopls-lsp` | Go | `go install golang.org/x/tools/gopls@latest` | `.go` |
+| `pyright-lsp` | Python | `npm i -g pyright` or `pip install pyright` | `.py`, `.pyi` |
+| `rust-analyzer-lsp` | Rust | `rustup component add rust-analyzer` | `.rs` |
+| `jdtls-lsp` | Java | `brew install jdtls` | `.java` |
+| `csharp-lsp` | C# | `dotnet tool install -g csharp-ls` | `.cs` |
+| `php-lsp` | PHP | `npm i -g intelephense` | `.php` |
+| `clangd-lsp` | C, C++ | `brew install llvm` | `.c`, `.cpp`, `.h`, `.hpp` |
+| `lua-lsp` | Lua | `brew install lua-language-server` | `.lua` |

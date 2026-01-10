@@ -12,9 +12,7 @@ import * as path from 'path';
 import {
   HookExecutionResult,
   FixResult,
-  BatchFixResult,
-  HookError,
-  ImportErrorDetails
+  BatchFixResult
 } from './types.js';
 import { HookExecutor } from './HookExecutor.js';
 
@@ -32,35 +30,33 @@ export class HookAutoFixer {
    * Attempt to fix a specific hook
    */
   async fixHook(hookName: string, executionResult: HookExecutionResult): Promise<FixResult> {
-    // Find first fixable error
     const fixableError = executionResult.errors.find(e => e.fixable);
 
     if (!fixableError) {
-      return {
-        hook: hookName,
-        success: false,
-        fixType: 'import',
-        description: 'No fixable issues detected',
-        filesModified: [],
-        error: 'No auto-fixable errors found'
-      };
+      return this.createFailedResult(hookName, 'No fixable issues detected', 'No auto-fixable errors found');
     }
 
-    // Attempt fix based on error type
-    switch (fixableError.type) {
-      case 'import':
-        return await this.fixImportError(hookName, executionResult);
-      default:
-        return {
-          hook: hookName,
-          success: false,
-          fixType: 'import', // Default to import type
-          description: `No auto-fix available for ${fixableError.type} errors`,
-          filesModified: [],
-          error: 'Unsupported error type for auto-fix'
-        };
+    if (fixableError.type === 'import') {
+      return this.fixImportError(hookName, executionResult);
     }
+
+    return this.createFailedResult(
+      hookName,
+      `No auto-fix available for ${fixableError.type} errors`,
+      'Unsupported error type for auto-fix'
+    );
   }
+
+  private createFailedResult(hook: string, description: string, error: string): FixResult {
+    return { hook, success: false, fixType: 'import', description, filesModified: [], error };
+  }
+
+  private static readonly DEFAULT_EXECUTOR_CONFIG = {
+    timeout: 5000,
+    captureStdout: true,
+    captureStderr: true,
+    testIncrementId: '__health-check-test__'
+  };
 
   /**
    * Fix import errors (missing .js extensions)
@@ -69,56 +65,21 @@ export class HookAutoFixer {
     hookName: string,
     executionResult: HookExecutionResult
   ): Promise<FixResult> {
-    // Extract import error details from stderr
-    const executor = new HookExecutor({
-      timeout: 5000,
-      captureStdout: true,
-      captureStderr: true,
-      testIncrementId: '__health-check-test__'
-    });
-
-    const importDetails = executor.extractImportErrorDetails(
-      executionResult.stderr,
-      '' // Hook path would be provided by caller
-    );
+    const executor = new HookExecutor(HookAutoFixer.DEFAULT_EXECUTOR_CONFIG);
+    const importDetails = executor.extractImportErrorDetails(executionResult.stderr, '');
 
     if (!importDetails || importDetails.fixConfidence === 'low') {
-      return {
-        hook: hookName,
-        success: false,
-        fixType: 'import',
-        description: 'Cannot confidently fix import error',
-        filesModified: [],
-        error: 'Import fix confidence too low'
-      };
+      return this.createFailedResult(hookName, 'Cannot confidently fix import error', 'Import fix confidence too low');
     }
 
-    // Find hook file
     const hookFile = await this.findHookFile(hookName);
-
     if (!hookFile) {
-      return {
-        hook: hookName,
-        success: false,
-        fixType: 'import',
-        description: 'Hook file not found',
-        filesModified: [],
-        error: `Cannot find hook file for ${hookName}`
-      };
+      return this.createFailedResult(hookName, 'Hook file not found', `Cannot find hook file for ${hookName}`);
     }
 
-    // Apply fix: Add .js extension to import
     const success = await this.addJsExtensionToImports(hookFile);
-
     if (!success) {
-      return {
-        hook: hookName,
-        success: false,
-        fixType: 'import',
-        description: 'Failed to apply import fix',
-        filesModified: [],
-        error: 'Could not modify hook file'
-      };
+      return this.createFailedResult(hookName, 'Failed to apply import fix', 'Could not modify hook file');
     }
 
     return {
@@ -135,34 +96,23 @@ export class HookAutoFixer {
    */
   private async addJsExtensionToImports(filePath: string): Promise<boolean> {
     try {
-      let content = await fs.readFile(filePath, 'utf-8');
+      const content = await fs.readFile(filePath, 'utf-8');
+      const importPattern = /import\s+{[^}]+}\s+from\s+['"](\.\.[^'"]+)['"]/g;
       let modified = false;
 
-      // Pattern: import ... from '../../../../src/....js' (missing .js)
-      const importPattern = /import\s+{[^}]+}\s+from\s+['"](\.\.[^'"]+)['"]/g;
-
-      content = content.replace(importPattern, (match, modulePath) => {
-        // Skip if already has .js extension
-        if (modulePath.endsWith('.js')) {
+      const updatedContent = content.replace(importPattern, (match, modulePath) => {
+        if (modulePath.endsWith('.js') || modulePath.includes('node_modules')) {
           return match;
         }
-
-        // Skip node_modules
-        if (modulePath.includes('node_modules')) {
-          return match;
-        }
-
-        // Add .js extension
         modified = true;
         return match.replace(modulePath, `${modulePath}.js`);
       });
 
       if (modified) {
-        await fs.writeFile(filePath, content, 'utf-8');
+        await fs.writeFile(filePath, updatedContent, 'utf-8');
       }
-
       return modified;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -256,19 +206,9 @@ export class HookAutoFixer {
 
   /**
    * Validate fix was successful by re-running hook
+   * Note: Currently a placeholder - would need hook definition to re-execute
    */
-  async verifyFix(hookName: string, originalResult: HookExecutionResult): Promise<boolean> {
-    // Re-execute hook
-    const executor = new HookExecutor({
-      timeout: 5000,
-      captureStdout: true,
-      captureStderr: true,
-      testIncrementId: '__health-check-test__'
-    });
-
-    // Would need hook definition to re-execute
-    // For now, just check if fix was applied
-
-    return true; // Placeholder
+  async verifyFix(_hookName: string, _originalResult: HookExecutionResult): Promise<boolean> {
+    return true;
   }
 }

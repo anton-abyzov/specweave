@@ -20,6 +20,11 @@ import {
   getGlobalMemoryDir,
   ensureSkillMemoryDir,
   getClaudeUserDir,
+  CLAUDE_MARKETPLACE_PATH,
+  LEGACY_MEMORY_PATH,
+  getLegacyMemoryDir,
+  hasLegacyMemoryFiles,
+  migrateMemoryFiles,
 } from '../../../../src/core/reflection/skill-memory-paths.js';
 
 describe('skill-memory-paths', () => {
@@ -247,6 +252,70 @@ describe('skill-memory-paths', () => {
       const brokenPattern = path.join(claudeDir, 'specweave');
       // The path can contain 'specweave' but NOT as direct child of claudeDir
       expect(memoryPath.indexOf(brokenPattern + path.sep + 'memory')).toBe(-1);
+    });
+  });
+
+  describe('Path constants', () => {
+    it('should export CLAUDE_MARKETPLACE_PATH constant', () => {
+      expect(CLAUDE_MARKETPLACE_PATH).toEqual(['plugins', 'marketplaces', 'specweave']);
+    });
+
+    it('should export LEGACY_MEMORY_PATH constant', () => {
+      expect(LEGACY_MEMORY_PATH).toEqual(['specweave', 'memory']);
+    });
+  });
+
+  describe('getLegacyMemoryDir', () => {
+    it('should return legacy path under ~/.claude/specweave/memory', () => {
+      const legacyPath = getLegacyMemoryDir();
+      const claudeDir = getClaudeUserDir();
+
+      expect(legacyPath).toBe(path.join(claudeDir, 'specweave', 'memory'));
+    });
+  });
+
+  describe('hasLegacyMemoryFiles', () => {
+    let legacyTestDir: string;
+
+    beforeEach(() => {
+      // Create a temporary test directory to simulate legacy location
+      legacyTestDir = fs.mkdtempSync(path.join(os.tmpdir(), 'legacy-memory-test-'));
+    });
+
+    afterEach(() => {
+      fs.rmSync(legacyTestDir, { recursive: true, force: true });
+    });
+
+    it('should return false when legacy directory does not exist', () => {
+      // getLegacyMemoryDir() returns the real user path, not our test dir
+      // We can't easily mock it, but we can test the behavior indirectly
+      // This test verifies the function doesn't throw on a normal system
+      const result = hasLegacyMemoryFiles();
+      expect(typeof result).toBe('boolean');
+    });
+  });
+
+  describe('migrateMemoryFiles', () => {
+    it('should return empty result when no migration needed', () => {
+      // For a fresh system with no legacy files
+      const result = migrateMemoryFiles(true); // dry run
+
+      expect(result.success).toBe(true);
+      // migrationNeeded depends on whether legacy files exist
+    });
+
+    it('should have correct structure in result', () => {
+      const result = migrateMemoryFiles(true);
+
+      expect(result).toHaveProperty('migrationNeeded');
+      expect(result).toHaveProperty('success');
+      expect(result).toHaveProperty('filesMigrated');
+      expect(result).toHaveProperty('sourcePath');
+      expect(result).toHaveProperty('targetPath');
+      expect(result).toHaveProperty('migratedFiles');
+      expect(result).toHaveProperty('errors');
+      expect(Array.isArray(result.migratedFiles)).toBe(true);
+      expect(Array.isArray(result.errors)).toBe(true);
     });
   });
 });

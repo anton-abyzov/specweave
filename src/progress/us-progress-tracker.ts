@@ -34,27 +34,23 @@ export interface AggregateProgress {
 }
 
 /**
+ * Count tasks by status predicate
+ */
+function countByStatus(tasks: Task[], predicate: (t: Task) => boolean): number {
+  return tasks.filter(predicate).length;
+}
+
+/**
  * Calculate task completion statistics for a single User Story
  */
 export function calculateUSProgress(usId: string, tasks: Task[]): USProgress {
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((t) => t.status === 'completed').length;
-  const inProgressTasks = tasks.filter((t) => t.status === 'in_progress').length;
-  const pendingTasks = tasks.filter(
-    (t) => t.status === 'pending' || t.status === 'transferred' || t.status === 'canceled'
-  ).length;
-
+  const completedTasks = countByStatus(tasks, t => t.status === 'completed');
+  const inProgressTasks = countByStatus(tasks, t => t.status === 'in_progress');
+  const pendingTasks = totalTasks - completedTasks - inProgressTasks;
   const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-  return {
-    usId,
-    totalTasks,
-    completedTasks,
-    inProgressTasks,
-    pendingTasks,
-    percentage,
-    tasks,
-  };
+  return { usId, totalTasks, completedTasks, inProgressTasks, pendingTasks, percentage, tasks };
 }
 
 /**
@@ -67,9 +63,8 @@ export function calculateAggregateProgress(tasksByUS: TasksByUserStory): Aggrega
   let inProgressTasks = 0;
   let pendingTasks = 0;
 
-  // Calculate per-US progress
   for (const [usId, tasks] of Object.entries(tasksByUS)) {
-    if (usId === 'orphan' || usId === 'unknown') continue; // Skip special keys
+    if (usId === 'orphan' || usId === 'unknown') continue;
 
     const usProgress = calculateUSProgress(usId, tasks);
     byUserStory.set(usId, usProgress);
@@ -80,28 +75,18 @@ export function calculateAggregateProgress(tasksByUS: TasksByUserStory): Aggrega
     pendingTasks += usProgress.pendingTasks;
   }
 
-  // Identify orphan tasks (tasks without userStory field)
   const orphanTasks = tasksByUS['orphan'] || tasksByUS['unknown'] || [];
   if (orphanTasks.length > 0) {
-    totalTasks += orphanTasks.length;
-    completedTasks += orphanTasks.filter((t) => t.status === 'completed').length;
-    inProgressTasks += orphanTasks.filter((t) => t.status === 'in_progress').length;
-    pendingTasks += orphanTasks.filter(
-      (t) => t.status === 'pending' || t.status === 'transferred' || t.status === 'canceled'
-    ).length;
+    const orphanProgress = calculateUSProgress('orphan', orphanTasks);
+    totalTasks += orphanProgress.totalTasks;
+    completedTasks += orphanProgress.completedTasks;
+    inProgressTasks += orphanProgress.inProgressTasks;
+    pendingTasks += orphanProgress.pendingTasks;
   }
 
   const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-  return {
-    totalTasks,
-    completedTasks,
-    inProgressTasks,
-    pendingTasks,
-    percentage,
-    byUserStory,
-    orphanTasks,
-  };
+  return { totalTasks, completedTasks, inProgressTasks, pendingTasks, percentage, byUserStory, orphanTasks };
 }
 
 /**
@@ -140,9 +125,7 @@ export function getProgressBar(percentage: number, width: number = 20): string {
  * Get color indicator based on percentage
  */
 export function getProgressColor(percentage: number): 'green' | 'yellow' | 'red' {
-  if (percentage >= 80) return 'green';
-  if (percentage >= 50) return 'yellow';
-  return 'red';
+  return percentage >= 80 ? 'green' : percentage >= 50 ? 'yellow' : 'red';
 }
 
 /**

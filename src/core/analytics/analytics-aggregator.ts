@@ -74,29 +74,26 @@ export class AnalyticsAggregator {
    * Aggregate events by name
    */
   private aggregateByName(events: AnalyticsEvent[], limit: number): UsageCount[] {
-    const countMap = new Map<
-      string,
-      {
-        count: number;
-        successCount: number;
-        failureCount: number;
-        totalDuration: number;
-        durationCount: number;
-        plugin?: string;
-        lastUsed: string;
-      }
-    >();
+    const countMap = new Map<string, {
+      count: number;
+      successCount: number;
+      failureCount: number;
+      totalDuration: number;
+      durationCount: number;
+      plugin?: string;
+      lastUsed: string;
+    }>();
 
     for (const event of events) {
       const existing = countMap.get(event.name);
+      const hasDuration = event.duration !== undefined;
+
       if (existing) {
         existing.count++;
-        if (event.success) existing.successCount++;
-        else existing.failureCount++;
-        if (event.duration !== undefined) {
-          existing.totalDuration += event.duration;
-          existing.durationCount++;
-        }
+        existing.successCount += event.success ? 1 : 0;
+        existing.failureCount += event.success ? 0 : 1;
+        existing.totalDuration += event.duration ?? 0;
+        existing.durationCount += hasDuration ? 1 : 0;
         if (event.timestamp > existing.lastUsed) {
           existing.lastUsed = event.timestamp;
         }
@@ -106,48 +103,41 @@ export class AnalyticsAggregator {
           successCount: event.success ? 1 : 0,
           failureCount: event.success ? 0 : 1,
           totalDuration: event.duration ?? 0,
-          durationCount: event.duration !== undefined ? 1 : 0,
+          durationCount: hasDuration ? 1 : 0,
           plugin: event.plugin,
           lastUsed: event.timestamp,
         });
       }
     }
 
-    // Convert to array and sort by count
-    const result: UsageCount[] = [];
-    for (const [name, data] of countMap.entries()) {
-      result.push({
+    return Array.from(countMap.entries())
+      .map(([name, data]) => ({
         name,
         count: data.count,
         successCount: data.successCount,
         failureCount: data.failureCount,
-        avgDuration:
-          data.durationCount > 0
-            ? Math.round(data.totalDuration / data.durationCount)
-            : undefined,
+        avgDuration: data.durationCount > 0
+          ? Math.round(data.totalDuration / data.durationCount)
+          : undefined,
         plugin: data.plugin,
         lastUsed: data.lastUsed,
-      });
-    }
-
-    return result.sort((a, b) => b.count - a.count).slice(0, limit);
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, limit);
   }
 
   /**
    * Get daily summaries
    */
   private getDailySummaries(events: AnalyticsEvent[]): DailySummary[] {
-    const dailyMap = new Map<
-      string,
-      {
-        commands: Set<string>;
-        skills: Set<string>;
-        agents: Set<string>;
-        commandCount: number;
-        skillCount: number;
-        agentCount: number;
-      }
-    >();
+    const dailyMap = new Map<string, {
+      commands: Set<string>;
+      skills: Set<string>;
+      agents: Set<string>;
+      commandCount: number;
+      skillCount: number;
+      agentCount: number;
+    }>();
 
     for (const event of events) {
       const date = event.timestamp.split('T')[0];
@@ -165,26 +155,14 @@ export class AnalyticsAggregator {
         dailyMap.set(date, daily);
       }
 
-      switch (event.type) {
-        case 'command':
-          daily.commands.add(event.name);
-          daily.commandCount++;
-          break;
-        case 'skill':
-          daily.skills.add(event.name);
-          daily.skillCount++;
-          break;
-        case 'agent':
-          daily.agents.add(event.name);
-          daily.agentCount++;
-          break;
-      }
+      const typeToKey = { command: 'commands', skill: 'skills', agent: 'agents' } as const;
+      const key = typeToKey[event.type];
+      daily[key].add(event.name);
+      daily[`${key.slice(0, -1)}Count` as 'commandCount' | 'skillCount' | 'agentCount']++;
     }
 
-    // Convert to array and sort by date
-    const result: DailySummary[] = [];
-    for (const [date, data] of dailyMap.entries()) {
-      result.push({
+    return Array.from(dailyMap.entries())
+      .map(([date, data]) => ({
         date,
         totalEvents: data.commandCount + data.skillCount + data.agentCount,
         commands: data.commandCount,
@@ -193,10 +171,8 @@ export class AnalyticsAggregator {
         uniqueCommands: data.commands.size,
         uniqueSkills: data.skills.size,
         uniqueAgents: data.agents.size,
-      });
-    }
-
-    return result.sort((a, b) => a.date.localeCompare(b.date));
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
   }
 
   /**
@@ -306,43 +282,27 @@ export class AnalyticsAggregator {
     }
 
     // CSV format
-    const lines: string[] = [];
+    const lines: string[] = [
+      '# SpecWeave Analytics Export',
+      `# Generated: ${summary.generatedAt}`,
+      `# Period: ${summary.since} to ${summary.until}`,
+      '',
+    ];
 
-    // Header
-    lines.push('# SpecWeave Analytics Export');
-    lines.push(`# Generated: ${summary.generatedAt}`);
-    lines.push(`# Period: ${summary.since} to ${summary.until}`);
-    lines.push('');
+    const formatUsageRow = (item: UsageCount): string =>
+      `${item.name},${item.count},${item.successCount},${item.failureCount},${item.avgDuration ?? ''},${item.plugin ?? ''},${item.lastUsed}`;
 
-    // Top Commands
-    lines.push('## Top Commands');
-    lines.push('Name,Count,Success,Failure,Avg Duration (ms),Plugin,Last Used');
-    for (const cmd of summary.topCommands) {
-      lines.push(
-        `${cmd.name},${cmd.count},${cmd.successCount},${cmd.failureCount},${cmd.avgDuration ?? ''},${cmd.plugin ?? ''},${cmd.lastUsed}`
-      );
+    const usageHeader = 'Name,Count,Success,Failure,Avg Duration (ms),Plugin,Last Used';
+
+    const sections: Array<{ title: string; items: UsageCount[] }> = [
+      { title: '## Top Commands', items: summary.topCommands },
+      { title: '## Top Skills', items: summary.topSkills },
+      { title: '## Top Agents', items: summary.topAgents },
+    ];
+
+    for (const section of sections) {
+      lines.push(section.title, usageHeader, ...section.items.map(formatUsageRow), '');
     }
-    lines.push('');
-
-    // Top Skills
-    lines.push('## Top Skills');
-    lines.push('Name,Count,Success,Failure,Avg Duration (ms),Plugin,Last Used');
-    for (const skill of summary.topSkills) {
-      lines.push(
-        `${skill.name},${skill.count},${skill.successCount},${skill.failureCount},${skill.avgDuration ?? ''},${skill.plugin ?? ''},${skill.lastUsed}`
-      );
-    }
-    lines.push('');
-
-    // Top Agents
-    lines.push('## Top Agents');
-    lines.push('Name,Count,Success,Failure,Avg Duration (ms),Plugin,Last Used');
-    for (const agent of summary.topAgents) {
-      lines.push(
-        `${agent.name},${agent.count},${agent.successCount},${agent.failureCount},${agent.avgDuration ?? ''},${agent.plugin ?? ''},${agent.lastUsed}`
-      );
-    }
-    lines.push('');
 
     // Daily Summary
     lines.push('## Daily Summary');

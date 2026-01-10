@@ -225,14 +225,6 @@ export class SyncInterceptor {
 
   /**
    * Intercept with automatic origin detection
-   *
-   * Convenience method that auto-detects item origin from itemId.
-   * External items end with 'E' or contain '-E-'.
-   *
-   * @param platform - Target platform
-   * @param operation - Operation type
-   * @param itemId - Item ID (origin auto-detected)
-   * @param execute - Function to execute
    */
   async interceptAuto<T>(
     platform: SyncPlatform,
@@ -240,18 +232,11 @@ export class SyncInterceptor {
     itemId: string,
     execute: () => Promise<T>
   ): Promise<InterceptorResult<T>> {
-    const origin = this.detectOrigin(itemId);
-    return this.intercept(platform, operation, itemId, origin, execute);
+    return this.intercept(platform, operation, itemId, this.detectOrigin(itemId), execute);
   }
 
   /**
    * Intercept a read operation (always allowed)
-   *
-   * Convenience method for read operations. Still logs for audit.
-   *
-   * @param platform - Target platform
-   * @param itemId - Item ID
-   * @param execute - Function to execute
    */
   async interceptRead<T>(
     platform: SyncPlatform,
@@ -263,28 +248,17 @@ export class SyncInterceptor {
 
   /**
    * Intercept a status update operation
-   *
-   * @param platform - Target platform
-   * @param itemId - Item ID
-   * @param execute - Function to execute
    */
   async interceptStatusUpdate<T>(
     platform: SyncPlatform,
     itemId: string,
     execute: () => Promise<T>
   ): Promise<InterceptorResult<T>> {
-    const origin = this.detectOrigin(itemId);
-    return this.intercept(platform, 'update-status', itemId, origin, execute);
+    return this.intercept(platform, 'update-status', itemId, this.detectOrigin(itemId), execute);
   }
 
   /**
-   * Intercept an upsert operation
-   *
-   * Automatically determines operation type based on item origin.
-   *
-   * @param platform - Target platform
-   * @param itemId - Item ID
-   * @param execute - Function to execute
+   * Intercept an upsert operation - determines operation type from item origin
    */
   async interceptUpsert<T>(
     platform: SyncPlatform,
@@ -292,56 +266,34 @@ export class SyncInterceptor {
     execute: () => Promise<T>
   ): Promise<InterceptorResult<T>> {
     const origin = this.detectOrigin(itemId);
-    const operation: SyncOperation =
-      origin === 'external' ? 'upsert-external' : 'upsert-internal';
+    const operation: SyncOperation = origin === 'external' ? 'upsert-external' : 'upsert-internal';
     return this.intercept(platform, operation, itemId, origin, execute);
   }
 
   /**
    * Check if an operation would be allowed (without executing)
-   *
-   * Useful for pre-flight checks before expensive operations.
-   *
-   * @param platform - Target platform
-   * @param operation - Operation type
-   * @param itemId - Item ID
-   * @returns true if operation would be allowed
    */
-  wouldAllow(
-    platform: SyncPlatform,
-    operation: SyncOperation,
-    itemId: string
-  ): boolean {
-    const origin = this.detectOrigin(itemId);
-    const permission = this.permissionEnforcer.checkPermission(
+  wouldAllow(platform: SyncPlatform, operation: SyncOperation, itemId: string): boolean {
+    return this.permissionEnforcer.checkPermission(
       platform,
       operation,
       itemId,
-      origin
-    );
-    return permission.allowed;
+      this.detectOrigin(itemId)
+    ).allowed;
   }
 
   /**
-   * Get permission summary for a platform
-   *
-   * @param platform - Target platform
-   * @returns Human-readable summary
+   * Get permission summary
    */
   getPermissionsSummary(): string {
     return this.permissionEnforcer.getPermissionsSummary().summary;
   }
 
   /**
-   * Detect item origin from ID
-   *
-   * External items end with 'E' or contain '-E-'.
+   * Detect item origin from ID - external items end with 'E' or contain '-E-'
    */
   private detectOrigin(itemId: string): ItemOrigin {
-    if (itemId.endsWith('E') || itemId.includes('-E-')) {
-      return 'external';
-    }
-    return 'internal';
+    return (itemId.endsWith('E') || itemId.includes('-E-')) ? 'external' : 'internal';
   }
 }
 

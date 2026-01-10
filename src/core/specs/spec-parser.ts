@@ -20,7 +20,6 @@ export class SpecParser {
    * Parse complete user story including acceptance criteria
    */
   static parseUserStory(markdown: string, usId: string): UserStory | null {
-    // Pattern: **US-001**: As a X, I want Y so that Z
     const usPattern = new RegExp(`\\*\\*${usId}\\*\\*:\\s*(.+?)(?=\\n|$)`, 'g');
     const match = usPattern.exec(markdown);
 
@@ -30,168 +29,142 @@ export class SpecParser {
 
     const title = match[1].trim();
     const acceptanceCriteria = this.parseAcceptanceCriteria(markdown, usId);
+    const status = this.determineStatusFromAC(acceptanceCriteria);
+    const priority = this.extractPriority(markdown, usId);
 
-    // Determine status from AC completion
-    let status: 'todo' | 'in-progress' | 'done' = 'todo';
-    if (acceptanceCriteria.length > 0) {
-      const completedCount = acceptanceCriteria.filter(ac => ac.status === 'done').length;
-      if (completedCount === acceptanceCriteria.length) {
-        status = 'done';
-      } else if (completedCount > 0) {
-        status = 'in-progress';
-      }
+    return { id: usId, title, status, priority, acceptanceCriteria };
+  }
+
+  /**
+   * Determine user story status based on acceptance criteria completion
+   */
+  private static determineStatusFromAC(acceptanceCriteria: AcceptanceCriteria[]): 'todo' | 'in-progress' | 'done' {
+    if (acceptanceCriteria.length === 0) {
+      return 'todo';
     }
+    const completedCount = acceptanceCriteria.filter(ac => ac.status === 'done').length;
+    if (completedCount === acceptanceCriteria.length) {
+      return 'done';
+    }
+    if (completedCount > 0) {
+      return 'in-progress';
+    }
+    return 'todo';
+  }
 
-    // Try to extract priority (look for P1, P2, P3 markers)
-    let priority: 'P1' | 'P2' | 'P3' = 'P1';
+  /**
+   * Extract priority from markdown near a user story
+   */
+  private static extractPriority(markdown: string, usId: string): 'P1' | 'P2' | 'P3' {
     const priorityMatch = markdown.match(new RegExp(`${usId}[\\s\\S]{0,200}?\\(P([123])\\)`));
-    if (priorityMatch) {
-      priority = `P${priorityMatch[1]}` as 'P1' | 'P2' | 'P3';
-    }
-
-    return {
-      id: usId,
-      title,
-      status,
-      priority,
-      acceptanceCriteria
-    };
+    return priorityMatch ? `P${priorityMatch[1]}` as 'P1' | 'P2' | 'P3' : 'P1';
   }
 
   /**
    * Parse all user stories from markdown
    */
   static parseAllUserStories(markdown: string): UserStory[] {
-    const stories: UserStory[] = [];
-
-    // Find all US-XXX patterns
     const usPattern = /\*\*US-(\d+)\*\*:/g;
-    const matches = markdown.matchAll(usPattern);
-
     const processedIds = new Set<string>();
 
-    for (const match of matches) {
-      const usId = `US-${match[1]}`;
-
-      if (processedIds.has(usId)) {
-        continue; // Skip duplicates
-      }
-
-      processedIds.add(usId);
-
-      const story = this.parseUserStory(markdown, usId);
-      if (story) {
-        stories.push(story);
-      }
-    }
-
-    return stories;
+    return [...markdown.matchAll(usPattern)]
+      .map(match => `US-${match[1]}`)
+      .filter(usId => {
+        if (processedIds.has(usId)) return false;
+        processedIds.add(usId);
+        return true;
+      })
+      .map(usId => this.parseUserStory(markdown, usId))
+      .filter((story): story is UserStory => story !== null);
   }
 
   /**
    * Parse acceptance criteria for a user story
    */
   static parseAcceptanceCriteria(markdown: string, usId: string): AcceptanceCriteria[] {
-    const criteria: AcceptanceCriteria[] = [];
-
-    // Extract the number from US-001 → 001
     const usNumber = usId.replace('US-', '');
-
-    // Pattern: - [ ] **AC-001-01**: Description
-    // or: - [x] **AC-001-01**: Description
     const acPattern = new RegExp(
       `- \\[([x ])\\] \\*\\*AC-${usNumber}-(\\d+)\\*\\*:\\s*(.+?)(?=\\n|$)`,
       'g'
     );
 
-    const matches = markdown.matchAll(acPattern);
-
-    for (const match of matches) {
-      const isDone = match[1] === 'x';
-      const acNumber = match[2];
+    return [...markdown.matchAll(acPattern)].map(match => {
       const description = match[3].trim();
+      const { priority, testable, cleanDescription } = this.parseACMetadata(description);
 
-      // Try to extract priority and testability markers
-      // Example: (P1, testable)
-      const metaMatch = description.match(/\(([^)]+)\)/);
-      let priority: 'P1' | 'P2' | 'P3' | undefined;
-      let testable: boolean | undefined;
-
-      if (metaMatch) {
-        const meta = metaMatch[1];
-        if (meta.includes('P1')) priority = 'P1';
-        if (meta.includes('P2')) priority = 'P2';
-        if (meta.includes('P3')) priority = 'P3';
-        if (meta.includes('testable')) testable = true;
-        if (meta.includes('not testable')) testable = false;
-      }
-
-      // Remove metadata from description
-      const cleanDescription = description.replace(/\s*\([^)]+\)\s*$/,  '').trim();
-
-      criteria.push({
-        id: `AC-${usNumber}-${acNumber}`,
+      return {
+        id: `AC-${usNumber}-${match[2]}`,
         description: cleanDescription,
-        status: isDone ? 'done' : 'todo',
+        status: match[1] === 'x' ? 'done' : 'todo',
         priority,
         testable
-      });
+      } as AcceptanceCriteria;
+    });
+  }
+
+  /**
+   * Parse metadata from AC description (priority, testability)
+   */
+  private static parseACMetadata(description: string): {
+    priority: 'P1' | 'P2' | 'P3' | undefined;
+    testable: boolean | undefined;
+    cleanDescription: string;
+  } {
+    const metaMatch = description.match(/\(([^)]+)\)/);
+    if (!metaMatch) {
+      return { priority: undefined, testable: undefined, cleanDescription: description };
     }
 
-    return criteria;
+    const meta = metaMatch[1];
+    let priority: 'P1' | 'P2' | 'P3' | undefined;
+    if (meta.includes('P1')) priority = 'P1';
+    else if (meta.includes('P2')) priority = 'P2';
+    else if (meta.includes('P3')) priority = 'P3';
+
+    let testable: boolean | undefined;
+    if (meta.includes('not testable')) testable = false;
+    else if (meta.includes('testable')) testable = true;
+
+    return {
+      priority,
+      testable,
+      cleanDescription: description.replace(/\s*\([^)]+\)\s*$/, '').trim()
+    };
   }
 
   /**
    * Parse increment references from markdown
    */
   static parseIncrementReferences(markdown: string): IncrementReference[] {
-    const increments: IncrementReference[] = [];
-
-    // Look for increment table
-    // Example: | **0001-core-framework** | ✅ Complete | 2025-10-15 | Initial CLI |
     const tablePattern = /\|\s*\*\*(\d{4}-[\w-]+)\*\*\s*\|\s*([✅❌⏳])?\s*(\w+)\s*\|\s*([0-9-]+)?\s*\|\s*(.+?)\s*\|/g;
-    const matches = markdown.matchAll(tablePattern);
 
-    for (const match of matches) {
-      const id = match[1];
-      const statusIcon = match[2];
-      const statusText = match[3].toLowerCase();
-      const completedAt = match[4] || undefined;
-      const notes = match[5]?.trim() || undefined;
+    return [...markdown.matchAll(tablePattern)].map(match => {
+      const notes = match[5]?.trim();
+      const userStories = notes ? [...notes.matchAll(/US-\d+/g)].map(m => m[0]) : [];
 
-      let status: 'planned' | 'in-progress' | 'complete' | 'abandoned';
-
-      if (statusText.includes('complete') || statusIcon === '✅') {
-        status = 'complete';
-      } else if (statusText.includes('progress') || statusText.includes('active') || statusIcon === '⏳') {
-        status = 'in-progress';
-      } else if (statusText.includes('abandon') || statusText.includes('cancel') || statusIcon === '❌') {
-        status = 'abandoned';
-      } else {
-        status = 'planned';
-      }
-
-      // Try to extract which user stories this increment implemented
-      // Look for patterns like "Implements: US-001, US-002"
-      const userStories: string[] = [];
-      const usRefPattern = /US-\d+/g;
-      const usMatches = notes?.matchAll(usRefPattern);
-      if (usMatches) {
-        for (const usMatch of usMatches) {
-          userStories.push(usMatch[0]);
-        }
-      }
-
-      increments.push({
-        id,
-        status,
-        completedAt,
+      return {
+        id: match[1],
+        status: this.parseIncrementStatus(match[2], match[3]),
+        completedAt: match[4] || undefined,
         userStories,
         notes
-      });
-    }
+      };
+    });
+  }
 
-    return increments;
+  /**
+   * Parse increment status from icon and text
+   */
+  private static parseIncrementStatus(
+    icon: string | undefined,
+    text: string
+  ): 'planned' | 'in-progress' | 'complete' | 'abandoned' {
+    const statusText = text.toLowerCase();
+
+    if (statusText.includes('complete') || icon === '✅') return 'complete';
+    if (statusText.includes('progress') || statusText.includes('active') || icon === '⏳') return 'in-progress';
+    if (statusText.includes('abandon') || statusText.includes('cancel') || icon === '❌') return 'abandoned';
+    return 'planned';
   }
 
   /**
@@ -199,10 +172,8 @@ export class SpecParser {
    */
   static extractFrontmatter(markdown: string): Partial<SpecMetadata> {
     try {
-      const parsed = matter(markdown);
-      return parsed.data as Partial<SpecMetadata>;
-    } catch (error) {
-      console.error('Error parsing frontmatter:', error);
+      return matter(markdown).data as Partial<SpecMetadata>;
+    } catch {
       return {};
     }
   }
@@ -223,34 +194,17 @@ export class SpecParser {
     jira?: string;
     ado?: string;
   } {
-    const refs: { github?: string; jira?: string; ado?: string } = {};
-
-    // Look for external references section
     const extRefSection = markdown.match(/##\s+External References\s+([\s\S]*?)(?=\n##\s+|\n---\s+|$)/);
-
-    if (extRefSection) {
-      const content = extRefSection[1];
-
-      // GitHub Project: URL or ID
-      const githubMatch = content.match(/GitHub Project:\s*(.+)/);
-      if (githubMatch) {
-        refs.github = githubMatch[1].trim();
-      }
-
-      // Jira Epic: URL or Key
-      const jiraMatch = content.match(/Jira Epic:\s*(.+)/);
-      if (jiraMatch) {
-        refs.jira = jiraMatch[1].trim();
-      }
-
-      // ADO Feature: URL or ID
-      const adoMatch = content.match(/(?:ADO|Azure DevOps) Feature:\s*(.+)/);
-      if (adoMatch) {
-        refs.ado = adoMatch[1].trim();
-      }
+    if (!extRefSection) {
+      return {};
     }
 
-    return refs;
+    const content = extRefSection[1];
+    return {
+      github: content.match(/GitHub Project:\s*(.+)/)?.[1]?.trim(),
+      jira: content.match(/Jira Epic:\s*(.+)/)?.[1]?.trim(),
+      ado: content.match(/(?:ADO|Azure DevOps) Feature:\s*(.+)/)?.[1]?.trim()
+    };
   }
 
   /**
@@ -263,26 +217,18 @@ export class SpecParser {
     todoUserStories: number;
     percentComplete: number;
   } {
-    if (!userStories || userStories.length === 0) {
-      return {
-        totalUserStories: 0,
-        completedUserStories: 0,
-        inProgressUserStories: 0,
-        todoUserStories: 0,
-        percentComplete: 0
-      };
+    const total = userStories?.length ?? 0;
+    if (total === 0) {
+      return { totalUserStories: 0, completedUserStories: 0, inProgressUserStories: 0, todoUserStories: 0, percentComplete: 0 };
     }
 
-    const completed = userStories.filter(us => us.status === 'done').length;
-    const inProgress = userStories.filter(us => us.status === 'in-progress').length;
-    const todo = userStories.filter(us => us.status === 'todo').length;
-
+    const completedUserStories = userStories.filter(us => us.status === 'done').length;
     return {
-      totalUserStories: userStories.length,
-      completedUserStories: completed,
-      inProgressUserStories: inProgress,
-      todoUserStories: todo,
-      percentComplete: Math.round((completed / userStories.length) * 100)
+      totalUserStories: total,
+      completedUserStories,
+      inProgressUserStories: userStories.filter(us => us.status === 'in-progress').length,
+      todoUserStories: userStories.filter(us => us.status === 'todo').length,
+      percentComplete: Math.round((completedUserStories / total) * 100)
     };
   }
 
@@ -294,17 +240,9 @@ export class SpecParser {
     status?: 'todo' | 'in-progress' | 'done',
     priority?: 'P1' | 'P2' | 'P3'
   ): UserStory[] {
-    let filtered = userStories;
-
-    if (status) {
-      filtered = filtered.filter(us => us.status === status);
-    }
-
-    if (priority) {
-      filtered = filtered.filter(us => us.priority === priority);
-    }
-
-    return filtered;
+    return userStories.filter(us =>
+      (!status || us.status === status) && (!priority || us.priority === priority)
+    );
   }
 
   /**
@@ -315,30 +253,29 @@ export class SpecParser {
   }
 
   /**
-   * Update user story status in markdown
+   * Update user story status in markdown by checking/unchecking AC boxes
    */
   static updateUserStoryStatus(
     markdown: string,
     usId: string,
     newStatus: 'todo' | 'in-progress' | 'done'
   ): string {
-    // This is a simple implementation - in reality we'd update all AC checkboxes
-    // For 'done', check all boxes for this US
-    // For 'in-progress', check some boxes
-    // For 'todo', uncheck all boxes
+    const usNumber = usId.replace('US-', '');
 
     if (newStatus === 'done') {
-      // Find all AC for this US and check them
-      const usNumber = usId.replace('US-', '');
-      const acPattern = new RegExp(`- \\[ \\] \\*\\*AC-${usNumber}-(\\d+)\\*\\*:`, 'g');
-      return markdown.replace(acPattern, `- [x] **AC-${usNumber}-$1**:`);
-    } else if (newStatus === 'todo') {
-      // Uncheck all AC for this US
-      const usNumber = usId.replace('US-', '');
-      const acPattern = new RegExp(`- \\[x\\] \\*\\*AC-${usNumber}-(\\d+)\\*\\*:`, 'g');
-      return markdown.replace(acPattern, `- [ ] **AC-${usNumber}-$1**:`);
+      return markdown.replace(
+        new RegExp(`- \\[ \\] \\*\\*AC-${usNumber}-(\\d+)\\*\\*:`, 'g'),
+        `- [x] **AC-${usNumber}-$1**:`
+      );
     }
 
-    return markdown; // in-progress doesn't change markdown directly
+    if (newStatus === 'todo') {
+      return markdown.replace(
+        new RegExp(`- \\[x\\] \\*\\*AC-${usNumber}-(\\d+)\\*\\*:`, 'g'),
+        `- [ ] **AC-${usNumber}-$1**:`
+      );
+    }
+
+    return markdown;
   }
 }

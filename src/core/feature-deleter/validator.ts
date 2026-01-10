@@ -57,11 +57,10 @@ export class FeatureValidator {
 
     // T-001: Check active increments (blocking in safe mode)
     if (activeIncrements.length > 0 && !options.force) {
-      const incrementList = activeIncrements.join(', ');
       const count = activeIncrements.length;
-      const plural = count > 1 ? 's' : '';
+      const s = count > 1 ? 's' : '';
       errors.push(
-        `Cannot delete feature ${featureId}: ${count} active increment${plural} reference${count > 1 ? '' : 's'} this feature (${incrementList}). Use --force to override.`
+        `Cannot delete feature ${featureId}: ${count} active increment${s} reference${s} this feature (${activeIncrements.join(', ')}). Use --force to override.`
       );
     }
 
@@ -219,57 +218,32 @@ export class FeatureValidator {
   }
 
   /**
-   * Recursively get all files in a directory
-   */
-  private async getAllFiles(dir: string): Promise<string[]> {
-    const files: string[] = [];
-    const entries = await fs.readdir(dir, { withFileTypes: true });
-
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        const subFiles = await this.getAllFiles(fullPath);
-        files.push(...subFiles);
-      } else {
-        files.push(fullPath);
-      }
-    }
-
-    return files;
-  }
-
-  /**
    * T-003: Format validation report for display
    */
   formatValidationReport(validation: ValidationResult): string {
-    const lines: string[] = [];
-
-    lines.push('Validation Complete:');
-    lines.push(`  Feature ID: ${validation.featureId}`);
-    lines.push(`  Files to delete: ${validation.files.length}`);
-    lines.push(`    - Living docs: ${validation.livingDocsFiles.length}`);
-    lines.push(`    - User stories: ${validation.userStoryFiles.length}`);
+    const lines = [
+      'Validation Complete:',
+      `  Feature ID: ${validation.featureId}`,
+      `  Files to delete: ${validation.files.length}`,
+      `    - Living docs: ${validation.livingDocsFiles.length}`,
+      `    - User stories: ${validation.userStoryFiles.length}`
+    ];
 
     if (validation.orphanedIncrements.length > 0) {
-      if (validation.mode === 'force') {
-        lines.push(`  ⚠️  Active increments (will be orphaned): ${validation.orphanedIncrements.length}`);
-        validation.orphanedIncrements.forEach(id => lines.push(`    - ${id}`));
-      } else {
-        lines.push(`  ❌ Active increments (blocking): ${validation.orphanedIncrements.length}`);
-        validation.orphanedIncrements.forEach(id => lines.push(`    - ${id}`));
-      }
+      const label = validation.mode === 'force' ? 'will be orphaned' : 'blocking';
+      const icon = validation.mode === 'force' ? '⚠️' : '❌';
+      lines.push(`  ${icon} Active increments (${label}): ${validation.orphanedIncrements.length}`);
+      lines.push(...validation.orphanedIncrements.map(id => `    - ${id}`));
     } else {
-      lines.push(`  ✓ No active increments (safe to delete)`);
+      lines.push('  ✓ No active increments (safe to delete)');
     }
 
-    if (validation.warnings && validation.warnings.length > 0) {
-      lines.push(`  Warnings:`);
-      validation.warnings.forEach(w => lines.push(`    ⚠️  ${w}`));
+    if (validation.warnings?.length) {
+      lines.push('  Warnings:', ...validation.warnings.map(w => `    ⚠️  ${w}`));
     }
 
     if (validation.errors.length > 0) {
-      lines.push(`  Errors:`);
-      validation.errors.forEach(e => lines.push(`    ❌ ${e}`));
+      lines.push('  Errors:', ...validation.errors.map(e => `    ❌ ${e}`));
     }
 
     return lines.join('\n');

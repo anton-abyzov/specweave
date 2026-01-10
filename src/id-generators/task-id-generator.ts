@@ -51,49 +51,36 @@ export function parseTaskId(id: string): ParsedTaskId {
 }
 
 /**
+ * Format Task ID with optional E suffix
+ */
+function formatTaskId(number: number, origin: Origin): string {
+  const formattedNumber = String(number).padStart(3, '0');
+  return origin === 'external' ? `T-${formattedNumber}E` : `T-${formattedNumber}`;
+}
+
+/**
  * Get next sequential Task ID
  *
  * Finds maximum numeric ID across all existing IDs (internal + external)
  * and generates next sequential ID with appropriate suffix.
- *
- * @param existingIds - Array of existing Task IDs
- * @param origin - Origin type for new ID
- * @returns Next sequential Task ID
- *
- * @example
- * getNextTaskId(['T-001', 'T-002E', 'T-003'], 'internal')
- * // Returns: 'T-004'
- *
- * @example
- * getNextTaskId(['T-001', 'T-002E', 'T-003'], 'external')
- * // Returns: 'T-004E'
  */
 export function getNextTaskId(existingIds: string[], origin: Origin): string {
   if (existingIds.length === 0) {
-    return origin === 'external' ? 'T-001E' : 'T-001';
+    return formatTaskId(1, origin);
   }
 
-  // Extract numeric parts from all IDs
-  const numbers: number[] = [];
+  const numbers = existingIds
+    .map(id => {
+      try {
+        return parseTaskId(id).number;
+      } catch {
+        return 0;
+      }
+    })
+    .filter(n => n > 0);
 
-  for (const id of existingIds) {
-    try {
-      const parsed = parseTaskId(id);
-      numbers.push(parsed.number);
-    } catch (error) {
-      // Skip invalid IDs (they'll be caught by validation elsewhere)
-      continue;
-    }
-  }
-
-  // Find maximum number
   const maxNumber = numbers.length > 0 ? Math.max(...numbers) : 0;
-
-  // Generate next ID
-  const nextNumber = maxNumber + 1;
-  const formattedNumber = String(nextNumber).padStart(3, '0');
-
-  return origin === 'external' ? `T-${formattedNumber}E` : `T-${formattedNumber}`;
+  return formatTaskId(maxNumber + 1, origin);
 }
 
 /**
@@ -143,29 +130,7 @@ export function isExternalTaskId(id: string): boolean {
 
 /**
  * Generate range of Task IDs
- *
- * @param start - Starting number
- * @param count - Number of IDs to generate
- * @param origin - Origin type
- * @returns Array of Task IDs
- *
- * @example
- * generateTaskIdRange(1, 3, 'internal')
- * // Returns: ['T-001', 'T-002', 'T-003']
- *
- * @example
- * generateTaskIdRange(5, 2, 'external')
- * // Returns: ['T-005E', 'T-006E']
  */
 export function generateTaskIdRange(start: number, count: number, origin: Origin): string[] {
-  const ids: string[] = [];
-
-  for (let i = 0; i < count; i++) {
-    const number = start + i;
-    const formattedNumber = String(number).padStart(3, '0');
-    const id = origin === 'external' ? `T-${formattedNumber}E` : `T-${formattedNumber}`;
-    ids.push(id);
-  }
-
-  return ids;
+  return Array.from({ length: count }, (_, i) => formatTaskId(start + i, origin));
 }

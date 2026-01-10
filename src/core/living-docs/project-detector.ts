@@ -53,10 +53,10 @@ export class ProjectDetector {
   private projects: Map<string, ProjectConfig>;
 
   constructor(options: DetectorOptions = {}) {
-    // ✅ FIX: Use repo name as fallback instead of "default" for GitHub integration
+    // Use repo name as fallback instead of "default" for GitHub integration
     const detectedFallback = options.fallbackProject || this.detectRepoName() || 'default';
 
-    // CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
+    // Uses getProjectRoot() instead of process.cwd() to prevent
     // accessing wrong .specweave folder when CWD != project root.
     this.options = {
       configPath: options.configPath || path.join(getProjectRoot(), '.specweave', 'config.json'),
@@ -66,6 +66,20 @@ export class ProjectDetector {
 
     this.projects = new Map();
     this.loadProjects();
+  }
+
+  /**
+   * Create and register a default fallback project
+   */
+  private createFallbackProject(id: string): ProjectConfig {
+    const project: ProjectConfig = {
+      id,
+      name: 'Default Project',
+      keywords: [],
+      techStack: [],
+    };
+    this.projects.set(id, project);
+    return project;
   }
 
   /**
@@ -128,31 +142,15 @@ export class ProjectDetector {
 
         // If no projects configured, create default
         if (this.projects.size === 0) {
-          this.projects.set(this.options.fallbackProject, {
-            id: this.options.fallbackProject,
-            name: 'Default Project',
-            keywords: [],
-            techStack: [],
-          });
+          this.createFallbackProject(this.options.fallbackProject);
         }
       } else {
         // No config found - create default project
-        this.projects.set(this.options.fallbackProject, {
-          id: this.options.fallbackProject,
-          name: 'Default Project',
-          keywords: [],
-          techStack: [],
-        });
+        this.createFallbackProject(this.options.fallbackProject);
       }
     } catch (error) {
       console.warn('Failed to load projects from config:', error);
-      // Fallback to default project
-      this.projects.set(this.options.fallbackProject, {
-        id: this.options.fallbackProject,
-        name: 'Default Project',
-        keywords: [],
-        techStack: [],
-      });
+      this.createFallbackProject(this.options.fallbackProject);
     }
   }
 
@@ -255,33 +253,13 @@ export class ProjectDetector {
     // Normalize confidence (max score of ~30 = 1.0 confidence)
     const confidence = Math.min(maxScore / 30, 1.0);
 
-    // ✅ FIX: Ensure fallback project exists in map
-    const project = this.projects.get(bestProjectId);
+    // Ensure fallback project exists in map
+    let project = this.projects.get(bestProjectId);
 
     if (!project) {
-      // ✅ FIX: Fallback project not found in map - create it on-demand
-      const createdFallback: ProjectConfig = {
-        id: bestProjectId,
-        name: 'Default Project',
-        keywords: [],
-        techStack: [],
-      };
-      this.projects.set(bestProjectId, createdFallback);
-
+      // Fallback project not found in map - create it on-demand
+      project = this.createFallbackProject(bestProjectId);
       bestReasoning.push(`Created fallback project "${bestProjectId}"`);
-
-      return {
-        id: createdFallback.id,
-        name: createdFallback.name,
-        confidence,
-        reasoning: bestReasoning,
-        metadata: {
-          totalProjects: this.projects.size,
-          scores: Object.fromEntries(
-            Array.from(scores.entries()).map(([id, data]) => [id, data.score])
-          ),
-        },
-      };
     }
 
     return {
@@ -337,28 +315,15 @@ export class ProjectDetector {
    * Create project context from string ID (fallback when no detection needed)
    */
   createContext(projectId: string): ProjectContext {
-    const project = this.projects.get(projectId);
+    let project = this.projects.get(projectId);
 
     if (!project) {
       // Unknown project - use fallback
-      const fallbackProject = this.projects.get(this.options.fallbackProject);
+      let fallbackProject = this.projects.get(this.options.fallbackProject);
 
       if (!fallbackProject) {
-        // ✅ FIX: Fallback project doesn't exist - create it on-demand
-        const createdFallback: ProjectConfig = {
-          id: this.options.fallbackProject,
-          name: 'Default Project',
-          keywords: [],
-          techStack: [],
-        };
-        this.projects.set(this.options.fallbackProject, createdFallback);
-
-        return {
-          id: createdFallback.id,
-          name: createdFallback.name,
-          confidence: 1.0,
-          reasoning: [`Fallback to "${createdFallback.id}" (created on-demand, project "${projectId}" not found)`],
-        };
+        // Fallback project doesn't exist - create it on-demand
+        fallbackProject = this.createFallbackProject(this.options.fallbackProject);
       }
 
       return {

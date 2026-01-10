@@ -112,3 +112,37 @@ export const COUNTS_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
 export const SUMMARY_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
+export const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+// ============================================================================
+// SHARED UTILITIES
+// ============================================================================
+
+/**
+ * Calculate age in days from a date string
+ */
+export function calculateAgeDays(createdAt: string): number {
+  const createdDate = new Date(createdAt).getTime();
+  return Math.floor((Date.now() - createdDate) / MS_PER_DAY);
+}
+
+/**
+ * Create an empty paginated result
+ */
+export function emptyPaginatedResult(page: number, pageSize: number): PaginatedItemsResult {
+  return {
+    items: [],
+    total: 0,
+    page,
+    pageSize,
+    totalPages: 0,
+    hasMore: false,
+  };
+}
+
+/**
+ * Filter items by stale status if requested
+ */
+export function filterByStale(items: ExternalItem[], staleOnly?: boolean): ExternalItem[] {
+  return staleOnly ? items.filter(i => i.isStale) : items;
+}

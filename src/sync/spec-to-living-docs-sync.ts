@@ -116,12 +116,10 @@ export class SpecToLivingDocsSync {
       const usFiles = await this.findLivingDocsUSFiles();
       if (usFiles.length === 0) {
         this.logger.warn('No living docs US files found for this increment');
-        console.log('DEBUG: No living docs US files found'); // DEBUG
         result.success = true;
         return result;
       }
 
-      console.log(`DEBUG: Found ${usFiles.length} living docs US files`); // DEBUG
       this.logger.log(`\n🔄 Syncing spec.md → ${usFiles.length} living docs US files...\n`);
 
       // Step 4: Update each US file
@@ -315,13 +313,7 @@ export class SpecToLivingDocsSync {
       `.specweave/docs/internal/specs/**/FS-${featureNum}/us-*.md`
     );
 
-    console.log(`DEBUG: Searching for US files with pattern: ${pattern}`); // DEBUG
-
     const files = await glob(pattern);
-    console.log(`DEBUG: Found ${files.length} US files`); // DEBUG
-    if (files.length > 0) {
-      console.log('DEBUG: Files:', files); // DEBUG
-    }
     this.logger.debug(`Found ${files.length} US files for feature FS-${featureNum}`);
 
     return files;
@@ -415,7 +407,6 @@ export class SpecToLivingDocsSync {
 
         const newCheckbox = task.completed ? '[x]' : '[ ]';
 
-        const beforeUpdate = updatedContent;
         updatedContent = updatedContent.replace(oldPattern, (match, currentCheck) => {
           if (currentCheck !== (task.completed ? 'x' : ' ')) {
             result.tasksUpdated++;

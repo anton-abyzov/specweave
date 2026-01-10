@@ -25,12 +25,9 @@ export interface PlanningResult {
   estimatedDuration: string; // e.g., "2-3 days"
 }
 
-/**
- * Target task count per increment (sweet spot)
- */
+/** Task count constraints per increment */
 const MIN_TASKS_PER_INCREMENT = 5;
 const MAX_TASKS_PER_INCREMENT = 15;
-const IDEAL_TASKS_PER_INCREMENT = 10;
 
 /**
  * Plan increments from extracted features
@@ -225,25 +222,17 @@ function identifyIncrementDependencies(increments: IncrementPlan[]): void {
 }
 
 /**
- * Estimate duration based on task count
+ * Estimate duration based on task count (~30 min per task in auto mode)
  */
 function estimateDuration(totalTasks: number): string {
-  // Assume ~30 minutes per task in auto mode
-  const hoursPerTask = 0.5;
-  const totalHours = totalTasks * hoursPerTask;
+  const totalHours = totalTasks * 0.5;
 
-  if (totalHours < 1) {
-    return '< 1 hour';
-  } else if (totalHours < 4) {
-    return `${Math.ceil(totalHours)} hours`;
-  } else if (totalHours < 8) {
-    return '~1 day';
-  } else if (totalHours < 16) {
-    return '1-2 days';
-  } else if (totalHours < 40) {
-    return `2-${Math.ceil(totalHours / 8)} days`;
-  } else {
-    const weeks = Math.ceil(totalHours / 40);
-    return `${weeks} ${weeks === 1 ? 'week' : 'weeks'}`;
-  }
+  if (totalHours < 1) return '< 1 hour';
+  if (totalHours < 4) return `${Math.ceil(totalHours)} hours`;
+  if (totalHours < 8) return '~1 day';
+  if (totalHours < 16) return '1-2 days';
+  if (totalHours < 40) return `2-${Math.ceil(totalHours / 8)} days`;
+
+  const weeks = Math.ceil(totalHours / 40);
+  return weeks === 1 ? '1 week' : `${weeks} weeks`;
 }

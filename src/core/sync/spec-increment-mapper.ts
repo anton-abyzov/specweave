@@ -106,13 +106,7 @@ export class SpecIncrementMapper {
    */
   async getTasksForUserStory(userStoryId: string): Promise<TaskInfo[]> {
     const increments = await this.findIncrementsByUserStory(userStoryId);
-    const tasks: TaskInfo[] = [];
-
-    for (const increment of increments) {
-      tasks.push(...increment.tasks);
-    }
-
-    return tasks;
+    return increments.flatMap((inc) => inc.tasks);
   }
 
   /**
@@ -120,34 +114,19 @@ export class SpecIncrementMapper {
    */
   async updateSpecWithIncrementLinks(specId: string, incrementId: string): Promise<boolean> {
     const specPath = await this.findSpecPath(specId);
-
-    if (!specPath) {
-      return false;
-    }
+    if (!specPath) return false;
 
     try {
       const content = await fs.readFile(specPath, 'utf-8');
       const { data: frontmatter, content: markdownContent } = matter(content);
 
-      // Initialize linked_increments if not exists
-      if (!frontmatter.linked_increments) {
-        frontmatter.linked_increments = [];
-      }
+      frontmatter.linked_increments = frontmatter.linked_increments ?? [];
+      if (frontmatter.linked_increments.includes(incrementId)) return false;
 
-      // Check if already linked
-      if (frontmatter.linked_increments.includes(incrementId)) {
-        return false; // Already linked
-      }
-
-      // Add new increment link
       frontmatter.linked_increments.push(incrementId);
-
-      // Write back
-      const updated = matter.stringify(markdownContent, frontmatter);
-      await fs.writeFile(specPath, updated);
-
+      await fs.writeFile(specPath, matter.stringify(markdownContent, frontmatter));
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -156,37 +135,19 @@ export class SpecIncrementMapper {
    * Update increment with spec link in frontmatter (Backward link)
    */
   async updateIncrementWithSpecLink(incrementId: string, specId: string): Promise<boolean> {
-    const incrementSpecPath = path.join(
-      this.rootDir,
-      '.specweave/increments',
-      incrementId,
-      'spec.md'
-    );
+    const incrementSpecPath = path.join(this.rootDir, '.specweave/increments', incrementId, 'spec.md');
 
     try {
       await fs.access(incrementSpecPath);
-    } catch {
-      return false; // Increment spec.md doesn't exist
-    }
-
-    try {
       const content = await fs.readFile(incrementSpecPath, 'utf-8');
       const { data: frontmatter, content: markdownContent } = matter(content);
 
-      // Check if already linked
-      if (frontmatter.spec_id === specId || frontmatter.source_spec === specId) {
-        return false; // Already linked
-      }
+      if (frontmatter.spec_id === specId || frontmatter.source_spec === specId) return false;
 
-      // Add spec link
       frontmatter.source_spec = specId;
-
-      // Write back
-      const updated = matter.stringify(markdownContent, frontmatter);
-      await fs.writeFile(incrementSpecPath, updated);
-
+      await fs.writeFile(incrementSpecPath, matter.stringify(markdownContent, frontmatter));
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -213,19 +174,11 @@ export class SpecIncrementMapper {
    * Get spec for a given increment (reverse lookup)
    */
   async getSpecForIncrement(incrementId: string): Promise<string | null> {
-    const incrementSpecPath = path.join(
-      this.rootDir,
-      '.specweave/increments',
-      incrementId,
-      'spec.md'
-    );
+    const incrementSpecPath = path.join(this.rootDir, '.specweave/increments', incrementId, 'spec.md');
 
     try {
-      const content = await fs.readFile(incrementSpecPath, 'utf-8');
-      const { data: frontmatter } = matter(content);
-
-      // Check both field names for compatibility
-      return frontmatter.source_spec || frontmatter.spec_id || null;
+      const { data: frontmatter } = matter(await fs.readFile(incrementSpecPath, 'utf-8'));
+      return frontmatter.source_spec ?? frontmatter.spec_id ?? null;
     } catch {
       return null;
     }
@@ -479,12 +432,8 @@ export class SpecIncrementMapper {
   }
 
   private extractTaskStatus(taskSection: string): 'pending' | 'in-progress' | 'completed' {
-    if (taskSection.includes('[x] Completed') || taskSection.includes('✅')) {
-      return 'completed';
-    }
-    if (taskSection.includes('[ ] In Progress') || taskSection.includes('🔄')) {
-      return 'in-progress';
-    }
+    if (taskSection.includes('[x] Completed')) return 'completed';
+    if (taskSection.includes('[ ] In Progress')) return 'in-progress';
     return 'pending';
   }
 
@@ -492,7 +441,6 @@ export class SpecIncrementMapper {
     const specsDir = path.join(this.rootDir, '.specweave/docs/internal/specs');
 
     try {
-      // Try default project first
       const defaultPath = path.join(specsDir, 'default', `${specId}.md`);
       try {
         await fs.access(defaultPath);
@@ -501,39 +449,30 @@ export class SpecIncrementMapper {
         // Not in default, search all projects
       }
 
-      // Search all project folders
       const entries = await fs.readdir(specsDir, { withFileTypes: true });
-      const projectDirs = entries.filter(e => e.isDirectory()).map(e => e.name);
-
-      for (const project of projectDirs) {
-        const specPath = path.join(specsDir, project, `${specId}.md`);
+      for (const entry of entries.filter((e) => e.isDirectory())) {
+        const specPath = path.join(specsDir, entry.name, `${specId}.md`);
         try {
           await fs.access(specPath);
           return specPath;
         } catch {
-          continue;
+          // Continue to next project
         }
       }
-
       return null;
-    } catch (error) {
+    } catch {
       return null;
     }
   }
 
   private async getUserStoriesFromSpec(specId: string): Promise<string[]> {
     const specPath = await this.findSpecPath(specId);
-
-    if (!specPath) {
-      return [];
-    }
+    if (!specPath) return [];
 
     try {
       const content = await fs.readFile(specPath, 'utf-8');
-      const userStoryRegex = /\*\*(US-\d+)\*\*:/g;
-      const matches = [...content.matchAll(userStoryRegex)];
-      return matches.map(m => m[1]);
-    } catch (error) {
+      return [...content.matchAll(/\*\*(US-\d+)\*\*:/g)].map((m) => m[1]);
+    } catch {
       return [];
     }
   }

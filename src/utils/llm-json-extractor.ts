@@ -208,9 +208,7 @@ function validateParsedJson(parsed: unknown, requiredFields?: string[]): boolean
  */
 function sanitizeInput(input: string): string {
   // Strip UTF-8 BOM if present
-  let sanitized = input.replace(/^\uFEFF/, '');
-
-  return sanitized;
+  return input.replace(/^\uFEFF/, '');
 }
 
 /**

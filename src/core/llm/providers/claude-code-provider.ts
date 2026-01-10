@@ -37,11 +37,9 @@ import { Logger, consoleLogger } from '../../../utils/logger.js';
 import { extractJson, extractRequiredFieldsFromSchema } from '../../../utils/llm-json-extractor.js';
 
 /**
- * Detect platform for cross-platform support
+ * Platform detection for cross-platform support
  */
 const IS_WINDOWS = process.platform === 'win32';
-const IS_MACOS = process.platform === 'darwin';
-const IS_LINUX = process.platform === 'linux';
 
 export interface ClaudeCodeProviderConfig {
   /** Model alias: 'opus' (default), 'sonnet', 'haiku' or full model ID */
@@ -230,15 +228,11 @@ export class ClaudeCodeProvider implements LLMProvider {
           throw new Error(`Claude Code returned error: ${output.result}`);
         }
 
-        // Extract actual content from result (may be wrapped in markdown)
-        let content = output.result;
-
-        // Calculate tokens (Claude Code provides this)
         const inputTokens = output.usage?.input_tokens || 0;
         const outputTokens = output.usage?.output_tokens || 0;
 
         return {
-          content,
+          content: output.result,
           usage: {
             inputTokens,
             outputTokens,
@@ -446,7 +440,7 @@ export async function getClaudeCodeStatus(): Promise<{
   error?: string;
   platform: string;
 }> {
-  const platform = IS_WINDOWS ? 'windows' : IS_MACOS ? 'macos' : IS_LINUX ? 'linux' : 'unknown';
+  const platform = process.platform;
 
   const cliInstalled = isClaudeCliInstalled();
   if (!cliInstalled) {

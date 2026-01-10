@@ -230,24 +230,24 @@ export class AutoLogger {
   }
 
   /**
+   * Filter entries by event type
+   */
+  private filterByEvent(event: AutoLogEntry['event']): AutoLogEntry[] {
+    return this.entries.filter((e) => e.event === event);
+  }
+
+  /**
    * Generate session summary from log entries
    */
   generateSummary(): SessionSummary {
     const startEntry = this.entries.find((e) => e.event === 'start');
     const completeEntry = this.entries.find((e) => e.event === 'complete' || e.event === 'cancel');
-    const taskCompletes = this.entries.filter((e) => e.event === 'task_complete');
-    const taskFails = this.entries.filter((e) => e.event === 'task_failed');
-    const gateTriggered = this.entries.filter((e) => e.event === 'gate_triggered');
-    const circuitOpen = this.entries.filter((e) => e.event === 'circuit_open');
-    const syncs = this.entries.filter((e) => e.event === 'sync');
-    const iterations = this.entries.filter((e) => e.event === 'iteration');
+    const taskCompletes = this.filterByEvent('task_complete');
+    const taskFails = this.filterByEvent('task_failed');
 
     const startTime = startEntry?.timestamp ?? new Date().toISOString();
     const endTime = completeEntry?.timestamp ?? new Date().toISOString();
-
-    const startDate = new Date(startTime);
-    const endDate = new Date(endTime);
-    const durationMs = endDate.getTime() - startDate.getTime();
+    const durationMs = new Date(endTime).getTime() - new Date(startTime).getTime();
 
     // Calculate average coverage from task completions
     const coverages = taskCompletes
@@ -257,32 +257,20 @@ export class AutoLogger {
       ? coverages.reduce((a, b) => a + b, 0) / coverages.length
       : 0;
 
-    // Get unique increments completed
-    const incrementsCompleted = new Set(
-      taskCompletes.map((e) => e.details.incrementId as string)
-    ).size;
-
-    const incrementsFailed = new Set(
-      taskFails.map((e) => e.details.incrementId as string)
-    ).size;
-
     return {
       sessionId: this.sessionId,
       startTime,
       endTime,
       duration: durationMs,
-      iterations: iterations.length,
-      incrementsCompleted,
-      incrementsFailed,
+      iterations: this.filterByEvent('iteration').length,
+      incrementsCompleted: new Set(taskCompletes.map((e) => e.details.incrementId as string)).size,
+      incrementsFailed: new Set(taskFails.map((e) => e.details.incrementId as string)).size,
       totalTasks: taskCompletes.length + taskFails.length,
-      totalTests: taskCompletes.reduce(
-        (sum, e) => sum + ((e.details.testsRun as number) ?? 0),
-        0
-      ),
+      totalTests: taskCompletes.reduce((sum, e) => sum + ((e.details.testsRun as number) ?? 0), 0),
       averageCoverage: Math.round(avgCoverage * 10) / 10,
-      humanGatesTriggered: gateTriggered.length,
-      circuitBreakerTrips: circuitOpen.length,
-      syncOperations: syncs.length,
+      humanGatesTriggered: this.filterByEvent('gate_triggered').length,
+      circuitBreakerTrips: this.filterByEvent('circuit_open').length,
+      syncOperations: this.filterByEvent('sync').length,
       success: completeEntry?.event === 'complete',
       endReason: (completeEntry?.details?.reason as string) ?? 'unknown',
     };

@@ -93,22 +93,22 @@ export function loadImportConfig(projectRoot: string): ImportConfig {
 export function loadFromEnvironment(): Partial<ImportConfig> {
   const config: Partial<ImportConfig> = {};
 
-  // SPECWEAVE_IMPORT_ENABLED
-  if (process.env.SPECWEAVE_IMPORT_ENABLED !== undefined) {
-    config.enabled = process.env.SPECWEAVE_IMPORT_ENABLED === 'true';
+  const enabledEnv = process.env.SPECWEAVE_IMPORT_ENABLED;
+  if (enabledEnv !== undefined) {
+    config.enabled = enabledEnv === 'true';
   }
 
-  // SPECWEAVE_IMPORT_TIME_RANGE_MONTHS
-  if (process.env.SPECWEAVE_IMPORT_TIME_RANGE_MONTHS !== undefined) {
-    const months = parseInt(process.env.SPECWEAVE_IMPORT_TIME_RANGE_MONTHS, 10);
+  const monthsEnv = process.env.SPECWEAVE_IMPORT_TIME_RANGE_MONTHS;
+  if (monthsEnv !== undefined) {
+    const months = parseInt(monthsEnv, 10);
     if (!isNaN(months) && months > 0) {
       config.timeRangeMonths = months;
     }
   }
 
-  // SPECWEAVE_IMPORT_PAGE_SIZE
-  if (process.env.SPECWEAVE_IMPORT_PAGE_SIZE !== undefined) {
-    const pageSize = parseInt(process.env.SPECWEAVE_IMPORT_PAGE_SIZE, 10);
+  const pageSizeEnv = process.env.SPECWEAVE_IMPORT_PAGE_SIZE;
+  if (pageSizeEnv !== undefined) {
+    const pageSize = parseInt(pageSizeEnv, 10);
     if (!isNaN(pageSize) && pageSize > 0 && pageSize <= 1000) {
       config.pageSize = pageSize;
     }

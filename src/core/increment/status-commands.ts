@@ -40,44 +40,6 @@ function getTypeLimits(type: IncrementType): { max: number } {
   return { max: limit === null ? Infinity : limit };
 }
 
-/**
- * Helper: Check WIP limits across all types
- */
-interface LimitInfo {
-  count: number;
-  limit: number;
-}
-
-function checkLimits(): Record<string, LimitInfo> {
-  const active = MetadataManager.getActive();
-  const result: Record<string, LimitInfo> = {};
-
-  // Count active increments by type
-  const typeCounts: Record<IncrementType, number> = {
-    [IncrementType.FEATURE]: 0,
-    [IncrementType.HOTFIX]: 0,
-    [IncrementType.BUG]: 0,
-    [IncrementType.CHANGE_REQUEST]: 0,
-    [IncrementType.REFACTOR]: 0,
-    [IncrementType.EXPERIMENT]: 0
-  };
-
-  active.forEach(m => {
-    typeCounts[m.type]++;
-  });
-
-  // Build result with readable type names
-  Object.entries(typeCounts).forEach(([type, count]) => {
-    const typeEnum = type as IncrementType;
-    const limit = TYPE_LIMITS[typeEnum];
-    result[type] = {
-      count,
-      limit: limit === null ? Infinity : limit
-    };
-  });
-
-  return result;
-}
 
 /**
  * Pause an active increment
@@ -290,9 +252,6 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
     // Show overall progress (prominent)
     console.log(chalk.cyan.bold(`📈 Overall Progress: ${completedCount}/${totalIncrements} increments complete (${overallProgress}%)`));
     console.log('');
-
-    // Check limits
-    const limitsInfo = checkLimits();
 
     // Show active increments
     if (active.length > 0) {

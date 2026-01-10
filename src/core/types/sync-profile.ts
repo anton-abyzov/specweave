@@ -925,15 +925,9 @@ export interface ProjectDetectionResult {
 
 /**
  * Check if profile uses intelligent strategy (auto-mapping, default)
- *
- * Intelligent strategy supports:
- * - Single project/repo (backward compatible)
- * - Multiple projects/repos (auto-classification)
  */
 export function isIntelligentStrategy(profile: SyncProfile): boolean {
-  // If strategy not specified, default to intelligent (backward compatibility)
-  if (!profile.strategy) return true;
-  return profile.strategy === 'intelligent';
+  return !profile.strategy || profile.strategy === 'intelligent';
 }
 
 /**
@@ -947,35 +941,35 @@ export function isCustomStrategy(profile: SyncProfile): boolean {
  * Check if GitHub config uses multi-repo pattern
  */
 export function hasMultipleGitHubRepos(config: GitHubConfig): boolean {
-  return !!(config.repos && config.repos.length > 1);
+  return (config.repos?.length ?? 0) > 1;
 }
 
 /**
  * Check if GitHub config uses master+nested repos pattern
  */
 export function hasGitHubMasterNested(config: GitHubConfig): boolean {
-  return !!(config.masterRepo && config.repos && config.repos.length > 0);
+  return !!config.masterRepo && (config.repos?.length ?? 0) > 0;
 }
 
 /**
  * Check if Jira config uses multi-project pattern
  */
 export function hasMultipleJiraProjects(config: JiraConfig): boolean {
-  return !!(config.projects && config.projects.length > 1);
+  return (config.projects?.length ?? 0) > 1;
 }
 
 /**
  * Check if ADO config uses multi-project pattern
  */
 export function hasMultipleAdoProjects(config: AdoConfig): boolean {
-  return !!(config.projects && config.projects.length > 1);
+  return (config.projects?.length ?? 0) > 1;
 }
 
 /**
  * Check if ADO config uses area path pattern (single project with area paths)
  */
 export function hasAdoAreaPaths(config: AdoConfig): boolean {
-  return !!(config.project && config.areaPaths && config.areaPaths.length > 0);
+  return !!config.project && (config.areaPaths?.length ?? 0) > 0;
 }
 
 // ============================================================================
@@ -984,28 +978,18 @@ export function hasAdoAreaPaths(config: AdoConfig): boolean {
 
 /**
  * Check if Jira config uses board-based team mapping (v0.29.0+)
- * Single JIRA project with multiple boards → SpecWeave projects
  */
 export function hasJiraBoardMapping(config: JiraConfig): boolean {
-  return !!(
-    config.boardMapping &&
-    config.boardMapping.projectKey &&
-    config.boardMapping.boards &&
-    config.boardMapping.boards.length > 0
-  );
+  const bm = config.boardMapping;
+  return !!bm?.projectKey && (bm.boards?.length ?? 0) > 0;
 }
 
 /**
  * Check if ADO config uses area path mapping (v0.29.0+)
- * Single ADO project with area paths → SpecWeave projects
  */
 export function hasAdoAreaPathMapping(config: AdoConfig): boolean {
-  return !!(
-    config.areaPathMapping &&
-    config.areaPathMapping.project &&
-    config.areaPathMapping.mappings &&
-    config.areaPathMapping.mappings.length > 0
-  );
+  const apm = config.areaPathMapping;
+  return !!apm?.project && (apm.mappings?.length ?? 0) > 0;
 }
 
 /**
@@ -1062,18 +1046,10 @@ export function getAdoMappedProjects(config: AdoConfig): string[] {
 
 /**
  * Get effective strategy (defaults to 'intelligent' if not specified)
- *
- * Backward compatibility: 'simple' is treated as 'intelligent'
  */
 export function getEffectiveStrategy(profile: SyncProfile): SyncStrategy {
   const strategy = profile.strategy as LegacySyncStrategy;
-
-  // Backward compatibility: 'simple' → 'intelligent'
-  if (strategy === 'simple' || !strategy) {
-    return 'intelligent';
-  }
-
-  return strategy as SyncStrategy;
+  return strategy === 'simple' || !strategy ? 'intelligent' : strategy;
 }
 
 /**

@@ -71,12 +71,7 @@ export class HookHealthTracker {
         const logTime = new Date(log.timestamp);
         return logTime >= windowStart && logTime <= now;
       })
-      .sort((a, b) => {
-        // Sort by timestamp descending (most recent first)
-        const timeA = new Date(a.timestamp!).getTime();
-        const timeB = new Date(b.timestamp!).getTime();
-        return timeB - timeA;
-      });
+      .sort((a, b) => new Date(b.timestamp!).getTime() - new Date(a.timestamp!).getTime());
 
     if (recentLogs.length === 0) {
       return {
@@ -100,43 +95,28 @@ export class HookHealthTracker {
       ? durations.reduce((sum, d) => sum + d, 0) / durations.length
       : 0;
 
-    const lastRun = recentLogs[0]?.timestamp || null;
+    const lastRun = recentLogs[0]?.timestamp ?? null;
 
-    // Count consecutive failures (from most recent backwards)
-    let consecutiveFailures = 0;
-    for (const log of recentLogs) {
-      if (log.status === 'error') {
-        consecutiveFailures++;
-      } else {
-        break;
-      }
-    }
+    // Count consecutive failures from most recent
+    const consecutiveFailures = recentLogs.findIndex(log => log.status !== 'error');
+    const actualConsecutiveFailures = consecutiveFailures === -1 ? recentLogs.length : consecutiveFailures;
 
     // Determine status
     let status: HookStatus;
-    if (consecutiveFailures >= this.CONSECUTIVE_FAILURE_THRESHOLD) {
-      status = 'FAILED';
-    } else if (successRate < this.DEGRADED_THRESHOLD) {
+    if (actualConsecutiveFailures >= this.CONSECUTIVE_FAILURE_THRESHOLD || successRate < this.DEGRADED_THRESHOLD) {
       status = 'FAILED';
     } else if (successRate < this.OK_THRESHOLD) {
       status = 'DEGRADED';
     } else {
-      // Check for recent warnings
-      const recentWarnings = recentLogs.slice(0, Math.min(10, recentLogs.length))
-        .filter(l => l.status === 'warning').length;
-
-      if (recentWarnings >= 3) {
-        status = 'DEGRADED';
-      } else {
-        status = 'OK';
-      }
+      const recentWarnings = recentLogs.slice(0, 10).filter(l => l.status === 'warning').length;
+      status = recentWarnings >= 3 ? 'DEGRADED' : 'OK';
     }
 
     // Generate recommendations
     const recommendations: string[] = [];
     if (status === 'FAILED') {
       recommendations.push('Run `specweave check-hooks` to diagnose issues');
-      if (consecutiveFailures >= 3) {
+      if (actualConsecutiveFailures >= 3) {
         recommendations.push('Multiple consecutive failures detected');
       }
       recommendations.push('Check `.specweave/logs/hooks/${hookName}.log` for details');
@@ -154,30 +134,28 @@ export class HookHealthTracker {
       avgDuration: Math.round(avgDuration),
       lastRun,
       totalExecutions: recentLogs.length,
-      consecutiveFailures,
+      consecutiveFailures: actualConsecutiveFailures,
       recommendations
     };
   }
 
+  private static readonly STATUS_ORDER: Record<HookStatus, number> = {
+    FAILED: 0,
+    DEGRADED: 1,
+    OK: 2,
+    UNKNOWN: 3
+  };
+
   /**
    * Analyze health for multiple hooks
-   *
-   * @param hooks - Map of hook names to their log entries
-   * @returns Array of health analyses
+   * @returns Array of health analyses sorted by severity, then by name
    */
   analyzeAll(hooks: Map<string, HookLogEntry[]>): HookHealth[] {
-    const results: HookHealth[] = [];
-
-    for (const [hookName, logs] of hooks.entries()) {
-      results.push(this.analyze(hookName, logs));
-    }
-
-    return results.sort((a, b) => {
-      // Sort by status severity, then by name
-      const statusOrder = { FAILED: 0, DEGRADED: 1, OK: 2, UNKNOWN: 3 };
-      const statusDiff = statusOrder[a.status] - statusOrder[b.status];
-      if (statusDiff !== 0) return statusDiff;
-      return a.hookName.localeCompare(b.hookName);
-    });
+    return Array.from(hooks.entries())
+      .map(([hookName, logs]) => this.analyze(hookName, logs))
+      .sort((a, b) => {
+        const statusDiff = HookHealthTracker.STATUS_ORDER[a.status] - HookHealthTracker.STATUS_ORDER[b.status];
+        return statusDiff !== 0 ? statusDiff : a.hookName.localeCompare(b.hookName);
+      });
   }
 }

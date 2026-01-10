@@ -145,27 +145,14 @@ export function detectSkill(content: string, context?: string): string | null {
   }
 
   // Priority 2: Score each skill by keyword matches
-  const scores: Map<string, number> = new Map();
-
-  for (const [skill, keywords] of Object.entries(SKILL_KEYWORDS)) {
-    let score = 0;
-    for (const keyword of keywords) {
-      if (text.includes(keyword.toLowerCase())) {
-        score += keyword.split(' ').length; // Multi-word keywords score higher
-      }
-    }
-    if (score > 0) {
-      scores.set(skill, score);
-    }
-  }
-
-  // Return highest scoring skill, or null if no matches
-  if (scores.size === 0) return null;
-
   let bestSkill: string | null = null;
   let bestScore = 0;
 
-  for (const [skill, score] of scores) {
+  for (const [skill, keywords] of Object.entries(SKILL_KEYWORDS)) {
+    const score = keywords.reduce((sum, keyword) => {
+      return text.includes(keyword.toLowerCase()) ? sum + keyword.split(' ').length : sum;
+    }, 0);
+
     if (score > bestScore) {
       bestScore = score;
       bestSkill = skill;
@@ -238,44 +225,23 @@ export function routeLearning(signal: DetectedSignal, projectRoot?: string): { t
     source: `session:${new Date().toISOString().split('T')[0]}`,
   };
 
-  // Route to skill if detected
-  if (signal.skill && skillExists(signal.skill, projectRoot)) {
-    const memoryPath = getSkillMemoryPath(signal.skill, projectRoot);
-    let memory = readMemoryFile(memoryPath);
+  // Determine target: skill or category
+  const isSkillTarget = signal.skill && skillExists(signal.skill, projectRoot);
+  const targetName = isSkillTarget ? signal.skill! : detectCategory(signal.content, signal.context);
+  const targetType = isSkillTarget ? 'skill' : 'category';
 
-    if (!memory) {
-      memory = createEmptyMemory(signal.skill);
-    }
+  const memoryPath = isSkillTarget
+    ? getSkillMemoryPath(signal.skill!, projectRoot)
+    : path.join(getGlobalMemoryDir(projectRoot), `${targetName}.md`);
 
-    const result = addLearning(memory, learning);
-
-    if (result.added) {
-      writeMemoryFile(memoryPath, memory);
-      return { target: `skill:${signal.skill}`, added: true };
-    }
-
-    return { target: `skill:${signal.skill}`, added: false, reason: result.reason };
-  }
-
-  // Route to category memory
-  const category = detectCategory(signal.content, signal.context);
-  const globalDir = getGlobalMemoryDir(projectRoot);
-  const categoryPath = path.join(globalDir, `${category}.md`);
-
-  let memory = readMemoryFile(categoryPath);
-
-  if (!memory) {
-    memory = createEmptyMemory(category);
-  }
-
+  const memory = readMemoryFile(memoryPath) || createEmptyMemory(targetName);
   const result = addLearning(memory, learning);
 
   if (result.added) {
-    writeMemoryFile(categoryPath, memory);
-    return { target: `category:${category}`, added: true };
+    writeMemoryFile(memoryPath, memory);
   }
 
-  return { target: `category:${category}`, added: false, reason: result.reason };
+  return { target: `${targetType}:${targetName}`, added: result.added, reason: result.reason };
 }
 
 /**
@@ -400,39 +366,33 @@ export function clearSkillLearnings(skillName: string, projectRoot?: string): bo
  * Remove a specific learning by ID
  */
 export function removeLearningById(learningId: string, projectRoot?: string): boolean {
+  // Helper to remove learning from a memory file
+  function tryRemoveFromFile(memoryPath: string): boolean {
+    const memory = readMemoryFile(memoryPath);
+    if (!memory) return false;
+
+    const index = memory.learnings.findIndex((l) => l.id === learningId);
+    if (index === -1) return false;
+
+    memory.learnings.splice(index, 1);
+    memory.lastUpdated = new Date().toISOString();
+    writeMemoryFile(memoryPath, memory);
+    return true;
+  }
+
   // Search in skill memories
   for (const skill of listSkills(projectRoot)) {
-    const memoryPath = getSkillMemoryPath(skill, projectRoot);
-    const memory = readMemoryFile(memoryPath);
-
-    if (memory) {
-      const index = memory.learnings.findIndex((l) => l.id === learningId);
-      if (index !== -1) {
-        memory.learnings.splice(index, 1);
-        memory.lastUpdated = new Date().toISOString();
-        writeMemoryFile(memoryPath, memory);
-        return true;
-      }
+    if (tryRemoveFromFile(getSkillMemoryPath(skill, projectRoot))) {
+      return true;
     }
   }
 
   // Search in category memories
   const globalDir = getGlobalMemoryDir(projectRoot);
   if (fs.existsSync(globalDir)) {
-    for (const file of fs.readdirSync(globalDir)) {
-      if (file.endsWith('.md')) {
-        const categoryPath = path.join(globalDir, file);
-        const memory = readMemoryFile(categoryPath);
-
-        if (memory) {
-          const index = memory.learnings.findIndex((l) => l.id === learningId);
-          if (index !== -1) {
-            memory.learnings.splice(index, 1);
-            memory.lastUpdated = new Date().toISOString();
-            writeMemoryFile(categoryPath, memory);
-            return true;
-          }
-        }
+    for (const file of fs.readdirSync(globalDir).filter((f) => f.endsWith('.md'))) {
+      if (tryRemoveFromFile(path.join(globalDir, file))) {
+        return true;
       }
     }
   }
@@ -449,46 +409,32 @@ export function getReflectionStats(projectRoot?: string): {
   totalLearnings: number;
   isClaudeCode: boolean;
 } {
-  const stats = {
-    skills: [] as Array<{ name: string; learningCount: number }>,
-    categories: [] as Array<{ name: string; learningCount: number }>,
-    totalLearnings: 0,
-    isClaudeCode: isClaudeCodeEnvironment(),
-  };
+  // Helper to get learning count from a memory file
+  function getLearningCount(memoryPath: string): number {
+    return readMemoryFile(memoryPath)?.learnings.length || 0;
+  }
 
   // Count skill learnings
-  for (const skill of listSkills(projectRoot)) {
-    const memoryPath = getSkillMemoryPath(skill, projectRoot);
-    const memory = readMemoryFile(memoryPath);
-    const count = memory?.learnings.length || 0;
-
-    if (count > 0) {
-      stats.skills.push({ name: skill, learningCount: count });
-      stats.totalLearnings += count;
-    }
-  }
+  const skills = listSkills(projectRoot)
+    .map((skill) => ({ name: skill, learningCount: getLearningCount(getSkillMemoryPath(skill, projectRoot)) }))
+    .filter((s) => s.learningCount > 0)
+    .sort((a, b) => b.learningCount - a.learningCount);
 
   // Count category learnings
   const globalDir = getGlobalMemoryDir(projectRoot);
-  if (fs.existsSync(globalDir)) {
-    for (const file of fs.readdirSync(globalDir)) {
-      if (file.endsWith('.md')) {
-        const categoryPath = path.join(globalDir, file);
-        const memory = readMemoryFile(categoryPath);
-        const count = memory?.learnings.length || 0;
+  const categories = fs.existsSync(globalDir)
+    ? fs
+        .readdirSync(globalDir)
+        .filter((f) => f.endsWith('.md'))
+        .map((file) => ({
+          name: path.basename(file, '.md'),
+          learningCount: getLearningCount(path.join(globalDir, file)),
+        }))
+        .filter((c) => c.learningCount > 0)
+        .sort((a, b) => b.learningCount - a.learningCount)
+    : [];
 
-        if (count > 0) {
-          const name = path.basename(file, '.md');
-          stats.categories.push({ name, learningCount: count });
-          stats.totalLearnings += count;
-        }
-      }
-    }
-  }
+  const totalLearnings = [...skills, ...categories].reduce((sum, item) => sum + item.learningCount, 0);
 
-  // Sort by count descending
-  stats.skills.sort((a, b) => b.learningCount - a.learningCount);
-  stats.categories.sort((a, b) => b.learningCount - a.learningCount);
-
-  return stats;
+  return { skills, categories, totalLearnings, isClaudeCode: isClaudeCodeEnvironment() };
 }

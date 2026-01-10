@@ -133,7 +133,6 @@ export class JiraClient {
   private credentials: JiraCredentials;
   private baseUrl: string;
   private apiVersion = '3';
-  private useMcp = false;
 
   constructor() {
     this.credentials = credentialsManager.getJiraCredentials();
@@ -155,6 +154,36 @@ export class JiraClient {
       `${this.credentials.email}:${this.credentials.apiToken}`
     ).toString('base64');
     return `Basic ${auth}`;
+  }
+
+  /**
+   * Extract plain text from Atlassian Document Format (ADF)
+   */
+  private extractTextFromAdf(body: any): string {
+    if (!body) {
+      return '';
+    }
+
+    if (typeof body === 'string') {
+      return body;
+    }
+
+    if (!body.content) {
+      return '';
+    }
+
+    const textParts: string[] = [];
+    for (const block of body.content) {
+      if (block.type === 'paragraph' && block.content) {
+        for (const inline of block.content) {
+          if (inline.type === 'text') {
+            textParts.push(inline.text);
+          }
+        }
+        textParts.push('\n');
+      }
+    }
+    return textParts.join('').trim();
   }
 
   /**
@@ -841,26 +870,7 @@ export class JiraClient {
       }
 
       const lastComment = comments[0];
-
-      // Extract body text from ADF format
-      let bodyText = '';
-      if (lastComment.body?.content) {
-        // ADF format - extract text from paragraphs
-        for (const block of lastComment.body.content) {
-          if (block.type === 'paragraph' && block.content) {
-            for (const inline of block.content) {
-              if (inline.type === 'text') {
-                bodyText += inline.text;
-              }
-            }
-            bodyText += '\n';
-          }
-        }
-        bodyText = bodyText.trim();
-      } else if (typeof lastComment.body === 'string') {
-        // Plain text format (older JIRA versions)
-        bodyText = lastComment.body;
-      }
+      const bodyText = this.extractTextFromAdf(lastComment.body);
 
       return {
         body: bodyText,

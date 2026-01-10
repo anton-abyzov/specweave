@@ -50,86 +50,65 @@ export class ReportGenerator {
    * @returns Markdown string
    */
   private static createMarkdown(insights: VisionInsights): string {
-    const timestamp = new Date().toISOString();
-    const date = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    const now = new Date();
+    const date = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const keywordsList = insights.keywords.map(k => `- ${k}`).join('\n');
+    const confidencePercent = ((insights.confidence || 0) * 100).toFixed(0);
 
-    const sections: string[] = [];
+    const sections: string[] = [
+      '# Market Research Report',
+      '',
+      `**Generated**: ${date}`,
+      `**Timestamp**: ${now.toISOString()}`,
+      '',
+      '---',
+      '',
+      '## Product Vision',
+      '',
+      insights.rawVision,
+      '',
+      '## Keywords & Domain Focus',
+      '',
+      '**Extracted Keywords**:',
+      '',
+      keywordsList,
+      '',
+      '## Market Classification',
+      '',
+      `**Category**: ${insights.market}`,
+      `**Confidence**: ${confidencePercent}%`,
+      '',
+      '## Opportunity Analysis',
+      '',
+      `**Opportunity Score**: ${insights.opportunityScore}/10`,
+      `**Viral Potential**: ${insights.viralPotential ? 'Yes' : 'No'}`,
+      ''
+    ];
 
-    // Header
-    sections.push('# Market Research Report');
+    // Competitors section
+    sections.push('## Competitive Landscape');
     sections.push('');
-    sections.push(`**Generated**: ${date}`);
-    sections.push(`**Timestamp**: ${timestamp}`);
-    sections.push('');
-    sections.push('---');
-    sections.push('');
-
-    // Vision
-    sections.push('## Product Vision');
-    sections.push('');
-    sections.push(insights.rawVision);
-    sections.push('');
-
-    // Keywords
-    sections.push('## Keywords & Domain Focus');
-    sections.push('');
-    sections.push('**Extracted Keywords**:');
-    sections.push('');
-    insights.keywords.forEach(keyword => {
-      sections.push(`- ${keyword}`);
-    });
-    sections.push('');
-
-    // Market Category
-    sections.push('## Market Classification');
-    sections.push('');
-    sections.push(`**Category**: ${insights.market}`);
-    sections.push(`**Confidence**: ${(insights.confidence * 100).toFixed(0)}%`);
-    sections.push('');
-
-    // Opportunity Score
-    sections.push('## Opportunity Analysis');
-    sections.push('');
-    sections.push(`**Opportunity Score**: ${insights.opportunityScore}/10`);
-    sections.push(`**Viral Potential**: ${insights.viralPotential ? 'Yes' : 'No'}`);
-    sections.push('');
-
-    // Competitors
     if (insights.competitors.length > 0) {
-      sections.push('## Competitive Landscape');
-      sections.push('');
       sections.push('**Similar Products**:');
       sections.push('');
-
       sections.push('| Product | URL | Similarity | Strengths | Weaknesses |');
       sections.push('|---------|-----|------------|-----------|------------|');
-
-      insights.competitors.forEach(comp => {
-        const similarity = 'N/A'; // Similarity scoring not yet implemented
+      for (const comp of insights.competitors) {
         const strengths = comp.strengths.join(', ') || 'N/A';
         const weaknesses = comp.weaknesses.join(', ') || 'N/A';
-        sections.push(`| ${comp.name} | ${comp.url || 'N/A'} | ${similarity} | ${strengths} | ${weaknesses} |`);
-      });
-
-      sections.push('');
+        sections.push(`| ${comp.name} | ${comp.url || 'N/A'} | N/A | ${strengths} | ${weaknesses} |`);
+      }
     } else {
-      sections.push('## Competitive Landscape');
-      sections.push('');
       sections.push('No similar products identified.');
-      sections.push('');
     }
+    sections.push('');
 
-    // Follow-up Questions
+    // Follow-up Questions section
     if (insights.followUpQuestions.length > 0) {
       sections.push('## Recommended Next Steps');
       sections.push('');
       sections.push('To refine your product strategy, consider these questions:');
       sections.push('');
-
       insights.followUpQuestions.forEach((q, idx) => {
         sections.push(`${idx + 1}. **${q.question}**`);
         sections.push('');

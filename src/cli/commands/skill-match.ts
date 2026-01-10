@@ -85,12 +85,24 @@ export async function skillMatchCommand(options: SkillMatchOptions): Promise<voi
 }
 
 /**
+ * Get score display properties based on percentage
+ */
+function getScoreDisplay(scorePercent: number): { icon: string; color: typeof chalk.green; explanation: string } {
+  if (scorePercent >= 70) {
+    return { icon: '✅', color: chalk.green, explanation: 'High match - prompt contains multiple relevant keywords' };
+  }
+  if (scorePercent >= 50) {
+    return { icon: '⚠️', color: chalk.yellow, explanation: 'Medium match - some relevant keywords found' };
+  }
+  return { icon: '❌', color: chalk.red, explanation: 'Low match - few keywords matched' };
+}
+
+/**
  * Display a single match result
  */
 function displayMatch(match: any, isBest: boolean): void {
   const scorePercent = Math.round(match.score * 100);
-  const icon = scorePercent >= 70 ? '✅' : scorePercent >= 50 ? '⚠️' : '❌';
-  const scoreColor = scorePercent >= 70 ? chalk.green : scorePercent >= 50 ? chalk.yellow : chalk.red;
+  const { icon, color: scoreColor, explanation } = getScoreDisplay(scorePercent);
 
   const skillName = match.fqn.split(':')[1] || match.fqn;
   const pluginName = match.fqn.split(':')[0] || 'unknown';
@@ -103,15 +115,6 @@ function displayMatch(match: any, isBest: boolean): void {
     console.log(`   ${chalk.gray('Matched:')} ${chalk.cyan(keywords)}`);
   }
 
-  // Explain score
-  let explanation = '';
-  if (scorePercent >= 70) {
-    explanation = 'High match - prompt contains multiple relevant keywords';
-  } else if (scorePercent >= 50) {
-    explanation = 'Medium match - some relevant keywords found';
-  } else {
-    explanation = 'Low match - few keywords matched';
-  }
   console.log(`   ${chalk.gray('Why:')} ${explanation}\n`);
 }
 

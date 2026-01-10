@@ -23,6 +23,22 @@ import path from 'path';
 import fs from 'fs/promises';
 import { Logger, consoleLogger } from '../../utils/logger.js';
 
+/**
+ * Action verb mapping for sync results
+ */
+const ACTION_VERBS: Record<string, string> = {
+  created: 'Created',
+  updated: 'Updated',
+  'updated-via-comment': 'Updated (via progress comment)',
+  'no-change': 'No changes',
+  skipped: 'Skipped',
+  error: 'Error',
+};
+
+function formatActionVerb(action: string): string {
+  return ACTION_VERBS[action] || 'Unknown';
+}
+
 // NOTE: This CLI sync command is primarily user-facing output (console.log/console.error).
 // All console.* calls in this file are legitimate user-facing exceptions
 // as defined in CONTRIBUTING.md (sync status, action results, progress indicators).
@@ -99,16 +115,7 @@ async function syncGitHub(specPath: string, options: any) {
   });
 
   if (result.success) {
-    const actionVerb = {
-      created: 'Created',
-      updated: 'Updated',
-      'updated-via-comment': 'Updated (via progress comment)',
-      'no-change': 'No changes',
-      skipped: 'Skipped',
-      error: 'Error',
-    }[result.action] || 'Unknown';
-
-    console.log(`✅ ${actionVerb} GitHub issue`);
+    console.log(`✅ ${formatActionVerb(result.action)} GitHub issue`);
     if (result.externalUrl) {
       console.log(`   URL: ${result.externalUrl}`);
     }
@@ -151,16 +158,7 @@ async function syncJira(specPath: string, options: any) {
   });
 
   if (result.success) {
-    const actionVerb = {
-      created: 'Created',
-      updated: 'Updated',
-      'updated-via-comment': 'Updated (via progress comment)',
-      'no-change': 'No changes',
-      skipped: 'Skipped',
-      error: 'Error',
-    }[result.action] || 'Unknown';
-
-    console.log(`✅ ${actionVerb} JIRA epic`);
+    console.log(`✅ ${formatActionVerb(result.action)} JIRA epic`);
     if (result.externalUrl) {
       console.log(`   URL: ${result.externalUrl}`);
     }
@@ -205,16 +203,7 @@ async function syncAdo(specPath: string, options: any) {
   });
 
   if (result.success) {
-    const actionVerb = {
-      created: 'Created',
-      updated: 'Updated',
-      'updated-via-comment': 'Updated (via progress comment)',
-      'no-change': 'No changes',
-      skipped: 'Skipped',
-      error: 'Error',
-    }[result.action] || 'Unknown';
-
-    console.log(`✅ ${actionVerb} ADO feature`);
+    console.log(`✅ ${formatActionVerb(result.action)} ADO feature`);
     if (result.externalUrl) {
       console.log(`   URL: ${result.externalUrl}`);
     }

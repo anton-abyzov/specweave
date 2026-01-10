@@ -168,7 +168,7 @@ export function spawnNodeBackground(
   args: string[] = [],
   cwd?: string
 ): ChildProcess | null {
-  const nodeExecutable = process.execPath; // Use same Node.js that's running this script
+  const nodeExecutable = process.execPath;
 
   try {
     const spawnOptions: SpawnOptions = {
@@ -182,18 +182,12 @@ export function spawnNodeBackground(
       },
     };
 
-    if (platformInfo.isWindows) {
-      // On Windows, spawn node directly with detached
-      // The windowsHide option prevents console window
-      const child = spawn(nodeExecutable, [scriptPath, ...args], spawnOptions);
-      child.unref();
-      return child;
-    } else {
-      // On POSIX, standard detached spawn
-      const child = spawn(nodeExecutable, [scriptPath, ...args], spawnOptions);
-      child.unref();
-      return child;
-    }
+    // Same spawn logic works for both Windows and POSIX
+    // - Windows: windowsHide prevents console window, detached allows orphaning
+    // - POSIX: detached creates new process group, unref allows parent to exit
+    const child = spawn(nodeExecutable, [scriptPath, ...args], spawnOptions);
+    child.unref();
+    return child;
   } catch {
     return null;
   }

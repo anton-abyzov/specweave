@@ -593,20 +593,13 @@ export class BrownfieldDiscrepancyManager {
         stats.byType[disc.type]++;
         stats.byPriority[disc.priority]++;
 
-        switch (disc.status) {
-          case 'pending':
-            stats.pending++;
-            break;
-          case 'in-progress':
-            stats.inProgress++;
-            break;
-          case 'resolved':
-            stats.resolved++;
-            break;
-          case 'ignored':
-            stats.ignored++;
-            break;
-        }
+        const statusKey: Record<BrownfieldDiscrepancyStatus, keyof BrownfieldDiscrepancyStats> = {
+          pending: 'pending',
+          'in-progress': 'inProgress',
+          resolved: 'resolved',
+          ignored: 'ignored',
+        };
+        (stats[statusKey[disc.status]] as number)++;
       }
     }
 

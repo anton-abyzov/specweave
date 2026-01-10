@@ -142,33 +142,26 @@ export function validateACCoverage(
   });
 
   // Populate mappings from tasks
-  allTasks.forEach(task => {
+  for (const task of allTasks) {
     if (!task.satisfiesACs || task.satisfiesACs.length === 0) {
-      // Task has no AC linkage - mark as orphan
       orphanTasks.push(task.id);
-      return;
+      continue;
     }
 
-    // Store task → ACs mapping
     taskToACsMap.set(task.id, task.satisfiesACs);
 
-    // Store AC → tasks mapping
-    task.satisfiesACs.forEach(acId => {
-      // Only count if AC exists in spec.md (valid AC-ID)
-      if (acToTasksMap.has(acId)) {
-        const tasks = acToTasksMap.get(acId)!;
-        tasks.push(task.id);
+    for (const acId of task.satisfiesACs) {
+      const existingTasks = acToTasksMap.get(acId);
+      if (existingTasks) {
+        existingTasks.push(task.id);
       }
-    });
-  });
+    }
+  }
 
   // Calculate coverage
-  const uncoveredACs: string[] = [];
-  acToTasksMap.forEach((tasks, acId) => {
-    if (tasks.length === 0) {
-      uncoveredACs.push(acId);
-    }
-  });
+  const uncoveredACs = Array.from(acToTasksMap.entries())
+    .filter(([, tasks]) => tasks.length === 0)
+    .map(([acId]) => acId);
 
   const coveredACs = specMetadata.allACIds.length - uncoveredACs.length;
   const coveragePercentage = specMetadata.allACIds.length > 0
@@ -347,37 +340,40 @@ export async function exportCoverageReportJSON(
 }
 
 /**
+ * Format list preview with ellipsis
+ */
+function formatListPreview(items: string[], maxItems: number = 3): string {
+  const preview = items.slice(0, maxItems).join(', ');
+  return items.length > maxItems ? `${preview}...` : preview;
+}
+
+/**
  * Get recommended actions based on coverage report
- *
- * @param report - Coverage report
- * @returns Array of recommended actions
  */
 export function getRecommendedActions(report: ACCoverageReport): string[] {
   const actions: string[] = [];
 
   if (report.uncoveredACs.length > 0) {
     actions.push(
-      `Create tasks to satisfy ${report.uncoveredACs.length} uncovered AC(s): ${report.uncoveredACs.slice(0, 3).join(', ')}${report.uncoveredACs.length > 3 ? '...' : ''}`
+      `Create tasks to satisfy ${report.uncoveredACs.length} uncovered AC(s): ${formatListPreview(report.uncoveredACs)}`
     );
   }
 
   if (report.orphanTasks.length > 0) {
     actions.push(
-      `Add **Satisfies ACs** field to ${report.orphanTasks.length} orphan task(s): ${report.orphanTasks.slice(0, 3).join(', ')}${report.orphanTasks.length > 3 ? '...' : ''}`
+      `Add **Satisfies ACs** field to ${report.orphanTasks.length} orphan task(s): ${formatListPreview(report.orphanTasks)}`
     );
   }
 
   if (report.coveragePercentage < 100) {
-    const gap = 100 - report.coveragePercentage;
-    actions.push(`Increase coverage by ${gap}% to reach 100% target`);
+    actions.push(`Increase coverage by ${100 - report.coveragePercentage}% to reach 100% target`);
   }
 
-  // Check for User Stories with low coverage
-  report.coverageByUS.forEach(stats => {
+  for (const stats of report.coverageByUS.values()) {
     if (stats.coveragePercentage < 80) {
       actions.push(`User Story ${stats.usId} has low coverage (${stats.coveragePercentage}%) - prioritize tasks for this US`);
     }
-  });
+  }
 
   return actions;
 }

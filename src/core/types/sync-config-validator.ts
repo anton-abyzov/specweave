@@ -140,25 +140,20 @@ export function assertValidSyncConfig(
 
 /**
  * Get human-readable summary of sync config validation
- *
- * @param config - Configuration object
- * @returns Summary string
  */
 export function getSyncConfigSummary(config: SyncConfig): string {
   const result = validateSyncConfig(config);
-
-  const lines: string[] = [];
-  lines.push('=== Sync Configuration Validation ===');
-  lines.push(`Valid: ${result.valid ? '✅ Yes' : '❌ No'}`);
+  const lines = [
+    '=== Sync Configuration Validation ===',
+    `Valid: ${result.valid ? '✅ Yes' : '❌ No'}`,
+  ];
 
   if (result.errors.length > 0) {
-    lines.push('\nErrors:');
-    result.errors.forEach((error) => lines.push(`  ❌ ${error}`));
+    lines.push('\nErrors:', ...result.errors.map((e) => `  ❌ ${e}`));
   }
 
   if (result.warnings.length > 0) {
-    lines.push('\nWarnings:');
-    result.warnings.forEach((warning) => lines.push(`  ⚠️  ${warning}`));
+    lines.push('\nWarnings:', ...result.warnings.map((w) => `  ⚠️  ${w}`));
   }
 
   if (result.valid && result.errors.length === 0 && result.warnings.length === 0) {

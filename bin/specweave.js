@@ -833,6 +833,20 @@ program
     await cmd.parseAsync(args, { from: 'user' });
   });
 
+// Migrate memory command - Migrate global memory from legacy location
+program
+  .command('migrate-memory')
+  .description('Migrate global memory files from legacy ~/.claude/specweave/memory/ to correct location')
+  .option('--dry-run', 'Preview what would be migrated without making changes')
+  .option('-y, --yes', 'Skip confirmation prompt')
+  .action(async (options) => {
+    const { migrateMemory } = await import('../dist/src/cli/commands/migrate-memory.js');
+    await migrateMemory({
+      dryRun: options.dryRun,
+      yes: options.yes,
+    });
+  });
+
 // Help text
 program.on('--help', () => {
   console.log('');
@@ -887,6 +901,8 @@ program.on('--help', () => {
   console.log('  $ specweave set-sync-target 0008 --validate-only  # Validate only');
   console.log('  $ specweave refresh-marketplace             # Refresh marketplace (GitHub)');
   console.log('  $ specweave refresh-marketplace --local     # Use local dev version');
+  console.log('  $ specweave migrate-memory                  # Migrate legacy memory files');
+  console.log('  $ specweave migrate-memory --dry-run        # Preview migration');
   console.log('');
   console.log('Supported AI Tools:');
   console.log('  - Claude Code (full automation) - Native skills, agents, hooks');

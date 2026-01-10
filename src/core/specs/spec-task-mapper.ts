@@ -54,52 +54,48 @@ export interface TaskToUserStoryMapping {
  */
 export async function parseSpec(specPath: string): Promise<UserStory[]> {
   const content = await fs.readFile(specPath, 'utf-8');
-  const userStories: UserStory[] = [];
-
-  // Match user story patterns (T-029: Support E suffix for external IDs):
-  // **US-001**: As a developer, I want... OR **US-001E**: External story...
   const userStoryRegex = /\*\*US-(\d+)(E?)\*\*:\s*(.+)/g;
-  const matches = [...content.matchAll(userStoryRegex)];
 
-  for (const match of matches) {
+  return [...content.matchAll(userStoryRegex)].map(match => {
     const usNumber = match[1];
-    const usESuffix = match[2]; // Will be 'E' or ''
+    const usESuffix = match[2];
     const usId = `US-${usNumber}${usESuffix}`;
-    const title = match[3].trim();
 
-    // Find acceptance criteria for this user story
-    // Pattern: - [x] **AC-US1-01**: Description OR - [x] **AC-US1E-01**: External AC
-    const acRegex = new RegExp(
-      `- \\[([ x])\\] \\*\\*AC-US${usNumber}${usESuffix}-(\\d+)\\*\\*:\\s*([^(]+)(?:\\(([^)]+)\\))?`,
-      'g'
-    );
-
-    const acceptanceCriteria: AcceptanceCriterion[] = [];
-    const acMatches = [...content.matchAll(acRegex)];
-
-    for (const acMatch of acMatches) {
-      const completed = acMatch[1] === 'x';
-      const acNumber = acMatch[2];
-      const description = acMatch[3].trim();
-      const metadata = acMatch[4] || '';
-
-      acceptanceCriteria.push({
-        id: `AC-US${usNumber}${usESuffix}-${acNumber}`,
-        description,
-        priority: metadata.includes('P1') ? 'P1' : metadata.includes('P2') ? 'P2' : undefined,
-        testable: metadata.includes('testable'),
-        completed,
-      });
-    }
-
-    userStories.push({
+    return {
       id: usId,
-      title,
-      acceptanceCriteria,
-    });
-  }
+      title: match[3].trim(),
+      acceptanceCriteria: parseAcceptanceCriteriaFromContent(content, usNumber, usESuffix)
+    };
+  });
+}
 
-  return userStories;
+/**
+ * Parse acceptance criteria for a user story from content
+ */
+function parseAcceptanceCriteriaFromContent(
+  content: string,
+  usNumber: string,
+  usESuffix: string
+): AcceptanceCriterion[] {
+  const acRegex = new RegExp(
+    `- \\[([ x])\\] \\*\\*AC-US${usNumber}${usESuffix}-(\\d+)\\*\\*:\\s*([^(]+)(?:\\(([^)]+)\\))?`,
+    'g'
+  );
+
+  return [...content.matchAll(acRegex)].map(acMatch => {
+    const metadata = acMatch[4] || '';
+    let priority: string | undefined;
+    if (metadata.includes('P1')) priority = 'P1';
+    else if (metadata.includes('P2')) priority = 'P2';
+
+    return {
+      id: `AC-US${usNumber}${usESuffix}-${acMatch[2]}`,
+      description: acMatch[3].trim(),
+      priority,
+      testable: metadata.includes('testable'),
+      completed: acMatch[1] === 'x'
+    };
+  });
 }
 
 /**
@@ -107,55 +103,40 @@ export async function parseSpec(specPath: string): Promise<UserStory[]> {
  */
 export async function parseTasks(tasksPath: string): Promise<Task[]> {
   const content = await fs.readFile(tasksPath, 'utf-8');
-  const tasks: Task[] = [];
-
-  // Match task patterns:
-  // ## T-001: Task Title
   const taskRegex = /##\s+T-(\d+):\s*(.+)/g;
-  const taskMatches = [...content.matchAll(taskRegex)];
 
-  for (const match of taskMatches) {
+  return [...content.matchAll(taskRegex)].map(match => {
     const taskNumber = match[1];
     const taskId = `T-${taskNumber}`;
-    const title = match[2].trim();
+    const acIds = extractACIds(content, taskId);
+    const userStories = deriveUserStoriesFromACIds(acIds);
+    const completed = new RegExp(`\\[(x)\\]\\s+T-${taskNumber}\\b`, 'i').test(content);
 
-    // Extract AC-IDs for this task
-    // Pattern: **AC**: AC-US1-01, AC-US1-02, AC-US2-01
-    const taskSection = extractTaskSection(content, taskId);
-    const acLine = taskSection.match(/\*\*AC\*\*:\s*(.+)/);
-    const acIds: string[] = [];
+    return { id: taskId, title: match[2].trim(), acIds, userStories, completed };
+  });
+}
 
-    if (acLine) {
-      const acText = acLine[1];
-      const acMatches = acText.matchAll(/AC-US\d+-\d+/g);
-      for (const acMatch of acMatches) {
-        acIds.push(acMatch[0]);
-      }
-    }
+/**
+ * Extract AC-IDs from a task section
+ */
+function extractACIds(content: string, taskId: string): string[] {
+  const taskSection = extractTaskSection(content, taskId);
+  const acLine = taskSection.match(/\*\*AC\*\*:\s*(.+)/);
+  if (!acLine) return [];
 
-    // Derive user story IDs from AC-IDs
-    const userStories = [...new Set(
-      acIds.map(acId => {
-        const match = acId.match(/AC-US(\d+)-/);
-        return match ? `US-${match[1]}` : null;
-      }).filter(Boolean) as string[]
-    )];
+  return [...acLine[1].matchAll(/AC-US\d+-\d+/g)].map(m => m[0]);
+}
 
-    // Check if task is completed
-    // Pattern: [x] T-001 or - [x] T-001
-    const completedRegex = new RegExp(`\\[(x)\\]\\s+T-${taskNumber}\\b`, 'i');
-    const completed = completedRegex.test(content);
-
-    tasks.push({
-      id: taskId,
-      title,
-      acIds,
-      userStories,
-      completed,
-    });
-  }
-
-  return tasks;
+/**
+ * Derive user story IDs from AC-IDs
+ */
+function deriveUserStoriesFromACIds(acIds: string[]): string[] {
+  return [...new Set(
+    acIds
+      .map(acId => acId.match(/AC-US(\d+)-/)?.[1])
+      .filter((n): n is string => n !== undefined)
+      .map(n => `US-${n}`)
+  )];
 }
 
 /**
@@ -172,20 +153,14 @@ function extractTaskSection(content: string, taskId: string): string {
  */
 export function createTaskToUserStoryMapping(
   tasks: Task[],
-  userStories: UserStory[]
+  _userStories: UserStory[]
 ): TaskToUserStoryMapping[] {
-  const mappings: TaskToUserStoryMapping[] = [];
-
-  for (const task of tasks) {
-    mappings.push({
-      taskId: task.id,
-      userStoryIds: task.userStories,
-      acIds: task.acIds,
-      completed: task.completed,
-    });
-  }
-
-  return mappings;
+  return tasks.map(task => ({
+    taskId: task.id,
+    userStoryIds: task.userStories,
+    acIds: task.acIds,
+    completed: task.completed
+  }));
 }
 
 /**
@@ -196,47 +171,24 @@ export async function getSpecTaskMapping(
   specPath?: string
 ): Promise<SpecTaskMapping | null> {
   try {
-    // Read increment spec.md
     const incrementSpecPath = path.join(incrementPath, 'spec.md');
     const incrementSpec = await fs.readFile(incrementSpecPath, 'utf-8');
 
-    // Extract spec ID from increment spec
-    // Pattern: **Implements**: SPEC-001-core-framework-architecture
     const specIdMatch = incrementSpec.match(/\*\*Implements\*\*:\s*SPEC-(\d+)-/);
     const specId = specIdMatch ? `spec-${specIdMatch[1]}` : null;
 
     if (!specId && !specPath) {
-      // No spec linked to this increment
       return null;
     }
 
-    // Determine spec path
-    let actualSpecPath = specPath;
-    if (!actualSpecPath && specId) {
-      // Try to find spec in living docs (flattened structure v0.16.11+)
-      const projectRoot = incrementPath.split('.specweave')[0];
-      const glob = await import('glob');
-
-      // Search in flattened structure: .specweave/docs/internal/specs/{project-id}/spec-{id}-*.md
-      const specPattern = path.join(projectRoot, '.specweave', 'docs', 'internal', 'specs', '*', `${specId}-*.md`);
-      const matches = glob.sync(specPattern);
-
-      if (matches.length > 0) {
-        actualSpecPath = matches[0];
-      }
-    }
-
+    const actualSpecPath = specPath || await findSpecPath(incrementPath, specId);
     if (!actualSpecPath) {
       return null;
     }
 
-    // Parse spec and tasks
     const userStories = await parseSpec(actualSpecPath);
     const tasksPath = path.join(incrementPath, 'tasks.md');
     const tasks = await parseTasks(tasksPath);
-
-    // Create mappings
-    const mappings = createTaskToUserStoryMapping(tasks, userStories);
 
     return {
       specId: specId || 'unknown',
@@ -245,7 +197,7 @@ export async function getSpecTaskMapping(
       incrementPath,
       userStories,
       tasks,
-      mappings,
+      mappings: createTaskToUserStoryMapping(tasks, userStories)
     };
   } catch (error: any) {
     console.error(`Failed to get spec-task mapping: ${error.message}`);
@@ -254,41 +206,37 @@ export async function getSpecTaskMapping(
 }
 
 /**
- * Get completed user stories from mappings
+ * Find spec path in living docs structure
  */
-export function getCompletedUserStories(
-  mapping: SpecTaskMapping
-): UserStory[] {
-  const completedUSIds = new Set<string>();
+async function findSpecPath(incrementPath: string, specId: string | null): Promise<string | null> {
+  if (!specId) return null;
 
-  // Find user stories where ALL tasks are complete
-  for (const us of mapping.userStories) {
-    const relatedTasks = mapping.tasks.filter(t =>
-      t.userStories.includes(us.id)
-    );
+  const projectRoot = incrementPath.split('.specweave')[0];
+  const glob = await import('glob');
+  const specPattern = path.join(projectRoot, '.specweave', 'docs', 'internal', 'specs', '*', `${specId}-*.md`);
+  const matches = glob.sync(specPattern);
 
-    if (relatedTasks.length > 0 && relatedTasks.every(t => t.completed)) {
-      completedUSIds.add(us.id);
-    }
-  }
+  return matches.length > 0 ? matches[0] : null;
+}
 
-  return mapping.userStories.filter(us => completedUSIds.has(us.id));
+/**
+ * Get completed user stories from mappings (all related tasks complete)
+ */
+export function getCompletedUserStories(mapping: SpecTaskMapping): UserStory[] {
+  return mapping.userStories.filter(us => {
+    const relatedTasks = mapping.tasks.filter(t => t.userStories.includes(us.id));
+    return relatedTasks.length > 0 && relatedTasks.every(t => t.completed);
+  });
 }
 
 /**
  * Get recently completed tasks (completed since last sync)
+ * Note: Currently returns all completed tasks; timestamp tracking could be added in the future
  */
 export function getRecentlyCompletedTasks(
   mapping: SpecTaskMapping,
-  lastSyncDate?: Date
+  _lastSyncDate?: Date
 ): Task[] {
-  // If no last sync date, return all completed tasks
-  if (!lastSyncDate) {
-    return mapping.tasks.filter(t => t.completed);
-  }
-
-  // For now, return all completed tasks
-  // In the future, we could track completion timestamps in metadata
   return mapping.tasks.filter(t => t.completed);
 }
 

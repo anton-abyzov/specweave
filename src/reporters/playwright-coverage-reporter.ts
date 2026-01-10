@@ -206,20 +206,15 @@ export class PlaywrightCoverageReporter implements Reporter {
    */
   private parseViewport(projectName: string): string {
     const name = projectName.toLowerCase();
+    const mobileKeywords = ['mobile', 'iphone', 'pixel', 'webkit'];
+    const tabletKeywords = ['tablet', 'ipad'];
 
-    if (
-      name.includes('mobile') ||
-      name.includes('iphone') ||
-      name.includes('pixel') ||
-      name === 'webkit'
-    ) {
+    if (mobileKeywords.some(keyword => name.includes(keyword) || name === keyword)) {
       return 'mobile';
     }
-
-    if (name.includes('tablet') || name.includes('ipad')) {
+    if (tabletKeywords.some(keyword => name.includes(keyword))) {
       return 'tablet';
     }
-
     return 'desktop';
   }
 
@@ -229,15 +224,10 @@ export class PlaywrightCoverageReporter implements Reporter {
   private normalizeRoute(urlOrPath: string): string | null {
     try {
       if (urlOrPath.startsWith('http://') || urlOrPath.startsWith('https://')) {
-        const url = new URL(urlOrPath);
-        return url.pathname || '/';
+        return new URL(urlOrPath).pathname || '/';
       }
-
-      if (urlOrPath.startsWith('/')) {
-        return urlOrPath.split('?')[0];
-      }
-
-      return '/' + urlOrPath.split('?')[0];
+      const path = urlOrPath.startsWith('/') ? urlOrPath : '/' + urlOrPath;
+      return path.split('?')[0];
     } catch {
       return null;
     }

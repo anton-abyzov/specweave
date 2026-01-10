@@ -35,6 +35,12 @@ export interface LSPReferencesResult {
   success: boolean;
 }
 
+/** Empty location for failed operations */
+const EMPTY_LOCATION: LSPLocation = {
+  uri: '',
+  range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }
+};
+
 export interface LSPServerConfig {
   command: string;
   args: string[];
@@ -232,39 +238,27 @@ export class LSPClient {
    */
   async goToDefinition(filePath: string, line: number, character: number): Promise<LSPDefinitionResult> {
     if (!this.initialized) {
-      return { location: { uri: '', range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } } }, success: false };
+      return { location: EMPTY_LOCATION, success: false };
     }
 
     try {
       const uri = `file://${path.resolve(this.config.rootPath, filePath)}`;
+      this.openDocument(filePath, uri);
 
-      // Open document
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      this.sendNotification('textDocument/didOpen', {
-        textDocument: {
-          uri,
-          languageId: this.getLanguageId(filePath),
-          version: 1,
-          text: fileContent
-        }
-      });
-
-      // Request definition
       const result = await this.sendRequest('textDocument/definition', {
         textDocument: { uri },
         position: { line, character }
       });
 
       if (!result) {
-        return { location: { uri: '', range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } } }, success: false };
+        return { location: EMPTY_LOCATION, success: false };
       }
 
       const location = Array.isArray(result) ? result[0] : result;
       return { location, success: true };
-
     } catch (error) {
       logger.error(`goToDefinition failed: ${error}`);
-      return { location: { uri: '', range: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } } }, success: false };
+      return { location: EMPTY_LOCATION, success: false };
     }
   }
 
@@ -278,19 +272,8 @@ export class LSPClient {
 
     try {
       const uri = `file://${path.resolve(this.config.rootPath, filePath)}`;
+      this.openDocument(filePath, uri);
 
-      // Open document if not already open
-      const fileContent = fs.readFileSync(filePath, 'utf-8');
-      this.sendNotification('textDocument/didOpen', {
-        textDocument: {
-          uri,
-          languageId: this.getLanguageId(filePath),
-          version: 1,
-          text: fileContent
-        }
-      });
-
-      // Request references
       const result = await this.sendRequest('textDocument/references', {
         textDocument: { uri },
         position: { line, character },
@@ -302,11 +285,20 @@ export class LSPClient {
       }
 
       return { locations: result, success: true };
-
     } catch (error) {
       logger.error(`findReferences failed: ${error}`);
       return { locations: [], success: false };
     }
+  }
+
+  /**
+   * Open a document in the LSP server
+   */
+  private openDocument(filePath: string, uri: string): void {
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    this.sendNotification('textDocument/didOpen', {
+      textDocument: { uri, languageId: this.getLanguageId(filePath), version: 1, text: fileContent }
+    });
   }
 
   /**
