@@ -1,6 +1,6 @@
 # Payment Webhook Configuration
 
-Generate secure webhook handlers for payment providers.
+Generate secure webhook handlers for payment providers, including Stripe Connect.
 
 ## Task
 
@@ -8,11 +8,20 @@ You are a payment webhook security expert. Generate secure, production-ready web
 
 ### Steps:
 
-1. **Ask for Provider**:
-   - Stripe
+1. **Ask for Provider and Pattern**:
+   - Stripe (Platform only)
+   - Stripe Connect (Direct Charge) - **Requires TWO webhook endpoints!**
+   - Stripe Connect (Destination Charge)
    - PayPal
    - Square
    - Custom payment gateway
+
+**⚠️ CRITICAL for Stripe Connect Direct Charge:**
+When using Direct Charge, checkout sessions are created ON the Connected Account. You need TWO webhook endpoints:
+- Platform endpoint (`/webhooks/stripe`) - for `account.updated`
+- Connect endpoint (`/webhooks/stripe/connect`) - for `checkout.session.completed`!
+
+Without the Connect endpoint, Direct Charge payments will NOT be detected!
 
 2. **Generate Webhook Endpoint** (Stripe):
 
@@ -120,6 +129,155 @@ async function processWebhookEvent(event: Stripe.Event) {
   }
 }
 ```
+
+2.5. **Generate Connect Webhook Endpoint** (For Direct Charge - CRITICAL!):
+
+```typescript
+// CRITICAL: This endpoint receives events from Connected Accounts
+// Without this, Direct Charge payments will NOT be detected!
+app.post(
+  '/api/webhooks/stripe/connect',
+  express.raw({ type: 'application/json' }),
+  async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    // DIFFERENT secret from platform webhook!
+    const connectWebhookSecret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET!;
+
+    let event;
+
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig!,
+        connectWebhookSecret
+      );
+    } catch (err) {
+      console.error(`Connect webhook signature verification failed: ${err.message}`);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Get the connected account that triggered this event
+    const connectedAccountId = event.account;
+
+    // Handle event idempotently
+    const eventId = event.id;
+    const existingEvent = await db.webhookEvents.findUnique({
+      where: { stripeEventId: eventId },
+    });
+
+    if (existingEvent) {
+      return res.status(200).json({ received: true });
+    }
+
+    await db.webhookEvents.create({
+      data: {
+        stripeEventId: eventId,
+        type: event.type,
+        connectedAccountId,
+        processedAt: new Date(),
+      },
+    });
+
+    // Process in background
+    processConnectWebhookEvent(event, connectedAccountId).catch((error) => {
+      console.error(`Failed to process Connect webhook: ${error.message}`);
+    });
+
+    res.status(200).json({ received: true });
+  }
+);
+
+async function processConnectWebhookEvent(
+  event: Stripe.Event,
+  connectedAccountId: string
+) {
+  switch (event.type) {
+    case 'checkout.session.completed':
+      // CRITICAL: This is where Direct Charge payments complete!
+      await handleConnectCheckoutComplete(event.data.object, connectedAccountId);
+      break;
+
+    case 'checkout.session.expired':
+      await handleConnectCheckoutExpired(event.data.object, connectedAccountId);
+      break;
+
+    case 'account.updated':
+      await handleAccountUpdated(event.data.object);
+      break;
+
+    case 'payout.paid':
+      await handlePayoutPaid(event.data.object, connectedAccountId);
+      break;
+
+    case 'payout.failed':
+      await handlePayoutFailed(event.data.object, connectedAccountId);
+      break;
+
+    default:
+      console.log(`Unhandled Connect event type: ${event.type}`);
+  }
+}
+
+async function handleConnectCheckoutComplete(
+  session: Stripe.Checkout.Session,
+  connectedAccountId: string
+) {
+  // Retrieve full session from the connected account
+  const fullSession = await stripe.checkout.sessions.retrieve(
+    session.id,
+    { expand: ['line_items', 'payment_intent'] },
+    { stripeAccount: connectedAccountId } // CRITICAL: Specify account!
+  );
+
+  // Handle 100% promo codes correctly
+  const is100PercentOff =
+    fullSession.payment_status === 'paid' &&
+    fullSession.amount_total === 0 &&
+    !fullSession.payment_intent;
+
+  // Confirm payment idempotently
+  const orderId = fullSession.metadata?.order_id;
+  if (orderId) {
+    await confirmPaymentIdempotently(orderId, is100PercentOff);
+  }
+}
+
+async function confirmPaymentIdempotently(orderId: string, isFreeCheckout: boolean) {
+  // Atomic conditional update - only if still pending
+  const result = await db.orders.updateMany({
+    where: {
+      id: orderId,
+      status: 'pending', // CRITICAL: Only update if pending!
+    },
+    data: {
+      status: 'paid',
+      isFreeCheckout,
+      paidAt: new Date(),
+    },
+  });
+
+  if (result.count === 0) {
+    // Already processed - skip side effects
+    return;
+  }
+
+  // Now safe to do side effects
+  await decrementInventory(orderId);
+  await sendConfirmationEmail(orderId);
+}
+```
+
+**Stripe Dashboard Setup for Connect Webhook:**
+1. Go to Stripe Dashboard → Developers → Webhooks
+2. Click "Add endpoint"
+3. URL: `https://yourdomain.com/api/webhooks/stripe/connect`
+4. Select: **"Connected accounts"** (NOT "Account"!)
+5. Events to select:
+   - `checkout.session.completed`
+   - `checkout.session.expired`
+   - `account.updated`
+   - `payout.paid`
+   - `payout.failed`
 
 3. **Generate PayPal Webhook**:
 

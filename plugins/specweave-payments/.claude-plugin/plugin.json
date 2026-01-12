@@ -1,7 +1,7 @@
 {
   "name": "sw-payments",
-  "description": "Payment processing integration for Stripe, PayPal, and billing automation. Includes checkout flows, subscription lifecycle management, PCI DSS compliance guidance, and recurring billing. Focus on production-ready payment systems.",
-  "version": "1.0.0",
+  "description": "Payment processing integration for Stripe, PayPal, Stripe Connect, and billing automation. Includes checkout flows, subscription lifecycle management, marketplace payments, Direct Charge patterns, PCI DSS compliance guidance, and recurring billing. Focus on production-ready payment systems with idempotent operations and dual confirmation patterns.",
+  "version": "1.1.0",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"
@@ -12,8 +12,17 @@
   "keywords": [
     "payments",
     "stripe",
+    "stripe-connect",
+    "direct-charge",
+    "destination-charge",
+    "marketplace",
     "paypal",
     "billing",
+    "checkout",
+    "subscription",
+    "webhook",
+    "idempotency",
+    "promo-code",
     "pci-compliance",
     "specweave"
   ]
