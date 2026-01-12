@@ -1,202 +1,202 @@
 
 === Job: test ===
-2026-01-12T11:16:19.6775304Z     [90m   | [39m         [31m^[39m
-2026-01-12T11:16:19.6775743Z     [90m141| [39m
-2026-01-12T11:16:19.6776309Z     [90m142| [39m      [90m// Copy all skill memory files[39m
-2026-01-12T11:16:19.6777249Z [90m [2m❯[22m tests/unit/plugin-cache/cache-invalidator.test.ts:[2m197:44[22m[39m
-2026-01-12T11:16:19.6777603Z 
-2026-01-12T11:16:19.6777834Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/30]⎯[22m[39m
-2026-01-12T11:16:19.6778033Z 
-2026-01-12T11:16:19.6779197Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/plugin-cache/cache-invalidator.test.ts[2m > [22mCacheInvalidator[2m > [22mvalidateBackup[2m > [22mshould detect corrupted backup files
-2026-01-12T11:16:19.6781099Z [31m[1mError[22m: EACCES: permission denied, mkdir '/home/runner/.specweave/backups/sw-1.0.0-2026-01-12-111558'[39m
-2026-01-12T11:16:19.6782148Z [36m [2m❯[22m CacheInvalidator.backupSkillMemories src/core/plugin-cache/cache-invalidator.ts:[2m140:10[22m[39m
-2026-01-12T11:16:19.6783205Z     [90m138| [39m
-2026-01-12T11:16:19.6783473Z     [90m139| [39m    [35mtry[39m {
-2026-01-12T11:16:19.6784107Z     [90m140| [39m      fs[33m.[39m[34mmkdirSync[39m(backupPath[33m,[39m { recursive[33m:[39m [35mtrue[39m })[33m;[39m
-2026-01-12T11:16:19.6784652Z     [90m   | [39m         [31m^[39m
-2026-01-12T11:16:19.6784922Z     [90m141| [39m
-2026-01-12T11:16:19.6785237Z     [90m142| [39m      [90m// Copy all skill memory files[39m
-2026-01-12T11:16:19.6785836Z [90m [2m❯[22m tests/unit/plugin-cache/cache-invalidator.test.ts:[2m208:44[22m[39m
-2026-01-12T11:16:19.6786150Z 
-2026-01-12T11:16:19.6786364Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/30]⎯[22m[39m
-2026-01-12T11:16:19.6786548Z 
-2026-01-12T11:16:19.6787362Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/plugin-cache/cache-invalidator.test.ts[2m > [22mCacheInvalidator[2m > [22mgetBackupMetadata[2m > [22mshould return backup metadata
-2026-01-12T11:16:19.6788505Z [31m[1mError[22m: EACCES: permission denied, mkdir '/home/runner/.specweave/backups/sw-1.0.0-2026-01-12-111558'[39m
-2026-01-12T11:16:19.6789758Z [36m [2m❯[22m CacheInvalidator.backupSkillMemories src/core/plugin-cache/cache-invalidator.ts:[2m140:10[22m[39m
-2026-01-12T11:16:19.6790295Z     [90m138| [39m
-2026-01-12T11:16:19.6790539Z     [90m139| [39m    [35mtry[39m {
-2026-01-12T11:16:19.6791350Z     [90m140| [39m      fs[33m.[39m[34mmkdirSync[39m(backupPath[33m,[39m { recursive[33m:[39m [35mtrue[39m })[33m;[39m
-2026-01-12T11:16:19.6791887Z     [90m   | [39m         [31m^[39m
-2026-01-12T11:16:19.6792137Z     [90m141| [39m
-2026-01-12T11:16:19.6792457Z     [90m142| [39m      [90m// Copy all skill memory files[39m
-2026-01-12T11:16:19.6793042Z [90m [2m❯[22m tests/unit/plugin-cache/cache-invalidator.test.ts:[2m222:44[22m[39m
-2026-01-12T11:16:19.6793377Z 
-2026-01-12T11:16:19.6793624Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/30]⎯[22m[39m
-2026-01-12T11:16:19.6793812Z 
-2026-01-12T11:16:19.6794634Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/plugin-system/plugin-loader.test.ts[2m > [22mPluginLoader[2m > [22mgetMetadata[2m > [22mshould extract plugin metadata without full load
-2026-01-12T11:16:19.6795510Z [31m[1mTypeError[22m: loader.getMetadata is not a function[39m
-2026-01-12T11:16:19.6796106Z [36m [2m❯[22m tests/unit/plugin-system/plugin-loader.test.ts:[2m67:39[22m[39m
-2026-01-12T11:16:19.6796512Z     [90m 65| [39m
-2026-01-12T11:16:19.6796958Z     [90m 66| [39m      [35mif[39m ([35mawait[39m fs[33m.[39m[34mpathExists[39m(pluginPath)) {
-2026-01-12T11:16:19.6797773Z     [90m 67| [39m        [35mconst[39m metadata [33m=[39m [35mawait[39m loader[33m.[39m[34mgetMetadata[39m(pluginPath)[33m;[39m
-2026-01-12T11:16:19.6798394Z     [90m   | [39m                                      [31m^[39m
-2026-01-12T11:16:19.6798693Z     [90m 68| [39m
-2026-01-12T11:16:19.6799264Z     [90m 69| [39m        [34mexpect[39m(metadata)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
-2026-01-12T11:16:19.6799571Z 
-2026-01-12T11:16:19.6799788Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/30]⎯[22m[39m
-2026-01-12T11:16:19.6799973Z 
-2026-01-12T11:16:19.6801033Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mLockManager - Concurrent Lock Acquisition[2m > [22mshould allow only one agent to acquire lock at a time
-2026-01-12T11:16:19.6802241Z [31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
-2026-01-12T11:16:19.6802549Z 
-2026-01-12T11:16:19.6802661Z [32m- Expected[39m
-2026-01-12T11:16:19.6802889Z [31m+ Received[39m
-2026-01-12T11:16:19.6803005Z 
-2026-01-12T11:16:19.6803109Z [32m- false[39m
-2026-01-12T11:16:19.6803310Z [31m+ true[39m
-2026-01-12T11:16:19.6803412Z 
-2026-01-12T11:16:19.6803903Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m59:25[22m[39m
-2026-01-12T11:16:19.6839831Z     [90m 57| [39m      [35mconst[39m elapsed [33m=[39m [33mDate[39m[33m.[39m[34mnow[39m() [33m-[39m startTime[33m;[39m
-2026-01-12T11:16:19.6840750Z     [90m 58| [39m
-2026-01-12T11:16:19.6841595Z     [90m 59| [39m      [34mexpect[39m(acquired2)[33m.[39m[34mtoBe[39m([35mfalse[39m)[33m;[39m
-2026-01-12T11:16:19.6842472Z     [90m   | [39m                        [31m^[39m
-2026-01-12T11:16:19.6843307Z     [90m 60| [39m      [90m// Should have tried for ~10 seconds (LOCK_TIMEOUT_MS)[39m
-2026-01-12T11:16:19.6844493Z     [90m 61| [39m      [34mexpect[39m(elapsed)[33m.[39m[34mtoBeGreaterThan[39m([34m9000[39m)[33m;[39m
-2026-01-12T11:16:19.6845012Z 
-2026-01-12T11:16:19.6845263Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/30]⎯[22m[39m
-2026-01-12T11:16:19.6845463Z 
-2026-01-12T11:16:19.6846488Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mSimulated Concurrent Issue Creation[2m > [22mshould serialize issue creation for same user story
-2026-01-12T11:16:19.6847566Z [31m[1mAssertionError[22m: expected 3 to be 1 // Object.is equality[39m
-2026-01-12T11:16:19.6847845Z 
-2026-01-12T11:16:19.6847962Z [32m- Expected[39m
-2026-01-12T11:16:19.6848182Z [31m+ Received[39m
-2026-01-12T11:16:19.6848299Z 
-2026-01-12T11:16:19.6848388Z [32m- 1[39m
-2026-01-12T11:16:19.6848576Z [31m+ 3[39m
-2026-01-12T11:16:19.6848672Z 
-2026-01-12T11:16:19.6849318Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m180:28[22m[39m
-2026-01-12T11:16:19.6850599Z     [90m178| [39m      [90m// Only one should succeed (created issue)[39m
-2026-01-12T11:16:19.6852018Z     [90m179| [39m      [35mconst[39m successCount [33m=[39m results[33m.[39m[34mfilter[39m(r [33m=>[39m r)[33m.[39mlength[33m;[39m
-2026-01-12T11:16:19.6853445Z     [90m180| [39m      [34mexpect[39m(successCount)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
-2026-01-12T11:16:19.6854350Z     [90m   | [39m                           [31m^[39m
-2026-01-12T11:16:19.6854832Z     [90m181| [39m
-2026-01-12T11:16:19.6855376Z     [90m182| [39m      [90m// Exactly one issue created[39m
-2026-01-12T11:16:19.6855772Z 
-2026-01-12T11:16:19.6856030Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/30]⎯[22m[39m
-2026-01-12T11:16:19.6856217Z 
-2026-01-12T11:16:19.6857217Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mSimulated Concurrent Comment Posting[2m > [22mshould serialize comment posting for same issue
-2026-01-12T11:16:19.6858288Z [31m[1mAssertionError[22m: expected 3 to be 1 // Object.is equality[39m
-2026-01-12T11:16:19.6858578Z 
-2026-01-12T11:16:19.6858689Z [32m- Expected[39m
-2026-01-12T11:16:19.6859056Z [31m+ Received[39m
-2026-01-12T11:16:19.6859176Z 
-2026-01-12T11:16:19.6859267Z [32m- 1[39m
-2026-01-12T11:16:19.6859463Z [31m+ 3[39m
-2026-01-12T11:16:19.6859557Z 
-2026-01-12T11:16:19.6859937Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m276:28[22m[39m
-2026-01-12T11:16:19.6862592Z     [90m274| [39m      [90m// Only one should succeed (first to acquire lock)[39m
-2026-01-12T11:16:19.6864044Z     [90m275| [39m      [35mconst[39m successCount [33m=[39m results[33m.[39m[34mfilter[39m(r [33m=>[39m r)[33m.[39mlength[33m;[39m
-2026-01-12T11:16:19.6865477Z     [90m276| [39m      [34mexpect[39m(successCount)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
-2026-01-12T11:16:19.6866378Z     [90m   | [39m                           [31m^[39m
-2026-01-12T11:16:19.6866855Z     [90m277| [39m
-2026-01-12T11:16:19.6867399Z     [90m278| [39m      [90m// Only one comment posted[39m
-2026-01-12T11:16:19.6867745Z 
-2026-01-12T11:16:19.6867979Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/30]⎯[22m[39m
-2026-01-12T11:16:19.6868170Z 
-2026-01-12T11:16:19.6869627Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mSimulated Concurrent Frontmatter Updates[2m > [22mshould serialize frontmatter updates for same user story
-2026-01-12T11:16:19.6870787Z [31m[1mAssertionError[22m: expected 3 to be 1 // Object.is equality[39m
-2026-01-12T11:16:19.6871073Z 
-2026-01-12T11:16:19.6871193Z [32m- Expected[39m
-2026-01-12T11:16:19.6871415Z [31m+ Received[39m
-2026-01-12T11:16:19.6871528Z 
-2026-01-12T11:16:19.6871616Z [32m- 1[39m
-2026-01-12T11:16:19.6871805Z [31m+ 3[39m
-2026-01-12T11:16:19.6871907Z 
-2026-01-12T11:16:19.6872396Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m397:28[22m[39m
-2026-01-12T11:16:19.6873844Z     [90m395| [39m      [90m// Only one should succeed[39m
-2026-01-12T11:16:19.6875183Z     [90m396| [39m      [35mconst[39m successCount [33m=[39m results[33m.[39m[34mfilter[39m(r [33m=>[39m r)[33m.[39mlength[33m;[39m
-2026-01-12T11:16:19.6876610Z     [90m397| [39m      [34mexpect[39m(successCount)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
-2026-01-12T11:16:19.6877510Z     [90m   | [39m                           [31m^[39m
-2026-01-12T11:16:19.6877991Z     [90m398| [39m
-2026-01-12T11:16:19.6878641Z     [90m399| [39m      [90m// File should have exactly one GitHub section[39m
-2026-01-12T11:16:19.6879254Z 
-2026-01-12T11:16:19.6879634Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/30]⎯[22m[39m
-2026-01-12T11:16:19.6879964Z 
-2026-01-12T11:16:19.6881618Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mLock Cleanup[2m > [22mshould cleanup stale locks on acquisition attempt
-2026-01-12T11:16:19.6883464Z [31m[1mAssertionError[22m: expected 1 to be 8691 // Object.is equality[39m
-2026-01-12T11:16:19.6884001Z 
-2026-01-12T11:16:19.6884236Z [32m- Expected[39m
-2026-01-12T11:16:19.6884645Z [31m+ Received[39m
-2026-01-12T11:16:19.6884859Z 
-2026-01-12T11:16:19.6885048Z [32m- 8691[39m
-2026-01-12T11:16:19.6885410Z [31m+ 1[39m
-2026-01-12T11:16:19.6885589Z 
-2026-01-12T11:16:19.6886299Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m427:40[22m[39m
-2026-01-12T11:16:19.6889885Z     [90m425| [39m      [90m// Lock dir should now have current PID[39m
-2026-01-12T11:16:19.6893065Z     [90m426| [39m      [35mconst[39m pidContent [33m=[39m fs[33m.[39m[34mreadFileSync[39m(path[33m.[39m[34mjoin[39m(lockDir[33m,[39m [32m'pid'[39m)[33m,[39m [32m'u[39m…
-2026-01-12T11:16:19.6895516Z     [90m427| [39m      [34mexpect[39m([34mparseInt[39m(pidContent[33m,[39m [34m10[39m))[33m.[39m[34mtoBe[39m(process[33m.[39mpid)[33m;[39m
-2026-01-12T11:16:19.6901133Z     [90m   | [39m                                       [31m^[39m
-2026-01-12T11:16:19.6908452Z     [90m428| [39m
-2026-01-12T11:16:19.6909485Z     [90m429| [39m      [35mawait[39m lock[33m.[39m[34mrelease[39m()[33m;[39m
-2026-01-12T11:16:19.6909974Z 
-2026-01-12T11:16:19.6910384Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/30]⎯[22m[39m
-2026-01-12T11:16:19.6910719Z 
-2026-01-12T11:16:19.6912690Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mLock Cleanup[2m > [22mshould preserve fresh locks held by other processes
-2026-01-12T11:16:19.6914614Z [31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
-2026-01-12T11:16:19.6915183Z 
-2026-01-12T11:16:19.6915377Z [32m- Expected[39m
-2026-01-12T11:16:19.6915764Z [31m+ Received[39m
-2026-01-12T11:16:19.6915968Z 
-2026-01-12T11:16:19.6916148Z [32m- false[39m
-2026-01-12T11:16:19.6916531Z [31m+ true[39m
-2026-01-12T11:16:19.6916714Z 
-2026-01-12T11:16:19.6917392Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m447:24[22m[39m
-2026-01-12T11:16:19.6918825Z     [90m445| [39m      [35mconst[39m elapsed [33m=[39m [33mDate[39m[33m.[39m[34mnow[39m() [33m-[39m startTime[33m;[39m
-2026-01-12T11:16:19.6919910Z     [90m446| [39m
-2026-01-12T11:16:19.6920760Z     [90m447| [39m      [34mexpect[39m(acquired)[33m.[39m[34mtoBe[39m([35mfalse[39m)[33m;[39m
-2026-01-12T11:16:19.6921673Z     [90m   | [39m                       [31m^[39m
-2026-01-12T11:16:19.6922943Z     [90m448| [39m      [34mexpect[39m(elapsed)[33m.[39m[34mtoBeGreaterThan[39m([34m9000[39m)[33m;[39m [90m// Should have timed out[39m
-2026-01-12T11:16:19.6924000Z     [90m449| [39m
-2026-01-12T11:16:19.6924208Z 
-2026-01-12T11:16:19.6924593Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/30]⎯[22m[39m
-2026-01-12T11:16:19.6924926Z 
-2026-01-12T11:16:19.6926372Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/core/deployment/project-analyzer.test.ts[2m > [22mProject Analyzer[2m > [22manalyzeSSR[2m > [22mshould detect dynamic routes
-2026-01-12T11:16:19.6928362Z [31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
-2026-01-12T11:16:19.6929112Z 
-2026-01-12T11:16:19.6929326Z [32m- Expected[39m
-2026-01-12T11:16:19.6929734Z [31m+ Received[39m
-2026-01-12T11:16:19.6929934Z 
-2026-01-12T11:16:19.6930103Z [32m- true[39m
-2026-01-12T11:16:19.6930465Z [31m+ false[39m
-2026-01-12T11:16:19.6930648Z 
-2026-01-12T11:16:19.6931373Z [36m [2m❯[22m tests/unit/core/deployment/project-analyzer.test.ts:[2m346:39[22m[39m
-2026-01-12T11:16:19.6962112Z     [90m344| [39m      [35mconst[39m result [33m=[39m [34manalyzeSSR[39m(testProjectDir)[33m;[39m
-2026-01-12T11:16:19.6990643Z     [90m345| [39m
-2026-01-12T11:16:19.6991795Z     [90m346| [39m      [34mexpect[39m(result[33m.[39mhasDynamicRoutes)[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
-2026-01-12T11:16:19.6992979Z     [90m   | [39m                                      [31m^[39m
-2026-01-12T11:16:19.6993588Z     [90m347| [39m    })[33m;[39m
-2026-01-12T11:16:19.6994017Z     [90m348| [39m
-2026-01-12T11:16:19.6994200Z 
-2026-01-12T11:16:19.6994602Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/30]⎯[22m[39m
-2026-01-12T11:16:19.6994939Z 
-2026-01-12T11:16:19.6995757Z [2m Test Files [22m [1m[31m11 failed[39m[22m[2m | [22m[1m[32m254 passed[39m[22m[90m (265)[39m
-2026-01-12T11:16:19.7013209Z [2m      Tests [22m [1m[31m25 failed[39m[22m[2m | [22m[1m[32m4840 passed[39m[22m[90m (4865)[39m
-2026-01-12T11:16:19.7015952Z [2m   Start at [22m 11:15:24
-2026-01-12T11:16:19.7020367Z [2m   Duration [22m 55.21s[2m (transform 5.54s, setup 2.79s, collect 12.61s, tests 68.56s, environment 87ms, prepare 23.34s)[22m
-2026-01-12T11:16:19.7022267Z 
-2026-01-12T11:16:19.7971179Z ##[error]Process completed with exit code 1.
-2026-01-12T11:16:19.8080770Z Post job cleanup.
-2026-01-12T11:16:19.9085926Z [command]/usr/bin/git version
-2026-01-12T11:16:19.9132150Z git version 2.52.0
-2026-01-12T11:16:19.9177189Z Temporarily overriding HOME='/home/runner/work/_temp/b7043c5e-c5d8-4b2c-ae3d-ff41c3ef0f5c' before making global git config changes
-2026-01-12T11:16:19.9178274Z Adding repository directory to the temporary git global config as a safe directory
-2026-01-12T11:16:19.9182918Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/specweave/specweave
-2026-01-12T11:16:19.9219946Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
-2026-01-12T11:16:19.9253656Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-2026-01-12T11:16:19.9529741Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
-2026-01-12T11:16:19.9554757Z http.https://github.com/.extraheader
-2026-01-12T11:16:19.9567403Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
-2026-01-12T11:16:19.9600330Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
-2026-01-12T11:16:19.9845963Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
-2026-01-12T11:16:19.9887646Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
-2026-01-12T11:16:20.0280830Z Cleaning up orphan processes
+2026-01-12T11:27:42.4065119Z     [90m 65| [39m
+2026-01-12T11:27:42.4066509Z     [90m 66| [39m      [35mif[39m ([35mawait[39m fs[33m.[39m[34mpathExists[39m(pluginPath)) {
+2026-01-12T11:27:42.4069618Z     [90m 67| [39m        [35mconst[39m metadata [33m=[39m [35mawait[39m loader[33m.[39m[34mgetMetadata[39m(pluginPath)[33m;[39m
+2026-01-12T11:27:42.4070669Z     [90m   | [39m                                      [31m^[39m
+2026-01-12T11:27:42.4071014Z     [90m 68| [39m
+2026-01-12T11:27:42.4071471Z     [90m 69| [39m        [34mexpect[39m(metadata)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+2026-01-12T11:27:42.4071783Z 
+2026-01-12T11:27:42.4072024Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/25]⎯[22m[39m
+2026-01-12T11:27:42.4072219Z 
+2026-01-12T11:27:42.4073525Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mLockManager - Concurrent Lock Acquisition[2m > [22mshould allow only one agent to acquire lock at a time
+2026-01-12T11:27:42.4074673Z [31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
+2026-01-12T11:27:42.4074983Z 
+2026-01-12T11:27:42.4075101Z [32m- Expected[39m
+2026-01-12T11:27:42.4075333Z [31m+ Received[39m
+2026-01-12T11:27:42.4075444Z 
+2026-01-12T11:27:42.4075546Z [32m- false[39m
+2026-01-12T11:27:42.4075742Z [31m+ true[39m
+2026-01-12T11:27:42.4075845Z 
+2026-01-12T11:27:42.4076218Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m59:25[22m[39m
+2026-01-12T11:27:42.4128350Z     [90m 57| [39m      [35mconst[39m elapsed [33m=[39m [33mDate[39m[33m.[39m[34mnow[39m() [33m-[39m startTime[33m;[39m
+2026-01-12T11:27:42.4130345Z     [90m 58| [39m
+2026-01-12T11:27:42.4131197Z     [90m 59| [39m      [34mexpect[39m(acquired2)[33m.[39m[34mtoBe[39m([35mfalse[39m)[33m;[39m
+2026-01-12T11:27:42.4132055Z     [90m   | [39m                        [31m^[39m
+2026-01-12T11:27:42.4132900Z     [90m 60| [39m      [90m// Should have tried for ~10 seconds (LOCK_TIMEOUT_MS)[39m
+2026-01-12T11:27:42.4134073Z     [90m 61| [39m      [34mexpect[39m(elapsed)[33m.[39m[34mtoBeGreaterThan[39m([34m9000[39m)[33m;[39m
+2026-01-12T11:27:42.4134691Z 
+2026-01-12T11:27:42.4135071Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/25]⎯[22m[39m
+2026-01-12T11:27:42.4135409Z 
+2026-01-12T11:27:42.4137306Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mSimulated Concurrent Issue Creation[2m > [22mshould serialize issue creation for same user story
+2026-01-12T11:27:42.4140414Z [31m[1mAssertionError[22m: expected 3 to be 1 // Object.is equality[39m
+2026-01-12T11:27:42.4141145Z 
+2026-01-12T11:27:42.4141451Z [32m- Expected[39m
+2026-01-12T11:27:42.4141859Z [31m+ Received[39m
+2026-01-12T11:27:42.4142070Z 
+2026-01-12T11:27:42.4142242Z [32m- 1[39m
+2026-01-12T11:27:42.4142564Z [31m+ 3[39m
+2026-01-12T11:27:42.4142736Z 
+2026-01-12T11:27:42.4143435Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m180:28[22m[39m
+2026-01-12T11:27:42.4144477Z     [90m178| [39m      [90m// Only one should succeed (created issue)[39m
+2026-01-12T11:27:42.4145876Z     [90m179| [39m      [35mconst[39m successCount [33m=[39m results[33m.[39m[34mfilter[39m(r [33m=>[39m r)[33m.[39mlength[33m;[39m
+2026-01-12T11:27:42.4147336Z     [90m180| [39m      [34mexpect[39m(successCount)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+2026-01-12T11:27:42.4148254Z     [90m   | [39m                           [31m^[39m
+2026-01-12T11:27:42.4148744Z     [90m181| [39m
+2026-01-12T11:27:42.4149505Z     [90m182| [39m      [90m// Exactly one issue created[39m
+2026-01-12T11:27:42.4149902Z 
+2026-01-12T11:27:42.4150432Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/25]⎯[22m[39m
+2026-01-12T11:27:42.4150741Z 
+2026-01-12T11:27:42.4152546Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mSimulated Concurrent Comment Posting[2m > [22mshould serialize comment posting for same issue
+2026-01-12T11:27:42.4154393Z [31m[1mAssertionError[22m: expected 3 to be 1 // Object.is equality[39m
+2026-01-12T11:27:42.4154884Z 
+2026-01-12T11:27:42.4155082Z [32m- Expected[39m
+2026-01-12T11:27:42.4155534Z [31m+ Received[39m
+2026-01-12T11:27:42.4155755Z 
+2026-01-12T11:27:42.4155917Z [32m- 1[39m
+2026-01-12T11:27:42.4156237Z [31m+ 3[39m
+2026-01-12T11:27:42.4156401Z 
+2026-01-12T11:27:42.4157100Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m276:28[22m[39m
+2026-01-12T11:27:42.4158181Z     [90m274| [39m      [90m// Only one should succeed (first to acquire lock)[39m
+2026-01-12T11:27:42.4159767Z     [90m275| [39m      [35mconst[39m successCount [33m=[39m results[33m.[39m[34mfilter[39m(r [33m=>[39m r)[33m.[39mlength[33m;[39m
+2026-01-12T11:27:42.4161422Z     [90m276| [39m      [34mexpect[39m(successCount)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+2026-01-12T11:27:42.4162357Z     [90m   | [39m                           [31m^[39m
+2026-01-12T11:27:42.4162859Z     [90m277| [39m
+2026-01-12T11:27:42.4163421Z     [90m278| [39m      [90m// Only one comment posted[39m
+2026-01-12T11:27:42.4163800Z 
+2026-01-12T11:27:42.4164186Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/25]⎯[22m[39m
+2026-01-12T11:27:42.4164515Z 
+2026-01-12T11:27:42.4166522Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mSimulated Concurrent Frontmatter Updates[2m > [22mshould serialize frontmatter updates for same user story
+2026-01-12T11:27:42.4168582Z [31m[1mAssertionError[22m: expected 3 to be 1 // Object.is equality[39m
+2026-01-12T11:27:42.4169094Z 
+2026-01-12T11:27:42.4169465Z [32m- Expected[39m
+2026-01-12T11:27:42.4169879Z [31m+ Received[39m
+2026-01-12T11:27:42.4170079Z 
+2026-01-12T11:27:42.4170246Z [32m- 1[39m
+2026-01-12T11:27:42.4170603Z [31m+ 3[39m
+2026-01-12T11:27:42.4170769Z 
+2026-01-12T11:27:42.4171453Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m397:28[22m[39m
+2026-01-12T11:27:42.4172400Z     [90m395| [39m      [90m// Only one should succeed[39m
+2026-01-12T11:27:42.4173739Z     [90m396| [39m      [35mconst[39m successCount [33m=[39m results[33m.[39m[34mfilter[39m(r [33m=>[39m r)[33m.[39mlength[33m;[39m
+2026-01-12T11:27:42.4175217Z     [90m397| [39m      [34mexpect[39m(successCount)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+2026-01-12T11:27:42.4176356Z     [90m   | [39m                           [31m^[39m
+2026-01-12T11:27:42.4176861Z     [90m398| [39m
+2026-01-12T11:27:42.4177561Z     [90m399| [39m      [90m// File should have exactly one GitHub section[39m
+2026-01-12T11:27:42.4178095Z 
+2026-01-12T11:27:42.4178528Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/25]⎯[22m[39m
+2026-01-12T11:27:42.4178935Z 
+2026-01-12T11:27:42.4180811Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mLock Cleanup[2m > [22mshould cleanup stale locks on acquisition attempt
+2026-01-12T11:27:42.4182703Z [31m[1mAssertionError[22m: expected 1 to be 8691 // Object.is equality[39m
+2026-01-12T11:27:42.4183478Z 
+2026-01-12T11:27:42.4183729Z [32m- Expected[39m
+2026-01-12T11:27:42.4184299Z [31m+ Received[39m
+2026-01-12T11:27:42.4184538Z 
+2026-01-12T11:27:42.4184719Z [32m- 8691[39m
+2026-01-12T11:27:42.4185278Z [31m+ 1[39m
+2026-01-12T11:27:42.4185493Z 
+2026-01-12T11:27:42.4186202Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m427:40[22m[39m
+2026-01-12T11:27:42.4187298Z     [90m425| [39m      [90m// Lock dir should now have current PID[39m
+2026-01-12T11:27:42.4189447Z     [90m426| [39m      [35mconst[39m pidContent [33m=[39m fs[33m.[39m[34mreadFileSync[39m(path[33m.[39m[34mjoin[39m(lockDir[33m,[39m [32m'pid'[39m)[33m,[39m [32m'u[39m…
+2026-01-12T11:27:42.4191701Z     [90m427| [39m      [34mexpect[39m([34mparseInt[39m(pidContent[33m,[39m [34m10[39m))[33m.[39m[34mtoBe[39m(process[33m.[39mpid)[33m;[39m
+2026-01-12T11:27:42.4192978Z     [90m   | [39m                                       [31m^[39m
+2026-01-12T11:27:42.4193752Z     [90m428| [39m
+2026-01-12T11:27:42.4194566Z     [90m429| [39m      [35mawait[39m lock[33m.[39m[34mrelease[39m()[33m;[39m
+2026-01-12T11:27:42.4195083Z 
+2026-01-12T11:27:42.4195468Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/25]⎯[22m[39m
+2026-01-12T11:27:42.4211049Z 
+2026-01-12T11:27:42.4212804Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mLock Cleanup[2m > [22mshould preserve fresh locks held by other processes
+2026-01-12T11:27:42.4214680Z [31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
+2026-01-12T11:27:42.4215242Z 
+2026-01-12T11:27:42.4215444Z [32m- Expected[39m
+2026-01-12T11:27:42.4215838Z [31m+ Received[39m
+2026-01-12T11:27:42.4216046Z 
+2026-01-12T11:27:42.4216451Z [32m- false[39m
+2026-01-12T11:27:42.4216816Z [31m+ true[39m
+2026-01-12T11:27:42.4216998Z 
+2026-01-12T11:27:42.4217679Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m447:24[22m[39m
+2026-01-12T11:27:42.4219108Z     [90m445| [39m      [35mconst[39m elapsed [33m=[39m [33mDate[39m[33m.[39m[34mnow[39m() [33m-[39m startTime[33m;[39m
+2026-01-12T11:27:42.4220156Z     [90m446| [39m
+2026-01-12T11:27:42.4220977Z     [90m447| [39m      [34mexpect[39m(acquired)[33m.[39m[34mtoBe[39m([35mfalse[39m)[33m;[39m
+2026-01-12T11:27:42.4221860Z     [90m   | [39m                       [31m^[39m
+2026-01-12T11:27:42.4223148Z     [90m448| [39m      [34mexpect[39m(elapsed)[33m.[39m[34mtoBeGreaterThan[39m([34m9000[39m)[33m;[39m [90m// Should have timed out[39m
+2026-01-12T11:27:42.4224123Z     [90m449| [39m
+2026-01-12T11:27:42.4224313Z 
+2026-01-12T11:27:42.4224692Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/25]⎯[22m[39m
+2026-01-12T11:27:42.4225064Z 
+2026-01-12T11:27:42.4226758Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/cli/commands/cache-refresh.test.ts[2m > [22mcache-refresh command[2m > [22mskill memory preservation[2m > [22mshould backup skill memories before refresh
+2026-01-12T11:27:42.4228460Z [31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+2026-01-12T11:27:42.4229675Z [36m [2m❯[22m tests/unit/cli/commands/cache-refresh.test.ts:[2m133:30[22m[39m
+2026-01-12T11:27:42.4230526Z     [90m131| [39m        [33m:[39m [][33m;[39m
+2026-01-12T11:27:42.4231224Z     [90m132| [39m
+2026-01-12T11:27:42.4232231Z     [90m133| [39m      [34mexpect[39m(backups[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+2026-01-12T11:27:42.4233280Z     [90m   | [39m                             [31m^[39m
+2026-01-12T11:27:42.4234847Z     [90m134| [39m      [34mexpect[39m(backups[33m.[39m[34msome[39m(b [33m=>[39m b[33m.[39m[34mincludes[39m([32m'sw-1.0.0'[39m)))[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+2026-01-12T11:27:42.4235991Z     [90m135| [39m
+2026-01-12T11:27:42.4236191Z 
+2026-01-12T11:27:42.4236578Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/25]⎯[22m[39m
+2026-01-12T11:27:42.4236898Z 
+2026-01-12T11:27:42.4238667Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/cli/commands/cache-refresh.test.ts[2m > [22mcache-refresh command[2m > [22mskill memory preservation[2m > [22mshould preserve memories even after hard refresh
+2026-01-12T11:27:42.4240689Z [31m[1mAssertionError[22m: expected undefined to be defined[39m
+2026-01-12T11:27:42.4241838Z [36m [2m❯[22m tests/unit/cli/commands/cache-refresh.test.ts:[2m170:28[22m[39m
+2026-01-12T11:27:42.4242664Z     [90m168| [39m      )[33m;[39m
+2026-01-12T11:27:42.4243117Z     [90m169| [39m
+2026-01-12T11:27:42.4243958Z     [90m170| [39m      [34mexpect[39m(memoryBackup)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+2026-01-12T11:27:42.4244868Z     [90m   | [39m                           [31m^[39m
+2026-01-12T11:27:42.4245431Z     [90m171| [39m    })[33m;[39m
+2026-01-12T11:27:42.4245927Z     [90m172| [39m  })[33m;[39m
+2026-01-12T11:27:42.4246182Z 
+2026-01-12T11:27:42.4246558Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/25]⎯[22m[39m
+2026-01-12T11:27:42.4246875Z 
+2026-01-12T11:27:42.4248321Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/cli/commands/cache-refresh.test.ts[2m > [22mcache-refresh command[2m > [22merror handling[2m > [22mshould handle backup failure
+2026-01-12T11:27:42.4250201Z [31m[1mAssertionError[22m: expected "spy" to be called at least once[39m
+2026-01-12T11:27:42.4251368Z [36m [2m❯[22m tests/unit/cli/commands/cache-refresh.test.ts:[2m268:26[22m[39m
+2026-01-12T11:27:42.4252145Z     [90m266| [39m      })[33m;[39m
+2026-01-12T11:27:42.4252596Z     [90m267| [39m
+2026-01-12T11:27:42.4253474Z     [90m268| [39m      [34mexpect[39m(consoleSpy)[33m.[39m[34mtoHaveBeenCalled[39m()[33m;[39m
+2026-01-12T11:27:42.4254412Z     [90m   | [39m                         [31m^[39m
+2026-01-12T11:27:42.4255182Z     [90m269| [39m
+2026-01-12T11:27:42.4255836Z     [90m270| [39m      [90m// Restore permissions for cleanup[39m
+2026-01-12T11:27:42.4256264Z 
+2026-01-12T11:27:42.4256655Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/25]⎯[22m[39m
+2026-01-12T11:27:42.4256983Z 
+2026-01-12T11:27:42.4258416Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/core/deployment/project-analyzer.test.ts[2m > [22mProject Analyzer[2m > [22manalyzeSSR[2m > [22mshould detect dynamic routes
+2026-01-12T11:27:42.4260357Z [31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+2026-01-12T11:27:42.4260938Z 
+2026-01-12T11:27:42.4261145Z [32m- Expected[39m
+2026-01-12T11:27:42.4261550Z [31m+ Received[39m
+2026-01-12T11:27:42.4261757Z 
+2026-01-12T11:27:42.4261928Z [32m- true[39m
+2026-01-12T11:27:42.4262288Z [31m+ false[39m
+2026-01-12T11:27:42.4262486Z 
+2026-01-12T11:27:42.4263214Z [36m [2m❯[22m tests/unit/core/deployment/project-analyzer.test.ts:[2m346:39[22m[39m
+2026-01-12T11:27:42.4264508Z     [90m344| [39m      [35mconst[39m result [33m=[39m [34manalyzeSSR[39m(testProjectDir)[33m;[39m
+2026-01-12T11:27:42.4265284Z     [90m345| [39m
+2026-01-12T11:27:42.4266350Z     [90m346| [39m      [34mexpect[39m(result[33m.[39mhasDynamicRoutes)[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+2026-01-12T11:27:42.4267480Z     [90m   | [39m                                      [31m^[39m
+2026-01-12T11:27:42.4268079Z     [90m347| [39m    })[33m;[39m
+2026-01-12T11:27:42.4268520Z     [90m348| [39m
+2026-01-12T11:27:42.4268934Z 
+2026-01-12T11:27:42.4269505Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/25]⎯[22m[39m
+2026-01-12T11:27:42.4269829Z 
+2026-01-12T11:27:42.4275387Z [2m Test Files [22m [1m[31m12 failed[39m[22m[2m | [22m[1m[32m253 passed[39m[22m[90m (265)[39m
+2026-01-12T11:27:42.4297193Z [2m      Tests [22m [1m[31m20 failed[39m[22m[2m | [22m[1m[32m4845 passed[39m[22m[90m (4865)[39m
+2026-01-12T11:27:42.4298115Z [2m   Start at [22m 11:26:51
+2026-01-12T11:27:42.4303077Z [2m   Duration [22m 51.21s[2m (transform 5.44s, setup 2.64s, collect 12.38s, tests 59.50s, environment 88ms, prepare 22.61s)[22m
+2026-01-12T11:27:42.4304213Z 
+2026-01-12T11:27:42.5166285Z ##[error]Process completed with exit code 1.
+2026-01-12T11:27:42.5277161Z Post job cleanup.
+2026-01-12T11:27:42.6227274Z [command]/usr/bin/git version
+2026-01-12T11:27:42.6270416Z git version 2.52.0
+2026-01-12T11:27:42.6312900Z Temporarily overriding HOME='/home/runner/work/_temp/7cc6e34d-49de-4d88-973d-afb8ad837fa0' before making global git config changes
+2026-01-12T11:27:42.6313971Z Adding repository directory to the temporary git global config as a safe directory
+2026-01-12T11:27:42.6317915Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/specweave/specweave
+2026-01-12T11:27:42.6350332Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-01-12T11:27:42.6381514Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-01-12T11:27:42.6621103Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-01-12T11:27:42.6642492Z http.https://github.com/.extraheader
+2026-01-12T11:27:42.6654686Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-01-12T11:27:42.6685688Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-01-12T11:27:42.6917383Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-01-12T11:27:42.6948564Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-01-12T11:27:42.7295641Z Cleaning up orphan processes
 

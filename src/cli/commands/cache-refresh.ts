@@ -18,6 +18,7 @@ import { consoleLogger as logger } from '../../utils/logger.js';
 export interface CacheRefreshOptions {
   pluginName?: string;
   cachePath?: string; // For testing
+  backupDir?: string; // For testing - override backup directory
   force?: boolean; // Hard refresh (delete cache)
   all?: boolean; // Refresh all plugins
   verify?: boolean; // Verify health after refresh
@@ -41,7 +42,7 @@ export async function cacheRefresh(options: CacheRefreshOptions = {}): Promise<v
   }
 
   try {
-    const invalidator = new CacheInvalidator();
+    const invalidator = new CacheInvalidator(options.backupDir);
     const pluginsToRefresh: Array<{ name: string; version: string }> = [];
 
     if (options.pluginName) {
@@ -112,7 +113,7 @@ export async function cacheRefresh(options: CacheRefreshOptions = {}): Promise<v
         console.log(`   ✅ Cache invalidated`);
 
         // Show backup message if memories were backed up
-        const backupDir = path.join(os.homedir(), '.specweave', 'backups');
+        const backupDir = options.backupDir || path.join(os.homedir(), '.specweave', 'backups');
         if (fs.existsSync(backupDir)) {
           const backups = fs.readdirSync(backupDir).filter(b => b.includes(plugin.name));
           if (backups.length > 0) {

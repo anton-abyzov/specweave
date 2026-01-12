@@ -365,7 +365,8 @@ export function analyzeSSR(projectPath: string): SSRAnalysis {
         result.hasGenerateMetadata = true;
       }
 
-      if (/\[.*\]/.test(path.basename(filePath))) {
+      // Check if any part of the path (not just basename) contains dynamic route brackets
+      if (/\[.*\]/.test(filePath)) {
         result.hasDynamicRoutes = true;
       }
     });

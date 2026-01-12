@@ -81,6 +81,7 @@ describe('cache-refresh command', () => {
       await cacheRefresh({
         pluginName: 'sw',
         cachePath: mockCacheDir,
+        backupDir: mockBackupDir,
         force: true,
         skipMarketplaceRefresh: true
       });
@@ -116,6 +117,7 @@ describe('cache-refresh command', () => {
       await cacheRefresh({
         pluginName: 'sw',
         cachePath: mockCacheDir,
+        backupDir: mockBackupDir,
         force: true,
         skipMarketplaceRefresh: true
       });
@@ -157,6 +159,7 @@ describe('cache-refresh command', () => {
       await cacheRefresh({
         pluginName: 'sw',
         cachePath: mockCacheDir,
+        backupDir: mockBackupDir,
         force: true,
         skipMarketplaceRefresh: true
       });
@@ -261,6 +264,7 @@ describe('cache-refresh command', () => {
       await cacheRefresh({
         pluginName: 'sw',
         cachePath: mockCacheDir,
+        backupDir: mockBackupDir,
         force: true,
         skipMarketplaceRefresh: true
       });
