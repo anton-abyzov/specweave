@@ -701,6 +701,53 @@ project-root/
 
 **Path refs in specs**: `repositories/backend/src/...`
 
+### 12. React Native / Expo Module-Level Safety
+
+**⚠️ Module-level code executes at IMPORT time - before React components mount!**
+
+**Known Crash Patterns (DO NOT DO):**
+```typescript
+// ❌ expo-localization at module level
+import * as Localization from 'expo-localization';
+const locale = Localization.getLocales()[0].languageCode; // CRASH!
+
+// ❌ react-i18next at module level (has React dependency)
+import { initReactI18next } from 'react-i18next';
+i18n.use(initReactI18next).init({...}); // CRASH in Expo Go!
+
+// ❌ AsyncStorage at module level
+const theme = await AsyncStorage.getItem('theme'); // CRASH!
+
+// ❌ React hooks at module level
+const theme = useContext(ThemeContext); // CRASH - outside component!
+```
+
+**Safe Alternatives:**
+```typescript
+// ✅ Use Intl instead of expo-localization
+const locale = Intl.DateTimeFormat().resolvedOptions().locale.split('-')[0];
+
+// ✅ Use i18n-js instead of react-i18next (no React dependency)
+import { I18n } from 'i18n-js';
+const i18n = new I18n({ en, es });
+
+// ✅ Lazy require for AsyncStorage
+async function getTheme() {
+  const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+  return await AsyncStorage.getItem('theme');
+}
+```
+
+**Error Signatures:**
+- `"Cannot read property 'getLocales' of null"` → expo-localization at module level
+- `"Invalid hook call"` → Hook outside component
+- `"No QueryClient set"` → TanStack Query outside provider
+- White screen with no error → Module crash before error boundary
+
+**Debugging:** Binary search - start with `<Text>Hello</Text>`, add providers ONE BY ONE until crash.
+
+**See:** `.specweave/docs/public/troubleshooting/react-native-expo-crashes.md`
+
 ---
 
 ## Skills vs Agents (Automatic vs Explicit)

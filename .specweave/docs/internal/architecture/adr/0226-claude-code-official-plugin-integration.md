@@ -21,15 +21,33 @@ Currently, SpecWeave skills operate independently without leveraging these offic
 
 ## Decision
 
-**Integrate Claude Code official plugins into SpecWeave skills through documented recommendations and optional dependencies.**
+**Integrate Claude Code official plugins into SpecWeave skills through documented recommendations with graceful degradation.**
 
-### Integration Levels
+### Why Recommendations Only (Not Dependencies)
 
-| Level | Description | Implementation |
-|-------|-------------|----------------|
-| **Recommended** | Document in skill/agent files | Add "Recommended Plugins" section |
-| **Enhanced** | Better experience with plugin | Detect plugin availability, adjust behavior |
-| **Required** | Skill requires plugin | Validate plugin presence, fail gracefully |
+**Claude Code does NOT currently support plugin dependencies.** Each plugin is completely independent ([Issue #9444](https://github.com/anthropics/claude-code/issues/9444) proposes this feature but it's not yet implemented).
+
+This means:
+- SpecWeave **cannot require** official plugins as dependencies
+- SpecWeave **cannot programmatically detect** if a plugin is installed
+- Users must **manually install** recommended plugins via `/plugin` command
+
+### Integration Strategy
+
+| Approach | Description | Implementation |
+|----------|-------------|----------------|
+| **Documentation** | Recommend plugins in skill/agent files | Add "Recommended Plugins" sections |
+| **Graceful Degradation** | Skills work without plugins | Reduced capability, not failure |
+| **User Education** | Guide installation | Include `/plugin install` commands |
+| **Hookify Templates** | Ship pre-configured rules | Users copy to `.claude/` directory |
+
+### NO Runtime Detection
+
+Since Claude Code lacks plugin introspection APIs, SpecWeave skills should:
+- ✅ **Document** which plugins enhance the experience
+- ✅ **Work without** plugins (graceful degradation)
+- ❌ **NOT check** for plugin availability at runtime
+- ❌ **NOT fail** if plugins aren't installed
 
 ### Plugin Mappings
 
@@ -117,22 +135,27 @@ Integration point: `/sw:living-docs` can detect Greptile availability and use it
 
 ## Implementation
 
-### Phase 1: Documentation (This ADR)
+### Phase 1: Documentation (This ADR) ✅
 - Document plugin recommendations in CLAUDE.md
 - Create reference document in living docs
+- **Completed**: [claude-code-official-plugins.md](../guides/claude-code-official-plugins.md)
 
-### Phase 2: Skill Updates
+### Phase 2: Skill Updates ✅
 - Add "Recommended Plugins" section to key AGENT.md/SKILL.md files
-- Start with mobile-architect (swift-lsp, kotlin-lsp)
+- **Completed**: mobile-architect with swift-lsp, kotlin-lsp recommendations
 
-### Phase 3: Hookify Templates
+### Phase 3: Hookify Templates ✅
 - Create `.claude/hookify.*.local.md` templates
-- Ship with SpecWeave marketplace plugin
+- **Completed**: 6 templates in `plugins/specweave/templates/hookify/`
+- Users copy templates manually (no automatic installation)
 
-### Phase 4: Enhanced Integration (Future)
-- Detect plugin availability at runtime
-- Adjust skill behavior based on available plugins
-- Greptile integration for `/sw:living-docs`
+### Phase 4: Future (When Claude Code Adds Plugin Dependencies)
+- ~~Detect plugin availability at runtime~~ (blocked: no API)
+- ~~Adjust skill behavior based on available plugins~~ (blocked: no introspection)
+- When [Issue #9444](https://github.com/anthropics/claude-code/issues/9444) is implemented:
+  - Add `dependencies` field to SpecWeave `plugin.json`
+  - Automatic plugin installation
+  - Runtime capability detection
 
 ## References
 

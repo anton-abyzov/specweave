@@ -10,10 +10,36 @@
  * @since v0.22.0
  */
 
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import { promisify } from 'util';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
+
+/**
+ * Validate and sanitize command name to prevent injection
+ * Only allows alphanumeric characters, hyphens, and underscores
+ */
+function validateCommandName(command: string): string {
+  if (!/^[a-zA-Z0-9_-]+$/.test(command)) {
+    throw new Error(`Invalid command name: ${command}. Only alphanumeric characters, hyphens, and underscores are allowed.`);
+  }
+  return command;
+}
+
+/**
+ * Validate command arguments to prevent injection
+ * Rejects arguments containing shell metacharacters
+ */
+function validateArgs(args: string[]): string[] {
+  const DANGEROUS_PATTERNS = /[;&|`$(){}[\]<>\\'"!#*?~]/;
+
+  for (const arg of args) {
+    if (DANGEROUS_PATTERNS.test(arg)) {
+      throw new Error(`Invalid argument: "${arg}". Contains potentially dangerous characters.`);
+    }
+  }
+  return args;
+}
 
 /**
  * Command invocation options
@@ -72,12 +98,16 @@ export class CommandInvoker {
     const startTime = Date.now();
 
     try {
-      // Build command string
-      const args = options.args || [];
-      const commandString = `npx specweave ${command} ${args.join(' ')}`;
+      // Validate command and arguments to prevent injection attacks
+      const validatedCommand = validateCommandName(command);
+      const validatedArgs = validateArgs(options.args || []);
 
-      // Execute command
-      const { stdout, stderr } = await execAsync(commandString, {
+      // Build arguments array for execFile (no shell interpretation)
+      // Using npx to run specweave command
+      const execArgs = ['specweave', validatedCommand, ...validatedArgs];
+
+      // Execute command using execFile - arguments are never interpreted by shell
+      const { stdout, stderr } = await execFileAsync('npx', execArgs, {
         cwd: options.cwd || process.cwd(),
         timeout: options.timeout || 300000, // 5 min default
         maxBuffer: 10 * 1024 * 1024 // 10MB
@@ -92,15 +122,21 @@ export class CommandInvoker {
         stderr: stderr || undefined,
         executionTime
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const executionTime = Date.now() - startTime;
+      const execError = error as {
+        code?: number;
+        stdout?: string;
+        stderr?: string;
+        message?: string;
+      };
 
       return {
         success: false,
-        exitCode: error.code || 1,
-        stdout: options.captureOutput ? error.stdout : undefined,
-        stderr: error.stderr || undefined,
-        error: error.message,
+        exitCode: execError.code || 1,
+        stdout: options.captureOutput ? execError.stdout : undefined,
+        stderr: execError.stderr || undefined,
+        error: execError.message || String(error),
         executionTime
       };
     }

@@ -22,6 +22,71 @@ import { getAdoPat } from '../integrations/ado/ado-pat-provider.js';
 import { deriveFeatureId } from '../utils/feature-id-derivation.js';
 import { ClosureMetrics, createClosureMetrics } from './closure-metrics.js';
 import { LockManager } from '../utils/lock-manager.js';
+import type {
+  SpecWeaveConfig,
+  SyncConfiguration,
+  GitHubConfig,
+  JiraConfig,
+  AzureDevOpsConfig,
+  SyncProfile,
+} from '../core/config/types.js';
+
+/**
+ * GitHub issue reference stored in metadata.json
+ */
+interface GitHubIssueReference {
+  userStory: string;
+  number: number;
+  url: string;
+  createdAt: string;
+}
+
+/**
+ * Increment metadata with GitHub sync info
+ */
+interface IncrementMetadataWithSync {
+  github?: {
+    issues?: GitHubIssueReference[];
+    lastSync?: string;
+  };
+  feature_id?: string;
+  epic_id?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * GitHub config with optional settings for repo detection
+ */
+interface GitHubRepoConfig {
+  enabled?: boolean;
+  owner?: string;
+  repo?: string;
+}
+
+/**
+ * Extended Jira config with runtime email field
+ * (email comes from credentials, not persisted in config types)
+ */
+interface JiraConfigExtended extends JiraConfig {
+  email?: string;
+}
+
+/**
+ * Status sync mapping configuration (runtime config, not in core types)
+ */
+interface StatusSyncMappings {
+  jira?: { completed?: string };
+  ado?: { completed?: string | { state: string } };
+}
+
+/**
+ * Extended sync configuration with runtime statusSync field
+ */
+interface SyncConfigurationExtended extends SyncConfiguration {
+  statusSync?: {
+    mappings?: StatusSyncMappings;
+  };
+}
 
 export interface SyncCoordinatorOptions {
   projectRoot: string;
@@ -52,16 +117,22 @@ export interface SyncResult {
  * @param provider - Provider to check ('github', 'jira', 'ado')
  * @returns true if provider is enabled in either format
  */
-export function isProviderEnabled(config: any, provider: 'github' | 'jira' | 'ado'): boolean {
+export function isProviderEnabled(config: SpecWeaveConfig, provider: 'github' | 'jira' | 'ado'): boolean {
+  const syncConfig = config.sync;
+  if (!syncConfig) {
+    return false;
+  }
+
   // Check LEGACY format first (sync.github.enabled, sync.jira.enabled, sync.ado.enabled)
-  if (config.sync?.[provider]?.enabled === true) {
+  const providerConfig = syncConfig[provider] as GitHubConfig | JiraConfig | AzureDevOpsConfig | undefined;
+  if (providerConfig?.enabled === true) {
     return true;
   }
 
   // Check PROFILES format (sync.profiles with provider field)
-  if (config.sync?.profiles) {
-    for (const profile of Object.values(config.sync.profiles)) {
-      if ((profile as any)?.provider === provider) {
+  if (syncConfig.profiles) {
+    for (const profile of Object.values(syncConfig.profiles)) {
+      if (profile?.provider === provider) {
         return true;
       }
     }
@@ -123,7 +194,7 @@ export class SyncCoordinator {
    * @param config - Project configuration
    * @returns Array of created issues
    */
-  async createGitHubIssuesForUserStories(config: any): Promise<GitHubIssue[]> {
+  async createGitHubIssuesForUserStories(config: SpecWeaveConfig): Promise<GitHubIssue[]> {
     const createdIssues: GitHubIssue[] = [];
 
     try {
@@ -241,9 +312,9 @@ export class SyncCoordinator {
 
           let existingIssue: number | null = null;
           if (existsSync(metadataFile)) {
-            const metadata = JSON.parse(await fs.readFile(metadataFile, 'utf-8'));
+            const metadata = JSON.parse(await fs.readFile(metadataFile, 'utf-8')) as IncrementMetadataWithSync;
             const githubIssues = metadata.github?.issues || [];
-            const found = githubIssues.find((i: any) => i.userStory === usFile.id);
+            const found = githubIssues.find((i: GitHubIssueReference) => i.userStory === usFile.id);
             if (found) {
               this.logger.log(`  🔍 ${usFile.id} - Issue #${found.number} exists (metadata)`);
               // Check if issue needs content update
@@ -323,7 +394,7 @@ export class SyncCoordinator {
 
               // Check if not already in metadata
               const existsInMetadata = metadata.github.issues.find(
-                (i: any) => i.userStory === usFile.id
+                (i: GitHubIssueReference) => i.userStory === usFile.id
               );
               if (!existsInMetadata) {
                 metadata.github.issues.push({
@@ -490,7 +561,7 @@ export class SyncCoordinator {
    * @param config - Project configuration
    * @returns Array of closed issue numbers
    */
-  async closeGitHubIssuesForUserStories(config: any): Promise<number[]> {
+  async closeGitHubIssuesForUserStories(config: SpecWeaveConfig): Promise<number[]> {
     const closedIssues: number[] = [];
 
     try {
@@ -621,7 +692,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
    * @param config - Project config with JIRA settings
    * @returns Number of closed JIRA issues
    */
-  async closeJiraIssuesForUserStories(config: any): Promise<number> {
+  async closeJiraIssuesForUserStories(config: SpecWeaveConfig): Promise<number> {
     let closedCount = 0;
 
     try {
@@ -632,10 +703,10 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
         return 0;
       }
 
-      // Get JIRA config
-      const jiraConfig = config.sync?.jira;
-      if (!jiraConfig?.domain || !jiraConfig?.email) {
-        this.logger.log('⚠️  JIRA config incomplete (missing domain or email)');
+      // Get JIRA config (use extended type for runtime email field)
+      const jiraConfig = config.sync?.jira as JiraConfigExtended | undefined;
+      if (!jiraConfig?.domain) {
+        this.logger.log('⚠️  JIRA config incomplete (missing domain)');
         return 0;
       }
 
@@ -645,7 +716,8 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       const jiraClient = new JiraClient();
 
       // Target status for completion (configurable via statusSync.mappings.jira.completed)
-      const targetStatus = config.sync?.statusSync?.mappings?.jira?.completed || 'Done';
+      const syncConfigExt = config.sync as SyncConfigurationExtended | undefined;
+      const targetStatus = syncConfigExt?.statusSync?.mappings?.jira?.completed || 'Done';
 
       for (const usFile of userStories) {
         try {
@@ -708,7 +780,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
    * @param config - Project config with ADO settings
    * @returns Number of closed ADO work items
    */
-  async closeAdoWorkItemsForUserStories(config: any): Promise<number> {
+  async closeAdoWorkItemsForUserStories(config: SpecWeaveConfig): Promise<number> {
     let closedCount = 0;
 
     try {
@@ -741,7 +813,8 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
       });
 
       // Target state for completion (configurable via statusSync.mappings.ado.completed)
-      const targetStateConfig = config.sync?.statusSync?.mappings?.ado?.completed || { state: 'Closed' };
+      const adoSyncConfigExt = config.sync as SyncConfigurationExtended | undefined;
+      const targetStateConfig = adoSyncConfigExt?.statusSync?.mappings?.ado?.completed || { state: 'Closed' };
       const targetState = typeof targetStateConfig === 'string' ? targetStateConfig : targetStateConfig.state;
 
       // Collect work item IDs to fetch
@@ -1248,7 +1321,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
   private async syncUserStory(
     usFile: LivingDocsUSFile,
     syncService: FormatPreservationSyncService,
-    config: any
+    config: SpecWeaveConfig
   ): Promise<void> {
     const origin = getOrigin(usFile);
     this.logger.log(`\n  📝 ${usFile.id} (${origin})`);
@@ -1332,7 +1405,8 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
         const canUpdateStatus = config.sync?.settings?.canUpdateStatus ?? false;
         if (canUpdateStatus && completionData.progressPercentage === 100) {
           // Get target status from config or default to "Done"
-          const targetStatus = config.sync?.statusSync?.mappings?.jira?.completed || 'Done';
+          const jiraSyncConfigExt = config.sync as SyncConfigurationExtended | undefined;
+          const targetStatus = jiraSyncConfigExt?.statusSync?.mappings?.jira?.completed || 'Done';
 
           // Get current issue status to avoid unnecessary transition
           const currentIssue = await jiraClient.getIssue(jiraKey);
@@ -1594,21 +1668,21 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
   /**
    * Load config
    */
-  private async loadConfig(): Promise<any> {
+  private async loadConfig(): Promise<SpecWeaveConfig> {
     const configPath = path.join(this.projectRoot, '.specweave/config.json');
 
     if (!existsSync(configPath)) {
-      return {};
+      return {} as SpecWeaveConfig;
     }
 
     const content = await fs.readFile(configPath, 'utf-8');
-    return JSON.parse(content);
+    return JSON.parse(content) as SpecWeaveConfig;
   }
 
   /**
    * Detect GitHub repository from config or git
    */
-  private async detectGitHubRepo(githubConfig: any): Promise<{ owner: string; repo: string } | null> {
+  private async detectGitHubRepo(githubConfig: GitHubRepoConfig): Promise<{ owner: string; repo: string } | null> {
     // Check config first
     if (githubConfig.owner && githubConfig.repo) {
       return { owner: githubConfig.owner, repo: githubConfig.repo };
@@ -1741,7 +1815,7 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
    * @returns Summary of synced ACs
    */
   async syncACCheckboxesToGitHub(
-    config: any,
+    config: SpecWeaveConfig,
     options: { addComment?: boolean } = {}
   ): Promise<{ success: boolean; updated: number; issues: number[] }> {
     const result = { success: true, updated: 0, issues: [] as number[] };

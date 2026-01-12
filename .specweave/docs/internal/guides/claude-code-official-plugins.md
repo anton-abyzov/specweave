@@ -10,6 +10,17 @@
 
 Claude Code provides an official plugin ecosystem at [github.com/anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official). This document maps these plugins to SpecWeave skills and provides installation/usage guidance.
 
+### Important: Recommendations Only
+
+**Claude Code does NOT support plugin dependencies** ([Issue #9444](https://github.com/anthropics/claude-code/issues/9444)). This means:
+
+- SpecWeave **cannot require** these plugins as dependencies
+- SpecWeave **cannot detect** if plugins are installed
+- Users must **manually install** recommended plugins
+- SpecWeave skills **work without** these plugins (graceful degradation)
+
+**Installation**: Use `/plugin` command in Claude Code, or browse the Discover tab.
+
 ## Plugin Categories
 
 1. **LSP Plugins** - Language Server Protocol for code intelligence
