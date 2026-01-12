@@ -267,9 +267,28 @@ main() {
     fi
 
     # Queue reflection for async processing (don't block session exit)
-    queue_reflection "$TRANSCRIPT_PATH"
+    if queue_reflection "$TRANSCRIPT_PATH"; then
+        # Return approve with systemMessage to notify user about reflection
+        # This message will be captured by stop-dispatcher.sh and shown to user
+        local reflect_msg="
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 🧠 REFLECT: Learning signals detected                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  Corrections or approvals found in this session.                            │
+│  Learnings queued for extraction → .specweave/memory/                       │
+│                                                                             │
+│  💡 Run /sw:reflect-status to see stored learnings                          │
+└─────────────────────────────────────────────────────────────────────────────┘"
 
-    # Always approve - session can exit immediately
+        jq -n \
+            --arg decision "approve" \
+            --arg reason "Session complete - learnings queued" \
+            --arg systemMessage "$reflect_msg" \
+            '{decision: $decision, reason: $reason, systemMessage: $systemMessage}'
+        exit 0
+    fi
+
+    # Queueing failed, just approve without message
     echo "$approve_response"
     exit 0
 }

@@ -1132,9 +1132,11 @@ Invoke the mobile-architect agent when you need help with:
 - **Glob**: Find files matching patterns
 - **Grep**: Search for architectural patterns in code
 
-## Recommended Claude Code Plugins
+## Recommended Claude Code Plugins (Optional)
 
-For enhanced mobile development experience, install these official Claude Code plugins:
+For enhanced mobile development experience, install these official Claude Code plugins.
+
+**Note**: These are **optional recommendations**. This agent works fully without them - they just provide enhanced code intelligence for native module development. Install via `/plugin` in Claude Code.
 
 ### LSP Plugins (Code Intelligence)
 
@@ -1172,6 +1174,290 @@ brew install JetBrains/utils/kotlin-lsp
 | `playwright` | E2E testing integration |
 
 See [ADR-0226](../../architecture/adr/0226-claude-code-official-plugin-integration.md) for full plugin integration strategy.
+
+---
+
+## ⚠️ CRITICAL: Module-Level Code Execution Crashes
+
+**This section documents the #1 cause of Expo Go / React Native crashes that waste hours of debugging time.**
+
+### The Problem
+
+When a JavaScript module is imported, ALL code at the module level executes **immediately** - before React components mount, before providers wrap anything, before `App.tsx` even renders. This causes crashes with:
+
+1. **Libraries that need React context** (translations, themes, auth)
+2. **Libraries that access device APIs** (AsyncStorage, SecureStore, locale)
+3. **React hooks called outside components** (`useX()` at module level)
+4. **Native modules not yet initialized** (especially in Expo Go)
+
+### Error Signatures (Learn to Recognize These!)
+
+```
+❌ "Cannot read property 'getLocales' of null"
+   → expo-localization called at module level
+
+❌ "Invalid hook call. Hooks can only be called inside of the body of a function component"
+   → useTranslation(), useContext(), etc. at module level
+
+❌ "Rendered more hooks than during the previous render"
+   → Conditional hook in translation wrapper
+
+❌ "No QueryClient set, use QueryClientProvider"
+   → TanStack Query hook outside provider tree
+
+❌ "Error: Unable to resolve module"
+   → Native module not linked / not available in Expo Go
+
+❌ App white screens silently
+   → Module-level crash before error boundary mounts
+```
+
+### Known Bad Patterns (DO NOT DO THIS!)
+
+```typescript
+// ❌ BAD: expo-localization at module level
+import * as Localization from 'expo-localization';
+const locale = Localization.getLocales()[0].languageCode; // CRASH!
+
+// ❌ BAD: react-i18next at module level (uses React context internally)
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+i18n.use(initReactI18next).init({...}); // Creates React dependency at import!
+
+// ❌ BAD: AsyncStorage at module level
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const savedTheme = await AsyncStorage.getItem('theme'); // CRASH - can't await at module level!
+
+// ❌ BAD: React hooks at module level
+import { useContext } from 'react';
+const theme = useContext(ThemeContext); // CRASH - outside component!
+
+// ❌ BAD: Supabase with auto-refresh at module level
+import { createClient } from '@supabase/supabase-js';
+const supabase = createClient(url, key, {
+  auth: { autoRefreshToken: true } // May access storage immediately
+});
+
+// ❌ BAD: Notification handlers at module level
+import * as Notifications from 'expo-notifications';
+Notifications.setNotificationHandler({...}); // May crash before native init
+```
+
+### Safe Patterns (DO THIS INSTEAD!)
+
+```typescript
+// ✅ SAFE: Lazy locale detection
+function getLocale(): string {
+  try {
+    // Intl is always available, no native module needed
+    return Intl.DateTimeFormat().resolvedOptions().locale.split('-')[0] || 'en';
+  } catch {
+    return 'en';
+  }
+}
+
+// ✅ SAFE: i18n-js instead of react-i18next (no React dependency!)
+// src/i18n/i18n.ts - PURE JAVASCRIPT, NO REACT
+import { I18n } from 'i18n-js';
+import en from './locales/en.json';
+import es from './locales/es.json';
+
+const i18n = new I18n({ en, es });
+i18n.defaultLocale = 'en';
+i18n.locale = getLocale();
+i18n.enableFallback = true;
+
+export default i18n;
+export const t = (key: string, options?: object) => i18n.t(key, options);
+
+// ✅ SAFE: React hooks in separate file, lazy-loaded
+// src/i18n/hooks.tsx - REACT HOOKS ONLY
+import { useState, useEffect, useCallback } from 'react';
+import i18n, { t as translate } from './i18n';
+
+// Simple pub/sub for locale changes (no React context at module level!)
+type Listener = () => void;
+const listeners = new Set<Listener>();
+
+export function useTranslation() {
+  const [, forceUpdate] = useState({});
+
+  useEffect(() => {
+    const listener = () => forceUpdate({});
+    listeners.add(listener);
+    return () => { listeners.delete(listener); };
+  }, []);
+
+  const changeLanguage = useCallback((lang: string) => {
+    i18n.locale = lang;
+    listeners.forEach(l => l());
+  }, []);
+
+  return { t: translate, i18n, changeLanguage };
+}
+
+// ✅ SAFE: Lazy AsyncStorage access
+async function loadSavedLocale(): Promise<string | null> {
+  try {
+    const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+    return await AsyncStorage.getItem('userLocale');
+  } catch {
+    return null;
+  }
+}
+
+// ✅ SAFE: Module constants (no native calls!)
+export const SUPPORTED_LOCALES = ['en', 'es', 'fr', 'de'] as const;
+export const DEFAULT_LOCALE = 'en';
+
+// ✅ SAFE: Supabase with lazy initialization
+let supabaseInstance: SupabaseClient | null = null;
+export function getSupabase() {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(url, key, { /* config */ });
+  }
+  return supabaseInstance;
+}
+```
+
+### Provider Order Matters!
+
+When your app crashes, provider order is often the cause:
+
+```typescript
+// app/_layout.tsx - CORRECT ORDER
+export default function RootLayout() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <AuthProvider>
+              <NotificationProvider>
+                <Slot />
+              </NotificationProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
+```
+
+**Provider Order Rules**:
+1. **GestureHandlerRootView** - MUST be outermost (native gestures)
+2. **SafeAreaProvider** - Early, needed by many components
+3. **QueryClientProvider** - Before any data fetching
+4. **ThemeProvider** - Before UI components
+5. **AuthProvider** - After data (may need queries)
+6. **Feature providers** - Innermost (notifications, etc.)
+
+### Debugging Strategy: Binary Search
+
+When app crashes on startup, **isolate the problem**:
+
+```typescript
+// Step 1: Start with MINIMAL app
+export default function App() {
+  return <Text>Hello</Text>; // Does this work?
+}
+
+// Step 2: Add providers ONE BY ONE
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <Text>Hello</Text> // Still works?
+    </SafeAreaProvider>
+  );
+}
+
+// Step 3: Keep adding until crash
+// The LAST thing you added is the problem!
+
+// Step 4: Check that provider's imports
+// Look for module-level code in dependencies
+```
+
+### Expo Go vs Development Build
+
+**Expo Go limitations** cause many crashes:
+
+| Feature | Expo Go | Dev Build |
+|---------|---------|-----------|
+| expo-localization | ⚠️ May crash | ✅ Works |
+| AsyncStorage | ⚠️ Timing issues | ✅ Works |
+| Custom native modules | ❌ Not available | ✅ Works |
+| react-native-mmkv | ❌ Not available | ✅ Works |
+| Push notifications | ⚠️ Limited | ✅ Full support |
+
+**If something crashes in Expo Go but docs say it should work**:
+1. Check if it needs a dev build
+2. Use `npx expo prebuild` + `npx expo run:ios`
+3. Or use EAS Build: `eas build --profile development`
+
+### Migration Guide: react-i18next → i18n-js
+
+If your app crashes with i18next, migrate:
+
+**Before (crashes in Expo Go):**
+```typescript
+// i18n.ts
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next'; // React dependency!
+i18n.use(initReactI18next).init({...}); // Module-level React usage!
+```
+
+**After (works everywhere):**
+```typescript
+// i18n/i18n.ts - NO REACT
+import { I18n } from 'i18n-js';
+const i18n = new I18n({ en, es });
+export default i18n;
+export const t = i18n.t.bind(i18n);
+
+// i18n/hooks.tsx - REACT ONLY, LAZY IMPORT
+export function useTranslation() { /* pub/sub pattern above */ }
+```
+
+### Quick Checklist
+
+Before shipping any React Native code, verify:
+
+- [ ] **No `useX()` calls at module level** - grep for `^const.*= use`
+- [ ] **No `expo-localization` at module level** - use `Intl.DateTimeFormat()`
+- [ ] **No `react-i18next`** - use `i18n-js` with custom hooks
+- [ ] **No `AsyncStorage.getItem()` at module level** - lazy require inside functions
+- [ ] **No React context at module level** - use pub/sub pattern
+- [ ] **Provider order is correct** - GestureHandler → SafeArea → Query → Theme → Auth
+- [ ] **Check Expo Go compatibility** - test on real device with Expo Go
+- [ ] **All native modules available** - or use dev build
+- [ ] **No conditional hooks** - same hooks every render
+- [ ] **Error boundaries added** - catch crashes before white screen
+
+### Architecture: i18n That Works
+
+Complete implementation pattern:
+
+```
+src/i18n/
+├── i18n.ts         # Pure JS - I18n instance, t() export
+├── hooks.tsx       # React hooks - useTranslation()
+├── provider.tsx    # Optional context for SSR/testing
+└── locales/
+    ├── en.json
+    └── es.json
+```
+
+**Key Decisions**:
+1. **i18n-js over react-i18next** - No React dependency at module level
+2. **Intl.DateTimeFormat over expo-localization** - Always available
+3. **Pub/sub over React Context** - No context needed for locale changes
+4. **Lazy requires** - AsyncStorage only when needed
+5. **Type-safe exports** - `t()` function with proper types
+6. **Separate files** - Pure JS and React code never mix
+
+---
 
 ## Version Reference
 

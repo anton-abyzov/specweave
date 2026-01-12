@@ -62,9 +62,46 @@ describe('ConfigManager', () => {
       expect(config.repository?.provider).toBe('local');
     });
 
-    it('should throw error for malformed JSON', async () => {
+    it('should throw specific error for malformed JSON', async () => {
       await fs.writeFile(configPath, 'invalid json {');
-      await expect(configManager.read()).rejects.toThrow(/Failed to read config/);
+      await expect(configManager.read()).rejects.toThrow(/Invalid JSON in config\.json/);
+    });
+
+    it('should throw error with JSON error details', async () => {
+      await fs.writeFile(configPath, '{ "version": "2.0", missing-quotes }');
+      try {
+        await configManager.read();
+        expect.fail('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        expect((error as Error).message).toContain('Invalid JSON in config.json');
+        // Check that it includes some parse context
+        expect((error as Error).message).toMatch(/Unexpected|Expected|position/i);
+      }
+    });
+  });
+
+  describe('readSync()', () => {
+    it('should return default config when file does not exist', () => {
+      const config = configManager.readSync();
+      expect(config).toEqual(DEFAULT_CONFIG);
+      expect(config.version).toBe('2.0');
+    });
+
+    it('should read existing config file synchronously', async () => {
+      const testConfig: SpecWeaveConfig = {
+        version: '2.0',
+        repository: { provider: 'github', organization: 'test-org' }
+      };
+      await fs.writeFile(configPath, JSON.stringify(testConfig, null, 2));
+      const config = configManager.readSync();
+      expect(config.repository?.provider).toBe('github');
+      expect(config.repository?.organization).toBe('test-org');
+    });
+
+    it('should throw specific error for malformed JSON (sync)', async () => {
+      await fs.writeFile(configPath, '{ not valid json }');
+      expect(() => configManager.readSync()).toThrow(/Invalid JSON in config\.json/);
     });
   });
 

@@ -32,14 +32,25 @@ FINAL_REASON="Session complete"
 SYSTEM_MESSAGE=""
 
 # ============================================================================
-# HOOK 1: REFLECT (always runs, never blocks)
+# STOP HOOK NOTIFICATION (always visible)
+# This appears on EVERY stop hook call to give visibility to the user
+# ============================================================================
+STOP_HOOK_HEADER="
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 🛑 STOP HOOK TRIGGERED                                                      │
+└─────────────────────────────────────────────────────────────────────────────┘"
+
+# ============================================================================
+# HOOK 1: REFLECT (always runs, never blocks, but may have notification)
 # ============================================================================
 
 REFLECT_HOOK="$SCRIPT_DIR/stop-reflect.sh"
+REFLECT_MESSAGE=""
 if [ -x "$REFLECT_HOOK" ]; then
     # Run reflect hook - it handles its own async processing
     REFLECT_RESULT=$(echo "$INPUT" | bash "$REFLECT_HOOK" 2>/dev/null || echo '{"decision":"approve"}')
-    # Reflect never blocks, so we don't check its decision
+    # Reflect never blocks, but capture its systemMessage if present
+    REFLECT_MESSAGE=$(echo "$REFLECT_RESULT" | jq -r '.systemMessage // ""' 2>/dev/null || echo "")
 fi
 
 # ============================================================================
@@ -89,20 +100,36 @@ if [ -f "$AUTO_SESSION" ] && [ -x "$AUTO_HOOK" ]; then
 fi
 
 # ============================================================================
-# OUTPUT FINAL DECISION
+# OUTPUT FINAL DECISION (with stop hook header for visibility)
 # ============================================================================
 
-if [ -n "$SYSTEM_MESSAGE" ]; then
-    # Use jq to properly construct JSON with escaped strings
-    # This avoids manual escaping which can break on special characters
-    jq -n \
-        --arg decision "$FINAL_DECISION" \
-        --arg reason "$FINAL_REASON" \
-        --arg systemMessage "$SYSTEM_MESSAGE" \
-        '{decision: $decision, reason: $reason, systemMessage: $systemMessage}'
-else
-    jq -n \
-        --arg decision "$FINAL_DECISION" \
-        --arg reason "$FINAL_REASON" \
-        '{decision: $decision, reason: $reason}'
+# Build full message with all components
+# 1. Stop hook header (always)
+# 2. Reflect message (if learnings queued)
+# 3. Auto/session message
+
+FULL_MESSAGE="${STOP_HOOK_HEADER}"
+
+# Add reflect message if present (learnings were queued)
+if [ -n "$REFLECT_MESSAGE" ]; then
+    FULL_MESSAGE="${FULL_MESSAGE}
+${REFLECT_MESSAGE}"
 fi
+
+# Add auto/session message
+if [ -n "$SYSTEM_MESSAGE" ]; then
+    FULL_MESSAGE="${FULL_MESSAGE}
+${SYSTEM_MESSAGE}"
+else
+    # Minimal message for non-auto sessions
+    FULL_MESSAGE="${FULL_MESSAGE}
+Session ending normally."
+fi
+
+# Use jq to properly construct JSON with escaped strings
+# This avoids manual escaping which can break on special characters
+jq -n \
+    --arg decision "$FINAL_DECISION" \
+    --arg reason "$FINAL_REASON" \
+    --arg systemMessage "$FULL_MESSAGE" \
+    '{decision: $decision, reason: $reason, systemMessage: $systemMessage}'

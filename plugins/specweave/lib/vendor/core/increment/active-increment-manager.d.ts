@@ -91,6 +91,21 @@ export declare class ActiveIncrementManager {
      */
     validate(): boolean;
     /**
+     * Validate and auto-repair the active increment state
+     *
+     * This is the recommended method to call on startup to ensure
+     * the active-increment.json is in sync with metadata.json files.
+     *
+     * Part of 0168: Status Single Source of Truth
+     *
+     * @returns Object with validation result and any repairs made
+     */
+    validateAndRepair(): {
+        valid: boolean;
+        repaired: boolean;
+        details: string[];
+    };
+    /**
      * Write state file atomically (temp file → rename)
      */
     private writeState;
