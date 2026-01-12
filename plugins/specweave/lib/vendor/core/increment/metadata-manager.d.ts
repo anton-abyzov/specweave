@@ -113,7 +113,7 @@ export declare class MetadataManager {
      * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
      * accessing wrong .specweave folder when CWD != project root.
      */
-    static getAll(): IncrementMetadata[];
+    static getAll(projectRoot?: string): IncrementMetadata[];
     /**
      * Get increments by status
      */

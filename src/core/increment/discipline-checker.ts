@@ -71,7 +71,7 @@ export class DisciplineChecker {
 
     try {
       // SIMPLIFIED APPROACH: Use MetadataManager directly (matches status-commands.ts)
-      const allIncrements = MetadataManager.getAll();
+      const allIncrements = MetadataManager.getAll(this.projectRoot);
 
       // Count by status (CRITICAL: active = planning + active + ready_for_review)
       const active = allIncrements.filter(m =>

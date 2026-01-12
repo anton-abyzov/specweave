@@ -430,8 +430,8 @@ export class MetadataManager {
      * CRITICAL FIX: Uses getProjectRoot() instead of process.cwd() to prevent
      * accessing wrong .specweave folder when CWD != project root.
      */
-    static getAll() {
-        const incrementsPath = path.join(getProjectRoot(), '.specweave', 'increments');
+    static getAll(projectRoot) {
+        const incrementsPath = path.join(projectRoot || getProjectRoot(), '.specweave', 'increments');
         if (!fs.existsSync(incrementsPath)) {
             return [];
         }
