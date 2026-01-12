@@ -1,202 +1,202 @@
 
 === Job: test ===
-2026-01-12T11:27:42.4065119Z     [90m 65| [39m
-2026-01-12T11:27:42.4066509Z     [90m 66| [39m      [35mif[39m ([35mawait[39m fs[33m.[39m[34mpathExists[39m(pluginPath)) {
-2026-01-12T11:27:42.4069618Z     [90m 67| [39m        [35mconst[39m metadata [33m=[39m [35mawait[39m loader[33m.[39m[34mgetMetadata[39m(pluginPath)[33m;[39m
-2026-01-12T11:27:42.4070669Z     [90m   | [39m                                      [31m^[39m
-2026-01-12T11:27:42.4071014Z     [90m 68| [39m
-2026-01-12T11:27:42.4071471Z     [90m 69| [39m        [34mexpect[39m(metadata)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
-2026-01-12T11:27:42.4071783Z 
-2026-01-12T11:27:42.4072024Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/25]⎯[22m[39m
-2026-01-12T11:27:42.4072219Z 
-2026-01-12T11:27:42.4073525Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mLockManager - Concurrent Lock Acquisition[2m > [22mshould allow only one agent to acquire lock at a time
-2026-01-12T11:27:42.4074673Z [31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
-2026-01-12T11:27:42.4074983Z 
-2026-01-12T11:27:42.4075101Z [32m- Expected[39m
-2026-01-12T11:27:42.4075333Z [31m+ Received[39m
-2026-01-12T11:27:42.4075444Z 
-2026-01-12T11:27:42.4075546Z [32m- false[39m
-2026-01-12T11:27:42.4075742Z [31m+ true[39m
-2026-01-12T11:27:42.4075845Z 
-2026-01-12T11:27:42.4076218Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m59:25[22m[39m
-2026-01-12T11:27:42.4128350Z     [90m 57| [39m      [35mconst[39m elapsed [33m=[39m [33mDate[39m[33m.[39m[34mnow[39m() [33m-[39m startTime[33m;[39m
-2026-01-12T11:27:42.4130345Z     [90m 58| [39m
-2026-01-12T11:27:42.4131197Z     [90m 59| [39m      [34mexpect[39m(acquired2)[33m.[39m[34mtoBe[39m([35mfalse[39m)[33m;[39m
-2026-01-12T11:27:42.4132055Z     [90m   | [39m                        [31m^[39m
-2026-01-12T11:27:42.4132900Z     [90m 60| [39m      [90m// Should have tried for ~10 seconds (LOCK_TIMEOUT_MS)[39m
-2026-01-12T11:27:42.4134073Z     [90m 61| [39m      [34mexpect[39m(elapsed)[33m.[39m[34mtoBeGreaterThan[39m([34m9000[39m)[33m;[39m
-2026-01-12T11:27:42.4134691Z 
-2026-01-12T11:27:42.4135071Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/25]⎯[22m[39m
-2026-01-12T11:27:42.4135409Z 
-2026-01-12T11:27:42.4137306Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mSimulated Concurrent Issue Creation[2m > [22mshould serialize issue creation for same user story
-2026-01-12T11:27:42.4140414Z [31m[1mAssertionError[22m: expected 3 to be 1 // Object.is equality[39m
-2026-01-12T11:27:42.4141145Z 
-2026-01-12T11:27:42.4141451Z [32m- Expected[39m
-2026-01-12T11:27:42.4141859Z [31m+ Received[39m
-2026-01-12T11:27:42.4142070Z 
-2026-01-12T11:27:42.4142242Z [32m- 1[39m
-2026-01-12T11:27:42.4142564Z [31m+ 3[39m
-2026-01-12T11:27:42.4142736Z 
-2026-01-12T11:27:42.4143435Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m180:28[22m[39m
-2026-01-12T11:27:42.4144477Z     [90m178| [39m      [90m// Only one should succeed (created issue)[39m
-2026-01-12T11:27:42.4145876Z     [90m179| [39m      [35mconst[39m successCount [33m=[39m results[33m.[39m[34mfilter[39m(r [33m=>[39m r)[33m.[39mlength[33m;[39m
-2026-01-12T11:27:42.4147336Z     [90m180| [39m      [34mexpect[39m(successCount)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
-2026-01-12T11:27:42.4148254Z     [90m   | [39m                           [31m^[39m
-2026-01-12T11:27:42.4148744Z     [90m181| [39m
-2026-01-12T11:27:42.4149505Z     [90m182| [39m      [90m// Exactly one issue created[39m
-2026-01-12T11:27:42.4149902Z 
-2026-01-12T11:27:42.4150432Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/25]⎯[22m[39m
-2026-01-12T11:27:42.4150741Z 
-2026-01-12T11:27:42.4152546Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mSimulated Concurrent Comment Posting[2m > [22mshould serialize comment posting for same issue
-2026-01-12T11:27:42.4154393Z [31m[1mAssertionError[22m: expected 3 to be 1 // Object.is equality[39m
-2026-01-12T11:27:42.4154884Z 
-2026-01-12T11:27:42.4155082Z [32m- Expected[39m
-2026-01-12T11:27:42.4155534Z [31m+ Received[39m
-2026-01-12T11:27:42.4155755Z 
-2026-01-12T11:27:42.4155917Z [32m- 1[39m
-2026-01-12T11:27:42.4156237Z [31m+ 3[39m
-2026-01-12T11:27:42.4156401Z 
-2026-01-12T11:27:42.4157100Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m276:28[22m[39m
-2026-01-12T11:27:42.4158181Z     [90m274| [39m      [90m// Only one should succeed (first to acquire lock)[39m
-2026-01-12T11:27:42.4159767Z     [90m275| [39m      [35mconst[39m successCount [33m=[39m results[33m.[39m[34mfilter[39m(r [33m=>[39m r)[33m.[39mlength[33m;[39m
-2026-01-12T11:27:42.4161422Z     [90m276| [39m      [34mexpect[39m(successCount)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
-2026-01-12T11:27:42.4162357Z     [90m   | [39m                           [31m^[39m
-2026-01-12T11:27:42.4162859Z     [90m277| [39m
-2026-01-12T11:27:42.4163421Z     [90m278| [39m      [90m// Only one comment posted[39m
-2026-01-12T11:27:42.4163800Z 
-2026-01-12T11:27:42.4164186Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/25]⎯[22m[39m
-2026-01-12T11:27:42.4164515Z 
-2026-01-12T11:27:42.4166522Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mSimulated Concurrent Frontmatter Updates[2m > [22mshould serialize frontmatter updates for same user story
-2026-01-12T11:27:42.4168582Z [31m[1mAssertionError[22m: expected 3 to be 1 // Object.is equality[39m
-2026-01-12T11:27:42.4169094Z 
-2026-01-12T11:27:42.4169465Z [32m- Expected[39m
-2026-01-12T11:27:42.4169879Z [31m+ Received[39m
-2026-01-12T11:27:42.4170079Z 
-2026-01-12T11:27:42.4170246Z [32m- 1[39m
-2026-01-12T11:27:42.4170603Z [31m+ 3[39m
-2026-01-12T11:27:42.4170769Z 
-2026-01-12T11:27:42.4171453Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m397:28[22m[39m
-2026-01-12T11:27:42.4172400Z     [90m395| [39m      [90m// Only one should succeed[39m
-2026-01-12T11:27:42.4173739Z     [90m396| [39m      [35mconst[39m successCount [33m=[39m results[33m.[39m[34mfilter[39m(r [33m=>[39m r)[33m.[39mlength[33m;[39m
-2026-01-12T11:27:42.4175217Z     [90m397| [39m      [34mexpect[39m(successCount)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
-2026-01-12T11:27:42.4176356Z     [90m   | [39m                           [31m^[39m
-2026-01-12T11:27:42.4176861Z     [90m398| [39m
-2026-01-12T11:27:42.4177561Z     [90m399| [39m      [90m// File should have exactly one GitHub section[39m
-2026-01-12T11:27:42.4178095Z 
-2026-01-12T11:27:42.4178528Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/25]⎯[22m[39m
-2026-01-12T11:27:42.4178935Z 
-2026-01-12T11:27:42.4180811Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mLock Cleanup[2m > [22mshould cleanup stale locks on acquisition attempt
-2026-01-12T11:27:42.4182703Z [31m[1mAssertionError[22m: expected 1 to be 8691 // Object.is equality[39m
-2026-01-12T11:27:42.4183478Z 
-2026-01-12T11:27:42.4183729Z [32m- Expected[39m
-2026-01-12T11:27:42.4184299Z [31m+ Received[39m
-2026-01-12T11:27:42.4184538Z 
-2026-01-12T11:27:42.4184719Z [32m- 8691[39m
-2026-01-12T11:27:42.4185278Z [31m+ 1[39m
-2026-01-12T11:27:42.4185493Z 
-2026-01-12T11:27:42.4186202Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m427:40[22m[39m
-2026-01-12T11:27:42.4187298Z     [90m425| [39m      [90m// Lock dir should now have current PID[39m
-2026-01-12T11:27:42.4189447Z     [90m426| [39m      [35mconst[39m pidContent [33m=[39m fs[33m.[39m[34mreadFileSync[39m(path[33m.[39m[34mjoin[39m(lockDir[33m,[39m [32m'pid'[39m)[33m,[39m [32m'u[39m…
-2026-01-12T11:27:42.4191701Z     [90m427| [39m      [34mexpect[39m([34mparseInt[39m(pidContent[33m,[39m [34m10[39m))[33m.[39m[34mtoBe[39m(process[33m.[39mpid)[33m;[39m
-2026-01-12T11:27:42.4192978Z     [90m   | [39m                                       [31m^[39m
-2026-01-12T11:27:42.4193752Z     [90m428| [39m
-2026-01-12T11:27:42.4194566Z     [90m429| [39m      [35mawait[39m lock[33m.[39m[34mrelease[39m()[33m;[39m
-2026-01-12T11:27:42.4195083Z 
-2026-01-12T11:27:42.4195468Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/25]⎯[22m[39m
-2026-01-12T11:27:42.4211049Z 
-2026-01-12T11:27:42.4212804Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mLock Cleanup[2m > [22mshould preserve fresh locks held by other processes
-2026-01-12T11:27:42.4214680Z [31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
-2026-01-12T11:27:42.4215242Z 
-2026-01-12T11:27:42.4215444Z [32m- Expected[39m
-2026-01-12T11:27:42.4215838Z [31m+ Received[39m
-2026-01-12T11:27:42.4216046Z 
-2026-01-12T11:27:42.4216451Z [32m- false[39m
-2026-01-12T11:27:42.4216816Z [31m+ true[39m
-2026-01-12T11:27:42.4216998Z 
-2026-01-12T11:27:42.4217679Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m447:24[22m[39m
-2026-01-12T11:27:42.4219108Z     [90m445| [39m      [35mconst[39m elapsed [33m=[39m [33mDate[39m[33m.[39m[34mnow[39m() [33m-[39m startTime[33m;[39m
-2026-01-12T11:27:42.4220156Z     [90m446| [39m
-2026-01-12T11:27:42.4220977Z     [90m447| [39m      [34mexpect[39m(acquired)[33m.[39m[34mtoBe[39m([35mfalse[39m)[33m;[39m
-2026-01-12T11:27:42.4221860Z     [90m   | [39m                       [31m^[39m
-2026-01-12T11:27:42.4223148Z     [90m448| [39m      [34mexpect[39m(elapsed)[33m.[39m[34mtoBeGreaterThan[39m([34m9000[39m)[33m;[39m [90m// Should have timed out[39m
-2026-01-12T11:27:42.4224123Z     [90m449| [39m
-2026-01-12T11:27:42.4224313Z 
-2026-01-12T11:27:42.4224692Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/25]⎯[22m[39m
-2026-01-12T11:27:42.4225064Z 
-2026-01-12T11:27:42.4226758Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/cli/commands/cache-refresh.test.ts[2m > [22mcache-refresh command[2m > [22mskill memory preservation[2m > [22mshould backup skill memories before refresh
-2026-01-12T11:27:42.4228460Z [31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
-2026-01-12T11:27:42.4229675Z [36m [2m❯[22m tests/unit/cli/commands/cache-refresh.test.ts:[2m133:30[22m[39m
-2026-01-12T11:27:42.4230526Z     [90m131| [39m        [33m:[39m [][33m;[39m
-2026-01-12T11:27:42.4231224Z     [90m132| [39m
-2026-01-12T11:27:42.4232231Z     [90m133| [39m      [34mexpect[39m(backups[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
-2026-01-12T11:27:42.4233280Z     [90m   | [39m                             [31m^[39m
-2026-01-12T11:27:42.4234847Z     [90m134| [39m      [34mexpect[39m(backups[33m.[39m[34msome[39m(b [33m=>[39m b[33m.[39m[34mincludes[39m([32m'sw-1.0.0'[39m)))[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
-2026-01-12T11:27:42.4235991Z     [90m135| [39m
-2026-01-12T11:27:42.4236191Z 
-2026-01-12T11:27:42.4236578Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/25]⎯[22m[39m
-2026-01-12T11:27:42.4236898Z 
-2026-01-12T11:27:42.4238667Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/cli/commands/cache-refresh.test.ts[2m > [22mcache-refresh command[2m > [22mskill memory preservation[2m > [22mshould preserve memories even after hard refresh
-2026-01-12T11:27:42.4240689Z [31m[1mAssertionError[22m: expected undefined to be defined[39m
-2026-01-12T11:27:42.4241838Z [36m [2m❯[22m tests/unit/cli/commands/cache-refresh.test.ts:[2m170:28[22m[39m
-2026-01-12T11:27:42.4242664Z     [90m168| [39m      )[33m;[39m
-2026-01-12T11:27:42.4243117Z     [90m169| [39m
-2026-01-12T11:27:42.4243958Z     [90m170| [39m      [34mexpect[39m(memoryBackup)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
-2026-01-12T11:27:42.4244868Z     [90m   | [39m                           [31m^[39m
-2026-01-12T11:27:42.4245431Z     [90m171| [39m    })[33m;[39m
-2026-01-12T11:27:42.4245927Z     [90m172| [39m  })[33m;[39m
-2026-01-12T11:27:42.4246182Z 
-2026-01-12T11:27:42.4246558Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/25]⎯[22m[39m
-2026-01-12T11:27:42.4246875Z 
-2026-01-12T11:27:42.4248321Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/cli/commands/cache-refresh.test.ts[2m > [22mcache-refresh command[2m > [22merror handling[2m > [22mshould handle backup failure
-2026-01-12T11:27:42.4250201Z [31m[1mAssertionError[22m: expected "spy" to be called at least once[39m
-2026-01-12T11:27:42.4251368Z [36m [2m❯[22m tests/unit/cli/commands/cache-refresh.test.ts:[2m268:26[22m[39m
-2026-01-12T11:27:42.4252145Z     [90m266| [39m      })[33m;[39m
-2026-01-12T11:27:42.4252596Z     [90m267| [39m
-2026-01-12T11:27:42.4253474Z     [90m268| [39m      [34mexpect[39m(consoleSpy)[33m.[39m[34mtoHaveBeenCalled[39m()[33m;[39m
-2026-01-12T11:27:42.4254412Z     [90m   | [39m                         [31m^[39m
-2026-01-12T11:27:42.4255182Z     [90m269| [39m
-2026-01-12T11:27:42.4255836Z     [90m270| [39m      [90m// Restore permissions for cleanup[39m
-2026-01-12T11:27:42.4256264Z 
-2026-01-12T11:27:42.4256655Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/25]⎯[22m[39m
-2026-01-12T11:27:42.4256983Z 
-2026-01-12T11:27:42.4258416Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/core/deployment/project-analyzer.test.ts[2m > [22mProject Analyzer[2m > [22manalyzeSSR[2m > [22mshould detect dynamic routes
-2026-01-12T11:27:42.4260357Z [31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
-2026-01-12T11:27:42.4260938Z 
-2026-01-12T11:27:42.4261145Z [32m- Expected[39m
-2026-01-12T11:27:42.4261550Z [31m+ Received[39m
-2026-01-12T11:27:42.4261757Z 
-2026-01-12T11:27:42.4261928Z [32m- true[39m
-2026-01-12T11:27:42.4262288Z [31m+ false[39m
-2026-01-12T11:27:42.4262486Z 
-2026-01-12T11:27:42.4263214Z [36m [2m❯[22m tests/unit/core/deployment/project-analyzer.test.ts:[2m346:39[22m[39m
-2026-01-12T11:27:42.4264508Z     [90m344| [39m      [35mconst[39m result [33m=[39m [34manalyzeSSR[39m(testProjectDir)[33m;[39m
-2026-01-12T11:27:42.4265284Z     [90m345| [39m
-2026-01-12T11:27:42.4266350Z     [90m346| [39m      [34mexpect[39m(result[33m.[39mhasDynamicRoutes)[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
-2026-01-12T11:27:42.4267480Z     [90m   | [39m                                      [31m^[39m
-2026-01-12T11:27:42.4268079Z     [90m347| [39m    })[33m;[39m
-2026-01-12T11:27:42.4268520Z     [90m348| [39m
-2026-01-12T11:27:42.4268934Z 
-2026-01-12T11:27:42.4269505Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/25]⎯[22m[39m
-2026-01-12T11:27:42.4269829Z 
-2026-01-12T11:27:42.4275387Z [2m Test Files [22m [1m[31m12 failed[39m[22m[2m | [22m[1m[32m253 passed[39m[22m[90m (265)[39m
-2026-01-12T11:27:42.4297193Z [2m      Tests [22m [1m[31m20 failed[39m[22m[2m | [22m[1m[32m4845 passed[39m[22m[90m (4865)[39m
-2026-01-12T11:27:42.4298115Z [2m   Start at [22m 11:26:51
-2026-01-12T11:27:42.4303077Z [2m   Duration [22m 51.21s[2m (transform 5.44s, setup 2.64s, collect 12.38s, tests 59.50s, environment 88ms, prepare 22.61s)[22m
-2026-01-12T11:27:42.4304213Z 
-2026-01-12T11:27:42.5166285Z ##[error]Process completed with exit code 1.
-2026-01-12T11:27:42.5277161Z Post job cleanup.
-2026-01-12T11:27:42.6227274Z [command]/usr/bin/git version
-2026-01-12T11:27:42.6270416Z git version 2.52.0
-2026-01-12T11:27:42.6312900Z Temporarily overriding HOME='/home/runner/work/_temp/7cc6e34d-49de-4d88-973d-afb8ad837fa0' before making global git config changes
-2026-01-12T11:27:42.6313971Z Adding repository directory to the temporary git global config as a safe directory
-2026-01-12T11:27:42.6317915Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/specweave/specweave
-2026-01-12T11:27:42.6350332Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
-2026-01-12T11:27:42.6381514Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
-2026-01-12T11:27:42.6621103Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
-2026-01-12T11:27:42.6642492Z http.https://github.com/.extraheader
-2026-01-12T11:27:42.6654686Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
-2026-01-12T11:27:42.6685688Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
-2026-01-12T11:27:42.6917383Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
-2026-01-12T11:27:42.6948564Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
-2026-01-12T11:27:42.7295641Z Cleaning up orphan processes
+2026-01-12T11:43:59.3369490Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/auto/session-state.test.ts[2m [ tests/unit/auto/session-state.test.ts ][22m
+2026-01-12T11:43:59.3372781Z [31m[1mError[22m: Failed to load url ../../../src/core/auto/session-state.js (resolved id: ../../../src/core/auto/session-state.js) in /home/runner/work/specweave/specweave/tests/unit/auto/session-state.test.ts. Does the file exist?[39m
+2026-01-12T11:43:59.3375557Z [90m [2m❯[22m loadAndTransform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:[2m51969:17[22m[39m
+2026-01-12T11:43:59.3376283Z 
+2026-01-12T11:43:59.3376766Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/15]⎯[22m[39m
+2026-01-12T11:43:59.3377118Z 
+2026-01-12T11:43:59.3378093Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/auto/test-gate.test.ts[2m [ tests/unit/auto/test-gate.test.ts ][22m
+2026-01-12T11:43:59.3380784Z [31m[1mError[22m: Failed to load url ../../../src/core/auto/test-gate.js (resolved id: ../../../src/core/auto/test-gate.js) in /home/runner/work/specweave/specweave/tests/unit/auto/test-gate.test.ts. Does the file exist?[39m
+2026-01-12T11:43:59.3383140Z [90m [2m❯[22m loadAndTransform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:[2m51969:17[22m[39m
+2026-01-12T11:43:59.3383868Z 
+2026-01-12T11:43:59.3384311Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/15]⎯[22m[39m
+2026-01-12T11:43:59.3384856Z 
+2026-01-12T11:43:59.3385363Z [31m⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 10 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+2026-01-12T11:43:59.3385758Z 
+2026-01-12T11:43:59.3387120Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/auto/config.test.ts[2m > [22mAuto Config[2m > [22mloadAutoConfig[2m > [22mshould warn for invalid maxIterations
+2026-01-12T11:43:59.3389096Z [31m[1mAssertionError[22m: expected [ Array(1) ] to include 'maxIterations must be >= 1, using def…'[39m
+2026-01-12T11:43:59.3390398Z [36m [2m❯[22m tests/unit/auto/config.test.ts:[2m85:31[22m[39m
+2026-01-12T11:43:59.3544752Z     [90m 83| [39m      [35mconst[39m result [33m=[39m [34mloadAutoConfig[39m(tempDir)[33m;[39m
+2026-01-12T11:43:59.3545659Z     [90m 84| [39m
+2026-01-12T11:43:59.3546888Z     [90m 85| [39m      [34mexpect[39m(result[33m.[39mwarnings)[33m.[39m[34mtoContain[39m([32m'maxIterations must be >= 1, u[39m…
+2026-01-12T11:43:59.3548099Z     [90m   | [39m                              [31m^[39m
+2026-01-12T11:43:59.3549483Z     [90m 86| [39m      [34mexpect[39m(result[33m.[39mconfig[33m.[39mmaxIterations)[33m.[39m[34mtoBe[39m([34m500[39m)[33m;[39m
+2026-01-12T11:43:59.3550635Z     [90m 87| [39m    })[33m;[39m
+2026-01-12T11:43:59.3550930Z 
+2026-01-12T11:43:59.3551679Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/15]⎯[22m[39m
+2026-01-12T11:43:59.3552038Z 
+2026-01-12T11:43:59.3553414Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/hooks/hook-health-tracker.test.ts[2m > [22mHookHealthTracker[2m > [22mshould calculate success rate from logs
+2026-01-12T11:43:59.3555250Z [31m[1mAssertionError[22m: expected +0 to be 0.5 // Object.is equality[39m
+2026-01-12T11:43:59.3555785Z 
+2026-01-12T11:43:59.3556031Z [32m- Expected[39m
+2026-01-12T11:43:59.3556445Z [31m+ Received[39m
+2026-01-12T11:43:59.3556657Z 
+2026-01-12T11:43:59.3557069Z [32m- 0.5[39m
+2026-01-12T11:43:59.3557422Z [31m+ 0[39m
+2026-01-12T11:43:59.3557598Z 
+2026-01-12T11:43:59.3558259Z [36m [2m❯[22m tests/unit/hooks/hook-health-tracker.test.ts:[2m17:32[22m[39m
+2026-01-12T11:43:59.3582348Z     [90m 15| [39m    [35mconst[39m health [33m=[39m tracker[33m.[39m[34manalyze[39m([32m'session-start'[39m[33m,[39m logs)[33m;[39m
+2026-01-12T11:43:59.3583449Z     [90m 16| [39m
+2026-01-12T11:43:59.3584774Z     [90m 17| [39m    [34mexpect[39m(health[33m.[39msuccessRate)[33m.[39m[34mtoBe[39m([34m0.5[39m)[33m;[39m [90m// 2/4[39m
+2026-01-12T11:43:59.3585951Z     [90m   | [39m                               [31m^[39m
+2026-01-12T11:43:59.3587100Z     [90m 18| [39m    [34mexpect[39m(health[33m.[39mstatus)[33m.[39m[34mtoBe[39m([32m'DEGRADED'[39m)[33m;[39m
+2026-01-12T11:43:59.3588033Z     [90m 19| [39m  })[33m;[39m
+2026-01-12T11:43:59.3588307Z 
+2026-01-12T11:43:59.3588714Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/15]⎯[22m[39m
+2026-01-12T11:43:59.3589071Z 
+2026-01-12T11:43:59.3590524Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/hooks/hook-health-tracker.test.ts[2m > [22mHookHealthTracker[2m > [22mshould mark as FAILED after 3 consecutive failures
+2026-01-12T11:43:59.3592464Z [31m[1mAssertionError[22m: expected 'UNKNOWN' to be 'FAILED' // Object.is equality[39m
+2026-01-12T11:43:59.3593095Z 
+2026-01-12T11:43:59.3593378Z Expected: [32m"FAILED"[39m
+2026-01-12T11:43:59.3593906Z Received: [31m"UNKNOWN"[39m
+2026-01-12T11:43:59.3594207Z 
+2026-01-12T11:43:59.3595102Z [36m [2m❯[22m tests/unit/hooks/hook-health-tracker.test.ts:[2m31:27[22m[39m
+2026-01-12T11:43:59.3596744Z     [90m 29| [39m    [35mconst[39m health [33m=[39m tracker[33m.[39m[34manalyze[39m([32m'user-prompt-submit'[39m[33m,[39m logs)[33m;[39m
+2026-01-12T11:43:59.3597823Z     [90m 30| [39m
+2026-01-12T11:43:59.3598793Z     [90m 31| [39m    [34mexpect[39m(health[33m.[39mstatus)[33m.[39m[34mtoBe[39m([32m'FAILED'[39m)[33m;[39m
+2026-01-12T11:43:59.3599819Z     [90m   | [39m                          [31m^[39m
+2026-01-12T11:43:59.3601053Z     [90m 32| [39m    [34mexpect[39m(health[33m.[39mconsecutiveFailures)[33m.[39m[34mtoBe[39m([34m3[39m)[33m;[39m
+2026-01-12T11:43:59.3602114Z     [90m 33| [39m  })[33m;[39m
+2026-01-12T11:43:59.3602397Z 
+2026-01-12T11:43:59.3602830Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/15]⎯[22m[39m
+2026-01-12T11:43:59.3603195Z 
+2026-01-12T11:43:59.3604979Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/hooks/hook-health-tracker.test.ts[2m > [22mHookHealthTracker[2m > [22mshould calculate average duration
+2026-01-12T11:43:59.3606692Z [31m[1mAssertionError[22m: expected +0 to be 200 // Object.is equality[39m
+2026-01-12T11:43:59.3607241Z 
+2026-01-12T11:43:59.3607471Z [32m- Expected[39m
+2026-01-12T11:43:59.3607876Z [31m+ Received[39m
+2026-01-12T11:43:59.3608079Z 
+2026-01-12T11:43:59.3608244Z [32m- 200[39m
+2026-01-12T11:43:59.3608577Z [31m+ 0[39m
+2026-01-12T11:43:59.3608756Z 
+2026-01-12T11:43:59.3609430Z [36m [2m❯[22m tests/unit/hooks/hook-health-tracker.test.ts:[2m45:32[22m[39m
+2026-01-12T11:43:59.3611984Z     [90m 43| [39m    [35mconst[39m health [33m=[39m tracker[33m.[39m[34manalyze[39m([32m'post-tool-use'[39m[33m,[39m logs)[33m;[39m
+2026-01-12T11:43:59.3613150Z     [90m 44| [39m
+2026-01-12T11:43:59.3614190Z     [90m 45| [39m    [34mexpect[39m(health[33m.[39mavgDuration)[33m.[39m[34mtoBe[39m([34m200[39m)[33m;[39m
+2026-01-12T11:43:59.3615517Z     [90m   | [39m                               [31m^[39m
+2026-01-12T11:43:59.3616113Z     [90m 46| [39m  })[33m;[39m
+2026-01-12T11:43:59.3616572Z     [90m 47| [39m
+2026-01-12T11:43:59.3616775Z 
+2026-01-12T11:43:59.3617176Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/15]⎯[22m[39m
+2026-01-12T11:43:59.3617505Z 
+2026-01-12T11:43:59.3618854Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/hooks/hook-health-tracker.test.ts[2m > [22mHookHealthTracker[2m > [22mshould mark as OK with high success rate
+2026-01-12T11:43:59.3620579Z [31m[1mAssertionError[22m: expected 'UNKNOWN' to be 'OK' // Object.is equality[39m
+2026-01-12T11:43:59.3621551Z 
+2026-01-12T11:43:59.3621803Z Expected: [32m"OK"[39m
+2026-01-12T11:43:59.3622299Z Received: [31m"UNKNOWN"[39m
+2026-01-12T11:43:59.3622572Z 
+2026-01-12T11:43:59.3623265Z [36m [2m❯[22m tests/unit/hooks/hook-health-tracker.test.ts:[2m59:27[22m[39m
+2026-01-12T11:43:59.3625057Z     [90m 57| [39m    [35mconst[39m health [33m=[39m tracker[33m.[39m[34manalyze[39m([32m'session-start'[39m[33m,[39m logs)[33m;[39m
+2026-01-12T11:43:59.3626150Z     [90m 58| [39m
+2026-01-12T11:43:59.3627132Z     [90m 59| [39m    [34mexpect[39m(health[33m.[39mstatus)[33m.[39m[34mtoBe[39m([32m'OK'[39m)[33m;[39m
+2026-01-12T11:43:59.3628411Z     [90m   | [39m                          [31m^[39m
+2026-01-12T11:43:59.3629590Z     [90m 60| [39m    [34mexpect[39m(health[33m.[39msuccessRate)[33m.[39m[34mtoBe[39m([34m1.0[39m)[33m;[39m
+2026-01-12T11:43:59.3630510Z     [90m 61| [39m  })[33m;[39m
+2026-01-12T11:43:59.3630812Z 
+2026-01-12T11:43:59.3631225Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/15]⎯[22m[39m
+2026-01-12T11:43:59.3631553Z 
+2026-01-12T11:43:59.3632960Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/hooks/hook-health-tracker.test.ts[2m > [22mHookHealthTracker[2m > [22mshould mark as DEGRADED with recent warnings
+2026-01-12T11:43:59.3635043Z [31m[1mAssertionError[22m: expected 'UNKNOWN' to be 'DEGRADED' // Object.is equality[39m
+2026-01-12T11:43:59.3635679Z 
+2026-01-12T11:43:59.3636011Z Expected: [32m"DEGRADED"[39m
+2026-01-12T11:43:59.3636516Z Received: [31m"UNKNOWN"[39m
+2026-01-12T11:43:59.3636779Z 
+2026-01-12T11:43:59.3637469Z [36m [2m❯[22m tests/unit/hooks/hook-health-tracker.test.ts:[2m81:27[22m[39m
+2026-01-12T11:43:59.3638635Z     [90m 79| [39m    [90m// 6 success + 3 warnings = 67% success rate (DEGRADED zone: 50-90[39m…
+2026-01-12T11:43:59.3639809Z     [90m 80| [39m    [90m// Plus 3 recent warnings in last 10 entries triggers DEGRADED[39m
+2026-01-12T11:43:59.3641222Z     [90m 81| [39m    [34mexpect[39m(health[33m.[39mstatus)[33m.[39m[34mtoBe[39m([32m'DEGRADED'[39m)[33m;[39m
+2026-01-12T11:43:59.3642232Z     [90m   | [39m                          [31m^[39m
+2026-01-12T11:43:59.3642836Z     [90m 82| [39m  })[33m;[39m
+2026-01-12T11:43:59.3643320Z     [90m 83| [39m
+2026-01-12T11:43:59.3643532Z 
+2026-01-12T11:43:59.3643968Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/15]⎯[22m[39m
+2026-01-12T11:43:59.3644322Z 
+2026-01-12T11:43:59.3646077Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/hooks/hook-health-tracker.test.ts[2m > [22mHookHealthTracker[2m > [22mshould track last execution time
+2026-01-12T11:43:59.3648168Z [31m[1mAssertionError[22m: expected '2026-01-08T10:00:00Z' to be '2026-01-08T10:05:00Z' // Object.is equality[39m
+2026-01-12T11:43:59.3648903Z 
+2026-01-12T11:43:59.3649325Z Expected: [32m"2026-01-08T10:0[7m5[27m:00Z"[39m
+2026-01-12T11:43:59.3650061Z Received: [31m"2026-01-08T10:0[7m0[27m:00Z"[39m
+2026-01-12T11:43:59.3650420Z 
+2026-01-12T11:43:59.3651089Z [36m [2m❯[22m tests/unit/hooks/hook-health-tracker.test.ts:[2m93:28[22m[39m
+2026-01-12T11:43:59.3652632Z     [90m 91| [39m    [35mconst[39m health [33m=[39m tracker[33m.[39m[34manalyze[39m([32m'session-start'[39m[33m,[39m logs)[33m;[39m
+2026-01-12T11:43:59.3653618Z     [90m 92| [39m
+2026-01-12T11:43:59.3654896Z     [90m 93| [39m    [34mexpect[39m(health[33m.[39mlastRun)[33m.[39m[34mtoBe[39m([32m'2026-01-08T10:05:00Z'[39m)[33m;[39m
+2026-01-12T11:43:59.3655975Z     [90m   | [39m                           [31m^[39m
+2026-01-12T11:43:59.3656550Z     [90m 94| [39m  })[33m;[39m
+2026-01-12T11:43:59.3656981Z     [90m 95| [39m
+2026-01-12T11:43:59.3657170Z 
+2026-01-12T11:43:59.3657563Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/15]⎯[22m[39m
+2026-01-12T11:43:59.3657896Z 
+2026-01-12T11:43:59.3659329Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/hooks/hook-health-tracker.test.ts[2m > [22mHookHealthTracker[2m > [22mshould provide recommendations for degraded hooks
+2026-01-12T11:43:59.3661324Z [31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+2026-01-12T11:43:59.3661882Z 
+2026-01-12T11:43:59.3662108Z [32m- Expected[39m
+2026-01-12T11:43:59.3662511Z [31m+ Received[39m
+2026-01-12T11:43:59.3662712Z 
+2026-01-12T11:43:59.3662884Z [32m- true[39m
+2026-01-12T11:43:59.3663243Z [31m+ false[39m
+2026-01-12T11:43:59.3663436Z 
+2026-01-12T11:43:59.3664111Z [36m [2m❯[22m tests/unit/hooks/hook-health-tracker.test.ts:[2m133:41[22m[39m
+2026-01-12T11:43:59.3664997Z     [90m131| [39m
+2026-01-12T11:43:59.3666204Z     [90m132| [39m    [35mconst[39m hasCheckHooksRecommendation [33m=[39m health[33m.[39mrecommendations[33m.[39m[34msome[39m(r …
+2026-01-12T11:43:59.3667909Z     [90m133| [39m    [34mexpect[39m(hasCheckHooksRecommendation)[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+2026-01-12T11:43:59.3669037Z     [90m   | [39m                                        [31m^[39m
+2026-01-12T11:43:59.3669641Z     [90m134| [39m})[33m;[39m
+2026-01-12T11:43:59.3670116Z     [90m135| [39m})[33m;[39m
+2026-01-12T11:43:59.3670360Z 
+2026-01-12T11:43:59.3670756Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/15]⎯[22m[39m
+2026-01-12T11:43:59.3671080Z 
+2026-01-12T11:43:59.3672953Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/plugin-cache/cache-invalidator.test.ts[2m > [22mCacheInvalidator[2m > [22minvalidatePlugin[2m > [22mshould throw error if backup fails during hard invalidation
+2026-01-12T11:43:59.3675010Z [31m[1mAssertionError[22m: promise resolved "undefined" instead of rejecting[39m
+2026-01-12T11:43:59.3675583Z 
+2026-01-12T11:43:59.3675800Z [32m- Expected:[39m 
+2026-01-12T11:43:59.3676208Z [Error: rejected promise]
+2026-01-12T11:43:59.3676462Z 
+2026-01-12T11:43:59.3676689Z [31m+ Received:[39m 
+2026-01-12T11:43:59.3677027Z undefined
+2026-01-12T11:43:59.3677195Z 
+2026-01-12T11:43:59.3677915Z [36m [2m❯[22m tests/unit/plugin-cache/cache-invalidator.test.ts:[2m115:7[22m[39m
+2026-01-12T11:43:59.3681695Z     [90m113| [39m      [35mawait[39m [34mexpect[39m(
+2026-01-12T11:43:59.3683308Z     [90m114| [39m        invalidator[33m.[39m[34minvalidatePlugin[39m([32m'sw'[39m[33m,[39m [32m'1.0.0'[39m[33m,[39m options)
+2026-01-12T11:43:59.3685150Z     [90m115| [39m      )[33m.[39mrejects[33m.[39m[34mtoThrow[39m()[33m;[39m
+2026-01-12T11:43:59.3687185Z     [90m   | [39m      [31m^[39m
+2026-01-12T11:43:59.3687656Z     [90m116| [39m
+2026-01-12T11:43:59.3688517Z     [90m117| [39m      [90m// Restore permissions for cleanup[39m
+2026-01-12T11:43:59.3688975Z 
+2026-01-12T11:43:59.3689395Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/15]⎯[22m[39m
+2026-01-12T11:43:59.3689735Z 
+2026-01-12T11:43:59.3691340Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/plugin-system/plugin-loader.test.ts[2m > [22mPluginLoader[2m > [22mgetMetadata[2m > [22mshould extract plugin metadata without full load
+2026-01-12T11:43:59.3692999Z [31m[1mTypeError[22m: loader.getMetadata is not a function[39m
+2026-01-12T11:43:59.3694138Z [36m [2m❯[22m tests/unit/plugin-system/plugin-loader.test.ts:[2m67:39[22m[39m
+2026-01-12T11:43:59.3708455Z     [90m 65| [39m
+2026-01-12T11:43:59.3711419Z     [90m 66| [39m      [35mif[39m ([35mawait[39m fs[33m.[39m[34mpathExists[39m(pluginPath)) {
+2026-01-12T11:43:59.3712757Z     [90m 67| [39m        [35mconst[39m metadata [33m=[39m [35mawait[39m loader[33m.[39m[34mgetMetadata[39m(pluginPath)[33m;[39m
+2026-01-12T11:43:59.3713951Z     [90m   | [39m                                      [31m^[39m
+2026-01-12T11:43:59.3714773Z     [90m 68| [39m
+2026-01-12T11:43:59.3715598Z     [90m 69| [39m        [34mexpect[39m(metadata)[33m.[39m[34mtoBeDefined[39m()[33m;[39m
+2026-01-12T11:43:59.3716215Z 
+2026-01-12T11:43:59.3716666Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/15]⎯[22m[39m
+2026-01-12T11:43:59.3717051Z 
+2026-01-12T11:43:59.3724717Z [2m Test Files [22m [1m[31m9 failed[39m[22m[2m | [22m[1m[32m256 passed[39m[22m[90m (265)[39m
+2026-01-12T11:43:59.3745947Z [2m      Tests [22m [1m[31m10 failed[39m[22m[2m | [22m[1m[32m4855 passed[39m[22m[90m (4865)[39m
+2026-01-12T11:43:59.3747311Z [2m   Start at [22m 11:43:02
+2026-01-12T11:43:59.3753045Z [2m   Duration [22m 56.49s[2m (transform 5.18s, setup 2.44s, collect 11.52s, tests 79.60s, environment 81ms, prepare 21.76s)[22m
+2026-01-12T11:43:59.3753794Z 
+2026-01-12T11:43:59.4583214Z ##[error]Process completed with exit code 1.
+2026-01-12T11:43:59.4703757Z Post job cleanup.
+2026-01-12T11:43:59.5639156Z [command]/usr/bin/git version
+2026-01-12T11:43:59.5673871Z git version 2.52.0
+2026-01-12T11:43:59.5716392Z Temporarily overriding HOME='/home/runner/work/_temp/a7c38709-8e92-44b9-a8cd-421d2ab2286b' before making global git config changes
+2026-01-12T11:43:59.5717924Z Adding repository directory to the temporary git global config as a safe directory
+2026-01-12T11:43:59.5722262Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/specweave/specweave
+2026-01-12T11:43:59.5757272Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-01-12T11:43:59.5788818Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-01-12T11:43:59.6019888Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-01-12T11:43:59.6039864Z http.https://github.com/.extraheader
+2026-01-12T11:43:59.6052221Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-01-12T11:43:59.6081799Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-01-12T11:43:59.6303866Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-01-12T11:43:59.6332998Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-01-12T11:43:59.6673912Z Cleaning up orphan processes
 

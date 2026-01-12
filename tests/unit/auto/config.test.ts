@@ -82,7 +82,7 @@ describe('Auto Config', () => {
 
       const result = loadAutoConfig(tempDir);
 
-      expect(result.warnings).toContain('maxIterations must be >= 1, using default (500)');
+      expect(result.warnings).toContain('maxIterations must be >= 1, using default');
       expect(result.config.maxIterations).toBe(500);
     });
 
