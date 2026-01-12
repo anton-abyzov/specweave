@@ -637,33 +637,122 @@ async function processPaymentIdempotently(orderId: string) {
 
 ---
 
-### 4. Web Browser Payment Flow (React Native)
+### 4. Web Browser Payment Flow (React Native/Expo)
 
-**Problem:** `WebBrowser.openBrowserAsync` returns immediately on web with `{type: 'opened'}`, while native waits for browser close.
+**Problem:** `WebBrowser.openBrowserAsync` behaves DIFFERENTLY on web vs native!
 
-**Solution:**
+| Platform | Return Timing | `result.type` | User State |
+|----------|---------------|---------------|------------|
+| **iOS/Android** | After browser closed | `'dismiss'` or `'cancel'` | Back in app |
+| **Web** | Immediately | `'opened'` | **Still viewing Stripe checkout!** |
+
+**⚠️ CRITICAL: On web, you CAN'T verify payment immediately because the user is still looking at Stripe checkout in another tab!**
+
+**Correct Solution - Platform-Specific Handling:**
 ```typescript
 import * as WebBrowser from 'expo-web-browser';
-import { Platform } from 'react-native';
+import { Platform, Alert } from 'react-native';
 
-async function handlePayment(checkoutUrl: string) {
+async function handlePayment(checkoutUrl: string, sessionId: string) {
   const result = await WebBrowser.openBrowserAsync(checkoutUrl);
 
-  // On web, result.type is 'opened' immediately
-  // On native, result.type is 'dismiss' when browser closed
+  // Platform-specific handling based on result.type
+  switch (result.type) {
+    case 'cancel':
+      // Native only: User explicitly cancelled (X button)
+      // Don't verify - they cancelled intentionally
+      Alert.alert('Payment Cancelled', 'You cancelled the payment.');
+      break;
 
-  if (Platform.OS === 'web' || result.type === 'dismiss') {
-    // ALWAYS verify regardless of browser result
-    const success = await verifyPaymentWithRetry(sessionId);
+    case 'dismiss':
+      // Native only: Browser was closed (could be success or cancel)
+      // NOW it's safe to verify - user is back in the app
+      const success = await verifyPaymentWithRetry(sessionId);
+      if (success) {
+        navigation.navigate('PaymentSuccess');
+      } else {
+        navigation.navigate('PaymentPending');
+      }
+      break;
 
-    if (success) {
-      navigation.navigate('PaymentSuccess');
-    } else {
-      // Could be: still processing, failed, or user cancelled
-      navigation.navigate('PaymentPending');
-    }
+    case 'opened':
+      // WEB ONLY: Browser opened but user is STILL VIEWING STRIPE!
+      // Do NOT verify immediately - show dialog instead
+      Alert.alert(
+        'Complete Your Payment',
+        'Please complete your payment in the browser tab, then return here.',
+        [
+          {
+            text: 'I\'ve Completed Payment',
+            onPress: async () => {
+              const success = await verifyPaymentWithRetry(sessionId);
+              if (success) {
+                navigation.navigate('PaymentSuccess');
+              } else {
+                Alert.alert('Payment Not Found', 'We couldn\'t confirm your payment. Please try again or contact support.');
+              }
+            }
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
+      break;
   }
 }
+```
+
+**Alternative for Web: Use Window Focus Event**
+```typescript
+// Web-specific: Listen for when user returns to tab
+if (Platform.OS === 'web') {
+  const handleFocus = async () => {
+    window.removeEventListener('focus', handleFocus);
+    // User returned to our tab - now verify
+    const success = await verifyPaymentWithRetry(sessionId);
+    // Handle result...
+  };
+  window.addEventListener('focus', handleFocus);
+}
+```
+
+**Verification with Exponential Backoff:**
+```typescript
+async function verifyPaymentWithRetry(
+  sessionId: string,
+  attempts = 3,
+  initialDelay = 1500
+): Promise<boolean> {
+  let delay = initialDelay;
+
+  for (let i = 0; i < attempts; i++) {
+    await sleep(delay);
+
+    try {
+      const result = await api.verifyPayment(sessionId);
+
+      if (result.success) return true;
+
+      if (result.status === 'pending') {
+        // Still processing - increase delay and retry
+        delay = Math.min(delay * 1.5, 5000);
+        continue;
+      }
+
+      // Failed or expired
+      return false;
+    } catch (error) {
+      // Network error - retry
+      delay = Math.min(delay * 1.5, 5000);
+    }
+  }
+
+  return false;
+}
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 ```
 
 ---
@@ -816,6 +905,7 @@ async function handleConnectCheckoutComplete(session, connectedAccountId: string
 - [ ] Frontend verify endpoint implemented (secondary - immediate UX)
 - [ ] Both use conditional UPDATE for idempotency
 - [ ] 100% promo detected by `amount_total === 0` (NOT `no_payment_required`)
+- [ ] **Web vs Native browser handling**: Check `result.type === 'opened'` (web) vs `'dismiss'/'cancel'` (native) - do NOT verify immediately on web!
 
 ### Inventory/Booking
 - [ ] Inventory only modified AFTER payment confirmed
