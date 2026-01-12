@@ -90,10 +90,10 @@ ACTIVE_INCREMENTS=$(find "$INCREMENTS_DIR" -type f -name "metadata.json" \
 # Read session info for context
 SESSION_FILE="$PROJECT_ROOT/.specweave/state/auto-session.json"
 ITERATION=0
-MAX_ITER=100
+MAX_ITER=1000
 if [ -f "$SESSION_FILE" ]; then
     ITERATION=$(jq -r '.iteration // 0' "$SESSION_FILE" 2>/dev/null || echo "0")
-    MAX_ITER=$(jq -r '.maxIterations // 100' "$SESSION_FILE" 2>/dev/null || echo "100")
+    MAX_ITER=$(jq -r '.maxIterations // 1000' "$SESSION_FILE" 2>/dev/null || echo "1000")
 
     # Increment iteration count
     NEW_ITER=$((ITERATION + 1))
@@ -101,16 +101,55 @@ if [ -f "$SESSION_FILE" ]; then
         mv "${SESSION_FILE}.tmp" "$SESSION_FILE" 2>/dev/null || true
 fi
 
+# Read completion conditions from session if available
+COMPLETION_CONDITIONS=""
+if [ -f "$SESSION_FILE" ]; then
+    # Parse completion conditions
+    HAS_BUILD=$(jq -r '.completionConditions[]? | select(.type=="build") | .type' "$SESSION_FILE" 2>/dev/null | head -1)
+    HAS_TESTS=$(jq -r '.completionConditions[]? | select(.type=="tests") | .type' "$SESSION_FILE" 2>/dev/null | head -1)
+    HAS_E2E=$(jq -r '.completionConditions[]? | select(.type=="e2e") | .type' "$SESSION_FILE" 2>/dev/null | head -1)
+    HAS_LINT=$(jq -r '.completionConditions[]? | select(.type=="lint") | .type' "$SESSION_FILE" 2>/dev/null | head -1)
+    HAS_TYPES=$(jq -r '.completionConditions[]? | select(.type=="types") | .type' "$SESSION_FILE" 2>/dev/null | head -1)
+    HAS_COVERAGE=$(jq -r '.completionConditions[]? | select(.type=="coverage") | .threshold' "$SESSION_FILE" 2>/dev/null | head -1)
+    HAS_E2E_COV=$(jq -r '.completionConditions[]? | select(.type=="e2e-coverage") | .threshold' "$SESSION_FILE" 2>/dev/null | head -1)
+    HAS_CMD=$(jq -r '.completionConditions[]? | select(.type=="command") | .cmd' "$SESSION_FILE" 2>/dev/null | head -1)
+    TDD_MODE=$(jq -r '.tddMode // false' "$SESSION_FILE" 2>/dev/null)
+
+    # Build conditions list
+    if [ "$HAS_BUILD" = "build" ]; then
+        COMPLETION_CONDITIONS="${COMPLETION_CONDITIONS}    ⬜ Build must pass\n"
+    fi
+    if [ "$HAS_TESTS" = "tests" ] || [ "$TDD_MODE" = "true" ]; then
+        COMPLETION_CONDITIONS="${COMPLETION_CONDITIONS}    ⬜ Tests must pass\n"
+    fi
+    if [ "$HAS_E2E" = "e2e" ]; then
+        COMPLETION_CONDITIONS="${COMPLETION_CONDITIONS}    ⬜ E2E tests must pass\n"
+    fi
+    if [ "$HAS_LINT" = "lint" ]; then
+        COMPLETION_CONDITIONS="${COMPLETION_CONDITIONS}    ⬜ Linting must pass\n"
+    fi
+    if [ "$HAS_TYPES" = "types" ]; then
+        COMPLETION_CONDITIONS="${COMPLETION_CONDITIONS}    ⬜ Type-check must pass\n"
+    fi
+    if [ -n "$HAS_COVERAGE" ] && [ "$HAS_COVERAGE" != "null" ]; then
+        COMPLETION_CONDITIONS="${COMPLETION_CONDITIONS}    ⬜ Coverage ≥ ${HAS_COVERAGE}%\n"
+    fi
+    if [ -n "$HAS_E2E_COV" ] && [ "$HAS_E2E_COV" != "null" ]; then
+        COMPLETION_CONDITIONS="${COMPLETION_CONDITIONS}    ⬜ E2E Coverage ≥ ${HAS_E2E_COV}%\n"
+    fi
+    if [ -n "$HAS_CMD" ] && [ "$HAS_CMD" != "null" ]; then
+        COMPLETION_CONDITIONS="${COMPLETION_CONDITIONS}    ⬜ Command: ${HAS_CMD}\n"
+    fi
+fi
+
 # Build system message with clear box art
 SYSTEM_MSG="
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║                       🔄 AUTO MODE - CONTINUING                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
-║                                                                              ║
-║  WHY IS SESSION CONTINUING?                                                  ║
-║  ─────────────────────────────────────────────────────────────────────────── ║
-║    ⏳ Active increments remaining: $ACTIVE_COUNT                               ║
-║    📊 Iteration: $NEW_ITER / $MAX_ITER                                         ║
+║  📊 Iteration: $NEW_ITER / $MAX_ITER                                           ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  ⏳ Active increments remaining: $ACTIVE_COUNT                                 ║
 ║                                                                              ║
 ║  REMAINING WORK:                                                             ║
 "
@@ -133,10 +172,19 @@ fi
 
 SYSTEM_MSG="${SYSTEM_MSG}║                                                                              ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
-║  SESSION WILL STOP WHEN:                                                     ║
-║    ✓ All tasks in increment marked [x] complete                              ║
-║    ✓ No active increments remaining                                          ║
-║    ✓ OR max iterations ($MAX_ITER) reached                                     ║
+║  🛑 STOP CONDITIONS (session will stop when ALL are met):                    ║
+║  ───────────────────────────────────────────────────────────────────────────  ║
+║    ⬜ All tasks in increment marked [x] complete                             ║
+║    ⬜ No active increments remaining                                         ║
+"
+
+# Add configured completion conditions
+if [ -n "$COMPLETION_CONDITIONS" ]; then
+    SYSTEM_MSG="${SYSTEM_MSG}$(printf '%b' "$COMPLETION_CONDITIONS")"
+fi
+
+SYSTEM_MSG="${SYSTEM_MSG}║  ───────────────────────────────────────────────────────────────────────────  ║
+║    OR: Max iterations ($MAX_ITER) reached                                      ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  NEXT ACTIONS:                                                               ║
 ║    1. Work on tasks with /sw:do                                              ║

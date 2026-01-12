@@ -24,7 +24,8 @@
 | 32:30 | VS Code + 4-Terminal Setup | 4 min |
 | 36:30 | DEMO 1: Greenfield Project | 4 min |
 | 40:30 | DEMO 2: Translation Feature | 3 min |
-| 43:30 | DEMO 3: Brownfield with Living Docs Builder (NEW!) | 10 min |
+| 43:30 | PRO TIP: React Native / Expo Module-Level Crashes | 2 min |
+| 45:30 | DEMO 3: Brownfield with Living Docs Builder (NEW!) | 10 min |
 | 53:30 | DEMO 4: GitHub Sync with Bidirectional Pull (NEW!) | 4 min |
 | 57:30 | DEMO 5: JIRA Sync | 3 min |
 | 60:30 | DEMO 6: Azure DevOps with Hierarchy Intelligence (NEW!) | 4 min |
@@ -34,7 +35,7 @@
 | 72:00 | Academy + Resources | 1.5 min |
 | 73:30 | Outro (This was HUGE work!) | 1 min |
 
-**Total: ~75 minutes** (extended for external increments demo)
+**Total: ~77 minutes** (extended for external increments demo + mobile tips)
 
 ---
 
@@ -1191,6 +1192,56 @@ Pending:
 
 ---
 
+### PRO TIP: React Native / Expo Module-Level Crashes
+
+**[VISUAL: Error message appearing - "Cannot read property 'getLocales' of null"]**
+
+> "Quick tip if you're building mobile apps with React Native or Expo. This saved me an ENTIRE DAY of debugging.
+>
+> The #1 cause of silent crashes in Expo Go? **Module-level code execution.** When JavaScript imports a file, ALL top-level code runs IMMEDIATELY — before React mounts, before providers wrap anything.
+>
+> Common crashes:"
+
+**[VISUAL: Code examples appearing]**
+
+```typescript
+// ❌ CRASHES - expo-localization at module level
+import * as Localization from 'expo-localization';
+const locale = Localization.getLocales()[0].languageCode; // BOOM!
+
+// ❌ CRASHES - react-i18next (has React dependency internally)
+import { initReactI18next } from 'react-i18next';
+i18n.use(initReactI18next).init({...}); // CRASH in Expo Go!
+
+// ❌ CRASHES - AsyncStorage at module level
+const theme = await AsyncStorage.getItem('theme'); // Can't await here!
+```
+
+> "The fix? Use alternatives that don't hit native modules at import time."
+
+```typescript
+// ✅ SAFE - Use Intl (always available, no native module)
+const locale = Intl.DateTimeFormat().resolvedOptions().locale.split('-')[0];
+
+// ✅ SAFE - Use i18n-js instead of react-i18next
+import { I18n } from 'i18n-js';
+const i18n = new I18n({ en, es });
+
+// ✅ SAFE - Lazy require inside functions
+async function getTheme() {
+  const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+  return await AsyncStorage.getItem('theme');
+}
+```
+
+> "If your app white-screens with no error? Binary search debugging: start with just `<Text>Hello</Text>`, add providers ONE BY ONE until it crashes. That's your culprit.
+>
+> Full guide in the docs: `.specweave/docs/public/troubleshooting/react-native-expo-crashes.md`
+>
+> Trust me — this will save you HOURS."
+
+---
+
 ### DEMO 3: BROWNFIELD WITH LIVING DOCS BUILDER (43:30 - 53:30) — NEW!
 
 **[VISUAL: EasyChamp codebase opening]**
@@ -2223,7 +2274,8 @@ EOF
 | 16:00 | VS Code settings.json |
 | 20:00 | Full greenfield demo |
 | 32:00 | Translation commands |
-| 38:00 | EasyChamp brownfield with Living Docs Builder (NEW!) |
+| 43:00 | React Native crash examples + safe patterns (NEW!) |
+| 45:00 | EasyChamp brownfield with Living Docs Builder (NEW!) |
 | 43:00 | specweave jobs --follow output (NEW!) |
 | 48:00 | SUGGESTIONS.md generated output (NEW!) |
 | 53:00 | GitHub sync with pull sync demo (NEW!) |
@@ -2332,15 +2384,16 @@ TIMESTAMPS:
 32:30 - VS Code Setup
 36:30 - DEMO: Greenfield
 40:30 - DEMO: Translation
-43:30 - DEMO: Brownfield with Living Docs Builder (NEW!)
-53:30 - DEMO: GitHub Sync with Bidirectional Pull (NEW!)
-57:30 - DEMO: JIRA Sync
-60:30 - DEMO: Azure DevOps with Hierarchy Intelligence (NEW!)
-64:30 - **DEMO: External Increments — ADO/GitHub/JIRA → SpecWeave (NEW!)**
-68:00 - Background Jobs Monitoring (NEW!)
-70:00 - Works with ANY AI (AGENT.md)
-72:00 - Academy & Resources
-73:30 - This was HUGE (Outro)
+43:30 - PRO TIP: React Native/Expo Module-Level Crashes (saves HOURS!)
+45:30 - DEMO: Brownfield with Living Docs Builder (NEW!)
+55:30 - DEMO: GitHub Sync with Bidirectional Pull (NEW!)
+59:30 - DEMO: JIRA Sync
+62:30 - DEMO: Azure DevOps with Hierarchy Intelligence (NEW!)
+66:30 - **DEMO: External Increments — ADO/GitHub/JIRA → SpecWeave (NEW!)**
+70:00 - Background Jobs Monitoring (NEW!)
+72:00 - Works with ANY AI (AGENT.md)
+74:00 - Academy & Resources
+75:30 - This was HUGE (Outro)
 
 Free. Open Source. No catch.
 
