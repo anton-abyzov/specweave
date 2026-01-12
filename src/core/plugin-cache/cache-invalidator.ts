@@ -27,6 +27,11 @@ interface BackupMetadata {
  */
 export class CacheInvalidator {
   private static readonly BACKUP_DIR = path.join(os.homedir(), '.specweave', 'backups');
+  private readonly backupDir: string;
+
+  constructor(backupDir?: string) {
+    this.backupDir = backupDir || CacheInvalidator.BACKUP_DIR;
+  }
 
   /**
    * Invalidate plugin cache with specified strategy
@@ -132,7 +137,7 @@ export class CacheInvalidator {
     const time = now.toISOString().slice(11, 19).replace(/:/g, ''); // HHMMSS
     const timestamp = `${date}-${time}`;
     const backupPath = path.join(
-      CacheInvalidator.BACKUP_DIR,
+      this.backupDir,
       `${pluginName}-${version}-${timestamp}`
     );
 

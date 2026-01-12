@@ -11,9 +11,11 @@ describe('CacheInvalidator', () => {
   let mockBackupDir: string;
 
   beforeEach(() => {
-    invalidator = new CacheInvalidator();
     mockCacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cache-'));
-    mockBackupDir = path.join(os.homedir(), '.specweave', 'backups');
+    mockBackupDir = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-'));
+
+    // Use temp directory for backups during tests
+    invalidator = new CacheInvalidator(mockBackupDir);
 
     // Create mock cache structure
     fs.mkdirSync(path.join(mockCacheDir, 'skills'), { recursive: true });
@@ -25,6 +27,9 @@ describe('CacheInvalidator', () => {
     // Cleanup
     if (fs.existsSync(mockCacheDir)) {
       fs.rmSync(mockCacheDir, { recursive: true, force: true });
+    }
+    if (fs.existsSync(mockBackupDir)) {
+      fs.rmSync(mockBackupDir, { recursive: true, force: true });
     }
   });
 

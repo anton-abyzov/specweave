@@ -16,10 +16,8 @@ describe('cache-refresh command', () => {
     fs.mkdirSync(mockPluginDir, { recursive: true });
     fs.mkdirSync(path.join(mockPluginDir, 'skills'), { recursive: true });
 
-    mockBackupDir = path.join(os.homedir(), '.specweave', 'backups');
-    if (fs.existsSync(mockBackupDir)) {
-      fs.rmSync(mockBackupDir, { recursive: true, force: true });
-    }
+    // Use temp directory for backups during tests
+    mockBackupDir = fs.mkdtempSync(path.join(os.tmpdir(), 'backup-'));
   });
 
   afterEach(() => {
