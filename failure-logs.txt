@@ -1,0 +1,202 @@
+
+=== Job: test ===
+2026-01-12T10:56:17.5003142Z     [90m397| [39m      [34mexpect[39m(successCount)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+2026-01-12T10:56:17.5004103Z     [90m   | [39m                           [31m^[39m
+2026-01-12T10:56:17.5004620Z     [90m398| [39m
+2026-01-12T10:56:17.5005284Z     [90m399| [39m      [90m// File should have exactly one GitHub section[39m
+2026-01-12T10:56:17.5005774Z 
+2026-01-12T10:56:17.5006163Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/36]⎯[22m[39m
+2026-01-12T10:56:17.5006497Z 
+2026-01-12T10:56:17.5008360Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mLock Cleanup[2m > [22mshould cleanup stale locks on acquisition attempt
+2026-01-12T10:56:17.5010184Z [31m[1mAssertionError[22m: expected 1 to be 8675 // Object.is equality[39m
+2026-01-12T10:56:17.5010729Z 
+2026-01-12T10:56:17.5010936Z [32m- Expected[39m
+2026-01-12T10:56:17.5011359Z [31m+ Received[39m
+2026-01-12T10:56:17.5011567Z 
+2026-01-12T10:56:17.5011731Z [32m- 8675[39m
+2026-01-12T10:56:17.5012068Z [31m+ 1[39m
+2026-01-12T10:56:17.5012242Z 
+2026-01-12T10:56:17.5012932Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m427:40[22m[39m
+2026-01-12T10:56:17.5013948Z     [90m425| [39m      [90m// Lock dir should now have current PID[39m
+2026-01-12T10:56:17.5015942Z     [90m426| [39m      [35mconst[39m pidContent [33m=[39m fs[33m.[39m[34mreadFileSync[39m(path[33m.[39m[34mjoin[39m(lockDir[33m,[39m [32m'pid'[39m)[33m,[39m [32m'u[39m…
+2026-01-12T10:56:17.5018278Z     [90m427| [39m      [34mexpect[39m([34mparseInt[39m(pidContent[33m,[39m [34m10[39m))[33m.[39m[34mtoBe[39m(process[33m.[39mpid)[33m;[39m
+2026-01-12T10:56:17.5019530Z     [90m   | [39m                                       [31m^[39m
+2026-01-12T10:56:17.5020122Z     [90m428| [39m
+2026-01-12T10:56:17.5020855Z     [90m429| [39m      [35mawait[39m lock[33m.[39m[34mrelease[39m()[33m;[39m
+2026-01-12T10:56:17.5021665Z 
+2026-01-12T10:56:17.5022103Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/36]⎯[22m[39m
+2026-01-12T10:56:17.5022460Z 
+2026-01-12T10:56:17.5024150Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/sync/concurrent-sync-safety.test.ts[2m > [22mConcurrent Sync Safety[2m > [22mLock Cleanup[2m > [22mshould preserve fresh locks held by other processes
+2026-01-12T10:56:17.5026098Z [31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
+2026-01-12T10:56:17.5026925Z 
+2026-01-12T10:56:17.5027161Z [32m- Expected[39m
+2026-01-12T10:56:17.5027601Z [31m+ Received[39m
+2026-01-12T10:56:17.5027814Z 
+2026-01-12T10:56:17.5028014Z [32m- false[39m
+2026-01-12T10:56:17.5028376Z [31m+ true[39m
+2026-01-12T10:56:17.5028583Z 
+2026-01-12T10:56:17.5029273Z [36m [2m❯[22m tests/unit/sync/concurrent-sync-safety.test.ts:[2m447:24[22m[39m
+2026-01-12T10:56:17.5030726Z     [90m445| [39m      [35mconst[39m elapsed [33m=[39m [33mDate[39m[33m.[39m[34mnow[39m() [33m-[39m startTime[33m;[39m
+2026-01-12T10:56:17.5031672Z     [90m446| [39m
+2026-01-12T10:56:17.5032530Z     [90m447| [39m      [34mexpect[39m(acquired)[33m.[39m[34mtoBe[39m([35mfalse[39m)[33m;[39m
+2026-01-12T10:56:17.5033423Z     [90m   | [39m                       [31m^[39m
+2026-01-12T10:56:17.5034703Z     [90m448| [39m      [34mexpect[39m(elapsed)[33m.[39m[34mtoBeGreaterThan[39m([34m9000[39m)[33m;[39m [90m// Should have timed out[39m
+2026-01-12T10:56:17.5035702Z     [90m449| [39m
+2026-01-12T10:56:17.5035895Z 
+2026-01-12T10:56:17.5036291Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/36]⎯[22m[39m
+2026-01-12T10:56:17.5036818Z 
+2026-01-12T10:56:17.5038237Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/core/deployment/project-analyzer.test.ts[2m > [22mProject Analyzer[2m > [22manalyzeSSR[2m > [22mshould detect dynamic routes
+2026-01-12T10:56:17.5039982Z [31m[1mAssertionError[22m: expected false to be true // Object.is equality[39m
+2026-01-12T10:56:17.5040541Z 
+2026-01-12T10:56:17.5040744Z [32m- Expected[39m
+2026-01-12T10:56:17.5041152Z [31m+ Received[39m
+2026-01-12T10:56:17.5041353Z 
+2026-01-12T10:56:17.5041512Z [32m- true[39m
+2026-01-12T10:56:17.5041869Z [31m+ false[39m
+2026-01-12T10:56:17.5042051Z 
+2026-01-12T10:56:17.5042758Z [36m [2m❯[22m tests/unit/core/deployment/project-analyzer.test.ts:[2m346:39[22m[39m
+2026-01-12T10:56:17.5044241Z     [90m344| [39m      [35mconst[39m result [33m=[39m [34manalyzeSSR[39m(testProjectDir)[33m;[39m
+2026-01-12T10:56:17.5045044Z     [90m345| [39m
+2026-01-12T10:56:17.5046073Z     [90m346| [39m      [34mexpect[39m(result[33m.[39mhasDynamicRoutes)[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+2026-01-12T10:56:17.5047384Z     [90m   | [39m                                      [31m^[39m
+2026-01-12T10:56:17.5048003Z     [90m347| [39m    })[33m;[39m
+2026-01-12T10:56:17.5048443Z     [90m348| [39m
+2026-01-12T10:56:17.5048642Z 
+2026-01-12T10:56:17.5049042Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/36]⎯[22m[39m
+2026-01-12T10:56:17.5049367Z 
+2026-01-12T10:56:17.5051264Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/core/increment/discipline-checker.test.ts[2m > [22mDisciplineChecker[2m > [22mvalidate() - no violations[2m > [22mshould return compliant when 1 active increment (at limit)
+2026-01-12T10:56:17.5053241Z [31m[1mAssertionError[22m: expected +0 to be 1 // Object.is equality[39m
+2026-01-12T10:56:17.5053757Z 
+2026-01-12T10:56:17.5053978Z [32m- Expected[39m
+2026-01-12T10:56:17.5054390Z [31m+ Received[39m
+2026-01-12T10:56:17.5054595Z 
+2026-01-12T10:56:17.5054763Z [32m- 1[39m
+2026-01-12T10:56:17.5055089Z [31m+ 0[39m
+2026-01-12T10:56:17.5055259Z 
+2026-01-12T10:56:17.5055998Z [36m [2m❯[22m tests/unit/core/increment/discipline-checker.test.ts:[2m109:40[22m[39m
+2026-01-12T10:56:17.5141223Z     [90m107| [39m      [34mexpect[39m(result[33m.[39mcompliant)[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+2026-01-12T10:56:17.5143191Z     [90m108| [39m      [34mexpect[39m(result[33m.[39mviolations)[33m.[39m[34mtoHaveLength[39m([34m0[39m)[33m;[39m
+2026-01-12T10:56:17.5144818Z     [90m109| [39m      [34mexpect[39m(result[33m.[39mincrements[33m.[39mactive)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+2026-01-12T10:56:17.5145958Z     [90m   | [39m                                       [31m^[39m
+2026-01-12T10:56:17.5146765Z     [90m110| [39m    })[33m;[39m
+2026-01-12T10:56:17.5147307Z     [90m111| [39m  })[33m;[39m
+2026-01-12T10:56:17.5147581Z 
+2026-01-12T10:56:17.5147988Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/36]⎯[22m[39m
+2026-01-12T10:56:17.5148327Z 
+2026-01-12T10:56:17.5150210Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/core/increment/discipline-checker.test.ts[2m > [22mDisciplineChecker[2m > [22mvalidate() - hard cap violations[2m > [22mshould detect hard cap exceeded (4 active, limit 3)
+2026-01-12T10:56:17.5152210Z [31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
+2026-01-12T10:56:17.5152785Z 
+2026-01-12T10:56:17.5152995Z [32m- Expected[39m
+2026-01-12T10:56:17.5153403Z [31m+ Received[39m
+2026-01-12T10:56:17.5153606Z 
+2026-01-12T10:56:17.5153792Z [32m- false[39m
+2026-01-12T10:56:17.5154135Z [31m+ true[39m
+2026-01-12T10:56:17.5154319Z 
+2026-01-12T10:56:17.5155067Z [36m [2m❯[22m tests/unit/core/increment/discipline-checker.test.ts:[2m136:32[22m[39m
+2026-01-12T10:56:17.5156483Z     [90m134| [39m      [35mconst[39m result [33m=[39m [35mawait[39m checker[33m.[39m[34mvalidate[39m()[33m;[39m
+2026-01-12T10:56:17.5157528Z     [90m135| [39m
+2026-01-12T10:56:17.5158524Z     [90m136| [39m      [34mexpect[39m(result[33m.[39mcompliant)[33m.[39m[34mtoBe[39m([35mfalse[39m)[33m;[39m
+2026-01-12T10:56:17.5159562Z     [90m   | [39m                               [31m^[39m
+2026-01-12T10:56:17.5160912Z     [90m137| [39m      [34mexpect[39m(result[33m.[39mviolations[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+2026-01-12T10:56:17.5161963Z     [90m138| [39m
+2026-01-12T10:56:17.5162159Z 
+2026-01-12T10:56:17.5162549Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/36]⎯[22m[39m
+2026-01-12T10:56:17.5162878Z 
+2026-01-12T10:56:17.5164805Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/core/increment/discipline-checker.test.ts[2m > [22mDisciplineChecker[2m > [22mvalidate() - WIP limit warnings[2m > [22mshould warn when exceeding recommended limit but under hard cap
+2026-01-12T10:56:17.5171591Z [31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
+2026-01-12T10:56:17.5172132Z 
+2026-01-12T10:56:17.5172342Z [32m- Expected[39m
+2026-01-12T10:56:17.5172617Z [31m+ Received[39m
+2026-01-12T10:56:17.5172754Z 
+2026-01-12T10:56:17.5172870Z [32m- false[39m
+2026-01-12T10:56:17.5173080Z [31m+ true[39m
+2026-01-12T10:56:17.5173201Z 
+2026-01-12T10:56:17.5173628Z [36m [2m❯[22m tests/unit/core/increment/discipline-checker.test.ts:[2m170:32[22m[39m
+2026-01-12T10:56:17.5174434Z     [90m168| [39m      [35mconst[39m result [33m=[39m [35mawait[39m checker[33m.[39m[34mvalidate[39m()[33m;[39m
+2026-01-12T10:56:17.5174939Z     [90m169| [39m
+2026-01-12T10:56:17.5175507Z     [90m170| [39m      [34mexpect[39m(result[33m.[39mcompliant)[33m.[39m[34mtoBe[39m([35mfalse[39m)[33m;[39m
+2026-01-12T10:56:17.5176103Z     [90m   | [39m                               [31m^[39m
+2026-01-12T10:56:17.5176400Z     [90m171| [39m
+2026-01-12T10:56:17.5177288Z     [90m172| [39m      [35mconst[39m wipViolation [33m=[39m result[33m.[39mviolations[33m.[39m[34mfind[39m(
+2026-01-12T10:56:17.5177688Z 
+2026-01-12T10:56:17.5177922Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/36]⎯[22m[39m
+2026-01-12T10:56:17.5178121Z 
+2026-01-12T10:56:17.5179296Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/core/increment/discipline-checker.test.ts[2m > [22mDisciplineChecker[2m > [22mvalidate() - active increment tracking[2m > [22mshould track active increments with pending tasks (compliant if under limit)
+2026-01-12T10:56:17.5180706Z [31m[1mAssertionError[22m: expected +0 to be 1 // Object.is equality[39m
+2026-01-12T10:56:17.5181006Z 
+2026-01-12T10:56:17.5181123Z [32m- Expected[39m
+2026-01-12T10:56:17.5181352Z [31m+ Received[39m
+2026-01-12T10:56:17.5181470Z 
+2026-01-12T10:56:17.5181564Z [32m- 1[39m
+2026-01-12T10:56:17.5181758Z [31m+ 0[39m
+2026-01-12T10:56:17.5181855Z 
+2026-01-12T10:56:17.5182256Z [36m [2m❯[22m tests/unit/core/increment/discipline-checker.test.ts:[2m210:40[22m[39m
+2026-01-12T10:56:17.5182698Z     [90m208| [39m
+2026-01-12T10:56:17.5183065Z     [90m209| [39m      [90m// But should report 1 active increment[39m
+2026-01-12T10:56:17.5183809Z     [90m210| [39m      [34mexpect[39m(result[33m.[39mincrements[33m.[39mactive)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+2026-01-12T10:56:17.5184440Z     [90m   | [39m                                       [31m^[39m
+2026-01-12T10:56:17.5185145Z     [90m211| [39m      [34mexpect[39m(result[33m.[39mincrements[33m.[39mcompleted)[33m.[39m[34mtoBe[39m([34m0[39m)[33m;[39m
+2026-01-12T10:56:17.5185714Z     [90m212| [39m    })[33m;[39m
+2026-01-12T10:56:17.5185877Z 
+2026-01-12T10:56:17.5186092Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/36]⎯[22m[39m
+2026-01-12T10:56:17.5186281Z 
+2026-01-12T10:56:17.5187337Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/core/increment/discipline-checker.test.ts[2m > [22mDisciplineChecker[2m > [22mvalidate() - edge cases[2m > [22mshould handle exactly at limit (no violation)
+2026-01-12T10:56:17.5188344Z [31m[1mAssertionError[22m: expected +0 to be 1 // Object.is equality[39m
+2026-01-12T10:56:17.5188627Z 
+2026-01-12T10:56:17.5188740Z [32m- Expected[39m
+2026-01-12T10:56:17.5189089Z [31m+ Received[39m
+2026-01-12T10:56:17.5189298Z 
+2026-01-12T10:56:17.5189472Z [32m- 1[39m
+2026-01-12T10:56:17.5189819Z [31m+ 0[39m
+2026-01-12T10:56:17.5190003Z 
+2026-01-12T10:56:17.5190752Z [36m [2m❯[22m tests/unit/core/increment/discipline-checker.test.ts:[2m237:40[22m[39m
+2026-01-12T10:56:17.5192197Z     [90m235| [39m      [34mexpect[39m(result[33m.[39mcompliant)[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+2026-01-12T10:56:17.5193836Z     [90m236| [39m      [34mexpect[39m(result[33m.[39mviolations)[33m.[39m[34mtoHaveLength[39m([34m0[39m)[33m;[39m
+2026-01-12T10:56:17.5195568Z     [90m237| [39m      [34mexpect[39m(result[33m.[39mincrements[33m.[39mactive)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+2026-01-12T10:56:17.5197250Z     [90m   | [39m                                       [31m^[39m
+2026-01-12T10:56:17.5197967Z     [90m238| [39m    })[33m;[39m
+2026-01-12T10:56:17.5198456Z     [90m239| [39m
+2026-01-12T10:56:17.5198667Z 
+2026-01-12T10:56:17.5199080Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/36]⎯[22m[39m
+2026-01-12T10:56:17.5199447Z 
+2026-01-12T10:56:17.5201161Z [31m[1m[7m FAIL [27m[22m[39m tests/unit/core/increment/discipline-checker.test.ts[2m > [22mDisciplineChecker[2m > [22mvalidate() - configuration[2m > [22mshould respect custom limits
+2026-01-12T10:56:17.5203187Z [31m[1mAssertionError[22m: expected true to be false // Object.is equality[39m
+2026-01-12T10:56:17.5203757Z 
+2026-01-12T10:56:17.5204008Z [32m- Expected[39m
+2026-01-12T10:56:17.5204519Z [31m+ Received[39m
+2026-01-12T10:56:17.5204744Z 
+2026-01-12T10:56:17.5204950Z [32m- false[39m
+2026-01-12T10:56:17.5205338Z [31m+ true[39m
+2026-01-12T10:56:17.5205547Z 
+2026-01-12T10:56:17.5206343Z [36m [2m❯[22m tests/unit/core/increment/discipline-checker.test.ts:[2m276:33[22m[39m
+2026-01-12T10:56:17.5207950Z     [90m274| [39m      [35mconst[39m checker1 [33m=[39m [35mnew[39m [33mDisciplineChecker[39m(testDir)[33m;[39m
+2026-01-12T10:56:17.5209451Z     [90m275| [39m      [35mconst[39m result1 [33m=[39m [35mawait[39m checker1[33m.[39m[34mvalidate[39m()[33m;[39m
+2026-01-12T10:56:17.5210933Z     [90m276| [39m      [34mexpect[39m(result1[33m.[39mcompliant)[33m.[39m[34mtoBe[39m([35mfalse[39m)[33m;[39m
+2026-01-12T10:56:17.5211983Z     [90m   | [39m                                [31m^[39m
+2026-01-12T10:56:17.5212758Z     [90m277| [39m
+2026-01-12T10:56:17.5213450Z     [90m278| [39m      [90m// With custom limits (max=2), this should pass[39m
+2026-01-12T10:56:17.5213942Z 
+2026-01-12T10:56:17.5214366Z [31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/36]⎯[22m[39m
+2026-01-12T10:56:17.5214704Z 
+2026-01-12T10:56:17.5215556Z [2m Test Files [22m [1m[31m12 failed[39m[22m[2m | [22m[1m[32m253 passed[39m[22m[90m (265)[39m
+2026-01-12T10:56:17.5217190Z [2m      Tests [22m [1m[31m31 failed[39m[22m[2m | [22m[1m[32m4834 passed[39m[22m[90m (4865)[39m
+2026-01-12T10:56:17.5218097Z [2m   Start at [22m 10:55:25
+2026-01-12T10:56:17.5219402Z [2m   Duration [22m 51.94s[2m (transform 5.42s, setup 2.64s, collect 12.32s, tests 60.57s, environment 87ms, prepare 23.07s)[22m
+2026-01-12T10:56:17.5220189Z 
+2026-01-12T10:56:17.6083219Z ##[error]Process completed with exit code 1.
+2026-01-12T10:56:17.6192621Z Post job cleanup.
+2026-01-12T10:56:17.7140528Z [command]/usr/bin/git version
+2026-01-12T10:56:17.7178312Z git version 2.52.0
+2026-01-12T10:56:17.7221775Z Temporarily overriding HOME='/home/runner/work/_temp/edeb7237-016b-4f07-ad6f-bbe48b399221' before making global git config changes
+2026-01-12T10:56:17.7223274Z Adding repository directory to the temporary git global config as a safe directory
+2026-01-12T10:56:17.7228239Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/specweave/specweave
+2026-01-12T10:56:17.7262343Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-01-12T10:56:17.7294265Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-01-12T10:56:17.7535485Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-01-12T10:56:17.7557015Z http.https://github.com/.extraheader
+2026-01-12T10:56:17.7570035Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-01-12T10:56:17.7601426Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-01-12T10:56:17.7833043Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-01-12T10:56:17.7865420Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-01-12T10:56:17.8213910Z Cleaning up orphan processes
+

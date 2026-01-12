@@ -6,9 +6,56 @@ import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } 
 
 import { DisciplineChecker } from '../../../../src/core/increment/discipline-checker.js';
 import { ValidationResult, DisciplineLimits } from '../../../../src/core/increment/types.js';
+import { IncrementStatus, IncrementType } from '../../../../src/core/types/increment-metadata.js';
 import path from 'path';
 import * as fs from '../../../../src/utils/fs-native.js';
 import os from 'os';
+
+/**
+ * Helper function to create a test increment with proper metadata.json
+ */
+async function createTestIncrement(
+  testDir: string,
+  incrementId: string,
+  status: IncrementStatus,
+  hasPendingTasks: boolean = false
+): Promise<void> {
+  const incPath = path.join(testDir, '.specweave', 'increments', incrementId);
+  await fs.ensureDir(incPath);
+
+  // Create metadata.json
+  const metadata = {
+    id: incrementId,
+    status,
+    type: IncrementType.FEATURE,
+    created: new Date().toISOString(),
+    lastActivity: new Date().toISOString(),
+  };
+  await fs.writeFile(
+    path.join(incPath, 'metadata.json'),
+    JSON.stringify(metadata, null, 2)
+  );
+
+  // Create tasks.md
+  const tasksContent = hasPendingTasks
+    ? `# Tasks
+
+### T-001: Task 1
+**Status**: [x] Completed
+
+### T-002: Task 2
+**Status**: [ ] Pending
+`
+    : `# Tasks
+
+### T-001: Task 1
+**Status**: [x] Completed
+
+### T-002: Task 2
+**Status**: [x] Completed
+`;
+  await fs.writeFile(path.join(incPath, 'tasks.md'), tasksContent);
+}
 
 describe('DisciplineChecker', () => {
   let testDir: string;
@@ -55,20 +102,8 @@ describe('DisciplineChecker', () => {
     });
 
     it('should return compliant when only completed increments exist', async () => {
-      // Create completed increment with proper task format
-      const incPath = path.join(testDir, '.specweave', 'increments', '0001-test');
-      await fs.ensureDir(incPath);
-      await fs.writeFile(
-        path.join(incPath, 'tasks.md'),
-        `# Tasks
-
-### T-001: Task 1
-**Status**: [x] Completed
-
-### T-002: Task 2
-**Status**: [x] Completed
-`
-      );
+      // Create completed increment with proper metadata and tasks
+      await createTestIncrement(testDir, '0001-test', IncrementStatus.COMPLETED, false);
 
       const checker = new DisciplineChecker(testDir);
       const result = await checker.validate();
@@ -86,20 +121,8 @@ describe('DisciplineChecker', () => {
     });
 
     it('should return compliant when 1 active increment (at limit)', async () => {
-      // Create 1 active increment with proper task format
-      const incPath = path.join(testDir, '.specweave', 'increments', '0001-test');
-      await fs.ensureDir(incPath);
-      await fs.writeFile(
-        path.join(incPath, 'tasks.md'),
-        `# Tasks
-
-### T-001: Task 1
-**Status**: [x] Completed
-
-### T-002: Task 2
-**Status**: [ ] Pending
-`
-      );
+      // Create 1 active increment with proper metadata and pending tasks
+      await createTestIncrement(testDir, '0001-test', IncrementStatus.ACTIVE, true);
 
       const checker = new DisciplineChecker(testDir);
       const result = await checker.validate();
@@ -112,22 +135,10 @@ describe('DisciplineChecker', () => {
 
   describe('validate() - hard cap violations', () => {
     it('should detect hard cap exceeded (4 active, limit 3)', async () => {
-      // Create 4 incomplete increments with proper task format
+      // Create 4 active increments with proper metadata and pending tasks
       // Hard cap is 3 by default, so 4 will trigger the violation
       for (let i = 1; i <= 4; i++) {
-        const incPath = path.join(testDir, '.specweave', 'increments', `000${i}-test`);
-        await fs.ensureDir(incPath);
-        await fs.writeFile(
-          path.join(incPath, 'tasks.md'),
-          `# Tasks
-
-### T-001: Task 1
-**Status**: [x] Completed
-
-### T-002: Task 2
-**Status**: [ ] Pending
-`
-        );
+        await createTestIncrement(testDir, `000${i}-test`, IncrementStatus.ACTIVE, true);
       }
 
       const checker = new DisciplineChecker(testDir);
@@ -147,21 +158,9 @@ describe('DisciplineChecker', () => {
 
   describe('validate() - WIP limit warnings', () => {
     it('should warn when exceeding recommended limit but under hard cap', async () => {
-      // Create 2 incomplete increments (exceeds max of 1, but under hard cap of 2)
+      // Create 2 active increments (exceeds max of 1, but under hard cap of 3)
       for (let i = 1; i <= 2; i++) {
-        const incPath = path.join(testDir, '.specweave', 'increments', `000${i}-test`);
-        await fs.ensureDir(incPath);
-        await fs.writeFile(
-          path.join(incPath, 'tasks.md'),
-          `# Tasks
-
-### T-001: Task 1
-**Status**: [x] Completed
-
-### T-002: Task 2
-**Status**: [ ] Pending
-`
-        );
+        await createTestIncrement(testDir, `000${i}-test`, IncrementStatus.ACTIVE, true);
       }
 
       const checker = new DisciplineChecker(testDir);
@@ -182,22 +181,7 @@ describe('DisciplineChecker', () => {
     it('should track active increments with pending tasks (compliant if under limit)', async () => {
       // Create 1 active increment with pending tasks (1/3 complete = 33%)
       // This is compliant since 1 active is at the maxActiveIncrements limit
-      const incPath = path.join(testDir, '.specweave', 'increments', '0001-test');
-      await fs.ensureDir(incPath);
-      await fs.writeFile(
-        path.join(incPath, 'tasks.md'),
-        `# Tasks
-
-### T-001: Task 1
-**Status**: [x] Completed
-
-### T-002: Task 2
-**Status**: [ ] Pending
-
-### T-003: Task 3
-**Status**: [ ] Pending
-`
-      );
+      await createTestIncrement(testDir, '0001-test', IncrementStatus.ACTIVE, true);
 
       const checker = new DisciplineChecker(testDir);
       const result = await checker.validate();
@@ -214,20 +198,8 @@ describe('DisciplineChecker', () => {
 
   describe('validate() - edge cases', () => {
     it('should handle exactly at limit (no violation)', async () => {
-      // Create exactly 1 active (at maxActiveIncrements) with proper task format
-      const incPath = path.join(testDir, '.specweave', 'increments', '0001-test');
-      await fs.ensureDir(incPath);
-      await fs.writeFile(
-        path.join(incPath, 'tasks.md'),
-        `# Tasks
-
-### T-001: Task 1
-**Status**: [x] Completed
-
-### T-002: Task 2
-**Status**: [ ] Pending
-`
-      );
+      // Create exactly 1 active (at maxActiveIncrements) with proper metadata
+      await createTestIncrement(testDir, '0001-test', IncrementStatus.ACTIVE, true);
 
       const checker = new DisciplineChecker(testDir);
       const result = await checker.validate();
@@ -253,21 +225,9 @@ describe('DisciplineChecker', () => {
 
   describe('validate() - configuration', () => {
     it('should respect custom limits', async () => {
-      // Create 2 active increments with proper task format
+      // Create 2 active increments with proper metadata and pending tasks
       for (let i = 1; i <= 2; i++) {
-        const incPath = path.join(testDir, '.specweave', 'increments', `000${i}-test`);
-        await fs.ensureDir(incPath);
-        await fs.writeFile(
-          path.join(incPath, 'tasks.md'),
-          `# Tasks
-
-### T-001: Task 1
-**Status**: [x] Completed
-
-### T-002: Task 2
-**Status**: [ ] Pending
-`
-        );
+        await createTestIncrement(testDir, `000${i}-test`, IncrementStatus.ACTIVE, true);
       }
 
       // With default limits (max=1), this should warn

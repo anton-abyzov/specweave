@@ -579,7 +579,8 @@ export class MetadataManager {
    * accessing wrong .specweave folder when CWD != project root.
    */
   static getAll(projectRoot?: string): IncrementMetadata[] {
-    const incrementsPath = path.join(projectRoot || getProjectRoot(), '.specweave', 'increments');
+    const root = projectRoot || getProjectRoot();
+    const incrementsPath = path.join(root, '.specweave', 'increments');
 
     if (!fs.existsSync(incrementsPath)) {
       return [];
@@ -594,7 +595,7 @@ export class MetadataManager {
     return incrementFolders
       .map(folder => {
         try {
-          return this.read(folder);
+          return this.read(folder, root);
         } catch (error) {
           // Skip increments with invalid/missing metadata
           return null;
