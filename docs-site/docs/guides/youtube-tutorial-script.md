@@ -1593,6 +1593,20 @@ specweave init .
 > - **GitHub**: Star the repo, report issues, contribute
 > - **Academy**: 16 lessons from beginner to expert"
 
+**[Point to staying updated resources]**
+
+> "AI tooling moves FAST. Claude Code ships updates constantly. Here's how I stay on top of it — and you should too:
+>
+> **Three resources I check daily:**
+>
+> - **Boris Cherny's Twitter**: https://x.com/bcherny — Boris is the creator of Claude Code at Anthropic. I follow him to learn about new features before they even hit the changelog.
+>
+> - **The Claude Code changelog**: github.com/anthropics/claude-code/blob/main/CHANGELOG.md — This is the source of truth. I read this daily to understand what's new, what's changed, what's deprecated.
+>
+> - **The Anthropic Engineering blog**: anthropic.com/engineering — New articles are rare, but when they drop, they're gold. Deep dives into how Claude works, straight from the team.
+>
+> Bookmark these. Check them regularly. The AI landscape changes weekly."
+
 **[EXCALIDRAW: Final slide with logo and call to action]**
 
 ```
