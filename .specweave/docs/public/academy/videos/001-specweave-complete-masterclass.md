@@ -2,7 +2,7 @@
 
 ## The Complete SpecWeave Masterclass - From Zero to Production
 
-**Duration**: ~61 minutes
+**Duration**: ~86 minutes
 **YouTube**: [Link pending]
 
 **Tags**: SpecWeave, AI coding framework, living documentation, spec-driven development, Claude Code, Opus 4.5, JIRA sync, GitHub sync, Azure DevOps, plugins, skills, AI agents, enterprise engineering, open source, free tools, BMAD alternative, developer productivity, GPT, Gemini, Copilot, translation, multilingual
@@ -19,23 +19,25 @@
 | 10:30 | Docs Architecture: Internal vs Public + Hosting | 3 min |
 | 13:30 | Enterprise Engineering 101 + Hierarchy Mapping | 6 min |
 | 19:30 | Project-Aware Sync & The /next Flow | 4 min |
-| 23:30 | Plugins & Skills System | 4 min |
-| 27:30 | Installation Mac & Windows | 5 min |
-| 32:30 | VS Code + 4-Terminal Setup | 4 min |
-| 36:30 | DEMO 1: Greenfield Project | 4 min |
-| 40:30 | DEMO 2: Translation Feature | 3 min |
-| 43:30 | PRO TIP: React Native / Expo Module-Level Crashes | 2 min |
-| 45:30 | DEMO 3: Brownfield with Living Docs Builder (NEW!) | 10 min |
-| 53:30 | DEMO 4: GitHub Sync with Bidirectional Pull (NEW!) | 4 min |
-| 57:30 | DEMO 5: JIRA Sync | 3 min |
-| 60:30 | DEMO 6: Azure DevOps with Hierarchy Intelligence (NEW!) | 4 min |
-| 64:30 | **DEMO 7: External Increments — Work Starts Outside (NEW!)** | 3.5 min |
-| 68:00 | Background Jobs Monitoring (NEW!) | 2 min |
-| 70:00 | AGENT.md for Non-Claude Tools | 2 min |
-| 72:00 | Academy + Resources | 1.5 min |
-| 73:30 | Outro (This was HUGE work!) | 1 min |
+| 23:30 | Plugins & Skills System + **Framework Trade-offs (NEW!)** | 4 min |
+| 27:30 | **MCP Servers & Context7 (NEW!)** | 3.5 min |
+| 31:00 | **Installation + Plugin Tiers + MCP Setup (EXPANDED!)** | 9 min |
+| 40:00 | VS Code + 4-Terminal Setup | 4 min |
+| 44:00 | DEMO 1: Greenfield Project | 4 min |
+| 48:00 | DEMO 2: Translation Feature | 3 min |
+| 51:00 | PRO TIP: React Native / Expo Module-Level Crashes | 2 min |
+| 53:00 | **PRO TIP: Self-Improving Skills with Reflect (NEW!)** | 2 min |
+| 55:00 | DEMO 3: Brownfield with Living Docs Builder (NEW!) | 10 min |
+| 65:00 | DEMO 4: GitHub Sync with Bidirectional Pull (NEW!) | 4 min |
+| 69:00 | DEMO 5: JIRA Sync | 3 min |
+| 72:00 | DEMO 6: Azure DevOps with Hierarchy Intelligence (NEW!) | 4 min |
+| 76:00 | **DEMO 7: External Increments — Work Starts Outside (NEW!)** | 3.5 min |
+| 79:30 | Background Jobs Monitoring (NEW!) | 2 min |
+| 81:30 | AGENT.md for Non-Claude Tools | 2 min |
+| 83:30 | Academy + Resources | 1.5 min |
+| 85:00 | Outro (This was HUGE work!) | 1 min |
 
-**Total: ~77 minutes** (extended for external increments demo + mobile tips)
+**Total: ~86 minutes** (extended for plugin tiers + MCP + framework trade-offs + external increments + Reflect)
 
 ---
 
@@ -764,6 +766,53 @@ npx specweave init .
 # → Plugins auto-install
 ```
 
+#### Framework Trade-offs — Be Honest
+
+**[VISUAL: Pros/Cons balance scale]**
+
+> "Now, let me be real with you. SpecWeave is a FRAMEWORK. And every framework comes with trade-offs. Let's be honest about them."
+
+**The Pros:**
+
+> "Full control. You own your specs. You own your files. Nothing is locked in a SaaS.
+>
+> Automation. Hooks fire automatically. Status syncs without thinking.
+>
+> Extensibility. 24 plugins. Growing ecosystem. Write your own skills.
+>
+> Flexibility. GitHub OR JIRA OR Azure DevOps. Swap at any time."
+
+**The Cons:**
+
+> "Some decisions are made for you. The folder structure. The naming conventions. The workflow phases.
+>
+> Learning curve. It's not 'just prompts'. You need to understand skills, hooks, commands.
+>
+> Opinionated. If you hate spec-first development, this isn't for you.
+>
+> Maintenance. Updates, plugin versions, occasional breaking changes."
+
+**[VISUAL: Decision matrix]**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    IS SPECWEAVE FOR YOU?                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ✅ YES if you:                │  ❌ NO if you:              │
+│  • Build complex features      │  • Just want quick prompts  │
+│  • Need traceability           │  • Hate any structure       │
+│  • Work in teams               │  • Prefer pure ad-hoc       │
+│  • Value documentation         │  • Don't use GitHub/JIRA    │
+│  • Want reproducible process   │  • Build throwaway code     │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> "If you're building something serious — a product, a startup, enterprise software — SpecWeave pays dividends.
+>
+> If you're just hacking a weekend project? Maybe overkill. And that's OK."
+
 #### Why This Architecture?
 
 **[VISUAL: Comparison with monolithic tools]**
@@ -772,15 +821,157 @@ npx specweave init .
 
 > Skills load knowledge on demand. Commands let you act. Hooks automate reactions. Plugins extend capabilities.
 
-> It's not a script. It's a framework."
+> It's not a script. It's a framework. With the pros AND cons of a framework."
 
 ---
 
-### INSTALLATION (21:00 - 27:00)
+### MCP SERVERS & CONTEXT7 (27:30 - 31:00) — NEW!
+
+**[VISUAL: MCP architecture diagram]**
+
+> "Before we install, let me show you something that makes SpecWeave 10x more powerful — MCP servers. If you've never heard of MCP, you're about to have a game-changer moment."
+
+#### What is MCP?
+
+**[VISUAL: MCP logo + Anthropic connection]**
+
+> "MCP — Model Context Protocol — is Anthropic's open standard for connecting AI to external tools. Think of it as USB-C for AI assistants. One protocol, infinite connections."
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    CLAUDE CODE                       │
+├─────────────────────────────────────────────────────┤
+│                                                      │
+│  MCP SERVERS (Plug-in Capabilities):                │
+│                                                      │
+│  📚 Context7      → Real-time library documentation │
+│  🎭 Playwright    → Browser automation & E2E tests  │
+│  🐘 PostgreSQL    → Direct database access          │
+│  ⚡ Supabase      → Backend-as-a-service            │
+│  ▲ Vercel        → Deployment management            │
+│  📊 Kafka        → Event streaming (4 options!)     │
+│                                                      │
+└─────────────────────────────────────────────────────┘
+```
+
+> "These aren't plugins you install and forget. They give Claude LIVE capabilities — browsing, database queries, documentation lookup — in real-time."
+
+#### Context7 — The Documentation Problem Solver
+
+**[VISUAL: Before/After comparison]**
+
+> "Here's a problem every developer knows. You ask AI: 'How do I use the new React Native Activity component?'
+>
+> AI trained 6 months ago? It hallucinates. It gives you old APIs. It makes up function names that don't exist.
+>
+> With Context7? It FETCHES the current docs. Live. Up-to-date. No hallucinations."
+
+**[VISUAL: Context7 in action]**
+
+```typescript
+// What Context7 does behind the scenes:
+mcp__plugin_context7_context7__query-docs({
+  libraryId: "/facebook/react-native",
+  query: "Activity component for tab state preservation"
+});
+// Returns CURRENT documentation, not 6-month-old training data
+```
+
+> "React Native releases every 8 weeks. Expo SDK every 4 months. Without Context7, your AI is always behind. With it? Always current."
+
+#### Installing MCP Servers
+
+**[VISUAL: Terminal showing commands]**
+
+> "Here's how to set them up. Two options."
+
+**Option 1: Claude Code Marketplace (Recommended)**
+
+```bash
+# Install Context7 from marketplace
+/plugin install context7
+
+# That's it. Auto-discovered, auto-configured.
+```
+
+> "The marketplace is the easiest. One command. Done."
+
+**Option 2: Manual MCP Configuration**
+
+```bash
+# Add Context7 manually
+claude mcp add context7 -- npx -y @upstash/context7-mcp
+
+# With API key for higher rate limits (free from context7.com)
+claude mcp add context7 -- npx -y @upstash/context7-mcp --api-key YOUR_KEY
+
+# Add Playwright for browser automation
+claude mcp add playwright -- npx -y @playwright/mcp@latest
+```
+
+> "Manual gives you more control. API keys give you higher rate limits. Both work."
+
+#### Recommended MCP Setup for SpecWeave
+
+**[VISUAL: Checklist appearing]**
+
+> "Here's my recommended setup for SpecWeave projects:"
+
+| MCP Server | Why You Need It |
+|------------|-----------------|
+| **Context7** | Current library docs — stops AI hallucinations |
+| **Playwright** | E2E testing with `sw-testing:qa-engineer` skill |
+| **Supabase/Postgres** | If using database — direct queries |
+| **Vercel** | If deploying frontend — deployment management |
+
+```bash
+# My recommended setup
+/plugin install context7
+claude mcp add playwright -- npx -y @playwright/mcp@latest
+```
+
+> "Context7 is mandatory in my workflow. Playwright if you're doing E2E. The rest depends on your stack."
+
+#### Important: Who Makes Context7?
+
+**[VISUAL: Upstash logo]**
+
+> "Quick clarification — Context7 is NOT made by Anthropic. It's made by Upstash, an open-source company. It IS listed in Anthropic's official marketplace, has 40,000+ downloads, and it's free.
+>
+> Anthropic created MCP the protocol. Third parties create MCP servers. Context7 is one of the best."
+
+#### Why This Matters for SpecWeave
+
+**[VISUAL: SpecWeave + MCP integration]**
+
+> "SpecWeave skills like `mobile-architect` and `frontend-architect` tell Claude: 'Before recommending React Native APIs, fetch current docs with Context7.'
+>
+> The skill provides patterns. Context7 provides current versions. Together? You get advice that actually works today, not 6 months ago."
+
+**[VISUAL: Code showing the integration]**
+
+```markdown
+# In mobile-architect AGENT.md:
+
+## CRITICAL: Fetching Current Documentation
+
+Before providing version-specific guidance, ALWAYS fetch:
+
+mcp__plugin_context7_context7__resolve-library-id({
+  libraryName: "react-native",
+  query: "React Native latest version features"
+});
+```
+
+> "This is built into SpecWeave's skills. You just need to install Context7, and the magic happens automatically."
+
+---
+
+### INSTALLATION (31:00 - 40:00)
 
 **[VISUAL: Terminal full screen]**
 
-> "Two things to install: Claude Code CLI and SpecWeave. Both take 60 seconds."
+> "Three things to install: Claude Code CLI, SpecWeave plugins, and MCP servers. Let me show you the fastest path."
 
 #### Mac Installation
 
@@ -808,15 +999,6 @@ claude
 # Follow prompts for API key or login
 ```
 
-```bash
-# Step 3: Install SpecWeave (inside any project)
-npx specweave init .
-```
-
-> "That's it. Three commands. You're ready."
-
-**[VISUAL: Show successful installation]**
-
 #### Windows Installation
 
 **[VISUAL: Windows PowerShell]**
@@ -824,31 +1006,117 @@ npx specweave init .
 > "Windows users — same deal, different commands."
 
 ```powershell
-# Step 1: Install Claude Code
-# Option A: winget (recommended)
+# Step 1: Install Claude Code (winget or npm)
 winget install Anthropic.ClaudeCode
+# or: npm install -g @anthropic-ai/claude-code
 
-# Option B: npm
-npm install -g @anthropic-ai/claude-code
-
-# Verify
-claude --version
-```
-
-```powershell
 # Step 2: First run
 claude
 # Authenticate with API key or login
 ```
 
-```powershell
-# Step 3: Install SpecWeave
+> "Same steps. Works identical on all platforms."
+
+#### SpecWeave Init + Plugin Tiers
+
+**[VISUAL: specweave init wizard]**
+
+> "Now the magic. Run specweave init and choose your plugin tier."
+
+```bash
 npx specweave init .
 ```
 
-> "Same three steps. Works identical."
+**[VISUAL: Plugin tier selection appearing]**
 
-**[VISUAL: Side-by-side Mac and Windows showing same result]**
+> "You'll see this prompt:"
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              CHOOSE YOUR PLUGIN SETUP                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  🚀 FULL (Recommended)                                       │
+│     All 24 SpecWeave plugins                                 │
+│     + Context7 (live docs)                                   │
+│     + TypeScript LSP                                         │
+│     + Playwright (E2E)                                       │
+│                                                              │
+│  ⚡ STANDARD                                                  │
+│     Core SpecWeave plugins                                   │
+│     + GitHub/JIRA/ADO sync                                   │
+│     + Context7                                               │
+│     (No ML, K8s, or specialized agents)                      │
+│                                                              │
+│  📦 MINIMAL                                                   │
+│     Core SpecWeave only                                      │
+│     (Add plugins manually later)                             │
+│                                                              │
+│  ⊘ NONE                                                      │
+│     Skip all plugin installation                             │
+│     (Just create folder structure)                           │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> "Pick based on your needs:
+>
+> **Full** — You want the full experience. ML, K8s, mobile, everything.
+>
+> **Standard** — Most developers. Core features without specialized agents.
+>
+> **Minimal** — You know what you want. Install manually.
+>
+> **None** — Just exploring. Add plugins later."
+
+#### What Gets Installed (Full Tier)
+
+**[VISUAL: Installation progress]**
+
+```bash
+Installing plugins...
+  ✓ specweave (core)
+  ✓ specweave-github
+  ✓ specweave-jira
+  ✓ specweave-ado
+  ✓ specweave-frontend
+  ✓ specweave-backend
+  ✓ specweave-mobile
+  ✓ specweave-testing
+  ✓ specweave-infrastructure
+  ✓ specweave-ml
+  ✓ specweave-kafka
+  ✓ specweave-k8s
+  ... (24 total)
+
+Installing MCP servers...
+  ✓ context7 (live documentation)
+  ✓ playwright (browser automation)
+
+Installing Claude Code plugins...
+  ✓ typescript-lsp (type intelligence)
+```
+
+> "Full tier gives you everything. One command, complete setup."
+
+#### MCP Server Installation (Cross-Platform)
+
+**[VISUAL: MCP installation commands]**
+
+> "After init, you can always add more MCP servers. These commands work on Mac, Windows, AND Linux:"
+
+```bash
+# Essential (install these!)
+/plugin install context7
+
+# Browser automation (for E2E testing)
+claude mcp add playwright -- npx -y @playwright/mcp@latest
+
+# Database access (if you use Postgres/Supabase)
+claude mcp add postgres -- npx -y @modelcontextprotocol/server-postgres
+```
+
+> "MCP servers are cross-platform. Same commands everywhere. Node.js required for npx."
 
 #### What Just Happened?
 
@@ -866,11 +1134,11 @@ npx specweave init .
 └── state/               # Runtime state
 ```
 
-> "This is your spec-driven workspace. Everything lives here."
+> "Plus 24 plugins loaded in Claude Code. Plus MCP servers ready. Your spec-driven workspace is live."
 
 ---
 
-### VS CODE + 4-TERMINAL SETUP (27:00 - 31:00)
+### VS CODE + 4-TERMINAL SETUP (40:00 - 44:00)
 
 **[VISUAL: VS Code opening]**
 
@@ -1242,7 +1510,181 @@ async function getTheme() {
 
 ---
 
-### DEMO 3: BROWNFIELD WITH LIVING DOCS BUILDER (43:30 - 53:30) — NEW!
+### PRO TIP: Self-Improving Skills with Reflect (45:00 - 47:00) — NEW!
+
+**[VISUAL: Split screen - wrong code vs correct code, skill file updating]**
+
+> "Here's something that will FUNDAMENTALLY change how you work with AI. The Reflect methodology.
+>
+> Every AI — Claude, GPT, Gemini — has the same problem: it generates patterns from training data. But YOUR codebase has YOUR patterns. Your conventions. Your hard-won lessons from production bugs.
+>
+> What happens when the AI generates code that's technically correct but WRONG for your context?"
+
+#### The Problem: AI Makes the Same Mistakes
+
+**[VISUAL: Stripe webhook code example - wrong pattern]**
+
+> "Real example from last week. I asked Claude to implement Stripe Connect webhooks. It generated this:"
+
+```typescript
+// ❌ AI GENERATED THIS - LOOKS CORRECT, BUT BROKEN!
+app.post('/webhooks/stripe', async (req, res) => {
+  const event = stripe.webhooks.constructEvent(req.body, sig, secret);
+
+  switch (event.type) {
+    case 'checkout.session.completed':
+      await confirmPayment(event.data.object);
+      break;
+  }
+  res.json({ received: true });
+});
+```
+
+> "This looks right. Standard Stripe pattern. But it's BROKEN for Stripe Connect with Direct Charge.
+>
+> Why? Direct Charge checkout sessions are created ON the connected account, not the platform. The webhook at `/webhooks/stripe` NEVER receives `checkout.session.completed` for Direct Charges!
+>
+> Payments silently fail. No error. No crash. Just... nothing happens."
+
+**[VISUAL: Correct pattern appearing]**
+
+> "The fix requires TWO webhook endpoints:"
+
+```typescript
+// ✅ CORRECT - Platform webhook
+app.post('/webhooks/stripe', ...);           // account.updated
+
+// ✅ CORRECT - Connect webhook (CRITICAL!)
+app.post('/webhooks/stripe/connect', ...);   // checkout.session.completed
+```
+
+> "I spent HOURS debugging this. But here's the thing — I only want to debug it ONCE."
+
+#### The Solution: Reflect Captures Learnings
+
+**[VISUAL: Terminal showing /sw:reflect command]**
+
+> "After fixing the bug, I ran:"
+
+```bash
+/sw:reflect
+```
+
+**[VISUAL: Skill file updating with new pattern]**
+
+```
+Analyzing session for learnings...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Detected correction pattern:
+  - Topic: Stripe Connect webhooks
+  - Wrong: Single webhook endpoint
+  - Correct: Dual endpoints (platform + connect)
+  - Confidence: HIGH (explicit user correction)
+
+✓ Saved to: .specweave/memory/api-patterns.md
+  → "For Stripe Connect Direct Charge, ALWAYS use separate
+     /webhooks/stripe (platform) and /webhooks/stripe/connect
+     (connected account events)"
+
+✓ Updated skill: specweave-payments/stripe-connect
+  → Added "Critical Patterns" section
+```
+
+> "That's it. The learning is captured. The skill is updated. Next time ANY developer on my team asks about Stripe Connect, the correct pattern is there. No debugging. No silent failures."
+
+#### Real Example: React Native Localization
+
+**[VISUAL: React Native error screen]**
+
+> "Another example that saved me HOURS. React Native localization.
+>
+> I asked Claude to set up i18n. It generated react-i18next — the standard library. Works great on web. Crashes on React Native."
+
+```typescript
+// ❌ AI GENERATED - CRASHES IN EXPO GO!
+import { initReactI18next } from 'react-i18next';
+i18n.use(initReactI18next).init({...});
+
+// Error: Cannot read property 'getLocales' of null
+```
+
+> "Why? Module-level code execution. react-i18next has internal React dependencies that run at IMPORT time — before React mounts. In Expo Go, this crashes silently.
+>
+> The fix? Use i18n-js instead — pure JavaScript, no React dependency at module level."
+
+```typescript
+// ✅ CORRECT - No native module dependency
+import { I18n } from 'i18n-js';
+const i18n = new I18n({ en, es });
+```
+
+> "After fixing this, I ran `/sw:reflect`. Now the mobile-architect skill KNOWS:"
+
+```markdown
+# Learned Pattern (captured by Reflect)
+
+## React Native i18n
+- **NEVER use** react-i18next (has React dependency at module level)
+- **ALWAYS use** i18n-js (pure JS, no crashes)
+- **For locale detection**: Use Intl.DateTimeFormat(), NOT expo-localization at module level
+```
+
+> "Next time anyone asks Claude about React Native localization? It generates the RIGHT pattern. No debugging. No white screens. No wasted hours."
+
+#### Why This Matters
+
+**[VISUAL: Diagram showing learning loop]**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                  REFLECT LEARNING LOOP                    │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  1. AI generates code → Works most of time               │
+│                          ↓                               │
+│  2. Edge case fails   → You debug, fix                   │
+│                          ↓                               │
+│  3. /sw:reflect       → Captures the correction          │
+│                          ↓                               │
+│  4. Skill updated     → Pattern saved permanently        │
+│                          ↓                               │
+│  5. Next request      → AI uses correct pattern          │
+│                          ↓                               │
+│  6. No debugging      → Time saved, every time           │
+│                                                          │
+└─────────────────────────────────────────────────────────┘
+```
+
+> "This is COMPOUND improvement. Every correction makes the AI smarter for YOUR codebase. After a few weeks, you'll notice: Claude stops making the same mistakes. Because YOU taught it."
+
+#### Commands
+
+```bash
+# Analyze session, extract learnings
+/sw:reflect
+
+# Enable auto-reflection on session end
+/sw:reflect-on
+
+# Check what's been learned
+/sw:reflect-status
+
+# View centralized memory
+cat .specweave/memory/*.md
+```
+
+> "Pro tip: Run `/sw:reflect-on` once. Now EVERY session automatically captures learnings when you close it. Zero manual work. Continuous improvement."
+
+#### The Bottom Line
+
+> "Default AI generates patterns from training data. YOUR AI — with Reflect — generates patterns from YOUR corrections.
+>
+> Same tool. Different results. Because it learned from YOU."
+
+---
+
+### DEMO 3: BROWNFIELD WITH LIVING DOCS BUILDER (47:00 - 57:00) — NEW!
 
 **[VISUAL: EasyChamp codebase opening]**
 
@@ -2216,6 +2658,22 @@ EOF
 
 > This isn't just a tool. It's a methodology. And you can learn all of it for free."
 
+#### Staying Updated
+
+**[VISUAL: Browser tabs showing the 3 key resources]**
+
+> "AI tooling moves FAST. Claude Code ships updates constantly. Here's how I stay on top of it:
+
+> **Three resources I check daily:**
+
+> **First** — Boris Cherny's Twitter: https://x.com/bcherny — Boris is the creator of Claude Code at Anthropic. This is where I learn about new features before they even hit the changelog. When I see Boris tweet about something, I know it's coming to Claude Code soon.
+
+> **Second** — The Claude Code changelog: github.com/anthropics/claude-code/blob/main/CHANGELOG.md — This is the source of truth for what's shipping. I read this every day to understand what's new, what's changed, what's deprecated.
+
+> **Third** — The Anthropic Engineering blog: anthropic.com/engineering — New articles don't drop often, but when they do, they're gold. Deep dives into how Claude works, new capabilities, best practices straight from the team that builds it.
+
+> Bookmark these. Check them regularly. The AI landscape changes weekly. You want to be ahead of the curve, not behind it."
+
 ---
 
 ### OUTRO (70:00 - 71:00)
@@ -2275,14 +2733,15 @@ EOF
 | 20:00 | Full greenfield demo |
 | 32:00 | Translation commands |
 | 43:00 | React Native crash examples + safe patterns (NEW!) |
-| 45:00 | EasyChamp brownfield with Living Docs Builder (NEW!) |
-| 43:00 | specweave jobs --follow output (NEW!) |
-| 48:00 | SUGGESTIONS.md generated output (NEW!) |
-| 53:00 | GitHub sync with pull sync demo (NEW!) |
-| 57:00 | JIRA board sync |
-| 60:00 | Azure DevOps with SAFe hierarchy detection (NEW!) |
-| 64:00 | **External Increments: import from GitHub issue, create increment, sync back (NEW!)** |
-| 68:00 | specweave jobs command (NEW!) |
+| 45:00 | **Reflect: /sw:reflect command + skill updating (NEW!)** |
+| 47:00 | EasyChamp brownfield with Living Docs Builder (NEW!) |
+| 50:00 | specweave jobs --follow output (NEW!) |
+| 52:00 | SUGGESTIONS.md generated output (NEW!) |
+| 57:00 | GitHub sync with pull sync demo (NEW!) |
+| 61:00 | JIRA board sync |
+| 64:00 | Azure DevOps with SAFe hierarchy detection (NEW!) |
+| 68:00 | **External Increments: import from GitHub issue, create increment, sync back (NEW!)** |
+| 71:30 | specweave jobs command (NEW!) |
 
 ### Graphics Needed
 
@@ -2292,6 +2751,7 @@ EOF
 - Living Docs Builder 6-phase diagram (NEW!)
 - ADO process template comparison table (NEW!)
 - Bidirectional sync flow diagram (NEW!)
+- **Reflect Learning Loop diagram: AI generates → You correct → Reflect captures → AI improves (NEW!)**
 - **External-First Workflow diagram: PM → GitHub Issue → Import → Increment → Sync back (NEW!)**
 - Sync flow diagram (JIRA ↔ SpecWeave ↔ Code)
 - 4-terminal layout diagram
@@ -2342,8 +2802,9 @@ THE SOLUTION:
 • 🔧 BACKGROUND JOBS: Clone, import, analyze in background
 • 🏢 ADO HIERARCHY INTELLIGENCE: Auto-detect SAFe, Agile, Scrum, CMMI
 • ⏸️ PAUSE/RESUME: Long-running jobs with checkpoints
+• 🧠 REFLECT: AI learns from YOUR corrections — never repeats the same mistakes
 
-8 REAL DEMOS:
+9 REAL DEMOS:
 • 🆕 Greenfield: Build from scratch
 • 🌍 Translation: Multi-language in one command
 • 🏚️ Brownfield: Living Docs Builder (auto-generate docs!)
@@ -2385,15 +2846,16 @@ TIMESTAMPS:
 36:30 - DEMO: Greenfield
 40:30 - DEMO: Translation
 43:30 - PRO TIP: React Native/Expo Module-Level Crashes (saves HOURS!)
-45:30 - DEMO: Brownfield with Living Docs Builder (NEW!)
-55:30 - DEMO: GitHub Sync with Bidirectional Pull (NEW!)
-59:30 - DEMO: JIRA Sync
-62:30 - DEMO: Azure DevOps with Hierarchy Intelligence (NEW!)
-66:30 - **DEMO: External Increments — ADO/GitHub/JIRA → SpecWeave (NEW!)**
-70:00 - Background Jobs Monitoring (NEW!)
-72:00 - Works with ANY AI (AGENT.md)
-74:00 - Academy & Resources
-75:30 - This was HUGE (Outro)
+45:00 - **PRO TIP: Self-Improving Skills with Reflect (NEW!)**
+47:00 - DEMO: Brownfield with Living Docs Builder (NEW!)
+57:00 - DEMO: GitHub Sync with Bidirectional Pull (NEW!)
+61:00 - DEMO: JIRA Sync
+64:00 - DEMO: Azure DevOps with Hierarchy Intelligence (NEW!)
+68:00 - **DEMO: External Increments — ADO/GitHub/JIRA → SpecWeave (NEW!)**
+71:30 - Background Jobs Monitoring (NEW!)
+73:30 - Works with ANY AI (AGENT.md)
+75:30 - Academy & Resources
+77:00 - This was HUGE (Outro)
 
 Free. Open Source. No catch.
 

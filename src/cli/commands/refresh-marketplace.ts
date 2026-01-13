@@ -109,6 +109,63 @@ function installPlugin(pluginName: string): PluginResult {
 }
 
 /**
+ * Fix executable permissions on hook scripts.
+ * Claude Code plugin installation doesn't preserve executable bits,
+ * so we need to chmod +x all .sh files in hooks directories.
+ */
+function fixHookPermissions(marketplacePath: string): { fixed: number; errors: string[] } {
+  const errors: string[] = [];
+  let fixed = 0;
+
+  const pluginsDir = path.join(marketplacePath, 'plugins');
+  if (!fs.existsSync(pluginsDir)) {
+    return { fixed, errors: ['Plugins directory not found'] };
+  }
+
+  // Find all plugin directories
+  const pluginDirs = fs.readdirSync(pluginsDir).filter(name => {
+    const pluginPath = path.join(pluginsDir, name);
+    return fs.statSync(pluginPath).isDirectory();
+  });
+
+  for (const pluginName of pluginDirs) {
+    const hooksDir = path.join(pluginsDir, pluginName, 'hooks');
+    if (!fs.existsSync(hooksDir)) continue;
+
+    // Find all .sh files in hooks directory
+    const hookFiles = fs.readdirSync(hooksDir).filter(f => f.endsWith('.sh'));
+
+    for (const hookFile of hookFiles) {
+      const hookPath = path.join(hooksDir, hookFile);
+      try {
+        // Make executable (0o755 = rwxr-xr-x)
+        fs.chmodSync(hookPath, 0o755);
+        fixed++;
+      } catch (error) {
+        errors.push(`${pluginName}/${hookFile}: ${error}`);
+      }
+    }
+
+    // Also check scripts directory
+    const scriptsDir = path.join(pluginsDir, pluginName, 'scripts');
+    if (fs.existsSync(scriptsDir)) {
+      const scriptFiles = fs.readdirSync(scriptsDir).filter(f => f.endsWith('.sh'));
+      for (const scriptFile of scriptFiles) {
+        const scriptPath = path.join(scriptsDir, scriptFile);
+        try {
+          fs.chmodSync(scriptPath, 0o755);
+          fixed++;
+        } catch (error) {
+          errors.push(`${pluginName}/scripts/${scriptFile}: ${error}`);
+        }
+      }
+    }
+  }
+
+  return { fixed, errors };
+}
+
+/**
  * Check plugin cache health before refresh and auto-invalidate critical issues
  */
 async function preRefreshCacheCheck(verbose: boolean = false): Promise<void> {
@@ -325,6 +382,21 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     console.log(chalk.green.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
     console.log(chalk.green.bold('  ✓ ALL PLUGINS INSTALLED SUCCESSFULLY!'));
     console.log(chalk.green.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+  }
+
+  console.log('');
+
+  // Step 3.5: Fix hook permissions (chmod +x)
+  console.log(chalk.yellow('🔧 Step 3.5: Fixing hook permissions...'));
+
+  const permResult = fixHookPermissions(marketplacePath);
+  if (permResult.fixed > 0) {
+    console.log(chalk.green(`✓ Fixed permissions on ${permResult.fixed} hook/script files`));
+  }
+  if (permResult.errors.length > 0 && options.verbose) {
+    for (const err of permResult.errors) {
+      console.log(chalk.yellow(`  ⚠ ${err}`));
+    }
   }
 
   console.log('');
