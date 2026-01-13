@@ -52,12 +52,12 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
-          id: 'glossary/terms/increments',
+          id: 'guides/core-concepts/what-is-an-increment',
           label: 'What is an Increment?',
         },
         {
           type: 'doc',
-          id: 'glossary/terms/living-docs',
+          id: 'guides/core-concepts/living-documentation',
           label: 'Living Documentation',
         },
       ],
@@ -213,12 +213,12 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
-          id: 'glossary/terms/increments',
+          id: 'guides/core-concepts/what-is-an-increment',
           label: 'What is an Increment?',
         },
         {
           type: 'doc',
-          id: 'glossary/terms/living-docs',
+          id: 'guides/core-concepts/living-documentation',
           label: 'Living Documentation',
         },
       ],
@@ -488,7 +488,7 @@ const sidebars: SidebarsConfig = {
   glossarySidebar: [
     {
       type: 'doc',
-      id: 'glossary/glossary-by-category',
+      id: 'glossary/index-by-category',
       label: '📖 Glossary by Category',
     },
     {
