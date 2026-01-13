@@ -4,6 +4,16 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.113] - 2026-01-13
+
+### 🔧 Improvements
+
+- **Auto mode refactoring**: Refactored auto mode commands and added comprehensive tests
+- **Payments plugin**: Expanded plugin keywords for better activation and added critical Stripe Connect patterns
+- **Bug fixes**: Fixed web browser payment flow handling
+
+---
+
 ## [1.0.101] - 2026-01-06
 
 ### 📚 Documentation
