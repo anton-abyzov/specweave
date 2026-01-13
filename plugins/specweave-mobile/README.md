@@ -1,47 +1,49 @@
 # SpecWeave Mobile Plugin
 
-Comprehensive **React Native 0.83+** and **Expo SDK 54+** development support for SpecWeave. Streamlines mobile app development with expert guidance on setup, debugging, performance optimization, and testing.
+Comprehensive **React Native** and **Expo** development support for SpecWeave. Streamlines mobile app development with expert guidance on setup, debugging, performance optimization, and testing.
+
+**IMPORTANT**: This plugin provides patterns and architectural guidance. For version-specific APIs, always use Context7 to fetch current React Native and Expo documentation.
 
 ## Overview
 
 The SpecWeave Mobile plugin provides specialized skills and agents for modern React Native and Expo development, covering the entire mobile development lifecycle from environment setup to production deployment.
 
-### What's New (December 2025)
+### Key Capabilities
 
-- **React Native 0.83**: Zero breaking changes, React 19.2, Activity component, useEffectEvent
-- **Expo SDK 54**: Native tabs, iOS Liquid Glass, Android edge-to-edge, expo-video/expo-audio
-- **Hermes V1**: Next-generation JavaScript engine (experimental)
-- **New Architecture**: Default since RN 0.76 - Turbo Modules, Fabric, JSI
-- **Web APIs**: Intersection Observer (Canary), Web Performance APIs (Stable)
+- **New Architecture**: Turbo Modules, Fabric, JSI
+- **Modern React**: Activity component, useEffectEvent, concurrent features
+- **Expo Workflows**: EAS Build, EAS Update, native tabs, file-based routing
+- **Performance**: Hermes engine, FlashList, Intersection Observer, Web Performance APIs
+- **Platform-Specific**: iOS blur/glass effects, Android edge-to-edge
 
 ## Features
 
 ### 7 Specialized Skills
 
-1. **react-native-setup** - Environment setup and configuration (2025)
-   - Node.js 20+, Xcode 16.1+, Android Studio Ladybug
-   - iOS simulators (iOS 26 for Liquid Glass) and Android emulators (API 35)
-   - CocoaPods 1.15+, watchman, EAS Build setup
+1. **react-native-setup** - Environment setup and configuration
+   - Node.js, Xcode, Android Studio setup
+   - iOS simulators and Android emulators
+   - CocoaPods, watchman, EAS Build setup
    - New Architecture setup and troubleshooting
 
-2. **expo-workflow** - Expo SDK 54+ development workflows
+2. **expo-workflow** - Expo development workflows
    - EAS Build and EAS Update
-   - Native tab navigation and Expo Router v6
-   - iOS Liquid Glass and Android edge-to-edge
-   - expo-video/expo-audio (replacing expo-av)
+   - Native tab navigation and Expo Router
+   - Platform-specific UI (iOS blur, Android edge-to-edge)
+   - expo-video/expo-audio
 
 3. **mobile-debugging** - Debugging strategies
-   - React DevTools Desktop App (RN 0.83)
+   - React DevTools Desktop App
    - Flipper, Chrome DevTools
    - Network request debugging
    - Error boundaries and crash analysis
 
 4. **performance-optimization** - Modern performance tuning
-   - Hermes V1 experimental engine
-   - React 19.2 Activity component for state preservation
+   - Hermes engine optimization
+   - React Activity component for state preservation
    - Intersection Observer API for lazy loading
    - Web Performance APIs (performance.now, User Timing)
-   - FlashList, expo-image v2
+   - FlashList, expo-image
 
 5. **native-modules** - New Architecture native integration
    - Turbo Modules with Codegen
@@ -67,11 +69,11 @@ The SpecWeave Mobile plugin provides specialized skills and agents for modern Re
 ### Mobile Architect Agent
 
 The `mobile-architect` agent specializes in:
-- Application architecture design for RN 0.83+ / Expo SDK 54+
-- State management selection (Zustand, TanStack Query v5, Jotai, Legend State)
-- Navigation with Expo Router v6 and React Navigation v7
-- Performance architecture with React 19.2 features
-- Platform-specific strategies (iOS Liquid Glass, Android edge-to-edge)
+- Application architecture design for React Native / Expo
+- State management selection (Zustand, TanStack Query, Jotai, Legend State)
+- Navigation with Expo Router and React Navigation
+- Performance architecture with modern React features
+- Platform-specific strategies (iOS design patterns, Android edge-to-edge)
 - Testing architecture
 - Build and deployment pipelines with EAS
 
@@ -327,14 +329,19 @@ To add new skills or improve existing ones:
 
 ## Version History
 
+- **2.1.0** (January 2026)
+  - Removed hardcoded version numbers from descriptions
+  - Added Context7 integration for fetching current documentation
+  - Skills now focus on patterns/concepts, not specific versions
+  - Added instructions to verify current APIs before advising
+
 - **2.0.0** (December 2025)
-  - React Native 0.83 support (React 19.2, Activity component, useEffectEvent)
-  - Expo SDK 54 support (native tabs, Liquid Glass, edge-to-edge)
-  - Hermes V1 experimental engine support
+  - Added modern React patterns (Activity component, useEffectEvent)
+  - Added Expo workflows (native tabs, platform effects)
+  - Hermes engine optimization support
   - Turbo Modules with Codegen documentation
   - Intersection Observer and Web Performance APIs
-  - expo-video/expo-audio (replacing expo-av)
-  - Updated all skills with 2025 requirements
+  - expo-video/expo-audio patterns
 
 - **1.0.0** (November 2024)
   - Initial release

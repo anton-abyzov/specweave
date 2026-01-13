@@ -1,7 +1,8 @@
 /**
- * Cancel Auto CLI Command
+ * Cancel Auto CLI Command (Simplified - Ralph Wiggum Pattern)
  *
- * Cancel running auto session and generate summary report.
+ * Just removes the auto-mode flag. That's it.
+ * The stop hook will then approve exit on next attempt.
  *
  * Usage:
  *   specweave cancel-auto
@@ -12,6 +13,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import chalk from 'chalk';
 import { Command } from 'commander';
+import { AutoModeFlag } from '../../core/auto/types.js';
 
 export interface CancelAutoOptions {
   force?: boolean;
@@ -19,8 +21,8 @@ export interface CancelAutoOptions {
 
 export function createCancelAutoCommand(): Command {
   const cmd = new Command('cancel-auto')
-    .description('Cancel running auto session')
-    .option('--force', 'Force cancel without confirmation')
+    .description('Cancel auto mode')
+    .option('--force', 'Cancel without confirmation')
     .action(async (options: CancelAutoOptions) => {
       const projectPath = process.cwd();
 
@@ -47,44 +49,44 @@ export function createCancelAutoCommand(): Command {
 /**
  * Handle cancel-auto command
  */
-async function handleCancelAuto(
-  projectPath: string,
-  options: CancelAutoOptions
-): Promise<void> {
-  const stateDir = path.join(projectPath, '.specweave/state');
-  const sessionPath = path.join(stateDir, 'auto-session.json');
+async function handleCancelAuto(projectPath: string, options: CancelAutoOptions): Promise<void> {
+  const autoFlagPath = path.join(projectPath, '.specweave/state/auto-mode.json');
 
-  // Load session
-  if (!fs.existsSync(sessionPath)) {
-    console.log(chalk.yellow('No auto session found'));
+  // Check if auto mode is active
+  if (!fs.existsSync(autoFlagPath)) {
+    console.log(chalk.yellow('No auto mode active'));
     return;
   }
 
-  let session: any;
+  let flag: AutoModeFlag | null = null;
   try {
-    session = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
-  } catch (error) {
-    console.log(chalk.yellow('Invalid auto session file'));
-    return;
+    flag = JSON.parse(fs.readFileSync(autoFlagPath, 'utf-8'));
+  } catch {
+    // Invalid file, just remove it
   }
 
-  if (session.status !== 'running') {
-    console.log(chalk.yellow(`Session is not running (status: ${session.status})`));
+  if (!flag?.active) {
+    console.log(chalk.yellow('Auto mode is not active'));
+    // Clean up the file anyway
+    fs.unlinkSync(autoFlagPath);
     return;
   }
 
   // Ask for confirmation unless --force
   if (!options.force) {
     console.log('');
-    console.log(chalk.yellow('⚠️  Cancel Auto Session'));
+    console.log(chalk.yellow('⚠️  Cancel Auto Mode'));
     console.log('');
-    console.log('Session ID:   ' + chalk.cyan(session.sessionId));
-    console.log('Current:      ' + chalk.green(session.currentIncrement || '(none)'));
-    console.log(`Progress:     ${session.completedIncrements.length} completed, ${session.incrementQueue.length} remaining`);
+    console.log('Started: ' + chalk.gray(flag.timestamp));
+    if (flag.incrementIds && flag.incrementIds.length > 0) {
+      console.log('Increments:');
+      for (const id of flag.incrementIds) {
+        console.log('  • ' + chalk.cyan(id));
+      }
+    }
     console.log('');
     console.log('Are you sure you want to cancel? (y/N)');
 
-    // Wait for user input
     const answer = await getUserInput();
     if (answer.toLowerCase() !== 'y' && answer.toLowerCase() !== 'yes') {
       console.log(chalk.gray('Cancelled'));
@@ -92,183 +94,46 @@ async function handleCancelAuto(
     }
   }
 
-  // Calculate duration
-  const startTime = new Date(session.startTime);
-  const endTime = new Date();
-  const durationMs = endTime.getTime() - startTime.getTime();
-  const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
-  const durationMinutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+  // Remove the flag file
+  fs.unlinkSync(autoFlagPath);
 
-  // Update session status
-  session.status = 'cancelled';
-  session.endTime = new Date().toISOString();
-  session.endReason = 'User requested cancellation';
+  // Also clean up any legacy session files if they exist
+  const legacyFiles = [
+    path.join(projectPath, '.specweave/state/auto-session.json'),
+    path.join(projectPath, '.specweave/state/active-session.lock'),
+  ];
 
-  try {
-    fs.writeFileSync(sessionPath, JSON.stringify(session, null, 2), 'utf-8');
-  } catch (error) {
-    console.log(chalk.red('❌ Failed to cancel session'));
-    return;
-  }
-
-  // Release lock
-  const lockPath = path.join(stateDir, 'active-session.lock');
-  try {
-    if (fs.existsSync(lockPath)) {
-      fs.unlinkSync(lockPath);
+  for (const file of legacyFiles) {
+    if (fs.existsSync(file)) {
+      try {
+        fs.unlinkSync(file);
+      } catch {
+        // Ignore cleanup errors
+      }
     }
-  } catch (error) {
-    // Ignore lock release errors
   }
 
-  // Generate summary report
-  const logsDir = path.join(projectPath, '.specweave/logs');
-  if (!fs.existsSync(logsDir)) {
-    fs.mkdirSync(logsDir, { recursive: true });
-  }
-
-  const summaryPath = path.join(logsDir, `${session.sessionId}-summary.md`);
-  const summary = generateSummaryReport(session, durationHours, durationMinutes, 'cancelled');
-
-  fs.writeFileSync(summaryPath, summary, 'utf-8');
-
-  // Log session end
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    event: 'session_cancel',
-    sessionId: session.sessionId,
-    duration: `${durationHours}h ${durationMinutes}m`,
-    iterations: session.iteration,
-    completed: session.completedIncrements.length,
-    failed: session.failedIncrements.length,
-  };
-  const logPath = path.join(logsDir, 'auto-sessions.log');
-  fs.appendFileSync(logPath, JSON.stringify(logEntry) + '\n', 'utf-8');
-
-  // Output
   console.log('');
-  console.log(chalk.yellow('🚫 Auto Session Cancelled'));
+  console.log(chalk.yellow('🚫 Auto Mode Cancelled'));
   console.log('');
-  console.log('Session ID:   ' + chalk.cyan(session.sessionId));
-  console.log(`Duration:     ${durationHours}h ${durationMinutes}m`);
-  console.log(`Iterations:   ${session.iteration}/${session.maxIterations}`);
-  console.log('');
-  console.log('RESULTS:');
-  console.log('  Completed:  ' + chalk.green(session.completedIncrements.length.toString()));
-  console.log('  Failed:     ' + chalk.red(session.failedIncrements.length.toString()));
-  console.log('  Remaining:  ' + chalk.yellow(session.incrementQueue.length.toString()));
-  console.log('');
-  console.log('Summary saved to: ' + chalk.cyan(summaryPath));
+  console.log('Resume work manually with: ' + chalk.cyan('/sw:do'));
   console.log('');
 }
 
 /**
- * Get user input from stdin
- * Cross-platform safe (handles Windows, macOS, Linux, WSL, CI environments)
+ * Get user input from stdin (cross-platform)
  */
 function getUserInput(): Promise<string> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const stdin = process.stdin;
     stdin.setEncoding('utf8');
 
-    // Only set raw mode if stdin is a TTY (prevents Windows errors)
     if (stdin.isTTY && typeof stdin.setRawMode === 'function') {
       stdin.setRawMode(false);
     }
 
-    stdin.once('data', (data) => {
+    stdin.once('data', data => {
       resolve(data.toString().trim());
     });
   });
-}
-
-/**
- * Generate summary report
- */
-function generateSummaryReport(
-  session: any,
-  durationHours: number,
-  durationMinutes: number,
-  status: string
-): string {
-  const lines: string[] = [];
-
-  lines.push(`# Auto Session Summary`);
-  lines.push('');
-  lines.push(`**Session ID**: \`${session.sessionId}\``);
-  lines.push(`**Status**: ${status}`);
-  lines.push(`**Started**: ${session.startTime}`);
-  lines.push(`**Ended**: ${new Date().toISOString()}`);
-  lines.push(`**Duration**: ${durationHours}h ${durationMinutes}m`);
-  lines.push('');
-
-  lines.push(`## Progress`);
-  lines.push('');
-  lines.push(`- **Iterations**: ${session.iteration}/${session.maxIterations}`);
-  lines.push(`- **Completed**: ${session.completedIncrements.length}`);
-  lines.push(`- **Failed**: ${session.failedIncrements.length}`);
-  lines.push(`- **Remaining**: ${session.incrementQueue.length}`);
-  lines.push('');
-
-  if (session.completedIncrements.length > 0) {
-    lines.push(`## Completed Increments`);
-    lines.push('');
-    for (const incId of session.completedIncrements) {
-      lines.push(`- ✅ ${incId}`);
-    }
-    lines.push('');
-  }
-
-  if (session.failedIncrements.length > 0) {
-    lines.push(`## Failed Increments`);
-    lines.push('');
-    for (const incId of session.failedIncrements) {
-      lines.push(`- ❌ ${incId}`);
-    }
-    lines.push('');
-  }
-
-  if (session.incrementQueue.length > 0) {
-    lines.push(`## Remaining Queue`);
-    lines.push('');
-    for (const incId of session.incrementQueue) {
-      lines.push(`- ⏳ ${incId}`);
-    }
-    lines.push('');
-  }
-
-  if (session.humanGates.approved.length > 0) {
-    lines.push(`## Approved Gates`);
-    lines.push('');
-    for (const gate of session.humanGates.approved) {
-      lines.push(`- ✓ ${gate}`);
-    }
-    lines.push('');
-  }
-
-  const openBreakers = Object.entries(session.circuitBreakers).filter(
-    ([_, status]: [string, any]) => status.state === 'open'
-  );
-
-  if (openBreakers.length > 0) {
-    lines.push(`## Circuit Breakers`);
-    lines.push('');
-    for (const [service, status] of openBreakers) {
-      lines.push(`- **${service}**: OPEN (${(status as any).failures} failures)`);
-    }
-    lines.push('');
-  }
-
-  if (session.endReason) {
-    lines.push(`## End Reason`);
-    lines.push('');
-    lines.push(session.endReason);
-    lines.push('');
-  }
-
-  lines.push('---');
-  lines.push('');
-  lines.push('_Generated by SpecWeave Auto Mode_');
-
-  return lines.join('\n');
 }

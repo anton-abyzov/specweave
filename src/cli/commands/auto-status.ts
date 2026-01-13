@@ -1,11 +1,11 @@
 /**
- * Auto Status CLI Command
+ * Auto Status CLI Command (Simplified - Ralph Wiggum Pattern)
  *
- * Check current auto session status, progress, and pending gates.
+ * Shows auto mode status by checking the flag file and counting active increments.
+ * The increment metadata.json IS the source of truth.
  *
  * Usage:
  *   specweave auto-status
- *   specweave auto-status --verbose
  *   specweave auto-status --json
  */
 
@@ -13,16 +13,15 @@ import * as path from 'path';
 import * as fs from 'fs';
 import chalk from 'chalk';
 import { Command } from 'commander';
+import { AutoModeFlag } from '../../core/auto/types.js';
 
 export interface AutoStatusOptions {
-  verbose?: boolean;
   json?: boolean;
 }
 
 export function createAutoStatusCommand(): Command {
   const cmd = new Command('auto-status')
-    .description('Check auto session status and progress')
-    .option('--verbose', 'Show detailed information')
+    .description('Check auto mode status')
     .option('--json', 'Output as JSON')
     .action(async (options: AutoStatusOptions) => {
       const projectPath = process.cwd();
@@ -50,217 +49,110 @@ export function createAutoStatusCommand(): Command {
 /**
  * Handle auto-status command
  */
-async function handleAutoStatus(
-  projectPath: string,
-  options: AutoStatusOptions
-): Promise<void> {
-  const sessionPath = path.join(projectPath, '.specweave/state/auto-session.json');
+async function handleAutoStatus(projectPath: string, options: AutoStatusOptions): Promise<void> {
+  const autoFlagPath = path.join(projectPath, '.specweave/state/auto-mode.json');
+  const incrementsDir = path.join(projectPath, '.specweave/increments');
 
-  // Load session
-  if (!fs.existsSync(sessionPath)) {
-    console.log(chalk.yellow('No auto session found'));
-    console.log('');
-    console.log('Start a new session with: ' + chalk.cyan('specweave auto [INCREMENT_IDS...]'));
-    return;
+  // Check if auto mode is active
+  let flag: AutoModeFlag | null = null;
+  let isActive = false;
+
+  if (fs.existsSync(autoFlagPath)) {
+    try {
+      flag = JSON.parse(fs.readFileSync(autoFlagPath, 'utf-8'));
+      isActive = flag?.active ?? false;
+    } catch {
+      // Invalid file
+    }
   }
 
-  let session: any;
-  try {
-    session = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
-  } catch (error) {
-    console.log(chalk.yellow('Invalid auto session file'));
-    return;
-  }
+  // Count active increments (THE source of truth)
+  const activeIncrements = findActiveIncrements(incrementsDir);
+
+  // Build status object
+  const status = {
+    autoModeActive: isActive,
+    startTime: flag?.timestamp ?? null,
+    configuredIncrements: flag?.incrementIds ?? [],
+    activeIncrements: activeIncrements,
+    activeCount: activeIncrements.length,
+  };
 
   // JSON output
   if (options.json) {
-    console.log(JSON.stringify(session, null, 2));
+    console.log(JSON.stringify(status, null, 2));
     return;
   }
 
-  // Calculate duration
-  const startTime = new Date(session.startTime);
-  const endTime = session.endTime ? new Date(session.endTime) : new Date();
-  const durationMs = endTime.getTime() - startTime.getTime();
-  const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
-  const durationMinutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
-
-  // Status color
-  const statusColor = getStatusColor(session.status);
-  const statusIcon = getStatusIcon(session.status);
-
-  // Print status
+  // Human-readable output
   console.log('');
-  console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-  console.log(chalk.bold('AUTO SESSION STATUS'));
-  console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-  console.log('');
-  console.log('Session ID:   ' + chalk.cyan(session.sessionId));
-  console.log(`Status:       ${statusIcon} ${statusColor(session.status)}`);
-  console.log('Started:      ' + chalk.gray(session.startTime));
-
-  if (session.endTime) {
-    console.log('Ended:        ' + chalk.gray(session.endTime));
-  }
-
-  console.log(`Duration:     ${durationHours}h ${durationMinutes}m`);
-  console.log(`Iteration:    ${chalk.yellow(session.iteration.toString())}/${chalk.yellow(session.maxIterations.toString())}`);
-
-  if (session.maxHours) {
-    const hoursRemaining = session.maxHours - durationHours;
-    console.log(`Hours Limit:  ${hoursRemaining}h remaining (max: ${session.maxHours}h)`);
-  }
-
-  console.log('');
-  console.log(chalk.bold('PROGRESS'));
-  console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+  console.log(chalk.bold('AUTO MODE STATUS'));
+  console.log('━'.repeat(50));
   console.log('');
 
-  if (session.currentIncrement) {
-    console.log('Current:      ' + chalk.green(session.currentIncrement));
+  if (isActive) {
+    console.log('Status: ' + chalk.green('🔄 ACTIVE'));
+    if (flag?.timestamp) {
+      console.log('Started: ' + chalk.gray(flag.timestamp));
+    }
   } else {
-    console.log('Current:      ' + chalk.gray('(none)'));
-  }
-
-  console.log(`Queue:        ${session.incrementQueue.length} remaining`);
-  console.log(`Completed:    ${chalk.green(session.completedIncrements.length.toString())}`);
-  console.log(`Failed:       ${chalk.red(session.failedIncrements.length.toString())}`);
-
-  if (options.verbose) {
-    if (session.incrementQueue.length > 0) {
-      console.log('');
-      console.log(chalk.bold('QUEUE'));
-      console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-      for (const incId of session.incrementQueue) {
-        console.log('  • ' + chalk.cyan(incId));
-      }
-    }
-
-    if (session.completedIncrements.length > 0) {
-      console.log('');
-      console.log(chalk.bold('COMPLETED'));
-      console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-      for (const incId of session.completedIncrements) {
-        console.log('  ✅ ' + chalk.green(incId));
-      }
-    }
-
-    if (session.failedIncrements.length > 0) {
-      console.log('');
-      console.log(chalk.bold('FAILED'));
-      console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-      for (const incId of session.failedIncrements) {
-        console.log('  ❌ ' + chalk.red(incId));
-      }
-    }
-  }
-
-  // Human gates
-  if (session.humanGates.pending) {
-    console.log('');
-    console.log(chalk.bold('PENDING GATE'));
-    console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-    console.log('');
-    console.log('Operation:    ' + chalk.yellow(session.humanGates.pending.operation));
-    console.log('Pattern:      ' + chalk.gray(session.humanGates.pending.pattern));
-    console.log('Requested:    ' + chalk.gray(session.humanGates.pending.requestedAt));
-  }
-
-  if (options.verbose && session.humanGates.approved.length > 0) {
-    console.log('');
-    console.log(chalk.bold('APPROVED GATES'));
-    console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-    for (const gate of session.humanGates.approved) {
-      console.log('  ✓ ' + chalk.green(gate));
-    }
-  }
-
-  // Circuit breakers
-  if (session.circuitBreakers) {
-    const openBreakers = Object.entries(session.circuitBreakers).filter(
-      ([_, status]: [string, any]) => status.state === 'open'
-    );
-
-    if (openBreakers.length > 0) {
-      console.log('');
-      console.log(chalk.bold('CIRCUIT BREAKERS'));
-      console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-      console.log('');
-      for (const [service, status] of openBreakers) {
-        const s = status as any;
-        console.log(`${service}:`.padEnd(15) + chalk.red('OPEN'));
-        console.log('  Failures:   ' + chalk.yellow(s.failures.toString()));
-        if (s.lastFailure) {
-          console.log('  Last:       ' + chalk.gray(s.lastFailure));
-        }
-        if (s.nextRetry) {
-          console.log('  Next Retry: ' + chalk.gray(s.nextRetry));
-        }
-      }
-    }
-  }
-
-  // End reason
-  if (session.endReason) {
-    console.log('');
-    console.log(chalk.bold('END REASON'));
-    console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-    console.log(session.endReason);
+    console.log('Status: ' + chalk.gray('⏹️  NOT ACTIVE'));
   }
 
   console.log('');
-  console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-  console.log('');
+  console.log(chalk.bold('ACTIVE INCREMENTS') + ` (${activeIncrements.length})`);
+  console.log('━'.repeat(50));
 
-  // Commands
-  if (session.status === 'running') {
-    console.log('Commands:');
-    console.log('  • Cancel: ' + chalk.cyan('specweave cancel-auto'));
-    console.log('  • Resume: ' + chalk.cyan('/sw:do'));
+  if (activeIncrements.length === 0) {
+    console.log(chalk.gray('  No active increments'));
   } else {
-    console.log('Session has ended.');
-    console.log('Start a new session: ' + chalk.cyan('specweave auto [INCREMENT_IDS...]'));
+    for (const inc of activeIncrements) {
+      console.log('  • ' + chalk.cyan(inc));
+    }
   }
 
   console.log('');
-}
 
-/**
- * Get status color function
- */
-function getStatusColor(status: string): (text: string) => string {
-  switch (status) {
-    case 'running':
-      return chalk.green;
-    case 'completed':
-      return chalk.blue;
-    case 'paused':
-      return chalk.yellow;
-    case 'failed':
-      return chalk.red;
-    case 'cancelled':
-      return chalk.gray;
-    default:
-      return chalk.white;
+  // Show actions
+  if (isActive && activeIncrements.length > 0) {
+    console.log(chalk.bold('NEXT STEPS'));
+    console.log('━'.repeat(50));
+    console.log('  • Continue working: ' + chalk.cyan('/sw:do'));
+    console.log('  • Cancel auto mode: ' + chalk.cyan('specweave cancel-auto'));
+    console.log('');
+  } else if (isActive && activeIncrements.length === 0) {
+    console.log(chalk.yellow('⚠️  Auto mode is active but no active increments found.'));
+    console.log('The stop hook will allow exit on next attempt.');
+    console.log('');
+  } else {
+    console.log('Start auto mode: ' + chalk.cyan('specweave auto [INCREMENT_IDS...]'));
+    console.log('');
   }
 }
 
 /**
- * Get status icon
+ * Find active or in-progress increments
  */
-function getStatusIcon(status: string): string {
-  switch (status) {
-    case 'running':
-      return '🔄';
-    case 'completed':
-      return '✅';
-    case 'paused':
-      return '⏸️';
-    case 'failed':
-      return '❌';
-    case 'cancelled':
-      return '🚫';
-    default:
-      return '❓';
+function findActiveIncrements(incrementsDir: string): string[] {
+  if (!fs.existsSync(incrementsDir)) return [];
+
+  const increments: string[] = [];
+
+  for (const entry of fs.readdirSync(incrementsDir)) {
+    if (!/^[0-9]{4}-/.test(entry)) continue;
+
+    const metaPath = path.join(incrementsDir, entry, 'metadata.json');
+    if (fs.existsSync(metaPath)) {
+      try {
+        const metadata = JSON.parse(fs.readFileSync(metaPath, 'utf-8'));
+        if (metadata.status === 'active' || metadata.status === 'in-progress') {
+          increments.push(entry);
+        }
+      } catch {
+        // Skip invalid metadata
+      }
+    }
   }
+
+  return increments;
 }

@@ -1,11 +1,11 @@
 ---
 name: native-modules
-description: Expert in React Native 0.83+ native modules, Turbo Modules with Codegen, Fabric renderer, JSI (JavaScript Interface), New Architecture migration, bridging JavaScript and native code, iOS Swift modules, Android Kotlin modules, expo config plugins. Activates for native module, native code, bridge, turbo module, JSI, fabric, autolinking, custom native module, ios module, android module, swift, kotlin, objective-c, java native code, codegen, new architecture.
+description: Expert in React Native native modules with New Architecture, Turbo Modules with Codegen, Fabric renderer, JSI (JavaScript Interface), New Architecture migration, bridging JavaScript and native code, iOS Swift modules, Android Kotlin modules, expo config plugins. IMPORTANT - Use Context7 for version-specific APIs. Activates for native module, native code, bridge, turbo module, JSI, fabric, autolinking, custom native module, ios module, android module, swift, kotlin, objective-c, java native code, codegen, new architecture.
 ---
 
-# Native Modules Expert (RN 0.83+ New Architecture)
+# Native Modules Expert (New Architecture)
 
-Specialized in React Native 0.83+ native module integration with New Architecture (enabled by default). Expert in Turbo Modules, JSI, Fabric, Codegen, and modern native development patterns.
+Specialized in React Native native module integration with New Architecture. Expert in Turbo Modules, JSI, Fabric, Codegen, and modern native development patterns. Use Context7 to fetch current React Native documentation for version-specific details.
 
 ## What I Know
 
@@ -683,7 +683,7 @@ console.log(deviceId);  // Returns immediately
 
 **Warning**: Synchronous methods block the JS thread. Use only for very fast operations (<5ms).
 
-### 5. Expo Config Plugins (SDK 54+)
+### 5. Expo Config Plugins
 
 For Expo projects, use config plugins to modify native code:
 
