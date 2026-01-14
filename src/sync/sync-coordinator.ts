@@ -24,12 +24,21 @@ import { ClosureMetrics, createClosureMetrics } from './closure-metrics.js';
 import { LockManager } from '../utils/lock-manager.js';
 import type {
   SpecWeaveConfig,
-  SyncConfiguration,
-  GitHubConfig,
   JiraConfig,
-  AzureDevOpsConfig,
-  SyncProfile,
 } from '../core/config/types.js';
+import {
+  isProviderEnabled,
+  StatusMapper,
+  SyncConfigurationExtended,
+} from './status-mapper.js';
+import {
+  ProviderRouter,
+  GitHubRepoConfig,
+  RepoInfo,
+} from './provider-router.js';
+
+// Re-export for backwards compatibility
+export { isProviderEnabled } from './status-mapper.js';
 
 /**
  * GitHub issue reference stored in metadata.json
@@ -55,37 +64,11 @@ interface IncrementMetadataWithSync {
 }
 
 /**
- * GitHub config with optional settings for repo detection
- */
-interface GitHubRepoConfig {
-  enabled?: boolean;
-  owner?: string;
-  repo?: string;
-}
-
-/**
  * Extended Jira config with runtime email field
  * (email comes from credentials, not persisted in config types)
  */
 interface JiraConfigExtended extends JiraConfig {
   email?: string;
-}
-
-/**
- * Status sync mapping configuration (runtime config, not in core types)
- */
-interface StatusSyncMappings {
-  jira?: { completed?: string };
-  ado?: { completed?: string | { state: string } };
-}
-
-/**
- * Extended sync configuration with runtime statusSync field
- */
-interface SyncConfigurationExtended extends SyncConfiguration {
-  statusSync?: {
-    mappings?: StatusSyncMappings;
-  };
 }
 
 export interface SyncCoordinatorOptions {
@@ -106,41 +89,6 @@ export interface SyncResult {
   errors: string[];
 }
 
-/**
- * Check if a provider is enabled in config (supports BOTH formats)
- *
- * v1.0.46 FIX: Supports two config formats:
- * 1. PROFILES format: sync.profiles[name].provider === provider
- * 2. LEGACY format: sync.[provider].enabled === true
- *
- * @param config - Project config object
- * @param provider - Provider to check ('github', 'jira', 'ado')
- * @returns true if provider is enabled in either format
- */
-export function isProviderEnabled(config: SpecWeaveConfig, provider: 'github' | 'jira' | 'ado'): boolean {
-  const syncConfig = config.sync;
-  if (!syncConfig) {
-    return false;
-  }
-
-  // Check LEGACY format first (sync.github.enabled, sync.jira.enabled, sync.ado.enabled)
-  const providerConfig = syncConfig[provider] as GitHubConfig | JiraConfig | AzureDevOpsConfig | undefined;
-  if (providerConfig?.enabled === true) {
-    return true;
-  }
-
-  // Check PROFILES format (sync.profiles with provider field)
-  if (syncConfig.profiles) {
-    for (const profile of Object.values(syncConfig.profiles)) {
-      if (profile?.provider === provider) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
 export class SyncCoordinator {
   private projectRoot: string;
   private incrementId: string;
@@ -149,6 +97,7 @@ export class SyncCoordinator {
   private projectId: string;
   private adoProfile?: ResolvedAdoProfile;
   private metrics: ClosureMetrics;
+  private providerRouter: ProviderRouter;
 
   constructor(options: SyncCoordinatorOptions) {
     this.projectRoot = options.projectRoot;
@@ -161,6 +110,11 @@ export class SyncCoordinator {
     this.adoProfile = options.adoProfile;
     // Initialize closure metrics (v0.34.0)
     this.metrics = createClosureMetrics(this.projectRoot, this.incrementId, this.logger);
+    // Initialize provider router (v1.0.115)
+    this.providerRouter = new ProviderRouter({
+      projectRoot: this.projectRoot,
+      logger: this.logger
+    });
   }
 
   /**
@@ -1681,31 +1635,10 @@ Increment \`${this.incrementId}\` has been marked as **completed**.
 
   /**
    * Detect GitHub repository from config or git
+   * Delegates to ProviderRouter (v1.0.115)
    */
-  private async detectGitHubRepo(githubConfig: GitHubRepoConfig): Promise<{ owner: string; repo: string } | null> {
-    // Check config first
-    if (githubConfig.owner && githubConfig.repo) {
-      return { owner: githubConfig.owner, repo: githubConfig.repo };
-    }
-
-    // Try to detect from git remote
-    try {
-      const { execSync } = await import('child_process');
-      const remote = execSync('git remote get-url origin', {
-        cwd: this.projectRoot,
-        encoding: 'utf-8'
-      }).trim();
-
-      // Parse GitHub URL: git@github.com:owner/repo.git or https://github.com/owner/repo.git
-      const match = remote.match(/github\.com[:/]([^/]+)\/([^.]+)/);
-      if (match) {
-        return { owner: match[1], repo: match[2].replace('.git', '') };
-      }
-    } catch {
-      // Ignore git errors
-    }
-
-    return null;
+  private async detectGitHubRepo(githubConfig: GitHubRepoConfig): Promise<RepoInfo | null> {
+    return this.providerRouter.detectGitHubRepo(githubConfig);
   }
 
   /**
