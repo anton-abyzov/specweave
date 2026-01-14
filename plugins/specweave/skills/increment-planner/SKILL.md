@@ -4,6 +4,8 @@ description: Creates comprehensive implementation plans for ANY type of SpecWeav
 visibility: internal
 invocableBy:
   - sw:increment
+context: fork
+model: opus
 ---
 
 # Increment Planner Skill
