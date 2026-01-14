@@ -1408,41 +1408,116 @@ Pass any arguments from the user (increment IDs, completion conditions, --max-it
 - `1`: Error (no increments found with --no-increment/--no-inc) → STOP
 - `2`: **Increment creation needed** → proceed to Step 2
 
-### Step 1.5: MANDATORY - Display Stop Conditions to User
+### Step 1.5: MANDATORY - Analyze Tests & Display Stop Conditions
 
-**⚠️ CRITICAL: You MUST output this EXACT banner to the user BEFORE starting any task work!**
+**⚠️ CRITICAL: You MUST analyze the test situation and output SPECIFIC stop conditions BEFORE starting any task work!**
 
-After `specweave auto` succeeds, you MUST output this to the user (not just run Bash):
+#### Step 1.5a: Detect Existing Tests
 
-```
-╔══════════════════════════════════════════════════════════════════════════╗
-║  🚀 AUTO MODE STARTING                                                    ║
-╠══════════════════════════════════════════════════════════════════════════╣
-║  Increment: [INCREMENT_ID]                                               ║
-║  Tasks: [X] pending                                                       ║
-╠══════════════════════════════════════════════════════════════════════════╣
-║  🎯 WHEN WILL THIS SESSION STOP?                                          ║
-║                                                                          ║
-║  ✅ SUCCESS CONDITIONS (session completes when ALL are met):              ║
-║     • All tasks marked [x] complete in tasks.md                          ║
-║     • All tests passing (unit + E2E if present)                          ║
-║     • /sw:done validation passes                                         ║
-║                                                                          ║
-║  🛑 STOP CONDITIONS (session pauses/ends):                                ║
-║     • Test failures after 3 retry attempts → pauses for human            ║
-║     • User runs /sw:cancel-auto → immediate stop                         ║
-║     • Max iterations reached (safety limit)                              ║
-╠══════════════════════════════════════════════════════════════════════════╣
-║  💡 You can check progress anytime: /sw:auto-status                       ║
-║  💡 To cancel: close session or /sw:cancel-auto                           ║
-╚══════════════════════════════════════════════════════════════════════════╝
+Run these commands to detect what tests exist:
+
+```bash
+# Check for test frameworks
+ls package.json 2>/dev/null && cat package.json | grep -E '"(jest|vitest|mocha|playwright|cypress)"' || true
+ls vitest.config.* jest.config.* playwright.config.* cypress.config.* 2>/dev/null || true
+
+# Count existing test files
+find . -name "*.test.ts" -o -name "*.test.tsx" -o -name "*.spec.ts" -o -name "*.test.js" 2>/dev/null | wc -l
+find . -name "*.e2e.ts" -o -name "*.e2e-spec.ts" -path "*/e2e/*" -name "*.spec.ts" 2>/dev/null | wc -l
+
+# Check if tests can run
+npm test --help 2>/dev/null | head -1 || true
 ```
 
-**Fill in the placeholders:**
-- `[INCREMENT_ID]`: The actual increment ID (e.g., 0001-user-auth)
-- `[X]`: The number of pending tasks (read from tasks.md)
+#### Step 1.5b: Determine Test Strategy
 
-**DO NOT SKIP THIS STEP!** Users MUST know when auto mode will stop BEFORE work begins.
+Based on what you find, determine:
+
+**IF tests exist:**
+- List the EXACT test commands that will be run
+- List the SPECIFIC test files that will validate this work
+
+**IF tests DON'T exist yet:**
+- You MUST plan what tests need to be created as part of the tasks
+- List the specific test files you will CREATE during auto mode
+- These tests become part of the stop criteria
+
+#### Step 1.5c: Output the Stop Conditions Banner
+
+**Output this banner with SPECIFIC test information:**
+
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  🚀 AUTO MODE STARTING                                                        ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  Increment: [INCREMENT_ID]                                                    ║
+║  Tasks: [X] pending                                                           ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  🧪 TESTS THAT MUST PASS FOR COMPLETION:                                      ║
+║                                                                               ║
+║  Unit/Integration Tests:                                                      ║
+║    Command: [EXACT_TEST_COMMAND]                                              ║
+║    Files:                                                                     ║
+║      • [test-file-1.test.ts] - [what it tests]                               ║
+║      • [test-file-2.test.ts] - [what it tests]                               ║
+║      • [NEW] [test-file-3.test.ts] - [will be created for X]                 ║
+║                                                                               ║
+║  E2E Tests (if applicable):                                                   ║
+║    Command: [EXACT_E2E_COMMAND]                                               ║
+║    Files:                                                                     ║
+║      • [auth.e2e.ts] - [login/logout flows]                                  ║
+║      • [NEW] [checkout.e2e.ts] - [will be created for payment flow]          ║
+║                                                                               ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  🎯 SESSION WILL COMPLETE WHEN:                                               ║
+║    ✅ All [X] tasks marked complete                                           ║
+║    ✅ [TEST_COMMAND] passes (0 failures)                                      ║
+║    ✅ [E2E_COMMAND] passes (if E2E tests exist)                               ║
+║    ✅ /sw:done validation passes                                              ║
+║                                                                               ║
+║  🛑 SESSION WILL PAUSE/STOP IF:                                               ║
+║    • Tests fail 3 times in a row → pauses for human review                   ║
+║    • User runs /sw:cancel-auto                                                ║
+║    • Max iterations reached (safety limit)                                    ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  💡 Check progress: /sw:auto-status                                           ║
+║  💡 Cancel: close session or /sw:cancel-auto                                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+```
+
+#### Step 1.5d: Fill in ALL placeholders with REAL values
+
+**Required placeholders:**
+- `[INCREMENT_ID]`: Actual increment ID (e.g., `0001-user-auth`)
+- `[X]`: Number of pending tasks from tasks.md
+- `[EXACT_TEST_COMMAND]`: Real command like `npm test` or `npx vitest run`
+- `[EXACT_E2E_COMMAND]`: Real command like `npx playwright test`
+- `[test-file-*.ts]`: Real test file names with brief description
+- `[NEW]`: Mark any test files that will be CREATED during auto mode
+
+**Examples of GOOD vs BAD:**
+
+❌ **BAD (vague):**
+```
+Tests: All tests passing (unit + E2E if present)
+```
+
+✅ **GOOD (specific):**
+```
+Unit Tests:
+  Command: npm test
+  Files:
+    • src/auth/auth.service.test.ts - JWT token generation
+    • src/auth/login.test.ts - login validation
+    • [NEW] src/auth/logout.test.ts - will create for logout flow
+
+E2E Tests:
+  Command: npx playwright test
+  Files:
+    • tests/auth.e2e.ts - full login/logout user journey
+```
+
+**DO NOT SKIP THIS STEP!** Users MUST see the EXACT tests that will determine success.
 
 ### Step 2: INTELLIGENT INCREMENT CREATION (if specweave auto exits with code 2)
 
