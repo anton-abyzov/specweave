@@ -1,5 +1,6 @@
 ---
 sidebar_position: 3
+slug: 02-three-file-structure
 title: "Lesson 2: The Three-File Structure"
 description: "Understand spec.md, plan.md, and tasks.md with a simple example"
 ---

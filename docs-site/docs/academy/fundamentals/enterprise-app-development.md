@@ -1565,11 +1565,10 @@ Deepen your understanding of key concepts:
 
 - [API (Application Programming Interface)](/docs/glossary/terms/api)
 - [Microservices Architecture](/docs/glossary/terms/microservices)
-- CI/CD (Continuous Integration/Continuous Deployment)
+- [CI/CD (Continuous Integration/Continuous Deployment)](/docs/glossary/terms/ci-cd)
 - [Infrastructure as Code (IaC)](/docs/glossary/terms/iac)
 - [Docker & Containerization](/docs/glossary/terms/docker)
 - [Kubernetes (K8s)](/docs/glossary/terms/kubernetes)
-- [Database (Relational vs NoSQL)](/docs/glossary/terms/database)
 - Authentication & Authorization
 
 ### SpecWeave in Action

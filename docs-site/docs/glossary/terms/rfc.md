@@ -483,15 +483,15 @@ Phase 3: Full migration
 - **[ADR (Architecture Decision Record)](/docs/glossary/terms/adr)** - Technical decisions (WHY this approach), RFC is requirements (WHAT to build)
 - **HLD (High-Level Design)** - System architecture (HOW to build), RFC is requirements (WHAT to build)
 - **[Increment](/docs/guides/core-concepts/what-is-an-increment)** - Unit of work that implements part of an RFC
-- **[User Story](/docs/glossary/terms/user-story)** - Individual feature from user perspective
+- **[User Story](/docs/glossary/terms/user-stories)** - Individual feature from user perspective
 - **[Acceptance Criteria](/docs/glossary/terms/acceptance-criteria)** - How to verify user story is complete
 - **[Brownfield](/docs/glossary/terms/brownfield)** - Existing codebase (RFCs often modify brownfield code)
 
 ## Learn More
 
 - **How to Write an RFC** - Step-by-step guide
-- **[Planning Workflow](/docs/guides/workflows/planning-workflow)** - RFC → Increment → Implementation
-- **[SpecWeave Internal Specs](./.specweave/docs/internal/specs/)** - See RFCs in action
+- **[Planning Workflow](/docs/quick-start)** - RFC → Increment → Implementation
+- **[SpecWeave Internal Specs](/docs/overview/introduction)** - See RFCs in action
 
 ---
 

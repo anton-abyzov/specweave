@@ -2,7 +2,6 @@
 
 **Version**: 0.16.11+ (Flattened Structure)
 **Last Updated**: 2025-11-11
-**Previous Version**: [0.8.0-0.16.10 (Nested Structure)](#historical-nested-structure)
 
 Complete guide to setting up and using SpecWeave's multi-project mode for enterprise teams managing multiple repos, microservices, or projects.
 

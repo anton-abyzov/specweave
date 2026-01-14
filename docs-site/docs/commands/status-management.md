@@ -296,17 +296,17 @@ $ /sw:do  # System pauses automatically when blocked
 
 ## Related Commands
 
-- [`/pause`](./pause) - Pause increment (mostly automatic)
-- [`/resume`](./resume) - Resume increment (mostly automatic)
-- [`/abandon`](./abandon) - Cancel increment permanently
-- `/progress` - Detailed progress for specific increment
-- [`/next`](./next) - Smart suggestion for what's next
+- [Pause](./pause) - Pause increment (mostly automatic)
+- [Resume](./resume) - Resume increment (mostly automatic)
+- [Abandon](./abandon) - Cancel increment permanently
+- [Status](./status) - View increment status
+- [Commands Overview](./overview) - All SpecWeave commands
 
 ## Related Documentation
 
 - [Commands Overview](./overview) - All SpecWeave commands
-- [Workflow Guide](/docs/guides/workflow) - Complete development workflow
-- [Getting Started](/docs/guides/getting-started) - Quick start guide
+- [Increment Lifecycle](/docs/academy/specweave-essentials/13-increment-lifecycle) - Complete increment lifecycle
+- [Quick Start](/docs/quick-start) - Quick start guide
 
 ## Summary
 

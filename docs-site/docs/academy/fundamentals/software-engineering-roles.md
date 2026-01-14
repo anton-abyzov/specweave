@@ -790,6 +790,6 @@ These agents collaborate automatically to deliver complete, tested, documented f
 
 **Further Reading**:
 - [Enterprise App Development](./enterprise-app-development.md) - How SpecWeave scales
-- [Backend Fundamentals](../backend/backend-fundamentals.md) - Backend architecture with SpecWeave
-- [Frontend Fundamentals](../frontend/frontend-fundamentals.md) - Frontend development with SpecWeave
-- [Testing Fundamentals](../testing/testing-fundamentals.md) - Test-driven development with TDD agents
+- [Backend Fundamentals](./backend-fundamentals.md) - Backend architecture with SpecWeave
+- [Frontend Fundamentals](./frontend-fundamentals.md) - Frontend development with SpecWeave
+- [Testing Fundamentals](./testing-fundamentals.md) - Test-driven development with TDD agents

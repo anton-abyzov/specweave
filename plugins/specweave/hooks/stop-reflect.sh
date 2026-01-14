@@ -74,7 +74,8 @@ has_reflection_signals() {
     fi
 
     # Pattern for correction/approval detection
-    local SIGNAL_PATTERN="(No, don't|No, use|Wrong[,!]|That's incorrect|Always use|Never use|The correct way|Perfect!|That's right|That's correct|Exactly!|Well done)"
+    # v4.3.1: Expanded to catch narrative best practices (never run X, always test Y, etc.)
+    local SIGNAL_PATTERN="(No, don't|No, use|Wrong[,!]|That's incorrect|Always use|Never use|The correct way|Perfect!|That's right|That's correct|Exactly!|Well done|[Nn]ever (run|do|execute|deploy|push|test|commit)|[Aa]lways (run|test|verify|check|build)|[Mm]ake sure|[Rr]un.*locally|[Mm]ust.*first|[Oo]nly.*after|[Bb]efore (deploy|push|prod)|[Rr]ather|[Ff]irst.*then|[Rr]emember|[Ii]mportant|[Dd]o not|[Dd]on't ever|[Ee]nsure|[Bb]e sure|[Ll]ocally.*first|[Tt]est.*locally)"
 
     # Determine file format
     local is_jsonl="false"

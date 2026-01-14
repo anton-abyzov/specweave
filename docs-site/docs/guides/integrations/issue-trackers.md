@@ -461,7 +461,7 @@ JIRA_COMPONENTS=Frontend,Backend
 
 ## Next Steps
 
-- [Sync Increments to Issues](/docs/commands/sync)
-- [Create GitHub/Jira Issues Automatically](/docs/commands/create-issue)
+- [Sync Increments to Issues](/docs/commands/overview)
+- [Create GitHub/Jira Issues Automatically](/docs/commands/overview)
 - [View Sync Status](/docs/commands/status)
-- [Multi-Project Configuration](/docs/advanced/multi-project)
+- [Multi-Project Configuration](/docs/guides/multi-project-setup)

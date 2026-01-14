@@ -1,5 +1,6 @@
 ---
 sidebar_position: 7
+slug: 06-tdd-workflow
 title: "Lesson 6: TDD Workflow"
 description: "Test-Driven Development with SpecWeave"
 ---

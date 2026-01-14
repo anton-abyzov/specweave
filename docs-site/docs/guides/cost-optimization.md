@@ -396,7 +396,7 @@ Since we store NO personal data:
 
 ## Next Steps
 
-- [Model Selection Guide](/docs/glossary/terms/model-selection) - Deep dive into how model selection works
+- [Model Selection Guide](/docs/glossary/terms/intelligent-model-selection) - Deep dive into how model selection works
 - [Cost Tracking Reference](../reference/cost-tracking) - Technical details on cost tracking
 
 ---

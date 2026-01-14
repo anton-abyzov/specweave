@@ -359,7 +359,7 @@ Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically an
 | `/sw:cancel-auto` | Stop autonomous session |
 | `/sw:tdd-cycle` | Full red-green-refactor workflow |
 
-**[Full Command Reference](./reference/commands/overview)**
+**[Full Command Reference](./commands/overview)**
 
 ---
 
@@ -394,12 +394,10 @@ If you see `SyntaxError: Unexpected token 'with'`, your Node.js is too old. Run 
 
 | Path | Duration | For |
 |------|----------|-----|
-| **[Quick Start](./academy/#path-1-quick-start-2-hours)** | 2 hours | Experienced devs wanting SpecWeave |
-| **[Beginner](./academy/#path-2-beginner-developer-4-weeks)** | 4 weeks | New to software engineering |
-| **[Full-Stack](./academy/#path-3-full-stack-developer-10-weeks)** | 10 weeks | Building complete web apps |
-| **[Enterprise](./academy/#path-5-enterprise-developer-16-weeks)** | 16 weeks | Fortune 500-ready skills |
+| **[SpecWeave Essentials](./academy/specweave-essentials/)** | 90 min+ | Learn SpecWeave step by step |
+| **[Fundamentals](./academy/fundamentals/software-engineering-roles)** | Varies | Software engineering foundations |
 
-**14 parts, 44 modules** — from single-file scripts to microservices with CI/CD.
+**16 SpecWeave lessons** + **8 fundamentals modules** — from first command to enterprise patterns.
 
 ---
 
@@ -424,17 +422,17 @@ SpecWeave isn't theory — it's **production-tested** across multiple use cases:
 **[Quick Start Guide →](./quick-start)** - Install, init, run your first increment
 
 ### 📖 Learn the Fundamentals
-- **[Core Concepts](./guides/core-concepts/specifications)** - Understand specs, plans, and tasks
+- **[Core Concepts](./guides/core-concepts/what-is-an-increment)** - Understand specs, plans, and tasks
 - **[Autonomous Execution](./commands/auto)** - Ship while you sleep with `/sw:auto`
-- **[External Sync](./guides/external-sync/github)** - Keep GitHub/JIRA/ADO updated
+- **[External Sync](./academy/specweave-essentials/07-external-tools)** - Keep GitHub/JIRA/ADO updated
 
 ### 🚀 Advanced Usage
-- **[Multi-Repo Projects](./guides/multi-repo)** - Coordinate across microservices
+- **[Multi-Project Setup](./guides/multi-project-setup)** - Coordinate across microservices
 - **[Self-Improving Skills](./guides/self-improving-skills)** - Claude learns from your corrections
-- **[API Documentation](./guides/api-docs)** - OpenAPI + Postman auto-generation
+- **[Quality Gates](./academy/specweave-essentials/05-quality-gates)** - Ensure quality before shipping
 
 ### 🎓 Complete Curriculum
-**[Software Engineering Academy](./academy/)** - From beginner to Fortune 500 enterprise developer (14 parts, 44 modules)
+**[Software Engineering Academy](./academy/)** - SpecWeave essentials + software engineering fundamentals
 
 ---
 

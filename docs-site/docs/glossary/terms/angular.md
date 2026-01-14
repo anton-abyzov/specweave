@@ -780,7 +780,7 @@ ngOnInit(): void {
 - **[Angular Official Docs](https://angular.io/docs)** - Comprehensive documentation
 - **Angular Tutorial** - SpecWeave Angular guide
 - **[TypeScript Guide](/docs/glossary/terms/typescript)** - Learn TypeScript first
-- **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - Angular-specific features
+- **[SpecWeave Frontend Plugin](/docs/overview/introduction)** - Angular-specific features
 
 ---
 

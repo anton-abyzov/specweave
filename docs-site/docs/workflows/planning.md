@@ -548,12 +548,12 @@ Planning complete! Move to implementation:
 
 **Learn more:**
 - [Implementation Workflow](/docs/workflows/implementation)
-- Test-Aware Planning
-- [Creating Great Specifications](/docs/guides/best-practices/specifications)
+- [TDD Workflow](/docs/academy/specweave-essentials/06-tdd-workflow)
+- [Specs](/docs/glossary/terms/specs)
 
 ---
 
 **Related:**
 - [Workflows Overview](/docs/workflows/overview)
 - [What is an Increment?](/docs/guides/core-concepts/what-is-an-increment)
-- PM Agent
+- [Increments](/docs/glossary/terms/increments)

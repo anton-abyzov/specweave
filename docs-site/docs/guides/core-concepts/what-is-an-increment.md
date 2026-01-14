@@ -319,5 +319,5 @@ Answer: Read living docs
 
 **Learn More:**
 - [Increment Planning Workflow](/docs/workflows/planning)
-- [Increment Discipline (WIP Limits)](/docs/guides/core-concepts/increment-discipline)
+- [Increment Discipline (WIP Limits)](/docs/academy/specweave-essentials/13-increment-lifecycle)
 - Test-Aware Planning

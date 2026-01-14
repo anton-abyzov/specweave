@@ -257,7 +257,7 @@ gh issue list --milestone "v0.19.0"
 
 ### Q: What if I use multiple tools (GitHub + JIRA)?
 
-**A**: Use SpecWeave's multi-project sync (see [Multi-Project Sync Guide](./multi-project-sync.md)). SpecWeave syncs implementation status to both tools, while you manage scheduling separately in each tool.
+**A**: Use SpecWeave's multi-project sync (see [Multi-Project Sync Guide](/docs/guides/multi-project-setup)). SpecWeave syncs implementation status to both tools, while you manage scheduling separately in each tool.
 
 ### Q: How do I track velocity if SpecWeave doesn't sync estimates?
 
@@ -438,7 +438,7 @@ gh project create --owner anton-abyzov --title "SpecWeave Sprints"
 ## Next Steps
 
 - [Status Sync Guide](./status-sync-guide.md) - Configure sync with external tools
-- [Multi-Project Sync](./multi-project-sync.md) - Sync to multiple projects/repos
-- [GitHub Sync](../../../plugins/sw-github/README.md) - GitHub-specific setup
-- [JIRA Sync](../../../plugins/sw-jira/README.md) - JIRA-specific setup
-- [ADO Sync](../../../plugins/sw-ado/README.md) - Azure DevOps-specific setup
+- [Multi-Project Sync](/docs/guides/multi-project-setup) - Sync to multiple projects/repos
+- [GitHub Sync](/docs/academy/specweave-essentials/14-github-integration) - GitHub-specific setup
+- [JIRA Sync](/docs/academy/specweave-essentials/15-jira-integration) - JIRA-specific setup
+- [ADO Sync](/docs/academy/specweave-essentials/16-ado-integration) - Azure DevOps-specific setup

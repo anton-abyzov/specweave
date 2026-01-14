@@ -7,3 +7,4 @@
 - ✗→✓ Always specify registry to avoid ~/
 - → Wrong! Always use vi.fn() not jest.fn() with Vitest testing framework.
 - → The convention here in SpecWeave is to use kebab-case for all file names.
+- ✗→✓ don't X instead" pattern expects explicit "instead" keyword positioning No support for "rather", "fi

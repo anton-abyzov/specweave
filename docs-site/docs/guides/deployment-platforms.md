@@ -487,5 +487,5 @@ mindmap
 ## Related Resources
 
 - [SpecWeave Quickstart](/docs/guides/getting-started/quickstart) — Get started with your first increment
-- [Quality Gates](/docs/guides/lessons/05-quality-gates) — Ensure code is ready before deployment
-- [GitHub Integration](/docs/guides/lessons/14-github-integration) — Auto-deploy via GitHub webhooks
+- [Quality Gates](/docs/academy/specweave-essentials/05-quality-gates) — Ensure code is ready before deployment
+- [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration) — Auto-deploy via GitHub webhooks

@@ -1,5 +1,6 @@
 ---
 sidebar_position: 14
+slug: 13-increment-lifecycle
 title: "Lesson 13: Increment Lifecycle Management"
 description: "Master cleanup, archiving, status transitions, and workspace management"
 ---

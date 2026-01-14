@@ -1,5 +1,6 @@
 ---
 sidebar_position: 9
+slug: 08-ai-model-selection
 title: "Lesson 8: AI Model Selection"
 description: "Choose the right model for each task"
 ---
@@ -187,7 +188,7 @@ ai:
 ## Glossary Terms Used
 
 - **[LLM](/docs/glossary/terms/llm)** — Large Language Model
-- **[Inference](/docs/glossary/terms/inference)** — Using trained models
+- **Inference** — Using trained models
 
 ---
 

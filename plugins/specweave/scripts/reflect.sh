@@ -1,7 +1,13 @@
 #!/bin/bash
-# reflect.sh - Self-Improving Skills Reflection System (v4.0)
+# reflect.sh - Self-Improving Skills Reflection System (v4.3)
 #
-# NEW IN v4.0: Skill-specific memory routing
+# NEW IN v4.3: Expanded pattern detection for narrative best practices
+# - "never run X directly, rather Y" patterns
+# - "always test/deploy/run before Y" patterns
+# - "make sure X before Y" patterns
+# - "run X locally first" patterns
+#
+# v4.0: Skill-specific memory routing
 # - Learnings can be routed to specific skills (e.g., /reflect architect)
 # - Cross-platform support (Claude Code vs non-Claude)
 # - Merges with marketplace updates (preserves user learnings)
@@ -139,6 +145,21 @@ CORRECTION_PATTERNS=(
     "That.s incorrect.*correct"
     "Actually,?.*should"
     "Stop using.*use"
+    # v4.3: Expanded patterns for narrative best practices
+    "[Nn]ever (run|do|execute|deploy|push|commit|test).*[Ff]irst"
+    "[Nn]ever (run|do|execute|deploy|push).*[Ll]ocally"
+    "[Nn]ever.*[Ii]nstead.*[Aa]lways"
+    "[Nn]ever.*[Rr]ather.*[Ff]irst"
+    "[Dd]on.t.*[Dd]irectly.*[Ff]irst"
+    # v4.3.1: Even more patterns for common corrections
+    "[Nn]ever (run|test|deploy|push|commit).*directly"
+    "[Nn]ever.*in (prod|production)"
+    "[Aa]lways.*[Bb]efore.*[Dd]eploy"
+    "[Rr]un.*locally.*[Bb]efore"
+    "[Mm]ake sure.*pass.*[Bb]efore"
+    "[Oo]nly then.*[Dd]eploy"
+    "[Rr]ather.*[Ff]irst"
+    "[Ff]irst.*then"
 )
 
 # Patterns for explicit rules (no correction needed, just a rule)
@@ -151,6 +172,28 @@ RULE_PATTERNS=(
     "We never"
     "The rule is"
     "Remember to always"
+    # v4.3: Expanded patterns for action verbs beyond "use"
+    "[Aa]lways (run|test|verify|check|build|deploy|commit|push|pull)"
+    "[Nn]ever (run|test|deploy|push|commit|delete|drop|truncate|force)"
+    "[Aa]lways.*[Bb]efore (deploy|push|commit|release|production|prod)"
+    "[Mm]ake sure.*[Bb]efore"
+    "[Mm]ust.*[Ff]irst"
+    "[Oo]nly.*[Aa]fter"
+    "[Rr]un.*[Ll]ocally.*[Ff]irst"
+    "[Vv]erify.*[Bb]efore"
+    # v4.3.1: Additional rule patterns
+    "[Rr]emember (to|that)"
+    "[Ii]mportant:"
+    "[Nn]ote:"
+    "[Rr]ule:"
+    "[Dd]o not"
+    "[Dd]on.t ever"
+    "[Mm]ake sure to"
+    "[Ee]nsure that"
+    "[Bb]e sure to"
+    "[Tt]est.*[Ll]ocally"
+    "[Ll]ocally.*[Ff]irst"
+    "[Bb]efore (deploying|pushing|releasing|production)"
 )
 
 # Patterns to SKIP (generic praise with no actionable info)
@@ -179,7 +222,8 @@ is_actionable() {
     [ ${#text} -lt "$MIN_ACTIONABLE_LENGTH" ] && return 1
 
     # Must contain some actionable verb
-    echo "$text" | grep -qiE "(use|don.t|never|always|should|must|avoid|prefer)" || return 1
+    # v4.3: Expanded to include more action verbs (run, test, deploy, etc.)
+    echo "$text" | grep -qiE "(use|don.t|never|always|should|must|avoid|prefer|run|test|deploy|verify|check|first|locally|before)" || return 1
 
     # QUALITY GATE: Skip documentation examples (uses shared patterns from config)
     # Line numbers at start (Read tool output) + common doc artifacts
@@ -252,6 +296,28 @@ extract_rule() {
 
     # PRIORITY 7: "prefer X" or "use X not Y"
     rule=$(echo "$context" | grep -oiE "(prefer|use) [^.!?]+ (not|instead|over) [^.!?]+" | head -1)
+    if [ -n "$rule" ] && [ ${#rule} -gt "$MIN_RULE_LENGTH" ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH"
+        return
+    fi
+
+    # PRIORITY 8: v4.3 - Narrative best practices "never run X directly, rather Y"
+    # Captures full sentence with "never" + action verb + qualifier
+    rule=$(echo "$context" | grep -oiE "[Nn]ever (run|do|execute|deploy|push|test)[^,.]+(,|rather|instead|first)[^.!?]+" | head -1)
+    if [ -n "$rule" ] && [ ${#rule} -gt "$MIN_RULE_LENGTH" ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH"
+        return
+    fi
+
+    # PRIORITY 9: v4.3 - "run X locally first" / "make sure X before Y"
+    rule=$(echo "$context" | grep -oiE "(run|test|verify|check)[^.!?]+(locally|first|before)[^.!?]+" | head -1)
+    if [ -n "$rule" ] && [ ${#rule} -gt "$MIN_RULE_LENGTH" ]; then
+        echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH"
+        return
+    fi
+
+    # PRIORITY 10: v4.3 - "make sure X before Y" / "must X first"
+    rule=$(echo "$context" | grep -oiE "(make sure|must|ensure)[^.!?]+(before|first|then)[^.!?]+" | head -1)
     if [ -n "$rule" ] && [ ${#rule} -gt "$MIN_RULE_LENGTH" ]; then
         echo "$rule" | sed 's/^[[:space:]]*//' | cut -c1-"$MAX_RULE_OUTPUT_LENGTH"
         return
@@ -675,6 +741,12 @@ reflect_session() {
 
     if [ -z "$signals_file" ] || [ ! -f "$signals_file" ]; then
         echo "No actionable signals found (this is normal)."
+        echo ""
+        echo "💡 TIP: To help reflection capture learnings, phrase them like:"
+        echo "   • \"Never run X directly, rather run Y first\""
+        echo "   • \"Always test locally before deploying\""
+        echo "   • \"Make sure tests pass before pushing\""
+        echo "   • \"No, don't use X. Use Y instead.\""
         return 0
     fi
 

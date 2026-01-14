@@ -1,5 +1,6 @@
 ---
 sidebar_position: 8
+slug: 07-external-tools
 title: "Lesson 7: External Tools"
 description: "Connect GitHub, JIRA, and Azure DevOps"
 ---
@@ -64,8 +65,8 @@ Beyond time savings, integration provides:
 | Platform | Features |
 |----------|----------|
 | **GitHub Issues** | Create, update, close, checkbox sync |
-| **[JIRA](/docs/glossary/terms/jira)** | Epic/Story hierarchy, status sync |
-| **[Azure DevOps](/docs/glossary/terms/azure-devops)** | Work items, area paths |
+| **JIRA** | Epic/Story hierarchy, status sync |
+| **Azure DevOps** | Work items, area paths |
 
 ---
 
@@ -480,9 +481,9 @@ During `specweave init`, you'll be asked:
 
 ## Glossary Terms Used
 
-- **[JIRA](/docs/glossary/terms/jira)** — Atlassian project tracking
-- **[Azure DevOps](/docs/glossary/terms/azure-devops)** — Microsoft DevOps platform
-- **[Epic](/docs/glossary/terms/epic)** — Large story spanning sprints
+- **JIRA** — Atlassian project tracking
+- **Azure DevOps** — Microsoft DevOps platform
+- **Epic** — Large story spanning sprints
 - **[Split-Source Sync](/docs/glossary/terms/split-source-sync)** — Content flows one way, status flows other way
 
 ---

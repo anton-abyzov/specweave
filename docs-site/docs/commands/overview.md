@@ -167,7 +167,7 @@ For GitHub, JIRA, or Azure DevOps integration:
 /sw-ado:sync 0007       # Two-way sync with Azure DevOps
 ```
 
-See [GitHub Sync Guide](/docs/guides/github-sync) for setup.
+See [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration) for setup.
 
 ---
 
@@ -248,9 +248,9 @@ See [GitHub Sync Guide](/docs/guides/github-sync) for setup.
 
 ## Next Steps
 
-- [Auto Mode Deep Dive](./auto.md) - Autonomous execution details
-- [Quick Start Guide](/docs/guides/getting-started/quickstart) - Get started in 5 minutes
-- [GitHub Sync Guide](/docs/guides/github-sync) - External tool integration
+- [Auto Mode Deep Dive](./auto) - Autonomous execution details
+- [Quick Start Guide](/docs/quick-start) - Get started in 5 minutes
+- [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration) - External tool integration
 
 ---
 

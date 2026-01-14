@@ -14,11 +14,11 @@ Large monitoring stacks (Prometheus + Grafana + OpenTelemetry + logs) = 1000+ li
 
 ## How to Invoke This Agent
 
-**Agent**: `specweave-infrastructure:observability-engineer:observability-engineer`
+**Agent**: `sw-infra:observability-engineer:observability-engineer`
 
 ```typescript
 Task({
-  subagent_type: "specweave-infrastructure:observability-engineer:observability-engineer",
+  subagent_type: "sw-infra:observability-engineer:observability-engineer",
   prompt: "Design monitoring for microservices with SLI/SLO tracking"
 });
 ```

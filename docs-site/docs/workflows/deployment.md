@@ -386,4 +386,4 @@ Alert: CPU usage 95%
 
 ## Next Step
 
-→ [Monitoring & Observability](/docs/workflows/monitoring)
+→ [Validation Workflow](/docs/workflows/validation)

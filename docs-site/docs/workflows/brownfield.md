@@ -808,9 +808,9 @@ Before modifying ANY existing code:
 ## Next Steps
 
 **New to brownfield?** Start here:
-- [Brownfield Analyzer](/docs/skills/brownfield-analyzer)
-- [Brownfield Onboarder](/docs/skills/brownfield-onboarder)
-- [Creating Baseline Tests](/docs/guides/testing/baseline-tests)
+- [Brownfield Projects](/docs/glossary/terms/brownfield) - Understanding existing codebases
+- [Quality Gates](/docs/glossary/terms/quality-gate) - Validation before shipping
+- [Testing Fundamentals](/docs/academy/fundamentals/testing-fundamentals) - Test strategies
 
 **Ready to start?**
 ```bash

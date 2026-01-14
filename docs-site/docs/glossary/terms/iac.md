@@ -738,8 +738,8 @@ resource "aws_instance" "web" {
 - **[Kubernetes](/docs/glossary/terms/kubernetes)** - Container orchestration platform
 - **[Docker](/docs/glossary/terms/docker)** - Container runtime (infrastructure for apps)
 - **CI/CD** - Automate infrastructure deployment
-- **[Cloud Computing](/docs/glossary/terms/cloud-computing)** - Where IaC manages resources
-- **[DevOps](/docs/glossary/terms/devops)** - IaC is core DevOps practice
+- **Cloud Computing** - Where IaC manages resources
+- **DevOps** - IaC is core DevOps practice
 
 ## Learn More
 

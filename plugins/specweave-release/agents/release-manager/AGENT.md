@@ -19,20 +19,20 @@ max_response_tokens: 2000
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-release:release-manager:release-manager`
+**Subagent Type**: `sw-release:release-manager:release-manager`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-release:release-manager:release-manager",
+  subagent_type: "sw-release:release-manager:release-manager",
   prompt: "Coordinate Product v4.0.0 release across 5 microservices with RC workflow and gradual rollout strategy",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-release
+- **Plugin**: sw-release
 - **Directory**: release-manager
 - **Agent Name**: release-manager
 

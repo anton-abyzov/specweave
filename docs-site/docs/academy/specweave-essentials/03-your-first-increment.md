@@ -1,5 +1,6 @@
 ---
 sidebar_position: 4
+slug: 03-your-first-increment
 title: "Lesson 3: Your First Increment"
 description: "Build a complete feature from start to finish"
 ---

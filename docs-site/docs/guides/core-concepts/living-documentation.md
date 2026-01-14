@@ -471,12 +471,12 @@ cat .specweave/docs/internal/architecture/adr/0001-jwt-tokens.md
 
 - [Understanding Increments](/docs/guides/core-concepts/what-is-an-increment)
 - [The /sw:do Workflow](/docs/workflows/implementation)
-- [Hook System](/docs/guides/advanced/hooks)
+- [Hook System](/docs/glossary/terms/hooks)
 
 ---
 
 **Learn More:**
-- [Documentation Structure](/docs/guides/core-concepts/documentation-structure)
+- [Documentation Structure](/docs/guides/specs-organization-guide)
 - [Increment vs Living Docs](/docs/guides/core-concepts/what-is-an-increment#increments-vs-living-documentation)
-- [Post-Task-Completion Hook](/docs/guides/advanced/hooks#post-task-completion-hook)
+- [Post-Task-Completion Hook](/docs/glossary/terms/hooks)
 - [Who Benefits from Living Docs](/docs/guides/core-concepts/who-benefits-from-living-docs) - Understand value for humans vs LLMs

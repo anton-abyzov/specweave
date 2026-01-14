@@ -72,13 +72,13 @@ DevOps and tools terms cover the practices, workflows, and technologies that bri
 
 ### Package Management
 
-**[NPM](/docs/glossary/terms/npm)**
+**NPM**
 - Node Package Manager
 - 2M+ packages (largest ecosystem)
 - Package.json: Project dependencies
 - SpecWeave distributed via NPM
 
-**[Yarn](/docs/glossary/terms/yarn)**
+**Yarn**
 - Alternative to NPM (faster, deterministic)
 - Lock file: Ensures consistent installs
 - Workspaces: Monorepo support
@@ -86,13 +86,13 @@ DevOps and tools terms cover the practices, workflows, and technologies that bri
 
 ### Code Quality
 
-**[ESLint](/docs/glossary/terms/eslint)**
+**ESLint**
 - JavaScript/TypeScript linter
 - Catches bugs, enforces style
 - Configurable rules (.eslintrc)
 - SpecWeave uses ESLint + Prettier
 
-**[Prettier](/docs/glossary/terms/prettier)**
+**Prettier**
 - Code formatter (opinionated)
 - Consistent code style across team
 - Auto-format on save
@@ -494,15 +494,15 @@ DevOps configuration documented in:
 
 - **[Infrastructure & Operations](/docs/glossary/categories/infrastructure-category)** - Deployment and scaling
 - **[Testing & Quality](/docs/glossary/categories/testing-category)** - CI/CD testing
-- **[Security & Compliance](/docs/glossary/categories/security)** - Secure pipelines
+- **Security & Compliance** - Secure pipelines
 
 ---
 
 ## Learn More
 
 ### Guides
-- [Development Workflow](/docs/delivery/guides/development-workflow)
-- [Branch Strategy](/docs/delivery/branch-strategy)
+- [Getting Started](/docs/quick-start)
+- [Multi-Project Setup](/docs/guides/multi-project-setup)
 - CI/CD Best Practices (coming soon)
 
 ### Books
@@ -524,4 +524,4 @@ DevOps configuration documented in:
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/README)
+- [Alphabetical Index](/docs/glossary/)

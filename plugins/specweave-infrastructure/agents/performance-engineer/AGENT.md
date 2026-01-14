@@ -16,20 +16,20 @@ You are a performance engineer specializing in modern application optimization, 
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-infrastructure:performance-engineer:performance-engineer`
+**Subagent Type**: `sw-infra:performance-engineer:performance-engineer`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-infrastructure:performance-engineer:performance-engineer",
+  subagent_type: "sw-infra:performance-engineer:performance-engineer",
   prompt: "Analyze and optimize API performance with distributed tracing, implement multi-tier caching, and load testing",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-infrastructure
+- **Plugin**: sw-infra
 - **Directory**: performance-engineer
 - **Agent Name**: performance-engineer
 

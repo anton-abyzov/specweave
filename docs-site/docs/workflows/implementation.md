@@ -598,7 +598,7 @@ Implementation complete? Move to validation:
 
 **Learn more:**
 - [Validation Workflow](/docs/workflows/validation)
-- [TDD with SpecWeave](/docs/guides/testing/tdd-workflow)
+- [TDD Workflow](/docs/academy/specweave-essentials/06-tdd-workflow)
 - [Living Documentation](/docs/guides/core-concepts/living-documentation)
 
 ---
@@ -606,4 +606,4 @@ Implementation complete? Move to validation:
 **Related:**
 - [Planning Workflow](/docs/workflows/planning)
 - [Workflows Overview](/docs/workflows/overview)
-- [Post-Task-Completion Hook](/docs/guides/advanced/hooks)
+- [Hooks](/docs/glossary/terms/hooks)

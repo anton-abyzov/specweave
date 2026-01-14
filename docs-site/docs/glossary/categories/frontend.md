@@ -65,19 +65,19 @@ Frontend development terms cover client-side logic, UI frameworks, state managem
 
 ### State Management
 
-**[Redux](/docs/glossary/terms/redux)**
+**Redux**
 - Predictable state container
 - Centralized state, time-travel debugging
 - Best for: complex state, multiple components
 - Trade-off: boilerplate, learning curve
 
-**[Context API](/docs/glossary/terms/context-api)**
+**Context API**
 - React's built-in state management
 - Simpler than Redux for small apps
 - Best for: simple global state, theme, auth
 - When to use: small/medium apps
 
-**[Zustand](/docs/glossary/terms/zustand)**
+**Zustand**
 - Minimal state management library
 - Less boilerplate than Redux
 - Best for: medium apps, want simplicity
@@ -85,19 +85,19 @@ Frontend development terms cover client-side logic, UI frameworks, state managem
 
 ### Styling Approaches
 
-**[CSS Modules](/docs/glossary/terms/css-modules)**
+**CSS Modules**
 - Scoped CSS by default
 - Prevents naming conflicts
 - Works with any framework
 - Best for: traditional CSS workflow
 
-**[Tailwind CSS](/docs/glossary/terms/tailwind)**
+**Tailwind CSS**
 - Utility-first CSS framework
 - Fast development, consistent design
 - Trade-off: HTML classes verbose
 - SpecWeave docs site uses Tailwind
 
-**[Styled Components](/docs/glossary/terms/styled-components)**
+**Styled Components**
 - CSS-in-JS solution
 - Component-scoped styles
 - Dynamic styling with props
@@ -459,4 +459,4 @@ test('user can view dashboard', async ({ page }) => {
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/README)
+- [Alphabetical Index](/docs/glossary/)

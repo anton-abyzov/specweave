@@ -230,7 +230,7 @@ With SpecWeave, every project contributes to a growing library of portable, reus
 
 ## Next Steps
 
-- **[Quick Start](/docs/getting-started)** - Start your first portable project
-- **[Brownfield Guide](/docs/workflows/brownfield)** - Extract specs from existing code
-- **[Migration Patterns](/docs/guides/migration-patterns)** - Learn proven migration strategies
+- **[Quick Start](/docs/quick-start)** - Start your first portable project
+- **[Brownfield Workflow](/docs/workflows/brownfield)** - Extract specs from existing code
+- **[Multi-Project Setup](/docs/guides/multi-project-setup)** - Learn project organization patterns
 - **[Contact Sales](https://spec-weave.com/enterprise)** - Discuss your migration project

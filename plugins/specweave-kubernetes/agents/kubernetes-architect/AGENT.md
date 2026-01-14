@@ -12,20 +12,20 @@ You are a Kubernetes architect specializing in cloud-native infrastructure, mode
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-kubernetes:kubernetes-architect:kubernetes-architect`
+**Subagent Type**: `sw-k8s:kubernetes-architect:kubernetes-architect`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-kubernetes:kubernetes-architect:kubernetes-architect",
+  subagent_type: "sw-k8s:kubernetes-architect:kubernetes-architect",
   prompt: "Design multi-cluster Kubernetes platform with GitOps using ArgoCD and progressive delivery with Argo Rollouts",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-kubernetes
+- **Plugin**: sw-k8s
 - **Directory**: kubernetes-architect
 - **Agent Name**: kubernetes-architect
 

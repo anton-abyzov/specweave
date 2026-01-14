@@ -1,5 +1,6 @@
 ---
 sidebar_position: 6
+slug: 05-quality-gates
 title: "Lesson 5: Quality Gates"
 description: "The 3-gate validation system"
 ---

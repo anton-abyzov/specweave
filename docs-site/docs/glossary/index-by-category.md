@@ -24,4 +24,4 @@ Browse SpecWeave terminology organized by topic.
 
 ---
 
-[View full alphabetical glossary →](./index.md)
+[View full alphabetical glossary →](./overview)

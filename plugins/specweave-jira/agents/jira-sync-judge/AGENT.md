@@ -7,13 +7,13 @@ model: claude-opus-4-5-20251101
 
 ## How to Invoke This Agent
 
-**Subagent Type**: `specweave-jira:jira-sync-judge:jira-sync-judge`
+**Subagent Type**: `sw-jira:jira-sync-judge:jira-sync-judge`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-jira:jira-sync-judge:jira-sync-judge",
+  subagent_type: "sw-jira:jira-sync-judge:jira-sync-judge",
   prompt: "Validate sync correctness for increment 0093",
   model: "opus"
 });

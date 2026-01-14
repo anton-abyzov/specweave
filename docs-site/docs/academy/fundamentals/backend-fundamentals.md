@@ -3279,28 +3279,22 @@ After `/sw:done`, sync docs automatically:
 
 **After mastering backend fundamentals:**
 
-1. **Related Guides**:
-   - [API Design Best Practices](.specweave/docs/learn/backend/api-design)
-   - [Database Design Guide](.specweave/docs/learn/backend/database-design)
-   - [Microservices Architecture](.specweave/docs/learn/backend/microservices)
+1. **Glossary Terms**:
+   - [REST](/docs/glossary/terms/rest)
+   - [Docker](/docs/glossary/terms/docker)
+   - [CI/CD](/docs/glossary/terms/ci-cd)
+   - [GraphQL](/docs/glossary/terms/graphql)
+   - [Microservices](/docs/glossary/terms/microservices)
 
-2. **Glossary Terms**:
-   - [REST API](../glossary/terms/rest-api)
-   - [PostgreSQL](../glossary/terms/postgresql)
-   - [JWT](../glossary/terms/jwt)
-   - [Docker](../glossary/terms/docker)
-   - [CI/CD](../glossary/terms/ci-cd)
-
-3. **Hands-On Practice**:
+2. **Hands-On Practice**:
    - Build a blog API (follow this guide)
    - Add authentication (JWT)
    - Deploy to production (Docker + AWS)
 
-4. **Advanced Topics**:
-   - [GraphQL API Development](.specweave/docs/learn/backend/graphql)
-   - [Serverless Architecture](.specweave/docs/learn/backend/serverless)
-   - [Event-Driven Systems](.specweave/docs/learn/backend/event-driven)
+3. **Related Topics**:
+   - [Frontend Fundamentals](./frontend-fundamentals.md)
+   - [Testing Fundamentals](./testing-fundamentals.md)
 
 ---
 
-**Questions or feedback?** [Open an issue](https://github.com/anton-abyzov/specweave/issues) or [join discussions](https://github.com/anton-abyzov/specweave/discussions).
+**Questions or feedback?** [Open an issue](https://github.com/specweave/specweave/issues) or [join discussions](https://github.com/specweave/specweave/discussions).

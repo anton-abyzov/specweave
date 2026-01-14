@@ -154,4 +154,4 @@ Content edits in GitHub do NOT sync back to SpecWeave.
 - [Living Docs](/docs/glossary/terms/living-docs) - The central hub
 - [Split-Source Sync](/docs/glossary/terms/split-source-sync) - Content out, status in
 - [Increments](/docs/glossary/terms/increments) - Units of work
-- [/sw:import-external](/docs/glossary/terms/specweave-import-external) - Import command
+- [/sw:import-external](/docs/commands/overview) - Import command

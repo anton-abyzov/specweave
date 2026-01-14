@@ -109,6 +109,40 @@ project rules and API patterns.
 
 4. **Summary paragraph** - Plain English explanation at bottom for quick understanding
 
+## How to Phrase Learnings for Capture
+
+The reflect system detects patterns in your messages. Here are examples of phrases that **will be captured**:
+
+### Direct Corrections (High Confidence)
+- "No, don't use X. Use Y instead."
+- "Wrong! Always use X."
+- "That's incorrect. The correct way is..."
+
+### Narrative Best Practices (High Confidence)
+- "Never run e2e tests directly in prod, rather run locally first"
+- "Always test locally before deploying"
+- "Make sure tests pass before pushing"
+- "Run tests locally first, then deploy"
+- "Never deploy directly to production"
+
+### Explicit Rules (Medium Confidence)
+- "Remember to always..."
+- "Important: always verify..."
+- "The rule is: never..."
+- "Ensure that..."
+- "Be sure to..."
+
+### Trigger Phrases That Work
+| Pattern | Example |
+|---------|---------|
+| `never run/test/deploy X` | "Never run migrations without backup" |
+| `always X before Y` | "Always build before deploy" |
+| `make sure X` | "Make sure tests pass first" |
+| `run X locally first` | "Run all tests locally first" |
+| `before deploying/pushing` | "Verify locally before pushing" |
+| `rather X first` | "Rather test locally first" |
+| `first X, then Y` | "First run tests, then deploy" |
+
 ## Related Commands
 
 | Command | Purpose |

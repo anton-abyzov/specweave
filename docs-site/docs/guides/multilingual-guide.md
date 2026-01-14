@@ -693,8 +693,8 @@ For better organization, use separate commits for source changes vs. translation
 
 **Documentation**:
 - [SpecWeave Website](https://spec-weave.com)
-- [CLAUDE.md](../../CLAUDE) (contributor guide)
-- [README.md](../../../../README) (project overview)
+- [CLAUDE.md](/docs/overview/introduction) (contributor guide)
+- [README.md](/docs/intro) (project overview)
 
 **Community**:
 - [GitHub Issues](https://github.com/anton-abyzov/specweave/issues)

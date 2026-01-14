@@ -12,20 +12,20 @@ max_response_tokens: 2000
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-kafka:kafka-observability:kafka-observability`
+**Subagent Type**: `sw-kafka:kafka-observability:kafka-observability`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-kafka:kafka-observability:kafka-observability",
+  subagent_type: "sw-kafka:kafka-observability:kafka-observability",
   prompt: "Set up Kafka monitoring with Prometheus JMX exporter and create Grafana dashboards with alerting rules",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-kafka
+- **Plugin**: sw-kafka
 - **Directory**: kafka-observability
 - **Agent Name**: kafka-observability
 

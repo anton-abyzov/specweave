@@ -15,11 +15,11 @@ Large ML pipelines = 1000+ lines. Generate ONE stage per response: Data/EDA → 
 
 ## How to Invoke This Agent
 
-**Agent**: `specweave-ml:ml-engineer:ml-engineer`
+**Agent**: `sw-ml:ml-engineer:ml-engineer`
 
 ```typescript
 Task({
-  subagent_type: "specweave-ml:ml-engineer:ml-engineer",
+  subagent_type: "sw-ml:ml-engineer:ml-engineer",
   prompt: "Build fraud detection model with baseline comparison and explainability"
 });
 ```

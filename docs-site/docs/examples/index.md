@@ -514,6 +514,6 @@ Not seeing your scenario? SpecWeave handles:
 ## Next Steps
 
 - **Try an example**: Pick one from above and run it
-- **Read the guides**: [Guides section](/docs/guides/)
+- **Read the guides**: [Guides section](/docs/guides/multi-project-setup)
 - **Watch videos**: [YouTube tutorials](https://www.youtube.com/@antonabyzov)
 - **Join community**: [Discord](https://discord.gg/UYg4BGJ65V)

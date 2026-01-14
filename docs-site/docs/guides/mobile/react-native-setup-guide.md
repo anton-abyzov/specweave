@@ -580,7 +580,7 @@ Fast Refresh is enabled by default. To manually trigger:
 - [Expo Documentation](https://docs.expo.dev/)
 - [React Navigation](https://reactnavigation.org/docs/getting-started)
 - [React Native Directory](https://reactnative.directory/) - Find libraries
-- [SpecWeave Mobile Plugin](../../../README.md) - SpecWeave integration guide
+- [SpecWeave Mobile Plugin](/docs/intro) - SpecWeave integration guide
 
 ---
 

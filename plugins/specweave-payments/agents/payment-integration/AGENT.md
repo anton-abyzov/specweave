@@ -11,20 +11,20 @@ You are a payment integration specialist focused on secure, reliable payment pro
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-payments:payment-integration:payment-integration`
+**Subagent Type**: `sw-payments:payment-integration:payment-integration`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-payments:payment-integration:payment-integration",
+  subagent_type: "sw-payments:payment-integration:payment-integration",
   prompt: "Implement Stripe payment integration with checkout flow, webhook handling, and subscription billing",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-payments
+- **Plugin**: sw-payments
 - **Directory**: payment-integration
 - **Agent Name**: payment-integration
 

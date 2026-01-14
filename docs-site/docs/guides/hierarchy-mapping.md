@@ -212,12 +212,12 @@ This creates issues for all 29 FS-* folders.
 ## Related Documentation
 
 - [Living Docs Sync Guide](./intelligent-living-docs-sync.md) - How living docs sync works
-- [Multi-Project Sync Architecture](../integrations/multi-project-sync.md) - Multi-repo sync patterns
-- [CLAUDE.md](../../CLAUDE.md) - Contributor guide with hierarchy mapping
+- [Multi-Project Sync Architecture](/docs/guides/multi-project-setup) - Multi-repo sync patterns
+- [CLAUDE.md](/docs/overview/introduction) - Contributor guide with hierarchy mapping
 
 ---
 
 **Next Steps**:
 - Read [Intelligent Living Docs Sync Guide](./intelligent-living-docs-sync.md)
-- Understand [Multi-Project Sync Architecture](../integrations/multi-project-sync.md)
-- Explore [External Tool Integration](../integrations/)
+- Understand [Multi-Project Sync Architecture](/docs/guides/multi-project-setup)
+- Explore [External Tool Integration](/docs/guides/integrations/external-tools-overview)

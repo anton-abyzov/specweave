@@ -1,5 +1,6 @@
 ---
 sidebar_position: 17
+slug: 16-ado-integration
 title: "Lesson 16: Azure DevOps Integration Guide"
 description: "Complete guide to syncing SpecWeave with Azure DevOps Work Items"
 ---
@@ -845,10 +846,10 @@ specweave init . --reconfigure
 
 ## Glossary Terms Used
 
-- **[Azure DevOps](/docs/glossary/terms/azure-devops)** — Microsoft DevOps platform
+- **Azure DevOps** — Microsoft DevOps platform
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work in SpecWeave
 - **[Split-Source Sync](/docs/glossary/terms/split-source-sync)** — Content out, status in (not true bidirectional)
-- **[Sprint](/docs/glossary/terms/sprint)** — Time-boxed iteration
+- **Sprint** — Time-boxed iteration
 
 ---
 
@@ -856,4 +857,4 @@ specweave init . --reconfigure
 
 You've completed the external tools integration lessons! Now let's return to advanced patterns and see how everything comes together.
 
-**:next** → [Back to Advanced Patterns](./10-advanced-patterns) or [Academy Overview](./index)
+**:next** → [Back to Advanced Patterns](./10-advanced-patterns) or [Academy Overview](./)

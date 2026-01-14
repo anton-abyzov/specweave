@@ -256,5 +256,5 @@ cclsp provides:
 ## Related
 
 - [Living Docs Guide](/docs/guides/intelligent-living-docs-sync)
-- [Getting Started](/docs/guides/getting-started)
+- [Getting Started](/docs/quick-start)
 - [Command Reference](/docs/guides/command-reference-by-priority)

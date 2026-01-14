@@ -476,8 +476,8 @@ cat .specweave/state/auto-session.json
 
 ## See Also
 
-- [/sw:auto-status](./auto-status.md) - Check session progress
-- [/sw:cancel-auto](./cancel-auto.md) - Emergency stop
-- [Testing Guide](../guides/testing.md) - Write tests for auto mode
-- [Multi-Repo Guide](../guides/multi-repo.md) - Coordinate across repos
-- [Hooks Deep Dive](../guides/hooks.md) - Understand the stop hook
+- [Commands Overview](/docs/commands/overview) - All available commands
+- [Status Management](/docs/commands/status-management) - Increment status commands
+- [TDD Workflow](/docs/academy/specweave-essentials/06-tdd-workflow) - Test-driven development
+- [Multi-Project Setup](/docs/guides/multi-project-setup) - Coordinate across repos
+- [Quick Start](/docs/quick-start) - Getting started guide

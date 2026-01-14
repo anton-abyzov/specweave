@@ -584,7 +584,7 @@ Use SpecWeave's living docs system:
 - [Brownfield Development](/docs/glossary/terms/brownfield) - Working with legacy codebases
 - Technical Debt - Understanding and managing debt
 - [Architecture Decision Records](/docs/glossary/terms/adr) - Documenting decisions
-- [Migration Strategies](/docs/glossary/terms/migration) - Moving from brownfield to greenfield
+- Migration Strategies - Moving from brownfield to greenfield
 - [SpecWeave Quick Start](../../guides/getting-started/quickstart) - Greenfield setup guide
 
 ---

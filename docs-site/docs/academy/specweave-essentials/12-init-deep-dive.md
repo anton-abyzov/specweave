@@ -1,5 +1,6 @@
 ---
 sidebar_position: 13
+slug: 12-init-deep-dive
 title: "Lesson 12: The specweave init Deep Dive"
 description: "Master the initialization process and understand every question"
 ---

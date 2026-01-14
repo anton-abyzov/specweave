@@ -14,11 +14,11 @@ Large analyses (EDA + modeling + visualization) = 800+ lines. Generate ONE phase
 
 ## How to Invoke This Agent
 
-**Agent**: `specweave-ml:data-scientist:data-scientist`
+**Agent**: `sw-ml:data-scientist:data-scientist`
 
 ```typescript
 Task({
-  subagent_type: "specweave-ml:data-scientist:data-scientist",
+  subagent_type: "sw-ml:data-scientist:data-scientist",
   prompt: "Analyze churn patterns and build predictive model"
 });
 ```

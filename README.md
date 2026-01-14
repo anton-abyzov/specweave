@@ -15,8 +15,6 @@
 npm install -g specweave
 ```
 
-> **New in v1.0.100**: Auto mode now shows live labels in your terminal — see exactly what SpecWeave is doing: `[Planning]`, `[Implementing]`, `[Testing]`, `[Fixing]`. Hours of autonomous execution with full visibility.
-
 ---
 
 ## The Problem With AI Coding Tools
@@ -77,7 +75,7 @@ Every AI coding tool promises productivity. But after the chat ends:
 
 | Capability | [BMAD](https://github.com/bmad-code-org/BMAD-METHOD) | [SpecKit](https://github.com/github/spec-kit) | Cursor Rules | **SpecWeave** |
 |---|---|---|---|---|
-| **Maturity** | Alpha (v6) | Stable | Built-in | **Production (v1.0.100)** |
+| **Maturity** | Alpha (v6) | Stable | Built-in | **Production** |
 | **Autonomous Work** | Manual steps required | One-shot generation | Per-request only | **Hours unattended** |
 | **Live Status** | None | None | None | **Terminal labels** |
 | **Multi-Repo** | Single repo | Single repo | Single repo | **Coordinate N repos** |
@@ -176,7 +174,7 @@ specweave update-instructions   # Regenerate CLAUDE.md
 
 ## Key Features
 
-### Autonomous Execution (v2.9)
+### Autonomous Execution
 
 Run for hours without intervention. See exactly what's happening:
 

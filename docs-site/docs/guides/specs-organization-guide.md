@@ -41,18 +41,17 @@
 | **Duplication** | ❌ Yes (4x) | ✅ No (1x) |
 | **External tool sync** | ❌ Manual mapping | ✅ Automatic (mirrors JIRA) |
 
-## 📚 Complete Documentation
+## 📚 Related Documentation
 
-1. **[REVISED-ORGANIZATION-STRATEGY.md](./REVISED-ORGANIZATION-STRATEGY.md)** - Full architecture
-2. **[V2-BROWNFIELD-FIRST.md](./V2-BROWNFIELD-FIRST.md)** - Visual comparison
-3. **[COMPLETE-ARCHITECTURE.md](./COMPLETE-ARCHITECTURE.md)** - Full example
-4. **[FINAL-DECISION.md](./FINAL-DECISION.md)** - Implementation plan
+- [Living Documentation](/docs/guides/core-concepts/living-documentation) - How docs stay current
+- [Multi-Project Setup](/docs/guides/multi-project-setup) - Multi-repo organization
+- [Increments](/docs/glossary/terms/increments) - Understanding increments
 
 ## 🚀 Next Steps
 
-1. Read [FINAL-DECISION.md](./FINAL-DECISION.md) for complete implementation plan
-2. Review [V2-BROWNFIELD-FIRST.md](./V2-BROWNFIELD-FIRST.md) for visual comparison
-3. Check [COMPLETE-ARCHITECTURE.md](./COMPLETE-ARCHITECTURE.md) for example spec
+1. Review [Multi-Project Setup](/docs/guides/multi-project-setup) for complete project organization
+2. Check [Living Documentation](/docs/guides/core-concepts/living-documentation) for document maintenance
+3. See [Brownfield Workflow](/docs/workflows/brownfield) for existing project migration
 
 ---
 

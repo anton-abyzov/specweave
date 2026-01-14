@@ -12,20 +12,20 @@ max_response_tokens: 2000
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-jira:jira-manager:jira-manager`
+**Subagent Type**: `sw-jira:jira-manager:jira-manager`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-jira:jira-manager:jira-manager",
+  subagent_type: "sw-jira:jira-manager:jira-manager",
   prompt: "Create Jira epic for increment 0005 and sync all tasks from spec.md and tasks.md",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-jira
+- **Plugin**: sw-jira
 - **Directory**: jira-manager
 - **Agent Name**: jira-manager
 

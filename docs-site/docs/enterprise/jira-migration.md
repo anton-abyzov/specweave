@@ -836,11 +836,11 @@ curl -X POST https://your-server.com/api/specweave/webhook/jira \
 
 ## 📚 Related Guides
 
-- [GitHub Migration Guide](./github-migration.md)
-- [Azure DevOps Migration Guide](./azure-devops-migration.md)
-- [Multi-Environment Deployment Strategy](./multi-environment-deployment.md)
-- [Release Management Guide](./release-management.md)
-- [Sprint Planning with SpecWeave](./sprint-planning.md)
+- [GitHub Migration Guide](./github-migration)
+- [Azure DevOps Migration Guide](./azure-devops-migration)
+- [Multi-Environment Deployment Strategy](./multi-environment-deployment)
+- [Release Management Guide](./release-management)
+- [JIRA Integration](/docs/academy/specweave-essentials/15-jira-integration)
 
 ---
 
