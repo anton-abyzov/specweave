@@ -3,6 +3,11 @@
  *
  * Converts external items (GitHub/JIRA/ADO) to SpecWeave living docs User Stories.
  * CRITICAL: Does NOT create increments - only creates living docs.
+ *
+ * NOTE: This file uses extracted modules from ./item-converter/ for better separation
+ * of concerns. The main ItemConverter class remains here for backward compatibility.
+ *
+ * @since v1.0.115 - Extracted helpers to ./item-converter/ modules
  */
 
 import type { ExternalItem } from './external-importer.js';
@@ -29,6 +34,35 @@ import {
   DEFAULT_TASK_TYPES,
 } from '../core/types/sync-profile.js';
 
+// Import from extracted modules
+import {
+  normalizeAdoWorkItemType as _normalizeAdoWorkItemType,
+  getSpecWeaveLevel as _getSpecWeaveLevel,
+  isFeatureLevelType as _isFeatureLevelType,
+  getJiraWorkItemTypeLabel as _getJiraWorkItemTypeLabel,
+  getDefaultMapping as _getDefaultMapping,
+  typeMatchesArray as _typeMatchesArray,
+} from './item-converter/hierarchy-mapper.js';
+import {
+  getBaseDirectory as _getBaseDirectory,
+  shouldAutoArchive as _shouldAutoArchive,
+  shouldArchiveEntireGroup as _shouldArchiveEntireGroup,
+  cleanupEmptyFeatureFolder as _cleanupEmptyFeatureFolder,
+} from './item-converter/path-resolver.js';
+import {
+  createFeatureFolder as _createFeatureFolder,
+  createOrphansFolder as _createOrphansFolder,
+} from './item-converter/feature-folder-creator.js';
+import {
+  hasParentChanged as _hasParentChanged,
+  updateParentMetadataInContent as _updateParentMetadataInContent,
+  moveUserStoryFile as _moveUserStoryFile,
+} from './item-converter/parent-change-handler.js';
+import {
+  findExistingFeatureFolders as _findExistingFeatureFolders,
+  groupHasNonDuplicates as _groupHasNonDuplicates,
+} from './item-converter/duplicate-scanner.js';
+
 /**
  * Module logger - can be replaced for testing
  */
@@ -41,38 +75,9 @@ export function setItemConverterLogger(logger: Logger): void {
   moduleLogger = logger;
 }
 
-/**
- * Normalize ADO work item type to canonical form
- * ADO returns both singular ('Epic') and plural ('Epics') forms
- * CRITICAL (v0.30.4): Fixes bug where 'Epics' didn't match 'epic'
- *
- * @param witType - Work item type from ADO (e.g., 'Epics', 'Epic', 'Feature')
- * @returns Normalized lowercase singular form (e.g., 'epic', 'feature', 'capability')
- */
+// Use extracted function (wrapper for backward compat)
 function normalizeAdoWorkItemType(witType: string | undefined): string | undefined {
-  if (!witType) return undefined;
-  const lower = witType.toLowerCase().trim();
-
-  // Explicit mappings for irregular plurals and known ADO types
-  const pluralMappings: Record<string, string> = {
-    'epics': 'epic',
-    'features': 'feature',
-    'capabilities': 'capability',
-    'bugs': 'bug',
-    'tasks': 'task',
-    'user stories': 'user story',
-  };
-
-  if (pluralMappings[lower]) {
-    return pluralMappings[lower];
-  }
-
-  // Fallback: remove trailing 's' for simple plurals
-  if (lower.endsWith('s') && lower.length > 1 && !lower.endsWith('ss')) {
-    return lower.slice(0, -1);
-  }
-
-  return lower;
+  return _normalizeAdoWorkItemType(witType);
 }
 
 export interface ConvertedUserStory {
