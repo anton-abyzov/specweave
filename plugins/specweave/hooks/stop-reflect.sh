@@ -245,25 +245,27 @@ queue_reflection() {
 
 # Main logic
 main() {
-    # Always approve - this hook should never block
-    local approve_response='{"decision":"approve","reason":"Session complete"}'
+    # SILENT approve - no reason/systemMessage to prevent UI feedback loops
+    # This addresses Claude Code 2.0.17-2.0.22 bug where hook output displays multiple times
+    # See: https://github.com/anthropics/claude-code/issues/9602
+    local silent_approve='{"decision":"approve"}'
 
-    # Quick bail if no transcript
+    # Quick bail if no transcript - SILENT (no output to show)
     if [ -z "$TRANSCRIPT_PATH" ] || [ ! -f "$TRANSCRIPT_PATH" ]; then
-        echo "$approve_response"
+        echo "$silent_approve"
         exit 0
     fi
 
-    # Check if auto-reflect is enabled
+    # Check if auto-reflect is enabled - SILENT if disabled
     if ! is_auto_reflect_enabled; then
-        echo "$approve_response"
+        echo "$silent_approve"
         exit 0
     fi
 
-    # Check for reflection signals
+    # Check for reflection signals - SILENT if none found
     if ! has_reflection_signals "$TRANSCRIPT_PATH"; then
         log_reflect "info" "No reflection signals detected"
-        echo "$approve_response"
+        echo "$silent_approve"
         exit 0
     fi
 
@@ -289,8 +291,8 @@ main() {
         exit 0
     fi
 
-    # Queueing failed, just approve without message
-    echo "$approve_response"
+    # Queueing failed, just approve silently
+    echo "$silent_approve"
     exit 0
 }
 
