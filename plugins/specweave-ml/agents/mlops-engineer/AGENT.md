@@ -16,13 +16,13 @@ You are an MLOps engineer specializing in ML infrastructure, automation, and pro
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-ml:mlops-engineer:mlops-engineer`
+**Subagent Type**: `sw-ml:mlops-engineer:mlops-engineer`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-ml:mlops-engineer:mlops-engineer",
+  subagent_type: "sw-ml:mlops-engineer:mlops-engineer",
   prompt: "Build complete MLOps platform on AWS with automated training pipelines, experiment tracking with MLflow, and model deployment",
   model: "opus" // default: opus (best quality)
 });

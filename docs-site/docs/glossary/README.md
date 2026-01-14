@@ -4,7 +4,7 @@ Comprehensive terminology reference for SpecWeave.
 
 ## Quick Links
 
-- [Full Alphabetical Glossary](./index.md) - Browse all terms A-Z
+- [Full Alphabetical Glossary](./overview) - Browse all terms A-Z
 - [Index by Category](./index-by-category.md) - Find terms by topic
 
 ## What's in the Glossary?
@@ -28,4 +28,4 @@ Found a term that's not defined? Submit an issue or PR with:
 
 ---
 
-[Start exploring the glossary →](./index.md)
+[Start exploring the glossary →](./overview)

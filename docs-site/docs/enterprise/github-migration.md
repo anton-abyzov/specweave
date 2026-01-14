@@ -766,11 +766,11 @@ cat .specweave/increments/0020-feature/metadata.json
 
 ## 📚 Related Guides
 
-- [Azure DevOps Migration Guide](./azure-devops-migration.md)
-- [JIRA Migration Guide](./jira-migration.md)
-- [Multi-Environment Deployment Strategy](./multi-environment-deployment.md)
-- [Release Management Guide](./release-management.md)
-- [CI/CD Integration Guide](./cicd-integration.md)
+- [Azure DevOps Migration Guide](./azure-devops-migration)
+- [JIRA Migration Guide](./jira-migration)
+- [Multi-Environment Deployment Strategy](./multi-environment-deployment)
+- [Release Management Guide](./release-management)
+- [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration)
 
 ---
 

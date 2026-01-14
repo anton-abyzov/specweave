@@ -335,6 +335,6 @@ This:
 
 ## Related
 
-- [Quality Gates](/docs/concepts/quality-gates)
-- [Testing Workflow](/docs/workflows/testing)
+- [Quality Gates](/docs/glossary/terms/quality-gate)
+- [TDD Workflow](/docs/academy/specweave-essentials/06-tdd-workflow)
 - [Implementation Workflow](/docs/workflows/implementation)

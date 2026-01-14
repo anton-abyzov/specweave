@@ -863,10 +863,10 @@ cp CLAUDE.md CLAUDE.md.backup
 
 - [Greenfield Development](/docs/glossary/terms/greenfield) - Starting projects from scratch
 - Technical Debt - Understanding and managing debt
-- [Legacy Code](/docs/glossary/terms/legacy-code) - Working with old codebases
-- [Refactoring Strategies](/docs/glossary/terms/refactoring) - Improving existing code
-- [Migration Patterns](/docs/glossary/terms/migration) - Moving between architectures
-- [SpecWeave Brownfield Guide](../../guides/brownfield-integration) - Detailed brownfield setup
+- Legacy Code - Working with old codebases
+- Refactoring Strategies - Improving existing code
+- Migration Patterns - Moving between architectures
+- [SpecWeave Brownfield Guide](/docs/workflows/brownfield) - Detailed brownfield setup
 
 ---
 

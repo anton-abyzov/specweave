@@ -206,4 +206,4 @@ Living Docs (Documentation)
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/README)
+- [Alphabetical Index](/docs/glossary/)

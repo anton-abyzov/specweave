@@ -394,4 +394,4 @@ The Three-Layer Architecture is SpecWeave's core synchronization pattern:
 ---
 
 **Last Updated**: 2025-11-16
-**Related Increment**: [0037-project-specific-tasks](../../../increments/0037-project-specific-tasks/)
+**Related Increment**: [0037-project-specific-tasks](/docs/glossary/terms/increments)

@@ -2183,12 +2183,11 @@ SpecWeave helps you build frontend applications with:
 
 ## Next Steps
 
-- [Backend Development Fundamentals](/docs/glossary/terms/backend-fundamentals) - Learn server-side development
-- [Accessibility Best Practices](../glossary/terms/accessibility) - A11y deep dive
-- [React](../glossary/terms/react) - React glossary term
-- [Next.js](../glossary/terms/nextjs) - Next.js glossary term
-- [TypeScript](../glossary/terms/typescript) - TypeScript glossary term
+- [Backend Development Fundamentals](./backend-fundamentals.md) - Learn server-side development
+- [React](/docs/glossary/terms/react) - React glossary term
+- [Next.js](/docs/glossary/terms/nextjs) - Next.js glossary term
+- [TypeScript](/docs/glossary/terms/typescript) - TypeScript glossary term
 
 ---
 
-**Related Glossary Terms**: [React](../glossary/terms/react), [TypeScript](../glossary/terms/typescript), [Responsive Design](../glossary/terms/responsive-design), [Accessibility](../glossary/terms/accessibility), [API](../glossary/terms/api)
+**Related Glossary Terms**: [React](/docs/glossary/terms/react), [TypeScript](/docs/glossary/terms/typescript), [API](/docs/glossary/terms/api)

@@ -652,7 +652,7 @@ For large projects with 100+ files:
 - **[Getting Started Guide](/docs/intro)** - Installation and first increment
 - **[Workflows](/docs/workflows/overview)** - Complete development journey
 - **[Commands Reference](/docs/commands/overview)** - All essential commands
-- **[Multi-Project Sync](/docs/integrations/multi-project-sync)** - GitHub/JIRA/ADO setup
+- **[Multi-Project Setup](/docs/guides/multi-project-setup)** - GitHub/JIRA/ADO setup
 - **[FAQ](/docs/faq)** - Common questions answered
 
 ---

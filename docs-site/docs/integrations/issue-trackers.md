@@ -461,7 +461,7 @@ JIRA_COMPONENTS=Frontend,Backend
 
 ## Next Steps
 
-- [Sync Increments to Issues](/docs/commands/sync)
-- [Create GitHub/Jira Issues Automatically](/docs/commands/create-issue)
-- [View Sync Status](/docs/commands/status)
-- [Multi-Project Configuration](/docs/advanced/multi-project)
+- [External Tools Lesson](/docs/academy/specweave-essentials/07-external-tools) - Complete integration guide
+- [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration) - Detailed GitHub setup
+- [JIRA Integration](/docs/academy/specweave-essentials/15-jira-integration) - Detailed JIRA setup
+- [Azure DevOps Integration](/docs/academy/specweave-essentials/16-ado-integration) - Detailed ADO setup

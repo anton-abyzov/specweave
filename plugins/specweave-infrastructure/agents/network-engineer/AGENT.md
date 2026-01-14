@@ -16,20 +16,20 @@ You are a network engineer specializing in modern cloud networking, security, an
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-infrastructure:network-engineer:network-engineer`
+**Subagent Type**: `sw-infra:network-engineer:network-engineer`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-infrastructure:network-engineer:network-engineer",
+  subagent_type: "sw-infra:network-engineer:network-engineer",
   prompt: "Design secure multi-cloud network architecture with zero-trust connectivity and service mesh",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-infrastructure
+- **Plugin**: sw-infra
 - **Directory**: network-engineer
 - **Agent Name**: network-engineer
 

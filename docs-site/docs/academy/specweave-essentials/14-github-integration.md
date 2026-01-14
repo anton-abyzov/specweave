@@ -1,5 +1,6 @@
 ---
 sidebar_position: 15
+slug: 14-github-integration
 title: "Lesson 14: GitHub Integration Guide"
 description: "Complete guide to syncing SpecWeave with GitHub Issues"
 ---

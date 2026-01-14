@@ -1,5 +1,6 @@
 ---
 sidebar_position: 5
+slug: 04-the-next-command
 title: "Lesson 4: The :next Command"
 description: "Your workflow compass"
 ---

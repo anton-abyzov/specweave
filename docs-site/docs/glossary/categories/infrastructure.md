@@ -279,7 +279,7 @@ Typical infrastructure increments in SpecWeave:
 
 - **[Architecture & Design](/docs/glossary/categories/architecture-category)** - System design decisions
 - **[DevOps & Tools](/docs/glossary/categories/devops-category)** - Development workflows
-- **[Security & Compliance](/docs/glossary/categories/security)** - Production security
+- **Security & Compliance** - Production security
 
 ---
 
@@ -309,4 +309,4 @@ Typical infrastructure increments in SpecWeave:
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/README)
+- [Alphabetical Index](/docs/glossary/)

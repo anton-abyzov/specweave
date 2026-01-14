@@ -1,7 +1,7 @@
 # COPIED ACs and Tasks
 
 **Category**: Architecture
-**Related Terms**: [Three-Layer Architecture](three-layer-architecture.md), [Living Docs](living-docs.md), [User Story](user-story.md), [Project-Specific Tasks](project-specific-tasks.md)
+**Related Terms**: [Three-Layer Architecture](three-layer-architecture.md), [Living Docs](living-docs.md), [User Story](user-stories), [Project-Specific Tasks](project-specific-tasks.md)
 
 ---
 
@@ -444,7 +444,7 @@ validation, and protected route middleware.
 - **[Living Docs](living-docs.md)**: Destination for COPIED User Stories
 - **[Project-Specific Tasks](project-specific-tasks.md)**: How tasks are filtered by project
 - **[Source of Truth](source-of-truth.md)**: Increment as definitive status
-- **[User Story](user-story.md)**: Container for COPIED ACs and tasks
+- **[User Story](user-stories)**: Container for COPIED ACs and tasks
 
 ---
 
@@ -465,4 +465,4 @@ validation, and protected route middleware.
 ---
 
 **Last Updated**: 2025-11-16
-**Related Increment**: [0037-project-specific-tasks](../../../increments/0037-project-specific-tasks/)
+**Related Increment**: [0037-project-specific-tasks](/docs/glossary/terms/increments)

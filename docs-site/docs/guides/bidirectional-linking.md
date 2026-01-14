@@ -518,7 +518,7 @@ node -e "import('./dist/src/core/living-docs/spec-distributor.js').then(async ({
 ## See Also
 
 - [Living Docs Sync Guide](intelligent-living-docs-sync.md) - Complete living docs architecture
-- [Test-Aware Planning](../../../increments/0003-intelligent-model-selection/reports/TEST-AWARE-PLANNING.md) - AC-ID format explanation
+- [Test-Aware Planning](/docs/academy/specweave-essentials/06-tdd-workflow) - AC-ID format explanation
 - [Multi-Project Setup](multi-project-setup.md) - Multi-project configuration
 
 ---

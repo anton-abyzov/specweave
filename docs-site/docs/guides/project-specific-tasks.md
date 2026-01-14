@@ -465,7 +465,7 @@ Tasks are automatically included:
 - [Intelligent Living Docs Sync](./intelligent-living-docs-sync.md) - Overall sync architecture
 - [GitHub Integration](./github-integration.md) - GitHub sync setup
 - [Multi-Project Setup](./multi-project-setup.md) - Multi-project configuration
-- [Bidirectional Linking](../../internal/specs/default/README.md) - AC-ID format
+- [Bidirectional Linking](/docs/overview/introduction) - AC-ID format
 
 ---
 

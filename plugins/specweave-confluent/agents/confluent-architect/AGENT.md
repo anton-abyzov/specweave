@@ -10,20 +10,20 @@ max_response_tokens: 2000
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-confluent:confluent-architect:confluent-architect`
+**Subagent Type**: `sw-confluent:confluent-architect:confluent-architect`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-confluent:confluent-architect:confluent-architect",
+  subagent_type: "sw-confluent:confluent-architect:confluent-architect",
   prompt: "Your task description here",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name}`
-- **Plugin**: specweave-confluent
+- **Plugin**: sw-confluent
 - **Directory**: confluent-architect
 - **YAML Name**: confluent-architect
 

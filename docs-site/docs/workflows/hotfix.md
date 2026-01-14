@@ -318,6 +318,6 @@ After hotfix is stable:
 
 ## Related
 
-- [Emergency Recovery](/docs/guides/troubleshooting/emergency-recovery)
+- [Troubleshooting](/docs/academy/specweave-essentials/09-troubleshooting)
 - [Deployment Workflow](/docs/workflows/deployment)
-- [Incident Response](/docs/enterprise/incident-response)
+- [Workflows Overview](/docs/workflows/overview)

@@ -1,5 +1,6 @@
 ---
 sidebar_position: 12
+slug: 11-vibe-coding-problem
 title: "Lesson 11: The Vibe Coding Problem"
 description: "Understanding why AI-assisted development fails without structure"
 ---

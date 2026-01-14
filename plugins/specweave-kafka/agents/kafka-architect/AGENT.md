@@ -16,13 +16,13 @@ When generating comprehensive Kafka architectures that exceed 1000 lines (e.g., 
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-kafka:kafka-architect:kafka-architect`
+**Subagent Type**: `sw-kafka:kafka-architect:kafka-architect`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-kafka:kafka-architect:kafka-architect",
+  subagent_type: "sw-kafka:kafka-architect:kafka-architect",
   prompt: "Design event-driven architecture for e-commerce with Kafka microservices and CQRS pattern",
   model: "opus" // default: opus (best quality)
 });

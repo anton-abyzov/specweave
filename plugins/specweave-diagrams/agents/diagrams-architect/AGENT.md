@@ -10,20 +10,20 @@ fallback_behavior: auto
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-diagrams:diagrams-architect:diagrams-architect`
+**Subagent Type**: `sw-diagrams:diagrams-architect:diagrams-architect`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-diagrams:diagrams-architect:diagrams-architect",
+  subagent_type: "sw-diagrams:diagrams-architect:diagrams-architect",
   prompt: "Your task description here",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name}`
-- **Plugin**: specweave-diagrams
+- **Plugin**: sw-diagrams
 - **Directory**: diagrams-architect
 - **YAML Name**: diagrams-architect
 
@@ -370,7 +370,7 @@ You will typically be invoked by the `diagrams-generator` skill using the Task t
 
 ```typescript
 await Task({
-  subagent_type: "specweave-diagrams:diagrams-architect:diagrams-architect",
+  subagent_type: "sw-diagrams:diagrams-architect:diagrams-architect",
   prompt: "Create C4 context diagram for authentication system",
   description: "Generate C4 Level 1 diagram"
 });

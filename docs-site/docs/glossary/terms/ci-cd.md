@@ -739,7 +739,7 @@ After CI/CD setup, update docs:
 - [Kubernetes](/docs/glossary/terms/kubernetes) - Deployment target
 - [Git](/docs/glossary/terms/git) - Version control triggering pipelines
 - Testing - Automated tests in CI
-- [DevOps](/docs/glossary/terms/devops) - CI/CD as DevOps practice
+- DevOps - CI/CD as DevOps practice
 
 ## Resources
 
