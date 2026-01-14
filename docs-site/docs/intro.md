@@ -13,10 +13,10 @@ sidebar_position: 1
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UYg4BGJ65V)
 [![YouTube](https://img.shields.io/badge/YouTube-Tutorials-red?logo=youtube&logoColor=white)](https://www.youtube.com/@antonabyzov)
 
-::::tip New in v2.9 — Now You Can SEE Auto Mode Working!
-`/sw:auto` runs for **hours** autonomously, and now you get **real-time visual labels** showing exactly what's happening! See iteration counts, test status, and stop criteria as your features build themselves.
+::::tip See Auto Mode Working in Real-Time!
+`/sw:auto` runs for **hours** autonomously, and you get **real-time visual labels** showing exactly what's happening! See iteration counts, test status, and stop criteria as your features build themselves.
 
-[Learn about Label Visibility →](/docs/commands/auto#new-in-v29-label-visibility)
+[Learn about Label Visibility →](/docs/commands/auto#label-visibility)
 :::
 
 ---
@@ -46,7 +46,7 @@ Every AI coding tool promises productivity. But after the chat ends:
 
 **SpecWeave is the only framework where AI decisions become permanent, searchable documentation.**
 
-### See Auto Mode in Action (v2.9)
+### See Auto Mode in Action
 
 When `/sw:auto` runs autonomously, you now see **real-time progress labels** in your conversation:
 
@@ -203,7 +203,7 @@ flowchart TB
 
 ## Key Strengths
 
-### 🚀 Autonomous Execution (NEW v2.9!)
+### 🚀 Autonomous Execution
 Run `/sw:auto` and watch **real-time labels** show progress, test results, and stop criteria. Can run for **hours** autonomously with self-healing when tests fail.
 
 **[See auto mode in action →](./commands/auto)**

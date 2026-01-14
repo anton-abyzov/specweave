@@ -103,7 +103,7 @@ Claude executes **all tasks automatically** - writes code, runs tests, fixes fai
 ```
 Execute one task, review, then continue.
 
-### Step 5: Watch It Work (NEW in v2.9!)
+### Step 5: Watch It Work
 
 You'll see real-time labels showing progress:
 

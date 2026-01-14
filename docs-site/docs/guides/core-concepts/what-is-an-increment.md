@@ -1,3 +1,9 @@
+---
+sidebar_position: 1
+title: What is an Increment?
+description: Learn about SpecWeave's fundamental unit of work - complete, self-contained features with specs, plans, and tests.
+---
+
 # What is an Increment?
 
 An **increment** is SpecWeave's fundamental unit of work—a complete, self-contained feature with specifications, architecture, implementation plan, and tests.

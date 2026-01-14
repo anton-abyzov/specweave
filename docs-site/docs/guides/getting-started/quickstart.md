@@ -6,18 +6,40 @@
 
 ```bash
 npm install -g specweave
+```
+
+---
+
+## Starting a New Project (Greenfield)
+
+The simplest way to start — just describe what you want to build:
+
+```bash
+mkdir my-app && cd my-app
+specweave init .
+```
+
+Then in Claude Code, simply say:
+```
+"Build a calculator app with React"
+```
+
+SpecWeave guides you through features, tech stack, and approach — then creates your first increment automatically.
+
+**Perfect for prototypes, learning, and weekend MVPs.**
+
+---
+
+## Adding Features to Existing Projects
+
+For existing codebases, use explicit commands:
+
+```bash
 cd your-project
 specweave init .
 ```
 
-**That's it.** SpecWeave is ready.
-
----
-
-## Your First Feature (2 minutes)
-
-Open Claude Code and run:
-
+Then in Claude Code:
 ```bash
 /sw:increment "Add dark mode toggle"
 ```
@@ -29,6 +51,10 @@ Open Claude Code and run:
 ├── plan.md    <- HOW: Architecture + tech decisions
 └── tasks.md   <- DO: Tasks with embedded tests
 ```
+
+---
+
+## Execution Options
 
 ### Ship While You Sleep (Auto Mode)
 
@@ -62,30 +88,6 @@ This lets you work **continuously for hours** in the same VSCode window without 
 
 **Bonus**: Stop hooks now work with subagents, so SpecWeave's quality gates validate every level of autonomous execution automatically.
 :::
-
----
-
-## Two Approaches
-
-### Option A: Quick Build (Fastest)
-
-Just describe what you want:
-```
-"build a calculator app with React"
-```
-
-SpecWeave's assistant guides you through features, tech stack, and approach. **Perfect for prototypes and learning.**
-
-### Option B: Spec-First (Recommended)
-
-Use explicit commands for full control:
-```bash
-/sw:increment "payment processing with Stripe"  # Plan
-/sw:do                                          # Build
-/sw:done 0002                                   # Close
-```
-
-**Perfect for production features and team projects.**
 
 ---
 

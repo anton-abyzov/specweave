@@ -163,9 +163,9 @@ const config: Config = {
         },
         {
           type: 'docSidebar',
-          sidebarId: 'learnSidebar',
+          sidebarId: 'academySidebar',
           position: 'left',
-          label: 'Learn',
+          label: 'Academy',
         },
         {
           type: 'docSidebar',

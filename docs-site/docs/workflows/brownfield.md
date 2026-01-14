@@ -580,7 +580,7 @@ graph TB
 # Authentication System
 - JWT authentication
 - OAuth (Google, GitHub)
-- ✨ Two-Factor Authentication (TOTP)  ← NEW!
+- ✨ Two-Factor Authentication (TOTP)
   - Optional for users
   - Required for admins
   - Authenticator app support

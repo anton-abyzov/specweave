@@ -1,14 +1,13 @@
 import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 
 /**
- * Creating a sidebar enables you to:
- - create an ordered group of docs
- - render a sidebar for each doc of that group
- - provide next/previous navigation
-
- The sidebars can be generated from the filesystem, or explicitly defined here.
-
- Create as many sidebars as you want.
+ * SpecWeave Documentation Sidebars
+ *
+ * Structure follows Diátaxis framework:
+ * - Tutorials (getting-started, academy)
+ * - How-to Guides (guides, workflows, enterprise)
+ * - Explanation (overview)
+ * - Reference (commands, glossary, api)
  */
 const sidebars: SidebarsConfig = {
   // Main documentation sidebar
@@ -25,13 +24,18 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: 'doc',
+          id: 'overview/claude-code-architecture',
+          label: 'Claude Code Architecture',
+        },
+        {
+          type: 'doc',
           id: 'overview/features',
           label: 'Key Features',
         },
         {
           type: 'doc',
           id: 'overview/plugins-ecosystem',
-          label: '🧩 Plugin Ecosystem',
+          label: 'Plugin Ecosystem',
         },
         {
           type: 'doc',
@@ -41,7 +45,24 @@ const sidebars: SidebarsConfig = {
         {
           type: 'doc',
           id: 'metrics',
-          label: '📊 DORA Metrics',
+          label: 'DORA Metrics',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Getting Started',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'getting-started/index',
+          label: 'Quick Start',
+        },
+        {
+          type: 'doc',
+          id: 'getting-started/first-increment',
+          label: 'Your First Increment',
         },
       ],
     },
@@ -70,29 +91,72 @@ const sidebars: SidebarsConfig = {
         {
           type: 'doc',
           id: 'workflows/overview',
-          label: '📊 Complete Journey',
+          label: 'Complete Journey',
         },
         {
           type: 'doc',
           id: 'workflows/planning',
-          label: '📋 Planning',
+          label: 'Planning',
         },
         {
           type: 'doc',
           id: 'workflows/implementation',
-          label: '⚙️ Implementation',
+          label: 'Implementation',
         },
         {
           type: 'doc',
           id: 'workflows/brownfield',
-          label: '🏢 Brownfield Projects',
+          label: 'Brownfield Projects',
         },
       ],
     },
     {
       type: 'doc',
       id: 'faq',
-      label: '❓ FAQ',
+      label: 'FAQ',
+    },
+  ],
+
+  // Getting Started sidebar (linked from navbar)
+  gettingStartedSidebar: [
+    {
+      type: 'category',
+      label: 'Getting Started',
+      collapsed: false,
+      items: [
+        {
+          type: 'doc',
+          id: 'getting-started/index',
+          label: 'Quick Start',
+        },
+        {
+          type: 'doc',
+          id: 'getting-started/first-increment',
+          label: 'Your First Increment',
+        },
+      ],
+    },
+    {
+      type: 'category',
+      label: 'Next Steps',
+      collapsed: false,
+      items: [
+        {
+          type: 'link',
+          label: 'SpecWeave Essentials',
+          href: '/docs/academy/specweave-essentials/',
+        },
+        {
+          type: 'link',
+          label: 'Command Reference',
+          href: '/docs/commands/overview',
+        },
+        {
+          type: 'link',
+          label: 'External Integrations',
+          href: '/docs/academy/specweave-essentials/07-external-tools',
+        },
+      ],
     },
   ],
 
@@ -106,22 +170,22 @@ const sidebars: SidebarsConfig = {
         {
           type: 'doc',
           id: 'guides/integrations/external-tools-overview',
-          label: '🔄 Overview',
+          label: 'Overview',
         },
         {
-          type: 'doc',
-          id: 'guides/lessons/github-integration',
-          label: '🐙 GitHub Integration',
+          type: 'link',
+          label: 'GitHub Integration',
+          href: '/docs/guides/lessons/14-github-integration',
         },
         {
-          type: 'doc',
-          id: 'guides/lessons/jira-integration',
-          label: '📋 JIRA Integration',
+          type: 'link',
+          label: 'JIRA Integration',
+          href: '/docs/guides/lessons/15-jira-integration',
         },
         {
-          type: 'doc',
-          id: 'guides/lessons/ado-integration',
-          label: '🔷 Azure DevOps Integration',
+          type: 'link',
+          label: 'Azure DevOps Integration',
+          href: '/docs/guides/lessons/16-ado-integration',
         },
       ],
     },
@@ -132,7 +196,7 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
-          id: 'integrations/issue-trackers',
+          id: 'guides/integrations/issue-trackers',
           label: 'Overview',
         },
       ],
@@ -143,7 +207,7 @@ const sidebars: SidebarsConfig = {
   enterpriseSidebar: [
     {
       type: 'category',
-      label: '🏢 Enterprise Migration',
+      label: 'Enterprise Migration',
       collapsed: false,
       items: [
         {
@@ -165,7 +229,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: '🚀 Deployment & Release',
+      label: 'Deployment & Release',
       collapsed: false,
       items: [
         {
@@ -177,6 +241,11 @@ const sidebars: SidebarsConfig = {
           type: 'doc',
           id: 'enterprise/release-management',
           label: 'Release Management',
+        },
+        {
+          type: 'doc',
+          id: 'enterprise/compliance-standards',
+          label: 'Compliance Standards',
         },
       ],
     },
@@ -191,13 +260,13 @@ const sidebars: SidebarsConfig = {
       items: [
         {
           type: 'doc',
-          id: 'intro',
-          label: 'Quickstart',
+          id: 'getting-started/index',
+          label: 'Quick Start',
         },
         {
-          type: 'link',
-          label: 'Installation',
-          href: '/docs/intro#installation',
+          type: 'doc',
+          id: 'getting-started/first-increment',
+          label: 'Your First Increment',
         },
         {
           type: 'doc',
@@ -250,235 +319,168 @@ const sidebars: SidebarsConfig = {
         },
       ],
     },
+    {
+      type: 'category',
+      label: 'Integrations',
+      collapsed: true,
+      items: [
+        {
+          type: 'doc',
+          id: 'guides/integrations/external-tools-overview',
+          label: 'External Tools Overview',
+        },
+        {
+          type: 'doc',
+          id: 'guides/integrations/issue-trackers',
+          label: 'Issue Trackers',
+        },
+      ],
+    },
   ],
 
   // API sidebar
   apiSidebar: [{type: 'autogenerated', dirName: 'api'}],
 
-  // Commands sidebar - Essential 8 commands only
+  // Commands sidebar
   commandsSidebar: [
     {
       type: 'doc',
       id: 'commands/overview',
-      label: '📖 Overview',
+      label: 'Overview',
+    },
+    {
+      type: 'doc',
+      id: 'commands/command-decision-tree',
+      label: 'Command Decision Tree',
     },
     {
       type: 'category',
-      label: '⚡ Essential Commands',
+      label: 'Essential Commands',
       collapsed: false,
       items: [
         {
           type: 'link',
-          label: '1️⃣ /sw:increment',
-          href: '/docs/commands/overview#1-planning-commands',
+          label: '/sw:increment',
+          href: '/docs/commands/overview#1-planning',
         },
         {
           type: 'link',
-          label: '2️⃣ /sw:do',
-          href: '/docs/commands/overview#2-implementation-commands',
+          label: '/sw:auto',
+          href: '/docs/commands/overview#2-execution',
         },
         {
           type: 'link',
-          label: '3️⃣ /sw:progress',
-          href: '/docs/commands/overview#5-monitoring-commands',
+          label: '/sw:do',
+          href: '/docs/commands/overview#2-execution',
         },
         {
           type: 'link',
-          label: '4️⃣ /sw:validate',
-          href: '/docs/commands/overview#3-quality-assurance-commands',
+          label: '/sw:progress',
+          href: '/docs/commands/overview#3-monitoring',
         },
         {
           type: 'link',
-          label: '5️⃣ /sw:qa',
-          href: '/docs/commands/overview#3-quality-assurance-commands',
+          label: '/sw:validate',
+          href: '/docs/commands/overview#4-quality-assurance',
         },
         {
           type: 'link',
-          label: '6️⃣ /sw:check-tests',
-          href: '/docs/commands/overview#3-quality-assurance-commands',
-        },
-        {
-          type: 'link',
-          label: '7️⃣ /sw:done',
-          href: '/docs/commands/overview#4-completion-commands',
-        },
-        {
-          type: 'link',
-          label: '8️⃣ /sw:sync-docs',
-          href: '/docs/commands/overview#4-completion-commands',
+          label: '/sw:done',
+          href: '/docs/commands/overview#5-completion',
         },
       ],
     },
   ],
 
-  // Learn sidebar
-  learnSidebar: [
+  // Academy sidebar (consolidated learning)
+  academySidebar: [
+    {
+      type: 'doc',
+      id: 'academy/index',
+      label: 'Academy Overview',
+    },
     {
       type: 'category',
-      label: '🎓 SpecWeave Academy',
+      label: 'SpecWeave Essentials',
       collapsed: false,
       items: [
-        {
-          type: 'doc',
-          id: 'guides/lessons/index',
-          label: 'Academy Overview',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/getting-started',
-          label: 'Lesson 1: Getting Started',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/three-file-structure',
-          label: 'Lesson 2: Three-File Structure',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/your-first-increment',
-          label: 'Lesson 3: Your First Increment',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/the-next-command',
-          label: 'Lesson 4: The :next Command',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/quality-gates',
-          label: 'Lesson 5: Quality Gates',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/tdd-workflow',
-          label: 'Lesson 6: TDD Workflow',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/external-tools',
-          label: 'Lesson 7: External Tools',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/ai-model-selection',
-          label: 'Lesson 8: AI Model Selection',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/troubleshooting',
-          label: 'Lesson 9: Troubleshooting',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/advanced-patterns',
-          label: 'Lesson 10: Advanced Patterns',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/vibe-coding-problem',
-          label: 'Lesson 11: The Vibe Coding Problem',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/init-deep-dive',
-          label: 'Lesson 12: Init Deep Dive',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/increment-lifecycle',
-          label: 'Lesson 13: Increment Lifecycle',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/github-integration',
-          label: 'Lesson 14: GitHub Integration',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/jira-integration',
-          label: 'Lesson 15: JIRA Integration',
-        },
-        {
-          type: 'doc',
-          id: 'guides/lessons/ado-integration',
-          label: 'Lesson 16: Azure DevOps Integration',
-        },
+        {type: 'autogenerated', dirName: 'academy/specweave-essentials'},
       ],
     },
     {
       type: 'category',
-      label: 'Foundations',
-      collapsed: false,
+      label: 'Fundamentals',
+      collapsed: true,
       items: [
         {
           type: 'doc',
-          id: 'learn/foundations/enterprise-app-development',
+          id: 'academy/fundamentals/index',
+          label: 'Overview',
+        },
+        {
+          type: 'doc',
+          id: 'academy/fundamentals/enterprise-app-development',
           label: 'Enterprise App Development',
         },
         {
           type: 'doc',
-          id: 'learn/foundations/software-engineering-roles',
+          id: 'academy/fundamentals/software-engineering-roles',
           label: 'Software Engineering Roles',
         },
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Infrastructure',
-      collapsed: false,
-      items: [
         {
           type: 'doc',
-          id: 'learn/infrastructure/iac-fundamentals',
-          label: 'IaC Fundamentals',
-        },
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Backend Development',
-      collapsed: false,
-      items: [
-        {
-          type: 'doc',
-          id: 'learn/backend/backend-fundamentals',
+          id: 'academy/fundamentals/backend-fundamentals',
           label: 'Backend Fundamentals',
         },
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Frontend Development',
-      collapsed: false,
-      items: [
         {
           type: 'doc',
-          id: 'learn/frontend/frontend-fundamentals',
+          id: 'academy/fundamentals/frontend-fundamentals',
           label: 'Frontend Fundamentals',
         },
-      ],
-    },
-    {
-      type: 'category',
-      label: 'Testing & Quality',
-      collapsed: false,
-      items: [
         {
           type: 'doc',
-          id: 'learn/testing/testing-fundamentals',
+          id: 'academy/fundamentals/testing-fundamentals',
           label: 'Testing Fundamentals',
+        },
+        {
+          type: 'doc',
+          id: 'academy/fundamentals/iac-fundamentals',
+          label: 'IaC Fundamentals',
+        },
+        {
+          type: 'doc',
+          id: 'academy/fundamentals/ml-fundamentals',
+          label: 'ML/AI Fundamentals',
+        },
+        {
+          type: 'doc',
+          id: 'academy/fundamentals/security-fundamentals',
+          label: 'Security Fundamentals',
         },
       ],
     },
     {
       type: 'category',
-      label: 'ML/AI',
+      label: 'Full Curriculum',
+      collapsed: true,
+      items: [
+        {type: 'autogenerated', dirName: 'academy/part-1-foundations'},
+        {type: 'autogenerated', dirName: 'academy/part-2-first-application'},
+      ],
+    },
+  ],
+
+  // Legacy learnSidebar - redirects to academy
+  learnSidebar: [
+    {
+      type: 'category',
+      label: 'SpecWeave Academy',
       collapsed: false,
       items: [
         {
-          type: 'doc',
-          id: 'learn/ml-ai/ml-fundamentals',
-          label: 'ML/AI Integration',
+          type: 'link',
+          label: 'Go to Academy',
+          href: '/docs/academy/specweave-essentials/',
         },
       ],
     },
@@ -489,7 +491,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'doc',
       id: 'glossary/index-by-category',
-      label: '📖 Glossary by Category',
+      label: 'Glossary by Category',
     },
     {
       type: 'category',
