@@ -19,7 +19,8 @@ When user says "auto" or "autonomous" or "keep working" or provides a task descr
    ```bash
    specweave auto [INCREMENT_IDS] [OPTIONS]
    ```
-4. **Start working**: Execute /sw:do on tasks, mark them complete, let framework hooks handle sync
+4. **⚠️ MANDATORY: Display stop conditions banner** - Users MUST see when auto mode will stop BEFORE work begins! See "Step 1.5" in Execution section.
+5. **Start working**: Execute /sw:do on tasks, mark them complete, let framework hooks handle sync
 
 Now work on the increment tasks. When you try to exit, the stop hook will check completion conditions and feed the next task back to you. Continue until all tasks are complete and quality gates pass.
 
@@ -1386,7 +1387,7 @@ All tests pass locally. Where should I deploy?
 
 ## Execution
 
-**CRITICAL: You MUST execute the setup script FIRST before any other action!**
+**CRITICAL: You MUST show STOP CONDITIONS to user BEFORE starting work!**
 
 When this command is invoked:
 
@@ -1403,9 +1404,45 @@ specweave auto [INCREMENT_IDS...] [OPTIONS]
 Pass any arguments from the user (increment IDs, completion conditions, --max-iterations, --simple, etc.)
 
 **Handle exit codes:**
-- `0`: Success, session created → proceed to Step 3
+- `0`: Success, session created → proceed to Step 1.5
 - `1`: Error (no increments found with --no-increment/--no-inc) → STOP
 - `2`: **Increment creation needed** → proceed to Step 2
+
+### Step 1.5: MANDATORY - Display Stop Conditions to User
+
+**⚠️ CRITICAL: You MUST output this EXACT banner to the user BEFORE starting any task work!**
+
+After `specweave auto` succeeds, you MUST output this to the user (not just run Bash):
+
+```
+╔══════════════════════════════════════════════════════════════════════════╗
+║  🚀 AUTO MODE STARTING                                                    ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║  Increment: [INCREMENT_ID]                                               ║
+║  Tasks: [X] pending                                                       ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║  🎯 WHEN WILL THIS SESSION STOP?                                          ║
+║                                                                          ║
+║  ✅ SUCCESS CONDITIONS (session completes when ALL are met):              ║
+║     • All tasks marked [x] complete in tasks.md                          ║
+║     • All tests passing (unit + E2E if present)                          ║
+║     • /sw:done validation passes                                         ║
+║                                                                          ║
+║  🛑 STOP CONDITIONS (session pauses/ends):                                ║
+║     • Test failures after 3 retry attempts → pauses for human            ║
+║     • User runs /sw:cancel-auto → immediate stop                         ║
+║     • Max iterations reached (safety limit)                              ║
+╠══════════════════════════════════════════════════════════════════════════╣
+║  💡 You can check progress anytime: /sw:auto-status                       ║
+║  💡 To cancel: close session or /sw:cancel-auto                           ║
+╚══════════════════════════════════════════════════════════════════════════╝
+```
+
+**Fill in the placeholders:**
+- `[INCREMENT_ID]`: The actual increment ID (e.g., 0001-user-auth)
+- `[X]`: The number of pending tasks (read from tasks.md)
+
+**DO NOT SKIP THIS STEP!** Users MUST know when auto mode will stop BEFORE work begins.
 
 ### Step 2: INTELLIGENT INCREMENT CREATION (if specweave auto exits with code 2)
 
@@ -1479,39 +1516,20 @@ Pass any arguments from the user (increment IDs, completion conditions, --max-it
    rm -f .specweave/state/auto-needs-increment.json
    ```
 
-5. **Proceed to Step 3** with increment(s) resolved
+5. **Proceed to Step 1.5** - Display the stop conditions banner!
 
-### Step 3: Verify session and start execution
+### Step 3: Start Task Execution
 
-**Verify session was created:**
+**After displaying the stop conditions banner (Step 1.5), begin work:**
 
-```bash
-cat .specweave/state/auto-session.json | jq -r '.sessionId'
-```
-
-**If file doesn't exist, the setup failed - investigate and fix before continuing.**
-
-**Start execution:
-   ```
-   Now starting autonomous execution...
-
-   Session: auto-2025-12-29-abc123
-   Increment: 0001-user-auth
-   Tasks: 12 pending
-
-   The stop hook will keep me working until all tasks are complete
-   or you run /sw:cancel-auto.
-
-   Beginning with T-001...
-   ```
-
-4. **Execute /sw:do in a loop** (stop hook handles continuation):
+1. **Execute /sw:do in a loop** (stop hook handles continuation):
    - Work on tasks
    - Mark complete in tasks.md
    - Update spec.md ACs
    - Sync to external tools
+   - Run tests after each task
 
-5. **On completion**:
+2. **On completion**:
    ```
    <auto-complete>DONE</auto-complete>
 
