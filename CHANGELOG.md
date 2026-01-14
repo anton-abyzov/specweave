@@ -4,6 +4,17 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.114] - 2026-01-13
+
+### 📚 Documentation
+
+- **Academy restructure**: Streamlined academy documentation structure by consolidating content
+- **Documentation cleanup**: Removed redundant lesson and bridge documentation files
+- **New LSP integration skill**: Added LSP integration skill for enhanced code intelligence
+- **Glossary expansion**: Added LLM glossary term
+
+---
+
 ## [1.0.113] - 2026-01-13
 
 ### 🔧 Improvements
