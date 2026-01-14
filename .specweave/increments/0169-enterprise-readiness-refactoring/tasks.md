@@ -148,10 +148,11 @@ estimated_weeks: 10-12
 ## Sprint 3: Test Coverage Expansion (Week 5-6)
 
 ### T-020: Add tests for jira-client.ts
-**User Story**: US-003 | **Satisfies ACs**: AC-US3-01 | **Status**: [ ] pending
+**User Story**: US-003 | **Satisfies ACs**: AC-US3-01 | **Status**: [x] completed
 **Test**: Given jira-client.ts → When tests written → Then >80% coverage of JIRA client
 **Priority**: P1
 **Files**: src/integrations/jira/jira-client.ts, tests/unit/integrations/jira/jira-client.test.ts (new)
+**Resolution**: Created comprehensive test suite with 28 tests covering: constructor, searchIssues, getIssue, createIssue, updateIssue, testConnection, getProjects, getSprints, getActiveSprints, getBoards, getComponents, getVersions, searchWithJql, and error handling. Combined with existing 14 comment tests = 42 total JIRA client tests.
 
 ---
 
