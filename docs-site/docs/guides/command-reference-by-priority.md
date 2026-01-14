@@ -24,7 +24,7 @@ These are the essential commands you'll use every day. Master these first!
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `/sw:reopen` | **NEW!** Reopen completed work | `/sw:reopen 0031 --reason "GitHub sync failing"` |
+| `/sw:reopen` | Reopen completed work | `/sw:reopen 0031 --reason "GitHub sync failing"` |
 
 **Smart Detection**: Just say "GitHub sync not working" and the skill auto-suggests what to reopen!
 
@@ -215,7 +215,7 @@ If you're new to SpecWeave, start with these 5 commands:
 # 4. Close when done
 /sw:done 0031
 
-# 5. (NEW!) Reopen if issues found
+# 5. Reopen if issues found
 /sw:reopen 0031 --reason "Auth broken in prod"
 ```
 

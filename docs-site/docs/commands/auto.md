@@ -39,7 +39,7 @@ Auto mode executes your tasks autonomously in a continuous loop:
 
 ---
 
-## NEW in v2.9: Label Visibility
+## Label Visibility
 
 **You can now SEE what auto mode is doing!** Labels appear in your conversation showing real-time progress.
 
@@ -91,8 +91,8 @@ When auto mode finishes successfully:
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ```
 
-:::info Before v2.9
-These labels existed but were hidden in STDERR. Now they appear directly in your conversation, giving you complete visibility into auto mode's progress!
+:::info Label Visibility
+Labels appear directly in your conversation, giving you complete visibility into auto mode's progress!
 :::
 
 ---
@@ -122,7 +122,7 @@ graph TD
 
 ### Key Mechanisms
 
-**1. Self-Healing** (NEW in v2.0)
+**1. Self-Healing**
 - Analyzes test failures
 - Extracts specific error details
 - Applies targeted fixes

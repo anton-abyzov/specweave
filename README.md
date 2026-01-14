@@ -129,7 +129,22 @@ nvm install 22 && nvm use 22 && nvm alias default 22
 
 > **Getting `SyntaxError: Unexpected token 'with'`?** Your Node.js is too old. See [upgrade instructions](https://spec-weave.com/docs/guides/troubleshooting/common-errors#node-version-error).
 
-### Installation
+### New Project (Greenfield)
+
+```bash
+npm install -g specweave
+mkdir my-app && cd my-app
+specweave init .
+```
+
+Then in Claude Code, just describe what you want:
+```
+"Build a calculator app with React"
+```
+
+SpecWeave guides you through features, tech stack, and approach — then creates your first increment automatically.
+
+### Existing Project
 
 ```bash
 npm install -g specweave

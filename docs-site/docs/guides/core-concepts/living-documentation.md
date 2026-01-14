@@ -1,3 +1,9 @@
+---
+sidebar_position: 2
+title: Living Documentation
+description: Documentation that automatically stays synchronized with your code - no manual updates, always current.
+---
+
 # Living Documentation
 
 **Living documentation** is documentation that automatically stays synchronized with your code—no manual updates, no drift, always current.
@@ -181,14 +187,14 @@ Watch how docs evolve automatically:
 ## Current Implementation
 - ✅ JWT-based authentication
 - ✅ Password hashing with bcrypt
-- ✅ OAuth 2.0 integration (Google, GitHub)  ← NEW!
+- ✅ OAuth 2.0 integration (Google, GitHub)
 - ✅ Login endpoint: POST /api/auth/login
-- ✅ OAuth callback: POST /api/auth/oauth/callback  ← NEW!
+- ✅ OAuth callback: POST /api/auth/oauth/callback
 
 ## Components
 - AuthService (src/services/auth/AuthService.ts)
 - JWT utilities (src/utils/jwt.ts)
-- OAuthManager (src/services/auth/OAuthManager.ts)  ← NEW!
+- OAuthManager (src/services/auth/OAuthManager.ts)
 
 ## Test Coverage
 - Unit: 92% (tests/unit/auth.test.ts, oauth.test.ts)
