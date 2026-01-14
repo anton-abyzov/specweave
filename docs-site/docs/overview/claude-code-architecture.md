@@ -38,21 +38,25 @@ flowchart TB
             SKILLS[⚡ Skills<br/>Auto-activate expertise]
             AGENTS[🤖 Agents<br/>Specialized subprocesses]
             COMMANDS[📝 Commands<br/>User-invoked actions]
-            HOOKS[🪝 Hooks<br/>Event-driven automation]
+            subgraph HOOKS_BOX[🪝 Hooks]
+                GLOBAL[Global<br/>hooks.json]
+                SCOPED[Skill-Scoped<br/>frontmatter]
+            end
             MCP[🔌 MCP Servers<br/>External tools]
         end
 
         PLUGIN --> SKILLS
         PLUGIN --> AGENTS
         PLUGIN --> COMMANDS
-        PLUGIN --> HOOKS
+        PLUGIN --> HOOKS_BOX
         PLUGIN --> MCP
     end
 
     USER[👤 User] -->|"describes task"| SKILLS
     USER -->|"/command"| COMMANDS
     SKILLS -->|"spawns when needed"| AGENTS
-    HOOKS -->|"fires on events"| AGENTS
+    GLOBAL -->|"always fires"| AGENTS
+    SCOPED -->|"fires when skill active"| AGENTS
 ```
 
 ---
@@ -160,6 +164,7 @@ Skills are **SKILL.md files** that Claude automatically loads when relevant keyw
 
 ```markdown
 ---
+name: security-review
 description: Security expert for code review and vulnerability detection
 triggers:
   - security
@@ -167,6 +172,8 @@ triggers:
   - vulnerability
   - authentication
 allowed-tools: Read, Grep, Glob
+context: fork          # NEW in 2.1.0: Run in isolated sub-agent
+model: opus            # NEW in 2.1.0: Specify execution model
 ---
 
 # Security Review Skill
@@ -182,9 +189,17 @@ When reviewing code for security issues:
 ### Key Properties
 
 - **Auto-activate**: No manual invocation needed
-- **Main context**: Runs in your conversation (not isolated)
+- **Main context**: Runs in your conversation (not isolated) — unless `context: fork` is set
 - **Keyword triggers**: Activates when description matches
 - **Token efficient**: Only loaded when needed
+
+### New Frontmatter Fields (Claude Code 2.1.0+)
+
+| Field | Purpose | Example |
+|-------|---------|---------|
+| **`context: fork`** | Run skill in isolated sub-agent context | Prevents context pollution |
+| **`model`** | Specify which model executes | `opus`, `sonnet`, `haiku` |
+| **`hooks`** | Embed skill-scoped hooks | See Hooks section below |
 
 ### Example Flow
 
@@ -360,14 +375,69 @@ Hooks are **scripts that run automatically** when specific events occur.
 - **Matchers**: Can filter by tool name (for tool hooks)
 - **Control flow**: Can block, modify, or allow operations
 
+### Skill-Scoped Hooks (Claude Code 2.1.0+)
+
+**New in 2.1.0**: Hooks can be embedded directly in skill/command frontmatter, scoped to the component's lifecycle:
+
+```yaml
+---
+name: sw:do
+description: Execute increment tasks
+hooks:
+  PostToolUse:
+    - matcher: Edit
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/task-ac-sync-guard.sh
+---
+```
+
+**Benefits of skill-scoped hooks:**
+- **~50% fewer invocations**: Only fire when that skill is active
+- **Isolation**: Hooks don't interfere across different skills
+- **Self-contained**: All behavior (instructions + hooks) in one file
+- **Auto-cleanup**: Hooks removed when skill completes
+
+### SpecWeave Hybrid Hook Architecture
+
+SpecWeave uses **both** global and skill-scoped hooks for optimal performance:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    HYBRID HOOK ARCHITECTURE                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  GLOBAL HOOKS (hooks.json)                                          │
+│  ─────────────────────────                                          │
+│  Cross-cutting concerns that always run:                            │
+│  • SessionStart → Initialize logging, load memory                   │
+│  • UserPromptSubmit → Inject context, detect patterns               │
+│  • PostToolUse (increments) → Update living docs                    │
+│  • Stop → Reflect learnings, check auto mode                        │
+│                                                                      │
+│  SKILL-SCOPED HOOKS (command frontmatter)                           │
+│  ─────────────────────────────────────────                          │
+│  Command-specific logic that fires only when skill active:          │
+│  • /sw:do → Task-AC sync guard (PostToolUse on Edit/Write)         │
+│  • /sw:done → Completion guard (Stop)                               │
+│  • /sw:validate → Spec validation guard (Stop)                      │
+│  • /sw:increment → Duplicate guard (PostToolUse)                    │
+│                                                                      │
+│  ~50% fewer hook invocations vs all-global approach                 │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
 ### SpecWeave Hook Examples
 
-| Hook | Event | Purpose |
-|------|-------|---------|
-| Task completion | PostToolUse | Auto-update living docs |
-| AC sync | PostToolUse | Sync acceptance criteria checkboxes |
-| Quality gates | Stop | Validate before increment closes |
-| Status sync | SubagentStop | Update external tools |
+| Hook | Location | Event | Purpose |
+|------|----------|-------|---------|
+| Session init | Global | SessionStart | Load memory, initialize state |
+| Living docs sync | Global | PostToolUse | Auto-update specs on increment changes |
+| Task-AC sync | Skill-scoped | PostToolUse | Sync ACs when task completed (only during /sw:do) |
+| Quality gates | Skill-scoped | Stop | Validate before increment closes (only during /sw:done) |
+| Reflect learning | Global | Stop | Extract learnings from session |
+| Auto mode check | Global | Stop | Continue autonomous execution |
 
 ---
 
@@ -482,16 +552,31 @@ Recent Claude Code updates improve the architecture:
 | Feature | Version | Benefit |
 |---------|---------|---------|
 | **Skill hot-reload** | v2.1.0 | Skills update instantly without restart |
-| **Context fork** | v2.1.0 | Skills can run in isolated context |
+| **Context fork** | v2.1.0 | Skills can run in isolated sub-agent context |
+| **Skill-scoped hooks** | v2.1.0 | Hooks in frontmatter, scoped to skill lifecycle |
+| **Agent field in skills** | v2.1.0 | Specify which model executes the skill |
+| **Agent type in SessionStart** | v2.1.2 | Agent-specific initialization |
 | **Merged skills/commands** | v2.1.3 | Simpler mental model |
+| **Large output → file ref** | v2.1.2 | Large outputs saved to disk, not truncated |
 | **Nested skill discovery** | v2.1.6 | Auto-finds skills in subdirectories |
-| **3x faster file suggestions** | v2.0.72 | Improved `@` mention performance |
+| **Wildcard permissions** | v2.1.0 | `Bash(npm *)` pattern matching |
+
+### SpecWeave 2.1.x Optimizations
+
+SpecWeave now leverages these Claude Code 2.1.x features:
+
+| Optimization | Skills Affected | Benefit |
+|--------------|-----------------|---------|
+| **`context: fork`** | pm, architect, tech-lead, increment-planner | Prevents context pollution in main conversation |
+| **`model: opus`** | pm, architect, increment-planner | Ensures highest quality for critical decisions |
+| **Skill-scoped hooks** | /sw:do, /sw:done, /sw:validate, /sw:increment | ~50% fewer hook invocations (only fire when skill active) |
+| **Agent-type init** | SessionStart hook | Agent-specific startup messages and context |
 
 ---
 
 ## SpecWeave Architecture
 
-SpecWeave builds on Claude Code's architecture:
+SpecWeave builds on Claude Code's architecture with **hybrid hooks**:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -511,7 +596,11 @@ SpecWeave builds on Claude Code's architecture:
 │   136 SKILLS (auto-activate based on keywords)                      │
 │   68 AGENTS (spawn for complex isolated tasks)                      │
 │   53 COMMANDS (user-invoked slash commands)                         │
-│   65+ HOOKS (event-driven automation)                               │
+│                                                                      │
+│   HYBRID HOOKS (65+ total)                                          │
+│   ├── Global (hooks.json)      - Cross-cutting: start, stop, prompt│
+│   └── Skill-scoped (frontmatter) - Command-specific: ~50% fewer    │
+│                                    invocations vs all-global        │
 │                                                                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -551,6 +640,8 @@ SpecWeave works with any AI coding assistant. Each has different integration dep
 - **Agents** = Workers (spawn for isolated tasks)
 - **Commands** = Actions (user explicitly invokes)
 - **Hooks** = Reactions (auto-fire on events)
+  - *Global*: Cross-cutting (always fire)
+  - *Skill-scoped*: Command-specific (~50% fewer invocations)
 
-SpecWeave bundles 24 plugins with 136 skills, 68 agents, 53 commands, and 65+ hooks - all working together to make AI-assisted development seamless.
+SpecWeave bundles 24 plugins with 136 skills, 68 agents, 53 commands, and 65+ hybrid hooks - all working together to make AI-assisted development seamless.
 :::

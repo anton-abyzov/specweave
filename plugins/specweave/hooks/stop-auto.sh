@@ -95,6 +95,8 @@ if [ "$ACTIVE_COUNT" -eq 0 ]; then
     # All done! Clean up auto mode state
     rm -f "$AUTO_FLAG" 2>/dev/null
     rm -f "$DEDUP_FILE" 2>/dev/null
+    # Clean up agent_type state file (Claude Code 2.1.2+ feature)
+    rm -f "$STATE_DIR/.current-agent-type" 2>/dev/null
 
     echo '{"decision":"approve","reason":"All increments complete","systemMessage":"✅ Auto mode complete - all work finished"}'
     exit 0

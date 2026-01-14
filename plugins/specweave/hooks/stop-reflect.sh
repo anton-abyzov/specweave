@@ -243,12 +243,21 @@ queue_reflection() {
     return 0
 }
 
+# Cleanup ephemeral state files (Claude Code 2.1.2+ feature)
+# These files are session-scoped and should be removed on session end
+cleanup_session_state() {
+    rm -f "$STATE_DIR/.current-agent-type" 2>/dev/null || true
+}
+
 # Main logic
 main() {
     # SILENT approve - no reason/systemMessage to prevent UI feedback loops
     # This addresses Claude Code 2.0.17-2.0.22 bug where hook output displays multiple times
     # See: https://github.com/anthropics/claude-code/issues/9602
     local silent_approve='{"decision":"approve"}'
+
+    # Always cleanup ephemeral session state (runs on EVERY session end)
+    cleanup_session_state
 
     # Quick bail if no transcript - SILENT (no output to show)
     if [ -z "$TRANSCRIPT_PATH" ] || [ ! -f "$TRANSCRIPT_PATH" ]; then
