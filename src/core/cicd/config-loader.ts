@@ -187,7 +187,7 @@ function validateConfig(config: MonitorServiceConfig): void {
     throw new Error('GitHub owner and repo are required (set GITHUB_OWNER/GITHUB_REPO or add to .specweave/config.json)');
   }
 
-  if (config.monitor.pollInterval < 10000) {
+  if (config.monitor.pollInterval && config.monitor.pollInterval < 10000) {
     throw new Error('Poll interval must be at least 10 seconds (10000ms) to avoid rate limiting');
   }
 

@@ -177,11 +177,12 @@ export async function executeLivingDocsChunk(
       }
 
       // Move to next phase
-      currentPhase = getNextPhase(currentPhase);
-      if (!currentPhase) {
+      const nextPhase = getNextPhase(currentPhase);
+      if (!nextPhase) {
         // All phases complete
         return { status: 'all_complete' };
       }
+      currentPhase = nextPhase;
 
       phaseProgress = {};
     } else {

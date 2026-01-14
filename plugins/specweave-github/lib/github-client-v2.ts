@@ -27,6 +27,9 @@ export class GitHubClientV2 {
     }
 
     const config = profile.config as GitHubConfig;
+    if (!config.owner || !config.repo) {
+      throw new Error('GitHub profile config missing required owner or repo');
+    }
     this.owner = config.owner;
     this.repo = config.repo;
     this.fullRepo = `${this.owner}/${this.repo}`;

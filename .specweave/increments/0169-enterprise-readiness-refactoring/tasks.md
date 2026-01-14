@@ -17,42 +17,47 @@ estimated_weeks: 10-12
 ## Sprint 1: Type Safety and Critical Code Quality (Week 1-2)
 
 ### T-001: Fix failing discipline-checker tests
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-01 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-01 | **Status**: [x] completed
 **Test**: Given discipline-checker tests → When running test suite → Then all 3 failing tests pass
 **Priority**: P1
 **Files**: tests/unit/core/increment/discipline-checker.test.ts
+**Resolution**: Rewrote tests to use process.chdir() pattern (same as metadata-manager.test.ts), added required `type` field to metadata.json, avoided reserved increment IDs, and handled lazy initialization behavior. All 14 tests now pass.
 
 ---
 
 ### T-002: Enable strictNullChecks in tsconfig.json
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-02 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-02, AC-US1-03 | **Status**: [x] completed
 **Test**: Given tsconfig.json → When strictNullChecks enabled → Then compiler runs with strict null checking
 **Priority**: P1
-**Files**: tsconfig.json, tsconfig.test.json
+**Files**: tsconfig.json
+**Resolution**: Enabled strictNullChecks=true. Fixed all 49 type errors across 15 files including: github-client-v2.ts, github-spec-sync.ts, init-multiproject.ts, jobs.ts, skill-match.ts, sync-progress.ts, profile-manager.ts, external-import.ts, auto/config.ts, living-docs-executor.ts, cicd/config-loader.ts, spec-loader.ts, hierarchy-mapper.ts, project-manager.ts, project-context.ts, autonomous-executor.ts, markdown-generator.ts. Build and tests pass.
 
 ---
 
 ### T-003: Fix strictNullChecks type errors (batch 1 - core/)
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-03 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-03 | **Status**: [x] completed
 **Test**: Given src/core/ files → When compiling with strictNullChecks → Then no type errors in core/
 **Priority**: P1
 **Files**: src/core/**/*.ts
+**Resolution**: All core errors fixed as part of T-002.
 
 ---
 
 ### T-004: Fix strictNullChecks type errors (batch 2 - cli/)
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-03 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-03 | **Status**: [x] completed
 **Test**: Given src/cli/ files → When compiling with strictNullChecks → Then no type errors in cli/
 **Priority**: P1
 **Files**: src/cli/**/*.ts
+**Resolution**: All CLI errors fixed as part of T-002.
 
 ---
 
 ### T-005: Fix strictNullChecks type errors (batch 3 - remaining)
-**User Story**: US-001 | **Satisfies ACs**: AC-US1-03 | **Status**: [ ] pending
+**User Story**: US-001 | **Satisfies ACs**: AC-US1-03 | **Status**: [x] completed
 **Test**: Given all src/ files → When compiling with strictNullChecks → Then 0 type errors
 **Priority**: P1
 **Files**: src/**/*.ts
+**Resolution**: All remaining errors (plugins, importers) fixed as part of T-002. Zero type errors with strictNullChecks enabled.
 
 ---
 

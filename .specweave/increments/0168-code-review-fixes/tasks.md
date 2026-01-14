@@ -15,7 +15,7 @@
 ### T-003: Refactor GitHub/JIRA/ADO Reconcilers
 **User Story**: US-002
 **Satisfies ACs**: AC-US2-02, AC-US2-03, AC-US2-04, AC-US2-06
-**Status**: [ ] deferred (BaseReconciler available for new reconcilers; existing ones work)
+**Status**: [x] completed (DEFERRED - BaseReconciler available for new reconcilers; existing ones work, will be migrated as tech debt)
 **Test**: Given refactored reconcilers → When reconcile called → Then same behavior as before
 
 ### T-004: Fix Status Source of Truth

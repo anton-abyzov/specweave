@@ -39,7 +39,7 @@ export class ProjectContextManager {
       const content = await fs.readFile(this.configPath, 'utf-8');
       const fullConfig = JSON.parse(content);
 
-      this.config = fullConfig.sync || {
+      const config: SyncConfiguration = fullConfig.sync || {
         profiles: {},
         projects: {},
         settings: {
@@ -48,8 +48,9 @@ export class ProjectContextManager {
           rateLimitProtection: true,
         },
       };
+      this.config = config;
 
-      return this.config;
+      return config;
     } catch (error: any) {
       if (error.code === 'ENOENT') {
         this.config = {
@@ -198,7 +199,10 @@ export class ProjectContextManager {
   async deleteProject(projectId: string, deleteSpecs: boolean = false): Promise<void> {
     const config = await this.load();
 
-    const project = config.projects?.[projectId];
+    if (!config.projects) {
+      throw new Error(`Projects not configured`);
+    }
+    const project = config.projects[projectId];
     if (!project) {
       throw new Error(`Project '${projectId}' does not exist`);
     }
