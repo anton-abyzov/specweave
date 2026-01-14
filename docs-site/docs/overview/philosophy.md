@@ -313,7 +313,7 @@ How do you know SpecWeave is working?
 
 **Ready to get started?**
 
-- [Quickstart Guide](/docs/guides/getting-started/quickstart) - Get up and running in 5 minutes
-- [Core Concepts](/docs/guides/core-concepts/specifications) - Understand the fundamentals
+- [Quick Start](/docs/getting-started/) - Get up and running in 5 minutes
+- [Core Concepts](/docs/guides/core-concepts/what-is-an-increment) - Understand the fundamentals
 
 **Previous**: [Key Features](/docs/overview/features) ←

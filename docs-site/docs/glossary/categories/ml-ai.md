@@ -24,13 +24,13 @@ ML/AI terms cover machine learning models, training, inference, and AI-powered a
 - Use cases: recommendations, fraud detection, image recognition
 - When to use: pattern recognition, large datasets, predictive tasks
 
-**[Model Training](/docs/glossary/terms/model-training)**
+**Model Training**
 - Process of teaching a model using data
 - Steps: data collection, preprocessing, training, validation
 - Metrics: accuracy, precision, recall, F1 score
 - Tools: TensorFlow, PyTorch, scikit-learn
 
-**[Inference](/docs/glossary/terms/inference)**
+**Inference**
 - Using a trained model to make predictions
 - Real-time: API endpoint (fast, expensive)
 - Batch: Process large datasets (slow, cheap)
@@ -44,19 +44,19 @@ ML/AI terms cover machine learning models, training, inference, and AI-powered a
 - Capabilities: text generation, code, reasoning, translation
 - SpecWeave is LLM-native (designed for Claude Code)
 
-**[Prompt Engineering](/docs/glossary/terms/prompt-engineering)**
+**Prompt Engineering**
 - Crafting effective prompts for LLMs
 - Techniques: few-shot learning, chain-of-thought, system prompts
 - SpecWeave uses: structured prompts in skills, agents, commands
 - Best practices: clear instructions, examples, constraints
 
-**[Context Window](/docs/glossary/terms/context-window)**
+**Context Window**
 - Maximum tokens an LLM can process
 - Claude Opus 4.5: 200K tokens
 - SpecWeave optimization: 75%+ reduction via plugins
 - Trade-off: context size vs cost/speed
 
-**[Token](/docs/glossary/terms/token)**
+**Token**
 - Basic unit of LLM processing
 - Roughly: 1 token ≈ 4 characters or 0.75 words
 - Cost: charged per input/output token
@@ -64,19 +64,19 @@ ML/AI terms cover machine learning models, training, inference, and AI-powered a
 
 ### AI Frameworks
 
-**[TensorFlow](/docs/glossary/terms/tensorflow)**
+**TensorFlow**
 - Open-source ML framework by Google
 - Best for: production ML, complex models
 - Deployment: TensorFlow Serving, TFLite (mobile)
 - When to use: enterprise ML, need for scale
 
-**[PyTorch](/docs/glossary/terms/pytorch)**
+**PyTorch**
 - Open-source ML framework by Meta
 - Best for: research, experimentation, flexibility
 - More Pythonic, dynamic computation graphs
 - When to use: research, prototyping, NLP
 
-**[Scikit-learn](/docs/glossary/terms/scikit-learn)**
+**Scikit-learn**
 - Python ML library (classical algorithms)
 - Algorithms: regression, classification, clustering
 - Best for: traditional ML (not deep learning)
@@ -84,19 +84,19 @@ ML/AI terms cover machine learning models, training, inference, and AI-powered a
 
 ### AI Development Patterns
 
-**[RAG (Retrieval-Augmented Generation)](/docs/glossary/terms/rag)**
+**RAG (Retrieval-Augmented Generation)**
 - Combine LLM with external knowledge retrieval
 - Steps: Retrieve relevant docs → Generate response
 - Use cases: chatbots, documentation search, Q&A
 - SpecWeave uses: context loading from living docs
 
-**[Fine-Tuning](/docs/glossary/terms/fine-tuning)**
+**Fine-Tuning**
 - Adapt pre-trained model to specific task
 - Requires: labeled data, training infrastructure
 - Benefits: better performance on domain tasks
 - Trade-offs: cost, maintenance vs prompt engineering
 
-**[Vector Database](/docs/glossary/terms/vector-database)**
+**Vector Database**
 - Database optimized for similarity search
 - Use cases: RAG, recommendations, semantic search
 - Tools: Pinecone, Weaviate, Chroma, pgvector
@@ -587,4 +587,4 @@ When planning increments:
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/README)
+- [Alphabetical Index](/docs/glossary/)

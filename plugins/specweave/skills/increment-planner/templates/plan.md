@@ -55,10 +55,10 @@
 
 | Domain | Agent | When to Use |
 |--------|-------|-------------|
-| Architecture | `specweave:architect:architect` | System design, ADRs |
-| Frontend | `specweave-frontend:frontend-architect:frontend-architect` | React/Vue/Next.js |
-| Backend | `specweave-backend:database-optimizer:database-optimizer` | API, database |
-| K8s | `specweave-kubernetes:kubernetes-architect:kubernetes-architect` | Manifests, GitOps |
-| Infra | `specweave-infrastructure:devops:devops` | Terraform, CI/CD |
-| Testing | `specweave-testing:qa-engineer:qa-engineer` | E2E, test strategy |
-| Security | `specweave:security:security` | Security review |
+| Architecture | `sw:architect:architect` | System design, ADRs |
+| Frontend | `sw-frontend:frontend-architect:frontend-architect` | React/Vue/Next.js |
+| Backend | `sw-backend:database-optimizer:database-optimizer` | API, database |
+| K8s | `sw-k8s:kubernetes-architect:kubernetes-architect` | Manifests, GitOps |
+| Infra | `sw-infra:devops:devops` | Terraform, CI/CD |
+| Testing | `sw-testing:qa-engineer:qa-engineer` | E2E, test strategy |
+| Security | `sw:security:security` | Security review |

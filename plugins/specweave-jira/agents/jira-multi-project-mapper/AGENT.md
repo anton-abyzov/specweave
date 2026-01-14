@@ -7,13 +7,13 @@ model: claude-opus-4-5-20251101
 
 ## How to Invoke This Agent
 
-**Subagent Type**: `specweave-jira:jira-multi-project-mapper:jira-multi-project-mapper`
+**Subagent Type**: `sw-jira:jira-multi-project-mapper:jira-multi-project-mapper`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-jira:jira-multi-project-mapper:jira-multi-project-mapper",
+  subagent_type: "sw-jira:jira-multi-project-mapper:jira-multi-project-mapper",
   prompt: "Map spec-002-checkout to appropriate JIRA projects",
   model: "opus"
 });

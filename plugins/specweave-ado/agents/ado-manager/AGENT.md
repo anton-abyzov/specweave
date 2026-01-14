@@ -20,20 +20,20 @@ max_response_tokens: 2000
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-ado:ado-manager:ado-manager`
+**Subagent Type**: `sw-ado:ado-manager:ado-manager`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-ado:ado-manager:ado-manager",
+  subagent_type: "sw-ado:ado-manager:ado-manager",
   prompt: "Your task description here",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name}`
-- **Plugin**: specweave-ado
+- **Plugin**: sw-ado
 - **Directory**: ado-manager
 - **YAML Name**: ado-manager
 

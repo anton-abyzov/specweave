@@ -1,5 +1,6 @@
 ---
 sidebar_position: 2
+slug: 01-getting-started
 title: "Lesson 1: Getting Started"
 description: "Install SpecWeave and run your first command in 15 minutes"
 ---

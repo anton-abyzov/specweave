@@ -187,7 +187,7 @@ Each category page includes:
 Category pages integrate with:
 - `/docs/glossary/` - Main glossary page
 - `/docs/glossary/index-by-category` - Category browser
-- `/docs/glossary/README` - Alphabetical index
+- `/docs/glossary/` - Alphabetical index
 - `/docs/glossary/terms/` - Individual term pages
 
 ---

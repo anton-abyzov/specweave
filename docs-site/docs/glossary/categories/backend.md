@@ -50,7 +50,7 @@ Backend development terms cover server-side logic, API design, database manageme
 - Most popular Node.js framework
 - Quick to set up, flexible
 
-**[NestJS](/docs/glossary/terms/nestjs)**
+**NestJS**
 - Progressive Node.js framework
 - TypeScript-first, modular architecture
 - Built-in dependency injection
@@ -58,19 +58,19 @@ Backend development terms cover server-side logic, API design, database manageme
 
 ### Database Management
 
-**[PostgreSQL](/docs/glossary/terms/postgresql)**
+**PostgreSQL**
 - Relational database (SQL)
 - ACID transactions, complex queries
 - Extensions: PostGIS, full-text search
 - SpecWeave default recommendation for transactional systems
 
-**[MongoDB](/docs/glossary/terms/mongodb)**
+**MongoDB**
 - NoSQL document database
 - Flexible schema, horizontal scaling
 - Best for: rapid development, unstructured data
 - Trade-off: No ACID transactions across documents
 
-**[Redis](/docs/glossary/terms/redis)**
+**Redis**
 - In-memory data store
 - Use cases: caching, session storage, rate limiting
 - Fast reads/writes (microsecond latency)
@@ -90,7 +90,7 @@ Backend development terms cover server-side logic, API design, database manageme
 - Benefits: simplicity, easier debugging
 - When to use: small teams, early-stage products
 
-**[Event-Driven Architecture](/docs/glossary/terms/event-driven)**
+**Event-Driven Architecture**
 - Systems communicate via events
 - Tools: Kafka, RabbitMQ, AWS SNS/SQS
 - Benefits: loose coupling, scalability
@@ -423,4 +423,4 @@ Backend increments include embedded tests:
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/README)
+- [Alphabetical Index](/docs/glossary/)

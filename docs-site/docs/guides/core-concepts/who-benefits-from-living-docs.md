@@ -424,6 +424,6 @@ Claude follows links when exploring context.
 ## Related
 
 - [Living Documentation Overview](/docs/guides/core-concepts/living-documentation)
-- [Context Loading Command](/docs/commands/context)
+- [Context Loading Command](/docs/commands/overview)
 - [Planning with /sw:increment](/docs/workflows/planning)
-- [CLAUDE.md Integration](/docs/guides/claude-md-guide)
+- [CLAUDE.md Integration](/docs/overview/introduction)

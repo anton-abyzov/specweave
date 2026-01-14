@@ -338,9 +338,9 @@ specweave update-instructions
 ## Next Steps
 
 - **[Installation Guide](installation)** - Detailed setup options
-- **[Core Concepts](../../guides/core-concepts/specifications)** - Understanding specs
+- **[Core Concepts](/docs/overview/introduction)** - Understanding specs
 - **[Key Features](../../overview/features)** - Full capabilities
-- **[Examples](../examples/)** - Real project walkthroughs
+- **[Examples](/docs/examples/)** - Real project walkthroughs
 
 ---
 

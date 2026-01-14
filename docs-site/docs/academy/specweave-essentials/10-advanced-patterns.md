@@ -1,5 +1,6 @@
 ---
 sidebar_position: 11
+slug: 10-advanced-patterns
 title: "Lesson 10: Advanced Patterns"
 description: "Master advanced workflows"
 ---
@@ -385,8 +386,8 @@ cat .specweave/increments/0001-feature/tasks.md
 ## Glossary Terms Used
 
 - **[Microservices](/docs/glossary/terms/microservices)** — Independent service architecture
-- **[Feature Flags](/docs/glossary/terms/feature-flags)** — Toggle features on/off
-- **[Branching Strategy](/docs/glossary/terms/branching-strategy)** — Git workflow
+- **Feature Flags** — Toggle features on/off
+- **Branching Strategy** — Git workflow
 - **[Quality Gate](/docs/glossary/terms/quality-gate)** — Validation checkpoint
 - **[WIP Limits](/docs/glossary/terms/wip-limits)** — Work-in-progress constraints
 

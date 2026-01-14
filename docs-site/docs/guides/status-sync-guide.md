@@ -467,5 +467,5 @@ This syncs 5 at a time with 1-second delay between batches.
 ## Next Steps
 
 - [Migration Guide](./status-sync-migration.md) - Upgrade from old sync
-- [Architecture](../internal/architecture/adr/0031-status-sync-architecture.md) - Technical details
-- [API Reference](../api/status-sync-api.md) - Programmatic usage
+- [External Tools](/docs/academy/specweave-essentials/07-external-tools) - Integration guide
+- [Troubleshooting](/docs/academy/specweave-essentials/09-troubleshooting) - Fix sync issues

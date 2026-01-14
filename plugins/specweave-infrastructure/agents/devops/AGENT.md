@@ -13,20 +13,20 @@ max_response_tokens: 2000
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-infrastructure:devops:devops`
+**Subagent Type**: `sw-infra:devops:devops`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-infrastructure:devops:devops",
+  subagent_type: "sw-infra:devops:devops",
   prompt: "Deploy application to AWS ECS Fargate with Terraform and configure CI/CD pipeline with GitHub Actions",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-infrastructure
+- **Plugin**: sw-infra
 - **Directory**: devops
 - **Agent Name**: devops
 

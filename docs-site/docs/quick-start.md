@@ -190,22 +190,21 @@ You just experienced **spec-driven development**:
 
 ### Learn the Core Concepts
 
-- [Three-File Structure](./guides/lessons/02-three-file-structure.md) - spec.md, plan.md, tasks.md
-- [What is an Increment?](./guides/core-concepts/what-is-an-increment.md)
-- [Auto Mode Deep Dive](./commands/auto.md) - Autonomous execution
+- [Three-File Structure](./academy/specweave-essentials/02-three-file-structure) - spec.md, plan.md, tasks.md
+- [What is an Increment?](./guides/core-concepts/what-is-an-increment) - Understanding increments
+- [Auto Mode Deep Dive](./commands/auto) - Autonomous execution
 
 ### Explore Advanced Features
 
-- [Multi-Repo Projects](./guides/multi-repo.md) - Coordinate multiple repositories
-- [GitHub/JIRA Sync](./integrations/issue-trackers.md) - Bidirectional integration
-- [Hooks System](./guides/hooks.md) - Customize behavior
-- [Skills Auto-Routing](./guides/claude-skills-deep-dive.md) - 136 specialized skills
+- [Multi-Project Setup](./guides/multi-project-setup) - Coordinate multiple repositories
+- [External Tools](./academy/specweave-essentials/07-external-tools) - GitHub/JIRA/ADO sync
+- [Hooks](/docs/glossary/terms/hooks) - Customize behavior
+- [Skills vs Agents](/docs/glossary/terms/skills-vs-agents) - 136 specialized skills
 
 ### Real-World Examples
 
-- [Mobile App Development](./examples/mobile-app.md) - React Native + Expo
-- [Microservices Architecture](./examples/microservices.md) - Multi-repo coordination
-- [Brownfield Documentation](./examples/brownfield.md) - Document existing code
+- [Examples Overview](./examples/) - Real-world use cases
+- [Brownfield Projects](./workflows/brownfield) - Document existing code
 
 ### Power Features to Explore Next
 
@@ -213,10 +212,10 @@ You just experienced **spec-driven development**:
 ```bash
 /sw:reflect-on    # Enable automatic learning from corrections
 ```
-Claude will learn your patterns and preferences, getting smarter over time. [Learn more →](./guides/self-improving-skills.md)
+Claude will learn your patterns and preferences, getting smarter over time. [Learn more →](./guides/self-improving-skills)
 
 **Hooks System**
-Customize behavior at every phase — session start, prompt submit, tool calls, and session end. Hooks enable autonomous validation and quality gates. [Learn more →](./guides/hooks.md)
+Customize behavior at every phase — session start, prompt submit, tool calls, and session end. Hooks enable autonomous validation and quality gates. [Learn more →](/docs/glossary/terms/hooks)
 
 ### Join the Community
 

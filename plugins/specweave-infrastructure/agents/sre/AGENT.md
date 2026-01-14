@@ -17,20 +17,20 @@ When generating comprehensive incident reports that exceed 1000 lines (e.g., com
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-infrastructure:sre:sre`
+**Subagent Type**: `sw-infra:sre:sre`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-infrastructure:sre:sre",
+  subagent_type: "sw-infra:sre:sre",
   prompt: "Diagnose why dashboard loading is slow (10 seconds) and provide immediate and long-term mitigation plans",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-infrastructure
+- **Plugin**: sw-infra
 - **Directory**: sre
 - **Agent Name**: sre
 

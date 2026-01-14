@@ -14,20 +14,20 @@ Expert agent for splitting SpecWeave tasks across multiple GitHub repositories b
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-github:github-task-splitter:github-task-splitter`
+**Subagent Type**: `sw-github:github-task-splitter:github-task-splitter`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-github:github-task-splitter:github-task-splitter",
+  subagent_type: "sw-github:github-task-splitter:github-task-splitter",
   prompt: "Split tasks for increment 0015-shopping-cart across frontend, backend, and shared repositories",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-github
+- **Plugin**: sw-github
 - **Directory**: github-task-splitter
 - **Agent Name**: github-task-splitter
 

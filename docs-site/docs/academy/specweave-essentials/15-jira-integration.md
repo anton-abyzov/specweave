@@ -1,5 +1,6 @@
 ---
 sidebar_position: 16
+slug: 15-jira-integration
 title: "Lesson 15: JIRA Integration Guide"
 description: "Complete guide to syncing SpecWeave with JIRA Epics and Stories"
 ---
@@ -759,8 +760,8 @@ specweave init . --reconfigure
 
 ## Glossary Terms Used
 
-- **[JIRA](/docs/glossary/terms/jira)** — Atlassian project tracking tool
-- **[Epic](/docs/glossary/terms/epic)** — Large feature spanning multiple sprints
+- **JIRA** — Atlassian project tracking tool
+- **Epic** — Large feature spanning multiple sprints
 - **[Increment](/docs/glossary/terms/increments)** — A unit of work in SpecWeave
 - **[Split-Source Sync](/docs/glossary/terms/split-source-sync)** — Content out, status in (not true bidirectional)
 

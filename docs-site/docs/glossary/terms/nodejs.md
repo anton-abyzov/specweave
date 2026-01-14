@@ -639,8 +639,8 @@ pm2 restart server
 ## Related Terms
 
 - **Express** - Most popular Node.js web framework
-- **[NestJS](/docs/glossary/terms/nestjs)** - Enterprise Node.js framework (TypeScript)
-- **[NPM](/docs/glossary/terms/npm)** - Node Package Manager
+- **NestJS** - Enterprise Node.js framework (TypeScript)
+- **NPM** - Node Package Manager
 - **[REST](/docs/glossary/terms/rest)** - API style often used with Node.js
 - **[GraphQL](/docs/glossary/terms/graphql)** - Query language often used with Node.js
 - **Backend** - Server-side development

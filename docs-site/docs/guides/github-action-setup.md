@@ -998,4 +998,4 @@ jobs:
 
 **Questions?** Open an issue with label `question` and tag `@claude`
 
-**Need help?** Check [Troubleshooting](#troubleshooting) or [GitHub Actions Logs](../../Actions)
+**Need help?** Check [Troubleshooting](#troubleshooting) or [GitHub Actions Logs](https://github.com/features/actions)

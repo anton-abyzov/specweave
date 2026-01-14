@@ -1,5 +1,6 @@
 ---
 sidebar_position: 10
+slug: 09-troubleshooting
 title: "Lesson 9: Troubleshooting"
 description: "Fix common issues quickly"
 ---

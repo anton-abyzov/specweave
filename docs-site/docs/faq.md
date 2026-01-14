@@ -384,7 +384,7 @@ graph LR
 - ✅ Auto-create GitHub Issues for increments
 - ✅ Auto-sync progress after each task
 - ✅ Auto-close issues when increments complete
-- ✅ See: [GitHub Sync Guide](./guides/github-sync)
+- ✅ See: [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration)
 
 ---
 
@@ -502,7 +502,7 @@ npx playwright test
 import { Kafka } from 'kafkajs';
 ```
 
-See [ADR-0140](/docs/architecture/adr/0140-code-over-mcp) for the full technical decision.
+See the Architecture Decision Records in `.specweave/docs/internal/architecture/adr/` for full technical decisions.
 
 ---
 
@@ -888,7 +888,7 @@ fi
 - Test validation
 - Quality gates
 
-**[Learn more about hooks →](/docs/guides/hooks)**
+**[Learn more about hooks →](/docs/glossary/terms/hooks)**
 
 ---
 
@@ -1012,16 +1012,16 @@ rm -rf .specweave/state/.dedup-cache
 ## Still Have Questions?
 
 **Resources**:
-- **User Guide**: [Getting Started](./guides/getting-started)
-- **GitHub Sync**: [GitHub Integration](./guides/github-sync)
-- **Architecture**: [System Architecture](./architecture/overview)
+- **User Guide**: [Quick Start](/docs/quick-start)
+- **GitHub Sync**: [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration)
+- **Intro**: [Introduction](/docs/intro)
 - **GitHub Issues**: [Ask a Question](https://github.com/anton-abyzov/specweave/issues/new)
 - **Discord**: [Join Community](https://discord.gg/UYg4BGJ65V)
 
 **Common Follow-Ups**:
-- "How do I sync with Jira?" → See [Jira Plugin](./plugins/jira-sync)
-- "Can I use SpecWeave with Cursor?" → See [Tool Support](./guides/tool-support)
-- "What's the increment lifecycle?" → See [Increment Guide](./guides/increment-lifecycle)
+- "How do I sync with Jira?" → See [JIRA Integration](/docs/academy/specweave-essentials/15-jira-integration)
+- "Can I use SpecWeave with Cursor?" → See [Introduction](/docs/intro)
+- "What's the increment lifecycle?" → See [Increment Lifecycle](/docs/academy/specweave-essentials/13-increment-lifecycle)
 - "How do I use auto mode?" → See [Auto Mode Guide](#auto-mode-issues) above
 
 ---

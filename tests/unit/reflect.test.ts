@@ -10,7 +10,9 @@ const CORRECTION_SIGNALS = [
     "Wrong! Always use the Logger class, not console.log.",
     "That's incorrect. The API should return 404, not 500.",
     "Never use inline styles. Always use Tailwind classes.",
-    "The correct way is to use vi.mock(), not jest.mock()."
+    "The correct way is to use vi.mock(), not jest.mock().",
+    // v4.3: Narrative best practices (not just "use X instead Y")
+    "never run e2e tests directly in prod, rather run all locally and make sure e2e tests passing locally, only then consider deploying"
 ];
 
 const APPROVAL_SIGNALS = [
@@ -243,6 +245,72 @@ User: ${CORRECTION_SIGNALS[4]}
                     expect(error.stdout).toContain('testing');
                 }
             }
+        });
+
+        it('should detect narrative best practices without explicit "use X instead Y" pattern', () => {
+            // v4.3: Test for narrative corrections like "never run X directly, rather Y"
+            const transcriptPath = path.join(tempDir, 'transcript.md');
+            fs.writeFileSync(transcriptPath, `
+User: ${CORRECTION_SIGNALS[5]}
+`);
+
+            const configPath = path.join(stateDir, 'reflect-config.json');
+            fs.writeFileSync(configPath, JSON.stringify({ enabled: true }));
+
+            try {
+                const result = execSync(
+                    `bash ${reflectScript} reflect --transcript ${transcriptPath} --dry-run`,
+                    {
+                        cwd: projectRoot,
+                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        encoding: 'utf-8'
+                    }
+                );
+
+                // Should detect this as a correction (testing category)
+                expect(result).toContain('testing');
+                expect(result).toContain('actionable signals');
+            } catch (error: any) {
+                if (error.stdout) {
+                    expect(error.stdout).toContain('testing');
+                }
+            }
+        });
+
+        it('should save narrative best practice to memory file', () => {
+            // v4.3: Verify actual saving of narrative rules (not just detection)
+            const transcriptPath = path.join(tempDir, 'transcript.md');
+            fs.writeFileSync(transcriptPath, `
+User: never run e2e tests directly in prod, rather run all locally first
+`);
+
+            const configPath = path.join(stateDir, 'reflect-config.json');
+            fs.writeFileSync(configPath, JSON.stringify({
+                enabled: true,
+                autoReflect: false,
+                gitCommit: false
+            }));
+
+            try {
+                execSync(
+                    `bash ${reflectScript} reflect --transcript ${transcriptPath}`,
+                    {
+                        cwd: projectRoot,
+                        env: { ...process.env, PROJECT_ROOT: projectRoot },
+                        encoding: 'utf-8'
+                    }
+                );
+            } catch (error) {
+                // May exit with non-zero but still save
+            }
+
+            // Check that the testing memory file was created with the rule
+            const testingMemory = path.join(memoryDir, 'testing.md');
+            expect(fs.existsSync(testingMemory)).toBe(true);
+
+            const content = fs.readFileSync(testingMemory, 'utf-8');
+            expect(content).toContain('e2e');
+            expect(content).toContain('locally');
         });
     });
 
