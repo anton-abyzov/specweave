@@ -382,7 +382,7 @@ Refactor authentication system from session-based to JWT:
 /sw:increment "Migrate auth from sessions to JWT"
 ```
 
-**TDD Strict Mode enabled** (v2.9 feature):
+**TDD Strict Mode enabled**:
 ```json
 {
   "auto": {

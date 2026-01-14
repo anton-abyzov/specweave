@@ -1,11 +1,10 @@
-# v2.0 Quick Start Guide
+# Quick Start Guide
 
 **Updated**: 2025-11-12
-**Version**: 2.0 (Brownfield-First)
 
 ## 🎯 One-Minute Summary
 
-**v2.0 = Brownfield-First + No Duplication**
+**Brownfield-First + No Duplication**
 
 1. **specs/ contains ONLY feature specs (FS-*)**
 2. **Other docs live in their proper folders** (strategy/, architecture/, operations/, delivery/)
@@ -33,9 +32,9 @@
         └── by-project.md
 ```
 
-## 🆚 v1.0 vs v2.0
+## 🆚 Old vs New Approach
 
-| Aspect | v1.0 (Rejected) | v2.0 (Approved) |
+| Aspect | Old Approach (Rejected) | Current Approach (Approved) |
 |--------|----------------|-----------------|
 | **Specs contain** | ❌ NFRs, overviews, user stories | ✅ ONLY references to other docs |
 | **Folder names** | Domain-based (core-framework) | Project-based (BE from JIRA) |
@@ -44,7 +43,7 @@
 
 ## 📚 Complete Documentation
 
-1. **[REVISED-ORGANIZATION-STRATEGY.md](./REVISED-ORGANIZATION-STRATEGY.md)** - Full v2.0 architecture
+1. **[REVISED-ORGANIZATION-STRATEGY.md](./REVISED-ORGANIZATION-STRATEGY.md)** - Full architecture
 2. **[V2-BROWNFIELD-FIRST.md](./V2-BROWNFIELD-FIRST.md)** - Visual comparison
 3. **[COMPLETE-ARCHITECTURE.md](./COMPLETE-ARCHITECTURE.md)** - Full example
 4. **[FINAL-DECISION.md](./FINAL-DECISION.md)** - Implementation plan

@@ -1647,5 +1647,4 @@ It will guide you through the entire cycle.
 
 ---
 
-*Course Version 1.0 | November 2025*
 *Built with SpecWeave*

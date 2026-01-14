@@ -8,8 +8,8 @@ description: Learn once, never repeat. Enable Claude to learn from corrections a
 
 **Correct once, never again.** The Reflect system enables Claude to learn from your corrections and patterns, persisting knowledge across sessions.
 
-:::tip NEW in v1.0.93
-Self-improving skills are now available! Enable `/sw:reflect-on` to start building AI memory that compounds over time.
+:::tip Self-Improving AI
+Enable `/sw:reflect-on` to start building AI memory that compounds over time.
 :::
 
 ---

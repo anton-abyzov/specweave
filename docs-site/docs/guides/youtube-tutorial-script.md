@@ -96,11 +96,35 @@ draft: true
 
 ## SECTION 1: WHAT IS SPECWEAVE (2:30 - 4:30)
 
-**[SCREEN: Navigate to docs/intro.md - Homepage]**
+**[SCREEN: Navigate to spec-weave.com homepage]**
 
-> "SpecWeave is the AI development framework that doesn't lose your work."
+> "SpecWeave is the spec-driven AI framework. That's the key word — spec-driven. Not vibe-driven. Not chat-driven. Spec-driven."
 
-**[SCROLL to the main mermaid flowchart]**
+**[EXCALIDRAW: 3 Commands to Ship]**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 3 COMMANDS TO SHIP                           │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   1. /sw:increment "Add OAuth"                              │
+│      → Creates spec.md + plan.md + tasks.md                 │
+│                                                              │
+│   2. /sw:auto                                               │
+│      → Autonomous execution for HOURS                       │
+│                                                              │
+│   3. /sw:done 0001                                          │
+│      → Quality gates: tasks ✓ tests 60%+ ✓ docs ✓          │
+│                                                              │
+│   Every feature = permanent documentation.                   │
+│   Searchable. Traceable. Always in sync.                    │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> "Three commands. That's all it takes. Define what you want, let AI build it, validate and ship. Every feature becomes permanent documentation — searchable, traceable, always in sync."
+
+**[SCREEN: Navigate to docs/intro.md - scroll to workflow diagram]**
 
 ```
 Your Idea → Spec ✓ → Plan ✓ → Tasks ✓ → Code → Living Docs
@@ -110,13 +134,23 @@ Your Idea → Spec ✓ → Plan ✓ → Tasks ✓ → Code → Living Docs
 
 **[SCROLL to "What You Get" comparison table]**
 
-> "Before SpecWeave: specs in chat, manual JIRA updates, tests maybe later, architecture in your head, onboarding takes two weeks.
+> "Before SpecWeave: specs in chat, manual JIRA updates, tests maybe later, architecture in your head, onboarding takes forever.
 >
-> After SpecWeave: permanent searchable specs, auto-sync on every task, tests embedded in tasks, ADRs captured automatically, onboarding in one day."
+> After SpecWeave: permanent searchable specs, auto-sync on every task, tests embedded in tasks with 60% coverage enforced, ADRs captured automatically, onboarding becomes trivial."
+
+**[Point to key positioning]**
+
+> "And here's the positioning that matters: Legacy. Startup. Enterprise.
+>
+> Drop it into a **10-year-old codebase** — it understands everything.
+> Use it on your **weekend MVP** — specs write themselves.
+> Scale it to **50 teams** — JIRA, GitHub, Azure DevOps sync automatically.
+>
+> **100% free and open source.** Not freemium. Not 'free tier with limits.' Fully open source, MIT license, forever."
 
 **[SCROLL to DORA badges]**
 
-> "And these aren't marketing numbers. SpecWeave builds SpecWeave. 100 deploys per month. Zero failures across 65 releases. We'll come back to this."
+> "And these aren't marketing numbers. SpecWeave builds SpecWeave. 100+ deploys per month. Zero failures across 65+ releases. We'll come back to this."
 
 ---
 
@@ -128,24 +162,88 @@ Your Idea → Spec ✓ → Plan ✓ → Tasks ✓ → Code → Living Docs
 
 **[Point to the plugin architecture]**
 
-> "Claude Code has four key concepts that make SpecWeave possible:"
+> "Claude Code has a plugin-based architecture with five core components. Let me show you how they relate — this is based on the official Claude Agent SDK documentation."
 
-**[EXCALIDRAW: Four pillars diagram]**
+**[EXCALIDRAW: Claude Code Architecture Overview]**
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│              CLAUDE CODE ARCHITECTURE                    │
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│  🔌 PLUGINS        📦 MARKETPLACE      🤖 AGENTS        │
-│  Extend behavior   Install packages    Complex tasks    │
-│  136 in SpecWeave  1-command install   68 specialists   │
-│                                                          │
-│  ⚡ SKILLS         🪝 HOOKS                              │
-│  Auto-activate     Event-driven        CLI > MCP        │
-│  90%+ accuracy     65 in SpecWeave     Direct execution │
-│                                                          │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                    CLAUDE CODE ARCHITECTURE                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│                         📦 PLUGINS                                   │
+│                    (Extension Packages)                              │
+│                           │                                          │
+│          ┌────────────────┼────────────────┐                         │
+│          │                │                │                         │
+│          ▼                ▼                ▼                         │
+│    ⚡ SKILLS        🤖 AGENTS       📝 COMMANDS                      │
+│   Auto-activate     Spawn for         User invokes                   │
+│   on keywords       isolated tasks    with /slash                    │
+│          │                │                │                         │
+│          └────────────────┼────────────────┘                         │
+│                           │                                          │
+│                     🪝 HOOKS                                         │
+│                Fire on events                                        │
+│          (task done, session end)                                    │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+> "Here's the key insight: **Plugins are containers**. They bundle related functionality together. Skills, agents, commands, and hooks all live inside plugins."
+
+**[EXCALIDRAW: Component Relationship Flow]**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                   HOW COMPONENTS RELATE                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   User: "Review code for security"                                   │
+│              │                                                       │
+│              ▼                                                       │
+│   ┌────────────────────────┐                                        │
+│   │  SKILL auto-activates  │ ← Keywords trigger activation          │
+│   │  (security expertise)  │                                        │
+│   └────────────────────────┘                                        │
+│              │                                                       │
+│     Complex task needed?                                             │
+│              │                                                       │
+│              ▼                                                       │
+│   ┌────────────────────────┐                                        │
+│   │  AGENT spawns          │ ← Task tool creates subprocess         │
+│   │  (isolated context)    │                                        │
+│   └────────────────────────┘                                        │
+│              │                                                       │
+│              ▼                                                       │
+│   ┌────────────────────────┐                                        │
+│   │  HOOK fires            │ ← Events trigger automation            │
+│   │  (PostToolUse)         │                                        │
+│   └────────────────────────┘                                        │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+> "See the flow? **Skills** provide expertise inline in your conversation. When you need isolated execution, skills can spawn **Agents**. **Hooks** fire automatically on events. **Commands** are your explicit controls."
+
+**[EXCALIDRAW: What You Get After specweave init]**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│         WHAT YOU GET AFTER: specweave init .                         │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ⚡ 136 SKILLS      🤖 68 AGENTS       📝 53 COMMANDS               │
+│  Auto-activating    PM, Architect,     Slash commands               │
+│  on keywords        DevOps, QA,        for workflow                 │
+│  (in conversation)  Security, SRE      control                      │
+│                     (isolated tasks)                                 │
+│                                                                      │
+│  📦 24 PLUGINS      🪝 65+ HOOKS       📄 CLAUDE.md                 │
+│  Domain-specific    Event-driven       Your project                 │
+│  packages           automation         reference                    │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
 ### 1. Plugins - Extending Claude Code
@@ -171,7 +269,7 @@ ls .claude/plugins/
 
 **[SCREEN: Show skill activation example]**
 
-> "Skills are the magic. You describe what you need, and the right skill activates automatically."
+> "Skills are the magic. They're SKILL.md files that Claude automatically loads when your keywords match the skill's description."
 
 ```
 User: "Review this code for security issues"
@@ -184,19 +282,64 @@ User: "Write API documentation"
 → sw:docs-writer skill activates (OpenAPI, markdown, examples)
 ```
 
-> "136 skills across all SpecWeave plugins. Over 90% routing accuracy. You don't call skills — they detect when they're needed and activate.
+> "136 skills across all SpecWeave plugins. You don't call skills — Claude matches your request against skill descriptions and activates the relevant ones.
 >
-> Each skill is a markdown file with context, patterns, and triggers. Claude reads it, understands the domain, provides expert guidance."
+> Key insight: Skills run **in your conversation**. They provide expertise inline. Since Claude Code v2.1.0, skills hot-reload — update a skill file, it's available immediately without restarting."
+
+**[EXCALIDRAW: Skill Anatomy]**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                      SKILL ANATOMY (SKILL.md)                        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   ---                                                                │
+│   description: Security expert for code review                       │
+│   triggers: security, OWASP, vulnerability, auth                     │
+│   allowed-tools: Read, Grep, Glob                                    │
+│   ---                                                                │
+│                                                                      │
+│   # Security Review Skill                                            │
+│                                                                      │
+│   When reviewing code for security issues:                           │
+│   1. Check for OWASP Top 10 vulnerabilities                         │
+│   2. Review authentication and authorization                         │
+│   ...                                                                │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
 ### 3. Agents - Specialized Task Execution
 
 **[Point to the difference]**
 
-> "Skills guide. Agents execute. Big difference.
+> "Skills guide. Agents execute. This is the critical distinction.
 >
-> **Skills** — You're in a conversation, a skill activates, provides expertise inline
+> **Skills** — Run in your conversation, provide expertise inline, no isolation
 >
-> **Agents** — You spawn a subprocess that works independently with specialized tools"
+> **Agents** — Spawn as separate processes, work in isolated context, return results"
+
+**[EXCALIDRAW: Skills vs Agents]**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                     SKILLS vs AGENTS                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  SKILL                              AGENT                           │
+│  ──────                             ─────                           │
+│  • Auto-activates                   • Explicitly spawned            │
+│  • Main conversation                • Isolated context              │
+│  • Provides guidance                • Executes tasks                │
+│  • Lightweight                      • Can run in parallel           │
+│                                                                      │
+│  Example:                           Example:                        │
+│  "How do I optimize SQL?"           "Analyze all 50 files           │
+│  → SQL skill guides you              and write a report"            │
+│                                     → Agent works isolated          │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
 **[TERMINAL: Show agent spawn example]**
 
@@ -215,7 +358,7 @@ Task({
 > - `sw-mobile:mobile-architect` → React Native, Expo, native iOS/Android
 > - `sw-testing:qa-engineer` → Playwright, Vitest, comprehensive testing
 >
-> Agents have their own context, their own tool access. They work in isolation, return results when done."
+> **Why agents?** Context isolation — complex tasks don't pollute your main conversation. Tool restrictions — read-only agents can't modify files. Parallelization — multiple agents can run concurrently."
 
 ### 4. Marketplace - One-Command Installation
 
@@ -313,9 +456,43 @@ ls .claude/hooks/
 
 > "Okay — plugins, skills, agents, marketplace, hooks, CLI over MCP. That's the Claude Code foundation.
 >
-> SpecWeave leverages all of this. Every increment you create uses skills for guidance, agents for complex tasks, hooks for automation, and CLIs for external integrations.
->
-> Now let's see how SpecWeave's philosophy builds on top of this foundation."
+> SpecWeave leverages all of this. Every increment you create uses skills for guidance, agents for complex tasks, hooks for automation, and CLIs for external integrations."
+
+### 7. Recent Claude Code Optimizations (2025-2026)
+
+**[EXCALIDRAW: Recent Optimizations]**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                CLAUDE CODE RECENT OPTIMIZATIONS                      │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  v2.1.6 (Jan 2026)                                                  │
+│  • Automatic skill discovery from nested directories                 │
+│  • Date range filtering in /stats                                   │
+│                                                                      │
+│  v2.1.3 (Jan 2026)                                                  │
+│  • Skills and commands merged (simpler mental model)                │
+│  • Release channel toggle (stable/latest)                           │
+│                                                                      │
+│  v2.1.0 (Dec 2025)                                                  │
+│  • Skill hot-reload (instant updates without restart)               │
+│  • context: fork for isolated skill execution                       │
+│                                                                      │
+│  v2.0.72 (Dec 2025)                                                 │
+│  • 3x faster @ mention file suggestions                             │
+│  • Chrome browser control (Beta)                                    │
+│                                                                      │
+│  v2.0.64 (Dec 2025)                                                 │
+│  • Instant auto-compacting                                          │
+│  • Named sessions (/rename, /resume)                                │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+> "The Claude Code team ships updates weekly. These optimizations directly benefit SpecWeave users — skill hot-reload means you can customize skills without restarting, context fork means skills can run isolated when needed, faster file suggestions make @-mentions instant."
+
+> "Now let's see how SpecWeave's philosophy builds on top of this foundation."
 
 ---
 
@@ -349,7 +526,55 @@ ls .claude/hooks/
 
 ---
 
-## SECTION 3: THE THREE-FILE STRUCTURE (10:30 - 13:30)
+## SECTION 2.5: WHY NOT BMAD OR SPECKIT? (10:30 - 12:00)
+
+**[SCREEN: Show comparison table]**
+
+> "Now you might be wondering — why SpecWeave? There are other frameworks out there. BMAD, SpecKit, Cursor Rules. Great tools. I used them before building this."
+
+**[EXCALIDRAW: Comparison diagram]**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│           WHY SPECWEAVE vs ALTERNATIVES?                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  📂 PERMANENT, NOT EPHEMERAL                                │
+│  Other tools → chat history. SpecWeave → permanent files.   │
+│  spec.md + plan.md + tasks.md. Searchable forever.          │
+│                                                              │
+│  🔄 FULL LIFECYCLE, NOT SNAPSHOTS                           │
+│  BMAD/SpecKit = single-use generation.                      │
+│  SpecWeave = 140+ increments with pause, resume, abandon,   │
+│  reopen, quality gates, and multi-hour autonomous execution.│
+│                                                              │
+│  🔗 EXTERNAL SYNC BUILT-IN                                  │
+│  Bidirectional sync with GitHub, JIRA, Azure DevOps.        │
+│  Other tools require manual updates or custom integrations. │
+│                                                              │
+│  🏢 BROWNFIELD-READY                                        │
+│  10-year legacy codebase? SpecWeave analyzes it, detects    │
+│  doc gaps, imports from Notion/Confluence.                  │
+│  Others assume greenfield only.                             │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> "Four key differences:
+>
+> **First**: Other tools generate into chat history. SpecWeave creates permanent files — spec.md, plan.md, tasks.md. Searchable forever.
+>
+> **Second**: BMAD and SpecKit are single-use. Generate once, done. SpecWeave manages full lifecycle — 140+ increments with pause, resume, abandon, reopen, quality gates, and hours of autonomous execution.
+>
+> **Third**: External sync is built in. Push to GitHub Issues, JIRA, Azure DevOps. Pull status back. Bidirectional. Other tools require manual updates.
+>
+> **Fourth**: Brownfield-ready. Have a 10-year legacy codebase? SpecWeave analyzes it, detects documentation gaps, imports from Notion or Confluence. Other tools assume you're starting fresh.
+>
+> Here's the math: SpecKit output equals ONE SpecWeave increment. SpecWeave equals N increments plus lifecycle plus sync plus hooks plus hours of autonomous execution."
+
+---
+
+## SECTION 3: THE THREE-FILE STRUCTURE (12:00 - 14:30)
 
 **[SCREEN: Navigate to docs/guides/lessons/02-three-file-structure]**
 
@@ -414,7 +639,7 @@ ls .claude/hooks/
 
 **[SCROLL to "Increment Sizing"]**
 
-> "Golden rule: 5-15 tasks, 1-3 user stories, completable in 1-3 days. Small increments = faster feedback, better AI accuracy, achievable goals."
+> "Golden rule: 5-15 tasks, 1-3 user stories. Small increments = faster feedback, better AI accuracy, achievable goals."
 
 **[SCROLL to lifecycle state diagram]**
 
@@ -426,27 +651,39 @@ ls .claude/hooks/
 
 **[SCREEN: Navigate to docs/guides/getting-started/quickstart]**
 
-> "Let's get you running. Three commands."
+> "Let's get you running. The simplest path is a new project."
 
-**[TERMINAL: Show installation]**
+**[TERMINAL: Show greenfield installation]**
 
 ```bash
 npm install -g specweave
-cd your-project
+mkdir my-app && cd my-app
 specweave init .
 ```
 
 **[Show init wizard running]**
 
-> "The init wizard detects your project type, tech stack, existing documentation. It works with greenfield AND brownfield projects."
+> "The init wizard sets up your project structure. It works with greenfield AND brownfield projects."
 
-**[SCREEN: Back to quickstart, scroll to "What You Get"]**
+**[TERMINAL: Natural language approach]**
 
-> "After init, you get 136 auto-activating skills, 68 specialized agents, 53 slash commands, event-driven hooks, and your own CLAUDE.md project reference."
+> "For a brand new project, just describe what you want:"
 
-**[TERMINAL: Create first increment]**
+```
+"Build a calculator app with React"
+```
+
+> "SpecWeave guides you through features, tech stack, and approach — then creates your first increment automatically. Perfect for prototypes and weekend MVPs."
+
+**[SCREEN: Back to quickstart, scroll to "Adding Features"]**
+
+> "For existing projects, use explicit commands:"
+
+**[TERMINAL: Explicit command approach]**
 
 ```bash
+cd your-project
+specweave init .
 /sw:increment "Add dark mode toggle"
 ```
 
@@ -456,10 +693,12 @@ specweave init .
 
 > "Three files created — spec.md, plan.md, tasks.md. Each with proper structure, user stories, acceptance criteria, architecture decisions, implementation tasks with embedded tests."
 
+> "After init, you get **136 auto-activating skills**, **68 specialized agents** (PM, Architect, DevOps, QA, Security, SRE), **53 slash commands** for workflow control, event-driven hooks for automation, and your own CLAUDE.md project reference."
+
 **[TERMINAL: Execute and close]**
 
 ```bash
-/sw:do        # Autonomous execution
+/sw:auto      # Autonomous execution for hours
 /sw:done 0001 # Close with quality gates
 ```
 
@@ -957,7 +1196,7 @@ wrangler deploy
 
 **[Point to the label visibility feature]**
 
-> "Version 2.9 introduced something we call 'box art' — visual labels that show you exactly what's happening at every moment."
+> "SpecWeave has something we call 'box art' — visual labels that show you exactly what's happening at every moment."
 
 **[TERMINAL: Show example box art output]**
 
@@ -1559,20 +1798,32 @@ npm install -g specweave
 
 > "Step one: install. Global npm package, works on Mac, Linux, Windows."
 
+**[TERMINAL: Show greenfield start]**
+
 ```bash
-cd your-project
+mkdir my-app && cd my-app
 specweave init .
 ```
 
-> "Step two: initialize. The wizard guides you through configuration. Works with new or existing projects."
+> "Step two: initialize. For a new project, just create a folder and init."
+
+```
+"Build a simple todo app with React"
+```
+
+> "Step three: describe what you want naturally. SpecWeave creates the increment for you. Perfect for getting started."
+
+**[TERMINAL: Show explicit command for existing projects]**
+
+> "For existing projects, use explicit commands:"
 
 ```bash
 /sw:increment "Add user login"
-/sw:do
+/sw:auto
 /sw:done 0001
 ```
 
-> "Step three: build something. Pick a small feature — user login, dark mode toggle, a simple API endpoint. Complete one increment. Feel the workflow."
+> "Pick a small feature — user login, dark mode toggle, a simple API endpoint. Complete one increment. Feel the workflow."
 
 **[Point to first project recommendations]**
 
@@ -1613,13 +1864,21 @@ specweave init .
 ┌─────────────────────────────────────────────────────────┐
 │                                                          │
 │                    SpecWeave                             │
-│           Stop Losing Your AI Work                       │
+│     Finally. A Spec-Driven AI Framework.                │
+│     Legacy. Startup. Enterprise.                        │
+│                                                          │
+│     100% FREE & OPEN SOURCE                             │
 │                                                          │
 │    ┌────────────────────────────────────────────┐       │
-│    │  npm install -g specweave                  │       │
-│    │  specweave init .                          │       │
-│    │  /sw:increment "Your first feature"        │       │
+│    │  3 COMMANDS TO SHIP:                       │       │
+│    │                                            │       │
+│    │  /sw:increment "Add OAuth"                │       │
+│    │  /sw:auto                                  │       │
+│    │  /sw:done 0001                            │       │
 │    └────────────────────────────────────────────┘       │
+│                                                          │
+│    140+ self-built features | 0% change failure rate    │
+│    136 skills | 68 agents | 53 commands                 │
 │                                                          │
 │    📖 spec-weave.com                                     │
 │    💬 discord.gg/UYg4BGJ65V                              │
@@ -1628,15 +1887,19 @@ specweave init .
 └─────────────────────────────────────────────────────────┘
 ```
 
-> "Every AI conversation you have is knowledge. Every decision, every correction, every architectural choice.
+> "Remember: Legacy. Startup. Enterprise. SpecWeave works for all of them.
 >
-> Without a system, that knowledge disappears. With SpecWeave, it becomes permanent.
+> Three commands to ship. 140+ features built with full traceability. Zero change failures.
+>
+> Every AI conversation you have is knowledge. Every decision, every correction, every architectural choice. Without a system, that knowledge disappears. With SpecWeave, it becomes permanent.
 >
 > Stop vibe coding. Start spec-driven development.
 >
+> **100% free. 100% open source. Forever.**
+>
 > Install SpecWeave today. Build your first increment. See the difference.
 >
-> I'm Anton Abyzov. Thanks for watching. See you in the Discord."
+> I'm Anton Abyzov. Thanks for watching. Star the repo, join the Discord, and let me know what you build."
 
 ---
 
@@ -1894,13 +2157,17 @@ specweave init .
 ### Terminal Commands to Demo
 
 ```bash
-# Installation
+# New Project (Greenfield)
 npm install -g specweave
+mkdir my-app && cd my-app
 specweave init .
+# Then describe: "Build a calculator app with React"
 
-# Core workflow
+# Existing Project
+cd your-project
+specweave init .
 /sw:increment "Add dark mode toggle"
-/sw:do
+/sw:auto                               # Or /sw:do for step-by-step
 /sw:done 0001
 /sw:next
 
@@ -1948,57 +2215,66 @@ cat .specweave/increments/0089-github-sync/spec.md  # View increment
 ```
 0:00 - The Vibe Coding Problem
 1:30 - Quick Preview: 5 Production Apps Built in a Month (100x faster)
-2:30 - What is SpecWeave?
-4:30 - THE CLAUDE CODE FOUNDATION (Plugins, Skills, Agents, Marketplace, Hooks, CLI vs MCP)
+2:30 - What is SpecWeave? (3 Commands to Ship, Legacy/Startup/Enterprise)
+4:30 - THE CLAUDE CODE FOUNDATION (136 Skills, 68 Agents, 53 Commands, 24 Plugins)
 8:00 - Core Philosophy (8 Principles)
-10:30 - The Three-File Structure (spec.md, plan.md, tasks.md)
-13:30 - What is an Increment?
-16:00 - Installation & Your First Feature
-19:30 - Living Docs for AI Context (Progressive Disclosure)
-21:00 - The Complete Workflow
-23:00 - External Tool Sync (GitHub, JIRA, ADO)
-25:00 - Working with Existing Codebases (Brownfield)
-27:00 - Quality Gates & TDD
-29:00 - The Learning Path (16 Lessons)
-31:00 - Dogfooding: Real Metrics (186K LOC, 0% failures, AI automation era)
-33:30 - Self-Improving Skills (Reflect)
-35:30 - Deployment Platforms (Vercel vs Cloudflare)
-38:30 - Autonomous Mode Deep Dive (/sw:auto)
-43:30 - Multi-Repo Coordination
-47:30 - External Sync Deep Dive (GitHub, JIRA)
-50:30 - Real Mobile App Example (React Native + Expo)
-55:30 - Self-Dogfooding & DORA Metrics
-58:30 - Advanced Features (Hooks, Skills, Reflect)
-61:30 - Getting Started & Next Steps
-63:30 - REAL-WORLD SHOWCASE: Apps Built with SpecWeave
-64:00 - SkillUp: Football Coaching Monetization Platform
-66:00 - EduFeed: Collaborative AI Learning Platform
-67:30 - WC26: World Cup 2026 AI Travel Assistant
-69:00 - Lulla: AI Baby Calming App (Swift + ML)
-70:00 - EasyChamp: Enterprise Sports League Platform (20+ Microservices)
+10:30 - Why Not BMAD or SpecKit? (4 Key Differences)
+12:00 - The Three-File Structure (spec.md, plan.md, tasks.md)
+14:30 - What is an Increment?
+17:00 - Installation & Your First Feature
+20:30 - Living Docs for AI Context (Progressive Disclosure)
+22:00 - The Complete Workflow
+24:00 - External Tool Sync (GitHub, JIRA, ADO)
+26:00 - Working with Existing Codebases (Brownfield)
+28:00 - Quality Gates & TDD (60%+ Test Coverage)
+30:00 - The Learning Path (16 Lessons)
+32:00 - Dogfooding: Real Metrics (186K LOC, 0% failures, AI automation era)
+34:30 - Self-Improving Skills (Reflect)
+36:30 - Deployment Platforms (Vercel vs Cloudflare)
+39:30 - Autonomous Mode Deep Dive (/sw:auto)
+44:30 - Multi-Repo Coordination
+48:30 - External Sync Deep Dive (GitHub, JIRA)
+51:30 - Real Mobile App Example (React Native + Expo)
+56:30 - Self-Dogfooding & DORA Metrics
+59:30 - Advanced Features (Hooks, Skills, Reflect)
+62:30 - Getting Started & Next Steps
+64:30 - REAL-WORLD SHOWCASE: Apps Built with SpecWeave
+65:00 - SkillUp: Football Coaching Monetization Platform
+67:00 - EduFeed: Collaborative AI Learning Platform
+68:30 - WC26: World Cup 2026 AI Travel Assistant
+70:00 - Lulla: AI Baby Calming App (Swift + ML)
+71:00 - EasyChamp: Enterprise Sports League Platform (20+ Microservices)
 ```
 
 ### YouTube Description Template
 
 ```
-SpecWeave: The AI Development Framework That Doesn't Lose Your Work
+SpecWeave: Finally. A Spec-Driven AI Framework. | 100% Free & Open Source
+
+Legacy. Startup. Enterprise. — Drop it into a 10-year-old codebase, use it on your weekend MVP, or scale it to 50 teams. 3 commands to ship. 140+ self-built features. 0% change failure rate.
 
 In this 71-minute comprehensive tutorial, I walk through the complete spec-weave.com
 documentation, showing you how to go from "vibe coding" to spec-driven development.
 Includes deep dive into Claude Code's architecture (plugins, skills, agents, marketplace)
 and a detailed showcase of 5 production apps built in ONE MONTH — 100x faster than before.
 
+🎯 THE 3-COMMAND WORKFLOW:
+/sw:increment "Add OAuth" → Creates spec.md + plan.md + tasks.md
+/sw:auto → Autonomous execution for HOURS
+/sw:done 0001 → Quality gates: tasks ✓ tests 60%+ ✓ docs ✓
+
 What you'll learn:
 - Why AI coding tools fail (the vibe coding problem)
-- **Claude Code Foundation** - Plugins, Skills, Agents, Marketplace, Hooks
+- **Why Not BMAD or SpecKit?** - Full lifecycle vs single-use generation
+- **Claude Code Foundation** - 136 Skills, 68 Agents, 53 Commands, 24 Plugins
 - **CLI vs MCP** - Why direct CLI usage often beats MCP servers
 - The three-file structure: spec.md, plan.md, tasks.md
 - What increments are and how they preserve context
 - Live demo: building your first feature
 - Living docs as AI context (progressive disclosure, not RAG)
-- External tool sync (GitHub, JIRA, Azure DevOps)
-- Working with existing codebases (brownfield)
-- Quality gates and TDD workflow
+- External tool sync (GitHub, JIRA, Azure DevOps) - bidirectional
+- Working with existing codebases (brownfield) - even 10-year legacy
+- Quality gates and TDD workflow (60%+ test coverage enforced)
 - Autonomous mode (/sw:auto) with visual status labels
 - Multi-repo coordination for complex projects
 - Building mobile apps with React Native + Expo
