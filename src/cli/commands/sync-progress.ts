@@ -66,9 +66,9 @@ export async function syncProgress(args: string[], options: { logger?: Logger } 
   logger.log('');
 
   // Step 1: Detect active increment
-  let incrementId = parsedArgs.incrementId;
+  let incrementId: string | undefined = parsedArgs.incrementId;
   if (!incrementId) {
-    incrementId = await detectActiveIncrement(projectRoot, logger);
+    incrementId = await detectActiveIncrement(projectRoot, logger) ?? undefined;
   }
 
   if (!incrementId) {

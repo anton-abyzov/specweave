@@ -400,7 +400,7 @@ export class EnhancedSpecLoader {
 
     // Look for JIRA links
     const jiraMatch = content.match(/([A-Z]+-\d+)/);
-    if (jiraMatch && content.includes('atlassian.net') || content.includes('jira')) {
+    if (jiraMatch && (content.includes('atlassian.net') || content.includes('jira'))) {
       return {
         provider: 'jira',
         id: jiraMatch[1],

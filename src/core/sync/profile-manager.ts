@@ -39,7 +39,7 @@ export class ProfileManager {
       const content = await fs.readFile(this.configPath, 'utf-8');
       const fullConfig = JSON.parse(content);
 
-      this.config = fullConfig.sync || {
+      const config: SyncConfiguration = fullConfig.sync || {
         profiles: {},
         settings: {
           autoDetectProject: true,
@@ -47,8 +47,9 @@ export class ProfileManager {
           rateLimitProtection: true,
         },
       };
+      this.config = config;
 
-      return this.config;
+      return config;
     } catch (error: any) {
       if (error.code === 'ENOENT') {
         // Config doesn't exist yet - return empty

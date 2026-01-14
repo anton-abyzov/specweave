@@ -57,7 +57,7 @@ interface SpecWeaveConfig {
  */
 export class GitHubProfileManager {
   private configPath: string;
-  private config: SpecWeaveConfig;
+  private config!: SpecWeaveConfig; // Definite assignment - loadConfig() always assigns
 
   constructor(projectPath: string) {
     this.configPath = path.join(projectPath, '.specweave', 'config.json');

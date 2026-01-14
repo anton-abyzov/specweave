@@ -386,7 +386,7 @@ async function handleLogs(projectPath: string, jobId: string): Promise<void> {
  */
 async function handleFollow(projectPath: string, jobId: string): Promise<void> {
   const jobManager = getJobManager(projectPath);
-  let job = jobManager.getJob(jobId) || findJobByPrefix(jobManager.getJobs(), jobId);
+  let job: BackgroundJob | null = jobManager.getJob(jobId) ?? findJobByPrefix(jobManager.getJobs(), jobId) ?? null;
 
   if (!job) {
     console.log(chalk.red(`Job not found: ${jobId}`));

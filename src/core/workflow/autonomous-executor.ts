@@ -146,7 +146,7 @@ export class AutonomousExecutor {
         // Safety checks
         const safetyCheck = this.checkSafety(state);
         if (!safetyCheck.safe) {
-          return this.terminateExecution(state, safetyCheck.reason, false);
+          return this.terminateExecution(state, safetyCheck.reason ?? 'Safety check failed', false);
         }
 
         // Execute next step

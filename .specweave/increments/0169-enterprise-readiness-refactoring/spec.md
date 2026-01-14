@@ -36,9 +36,9 @@ Comprehensive refactoring to make SpecWeave enterprise-ready with improved type 
 **As a** SpecWeave developer, I want **strictNullChecks enabled** and **large files split** so that we have better type safety and maintainable code.
 
 **Acceptance Criteria**:
-- [ ] **AC-US1-01**: Fix 3 failing discipline-checker tests
-- [ ] **AC-US1-02**: Enable strictNullChecks in tsconfig.json
-- [ ] **AC-US1-03**: Fix all ~200-300 strictNullChecks type errors
+- [x] **AC-US1-01**: Fix 3 failing discipline-checker tests
+- [x] **AC-US1-02**: Enable strictNullChecks in tsconfig.json
+- [x] **AC-US1-03**: Fix all ~200-300 strictNullChecks type errors (actual: 49 errors fixed)
 - [ ] **AC-US1-04**: Split sync-coordinator.ts (2,020 LOC) into StatusMapper, ProviderRouter, SyncOrchestrator
 - [ ] **AC-US1-05**: Split living-docs-sync.ts (1,972 LOC) into ContentGenerator, HierarchyBuilder, CrossLinker
 - [ ] **AC-US1-06**: Split e2e-coverage.ts (1,759 LOC) into CoverageAnalyzer, PathTracker, ReportGenerator

@@ -238,7 +238,7 @@ export class MarkdownGenerator {
       isOrphanGroup
     );
 
-    const includeExternalMetadata = isAdoFeatureLevelItem || isOrphanGroup;
+    const includeExternalMetadata = Boolean(isAdoFeatureLevelItem || isOrphanGroup);
     const hasParentEpic = parentEpicId !== undefined;
 
     return this.buildFeatureMarkdown({
