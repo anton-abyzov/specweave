@@ -236,6 +236,33 @@ Three gates before any increment closes:
 - Skills auto-activate on keywords
 - Context optimizer removes irrelevant specs
 
+### Claude Code 2.1.x Optimizations
+
+SpecWeave leverages the latest Claude Code features for maximum performance:
+
+| Feature | Benefit |
+|---------|---------|
+| **`context: fork`** | Heavy skills (PM, Architect) run in isolated sub-agents |
+| **`model: opus`** | Critical decisions use Opus for highest quality |
+| **Skill-scoped hooks** | ~50% fewer hook invocations (fire only when skill active) |
+| **Agent-type init** | Agent-specific startup context and messages |
+
+```yaml
+# Example: SpecWeave skills use modern frontmatter
+---
+name: pm
+description: Product Manager expertise...
+context: fork       # Isolated execution
+model: opus         # Quality guarantee
+hooks:              # Skill-scoped hooks
+  PostToolUse:
+    - matcher: Edit
+      hooks:
+        - type: command
+          command: bash hooks/v2/guards/task-ac-sync-guard.sh
+---
+```
+
 ---
 
 ## Commands

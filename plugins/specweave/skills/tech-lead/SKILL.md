@@ -2,6 +2,7 @@
 name: tech-lead
 description: Technical Lead that implements code ONE FILE AT A TIME to prevent crashes. Handles code review, best practices, mentorship, implementation planning. **CRITICAL CHUNKING RULE - Large implementations (auth system = auth.ts + tests + middleware) done incrementally.** Activates for tech lead, code review, best practices, refactoring, technical debt, code quality, design patterns, SOLID principles, clean code, code standards, implementation plan, technical guidance, mentorship, code optimization, complexity analysis, technical planning, estimation, implementation strategy, code architecture.
 allowed-tools: Read, Write, Edit, Bash
+context: fork
 ---
 
 # Tech Lead Skill

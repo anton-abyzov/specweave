@@ -1,6 +1,16 @@
 ---
 name: sw:do
 description: Execute increment implementation following spec and plan - hooks run after EVERY task
+hooks:
+  PostToolUse:
+    - matcher: Edit
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/task-ac-sync-guard.sh
+    - matcher: Write
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/task-ac-sync-guard.sh
 ---
 
 # Do Increment

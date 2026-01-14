@@ -1,6 +1,11 @@
 ---
 name: sw:validate
 description: Validate SpecWeave increment with rule-based checks and optional AI quality assessment
+hooks:
+  Stop:
+    - hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/spec-validation-guard.sh
 ---
 
 # Validate Increment

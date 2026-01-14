@@ -1,6 +1,11 @@
 ---
 name: sw:done
 description: Close increment with PM validation - checks tasks, tests, and docs before closing
+hooks:
+  Stop:
+    - hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/completion-guard.sh
 ---
 
 # Close Increment (PM Validated)

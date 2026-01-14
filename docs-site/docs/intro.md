@@ -223,6 +223,19 @@ Run `/sw:auto` and watch **real-time labels** show progress, test results, and s
 - **Auto-Sync** — Push specs to GitHub/JIRA/ADO, read status back automatically
 - **3-Gate Quality Validation** — Tasks, tests (60%+), and docs verified before closing
 
+### ⚡ Claude Code 2.1.x Optimizations
+
+SpecWeave leverages the latest Claude Code features for maximum performance:
+
+| Feature | Benefit |
+|---------|---------|
+| **`context: fork`** | Heavy skills (PM, Architect) run in isolated sub-agents |
+| **`model: opus`** | Critical decisions use Opus for highest quality |
+| **Skill-scoped hooks** | ~50% fewer hook invocations (fire only when skill active) |
+| **Agent-type init** | Agent-specific startup context and messages |
+
+**[Learn about Claude Code architecture →](./overview/claude-code-architecture)**
+
 ---
 
 ## The Three-File Foundation
@@ -277,12 +290,15 @@ As a user, I want to toggle dark mode so that I can reduce eye strain at night.
 
 ### Living Documentation & Hooks
 
-Documentation updates **after every task** via the powerful hooks system:
+Documentation updates **after every task** via the powerful **hybrid hooks system**:
 - **Strategic specs sync** to `.specweave/docs/` automatically
 - **ADRs captured** during architectural decisions
 - **Runbooks and SLOs** generated from operations work
-- **Custom hooks** at session start, prompt submit, tool calls, and session end
 - **No manual doc updates** — hooks ensure docs are always current
+
+**SpecWeave uses a hybrid hook architecture:**
+1. **Global hooks** (hooks.json): Cross-cutting concerns — SessionStart, UserPromptSubmit, PostToolUse, Stop
+2. **Skill-scoped hooks** (frontmatter): Command-specific logic — only fire when that skill is active
 
 **Hooks are critical to SpecWeave's quality system.** They enable autonomous validation, test execution, and quality gates that make `/sw:auto` reliable for multi-hour sessions.
 

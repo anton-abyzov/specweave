@@ -1,6 +1,12 @@
 ---
 name: sw:increment
 description: Plan new Product Increment - PM-led process (market research, spec, plan, auto-generate tasks). Auto-closes previous increment if PM gates pass.
+hooks:
+  PostToolUse:
+    - matcher: Write
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/increment-duplicate-guard.sh
 ---
 
 # Plan Product Increment

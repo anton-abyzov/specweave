@@ -1,6 +1,10 @@
 #!/bin/bash
 # session-start.sh - Launch background processor on session start
 # Ultra-fast, non-blocking
+#
+# Claude Code 2.1.2+ Enhancement:
+# - Reads agent_type from SessionStart input for agent-specific initialization
+# - Enables customized startup behavior based on which agent is running
 set +e
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
@@ -12,8 +16,34 @@ while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
 done
 [[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
 
-# Consume stdin
-cat > /dev/null
+# Read stdin to extract agent_type (Claude Code 2.1.2+)
+INPUT=$(cat 2>/dev/null || echo '{}')
+AGENT_TYPE=""
+if command -v jq >/dev/null 2>&1; then
+  AGENT_TYPE=$(echo "$INPUT" | jq -r '.agent_type // ""' 2>/dev/null || echo "")
+fi
+
+# Agent-specific initialization (Claude Code 2.1.2+)
+if [[ -n "$AGENT_TYPE" ]]; then
+  STATE_DIR="$PROJECT_ROOT/.specweave/state"
+  mkdir -p "$STATE_DIR" 2>/dev/null
+
+  # Store agent type for other hooks to use
+  echo "$AGENT_TYPE" > "$STATE_DIR/.current-agent-type" 2>/dev/null
+
+  # Agent-specific startup messages
+  case "$AGENT_TYPE" in
+    sw:pm|sw-pm)
+      echo '{"continue":true,"systemMessage":"🎯 PM Agent: Product Management context loaded. Focus on user stories, acceptance criteria, and business value."}'
+      ;;
+    sw:architect|sw-architect)
+      echo '{"continue":true,"systemMessage":"🏗️ Architect Agent: Technical design context loaded. Focus on ADRs, system design, and architecture patterns."}'
+      ;;
+    sw:tech-lead|sw-tech-lead)
+      echo '{"continue":true,"systemMessage":"👨‍💻 Tech Lead Agent: Implementation context loaded. Focus on code quality, best practices, and task execution."}'
+      ;;
+  esac
+fi
 
 # Hook directory for finding other scripts
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
