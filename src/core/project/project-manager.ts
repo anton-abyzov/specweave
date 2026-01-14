@@ -75,7 +75,7 @@ export class ProjectManager {
   getAllProjects(): ProjectContext[] {
     const config = this.configManager.load();
 
-    if (!config.multiProject?.enabled) {
+    if (!config.multiProject?.enabled || !config.multiProject.projects) {
       const projectId = autoDetectProjectIdSync(this.projectRoot, { silent: true });
       return [this.createProjectContext(
         projectId,
@@ -132,7 +132,7 @@ export class ProjectManager {
    */
   getSpecsPath(projectId?: string): string {
     const project = projectId ? this.getProjectById(projectId) : this.getActiveProject();
-    if (!project) {
+    if (!project || !project.projectId) {
       throw new Error(`Project '${projectId}' not found`);
     }
 
@@ -171,6 +171,10 @@ export class ProjectManager {
    * @param project - Project context
    */
   async addProject(project: ProjectContext): Promise<void> {
+    if (!project.projectId) {
+      throw new Error('Project ID is required');
+    }
+    const projectId = project.projectId;
     const config = this.configManager.load();
 
     // Initialize multiProject if not present
@@ -181,23 +185,27 @@ export class ProjectManager {
         projects: {}
       };
     }
+    if (!config.multiProject.projects) {
+      config.multiProject.projects = {};
+    }
 
     // Check for duplicate ID
-    if (config.multiProject.projects[project.projectId]) {
-      throw new Error(`Project with ID '${project.projectId}' already exists`);
+    if (config.multiProject.projects[projectId]) {
+      throw new Error(`Project with ID '${projectId}' already exists`);
     }
 
     // Validate project ID (kebab-case)
     const kebabCaseRegex = /^[a-z0-9-]+$/;
-    if (!kebabCaseRegex.test(project.projectId)) {
-      throw new Error(`Project ID '${project.projectId}' is invalid. Must be kebab-case (lowercase, hyphens only)`);
+    if (!kebabCaseRegex.test(projectId)) {
+      throw new Error(`Project ID '${projectId}' is invalid. Must be kebab-case (lowercase, hyphens only)`);
     }
 
     // Add project - convert ProjectContext to ProjectConfig
-    config.multiProject.projects[project.projectId] = {
-      id: project.projectId,
-      name: project.projectName,
-      description: `${project.projectName} project`,
+    const projectName = project.projectName || project.name || projectId;
+    config.multiProject.projects[projectId] = {
+      id: projectId,
+      name: projectName,
+      description: `${projectName} project`,
       keywords: project.keywords,
       techStack: project.techStack,
       team: 'Engineering Team'
@@ -205,9 +213,9 @@ export class ProjectManager {
     await this.configManager.save(config);
 
     // Create structure
-    await this.createProjectStructure(project.projectId);
+    await this.createProjectStructure(projectId);
 
-    console.log(`✅ Added project: ${project.projectName} (${project.projectId})`);
+    console.log(`✅ Added project: ${project.projectName} (${projectId})`);
   }
 
   /**
@@ -218,7 +226,7 @@ export class ProjectManager {
   async removeProject(projectId: string): Promise<void> {
     const config = this.configManager.load();
 
-    if (!config.multiProject?.enabled) {
+    if (!config.multiProject?.enabled || !config.multiProject.projects) {
       throw new Error('Multi-project mode not enabled');
     }
 
@@ -261,7 +269,7 @@ export class ProjectManager {
 ## Project Information
 
 - **Team**: Engineering Team
-- **Tech Stack**: ${project.techStack.length > 0 ? project.techStack.join(', ') : 'Not specified'}
+- **Tech Stack**: ${project.techStack && project.techStack.length > 0 ? project.techStack.join(', ') : 'Not specified'}
 
 ## Documentation
 

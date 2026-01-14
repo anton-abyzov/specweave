@@ -42,6 +42,12 @@ export async function skillMatchCommand(options: SkillMatchOptions): Promise<voi
     return;
   }
 
+  if (!index) {
+    console.log(chalk.red('❌ Skill trigger index not found'));
+    console.log(chalk.gray('   Run: specweave refresh-marketplace\n'));
+    return;
+  }
+
   // Match prompt against index
   const matches = await indexManager.matchPrompt(options.prompt, index);
   const minScore = options.minScore || 0.3;

@@ -90,7 +90,7 @@ class GitHubSpecSync {
         };
       }
       console.log(`   \u{1F4E6} Detected project: ${projectId}`);
-      const githubConfig = await this.getGitHubConfigForProject(projectId);
+      let githubConfig = await this.getGitHubConfigForProject(projectId);
       if (!githubConfig) {
         const repoInfo = await this.detectRepo();
         if (!repoInfo) {
@@ -101,9 +101,12 @@ class GitHubSpecSync {
             error: `No GitHub configuration found for project '${projectId}'`
           };
         }
-        githubConfig.owner = repoInfo.owner;
-        githubConfig.repo = repoInfo.repo;
-        githubConfig.strategy = "project-per-spec";
+        githubConfig = {
+          projectId,
+          owner: repoInfo.owner,
+          repo: repoInfo.repo,
+          strategy: "project-per-spec"
+        };
       }
       console.log(`   \u{1F3AF} Strategy: ${githubConfig.strategy}`);
       console.log(`   \u{1F517} Repository: ${githubConfig.owner}/${githubConfig.repo}`);

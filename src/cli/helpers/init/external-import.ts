@@ -1313,7 +1313,7 @@ async function convertToLivingDocs(
         console.log(chalk.gray(`   → ADO: specs/{project}/{areaPath}/FS-XXX/`));
       }
     }
-    if (containerTypesUsed.has('github') || containerTypesUsed.has(null)) {
+    if (containerTypesUsed.has('github')) {
       console.log(chalk.gray(`   → GitHub: specs/{repo}/FS-XXX/ (1-level)`));
     }
     if (groupCount > 1) {

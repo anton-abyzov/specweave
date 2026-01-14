@@ -120,7 +120,7 @@ function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoC
 
   // Human gated config
   const hg = userConfig.humanGated;
-  if (hg && typeof hg === 'object') {
+  if (hg && typeof hg === 'object' && config.humanGated) {
     if (Array.isArray(hg.patterns)) {
       config.humanGated.patterns = hg.patterns.filter((p): p is string => typeof p === 'string');
     }
@@ -134,7 +134,7 @@ function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoC
 
   // Circuit breaker config
   const cb = userConfig.circuitBreakers;
-  if (cb && typeof cb === 'object') {
+  if (cb && typeof cb === 'object' && config.circuitBreakers) {
     if (typeof cb.failureThreshold === 'number' && cb.failureThreshold >= 1) {
       config.circuitBreakers.failureThreshold = Math.min(cb.failureThreshold, 10);
     }
@@ -145,7 +145,7 @@ function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoC
 
   // Sync config
   const sync = userConfig.sync;
-  if (sync && typeof sync === 'object') {
+  if (sync && typeof sync === 'object' && config.sync) {
     if (typeof sync.batchInterval === 'number' && sync.batchInterval >= 60) {
       config.sync.batchInterval = Math.min(sync.batchInterval, 1800);
     }

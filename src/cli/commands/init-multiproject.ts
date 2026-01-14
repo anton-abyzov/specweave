@@ -212,7 +212,7 @@ export async function listProjects(projectRoot: string): Promise<void> {
     console.log(`${marker} ${project.projectId} - ${project.projectName}`);
     console.log(`    ${project.projectName} project`);
     console.log(`    Team: Engineering Team`);
-    if (project.techStack.length > 0) {
+    if (project.techStack && project.techStack.length > 0) {
       console.log(`    Tech: ${project.techStack.join(', ')}`);
     }
     console.log('');
