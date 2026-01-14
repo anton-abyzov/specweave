@@ -50,16 +50,28 @@ AUTO_ACTIVE=$(jq -r '.active // false' "$AUTO_FLAG" 2>/dev/null || echo "false")
 # ============================================================================
 # DEDUPLICATION: Prevent feedback loops (Claude Code UI bug workaround)
 # ============================================================================
-# If we've shown this message in the last 5 seconds, skip to prevent loops
+# If we've shown this message within the dedup window, skip to prevent loops.
 # This addresses the Claude Code 2.0.17-2.0.22 bug where stop hooks display
 # multiple times even though they execute once.
+#
+# Configurable via environment variable for power users:
+#   SPECWEAVE_STOP_HOOK_DEDUP=10  (seconds, default: 5)
 
+DEDUP_WINDOW="${SPECWEAVE_STOP_HOOK_DEDUP:-5}"
 NOW=$(date +%s)
+
 if [ -f "$DEDUP_FILE" ]; then
     LAST_FIRE=$(cat "$DEDUP_FILE" 2>/dev/null || echo "0")
     ELAPSED=$((NOW - LAST_FIRE))
-    # If fired within last 5 seconds, approve silently to break the loop
-    if [ "$ELAPSED" -lt 5 ]; then
+
+    # Age-based cleanup: if dedup file is older than 1 hour, ignore it
+    # This prevents stale files from affecting behavior after long gaps
+    MAX_AGE=3600  # 1 hour in seconds
+    if [ "$ELAPSED" -gt "$MAX_AGE" ]; then
+        # Stale file - remove it and continue (don't deduplicate)
+        rm -f "$DEDUP_FILE" 2>/dev/null
+    elif [ "$ELAPSED" -lt "$DEDUP_WINDOW" ]; then
+        # Recent fire - deduplicate by returning silent approve
         silent_approve
     fi
 fi
