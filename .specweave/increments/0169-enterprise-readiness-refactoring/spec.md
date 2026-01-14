@@ -39,12 +39,12 @@ Comprehensive refactoring to make SpecWeave enterprise-ready with improved type 
 - [x] **AC-US1-01**: Fix 3 failing discipline-checker tests
 - [x] **AC-US1-02**: Enable strictNullChecks in tsconfig.json
 - [x] **AC-US1-03**: Fix all ~200-300 strictNullChecks type errors (actual: 49 errors fixed)
-- [ ] **AC-US1-04**: Split sync-coordinator.ts (2,020 LOC) into StatusMapper, ProviderRouter, SyncOrchestrator
-- [ ] **AC-US1-05**: Split living-docs-sync.ts (1,972 LOC) into ContentGenerator, HierarchyBuilder, CrossLinker
-- [ ] **AC-US1-06**: Split e2e-coverage.ts (1,759 LOC) into CoverageAnalyzer, PathTracker, ReportGenerator
-- [ ] **AC-US1-07**: Split item-converter.ts (1,730 LOC) into SpecConverter, TaskConverter, MetadataMapper
-- [ ] **AC-US1-08**: All unit tests pass after changes
-- [ ] **AC-US1-09**: Build succeeds with no TypeScript errors
+- [x] **AC-US1-04**: Split sync-coordinator.ts (2,020 LOC) into StatusMapper, ProviderRouter, SyncOrchestrator
+- [x] **AC-US1-05**: Split living-docs-sync.ts (1,972 LOC) into ContentGenerator, HierarchyBuilder, CrossLinker
+- [x] **AC-US1-06**: Split e2e-coverage.ts (1,759 LOC) into CoverageAnalyzer, PathTracker, ReportGenerator
+- [x] **AC-US1-07**: Split item-converter.ts (1,730 LOC) into SpecConverter, TaskConverter, MetadataMapper
+- [x] **AC-US1-08**: All unit tests pass after changes
+- [x] **AC-US1-09**: Build succeeds with no TypeScript errors
 
 ---
 
