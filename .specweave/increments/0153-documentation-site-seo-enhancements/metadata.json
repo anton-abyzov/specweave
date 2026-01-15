@@ -1,6 +1,6 @@
 {
   "id": "0153-documentation-site-seo-enhancements",
-  "status": "planned",
+  "status": "backlog",
   "type": "feature",
   "priority": "P1",
   "created": "2026-01-04T21:00:00Z",
@@ -9,5 +9,6 @@
   "coverageTarget": 80,
   "feature_id": null,
   "epic_id": null,
-  "externalLinks": {}
+  "externalLinks": {},
+  "updated": "2026-01-15T04:07:53.740Z"
 }

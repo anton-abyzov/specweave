@@ -1,16 +1,18 @@
 #!/bin/bash
-# stop-auto.sh - Auto Mode Stop Hook (v2.0 - Deduplication + Strict Guards)
+# stop-auto.sh - Auto Mode Stop Hook (v3.0 - SpecWeave Auto Mode)
 #
-# PURPOSE: ONLY fires when auto mode is EXPLICITLY active via /sw:auto command.
-# This hook should NEVER fire during normal development sessions.
+# PHILOSOPHY: No session files. No complex state. Just:
+#   1. Is this a SpecWeave project with auto enabled?
+#   2. Are there active increments?
+#   3. YES → block exit, continue working
+#   4. NO → approve exit
 #
-# Core principle: The increment's metadata.json status IS the state.
-# - If active increments exist AND auto-mode flag is set → block exit
-# - Otherwise → approve exit (SILENTLY - no output!)
+# Configuration is read from .specweave/config.json:
+#   - auto.enabled: Master switch (default: true)
+#   - auto.requireTests: Block until tests pass (default: false)
+#   - testing.defaultTestMode: "tdd" enables strict test enforcement
 #
-# IMPORTANT: This hook includes deduplication to prevent feedback loops
-# caused by Claude Code UI bug (2.0.17-2.0.22) that shows duplicate messages.
-# See: https://github.com/anthropics/claude-code/issues/9602
+# This implements SpecWeave's autonomous execution pattern.
 
 set +e  # Don't exit on errors
 
@@ -19,44 +21,50 @@ INPUT=$(cat)
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
 
 # ============================================================================
-# SILENT APPROVE HELPER (prevents feedback loops)
+# SILENT APPROVE - Normal sessions get NO output
 # ============================================================================
-# Returns approve with NO systemMessage to avoid triggering UI display loops
 silent_approve() {
     echo '{"decision":"approve"}'
     exit 0
 }
 
 # ============================================================================
-# Quick exits - not a SpecWeave project or auto mode not active
+# QUICK EXITS - Not a SpecWeave project
 # ============================================================================
 
-INCREMENTS_DIR="$PROJECT_ROOT/.specweave/increments"
-AUTO_FLAG="$PROJECT_ROOT/.specweave/state/auto-mode.json"
-STATE_DIR="$PROJECT_ROOT/.specweave/state"
-DEDUP_FILE="$STATE_DIR/.stop-auto-last-fire"
+SPECWEAVE_DIR="$PROJECT_ROOT/.specweave"
+INCREMENTS_DIR="$SPECWEAVE_DIR/increments"
+CONFIG_FILE="$SPECWEAVE_DIR/config.json"
 
-# Not a SpecWeave project - SILENT approve
+# Not a SpecWeave project - silent approve
+[ ! -d "$SPECWEAVE_DIR" ] && silent_approve
 [ ! -d "$INCREMENTS_DIR" ] && silent_approve
 
-# Auto mode not active (flag file missing) - SILENT approve
-# This is the CRITICAL check: no auto-mode.json = normal session = no output!
-[ ! -f "$AUTO_FLAG" ] && silent_approve
+# ============================================================================
+# READ PROJECT CONFIG (the ONLY state we need!)
+# ============================================================================
 
-# Check if auto mode is actually active (file exists but might have active=false)
-AUTO_ACTIVE=$(jq -r '.active // false' "$AUTO_FLAG" 2>/dev/null || echo "false")
-[ "$AUTO_ACTIVE" != "true" ] && silent_approve
+# Check if auto mode is enabled in config (default: true)
+AUTO_ENABLED="true"
+REQUIRE_TESTS="false"
+TDD_MODE="false"
+
+if [ -f "$CONFIG_FILE" ]; then
+    AUTO_ENABLED=$(jq -r '.auto.enabled // true' "$CONFIG_FILE" 2>/dev/null || echo "true")
+    REQUIRE_TESTS=$(jq -r '.auto.requireTests // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
+    TDD_MODE_CONFIG=$(jq -r '.testing.defaultTestMode // "standard"' "$CONFIG_FILE" 2>/dev/null || echo "standard")
+    [ "$TDD_MODE_CONFIG" = "tdd" ] && TDD_MODE="true"
+fi
+
+# Auto mode disabled in config - silent approve
+[ "$AUTO_ENABLED" != "true" ] && silent_approve
 
 # ============================================================================
-# DEDUPLICATION: Prevent feedback loops (Claude Code UI bug workaround)
+# DEDUPLICATION - Prevent feedback loops (Claude Code UI bug workaround)
 # ============================================================================
-# If we've shown this message within the dedup window, skip to prevent loops.
-# This addresses the Claude Code 2.0.17-2.0.22 bug where stop hooks display
-# multiple times even though they execute once.
-#
-# Configurable via environment variable for power users:
-#   SPECWEAVE_STOP_HOOK_DEDUP=10  (seconds, default: 5)
 
+STATE_DIR="$SPECWEAVE_DIR/state"
+DEDUP_FILE="$STATE_DIR/.stop-auto-dedup"
 DEDUP_WINDOW="${SPECWEAVE_STOP_HOOK_DEDUP:-5}"
 NOW=$(date +%s)
 
@@ -64,52 +72,53 @@ if [ -f "$DEDUP_FILE" ]; then
     LAST_FIRE=$(cat "$DEDUP_FILE" 2>/dev/null || echo "0")
     ELAPSED=$((NOW - LAST_FIRE))
 
-    # Age-based cleanup: if dedup file is older than 1 hour, ignore it
-    # This prevents stale files from affecting behavior after long gaps
-    MAX_AGE=3600  # 1 hour in seconds
-    if [ "$ELAPSED" -gt "$MAX_AGE" ]; then
-        # Stale file - remove it and continue (don't deduplicate)
-        rm -f "$DEDUP_FILE" 2>/dev/null
-    elif [ "$ELAPSED" -lt "$DEDUP_WINDOW" ]; then
-        # Recent fire - deduplicate by returning silent approve
-        silent_approve
-    fi
+    # Stale file (>1 hour) - ignore it
+    [ "$ELAPSED" -gt 3600 ] && rm -f "$DEDUP_FILE" 2>/dev/null
+    # Recent fire - deduplicate
+    [ "$ELAPSED" -lt "$DEDUP_WINDOW" ] && silent_approve
 fi
 
-# Record this fire time for deduplication
+# Record this fire
 mkdir -p "$STATE_DIR" 2>/dev/null
 echo "$NOW" > "$DEDUP_FILE" 2>/dev/null
 
 # ============================================================================
-# Count active increments (THE source of truth!)
+# COUNT ACTIVE INCREMENTS (the source of truth!)
 # ============================================================================
 
 ACTIVE_COUNT=$(find "$INCREMENTS_DIR" -maxdepth 2 -name "metadata.json" \
     -exec grep -l '"status"[[:space:]]*:[[:space:]]*"active\|"status"[[:space:]]*:[[:space:]]*"in-progress' {} \; 2>/dev/null | wc -l | tr -d ' ')
 
 # ============================================================================
-# Decision: Continue or Complete
+# DECISION: Continue or Complete
 # ============================================================================
 
 if [ "$ACTIVE_COUNT" -eq 0 ]; then
-    # All done! Clean up auto mode state
-    rm -f "$AUTO_FLAG" 2>/dev/null
+    # No active work - approve exit
     rm -f "$DEDUP_FILE" 2>/dev/null
-    # Clean up agent_type state file (Claude Code 2.1.2+ feature)
-    rm -f "$STATE_DIR/.current-agent-type" 2>/dev/null
-
-    echo '{"decision":"approve","reason":"All increments complete","systemMessage":"✅ Auto mode complete - all work finished"}'
-    exit 0
+    silent_approve
 fi
 
-# Work remains - block exit and continue
-# Get first active increment for context
-ACTIVE_INC=$(find "$INCREMENTS_DIR" -maxdepth 2 -name "metadata.json" \
+# Work remains - get ALL active increments (WIP limits don't apply to completion!)
+ACTIVE_INCS=$(find "$INCREMENTS_DIR" -maxdepth 2 -name "metadata.json" \
     -exec grep -l '"status"[[:space:]]*:[[:space:]]*"active\|"status"[[:space:]]*:[[:space:]]*"in-progress' {} \; 2>/dev/null \
-    | head -1 | sed 's|.*/\([^/]*\)/metadata.json|\1|')
+    | sed 's|.*/\([^/]*\)/metadata.json|\1|' | tr '\n' ', ' | sed 's/,$//')
 
+# Build the message - MUST complete ALL increments before exit
+MSG="🔄 $ACTIVE_COUNT increment(s) to complete: $ACTIVE_INCS"
+
+if [ "$TDD_MODE" = "true" ]; then
+    MSG="🔴 TDD | $ACTIVE_COUNT to complete: $ACTIVE_INCS (tests must pass!)"
+elif [ "$REQUIRE_TESTS" = "true" ]; then
+    MSG="🧪 $ACTIVE_COUNT to complete: $ACTIVE_INCS (run tests)"
+fi
+
+# Add clear instruction
+MSG="$MSG → /sw:do"
+
+# Block exit - MUST complete ALL active increments (WIP limits = creation, not completion)
 jq -n \
     --arg decision "block" \
-    --arg reason "$ACTIVE_COUNT active increment(s): $ACTIVE_INC" \
-    --arg msg "🔄 Auto mode: $ACTIVE_COUNT increment(s) in progress. Continue with /sw:do" \
+    --arg reason "Complete all $ACTIVE_COUNT increment(s): $ACTIVE_INCS" \
+    --arg msg "$MSG" \
     '{decision: $decision, reason: $reason, systemMessage: $msg}'

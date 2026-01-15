@@ -24,6 +24,7 @@ import os from 'os';
 import { mergeSkillMemoriesOnRefresh } from './merge-skill-memories.js';
 import { CacheHealthMonitor } from '../../core/plugin-cache/cache-health-monitor.js';
 import { CacheInvalidator } from '../../core/plugin-cache/cache-invalidator.js';
+import { CacheMetadataManager } from '../../core/plugin-cache/cache-metadata.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
 
 // Configuration
@@ -94,6 +95,98 @@ function getPluginsFromMarketplace(marketplacePath: string): string[] {
   }
 }
 
+/**
+ * Get version from plugin manifest
+ */
+function getPluginVersion(cachePath: string): string {
+  const manifestPath = path.join(cachePath, '.claude-plugin/manifest.json');
+  if (fs.existsSync(manifestPath)) {
+    try {
+      const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+      return manifest.version || '1.0.0';
+    } catch {
+      return '1.0.0';
+    }
+  }
+  return '1.0.0';
+}
+
+/**
+ * Generate cache metadata for a plugin after installation
+ */
+function generatePluginCacheMetadata(pluginName: string): void {
+  const basePath = path.join(os.homedir(), '.claude/plugins/cache/specweave', pluginName);
+
+  if (!fs.existsSync(basePath)) {
+    logger.debug(`Cache path not found for ${pluginName}: ${basePath}`);
+    return;
+  }
+
+  // Find latest version directory
+  const versions = fs.readdirSync(basePath).filter(v => {
+    const versionPath = path.join(basePath, v);
+    return fs.statSync(versionPath).isDirectory();
+  });
+
+  if (versions.length === 0) {
+    logger.debug(`No version directories found for ${pluginName}`);
+    return;
+  }
+
+  const version = versions.sort().reverse()[0];
+  const versionPath = path.join(basePath, version);
+
+  // Generate metadata
+  const metadataManager = new CacheMetadataManager();
+
+  // Try to get commit SHA from marketplace or use timestamp
+  const commitSha = getLatestCommitSha() || `installed-${Date.now()}`;
+
+  const metadata = metadataManager.generateMetadata(
+    versionPath,
+    pluginName,
+    version,
+    commitSha
+  );
+
+  metadataManager.writeMetadata(versionPath, metadata);
+  logger.debug(`Generated cache metadata for ${pluginName}@${version}`);
+}
+
+/**
+ * Get latest commit SHA from Git (if in repo) or marketplace
+ */
+function getLatestCommitSha(): string | null {
+  // Try to get from git
+  const result = runCommand('git rev-parse HEAD 2>/dev/null', true);
+  if (result.success && result.output.length === 40) {
+    return result.output;
+  }
+
+  // Fallback: check marketplace install location for git info
+  const marketplacePath = getMarketplaceInstallPath();
+  if (marketplacePath) {
+    const gitHeadPath = path.join(marketplacePath, '.git/HEAD');
+    if (fs.existsSync(gitHeadPath)) {
+      try {
+        const headContent = fs.readFileSync(gitHeadPath, 'utf8').trim();
+        // If it's a ref, resolve it
+        if (headContent.startsWith('ref:')) {
+          const refPath = path.join(marketplacePath, '.git', headContent.replace('ref: ', ''));
+          if (fs.existsSync(refPath)) {
+            return fs.readFileSync(refPath, 'utf8').trim();
+          }
+        }
+        return headContent;
+      } catch {
+        // Ignore
+      }
+    }
+  }
+
+  return null;
+}
+
 function installPlugin(pluginName: string, force: boolean = false): PluginResult {
   // If force mode, uninstall first to ensure fresh copy
   if (force) {
@@ -112,11 +205,15 @@ function installPlugin(pluginName: string, force: boolean = false): PluginResult
   const result = runCommand(`claude plugin install "${pluginName}" 2>&1`, true);
 
   if (result.success && result.output.includes('Successfully installed')) {
+    // Generate cache metadata after successful installation
+    generatePluginCacheMetadata(pluginName);
     return { name: pluginName, success: true };
   }
 
   // Check if already installed (not an error) - but only if not forcing
   if (!force && result.output.includes('already installed')) {
+    // Still generate metadata if missing (for plugins installed before this feature)
+    generatePluginCacheMetadata(pluginName);
     return { name: pluginName, success: true };
   }
 

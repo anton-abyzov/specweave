@@ -425,35 +425,15 @@ program
     console.log(statusLine);
   });
 
-// Auto mode commands - Autonomous execution with Ralph Wiggum pattern
+// Auto mode commands - Autonomous execution with Pure Ralph Wiggum pattern (v3.0)
+// No session files. No complex state. Just: "Are there active increments?"
 program
   .command('auto [incrementIds...]')
-  .description('Start autonomous execution session (Ralph Wiggum pattern + stop hooks)')
-  .option('--max-iterations <n>', 'Maximum iterations (safety net)', '2500')
-  .option('--max-hours <n>', 'Maximum hours to run', '600')
-  .option('--simple', 'Pure Ralph mode (minimal context)')
-  .option('--dry-run', 'Preview without starting')
-  .option('--increments <ids>', 'Comma-separated increment IDs')
-  .option('--all-backlog', 'Process all backlog items')
-  .option('--skip-gates <gates>', 'Pre-approve specific gates (comma-separated)')
-  .option('--no-increment', 'Skip auto-creation (require existing increments)')
-  .option('--no-inc', 'Alias for --no-increment')
-  .option('--prompt <text>', 'Analyze prompt and create increments (intelligent chunking)')
-  .option('--yes', 'Auto-approve increment plan (skip user approval)')
-  .option('-y', 'Alias for --yes')
-  .option('--tdd', 'Enable TDD strict mode - ALL tests must pass')
-  .option('--strict', 'Alias for --tdd')
-  // Completion condition flags (v0.4.0+)
-  .option('--build', 'Build must pass before completion')
-  .option('--tests', 'Tests must pass before completion (unit + integration)')
-  .option('--e2e', 'E2E tests must pass before completion')
-  .option('--lint', 'Linting must pass before completion')
-  .option('--types', 'Type-checking must pass before completion')
-  .option('--cov <n>', 'Code coverage must meet threshold (%)', '80')
-  .option('--e2e-cov <n>', 'E2E coverage must meet threshold (%)', '70')
-  .option('--cmd <command>', 'Custom command must pass before completion')
+  .description('Start autonomous execution (Pure Ralph pattern - no session files)')
+  .option('--dry-run', 'Preview without activating')
+  .option('--all-backlog', 'Activate all backlog items')
+  .option('--reset', 'Clean up any stale state files')
   .action(async (incrementIds, options) => {
-    // Import and execute the auto command handler directly
     const path = await import('path');
     const fs = await import('fs');
     const projectPath = process.cwd();
@@ -468,7 +448,6 @@ program
 
     try {
       const { handleAutoCommand } = await import('../dist/src/cli/commands/auto.js');
-      // Call handleAutoCommand directly with all options
       await handleAutoCommand(projectPath, incrementIds, options);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -827,6 +806,24 @@ program
       pluginName,
       verbose: options.verbose,
       checkGithub: options.checkGithub,
+    });
+  });
+
+// Cache refresh command - Refresh plugin cache with skill memory preservation
+program
+  .command('cache-refresh')
+  .description('Refresh plugin cache with skill memory preservation')
+  .argument('[plugin]', 'Refresh specific plugin (optional)')
+  .option('--force', 'Hard refresh (delete cache)')
+  .option('--all', 'Refresh all plugins (even healthy)')
+  .option('--verify', 'Verify cache health after refresh')
+  .action(async (pluginName, options) => {
+    const { cacheRefresh } = await import('../dist/src/cli/commands/cache-refresh.js');
+    await cacheRefresh({
+      pluginName,
+      force: options.force,
+      all: options.all,
+      verify: options.verify,
     });
   });
 
