@@ -48,8 +48,8 @@ export class DisciplineChecker {
    */
   private getDefaultLimits(): DisciplineLimits {
     return {
-      maxActiveIncrements: 1,
-      hardCap: 3,
+      maxActiveIncrements: 3,  // WIP limit (warning)
+      hardCap: 5,              // Absolute maximum (error)
       allowEmergencyInterrupt: true,
       typeBehaviors: {
         canInterrupt: ['hotfix', 'bug'],
