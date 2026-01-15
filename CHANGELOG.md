@@ -4,6 +4,21 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.116] - 2026-01-14
+
+### 🔧 Improvements
+
+- **Auto mode refactoring**: Enhanced auto mode command with better error handling and state management
+- **Marketplace refresh improvements**: Added better cache handling and plugin installation reliability
+- **Documentation updates**: Updated CLAUDE.md and AGENTS.md with latest instructions and troubleshooting guidance
+
+### 🐛 Bug Fixes
+
+- **Discipline checker**: Fixed increment validation logic
+- **Stop-auto hook**: Improved cleanup and reliability
+
+---
+
 ## [1.0.115] - 2026-01-14
 
 ### ✨ New Features
