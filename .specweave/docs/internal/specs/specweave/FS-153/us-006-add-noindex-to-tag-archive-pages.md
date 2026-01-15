@@ -2,7 +2,7 @@
 id: US-006
 feature: FS-153
 title: "Add Noindex to Tag Archive Pages"
-status: not_started
+status: in_progress
 priority: P1
 created: 2026-01-04
 project: specweave-dev
@@ -16,12 +16,12 @@ project: specweave-dev
 
 ## Acceptance Criteria
 
-- [ ] **AC-US6-01**: Custom BlogTagsPostsPage component created via swizzling (@theme/BlogTagsPostsPage)
-- [ ] **AC-US6-02**: Component adds `<meta name="robots" content="noindex, follow" />` to tag archive pages
-- [ ] **AC-US6-03**: Noindex meta tag renders on all /blog/tags/* pages
-- [ ] **AC-US6-04**: Original blog posts remain indexed (do NOT have noindex)
+- [x] **AC-US6-01**: Custom BlogTagsPostsPage component created via swizzling (@theme/BlogTagsPostsPage)
+- [x] **AC-US6-02**: Component adds `<meta name="robots" content="noindex, follow" />` to tag archive pages
+- [x] **AC-US6-03**: Noindex meta tag renders on all /blog/tags/* pages
+- [x] **AC-US6-04**: Original blog posts remain indexed (do NOT have noindex)
 - [ ] **AC-US6-05**: Google Search Console confirms tag pages are not indexed after next crawl
-- [ ] **AC-US6-06**: Blog pagination pages also include noindex to prevent duplicate content
+- [x] **AC-US6-06**: Blog pagination pages also include noindex to prevent duplicate content
 
 ---
 

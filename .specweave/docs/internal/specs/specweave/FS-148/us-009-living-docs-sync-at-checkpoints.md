@@ -1,15 +1,11 @@
 ---
 id: US-009
 feature: FS-148
-title: Living Docs and External Tool Sync at Checkpoints
+title: "Living Docs and External Tool Sync at Checkpoints"
 status: completed
 priority: P1
 created: 2025-12-29
 project: specweave
-external:
-  github:
-    issue: 959
-    url: https://github.com/anton-abyzov/specweave/issues/959
 ---
 
 # US-009: Living Docs and External Tool Sync at Checkpoints

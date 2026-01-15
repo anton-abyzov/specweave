@@ -1491,3 +1491,193 @@ mcp__plugin_context7_context7__resolve-library-id({
 - [React Native Versions](https://reactnative.dev/versions)
 - [Expo SDK Changelog](https://expo.dev/changelog)
 - [React Native Environment Setup](https://reactnative.dev/docs/environment-setup)
+
+---
+
+## App Store Screenshot Capture (iPad/iPhone Simulators)
+
+For capturing App Store screenshots on various device simulators with Expo:
+
+### Quick Command Reference
+
+```bash
+# Get your local Expo dev server IP
+EXPO_IP=$(ifconfig | grep "inet " | grep -v 127.0.0.1 | head -1 | awk '{print $2}')
+EXPO_PORT=8081  # Default Expo port
+
+# Open app on specific simulator
+xcrun simctl openurl "iPad Pro 13-inch (M4)" "exp://${EXPO_IP}:${EXPO_PORT}"
+xcrun simctl openurl "iPhone 16 Pro Max" "exp://${EXPO_IP}:${EXPO_PORT}"
+xcrun simctl openurl "iPhone 16 Pro" "exp://${EXPO_IP}:${EXPO_PORT}"
+```
+
+### Full Screenshot Workflow
+
+```bash
+#!/bin/bash
+# screenshot-all-devices.sh - Capture App Store screenshots
+
+# Get Expo dev server IP
+get_expo_ip() {
+  # Try common network interfaces
+  local ip=$(ifconfig en0 2>/dev/null | grep "inet " | awk '{print $2}')
+  if [ -z "$ip" ]; then
+    ip=$(ifconfig en1 2>/dev/null | grep "inet " | awk '{print $2}')
+  fi
+  if [ -z "$ip" ]; then
+    ip=$(ipconfig getifaddr en0 2>/dev/null)
+  fi
+  echo "${ip:-localhost}"
+}
+
+EXPO_IP=$(get_expo_ip)
+EXPO_PORT="${EXPO_PORT:-8081}"
+EXPO_URL="exp://${EXPO_IP}:${EXPO_PORT}"
+
+echo "Using Expo URL: ${EXPO_URL}"
+
+# App Store required device sizes (2024)
+DEVICES=(
+  "iPhone 16 Pro Max"      # 6.9" (required)
+  "iPhone 16 Pro"          # 6.3"
+  "iPhone SE (3rd generation)" # 4.7" (if supporting older)
+  "iPad Pro 13-inch (M4)"  # 12.9" (required for iPad apps)
+  "iPad Pro 11-inch (M4)"  # 11"
+)
+
+# Screenshot output directory
+OUTPUT_DIR="./screenshots/$(date +%Y-%m-%d)"
+mkdir -p "$OUTPUT_DIR"
+
+# Boot simulator if needed
+boot_simulator() {
+  local device="$1"
+  local udid=$(xcrun simctl list devices | grep "$device" | grep -oE "[A-F0-9-]{36}" | head -1)
+
+  if [ -n "$udid" ]; then
+    xcrun simctl boot "$udid" 2>/dev/null || true
+    echo "Booted: $device ($udid)"
+  else
+    echo "Device not found: $device"
+    return 1
+  fi
+}
+
+# Open Expo app on device
+open_expo() {
+  local device="$1"
+  xcrun simctl openurl "$device" "$EXPO_URL"
+  sleep 3  # Wait for app to load
+}
+
+# Take screenshot
+take_screenshot() {
+  local device="$1"
+  local screen_name="$2"
+  local filename=$(echo "${device}_${screen_name}" | tr ' ' '_' | tr -d '()')
+
+  xcrun simctl io "$device" screenshot "${OUTPUT_DIR}/${filename}.png"
+  echo "Saved: ${OUTPUT_DIR}/${filename}.png"
+}
+
+# Main workflow
+for device in "${DEVICES[@]}"; do
+  echo "\n📱 Processing: $device"
+  boot_simulator "$device"
+  open_expo "$device"
+
+  # Take screenshot of current screen
+  take_screenshot "$device" "home"
+
+  # Add navigation commands here for different screens
+  # Example: Use Maestro or manual navigation, then:
+  # take_screenshot "$device" "profile"
+  # take_screenshot "$device" "settings"
+done
+
+echo "\n✅ Screenshots saved to: $OUTPUT_DIR"
+```
+
+### Available Simulator Devices
+
+```bash
+# List all available simulators
+xcrun simctl list devices available
+
+# Common App Store screenshot devices:
+# iPhone:
+#   - "iPhone 16 Pro Max" (6.9" - REQUIRED)
+#   - "iPhone 16 Pro" (6.3")
+#   - "iPhone 16 Plus" (6.7")
+#   - "iPhone 16" (6.1")
+#   - "iPhone SE (3rd generation)" (4.7" - for older support)
+#
+# iPad:
+#   - "iPad Pro 13-inch (M4)" (12.9" - REQUIRED for iPad apps)
+#   - "iPad Pro 11-inch (M4)" (11")
+#   - "iPad Air 13-inch (M2)" (13")
+#   - "iPad mini (6th generation)" (8.3")
+```
+
+### Automated Screenshots with Maestro
+
+For fully automated screenshot capture across all screens:
+
+```yaml
+# .maestro/screenshots.yaml
+appId: com.yourapp.id
+
+---
+- launchApp
+- waitForAnimationToEnd
+
+# Home screen
+- takeScreenshot: screenshots/home
+
+# Navigate to profile
+- tapOn: "Profile"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/profile
+
+# Navigate to settings
+- tapOn: "Settings"
+- waitForAnimationToEnd
+- takeScreenshot: screenshots/settings
+
+# Repeat for all App Store required screens
+```
+
+```bash
+# Run Maestro on specific simulator
+maestro --device "iPhone 16 Pro Max" test .maestro/screenshots.yaml
+maestro --device "iPad Pro 13-inch (M4)" test .maestro/screenshots.yaml
+```
+
+### Tips for App Store Screenshots
+
+1. **Device Requirements (2024)**:
+   - iPhone 6.9" display (iPhone 16 Pro Max) - **Required**
+   - iPhone 6.5" display - Optional but recommended
+   - iPad 12.9" display - **Required if supporting iPad**
+
+2. **Screenshot Specs**:
+   - iPhone 16 Pro Max: 1320 x 2868 pixels
+   - iPad Pro 12.9": 2048 x 2732 pixels
+   - PNG or JPEG format
+   - No alpha transparency
+
+3. **Expo-Specific Notes**:
+   - Ensure Expo Go is installed on simulators: `xcrun simctl install <device> /path/to/Expo-Go.app`
+   - For production screenshots, use EAS Build dev client instead of Expo Go
+   - Hide Expo dev menu before screenshots: shake gesture disabled in release builds
+
+4. **Simulator Control**:
+   ```bash
+   # Disable simulator chrome for cleaner screenshots
+   xcrun simctl status_bar "iPhone 16 Pro Max" override \
+     --time "9:41" \
+     --batteryState charged \
+     --batteryLevel 100 \
+     --cellularMode active \
+     --cellularBars 4
+   ```

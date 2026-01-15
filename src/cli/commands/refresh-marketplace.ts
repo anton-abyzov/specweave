@@ -34,6 +34,7 @@ interface RefreshOptions {
   local?: boolean;
   github?: boolean;
   verbose?: boolean;
+  force?: boolean;
 }
 
 interface PluginResult {
@@ -93,15 +94,29 @@ function getPluginsFromMarketplace(marketplacePath: string): string[] {
   }
 }
 
-function installPlugin(pluginName: string): PluginResult {
+function installPlugin(pluginName: string, force: boolean = false): PluginResult {
+  // If force mode, uninstall first to ensure fresh copy
+  if (force) {
+    runCommand(`claude plugin uninstall "${pluginName}" 2>&1`, true);
+    // Also clear the cache directory to ensure completely fresh install
+    const cachePath = path.join(os.homedir(), '.claude/plugins/cache/specweave', pluginName);
+    if (fs.existsSync(cachePath)) {
+      try {
+        fs.rmSync(cachePath, { recursive: true, force: true });
+      } catch (e) {
+        // Ignore errors, installation will handle it
+      }
+    }
+  }
+
   const result = runCommand(`claude plugin install "${pluginName}" 2>&1`, true);
 
   if (result.success && result.output.includes('Successfully installed')) {
     return { name: pluginName, success: true };
   }
 
-  // Check if already installed (not an error)
-  if (result.output.includes('already installed')) {
+  // Check if already installed (not an error) - but only if not forcing
+  if (!force && result.output.includes('already installed')) {
     return { name: pluginName, success: true };
   }
 
@@ -249,13 +264,18 @@ async function preRefreshCacheCheck(verbose: boolean = false): Promise<void> {
 export async function refreshMarketplaceCommand(options: RefreshOptions = {}): Promise<void> {
   // Determine mode - GitHub is default per CLAUDE.md rules
   const mode = options.local ? 'local' : 'github';
+  const forceMode = options.force ?? false;
 
   console.log(chalk.blue.bold('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
-  console.log(chalk.blue.bold(`  SpecWeave Marketplace Refresh (${mode} mode)`));
+  console.log(chalk.blue.bold(`  SpecWeave Marketplace Refresh (${mode} mode${forceMode ? ' + FORCE' : ''})`));
   console.log(chalk.blue.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
 
   if (mode === 'local') {
     console.log(chalk.yellow('⚠️  Local mode - use only for active development!\n'));
+  }
+
+  if (forceMode) {
+    console.log(chalk.yellow('🔄 Force mode: Will uninstall and clear cache before reinstalling\n'));
   }
 
   // Step 1: Check/update marketplace
@@ -335,13 +355,13 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
   console.log(chalk.green(`✓ Found ${plugins.length} plugins\n`));
 
   // Step 3: Install all plugins
-  console.log(chalk.yellow('⚙️  Step 3: Installing all plugins...\n'));
+  console.log(chalk.yellow(`⚙️  Step 3: Installing all plugins${forceMode ? ' (force reinstall)' : ''}...\n`));
 
   const results: PluginResult[] = [];
 
   for (const plugin of plugins) {
-    console.log(chalk.blue(`  Installing ${plugin}...`));
-    const result = installPlugin(plugin);
+    console.log(chalk.blue(`  ${forceMode ? 'Force reinstalling' : 'Installing'} ${plugin}...`));
+    const result = installPlugin(plugin, forceMode);
     results.push(result);
 
     if (result.success) {

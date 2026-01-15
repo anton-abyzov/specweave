@@ -323,8 +323,10 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 
 | Issue | Fix |
 |-------|-----|
-| Skills missing | Restart Claude Code |
-| Plugins outdated | `specweave refresh-marketplace` (NEVER use `scripts/refresh-marketplace.sh` - that's for contributors only!) |
+| Skills missing | `specweave refresh-marketplace --force` then restart Claude Code |
+| Skills not activating | `specweave cache-status` to check health, then `specweave refresh-marketplace --force` |
+| Plugins outdated | `specweave refresh-marketplace --force` (NEVER use `scripts/refresh-marketplace.sh` - that's for contributors only!) |
+| Cache stale | `specweave cache-status --check-github` to verify, `refresh-marketplace --force` to fix |
 | Commands gone | `/plugin list --installed` |
 | Out of sync | `/sw:sync-tasks` |
 | Find increment | `/sw:status` |
@@ -754,21 +756,36 @@ async function getTheme() {
 
 **SpecWeave provides expertise through Skills (auto-activate) and Agents (explicit spawn).**
 
-### Skills (Auto-Activate)
+### Skills (Auto-Activate) - YOU DON'T CALL THESE
 
-Skills activate automatically based on keywords in user prompts. No action needed.
+Skills activate **automatically** when Claude detects keywords in your prompt. **You never invoke skills directly** - they're loaded transparently when relevant.
 
-| Domain | Skill | Auto-Activates For |
-|--------|-------|-------------------|
-| **Architecture** | `sw:architect` | system design, ADR, technical design, patterns |
-| **Tech Lead** | `sw:tech-lead` | code review, best practices, refactoring |
-| **QA Lead** | `sw:qa-lead` | test strategy, QA, quality gates |
-| **Security** | `sw:security` | security review, OWASP, auth, vulnerabilities |
-| **Docs** | `sw:docs-writer` | documentation, README, API docs |
-| **Infrastructure** | `sw:infrastructure` | Terraform IaC, serverless, cloud setup |
-| **Performance** | `sw:performance` | optimization, profiling, caching |
-| **TDD** | `sw:tdd-orchestrator` | TDD, red-green-refactor, test-first |
-| **PM** | `sw:pm` | product planning, roadmap, requirements |
+**How it works:**
+```
+You: "Design the authentication system architecture"
+      ↓
+Claude detects: "architecture" keyword
+      ↓
+Loads: plugins/specweave/skills/architect/SKILL.md
+      ↓
+Response includes architecture expertise automatically
+```
+
+**Activation rate**: ~20-50% with basic descriptions. Use specific keywords for better activation.
+
+| Domain | Keywords That Activate | Example Prompts |
+|--------|----------------------|-----------------|
+| **Architecture** | architecture, system design, ADR, microservices, API design | "Design the auth system architecture" |
+| **Tech Lead** | code review, best practices, refactoring, clean code | "Review my code for best practices" |
+| **QA Lead** | test strategy, QA, quality gates, E2E testing | "Create a test strategy for this feature" |
+| **Security** | security, OWASP, vulnerabilities, auth security | "Review security of this implementation" |
+| **Docs** | documentation, README, API docs, technical writing | "Write documentation for this API" |
+| **Infrastructure** | Terraform, serverless, Lambda, cloud setup, IaC | "Generate Terraform for this deployment" |
+| **Performance** | optimization, profiling, caching, performance | "Optimize this database query" |
+| **TDD** | TDD, test-driven, red-green-refactor, test-first | "Let's use TDD for this feature" |
+| **PM** | product, requirements, user story, MVP, roadmap | "Help me plan this product feature" |
+
+**Pro tip**: If skills aren't activating, add explicit keywords: "Help me **design the architecture** for..." instead of just "Help me with the backend".
 
 ### Agents (Task Tool Spawn)
 
@@ -799,13 +816,14 @@ For complex, isolated tasks requiring specialized plugins, spawn via Task tool:
 ### Usage Pattern
 
 ```typescript
-// Skills auto-activate - just describe what you need:
-"Design the authentication system architecture"  // → sw:architect activates
-"Review my code for security issues"             // → sw:security activates
+// Skills auto-activate - just describe what you need (NO explicit call):
+"Design the authentication system architecture"  // → architect skill loads automatically
+"Review my code for security issues"             // → security skill loads automatically
+"Let's use TDD for this feature"                 // → tdd-orchestrator skill loads automatically
 
-// Agents spawn for isolated complex tasks:
+// Agents spawn for isolated complex tasks (explicit Task call):
 Task({
-  subagent_type: "sw-k8s:kubernetes-architect",
+  subagent_type: "sw-k8s:kubernetes-architect:kubernetes-architect",
   prompt: "Create K8s manifests for a 3-tier web app with Ingress",
   description: "K8s manifests design"
 })
@@ -813,8 +831,14 @@ Task({
 
 ### When to Use What
 
-- **Skills** (auto): Architecture decisions, code review, security review, documentation
-- **Agents** (Task tool): Complex K8s/infra, frontend architecture, ML pipelines, external syncs
+| Scenario | Use | Why |
+|----------|-----|-----|
+| Architecture decisions | Skills (auto) | Keywords trigger automatically |
+| Code review, security | Skills (auto) | Keywords trigger automatically |
+| Complex K8s/infra | Agents (Task) | Needs isolated context |
+| Frontend architecture | Agents (Task) | Specialized plugin |
+| ML pipelines | Agents (Task) | Specialized plugin |
+| External syncs | Commands | Use `/sw-github:sync` etc. |
 
 **Reference**: See `plugins/PLUGINS-INDEX.md` for full plugin catalog with triggers.
 
