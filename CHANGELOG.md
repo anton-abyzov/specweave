@@ -4,6 +4,27 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.115] - 2026-01-14
+
+### ✨ New Features
+
+- **`specweave cache-status`**: New command to check plugin cache health status, detect staleness, and suggest fixes. Supports `--check-github` to compare against remote
+- **`specweave export-skills`**: Export SpecWeave skills to Agent Skills open standard format (agentskills.io) for cross-platform compatibility with GitHub Copilot, VS Code, Gemini CLI, Cursor
+- **`--force` flag for `refresh-marketplace`**: Force reinstall all plugins by clearing cache first, ensuring fresh copies from source
+
+### 📚 Documentation
+
+- **ADR-0225**: New architecture decision record documenting plugin cache architecture, lifecycle, and troubleshooting
+- **AGENTS-INDEX.md rewrite**: Clarified that `sw` plugin provides auto-activating SKILLS, not Task-invocable agents
+- **CLAUDE.md troubleshooting updates**: Added cache-related guidance for "Skills not activating" and "Cache stale" issues
+
+### 🔧 Improvements
+
+- **Cache staleness fix**: `refresh-marketplace --force` now properly uninstalls plugins and clears cache before reinstalling
+- **Skill activation improvements**: Enhanced skill descriptions and trigger keywords for better auto-activation
+
+---
+
 ## [1.0.114] - 2026-01-13
 
 ### 📚 Documentation
