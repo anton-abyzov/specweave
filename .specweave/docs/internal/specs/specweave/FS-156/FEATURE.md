@@ -2,10 +2,10 @@
 id: FS-156
 title: Per-Skill Reflection with MEMORY.md Override System
 type: feature
-status: planned
+status: completed
 priority: P1
 created: 2026-01-06
-lastUpdated: 2026-01-06
+lastUpdated: 2026-01-14
 external_tools:
   github:
     type: milestone
@@ -23,7 +23,7 @@ SpecWeave's reflection system currently uses centrali
 
 | Increment | Status | Completion Date |
 |-----------|--------|----------------|
-| [0156-per-skill-reflection-memory-override](../../../../increments/0156-per-skill-reflection-memory-override/spec.md) | ⏳ planned | 2026-01-06 |
+| [0156-per-skill-reflection-memory-override](../../../../increments/0156-per-skill-reflection-memory-override/spec.md) | ✅ completed | 2026-01-06 |
 
 ## User Stories
 

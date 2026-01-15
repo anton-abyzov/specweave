@@ -1,15 +1,11 @@
 ---
 id: US-001
 feature: FS-148
-title: Stop Hook-Based Continuation Loop
+title: "Stop Hook-Based Continuation Loop"
 status: completed
 priority: P1
 created: 2025-12-29
 project: specweave
-external:
-  github:
-    issue: 951
-    url: https://github.com/anton-abyzov/specweave/issues/951
 ---
 
 # US-001: Stop Hook-Based Continuation Loop

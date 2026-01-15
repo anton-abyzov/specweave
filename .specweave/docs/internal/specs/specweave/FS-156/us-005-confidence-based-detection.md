@@ -41,4 +41,4 @@ external:
 
 ## Tasks
 
-- [ ] **T-026**: Create /sw:reflect-status command
+- [x] **T-026**: Create /sw:reflect-status command

@@ -1,15 +1,11 @@
 ---
 id: US-012
 feature: FS-148
-title: 2-Level Structure Support (Projects/Boards)
+title: "2-Level Structure Support (Projects/Boards)"
 status: completed
 priority: P1
 created: 2025-12-29
 project: specweave
-external:
-  github:
-    issue: 962
-    url: https://github.com/anton-abyzov/specweave/issues/962
 ---
 
 # US-012: 2-Level Structure Support (Projects/Boards)
