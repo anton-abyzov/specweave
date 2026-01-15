@@ -430,6 +430,42 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
   // Step 1.5: Pre-refresh cache health check
   await preRefreshCacheCheck(options.verbose);
 
+  // Step 1.6: Clean up auto mode state files
+  console.log(chalk.yellow('🧹 Cleaning up auto mode state files...'));
+  const stateDir = path.join(process.cwd(), '.specweave/state');
+  if (fs.existsSync(stateDir)) {
+    const filesToClean = [
+      'auto-mode.json',
+      'auto-session.json',
+      'auto-needs-increment.json',
+      '.stop-auto-dedup',
+      '.stop-auto-last-fire',
+    ];
+
+    let cleaned = 0;
+    for (const file of filesToClean) {
+      const filePath = path.join(stateDir, file);
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+          cleaned++;
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+    }
+
+    if (cleaned > 0) {
+      console.log(chalk.green(`✓ Cleaned up ${cleaned} auto mode state file(s)`));
+    } else {
+      console.log(chalk.blue('ℹ No auto mode state files to clean'));
+    }
+  } else {
+    console.log(chalk.blue('ℹ Not in a SpecWeave project - skipping auto mode cleanup'));
+  }
+
+  console.log('');
+
   // Step 2: Get plugin list
   console.log(chalk.yellow('📋 Step 2: Reading plugin list...'));
 
