@@ -2,7 +2,7 @@
 id: US-001
 feature: FS-153
 title: "Implement Schema.org Structured Data"
-status: not_started
+status: completed
 priority: P1
 created: 2026-01-04
 project: specweave-dev
@@ -16,11 +16,11 @@ project: specweave-dev
 
 ## Acceptance Criteria
 
-- [ ] **AC-US1-01**: Organization schema added to docs-site/docusaurus.config.ts headTags with name, URL, logo, and social media profiles
-- [ ] **AC-US1-02**: SoftwareApplication schema added with applicationCategory, operatingSystem, offers (price: 0, priceCurrency: USD)
-- [ ] **AC-US1-03**: AggregateRating schema included in SoftwareApplication with realistic rating values based on GitHub stars
-- [ ] **AC-US1-04**: JSON-LD scripts render in HTML head tag on all pages (verified by viewing page source)
-- [ ] **AC-US1-05**: Structured data passes Google Rich Results Test validation with zero errors
+- [x] **AC-US1-01**: Organization schema added to docusaurus.config.ts headTags with name, URL, logo, and social media profiles
+- [x] **AC-US1-02**: SoftwareApplication schema added with applicationCategory, operatingSystem, offers (price: 0, priceCurrency: USD)
+- [x] **AC-US1-03**: AggregateRating schema included in SoftwareApplication with realistic rating values based on GitHub stars
+- [x] **AC-US1-04**: JSON-LD scripts render in HTML head tag on all pages (verified by viewing page source)
+- [x] **AC-US1-05**: Structured data passes Google Rich Results Test validation with zero errors
 
 ---
 

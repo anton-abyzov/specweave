@@ -807,10 +807,49 @@ program
   .description('Refresh SpecWeave marketplace and install all plugins')
   .option('--local', 'Use local development version (ONLY for active dev)')
   .option('--github', 'Pull latest from GitHub (default, recommended)')
+  .option('-f, --force', 'Force reinstall all plugins (clears cache, ensures fresh copy)')
   .option('-v, --verbose', 'Show detailed error messages')
   .action(async (options) => {
     const { refreshMarketplaceCommand } = await import('../dist/src/cli/commands/refresh-marketplace.js');
     await refreshMarketplaceCommand(options);
+  });
+
+// Cache status command - Display plugin cache health status
+program
+  .command('cache-status')
+  .description('Display plugin cache health status and detect issues')
+  .argument('[plugin]', 'Check specific plugin (optional)')
+  .option('--verbose', 'Show detailed information')
+  .option('--check-github', 'Check GitHub for updates (uses API)')
+  .action(async (pluginName, options) => {
+    const { cacheStatus } = await import('../dist/src/cli/commands/cache-status.js');
+    await cacheStatus({
+      pluginName,
+      verbose: options.verbose,
+      checkGithub: options.checkGithub,
+    });
+  });
+
+// Export skills command - Export to Agent Skills open standard
+program
+  .command('export-skills')
+  .description('Export SpecWeave skills to Agent Skills open standard format (agentskills.io)')
+  .option('-o, --output <dir>', 'Output directory (default: .agent-skills)')
+  .option('-p, --plugin <name>', 'Export specific plugin only')
+  .option('-s, --skill <name>', 'Export specific skill only')
+  .option('--dry-run', 'Preview without writing files')
+  .option('--validate', 'Validate output against Agent Skills spec')
+  .option('-v, --verbose', 'Show detailed output')
+  .action(async (options) => {
+    const { exportSkillsCommand } = await import('../dist/src/cli/commands/export-skills.js');
+    await exportSkillsCommand({
+      output: options.output,
+      plugin: options.plugin,
+      skill: options.skill,
+      dryRun: options.dryRun,
+      validate: options.validate,
+      verbose: options.verbose,
+    });
   });
 
 // Set sync target command - Set external tool sync target for increment (ADR-0211)
@@ -900,6 +939,7 @@ program.on('--help', () => {
   console.log('  $ specweave set-sync-target 0008 -v         # Show resolution path');
   console.log('  $ specweave set-sync-target 0008 --validate-only  # Validate only');
   console.log('  $ specweave refresh-marketplace             # Refresh marketplace (GitHub)');
+  console.log('  $ specweave refresh-marketplace --force     # Force reinstall (clears cache)');
   console.log('  $ specweave refresh-marketplace --local     # Use local dev version');
   console.log('  $ specweave migrate-memory                  # Migrate legacy memory files');
   console.log('  $ specweave migrate-memory --dry-run        # Preview migration');

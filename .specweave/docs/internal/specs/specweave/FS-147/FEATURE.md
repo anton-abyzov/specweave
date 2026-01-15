@@ -1,52 +1,32 @@
-# FS-147: Eliminate Duplicate Prompts in GitHub Init Flow
+---
+id: FS-147
+title: Eliminate Duplicate Prompts in GitHub + GitHub Issues Init Flow
+type: feature
+status: completed
+priority: P1
+created: 2026-01-14
+lastUpdated: 2026-01-14
+external_tools:
+  github:
+    type: milestone
+    id: 69
+    url: https://github.com/anton-abyzov/specweave/milestone/69
+---
 
-**Status**: Completed
-**Increment**: 0147-github-init-duplicate-prompts-elimination
-**Priority**: P1
+# Eliminate Duplicate Prompts in GitHub + GitHub Issues Init Flow
 
-## Summary
+## Overview
 
-Eliminated duplicate configuration prompts when users select GitHub for both repositories AND issue tracking during `specweave init`. Previously, users were asked the same repository configuration questions twice.
+When users select GitHub for repositories AND GitHub Issues for issue tracking during `specweave init`, they are currently asked the same repository configuration questions TWICE:
 
-## Problem Solved
+## Implementation History
 
-When users selected GitHub for repositories AND GitHub Issues for issue tracking, they were prompted for the same information twice:
-1. During repository setup (Step 1)
-2. During issue tracker setup (Step 2)
-
-## Solution
-
-Pass GitHub repository selection data through function parameters from repository setup to issue tracker setup, eliminating redundant prompts.
-
-```
-Repository Setup → repoResult.githubRepoSelection → Issue Tracker Setup
-```
+| Increment | Status | Completion Date |
+|-----------|--------|----------------|
+| [0147-github-init-duplicate-prompts-elimination](../../../../increments/0147-github-init-duplicate-prompts-elimination/spec.md) | ✅ completed | 2026-01-14 |
 
 ## User Stories
 
-### US-001: Pass GitHub Repository Selection Through Init Workflow
-- Pass `githubRepoSelection` from `repoResult` to `setupIssueTrackerWrapper()`
-- Matches existing `adoCredentialsFromRepoSetup` pattern
-
-### US-002: Skip Duplicate Prompts When GitHub Data Available
-- Skip repository structure and configuration prompts
-- Reuse `org` and `pat` from repository setup
-
-### US-003: Parent Repository Selection for Multi-Repo
-- Multi-repo users can select which repo hosts GitHub Issues
-- Single-repo case skips parent selection
-
-## Technical Changes
-
-- `src/cli/commands/init.ts` - Extract and pass `githubRepoSelection`
-- `src/cli/helpers/issue-tracker/index.ts` - Accept `githubCredentialsFromRepoSetup` parameter
-- `src/cli/helpers/issue-tracker/github.ts` - Use passed data instead of re-prompting
-
-## Success Metrics
-
-- Zero duplicate questions when GitHub repos + GitHub Issues selected
-- Init flow completes 30-50% faster (fewer prompts)
-- All existing tests pass
-
----
-*Synced from increment: 2025-12-30*
+- [US-001: Pass GitHub Repository Selection Through Init Workflow](./us-001-pass-github-repository-selection-through-init-workflow.md)
+- [US-002: Skip Duplicate Prompts When GitHub Data Available](./us-002-skip-duplicate-prompts-when-github-data-available.md)
+- [US-003: Parent Repository Selection for Multi-Repo GitHub Issues](./us-003-parent-repository-selection-for-multi-repo-github-issues.md)

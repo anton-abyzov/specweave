@@ -48,7 +48,7 @@ external:
 - [x] **T-011**: Unit tests for ReflectionEngine
 - [x] **T-018**: Integration test for smart merge workflow
 - [x] **T-019**: Unit tests for deduplication logic
-- [ ] **T-027**: E2E test for silent reflection workflow
+- [x] **T-027**: E2E test for silent reflection workflow
 - [x] **T-035**: Design homepage hero section
 - [x] **T-036**: Create features section with cards
 - [x] **T-037**: Add quick start section
@@ -56,4 +56,4 @@ external:
 - [x] **T-039**: Implement dark mode support
 - [x] **T-040**: Optimize homepage performance
 - [x] **T-041**: Test homepage accessibility
-- [ ] **T-042**: Deploy updated homepage to spec-weave.com
+- [x] **T-042**: Dogfooding banner (use case section)

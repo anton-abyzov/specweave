@@ -8,3 +8,5 @@
 - → Wrong! Always use vi.fn() not jest.fn() with Vitest testing framework.
 - → The convention here in SpecWeave is to use kebab-case for all file names.
 - ✗→✓ don't X instead" pattern expects explicit "instead" keyword positioning No support for "rather", "fi
+- → All tests pass locally. Where should I deploy?
+- → never used in any user pojrect based on specweave in any user promp
