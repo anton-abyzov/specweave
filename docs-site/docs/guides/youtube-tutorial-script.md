@@ -154,6 +154,59 @@ Your Idea → Spec ✓ → Plan ✓ → Tasks ✓ → Code → Living Docs
 
 ---
 
+## SECTION 1.25: WHY SPECWEAVE ISN'T A "FRAMEWORK" (4:00 - 4:30)
+
+**[SCREEN: Show the word "Framework" with negative associations crossed out]**
+
+> "Now, when you hear 'framework,' you might think Angular — heavy, opinionated, lots of rules. That's NOT what SpecWeave is.
+>
+> SpecWeave is more like... steroids for your AI. A lightweight layer that gives Claude Code — or any AI tool — enterprise capabilities:
+>
+> - **Permanent memory** instead of chat that disappears
+> - **GitHub/JIRA sync** instead of manual ticket updates
+> - **Quality gates** instead of 'we'll add tests later'
+> - **Autonomous execution** instead of babysitting every prompt"
+
+**[EXCALIDRAW: "Framework" crossed out → "AI Supercharger"]**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│         SPECWEAVE IS NOT A CONSTRAINING FRAMEWORK            │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ❌ NOT Angular vibes — heavy, opinionated, many rules      │
+│  ❌ NOT a walled garden — delete it tomorrow, specs remain   │
+│  ❌ NOT proprietary — just markdown files (spec.md, etc.)   │
+│                                                              │
+│  ✅ IS a lightweight layer — 3 markdown files per feature   │
+│  ✅ IS an amplifier — makes your AI 10x more capable        │
+│  ✅ IS team-agnostic — Claude, GPT-4, Copilot, any AI works │
+│                                                              │
+│  THE POSITIONING:                                            │
+│  "The Enterprise Layer for AI Coding"                        │
+│  — enterprise capabilities without enterprise complexity     │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> "It's three markdown files — spec.md, plan.md, tasks.md. That's it. You can delete SpecWeave tomorrow and your specs still exist. No lock-in. No database. No server.
+>
+> The truth? Claude Code by itself is already incredible. But it lacks enterprise features — external tool sync, multi-project coordination, quality enforcement, long-term memory.
+>
+> SpecWeave adds those missing pieces. It's the difference between:
+> - A powerful tool you use session by session
+> - An AI development system that compounds over time"
+
+**[Quick mention of Claude Code velocity]**
+
+> "And here's something cool — Anthropic ships Claude Code features faster than they can document them. New version every week. SpecWeave tracks those changes and uses the latest optimizations automatically.
+>
+> `context: fork` for isolated execution. `model: opus` for critical decisions. MCP Tool Search for 85% token reduction. Skill-scoped hooks for efficiency.
+>
+> You don't have to read Claude Code changelogs. SpecWeave does it for you."
+
+---
+
 ## SECTION 1.5: THE CLAUDE CODE FOUNDATION (4:30 - 8:00)
 
 **[SCREEN: Navigate to a code editor showing .claude/ folder structure]**
@@ -452,9 +505,48 @@ ls .claude/hooks/
 >
 > Fewer dependencies, fewer failure points, faster execution."
 
+### 6.5. The Two MCP Servers You SHOULD Install
+
+**[EXCALIDRAW: Essential MCP Servers]**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│           THE TWO MCP SERVERS EVERY PROJECT NEEDS                    │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  📚 CONTEXT7 (Real-Time Documentation)                              │
+│     • Fetches latest docs for ANY library                           │
+│     • React 19? Next.js 15? Supabase v2? Always current             │
+│     • No more hallucinated APIs                                      │
+│                                                                      │
+│     Install: claude mcp add context7 -- npx -y @anthropic-ai/context7-mcp
+│                                                                      │
+│  🎭 PLAYWRIGHT (Browser Automation)                                 │
+│     • Automates E2E testing at the browser level                    │
+│     • Screenshot verification, form testing, visual regression      │
+│     • Claude can literally SEE your app                              │
+│                                                                      │
+│     Install: claude mcp add playwright -- npx -y @anthropic-ai/playwright-mcp
+│                                                                      │
+│  WHY THESE TWO?                                                     │
+│  • Context7 → Claude knows correct APIs (no guessing)               │
+│  • Playwright → Claude can verify UI actually works                  │
+│  • Together → From spec to tested, verified feature                  │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+> "Now I said CLI over MCP — but there are two exceptions. Two MCP servers that I install on EVERY project because they add capabilities that CLIs can't match:
+>
+> **Context7** — real-time documentation. Claude can fetch the latest docs for any library. React 19 hooks? Next.js 15 server actions? Supabase v2 realtime? Always current. No more hallucinated APIs.
+>
+> **Playwright MCP** — browser automation. Claude can literally see your app. Click buttons, fill forms, take screenshots, verify that the UI actually works. Combine this with SpecWeave's test-embedded tasks, and you get end-to-end verification.
+>
+> These two? Install them. They're exceptions to the 'CLI over MCP' rule because they add capabilities you simply can't get from a CLI."
+
 **[SCREEN: Back to main flow]**
 
-> "Okay — plugins, skills, agents, marketplace, hooks, CLI over MCP. That's the Claude Code foundation.
+> "Okay — plugins, skills, agents, marketplace, hooks, CLI over MCP with two exceptions. That's the Claude Code foundation.
 >
 > SpecWeave leverages all of this. Every increment you create uses skills for guidance, agents for complex tasks, hooks for automation, and CLIs for external integrations."
 
@@ -491,6 +583,53 @@ ls .claude/hooks/
 ```
 
 > "The Claude Code team ships updates weekly. These optimizations directly benefit SpecWeave users — skill hot-reload means you can customize skills without restarting, context fork means skills can run isolated when needed, faster file suggestions make @-mentions instant."
+
+### 8. Anthropic Defines Industry Standards
+
+**[SCREEN: Show agentskills.io homepage]**
+
+> "Here's something important to understand: Anthropic doesn't just USE standards — they DEFINE them. Let me show you what I mean."
+
+**[EXCALIDRAW: Anthropic's Industry Standards]**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│           ANTHROPIC DEFINES THE STANDARDS                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  🔌 MCP (Model Context Protocol)                                    │
+│     • Open standard for AI-to-service connections                   │
+│     • Adopted by: OpenAI, Google, Microsoft                         │
+│     • URL: modelcontextprotocol.io                                  │
+│                                                                      │
+│  ⚡ AGENT SKILLS                                                     │
+│     • Open format for giving AI agents capabilities                 │
+│     • Skills = folders with instructions, scripts, resources        │
+│     • Build once → deploy across agent products                     │
+│     • URL: agentskills.io                                           │
+│                                                                      │
+│  📦 CLAUDE CODE PLUGIN ARCHITECTURE                                 │
+│     • Skills, agents, hooks, commands                               │
+│     • Becoming the pattern for AI development tools                 │
+│                                                                      │
+│  THE PATTERN: Anthropic releases → Industry adopts → Standard forms │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+> "**MCP** — Model Context Protocol. Anthropic created it, then OpenAI, Google, and Microsoft adopted it. Now it's THE way to connect AI to external services.
+>
+> **Agent Skills** — just released at agentskills.io. An open format for giving AI agents reusable capabilities. Skills are folders containing instructions, scripts, and resources that agents can discover and load on-demand.
+>
+> Think about it: build a skill once, deploy it across ANY skills-compatible agent product. That's interoperability.
+>
+> SpecWeave was actually ahead of this trend — our SKILL.md format predates the Agent Skills standard. But now we're aligned with it. Your SpecWeave skills? They follow the same patterns Anthropic is standardizing."
+
+**[Point to the strategic advantage]**
+
+> "Why does this matter? Because when you learn SpecWeave, you're learning patterns that are BECOMING industry standards. MCP, Agent Skills, plugin architecture — all pioneered by Anthropic, all foundational to SpecWeave.
+>
+> You're not learning a proprietary system. You're learning the future of AI development tooling."
 
 > "Now let's see how SpecWeave's philosophy builds on top of this foundation."
 
@@ -1067,51 +1206,104 @@ git checkout HEAD~1 -- .specweave/skills/frontend/MEMORY.md
 
 ---
 
-## SECTION 12.75: DEPLOYMENT PLATFORMS (35:30 - 38:30)
+## SECTION 12.75: DEPLOYMENT PLATFORMS - THE $0 TO PRODUCTION STACK (35:30 - 38:30)
 
 **[SCREEN: Navigate to docs/guides/deployment-platforms]**
 
-> "Your increment is complete. Tests pass. Docs updated. Now — where do you deploy?"
+> "Your increment is complete. Tests pass. Docs updated. Now — where do you deploy?
+>
+> And here's a question that matters more than you think: **Why NOT AWS, Azure, or GCP?**"
+
+**[EXCALIDRAW: The Complexity Tax diagram]**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│          AWS/AZURE/GCP: THE COMPLEXITY TAX                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ❌ 200+ services to learn                                  │
+│  ❌ IAM policies, VPCs, security groups                     │
+│  ❌ Surprise bills (forgot to turn off that Lambda?)        │
+│  ❌ Cold starts in seconds                                   │
+│  ❌ Requires dedicated DevOps knowledge                      │
+│                                                              │
+│  WHEN TO USE:                                                │
+│  • Enterprise with FedRAMP compliance                        │
+│  • Existing infrastructure lock-in                           │
+│  • Specialized services (SageMaker, BigQuery)                │
+│  • When you have a dedicated DevOps team                     │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> "If your DevOps team is just you, don't pick a stack that expects deep knowledge of IAM policies and VPC peering. Use tools that let you stay in **dev mode**, not **ops mode**."
+
+**[EXCALIDRAW: The $0 Stack]**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              THE $0 TO PRODUCTION STACK                      │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Frontend    →  Cloudflare Pages (unlimited) or Vercel      │
+│  Backend     →  Cloudflare Workers (100K/day)               │
+│  Database    →  Supabase (500MB + 50K MAU)                  │
+│  Storage     →  Cloudflare R2 (10GB + $0 egress)            │
+│  Auth        →  Supabase Auth (50K MAU included)            │
+│  Git/CI      →  GitHub (unlimited repos)                    │
+│                                                              │
+│  TOTAL MONTHLY COST: $0                                      │
+│  (until you have real traction)                              │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> "This exact stack — Cloudflare + Supabase + GitHub — powers most of the apps I showed you. Zero dollars until you have paying customers. That's the modern way."
 
 **[Point to the Quick Decision flowchart]**
 
-> "Two platforms dominate modern deployment: Vercel and Cloudflare. Both are excellent. Let me help you choose."
+> "Let me break down the key players. You have six options, and they each have a sweet spot."
 
-**[EXCALIDRAW: Side-by-side comparison visual]**
+**[EXCALIDRAW: Platform comparison]**
 
 ```
-┌─────────────────┬─────────────────┐
-│     VERCEL      │   CLOUDFLARE    │
-├─────────────────┼─────────────────┤
-│  Next.js Native │  Unlimited BW   │
-│  Best DX        │  100K/day APIs  │
-│  $20/user       │  $20/team       │
-│  100GB/mo       │  Commercial OK  │
-└─────────────────┴─────────────────┘
+┌─────────────────┬─────────────────┬─────────────────┐
+│     VERCEL      │   CLOUDFLARE    │    SUPABASE     │
+├─────────────────┼─────────────────┼─────────────────┤
+│  Next.js Native │  Unlimited BW   │  Real Postgres  │
+│  Best DX        │  100K/day APIs  │  Auth Built-in  │
+│  $20/user       │  $5/team flat   │  $25/project    │
+│  NO commercial  │  Commercial OK  │  Realtime       │
+│  on free tier   │  on free tier   │  Row-Level Sec  │
+└─────────────────┴─────────────────┴─────────────────┘
 ```
 
-**[SCROLL to Free Tier Comparison table]**
-
-> "Look at the free tiers.
+> "Key takeaways:
 >
-> Vercel: 100GB bandwidth, 100K serverless calls per MONTH.
-> Cloudflare: UNLIMITED bandwidth, 100K calls per DAY.
+> **Vercel** — best developer experience for Next.js. But the hobby tier is **personal, non-commercial only**. If you're building a product, you need Pro at $20 per user per month.
 >
-> If you're building high-traffic APIs or need commercial use on free tier — Cloudflare.
-> If you want zero-config Next.js with best developer experience — Vercel."
+> **Cloudflare** — unlimited bandwidth, 100K requests per DAY not month, and commercial use on free tier. That's huge for startups.
+>
+> **Supabase** — the open-source Firebase alternative with REAL PostgreSQL. Auth, realtime, storage, edge functions — all in one. 50K monthly active users on free tier.
+>
+> **Railway and Render** — when you need real containers, background jobs, or traditional backends. Heroku successors.
+>
+> **Netlify** — JAMstack pioneer, great for forms-heavy sites."
 
 **[Point to Decision Matrix]**
 
-> "Here's how I decide:
+> "Here's my mental model:
 >
-> - Next.js solo project? Vercel.
-> - High-traffic API? Cloudflare Workers.
-> - Team bigger than 2? Cloudflare — they charge per account, not per user.
-> - Startup that needs commercial use? Cloudflare free tier allows it."
+> - **Next.js SaaS?** Vercel + Supabase
+> - **High-traffic API?** Cloudflare Workers + Supabase
+> - **Mobile backend?** Supabase alone — auth, realtime, storage all-in-one
+> - **Startup MVP?** Cloudflare + Supabase for $0 until traction
+> - **Custom Python/Ruby?** Railway or Render
+> - **Static docs?** Cloudflare Pages — unlimited bandwidth, free forever"
 
 **[SCROLL to Cloudflare Serverless Ecosystem section]**
 
-> "But here's where Cloudflare gets really interesting — it's not just hosting. It's a complete serverless stack."
+> "Now let me show you why Cloudflare is my default choice for APIs — it's not just hosting. It's a complete serverless stack at the edge."
 
 **[EXCALIDRAW: Cloudflare ecosystem diagram]**
 

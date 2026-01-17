@@ -1,8 +1,8 @@
 # SpecWeave
 
-**The AI Development Framework That Can Run for Hours Autonomously.**
+**The Enterprise Layer for AI Coding.**
 
-*Ship features while you sleep. `/sw:auto` executes tasks, runs tests, fixes failures, and syncs to GitHub/JIRA — completely hands-off. Mobile apps, microservices, multi-repo architectures — one framework handles it all.*
+*Enterprise capabilities for Claude Code — without enterprise complexity. Permanent memory, GitHub/JIRA sync, quality gates, autonomous execution. Ship features while you sleep.*
 
 [![NPM Version](https://img.shields.io/npm/v/specweave?color=brightgreen)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -229,12 +229,23 @@ Three gates before any increment closes:
 2. **Tests**: 60%+ coverage (configurable)
 3. **Documentation**: Living docs updated
 
-### Token Efficiency
+### Token Efficiency (MCP Tool Search)
 
-70%+ context reduction:
-- Progressive plugin loading
-- Skills auto-activate on keywords
-- Context optimizer removes irrelevant specs
+**85%+ context reduction** with Claude Code 2.1.7+ MCP Tool Search (lazy loading):
+
+| Before (2.1.6-) | After (2.1.7+) |
+|-----------------|----------------|
+| All plugins loaded upfront (~100k tokens) | On-demand loading (~5-10k tokens) |
+| Max ~25 tasks/increment | ~50+ tasks/increment |
+| `/sw:auto` context-limited | Hours of autonomous work |
+
+**How it works:**
+- **Lazy loading by default** - Tools load on-demand via search, not all at once
+- **Auto-enabled** - When MCP tools exceed 10% of context window
+- **SpecWeave's 24 plugins** discovered only when keywords match
+- **Skills activate on demand** - Architecture, PM, TDD skills load when needed
+
+**No configuration needed** - enabled by default. [Learn more about Tool Search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool).
 
 ### Claude Code 2.1.x Optimizations
 
@@ -262,6 +273,18 @@ hooks:              # Skill-scoped hooks
           command: bash hooks/v2/guards/task-ac-sync-guard.sh
 ---
 ```
+
+### Built on Industry Standards
+
+Anthropic doesn't just use standards — they **define** them. SpecWeave builds on:
+
+| Standard | What It Does |
+|----------|--------------|
+| **[MCP](https://modelcontextprotocol.io)** | Model Context Protocol — adopted by OpenAI, Google, Microsoft |
+| **[Agent Skills](https://agentskills.io)** | Open format for reusable AI capabilities across agent products |
+| **Plugin Architecture** | Skills, agents, hooks pattern — becoming the standard for AI dev tools |
+
+**Learn SpecWeave = Learn the future.** Your skills are portable across any agent that supports these standards.
 
 ---
 

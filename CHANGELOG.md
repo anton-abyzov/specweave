@@ -4,6 +4,19 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.118] - 2026-01-17
+
+### 📚 Documentation
+
+- **Enterprise positioning**: Updated README and docs with "The Enterprise Layer for AI Coding" messaging
+- **MCP Tool Search**: Added documentation for 85%+ context reduction with Claude Code 2.1.7+ lazy loading
+- **Industry standards section**: New section highlighting MCP, Agent Skills, and plugin architecture as Anthropic-led standards
+- **Recommended MCP servers**: Added Context7 and Playwright as recommended global MCP servers
+- **Deployment platforms guide**: Expanded guide with Railway, Render, Supabase, Vercel integration patterns
+- **YouTube tutorial script**: Enhanced script with enterprise features and demo walkthrough
+
+---
+
 ## [1.0.116] - 2026-01-14
 
 ### 🔧 Improvements
