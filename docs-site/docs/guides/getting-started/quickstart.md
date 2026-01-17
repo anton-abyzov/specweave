@@ -120,6 +120,30 @@ After `specweave init .`:
 | **Hooks** | 3+ | Event-driven automation (lifecycle, sync, status) |
 | **CLAUDE.md** | 1 | Your project reference guide |
 
+:::tip Context Efficiency with MCP Tool Search
+Claude Code 2.1.7+ includes **MCP Tool Search** (lazy loading) — SpecWeave's 24 plugins load on-demand instead of all at once.
+
+**Result**: 85%+ context reduction (~100k → ~5-10k tokens at startup), enabling longer `/sw:auto` sessions and more complex increments.
+
+No configuration needed — enabled by default when MCP tools exceed 10% of context.
+:::
+
+:::info Recommended MCP Servers
+Two MCP servers that supercharge SpecWeave:
+
+**Context7** — Real-time docs for any library (no more hallucinated APIs):
+```bash
+claude mcp add context7 -- npx -y @anthropic-ai/context7-mcp
+```
+
+**Playwright** — Browser automation for E2E testing (Claude sees your app):
+```bash
+claude mcp add playwright -- npx -y @anthropic-ai/playwright-mcp
+```
+
+These add capabilities CLI tools can't match — current documentation and visual verification.
+:::
+
 ---
 
 ## Essential Commands

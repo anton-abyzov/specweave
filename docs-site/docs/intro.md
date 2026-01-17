@@ -4,9 +4,9 @@ sidebar_position: 1
 
 # SpecWeave
 
-**The AI Development Framework That Can Run for Hours Autonomously**
+**The Enterprise Layer for AI Coding**
 
-*Ship features while you sleep. Mobile apps, microservices, multi-repo architectures — one framework handles it all.*
+*Enterprise capabilities for Claude Code — without enterprise complexity. Permanent memory, GitHub/JIRA sync, quality gates, autonomous execution. Ship features while you sleep.*
 
 [![NPM Version](https://img.shields.io/npm/v/specweave?color=blue)](https://www.npmjs.com/package/specweave)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -236,6 +236,18 @@ SpecWeave leverages the latest Claude Code features for maximum performance:
 
 **[Learn about Claude Code architecture →](./overview/claude-code-architecture)**
 
+### 🌐 Anthropic Defines Industry Standards
+
+SpecWeave builds on standards that Anthropic is **defining for the entire industry**:
+
+| Standard | What It Does | Industry Status |
+|----------|--------------|-----------------|
+| **[MCP](https://modelcontextprotocol.io)** | Model Context Protocol - connects AI to external services | Adopted by OpenAI, Google, Microsoft |
+| **[Agent Skills](https://agentskills.io)** | Open format for reusable AI agent capabilities | New standard for agent interoperability |
+| **Plugin Architecture** | Skills, agents, hooks, commands pattern | Becoming the standard for AI dev tools |
+
+**Why this matters:** When you learn SpecWeave, you're learning patterns that are **becoming industry standards**. Build skills once, use them across any skills-compatible agent. SpecWeave's SKILL.md format aligns with Anthropic's Agent Skills specification.
+
 ---
 
 ## The Three-File Foundation
@@ -323,13 +335,36 @@ Three gates before any [increment](/docs/glossary/terms/increments) closes:
 2. **Tests**: 60%+ coverage minimum (configurable)
 3. **Documentation**: Living docs updated
 
-### Token Efficiency
+### Token Efficiency (MCP Tool Search)
 
-70%+ context reduction through:
-- Progressive plugin loading (load only what you need)
-- Skills auto-activate based on keywords
-- Context optimizer removes irrelevant specs
-- Sub-agent parallelization isolates context
+**85%+ context reduction** with Claude Code 2.1.7+ [MCP Tool Search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool) (lazy loading):
+
+| Before (2.1.6-) | After (2.1.7+) |
+|-----------------|----------------|
+| All plugins loaded upfront (~100k tokens) | On-demand loading (~5-10k tokens) |
+| Max ~25 tasks/increment | ~50+ tasks/increment |
+| `/sw:auto` context-limited | Hours of autonomous work |
+
+**How it works:**
+- **Lazy loading by default** - Tools discovered on-demand, not all at once
+- **Auto-enabled at 10%** - When MCP tools exceed 10% of context window
+- **SpecWeave's 24 plugins** load only when their keywords match
+- **Skills activate on demand** - PM, Architect, TDD skills load when needed
+
+**No configuration required** - enabled by default in Claude Code 2.1.7+.
+
+### Recommended MCP Servers
+
+Two MCP servers that supercharge SpecWeave (install globally):
+
+| Server | Purpose | Install Command |
+|--------|---------|-----------------|
+| **[Context7](https://github.com/anthropic-ai/context7-mcp)** | Real-time docs for any library | `claude mcp add context7 -- npx -y @anthropic-ai/context7-mcp` |
+| **[Playwright](https://github.com/anthropic-ai/playwright-mcp)** | Browser automation for E2E | `claude mcp add playwright -- npx -y @anthropic-ai/playwright-mcp` |
+
+**Why these two?**
+- **Context7**: Claude fetches latest docs (no hallucinated APIs)
+- **Playwright**: Claude can see and interact with your app (visual verification)
 
 ---
 
