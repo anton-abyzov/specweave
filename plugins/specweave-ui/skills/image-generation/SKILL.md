@@ -1,6 +1,12 @@
 ---
 name: image-generation
-description: AI image generation using Pollinations.ai - FREE, no API key required. Generates professional-quality images for websites, apps, marketing, mockups, icons, and illustrations. Auto-activates when images are needed. Activates for generate image, create image, make image, image for, picture of, illustration of, icon for, logo for, hero image, banner image, background image, placeholder image, product image, mockup image, avatar, thumbnail, splash screen, app icon, website image, landing page image, UI image, design asset, visual asset, stock photo, photo of, render, artwork, graphic, visual, imagery.
+description: AI image generation expert using Pollinations.ai - FREE, no API key required. Generates professional-quality images for websites, apps, marketing, mockups, icons, and illustrations. Activates for image, images, generate image, create image, make image, picture, pictures, illustration, illustrations, icon, icons, logo, logos, hero image, hero section image, banner, banners, background image, backgrounds, placeholder, placeholders, product image, product shot, mockup, mockups, avatar, avatars, thumbnail, thumbnails, splash screen, app icon, website image, landing page, UI image, design asset, visual asset, stock photo, photo, render, renders, artwork, graphic, graphics, visual, visually, imagery, Pollinations, Pollinations.ai, AI image, AI art, AI generated, text-to-image, image generation, image generator, FLUX, stable diffusion, midjourney alternative, DALL-E alternative, free image generation, generate visual, create visual, need image, need picture, need icon, need logo, need illustration, website design image, app design image, marketing image, social media image, blog image, featured image, OG image, cover image, profile picture, user avatar, empty state illustration, onboarding image, feature graphic.
+allowed-tools:
+  - Read
+  - Write
+  - WebFetch
+context: fork
+model: sonnet
 ---
 
 # AI Image Generation Skill
