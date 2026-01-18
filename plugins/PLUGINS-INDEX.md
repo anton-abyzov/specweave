@@ -2,7 +2,7 @@
 
 **Purpose**: Lightweight plugin manifest for progressive disclosure. Load plugin content only when triggers match.
 
-**Total Plugins**: 25 | **Last Updated**: 2025-12-11
+**Total Plugins**: 24 | **Last Updated**: 2026-01-17
 
 ---
 
@@ -86,7 +86,6 @@
 |--------|----------|-------------|
 | **specweave-diagrams** | diagram, Mermaid, C4, architecture diagram | Mermaid diagram generation |
 | **specweave-n8n** | n8n, workflow, automation, no-code | n8n workflow templates |
-| **specweave-alternatives** | alternative, compare, evaluation, technology choice | Technology comparison |
 | **specweave-cost-optimizer** | cost, optimize, reduce cost, cloud cost | Cloud cost optimization |
 
 ## Development Plugins

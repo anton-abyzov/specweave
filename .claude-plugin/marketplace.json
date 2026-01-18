@@ -239,17 +239,6 @@
       }
     },
     {
-      "name": "sw-alternatives",
-      "description": "Technology stack alternatives analysis using BMAD method - Best, Most Appropriate, Design decisions for architecture choices",
-      "source": "./plugins/specweave-alternatives",
-      "category": "development",
-      "version": "1.0.0",
-      "author": {
-        "name": "Anton Abyzov",
-        "email": "anton.abyzov@gmail.com"
-      }
-    },
-    {
       "name": "sw-cost",
       "description": "Cloud cost optimization - AWS, GCP, Azure cost analysis, right-sizing, reserved instances, savings plans",
       "source": "./plugins/specweave-cost-optimizer",
