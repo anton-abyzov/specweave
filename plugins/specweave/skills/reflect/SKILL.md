@@ -81,6 +81,132 @@ User Memory + Default Memory → Merged Memory
 
 ---
 
+## ⚠️ CRITICAL: Learning Extraction Rules (v4.2)
+
+**This section is MANDATORY for Claude to follow when extracting learnings.**
+
+### The Golden Rule
+
+**NEVER store user input verbatim. ALWAYS synthesize into actionable rules.**
+
+### What Makes a Good Learning
+
+| Good Learning | Bad Learning | Why Bad |
+|--------------|--------------|---------|
+| `Use vi.fn() for mocks in Vitest, never jest.fn()` | `use vi.fn() for mocks in Vitest, never jest.fn()` | OK but could be improved with reasoning |
+| `Always specify npm registry to avoid auth errors with private packages` | `Always specify registry to avoid ~/` | Truncated, loses meaning |
+| `Voice dictation mangles slash commands - type manually or use clipboard` | `always command not recognized` | Raw symptom, not the learning |
+| `For API tests, use os.tmpdir() for temp files to avoid polluting project directory` | `Where should I deploy?` | This is a question, not a learning! |
+| `The /sw:increment skill requires an increment name argument` | `never used in any user pojrect based on specweave` | Gibberish from partial capture |
+
+### Learning Quality Checklist (MUST PASS ALL)
+
+Before storing ANY learning, verify:
+
+1. **✅ Is it a complete sentence?** Not truncated, not a fragment
+2. **✅ Is it actionable?** Contains DO/DON'T/USE/AVOID/PREFER
+3. **✅ Is it specific?** Names tools, patterns, files, or concepts
+4. **✅ Is it understandable standalone?** Someone reading it later would understand
+5. **✅ Is it NOT a question?** Questions are never learnings
+6. **✅ Is it NOT a complaint?** Complaints need transformation
+7. **✅ Does it have context?** WHY this rule exists, not just WHAT
+
+### Transformation Examples
+
+**User says a complaint → Claude extracts the underlying learning:**
+
+```
+USER: "When I use voice control, it always gives me 'command not recognized'"
+
+WRONG extraction:
+  - → always command not recognized
+  - → voice control gives command not recognized
+
+CORRECT extraction:
+  - → Voice dictation can mangle slash command syntax (e.g., "/sw:increment" becomes "slash S W increment"). Type commands manually or use clipboard paste for reliable execution.
+```
+
+**User makes a correction → Claude extracts the rule:**
+
+```
+USER: "No, don't use jest.fn(), we use Vitest here"
+
+WRONG extraction:
+  - → don't use jest.fn()
+
+CORRECT extraction:
+  - → Use vi.fn() not jest.fn() with Vitest testing framework. Import mocks from 'vitest' package.
+```
+
+**User approves something → Claude extracts the pattern:**
+
+```
+USER: "Perfect! That's exactly how we handle errors"
+
+WRONG extraction:
+  - → Perfect! That's exactly how we handle errors
+
+CORRECT extraction (look at WHAT was approved):
+  - → For API error responses, use { success: false, error: { code: string, message: string } } structure
+```
+
+### What to REJECT (Never Store)
+
+1. **Questions** - `"Where should I deploy?"` → NOT a learning
+2. **Fragments** - `"eplicilty how to g"` → Truncated garbage
+3. **Raw symptoms** - `"always command not recognized"` → No explanation
+4. **Duplicates** - Same rule phrased differently
+5. **Temporary context** - `"for this PR"`, `"just this time"`
+6. **Personal preferences** - Without universal applicability
+7. **Typos/gibberish** - `"user pojrect"`, `"promp"`
+
+### Memory Format Requirements
+
+Each entry MUST follow this format:
+
+```markdown
+- → {VERB} {specific action} {context/reason if helpful}
+```
+
+Or for corrections:
+```markdown
+- ✗→✓ {wrong way} → {right way} {reason}
+```
+
+**Examples of proper format:**
+```markdown
+- → Use vi.fn() for mocks in Vitest, never jest.fn()
+- → Use os.tmpdir() for test temp files, not project cwd
+- ✗→✓ Never suggest scripts/refresh-marketplace.sh to end users - use `specweave refresh-marketplace` CLI command
+- → Voice dictation mangles slash commands - type manually or paste from clipboard
+```
+
+### Extraction Process
+
+When `/sw:reflect` is invoked:
+
+1. **Scan conversation** for signals (corrections, rules, approvals, complaints)
+2. **For each signal**, apply transformation:
+   - Corrections → Extract the rule being taught
+   - Rules → Preserve the rule with context
+   - Approvals → Extract WHAT was approved (look at Claude's previous message)
+   - Complaints → Transform into actionable workaround/solution
+3. **Validate** each extraction against the quality checklist
+4. **REJECT** any that fail validation (better to store nothing than garbage)
+5. **Deduplicate** against existing memory
+6. **Store** with proper format
+
+### Self-Check Before Storing
+
+Ask yourself:
+> "If I read this learning in 6 months with no context, would it help me?"
+
+If NO → Don't store it.
+If MAYBE → Improve it until YES.
+If YES → Store it.
+
+---
+
 ## The Problem
 
 Every LLM session starts from zero:

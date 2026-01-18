@@ -326,10 +326,53 @@ Each skill's MEMORY.md follows this structure:
 
 When this command is invoked:
 
-1. **Scan conversation** for correction and approval signals
-2. **Extract learnings** with confidence levels
-3. **Match to skills** based on category
-4. **Show preview** of proposed changes
-5. **Save to MEMORY.md** files on approval
-6. **Git commit** if configured
-7. **Show confirmation** with learning summary
+1. **Scan conversation** for correction, approval, and complaint signals
+2. **Transform each signal** into an actionable learning (see Quality Rules below)
+3. **Validate** each learning against quality checklist
+4. **REJECT** low-quality extractions (truncated, questions, gibberish)
+5. **Match to skills** based on category and keywords
+6. **Show preview** of proposed changes
+7. **Save to MEMORY.md** files on approval
+8. **Git commit** if configured
+9. **Show confirmation** with learning summary
+
+## ⚠️ CRITICAL: Quality Rules
+
+**NEVER store user input verbatim. ALWAYS synthesize into actionable rules.**
+
+### Learning Quality Checklist (MUST PASS ALL)
+
+Before storing ANY learning, verify it passes ALL checks:
+
+| Check | Requirement | Example Failure |
+|-------|-------------|-----------------|
+| Complete | Full sentence, not truncated | `"eplicilty how to g"` ❌ |
+| Actionable | Contains DO/DON'T/USE/AVOID | `"Where should I deploy?"` ❌ |
+| Specific | Names tools, patterns, concepts | `"always command not recognized"` ❌ |
+| Standalone | Understandable without context | `"user pojrect based on specweave"` ❌ |
+| Not a Question | Must be a statement | `"Where should I deploy?"` ❌ |
+| Transformed | Complaints → Solutions | Raw symptom without fix ❌ |
+
+### Transformation Requirements
+
+| User Signal | WRONG Extraction | CORRECT Extraction |
+|-------------|------------------|-------------------|
+| "it gives 'command not recognized'" | `command not recognized` | `Voice dictation mangles slash commands - type manually or paste` |
+| "don't use jest.fn()" | `don't use jest.fn()` | `Use vi.fn() not jest.fn() with Vitest framework` |
+| "Perfect!" (after Claude showed pattern) | `Perfect!` | `{The actual pattern that was approved}` |
+
+### What to REJECT (Never Store)
+
+1. **Questions** - Not learnings
+2. **Fragments** - Truncated mid-sentence
+3. **Raw complaints** - Without solution/workaround
+4. **Gibberish/typos** - `"pojrect"`, `"promp"`
+5. **Duplicates** - Already exists in memory
+
+### Self-Check Before Storing
+
+> "If I read this learning in 6 months with no context, would it help me?"
+>
+> If NO → Don't store it.
+> If MAYBE → Improve it until YES.
+> If YES → Store it.

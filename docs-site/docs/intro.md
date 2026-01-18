@@ -1,502 +1,305 @@
 ---
 sidebar_position: 1
+title: SpecWeave - Ship Features While You Sleep
+description: Autonomous AI agents that remember everything. Your specs, architecture decisions, and documentation persist forever. Production-ready code with zero context loss.
+keywords: [specweave, ai coding, autonomous agents, claude code, living documentation, spec-driven development, ai memory, claude]
+image: /img/specweave-social-card.webp
 ---
 
-# SpecWeave
+<div className="homepage-hero">
 
-**The Enterprise Layer for AI Coding**
+<div className="hero-content">
 
-*Enterprise capabilities for Claude Code — without enterprise complexity. Permanent memory, GitHub/JIRA sync, quality gates, autonomous execution. Ship features while you sleep.*
+# Ship Features While You Sleep
 
-[![NPM Version](https://img.shields.io/npm/v/specweave?color=blue)](https://www.npmjs.com/package/specweave)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/UYg4BGJ65V)
-[![YouTube](https://img.shields.io/badge/YouTube-Tutorials-red?logo=youtube&logoColor=white)](https://www.youtube.com/@antonabyzov)
+<span className="hero-subtitle">
+Autonomous AI agents with <strong>permanent memory</strong>. Your specs, decisions, and docs persist forever — not just until the chat ends.
+</span>
 
-::::tip See Auto Mode Working in Real-Time!
-`/sw:auto` runs for **hours** autonomously, and you get **real-time visual labels** showing exactly what's happening! See iteration counts, test status, and stop criteria as your features build themselves.
+<div className="hero-cta-row">
+<a href="./quick-start" className="hero-btn hero-btn-primary">Get Started Free</a>
+<a href="https://youtube.com/@antonabyzov" className="hero-btn hero-btn-secondary">Watch Demo</a>
+</div>
 
-[Learn about Label Visibility →](/docs/commands/auto#label-visibility)
-:::
+<div className="hero-badges">
+
+[![NPM Version](https://img.shields.io/npm/v/specweave?color=7c3aed&style=for-the-badge)](https://www.npmjs.com/package/specweave)
+[![Downloads](https://img.shields.io/npm/dm/specweave?color=22c55e&style=for-the-badge)](https://www.npmjs.com/package/specweave)
+[![Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/UYg4BGJ65V)
+
+</div>
+
+</div>
+
+<div className="hero-visual">
+<img src="/img/hero/software-engineering.jpg" alt="AI-powered development" className="hero-image" />
+</div>
+
+</div>
 
 ---
 
-## Engineering Metrics (DORA)
+<div className="features-section">
 
-[![Deploy Frequency](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.deploymentFrequency.value&label=Deploy%20Frequency&suffix=/month&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
-[![Lead Time](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.leadTime.value&label=Lead%20Time&suffix=h&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
-[![Change Failure Rate](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.changeFailureRate.value&label=Change%20Failure%20Rate&suffix=%25&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
-[![MTTR](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/anton-abyzov/specweave/develop/.specweave/metrics/dora-latest.json&query=$.metrics.mttr.value&label=MTTR&suffix=min&color=brightgreen)](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/docs/internal/delivery/dora-metrics.md)
+## The Problem with AI Coding Today
 
-**SpecWeave builds SpecWeave using SpecWeave.** These are real metrics from our own development — **150+ increments** and counting!
+<div className="problem-cards">
+<div className="problem-card">
+<span className="problem-icon">💨</span>
+<h3>Context Vanishes</h3>
+<p>Chat ends, specs disappear. You lose everything.</p>
+</div>
+<div className="problem-card">
+<span className="problem-icon">🔄</span>
+<h3>Repeat Yourself</h3>
+<p>Re-explain architecture every single session.</p>
+</div>
+<div className="problem-card">
+<span className="problem-icon">📝</span>
+<h3>Docs Rot</h3>
+<p>JIRA outdated. README lies. Tests missing.</p>
+</div>
+</div>
 
-**[Live Dashboard](https://spec-weave.com/docs/metrics)** | **[Detailed Report](https://github.com/anton-abyzov/specweave/blob/develop/.specweave/metrics/dora-report.md)**
+<div className="solution-highlight">
+
+### SpecWeave Solves This
+
+AI that **remembers everything** — your decisions, patterns, and preferences compound across sessions. Docs update automatically. Nothing gets lost.
+
+</div>
+
+</div>
 
 ---
 
-## What Makes SpecWeave Different
+<div className="how-it-works-section">
 
-Every AI coding tool promises productivity. But after the chat ends:
+## How It Works
 
-- **Your specs disappear** into chat history
-- **Your architecture decisions are forgotten**
-- **Your tests are never written**
-- **Your GitHub/JIRA stays outdated**
-- **New team members start from zero**
-
-**SpecWeave is the only framework where AI decisions become permanent, searchable documentation.**
-
-### See Auto Mode in Action
-
-When `/sw:auto` runs autonomously, you now see **real-time progress labels** in your conversation:
-
-```
-╔══════════════════════════════════════════════════════════════╗
-║  🔄 AUTO SESSION CONTINUING                                  ║
-║  🤖 Main Orchestrator                                        ║
-╠══════════════════════════════════════════════════════════════╣
-║  Why: Work incomplete, continuing...                         ║
-║  Iteration: 42/2500                                         ║
-║  Increment: 0001-user-auth                                  ║
-║  Subagents used: 3                                          ║
-╠══════════════════════════════════════════════════════════════╣
-║  🎯 WHEN WILL SESSION STOP?                                  ║
-║  ├─ Mode: STANDARD MODE                                     ║
-║  └─ Criteria: ALL tasks [x] completed + tests passing       ║
-║  ✅ Tests: 42 passed, 0 failed                              ║
-╚══════════════════════════════════════════════════════════════╝
-```
-
-No more wondering "is it still working?" — you see **exactly** what's happening, iteration counts, test status, and stop criteria in real-time.
-
-**[Learn about autonomous execution →](./commands/auto)**
+<div className="workflow-visual">
 
 ```mermaid
 flowchart LR
-    A["Your Idea"] --> B["Spec ✓"]
-    B --> C["Plan ✓"]
-    C --> D["Tasks ✓"]
-    D --> E["Code"]
-    E --> F["Living Docs"]
+    A["💡 Your Idea"] --> B["📋 spec.md"]
+    B --> C["🏗️ plan.md"]
+    C --> D["✅ tasks.md"]
+    D --> E["💻 Code"]
+    E --> F["📚 Living Docs"]
 
-    style B fill:#d4edda,stroke:#28a745
-    style C fill:#d4edda,stroke:#28a745
-    style D fill:#d4edda,stroke:#28a745
-    style F fill:#cce5ff,stroke:#0d6efd
+    style A fill:#f3f4f6,stroke:#9ca3af,color:#1f2937
+    style B fill:#7c3aed,stroke:#5b21b6,color:#fff
+    style C fill:#7c3aed,stroke:#5b21b6,color:#fff
+    style D fill:#7c3aed,stroke:#5b21b6,color:#fff
+    style E fill:#22c55e,stroke:#16a34a,color:#fff
+    style F fill:#a78bfa,stroke:#7c3aed,color:#1e1b4b
 ```
 
-**Permanent** = survives chat sessions | **Auto-sync** = updates automatically after each task
+</div>
+
+<div className="workflow-steps">
+<div className="workflow-step">
+<div className="step-number">1</div>
+<h3>Describe Your Feature</h3>
+<code>/sw:increment "Add user authentication"</code>
+<p>AI creates detailed spec with user stories and acceptance criteria</p>
+</div>
+<div className="workflow-step">
+<div className="step-number">2</div>
+<h3>Let AI Work</h3>
+<code>/sw:auto</code>
+<p>Autonomous execution for hours. Self-healing. Quality gates built in.</p>
+</div>
+<div className="workflow-step">
+<div className="step-number">3</div>
+<h3>Ship It</h3>
+<code>/sw:done</code>
+<p>Validated code with tests, docs updated, and external tools synced.</p>
+</div>
+</div>
+
+</div>
 
 ---
 
-## Quick Start (30 Seconds)
+<div className="auto-mode-section">
+
+## Autonomous Mode
+
+<div className="auto-mode-container">
+<div className="auto-mode-content">
+
+Run `/sw:auto` and watch AI work for **hours** without intervention:
+
+- **Self-healing** — Test fails? AI analyzes, fixes, retries
+- **Quality gates** — Won't ship until all checks pass
+- **Real-time visibility** — See exactly what's happening
+- **15+ specialized agents** — PM, Architect, QA, Security, DevOps
+
+</div>
+<div className="auto-mode-terminal">
+
+```
+╔══════════════════════════════════════════════════════════╗
+║  🚀 AUTO SESSION ACTIVE                                  ║
+╠══════════════════════════════════════════════════════════╣
+║  Iteration: 47/2500                                      ║
+║  Increment: 0001-user-auth                               ║
+║  Progress: ████████████░░░░ 12/15 tasks                  ║
+║  Tests: ✅ 42 passed · 0 failed                          ║
+╠══════════════════════════════════════════════════════════╣
+║  Stop when: All tasks complete + tests passing           ║
+╚══════════════════════════════════════════════════════════╝
+```
+
+</div>
+</div>
+
+**[Learn about Auto Mode →](./commands/auto)**
+
+</div>
+
+---
+
+<div className="features-grid-section">
+
+## Everything You Need
+
+<div className="feature-grid">
+
+<div className="feature-card">
+<div className="feature-icon">🤖</div>
+<h3>15+ AI Agents</h3>
+<p>PM, Architect, Tech Lead, QA, Security, DevOps — all working together on your feature.</p>
+</div>
+
+<div className="feature-card">
+<div className="feature-icon">📚</div>
+<h3>Living Documentation</h3>
+<p>Specs, ADRs, and runbooks update automatically after every task. Zero manual work.</p>
+</div>
+
+<div className="feature-card">
+<div className="feature-icon">🧠</div>
+<h3>Self-Improving AI</h3>
+<p>Claude learns from your corrections. Fix something once — it remembers forever.</p>
+</div>
+
+<div className="feature-card">
+<div className="feature-icon">🔗</div>
+<h3>External Sync</h3>
+<p>GitHub Issues, JIRA, Azure DevOps — all stay in sync automatically.</p>
+</div>
+
+<div className="feature-card">
+<div className="feature-icon">✅</div>
+<h3>Quality Gates</h3>
+<p>Can't ship until tests pass, docs are updated, and all acceptance criteria are met.</p>
+</div>
+
+<div className="feature-card">
+<div className="feature-icon">⚡</div>
+<h3>Instant Setup</h3>
+<p>One command to install. Works with any project. No configuration needed.</p>
+</div>
+
+</div>
+
+</div>
+
+---
+
+<div className="social-proof-section">
+
+## Battle Tested
+
+<div className="stats-row">
+<div className="stat-item">
+<div className="stat-number">200+</div>
+<div className="stat-label">Features Shipped</div>
+</div>
+<div className="stat-item">
+<div className="stat-number">10k+</div>
+<div className="stat-label">Downloads</div>
+</div>
+<div className="stat-item">
+<div className="stat-number">500+</div>
+<div className="stat-label">Discord Members</div>
+</div>
+</div>
+
+<div className="results-grid">
+<div className="result-card">
+<div className="result-project">React Native App</div>
+<div className="result-time">2.5 hours</div>
+<div className="result-detail">3,200 LOC, 42 tests, offline sync</div>
+</div>
+<div className="result-card">
+<div className="result-project">Microservices (3 repos)</div>
+<div className="result-time">1.2 hours</div>
+<div className="result-detail">Payment webhooks, 67 tests</div>
+</div>
+<div className="result-card">
+<div className="result-project">Brownfield Docs</div>
+<div className="result-time">3 hours</div>
+<div className="result-detail">450k LOC analyzed, 127 pages</div>
+</div>
+</div>
+
+</div>
+
+---
+
+<div className="quick-start-section">
+
+## Start in 30 Seconds
+
+<div className="install-box">
 
 ```bash
+# Install globally
 npm install -g specweave
+
+# Initialize in your project
 cd your-project
 specweave init .
+
+# In Claude Code, start building
+/sw:increment "Add user authentication"
+/sw:auto  # Let AI work autonomously
 ```
 
-Then in Claude Code:
-```bash
-/sw:increment "Add dark mode toggle"  # AI creates spec + plan + tasks
-/sw:auto                              # 🚀 Ship while you sleep (hours of autonomous work)
-```
+</div>
 
-**Or step-by-step control:**
-```bash
-/sw:do                                # Execute one task at a time
-/sw:done 0001                         # Quality-validated completion
-```
+<div className="requirements-box">
 
-**Pro tip**: Use `/sw:next` to flow through the entire cycle. One command auto-closes completed work and suggests what's next — review specs/tasks when needed, otherwise just keep clicking "next".
+**Requirements:** Node.js 20.12+ · Claude Code (VSCode or CLI) · Git
 
-:::tip Keep Increments Small — 2-3x Faster with Opus 4.5!
-**5-15 tasks, 1-3 user stories, completable in 1-3 days.** With **Claude Opus 4.5**, development speed increases **2-3x** (some report **5-10x**!). Small increments + Opus 4.5 = almost **no manual interaction**. Just define requirements, run `/sw:auto`, and review what's done.
+:::tip Best Experience
+**Claude Code + Claude Opus 4.5** — native hooks, multi-hour sessions, quality gates work out of the box.
 :::
 
-:::info Troubleshooting
-If commands/skills stop working after a Claude Code update:
-```bash
-specweave refresh-marketplace   # Reinstall all plugins from GitHub
-specweave update-instructions   # Regenerate CLAUDE.md
-```
-:::
+</div>
 
-:::caution Prevent Claude Code Crashes
-**Keep files small**: Target **600-800 lines max**. Files over 1K lines = crash risk. Split large files into modules before adding code.
-:::
-
-**[Full Quickstart Guide →](./quick-start)** | **[Real Examples →](./examples/)**
-
-:::info 🎯 Claude Code's Game-Changing Updates
-**Compact Command** — VSCode users can now use `compact` mode to keep Claude Code inside your editor window. Work continuously for **hours** in the same session without context switching. No more jumping between terminal and editor!
-
-**STOP Hooks with Subagents** — Stop hooks now work with spawned subagents, enabling autonomous quality gates at every level. SpecWeave's `/sw:auto` uses this to validate tests and completion criteria automatically.
-
-Learn more: [Boris Cherny's autonomous coding demo](https://x.com/bcherny/status/2004916410687050167) — 259 PRs, 497 commits, 40,000 lines added in one month without opening an IDE.
-:::
+</div>
 
 ---
 
-## The Workflow
+<div className="final-cta">
 
-```mermaid
-flowchart TB
-    subgraph INPUT["1. TYPE ONE COMMAND"]
-        A["/sw:increment<br/>'Add dark mode'"]
-    end
+<h2>Ready to Ship While You Sleep?</h2>
 
-    subgraph AGENTS["2. AI AGENTS CREATE"]
-        direction TB
-        PM["PM Agent<br/>User stories + ACs"]
-        ARCH["Architect Agent<br/>Design + ADRs"]
-        PLAN["Planner Agent<br/>Tasks + Tests"]
-        PM --> ARCH --> PLAN
-    end
+<p>Join thousands of developers building production features with AI that actually remembers.</p>
 
-    subgraph OUTPUT["3. PERMANENT FILES"]
-        direction LR
-        SPEC["spec.md<br/>WHAT"]
-        PLANF["plan.md<br/>HOW"]
-        TASKS["tasks.md<br/>DO"]
-    end
+<div className="cta-buttons">
+<a href="./quick-start" className="cta-primary">Get Started Free →</a>
+<a href="https://github.com/anton-abyzov/specweave" className="cta-secondary">Star on GitHub ⭐</a>
+</div>
 
-    subgraph EXECUTE["4. BUILD"]
-        B["/sw:do<br/>Autonomous execution"]
-    end
+<div className="cta-links">
+<a href="https://discord.gg/UYg4BGJ65V">Discord Community</a> ·
+<a href="https://youtube.com/@antonabyzov">YouTube Tutorials</a> ·
+<a href="./commands/overview">All Commands</a>
+</div>
 
-    subgraph SYNC["5. AUTO-SYNC"]
-        direction LR
-        GH["GitHub"]
-        JIRA["JIRA"]
-        ADO["ADO"]
-        DOCS["Docs"]
-    end
-
-    INPUT --> AGENTS
-    AGENTS --> OUTPUT
-    OUTPUT --> EXECUTE
-    EXECUTE --> SYNC
-
-    style INPUT fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
-    style AGENTS fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
-    style OUTPUT fill:#fff3e0,stroke:#ff9800,stroke-width:2px
-    style EXECUTE fill:#fce4ec,stroke:#e91e63,stroke-width:2px
-    style SYNC fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
-```
-
----
-
-## What You Get
-
-| Before | After SpecWeave |
-|--------|-----------------|
-| Specs in chat history | **Permanent, searchable specs** |
-| Manual JIRA/GitHub updates | **Auto-sync on every task** |
-| Tests? Maybe later... | **Tests embedded in tasks (60%+ enforced)** |
-| Architecture in your head | **ADRs captured automatically** |
-| "Ask John, he knows" | **Living docs, always current** |
-| Onboarding: 2 weeks | **Onboarding: 1 day** |
-
----
-
-## Key Strengths
-
-### 🚀 Autonomous Execution
-Run `/sw:auto` and watch **real-time labels** show progress, test results, and stop criteria. Can run for **hours** autonomously with self-healing when tests fail.
-
-**[See auto mode in action →](./commands/auto)**
-
-### 📚 Permanent Knowledge
-- **[Brownfield](/docs/glossary/terms/brownfield) + [Greenfield](/docs/glossary/terms/greenfield)** — Works with existing codebases, not just new projects
-- **Living Documentation** — Specs auto-update after every task via hooks (critical for quality)
-- **🧠 Self-Improving Skills** — [Claude learns from corrections](/docs/guides/self-improving-skills) with `/sw:reflect`, applies patterns automatically in future sessions
-- **🪝 Powerful Hooks System** — Customize behavior at every phase (start, prompt submit, tool calls, session end)
-
-### ⚡ Performance & Scale
-- **70%+ Token Reduction** — Progressive loading, context optimizer, sub-agent isolation
-- **Multi-Project Mode** — Manage multiple repos with shared specs and cross-project sync
-- **15+ Specialized Agents** — PM, Architect, Tech Lead, QA, Security, DevOps work autonomously
-
-### 🔄 External Integration
-- **Auto-Sync** — Push specs to GitHub/JIRA/ADO, read status back automatically
-- **3-Gate Quality Validation** — Tasks, tests (60%+), and docs verified before closing
-
-### ⚡ Claude Code 2.1.x Optimizations
-
-SpecWeave leverages the latest Claude Code features for maximum performance:
-
-| Feature | Benefit |
-|---------|---------|
-| **`context: fork`** | Heavy skills (PM, Architect) run in isolated sub-agents |
-| **`model: opus`** | Critical decisions use Opus for highest quality |
-| **Skill-scoped hooks** | ~50% fewer hook invocations (fire only when skill active) |
-| **Agent-type init** | Agent-specific startup context and messages |
-
-**[Learn about Claude Code architecture →](./overview/claude-code-architecture)**
-
-### 🌐 Anthropic Defines Industry Standards
-
-SpecWeave builds on standards that Anthropic is **defining for the entire industry**:
-
-| Standard | What It Does | Industry Status |
-|----------|--------------|-----------------|
-| **[MCP](https://modelcontextprotocol.io)** | Model Context Protocol - connects AI to external services | Adopted by OpenAI, Google, Microsoft |
-| **[Agent Skills](https://agentskills.io)** | Open format for reusable AI agent capabilities | New standard for agent interoperability |
-| **Plugin Architecture** | Skills, agents, hooks, commands pattern | Becoming the standard for AI dev tools |
-
-**Why this matters:** When you learn SpecWeave, you're learning patterns that are **becoming industry standards**. Build skills once, use them across any skills-compatible agent. SpecWeave's SKILL.md format aligns with Anthropic's Agent Skills specification.
-
----
-
-## The Three-File Foundation
-
-Every feature generates three permanent files:
-
-```
-.specweave/increments/0001-dark-mode/
-├── spec.md    <- WHAT: User stories, acceptance criteria, requirements
-├── plan.md    <- HOW: Architecture, tech decisions, ADRs
-└── tasks.md   <- DO: Implementation tasks with embedded tests
-```
-
-### spec.md (WHAT)
-```markdown
-## User Stories
-
-### US-001: Dark Mode Toggle
-As a user, I want to toggle dark mode so that I can reduce eye strain at night.
-
-**Acceptance Criteria:**
-- [x] AC-US1-01: Toggle switch in settings persists preference
-- [x] AC-US1-02: Theme applies to all components instantly
-- [ ] AC-US1-03: System preference detected on first visit
-```
-
-### tasks.md (DO)
-```markdown
-### T-001: Implement Theme Provider
-**User Story**: US-001
-**Satisfies ACs**: AC-US1-01, AC-US1-02
-**Status**: [x] completed
-
-**Embedded Tests** (AC-US1-01):
-- test_theme_toggle_persists_to_localstorage
-- test_theme_applies_to_all_components
-- test_toggle_updates_ui_instantly
-```
-
----
-
-## Key Features
-
-### Autonomous Multi-Agent Orchestration
-
-- **[PM Agent](/docs/glossary/terms/pm-agent)**: [User stories](/docs/glossary/terms/user-stories), [acceptance criteria](/docs/glossary/terms/acceptance-criteria), market analysis
-- **[Architect Agent](/docs/glossary/terms/architect-agent)**: System design, [ADRs](/docs/glossary/terms/adr), tech stack decisions
-- **[Tech Lead Agent](/docs/glossary/terms/tech-lead-agent)**: Implementation, code review, best practices
-- **[QA Lead Agent](/docs/glossary/terms/qa-lead-agent)**: Test strategy, [E2E](/docs/glossary/terms/e2e) tests, [coverage](/docs/glossary/terms/test-coverage) validation
-- **Security Agent**: Threat modeling, OWASP, vulnerability assessment
-- **DevOps Agent**: [IaC](/docs/glossary/terms/iac), [Kubernetes](/docs/glossary/terms/kubernetes), [CI/CD](/docs/glossary/terms/ci-cd) pipelines
-
-### Living Documentation & Hooks
-
-Documentation updates **after every task** via the powerful **hybrid hooks system**:
-- **Strategic specs sync** to `.specweave/docs/` automatically
-- **ADRs captured** during architectural decisions
-- **Runbooks and SLOs** generated from operations work
-- **No manual doc updates** — hooks ensure docs are always current
-
-**SpecWeave uses a hybrid hook architecture:**
-1. **Global hooks** (hooks.json): Cross-cutting concerns — SessionStart, UserPromptSubmit, PostToolUse, Stop
-2. **Skill-scoped hooks** (frontmatter): Command-specific logic — only fire when that skill is active
-
-**Hooks are critical to SpecWeave's quality system.** They enable autonomous validation, test execution, and quality gates that make `/sw:auto` reliable for multi-hour sessions.
-
-### Self-Improving AI with Reflect
-
-**Correct once, never again.** SpecWeave's Reflect system enables Claude to learn from your corrections:
-
-- **Pattern Learning**: Claude remembers naming conventions, architectural decisions, and code patterns
-- **Automatic Application**: Learned patterns apply in future sessions without reminders
-- **Centralized Memory**: Knowledge stored in `.specweave/memory/*.md` files (project and global)
-- **Signal Detection**: High-confidence corrections and approvals automatically extracted
-- **Compounding Knowledge**: AI gets smarter over time as it learns your preferences
-
-Enable with `/sw:reflect-on` for automatic learning, or `/sw:reflect` to manually capture session learnings.
-
-**[Learn more about Reflect →](/docs/guides/self-improving-skills)**
-
-### [Quality Gates](/docs/glossary/terms/quality-gate)
-
-Three gates before any [increment](/docs/glossary/terms/increments) closes:
-1. **Tasks**: All tasks marked complete
-2. **Tests**: 60%+ coverage minimum (configurable)
-3. **Documentation**: Living docs updated
-
-### Token Efficiency (MCP Tool Search)
-
-**85%+ context reduction** with Claude Code 2.1.7+ [MCP Tool Search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool) (lazy loading):
-
-| Before (2.1.6-) | After (2.1.7+) |
-|-----------------|----------------|
-| All plugins loaded upfront (~100k tokens) | On-demand loading (~5-10k tokens) |
-| Max ~25 tasks/increment | ~50+ tasks/increment |
-| `/sw:auto` context-limited | Hours of autonomous work |
-
-**How it works:**
-- **Lazy loading by default** - Tools discovered on-demand, not all at once
-- **Auto-enabled at 10%** - When MCP tools exceed 10% of context window
-- **SpecWeave's 24 plugins** load only when their keywords match
-- **Skills activate on demand** - PM, Architect, TDD skills load when needed
-
-**No configuration required** - enabled by default in Claude Code 2.1.7+.
-
-### Recommended MCP Servers
-
-Two MCP servers that supercharge SpecWeave (install globally):
-
-| Server | Purpose | Install Command |
-|--------|---------|-----------------|
-| **[Context7](https://github.com/anthropic-ai/context7-mcp)** | Real-time docs for any library | `claude mcp add context7 -- npx -y @anthropic-ai/context7-mcp` |
-| **[Playwright](https://github.com/anthropic-ai/playwright-mcp)** | Browser automation for E2E | `claude mcp add playwright -- npx -y @anthropic-ai/playwright-mcp` |
-
-**Why these two?**
-- **Context7**: Claude fetches latest docs (no hallucinated APIs)
-- **Playwright**: Claude can see and interact with your app (visual verification)
-
----
-
-## External Tool Integration
-
-SpecWeave keeps your project management tools in sync **automatically**:
-
-| Platform | Capabilities |
-|----------|--------------|
-| **GitHub Issues** | Create, update, close, progress sync, checkbox tracking |
-| **JIRA** | Epic/Story hierarchy, status sync, custom fields |
-| **Azure DevOps** | Work items, area paths, status sync |
-| **Linear** | Coming Q1 2026 |
-
----
-
-## Brownfield & Greenfield
-
-**New Projects**: Start spec-driven from day one.
-
-**Existing Projects**:
-```bash
-specweave init .
-/sw:import-docs ~/exports/notion --source=notion
-```
-
-Import from Notion, Confluence, GitHub Wiki. AI classifies docs automatically and creates retroactive specifications.
-
----
-
-## Commands Reference
-
-| Command | Purpose |
-|---------|---------|
-| `/sw:increment "feature"` | Plan new increment (PM -> Architect -> Tasks) |
-| `/sw:auto` | 🚀 **Ship while you sleep** - hours of autonomous work |
-| `/sw:do` | Execute one task at a time |
-| `/sw:done 0001` | Complete with quality gate validation |
-| `/sw:progress` | Show real-time status |
-| `/sw:validate 0001` | Run quality checks |
-| `/sw:sync-progress` | Sync to GitHub/JIRA/ADO |
-| `/sw:auto-status` | Check autonomous session progress |
-| `/sw:cancel-auto` | Stop autonomous session |
-| `/sw:tdd-cycle` | Full red-green-refactor workflow |
-
-**[Full Command Reference](./commands/overview)**
-
----
-
-## Requirements
-
-- **Node.js 20.12.0+** (we recommend Node.js 22 LTS) — [upgrade guide](/docs/guides/troubleshooting/common-errors#node-version-error)
-- **Claude Code** (VSCode extension or CLI) with **Claude Opus 4.5** (recommended) — [released Nov 2026](https://www.anthropic.com/news/claude-opus-4-5)
-- Git repository
-
-:::tip Best Tool for SpecWeave
-**Claude Code is the best AI tool for SpecWeave** — native hooks support, task management, and multi-hour autonomous sessions. While SpecWeave works with other AI tools (see `md.template` instructions), Claude Code + SpecWeave provides the optimal experience with autonomous execution, stop hooks, and quality gates.
-:::
-
-:::caution Node.js Version
-If you see `SyntaxError: Unexpected token 'with'`, your Node.js is too old. Run `node --version` — you need **20.12.0 or higher**. See [upgrade instructions](/docs/guides/troubleshooting/common-errors#node-version-error).
-:::
-
----
-
-## Community
-
-- **[Documentation](https://spec-weave.com)** - Full guides and tutorials
-- **[Discord](https://discord.gg/UYg4BGJ65V)** - Get help, share tips
-- **[YouTube](https://www.youtube.com/@antonabyzov)** - Video tutorials
-- **[GitHub Issues](https://github.com/anton-abyzov/specweave/issues)** - Bug reports and features
-
----
-
-## Learn Software Engineering with SpecWeave
-
-**New to software engineering?** The [Software Engineering Academy](./academy/) takes you from complete beginner to Fortune 500 enterprise developer:
-
-| Path | Duration | For |
-|------|----------|-----|
-| **[SpecWeave Essentials](./academy/specweave-essentials/)** | 90 min+ | Learn SpecWeave step by step |
-| **[Fundamentals](./academy/fundamentals/software-engineering-roles)** | Varies | Software engineering foundations |
-
-**16 SpecWeave lessons** + **8 fundamentals modules** — from first command to enterprise patterns.
-
----
-
-## Real-World Proof
-
-SpecWeave isn't theory — it's **production-tested** across multiple use cases:
-
-| Use Case | Duration | Result |
-|----------|----------|--------|
-| **Mobile App (React Native)** | 2.5 hours | 3,200 LOC, 42 tests, full offline sync |
-| **Microservices (3 repos)** | 1.2 hours | Payment webhooks, 67 tests, 3 PRs created |
-| **Brownfield Docs** | 3 hours | 450k LOC analyzed, 127 pages generated |
-| **Large Refactor** | 1.8 hours | 52 files migrated, 186 tests maintained |
-
-**[See detailed examples →](./examples/)**
-
----
-
-## Next Steps
-
-### 🎯 Get Started (5 minutes)
-**[Quick Start Guide →](./quick-start)** - Install, init, run your first increment
-
-### 📖 Learn the Fundamentals
-- **[Core Concepts](./guides/core-concepts/what-is-an-increment)** - Understand specs, plans, and tasks
-- **[Autonomous Execution](./commands/auto)** - Ship while you sleep with `/sw:auto`
-- **[External Sync](./academy/specweave-essentials/07-external-tools)** - Keep GitHub/JIRA/ADO updated
-
-### 🚀 Advanced Usage
-- **[Multi-Project Setup](./guides/multi-project-setup)** - Coordinate across microservices
-- **[Self-Improving Skills](./guides/self-improving-skills)** - Claude learns from your corrections
-- **[Quality Gates](./academy/specweave-essentials/05-quality-gates)** - Ensure quality before shipping
-
-### 🎓 Complete Curriculum
-**[Software Engineering Academy](./academy/)** - SpecWeave essentials + software engineering fundamentals
-
----
-
-**Ready to ship features while you sleep?**
-
-```bash
-npm install -g specweave
-cd your-project
-specweave init .
-# Then in Claude Code: /sw:increment "your feature"
-```
-
-**Join the community:**
-- **[Discord](https://discord.gg/UYg4BGJ65V)** - Get help, share success stories
-- **[YouTube](https://www.youtube.com/@antonabyzov)** - Video tutorials
-- **[GitHub](https://github.com/anton-abyzov/specweave)** - Star the repo, contribute
+</div>

@@ -154,7 +154,6 @@ map_plugin_to_dir() {
         sw-diagrams) echo "specweave-diagrams" ;;
         sw-ui) echo "specweave-ui" ;;
         sw-docs) echo "specweave-docs" ;;
-        sw-alternatives) echo "specweave-alternatives" ;;
         sw-cost) echo "specweave-cost-optimizer" ;;
         sw-plugin-dev) echo "specweave-plugin-dev" ;;
         *) echo "$plugin_name" ;;  # Default: use as-is
