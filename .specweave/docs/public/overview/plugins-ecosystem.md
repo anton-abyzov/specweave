@@ -488,23 +488,6 @@ Tracks AI costs, suggests optimizations.
 
 ---
 
-#### **specweave-alternatives** - Tool Alternatives
-Suggests alternatives when users mention specific tools.
-
-**Example:**
-```bash
-"I want to use MongoDB"
-
-# Suggests:
-# ✅ MongoDB (NoSQL, document store)
-# 🔄 Alternatives:
-#   - PostgreSQL with JSONB (relational + document)
-#   - CouchDB (CouchDB protocol)
-#   - RethinkDB (real-time queries)
-```
-
----
-
 ## 🎯 How Plugins Work Together
 
 ### Example: Full-Stack Feature Implementation
@@ -578,7 +561,7 @@ Suggests alternatives when users mention specific tools.
 
 ---
 
-## 🚀 Quick Reference: All 20 Plugins
+## 🚀 Quick Reference: All 19 Plugins
 
 | Plugin | Purpose | Key Features |
 |--------|---------|--------------|
@@ -598,7 +581,6 @@ Suggests alternatives when users mention specific tools.
 | **specweave-diagrams** | Diagram generation | Mermaid, C4 Model |
 | **specweave-figma** | Design integration | Figma → Components |
 | **specweave-cost-optimizer** | Cost tracking | AI cost optimization |
-| **specweave-alternatives** | Tool suggestions | Alternative recommendations |
 | **specweave-docs** | Documentation | Guides, API docs, Docusaurus preview |
 | **specweave-testing** | Testing utilities | Test automation |
 | **specweave-tooling** | Development tools | CLI utilities |

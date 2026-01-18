@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'SpecWeave',
-  tagline: 'Autonomous AI Agents for Production Software - Just Works, Minimal Interaction',
+  tagline: 'AI That Remembers Everything You Build - Ship Features While You Sleep',
   // Use SpecWeave logo as favicon (SVG for modern browsers)
   favicon: 'img/logo.svg',
 

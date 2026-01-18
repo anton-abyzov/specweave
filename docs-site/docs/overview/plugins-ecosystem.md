@@ -488,23 +488,6 @@ Tracks AI costs, suggests optimizations.
 
 ---
 
-#### **sw-alternatives** - Tool Alternatives
-Suggests alternatives when users mention specific tools.
-
-**Example:**
-```bash
-"I want to use MongoDB"
-
-# Suggests:
-# ✅ MongoDB (NoSQL, document store)
-# 🔄 Alternatives:
-#   - PostgreSQL with JSONB (relational + document)
-#   - CouchDB (CouchDB protocol)
-#   - RethinkDB (real-time queries)
-```
-
----
-
 ## 🎯 How Plugins Work Together
 
 ### Example: Full-Stack Feature Implementation
@@ -578,7 +561,7 @@ Suggests alternatives when users mention specific tools.
 
 ---
 
-## 🚀 Quick Reference: All 20 Plugins
+## 🚀 Quick Reference: All 19 Plugins
 
 | Plugin | Purpose | Key Features |
 |--------|---------|--------------|
@@ -598,7 +581,6 @@ Suggests alternatives when users mention specific tools.
 | **sw-diagrams** | Diagram generation | Mermaid, C4 Model |
 | **sw-figma** | Design integration | Figma → Components |
 | **sw-cost** | Cost tracking | AI cost optimization |
-| **sw-alternatives** | Tool suggestions | Alternative recommendations |
 | **sw-docs** | Documentation | Guides, API docs, Docusaurus preview |
 | **sw-confluent** | Kafka/Confluent | Streaming, Schema Registry |
 | **sw-kafka** | Kafka operations | DevOps, monitoring, architecture |

@@ -22,11 +22,29 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import { isSpecWeaveInitialized } from '../../utils/fs-native.js';
 import { DisciplineChecker } from '../../core/increment/discipline-checker.js';
+import {
+  ParallelOrchestrator,
+  type AgentDomain,
+  type ParallelConfig,
+} from '../../core/auto/parallel/index.js';
 
 export interface AutoCommandOptions {
   dryRun?: boolean;
   allBacklog?: boolean;
   reset?: boolean;
+  // Parallel execution options
+  parallel?: boolean;
+  maxParallel?: number;
+  frontend?: boolean;
+  backend?: boolean;
+  database?: boolean;
+  devops?: boolean;
+  qa?: boolean;
+  pr?: boolean;
+  draftPr?: boolean;
+  mergeStrategy?: 'auto' | 'manual' | 'pr';
+  baseBranch?: string;
+  prompt?: string;
 }
 
 export function createAutoCommand(): Command {
@@ -36,6 +54,19 @@ export function createAutoCommand(): Command {
     .option('--dry-run', 'Preview without activating')
     .option('--all-backlog', 'Activate all backlog items')
     .option('--reset', 'Clean up any stale state files')
+    // Parallel execution options
+    .option('--parallel', 'Enable parallel agent execution')
+    .option('--max-parallel <n>', 'Maximum concurrent agents', parseInt)
+    .option('--frontend', 'Spawn frontend-specialized agent')
+    .option('--backend', 'Spawn backend-specialized agent')
+    .option('--database', 'Spawn database-specialized agent')
+    .option('--devops', 'Spawn devops-specialized agent')
+    .option('--qa', 'Spawn QA-specialized agent')
+    .option('--pr', 'Create PR per completed agent')
+    .option('--draft-pr', 'Create PRs in draft mode')
+    .option('--merge-strategy <strategy>', 'Merge strategy: auto|manual|pr', 'auto')
+    .option('--base-branch <branch>', 'Base branch for merging')
+    .option('--prompt <prompt>', 'Analyze prompt for parallel suggestions')
     .action(async (incrementIds: string[], options: AutoCommandOptions) => {
       const projectPath = process.cwd();
 
@@ -72,7 +103,62 @@ export async function handleAutoCommand(
   // Handle --reset (clean up stale files)
   if (options.reset) {
     cleanupStateFiles(stateDir);
+    // Also clean up parallel state
+    const parallelStateDir = path.join(stateDir, 'parallel');
+    if (fs.existsSync(parallelStateDir)) {
+      fs.rmSync(parallelStateDir, { recursive: true, force: true });
+    }
     console.log(chalk.green('✓ State files cleaned up'));
+    return;
+  }
+
+  // Handle --prompt for parallel suggestions (no increment needed)
+  if (options.prompt && !isParallelModeRequested(options)) {
+    const orchestrator = new ParallelOrchestrator(projectPath);
+    const shouldParallel = orchestrator.shouldSuggestParallel(options.prompt);
+    const suggestions = orchestrator.analyzePrompt(options.prompt);
+    const suggestedDomains = orchestrator.getSuggestedDomains(options.prompt);
+
+    console.log('');
+    console.log(chalk.blue.bold('🔍 Prompt Analysis'));
+    console.log('');
+
+    if (shouldParallel) {
+      console.log(chalk.green('✓ Parallel execution recommended'));
+      console.log('');
+      console.log('Detected domains:');
+      for (const domain of suggestedDomains) {
+        console.log('  • ' + chalk.cyan(domain));
+      }
+      console.log('');
+      console.log('Suggestions:');
+      console.log(orchestrator.formatSuggestions(suggestions));
+      console.log('');
+      console.log('To use parallel mode:');
+      console.log('  ' + chalk.cyan('specweave auto --parallel ' + suggestedDomains.map(d => `--${d}`).join(' ') + ' <increment-id>'));
+    } else {
+      console.log(chalk.yellow('Single-domain task detected - parallel mode not needed'));
+    }
+    return;
+  }
+
+  // Handle parallel mode if requested
+  if (isParallelModeRequested(options)) {
+    if (incrementIds.length === 0) {
+      console.log(chalk.yellow('⚠️  Parallel mode requires an increment ID'));
+      console.log('');
+      console.log('Usage: ' + chalk.cyan('specweave auto --parallel --frontend --backend <increment-id>'));
+      return;
+    }
+
+    // Use first increment ID for parallel session
+    const incrementId = findIncrementByIdOrPrefix(incrementsDir, incrementIds[0]);
+    if (!incrementId) {
+      console.log(chalk.red(`❌ Increment not found: ${incrementIds[0]}`));
+      return;
+    }
+
+    await handleParallelMode(projectPath, incrementId, options);
     return;
   }
 
@@ -380,4 +466,184 @@ function printStartMessage(incrementIds: string[], configPath: string): void {
 
   console.log(chalk.blue('Start working with: ') + chalk.cyan('/sw:do'));
   console.log('');
+}
+
+// ============================================================================
+// PARALLEL MODE HELPERS
+// ============================================================================
+
+/**
+ * Check if parallel mode is requested
+ */
+export function isParallelModeRequested(options: AutoCommandOptions): boolean {
+  return !!(
+    options.parallel ||
+    options.frontend ||
+    options.backend ||
+    options.database ||
+    options.devops ||
+    options.qa
+  );
+}
+
+/**
+ * Get selected domains from options
+ */
+export function getSelectedDomains(options: AutoCommandOptions): AgentDomain[] {
+  const domains: AgentDomain[] = [];
+  if (options.frontend) domains.push('frontend');
+  if (options.backend) domains.push('backend');
+  if (options.database) domains.push('database');
+  if (options.devops) domains.push('devops');
+  if (options.qa) domains.push('qa');
+  return domains;
+}
+
+/**
+ * Build parallel config from options
+ */
+export function buildParallelConfig(options: AutoCommandOptions): ParallelConfig {
+  const domains = getSelectedDomains(options);
+
+  return {
+    enabled: true,
+    maxParallel: options.maxParallel || 3,
+    domains: domains.length > 0 ? domains : ['frontend', 'backend', 'database', 'devops', 'qa'],
+    createPR: options.pr || false,
+    draftPR: options.draftPr || false,
+    mergeStrategy: options.mergeStrategy || 'auto',
+    baseBranch: options.baseBranch || 'main',
+  };
+}
+
+/**
+ * Handle parallel mode execution
+ */
+export async function handleParallelMode(
+  projectPath: string,
+  incrementId: string,
+  options: AutoCommandOptions
+): Promise<void> {
+  const orchestrator = new ParallelOrchestrator(projectPath);
+
+  // If prompt provided, analyze and show suggestions
+  if (options.prompt) {
+    const shouldParallel = orchestrator.shouldSuggestParallel(options.prompt);
+    const suggestions = orchestrator.analyzePrompt(options.prompt);
+    const suggestedDomains = orchestrator.getSuggestedDomains(options.prompt);
+
+    console.log('');
+    console.log(chalk.blue.bold('🔍 Prompt Analysis'));
+    console.log('');
+
+    if (shouldParallel) {
+      console.log(chalk.green('✓ Parallel execution recommended'));
+      console.log('');
+      console.log('Detected domains:');
+      for (const domain of suggestedDomains) {
+        console.log('  • ' + chalk.cyan(domain));
+      }
+      console.log('');
+      console.log('Suggestions:');
+      console.log(orchestrator.formatSuggestions(suggestions));
+    } else {
+      console.log(chalk.yellow('Single-domain task detected - parallel mode not needed'));
+    }
+    return;
+  }
+
+  // Validate domains are selected
+  const domains = getSelectedDomains(options);
+  if (domains.length === 0 && !options.parallel) {
+    console.log(chalk.yellow('⚠️  No domains specified for parallel mode'));
+    console.log('');
+    console.log('Use domain flags to specify agents:');
+    console.log('  ' + chalk.cyan('--frontend') + '  Frontend agent (React, Vue, etc.)');
+    console.log('  ' + chalk.cyan('--backend') + '   Backend agent (API, services)');
+    console.log('  ' + chalk.cyan('--database') + '  Database agent (schema, migrations)');
+    console.log('  ' + chalk.cyan('--devops') + '    DevOps agent (CI/CD, infra)');
+    console.log('  ' + chalk.cyan('--qa') + '        QA agent (tests, E2E)');
+    console.log('');
+    console.log('Or use: ' + chalk.cyan('--prompt "your task"') + ' to get suggestions');
+    return;
+  }
+
+  // Build config
+  const config = buildParallelConfig(options);
+
+  // Check for existing session
+  if (orchestrator.hasActiveSession()) {
+    console.log(chalk.yellow('⚠️  Active parallel session already exists'));
+    console.log('');
+    const status = orchestrator.getSessionStatus();
+    if (status) {
+      console.log('Session: ' + chalk.cyan(status.sessionId));
+      console.log('Increment: ' + chalk.cyan(status.incrementId));
+      console.log('Status: ' + status.status);
+      console.log('');
+      console.log('Agents:');
+      console.log('  Pending:   ' + status.overall.pending);
+      console.log('  Running:   ' + status.overall.running);
+      console.log('  Completed: ' + status.overall.completed);
+      console.log('  Failed:    ' + status.overall.failed);
+    }
+    console.log('');
+    console.log('Use ' + chalk.cyan('/sw:auto-status') + ' for details');
+    console.log('Use ' + chalk.cyan('specweave auto --reset') + ' to clean up');
+    return;
+  }
+
+  // Create session
+  if (options.dryRun) {
+    console.log(chalk.blue('🔍 Dry Run - Would create parallel session:'));
+    console.log('');
+    console.log('Increment: ' + chalk.cyan(incrementId));
+    console.log('Max parallel: ' + config.maxParallel);
+    console.log('Domains: ' + config.domains.join(', '));
+    console.log('Create PRs: ' + (config.createPR ? 'yes' : 'no'));
+    console.log('Draft PRs: ' + (config.draftPR ? 'yes' : 'no'));
+    console.log('Merge strategy: ' + config.mergeStrategy);
+    console.log('Base branch: ' + config.baseBranch);
+    return;
+  }
+
+  try {
+    const session = await orchestrator.createSession({
+      incrementId,
+      config,
+      baseBranch: options.baseBranch,
+    });
+
+    console.log('');
+    console.log(chalk.green.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+    console.log(chalk.green.bold('  🚀 PARALLEL AUTO MODE READY'));
+    console.log(chalk.green.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+    console.log('');
+
+    console.log('Session: ' + chalk.cyan(session.id));
+    console.log('Increment: ' + chalk.cyan(incrementId));
+    console.log('');
+
+    console.log('Configuration:');
+    console.log('  Max parallel agents: ' + config.maxParallel);
+    console.log('  Domains: ' + config.domains.join(', '));
+    console.log('  Create PRs: ' + (config.createPR ? 'yes' : 'no'));
+    console.log('  Merge strategy: ' + config.mergeStrategy);
+    console.log('');
+
+    console.log(chalk.bold('How parallel mode works:'));
+    console.log('');
+    console.log('  1. Each domain gets its own git worktree');
+    console.log('  2. Agents work in isolation (no conflicts)');
+    console.log('  3. Changes are merged after completion');
+    console.log('  4. PRs are created if --pr flag is set');
+    console.log('');
+
+    console.log('Check status with: ' + chalk.cyan('/sw:auto-status --parallel'));
+    console.log('');
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(chalk.red(`Failed to create parallel session: ${errorMessage}`));
+    process.exit(1);
+  }
 }

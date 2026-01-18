@@ -5,7 +5,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { AutoConfig, DEFAULT_AUTO_CONFIG } from './types.js';
+import { AutoConfig, DEFAULT_AUTO_CONFIG, DEFAULT_PARALLEL_AUTO_CONFIG, isAgentDomain, type AgentDomain } from './types.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
 
 const CONFIG_PATH = '.specweave/config.json';
@@ -87,7 +87,21 @@ function clampWithWarning(
  * Merge user config with defaults, validating values
  */
 function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoConfig {
-  const config: AutoConfig = { ...DEFAULT_AUTO_CONFIG };
+  // Deep clone to avoid mutating the default config
+  const config: AutoConfig = {
+    ...DEFAULT_AUTO_CONFIG,
+    humanGated: DEFAULT_AUTO_CONFIG.humanGated ? {
+      ...DEFAULT_AUTO_CONFIG.humanGated,
+      patterns: [...DEFAULT_AUTO_CONFIG.humanGated.patterns],
+      neverAutoApprove: [...DEFAULT_AUTO_CONFIG.humanGated.neverAutoApprove],
+    } : undefined,
+    circuitBreakers: DEFAULT_AUTO_CONFIG.circuitBreakers ? { ...DEFAULT_AUTO_CONFIG.circuitBreakers } : undefined,
+    sync: DEFAULT_AUTO_CONFIG.sync ? { ...DEFAULT_AUTO_CONFIG.sync } : undefined,
+    parallel: DEFAULT_AUTO_CONFIG.parallel ? {
+      ...DEFAULT_AUTO_CONFIG.parallel,
+      defaultDomains: DEFAULT_AUTO_CONFIG.parallel.defaultDomains ? [...DEFAULT_AUTO_CONFIG.parallel.defaultDomains] : [],
+    } : undefined,
+  };
 
   // Boolean fields - direct assignment if valid type
   if (typeof userConfig.enabled === 'boolean') config.enabled = userConfig.enabled;
@@ -151,6 +165,52 @@ function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoC
     }
     if (typeof sync.forceOnComplete === 'boolean') {
       config.sync.forceOnComplete = sync.forceOnComplete;
+    }
+  }
+
+  // Parallel config (NEW)
+  const parallel = userConfig.parallel;
+  if (parallel && typeof parallel === 'object') {
+    // Initialize parallel config if not present
+    if (!config.parallel) {
+      config.parallel = { ...DEFAULT_PARALLEL_AUTO_CONFIG };
+    }
+
+    // Boolean fields
+    if (typeof parallel.enabled === 'boolean') {
+      config.parallel.enabled = parallel.enabled;
+    }
+    if (typeof parallel.createPR === 'boolean') {
+      config.parallel.createPR = parallel.createPR;
+    }
+    if (typeof parallel.draftPR === 'boolean') {
+      config.parallel.draftPR = parallel.draftPR;
+    }
+
+    // Numeric fields with validation
+    if (typeof parallel.maxParallel === 'number') {
+      const clamped = clampWithWarning(parallel.maxParallel, 1, 10, 'parallel.maxParallel', warnings);
+      if (clamped !== undefined) config.parallel.maxParallel = clamped;
+    }
+
+    // String fields
+    if (typeof parallel.defaultBaseBranch === 'string' && parallel.defaultBaseBranch.trim()) {
+      config.parallel.defaultBaseBranch = parallel.defaultBaseBranch.trim();
+    }
+
+    // Enum fields
+    if (parallel.defaultMergeStrategy && ['auto', 'manual', 'pr'].includes(parallel.defaultMergeStrategy)) {
+      config.parallel.defaultMergeStrategy = parallel.defaultMergeStrategy as 'auto' | 'manual' | 'pr';
+    }
+
+    // Domain array
+    if (Array.isArray(parallel.defaultDomains)) {
+      const validDomains = parallel.defaultDomains.filter((d): d is AgentDomain => isAgentDomain(d));
+      if (validDomains.length > 0) {
+        config.parallel.defaultDomains = validDomains;
+      } else if (parallel.defaultDomains.length > 0) {
+        warnings.push('parallel.defaultDomains contains invalid domains, using default');
+      }
     }
   }
 

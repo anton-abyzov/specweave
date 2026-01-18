@@ -90,7 +90,6 @@ EXTRA_PLUGINS=(
     "sw-docs"
     "sw-figma"
     "sw-n8n"
-    "sw-alternatives"
     "sw-cost"
     "sw-plugin-dev"
 )

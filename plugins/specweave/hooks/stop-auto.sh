@@ -83,6 +83,35 @@ mkdir -p "$STATE_DIR" 2>/dev/null
 echo "$NOW" > "$DEDUP_FILE" 2>/dev/null
 
 # ============================================================================
+# CHECK FOR PARALLEL SESSION
+# ============================================================================
+
+PARALLEL_SESSION="$STATE_DIR/parallel/session.json"
+
+if [ -f "$PARALLEL_SESSION" ]; then
+    SESSION_STATUS=$(jq -r '.status // "unknown"' "$PARALLEL_SESSION" 2>/dev/null || echo "unknown")
+
+    if [ "$SESSION_STATUS" = "active" ]; then
+        # Count pending agents (not completed or failed)
+        PENDING_AGENTS=$(jq '[.agents[] | select(.status != "completed" and .status != "failed" and .status != "cancelled")] | length' "$PARALLEL_SESSION" 2>/dev/null || echo "0")
+
+        if [ "$PENDING_AGENTS" -gt 0 ]; then
+            # Get list of pending agents
+            AGENT_LIST=$(jq -r '[.agents[] | select(.status != "completed" and .status != "failed" and .status != "cancelled") | "\(.domain):\(.status)"] | join(", ")' "$PARALLEL_SESSION" 2>/dev/null || echo "unknown")
+
+            MSG="🔄 $PENDING_AGENTS parallel agent(s) running: $AGENT_LIST → wait for completion"
+
+            jq -n \
+                --arg decision "block" \
+                --arg reason "Parallel agents still running" \
+                --arg msg "$MSG" \
+                '{decision: $decision, reason: $reason, systemMessage: $msg}'
+            exit 0
+        fi
+    fi
+fi
+
+# ============================================================================
 # COUNT ACTIVE INCREMENTS (the source of truth!)
 # ============================================================================
 
