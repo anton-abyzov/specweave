@@ -69,12 +69,20 @@ CONFIG_FILE="$SPECWEAVE_DIR/config.json"
 
 AUTO_ENABLED="true"
 REQUIRE_TESTS="false"
+REQUIRE_VALIDATION="true"
+REQUIRE_JUDGE_LLM="false"
+MAX_RETRIES="20"
 TDD_MODE="false"
 SKIP_QUALITY_GATES="false"
+TEST_COMMAND=""
 
 if [ -f "$CONFIG_FILE" ]; then
     AUTO_ENABLED=$(jq -r '.auto.enabled // true' "$CONFIG_FILE" 2>/dev/null || echo "true")
     REQUIRE_TESTS=$(jq -r '.auto.requireTests // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
+    REQUIRE_VALIDATION=$(jq -r '.auto.requireValidation // true' "$CONFIG_FILE" 2>/dev/null || echo "true")
+    REQUIRE_JUDGE_LLM=$(jq -r '.auto.requireJudgeLLM // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
+    MAX_RETRIES=$(jq -r '.auto.maxRetries // 20' "$CONFIG_FILE" 2>/dev/null || echo "20")
+    TEST_COMMAND=$(jq -r '.auto.testCommand // ""' "$CONFIG_FILE" 2>/dev/null || echo "")
     SKIP_QUALITY_GATES=$(jq -r '.auto.skipQualityGates // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
     TDD_MODE_CONFIG=$(jq -r '.testing.defaultTestMode // "standard"' "$CONFIG_FILE" 2>/dev/null || echo "standard")
     [ "$TDD_MODE_CONFIG" = "tdd" ] || [ "$TDD_MODE_CONFIG" = "TDD" ] && TDD_MODE="true"
@@ -83,7 +91,7 @@ fi
 # Auto mode disabled in config - silent approve
 [ "$AUTO_ENABLED" != "true" ] && silent_approve "Auto mode disabled in config"
 
-log "Config: TDD=$TDD_MODE, RequireTests=$REQUIRE_TESTS, SkipQualityGates=$SKIP_QUALITY_GATES"
+log "Config: TDD=$TDD_MODE, RequireTests=$REQUIRE_TESTS, RequireValidation=$REQUIRE_VALIDATION, RequireJudgeLLM=$REQUIRE_JUDGE_LLM, MaxRetries=$MAX_RETRIES"
 
 # ============================================================================
 # DEDUPLICATION - Prevent feedback loops (Claude Code UI bug workaround)
@@ -110,7 +118,7 @@ echo "$NOW" > "$DEDUP_FILE" 2>/dev/null
 
 RETRY_FILE="$STATE_DIR/.stop-auto-retry"
 RETRY_COUNT=0
-MAX_RETRIES_BEFORE_ESCALATE=5
+MAX_RETRIES_BEFORE_ESCALATE="$MAX_RETRIES"  # From config (default: 20)
 
 # Read current retry state
 if [ -f "$RETRY_FILE" ]; then
@@ -119,8 +127,10 @@ if [ -f "$RETRY_FILE" ]; then
 fi
 
 # Function to update retry count (called when blocking)
+# Also tracks failure reasons for reflection
 update_retry_counter() {
     local incs="$1"
+    local reason="$2"
     local new_count=$((RETRY_COUNT + 1))
 
     # Reset if different increments
@@ -128,14 +138,36 @@ update_retry_counter() {
         new_count=1
     fi
 
+    # Get previous reasons for reflection
+    local prev_reasons=""
+    if [ -f "$RETRY_FILE" ]; then
+        prev_reasons=$(jq -r '.reasons // []' "$RETRY_FILE" 2>/dev/null || echo "[]")
+    fi
+
+    # Build updated retry state with history
     jq -n \
         --argjson count "$new_count" \
         --arg increments "$incs" \
         --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-        '{count: $count, increments: $increments, lastUpdate: $timestamp}' \
+        --arg currentReason "$reason" \
+        --argjson prevReasons "$prev_reasons" \
+        '{
+          count: $count,
+          increments: $increments,
+          lastUpdate: $timestamp,
+          currentReason: $currentReason,
+          reasons: ([$currentReason] + ($prevReasons | .[0:4]))
+        }' \
         > "$RETRY_FILE" 2>/dev/null
 
     echo "$new_count"
+}
+
+# Function to get previous failure reasons for reflection
+get_failure_history() {
+    if [ -f "$RETRY_FILE" ]; then
+        jq -r '.reasons // [] | .[] | "  - " + .' "$RETRY_FILE" 2>/dev/null || echo ""
+    fi
 }
 
 # Function to clear retry counter (called when work completes)
@@ -436,94 +468,178 @@ REMAINING_INCS=$(find "$INCREMENTS_DIR" -maxdepth 2 -name "metadata.json" \
     -exec grep -l '"status"[[:space:]]*:[[:space:]]*"active\|"status"[[:space:]]*:[[:space:]]*"in-progress' {} \; 2>/dev/null \
     | sed 's|.*/\([^/]*\)/metadata.json|\1|' | tr '\n' ', ' | sed 's/,$//')
 
-# Update retry counter
-CURRENT_RETRY=$(update_retry_counter "$REMAINING_INCS")
+# Build reason string for retry tracking
+BLOCK_REASON="${VALIDATION_ERRORS:-tasks_or_acs_pending}"
+
+# Update retry counter with reason
+CURRENT_RETRY=$(update_retry_counter "$REMAINING_INCS" "$BLOCK_REASON")
 log "Retry count: $CURRENT_RETRY for increments: $REMAINING_INCS"
 
-# Build detailed message with retry indicator
-if [ "$CURRENT_RETRY" -ge "$MAX_RETRIES_BEFORE_ESCALATE" ]; then
-    MSG="🚨 STUCK SESSION DETECTED (attempt $CURRENT_RETRY/$MAX_RETRIES_BEFORE_ESCALATE)
+# Get first increment ID for commands
+FIRST_INC=$(echo "$REMAINING_INCS" | cut -d',' -f1 | tr -d ' ')
 
-⚠️  This session has failed to complete $CURRENT_RETRY times!
-    Something may be blocking completion. Check:
-    • Are there failing tests that can't be fixed?
-    • Is there a blocking dependency?
-    • Does the increment need to be paused/abandoned?
+# ============================================================================
+# DETECT PROJECT CAPABILITIES (conditional steps)
+# ============================================================================
 
-🔄 $REMAINING_COUNT increment(s) need work: $REMAINING_INCS"
-else
-    MSG="🔄 $REMAINING_COUNT increment(s) need work: $REMAINING_INCS (attempt $CURRENT_RETRY)"
+HAS_TESTS="false"
+TEST_CMD=""
+
+# Check for test capability
+if [ -f "$PROJECT_ROOT/package.json" ]; then
+    TEST_SCRIPT=$(jq -r '.scripts.test // ""' "$PROJECT_ROOT/package.json" 2>/dev/null)
+    if [ -n "$TEST_SCRIPT" ] && [ "$TEST_SCRIPT" != "null" ]; then
+        HAS_TESTS="true"
+        TEST_CMD="npm test"
+    fi
+elif [ -f "$PROJECT_ROOT/pytest.ini" ] || [ -d "$PROJECT_ROOT/tests" ]; then
+    HAS_TESTS="true"
+    TEST_CMD="pytest"
+elif [ -f "$PROJECT_ROOT/go.mod" ]; then
+    HAS_TESTS="true"
+    TEST_CMD="go test ./..."
 fi
 
-# Add validation errors if any
-if [ -n "$VALIDATION_ERRORS" ]; then
-    # Parse errors and format nicely
-    error_details=$(echo "$VALIDATION_ERRORS" | tr '|' '\n' | grep -v '^$' | head -5 | while read line; do
-        echo "   • $line"
-    done)
-    MSG="$MSG
+# Use configured test command if provided
+[ -n "$TEST_COMMAND" ] && TEST_CMD="$TEST_COMMAND" && HAS_TESTS="true"
 
-📋 Blocking issues:
-$error_details"
-fi
+# ============================================================================
+# BUILD MESSAGE WITH REFLECTION ON PREVIOUS FAILURES
+# ============================================================================
 
-# Add mode indicators
-if [ "$TDD_MODE" = "true" ]; then
-    MSG="🔴 TDD MODE | $MSG
-
-✓ Tests must pass before auto-close"
-elif [ "$REQUIRE_TESTS" = "true" ]; then
-    MSG="🧪 TEST MODE | $MSG"
-fi
+MSG=""
 
 # Add closed count if any
 if [ "$CLOSED_COUNT" -gt 0 ]; then
     MSG="✅ Auto-closed $CLOSED_COUNT increment(s)
 
-$MSG"
+"
 fi
 
-# Build explicit mandatory instructions with first increment ID
-FIRST_INC=$(echo "$REMAINING_INCS" | cut -d',' -f1 | tr -d ' ')
+# Build header based on retry count
+if [ "$CURRENT_RETRY" -ge "$MAX_RETRIES_BEFORE_ESCALATE" ]; then
+    MSG="${MSG}🚨 STUCK SESSION (attempt $CURRENT_RETRY/$MAX_RETRIES_BEFORE_ESCALATE)
+
+⚠️  This session has failed to complete $CURRENT_RETRY times.
+    Consider: pausing (/sw:pause $FIRST_INC) or abandoning (/sw:abandon $FIRST_INC)
+
+"
+fi
+
+MSG="${MSG}🔄 $REMAINING_COUNT increment(s) need work: $REMAINING_INCS (attempt $CURRENT_RETRY/$MAX_RETRIES_BEFORE_ESCALATE)"
+
+# Add validation errors if any
+if [ -n "$VALIDATION_ERRORS" ]; then
+    error_details=$(echo "$VALIDATION_ERRORS" | tr '|' '\n' | grep -v '^$' | head -5 | while read line; do
+        echo "   • $line"
+    done)
+    MSG="$MSG
+
+📋 Current blocking issues:
+$error_details"
+fi
+
+# ============================================================================
+# REFLECTION: Why did previous attempts fail?
+# ============================================================================
+
+if [ "$CURRENT_RETRY" -gt 1 ]; then
+    FAILURE_HISTORY=$(get_failure_history)
+    if [ -n "$FAILURE_HISTORY" ]; then
+        MSG="$MSG
+
+🔍 REFLECT: Why previous attempts failed:
+$FAILURE_HISTORY
+
+💡 THINK: What can you do differently this time?
+   • Is there a different approach to fix the issue?
+   • Are you stuck in a loop doing the same thing?
+   • Should you ask the user for help?"
+    fi
+fi
+
+# Add mode indicators
+if [ "$TDD_MODE" = "true" ]; then
+    MSG="🔴 TDD MODE | $MSG"
+elif [ "$REQUIRE_TESTS" = "true" ]; then
+    MSG="🧪 TEST MODE | $MSG"
+fi
+
+# ============================================================================
+# BUILD CONDITIONAL COMPLETION STEPS
+# ============================================================================
+
+STEP_NUM=1
+STEPS=""
+
+# Step 1: Complete tasks (always required)
+STEPS="${STEPS}
+${STEP_NUM}️⃣  COMPLETE ALL TASKS
+    → Run: /sw:do
+    → Mark all tasks [x] completed in tasks.md
+    → Mark all ACs [x] completed in spec.md"
+STEP_NUM=$((STEP_NUM + 1))
+
+# Step 2: Run tests (if available and required)
+if [ "$HAS_TESTS" = "true" ] && { [ "$REQUIRE_TESTS" = "true" ] || [ "$TDD_MODE" = "true" ]; }; then
+    STEPS="${STEPS}
+
+${STEP_NUM}️⃣  RUN TESTS (REQUIRED by config)
+    → Run: $TEST_CMD
+    → ALL tests MUST pass before proceeding
+    → If tests fail, FIX them and re-run"
+    STEP_NUM=$((STEP_NUM + 1))
+elif [ "$HAS_TESTS" = "true" ]; then
+    STEPS="${STEPS}
+
+${STEP_NUM}️⃣  RUN TESTS (recommended)
+    → Run: $TEST_CMD
+    → Verify your changes work correctly"
+    STEP_NUM=$((STEP_NUM + 1))
+fi
+
+# Step 3: Validate (if required by config)
+if [ "$REQUIRE_VALIDATION" = "true" ]; then
+    STEPS="${STEPS}
+
+${STEP_NUM}️⃣  VALIDATE QUALITY GATES (REQUIRED)
+    → Run: /sw:validate $FIRST_INC
+    → Review and fix any blocking issues"
+    STEP_NUM=$((STEP_NUM + 1))
+fi
+
+# Step 4: Judge LLM (if required by config)
+if [ "$REQUIRE_JUDGE_LLM" = "true" ]; then
+    STEPS="${STEPS}
+
+${STEP_NUM}️⃣  AI QUALITY VERIFICATION (REQUIRED)
+    → Run: /sw:judge-llm $FIRST_INC
+    → Must pass before closing"
+    STEP_NUM=$((STEP_NUM + 1))
+fi
+
+# Final step: Close increment (always required)
+STEPS="${STEPS}
+
+${STEP_NUM}️⃣  CLOSE INCREMENT (FINAL STEP)
+    → Run: /sw:done $FIRST_INC
+    → This validates gates and closes properly"
 
 MSG="$MSG
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️  MANDATORY COMPLETION STEPS (DO NOT SKIP ANY):
+📋 COMPLETION STEPS for $FIRST_INC:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1️⃣  COMPLETE ALL TASKS
-    → Run: /sw:do
-    → Mark all tasks [x] completed in tasks.md
-    → Mark all ACs [x] completed in spec.md
-
-2️⃣  RUN TESTS (MANDATORY)
-    → Run: npm test (or pytest/go test as appropriate)
-    → ALL tests MUST pass before proceeding
-    → If tests fail, FIX them and re-run
-
-3️⃣  VALIDATE QUALITY GATES
-    → Run: /sw:validate $FIRST_INC
-    → Review any warnings or issues
-    → Fix any blocking problems
-
-4️⃣  AI QUALITY VERIFICATION (MANDATORY)
-    → Run: /sw:judge-llm $FIRST_INC
-    → Ensure work meets acceptance criteria
-    → Must pass before closing increment
-
-5️⃣  CLOSE INCREMENT (FINAL STEP)
-    → Run: /sw:done $FIRST_INC
-    → This validates all gates and closes properly
+$STEPS
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚫 DO NOT exit without completing ALL steps above!
+🎯 Execute these steps IN ORDER, then session will complete automatically.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-log "BLOCK: $REMAINING_COUNT increment(s) remaining - explicit instructions provided"
+log "BLOCK: $REMAINING_COUNT increment(s) remaining - attempt $CURRENT_RETRY"
 
 jq -n \
     --arg decision "block" \
-    --arg reason "Complete remaining $REMAINING_COUNT increment(s): $REMAINING_INCS" \
+    --arg reason "Complete remaining $REMAINING_COUNT increment(s): $REMAINING_INCS (attempt $CURRENT_RETRY)" \
     --arg msg "$MSG" \
     '{decision: $decision, reason: $reason, systemMessage: $msg}'

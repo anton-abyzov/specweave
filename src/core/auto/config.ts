@@ -107,11 +107,19 @@ function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoC
   if (typeof userConfig.enabled === 'boolean') config.enabled = userConfig.enabled;
   if (typeof userConfig.enforceTestFirst === 'boolean') config.enforceTestFirst = userConfig.enforceTestFirst;
   if (typeof userConfig.warnOnParallelSession === 'boolean') config.warnOnParallelSession = userConfig.warnOnParallelSession;
+  if (typeof userConfig.requireTests === 'boolean') config.requireTests = userConfig.requireTests;
+  if (typeof userConfig.requireValidation === 'boolean') config.requireValidation = userConfig.requireValidation;
+  if (typeof userConfig.requireJudgeLLM === 'boolean') config.requireJudgeLLM = userConfig.requireJudgeLLM;
 
   // Numeric fields with validation
   if (typeof userConfig.maxIterations === 'number') {
     const clamped = clampWithWarning(userConfig.maxIterations, 1, 5000, 'maxIterations', warnings);
     if (clamped !== undefined) config.maxIterations = clamped;
+  }
+
+  if (typeof userConfig.maxRetries === 'number') {
+    const clamped = clampWithWarning(userConfig.maxRetries, 5, 100, 'maxRetries', warnings);
+    if (clamped !== undefined) config.maxRetries = clamped;
   }
 
   if (typeof userConfig.maxHours === 'number') {
