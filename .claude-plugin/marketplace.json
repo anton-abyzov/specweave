@@ -16,11 +16,6 @@
       "author": {
         "name": "Anton Abyzov",
         "email": "anton.abyzov@gmail.com"
-      },
-      "lazyLoading": {
-        "isRouter": true,
-        "tokenEstimate": 800,
-        "loadFirst": true
       }
     },
     {

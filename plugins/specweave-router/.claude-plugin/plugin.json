@@ -23,10 +23,5 @@
     "mobile",
     "payments",
     "specweave"
-  ],
-  "lazyLoading": {
-    "isRouter": true,
-    "tokenEstimate": 800,
-    "triggersAgentSpawn": true
-  }
+  ]
 }
