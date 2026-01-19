@@ -641,7 +641,8 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
 
   if (lazyMode) {
     // LAZY MODE: Install only router plugin
-    const routerPlugin = 'specweave-router';
+    // Note: Plugin name in marketplace.json is 'sw-router', folder name is 'specweave-router'
+    const routerPlugin = 'sw-router';
     console.log(chalk.yellow(`⚙️  Step 3: Installing router plugin only (lazy mode)${forceMode ? ' + force' : ''}...\n`));
 
     if (plugins.includes(routerPlugin)) {
@@ -810,12 +811,12 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     });
 
     // SIMPLIFIED (v1.0.122+): No intermediate cache needed!
-    // Plugins load directly from marketplace (~/.claude/plugins/specweave/)
+    // Plugins load directly from marketplace (~/.claude/plugins/marketplaces/specweave/plugins/)
     const cacheResult = await cacheManager.populateCache();
 
     if (cacheResult.success) {
       console.log(chalk.green(`✓ ${cacheResult.pluginsAffected} plugins ready for on-demand loading`));
-      console.log(chalk.gray(`  Marketplace: ~/.claude/plugins/specweave/`));
+      console.log(chalk.gray(`  Marketplace: ~/.claude/plugins/marketplaces/specweave/plugins/`));
       console.log(chalk.gray(`  No intermediate cache needed (loads directly from marketplace)`));
       if (options.verbose) {
         console.log(chalk.gray(`  Duration: ${cacheResult.durationMs.toFixed(0)}ms`));

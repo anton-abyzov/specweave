@@ -605,7 +605,8 @@ async function installLazyMode(
   }
 
   // Step 2: Install ONLY the router skill
-  const routerPlugin = allPlugins.find(p => p.name === 'specweave-router');
+  // Note: Plugin name in marketplace.json is 'sw-router', folder name is 'specweave-router'
+  const routerPlugin = allPlugins.find(p => p.name === 'sw-router');
 
   if (routerPlugin) {
     spinner.start('Installing router skill...');
