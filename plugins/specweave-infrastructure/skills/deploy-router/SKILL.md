@@ -653,3 +653,165 @@ Cost consideration:
 2. Replace with Vercel equivalents (Edge Config, Postgres, Blob)
 3. Update `wrangler.toml` to `vercel.json`
 4. Test Node.js compatibility
+
+---
+
+## Enterprise Considerations
+
+### Scaling Beyond Free Tier
+
+| Platform | Free Tier Limit | When to Upgrade | Enterprise Cost |
+|----------|-----------------|-----------------|-----------------|
+| **Vercel** | 100GB bandwidth, 100 serverless hours | > 50K requests/day | $20/user/month (Pro), Custom (Enterprise) |
+| **Cloudflare** | 100K requests/day, 500 builds/month | > 100K requests/day | $5/month (Workers), Custom (Enterprise) |
+| **GitHub Pages** | 100GB bandwidth, 10 min builds | N/A (static only) | Pro: $4/month, Team: $4/user |
+
+### Enterprise Features Comparison
+
+| Feature | Vercel Enterprise | Cloudflare Enterprise | Notes |
+|---------|-------------------|----------------------|-------|
+| **SLA** | 99.99% | 100% (edge) | Cloudflare edge is bulletproof |
+| **DDoS Protection** | ✅ Included | ✅ Industry-leading | Cloudflare is the gold standard |
+| **SSO/SAML** | ✅ Enterprise | ✅ Enterprise | Both require enterprise tier |
+| **Audit Logs** | ✅ Enterprise | ✅ Enterprise | Compliance requirements |
+| **Custom Domains** | Unlimited | Unlimited | Both generous |
+| **Private Network** | ✅ Secure Compute | ✅ Cloudflare Tunnel | Zero-trust networking |
+| **Compliance** | SOC2, HIPAA | SOC2, HIPAA, PCI-DSS | Cloudflare has broader certs |
+
+### When Enterprise Tier is Needed
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  ENTERPRISE TIER TRIGGERS                                        │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Vercel Enterprise ($$$):                                       │
+│  ├─ > 1M requests/month                                         │
+│  ├─ > 100 team members                                          │
+│  ├─ SOC2/HIPAA compliance required                              │
+│  ├─ SLA guarantees needed for contracts                         │
+│  ├─ Advanced observability (OpenTelemetry)                      │
+│  └─ Dedicated support                                           │
+│                                                                 │
+│  Cloudflare Enterprise ($$$):                                   │
+│  ├─ > 10M requests/day                                          │
+│  ├─ Custom WAF rules                                            │
+│  ├─ Advanced bot management                                     │
+│  ├─ PCI-DSS compliance                                          │
+│  ├─ 24/7 phone support                                          │
+│  └─ Custom SSL certificates                                     │
+│                                                                 │
+│  Stay on Free/Pro when:                                         │
+│  ├─ < 50K requests/day                                          │
+│  ├─ < 20 team members                                           │
+│  ├─ No compliance requirements                                  │
+│  ├─ Community support is acceptable                             │
+│  └─ Standard SLA is fine                                        │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Framework-Specific Guidance
+
+### Remix (Special Case)
+
+Remix is uniquely positioned to work well on BOTH platforms:
+
+| Remix Adapter | Platform | Best For |
+|---------------|----------|----------|
+| `@remix-run/cloudflare` | Cloudflare Workers | Edge-first, cost-sensitive |
+| `@remix-run/cloudflare-pages` | Cloudflare Pages | Static + edge functions |
+| `@remix-run/vercel` | Vercel | Node.js features, dynamic SEO |
+| `@remix-run/node` | Vercel/Railway | Full Node.js, DB access |
+
+**Remix + Cloudflare Decision**:
+```
+If your Remix app:
+├─ Uses only edge-compatible packages → Cloudflare ✅
+├─ Needs KV/D1/R2 storage → Cloudflare ✅ (native support)
+├─ Is cost-sensitive → Cloudflare ✅ (cheaper)
+├─ Needs Prisma/native modules → Vercel (Node.js required)
+├─ Has critical dynamic SEO → Vercel (SSR power)
+└─ Needs WebSockets → Vercel (Durable Objects are complex)
+```
+
+**Remix Setup for Cloudflare**:
+```bash
+npx create-remix@latest --template cloudflare-pages
+```
+
+**Remix Setup for Vercel**:
+```bash
+npx create-remix@latest --template vercel
+```
+
+---
+
+## Backend Services (Cron Jobs, Workers)
+
+Not all deployments are frontends. For backend services:
+
+| Use Case | Recommended Platform | Alternative |
+|----------|---------------------|-------------|
+| **Cron < 1/hour** | Vercel Cron, GitHub Actions | - |
+| **Cron >= 1/hour** | Railway, Render, Fly.io | Cloudflare Workers (paid) |
+| **Long-running jobs** | Railway, Render | Modal, Inngest |
+| **Event processing** | Cloudflare Queues | AWS SQS, Inngest |
+| **Background tasks** | Inngest, Trigger.dev | Railway |
+
+### Backend Platform Comparison
+
+| Platform | Pricing | Best For | Limitations |
+|----------|---------|----------|-------------|
+| **Railway** | $5/month + usage | Full-stack, databases, cron | Can get expensive at scale |
+| **Render** | Free tier + $7/month | Background workers, cron | Cold starts on free |
+| **Fly.io** | Free tier + usage | Global edge, persistent | Learning curve |
+| **Inngest** | Free tier + usage | Event-driven workflows | Requires adapter |
+| **Cloudflare Workers** | $5/month | Edge compute, queues | No Node.js |
+
+### Hybrid Architecture
+
+For complex apps, consider hybrid:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    HYBRID ARCHITECTURE                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Frontend (Cloudflare Pages)                                    │
+│  ├─ Static assets (CSS, JS, images)                             │
+│  ├─ Edge-rendered pages (fast TTFB)                             │
+│  └─ Cloudflare KV for session cache                             │
+│                                                                 │
+│              ▼ API calls                                        │
+│                                                                 │
+│  API (Vercel Functions)                                         │
+│  ├─ Node.js runtime for DB access                               │
+│  ├─ Prisma/Drizzle with PostgreSQL                              │
+│  └─ Server-side auth (Prisma sessions)                          │
+│                                                                 │
+│              ▼ Background jobs                                  │
+│                                                                 │
+│  Workers (Railway/Render)                                       │
+│  ├─ Cron jobs (hourly+)                                         │
+│  ├─ Email sending                                               │
+│  └─ Heavy processing                                            │
+│                                                                 │
+│  Result: Edge speed + Node.js power + Background processing     │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Cost Optimization Tips
+
+1. **Start on Cloudflare** if you're unsure - it's free and generous
+2. **Migrate to Vercel** only when you hit Node.js requirements
+3. **Use Vercel Edge** when possible (cheaper than Serverless)
+4. **Cache aggressively** on Cloudflare (KV, R2, Workers KV)
+5. **Use ISR** with long revalidation periods when real-time isn't critical
+6. **Monitor usage** - set billing alerts on both platforms
+7. **Consider Railway** for backend services (cheaper than Vercel for workers)

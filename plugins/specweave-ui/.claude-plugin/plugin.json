@@ -1,7 +1,9 @@
 {
   "name": "sw-ui",
   "version": "1.0.0",
-  "description": "Browser automation and UI tools - Element inspection, automated testing, Playwright integration",
+  "description": "[DEPRECATED] Browser automation and UI tools - merged into sw-testing. Use sw-testing instead.",
+  "deprecated": true,
+  "deprecatedMessage": "Merged into sw-testing plugin in v1.0.130. Use sw-testing for browser automation, UI inspection, and visual regression testing.",
   "author": {
     "name": "Anton Abyzov",
     "email": "anton.abyzov@gmail.com"

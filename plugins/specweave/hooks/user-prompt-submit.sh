@@ -54,7 +54,25 @@ fi
 if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" != "1" ]]; then
   # Check for plugin-specific keywords (broader than SpecWeave keywords)
   # These trigger auto-install of relevant plugins
-  if echo "$PROMPT" | grep -qiE "(react|vue|angular|next\.?js|nuxt|express|fastapi|django|nestjs|spring|kubernetes|k8s|docker|terraform|pulumi|github|jira|ado|azure.?devops|kafka|ml|machine.?learning|pytorch|tensorflow|mobile|react.?native|expo|ios|android|stripe|payment|release|changelog|playwright|cypress|e2e|mermaid|diagram)"; then
+  # v1.0.130: Expanded to cover ALL development domains
+  #
+  # DOMAINS COVERED:
+  # - Frontend: react, vue, angular, svelte, nextjs, nuxt, tailwind, dashboard, component, ui
+  # - Backend: api, rest, graphql, express, fastapi, django, nestjs, spring, database, sql, postgres, mongodb, redis
+  # - Testing: test, tdd, vitest, jest, playwright, cypress, e2e, coverage, qa
+  # - Infrastructure: docker, terraform, pulumi, aws, azure, gcp, deploy, ci/cd, prometheus, grafana
+  # - Kubernetes: kubernetes, k8s, helm, eks, aks, gke, argocd, gitops
+  # - Mobile: mobile, react native, expo, ios, android, flutter
+  # - ML/AI: ml, ai, machine learning, pytorch, tensorflow, mlops, llm, nlp
+  # - Payments: stripe, paypal, checkout, billing, subscription
+  # - Release: release, version, changelog, publish, semver
+  # - GitHub: github, pr, pull request, issues, actions
+  # - Kafka: kafka, event streaming, confluent, ksqldb
+  # - Diagrams: diagram, mermaid, c4, flowchart
+  # - Docs: documentation, docusaurus, readme
+  # - JIRA/ADO: jira, azure devops, work item
+  #
+  if echo "$PROMPT" | grep -qiE "(react|vue|angular|svelte|next\.?js|nuxt|tailwind|dashboard|component|frontend|api|rest|graphql|express|fastapi|django|nestjs|spring|backend|database|sql|postgres|mongodb|redis|prisma|test|tdd|vitest|jest|playwright|cypress|e2e|coverage|qa|docker|terraform|pulumi|aws|azure|gcp|deploy|ci.?cd|prometheus|grafana|kubernetes|k8s|helm|eks|aks|gke|argocd|gitops|mobile|react.?native|expo|ios|android|flutter|ml|ai|machine.?learning|pytorch|tensorflow|mlops|llm|nlp|stripe|paypal|checkout|billing|subscription|payment|release|version|changelog|publish|semver|github|pr|pull.?request|issues|actions|kafka|event.?streaming|confluent|ksqldb|diagram|mermaid|c4|flowchart|documentation|docusaurus|readme|jira|azure.?devops|work.?item)"; then
     # Run detect-intent in background (non-blocking) with --install --silent
     # This will auto-install relevant plugins based on the prompt
     if command -v specweave >/dev/null 2>&1; then
@@ -68,7 +86,8 @@ if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_H
       mkdir -p "$PROMPT_CACHE_DIR" 2>/dev/null
 
       # Extract matched keywords as cache key (simpler than full prompt hash)
-      MATCHED_KEYWORDS=$(echo "$PROMPT" | grep -oiE "(react|vue|angular|nextjs|nuxt|express|fastapi|django|nestjs|spring|kubernetes|k8s|docker|terraform|pulumi|github|jira|ado|kafka|ml|mobile|stripe|payment|release|playwright|cypress|mermaid)" | tr '[:upper:]' '[:lower:]' | sort -u | tr '\n' '-')
+      # v1.0.130: Expanded to match all domain keywords
+      MATCHED_KEYWORDS=$(echo "$PROMPT" | grep -oiE "(react|vue|angular|svelte|nextjs|nuxt|tailwind|dashboard|frontend|api|graphql|express|fastapi|django|nestjs|spring|backend|database|postgres|mongodb|redis|test|tdd|vitest|jest|playwright|cypress|docker|terraform|aws|azure|gcp|kubernetes|k8s|helm|argocd|mobile|expo|ios|android|flutter|ml|ai|pytorch|tensorflow|mlops|llm|stripe|paypal|payment|release|changelog|github|kafka|confluent|diagram|mermaid|jira|ado)" | tr '[:upper:]' '[:lower:]' | sort -u | tr '\n' '-')
       CACHE_FILE="$PROMPT_CACHE_DIR/${MATCHED_KEYWORDS}detected"
 
       # Skip if these keywords were already processed (cache exists and is recent)

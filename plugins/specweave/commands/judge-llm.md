@@ -7,6 +7,18 @@ description: Ultrathink LLM-as-Judge validation of completed work. Uses extended
 
 **ULTRATHINK BY DEFAULT** - Validate completed work using extended thinking and the LLM-as-Judge pattern.
 
+## Implementation: Opus Model + Timeout Handling
+
+**Model**: `opus` for deepest analysis
+**Timeout**: 60 seconds default (configurable with `--timeout`)
+**Progress Log**: `.specweave/logs/judge-llm.log`
+
+Implementation in `src/core/skills/skill-judge.ts`:
+- Uses Anthropic SDK with user's ANTHROPIC_API_KEY
+- AbortController-based timeout to prevent stuck states
+- Progress logging for visibility during evaluation
+- Fallback to basic pattern matching if no API key
+
 ## CRITICAL: Extended Thinking is DEFAULT
 
 This command ALWAYS uses **ultrathink (extended thinking)** for thorough LLM-as-Judge evaluation:
@@ -17,6 +29,7 @@ DEFAULT BEHAVIOR = ULTRATHINK MODE
 - Deep chain-of-thought reasoning
 - Thorough multi-dimensional analysis
 - ~60-90 seconds for comprehensive evaluation
+- Uses Opus model for maximum quality
 ```
 
 Use `--quick` only if you explicitly need faster (but less thorough) validation.
@@ -43,11 +56,35 @@ Use when you've completed work and want **maximum-quality AI validation**:
 # Quick mode (ONLY if you need speed over thoroughness)
 /sw:judge-llm src/file.ts --quick
 
+# Timeout control (default: 60s)
+/sw:judge-llm src/file.ts --timeout 120000   # 120 seconds
+/sw:judge-llm src/file.ts --timeout 30000    # 30 seconds (faster cutoff)
+
 # Additional options
 /sw:judge-llm src/file.ts --strict   # Fail on any concern
 /sw:judge-llm src/file.ts --fix      # Include fix suggestions
 /sw:judge-llm src/file.ts --export   # Export report to markdown
+/sw:judge-llm src/file.ts --verbose  # Show progress to console
 ```
+
+## Visibility & Stuck Detection
+
+Progress is **always logged** to `.specweave/logs/judge-llm.log`:
+
+```
+[2026-01-19T10:30:00.000Z] [0.0s] [INFO] Starting LLM Judge evaluation for domain: backend
+[2026-01-19T10:30:00.001Z] [0.0s] [INFO] Task: Validate authentication implementation...
+[2026-01-19T10:30:00.002Z] [0.0s] [INFO] Using model: opus
+[2026-01-19T10:30:00.003Z] [0.0s] [INFO] Timeout: 60000ms
+[2026-01-19T10:30:00.004Z] [0.0s] [PROGRESS] Sending request to Opus...
+[2026-01-19T10:30:45.000Z] [45.0s] [PROGRESS] Response received, parsing...
+```
+
+**If evaluation gets stuck**:
+1. Check `.specweave/logs/judge-llm.log` for last progress
+2. Default timeout (60s) will abort if stuck
+3. Increase timeout with `--timeout` if legitimately slow
+4. Result will show `timedOut: true` if aborted
 
 ## How It Works
 

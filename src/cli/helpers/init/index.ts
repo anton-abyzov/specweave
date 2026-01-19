@@ -126,3 +126,15 @@ export {
   type TemplateSection,
   type MergeResult,
 } from './instruction-file-merger.js';
+
+// Smart .gitignore generator (v1.0.130+)
+export {
+  generateSmartGitignore,
+  detectTechStack,
+  generateGitignore,
+  generateRepoGitignore,
+  writeGitignore,
+  type DetectedTech,
+  type TechCategory,
+  type TechStackDetection,
+} from './gitignore-generator.js';

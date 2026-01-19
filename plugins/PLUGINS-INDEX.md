@@ -2,7 +2,7 @@
 
 **Purpose**: Lightweight plugin manifest for progressive disclosure. Load plugin content only when triggers match.
 
-**Total Plugins**: 24 | **Last Updated**: 2026-01-17
+**Total Plugins**: 23 | **Last Updated**: 2026-01-19
 
 ---
 
@@ -44,7 +44,6 @@
 | Plugin | Triggers | Description |
 |--------|----------|-------------|
 | **specweave-frontend** | React, Vue, Angular, Next.js, frontend, UI, components | Frontend architecture, design systems |
-| **specweave-ui** | UI components, design system, Storybook, Figma | UI component development |
 | **specweave-figma** | Figma, design tokens, design-to-code | Figma integration |
 | **specweave-mobile** | React Native, mobile, iOS, Android | Mobile app development |
 
@@ -65,7 +64,7 @@
 
 | Plugin | Triggers | Description |
 |--------|----------|-------------|
-| **specweave-testing** | test, E2E, Playwright, Vitest, Jest, QA | Test automation, QA strategy |
+| **specweave-testing** | test, E2E, Playwright, Vitest, Jest, QA, browser automation, visual regression, UI inspection, screenshot | Test automation, QA strategy, browser automation, visual regression testing |
 
 ## Documentation & Release
 
@@ -94,6 +93,17 @@
 |--------|----------|-------------|
 | **specweave-plugin-dev** | create plugin, plugin development | Plugin development guide |
 | **specweave-tooling** | tooling, skill create, agent create | SpecWeave tooling |
+
+---
+
+## Deprecated Plugins (v1.0.130+)
+
+| Plugin | Merged Into | Notes |
+|--------|-------------|-------|
+| ~~specweave-ui~~ | specweave-testing | Browser automation, UI inspection, visual regression now in testing |
+| ~~specweave-release~~ | specweave (core) | `/sw:npm` now in core |
+| ~~specweave-diagrams~~ | specweave (core) | Mermaid, C4 diagrams now in core |
+| ~~specweave-docs~~ | specweave (core) | Documentation skills now in core |
 
 ---
 
