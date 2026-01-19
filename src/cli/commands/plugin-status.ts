@@ -10,6 +10,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import chalk from 'chalk';
 import { SkillTriggerIndexManager } from '../../core/plugins/skill-trigger-index.js';
+import { PluginCacheManager } from '../../core/lazy-loading/cache-manager.js';
 
 export interface PluginStatusOptions {
   verbose?: boolean;
@@ -84,7 +85,104 @@ export async function pluginStatusCommand(options: PluginStatusOptions = {}): Pr
     console.log(`Skill Index: ${chalk.yellow('⚠️')} Not generated`);
   }
 
+  // Lazy Loading Cache Status
+  console.log(chalk.bold('\n📦 Lazy Loading Status'));
+  console.log(chalk.gray('─────────────────────'));
+
+  try {
+    const cacheManager = new PluginCacheManager();
+    const cachedPlugins = cacheManager.getCachedPlugins();
+    const loadedPlugins = cacheManager.getLoadedPlugins();
+    const cacheSize = cacheManager.getCacheSize();
+    const state = cacheManager.readState();
+
+    // Mode and summary
+    console.log(`Mode: ${state.lazyMode ? chalk.green('Lazy Loading') : chalk.yellow('Full Install')}`);
+    console.log(`Loaded: ${chalk.green(loadedPlugins.length)} plugins`);
+    console.log(`Cached: ${chalk.yellow(cachedPlugins.length)} plugins`);
+    console.log(`Cache Size: ${chalk.cyan(formatBytes(cacheSize.total))}`);
+
+    // Last updated timestamp
+    if (state.lastUpdated) {
+      const lastUpdate = new Date(state.lastUpdated);
+      const timeAgo = formatTimeAgo(lastUpdate);
+      console.log(`Last Updated: ${chalk.gray(timeAgo)}`);
+    }
+
+    // Color-coded plugin list (loaded=green, cached=yellow)
+    console.log(chalk.bold('\n📋 Plugin Status'));
+    console.log(chalk.gray('────────────────'));
+
+    // List loaded plugins (green)
+    if (loadedPlugins.length > 0) {
+      console.log(chalk.green('\n✓ Loaded (Active):'));
+      for (const plugin of loadedPlugins.sort()) {
+        const size = cacheSize.plugins[plugin] || 0;
+        console.log(`  ${chalk.green('●')} ${plugin} ${chalk.gray(`(${formatBytes(size)})`)}`);
+      }
+    }
+
+    // List cached-only plugins (yellow)
+    const cachedOnly = cachedPlugins.filter((p) => !loadedPlugins.includes(p));
+    if (cachedOnly.length > 0) {
+      console.log(chalk.yellow('\n○ Cached (Ready to load):'));
+      for (const plugin of cachedOnly.sort()) {
+        const size = cacheSize.plugins[plugin] || 0;
+        console.log(`  ${chalk.yellow('○')} ${plugin} ${chalk.gray(`(${formatBytes(size)})`)}`);
+      }
+    }
+
+    // Analytics
+    if (state.analytics.totalLoads > 0) {
+      console.log(chalk.gray(`\nAnalytics: ${state.analytics.totalLoads} total loads`));
+    }
+
+    // Help tips
+    if (cachedOnly.length > 0) {
+      console.log(chalk.cyan('\n💡 Load more plugins:'));
+      console.log(chalk.gray('   specweave load-plugins <group>'));
+      console.log(chalk.gray('   specweave load-plugins all'));
+    }
+  } catch (error) {
+    console.log(chalk.yellow('⚠️  Lazy loading cache not available'));
+    console.log(chalk.gray('   Run: specweave refresh-marketplace'));
+  }
+
   console.log();
+}
+
+/**
+ * Format bytes to human-readable string
+ */
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+}
+
+/**
+ * Format date to human-readable "time ago" string
+ */
+function formatTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) {
+    return 'just now';
+  } else if (diffMins < 60) {
+    return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
+  } else if (diffHours < 24) {
+    return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+  } else if (diffDays < 7) {
+    return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+  } else {
+    return date.toLocaleDateString();
+  }
 }
 
 /**

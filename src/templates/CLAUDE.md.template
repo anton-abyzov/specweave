@@ -336,6 +336,60 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | No GITHUB_TOKEN | Check `.env` file or run `gh auth login` |
 | Edits blocked in repositories/ | Add `"additionalDirectories":["repositories"]` + `Write(//**)`, `Edit(//**)` to `.claude/settings.json` |
 | Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
+| Lazy loading not working | `specweave load-plugins core` to manually load plugins |
+| Need all plugins now | `specweave load-plugins all` loads everything immediately |
+<!-- /SECTION -->
+
+<!-- SECTION:lazyloading -->
+## Lazy Plugin Loading
+
+**SpecWeave uses lazy loading by default** - only the router skill (~500 tokens) loads initially.
+
+### How It Works
+
+When you mention SpecWeave-related keywords, the router skill automatically loads the full plugin suite:
+
+**Trigger keywords**: `increment`, `specweave`, `/sw:`, `spec.md`, `tasks.md`, `living docs`, `feature planning`, `sprint`, `jira sync`, `github sync`
+
+### Manual Plugin Control
+
+```bash
+specweave load-plugins core      # Load core plugins only
+specweave load-plugins github    # Load GitHub integration
+specweave load-plugins jira      # Load JIRA integration
+specweave load-plugins all       # Load all 24 plugins
+specweave unload-plugins         # Unload all except router
+specweave plugin-status          # Check loaded vs cached
+```
+
+**Available groups**: `core`, `github`, `jira`, `ado`, `frontend`, `backend`, `infra`, `ml`, `kafka`, `confluent`, `mobile`, `payments`, `release`, `testing`, `diagrams`, `all`
+
+### Token Savings
+
+| Mode | Context Usage |
+|------|---------------|
+| Non-SpecWeave work | ~500 tokens (router only) |
+| SpecWeave work | ~60k tokens (on-demand) |
+
+### Checking Plugin Status
+
+```bash
+specweave plugin-status
+# Shows: loaded plugins (green), cached plugins (yellow), lazy mode status
+```
+
+### Migration (Existing Users)
+
+```bash
+specweave migrate-lazy           # Convert to lazy mode
+specweave migrate-lazy --rollback  # Restore full mode
+```
+
+### Full Install (Skip Lazy Loading)
+
+```bash
+specweave init --full .          # Install all plugins immediately
+```
 <!-- /SECTION -->
 
 <!-- SECTION:principles -->
@@ -477,4 +531,136 @@ wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 ## Docs
 
 [spec-weave.com](https://spec-weave.com) | `.specweave/docs/internal/`
+<!-- /SECTION -->
+
+<!-- SECTION:non-claude -->
+## Non-Claude AI Tools
+
+**SpecWeave works with ANY AI coding assistant.** The framework uses file-based tracking that's AI-tool agnostic.
+
+### Quick Setup for Other Tools
+
+```bash
+# Install SpecWeave CLI globally
+npm install -g specweave
+
+# Initialize project (creates .specweave/ folder)
+specweave init .
+
+# Install plugins for your AI tool
+bash ~/.specweave/scripts/install-plugins.sh --target generic
+# Or on Windows PowerShell:
+~\.specweave\scripts\install-plugins.ps1 -Target generic
+```
+
+### Manual Context Loading (Cursor, Windsurf, Aider, etc.)
+
+If your AI tool doesn't have a plugin system, manually include these files in context:
+
+**Essential files to include in EVERY session:**
+1. `CLAUDE.md` (this file) - Framework rules and workflow
+2. `.specweave/increments/####-*/tasks.md` - Current work items
+3. `.specweave/increments/####-*/spec.md` - Requirements and ACs
+
+**Copy-paste starter prompt:**
+```
+I'm using SpecWeave for spec-driven development. Here are my current files:
+
+[PASTE CLAUDE.md CONTENT]
+
+[PASTE CURRENT tasks.md CONTENT]
+
+[PASTE CURRENT spec.md CONTENT]
+
+Follow SpecWeave workflow: update tasks.md checkboxes when done, update spec.md ACs.
+```
+
+### Tool-Specific Setup
+
+**Cursor IDE:**
+- Add `.specweave/` to workspace folders
+- Include `CLAUDE.md` in `.cursorrules`
+- Use `@file` to reference spec.md and tasks.md
+
+**Windsurf:**
+- Add this file content to cascade rules
+- Reference increment files with `/file` command
+
+**Aider:**
+- Add CLAUDE.md to `.aider.conf.yml`:
+  ```yaml
+  read:
+    - CLAUDE.md
+    - .specweave/increments/*/spec.md
+    - .specweave/increments/*/tasks.md
+  ```
+
+**Continue.dev:**
+- Add to `.continue/config.json`:
+  ```json
+  {
+    "contextProviders": [{
+      "name": "file",
+      "params": { "path": "CLAUDE.md" }
+    }]
+  }
+  ```
+
+**GitHub Copilot:**
+- Add to `.github/copilot-instructions.md`:
+  ```
+  Follow SpecWeave workflow from CLAUDE.md.
+  Check .specweave/increments/ for current tasks.
+  Update tasks.md when completing work.
+  ```
+
+### Replicating SpecWeave Behaviors
+
+**Without plugins, implement these manually:**
+
+| SpecWeave Feature | Manual Equivalent |
+|-------------------|-------------------|
+| `/sw:increment` | Create `spec.md` with User Stories, create `tasks.md` with Tasks |
+| `/sw:do` | Read tasks.md, work on pending tasks, update checkboxes |
+| `/sw:done` | Mark all tasks complete, review ACs in spec.md |
+| Hooks (validation) | Run `npm test && npm run build` before marking complete |
+| Auto mode | Use agentic loop: read tasks.md → work → update → repeat |
+
+**Task format for any AI:**
+```markdown
+### T-001: Task Title
+**Status**: [ ] pending
+**Acceptance**: Given X, When Y, Then Z
+
+Implementation notes here.
+```
+
+**Mark complete by changing:** `[ ] pending` → `[x] completed`
+
+### Autonomous Mode Without Claude Code
+
+For non-Claude AI tools, implement the "Ralph Loop" pattern:
+
+```bash
+# Pseudo-code for any AI tool with API access
+while tasks_pending():
+    tasks = read_file("tasks.md")
+    current_task = get_first_pending(tasks)
+
+    # Have AI work on task
+    result = ai.complete(f"Complete this task: {current_task}")
+
+    # Update files
+    update_task_status(current_task, "completed")
+
+    # Run tests
+    if not run_tests():
+        ai.complete("Fix failing tests")
+
+    # Max iterations safety
+    if iterations > 100:
+        break
+```
+
+**Key principle:** The AI reads tasks.md, works, updates the file, and loops until all `[x]` complete.
 <!-- /SECTION -->

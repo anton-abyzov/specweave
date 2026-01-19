@@ -4,3 +4,4 @@
 
 - ✗→✓ always keep commit messages short and professional without AI attribution
 - ✗→✓ never include "Generated with Claude" or "Co-Authored-By: Claude" in commits
+- → Always commit working state before major changes

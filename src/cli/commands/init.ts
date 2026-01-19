@@ -264,12 +264,18 @@ export async function initCommand(
   projectName?: string,
   options: InitOptions = {}
 ): Promise<void> {
-  // Detect CI/non-interactive environment
-  const isCI = process.env.CI === 'true' ||
+  // Detect CI/non-interactive environment or quick mode
+  const isCI = options.quick ||  // Quick mode acts like CI for skipping prompts
+               process.env.CI === 'true' ||
                process.env.GITHUB_ACTIONS === 'true' ||
                process.env.GITLAB_CI === 'true' ||
                process.env.CIRCLECI === 'true' ||
                !process.stdin.isTTY;
+
+  // In quick mode, show a brief message
+  if (options.quick) {
+    console.log(chalk.cyan('\n⚡ Quick mode: Using sensible defaults (local git, no external tools)'));
+  }
 
   // STEP 1: LANGUAGE SELECTION (FIRST QUESTION!)
   // This must be asked before anything else so all prompts are in user's language
@@ -541,7 +547,11 @@ export async function initCommand(
         console.log(chalk.green('   ✓ Keeping existing plugin configuration'));
         autoInstallSucceeded = true;
       } else {
-        const result = await installAllPlugins({ dirname: __dirname, forceRefresh: options.forceRefresh });
+        const result = await installAllPlugins({
+          dirname: __dirname,
+          forceRefresh: options.forceRefresh,
+          lazyMode: !options.fullInstall,  // Lazy mode by default, --full disables it
+        });
         autoInstallSucceeded = result.success;
         marketplaceOnly = result.marketplaceOnly || false;
       }
@@ -618,6 +628,13 @@ export async function initCommand(
       githubRepoSelection,
       repoResult.gitUrlFormat
     );
+
+    // SMART PLUGIN INSTALL (v1.0.122): Auto-install selected external tool plugin
+    // Based on issue tracker selection, pre-load the appropriate plugin
+    // This saves tokens by NOT loading all 24 plugins - just router + selected tool
+    if (toolName === 'claude' && autoInstallSucceeded) {
+      await autoInstallSelectedExternalPlugin(targetDir);
+    }
 
     // Multi-project folders
     await createMultiProjectFolders(targetDir);
@@ -948,4 +965,78 @@ function displayLivingDocsInstructions(
   console.log(chalk.gray('     - Pause/resume by closing/reopening the window'));
   console.log(chalk.gray('     - No background processes or orphaned jobs'));
   console.log('');
+}
+
+/**
+ * Auto-install external tool plugin based on issue tracker selection
+ *
+ * NEW (v1.0.122): Smart plugin installation
+ * Instead of loading all 24 plugins (~60K tokens), we:
+ * 1. Load router skill by default (~500 tokens)
+ * 2. Auto-load ONLY the selected external tool plugin (~5K tokens)
+ * 3. Other plugins load on-demand via keywords
+ *
+ * Result: ~30K max instead of ~60K (50% token savings)
+ */
+async function autoInstallSelectedExternalPlugin(targetDir: string): Promise<void> {
+  const configPath = path.join(targetDir, '.specweave', 'config.json');
+
+  if (!fs.existsSync(configPath)) {
+    return;
+  }
+
+  try {
+    const config = await fs.readJson(configPath);
+    const syncConfig = config.sync as { defaultProfile?: string; profiles?: Record<string, { provider?: string }> } | undefined;
+
+    if (!syncConfig?.defaultProfile || !syncConfig?.profiles) {
+      return;
+    }
+
+    const defaultProfile = syncConfig.profiles[syncConfig.defaultProfile];
+    if (!defaultProfile?.provider) {
+      return;
+    }
+
+    // Map provider to plugin name
+    const providerToPlugin: Record<string, string> = {
+      github: 'specweave-github',
+      jira: 'specweave-jira',
+      ado: 'specweave-ado',
+    };
+
+    const pluginToInstall = providerToPlugin[defaultProfile.provider];
+    if (!pluginToInstall) {
+      return;
+    }
+
+    // Import cache manager and install the selected plugin
+    const { PluginCacheManager } = await import('../../core/lazy-loading/cache-manager.js');
+    const cacheManager = new PluginCacheManager();
+
+    console.log(chalk.cyan(`\n📦 Auto-installing ${defaultProfile.provider.toUpperCase()} plugin...`));
+
+    const installResult = await cacheManager.installPlugins({
+      plugins: [pluginToInstall],
+      force: false,
+    });
+
+    if (installResult.success && installResult.pluginsAffected > 0) {
+      console.log(chalk.green(`   ✓ ${pluginToInstall} installed (ready for sync commands)`));
+    } else {
+      // Fallback to CLI install
+      const cliResult = execFileNoThrowSync('claude', ['plugin', 'install', pluginToInstall]);
+      if (cliResult.success) {
+        console.log(chalk.green(`   ✓ ${pluginToInstall} installed`));
+      } else {
+        console.log(chalk.yellow(`   ⚠ Could not auto-install ${pluginToInstall}`));
+        console.log(chalk.gray(`   → Install manually: /plugin install ${pluginToInstall}`));
+      }
+    }
+  } catch (error) {
+    // Non-blocking - just log and continue
+    if (process.env.DEBUG) {
+      console.log(chalk.gray(`   → Auto-install skipped: ${error instanceof Error ? error.message : String(error)}`));
+    }
+  }
 }

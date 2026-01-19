@@ -290,6 +290,47 @@ Three gates before any increment closes:
 
 **No configuration needed** - enabled by default. [Learn more about Tool Search](https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool).
 
+### Lazy Plugin Loading (NEW)
+
+**99% token savings** for non-SpecWeave work with our router-based architecture:
+
+| Scenario | Before | After | Savings |
+|----------|--------|-------|---------|
+| Non-SpecWeave work | ~60k tokens | ~500 tokens | **99%** |
+| SpecWeave work | ~60k tokens | ~60k (on-demand) | 0% |
+| Mixed session | ~60k tokens | ~30k avg | **50%** |
+
+**How it works:**
+- **Router skill** (~500 tokens) installed by default - detects SpecWeave intent from keywords
+- **On-demand loading** - Full plugins hot-reload when you mention "increment", "spec.md", "living docs", etc.
+- **Context forking** - Heavy skills (PM, Architect) run in isolated sub-agents via `context: fork`
+- **Skills cache** at `~/.specweave/skills-cache/` - instant activation without network latency
+
+**Keywords that trigger full loading:** `increment`, `specweave`, `/sw:`, `spec.md`, `tasks.md`, `living docs`, `feature planning`, `sprint`, `jira sync`, `github sync`
+
+**New installations** automatically use lazy loading. For existing installations:
+
+```bash
+specweave migrate-lazy      # Convert to lazy mode (with backup)
+specweave migrate-lazy --rollback  # Restore if needed
+```
+
+**Manual plugin control:**
+
+```bash
+specweave load-plugins core      # Load core plugins
+specweave load-plugins github    # Load GitHub integration
+specweave load-plugins all       # Load all plugins
+specweave unload-plugins         # Unload all except router
+specweave plugin-status          # Check loaded vs cached
+```
+
+**Full install mode** (skip lazy loading):
+
+```bash
+specweave init --full .    # Install all plugins immediately
+```
+
 ### Claude Code 2.1.x Optimizations
 
 SpecWeave leverages the latest Claude Code features for maximum performance:

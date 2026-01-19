@@ -126,6 +126,8 @@ Claude Code 2.1.7+ includes **MCP Tool Search** (lazy loading) — SpecWeave's 2
 **Result**: 85%+ context reduction (~100k → ~5-10k tokens at startup), enabling longer `/sw:auto` sessions and more complex increments.
 
 No configuration needed — enabled by default when MCP tools exceed 10% of context.
+
+**Coming in v1.1**: [Native Lazy Plugin Loading](/docs/guides/lazy-plugin-loading) — 99% token savings for non-SpecWeave work via router-based architecture.
 :::
 
 :::info Recommended MCP Servers
