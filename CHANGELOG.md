@@ -4,6 +4,21 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.126] - 2026-01-19
+
+### 🐛 Bug Fixes
+
+- **Reflect memory**: Improved memory entries and cache invalidation for better learning persistence
+- **Lazy loading docs**: Updated documentation to reflect core+router architecture
+
+### 📚 Documentation
+
+- **Instruction files**: Synced instruction files with updated template
+
+---
+
+
+
 ## [1.0.118] - 2026-01-17
 
 ### 📚 Documentation
