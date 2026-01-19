@@ -2,12 +2,14 @@
  * Analytics CLI Command
  *
  * Shows usage statistics for commands, skills, and agents.
+ * Also supports lazy loading analytics with --lazy-loading flag.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 import { AnalyticsAggregator } from '../../core/analytics/analytics-aggregator.js';
 import { AnalyticsQueryOptions, AnalyticsSummary, UsageCount, DailySummary } from '../../core/analytics/types.js';
+import { PluginCacheManager } from '../../core/lazy-loading/cache-manager.js';
 
 interface AnalyticsCommandOptions {
   since?: string;
@@ -16,6 +18,7 @@ interface AnalyticsCommandOptions {
   limit?: number;
   type?: 'command' | 'skill' | 'agent';
   plugin?: string;
+  lazyLoading?: boolean;
 }
 
 /** Format a number with commas */
@@ -106,10 +109,85 @@ function renderActivityChart(dailySummaries: DailySummary[]): void {
   }
 }
 
+/** Render lazy loading analytics dashboard */
+function renderLazyLoadingDashboard(): void {
+  const cacheManager = new PluginCacheManager();
+  const analytics = cacheManager.getAnalyticsSummary();
+
+  const line = '═'.repeat(68);
+  const thinLine = '─'.repeat(68);
+
+  console.log('\n⚡ Lazy Loading Analytics');
+  console.log(line + '\n');
+
+  // Status
+  const statusIcon = analytics.lazyModeEnabled ? '✅' : '❌';
+  console.log(`Status: ${statusIcon} Lazy mode ${analytics.lazyModeEnabled ? 'enabled' : 'disabled'}`);
+  if (analytics.firstUsedAt) {
+    console.log(`First used: ${analytics.firstUsedAt.split('T')[0]}`);
+  }
+  console.log('');
+
+  // Summary stats
+  console.log('SUMMARY');
+  console.log(thinLine);
+  console.log(`Total plugin loads:          ${formatNumber(analytics.totalLoads)}`);
+  console.log(`Estimated tokens saved:      ${formatNumber(analytics.estimatedTokensSaved)} tokens`);
+  console.log(`Average load time:           ${formatNumber(analytics.avgLoadTimeMs)} ms`);
+  console.log(`Keyword triggers:            ${formatNumber(analytics.keywordTriggers)}`);
+  console.log(`Sessions with lazy mode:     ${formatNumber(analytics.sessionsWithLazyMode)}`);
+  console.log('');
+
+  // Plugin status
+  console.log('PLUGIN STATUS');
+  console.log(thinLine);
+  console.log(`Cached plugins:              ${analytics.cachedPlugins}`);
+  console.log(`Currently loaded:            ${analytics.loadedPlugins}`);
+  const savingsPercent = analytics.cachedPlugins > 0
+    ? Math.round(((analytics.cachedPlugins - analytics.loadedPlugins) / analytics.cachedPlugins) * 100)
+    : 0;
+  console.log(`Context savings:             ${savingsPercent}%`);
+  console.log('');
+
+  // Top keywords
+  if (analytics.topKeywords.length > 0) {
+    console.log('TOP TRIGGER KEYWORDS');
+    console.log(thinLine);
+    const maxCount = Math.max(...analytics.topKeywords.map(k => k.count));
+    for (const kw of analytics.topKeywords.slice(0, 5)) {
+      console.log(`  ${pad(kw.keyword, 25)} ${progressBar(kw.count, maxCount, 10)} ${kw.count}`);
+    }
+    console.log('');
+  }
+
+  // Recent loads
+  if (analytics.recentLoads.length > 0) {
+    console.log('RECENT LOADS');
+    console.log(thinLine);
+    for (const load of analytics.recentLoads.slice(-5)) {
+      const time = new Date(load.timestamp).toLocaleString();
+      const plugins = load.plugins.slice(0, 3).join(', ');
+      const more = load.plugins.length > 3 ? ` +${load.plugins.length - 3}` : '';
+      console.log(`  ${time}  ${plugins}${more}  (${load.durationMs}ms)`);
+    }
+    console.log('');
+  }
+
+  if (analytics.totalLoads === 0) {
+    console.log('No lazy loading activity recorded yet.\n');
+    console.log('Lazy loading will track plugin loads triggered by keywords.\n');
+  }
+}
+
 /**
  * CLI command to show analytics
  */
 export async function analyticsCommand(options: AnalyticsCommandOptions = {}): Promise<void> {
+  // Handle lazy loading analytics
+  if (options.lazyLoading) {
+    renderLazyLoadingDashboard();
+    return;
+  }
   const aggregator = new AnalyticsAggregator();
 
   // Build query options

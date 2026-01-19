@@ -26,6 +26,8 @@ const SPECWEAVE_MARKETPLACE_URL = `https://github.com/${SPECWEAVE_MARKETPLACE_RE
 export interface PluginInstallOptions {
   dirname: string;
   forceRefresh?: boolean;
+  /** Install only router skill (lazy mode) - default true */
+  lazyMode?: boolean;
 }
 
 /**
@@ -41,13 +43,18 @@ export interface PluginInstallResult {
 }
 
 /**
- * Install all SpecWeave plugins via Claude CLI
+ * Install SpecWeave plugins via Claude CLI
+ *
+ * By default (lazyMode=true), only the router skill is installed.
+ * Full plugins are cached for on-demand loading based on keywords.
+ *
+ * With lazyMode=false, all plugins are installed (legacy behavior).
  *
  * @param options - Installation options
  * @returns Installation result
  */
 export async function installAllPlugins(options: PluginInstallOptions): Promise<PluginInstallResult> {
-  const { dirname, forceRefresh } = options;
+  const { dirname, forceRefresh, lazyMode = true } = options;
   const spinner = ora();
 
   // Pre-flight check: Is Claude CLI available?
@@ -174,6 +181,13 @@ export async function installAllPlugins(options: PluginInstallOptions): Promise<
       spinner.succeed('No stale plugins found');
     }
 
+    // LAZY LOADING MODE (default)
+    // Install only router skill, cache the rest for on-demand loading
+    if (lazyMode) {
+      return await installLazyMode(allPlugins, spinner, dirname);
+    }
+
+    // FULL MODE (--full flag)
     // Install ALL plugins with retry logic
     const result = await installPluginsWithRetry(allPlugins, spinner);
 
@@ -560,6 +574,96 @@ function getPluginVersion(pluginName: string): string {
   } catch {
     return '0.25.0';
   }
+}
+
+/**
+ * Install in lazy mode - router skill only, cache the rest
+ *
+ * This function:
+ * 1. Populates the skills cache from marketplace
+ * 2. Installs ONLY the router skill to active directory
+ * 3. Other plugins are loaded on-demand based on keywords
+ */
+async function installLazyMode(
+  allPlugins: Array<{ name: string }>,
+  spinner: ReturnType<typeof ora>,
+  dirname: string
+): Promise<PluginInstallResult> {
+  // Import cache manager dynamically to avoid circular deps
+  const { PluginCacheManager } = await import('../../../core/lazy-loading/cache-manager.js');
+  const cacheManager = new PluginCacheManager();
+
+  // Step 1: Populate skills cache from marketplace
+  spinner.start('Populating skills cache...');
+  const cacheResult = await cacheManager.populateCache();
+
+  if (!cacheResult.success) {
+    spinner.warn(`Cache population failed: ${cacheResult.error}`);
+    // Fall back to installing router only via CLI
+  } else {
+    spinner.succeed(`Cached ${cacheResult.pluginsAffected} plugins`);
+  }
+
+  // Step 2: Install ONLY the router skill
+  const routerPlugin = allPlugins.find(p => p.name === 'specweave-router');
+
+  if (routerPlugin) {
+    spinner.start('Installing router skill...');
+
+    // Try cache-based install first
+    const installResult = await cacheManager.installPlugins({
+      plugins: ['specweave-router'],
+      force: false,
+    });
+
+    if (installResult.success && installResult.pluginsAffected > 0) {
+      spinner.succeed('Router skill installed');
+    } else {
+      // Fall back to CLI-based install
+      const cliResult = await installPluginsWithRetry([routerPlugin], spinner);
+
+      if (cliResult.successCount === 0) {
+        spinner.warn('Could not install router skill');
+        console.log(chalk.yellow('   → Install manually: /plugin install specweave-router'));
+      }
+    }
+  } else {
+    spinner.warn('Router skill not found in marketplace');
+  }
+
+  // Step 3: Update state to enable lazy mode
+  const state = cacheManager.readState();
+  state.lazyMode = true;
+
+  // Step 4: Show lazy loading explanation
+  console.log('');
+  console.log(chalk.green.bold('✅ Lazy Loading Enabled'));
+  console.log('');
+  console.log(chalk.cyan('How it works:'));
+  console.log(chalk.gray('   • Only the router skill (~500 tokens) is loaded initially'));
+  console.log(chalk.gray('   • Full plugins are loaded on-demand based on keywords'));
+  console.log(chalk.gray('   • Claude Code hot-reloads skills within seconds'));
+  console.log('');
+  console.log(chalk.cyan('Trigger keywords:'));
+  console.log(chalk.gray('   • "GitHub sync" → loads specweave-github'));
+  console.log(chalk.gray('   • "JIRA" → loads specweave-jira'));
+  console.log(chalk.gray('   • "Kubernetes" → loads specweave-k8s'));
+  console.log(chalk.gray('   • "React", "frontend" → loads specweave-frontend'));
+  console.log(chalk.gray('   • ...and more'));
+  console.log('');
+  console.log(chalk.cyan('Manual loading:'));
+  console.log(chalk.gray('   specweave load-plugins github    # Load GitHub plugin'));
+  console.log(chalk.gray('   specweave load-plugins all       # Load all plugins'));
+  console.log(chalk.gray('   specweave plugin-status          # Check loaded plugins'));
+  console.log('');
+
+  return {
+    success: true,
+    successCount: routerPlugin ? 1 : 0,
+    failCount: 0,
+    failedPlugins: [],
+    marketplaceOnly: false,
+  };
 }
 
 /**
