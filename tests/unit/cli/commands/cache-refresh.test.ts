@@ -19,18 +19,36 @@ describe('cache-refresh command', () => {
 
     // Use the actual backup directory from CacheInvalidator (now in temp dir)
     mockBackupDir = CacheInvalidator.getBackupDir();
-    if (fs.existsSync(mockBackupDir)) {
-      fs.rmSync(mockBackupDir, { recursive: true, force: true });
+    // Clean up backup dir before each test (handle CI permission issues)
+    try {
+      if (fs.existsSync(mockBackupDir)) {
+        fs.rmSync(mockBackupDir, { recursive: true, force: true });
+      }
+    } catch {
+      // If we can't delete it, try to fix permissions first
+      try {
+        fs.chmodSync(mockBackupDir, 0o755);
+        fs.rmSync(mockBackupDir, { recursive: true, force: true });
+      } catch {
+        // Ignore - will create fresh in tests
+      }
     }
   });
 
   afterEach(() => {
-    // Cleanup
+    // Cleanup cache dir
     if (fs.existsSync(mockCacheDir)) {
       fs.rmSync(mockCacheDir, { recursive: true, force: true });
     }
-    if (fs.existsSync(mockBackupDir)) {
-      fs.rmSync(mockBackupDir, { recursive: true, force: true });
+    // Cleanup backup dir
+    try {
+      if (fs.existsSync(mockBackupDir)) {
+        // Restore permissions if needed
+        try { fs.chmodSync(mockBackupDir, 0o755); } catch { /* ignore */ }
+        fs.rmSync(mockBackupDir, { recursive: true, force: true });
+      }
+    } catch {
+      // Ignore cleanup failures in CI
     }
     vi.clearAllMocks();
   });
