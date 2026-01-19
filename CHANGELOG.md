@@ -4,6 +4,22 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.130] - 2026-01-19
+
+### ✨ Features
+
+- **Testing skills**: New browser automation, visual regression, UI testing, and image generation skills
+- **Self-validating skills**: Architecture for skills that validate their own activation and execution
+- **Enhanced keyword detection**: Improved lazy loading with better keyword matching and domain detection
+
+### 🔧 Improvements
+
+- **Plugin consolidation**: TDD defaults and cleaner plugin organization
+- **Init command**: Better gitignore generation and directory structure setup
+- **Learning validator**: New reflection learning validator for skill improvement tracking
+
+---
+
 ## [1.0.129] - 2026-01-19
 
 ### 🐛 Bug Fixes
