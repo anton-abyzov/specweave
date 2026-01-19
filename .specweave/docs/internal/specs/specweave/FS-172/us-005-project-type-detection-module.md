@@ -1,11 +1,15 @@
 ---
 id: US-005
 feature: FS-172
-title: "Project Type Detection Module"
+title: Project Type Detection Module
 status: not_started
 priority: critical
 created: 2026-01-19
 project: specweave
+external:
+  github:
+    issue: 1027
+    url: https://github.com/anton-abyzov/specweave/issues/1027
 ---
 
 # US-005: Project Type Detection Module

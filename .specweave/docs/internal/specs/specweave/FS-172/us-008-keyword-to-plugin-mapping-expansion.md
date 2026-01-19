@@ -1,11 +1,15 @@
 ---
 id: US-008
 feature: FS-172
-title: "Keyword-to-Plugin Mapping Expansion"
+title: Keyword-to-Plugin Mapping Expansion
 status: not_started
 priority: critical
 created: 2026-01-19
 project: specweave
+external:
+  github:
+    issue: 1030
+    url: https://github.com/anton-abyzov/specweave/issues/1030
 ---
 
 # US-008: Keyword-to-Plugin Mapping Expansion

@@ -1,11 +1,15 @@
 ---
 id: US-007
 feature: FS-172
-title: "Hook Performance Optimization"
+title: Hook Performance Optimization
 status: not_started
 priority: critical
 created: 2026-01-19
 project: specweave
+external:
+  github:
+    issue: 1029
+    url: https://github.com/anton-abyzov/specweave/issues/1029
 ---
 
 # US-007: Hook Performance Optimization

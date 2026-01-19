@@ -1,11 +1,15 @@
 ---
 id: US-006
 feature: FS-172
-title: "Silent Plugin Installation Mode"
+title: Silent Plugin Installation Mode
 status: not_started
 priority: critical
 created: 2026-01-19
 project: specweave
+external:
+  github:
+    issue: 1028
+    url: https://github.com/anton-abyzov/specweave/issues/1028
 ---
 
 # US-006: Silent Plugin Installation Mode
