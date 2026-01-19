@@ -259,6 +259,21 @@
         "name": "Anton Abyzov",
         "email": "anton.abyzov@gmail.com"
       }
+    },
+    {
+      "name": "sw-router",
+      "description": "Lightweight SpecWeave router for lazy plugin loading - detects intent and loads plugins on-demand",
+      "source": "./plugins/specweave-router",
+      "category": "development",
+      "version": "1.0.0",
+      "lazyLoading": {
+        "isRouter": true,
+        "tokenEstimate": 400
+      },
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      }
     }
   ]
 }

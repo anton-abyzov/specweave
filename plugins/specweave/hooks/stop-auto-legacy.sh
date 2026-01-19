@@ -1859,7 +1859,8 @@ if [ -n "$TRANSCRIPT_PATH" ] && [ -f "$TRANSCRIPT_PATH" ]; then
     # 1. Promise is in the LAST 100 lines of transcript (fresh, not legacy)
     # 2. All tasks are marked complete
     # 3. Tests pass OR no tests exist
-    if tail -100 "$TRANSCRIPT_PATH" 2>/dev/null | grep -q "<auto-complete>DONE</auto-complete>"; then
+    # Support both old format (<auto-complete>DONE</auto-complete>) and new format (<!-- auto-complete:DONE -->)
+    if tail -100 "$TRANSCRIPT_PATH" 2>/dev/null | grep -qE "<auto-complete>DONE</auto-complete>|<!-- auto-complete:DONE -->"; then
         # Verify tasks are actually complete before accepting promise
         TASKS_FILE=""
         if [ -n "$CURRENT_INCREMENT" ] && [ "$CURRENT_INCREMENT" != "null" ]; then

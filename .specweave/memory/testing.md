@@ -6,3 +6,4 @@
 - → Use os.tmpdir() for test temp files, not project cwd - avoids polluting the project directory
 - → Use kebab-case for all file names in SpecWeave (e.g., `my-component.test.ts`)
 - → always use it once you need by defualt to generate images and user didn't specify eplicilty how to g
+- → All tests pass locally. Where should I deploy?

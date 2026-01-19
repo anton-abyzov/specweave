@@ -192,6 +192,21 @@ describe('Stop Hook Integration', () => {
       expect(result.reason).toContain('incomplete');
     });
 
+    it('should approve when new HTML comment completion promise found (no tasks)', () => {
+      const manager = new SessionStateManager(tempDir);
+      const session = manager.createSession({ incrementQueue: ['0001'] });
+      manager.save(session);
+
+      // Create transcript with NEW completion promise format (HTML comment - not visible to users)
+      const transcriptPath = path.join(tempDir, 'transcript.txt');
+      fs.writeFileSync(transcriptPath, 'Some output\n<!-- auto-complete:DONE -->\nMore output');
+
+      const result = runHook({ transcript_path: transcriptPath, stop_hook_active: false });
+
+      expect(result.decision).toBe('approve');
+      expect(result.reason).toContain('Completion promise detected');
+    });
+
     it('should block when no completion promise', () => {
       const manager = new SessionStateManager(tempDir);
       const session = manager.createSession({ incrementQueue: ['0001'] });

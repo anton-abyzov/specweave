@@ -245,13 +245,19 @@ function installPlugin(pluginName: string, force: boolean = false): PluginResult
  * Claude Code plugin installation doesn't preserve executable bits,
  * so we need to chmod +x all .sh files in hooks directories.
  */
-function fixHookPermissions(marketplacePath: string): { fixed: number; errors: string[] } {
+function fixHookPermissions(marketplacePath: string): { fixed: number; skipped: number; errors: string[] } {
   const errors: string[] = [];
   let fixed = 0;
+  let skipped = 0;
+
+  // Skip on Windows - chmod has no effect on NTFS
+  if (process.platform === 'win32') {
+    return { fixed: 0, skipped: 0, errors: [] };
+  }
 
   const pluginsDir = path.join(marketplacePath, 'plugins');
   if (!fs.existsSync(pluginsDir)) {
-    return { fixed, errors: ['Plugins directory not found'] };
+    return { fixed, skipped, errors: ['Plugins directory not found'] };
   }
 
   // Find all plugin directories
@@ -260,21 +266,44 @@ function fixHookPermissions(marketplacePath: string): { fixed: number; errors: s
     return fs.statSync(pluginPath).isDirectory();
   });
 
+  /**
+   * Check if file already has execute permission for owner
+   */
+  const isExecutable = (filePath: string): boolean => {
+    try {
+      const stats = fs.statSync(filePath);
+      // Check owner execute bit (0o100)
+      return (stats.mode & 0o100) !== 0;
+    } catch {
+      return false;
+    }
+  };
+
+  /**
+   * Fix permission on a single file if needed
+   */
+  const fixFilePermission = (filePath: string, displayName: string): void => {
+    try {
+      if (isExecutable(filePath)) {
+        skipped++;
+        return;
+      }
+      // Make executable (0o755 = rwxr-xr-x)
+      fs.chmodSync(filePath, 0o755);
+      fixed++;
+    } catch (error) {
+      errors.push(`${displayName}: ${error}`);
+    }
+  };
+
   for (const pluginName of pluginDirs) {
     const hooksDir = path.join(pluginsDir, pluginName, 'hooks');
-    if (!fs.existsSync(hooksDir)) continue;
-
-    // Find all .sh files in hooks directory
-    const hookFiles = fs.readdirSync(hooksDir).filter(f => f.endsWith('.sh'));
-
-    for (const hookFile of hookFiles) {
-      const hookPath = path.join(hooksDir, hookFile);
-      try {
-        // Make executable (0o755 = rwxr-xr-x)
-        fs.chmodSync(hookPath, 0o755);
-        fixed++;
-      } catch (error) {
-        errors.push(`${pluginName}/${hookFile}: ${error}`);
+    if (fs.existsSync(hooksDir)) {
+      // Find all .sh files in hooks directory
+      const hookFiles = fs.readdirSync(hooksDir).filter(f => f.endsWith('.sh'));
+      for (const hookFile of hookFiles) {
+        const hookPath = path.join(hooksDir, hookFile);
+        fixFilePermission(hookPath, `${pluginName}/${hookFile}`);
       }
     }
 
@@ -284,17 +313,12 @@ function fixHookPermissions(marketplacePath: string): { fixed: number; errors: s
       const scriptFiles = fs.readdirSync(scriptsDir).filter(f => f.endsWith('.sh'));
       for (const scriptFile of scriptFiles) {
         const scriptPath = path.join(scriptsDir, scriptFile);
-        try {
-          fs.chmodSync(scriptPath, 0o755);
-          fixed++;
-        } catch (error) {
-          errors.push(`${pluginName}/scripts/${scriptFile}: ${error}`);
-        }
+        fixFilePermission(scriptPath, `${pluginName}/scripts/${scriptFile}`);
       }
     }
   }
 
-  return { fixed, errors };
+  return { fixed, skipped, errors };
 }
 
 /**
@@ -559,16 +583,28 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
 
   console.log('');
 
-  // Step 3.5: Fix hook permissions (chmod +x)
-  console.log(chalk.yellow('🔧 Step 3.5: Fixing hook permissions...'));
+  // Step 3.5: Fix hook permissions (chmod +x) - Unix only
+  if (process.platform !== 'win32') {
+    console.log(chalk.yellow('🔧 Step 3.5: Fixing hook permissions...'));
 
-  const permResult = fixHookPermissions(marketplacePath);
-  if (permResult.fixed > 0) {
-    console.log(chalk.green(`✓ Fixed permissions on ${permResult.fixed} hook/script files`));
-  }
-  if (permResult.errors.length > 0 && options.verbose) {
-    for (const err of permResult.errors) {
-      console.log(chalk.yellow(`  ⚠ ${err}`));
+    const permResult = fixHookPermissions(marketplacePath);
+    if (permResult.fixed > 0) {
+      console.log(chalk.green(`✓ Fixed permissions on ${permResult.fixed} hook/script files`));
+    }
+    if (permResult.skipped > 0 && options.verbose) {
+      console.log(chalk.dim(`  (${permResult.skipped} files already executable)`));
+    }
+    if (permResult.fixed === 0 && permResult.skipped > 0) {
+      console.log(chalk.green(`✓ All ${permResult.skipped} hook/script files already executable`));
+    }
+    if (permResult.errors.length > 0 && options.verbose) {
+      for (const err of permResult.errors) {
+        console.log(chalk.yellow(`  ⚠ ${err}`));
+      }
+    }
+  } else {
+    if (options.verbose) {
+      console.log(chalk.dim('🔧 Step 3.5: Skipped (Windows - permissions not applicable)'));
     }
   }
 
