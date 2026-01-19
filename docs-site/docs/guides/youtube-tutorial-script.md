@@ -205,6 +205,24 @@ Your Idea → Spec ✓ → Plan ✓ → Tasks ✓ → Code → Living Docs
 >
 > You don't have to read Claude Code changelogs. SpecWeave does it for you."
 
+**[SECTION 1.35: DETERMINISTIC VS NON-DETERMINISTIC]**
+
+> "Now, before we go further, I want to set your expectations correctly. There's a fundamental difference between traditional programming and working with LLMs.
+>
+> When you call a function in traditional code — like `calculateTotal(items)` — you get the **exact same result** every time. That's **deterministic**. Input A always produces output B. Predictable. Reliable. Testable.
+>
+> But when you work with Claude or any LLM, it's **non-deterministic**. You might be 90% confident in what response you'll get, but it's never 100%. The same prompt can produce slightly different outputs. Temperature, context length, even the order of messages can affect results.
+>
+> This isn't a weakness — it's the nature of how LLMs work. They generate creative, contextual responses. But it means your workflow needs guardrails.
+>
+> That's exactly what SpecWeave provides — structure around non-deterministic AI. Specs define what success looks like. Tasks break work into verifiable chunks. Hooks validate outputs. Quality gates catch drift.
+>
+> Think of it this way:
+> - **Deterministic**: `function add(a, b) { return a + b; }` — always the same
+> - **Non-deterministic**: 'Claude, implement authentication' — probably right, needs verification
+>
+> Throughout this tutorial, remember: we're not writing scripts that execute the same way every time. We're orchestrating an AI that needs guidance, validation, and clear acceptance criteria to stay on track."
+
 ---
 
 ## SECTION 1.5: THE CLAUDE CODE FOUNDATION (4:30 - 8:00)

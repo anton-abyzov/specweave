@@ -14,6 +14,7 @@ import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import type { TestMode } from './types.js';
 import { findSourceDir, findPackageRoot } from './path-utils.js';
 import { mergeInstructionFile, parseTemplateSections, getPackageVersion } from './instruction-file-merger.js';
+import { generateSmartGitignore } from './gitignore-generator.js';
 import {
   LivingDocsScaffold,
   scanExistingDocs,
@@ -305,10 +306,33 @@ export async function copyTemplates(
     fs.writeFileSync(agentsMdPath, agentsMd);
   }
 
-  // Copy .gitignore
-  const gitignoreTemplate = path.join(templatesDir, '.gitignore.template');
-  if (fs.existsSync(gitignoreTemplate)) {
-    fs.copyFileSync(gitignoreTemplate, path.join(targetDir, '.gitignore'));
+  // Generate smart .gitignore based on detected tech stack (v1.0.130+)
+  // Falls back to template if detection fails
+  try {
+    const { detection, result } = await generateSmartGitignore(targetDir, undefined, {
+      merge: true,
+      backup: true,
+      includeSpecweave: true,
+      verbose: false,
+    });
+
+    if (result.action === 'created') {
+      const techCount = detection.detected.length;
+      if (techCount > 0) {
+        console.log(chalk.green(`   ✓ .gitignore created (${techCount} tech patterns detected)`));
+      } else {
+        console.log(chalk.green('   ✓ .gitignore created'));
+      }
+    } else if (result.action === 'merged') {
+      console.log(chalk.blue('   ✓ .gitignore updated with detected patterns'));
+    }
+  } catch {
+    // Fallback to template copy if smart generation fails
+    const gitignoreTemplate = path.join(templatesDir, '.gitignore.template');
+    if (fs.existsSync(gitignoreTemplate)) {
+      fs.copyFileSync(gitignoreTemplate, path.join(targetDir, '.gitignore'));
+      console.log(chalk.green('   ✓ .gitignore created (from template)'));
+    }
   }
 
   // Copy .gitattributes
