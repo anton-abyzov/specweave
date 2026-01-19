@@ -13,7 +13,8 @@ describe('CacheInvalidator', () => {
   beforeEach(() => {
     invalidator = new CacheInvalidator();
     mockCacheDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cache-'));
-    mockBackupDir = path.join(os.homedir(), '.specweave', 'backups');
+    // Use the actual backup directory from CacheInvalidator (now in temp dir)
+    mockBackupDir = CacheInvalidator.getBackupDir();
 
     // Create mock cache structure
     fs.mkdirSync(path.join(mockCacheDir, 'skills'), { recursive: true });
@@ -227,6 +228,47 @@ describe('CacheInvalidator', () => {
       expect(metadata.version).toBe('1.0.0');
       expect(metadata.timestamp).toBeDefined();
       expect(metadata.fileCount).toBeGreaterThan(0);
+    });
+  });
+
+  describe('cleanupOldBackups', () => {
+    it('should remove backups older than TTL', async () => {
+      // Create a backup
+      const backupPath = await invalidator.backupSkillMemories('sw', '1.0.0', mockCacheDir);
+      expect(fs.existsSync(backupPath)).toBe(true);
+
+      // Modify the mtime to be older than TTL (25 hours ago)
+      const oldTime = new Date(Date.now() - 25 * 60 * 60 * 1000);
+      fs.utimesSync(backupPath, oldTime, oldTime);
+
+      // Run cleanup
+      await invalidator.cleanupOldBackups();
+
+      // Old backup should be deleted
+      expect(fs.existsSync(backupPath)).toBe(false);
+    });
+
+    it('should keep recent backups', async () => {
+      // Create a backup (will be recent by default)
+      const backupPath = await invalidator.backupSkillMemories('sw', '1.0.0', mockCacheDir);
+      expect(fs.existsSync(backupPath)).toBe(true);
+
+      // Run cleanup
+      await invalidator.cleanupOldBackups();
+
+      // Recent backup should still exist
+      expect(fs.existsSync(backupPath)).toBe(true);
+    });
+  });
+
+  describe('getBackupDir', () => {
+    it('should return temp directory path', () => {
+      const backupDir = CacheInvalidator.getBackupDir();
+
+      // Should be in temp directory, not home directory
+      expect(backupDir).toContain(os.tmpdir());
+      expect(backupDir).not.toContain(os.homedir());
+      expect(backupDir).toContain('specweave-cache-backups');
     });
   });
 });

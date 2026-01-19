@@ -112,7 +112,7 @@ export async function cacheRefresh(options: CacheRefreshOptions = {}): Promise<v
         console.log(`   ✅ Cache invalidated`);
 
         // Show backup message if memories were backed up
-        const backupDir = path.join(os.homedir(), '.specweave', 'backups');
+        const backupDir = CacheInvalidator.getBackupDir();
         if (fs.existsSync(backupDir)) {
           const backups = fs.readdirSync(backupDir).filter(b => b.includes(plugin.name));
           if (backups.length > 0) {

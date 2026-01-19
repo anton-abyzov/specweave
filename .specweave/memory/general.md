@@ -8,3 +8,4 @@
 - ✗→✓ When working on SpecWeave repo itself, update .specweave/memory/*.md (project learnings), NOT ~/.specweave/memory/*.md (global user learnings)
 - ✗→✓ Session watchdog is DISABLED BY DEFAULT (opt-in via SPECWEAVE_ENABLE_WATCHDOG=1) - VSCode extension manages session lifecycle, making background daemons unnecessary and preventing .specweave folder pollution
 - ✗→✓ NEVER use background processes (`&`) in Claude Code hooks - use Ralph plugin pattern: queue to JSONL file, fire-and-forget detached processor with double-fork, lock-based concurrency
+- ✗→✓ PASSIVE skill observation doesn't activate reliably - use ACTIVE routing that spawns specialized agents via Task tool based on detected keywords (React→sw-frontend, GitHub→sw-github, TDD→sw-testing)
