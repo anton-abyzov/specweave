@@ -1,7 +1,7 @@
 {
   "name": "sw-router",
-  "description": "Lightweight SpecWeave router for lazy plugin loading. Detects spec-driven development intent and loads full plugins on-demand, reducing context usage by 99% when not using SpecWeave features.",
-  "version": "1.0.0",
+  "description": "ACTIVE router that detects development tasks and spawns specialized agents. MANDATORY for: React, Vue, frontend, dashboard, UI - spawn sw-frontend agent. GitHub, API, repository - spawn sw-github agent. TDD, testing, Vitest - spawn sw-testing agent. Kubernetes, Docker, Terraform - spawn sw-infra agent. ML, AI, training - spawn sw-ml agent. Mobile, React Native - spawn sw-mobile agent. Payments, Stripe - spawn sw-payments agent.",
+  "version": "1.0.1",
   "author": {
     "name": "SpecWeave Team",
     "url": "https://spec-weave.com"
@@ -11,13 +11,22 @@
   "license": "MIT",
   "keywords": [
     "router",
-    "lazy-loading",
-    "context-optimization",
+    "active-routing",
+    "agent-spawning",
+    "react",
+    "frontend",
+    "github",
+    "testing",
+    "tdd",
+    "kubernetes",
+    "ml",
+    "mobile",
+    "payments",
     "specweave"
   ],
   "lazyLoading": {
     "isRouter": true,
-    "tokenEstimate": 400,
-    "triggersFullLoad": true
+    "tokenEstimate": 800,
+    "triggersAgentSpawn": true
   }
 }

@@ -1,12 +1,28 @@
 {
   "name": "specweave",
-  "version": "1.0.32",
+  "version": "1.0.33",
   "description": "SpecWeave - Spec-Driven Development Framework. PM-led planning, intelligent model selection, living documentation, multi-tool support.",
   "owner": {
     "name": "Anton Abyzov",
     "email": "anton.abyzov@gmail.com"
   },
   "plugins": [
+    {
+      "name": "sw-router",
+      "description": "ACTIVE router - spawns specialized agents for React/frontend (sw-frontend), GitHub (sw-github), TDD/testing (sw-testing), K8s/DevOps (sw-infra), ML/AI (sw-ml), mobile (sw-mobile), payments (sw-payments). MANDATORY agent spawning for domain tasks.",
+      "source": "./plugins/specweave-router",
+      "category": "development",
+      "version": "1.0.1",
+      "author": {
+        "name": "Anton Abyzov",
+        "email": "anton.abyzov@gmail.com"
+      },
+      "lazyLoading": {
+        "isRouter": true,
+        "tokenEstimate": 800,
+        "loadFirst": true
+      }
+    },
     {
       "name": "sw",
       "description": "SpecWeave framework - increment lifecycle, living docs, PM-led planning",
