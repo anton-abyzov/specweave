@@ -253,6 +253,11 @@ export const DEFAULT_PARALLEL_AUTO_CONFIG: ParallelAutoConfig = {
 export interface AutoConfig {
   enabled: boolean;
   maxIterations: number; // Safety limit (default: 2500)
+  // Stop hook retry settings
+  maxRetries?: number; // Max retries before escalating (default: 20)
+  requireTests?: boolean; // Require tests to pass before completion (default: false)
+  requireValidation?: boolean; // Require /sw:validate before completion (default: true)
+  requireJudgeLLM?: boolean; // Require /sw:judge-llm before completion (default: false)
   // Legacy fields (still supported in config but not used by simplified auto mode)
   maxHours?: number;
   testCommand?: string;
@@ -279,6 +284,10 @@ export interface AutoConfig {
 export const DEFAULT_AUTO_CONFIG: AutoConfig = {
   enabled: true,
   maxIterations: 2500,
+  maxRetries: 20, // Attempts before escalating stuck session warning
+  requireTests: false, // Set true to require tests pass before completion
+  requireValidation: true, // Run /sw:validate before completion
+  requireJudgeLLM: false, // Set true to require AI quality verification
   maxHours: 600,
   testCommand: 'npm test',
   coverageThreshold: 80,
