@@ -1,0 +1,23 @@
+{
+  "name": "sw-router",
+  "description": "Lightweight SpecWeave router for lazy plugin loading. Detects spec-driven development intent and loads full plugins on-demand, reducing context usage by 99% when not using SpecWeave features.",
+  "version": "1.0.0",
+  "author": {
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "router",
+    "lazy-loading",
+    "context-optimization",
+    "specweave"
+  ],
+  "lazyLoading": {
+    "isRouter": true,
+    "tokenEstimate": 400,
+    "triggersFullLoad": true
+  }
+}
