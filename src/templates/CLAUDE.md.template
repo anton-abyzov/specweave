@@ -336,54 +336,48 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | No GITHUB_TOKEN | Check `.env` file or run `gh auth login` |
 | Edits blocked in repositories/ | Add `"additionalDirectories":["repositories"]` + `Write(//**)`, `Edit(//**)` to `.claude/settings.json` |
 | Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
-| Lazy loading not working | `specweave load-plugins core` to manually load plugins |
-| Need all plugins now | `specweave load-plugins all` loads everything immediately |
+| Router not spawning agents | Restart Claude Code; check `/plugin` shows `sw-router` |
+| Need all plugins loaded | `specweave load-plugins all` (~60K tokens) |
 <!-- /SECTION -->
 
 <!-- SECTION:lazyloading -->
 ## Lazy Plugin Loading
 
-**SpecWeave uses lazy loading by default** - only the router skill (~500 tokens) loads initially.
+**By default, SpecWeave installs 2 essential plugins** (~3K tokens total):
+- **sw** (core): `/sw:increment`, `/sw:do`, `/sw:done` commands
+- **sw-router**: ACTIVE router that spawns specialized agents
 
-### How It Works
+### How the Router Works
 
-When you mention SpecWeave-related keywords, the router skill automatically loads the full plugin suite:
+The router detects development keywords and **spawns specialized agents via Task tool** (forks context, doesn't load more plugins):
 
-**Trigger keywords**: `increment`, `specweave`, `/sw:`, `spec.md`, `tasks.md`, `living docs`, `feature planning`, `sprint`, `jira sync`, `github sync`
+| Keywords | Agent Spawned |
+|----------|---------------|
+| React, Vue, frontend, dashboard, UI | `sw-frontend:frontend-architect` |
+| GitHub, PR, issues, sync | `sw-github:github-manager` |
+| TDD, test, Vitest, Playwright | `sw-testing:qa-engineer` |
+| K8s, Docker, Terraform, deploy | `sw-infra:devops` |
+| ML, AI, training, model | `sw-ml:ml-engineer` |
+| mobile, React Native, Expo | `sw-mobile:mobile-architect` |
+| Stripe, payments, checkout | `sw-payments:payment-integration` |
+
+**Example**: "Build React dashboard" → Router spawns `sw-frontend:frontend-architect` agent
 
 ### Manual Plugin Control
 
 ```bash
-specweave load-plugins core      # Load core plugins only
-specweave load-plugins github    # Load GitHub integration
-specweave load-plugins jira      # Load JIRA integration
-specweave load-plugins all       # Load all 24 plugins
-specweave unload-plugins         # Unload all except router
-specweave plugin-status          # Check loaded vs cached
+specweave load-plugins github    # Load GitHub integration plugin
+specweave load-plugins all       # Load all 24 plugins (~60K tokens)
+specweave plugin-status          # Check loaded vs available
 ```
-
-**Available groups**: `core`, `github`, `jira`, `ado`, `frontend`, `backend`, `infra`, `ml`, `kafka`, `confluent`, `mobile`, `payments`, `release`, `testing`, `diagrams`, `all`
 
 ### Token Savings
 
 | Mode | Context Usage |
 |------|---------------|
-| Non-SpecWeave work | ~500 tokens (router only) |
-| SpecWeave work | ~60k tokens (on-demand) |
-
-### Checking Plugin Status
-
-```bash
-specweave plugin-status
-# Shows: loaded plugins (green), cached plugins (yellow), lazy mode status
-```
-
-### Migration (Existing Users)
-
-```bash
-specweave migrate-lazy           # Convert to lazy mode
-specweave migrate-lazy --rollback  # Restore full mode
-```
+| Default (core + router) | ~3K tokens |
+| All 24 plugins | ~60K tokens |
+| Agent spawn (forked) | 0 tokens in main context |
 
 ### Full Install (Skip Lazy Loading)
 
