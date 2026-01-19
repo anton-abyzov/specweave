@@ -8,6 +8,15 @@
 #
 # Called from post-tool-use.sh when tasks.md or spec.md is edited
 #
+# CRITICAL FIX (v1.0.127): Rewritten for bash 3.2 compatibility
+# - Removed associative arrays (requires bash 4+)
+# - Uses temp files instead for US tracking
+#
+# CROSS-PLATFORM (v1.0.127): Works on macOS, Linux, and Windows (Git Bash/WSL)
+# - Uses portable commands (grep, sed, cat, echo)
+# - mktemp with fallback for different systems
+# - No stat commands (different syntax per OS)
+#
 # IMPORTANT: This script must be fast (<50ms) and never crash
 set +e
 
@@ -33,27 +42,34 @@ mkdir -p "$STATE_DIR" 2>/dev/null
 [[ ! -f "$TASKS_FILE" ]] && exit 0
 [[ ! -f "$SPEC_FILE" ]] && exit 0
 
+# Create temp directory for processing
+TEMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'us-detect')
+trap "rm -rf $TEMP_DIR" EXIT
+
+# Initialize temp files for tracking
+mkdir -p "$TEMP_DIR/tasks_total" "$TEMP_DIR/tasks_done" "$TEMP_DIR/acs_total" "$TEMP_DIR/acs_done" 2>/dev/null
+
 # Parse tasks.md to find US -> Tasks mapping and completion status
 # Format: ### T-001: Title
-#         **Satisfies ACs**: AC-US1-01, AC-US1-02
+#         **User Story**: US-003
 #         **Status**: [x] completed
 
-declare -A US_TASKS_TOTAL
-declare -A US_TASKS_DONE
-
-# Parse task blocks
 CURRENT_TASK=""
 CURRENT_STATUS=""
 CURRENT_US=""
 
 while IFS= read -r line; do
   # Detect task header
-  if [[ "$line" =~ ^###[[:space:]]+T-[0-9]+ ]]; then
+  if echo "$line" | grep -qE '^###[[:space:]]+T-[0-9]+'; then
     # Process previous task
     if [[ -n "$CURRENT_US" ]] && [[ -n "$CURRENT_TASK" ]]; then
-      US_TASKS_TOTAL["$CURRENT_US"]=$((${US_TASKS_TOTAL["$CURRENT_US"]:-0} + 1))
+      # Increment task count for this US
+      COUNT=$(cat "$TEMP_DIR/tasks_total/$CURRENT_US" 2>/dev/null || echo 0)
+      echo $((COUNT + 1)) > "$TEMP_DIR/tasks_total/$CURRENT_US"
+
       if [[ "$CURRENT_STATUS" == "done" ]]; then
-        US_TASKS_DONE["$CURRENT_US"]=$((${US_TASKS_DONE["$CURRENT_US"]:-0} + 1))
+        DONE=$(cat "$TEMP_DIR/tasks_done/$CURRENT_US" 2>/dev/null || echo 0)
+        echo $((DONE + 1)) > "$TEMP_DIR/tasks_done/$CURRENT_US"
       fi
     fi
     CURRENT_TASK=$(echo "$line" | grep -o 'T-[0-9][0-9][0-9]' | head -1)
@@ -61,61 +77,76 @@ while IFS= read -r line; do
     CURRENT_US=""
   fi
 
-  # Detect User Story reference
-  if [[ "$line" =~ User[[:space:]]*Story.*:.*US-[0-9]+ ]]; then
+  # Detect User Story reference (format: US-001, US-002, etc.)
+  if echo "$line" | grep -qE 'User[[:space:]]*Story.*:[[:space:]]*US-[0-9]+'; then
     CURRENT_US=$(echo "$line" | grep -o 'US-[0-9][0-9][0-9]' | head -1)
   fi
 
   # Detect completion status
-  if [[ "$line" =~ Status.*\[x\] ]]; then
+  if echo "$line" | grep -qE 'Status.*\[x\]'; then
     CURRENT_STATUS="done"
   fi
 done < "$TASKS_FILE"
 
 # Process last task
 if [[ -n "$CURRENT_US" ]] && [[ -n "$CURRENT_TASK" ]]; then
-  US_TASKS_TOTAL["$CURRENT_US"]=$((${US_TASKS_TOTAL["$CURRENT_US"]:-0} + 1))
+  COUNT=$(cat "$TEMP_DIR/tasks_total/$CURRENT_US" 2>/dev/null || echo 0)
+  echo $((COUNT + 1)) > "$TEMP_DIR/tasks_total/$CURRENT_US"
+
   if [[ "$CURRENT_STATUS" == "done" ]]; then
-    US_TASKS_DONE["$CURRENT_US"]=$((${US_TASKS_DONE["$CURRENT_US"]:-0} + 1))
+    DONE=$(cat "$TEMP_DIR/tasks_done/$CURRENT_US" 2>/dev/null || echo 0)
+    echo $((DONE + 1)) > "$TEMP_DIR/tasks_done/$CURRENT_US"
   fi
 fi
 
 # Parse spec.md for AC completion status
 # Format: - [x] **AC-US1-01**: Description
-declare -A US_ACS_TOTAL
-declare -A US_ACS_DONE
+# CRITICAL FIX (v1.0.127): Pad US number to match tasks.md format (US-001, US-002, etc.)
 
 while IFS= read -r line; do
-  # Find AC lines with US reference
-  if [[ "$line" =~ AC-US([0-9]+)-[0-9]+ ]]; then
-    US_NUM="${BASH_REMATCH[1]}"
-    US_ID="US-${US_NUM}"
+  # Find AC lines with US reference (AC-US1-01, AC-US2-05, etc.)
+  if echo "$line" | grep -qE 'AC-US[0-9]+-[0-9]+'; then
+    # Extract US number from AC-USX-YY pattern
+    US_NUM=$(echo "$line" | sed -n 's/.*AC-US\([0-9]*\)-.*/\1/p' | head -1)
 
-    US_ACS_TOTAL["$US_ID"]=$((${US_ACS_TOTAL["$US_ID"]:-0} + 1))
+    if [[ -n "$US_NUM" ]]; then
+      # Pad to 3 digits to match tasks.md format (US-001, US-002, etc.)
+      US_ID=$(printf "US-%03d" "$US_NUM")
 
-    if [[ "$line" =~ \[x\] ]]; then
-      US_ACS_DONE["$US_ID"]=$((${US_ACS_DONE["$US_ID"]:-0} + 1))
+      # Increment AC count for this US
+      COUNT=$(cat "$TEMP_DIR/acs_total/$US_ID" 2>/dev/null || echo 0)
+      echo $((COUNT + 1)) > "$TEMP_DIR/acs_total/$US_ID"
+
+      if echo "$line" | grep -qE '\[x\]'; then
+        DONE=$(cat "$TEMP_DIR/acs_done/$US_ID" 2>/dev/null || echo 0)
+        echo $((DONE + 1)) > "$TEMP_DIR/acs_done/$US_ID"
+      fi
     fi
   fi
 done < "$SPEC_FILE"
 
 # Load previous completion state
-declare -A PREV_COMPLETE
+# Format: US-001=yes, US-002=no
 if [[ -f "$US_STATE_FILE" ]]; then
   while IFS='=' read -r us status; do
-    [[ -n "$us" ]] && PREV_COMPLETE["$us"]="$status"
+    [[ -n "$us" ]] && echo "$status" > "$TEMP_DIR/prev/$us"
   done < "$US_STATE_FILE"
 fi
+mkdir -p "$TEMP_DIR/prev" 2>/dev/null
 
-# Check completion for each US
+# Check completion for each US that has tasks
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 NEW_STATE=""
 
-for US_ID in "${!US_TASKS_TOTAL[@]}"; do
-  TASKS_TOTAL=${US_TASKS_TOTAL["$US_ID"]:-0}
-  TASKS_DONE=${US_TASKS_DONE["$US_ID"]:-0}
-  ACS_TOTAL=${US_ACS_TOTAL["$US_ID"]:-0}
-  ACS_DONE=${US_ACS_DONE["$US_ID"]:-0}
+for US_FILE in "$TEMP_DIR/tasks_total"/*; do
+  [[ ! -f "$US_FILE" ]] && continue
+
+  US_ID=$(basename "$US_FILE")
+
+  TASKS_TOTAL=$(cat "$TEMP_DIR/tasks_total/$US_ID" 2>/dev/null || echo 0)
+  TASKS_DONE=$(cat "$TEMP_DIR/tasks_done/$US_ID" 2>/dev/null || echo 0)
+  ACS_TOTAL=$(cat "$TEMP_DIR/acs_total/$US_ID" 2>/dev/null || echo 0)
+  ACS_DONE=$(cat "$TEMP_DIR/acs_done/$US_ID" 2>/dev/null || echo 0)
 
   # US is complete if ALL tasks done AND ALL ACs checked
   CURRENT_COMPLETE="no"
@@ -128,21 +159,22 @@ for US_ID in "${!US_TASKS_TOTAL[@]}"; do
     fi
   fi
 
-  PREV="${PREV_COMPLETE["$US_ID"]:-no}"
+  PREV=$(cat "$TEMP_DIR/prev/$US_ID" 2>/dev/null || echo "no")
 
-  # Detect transitions
+  # Detect transitions and emit events
   if [[ "$CURRENT_COMPLETE" == "yes" ]] && [[ "$PREV" == "no" ]]; then
-    # User story just completed
+    # User story just completed - emit event
     bash "$HOOK_DIR/queue/enqueue.sh" "user-story.completed" "$INC_ID:$US_ID" 2>/dev/null
   elif [[ "$CURRENT_COMPLETE" == "no" ]] && [[ "$PREV" == "yes" ]]; then
-    # User story reopened
+    # User story reopened - emit event
     bash "$HOOK_DIR/queue/enqueue.sh" "user-story.reopened" "$INC_ID:$US_ID" 2>/dev/null
   fi
 
-  NEW_STATE="${NEW_STATE}${US_ID}=${CURRENT_COMPLETE}\n"
+  NEW_STATE="${NEW_STATE}${US_ID}=${CURRENT_COMPLETE}
+"
 done
 
 # Save new state
-echo -e "$NEW_STATE" > "$US_STATE_FILE"
+echo "$NEW_STATE" > "$US_STATE_FILE"
 
 exit 0
