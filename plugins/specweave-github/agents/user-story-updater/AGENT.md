@@ -1,7 +1,7 @@
 ---
 name: user-story-updater
 description: Updates GitHub issues for user stories with proper ACs and tasks. Activates for update user story issue, fix GitHub issue format, add checkable ACs, refresh user story issue, sync user story to GitHub.
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible

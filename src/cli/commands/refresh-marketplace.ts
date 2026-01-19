@@ -17,7 +17,6 @@
  */
 
 import chalk from 'chalk';
-import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import os from 'os';
@@ -26,6 +25,7 @@ import { CacheHealthMonitor } from '../../core/plugin-cache/cache-health-monitor
 import { CacheInvalidator } from '../../core/plugin-cache/cache-invalidator.js';
 import { CacheMetadataManager } from '../../core/plugin-cache/cache-metadata.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
+import { execFileNoThrowSync, ExecResult } from '../../utils/execFileNoThrow.js';
 
 // Configuration
 const MARKETPLACE_NAME = 'specweave';
@@ -44,22 +44,29 @@ interface PluginResult {
   error?: string;
 }
 
-function runCommand(command: string, silent = false): { success: boolean; output: string } {
-  try {
-    const output = execSync(command, {
-      encoding: 'utf8',
-      stdio: silent ? 'pipe' : ['pipe', 'pipe', 'pipe'],
-    });
-    return { success: true, output: output.trim() };
-  } catch (error: unknown) {
-    const err = error as { stdout?: Buffer | string; stderr?: Buffer | string; message?: string };
-    const output = (err.stdout?.toString() || '') + (err.stderr?.toString() || '');
-    return { success: false, output: output || err.message || 'Unknown error' };
-  }
+/**
+ * Safely execute a CLI command using execFileNoThrow (no shell injection risk)
+ *
+ * @param command - The command executable (e.g., 'claude', 'git', 'npx')
+ * @param args - Array of arguments (safely escaped automatically)
+ * @param _silent - Unused, kept for API compatibility
+ * @returns Result with success status and output
+ */
+function runCommand(command: string, args: string[], _silent = false): { success: boolean; output: string } {
+  const result: ExecResult = execFileNoThrowSync(command, args);
+  const output = (result.stdout + result.stderr).trim();
+  return { success: result.success, output };
+}
+
+/**
+ * Run git command safely
+ */
+function runGitCommand(args: string[]): { success: boolean; output: string } {
+  return runCommand('git', args);
 }
 
 function checkMarketplaceExists(): boolean {
-  const result = runCommand('claude plugin marketplace list 2>/dev/null', true);
+  const result = runCommand('claude', ['plugin', 'marketplace', 'list'], true);
   return result.success && result.output.includes(MARKETPLACE_NAME);
 }
 
@@ -157,8 +164,8 @@ function generatePluginCacheMetadata(pluginName: string): void {
  * Get latest commit SHA from Git (if in repo) or marketplace
  */
 function getLatestCommitSha(): string | null {
-  // Try to get from git
-  const result = runCommand('git rev-parse HEAD 2>/dev/null', true);
+  // Try to get from git (safe - uses array args)
+  const result = runGitCommand(['rev-parse', 'HEAD']);
   if (result.success && result.output.length === 40) {
     return result.output;
   }
@@ -187,10 +194,23 @@ function getLatestCommitSha(): string | null {
   return null;
 }
 
+/**
+ * Validate plugin name to prevent path traversal attacks
+ * Plugin names should only contain alphanumeric chars, hyphens, and underscores
+ */
+function isValidPluginName(name: string): boolean {
+  return /^[a-zA-Z0-9_-]+$/.test(name);
+}
+
 function installPlugin(pluginName: string, force: boolean = false): PluginResult {
+  // Security: Validate plugin name to prevent injection/traversal
+  if (!isValidPluginName(pluginName)) {
+    return { name: pluginName, success: false, error: 'Invalid plugin name format' };
+  }
+
   // If force mode, uninstall first to ensure fresh copy
   if (force) {
-    runCommand(`claude plugin uninstall "${pluginName}" 2>&1`, true);
+    runCommand('claude', ['plugin', 'uninstall', pluginName], true);
     // Also clear the cache directory to ensure completely fresh install
     const cachePath = path.join(os.homedir(), '.claude/plugins/cache/specweave', pluginName);
     if (fs.existsSync(cachePath)) {
@@ -202,7 +222,7 @@ function installPlugin(pluginName: string, force: boolean = false): PluginResult
     }
   }
 
-  const result = runCommand(`claude plugin install "${pluginName}" 2>&1`, true);
+  const result = runCommand('claude', ['plugin', 'install', pluginName], true);
 
   if (result.success && result.output.includes('Successfully installed')) {
     // Generate cache metadata after successful installation
@@ -384,7 +404,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     console.log(chalk.blue(`✓ Marketplace '${MARKETPLACE_NAME}' already registered`));
     console.log(chalk.blue('📥 Updating marketplace from source...'));
 
-    const updateResult = runCommand(`claude plugin marketplace update "${MARKETPLACE_NAME}" 2>&1`, true);
+    const updateResult = runCommand('claude', ['plugin', 'marketplace', 'update', MARKETPLACE_NAME], true);
 
     if (updateResult.success || updateResult.output.includes('Updated')) {
       console.log(chalk.green('✓ Marketplace updated successfully'));
@@ -396,7 +416,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
   } else {
     console.log(chalk.blue('Marketplace not found - adding it now...'));
 
-    let addCommand: string;
+    let addArgs: string[];
     if (mode === 'local') {
       const localPath = process.cwd();
       const marketplaceJsonPath = path.join(localPath, '.claude-plugin/marketplace.json');
@@ -407,14 +427,14 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
         process.exit(1);
       }
 
-      addCommand = `claude plugin marketplace add "${localPath}" 2>&1`;
+      addArgs = ['plugin', 'marketplace', 'add', localPath];
       console.log(chalk.blue(`Using local development version: ${localPath}`));
     } else {
-      addCommand = `claude plugin marketplace add "${GITHUB_REPO}" 2>&1`;
+      addArgs = ['plugin', 'marketplace', 'add', GITHUB_REPO];
       console.log(chalk.blue(`Adding from GitHub: ${GITHUB_REPO}`));
     }
 
-    const addResult = runCommand(addCommand, true);
+    const addResult = runCommand('claude', addArgs, true);
 
     if (addResult.success || addResult.output.includes('Added') || addResult.output.includes('already')) {
       console.log(chalk.green(`✓ ${mode === 'local' ? 'Local' : 'GitHub'} marketplace added`));
@@ -586,7 +606,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
   const configPath = path.join(process.cwd(), '.specweave/config.json');
 
   if (fs.existsSync(configPath)) {
-    const updateResult = runCommand('npx specweave update-instructions 2>&1', true);
+    const updateResult = runCommand('npx', ['specweave', 'update-instructions'], true);
 
     if (updateResult.success) {
       console.log(chalk.green('✓ Instruction files updated'));

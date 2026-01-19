@@ -213,15 +213,73 @@ export interface ModelPricing {
 }
 
 /**
+ * Model alias to full model ID mapping
+ *
+ * SINGLE SOURCE OF TRUTH for model aliases.
+ * When Anthropic releases new models, update this mapping ONLY.
+ *
+ * Usage:
+ * - Use aliases (opus, sonnet, haiku) in AGENT.md, SKILL.md, and configs
+ * - resolveModelAlias('opus') → 'claude-opus-4-5-20251101'
+ *
+ * Updated: 2025-01-18
+ */
+export const MODEL_ALIASES: Record<string, string> = {
+  // Anthropic Claude aliases
+  'opus': 'claude-opus-4-5-20251101',
+  'sonnet': 'claude-sonnet-4-5-20250929',
+  'haiku': 'claude-3-5-haiku-20241022',
+
+  // AWS Bedrock aliases (includes provider prefix)
+  'bedrock:opus': 'anthropic.claude-opus-4-5-20251101-v1:0',
+  'bedrock:sonnet': 'anthropic.claude-3-5-sonnet-20241022-v2:0',
+  'bedrock:haiku': 'anthropic.claude-3-haiku-20240307-v1:0',
+};
+
+/**
+ * Resolve model alias to full model ID
+ *
+ * @param modelOrAlias - Model alias (opus, sonnet, haiku) or full model ID
+ * @param provider - Optional provider context for provider-specific resolution
+ * @returns Full model ID
+ *
+ * @example
+ * resolveModelAlias('opus') // → 'claude-opus-4-5-20251101'
+ * resolveModelAlias('opus', 'bedrock') // → 'anthropic.claude-opus-4-5-20251101-v1:0'
+ * resolveModelAlias('claude-opus-4-5-20251101') // → 'claude-opus-4-5-20251101' (passthrough)
+ */
+export function resolveModelAlias(modelOrAlias: string, provider?: string): string {
+  // Check provider-specific alias first
+  if (provider) {
+    const providerAlias = `${provider}:${modelOrAlias}`;
+    if (MODEL_ALIASES[providerAlias]) {
+      return MODEL_ALIASES[providerAlias];
+    }
+  }
+
+  // Check generic alias
+  if (MODEL_ALIASES[modelOrAlias]) {
+    return MODEL_ALIASES[modelOrAlias];
+  }
+
+  // Return as-is (already a full model ID)
+  return modelOrAlias;
+}
+
+/**
  * Default pricing for known models (USD per 1M tokens)
- * Updated: 2025-12-03
+ * Updated: 2025-01-18
  */
 export const MODEL_PRICING: Record<string, ModelPricing> = {
-  // Anthropic
+  // Anthropic (use full IDs for API calls, aliases for display)
   'claude-opus-4-5-20251101': { inputPer1M: 15, outputPer1M: 75 },
   'claude-sonnet-4-5-20250929': { inputPer1M: 3, outputPer1M: 15 },
   'claude-sonnet-4-20250514': { inputPer1M: 3, outputPer1M: 15 },
   'claude-3-5-haiku-20241022': { inputPer1M: 1, outputPer1M: 5 },
+  // Aliases pointing to same pricing
+  'opus': { inputPer1M: 15, outputPer1M: 75 },
+  'sonnet': { inputPer1M: 3, outputPer1M: 15 },
+  'haiku': { inputPer1M: 1, outputPer1M: 5 },
 
   // OpenAI
   'gpt-4o': { inputPer1M: 5, outputPer1M: 15 },

@@ -102,20 +102,20 @@ export class AgentSpawner {
    * Select the appropriate model for a domain
    */
   selectModel(domain: AgentDomain): 'sonnet' | 'opus' | 'haiku' {
-    // Use opus for complex domains, sonnet for most, haiku for simple tasks
+    // Use opus for all domains - highest quality model
     switch (domain) {
       case 'frontend':
       case 'backend':
-        return 'sonnet';
+        return 'opus';
       case 'database':
-        return 'sonnet';
+        return 'opus';
       case 'devops':
-        return 'sonnet';
+        return 'opus';
       case 'qa':
-        return 'sonnet';
+        return 'opus';
       case 'general':
       default:
-        return 'sonnet';
+        return 'opus';
     }
   }
 

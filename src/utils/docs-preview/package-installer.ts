@@ -72,11 +72,14 @@ export async function installPackages(options: InstallOptions): Promise<void> {
   args.push(...packages);
 
   // Spawn npm install process
+  // Note: shell:true removed - npm works without shell on all platforms when called with array args
+  // On Windows, npm.cmd is found automatically via PATH
   return new Promise((resolve, reject) => {
     const npmProcess = spawn('npm', args, {
       cwd: targetDir,
       stdio: ['ignore', 'pipe', 'pipe'],
-      shell: true
+      // Security: Using shell only on Windows where npm.cmd requires it
+      shell: process.platform === 'win32'
     });
 
     let stdout = '';

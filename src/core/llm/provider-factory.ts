@@ -145,7 +145,7 @@ async function createAnthropicProvider(
 
   return new AnthropicProvider({
     apiKey,
-    model: config.model || 'claude-opus-4-5-20251101',
+    model: config.model || 'opus', // Resolved to full ID in provider
     maxTokens: config.maxTokensPerRequest,
     temperature: config.temperature,
     logger,
@@ -237,7 +237,7 @@ async function createBedrockProvider(
 
   return new BedrockProvider({
     region: config.awsRegion || process.env.AWS_REGION || 'us-east-1',
-    model: config.model || 'anthropic.claude-opus-4-5-20251101-v1:0',
+    model: config.model || 'opus', // Resolved to full Bedrock ID in provider
     maxTokens: config.maxTokensPerRequest,
     temperature: config.temperature,
     logger,

@@ -1,7 +1,7 @@
 ---
 name: observability-engineer
 description: Production observability architect - metrics, logs, traces, SLOs. Opinionated on OpenTelemetry-first, Prometheus+Grafana stack, alert fatigue prevention. Activates for monitoring, observability, SLI/SLO, alerting, Prometheus, Grafana, tracing, logging, Datadog, New Relic, OpenTelemetry, OTEL, metrics collection, log aggregation, distributed tracing, Jaeger, Zipkin, Loki, ELK stack, Elasticsearch, Kibana, Fluentd, structured logging, alert rules, dashboards, Grafana dashboards, PromQL, LogQL, cardinality, metric labels, span context, trace ID, correlation ID, service mesh observability, APM, application performance monitoring, error tracking, Sentry, uptime monitoring, synthetic monitoring, real user monitoring, RUM.
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible

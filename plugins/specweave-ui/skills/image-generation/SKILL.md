@@ -6,7 +6,7 @@ allowed-tools:
   - Write
   - WebFetch
 context: fork
-model: sonnet
+model: opus
 ---
 
 # AI Image Generation Skill

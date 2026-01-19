@@ -17,6 +17,49 @@ npm install -g specweave
 
 ---
 
+## Stop Repeating Yourself
+
+Every app needs the same things: auth, tests, docs, deployment. Without SpecWeave, you dictate every step:
+
+```
+"Create user authentication"
+"Now add tests for that"
+"Document the architecture"
+"Update JIRA with progress"
+"Create the PR description"
+"Run the linter and fix issues"
+```
+
+**With SpecWeave:**
+```bash
+/sw:increment "User authentication"
+/sw:auto
+# Done. Tests, docs, sync - all handled.
+```
+
+### One Command = Many Prompts
+
+| What You Used To Dictate | SpecWeave Command |
+|-------------------------|-------------------|
+| "Create spec with user stories and ACs..." | `/sw:increment "feature"` |
+| "Implement, test, fix failures, repeat..." | `/sw:auto` (runs for hours) |
+| "Update GitHub/JIRA with my progress..." | `/sw:sync-progress` |
+| "Review for security vulnerabilities..." | Auto-activates on keywords |
+| "Commit everything and create a PR..." | `/sw:save` |
+
+### Built-In Expertise, Not Just Commands
+
+SpecWeave isn't just shortcuts - it's **encapsulated expertise**:
+
+- **15+ AI agents** (PM, Architect, QA, Security) work in parallel
+- **Skills auto-activate** - mention "security" and security expertise loads
+- **Quality gates** enforce what senior devs know: tests before merge, docs before close
+- **Patterns learned once, applied everywhere** - your best practices become defaults
+
+**Real result**: I built 5 production apps using SpecWeave. Then taught my 10 and 14-year-old daughters to do the same - because the expertise is in the framework, not in knowing what to ask.
+
+---
+
 ## The Problem With AI Coding Tools
 
 Every AI coding tool promises productivity. But after the chat ends:
