@@ -1,10 +1,10 @@
 /**
- * Tests for Auto Mode CLI Command (Ralph Wiggum Pattern)
+ * Tests for Auto Mode CLI Command (v3.0 Pure Ralph Wiggum Pattern)
  *
  * Verifies the simplified auto mode implementation:
- * - Only auto-mode.json flag file is created
- * - No session files, no lock files
- * - Increment status is the source of truth
+ * - NO session files, NO state files (Pure Ralph pattern)
+ * - Increment metadata IS the state
+ * - Stop hook checks active increments directly
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -17,6 +17,8 @@ describe('Auto Command (Ralph Wiggum Pattern)', () => {
   let tempDir: string;
   let incrementsDir: string;
   let stateDir: string;
+  let consoleSpy: ReturnType<typeof vi.spyOn>;
+  let exitSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'auto-test-'));
@@ -32,16 +34,23 @@ describe('Auto Command (Ralph Wiggum Pattern)', () => {
       path.join(tempDir, '.specweave/config.json'),
       JSON.stringify({ project: { name: 'test-project' } })
     );
+
+    // Spy on console.log to capture output
+    consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    // Mock process.exit to prevent test from exiting
+    exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
   });
 
   afterEach(() => {
+    consoleSpy.mockRestore();
+    exitSpy.mockRestore();
     if (fs.existsSync(tempDir)) {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
   });
 
-  describe('auto-mode.json flag', () => {
-    it('should create auto-mode.json when starting auto mode', async () => {
+  describe('Pure Ralph Pattern - No State Files', () => {
+    it('should NOT create any state files (pure pattern)', async () => {
       // Create an active increment
       const incDir = path.join(incrementsDir, '0001-test-feature');
       fs.mkdirSync(incDir, { recursive: true });
@@ -53,44 +62,19 @@ describe('Auto Command (Ralph Wiggum Pattern)', () => {
       const options: AutoCommandOptions = {};
       await handleAutoCommand(tempDir, ['0001-test-feature'], options);
 
+      // Pure Ralph pattern: NO state files
       const flagPath = path.join(stateDir, 'auto-mode.json');
-      expect(fs.existsSync(flagPath)).toBe(true);
+      expect(fs.existsSync(flagPath)).toBe(false);
 
-      const flag = JSON.parse(fs.readFileSync(flagPath, 'utf-8'));
-      expect(flag.active).toBe(true);
-      expect(flag.timestamp).toBeTruthy();
-      expect(flag.incrementIds).toContain('0001-test-feature');
-    });
-
-    it('should NOT create session file (only auto-mode.json)', async () => {
-      // Create an active increment
-      const incDir = path.join(incrementsDir, '0001-test-feature');
-      fs.mkdirSync(incDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(incDir, 'metadata.json'),
-        JSON.stringify({ status: 'active', id: '0001-test-feature' })
-      );
-
-      const options: AutoCommandOptions = {};
-      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
-
-      // Should NOT have session file
       const sessionPath = path.join(stateDir, 'auto-session.json');
       expect(fs.existsSync(sessionPath)).toBe(false);
 
-      // Should NOT have lock file
       const lockPath = path.join(stateDir, 'active-session.lock');
       expect(fs.existsSync(lockPath)).toBe(false);
     });
 
-    it('should warn if auto mode is already active', async () => {
-      // Create existing auto-mode flag
-      fs.writeFileSync(
-        path.join(stateDir, 'auto-mode.json'),
-        JSON.stringify({ active: true, timestamp: new Date().toISOString() })
-      );
-
-      // Create an increment
+    it('should show start message with active increment', async () => {
+      // Create an active increment
       const incDir = path.join(incrementsDir, '0001-test-feature');
       fs.mkdirSync(incDir, { recursive: true });
       fs.writeFileSync(
@@ -98,16 +82,11 @@ describe('Auto Command (Ralph Wiggum Pattern)', () => {
         JSON.stringify({ status: 'active', id: '0001-test-feature' })
       );
 
-      // Capture console output
-      const consoleSpy = vi.spyOn(console, 'log');
-
       const options: AutoCommandOptions = {};
       await handleAutoCommand(tempDir, ['0001-test-feature'], options);
 
-      // Should have warned about active auto mode
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('already active'));
-
-      consoleSpy.mockRestore();
+      // Should have printed start message
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('AUTO MODE READY'));
     });
   });
 
@@ -124,14 +103,11 @@ describe('Auto Command (Ralph Wiggum Pattern)', () => {
       const options: AutoCommandOptions = {};
       await handleAutoCommand(tempDir, [], options);
 
-      const flagPath = path.join(stateDir, 'auto-mode.json');
-      expect(fs.existsSync(flagPath)).toBe(true);
-
-      const flag = JSON.parse(fs.readFileSync(flagPath, 'utf-8'));
-      expect(flag.incrementIds).toContain('0001-test-feature');
+      // Should show the active increment
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('0001-test-feature'));
     });
 
-    it('should find backlog increments with --all-backlog', async () => {
+    it('should activate backlog increments with --all-backlog', async () => {
       // Create backlog increments
       const inc1 = path.join(incrementsDir, '0001-feature-one');
       const inc2 = path.join(incrementsDir, '0002-feature-two');
@@ -149,11 +125,12 @@ describe('Auto Command (Ralph Wiggum Pattern)', () => {
       const options: AutoCommandOptions = { allBacklog: true };
       await handleAutoCommand(tempDir, [], options);
 
-      const flagPath = path.join(stateDir, 'auto-mode.json');
-      expect(fs.existsSync(flagPath)).toBe(true);
+      // Both increments should be activated (metadata changed)
+      const meta1 = JSON.parse(fs.readFileSync(path.join(inc1, 'metadata.json'), 'utf-8'));
+      const meta2 = JSON.parse(fs.readFileSync(path.join(inc2, 'metadata.json'), 'utf-8'));
 
-      const flag = JSON.parse(fs.readFileSync(flagPath, 'utf-8'));
-      expect(flag.incrementIds).toHaveLength(2);
+      expect(meta1.status).toBe('active');
+      expect(meta2.status).toBe('active');
     });
 
     it('should find increment by prefix', async () => {
@@ -168,94 +145,129 @@ describe('Auto Command (Ralph Wiggum Pattern)', () => {
       const options: AutoCommandOptions = {};
       await handleAutoCommand(tempDir, ['0001'], options);
 
-      const flagPath = path.join(stateDir, 'auto-mode.json');
-      expect(fs.existsSync(flagPath)).toBe(true);
+      // Should have found the increment
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('0001-long-feature-name'));
+    });
 
-      const flag = JSON.parse(fs.readFileSync(flagPath, 'utf-8'));
-      expect(flag.incrementIds).toContain('0001-long-feature-name');
+    it('should warn when increment not found', async () => {
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['9999-nonexistent'], options);
+
+      // Should warn about not found and exit
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('not found'));
+      expect(exitSpy).toHaveBeenCalledWith(1);
     });
   });
 
   describe('dry run', () => {
-    it('should NOT create flag file in dry run mode', async () => {
-      // Create an active increment
+    it('should NOT activate increment in dry run mode', async () => {
+      // Create a backlog increment
       const incDir = path.join(incrementsDir, '0001-test-feature');
       fs.mkdirSync(incDir, { recursive: true });
       fs.writeFileSync(
         path.join(incDir, 'metadata.json'),
-        JSON.stringify({ status: 'active', id: '0001-test-feature' })
+        JSON.stringify({ status: 'backlog', id: '0001-test-feature' })
       );
 
       const options: AutoCommandOptions = { dryRun: true };
       await handleAutoCommand(tempDir, ['0001-test-feature'], options);
 
-      const flagPath = path.join(stateDir, 'auto-mode.json');
-      expect(fs.existsSync(flagPath)).toBe(false);
+      // Should show dry run message
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Dry Run'));
+
+      // Increment should NOT be activated
+      const meta = JSON.parse(fs.readFileSync(path.join(incDir, 'metadata.json'), 'utf-8'));
+      expect(meta.status).toBe('backlog');
     });
   });
 
-  describe('prompt mode', () => {
-    it('should create marker file for prompt mode', async () => {
-      const options: AutoCommandOptions = { prompt: 'Build a feature' };
+  describe('prompt analysis mode', () => {
+    it('should analyze prompt without exit when no parallel flags', async () => {
+      const options: AutoCommandOptions = { prompt: 'Build a React dashboard with API' };
 
-      // This will exit with code 2, so we need to catch it
-      const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
-        throw new Error('process.exit called');
-      });
+      // Should NOT exit, just analyze and return
+      await handleAutoCommand(tempDir, [], options);
 
-      try {
-        await handleAutoCommand(tempDir, [], options);
-      } catch (e) {
-        // Expected - process.exit was called
-      }
-
-      const markerPath = path.join(stateDir, 'auto-needs-increment.json');
-      expect(fs.existsSync(markerPath)).toBe(true);
-
-      const marker = JSON.parse(fs.readFileSync(markerPath, 'utf-8'));
-      expect(marker.needsIncrementCreation).toBe(true);
-      expect(marker.fromChunking).toBe(true);
-      expect(marker.prompt).toBe('Build a feature');
-
-      exitSpy.mockRestore();
+      // Should show analysis
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Prompt Analysis'));
     });
   });
 
   describe('error handling', () => {
-    it('should exit with code 1 when increment not found and --no-increment set', async () => {
-      const exitSpy = vi.spyOn(process, 'exit').mockImplementation(code => {
-        throw new Error(`process.exit(${code})`);
-      });
+    it('should warn when no increments found', async () => {
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, [], options);
 
-      const options: AutoCommandOptions = { noIncrement: true };
-
-      try {
-        await handleAutoCommand(tempDir, [], options);
-      } catch (e) {
-        expect((e as Error).message).toBe('process.exit(1)');
-      }
-
-      exitSpy.mockRestore();
+      // Should warn about no increments
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('No increments'));
     });
 
-    it('should exit with code 2 when no increments and auto-creation needed', async () => {
-      const exitSpy = vi.spyOn(process, 'exit').mockImplementation(code => {
-        throw new Error(`process.exit(${code})`);
-      });
+    it('should warn about backlog when only backlog exists', async () => {
+      // Create a backlog increment
+      const incDir = path.join(incrementsDir, '0001-backlog-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'backlog', id: '0001-backlog-feature' })
+      );
 
       const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, [], options);
 
-      try {
-        await handleAutoCommand(tempDir, [], options);
-      } catch (e) {
-        expect((e as Error).message).toBe('process.exit(2)');
-      }
+      // Should mention backlog exists
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('backlog'));
+    });
+  });
 
-      // Should have created marker file
-      const markerPath = path.join(stateDir, 'auto-needs-increment.json');
-      expect(fs.existsSync(markerPath)).toBe(true);
+  describe('reset mode', () => {
+    it('should clean up state files with --reset', async () => {
+      // Create some state files
+      fs.writeFileSync(path.join(stateDir, 'auto-mode.json'), '{}');
+      fs.writeFileSync(path.join(stateDir, 'auto-session.json'), '{}');
 
-      exitSpy.mockRestore();
+      const options: AutoCommandOptions = { reset: true };
+      await handleAutoCommand(tempDir, [], options);
+
+      // State files should be cleaned up
+      expect(fs.existsSync(path.join(stateDir, 'auto-mode.json'))).toBe(false);
+      expect(fs.existsSync(path.join(stateDir, 'auto-session.json'))).toBe(false);
+    });
+  });
+
+  describe('increment activation', () => {
+    it('should activate specified increment by changing metadata', async () => {
+      // Create a backlog increment
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify({ status: 'backlog', id: '0001-test-feature' })
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+
+      // Increment should be activated
+      const meta = JSON.parse(fs.readFileSync(path.join(incDir, 'metadata.json'), 'utf-8'));
+      expect(meta.status).toBe('active');
+    });
+
+    it('should not modify already active increments', async () => {
+      // Create an already active increment
+      const incDir = path.join(incrementsDir, '0001-test-feature');
+      fs.mkdirSync(incDir, { recursive: true });
+      const originalMeta = { status: 'active', id: '0001-test-feature', updated: '2020-01-01T00:00:00Z' };
+      fs.writeFileSync(
+        path.join(incDir, 'metadata.json'),
+        JSON.stringify(originalMeta)
+      );
+
+      const options: AutoCommandOptions = {};
+      await handleAutoCommand(tempDir, ['0001-test-feature'], options);
+
+      // Metadata timestamp should not have changed (no re-activation)
+      const meta = JSON.parse(fs.readFileSync(path.join(incDir, 'metadata.json'), 'utf-8'));
+      expect(meta.updated).toBe('2020-01-01T00:00:00Z');
     });
   });
 });

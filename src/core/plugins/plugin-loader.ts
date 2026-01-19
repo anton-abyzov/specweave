@@ -166,6 +166,71 @@ export class PluginLoader {
   }
 
   /**
+   * Get plugin metadata without full load (counts skills/agents/commands)
+   *
+   * @param pluginPath - Absolute path to plugin directory
+   * @returns Plugin metadata with counts
+   */
+  async getMetadata(pluginPath: string): Promise<{
+    name: string;
+    version: string;
+    description: string;
+    skillCount: number;
+    agentCount: number;
+    commandCount: number;
+  }> {
+    // Load manifest first
+    const manifest = await this.loadManifest(pluginPath);
+
+    // Count skills
+    const skillsDir = path.join(pluginPath, 'skills');
+    let skillCount = 0;
+    if (await fs.pathExists(skillsDir)) {
+      const entries = await fs.readdir(skillsDir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const skillMdPath = path.join(skillsDir, entry.name, 'SKILL.md');
+          if (await fs.pathExists(skillMdPath)) {
+            skillCount++;
+          }
+        }
+      }
+    }
+
+    // Count agents
+    const agentsDir = path.join(pluginPath, 'agents');
+    let agentCount = 0;
+    if (await fs.pathExists(agentsDir)) {
+      const entries = await fs.readdir(agentsDir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const agentMdPath = path.join(agentsDir, entry.name, 'AGENT.md');
+          if (await fs.pathExists(agentMdPath)) {
+            agentCount++;
+          }
+        }
+      }
+    }
+
+    // Count commands
+    const commandsDir = path.join(pluginPath, 'commands');
+    let commandCount = 0;
+    if (await fs.pathExists(commandsDir)) {
+      const files = await fs.readdir(commandsDir);
+      commandCount = files.filter(f => f.endsWith('.md')).length;
+    }
+
+    return {
+      name: manifest.name,
+      version: manifest.version,
+      description: manifest.description,
+      skillCount,
+      agentCount,
+      commandCount
+    };
+  }
+
+  /**
    * Discover skills by scanning skills/ directory
    *
    * @param pluginPath - Path to plugin directory
