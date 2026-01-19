@@ -691,21 +691,21 @@
 }
 
 .ctaCode {
-  background: rgba(15, 15, 35, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
-  padding: 1rem 2rem;
+  padding: 1.25rem 2rem;
   display: inline-block;
   margin-bottom: 2rem;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .ctaCode code {
-  color: #e2e8f0;
+  color: #f8fafc;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 1rem;
-  letter-spacing: 0.02em;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
 }
 
 .ctaButtons {

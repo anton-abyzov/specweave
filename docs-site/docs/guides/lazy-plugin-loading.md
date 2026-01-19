@@ -96,7 +96,7 @@ The router skill detects SpecWeave intent using these keywords:
 **Advanced:**
 - `auto mode`, `parallel auto`, `tdd mode`
 
-Detection is **case-insensitive** and takes **<50ms**.
+Detection is **case-insensitive** and takes **under 50ms**.
 
 ### Claude Code Features Used
 
