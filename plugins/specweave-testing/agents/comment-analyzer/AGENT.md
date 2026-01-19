@@ -6,8 +6,8 @@ tools:
   - Glob
   - Grep
   - Bash
-model: sonnet
-model_preference: sonnet
+model: opus
+model_preference: opus
 cost_profile: analysis
 fallback_behavior: flexible
 max_response_tokens: 2000

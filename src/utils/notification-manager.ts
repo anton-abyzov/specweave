@@ -138,23 +138,42 @@ export class NotificationManager {
 
   /**
    * Escapes string for AppleScript
+   * Security: Handles backslashes first, then quotes, then newlines
    */
   private escapeForAppleScript(str: string): string {
-    return str.replace(/"/g, '\\"').replace(/\\/g, '\\\\');
+    return str
+      .replace(/\\/g, '\\\\')    // Escape backslashes first
+      .replace(/"/g, '\\"')       // Escape double quotes
+      .replace(/\n/g, '\\n')      // Escape newlines
+      .replace(/\r/g, '\\r');     // Escape carriage returns
   }
 
   /**
-   * Escapes string for shell
+   * Escapes string for shell (notify-send on Linux)
+   * Security: Comprehensive escaping for shell metacharacters
    */
   private escapeForShell(str: string): string {
-    return str.replace(/"/g, '\\"').replace(/\$/g, '\\$');
+    return str
+      .replace(/\\/g, '\\\\')    // Escape backslashes first
+      .replace(/"/g, '\\"')       // Escape double quotes
+      .replace(/\$/g, '\\$')      // Escape dollar signs
+      .replace(/`/g, '\\`')       // Escape backticks
+      .replace(/!/g, '\\!')       // Escape history expansion
+      .replace(/\n/g, ' ')        // Replace newlines with spaces
+      .replace(/\r/g, '');        // Remove carriage returns
   }
 
   /**
    * Escapes string for PowerShell
+   * Security: Comprehensive escaping for PowerShell special chars
    */
   private escapeForPowerShell(str: string): string {
-    return str.replace(/"/g, '`"').replace(/\$/g, '`$');
+    return str
+      .replace(/`/g, '``')        // Escape backticks first (PowerShell escape char)
+      .replace(/"/g, '`"')        // Escape double quotes
+      .replace(/\$/g, '`$')       // Escape dollar signs
+      .replace(/\n/g, '`n')       // Escape newlines
+      .replace(/\r/g, '`r');      // Escape carriage returns
   }
 
   /**

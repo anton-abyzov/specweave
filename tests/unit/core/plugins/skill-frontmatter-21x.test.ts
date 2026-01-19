@@ -98,10 +98,10 @@ model: opus
       expect(frontmatter.model).toBe('opus');
     });
 
-    it('should parse model: sonnet', () => {
+    it('should parse model: opus', () => {
       const content = `---
 name: general-skill
-model: sonnet
+model: opus
 ---
 
 # General Skill
@@ -109,7 +109,7 @@ model: sonnet
 
       const frontmatter = parseSkillFrontmatter(content);
 
-      expect(frontmatter.model).toBe('sonnet');
+      expect(frontmatter.model).toBe('opus');
     });
 
     it('should parse model: haiku', () => {

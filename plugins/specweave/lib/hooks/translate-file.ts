@@ -213,7 +213,7 @@ async function invokeLLMTranslation(prompt: string, verbose: boolean): Promise<s
       });
 
       const message = await anthropic.messages.create({
-        model: 'claude-3-haiku-20240307',
+        model: 'claude-3-5-haiku-20241022',
         max_tokens: 8000,
         messages: [
           {
@@ -230,7 +230,7 @@ async function invokeLLMTranslation(prompt: string, verbose: boolean): Promise<s
 
       if (verbose) {
         console.log(`✅ Translation complete via API`);
-        console.log(`   Model: claude-3-haiku-20240307`);
+        console.log(`   Model: claude-3-5-haiku-20241022`);
         console.log(`   Input tokens: ${message.usage.input_tokens}`);
         console.log(`   Output tokens: ${message.usage.output_tokens}`);
         console.log(`   Cost: ~$${((message.usage.input_tokens * 0.25 + message.usage.output_tokens * 1.25) / 1000000).toFixed(4)}`);

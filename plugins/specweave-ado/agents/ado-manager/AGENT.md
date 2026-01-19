@@ -11,7 +11,7 @@ context: |
   - Handle bidirectional sync (ADO ↔ SpecWeave)
   - Troubleshoot ADO API issues
   - Optimize sync performance and rate limiting
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
