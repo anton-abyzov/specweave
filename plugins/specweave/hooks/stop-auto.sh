@@ -443,6 +443,83 @@ for inc_id in $READY_TO_CLOSE; do
 done
 
 # ============================================================================
+# SKILL VALIDATION: Run domain-specific validation if skills were activated
+# Only runs in auto mode when skills/agents were used during session
+# ============================================================================
+
+SKILL_ACTIVATIONS_FILE="$STATE_DIR/skill-activations.json"
+SKILL_VALIDATION_FAILED="false"
+VALIDATION_SUMMARY=""  # Track what validations were run
+
+if [ -f "$SKILL_ACTIVATIONS_FILE" ]; then
+    # Skills were activated during this session
+    ACTIVATED_DOMAINS=$(jq -r '.domains | join(", ")' "$SKILL_ACTIVATIONS_FILE" 2>/dev/null || echo "")
+    ACTIVATION_COUNT=$(jq -r '.activations | length' "$SKILL_ACTIVATIONS_FILE" 2>/dev/null || echo "0")
+
+    if [ -n "$ACTIVATED_DOMAINS" ] && [ "$ACTIVATED_DOMAINS" != "null" ]; then
+        log "SKILL VALIDATION: Activated domains: $ACTIVATED_DOMAINS"
+
+        # Run domain-specific validation
+        VALIDATION_SCRIPT="$PROJECT_ROOT/plugins/specweave/hooks/validate-skill-activations.sh"
+
+        # Try installed location first, then package location
+        if [ ! -f "$VALIDATION_SCRIPT" ]; then
+            VALIDATION_SCRIPT="$(dirname "$0")/validate-skill-activations.sh"
+        fi
+
+        if [ -f "$VALIDATION_SCRIPT" ] && [ -x "$VALIDATION_SCRIPT" ]; then
+            log "Running skill validation: $VALIDATION_SCRIPT"
+
+            SKILL_VALIDATION_START=$(date +%s)
+            if ! PROJECT_ROOT="$PROJECT_ROOT" "$VALIDATION_SCRIPT" 2>&1 | tee -a "$LOG_FILE"; then
+                SKILL_VALIDATION_FAILED="true"
+                SKILL_VALIDATION_END=$(date +%s)
+                SKILL_VALIDATION_DURATION=$((SKILL_VALIDATION_END - SKILL_VALIDATION_START))
+                log "SKILL VALIDATION: Failed - blocking completion"
+                VALIDATION_ERRORS="$VALIDATION_ERRORS|skill_validation:Domain validation failed for: $ACTIVATED_DOMAINS"
+                VALIDATION_SUMMARY="${VALIDATION_SUMMARY}
+  ❌ Skill Validation ($ACTIVATED_DOMAINS): FAILED in ${SKILL_VALIDATION_DURATION}s"
+            else
+                SKILL_VALIDATION_END=$(date +%s)
+                SKILL_VALIDATION_DURATION=$((SKILL_VALIDATION_END - SKILL_VALIDATION_START))
+                log "SKILL VALIDATION: Passed"
+                VALIDATION_SUMMARY="${VALIDATION_SUMMARY}
+  ✅ Skill Validation ($ACTIVATED_DOMAINS): PASSED in ${SKILL_VALIDATION_DURATION}s"
+            fi
+        else
+            log "SKILL VALIDATION: Script not found, skipping"
+            VALIDATION_SUMMARY="${VALIDATION_SUMMARY}
+  ⏭️  Skill Validation: Skipped (no validator)"
+        fi
+    fi
+else
+    # No skills activated - note this in log
+    log "SKILL VALIDATION: No skills activated this session"
+fi
+
+# Add increment validation summary
+if [ -n "$READY_TO_CLOSE" ]; then
+    for inc in $READY_TO_CLOSE; do
+        [ -z "$inc" ] && continue
+        VALIDATION_SUMMARY="${VALIDATION_SUMMARY}
+  ✅ Increment $inc: All tasks complete, ACs satisfied"
+    done
+fi
+
+if [ -n "$INCOMPLETE_INCS" ]; then
+    for inc in $INCOMPLETE_INCS; do
+        [ -z "$inc" ] && continue
+        VALIDATION_SUMMARY="${VALIDATION_SUMMARY}
+  ⏳ Increment $inc: Work remaining"
+    done
+fi
+
+# Log validation summary
+if [ -n "$VALIDATION_SUMMARY" ]; then
+    log "VALIDATION SUMMARY:$VALIDATION_SUMMARY"
+fi
+
+# ============================================================================
 # DECISION: Continue or Complete
 # ============================================================================
 
@@ -450,8 +527,8 @@ done
 REMAINING_COUNT=$(find "$INCREMENTS_DIR" -maxdepth 2 -name "metadata.json" \
     -exec grep -l '"status"[[:space:]]*:[[:space:]]*"active\|"status"[[:space:]]*:[[:space:]]*"in-progress' {} \; 2>/dev/null | wc -l | tr -d ' ')
 
-if [ "$REMAINING_COUNT" -eq 0 ]; then
-    # All work complete - approve exit and clear retry counter
+if [ "$REMAINING_COUNT" -eq 0 ] && [ "$SKILL_VALIDATION_FAILED" != "true" ]; then
+    # All work complete AND skill validation passed - approve exit
     rm -f "$DEDUP_FILE" 2>/dev/null
     clear_retry_counter
 
@@ -461,6 +538,11 @@ if [ "$REMAINING_COUNT" -eq 0 ]; then
     else
         silent_approve "No active increments"
     fi
+fi
+
+# Handle skill validation failure (block even if tasks are done)
+if [ "$SKILL_VALIDATION_FAILED" = "true" ]; then
+    log "BLOCK: Skill validation failed - fix issues before completion"
 fi
 
 # Work remains - show what's blocking
@@ -509,9 +591,20 @@ fi
 
 MSG=""
 
+# Add validation summary at the top if any validations were run
+if [ -n "$VALIDATION_SUMMARY" ]; then
+    MSG="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 VALIDATION SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+$VALIDATION_SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+"
+fi
+
 # Add closed count if any
 if [ "$CLOSED_COUNT" -gt 0 ]; then
-    MSG="✅ Auto-closed $CLOSED_COUNT increment(s)
+    MSG="${MSG}✅ Auto-closed $CLOSED_COUNT increment(s)
 
 "
 fi

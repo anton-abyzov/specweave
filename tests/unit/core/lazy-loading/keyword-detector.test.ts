@@ -113,11 +113,12 @@ describe('Keyword Detector', () => {
     });
 
     describe('Low Confidence Keywords', () => {
-      it('should detect standalone "backlog" with low confidence', () => {
+      it('should detect standalone "backlog" with development confidence', () => {
+        // v1.0.130: "backlog" is now in DEVELOPMENT_KEYWORDS.jira
+        // so it gets 0.7 confidence (above auto-install threshold)
         const result = detectSpecWeaveIntent('Review the backlog items');
         expect(result.detected).toBe(true);
-        expect(result.confidence).toBeGreaterThanOrEqual(0.3);
-        expect(result.confidence).toBeLessThan(0.6);
+        expect(result.confidence).toBeGreaterThanOrEqual(0.7);
         expect(result.matchedKeywords).toContain('backlog');
       });
 
@@ -306,9 +307,12 @@ describe('Keyword Detector', () => {
       expect(result).toContain('specweave-testing');
     });
 
-    it('should suggest diagrams plugin for mermaid keywords', () => {
+    it('should route mermaid keywords to core (diagrams now in core)', () => {
+      // v1.0.130: Diagrams, docs, release moved to CORE specweave plugin
+      // No separate specweave-diagrams plugin needed
       const result = determinePlugins([], 'create a mermaid diagram');
-      expect(result).toContain('specweave-diagrams');
+      expect(result).toContain('specweave'); // Core handles diagrams
+      // specweave-diagrams is no longer suggested
     });
   });
 
