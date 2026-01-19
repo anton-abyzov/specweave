@@ -1,157 +1,263 @@
 ---
 name: specweave-router
 description: |
-  Lightweight SpecWeave router that detects spec-driven development intent
-  and loads full plugins on-demand. Activates for: increment, specweave,
-  /sw:, /sw-github:, /sw-jira:, /sw-ado:, /sw-release:, /sw-infra:,
-  /sw-k8s:, /sw-ml:, /sw-kafka:, /sw-confluent:, /sw-mobile:, /sw-payments:,
-  /sw-testing:, /sw-diagrams:, /sw-frontend:, /sw-backend:,
-  spec.md, tasks.md, plan.md, living docs, living documentation,
-  acceptance criteria, user story, feature planning, sprint planning,
-  jira sync, github sync, ado sync, auto mode, tdd mode, parallel auto.
+  ACTIVE router that detects development tasks and spawns specialized agents.
+  Activates for: React, Vue, Next.js, frontend, dashboard, component, UI, UX,
+  GitHub, API, backend, database, SQL, PostgreSQL, MongoDB, Redis,
+  Kubernetes, K8s, Docker, Terraform, AWS, Azure, GCP, infrastructure,
+  ML, machine learning, model, training, AI, data science,
+  testing, TDD, test-driven, Vitest, Jest, Playwright, E2E,
+  mobile, React Native, iOS, Android, Expo,
+  Kafka, streaming, event-driven, messaging,
+  payments, Stripe, checkout, billing, subscriptions,
+  release, deploy, CI/CD, pipeline, version,
+  diagram, architecture, C4, Mermaid, flowchart,
+  increment, specweave, /sw:, spec.md, tasks.md, living docs.
 visibility: public
 user-invocable: false
 allowed-tools:
   - Bash
+  - Task
 ---
 
-# SpecWeave Router
+# SpecWeave ACTIVE Router
 
-Minimal router for lazy-loading SpecWeave plugins. Detects intent and loads full functionality on-demand.
+**I am an ACTIVE router.** When I detect development tasks, I **MUST spawn specialized agents**.
 
-## When I Activate
+## CRITICAL RULE: Agent Spawning is MANDATORY
 
-I detect SpecWeave intent when you mention:
-- **Core Commands**: `/sw:*` (increment, do, done, progress, validate, etc.)
-- **Plugin Commands**: `/sw-github:*`, `/sw-jira:*`, `/sw-ado:*`, `/sw-release:*`, etc.
-- **Files**: `spec.md`, `tasks.md`, `plan.md`
-- **Concepts**: increment, living docs, acceptance criteria, user story
-- **Integrations**: jira sync, github sync, ado sync
-- **Modes**: auto mode, tdd mode, parallel auto
+When I detect domain-specific keywords, I **MUST** spawn the appropriate agent using the Task tool.
+**DO NOT** just use basic tools (Read, Write, Edit). **SPAWN THE AGENT**.
 
-## CRITICAL: Command Prefix Detection
+## Domain Detection Matrix
 
-When user types a plugin-specific command, load THAT plugin specifically:
+### Frontend Development
+**Keywords**: React, Vue, Angular, Next.js, Nuxt, Svelte, frontend, dashboard, component, UI, UX, CSS, Tailwind, styled-components, SPA, SSR, design system, landing page, responsive
 
-| Command Prefix | Plugin to Load | Load Command |
-|---------------|----------------|--------------|
-| `/sw:*` | specweave (core) | `specweave load-plugins core` |
-| `/sw-github:*` | specweave-github | `specweave load-plugins github` |
-| `/sw-jira:*` | specweave-jira | `specweave load-plugins jira` |
-| `/sw-ado:*` | specweave-ado | `specweave load-plugins ado` |
-| `/sw-release:*` | specweave-release | `specweave load-plugins release` |
-| `/sw-infra:*` | specweave-infrastructure | `specweave load-plugins infra` |
-| `/sw-k8s:*` | specweave-k8s | `specweave load-plugins infra` |
-| `/sw-ml:*` | specweave-ml | `specweave load-plugins ml` |
-| `/sw-kafka:*` | specweave-kafka | `specweave load-plugins kafka` |
-| `/sw-confluent:*` | specweave-confluent | `specweave load-plugins confluent` |
-| `/sw-mobile:*` | specweave-mobile | `specweave load-plugins mobile` |
-| `/sw-payments:*` | specweave-payments | `specweave load-plugins payments` |
-| `/sw-testing:*` | specweave-testing | `specweave load-plugins testing` |
-| `/sw-diagrams:*` | specweave-diagrams | `specweave load-plugins diagrams` |
-| `/sw-frontend:*` | specweave-frontend | `specweave load-plugins frontend` |
-| `/sw-backend:*` | specweave-backend | `specweave load-plugins backend` |
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-frontend:frontend-architect",
+  prompt: "[User's request]",
+  description: "Frontend architecture"
+})
+```
 
-## On Activation - CROSS-PLATFORM
+### Backend & Database
+**Keywords**: API, REST, GraphQL, backend, server, database, SQL, PostgreSQL, MySQL, MongoDB, Redis, optimization, query, ORM, Prisma, migration
 
-When SpecWeave intent detected, follow this sequence:
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-backend:database-optimizer",
+  prompt: "[User's request]",
+  description: "Backend/database task"
+})
+```
 
-### Step 1: Check if this is a SpecWeave project
+### GitHub Integration
+**Keywords**: GitHub, repository, issues, PR, pull request, actions, workflow, sync, git
 
-First verify the project has SpecWeave initialized:
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-github:github-manager",
+  prompt: "[User's request]",
+  description: "GitHub integration"
+})
+```
 
-**macOS/Linux:**
+### Testing & QA
+**Keywords**: test, TDD, test-driven, Vitest, Jest, Playwright, Cypress, E2E, unit test, integration test, coverage, QA
+
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-testing:qa-engineer",
+  prompt: "[User's request]",
+  description: "Testing strategy"
+})
+```
+
+### Infrastructure & DevOps
+**Keywords**: Kubernetes, K8s, Docker, Terraform, AWS, Azure, GCP, infrastructure, deploy, CI/CD, pipeline, serverless, Lambda
+
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-infra:devops",
+  prompt: "[User's request]",
+  description: "Infrastructure task"
+})
+```
+
+### Kubernetes Specific
+**Keywords**: K8s, Kubernetes, pods, deployments, services, ingress, helm, GitOps, ArgoCD
+
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-k8s:kubernetes-architect",
+  prompt: "[User's request]",
+  description: "Kubernetes architecture"
+})
+```
+
+### Machine Learning
+**Keywords**: ML, machine learning, model, training, AI, neural network, TensorFlow, PyTorch, data science, prediction
+
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-ml:ml-engineer",
+  prompt: "[User's request]",
+  description: "ML implementation"
+})
+```
+
+### Mobile Development
+**Keywords**: mobile, React Native, iOS, Android, Expo, app, smartphone, tablet
+
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-mobile:mobile-architect",
+  prompt: "[User's request]",
+  description: "Mobile architecture"
+})
+```
+
+### Payments
+**Keywords**: payments, Stripe, PayPal, checkout, billing, subscription, invoice, pricing
+
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-payments:payment-integration",
+  prompt: "[User's request]",
+  description: "Payment integration"
+})
+```
+
+### Kafka & Streaming
+**Keywords**: Kafka, streaming, event-driven, messaging, pub/sub, consumer, producer, topic
+
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-kafka:kafka-architect",
+  prompt: "[User's request]",
+  description: "Kafka architecture"
+})
+```
+
+### Release Management
+**Keywords**: release, version, changelog, deploy, publish, npm publish, CI/CD, semver
+
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-release:release-manager",
+  prompt: "[User's request]",
+  description: "Release management"
+})
+```
+
+### Diagrams & Architecture
+**Keywords**: diagram, architecture diagram, C4, Mermaid, flowchart, sequence diagram, ER diagram
+
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-diagrams:diagrams-architect",
+  prompt: "[User's request]",
+  description: "Architecture diagram"
+})
+```
+
+### JIRA Integration
+**Keywords**: JIRA, Jira, epic, story, sprint, board, backlog
+
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-jira:jira-manager",
+  prompt: "[User's request]",
+  description: "JIRA integration"
+})
+```
+
+### Azure DevOps Integration
+**Keywords**: Azure DevOps, ADO, work items, boards, pipelines
+
+**MANDATORY ACTION**:
+```
+Task({
+  subagent_type: "sw-ado:ado-manager",
+  prompt: "[User's request]",
+  description: "ADO integration"
+})
+```
+
+## Multi-Domain Tasks
+
+When a task spans multiple domains, spawn MULTIPLE agents in parallel:
+
+**Example**: "Build a React dashboard that displays GitHub repository statistics using TDD"
+
+Detected domains:
+1. Frontend (React, dashboard) → `sw-frontend:frontend-architect`
+2. GitHub (GitHub, repository) → `sw-github:github-manager`
+3. Testing (TDD) → `sw-testing:qa-engineer`
+
+**MANDATORY ACTION** (parallel spawn):
+```
+Task({
+  subagent_type: "sw-frontend:frontend-architect",
+  prompt: "Design React dashboard architecture for displaying repository statistics",
+  description: "Frontend architecture"
+})
+
+Task({
+  subagent_type: "sw-testing:qa-engineer",
+  prompt: "Create TDD test strategy for React dashboard with GitHub stats",
+  description: "TDD strategy"
+})
+```
+
+## SpecWeave Commands
+
+For explicit `/sw:*` commands, load the appropriate plugin:
+
+| Command | Action |
+|---------|--------|
+| `/sw:*` | `specweave load-plugins core` then execute |
+| `/sw-github:*` | `specweave load-plugins github` then execute |
+| `/sw-jira:*` | `specweave load-plugins jira` then execute |
+| `/sw-ado:*` | `specweave load-plugins ado` then execute |
+
+## Project Detection
+
+Before spawning agents, check if this is a SpecWeave project:
+
 ```bash
-test -d ".specweave" && echo "SpecWeave project detected"
+test -d ".specweave" && echo "SpecWeave project"
 ```
 
-**Windows (PowerShell):**
-```powershell
-if (Test-Path ".specweave") { Write-Host "SpecWeave project detected" }
-```
-
-**If `.specweave/` folder does NOT exist**: Stop here. This is not a SpecWeave project. Tell user to run `specweave init` first if they want to use SpecWeave.
-
-### Step 2: Determine which plugin to load
-
-Analyze the user's request:
-
-1. **If command starts with `/sw-github:`** → Load github plugin
-2. **If command starts with `/sw-jira:`** → Load jira plugin
-3. **If command starts with `/sw-ado:`** → Load ado plugin
-4. **If command starts with `/sw-release:`** → Load release plugin
-5. **If command starts with `/sw-infra:` or `/sw-k8s:`** → Load infra plugin
-6. **If command starts with `/sw-ml:`** → Load ml plugin
-7. **If command starts with `/sw:`** (core) → Load core plugin
-8. **If natural language** → Load all plugins
-
-### Step 3: Load plugins (CROSS-PLATFORM)
-
-Use the CLI which handles all OS differences internally:
-
-**For specific plugin (faster, recommended):**
-```bash
-specweave load-plugins github    # For /sw-github:* commands
-specweave load-plugins jira      # For /sw-jira:* commands
-specweave load-plugins core      # For /sw:* commands
-```
-
-**For all plugins (if unsure):**
-```bash
-specweave load-plugins all
-```
-
-This command:
-- Auto-detects shell (Bash > PowerShell > cmd)
-- Handles Windows long paths (>260 chars)
-- Has retry mechanism with exponential backoff
-- Works on macOS, Linux, and Windows
-
-### Step 4: Execute the original command
-
-After plugins are loaded (hot-reload ~2 seconds), the original command will work.
-
-Output to user:
-```
-Loading SpecWeave [plugin-name] plugin...
-✅ Ready. Executing /sw-*:command...
-```
-
-Then proceed with the user's original request.
-
-## IMPORTANT: Project Detection
-
-**NEVER load plugins if `.specweave/` folder doesn't exist!**
-
-This prevents:
-- Loading SpecWeave in non-SpecWeave projects
-- Confusing users who don't have SpecWeave initialized
-- Wasting context on projects that don't need it
-
-If user asks about SpecWeave but project isn't initialized:
-```
-This project doesn't have SpecWeave initialized.
-Run: specweave init
-Then I can help with spec-driven development.
-```
+If NOT a SpecWeave project, still spawn agents (they work without SpecWeave), but skip SpecWeave-specific commands.
 
 ## Token Savings
 
-- This router: ~800 tokens
+- Router only: ~800 tokens
 - Full plugins: ~60,000 tokens
-- Savings: 98% when not using SpecWeave
+- Agents load context as needed
 
-## Manual Loading
+## REMEMBER
 
-Users can manually load plugins anytime:
-```bash
-specweave load-plugins all       # Load all plugins
-specweave load-plugins core      # Load core only
-specweave load-plugins github    # Load GitHub integration
-specweave load-plugins --force   # Force reload even if loaded
-```
+**I am ACTIVE, not passive.**
 
-## Related
+When I see "Build React dashboard with GitHub stats and TDD":
+- ❌ WRONG: Use Read, Write, Edit, Bash only
+- ✅ CORRECT: Spawn sw-frontend + sw-testing agents
 
-- Full documentation: https://spec-weave.com
-- Commands reference: `/sw:sw`
+**SPAWN THE AGENTS. ALWAYS.**
