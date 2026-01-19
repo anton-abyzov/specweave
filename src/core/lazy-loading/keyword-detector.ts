@@ -74,15 +74,21 @@ export const SPECWEAVE_KEYWORDS = {
   low: ['backlog', 'kanban', 'scrum', 'spec', 'task', 'plan', 'milestone', 'epic', 'feature'],
 
   /**
-   * Negative patterns - definitely NOT SpecWeave intent
+   * Negative patterns - definitely NOT SpecWeave intent (T-016 expanded)
    * If matched, detection returns false regardless of other matches
+   * Prevents false positives from common development terminology
    */
   negative: [
+    // Spec-related (not SpecWeave spec)
     'openapi spec',
     'api spec',
     'test spec',
     'spec file',
     'specification file',
+    'swagger spec',
+    'json schema',
+
+    // Task-related (not SpecWeave tasks)
     'task runner',
     'gulp task',
     'npm task',
@@ -90,12 +96,54 @@ export const SPECWEAVE_KEYWORDS = {
     'rake task',
     'cron task',
     'scheduled task',
+    'async task',
+    'celery task',
+
+    // Plan-related (not SpecWeave plan)
     'build plan',
     'terraform plan',
     'query plan',
     'execution plan',
     'test plan',
     'project plan',
+    'marketing plan',
+    'business plan',
+
+    // Reading/documentation contexts (not action intent)
+    'read the release notes',
+    'check the changelog',
+    'look at the test',
+    'review the pr',
+    'read the docs',
+    'see the documentation',
+
+    // Model-related (not ML model)
+    'data model',
+    'database model',
+    'domain model',
+    'object model',
+    'er model',
+    'uml model',
+
+    // Version-related (not release versioning)
+    'version control',
+    'git version',
+    'node version',
+    'python version',
+    'java version',
+
+    // Deployment status checks (not deploy action)
+    'deployment status',
+    'deploy status',
+    'is deployed',
+    'was deployed',
+
+    // General reading/inquiry (not action)
+    'what is',
+    'how does',
+    'explain',
+    'describe',
+    'tell me about',
   ],
 } as const;
 
@@ -121,39 +169,142 @@ export const PLUGIN_GROUPS: Record<string, string[]> = {
 };
 
 /**
- * Keyword to plugin mapping for intelligent suggestions
+ * Keyword to plugin mapping for intelligent suggestions (T-015 expanded)
  */
 const KEYWORD_PLUGIN_MAP: Record<string, string[]> = {
+  // External tool sync
   jira: ['specweave-jira'],
   github: ['specweave-github'],
+  'pull request': ['specweave-github'],
+  pr: ['specweave-github'],
+  'github issue': ['specweave-github'],
+  'github actions': ['specweave-github'],
   ado: ['specweave-ado'],
   'azure devops': ['specweave-ado'],
+  'work item': ['specweave-ado'],
+
+  // Frontend
   frontend: ['specweave-frontend'],
   react: ['specweave-frontend'],
   vue: ['specweave-frontend'],
+  angular: ['specweave-frontend'],
+  svelte: ['specweave-frontend'],
+  nextjs: ['specweave-frontend'],
+  'next.js': ['specweave-frontend'],
+  nuxt: ['specweave-frontend'],
+  component: ['specweave-frontend'],
+  ui: ['specweave-frontend'],
+  dashboard: ['specweave-frontend'],
+  css: ['specweave-frontend'],
+  tailwind: ['specweave-frontend'],
+  'styled-components': ['specweave-frontend'],
+
+  // Backend
   backend: ['specweave-backend'],
   api: ['specweave-backend'],
+  rest: ['specweave-backend'],
+  graphql: ['specweave-backend'],
   database: ['specweave-backend'],
+  sql: ['specweave-backend'],
+  postgres: ['specweave-backend'],
+  mongodb: ['specweave-backend'],
+  redis: ['specweave-backend'],
+  express: ['specweave-backend'],
+  fastapi: ['specweave-backend'],
+  django: ['specweave-backend'],
+  nestjs: ['specweave-backend'],
+  springboot: ['specweave-backend'],
+  'spring boot': ['specweave-backend'],
+
+  // Infrastructure & DevOps
   k8s: ['specweave-k8s'],
   kubernetes: ['specweave-k8s'],
+  helm: ['specweave-k8s'],
+  kubectl: ['specweave-k8s'],
+  eks: ['specweave-k8s'],
+  aks: ['specweave-k8s'],
+  gke: ['specweave-k8s'],
   docker: ['specweave-infrastructure'],
+  dockerfile: ['specweave-infrastructure'],
   terraform: ['specweave-infrastructure'],
+  pulumi: ['specweave-infrastructure'],
+  ansible: ['specweave-infrastructure'],
+  deploy: ['specweave-infrastructure'],
+  deployment: ['specweave-infrastructure'],
+  'ci/cd': ['specweave-infrastructure'],
+  cicd: ['specweave-infrastructure'],
+  pipeline: ['specweave-infrastructure'],
+  aws: ['specweave-infrastructure'],
+  azure: ['specweave-infrastructure'],
+  gcp: ['specweave-infrastructure'],
+
+  // Messaging & Streaming
   kafka: ['specweave-kafka'],
+  confluent: ['specweave-confluent'],
+  'schema registry': ['specweave-confluent'],
+  ksqldb: ['specweave-confluent'],
+  'event streaming': ['specweave-kafka'],
+
+  // ML/AI
   ml: ['specweave-ml'],
   'machine learning': ['specweave-ml'],
+  ai: ['specweave-ml'],
+  'artificial intelligence': ['specweave-ml'],
+  pytorch: ['specweave-ml'],
+  tensorflow: ['specweave-ml'],
+  model: ['specweave-ml'],
+  training: ['specweave-ml'],
+  mlops: ['specweave-ml'],
+
+  // Mobile
   mobile: ['specweave-mobile'],
   'react native': ['specweave-mobile'],
+  expo: ['specweave-mobile'],
   ios: ['specweave-mobile'],
   android: ['specweave-mobile'],
+  swift: ['specweave-mobile'],
+  kotlin: ['specweave-mobile'],
+  flutter: ['specweave-mobile'],
+
+  // Payments
   payment: ['specweave-payments'],
   stripe: ['specweave-payments'],
+  paypal: ['specweave-payments'],
+  checkout: ['specweave-payments'],
+  billing: ['specweave-payments'],
+  subscription: ['specweave-payments'],
+  invoice: ['specweave-payments'],
+
+  // Release Management
   release: ['specweave-release'],
   changelog: ['specweave-release'],
+  publish: ['specweave-release'],
+  'npm publish': ['specweave-release'],
+  version: ['specweave-release'],
+  semver: ['specweave-release'],
+  'semantic versioning': ['specweave-release'],
+
+  // Testing
   test: ['specweave-testing'],
+  testing: ['specweave-testing'],
+  tdd: ['specweave-testing'],
+  'test-driven': ['specweave-testing'],
   e2e: ['specweave-testing'],
+  'end-to-end': ['specweave-testing'],
   playwright: ['specweave-testing'],
+  cypress: ['specweave-testing'],
+  vitest: ['specweave-testing'],
+  jest: ['specweave-testing'],
+  'unit test': ['specweave-testing'],
+  'integration test': ['specweave-testing'],
+
+  // Diagrams
   diagram: ['specweave-diagrams'],
   mermaid: ['specweave-diagrams'],
+  c4: ['specweave-diagrams'],
+  'architecture diagram': ['specweave-diagrams'],
+  flowchart: ['specweave-diagrams'],
+  sequence: ['specweave-diagrams'],
 };
 
 /**

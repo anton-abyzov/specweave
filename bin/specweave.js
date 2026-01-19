@@ -850,6 +850,7 @@ const loadPluginsCmd = program
   .option('-f, --force', 'Force reinstall even if already loaded')
   .option('-b, --background', 'Run installation in background')
   .option('-v, --verbose', 'Show detailed output')
+  .option('-s, --silent', 'Silent mode - no stdout output (for hooks)')
   .option('--list-groups', 'Show available plugin groups')
   .action(async (group, options) => {
     if (options.listGroups) {
@@ -890,6 +891,34 @@ Examples:
   $ specweave load-plugins infra --force   # Force reload infra plugins
   $ specweave load-plugins ml --background # Load ML plugins in background
 `);
+
+// Detect intent command - Hook helper for automatic plugin loading
+program
+  .command('detect-intent <prompt>')
+  .description('Detect SpecWeave intent from a prompt and optionally install plugins')
+  .option('--install', 'Also install detected plugins after detection')
+  .option('--silent', 'Silent mode - no stdout output (for hooks)')
+  .action(async (prompt, options) => {
+    const { detectIntentCommand } = await import('../dist/src/cli/commands/detect-intent.js');
+    const result = await detectIntentCommand(prompt, options);
+    // Exit code: 0 if plugins detected, 1 if none
+    process.exit(result.detected ? 0 : 1);
+  });
+
+// Detect project command - Analyze project files and suggest plugins
+program
+  .command('detect-project [path]')
+  .description('Detect project type from files and suggest plugins to install')
+  .option('--name <name>', 'Increment name for legacy name-based detection')
+  .option('--description <text>', 'Description for legacy name-based detection')
+  .option('--install', 'Also install detected plugins after detection')
+  .option('--silent', 'Silent mode - no stdout output (for hooks)')
+  .action(async (path, options) => {
+    const { detectProjectCommand } = await import('../dist/src/cli/commands/detect-project.js');
+    const result = await detectProjectCommand(path, options);
+    // Exit code: 0 if types detected, 1 if none
+    process.exit(result.types.length > 0 ? 0 : 1);
+  });
 
 // Unload plugins command - Lazy loading: remove plugin groups from active
 const unloadPluginsCmd = program

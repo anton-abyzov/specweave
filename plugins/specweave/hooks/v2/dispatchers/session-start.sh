@@ -1,6 +1,8 @@
 #!/bin/bash
-# session-start.sh - Launch background processor on session start
+# session-start.sh - Session initialization with auto plugin loading
 # Ultra-fast, non-blocking
+#
+# v1.0.127: AUTO-LOAD PLUGINS based on project type (React, Express, K8s, etc.)
 #
 # Claude Code 2.1.2+ Enhancement:
 # - Reads agent_type from SessionStart input for agent-specific initialization
@@ -93,6 +95,73 @@ if [[ -f "$REBUILD_SCRIPT" ]]; then
     # Rebuild in background to not block session start
     nohup bash "$REBUILD_SCRIPT" --quiet > /dev/null 2>&1 &
     disown 2>/dev/null
+  fi
+fi
+
+# === AUTO-LOAD PLUGINS BASED ON PROJECT TYPE (v1.0.127 - Increment 0172) ===
+# Detect project type (React, Express, K8s, etc.) and pre-install relevant plugins
+# Runs in background to not block session start
+# Controlled by SPECWEAVE_DISABLE_AUTO_LOAD environment variable
+
+if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]]; then
+  if command -v specweave >/dev/null 2>&1; then
+    # Setup lazy-loading log for graceful degradation (T-010)
+    LAZY_LOAD_LOG="$HOME/.specweave/logs/lazy-loading.log"
+    mkdir -p "$(dirname "$LAZY_LOAD_LOG")" 2>/dev/null
+
+    # T-012: Check project detection cache (1 hour TTL)
+    # Cache avoids redundant project detection on every session start
+    AUTO_LOAD_CACHE="$HOME/.specweave/state/auto-load-cache.json"
+    CACHE_TTL_SECONDS=3600  # 1 hour
+    SHOULD_DETECT=true
+
+    if [[ -f "$AUTO_LOAD_CACHE" ]] && command -v jq >/dev/null 2>&1; then
+      CACHED_PATH=$(jq -r '.projectPath // ""' "$AUTO_LOAD_CACHE" 2>/dev/null)
+      CACHED_TIME=$(jq -r '.timestamp // 0' "$AUTO_LOAD_CACHE" 2>/dev/null)
+      CURRENT_TIME=$(date +%s)
+
+      # Skip detection if same project and cache is fresh
+      if [[ "$CACHED_PATH" == "$PROJECT_ROOT" ]]; then
+        CACHE_AGE=$((CURRENT_TIME - CACHED_TIME))
+        if [[ "$CACHE_AGE" -lt "$CACHE_TTL_SECONDS" ]]; then
+          SHOULD_DETECT=false
+          echo "[$(date -Iseconds)] Cache hit: skipping project detection (age: ${CACHE_AGE}s)" >> "$LAZY_LOAD_LOG"
+        fi
+      fi
+    fi
+
+    if [[ "$SHOULD_DETECT" == "true" ]]; then
+      # Run detect-project in background with --install --silent
+      # This will analyze project files (package.json, Dockerfile, etc.) and install relevant plugins
+      # T-011: Background timeout is 15s; hook itself returns immediately (<3000ms)
+      # Graceful degradation: errors logged but don't block Claude session start
+      (
+        mkdir -p "$(dirname "$AUTO_LOAD_CACHE")" 2>/dev/null
+
+        # T-014: Performance logging
+        START_TIME=$(date +%s%3N 2>/dev/null || date +%s)
+        PROJECT_NAME=$(basename "$PROJECT_ROOT")
+
+        if command -v timeout >/dev/null 2>&1; then
+          timeout 15 specweave detect-project "$PROJECT_ROOT" --install --silent 2>>"$LAZY_LOAD_LOG"
+          EXIT_CODE=$?
+        else
+          specweave detect-project "$PROJECT_ROOT" --install --silent 2>>"$LAZY_LOAD_LOG"
+          EXIT_CODE=$?
+        fi
+
+        END_TIME=$(date +%s%3N 2>/dev/null || date +%s)
+        DURATION=$((END_TIME - START_TIME))
+
+        if [[ "$EXIT_CODE" -eq 0 ]]; then
+          echo "{\"projectPath\":\"$PROJECT_ROOT\",\"timestamp\":$(date +%s)}" > "$AUTO_LOAD_CACHE"
+          echo "[$(date -Iseconds)] detect-project success | duration=${DURATION}ms | project=$PROJECT_NAME" >> "$LAZY_LOAD_LOG"
+        else
+          echo "[$(date -Iseconds)] detect-project failed (code=$EXIT_CODE) | duration=${DURATION}ms | path=$PROJECT_ROOT" >> "$LAZY_LOAD_LOG"
+        fi
+      ) &
+      disown 2>/dev/null
+    fi
   fi
 fi
 

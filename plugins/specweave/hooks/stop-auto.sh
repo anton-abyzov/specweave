@@ -105,6 +105,45 @@ mkdir -p "$STATE_DIR" 2>/dev/null
 echo "$NOW" > "$DEDUP_FILE" 2>/dev/null
 
 # ============================================================================
+# BLOCK RETRY COUNTER - Track how many times we block on same increments
+# ============================================================================
+
+RETRY_FILE="$STATE_DIR/.stop-auto-retry"
+RETRY_COUNT=0
+MAX_RETRIES_BEFORE_ESCALATE=5
+
+# Read current retry state
+if [ -f "$RETRY_FILE" ]; then
+    RETRY_COUNT=$(jq -r '.count // 0' "$RETRY_FILE" 2>/dev/null || echo "0")
+    RETRY_INCS=$(jq -r '.increments // ""' "$RETRY_FILE" 2>/dev/null || echo "")
+fi
+
+# Function to update retry count (called when blocking)
+update_retry_counter() {
+    local incs="$1"
+    local new_count=$((RETRY_COUNT + 1))
+
+    # Reset if different increments
+    if [ "$RETRY_INCS" != "$incs" ]; then
+        new_count=1
+    fi
+
+    jq -n \
+        --argjson count "$new_count" \
+        --arg increments "$incs" \
+        --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+        '{count: $count, increments: $increments, lastUpdate: $timestamp}' \
+        > "$RETRY_FILE" 2>/dev/null
+
+    echo "$new_count"
+}
+
+# Function to clear retry counter (called when work completes)
+clear_retry_counter() {
+    rm -f "$RETRY_FILE" 2>/dev/null
+}
+
+# ============================================================================
 # CHECK FOR PARALLEL SESSION
 # ============================================================================
 
@@ -380,8 +419,9 @@ REMAINING_COUNT=$(find "$INCREMENTS_DIR" -maxdepth 2 -name "metadata.json" \
     -exec grep -l '"status"[[:space:]]*:[[:space:]]*"active\|"status"[[:space:]]*:[[:space:]]*"in-progress' {} \; 2>/dev/null | wc -l | tr -d ' ')
 
 if [ "$REMAINING_COUNT" -eq 0 ]; then
-    # All work complete - approve exit
+    # All work complete - approve exit and clear retry counter
     rm -f "$DEDUP_FILE" 2>/dev/null
+    clear_retry_counter
 
     if [ "$CLOSED_COUNT" -gt 0 ]; then
         log "APPROVE: Auto-closed $CLOSED_COUNT increment(s), all work complete"
@@ -396,8 +436,24 @@ REMAINING_INCS=$(find "$INCREMENTS_DIR" -maxdepth 2 -name "metadata.json" \
     -exec grep -l '"status"[[:space:]]*:[[:space:]]*"active\|"status"[[:space:]]*:[[:space:]]*"in-progress' {} \; 2>/dev/null \
     | sed 's|.*/\([^/]*\)/metadata.json|\1|' | tr '\n' ', ' | sed 's/,$//')
 
-# Build detailed message
-MSG="🔄 $REMAINING_COUNT increment(s) need work: $REMAINING_INCS"
+# Update retry counter
+CURRENT_RETRY=$(update_retry_counter "$REMAINING_INCS")
+log "Retry count: $CURRENT_RETRY for increments: $REMAINING_INCS"
+
+# Build detailed message with retry indicator
+if [ "$CURRENT_RETRY" -ge "$MAX_RETRIES_BEFORE_ESCALATE" ]; then
+    MSG="🚨 STUCK SESSION DETECTED (attempt $CURRENT_RETRY/$MAX_RETRIES_BEFORE_ESCALATE)
+
+⚠️  This session has failed to complete $CURRENT_RETRY times!
+    Something may be blocking completion. Check:
+    • Are there failing tests that can't be fixed?
+    • Is there a blocking dependency?
+    • Does the increment need to be paused/abandoned?
+
+🔄 $REMAINING_COUNT increment(s) need work: $REMAINING_INCS"
+else
+    MSG="🔄 $REMAINING_COUNT increment(s) need work: $REMAINING_INCS (attempt $CURRENT_RETRY)"
+fi
 
 # Add validation errors if any
 if [ -n "$VALIDATION_ERRORS" ]; then
@@ -427,11 +483,44 @@ if [ "$CLOSED_COUNT" -gt 0 ]; then
 $MSG"
 fi
 
+# Build explicit mandatory instructions with first increment ID
+FIRST_INC=$(echo "$REMAINING_INCS" | cut -d',' -f1 | tr -d ' ')
+
 MSG="$MSG
 
-→ Continue with /sw:do"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  MANDATORY COMPLETION STEPS (DO NOT SKIP ANY):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-log "BLOCK: $REMAINING_COUNT increment(s) remaining"
+1️⃣  COMPLETE ALL TASKS
+    → Run: /sw:do
+    → Mark all tasks [x] completed in tasks.md
+    → Mark all ACs [x] completed in spec.md
+
+2️⃣  RUN TESTS (MANDATORY)
+    → Run: npm test (or pytest/go test as appropriate)
+    → ALL tests MUST pass before proceeding
+    → If tests fail, FIX them and re-run
+
+3️⃣  VALIDATE QUALITY GATES
+    → Run: /sw:validate $FIRST_INC
+    → Review any warnings or issues
+    → Fix any blocking problems
+
+4️⃣  AI QUALITY VERIFICATION (MANDATORY)
+    → Run: /sw:judge-llm $FIRST_INC
+    → Ensure work meets acceptance criteria
+    → Must pass before closing increment
+
+5️⃣  CLOSE INCREMENT (FINAL STEP)
+    → Run: /sw:done $FIRST_INC
+    → This validates all gates and closes properly
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚫 DO NOT exit without completing ALL steps above!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+log "BLOCK: $REMAINING_COUNT increment(s) remaining - explicit instructions provided"
 
 jq -n \
     --arg decision "block" \

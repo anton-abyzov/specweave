@@ -203,10 +203,15 @@ async function hierarchicalDistribution(incrementId) {
     }
 
     // Create logger adapter for LivingDocsSync
+    // CRITICAL FIX (v1.0.127): Added debug and info methods
+    // Root cause: ProjectResolutionService calls logger.debug() which was missing
+    // This caused silent sync failures for all increments since v1.0.100+
     const logger = {
       log: (msg) => console.log(`   ${msg}`),
       error: (msg, err) => console.error(`   ${msg}`, err || ''),
-      warn: (msg) => console.warn(`   ${msg}`)
+      warn: (msg) => console.warn(`   ${msg}`),
+      debug: () => {},  // No-op for hooks (reduce noise)
+      info: (msg) => console.log(`   ${msg}`)
     };
 
     const sync = new LivingDocsSync(projectRoot, { logger });

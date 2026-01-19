@@ -341,49 +341,58 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 <!-- /SECTION -->
 
 <!-- SECTION:lazyloading -->
-## Lazy Plugin Loading
+## Lazy Plugin Loading (Auto-Loading)
 
-**By default, SpecWeave installs 2 essential plugins** (~3K tokens total):
-- **sw** (core): `/sw:increment`, `/sw:do`, `/sw:done` commands
-- **sw-router**: ACTIVE router that spawns specialized agents
+**SpecWeave automatically loads plugins** when you need them - no manual action required.
 
-### How the Router Works
+### Three-Layer Auto-Loading
 
-The router detects development keywords and **spawns specialized agents via Task tool** (forks context, doesn't load more plugins):
+| Layer | When | What Happens |
+|-------|------|--------------|
+| **Session Start** | Claude starts | Detects project type (React, K8s, etc.) → installs matching plugins |
+| **Prompt Detection** | You type | Detects keywords (stripe, terraform, etc.) → installs matching plugins |
+| **Router Spawn** | Implementation | Router spawns specialized agents via Task tool (isolated context) |
 
-| Keywords | Agent Spawned |
-|----------|---------------|
-| React, Vue, frontend, dashboard, UI | `sw-frontend:frontend-architect` |
-| GitHub, PR, issues, sync | `sw-github:github-manager` |
-| TDD, test, Vitest, Playwright | `sw-testing:qa-engineer` |
-| K8s, Docker, Terraform, deploy | `sw-infra:devops` |
-| ML, AI, training, model | `sw-ml:ml-engineer` |
-| mobile, React Native, Expo | `sw-mobile:mobile-architect` |
-| Stripe, payments, checkout | `sw-payments:payment-integration` |
+**Example flow**:
+1. You open a React project → `sw-frontend` auto-installed
+2. You type "add stripe checkout" → `sw-payments` auto-installed
+3. You run `/sw:do` → Router spawns `frontend-architect` agent
 
-**Example**: "Build React dashboard" → Router spawns `sw-frontend:frontend-architect` agent
+### Keyword → Plugin Mapping
 
-### Manual Plugin Control
+| Keywords | Plugin Installed |
+|----------|------------------|
+| react, vue, angular, nextjs, UI, component | `sw-frontend` |
+| stripe, payment, checkout, billing | `sw-payments` |
+| k8s, kubernetes, docker, terraform | `sw-k8s`, `sw-infrastructure` |
+| github, PR, issue, actions | `sw-github` |
+| jira, epic, story | `sw-jira` |
+| release, changelog, npm publish | `sw-release` |
+| test, tdd, playwright, vitest | `sw-testing` |
+| ml, pytorch, tensorflow, training | `sw-ml` |
+
+### Manual Fallback (Rarely Needed)
+
+If auto-loading misses something, install manually:
+```bash
+specweave load-plugins github    # Load specific plugin
+specweave load-plugins all       # Load all 24 plugins (~60K tokens)
+specweave plugin-status          # Check what's loaded
+```
+
+### Disable Auto-Loading
 
 ```bash
-specweave load-plugins github    # Load GitHub integration plugin
-specweave load-plugins all       # Load all 24 plugins (~60K tokens)
-specweave plugin-status          # Check loaded vs available
+export SPECWEAVE_DISABLE_AUTO_LOAD=1  # Disable auto-loading
 ```
 
 ### Token Savings
 
 | Mode | Context Usage |
 |------|---------------|
-| Default (core + router) | ~3K tokens |
+| Default (core + auto-load) | ~3-5K tokens |
 | All 24 plugins | ~60K tokens |
 | Agent spawn (forked) | 0 tokens in main context |
-
-### Full Install (Skip Lazy Loading)
-
-```bash
-specweave init --full .          # Install all plugins immediately
-```
 <!-- /SECTION -->
 
 <!-- SECTION:principles -->
