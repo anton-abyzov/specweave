@@ -4,6 +4,14 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.129] - 2026-01-19
+
+### 🐛 Bug Fixes
+
+- **Init command**: Allow user-level `~/.specweave` for global settings without blocking project initialization
+
+---
+
 ## [1.0.126] - 2026-01-19
 
 ### 🐛 Bug Fixes
