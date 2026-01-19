@@ -2,6 +2,7 @@
  * Cache Invalidator
  *
  * Smart cache invalidation strategies with skill memory preservation.
+ * Backups are stored in OS temp directory (transient) - NOT in home directory.
  */
 
 import fs from 'fs';
@@ -23,10 +24,17 @@ interface BackupMetadata {
 }
 
 /**
+ * Max age for backups before cleanup (24 hours)
+ */
+const BACKUP_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+/**
  * Handles cache invalidation with backup/restore capabilities
  */
 export class CacheInvalidator {
-  private static readonly BACKUP_DIR = path.join(os.homedir(), '.specweave', 'backups');
+  // Use OS temp directory for transient backups - NOT home directory
+  // This prevents: 1) home directory pollution, 2) iCloud sync issues, 3) stale backup accumulation
+  private static readonly BACKUP_DIR = path.join(os.tmpdir(), 'specweave-cache-backups');
 
   /**
    * Invalidate plugin cache with specified strategy
@@ -125,6 +133,9 @@ export class CacheInvalidator {
       logger.info(`No skill memories to backup for ${pluginName}@${version}`);
       return '';
     }
+
+    // Clean up old backups before creating new ones
+    await this.cleanupOldBackups();
 
     // Create backup directory with timestamp (YYYY-MM-DD-HHMMSS format)
     const now = new Date();
@@ -315,5 +326,40 @@ export class CacheInvalidator {
     }
 
     return JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+  }
+
+  /**
+   * Clean up old backups that exceed TTL
+   * Called automatically before creating new backups
+   */
+  async cleanupOldBackups(): Promise<void> {
+    if (!fs.existsSync(CacheInvalidator.BACKUP_DIR)) {
+      return;
+    }
+
+    try {
+      const now = Date.now();
+      const entries = fs.readdirSync(CacheInvalidator.BACKUP_DIR);
+
+      for (const entry of entries) {
+        const entryPath = path.join(CacheInvalidator.BACKUP_DIR, entry);
+        const stat = fs.statSync(entryPath);
+
+        if (stat.isDirectory() && now - stat.mtimeMs > BACKUP_MAX_AGE_MS) {
+          fs.rmSync(entryPath, { recursive: true, force: true });
+          logger.debug(`Cleaned up old backup: ${entry}`);
+        }
+      }
+    } catch (error) {
+      // Non-fatal - just log and continue
+      logger.debug(`Backup cleanup warning: ${error}`);
+    }
+  }
+
+  /**
+   * Get the backup directory path (for testing/debugging)
+   */
+  static getBackupDir(): string {
+    return CacheInvalidator.BACKUP_DIR;
   }
 }

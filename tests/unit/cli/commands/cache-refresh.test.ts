@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { cacheRefresh } from '../../../../src/cli/commands/cache-refresh.js';
+import { CacheInvalidator } from '../../../../src/core/plugin-cache/cache-invalidator.js';
 
 describe('cache-refresh command', () => {
   let mockCacheDir: string;
@@ -16,7 +17,8 @@ describe('cache-refresh command', () => {
     fs.mkdirSync(mockPluginDir, { recursive: true });
     fs.mkdirSync(path.join(mockPluginDir, 'skills'), { recursive: true });
 
-    mockBackupDir = path.join(os.homedir(), '.specweave', 'backups');
+    // Use the actual backup directory from CacheInvalidator (now in temp dir)
+    mockBackupDir = CacheInvalidator.getBackupDir();
     if (fs.existsSync(mockBackupDir)) {
       fs.rmSync(mockBackupDir, { recursive: true, force: true });
     }
