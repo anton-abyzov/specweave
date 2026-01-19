@@ -128,6 +128,12 @@ export function getShell(): { shell: string; args: string[] } {
 
 /**
  * Execute a command with platform-appropriate shell
+ *
+ * SECURITY WARNING: This function executes shell commands. Only use with:
+ * - Hardcoded command strings (safe)
+ * - Validated/sanitized input (must validate before passing)
+ *
+ * For user input, prefer execFileNoThrow() with array-based arguments.
  */
 export interface SpawnResult {
   process: ChildProcess;
@@ -140,17 +146,17 @@ export function spawnCommand(
 ): SpawnResult {
   const shellInfo = getShell();
 
+  // Security: shell commands - ensure caller validates input
   const spawnOptions: SpawnOptions = {
     ...options,
-    shell: isWindows() ? true : undefined,
     stdio: options.stdio || 'pipe',
   };
 
   let proc: ChildProcess;
 
   if (isWindows()) {
-    // On Windows, use shell directly
-    proc = nodeSpawn(command, [], { ...spawnOptions, shell: true });
+    // On Windows, pass through PowerShell with proper escaping
+    proc = nodeSpawn(shellInfo.shell, [...shellInfo.args, command], spawnOptions);
   } else {
     // On Unix, use shell with -c
     proc = nodeSpawn(shellInfo.shell, [...shellInfo.args, command], spawnOptions);

@@ -2,7 +2,7 @@
 name: diagrams-architect
 description: Expert in creating Mermaid diagrams following C4 Model conventions. Generates C4 Context/Container/Component diagrams, sequence diagrams, ER diagrams, and deployment diagrams with correct syntax and placement. Activates for Mermaid diagram, create diagram, draw diagram, flowchart, sequence diagram, class diagram, ER diagram, entity relationship, state diagram, C4 diagram, architecture diagram, system diagram, deployment diagram, database schema diagram, API flow, visualize architecture, explain visually, draw flow, show relationship, diagram the system, document architecture, technical diagram, UML, PlantUML alternative.
 tools: Read, Write, Edit
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: auto
 cost_profile: hybrid
 fallback_behavior: auto

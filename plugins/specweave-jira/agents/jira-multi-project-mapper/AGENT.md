@@ -2,7 +2,7 @@
 name: jira-multi-project-mapper
 description: Expert in mapping SpecWeave specs to multiple JIRA projects with intelligent project detection and cross-project coordination. Handles project-per-team, component-based, and epic-based strategies. Manages bidirectional sync across multiple projects.
 tools: Read, Write, Edit, Bash, Glob
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 ## How to Invoke This Agent

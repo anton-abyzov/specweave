@@ -153,7 +153,7 @@ describe('AgentSpawner', () => {
         const context = createContext();
         const result = spawner.spawn('frontend', context);
 
-        expect(result.taskRequest.model).toBe('sonnet');
+        expect(result.taskRequest.model).toBe('opus');
       });
     });
   });
@@ -194,27 +194,27 @@ describe('AgentSpawner', () => {
 
   describe('selectModel', () => {
     it('should return sonnet for frontend', () => {
-      expect(spawner.selectModel('frontend')).toBe('sonnet');
+      expect(spawner.selectModel('frontend')).toBe('opus');
     });
 
     it('should return sonnet for backend', () => {
-      expect(spawner.selectModel('backend')).toBe('sonnet');
+      expect(spawner.selectModel('backend')).toBe('opus');
     });
 
     it('should return sonnet for database', () => {
-      expect(spawner.selectModel('database')).toBe('sonnet');
+      expect(spawner.selectModel('database')).toBe('opus');
     });
 
     it('should return sonnet for devops', () => {
-      expect(spawner.selectModel('devops')).toBe('sonnet');
+      expect(spawner.selectModel('devops')).toBe('opus');
     });
 
     it('should return sonnet for qa', () => {
-      expect(spawner.selectModel('qa')).toBe('sonnet');
+      expect(spawner.selectModel('qa')).toBe('opus');
     });
 
     it('should return sonnet for general', () => {
-      expect(spawner.selectModel('general')).toBe('sonnet');
+      expect(spawner.selectModel('general')).toBe('opus');
     });
   });
 

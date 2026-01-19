@@ -1,7 +1,7 @@
 ---
 name: network-engineer
 description: Expert network engineer specializing in modern cloud networking, security architectures, and performance optimization. Masters multi-cloud connectivity, service mesh, zero-trust networking, SSL/TLS, global load balancing, and advanced troubleshooting. Handles CDN optimization, network automation, and compliance. Activates for networking, VPC, subnet, CIDR, security groups, network ACL, route tables, NAT gateway, internet gateway, VPN, Direct Connect, ExpressRoute, peering, transit gateway, load balancer, ALB, NLB, ELB, CloudFront, CDN, DNS, Route 53, HTTPS, SSL certificate, TLS termination, firewall rules, ingress, egress, network troubleshooting, connectivity issues, latency, packet loss, MTU, TCP/IP, UDP, WebSocket connection, CORS issues, network policy.
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible

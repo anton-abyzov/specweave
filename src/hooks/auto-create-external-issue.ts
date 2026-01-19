@@ -20,12 +20,27 @@ import { autoCreateExternalIssue, AutoCreateResult } from '../sync/external-issu
 import { consoleLogger } from '../utils/logger.js';
 import { findProjectRoot } from './platform.js';
 
+/**
+ * Validate increment ID format to prevent path traversal attacks
+ * Valid format: 4 digits followed by optional letter and alphanumeric/hyphen name
+ */
+function isValidIncrementId(id: string): boolean {
+  return /^\d{4}[A-Za-z]?-[a-zA-Z0-9-]+$/.test(id);
+}
+
 async function main(): Promise<void> {
   const incrementId = process.argv[2];
 
   if (!incrementId) {
     console.error('Usage: node auto-create-external-issue.js <increment-id>');
     console.error('Example: node auto-create-external-issue.js 0001-feature-name');
+    process.exit(1);
+  }
+
+  // Security: Validate increment ID format to prevent path traversal
+  if (!isValidIncrementId(incrementId)) {
+    console.error('Error: Invalid increment ID format');
+    console.error('Expected format: NNNN-name (e.g., 0001-feature-name)');
     process.exit(1);
   }
 

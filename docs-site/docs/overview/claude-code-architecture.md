@@ -235,7 +235,7 @@ Agents (subagents) are **separate Claude instances** spawned to handle complex t
 ```markdown
 ---
 description: Expert code review specialist for quality, security, and maintainability
-model: sonnet
+model: opus
 tools: Read, Grep, Glob
 ---
 

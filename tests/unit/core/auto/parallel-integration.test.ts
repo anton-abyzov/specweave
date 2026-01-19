@@ -454,7 +454,7 @@ describe('Parallel Module Integration', () => {
       expect(requests[0].run_in_background).toBe(true);
       expect(requests[0].prompt).toContain('Build login form');
       expect(requests[0].prompt).toContain('Add validation');
-      expect(requests[0].model).toBe('sonnet');
+      expect(requests[0].model).toBe('opus');
     });
   });
 });

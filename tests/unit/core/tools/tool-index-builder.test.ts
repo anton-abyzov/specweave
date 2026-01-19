@@ -71,7 +71,7 @@ description: A test skill for unit testing. Activates for: testing, unit tests.
         `---
 name: test-agent
 description: A test agent for architecture. Activates for: design, architecture.
-model: sonnet
+model: opus
 ---
 
 # Test Agent

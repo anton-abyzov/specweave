@@ -223,9 +223,9 @@ model_selection:
   mode: auto  # auto|balanced|manual
 
   # Defaults
-  default_planning_model: sonnet
+  default_planning_model: opus
   default_execution_model: haiku
-  default_review_model: sonnet
+  default_review_model: opus
 
   # Confidence thresholds
   high_confidence: 0.7

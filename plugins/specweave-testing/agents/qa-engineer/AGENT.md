@@ -8,7 +8,7 @@ tools:
   - Bash
   - Glob
   - Grep
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible

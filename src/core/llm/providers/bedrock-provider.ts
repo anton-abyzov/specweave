@@ -15,6 +15,7 @@ import type {
   AnalyzeResult,
   StructuredOptions,
 } from '../types.js';
+import { resolveModelAlias } from '../types.js';
 import { Logger, consoleLogger } from '../../../utils/logger.js';
 import { extractJson, extractRequiredFieldsFromSchema } from '../../../utils/llm-json-extractor.js';
 
@@ -38,7 +39,8 @@ export class BedrockProvider implements LLMProvider {
 
   constructor(config: BedrockProviderConfig) {
     this.region = config.region || process.env.AWS_REGION || 'us-east-1';
-    this.defaultModel = config.model || 'anthropic.claude-opus-4-5-20251101-v1:0';
+    // Support both aliases (opus, sonnet, haiku) and full model IDs
+    this.defaultModel = resolveModelAlias(config.model || 'opus', 'bedrock');
     this.maxTokens = config.maxTokens || 4096;
     this.temperature = config.temperature ?? 0.3;
     this.logger = config.logger || consoleLogger;
@@ -55,7 +57,8 @@ export class BedrockProvider implements LLMProvider {
 
   async analyze(prompt: string, options: AnalyzeOptions = {}): Promise<AnalyzeResult> {
     const startTime = Date.now();
-    const model = options.model || this.defaultModel;
+    // Resolve model alias (opus → anthropic.claude-opus-4-5-20251101-v1:0)
+    const model = resolveModelAlias(options.model || this.defaultModel, 'bedrock');
 
     const client = await this.getClient();
     // @ts-ignore - @aws-sdk/client-bedrock-runtime is an optional runtime dependency (may not be installed)

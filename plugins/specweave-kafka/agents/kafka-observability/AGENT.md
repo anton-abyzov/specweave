@@ -1,7 +1,7 @@
 ---
 name: kafka-observability
 description: Kafka observability and monitoring specialist. Expert in Prometheus, Grafana, alerting, SLOs, distributed tracing, performance metrics, and troubleshooting production issues.
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible

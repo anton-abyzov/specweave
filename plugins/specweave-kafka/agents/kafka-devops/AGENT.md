@@ -1,7 +1,7 @@
 ---
 name: kafka-devops
 description: Kafka DevOps and SRE specialist. Expert in infrastructure deployment, CI/CD, monitoring, incident response, capacity planning, and operational best practices for Apache Kafka.
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible

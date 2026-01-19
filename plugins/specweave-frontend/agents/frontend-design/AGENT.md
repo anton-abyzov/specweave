@@ -7,8 +7,8 @@ tools:
   - Edit
   - Glob
   - Grep
-model: sonnet
-model_preference: sonnet
+model: opus
+model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
 max_response_tokens: 4000
