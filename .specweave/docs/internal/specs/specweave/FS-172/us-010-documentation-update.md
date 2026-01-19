@@ -1,11 +1,15 @@
 ---
 id: US-010
 feature: FS-172
-title: "Documentation Update"
+title: Documentation Update
 status: not_started
 priority: critical
 created: 2026-01-19
 project: specweave
+external:
+  github:
+    issue: 1032
+    url: https://github.com/anton-abyzov/specweave/issues/1032
 ---
 
 # US-010: Documentation Update
