@@ -562,7 +562,7 @@ In `.specweave/config.json`:
 The session ends when ANY of these occur:
 
 1. **All tasks complete + tests passed** - tasks.md has all `[x]` AND tests were executed
-2. **Completion promise** - Output contains `<auto-complete>DONE</auto-complete>`
+2. **Completion promise** - Output contains `<!-- auto-complete:DONE -->`
 3. **Max iterations** - Reached configured limit (default: 500)
 4. **Max hours** - Time limit exceeded (default: 120 hours / 5 days)
 5. **User cancellation** - `/sw:cancel-auto`
@@ -939,7 +939,7 @@ All stop reasons logged to `.specweave/logs/auto-stop-reasons.log`:
 | Category | Success | Example |
 |----------|---------|---------|
 | `all_tasks_complete` | ✅ | All tests pass, all tasks done |
-| `completion_promise` | ✅ | `<auto-complete>DONE</auto-complete>` detected |
+| `completion_promise` | ✅ | `<!-- auto-complete:DONE -->` detected |
 | `max_iterations_reached` | ❌ | Safety limit hit (not ideal) |
 | `max_hours_exceeded` | ❌ | Time limit hit |
 | `test_failures_exhausted` | ❌ | 3 retry attempts failed |
@@ -1606,9 +1606,8 @@ E2E Tests:
 
 2. **On completion**:
    ```
-   <auto-complete>DONE</auto-complete>
-
    ✅ Auto Session Complete!
+   <!-- auto-complete:DONE -->
 
    Session: auto-2025-12-29-abc123
    Duration: 2h 34m
