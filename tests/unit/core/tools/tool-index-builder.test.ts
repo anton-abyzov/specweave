@@ -91,7 +91,7 @@ model: opus
       const tools = builder.getIndexedTools();
       expect(tools[0].type).toBe('agent');
       expect(tools[0].capabilities).toHaveLength(2);
-      expect(tools[0].modelPreference).toBe('sonnet');
+      expect(tools[0].modelPreference).toBe('opus');
     });
 
     it('should index commands from plugins', async () => {
