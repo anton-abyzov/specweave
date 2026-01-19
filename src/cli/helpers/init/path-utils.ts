@@ -93,6 +93,9 @@ export function findSourceDir(relativePath: string, dirname: string): string {
  * SpecWeave ONLY supports root-level .specweave/ folders
  * Nested .specweave/ folders are NOT supported
  *
+ * EXCEPTION: User-level ~/.specweave is VALID and doesn't block initialization.
+ * This is used for global SpecWeave settings (memory, logs, state, skills-cache).
+ *
  * @param targetDir - Directory where user wants to initialize
  * @returns Array of paths to parent .specweave/ folders with depth info, or null if none found
  */
@@ -111,8 +114,12 @@ export function detectNestedSpecweave(targetDir: string): ParentSpecweaveFolder[
 
     // Check if .specweave/ exists at this level
     if (fs.existsSync(specweavePath)) {
-      const isHomeDir = path.resolve(currentDir) === path.resolve(homeDir);
-      foundFolders.push({ path: currentDir, depth, isHomeDir });
+      const resolvedDir = path.resolve(currentDir);
+      const isHomeDir = resolvedDir === path.resolve(homeDir);
+      // ~/.specweave is a VALID global settings location and should NOT block init
+      // It's used for: memory files, logs, state, skills-cache
+      const isUserLevel = isHomeDir;
+      foundFolders.push({ path: currentDir, depth, isHomeDir, isUserLevel });
     }
 
     // Move up one level

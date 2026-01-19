@@ -136,7 +136,7 @@ export const CACHE_PATHS = {
   /** State file location */
   state: path.join(os.homedir(), '.specweave', 'state', 'plugins-loaded.json'),
   /** Marketplace plugins source */
-  marketplace: path.join(os.homedir(), '.claude', 'plugins', 'specweave'),
+  marketplace: path.join(os.homedir(), '.claude', 'plugins', 'marketplaces', 'specweave', 'plugins'),
 } as const;
 
 /**
@@ -167,7 +167,7 @@ export class PluginCacheManager {
    * Plugins are loaded directly from marketplace to skills directory,
    * eliminating the need for an intermediate cache at ~/.specweave/skills-cache/.
    *
-   * The marketplace at ~/.claude/plugins/specweave/ IS the cache.
+   * The marketplace at ~/.claude/plugins/marketplaces/specweave/plugins/ IS the cache.
    * When you run `specweave refresh-marketplace`, it updates from GitHub.
    * When you run `specweave load-plugins`, it copies directly from marketplace.
    *
@@ -221,7 +221,7 @@ export class PluginCacheManager {
   /**
    * Installs plugins directly from marketplace to active directory
    *
-   * SIMPLIFIED (v1.0.122+): Copies directly from marketplace (~/.claude/plugins/specweave/)
+   * SIMPLIFIED (v1.0.122+): Copies directly from marketplace (~/.claude/plugins/marketplaces/specweave/plugins/)
    * to skills directory (~/.claude/skills/) - no intermediate cache needed!
    *
    * This ensures plugins always come from the latest marketplace version,

@@ -5,7 +5,7 @@
  * Plugins are loaded directly from marketplace to skills directory for hot-reload.
  *
  * SIMPLIFIED (v1.0.122+): No intermediate cache needed!
- * Loads from ~/.claude/plugins/specweave/ → ~/.claude/skills/
+ * Loads from ~/.claude/plugins/marketplaces/specweave/plugins/ → ~/.claude/skills/
  *
  * Usage: specweave load-plugins [group]
  * Groups: core, github, jira, ado, frontend, backend, infra, ml, all
