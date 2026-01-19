@@ -62,6 +62,11 @@ export interface ParentSpecweaveFolder {
   path: string;
   depth: number;
   isHomeDir?: boolean;
+  /**
+   * True if this is a user-level .specweave folder (e.g., ~/.specweave or ~/.claude/.specweave)
+   * User-level folders are VALID and should NOT block project initialization
+   */
+  isUserLevel?: boolean;
 }
 
 /**

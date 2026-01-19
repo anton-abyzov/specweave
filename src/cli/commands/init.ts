@@ -411,17 +411,22 @@ export async function initCommand(
   }
 
   // Check for nested .specweave/
+  // EXCEPTION: User-level folders are VALID (e.g., ~/.specweave for global memory/state)
   const parentSpecweaveFolders = detectNestedSpecweave(targetDir);
   if (parentSpecweaveFolders && parentSpecweaveFolders.length > 0) {
-    console.log(chalk.red.bold('\n' + locale.t('cli', 'init.errors.nestedNotSupported') + '\n'));
-    const homeDirFolder = parentSpecweaveFolders.find(f => f.isHomeDir);
-    if (homeDirFolder) {
-      console.log(chalk.red.bold('   ⚠️  CRITICAL: Found .specweave/ in HOME DIRECTORY!'));
-      console.log(chalk.yellow('   ' + homeDirFolder.path));
-      console.log(chalk.cyan.bold('\n   💡 Quick fix:'));
-      console.log(chalk.white('   rm -rf "' + homeDirFolder.path + '/.specweave"\n'));
+    // Filter out user-level folders - these are VALID global settings locations
+    const problematicFolders = parentSpecweaveFolders.filter(f => !f.isUserLevel);
+
+    if (problematicFolders.length > 0) {
+      console.log(chalk.red.bold('\n' + locale.t('cli', 'init.errors.nestedNotSupported') + '\n'));
+      for (const folder of problematicFolders) {
+        console.log(chalk.yellow('   Found .specweave/ at: ' + folder.path));
+      }
+      console.log(chalk.cyan.bold('\n   💡 SpecWeave doesn\'t support nested projects.'));
+      console.log(chalk.white('   Initialize in a different directory or remove the parent .specweave/ folder.\n'));
+      process.exit(1);
     }
-    process.exit(1);
+    // User-level folders found but no problematic ones - allow init to proceed
   }
 
   const spinner = ora('Creating SpecWeave project...').start();
