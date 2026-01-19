@@ -63,8 +63,13 @@
   },
   "deferredToFuture": {
     "phase6_mcp_alternative": [
-      "T-028", "T-029", "T-030", "T-031", "T-032"
+      "T-028",
+      "T-029",
+      "T-030",
+      "T-031",
+      "T-032"
     ],
     "reason": "MCP Alternative is exploratory stretch goal, not MVP"
-  }
+  },
+  "updated": "2026-01-19T07:42:53.905Z"
 }

@@ -32,6 +32,8 @@ export interface LoadPluginsOptions {
   background?: boolean;
   /** Show verbose output */
   verbose?: boolean;
+  /** Silent mode - no stdout output (for hooks) - T-021 */
+  silent?: boolean;
 }
 
 /** Available plugin groups */
@@ -66,14 +68,22 @@ export async function loadPluginsCommand(
   group?: string,
   options: LoadPluginsOptions = {}
 ): Promise<void> {
-  console.log(chalk.bold.blue('\n📦 SpecWeave Load Plugins'));
-  console.log(chalk.gray('=========================\n'));
+  // T-021: Silent mode helper
+  const log = (message: string) => {
+    if (!options.silent) console.log(message);
+  };
+  const logErr = (message: string) => {
+    if (!options.silent) console.error(message);
+  };
+
+  log(chalk.bold.blue('\n📦 SpecWeave Load Plugins'));
+  log(chalk.gray('=========================\n'));
 
   // Validate group
   if (group && group !== 'all' && !PLUGIN_GROUPS[group.toLowerCase()]) {
-    console.error(chalk.red(`Unknown plugin group: ${group}`));
-    console.log(chalk.gray('\nAvailable groups:'));
-    showAvailableGroups();
+    logErr(chalk.red(`Unknown plugin group: ${group}`));
+    log(chalk.gray('\nAvailable groups:'));
+    if (!options.silent) showAvailableGroups();
     process.exit(1);
   }
 
@@ -83,8 +93,8 @@ export async function loadPluginsCommand(
   // Check if marketplace has plugins
   const availablePlugins = cacheManager.getCachedPlugins(); // Now returns marketplace plugins directly
   if (availablePlugins.length === 0) {
-    console.log(chalk.yellow('⚠️  No plugins in marketplace.'));
-    console.log(chalk.gray('Run: specweave refresh-marketplace'));
+    log(chalk.yellow('⚠️  No plugins in marketplace.'));
+    log(chalk.gray('Run: specweave refresh-marketplace'));
     return;
   }
 
@@ -100,7 +110,7 @@ export async function loadPluginsCommand(
     pluginsToLoad = getPluginsForGroup(normalizedGroup);
 
     if (pluginsToLoad.length === 0) {
-      console.error(chalk.red(`No plugins found for group: ${group}`));
+      logErr(chalk.red(`No plugins found for group: ${group}`));
       return;
     }
 
@@ -110,13 +120,13 @@ export async function loadPluginsCommand(
   }
 
   if (pluginsToLoad.length === 0) {
-    console.log(chalk.yellow('No plugins to load.'));
+    log(chalk.yellow('No plugins to load.'));
     return;
   }
 
-  // Show what we're going to load
-  console.log(chalk.cyan(`Loading ${groupLabel}:`));
-  if (options.verbose) {
+  // Show what we're going to load (skip in silent mode)
+  log(chalk.cyan(`Loading ${groupLabel}:`));
+  if (options.verbose && !options.silent) {
     for (const plugin of pluginsToLoad) {
       const loaded = cacheManager.isPluginLoaded(plugin);
       const status = loaded
@@ -126,7 +136,7 @@ export async function loadPluginsCommand(
     }
     console.log();
   } else {
-    console.log(chalk.gray(`  ${pluginsToLoad.length} plugin(s)\n`));
+    log(chalk.gray(`  ${pluginsToLoad.length} plugin(s)\n`));
   }
 
   // Background or foreground install
@@ -136,14 +146,14 @@ export async function loadPluginsCommand(
       force: options.force,
     });
 
-    console.log(chalk.green('✅ Background installation started'));
-    console.log(chalk.gray(`   Task ID: ${taskId}`));
-    console.log(chalk.gray('   Check status with: specweave plugin-status\n'));
+    log(chalk.green('✅ Background installation started'));
+    log(chalk.gray(`   Task ID: ${taskId}`));
+    log(chalk.gray('   Check status with: specweave plugin-status\n'));
     return;
   }
 
-  // Foreground installation with spinner and retry mechanism
-  const spinner = ora('Loading plugins...').start();
+  // Foreground installation with spinner and retry mechanism (disabled in silent mode)
+  const spinner = options.silent ? null : ora('Loading plugins...').start();
 
   const maxRetries = 3;
   const retryDelays = [500, 1000, 2000]; // Exponential backoff
@@ -174,7 +184,7 @@ export async function loadPluginsCommand(
 
       if (attempt < maxRetries) {
         const delay = retryDelays[attempt - 1];
-        spinner.text = `Retrying (${attempt}/${maxRetries})... waiting ${delay}ms`;
+        if (spinner) spinner.text = `Retrying (${attempt}/${maxRetries})... waiting ${delay}ms`;
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     } catch (err) {
@@ -188,29 +198,29 @@ export async function loadPluginsCommand(
 
       if (attempt < maxRetries) {
         const delay = retryDelays[attempt - 1];
-        spinner.text = `Error occurred, retrying (${attempt}/${maxRetries})...`;
+        if (spinner) spinner.text = `Error occurred, retrying (${attempt}/${maxRetries})...`;
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
 
   if (result?.success) {
-    spinner.succeed(
-      chalk.green(
-        `Loaded ${result.pluginsAffected} plugin(s) in ${Math.round(result.durationMs)}ms`
-      )
-    );
+    if (spinner) {
+      spinner.succeed(
+        chalk.green(
+          `Loaded ${result.pluginsAffected} plugin(s) in ${Math.round(result.durationMs)}ms`
+        )
+      );
+    }
 
-    // Show hot-reload notice
-    console.log(
-      chalk.cyan('\n🔄 Hot-reload will activate skills within seconds.')
-    );
-    console.log(chalk.gray('   No restart required.\n'));
+    // Show hot-reload notice (skip in silent mode)
+    log(chalk.cyan('\n🔄 Hot-reload will activate skills within seconds.'));
+    log(chalk.gray('   No restart required.\n'));
 
     // Show loaded plugins summary
     const loadedPlugins = cacheManager.getLoadedPlugins();
-    console.log(chalk.bold('📊 Currently Loaded:'));
-    console.log(chalk.gray(`   ${loadedPlugins.length} plugin(s) active\n`));
+    log(chalk.bold('📊 Currently Loaded:'));
+    log(chalk.gray(`   ${loadedPlugins.length} plugin(s) active\n`));
   } else {
     // Log the final failure
     logError('installPlugins', `Failed to load plugins after ${maxRetries} attempts`, undefined, {
@@ -219,14 +229,16 @@ export async function loadPluginsCommand(
       attempts: maxRetries,
     });
 
-    spinner.fail(chalk.red(`Failed to load plugins after ${maxRetries} attempts`));
-    console.log(chalk.red(`\nLast error: ${lastError || 'Unknown error'}`));
-    console.log(chalk.yellow('\nTroubleshooting steps:'));
-    console.log(chalk.gray('  1. Run: specweave refresh-marketplace'));
-    console.log(chalk.gray('  2. Ensure ~/.claude/plugins/specweave/ has plugins'));
-    console.log(chalk.gray('  3. Check disk space and permissions'));
-    console.log(chalk.gray('  4. Restart Claude Code if hot-reload fails'));
-    console.log(chalk.gray(`\n📋 Detailed logs: ${getLogFilePath()}\n`));
+    if (spinner) {
+      spinner.fail(chalk.red(`Failed to load plugins after ${maxRetries} attempts`));
+    }
+    logErr(chalk.red(`\nLast error: ${lastError || 'Unknown error'}`));
+    log(chalk.yellow('\nTroubleshooting steps:'));
+    log(chalk.gray('  1. Run: specweave refresh-marketplace'));
+    log(chalk.gray('  2. Ensure ~/.claude/plugins/specweave/ has plugins'));
+    log(chalk.gray('  3. Check disk space and permissions'));
+    log(chalk.gray('  4. Restart Claude Code if hot-reload fails'));
+    log(chalk.gray(`\n📋 Detailed logs: ${getLogFilePath()}\n`));
     process.exit(1);
   }
 }
@@ -277,6 +289,7 @@ ${chalk.bold('Options:')}
   --force       Force reinstall even if already loaded
   --background  Run installation in background
   --verbose     Show detailed output
+  --silent      Silent mode - no stdout output (for hooks)
 
 ${chalk.bold('Groups:')}
   core       Core SpecWeave functionality
