@@ -1,10 +1,14 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v1.0.106 - FIX INSTANT COMMANDS)
+# SpecWeave UserPromptSubmit Hook (v1.0.127 - True Auto Plugin Loading)
 # Fires BEFORE user's command executes (prompt-based hook)
-# Purpose: Discipline validation, context injection, instant command execution
+# Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
+# - v1.0.127: AUTO-LOAD PLUGINS - Detect plugin-specific keywords and install in background
+#   * Keywords: react, vue, kubernetes, docker, terraform, github, jira, etc.
+#   * Runs in background (non-blocking)
+#   * Controlled by SPECWEAVE_DISABLE_AUTO_LOAD env var
 # - v1.0.106: CRITICAL FIX - Use approve+systemMessage for info commands (not block)
 #   * "block" erases command from context and stops execution
 #   * Info commands (/sw:progress, /sw:status, /sw:jobs, etc.) now use "approve"
@@ -38,6 +42,79 @@ if command -v jq >/dev/null 2>&1; then
 else
   # Fallback: extract prompt with grep (no node!)
   PROMPT=$(echo "$INPUT" | grep -oP '"prompt"\s*:\s*"\K[^"]*' 2>/dev/null || echo "")
+fi
+
+# ==============================================================================
+# AUTO-LOAD PLUGIN DETECTION (v1.0.127 - True Auto Plugin Loading - Increment 0172)
+# ==============================================================================
+# Detect plugin-specific keywords and auto-install plugins in background
+# This runs BEFORE the SpecWeave keyword check to catch plugin-specific prompts
+# Controlled by SPECWEAVE_DISABLE_AUTO_LOAD environment variable
+
+if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" != "1" ]]; then
+  # Check for plugin-specific keywords (broader than SpecWeave keywords)
+  # These trigger auto-install of relevant plugins
+  if echo "$PROMPT" | grep -qiE "(react|vue|angular|next\.?js|nuxt|express|fastapi|django|nestjs|spring|kubernetes|k8s|docker|terraform|pulumi|github|jira|ado|azure.?devops|kafka|ml|machine.?learning|pytorch|tensorflow|mobile|react.?native|expo|ios|android|stripe|payment|release|changelog|playwright|cypress|e2e|mermaid|diagram)"; then
+    # Run detect-intent in background (non-blocking) with --install --silent
+    # This will auto-install relevant plugins based on the prompt
+    if command -v specweave >/dev/null 2>&1; then
+      # Setup lazy-loading log for graceful degradation (T-010)
+      LAZY_LOAD_LOG="$HOME/.specweave/logs/lazy-loading.log"
+      mkdir -p "$(dirname "$LAZY_LOAD_LOG")" 2>/dev/null
+
+      # T-012: Per-session cache to avoid redundant detection
+      # Hash the prompt and check if we've already processed similar keywords this session
+      PROMPT_CACHE_DIR="$HOME/.specweave/state/prompt-cache"
+      mkdir -p "$PROMPT_CACHE_DIR" 2>/dev/null
+
+      # Extract matched keywords as cache key (simpler than full prompt hash)
+      MATCHED_KEYWORDS=$(echo "$PROMPT" | grep -oiE "(react|vue|angular|nextjs|nuxt|express|fastapi|django|nestjs|spring|kubernetes|k8s|docker|terraform|pulumi|github|jira|ado|kafka|ml|mobile|stripe|payment|release|playwright|cypress|mermaid)" | tr '[:upper:]' '[:lower:]' | sort -u | tr '\n' '-')
+      CACHE_FILE="$PROMPT_CACHE_DIR/${MATCHED_KEYWORDS}detected"
+
+      # Skip if these keywords were already processed (cache exists and is recent)
+      SHOULD_DETECT=true
+      if [[ -f "$CACHE_FILE" ]]; then
+        CACHE_AGE=$(($(date +%s) - $(stat -f%m "$CACHE_FILE" 2>/dev/null || stat -c%Y "$CACHE_FILE" 2>/dev/null || echo 0)))
+        # Per-session cache: 30 minutes (session duration)
+        if [[ "$CACHE_AGE" -lt 1800 ]]; then
+          SHOULD_DETECT=false
+        fi
+      fi
+
+      if [[ "$SHOULD_DETECT" == "true" ]]; then
+        # Escape prompt for shell (replace quotes and special chars)
+        ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | sed "s/'/'\\\\''/g")
+
+        # Run with timeout (10s max per T-011) and log errors for debugging
+        # T-011: Background timeout is 10s; hook itself returns immediately (<500ms)
+        # Graceful degradation: errors logged but don't block Claude
+        (
+          # T-014: Performance logging
+          START_TIME=$(date +%s%3N 2>/dev/null || date +%s)
+          PROMPT_HASH=$(echo "$MATCHED_KEYWORDS" | md5sum 2>/dev/null | cut -c1-8 || echo "unknown")
+
+          if command -v timeout >/dev/null 2>&1; then
+            timeout 10 specweave detect-intent "$ESCAPED_PROMPT" --install --silent 2>>"$LAZY_LOAD_LOG"
+            EXIT_CODE=$?
+          else
+            specweave detect-intent "$ESCAPED_PROMPT" --install --silent 2>>"$LAZY_LOAD_LOG"
+            EXIT_CODE=$?
+          fi
+
+          END_TIME=$(date +%s%3N 2>/dev/null || date +%s)
+          DURATION=$((END_TIME - START_TIME))
+
+          if [[ "$EXIT_CODE" -eq 0 ]]; then
+            touch "$CACHE_FILE"
+            echo "[$(date -Iseconds)] detect-intent success | duration=${DURATION}ms | keywords=$MATCHED_KEYWORDS | hash=$PROMPT_HASH" >> "$LAZY_LOAD_LOG"
+          else
+            echo "[$(date -Iseconds)] detect-intent failed (code=$EXIT_CODE) | duration=${DURATION}ms | prompt=${ESCAPED_PROMPT:0:50}..." >> "$LAZY_LOAD_LOG"
+          fi
+        ) &
+        disown 2>/dev/null
+      fi
+    fi
+  fi
 fi
 
 # CRITICAL: Exit immediately for non-SpecWeave prompts

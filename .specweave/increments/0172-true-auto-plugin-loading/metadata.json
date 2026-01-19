@@ -1,0 +1,56 @@
+{
+  "id": "0172-true-auto-plugin-loading",
+  "increment": "0172-true-auto-plugin-loading",
+  "title": "True Auto Plugin Loading - Hook-Based Automatic Installation",
+  "type": "feature",
+  "status": "completed",
+  "priority": "critical",
+  "createdAt": "2026-01-19T09:30:00Z",
+  "updatedAt": "2026-01-19T08:06:00.116Z",
+  "feature": {
+    "id": "FS-072",
+    "name": "Auto Plugin Loading"
+  },
+  "tags": [
+    "auto-loading",
+    "hooks",
+    "plugin-architecture",
+    "ux-improvement",
+    "critical-fix"
+  ],
+  "estimatedEffort": "medium",
+  "dependencies": [
+    "0171-lazy-plugin-loading"
+  ],
+  "blockedBy": [],
+  "relatedIncrements": [
+    "0171-lazy-plugin-loading",
+    "0155-native-plugin-skill-architecture"
+  ],
+  "context": {
+    "problem": "0171 built infrastructure but auto-loading never worked - keyword detector exists but is never called automatically",
+    "solution": "Three-layer auto-loading: session-start project detection, user-prompt-submit keyword detection, CLAUDE.md fallback router",
+    "impact": "Users no longer need manual `specweave load-plugins` - plugins auto-install based on context"
+  },
+  "deliverables": {
+    "cliCommands": [
+      "detect-intent",
+      "detect-project"
+    ],
+    "hooks": [
+      "user-prompt-auto-load.sh",
+      "session-start-auto-load.sh"
+    ],
+    "modules": [
+      "src/core/lazy-loading/project-detector.ts",
+      "src/cli/commands/detect-intent.ts",
+      "src/cli/commands/detect-project.ts"
+    ],
+    "templates": [
+      "CLAUDE.md.template (auto-loading fallback section)"
+    ]
+  },
+  "planningComplete": true,
+  "planningCompletedAt": "2026-01-19T09:30:00Z",
+  "completedAt": "2026-01-19T08:06:00.115Z"
+}
