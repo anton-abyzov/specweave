@@ -3,6 +3,7 @@
  *
  * Smart merge for CLAUDE.md and AGENTS.md instruction files.
  * Preserves user customizations while updating SpecWeave sections.
+ * Also migrates config.json to add missing sections (v1.0.131+).
  */
 
 import * as fs from '../../utils/fs-native.js';
@@ -24,6 +25,19 @@ interface UpdateInstructionsOptions {
 }
 
 /**
+ * Default auto configuration (v1.0.131+)
+ * Added to old projects missing this section
+ */
+const DEFAULT_AUTO_CONFIG = {
+  enabled: true,
+  maxRetries: 20,
+  requireTests: false,
+  requireValidation: true,
+  requireJudgeLLM: false,
+  skipQualityGates: false,
+};
+
+/**
  * CLI command to update CLAUDE.md and AGENTS.md with smart merge
  */
 export async function updateInstructionsCommand(
@@ -35,6 +49,9 @@ export async function updateInstructionsCommand(
   console.log(chalk.blue('\n📄 Updating Instruction Files'));
   console.log(chalk.gray('   Version: ' + version));
   console.log(chalk.gray('   Project: ' + projectPath + '\n'));
+
+  // Migrate config.json (add missing sections)
+  const configMigrated = await migrateConfig(projectPath, options);
 
   // Find templates directory
   const templatesDir = findSourceDir('templates', __dirname);
@@ -67,6 +84,11 @@ export async function updateInstructionsCommand(
   console.log(chalk.blue('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
   console.log(chalk.blue('  Summary'));
   console.log(chalk.blue('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
+
+  if (configMigrated.sectionsAdded > 0) {
+    console.log('  config.json: ' + chalk.blue('migrated'));
+    console.log(chalk.gray('    Added ' + configMigrated.sectionsAdded + ' missing section(s): ' + configMigrated.sections.join(', ')));
+  }
 
   if (claudeResult.action !== 'skipped') {
     console.log('  CLAUDE.md: ' + formatAction(claudeResult.action));
@@ -188,5 +210,65 @@ function formatAction(action: string): string {
       return chalk.yellow('preserved (manual fix needed)');
     default:
       return action;
+  }
+}
+
+/**
+ * Migrate config.json to add missing sections
+ *
+ * v1.0.131+: Adds 'auto' section for stop hook circuit breaker config
+ *
+ * This is safe and idempotent:
+ * - Only adds sections that don't exist
+ * - Preserves all existing configuration
+ * - Can be run multiple times
+ */
+async function migrateConfig(
+  projectPath: string,
+  options: UpdateInstructionsOptions
+): Promise<{ sectionsAdded: number; sections: string[] }> {
+  const configPath = path.join(projectPath, '.specweave', 'config.json');
+  const sectionsAdded: string[] = [];
+
+  if (!fs.existsSync(configPath)) {
+    if (options.verbose) {
+      console.log(chalk.gray('  ⊘ config.json: not found, skipping migration'));
+    }
+    return { sectionsAdded: 0, sections: [] };
+  }
+
+  try {
+    const configContent = fs.readFileSync(configPath, 'utf-8');
+    const config = JSON.parse(configContent);
+
+    let modified = false;
+
+    // Add 'auto' section if missing (v1.0.131+)
+    if (!config.auto) {
+      config.auto = DEFAULT_AUTO_CONFIG;
+      sectionsAdded.push('auto');
+      modified = true;
+    }
+
+    // Future migrations can be added here:
+    // if (!config.someOtherSection) { ... }
+
+    if (modified) {
+      if (options.dryRun) {
+        console.log(chalk.yellow('  ○ config.json: would add missing sections: ' + sectionsAdded.join(', ')));
+      } else {
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        console.log(chalk.blue('  ✓ config.json: added missing sections'));
+      }
+    } else if (options.verbose) {
+      console.log(chalk.gray('  ⊘ config.json: already up to date'));
+    }
+
+    return { sectionsAdded: sectionsAdded.length, sections: sectionsAdded };
+  } catch (error) {
+    if (options.verbose) {
+      console.log(chalk.yellow('  ⚠ config.json: could not parse, skipping migration'));
+    }
+    return { sectionsAdded: 0, sections: [] };
   }
 }
