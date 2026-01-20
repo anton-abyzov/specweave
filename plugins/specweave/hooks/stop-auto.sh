@@ -957,6 +957,47 @@ if [ "$CURRENT_RETRY" -ge "$MAX_RETRIES_BEFORE_ESCALATE" ]; then
 fi
 
 # ============================================================================
+# ESCAPE GUIDANCE: Help user understand when to pivot vs continue
+# Adds guidance for new functionality/bug fixes that don't fit current increment
+# ============================================================================
+
+# Build escape options section for the message
+ESCAPE_OPTIONS="
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 WORKING ON SOMETHING DIFFERENT? (New functionality, bug fix, or urgent work)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If the current increment ($FIRST_INC) doesn't match what you need to work on:
+
+📋 OPTION 1: Create a NEW increment for new functionality
+   → Run: /sw:cancel-auto (stop auto mode first)
+   → Then: /sw:increment \"your new feature or bug fix description\"
+   → This will involve PM and Architect roles to properly plan
+
+📋 OPTION 2: Pause current work and start something new
+   → Run: /sw:pause $FIRST_INC
+   → Then: /sw:increment \"urgent bug fix\" --type=bug
+   → Resume later: /sw:resume $FIRST_INC
+
+📋 OPTION 3: Emergency quick fix (skip planning)
+   → Run: /sw:cancel-auto
+   → Work directly without increment tracking
+   → Better for tiny fixes that don't need tracking
+
+💡 TIP: If you're stuck in a loop, the RIGHT answer is often to:
+   1. Cancel auto mode: /sw:cancel-auto
+   2. Think about what you actually need
+   3. Start fresh with a proper increment
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# Show escape options after 3+ retries or when turn count is high
+if [ "$CURRENT_RETRY" -ge 3 ] || [ "$CURRENT_TURN" -ge $((MAX_TURNS / 2)) ]; then
+    log "Adding escape guidance (retry=$CURRENT_RETRY, turn=$CURRENT_TURN)"
+    MSG="$MSG
+$ESCAPE_OPTIONS"
+fi
+
+# ============================================================================
 # BUILD CLEAR SUCCESS CRITERIA FOR THE REASON FIELD
 # This is what shows in Claude Code UI - must be ACTIONABLE
 # ============================================================================

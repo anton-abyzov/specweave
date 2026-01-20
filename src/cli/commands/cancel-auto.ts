@@ -97,13 +97,19 @@ async function handleCancelAuto(projectPath: string, options: CancelAutoOptions)
   // Remove the flag file
   fs.unlinkSync(autoFlagPath);
 
-  // Also clean up any legacy session files if they exist
-  const legacyFiles = [
+  // Also clean up ALL auto-related state files (critical for preventing infinite loops!)
+  const stateFiles = [
+    // Legacy session files
     path.join(projectPath, '.specweave/state/auto-session.json'),
     path.join(projectPath, '.specweave/state/active-session.lock'),
+    // Stop hook state files (CRITICAL - these cause infinite loops if not cleaned!)
+    path.join(projectPath, '.specweave/state/.stop-auto-turns'),
+    path.join(projectPath, '.specweave/state/.stop-auto-retry'),
+    path.join(projectPath, '.specweave/state/.stop-auto-dedup'),
+    path.join(projectPath, '.specweave/state/.stop-auto-last-fire'),
   ];
 
-  for (const file of legacyFiles) {
+  for (const file of stateFiles) {
     if (fs.existsSync(file)) {
       try {
         fs.unlinkSync(file);
@@ -114,9 +120,23 @@ async function handleCancelAuto(projectPath: string, options: CancelAutoOptions)
   }
 
   console.log('');
-  console.log(chalk.yellow('🚫 Auto Mode Cancelled'));
+  console.log(chalk.green('✅ Auto Mode Cancelled'));
   console.log('');
-  console.log('Resume work manually with: ' + chalk.cyan('/sw:do'));
+  console.log(chalk.bold('What would you like to do next?'));
+  console.log('');
+  console.log('  📋 Continue current increment work:');
+  console.log('     ' + chalk.cyan('/sw:do') + ' - Resume tasks manually');
+  console.log('     ' + chalk.cyan('/sw:progress') + ' - Check what remains');
+  console.log('');
+  console.log('  🆕 Start something new:');
+  console.log('     ' + chalk.cyan('/sw:increment "feature description"') + ' - Create new increment');
+  console.log('     ' + chalk.cyan('/sw:increment "bug fix" --type=bug') + ' - Create bug fix increment');
+  console.log('');
+  console.log('  ⏸️  Manage current increment:');
+  console.log('     ' + chalk.cyan('/sw:pause <id>') + ' - Pause and work on something else');
+  console.log('     ' + chalk.cyan('/sw:done <id>') + ' - Close if work is complete');
+  console.log('');
+  console.log(chalk.gray('💡 Tip: Creating a new increment invokes PM and Architect for proper planning.'));
   console.log('');
 }
 

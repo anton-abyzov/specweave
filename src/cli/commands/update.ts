@@ -51,6 +51,7 @@ interface UpdateResult {
   instructionsUpdated: boolean;
   pluginsRefreshed: boolean;
   selfUpdated: boolean;
+  stateFilesCleaned: number;
   newVersion?: string;
   errors: string[];
   warnings: string[];
@@ -82,6 +83,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     instructionsUpdated: false,
     pluginsRefreshed: false,
     selfUpdated: false,
+    stateFilesCleaned: 0,
     errors: [],
     warnings: [],
   };
@@ -158,7 +160,26 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
-  // Step 2: Validate project health (quick checks)
+  // Step 2: Cleanup stale auto state files (prevents infinite stop hook loops!)
+  if (isSpecWeaveProject) {
+    const cleanupResult = await cleanupStaleAutoState(projectPath, options.verbose, options.check);
+    result.stateFilesCleaned = cleanupResult.cleaned;
+
+    if (cleanupResult.cleaned > 0) {
+      if (options.check) {
+        console.log(chalk.yellow(`  ⚠️  ${cleanupResult.cleaned} stale auto state file(s) found (will be cleaned on update)`));
+      } else {
+        console.log(chalk.green(`  ✓ Cleaned ${cleanupResult.cleaned} stale auto state file(s)`));
+      }
+      if (options.verbose || options.check) {
+        cleanupResult.files.forEach(file => {
+          console.log(chalk.gray(`    - ${file}`));
+        });
+      }
+    }
+  }
+
+  // Step 3: Validate project health (quick checks)
   if (isSpecWeaveProject && !options.check) {
     spinner.start('Validating project health...');
 
@@ -178,7 +199,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
-  // Step 3: Refresh plugins (if requested)
+  // Step 4: Refresh plugins (if requested)
   if (options.plugins || options.all) {
     console.log('');
     spinner.start('Refreshing marketplace plugins...');
@@ -204,6 +225,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   if (isSpecWeaveProject) {
     console.log(`  Config:       ${result.configMigrated ? chalk.green('✓ Updated') : chalk.gray('No changes')}`);
     console.log(`  Instructions: ${result.instructionsUpdated ? chalk.green('✓ Updated') : chalk.gray('No changes')}`);
+    console.log(`  State cleanup: ${result.stateFilesCleaned > 0 ? chalk.green(`✓ Cleaned ${result.stateFilesCleaned} file(s)`) : chalk.gray('No stale files')}`);
   }
 
   if (options.plugins || options.all) {
@@ -243,7 +265,73 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
 }
 
 /**
- * Quick project health validation
+ * Cleanup stale auto state files that can cause infinite stop hook loops
+ * Only cleans files older than the threshold (default: 4 hours for safety)
+ *
+ * @param projectPath - Path to the project root
+ * @param verbose - Show detailed output
+ * @param dryRun - If true, only report what would be cleaned (don't actually delete)
+ */
+async function cleanupStaleAutoState(
+  projectPath: string,
+  verbose?: boolean,
+  dryRun?: boolean
+): Promise<{ cleaned: number; files: string[] }> {
+  const stateDir = path.join(projectPath, '.specweave', 'state');
+  const result = { cleaned: 0, files: [] as string[] };
+
+  if (!fs.existsSync(stateDir)) {
+    return result;
+  }
+
+  // All auto-related state files that should be session-scoped
+  const autoStateFiles = [
+    'auto-mode.json',
+    'auto-session.json',
+    '.stop-auto-dedup',
+    '.stop-auto-last-fire',
+    '.stop-auto-retry',
+    '.stop-auto-turns',
+  ];
+
+  // Threshold: 4 hours (sessions rarely last this long, and if they do, state should be fresh)
+  const staleThresholdHours = 4;
+
+  for (const file of autoStateFiles) {
+    const filePath = path.join(stateDir, file);
+    if (fs.existsSync(filePath)) {
+      try {
+        const stats = fs.statSync(filePath);
+        const ageHours = (Date.now() - stats.mtimeMs) / (1000 * 60 * 60);
+
+        // Only clean if stale (older than threshold)
+        if (ageHours > staleThresholdHours) {
+          if (dryRun) {
+            // Dry run - just report
+            result.cleaned++;
+            result.files.push(`${file} (${Math.floor(ageHours)}h old)`);
+          } else {
+            // Actually delete
+            try {
+              fs.unlinkSync(filePath);
+              result.cleaned++;
+              result.files.push(`${file} (was ${Math.floor(ageHours)}h old)`);
+            } catch {
+              // Ignore cleanup errors silently
+            }
+          }
+        }
+      } catch {
+        // Ignore stat errors
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Quick project health validation (no cleanup - that's done separately)
  */
 async function validateProjectHealth(projectPath: string): Promise<string[]> {
   const issues: string[] = [];
@@ -268,35 +356,6 @@ async function validateProjectHealth(projectPath: string): Promise<string[]> {
     }
   } else {
     issues.push('config.json not found');
-  }
-
-  // Check for orphaned state files
-  const stateDir = path.join(projectPath, '.specweave', 'state');
-  if (fs.existsSync(stateDir)) {
-    const staleFiles = [
-      'auto-mode.json',
-      'auto-session.json',
-      '.stop-auto-dedup',
-      '.stop-auto-last-fire',
-      '.stop-auto-retry',
-    ];
-
-    for (const file of staleFiles) {
-      const filePath = path.join(stateDir, file);
-      if (fs.existsSync(filePath)) {
-        try {
-          const stats = fs.statSync(filePath);
-          const ageHours = (Date.now() - stats.mtimeMs) / (1000 * 60 * 60);
-
-          // Warn if state file is older than 24 hours
-          if (ageHours > 24) {
-            issues.push(`Stale state file: ${file} (${Math.floor(ageHours)}h old)`);
-          }
-        } catch {
-          // Ignore stat errors
-        }
-      }
-    }
   }
 
   // Check for too many active increments
@@ -444,6 +503,9 @@ async function selfUpdateSpecWeave(
     // Compare versions
     if (latestVersion === currentVersion) {
       spinner.succeed(`SpecWeave is up to date (v${currentVersion})`);
+      if (options.check) {
+        console.log(chalk.green('\n  ✓ You have the latest version. No update needed.'));
+      }
       return { updated: false };
     }
 
@@ -479,9 +541,13 @@ async function selfUpdateSpecWeave(
       console.log('');
     }
 
-    // Dry run - just report
+    // Dry run - show recommendation
     if (options.check) {
-      console.log(chalk.gray('    Run without --check to update'));
+      console.log(chalk.green.bold('  ✅ Update recommended!'));
+      console.log('');
+      console.log(chalk.gray('  To update, run:'));
+      console.log(chalk.cyan('    specweave update'));
+      console.log('');
       return { updated: false, newVersion: latestVersion };
     }
 
