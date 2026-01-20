@@ -397,6 +397,15 @@ export function createConfigFile(
         auto_create_github_issue: false
       }
     },
+    // Auto mode configuration (stop hook behavior)
+    auto: {
+      enabled: true,
+      maxRetries: 20,           // Circuit breaker after N retries
+      requireTests: false,      // Require tests to pass before completion
+      requireValidation: true,  // Require validation before completion
+      requireJudgeLLM: false,   // Require LLM judge validation
+      skipQualityGates: false,  // Skip quality gates (not recommended)
+    },
   };
 
   // Add testing configuration if provided
