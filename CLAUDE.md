@@ -1,10 +1,10 @@
-<!-- SW:META template="claude" version="1.0.126" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,lazyloading,principles,linking,mcp,autoexecute,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.135" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,lazyloading,principles,linking,mcp,autoexecute,auto,docs" -->
 
-<!-- SW:SECTION:header version="1.0.126" -->
+<!-- SW:SECTION:header version="1.0.135" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
-<!-- SW:SECTION:start version="1.0.126" -->
+<!-- SW:SECTION:start version="1.0.135" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -14,7 +14,7 @@
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.126" -->
+<!-- SW:SECTION:autodetect version="1.0.135" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -24,7 +24,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.126" -->
+<!-- SW:SECTION:metarule version="1.0.135" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -35,7 +35,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.126" -->
+<!-- SW:SECTION:rules version="1.0.135" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (spec.md, plan.md, tasks.md at root; reports/, scripts/, logs/ subfolders)
@@ -48,7 +48,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 8. **⛔ Marketplace refresh**: ALWAYS use `specweave refresh-marketplace` CLI command. NEVER suggest `scripts/refresh-marketplace.sh` - end users don't have the scripts folder (npm global install).
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.126" -->
+<!-- SW:SECTION:workflow version="1.0.135" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -68,7 +68,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:reflect version="1.0.126" -->
+<!-- SW:SECTION:reflect version="1.0.135" -->
 ## Self-Improving Skills (Reflect)
 
 **Learn once, never repeat.** Claude learns from corrections and patterns across sessions.
@@ -112,7 +112,7 @@ ls ~/.specweave/memory/*.md 2>/dev/null
 **Enable auto-learning**: `/sw:reflect-on` → Stop hook analyzes sessions automatically
 <!-- SW:END:reflect -->
 
-<!-- SW:SECTION:context version="1.0.126" -->
+<!-- SW:SECTION:context version="1.0.135" -->
 ## Living Docs Context
 
 **Before implementing features**: Check existing docs for patterns and decisions.
@@ -132,7 +132,7 @@ grep -ril "keyword" .specweave/docs/internal/
 **Use `/sw:context <topic>`** to load relevant living docs into conversation.
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:lsp version="1.0.126" -->
+<!-- SW:SECTION:lsp version="1.0.135" -->
 ## LSP-Enhanced Exploration
 
 **USE LSP ACTIVELY** for semantic code understanding (100x faster than grep).
@@ -149,7 +149,7 @@ go install golang.org/x/tools/gopls@latest  # Go
 **Best Practices**: ALWAYS use `findReferences` before refactoring | Use `goToDefinition` instead of grep | Combine with Explore agent
 <!-- SW:END:lsp -->
 
-<!-- SW:SECTION:structure version="1.0.126" -->
+<!-- SW:SECTION:structure version="1.0.135" -->
 ## Structure
 
 ```
@@ -219,7 +219,7 @@ my-project/
 ```
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.126" -->
+<!-- SW:SECTION:taskformat version="1.0.135" -->
 ## Task Format
 
 ```markdown
@@ -229,7 +229,7 @@ my-project/
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.126" -->
+<!-- SW:SECTION:secrets version="1.0.135" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
@@ -243,7 +243,7 @@ gh auth status
 **SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.126" -->
+<!-- SW:SECTION:syncing version="1.0.135" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **After increment creation**: Run `/sw-github:sync {id}` to create issues!
@@ -271,7 +271,7 @@ Living docs sync ≠ External sync. They are separate:
 **Verify tokens**: `grep -q GITHUB_TOKEN .env && echo "Token configured"` | `gh auth status`
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:mapping version="1.0.126" -->
+<!-- SW:SECTION:mapping version="1.0.135" -->
 ## GitHub Mapping
 
 | SpecWeave | GitHub |
@@ -281,7 +281,7 @@ Living docs sync ≠ External sync. They are separate:
 | Task T-XXX | Checkbox |
 <!-- SW:END:mapping -->
 
-<!-- SW:SECTION:testing version="1.0.126" -->
+<!-- SW:SECTION:testing version="1.0.135" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -293,7 +293,7 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:api version="1.0.126" -->
+<!-- SW:SECTION:api version="1.0.135" -->
 ## API Development (OpenAPI-First)
 
 **For API projects only.** OpenAPI = source of truth → Postman derived from it.
@@ -312,13 +312,13 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 **Import**: Postman → Import collection + env → Fill secrets → Select env
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.126" -->
+<!-- SW:SECTION:limits version="1.0.135" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.126" -->
+<!-- SW:SECTION:troubleshooting version="1.0.135" -->
 ## Troubleshooting
 
 | Issue | Fix |
@@ -340,53 +340,62 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 | Need all plugins loaded | `specweave load-plugins all` (~60K tokens) |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:lazyloading version="1.0.126" -->
-## Lazy Plugin Loading
+<!-- SW:SECTION:lazyloading version="1.0.135" -->
+## Lazy Plugin Loading (Auto-Loading)
 
-**By default, SpecWeave installs 2 essential plugins** (~3K tokens total):
-- **sw** (core): `/sw:increment`, `/sw:do`, `/sw:done` commands
-- **sw-router**: ACTIVE router that spawns specialized agents
+**SpecWeave automatically loads plugins** when you need them - no manual action required.
 
-### How the Router Works
+### Three-Layer Auto-Loading
 
-The router detects development keywords and **spawns specialized agents via Task tool** (forks context, doesn't load more plugins):
+| Layer | When | What Happens |
+|-------|------|--------------|
+| **Session Start** | Claude starts | Detects project type (React, K8s, etc.) → installs matching plugins |
+| **Prompt Detection** | You type | Detects keywords (stripe, terraform, etc.) → installs matching plugins |
+| **Router Spawn** | Implementation | Router spawns specialized agents via Task tool (isolated context) |
 
-| Keywords | Agent Spawned |
-|----------|---------------|
-| React, Vue, frontend, dashboard, UI | `sw-frontend:frontend-architect` |
-| GitHub, PR, issues, sync | `sw-github:github-manager` |
-| TDD, test, Vitest, Playwright | `sw-testing:qa-engineer` |
-| K8s, Docker, Terraform, deploy | `sw-infra:devops` |
-| ML, AI, training, model | `sw-ml:ml-engineer` |
-| mobile, React Native, Expo | `sw-mobile:mobile-architect` |
-| Stripe, payments, checkout | `sw-payments:payment-integration` |
+**Example flow**:
+1. You open a React project → `sw-frontend` auto-installed
+2. You type "add stripe checkout" → `sw-payments` auto-installed
+3. You run `/sw:do` → Router spawns `frontend-architect` agent
 
-**Example**: "Build React dashboard" → Router spawns `sw-frontend:frontend-architect` agent
+### Keyword → Plugin Mapping
 
-### Manual Plugin Control
+| Keywords | Plugin Installed |
+|----------|------------------|
+| react, vue, angular, nextjs, UI, component | `sw-frontend` |
+| stripe, payment, checkout, billing | `sw-payments` |
+| k8s, kubernetes, docker, terraform | `sw-k8s`, `sw-infrastructure` |
+| github, PR, issue, actions | `sw-github` |
+| jira, epic, story | `sw-jira` |
+| release, changelog, npm publish | `sw-release` |
+| test, tdd, playwright, vitest | `sw-testing` |
+| ml, pytorch, tensorflow, training | `sw-ml` |
+
+### Manual Fallback (Rarely Needed)
+
+If auto-loading misses something, install manually:
+```bash
+specweave load-plugins github    # Load specific plugin
+specweave load-plugins all       # Load all 24 plugins (~60K tokens)
+specweave plugin-status          # Check what's loaded
+```
+
+### Disable Auto-Loading
 
 ```bash
-specweave load-plugins github    # Load GitHub integration plugin
-specweave load-plugins all       # Load all 24 plugins (~60K tokens)
-specweave plugin-status          # Check loaded vs available
+export SPECWEAVE_DISABLE_AUTO_LOAD=1  # Disable auto-loading
 ```
 
 ### Token Savings
 
 | Mode | Context Usage |
 |------|---------------|
-| Default (core + router) | ~3K tokens |
+| Default (core + auto-load) | ~3-5K tokens |
 | All 24 plugins | ~60K tokens |
 | Agent spawn (forked) | 0 tokens in main context |
-
-### Full Install (Skip Lazy Loading)
-
-```bash
-specweave init --full .          # Install all plugins immediately
-```
 <!-- SW:END:lazyloading -->
 
-<!-- SW:SECTION:principles version="1.0.126" -->
+<!-- SW:SECTION:principles version="1.0.135" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -396,7 +405,7 @@ specweave init --full .          # Install all plugins immediately
 5. **Clean**: All files in increment folders
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.126" -->
+<!-- SW:SECTION:linking version="1.0.135" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -404,7 +413,7 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.126" -->
+<!-- SW:SECTION:mcp version="1.0.135" -->
 ## External Service Connection
 
 **Priority**: MCP Server → REST API → CLI → Direct Connection
@@ -429,7 +438,7 @@ wrangler whoami 2>/dev/null
 ```
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:autoexecute version="1.0.126" -->
+<!-- SW:SECTION:autoexecute version="1.0.135" -->
 ## Auto-Execute Rule
 
 **NEVER** output "Manual Step Required" when credentials exist. **EXECUTE DIRECTLY.**
@@ -444,7 +453,7 @@ wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 ```
 <!-- SW:END:autoexecute -->
 
-<!-- SW:SECTION:auto version="1.0.126" -->
+<!-- SW:SECTION:auto version="1.0.135" -->
 ## Auto Mode (Autonomous Execution)
 
 **Continuous execution until all tasks complete.**
@@ -521,7 +530,7 @@ wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 **Circuit Breaker**: External API fails 3x? Queue & continue
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.126" -->
+<!-- SW:SECTION:docs version="1.0.135" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com) | `.specweave/docs/internal/`

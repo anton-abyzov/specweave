@@ -711,6 +711,35 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
       console.log(chalk.green('✓ No non-core plugins to clean up\n'));
     }
 
+    // Also clean up ~/.claude/skills/ directory for non-core plugins
+    // (claude plugin uninstall may not always clean this up)
+    const skillsDir = path.join(os.homedir(), '.claude', 'skills');
+    const coreSkillDirs = ['specweave', 'specweave-router']; // Folder names to keep
+
+    if (fs.existsSync(skillsDir)) {
+      const skillDirs = fs.readdirSync(skillsDir).filter(name => {
+        const dirPath = path.join(skillsDir, name);
+        return fs.statSync(dirPath).isDirectory() && name.startsWith('specweave');
+      });
+
+      const dirsToRemove = skillDirs.filter(dir => !coreSkillDirs.includes(dir));
+
+      if (dirsToRemove.length > 0) {
+        console.log(chalk.blue(`  Cleaning up ${dirsToRemove.length} skill folder(s)...`));
+
+        for (const dir of dirsToRemove) {
+          try {
+            fs.rmSync(path.join(skillsDir, dir), { recursive: true, force: true });
+            console.log(chalk.gray(`  ✓ Removed ${dir}/`));
+          } catch (e) {
+            if (options.verbose) {
+              console.log(chalk.yellow(`  ⚠ Could not remove ${dir}/`));
+            }
+          }
+        }
+      }
+    }
+
     // Step 3b: Install router
     console.log(chalk.yellow(`⚙️  Step 3b: Installing router plugin only${forceMode ? ' + force' : ''}...\n`));
 
