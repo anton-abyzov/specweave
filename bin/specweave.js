@@ -508,13 +508,14 @@ program
     await updateInstructionsCommand(options);
   });
 
-// Unified update command - One-stop update for everything (self-updates CLI by default)
+// Unified update command - One-stop update for everything (self-updates CLI AND plugins by default)
 program
   .command('update')
-  .description('Update SpecWeave: CLI (via npm), instructions, config, and optionally plugins')
+  .description('Update SpecWeave: CLI, instructions, config, AND plugins (default)')
   .option('--no-self', 'Skip CLI self-update via npm')
-  .option('--plugins', 'Also refresh marketplace plugins')
-  .option('--all', 'Full update including all plugins (not just router)')
+  .option('--no-plugins', 'Skip marketplace plugins refresh')
+  .option('--all', 'Install ALL plugins (not just router)')
+  .option('--minimal', 'Clean /plugin output (removes marketplace, no lazy loading)')
   .option('--check', 'Dry run - show what would change without making changes')
   .option('-v, --verbose', 'Show detailed output')
   .option('-f, --force', 'Force refresh even if up to date')
@@ -817,6 +818,7 @@ program
   .option('--local', 'Use local development version (ONLY for active dev)')
   .option('--github', 'Pull latest from GitHub (default, recommended)')
   .option('--all', 'Install ALL plugins (legacy mode, ~60K tokens)')
+  .option('--minimal', 'Remove marketplace, install only core plugins (clean /plugin output, no lazy loading)')
   .option('-f, --force', 'Force reinstall all plugins (clears cache, ensures fresh copy)')
   .option('-v, --verbose', 'Show detailed error messages')
   .action(async (options) => {

@@ -10,16 +10,18 @@
  * 2. Migrates config.json (adds missing sections like 'auto')
  * 3. Updates instruction files (CLAUDE.md, AGENTS.md)
  * 4. Validates project health
- * 5. Refreshes marketplace plugins (optional, with --plugins)
+ * 5. Refreshes marketplace plugins (DEFAULT - cleans non-core, installs router only)
  *
  * Usage:
- *   specweave update                  # Update CLI + instructions + config
- *   specweave update --plugins        # Also refresh marketplace plugins
- *   specweave update --all            # Full update including all plugins
+ *   specweave update                  # Full update: CLI + instructions + config + plugins
+ *   specweave update --no-plugins     # Skip marketplace plugins refresh
+ *   specweave update --all            # Install ALL plugins (not just router)
+ *   specweave update --minimal        # Clean /plugin output (removes marketplace)
  *   specweave update --no-self        # Skip CLI update, only project files
  *   specweave update --check          # Dry run - show what would change
  *
  * @since 1.0.131
+ * @updated 1.0.138 - Plugins refresh is now DEFAULT (use --no-plugins to skip)
  */
 
 import chalk from 'chalk';
@@ -32,10 +34,12 @@ import { refreshMarketplaceCommand } from './refresh-marketplace.js';
 import { getPackageVersion } from '../helpers/init/instruction-file-merger.js';
 
 interface UpdateOptions {
-  /** Also refresh marketplace plugins */
-  plugins?: boolean;
+  /** Skip marketplace plugins refresh (default: false - plugins ARE refreshed) */
+  noPlugins?: boolean;
   /** Install all plugins (not just router) */
   all?: boolean;
+  /** Minimal mode: remove marketplace for clean /plugin output */
+  minimal?: boolean;
   /** Dry run - show what would change */
   check?: boolean;
   /** Verbose output */
@@ -106,8 +110,9 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
 
       // Build command with same flags, but add --no-self to skip re-updating
       const flags: string[] = ['--no-self'];
-      if (options.plugins) flags.push('--plugins');
+      if (options.noPlugins) flags.push('--no-plugins');
       if (options.all) flags.push('--all');
+      if (options.minimal) flags.push('--minimal');
       if (options.verbose) flags.push('--verbose');
       if (options.force) flags.push('--force');
       if (options.check) flags.push('--check');
@@ -134,8 +139,8 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     console.log(chalk.yellow('⚠️  Not a SpecWeave project (no .specweave directory found)'));
     console.log(chalk.gray('   Run: specweave init\n'));
 
-    // Still allow plugins refresh for global updates
-    if (options.plugins || options.all) {
+    // Still allow plugins refresh for global updates (default behavior)
+    if (!options.noPlugins) {
       console.log(chalk.blue('Proceeding with plugins refresh only...\n'));
     } else {
       return;
@@ -199,8 +204,8 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     }
   }
 
-  // Step 4: Refresh plugins (if requested)
-  if (options.plugins || options.all) {
+  // Step 4: Refresh plugins (DEFAULT - unless --no-plugins specified)
+  if (!options.noPlugins) {
     console.log('');
     spinner.start('Refreshing marketplace plugins...');
     spinner.stop();
@@ -208,6 +213,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     try {
       await refreshMarketplaceCommand({
         all: options.all,
+        minimal: options.minimal,
         force: options.force,
         verbose: options.verbose,
       });
@@ -228,10 +234,10 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     console.log(`  State cleanup: ${result.stateFilesCleaned > 0 ? chalk.green(`✓ Cleaned ${result.stateFilesCleaned} file(s)`) : chalk.gray('No stale files')}`);
   }
 
-  if (options.plugins || options.all) {
+  if (!options.noPlugins) {
     console.log(`  Plugins:      ${result.pluginsRefreshed ? chalk.green('✓ Refreshed') : chalk.red('Failed')}`);
   } else {
-    console.log(chalk.gray(`  Plugins:      Skipped (use --plugins to refresh)`));
+    console.log(chalk.gray(`  Plugins:      Skipped (--no-plugins specified)`));
   }
 
   if (result.warnings.length > 0) {
@@ -251,14 +257,16 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   // Next steps
   console.log(chalk.blue('\n  Next steps:'));
 
-  if (options.plugins || options.all) {
+  if (!options.noPlugins) {
     console.log(chalk.gray('    1. Restart Claude Code for plugin changes'));
+    if (result.warnings.length > 0) {
+      console.log(chalk.gray('    2. Review warnings above'));
+    }
   } else {
-    console.log(chalk.gray('    1. Run `specweave update --plugins` to also refresh plugins'));
-  }
-
-  if (result.warnings.length > 0) {
-    console.log(chalk.gray('    2. Review warnings above'));
+    console.log(chalk.gray('    1. Plugins were skipped. Run `specweave update` to refresh them.'));
+    if (result.warnings.length > 0) {
+      console.log(chalk.gray('    2. Review warnings above'));
+    }
   }
 
   console.log('');
@@ -593,10 +601,11 @@ async function selfUpdateSpecWeave(
 export function registerUpdateCommand(program: import('commander').Command): void {
   program
     .command('update')
-    .description('Update SpecWeave: CLI, instructions, config, and optionally plugins')
+    .description('Update SpecWeave: CLI, instructions, config, AND plugins (default)')
     .option('--no-self', 'Skip CLI self-update via npm')
-    .option('--plugins', 'Also refresh marketplace plugins')
-    .option('--all', 'Full update including all plugins (not just router)')
+    .option('--no-plugins', 'Skip marketplace plugins refresh')
+    .option('--all', 'Install ALL plugins (not just router)')
+    .option('--minimal', 'Clean /plugin output (removes marketplace, no lazy loading)')
     .option('--check', 'Dry run - show what would change without making changes')
     .option('-v, --verbose', 'Show detailed output')
     .option('-f, --force', 'Force refresh even if up to date')
