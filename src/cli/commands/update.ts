@@ -97,10 +97,32 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
       result.errors.push(selfUpdateResult.error);
     }
 
-    // If self-update happened, recommend restarting
+    // If self-update happened, spawn NEW CLI to complete remaining steps
     if (result.selfUpdated) {
       console.log(chalk.green(`\n✓ SpecWeave updated to ${result.newVersion}`));
-      console.log(chalk.yellow('  Please restart your terminal and run this command again.\n'));
+      console.log(chalk.blue('  Running post-update tasks with new version...\n'));
+
+      // Build command with same flags, but add --no-self to skip re-updating
+      const flags: string[] = ['--no-self'];
+      if (options.plugins) flags.push('--plugins');
+      if (options.all) flags.push('--all');
+      if (options.verbose) flags.push('--verbose');
+      if (options.force) flags.push('--force');
+      if (options.check) flags.push('--check');
+
+      try {
+        // Spawn NEW binary to run instructions/config/plugins update
+        execSync(`specweave update ${flags.join(' ')}`, {
+          stdio: 'inherit',
+          cwd: projectPath,
+        });
+      } catch (error: any) {
+        // Non-zero exit from spawned process - already printed output
+        if (error.status) {
+          process.exit(error.status);
+        }
+        throw error;
+      }
       return;
     }
   }
@@ -310,6 +332,99 @@ async function validateProjectHealth(projectPath: string): Promise<string[]> {
 }
 
 /**
+ * Fetch what's new from npm package changelog
+ */
+async function fetchWhatsNew(currentVersion: string, latestVersion: string): Promise<string[]> {
+  try {
+    // Try to get changelog from GitHub raw content
+    const https = await import('https');
+
+    return new Promise((resolve) => {
+      const url = 'https://raw.githubusercontent.com/anthropics/specweave/main/CHANGELOG.md';
+
+      const req = https.get(url, { timeout: 5000 }, (res) => {
+        if (res.statusCode !== 200) {
+          resolve([]);
+          return;
+        }
+
+        let data = '';
+        res.on('data', (chunk: Buffer) => { data += chunk.toString(); });
+        res.on('end', () => {
+          const changes = parseChangelogBetweenVersions(data, currentVersion, latestVersion);
+          resolve(changes);
+        });
+      });
+
+      req.on('error', () => resolve([]));
+      req.on('timeout', () => {
+        req.destroy();
+        resolve([]);
+      });
+    });
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Parse changelog entries between two versions
+ */
+function parseChangelogBetweenVersions(changelog: string, fromVersion: string, toVersion: string): string[] {
+  const changes: string[] = [];
+  const lines = changelog.split('\n');
+
+  let inRelevantSection = false;
+  let currentSection = '';
+
+  for (const line of lines) {
+    // Match version headers like ## [1.0.132] or ## [1.0.132] - 2026-01-20
+    const versionMatch = line.match(/^## \[(\d+\.\d+\.\d+)\]/);
+
+    if (versionMatch) {
+      const version = versionMatch[1];
+      const versionNum = versionToNumber(version);
+      const fromNum = versionToNumber(fromVersion);
+      const toNum = versionToNumber(toVersion);
+
+      // Include versions > fromVersion and <= toVersion
+      if (versionNum > fromNum && versionNum <= toNum) {
+        inRelevantSection = true;
+        changes.push(`\n${chalk.cyan.bold(`v${version}`)}`);
+      } else if (versionNum <= fromNum) {
+        inRelevantSection = false;
+      }
+      continue;
+    }
+
+    if (inRelevantSection) {
+      // Match section headers like ### ✨ Features
+      if (line.startsWith('### ')) {
+        currentSection = line.replace('### ', '').trim();
+        changes.push(chalk.yellow(`  ${currentSection}`));
+      }
+      // Match bullet points
+      else if (line.startsWith('- ')) {
+        const item = line.replace('- ', '').trim();
+        // Truncate long items
+        const truncated = item.length > 80 ? item.substring(0, 77) + '...' : item;
+        changes.push(chalk.gray(`    • ${truncated}`));
+      }
+    }
+  }
+
+  return changes.slice(0, 20); // Limit to 20 lines
+}
+
+/**
+ * Convert version string to number for comparison
+ */
+function versionToNumber(version: string): number {
+  const parts = version.split('.').map(Number);
+  return parts[0] * 1000000 + parts[1] * 1000 + parts[2];
+}
+
+/**
  * Self-update SpecWeave CLI via npm
  */
 async function selfUpdateSpecWeave(
@@ -351,15 +466,27 @@ async function selfUpdateSpecWeave(
       return { updated: false };
     }
 
+    spinner.info(`New version available: v${currentVersion} → v${latestVersion}`);
+
+    // Fetch and show what's new
+    spinner.start('Fetching changelog...');
+    const whatsNew = await fetchWhatsNew(currentVersion, latestVersion);
+    spinner.stop();
+
+    if (whatsNew.length > 0) {
+      console.log(chalk.blue.bold('\n  📋 What\'s New:'));
+      whatsNew.forEach(line => console.log(line));
+      console.log('');
+    }
+
     // Dry run - just report
     if (options.check) {
-      spinner.info(`New version available: v${currentVersion} → v${latestVersion}`);
       console.log(chalk.gray('    Run without --check to update'));
       return { updated: false, newVersion: latestVersion };
     }
 
     // Perform update
-    spinner.text = `Updating SpecWeave: v${currentVersion} → v${latestVersion}...`;
+    spinner.start(`Updating SpecWeave: v${currentVersion} → v${latestVersion}...`);
 
     execSync('npm install -g specweave@latest', {
       encoding: 'utf-8',

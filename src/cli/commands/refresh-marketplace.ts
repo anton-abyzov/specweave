@@ -115,6 +115,49 @@ function getPluginsFromMarketplace(marketplacePath: string): string[] {
 }
 
 /**
+ * Get all installed SpecWeave plugins from the registry
+ * Reads ~/.claude/plugins/installed_plugins.json and filters to specweave marketplace
+ */
+function getInstalledSpecweavePlugins(): string[] {
+  const installedPluginsPath = path.join(os.homedir(), '.claude/plugins/installed_plugins.json');
+
+  if (!fs.existsSync(installedPluginsPath)) {
+    return [];
+  }
+
+  try {
+    const content = fs.readFileSync(installedPluginsPath, 'utf8');
+    const data = JSON.parse(content);
+
+    // Filter to only specweave marketplace plugins (format: "plugin-name@specweave")
+    const specweavePlugins: string[] = [];
+    for (const key of Object.keys(data.plugins || {})) {
+      if (key.endsWith('@specweave')) {
+        // Extract plugin name from "plugin-name@specweave"
+        const pluginName = key.replace('@specweave', '');
+        specweavePlugins.push(pluginName);
+      }
+    }
+
+    return specweavePlugins;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Uninstall a plugin via Claude CLI
+ */
+function uninstallPlugin(pluginName: string): { success: boolean; output: string } {
+  // Security: Validate plugin name
+  if (!isValidPluginName(pluginName)) {
+    return { success: false, output: 'Invalid plugin name format' };
+  }
+
+  return runCommand('claude', ['plugin', 'uninstall', pluginName], true);
+}
+
+/**
  * Get version from plugin manifest
  */
 function getPluginVersion(cachePath: string): string {
@@ -643,7 +686,33 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     // LAZY MODE: Install only router plugin
     // Note: Plugin name in marketplace.json is 'sw-router', folder name is 'specweave-router'
     const routerPlugin = 'sw-router';
-    console.log(chalk.yellow(`⚙️  Step 3: Installing router plugin only (lazy mode)${forceMode ? ' + force' : ''}...\n`));
+    const corePlugins = ['sw', 'sw-router']; // Plugins to keep in lazy mode
+
+    // Step 3a: Uninstall non-core plugins to match fresh install state
+    console.log(chalk.yellow('⚙️  Step 3a: Cleaning up non-core plugins...'));
+
+    const installedPlugins = getInstalledSpecweavePlugins();
+    const pluginsToUninstall = installedPlugins.filter(p => !corePlugins.includes(p));
+
+    if (pluginsToUninstall.length > 0) {
+      console.log(chalk.blue(`  Found ${pluginsToUninstall.length} non-core plugin(s) to uninstall`));
+
+      for (const plugin of pluginsToUninstall) {
+        const uninstallResult = uninstallPlugin(plugin);
+        if (uninstallResult.success || uninstallResult.output.includes('not installed')) {
+          console.log(chalk.gray(`  ✓ Uninstalled ${plugin}`));
+        } else if (options.verbose) {
+          console.log(chalk.yellow(`  ⚠ Could not uninstall ${plugin}: ${uninstallResult.output}`));
+        }
+      }
+
+      console.log(chalk.green(`✓ Cleaned up ${pluginsToUninstall.length} non-core plugin(s)\n`));
+    } else {
+      console.log(chalk.green('✓ No non-core plugins to clean up\n'));
+    }
+
+    // Step 3b: Install router
+    console.log(chalk.yellow(`⚙️  Step 3b: Installing router plugin only${forceMode ? ' + force' : ''}...\n`));
 
     if (plugins.includes(routerPlugin)) {
       console.log(chalk.blue(`  ${forceMode ? 'Force reinstalling' : 'Installing'} ${routerPlugin}...`));

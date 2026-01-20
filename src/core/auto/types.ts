@@ -286,7 +286,7 @@ export interface AutoConfig {
 export const DEFAULT_AUTO_CONFIG: AutoConfig = {
   enabled: true,
   maxIterations: 2500,
-  maxTurns: 50, // HARD STOP: Max total turns in auto session (never resets during session)
+  maxTurns: 20, // HARD STOP: Max total turns in auto session (never resets during session)
   maxRetries: 20, // Attempts before escalating stuck session warning (resets when work changes)
   requireTests: false, // Set true to require tests pass before completion
   requireValidation: true, // Run /sw:validate before completion
