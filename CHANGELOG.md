@@ -4,11 +4,11 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
-## [1.0.134] - 2026-01-20
+## [1.0.135] - 2026-01-20
 
 ### ✨ Features
 
-- **Turn counter with HARD STOP**: Auto mode now has a session turn limit (`maxTurns: 50`) that NEVER resets
+- **Turn counter with HARD STOP**: Auto mode now has a session turn limit (`maxTurns: 20`) that NEVER resets
   - Prevents infinite loops even when retry counter resets
   - Turn count persisted across hook invocations via `.stop-auto-turns` file
   - Separate from `maxRetries` which tracks stuck detection (resets when work changes)
