@@ -29,30 +29,27 @@ fi
 log "=== Health check started ==="
 
 # ============================================================================
-# SESSION CLEANUP: Clear stale auto-mode.json (CRITICAL for session-scoped auto)
-# Auto mode MUST be session-scoped - if Claude Code closed, auto mode ends.
+# SESSION CLEANUP: ALWAYS clear auto-mode.json (CRITICAL for session-scoped auto)
+# Auto mode MUST be session-scoped - each new Claude Code session starts FRESH.
+# The file is per-project but MUST only affect the session that created it.
 # ============================================================================
 
 AUTO_MODE_FILE=".specweave/state/auto-mode.json"
+STATE_DIR=".specweave/state"
+
+# ALWAYS clear auto-mode.json on session start
+# This ensures auto mode is truly session-scoped:
+# - Session A runs /sw:auto → creates auto-mode.json
+# - Session A closes → file remains but is now orphaned
+# - Session B starts → SessionStart hook clears the file
+# - Session B is NOT in auto mode (correct behavior)
 if [ -f "$AUTO_MODE_FILE" ]; then
-    # Get file modification time (seconds since epoch)
-    FILE_MTIME=$(stat -f%m "$AUTO_MODE_FILE" 2>/dev/null || stat -c%Y "$AUTO_MODE_FILE" 2>/dev/null || echo "0")
-    NOW=$(date +%s)
-    AGE_SECONDS=$((NOW - FILE_MTIME))
-
-    # If auto-mode.json is older than 30 minutes, it's definitely stale
-    # (Claude Code session wouldn't have a 30-minute gap without activity)
-    MAX_AGE_SECONDS=1800
-
-    if [ "$AGE_SECONDS" -gt "$MAX_AGE_SECONDS" ]; then
-        log "STALE SESSION: Removing auto-mode.json (age: ${AGE_SECONDS}s > ${MAX_AGE_SECONDS}s)"
-        rm -f "$AUTO_MODE_FILE" 2>/dev/null
-        rm -f ".specweave/state/.stop-auto-dedup" 2>/dev/null
-        rm -f ".specweave/state/.stop-auto-retry" 2>/dev/null
-        log "Cleaned up stale auto-mode session files"
-    else
-        log "Auto-mode session exists (age: ${AGE_SECONDS}s) - may be valid continuation"
-    fi
+    log "SESSION START: Clearing previous auto-mode.json (session-scoped cleanup)"
+    rm -f "$AUTO_MODE_FILE" 2>/dev/null
+    rm -f "$STATE_DIR/.stop-auto-dedup" 2>/dev/null
+    rm -f "$STATE_DIR/.stop-auto-retry" 2>/dev/null
+    rm -f "$STATE_DIR/.stop-auto-turns" 2>/dev/null
+    log "Cleared all auto-mode session files - new session starts fresh"
 fi
 
 # Check 1: Is marketplace installed?

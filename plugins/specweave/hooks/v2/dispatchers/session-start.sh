@@ -18,6 +18,24 @@ while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
 done
 [[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
 
+# ============================================================================
+# SESSION CLEANUP: ALWAYS clear auto-mode.json (CRITICAL for session-scoped auto)
+# Auto mode MUST be session-scoped - each new Claude Code session starts FRESH.
+# This ensures: Session A runs /sw:auto → closes → Session B starts CLEAN
+# ============================================================================
+STATE_DIR="$PROJECT_ROOT/.specweave/state"
+AUTO_MODE_FILE="$STATE_DIR/auto-mode.json"
+
+if [[ -f "$AUTO_MODE_FILE" ]]; then
+  rm -f "$AUTO_MODE_FILE" 2>/dev/null
+  rm -f "$STATE_DIR/.stop-auto-dedup" 2>/dev/null
+  rm -f "$STATE_DIR/.stop-auto-retry" 2>/dev/null
+  rm -f "$STATE_DIR/.stop-auto-turns" 2>/dev/null
+  # Log cleanup (non-blocking, fire-and-forget)
+  mkdir -p "$PROJECT_ROOT/.specweave/logs" 2>/dev/null
+  echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SessionStart: Cleared auto-mode session files (session-scoped)" >> "$PROJECT_ROOT/.specweave/logs/session.log" 2>/dev/null
+fi
+
 # Read stdin to extract agent_type (Claude Code 2.1.2+)
 INPUT=$(cat 2>/dev/null || echo '{}')
 AGENT_TYPE=""

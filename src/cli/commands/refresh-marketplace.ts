@@ -15,14 +15,22 @@
  *   - No intermediate cache needed (marketplace IS the cache!)
  *   - Result: ~5K tokens at startup instead of ~60K (90% savings!)
  *
+ * MINIMAL MODE (--minimal):
+ *   - Removes specweave marketplace entirely
+ *   - Installs only core plugins (sw, sw-router)
+ *   - Clean /plugin output (only shows installed plugins)
+ *   - Tradeoff: Lazy loading disabled (use --all to reinstall all)
+ *
  * Usage:
  *   specweave refresh-marketplace           # Lazy mode (default) - router only
  *   specweave refresh-marketplace --all     # Legacy mode - install all plugins
+ *   specweave refresh-marketplace --minimal # Minimal mode - clean /plugin output
  *   specweave refresh-marketplace --local   # Use local dev version
  *   specweave refresh-marketplace --github  # Use GitHub version (default)
  *
  * @since 1.0.60
  * @updated 1.0.122 - Added lazy loading support
+ * @updated 1.0.138 - Added minimal mode for clean /plugin output
  */
 
 import chalk from 'chalk';
@@ -48,6 +56,9 @@ interface RefreshOptions {
   force?: boolean;
   /** Install ALL plugins (legacy mode). Default: false (lazy loading - router only) */
   all?: boolean;
+  /** Minimal mode: Remove marketplace entirely, install only core plugins directly.
+   * Results in clean /plugin output but disables lazy loading. */
+  minimal?: boolean;
 }
 
 interface PluginResult {
@@ -155,6 +166,33 @@ function uninstallPlugin(pluginName: string): { success: boolean; output: string
   }
 
   return runCommand('claude', ['plugin', 'uninstall', pluginName], true);
+}
+
+/**
+ * Disable a plugin via Claude CLI (keeps it in marketplace but hides from /plugin)
+ */
+function disablePlugin(pluginName: string): { success: boolean; output: string } {
+  // Security: Validate plugin name
+  if (!isValidPluginName(pluginName)) {
+    return { success: false, output: 'Invalid plugin name format' };
+  }
+
+  return runCommand('claude', ['plugin', 'disable', pluginName], true);
+}
+
+/**
+ * Remove a marketplace entirely
+ */
+function removeMarketplace(name: string): { success: boolean; output: string } {
+  return runCommand('claude', ['plugin', 'marketplace', 'remove', name], true);
+}
+
+/**
+ * Install a plugin directly from GitHub URL (not from marketplace)
+ */
+function installPluginFromGitHub(repo: string, pluginPath: string): { success: boolean; output: string } {
+  const url = `https://github.com/${repo}/tree/main/${pluginPath}`;
+  return runCommand('claude', ['plugin', 'install', url], true);
 }
 
 /**
@@ -534,7 +572,198 @@ async function preRefreshCacheCheck(verbose: boolean = false): Promise<void> {
   console.log('');
 }
 
+/**
+ * Minimal mode: Remove marketplace entirely, install only core plugins directly.
+ * This results in a clean /plugin output with only installed plugins visible.
+ * Tradeoff: Disables lazy loading capability.
+ */
+async function runMinimalMode(options: RefreshOptions): Promise<void> {
+  const forceMode = options.force ?? false;
+
+  console.log(chalk.blue.bold('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+  console.log(chalk.blue.bold(`  SpecWeave Minimal Mode`));
+  console.log(chalk.blue.bold(`  Clean /plugin output | No lazy loading`));
+  console.log(chalk.blue.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
+
+  console.log(chalk.yellow('⚠️  Minimal mode:'));
+  console.log(chalk.gray('   • Removes specweave marketplace entirely'));
+  console.log(chalk.gray('   • Installs only core plugins (sw, sw-router)'));
+  console.log(chalk.gray('   • /plugin will show only installed plugins'));
+  console.log(chalk.gray('   • Lazy loading will NOT work (use --all to reload)\n'));
+
+  // Step 1: Uninstall all specweave plugins
+  console.log(chalk.yellow('📦 Step 1: Uninstalling all SpecWeave plugins...'));
+
+  const installedPlugins = getInstalledSpecweavePlugins();
+  let uninstalledCount = 0;
+
+  for (const plugin of installedPlugins) {
+    const result = uninstallPlugin(plugin);
+    if (result.success || result.output.includes('not installed')) {
+      uninstalledCount++;
+      if (options.verbose) {
+        console.log(chalk.gray(`  ✓ Uninstalled ${plugin}`));
+      }
+    }
+  }
+
+  console.log(chalk.green(`✓ Uninstalled ${uninstalledCount} plugin(s)\n`));
+
+  // Step 2: Remove the specweave marketplace
+  console.log(chalk.yellow('🗑️  Step 2: Removing specweave marketplace...'));
+
+  const marketplaceExists = checkMarketplaceExists();
+  if (marketplaceExists) {
+    const removeResult = removeMarketplace(MARKETPLACE_NAME);
+    if (removeResult.success || removeResult.output.includes('removed') || removeResult.output.includes('not found')) {
+      console.log(chalk.green('✓ Marketplace removed\n'));
+    } else {
+      console.log(chalk.yellow('⚠ Could not remove marketplace'));
+      if (options.verbose) {
+        console.log(chalk.gray(`  ${removeResult.output}`));
+      }
+      console.log('');
+    }
+  } else {
+    console.log(chalk.blue('ℹ Marketplace not found - already removed\n'));
+  }
+
+  // Step 3: Clean up all caches
+  console.log(chalk.yellow('🧹 Step 3: Cleaning up all caches...'));
+
+  // Clean plugin cache
+  const pluginCacheDir = path.join(os.homedir(), '.claude', 'plugins', 'cache', 'specweave');
+  if (fs.existsSync(pluginCacheDir)) {
+    try {
+      fs.rmSync(pluginCacheDir, { recursive: true, force: true });
+      console.log(chalk.gray('  ✓ Removed plugin cache'));
+    } catch (e) {
+      if (options.verbose) {
+        console.log(chalk.yellow(`  ⚠ Could not remove plugin cache: ${e}`));
+      }
+    }
+  }
+
+  // Clean skills directory
+  const skillsDir = path.join(os.homedir(), '.claude', 'skills');
+  if (fs.existsSync(skillsDir)) {
+    const skillDirs = fs.readdirSync(skillsDir).filter(name => {
+      const dirPath = path.join(skillsDir, name);
+      return fs.statSync(dirPath).isDirectory() && name.startsWith('specweave');
+    });
+
+    for (const dir of skillDirs) {
+      try {
+        fs.rmSync(path.join(skillsDir, dir), { recursive: true, force: true });
+        if (options.verbose) {
+          console.log(chalk.gray(`  ✓ Removed skills/${dir}`));
+        }
+      } catch (e) {
+        // Ignore
+      }
+    }
+
+    if (skillDirs.length > 0) {
+      console.log(chalk.gray(`  ✓ Removed ${skillDirs.length} skill folder(s)`));
+    }
+  }
+
+  // Clean marketplace directory
+  const marketplaceDir = path.join(os.homedir(), '.claude', 'plugins', 'marketplaces', 'specweave');
+  if (fs.existsSync(marketplaceDir)) {
+    try {
+      fs.rmSync(marketplaceDir, { recursive: true, force: true });
+      console.log(chalk.gray('  ✓ Removed marketplace directory'));
+    } catch (e) {
+      if (options.verbose) {
+        console.log(chalk.yellow(`  ⚠ Could not remove marketplace directory: ${e}`));
+      }
+    }
+  }
+
+  // Clean settings.json
+  const settingsPath = path.join(os.homedir(), '.claude', 'settings.json');
+  if (fs.existsSync(settingsPath)) {
+    try {
+      const settingsContent = fs.readFileSync(settingsPath, 'utf8');
+      const settings = JSON.parse(settingsContent);
+
+      if (settings.enabledPlugins) {
+        for (const pluginKey of Object.keys(settings.enabledPlugins)) {
+          if (pluginKey.endsWith('@specweave')) {
+            delete settings.enabledPlugins[pluginKey];
+          }
+        }
+        fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf8');
+        console.log(chalk.gray('  ✓ Cleaned settings.json'));
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  console.log(chalk.green('✓ All caches cleaned\n'));
+
+  // Step 4: Install core plugins directly from GitHub
+  console.log(chalk.yellow('📥 Step 4: Installing core plugins from GitHub...'));
+
+  // First, add the marketplace back temporarily to install plugins
+  const addResult = runCommand('claude', ['plugin', 'marketplace', 'add', GITHUB_REPO], true);
+  if (!addResult.success && !addResult.output.includes('already')) {
+    console.log(chalk.red('✗ Failed to add marketplace for installation'));
+    console.log(chalk.gray(addResult.output));
+    process.exit(1);
+  }
+
+  // Install core plugins
+  const corePlugins = ['sw', 'sw-router'];
+  let installedCount = 0;
+
+  for (const plugin of corePlugins) {
+    console.log(chalk.blue(`  Installing ${plugin}...`));
+    const result = installPlugin(plugin, forceMode);
+    if (result.success) {
+      installedCount++;
+      console.log(chalk.green(`  ✓ ${plugin} installed`));
+    } else {
+      console.log(chalk.red(`  ✗ ${plugin} failed`));
+      if (options.verbose) {
+        console.log(chalk.gray(`    ${result.error}`));
+      }
+    }
+  }
+
+  // Now remove the marketplace again to clean /plugin output
+  const removeResult2 = removeMarketplace(MARKETPLACE_NAME);
+  if (removeResult2.success || removeResult2.output.includes('removed')) {
+    console.log(chalk.gray('  ✓ Marketplace removed after installation'));
+  }
+
+  console.log('');
+  console.log(chalk.green.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+  console.log(chalk.green.bold('  ✓ MINIMAL MODE COMPLETE'));
+  console.log(chalk.green.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'));
+
+  console.log(`  Installed: ${installedCount} core plugin(s)`);
+  console.log(chalk.cyan('  /plugin will now show only installed plugins\n'));
+
+  console.log(chalk.yellow('⚠️  Note: Lazy loading is disabled in minimal mode'));
+  console.log(chalk.gray('   To re-enable lazy loading, run:'));
+  console.log(chalk.gray('   specweave refresh-marketplace\n'));
+
+  console.log(chalk.blue('Next steps:'));
+  console.log('  1. Restart Claude Code for changes to take effect');
+  console.log('  2. Run /plugin to verify clean output');
+  console.log('');
+}
+
 export async function refreshMarketplaceCommand(options: RefreshOptions = {}): Promise<void> {
+  // Handle minimal mode separately - completely different flow
+  if (options.minimal) {
+    await runMinimalMode(options);
+    return;
+  }
+
   // Determine mode - GitHub is default per CLAUDE.md rules
   const sourceMode = options.local ? 'local' : 'github';
   const forceMode = options.force ?? false;
@@ -552,7 +781,8 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     console.log(chalk.cyan('🚀 Lazy loading mode (default):'));
     console.log(chalk.gray('   • Install only router plugin (~500 tokens)'));
     console.log(chalk.gray('   • Other plugins cached for on-demand loading'));
-    console.log(chalk.gray('   • Use --all flag to install all plugins\n'));
+    console.log(chalk.gray('   • Use --all flag to install all plugins'));
+    console.log(chalk.gray('   • Use --minimal flag for clean /plugin output (no lazy loading)\n'));
   } else {
     console.log(chalk.yellow('⚠️  All plugins mode (legacy):'));
     console.log(chalk.gray('   • Installing all 24 plugins (~60K tokens)'));
@@ -740,8 +970,97 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
       }
     }
 
-    // Step 3b: Install router
-    console.log(chalk.yellow(`⚙️  Step 3b: Installing router plugin only${forceMode ? ' + force' : ''}...\n`));
+    // CRITICAL: Also clean up ~/.claude/plugins/cache/specweave/ for non-core plugins
+    // This is where Claude Code discovers plugins from, even if not "installed"
+    const pluginCacheDir = path.join(os.homedir(), '.claude', 'plugins', 'cache', 'specweave');
+    const corePluginCacheDirs = ['sw', 'sw-router']; // Cache folder names to keep
+
+    if (fs.existsSync(pluginCacheDir)) {
+      const cacheDirs = fs.readdirSync(pluginCacheDir).filter(name => {
+        const dirPath = path.join(pluginCacheDir, name);
+        return fs.statSync(dirPath).isDirectory();
+      });
+
+      const cacheDirsToRemove = cacheDirs.filter(dir => !corePluginCacheDirs.includes(dir));
+
+      if (cacheDirsToRemove.length > 0) {
+        console.log(chalk.blue(`  Cleaning up ${cacheDirsToRemove.length} cached plugin(s)...`));
+
+        for (const dir of cacheDirsToRemove) {
+          try {
+            fs.rmSync(path.join(pluginCacheDir, dir), { recursive: true, force: true });
+            console.log(chalk.gray(`  ✓ Removed cache: ${dir}/`));
+          } catch (e) {
+            if (options.verbose) {
+              console.log(chalk.yellow(`  ⚠ Could not remove cache: ${dir}/`));
+            }
+          }
+        }
+
+        console.log(chalk.green(`✓ Cleaned up ${cacheDirsToRemove.length} cached plugin(s)\n`));
+      } else {
+        console.log(chalk.green('✓ No cached plugins to clean up\n'));
+      }
+    }
+
+    // Also clean up settings.json enabledPlugins for non-core specweave plugins
+    const settingsPath = path.join(os.homedir(), '.claude', 'settings.json');
+    const coreEnabledPlugins = ['sw@specweave', 'sw-router@specweave'];
+
+    if (fs.existsSync(settingsPath)) {
+      try {
+        const settingsContent = fs.readFileSync(settingsPath, 'utf8');
+        const settings = JSON.parse(settingsContent);
+
+        if (settings.enabledPlugins) {
+          const pluginsToDisable: string[] = [];
+
+          for (const pluginKey of Object.keys(settings.enabledPlugins)) {
+            // Only target specweave plugins, not official ones
+            if (pluginKey.endsWith('@specweave') && !coreEnabledPlugins.includes(pluginKey)) {
+              pluginsToDisable.push(pluginKey);
+              delete settings.enabledPlugins[pluginKey];
+            }
+          }
+
+          if (pluginsToDisable.length > 0) {
+            fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2) + '\n', 'utf8');
+            console.log(chalk.blue(`  Disabled ${pluginsToDisable.length} plugin(s) in settings.json`));
+            if (options.verbose) {
+              for (const p of pluginsToDisable) {
+                console.log(chalk.gray(`  ✓ Disabled: ${p}`));
+              }
+            }
+          }
+        }
+      } catch (e) {
+        if (options.verbose) {
+          console.log(chalk.yellow(`  ⚠ Could not clean settings.json: ${e}`));
+        }
+      }
+    }
+
+    // Step 3b: Disable all non-core marketplace plugins
+    // This ensures they don't show up in /plugin as enabled
+    console.log(chalk.yellow('⚙️  Step 3b: Disabling non-core marketplace plugins...'));
+
+    const nonCorePlugins = plugins.filter(p => !corePlugins.includes(p));
+    let disabledCount = 0;
+
+    for (const plugin of nonCorePlugins) {
+      const disableResult = disablePlugin(plugin);
+      if (disableResult.success || disableResult.output.includes('already disabled') || disableResult.output.includes('not installed')) {
+        disabledCount++;
+        if (options.verbose) {
+          console.log(chalk.gray(`  ✓ Disabled ${plugin}`));
+        }
+      }
+    }
+
+    console.log(chalk.green(`✓ Disabled ${disabledCount} non-core marketplace plugin(s)\n`));
+
+    // Step 3c: Install router
+    console.log(chalk.yellow(`⚙️  Step 3c: Installing router plugin only${forceMode ? ' + force' : ''}...\n`));
 
     if (plugins.includes(routerPlugin)) {
       console.log(chalk.blue(`  ${forceMode ? 'Force reinstalling' : 'Installing'} ${routerPlugin}...`));
