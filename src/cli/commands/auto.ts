@@ -217,7 +217,7 @@ export async function handleAutoCommand(
       activateIncrement(incrementsDir, inc);
     }
 
-    printStartMessage([...activeIncrements, ...backlogIncrements], configPath);
+    printStartMessage([...activeIncrements, ...backlogIncrements], configPath, projectPath);
     return;
   }
 
@@ -275,7 +275,7 @@ export async function handleAutoCommand(
       activateIncrement(incrementsDir, inc);
     }
 
-    printStartMessage(toActivate, configPath);
+    printStartMessage(toActivate, configPath, projectPath);
     return;
   }
 
@@ -301,7 +301,7 @@ export async function handleAutoCommand(
       console.log('');
     }
 
-    printStartMessage(activeIncrements, configPath);
+    printStartMessage(activeIncrements, configPath, projectPath);
   } else if (backlogIncrements.length > 0) {
     console.log(chalk.blue('ℹ️  No active increments, but backlog exists:'));
     console.log('');
@@ -410,9 +410,9 @@ function cleanupStateFiles(stateDir: string): void {
 }
 
 /**
- * Print start message
+ * Print start message and create session marker file
  */
-function printStartMessage(incrementIds: string[], configPath: string): void {
+function printStartMessage(incrementIds: string[], configPath: string, projectPath?: string): void {
   // Read config for TDD mode
   let tddMode = false;
   let requireTests = false;
@@ -425,6 +425,32 @@ function printStartMessage(incrementIds: string[], configPath: string): void {
     } catch {
       // Ignore
     }
+  }
+
+  // Create auto-mode.json session marker (CRITICAL for stop hook to fire)
+  // This file indicates that auto mode was EXPLICITLY started
+  // Without this file, stop hook silently approves (no blocking)
+  const derivedProjectPath = projectPath || path.dirname(path.dirname(configPath));
+  const stateDir = path.join(derivedProjectPath, '.specweave/state');
+  const autoModeFile = path.join(stateDir, 'auto-mode.json');
+
+  try {
+    if (!fs.existsSync(stateDir)) {
+      fs.mkdirSync(stateDir, { recursive: true });
+    }
+
+    const sessionMarker = {
+      active: true,
+      incrementIds: incrementIds,
+      startedAt: new Date().toISOString(),
+      tddMode: tddMode,
+      requireTests: requireTests,
+    };
+
+    fs.writeFileSync(autoModeFile, JSON.stringify(sessionMarker, null, 2));
+  } catch (err) {
+    // Non-fatal - continue even if we can't write the marker
+    console.log(chalk.yellow('⚠️  Could not create session marker: ' + (err instanceof Error ? err.message : String(err))));
   }
 
   console.log('');
@@ -449,19 +475,19 @@ function printStartMessage(incrementIds: string[], configPath: string): void {
   }
   console.log('');
 
-  console.log(chalk.bold('How it works (Pure Ralph Pattern):'));
+  console.log(chalk.bold('How it works:'));
   console.log('');
-  console.log('  Stop hook asks: "Are there active increments?"');
-  console.log('    • YES → Block exit, show "Continue with /sw:do"');
-  console.log('    • NO  → Approve exit, session complete');
+  console.log('  Stop hook checks auto-mode.json marker file:');
+  console.log('    • File exists + active=true → Block exit until work complete');
+  console.log('    • File missing or active=false → Normal exit allowed');
   console.log('');
-  console.log(chalk.gray('  No session files. No complex state.'));
-  console.log(chalk.gray('  The increment metadata IS the state.'));
+  console.log(chalk.gray('  Session marker created at: .specweave/state/auto-mode.json'));
   console.log('');
 
   console.log('Session ends when:');
   console.log('  • All tasks marked [x] complete');
-  console.log('  • Increment status changes to "completed"');
+  console.log('  • Run /sw:done <id> to close increment');
+  console.log('  • Or /sw:cancel-auto to stop early');
   console.log('');
 
   console.log(chalk.blue('Start working with: ') + chalk.cyan('/sw:do'));
