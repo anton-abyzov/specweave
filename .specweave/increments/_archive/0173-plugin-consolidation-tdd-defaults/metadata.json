@@ -3,10 +3,11 @@
   "increment": "0173-plugin-consolidation-tdd-defaults",
   "title": "Plugin Consolidation and TDD-First Defaults",
   "type": "feature",
-  "status": "in_progress",
+  "status": "completed",
   "priority": "high",
   "createdAt": "2026-01-19T12:30:00Z",
-  "updatedAt": "2026-01-19T12:30:00Z",
+  "updatedAt": "2026-01-20T00:31:00Z",
+  "completedAt": "2026-01-20T00:31:00Z",
   "feature": {
     "id": "FS-073",
     "name": "Plugin Architecture Improvements"

@@ -77,7 +77,8 @@ AUTO_ENABLED="true"
 REQUIRE_TESTS="false"
 REQUIRE_VALIDATION="true"
 REQUIRE_JUDGE_LLM="false"
-MAX_RETRIES="5"
+MAX_TURNS="50"           # HARD STOP: Total turns in session (NEVER resets during session)
+MAX_RETRIES="20"         # Stuck detection: Retries on same work (resets when work changes)
 TDD_MODE="false"
 SKIP_QUALITY_GATES="false"
 TEST_COMMAND=""
@@ -87,7 +88,10 @@ if [ -f "$CONFIG_FILE" ]; then
     REQUIRE_TESTS=$(jq -r '.auto.requireTests // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
     REQUIRE_VALIDATION=$(jq -r '.auto.requireValidation // true' "$CONFIG_FILE" 2>/dev/null || echo "true")
     REQUIRE_JUDGE_LLM=$(jq -r '.auto.requireJudgeLLM // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
-    MAX_RETRIES=$(jq -r '.auto.maxRetries // 5' "$CONFIG_FILE" 2>/dev/null || echo "5")
+    # maxTurns = HARD STOP (total turns in session, NEVER resets) - default 50
+    MAX_TURNS=$(jq -r '.auto.maxTurns // 50' "$CONFIG_FILE" 2>/dev/null || echo "50")
+    # maxRetries = stuck detection (resets when increments change) - default 20
+    MAX_RETRIES=$(jq -r '.auto.maxRetries // 20' "$CONFIG_FILE" 2>/dev/null || echo "20")
     TEST_COMMAND=$(jq -r '.auto.testCommand // ""' "$CONFIG_FILE" 2>/dev/null || echo "")
     SKIP_QUALITY_GATES=$(jq -r '.auto.skipQualityGates // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
     TDD_MODE_CONFIG=$(jq -r '.testing.defaultTestMode // "standard"' "$CONFIG_FILE" 2>/dev/null || echo "standard")
@@ -118,10 +122,11 @@ MAX_SESSION_AGE=1800  # 30 minutes
 
 if [ "$SESSION_AGE" -gt "$MAX_SESSION_AGE" ]; then
     log "STALE SESSION DETECTED: Session file is ${SESSION_AGE}s old (max: ${MAX_SESSION_AGE}s)"
-    # Clean up stale session and exit cleanly
+    # Clean up stale session and ALL state files
     rm -f "$AUTO_SESSION_FILE" 2>/dev/null
     rm -f "$STATE_DIR/.stop-auto-dedup" 2>/dev/null
     rm -f "$STATE_DIR/.stop-auto-retry" 2>/dev/null
+    rm -f "$STATE_DIR/.stop-auto-turns" 2>/dev/null  # Also clear turn counter
     silent_approve "Stale auto-mode session cleared (inactive for ${SESSION_AGE}s)"
 fi
 
@@ -134,8 +139,76 @@ fi
 # Update session file mtime to keep it fresh (touch it)
 touch "$AUTO_SESSION_FILE" 2>/dev/null
 
-log "Config: TDD=$TDD_MODE, RequireTests=$REQUIRE_TESTS, RequireValidation=$REQUIRE_VALIDATION, RequireJudgeLLM=$REQUIRE_JUDGE_LLM, MaxRetries=$MAX_RETRIES"
+log "Config: TDD=$TDD_MODE, RequireTests=$REQUIRE_TESTS, RequireValidation=$REQUIRE_VALIDATION, RequireJudgeLLM=$REQUIRE_JUDGE_LLM, MaxTurns=$MAX_TURNS, MaxRetries=$MAX_RETRIES"
 log "Auto mode session active: $AUTO_SESSION_ACTIVE"
+
+# ============================================================================
+# TURN COUNTER - HARD STOP after maxTurns (NEVER resets during session)
+# This is the PRIMARY limit on session length. Unlike retry counter which
+# resets when increments change, this counter NEVER resets during a session.
+# ============================================================================
+
+TURN_FILE="$STATE_DIR/.stop-auto-turns"
+CURRENT_TURN=1
+
+# Read and increment turn counter (atomic operation)
+if [ -f "$TURN_FILE" ]; then
+    STORED_TURN=$(cat "$TURN_FILE" 2>/dev/null || echo "0")
+    # Validate it's a number
+    if [[ "$STORED_TURN" =~ ^[0-9]+$ ]]; then
+        CURRENT_TURN=$((STORED_TURN + 1))
+    fi
+fi
+
+# Write new turn count (atomic via temp file)
+echo "$CURRENT_TURN" > "$TURN_FILE.tmp" 2>/dev/null && mv "$TURN_FILE.tmp" "$TURN_FILE" 2>/dev/null
+
+log "Turn counter: $CURRENT_TURN / $MAX_TURNS"
+
+# HARD STOP: If turn count reaches limit, end session immediately
+if [ "$CURRENT_TURN" -ge "$MAX_TURNS" ]; then
+    log "HARD STOP: Turn limit reached ($CURRENT_TURN >= $MAX_TURNS)"
+
+    # Clean up all state files
+    rm -f "$TURN_FILE" 2>/dev/null
+    rm -f "$STATE_DIR/.stop-auto-dedup" 2>/dev/null
+    rm -f "$STATE_DIR/.stop-auto-retry" 2>/dev/null
+    rm -f "$AUTO_SESSION_FILE" 2>/dev/null
+
+    # Get active increments for the message
+    ACTIVE_INCS=$(find "$INCREMENTS_DIR" -maxdepth 2 -name "metadata.json" \
+        -exec grep -l '"status"[[:space:]]*:[[:space:]]*"active\|"status"[[:space:]]*:[[:space:]]*"in-progress' {} \; 2>/dev/null \
+        | sed 's|.*/\([^/]*\)/metadata.json|\1|' | sort | tr '\n' ', ' | sed 's/,$//')
+
+    TURN_LIMIT_MSG="
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🛑 SESSION TURN LIMIT REACHED ($CURRENT_TURN/$MAX_TURNS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The auto mode session has reached its maximum turn limit.
+This is a safety mechanism to prevent runaway sessions.
+
+📋 REMAINING WORK:
+   • Active increment(s): ${ACTIVE_INCS:-none}
+
+🔧 OPTIONS:
+   1. Start a new auto session: /sw:auto
+   2. Continue manually: /sw:do
+   3. Check status: /sw:progress
+
+💡 To increase turn limit, set in .specweave/config.json:
+   { \"auto\": { \"maxTurns\": 100 } }
+
+   Current limit: $MAX_TURNS turns
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    jq -n \
+        --arg decision "approve" \
+        --arg reason "Turn limit reached: $CURRENT_TURN/$MAX_TURNS turns" \
+        --arg msg "$TURN_LIMIT_MSG" \
+        '{decision: $decision, reason: $reason, systemMessage: $msg}'
+    exit 0
+fi
 
 # ============================================================================
 # DEDUPLICATION - Prevent feedback loops (Claude Code UI bug workaround)
@@ -221,7 +294,8 @@ clear_retry_counter() {
 # Function to clear auto-mode session (called when all work completes)
 clear_auto_session() {
     rm -f "$AUTO_SESSION_FILE" 2>/dev/null
-    log "Auto-mode session cleared"
+    rm -f "$TURN_FILE" 2>/dev/null  # Also clear turn counter on session end
+    log "Auto-mode session cleared (including turn counter)"
 }
 
 # ============================================================================
@@ -443,6 +517,11 @@ INCOMPLETE_INCS=""
 READY_TO_CLOSE=""
 VALIDATION_ERRORS=""
 
+# Cache for first incomplete increment (avoids redundant calculation later)
+FIRST_INC_PENDING_CACHED=""
+FIRST_INC_ACS_CACHED=""
+FIRST_INC_CACHED=""
+
 for meta_file in $ACTIVE_METADATA_FILES; do
     # Extract increment ID from path
     inc_id=$(echo "$meta_file" | sed 's|.*/\([^/]*\)/metadata.json|\1|')
@@ -452,15 +531,24 @@ for meta_file in $ACTIVE_METADATA_FILES; do
     if [ "$SKIP_QUALITY_GATES" = "true" ]; then
         # Skip validation, just check task status
         pending=$(count_pending_tasks "$inc_id")
+        open_acs=$(count_open_acs "$inc_id")
         if [ "$pending" -eq 0 ]; then
             log "SKIP_QUALITY_GATES: $inc_id has no pending tasks, marking ready"
             READY_TO_CLOSE="$READY_TO_CLOSE $inc_id"
         else
             INCOMPLETE_INCS="$INCOMPLETE_INCS $inc_id"
             VALIDATION_ERRORS="$VALIDATION_ERRORS|$inc_id:$pending tasks pending"
+            # Cache first incomplete increment's stats
+            if [ -z "$FIRST_INC_CACHED" ]; then
+                FIRST_INC_CACHED="$inc_id"
+                FIRST_INC_PENDING_CACHED="$pending"
+                FIRST_INC_ACS_CACHED="$open_acs"
+            fi
         fi
     else
-        # Full validation
+        # Full validation - get counts first for caching
+        pending=$(count_pending_tasks "$inc_id")
+        open_acs=$(count_open_acs "$inc_id")
         result=$(validate_increment "$inc_id")
 
         if [ "$result" = "valid" ]; then
@@ -471,6 +559,12 @@ for meta_file in $ACTIVE_METADATA_FILES; do
             log "INVALID: $inc_id - $reason"
             INCOMPLETE_INCS="$INCOMPLETE_INCS $inc_id"
             VALIDATION_ERRORS="$VALIDATION_ERRORS|$inc_id:$reason"
+            # Cache first incomplete increment's stats
+            if [ -z "$FIRST_INC_CACHED" ]; then
+                FIRST_INC_CACHED="$inc_id"
+                FIRST_INC_PENDING_CACHED="$pending"
+                FIRST_INC_ACS_CACHED="$open_acs"
+            fi
         fi
     fi
 done
@@ -708,7 +802,8 @@ if [ "$CURRENT_RETRY" -ge "$MAX_RETRIES_BEFORE_ESCALATE" ]; then
 "
 fi
 
-MSG="${MSG}🔄 $REMAINING_COUNT increment(s) need work: $REMAINING_INCS (attempt $CURRENT_RETRY/$MAX_RETRIES_BEFORE_ESCALATE)"
+MSG="${MSG}🔄 $REMAINING_COUNT increment(s) need work: $REMAINING_INCS
+📊 Session: turn $CURRENT_TURN/$MAX_TURNS | stuck retry $CURRENT_RETRY/$MAX_RETRIES_BEFORE_ESCALATE"
 
 # Add validation errors if any
 if [ -n "$VALIDATION_ERRORS" ]; then
@@ -820,18 +915,19 @@ $STEPS
 
 # ============================================================================
 # CIRCUIT BREAKER: Prevent infinite loops after MAX_RETRIES
+# NOTE: Uses -ge (>=) to trigger AT the limit, not after it
 # ============================================================================
 
-if [ "$CURRENT_RETRY" -gt "$MAX_RETRIES_BEFORE_ESCALATE" ]; then
-    log "CIRCUIT BREAKER: Exceeded $MAX_RETRIES_BEFORE_ESCALATE retries, approving to break loop"
+if [ "$CURRENT_RETRY" -ge "$MAX_RETRIES_BEFORE_ESCALATE" ]; then
+    log "CIRCUIT BREAKER: Reached $MAX_RETRIES_BEFORE_ESCALATE stuck retries (on same work), approving to break loop"
 
     CIRCUIT_MSG="
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🛑 CIRCUIT BREAKER ACTIVATED (attempt $CURRENT_RETRY/$MAX_RETRIES_BEFORE_ESCALATE)
+🛑 STUCK SESSION BREAKER (retry $CURRENT_RETRY/$MAX_RETRIES_BEFORE_ESCALATE on same work)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-⚠️  Stop hook has fired $CURRENT_RETRY times without completion.
-    Breaking infinite loop to prevent session freeze.
+⚠️  Stop hook has fired $CURRENT_RETRY times on the SAME incomplete work.
+    This suggests the session is stuck and not making progress.
 
 📋 REMAINING WORK:
    • $REMAINING_COUNT active increment(s): $REMAINING_INCS
@@ -841,8 +937,11 @@ if [ "$CURRENT_RETRY" -gt "$MAX_RETRIES_BEFORE_ESCALATE" ]; then
    2. Run /sw:do to complete remaining tasks
    3. Run /sw:done $FIRST_INC when ready to close
 
-💡 To increase retry limit, set in .specweave/config.json:
+💡 To increase stuck retry limit, set in .specweave/config.json:
    { \"auto\": { \"maxRetries\": 50 } }
+
+   NOTE: maxRetries tracks stuck retries on SAME work.
+   For total session limit, use maxTurns instead.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
     # Clear retry counter and auto session to prevent immediate re-triggering
@@ -851,7 +950,7 @@ if [ "$CURRENT_RETRY" -gt "$MAX_RETRIES_BEFORE_ESCALATE" ]; then
 
     jq -n \
         --arg decision "approve" \
-        --arg reason "Circuit breaker: exceeded $MAX_RETRIES_BEFORE_ESCALATE retries" \
+        --arg reason "Stuck session: $CURRENT_RETRY retries on same incomplete work" \
         --arg msg "$CIRCUIT_MSG" \
         '{decision: $decision, reason: $reason, systemMessage: $msg}'
     exit 0
@@ -871,8 +970,15 @@ fi
 # Build success criteria string with MANDATORY instructions
 SUCCESS_CRITERIA=""
 NEXT_COMMAND=""
-pending_count=$(count_pending_tasks "$FIRST_INC")
-open_acs=$(count_open_acs "$FIRST_INC")
+
+# Use cached values if available, otherwise calculate (fallback)
+if [ -n "$FIRST_INC_CACHED" ] && [ "$FIRST_INC_CACHED" = "$FIRST_INC" ]; then
+    pending_count="$FIRST_INC_PENDING_CACHED"
+    open_acs="$FIRST_INC_ACS_CACHED"
+else
+    pending_count=$(count_pending_tasks "$FIRST_INC")
+    open_acs=$(count_open_acs "$FIRST_INC")
+fi
 
 if [ -n "$FIRST_BLOCKER" ]; then
     SUCCESS_CRITERIA="FIX: $FIRST_BLOCKER"
@@ -889,15 +995,16 @@ else
     NEXT_COMMAND="/sw:done $FIRST_INC"
 fi
 
-log "BLOCK: $REMAINING_COUNT increment(s) remaining - attempt $CURRENT_RETRY - $SUCCESS_CRITERIA"
+log "BLOCK: $REMAINING_COUNT increment(s) remaining - turn $CURRENT_TURN/$MAX_TURNS, retry $CURRENT_RETRY - $SUCCESS_CRITERIA"
 
 # Build actionable reason for Claude Code UI - this is the INSTRUCTION
+# Show turn/maxTurns (total session limit) in reason for visibility
 if [ "$pending_count" -eq 0 ] && [ "$open_acs" -eq 0 ]; then
     # Everything complete - direct to close
-    ACTIONABLE_REASON="✅ [$CURRENT_RETRY/$MAX_RETRIES_BEFORE_ESCALATE] ALL COMPLETE! RUN NOW: /sw:done $FIRST_INC"
+    ACTIONABLE_REASON="✅ [turn $CURRENT_TURN/$MAX_TURNS] ALL COMPLETE! RUN NOW: /sw:done $FIRST_INC"
 else
     # Work remains - show what and then remind to close
-    ACTIONABLE_REASON="⏳ [$CURRENT_RETRY/$MAX_RETRIES_BEFORE_ESCALATE] $SUCCESS_CRITERIA → RUN: $NEXT_COMMAND → THEN: /sw:done $FIRST_INC"
+    ACTIONABLE_REASON="⏳ [turn $CURRENT_TURN/$MAX_TURNS] $SUCCESS_CRITERIA → RUN: $NEXT_COMMAND → THEN: /sw:done $FIRST_INC"
 fi
 
 # Append mandatory instruction to systemMessage
@@ -912,7 +1019,7 @@ MSG="$MSG
 3. CLOSE THE INCREMENT: Run /sw:done $FIRST_INC
 
 ⚠️  DO NOT STOP until you have run /sw:done $FIRST_INC successfully!
-⚠️  This is attempt $CURRENT_RETRY of $MAX_RETRIES_BEFORE_ESCALATE - complete the work!
+⚠️  Session: turn $CURRENT_TURN of $MAX_TURNS (hard limit)
 
 Current status: $pending_count pending task(s), $open_acs open AC(s)
 Next command to run: $NEXT_COMMAND
