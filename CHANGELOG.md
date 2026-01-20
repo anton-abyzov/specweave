@@ -4,6 +4,45 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.134] - 2026-01-20
+
+### ✨ Features
+
+- **Turn counter with HARD STOP**: Auto mode now has a session turn limit (`maxTurns: 50`) that NEVER resets
+  - Prevents infinite loops even when retry counter resets
+  - Turn count persisted across hook invocations via `.stop-auto-turns` file
+  - Separate from `maxRetries` which tracks stuck detection (resets when work changes)
+
+- **Clear success criteria output**: Stop hook now outputs actionable success criteria
+  - Format: `⏳ [turn X/Y] CRITERIA → RUN: command → THEN: /sw:done XXXX`
+  - LLM receives clear instructions on what to complete and what command to run
+  - MANDATORY INSTRUCTION block ensures LLM completes pending tasks before closure
+
+- **Changelog display in update command**: `specweave update` now shows what's new
+  - Fetches changelog from GitHub before updating
+  - Displays relevant version entries between current and latest
+  - Helps users decide if update is needed
+
+### 🔧 Improvements
+
+- **Validation result caching**: Stop hook caches `count_pending_tasks` and `count_open_acs` results
+  - Avoids redundant file reads during same hook invocation
+  - Reduces hook execution time
+
+- **Stale session detection**: Auto-approves sessions older than 30 minutes
+  - Prevents abandoned sessions from blocking indefinitely
+  - Checks `.stop-auto-turns` file modification time
+
+- **Default retry limits**: Changed autonomous executor default retries from 3 to 5
+  - More resilient per-command execution
+
+### 🐛 Bug Fixes
+
+- **Stop hook clarity**: Replaced ambiguous "1 active increment(s): XXX" with actionable success criteria
+- **Retry counter stability**: Turn counter provides guaranteed termination even if retry counter resets
+
+---
+
 ## [1.0.131] - 2026-01-19
 
 ### ✨ Features
