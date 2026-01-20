@@ -275,5 +275,13 @@
     "autoInstall": false,
     "verbose": false,
     "cacheValidation": false
+  },
+  "auto": {
+    "enabled": true,
+    "maxRetries": 20,
+    "requireTests": false,
+    "requireValidation": true,
+    "requireJudgeLLM": false,
+    "skipQualityGates": false
   }
 }
