@@ -1,7 +1,7 @@
 # Specification: Plugin Consolidation and TDD-First Defaults
 
 **Increment**: 0173-plugin-consolidation-tdd-defaults
-**Status**: in_progress
+**Status**: completed
 **Created**: 2026-01-19
 
 ## Overview

@@ -253,8 +253,10 @@ export const DEFAULT_PARALLEL_AUTO_CONFIG: ParallelAutoConfig = {
 export interface AutoConfig {
   enabled: boolean;
   maxIterations: number; // Safety limit (default: 2500)
-  // Stop hook retry settings
-  maxRetries?: number; // Max retries before escalating (default: 20)
+  // Session turn limit (HARD STOP)
+  maxTurns?: number; // Max total turns in auto session before hard stop (default: 50)
+  // Stop hook retry settings (for stuck detection)
+  maxRetries?: number; // Max retries on same incomplete work before escalating (default: 20)
   requireTests?: boolean; // Require tests to pass before completion (default: false)
   requireValidation?: boolean; // Require /sw:validate before completion (default: true)
   requireJudgeLLM?: boolean; // Require /sw:judge-llm before completion (default: false)
@@ -284,7 +286,8 @@ export interface AutoConfig {
 export const DEFAULT_AUTO_CONFIG: AutoConfig = {
   enabled: true,
   maxIterations: 2500,
-  maxRetries: 20, // Attempts before escalating stuck session warning
+  maxTurns: 50, // HARD STOP: Max total turns in auto session (never resets during session)
+  maxRetries: 20, // Attempts before escalating stuck session warning (resets when work changes)
   requireTests: false, // Set true to require tests pass before completion
   requireValidation: true, // Run /sw:validate before completion
   requireJudgeLLM: false, // Set true to require AI quality verification

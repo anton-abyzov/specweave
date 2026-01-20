@@ -117,6 +117,12 @@ function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoC
     if (clamped !== undefined) config.maxIterations = clamped;
   }
 
+  // maxTurns: HARD STOP for total turns in auto session (minimum 5, max 500)
+  if (typeof userConfig.maxTurns === 'number') {
+    const clamped = clampWithWarning(userConfig.maxTurns, 5, 500, 'maxTurns', warnings);
+    if (clamped !== undefined) config.maxTurns = clamped;
+  }
+
   if (typeof userConfig.maxRetries === 'number') {
     const clamped = clampWithWarning(userConfig.maxRetries, 5, 100, 'maxRetries', warnings);
     if (clamped !== undefined) config.maxRetries = clamped;
