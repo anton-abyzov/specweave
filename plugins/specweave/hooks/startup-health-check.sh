@@ -28,6 +28,33 @@ fi
 
 log "=== Health check started ==="
 
+# ============================================================================
+# SESSION CLEANUP: Clear stale auto-mode.json (CRITICAL for session-scoped auto)
+# Auto mode MUST be session-scoped - if Claude Code closed, auto mode ends.
+# ============================================================================
+
+AUTO_MODE_FILE=".specweave/state/auto-mode.json"
+if [ -f "$AUTO_MODE_FILE" ]; then
+    # Get file modification time (seconds since epoch)
+    FILE_MTIME=$(stat -f%m "$AUTO_MODE_FILE" 2>/dev/null || stat -c%Y "$AUTO_MODE_FILE" 2>/dev/null || echo "0")
+    NOW=$(date +%s)
+    AGE_SECONDS=$((NOW - FILE_MTIME))
+
+    # If auto-mode.json is older than 30 minutes, it's definitely stale
+    # (Claude Code session wouldn't have a 30-minute gap without activity)
+    MAX_AGE_SECONDS=1800
+
+    if [ "$AGE_SECONDS" -gt "$MAX_AGE_SECONDS" ]; then
+        log "STALE SESSION: Removing auto-mode.json (age: ${AGE_SECONDS}s > ${MAX_AGE_SECONDS}s)"
+        rm -f "$AUTO_MODE_FILE" 2>/dev/null
+        rm -f ".specweave/state/.stop-auto-dedup" 2>/dev/null
+        rm -f ".specweave/state/.stop-auto-retry" 2>/dev/null
+        log "Cleaned up stale auto-mode session files"
+    else
+        log "Auto-mode session exists (age: ${AGE_SECONDS}s) - may be valid continuation"
+    fi
+fi
+
 # Check 1: Is marketplace installed?
 if [ ! -d "$SPECWEAVE_DIR" ]; then
     log "WARN: SpecWeave marketplace not found"

@@ -64,6 +64,12 @@ CONFIG_FILE="$SPECWEAVE_DIR/config.json"
 [ ! -d "$INCREMENTS_DIR" ] && silent_approve "No increments directory"
 
 # ============================================================================
+# STATE DIRECTORY (MUST be defined BEFORE AUTO_SESSION_FILE check)
+# ============================================================================
+
+STATE_DIR="$SPECWEAVE_DIR/state"
+
+# ============================================================================
 # READ PROJECT CONFIG
 # ============================================================================
 
@@ -71,7 +77,7 @@ AUTO_ENABLED="true"
 REQUIRE_TESTS="false"
 REQUIRE_VALIDATION="true"
 REQUIRE_JUDGE_LLM="false"
-MAX_RETRIES="20"
+MAX_RETRIES="5"
 TDD_MODE="false"
 SKIP_QUALITY_GATES="false"
 TEST_COMMAND=""
@@ -81,7 +87,7 @@ if [ -f "$CONFIG_FILE" ]; then
     REQUIRE_TESTS=$(jq -r '.auto.requireTests // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
     REQUIRE_VALIDATION=$(jq -r '.auto.requireValidation // true' "$CONFIG_FILE" 2>/dev/null || echo "true")
     REQUIRE_JUDGE_LLM=$(jq -r '.auto.requireJudgeLLM // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
-    MAX_RETRIES=$(jq -r '.auto.maxRetries // 20' "$CONFIG_FILE" 2>/dev/null || echo "20")
+    MAX_RETRIES=$(jq -r '.auto.maxRetries // 5' "$CONFIG_FILE" 2>/dev/null || echo "5")
     TEST_COMMAND=$(jq -r '.auto.testCommand // ""' "$CONFIG_FILE" 2>/dev/null || echo "")
     SKIP_QUALITY_GATES=$(jq -r '.auto.skipQualityGates // false' "$CONFIG_FILE" 2>/dev/null || echo "false")
     TDD_MODE_CONFIG=$(jq -r '.testing.defaultTestMode // "standard"' "$CONFIG_FILE" 2>/dev/null || echo "standard")
@@ -91,13 +97,50 @@ fi
 # Auto mode disabled in config - silent approve
 [ "$AUTO_ENABLED" != "true" ] && silent_approve "Auto mode disabled in config"
 
+# ============================================================================
+# CHECK FOR AUTO MODE SESSION - Only block if explicitly activated
+# Auto mode is SESSION-SCOPED: if Claude Code session ends, auto mode ends.
+# ============================================================================
+
+AUTO_SESSION_FILE="$STATE_DIR/auto-mode.json"
+
+# If no auto-mode.json exists, auto mode was never started this session
+if [ ! -f "$AUTO_SESSION_FILE" ]; then
+    silent_approve "Auto mode not activated (no session file)"
+fi
+
+# STALENESS CHECK: If session file is older than 30 minutes, it's stale
+# (A real auto mode session would have activity within 30 minutes)
+FILE_MTIME=$(stat -f%m "$AUTO_SESSION_FILE" 2>/dev/null || stat -c%Y "$AUTO_SESSION_FILE" 2>/dev/null || echo "0")
+CURRENT_TIME=$(date +%s)
+SESSION_AGE=$((CURRENT_TIME - FILE_MTIME))
+MAX_SESSION_AGE=1800  # 30 minutes
+
+if [ "$SESSION_AGE" -gt "$MAX_SESSION_AGE" ]; then
+    log "STALE SESSION DETECTED: Session file is ${SESSION_AGE}s old (max: ${MAX_SESSION_AGE}s)"
+    # Clean up stale session and exit cleanly
+    rm -f "$AUTO_SESSION_FILE" 2>/dev/null
+    rm -f "$STATE_DIR/.stop-auto-dedup" 2>/dev/null
+    rm -f "$STATE_DIR/.stop-auto-retry" 2>/dev/null
+    silent_approve "Stale auto-mode session cleared (inactive for ${SESSION_AGE}s)"
+fi
+
+# Check if session is actually active
+AUTO_SESSION_ACTIVE=$(jq -r '.active // false' "$AUTO_SESSION_FILE" 2>/dev/null || echo "false")
+if [ "$AUTO_SESSION_ACTIVE" != "true" ]; then
+    silent_approve "Auto mode session not active"
+fi
+
+# Update session file mtime to keep it fresh (touch it)
+touch "$AUTO_SESSION_FILE" 2>/dev/null
+
 log "Config: TDD=$TDD_MODE, RequireTests=$REQUIRE_TESTS, RequireValidation=$REQUIRE_VALIDATION, RequireJudgeLLM=$REQUIRE_JUDGE_LLM, MaxRetries=$MAX_RETRIES"
+log "Auto mode session active: $AUTO_SESSION_ACTIVE"
 
 # ============================================================================
 # DEDUPLICATION - Prevent feedback loops (Claude Code UI bug workaround)
 # ============================================================================
 
-STATE_DIR="$SPECWEAVE_DIR/state"
 DEDUP_FILE="$STATE_DIR/.stop-auto-dedup"
 DEDUP_WINDOW="${SPECWEAVE_STOP_HOOK_DEDUP:-5}"
 NOW=$(date +%s)
@@ -173,6 +216,12 @@ get_failure_history() {
 # Function to clear retry counter (called when work completes)
 clear_retry_counter() {
     rm -f "$RETRY_FILE" 2>/dev/null
+}
+
+# Function to clear auto-mode session (called when all work completes)
+clear_auto_session() {
+    rm -f "$AUTO_SESSION_FILE" 2>/dev/null
+    log "Auto-mode session cleared"
 }
 
 # ============================================================================
@@ -531,6 +580,7 @@ if [ "$REMAINING_COUNT" -eq 0 ] && [ "$SKILL_VALIDATION_FAILED" != "true" ]; the
     # All increments closed AND skill validation passed - approve exit
     rm -f "$DEDUP_FILE" 2>/dev/null
     clear_retry_counter
+    clear_auto_session  # Clear session marker - work is done!
 
     if [ "$CLOSED_COUNT" -gt 0 ]; then
         log "APPROVE: Auto-closed $CLOSED_COUNT increment(s), all work complete"
@@ -552,6 +602,7 @@ if [ "$INCOMPLETE_COUNT" -eq 0 ] && [ "$SKILL_VALIDATION_FAILED" != "true" ]; th
     # All active increments have complete tasks/ACs - approve even if still "active" status
     rm -f "$DEDUP_FILE" 2>/dev/null
     clear_retry_counter
+    clear_auto_session  # Clear session marker - work is done!
 
     log "APPROVE: All tasks complete in active increments (manual close pending)"
 
@@ -794,8 +845,9 @@ if [ "$CURRENT_RETRY" -gt "$MAX_RETRIES_BEFORE_ESCALATE" ]; then
    { \"auto\": { \"maxRetries\": 50 } }
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-    # Clear retry counter to prevent immediate re-triggering
+    # Clear retry counter and auto session to prevent immediate re-triggering
     clear_retry_counter
+    clear_auto_session  # End auto mode on circuit breaker
 
     jq -n \
         --arg decision "approve" \
@@ -805,10 +857,69 @@ if [ "$CURRENT_RETRY" -gt "$MAX_RETRIES_BEFORE_ESCALATE" ]; then
     exit 0
 fi
 
-log "BLOCK: $REMAINING_COUNT increment(s) remaining - attempt $CURRENT_RETRY"
+# ============================================================================
+# BUILD CLEAR SUCCESS CRITERIA FOR THE REASON FIELD
+# This is what shows in Claude Code UI - must be ACTIONABLE
+# ============================================================================
+
+# Extract first blocking issue
+FIRST_BLOCKER=""
+if [ -n "$VALIDATION_ERRORS" ]; then
+    FIRST_BLOCKER=$(echo "$VALIDATION_ERRORS" | tr '|' '\n' | grep -v '^$' | head -1)
+fi
+
+# Build success criteria string with MANDATORY instructions
+SUCCESS_CRITERIA=""
+NEXT_COMMAND=""
+pending_count=$(count_pending_tasks "$FIRST_INC")
+open_acs=$(count_open_acs "$FIRST_INC")
+
+if [ -n "$FIRST_BLOCKER" ]; then
+    SUCCESS_CRITERIA="FIX: $FIRST_BLOCKER"
+    NEXT_COMMAND="/sw:do"
+elif [ "$pending_count" -gt 0 ]; then
+    SUCCESS_CRITERIA="MUST COMPLETE $pending_count pending task(s)"
+    NEXT_COMMAND="/sw:do"
+elif [ "$open_acs" -gt 0 ]; then
+    SUCCESS_CRITERIA="MUST SATISFY $open_acs open AC(s)"
+    NEXT_COMMAND="/sw:do"
+else
+    # All tasks and ACs done - MUST close now!
+    SUCCESS_CRITERIA="ALL DONE → MUST RUN /sw:done $FIRST_INC NOW"
+    NEXT_COMMAND="/sw:done $FIRST_INC"
+fi
+
+log "BLOCK: $REMAINING_COUNT increment(s) remaining - attempt $CURRENT_RETRY - $SUCCESS_CRITERIA"
+
+# Build actionable reason for Claude Code UI - this is the INSTRUCTION
+if [ "$pending_count" -eq 0 ] && [ "$open_acs" -eq 0 ]; then
+    # Everything complete - direct to close
+    ACTIONABLE_REASON="✅ [$CURRENT_RETRY/$MAX_RETRIES_BEFORE_ESCALATE] ALL COMPLETE! RUN NOW: /sw:done $FIRST_INC"
+else
+    # Work remains - show what and then remind to close
+    ACTIONABLE_REASON="⏳ [$CURRENT_RETRY/$MAX_RETRIES_BEFORE_ESCALATE] $SUCCESS_CRITERIA → RUN: $NEXT_COMMAND → THEN: /sw:done $FIRST_INC"
+fi
+
+# Append mandatory instruction to systemMessage
+MSG="$MSG
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚨 MANDATORY INSTRUCTION (YOU MUST FOLLOW THIS):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. COMPLETE ALL PENDING TASKS: Run /sw:do and finish every [ ] task
+2. SATISFY ALL ACCEPTANCE CRITERIA: Mark all ACs as [x] in spec.md
+3. CLOSE THE INCREMENT: Run /sw:done $FIRST_INC
+
+⚠️  DO NOT STOP until you have run /sw:done $FIRST_INC successfully!
+⚠️  This is attempt $CURRENT_RETRY of $MAX_RETRIES_BEFORE_ESCALATE - complete the work!
+
+Current status: $pending_count pending task(s), $open_acs open AC(s)
+Next command to run: $NEXT_COMMAND
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 jq -n \
     --arg decision "block" \
-    --arg reason "Complete remaining $REMAINING_COUNT increment(s): $REMAINING_INCS (attempt $CURRENT_RETRY)" \
+    --arg reason "$ACTIONABLE_REASON" \
     --arg msg "$MSG" \
     '{decision: $decision, reason: $reason, systemMessage: $msg}'

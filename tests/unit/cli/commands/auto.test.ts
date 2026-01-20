@@ -1,10 +1,11 @@
 /**
- * Tests for Auto Mode CLI Command (v3.0 Pure Ralph Wiggum Pattern)
+ * Tests for Auto Mode CLI Command (v3.1 Session-Scoped Auto)
  *
  * Verifies the simplified auto mode implementation:
- * - NO session files, NO state files (Pure Ralph pattern)
- * - Increment metadata IS the state
- * - Stop hook checks active increments directly
+ * - Uses auto-mode.json to track EXPLICIT auto mode activation
+ * - Session-scoped: file is cleared on session end/startup
+ * - Stop hook only fires when auto mode was EXPLICITLY activated
+ * - Prevents false-positive stop hook triggers on normal prompts
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -49,8 +50,8 @@ describe('Auto Command (Ralph Wiggum Pattern)', () => {
     }
   });
 
-  describe('Pure Ralph Pattern - No State Files', () => {
-    it('should NOT create any state files (pure pattern)', async () => {
+  describe('Session-Scoped Auto Mode', () => {
+    it('should create auto-mode.json when auto mode is started (session marker)', async () => {
       // Create an active increment
       const incDir = path.join(incrementsDir, '0001-test-feature');
       fs.mkdirSync(incDir, { recursive: true });
@@ -62,10 +63,18 @@ describe('Auto Command (Ralph Wiggum Pattern)', () => {
       const options: AutoCommandOptions = {};
       await handleAutoCommand(tempDir, ['0001-test-feature'], options);
 
-      // Pure Ralph pattern: NO state files
+      // Session-scoped auto: auto-mode.json MUST exist to indicate explicit auto activation
+      // This prevents stop hook from firing on normal prompts (fixes bug where hook
+      // triggered on every response when there were active increments)
       const flagPath = path.join(stateDir, 'auto-mode.json');
-      expect(fs.existsSync(flagPath)).toBe(false);
+      expect(fs.existsSync(flagPath)).toBe(true);
 
+      // Validate the session marker contents
+      const session = JSON.parse(fs.readFileSync(flagPath, 'utf-8'));
+      expect(session.active).toBe(true);
+      expect(session.incrementIds).toContain('0001-test-feature');
+
+      // Legacy session files should NOT be created
       const sessionPath = path.join(stateDir, 'auto-session.json');
       expect(fs.existsSync(sessionPath)).toBe(false);
 
