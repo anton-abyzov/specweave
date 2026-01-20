@@ -508,6 +508,21 @@ program
     await updateInstructionsCommand(options);
   });
 
+// Unified update command - One-stop update for everything (self-updates CLI by default)
+program
+  .command('update')
+  .description('Update SpecWeave: CLI (via npm), instructions, config, and optionally plugins')
+  .option('--no-self', 'Skip CLI self-update via npm')
+  .option('--plugins', 'Also refresh marketplace plugins')
+  .option('--all', 'Full update including all plugins (not just router)')
+  .option('--check', 'Dry run - show what would change without making changes')
+  .option('-v, --verbose', 'Show detailed output')
+  .option('-f, --force', 'Force refresh even if up to date')
+  .action(async (options) => {
+    const { updateCommand } = await import('../dist/src/cli/commands/update.js');
+    await updateCommand(options);
+  });
+
 // Check discipline command - Validate increment discipline
 program
   .command('check-discipline')
@@ -1098,6 +1113,10 @@ program.on('--help', () => {
   console.log('  $ specweave refresh-marketplace --local     # Use local dev version');
   console.log('  $ specweave migrate-memory                  # Migrate legacy memory files');
   console.log('  $ specweave migrate-memory --dry-run        # Preview migration');
+  console.log('  $ specweave update                          # Update CLI + instructions + config');
+  console.log('  $ specweave update --plugins                # Also refresh marketplace plugins');
+  console.log('  $ specweave update --no-self                # Skip CLI update, only project files');
+  console.log('  $ specweave update --check                  # Dry run - preview changes');
   console.log('  $ specweave load-plugins                    # Load all plugins');
   console.log('  $ specweave load-plugins github             # Load GitHub plugin group');
   console.log('  $ specweave load-plugins infra --force      # Force reload infra plugins');

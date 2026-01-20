@@ -155,6 +155,15 @@ Auto mode stops when ANY of these conditions are met:
 | **E2E tests passed** | Playwright tests pass (if detected) |
 | **Multiple increments** | Transitions to next increment in queue |
 
+:::tip Smart Completion (v1.0.131+)
+Auto mode now **approves when all tasks are complete**, even if increments are still in "active" status. This handles cases where:
+- Auto-close validation failed but work is done
+- User prefers manual `/sw:done` for final review
+- External sync is pending but implementation is complete
+
+The session won't block indefinitely waiting for manual closure.
+:::
+
 ### 🛑 Stop Conditions
 
 | Condition | Description | Action |
@@ -166,6 +175,7 @@ Auto mode stops when ANY of these conditions are met:
 | **Credential errors** | Multiple auth/deployment failures | Pause for config |
 | **Human gate** | Dangerous operation detected | Wait for approval |
 | **Circuit breaker** | External API failing repeatedly | Queue and continue |
+| **Max retries exceeded** | Stop hook blocked too many times (v1.0.131+) | Force approve to break loop |
 
 ### ⏸️ Pause Conditions
 
@@ -248,12 +258,28 @@ Enable stricter test requirements:
 // .specweave/config.json
 {
   "auto": {
-    "maxIterations": 2500,    // Max loop iterations (safety)
-    "maxHours": 8,             // Max duration in hours (optional)
-    "tddStrictMode": false     // Require TDD discipline
+    "enabled": true,            // Enable auto mode (default: true)
+    "maxRetries": 20,           // Circuit breaker threshold (v1.0.131+)
+    "maxIterations": 2500,      // Max loop iterations (safety)
+    "maxHours": 8,              // Max duration in hours (optional)
+    "tddStrictMode": false,     // Require TDD discipline
+    "requireTests": false,      // Require tests to pass before task completion
+    "requireValidation": true,  // Require validation before closure
+    "requireJudgeLLM": false,   // Require AI quality gate
+    "skipQualityGates": false   // Skip all quality gates (not recommended)
   }
 }
 ```
+
+:::info Config Migration (v1.0.131+)
+If your project was created before v1.0.131, the `auto` section may be missing from your config. Run `specweave update` to automatically add default values:
+
+```bash
+specweave update
+```
+
+This migrates your config safely without affecting existing settings.
+:::
 
 ### Circuit Breakers
 
@@ -267,6 +293,30 @@ Prevent external API failures from blocking progress:
       "jira": { "maxFailures": 3, "resetMinutes": 5 },
       "ado": { "maxFailures": 3, "resetMinutes": 5 }
     }
+  }
+}
+```
+
+### Stop Hook Circuit Breaker (v1.0.131+)
+
+The stop hook includes a built-in circuit breaker that prevents infinite loops:
+
+**How it works:**
+1. Each time the stop hook returns "block", a retry counter increments
+2. When retries exceed `auto.maxRetries` (default: 20), the circuit breaker triggers
+3. Session automatically approves to break the loop
+4. Counter resets on successful approval or completion
+
+**Why this matters:**
+- Prevents sessions from getting stuck indefinitely
+- Handles edge cases where completion criteria can't be satisfied
+- Ensures deterministic behavior even with complex increment configurations
+
+**Tuning:**
+```json
+{
+  "auto": {
+    "maxRetries": 20   // Increase for complex increments, decrease for faster fail-safe
   }
 }
 ```

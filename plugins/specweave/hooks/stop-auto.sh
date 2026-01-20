@@ -528,7 +528,7 @@ REMAINING_COUNT=$(find "$INCREMENTS_DIR" -maxdepth 2 -name "metadata.json" \
     -exec grep -l '"status"[[:space:]]*:[[:space:]]*"active\|"status"[[:space:]]*:[[:space:]]*"in-progress' {} \; 2>/dev/null | wc -l | tr -d ' ')
 
 if [ "$REMAINING_COUNT" -eq 0 ] && [ "$SKILL_VALIDATION_FAILED" != "true" ]; then
-    # All work complete AND skill validation passed - approve exit
+    # All increments closed AND skill validation passed - approve exit
     rm -f "$DEDUP_FILE" 2>/dev/null
     clear_retry_counter
 
@@ -540,15 +540,53 @@ if [ "$REMAINING_COUNT" -eq 0 ] && [ "$SKILL_VALIDATION_FAILED" != "true" ]; the
     fi
 fi
 
+# ============================================================================
+# KEY FIX: APPROVE if all tasks complete even if increments still "active"
+# This handles: auto-close failed, user prefers manual close, etc.
+# ============================================================================
+
+# Count how many active increments have incomplete work
+INCOMPLETE_COUNT=$(echo "$INCOMPLETE_INCS" | tr -s ' ' | sed 's/^ //' | grep -v '^$' | wc -w | tr -d ' ')
+
+if [ "$INCOMPLETE_COUNT" -eq 0 ] && [ "$SKILL_VALIDATION_FAILED" != "true" ]; then
+    # All active increments have complete tasks/ACs - approve even if still "active" status
+    rm -f "$DEDUP_FILE" 2>/dev/null
+    clear_retry_counter
+
+    log "APPROVE: All tasks complete in active increments (manual close pending)"
+
+    # Show message about manual close needed
+    CLOSE_MSG="
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ ALL TASKS COMPLETE - Session can end
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All work is done! Increments need manual closing:
+
+$READY_TO_CLOSE
+
+To close: /sw:done <increment-id>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    jq -n \
+        --arg decision "approve" \
+        --arg reason "All tasks complete - increments ready for manual close" \
+        --arg msg "$CLOSE_MSG" \
+        '{decision: $decision, reason: $reason, systemMessage: $msg}'
+    exit 0
+fi
+
 # Handle skill validation failure (block even if tasks are done)
 if [ "$SKILL_VALIDATION_FAILED" = "true" ]; then
     log "BLOCK: Skill validation failed - fix issues before completion"
 fi
 
 # Work remains - show what's blocking
+# IMPORTANT: Sort to ensure deterministic order (prevents retry counter resets)
 REMAINING_INCS=$(find "$INCREMENTS_DIR" -maxdepth 2 -name "metadata.json" \
     -exec grep -l '"status"[[:space:]]*:[[:space:]]*"active\|"status"[[:space:]]*:[[:space:]]*"in-progress' {} \; 2>/dev/null \
-    | sed 's|.*/\([^/]*\)/metadata.json|\1|' | tr '\n' ', ' | sed 's/,$//')
+    | sed 's|.*/\([^/]*\)/metadata.json|\1|' | sort | tr '\n' ', ' | sed 's/,$//')
 
 # Build reason string for retry tracking
 BLOCK_REASON="${VALIDATION_ERRORS:-tasks_or_acs_pending}"
@@ -728,6 +766,44 @@ $STEPS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🎯 Execute these steps IN ORDER, then session will complete automatically.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+# ============================================================================
+# CIRCUIT BREAKER: Prevent infinite loops after MAX_RETRIES
+# ============================================================================
+
+if [ "$CURRENT_RETRY" -gt "$MAX_RETRIES_BEFORE_ESCALATE" ]; then
+    log "CIRCUIT BREAKER: Exceeded $MAX_RETRIES_BEFORE_ESCALATE retries, approving to break loop"
+
+    CIRCUIT_MSG="
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🛑 CIRCUIT BREAKER ACTIVATED (attempt $CURRENT_RETRY/$MAX_RETRIES_BEFORE_ESCALATE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  Stop hook has fired $CURRENT_RETRY times without completion.
+    Breaking infinite loop to prevent session freeze.
+
+📋 REMAINING WORK:
+   • $REMAINING_COUNT active increment(s): $REMAINING_INCS
+
+🔧 RECOMMENDED ACTIONS:
+   1. Run /sw:status to see what's incomplete
+   2. Run /sw:do to complete remaining tasks
+   3. Run /sw:done $FIRST_INC when ready to close
+
+💡 To increase retry limit, set in .specweave/config.json:
+   { \"auto\": { \"maxRetries\": 50 } }
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    # Clear retry counter to prevent immediate re-triggering
+    clear_retry_counter
+
+    jq -n \
+        --arg decision "approve" \
+        --arg reason "Circuit breaker: exceeded $MAX_RETRIES_BEFORE_ESCALATE retries" \
+        --arg msg "$CIRCUIT_MSG" \
+        '{decision: $decision, reason: $reason, systemMessage: $msg}'
+    exit 0
+fi
 
 log "BLOCK: $REMAINING_COUNT increment(s) remaining - attempt $CURRENT_RETRY"
 

@@ -4,6 +4,47 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.131] - 2026-01-19
+
+### ✨ Features
+
+- **`specweave update` command**: New unified update command that:
+  - Self-updates CLI via npm (by default)
+  - Migrates config.json (adds missing `auto` section for older projects)
+  - Updates instruction files (CLAUDE.md, AGENTS.md)
+  - Validates project health
+  - Options: `--plugins`, `--all`, `--check`, `--no-self`, `--verbose`, `--force`
+
+- **Auto mode circuit breaker**: Prevents infinite loops in stop hook
+  - Added retry counter with deterministic increment list sorting
+  - Auto-approves after `auto.maxRetries` (default: 20) to break loops
+  - Configurable via `config.json` `auto.maxRetries` setting
+
+- **Smart completion criteria**: Auto mode now approves when all tasks are complete
+  - Sessions no longer block indefinitely waiting for manual closure
+  - Handles cases where auto-close validation fails but work is done
+  - Supports increments still in "active" status with complete tasks
+
+### 🔧 Improvements
+
+- **Config migration**: Automatically adds `auto` section to older projects
+  - Default values: `enabled: true`, `maxRetries: 20`, `requireTests: false`, `requireValidation: true`
+  - Safe migration preserves existing configuration
+
+- **Stop hook reliability**: Deterministic sorting prevents retry counter reset
+  - Added `| sort |` to ensure consistent increment list order
+  - Fixed non-deterministic `find` output causing counter reset
+
+### 📚 Documentation
+
+- Updated README.md with `specweave update` command
+- Updated auto mode docs with circuit breaker and completion criteria
+- Updated installation guide with new upgrade workflow
+- Updated quick-start troubleshooting section
+- Added CLI commands section to commands overview
+
+---
+
 ## [1.0.130] - 2026-01-19
 
 ### ✨ Features

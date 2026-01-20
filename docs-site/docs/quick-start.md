@@ -258,9 +258,13 @@ specweave init .
 
 **Claude doesn't recognize commands:**
 ```bash
-# Restart Claude Code extension
-# Or refresh marketplace
+# Full update (recommended) - updates CLI, instructions, and config
+specweave update
+
+# Or just refresh marketplace
 specweave refresh-marketplace
+
+# Then restart Claude Code extension
 ```
 
 ### Auto Mode Issues
@@ -273,6 +277,11 @@ specweave refresh-marketplace
 **Session stops early:**
 - Check `.specweave/logs/auto-stop-reasons.log`
 - Review stop conditions in [Auto Mode docs](./commands/auto.md)
+
+**Session stuck in infinite loop (v1.0.131 fix):**
+- Update to latest: `specweave update`
+- Circuit breaker now prevents infinite loops after `auto.maxRetries` (default: 20)
+- Session auto-approves when all tasks complete, even if increments still "active"
 
 ---
 

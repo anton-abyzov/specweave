@@ -206,6 +206,15 @@ See [GitHub Integration](/docs/academy/specweave-essentials/14-github-integratio
 | `/sw:resume` | Resume paused work |
 | `/sw:status` | Show all increments |
 
+### CLI Commands (Terminal)
+
+| Command | Purpose |
+|---------|---------|
+| `specweave update` | **Full update**: CLI + instructions + config |
+| `specweave update --plugins` | Update + refresh marketplace plugins |
+| `specweave refresh-marketplace` | Reinstall plugins from GitHub |
+| `specweave init .` | Initialize project |
+
 ---
 
 ## Example Workflows
