@@ -1,10 +1,10 @@
 ---
 increment: 0161-hook-execution-visibility-and-command-reliability
-title: "Hook Execution Visibility and Command Reliability"
+title: Hook Execution Visibility and Command Reliability
 priority: P0
-status: planned
+status: abandoned
 type: hotfix
-created: 2026-01-07
+created: 2026-01-07T00:00:00.000Z
 ---
 
 # Hook Execution Visibility and Command Reliability
