@@ -902,40 +902,28 @@ formatError(ERROR_MESSAGES.DUPLICATE_INCREMENT(incrementId));
 
 **Only use this if Skill tool is unavailable or fails:**
 
-Manually invoke agents using Task tool:
+PM and Architect are **SKILLS** that auto-activate based on keywords in your prompt - they are NOT agents you invoke via Task tool.
 
-1. **Invoke PM Agent:**
-   ```
-   Task(
-     subagent_type: "specweave:pm:pm",
-     prompt: "Create product strategy for: [user description]
-             Detect tech stack from: [detected tech info]
-             Create living docs in .specweave/docs/internal/strategy/
-             Create increment spec.md that references strategy docs",
-     description: "PM product strategy"
-   )
-   ```
+**To trigger PM skill**, include keywords like "product", "requirements", "user story", "spec":
+```
+"As a product manager, create the specification for: [user description]"
+```
 
-2. **Invoke Architect Agent:**
-   ```
-   Task(
-     subagent_type: "specweave:architect:architect",
-     prompt: "Read PM's strategy docs from .specweave/docs/internal/strategy/
-             Create technical architecture for: [user description]
-             Tech stack: [detected tech stack]
-             Create living docs in .specweave/docs/internal/architecture/
-             Create ADRs for all technical decisions
-             Create increment plan.md that references architecture docs",
-     description: "Architect technical design"
-   )
-   ```
+**To trigger Architect skill**, include keywords like "architecture", "system design", "ADR":
+```
+"Design the architecture for: [user description]"
+```
 
-3. **Auto-generate tasks.md:**
-   ```
-   Skill(command: "task-builder")
-   ```
+**For specialized domain agents** (these ARE agents you invoke via Task):
+```
+Task(
+  subagent_type: "sw-frontend:frontend-architect",
+  prompt: "Design React component architecture for: [description]",
+  description: "Frontend architecture"
+)
+```
 
-**Pass detected tech stack to ALL agents** (CRITICAL!)
+Available agents: `sw-frontend:frontend-architect`, `sw-backend:database-optimizer`, `sw-testing:qa-engineer`, `sw-k8s:kubernetes-architect`, `sw-infra:devops`
 
 ### Step 7: Verify Increment Creation
 

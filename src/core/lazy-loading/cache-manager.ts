@@ -13,6 +13,50 @@ import path from 'path';
 import os from 'os';
 import { consoleLogger as logger } from '../../utils/logger.js';
 import { getAllPlugins, getPluginsForGroup, PLUGIN_GROUPS } from './keyword-detector.js';
+import { detectClaudeCli } from '../../utils/claude-cli-detector.js';
+import { execFileNoThrowSync } from '../../utils/execFileNoThrow.js';
+
+/**
+ * Claude plugin registry entry format
+ * Matches the structure in ~/.claude/plugins/installed_plugins.json
+ */
+interface PluginRegistryEntry {
+  scope: string;
+  installPath: string;
+  version: string;
+  installedAt: string;
+  lastUpdated: string;
+  gitCommitSha?: string;
+}
+
+/**
+ * Claude plugin registry format
+ */
+interface PluginRegistry {
+  version: number;
+  plugins: Record<string, PluginRegistryEntry[]>;
+}
+
+/**
+ * Environment detection for CI/CD safety
+ */
+function isCI(): boolean {
+  return !!(
+    process.env.CI ||
+    process.env.GITHUB_ACTIONS ||
+    process.env.JENKINS_URL ||
+    process.env.GITLAB_CI ||
+    process.env.CIRCLECI ||
+    process.env.TRAVIS
+  );
+}
+
+/**
+ * Get the Claude plugins registry path (cross-platform)
+ */
+function getRegistryPath(): string {
+  return path.join(os.homedir(), '.claude', 'plugins', 'installed_plugins.json');
+}
 
 /**
  * Plugin metadata stored in cache
@@ -147,17 +191,26 @@ export class PluginCacheManager {
   private activePath: string;
   private statePath: string;
   private marketplacePath: string;
+  private registryPath: string;
+  private pluginCachePath: string;
 
   constructor(options?: {
     cachePath?: string;
     activePath?: string;
     statePath?: string;
     marketplacePath?: string;
+    /** Path to installed_plugins.json (for testing) */
+    registryPath?: string;
+    /** Path to plugin cache directory (for testing) */
+    pluginCachePath?: string;
   }) {
     this.cachePath = options?.cachePath ?? CACHE_PATHS.cache;
     this.activePath = options?.activePath ?? CACHE_PATHS.active;
     this.statePath = options?.statePath ?? CACHE_PATHS.state;
     this.marketplacePath = options?.marketplacePath ?? CACHE_PATHS.marketplace;
+    // Use provided paths or defaults for registry and plugin cache
+    this.registryPath = options?.registryPath ?? getRegistryPath();
+    this.pluginCachePath = options?.pluginCachePath ?? path.join(os.homedir(), '.claude', 'plugins', 'cache');
   }
 
   /**
@@ -219,13 +272,19 @@ export class PluginCacheManager {
   }
 
   /**
-   * Installs plugins directly from marketplace to active directory
+   * Installs plugins using Claude CLI with safe fallback
    *
-   * SIMPLIFIED (v1.0.122+): Copies directly from marketplace (~/.claude/plugins/marketplaces/specweave/plugins/)
-   * to skills directory (~/.claude/skills/) - no intermediate cache needed!
+   * FIXED (v1.0.139): Now properly registers plugins with Claude CLI!
    *
-   * This ensures plugins always come from the latest marketplace version,
-   * which is updated from GitHub when user runs `specweave refresh-marketplace`.
+   * Installation strategy (in order of preference):
+   * 1. Use `claude plugin install` command (proper registration)
+   * 2. Fall back to direct registry update (if CLI unavailable)
+   * 3. Also copy to skills directory for backward compatibility
+   *
+   * CI/CD Safety:
+   * - Detects CI environment and handles gracefully
+   * - Doesn't fail if Claude CLI is unavailable
+   * - Uses cross-platform paths throughout
    *
    * Idempotent - skips already installed plugins unless force=true.
    *
@@ -273,10 +332,20 @@ export class PluginCacheManager {
       // Remove duplicates
       pluginsToInstall = [...new Set(pluginsToInstall)];
 
+      // Detect Claude CLI availability (cross-platform)
+      const claudeStatus = isCI() ? { available: false } : detectClaudeCli();
+      const useCliInstall = claudeStatus.available;
+
+      if (isCI()) {
+        logger.debug('CI environment detected - using fallback installation');
+      } else if (!useCliInstall) {
+        logger.debug('Claude CLI not available - using fallback installation');
+      }
+
       let installedCount = 0;
+      const failedPlugins: string[] = [];
 
       for (const pluginName of pluginsToInstall) {
-        // SIMPLIFIED: Read directly from marketplace (not intermediate cache)
         const sourcePath = path.join(this.marketplacePath, pluginName);
         const destPath = path.join(this.activePath, pluginName);
 
@@ -286,17 +355,45 @@ export class PluginCacheManager {
           continue;
         }
 
-        // Skip if already installed (unless force)
-        if (!force && fs.existsSync(destPath)) {
-          logger.debug(`Plugin already installed: ${pluginName}`);
+        // Check if already registered in Claude's registry
+        const alreadyRegistered = this.isPluginRegistered(pluginName);
+        if (!force && alreadyRegistered) {
+          logger.debug(`Plugin already registered: ${pluginName}`);
           continue;
         }
 
-        // Copy plugin to active directory
-        await this.copyDirectory(sourcePath, destPath);
-        installedCount++;
+        let installed = false;
 
-        logger.debug(`Installed plugin: ${pluginName}`);
+        // Strategy 1: Try Claude CLI installation (preferred)
+        if (useCliInstall) {
+          installed = await this.installPluginViaCli(pluginName);
+          if (installed) {
+            logger.debug(`Plugin installed via CLI: ${pluginName}`);
+          }
+        }
+
+        // Strategy 2: Fallback to direct registry update
+        if (!installed) {
+          installed = await this.installPluginViaRegistry(pluginName, sourcePath);
+          if (installed) {
+            logger.debug(`Plugin installed via registry: ${pluginName}`);
+          }
+        }
+
+        // Strategy 3: Also copy to skills directory (backward compatibility)
+        if (!fs.existsSync(destPath) || force) {
+          try {
+            await this.copyDirectory(sourcePath, destPath);
+          } catch (copyError) {
+            logger.warn(`Failed to copy plugin to skills dir: ${pluginName}`);
+          }
+        }
+
+        if (installed) {
+          installedCount++;
+        } else {
+          failedPlugins.push(pluginName);
+        }
       }
 
       // Calculate duration for analytics
@@ -304,9 +401,7 @@ export class PluginCacheManager {
 
       // Update state file with detailed analytics
       await this.updateState((state) => {
-        const newlyLoaded = pluginsToInstall.filter((p) =>
-          fs.existsSync(path.join(this.activePath, p))
-        );
+        const newlyLoaded = pluginsToInstall.filter((p) => this.isPluginRegistered(p));
         state.loadedPlugins = [...new Set([...state.loadedPlugins, ...newlyLoaded])];
         state.lastUpdated = new Date().toISOString();
         state.analytics.totalLoads++;
@@ -349,6 +444,10 @@ export class PluginCacheManager {
         );
       }
 
+      if (failedPlugins.length > 0) {
+        logger.warn(`Some plugins failed to install: ${failedPlugins.join(', ')}`);
+      }
+
       return {
         success: true,
         pluginsAffected: installedCount,
@@ -363,6 +462,122 @@ export class PluginCacheManager {
         pluginsAffected: 0,
         durationMs: performance.now() - startTime,
       };
+    }
+  }
+
+  /**
+   * Install a plugin using Claude CLI command
+   * Cross-platform: works on Windows, macOS, Linux
+   *
+   * @param pluginName - Plugin name to install
+   * @returns true if installation succeeded
+   */
+  private async installPluginViaCli(pluginName: string): Promise<boolean> {
+    try {
+      // Use execFileNoThrowSync which handles cross-platform execution
+      const result = execFileNoThrowSync('claude', ['plugin', 'install', pluginName], {
+        timeout: 30000, // 30 second timeout
+      });
+
+      if (result.success) {
+        return true;
+      }
+
+      // Check for "already installed" which is still a success
+      if (result.stdout?.includes('already installed') || result.stderr?.includes('already installed')) {
+        return true;
+      }
+
+      logger.debug(`CLI install failed for ${pluginName}: ${result.stderr || result.stdout}`);
+      return false;
+    } catch (error) {
+      logger.debug(`CLI install error for ${pluginName}: ${error}`);
+      return false;
+    }
+  }
+
+  /**
+   * Install a plugin by directly updating Claude's registry file
+   * Fallback method when CLI is unavailable (CI/CD, CLI not in PATH)
+   *
+   * @param pluginName - Plugin name to install
+   * @param sourcePath - Path to plugin source in marketplace
+   * @returns true if installation succeeded
+   */
+  private async installPluginViaRegistry(pluginName: string, sourcePath: string): Promise<boolean> {
+    try {
+      const registryDir = path.dirname(this.registryPath);
+
+      // Ensure registry directory exists
+      if (!fs.existsSync(registryDir)) {
+        fs.mkdirSync(registryDir, { recursive: true });
+      }
+
+      // Read existing registry or create default
+      let registry: PluginRegistry = { version: 2, plugins: {} };
+      if (fs.existsSync(this.registryPath)) {
+        try {
+          registry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
+        } catch {
+          logger.warn('Failed to parse existing registry, creating new one');
+        }
+      }
+
+      // Create the plugin key (format: {pluginName}@specweave)
+      const pluginKey = `${pluginName}@specweave`;
+
+      // Skip if already in registry
+      if (registry.plugins[pluginKey] && registry.plugins[pluginKey].length > 0) {
+        return true;
+      }
+
+      // Copy plugin to Claude's cache directory (use configurable path for testing)
+      const cacheDir = path.join(this.pluginCachePath, 'specweave', pluginName, '1.0.0');
+      if (!fs.existsSync(cacheDir)) {
+        fs.mkdirSync(cacheDir, { recursive: true });
+        await this.copyDirectory(sourcePath, cacheDir);
+      }
+
+      // Add to registry
+      const now = new Date().toISOString();
+      registry.plugins[pluginKey] = [{
+        scope: 'user',
+        installPath: cacheDir,
+        version: '1.0.0',
+        installedAt: now,
+        lastUpdated: now,
+      }];
+
+      // Write registry atomically (write to temp, then rename)
+      const tempPath = `${this.registryPath}.tmp.${process.pid}`;
+      fs.writeFileSync(tempPath, JSON.stringify(registry, null, 2));
+      fs.renameSync(tempPath, this.registryPath);
+
+      return true;
+    } catch (error) {
+      logger.debug(`Registry install error for ${pluginName}: ${error}`);
+      return false;
+    }
+  }
+
+  /**
+   * Check if a plugin is registered in Claude's registry
+   *
+   * @param pluginName - Plugin name to check
+   * @returns true if plugin is in the registry
+   */
+  private isPluginRegistered(pluginName: string): boolean {
+    try {
+      if (!fs.existsSync(this.registryPath)) {
+        return false;
+      }
+
+      const registry: PluginRegistry = JSON.parse(fs.readFileSync(this.registryPath, 'utf8'));
+      const pluginKey = `${pluginName}@specweave`;
+
+      return !!(registry.plugins[pluginKey] && registry.plugins[pluginKey].length > 0);
+    } catch {
+      return false;
     }
   }
 

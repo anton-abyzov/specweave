@@ -259,26 +259,31 @@ Use PostgreSQL.
 
 ---
 
-## Using SpecWeave Agents
+## Using SpecWeave Skills
 
-Leverage agents for design:
+Leverage skills for design (auto-activate on keywords):
 
 ```bash
-# Architecture agent
-Task: specweave:architect:architect
-"Design authentication system for
+# Architecture skill (auto-activates on "architecture", "design")
+"Design authentication system architecture for
 multi-tenant SaaS application"
 
 # Output: C4 diagrams, ADRs, data model
 ```
 
 ```bash
-# Security agent
-Task: specweave:security:security
+# Security skill (auto-activates on "security", "OWASP")
 "Review authentication design for
-OWASP compliance"
+OWASP compliance and security"
 
 # Output: Security recommendations, threat model
+```
+
+**Note**: Architect and Security are SKILLS that auto-activate based on keywords in your prompt. For specialized domain work, use agents via Task tool:
+
+```typescript
+Task({ subagent_type: "sw-frontend:frontend-architect", prompt: "..." })
+Task({ subagent_type: "sw-k8s:kubernetes-architect", prompt: "..." })
 ```
 
 ---

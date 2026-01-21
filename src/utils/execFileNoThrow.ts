@@ -128,6 +128,7 @@ export function execFileNoThrowSync(
       encoding: 'utf-8',
       windowsHide: true,
       shell: needsShell,
+      stdio: ['pipe', 'pipe', 'pipe'], // Capture all streams, don't leak to terminal
     });
 
     return {
