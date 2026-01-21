@@ -2,18 +2,18 @@
 name: jira-sync-judge
 description: LLM Judge for verifying JIRA synchronization correctness, conflict resolution, and lifecycle management. Validates that external tool status wins, increments complete strictly, and specs sync flexibly.
 tools: Read, Grep, Bash
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 ## How to Invoke This Agent
 
-**Subagent Type**: `specweave-jira:jira-sync-judge:jira-sync-judge`
+**Subagent Type**: `sw-jira:jira-sync-judge:jira-sync-judge`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-jira:jira-sync-judge:jira-sync-judge",
+  subagent_type: "sw-jira:jira-sync-judge:jira-sync-judge",
   prompt: "Validate sync correctness for increment 0093",
   model: "opus"
 });

@@ -142,27 +142,13 @@ export class PermissionChecker {
    * @returns Permission summary string
    */
   getPermissionSummary(): string {
-    const permissions: string[] = [];
+    const permissionChecks = [
+      { check: this.canUpsertInternalItems(), yes: '✅ Can CREATE and UPDATE internal items', no: '❌ Cannot create internal items (local-only)' },
+      { check: this.canUpdateExternalItems(), yes: '✅ Can UPDATE external items (full content)', no: '❌ Cannot update external items (read-only)' },
+      { check: this.canUpdateStatus(), yes: '✅ Can UPDATE status (both internal & external)', no: '❌ Cannot update status (manual only)' },
+    ];
 
-    if (this.canUpsertInternalItems()) {
-      permissions.push('✅ Can CREATE and UPDATE internal items');
-    } else {
-      permissions.push('❌ Cannot create internal items (local-only)');
-    }
-
-    if (this.canUpdateExternalItems()) {
-      permissions.push('✅ Can UPDATE external items (full content)');
-    } else {
-      permissions.push('❌ Cannot update external items (read-only)');
-    }
-
-    if (this.canUpdateStatus()) {
-      permissions.push('✅ Can UPDATE status (both internal & external)');
-    } else {
-      permissions.push('❌ Cannot update status (manual only)');
-    }
-
-    return permissions.join('\n');
+    return permissionChecks.map(p => p.check ? p.yes : p.no).join('\n');
   }
 
   /**

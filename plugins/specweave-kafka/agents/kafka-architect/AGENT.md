@@ -1,7 +1,7 @@
 ---
 name: kafka-architect
-description: Kafka architecture and design specialist. Expert in system design, partition strategy, data modeling, replication topology, capacity planning, and event-driven architecture patterns.
-model: claude-opus-4-5-20251101
+description: Kafka architecture and design specialist. Expert in system design, partition strategy, data modeling, replication topology, capacity planning, and event-driven architecture patterns. Activates for Kafka, Apache Kafka, Kafka architecture, topic design, partition strategy, consumer groups, producer config, Kafka Connect, Kafka Streams, event streaming, message broker, pub/sub, event-driven architecture, EDA, event sourcing, CQRS with Kafka, Kafka cluster, Zookeeper, KRaft, replication factor, ISR, broker config, retention policy, compaction, exactly-once semantics, at-least-once, offset management, lag monitoring, Kafka security, SASL, SSL Kafka.
+model: opus
 model_preference: opus
 cost_profile: planning
 fallback_behavior: strict
@@ -16,13 +16,13 @@ When generating comprehensive Kafka architectures that exceed 1000 lines (e.g., 
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-kafka:kafka-architect:kafka-architect`
+**Subagent Type**: `sw-kafka:kafka-architect:kafka-architect`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-kafka:kafka-architect:kafka-architect",
+  subagent_type: "sw-kafka:kafka-architect:kafka-architect",
   prompt: "Design event-driven architecture for e-commerce with Kafka microservices and CQRS pattern",
   model: "opus" // default: opus (best quality)
 });

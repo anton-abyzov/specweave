@@ -1,0 +1,36 @@
+C4Context
+  title SpecWeave System Context Diagram
+
+  Person(developer, "Developer", "Uses Claude Code/Cursor/Copilot for AI-assisted development")
+  Person(pm, "Product Manager", "Plans features and reviews increments")
+  Person(reviewer, "Code Reviewer", "Reviews completed increments")
+
+  Enterprise_Boundary(b0, "SpecWeave Ecosystem") {
+    System(specweave, "SpecWeave Framework", "Spec-driven development framework with living docs, autonomous agents, and bidirectional sync")
+  }
+
+  System_Ext(claude, "Claude Code", "AI coding assistant with native plugin support, skills, agents, and hooks")
+  System_Ext(cursor, "Cursor IDE", "AI-powered code editor with .cursorrules integration")
+  System_Ext(copilot, "GitHub Copilot", "AI pair programmer with workspace instructions")
+
+  System_Ext(github, "GitHub", "Source code hosting, Issues, Pull Requests, Projects")
+  System_Ext(jira, "JIRA", "Issue tracking, Epics, Stories, Boards")
+  System_Ext(ado, "Azure DevOps", "Work items, Boards, Pipelines, Repos")
+
+  System_Ext(llm, "LLM APIs", "Anthropic Claude API for AI-powered analysis and generation")
+
+  BiRel(developer, specweave, "Plans increments, executes tasks", "CLI/Skills")
+  BiRel(pm, specweave, "Reviews specs, approves completion", "CLI")
+  Rel(reviewer, specweave, "Reviews ready_for_review increments", "CLI")
+
+  BiRel(specweave, claude, "Skills, Agents, Hooks", "Native Plugin System")
+  Rel(specweave, cursor, "Generates .cursorrules", "Config files")
+  Rel(specweave, copilot, "Generates workspace instructions", "Config files")
+
+  BiRel(specweave, github, "Syncs issues, milestones, labels", "Octokit REST API")
+  BiRel(specweave, jira, "Syncs stories, epics, boards", "JIRA REST API")
+  BiRel(specweave, ado, "Syncs work items, area paths", "Azure DevOps REST API")
+
+  Rel(specweave, llm, "AI analysis, documentation generation", "Anthropic SDK")
+
+  UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")

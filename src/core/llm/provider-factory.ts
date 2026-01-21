@@ -121,16 +121,21 @@ async function createClaudeCodeProvider(
 }
 
 /**
+ * Get API key from config or environment
+ */
+function getApiKey(config: LLMConfig, defaultEnvVar: string): string | undefined {
+  return config.apiKeyEnv ? process.env[config.apiKeyEnv] : process.env[defaultEnvVar];
+}
+
+/**
  * Create Anthropic provider (lazy load SDK)
  */
 async function createAnthropicProvider(
   config: LLMConfig,
   logger: Logger
 ): Promise<LLMProvider> {
-  // Dynamic import to avoid requiring SDK if not used
   const { AnthropicProvider } = await import('./providers/anthropic-provider.js');
-
-  const apiKey = config.apiKeyEnv ? process.env[config.apiKeyEnv] : process.env.ANTHROPIC_API_KEY;
+  const apiKey = getApiKey(config, 'ANTHROPIC_API_KEY');
 
   if (!apiKey) {
     throw new Error(
@@ -140,7 +145,7 @@ async function createAnthropicProvider(
 
   return new AnthropicProvider({
     apiKey,
-    model: config.model || 'claude-opus-4-5-20251101',
+    model: config.model || 'opus', // Resolved to full ID in provider
     maxTokens: config.maxTokensPerRequest,
     temperature: config.temperature,
     logger,
@@ -155,8 +160,7 @@ async function createOpenAIProvider(
   logger: Logger
 ): Promise<LLMProvider> {
   const { OpenAIProvider } = await import('./providers/openai-provider.js');
-
-  const apiKey = config.apiKeyEnv ? process.env[config.apiKeyEnv] : process.env.OPENAI_API_KEY;
+  const apiKey = getApiKey(config, 'OPENAI_API_KEY');
 
   if (!apiKey) {
     throw new Error(
@@ -181,10 +185,7 @@ async function createAzureOpenAIProvider(
   logger: Logger
 ): Promise<LLMProvider> {
   const { AzureOpenAIProvider } = await import('./providers/azure-openai-provider.js');
-
-  const apiKey = config.apiKeyEnv
-    ? process.env[config.apiKeyEnv]
-    : process.env.AZURE_OPENAI_API_KEY;
+  const apiKey = getApiKey(config, 'AZURE_OPENAI_API_KEY');
 
   if (!apiKey) {
     throw new Error(
@@ -236,7 +237,7 @@ async function createBedrockProvider(
 
   return new BedrockProvider({
     region: config.awsRegion || process.env.AWS_REGION || 'us-east-1',
-    model: config.model || 'anthropic.claude-opus-4-5-20251101-v1:0',
+    model: config.model || 'opus', // Resolved to full Bedrock ID in provider
     maxTokens: config.maxTokensPerRequest,
     temperature: config.temperature,
     logger,

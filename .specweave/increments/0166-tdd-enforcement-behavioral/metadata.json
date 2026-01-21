@@ -1,0 +1,32 @@
+{
+  "id": "0166-tdd-enforcement-behavioral",
+  "status": "completed",
+  "type": "feature",
+  "priority": "P1",
+  "created": "2026-01-09T10:00:00Z",
+  "lastActivity": "2026-01-09T14:42:00Z",
+  "completedAt": "2026-01-09T14:42:00Z",
+  "testMode": "TDD",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "epic_id": null,
+  "externalLinks": {},
+  "notes": "Phases 1-4 complete + T-028 (57 tests). Phases 5 (auto mode) and T-029/T-030 (docs) deferred.",
+  "testResults": {
+    "total": 57,
+    "passed": 57,
+    "failed": 0,
+    "suites": [
+      "tests/unit/tdd/template-selection.test.ts",
+      "tests/unit/tdd/spec-contract.test.ts",
+      "tests/unit/tdd/enforcement-guard.test.ts",
+      "tests/integration/tdd/tdd-workflow.test.ts"
+    ]
+  },
+  "pmValidation": {
+    "gate1_tasks": "PASS - 22/22 completed tasks",
+    "gate2_tests": "PASS - 57/57 tests passing",
+    "gate3_docs": "PASS - implementation-summary.md created",
+    "approvedAt": "2026-01-09T14:42:00Z"
+  }
+}

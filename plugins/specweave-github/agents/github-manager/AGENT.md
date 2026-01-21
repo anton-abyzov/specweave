@@ -66,20 +66,20 @@ gh auth login
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-github:github-manager:SpecWeave Sync`
+**Subagent Type**: `sw-github:github-manager:AGENT`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-github:github-manager:SpecWeave Sync",
+  subagent_type: "sw-github:github-manager:AGENT",
   prompt: "Your task description here",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name}`
-- **Plugin**: specweave-github
+- **Plugin**: sw-github
 - **Directory**: github-manager
 - **YAML Name**: SpecWeave Sync
 

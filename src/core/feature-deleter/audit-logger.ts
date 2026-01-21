@@ -81,11 +81,7 @@ export class FeatureDeletionAuditLogger {
    * Get user from git config or environment
    */
   private async getUser(): Promise<string> {
-    try {
-      const result = await execFileNoThrow('git', ['config', 'user.name']);
-      return result.stdout.trim();
-    } catch {
-      return process.env.USER || 'unknown';
-    }
+    const result = await execFileNoThrow('git', ['config', 'user.name']);
+    return result.stdout.trim() || process.env.USER || 'unknown';
   }
 }

@@ -20,12 +20,25 @@ import chalkFallback, { getChalk } from '../utils/chalk-fallback.js';
 // Use chalk if available, otherwise fallback to ANSI codes
 let chalk = chalkFallback;
 getChalk().then(c => { chalk = c; }).catch(() => { });
+/**
+ * Validate increment ID format to prevent path traversal attacks
+ * Valid format: 4 digits followed by alphanumeric/hyphen name (e.g., "0001-feature-name")
+ */
+function isValidIncrementId(id) {
+    return /^\d{4}[A-Za-z]?-[a-zA-Z0-9-]+$/.test(id);
+}
 async function main() {
     // Parse arguments
     const incrementId = process.argv[2];
     if (!incrementId) {
         console.error(chalk.red('Error: Missing increment ID'));
         console.error(chalk.gray('Usage: node ac-test-validator-cli.js <increment-id>'));
+        process.exit(2);
+    }
+    // Security: Validate increment ID format to prevent path traversal
+    if (!isValidIncrementId(incrementId)) {
+        console.error(chalk.red('Error: Invalid increment ID format'));
+        console.error(chalk.gray('Expected format: NNNN-name (e.g., 0001-feature-name)'));
         process.exit(2);
     }
     // Find project root

@@ -699,7 +699,7 @@ docker system prune -a --volumes
 - [CI/CD](/docs/glossary/terms/ci-cd) - Automated Docker image builds
 - Container Registry - Docker image storage
 - [Microservices](/docs/glossary/terms/microservices) - Architecture Docker enables
-- [DevOps](/docs/glossary/terms/devops) - Docker in DevOps workflows
+- DevOps - Docker in DevOps workflows
 
 ## Resources
 

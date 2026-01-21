@@ -1,0 +1,43 @@
+{
+  "id": "0158-smart-completion-conditions",
+  "title": "Smart Completion Conditions with Project Type Detection",
+  "status": "completed",
+  "priority": "P0",
+  "type": "feature",
+  "created": "2026-01-07T12:00:00Z",
+  "updated": "2026-01-07T23:30:00Z",
+  "lastActivity": "2026-01-07T23:30:00Z",
+  "startedAt": "2026-01-07T12:00:00Z",
+  "completedAt": "2026-01-07T23:30:00Z",
+  "approvedAt": "2026-01-07T23:30:00Z",
+  "estimatedHours": 40,
+  "actualHours": 11,
+  "dependencies": [],
+  "tags": ["auto-mode", "quality-gates", "e2e-testing", "project-detection"],
+  "assignee": "claude",
+  "completionConditions": [
+    {
+      "type": "build",
+      "mandatory": true
+    },
+    {
+      "type": "tests",
+      "mandatory": true
+    },
+    {
+      "type": "types",
+      "mandatory": true
+    }
+  ],
+  "notes": "Build fixed - default-conditions.ts implemented and all 32 tests passing",
+  "project": "specweave",
+  "pmApproval": {
+    "gate1_tasks": "PASS",
+    "gate2_tests": "PASS",
+    "gate3_docs": "PASS",
+    "decision": "APPROVED",
+    "approvedBy": "PM Agent (Claude)",
+    "approvedAt": "2026-01-07T23:30:00Z",
+    "summary": "All 35 tasks completed (100%), all 69 ACs checked, build and tests passing, documentation updated"
+  }
+}

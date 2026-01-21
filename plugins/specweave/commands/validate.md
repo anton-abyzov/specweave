@@ -1,6 +1,11 @@
 ---
 name: sw:validate
 description: Validate SpecWeave increment with rule-based checks and optional AI quality assessment
+hooks:
+  Stop:
+    - hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/spec-validation-guard.sh
 ---
 
 # Validate Increment
@@ -69,8 +74,10 @@ This command implements a **two-gate validation system**:
 
 1. **Extract increment ID**:
    - Parse from command: `/sw:validate 001` → "001"
-   - Normalize to 4-digit format: "0001"
-   - Support formats: "1", "01", "001", "0001"
+   - **Normalize increment ID**:
+     - If ID contains dash (e.g., "0153-feature-name"), extract numeric portion before first dash → "0153"
+     - Convert to 4-digit format: "1" → "0001", "153" → "0153"
+     - Both formats work: `/sw:validate 0153` or `/sw:validate 0153-feature-name`
 
 2. **Extract flags**:
    - Check for `--quality` flag

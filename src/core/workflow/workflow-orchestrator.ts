@@ -188,10 +188,6 @@ export class WorkflowOrchestrator {
 
   /**
    * Determine action based on phase and confidence
-   *
-   * @param detection - Phase detection result
-   * @param options - Execution options
-   * @returns Suggested action
    */
   private determineAction(
     detection: PhaseDetectionResult,
@@ -199,7 +195,6 @@ export class WorkflowOrchestrator {
   ): { description: string; command?: string } {
     const { phase, confidence } = detection;
 
-    // Low confidence - prompt user
     if (confidence < 0.7 && !options.force) {
       return {
         description: `Phase detection confidence is low (${(confidence * 100).toFixed(0)}%). Please specify action manually.`,
@@ -207,61 +202,19 @@ export class WorkflowOrchestrator {
       };
     }
 
-    // Map phase to action
-    switch (phase) {
-      case WorkflowPhase.PLAN_GENERATION:
-        return {
-          description: 'Generate implementation plan',
-          command: '/sw:plan'
-        };
+    const PHASE_ACTIONS: Record<WorkflowPhase, { description: string; command: string }> = {
+      [WorkflowPhase.PLAN_GENERATION]: { description: 'Generate implementation plan', command: '/sw:plan' },
+      [WorkflowPhase.IMPLEMENTATION]: { description: 'Execute tasks', command: '/sw:do' },
+      [WorkflowPhase.TESTING]: { description: 'Run tests', command: 'npm test' },
+      [WorkflowPhase.REVIEW]: { description: 'Run quality assessment', command: '/sw:qa' },
+      [WorkflowPhase.COMPLETION]: { description: 'Close increment', command: '/sw:done' },
+      [WorkflowPhase.SPEC_WRITING]: { description: 'Complete spec.md and generate plan', command: '/sw:plan' },
+      [WorkflowPhase.TASK_BREAKDOWN]: { description: 'Create tasks and start implementation', command: '/sw:do' },
+      [WorkflowPhase.DOCUMENTATION]: { description: 'Update living documentation', command: '/sw:sync-docs update' },
+      [WorkflowPhase.UNKNOWN]: { description: 'Phase detection unclear - please specify action manually', command: '' }
+    };
 
-      case WorkflowPhase.IMPLEMENTATION:
-        return {
-          description: 'Execute tasks',
-          command: '/sw:do'
-        };
-
-      case WorkflowPhase.TESTING:
-        return {
-          description: 'Run tests',
-          command: 'npm test'
-        };
-
-      case WorkflowPhase.REVIEW:
-        return {
-          description: 'Run quality assessment',
-          command: '/sw:qa'
-        };
-
-      case WorkflowPhase.COMPLETION:
-        return {
-          description: 'Close increment',
-          command: '/sw:done'
-        };
-
-      case WorkflowPhase.SPEC_WRITING:
-        return {
-          description: 'Complete spec.md and generate plan',
-          command: '/sw:plan'
-        };
-
-      case WorkflowPhase.TASK_BREAKDOWN:
-        return {
-          description: 'Create tasks and start implementation',
-          command: '/sw:do'
-        };
-
-      case WorkflowPhase.DOCUMENTATION:
-        return {
-          description: 'Update living documentation',
-          command: '/sw:sync-docs update'
-        };
-
-      default:
-        return {
-          description: 'Phase detection unclear - please specify action manually',
-          command: undefined
-        };
-    }
+    const action = PHASE_ACTIONS[phase];
+    return action.command ? action : { description: action.description, command: undefined };
   }
 }

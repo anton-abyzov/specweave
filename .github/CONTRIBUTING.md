@@ -397,7 +397,7 @@ plugins/specweave/agents/my-agent/
 name: my-agent
 description: What this agent does and when to use it. Include activation keywords.
 tools: Read, Write, Edit  # Optional: restrict tools
-model: claude-opus-4-5-20251101  # Optional: specify model (opus is default)
+model: opus  # Optional: specify model alias (opus, sonnet, haiku)
 ---
 
 # Agent System Prompt

@@ -28,3 +28,10 @@ export {
   cleanupDuplicateFiles,
   cleanupTempFiles,
 } from './file-utils.js';
+
+// Hierarchy builder (v1.0.115)
+export {
+  HierarchyBuilder,
+  type MultiProjectDetection,
+  type HierarchyBuilderOptions,
+} from './hierarchy-builder.js';

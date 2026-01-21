@@ -57,19 +57,26 @@ export function selectPlatforms(
 }
 
 /**
+ * Context scoring functions map
+ */
+const CONTEXT_SCORERS: Record<
+  ProjectContext,
+  (platform: ServerlessPlatform, criteria: SelectionCriteria) => number
+> = {
+  'pet-project': scorePetProject,
+  startup: scoreStartup,
+  enterprise: scoreEnterprise,
+};
+
+/**
  * Score a platform based on selection criteria (0-100)
  */
 function scorePlatform(platform: ServerlessPlatform, criteria: SelectionCriteria): number {
-  let score = 0; // Base score (changed from 50 to 0 for better differentiation)
+  let score = 0;
 
   // Context-based scoring
-  if (criteria.context === 'pet-project') {
-    score += scorePetProject(platform, criteria);
-  } else if (criteria.context === 'startup') {
-    score += scoreStartup(platform, criteria);
-  } else if (criteria.context === 'enterprise') {
-    score += scoreEnterprise(platform, criteria);
-  }
+  const contextScorer = CONTEXT_SCORERS[criteria.context];
+  score += contextScorer(platform, criteria);
 
   // Ecosystem matching (strong preference - should override context biases)
   if (criteria.preferredEcosystem) {
@@ -211,26 +218,31 @@ function scoreEnterprise(platform: ServerlessPlatform, criteria: SelectionCriter
 }
 
 /**
+ * Ecosystem to provider/platform mapping
+ */
+const ECOSYSTEM_MAPPING: Record<string, { provider?: CloudProvider; platformId?: string }> = {
+  aws: { provider: 'AWS' },
+  azure: { provider: 'Azure' },
+  gcp: { provider: 'GCP' },
+  'open-source': { provider: 'Supabase' },
+  mobile: { platformId: 'firebase' },
+};
+
+/**
  * Score based on ecosystem preference
  */
 function scoreEcosystem(platform: ServerlessPlatform, ecosystem: string): number {
-  let score = 0;
-
-  // Very strong ecosystem preference - must override all context-based biases
-  // Even if a platform has weaker features, ecosystem lock-in is a major decision factor
-  if (ecosystem === 'aws' && platform.provider === 'AWS') {
-    score += 50;
-  } else if (ecosystem === 'azure' && platform.provider === 'Azure') {
-    score += 50;
-  } else if (ecosystem === 'gcp' && platform.provider === 'GCP') {
-    score += 50;
-  } else if (ecosystem === 'open-source' && platform.provider === 'Supabase') {
-    score += 50;
-  } else if (ecosystem === 'mobile' && platform.id === 'firebase') {
-    score += 50;
+  const mapping = ECOSYSTEM_MAPPING[ecosystem];
+  if (!mapping) {
+    return 0;
   }
 
-  return score;
+  // Very strong ecosystem preference (50 points) - overrides context-based biases
+  const matches =
+    (mapping.provider && platform.provider === mapping.provider) ||
+    (mapping.platformId && platform.id === mapping.platformId);
+
+  return matches ? 50 : 0;
 }
 
 /**

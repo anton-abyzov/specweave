@@ -9,6 +9,20 @@
  */
 import { readFileSync } from 'fs';
 /**
+ * Parse task status from checkbox and status text
+ */
+function parseTaskStatus(checkbox, statusText) {
+    if (checkbox === 'x')
+        return 'completed';
+    if (statusText.includes('progress'))
+        return 'in_progress';
+    if (statusText.includes('transfer'))
+        return 'transferred';
+    if (statusText.includes('cancel'))
+        return 'canceled';
+    return 'pending';
+}
+/**
  * Parse tasks.md and extract all tasks with US linkage
  *
  * @param tasksPath - Path to tasks.md file
@@ -75,22 +89,7 @@ export function parseTasksWithUSLinks(tasksPath) {
             if (statusMatch) {
                 const checkbox = statusMatch[1];
                 const statusText = statusMatch[2].toLowerCase();
-                // Map checkbox and status text to TaskStatus
-                if (checkbox === 'x') {
-                    currentTask.status = 'completed';
-                }
-                else if (statusText.includes('progress')) {
-                    currentTask.status = 'in_progress';
-                }
-                else if (statusText.includes('transfer')) {
-                    currentTask.status = 'transferred';
-                }
-                else if (statusText.includes('cancel')) {
-                    currentTask.status = 'canceled';
-                }
-                else {
-                    currentTask.status = 'pending';
-                }
+                currentTask.status = parseTaskStatus(checkbox, statusText);
                 continue;
             }
             const priorityMatch = line.match(priorityRegex);
@@ -280,10 +279,9 @@ export function countTasksByStatus(tasksByUS) {
         transferred: 0,
         canceled: 0
     };
-    const allTasks = getAllTasks(tasksByUS);
-    allTasks.forEach(task => {
+    for (const task of getAllTasks(tasksByUS)) {
         counts[task.status]++;
-    });
+    }
     return counts;
 }
 /**

@@ -6,18 +6,40 @@
 
 ```bash
 npm install -g specweave
+```
+
+---
+
+## Starting a New Project (Greenfield)
+
+The simplest way to start — just describe what you want to build:
+
+```bash
+mkdir my-app && cd my-app
+specweave init .
+```
+
+Then in Claude Code, simply say:
+```
+"Build a calculator app with React"
+```
+
+SpecWeave guides you through features, tech stack, and approach — then creates your first increment automatically.
+
+**Perfect for prototypes, learning, and weekend MVPs.**
+
+---
+
+## Adding Features to Existing Projects
+
+For existing codebases, use explicit commands:
+
+```bash
 cd your-project
 specweave init .
 ```
 
-**That's it.** SpecWeave is ready.
-
----
-
-## Your First Feature (2 minutes)
-
-Open Claude Code and run:
-
+Then in Claude Code:
 ```bash
 /sw:increment "Add dark mode toggle"
 ```
@@ -29,6 +51,10 @@ Open Claude Code and run:
 ├── plan.md    <- HOW: Architecture + tech decisions
 └── tasks.md   <- DO: Tasks with embedded tests
 ```
+
+---
+
+## Execution Options
 
 ### Ship While You Sleep (Auto Mode)
 
@@ -65,30 +91,6 @@ This lets you work **continuously for hours** in the same VSCode window without 
 
 ---
 
-## Two Approaches
-
-### Option A: Quick Build (Fastest)
-
-Just describe what you want:
-```
-"build a calculator app with React"
-```
-
-SpecWeave's assistant guides you through features, tech stack, and approach. **Perfect for prototypes and learning.**
-
-### Option B: Spec-First (Recommended)
-
-Use explicit commands for full control:
-```bash
-/sw:increment "payment processing with Stripe"  # Plan
-/sw:do                                          # Build
-/sw:done 0002                                   # Close
-```
-
-**Perfect for production features and team projects.**
-
----
-
 ## When to Use Increments
 
 Not every change needs an increment. **The rule of thumb:**
@@ -117,6 +119,32 @@ After `specweave init .`:
 | **Commands** | 53 | Slash commands for workflow control |
 | **Hooks** | 3+ | Event-driven automation (lifecycle, sync, status) |
 | **CLAUDE.md** | 1 | Your project reference guide |
+
+:::tip Context Efficiency with MCP Tool Search
+Claude Code 2.1.7+ includes **MCP Tool Search** (lazy loading) — SpecWeave's 24 plugins load on-demand instead of all at once.
+
+**Result**: 85%+ context reduction (~100k → ~5-10k tokens at startup), enabling longer `/sw:auto` sessions and more complex increments.
+
+No configuration needed — enabled by default when MCP tools exceed 10% of context.
+
+**Coming in v1.1**: [Native Lazy Plugin Loading](/docs/guides/lazy-plugin-loading) — 99% token savings for non-SpecWeave work via router-based architecture.
+:::
+
+:::info Recommended MCP Servers
+Two MCP servers that supercharge SpecWeave:
+
+**Context7** — Real-time docs for any library (no more hallucinated APIs):
+```bash
+claude mcp add context7 -- npx -y @anthropic-ai/context7-mcp
+```
+
+**Playwright** — Browser automation for E2E testing (Claude sees your app):
+```bash
+claude mcp add playwright -- npx -y @anthropic-ai/playwright-mcp
+```
+
+These add capabilities CLI tools can't match — current documentation and visual verification.
+:::
 
 ---
 
@@ -336,9 +364,9 @@ specweave update-instructions
 ## Next Steps
 
 - **[Installation Guide](installation)** - Detailed setup options
-- **[Core Concepts](../../guides/core-concepts/specifications)** - Understanding specs
+- **[Core Concepts](/docs/overview/introduction)** - Understanding specs
 - **[Key Features](../../overview/features)** - Full capabilities
-- **[Examples](../examples/)** - Real project walkthroughs
+- **[Examples](/docs/examples/)** - Real project walkthroughs
 
 ---
 

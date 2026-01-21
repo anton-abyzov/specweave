@@ -164,36 +164,22 @@ export class FeatureDeleter {
    */
   private async handleGitHubCleanup(validation: any, options: DeletionOptions): Promise<number> {
     try {
-      // Extract owner/repo from git remote
       const { owner, repo } = await this.getGitHubOwnerRepo();
-
       if (!owner || !repo) {
         this.logger.warn('GitHub cleanup skipped: Unable to detect owner/repo from git remote');
         return 0;
       }
 
-      // Find GitHub issues
-      const githubService = new FeatureDeletionGitHubService({
-        owner,
-        repo,
-        logger: this.logger
-      });
-
+      const githubService = new FeatureDeletionGitHubService({ owner, repo, logger: this.logger });
       const issues = await githubService.findFeatureIssues(validation.featureId);
+      if (issues.length === 0) return 0;
 
-      if (issues.length === 0) {
-        return 0;
-      }
-
-      // T-026: Confirm GitHub cleanup
       const confirmed = await this.confirmationManager.confirmGitHub(issues.length, options);
-
       if (!confirmed) {
         console.log('GitHub cleanup skipped.');
         return 0;
       }
 
-      // Close issues
       const { closed } = await githubService.deleteIssues(issues);
       return closed;
     } catch (error) {
@@ -206,35 +192,19 @@ export class FeatureDeleter {
    * Extract GitHub owner and repo from git remote URL
    */
   private async getGitHubOwnerRepo(): Promise<{ owner: string; repo: string }> {
+    const empty = { owner: '', repo: '' };
+
     try {
       const { execFileNoThrow } = await import('../../utils/execFileNoThrow.js');
-      const result = await execFileNoThrow('git', ['remote', 'get-url', 'origin'], {
-        cwd: this.projectRoot
-      });
+      const result = await execFileNoThrow('git', ['remote', 'get-url', 'origin'], { cwd: this.projectRoot });
+      if (!result.success) return empty;
 
-      if (!result.success) {
-        return { owner: '', repo: '' };
-      }
-
-      const remoteUrl = result.stdout.trim();
-
-      // Parse GitHub URL patterns:
-      // - https://github.com/owner/repo.git
-      // - git@github.com:owner/repo.git
-      // - https://github.com/owner/repo
-      const httpsMatch = remoteUrl.match(/github\.com[/:]([\w-]+)\/([\w-]+?)(\.git)?$/);
-
-      if (httpsMatch) {
-        return {
-          owner: httpsMatch[1],
-          repo: httpsMatch[2]
-        };
-      }
-
-      return { owner: '', repo: '' };
+      // Parse: https://github.com/owner/repo.git, git@github.com:owner/repo.git, https://github.com/owner/repo
+      const match = result.stdout.trim().match(/github\.com[/:]([\w-]+)\/([\w-]+?)(\.git)?$/);
+      return match ? { owner: match[1], repo: match[2] } : empty;
     } catch (error) {
       this.logger.warn(`Failed to extract GitHub owner/repo: ${error}`);
-      return { owner: '', repo: '' };
+      return empty;
     }
   }
 }

@@ -137,12 +137,6 @@ export class PermissionEnforcer {
 
   /**
    * Check if an operation is permitted for an item
-   *
-   * @param platform - Target platform (github, jira, ado)
-   * @param operation - Operation to perform
-   * @param itemId - Item ID being operated on
-   * @param origin - Whether item is internal or external
-   * @returns Permission result
    */
   checkPermission(
     platform: SyncPlatform,
@@ -150,13 +144,12 @@ export class PermissionEnforcer {
     itemId: string,
     origin: ItemOrigin = 'internal'
   ): PermissionResult {
-    const allowed = this.isOperationAllowed(operation, origin);
-
+    const allowed = this.isOperationAllowed(operation);
     const reason = allowed
       ? `Operation "${operation}" permitted for ${origin} item`
-      : this.getDenialReason(operation, origin);
+      : this.getDenialReason(operation);
 
-    const result: PermissionResult = {
+    return {
       allowed,
       reason,
       platform,
@@ -165,8 +158,6 @@ export class PermissionEnforcer {
       origin,
       timestamp: new Date().toISOString(),
     };
-
-    return result;
   }
 
   /**
@@ -264,8 +255,6 @@ export class PermissionEnforcer {
 
   /**
    * Get a human-readable summary of current permissions
-   *
-   * @returns Summary object
    */
   getPermissionsSummary(): {
     canCreateInternal: boolean;
@@ -273,21 +262,17 @@ export class PermissionEnforcer {
     canUpdateStatus: boolean;
     summary: string;
   } {
+    const { canUpsertInternalItems, canUpdateExternalItems, canUpdateStatus } = this.settings;
+
     const parts: string[] = [];
-    if (this.settings.canUpsertInternalItems) {
-      parts.push('create/update internal items');
-    }
-    if (this.settings.canUpdateExternalItems) {
-      parts.push('update external items');
-    }
-    if (this.settings.canUpdateStatus) {
-      parts.push('update status');
-    }
+    if (canUpsertInternalItems) parts.push('create/update internal items');
+    if (canUpdateExternalItems) parts.push('update external items');
+    if (canUpdateStatus) parts.push('update status');
 
     return {
-      canCreateInternal: this.settings.canUpsertInternalItems,
-      canUpdateExternal: this.settings.canUpdateExternalItems,
-      canUpdateStatus: this.settings.canUpdateStatus,
+      canCreateInternal: canUpsertInternalItems,
+      canUpdateExternal: canUpdateExternalItems,
+      canUpdateStatus,
       summary: parts.length > 0 ? `Allowed: ${parts.join(', ')}` : 'All sync disabled (read-only)',
     };
   }
@@ -308,24 +293,16 @@ export class PermissionEnforcer {
   /**
    * Check if operation is allowed by current settings
    */
-  private isOperationAllowed(operation: SyncOperation, origin: ItemOrigin): boolean {
+  private isOperationAllowed(operation: SyncOperation): boolean {
     switch (operation) {
       case 'read':
-        // Reading is always allowed
         return true;
-
       case 'update-status':
-        // Status updates controlled by canUpdateStatus
         return this.settings.canUpdateStatus;
-
       case 'upsert-internal':
-        // Creating/updating internal items controlled by canUpsertInternalItems
         return this.settings.canUpsertInternalItems;
-
       case 'upsert-external':
-        // Updating external items controlled by canUpdateExternalItems
         return this.settings.canUpdateExternalItems;
-
       default:
         return false;
     }
@@ -334,20 +311,13 @@ export class PermissionEnforcer {
   /**
    * Get denial reason for logging
    */
-  private getDenialReason(operation: SyncOperation, origin: ItemOrigin): string {
-    switch (operation) {
-      case 'update-status':
-        return 'Status updates disabled. Enable sync.settings.canUpdateStatus in config.';
-
-      case 'upsert-internal':
-        return 'Creating/updating internal items disabled. Enable sync.settings.canUpsertInternalItems in config.';
-
-      case 'upsert-external':
-        return 'Updating external items disabled. Enable sync.settings.canUpdateExternalItems in config.';
-
-      default:
-        return `Operation "${operation}" not permitted for ${origin} items.`;
-    }
+  private getDenialReason(operation: SyncOperation): string {
+    const messages: Record<string, string> = {
+      'update-status': 'Status updates disabled. Enable sync.settings.canUpdateStatus in config.',
+      'upsert-internal': 'Creating/updating internal items disabled. Enable sync.settings.canUpsertInternalItems in config.',
+      'upsert-external': 'Updating external items disabled. Enable sync.settings.canUpdateExternalItems in config.',
+    };
+    return messages[operation] ?? `Operation "${operation}" not permitted.`;
   }
 
   /**

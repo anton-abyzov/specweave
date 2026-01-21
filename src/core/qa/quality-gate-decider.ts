@@ -205,22 +205,26 @@ export class QualityGateDecider {
     }
 
     // Add dimension-specific issues
+    const severityToGateSeverity: Record<string, 'critical' | 'high' | 'medium'> = {
+      critical: 'critical',
+      major: 'high',
+      minor: 'medium',
+    };
+
     for (const issue of assessment.issues) {
       const gateIssue: QualityGateIssue = {
         type: `spec_${issue.dimension}`,
-        severity: issue.severity === 'critical' ? 'critical' : issue.severity === 'major' ? 'high' : 'medium',
+        severity: severityToGateSeverity[issue.severity] ?? 'medium',
         title: `${issue.dimension.toUpperCase()}: ${issue.description}`,
         description: issue.impact,
         location: issue.location,
       };
 
-      if (issue.severity === 'critical') {
-        blockers.push(gateIssue);
-      } else if (issue.severity === 'major') {
-        concerns.push(gateIssue);
-      } else {
-        recommendations.push(gateIssue);
-      }
+      const targetList =
+        issue.severity === 'critical' ? blockers :
+        issue.severity === 'major' ? concerns :
+        recommendations;
+      targetList.push(gateIssue);
     }
   }
 
@@ -304,31 +308,23 @@ export class QualityGateDecider {
     };
   }
 
+  private static readonly DECISION_DISPLAY: Record<QualityGateDecision, { icon: string; color: 'green' | 'yellow' | 'red' }> = {
+    PASS: { icon: '🟢', color: 'green' },
+    CONCERNS: { icon: '🟡', color: 'yellow' },
+    FAIL: { icon: '🔴', color: 'red' },
+  };
+
   /**
    * Get decision icon/emoji
    */
   static getDecisionIcon(decision: QualityGateDecision): string {
-    switch (decision) {
-      case 'PASS':
-        return '🟢';
-      case 'CONCERNS':
-        return '🟡';
-      case 'FAIL':
-        return '🔴';
-    }
+    return this.DECISION_DISPLAY[decision].icon;
   }
 
   /**
    * Get decision color (for terminal output)
    */
   static getDecisionColor(decision: QualityGateDecision): 'green' | 'yellow' | 'red' {
-    switch (decision) {
-      case 'PASS':
-        return 'green';
-      case 'CONCERNS':
-        return 'yellow';
-      case 'FAIL':
-        return 'red';
-    }
+    return this.DECISION_DISPLAY[decision].color;
   }
 }

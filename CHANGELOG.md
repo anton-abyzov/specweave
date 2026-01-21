@@ -4,6 +4,293 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.135] - 2026-01-20
+
+### ✨ Features
+
+- **Turn counter with HARD STOP**: Auto mode now has a session turn limit (`maxTurns: 20`) that NEVER resets
+  - Prevents infinite loops even when retry counter resets
+  - Turn count persisted across hook invocations via `.stop-auto-turns` file
+  - Separate from `maxRetries` which tracks stuck detection (resets when work changes)
+
+- **Clear success criteria output**: Stop hook now outputs actionable success criteria
+  - Format: `⏳ [turn X/Y] CRITERIA → RUN: command → THEN: /sw:done XXXX`
+  - LLM receives clear instructions on what to complete and what command to run
+  - MANDATORY INSTRUCTION block ensures LLM completes pending tasks before closure
+
+- **Changelog display in update command**: `specweave update` now shows what's new
+  - Fetches changelog from GitHub before updating
+  - Displays relevant version entries between current and latest
+  - Helps users decide if update is needed
+
+### 🔧 Improvements
+
+- **Validation result caching**: Stop hook caches `count_pending_tasks` and `count_open_acs` results
+  - Avoids redundant file reads during same hook invocation
+  - Reduces hook execution time
+
+- **Stale session detection**: Auto-approves sessions older than 30 minutes
+  - Prevents abandoned sessions from blocking indefinitely
+  - Checks `.stop-auto-turns` file modification time
+
+- **Default retry limits**: Changed autonomous executor default retries from 3 to 5
+  - More resilient per-command execution
+
+### 🐛 Bug Fixes
+
+- **Stop hook clarity**: Replaced ambiguous "1 active increment(s): XXX" with actionable success criteria
+- **Retry counter stability**: Turn counter provides guaranteed termination even if retry counter resets
+
+---
+
+## [1.0.131] - 2026-01-19
+
+### ✨ Features
+
+- **`specweave update` command**: New unified update command that:
+  - Self-updates CLI via npm (by default)
+  - Migrates config.json (adds missing `auto` section for older projects)
+  - Updates instruction files (CLAUDE.md, AGENTS.md)
+  - Validates project health
+  - Options: `--plugins`, `--all`, `--check`, `--no-self`, `--verbose`, `--force`
+
+- **Auto mode circuit breaker**: Prevents infinite loops in stop hook
+  - Added retry counter with deterministic increment list sorting
+  - Auto-approves after `auto.maxRetries` (default: 20) to break loops
+  - Configurable via `config.json` `auto.maxRetries` setting
+
+- **Smart completion criteria**: Auto mode now approves when all tasks are complete
+  - Sessions no longer block indefinitely waiting for manual closure
+  - Handles cases where auto-close validation fails but work is done
+  - Supports increments still in "active" status with complete tasks
+
+### 🔧 Improvements
+
+- **Config migration**: Automatically adds `auto` section to older projects
+  - Default values: `enabled: true`, `maxRetries: 20`, `requireTests: false`, `requireValidation: true`
+  - Safe migration preserves existing configuration
+
+- **Stop hook reliability**: Deterministic sorting prevents retry counter reset
+  - Added `| sort |` to ensure consistent increment list order
+  - Fixed non-deterministic `find` output causing counter reset
+
+### 📚 Documentation
+
+- Updated README.md with `specweave update` command
+- Updated auto mode docs with circuit breaker and completion criteria
+- Updated installation guide with new upgrade workflow
+- Updated quick-start troubleshooting section
+- Added CLI commands section to commands overview
+
+---
+
+## [1.0.130] - 2026-01-19
+
+### ✨ Features
+
+- **Testing skills**: New browser automation, visual regression, UI testing, and image generation skills
+- **Self-validating skills**: Architecture for skills that validate their own activation and execution
+- **Enhanced keyword detection**: Improved lazy loading with better keyword matching and domain detection
+
+### 🔧 Improvements
+
+- **Plugin consolidation**: TDD defaults and cleaner plugin organization
+- **Init command**: Better gitignore generation and directory structure setup
+- **Learning validator**: New reflection learning validator for skill improvement tracking
+
+---
+
+## [1.0.129] - 2026-01-19
+
+### 🐛 Bug Fixes
+
+- **Init command**: Allow user-level `~/.specweave` for global settings without blocking project initialization
+
+---
+
+## [1.0.126] - 2026-01-19
+
+### 🐛 Bug Fixes
+
+- **Reflect memory**: Improved memory entries and cache invalidation for better learning persistence
+- **Lazy loading docs**: Updated documentation to reflect core+router architecture
+
+### 📚 Documentation
+
+- **Instruction files**: Synced instruction files with updated template
+
+---
+
+
+
+## [1.0.118] - 2026-01-17
+
+### 📚 Documentation
+
+- **Enterprise positioning**: Updated README and docs with "The Enterprise Layer for AI Coding" messaging
+- **MCP Tool Search**: Added documentation for 85%+ context reduction with Claude Code 2.1.7+ lazy loading
+- **Industry standards section**: New section highlighting MCP, Agent Skills, and plugin architecture as Anthropic-led standards
+- **Recommended MCP servers**: Added Context7 and Playwright as recommended global MCP servers
+- **Deployment platforms guide**: Expanded guide with Railway, Render, Supabase, Vercel integration patterns
+- **YouTube tutorial script**: Enhanced script with enterprise features and demo walkthrough
+
+---
+
+## [1.0.116] - 2026-01-14
+
+### 🔧 Improvements
+
+- **Auto mode refactoring**: Enhanced auto mode command with better error handling and state management
+- **Marketplace refresh improvements**: Added better cache handling and plugin installation reliability
+- **Documentation updates**: Updated CLAUDE.md and AGENTS.md with latest instructions and troubleshooting guidance
+
+### 🐛 Bug Fixes
+
+- **Discipline checker**: Fixed increment validation logic
+- **Stop-auto hook**: Improved cleanup and reliability
+
+---
+
+## [1.0.115] - 2026-01-14
+
+### ✨ New Features
+
+- **`specweave cache-status`**: New command to check plugin cache health status, detect staleness, and suggest fixes. Supports `--check-github` to compare against remote
+- **`specweave export-skills`**: Export SpecWeave skills to Agent Skills open standard format (agentskills.io) for cross-platform compatibility with GitHub Copilot, VS Code, Gemini CLI, Cursor
+- **`--force` flag for `refresh-marketplace`**: Force reinstall all plugins by clearing cache first, ensuring fresh copies from source
+
+### 📚 Documentation
+
+- **ADR-0225**: New architecture decision record documenting plugin cache architecture, lifecycle, and troubleshooting
+- **AGENTS-INDEX.md rewrite**: Clarified that `sw` plugin provides auto-activating SKILLS, not Task-invocable agents
+- **CLAUDE.md troubleshooting updates**: Added cache-related guidance for "Skills not activating" and "Cache stale" issues
+
+### 🔧 Improvements
+
+- **Cache staleness fix**: `refresh-marketplace --force` now properly uninstalls plugins and clears cache before reinstalling
+- **Skill activation improvements**: Enhanced skill descriptions and trigger keywords for better auto-activation
+
+---
+
+## [1.0.114] - 2026-01-13
+
+### 📚 Documentation
+
+- **Academy restructure**: Streamlined academy documentation structure by consolidating content
+- **Documentation cleanup**: Removed redundant lesson and bridge documentation files
+- **New LSP integration skill**: Added LSP integration skill for enhanced code intelligence
+- **Glossary expansion**: Added LLM glossary term
+
+---
+
+## [1.0.113] - 2026-01-13
+
+### 🔧 Improvements
+
+- **Auto mode refactoring**: Refactored auto mode commands and added comprehensive tests
+- **Payments plugin**: Expanded plugin keywords for better activation and added critical Stripe Connect patterns
+- **Bug fixes**: Fixed web browser payment flow handling
+
+---
+
+## [1.0.101] - 2026-01-06
+
+### 📚 Documentation
+
+- **Docusaurus documentation updates**:
+  - Added `/sw:auto` command documentation with comprehensive guide
+  - Added quick start guide for new users
+  - Added examples directory with initial examples
+  - Updated intro page and YouTube tutorial script
+  - Improved documentation navigation and content
+- **Updated project memory rules** in `.specweave/memory/general.md`
+
+---
+
+## [1.0.100] - 2026-01-06
+
+### 📚 Documentation
+
+- Documentation improvements and minor updates
+
+---
+
+## [1.0.93] - 2026-01-04
+
+### 🔧 Bug Fixes
+
+- **`/sw:jobs` output improvements**:
+  - Now shows completed job timestamps ("3 days ago", "5 hours ago")
+  - Removed contradictory "use --all to see" message when jobs are already displayed
+  - Fixed incomplete output where job details weren't showing
+  - Better user experience with complete job history at a glance
+
+### 📚 Documentation
+
+- **Comprehensive documentation updates for instant command fixes**:
+  - Updated [CLAUDE.md](CLAUDE.md) troubleshooting section with instant command fixes
+  - Added auto mode flags documentation (`--build`, `--e2e`, `--tests`)
+  - Created [ADR-0223](docs/internal/architecture/adr/0223-vscode-hook-detection-pattern.md) documenting VSCode hook detection architecture
+  - Updated [hooks overview](docs/internal/repos/hooks/overview.md) with VSCode detection pattern
+  - Updated [CLI overview](docs/internal/repos/cli/overview.md) with direct function invocation pattern
+  - Created [instant commands troubleshooting guide](docs/internal/troubleshooting/instant-commands-not-working.md) with complete fix history
+
+---
+
+## [1.0.92] - 2026-01-04
+
+### 🎯 Improvements
+
+- **`/sw:jobs` now shows all jobs by default** (including completed ones)
+  - Changed default behavior from showing only active jobs to showing all jobs
+  - Users no longer need to remember `--all` flag
+  - Better UX: see completed job history immediately
+  - Files changed: `plugins/specweave/scripts/read-jobs.sh`, `src/cli/commands/jobs.ts`
+
+---
+
+## [1.0.91] - 2026-01-04
+
+### 🔧 Bug Fixes
+
+**ULTIMATE FIX**: Resolved dual root causes preventing `/sw:jobs`, `/sw:status`, and `/sw:progress` from working in VSCode extension
+
+1. **VSCode Hook Blocking Issue** (Primary fix):
+   - Added VSCode environment detection via `CLAUDE_CODE_ENTRYPOINT=claude-vscode`
+   - Hook now returns `{"decision":"approve"}` in VSCode mode, allowing fallback to execute
+   - Hook still returns `{"decision":"block","reason":"..."}` in CLI mode for instant execution
+   - Fixes all 6 instant commands: `/sw:jobs`, `/sw:status`, `/sw:progress`, `/sw:workflow`, `/sw:costs`, `/sw:analytics`
+
+2. **CLI Double-Parsing Bug**:
+   - Refactored `src/cli/commands/jobs.ts` to export `jobsCommand(options)` function
+   - Replaced double `parseAsync()` antipattern in `bin/specweave.js` with direct function call
+   - Matches pattern used by working commands (status, progress)
+
+**Impact**: Commands now work in **BOTH** CLI and VSCode environments!
+
+---
+
+## [1.0.90] - 2026-01-04
+
+### 🔧 Bug Fixes
+
+- **CRITICAL FIX**: Removed `$ARGUMENTS` placeholder from command fallbacks that was causing "too many arguments" errors
+- Commands now instruct Claude to explicitly extract and pass arguments from the user's prompt
+- This fully fixes `/sw:jobs`, `/sw:status`, and `/sw:progress` commands in all execution contexts
+
+---
+
+## [1.0.89] - 2026-01-04
+
+### 🔧 Bug Fixes
+
+- Fixed `/sw:jobs`, `/sw:status`, and `/sw:progress` commands not working in VSCode
+- Changed command fallbacks from bash scripts to globally-available CLI commands
+- Hook output now properly falls back to `specweave jobs/status/progress $ARGUMENTS`
+- Resolved `${CLAUDE_PLUGIN_ROOT}` variable not being set in Claude's execution context
+
+---
+
 ## [1.0.40] - 2025-12-23
 
 ### 🔧 Maintenance

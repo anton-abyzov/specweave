@@ -45,45 +45,22 @@ export class BackgroundJobManager {
     const startTime = Date.now();
 
     while (Date.now() - startTime < LOCK_TIMEOUT) {
-      try {
-        // Try to create lock file exclusively (will fail if exists)
-        const fd = fsNative.openSync(this.lockPath, 'wx');
-        fsNative.writeSync(fd, `${process.pid}\n${Date.now()}`);
-        fsNative.closeSync(fd);
+      if (this.tryCreateLockFile()) {
         return true;
-      } catch (err: any) {
-        if (err.code === 'EEXIST') {
-          // Lock exists - check if it's stale (older than 30 seconds)
-          try {
-            const lockContent = fs.readFileSync(this.lockPath, 'utf-8');
-            const lockTime = parseInt(lockContent.split('\n')[1], 10);
-            if (Date.now() - lockTime > 30000) {
-              // Stale lock - remove it and retry
-              fs.unlinkSync(this.lockPath);
-              continue;
-            }
-          } catch {
-            // Can't read lock, try removing it
-            try { fs.unlinkSync(this.lockPath); } catch { /* ignore */ }
-          }
+      }
 
-          // Wait and retry
-          const delay = Math.min(LOCK_RETRY_INTERVAL, LOCK_TIMEOUT - (Date.now() - startTime));
-          if (delay > 0) {
-            // Synchronous sleep
-            const end = Date.now() + delay;
-            while (Date.now() < end) { /* busy wait */ }
-          }
-        } else {
-          // Other error - ensure directory exists and retry
-          fs.ensureDirSync(path.dirname(this.lockPath));
-        }
+      if (!this.handleExistingLock(startTime)) {
+        // Other error - ensure directory exists and retry
+        fs.ensureDirSync(path.dirname(this.lockPath));
       }
     }
 
     // Timeout - force acquire by removing stale lock
+    return this.forceAcquireLock();
+  }
+
+  private tryCreateLockFile(): boolean {
     try {
-      fs.unlinkSync(this.lockPath);
       const fd = fsNative.openSync(this.lockPath, 'wx');
       fsNative.writeSync(fd, `${process.pid}\n${Date.now()}`);
       fsNative.closeSync(fd);
@@ -91,6 +68,38 @@ export class BackgroundJobManager {
     } catch {
       return false;
     }
+  }
+
+  private handleExistingLock(startTime: number): boolean {
+    try {
+      const lockContent = fs.readFileSync(this.lockPath, 'utf-8');
+      const lockTime = parseInt(lockContent.split('\n')[1], 10);
+
+      if (Date.now() - lockTime > 30000) {
+        // Stale lock - remove it
+        fs.unlinkSync(this.lockPath);
+        return true;
+      }
+
+      // Wait and retry
+      const delay = Math.min(LOCK_RETRY_INTERVAL, LOCK_TIMEOUT - (Date.now() - startTime));
+      if (delay > 0) {
+        const end = Date.now() + delay;
+        while (Date.now() < end) { /* busy wait */ }
+      }
+      return true;
+    } catch {
+      // Can't read lock, try removing it
+      try { fs.unlinkSync(this.lockPath); } catch { /* ignore */ }
+      return true;
+    }
+  }
+
+  private forceAcquireLock(): boolean {
+    try {
+      fs.unlinkSync(this.lockPath);
+    } catch { /* ignore */ }
+    return this.tryCreateLockFile();
   }
 
   /**
@@ -257,8 +266,7 @@ export class BackgroundJobManager {
    * Get all jobs (optionally filtered by type or status)
    */
   getJobs(filter?: { type?: JobType; status?: JobStatus }): BackgroundJob[] {
-    const state = this.loadState();
-    let jobs = state.jobs;
+    let jobs = this.loadState().jobs;
 
     if (filter?.type) {
       jobs = jobs.filter(j => j.type === filter.type);
@@ -273,14 +281,16 @@ export class BackgroundJobManager {
     );
   }
 
+  private static readonly ACTIVE_STATUSES: JobStatus[] = ['running', 'paused', 'pending'];
+
   /**
    * Get active (running/paused) jobs
    */
   getActiveJobs(): BackgroundJob[] {
-    return this.getJobs().filter(j =>
-      j.status === 'running' || j.status === 'paused' || j.status === 'pending'
-    );
+    return this.getJobs().filter(j => BackgroundJobManager.ACTIVE_STATUSES.includes(j.status));
   }
+
+  private static readonly COMPLETED_STATUSES: JobStatus[] = ['completed', 'completed_with_warnings', 'failed'];
 
   /**
    * Clean up old completed jobs (keep last 10)
@@ -290,11 +300,9 @@ export class BackgroundJobManager {
     this.acquireLock();
     try {
       const state = this.loadState();
-      const active = state.jobs.filter(j =>
-        j.status === 'running' || j.status === 'paused' || j.status === 'pending'
-      );
+      const active = state.jobs.filter(j => BackgroundJobManager.ACTIVE_STATUSES.includes(j.status));
       const completed = state.jobs
-        .filter(j => j.status === 'completed' || j.status === 'completed_with_warnings' || j.status === 'failed')
+        .filter(j => BackgroundJobManager.COMPLETED_STATUSES.includes(j.status))
         .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
         .slice(0, 10);
 

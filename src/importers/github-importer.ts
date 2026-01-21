@@ -181,45 +181,16 @@ export class GitHubImporter implements Importer {
    * Convert GitHub issue to ExternalItem
    */
   private convertToExternalItem(issue: GitHubIssue): ExternalItem {
-    // Extract type from labels
-    let type: ExternalItem['type'] = 'task';
     const labelNames = issue.labels.map((l) => l.name.toLowerCase());
-
-    if (labelNames.includes('user-story') || labelNames.includes('story')) {
-      type = 'user-story';
-    } else if (labelNames.includes('epic')) {
-      type = 'epic';
-    } else if (labelNames.includes('bug')) {
-      type = 'bug';
-    } else if (labelNames.includes('feature')) {
-      type = 'feature';
-    }
-
-    // Extract priority from labels (P0, P1, P2, P3, P4)
-    const priorityLabel = labelNames.find((l) => /^p[0-4]$/i.test(l));
-    const priority = priorityLabel ? (priorityLabel.toUpperCase() as ExternalItem['priority']) : undefined;
-
-    // Extract acceptance criteria from body
     const acceptanceCriteria = this.extractAcceptanceCriteria(issue.body || '');
 
-    // Map GitHub state to ExternalItem status
-    let status: ExternalItem['status'] = 'open';
-    if (issue.state === 'closed') {
-      status = 'completed';
-    } else if (labelNames.includes('in-progress') || labelNames.includes('in progress')) {
-      status = 'in-progress';
-    }
-
-    // CRITICAL FIX (2025-11-26): Include repo in external ID to prevent cross-repo collisions
-    // Bug: Multiple repos with same issue number (e.g., #1) were being deduplicated incorrectly
-    // because external ID was only `github#1` for all repos
     return {
       id: `github#${this.owner}/${this.repo}#${issue.number}`,
-      type,
+      type: this.mapLabelToType(labelNames),
       title: issue.title,
       description: sanitizeHtmlForMdx(issue.body),
-      status,
-      priority,
+      status: this.mapStatus(issue.state, labelNames),
+      priority: this.extractPriority(labelNames),
       createdAt: new Date(issue.created_at),
       updatedAt: new Date(issue.updated_at),
       url: issue.html_url,
@@ -227,6 +198,34 @@ export class GitHubImporter implements Importer {
       acceptanceCriteria: acceptanceCriteria.length > 0 ? acceptanceCriteria : undefined,
       platform: 'github',
     };
+  }
+
+  /**
+   * Map GitHub labels to ExternalItem type
+   */
+  private mapLabelToType(labelNames: string[]): ExternalItem['type'] {
+    if (labelNames.includes('user-story') || labelNames.includes('story')) return 'user-story';
+    if (labelNames.includes('epic')) return 'epic';
+    if (labelNames.includes('bug')) return 'bug';
+    if (labelNames.includes('feature')) return 'feature';
+    return 'task';
+  }
+
+  /**
+   * Map GitHub state to ExternalItem status
+   */
+  private mapStatus(state: 'open' | 'closed', labelNames: string[]): ExternalItem['status'] {
+    if (state === 'closed') return 'completed';
+    if (labelNames.includes('in-progress') || labelNames.includes('in progress')) return 'in-progress';
+    return 'open';
+  }
+
+  /**
+   * Extract priority from labels (P0-P4)
+   */
+  private extractPriority(labelNames: string[]): ExternalItem['priority'] | undefined {
+    const priorityLabel = labelNames.find((l) => /^p[0-4]$/i.test(l));
+    return priorityLabel ? (priorityLabel.toUpperCase() as ExternalItem['priority']) : undefined;
   }
 
   /**

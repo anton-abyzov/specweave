@@ -124,28 +124,32 @@ export interface NotificationContext {
 
 /**
  * Get appropriate sound for notification type
+ *
+ * NOTE: Sounds are currently disabled - returns undefined for all types
+ * to prevent audio notifications. To re-enable sounds, uncomment the
+ * switch statement below and remove the return undefined.
  */
-export function getSoundForType(type: NotificationType): string {
-  switch (type) {
-    case 'cleanup':
-    case 'job_complete':
-    case 'sync_complete':
-    case 'import_complete':
-    case 'session_recovered':
-      return NotificationSounds.SUCCESS;
+export function getSoundForType(_type: NotificationType): string | undefined {
+  // Sounds disabled - return undefined to suppress all notification sounds
+  // To re-enable, uncomment below and remove this return:
+  return undefined;
 
-    case 'job_started':
-      return NotificationSounds.INFO;
-
-    case 'session_stuck':
-      return NotificationSounds.WARNING;
-
-    case 'error':
-      return NotificationSounds.CRITICAL;
-
-    default:
-      return NotificationSounds.INFO;
-  }
+  // switch (type) {
+  //   case 'cleanup':
+  //   case 'job_complete':
+  //   case 'sync_complete':
+  //   case 'import_complete':
+  //   case 'session_recovered':
+  //     return NotificationSounds.SUCCESS;
+  //   case 'job_started':
+  //     return NotificationSounds.INFO;
+  //   case 'session_stuck':
+  //     return NotificationSounds.WARNING;
+  //   case 'error':
+  //     return NotificationSounds.CRITICAL;
+  //   default:
+  //     return NotificationSounds.INFO;
+  // }
 }
 
 /**

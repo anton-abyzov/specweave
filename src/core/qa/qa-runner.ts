@@ -106,34 +106,9 @@ export async function runQA(
 
   // Step 3: Quality Gate Decision
   const decider = new QualityGateDecider(DEFAULT_THRESHOLDS);
-
-  let qualityGate: QualityGateResult;
-  if (specQuality) {
-    qualityGate = decider.decide(specQuality);
-  } else {
-    // No AI assessment, use rule-based only
-    qualityGate = {
-      decision: ruleBasedResult.passed ? 'PASS' : 'FAIL',
-      blockers: ruleBasedResult.passed ? [] : ruleBasedResult.errors.filter(e => e.severity === 'error').map(e => ({
-        type: 'rule_based',
-        severity: 'critical',
-        title: e.rule,
-        description: e.message,
-        location: e.file,
-      })),
-      concerns: ruleBasedResult.errors.filter(e => e.severity === 'warning').map(e => ({
-        type: 'rule_based',
-        severity: 'high',
-        title: e.rule,
-        description: e.message,
-        location: e.file,
-      })),
-      recommendations: [],
-      reasoning: ruleBasedResult.passed
-        ? 'Rule-based validation passed. AI assessment skipped.'
-        : 'Rule-based validation failed. Fix errors before proceeding.',
-    };
-  }
+  const qualityGate: QualityGateResult = specQuality
+    ? decider.decide(specQuality)
+    : buildRuleBasedQualityGate(ruleBasedResult);
 
   // Build final report
   const report: QAReport = {
@@ -175,7 +150,33 @@ function determineMode(options: QAOptions): QAMode {
   if (options.gate) return 'gate';
   if (options.pre) return 'pre';
   if (options.full) return 'full';
-  return 'quick'; // Default
+  return 'quick';
+}
+
+/**
+ * Build quality gate result from rule-based validation when AI is skipped
+ */
+function buildRuleBasedQualityGate(ruleBasedResult: RuleBasedResult): QualityGateResult {
+  const mapErrorToIssue = (e: typeof ruleBasedResult.errors[0], severity: 'critical' | 'high') => ({
+    type: 'rule_based',
+    severity,
+    title: e.rule,
+    description: e.message,
+    location: e.file,
+  });
+
+  const errors = ruleBasedResult.errors.filter(e => e.severity === 'error');
+  const warnings = ruleBasedResult.errors.filter(e => e.severity === 'warning');
+
+  return {
+    decision: ruleBasedResult.passed ? 'PASS' : 'FAIL',
+    blockers: errors.map(e => mapErrorToIssue(e, 'critical')),
+    concerns: warnings.map(e => mapErrorToIssue(e, 'high')),
+    recommendations: [],
+    reasoning: ruleBasedResult.passed
+      ? 'Rule-based validation passed. AI assessment skipped.'
+      : 'Rule-based validation failed. Fix errors before proceeding.',
+  };
 }
 
 /**

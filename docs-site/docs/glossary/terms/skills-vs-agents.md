@@ -98,22 +98,25 @@ graph LR
 ### Example Agents
 
 ```
-specweave:pm:pm              # Product management
-specweave:architect:architect # System architecture
-specweave:tech-lead:tech-lead # Technical implementation
-specweave:qa-lead:qa-lead     # Quality assurance
+sw-frontend:frontend-architect  # React/Vue/Angular architecture
+sw-backend:database-optimizer   # Database and API design
+sw-testing:qa-engineer          # Test strategy and E2E automation
+sw-k8s:kubernetes-architect     # Kubernetes manifests and GitOps
+sw-infra:devops                 # Infrastructure-as-Code, CI/CD
 ```
+
+**Note**: PM, Architect, Tech-Lead, and QA-Lead are SKILLS (auto-activate), NOT agents.
 
 ### Agent File Structure
 
 ```markdown
 ---
-name: pm-agent
-description: Product Manager AI agent for strategy, requirements,
-             user stories. Activates explicitly via Task().
+name: frontend-architect
+description: Frontend architecture agent for React/Vue/Angular.
+             Invoked explicitly via Task().
 ---
 
-# PM Agent
+# Frontend Architect Agent
 
 ## Capabilities
 [What the agent can do...]

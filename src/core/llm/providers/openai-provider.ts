@@ -3,8 +3,6 @@
  *
  * Implements LLMProvider interface for OpenAI's GPT models.
  * Uses openai SDK for API calls.
- *
- * TODO: Implement following the same pattern as anthropic-provider.ts
  */
 
 import type {

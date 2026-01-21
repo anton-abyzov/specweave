@@ -72,46 +72,25 @@ export function isValidSyncSettings(obj: any): obj is SyncSettings {
 
 /**
  * Migrate old syncDirection to new SyncSettings
- *
- * @param syncDirection - Old syncDirection value ('bidirectional' | 'export' | 'import' | 'to-external' | 'from-external' | undefined)
- * @returns SyncSettings with appropriate permissions
  */
 export function migrateSyncDirection(syncDirection?: string | null): SyncSettings {
-  if (syncDirection === 'bidirectional') {
-    // Old bidirectional mode → enable all permissions
-    return {
-      canUpsertInternalItems: true,
-      canUpdateExternalItems: true,
-      canUpdateStatus: true,
-    };
+  switch (syncDirection) {
+    case 'bidirectional':
+      return { canUpsertInternalItems: true, canUpdateExternalItems: true, canUpdateStatus: true };
+    case 'export':
+    case 'to-external':
+      return { canUpsertInternalItems: true, canUpdateExternalItems: false, canUpdateStatus: false };
+    case 'import':
+    case 'from-external':
+      return { canUpsertInternalItems: false, canUpdateExternalItems: false, canUpdateStatus: true };
+    default:
+      return { ...DEFAULT_SYNC_SETTINGS };
   }
-
-  if (syncDirection === 'export' || syncDirection === 'to-external') {
-    // Old export-only mode → create/update internal items only
-    return {
-      canUpsertInternalItems: true,
-      canUpdateExternalItems: false,
-      canUpdateStatus: false,
-    };
-  }
-
-  if (syncDirection === 'import' || syncDirection === 'from-external') {
-    // Old import-only mode → status updates only
-    return {
-      canUpsertInternalItems: false,
-      canUpdateExternalItems: false,
-      canUpdateStatus: true,
-    };
-  }
-
-  // Old one-way or missing or unknown → disable all (safer default)
-  return { ...DEFAULT_SYNC_SETTINGS };
 }
 
 /**
  * Validate SyncSettings object
  *
- * @param settings - Settings to validate
  * @throws Error if settings are invalid
  */
 export function validateSyncSettings(settings: SyncSettings): void {
@@ -119,16 +98,16 @@ export function validateSyncSettings(settings: SyncSettings): void {
     throw new Error('SyncSettings must be a non-null object');
   }
 
-  if (typeof settings.canUpsertInternalItems !== 'boolean') {
-    throw new Error('SyncSettings.canUpsertInternalItems must be a boolean (required)');
-  }
+  const requiredBooleans: (keyof SyncSettings)[] = [
+    'canUpsertInternalItems',
+    'canUpdateExternalItems',
+    'canUpdateStatus',
+  ];
 
-  if (typeof settings.canUpdateExternalItems !== 'boolean') {
-    throw new Error('SyncSettings.canUpdateExternalItems must be a boolean (required)');
-  }
-
-  if (typeof settings.canUpdateStatus !== 'boolean') {
-    throw new Error('SyncSettings.canUpdateStatus must be a boolean (required)');
+  for (const field of requiredBooleans) {
+    if (typeof settings[field] !== 'boolean') {
+      throw new Error(`SyncSettings.${field} must be a boolean (required)`);
+    }
   }
 }
 

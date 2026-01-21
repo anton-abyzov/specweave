@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { AutoLogEntry, SessionSummary, IncrementCompletionReport } from './types.js';
 import { consoleLogger as baseLogger } from '../../utils/logger.js';
+import { isSpecWeaveInitialized, ensureSpecWeaveDir } from '../../utils/fs-native.js';
 
 const LOGS_DIR = '.specweave/logs';
 
@@ -16,19 +17,24 @@ export class AutoLogger {
   private sessionId: string;
   private logFile: string;
   private entries: AutoLogEntry[] = [];
+  private loggingEnabled: boolean;
 
   constructor(projectRoot: string, sessionId: string) {
     this.projectRoot = projectRoot;
     this.logsDir = path.join(projectRoot, LOGS_DIR);
     this.sessionId = sessionId;
     this.logFile = path.join(this.logsDir, `auto-${sessionId}.json`);
-    this.ensureLogsDir();
+    // Only enable logging if SpecWeave is initialized (has config.json)
+    this.loggingEnabled = this.ensureLogsDir();
   }
 
-  private ensureLogsDir(): void {
-    if (!fs.existsSync(this.logsDir)) {
-      fs.mkdirSync(this.logsDir, { recursive: true });
+  private ensureLogsDir(): boolean {
+    // CRITICAL: Only create logs dir if SpecWeave is properly initialized
+    if (!isSpecWeaveInitialized(this.projectRoot)) {
+      baseLogger.warn('AutoLogger: SpecWeave not initialized, logging disabled');
+      return false;
     }
+    return ensureSpecWeaveDir(this.logsDir, this.projectRoot);
   }
 
   /**
@@ -193,6 +199,9 @@ export class AutoLogger {
    * Append entry to log file
    */
   private appendToFile(entry: AutoLogEntry): void {
+    if (!this.loggingEnabled) {
+      return; // Skip file logging if SpecWeave not initialized
+    }
     try {
       const line = JSON.stringify(entry) + '\n';
       fs.appendFileSync(this.logFile, line, 'utf-8');
@@ -221,24 +230,24 @@ export class AutoLogger {
   }
 
   /**
+   * Filter entries by event type
+   */
+  private filterByEvent(event: AutoLogEntry['event']): AutoLogEntry[] {
+    return this.entries.filter((e) => e.event === event);
+  }
+
+  /**
    * Generate session summary from log entries
    */
   generateSummary(): SessionSummary {
     const startEntry = this.entries.find((e) => e.event === 'start');
     const completeEntry = this.entries.find((e) => e.event === 'complete' || e.event === 'cancel');
-    const taskCompletes = this.entries.filter((e) => e.event === 'task_complete');
-    const taskFails = this.entries.filter((e) => e.event === 'task_failed');
-    const gateTriggered = this.entries.filter((e) => e.event === 'gate_triggered');
-    const circuitOpen = this.entries.filter((e) => e.event === 'circuit_open');
-    const syncs = this.entries.filter((e) => e.event === 'sync');
-    const iterations = this.entries.filter((e) => e.event === 'iteration');
+    const taskCompletes = this.filterByEvent('task_complete');
+    const taskFails = this.filterByEvent('task_failed');
 
     const startTime = startEntry?.timestamp ?? new Date().toISOString();
     const endTime = completeEntry?.timestamp ?? new Date().toISOString();
-
-    const startDate = new Date(startTime);
-    const endDate = new Date(endTime);
-    const durationMs = endDate.getTime() - startDate.getTime();
+    const durationMs = new Date(endTime).getTime() - new Date(startTime).getTime();
 
     // Calculate average coverage from task completions
     const coverages = taskCompletes
@@ -248,32 +257,20 @@ export class AutoLogger {
       ? coverages.reduce((a, b) => a + b, 0) / coverages.length
       : 0;
 
-    // Get unique increments completed
-    const incrementsCompleted = new Set(
-      taskCompletes.map((e) => e.details.incrementId as string)
-    ).size;
-
-    const incrementsFailed = new Set(
-      taskFails.map((e) => e.details.incrementId as string)
-    ).size;
-
     return {
       sessionId: this.sessionId,
       startTime,
       endTime,
       duration: durationMs,
-      iterations: iterations.length,
-      incrementsCompleted,
-      incrementsFailed,
+      iterations: this.filterByEvent('iteration').length,
+      incrementsCompleted: new Set(taskCompletes.map((e) => e.details.incrementId as string)).size,
+      incrementsFailed: new Set(taskFails.map((e) => e.details.incrementId as string)).size,
       totalTasks: taskCompletes.length + taskFails.length,
-      totalTests: taskCompletes.reduce(
-        (sum, e) => sum + ((e.details.testsRun as number) ?? 0),
-        0
-      ),
+      totalTests: taskCompletes.reduce((sum, e) => sum + ((e.details.testsRun as number) ?? 0), 0),
       averageCoverage: Math.round(avgCoverage * 10) / 10,
-      humanGatesTriggered: gateTriggered.length,
-      circuitBreakerTrips: circuitOpen.length,
-      syncOperations: syncs.length,
+      humanGatesTriggered: this.filterByEvent('gate_triggered').length,
+      circuitBreakerTrips: this.filterByEvent('circuit_open').length,
+      syncOperations: this.filterByEvent('sync').length,
       success: completeEntry?.event === 'complete',
       endReason: (completeEntry?.details?.reason as string) ?? 'unknown',
     };
@@ -371,6 +368,10 @@ export class AutoLogger {
    * Write summary to markdown file
    */
   writeSummaryMarkdown(summary: SessionSummary): string {
+    if (!this.loggingEnabled) {
+      baseLogger.info('AutoLogger: Summary not written (SpecWeave not initialized)');
+      return '';
+    }
     const summaryPath = path.join(this.logsDir, `auto-${this.sessionId}-summary.md`);
 
     const durationStr = formatDuration(summary.duration);

@@ -384,6 +384,58 @@ logger.error('Error', error);
 
 ---
 
+### 4. Root Directory Cleanliness
+
+**Rule**: NEVER create files in project root - use increment folders
+
+**Critical**: Project root MUST stay clean. All AI-generated files belong in increment folders.
+
+**Allowed root files ONLY**:
+- `README.md`, `CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`
+- `LICENSE`, `CODE_OF_CONDUCT.md`, `SECURITY.md`
+- `IMPLEMENTATION-SUMMARY.md`, `IMPLEMENTATION-COMPLETE.md` (project docs only)
+- `package.json`, `tsconfig*.json`, config files
+
+**Increment folder structure**:
+```
+✅ CORRECT - organized increment folder
+.specweave/increments/0001-feature/
+├── metadata.json                  # REQUIRED
+├── spec.md                        # WHAT & WHY
+├── plan.md                        # HOW (optional)
+├── tasks.md                       # Task checklist
+├── reports/                       # ALL other .md files
+│   ├── analysis.md
+│   ├── validation-report.md
+│   └── completion-report.md
+├── scripts/                       # Helper scripts
+└── logs/                          # Execution logs
+    └── 2026-01-04/
+
+❌ WRONG - polluted increment folder
+.specweave/increments/0001-feature/
+├── metadata.json
+├── spec.md
+├── tasks.md
+├── analysis.md                   # WRONG! → reports/
+├── some-report.md                # WRONG! → reports/
+└── helper.sh                     # WRONG! → scripts/
+```
+
+**File destination rules**:
+| File Type | Destination |
+|-----------|-------------|
+| Reports, analysis, summaries (*.md) | `reports/` |
+| Validation/QA/completion reports | `reports/` |
+| Auto-session summaries | `reports/` |
+| Logs, execution output | `logs/{YYYY-MM-DD}/` |
+| Helper scripts | `scripts/` |
+| Domain docs | `docs/domain/` |
+
+**Enforcement**: Pre-commit hook #13 blocks staging root pollution files
+
+---
+
 ## 9. Anti-Patterns & Issues
 
 ### 🔴 CRITICAL ({{critical_issues_count}} issues)

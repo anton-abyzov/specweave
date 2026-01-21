@@ -378,22 +378,54 @@ export class JiraImporter implements Importer {
    * Convert JIRA issue to ExternalItem
    */
   private convertToExternalItem(issue: JiraIssue): ExternalItem {
-    // Map JIRA issue type to ExternalItem type
-    let type: ExternalItem['type'] = 'task';
     const issueTypeName = issue.fields.issuetype.name.toLowerCase();
+    const descriptionText = this.extractTextFromDescription(issue.fields.description);
+    const jiraProject = issue.fields.project;
 
-    // Flexible type matching to support custom JIRA types (e.g., "L3 Feature", "L2 Epic")
-    if (issueTypeName.includes('story') || issueTypeName === 'user story') {
-      type = 'user-story';
-    } else if (issueTypeName.includes('epic') || issueTypeName.includes('l2')) {
-      type = 'epic';
-    } else if (issueTypeName.includes('feature') || issueTypeName.includes('l3')) {
-      type = 'feature';
-    } else if (issueTypeName.includes('bug')) {
-      type = 'bug';
-    }
+    return {
+      id: `JIRA-${issue.key}`,
+      type: this.mapIssueType(issueTypeName),
+      title: issue.fields.summary,
+      description: sanitizeHtmlForMdx(descriptionText),
+      status: this.mapStatusCategory(issue.fields.status.statusCategory.key),
+      priority: this.mapPriority(issue.fields.priority?.name),
+      createdAt: new Date(issue.fields.created),
+      updatedAt: new Date(issue.fields.updated),
+      url: `${this.host}/browse/${issue.key}`,
+      labels: issue.fields.labels,
+      acceptanceCriteria: this.extractAcceptanceCriteria(descriptionText),
+      parentId: issue.fields.parent ? `JIRA-${issue.fields.parent.key}` : undefined,
+      platform: 'jira',
+      jiraProjectKey: jiraProject?.key,
+      jiraProjectName: jiraProject?.name,
+    };
+  }
 
-    // Map JIRA priority to ExternalItem priority
+  /**
+   * Map JIRA issue type to ExternalItem type
+   */
+  private mapIssueType(issueTypeName: string): ExternalItem['type'] {
+    if (issueTypeName.includes('story') || issueTypeName === 'user story') return 'user-story';
+    if (issueTypeName.includes('epic') || issueTypeName.includes('l2')) return 'epic';
+    if (issueTypeName.includes('feature') || issueTypeName.includes('l3')) return 'feature';
+    if (issueTypeName.includes('bug')) return 'bug';
+    return 'task';
+  }
+
+  /**
+   * Map JIRA status category to ExternalItem status
+   */
+  private mapStatusCategory(statusCategory: string): ExternalItem['status'] {
+    if (statusCategory === 'indeterminate') return 'in-progress';
+    if (statusCategory === 'done') return 'completed';
+    return 'open';
+  }
+
+  /**
+   * Map JIRA priority to ExternalItem priority
+   */
+  private mapPriority(priorityName: string | undefined): ExternalItem['priority'] | undefined {
+    if (!priorityName) return undefined;
     const priorityMap: Record<string, ExternalItem['priority']> = {
       'highest': 'P0',
       'high': 'P1',
@@ -401,48 +433,7 @@ export class JiraImporter implements Importer {
       'low': 'P3',
       'lowest': 'P4',
     };
-    const priority = issue.fields.priority
-      ? priorityMap[issue.fields.priority.name.toLowerCase()]
-      : undefined;
-
-    // Extract text from description (handles ADF format)
-    const descriptionText = this.extractTextFromDescription(issue.fields.description);
-
-    // Extract acceptance criteria from description text
-    const acceptanceCriteria = this.extractAcceptanceCriteria(descriptionText);
-
-    // Map JIRA status category to ExternalItem status
-    let status: ExternalItem['status'] = 'open';
-    const statusCategory = issue.fields.status.statusCategory.key;
-
-    if (statusCategory === 'indeterminate') {
-      status = 'in-progress';
-    } else if (statusCategory === 'done') {
-      status = 'completed';
-    }
-
-    // Extract JIRA project information for 1-level folder structure
-    const jiraProject = issue.fields.project;
-
-    return {
-      id: `JIRA-${issue.key}`,
-      type,
-      title: issue.fields.summary,
-      // Use pre-extracted text (ADF → plain text) and sanitize for MDX
-      description: sanitizeHtmlForMdx(descriptionText),
-      status,
-      priority,
-      createdAt: new Date(issue.fields.created),
-      updatedAt: new Date(issue.fields.updated),
-      url: `${this.host}/browse/${issue.key}`,
-      labels: issue.fields.labels,
-      acceptanceCriteria,
-      parentId: issue.fields.parent ? `JIRA-${issue.fields.parent.key}` : undefined,
-      platform: 'jira',
-      // JIRA project info for 1-level structure (Project → SpecWeave Project)
-      jiraProjectKey: jiraProject?.key,
-      jiraProjectName: jiraProject?.name,
-    };
+    return priorityMap[priorityName.toLowerCase()];
   }
 
   /**

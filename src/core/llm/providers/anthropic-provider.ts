@@ -10,9 +10,8 @@ import type {
   AnalyzeOptions,
   AnalyzeResult,
   StructuredOptions,
-  ModelPricing,
 } from '../types.js';
-import { MODEL_PRICING } from '../types.js';
+import { MODEL_PRICING, MODEL_ALIASES, resolveModelAlias } from '../types.js';
 import { Logger, consoleLogger } from '../../../utils/logger.js';
 import { extractJson, extractRequiredFieldsFromSchema } from '../../../utils/llm-json-extractor.js';
 
@@ -44,7 +43,8 @@ export class AnthropicProvider implements LLMProvider {
 
   constructor(config: AnthropicProviderConfig) {
     this.apiKey = config.apiKey;
-    this.defaultModel = config.model || 'claude-opus-4-5-20251101';
+    // Support both aliases (opus, sonnet, haiku) and full model IDs
+    this.defaultModel = resolveModelAlias(config.model || 'opus');
     this.maxTokens = config.maxTokens || 4096;
     this.temperature = config.temperature ?? 0.3;
     this.baseUrl = config.baseUrl || 'https://api.anthropic.com';
@@ -71,7 +71,8 @@ export class AnthropicProvider implements LLMProvider {
    */
   async analyze(prompt: string, options: AnalyzeOptions = {}): Promise<AnalyzeResult> {
     const startTime = Date.now();
-    const model = options.model || this.defaultModel;
+    // Resolve model alias (opus → claude-opus-4-5-20251101)
+    const model = resolveModelAlias(options.model || this.defaultModel);
     const maxTokens = options.maxTokens || this.maxTokens;
     const temperature = options.temperature ?? this.temperature;
     const retries = options.retries ?? 2;

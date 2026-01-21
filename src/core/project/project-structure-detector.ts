@@ -81,42 +81,25 @@ export class ProjectStructureDetector {
   }
 
   /**
-   * Detect project structure with pure auto-detection
+   * Detect project structure from existing increments
    */
   public async detectStructure(): Promise<ProjectStructure> {
-    // Auto-detect from existing increments
-    const detected = await this.autoDetectStructure();
-    return detected.structure;
-  }
-
-  /**
-   * Auto-detect structure from existing increments
-   */
-  private async autoDetectStructure(): Promise<DetectedStructure> {
     const incrementsDir = path.join(this.projectRoot, '.specweave', 'increments');
 
     if (!fs.existsSync(incrementsDir)) {
-      // No increments yet, use defaults based on source
-      return this.getDefaultStructure();
+      return this.getDefaultStructure().structure;
     }
 
     const increments = fs.readdirSync(incrementsDir)
       .filter(name => /^\d{4}/.test(name))
-      .slice(0, 5);  // Analyze first 5 increments
+      .slice(0, 5);
 
     if (increments.length === 0) {
-      return this.getDefaultStructure();
+      return this.getDefaultStructure().structure;
     }
 
-    // Analyze increments for patterns
     const analysis = await this.analyzeIncrements(increments);
-
-    return {
-      structure: analysis.structure,
-      confidence: analysis.confidence,
-      evidence: analysis.evidence,
-      sampleIncrements: increments
-    };
+    return analysis.structure;
   }
 
   /**
@@ -239,33 +222,34 @@ export class ProjectStructureDetector {
   ): WorkItemTypes {
     switch (source) {
       case 'jira':
-        return hierarchyLevel === 'three_level'
-          ? { topLevel: 'Initiative', parentLevel: 'Epic', itemLevel: 'Story', subItemLevel: 'Sub-task' }
-          : { parentLevel: 'Epic', itemLevel: 'Story', subItemLevel: 'Sub-task' };
+        if (hierarchyLevel === 'three_level') {
+          return { topLevel: 'Initiative', parentLevel: 'Epic', itemLevel: 'Story', subItemLevel: 'Sub-task' };
+        }
+        return { parentLevel: 'Epic', itemLevel: 'Story', subItemLevel: 'Sub-task' };
 
       case 'ado':
         if (hierarchyLevel === 'three_level') {
           return { topLevel: 'Epic', parentLevel: 'Feature', itemLevel: 'User Story', subItemLevel: 'Task' };
-        } else if (hierarchyLevel === 'two_level') {
-          return { parentLevel: 'Feature', itemLevel: 'User Story', subItemLevel: 'Task' };
-        } else {
-          return { itemLevel: 'User Story', subItemLevel: 'Task' };
         }
+        if (hierarchyLevel === 'two_level') {
+          return { parentLevel: 'Feature', itemLevel: 'User Story', subItemLevel: 'Task' };
+        }
+        return { itemLevel: 'User Story', subItemLevel: 'Task' };
 
       case 'github':
-        return hierarchyLevel === 'two_level'
-          ? { parentLevel: 'Milestone', itemLevel: 'Issue' }
-          : { itemLevel: 'Issue' };
+        if (hierarchyLevel === 'two_level') {
+          return { parentLevel: 'Milestone', itemLevel: 'Issue' };
+        }
+        return { itemLevel: 'Issue' };
 
       default:
-        // Infer from types seen
         if (typesSeen.has('story')) {
           return { parentLevel: 'Epic', itemLevel: 'Story', subItemLevel: 'Task' };
-        } else if (typesSeen.has('issue')) {
-          return { itemLevel: 'Issue' };
-        } else {
-          return { itemLevel: 'Item' };
         }
+        if (typesSeen.has('issue')) {
+          return { itemLevel: 'Issue' };
+        }
+        return { itemLevel: 'Item' };
     }
   }
 

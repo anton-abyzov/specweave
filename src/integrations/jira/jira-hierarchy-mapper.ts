@@ -73,72 +73,21 @@ export class JiraHierarchyMapper {
   /**
    * Detect Jira project type based on available issue types
    *
+   * Currently returns default Agile hierarchy.
+   * TODO: Implement getIssueTypes in JiraClient for dynamic detection.
+   *
    * @param projectKey - Jira project key
    * @returns Detected hierarchy mapping
    */
   async detectProjectType(projectKey: string): Promise<JiraHierarchyMapping> {
-    try {
-      // Fetch issue types for project
-      // Note: This requires implementing getIssueTypes in JiraClient
-      // For now, we'll use a default Agile mapping
-      // TODO: Implement getIssueTypes in JiraClient
-
-      // Default: Agile (has "Story" and "Sub-task")
-      console.log(chalk.cyan(`📊 Using Jira Agile hierarchy for project: ${projectKey}`));
-      return {
-        epic: 'Initiative',
-        feature: 'Epic',
-        userStory: 'Story',
-        task: 'Sub-task'
-      };
-
-      /* Future implementation:
-      const issueTypes = await this.jiraClient.getIssueTypes(projectKey);
-      const typeNames = issueTypes.map(t => t.name.toLowerCase());
-
-      // Detect SAFe (has "Capability" or "Strategic Theme")
-      if (typeNames.includes('capability') || typeNames.includes('strategic theme')) {
-        console.log(chalk.cyan(`📊 Detected Jira SAFe project: ${projectKey}`));
-        return {
-          epic: 'Strategic Theme',
-          feature: 'Capability',
-          userStory: 'User Story',
-          task: 'Task'
-        };
-      }
-
-      // Detect CMMI (has "Requirement")
-      if (typeNames.includes('requirement')) {
-        console.log(chalk.cyan(`📊 Detected Jira CMMI project: ${projectKey}`));
-        return {
-          epic: 'Epic',
-          feature: 'Feature',
-          userStory: 'Requirement',
-          task: 'Task'
-        };
-      }
-
-      // Default: Agile
-      console.log(chalk.cyan(`📊 Detected Jira Agile project: ${projectKey}`));
-      return {
-        epic: 'Initiative',
-        feature: 'Epic',
-        userStory: 'Story',
-        task: 'Sub-task'
-      };
-      */
-    } catch (error: any) {
-      console.error(chalk.red(`⚠️  Failed to detect Jira project type: ${error.message}`));
-      console.log(chalk.gray('   Using default Agile hierarchy\n'));
-
-      // Fallback to Agile
-      return {
-        epic: 'Initiative',
-        feature: 'Epic',
-        userStory: 'Story',
-        task: 'Sub-task'
-      };
-    }
+    // Default: Agile (has "Story" and "Sub-task")
+    console.log(chalk.cyan(`📊 Using Jira Agile hierarchy for project: ${projectKey}`));
+    return {
+      epic: 'Initiative',
+      feature: 'Epic',
+      userStory: 'Story',
+      task: 'Sub-task'
+    };
   }
 
   /**

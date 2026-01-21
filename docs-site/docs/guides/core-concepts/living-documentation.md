@@ -1,3 +1,9 @@
+---
+sidebar_position: 2
+title: Living Documentation
+description: Documentation that automatically stays synchronized with your code - no manual updates, always current.
+---
+
 # Living Documentation
 
 **Living documentation** is documentation that automatically stays synchronized with your code—no manual updates, no drift, always current.
@@ -181,14 +187,14 @@ Watch how docs evolve automatically:
 ## Current Implementation
 - ✅ JWT-based authentication
 - ✅ Password hashing with bcrypt
-- ✅ OAuth 2.0 integration (Google, GitHub)  ← NEW!
+- ✅ OAuth 2.0 integration (Google, GitHub)
 - ✅ Login endpoint: POST /api/auth/login
-- ✅ OAuth callback: POST /api/auth/oauth/callback  ← NEW!
+- ✅ OAuth callback: POST /api/auth/oauth/callback
 
 ## Components
 - AuthService (src/services/auth/AuthService.ts)
 - JWT utilities (src/utils/jwt.ts)
-- OAuthManager (src/services/auth/OAuthManager.ts)  ← NEW!
+- OAuthManager (src/services/auth/OAuthManager.ts)
 
 ## Test Coverage
 - Unit: 92% (tests/unit/auth.test.ts, oauth.test.ts)
@@ -465,12 +471,12 @@ cat .specweave/docs/internal/architecture/adr/0001-jwt-tokens.md
 
 - [Understanding Increments](/docs/guides/core-concepts/what-is-an-increment)
 - [The /sw:do Workflow](/docs/workflows/implementation)
-- [Hook System](/docs/guides/advanced/hooks)
+- [Hook System](/docs/glossary/terms/hooks)
 
 ---
 
 **Learn More:**
-- [Documentation Structure](/docs/guides/core-concepts/documentation-structure)
+- [Documentation Structure](/docs/guides/specs-organization-guide)
 - [Increment vs Living Docs](/docs/guides/core-concepts/what-is-an-increment#increments-vs-living-documentation)
-- [Post-Task-Completion Hook](/docs/guides/advanced/hooks#post-task-completion-hook)
+- [Post-Task-Completion Hook](/docs/glossary/terms/hooks)
 - [Who Benefits from Living Docs](/docs/guides/core-concepts/who-benefits-from-living-docs) - Understand value for humans vs LLMs

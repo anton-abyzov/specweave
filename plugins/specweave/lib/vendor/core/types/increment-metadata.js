@@ -152,19 +152,20 @@ export function isValidTransition(from, to) {
     return allowedTransitions.includes(to);
 }
 /**
+ * Calculate days elapsed since a given date
+ */
+function daysSince(dateStr) {
+    return (Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24);
+}
+/**
  * Check if increment is stale (paused too long or active too long)
  */
 export function isStale(metadata) {
-    const now = new Date();
     if (metadata.status === IncrementStatus.PAUSED && metadata.pausedAt) {
-        const pausedDate = new Date(metadata.pausedAt);
-        const daysPaused = (now.getTime() - pausedDate.getTime()) / (1000 * 60 * 60 * 24);
-        return daysPaused > STALENESS_THRESHOLDS.PAUSED;
+        return daysSince(metadata.pausedAt) > STALENESS_THRESHOLDS.PAUSED;
     }
     if (metadata.status === IncrementStatus.ACTIVE) {
-        const createdDate = new Date(metadata.created);
-        const daysActive = (now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
-        return daysActive > STALENESS_THRESHOLDS.ACTIVE;
+        return daysSince(metadata.created) > STALENESS_THRESHOLDS.ACTIVE;
     }
     return false;
 }
@@ -172,13 +173,8 @@ export function isStale(metadata) {
  * Check if increment should be auto-abandoned (experiments only)
  */
 export function shouldAutoAbandon(metadata) {
-    if (metadata.type !== IncrementType.EXPERIMENT) {
-        return false;
-    }
-    const now = new Date();
-    const lastActivityDate = new Date(metadata.lastActivity);
-    const daysSinceActivity = (now.getTime() - lastActivityDate.getTime()) / (1000 * 60 * 60 * 24);
-    return daysSinceActivity > STALENESS_THRESHOLDS.EXPERIMENT;
+    return metadata.type === IncrementType.EXPERIMENT &&
+        daysSince(metadata.lastActivity) > STALENESS_THRESHOLDS.EXPERIMENT;
 }
 /**
  * Statuses that count toward WIP (Work In Progress) limits

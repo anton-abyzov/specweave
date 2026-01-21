@@ -131,11 +131,7 @@ export class SpecMetadataManager {
   async linkToExternal(
     specId: string,
     provider: 'github' | 'jira' | 'ado',
-    externalData: {
-      id: string | number;
-      url: string;
-      [key: string]: any;
-    }
+    externalData: { id: string | number; url: string; [key: string]: any }
   ): Promise<void> {
     const spec = await this.loadSpec(specId);
     if (!spec) {
@@ -143,31 +139,36 @@ export class SpecMetadataManager {
     }
 
     const externalLinks = spec.metadata.externalLinks || {};
+    const syncedAt = new Date().toISOString();
 
-    if (provider === 'github') {
-      externalLinks.github = {
-        projectId: externalData.id as number,
-        projectUrl: externalData.url,
-        syncedAt: new Date().toISOString(),
-        owner: externalData.owner,
-        repo: externalData.repo
-      };
-    } else if (provider === 'jira') {
-      externalLinks.jira = {
-        epicKey: externalData.id as string,
-        epicUrl: externalData.url,
-        syncedAt: new Date().toISOString(),
-        projectKey: externalData.projectKey,
-        domain: externalData.domain
-      };
-    } else if (provider === 'ado') {
-      externalLinks.ado = {
-        featureId: externalData.id as number,
-        featureUrl: externalData.url,
-        syncedAt: new Date().toISOString(),
-        organization: externalData.organization,
-        project: externalData.project
-      };
+    switch (provider) {
+      case 'github':
+        externalLinks.github = {
+          projectId: externalData.id as number,
+          projectUrl: externalData.url,
+          syncedAt,
+          owner: externalData.owner,
+          repo: externalData.repo
+        };
+        break;
+      case 'jira':
+        externalLinks.jira = {
+          epicKey: externalData.id as string,
+          epicUrl: externalData.url,
+          syncedAt,
+          projectKey: externalData.projectKey,
+          domain: externalData.domain
+        };
+        break;
+      case 'ado':
+        externalLinks.ado = {
+          featureId: externalData.id as number,
+          featureUrl: externalData.url,
+          syncedAt,
+          organization: externalData.organization,
+          project: externalData.project
+        };
+        break;
     }
 
     await this.saveMetadata(specId, { externalLinks });
@@ -275,110 +276,92 @@ export class SpecMetadataManager {
    * Parse user stories from markdown content
    */
   private parseUserStories(markdown: string): UserStory[] {
-    const stories: UserStory[] = [];
-
-    // Look for user story patterns
-    // Example: **US-001**: As a developer, I want to...
     const usPattern = /\*\*US-(\d+)\*\*:\s*(.+?)(?=\n|$)/g;
-    const matches = markdown.matchAll(usPattern);
 
-    for (const match of matches) {
-      const id = `US-${match[1]}`;
-      const title = match[2].trim();
+    return [...markdown.matchAll(usPattern)].map(match => {
+      const usNumber = match[1];
+      const acceptanceCriteria = this.parseAcceptanceCriteriaForUS(markdown, usNumber);
 
-      // Extract acceptance criteria for this user story
-      const acPattern = new RegExp(`\\*\\*US-${match[1]}\\*\\*:[\\s\\S]*?(?:- \\[([x ])\\] \\*\\*AC-${match[1]}-(\\d+)\\*\\*: (.+?)(?=\\n|$))`, 'g');
-      const acMatches = markdown.matchAll(acPattern);
-
-      const acceptanceCriteria: AcceptanceCriteria[] = [];
-      for (const acMatch of acMatches) {
-        acceptanceCriteria.push({
-          id: `AC-${match[1]}-${acMatch[2]}`,
-          description: acMatch[3].trim(),
-          status: acMatch[1] === 'x' ? 'done' : 'todo'
-        });
-      }
-
-      // Determine status based on AC completion
-      let status: 'todo' | 'in-progress' | 'done' = 'todo';
-      if (acceptanceCriteria.length > 0) {
-        const completedAC = acceptanceCriteria.filter(ac => ac.status === 'done').length;
-        if (completedAC === acceptanceCriteria.length) {
-          status = 'done';
-        } else if (completedAC > 0) {
-          status = 'in-progress';
-        }
-      }
-
-      stories.push({
-        id,
-        title,
-        status,
-        priority: 'P1', // Default, could parse from markdown
+      return {
+        id: `US-${usNumber}`,
+        title: match[2].trim(),
+        status: this.determineStatusFromAC(acceptanceCriteria),
+        priority: 'P1' as const,
         acceptanceCriteria
-      });
-    }
+      };
+    });
+  }
 
-    return stories;
+  /**
+   * Parse acceptance criteria for a specific user story
+   */
+  private parseAcceptanceCriteriaForUS(markdown: string, usNumber: string): AcceptanceCriteria[] {
+    const acPattern = new RegExp(
+      `- \\[([x ])\\] \\*\\*AC-${usNumber}-(\\d+)\\*\\*:\\s*(.+?)(?=\\n|$)`,
+      'g'
+    );
+
+    return [...markdown.matchAll(acPattern)].map(acMatch => ({
+      id: `AC-${usNumber}-${acMatch[2]}`,
+      description: acMatch[3].trim(),
+      status: acMatch[1] === 'x' ? 'done' : 'todo' as 'done' | 'todo'
+    }));
+  }
+
+  /**
+   * Determine user story status based on AC completion
+   */
+  private determineStatusFromAC(acceptanceCriteria: AcceptanceCriteria[]): 'todo' | 'in-progress' | 'done' {
+    if (acceptanceCriteria.length === 0) return 'todo';
+
+    const completed = acceptanceCriteria.filter(ac => ac.status === 'done').length;
+    if (completed === acceptanceCriteria.length) return 'done';
+    if (completed > 0) return 'in-progress';
+    return 'todo';
   }
 
   /**
    * Parse increment references from markdown content
    */
   private parseIncrements(markdown: string): IncrementReference[] {
-    const increments: IncrementReference[] = [];
-
-    // Look for increment table or list
-    // Example: | **0001-core-framework** | ✅ Complete | 2025-10-15 | ...
     const incPattern = /\|\s*\*\*(\d{4}-[\w-]+)\*\*\s*\|\s*([✅❌⏳])?\s*(\w+)\s*\|\s*([0-9-]+)?\s*\|/g;
-    const matches = markdown.matchAll(incPattern);
 
-    for (const match of matches) {
-      const id = match[1];
-      const statusIcon = match[2];
-      const statusText = match[3].toLowerCase();
-      const completedAt = match[4];
+    return [...markdown.matchAll(incPattern)].map(match => ({
+      id: match[1],
+      status: this.parseIncrementStatus(match[2], match[3]),
+      completedAt: match[4] || undefined,
+      userStories: [] as string[]
+    }));
+  }
 
-      let status: 'planned' | 'in-progress' | 'complete' | 'abandoned';
-      if (statusText.includes('complete') || statusIcon === '✅') {
-        status = 'complete';
-      } else if (statusText.includes('progress') || statusIcon === '⏳') {
-        status = 'in-progress';
-      } else if (statusText.includes('abandon') || statusIcon === '❌') {
-        status = 'abandoned';
-      } else {
-        status = 'planned';
-      }
-
-      increments.push({
-        id,
-        status,
-        completedAt: completedAt || undefined,
-        userStories: [] // Would need more parsing to determine which US each increment implemented
-      });
-    }
-
-    return increments;
+  /**
+   * Parse increment status from icon and text
+   */
+  private parseIncrementStatus(
+    icon: string | undefined,
+    text: string
+  ): 'planned' | 'in-progress' | 'complete' | 'abandoned' {
+    const statusText = text.toLowerCase();
+    if (statusText.includes('complete') || icon === '✅') return 'complete';
+    if (statusText.includes('progress') || icon === '⏳') return 'in-progress';
+    if (statusText.includes('abandon') || icon === '❌') return 'abandoned';
+    return 'planned';
   }
 
   /**
    * Calculate progress from user stories
    */
   private calculateProgress(userStories: UserStory[]) {
-    if (!userStories || userStories.length === 0) {
-      return {
-        totalUserStories: 0,
-        completedUserStories: 0,
-        percentComplete: 0
-      };
+    const total = userStories?.length ?? 0;
+    if (total === 0) {
+      return { totalUserStories: 0, completedUserStories: 0, percentComplete: 0 };
     }
 
     const completedUserStories = userStories.filter(us => us.status === 'done').length;
-
     return {
-      totalUserStories: userStories.length,
+      totalUserStories: total,
       completedUserStories,
-      percentComplete: Math.round((completedUserStories / userStories.length) * 100)
+      percentComplete: Math.round((completedUserStories / total) * 100)
     };
   }
 

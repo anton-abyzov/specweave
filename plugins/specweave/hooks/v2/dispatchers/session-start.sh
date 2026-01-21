@@ -1,6 +1,12 @@
 #!/bin/bash
-# session-start.sh - Launch background processor on session start
+# session-start.sh - Session initialization with auto plugin loading
 # Ultra-fast, non-blocking
+#
+# v1.0.127: AUTO-LOAD PLUGINS based on project type (React, Express, K8s, etc.)
+#
+# Claude Code 2.1.2+ Enhancement:
+# - Reads agent_type from SessionStart input for agent-specific initialization
+# - Enables customized startup behavior based on which agent is running
 set +e
 
 [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" == "1" ]] && exit 0
@@ -12,8 +18,52 @@ while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
 done
 [[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
 
-# Consume stdin
-cat > /dev/null
+# ============================================================================
+# SESSION CLEANUP: ALWAYS clear auto-mode.json (CRITICAL for session-scoped auto)
+# Auto mode MUST be session-scoped - each new Claude Code session starts FRESH.
+# This ensures: Session A runs /sw:auto → closes → Session B starts CLEAN
+# ============================================================================
+STATE_DIR="$PROJECT_ROOT/.specweave/state"
+AUTO_MODE_FILE="$STATE_DIR/auto-mode.json"
+
+if [[ -f "$AUTO_MODE_FILE" ]]; then
+  rm -f "$AUTO_MODE_FILE" 2>/dev/null
+  rm -f "$STATE_DIR/.stop-auto-dedup" 2>/dev/null
+  rm -f "$STATE_DIR/.stop-auto-retry" 2>/dev/null
+  rm -f "$STATE_DIR/.stop-auto-turns" 2>/dev/null
+  # Log cleanup (non-blocking, fire-and-forget)
+  mkdir -p "$PROJECT_ROOT/.specweave/logs" 2>/dev/null
+  echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] SessionStart: Cleared auto-mode session files (session-scoped)" >> "$PROJECT_ROOT/.specweave/logs/session.log" 2>/dev/null
+fi
+
+# Read stdin to extract agent_type (Claude Code 2.1.2+)
+INPUT=$(cat 2>/dev/null || echo '{}')
+AGENT_TYPE=""
+if command -v jq >/dev/null 2>&1; then
+  AGENT_TYPE=$(echo "$INPUT" | jq -r '.agent_type // ""' 2>/dev/null || echo "")
+fi
+
+# Agent-specific initialization (Claude Code 2.1.2+)
+if [[ -n "$AGENT_TYPE" ]]; then
+  STATE_DIR="$PROJECT_ROOT/.specweave/state"
+  mkdir -p "$STATE_DIR" 2>/dev/null
+
+  # Store agent type for other hooks to use
+  echo "$AGENT_TYPE" > "$STATE_DIR/.current-agent-type" 2>/dev/null
+
+  # Agent-specific startup messages
+  case "$AGENT_TYPE" in
+    sw:pm|sw-pm)
+      echo '{"continue":true,"systemMessage":"🎯 PM Agent: Product Management context loaded. Focus on user stories, acceptance criteria, and business value."}'
+      ;;
+    sw:architect|sw-architect)
+      echo '{"continue":true,"systemMessage":"🏗️ Architect Agent: Technical design context loaded. Focus on ADRs, system design, and architecture patterns."}'
+      ;;
+    sw:tech-lead|sw-tech-lead)
+      echo '{"continue":true,"systemMessage":"👨‍💻 Tech Lead Agent: Implementation context loaded. Focus on code quality, best practices, and task execution."}'
+      ;;
+  esac
+fi
 
 # Hook directory for finding other scripts
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -30,11 +80,13 @@ if [[ -f "$CLAUDE_DEBUG" ]]; then
 fi
 
 # Background processor paths (HOOK_DIR already defined above)
+# HOOK_DIR is hooks/v2/dispatchers (where this script is)
+# Need to go up THREE levels to reach plugin root: dispatchers -> v2 -> hooks -> plugin
 PROCESSOR="$HOOK_DIR/../queue/processor.sh"
-SCHEDULER_STARTUP="$HOOK_DIR/../../lib/scheduler-startup.sh"
+SCHEDULER_STARTUP="$HOOK_DIR/../../../lib/scheduler-startup.sh"
 SESSION_WATCHDOG="$PROJECT_ROOT/plugins/specweave/scripts/session-watchdog.sh"
-SCRIPTS_WATCHDOG="$(dirname "$HOOK_DIR")/../../scripts/session-watchdog.sh"
-PLUGIN_ROOT="$(dirname "$HOOK_DIR")/.."
+SCRIPTS_WATCHDOG="$HOOK_DIR/../../../scripts/session-watchdog.sh"
+PLUGIN_ROOT="$(cd "$HOOK_DIR/../../.." && pwd)"
 SCRIPTS_DIR="$PLUGIN_ROOT/scripts"
 
 # === Dashboard Cache Validation (v0.34.0 - Instant Status Commands) ===
@@ -64,8 +116,86 @@ if [[ -f "$REBUILD_SCRIPT" ]]; then
   fi
 fi
 
-# Launch queue processor in background (daemon mode)
-if [[ -f "$PROCESSOR" ]]; then
+# === AUTO-LOAD PLUGINS BASED ON PROJECT TYPE (v1.0.127 - Increment 0172) ===
+# Detect project type (React, Express, K8s, etc.) and pre-install relevant plugins
+# Runs in background to not block session start
+# Controlled by SPECWEAVE_DISABLE_AUTO_LOAD environment variable
+
+if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]]; then
+  if command -v specweave >/dev/null 2>&1; then
+    # Setup lazy-loading log for graceful degradation (T-010)
+    LAZY_LOAD_LOG="$HOME/.specweave/logs/lazy-loading.log"
+    mkdir -p "$(dirname "$LAZY_LOAD_LOG")" 2>/dev/null
+
+    # T-012: Check project detection cache (1 hour TTL)
+    # Cache avoids redundant project detection on every session start
+    AUTO_LOAD_CACHE="$HOME/.specweave/state/auto-load-cache.json"
+    CACHE_TTL_SECONDS=3600  # 1 hour
+    SHOULD_DETECT=true
+
+    if [[ -f "$AUTO_LOAD_CACHE" ]] && command -v jq >/dev/null 2>&1; then
+      CACHED_PATH=$(jq -r '.projectPath // ""' "$AUTO_LOAD_CACHE" 2>/dev/null)
+      CACHED_TIME=$(jq -r '.timestamp // 0' "$AUTO_LOAD_CACHE" 2>/dev/null)
+      CURRENT_TIME=$(date +%s)
+
+      # Skip detection if same project and cache is fresh
+      if [[ "$CACHED_PATH" == "$PROJECT_ROOT" ]]; then
+        CACHE_AGE=$((CURRENT_TIME - CACHED_TIME))
+        if [[ "$CACHE_AGE" -lt "$CACHE_TTL_SECONDS" ]]; then
+          SHOULD_DETECT=false
+          echo "[$(date -Iseconds)] Cache hit: skipping project detection (age: ${CACHE_AGE}s)" >> "$LAZY_LOAD_LOG"
+        fi
+      fi
+    fi
+
+    if [[ "$SHOULD_DETECT" == "true" ]]; then
+      # Run detect-project in background with --install --silent
+      # This will analyze project files (package.json, Dockerfile, etc.) and install relevant plugins
+      # T-011: Background timeout is 15s; hook itself returns immediately (<3000ms)
+      # Graceful degradation: errors logged but don't block Claude session start
+      (
+        mkdir -p "$(dirname "$AUTO_LOAD_CACHE")" 2>/dev/null
+
+        # T-014: Performance logging
+        START_TIME=$(date +%s%3N 2>/dev/null || date +%s)
+        PROJECT_NAME=$(basename "$PROJECT_ROOT")
+
+        if command -v timeout >/dev/null 2>&1; then
+          timeout 15 specweave detect-project "$PROJECT_ROOT" --install --silent 2>>"$LAZY_LOAD_LOG"
+          EXIT_CODE=$?
+        else
+          specweave detect-project "$PROJECT_ROOT" --install --silent 2>>"$LAZY_LOAD_LOG"
+          EXIT_CODE=$?
+        fi
+
+        END_TIME=$(date +%s%3N 2>/dev/null || date +%s)
+        DURATION=$((END_TIME - START_TIME))
+
+        if [[ "$EXIT_CODE" -eq 0 ]]; then
+          echo "{\"projectPath\":\"$PROJECT_ROOT\",\"timestamp\":$(date +%s)}" > "$AUTO_LOAD_CACHE"
+          echo "[$(date -Iseconds)] detect-project success | duration=${DURATION}ms | project=$PROJECT_NAME" >> "$LAZY_LOAD_LOG"
+        else
+          echo "[$(date -Iseconds)] detect-project failed (code=$EXIT_CODE) | duration=${DURATION}ms | path=$PROJECT_ROOT" >> "$LAZY_LOAD_LOG"
+        fi
+      ) &
+      disown 2>/dev/null
+    fi
+  fi
+fi
+
+# === Queue Processor (DISABLED BY DEFAULT) ===
+# Background processor daemon is now OPT-IN ONLY
+# Reason: Most hooks execute synchronously, making async queue unnecessary in VSCode
+# To enable: export SPECWEAVE_ENABLE_PROCESSOR=1
+#
+# PROCESSOR DISABLED - Removed to eliminate:
+# - Background daemon processes consuming resources
+# - Complex async execution model when synchronous works fine
+# - Lock contention between processor and hook execution
+#
+# Event handlers now execute directly in hooks (synchronous, simpler)
+
+if [[ "${SPECWEAVE_ENABLE_PROCESSOR:-0}" == "1" ]] && [[ -f "$PROCESSOR" ]]; then
   nohup bash "$PROCESSOR" --daemon > /dev/null 2>&1 &
   disown 2>/dev/null
 fi
@@ -75,39 +205,8 @@ if [[ -f "$SCHEDULER_STARTUP" ]]; then
   bash "$SCHEDULER_STARTUP" 2>/dev/null || true
 fi
 
-# === LAYER 2: Auto-Start Session Watchdog ===
-# Start the watchdog daemon to detect stuck sessions
-# Uses short interval (30s) and threshold (120s) for fast detection
-WATCHDOG_SCRIPT=""
-if [[ -f "$SESSION_WATCHDOG" ]]; then
-  WATCHDOG_SCRIPT="$SESSION_WATCHDOG"
-elif [[ -f "$SCRIPTS_WATCHDOG" ]]; then
-  WATCHDOG_SCRIPT="$SCRIPTS_WATCHDOG"
-fi
-
-if [[ -n "$WATCHDOG_SCRIPT" ]]; then
-  # Check if watchdog is already running
-  WATCHDOG_PID_FILE="$PROJECT_ROOT/.specweave/state/.watchdog.pid"
-  if [[ -f "$WATCHDOG_PID_FILE" ]]; then
-    EXISTING_PID=$(cat "$WATCHDOG_PID_FILE" 2>/dev/null)
-    if ! kill -0 "$EXISTING_PID" 2>/dev/null; then
-      # Stale PID file, clean it up
-      rm -f "$WATCHDOG_PID_FILE"
-    fi
-  fi
-
-  # Start watchdog if not already running
-  if [[ ! -f "$WATCHDOG_PID_FILE" ]] || ! kill -0 "$(cat "$WATCHDOG_PID_FILE" 2>/dev/null)" 2>/dev/null; then
-    mkdir -p "$PROJECT_ROOT/.specweave/state"
-    (
-      export STUCK_THRESHOLD=120  # 2 minutes - faster detection
-      export CHECK_INTERVAL=30    # Check every 30 seconds
-      export SPECWEAVE_ROOT="$PROJECT_ROOT/.specweave"
-      nohup bash "$WATCHDOG_SCRIPT" --daemon > /dev/null 2>&1 &
-      echo $! > "$WATCHDOG_PID_FILE"
-    )
-    disown 2>/dev/null
-  fi
-fi
+# Session watchdog REMOVED (ADR-0224)
+# VSCode extension manages session lifecycle - no daemon needed
+# For stuck sessions: Close Claude Code or restart Extension Host
 
 exit 0

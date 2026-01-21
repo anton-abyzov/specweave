@@ -1,11 +1,13 @@
 ---
 name: sw:cancel-auto
-description: Cancel running auto session. Generates summary report and releases lock. Activates for: cancel auto, stop auto, cancel auto.
+description: EMERGENCY ONLY - Manually cancel running auto session. Generates summary report and releases lock. Activates for: cancel auto, stop auto, emergency cancel.
 ---
 
 # Cancel Auto Command
 
-**Cancel the running auto session and generate summary.**
+**⚠️ EMERGENCY USE ONLY - Manually cancel the running auto session.**
+
+> **Note**: Auto mode is designed to run until completion. In most cases, just close the Claude Code session and resume later with `/sw:do`. Only use this command in true emergencies.
 
 ## Usage
 
@@ -18,7 +20,6 @@ description: Cancel running auto session. Generates summary report and releases 
 | Option | Description |
 |--------|-------------|
 | `--force` | Cancel without confirmation |
-| `--reason <text>` | Reason for cancellation |
 
 ## Examples
 
@@ -26,11 +27,8 @@ description: Cancel running auto session. Generates summary report and releases 
 # Interactive cancel (asks for confirmation)
 /sw:cancel-auto
 
-# Force cancel without confirmation
+# Force cancel without confirmation (emergency)
 /sw:cancel-auto --force
-
-# With reason
-/sw:cancel-auto --reason "Need to switch to urgent bug fix"
 ```
 
 ## What It Does
@@ -73,7 +71,20 @@ bash plugins/specweave/scripts/cancel-auto.sh [args]
 
 ## Notes
 
+- **This command should rarely be needed** - auto mode is designed to run until completion
+- **Preferred approach**: Just close the Claude Code session to pause, resume later with `/sw:do`
 - Cancelling doesn't undo completed work
 - tasks.md progress is preserved
 - You can resume anytime with `/sw:do`
 - Use Claude Code's `/resume` to restore full conversation context
+
+## When to Use
+
+**Use cancel-auto only for:**
+- True emergencies (system resources, critical bugs)
+- Need to force-stop a runaway session
+
+**DON'T use for:**
+- Normal pause/resume (just close Claude Code)
+- Switching contexts (close tab, resume later)
+- Profile switches (not supported - wrong concept)

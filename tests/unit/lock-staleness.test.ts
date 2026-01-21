@@ -9,13 +9,18 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { LockManager } from '../../src/utils/lock-manager.js';
+import { forceEnableLocksForTest, restoreEnvironment, type OriginalEnv } from '../helpers/force-enable-locks.js';
 
 describe('LockManager - Staleness Detection', () => {
   let testDir: string;
   let lockDir: string;
   let lockManager: LockManager;
+  let originalEnv: OriginalEnv;
 
   beforeEach(() => {
+    // CRITICAL: Force enable locks for tests (bypass VSCode/CI auto-skip)
+    originalEnv = forceEnableLocksForTest();
+
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-staleness-'));
     lockDir = path.join(testDir, '.test.lock');
     lockManager = new LockManager(lockDir, 300); // 5 minutes
@@ -25,6 +30,9 @@ describe('LockManager - Staleness Detection', () => {
     if (fs.existsSync(testDir)) {
       fs.rmSync(testDir, { recursive: true, force: true });
     }
+
+    // Restore original environment
+    restoreEnvironment(originalEnv);
   });
 
   describe('Lock Acquisition and Release', () => {

@@ -98,7 +98,7 @@ Technology stack        → .specweave/docs/internal/architecture/tech-stack.md
 Business rules          → .specweave/docs/internal/strategy/business-rules.md
 Team workflows          → .specweave/docs/internal/processes/team-workflows.md
 Deployment process      → .specweave/docs/internal/processes/deployment.md
-Domain knowledge        → .specweave/increments/{####-name}/domain/{domain}.md
+Domain knowledge        → .specweave/increments/{####-name}/docs/domain/{domain}.md
 
 # Public Documentation (user-facing, can be published)
 Project conventions     → .specweave/docs/public/guides/project-conventions.md
@@ -438,7 +438,7 @@ function useCustomAuth() {
 **Domain**: Healthcare, Patient Management, Provider Scheduling
 
 ### Quick Links
-- [Domain Model](.specweave/increments/####-name/domain/appointments/domain-model.md)
+- [Domain Model](.specweave/increments/####-name/docs/domain/appointments/domain-model.md)
 - [Existing System Architecture](.specweave/docs/internal/architecture/existing-system.md)
 - [Tech Stack](.specweave/docs/internal/architecture/tech-stack.md)
 - [Business Rules](.specweave/docs/internal/strategy/appointments/business-rules.md)
@@ -508,7 +508,7 @@ if (exists("specifications/modules/appointments/domain-model.md")) {
 I found the following project-specific content in your backup CLAUDE.md:
 
 📦 Domain Model (Healthcare Appointments)
-   → .specweave/increments/####-name/domain/appointments/domain-model.md
+   → .specweave/increments/####-name/docs/domain/appointments/domain-model.md
 
 🏗️ Microservices Architecture
    → .specweave/docs/internal/architecture/existing-system.md
@@ -665,7 +665,7 @@ The following content remains in the backup and will be extracted when you work 
 
 ## Files Created
 
-1. ✅ `.specweave/increments/####-name/domain/appointments/domain-model.md` (450 lines)
+1. ✅ `.specweave/increments/####-name/docs/domain/appointments/domain-model.md` (450 lines)
 2. ✅ `.specweave/docs/internal/architecture/existing-system.md` (320 lines)
 3. ✅ `.specweave/docs/internal/architecture/tech-stack.md` (180 lines)
 4. ✅ `.specweave/docs/internal/strategy/appointments/business-rules.md` (280 lines)
@@ -688,7 +688,7 @@ The following content remains in the backup and will be extracted when you work 
 
 | Content Type | Lines | Destination |
 |--------------|-------|-------------|
-| Domain Model | 450 | .specweave/increments/####-name/domain/ |
+| Domain Model | 450 | .specweave/increments/####-name/docs/domain/ |
 | Architecture | 320 | .specweave/docs/internal/architecture/ |
 | Tech Stack | 180 | .specweave/docs/internal/architecture/ |
 | Business Rules | 280 | .specweave/docs/internal/strategy/ |
@@ -782,7 +782,7 @@ Proceed with merge? (y/n)
 ✅ Merge complete!
 
 Created:
-1. .specweave/increments/####-name/domain/appointments/domain-model.md
+1. .specweave/increments/####-name/docs/domain/appointments/domain-model.md
 2. .specweave/docs/internal/architecture/existing-system.md
 3. .specweave/docs/internal/architecture/tech-stack.md
 4. .specweave/docs/internal/strategy/appointments/business-rules.md

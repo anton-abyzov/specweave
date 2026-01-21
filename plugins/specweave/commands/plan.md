@@ -5,6 +5,19 @@ description: Generate plan.md and tasks.md for PLANNING increment using Architec
 
 # /sw:plan - Generate Implementation Plan
 
+**⚠️ FOR EXISTING INCREMENTS ONLY - NOT for creating new increments!**
+
+**When to use `/sw:plan`:**
+- You already have `spec.md` created
+- Increment status is PLANNING or ACTIVE
+- You need to generate/regenerate `plan.md` and `tasks.md`
+
+**When NOT to use `/sw:plan`:**
+- Creating a brand new increment from scratch → Use `/sw:increment` instead
+- No `spec.md` exists yet → Use `/sw:increment` instead
+
+---
+
 Generate `plan.md` and `tasks.md` for an increment using Architect Agent and test-aware-planner.
 
 ## Usage
@@ -26,6 +39,29 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
    - spec.md exists and is not empty
    - Increment is not COMPLETED/ABANDONED
    - plan.md/tasks.md don't exist (unless --force)
+
+   **Error Handling (v1.0.102+):**
+   ```typescript
+   import { ERROR_MESSAGES, formatError } from './src/utils/error-formatter.js';
+
+   // If spec.md not found
+   if (!specExists) {
+     formatError(ERROR_MESSAGES.SPEC_NOT_FOUND(incrementId));
+     return;
+   }
+
+   // If increment not found
+   if (!incrementExists) {
+     formatError(ERROR_MESSAGES.INCREMENT_NOT_FOUND(incrementId));
+     return;
+   }
+
+   // If user tries to use /sw:plan for NEW increments
+   if (userIsCreatingNew) {
+     formatError(ERROR_MESSAGES.WRONG_COMMAND_FOR_NEW_INCREMENT());
+     return;
+   }
+   ```
 
 3. **Generate plan.md** (via Architect Agent):
    - Technical approach
@@ -76,6 +112,39 @@ Generate `plan.md` and `tasks.md` for an increment using Architect Agent and tes
 #    - 0041-feature-b
 # Please specify: /sw:plan 0040
 ```
+
+## Self-Awareness Check (v1.0.102+)
+
+**🎯 OPTIONAL**: Detect if planning for SpecWeave framework increment.
+
+Before generating plan.md, check repository context:
+
+```typescript
+import { detectSpecWeaveRepository } from './src/utils/repository-detector.js';
+
+const repoInfo = detectSpecWeaveRepository(process.cwd());
+
+if (repoInfo.isSpecWeaveRepo) {
+  console.log('ℹ️  Planning for SpecWeave framework increment');
+  console.log('');
+  console.log('   💡 Framework Planning Considerations:');
+  console.log('      • Design for backward compatibility');
+  console.log('      • Consider impact on existing user projects');
+  console.log('      • Plan for migration guides if breaking');
+  console.log('      • Document new patterns in CLAUDE.md');
+  console.log('      • Add ADR for significant architectural changes');
+  console.log('');
+}
+```
+
+**Why This Helps**:
+Planning for framework features requires different considerations than user apps:
+- Backward compatibility is critical
+- Changes affect ALL SpecWeave users
+- Architecture decisions need ADRs
+- Workflow changes need CLAUDE.md updates
+
+---
 
 ## Workflow Integration
 

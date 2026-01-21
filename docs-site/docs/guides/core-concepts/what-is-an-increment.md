@@ -1,3 +1,9 @@
+---
+sidebar_position: 1
+title: What is an Increment?
+description: Learn about SpecWeave's fundamental unit of work - complete, self-contained features with specs, plans, and tests.
+---
+
 # What is an Increment?
 
 An **increment** is SpecWeave's fundamental unit of work—a complete, self-contained feature with specifications, architecture, implementation plan, and tests.
@@ -313,5 +319,5 @@ Answer: Read living docs
 
 **Learn More:**
 - [Increment Planning Workflow](/docs/workflows/planning)
-- [Increment Discipline (WIP Limits)](/docs/guides/core-concepts/increment-discipline)
+- [Increment Discipline (WIP Limits)](/docs/academy/specweave-essentials/13-increment-lifecycle)
 - Test-Aware Planning

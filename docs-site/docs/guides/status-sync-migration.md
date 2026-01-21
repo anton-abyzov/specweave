@@ -466,8 +466,8 @@ If you need to revert to old sync:
 ## Next Steps
 
 1. [Status Sync Guide](./status-sync-guide.md) - Complete user guide
-2. [Architecture](../internal/architecture/adr/0031-status-sync-architecture.md) - Technical details
-3. [API Reference](../api/status-sync-api.md) - Programmatic usage
+2. [External Tools](/docs/academy/specweave-essentials/07-external-tools) - Integration guide
+3. [Troubleshooting](/docs/academy/specweave-essentials/09-troubleshooting) - Fix sync issues
 
 ---
 

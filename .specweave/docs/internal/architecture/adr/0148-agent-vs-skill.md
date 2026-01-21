@@ -1,53 +1,55 @@
 # ADR-0148: Agents vs Skills Architecture
 
-**Status**: Accepted  
-**Date**: 2025-01-17  
-**Deciders**: Core Team  
+**Status**: Accepted
+**Date**: 2025-01-17
+**Updated**: 2026-01-20 (corrected agent/skill classification)
+**Deciders**: Core Team
 
 ## Context
 
 Claude Code provides two extension mechanisms:
-1. **Agents** - Separate context windows
-2. **Skills** - Shared context, auto-activation
+1. **Agents** - Separate context windows, explicit invocation via Task tool
+2. **Skills** - Shared context, auto-activation based on keywords
 
 Question: When to use which?
 
 ## Decision
 
 **Use Agents for**:
-- Complex, multi-step workflows
-- Distinct personality/role needed
+- Complex, multi-step workflows requiring isolated context
+- Specialized domain expertise (frontend, K8s, testing, etc.)
 - Tool restrictions by role
 - Separate context window required
 - Long-running tasks
-- Examples: PM, Architect, DevOps, Security, QA Lead
+- Examples: frontend-architect, kubernetes-architect, qa-engineer, database-optimizer
 
 **Use Skills for**:
-- Focused capabilities
-- Quick operations
+- Auto-activating capabilities based on keywords
+- Quick operations in shared context
+- Role-based expertise (PM, Architect, Security, etc.)
 - Capability extensions
-- Shared context acceptable
-- Auto-activation based on keywords
-- Examples: increment-planner, context-loader, skill-router
+- Examples: pm, architect, tech-lead, qa-lead, increment-planner, context-loader
+
+**Key insight**: PM, Architect, Security, QA Lead are SKILLS (auto-activate), NOT agents!
 
 ## Agent Examples
 
 ```yaml
-# src/agents/pm/AGENT.md
+# plugins/specweave-frontend/agents/frontend-architect/AGENT.md
 ---
-name: pm
-description: Product Manager for requirements...
-tools: Read, Grep, Glob
-model: claude-opus-4-5-20251101
+name: frontend-architect
+description: Frontend architecture specialist for React/Vue/Angular...
+tools: Read, Grep, Glob, Write, Edit
+model: opus
 ---
-You are an expert Product Manager...
+You are an expert Frontend Architect...
 ```
 
-**Invocation**: Via Task tool
+**Invocation**: Via Task tool (explicit)
 ```typescript
 await Task({
-  subagent_type: "specweave:pm:pm",
-  prompt: "Create product requirements for..."
+  subagent_type: "sw-frontend:frontend-architect",
+  prompt: "Design React component architecture for..."
 });
 ```
 
@@ -90,8 +92,8 @@ Plans features by loading context manifests...
 
 ## Metrics
 
-**Agents**: 14 agents (PM, Architect, DevOps, SRE, QA, Security, etc.)
-**Skills**: 10+ skills (detector, planner, router, loader, etc.)
+**Agents**: 35+ agents in domain plugins (frontend-architect, kubernetes-architect, qa-engineer, etc.)
+**Skills**: 50+ skills in core plugin (pm, architect, tech-lead, qa-lead, increment-planner, etc.)
 
 ## Related
 

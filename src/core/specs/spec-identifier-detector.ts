@@ -36,131 +36,105 @@ export function detectSpecIdentifier(
   spec: SpecContent,
   options: DetectorOptions = {}
 ): SpecIdentifier {
-  const {
-    existingSpecs = [],
-    preferTitleSlug = true,
-    minSlugLength = 5
-  } = options;
-
+  const { existingSpecs = [], preferTitleSlug = true, minSlugLength = 5 } = options;
   const { frontmatter, title, project } = spec;
   const projectCode = getProjectCode(project);
 
   // Priority 1: External tool link (JIRA, ADO, GitHub)
-  // v0.34.1: Pass project from spec (not frontmatter) - see ADR-0140
   const externalId = detectExternalId(frontmatter, project);
-  if (externalId) {
-    return externalId;
-  }
+  if (externalId) return externalId;
 
   // Priority 2: Explicit custom ID in frontmatter
   if (frontmatter.id && typeof frontmatter.id === 'string') {
-    const customId = frontmatter.id;
-    return {
-      full: `${project}/${customId}`,
-      display: customId,
-      source: 'custom',
-      project,
-      stable: true,
-      compact: `${projectCode}-${customId}`
-    };
+    return buildIdentifier(project, frontmatter.id, 'custom', projectCode);
   }
 
   // Priority 3: Generate from title (slugified)
   if (preferTitleSlug && title) {
     const titleSlug = slugify(title);
-    const slugExists = existingSpecs.some(s =>
-      s.toLowerCase().includes(titleSlug.toLowerCase())
-    );
+    const slugExists = existingSpecs.some(s => s.toLowerCase().includes(titleSlug.toLowerCase()));
 
     if (!slugExists && titleSlug.length >= minSlugLength) {
-      return {
-        full: `${project}/${titleSlug}`,
-        display: titleSlug,
-        source: 'title-slug',
-        project,
-        stable: true,
-        compact: `${projectCode}-${titleSlug}`
-      };
+      return buildIdentifier(project, titleSlug, 'title-slug', projectCode);
     }
   }
 
   // Priority 4: Sequential numbering (fallback)
   const nextNumber = findNextSequentialNumber(existingSpecs, project);
+  return buildIdentifier(project, `spec-${nextNumber}`, 'sequential', projectCode, nextNumber);
+}
+
+/**
+ * Build a spec identifier object
+ */
+function buildIdentifier(
+  project: string,
+  id: string,
+  source: SpecIdentifierSource,
+  projectCode: string,
+  compactId?: string
+): SpecIdentifier {
   return {
-    full: `${project}/spec-${nextNumber}`,
-    display: `spec-${nextNumber}`,
-    source: 'sequential',
+    full: `${project}/${id}`,
+    display: id,
+    source,
     project,
     stable: true,
-    compact: `${projectCode}-${nextNumber}`
+    compact: `${projectCode}-${compactId || id}`
   };
 }
 
 /**
  * Detect external tool ID from frontmatter
- *
- * @param frontmatter - Parsed YAML frontmatter
- * @param resolvedProject - Project ID resolved via ProjectResolutionService (v0.34.1+)
  */
 function detectExternalId(
   frontmatter: Record<string, any>,
   resolvedProject: string
 ): SpecIdentifier | null {
-  // v0.34.1: Use resolvedProject instead of frontmatter.project (ADR-0140)
   const project = resolvedProject || 'default';
+  const projectCode = getProjectCode(project);
+  const externalLinks = frontmatter.externalLinks;
 
-  // Check for JIRA
-  if (frontmatter.externalLinks?.jira?.issueKey) {
-    const { issueKey, url } = frontmatter.externalLinks.jira;
-    const projectCode = getProjectCode(project);
-
-    return {
-      full: `${project}/JIRA-${issueKey}`,
-      display: `JIRA-${issueKey}`,
-      source: 'external-jira',
-      externalId: issueKey,
-      externalUrl: url,
-      project,
-      stable: true,
-      compact: `${projectCode}-JIRA-${issueKey}`
-    };
+  if (externalLinks?.jira?.issueKey) {
+    const { issueKey, url } = externalLinks.jira;
+    return buildExternalIdentifier(project, projectCode, 'JIRA', issueKey, issueKey, url, 'external-jira');
   }
 
-  // Check for Azure DevOps
-  if (frontmatter.externalLinks?.ado?.workItemId) {
-    const { workItemId, url } = frontmatter.externalLinks.ado;
-    const projectCode = getProjectCode(project);
-
-    return {
-      full: `${project}/ADO-${workItemId}`,
-      display: `ADO-${workItemId}`,
-      source: 'external-ado',
-      externalId: String(workItemId),
-      externalUrl: url,
-      project,
-      stable: true,
-      compact: `${projectCode}-ADO-${workItemId}`
-    };
+  if (externalLinks?.ado?.workItemId) {
+    const { workItemId, url } = externalLinks.ado;
+    return buildExternalIdentifier(project, projectCode, 'ADO', workItemId, String(workItemId), url, 'external-ado');
   }
 
-  // Check for GitHub
-  if (frontmatter.externalLinks?.github?.issueNumber) {
-    const { issueNumber, issueUrl } = frontmatter.externalLinks.github;
-    const projectCode = getProjectCode(project);
-
-    return {
-      full: `${project}/GH-${issueNumber}`,
-      display: `GH-${issueNumber}`,
-      source: 'external-github',
-      externalId: `#${issueNumber}`,
-      externalUrl: issueUrl,
-      project,
-      stable: true,
-      compact: `${projectCode}-GH-${issueNumber}`
-    };
+  if (externalLinks?.github?.issueNumber) {
+    const { issueNumber, issueUrl } = externalLinks.github;
+    return buildExternalIdentifier(project, projectCode, 'GH', issueNumber, `#${issueNumber}`, issueUrl, 'external-github');
   }
 
   return null;
+}
+
+/**
+ * Build an external identifier object
+ */
+function buildExternalIdentifier(
+  project: string,
+  projectCode: string,
+  prefix: string,
+  id: string | number,
+  externalId: string,
+  externalUrl: string,
+  source: SpecIdentifierSource
+): SpecIdentifier {
+  return {
+    full: `${project}/${prefix}-${id}`,
+    display: `${prefix}-${id}`,
+    source,
+    externalId,
+    externalUrl,
+    project,
+    stable: true,
+    compact: `${projectCode}-${prefix}-${id}`
+  };
 }
 
 /**
@@ -250,21 +224,8 @@ export function formatGitHubIssueTitle(
  * Validate spec identifier format
  */
 export function isValidSpecIdentifier(id: string): boolean {
-  // Must be non-empty
-  if (!id || id.length === 0) {
-    return false;
-  }
-
-  // Must contain only valid characters
-  const validPattern = /^[a-zA-Z0-9-_]+$/;
-  if (!validPattern.test(id)) {
-    return false;
-  }
-
-  // Must not start or end with hyphen/underscore
-  if (/^[-_]|[-_]$/.test(id)) {
-    return false;
-  }
-
+  if (!id || id.length === 0) return false;
+  if (!/^[a-zA-Z0-9-_]+$/.test(id)) return false;
+  if (/^[-_]|[-_]$/.test(id)) return false;
   return true;
 }

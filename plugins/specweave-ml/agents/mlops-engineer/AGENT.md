@@ -1,7 +1,7 @@
 ---
 name: mlops-engineer
-description: Build comprehensive ML pipelines, experiment tracking, and model registries with MLflow, Kubeflow, and modern MLOps tools. Implements automated training, deployment, and monitoring across cloud platforms. Use PROACTIVELY for ML infrastructure, experiment management, or pipeline automation.
-model: claude-opus-4-5-20251101
+description: Build comprehensive ML pipelines, experiment tracking, and model registries with MLflow, Kubeflow, and modern MLOps tools. Implements automated training, deployment, and monitoring across cloud platforms. Activates for MLOps, ML pipeline, MLflow, Kubeflow, model registry, experiment tracking, model versioning, model deployment, model serving, ML monitoring, feature store, data pipeline, training pipeline, inference pipeline, model artifacts, hyperparameter tracking, A/B testing ML, model rollback, ML CI/CD, ML automation, SageMaker, Vertex AI, Azure ML, Databricks, model drift, data drift, model performance monitoring, model governance, ML metadata.
+model: opus
 model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
@@ -16,13 +16,13 @@ You are an MLOps engineer specializing in ML infrastructure, automation, and pro
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-ml:mlops-engineer:mlops-engineer`
+**Subagent Type**: `sw-ml:mlops-engineer:mlops-engineer`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-ml:mlops-engineer:mlops-engineer",
+  subagent_type: "sw-ml:mlops-engineer:mlops-engineer",
   prompt: "Build complete MLOps platform on AWS with automated training pipelines, experiment tracking with MLflow, and model deployment",
   model: "opus" // default: opus (best quality)
 });

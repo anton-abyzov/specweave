@@ -131,40 +131,51 @@ export function detectModelForTask(
     haikuScore += 1; // Multi-step with plan = can execute mechanically
   }
 
-  // Calculate confidence and select model
+  // Calculate confidence based on total scores
   const totalScore = haikuScore + sonnetScore + opusScore;
-  const haikuConfidence = totalScore > 0 ? haikuScore / totalScore : 0;
-  const sonnetConfidence = totalScore > 0 ? sonnetScore / totalScore : 0;
-  const opusConfidence = totalScore > 0 ? opusScore / totalScore : 0;
 
-  // Decision logic
-  let selectedModel: ModelTier;
-  let confidence: number;
-  let reasoning: string;
+  // Default to opus for best quality
+  if (totalScore === 0) {
+    return {
+      model: 'opus',
+      confidence: 0.5,
+      reasoning: 'Default to opus for best quality and reasoning'
+    };
+  }
 
+  const haikuConfidence = haikuScore / totalScore;
+  const sonnetConfidence = sonnetScore / totalScore;
+  const opusConfidence = opusScore / totalScore;
+
+  // Decision logic - prioritize opus for critical work, haiku for clear instructions
   if (opusScore > 5 && opusConfidence > 0.3) {
-    selectedModel = 'opus';
-    confidence = opusConfidence;
-    reasoning = 'Critical architectural decision requiring deep reasoning';
-  } else if (haikuScore > sonnetScore && haikuConfidence > 0.5) {
-    selectedModel = 'haiku';
-    confidence = haikuConfidence;
-    reasoning = 'Clear instructions with detailed spec/plan - suitable for fast execution';
-  } else if (sonnetScore > haikuScore || sonnetConfidence > 0.4) {
-    selectedModel = 'opus';
-    confidence = sonnetConfidence;
-    reasoning = 'Requires decision-making or complex implementation';
-  } else {
-    // Default to opus for best quality
-    selectedModel = 'opus';
-    confidence = 0.5;
-    reasoning = 'Default to opus for best quality and reasoning';
+    return {
+      model: 'opus',
+      confidence: opusConfidence,
+      reasoning: 'Critical architectural decision requiring deep reasoning'
+    };
+  }
+
+  if (haikuScore > sonnetScore && haikuConfidence > 0.5) {
+    return {
+      model: 'haiku',
+      confidence: haikuConfidence,
+      reasoning: 'Clear instructions with detailed spec/plan - suitable for fast execution'
+    };
+  }
+
+  if (sonnetScore > haikuScore || sonnetConfidence > 0.4) {
+    return {
+      model: 'opus',
+      confidence: sonnetConfidence,
+      reasoning: 'Requires decision-making or complex implementation'
+    };
   }
 
   return {
-    model: selectedModel,
-    confidence,
-    reasoning
+    model: 'opus',
+    confidence: 0.5,
+    reasoning: 'Default to opus for best quality and reasoning'
   };
 }
 

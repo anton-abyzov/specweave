@@ -1,0 +1,41 @@
+{
+  "id": "0173-plugin-consolidation-tdd-defaults",
+  "increment": "0173-plugin-consolidation-tdd-defaults",
+  "title": "Plugin Consolidation and TDD-First Defaults",
+  "type": "feature",
+  "status": "completed",
+  "priority": "high",
+  "createdAt": "2026-01-19T12:30:00Z",
+  "updatedAt": "2026-01-20T00:31:00Z",
+  "completedAt": "2026-01-20T00:31:00Z",
+  "feature": {
+    "id": "FS-073",
+    "name": "Plugin Architecture Improvements"
+  },
+  "tags": [
+    "plugins",
+    "tdd",
+    "testing",
+    "consolidation",
+    "ux-improvement"
+  ],
+  "estimatedEffort": "medium",
+  "dependencies": [
+    "0172-true-auto-plugin-loading"
+  ],
+  "context": {
+    "problem": "Multiple overlapping plugins (sw-ui/sw-testing), TDD not recommended by default, plugin-dev lacks tests",
+    "solution": "Merge sw-ui into sw-testing, make TDD recommended in init with 80% coverage default, ensure plugin-dev works properly",
+    "impact": "Better plugin organization, stronger TDD culture by default"
+  },
+  "deliverables": {
+    "changes": [
+      "Merge sw-ui into sw-testing",
+      "Update init wizard to recommend TDD with 80% coverage",
+      "Add hosting recommendations to sw-infrastructure",
+      "Ensure plugin-dev has proper tests"
+    ]
+  },
+  "planningComplete": true,
+  "planningCompletedAt": "2026-01-19T12:30:00Z"
+}

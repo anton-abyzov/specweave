@@ -194,13 +194,15 @@ Agents are invoked explicitly via Task tool:
 
 ```typescript
 await Task({
-  subagent_type: "specweave:pm:pm",
-  prompt: "Create product requirements for user authentication",
-  description: "Product requirements analysis"
+  subagent_type: "sw-frontend:frontend-architect",
+  prompt: "Design React component architecture for dashboard",
+  description: "Frontend architecture design"
 });
 ```
 
 Agents have separate context windows to prevent pollution of main conversation.
+
+**Note**: Skills like PM and Architect auto-activate based on keywords - you don't invoke them via Task. Only specialized plugin agents (sw-frontend, sw-testing, sw-k8s, etc.) use Task invocation.
 
 ### Hooks Execution
 

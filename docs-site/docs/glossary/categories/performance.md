@@ -24,13 +24,13 @@ Performance and scalability terms cover the practices, patterns, and technologie
 - Types: In-memory (Redis), HTTP, Query result
 - Benefits: Faster response, reduced database load
 
-**[Redis](/docs/glossary/terms/redis)**
+**Redis**
 - In-memory data store (key-value)
 - Use cases: caching, session storage, rate limiting
 - Fast: microsecond latency
 - SpecWeave uses Redis for hook debouncing
 
-**[CDN (Content Delivery Network)](/docs/glossary/terms/cdn)**
+**CDN (Content Delivery Network)**
 - Distributed network of servers for static content
 - Benefits: faster load times, reduced server load
 - Providers: CloudFront, Cloudflare, Fastly
@@ -38,19 +38,19 @@ Performance and scalability terms cover the practices, patterns, and technologie
 
 ### Scaling Patterns
 
-**[Horizontal Scaling](/docs/glossary/terms/horizontal-scaling)**
+**Horizontal Scaling**
 - Add more servers (scale out)
 - Benefits: handle more traffic, fault tolerance
 - Requires: load balancer, stateless design
 - Example: 1 server → 10 servers
 
-**[Vertical Scaling](/docs/glossary/terms/vertical-scaling)**
+**Vertical Scaling**
 - Increase server resources (scale up)
 - Benefits: simpler, no code changes
 - Limits: hardware ceiling, single point of failure
 - Example: 2 CPU → 16 CPU
 
-**[Load Balancing](/docs/glossary/terms/load-balancing)**
+**Load Balancing**
 - Distribute traffic across multiple servers
 - Algorithms: Round Robin, Least Connections, IP Hash
 - Tools: Nginx, HAProxy, AWS ELB
@@ -58,19 +58,19 @@ Performance and scalability terms cover the practices, patterns, and technologie
 
 ### Database Optimization
 
-**[Database Indexing](/docs/glossary/terms/database-indexing)**
+**Database Indexing**
 - Speed up queries by creating indexes
 - Trade-off: faster reads, slower writes
 - Types: B-tree, Hash, Full-text
 - When to use: frequently queried columns (WHERE, JOIN)
 
-**[Query Optimization](/docs/glossary/terms/query-optimization)**
+**Query Optimization**
 - Improve database query performance
 - Techniques: EXPLAIN plan, avoid N+1, use indexes
 - Tools: pg_stat_statements (PostgreSQL), slow query log
 - Target: &lt;100ms for most queries
 
-**[Connection Pooling](/docs/glossary/terms/connection-pooling)**
+**Connection Pooling**
 - Reuse database connections
 - Benefits: faster queries, lower overhead
 - Tools: PgBouncer (PostgreSQL), HikariCP (Java)
@@ -78,19 +78,19 @@ Performance and scalability terms cover the practices, patterns, and technologie
 
 ### Performance Monitoring
 
-**[APM (Application Performance Monitoring)](/docs/glossary/terms/apm)**
+**APM (Application Performance Monitoring)**
 - Monitor application performance in production
 - Metrics: response time, error rate, throughput
 - Tools: Datadog, New Relic, AppDynamics
 - Benefits: identify bottlenecks, track SLOs
 
-**[Profiling](/docs/glossary/terms/profiling)**
+**Profiling**
 - Analyze code performance (CPU, memory)
 - Identify hotspots (slow functions)
 - Tools: Chrome DevTools, Node.js profiler, py-spy
 - When to use: performance issues, optimization
 
-**[Metrics](/docs/glossary/terms/metrics)**
+**Metrics**
 - Quantitative measurements of system behavior
 - Types: RED (Rate, Errors, Duration), USE (Utilization, Saturation, Errors)
 - Storage: Prometheus, InfluxDB, CloudWatch
@@ -497,7 +497,7 @@ await redis.setex('hook:post-task-completion:last-fire', 10, now.toString());
 ## Learn More
 
 ### Guides
-- [Performance Tuning](/docs/operations/performance-tuning)
+- Performance Tuning (coming soon)
 - Caching Strategies (coming soon)
 - Database Optimization (coming soon)
 
@@ -519,4 +519,4 @@ await redis.setex('hook:post-task-completion:last-fire', 10, now.toString());
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/README)
+- [Alphabetical Index](/docs/glossary/)

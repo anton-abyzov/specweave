@@ -411,4 +411,216 @@ No tasks in this increment.
       expect(count).toBe(0);
     });
   });
+
+  describe('coverage validation (v1.0.105)', () => {
+    it('should warn when coverage is below target', async () => {
+      // Arrange: Create complete increment with coverage target
+      const specContent = `---
+increment: ${incrementId}
+---
+
+# Test
+
+- [x] **AC-US1-01**: Test coverage
+`;
+      await fs.writeFile(path.join(incrementPath, 'spec.md'), specContent);
+
+      const tasksContent = `---
+increment: ${incrementId}
+---
+
+# Tasks
+
+### T-001: Task
+**Status**: [x] completed
+**Satisfies ACs**: AC-US1-01
+`;
+      await fs.writeFile(path.join(incrementPath, 'tasks.md'), tasksContent);
+
+      // Create metadata with coverage target
+      const metadata = {
+        id: incrementId,
+        status: 'active',
+        testMode: 'TDD',
+        coverageTarget: 80,
+      };
+      await fs.writeFile(
+        path.join(incrementPath, 'metadata.json'),
+        JSON.stringify(metadata, null, 2)
+      );
+
+      // Create coverage data below target
+      const coverageDir = path.join(testRoot, 'coverage');
+      await fs.ensureDir(coverageDir);
+      const coverageSummary = {
+        total: {
+          lines: { pct: 50 },
+          statements: { pct: 50 },
+          functions: { pct: 40 },
+          branches: { pct: 30 },
+        },
+      };
+      await fs.writeFile(
+        path.join(coverageDir, 'coverage-summary.json'),
+        JSON.stringify(coverageSummary, null, 2)
+      );
+
+      // Act
+      const result = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      // Assert: Should pass (coverage is warning-only) but have warning
+      expect(result.isValid).toBe(true);
+      expect(result.warnings).toBeDefined();
+      expect(result.warnings!.some(w => w.includes('coverage below target'))).toBe(true);
+    });
+
+    it('should not warn when coverage meets target', async () => {
+      // Arrange
+      const specContent = `---
+increment: ${incrementId}
+---
+
+# Test
+
+- [x] **AC-US1-01**: Test coverage
+`;
+      await fs.writeFile(path.join(incrementPath, 'spec.md'), specContent);
+
+      const tasksContent = `---
+increment: ${incrementId}
+---
+
+# Tasks
+
+### T-001: Task
+**Status**: [x] completed
+**Satisfies ACs**: AC-US1-01
+`;
+      await fs.writeFile(path.join(incrementPath, 'tasks.md'), tasksContent);
+
+      const metadata = {
+        id: incrementId,
+        status: 'active',
+        testMode: 'TDD',
+        coverageTarget: 80,
+      };
+      await fs.writeFile(
+        path.join(incrementPath, 'metadata.json'),
+        JSON.stringify(metadata, null, 2)
+      );
+
+      // Create coverage data meeting target
+      const coverageDir = path.join(testRoot, 'coverage');
+      await fs.ensureDir(coverageDir);
+      const coverageSummary = {
+        total: {
+          lines: { pct: 85 },
+          statements: { pct: 85 },
+          functions: { pct: 82 },
+          branches: { pct: 78 },
+        },
+      };
+      await fs.writeFile(
+        path.join(coverageDir, 'coverage-summary.json'),
+        JSON.stringify(coverageSummary, null, 2)
+      );
+
+      // Act
+      const result = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      // Assert: Should pass without coverage warning
+      expect(result.isValid).toBe(true);
+      const hasCoverageWarning = result.warnings?.some(w => w.includes('coverage below target'));
+      expect(hasCoverageWarning).toBeFalsy();
+    });
+
+    it('should skip coverage validation when coverageTarget is 0', async () => {
+      // Arrange
+      const specContent = `---
+increment: ${incrementId}
+---
+
+# Test
+
+- [x] **AC-US1-01**: Test
+`;
+      await fs.writeFile(path.join(incrementPath, 'spec.md'), specContent);
+
+      const tasksContent = `---
+increment: ${incrementId}
+---
+
+# Tasks
+
+### T-001: Task
+**Status**: [x] completed
+**Satisfies ACs**: AC-US1-01
+`;
+      await fs.writeFile(path.join(incrementPath, 'tasks.md'), tasksContent);
+
+      const metadata = {
+        id: incrementId,
+        status: 'active',
+        testMode: 'TDD',
+        coverageTarget: 0, // Disabled
+      };
+      await fs.writeFile(
+        path.join(incrementPath, 'metadata.json'),
+        JSON.stringify(metadata, null, 2)
+      );
+
+      // Act
+      const result = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      // Assert: Should pass without coverage below target warning
+      // Note: "coverage validation skipped" or "AC coverage" warnings are OK
+      expect(result.isValid).toBe(true);
+      const hasCoverageBelowTarget = result.warnings?.some(w => w.includes('coverage below target'));
+      expect(hasCoverageBelowTarget).toBeFalsy();
+    });
+
+    it('should skip coverage validation when testMode is none', async () => {
+      // Arrange
+      const specContent = `---
+increment: ${incrementId}
+---
+
+# Test
+
+- [x] **AC-US1-01**: Test
+`;
+      await fs.writeFile(path.join(incrementPath, 'spec.md'), specContent);
+
+      const tasksContent = `---
+increment: ${incrementId}
+---
+
+# Tasks
+
+### T-001: Task
+**Status**: [x] completed
+**Satisfies ACs**: AC-US1-01
+`;
+      await fs.writeFile(path.join(incrementPath, 'tasks.md'), tasksContent);
+
+      const metadata = {
+        id: incrementId,
+        status: 'active',
+        testMode: 'none',
+        coverageTarget: 80,
+      };
+      await fs.writeFile(
+        path.join(incrementPath, 'metadata.json'),
+        JSON.stringify(metadata, null, 2)
+      );
+
+      // Act
+      const result = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      // Assert: Should pass - testMode none skips coverage
+      expect(result.isValid).toBe(true);
+      const hasCoverageWarning = result.warnings?.some(w => w.includes('coverage below target'));
+      expect(hasCoverageWarning).toBeFalsy();
+    });
+  });
 });

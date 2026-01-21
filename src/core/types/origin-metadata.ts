@@ -186,9 +186,6 @@ export function parseExternalId(externalId: string): {
 
 /**
  * Create external item metadata
- *
- * @param params - Creation parameters
- * @returns External item metadata
  */
 export function createExternalMetadata(params: {
   id: string;
@@ -198,65 +195,33 @@ export function createExternalMetadata(params: {
   externalTitle?: string;
   formatPreservation?: boolean;
 }): ExternalItemMetadata {
-  const metadata: ExternalItemMetadata = {
+  return {
     id: params.id,
     origin: 'external',
     source: params.source,
     external_id: params.externalId,
     external_url: params.externalUrl,
-    imported_at: new Date().toISOString()
+    imported_at: new Date().toISOString(),
+    ...(params.externalTitle !== undefined && { external_title: params.externalTitle }),
+    ...(params.formatPreservation !== undefined && { format_preservation: params.formatPreservation }),
   };
-
-  // Only include optional fields if explicitly provided
-  if (params.externalTitle !== undefined) {
-    metadata.external_title = params.externalTitle;
-  }
-
-  if (params.formatPreservation !== undefined) {
-    metadata.format_preservation = params.formatPreservation;
-  }
-
-  return metadata;
 }
 
 /**
  * Validate external item metadata
  *
- * @param metadata - External item metadata
  * @throws Error if metadata is invalid
  */
 export function validateExternalMetadata(metadata: ExternalItemMetadata): void {
-  if (!metadata.id) {
-    throw new Error('External item metadata must have id');
-  }
+  const VALID_SOURCES: ExternalSource[] = ['github', 'jira', 'ado', 'unknown'];
+  const id = metadata.id;
 
-  if (!metadata.id.endsWith('E')) {
-    throw new Error(`External item ID must end with E suffix: ${metadata.id}`);
-  }
-
-  if (metadata.origin !== 'external') {
-    throw new Error(`External item must have origin='external': ${metadata.id}`);
-  }
-
-  if (!['github', 'jira', 'ado', 'unknown'].includes(metadata.source)) {
-    throw new Error(`Invalid external source: ${metadata.source}`);
-  }
-
-  if (!metadata.external_id) {
-    throw new Error(`External item must have external_id: ${metadata.id}`);
-  }
-
-  if (!metadata.external_url) {
-    throw new Error(`External item must have external_url: ${metadata.id}`);
-  }
-
-  if (!metadata.imported_at) {
-    throw new Error(`External item must have imported_at: ${metadata.id}`);
-  }
-
-  // Validate ISO 8601 format
-  const timestamp = new Date(metadata.imported_at);
-  if (isNaN(timestamp.getTime())) {
-    throw new Error(`Invalid imported_at timestamp: ${metadata.imported_at}`);
-  }
+  if (!id) throw new Error('External item metadata must have id');
+  if (!id.endsWith('E')) throw new Error(`External item ID must end with E suffix: ${id}`);
+  if (metadata.origin !== 'external') throw new Error(`External item must have origin='external': ${id}`);
+  if (!VALID_SOURCES.includes(metadata.source)) throw new Error(`Invalid external source: ${metadata.source}`);
+  if (!metadata.external_id) throw new Error(`External item must have external_id: ${id}`);
+  if (!metadata.external_url) throw new Error(`External item must have external_url: ${id}`);
+  if (!metadata.imported_at) throw new Error(`External item must have imported_at: ${id}`);
+  if (isNaN(new Date(metadata.imported_at).getTime())) throw new Error(`Invalid imported_at timestamp: ${metadata.imported_at}`);
 }

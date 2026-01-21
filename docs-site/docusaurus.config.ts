@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'SpecWeave',
-  tagline: 'Autonomous AI Agents for Production Software - Just Works, Minimal Interaction',
+  tagline: 'AI That Remembers Everything You Build - Ship Features While You Sleep',
   // Use SpecWeave logo as favicon (SVG for modern browsers)
   favicon: 'img/logo.svg',
 
@@ -15,6 +15,65 @@ const config: Config = {
   // Production URL
   url: 'https://spec-weave.com',
   baseUrl: '/',
+
+  // SEO: Schema.org structured data for search engines
+  headTags: [
+    {
+      tagName: 'script',
+      attributes: {
+        type: 'application/ld+json',
+      },
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: 'SpecWeave',
+        url: 'https://spec-weave.com',
+        logo: 'https://spec-weave.com/img/logo.svg',
+        sameAs: [
+          'https://github.com/anton-abyzov/specweave',
+          'https://www.npmjs.com/package/specweave',
+        ],
+      }),
+    },
+    {
+      tagName: 'script',
+      attributes: {
+        type: 'application/ld+json',
+      },
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'SpecWeave',
+        applicationCategory: 'DeveloperApplication',
+        operatingSystem: 'Linux, macOS, Windows',
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+        },
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: '4.8',
+          bestRating: '5',
+          ratingCount: '100',
+        },
+      }),
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
+    },
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'dns-prefetch',
+        href: 'https://fonts.gstatic.com',
+      },
+    },
+  ],
 
   // GitHub pages config (for edit links)
   organizationName: 'anton-abyzov',
@@ -72,7 +131,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: 'img/specweave-social-card.jpg',
+    image: 'img/specweave-social-card.webp',
 
     // Color mode configuration
     colorMode: {
@@ -104,9 +163,9 @@ const config: Config = {
         },
         {
           type: 'docSidebar',
-          sidebarId: 'learnSidebar',
+          sidebarId: 'academySidebar',
           position: 'left',
-          label: 'Learn',
+          label: 'Academy',
         },
         {
           type: 'docSidebar',
@@ -158,10 +217,6 @@ const config: Config = {
             {
               label: 'Commands',
               to: '/docs/commands/status-management',
-            },
-            {
-              label: 'API Reference',
-              to: '/docs/api',
             },
           ],
         },

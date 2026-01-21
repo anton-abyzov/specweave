@@ -1,11 +1,28 @@
 ---
 name: sw:auto
 description: Start autonomous execution session with stop hook integration. Works until all tasks complete or max iterations reached. Uses Ralph Wiggum pattern with SpecWeave workflow integration. Activates for: auto, autonomous, auto mode, ship while sleeping.
+argument-hint: "[INCREMENT_IDS...] [OPTIONS]"
+allowed-tools: ["Bash(specweave auto *)"]
 ---
 
 # Auto Command
 
 **Start autonomous execution session using Claude Code's Stop Hook.**
+
+## How to Use
+
+When user says "auto" or "autonomous" or "keep working" or provides a task description, you should:
+
+1. **Understand the user's intent**: What do they want to work on?
+2. **Find or create the increment**: Check for active increments, or create new ones if needed
+3. **Execute the command**:
+   ```bash
+   specweave auto [INCREMENT_IDS] [OPTIONS]
+   ```
+4. **⚠️ MANDATORY: Display stop conditions banner** - Users MUST see when auto mode will stop BEFORE work begins! See "Step 1.5" in Execution section.
+5. **Start working**: Execute /sw:do on tasks, mark them complete, let framework hooks handle sync
+
+Now work on the increment tasks. When you try to exit, the stop hook will check completion conditions and feed the next task back to you. Continue until all tasks are complete and quality gates pass.
 
 ## Usage
 
@@ -33,8 +50,8 @@ description: Start autonomous execution session with stop hook integration. Work
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--max-iterations N` | Maximum iterations before stopping | 500 |
-| `--max-hours N` | Maximum hours to run | 120 (5 days) |
+| `--max-iterations N` | Maximum iterations (safety net, not primary stop) | **2500** (v2.3) |
+| `--max-hours N` | Maximum hours to run | **600 hours** (25 days, v2.3) |
 | `--simple` | Pure Ralph mode (minimal context) | false |
 | `--dry-run` | Preview without starting | false |
 | `--all-backlog` | Process all backlog items | false |
@@ -42,6 +59,233 @@ description: Start autonomous execution session with stop hook integration. Work
 | `--no-increment`, `--no-inc` | Skip auto-creation (require existing increments) | false |
 | `--prompt "text"` | Analyze prompt and create increments (intelligent chunking) | None |
 | `--yes`, `-y` | Auto-approve increment plan (skip user approval) | false |
+| `--tdd`, `--strict` | **NEW v2.2**: Enable TDD strict mode - ALL tests must pass | false |
+| **`--build`** | **NEW v0.4.0**: Build must pass before completion (auto-heal: 3 retries) | false |
+| **`--tests`** | **NEW v0.4.0**: Tests must pass before completion (unit + integration) | false |
+| **`--e2e`** | **NEW v0.4.0**: E2E tests must pass before completion | false |
+| **`--lint`** | **NEW v0.4.0**: Linting must pass before completion (auto-heal: 3 retries) | false |
+| **`--types`** | **NEW v0.4.0**: Type-checking must pass before completion (auto-heal: 3 retries) | false |
+| **`--cov <n>`** | **NEW v0.4.0**: Code coverage must meet threshold (%) | 80 |
+| **`--e2e-cov <n>`** | **NEW v0.4.0**: E2E coverage must meet threshold (%) | 70 |
+| **`--cmd "<command>"`** | **NEW v0.4.0**: Custom command must pass before completion | None |
+
+:::warning v2.3 - Iteration limits are SAFETY NETS
+The primary completion criteria is **tests passing + tasks complete**. Iteration limits (2500 iterations, 600 hours) are backup safety nets. Per the Ralph Wiggum pattern, completion should be detected through **external verification** (test results), not self-assessment.
+
+**IMPORTANT: Stop hook runs PER AGENT** - Each spawned subagent gets its own hook invocation. Iteration count is shared via session file, reflecting main agent loops.
+:::
+
+## Completion Conditions (v0.4.0+)
+
+**Auto mode will NOT stop until ALL specified conditions pass.**
+
+### What Are Completion Conditions?
+
+Completion conditions are **quality gates** that prevent auto mode from completing until specific checks pass:
+
+- **`--build`**: Build must succeed (auto-heal enabled, max 3 retries)
+- **`--tests`**: All tests must pass (unit + integration tests)
+- **`--e2e`**: E2E tests must pass (Playwright, Cypress, etc.)
+- **`--lint`**: Linting must pass (ESLint, Black, Clippy, etc.)
+- **`--types`**: Type-checking must pass (TypeScript, mypy, etc.)
+- **`--cov N`**: Code coverage must meet threshold (e.g., `--cov 80` = 80% minimum)
+- **`--e2e-cov N`**: E2E coverage must meet threshold
+- **`--cmd "..."`**: Custom command must pass (e.g., `--cmd "make verify"`)
+
+### Auto-Heal vs Manual Fix
+
+| Condition | Auto-Heal? | Behavior |
+|-----------|-----------|----------|
+| `--build` | ✅ Yes (3 retries) | Build failures auto-fixed by LLM |
+| `--lint` | ✅ Yes (3 retries) | Lint errors auto-fixed by LLM |
+| `--types` | ✅ Yes (3 retries) | Type errors auto-fixed by LLM |
+| `--tests` | ❌ No | Tests must be fixed manually by LLM |
+| `--e2e` | ❌ No | E2E tests must be fixed manually |
+| `--cov` | ❌ No | Must write more tests to meet threshold |
+| `--cmd` | ❌ No | Custom commands run as-is |
+
+**Auto-heal** means the hook will:
+1. Run the command
+2. If it fails, ask LLM to fix the issue
+3. Retry up to 3 times
+4. Block completion if still failing after 3 attempts
+
+**Manual fix** means:
+1. Run the command
+2. If it fails, BLOCK immediately
+3. LLM must fix the issue manually
+4. Re-run to validate
+
+### Framework Auto-Detection
+
+Commands are auto-detected based on your project structure:
+
+**TypeScript/Node:**
+```bash
+# Detected from package.json, jest.config.js, vitest.config.ts
+build: npm run build
+tests: npm test OR npx vitest run
+e2e: npx playwright test OR npx cypress run
+lint: npm run lint OR npx eslint .
+types: npx tsc --noEmit
+```
+
+**Python:**
+```bash
+# Detected from requirements.txt, pyproject.toml, pytest.ini
+build: python -m build
+tests: pytest
+e2e: (none)
+lint: black --check . OR flake8
+types: mypy .
+```
+
+**Go:**
+```bash
+# Detected from go.mod
+build: go build ./...
+tests: go test ./...
+lint: golangci-lint run
+```
+
+**Rust:**
+```bash
+# Detected from Cargo.toml
+build: cargo build
+tests: cargo test
+lint: cargo clippy
+```
+
+### Example Usage
+
+**Basic - Build + Tests:**
+```bash
+/sw:auto --build --tests
+# → Auto mode will NOT stop until build passes AND all tests pass
+```
+
+**Strict Quality:**
+```bash
+/sw:auto --build --tests --e2e --lint --types --cov 80
+# → ALL conditions must pass:
+#   ✅ Build succeeds
+#   ✅ Tests pass
+#   ✅ E2E tests pass
+#   ✅ Lint passes
+#   ✅ Type-check passes
+#   ✅ Coverage ≥80%
+```
+
+**Custom Command:**
+```bash
+/sw:auto --cmd "make verify"
+# → Auto mode will run `make verify` before completion
+```
+
+**Combined with Other Flags:**
+```bash
+/sw:auto --prompt "Build auth system" --yes --build --tests --cov 85
+# → Intelligent chunking + auto-approve + quality gates
+```
+
+### Session Output
+
+When you start auto mode with completion conditions, you'll see:
+
+```
+🚀 Auto Session Started
+
+Session ID: auto-2026-01-04-abc123
+Max Iterations: 2500
+Max Hours: 600
+Simple Mode: false
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚙️  COMPLETION CONDITIONS
+   Auto mode will NOT stop until ALL conditions pass:
+
+   • 🔨 Build must pass (auto-heal enabled, max 3 retries)
+   • ✅ Tests must pass (unit + integration)
+   • 🎭 E2E tests must pass
+   • 📊 Code coverage must be ≥80%
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Increment Queue (1):
+  • 0001-auth-system
+
+Current: 0001-auth-system
+
+The session will continue until:
+  • All tasks complete AND tests pass
+  • ALL 4 completion conditions pass
+  • Max iterations (2500) reached
+  • Max hours (600) exceeded
+  • You run specweave cancel-auto
+  • A human gate requires approval
+```
+
+### Stop Hook Validation
+
+The stop hook (`stop-auto.sh`) validates completion conditions:
+
+1. **Before allowing completion**, the hook runs:
+   ```bash
+   plugins/specweave/hooks/validate-completion-conditions.sh
+   ```
+
+2. **For each condition**:
+   - Auto-detects the framework-specific command
+   - Runs the command
+   - Parses the output
+   - If auto-heal enabled, retries on failure (max 3x)
+   - BLOCKS completion if ANY condition fails
+
+3. **Only when ALL conditions pass**:
+   - Hook approves completion
+   - Auto mode stops successfully
+   - Celebration sound plays 🎉
+
+### Per-Increment Override
+
+You can override completion conditions per increment in `metadata.json`:
+
+```json
+{
+  "increment": "0001-auth-system",
+  "autoCompletion": {
+    "conditions": [
+      { "type": "build" },
+      { "type": "tests" },
+      { "type": "coverage", "threshold": 90 }
+    ],
+    "override": true
+  }
+}
+```
+
+When `override: true`, the increment-specific conditions replace the session-level conditions.
+
+### Troubleshooting
+
+**Issue**: "Build command not detected"
+- **Fix**: Add `scripts.build` to `package.json` OR use `--cmd "your-build-cmd"`
+
+**Issue**: "Tests pass but coverage below threshold"
+- **Fix**: Write more tests to cover untested code paths
+
+**Issue**: "Auto-heal keeps retrying but failing"
+- **Fix**: After 3 retries, the hook will BLOCK. Fix the issue manually, then resume.
+
+**Issue**: "E2E tests not detected"
+- **Fix**: Ensure `playwright.config.ts` or `cypress.config.js` exists
+
+### Best Practices
+
+1. **Start Simple**: Use `--build --tests` for basic quality gates
+2. **Add Coverage Gradually**: Start with `--cov 70`, increase to 80-90 over time
+3. **Use Auto-Heal**: Let build/lint/types auto-fix (saves manual work)
+4. **Don't Skip E2E**: Use `--e2e` for user-facing features
+5. **Custom Commands**: Use `--cmd` for project-specific checks (e.g., security scans)
 
 ## Intelligent Increment Creation (NEW!)
 
@@ -195,7 +439,7 @@ Analyze & Show Plan
 1. User runs /sw:auto (with or without IDs)
            │
            ▼
-2. setup-auto.sh creates session state
+2. specweave auto command creates session state
    └─ .specweave/state/auto-session.json
            │
            ▼
@@ -318,7 +562,7 @@ In `.specweave/config.json`:
 The session ends when ANY of these occur:
 
 1. **All tasks complete + tests passed** - tasks.md has all `[x]` AND tests were executed
-2. **Completion promise** - Output contains `<auto-complete>DONE</auto-complete>`
+2. **Completion promise** - Output contains `<!-- auto-complete:DONE -->`
 3. **Max iterations** - Reached configured limit (default: 500)
 4. **Max hours** - Time limit exceeded (default: 120 hours / 5 days)
 5. **User cancellation** - `/sw:cancel-auto`
@@ -344,9 +588,387 @@ Pure Ralph Wiggum behavior:
 
 - **Human Gates**: Sensitive operations require approval
 - **Circuit Breakers**: External service failures handled gracefully
-- **Max Iterations**: Prevents runaway loops
-- **Max Hours**: Time boxing
+- **Max Iterations**: Prevents runaway loops (2500 default)
+- **Max Hours**: Time boxing (600 hours / 25 days default)
 - **stop_hook_active**: Prevents infinite continuation loops
+- **Sound Notifications** (v2.6): Audible alerts when Claude stops working
+
+## 🔔 Sound Notifications (NEW in v2.6!)
+
+**Auto mode plays a satisfying sound when work completes successfully!**
+
+### When Sound Plays
+
+| Event | Sound | Platforms | Meaning |
+|-------|-------|-----------|---------|
+| **Session Complete (Success)** ✅ | Glass.aiff (macOS)<br>complete.oga (Linux)<br>Windows Notify (Windows) | All | All tasks done, tests passing - work finished! |
+
+**Sound plays ONLY on complete success** - when all tasks are done AND all tests pass. This way you know when to check back without being interrupted during ongoing work.
+
+### Cross-Platform Support
+
+The sound notification works automatically on:
+- **macOS**: Glass.aiff (satisfying chime)
+- **Linux**: PulseAudio/ALSA/speaker-test fallbacks
+- **Windows**: PowerShell beeps
+
+Sounds fail gracefully on systems without audio support.
+
+## 🔧 v2.3 Per-Agent Stop Hook Behavior (NEW!)
+
+**CRITICAL: The stop hook runs PER AGENT, not globally!**
+
+### How It Works
+
+```
+Main Agent (Claude Code)
+    │
+    ├── Stop hook invoked when main agent tries to exit
+    │
+    ├── Spawns Subagent A (Task tool)
+    │   └── Subagent A completes → returns to main agent
+    │       (NO stop hook for subagent exit by default)
+    │
+    ├── Spawns Subagent B (Task tool with stop_hooks enabled)
+    │   └── Stop hook CAN be invoked if configured
+    │
+    └── Main agent tries to exit → Stop hook invoked
+```
+
+### Key Implications
+
+1. **Iteration count = main agent loops**: When you see "Iteration 42/2500", that's 42 times the MAIN agent tried to exit, not subagent work.
+
+2. **Subagent work is "free"**: Spawning specialized agents (QA, Security, etc.) doesn't consume iterations from the main loop.
+
+3. **Shared session state**: All agents (main + sub) share the same `auto-session.json`, so task completion is tracked globally.
+
+4. **Test validation at main level**: The stop hook validates test results when the MAIN agent tries to complete, ensuring all subagent work is verified.
+
+### Configuration
+
+To enable stop hooks for subagents (advanced):
+```typescript
+// In Task tool call
+{
+  "stop_hooks": true,  // Enable stop hook for this subagent
+  "inherit_session": true  // Share session state with parent
+}
+```
+
+### Best Practices
+
+- Let subagents do specialized work without worrying about iterations
+- Main agent orchestrates and validates via stop hook
+- Use `--max-iterations` as a safety net, not a target
+- Primary completion = tests pass + tasks complete
+
+## 🔧 v2.1 Reliability Improvements (NEW!)
+
+Auto mode v2.1 includes critical improvements for reliable long-running sessions:
+
+### Context Management
+
+**Auto mode now monitors context size and triggers compaction when needed:**
+
+- Estimates context size from transcript file (~4 chars/token)
+- Triggers compaction warning at ~150k tokens (~600KB transcript)
+- Saves checkpoint before compaction for safe state recovery
+- Logs `context_near_limit` events to `auto-iterations.log`
+
+**Configuration:**
+```json
+{
+  "auto": {
+    "contextThreshold": 150000  // tokens before compaction warning
+  }
+}
+```
+
+### Heartbeat & Watchdog Mechanism
+
+**Detects and logs stale sessions (zombie detection):**
+
+- Heartbeat file updated on every stop hook invocation
+- Watchdog detects sessions with no heartbeat for >5 minutes
+- Stale sessions logged with `stale_heartbeat_detected` event
+- Heartbeat stored in `.specweave/state/heartbeat.json`
+
+**Heartbeat format:**
+```json
+{
+  "timestamp": "2026-01-02T08:00:00Z",
+  "sessionId": "auto-2026-01-02-abc123",
+  "pid": 12345,
+  "iteration": 42
+}
+```
+
+### Xcode/iOS Test Support
+
+**Full support for Apple platform testing:**
+
+| Framework | Detection Pattern |
+|-----------|------------------|
+| xcodebuild test | `Executed X tests, with Y failures` |
+| Swift PM (swift test) | `Test Suite passed/failed` |
+| Xcode build | `BUILD FAILED`, `xcodebuild: error:` |
+
+**Features:**
+- Parses passed/failed counts from Xcode output
+- Distinguishes build failures from test failures
+- Extracts failure details (file, line, message)
+- Framework auto-detection from output patterns
+
+### Generic Test Framework Detection
+
+**Works with ANY test framework via exit codes and patterns:**
+
+| Pattern Type | Examples |
+|-------------|----------|
+| Exit code | Non-zero = failure |
+| Universal failure | `FAIL`, `ERROR`, `FAILED`, `failed` |
+| Universal success | `All tests passed`, `SUCCESS`, `OK` |
+
+**Fallback chain:**
+1. Try specific framework detection (Jest, Vitest, Pytest, etc.)
+2. Try Xcode/Swift detection
+3. Fall back to exit code + universal patterns
+
+### Intelligent Failure Classification
+
+**Failures are classified into categories with different handling:**
+
+| Category | Patterns | Handling |
+|----------|----------|----------|
+| **Transient** | Network errors, timeouts, flaky tests | Immediate retry |
+| **Fixable** | Assertion errors, type errors | AI analysis + fix |
+| **Structural** | Import errors, syntax errors | Deeper analysis |
+| **External** | Missing files, env config | Pause + alert |
+| **Unfixable** | Permission denied, external service | Log + skip |
+
+**Example classifications:**
+- `ECONNREFUSED` → transient
+- `expect(received).toEqual(expected)` → fixable
+- `Module not found` → structural
+- `ENOENT: no such file` → external
+
+### Task-Level Checkpoints
+
+**Progress preserved at task boundaries for crash recovery:**
+
+- Checkpoint created when context limit approached
+- Contains: task ID, increment ID, timestamp, status
+- Stored in `.specweave/state/task-checkpoint.json`
+- Incomplete checkpoints detected on resume
+
+**Checkpoint format:**
+```json
+{
+  "taskId": "T-003",
+  "incrementId": "0001-feature",
+  "timestamp": "2026-01-02T08:00:00Z",
+  "status": "in_progress",
+  "contextTokens": 145000
+}
+```
+
+### Command Timeout Handling
+
+**Graceful handling of hung commands:**
+
+- Default timeout: 10 minutes for test commands
+- Configurable per command type
+- SIGTERM first, SIGKILL after 30s
+- Timeout events logged with context
+
+**Configuration:**
+```json
+{
+  "auto": {
+    "timeouts": {
+      "test": 600,      // 10 minutes
+      "build": 300,     // 5 minutes
+      "deploy": 600     // 10 minutes
+    }
+  }
+}
+```
+
+### Reliability Logs
+
+All reliability events logged to `.specweave/logs/auto-iterations.log`:
+
+```json
+{"timestamp":"2026-01-02T08:00:00Z","event":"iteration","iteration":42,...}
+{"timestamp":"2026-01-02T08:01:00Z","event":"context_near_limit","tokens":152000}
+{"timestamp":"2026-01-02T08:02:00Z","event":"stale_heartbeat_detected","age":"320s"}
+{"timestamp":"2026-01-02T08:03:00Z","event":"failure_classified","category":"transient"}
+```
+
+## 🔧 v2.2 TDD Strict Mode & Stop Reason Tracking (NEW!)
+
+### TDD Strict Mode
+
+**Enable TDD strict mode to enforce ALL tests passing before completion:**
+
+```bash
+/sw:auto --tdd 0001-feature
+# or
+/sw:auto --strict 0001-feature
+```
+
+**TDD Mode Requirements:**
+- ALL unit tests must pass (0 failures)
+- ALL E2E tests must pass
+- Test execution must be detected in transcript
+- At least 1 passing test required per completed task (suspicious if 0)
+
+### Per-Increment TDD Configuration (NEW v2.2)
+
+**TDD mode can be configured at multiple levels with priority:**
+
+1. **Increment metadata.json** (highest priority)
+2. **Increment config.json**
+3. **spec.md frontmatter**
+4. **Session (`--tdd` flag)**
+5. **Global config.json** (lowest priority)
+
+**Example: Enable TDD for a specific increment:**
+
+```json
+// .specweave/increments/0001-feature/metadata.json
+{
+  "tddMode": true,
+  "testMode": "tdd"
+}
+```
+
+**Or via spec.md frontmatter:**
+
+```markdown
+---
+increment: 0001-feature
+title: "Critical Payment Feature"
+tdd: true
+---
+```
+
+**Console output shows TDD source:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔄 AUTO MODE CONTINUING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 STOP CRITERIA: 🔴 TDD MODE: ALL tests MUST pass
+   TDD Source: increment metadata.json
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Global Configuration (`.specweave/config.json`):**
+```json
+{
+  "testing": {
+    "defaultTestMode": "tdd",    // "tdd", "test-first", or "test-after"
+    "coverageTargets": {
+      "unit": 85,
+      "integration": 80,
+      "e2e": 90
+    }
+  }
+}
+```
+
+### Automatic Test Command Discovery (NEW v2.2)
+
+**Auto mode now discovers and displays available test commands for your project:**
+
+The stop hook scans for test frameworks and shows you exactly what commands to run:
+
+```
+AVAILABLE TEST COMMANDS FOR THIS PROJECT:
+
+Unit/Integration Tests:
+  • npm test (npm)
+  • npx vitest run (vitest)
+
+E2E Tests:
+  • npx playwright test (playwright)
+
+PRIORITY: Run ALL tests BEFORE marking tasks complete!
+```
+
+**Supported frameworks detected automatically:**
+
+| Framework | Detection Method |
+|-----------|-----------------|
+| npm scripts | `package.json` scripts.test |
+| Vitest | `vitest.config.ts/js` or dependency |
+| Jest | `jest.config.ts/js` or dependency |
+| Playwright | `playwright.config.ts/js` |
+| Cypress | `cypress.config.ts/js` or `/cypress` dir |
+| Detox | `.detoxrc.js/json` or dependency |
+| Pytest | `pytest.ini` or `pyproject.toml` |
+| Go test | `go.mod` |
+| Cargo test | `Cargo.toml` |
+| Xcode | `*.xcodeproj` or `*.xcworkspace` |
+| Swift test | `Package.swift` |
+| Gradle | `build.gradle(.kts)` |
+| Maestro | `maestro.yaml` or `.maestro/` |
+
+### Stop Reason Tracking
+
+**v2.2 now logs EXACTLY why auto mode stops:**
+
+All stop reasons logged to `.specweave/logs/auto-stop-reasons.log`:
+
+```json
+{
+  "timestamp": "2026-01-02T08:00:00Z",
+  "sessionId": "auto-2026-01-02-abc123",
+  "reason": "All tasks completed, all tests passed (42 passed, 0 failed)",
+  "success": true,
+  "iteration": 15,
+  "increment": "0001-feature",
+  "testsRun": true,
+  "testsPassed": 42,
+  "testsFailed": 0
+}
+```
+
+**Stop reasons categorized:**
+| Category | Success | Example |
+|----------|---------|---------|
+| `all_tasks_complete` | ✅ | All tests pass, all tasks done |
+| `completion_promise` | ✅ | `<!-- auto-complete:DONE -->` detected |
+| `max_iterations_reached` | ❌ | Safety limit hit (not ideal) |
+| `max_hours_exceeded` | ❌ | Time limit hit |
+| `test_failures_exhausted` | ❌ | 3 retry attempts failed |
+| `external_failure` | ❌ | Environment/config issue |
+| `human_gate_pending` | ⏸️ | Waiting for user approval |
+
+### Mobile App Testing Support
+
+**For iOS/Android projects, auto mode detects:**
+
+| Framework | Detection | Command |
+|-----------|-----------|---------|
+| Xcode (iOS) | `xcodebuild test` output | `xcodebuild -scheme X test` |
+| Swift PM | `swift test` output | `swift test` |
+| Detox (RN) | `detox test` output | `detox test -c ios.sim.debug` |
+| Maestro | `maestro test` output | `maestro test flow.yaml` |
+| Appium | Test framework output | Framework-specific |
+
+**Best Practice for Mobile Apps:**
+1. Set up automated tests (XCTest, Detox, Maestro)
+2. Run tests as part of task completion
+3. Auto mode blocks until all mobile tests pass
+4. Use `--tdd` for strictest enforcement
+
+**Example mobile test detection:**
+```
+Executed 15 tests, with 0 failures (0 unexpected) in 12.345 seconds
+** TEST SUCCEEDED **
+```
 
 ## ♿ UI/UX Quality Gates (NEW!)
 
@@ -765,28 +1387,141 @@ All tests pass locally. Where should I deploy?
 
 ## Execution
 
-**CRITICAL: You MUST execute the setup script FIRST before any other action!**
+**CRITICAL: You MUST show STOP CONDITIONS to user BEFORE starting work!**
 
 When this command is invoked:
 
-### Step 1: MANDATORY - Run setup-auto.sh (DO THIS FIRST!)
+### Step 1: MANDATORY - Run specweave auto (DO THIS FIRST!)
 
 **Execute this IMMEDIATELY when /sw:auto is invoked:**
 
 ```bash
-bash plugins/specweave/scripts/setup-auto.sh [args]
+specweave auto [INCREMENT_IDS...] [OPTIONS]
 ```
 
-Pass any arguments from the user (increment IDs, --max-iterations, --simple, etc.)
+**IMPORTANT**: The command is executed via the globally-installed `specweave` CLI, NOT bash scripts. This ensures cross-platform compatibility (Windows, macOS, Linux).
+
+Pass any arguments from the user (increment IDs, completion conditions, --max-iterations, --simple, etc.)
 
 **Handle exit codes:**
-- `0`: Success, session created → proceed to Step 3
+- `0`: Success, session created → proceed to Step 1.5
 - `1`: Error (no increments found with --no-increment/--no-inc) → STOP
 - `2`: **Increment creation needed** → proceed to Step 2
 
-### Step 2: INTELLIGENT INCREMENT CREATION (if setup-auto.sh exits with code 2)
+### Step 1.5: MANDATORY - Analyze Tests & Display Stop Conditions
 
-**When setup script signals increment creation needed:**
+**⚠️ CRITICAL: You MUST analyze the test situation and output SPECIFIC stop conditions BEFORE starting any task work!**
+
+#### Step 1.5a: Detect Existing Tests
+
+Run these commands to detect what tests exist:
+
+```bash
+# Check for test frameworks
+ls package.json 2>/dev/null && cat package.json | grep -E '"(jest|vitest|mocha|playwright|cypress)"' || true
+ls vitest.config.* jest.config.* playwright.config.* cypress.config.* 2>/dev/null || true
+
+# Count existing test files
+find . -name "*.test.ts" -o -name "*.test.tsx" -o -name "*.spec.ts" -o -name "*.test.js" 2>/dev/null | wc -l
+find . -name "*.e2e.ts" -o -name "*.e2e-spec.ts" -path "*/e2e/*" -name "*.spec.ts" 2>/dev/null | wc -l
+
+# Check if tests can run
+npm test --help 2>/dev/null | head -1 || true
+```
+
+#### Step 1.5b: Determine Test Strategy
+
+Based on what you find, determine:
+
+**IF tests exist:**
+- List the EXACT test commands that will be run
+- List the SPECIFIC test files that will validate this work
+
+**IF tests DON'T exist yet:**
+- You MUST plan what tests need to be created as part of the tasks
+- List the specific test files you will CREATE during auto mode
+- These tests become part of the stop criteria
+
+#### Step 1.5c: Output the Stop Conditions Banner
+
+**Output this banner with SPECIFIC test information:**
+
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  🚀 AUTO MODE STARTING                                                        ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  Increment: [INCREMENT_ID]                                                    ║
+║  Tasks: [X] pending                                                           ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  🧪 TESTS THAT MUST PASS FOR COMPLETION:                                      ║
+║                                                                               ║
+║  Unit/Integration Tests:                                                      ║
+║    Command: [EXACT_TEST_COMMAND]                                              ║
+║    Files:                                                                     ║
+║      • [test-file-1.test.ts] - [what it tests]                               ║
+║      • [test-file-2.test.ts] - [what it tests]                               ║
+║      • [NEW] [test-file-3.test.ts] - [will be created for X]                 ║
+║                                                                               ║
+║  E2E Tests (if applicable):                                                   ║
+║    Command: [EXACT_E2E_COMMAND]                                               ║
+║    Files:                                                                     ║
+║      • [auth.e2e.ts] - [login/logout flows]                                  ║
+║      • [NEW] [checkout.e2e.ts] - [will be created for payment flow]          ║
+║                                                                               ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  🎯 SESSION WILL COMPLETE WHEN:                                               ║
+║    ✅ All [X] tasks marked complete                                           ║
+║    ✅ [TEST_COMMAND] passes (0 failures)                                      ║
+║    ✅ [E2E_COMMAND] passes (if E2E tests exist)                               ║
+║    ✅ /sw:done validation passes                                              ║
+║                                                                               ║
+║  🛑 SESSION WILL PAUSE/STOP IF:                                               ║
+║    • Tests fail 3 times in a row → pauses for human review                   ║
+║    • User runs /sw:cancel-auto                                                ║
+║    • Max iterations reached (safety limit)                                    ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  💡 Check progress: /sw:auto-status                                           ║
+║  💡 Cancel: close session or /sw:cancel-auto                                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+```
+
+#### Step 1.5d: Fill in ALL placeholders with REAL values
+
+**Required placeholders:**
+- `[INCREMENT_ID]`: Actual increment ID (e.g., `0001-user-auth`)
+- `[X]`: Number of pending tasks from tasks.md
+- `[EXACT_TEST_COMMAND]`: Real command like `npm test` or `npx vitest run`
+- `[EXACT_E2E_COMMAND]`: Real command like `npx playwright test`
+- `[test-file-*.ts]`: Real test file names with brief description
+- `[NEW]`: Mark any test files that will be CREATED during auto mode
+
+**Examples of GOOD vs BAD:**
+
+❌ **BAD (vague):**
+```
+Tests: All tests passing (unit + E2E if present)
+```
+
+✅ **GOOD (specific):**
+```
+Unit Tests:
+  Command: npm test
+  Files:
+    • src/auth/auth.service.test.ts - JWT token generation
+    • src/auth/login.test.ts - login validation
+    • [NEW] src/auth/logout.test.ts - will create for logout flow
+
+E2E Tests:
+  Command: npx playwright test
+  Files:
+    • tests/auth.e2e.ts - full login/logout user journey
+```
+
+**DO NOT SKIP THIS STEP!** Users MUST see the EXACT tests that will determine success.
+
+### Step 2: INTELLIGENT INCREMENT CREATION (if specweave auto exits with code 2)
+
+**When specweave auto signals increment creation needed:**
 
 1. **Check marker file:**
    ```bash
@@ -805,9 +1540,9 @@ Pass any arguments from the user (increment IDs, --max-iterations, --simple, etc
    ```bash
    # User said: "work on the login feature"
    # Found: .specweave/increments/0002-user-login-system (status: planned)
-   # Action: Activate it and run setup-auto.sh again with 0002
+   # Action: Activate it and run specweave auto with 0002
    /sw:resume 0002
-   bash plugins/specweave/scripts/setup-auto.sh 0002 [other-args]
+   specweave auto 0002 [other-args]
    ```
 
    **B. Extend existing increment:**
@@ -816,7 +1551,7 @@ Pass any arguments from the user (increment IDs, --max-iterations, --simple, etc
    # Found: .specweave/increments/0001-authentication (status: active, incomplete)
    # Action: Add tasks to existing increment, use it for auto mode
    # Edit tasks.md to add new tasks
-   bash plugins/specweave/scripts/setup-auto.sh 0001 [other-args]
+   specweave auto 0001 [other-args]
    ```
 
    **C. Create new increment(s):**
@@ -825,8 +1560,8 @@ Pass any arguments from the user (increment IDs, --max-iterations, --simple, etc
    # No matching increments found
    # Action: Create new increment via /sw:increment
    /sw:increment "Payment integration with Stripe - support card payments, webhooks, and subscription management"
-   # Then run setup-auto.sh with the new increment ID
-   bash plugins/specweave/scripts/setup-auto.sh 0003-payment-integration [other-args]
+   # Then run specweave auto with the new increment ID
+   specweave auto 0003-payment-integration [other-args]
    ```
 
    **D. Multiple increments:**
@@ -834,7 +1569,7 @@ Pass any arguments from the user (increment IDs, --max-iterations, --simple, etc
    # User said: "finish all pending features"
    # Found: multiple backlog/planned increments
    # Action: Create queue
-   bash plugins/specweave/scripts/setup-auto.sh 0002-dashboard 0003-reports 0004-export [other-args]
+   specweave auto 0002-dashboard 0003-reports 0004-export [other-args]
    ```
 
    **E. Ask user (if ambiguous):**
@@ -856,43 +1591,23 @@ Pass any arguments from the user (increment IDs, --max-iterations, --simple, etc
    rm -f .specweave/state/auto-needs-increment.json
    ```
 
-5. **Proceed to Step 3** with increment(s) resolved
+5. **Proceed to Step 1.5** - Display the stop conditions banner!
 
-### Step 3: Verify session and start execution
+### Step 3: Start Task Execution
 
-**Verify session was created:**
+**After displaying the stop conditions banner (Step 1.5), begin work:**
 
-```bash
-cat .specweave/state/auto-session.json | jq -r '.sessionId'
-```
-
-**If file doesn't exist, the setup failed - investigate and fix before continuing.**
-
-**Start execution:
-   ```
-   Now starting autonomous execution...
-
-   Session: auto-2025-12-29-abc123
-   Increment: 0001-user-auth
-   Tasks: 12 pending
-
-   The stop hook will keep me working until all tasks are complete
-   or you run /sw:cancel-auto.
-
-   Beginning with T-001...
-   ```
-
-4. **Execute /sw:do in a loop** (stop hook handles continuation):
+1. **Execute /sw:do in a loop** (stop hook handles continuation):
    - Work on tasks
    - Mark complete in tasks.md
    - Update spec.md ACs
    - Sync to external tools
+   - Run tests after each task
 
-5. **On completion**:
+2. **On completion**:
    ```
-   <auto-complete>DONE</auto-complete>
-
    ✅ Auto Session Complete!
+   <!-- auto-complete:DONE -->
 
    Session: auto-2025-12-29-abc123
    Duration: 2h 34m
@@ -913,3 +1628,184 @@ cat .specweave/state/auto-session.json | jq -r '.sessionId'
 | `/sw:skip-increment` | Skip failed increment and continue queue |
 | `/sw:do` | Execute tasks (also works standalone) |
 | `/sw:progress` | Show increment progress |
+
+---
+
+## 🔀 Parallel Execution Mode (NEW!)
+
+**Enable parallel agent execution for multi-domain features.**
+
+### What is Parallel Mode?
+
+Parallel mode spawns multiple specialized agents that work simultaneously on different parts of your feature:
+- **Frontend Agent**: React, Vue, Angular, UI components
+- **Backend Agent**: API, services, controllers, middleware
+- **Database Agent**: Schema, migrations, queries, indexes
+- **DevOps Agent**: CI/CD, Docker, Terraform, infrastructure
+- **QA Agent**: Tests, E2E, coverage, validation
+
+Each agent works in its own **git worktree** for complete isolation - no merge conflicts during development!
+
+### Parallel Flags
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--parallel` | Enable parallel mode | false |
+| `--max-parallel N` | Max concurrent agents | 3 |
+| `--frontend` | Spawn frontend agent | false |
+| `--backend` | Spawn backend agent | false |
+| `--database` | Spawn database agent | false |
+| `--devops` | Spawn devops agent | false |
+| `--qa` | Spawn QA agent | false |
+| `--pr` | Create PRs on completion | false |
+| `--draft-pr` | Create PRs in draft mode | false |
+| `--merge-strategy` | Merge: auto\|manual\|pr | auto |
+| `--base-branch` | Base branch for merging | main |
+| `--prompt` | Analyze prompt for suggestions | - |
+
+### Examples
+
+**Parallel Frontend + Backend:**
+```bash
+/sw:auto --parallel --frontend --backend 0170-auth-feature
+```
+
+**With PR Creation:**
+```bash
+/sw:auto --parallel --frontend --backend --pr 0170-auth-feature
+```
+
+**Analyze Prompt for Suggestions:**
+```bash
+/sw:auto --prompt "Build React login with Express API and PostgreSQL"
+
+# Output:
+# ✓ Parallel execution recommended
+# Detected domains: frontend, backend, database
+# Suggestions:
+#   --parallel --frontend --backend --database
+```
+
+**Full Stack with All Domains:**
+```bash
+/sw:auto --parallel --frontend --backend --database --qa 0170-feature
+```
+
+### How Parallel Mode Works
+
+```
+1. /sw:auto --parallel --frontend --backend 0170
+           │
+           ▼
+2. Session created with 2 agents
+   └─ .specweave/state/parallel/session.json
+           │
+           ▼
+3. Git worktrees created
+   ├─ .specweave/worktrees/frontend-0170/
+   └─ .specweave/worktrees/backend-0170/
+           │
+           ▼
+4. Agents work in parallel
+   ├─ Frontend agent: UI components
+   └─ Backend agent: API endpoints
+           │
+           ▼
+5. Completion detected
+           │
+           ├─ --pr flag? → Create PRs
+           │   ├─ PR #1: [0170] frontend: Auth UI
+           │   └─ PR #2: [0170] backend: Auth API
+           │
+           └─ --merge-strategy auto? → Merge to base
+               ├─ database first
+               ├─ backend second
+               └─ frontend last
+```
+
+### Parallel Status Dashboard
+
+```bash
+/sw:auto-status --parallel
+
+# Output:
+╔═══════════════════════════════════════════════════════════════════╗
+║  PARALLEL SESSION: session-abc123                                  ║
+╠═══════════════════════════════════════════════════════════════════╣
+║  Agent      │ Status  │ Progress    │ Time   │ Branch               ║
+║  ───────────────────────────────────────────────────────────────── ║
+║  frontend   │ 🔄 run  │ ████░░ 4/6  │  12m   │ auto/frontend-0170   ║
+║  backend    │ ✅ done │ ██████ 8/8  │  25m   │ auto/backend-0170    ║
+║  database   │ ✅ done │ ██████ 3/3  │   5m   │ auto/database-0170   ║
+╠═══════════════════════════════════════════════════════════════════╣
+║  Overall: 78% │ Completed: 2 │ Running: 1 │ Failed: 0               ║
+╚═══════════════════════════════════════════════════════════════════╝
+```
+
+**Watch mode (auto-refresh):**
+```bash
+/sw:auto-status --parallel --watch
+```
+
+### Merge Order
+
+Agents are merged in dependency order:
+1. **Database** first (schema before API)
+2. **Backend** second (API before UI)
+3. **Frontend** last (depends on backend)
+4. **DevOps/QA** anytime (parallel-safe)
+
+### Stop Hook Integration
+
+The stop hook blocks exit while parallel agents are running:
+
+```
+🔄 2 parallel agent(s) running: frontend:running, backend:pending → wait for completion
+```
+
+Exit is approved when:
+- All agents are completed or failed
+- Session is cancelled via `--reset`
+
+### Configuration
+
+In `.specweave/config.json`:
+
+```json
+{
+  "auto": {
+    "parallel": {
+      "enabled": true,
+      "maxParallel": 3,
+      "defaultDomains": ["frontend", "backend"],
+      "defaultMergeStrategy": "auto",
+      "createPR": false,
+      "draftPR": false
+    }
+  }
+}
+```
+
+### Cross-Platform Support
+
+Parallel mode works on all platforms:
+- **macOS**: Native git worktrees
+- **Linux**: Native git worktrees
+- **Windows**: Long path support (\\?\\ prefix for >260 chars)
+
+### Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| "Active session exists" | `specweave auto --reset` to clean up |
+| Worktree creation fails | Check git version ≥ 2.5 |
+| Merge conflicts | Use `--merge-strategy manual` for control |
+| PRs not created | Ensure `gh` CLI is authenticated |
+
+### Best Practices
+
+1. **Start with 2-3 domains**: frontend + backend is most common
+2. **Use --prompt first**: Let the analyzer suggest the right flags
+3. **Use --draft-pr**: Review before merging
+4. **Check status often**: Use `--watch` for live updates
+5. **Reset on stuck**: `specweave auto --reset` clears state

@@ -26,26 +26,15 @@ export class HealthReporter {
     result: HealthCheckResult,
     options: ReportOptions
   ): Promise<string> {
-    let report: string;
+    const formatters: Record<ReportFormat, () => string> = {
+      console: () => this.formatConsoleReport(result, options),
+      markdown: () => this.formatMarkdownReport(result, options),
+      json: () => this.formatJsonReport(result),
+      junit: () => this.formatJUnitReport(result)
+    };
 
-    switch (options.format) {
-      case 'console':
-        report = this.formatConsoleReport(result, options);
-        break;
-      case 'markdown':
-        report = this.formatMarkdownReport(result, options);
-        break;
-      case 'json':
-        report = this.formatJsonReport(result);
-        break;
-      case 'junit':
-        report = this.formatJUnitReport(result);
-        break;
-      default:
-        report = this.formatConsoleReport(result, options);
-    }
+    const report = (formatters[options.format] ?? formatters.console)();
 
-    // Write to file if outputPath specified
     if (options.outputPath) {
       await fs.writeFile(options.outputPath, report, 'utf-8');
     }
@@ -70,8 +59,12 @@ export class HealthReporter {
     lines.push('');
 
     // Overall status
-    const statusIcon = result.overallHealth === 'healthy' ? '✅' : result.overallHealth === 'degraded' ? '⚠️' : '❌';
-    const statusColor = result.overallHealth === 'healthy' ? 'green' : result.overallHealth === 'degraded' ? 'yellow' : 'red';
+    const statusMap = {
+      healthy: { icon: '✅', color: 'green' },
+      degraded: { icon: '⚠️', color: 'yellow' },
+      unhealthy: { icon: '❌', color: 'red' }
+    } as const;
+    const { icon: statusIcon, color: statusColor } = statusMap[result.overallHealth];
 
     lines.push(this.colorize(`${statusIcon} ${result.summary.message}`, statusColor, color));
     lines.push('');
@@ -280,6 +273,16 @@ export class HealthReporter {
     return lines.join('\n');
   }
 
+  private static readonly ANSI_CODES: Record<string, string> = {
+    red: '\x1b[31m',
+    green: '\x1b[32m',
+    yellow: '\x1b[33m',
+    blue: '\x1b[34m',
+    bold: '\x1b[1m',
+    dim: '\x1b[2m',
+    reset: '\x1b[0m'
+  };
+
   /**
    * Colorize text for console output
    */
@@ -287,34 +290,21 @@ export class HealthReporter {
     if (!enabled) {
       return text;
     }
-
-    const colors: Record<string, string> = {
-      red: '\x1b[31m',
-      green: '\x1b[32m',
-      yellow: '\x1b[33m',
-      blue: '\x1b[34m',
-      bold: '\x1b[1m',
-      dim: '\x1b[2m',
-      reset: '\x1b[0m'
-    };
-
-    const colorCode = colors[color] || '';
-    const resetCode = colors.reset;
-
-    return `${colorCode}${text}${resetCode}`;
+    const colorCode = this.ANSI_CODES[color] ?? '';
+    return `${colorCode}${text}${this.ANSI_CODES.reset}`;
   }
+
+  private static readonly HEALTH_EMOJI: Record<string, string> = {
+    healthy: '🟢',
+    degraded: '🟡',
+    unhealthy: '🔴'
+  };
 
   /**
    * Convert health status to emoji
    */
   private static healthToEmoji(health: string): string {
-    const emojiMap: Record<string, string> = {
-      healthy: '🟢',
-      degraded: '🟡',
-      unhealthy: '🔴'
-    };
-
-    return emojiMap[health] || '⚪';
+    return this.HEALTH_EMOJI[health] ?? '⚪';
   }
 
   /**

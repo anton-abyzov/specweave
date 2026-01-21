@@ -113,12 +113,11 @@ export function validateACPresence(
   }
 
   // 5. Validate AC format
-  const invalidACs = [];
+  const invalidACs: string[] = [];
   const lines = specContent.split('\n');
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+  for (const [index, line] of lines.entries()) {
     if (line.includes('**AC-US') && !line.match(/^- \[[x ]\] \*\*AC-US\d+-\d+\*\*:/)) {
-      invalidACs.push(`Line ${i + 1}: "${line.substring(0, 60)}..."`);
+      invalidACs.push(`Line ${index + 1}: "${line.substring(0, 60)}..."`);
     }
   }
 
@@ -152,39 +151,39 @@ export function validateACPresence(
  * Format validation result as human-readable message
  */
 export function formatValidationResult(result: ACPresenceValidationResult): string {
-  let output = '';
+  const lines: string[] = [];
 
   if (result.valid) {
-    output += `✅ AC Presence Validation: PASSED\n`;
-    output += `   ✓ ${result.acCount} Acceptance Criteria found in spec.md\n`;
+    lines.push(`✅ AC Presence Validation: PASSED`);
+    lines.push(`   ✓ ${result.acCount} Acceptance Criteria found in spec.md`);
     if (result.expectedCount > 0) {
-      output += `   ✓ Matches metadata.json (${result.expectedCount} expected)\n`;
+      lines.push(`   ✓ Matches metadata.json (${result.expectedCount} expected)`);
     }
   } else {
-    output += `❌ AC Presence Validation: FAILED\n\n`;
+    lines.push(`❌ AC Presence Validation: FAILED`, '');
 
     if (result.errors.length > 0) {
-      output += `ERRORS (${result.errors.length}):\n`;
+      lines.push(`ERRORS (${result.errors.length}):`);
       for (const error of result.errors) {
-        output += `  🔴 ${error}\n`;
+        lines.push(`  🔴 ${error}`);
       }
-      output += '\n';
+      lines.push('');
     }
 
     if (result.suggestedFix) {
-      output += `💡 SUGGESTED FIX:\n`;
-      output += `   ${result.suggestedFix}\n\n`;
+      lines.push(`💡 SUGGESTED FIX:`);
+      lines.push(`   ${result.suggestedFix}`, '');
     }
   }
 
   if (result.warnings.length > 0) {
-    output += `WARNINGS (${result.warnings.length}):\n`;
+    lines.push(`WARNINGS (${result.warnings.length}):`);
     for (const warning of result.warnings) {
-      output += `  🟡 ${warning}\n`;
+      lines.push(`  🟡 ${warning}`);
     }
   }
 
-  return output;
+  return lines.join('\n');
 }
 
 /**

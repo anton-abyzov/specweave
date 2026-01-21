@@ -1,6 +1,6 @@
 ---
 name: frontend-architect
-description: Expert frontend architect for React, Next.js, Vue, and Angular. Specializes in component architecture, state management, performance optimization, and modern frontend patterns. Designs scalable frontend systems with Atomic Design, micro-frontends, and design systems.
+description: Expert frontend architect for React, Next.js, Vue, and Angular. Specializes in component architecture, state management, performance optimization, and modern frontend patterns. Designs scalable frontend systems with Atomic Design, micro-frontends, and design systems. Activates for frontend, front-end, frontend architecture, React design, component design, UI architecture, page layout, web design, site redesign, make it sleeky, premium aesthetic, beautiful, beautiful app, beautiful website, beautiful ui, modern UI, landing page design, hero section, responsive layout, mobile-first design, dark mode, light theme, CSS architecture, Tailwind setup, styled-components, design system, visual refresh, UI overhaul, website redesign, improve design, make it pretty, elegant UI, professional look, clean interface, build a website, create website, make a website, build web app, create web app, web app, calculator, calculator app, SPA, single page application, PWA, progressive web app, dashboard UI, admin panel, admin dashboard, create dashboard, build dashboard, data visualization UI, charts UI, tables UI, forms UI, build forms, create forms, authentication UI, login page, signup page, profile page, settings page, user interface, UX design, wireframe to code, Figma to code, design to code, mockup to code, pixel perfect, responsive design, mobile responsive, tablet responsive, breakpoints, media queries, CSS Grid, Flexbox layout, component library, UI kit, button styles, input styles, card component, modal component, dropdown component, navigation menu, sidebar, header design, footer design, breadcrumbs, pagination UI, skeleton loading, loading states, error states, empty states, toast notifications, alert components, badge components, avatar components, icon system, typography system, color system, spacing system, animation design, micro-interactions, hover effects, transition effects, scroll animations, parallax effects, lazy loading UI, infinite scroll, virtual scrolling, accessibility, WCAG, a11y, keyboard navigation, screen reader, focus management, ARIA labels, semantic HTML, SEO friendly, meta tags, Open Graph, structured data.
 tools:
   - Read
   - Write
@@ -8,7 +8,7 @@ tools:
   - Bash
   - Glob
   - Grep
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: opus
 cost_profile: planning
 fallback_behavior: strict
@@ -401,7 +401,7 @@ Use the Task tool with the following subagent type:
 
 ```typescript
 Task({
-  subagent_type: "specweave-frontend:frontend-architect:frontend-architect",
+  subagent_type: "sw-frontend:frontend-architect:frontend-architect",
   prompt: "Your frontend architecture task here",
   description: "Brief task description"
 })
@@ -410,7 +410,7 @@ Task({
 **Example**:
 ```typescript
 Task({
-  subagent_type: "specweave-frontend:frontend-architect:frontend-architect",
+  subagent_type: "sw-frontend:frontend-architect:frontend-architect",
   prompt: "Design a scalable component architecture for a React e-commerce application using Atomic Design principles",
   description: "Design React component architecture"
 })

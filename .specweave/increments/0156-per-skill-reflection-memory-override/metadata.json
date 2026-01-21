@@ -1,0 +1,45 @@
+{
+  "id": "0156-per-skill-reflection-memory-override",
+  "status": "completed",
+  "type": "refactor",
+  "priority": "P1",
+  "created": "2026-01-06T20:15:00.000Z",
+  "lastActivity": "2026-01-06T23:10:41.383Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "featureId": "FS-156",
+  "epic_id": null,
+  "externalLinks": {},
+  "planningComplete": true,
+  "totalTasks": 42,
+  "completedTasks": 42,
+  "completedAt": "2026-01-06T22:55:59.025Z",
+  "acSyncEvents": [
+    {
+      "timestamp": "2026-01-06T23:10:41.382Z",
+      "updated": [],
+      "conflicts": [
+        "AC-US3-01: [x] but only 1/2 tasks complete (50%)",
+        "AC-US3-02: [x] but only 1/2 tasks complete (50%)",
+        "AC-US3-03: [x] but only 1/2 tasks complete (50%)",
+        "AC-US3-04: [x] but only 0/1 tasks complete (0%)",
+        "AC-US3-05: [x] but only 0/1 tasks complete (0%)",
+        "AC-US5-01: [x] but only 0/1 tasks complete (0%)",
+        "AC-US5-02: [x] but only 0/1 tasks complete (0%)",
+        "AC-US5-03: [x] but only 0/1 tasks complete (0%)",
+        "AC-US7-05: [x] but only 0/2 tasks complete (0%)"
+      ],
+      "warnings": [
+        "AC-US3-06 referenced in tasks.md but not found in spec.md",
+        "AC-US3-07 referenced in tasks.md but not found in spec.md",
+        "AC-US3-08 referenced in tasks.md but not found in spec.md",
+        "AC-US2-04: [x] but no tasks found (manual verification?)",
+        "AC-US4-06: [x] but no tasks found (manual verification?)",
+        "AC-US5-04: [x] but no tasks found (manual verification?)",
+        "AC-US5-05: [x] but no tasks found (manual verification?)"
+      ],
+      "changesCount": 0
+    }
+  ]
+}

@@ -1,11 +1,11 @@
 ---
 name: stripe-integration
-description: Implement Stripe payment processing for robust, PCI-compliant payment flows including checkout, subscriptions, and webhooks. Use when integrating Stripe payments, building subscription systems, or implementing secure checkout flows.
+description: Implement Stripe payment processing for robust, PCI-compliant payment flows including checkout, subscriptions, webhooks, Stripe Connect, and marketplace payments. Use when integrating Stripe payments, building subscription systems, implementing secure checkout flows, or setting up marketplace/platform payments with Connect. Activates for Stripe, payment, checkout, subscription, webhook, Connect, Direct Charge, Destination Charge, platform payments, marketplace, promo code, coupon, discount, idempotency, payment verification, checkout session, payment intent, refund, dispute, billing, SaaS billing, recurring payment, one-time payment, card payment, ACH, SEPA, Apple Pay, Google Pay.
 ---
 
 # Stripe Integration
 
-Master Stripe payment processing integration for robust, PCI-compliant payment flows including checkout, subscriptions, webhooks, and refunds.
+Master Stripe payment processing integration for robust, PCI-compliant payment flows including checkout, subscriptions, webhooks, Stripe Connect marketplace payments, and mobile/web payment verification.
 
 ## When to Use This Skill
 
@@ -16,6 +16,10 @@ Master Stripe payment processing integration for robust, PCI-compliant payment f
 - Managing customer payment methods
 - Implementing SCA (Strong Customer Authentication) for European payments
 - Building marketplace payment flows with Stripe Connect
+- Implementing Direct Charge or Destination Charge patterns
+- Handling promo codes and 100% discount scenarios
+- Implementing dual confirmation (webhook + frontend verification)
+- Managing inventory/slots with payment atomicity
 
 ## Core Concepts
 
@@ -41,10 +45,14 @@ Master Stripe payment processing integration for robust, PCI-compliant payment f
 **Critical Events:**
 - `payment_intent.succeeded`: Payment completed
 - `payment_intent.payment_failed`: Payment failed
+- `checkout.session.completed`: Checkout session finished (CRITICAL for Connect!)
+- `checkout.session.expired`: Checkout session timed out
 - `customer.subscription.updated`: Subscription changed
 - `customer.subscription.deleted`: Subscription canceled
 - `charge.refunded`: Refund processed
 - `invoice.payment_succeeded`: Subscription payment successful
+- `account.updated`: Connect account status changed
+- `payout.paid` / `payout.failed`: Payout status for Connect accounts
 
 ### 3. Subscriptions
 **Components:**
@@ -58,6 +66,31 @@ Master Stripe payment processing integration for robust, PCI-compliant payment f
 - Store multiple payment methods
 - Track customer metadata
 - Manage billing details
+
+### 5. Stripe Connect (Marketplace/Platform Payments)
+
+**Charge Types:**
+
+| Type | Who Creates | Webhook Location | Use Case |
+|------|-------------|------------------|----------|
+| **Direct Charge** | Connected Account | Connect endpoint | Marketplace where seller owns relationship |
+| **Destination Charge** | Platform | Platform endpoint | Platform controls experience |
+| **Separate Charges & Transfers** | Platform | Platform endpoint | Maximum flexibility |
+
+**⚠️ CRITICAL: Direct Charge Webhook Gap**
+
+When using Direct Charge, checkout sessions are created ON the Connected Account, NOT the platform. Webhooks go to the Connect endpoint, not the platform endpoint!
+
+```
+Platform endpoint:  /webhooks/stripe        → Has general events ✓
+Connect endpoint:   /webhooks/stripe/connect → MUST have checkout.session.completed! ✓
+```
+
+**Connect Endpoint MUST Handle:**
+- `checkout.session.completed` (CRITICAL for Direct Charge)
+- `checkout.session.expired`
+- `account.updated`
+- `payout.paid` / `payout.failed`
 
 ## Quick Start
 
@@ -410,6 +443,481 @@ def test_payment_flow():
 
     assert confirmed.status == 'succeeded'
 ```
+
+## ⚠️ Critical Production Patterns
+
+### 1. 100% Promo Code Detection (WRONG vs CORRECT)
+
+**Common Mistake:**
+```python
+# ❌ WRONG - no_payment_required is for different scenarios!
+if session.payment_status == 'no_payment_required':
+    handle_free_checkout()
+```
+
+**Correct Detection:**
+```python
+# ✅ CORRECT - 100% promo codes have: status=complete, payment_status=paid, amount_total=0
+def is_100_percent_promo(session):
+    """Detect 100% discount promo code checkout."""
+    return (
+        session.payment_status == 'paid' and
+        session.amount_total == 0 and
+        session.payment_intent is None  # No payment intent when $0
+    )
+
+# In webhook handler
+if session.status == 'complete':
+    if is_100_percent_promo(session):
+        # Handle free checkout from promo code
+        fulfill_order(session)
+    else:
+        # Normal paid checkout
+        fulfill_order(session)
+```
+
+**Key Insight:** Stripe says "paid" even when amount is $0 from a promo code. The `no_payment_required` status is for different scenarios (like $0 invoices for metered billing).
+
+---
+
+### 2. Dual Confirmation Pattern (Webhook + Frontend)
+
+**Problem:** Frontend verification alone fails when:
+- User closes browser before redirect
+- Network error during verify call
+- Web mode where payment happens in separate tab
+
+**Solution: Dual Confirmation Architecture**
+```
+Payment Complete
+      ↓
+ ┌────┴────┐
+ ↓         ↓
+Webhook   Frontend
+(async)   (polling)
+ ↓         ↓
+ └────┬────┘
+      ↓
+First one wins (idempotent)
+```
+
+**Backend Implementation:**
+```typescript
+// Idempotent order confirmation - BOTH webhook and frontend call this
+async function confirmPayment(sessionId: string): Promise<boolean> {
+  // Atomic conditional update - only updates if still pending
+  const result = await db
+    .update(orders)
+    .set({
+      status: 'paid',
+      paidAt: new Date(),
+      updatedAt: new Date()
+    })
+    .where(
+      and(
+        eq(orders.stripeSessionId, sessionId),
+        eq(orders.status, 'pending')  // CRITICAL: Only if still pending!
+      )
+    );
+
+  if (result.changes === 0) {
+    // Already processed by other path - that's OK!
+    return false;
+  }
+
+  // We just confirmed it - now do post-payment work
+  await decrementInventory(sessionId);
+  await sendConfirmationEmail(sessionId);
+  return true;
+}
+
+// Webhook endpoint
+app.post('/webhooks/stripe', async (req, res) => {
+  const event = stripe.webhooks.constructEvent(...);
+
+  if (event.type === 'checkout.session.completed') {
+    await confirmPayment(event.data.object.id);
+  }
+
+  res.json({ received: true });
+});
+
+// Frontend verify endpoint
+app.get('/api/verify-payment/:sessionId', async (req, res) => {
+  const session = await stripe.checkout.sessions.retrieve(req.params.sessionId);
+
+  if (session.status === 'complete') {
+    await confirmPayment(session.id);
+    return res.json({ success: true });
+  }
+
+  res.json({ success: false, status: session.status });
+});
+```
+
+**Frontend with Exponential Backoff (React Native/Web):**
+```typescript
+async function verifyPaymentWithRetry(
+  sessionId: string,
+  attempts = 3,
+  initialDelay = 1500
+): Promise<boolean> {
+  let delay = initialDelay;
+
+  for (let i = 0; i < attempts; i++) {
+    await sleep(delay);
+
+    try {
+      const result = await api.verifyPayment(sessionId);
+
+      if (result.success) return true;
+
+      if (result.status === 'pending') {
+        // Still processing - increase delay and retry
+        delay = Math.min(delay * 1.5, 5000);
+        continue;
+      }
+
+      // Failed or expired
+      return false;
+    } catch (error) {
+      // Network error - retry
+      delay = Math.min(delay * 1.5, 5000);
+    }
+  }
+
+  return false;
+}
+```
+
+---
+
+### 3. Idempotency for All Payment Operations
+
+**Problem:** Webhook and frontend can race, causing:
+- Double inventory/slot decrements
+- Duplicate notifications
+- Inconsistent state
+
+**Solution: Conditional UPDATE Pattern**
+```sql
+-- Only update if still in expected state
+UPDATE orders
+SET status = 'paid', updated_at = NOW()
+WHERE id = $1 AND status = 'pending';
+
+-- Check affected rows
+-- If 0 rows affected → another process already handled it → skip side effects
+```
+
+**TypeScript/Drizzle Implementation:**
+```typescript
+async function processPaymentIdempotently(orderId: string) {
+  const result = await db
+    .update(orders)
+    .set({ status: 'paid', updatedAt: new Date() })
+    .where(and(
+      eq(orders.id, orderId),
+      eq(orders.status, 'pending')
+    ));
+
+  if (result.changes === 0) {
+    // Already processed - safe to skip
+    console.log(`Order ${orderId} already processed`);
+    return { alreadyProcessed: true };
+  }
+
+  // We just confirmed - NOW do side effects
+  await decrementInventory(orderId);
+  await sendEmail(orderId);
+
+  return { alreadyProcessed: false };
+}
+```
+
+---
+
+### 4. Web Browser Payment Flow (React Native/Expo)
+
+**Problem:** `WebBrowser.openBrowserAsync` behaves DIFFERENTLY on web vs native!
+
+| Platform | Return Timing | `result.type` | User State |
+|----------|---------------|---------------|------------|
+| **iOS/Android** | After browser closed | `'dismiss'` or `'cancel'` | Back in app |
+| **Web** | Immediately | `'opened'` | **Still viewing Stripe checkout!** |
+
+**⚠️ CRITICAL: On web, you CAN'T verify payment immediately because the user is still looking at Stripe checkout in another tab!**
+
+**Correct Solution - Platform-Specific Handling:**
+```typescript
+import * as WebBrowser from 'expo-web-browser';
+import { Platform, Alert } from 'react-native';
+
+async function handlePayment(checkoutUrl: string, sessionId: string) {
+  const result = await WebBrowser.openBrowserAsync(checkoutUrl);
+
+  // Platform-specific handling based on result.type
+  switch (result.type) {
+    case 'cancel':
+      // Native only: User explicitly cancelled (X button)
+      // Don't verify - they cancelled intentionally
+      Alert.alert('Payment Cancelled', 'You cancelled the payment.');
+      break;
+
+    case 'dismiss':
+      // Native only: Browser was closed (could be success or cancel)
+      // NOW it's safe to verify - user is back in the app
+      const success = await verifyPaymentWithRetry(sessionId);
+      if (success) {
+        navigation.navigate('PaymentSuccess');
+      } else {
+        navigation.navigate('PaymentPending');
+      }
+      break;
+
+    case 'opened':
+      // WEB ONLY: Browser opened but user is STILL VIEWING STRIPE!
+      // Do NOT verify immediately - show dialog instead
+      Alert.alert(
+        'Complete Your Payment',
+        'Please complete your payment in the browser tab, then return here.',
+        [
+          {
+            text: 'I\'ve Completed Payment',
+            onPress: async () => {
+              const success = await verifyPaymentWithRetry(sessionId);
+              if (success) {
+                navigation.navigate('PaymentSuccess');
+              } else {
+                Alert.alert('Payment Not Found', 'We couldn\'t confirm your payment. Please try again or contact support.');
+              }
+            }
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
+      break;
+  }
+}
+```
+
+**Alternative for Web: Use Window Focus Event**
+```typescript
+// Web-specific: Listen for when user returns to tab
+if (Platform.OS === 'web') {
+  const handleFocus = async () => {
+    window.removeEventListener('focus', handleFocus);
+    // User returned to our tab - now verify
+    const success = await verifyPaymentWithRetry(sessionId);
+    // Handle result...
+  };
+  window.addEventListener('focus', handleFocus);
+}
+```
+
+**Verification with Exponential Backoff:**
+```typescript
+async function verifyPaymentWithRetry(
+  sessionId: string,
+  attempts = 3,
+  initialDelay = 1500
+): Promise<boolean> {
+  let delay = initialDelay;
+
+  for (let i = 0; i < attempts; i++) {
+    await sleep(delay);
+
+    try {
+      const result = await api.verifyPayment(sessionId);
+
+      if (result.success) return true;
+
+      if (result.status === 'pending') {
+        // Still processing - increase delay and retry
+        delay = Math.min(delay * 1.5, 5000);
+        continue;
+      }
+
+      // Failed or expired
+      return false;
+    } catch (error) {
+      // Network error - retry
+      delay = Math.min(delay * 1.5, 5000);
+    }
+  }
+
+  return false;
+}
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+```
+
+---
+
+### 5. Inventory/Slot Management with Atomicity
+
+**Rule:** ONLY modify inventory AFTER payment confirmed, and atomically.
+
+**Problem Pattern (DON'T DO):**
+```typescript
+// ❌ WRONG - Decrementing before payment confirmation
+await reserveSlot(slotId);  // Slot decremented
+const session = await createCheckoutSession();  // Payment might fail!
+// If user abandons → slot is stuck as reserved
+```
+
+**Correct Pattern:**
+```typescript
+// ✅ CORRECT - Only decrement AFTER payment confirmed
+async function confirmBookingPayment(sessionId: string) {
+  // Atomic update with inventory in single transaction
+  const result = await db.transaction(async (tx) => {
+    // 1. Mark order as paid (only if pending)
+    const orderUpdate = await tx
+      .update(orders)
+      .set({ status: 'paid' })
+      .where(and(
+        eq(orders.stripeSessionId, sessionId),
+        eq(orders.status, 'pending')
+      ));
+
+    if (orderUpdate.changes === 0) {
+      return { success: false, reason: 'already_processed' };
+    }
+
+    // 2. Get order details
+    const order = await tx.query.orders.findFirst({
+      where: eq(orders.stripeSessionId, sessionId)
+    });
+
+    // 3. Decrement inventory atomically
+    const slotUpdate = await tx
+      .update(slots)
+      .set({
+        availableCount: sql`available_count - 1`,
+        updatedAt: new Date()
+      })
+      .where(and(
+        eq(slots.id, order.slotId),
+        gt(slots.availableCount, 0)  // Prevent negative
+      ));
+
+    if (slotUpdate.changes === 0) {
+      // Slot became unavailable - need to refund
+      throw new Error('SLOT_UNAVAILABLE');
+    }
+
+    return { success: true };
+  });
+
+  return result;
+}
+```
+
+---
+
+### 6. Stripe Connect Direct Charge Webhook Setup
+
+**Complete Connect Webhook Handler:**
+```typescript
+// /webhooks/stripe/connect - For Direct Charge events
+app.post('/webhooks/stripe/connect',
+  express.raw({ type: 'application/json' }),
+  async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    const connectWebhookSecret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET!;
+
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig!,
+        connectWebhookSecret  // Different secret from platform webhook!
+      );
+    } catch (err) {
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Get the connected account ID
+    const connectedAccountId = event.account;
+
+    switch (event.type) {
+      case 'checkout.session.completed':
+        // CRITICAL: This is where Direct Charge sessions complete!
+        await handleConnectCheckoutComplete(event.data.object, connectedAccountId);
+        break;
+
+      case 'checkout.session.expired':
+        await handleConnectCheckoutExpired(event.data.object, connectedAccountId);
+        break;
+
+      case 'account.updated':
+        await handleAccountUpdated(event.data.object);
+        break;
+
+      case 'payout.paid':
+        await handlePayoutPaid(event.data.object, connectedAccountId);
+        break;
+
+      case 'payout.failed':
+        await handlePayoutFailed(event.data.object, connectedAccountId);
+        break;
+    }
+
+    res.json({ received: true });
+  }
+);
+
+async function handleConnectCheckoutComplete(session, connectedAccountId: string) {
+  // Retrieve full session with line items
+  const fullSession = await stripe.checkout.sessions.retrieve(
+    session.id,
+    { expand: ['line_items'] },
+    { stripeAccount: connectedAccountId }  // CRITICAL: Specify account!
+  );
+
+  // Confirm payment in your system
+  await confirmPayment(fullSession.id);
+}
+```
+
+**Stripe Dashboard Setup Required:**
+1. Go to Stripe Dashboard → Developers → Webhooks
+2. Add endpoint for Connect: `https://yourdomain.com/webhooks/stripe/connect`
+3. Select "Connected accounts" (NOT "Account")
+4. Add events: `checkout.session.completed`, `checkout.session.expired`, `account.updated`, `payout.paid`, `payout.failed`
+
+---
+
+## Pre-Implementation Checklist
+
+### Webhook Setup
+- [ ] Platform endpoint handles platform events
+- [ ] Connect endpoint handles `checkout.session.completed` (if using Direct Charge)
+- [ ] Stripe Dashboard has Connect webhook with correct events
+- [ ] Webhook secrets configured for BOTH endpoints (different secrets!)
+
+### Payment Verification
+- [ ] Webhook handler implemented (primary - async, reliable)
+- [ ] Frontend verify endpoint implemented (secondary - immediate UX)
+- [ ] Both use conditional UPDATE for idempotency
+- [ ] 100% promo detected by `amount_total === 0` (NOT `no_payment_required`)
+- [ ] **Web vs Native browser handling**: Check `result.type === 'opened'` (web) vs `'dismiss'/'cancel'` (native) - do NOT verify immediately on web!
+
+### Inventory/Booking
+- [ ] Inventory only modified AFTER payment confirmed
+- [ ] Atomic operations prevent double-counting
+- [ ] Proper error handling if slot becomes unavailable (refund flow)
+
+### Testing
+- [ ] Test with regular payment
+- [ ] Test with 100% promo code
+- [ ] Test browser close during payment
+- [ ] Test network failure during verify
+- [ ] Verify webhook receives events from Connect accounts (if applicable)
 
 ## Resources
 

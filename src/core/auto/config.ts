@@ -5,7 +5,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { AutoConfig, DEFAULT_AUTO_CONFIG } from './types.js';
+import { AutoConfig, DEFAULT_AUTO_CONFIG, DEFAULT_PARALLEL_AUTO_CONFIG, isAgentDomain, type AgentDomain } from './types.js';
 import { consoleLogger as logger } from '../../utils/logger.js';
 
 const CONFIG_PATH = '.specweave/config.json';
@@ -63,43 +63,74 @@ export function loadAutoConfig(projectRoot: string): ConfigLoadResult {
 }
 
 /**
+ * Clamp a number within a range, returning undefined if out of bounds (for warning)
+ */
+function clampWithWarning(
+  value: number,
+  min: number,
+  max: number,
+  fieldName: string,
+  warnings: string[]
+): number | undefined {
+  if (value < min) {
+    warnings.push(`${fieldName} must be >= ${min}, using default`);
+    return undefined;
+  }
+  if (value > max) {
+    warnings.push(`${fieldName} exceeds ${max}, capping at ${max}`);
+    return max;
+  }
+  return value;
+}
+
+/**
  * Merge user config with defaults, validating values
  */
 function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoConfig {
-  const config: AutoConfig = { ...DEFAULT_AUTO_CONFIG };
+  // Deep clone to avoid mutating the default config
+  const config: AutoConfig = {
+    ...DEFAULT_AUTO_CONFIG,
+    humanGated: DEFAULT_AUTO_CONFIG.humanGated ? {
+      ...DEFAULT_AUTO_CONFIG.humanGated,
+      patterns: [...DEFAULT_AUTO_CONFIG.humanGated.patterns],
+      neverAutoApprove: [...DEFAULT_AUTO_CONFIG.humanGated.neverAutoApprove],
+    } : undefined,
+    circuitBreakers: DEFAULT_AUTO_CONFIG.circuitBreakers ? { ...DEFAULT_AUTO_CONFIG.circuitBreakers } : undefined,
+    sync: DEFAULT_AUTO_CONFIG.sync ? { ...DEFAULT_AUTO_CONFIG.sync } : undefined,
+    parallel: DEFAULT_AUTO_CONFIG.parallel ? {
+      ...DEFAULT_AUTO_CONFIG.parallel,
+      defaultDomains: DEFAULT_AUTO_CONFIG.parallel.defaultDomains ? [...DEFAULT_AUTO_CONFIG.parallel.defaultDomains] : [],
+    } : undefined,
+  };
 
-  // Boolean fields
-  if (typeof userConfig.enabled === 'boolean') {
-    config.enabled = userConfig.enabled;
-  }
-  if (typeof userConfig.enforceTestFirst === 'boolean') {
-    config.enforceTestFirst = userConfig.enforceTestFirst;
-  }
-  if (typeof userConfig.warnOnParallelSession === 'boolean') {
-    config.warnOnParallelSession = userConfig.warnOnParallelSession;
-  }
+  // Boolean fields - direct assignment if valid type
+  if (typeof userConfig.enabled === 'boolean') config.enabled = userConfig.enabled;
+  if (typeof userConfig.enforceTestFirst === 'boolean') config.enforceTestFirst = userConfig.enforceTestFirst;
+  if (typeof userConfig.warnOnParallelSession === 'boolean') config.warnOnParallelSession = userConfig.warnOnParallelSession;
+  if (typeof userConfig.requireTests === 'boolean') config.requireTests = userConfig.requireTests;
+  if (typeof userConfig.requireValidation === 'boolean') config.requireValidation = userConfig.requireValidation;
+  if (typeof userConfig.requireJudgeLLM === 'boolean') config.requireJudgeLLM = userConfig.requireJudgeLLM;
 
   // Numeric fields with validation
   if (typeof userConfig.maxIterations === 'number') {
-    if (userConfig.maxIterations < 1) {
-      warnings.push('maxIterations must be >= 1, using default (500)');
-    } else if (userConfig.maxIterations > 5000) {
-      warnings.push('maxIterations exceeds 5000, capping at 5000');
-      config.maxIterations = 5000;
-    } else {
-      config.maxIterations = userConfig.maxIterations;
-    }
+    const clamped = clampWithWarning(userConfig.maxIterations, 1, 5000, 'maxIterations', warnings);
+    if (clamped !== undefined) config.maxIterations = clamped;
+  }
+
+  // maxTurns: HARD STOP for total turns in auto session (minimum 5, max 500)
+  if (typeof userConfig.maxTurns === 'number') {
+    const clamped = clampWithWarning(userConfig.maxTurns, 5, 500, 'maxTurns', warnings);
+    if (clamped !== undefined) config.maxTurns = clamped;
+  }
+
+  if (typeof userConfig.maxRetries === 'number') {
+    const clamped = clampWithWarning(userConfig.maxRetries, 5, 100, 'maxRetries', warnings);
+    if (clamped !== undefined) config.maxRetries = clamped;
   }
 
   if (typeof userConfig.maxHours === 'number') {
-    if (userConfig.maxHours < 0.5) {
-      warnings.push('maxHours must be >= 0.5, using default');
-    } else if (userConfig.maxHours > 720) {
-      warnings.push('maxHours exceeds 720 (30 days), capping at 720');
-      config.maxHours = 720;
-    } else {
-      config.maxHours = userConfig.maxHours;
-    }
+    const clamped = clampWithWarning(userConfig.maxHours, 0.5, 720, 'maxHours', warnings);
+    if (clamped !== undefined) config.maxHours = clamped;
   }
 
   if (typeof userConfig.coverageThreshold === 'number') {
@@ -116,49 +147,84 @@ function mergeConfig(userConfig: Partial<AutoConfig>, warnings: string[]): AutoC
   }
 
   // Human gated config
-  if (userConfig.humanGated && typeof userConfig.humanGated === 'object') {
-    const hg = userConfig.humanGated;
-
+  const hg = userConfig.humanGated;
+  if (hg && typeof hg === 'object' && config.humanGated) {
     if (Array.isArray(hg.patterns)) {
-      config.humanGated.patterns = hg.patterns.filter(
-        (p): p is string => typeof p === 'string'
-      );
+      config.humanGated.patterns = hg.patterns.filter((p): p is string => typeof p === 'string');
     }
-
     if (typeof hg.timeout === 'number' && hg.timeout >= 60) {
-      config.humanGated.timeout = Math.min(hg.timeout, 7200); // Max 2 hours
+      config.humanGated.timeout = Math.min(hg.timeout, 7200);
     }
-
     if (Array.isArray(hg.neverAutoApprove)) {
-      config.humanGated.neverAutoApprove = hg.neverAutoApprove.filter(
-        (p): p is string => typeof p === 'string'
-      );
+      config.humanGated.neverAutoApprove = hg.neverAutoApprove.filter((p): p is string => typeof p === 'string');
     }
   }
 
   // Circuit breaker config
-  if (userConfig.circuitBreakers && typeof userConfig.circuitBreakers === 'object') {
-    const cb = userConfig.circuitBreakers;
-
+  const cb = userConfig.circuitBreakers;
+  if (cb && typeof cb === 'object' && config.circuitBreakers) {
     if (typeof cb.failureThreshold === 'number' && cb.failureThreshold >= 1) {
       config.circuitBreakers.failureThreshold = Math.min(cb.failureThreshold, 10);
     }
-
     if (typeof cb.resetTimeout === 'number' && cb.resetTimeout >= 60) {
-      config.circuitBreakers.resetTimeout = Math.min(cb.resetTimeout, 3600); // Max 1 hour
+      config.circuitBreakers.resetTimeout = Math.min(cb.resetTimeout, 3600);
     }
   }
 
   // Sync config
-  if (userConfig.sync && typeof userConfig.sync === 'object') {
-    const sync = userConfig.sync;
-
+  const sync = userConfig.sync;
+  if (sync && typeof sync === 'object' && config.sync) {
     if (typeof sync.batchInterval === 'number' && sync.batchInterval >= 60) {
-      config.sync.batchInterval = Math.min(sync.batchInterval, 1800); // Max 30 min
+      config.sync.batchInterval = Math.min(sync.batchInterval, 1800);
     }
-
     if (typeof sync.forceOnComplete === 'boolean') {
       config.sync.forceOnComplete = sync.forceOnComplete;
+    }
+  }
+
+  // Parallel config (NEW)
+  const parallel = userConfig.parallel;
+  if (parallel && typeof parallel === 'object') {
+    // Initialize parallel config if not present
+    if (!config.parallel) {
+      config.parallel = { ...DEFAULT_PARALLEL_AUTO_CONFIG };
+    }
+
+    // Boolean fields
+    if (typeof parallel.enabled === 'boolean') {
+      config.parallel.enabled = parallel.enabled;
+    }
+    if (typeof parallel.createPR === 'boolean') {
+      config.parallel.createPR = parallel.createPR;
+    }
+    if (typeof parallel.draftPR === 'boolean') {
+      config.parallel.draftPR = parallel.draftPR;
+    }
+
+    // Numeric fields with validation
+    if (typeof parallel.maxParallel === 'number') {
+      const clamped = clampWithWarning(parallel.maxParallel, 1, 10, 'parallel.maxParallel', warnings);
+      if (clamped !== undefined) config.parallel.maxParallel = clamped;
+    }
+
+    // String fields
+    if (typeof parallel.defaultBaseBranch === 'string' && parallel.defaultBaseBranch.trim()) {
+      config.parallel.defaultBaseBranch = parallel.defaultBaseBranch.trim();
+    }
+
+    // Enum fields
+    if (parallel.defaultMergeStrategy && ['auto', 'manual', 'pr'].includes(parallel.defaultMergeStrategy)) {
+      config.parallel.defaultMergeStrategy = parallel.defaultMergeStrategy as 'auto' | 'manual' | 'pr';
+    }
+
+    // Domain array
+    if (Array.isArray(parallel.defaultDomains)) {
+      const validDomains = parallel.defaultDomains.filter((d): d is AgentDomain => isAgentDomain(d));
+      if (validDomains.length > 0) {
+        config.parallel.defaultDomains = validDomains;
+      } else if (parallel.defaultDomains.length > 0) {
+        warnings.push('parallel.defaultDomains contains invalid domains, using default');
+      }
     }
   }
 

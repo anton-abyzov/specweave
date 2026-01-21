@@ -33,8 +33,8 @@ Setup MCP:
   npx @anthropic-ai/claude-code-mcp add supabase
   # Then restart Claude Code
 
-Credential Check:
-  grep -E "SUPABASE_URL|SUPABASE_ANON_KEY|SUPABASE_SERVICE_ROLE" .env
+Credential Check (presence only - never display values!):
+  grep -qE "SUPABASE_URL|SUPABASE_ANON_KEY|SUPABASE_SERVICE_ROLE" .env && echo "Supabase credentials found"
 
 Direct REST (no MCP needed):
   curl "${SUPABASE_URL}/rest/v1/table" \
@@ -68,9 +68,9 @@ Setup:
   # Verify
   wrangler whoami
 
-Credential Check:
+Credential Check (presence only - never display values!):
   wrangler whoami 2>/dev/null || echo "Not logged in"
-  grep -E "CF_API_TOKEN|CLOUDFLARE_API_TOKEN" .env
+  grep -qE "CF_API_TOKEN|CLOUDFLARE_API_TOKEN" .env && echo "Cloudflare token found"
 
 Common Operations:
   # Deploy Worker
@@ -113,8 +113,8 @@ Connection String Patterns:
   # Supabase Pooler (transaction mode for serverless)
   postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres?pgbouncer=true
 
-Credential Check:
-  grep -E "DATABASE_URL|POSTGRES_|PG_" .env
+Credential Check (presence only - never display values!):
+  grep -qE "DATABASE_URL|POSTGRES_|PG_" .env && echo "PostgreSQL credentials found"
 ```
 
 ### MongoDB Atlas
@@ -141,8 +141,8 @@ Atlas Data API Setup:
       "filter": {"email": "test@example.com"}
     }'
 
-Credential Check:
-  grep -E "MONGODB_URI|MONGO_URL|MONGODB_DATA_API" .env
+Credential Check (presence only - never display values!):
+  grep -qE "MONGODB_URI|MONGO_URL|MONGODB_DATA_API" .env && echo "MongoDB credentials found"
 ```
 
 ### Redis / Upstash
@@ -167,8 +167,8 @@ Vercel KV (Upstash-backed):
   import { kv } from '@vercel/kv';
   await kv.set('key', 'value');
 
-Credential Check:
-  grep -E "REDIS_URL|UPSTASH_" .env
+Credential Check (presence only - never display values!):
+  grep -qE "REDIS_URL|UPSTASH_" .env && echo "Redis/Upstash credentials found"
 ```
 
 ### AWS Services
@@ -186,9 +186,9 @@ Setup:
   # Or use access keys (store in ~/.aws/credentials, NOT .env)
   aws configure
 
-Credential Check:
+Credential Check (presence only - never display values!):
   aws sts get-caller-identity
-  grep -E "AWS_ACCESS_KEY|AWS_SECRET|AWS_PROFILE" .env ~/.aws/credentials
+  grep -qE "AWS_ACCESS_KEY|AWS_SECRET|AWS_PROFILE" .env ~/.aws/credentials && echo "AWS credentials found"
 
 Common Services:
   # S3
@@ -219,9 +219,9 @@ Setup:
   # Link project
   vercel link
 
-Credential Check:
+Credential Check (presence only - never display values!):
   vercel whoami 2>/dev/null || echo "Not logged in"
-  grep VERCEL_TOKEN .env
+  grep -q VERCEL_TOKEN .env && echo "Vercel token found"
 
 Common Operations:
   # Deploy
@@ -261,8 +261,8 @@ fi
 # PostgreSQL
 if grep -q "DATABASE_URL\|POSTGRES" .env 2>/dev/null; then
   echo "✓ PostgreSQL detected"
-  DB_URL=$(grep DATABASE_URL .env | cut -d= -f2)
-  if echo "$DB_URL" | grep -q "pooler\|:6543"; then
+  # Check for pooler pattern without displaying URL
+  if grep -qE "DATABASE_URL=.*(pooler|:6543)" .env 2>/dev/null; then
     echo "  → Using connection pooler (good!)"
   else
     echo "  ⚠ Direct connection - consider pooler for serverless"
@@ -364,7 +364,7 @@ Fix: Use Atlas Data API instead (no driver needed)
 
 Before external service operations:
 
-1. **Check credentials exist**: `grep SERVICE .env`
+1. **Check credentials exist**: `grep -q SERVICE .env && echo "Found"`
 2. **Check CLI auth**: `service-cli whoami`
 3. **Prefer MCP/REST**: Avoid direct connections
 4. **Use pooler for DBs**: Port 6543 not 5432

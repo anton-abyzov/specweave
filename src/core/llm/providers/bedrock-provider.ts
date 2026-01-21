@@ -15,6 +15,7 @@ import type {
   AnalyzeResult,
   StructuredOptions,
 } from '../types.js';
+import { resolveModelAlias } from '../types.js';
 import { Logger, consoleLogger } from '../../../utils/logger.js';
 import { extractJson, extractRequiredFieldsFromSchema } from '../../../utils/llm-json-extractor.js';
 
@@ -38,7 +39,8 @@ export class BedrockProvider implements LLMProvider {
 
   constructor(config: BedrockProviderConfig) {
     this.region = config.region || process.env.AWS_REGION || 'us-east-1';
-    this.defaultModel = config.model || 'anthropic.claude-opus-4-5-20251101-v1:0';
+    // Support both aliases (opus, sonnet, haiku) and full model IDs
+    this.defaultModel = resolveModelAlias(config.model || 'opus', 'bedrock');
     this.maxTokens = config.maxTokens || 4096;
     this.temperature = config.temperature ?? 0.3;
     this.logger = config.logger || consoleLogger;
@@ -55,7 +57,8 @@ export class BedrockProvider implements LLMProvider {
 
   async analyze(prompt: string, options: AnalyzeOptions = {}): Promise<AnalyzeResult> {
     const startTime = Date.now();
-    const model = options.model || this.defaultModel;
+    // Resolve model alias (opus → anthropic.claude-opus-4-5-20251101-v1:0)
+    const model = resolveModelAlias(options.model || this.defaultModel, 'bedrock');
 
     const client = await this.getClient();
     // @ts-ignore - @aws-sdk/client-bedrock-runtime is an optional runtime dependency (may not be installed)
@@ -159,24 +162,19 @@ Return ONLY the JSON object.`;
   }
 
   estimateCost(inputTokens: number, outputTokens: number, model?: string): number {
-    // Bedrock Claude pricing (slightly higher than direct)
     const modelId = model || this.defaultModel;
 
-    if (modelId.includes('claude-opus-4')) {
-      return (inputTokens / 1_000_000) * 15 + (outputTokens / 1_000_000) * 75;
-    }
-    if (modelId.includes('claude-sonnet-4') || modelId.includes('claude-3-5-sonnet')) {
-      return (inputTokens / 1_000_000) * 3 + (outputTokens / 1_000_000) * 15;
-    }
-    if (modelId.includes('claude-3-haiku') || modelId.includes('claude-haiku')) {
-      return (inputTokens / 1_000_000) * 0.25 + (outputTokens / 1_000_000) * 1.25;
-    }
-    if (modelId.includes('titan')) {
-      return (inputTokens / 1_000_000) * 0.8 + (outputTokens / 1_000_000) * 1.6;
-    }
+    // Model pricing per 1M tokens (input, output)
+    const pricing = this.getPricing(modelId);
+    return (inputTokens / 1_000_000) * pricing.input + (outputTokens / 1_000_000) * pricing.output;
+  }
 
-    // Default to opus pricing
-    return (inputTokens / 1_000_000) * 15 + (outputTokens / 1_000_000) * 75;
+  private getPricing(modelId: string): { input: number; output: number } {
+    if (modelId.includes('claude-opus-4')) return { input: 15, output: 75 };
+    if (modelId.includes('claude-sonnet-4') || modelId.includes('claude-3-5-sonnet')) return { input: 3, output: 15 };
+    if (modelId.includes('claude-3-haiku') || modelId.includes('claude-haiku')) return { input: 0.25, output: 1.25 };
+    if (modelId.includes('titan')) return { input: 0.8, output: 1.6 };
+    return { input: 15, output: 75 }; // Default to opus
   }
 
   async isAvailable(): Promise<boolean> {

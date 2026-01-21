@@ -99,15 +99,19 @@ export class ProgressTracker {
    * @param item - Item identifier (e.g., project key)
    * @param status - Item status (success, failure, skip)
    */
-  update(item: string, status: ItemStatus): void {
+  update(_item: string, status: ItemStatus): void {
     this.completed++;
 
-    if (status === 'success') {
-      this.succeeded++;
-    } else if (status === 'failure') {
-      this.failed++;
-    } else if (status === 'skip') {
-      this.skipped++;
+    switch (status) {
+      case 'success':
+        this.succeeded++;
+        break;
+      case 'failure':
+        this.failed++;
+        break;
+      case 'skip':
+        this.skipped++;
+        break;
     }
 
     // Track timestamp for ETA calculation

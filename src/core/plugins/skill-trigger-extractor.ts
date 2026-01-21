@@ -4,8 +4,13 @@
  * Extracts activation trigger keywords from SKILL.md and AGENT.md files.
  * These triggers enable automatic skill activation based on user prompts.
  *
+ * Enhanced in v1.1.0:
+ * - Added domain term extraction (api, backend, frontend, etc.)
+ * - Word tokenization from compound phrases
+ * - Improved matching for natural language prompts
+ *
  * @module core/plugins/skill-trigger-extractor
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import * as path from 'path';
@@ -119,6 +124,8 @@ export class SkillTriggerExtractor {
    * 1. "Activates for:" sections in description
    * 2. Keywords in YAML frontmatter
    * 3. Technology names and patterns in the description
+   * 4. Domain terms (api, backend, frontend, etc.)
+   * 5. Tokenized words from compound phrases
    *
    * @param content - Full file content
    * @param description - Extracted description
@@ -132,6 +139,9 @@ export class SkillTriggerExtractor {
     if (activatesForMatch) {
       const keywords = this.parseKeywordList(activatesForMatch[1]);
       keywords.forEach(k => triggers.add(k));
+      // Also extract individual words from compound phrases
+      const tokenized = this.tokenizeKeywords(keywords);
+      tokenized.forEach(t => triggers.add(t));
     }
 
     // 2. Extract from "Use when" or "Use this skill when" patterns
@@ -155,15 +165,147 @@ export class SkillTriggerExtractor {
     const techTerms = this.extractTechnologyTerms(description);
     techTerms.forEach(t => triggers.add(t));
 
-    // 5. Look for "When to Use" sections in content
+    // 5. Extract domain terms from description (api, backend, frontend, etc.)
+    const domainTerms = this.extractDomainTerms(description);
+    domainTerms.forEach(t => triggers.add(t));
+
+    // 6. Look for "When to Use" sections in content
     const whenToUseMatch = content.match(/##\s*When to Use[^\n]*\n([\s\S]+?)(?:\n##|$)/i);
     if (whenToUseMatch) {
-      const techTerms = this.extractTechnologyTerms(whenToUseMatch[1]);
-      // Only add strong technology terms from this section
-      techTerms.filter(t => this.isStrongTechnologyTerm(t)).forEach(t => triggers.add(t));
+      const whenToUseTerms = this.extractTechnologyTerms(whenToUseMatch[1]);
+      whenToUseTerms.filter(t => this.isStrongTechnologyTerm(t)).forEach(t => triggers.add(t));
     }
 
     return Array.from(triggers).filter(t => t.length >= 2);
+  }
+
+  /**
+   * Tokenize compound keywords into individual meaningful words
+   *
+   * @param keywords - Array of compound keywords
+   * @returns Array of individual meaningful tokens
+   */
+  private tokenizeKeywords(keywords: string[]): string[] {
+    const tokens = new Set<string>();
+    const meaningfulWords = new Set([
+      // Domain terms that should be extracted as standalone
+      'api', 'backend', 'frontend', 'fullstack', 'full-stack',
+      'architect', 'architecture', 'design', 'system',
+      'database', 'server', 'client', 'web', 'mobile',
+      'test', 'testing', 'tdd', 'bdd', 'qa', 'quality',
+      'deploy', 'deployment', 'devops', 'infrastructure',
+      'security', 'auth', 'authentication', 'authorization',
+      'performance', 'optimization', 'cache', 'caching',
+      'monitor', 'monitoring', 'observability', 'logging',
+      'microservices', 'monolith', 'serverless', 'cloud',
+      'container', 'kubernetes', 'docker', 'ci', 'cd',
+      'rest', 'graphql', 'grpc', 'websocket', 'realtime',
+      'schema', 'model', 'migration', 'orm', 'sql', 'nosql',
+      'component', 'hook', 'state', 'redux', 'store',
+      'route', 'routing', 'navigation', 'page', 'layout',
+      'form', 'validation', 'input', 'ui', 'ux',
+      'style', 'css', 'sass', 'tailwind', 'styled',
+      'build', 'bundle', 'webpack', 'vite', 'rollup',
+      'lint', 'format', 'prettier', 'eslint',
+      'ml', 'ai', 'machine', 'learning', 'model', 'training',
+      'data', 'analytics', 'pipeline', 'etl',
+      'payment', 'checkout', 'stripe', 'subscription',
+      'email', 'notification', 'push', 'sms',
+      'file', 'upload', 'storage', 's3', 'cdn',
+      'search', 'index', 'elasticsearch', 'algolia',
+      'queue', 'message', 'kafka', 'rabbitmq', 'redis',
+      'diagram', 'documentation', 'docs', 'readme',
+      'release', 'version', 'changelog', 'semantic',
+      // LSP & Code Intelligence
+      'lsp', 'language', 'server', 'definition', 'references',
+      'navigation', 'hover', 'symbol', 'diagnostic', 'intellisense',
+      'refactor', 'rename', 'actions', 'semantic', 'autocomplete'
+    ]);
+
+    for (const keyword of keywords) {
+      // Split compound phrases into words
+      const words = keyword.toLowerCase().split(/[\s\-_]+/);
+      for (const word of words) {
+        // Only add if it's a meaningful domain word and not too short
+        if (word.length >= 3 && meaningfulWords.has(word)) {
+          tokens.add(word);
+        }
+      }
+    }
+
+    return Array.from(tokens);
+  }
+
+  /**
+   * Extract domain-specific terms from text
+   * These are common software development domain terms that may not be
+   * specific technology names but are important for matching
+   *
+   * @param text - Text to extract from
+   * @returns Array of domain terms
+   */
+  private extractDomainTerms(text: string): string[] {
+    const terms = new Set<string>();
+
+    // Domain term patterns (case-insensitive, word boundaries)
+    const domainPatterns = [
+      // Architecture & Design
+      /\bAPI\b/gi, /\bAPIs\b/gi, /\bbackend\b/gi, /\bback-end\b/gi,
+      /\bfrontend\b/gi, /\bfront-end\b/gi, /\bfullstack\b/gi, /\bfull-stack\b/gi,
+      /\barchitect\b/gi, /\barchitecture\b/gi, /\bdesign\b/gi, /\bsystem design\b/gi,
+      /\bmicroservices?\b/gi, /\bmonolith\b/gi, /\bserverless\b/gi,
+      // Development
+      /\bweb app\b/gi, /\bweb application\b/gi, /\bmobile app\b/gi,
+      /\bserver\b/gi, /\bclient\b/gi, /\bdatabase\b/gi, /\bDB\b/g,
+      // Testing
+      /\bunit test\b/gi, /\bintegration test\b/gi, /\be2e test\b/gi,
+      /\btest driven\b/gi, /\btest-driven\b/gi, /\bQA\b/g,
+      // DevOps
+      /\bdeployment\b/gi, /\bCI\/CD\b/gi, /\bpipeline\b/gi,
+      /\binfrastructure\b/gi, /\binfra\b/gi,
+      // Quality
+      /\bperformance\b/gi, /\boptimization\b/gi, /\bscalability\b/gi,
+      /\bsecurity\b/gi, /\bmonitoring\b/gi, /\bobservability\b/gi,
+      // UI/UX
+      /\bbeautiful\b/gi, /\bpretty\b/gi, /\bsleek\b/gi, /\bmodern UI\b/gi,
+      /\bresponsive\b/gi, /\bUI\/UX\b/gi, /\buser interface\b/gi,
+      /\blanding page\b/gi, /\bdashboard\b/gi, /\badmin panel\b/gi,
+      // Data
+      /\bdata model\b/gi, /\bschema\b/gi, /\bmigration\b/gi,
+      /\bquery\b/gi, /\bORM\b/gi,
+      // Product
+      /\bproduct\b/gi, /\bfeature\b/gi, /\bMVP\b/gi, /\broadmap\b/gi,
+      /\brequirements?\b/gi, /\buser stor(?:y|ies)\b/gi, /\bspec(?:ification)?s?\b/gi,
+      // Process
+      /\bagile\b/gi, /\bscrum\b/gi, /\bkanban\b/gi, /\bsprint\b/gi,
+      // Common app types
+      /\bcalculator\b/gi, /\bchat\b/gi, /\be-commerce\b/gi, /\becommerce\b/gi,
+      /\bmarketplace\b/gi, /\bblog\b/gi, /\bCMS\b/gi, /\bCRM\b/gi,
+      /\bSaaS\b/gi, /\bB2B\b/gi, /\bB2C\b/gi,
+      // LSP & Code Intelligence
+      /\bLSP\b/gi, /\blanguage server\b/gi, /\bgo to definition\b/gi,
+      /\bfind references\b/gi, /\bcode navigation\b/gi, /\bhover type\b/gi,
+      /\bsemantic analysis\b/gi, /\bcode intelligence\b/gi, /\bintellisense\b/gi,
+      /\btype information\b/gi, /\bsymbol search\b/gi, /\bdiagnostics\b/gi,
+      /\brefactoring\b/gi, /\brename symbol\b/gi, /\bcode actions\b/gi
+    ];
+
+    for (const pattern of domainPatterns) {
+      const matches = text.match(pattern);
+      if (matches) {
+        matches.forEach(m => {
+          // Normalize: lowercase, remove hyphens for consistency
+          const normalized = m.toLowerCase().trim().replace(/-/g, '');
+          terms.add(normalized);
+          // Also add hyphenated version if applicable
+          if (m.includes('-')) {
+            terms.add(m.toLowerCase().trim());
+          }
+        });
+      }
+    }
+
+    return Array.from(terms);
   }
 
   /**
@@ -307,20 +449,47 @@ export class SkillTriggerExtractor {
   }
 
   /**
+   * Scan a component directory (skills or agents) and extract triggers
+   */
+  private async scanComponentDir(
+    componentDir: string,
+    pluginName: string,
+    type: 'skill' | 'agent',
+    fileName: string
+  ): Promise<ExtractedTriggers[]> {
+    const triggers: ExtractedTriggers[] = [];
+
+    if (!(await fs.pathExists(componentDir))) {
+      return triggers;
+    }
+
+    const entries = await fs.readdir(componentDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+
+      const filePath = path.join(componentDir, entry.name, fileName);
+      if (await fs.pathExists(filePath)) {
+        const content = await fs.readFile(filePath, 'utf-8');
+        triggers.push(this.extractFromContent(content, entry.name, pluginName, type, filePath));
+      }
+    }
+
+    return triggers;
+  }
+
+  /**
    * Scan all plugins and extract triggers
    *
    * @param pluginsDir - Path to plugins directory
    * @returns Array of extracted triggers
    */
   async scanAllPlugins(pluginsDir: string): Promise<ExtractedTriggers[]> {
-    const allTriggers: ExtractedTriggers[] = [];
-
-    // Get all plugin directories
     if (!(await fs.pathExists(pluginsDir))) {
-      return allTriggers;
+      return [];
     }
 
     const entries = await fs.readdir(pluginsDir, { withFileTypes: true });
+    const allTriggers: ExtractedTriggers[] = [];
 
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
@@ -328,49 +497,12 @@ export class SkillTriggerExtractor {
       const pluginPath = path.join(pluginsDir, entry.name);
       const pluginName = entry.name;
 
-      // Scan skills
-      const skillsDir = path.join(pluginPath, 'skills');
-      if (await fs.pathExists(skillsDir)) {
-        const skillEntries = await fs.readdir(skillsDir, { withFileTypes: true });
-        for (const skillEntry of skillEntries) {
-          if (!skillEntry.isDirectory()) continue;
+      const [skillTriggers, agentTriggers] = await Promise.all([
+        this.scanComponentDir(path.join(pluginPath, 'skills'), pluginName, 'skill', 'SKILL.md'),
+        this.scanComponentDir(path.join(pluginPath, 'agents'), pluginName, 'agent', 'AGENT.md')
+      ]);
 
-          const skillPath = path.join(skillsDir, skillEntry.name, 'SKILL.md');
-          if (await fs.pathExists(skillPath)) {
-            const content = await fs.readFile(skillPath, 'utf-8');
-            const triggers = this.extractFromContent(
-              content,
-              skillEntry.name,
-              pluginName,
-              'skill',
-              skillPath
-            );
-            allTriggers.push(triggers);
-          }
-        }
-      }
-
-      // Scan agents
-      const agentsDir = path.join(pluginPath, 'agents');
-      if (await fs.pathExists(agentsDir)) {
-        const agentEntries = await fs.readdir(agentsDir, { withFileTypes: true });
-        for (const agentEntry of agentEntries) {
-          if (!agentEntry.isDirectory()) continue;
-
-          const agentPath = path.join(agentsDir, agentEntry.name, 'AGENT.md');
-          if (await fs.pathExists(agentPath)) {
-            const content = await fs.readFile(agentPath, 'utf-8');
-            const triggers = this.extractFromContent(
-              content,
-              agentEntry.name,
-              pluginName,
-              'agent',
-              agentPath
-            );
-            allTriggers.push(triggers);
-          }
-        }
-      }
+      allTriggers.push(...skillTriggers, ...agentTriggers);
     }
 
     return allTriggers;

@@ -32,11 +32,16 @@ export interface NotifierConfig {
 }
 
 /**
+ * Notification type
+ */
+export type NotificationType = 'failure_detected' | 'analysis_complete' | 'fix_applied';
+
+/**
  * Notification payload
  */
 export interface Notification {
   /** Notification type */
-  type: 'failure_detected' | 'analysis_complete' | 'fix_applied';
+  type: NotificationType;
 
   /** Failure record */
   failure: FailureRecord;
@@ -47,6 +52,24 @@ export interface Notification {
   /** Timestamp */
   timestamp: string;
 }
+
+/**
+ * Icon lookup for notification types
+ */
+const NOTIFICATION_ICONS: Record<NotificationType, string> = {
+  failure_detected: '🚨',
+  analysis_complete: '🔍',
+  fix_applied: '✅'
+};
+
+/**
+ * ANSI color codes for notification types
+ */
+const NOTIFICATION_COLORS: Record<NotificationType, string> = {
+  failure_detected: '\x1b[31m', // Red
+  analysis_complete: '\x1b[33m', // Yellow
+  fix_applied: '\x1b[32m' // Green
+};
 
 /**
  * Notifier - Sends failure notifications to configured channels
@@ -224,32 +247,14 @@ export class Notifier {
   /**
    * Get icon for notification type
    */
-  private getIcon(type: Notification['type']): string {
-    switch (type) {
-      case 'failure_detected':
-        return '🚨';
-      case 'analysis_complete':
-        return '🔍';
-      case 'fix_applied':
-        return '✅';
-      default:
-        return '📢';
-    }
+  private getIcon(type: NotificationType): string {
+    return NOTIFICATION_ICONS[type] ?? '📢';
   }
 
   /**
    * Get ANSI color code for notification type
    */
-  private getColor(type: Notification['type']): string {
-    switch (type) {
-      case 'failure_detected':
-        return '\x1b[31m'; // Red
-      case 'analysis_complete':
-        return '\x1b[33m'; // Yellow
-      case 'fix_applied':
-        return '\x1b[32m'; // Green
-      default:
-        return '\x1b[37m'; // White
-    }
+  private getColor(type: NotificationType): string {
+    return NOTIFICATION_COLORS[type] ?? '\x1b[37m'; // Default: White
   }
 }

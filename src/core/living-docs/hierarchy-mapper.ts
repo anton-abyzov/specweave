@@ -245,7 +245,7 @@ export class HierarchyMapper {
           break;
       }
 
-      if (mapping && mapping.confidence >= 80) {
+      if (mapping && (mapping.confidence ?? 0) >= 80) {
         return mapping;
       }
     }
@@ -297,7 +297,7 @@ export class HierarchyMapper {
           break;
       }
 
-      if (mapping && mapping.confidence >= 80) {
+      if (mapping && (mapping.confidence ?? 0) >= 80) {
         return mapping;
       }
     }

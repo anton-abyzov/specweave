@@ -2,6 +2,28 @@
 
 SpecWeave provides a comprehensive suite of tools and workflows for building production-grade software with AI assistance.
 
+## ⚡ One Command = Many Prompts
+
+**Stop dictating the same things over and over.** Every app needs auth, tests, docs, deployment - SpecWeave handles the repetitive workflows with single commands.
+
+| What You Used To Dictate | SpecWeave Command |
+|-------------------------|-------------------|
+| "Create spec with user stories and acceptance criteria..." | `/sw:increment "feature"` |
+| "Implement this, run tests, fix failures, repeat until green..." | `/sw:auto` (runs for hours autonomously) |
+| "Update GitHub issue and JIRA with my progress..." | `/sw:sync-progress` |
+| "Review this code for security vulnerabilities..." | Skills auto-activate on keywords |
+| "Commit everything, push, and create a PR..." | `/sw:save` |
+
+**The expertise is built-in:**
+- 15+ AI agents work in parallel (PM, Architect, QA, Security, DevOps)
+- Skills auto-activate when you mention keywords - no need to ask for expertise
+- Quality gates enforce senior dev practices automatically
+- Patterns learned once become defaults everywhere
+
+**Real-world proof**: 5 production apps built with SpecWeave. Then 10 and 14-year-old daughters learned to build apps too - because the expertise is in the framework, not in knowing what to ask.
+
+---
+
 ## 🚀 Two Ways to Work (Flexibility for All Project Sizes)
 
 ### Interactive Quick Build
@@ -655,6 +677,15 @@ All commands adapt to detected tech stack.
   - Track design-to-code alignment
 
 ### 🔜 Roadmap
+
+- **Lazy Plugin Loading** (v1.1): **99% token reduction** for non-SpecWeave work
+  - Router skill (~500 tokens) installed by default instead of 24 full plugins
+  - Keyword detection triggers on-demand plugin loading
+  - Skills cache at `~/.specweave/skills-cache/` for instant activation
+  - Hot-reload leverages Claude Code 2.1.0+ skill activation
+  - Context forking for heavy skills (PM, Architect) in isolated sub-agents
+  - Migration path: `specweave migrate-lazy` for existing installations
+  - See [increment 0171](https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments/0171-lazy-plugin-loading) for full specification
 
 - **Vector search**: Semantic spec search across all increments (v2.0)
 - **Enterprise analytics**: Advanced compliance tracking and team metrics

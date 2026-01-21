@@ -17,6 +17,9 @@ import {
   STALE_THRESHOLD_DAYS,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
+  calculateAgeDays,
+  emptyPaginatedResult,
+  filterByStale,
 } from '../types.js';
 import { Logger, consoleLogger } from '../../../utils/logger.js';
 
@@ -113,12 +116,13 @@ export class AdoItemsAdapter implements ExternalItemsProvider {
    */
   async getOpenItems(filter?: ItemsFilter): Promise<PaginatedItemsResult> {
     if (!await this.isConfigured()) {
-      return this.emptyResult(1, DEFAULT_PAGE_SIZE);
+      return emptyPaginatedResult(1, DEFAULT_PAGE_SIZE);
     }
 
     const limit = Math.min(filter?.limit || DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
     const offset = filter?.offset || 0;
     const page = Math.floor(offset / limit) + 1;
+    const authString = Buffer.from(`:${this.pat}`).toString('base64');
 
     try {
       // First get all IDs (for total count and pagination)
@@ -130,21 +134,21 @@ export class AdoItemsAdapter implements ExternalItemsProvider {
                 ORDER BY [System.CreatedDate] DESC`,
       };
 
-      const queryUrl = `${this.orgUrl}/${this.project}/_apis/wit/wiql?api-version=7.0`;
-      const authString = Buffer.from(`:${this.pat}`).toString('base64');
-
-      const queryResponse = await fetch(queryUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Basic ${authString}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(wiql),
-      });
+      const queryResponse = await fetch(
+        `${this.orgUrl}/${this.project}/_apis/wit/wiql?api-version=7.0`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${authString}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(wiql),
+        }
+      );
 
       if (!queryResponse.ok) {
         this.logger.error(`ADO WIQL error: ${queryResponse.status} ${queryResponse.statusText}`);
-        return this.emptyResult(page, limit);
+        return emptyPaginatedResult(page, limit);
       }
 
       const queryData = await queryResponse.json() as {
@@ -156,34 +160,25 @@ export class AdoItemsAdapter implements ExternalItemsProvider {
       const totalPages = Math.ceil(total / limit);
 
       if (total === 0) {
-        return this.emptyResult(page, limit);
+        return emptyPaginatedResult(page, limit);
       }
 
       // Get IDs for current page
       const pageIds = allIds.slice(offset, offset + limit).map(wi => wi.id);
 
       if (pageIds.length === 0) {
-        return {
-          items: [],
-          total,
-          page,
-          pageSize: limit,
-          totalPages,
-          hasMore: false,
-        };
+        return { items: [], total, page, pageSize: limit, totalPages, hasMore: false };
       }
 
       // Fetch details for page
-      const detailsUrl = `${this.orgUrl}/${this.project}/_apis/wit/workitems?ids=${pageIds.join(',')}&fields=System.Id,System.Title,System.CreatedDate,System.State,System.Tags&api-version=7.0`;
-      const detailsResponse = await fetch(detailsUrl, {
-        headers: {
-          'Authorization': `Basic ${authString}`,
-        },
-      });
+      const detailsResponse = await fetch(
+        `${this.orgUrl}/${this.project}/_apis/wit/workitems?ids=${pageIds.join(',')}&fields=System.Id,System.Title,System.CreatedDate,System.State,System.Tags&api-version=7.0`,
+        { headers: { 'Authorization': `Basic ${authString}` } }
+      );
 
       if (!detailsResponse.ok) {
         this.logger.error(`ADO details error: ${detailsResponse.status}`);
-        return this.emptyResult(page, limit);
+        return emptyPaginatedResult(page, limit);
       }
 
       const detailsData = await detailsResponse.json() as {
@@ -195,18 +190,12 @@ export class AdoItemsAdapter implements ExternalItemsProvider {
             'System.State': string;
             'System.Tags'?: string;
           };
-          _links: {
-            html: { href: string };
-          };
+          _links: { html: { href: string } };
         }>;
       };
 
-      const now = Date.now();
-
       const items: ExternalItem[] = detailsData.value.map(item => {
-        const createdDate = new Date(item.fields['System.CreatedDate']).getTime();
-        const ageMs = now - createdDate;
-        const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
+        const ageDays = calculateAgeDays(item.fields['System.CreatedDate']);
         const tags = item.fields['System.Tags']?.split(';').map(t => t.trim()) || [];
 
         return {
@@ -223,13 +212,8 @@ export class AdoItemsAdapter implements ExternalItemsProvider {
         };
       });
 
-      // Filter stale if requested
-      const filteredItems = filter?.staleOnly
-        ? items.filter(i => i.isStale)
-        : items;
-
       return {
-        items: filteredItems,
+        items: filterByStale(items, filter?.staleOnly),
         total,
         page,
         pageSize: limit,
@@ -238,18 +222,7 @@ export class AdoItemsAdapter implements ExternalItemsProvider {
       };
     } catch (error) {
       this.logger.error(`Failed to fetch ADO work items: ${error}`);
-      return this.emptyResult(page, limit);
+      return emptyPaginatedResult(page, limit);
     }
-  }
-
-  private emptyResult(page: number, pageSize: number): PaginatedItemsResult {
-    return {
-      items: [],
-      total: 0,
-      page,
-      pageSize,
-      totalPages: 0,
-      hasMore: false,
-    };
   }
 }

@@ -1,7 +1,7 @@
 ---
 name: kafka-devops
 description: Kafka DevOps and SRE specialist. Expert in infrastructure deployment, CI/CD, monitoring, incident response, capacity planning, and operational best practices for Apache Kafka.
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
@@ -12,20 +12,20 @@ max_response_tokens: 2000
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-kafka:kafka-devops:kafka-devops`
+**Subagent Type**: `sw-kafka:kafka-devops:kafka-devops`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-kafka:kafka-devops:kafka-devops",
+  subagent_type: "sw-kafka:kafka-devops:kafka-devops",
   prompt: "Deploy production Kafka cluster on AWS with Terraform, configure monitoring with Prometheus and Grafana",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-kafka
+- **Plugin**: sw-kafka
 - **Directory**: kafka-devops
 - **Agent Name**: kafka-devops
 

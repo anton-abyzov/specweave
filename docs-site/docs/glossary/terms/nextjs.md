@@ -703,7 +703,7 @@ export async function getStaticProps() {
 - **[Next.js Official Docs](https://nextjs.org/docs)** - Comprehensive documentation
 - **Next.js Tutorial** - SpecWeave Next.js guide
 - **[React Guide](/docs/glossary/terms/react)** - Understanding React first
-- **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - Next.js-specific features
+- **[SpecWeave Frontend Plugin](/docs/overview/introduction)** - Next.js-specific features
 
 ---
 

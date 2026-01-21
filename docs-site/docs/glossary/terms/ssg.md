@@ -798,7 +798,7 @@ export async function getStaticProps() {
 - **SSG Tutorial** - SpecWeave SSG guide
 - **[Next.js Guide](/docs/glossary/terms/nextjs)** - React + SSG
 - **[Docusaurus Guide](https://docusaurus.io)** - Documentation SSG
-- **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - SSG-specific features
+- **[SpecWeave Frontend Plugin](/docs/overview/introduction)** - SSG-specific features
 
 ---
 

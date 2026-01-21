@@ -92,4 +92,4 @@ We would like to thank the following individuals for responsibly disclosing secu
 
 ---
 
-**Last Updated**: 2025-11-04
+**Last Updated**: 2026-01-02

@@ -11,7 +11,7 @@
 set -e
 
 # Parse arguments
-SHOW_ALL=false
+SHOW_ALL=true  # Changed: Show all jobs by default (including completed)
 SPECIFIC_ID=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -297,16 +297,39 @@ else
 
   # Completed jobs (only with --all)
   if [[ "$SHOW_ALL" == "true" ]]; then
-    COMPLETED=$(jq -r '.jobs[] | select(.status == "completed") | "\(.id)|\(.type)|\(.progress.current)"' "$JOBS_FILE" 2>/dev/null)
+    COMPLETED=$(jq -r '.jobs[] | select(.status == "completed") | "\(.id)|\(.type)|\(.progress.current)|\(.completedAt)"' "$JOBS_FILE" 2>/dev/null)
 
     if [[ -n "$COMPLETED" ]]; then
       COMPLETED_COUNT=$(echo "$COMPLETED" | wc -l | tr -d ' ')
       echo "✅ Completed ($COMPLETED_COUNT):"
       COUNT=0
-      while IFS='|' read -r id type items; do
+      while IFS='|' read -r id type items completed_at; do
         [[ -z "$id" ]] && continue
         if [[ $COUNT -lt 10 ]]; then
-          echo "   [${id:0:8}] $type - $items items"
+          # Calculate time ago
+          if [[ -n "$completed_at" ]] && [[ "$completed_at" != "null" ]]; then
+            NOW=$(date +%s)
+            COMPLETED_TS=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$(echo "$completed_at" | cut -d'.' -f1)" +%s 2>/dev/null || echo "$NOW")
+            DIFF=$((NOW - COMPLETED_TS))
+            DAYS=$((DIFF / 86400))
+            HOURS=$(((DIFF % 86400) / 3600))
+
+            if [[ $DAYS -gt 0 ]]; then
+              TIME_AGO="${DAYS} day$([ $DAYS -ne 1 ] && echo 's') ago"
+            elif [[ $HOURS -gt 0 ]]; then
+              TIME_AGO="${HOURS} hour$([ $HOURS -ne 1 ] && echo 's') ago"
+            else
+              TIME_AGO="recently"
+            fi
+          else
+            TIME_AGO=""
+          fi
+
+          if [[ -n "$TIME_AGO" ]]; then
+            echo "   [${id:0:8}] $type - $items items - $TIME_AGO"
+          else
+            echo "   [${id:0:8}] $type - $items items"
+          fi
           COUNT=$((COUNT + 1))
         fi
       done <<< "$COMPLETED"
@@ -317,15 +340,17 @@ else
     fi
   fi
 
-  # Summary if no active jobs
-  RUNNING_COUNT=$(jq '[.jobs[] | select(.status == "running")] | length' "$JOBS_FILE" 2>/dev/null || echo "0")
-  PAUSED_COUNT=$(jq '[.jobs[] | select(.status == "paused")] | length' "$JOBS_FILE" 2>/dev/null || echo "0")
-  FAILED_COUNT=$(jq '[.jobs[] | select(.status == "failed")] | length' "$JOBS_FILE" 2>/dev/null || echo "0")
-  COMPLETED_COUNT=$(jq '[.jobs[] | select(.status == "completed")] | length' "$JOBS_FILE" 2>/dev/null || echo "0")
+  # Summary if no active jobs AND not showing all
+  if [[ "$SHOW_ALL" != "true" ]]; then
+    RUNNING_COUNT=$(jq '[.jobs[] | select(.status == "running")] | length' "$JOBS_FILE" 2>/dev/null || echo "0")
+    PAUSED_COUNT=$(jq '[.jobs[] | select(.status == "paused")] | length' "$JOBS_FILE" 2>/dev/null || echo "0")
+    FAILED_COUNT=$(jq '[.jobs[] | select(.status == "failed")] | length' "$JOBS_FILE" 2>/dev/null || echo "0")
+    COMPLETED_COUNT=$(jq '[.jobs[] | select(.status == "completed")] | length' "$JOBS_FILE" 2>/dev/null || echo "0")
 
-  if [[ "$RUNNING_COUNT" -eq 0 ]] && [[ "$PAUSED_COUNT" -eq 0 ]] && [[ "$FAILED_COUNT" -eq 0 ]]; then
-    if [[ "$COMPLETED_COUNT" -gt 0 ]]; then
-      echo "   No active jobs. $COMPLETED_COUNT completed (use --all to see)."
+    if [[ "$RUNNING_COUNT" -eq 0 ]] && [[ "$PAUSED_COUNT" -eq 0 ]] && [[ "$FAILED_COUNT" -eq 0 ]]; then
+      if [[ "$COMPLETED_COUNT" -gt 0 ]]; then
+        echo "   No active jobs. $COMPLETED_COUNT completed (use --all to see)."
+      fi
     fi
   fi
 fi

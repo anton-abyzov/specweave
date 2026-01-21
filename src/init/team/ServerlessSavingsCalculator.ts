@@ -344,7 +344,6 @@ export class ServerlessSavingsCalculator {
     rationale: string;
     confidence: number;
   } {
-    // No applicable use cases → traditional
     if (options.length === 0) {
       return {
         recommendation: 'traditional',
@@ -353,7 +352,9 @@ export class ServerlessSavingsCalculator {
       };
     }
 
-    // High savings (> $500/month) → serverless
+    const useCaseList = options.map(o => o.useCase.toLowerCase()).join(', ');
+
+    // Threshold-based recommendation using a lookup approach
     if (totalSavings >= 500) {
       return {
         recommendation: 'serverless',
@@ -362,16 +363,14 @@ export class ServerlessSavingsCalculator {
       };
     }
 
-    // Moderate savings ($200-500) → hybrid
     if (totalSavings >= 200) {
       return {
         recommendation: 'hybrid',
-        rationale: `Serverless saves $${totalSavings}/month. Consider hybrid approach: serverless for ${options.map(o => o.useCase.toLowerCase()).join(', ')}, traditional for other services.`,
+        rationale: `Serverless saves $${totalSavings}/month. Consider hybrid approach: serverless for ${useCaseList}, traditional for other services.`,
         confidence: 0.85
       };
     }
 
-    // Low savings (< $200) → evaluate trade-offs
     if (totalSavings >= 100) {
       return {
         recommendation: 'hybrid',
@@ -380,7 +379,6 @@ export class ServerlessSavingsCalculator {
       };
     }
 
-    // Minimal savings → traditional
     return {
       recommendation: 'traditional',
       rationale: `Minimal savings ($${totalSavings}/month). Traditional infrastructure may offer better control for your use cases.`,

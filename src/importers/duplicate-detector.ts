@@ -160,61 +160,50 @@ export class DuplicateDetector {
   /**
    * Extract external_id and parent tracking info from a User Story file
    *
-   * CRITICAL (2025-12-01): Also extracts parent info for re-import hierarchy updates
-   *
    * @param filePath - Path to User Story markdown file
    * @returns External ID reference with parent info if found, null otherwise
    */
   private async extractExternalIdFromFile(filePath: string): Promise<ExternalIdReference | null> {
+    let content: string;
     try {
-      const content = await fs.readFile(filePath, 'utf-8');
+      content = await fs.readFile(filePath, 'utf-8');
+    } catch {
+      return null; // Skip files that can't be read
+    }
 
-      // Try to parse frontmatter
-      const parsed = matter(content);
+    const parsed = matter(content);
+    const usId = this.extractUsIdFromFile(filePath, content);
 
-      // Check for external_id in frontmatter
-      if (parsed.data.external_id) {
-        return {
-          usId: this.extractUsIdFromFile(filePath, content),
-          filePath,
-          externalId: String(parsed.data.external_id),
-          platform: parsed.data.external_platform,
-          // Parent tracking from frontmatter
-          featureId: parsed.data.feature_id,
-          parentId: parsed.data.parent_id,
-          isOrphan: parsed.data.is_orphan,
-          adoWorkItemType: parsed.data.ado_work_item_type,
-        };
-      }
+    // Check for external_id in frontmatter
+    if (parsed.data.external_id) {
+      return {
+        usId,
+        filePath,
+        externalId: String(parsed.data.external_id),
+        platform: parsed.data.external_platform,
+        featureId: parsed.data.feature_id,
+        parentId: parsed.data.parent_id,
+        isOrphan: parsed.data.is_orphan,
+        adoWorkItemType: parsed.data.ado_work_item_type,
+      };
+    }
 
-      // Fallback: Parse external metadata section in content
-      const externalIdMatch = content.match(/^-\s+\*\*External ID\*\*:\s+(.+)$/m);
-      if (externalIdMatch) {
-        // Extract parent tracking info from content body
-        const featureIdMatch = content.match(/^-\s+\*\*Feature ID\*\*:\s+(.+)$/m);
-        const parentIdMatch = content.match(/^-\s+\*\*Parent ID\*\*:\s+(.+)$/m);
-        const orphanMatch = content.match(/^-\s+\*\*Orphan\*\*:\s+true/m);
-        const adoTypeMatch = content.match(/^-\s+\*\*ADO Work Item Type\*\*:\s+(.+)$/m);
-        const platformMatch = content.match(/^-\s+\*\*Platform\*\*:\s+(.+)$/m);
-
-        return {
-          usId: this.extractUsIdFromFile(filePath, content),
-          filePath,
-          externalId: externalIdMatch[1].trim(),
-          platform: platformMatch?.[1]?.trim()?.toLowerCase(),
-          // Parent tracking from content body
-          featureId: featureIdMatch?.[1]?.trim(),
-          parentId: parentIdMatch?.[1]?.trim(),
-          isOrphan: !!orphanMatch,
-          adoWorkItemType: adoTypeMatch?.[1]?.trim(),
-        };
-      }
-
-      return null;
-    } catch (error: any) {
-      // Skip files that can't be read
+    // Fallback: Parse external metadata section in content
+    const externalIdMatch = content.match(/^-\s+\*\*External ID\*\*:\s+(.+)$/m);
+    if (!externalIdMatch) {
       return null;
     }
+
+    return {
+      usId,
+      filePath,
+      externalId: externalIdMatch[1].trim(),
+      platform: content.match(/^-\s+\*\*Platform\*\*:\s+(.+)$/m)?.[1]?.trim()?.toLowerCase(),
+      featureId: content.match(/^-\s+\*\*Feature ID\*\*:\s+(.+)$/m)?.[1]?.trim(),
+      parentId: content.match(/^-\s+\*\*Parent ID\*\*:\s+(.+)$/m)?.[1]?.trim(),
+      isOrphan: !!content.match(/^-\s+\*\*Orphan\*\*:\s+true/m),
+      adoWorkItemType: content.match(/^-\s+\*\*ADO Work Item Type\*\*:\s+(.+)$/m)?.[1]?.trim(),
+    };
   }
 
   /**

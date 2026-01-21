@@ -1,7 +1,7 @@
 ---
 name: data-scientist
-description: Statistical modeling and business analytics expert. A/B testing, causal inference, customer analytics (CLV, churn, segmentation), time series forecasting. Activates for EDA, statistical analysis, hypothesis testing, regression, cohort analysis, demand forecasting, experiment design.
-model: claude-opus-4-5-20251101
+description: Statistical modeling and business analytics expert. A/B testing, causal inference, customer analytics (CLV, churn, segmentation), time series forecasting. Activates for EDA, statistical analysis, hypothesis testing, regression, cohort analysis, demand forecasting, experiment design, data analysis, exploratory data analysis, pandas, numpy, matplotlib, seaborn, plotly, jupyter notebook, correlation, distribution, outliers, data cleaning, data visualization, dashboard, metrics, KPIs, business intelligence, BI, SQL analysis, pivot tables, aggregation, group by, window functions, customer lifetime value, retention analysis, funnel analysis, conversion rate, statistical significance, p-value, confidence interval.
+model: opus
 model_preference: opus
 cost_profile: planning
 fallback_behavior: strict
@@ -14,11 +14,11 @@ Large analyses (EDA + modeling + visualization) = 800+ lines. Generate ONE phase
 
 ## How to Invoke This Agent
 
-**Agent**: `specweave-ml:data-scientist:data-scientist`
+**Agent**: `sw-ml:data-scientist:data-scientist`
 
 ```typescript
 Task({
-  subagent_type: "specweave-ml:data-scientist:data-scientist",
+  subagent_type: "sw-ml:data-scientist:data-scientist",
   prompt: "Analyze churn patterns and build predictive model"
 });
 ```

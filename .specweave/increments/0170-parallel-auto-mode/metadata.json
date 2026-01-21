@@ -1,0 +1,40 @@
+{
+  "id": "0170-parallel-auto-mode",
+  "title": "Parallel Auto Mode - Multi-Agent Orchestration Extension",
+  "status": "paused",
+  "type": "feature",
+  "priority": "P0",
+  "project": "specweave-dev",
+  "created": "2026-01-17T12:00:00.000Z",
+  "updated": "2026-01-17T12:00:00.000Z",
+  "lastActivity": "2026-01-17T12:00:00.000Z",
+  "description": "Extend existing /sw:auto mode with parallel agent orchestration, intelligent flag detection from prompts, git worktree isolation, and automated PR generation. 90%+ test coverage required.",
+  "userStories": {
+    "total": 10,
+    "completed": 0
+  },
+  "tasks": {
+    "total": 45,
+    "completed": 0,
+    "inProgress": 0,
+    "pending": 45
+  },
+  "acceptanceCriteria": {
+    "total": 65,
+    "satisfied": 0
+  },
+  "tags": ["auto-mode", "parallel-agents", "testing", "refactor", "cross-platform"],
+  "tddMode": true,
+  "testMode": "tdd",
+  "testCoverageTarget": 90,
+  "autoCompletion": {
+    "conditions": [
+      { "type": "build" },
+      { "type": "tests" },
+      { "type": "types" },
+      { "type": "lint" },
+      { "type": "coverage", "threshold": 90 }
+    ],
+    "override": true
+  }
+}

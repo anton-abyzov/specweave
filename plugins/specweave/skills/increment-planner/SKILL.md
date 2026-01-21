@@ -1,11 +1,20 @@
 ---
 name: increment-planner
 description: Creates comprehensive implementation plans for ANY type of SpecWeave increment (feature, hotfix, bug, change-request, refactor, experiment). Supports all work types from features to bug investigations to POCs. Activates for: increment planning, feature planning, hotfix, bug investigation, root cause analysis, SRE investigation, change request, refactor, POC, prototype, spike work, experiment, implementation plan, create increment, organize work, break down work, new product, build project, MVP, SaaS, app development, tech stack planning, production issue, critical bug, stakeholder request.
+visibility: public
+invocableBy:
+  - sw:increment
+context: fork
+model: opus
 ---
 
 # Increment Planner Skill
 
+**Invoked automatically by `/sw:increment` command or via direct Skill tool call**
+
 **Self-contained increment planning that works in ANY user project after `specweave init`.**
+
+**Usage**: Either call `/sw:increment` command (recommended) or invoke this skill directly via `Skill({ skill: "increment-planner" })`.
 
 ---
 
@@ -149,8 +158,8 @@ Every increment MUST have `metadata.json` or:
   "priority": "P1",
   "created": "2025-11-24T12:00:00Z",
   "lastActivity": "2025-11-24T12:00:00Z",
-  "testMode": "<FROM config.testing.defaultTestMode OR 'TDD'>",
-  "coverageTarget": <FROM config.testing.defaultCoverageTarget OR 95>,
+  "testMode": "<FROM config.testing.defaultTestMode OR 'test-after'>",
+  "coverageTarget": <FROM config.testing.defaultCoverageTarget OR 80>,
   "feature_id": null,
   "epic_id": null,
   "externalLinks": {}
@@ -158,6 +167,13 @@ Every increment MUST have `metadata.json` or:
 ```
 
 **NOTE**: Always read `testMode` and `coverageTarget` from config, don't hardcode!
+
+**Testing Mode Configuration**:
+- **User Projects**: Default `testMode: "test-after"` (init wizard default, fast iteration)
+- **SpecWeave Core**: `testMode: "TDD"` required (mission-critical framework)
+- **Override per-increment**: Can be changed in metadata.json for specific needs
+- **Quality Gates**: `/sw:done` validates test coverage meets targets
+- **Coverage Targets**: Unit (>85%), Integration (>80%), E2E (>90%) - see config.testing.coverageTargets
 
 ### 4. Increment Structure
 
@@ -177,6 +193,81 @@ Every increment MUST have `metadata.json` or:
 ---
 
 ## Workflow (Safe, Self-Contained)
+
+### STEP 0-Prime: Self-Awareness Check (v1.0.102+)
+
+**🚨 CRITICAL: Detect if running in SpecWeave repository itself!**
+
+**Purpose**: Prevent pollution of SpecWeave's own increment history with test examples or confusion between framework development vs user project work.
+
+**Implementation**:
+
+```typescript
+import { detectSpecWeaveRepository, logRepositoryWarnings } from './src/utils/repository-detector.js';
+
+// Detect if this is SpecWeave's own repository
+const repoInfo = detectSpecWeaveRepository(process.cwd());
+
+// Log warnings if SpecWeave repo detected
+logRepositoryWarnings(repoInfo);
+
+// If SpecWeave repo detected, prompt user
+if (repoInfo.isSpecWeaveRepo) {
+  console.log('⚠️  You are running in the SpecWeave framework repository itself!');
+  console.log('');
+  console.log('   This increment will be created in SpecWeave\'s own .specweave/ folder.');
+  console.log('');
+  console.log('   Please confirm your intent:');
+  console.log('');
+  console.log('   1️⃣  SpecWeave Development - Working on the framework itself');
+  console.log('      Example: "Add new skill routing validator"');
+  console.log('');
+  console.log('   2️⃣  Testing/Example - Creating test increment for examples');
+  console.log('      💡 Consider using examples/ folder instead');
+  console.log('');
+  console.log('   3️⃣  Cancel - Not what I intended');
+  console.log('');
+
+  // In interactive Claude session, ASK user to choose
+  // In CI/automation, check for --force-specweave-dev flag
+
+  const choice = await promptUser('Your choice (1, 2, or 3): ');
+
+  if (choice === '3') {
+    throw new Error('Increment creation cancelled by user.');
+  }
+
+  if (choice === '2') {
+    console.log('');
+    console.log('💡 Recommendation: Create test examples in separate directory:');
+    console.log('   mkdir -p examples/0001-todo-api');
+    console.log('   cd examples/0001-todo-api');
+    console.log('   specweave init .');
+    console.log('');
+    const proceed = await promptUser('Proceed anyway in SpecWeave repo? (y/N): ');
+    if (proceed.toLowerCase() !== 'y') {
+      throw new Error('Increment creation cancelled. Please use examples/ folder for tests.');
+    }
+  }
+
+  // If choice === '1', continue with SpecWeave development
+  console.log('✅ Proceeding with SpecWeave framework development');
+  console.log('');
+}
+```
+
+**When to Skip**:
+- `--force-specweave-dev` flag provided (CI/automation)
+- Not running in SpecWeave repo (normal user project)
+
+**Why This Matters**:
+The triggering bug (0001-todo-api test example created in SpecWeave repo) happened because there was NO distinction between:
+- Testing SpecWeave with an example → Should use examples/ folder
+- Developing SpecWeave features → Should use .specweave/ folder
+
+This guard makes the distinction explicit and prevents confusion.
+
+---
 
 ### STEP 0: Detect Multi-Project Mode (MANDATORY FIRST!)
 
@@ -212,17 +303,33 @@ infra-terraform        → prefix: INFRA (infrastructure)
 ### STEP 0A: Read Config Values (MANDATORY)
 
 ```bash
-# Read testMode (default: "TDD")
-testMode=$(cat .specweave/config.json | jq -r '.testing.defaultTestMode // "TDD"')
+# Read testMode (default: "test-after" for user projects)
+testMode=$(cat .specweave/config.json | jq -r '.testing.defaultTestMode // "test-after"')
 
-# Read coverageTarget (default: 95)
-coverageTarget=$(cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 95')
+# Read coverageTarget (default: 80)
+coverageTarget=$(cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 80')
+
+# NEW (v1.0.111+): Select template based on testMode
+if [ "$testMode" = "TDD" ]; then
+  TASK_TEMPLATE="tasks-tdd-single-project.md"
+  INCLUDE_TDD_CONTRACT=true
+  echo "🔴 TDD MODE: Using TDD task template with RED-GREEN-REFACTOR triplets"
+else
+  TASK_TEMPLATE="tasks-single-project.md"
+  INCLUDE_TDD_CONTRACT=false
+fi
 
 echo "Using testMode: $testMode"
 echo "Using coverageTarget: $coverageTarget"
+echo "Using task template: $TASK_TEMPLATE"
 ```
 
 **Store these values for use in STEP 4 and STEP 7!**
+
+**TDD Template Selection (v1.0.111+)**:
+- When `testMode: "TDD"` → Use `tasks-tdd-single-project.md` with TDD triplet structure
+- When `testMode: "test-after"` (default) → Use standard `tasks-single-project.md`
+- TDD mode also injects `## TDD Contract` section into spec.md
 
 ### STEP 0B: Get Project Context (MANDATORY - BLOCKING!)
 
@@ -749,6 +856,50 @@ ls -1 .specweave/increments/ | grep -E '^[0-9]{4}-' | sort | tail -1
 # Get highest number, add 1
 ```
 
+### STEP 1.5: Validate Increment Number (v1.0.102+)
+
+**Warn if non-sequential number is requested.**
+
+```typescript
+import { validateIncrementNumber, logValidationResult } from './src/core/increment-validator.js';
+
+// Get all existing increments (including archived/paused)
+const existingIncrements = [
+  ...fs.readdirSync('.specweave/increments/'),
+  ...fs.readdirSync('.specweave/increments/_archive/').map(f => `_archive/${f}`),
+  ...fs.readdirSync('.specweave/increments/_paused/').map(f => `_paused/${f}`)
+].filter(f => /^\d{4}-/.test(f));
+
+// Validate requested number
+const result = validateIncrementNumber(requestedNumber, existingIncrements);
+
+// Log warnings and suggestions
+logValidationResult(result);
+
+// If invalid, STOP
+if (!result.isValid) {
+  throw new Error('Invalid increment number. See warnings above.');
+}
+
+// If valid but has warnings, prompt user to confirm
+if (result.warnings.length > 0) {
+  const proceed = await promptUser(`Continue with ${requestedNumber}? (Y/n)`);
+  if (!proceed) {
+    throw new Error('Increment creation cancelled by user.');
+  }
+}
+```
+
+**Example output for non-sequential number:**
+```
+⚠️  Increment Number Warning
+   ⚠️  Skipping 2 number(s): 0158 to 0159
+   💡 Consider using 0158 for sequential tracking.
+   💡 Non-sequential numbers can make it harder to track increment history.
+
+Continue with 0160? (Y/n)
+```
+
 ### STEP 2: Check for Duplicates
 
 ```bash
@@ -762,6 +913,24 @@ node plugins/specweave/skills/increment-planner/scripts/feature-utils.js check-i
 mkdir -p .specweave/increments/0021-feature-name
 ```
 
+**⚠️ CRITICAL: Increment Folder Structure Rules**
+
+**ONLY these files allowed at increment ROOT:**
+- `metadata.json` - Increment state (auto-managed)
+- `spec.md` - Specification
+- `plan.md` - Implementation plan
+- `tasks.md` - Task list
+
+**ALL other files MUST go in subfolders:**
+```
+.specweave/increments/####-name/
+├── reports/     # Validation reports, QA, completion summaries
+├── logs/        # Debug logs, session traces
+├── scripts/     # Helper scripts
+├── docs/        # Additional documentation, domain knowledge
+└── backups/     # Backup files
+```
+
 ### STEP 4: Create metadata.json FIRST (MANDATORY - CRITICAL ORDER!)
 
 **🚨 CRITICAL: metadata.json MUST be created BEFORE spec.md!**
@@ -773,8 +942,8 @@ This prevents broken increments that lack proper tracking.
 
 ```bash
 # Read config to get defaultTestMode and defaultCoverageTarget
-cat .specweave/config.json | jq -r '.testing.defaultTestMode // "TDD"'
-cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 95'
+cat .specweave/config.json | jq -r '.testing.defaultTestMode // "test-after"'
+cat .specweave/config.json | jq -r '.testing.defaultCoverageTarget // 80'
 ```
 
 Create `.specweave/increments/0021-feature-name/metadata.json`:
@@ -787,8 +956,8 @@ Create `.specweave/increments/0021-feature-name/metadata.json`:
   "priority": "P1",
   "created": "2025-11-24T12:00:00Z",
   "lastActivity": "2025-11-24T12:00:00Z",
-  "testMode": "<VALUE FROM config.testing.defaultTestMode OR 'TDD'>",
-  "coverageTarget": <VALUE FROM config.testing.defaultCoverageTarget OR 95>,
+  "testMode": "<VALUE FROM config.testing.defaultTestMode OR 'test-after'>",
+  "coverageTarget": <VALUE FROM config.testing.defaultCoverageTarget OR 80>,
   "feature_id": null,
   "epic_id": null,
   "externalLinks": {}
@@ -801,8 +970,8 @@ Create `.specweave/increments/0021-feature-name/metadata.json`:
 ```javascript
 // Read config
 const config = JSON.parse(fs.readFileSync('.specweave/config.json', 'utf8'));
-const testMode = config?.testing?.defaultTestMode || 'TDD';
-const coverageTarget = config?.testing?.defaultCoverageTarget || 95;
+const testMode = config?.testing?.defaultTestMode || 'test-after';
+const coverageTarget = config?.testing?.defaultCoverageTarget || 80;
 
 // Create metadata with config values
 const metadata = {
@@ -911,12 +1080,26 @@ Replace `{{FEATURE_TITLE}}` placeholder. plan.md is OPTIONAL - create only for c
 
 Create `.specweave/increments/0021-feature-name/tasks.md`:
 
-**⚠️ IMPORTANT: Use the correct template based on STEP 0 detection!**
+**⚠️ IMPORTANT: Use the correct template based on STEP 0A testMode detection!**
 
-#### 7A: Single-Project Template
+#### 7-TDD: TDD Mode Template (testMode: "TDD") - v1.0.111+
+
+**Template File**: `templates/tasks-tdd-single-project.md`
+
+Use this when `$TASK_TEMPLATE = "tasks-tdd-single-project.md"` (set in STEP 0A).
+
+This template generates tasks in RED-GREEN-REFACTOR triplets:
+- T-001 [RED]: Write failing test
+- T-002 [GREEN]: Implement to pass test (depends on T-001)
+- T-003 [REFACTOR]: Improve code quality (depends on T-002)
+
+**Dependency markers are CRITICAL** - they enable TDD enforcement hooks.
+
+#### 7A: Single-Project Template (Standard)
 
 **Template File**: `templates/tasks-single-project.md`
 
+Use this when `testMode != "TDD"` (default for most user projects).
 Replace `{{FEATURE_TITLE}}` placeholder.
 
 #### 7B: Multi-Project Template (umbrella.enabled: true) - USE THIS!
@@ -1047,6 +1230,112 @@ When creating tasks, assign optimal models:
 
 ---
 
+## TDD Task Generation (v1.0.105+)
+
+**When `testMode: "TDD"` is set in metadata.json, tasks MUST follow RED-GREEN-REFACTOR triplet pattern!**
+
+### TDD Task Structure
+
+For each feature, generate tasks in triplets:
+
+```markdown
+### T-001: [RED] Write failing test for user authentication
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01
+**Status**: [ ] pending
+**Phase**: RED
+**Model**: 💎 opus
+
+**Test**: Given [invalid credentials] → When [login attempted] → Then [authentication fails]
+
+**Guidance**:
+- Write test BEFORE implementation
+- Test MUST fail initially (no production code yet)
+- Focus on behavior, not implementation details
+
+---
+
+### T-002: [GREEN] Implement user authentication
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01
+**Status**: [ ] pending
+**Phase**: GREEN
+**Model**: 💎 opus
+**Depends On**: T-001
+
+**Test**: Make T-001 tests pass with minimal code
+
+**Guidance**:
+- Write MINIMAL code to make tests pass
+- Don't over-engineer or optimize yet
+- Keep it simple and working
+
+---
+
+### T-003: [REFACTOR] Improve authentication code quality
+**User Story**: US-001
+**Satisfies ACs**: AC-US1-01
+**Status**: [ ] pending
+**Phase**: REFACTOR
+**Model**: 💎 opus
+**Depends On**: T-002
+
+**Test**: All tests from T-001 must still pass after refactoring
+
+**Guidance**:
+- Clean up code without changing behavior
+- Extract helpers, improve naming
+- Tests MUST stay green throughout
+```
+
+### TDD Phase Markers
+
+**CRITICAL**: Use phase markers in task titles:
+
+| Phase | Marker | Purpose |
+|-------|--------|---------|
+| RED | `[RED]` | Write failing test first |
+| GREEN | `[GREEN]` | Make test pass with minimal code |
+| REFACTOR | `[REFACTOR]` | Improve code, keep tests green |
+
+### TDD Enforcement Hook
+
+When tasks.md is edited, the `tdd-enforcement-guard.sh` hook:
+1. Detects if `testMode: "TDD"` in metadata.json
+2. Checks task completion order
+3. **WARNS** (non-blocking) if:
+   - GREEN task completed before RED task
+   - REFACTOR task completed before GREEN task
+
+**Example warning:**
+```
+⚠️  TDD DISCIPLINE WARNING
+   Your increment is configured for TDD mode (testMode: TDD)
+
+   Potential violations detected:
+   • T-002 (GREEN) completed but T-001 (RED) not found or not completed
+
+   💡 TDD Best Practice: RED → GREEN → REFACTOR
+      1. 🔴 Write failing test FIRST
+      2. 🟢 Make test pass with minimal code
+      3. 🔵 Refactor while keeping tests green
+```
+
+### Coverage Validation
+
+During `/sw:done`, coverage validation checks:
+1. If `coverageTarget > 0` and `testMode != "none"`
+2. Searches for coverage data (Istanbul, c8, Jest, lcov, Cobertura)
+3. **WARNS** if coverage below target (non-blocking)
+
+Supported coverage file locations:
+- `coverage/coverage-summary.json` (Istanbul)
+- `.c8/coverage-summary.json` (c8)
+- `coverage/lcov.info` (lcov)
+- `coverage/cobertura-coverage.xml` (Cobertura)
+
+---
+
 ## Validation Checklist
 
 Before marking increment planning complete, verify:
@@ -1078,6 +1367,8 @@ Before marking increment planning complete, verify:
 - [ ] All AC-IDs from spec covered by tasks
 - [ ] Model hints assigned (⚡🧠💎)
 - [ ] Dependencies explicitly stated
+- [ ] **If TDD mode**: Tasks follow RED-GREEN-REFACTOR triplets
+- [ ] **If TDD mode**: Phase markers used ([RED], [GREEN], [REFACTOR])
 
 **metadata.json Content**:
 - [ ] Valid JSON syntax

@@ -325,7 +325,7 @@ GET /users
 Headers: Authorization: Bearer eyJhbGc...
 ```
 
-**Learn More: JWT →** | **[OAuth2 →](/docs/glossary/terms/oauth2)**
+**Learn More: JWT →** | **OAuth2 →**
 
 ### 3. Rate Limiting
 

@@ -8,6 +8,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Logger, consoleLogger } from '../../../utils/logger.js';
+import { PackageJsonCache, type PackageJsonContent } from '../../../utils/package-json-cache.js';
 
 export interface RepoInfo {
   path: string;
@@ -43,10 +44,12 @@ export interface LanguageStats {
 export class RepoScanner {
   private projectRoot: string;
   private logger: Logger;
+  private pkgCache: PackageJsonCache;
 
   constructor(projectRoot: string, logger?: Logger) {
     this.projectRoot = projectRoot;
     this.logger = logger ?? consoleLogger;
+    this.pkgCache = PackageJsonCache.getInstance();
   }
 
   /**
@@ -91,31 +94,27 @@ export class RepoScanner {
 
   /**
    * Detect repository type based on file patterns.
+   * Uses PackageJsonCache to avoid redundant file reads.
    */
   detectRepoType(repoPath: string): RepoType {
-    // Check package.json for Node.js projects
-    const packageJsonPath = path.join(repoPath, 'package.json');
-    if (fs.existsSync(packageJsonPath)) {
-      try {
-        const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-        const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+    // Check package.json for Node.js projects (using cache)
+    const pkg = this.pkgCache.get(repoPath);
+    if (pkg) {
+      const deps = this.pkgCache.getAllDependencies(pkg);
 
-        // Frontend indicators
-        if (deps['react'] || deps['vue'] || deps['@angular/core'] || deps['svelte']) {
-          return 'frontend';
-        }
+      // Frontend indicators
+      if (deps['react'] || deps['vue'] || deps['@angular/core'] || deps['svelte']) {
+        return 'frontend';
+      }
 
-        // Mobile indicators
-        if (deps['react-native'] || deps['expo'] || deps['@ionic/angular']) {
-          return 'mobile';
-        }
+      // Mobile indicators
+      if (deps['react-native'] || deps['expo'] || deps['@ionic/angular']) {
+        return 'mobile';
+      }
 
-        // Backend indicators
-        if (deps['express'] || deps['fastify'] || deps['koa'] || deps['@nestjs/core']) {
-          return 'backend';
-        }
-      } catch {
-        // Ignore parse errors
+      // Backend indicators
+      if (deps['express'] || deps['fastify'] || deps['koa'] || deps['@nestjs/core']) {
+        return 'backend';
       }
     }
 
@@ -143,14 +142,10 @@ export class RepoScanner {
     const hasUtilsFolder = fs.existsSync(path.join(repoPath, 'utils'));
     const hasSharedFolder = fs.existsSync(path.join(repoPath, 'shared'));
 
-    if ((hasTypesFolder || hasUtilsFolder || hasSharedFolder) && packageJsonPath) {
-      try {
-        const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-        if (pkg.main || pkg.exports) {
-          return 'shared-lib';
-        }
-      } catch {
-        // Ignore
+    if ((hasTypesFolder || hasUtilsFolder || hasSharedFolder) && pkg) {
+      // Reuse cached pkg instead of re-reading
+      if (pkg.main || pkg.exports) {
+        return 'shared-lib';
       }
     }
 
@@ -159,55 +154,51 @@ export class RepoScanner {
 
   /**
    * Extract tech stack from repository.
+   * Uses PackageJsonCache to avoid redundant file reads.
    */
   async extractTechStack(repoPath: string): Promise<TechStack> {
     const techStack: TechStack = {
       primary: 'unknown',
     };
 
-    // Check package.json for Node.js/TypeScript
-    const packageJsonPath = path.join(repoPath, 'package.json');
-    if (fs.existsSync(packageJsonPath)) {
-      try {
-        const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-        const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+    // Check package.json for Node.js/TypeScript (using cache)
+    const pkg = this.pkgCache.get(repoPath);
+    if (pkg) {
+      const deps = this.pkgCache.getAllDependencies(pkg);
 
-        // Primary language
-        if (deps['typescript'] || fs.existsSync(path.join(repoPath, 'tsconfig.json'))) {
-          techStack.primary = 'typescript';
-        } else {
-          techStack.primary = 'javascript';
-        }
-
-        // Framework detection
-        if (deps['next']) techStack.framework = 'nextjs';
-        else if (deps['@nestjs/core']) techStack.framework = 'nestjs';
-        else if (deps['express']) techStack.framework = 'express';
-        else if (deps['fastify']) techStack.framework = 'fastify';
-        else if (deps['react']) techStack.framework = 'react';
-        else if (deps['vue']) techStack.framework = 'vue';
-        else if (deps['@angular/core']) techStack.framework = 'angular';
-
-        // Database detection
-        if (deps['pg'] || deps['postgres']) techStack.database = 'postgresql';
-        else if (deps['mysql'] || deps['mysql2']) techStack.database = 'mysql';
-        else if (deps['mongodb'] || deps['mongoose']) techStack.database = 'mongodb';
-        else if (deps['redis']) techStack.database = 'redis';
-
-        // ORM detection
-        if (deps['prisma'] || deps['@prisma/client']) techStack.orm = 'prisma';
-        else if (deps['typeorm']) techStack.orm = 'typeorm';
-        else if (deps['sequelize']) techStack.orm = 'sequelize';
-        else if (deps['mongoose']) techStack.orm = 'mongoose';
-
-        // Testing framework
-        if (deps['jest']) techStack.testing = 'jest';
-        else if (deps['vitest']) techStack.testing = 'vitest';
-        else if (deps['mocha']) techStack.testing = 'mocha';
-        else if (deps['@playwright/test']) techStack.testing = 'playwright';
-      } catch {
-        // Ignore parse errors
+      // Primary language
+      if (deps['typescript'] || fs.existsSync(path.join(repoPath, 'tsconfig.json'))) {
+        techStack.primary = 'typescript';
+      } else {
+        techStack.primary = 'javascript';
       }
+
+      // Framework detection
+      if (deps['next']) techStack.framework = 'nextjs';
+      else if (deps['@nestjs/core']) techStack.framework = 'nestjs';
+      else if (deps['express']) techStack.framework = 'express';
+      else if (deps['fastify']) techStack.framework = 'fastify';
+      else if (deps['react']) techStack.framework = 'react';
+      else if (deps['vue']) techStack.framework = 'vue';
+      else if (deps['@angular/core']) techStack.framework = 'angular';
+
+      // Database detection
+      if (deps['pg'] || deps['postgres']) techStack.database = 'postgresql';
+      else if (deps['mysql'] || deps['mysql2']) techStack.database = 'mysql';
+      else if (deps['mongodb'] || deps['mongoose']) techStack.database = 'mongodb';
+      else if (deps['redis']) techStack.database = 'redis';
+
+      // ORM detection
+      if (deps['prisma'] || deps['@prisma/client']) techStack.orm = 'prisma';
+      else if (deps['typeorm']) techStack.orm = 'typeorm';
+      else if (deps['sequelize']) techStack.orm = 'sequelize';
+      else if (deps['mongoose']) techStack.orm = 'mongoose';
+
+      // Testing framework
+      if (deps['jest']) techStack.testing = 'jest';
+      else if (deps['vitest']) techStack.testing = 'vitest';
+      else if (deps['mocha']) techStack.testing = 'mocha';
+      else if (deps['@playwright/test']) techStack.testing = 'playwright';
     }
 
     // Check go.mod for Go projects

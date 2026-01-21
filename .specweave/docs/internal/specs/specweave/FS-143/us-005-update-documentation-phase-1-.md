@@ -4,7 +4,7 @@ feature: FS-143
 title: Update Documentation (Phase 1)
 status: completed
 priority: P1
-created: 2025-12-12
+created: 2026-01-14
 project: specweave
 external:
   github:

@@ -142,51 +142,34 @@ export class FormatPreservationValidator {
     };
   }
 
+  private static readonly BLOCKED_FIELDS = new Set([
+    'title', 'description', 'acceptance_criteria', 'acs', 'body', 'overview'
+  ]);
+
   /**
    * Check if field is blocked for external items
-   *
-   * @param field - Field name (e.g., 'title', 'description', 'comments')
-   * @returns True if field is blocked for external items
    */
   private isBlockedField(field: string): boolean {
-    const BLOCKED_FIELDS = [
-      'title',
-      'description',
-      'acceptance_criteria',
-      'acs',
-      'body',
-      'overview'
-    ];
-
-    return BLOCKED_FIELDS.includes(field.toLowerCase());
+    return FormatPreservationValidator.BLOCKED_FIELDS.has(field.toLowerCase());
   }
 
   /**
    * Get error message for blocked field
-   *
-   * @param field - Blocked field name
-   * @param usId - User Story ID
-   * @returns Error message
    */
   private getBlockedFieldError(field: string, usId: string): string {
     const fieldName = field.toLowerCase();
+    const suffix = `for ${usId} (external item with format preservation enabled)`;
 
-    switch (fieldName) {
-      case 'title':
-        return `Cannot update title for ${usId} (external item with format preservation enabled). Original title must be preserved.`;
-
-      case 'description':
-      case 'body':
-      case 'overview':
-        return `Cannot update description/body for ${usId} (external item with format preservation enabled). Original description must be preserved.`;
-
-      case 'acceptance_criteria':
-      case 'acs':
-        return `Cannot update acceptance criteria for ${usId} (external item with format preservation enabled). Original ACs must be preserved.`;
-
-      default:
-        return `Cannot update field "${field}" for ${usId} (external item with format preservation enabled).`;
+    if (fieldName === 'title') {
+      return `Cannot update title ${suffix}. Original title must be preserved.`;
     }
+    if (['description', 'body', 'overview'].includes(fieldName)) {
+      return `Cannot update description/body ${suffix}. Original description must be preserved.`;
+    }
+    if (['acceptance_criteria', 'acs'].includes(fieldName)) {
+      return `Cannot update acceptance criteria ${suffix}. Original ACs must be preserved.`;
+    }
+    return `Cannot update field "${field}" ${suffix}.`;
   }
 
   /**

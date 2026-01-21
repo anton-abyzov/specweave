@@ -1,209 +1,126 @@
-# SpecWeave Agents Index
+# SpecWeave Core Plugin - Agents & Skills Guide
 
-## Quick Reference: How to Invoke Agents
+> **Important**: The `sw` (specweave) core plugin provides capabilities through **auto-activating SKILLS**, not through agents you spawn via Task tool.
 
-All SpecWeave agents follow the naming pattern: `{plugin}:{directory}:{name-from-yaml}`
+## How Skills Work (Auto-Activation)
 
-### Core Planning & Design Agents
+Skills activate **automatically** when Claude detects keywords in your prompt. You don't call them explicitly.
 
-#### Product Manager (PM)
+```
+User: "Design the authentication system architecture"
+       ↓
+Claude sees "architecture" keyword
+       ↓
+Loads: plugins/specweave/skills/architect/SKILL.md
+       ↓
+Provides architecture expertise automatically
+```
+
+## Available Skills (Auto-Activated)
+
+### Planning & Design
+
+| Skill | Auto-Triggers | What It Does |
+|-------|---------------|--------------|
+| **architect** | architecture, system design, ADR, API design, microservices | System architecture, technical specs, ADRs |
+| **pm** | product, requirements, user story, MVP, roadmap | Product management, feature planning |
+| **tech-lead** | code review, best practices, refactoring | Technical leadership, code quality |
+
+### Quality & Testing
+
+| Skill | Auto-Triggers | What It Does |
+|-------|---------------|--------------|
+| **qa-lead** | test strategy, QA, quality gates, E2E | Test planning, quality assurance |
+| **tdd-orchestrator** | TDD, test-driven, red-green-refactor | TDD workflow coordination |
+| **code-reviewer** | code review, security, performance | Code quality review |
+
+### Documentation
+
+| Skill | Auto-Triggers | What It Does |
+|-------|---------------|--------------|
+| **docs-writer** | documentation, README, API docs | Technical documentation |
+| **translator** | translate, language, i18n | Multi-language translation |
+
+### Infrastructure
+
+| Skill | Auto-Triggers | What It Does |
+|-------|---------------|--------------|
+| **infrastructure** | Terraform, serverless, Lambda, deploy | IaC generation |
+| **performance** | optimization, profiling, caching | Performance analysis |
+| **security** | security, OWASP, vulnerabilities | Security review |
+
+## Example: Skills in Action
+
+```
+User: "I need to design the database schema for user authentication"
+
+Claude's internal process:
+1. Detects keywords: "design", "database schema", "authentication"
+2. Matches: architect skill (system design, database schema)
+3. Loads: skills/architect/SKILL.md
+4. Response includes architecture expertise automatically
+```
+
+## When to Use Task Tool (External Agents)
+
+For specialized agents from **other plugins**, use the Task tool:
+
 ```typescript
+// Frontend architecture (sw-frontend plugin)
 Task({
-  subagent_type: "specweave:pm:pm",
-  prompt: "Create product requirements for user dashboard feature"
+  subagent_type: "sw-frontend:frontend-architect:frontend-architect",
+  prompt: "Design React component architecture"
+});
+
+// Kubernetes (sw-k8s plugin)
+Task({
+  subagent_type: "sw-k8s:kubernetes-architect:kubernetes-architect",
+  prompt: "Create K8s manifests for microservices"
+});
+
+// QA Engineering (sw-testing plugin)
+Task({
+  subagent_type: "sw-testing:qa-engineer:qa-engineer",
+  prompt: "Create comprehensive test strategy"
 });
 ```
-**Use for**: Product strategy, requirements gathering, user story creation, feature prioritization
 
-#### Architect
-```typescript
-Task({
-  subagent_type: "specweave:architect:architect",
-  prompt: "Design system architecture for user authentication"
-});
-```
-**Use for**: System architecture, technical specifications, ADRs, component designs, API contracts
+## Skills vs Agents Summary
 
-#### Tech Lead
-```typescript
-Task({
-  subagent_type: "specweave:tech-lead:tech-lead",
-  prompt: "Review code and suggest improvements"
-});
-```
-**Use for**: Code review, best practices, technical mentorship, implementation planning
+| Aspect | Skills (sw plugin) | Agents (other plugins) |
+|--------|-------------------|----------------------|
+| **Invocation** | Auto-activated by keywords | Explicit via Task tool |
+| **Location** | `plugins/specweave/skills/` | `plugins/sw-*/agents/` |
+| **Format** | SKILL.md | AGENT.md |
+| **Plugin** | sw (core) | sw-frontend, sw-k8s, etc. |
 
----
-
-### Quality & Testing Agents
-
-#### QA Lead
-```typescript
-Task({
-  subagent_type: "specweave:qa-lead:qa-lead",
-  prompt: "Create test strategy for permission gates feature"
-});
-```
-**Use for**: Test plans, test cases, E2E testing with Playwright, test automation, coverage analysis
-
-#### Test-Aware Planner
-```typescript
-Task({
-  subagent_type: "specweave:test-aware-planner:test-aware-planner",
-  prompt: "Generate tasks with embedded test plans"
-});
-```
-**Use for**: Task generation with BDD test plans, coverage targets, AC-test mapping
-
-#### TDD Orchestrator
-```typescript
-Task({
-  subagent_type: "specweave:tdd-orchestrator:tdd-orchestrator",
-  prompt: "Coordinate TDD workflow for feature implementation"
-});
-```
-**Use for**: Red-green-refactor discipline, multi-agent TDD coordination
-
----
-
-### Code Quality & Standards Agents
-
-#### Code Standards Detective
-```typescript
-Task({
-  subagent_type: "specweave:code-standards-detective:code-standards-detective",
-  prompt: "Analyze codebase and generate coding standards documentation"
-});
-```
-**Use for**: Discovering naming conventions, import patterns, detecting anti-patterns
-
-#### Security
-```typescript
-Task({
-  subagent_type: "specweave:security:security",
-  prompt: "Perform security review of authentication implementation"
-});
-```
-**Use for**: Threat modeling, security architecture, OWASP Top 10, vulnerability assessment
-
----
-
-### Documentation & Communication Agents
-
-#### Docs Writer
-```typescript
-Task({
-  subagent_type: "specweave:docs-writer:docs-writer",
-  prompt: "Create API documentation for REST endpoints"
-});
-```
-**Use for**: API docs, user guides, developer guides, README files, architecture documentation
-
-#### Translator
-```typescript
-Task({
-  subagent_type: "specweave:translator:AGENT",
-  prompt: "Translate documentation to Spanish"
-});
-```
-**Use for**: Batch translation projects, multi-file translation coordination
-
----
-
-### Infrastructure & Performance Agents
-
-#### Infrastructure
-```typescript
-Task({
-  subagent_type: "specweave:infrastructure:infrastructure",
-  prompt: "Generate Terraform configurations for serverless deployment"
-});
-```
-**Use for**: Infrastructure-as-Code, AWS Lambda, Azure Functions, GCP Cloud Functions, Supabase
-
-#### Performance
-```typescript
-Task({
-  subagent_type: "specweave:performance:performance",
-  prompt: "Analyze and optimize database query performance"
-});
-```
-**Use for**: Performance optimization, profiling, benchmarking, scalability analysis
-
----
-
-### Quality Assurance Agents
-
-#### Quality Assessment (Skill-Based)
-
-**NOTE**: Quality assessment uses the `increment-quality-judge-v2` **skill** (auto-activated), not an agent.
+## Finding All Available Skills
 
 ```bash
-# Use CLI command directly - DO NOT spawn agents
-specweave qa 0001 --pre
+# List all skills in core plugin
+ls plugins/specweave/skills/
+
+# Check skill triggers
+head -5 plugins/specweave/skills/architect/SKILL.md
+
+# See full skills index
+cat plugins/specweave/skills/SKILLS-INDEX.md
 ```
 
-The skill auto-activates when you discuss quality assessment. See `plugins/specweave/skills/increment-quality-judge-v2/SKILL.md`.
+## Improving Skill Activation
 
-#### Reflective Reviewer
-```typescript
-Task({
-  subagent_type: "specweave:reflective-reviewer:reflective-reviewer",
-  prompt: "Perform reflective review of implementation quality"
-});
+If skills aren't activating reliably, ensure your prompts include trigger keywords:
+
 ```
-**Use for**: Post-implementation review, learning from mistakes, improvement suggestions
+# Less likely to activate architect skill
+"Help me with the backend"
 
----
-
-## Naming Pattern Explanation
-
-**Directory-based agents** (most common):
-```
-Pattern: {plugin}:{directory}:{name-from-yaml}
-Example: specweave:qa-lead:qa-lead
-
-Structure:
-plugins/specweave/agents/qa-lead/
-  └── AGENT.md (contains: name: qa-lead)
-```
-
-**File-based agents** (legacy):
-```
-Pattern: {plugin}:{filename}
-Example: specweave:code-reviewer
-
-Structure:
-plugins/specweave/agents/
-  └── code-reviewer.md
-```
-
-## Finding Agent Types
-
-```bash
-# List all available agents
-ls -la plugins/specweave/agents/
-
-# Check agent's YAML name field
-head -5 plugins/specweave/agents/qa-lead/AGENT.md
-# Output: name: qa-lead
-
-# Construct full type: specweave:qa-lead:qa-lead
-```
-
-## Common Mistakes
-
-```typescript
-// ❌ WRONG: Missing directory/name part
-Task({ subagent_type: "specweave:qa-lead", ... });
-// Error: Agent type 'specweave:qa-lead' not found
-
-// ✅ CORRECT: Full pattern with directory and name
-Task({ subagent_type: "specweave:qa-lead:qa-lead", ... });
+# More likely to activate architect skill
+"Help me design the backend architecture"
 ```
 
 ## See Also
 
-- **Agent Details**: Each agent's `AGENT.md` file contains full documentation
-- **CLAUDE.md**: Section 15 - Skills vs Agents: Understanding the Distinction
-- **Plugin Validation**: `scripts/validate-plugin-directories.sh`
+- **Skills Index**: `plugins/specweave/skills/SKILLS-INDEX.md`
+- **Plugin Agents**: Check `plugins/sw-*/agents/` for Task-invocable agents
+- **CLAUDE.md**: Section on Skills vs Agents

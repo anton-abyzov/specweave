@@ -246,12 +246,28 @@ export class FilterProcessor {
     const filtered = await this.applyFilters(projects, options);
     const reduction = Math.round(((original - filtered.length) / original) * 100);
 
-    const preview = `
-Filters will load ${filtered.length} projects (down from ${original})
+    const appliedFilters: string[] = [];
+    if (options.active) {
+      appliedFilters.push('  - Active projects only');
+    }
+    if (options.types) {
+      appliedFilters.push(`  - Types: ${options.types.join(', ')}`);
+    }
+    if (options.lead) {
+      appliedFilters.push(`  - Lead: ${options.lead}`);
+    }
+    if (options.jql) {
+      appliedFilters.push(`  - JQL: ${options.jql}`);
+    }
 
-Applied filters:
-${options.active ? '  ✓ Active projects only\n' : ''}${options.types ? `  ✓ Types: ${options.types.join(', ')}\n` : ''}${options.lead ? `  ✓ Lead: ${options.lead}\n` : ''}${options.jql ? `  ✓ JQL: ${options.jql}\n` : ''}
-Reduction: ${reduction}% fewer projects`;
+    const preview = [
+      `Filters will load ${filtered.length} projects (down from ${original})`,
+      '',
+      'Applied filters:',
+      ...appliedFilters,
+      '',
+      `Reduction: ${reduction}% fewer projects`
+    ].join('\n');
 
     return { original, filtered: filtered.length, reduction, preview };
   }

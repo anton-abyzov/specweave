@@ -51,8 +51,8 @@ function getTestingStrings(language: SupportedLanguage): {
       manualHint: '🟡 Manual: Ad-hoc tests → Flexible (startups, MVPs)',
       noneHint: '⚪ None: No tests → Fastest (hackathons, experiments)',
       selectApproach: 'Select your testing approach:',
-      tddOption: '🔴 TDD - Write tests first (mission-critical systems)',
-      testAfterOption: '🔵 Test-After - Implement first, test later (recommended)',
+      tddOption: '🔴 TDD - Write tests first (Recommended)',
+      testAfterOption: '🔵 Test-After - Implement first, test later (most projects)',
       manualOption: '🟡 Manual - Test when needed, no strict rules (flexible)',
       noneOption: '⚪ None - Skip testing entirely (hackathons, experiments)',
       selectCoverage: 'Select your coverage target level:',
@@ -78,8 +78,8 @@ function getTestingStrings(language: SupportedLanguage): {
       manualHint: '🟡 Ручное: Тесты по необходимости → Гибко (стартапы, MVP)',
       noneHint: '⚪ Без тестов: Пропустить → Быстро (хакатоны, эксперименты)',
       selectApproach: 'Выберите подход к тестированию:',
-      tddOption: '🔴 TDD - Сначала тесты (критичные системы)',
-      testAfterOption: '🔵 Test-After - Сначала код, потом тесты (рекомендуется)',
+      tddOption: '🔴 TDD - Сначала тесты (Рекомендуется)',
+      testAfterOption: '🔵 Test-After - Сначала код, потом тесты (большинство проектов)',
       manualOption: '🟡 Ручное - Тесты по необходимости, без строгих правил (гибко)',
       noneOption: '⚪ Без тестов - Пропустить тестирование (хакатоны, эксперименты)',
       selectCoverage: 'Выберите целевой уровень покрытия:',
@@ -105,8 +105,8 @@ function getTestingStrings(language: SupportedLanguage): {
       manualHint: '🟡 Manual: Pruebas ad-hoc → Flexible (startups, MVPs)',
       noneHint: '⚪ Ninguno: Sin pruebas → Más rápido (hackathons, experimentos)',
       selectApproach: 'Seleccione su enfoque de pruebas:',
-      tddOption: '🔴 TDD - Escribir pruebas primero (sistemas críticos)',
-      testAfterOption: '🔵 Test-After - Implementar primero, probar después (recomendado)',
+      tddOption: '🔴 TDD - Escribir pruebas primero (Recomendado)',
+      testAfterOption: '🔵 Test-After - Implementar primero, probar después (mayoría de proyectos)',
       manualOption: '🟡 Manual - Probar cuando sea necesario, sin reglas estrictas (flexible)',
       noneOption: '⚪ Ninguno - Omitir pruebas completamente (hackathons, experimentos)',
       selectCoverage: 'Seleccione su nivel de cobertura objetivo:',
@@ -132,8 +132,8 @@ function getTestingStrings(language: SupportedLanguage): {
       manualHint: '🟡 手动: 按需测试 → 灵活 (初创企业, MVP)',
       noneHint: '⚪ 无测试: 跳过 → 最快 (黑客马拉松, 实验)',
       selectApproach: '选择您的测试方法：',
-      tddOption: '🔴 TDD - 先写测试（关键系统）',
-      testAfterOption: '🔵 后置测试 - 先实现后测试（推荐）',
+      tddOption: '🔴 TDD - 先写测试（推荐）',
+      testAfterOption: '🔵 后置测试 - 先实现后测试（大多数项目）',
       manualOption: '🟡 手动 - 按需测试，无严格规则（灵活）',
       noneOption: '⚪ 无测试 - 完全跳过测试（黑客马拉松, 实验）',
       selectCoverage: '选择您的覆盖率目标级别：',
@@ -159,8 +159,8 @@ function getTestingStrings(language: SupportedLanguage): {
       manualHint: '🟡 Manuell: Tests bei Bedarf → Flexibel (Startups, MVPs)',
       noneHint: '⚪ Keine: Tests überspringen → Am schnellsten (Hackathons, Experimente)',
       selectApproach: 'Wählen Sie Ihren Testansatz:',
-      tddOption: '🔴 TDD - Zuerst Tests schreiben (kritische Systeme)',
-      testAfterOption: '🔵 Test-After - Erst implementieren, dann testen (empfohlen)',
+      tddOption: '🔴 TDD - Zuerst Tests schreiben (Empfohlen)',
+      testAfterOption: '🔵 Test-After - Erst implementieren, dann testen (meiste Projekte)',
       manualOption: '🟡 Manuell - Testen bei Bedarf, keine strengen Regeln (flexibel)',
       noneOption: '⚪ Keine - Tests komplett überspringen (Hackathons, Experimente)',
       selectCoverage: 'Wählen Sie Ihr Abdeckungsziel:',
@@ -186,8 +186,8 @@ function getTestingStrings(language: SupportedLanguage): {
       manualHint: '🟡 Manuel: Tests ad-hoc → Flexible (startups, MVPs)',
       noneHint: '⚪ Aucun: Pas de tests → Plus rapide (hackathons, expériences)',
       selectApproach: 'Sélectionnez votre approche de test :',
-      tddOption: '🔴 TDD - Écrire les tests en premier (systèmes critiques)',
-      testAfterOption: '🔵 Test-After - Implémenter d\'abord, tester ensuite (recommandé)',
+      tddOption: '🔴 TDD - Écrire les tests en premier (Recommandé)',
+      testAfterOption: '🔵 Test-After - Implémenter d\'abord, tester ensuite (plupart des projets)',
       manualOption: '🟡 Manuel - Tester quand nécessaire, pas de règles strictes (flexible)',
       noneOption: '⚪ Aucun - Ignorer les tests complètement (hackathons, expériences)',
       selectCoverage: 'Sélectionnez votre niveau de couverture cible :',
@@ -213,8 +213,8 @@ function getTestingStrings(language: SupportedLanguage): {
       manualHint: '🟡 手動: 必要時テスト → 柔軟 (スタートアップ, MVP)',
       noneHint: '⚪ なし: テストスキップ → 最速 (ハッカソン, 実験)',
       selectApproach: 'テストアプローチを選択してください：',
-      tddOption: '🔴 TDD - テストを先に書く（クリティカルシステム）',
-      testAfterOption: '🔵 テスト後付け - 先に実装、後でテスト（推奨）',
+      tddOption: '🔴 TDD - テストを先に書く（推奨）',
+      testAfterOption: '🔵 テスト後付け - 先に実装、後でテスト（ほとんどのプロジェクト）',
       manualOption: '🟡 手動 - 必要時にテスト、厳格なルールなし（柔軟）',
       noneOption: '⚪ なし - テストを完全にスキップ（ハッカソン, 実験）',
       selectCoverage: 'カバレッジ目標レベルを選択してください：',
@@ -240,8 +240,8 @@ function getTestingStrings(language: SupportedLanguage): {
       manualHint: '🟡 수동: 필요시 테스트 → 유연 (스타트업, MVP)',
       noneHint: '⚪ 없음: 테스트 건너뛰기 → 가장 빠름 (해커톤, 실험)',
       selectApproach: '테스트 접근 방식을 선택하세요:',
-      tddOption: '🔴 TDD - 테스트 먼저 작성 (핵심 시스템)',
-      testAfterOption: '🔵 테스트 후행 - 먼저 구현, 나중에 테스트 (권장)',
+      tddOption: '🔴 TDD - 테스트 먼저 작성 (권장)',
+      testAfterOption: '🔵 테스트 후행 - 먼저 구현, 나중에 테스트 (대부분 프로젝트)',
       manualOption: '🟡 수동 - 필요시 테스트, 엄격한 규칙 없음 (유연)',
       noneOption: '⚪ 없음 - 테스트 완전히 건너뛰기 (해커톤, 실험)',
       selectCoverage: '커버리지 목표 수준을 선택하세요:',
@@ -267,8 +267,8 @@ function getTestingStrings(language: SupportedLanguage): {
       manualHint: '🟡 Manual: Testes ad-hoc → Flexível (startups, MVPs)',
       noneHint: '⚪ Nenhum: Sem testes → Mais rápido (hackathons, experimentos)',
       selectApproach: 'Selecione sua abordagem de teste:',
-      tddOption: '🔴 TDD - Escrever testes primeiro (sistemas críticos)',
-      testAfterOption: '🔵 Test-After - Implementar primeiro, testar depois (recomendado)',
+      tddOption: '🔴 TDD - Escrever testes primeiro (Recomendado)',
+      testAfterOption: '🔵 Test-After - Implementar primeiro, testar depois (maioria dos projetos)',
       manualOption: '🟡 Manual - Testar quando necessário, sem regras rígidas (flexível)',
       noneOption: '⚪ Nenhum - Pular testes completamente (hackathons, experimentos)',
       selectCoverage: 'Selecione seu nível de cobertura alvo:',
@@ -325,6 +325,10 @@ export async function promptTestingConfig(language: SupportedLanguage = 'en'): P
     message: strings.selectApproach,
     choices: [
       {
+        name: strings.tddOption,
+        value: 'TDD' as TestMode | 'back',
+      },
+      {
         name: strings.testAfterOption,
         value: 'test-after' as TestMode | 'back',
       },
@@ -333,21 +337,17 @@ export async function promptTestingConfig(language: SupportedLanguage = 'en'): P
         value: 'manual' as TestMode | 'back',
       },
       {
-        name: strings.tddOption,
-        value: 'TDD' as TestMode | 'back',
-      },
-      {
         name: strings.noneOption,
         value: 'none' as TestMode | 'back',
       },
       createGoBackChoice(language) as { name: string; value: TestMode | 'back' },
     ],
-    default: 'test-after'
+    default: 'TDD'
   });
 
   // Handle go back
   if (testModeChoice === 'back') {
-    return { testMode: 'test-after', coverageTarget: 80, goBack: WIZARD_BACK };
+    return { testMode: 'TDD', coverageTarget: 80, goBack: WIZARD_BACK };
   }
 
   const testMode = testModeChoice as TestMode;
@@ -386,7 +386,7 @@ export async function promptTestingConfig(language: SupportedLanguage = 'en'): P
           value: 'custom' as number | 'custom',
         }
       ],
-      default: 50
+      default: 80
     });
 
     if (selectedCoverageLevel === 'custom') {

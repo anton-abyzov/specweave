@@ -53,30 +53,104 @@ LOCAL_PATH="/Users/antonabyzov/Projects/github/specweave"
 
 # Parse arguments
 MODE="github"  # ✅ DEFAULT TO GITHUB (stable, production-ready)
-if [ "$1" = "--local" ]; then
-  MODE="local"  # ⚠️  Only for active development
-elif [ "$1" = "--github" ]; then
-  MODE="github"
-elif [ "$1" = "--help" ]; then
-  echo "Usage: bash scripts/refresh-marketplace.sh [--github|--local]"
-  echo ""
-  echo "Options:"
-  echo "  --github  Pull latest from GitHub (default, recommended)"
-  echo "  --local   Use local development version (ONLY for active dev)"
-  echo "  --help    Show this help message"
-  echo ""
-  echo "⚠️  CRITICAL: Always use GitHub mode unless actively developing!"
-  echo "    Local mode creates filesystem coupling that can cause stale hooks."
-  exit 0
+LAZY_MODE=true # ✅ DEFAULT TO LAZY (router only, ~500 tokens)
+
+# Parse all arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --local)
+      MODE="local"  # ⚠️  Only for active development
+      shift
+      ;;
+    --github)
+      MODE="github"
+      shift
+      ;;
+    --all)
+      LAZY_MODE=false  # Install all plugins (~60K tokens)
+      shift
+      ;;
+    --lazy)
+      LAZY_MODE=true  # Explicit lazy mode (default anyway)
+      shift
+      ;;
+    --help)
+      echo "Usage: bash scripts/refresh-marketplace.sh [options]"
+      echo ""
+      echo "Options:"
+      echo "  --github  Pull latest from GitHub (default, recommended)"
+      echo "  --local   Use local development version (ONLY for active dev)"
+      echo "  --lazy    Install core + router only (~3K tokens) - DEFAULT"
+      echo "  --all     Install ALL plugins (~60K tokens) - legacy mode"
+      echo "  --help    Show this help message"
+      echo ""
+      echo "⚠️  CRITICAL: Always use GitHub mode unless actively developing!"
+      echo "    Local mode creates filesystem coupling that can cause stale hooks."
+      echo ""
+      echo "💡 Token savings with lazy mode:"
+      echo "   --lazy (default): ~3,000 tokens (core + router)"
+      echo "   --all:            ~60,000 tokens (all 24 plugins)"
+      exit 0
+      ;;
+    *)
+      echo -e "${RED}Unknown option: $1${NC}"
+      echo "Use --help for usage information"
+      exit 1
+      ;;
+  esac
+done
+
+INSTALL_MODE="lazy"
+if [ "$LAZY_MODE" = false ]; then
+  INSTALL_MODE="all"
 fi
 
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}  SpecWeave Marketplace Refresh (${MODE} mode)${NC}"
+echo -e "${BLUE}  SpecWeave Marketplace Refresh${NC}"
+echo -e "${BLUE}  Source: ${MODE} | Mode: ${INSTALL_MODE}${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+
+if [ "$LAZY_MODE" = true ]; then
+  echo -e "${GREEN}🚀 Lazy mode (default):${NC}"
+  echo -e "${BLUE}   • Install core + router plugins (~3K tokens)${NC}"
+  echo -e "${BLUE}   • Core: /sw:increment, /sw:do, /sw:done commands${NC}"
+  echo -e "${BLUE}   • Router: Agent spawning for dev tasks${NC}"
+  echo -e "${BLUE}   • Use --all flag to install all 24 plugins${NC}"
+else
+  echo -e "${YELLOW}⚠️  All plugins mode (legacy):${NC}"
+  echo -e "${YELLOW}   • Installing all 24 plugins (~60K tokens)${NC}"
+  echo -e "${YELLOW}   • Consider using lazy mode (default) for better performance${NC}"
+fi
 echo ""
 echo -e "${BLUE}ℹ️  Claude CLI automatically refreshes cache on 'marketplace add'${NC}"
 echo -e "${BLUE}   No need to manually remove/clear - just add and it pulls latest!${NC}"
 echo ""
+
+# Step 0: Uninstall existing SpecWeave plugins (for clean lazy mode)
+if [ "$LAZY_MODE" = true ]; then
+  echo -e "${YELLOW}🧹 Step 0: Cleaning up existing SpecWeave plugins...${NC}"
+
+  # Get list of installed SpecWeave plugins
+  INSTALLED_SW_PLUGINS=$(claude plugin list 2>/dev/null | grep "@specweave" | awk '{print $2}' | cut -d'@' -f1)
+
+  if [ -n "$INSTALLED_SW_PLUGINS" ]; then
+    INSTALLED_COUNT=$(echo "$INSTALLED_SW_PLUGINS" | wc -l | tr -d ' ')
+    echo -e "${BLUE}  Found $INSTALLED_COUNT SpecWeave plugins to uninstall${NC}"
+
+    while IFS= read -r plugin; do
+      if [ -n "$plugin" ]; then
+        echo -e "${BLUE}  Uninstalling $plugin...${NC}"
+        claude plugin uninstall "$plugin" 2>/dev/null || true
+      fi
+    done <<< "$INSTALLED_SW_PLUGINS"
+
+    echo -e "${GREEN}✓ Existing plugins uninstalled${NC}"
+  else
+    echo -e "${BLUE}  No existing SpecWeave plugins to remove${NC}"
+  fi
+  echo ""
+fi
 
 # Step 1: Ensure marketplace is registered and updated
 echo -e "${YELLOW}📥 Step 1: Checking marketplace status...${NC}"
@@ -166,52 +240,117 @@ PLUGIN_COUNT=$(echo "$PLUGINS" | wc -l | tr -d ' ')
 echo -e "${GREEN}✓ Found $PLUGIN_COUNT plugins${NC}"
 echo ""
 
-# Step 3: Install all plugins
-echo -e "${YELLOW}⚙️  Step 3: Installing all plugins...${NC}"
-echo ""
+# Step 3: Install plugins (LAZY or ALL mode)
+if [ "$LAZY_MODE" = true ]; then
+  # LAZY MODE: Install core + router plugins (essential pair)
+  echo -e "${YELLOW}⚙️  Step 3: Installing essential plugins (lazy mode)...${NC}"
+  echo ""
 
-SUCCESS_COUNT=0
-FAIL_COUNT=0
-FAILED_PLUGINS=()
+  CORE_PLUGIN="sw"          # Core SpecWeave commands (/sw:increment, /sw:do, /sw:done)
+  ROUTER_PLUGIN="sw-router"  # Agent routing for dev tasks
+  SUCCESS_COUNT=0
+  FAIL_COUNT=0
+  FAILED_PLUGINS=()
 
-while IFS= read -r plugin; do
-  echo -e "${BLUE}  Installing $plugin...${NC}"
-
-  if claude plugin install "$plugin" 2>&1 | grep -q "Successfully installed"; then
-    echo -e "${GREEN}  ✓ $plugin installed${NC}"
+  # 1. Install CORE plugin (provides /sw:increment, /sw:do, /sw:done etc.)
+  echo -e "${BLUE}  Installing $CORE_PLUGIN (core commands)...${NC}"
+  if claude plugin install "$CORE_PLUGIN" 2>&1 | grep -q "Successfully installed\|already installed"; then
+    echo -e "${GREEN}  ✓ $CORE_PLUGIN installed${NC}"
     ((SUCCESS_COUNT++))
   else
-    echo -e "${RED}  ✗ $plugin failed${NC}"
+    echo -e "${RED}  ✗ $CORE_PLUGIN failed${NC}"
     ((FAIL_COUNT++))
-    FAILED_PLUGINS+=("$plugin")
+    FAILED_PLUGINS+=("$CORE_PLUGIN")
+  fi
+
+  # 2. Install ROUTER plugin (provides agent spawning for dev tasks)
+  if echo "$PLUGINS" | grep -q "$ROUTER_PLUGIN"; then
+    echo -e "${BLUE}  Installing $ROUTER_PLUGIN (agent routing)...${NC}"
+    if claude plugin install "$ROUTER_PLUGIN" 2>&1 | grep -q "Successfully installed\|already installed"; then
+      echo -e "${GREEN}  ✓ $ROUTER_PLUGIN installed${NC}"
+      ((SUCCESS_COUNT++))
+    else
+      echo -e "${RED}  ✗ $ROUTER_PLUGIN failed${NC}"
+      ((FAIL_COUNT++))
+      FAILED_PLUGINS+=("$ROUTER_PLUGIN")
+    fi
+  else
+    echo -e "${YELLOW}  ⚠ Router plugin not found in marketplace (optional)${NC}"
   fi
   echo ""
-done <<< "$PLUGINS"
 
-# Summary
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${BLUE}  Installation Summary${NC}"
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
-echo -e "  Total plugins: ${PLUGIN_COUNT}"
-echo -e "  ${GREEN}Successful: ${SUCCESS_COUNT}${NC}"
+  # Lazy mode summary
+  echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${BLUE}  Lazy Loading Summary${NC}"
+  echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo ""
+  echo -e "  Total plugins available: ${PLUGIN_COUNT}"
+  echo -e "  ${GREEN}Installed now: ${SUCCESS_COUNT} (core + router)${NC}"
+  echo -e "  ${BLUE}Available for on-demand: $((PLUGIN_COUNT - SUCCESS_COUNT))${NC}"
+  echo ""
+  echo -e "${GREEN}  💡 Token savings:${NC}"
+  echo -e "${BLUE}     Before: ~60,000 tokens (all 24 plugins)${NC}"
+  echo -e "${BLUE}     After:  ~3,000 tokens (core + router)${NC}"
+  echo -e "${GREEN}     Saved:  ~57,000 tokens (95% reduction!)${NC}"
+  echo ""
+  echo -e "${BLUE}  📚 What's installed:${NC}"
+  echo -e "${BLUE}     • sw (core): /sw:increment, /sw:do, /sw:done${NC}"
+  echo -e "${BLUE}     • sw-router: Agent spawning for dev tasks${NC}"
+  echo ""
+  echo -e "${BLUE}  📚 How lazy loading works:${NC}"
+  echo -e "${BLUE}     • Router detects keywords in your prompts${NC}"
+  echo -e "${BLUE}     • Spawns specialized agents for the task${NC}"
+  echo -e "${BLUE}     • \"React dashboard\" → sw-frontend agent${NC}"
+  echo -e "${BLUE}     • \"GitHub sync\" → sw-github agent${NC}"
 
-if [ $FAIL_COUNT -gt 0 ]; then
-  echo -e "  ${RED}Failed: ${FAIL_COUNT}${NC}"
-  echo ""
-  echo -e "${YELLOW}Failed plugins:${NC}"
-  for plugin in "${FAILED_PLUGINS[@]}"; do
-    echo -e "  ${RED}- $plugin${NC}"
-  done
-  echo ""
-  echo -e "${YELLOW}⚠ Some plugins failed to install${NC}"
-  echo -e "${YELLOW}Check Claude Code logs for details${NC}"
 else
-  echo -e "  ${RED}Failed: 0${NC}"
+  # ALL MODE: Install all plugins (legacy behavior)
+  echo -e "${YELLOW}⚙️  Step 3: Installing all plugins...${NC}"
   echo ""
-  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  echo -e "${GREEN}  ✓ ALL PLUGINS INSTALLED SUCCESSFULLY!${NC}"
-  echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+  SUCCESS_COUNT=0
+  FAIL_COUNT=0
+  FAILED_PLUGINS=()
+
+  while IFS= read -r plugin; do
+    echo -e "${BLUE}  Installing $plugin...${NC}"
+
+    if claude plugin install "$plugin" 2>&1 | grep -q "Successfully installed\|already installed"; then
+      echo -e "${GREEN}  ✓ $plugin installed${NC}"
+      ((SUCCESS_COUNT++))
+    else
+      echo -e "${RED}  ✗ $plugin failed${NC}"
+      ((FAIL_COUNT++))
+      FAILED_PLUGINS+=("$plugin")
+    fi
+    echo ""
+  done <<< "$PLUGINS"
+
+  # Summary
+  echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo -e "${BLUE}  Installation Summary${NC}"
+  echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  echo ""
+  echo -e "  Total plugins: ${PLUGIN_COUNT}"
+  echo -e "  ${GREEN}Successful: ${SUCCESS_COUNT}${NC}"
+
+  if [ $FAIL_COUNT -gt 0 ]; then
+    echo -e "  ${RED}Failed: ${FAIL_COUNT}${NC}"
+    echo ""
+    echo -e "${YELLOW}Failed plugins:${NC}"
+    for plugin in "${FAILED_PLUGINS[@]}"; do
+      echo -e "  ${RED}- $plugin${NC}"
+    done
+    echo ""
+    echo -e "${YELLOW}⚠ Some plugins failed to install${NC}"
+    echo -e "${YELLOW}Check Claude Code logs for details${NC}"
+  else
+    echo -e "  ${RED}Failed: 0${NC}"
+    echo ""
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${GREEN}  ✓ ALL PLUGINS INSTALLED SUCCESSFULLY!${NC}"
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+  fi
 fi
 
 echo ""
@@ -281,8 +420,16 @@ fi
 echo ""
 echo -e "${BLUE}Next steps:${NC}"
 echo -e "  1. Restart Claude Code for changes to take effect"
-echo -e "  2. Run ${YELLOW}/plugin${NC} to verify all plugins loaded"
-echo -e "  3. Check ${YELLOW}~/.claude/plugins/installed_plugins.json${NC}"
+if [ "$LAZY_MODE" = true ]; then
+  echo -e "  2. Run ${YELLOW}/plugin${NC} to verify sw + sw-router loaded"
+  echo -e "  3. Test: ${YELLOW}/sw:increment \"test feature\"${NC} (from core)"
+  echo -e "  4. Test: \"Build React dashboard\" → should spawn sw-frontend agent"
+  echo -e "  5. Manual load: ${YELLOW}specweave load-plugins <group>${NC}"
+  echo -e "${BLUE}     Groups: github, jira, ado, frontend, backend, ml, infra, all${NC}"
+else
+  echo -e "  2. Run ${YELLOW}/plugin${NC} to verify all plugins loaded"
+  echo -e "  3. Check ${YELLOW}~/.claude/plugins/installed_plugins.json${NC}"
+fi
 echo ""
 
 exit 0

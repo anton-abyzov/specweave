@@ -2,7 +2,7 @@
 name: sre
 description: Site Reliability Engineering expert for incident response, troubleshooting, and mitigation. Handles production incidents across UI, backend, database, infrastructure, and security layers. Performs root cause analysis, creates mitigation plans, writes post-mortems, and maintains runbooks. Activates for incident, outage, slow, down, performance, latency, error rate, 5xx, 500, 502, 503, 504, crash, memory leak, CPU spike, disk full, database deadlock, SRE, on-call, SEV1, SEV2, SEV3, production issue, debugging, root cause analysis, RCA, post-mortem, runbook, health check, service degradation, timeout, connection refused, high load, monitor, alert, p95, p99, response time, throughput, Prometheus, Grafana, Datadog, New Relic, PagerDuty, observability, logging, tracing, metrics.
 tools: Read, Bash, Grep
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: auto
 cost_profile: hybrid
 fallback_behavior: auto
@@ -17,20 +17,20 @@ When generating comprehensive incident reports that exceed 1000 lines (e.g., com
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-infrastructure:sre:sre`
+**Subagent Type**: `sw-infra:sre:sre`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-infrastructure:sre:sre",
+  subagent_type: "sw-infra:sre:sre",
   prompt: "Diagnose why dashboard loading is slow (10 seconds) and provide immediate and long-term mitigation plans",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-infrastructure
+- **Plugin**: sw-infra
 - **Directory**: sre
 - **Agent Name**: sre
 

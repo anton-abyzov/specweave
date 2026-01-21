@@ -282,25 +282,14 @@ function formatDate(isoDate: string): string {
  * Format time relative to now
  */
 function formatRelativeTime(isoDate: string): string {
-  const timestamp = new Date(isoDate).getTime();
-  const now = Date.now();
-  const diffMs = now - timestamp;
-
-  if (diffMs < 60 * 1000) {
-    return 'just now';
-  }
-
-  const minutes = Math.floor(diffMs / (60 * 1000));
-  if (minutes < 60) {
-    return `${minutes}m ago`;
-  }
-
+  const diffMs = Date.now() - new Date(isoDate).getTime();
+  const minutes = Math.floor(diffMs / 60000);
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) {
-    return `${hours}h ago`;
-  }
-
   const days = Math.floor(hours / 24);
+
+  if (minutes < 1) return 'just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
   return `${days}d ago`;
 }
 

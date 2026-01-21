@@ -148,31 +148,10 @@ const MARKET_MAPPINGS: MarketCategoryMapping[] = [
 ];
 
 /**
- * Detect market category from vision text
- *
- * Uses rule-based classification against domain patterns to determine
- * the best-fit market category with confidence score.
- *
- * @param vision - Product vision text
- * @returns Market classification with category and confidence
- *
- * @example
- * ```typescript
- * const result = detectMarketCategory('A project management tool for agile teams');
- * // Returns: { category: 'productivity-saas', confidence: 0.85 }
- * ```
+ * Detect which domains are present in the vision text
  */
-export function detectMarketCategory(vision: string): MarketClassification {
-  if (!vision || vision.trim().length === 0) {
-    return {
-      category: 'unknown',
-      confidence: 0
-    };
-  }
-
+function detectPresentDomains(vision: string): Set<string> {
   const visionLower = vision.toLowerCase();
-
-  // Step 1: Detect which domains are present in the vision
   const presentDomains = new Set<string>();
 
   for (const domainPattern of DOMAIN_PATTERNS) {
@@ -182,112 +161,21 @@ export function detectMarketCategory(vision: string): MarketClassification {
     }
   }
 
-  // If no domains detected, return unknown
-  if (presentDomains.size === 0) {
-    return {
-      category: 'unknown',
-      confidence: 0
-    };
-  }
-
-  // Step 2: Score each market category based on domain matches
-  const categoryScores: Array<{
-    category: MarketCategory;
-    score: number;
-    confidence: number;
-  }> = [];
-
-  for (const mapping of MARKET_MAPPINGS) {
-    let score = 0;
-
-    // Primary domains: weight 3.0
-    for (const primaryDomain of mapping.primaryDomains) {
-      if (presentDomains.has(primaryDomain)) {
-        score += 3.0;
-      }
-    }
-
-    // Secondary domains: weight 1.0
-    for (const secondaryDomain of mapping.secondaryDomains) {
-      if (presentDomains.has(secondaryDomain)) {
-        score += 1.0;
-      }
-    }
-
-    // Calculate confidence (normalize score)
-    const maxPossibleScore = mapping.primaryDomains.length * 3.0 +
-                            mapping.secondaryDomains.length * 1.0;
-    const confidence = score / maxPossibleScore;
-
-    if (confidence >= mapping.minConfidence) {
-      categoryScores.push({
-        category: mapping.category,
-        score,
-        confidence
-      });
-    }
-  }
-
-  // Step 3: Sort by score (descending)
-  categoryScores.sort((a, b) => b.score - a.score);
-
-  // Step 4: Return best match (or unknown if no matches)
-  if (categoryScores.length === 0) {
-    return {
-      category: 'unknown',
-      confidence: 0
-    };
-  }
-
-  const best = categoryScores[0];
-  const result: MarketClassification = {
-    category: best.category,
-    confidence: best.confidence
-  };
-
-  // Include runner-up if close (within 20% confidence)
-  if (categoryScores.length > 1) {
-    const runnerUp = categoryScores[1];
-    if (runnerUp.confidence >= best.confidence * 0.8) {
-      result.runnerUp = {
-        category: runnerUp.category,
-        confidence: runnerUp.confidence
-      };
-    }
-  }
-
-  return result;
+  return presentDomains;
 }
 
 /**
- * Get all potential market categories with scores (useful for debugging)
- *
- * @param vision - Product vision text
- * @returns Array of all categories with scores, sorted by confidence
+ * Score market categories based on present domains
  */
-export function analyzeMarketCategories(vision: string): Array<{
+function scoreMarketCategories(presentDomains: Set<string>): Array<{
   category: MarketCategory;
+  score: number;
   confidence: number;
   matchedDomains: string[];
 }> {
-  if (!vision || vision.trim().length === 0) {
-    return [];
-  }
-
-  const visionLower = vision.toLowerCase();
-
-  // Detect domains
-  const presentDomains = new Set<string>();
-  for (const domainPattern of DOMAIN_PATTERNS) {
-    const regex = new RegExp(domainPattern.pattern);
-    if (regex.test(visionLower)) {
-      presentDomains.add(domainPattern.domain);
-    }
-  }
-
-  // Score all categories
   const results: Array<{
     category: MarketCategory;
+    score: number;
     confidence: number;
     matchedDomains: string[];
   }> = [];
@@ -316,11 +204,91 @@ export function analyzeMarketCategories(vision: string): Array<{
 
     results.push({
       category: mapping.category,
+      score,
       confidence,
       matchedDomains
     });
   }
 
-  // Sort by confidence
-  return results.sort((a, b) => b.confidence - a.confidence);
+  return results.sort((a, b) => b.score - a.score);
+}
+
+/**
+ * Detect market category from vision text
+ *
+ * Uses rule-based classification against domain patterns to determine
+ * the best-fit market category with confidence score.
+ *
+ * @param vision - Product vision text
+ * @returns Market classification with category and confidence
+ *
+ * @example
+ * ```typescript
+ * const result = detectMarketCategory('A project management tool for agile teams');
+ * // Returns: { category: 'productivity-saas', confidence: 0.85 }
+ * ```
+ */
+export function detectMarketCategory(vision: string): MarketClassification {
+  if (!vision || vision.trim().length === 0) {
+    return { category: 'unknown', confidence: 0 };
+  }
+
+  const presentDomains = detectPresentDomains(vision);
+
+  if (presentDomains.size === 0) {
+    return { category: 'unknown', confidence: 0 };
+  }
+
+  const categoryScores = scoreMarketCategories(presentDomains);
+  const qualifyingScores = categoryScores.filter((cs, idx) => {
+    const mapping = MARKET_MAPPINGS.find(m => m.category === cs.category);
+    return mapping && cs.confidence >= mapping.minConfidence;
+  });
+
+  if (qualifyingScores.length === 0) {
+    return { category: 'unknown', confidence: 0 };
+  }
+
+  const best = qualifyingScores[0];
+  const result: MarketClassification = {
+    category: best.category,
+    confidence: best.confidence
+  };
+
+  if (qualifyingScores.length > 1) {
+    const runnerUp = qualifyingScores[1];
+    if (runnerUp.confidence >= best.confidence * 0.8) {
+      result.runnerUp = {
+        category: runnerUp.category,
+        confidence: runnerUp.confidence
+      };
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Get all potential market categories with scores (useful for debugging)
+ *
+ * @param vision - Product vision text
+ * @returns Array of all categories with scores, sorted by confidence
+ */
+export function analyzeMarketCategories(vision: string): Array<{
+  category: MarketCategory;
+  confidence: number;
+  matchedDomains: string[];
+}> {
+  if (!vision || vision.trim().length === 0) {
+    return [];
+  }
+
+  const presentDomains = detectPresentDomains(vision);
+  const scored = scoreMarketCategories(presentDomains);
+
+  return scored.map(({ category, confidence, matchedDomains }) => ({
+    category,
+    confidence,
+    matchedDomains
+  }));
 }

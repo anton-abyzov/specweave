@@ -192,10 +192,10 @@ export class FlexibleRFCGenerator {
     const grouped = this.groupWorkItems(workItems, structure);
 
     // Generate sections for each group
-    grouped.forEach(group => {
+    for (const group of grouped) {
       design += `### ${group.displayName}\n\n`;
 
-      group.items.forEach((item, index) => {
+      for (const [index, item] of group.items.entries()) {
         design += `#### ${index + 1}. ${item.title}\n\n`;
 
         if (item.description) {
@@ -225,8 +225,8 @@ export class FlexibleRFCGenerator {
         if (metadataItems.length > 0) {
           design += metadataItems.join(' | ') + '\n\n';
         }
-      });
-    });
+      }
+    }
 
     return design;
   }
@@ -280,13 +280,13 @@ export class FlexibleRFCGenerator {
   private groupByType(items: FlexibleWorkItem[], structure: ProjectStructure): GroupedWorkItems[] {
     const typeMap = new Map<string, FlexibleWorkItem[]>();
 
-    items.forEach(item => {
+    for (const item of items) {
       const type = item.type.toLowerCase();
       if (!typeMap.has(type)) {
         typeMap.set(type, []);
       }
       typeMap.get(type)!.push(item);
-    });
+    }
 
     // Define display order and names
     const typeDisplayNames: Record<string, string> = {
@@ -306,7 +306,7 @@ export class FlexibleRFCGenerator {
     const groups: GroupedWorkItems[] = [];
 
     // Add groups in order
-    typeOrder.forEach(type => {
+    for (const type of typeOrder) {
       if (typeMap.has(type)) {
         groups.push({
           groupName: type,
@@ -315,16 +315,16 @@ export class FlexibleRFCGenerator {
         });
         typeMap.delete(type);
       }
-    });
+    }
 
     // Add remaining types not in predefined order
-    typeMap.forEach((groupItems, type) => {
+    for (const [type, groupItems] of typeMap) {
       groups.push({
         groupName: type,
         displayName: this.formatGroupName(type),
         items: groupItems
       });
-    });
+    }
 
     return groups;
   }
@@ -336,7 +336,7 @@ export class FlexibleRFCGenerator {
     const parentMap = new Map<string, FlexibleWorkItem[]>();
     const noParent: FlexibleWorkItem[] = [];
 
-    items.forEach(item => {
+    for (const item of items) {
       if (item.parent) {
         const parentKey = item.parent.key;
         if (!parentMap.has(parentKey)) {
@@ -346,12 +346,12 @@ export class FlexibleRFCGenerator {
       } else {
         noParent.push(item);
       }
-    });
+    }
 
     const groups: GroupedWorkItems[] = [];
 
     // Add parent groups
-    parentMap.forEach((groupItems, parentKey) => {
+    for (const [parentKey, groupItems] of parentMap) {
       const firstItem = groupItems[0];
       const parentType = firstItem.parent?.type || structure.workItemTypes.parentLevel || 'Parent';
       const parentTitle = firstItem.parent?.title || parentKey;
@@ -366,7 +366,7 @@ export class FlexibleRFCGenerator {
           parentUrl: firstItem.parent?.url
         }
       });
-    });
+    }
 
     // Add ungrouped items
     if (noParent.length > 0) {
@@ -386,18 +386,18 @@ export class FlexibleRFCGenerator {
   private groupByPriority(items: FlexibleWorkItem[]): GroupedWorkItems[] {
     const priorityMap = new Map<string, FlexibleWorkItem[]>();
 
-    items.forEach(item => {
+    for (const item of items) {
       const priority = item.priority || 'None';
       if (!priorityMap.has(priority)) {
         priorityMap.set(priority, []);
       }
       priorityMap.get(priority)!.push(item);
-    });
+    }
 
     const priorityOrder = ['P1', 'P2', 'P3', 'High', 'Medium', 'Low', 'None'];
     const groups: GroupedWorkItems[] = [];
 
-    priorityOrder.forEach(priority => {
+    for (const priority of priorityOrder) {
       if (priorityMap.has(priority)) {
         groups.push({
           groupName: priority,
@@ -406,16 +406,16 @@ export class FlexibleRFCGenerator {
         });
         priorityMap.delete(priority);
       }
-    });
+    }
 
     // Add remaining priorities
-    priorityMap.forEach((groupItems, priority) => {
+    for (const [priority, groupItems] of priorityMap) {
       groups.push({
         groupName: priority,
         displayName: `Priority: ${priority}`,
         items: groupItems
       });
-    });
+    }
 
     return groups;
   }
@@ -427,28 +427,28 @@ export class FlexibleRFCGenerator {
     const labelMap = new Map<string, FlexibleWorkItem[]>();
     const noLabels: FlexibleWorkItem[] = [];
 
-    items.forEach(item => {
+    for (const item of items) {
       if (item.labels && item.labels.length > 0) {
-        item.labels.forEach(label => {
+        for (const label of item.labels) {
           if (!labelMap.has(label)) {
             labelMap.set(label, []);
           }
           labelMap.get(label)!.push(item);
-        });
+        }
       } else {
         noLabels.push(item);
       }
-    });
+    }
 
     const groups: GroupedWorkItems[] = [];
 
-    labelMap.forEach((groupItems, label) => {
+    for (const [label, groupItems] of labelMap) {
       groups.push({
         groupName: label,
         displayName: `Label: ${label}`,
         items: groupItems
       });
-    });
+    }
 
     if (noLabels.length > 0) {
       groups.push({
@@ -493,12 +493,13 @@ export class FlexibleRFCGenerator {
    * Get source label
    */
   private getSourceLabel(sourceType?: RFCSource): string {
-    switch (sourceType) {
-      case 'jira': return 'Jira';
-      case 'ado': return 'ADO';
-      case 'github': return 'GitHub';
-      default: return 'Source';
-    }
+    const sourceLabels: Record<RFCSource, string> = {
+      jira: 'Jira',
+      ado: 'ADO',
+      github: 'GitHub',
+      manual: 'Source',
+    };
+    return sourceType ? (sourceLabels[sourceType] ?? 'Source') : 'Source';
   }
 
   /**

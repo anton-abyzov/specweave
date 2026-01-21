@@ -8,6 +8,9 @@ class GitHubClientV2 {
       throw new Error(`Expected GitHub profile, got ${profile.provider}`);
     }
     const config = profile.config;
+    if (!config.owner || !config.repo) {
+      throw new Error("GitHub profile config missing required owner or repo");
+    }
     this.owner = config.owner;
     this.repo = config.repo;
     this.fullRepo = `${this.owner}/${this.repo}`;

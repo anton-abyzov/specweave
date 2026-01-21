@@ -31,51 +31,40 @@ export class ProjectManager {
    * @returns ProjectContext
    */
   getActiveProject(): ProjectContext {
-    // Return cached project if available
     if (this.cachedProject) {
       return this.cachedProject;
     }
 
     const config = this.configManager.load();
 
-    // Single project mode → return auto-detected project
+    // Single project mode
     if (!config.multiProject?.enabled) {
-      // Auto-detect project ID (git remote, sync config, or "default")
       const projectId = autoDetectProjectIdSync(this.projectRoot, { silent: true });
-
-      this.cachedProject = {
-        projectId: projectId,
-        projectName: config.project?.name || formatProjectName(projectId),
-        projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', projectId),
-        keywords: [],
-        techStack: config.project?.techStack || []
-      };
+      this.cachedProject = this.createProjectContext(
+        projectId,
+        config.project?.name || formatProjectName(projectId),
+        [],
+        config.project?.techStack || []
+      );
       return this.cachedProject;
     }
 
-    // Multi-project mode → return first available project
-    // NOTE (v0.33.0): activeProject REMOVED - per-US project targeting replaces it
-    // In multi-project mode, we use the first project as default context
-    // Individual USs can target specific projects via **Project**: field
+    // Multi-project mode - use first project as default
     const projectIds = Object.keys(config.multiProject.projects || {});
     if (projectIds.length === 0) {
       throw new Error('Multi-project mode enabled but no projects defined in config');
     }
 
-    const activeProjectId = projectIds[0];  // Use first project as default
+    const activeProjectId = projectIds[0];
     const projectConfig = config.multiProject.projects![activeProjectId];
 
-    // Convert ProjectConfig to ProjectContext
-    const project: ProjectContext = {
-      projectId: activeProjectId,
-      projectName: projectConfig.name,
-      projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', activeProjectId),
-      keywords: projectConfig.keywords || [],
-      techStack: projectConfig.techStack || []
-    };
-
-    this.cachedProject = project;
-    return project;
+    this.cachedProject = this.createProjectContext(
+      activeProjectId,
+      projectConfig.name,
+      projectConfig.keywords || [],
+      projectConfig.techStack || []
+    );
+    return this.cachedProject;
   }
 
   /**
@@ -86,32 +75,42 @@ export class ProjectManager {
   getAllProjects(): ProjectContext[] {
     const config = this.configManager.load();
 
-    if (!config.multiProject?.enabled) {
-      // Auto-detect project ID for single project mode
+    if (!config.multiProject?.enabled || !config.multiProject.projects) {
       const projectId = autoDetectProjectIdSync(this.projectRoot, { silent: true });
-
-      return [{
-        projectId: projectId,
-        projectName: config.project?.name || formatProjectName(projectId),
-        projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', projectId),
-        keywords: [],
-        techStack: config.project?.techStack || []
-      }];
+      return [this.createProjectContext(
+        projectId,
+        config.project?.name || formatProjectName(projectId),
+        [],
+        config.project?.techStack || []
+      )];
     }
 
-    // Convert Record<string, ProjectConfig> to ProjectContext[]
-    const projects: ProjectContext[] = [];
-    for (const [projectId, projectConfig] of Object.entries(config.multiProject.projects)) {
-      projects.push({
-        projectId: projectId,
-        projectName: projectConfig.name,
-        projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', projectId),
-        keywords: projectConfig.keywords || [],
-        techStack: projectConfig.techStack || []
-      });
-    }
+    return Object.entries(config.multiProject.projects).map(([projectId, projectConfig]) =>
+      this.createProjectContext(
+        projectId,
+        projectConfig.name,
+        projectConfig.keywords || [],
+        projectConfig.techStack || []
+      )
+    );
+  }
 
-    return projects;
+  /**
+   * Create a ProjectContext from individual properties
+   */
+  private createProjectContext(
+    projectId: string,
+    projectName: string,
+    keywords: string[],
+    techStack: string[]
+  ): ProjectContext {
+    return {
+      projectId,
+      projectName,
+      projectPath: path.join(this.projectRoot, '.specweave/docs/internal/specs', projectId),
+      keywords,
+      techStack
+    };
   }
 
   /**
@@ -133,7 +132,7 @@ export class ProjectManager {
    */
   getSpecsPath(projectId?: string): string {
     const project = projectId ? this.getProjectById(projectId) : this.getActiveProject();
-    if (!project) {
+    if (!project || !project.projectId) {
       throw new Error(`Project '${projectId}' not found`);
     }
 
@@ -172,6 +171,10 @@ export class ProjectManager {
    * @param project - Project context
    */
   async addProject(project: ProjectContext): Promise<void> {
+    if (!project.projectId) {
+      throw new Error('Project ID is required');
+    }
+    const projectId = project.projectId;
     const config = this.configManager.load();
 
     // Initialize multiProject if not present
@@ -182,23 +185,27 @@ export class ProjectManager {
         projects: {}
       };
     }
+    if (!config.multiProject.projects) {
+      config.multiProject.projects = {};
+    }
 
     // Check for duplicate ID
-    if (config.multiProject.projects[project.projectId]) {
-      throw new Error(`Project with ID '${project.projectId}' already exists`);
+    if (config.multiProject.projects[projectId]) {
+      throw new Error(`Project with ID '${projectId}' already exists`);
     }
 
     // Validate project ID (kebab-case)
     const kebabCaseRegex = /^[a-z0-9-]+$/;
-    if (!kebabCaseRegex.test(project.projectId)) {
-      throw new Error(`Project ID '${project.projectId}' is invalid. Must be kebab-case (lowercase, hyphens only)`);
+    if (!kebabCaseRegex.test(projectId)) {
+      throw new Error(`Project ID '${projectId}' is invalid. Must be kebab-case (lowercase, hyphens only)`);
     }
 
     // Add project - convert ProjectContext to ProjectConfig
-    config.multiProject.projects[project.projectId] = {
-      id: project.projectId,
-      name: project.projectName,
-      description: `${project.projectName} project`,
+    const projectName = project.projectName || project.name || projectId;
+    config.multiProject.projects[projectId] = {
+      id: projectId,
+      name: projectName,
+      description: `${projectName} project`,
       keywords: project.keywords,
       techStack: project.techStack,
       team: 'Engineering Team'
@@ -206,9 +213,9 @@ export class ProjectManager {
     await this.configManager.save(config);
 
     // Create structure
-    await this.createProjectStructure(project.projectId);
+    await this.createProjectStructure(projectId);
 
-    console.log(`✅ Added project: ${project.projectName} (${project.projectId})`);
+    console.log(`✅ Added project: ${project.projectName} (${projectId})`);
   }
 
   /**
@@ -219,7 +226,7 @@ export class ProjectManager {
   async removeProject(projectId: string): Promise<void> {
     const config = this.configManager.load();
 
-    if (!config.multiProject?.enabled) {
+    if (!config.multiProject?.enabled || !config.multiProject.projects) {
       throw new Error('Multi-project mode not enabled');
     }
 
@@ -262,7 +269,7 @@ export class ProjectManager {
 ## Project Information
 
 - **Team**: Engineering Team
-- **Tech Stack**: ${project.techStack.length > 0 ? project.techStack.join(', ') : 'Not specified'}
+- **Tech Stack**: ${project.techStack && project.techStack.length > 0 ? project.techStack.join(', ') : 'Not specified'}
 
 ## Documentation
 

@@ -110,40 +110,52 @@ export class CrossLinker {
   }
 
   /**
+   * Generate links between two categories
+   */
+  private async generateCategoryLinks(
+    groups: Map<ContentCategory, DistributedFile[]>,
+    sourceCategory: ContentCategory,
+    targetCategory: ContentCategory,
+    linkType: LinkType,
+    description: string
+  ): Promise<void> {
+    const sources = groups.get(sourceCategory) || [];
+    const targets = groups.get(targetCategory) || [];
+
+    for (const source of sources) {
+      for (const target of targets) {
+        if (await this.documentsRelated(source.path, target.path)) {
+          this.links.push({
+            source: source.path,
+            target: target.path,
+            type: linkType,
+            description,
+          });
+        }
+      }
+    }
+  }
+
+  /**
    * Generate links from specs to architecture
    */
   private async generateArchitectureLinks(
     groups: Map<ContentCategory, DistributedFile[]>
   ): Promise<void> {
-    const specs = groups.get(ContentCategory.UserStory) || [];
-    const architecture = groups.get(ContentCategory.Architecture) || [];
-    const adrs = groups.get(ContentCategory.ADR) || [];
-
-    // Link specs to architecture docs
-    for (const spec of specs) {
-      for (const arch of architecture) {
-        if (await this.documentsRelated(spec.path, arch.path)) {
-          this.links.push({
-            source: spec.path,
-            target: arch.path,
-            type: LinkType.Implements,
-            description: 'User story implements architecture design',
-          });
-        }
-      }
-
-      // Link specs to ADRs
-      for (const adr of adrs) {
-        if (await this.documentsRelated(spec.path, adr.path)) {
-          this.links.push({
-            source: spec.path,
-            target: adr.path,
-            type: LinkType.References,
-            description: 'User story references architecture decision',
-          });
-        }
-      }
-    }
+    await this.generateCategoryLinks(
+      groups,
+      ContentCategory.UserStory,
+      ContentCategory.Architecture,
+      LinkType.Implements,
+      'User story implements architecture design'
+    );
+    await this.generateCategoryLinks(
+      groups,
+      ContentCategory.UserStory,
+      ContentCategory.ADR,
+      LinkType.References,
+      'User story references architecture decision'
+    );
   }
 
   /**
@@ -152,21 +164,13 @@ export class CrossLinker {
   private async generateOperationsLinks(
     groups: Map<ContentCategory, DistributedFile[]>
   ): Promise<void> {
-    const operations = groups.get(ContentCategory.Operations) || [];
-    const architecture = groups.get(ContentCategory.Architecture) || [];
-
-    for (const ops of operations) {
-      for (const arch of architecture) {
-        if (await this.documentsRelated(ops.path, arch.path)) {
-          this.links.push({
-            source: ops.path,
-            target: arch.path,
-            type: LinkType.DependsOn,
-            description: 'Operational procedure depends on architecture',
-          });
-        }
-      }
-    }
+    await this.generateCategoryLinks(
+      groups,
+      ContentCategory.Operations,
+      ContentCategory.Architecture,
+      LinkType.DependsOn,
+      'Operational procedure depends on architecture'
+    );
   }
 
   /**
@@ -175,21 +179,13 @@ export class CrossLinker {
   private async generateDeliveryLinks(
     groups: Map<ContentCategory, DistributedFile[]>
   ): Promise<void> {
-    const delivery = groups.get(ContentCategory.Delivery) || [];
-    const specs = groups.get(ContentCategory.UserStory) || [];
-
-    for (const del of delivery) {
-      for (const spec of specs) {
-        if (await this.documentsRelated(del.path, spec.path)) {
-          this.links.push({
-            source: del.path,
-            target: spec.path,
-            type: LinkType.TestsFor,
-            description: 'Test strategy covers user story',
-          });
-        }
-      }
-    }
+    await this.generateCategoryLinks(
+      groups,
+      ContentCategory.Delivery,
+      ContentCategory.UserStory,
+      LinkType.TestsFor,
+      'Test strategy covers user story'
+    );
   }
 
   /**
@@ -198,21 +194,13 @@ export class CrossLinker {
   private async generateStrategyLinks(
     groups: Map<ContentCategory, DistributedFile[]>
   ): Promise<void> {
-    const strategy = groups.get(ContentCategory.Strategy) || [];
-    const specs = groups.get(ContentCategory.UserStory) || [];
-
-    for (const strat of strategy) {
-      for (const spec of specs) {
-        if (await this.documentsRelated(strat.path, spec.path)) {
-          this.links.push({
-            source: strat.path,
-            target: spec.path,
-            type: LinkType.DefinedIn,
-            description: 'Business requirement defined in strategy',
-          });
-        }
-      }
-    }
+    await this.generateCategoryLinks(
+      groups,
+      ContentCategory.Strategy,
+      ContentCategory.UserStory,
+      LinkType.DefinedIn,
+      'Business requirement defined in strategy'
+    );
   }
 
   /**

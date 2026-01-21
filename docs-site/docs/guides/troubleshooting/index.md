@@ -56,5 +56,5 @@ SpecWeave limits API calls to prevent rate limiting. Wait 60 seconds or use `/sw
 
 ## Related
 
-- [General Troubleshooting Lesson](/guides/lessons/09-troubleshooting)
-- [Kafka Troubleshooting](/guides/kafka-troubleshooting)
+- [Troubleshooting Lesson](/docs/academy/specweave-essentials/09-troubleshooting) - General troubleshooting guide
+- [FAQ](/docs/faq) - Common questions answered

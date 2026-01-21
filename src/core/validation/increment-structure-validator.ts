@@ -84,25 +84,14 @@ export async function validateIncrementStructure(
       .filter(entry => entry.isFile())
       .map(entry => entry.name);
 
-    const unknownFiles = rootFiles.filter(filename => {
-      // Skip if it's an allowed file
-      if (ALLOWED_ROOT_FILES.has(filename)) {
-        return false;
-      }
-      // Skip if it's a task file variant (already checked above)
-      if (filename.startsWith('tasks') && filename.endsWith('.md')) {
-        return false;
-      }
-      return true;
-    });
+    const unknownFiles = rootFiles.filter(filename =>
+      !ALLOWED_ROOT_FILES.has(filename) &&
+      !(filename.startsWith('tasks') && filename.endsWith('.md'))
+    );
 
-    if (unknownFiles.length > 0) {
-      unknownFiles.forEach(filename => {
-        const suggestion = getSuggestionForUnknownFile(filename);
-        errors.push(
-          `❌ Unknown root-level file: ${filename}. ${suggestion}`
-        );
-      });
+    for (const filename of unknownFiles) {
+      const suggestion = getSuggestionForUnknownFile(filename);
+      errors.push(`❌ Unknown root-level file: ${filename}. ${suggestion}`);
     }
 
     // Check subdirectories (informational only, not strict)
@@ -114,13 +103,11 @@ export async function validateIncrementStructure(
       dirname => !ALLOWED_SUBDIRECTORIES.has(dirname) && !dirname.startsWith('.')
     );
 
-    if (unknownSubdirs.length > 0) {
-      unknownSubdirs.forEach(dirname => {
-        warnings.push(
-          `⚠️  Unknown subdirectory: ${dirname}/. ` +
-          `Consider using standard directories: reports/, scripts/, logs/, diagrams/`
-        );
-      });
+    for (const dirname of unknownSubdirs) {
+      warnings.push(
+        `⚠️  Unknown subdirectory: ${dirname}/. ` +
+        `Consider using standard directories: reports/, scripts/, logs/, diagrams/`
+      );
     }
   } catch (error) {
     errors.push(
@@ -211,36 +198,36 @@ export function formatValidationResults(
 ): string {
   const lines: string[] = [];
 
-  let totalIncrements = 0;
   let validIncrements = 0;
   let totalErrors = 0;
   let totalWarnings = 0;
 
   for (const [incrementId, result] of results) {
-    totalIncrements++;
-
     if (result.valid) {
       validIncrements++;
-    } else {
-      lines.push(`\n📦 Increment: ${incrementId}`);
+      continue;
+    }
 
-      if (result.errors.length > 0) {
-        totalErrors += result.errors.length;
-        lines.push('\n  Errors:');
-        result.errors.forEach(error => {
-          lines.push(`    ${error}`);
-        });
+    lines.push(`\n📦 Increment: ${incrementId}`);
+
+    if (result.errors.length > 0) {
+      totalErrors += result.errors.length;
+      lines.push('\n  Errors:');
+      for (const error of result.errors) {
+        lines.push(`    ${error}`);
       }
+    }
 
-      if (result.warnings.length > 0) {
-        totalWarnings += result.warnings.length;
-        lines.push('\n  Warnings:');
-        result.warnings.forEach(warning => {
-          lines.push(`    ${warning}`);
-        });
+    if (result.warnings.length > 0) {
+      totalWarnings += result.warnings.length;
+      lines.push('\n  Warnings:');
+      for (const warning of result.warnings) {
+        lines.push(`    ${warning}`);
       }
     }
   }
+
+  const totalIncrements = results.size;
 
   // Summary
   const summary = [

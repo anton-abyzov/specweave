@@ -91,7 +91,21 @@ export class MetadataManager {
         }
         try {
             const content = fs.readFileSync(metadataPath, 'utf-8');
-            const metadata = JSON.parse(content);
+            const rawMetadata = JSON.parse(content);
+            // **SCHEMA NORMALIZATION**: Handle legacy schemas with different field names
+            // This makes the status command schema-agnostic
+            const metadata = {
+                ...rawMetadata,
+                // Normalize: createdAt → created (legacy schema compatibility)
+                created: rawMetadata.created || rawMetadata.createdAt || new Date().toISOString(),
+                // Normalize: updatedAt → updated (legacy schema compatibility)
+                updated: rawMetadata.updated || rawMetadata.updatedAt || rawMetadata.lastActivity || new Date().toISOString(),
+                // Ensure lastActivity exists (required by standard schema)
+                lastActivity: rawMetadata.lastActivity || rawMetadata.updated || rawMetadata.updatedAt || new Date().toISOString()
+            };
+            // Remove legacy fields after normalization
+            delete metadata.createdAt;
+            delete metadata.updatedAt;
             // Validate schema
             this.validate(metadata);
             return metadata;

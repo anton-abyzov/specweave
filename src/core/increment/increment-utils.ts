@@ -199,6 +199,32 @@ export class IncrementNumberManager {
 
 
   /**
+   * Reserved names that CANNOT be used as increment IDs.
+   * These names are reserved for SpecWeave internal use and would cause
+   * structural violations if used as increment names.
+   *
+   * @since 1.0.105
+   * @private
+   */
+  private static readonly RESERVED_INCREMENT_NAMES = [
+    'reports',
+    'backup',
+    'backups',
+    'temp',
+    'tmp',
+    'logs',
+    'scripts',
+    'docs',
+    'documentation',
+    'archive',
+    'abandoned',
+    'paused',
+    'config',
+    'cache',
+    'state'
+  ];
+
+  /**
    * Get all existing increment numbers across all directories.
    *
    * CRITICAL COLLISION PREVENTION (v1.0.42):
@@ -207,6 +233,11 @@ export class IncrementNumberManager {
    * from both variants to ensure:
    * - If 0001E-external exists → 0001-internal is BLOCKED (returns 0002)
    * - If 0001-internal exists → 0001E-external is BLOCKED (returns 0002E)
+   *
+   * RESERVED NAME VALIDATION (v1.0.105):
+   * Folders using reserved names like "reports", "backup", "temp" are
+   * REJECTED and logged as errors. This prevents pollution of the
+   * increments directory with folders that should not exist there.
    *
    * Returns a Set of all increment numbers found in:
    * 1. .specweave/increments/ (main)
@@ -241,12 +272,44 @@ export class IncrementNumberManager {
         for (const entry of entries) {
           if (!entry.isDirectory()) continue;
 
+          // **CRITICAL VALIDATION (v1.0.103)**: Reject invalid increment IDs
+          // 1. Must start with digits (XXXX-name format)
+          // 2. Cannot be 0000 (must be positive: 0001+)
+          // 3. No non-numeric prefixes (reject .specweave, _templates, etc.)
+          // 4. **NEW (v1.0.105)**: Cannot use reserved names (reports, backup, temp, etc.)
+
           // Match pattern: 0032-name, 032-name, or 0032E-name (external)
           // CRITICAL: Extract BASE number - both 0001 and 0001E → 1
           const match = entry.name.match(/^(\d{3,4})E?-/);
           if (match) {
             const number = parseInt(match[1], 10);
+
+            // **VALIDATION**: Reject 0000 - increment numbers must be positive (0001+)
+            if (number === 0) {
+              console.warn(`⚠️  INVALID INCREMENT ID: ${entry.name} - Increment numbers must start from 0001, not 0000`);
+              continue; // Skip this invalid increment
+            }
+
             numbers.add(number);
+          } else {
+            // **VALIDATION**: Warn about non-standard increment folder names
+            // Valid: XXXX-name, XXXE-name
+            // Invalid: .specweave, _templates, 0000-adhoc, reports, backup, etc.
+            if (!entry.name.startsWith('_')) { // Ignore system folders like _archive
+              // **NEW (v1.0.105)**: Check for reserved names
+              const folderName = entry.name.toLowerCase();
+              if (this.RESERVED_INCREMENT_NAMES.includes(folderName)) {
+                console.error(
+                  `🚨 RESERVED NAME VIOLATION: "${entry.name}" is a RESERVED name!\n` +
+                  `   Location: ${dirPath}\n` +
+                  `   This folder MUST be removed or renamed.\n` +
+                  `   Reserved names: ${this.RESERVED_INCREMENT_NAMES.join(', ')}\n` +
+                  `   FIX: Increments must follow XXXX-name format (e.g., 0001-my-feature)`
+                );
+              } else {
+                console.warn(`⚠️  NON-STANDARD INCREMENT FOLDER: ${entry.name} - Must follow XXXX-name format (4 digits + hyphen + name)`);
+              }
+            }
           }
         }
       } catch (error) {
@@ -350,6 +413,84 @@ export class IncrementNumberManager {
   }
 
   /**
+   * Validate that an increment number is valid (must be >= 0001, never 0000).
+   *
+   * CRITICAL VALIDATION (v1.0.104):
+   * Increment numbers MUST start from 0001. 0000 is PERMANENTLY FORBIDDEN.
+   * This prevents structural violations and invalid increment creation.
+   *
+   * @param number - Increment number to validate (4-digit string)
+   * @throws Error if number is 0000
+   *
+   * @example
+   * ```typescript
+   * IncrementNumberManager.validateIncrementNumber('0001'); // OK
+   * IncrementNumberManager.validateIncrementNumber('0042'); // OK
+   * IncrementNumberManager.validateIncrementNumber('0000'); // THROWS ERROR
+   * ```
+   *
+   * @since 1.0.104
+   * @private
+   */
+  private static validateIncrementNumber(number: string): void {
+    const numericValue = parseInt(number, 10);
+    if (numericValue === 0) {
+      throw new Error(
+        `🚨 INVALID INCREMENT NUMBER: 0000 is FORBIDDEN!\n\n` +
+        `Increment numbers MUST start from 0001, never 0000.\n\n` +
+        `REASON: 0000 violates SpecWeave increment structure requirements.\n` +
+        `  - Increments must have spec.md, tasks.md, and metadata.json\n` +
+        `  - 0000 is reserved and should never be created\n` +
+        `  - All increments must follow sequential numbering from 0001+\n\n` +
+        `FIX: The next available increment number will be used automatically.\n` +
+        `If you're seeing this error from a script, the script needs to be fixed\n` +
+        `to use proper increment creation APIs instead of raw filesystem operations.`
+      );
+    }
+  }
+
+  /**
+   * Validate that an increment name is not a reserved keyword.
+   *
+   * CRITICAL VALIDATION (v1.0.105):
+   * Increment names CANNOT use reserved keywords like "reports", "backup", "temp".
+   * These names are reserved for SpecWeave internal use and would cause
+   * structural violations if used as increment names.
+   *
+   * @param name - Increment name to validate (kebab-case)
+   * @throws Error if name is reserved
+   *
+   * @example
+   * ```typescript
+   * IncrementNumberManager.validateIncrementName('my-feature'); // OK
+   * IncrementNumberManager.validateIncrementName('reports');    // THROWS ERROR
+   * IncrementNumberManager.validateIncrementName('backup');     // THROWS ERROR
+   * ```
+   *
+   * @since 1.0.105
+   * @private
+   */
+  private static validateIncrementName(name: string): void {
+    const normalizedName = name.toLowerCase();
+    if (this.RESERVED_INCREMENT_NAMES.includes(normalizedName)) {
+      throw new Error(
+        `🚨 RESERVED NAME VIOLATION: "${name}" is a RESERVED name!\n\n` +
+        `Increment names CANNOT use reserved keywords like:\n` +
+        `  ${this.RESERVED_INCREMENT_NAMES.join(', ')}\n\n` +
+        `REASON: These names are reserved for SpecWeave internal use.\n` +
+        `  - "reports" → Used for increment report folders\n` +
+        `  - "backup" → Used for backup storage\n` +
+        `  - "temp" → Used for temporary files\n` +
+        `  - "logs" → Used for execution logs\n` +
+        `  - etc.\n\n` +
+        `FIX: Choose a different increment name that describes your feature.\n` +
+        `Example: Instead of "reports", use "reporting-feature" or "report-generation"\n` +
+        `Example: Instead of "backup", use "backup-system" or "data-backup-feature"`
+      );
+    }
+  }
+
+  /**
    * Generate a full increment folder name.
    *
    * @param name - Kebab-case increment name (e.g., "dora-metrics-fix")
@@ -383,12 +524,18 @@ export class IncrementNumberManager {
   ): string {
     const { isExternal = false, projectRoot = process.cwd(), projectId, skipValidation = false } = options;
 
+    // 🚨 CRITICAL VALIDATION (v1.0.105): Block reserved names at creation time
+    this.validateIncrementName(name);
+
     // PER-PROJECT COLLISION PREVENTION (v1.0.19+):
     // When projectId is provided, use project-scoped number generation
     // This checks the target project's FS-ID space and skips colliding numbers
     const number = projectId
       ? this.getNextIncrementNumberForProject(projectRoot, projectId, { isExternal })
       : this.getNextIncrementNumber(projectRoot);
+
+    // 🚨 CRITICAL VALIDATION (v1.0.104): Block 0000 at creation time
+    this.validateIncrementNumber(number);
 
     const suffix = isExternal ? 'E' : '';
     const id = `${number}${suffix}-${name}`;
@@ -431,6 +578,9 @@ export class IncrementNumberManager {
         `Expected format: "XXXX-name" (e.g., "0141-my-feature") or "XXXXE-name" for external items.`
       );
     }
+
+    // 🚨 CRITICAL VALIDATION (v1.0.104): Block 0000 at validation time
+    this.validateIncrementNumber(number);
 
     const duplicates = this.findDuplicates(number, projectRoot);
 

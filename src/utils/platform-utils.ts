@@ -6,7 +6,7 @@
  * and system notifications
  */
 
-import { execSync } from 'child_process';
+import { exec, execSync } from 'child_process';
 import { stat, mkdir, rmdir } from 'fs/promises';
 import { Logger, consoleLogger } from './logger.js';
 
@@ -330,11 +330,11 @@ export class PlatformUtils {
   async sendNotification(title: string, body: string, sound?: string): Promise<void> {
     try {
       if (this.platform === 'darwin') {
-        await this.sendNotificationMacOS(title, body, sound);
+        this.sendNotificationMacOS(title, body, sound);
       } else if (this.platform === 'linux') {
-        await this.sendNotificationLinux(title, body);
+        this.sendNotificationLinux(title, body);
       } else if (this.platform === 'win32') {
-        await this.sendNotificationWindows(title, body);
+        this.sendNotificationWindows(title, body);
       }
       this.logger.debug(`Sent notification: ${title}`);
     } catch (err) {
@@ -352,15 +352,14 @@ export class PlatformUtils {
    * @param body Notification body (should be explicit about what happened)
    * @param sound Optional sound name (default: "Pop" for neutral notifications)
    */
-  private async sendNotificationMacOS(title: string, body: string, sound: string = 'Pop'): Promise<void> {
-    const cp = await import('child_process');
+  private sendNotificationMacOS(title: string, body: string, sound: string = 'Pop'): void {
     const escapedTitle = title.replace(/"/g, '\\"');
     const escapedBody = body.replace(/"/g, '\\"');
     const soundParam = sound ? ` sound name "${sound}"` : '';
     const cmd = `osascript -e 'display notification "${escapedBody}" with title "${escapedTitle}"${soundParam}'`;
 
     // Fire-and-forget: DON'T await or block!
-    cp.exec(cmd, (error: Error | null) => {
+    exec(cmd, (error) => {
       if (error) {
         this.logger.debug(`Notification failed (non-critical): ${error.message}`);
       }
@@ -373,14 +372,13 @@ export class PlatformUtils {
    * CRITICAL: Fire-and-forget pattern to prevent blocking Claude Code!
    * Notifications should NEVER block execution.
    */
-  private async sendNotificationLinux(title: string, body: string): Promise<void> {
-    const cp = await import('child_process');
+  private sendNotificationLinux(title: string, body: string): void {
     const escapedTitle = title.replace(/"/g, '\\"');
     const escapedBody = body.replace(/"/g, '\\"');
     const cmd = `notify-send "${escapedTitle}" "${escapedBody}" --urgency=normal`;
 
     // Fire-and-forget: DON'T wait for completion!
-    cp.exec(cmd, (error: Error | null) => {
+    exec(cmd, (error) => {
       if (error) {
         this.logger.debug(`Notification failed (non-critical): ${error.message}`);
       }
@@ -393,8 +391,7 @@ export class PlatformUtils {
    * CRITICAL: Fire-and-forget pattern to prevent blocking Claude Code!
    * Notifications should NEVER block execution.
    */
-  private async sendNotificationWindows(title: string, body: string): Promise<void> {
-    const cp = await import('child_process');
+  private sendNotificationWindows(title: string, body: string): void {
     const escapedTitle = title.replace(/'/g, "''");
     const escapedBody = body.replace(/'/g, "''");
     const psScript = `
@@ -408,7 +405,7 @@ export class PlatformUtils {
     `;
 
     // Fire-and-forget: DON'T wait for completion!
-    cp.exec(`powershell -Command "${psScript}"`, (error: Error | null) => {
+    exec(`powershell -Command "${psScript}"`, (error) => {
       if (error) {
         this.logger.debug(`Notification failed (non-critical): ${error.message}`);
       }

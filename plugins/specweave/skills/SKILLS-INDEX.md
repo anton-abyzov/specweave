@@ -2,7 +2,7 @@
 
 **Purpose**: Lightweight skill manifest for lazy loading. Load SKILL.md only when triggers match.
 
-**Total Skills**: 28 | **Last Updated**: 2025-12-30
+**Total Skills**: 30 | **Last Updated**: 2026-01-13
 
 ---
 
@@ -23,14 +23,15 @@
 | **increment-planner** | increment, feature, plan, create increment, new feature, organize work, MVP, SaaS, product, build project, tech stack | `skills/increment-planner/SKILL.md` |
 | **increment-work-router** | implement, complete, build, develop, work on, continue, resume, finish, fix, resolve, let's implement, start working | `skills/increment-work-router/SKILL.md` |
 | **spec-generator** | specification, spec.md, plan.md, tasks.md, generate spec, create tasks, requirements, acceptance criteria | `skills/spec-generator/SKILL.md` |
-| **project-kickstarter** | project, product, SaaS, app, MVP, build, new project, features, I want to build, let's build, quick build | `skills/project-kickstarter/SKILL.md` |
 | **roadmap-planner** | roadmap, prioritization, RICE, MoSCoW, Kano, product planning, feature ranking, KPIs, Q1 Q2 Q3 Q4, release planning | `skills/roadmap-planner/SKILL.md` |
 | **role-orchestrator** | multi-agent, orchestrate, coordinate roles, complex project, end-to-end, full implementation, build product | `skills/role-orchestrator/SKILL.md` |
 
-### Quality & Validation
+### Code Intelligence & Quality
 
 | Skill | Triggers | Location |
 |-------|----------|----------|
+| **lsp-integration** | LSP, language server, TypeScript, JavaScript, Python, Go, Rust, code navigation, go to definition, find references, hover type, type information, symbol search, diagnostics, refactoring, rename symbol, semantic analysis, code intelligence, intellisense | `skills/lsp-integration/SKILL.md` |
+| **code-simplifier** | simplify code, clean up code, refactor for clarity, reduce complexity, improve readability, code refinement, clarity, maintainability | `skills/code-simplifier/SKILL.md` |
 | **increment-quality-judge-v2** | quality check, assess spec, risk assessment, qa check, quality gate, /sw:qa, validate quality, evaluate increment | `skills/increment-quality-judge-v2/SKILL.md` |
 | **pm-closure-validation** | /done, close increment, validate increment, completion check, quality gate, PM approval, ready to close, scope creep | `skills/pm-closure-validation/SKILL.md` |
 | **code-reviewer** | code review, security vulnerabilities, performance optimization, static analysis, code quality, pull request review | `skills/code-reviewer/SKILL.md` |
@@ -69,6 +70,7 @@
 
 | Skill | Triggers | Location |
 |-------|----------|----------|
+| **deploy-router** | deploy, vercel vs cloudflare, where to deploy, cloudflare workers, cloudflare pages, vercel deployment, edge deployment, SSR deployment, static site deployment, which hosting, deployment recommendation | `../../specweave-infrastructure/skills/deploy-router/SKILL.md` |
 | **serverless-recommender** | serverless, AWS Lambda, Azure Functions, GCP Cloud Functions, Firebase, Supabase, which platform, serverless cost | `skills/serverless-recommender/SKILL.md` |
 | **compliance-architecture** | compliance, HIPAA, SOC2, SOC 2, GDPR, PCI-DSS, regulatory, healthcare data, payment card, audit, security standards | `skills/compliance-architecture/SKILL.md` |
 | **service-connect** | connect database, supabase connection, cloudflare workers, wrangler, postgres connection, mongodb atlas, redis cache, MCP setup, service integration, connection failed, IPv6, database setup | `skills/service-connect/SKILL.md` |
@@ -86,9 +88,13 @@
 | "Sync to GitHub/JIRA" | `external-sync-wizard` |
 | "Archive old increments" | `archive-increments` |
 | "Bug/issue/broken" | `smart-reopen-detector` |
+| "Where to deploy?" / "Vercel vs Cloudflare" | `deploy-router` |
 | "AWS vs Azure vs GCP" | `serverless-recommender` |
 | "SOC2/HIPAA compliance" | `compliance-architecture` |
 | "Review my code" | `code-reviewer` |
+| "Simplify my code" | `code-simplifier` |
+| "Find all references" / "Go to definition" | `lsp-integration` |
+| "TypeScript/Python code navigation" | `lsp-integration` |
 | "Connect to Supabase/DB" | `service-connect` |
 | "Connection failed" | `service-connect` |
 

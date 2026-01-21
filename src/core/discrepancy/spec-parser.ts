@@ -260,27 +260,22 @@ export class SpecParser {
   }
 
   private findMarkdownFiles(dir: string): string[] {
+    if (!fs.existsSync(dir)) return [];
+
     const files: string[] = [];
+    const skipDirs = new Set(['node_modules', '.git', 'dist', '_archive']);
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
 
-    const scan = (currentDir: string): void => {
-      if (!fs.existsSync(currentDir)) return;
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
 
-      const entries = fs.readdirSync(currentDir, { withFileTypes: true });
-
-      for (const entry of entries) {
-        const fullPath = path.join(currentDir, entry.name);
-
-        if (entry.isDirectory()) {
-          // Skip common non-doc directories
-          if (['node_modules', '.git', 'dist', '_archive'].includes(entry.name)) continue;
-          scan(fullPath);
-        } else if (entry.isFile() && entry.name.endsWith('.md')) {
-          files.push(fullPath);
-        }
+      if (entry.isDirectory() && !skipDirs.has(entry.name)) {
+        files.push(...this.findMarkdownFiles(fullPath));
+      } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        files.push(fullPath);
       }
-    };
+    }
 
-    scan(dir);
     return files;
   }
 }

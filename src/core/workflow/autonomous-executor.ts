@@ -146,7 +146,7 @@ export class AutonomousExecutor {
         // Safety checks
         const safetyCheck = this.checkSafety(state);
         if (!safetyCheck.safe) {
-          return this.terminateExecution(state, safetyCheck.reason, false);
+          return this.terminateExecution(state, safetyCheck.reason ?? 'Safety check failed', false);
         }
 
         // Execute next step
@@ -241,18 +241,13 @@ export class AutonomousExecutor {
    * Preflight check before execution
    */
   private async preflightCheck(incrementId: string): Promise<{ passed: boolean; reason?: string }> {
-    // Check increment exists
     const incrementPath = path.join(process.cwd(), '.specweave/increments', incrementId);
     const fs = await import('../../utils/fs-native.js');
 
     if (!await fs.pathExists(incrementPath)) {
-      return {
-        passed: false,
-        reason: `Increment ${incrementId} not found`
-      };
+      return { passed: false, reason: `Increment ${incrementId} not found` };
     }
 
-    // Estimate cost
     const estimate = await this.costEstimator.estimateIncrement(incrementPath);
     this.log(`💰 Estimated cost: $${estimate.estimatedCost.toFixed(2)} (${estimate.riskLevel.toUpperCase()})`);
 
@@ -293,17 +288,8 @@ export class AutonomousExecutor {
    * Check if workflow is complete
    */
   private isComplete(state: ExecutionState): boolean {
-    // Completion phase reached
-    if (state.phase === WorkflowPhase.COMPLETION) {
-      return true;
-    }
-
-    // Unknown phase with no further actions (stuck)
-    if (state.phase === WorkflowPhase.UNKNOWN && state.iteration > 5) {
-      return true;
-    }
-
-    return false;
+    return state.phase === WorkflowPhase.COMPLETION ||
+           (state.phase === WorkflowPhase.UNKNOWN && state.iteration > 5);
   }
 
   /**

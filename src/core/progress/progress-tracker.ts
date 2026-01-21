@@ -11,12 +11,25 @@
  * @module core/progress/progress-tracker
  */
 
-import { Logger, consoleLogger } from '../../utils/logger.js';
+import type { Logger } from '../../utils/logger.js';
+import { consoleLogger } from '../../utils/logger.js';
 
 /**
  * Item status types
  */
 export type ItemStatus = 'pending' | 'success' | 'error';
+
+/**
+ * Format seconds into human-readable time string
+ */
+function formatTime(seconds: number): string {
+  if (seconds < 60) {
+    return `${seconds}s`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}m ${remainingSeconds}s`;
+}
 
 /**
  * Progress tracker options
@@ -120,44 +133,26 @@ export class ProgressTracker {
     errorLogFile?: string;
     showErrorDetails?: boolean;
   }): void {
-    // Final render
     this.render();
 
-    // Calculate total time
-    const totalTimeMs = Date.now() - this.startTime;
-    const totalTimeSec = Math.floor(totalTimeMs / 1000);
-    const minutes = Math.floor(totalTimeSec / 60);
-    const seconds = totalTimeSec % 60;
-    const totalTimeStr = minutes > 0
-      ? `${minutes}m ${seconds}s`
-      : `${seconds}s`;
+    const totalTimeSec = Math.floor((Date.now() - this.startTime) / 1000);
 
-    // Show summary
-    console.log(''); // Blank line
+    console.log('');
     console.log(`✅ Import Complete!`);
     console.log('');
     console.log(`Imported: ${succeeded} projects`);
 
     if (failed > 0) {
-      const errorLogHint = options?.errorLogFile
-        ? ` (see ${options.errorLogFile})`
-        : '';
+      const errorLogHint = options?.errorLogFile ? ` (see ${options.errorLogFile})` : '';
       console.log(`Failed: ${failed} projects${errorLogHint}`);
 
-      // Show error details if requested
       if (options?.showErrorDetails) {
-        const failedItems = Array.from(this.items.values())
-          .filter(item => item.status === 'error')
-          .slice(0, 5); // Show first 5 errors
-
-        if (failedItems.length > 0) {
-          failedItems.forEach(item => {
-            console.log(`  ❌ ${item.name}`);
-          });
-
-          if (failed > 5) {
-            console.log(`  ... and ${failed - 5} more errors`);
-          }
+        const failedItems = this.getItemsByStatus('error').slice(0, 5);
+        for (const item of failedItems) {
+          console.log(`  ❌ ${item.name}`);
+        }
+        if (failed > 5) {
+          console.log(`  ... and ${failed - 5} more errors`);
         }
       }
     }
@@ -167,8 +162,8 @@ export class ProgressTracker {
     }
 
     console.log('');
-    console.log(`Total time: ${totalTimeStr}`);
-    console.log(''); // Blank line
+    console.log(`Total time: ${formatTime(totalTimeSec)}`);
+    console.log('');
   }
 
   /**
@@ -202,42 +197,25 @@ export class ProgressTracker {
   renderProgressBar(percentage: number): string {
     const barLength = 30;
     const filledLength = Math.round((percentage / 100) * barLength);
-    const emptyLength = barLength - filledLength;
 
-    let bar = '[';
-
-    // Filled portion
-    if (filledLength > 0) {
-      bar += '='.repeat(Math.max(0, filledLength - 1));
-      bar += '>';
-      bar += ' '.repeat(Math.max(0, emptyLength));
-    } else {
-      // At 0%, show cursor at start
-      bar += '>';
-      bar += ' '.repeat(Math.max(0, emptyLength - 1));
+    if (filledLength === 0) {
+      return `[>${' '.repeat(barLength - 1)}]`;
     }
 
-    bar += ']';
+    const filled = '='.repeat(filledLength - 1) + '>';
+    const empty = ' '.repeat(barLength - filledLength);
 
-    return bar;
+    return `[${filled}${empty}]`;
   }
 
   /**
    * Get elapsed time in human-readable format
    *
-   * @returns Elapsed time string (e.g., "2m 34s", "45s")
+   * @returns Elapsed time string (e.g., "2m 34s elapsed", "45s elapsed")
    */
   getElapsedTime(): string {
-    const elapsedMs = Date.now() - this.startTime;
-    const elapsedSeconds = Math.floor(elapsedMs / 1000);
-
-    if (elapsedSeconds < 60) {
-      return `${elapsedSeconds}s elapsed`;
-    }
-
-    const minutes = Math.floor(elapsedSeconds / 60);
-    const seconds = elapsedSeconds % 60;
-    return `${minutes}m ${seconds}s elapsed`;
+    const elapsedSeconds = Math.floor((Date.now() - this.startTime) / 1000);
+    return `${formatTime(elapsedSeconds)} elapsed`;
   }
 
   /**
@@ -253,49 +231,30 @@ export class ProgressTracker {
     if (completed === 0) {
       return ', ~? remaining';
     }
-
     if (completed === this.total) {
       return ', ~0s remaining';
     }
 
     const elapsedMs = Date.now() - this.startTime;
-    const avgTimePerItem = elapsedMs / completed;
-    const remaining = this.total - completed;
-    const etaMs = remaining * avgTimePerItem;
-    const etaSeconds = Math.floor(etaMs / 1000);
+    const etaSeconds = Math.floor(((this.total - completed) * elapsedMs) / completed / 1000);
 
-    if (etaSeconds < 60) {
-      return `, ~${etaSeconds}s remaining`;
-    }
-
-    const minutes = Math.floor(etaSeconds / 60);
-    return `, ~${minutes}m remaining`;
+    return `, ~${formatTime(etaSeconds)} remaining`;
   }
 
   /**
    * Get count of completed items (success + error)
    */
   private getCompletedCount(): number {
-    let count = 0;
-    for (const item of this.items.values()) {
-      if (item.status === 'success' || item.status === 'error') {
-        count++;
-      }
-    }
-    return count;
+    return Array.from(this.items.values()).filter(
+      item => item.status === 'success' || item.status === 'error'
+    ).length;
   }
 
   /**
    * Get items by status
    */
   getItemsByStatus(status: ItemStatus): TrackedItem[] {
-    const result: TrackedItem[] = [];
-    for (const item of this.items.values()) {
-      if (item.status === status) {
-        result.push(item);
-      }
-    }
-    return result;
+    return Array.from(this.items.values()).filter(item => item.status === status);
   }
 
   /**

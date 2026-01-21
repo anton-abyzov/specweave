@@ -40,44 +40,6 @@ function getTypeLimits(type: IncrementType): { max: number } {
   return { max: limit === null ? Infinity : limit };
 }
 
-/**
- * Helper: Check WIP limits across all types
- */
-interface LimitInfo {
-  count: number;
-  limit: number;
-}
-
-function checkLimits(): Record<string, LimitInfo> {
-  const active = MetadataManager.getActive();
-  const result: Record<string, LimitInfo> = {};
-
-  // Count active increments by type
-  const typeCounts: Record<IncrementType, number> = {
-    [IncrementType.FEATURE]: 0,
-    [IncrementType.HOTFIX]: 0,
-    [IncrementType.BUG]: 0,
-    [IncrementType.CHANGE_REQUEST]: 0,
-    [IncrementType.REFACTOR]: 0,
-    [IncrementType.EXPERIMENT]: 0
-  };
-
-  active.forEach(m => {
-    typeCounts[m.type]++;
-  });
-
-  // Build result with readable type names
-  Object.entries(typeCounts).forEach(([type, count]) => {
-    const typeEnum = type as IncrementType;
-    const limit = TYPE_LIMITS[typeEnum];
-    result[type] = {
-      count,
-      limit: limit === null ? Infinity : limit
-    };
-  });
-
-  return result;
-}
 
 /**
  * Pause an active increment
@@ -253,6 +215,90 @@ export async function abandonIncrement(options: AbandonOptions): Promise<void> {
   }
 }
 
+export interface CompleteOptions {
+  incrementId: string;
+  silent?: boolean;  // For auto mode - suppress output
+  skipValidation?: boolean;  // DANGEROUS: Skip quality gates
+}
+
+/**
+ * Complete an active increment
+ *
+ * This transitions the increment to "completed" status, which triggers:
+ * 1. StatusChangeSyncTrigger → External tool sync (GitHub/JIRA/ADO)
+ * 2. Living docs update
+ *
+ * Quality gates (unless skipValidation=true):
+ * - All tasks must be marked complete
+ * - All ACs must be checked
+ * - External tool drift check (warns if >24h, blocks if >7d)
+ *
+ * @since v4.0 - Auto mode stop hook integration
+ */
+export async function completeIncrement(options: CompleteOptions): Promise<boolean> {
+  const { incrementId, silent = false, skipValidation = false } = options;
+
+  const log = (msg: string) => !silent && console.log(msg);
+
+  log(chalk.blue(`\n✅ Completing increment ${incrementId}...\n`));
+
+  try {
+    // Check if increment exists
+    const metadata = MetadataManager.read(incrementId);
+
+    // Validate can complete
+    if (metadata.status === IncrementStatus.COMPLETED) {
+      log(chalk.yellow(`⚠️  Increment ${incrementId} is already completed`));
+      return true;  // Not an error - already complete
+    }
+
+    if (metadata.status !== IncrementStatus.ACTIVE &&
+        metadata.status !== IncrementStatus.READY_FOR_REVIEW) {
+      log(chalk.red(`❌ Cannot complete increment ${incrementId}`));
+      log(chalk.gray(`   Current status: ${metadata.status}`));
+      log(chalk.gray(`   Only active or ready_for_review increments can be completed`));
+      return false;
+    }
+
+    // Run quality gate validation unless skipped
+    if (!skipValidation) {
+      // Dynamic import to avoid circular dependency
+      const { IncrementCompletionValidator } = await import('./completion-validator.js');
+      const validation = await IncrementCompletionValidator.validateCompletion(incrementId);
+
+      if (!validation.isValid) {
+        log(chalk.red(`❌ Increment ${incrementId} failed quality gates:\n`));
+        validation.errors.forEach((err) => log(chalk.red(`   • ${err}`)));
+        if (validation.warnings && validation.warnings.length > 0) {
+          log(chalk.yellow(`\n⚠️  Warnings:\n`));
+          validation.warnings.forEach((warn) => log(chalk.yellow(`   • ${warn}`)));
+        }
+        return false;
+      }
+
+      // Show warnings but continue
+      if (validation.warnings && validation.warnings.length > 0) {
+        log(chalk.yellow(`\n⚠️  Warnings (non-blocking):\n`));
+        validation.warnings.forEach((warn) => log(chalk.yellow(`   • ${warn}`)));
+      }
+    }
+
+    // Update status to completed
+    // This triggers StatusChangeSyncTrigger → external tool sync!
+    MetadataManager.updateStatus(incrementId, IncrementStatus.COMPLETED);
+
+    log(chalk.green(`\n✅ Increment ${incrementId} completed!`));
+    log(chalk.gray(`📦 Status changed to: completed`));
+    log(chalk.gray(`🔄 External sync triggered (GitHub/JIRA/ADO will be updated)\n`));
+
+    return true;
+
+  } catch (error) {
+    log(chalk.red(`\n❌ Failed to complete increment: ${error instanceof Error ? error.message : String(error)}\n`));
+    return false;
+  }
+}
+
 /**
  * Show status of all increments
  */
@@ -272,7 +318,12 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
     }
 
     // Group by status
-    const active = increments.filter(m => m.status === IncrementStatus.ACTIVE);
+    // CRITICAL: "active" includes planning, active, and ready_for_review (all count towards WIP limits)
+    const active = increments.filter(m =>
+      m.status === IncrementStatus.PLANNING ||
+      m.status === IncrementStatus.ACTIVE ||
+      m.status === IncrementStatus.READY_FOR_REVIEW
+    );
     const paused = increments.filter(m => m.status === IncrementStatus.PAUSED);
     const completed = increments.filter(m => m.status === IncrementStatus.COMPLETED);
     const abandoned = increments.filter(m => m.status === IncrementStatus.ABANDONED);
@@ -285,9 +336,6 @@ export async function showStatus(options: StatusOptions = {}): Promise<void> {
     // Show overall progress (prominent)
     console.log(chalk.cyan.bold(`📈 Overall Progress: ${completedCount}/${totalIncrements} increments complete (${overallProgress}%)`));
     console.log('');
-
-    // Check limits
-    const limitsInfo = checkLimits();
 
     // Show active increments
     if (active.length > 0) {

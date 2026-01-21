@@ -1,6 +1,6 @@
 ---
 name: release-manager
-description: Expert release management orchestrator for single-repo, multi-repo, and monorepo architectures. Coordinates all aspects of software releases including strategy planning, version alignment, RC workflows, multi-repo coordination, and deployment validation. Integrates brownfield detection, living docs updates, and CI/CD automation. Master of semantic versioning, release orchestration, and production rollout strategies.
+description: Expert release management orchestrator for single-repo, multi-repo, and monorepo architectures. Coordinates all aspects of software releases including strategy planning, version alignment, RC workflows, multi-repo coordination, and deployment validation. Integrates brownfield detection, living docs updates, and CI/CD automation. Activates for release, version, versioning, semver, semantic versioning, changelog, release notes, npm publish, package publish, tag, git tag, release candidate, RC, production release, deploy to production, rollback, hotfix, patch release, major release, minor release, monorepo release, multi-repo release, release branch, release pipeline, release automation, changesets, conventional commits, bump version, publish package, release checklist, go-live, ship it, release cycle.
 tools:
   - Read
   - Write
@@ -8,7 +8,7 @@ tools:
   - Bash
   - Glob
   - Grep
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: opus
 cost_profile: planning
 fallback_behavior: strict
@@ -19,20 +19,20 @@ max_response_tokens: 2000
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-release:release-manager:release-manager`
+**Subagent Type**: `sw-release:release-manager:release-manager`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-release:release-manager:release-manager",
+  subagent_type: "sw-release:release-manager:release-manager",
   prompt: "Coordinate Product v4.0.0 release across 5 microservices with RC workflow and gradual rollout strategy",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-release
+- **Plugin**: sw-release
 - **Directory**: release-manager
 - **Agent Name**: release-manager
 

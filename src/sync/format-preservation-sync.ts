@@ -101,55 +101,8 @@ export class FormatPreservationSyncService {
   ): Promise<void> {
     this.logger.log(`  💬 External US: Comment-only sync (format preserved)`);
 
-    // Build completion comment
     const comment = this.buildCompletionComment(completionData);
-
-    // Post comment to external tool with idempotency check + atomic locking
-    if (externalClient instanceof GitHubClientV2) {
-      // FIX (v0.26.0): Idempotency check to prevent duplicate comments
-      // FIX (v1.0.20): Atomic locking to prevent TOCTOU race condition
-      // See: .specweave/increments/0051-*/reports/GITHUB-COMMENT-RECURSION-ROOT-CAUSE-2025-11-24.md
-      const issueNumber = usFile.external_tools?.github?.number || 0;
-
-      // ATOMIC LOCK: Prevent race condition between check and post
-      const lockDir = path.join(
-        this.projectRoot,
-        '.specweave/state/.locks',
-        `github-comment-${issueNumber}`
-      );
-      const lockManager = new LockManager(lockDir, 30, { logger: this.logger }); // 30s stale threshold
-
-      let lockAcquired = false;
-      try {
-        lockAcquired = await lockManager.acquire();
-        if (!lockAcquired) {
-          this.logger.log(`  ⏳ Issue #${issueNumber} - Another comment in progress, skipping`);
-          return;
-        }
-
-        // Check if we already posted this exact comment (within lock)
-        const lastComment = await externalClient.getLastComment(issueNumber);
-
-        if (lastComment && lastComment.body === comment) {
-          this.logger.log(`  ⏭️  Skipping duplicate comment (already posted)`);
-          return;  // Idempotency: Don't post duplicate!
-        }
-
-        await externalClient.addComment(issueNumber, comment);
-        this.logger.log(`  ✅ Posted progress comment to issue #${issueNumber}`);
-      } finally {
-        if (lockAcquired) {
-          await lockManager.release();
-        }
-      }
-    } else if (externalClient instanceof JiraClient) {
-      const issueKey = usFile.external_id || usFile.external_tools?.jira?.key || '';
-      await this.postJiraCommentWithIdempotency(externalClient, String(issueKey), comment);
-    } else if (externalClient instanceof AdoClient) {
-      const adoId = usFile.external_id || usFile.external_tools?.ado?.id || '0';
-      const workItemId = parseInt(String(adoId), 10);
-      await this.postAdoCommentWithIdempotency(externalClient, workItemId, comment);
-    }
+    await this.postCommentWithIdempotency(usFile, comment, externalClient);
 
     // Conditional status update (only if config allows AND progress is 100%)
     if (this.config.canUpdateStatus && completionData.progressPercentage === 100) {
@@ -159,6 +112,73 @@ export class FormatPreservationSyncService {
       this.logger.log(`  ⏭️  Status update skipped (progress: ${completionData.progressPercentage}% < 100%)`);
     } else {
       this.logger.log(`  ⏭️  Status update skipped (canUpdateStatus=false)`);
+    }
+  }
+
+  /**
+   * Post comment to external tool with idempotency check + atomic locking
+   *
+   * Handles GitHub, JIRA, and ADO with platform-specific logic.
+   * Uses atomic locking to prevent TOCTOU race conditions.
+   */
+  private async postCommentWithIdempotency(
+    usFile: LivingDocsUSFile,
+    comment: string,
+    externalClient: GitHubClientV2 | JiraClient | AdoClient
+  ): Promise<void> {
+    if (externalClient instanceof GitHubClientV2) {
+      await this.postGitHubCommentWithIdempotency(externalClient, usFile, comment);
+    } else if (externalClient instanceof JiraClient) {
+      const issueKey = usFile.external_id || usFile.external_tools?.jira?.key || '';
+      await this.postJiraCommentWithIdempotency(externalClient, String(issueKey), comment);
+    } else if (externalClient instanceof AdoClient) {
+      const adoId = usFile.external_id || usFile.external_tools?.ado?.id || '0';
+      const workItemId = parseInt(String(adoId), 10);
+      await this.postAdoCommentWithIdempotency(externalClient, workItemId, comment);
+    }
+  }
+
+  /**
+   * Post GitHub comment with atomic locking to prevent concurrent duplicates
+   */
+  private async postGitHubCommentWithIdempotency(
+    client: GitHubClientV2,
+    usFile: LivingDocsUSFile,
+    comment: string
+  ): Promise<void> {
+    const issueNumber = usFile.external_tools?.github?.number || 0;
+    if (!issueNumber) {
+      this.logger.log(`  ⚠️ No GitHub issue number, skipping comment`);
+      return;
+    }
+
+    const lockDir = path.join(
+      this.projectRoot,
+      '.specweave/state/.locks',
+      `github-comment-${issueNumber}`
+    );
+    const lockManager = new LockManager(lockDir, 30, { logger: this.logger });
+
+    let lockAcquired = false;
+    try {
+      lockAcquired = await lockManager.acquire();
+      if (!lockAcquired) {
+        this.logger.log(`  ⏳ Issue #${issueNumber} - Another comment in progress, skipping`);
+        return;
+      }
+
+      const lastComment = await client.getLastComment(issueNumber);
+      if (lastComment && lastComment.body === comment) {
+        this.logger.log(`  ⏭️  Skipping duplicate comment (already posted)`);
+        return;
+      }
+
+      await client.addComment(issueNumber, comment);
+      this.logger.log(`  ✅ Posted progress comment to issue #${issueNumber}`);
+    } finally {
+      if (lockAcquired) {
+        await lockManager.release();
+      }
     }
   }
 
@@ -218,69 +238,22 @@ export class FormatPreservationSyncService {
   ): Promise<void> {
     this.logger.log(`  🔄 Internal US: Full sync (updates allowed)`);
 
-    // Full sync: Update title, description, comments, status
-    if (this.config.canUpdateExternalItems) {
-      this.logger.log(`  ✅ External updates enabled`);
-
-      // Build completion comment
-      const comment = this.buildCompletionComment(completionData);
-
-      // Post comment with idempotency check + atomic locking
-      if (externalClient instanceof GitHubClientV2) {
-        // FIX (v0.26.0): Idempotency check to prevent duplicate comments
-        // FIX (v1.0.20): Atomic locking to prevent TOCTOU race condition
-        const issueNumber = usFile.external_tools?.github?.number || 0;
-
-        // ATOMIC LOCK: Prevent race condition between check and post
-        const lockDir = path.join(
-          this.projectRoot,
-          '.specweave/state/.locks',
-          `github-comment-${issueNumber}`
-        );
-        const lockManager = new LockManager(lockDir, 30, { logger: this.logger });
-
-        let lockAcquired = false;
-        try {
-          lockAcquired = await lockManager.acquire();
-          if (!lockAcquired) {
-            this.logger.log(`  ⏳ Issue #${issueNumber} - Another comment in progress, skipping`);
-          } else {
-            // Check if we already posted this exact comment (within lock)
-            const lastComment = await externalClient.getLastComment(issueNumber);
-
-            if (lastComment && lastComment.body === comment) {
-              this.logger.log(`  ⏭️  Skipping duplicate comment (already posted)`);
-            } else {
-              await externalClient.addComment(issueNumber, comment);
-              this.logger.log(`  ✅ Posted progress comment to issue #${issueNumber}`);
-            }
-          }
-        } finally {
-          if (lockAcquired) {
-            await lockManager.release();
-          }
-        }
-
-        // Update title/description if needed
-        // TODO: Implement title/description update logic
-      } else if (externalClient instanceof JiraClient) {
-        const issueKey = usFile.external_id || usFile.external_tools?.jira?.key || '';
-        await this.postJiraCommentWithIdempotency(externalClient, String(issueKey), comment);
-      } else if (externalClient instanceof AdoClient) {
-        const adoId = usFile.external_id || usFile.external_tools?.ado?.id || '0';
-        const workItemId = parseInt(String(adoId), 10);
-        await this.postAdoCommentWithIdempotency(externalClient, workItemId, comment);
-      }
-
-      // Update status if allowed AND progress is 100%
-      if (this.config.canUpdateStatus && completionData.progressPercentage === 100) {
-        this.logger.log(`  🔀 Status update enabled (100% complete)`);
-        await this.updateExternalStatus(usFile, 'Done', externalClient);
-      } else if (this.config.canUpdateStatus) {
-        this.logger.log(`  ⏭️  Status update skipped (progress: ${completionData.progressPercentage}% < 100%)`);
-      }
-    } else {
+    if (!this.config.canUpdateExternalItems) {
       this.logger.log(`  ⏭️  External updates skipped (canUpdateExternalItems=false)`);
+      return;
+    }
+
+    this.logger.log(`  ✅ External updates enabled`);
+
+    const comment = this.buildCompletionComment(completionData);
+    await this.postCommentWithIdempotency(usFile, comment, externalClient);
+
+    // Update status if allowed AND progress is 100%
+    if (this.config.canUpdateStatus && completionData.progressPercentage === 100) {
+      this.logger.log(`  🔀 Status update enabled (100% complete)`);
+      await this.updateExternalStatus(usFile, 'Done', externalClient);
+    } else if (this.config.canUpdateStatus) {
+      this.logger.log(`  ⏭️  Status update skipped (progress: ${completionData.progressPercentage}% < 100%)`);
     }
   }
 
@@ -342,15 +315,6 @@ export class FormatPreservationSyncService {
     }
 
     return lines.join('\n');
-  }
-
-  /**
-   * Extract issue number from external_id
-   * Examples: "GH-#123" → 123, "#456" → 456
-   */
-  private extractIssueNumber(externalId: string): number {
-    const match = externalId.match(/#(\d+)/);
-    return match ? parseInt(match[1], 10) : 0;
   }
 
   /**

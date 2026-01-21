@@ -27,6 +27,7 @@ import {
   PaginatedItemsResult,
   COUNTS_CACHE_TTL_MS,
   SUMMARY_CACHE_TTL_MS,
+  emptyPaginatedResult,
 } from './types.js';
 import { GitHubItemsAdapter } from './providers/github-items-adapter.js';
 import { JiraItemsAdapter } from './providers/jira-items-adapter.js';
@@ -130,9 +131,7 @@ export class ExternalItemsCounter {
    * Used when user drills down: /sw:external --limit 20
    */
   async getItems(filter?: ItemsFilter): Promise<PaginatedItemsResult> {
-    const provider = filter?.provider || 'github';
-
-    switch (provider) {
+    switch (filter?.provider || 'github') {
       case 'github':
         return this.getGitHubItems(filter);
       case 'jira':
@@ -140,7 +139,7 @@ export class ExternalItemsCounter {
       case 'ado':
         return this.getAdoItems(filter);
       default:
-        return { items: [], total: 0, page: 1, pageSize: 20, totalPages: 0, hasMore: false };
+        return emptyPaginatedResult(1, 20);
     }
   }
 
@@ -203,25 +202,19 @@ export class ExternalItemsCounter {
 
   private async getGitHubItems(filter?: ItemsFilter): Promise<PaginatedItemsResult> {
     const adapter = await GitHubItemsAdapter.fromGitRemote({ logger: this.logger });
-    if (!adapter || !await adapter.isConfigured()) {
-      return { items: [], total: 0, page: 1, pageSize: 20, totalPages: 0, hasMore: false };
-    }
+    if (!adapter || !await adapter.isConfigured()) return emptyPaginatedResult(1, 20);
     return adapter.getOpenItems(filter);
   }
 
   private async getJiraItems(filter?: ItemsFilter): Promise<PaginatedItemsResult> {
     const adapter = JiraItemsAdapter.fromEnv({ logger: this.logger });
-    if (!adapter) {
-      return { items: [], total: 0, page: 1, pageSize: 20, totalPages: 0, hasMore: false };
-    }
+    if (!adapter) return emptyPaginatedResult(1, 20);
     return adapter.getOpenItems(filter);
   }
 
   private async getAdoItems(filter?: ItemsFilter): Promise<PaginatedItemsResult> {
     const adapter = AdoItemsAdapter.fromEnv({ logger: this.logger });
-    if (!adapter) {
-      return { items: [], total: 0, page: 1, pageSize: 20, totalPages: 0, hasMore: false };
-    }
+    if (!adapter) return emptyPaginatedResult(1, 20);
     return adapter.getOpenItems(filter);
   }
 

@@ -17,8 +17,8 @@ Smart merge for CLAUDE.md and AGENTS.md instruction files.
 
 ## When to Use
 
-- After running `bash scripts/refresh-marketplace.sh`
-- After upgrading SpecWeave version (`npm update specweave`)
+- After running `specweave refresh-marketplace`
+- After upgrading SpecWeave version (`npm update -g specweave`)
 - When CLAUDE.md or AGENTS.md seem outdated
 - To sync instruction files with latest framework features
 

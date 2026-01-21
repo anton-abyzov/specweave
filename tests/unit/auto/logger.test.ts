@@ -15,6 +15,15 @@ describe('AutoLogger', () => {
 
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'auto-logger-test-'));
+    // Create .specweave directory structure to simulate initialized project
+    const specweaveDir = path.join(tempDir, '.specweave');
+    fs.mkdirSync(specweaveDir, { recursive: true });
+    // Create config.json to satisfy isSpecWeaveInitialized check
+    fs.writeFileSync(
+      path.join(specweaveDir, 'config.json'),
+      JSON.stringify({ version: '1.0.0' }),
+      'utf-8'
+    );
     logger = new AutoLogger(tempDir, testSessionId);
   });
 

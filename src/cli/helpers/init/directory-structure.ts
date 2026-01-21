@@ -14,6 +14,7 @@ import type { SupportedLanguage } from '../../../core/i18n/types.js';
 import type { TestMode } from './types.js';
 import { findSourceDir, findPackageRoot } from './path-utils.js';
 import { mergeInstructionFile, parseTemplateSections, getPackageVersion } from './instruction-file-merger.js';
+import { generateSmartGitignore } from './gitignore-generator.js';
 import {
   LivingDocsScaffold,
   scanExistingDocs,
@@ -22,6 +23,7 @@ import {
   type DetectedDoc,
 } from '../../../core/living-docs/scaffolding/index.js';
 import { consoleLogger } from '../../../utils/logger.js';
+import { hasLegacyMemoryFiles, getLegacyMemoryDir, isClaudeCodeEnvironment } from '../../../core/reflection/skill-memory-paths.js';
 
 /**
  * Create the .specweave directory structure
@@ -46,11 +48,40 @@ export async function createDirectoryStructure(
     '.specweave/increments',
     '.specweave/cache',
     '.specweave/state',
+    '.specweave/memory',  // For category-based learnings (reflect feature)
+    '.specweave/logs/reflect',  // For reflection logs
   ];
 
   coreDirectories.forEach((dir) => {
     fs.mkdirSync(path.join(targetDir, dir), { recursive: true });
   });
+
+  // Create reflect-config.json with auto-reflect enabled by default (v1.0.96+)
+  // This enables the self-improving AI feature where learnings are extracted
+  // from user corrections and approvals during sessions
+  const reflectConfigPath = path.join(targetDir, '.specweave', 'state', 'reflect-config.json');
+  if (!fs.existsSync(reflectConfigPath)) {
+    const reflectConfig = {
+      enabled: true,
+      autoReflect: true,
+      enabledAt: new Date().toISOString(),
+      confidenceThreshold: 'medium',
+      maxLearningsPerSession: 10,
+      gitCommit: false,  // Don't auto-commit by default, let user decide
+      gitPush: false
+    };
+    fs.writeJsonSync(reflectConfigPath, reflectConfig, { spaces: 2 });
+    console.log(chalk.green('   ✓ Auto-reflection enabled (self-improving AI)'));
+  }
+
+  // Check for legacy memory files that need migration (GAP-009)
+  // Only check in Claude Code environment where legacy files might exist
+  if (isClaudeCodeEnvironment() && hasLegacyMemoryFiles()) {
+    const legacyPath = getLegacyMemoryDir();
+    console.log(chalk.yellow('   ⚠ Legacy memory files detected at: ' + legacyPath));
+    console.log(chalk.yellow('     Run: specweave migrate-memory'));
+    console.log(chalk.gray('     This will move learnings to the correct location'));
+  }
 
   // Use smart scaffolding for living docs structure
   const scaffold = new LivingDocsScaffold({
@@ -275,10 +306,33 @@ export async function copyTemplates(
     fs.writeFileSync(agentsMdPath, agentsMd);
   }
 
-  // Copy .gitignore
-  const gitignoreTemplate = path.join(templatesDir, '.gitignore.template');
-  if (fs.existsSync(gitignoreTemplate)) {
-    fs.copyFileSync(gitignoreTemplate, path.join(targetDir, '.gitignore'));
+  // Generate smart .gitignore based on detected tech stack (v1.0.130+)
+  // Falls back to template if detection fails
+  try {
+    const { detection, result } = await generateSmartGitignore(targetDir, undefined, {
+      merge: true,
+      backup: true,
+      includeSpecweave: true,
+      verbose: false,
+    });
+
+    if (result.action === 'created') {
+      const techCount = detection.detected.length;
+      if (techCount > 0) {
+        console.log(chalk.green(`   ✓ .gitignore created (${techCount} tech patterns detected)`));
+      } else {
+        console.log(chalk.green('   ✓ .gitignore created'));
+      }
+    } else if (result.action === 'merged') {
+      console.log(chalk.blue('   ✓ .gitignore updated with detected patterns'));
+    }
+  } catch {
+    // Fallback to template copy if smart generation fails
+    const gitignoreTemplate = path.join(templatesDir, '.gitignore.template');
+    if (fs.existsSync(gitignoreTemplate)) {
+      fs.copyFileSync(gitignoreTemplate, path.join(targetDir, '.gitignore'));
+      console.log(chalk.green('   ✓ .gitignore created (from template)'));
+    }
   }
 
   // Copy .gitattributes
@@ -342,6 +396,15 @@ export function createConfigFile(
       post_increment_planning: {
         auto_create_github_issue: false
       }
+    },
+    // Auto mode configuration (stop hook behavior)
+    auto: {
+      enabled: true,
+      maxRetries: 20,           // Circuit breaker after N retries
+      requireTests: false,      // Require tests to pass before completion
+      requireValidation: true,  // Require validation before completion
+      requireJudgeLLM: false,   // Require LLM judge validation
+      skipQualityGates: false,  // Skip quality gates (not recommended)
     },
   };
 

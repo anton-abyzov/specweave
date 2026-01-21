@@ -496,18 +496,21 @@ export class SmartDocOrganizer {
     return groups;
   }
 
+  /** Known acronyms to preserve in uppercase when formatting titles */
+  private static readonly ACRONYMS = new Set([
+    'adr', 'api', 'cli', 'hld', 'tdd', 'ado', 'pr', 'ci', 'cd', 'url', 'jwt', 'iac', 'sla', 'slo'
+  ]);
+
   /**
    * Format string to title case, preserving known acronyms
    */
   private formatTitle(str: string): string {
-    const acronyms = ['adr', 'api', 'cli', 'hld', 'tdd', 'ado', 'pr', 'ci', 'cd', 'url', 'jwt', 'iac', 'sla', 'slo'];
-
     return str
       .replace(/[-_]/g, ' ')
       .split(' ')
       .map(word => {
         const lower = word.toLowerCase();
-        if (acronyms.includes(lower)) {
+        if (SmartDocOrganizer.ACRONYMS.has(lower)) {
           return word.toUpperCase();
         }
         return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();

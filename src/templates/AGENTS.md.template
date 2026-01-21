@@ -50,22 +50,51 @@
 ```
 1. NEVER pollute project root with .md files
 2. Increment IDs unique (0001-9999)
-3. ONLY 4 files in increment root: metadata.json, spec.md, plan.md, tasks.md
-4. All reports/scripts/logs → increment subfolders
+3. ⛔ ONLY 4 files in increment root: metadata.json, spec.md, plan.md, tasks.md
+4. ⛔ ALL reports/scripts/logs → increment subfolders (NEVER at root!)
 5. metadata.json MUST exist BEFORE spec.md can be created
 6. tasks.md + spec.md = SOURCE OF TRUTH (update after every task!)
 7. ⛔ EVERY User Story MUST have **Project**: field (v0.35.0+)
 8. ⛔ For 2-level structures: EVERY US also needs **Board**: field
 ```
 
+### ⛔ INCREMENT FOLDER CLEANLINESS (CRITICAL!)
+
+**Increment folders MUST stay organized. NEVER create random files at increment root!**
+
+| File Type | Correct Location |
+|-----------|-----------------|
+| Reports, summaries, analysis (*.md) | `reports/` |
+| Validation/QA/completion reports | `reports/` |
+| Auto-session summaries | `reports/` |
+| Logs, execution output | `logs/{YYYY-MM-DD}/` |
+| Helper scripts | `scripts/` |
+| Domain docs | `docs/domain/` |
+
 **File Organization**:
 ```
+# ✅ CORRECT - clean increment structure
 .specweave/increments/0001-feature/
 ├── metadata.json                  # REQUIRED - create FIRST
-├── spec.md, plan.md, tasks.md    # Core increment docs
-├── reports/                       # SESSION-*.md, analysis, etc.
+├── spec.md                        # WHAT & WHY
+├── plan.md                        # HOW (optional)
+├── tasks.md                       # Task checklist
+├── reports/                       # ALL other .md files go here!
+│   ├── validation-report.md
+│   ├── completion-report.md
+│   └── auto-session-summary.md
 ├── scripts/                       # Helper scripts
 └── logs/                          # Execution logs
+    └── 2026-01-04/
+
+# ❌ WRONG - polluted increment folder!
+.specweave/increments/0001-feature/
+├── metadata.json
+├── spec.md
+├── tasks.md
+├── completion-report.md          # WRONG! Move to reports/
+├── auto-session-summary.md       # WRONG! Move to reports/
+└── some-analysis.md              # WRONG! Move to reports/
 ```
 <!-- /SECTION -->
 

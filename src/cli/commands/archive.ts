@@ -29,10 +29,10 @@ export async function archiveCommand(incrementIds: string[], options: any): Prom
 
       const externalOptions = {
         featureIds: featureIds.length > 0 ? featureIds : undefined,
-        olderThanDays: options.olderThan ? parseInt(options.olderThan) : undefined,
-        keepLast: options.keepLast ? parseInt(options.keepLast) : undefined,
+        olderThanDays: options.olderThan ? parseInt(options.olderThan, 10) : undefined,
+        keepLast: options.keepLast ? parseInt(options.keepLast, 10) : undefined,
         dryRun: options.dryRun,
-        updateLinks: true
+        updateLinks: true,
       };
 
       const result = await featureArchiver.archiveExternalFeatures(externalOptions);
@@ -56,16 +56,15 @@ export async function archiveCommand(incrementIds: string[], options: any): Prom
 
     const archiver = new IncrementArchiver(process.cwd());
 
-    // Parse options
     const archiveOptions = {
       increments: incrementIds.length > 0 ? incrementIds : undefined,
-      keepLast: options.keepLast ? parseInt(options.keepLast) : 5,
-      strictLast: options.last ? parseInt(options.last) : undefined,
-      olderThanDays: options.olderThan ? parseInt(options.olderThan) : undefined,
+      keepLast: options.keepLast ? parseInt(options.keepLast, 10) : 5,
+      strictLast: options.last ? parseInt(options.last, 10) : undefined,
+      olderThanDays: options.olderThan ? parseInt(options.olderThan, 10) : undefined,
       pattern: options.pattern,
       archiveCompleted: options.archiveCompleted,
       preserveActive: options.preserveActive,
-      dryRun: options.dryRun
+      dryRun: options.dryRun,
     };
 
     // Execute archiving
@@ -124,6 +123,7 @@ export async function archiveCommand(incrementIds: string[], options: any): Prom
 }
 
 function formatSize(bytes: number): string {
-  const mb = bytes / (1024 * 1024);
-  return mb < 1 ? `${Math.round(bytes / 1024)} KB` : `${Math.round(mb)} MB`;
+  const KB = 1024;
+  const MB = KB * 1024;
+  return bytes < MB ? `${Math.round(bytes / KB)} KB` : `${Math.round(bytes / MB)} MB`;
 }

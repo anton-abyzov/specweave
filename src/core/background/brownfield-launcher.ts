@@ -7,7 +7,6 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { spawn, ChildProcess } from 'node:child_process';
 import { v4 as uuidv4 } from 'uuid';
 import {
   BackgroundJob,
@@ -114,16 +113,10 @@ export function listBrownfieldJobs(projectPath: string): BackgroundJob[] {
     return [];
   }
 
-  const jobs: BackgroundJob[] = [];
-  const files = fs.readdirSync(jobsDir).filter(f => f.endsWith('.json'));
-
-  for (const file of files) {
-    const jobId = file.replace('.json', '');
-    const job = loadJobState(projectPath, jobId);
-    if (job) {
-      jobs.push(job);
-    }
-  }
+  const jobs = fs.readdirSync(jobsDir)
+    .filter(f => f.endsWith('.json'))
+    .map(file => loadJobState(projectPath, file.replace('.json', '')))
+    .filter((job): job is BackgroundJob => job !== null);
 
   // Sort by start date, newest first
   return jobs.sort((a, b) =>
@@ -139,6 +132,14 @@ export function getActiveBrownfieldJob(projectPath: string): BackgroundJob | nul
   return jobs.find(j => j.status === 'running' || j.status === 'pending') || null;
 }
 
+const PHASE_INDEX: Record<BrownfieldPhase, number> = {
+  'discovery': 0,
+  'code-analysis': 1,
+  'doc-matching': 2,
+  'discrepancy-detect': 3,
+  'reporting': 4,
+};
+
 /**
  * Update job progress
  */
@@ -153,18 +154,11 @@ export function updateJobProgress(
   const job = loadJobState(projectPath, jobId);
   if (!job) return;
 
-  const phaseIndex = {
-    'discovery': 0,
-    'code-analysis': 1,
-    'doc-matching': 2,
-    'discrepancy-detect': 3,
-    'reporting': 4,
-  };
-
+  const phaseNum = PHASE_INDEX[phase];
   job.progress = {
-    current: phaseIndex[phase],
+    current: phaseNum,
     total: 5,
-    percentage: Math.round((phaseIndex[phase] / 5) * 100),
+    percentage: Math.round((phaseNum / 5) * 100),
     currentItem: currentItem || `Phase: ${phase} (${current}/${total})`,
     itemsCompleted: job.progress.itemsCompleted,
     itemsFailed: job.progress.itemsFailed,
@@ -233,6 +227,20 @@ export function completeJob(
   saveJobState(projectPath, job);
 }
 
+const PRIORITY_ICONS: Record<string, string> = {
+  critical: '🔴',
+  high: '🟠',
+  medium: '🟡',
+  low: '🟢',
+};
+
+function formatDuration(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return minutes > 0 ? `${minutes}m ${remainingSeconds}s` : `${seconds}s`;
+}
+
 /**
  * Format completion notification for display
  */
@@ -240,13 +248,6 @@ export function formatCompletionNotification(
   jobId: string,
   stats: BrownfieldCompletionStats
 ): string {
-  const formatDuration = (ms: number): string => {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return minutes > 0 ? `${minutes}m ${remainingSeconds}s` : `${seconds}s`;
-  };
-
   const typeLines = Object.entries(stats.byType)
     .map(([type, count]) => {
       const percentage = Math.round((count / stats.discrepancyCount) * 100);
@@ -254,16 +255,9 @@ export function formatCompletionNotification(
     })
     .join('\n');
 
-  const priorityIcons: Record<string, string> = {
-    critical: '🔴',
-    high: '🟠',
-    medium: '🟡',
-    low: '🟢',
-  };
-
   const priorityLines = Object.entries(stats.byPriority)
     .map(([priority, count]) => {
-      const icon = priorityIcons[priority] ?? '⚪';
+      const icon = PRIORITY_ICONS[priority] ?? '⚪';
       return `     ${icon} ${priority.charAt(0).toUpperCase() + priority.slice(1).padEnd(8)}: ${String(count).padStart(3)}`;
     })
     .join('\n');
