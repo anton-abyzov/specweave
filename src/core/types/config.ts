@@ -475,6 +475,27 @@ export interface ProjectMapping {
 export type ProjectMappings = Record<string, ProjectMapping>;
 
 /**
+ * Plugin Auto-Load Configuration (v1.0.140+)
+ *
+ * Controls automatic plugin detection and installation.
+ * Uses LLM (Claude Haiku) to analyze prompts and determine which plugins are needed.
+ */
+export interface PluginAutoLoadConfig {
+  /**
+   * Enable automatic plugin detection and installation
+   *
+   * When true (default): Uses Claude Haiku to analyze prompts and detect needed plugins.
+   * This is more accurate than keyword matching but adds ~5-6 seconds overhead per prompt.
+   *
+   * When false: Disables ALL plugin detection for maximum speed (no overhead).
+   * Use this if you always load all plugins upfront or want fastest response.
+   *
+   * @default true
+   */
+  enabled?: boolean;
+}
+
+/**
  * Complete SpecWeave Configuration
  *
  * Represents the structure of .specweave/config.json
@@ -541,6 +562,9 @@ export interface SpecweaveConfig {
    * ```
    */
   projectMappings?: ProjectMappings;
+
+  /** Plugin auto-load configuration (v1.0.140+) */
+  pluginAutoLoad?: PluginAutoLoadConfig;
 
   /** Allow additional properties */
   [key: string]: any;
@@ -663,5 +687,8 @@ export const DEFAULT_CONFIG: Partial<SpecweaveConfig> = {
         }
       }
     }
+  },
+  pluginAutoLoad: {
+    enabled: true,  // v1.0.140+: LLM-based plugin detection enabled by default
   },
 };

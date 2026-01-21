@@ -57,21 +57,6 @@ This skill provides guidance for building **platform-agnostic MLOps pipelines** 
    - Blue-green deployment strategies
    - Rollback mechanisms
 
-### Reference Documentation
-
-See the `references/` directory for detailed guides:
-- **data-preparation.md** - Data cleaning, validation, and feature engineering
-- **model-training.md** - Training workflows and best practices
-- **model-validation.md** - Validation strategies and metrics
-- **model-deployment.md** - Deployment patterns and serving architectures
-
-### Assets and Templates
-
-The `assets/` directory contains:
-- **pipeline-dag.yaml.template** - DAG template for workflow orchestration
-- **training-config.yaml** - Training configuration template
-- **validation-checklist.md** - Pre-deployment validation checklist
-
 ## Usage Patterns
 
 ### Basic Pipeline Setup
@@ -87,8 +72,7 @@ stages = [
     "model_deployment"
 ]
 
-# 2. Configure dependencies
-# See assets/pipeline-dag.yaml.template for full example
+# 2. Configure dependencies between stages
 ```
 
 ### Production Workflow
@@ -187,7 +171,6 @@ Start with the basics and gradually add complexity:
 ### Batch Training Pipeline
 
 ```yaml
-# See assets/pipeline-dag.yaml.template
 stages:
   - name: data_preparation
     dependencies: []
@@ -203,8 +186,7 @@ stages:
 
 ```python
 # Stream processing for real-time features
-# Combined with batch training
-# See references/data-preparation.md
+# Combined with batch training for production
 ```
 
 ### Continuous Training
@@ -212,7 +194,6 @@ stages:
 ```python
 # Automated retraining on schedule
 # Triggered by data drift detection
-# See references/model-training.md
 ```
 
 ## Troubleshooting

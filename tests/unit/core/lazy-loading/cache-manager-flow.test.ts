@@ -1,10 +1,16 @@
 /**
- * E2E Tests for Lazy Loading Full Flow
+ * Cache Manager Flow Tests (Unit Tests)
  *
- * Tests the complete user journey from initialization to lazy loading
- * to migration and rollback scenarios.
+ * Tests the PluginCacheManager class flows:
+ * - Init → Install → Verify
+ * - Migration → Rollback
+ * - Unload → Reload
  *
- * @module tests/unit/core/lazy-loading/e2e-flow
+ * NOTE: These are UNIT tests using mocked filesystem paths.
+ * For real E2E tests with actual `claude plugin install` CLI,
+ * see: tests/integration/lazy-loading/plugin-install-e2e.test.ts
+ *
+ * @module tests/unit/core/lazy-loading/cache-manager-flow
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -16,7 +22,7 @@ import { PluginCacheManager } from '../../../../src/core/lazy-loading/cache-mana
 // Create a temporary directory for tests
 const TEST_BASE_DIR = path.join(os.tmpdir(), 'specweave-e2e-test');
 
-describe('E2E Flow Tests', () => {
+describe('Cache Manager Flow Tests', () => {
   let testDir: string;
   let testCachePath: string;
   let testActivePath: string;

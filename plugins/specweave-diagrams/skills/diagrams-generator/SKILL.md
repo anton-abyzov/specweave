@@ -207,13 +207,6 @@ If diagram fails to render, I will regenerate with fixes.
 - Suggest corrections
 - Retry with adjusted prompt
 
-## Test Cases
-
-See `test-cases/` directory:
-- `test-1.yaml` - Diagram type detection
-- `test-2.yaml` - Agent coordination
-- `test-3.yaml` - File placement and naming
-
 ## Integration
 
 **Invoked by**: User request (auto-activation via description keywords)

@@ -136,17 +136,43 @@ export function getCliStatus(): ReturnType<typeof detectClaudeCli> | null {
 export function isClaudeCliAvailable(): ClaudeCliStatus {
   // Use cached result if available
   if (cachedCliStatus) {
-    return {
+    const result = {
       available: cachedCliStatus.available,
       path: cachedCliStatus.commandPath,
       version: cachedCliStatus.version,
       error: cachedCliStatus.available ? undefined : cachedCliStatus.errorMessage,
     };
+
+    // Log when returning cached unavailable status (helps debug stale cache issues)
+    if (!result.available) {
+      logger.debug(`[isClaudeCliAvailable] Returning CACHED unavailable status: error=${cachedCliStatus.error}, errorMessage=${cachedCliStatus.errorMessage}, exitCode=${cachedCliStatus.exitCode}, platform=${cachedCliStatus.platform}`);
+    }
+
+    return result;
   }
 
   // Detect and cache
+  logger.debug('[isClaudeCliAvailable] Running fresh detection (no cache)...');
   const canonicalStatus = detectClaudeCli();
   cachedCliStatus = canonicalStatus;
+
+  // Log full detection result for debugging
+  if (!canonicalStatus.available) {
+    const debugInfo = [
+      `error=${canonicalStatus.error}`,
+      `errorMessage=${canonicalStatus.errorMessage}`,
+      `commandExists=${canonicalStatus.commandExists}`,
+      `pluginCommandsWork=${canonicalStatus.pluginCommandsWork}`,
+      `exitCode=${canonicalStatus.exitCode}`,
+      `platform=${canonicalStatus.platform}`,
+      `detectionMethod=${canonicalStatus.detectionMethod}`,
+      canonicalStatus.debugStdout ? `stdout=${canonicalStatus.debugStdout.substring(0, 100)}` : null,
+      canonicalStatus.debugStderr ? `stderr=${canonicalStatus.debugStderr.substring(0, 100)}` : null,
+    ].filter(Boolean).join(', ');
+    logger.warn(`[isClaudeCliAvailable] Claude CLI NOT available: ${debugInfo}`);
+  } else {
+    logger.debug(`[isClaudeCliAvailable] Claude CLI available: version=${canonicalStatus.version}, path=${canonicalStatus.commandPath}, method=${canonicalStatus.detectionMethod}`);
+  }
 
   // Map to our simpler interface
   return {
@@ -242,19 +268,28 @@ function executeClaudeCli(
     cachedCliStatus = detectClaudeCli();
   }
 
-  // If detected via shell workaround (function/alias), use interactive shell
-  if (cachedCliStatus.shellWorkaround && !isWindows) {
-    return executeViaInteractiveShell(args, timeout);
-  }
+  // CRITICAL FIX: Prefer DIRECT binary path when available.
+  //
+  // Why? Users often have shell wrapper functions like:
+  //   function claude() { command claude --dangerously-skip-permissions "$@" }
+  //
+  // These wrappers are great for interactive use but can interfere with
+  // programmatic access. The `--dangerously-skip-permissions` flag, for example,
+  // may cause issues when combined with certain arguments.
+  //
+  // Strategy:
+  // 1. If we have a direct binary path (via `which` or file lookup), use it directly
+  // 2. Only use interactive shell if claude was detected purely as a shell function
+  //    (i.e., shellWorkaround is true and no direct binary path)
 
-  // If we have a direct path to the binary, use it
-  if (cachedCliStatus.commandPath && cachedCliStatus.detectionMethod === 'binary') {
+  // Use direct binary path if available (bypasses shell functions)
+  if (cachedCliStatus.commandPath && !cachedCliStatus.shellWorkaround) {
+    logger.debug(`[executeClaudeCli] Using direct binary: ${cachedCliStatus.commandPath}`);
     return spawnSync(cachedCliStatus.commandPath, args, {
       encoding: 'utf8',
       timeout,
       maxBuffer: 1024 * 1024, // 1MB buffer
       windowsHide: true,
-      shell: false, // Direct binary execution
       cwd: os.tmpdir(),
       env: {
         ...process.env,
@@ -264,13 +299,19 @@ function executeClaudeCli(
     });
   }
 
-  // Default: try direct spawn with shell on Windows
+  // On Unix with no direct binary (shell function only): use interactive shell
+  if (!isWindows) {
+    logger.debug('[executeClaudeCli] Using interactive shell (no direct binary)');
+    return executeViaInteractiveShell(args, timeout);
+  }
+
+  // Windows: try with shell for PATH resolution
   return spawnSync('claude', args, {
     encoding: 'utf8',
     timeout,
-    maxBuffer: 1024 * 1024, // 1MB buffer
+    maxBuffer: 1024 * 1024,
     windowsHide: true,
-    shell: isWindows, // Shell on Windows for PATH resolution
+    shell: true,
     cwd: os.tmpdir(),
     env: {
       ...process.env,
