@@ -402,41 +402,6 @@ Last Sync: 2025-10-26T16:30:00Z
 
 ---
 
-## Templates
-
-Use templates in `templates/` folder for consistent outputs:
-
-- `epic-from-increment.md` - Epic creation template
-- `story-from-user-story.md` - Story creation template
-- `increment-from-epic.md` - Increment import template
-
----
-
-## References
-
-Consult references in `references/` folder:
-
-- `jira-concepts.md` - JIRA terminology (Epic, Story, Subtask, Epic Link)
-- `specweave-concepts.md` - SpecWeave structure (Increment, User Story, Task)
-- `mapping-examples.md` - Real-world conversion examples
-
----
-
-## Test Cases
-
-Validate all conversions using test cases in `test-cases/`:
-
-1. **test-1-increment-to-epic.yaml** - Basic export (Increment → Epic)
-2. **test-2-epic-to-increment.yaml** - Basic import (Epic → Increment)
-3. **test-3-bidirectional-sync.yaml** - Sync with conflict resolution
-
-**Run tests**:
-```bash
-npm run test:agents:jira-mapper
-```
-
----
-
 ## Best Practices
 
 1. **Always validate before sync** - Check increment structure, JIRA connection

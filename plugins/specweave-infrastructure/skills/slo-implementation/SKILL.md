@@ -58,8 +58,6 @@ sum(storage_writes_successful_total)
 sum(storage_writes_total)
 ```
 
-**Reference:** See `references/slo-definitions.md`
-
 ## Setting SLO Targets
 
 ### Availability SLO Examples
@@ -127,8 +125,6 @@ error_budget_policy:
   - remaining_budget: 0%
     action: Feature freeze, focus on reliability
 ```
-
-**Reference:** See `references/error-budget.md`
 
 ## SLO Implementation
 
@@ -316,12 +312,6 @@ rules:
 8. **Align with business goals**
 9. **Automate SLO reporting**
 10. **Use SLOs for prioritization**
-
-## Reference Files
-
-- `assets/slo-template.md` - SLO definition template
-- `references/slo-definitions.md` - SLO definition patterns
-- `references/error-budget.md` - Error budget calculations
 
 ## Related Skills
 

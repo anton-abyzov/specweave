@@ -919,17 +919,6 @@ async function handleConnectCheckoutComplete(session, connectedAccountId: string
 - [ ] Test network failure during verify
 - [ ] Verify webhook receives events from Connect accounts (if applicable)
 
-## Resources
-
-- **references/checkout-flows.md**: Detailed checkout implementation
-- **references/webhook-handling.md**: Webhook security and processing
-- **references/subscription-management.md**: Subscription lifecycle
-- **references/customer-management.md**: Customer and payment method handling
-- **references/invoice-generation.md**: Invoicing and billing
-- **assets/stripe-client.py**: Production-ready Stripe client wrapper
-- **assets/webhook-handler.py**: Complete webhook processor
-- **assets/checkout-config.json**: Checkout configuration templates
-
 ## Best Practices
 
 1. **Always Use Webhooks**: Don't rely solely on client-side confirmation

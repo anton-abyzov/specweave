@@ -198,13 +198,6 @@ Database options:
 - Managed MySQL (2GB): $5/month
 - Self-hosted (included in instance cost)
 
-## Test Cases
-
-See `test-cases/` for validation scenarios:
-1. **test-1-basic-provision.yaml** - Basic CX11 instance
-2. **test-2-postgres-provision.yaml** - Add managed Postgres
-3. **test-3-ssl-config.yaml** - SSL and DNS configuration
-
 ## Cost Comparison
 
 | Platform | Small App | Medium App | Large App |
@@ -246,6 +239,3 @@ Works with:
 - Multi-region deployment
 - Disaster recovery setup
 
----
-
-**For detailed usage**, see `README.md` and test cases in `test-cases/`

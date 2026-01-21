@@ -1,8 +1,14 @@
 /**
  * Detect Intent CLI Command
  *
- * Detects SpecWeave intent from a user prompt and optionally installs matching plugins.
- * Used by hooks for automatic plugin loading on user-prompt-submit.
+ * Detects SpecWeave intent from a user prompt using LLM (Claude Haiku)
+ * and optionally installs matching plugins.
+ *
+ * v1.0.140+: Switched from keyword-based to LLM-only detection.
+ * The LLM analyzes the prompt and decides which plugins are needed.
+ *
+ * Configuration:
+ *   Set lazyLoading.llmDetection: false in config.json to disable detection entirely.
  *
  * Usage:
  *   specweave detect-intent "prompt text"                    # Returns JSON with detected plugins
@@ -14,12 +20,11 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { detectSpecWeaveIntent, determinePlugins } from '../../core/lazy-loading/keyword-detector.js';
+import * as fs from 'fs';
+import * as path from 'path';
+import { detectPluginsViaLLM } from '../../core/lazy-loading/llm-plugin-detector.js';
 import { PluginCacheManager } from '../../core/lazy-loading/cache-manager.js';
-import { logInfo, logError, logWarn } from '../../core/lazy-loading/failure-logger.js';
-
-/** Default confidence threshold for auto-install (T-017) */
-const DEFAULT_INSTALL_THRESHOLD = 0.6;
+import { logInfo, logError } from '../../core/lazy-loading/failure-logger.js';
 
 export interface DetectIntentOptions {
   /** Also install detected plugins after detection */
@@ -28,8 +33,6 @@ export interface DetectIntentOptions {
   silent?: boolean;
   /** Output format - json or text */
   json?: boolean;
-  /** Confidence threshold for auto-install (0-1, default 0.6) */
-  threshold?: number;
 }
 
 export interface DetectIntentResult {
@@ -37,20 +40,71 @@ export interface DetectIntentResult {
   detected: boolean;
   /** List of detected plugin names to install */
   plugins: string[];
-  /** Confidence score (0-1) */
+  /** Confidence score (0-1) from LLM */
   confidence: number;
-  /** Keywords that matched */
-  matchedKeywords: string[];
+  /** LLM reasoning (when available) */
+  reasoning?: string;
   /** Detection latency in milliseconds */
   latencyMs?: number;
   /** Whether plugins were installed (when --install used) */
   installed?: boolean;
   /** Installation result message (when --install used) */
   installMessage?: string;
+  /** Whether LLM detection was skipped (config disabled) */
+  skipped?: boolean;
 }
 
 /**
- * Detect intent from a user prompt
+ * Find project root by looking for .specweave directory
+ */
+function findProjectRoot(): string | null {
+  let current = process.cwd();
+  const root = path.parse(current).root;
+
+  while (current !== root) {
+    if (fs.existsSync(path.join(current, '.specweave'))) {
+      return current;
+    }
+    current = path.dirname(current);
+  }
+  return null;
+}
+
+/**
+ * Check if plugin auto-load is enabled in config
+ *
+ * Returns true if:
+ * - No config exists (default to enabled)
+ * - Config exists but pluginAutoLoad.enabled is undefined (default to true)
+ * - Config has pluginAutoLoad.enabled: true
+ *
+ * Returns false only if explicitly set to false.
+ */
+function isPluginAutoLoadEnabled(): boolean {
+  const projectRoot = findProjectRoot();
+  if (!projectRoot) {
+    return true; // Default to enabled if no project found
+  }
+
+  const configPath = path.join(projectRoot, '.specweave', 'config.json');
+  if (!fs.existsSync(configPath)) {
+    return true; // Default to enabled if no config
+  }
+
+  try {
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    // Only return false if explicitly set to false
+    return config.pluginAutoLoad?.enabled !== false;
+  } catch {
+    return true; // Default to enabled on read error
+  }
+}
+
+/**
+ * Detect intent from a user prompt using LLM
+ *
+ * v1.0.140+: Uses Claude Haiku for accurate intent detection.
+ * The LLM decides which plugins are needed based on full context understanding.
  *
  * @param prompt - User's input prompt to analyze
  * @param options - Command options
@@ -62,73 +116,96 @@ export async function detectIntentCommand(
 ): Promise<DetectIntentResult> {
   const startTime = performance.now();
 
-  // Run detection
-  const detection = detectSpecWeaveIntent(prompt);
+  // Check if plugin auto-load is enabled in config
+  const autoLoadEnabled = isPluginAutoLoadEnabled();
 
-  // Map matched keywords to plugins
-  const plugins = detection.suggestedPlugins;
+  // If plugin auto-load is disabled, return early with no plugins
+  if (!autoLoadEnabled) {
+    const result: DetectIntentResult = {
+      detected: false,
+      plugins: [],
+      confidence: 0,
+      latencyMs: performance.now() - startTime,
+      skipped: true,
+    };
+
+    if (!options.silent) {
+      console.log(JSON.stringify(result, null, 2));
+    }
+
+    logInfo('detect-intent', 'Plugin auto-load disabled via config, skipping', {
+      configSetting: 'pluginAutoLoad.enabled: false',
+    });
+
+    return result;
+  }
+
+  // Run LLM detection
+  const llmResult = await detectPluginsViaLLM(prompt);
 
   const result: DetectIntentResult = {
-    detected: detection.detected,
-    plugins,
-    confidence: detection.confidence,
-    matchedKeywords: detection.matchedKeywords,
-    latencyMs: detection.latencyMs,
+    detected: llmResult.success && llmResult.plugins.length > 0,
+    plugins: llmResult.plugins,
+    confidence: llmResult.confidence,
+    reasoning: llmResult.reasoning,
+    latencyMs: llmResult.durationMs,
   };
 
-  // Handle installation if requested (T-017: confidence threshold check)
-  const installThreshold = options.threshold ?? DEFAULT_INSTALL_THRESHOLD;
+  // Handle LLM failure
+  if (!llmResult.success) {
+    result.installMessage = llmResult.error || 'LLM detection failed';
 
-  if (options.install && plugins.length > 0) {
-    // T-017: Only auto-install if confidence meets threshold
-    if (detection.confidence < installThreshold) {
-      result.installed = false;
-      result.installMessage = `Confidence ${detection.confidence.toFixed(2)} below threshold ${installThreshold} - plugins suggested but not installed`;
+    logError('detect-intent', 'LLM detection failed', new Error(llmResult.error || 'Unknown error'), {
+      prompt: prompt.substring(0, 100),
+      durationMs: llmResult.durationMs,
+    });
 
-      logWarn('detect-intent', 'Low confidence - skipping install', {
-        confidence: detection.confidence,
-        threshold: installThreshold,
-        plugins,
-        matchedKeywords: detection.matchedKeywords,
-      });
-    } else {
-      try {
-        const cacheManager = new PluginCacheManager();
+    if (!options.silent) {
+      console.log(JSON.stringify(result, null, 2));
+    }
 
-        // Filter to only plugins not already loaded
-        const unloadedPlugins = plugins.filter((p) => !cacheManager.isPluginLoaded(p));
+    return result;
+  }
 
-        if (unloadedPlugins.length > 0) {
-          const installResult = await cacheManager.installPlugins({
-            plugins: unloadedPlugins,
-            force: false, // Don't force reinstall
-          });
+  // Handle installation if requested
+  // Note: No confidence threshold - if LLM says install, we install
+  if (options.install && result.plugins.length > 0) {
+    try {
+      const cacheManager = new PluginCacheManager();
 
-          result.installed = installResult.success;
-          result.installMessage = installResult.success
-            ? `Installed ${installResult.pluginsAffected} plugin(s) in ${Math.round(installResult.durationMs)}ms`
-            : installResult.error;
+      // Filter to only plugins not already loaded
+      const unloadedPlugins = result.plugins.filter((p) => !cacheManager.isPluginLoaded(p));
 
-          logInfo('detect-intent', 'Plugins installed', {
-            plugins: unloadedPlugins,
-            success: installResult.success,
-            durationMs: installResult.durationMs,
-            confidence: detection.confidence,
-          });
-        } else {
-          result.installed = true;
-          result.installMessage = 'All plugins already loaded';
-        }
-      } catch (error) {
-        const err = error instanceof Error ? error : new Error(String(error));
-        result.installed = false;
-        result.installMessage = err.message;
-
-        logError('detect-intent', 'Installation failed', err, {
-          plugins,
-          prompt: prompt.substring(0, 100),
+      if (unloadedPlugins.length > 0) {
+        const installResult = await cacheManager.installPlugins({
+          plugins: unloadedPlugins,
+          force: false,
         });
+
+        result.installed = installResult.success;
+        result.installMessage = installResult.success
+          ? `Installed ${installResult.pluginsAffected} plugin(s) in ${Math.round(installResult.durationMs)}ms`
+          : installResult.error;
+
+        logInfo('detect-intent', 'Plugins installed via LLM detection', {
+          plugins: unloadedPlugins,
+          success: installResult.success,
+          durationMs: installResult.durationMs,
+          reasoning: llmResult.reasoning,
+        });
+      } else {
+        result.installed = true;
+        result.installMessage = 'All plugins already loaded';
       }
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      result.installed = false;
+      result.installMessage = err.message;
+
+      logError('detect-intent', 'Installation failed', err, {
+        plugins: result.plugins,
+        prompt: prompt.substring(0, 100),
+      });
     }
   }
 
@@ -138,12 +215,13 @@ export async function detectIntentCommand(
   }
 
   // Log for analytics
-  logInfo('detect-intent', 'Detection complete', {
+  logInfo('detect-intent', 'LLM detection complete', {
     detected: result.detected,
     plugins: result.plugins,
     confidence: result.confidence,
     latencyMs: result.latencyMs,
     installed: result.installed,
+    reasoning: result.reasoning,
   });
 
   return result;
@@ -156,12 +234,11 @@ export function createDetectIntentCommand(): Command {
   const cmd = new Command('detect-intent');
 
   cmd
-    .description('Detect SpecWeave intent from a prompt and optionally install plugins')
+    .description('Detect SpecWeave intent from a prompt using LLM and optionally install plugins')
     .argument('<prompt>', 'User prompt text to analyze')
     .option('--install', 'Also install detected plugins after detection')
     .option('--silent', 'Silent mode - no stdout output (for hooks)')
     .option('--json', 'Output as JSON (default when not silent)')
-    .option('--threshold <number>', 'Confidence threshold for auto-install (0-1, default 0.6)', parseFloat)
     .action(async (prompt: string, options: DetectIntentOptions) => {
       try {
         const result = await detectIntentCommand(prompt, options);
@@ -212,6 +289,9 @@ export async function main(): Promise<void> {
       console.error('  specweave detect-intent "release npm version"');
       console.error('  specweave detect-intent "deploy to kubernetes" --install');
       console.error('  specweave detect-intent "create react component" --install --silent');
+      console.error('');
+      console.error('Configuration:');
+      console.error('  Set lazyLoading.llmDetection: false in .specweave/config.json to disable.');
     }
     process.exit(1);
   }

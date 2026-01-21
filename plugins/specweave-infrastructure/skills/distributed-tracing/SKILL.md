@@ -88,8 +88,6 @@ services:
       - COLLECTOR_ZIPKIN_HOST_PORT=:9411
 ```
 
-**Reference:** See `references/jaeger-setup.md`
-
 ## Application Instrumentation
 
 ### OpenTelemetry (Recommended)
@@ -234,8 +232,6 @@ func getUsers(ctx context.Context) ([]User, error) {
     return users, nil
 }
 ```
-
-**Reference:** See `references/instrumentation.md`
 
 ## Context Propagation
 
@@ -424,12 +420,6 @@ def process_request():
 - Reduce sampling rate
 - Use batch span processor
 - Check exporter configuration
-
-## Reference Files
-
-- `references/jaeger-setup.md` - Jaeger installation
-- `references/instrumentation.md` - Instrumentation patterns
-- `assets/jaeger-config.yaml.template` - Jaeger configuration
 
 ## Related Skills
 

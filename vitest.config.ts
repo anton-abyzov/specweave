@@ -1,10 +1,17 @@
 import { defineConfig } from 'vitest/config';
 import path from 'path';
+import os from 'os';
 
 export default defineConfig({
   test: {
     // Test environment
     environment: 'node',
+
+    // Ensure ~/.local/bin is in PATH for Claude CLI detection tests
+    // VSCode debugger doesn't source .zshrc/.bashrc, so PATH may be missing this
+    env: {
+      PATH: `${os.homedir()}/.local/bin:${process.env.PATH}`,
+    },
 
     // Test file patterns
     include: [

@@ -834,8 +834,3 @@ if (exists(targetPath)) {
 - [brownfield-analyzer skill](../brownfield-analyzer/SKILL.md)
 - [CLAUDE.md](../../CLAUDE.md)
 
----
-
-## Test Cases
-
-See `test-cases/` directory for validation scenarios.

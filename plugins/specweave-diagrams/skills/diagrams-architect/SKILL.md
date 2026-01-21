@@ -635,44 +635,6 @@ graph TB
 
 ---
 
-## Templates
-
-Use templates in `templates/` folder for consistent diagrams:
-
-- `c4-context.mmd.template` - C4 Level 1 template
-- `c4-container.mmd.template` - C4 Level 2 template
-- `c4-component.mmd.template` - C4 Level 3 template (NEW)
-- `sequence-diagram.mmd.template` - Sequence flow template
-- `er-diagram.mmd.template` - ER diagram template
-- `deployment-diagram.mmd.template` - Deployment diagram template
-
----
-
-## References
-
-Consult references in `references/` folder:
-
-- `c4-model-guide.md` - Complete C4 Model reference
-- `mermaid-syntax.md` - Mermaid syntax guide
-- `diagram-best-practices.md` - Industry best practices
-
----
-
-## Test Cases
-
-Validate diagrams using test cases in `test-cases/`:
-
-1. **test-1-c4-context-diagram.yaml** - C4 Level 1 (Context)
-2. **test-2-c4-component-diagram.yaml** - C4 Level 3 (Component - NEW)
-3. **test-3-sequence-diagram.yaml** - API flow sequence
-
-**Run tests**:
-```bash
-npm run test:agents:diagrams-architect
-```
-
----
-
 ## Best Practices Summary
 
 1. **Follow C4 Model hierarchy** - Context → Container → Component → Code
@@ -683,8 +645,6 @@ npm run test:agents:diagrams-architect
 6. **Version control** - Track diagram changes with git
 7. **Link from docs** - Reference diagrams in architecture documents
 8. **Update regularly** - Keep diagrams in sync with implementation
-
----
 
 ---
 

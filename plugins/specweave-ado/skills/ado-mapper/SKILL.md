@@ -417,42 +417,6 @@ Ask user:
 
 ---
 
-## Templates
-
-Use templates in `templates/` folder:
-
-- `epic-from-increment.md` - Epic creation template
-- `feature-from-user-story.md` - Feature creation template
-- `user-story-from-small-story.md` - User Story creation template
-- `increment-from-epic.md` - Increment import template
-
----
-
-## References
-
-Consult references in `references/` folder:
-
-- `ado-concepts.md` - ADO structure (Epic, Feature, User Story, Task)
-- `specweave-concepts.md` - SpecWeave structure
-- `mapping-examples.md` - Real-world conversions with Area Paths and Iterations
-
----
-
-## Test Cases
-
-Validate all conversions using test cases in `test-cases/`:
-
-1. **test-1-increment-to-epic.yaml** - Export with Feature/User Story decision
-2. **test-2-epic-to-increment.yaml** - Import with Area Path and Iteration
-3. **test-3-bidirectional-sync.yaml** - Sync with ADO-specific fields
-
-**Run tests**:
-```bash
-npm run test:agents:ado-mapper
-```
-
----
-
 ## Best Practices
 
 1. **Respect ADO hierarchy** - Use Feature for large work, User Story for small

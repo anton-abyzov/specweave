@@ -45,13 +45,33 @@ else
 fi
 
 # ==============================================================================
-# AUTO-LOAD PLUGIN DETECTION (v1.0.127 - True Auto Plugin Loading - Increment 0172)
+# AUTO-LOAD PLUGIN DETECTION (v1.0.140 - LLM-Only Detection)
 # ==============================================================================
-# Detect plugin-specific keywords and auto-install plugins in background
+# Detect plugin needs using LLM (Claude Haiku) and auto-install in background
 # This runs BEFORE the SpecWeave keyword check to catch plugin-specific prompts
-# Controlled by SPECWEAVE_DISABLE_AUTO_LOAD environment variable
+#
+# Control:
+# - SPECWEAVE_DISABLE_AUTO_LOAD=1 environment variable
+# - pluginAutoLoad.enabled: false in .specweave/config.json
+#
+# When disabled: NO detection, NO LLM calls, fastest response time
 
-if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" != "1" ]]; then
+# Check config for pluginAutoLoad.enabled setting (default: true)
+PLUGIN_AUTOLOAD_ENABLED=true
+CONFIG_PATH=".specweave/config.json"
+if [[ -f "$CONFIG_PATH" ]]; then
+  if command -v jq >/dev/null 2>&1; then
+    AUTOLOAD_VALUE=$(jq -r '.pluginAutoLoad.enabled // true' "$CONFIG_PATH" 2>/dev/null)
+    [[ "$AUTOLOAD_VALUE" == "false" ]] && PLUGIN_AUTOLOAD_ENABLED=false
+  else
+    # Fallback: grep for explicit false setting
+    if grep -q '"pluginAutoLoad"' "$CONFIG_PATH" 2>/dev/null && grep -q '"enabled"[[:space:]]*:[[:space:]]*false' "$CONFIG_PATH" 2>/dev/null; then
+      PLUGIN_AUTOLOAD_ENABLED=false
+    fi
+  fi
+fi
+
+if [[ "$PLUGIN_AUTOLOAD_ENABLED" == "true" ]] && [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" != "1" ]]; then
   # Check for plugin-specific keywords (broader than SpecWeave keywords)
   # These trigger auto-install of relevant plugins
   # v1.0.130: Expanded to cover ALL development domains
