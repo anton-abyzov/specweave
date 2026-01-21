@@ -691,17 +691,16 @@
 }
 
 .ctaCode {
-  background: #1a1a2e;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  border: none;
   border-radius: 12px;
   padding: 1.25rem 2rem;
   display: inline-block;
   margin-bottom: 2rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .ctaCode code {
-  color: #f8fafc;
+  color: white;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 1.05rem;
   font-weight: 500;
