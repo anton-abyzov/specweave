@@ -39,7 +39,7 @@ export class ProfileManager {
       const content = await fs.readFile(this.configPath, 'utf-8');
       const fullConfig = JSON.parse(content);
 
-      this.config = fullConfig.sync || {
+      const config: SyncConfiguration = fullConfig.sync || {
         profiles: {},
         settings: {
           autoDetectProject: true,
@@ -47,8 +47,9 @@ export class ProfileManager {
           rateLimitProtection: true,
         },
       };
+      this.config = config;
 
-      return this.config;
+      return config;
     } catch (error: any) {
       if (error.code === 'ENOENT') {
         // Config doesn't exist yet - return empty
@@ -108,16 +109,14 @@ export class ProfileManager {
    * Get all profiles
    */
   async getAllProfiles(): Promise<Record<string, SyncProfile>> {
-    const config = await this.load();
-    return config.profiles || {};
+    return (await this.load()).profiles ?? {};
   }
 
   /**
    * Get a specific profile by ID
    */
   async getProfile(profileId: string): Promise<SyncProfile | null> {
-    const config = await this.load();
-    return config.profiles?.[profileId] || null;
+    return (await this.load()).profiles?.[profileId] ?? null;
   }
 
   /**
@@ -126,17 +125,10 @@ export class ProfileManager {
   async getDefaultProfile(): Promise<{ id: string; profile: SyncProfile } | null> {
     const config = await this.load();
     const defaultId = config.defaultProfile;
-
-    if (!defaultId) {
-      return null;
-    }
+    if (!defaultId) return null;
 
     const profile = config.profiles?.[defaultId];
-    if (!profile) {
-      return null;
-    }
-
-    return { id: defaultId, profile };
+    return profile ? { id: defaultId, profile } : null;
   }
 
   /**
@@ -234,15 +226,9 @@ export class ProfileManager {
 
     delete config.profiles[profileId];
 
-    // If this was the default profile, clear it
     if (config.defaultProfile === profileId) {
-      config.defaultProfile = undefined;
-
-      // Set first available profile as default
       const remaining = Object.keys(config.profiles);
-      if (remaining.length > 0) {
-        config.defaultProfile = remaining[0];
-      }
+      config.defaultProfile = remaining.length > 0 ? remaining[0] : undefined;
     }
 
     await this.save();
@@ -255,58 +241,32 @@ export class ProfileManager {
   /**
    * Get profiles by provider
    */
-  async getProfilesByProvider(
-    provider: SyncProvider
-  ): Promise<Record<string, SyncProfile>> {
+  async getProfilesByProvider(provider: SyncProvider): Promise<Record<string, SyncProfile>> {
     const all = await this.getAllProfiles();
-    const filtered: Record<string, SyncProfile> = {};
-
-    for (const [id, profile] of Object.entries(all)) {
-      if (profile.provider === provider) {
-        filtered[id] = profile;
-      }
-    }
-
-    return filtered;
+    return Object.fromEntries(
+      Object.entries(all).filter(([_, profile]) => profile.provider === provider)
+    );
   }
 
   /**
    * Get profiles for a project
    */
-  async getProfilesForProject(
-    projectName: string
-  ): Promise<Record<string, SyncProfile>> {
+  async getProfilesForProject(projectName: string): Promise<Record<string, SyncProfile>> {
     const all = await this.getAllProfiles();
-    const filtered: Record<string, SyncProfile> = {};
-
     const lowerName = projectName.toLowerCase();
 
-    for (const [id, profile] of Object.entries(all)) {
-      if (!profile.projectContext) {
-        continue;
-      }
+    return Object.fromEntries(
+      Object.entries(all).filter(([_, profile]) => {
+        if (!profile.projectContext) return false;
 
-      // Match by name
-      if (profile.projectContext.name.toLowerCase() === lowerName) {
-        filtered[id] = profile;
-        continue;
-      }
+        const ctx = profile.projectContext;
+        if (ctx.name.toLowerCase() === lowerName) return true;
 
-      // Match by keywords
-      if (profile.projectContext.keywords) {
-        for (const keyword of profile.projectContext.keywords) {
-          if (
-            lowerName.includes(keyword.toLowerCase()) ||
-            keyword.toLowerCase().includes(lowerName)
-          ) {
-            filtered[id] = profile;
-            break;
-          }
-        }
-      }
-    }
-
-    return filtered;
+        return ctx.keywords?.some(
+          (kw) => lowerName.includes(kw.toLowerCase()) || kw.toLowerCase().includes(lowerName)
+        );
+      })
+    );
   }
 
   // ==========================================================================
@@ -408,22 +368,16 @@ export class ProfileManager {
     defaultProfile: string | null;
   }> {
     const config = await this.load();
-    const all = config.profiles || {};
+    const profiles = Object.values(config.profiles ?? {});
 
-    const stats = {
-      totalProfiles: Object.keys(all).length,
+    return {
+      totalProfiles: profiles.length,
       byProvider: {
-        github: 0,
-        jira: 0,
-        ado: 0,
-      } as Record<SyncProvider, number>,
-      defaultProfile: config.defaultProfile || null,
+        github: profiles.filter((p) => p.provider === 'github').length,
+        jira: profiles.filter((p) => p.provider === 'jira').length,
+        ado: profiles.filter((p) => p.provider === 'ado').length,
+      },
+      defaultProfile: config.defaultProfile ?? null,
     };
-
-    for (const profile of Object.values(all)) {
-      stats.byProvider[profile.provider]++;
-    }
-
-    return stats;
   }
 }

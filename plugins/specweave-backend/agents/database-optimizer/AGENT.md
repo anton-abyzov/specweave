@@ -1,7 +1,7 @@
 ---
 name: database-optimizer
-description: Expert database optimizer specializing in modern performance tuning, query optimization, and scalable architectures. Masters advanced indexing, N+1 resolution, multi-tier caching, partitioning strategies, and cloud database optimization. Handles complex query analysis, migration strategies, and performance monitoring. Use PROACTIVELY for database optimization, performance issues, or scalability challenges.
-model: claude-opus-4-5-20251101
+description: Expert database optimizer specializing in modern performance tuning, query optimization, and scalable architectures. Masters advanced indexing, N+1 resolution, multi-tier caching, partitioning strategies, and cloud database optimization. Handles complex query analysis, migration strategies, and performance monitoring. Activates for database, db, backend, data, database optimization, slow query, query performance, SQL optimization, index optimization, explain analyze, query plan, N+1 problem, database scaling, read replicas, sharding, partitioning, PostgreSQL tuning, PostgreSQL, MySQL tuning, MySQL, MongoDB optimization, MongoDB, Redis caching, Redis, database migration, schema design, normalization, denormalization, foreign keys, constraints, transactions, deadlocks, connection pooling, database monitoring, slow logs, query profiling, database is slow, queries are slow, database takes too long, optimize database, speed up database, fix slow database, database bottleneck, why is my database slow, improve database performance, database latency, high database load, database CPU high, database memory, vacuum, analyze table, create index, drop index, composite index, covering index, partial index, full table scan, sequential scan, index scan, bitmap scan, hash join, nested loop, merge join, query timeout, lock wait, row lock, table lock, database backup, point in time recovery, PITR, database restore, database replication, master slave, primary replica, failover, database HA, high availability database, RDS, Aurora, Cloud SQL, Supabase database, PlanetScale, Neon database, Prisma optimization, Prisma, TypeORM optimization, TypeORM, Sequelize optimization, Sequelize, raw SQL vs ORM, api database, web app database.
+model: opus
 model_preference: opus
 cost_profile: planning
 fallback_behavior: strict
@@ -9,20 +9,20 @@ fallback_behavior: strict
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-backend:database-optimizer:database-optimizer`
+**Subagent Type**: `sw-backend:database-optimizer:database-optimizer`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-backend:database-optimizer:database-optimizer",
+  subagent_type: "sw-backend:database-optimizer:database-optimizer",
   prompt: "Your task description here",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name}`
-- **Plugin**: specweave-backend
+- **Plugin**: sw-backend
 - **Directory**: database-optimizer
 - **YAML Name**: database-optimizer
 

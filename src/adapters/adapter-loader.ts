@@ -8,14 +8,12 @@
 import * as fs from '../utils/fs-native.js';
 import * as path from 'path';
 import * as YAML from 'yaml';
-import { execSync } from 'child_process';
 import { IAdapter } from './adapter-interface.js';
 import { CursorAdapter } from './cursor/adapter.js';
 import { GeminiAdapter } from './gemini/adapter.js';
 import { CodexAdapter } from './codex/adapter.js';
 import { GenericAdapter } from './generic/adapter.js';
 import { getDirname } from '../utils/esm-helpers.js';
-import { isCommandAvailable } from '../utils/execFileNoThrow.js';
 import { detectClaudeCli } from '../utils/claude-cli-detector.js';
 
 const __dirname = getDirname(import.meta.url);
@@ -153,33 +151,6 @@ export class AdapterLoader {
     }
 
     return 'claude';
-  }
-
-  /**
-   * Helper: Check if a command exists in PATH
-   * Cross-platform: uses 'where' on Windows, 'which' on Unix
-   */
-  private async commandExists(command: string): Promise<boolean> {
-    try {
-      const isWindows = process.platform === 'win32';
-      const checkCommand = isWindows ? 'where' : 'which';
-      execSync(`${checkCommand} ${command}`, { stdio: 'ignore' });
-      return true;
-    } catch (error) {
-      return false;
-    }
-  }
-
-  /**
-   * Helper: Check if a file exists
-   */
-  private async fileExists(filePath: string): Promise<boolean> {
-    try {
-      await fs.access(filePath);
-      return true;
-    } catch (error) {
-      return false;
-    }
   }
 
   /**

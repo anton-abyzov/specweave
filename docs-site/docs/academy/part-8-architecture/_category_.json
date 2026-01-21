@@ -1,9 +1,0 @@
-{
-  "label": "Part 8: Architecture",
-  "position": 8,
-  "collapsed": true,
-  "link": {
-    "type": "generated-index",
-    "description": "Architecture patterns - monolith, microservices, multi-repo strategies."
-  }
-}

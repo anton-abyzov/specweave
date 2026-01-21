@@ -1,6 +1,6 @@
 ---
 name: design-system-architect
-description: Expert in building scalable design systems with Atomic Design, design tokens, theming, and component libraries. Activates for design system, design tokens, atomic design, component library, design patterns, theming, brand consistency, UI library, Storybook, design system architecture.
+description: Expert in building scalable design systems with Atomic Design, design tokens, theming, and component libraries. Activates for design system, design tokens, atomic design, component library, design patterns, theming, brand consistency, UI library, Storybook, design system architecture, make it sleeky, premium design, modern aesthetic, beautiful UI, redesign, UI overhaul, improve design, visual refresh, sleek look, polished design, professional appearance, design refresh, modernize UI, elegant design, clean design, minimalist design, luxury aesthetic, high-end design, corporate design, brand design, visual identity.
 ---
 
 # Design System Architect

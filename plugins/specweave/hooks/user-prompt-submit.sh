@@ -1,17 +1,33 @@
 #!/bin/bash
 
-# SpecWeave UserPromptSubmit Hook (v0.33.0 - SCRIPT DELEGATION)
+# SpecWeave UserPromptSubmit Hook (v1.0.127 - True Auto Plugin Loading)
 # Fires BEFORE user's command executes (prompt-based hook)
-# Purpose: Discipline validation, context injection, command suggestions
+# Purpose: Auto-load plugins, discipline validation, context injection, instant command execution
 #
 # FEATURES:
-# - v0.33.0: Script delegation - status commands bypass LLM entirely (<1s)
+# - v1.0.127: AUTO-LOAD PLUGINS - Detect plugin-specific keywords and install in background
+#   * Keywords: react, vue, kubernetes, docker, terraform, github, jira, etc.
+#   * Runs in background (non-blocking)
+#   * Controlled by SPECWEAVE_DISABLE_AUTO_LOAD env var
+# - v1.0.106: CRITICAL FIX - Use approve+systemMessage for info commands (not block)
+#   * "block" erases command from context and stops execution
+#   * Info commands (/sw:progress, /sw:status, /sw:jobs, etc.) now use "approve"
+#   * Validation errors (task limit) still use "block" correctly
+# - v1.0.105: Fix ARGS extraction for prompts with IDE metadata prefix (<ide_opened_file>)
+# - v0.34.0: Unified "block" decision for both CLI and VSCode (WRONG - fixed in v1.0.106)
+# - v0.33.1: Unified instant execution - scripts run in hook for both CLI and VSCode
+# - v0.33.0: Script delegation pattern (now deprecated in favor of block decision)
 # - v0.26.13: jq for JSON parsing (10x faster than node -e)
 # - Single active increment detection (cached, not 4x!)
 # - Deferred heavy checks (SpecSyncManager only when needed)
 # - Ultra-fast early exits
 #
-# Performance: Status commands <1s (was 3+ min), other prompts <10ms
+# Performance: Status commands <100ms (was 3+ min), other prompts <10ms
+#
+# ARCHITECTURE:
+# - Both CLI and VSCode: Uses "block" decision with "reason" field to display output and stop execution
+# - Scripts execute in hook - NO LLM involvement for instant commands
+# - systemMessage only works in Stop hooks (not UserPromptSubmit), so we use block uniformly
 
 set +e
 
@@ -26,6 +42,98 @@ if command -v jq >/dev/null 2>&1; then
 else
   # Fallback: extract prompt with grep (no node!)
   PROMPT=$(echo "$INPUT" | grep -oP '"prompt"\s*:\s*"\K[^"]*' 2>/dev/null || echo "")
+fi
+
+# ==============================================================================
+# AUTO-LOAD PLUGIN DETECTION (v1.0.127 - True Auto Plugin Loading - Increment 0172)
+# ==============================================================================
+# Detect plugin-specific keywords and auto-install plugins in background
+# This runs BEFORE the SpecWeave keyword check to catch plugin-specific prompts
+# Controlled by SPECWEAVE_DISABLE_AUTO_LOAD environment variable
+
+if [[ "${SPECWEAVE_DISABLE_AUTO_LOAD:-0}" != "1" ]] && [[ "${SPECWEAVE_DISABLE_HOOKS:-0}" != "1" ]]; then
+  # Check for plugin-specific keywords (broader than SpecWeave keywords)
+  # These trigger auto-install of relevant plugins
+  # v1.0.130: Expanded to cover ALL development domains
+  #
+  # DOMAINS COVERED:
+  # - Frontend: react, vue, angular, svelte, nextjs, nuxt, tailwind, dashboard, component, ui
+  # - Backend: api, rest, graphql, express, fastapi, django, nestjs, spring, database, sql, postgres, mongodb, redis
+  # - Testing: test, tdd, vitest, jest, playwright, cypress, e2e, coverage, qa
+  # - Infrastructure: docker, terraform, pulumi, aws, azure, gcp, deploy, ci/cd, prometheus, grafana
+  # - Kubernetes: kubernetes, k8s, helm, eks, aks, gke, argocd, gitops
+  # - Mobile: mobile, react native, expo, ios, android, flutter
+  # - ML/AI: ml, ai, machine learning, pytorch, tensorflow, mlops, llm, nlp
+  # - Payments: stripe, paypal, checkout, billing, subscription
+  # - Release: release, version, changelog, publish, semver
+  # - GitHub: github, pr, pull request, issues, actions
+  # - Kafka: kafka, event streaming, confluent, ksqldb
+  # - Diagrams: diagram, mermaid, c4, flowchart
+  # - Docs: documentation, docusaurus, readme
+  # - JIRA/ADO: jira, azure devops, work item
+  #
+  if echo "$PROMPT" | grep -qiE "(react|vue|angular|svelte|next\.?js|nuxt|tailwind|dashboard|component|frontend|api|rest|graphql|express|fastapi|django|nestjs|spring|backend|database|sql|postgres|mongodb|redis|prisma|test|tdd|vitest|jest|playwright|cypress|e2e|coverage|qa|docker|terraform|pulumi|aws|azure|gcp|deploy|ci.?cd|prometheus|grafana|kubernetes|k8s|helm|eks|aks|gke|argocd|gitops|mobile|react.?native|expo|ios|android|flutter|ml|ai|machine.?learning|pytorch|tensorflow|mlops|llm|nlp|stripe|paypal|checkout|billing|subscription|payment|release|version|changelog|publish|semver|github|pr|pull.?request|issues|actions|kafka|event.?streaming|confluent|ksqldb|diagram|mermaid|c4|flowchart|documentation|docusaurus|readme|jira|azure.?devops|work.?item)"; then
+    # Run detect-intent in background (non-blocking) with --install --silent
+    # This will auto-install relevant plugins based on the prompt
+    if command -v specweave >/dev/null 2>&1; then
+      # Setup lazy-loading log for graceful degradation (T-010)
+      LAZY_LOAD_LOG="$HOME/.specweave/logs/lazy-loading.log"
+      mkdir -p "$(dirname "$LAZY_LOAD_LOG")" 2>/dev/null
+
+      # T-012: Per-session cache to avoid redundant detection
+      # Hash the prompt and check if we've already processed similar keywords this session
+      PROMPT_CACHE_DIR="$HOME/.specweave/state/prompt-cache"
+      mkdir -p "$PROMPT_CACHE_DIR" 2>/dev/null
+
+      # Extract matched keywords as cache key (simpler than full prompt hash)
+      # v1.0.130: Expanded to match all domain keywords
+      MATCHED_KEYWORDS=$(echo "$PROMPT" | grep -oiE "(react|vue|angular|svelte|nextjs|nuxt|tailwind|dashboard|frontend|api|graphql|express|fastapi|django|nestjs|spring|backend|database|postgres|mongodb|redis|test|tdd|vitest|jest|playwright|cypress|docker|terraform|aws|azure|gcp|kubernetes|k8s|helm|argocd|mobile|expo|ios|android|flutter|ml|ai|pytorch|tensorflow|mlops|llm|stripe|paypal|payment|release|changelog|github|kafka|confluent|diagram|mermaid|jira|ado)" | tr '[:upper:]' '[:lower:]' | sort -u | tr '\n' '-')
+      CACHE_FILE="$PROMPT_CACHE_DIR/${MATCHED_KEYWORDS}detected"
+
+      # Skip if these keywords were already processed (cache exists and is recent)
+      SHOULD_DETECT=true
+      if [[ -f "$CACHE_FILE" ]]; then
+        CACHE_AGE=$(($(date +%s) - $(stat -f%m "$CACHE_FILE" 2>/dev/null || stat -c%Y "$CACHE_FILE" 2>/dev/null || echo 0)))
+        # Per-session cache: 30 minutes (session duration)
+        if [[ "$CACHE_AGE" -lt 1800 ]]; then
+          SHOULD_DETECT=false
+        fi
+      fi
+
+      if [[ "$SHOULD_DETECT" == "true" ]]; then
+        # Escape prompt for shell (replace quotes and special chars)
+        ESCAPED_PROMPT=$(printf '%s' "$PROMPT" | sed "s/'/'\\\\''/g")
+
+        # Run with timeout (10s max per T-011) and log errors for debugging
+        # T-011: Background timeout is 10s; hook itself returns immediately (<500ms)
+        # Graceful degradation: errors logged but don't block Claude
+        (
+          # T-014: Performance logging
+          START_TIME=$(date +%s%3N 2>/dev/null || date +%s)
+          PROMPT_HASH=$(echo "$MATCHED_KEYWORDS" | md5sum 2>/dev/null | cut -c1-8 || echo "unknown")
+
+          if command -v timeout >/dev/null 2>&1; then
+            timeout 10 specweave detect-intent "$ESCAPED_PROMPT" --install --silent 2>>"$LAZY_LOAD_LOG"
+            EXIT_CODE=$?
+          else
+            specweave detect-intent "$ESCAPED_PROMPT" --install --silent 2>>"$LAZY_LOAD_LOG"
+            EXIT_CODE=$?
+          fi
+
+          END_TIME=$(date +%s%3N 2>/dev/null || date +%s)
+          DURATION=$((END_TIME - START_TIME))
+
+          if [[ "$EXIT_CODE" -eq 0 ]]; then
+            touch "$CACHE_FILE"
+            echo "[$(date -Iseconds)] detect-intent success | duration=${DURATION}ms | keywords=$MATCHED_KEYWORDS | hash=$PROMPT_HASH" >> "$LAZY_LOAD_LOG"
+          else
+            echo "[$(date -Iseconds)] detect-intent failed (code=$EXIT_CODE) | duration=${DURATION}ms | prompt=${ESCAPED_PROMPT:0:50}..." >> "$LAZY_LOAD_LOG"
+          fi
+        ) &
+        disown 2>/dev/null
+      fi
+    fi
+  fi
 fi
 
 # CRITICAL: Exit immediately for non-SpecWeave prompts
@@ -63,87 +171,152 @@ escape_json() {
   printf '%s' "$input" | jq -Rs '.' | sed 's/^"//; s/"$//'
 }
 
+# Helper: Check if running in VSCode extension
+# VSCode sets CLAUDE_CODE_ENTRYPOINT=claude-vscode
+# Returns 0 (true) if VSCode, 1 (false) if CLI
+is_vscode() {
+  [[ -n "${CLAUDE_CODE_ENTRYPOINT}" ]] && [[ "${CLAUDE_CODE_ENTRYPOINT}" == "claude-vscode" ]]
+}
+
+# Helper: Extract command line and args from multi-line prompt (v1.0.105+)
+# When prompts contain IDE metadata (e.g., <ide_opened_file>...</ide_opened_file>)
+# the command may be on a subsequent line. This function:
+# 1. Finds the line containing the command
+# 2. Extracts args from that specific line
+# Usage: extract_command_args "PROMPT" "command_pattern" (e.g., "/sw:progress")
+# Returns args on stdout, or empty string if no args
+extract_command_args() {
+  local prompt="$1"
+  local cmd_pattern="$2"
+
+  # Find the line containing the command and extract args from it
+  # The grep -oE gets just the matching line, sed removes the command prefix
+  local cmd_line
+  cmd_line=$(echo "$prompt" | grep -E "^${cmd_pattern}($| )" | head -1)
+
+  if [[ -n "$cmd_line" ]]; then
+    # Remove the command pattern from the line to get args
+    echo "$cmd_line" | sed "s|^${cmd_pattern}[[:space:]]*||"
+  fi
+}
+
 # /sw:jobs → Execute read-jobs.sh (pure bash, ~2ms)
 if echo "$PROMPT" | grep -qE "^/sw:jobs($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/sw:jobs\s*||')
+  ARGS=$(extract_command_args "$PROMPT" "/sw:jobs")
+
+  # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-jobs.sh" ]]; then
-    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-jobs.sh" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-jobs.sh" "$ARGS" 2>&1)
   elif [[ -f "$SCRIPTS_DIR/jobs.js" ]] && command -v node >/dev/null 2>&1; then
-    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/jobs.js" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/jobs.js" "$ARGS" 2>&1)
   else
     OUTPUT="❌ No jobs script available"
   fi
+
+  # Unified response for both CLI and VSCode (v1.0.106)
+  # FIXED: Use approve + systemMessage to display output WITHOUT blocking execution
+  # "block" erases the command from context; we want to show info and continue
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+  printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
 fi
 
 # /sw:progress → Execute read-progress.sh (pure bash, ~30ms)
 if echo "$PROMPT" | grep -qE "^/sw:progress($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/sw:progress\s*||')
+  ARGS=$(extract_command_args "$PROMPT" "/sw:progress")
+
+  # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-progress.sh" ]]; then
-    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-progress.sh" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-progress.sh" "$ARGS" 2>&1)
   elif [[ -f "$SCRIPTS_DIR/progress.js" ]] && command -v node >/dev/null 2>&1; then
-    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/progress.js" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/progress.js" "$ARGS" 2>&1)
   else
     OUTPUT="❌ No progress script available"
   fi
+
+  # Unified response for both CLI and VSCode (v1.0.106)
+  # FIXED: Use approve + systemMessage to display output WITHOUT blocking execution
+  # "block" erases the command from context; we want to show info and continue
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+  printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
 fi
 
 # /sw:status → Execute read-status.sh (pure bash, ~150ms)
 if echo "$PROMPT" | grep -qE "^/sw:status($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/sw:status\s*||')
+  ARGS=$(extract_command_args "$PROMPT" "/sw:status")
+
+  # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-status.sh" ]]; then
-    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-status.sh" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-status.sh" "$ARGS" 2>&1)
   elif [[ -f "$SCRIPTS_DIR/status.js" ]] && command -v node >/dev/null 2>&1; then
-    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/status.js" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && node "$SCRIPTS_DIR/status.js" "$ARGS" 2>&1)
   else
     OUTPUT="❌ No status script available"
   fi
+
+  # Unified response for both CLI and VSCode (v1.0.106)
+  # FIXED: Use approve + systemMessage to display output WITHOUT blocking execution
+  # "block" erases the command from context; we want to show info and continue
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+  printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
 fi
 
 # /sw:workflow → Execute read-workflow.sh (pure bash, ~100ms)
 if echo "$PROMPT" | grep -qE "^/sw:workflow($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/sw:workflow\s*||')
+  ARGS=$(extract_command_args "$PROMPT" "/sw:workflow")
+
+  # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-workflow.sh" ]]; then
-    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-workflow.sh" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-workflow.sh" "$ARGS" 2>&1)
   else
     OUTPUT="❌ No workflow script available"
   fi
+
+  # Unified response for both CLI and VSCode (v1.0.106)
+  # FIXED: Use approve + systemMessage to display output WITHOUT blocking execution
+  # "block" erases the command from context; we want to show info and continue
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+  printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
 fi
 
 # /sw:costs → Execute read-costs.sh (pure bash, ~50ms)
 if echo "$PROMPT" | grep -qE "^/sw:costs($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/sw:costs\s*||')
+  ARGS=$(extract_command_args "$PROMPT" "/sw:costs")
+
+  # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-costs.sh" ]]; then
-    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-costs.sh" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-costs.sh" "$ARGS" 2>&1)
   else
     OUTPUT="❌ No costs script available"
   fi
+
+  # Unified response for both CLI and VSCode (v1.0.106)
+  # FIXED: Use approve + systemMessage to display output WITHOUT blocking execution
+  # "block" erases the command from context; we want to show info and continue
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+  printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
 fi
 
 # /sw:analytics → Execute read-analytics.sh (pure bash, ~50ms)
 if echo "$PROMPT" | grep -qE "^/sw:analytics($| )"; then
-  ARGS=$(echo "$PROMPT" | sed 's|^/sw:analytics\s*||')
+  ARGS=$(extract_command_args "$PROMPT" "/sw:analytics")
+
+  # Execute command and get output
   if [[ -f "$SCRIPTS_DIR/read-analytics.sh" ]]; then
-    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-analytics.sh" $ARGS 2>&1)
+    OUTPUT=$(cd "$(pwd)" && bash "$SCRIPTS_DIR/read-analytics.sh" "$ARGS" 2>&1)
   else
     OUTPUT="❌ No analytics script available"
   fi
+
+  # Unified response for both CLI and VSCode (v1.0.106)
+  # FIXED: Use approve + systemMessage to display output WITHOUT blocking execution
+  # "block" erases the command from context; we want to show info and continue
   OUTPUT_ESCAPED=$(escape_json "$OUTPUT")
-  printf '{"decision":"block","reason":"%s"}\n' "$OUTPUT_ESCAPED"
+  printf '{"decision":"approve","systemMessage":"%s"}\n' "$OUTPUT_ESCAPED"
   exit 0
 fi
 

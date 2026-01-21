@@ -4,7 +4,7 @@ feature: FS-145
 title: ADO Sync Adapter (P1)
 status: completed
 priority: P1
-created: 2025-12-12
+created: 2026-01-14
 project: specweave
 external:
   github:

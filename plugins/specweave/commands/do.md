@@ -1,6 +1,16 @@
 ---
 name: sw:do
 description: Execute increment implementation following spec and plan - hooks run after EVERY task
+hooks:
+  PostToolUse:
+    - matcher: Edit
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/task-ac-sync-guard.sh
+    - matcher: Write
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/task-ac-sync-guard.sh
 ---
 
 # Do Increment
@@ -40,11 +50,52 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 
 ## Workflow
 
+### Step 0: Self-Awareness Check (v1.0.102+)
+
+**🎯 OPTIONAL BUT RECOMMENDED**: Check if running in SpecWeave repository itself.
+
+This step is particularly useful when implementing SpecWeave features vs user projects, as it provides context for:
+- Understanding if changes affect the framework
+- Being careful with breaking changes
+- Considering backward compatibility
+
+```typescript
+import { detectSpecWeaveRepository } from './src/utils/repository-detector.js';
+
+const repoInfo = detectSpecWeaveRepository(process.cwd());
+
+if (repoInfo.isSpecWeaveRepo) {
+  console.log('ℹ️  Working on SpecWeave framework increment');
+  console.log(`   Confidence: ${repoInfo.confidence}`);
+  console.log('');
+  console.log('   💡 Reminders:');
+  console.log('      • Test changes don\'t break existing user projects');
+  console.log('      • Consider backward compatibility');
+  console.log('      • Update CLAUDE.md if workflow changes');
+  console.log('');
+}
+```
+
+**When to Show This**:
+- On first task execution for the increment
+- Skip on subsequent tasks (user already knows context)
+
+**Why This Helps**:
+Contributors working on SpecWeave itself need different mindset than users building apps:
+- Framework changes affect ALL users
+- Breaking changes need deprecation warnings
+- Documentation updates are critical
+
+---
+
 ### Step 1: Load Context
 
 1. **Find increment directory**:
-   - Normalize ID to 4-digit format (e.g., "1" → "0001")
-   - Find `.specweave/increments/0001-name/`
+   - **Normalize increment ID**:
+     - If ID contains dash (e.g., "0153-feature-name"), extract numeric portion before first dash → "0153"
+     - Convert to 4-digit format (e.g., "1" → "0001", "153" → "0153")
+     - Both formats work: `/sw:do 0153` or `/sw:do 0153-feature-name`
+   - Find matching directory: `.specweave/increments/0001-*/` (matches by prefix)
    - Verify increment exists
 
 2. **Load specification and plan**:
@@ -173,6 +224,59 @@ You are helping the user implement a SpecWeave increment by executing tasks from
 
 🎯 Ready to execute!
 ```
+
+### Step 1.5: Check TDD Mode (v1.0.111+)
+
+**Read testMode from metadata.json:**
+
+```bash
+INCREMENT_PATH=".specweave/increments/<id>"
+TEST_MODE=$(cat "$INCREMENT_PATH/metadata.json" | jq -r '.testMode // "test-after"')
+```
+
+**If TEST_MODE == "TDD", display TDD reminder banner:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  🔴 TDD MODE ACTIVE                                          │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  This increment uses Test-Driven Development.               │
+│                                                             │
+│  WORKFLOW:                                                  │
+│  1. [RED]      Write failing test FIRST                     │
+│  2. [GREEN]    Minimal code to make test pass               │
+│  3. [REFACTOR] Improve code, keep tests green               │
+│                                                             │
+│  ⚠️  GREEN tasks depend on their RED counterpart!           │
+│  💡 Tip: Use /sw:tdd-cycle for guided workflow              │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**When executing tasks, detect and display current phase:**
+
+```bash
+CURRENT_TASK_TITLE="T-001: [RED] Write failing test for login"
+
+if [[ "$CURRENT_TASK_TITLE" == *"[RED]"* ]]; then
+  PHASE="🔴 RED - Writing failing test"
+elif [[ "$CURRENT_TASK_TITLE" == *"[GREEN]"* ]]; then
+  PHASE="🟢 GREEN - Making test pass"
+elif [[ "$CURRENT_TASK_TITLE" == *"[REFACTOR]"* ]]; then
+  PHASE="🔵 REFACTOR - Improving code quality"
+else
+  PHASE=""  # Not a TDD task
+fi
+
+if [ -n "$PHASE" ]; then
+  echo "Current Phase: $PHASE"
+fi
+```
+
+**Skip TDD banner if**:
+- `testMode` is not "TDD"
+- Already showed banner in current session
 
 ### Step 2: Smart Resume - Find Next Incomplete Task
 
@@ -702,8 +806,8 @@ Options:
 ### Before Any Deployment Task
 
 ```bash
-# Always check for credentials FIRST:
-grep -E "SUPABASE|DATABASE_URL|CF_|AWS_|HETZNER" .env 2>/dev/null
+# Always check for credentials FIRST (presence only - never display values!):
+grep -qE "SUPABASE|DATABASE_URL|CF_|AWS_|HETZNER" .env 2>/dev/null && echo "Credentials found in .env"
 wrangler whoami 2>/dev/null
 aws sts get-caller-identity 2>/dev/null
 gh auth status 2>/dev/null

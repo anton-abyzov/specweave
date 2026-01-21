@@ -464,7 +464,7 @@ Communication:
 /sw:release dashboard --period last-quarter
 
 # Output:
-📊 Release Dashboard (Q4 2025)
+📊 Release Dashboard (Q4 2026)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Releases Deployed: 12 releases
@@ -574,11 +574,11 @@ Report Hash: sha256:a1b2c3d4e5f6...
 
 ## 📚 Related Guides
 
-- [GitHub Migration Guide](./github-migration.md)
-- [JIRA Migration Guide](./jira-migration.md)
-- [Azure DevOps Migration Guide](./azure-devops-migration.md)
-- [Multi-Environment Deployment Strategy](./multi-environment-deployment.md)
-- [CI/CD Integration Guide](./cicd-integration.md)
+- [GitHub Migration Guide](./github-migration)
+- [JIRA Migration Guide](./jira-migration)
+- [Azure DevOps Migration Guide](./azure-devops-migration)
+- [Multi-Environment Deployment Strategy](./multi-environment-deployment)
+- [External Tools Integration](/docs/academy/specweave-essentials/07-external-tools)
 
 ---
 

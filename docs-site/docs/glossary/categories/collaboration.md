@@ -24,13 +24,13 @@ Collaboration and management terms cover the methodologies, practices, and tools
 - Frameworks: Scrum, Kanban, XP (Extreme Programming)
 - When to use: uncertainty, changing requirements, need for feedback
 
-**[Scrum](/docs/glossary/terms/scrum)**
+**Scrum**
 - Agile framework with defined roles and ceremonies
 - Roles: Product Owner, Scrum Master, Development Team
 - Ceremonies: Sprint Planning, Daily Standup, Review, Retrospective
 - Sprint: Time-boxed iteration (1-4 weeks)
 
-**[Kanban](/docs/glossary/terms/kanban)**
+**Kanban**
 - Visual workflow management
 - Focus on continuous flow (no sprints)
 - WIP (Work In Progress) limits
@@ -38,25 +38,25 @@ Collaboration and management terms cover the methodologies, practices, and tools
 
 ### Work Breakdown
 
-**[User Story](/docs/glossary/terms/user-story)**
+**[User Story](/docs/glossary/terms/user-stories)**
 - Feature from user's perspective
 - Format: "As a [role], I want [feature] so that [benefit]"
 - Acceptance criteria define "done"
 - SpecWeave generates user stories in spec.md
 
-**[Epic](/docs/glossary/terms/epic)**
+**Epic**
 - Large user story spanning multiple sprints
 - Broken down into smaller stories
 - Example: "User Authentication" epic → Login, Signup, Password Reset stories
 - SpecWeave maps epics to living docs specs
 
-**[Task](/docs/glossary/terms/task)**
+**Task**
 - Technical work item (developer perspective)
 - Smaller than user story
 - Example: "Create database migration", "Add unit tests"
 - SpecWeave tracks tasks in tasks.md
 
-**[Spike](/docs/glossary/terms/spike)**
+**Spike**
 - Time-boxed research/investigation
 - Explores unknowns, reduces risk
 - No production code (prototype only)
@@ -64,19 +64,19 @@ Collaboration and management terms cover the methodologies, practices, and tools
 
 ### Estimation & Planning
 
-**[Story Points](/docs/glossary/terms/story-points)**
+**Story Points**
 - Relative effort estimation (not time)
 - Common scales: Fibonacci (1, 2, 3, 5, 8, 13), T-shirt sizes (S, M, L)
 - Accounts for: complexity, risk, uncertainty
 - Not used by SpecWeave (uses time estimates)
 
-**[Velocity](/docs/glossary/terms/velocity)**
+**Velocity**
 - Story points completed per sprint
 - Used for predicting future capacity
 - Example: Team averages 30 points/sprint
 - SpecWeave tracks: tasks completed per increment
 
-**[Sprint Planning](/docs/glossary/terms/sprint-planning)**
+**Sprint Planning**
 - Meeting to plan sprint work
 - Select stories from backlog
 - Break stories into tasks
@@ -84,19 +84,19 @@ Collaboration and management terms cover the methodologies, practices, and tools
 
 ### Tracking & Collaboration
 
-**[Backlog](/docs/glossary/terms/backlog)**
+**Backlog**
 - Prioritized list of work (stories, bugs, tasks)
 - Product Backlog: All work (long-term)
 - Sprint Backlog: Work for current sprint
 - SpecWeave uses: `.specweave/increments/_backlog/`
 
-**[Jira](/docs/glossary/terms/jira)**
+**Jira**
 - Issue tracking and project management tool
 - Features: boards, sprints, roadmaps, reports
 - Most popular in enterprises
 - SpecWeave plugin: `sw-jira`
 
-**[GitHub Issues](/docs/glossary/terms/github-issues)**
+**GitHub Issues**
 - Issue tracking on GitHub
 - Lightweight, integrated with Git
 - Labels, milestones, projects
@@ -435,9 +435,9 @@ Team collaboration documented in:
 ## Learn More
 
 ### Guides
-- [Development Workflow](/docs/delivery/guides/development-workflow)
-- [Increment Lifecycle](/docs/delivery/guides/increment-lifecycle)
-- [Branch Strategy](/docs/delivery/branch-strategy)
+- [Getting Started](/docs/quick-start)
+- [Increment Lifecycle](/docs/academy/specweave-essentials/13-increment-lifecycle)
+- [Multi-Project Setup](/docs/guides/multi-project-setup)
 
 ### Books
 - "Agile Estimating and Planning" by Mike Cohn
@@ -458,4 +458,4 @@ Team collaboration documented in:
 **Navigation**:
 - [← Back to Glossary](/docs/glossary/)
 - [Browse by Category](/docs/glossary/index-by-category)
-- [Alphabetical Index](/docs/glossary/README)
+- [Alphabetical Index](/docs/glossary/)

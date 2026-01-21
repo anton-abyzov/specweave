@@ -34,8 +34,32 @@ Convert one or more brownfield discrepancies into a new increment for systematic
      - Single increment covering all modules
      - Separate increments per module
 
-3. **Generate Increment Spec**
-   - Create increment with auto-generated ID
+3. **Generate Increment ID with Validation** (v1.0.102+)
+   - Get next available increment number
+   - **Validate increment number** using increment-validator:
+     ```typescript
+     import { validateIncrementNumber, logValidationResult } from './src/core/increment-validator.js';
+
+     // Get all existing increments
+     const existingIncrements = [
+       ...fs.readdirSync('.specweave/increments/'),
+       ...fs.readdirSync('.specweave/increments/_archive/').map(f => `_archive/${f}`),
+     ].filter(f => /^\d{4}-/.test(f));
+
+     // Get next number
+     const nextNumber = getNextIncrementNumber();
+
+     // Validate (should always be sequential for discrepancy-to-increment)
+     const result = validateIncrementNumber(nextNumber, existingIncrements);
+     logValidationResult(result);
+
+     if (!result.isValid) {
+       throw new Error('Cannot generate increment ID. See validation errors above.');
+     }
+
+     // Use validated number
+     const incrementId = `${nextNumber}-${moduleName}-docs-improvement`;
+     ```
    - Include discrepancy context in spec.md
    - Generate user stories from discrepancies
    - Link code/doc locations

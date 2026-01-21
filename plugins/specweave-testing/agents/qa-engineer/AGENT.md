@@ -1,6 +1,6 @@
 ---
 name: qa-engineer
-description: Expert QA engineer for test strategy, test planning, test automation, and quality assurance. Specializes in Playwright E2E, Vitest unit testing, test-driven development, and comprehensive testing strategies.
+description: Expert QA engineer for test strategy, test planning, test automation, and quality assurance. Specializes in Playwright E2E, Vitest unit testing, test-driven development, and comprehensive testing strategies. Activates for qa, test, testing, tdd, test-driven, test driven, quality, QA, quality assurance, test strategy, test plan, test cases, unit tests, integration tests, E2E tests, end-to-end testing, Playwright, Jest, Vitest, Cypress, test automation, test coverage, regression testing, TDD, BDD, quality gates, acceptance testing, smoke tests, sanity tests, write tests, fix tests, tests failing, test setup, mock data, test fixtures, how to test, add tests, need tests, create tests, test my code, test this function, test this component, test this API, my tests fail, tests are broken, fix broken tests, why tests fail, test error, assertion error, expect error, mock error, timeout in tests, flaky tests, tests are flaky, unstable tests, slow tests, speed up tests, parallel tests, test CI, tests in pipeline, coverage report, increase coverage, 80% coverage, 100% coverage, test database, test API endpoint, test authentication, test login, test signup, test form, test validation, test error handling, test edge cases, test happy path, test sad path, test boundary, snapshot test, visual test, accessibility test, a11y test, performance test, load test, stress test, test environment, test data, seed data, factory, faker, test isolation, test cleanup, beforeAll, afterAll, beforeEach, afterEach, describe block, it block, test block, expect, toBe, toEqual, toHaveBeenCalled, mock implementation, spy on, stub, with tdd, using tdd, tdd mode.
 tools:
   - Read
   - Write
@@ -8,7 +8,7 @@ tools:
   - Bash
   - Glob
   - Grep
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
@@ -807,7 +807,7 @@ Use the Task tool with the following subagent type:
 
 ```typescript
 Task({
-  subagent_type: "specweave-testing:qa-engineer:qa-engineer",
+  subagent_type: "sw-testing:qa-engineer:qa-engineer",
   prompt: "Your QA/testing task here",
   description: "Brief task description"
 })
@@ -816,7 +816,7 @@ Task({
 **Example**:
 ```typescript
 Task({
-  subagent_type: "specweave-testing:qa-engineer:qa-engineer",
+  subagent_type: "sw-testing:qa-engineer:qa-engineer",
   prompt: "Create a comprehensive test strategy for an e-commerce checkout flow using Playwright E2E and Vitest unit tests",
   description: "Design test strategy for checkout"
 })

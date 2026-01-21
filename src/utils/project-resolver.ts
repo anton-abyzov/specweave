@@ -621,49 +621,6 @@ export class ProjectResolver {
   }
 
   /**
-   * Detect if description indicates cross-project work
-   */
-  private detectCrossProject(description: string): boolean {
-    // Keywords that indicate cross-project work
-    const crossProjectIndicators = [
-      'frontend and backend',
-      'fe and be',
-      'client and server',
-      'mobile and api',
-      'multiple repos',
-      'across projects',
-      'shared between',
-      'full stack',
-      'end to end',
-      'e2e'
-    ];
-
-    for (const indicator of crossProjectIndicators) {
-      if (description.includes(indicator)) {
-        return true;
-      }
-    }
-
-    // Count distinct project-type keywords
-    const projectTypes = new Set<string>();
-
-    if (this.matchesKeywords(description, DEFAULT_KEYWORD_PATTERNS.frontend)) {
-      projectTypes.add('frontend');
-    }
-    if (this.matchesKeywords(description, DEFAULT_KEYWORD_PATTERNS.backend)) {
-      projectTypes.add('backend');
-    }
-    if (this.matchesKeywords(description, DEFAULT_KEYWORD_PATTERNS.mobile)) {
-      projectTypes.add('mobile');
-    }
-    if (this.matchesKeywords(description, DEFAULT_KEYWORD_PATTERNS.infrastructure)) {
-      projectTypes.add('infrastructure');
-    }
-
-    return projectTypes.size >= 2;
-  }
-
-  /**
    * Check if content matches any keywords
    */
   private matchesKeywords(content: string, keywords: string[]): boolean {

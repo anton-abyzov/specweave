@@ -259,18 +259,13 @@ export class DashboardDataProvider {
    * Get job status emoji for display
    */
   getJobStatusEmoji(status: JobStatus): string {
-    switch (status) {
-      case 'idle':
-        return '✅';
-      case 'running':
-        return '🔄';
-      case 'failed':
-        return '❌';
-      case 'disabled':
-        return '⏸️';
-      default:
-        return '❓';
-    }
+    const statusEmojis: Record<JobStatus, string> = {
+      idle: '✅',
+      running: '🔄',
+      failed: '❌',
+      disabled: '⏸️',
+    };
+    return statusEmojis[status] ?? '❓';
   }
 
   /**

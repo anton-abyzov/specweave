@@ -349,41 +349,22 @@ export class ThreeFileValidator {
       const warnings = result.issues.filter(i => i.severity === ValidationSeverity.WARNING);
       const infos = result.issues.filter(i => i.severity === ValidationSeverity.INFO);
 
-      if (errors.length > 0) {
-        lines.push('### ❌ Errors (Must Fix)\n');
-        errors.forEach(issue => {
+      const formatIssues = (issues: ValidationIssue[], header: string): void => {
+        if (issues.length === 0) return;
+        lines.push(`${header}\n`);
+        for (const issue of issues) {
           lines.push(`**${issue.file}:${issue.line ?? '?'}** - ${issue.code}`);
           lines.push(`- **Message**: ${issue.message}`);
           if (issue.fix) {
             lines.push(`- **Fix**: ${issue.fix}`);
           }
           lines.push('');
-        });
-      }
+        }
+      };
 
-      if (warnings.length > 0) {
-        lines.push('### ⚠️ Warnings (Should Fix)\n');
-        warnings.forEach(issue => {
-          lines.push(`**${issue.file}:${issue.line ?? '?'}** - ${issue.code}`);
-          lines.push(`- **Message**: ${issue.message}`);
-          if (issue.fix) {
-            lines.push(`- **Fix**: ${issue.fix}`);
-          }
-          lines.push('');
-        });
-      }
-
-      if (infos.length > 0) {
-        lines.push('### ℹ️ Info (Nice to Have)\n');
-        infos.forEach(issue => {
-          lines.push(`**${issue.file}:${issue.line ?? '?'}** - ${issue.code}`);
-          lines.push(`- **Message**: ${issue.message}`);
-          if (issue.fix) {
-            lines.push(`- **Fix**: ${issue.fix}`);
-          }
-          lines.push('');
-        });
-      }
+      formatIssues(errors, '### ❌ Errors (Must Fix)');
+      formatIssues(warnings, '### ⚠️ Warnings (Should Fix)');
+      formatIssues(infos, '### ℹ️ Info (Nice to Have)');
     }
 
     return lines.join('\n');

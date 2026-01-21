@@ -366,6 +366,110 @@ describe('ActiveIncrementManager', () => {
     });
   });
 
+  describe('validateAndRepair', () => {
+    it('should return valid=true when no issues found', () => {
+      createTestIncrement('0001-active');
+      manager.setActive('0001-active');
+
+      const result = manager.validateAndRepair();
+
+      expect(result.valid).toBe(true);
+      expect(result.repaired).toBe(false);
+      expect(result.details).toEqual([]);
+    });
+
+    it('should detect and repair stale pointer (increment completed)', () => {
+      createTestIncrement('0001-stale');
+      manager.setActive('0001-stale');
+
+      // Manually corrupt state (bypass MetadataManager which would auto-fix)
+      const metadataPath = path.join(
+        tempDir,
+        '.specweave/increments/0001-stale/metadata.json'
+      );
+      const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+      metadata.status = IncrementStatus.COMPLETED;
+      fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
+
+      const result = manager.validateAndRepair();
+
+      expect(result.valid).toBe(false);
+      expect(result.repaired).toBe(true);
+      expect(result.details).toContain('Stale: 0001-stale is completed, not active');
+      expect(result.details).toContain('Auto-repaired: Rebuilt active increment list from metadata');
+      expect(manager.getActive()).toEqual([]); // Cleared since no other active increments
+    });
+
+    it('should detect and repair missing increment', () => {
+      createTestIncrement('0001-deleted');
+      manager.setActive('0001-deleted');
+
+      // Delete increment (but leave active-increment.json pointing to it)
+      const incrementDir = path.join(tempDir, '.specweave/increments/0001-deleted');
+      fs.removeSync(incrementDir);
+
+      const result = manager.validateAndRepair();
+
+      expect(result.valid).toBe(false);
+      expect(result.repaired).toBe(true);
+      expect(result.details).toContain('Missing: 0001-deleted not found');
+      expect(manager.getActive()).toEqual([]);
+    });
+
+    it('should detect active increments missing from list', () => {
+      createTestIncrement('0001-tracked');
+      createTestIncrement('0002-untracked');
+
+      // Manually write state file with only 0001-tracked
+      // (Bypassing setActive to simulate a desync scenario)
+      const stateFile = manager.getStateFilePath();
+      fs.writeFileSync(stateFile, JSON.stringify({
+        ids: ['0001-tracked'],
+        lastUpdated: new Date().toISOString()
+      }, null, 2));
+
+      const result = manager.validateAndRepair();
+
+      // The repair should have happened since 0002-untracked is missing from list
+      expect(result.repaired).toBe(true);
+      // After repair, both should be in the list
+      expect(manager.getActive()).toContain('0001-tracked');
+      expect(manager.getActive()).toContain('0002-untracked');
+    });
+
+    it('should handle combined issues (stale + missing from list)', () => {
+      createTestIncrement('0001-stale');
+      createTestIncrement('0002-active');
+      manager.setActive('0001-stale');
+
+      // Corrupt 0001 to be completed
+      const metadataPath = path.join(
+        tempDir,
+        '.specweave/increments/0001-stale/metadata.json'
+      );
+      const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+      metadata.status = IncrementStatus.COMPLETED;
+      fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
+
+      const result = manager.validateAndRepair();
+
+      expect(result.valid).toBe(false);
+      expect(result.repaired).toBe(true);
+      // After repair, only 0002-active should be in the list
+      expect(manager.getActive()).toContain('0002-active');
+      expect(manager.getActive()).not.toContain('0001-stale');
+    });
+
+    it('should not repair when no issues exist', () => {
+      // No increments, no state file = valid
+      const result = manager.validateAndRepair();
+
+      expect(result.valid).toBe(true);
+      expect(result.repaired).toBe(false);
+      expect(result.details).toEqual([]);
+    });
+  });
+
   describe('Edge Cases', () => {
     it('should handle empty increment ID gracefully', () => {
       fs.writeFileSync(manager.getStateFilePath(), '{"ids": [""]}');

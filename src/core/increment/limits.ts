@@ -99,7 +99,7 @@ export function checkIncrementLimits(type: IncrementType): LimitCheckResult {
   // Add warning message if exceeded
   if (exceeded) {
     result.warning = buildLimitWarning(type, current, limit, activeOfType);
-    result.suggestions = buildSuggestions(type, activeOfType);
+    result.suggestions = buildSuggestions(type);
   }
 
   return result;
@@ -204,25 +204,26 @@ Context switching reduces productivity by 20-40%.
 }
 
 /**
+ * Type-specific suggestions for exceeding limits
+ */
+const TYPE_SUGGESTIONS: Partial<Record<IncrementType, string>> = {
+  [IncrementType.FEATURE]: 'Reduce scope: Break large feature into smaller increments',
+  [IncrementType.REFACTOR]: 'Refactors need focus: Complete current refactor before starting new one'
+};
+
+/**
  * Build suggestions for resolving limit exceeded
  */
-function buildSuggestions(type: IncrementType, activeIncrements: IncrementMetadata[]): string[] {
-  const suggestions: string[] = [];
+function buildSuggestions(type: IncrementType): string[] {
+  const suggestions = [
+    'Complete active increment: /done <id>',
+    'Pause active increment: /pause <id>',
+    'Check status: /status'
+  ];
 
-  // Suggest completing increments
-  suggestions.push(`Complete active increment: /done <id>`);
-
-  // Suggest pausing increments
-  suggestions.push(`Pause active increment: /pause <id>`);
-
-  // Show status
-  suggestions.push(`Check status: /status`);
-
-  // Type-specific suggestions
-  if (type === IncrementType.FEATURE) {
-    suggestions.push(`Reduce scope: Break large feature into smaller increments`);
-  } else if (type === IncrementType.REFACTOR) {
-    suggestions.push(`Refactors need focus: Complete current refactor before starting new one`);
+  const typeSuggestion = TYPE_SUGGESTIONS[type];
+  if (typeSuggestion) {
+    suggestions.push(typeSuggestion);
   }
 
   return suggestions;
@@ -258,28 +259,34 @@ Recommended: Complete or pause active work first.
 }
 
 /**
+ * Productivity cost lookup table based on research
+ */
+const PRODUCTIVITY_COST = ['0%', '20%', '30%', '40%'] as const;
+
+/**
  * Calculate productivity cost based on active increment count
  */
 function calculateProductivityCost(activeCount: number): string {
-  if (activeCount === 0) return '0%';
-  if (activeCount === 1) return '20%';
-  if (activeCount === 2) return '30%';
-  return '40%';
+  return PRODUCTIVITY_COST[Math.min(activeCount, PRODUCTIVITY_COST.length - 1)];
 }
+
+/**
+ * Type label mapping for display
+ */
+const TYPE_LABELS: Record<IncrementType, string> = {
+  [IncrementType.HOTFIX]: 'hotfix',
+  [IncrementType.FEATURE]: 'feature',
+  [IncrementType.BUG]: 'bug',
+  [IncrementType.CHANGE_REQUEST]: 'change request',
+  [IncrementType.REFACTOR]: 'refactor',
+  [IncrementType.EXPERIMENT]: 'experiment'
+};
 
 /**
  * Format type label for display
  */
 function formatTypeLabel(type: IncrementType): string {
-  switch (type) {
-    case IncrementType.HOTFIX: return 'hotfix';
-    case IncrementType.FEATURE: return 'feature';
-    case IncrementType.BUG: return 'bug';
-    case IncrementType.CHANGE_REQUEST: return 'change request';
-    case IncrementType.REFACTOR: return 'refactor';
-    case IncrementType.EXPERIMENT: return 'experiment';
-    default: return type;
-  }
+  return TYPE_LABELS[type] ?? type;
 }
 
 /**

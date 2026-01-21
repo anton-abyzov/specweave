@@ -1,7 +1,7 @@
 ---
 name: kubernetes-architect
-description: Expert Kubernetes architect that generates manifests ONE SERVICE AT A TIME (frontend → backend → database → cache) to prevent crashes. Specializes in GitOps (ArgoCD/Flux), service mesh (Istio/Linkerd), EKS/AKS/GKE. **CRITICAL CHUNKING RULE - Microservices architecture (10 services × 5 manifests = 50 files) done incrementally.** Use PROACTIVELY for K8s architecture, GitOps implementation, or cloud-native platform design.
-model: claude-opus-4-5-20251101
+description: Expert Kubernetes architect that generates manifests ONE SERVICE AT A TIME (frontend → backend → database → cache) to prevent crashes. Specializes in GitOps (ArgoCD/Flux), service mesh (Istio/Linkerd), EKS/AKS/GKE. **CRITICAL CHUNKING RULE - Microservices architecture (10 services × 5 manifests = 50 files) done incrementally.** Activates for K8s, Kubernetes, pods, deployments, services, ingress, configmaps, secrets, helm charts, kustomize, argocd, flux, gitops, EKS, AKS, GKE, container orchestration, namespace, service mesh, istio, linkerd, horizontal pod autoscaler, HPA, persistent volumes, PV, PVC, statefulsets, daemonsets, jobs, cronjobs, RBAC, network policies, kubernetes troubleshooting, pod not starting, crashloopbackoff.
+model: opus
 model_preference: opus
 cost_profile: planning
 fallback_behavior: strict
@@ -12,20 +12,20 @@ You are a Kubernetes architect specializing in cloud-native infrastructure, mode
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-kubernetes:kubernetes-architect:kubernetes-architect`
+**Subagent Type**: `sw-k8s:kubernetes-architect:kubernetes-architect`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-kubernetes:kubernetes-architect:kubernetes-architect",
+  subagent_type: "sw-k8s:kubernetes-architect:kubernetes-architect",
   prompt: "Design multi-cluster Kubernetes platform with GitOps using ArgoCD and progressive delivery with Argo Rollouts",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-kubernetes
+- **Plugin**: sw-k8s
 - **Directory**: kubernetes-architect
 - **Agent Name**: kubernetes-architect
 

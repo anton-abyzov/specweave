@@ -171,32 +171,26 @@ export class ApiRouteAnalyzer {
     return { routes, errors };
   }
 
-  private async scanNextjsApiDir(apiDir: string, baseDir: string): Promise<ApiRoute[]> {
+  private async scanNextjsApiDir(dir: string, baseDir: string): Promise<ApiRoute[]> {
+    if (!fs.existsSync(dir)) return [];
+
     const routes: ApiRoute[] = [];
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
 
-    const scanDir = (dir: string): void => {
-      if (!fs.existsSync(dir)) return;
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
 
-      const entries = fs.readdirSync(dir, { withFileTypes: true });
-
-      for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-
-        if (entry.isDirectory()) {
-          scanDir(fullPath);
-        } else if (entry.isFile() && /\.(ts|tsx|js|jsx)$/.test(entry.name)) {
-          // Skip non-route files
-          if (entry.name.startsWith('_')) continue;
-
-          const route = this.parseNextjsRoute(fullPath, baseDir);
-          if (route) {
-            routes.push(...route);
-          }
+      if (entry.isDirectory()) {
+        const subRoutes = await this.scanNextjsApiDir(fullPath, baseDir);
+        routes.push(...subRoutes);
+      } else if (entry.isFile() && /\.(ts|tsx|js|jsx)$/.test(entry.name) && !entry.name.startsWith('_')) {
+        const route = this.parseNextjsRoute(fullPath, baseDir);
+        if (route) {
+          routes.push(...route);
         }
       }
-    };
+    }
 
-    scanDir(apiDir);
     return routes;
   }
 

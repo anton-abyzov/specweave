@@ -16,6 +16,8 @@ import {
   AutomationLevel
 } from './adapter-interface.js';
 import { getDirname } from '../utils/esm-helpers.js';
+import { getSystemPromptForLanguage } from '../core/i18n/language-manager.js';
+import type { SupportedLanguage } from '../core/i18n/types.js';
 import type { Plugin } from '../core/types/plugin.js';
 
 const __dirname = getDirname(import.meta.url);
@@ -178,5 +180,47 @@ export abstract class AdapterBase implements IAdapter {
    */
   async getInstalledPlugins(): Promise<string[]> {
     return [];
+  }
+
+  /**
+   * Read language configuration from project config
+   */
+  protected async getLanguageConfig(): Promise<SupportedLanguage> {
+    const projectPath = process.cwd();
+    const configPath = path.join(projectPath, '.specweave', 'config.json');
+
+    if (!(await fs.pathExists(configPath))) {
+      return 'en';
+    }
+
+    try {
+      const config = await fs.readJson(configPath);
+      return (config.language as SupportedLanguage) || 'en';
+    } catch {
+      return 'en';
+    }
+  }
+
+  /**
+   * Inject system prompt for non-English languages
+   */
+  protected injectSystemPrompt(content: string, language: SupportedLanguage): string {
+    if (language === 'en') {
+      return content;
+    }
+
+    const systemPrompt = getSystemPromptForLanguage(language);
+
+    // Handle YAML frontmatter
+    if (content.startsWith('---')) {
+      const endOfFrontmatter = content.indexOf('---', 3);
+      if (endOfFrontmatter !== -1) {
+        const frontmatter = content.substring(0, endOfFrontmatter + 3);
+        const body = content.substring(endOfFrontmatter + 3);
+        return `${frontmatter}\n\n${systemPrompt}\n${body}`;
+      }
+    }
+
+    return `${systemPrompt}\n\n${content}`;
   }
 }

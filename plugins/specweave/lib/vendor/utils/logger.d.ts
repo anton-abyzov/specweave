@@ -3,6 +3,8 @@
  *
  * Abstraction for logging to enable silent testing and flexible log output.
  * Prevents test output pollution from expected error conditions.
+ *
+ * SECURITY: All loggers automatically mask credentials using credential-masker utility.
  */
 /**
  * Logger interface for dependency injection
@@ -33,6 +35,7 @@ export interface Logger {
  * Console logger (default production logger)
  *
  * Logs to console.log/error/warn
+ * SECURITY: Automatically masks all credentials before logging
  */
 export declare const consoleLogger: Logger;
 /**
@@ -47,6 +50,7 @@ export declare const silentLogger: Logger;
  *
  * @param minLevel - Minimum level to log (debug=0, log=1, warn=2, error=3)
  * @returns Logger instance
+ * SECURITY: Automatically masks all credentials before logging
  */
 export declare function createFilteredLogger(minLevel?: 'debug' | 'log' | 'warn' | 'error'): Logger;
 //# sourceMappingURL=logger.d.ts.map

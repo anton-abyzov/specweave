@@ -1,9 +1,0 @@
-{
-  "label": "Module 10: E2E Testing",
-  "position": 10,
-  "collapsed": false,
-  "link": {
-    "type": "generated-index",
-    "description": "Test complete user journeys with Playwright"
-  }
-}

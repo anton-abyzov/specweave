@@ -138,7 +138,6 @@ your-project/
 │   │   ├── spec-generator/
 │   │   ├── context-loader/
 │   │   ├── tdd-workflow/
-│   │   ├── project-kickstarter/
 │   │   ├── brownfield-analyzer/
 │   │   ├── brownfield-onboarder/
 │   │   ├── increment-quality-judge/
@@ -391,7 +390,38 @@ integrations:
 
 ## Upgrading
 
-### Global Installation
+### Recommended: `specweave update` (v1.0.131+)
+
+The easiest way to upgrade SpecWeave:
+
+```bash
+# Full update: CLI + instructions + config (self-updates via npm by default!)
+specweave update
+
+# Also refresh marketplace plugins
+specweave update --plugins
+
+# Full update with all plugins
+specweave update --all
+
+# Dry run - see what would change
+specweave update --check
+
+# Skip CLI self-update (only update project files)
+specweave update --no-self
+```
+
+**What `specweave update` does:**
+1. **Self-updates CLI** via `npm install -g specweave@latest` (by default)
+2. **Migrates config.json** - adds missing sections like `auto` for older projects
+3. **Updates instruction files** - CLAUDE.md, AGENTS.md with latest templates
+4. **Validates project health** - checks for stale files, missing config
+
+:::tip Config Migration
+Projects created before v1.0.131 may be missing the `auto` config section. Running `specweave update` automatically adds default values without affecting existing settings.
+:::
+
+### Alternative: Manual npm Update
 
 ```bash
 # Check current version

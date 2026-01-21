@@ -44,93 +44,44 @@ export class GitHubAPIClient {
   }
 
   /**
-   * Fetch all repositories for a user or organization
-   *
-   * @param owner - GitHub username or organization name
-   * @returns Array of repository metadata
+   * Create request headers with optional auth token
    */
-  async fetchAllRepos(owner: string): Promise<RepositoryMetadata[]> {
-    const repos: RepositoryMetadata[] = [];
-    let page = 1;
-
-    try {
-      while (page <= this.config.maxPages) {
-        const url = `${this.config.baseUrl}/users/${owner}/repos?per_page=${this.config.perPage}&page=${page}&sort=updated`;
-
-        const headers: Record<string, string> = {
-          'Accept': 'application/vnd.github.v3+json'
-        };
-
-        if (this.config.token) {
-          headers['Authorization'] = `Bearer ${this.config.token}`;
-        }
-
-        const response = await fetch(url, { headers });
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            // User not found - try as org
-            return this.fetchOrgRepos(owner);
-          }
-          throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json() as any[];
-
-        if (data.length === 0) {
-          // No more repos
-          break;
-        }
-
-        // Map to RepositoryMetadata
-        for (const repo of data) {
-          repos.push({
-            name: repo.name,
-            url: repo.html_url,
-            owner: repo.owner.login,
-            description: repo.description || '',
-            language: repo.language || 'Unknown',
-            stars: repo.stargazers_count || 0,
-            lastUpdated: new Date(repo.updated_at),
-            private: repo.private,
-            defaultBranch: repo.default_branch
-          });
-        }
-
-        // Check for next page
-        if (data.length < this.config.perPage) {
-          break;
-        }
-
-        page++;
-      }
-
-      return repos;
-    } catch (error) {
-      console.error('GitHub API fetch failed:', error);
-      // Fallback to empty array (could implement local git remote parsing here)
-      return [];
+  private getHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Accept': 'application/vnd.github.v3+json'
+    };
+    if (this.config.token) {
+      headers['Authorization'] = `Bearer ${this.config.token}`;
     }
+    return headers;
   }
 
   /**
-   * Fetch repositories for an organization
+   * Map GitHub API response to RepositoryMetadata
    */
-  private async fetchOrgRepos(org: string): Promise<RepositoryMetadata[]> {
+  private mapRepoData(repo: any): RepositoryMetadata {
+    return {
+      name: repo.name,
+      url: repo.html_url,
+      owner: repo.owner.login,
+      description: repo.description || '',
+      language: repo.language || 'Unknown',
+      stars: repo.stargazers_count || 0,
+      lastUpdated: new Date(repo.updated_at),
+      private: repo.private,
+      defaultBranch: repo.default_branch
+    };
+  }
+
+  /**
+   * Fetch paginated repositories from a URL pattern
+   */
+  private async fetchPaginatedRepos(urlPattern: string): Promise<RepositoryMetadata[]> {
     const repos: RepositoryMetadata[] = [];
-    let page = 1;
+    const headers = this.getHeaders();
 
-    while (page <= this.config.maxPages) {
-      const url = `${this.config.baseUrl}/orgs/${org}/repos?per_page=${this.config.perPage}&page=${page}&sort=updated`;
-
-      const headers: Record<string, string> = {
-        'Accept': 'application/vnd.github.v3+json'
-      };
-
-      if (this.config.token) {
-        headers['Authorization'] = `Bearer ${this.config.token}`;
-      }
-
+    for (let page = 1; page <= this.config.maxPages; page++) {
+      const url = `${urlPattern}?per_page=${this.config.perPage}&page=${page}&sort=updated`;
       const response = await fetch(url, { headers });
 
       if (!response.ok) {
@@ -143,28 +94,39 @@ export class GitHubAPIClient {
         break;
       }
 
-      for (const repo of data) {
-        repos.push({
-          name: repo.name,
-          url: repo.html_url,
-          owner: repo.owner.login,
-          description: repo.description || '',
-          language: repo.language || 'Unknown',
-          stars: repo.stargazers_count || 0,
-          lastUpdated: new Date(repo.updated_at),
-          private: repo.private,
-          defaultBranch: repo.default_branch
-        });
-      }
+      repos.push(...data.map(repo => this.mapRepoData(repo)));
 
       if (data.length < this.config.perPage) {
         break;
       }
-
-      page++;
     }
 
     return repos;
+  }
+
+  /**
+   * Fetch all repositories for a user or organization
+   *
+   * @param owner - GitHub username or organization name
+   * @returns Array of repository metadata
+   */
+  async fetchAllRepos(owner: string): Promise<RepositoryMetadata[]> {
+    try {
+      return await this.fetchPaginatedRepos(`${this.config.baseUrl}/users/${owner}/repos`);
+    } catch (error: any) {
+      if (error.message?.includes('404')) {
+        return this.fetchOrgRepos(owner);
+      }
+      console.error('GitHub API fetch failed:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Fetch repositories for an organization
+   */
+  private async fetchOrgRepos(org: string): Promise<RepositoryMetadata[]> {
+    return this.fetchPaginatedRepos(`${this.config.baseUrl}/orgs/${org}/repos`);
   }
 
   /**

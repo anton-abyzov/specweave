@@ -260,6 +260,20 @@ ls -la .claude/commands/
 
 ---
 
+## Staying Updated
+
+AI tooling moves fast. Claude Code ships updates constantly. Here's how to stay on top of it:
+
+| Resource | URL | Why It Matters |
+|----------|-----|----------------|
+| **Boris Cherny (Twitter)** | [x.com/bcherny](https://x.com/bcherny) | Creator of Claude Code at Anthropic. Follow for early insights on new features before they hit the changelog. |
+| **Claude Code Changelog** | [CHANGELOG.md](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md) | Source of truth for what's shipping. Check daily for new features, changes, and deprecations. |
+| **Anthropic Engineering Blog** | [anthropic.com/engineering](https://www.anthropic.com/engineering) | Deep dives into Claude capabilities. New articles are rare but invaluable when they drop. |
+
+**Bookmark these. Check them regularly.** The AI landscape changes weekly.
+
+---
+
 ## Next Steps
 
 - **[Installation Guide](installation)** - Detailed setup options

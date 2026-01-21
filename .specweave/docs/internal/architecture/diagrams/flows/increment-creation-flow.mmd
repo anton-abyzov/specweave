@@ -1,0 +1,92 @@
+sequenceDiagram
+    autonumber
+    title /sw:increment Command Flow
+
+    actor Developer
+    participant Claude as Claude Code
+    participant Skill as sw:increment Skill
+    participant PM as PM Agent
+    participant Arch as Architect Agent
+    participant TL as Tech Lead Agent
+    participant Loader as Plugin Loader
+    participant Meta as MetadataManager
+    participant NumMgr as IncrementNumberManager
+    participant Living as LivingDocsSync
+    participant FS as File System
+
+    Developer->>Claude: /sw:increment "Build auth system"
+
+    Note over Claude: Auto-detect skill trigger
+
+    Claude->>Skill: Activate increment skill
+    activate Skill
+
+    Skill->>Loader: Load required agents
+    Loader-->>Skill: PM, Architect, TechLead agents
+
+    Note over Skill: Phase 1: Requirements Gathering
+
+    Skill->>PM: Task: Analyze requirements
+    activate PM
+    PM->>PM: Extract user stories
+    PM->>PM: Define acceptance criteria
+    PM-->>Skill: User stories + ACs
+    deactivate PM
+
+    Note over Skill: Phase 2: Technical Design
+
+    Skill->>Arch: Task: Create technical design
+    activate Arch
+    Arch->>Arch: System architecture
+    Arch->>Arch: Component breakdown
+    Arch->>Arch: Integration points
+    Arch-->>Skill: Architecture decisions
+    deactivate Arch
+
+    Note over Skill: Phase 3: Task Planning
+
+    Skill->>TL: Task: Create implementation tasks
+    activate TL
+    TL->>TL: Break down into tasks
+    TL->>TL: Add test criteria (BDD)
+    TL->>TL: Estimate complexity
+    TL-->>Skill: Task list + estimates
+    deactivate TL
+
+    Note over Skill: Phase 4: Increment Creation
+
+    Skill->>NumMgr: Generate unique increment ID
+    NumMgr->>FS: Scan existing increments
+    FS-->>NumMgr: Existing IDs
+    NumMgr->>NumMgr: Check duplicates across _archive, _abandoned
+    NumMgr-->>Skill: 0042-auth-system
+
+    Skill->>FS: Create increment folder
+    FS-->>Skill: .specweave/increments/0042-auth-system/
+
+    Skill->>FS: Write spec.md (frontmatter + user stories)
+    Skill->>FS: Write plan.md (architecture decisions)
+    Skill->>FS: Write tasks.md (task breakdown)
+
+    Skill->>Meta: Create metadata.json
+    Meta->>Meta: Default status: PLANNING
+    Meta->>FS: Write metadata.json
+    Meta-->>Skill: Metadata created
+
+    Note over Skill: Phase 5: Living Docs Sync
+
+    Skill->>Living: Sync to living docs
+    activate Living
+    Living->>Living: Derive FS-042 feature ID
+    Living->>FS: Create .specweave/docs/internal/specs/project/FS-042/
+    Living->>FS: Write FEATURE.md
+    Living->>FS: Write us-001-*.md per story
+    Living-->>Skill: Synced to FS-042
+    deactivate Living
+
+    Skill-->>Claude: Increment 0042-auth-system created
+    deactivate Skill
+
+    Claude-->>Developer: Increment ready, run /sw:do to start
+
+    Note over Developer: Increment is now in PLANNING status

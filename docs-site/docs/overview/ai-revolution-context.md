@@ -33,7 +33,7 @@ The bottleneck was **typing speed** and **domain knowledge**. Senior developers 
 
 ## The Shift (2023-2024)
 
-[ChatGPT](../glossary/terms/llm) and [Claude](../glossary/terms/claude) changed everything. Suddenly:
+[ChatGPT](/docs/glossary/terms/llm) and Claude changed everything. Suddenly:
 
 - AI could write functional code in seconds
 - Debugging became "describe the problem → get solution"
@@ -78,7 +78,7 @@ Instead of "code first, think later":
 
 | Phase | What Happens | Who Does It |
 |-------|--------------|-------------|
-| **Specify** | Write requirements with [acceptance criteria](/glossary/terms/acceptance-criteria) | Human (AI assists) |
+| **Specify** | Write requirements with [acceptance criteria](/docs/glossary/terms/acceptance-criteria) | Human (AI assists) |
 | **Plan** | Design architecture, break into tasks | AI (human reviews) |
 | **Implement** | Write code, tests, docs | AI (autonomous) |
 | **Validate** | Verify AC met, tests pass | Automated + human |
@@ -155,7 +155,7 @@ Instead of "code first, think later":
 
 ## SpecWeave's Role
 
-[SpecWeave](/overview/introduction) operationalizes this paradigm shift:
+[SpecWeave](/docs/overview/introduction) operationalizes this paradigm shift:
 
 ### The Three-File Structure
 
@@ -176,7 +176,7 @@ Every feature in SpecWeave has:
    ```
 
 2. **AI generates spec.md**
-   - User stories with [acceptance criteria](/glossary/terms/acceptance-criteria)
+   - User stories with [acceptance criteria](/docs/glossary/terms/acceptance-criteria)
    - Non-functional requirements
    - Edge cases and constraints
 
@@ -187,7 +187,7 @@ Every feature in SpecWeave has:
 
 4. **AI generates plan.md**
    - Technical architecture
-   - [ADRs](/glossary/terms/adr) for key decisions
+   - [ADRs](/docs/glossary/terms/adr) for key decisions
    - Component breakdown
 
 5. **AI generates tasks.md with embedded tests**
@@ -257,10 +257,10 @@ But shift time from writing to specifying and reviewing.
 
 ## Getting Started
 
-1. **Read the [Introduction](/overview/introduction)** - Understand SpecWeave's philosophy
-2. **Try the [Quickstart](/guides/getting-started/quickstart)** - Build your first feature
-3. **Learn the [Three-File Structure](/guides/lessons/03-three-file-structure)** - Core concept
-4. **Understand [Quality Gates](/guides/lessons/05-quality-gates)** - Why validation matters
+1. **Read the [Introduction](/docs/overview/introduction)** - Understand SpecWeave's philosophy
+2. **Try the [Quickstart](/docs/getting-started/)** - Build your first feature
+3. **Learn the [Three-File Structure](/docs/academy/specweave-essentials/02-three-file-structure)** - Core concept
+4. **Understand [Quality Gates](/docs/academy/specweave-essentials/05-quality-gates)** - Why validation matters
 
 ## Key Takeaways
 
@@ -277,7 +277,7 @@ But shift time from writing to specifying and reviewing.
 
 ## Further Reading
 
-- [What is an Increment?](/guides/core-concepts/what-is-an-increment) - The fundamental building block
-- [Living Documentation](/guides/core-concepts/living-documentation) - Why docs never go stale
-- [TDD Workflow](/guides/lessons/06-tdd-workflow) - Test-driven development with AI
-- [Enterprise Patterns](/academy/part-12-enterprise/) - Scaling spec-driven development
+- [What is an Increment?](/docs/guides/core-concepts/what-is-an-increment) - The fundamental building block
+- [Living Documentation](/docs/guides/core-concepts/living-documentation) - Why docs never go stale
+- [TDD Workflow](/docs/academy/specweave-essentials/06-tdd-workflow) - Test-driven development with AI
+- [Enterprise Development](/docs/academy/fundamentals/enterprise-app-development) - Scaling spec-driven development

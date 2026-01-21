@@ -1,0 +1,67 @@
+C4Container
+  title SpecWeave Container Diagram
+
+  Person(developer, "Developer", "Uses CLI and skills for spec-driven development")
+
+  System_Boundary(specweave, "SpecWeave Framework") {
+    Container(cli, "CLI", "TypeScript, Commander.js", "Command-line interface for project management, increment lifecycle, sync operations")
+
+    Container(core, "Core Framework", "TypeScript", "Increment management, spec parsing, metadata tracking, task management")
+
+    Container(plugins, "Plugin System", "TypeScript + Bash", "Skill/Agent/Command/Hook registry with progressive loading")
+
+    Container(livingdocs, "Living Docs Builder", "TypeScript", "Syncs specs to organized documentation structure, cross-project support")
+
+    Container(sync, "Sync Engine", "TypeScript", "Bidirectional sync with GitHub, JIRA, Azure DevOps")
+
+    Container(hooks, "Hook System", "Bash + TypeScript", "Start/Stop hooks, event-driven automation, reflect learning")
+
+    Container(agents, "Multi-Agent System", "TypeScript + YAML", "PM, Architect, Tech Lead, QA, Security agents")
+
+    ContainerDb(state, "State Store", "JSON Files", "Active increments, session state, cache, dedup tokens")
+
+    ContainerDb(increments, "Increments", "Markdown + JSON", "spec.md, plan.md, tasks.md, metadata.json per increment")
+
+    ContainerDb(docs, "Living Docs", "Markdown", "Organized specs by project/feature: FS-XXX folders")
+
+    ContainerDb(config, "Configuration", "JSON", "config.json (settings), .env (secrets)")
+  }
+
+  System_Ext(claude, "Claude Code", "AI coding assistant")
+  System_Ext(github, "GitHub", "Issue tracker")
+  System_Ext(jira, "JIRA", "Issue tracker")
+  System_Ext(ado, "Azure DevOps", "Work items")
+
+  Rel(developer, cli, "specweave init/status/auto", "Terminal")
+  Rel(developer, plugins, "Uses skills via Claude Code", "/sw:increment")
+
+  Rel(cli, core, "Delegates operations")
+  Rel(cli, sync, "Triggers sync operations")
+  Rel(cli, livingdocs, "Triggers doc sync")
+
+  Rel(core, increments, "CRUD operations", "fs")
+  Rel(core, state, "Reads/writes state", "fs")
+  Rel(core, config, "Reads configuration", "fs")
+
+  Rel(plugins, agents, "Spawns agents", "Task tool")
+  Rel(plugins, hooks, "Registers hooks", "Bash scripts")
+  Rel(plugins, core, "Uses core APIs")
+
+  Rel(livingdocs, increments, "Reads specs")
+  Rel(livingdocs, docs, "Writes organized docs")
+
+  Rel(sync, github, "REST API", "Octokit")
+  Rel(sync, jira, "REST API", "axios")
+  Rel(sync, ado, "REST API", "azure-devops-node-api")
+  Rel(sync, increments, "Reads/updates refs")
+
+  Rel(hooks, state, "Manages sessions")
+  Rel(hooks, core, "Triggers transitions")
+
+  Rel(agents, plugins, "Loaded from plugins")
+  Rel(agents, core, "Uses core services")
+
+  BiRel(claude, plugins, "Native plugin integration")
+  BiRel(claude, hooks, "Start/Stop hooks")
+
+  UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="1")

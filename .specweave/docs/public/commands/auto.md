@@ -169,7 +169,7 @@ The session ends when ANY of these occur:
 | Signal | Description |
 |--------|-------------|
 | **All tasks complete** | tasks.md has all `[x]` checkboxes |
-| **Completion promise** | Output contains `<auto-complete>DONE</auto-complete>` |
+| **Completion promise** | Output contains `<!-- auto-complete:DONE -->` (hidden HTML comment) |
 | **Max iterations** | Reached configured limit (default: 100) |
 | **Max hours** | Time limit exceeded |
 | **User cancellation** | User runs `/sw:cancel-auto` |

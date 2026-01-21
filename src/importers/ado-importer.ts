@@ -348,78 +348,73 @@ export class ADOImporter implements Importer {
    * Convert ADO work item to ExternalItem
    */
   private convertToExternalItem(workItem: ADOWorkItem): ExternalItem {
-    // Map ADO work item type to ExternalItem type
-    // CRITICAL FIX (2025-12-01): Added 'capability' mapping for enterprise ADO setups
-    // ADO hierarchy: Capability → Epic → Feature → User Story → Task
-    let type: ExternalItem['type'] = 'task';
-    const witType = workItem.fields['System.WorkItemType'].toLowerCase();
-
-    if (witType === 'user story' || witType === 'product backlog item') {
-      type = 'user-story';
-    } else if (witType === 'epic') {
-      type = 'epic';
-    } else if (witType === 'capability') {
-      // Capability is above Epic in some ADO setups - treat as epic for feature organization
-      type = 'epic';
-    } else if (witType === 'bug') {
-      type = 'bug';
-    } else if (witType === 'feature') {
-      type = 'feature';
-    }
-
-    // Map ADO priority to ExternalItem priority
-    const priorityValue = workItem.fields['Microsoft.VSTS.Common.Priority'];
-    let priority: ExternalItem['priority'] | undefined;
-    if (priorityValue !== undefined) {
-      if (priorityValue === 1) priority = 'P0';
-      else if (priorityValue === 2) priority = 'P1';
-      else if (priorityValue === 3) priority = 'P2';
-      else if (priorityValue === 4) priority = 'P3';
-      else priority = 'P4';
-    }
-
-    // Extract acceptance criteria (ADO has dedicated field)
-    const acceptanceCriteria = workItem.fields['Microsoft.VSTS.Common.AcceptanceCriteria']
-      ? this.parseAcceptanceCriteria(workItem.fields['Microsoft.VSTS.Common.AcceptanceCriteria'])
-      : undefined;
-
-    // Map ADO state to ExternalItem status
-    let status: ExternalItem['status'] = 'open';
-    const state = workItem.fields['System.State'].toLowerCase();
-
-    if (state === 'active' || state === 'in progress' || state === 'committed') {
-      status = 'in-progress';
-    } else if (state === 'closed' || state === 'done' || state === 'resolved') {
-      status = 'completed';
-    }
-
-    // Parse tags (semicolon-separated)
-    const tags = workItem.fields['System.Tags']
-      ? workItem.fields['System.Tags'].split(';').map((t) => t.trim()).filter(Boolean)
-      : [];
+    const fields = workItem.fields;
+    const witType = fields['System.WorkItemType'].toLowerCase();
+    const state = fields['System.State'].toLowerCase();
 
     return {
-      id: `ADO-${workItem.fields['System.Id']}`,
-      type,
-      title: workItem.fields['System.Title'],
-      description: sanitizeHtmlForMdx(workItem.fields['System.Description']),
-      status,
-      priority,
-      createdAt: new Date(workItem.fields['System.CreatedDate']),
-      updatedAt: new Date(workItem.fields['System.ChangedDate']),
+      id: `ADO-${fields['System.Id']}`,
+      type: this.mapWorkItemType(witType),
+      title: fields['System.Title'],
+      description: sanitizeHtmlForMdx(fields['System.Description']),
+      status: this.mapState(state),
+      priority: this.mapPriority(fields['Microsoft.VSTS.Common.Priority']),
+      createdAt: new Date(fields['System.CreatedDate']),
+      updatedAt: new Date(fields['System.ChangedDate']),
       url: workItem._links.html.href,
-      labels: tags,
-      acceptanceCriteria,
-      // CRITICAL FIX (2025-12-01): System.Parent is a number, not object
-      parentId: workItem.fields['System.Parent']
-        ? `ADO-${workItem.fields['System.Parent']}`
+      labels: fields['System.Tags']
+        ? fields['System.Tags'].split(';').map((t) => t.trim()).filter(Boolean)
+        : [],
+      acceptanceCriteria: fields['Microsoft.VSTS.Common.AcceptanceCriteria']
+        ? this.parseAcceptanceCriteria(fields['Microsoft.VSTS.Common.AcceptanceCriteria'])
         : undefined,
+      parentId: fields['System.Parent'] ? `ADO-${fields['System.Parent']}` : undefined,
       platform: 'ado',
       adoProjectName: this.project,
-      adoAreaPath: workItem.fields['System.AreaPath'],
-      // Store original work item type for hierarchy mapping
-      adoWorkItemType: workItem.fields['System.WorkItemType'],
+      adoAreaPath: fields['System.AreaPath'],
+      adoWorkItemType: fields['System.WorkItemType'],
     };
+  }
+
+  /**
+   * Map ADO work item type to ExternalItem type
+   */
+  private mapWorkItemType(witType: string): ExternalItem['type'] {
+    const typeMap: Record<string, ExternalItem['type']> = {
+      'user story': 'user-story',
+      'product backlog item': 'user-story',
+      'epic': 'epic',
+      'capability': 'epic', // Capability is above Epic in enterprise ADO
+      'bug': 'bug',
+      'feature': 'feature',
+    };
+    return typeMap[witType] || 'task';
+  }
+
+  /**
+   * Map ADO state to ExternalItem status
+   */
+  private mapState(state: string): ExternalItem['status'] {
+    const inProgressStates = ['active', 'in progress', 'committed'];
+    const completedStates = ['closed', 'done', 'resolved'];
+
+    if (inProgressStates.includes(state)) return 'in-progress';
+    if (completedStates.includes(state)) return 'completed';
+    return 'open';
+  }
+
+  /**
+   * Map ADO priority (1-4) to ExternalItem priority (P0-P4)
+   */
+  private mapPriority(priorityValue: number | undefined): ExternalItem['priority'] | undefined {
+    if (priorityValue === undefined) return undefined;
+    const priorityMap: Record<number, ExternalItem['priority']> = {
+      1: 'P0',
+      2: 'P1',
+      3: 'P2',
+      4: 'P3',
+    };
+    return priorityMap[priorityValue] || 'P4';
   }
 
   /**

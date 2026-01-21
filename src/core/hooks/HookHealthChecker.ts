@@ -130,45 +130,32 @@ export class HookHealthChecker {
    */
   private calculateOverallHealth(results: HookExecutionResult[]): 'healthy' | 'degraded' | 'unhealthy' {
     if (results.length === 0) {
-      return 'healthy'; // No hooks to check
+      return 'healthy';
     }
 
-    const failedCount = results.filter(r => !r.success).length;
-    const total = results.length;
-    const failureRate = failedCount / total;
-
-    // Check for critical failures
-    const criticalFailures = results.filter(r => !r.success && this.isResultCritical(r));
-
-    if (criticalFailures.length > 0) {
-      return 'unhealthy'; // Any critical failure = unhealthy
+    const hasCriticalFailures = results.some(r => !r.success && this.isResultCritical(r));
+    if (hasCriticalFailures) {
+      return 'unhealthy';
     }
 
-    if (failureRate > 0.3) {
-      return 'degraded'; // >30% failure rate = degraded
-    }
-
-    if (failureRate > 0) {
-      return 'degraded'; // Any failures = degraded
-    }
-
-    return 'healthy';
+    const hasAnyFailures = results.some(r => !r.success);
+    return hasAnyFailures ? 'degraded' : 'healthy';
   }
+
+  private static readonly CRITICAL_HOOKS = ['post-task-completion', 'user-prompt-submit'];
 
   /**
    * Check if result is for a critical hook
    */
   private isResultCritical(result: HookExecutionResult): boolean {
-    const criticalHooks = ['post-task-completion', 'user-prompt-submit'];
-    return criticalHooks.includes(result.hook);
+    return HookHealthChecker.CRITICAL_HOOKS.includes(result.hook);
   }
 
   /**
    * Check if hook name is critical
    */
   private isHookCritical(hookName: string, allHooks: HookDefinition[]): boolean {
-    const hook = allHooks.find(h => h.name === hookName);
-    return hook?.critical || false;
+    return allHooks.find(h => h.name === hookName)?.critical ?? false;
   }
 
   /**
@@ -214,8 +201,8 @@ export class HookHealthChecker {
     }
 
     // Determine overall status
-    let status: 'pass' | 'warn' | 'fail' = 'pass';
-    let message = '';
+    let status: 'pass' | 'warn' | 'fail';
+    let message: string;
 
     if (criticalHooksFailed.length > 0) {
       status = 'fail';

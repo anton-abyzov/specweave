@@ -384,7 +384,7 @@ graph LR
 - ✅ Auto-create GitHub Issues for increments
 - ✅ Auto-sync progress after each task
 - ✅ Auto-close issues when increments complete
-- ✅ See: [GitHub Sync Guide](./guides/github-sync)
+- ✅ See: [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration)
 
 ---
 
@@ -502,7 +502,7 @@ npx playwright test
 import { Kafka } from 'kafkajs';
 ```
 
-See [ADR-0140](/docs/architecture/adr/0140-code-over-mcp) for the full technical decision.
+See the Architecture Decision Records in `.specweave/docs/internal/architecture/adr/` for full technical decisions.
 
 ---
 
@@ -700,6 +700,215 @@ See `/docs/auth-design.md` for existing system details.
 
 ---
 
+## Self-Improving AI (Reflect)
+
+### What is the Reflect system?
+
+**Reflect enables Claude to learn from your corrections and apply patterns automatically in future sessions.**
+
+Instead of repeating yourself every session ("No, always use Button component, not button tag"), Claude captures these corrections and remembers them permanently.
+
+**How it works:**
+
+```mermaid
+flowchart LR
+    A["Session 1: You correct Claude"] --> B["Reflect captures pattern"]
+    B --> C["Saved to .specweave/memory/"]
+    C --> D["Session 2: Pattern auto-applied"]
+```
+
+**Enable it:**
+```bash
+/sw:reflect-on     # Auto-learn from every session
+/sw:reflect        # Manually capture learnings
+/sw:reflect-status # Check memory status
+```
+
+**What gets learned:**
+- ✅ Naming conventions ("Always use kebab-case for file names")
+- ✅ Component patterns ("Use Button variant='primary' for main actions")
+- ✅ Architecture decisions ("Always validate input at API boundary")
+- ✅ Testing patterns ("Mock external APIs in unit tests")
+- ✅ Code style preferences ("Prefer functional components over class")
+
+**[Full Reflect Guide →](/docs/guides/self-improving-skills)**
+
+---
+
+### Why use Reflect instead of just telling Claude each time?
+
+**Because compounding knowledge beats repetition.**
+
+| Without Reflect | With Reflect |
+|-----------------|--------------|
+| Correct 10x per month | Correct once |
+| 50 tokens × 10 = 500 tokens | 50 tokens × 1 = 50 tokens |
+| Claude forgets next session | Claude remembers forever |
+| You're the memory | AI has memory |
+
+**Real example:**
+
+```
+Day 1: "No, use <Button>, not <button>"
+Day 3: "Again, use <Button>"
+Day 7: "STILL using <button>!"
+Day 14: "Please remember: <Button>"
+```
+
+**With Reflect:**
+
+```
+Day 1: "No, use <Button>, not <button>"
+       → Reflect captures learning
+Day 3: Claude automatically uses <Button>
+Day 7: Still uses <Button>
+Forever: Pattern applied automatically
+```
+
+**Memory compounds over time** — the more you work with SpecWeave, the smarter Claude becomes about YOUR project.
+
+---
+
+### Where are learnings stored?
+
+Learnings are stored in **centralized memory files**:
+
+```
+.specweave/memory/                  # Project-specific learnings
+├── component-usage.md              # UI component patterns
+├── api-patterns.md                 # API conventions
+├── testing.md                      # Test patterns
+├── deployment.md                   # Deploy procedures
+└── general.md                      # Misc learnings
+
+~/.specweave/memory/                # Global learnings (all projects)
+├── general.md                      # Cross-project patterns
+└── ...
+```
+
+**Benefits:**
+- ✅ Git-trackable (team can share learnings)
+- ✅ Human-readable markdown
+- ✅ Easy to edit or remove specific learnings
+- ✅ Project-specific + global memory
+
+---
+
+### Can I edit or delete learnings?
+
+**Yes! Memory files are plain markdown.**
+
+**View learnings:**
+```bash
+cat .specweave/memory/component-usage.md
+```
+
+**Edit learnings:**
+```bash
+# Remove or modify entries manually
+vim .specweave/memory/component-usage.md
+```
+
+**Delete specific learning:**
+```bash
+/sw:reflect-clear "LRN-2026-01-05-abc"
+```
+
+**Clear all learnings:**
+```bash
+rm -rf .specweave/memory/
+```
+
+Memory is transparent and user-controlled.
+
+---
+
+## Hooks System
+
+### What are hooks and why do they matter?
+
+**Hooks are the secret to SpecWeave's autonomous quality.**
+
+They execute automatically at key points:
+- **SessionStart** — Load context, check prerequisites
+- **UserPromptSubmit** — Validate increment status, enforce rules
+- **ToolCall** — Auto-sync living docs, update task status
+- **SessionEnd** — Generate reports, trigger Reflect
+
+**Why they're critical:**
+
+```mermaid
+flowchart TB
+    A["Claude marks task complete"] --> B["Hook: Sync spec.md ACs"]
+    B --> C["Hook: Update living docs"]
+    C --> D["Hook: Run quality checks"]
+    D --> E["Result: Docs always current"]
+```
+
+Without hooks:
+- ❌ Manual doc updates (forget 50% of the time)
+- ❌ Specs drift from reality
+- ❌ No quality gates
+
+With hooks:
+- ✅ **Automatic doc sync** after every task
+- ✅ **Quality gates** prevent bad merges
+- ✅ **Test validation** ensures code works
+- ✅ **Living docs stay current** without manual work
+
+**Hooks make `/sw:auto` reliable** for multi-hour autonomous sessions.
+
+---
+
+### Can I customize hooks?
+
+**Yes! Hooks are customizable bash scripts.**
+
+**Hook locations:**
+```
+.claude/hooks/
+├── session-start/
+├── user-prompt-submit/
+├── tool-call/
+└── session-end/
+```
+
+**Example custom hook** (validate environment):
+```bash
+# .claude/hooks/session-start/check-env.sh
+if [ ! -f .env ]; then
+  echo "⚠️  Missing .env file!"
+  exit 1
+fi
+```
+
+**SpecWeave provides default hooks** for:
+- Living docs sync
+- Task-AC auto-update
+- Test validation
+- Quality gates
+
+**[Learn more about hooks →](/docs/glossary/terms/hooks)**
+
+---
+
+### What's the difference between hooks and skills?
+
+**Hooks execute automatically, skills activate on keywords.**
+
+| Aspect | Hooks | Skills |
+|--------|-------|--------|
+| **When** | Automatic (session start, tool calls) | Keyword-triggered ("architecture", "security") |
+| **Purpose** | Quality gates, validation, sync | Specialized expertise (PM, Architect, QA) |
+| **Customization** | Edit bash scripts in `.claude/hooks/` | Use provided skills or write custom |
+| **Examples** | Sync docs after task, validate tests | Generate ADR, design system, write tests |
+
+**Together they're powerful:**
+- **Skills** = AI agents with domain expertise
+- **Hooks** = Automation ensuring quality
+
+---
+
 ## Troubleshooting & Recovery
 
 ### Commands not working? Skills not loading?
@@ -803,18 +1012,18 @@ rm -rf .specweave/state/.dedup-cache
 ## Still Have Questions?
 
 **Resources**:
-- **User Guide**: [Getting Started](./guides/getting-started)
-- **GitHub Sync**: [GitHub Integration](./guides/github-sync)
-- **Architecture**: [System Architecture](./architecture/overview)
+- **User Guide**: [Quick Start](/docs/quick-start)
+- **GitHub Sync**: [GitHub Integration](/docs/academy/specweave-essentials/14-github-integration)
+- **Intro**: [Introduction](/docs/intro)
 - **GitHub Issues**: [Ask a Question](https://github.com/anton-abyzov/specweave/issues/new)
 - **Discord**: [Join Community](https://discord.gg/UYg4BGJ65V)
 
 **Common Follow-Ups**:
-- "How do I sync with Jira?" → See [Jira Plugin](./plugins/jira-sync)
-- "Can I use SpecWeave with Cursor?" → See [Tool Support](./guides/tool-support)
-- "What's the increment lifecycle?" → See [Increment Guide](./guides/increment-lifecycle)
+- "How do I sync with Jira?" → See [JIRA Integration](/docs/academy/specweave-essentials/15-jira-integration)
+- "Can I use SpecWeave with Cursor?" → See [Introduction](/docs/intro)
+- "What's the increment lifecycle?" → See [Increment Lifecycle](/docs/academy/specweave-essentials/13-increment-lifecycle)
 - "How do I use auto mode?" → See [Auto Mode Guide](#auto-mode-issues) above
 
 ---
 
-**Last Updated**: 2025-12-30
+**Last Updated**: 2026-01-02

@@ -178,40 +178,21 @@ export class ProjectService {
    * Load adapter configuration from various sources
    */
   private async loadAdapterConfig(): Promise<AdapterConfig> {
+    const envVars = this.loadEnvFile();
+    const specweaveConfig = this.loadSpecweaveConfig();
     const config: AdapterConfig = {};
 
-    // Load .env file if exists
-    const envPath = path.join(this.projectRoot, '.env');
-    const envVars: Record<string, string> = {};
+    // Helper to get value from multiple sources
+    const getEnv = (key: string): string | undefined =>
+      envVars[key] || process.env[key];
 
-    if (fs.existsSync(envPath)) {
-      const envContent = fs.readFileSync(envPath, 'utf-8');
-      for (const line of envContent.split('\n')) {
-        const match = line.match(/^([^=]+)=(.*)$/);
-        if (match) {
-          const key = match[1].trim();
-          const value = match[2].trim().replace(/^["']|["']$/g, '');
-          envVars[key] = value;
-        }
-      }
-    }
-
-    // Load config.json
-    const configPath = path.join(this.projectRoot, '.specweave', 'config.json');
-    let specweaveConfig: any = {};
-
-    if (fs.existsSync(configPath)) {
-      try {
-        specweaveConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      } catch {
-        // Ignore parse errors
-      }
-    }
+    const getConfigValue = (section: string, key: string, envKey: string): string | undefined =>
+      specweaveConfig.sync?.[section]?.[key] || getEnv(envKey);
 
     // GitHub configuration
-    const githubToken = envVars.GITHUB_TOKEN || process.env.GITHUB_TOKEN;
-    const githubOwner = specweaveConfig.sync?.github?.owner || envVars.GITHUB_OWNER || process.env.GITHUB_OWNER;
-    const githubRepo = specweaveConfig.sync?.github?.repo || envVars.GITHUB_REPO || process.env.GITHUB_REPO;
+    const githubToken = getEnv('GITHUB_TOKEN');
+    const githubOwner = getConfigValue('github', 'owner', 'GITHUB_OWNER');
+    const githubRepo = getConfigValue('github', 'repo', 'GITHUB_REPO');
 
     if (githubToken && githubOwner && githubRepo) {
       config.github = {
@@ -223,9 +204,9 @@ export class ProjectService {
     }
 
     // ADO configuration
-    const adoToken = envVars.AZURE_DEVOPS_PAT || process.env.AZURE_DEVOPS_PAT;
-    const adoOrg = specweaveConfig.sync?.ado?.organization || envVars.AZURE_DEVOPS_ORG || process.env.AZURE_DEVOPS_ORG;
-    const adoProject = specweaveConfig.sync?.ado?.project || envVars.AZURE_DEVOPS_PROJECT || process.env.AZURE_DEVOPS_PROJECT;
+    const adoToken = getEnv('AZURE_DEVOPS_PAT');
+    const adoOrg = getConfigValue('ado', 'organization', 'AZURE_DEVOPS_ORG');
+    const adoProject = getConfigValue('ado', 'project', 'AZURE_DEVOPS_PROJECT');
 
     if (adoToken && adoOrg && adoProject) {
       config.ado = {
@@ -237,9 +218,9 @@ export class ProjectService {
     }
 
     // JIRA configuration
-    const jiraToken = envVars.JIRA_API_TOKEN || process.env.JIRA_API_TOKEN;
-    const jiraDomain = specweaveConfig.sync?.jira?.domain || envVars.JIRA_DOMAIN || process.env.JIRA_DOMAIN;
-    const jiraEmail = envVars.JIRA_EMAIL || process.env.JIRA_EMAIL;
+    const jiraToken = getEnv('JIRA_API_TOKEN');
+    const jiraDomain = getConfigValue('jira', 'domain', 'JIRA_DOMAIN');
+    const jiraEmail = getEnv('JIRA_EMAIL');
 
     if (jiraToken && jiraDomain) {
       config.jira = {
@@ -251,6 +232,47 @@ export class ProjectService {
     }
 
     return config;
+  }
+
+  /**
+   * Load and parse .env file
+   */
+  private loadEnvFile(): Record<string, string> {
+    const envPath = path.join(this.projectRoot, '.env');
+    const envVars: Record<string, string> = {};
+
+    if (!fs.existsSync(envPath)) {
+      return envVars;
+    }
+
+    const envContent = fs.readFileSync(envPath, 'utf-8');
+    for (const line of envContent.split('\n')) {
+      const match = line.match(/^([^=]+)=(.*)$/);
+      if (match) {
+        const key = match[1].trim();
+        const value = match[2].trim().replace(/^["']|["']$/g, '');
+        envVars[key] = value;
+      }
+    }
+
+    return envVars;
+  }
+
+  /**
+   * Load SpecWeave config.json
+   */
+  private loadSpecweaveConfig(): any {
+    const configPath = path.join(this.projectRoot, '.specweave', 'config.json');
+
+    if (!fs.existsSync(configPath)) {
+      return {};
+    }
+
+    try {
+      return JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    } catch {
+      return {};
+    }
   }
 
   /**
@@ -395,36 +417,22 @@ export class ProjectService {
   async discoverProjects(): Promise<Map<string, any[]>> {
     const discovered = new Map<string, any[]>();
 
-    if (this.adapters.github) {
-      try {
-        const projects = await this.adapters.github.discoverProjects();
-        if (projects.length > 0) {
-          discovered.set('github', projects);
-        }
-      } catch (error) {
-        this.logger.warn(`GitHub discovery failed: ${error}`);
-      }
-    }
+    const adapterEntries: Array<[string, { discoverProjects: () => Promise<any[]> } | undefined]> = [
+      ['github', this.adapters.github],
+      ['ado', this.adapters.ado],
+      ['jira', this.adapters.jira],
+    ];
 
-    if (this.adapters.ado) {
-      try {
-        const projects = await this.adapters.ado.discoverProjects();
-        if (projects.length > 0) {
-          discovered.set('ado', projects);
-        }
-      } catch (error) {
-        this.logger.warn(`ADO discovery failed: ${error}`);
-      }
-    }
+    for (const [name, adapter] of adapterEntries) {
+      if (!adapter) continue;
 
-    if (this.adapters.jira) {
       try {
-        const projects = await this.adapters.jira.discoverProjects();
+        const projects = await adapter.discoverProjects();
         if (projects.length > 0) {
-          discovered.set('jira', projects);
+          discovered.set(name, projects);
         }
       } catch (error) {
-        this.logger.warn(`JIRA discovery failed: ${error}`);
+        this.logger.warn(`${name.toUpperCase()} discovery failed: ${error}`);
       }
     }
 

@@ -1,9 +1,0 @@
-{
-  "label": "Part 7: Environments",
-  "position": 7,
-  "collapsed": true,
-  "link": {
-    "type": "generated-index",
-    "description": "Environment management and release practices - dev, staging, production."
-  }
-}

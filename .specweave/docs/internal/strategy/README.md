@@ -84,7 +84,7 @@ cp templates/docs/prd-template.md .specweave/docs/internal/strategy/prd-{feature
 **OKRs track quarterly objectives** with measurable key results
 
 **To create OKRs:**
-- Use format: `okr-{year}-q{quarter}.md` (e.g., `okr-2025-q1.md`)
+- Use format: `okr-{year}-q{quarter}.md` (e.g., `okr-2026-q1.md`)
 - Track: Adoption metrics, performance KPIs, developer experience scores
 
 **Current OKRs:**

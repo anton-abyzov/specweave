@@ -286,7 +286,7 @@ github_actions:
 
 # AI Model Configuration
 ai:
-  model: "claude-opus-4-5-20251101"
+  model: "opus"  # Use alias: opus, sonnet, or haiku
   max_tokens: 16000
 ```
 
@@ -998,4 +998,4 @@ jobs:
 
 **Questions?** Open an issue with label `question` and tag `@claude`
 
-**Need help?** Check [Troubleshooting](#troubleshooting) or [GitHub Actions Logs](../../Actions)
+**Need help?** Check [Troubleshooting](#troubleshooting) or [GitHub Actions Logs](https://github.com/features/actions)

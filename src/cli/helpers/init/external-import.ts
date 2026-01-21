@@ -32,8 +32,8 @@ import {
   type AdoMappingResult,
 } from './jira-ado-auto-detect.js';
 import { normalizeToProjectId } from '../../../utils/project-id-generator.js';
-import { getJobManager, launchImportJob, isJobRunning, getJobLog, detectOrphanedJobs, getActiveImportJob } from '../../../core/background/index.js';
-import type { ImportJobConfig } from '../../../core/background/types.js';
+// NOTE: Background job imports removed - init imports run synchronously
+// Background jobs still used by living-docs builder (see cli/commands/living-docs.ts)
 // Extracted helpers for better maintainability
 import {
   getExistingSyncProfiles,
@@ -474,31 +474,8 @@ export async function promptAndRunExternalImport(
 ): Promise<CoordinatorResult | BackgroundImportResult> {
   const strings = getExternalImportStrings(language);
 
-  // P2 FIX: Detect and handle orphaned jobs before starting new import
-  // This catches jobs that crashed mid-import and marks them as failed
-  const orphanedJobs = detectOrphanedJobs(targetDir);
-  if (orphanedJobs.length > 0) {
-    console.log(chalk.yellow(`\n   ⚠️  Found ${orphanedJobs.length} orphaned import job(s) from previous session(s)`));
-    for (const job of orphanedJobs) {
-      console.log(chalk.gray(`      → Job ${job.id}: ${job.progress.current}/${job.progress.total} items processed`));
-    }
-    console.log(chalk.gray('      These jobs have been marked as failed. Use /sw:jobs --resume <id> to restart.'));
-    console.log('');
-  }
-
-  // P2 FIX: Check for active import job (prevents concurrent conflicts)
-  const activeJob = getActiveImportJob(targetDir);
-  if (activeJob) {
-    console.log(chalk.cyan(`\n   📦 Import job already running (Job ID: ${activeJob.id})`));
-    console.log(chalk.gray(`      Progress: ${activeJob.progress.current}/${activeJob.progress.total} items`));
-    console.log(chalk.gray(`      Use '/sw:jobs --follow ${activeJob.id}' to monitor progress`));
-    console.log('');
-    return {
-      jobId: activeJob.id,
-      isBackground: true,
-      message: `Existing import job in progress. Monitor with /sw:jobs`
-    };
-  }
+  // NOTE: Background job detection removed - init imports always run synchronously
+  // Background jobs are still used by living-docs builder and repo cloning
 
   // Load import configuration
   const importConfig = loadImportConfig(targetDir);
@@ -850,12 +827,10 @@ export async function promptAndRunExternalImport(
     }
   }
 
-  // Run import in BACKGROUND by default (non-blocking)
-  // This prevents large imports from polluting the terminal and allows
-  // users to track progress via /sw:jobs
-  //
-  // Only run in foreground if explicitly requested (options.background === false)
-  const useBackground = options.background !== false;
+  // Always run import synchronously during init (simple, fast, predictable)
+  // Background jobs add unnecessary complexity for fast operations (<1 minute)
+  // Background infrastructure is still used by living-docs and repo cloning
+  const useBackground = false;
 
   // CRITICAL FIX (v1.0.7): Pre-create project folders BEFORE import runs
   // This ensures folders exist even if import finds 0 items
@@ -1062,11 +1037,11 @@ export interface BackgroundImportResult {
 }
 
 /**
- * Run the import with progress tracking
+ * Run the import with progress tracking (always synchronous during init)
  *
  * @param targetDir Project directory
  * @param coordinatorConfig Import configuration
- * @param options.background If true (default), run in background process (non-blocking)
+ * @param options.background Always false for init imports (unused, kept for compatibility)
  * @param options.estimatedTotal Estimated total items (for progress tracking)
  */
 async function runImport(
@@ -1074,76 +1049,12 @@ async function runImport(
   coordinatorConfig: CoordinatorConfig,
   options: { background?: boolean; estimatedTotal?: number } = {}
 ): Promise<CoordinatorResult | BackgroundImportResult> {
-  // Default to BACKGROUND mode - prevents terminal pollution with huge messages
-  const { background = true, estimatedTotal = 100 } = options;
+  // Always run synchronously during init - imports are fast (<1 minute)
+  const { background = false, estimatedTotal = 100 } = options;
 
-  // BACKGROUND MODE: Spawn detached worker process (DEFAULT)
-  if (background) {
-    console.log(chalk.cyan('\n   🚀 Starting background import job...'));
-    console.log(chalk.gray('   Import will run in background - init continues immediately'));
-
-    try {
-      const result = await launchImportJob({
-        type: 'import-issues',
-        projectPath: targetDir,
-        coordinatorConfig,
-        estimatedTotal
-      });
-
-      if (result.isBackground) {
-        const shortId = result.job.id.slice(0, 8);
-        console.log(chalk.green(`\n   ✓ Background import started`));
-        console.log(chalk.white(`   Job ID: ${shortId}`));
-        console.log(chalk.gray(`   PID: ${result.pid}`));
-        console.log('');
-        console.log(chalk.blue('   📊 Monitor import progress:'));
-        console.log(chalk.gray(`   → /sw:jobs                  Show job status`));
-        console.log(chalk.gray(`   → /sw:jobs --follow ${shortId}  Follow live progress`));
-        console.log(chalk.gray(`   → /sw:jobs --logs ${shortId}    View full logs`));
-        console.log('');
-
-        return {
-          jobId: result.job.id,
-          isBackground: true,
-          pid: result.pid,
-          message: `Background import started. Check progress with /sw:jobs`
-        };
-      }
-      // Fallback to foreground if background launch failed
-      console.log(chalk.yellow('   ⚠ Background mode unavailable, falling back to foreground'));
-    } catch (error: any) {
-      console.log(chalk.yellow(`   ⚠ Could not start background job: ${error.message}`));
-      console.log(chalk.gray('   Falling back to foreground mode...'));
-    }
-  }
-
-  // FOREGROUND MODE: Run import directly (original behavior)
+  // SYNCHRONOUS MODE: Run import directly (simple, fast, predictable)
   const spinner = ora('Importing items...').start();
   let lastRepo = '';
-
-  // Create background job for tracking
-  let jobManager: ReturnType<typeof getJobManager> | null = null;
-  let jobId: string | null = null;
-
-  try {
-    jobManager = getJobManager(targetDir);
-    const provider = coordinatorConfig.github ? 'github' :
-                     coordinatorConfig.jira ? 'jira' :
-                     coordinatorConfig.ado ? 'ado' : 'github';
-    const jobConfig: ImportJobConfig = {
-      type: 'import-issues',
-      provider,
-      repositories: coordinatorConfig.githubRepositories?.map(r => `${r.owner}/${r.repo}`),
-      timeRangeMonths: coordinatorConfig.importConfig?.timeRangeMonths || 3,
-      projectPath: targetDir
-    };
-    // Estimate total - will be updated when we know actual count
-    const job = jobManager.createJob('import-issues', jobConfig, 100);
-    jobId = job.id;
-    jobManager.startJob(jobId);
-  } catch {
-    // Job tracking is optional
-  }
 
   // Enhanced progress callback with percentage and ETA
   coordinatorConfig.onProgressEnhanced = (info: ProgressInfo) => {
@@ -1185,12 +1096,6 @@ async function runImport(
     }
 
     spinner.text = `Importing from ${info.platform}${repoLabel}... ${parts.join(' | ')}`;
-
-    // Update background job progress
-    if (jobManager && jobId && info.current !== undefined) {
-      const itemId = info.sourceRepo || info.platform;
-      jobManager.updateProgress(jobId, info.current, itemId);
-    }
   };
 
   // Legacy progress callback (fallback)
@@ -1208,10 +1113,6 @@ async function runImport(
 
   coordinatorConfig.onRateLimitPause = (platform: string, seconds: number) => {
     spinner.text = `⏸️  ${platform} rate limited - waiting ${seconds}s...`;
-    // Pause background job
-    if (jobManager && jobId) {
-      jobManager.pauseJob(jobId);
-    }
   };
 
   try {
@@ -1219,11 +1120,6 @@ async function runImport(
     const result = await coordinator.importAll();
 
     spinner.succeed(`Imported ${result.totalCount} items`);
-
-    // Complete background job
-    if (jobManager && jobId) {
-      jobManager.completeJob(jobId);
-    }
 
     // ENHANCED (2025-11-26): Show per-repo breakdown with open/closed counts
     if (result.allItems.length > 0) {
@@ -1318,11 +1214,6 @@ async function runImport(
     // Show actual error message (was generic "Import failed" before)
     const errorMsg = error instanceof Error ? error.message : String(error);
     spinner.fail(`Import failed: ${errorMsg}`);
-
-    // Mark background job as failed
-    if (jobManager && jobId) {
-      jobManager.completeJob(jobId, errorMsg);
-    }
 
     throw error;
   }
@@ -1422,7 +1313,7 @@ async function convertToLivingDocs(
         console.log(chalk.gray(`   → ADO: specs/{project}/{areaPath}/FS-XXX/`));
       }
     }
-    if (containerTypesUsed.has('github') || containerTypesUsed.has(null)) {
+    if (containerTypesUsed.has('github')) {
       console.log(chalk.gray(`   → GitHub: specs/{repo}/FS-XXX/ (1-level)`));
     }
     if (groupCount > 1) {

@@ -12,7 +12,7 @@
  * This is the foundation of SpecWeave's research-driven init flow.
  */
 
-import { VisionInsights, VisionInsightsSchema, MarketCategory } from './types.js';
+import { VisionInsights, VisionInsightsSchema } from './types.js';
 import { extractKeywords } from './keyword-extractor.js';
 
 /**
@@ -198,16 +198,10 @@ export class VisionAnalyzer {
    */
   private getCached(vision: string): VisionInsights | undefined {
     const cached = this.cache.get(vision);
+    if (!cached) return undefined;
 
-    if (!cached) {
-      return undefined;
-    }
-
-    const now = Date.now();
-    const age = now - cached.timestamp;
-
-    if (age > this.config.cacheDuration) {
-      // Expired, remove from cache
+    const isExpired = Date.now() - cached.timestamp > this.config.cacheDuration;
+    if (isExpired) {
       this.cache.delete(vision);
       return undefined;
     }

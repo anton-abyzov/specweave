@@ -59,30 +59,37 @@ These scripts work across all contexts through a layered architecture:
 
 | Layer | Context | Speed | How It Works |
 |-------|---------|-------|--------------|
+| **Command `!` Block** | Claude Code | <100ms | Command file auto-executes script via `` ```! `` block |
 | **Hook** | Claude Code | <100ms | `UserPromptSubmit` intercepts `/sw:*`, runs script, blocks prompt |
-| **Skill** | Any LLM | ~2s | Skill instructs LLM to run script via Bash |
-| **CLI** | Terminal | ~500ms | `specweave status` / direct `node scripts/*.js` |
+| **CLI** | Terminal | ~500ms | `specweave status` / direct `bash scripts/*.sh` |
 
-### 1. Claude Code (Hook - Fastest)
+### 1. Claude Code (Command Auto-Execution - Primary)
 
-In Claude Code, the `UserPromptSubmit` hook automatically intercepts status commands:
+In Claude Code, commands with `` ```! `` blocks auto-execute scripts:
+
+```markdown
+# commands/jobs.md
+---
+name: sw:jobs
+allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/read-jobs.sh)"]
+---
+
+```!
+bash "${CLAUDE_PLUGIN_ROOT}/scripts/read-jobs.sh" "$ARGUMENTS"
+```
+```
+
+When user types `/sw:status`, the `` ```! `` block executes automatically.
+
+### 2. Claude Code (Hook - Fallback)
+
+The `UserPromptSubmit` hook provides a fallback intercept layer:
 
 ```
 User types: /sw:status
 Hook runs: bash plugins/specweave/scripts/read-status.sh
 Output appears instantly (<10ms)
 LLM never processes the prompt
-```
-
-### 2. Other LLMs (Skill - Fast)
-
-In Cursor, Windsurf, Copilot, or API usage, the `instant-status` skill provides instructions:
-
-```
-User types: /sw:status
-Skill activates and instructs LLM to run the script
-LLM executes: bash plugins/specweave/scripts/read-status.sh
-Output appears (~2s)
 ```
 
 ### 3. Terminal (CLI - Direct)
@@ -103,20 +110,30 @@ bash plugins/specweave/scripts/read-progress.sh 0045
 
 | Situation | Recommended Path |
 |-----------|------------------|
-| Quick status check in Claude Code | Just type `/sw:status` |
-| Using Cursor/Windsurf/Copilot | Let skill guide execution |
-| Terminal/scripting | `specweave status` or `node scripts/*.js` |
-| CI/CD pipelines | Direct `node scripts/*.js` |
+| Quick status check in Claude Code | Just type `/sw:status` (auto-executes) |
+| Using other AI tools (Cursor, etc.) | Not supported - use CLI instead |
+| Terminal/scripting | `specweave status` or `bash scripts/*.sh` |
+| CI/CD pipelines | Direct `bash scripts/*.sh` |
 
 ## Adding New Instant Commands
 
 To add a new instant command:
 
-1. Create script in `plugins/specweave/scripts/newcmd.js`
+1. Create script in `plugins/specweave/scripts/newcmd.sh`
 2. Add `--help` handling (required)
-3. Add to hook dispatcher in `plugins/specweave/hooks/user-prompt-submit.sh`
-4. Update `skills/instant-status/SKILL.md` with new command
-5. Test all three paths (hook, skill, CLI)
+3. Create command in `commands/newcmd.md` with `` ```! `` block:
+   ```markdown
+   ---
+   name: sw:newcmd
+   allowed-tools: ["Bash(${CLAUDE_PLUGIN_ROOT}/scripts/newcmd.sh)"]
+   ---
+
+   ```!
+   bash "${CLAUDE_PLUGIN_ROOT}/scripts/newcmd.sh" "$ARGUMENTS"
+   ```
+   ```
+4. (Optional) Add to hook dispatcher in `plugins/specweave/hooks/user-prompt-submit.sh`
+5. Test both paths (command auto-exec, CLI)
 
 ### Script Template
 

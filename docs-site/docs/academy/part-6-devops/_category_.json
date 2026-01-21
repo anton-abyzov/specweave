@@ -1,9 +1,0 @@
-{
-  "label": "Part 6: DevOps",
-  "position": 6,
-  "collapsed": true,
-  "link": {
-    "type": "generated-index",
-    "description": "CI/CD, containers, Kubernetes, and infrastructure as code."
-  }
-}

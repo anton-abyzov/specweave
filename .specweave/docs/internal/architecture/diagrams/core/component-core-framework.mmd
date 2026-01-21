@@ -1,0 +1,65 @@
+C4Component
+  title Core Framework Component Diagram
+
+  Container_Boundary(core, "Core Framework") {
+    Component(metadata, "MetadataManager", "TypeScript Class", "CRUD for increment metadata, status transitions, WIP limits, sync triggers")
+
+    Component(active, "ActiveIncrementManager", "TypeScript Class", "Tracks active increments, fast cache lookup, smart updates")
+
+    Component(types, "IncrementTypes", "TypeScript Types", "IncrementStatus, IncrementType, transitions, staleness rules")
+
+    Component(config, "ConfigManager", "TypeScript Class", "Reads/writes config.json, migration support, defaults merging")
+
+    Component(spec, "SpecFrontmatterUpdater", "TypeScript Class", "Updates spec.md YAML frontmatter, atomic writes")
+
+    Component(duplicate, "DuplicateDetector", "TypeScript Class", "Detects duplicate increment numbers across folders")
+
+    Component(number, "IncrementNumberManager", "TypeScript Class", "Generates unique increment IDs, validates format")
+
+    Component(project, "ProjectResolutionService", "TypeScript Class", "Resolves project from spec, config, git remote")
+
+    Component(living, "LivingDocsSync", "TypeScript Class", "Syncs increments to organized doc structure")
+
+    Component(feature, "FeatureIDManager", "TypeScript Class", "Manages FS-XXX feature ID assignment and registry")
+
+    Component(status, "StatusLineManager", "TypeScript Class", "Renders terminal status line with progress")
+
+    Component(autotrans, "AutoTransitionManager", "TypeScript Class", "Auto-transitions: PLANNING->ACTIVE, ACTIVE->READY_FOR_REVIEW")
+  }
+
+  ContainerDb(increments, "Increments", "Markdown + JSON")
+  ContainerDb(state, "State Store", "JSON Files")
+  ContainerDb(docs, "Living Docs", "Markdown")
+  ContainerDb(configdb, "config.json", "JSON")
+
+  Rel(metadata, types, "Uses status/type enums")
+  Rel(metadata, active, "Updates active state")
+  Rel(metadata, spec, "Updates spec.md status")
+  Rel(metadata, living, "Triggers doc sync on status change")
+  Rel(metadata, duplicate, "Validates before create")
+
+  Rel(active, state, "Reads/writes active-increment.json")
+  Rel(active, metadata, "Validates against metadata")
+
+  Rel(config, configdb, "Reads/writes config")
+
+  Rel(number, increments, "Scans for existing IDs")
+  Rel(number, duplicate, "Checks for collisions")
+
+  Rel(project, config, "Reads project settings")
+  Rel(project, increments, "Reads spec.md frontmatter")
+
+  Rel(living, increments, "Reads spec.md")
+  Rel(living, docs, "Writes FS-XXX folders")
+  Rel(living, feature, "Gets/assigns feature IDs")
+  Rel(living, project, "Resolves project folder")
+
+  Rel(feature, docs, "Scans existing features")
+
+  Rel(status, active, "Gets active increment")
+  Rel(status, metadata, "Gets progress info")
+
+  Rel(autotrans, metadata, "Triggers status updates")
+  Rel(autotrans, active, "Updates active state")
+
+  UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="1")

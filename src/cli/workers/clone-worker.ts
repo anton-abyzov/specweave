@@ -24,13 +24,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
-// NOTE: JOB_SUCCESS_THRESHOLD no longer used for clone jobs (v0.34.0+)
-// Clone jobs NEVER fail - they always complete with warnings if any repos fail
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 interface CloneRepoConfig {
   owner: string;     // e.g., "org/project"
@@ -364,35 +358,20 @@ async function main(): Promise<void> {
 }
 
 /**
- * Extract team name from repo path
- * v1.0.21: Updated to handle repositories/{org}/{repo} structure
- * e.g., "repositories/acme/inventory-fe" -> "inventory"
- * e.g., "acme/inventory-fe" -> "inventory" (legacy)
+ * Extract team name from repo path by removing common suffixes.
+ * Examples:
+ *   "repositories/acme/inventory-fe" -> "inventory"
+ *   "acme/inventory-api" -> "inventory"
  */
 function extractTeamFromPath(repoPath: string): string | undefined {
   const parts = repoPath.split('/');
-
-  // v1.0.21: Handle new repositories/{org}/{repo} structure
-  // Path format: repositories/{org}/{repo} -> repo name is the last part
-  if (parts.length >= 2) {
-    // Pattern: repositories/org/team-suffix OR org/team-suffix -> team
-    const repoName = parts[parts.length - 1];
-    // Remove common suffixes
-    const team = repoName
-      .replace(/-fe$/, '')
-      .replace(/-be$/, '')
-      .replace(/-api$/, '')
-      .replace(/-web$/, '')
-      .replace(/-mobile$/, '')
-      .replace(/-backend$/, '')
-      .replace(/-frontend$/, '')
-      .replace(/-service$/, '')
-      .replace(/-srv$/, '');
-
-    return team;
+  if (parts.length < 2) {
+    return undefined;
   }
 
-  return undefined;
+  const repoName = parts[parts.length - 1];
+  const suffixPattern = /-(fe|be|api|web|mobile|backend|frontend|service|srv)$/;
+  return repoName.replace(suffixPattern, '');
 }
 
 // Run worker

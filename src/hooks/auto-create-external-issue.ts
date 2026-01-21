@@ -20,6 +20,14 @@ import { autoCreateExternalIssue, AutoCreateResult } from '../sync/external-issu
 import { consoleLogger } from '../utils/logger.js';
 import { findProjectRoot } from './platform.js';
 
+/**
+ * Validate increment ID format to prevent path traversal attacks
+ * Valid format: 4 digits followed by optional letter and alphanumeric/hyphen name
+ */
+function isValidIncrementId(id: string): boolean {
+  return /^\d{4}[A-Za-z]?-[a-zA-Z0-9-]+$/.test(id);
+}
+
 async function main(): Promise<void> {
   const incrementId = process.argv[2];
 
@@ -29,14 +37,20 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  // Security: Validate increment ID format to prevent path traversal
+  if (!isValidIncrementId(incrementId)) {
+    console.error('Error: Invalid increment ID format');
+    console.error('Expected format: NNNN-name (e.g., 0001-feature-name)');
+    process.exit(1);
+  }
+
   console.log(`\n🔗 Auto-creating external issue for ${incrementId}...`);
 
-  // CRITICAL FIX: Use findProjectRoot() to find the actual project root
-  // This prevents creating .specweave in the wrong location when the hook
-  // is executed from a different working directory (e.g., by CI/CD or parent scripts)
-  const projectRoot = findProjectRoot() || process.cwd();
+  // Find project root, warn if not found
+  const foundRoot = findProjectRoot();
+  const projectRoot = foundRoot || process.cwd();
 
-  if (!findProjectRoot()) {
+  if (!foundRoot) {
     console.warn('⚠️  Warning: Could not find .specweave directory. Using current working directory.');
     console.warn('   This may cause issues if not running from the project root.');
   }

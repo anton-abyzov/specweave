@@ -1,0 +1,64 @@
+C4Deployment
+  title SpecWeave Deployment Diagram
+
+  Deployment_Node(dev_machine, "Developer Machine", "macOS/Linux/Windows") {
+    Deployment_Node(nodejs, "Node.js Runtime", "v20.12.0+") {
+      Container(cli_dev, "specweave CLI", "TypeScript/ESM", "Global npm package or local dev")
+    }
+
+    Deployment_Node(claude_code, "Claude Code", "VS Code Extension") {
+      Container(plugins_dev, "SpecWeave Plugins", "Bash + YAML", "Skills, Agents, Hooks in ~/.claude/plugins/")
+    }
+
+    Deployment_Node(fs_dev, "Local Filesystem", "") {
+      ContainerDb(project_dev, "Project Directory", "Git Repo", ".specweave/ folder with increments, docs, state")
+    }
+  }
+
+  Deployment_Node(npm_registry, "NPM Registry", "npmjs.com") {
+    Container(npm_package, "specweave", "npm package", "Published CLI with plugins bundled")
+  }
+
+  Deployment_Node(github_infra, "GitHub Infrastructure", "github.com") {
+    Deployment_Node(github_repo, "GitHub Repository", "Git") {
+      Container(source_code, "Source Code", "TypeScript", "SpecWeave framework source")
+      Container(marketplace, "Plugin Marketplace", "Markdown + YAML", "plugins/ directory with all plugins")
+    }
+
+    Deployment_Node(github_api, "GitHub API", "REST") {
+      Container(issues_api, "Issues API", "REST", "Create/update issues, labels, milestones")
+      Container(projects_api, "Projects API", "GraphQL", "Project boards sync")
+    }
+  }
+
+  Deployment_Node(external_tools, "External Issue Trackers", "Cloud") {
+    Deployment_Node(jira_cloud, "JIRA Cloud", "Atlassian") {
+      Container(jira_api, "JIRA REST API", "REST", "Stories, Epics, Boards")
+    }
+
+    Deployment_Node(ado_cloud, "Azure DevOps", "Microsoft") {
+      Container(ado_api, "ADO REST API", "REST", "Work Items, Area Paths")
+    }
+  }
+
+  Deployment_Node(ai_services, "AI Services", "Cloud") {
+    Deployment_Node(anthropic, "Anthropic", "API Provider") {
+      Container(claude_api, "Claude API", "REST", "AI analysis, generation")
+    }
+  }
+
+  Rel(cli_dev, npm_package, "npm install -g specweave", "npm")
+  Rel(cli_dev, project_dev, "Reads/writes .specweave/", "fs")
+  Rel(cli_dev, plugins_dev, "Installs plugins", "fs copy")
+
+  Rel(plugins_dev, project_dev, "Reads/writes increments", "fs")
+  Rel(plugins_dev, claude_api, "AI-powered features", "REST")
+
+  Rel(cli_dev, issues_api, "Sync issues", "Octokit")
+  Rel(cli_dev, jira_api, "Sync stories", "axios")
+  Rel(cli_dev, ado_api, "Sync work items", "azure-devops-node-api")
+
+  Rel(npm_package, source_code, "Built from", "npm publish")
+  Rel(cli_dev, marketplace, "specweave refresh-marketplace", "HTTP/Git")
+
+  UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="2")

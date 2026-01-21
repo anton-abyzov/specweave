@@ -131,8 +131,23 @@ export class ProjectResolutionService {
    * @returns Resolved project with confidence and source
    */
   async resolveProjectFromContent(specContent: string): Promise<ResolvedProject> {
-    // Try per-US fields from content
     const projects = this.extractProjectsFromUSFields(specContent);
+    const resolved = this.createResolvedProjectFromUSFields(projects);
+
+    if (resolved) {
+      return resolved;
+    }
+
+    return await this.resolveFromConfig() || this.resolveFallback();
+  }
+
+  /**
+   * Create a ResolvedProject from extracted US field projects
+   */
+  private createResolvedProjectFromUSFields(projects: string[]): ResolvedProject | null {
+    if (projects.length === 0) {
+      return null;
+    }
 
     if (projects.length === 1) {
       return {
@@ -143,26 +158,15 @@ export class ProjectResolutionService {
       };
     }
 
-    if (projects.length > 1) {
-      return {
-        projectId: projects[0],
-        confidence: 'medium',
-        source: 'per-us',
-        reasoning: [
-          `Multiple projects found: ${projects.join(', ')}`,
-          `Using first project as primary: ${projects[0]}`
-        ]
-      };
-    }
-
-    // Fall back to config
-    const configResolved = await this.resolveFromConfig();
-    if (configResolved) {
-      return configResolved;
-    }
-
-    // Ultimate fallback
-    return this.resolveFallback();
+    return {
+      projectId: projects[0],
+      confidence: 'medium',
+      source: 'per-us',
+      reasoning: [
+        `Multiple projects found: ${projects.join(', ')}`,
+        `Using first project as primary: ${projects[0]}`
+      ]
+    };
   }
 
   /**
@@ -187,29 +191,10 @@ export class ProjectResolutionService {
 
       if (projects.length === 0) {
         this.logger.debug(`No per-US **Project**: fields found in ${incrementId}`);
-        return null; // No per-US fields found
+        return null;
       }
 
-      if (projects.length === 1) {
-        // Single project - high confidence
-        return {
-          projectId: projects[0],
-          confidence: 'high',
-          source: 'per-us',
-          reasoning: [`Single project found in US fields: ${projects[0]}`]
-        };
-      }
-
-      // Multiple projects - use first one as primary (cross-project increment)
-      return {
-        projectId: projects[0],
-        confidence: 'medium',
-        source: 'per-us',
-        reasoning: [
-          `Multiple projects found: ${projects.join(', ')}`,
-          `Using first project as primary: ${projects[0]}`
-        ]
-      };
+      return this.createResolvedProjectFromUSFields(projects);
     } catch (error: any) {
       this.logger.debug(`Could not extract from per-US fields: ${error.message}`);
       return null;

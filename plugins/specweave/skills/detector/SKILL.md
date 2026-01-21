@@ -7,7 +7,7 @@ description: Detects SpecWeave context (.specweave/ directory exists) and provid
 
 SpecWeave provides explicit slash commands for reliable workflow execution.
 
-**NOTE**: Auto-detection of product descriptions is handled by the `project-kickstarter` skill. This skill provides command documentation and workflow guidance.
+**NOTE**: Auto-detection of product descriptions is handled by the `increment-planner` skill. This skill provides command documentation and workflow guidance.
 
 ## How SpecWeave Works (v0.1.9)
 

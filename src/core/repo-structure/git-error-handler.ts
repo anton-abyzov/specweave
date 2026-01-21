@@ -175,58 +175,37 @@ function handleGenericError(error: GitApiError): ActionableError {
   };
 }
 
-/**
- * Get platform display name
- */
+const PLATFORM_DISPLAY_NAMES: Record<string, string> = {
+  'github': 'GitHub',
+  'gitlab': 'GitLab',
+  'bitbucket': 'Bitbucket',
+  'azure-devops': 'Azure DevOps'
+};
+
+const PLATFORM_TOKEN_URLS: Record<string, string> = {
+  'github': 'https://github.com/settings/tokens/new',
+  'gitlab': 'https://gitlab.com/-/profile/personal_access_tokens',
+  'bitbucket': 'https://bitbucket.org/account/settings/app-passwords/',
+  'azure-devops': 'https://dev.azure.com/{organization}/_usersSettings/tokens'
+};
+
+const PLATFORM_SCOPES: Record<string, string> = {
+  'github': 'repo, admin:org (for organizations)',
+  'gitlab': 'api, read_repository, write_repository',
+  'bitbucket': 'repository:read, repository:write',
+  'azure-devops': 'Code (Read & Write), Project and Team (Read, Write, & Manage)'
+};
+
 function getPlatformDisplayName(platform: string): string {
-  switch (platform) {
-    case 'github':
-      return 'GitHub';
-    case 'gitlab':
-      return 'GitLab';
-    case 'bitbucket':
-      return 'Bitbucket';
-    case 'azure-devops':
-      return 'Azure DevOps';
-    default:
-      return platform;
-  }
+  return PLATFORM_DISPLAY_NAMES[platform] ?? platform;
 }
 
-/**
- * Get token creation URL for platform
- */
 function getTokenUrl(platform: string): string {
-  switch (platform) {
-    case 'github':
-      return 'https://github.com/settings/tokens/new';
-    case 'gitlab':
-      return 'https://gitlab.com/-/profile/personal_access_tokens';
-    case 'bitbucket':
-      return 'https://bitbucket.org/account/settings/app-passwords/';
-    case 'azure-devops':
-      return 'https://dev.azure.com/{organization}/_usersSettings/tokens';
-    default:
-      return `https://${platform}.com`;
-  }
+  return PLATFORM_TOKEN_URLS[platform] ?? `https://${platform}.com`;
 }
 
-/**
- * Get required token scopes for platform
- */
 function getRequiredScopes(platform: string): string {
-  switch (platform) {
-    case 'github':
-      return 'repo, admin:org (for organizations)';
-    case 'gitlab':
-      return 'api, read_repository, write_repository';
-    case 'bitbucket':
-      return 'repository:read, repository:write';
-    case 'azure-devops':
-      return 'Code (Read & Write), Project and Team (Read, Write, & Manage)';
-    default:
-      return 'Full repository access';
-  }
+  return PLATFORM_SCOPES[platform] ?? 'Full repository access';
 }
 
 /**

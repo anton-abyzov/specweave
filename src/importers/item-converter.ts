@@ -3,6 +3,11 @@
  *
  * Converts external items (GitHub/JIRA/ADO) to SpecWeave living docs User Stories.
  * CRITICAL: Does NOT create increments - only creates living docs.
+ *
+ * NOTE: This file uses extracted modules from ./item-converter/ for better separation
+ * of concerns. The main ItemConverter class remains here for backward compatibility.
+ *
+ * @since v1.0.115 - Extracted helpers to ./item-converter/ modules
  */
 
 import type { ExternalItem } from './external-importer.js';
@@ -29,6 +34,35 @@ import {
   DEFAULT_TASK_TYPES,
 } from '../core/types/sync-profile.js';
 
+// Import from extracted modules
+import {
+  normalizeAdoWorkItemType as _normalizeAdoWorkItemType,
+  getSpecWeaveLevel as _getSpecWeaveLevel,
+  isFeatureLevelType as _isFeatureLevelType,
+  getJiraWorkItemTypeLabel as _getJiraWorkItemTypeLabel,
+  getDefaultMapping as _getDefaultMapping,
+  typeMatchesArray as _typeMatchesArray,
+} from './item-converter/hierarchy-mapper.js';
+import {
+  getBaseDirectory as _getBaseDirectory,
+  shouldAutoArchive as _shouldAutoArchive,
+  shouldArchiveEntireGroup as _shouldArchiveEntireGroup,
+  cleanupEmptyFeatureFolder as _cleanupEmptyFeatureFolder,
+} from './item-converter/path-resolver.js';
+import {
+  createFeatureFolder as _createFeatureFolder,
+  createOrphansFolder as _createOrphansFolder,
+} from './item-converter/feature-folder-creator.js';
+import {
+  hasParentChanged as _hasParentChanged,
+  updateParentMetadataInContent as _updateParentMetadataInContent,
+  moveUserStoryFile as _moveUserStoryFile,
+} from './item-converter/parent-change-handler.js';
+import {
+  findExistingFeatureFolders as _findExistingFeatureFolders,
+  groupHasNonDuplicates as _groupHasNonDuplicates,
+} from './item-converter/duplicate-scanner.js';
+
 /**
  * Module logger - can be replaced for testing
  */
@@ -41,38 +75,9 @@ export function setItemConverterLogger(logger: Logger): void {
   moduleLogger = logger;
 }
 
-/**
- * Normalize ADO work item type to canonical form
- * ADO returns both singular ('Epic') and plural ('Epics') forms
- * CRITICAL (v0.30.4): Fixes bug where 'Epics' didn't match 'epic'
- *
- * @param witType - Work item type from ADO (e.g., 'Epics', 'Epic', 'Feature')
- * @returns Normalized lowercase singular form (e.g., 'epic', 'feature', 'capability')
- */
+// Use extracted function (wrapper for backward compat)
 function normalizeAdoWorkItemType(witType: string | undefined): string | undefined {
-  if (!witType) return undefined;
-  const lower = witType.toLowerCase().trim();
-
-  // Explicit mappings for irregular plurals and known ADO types
-  const pluralMappings: Record<string, string> = {
-    'epics': 'epic',
-    'features': 'feature',
-    'capabilities': 'capability',
-    'bugs': 'bug',
-    'tasks': 'task',
-    'user stories': 'user story',
-  };
-
-  if (pluralMappings[lower]) {
-    return pluralMappings[lower];
-  }
-
-  // Fallback: remove trailing 's' for simple plurals
-  if (lower.endsWith('s') && lower.length > 1 && !lower.endsWith('ss')) {
-    return lower.slice(0, -1);
-  }
-
-  return lower;
+  return _normalizeAdoWorkItemType(witType);
 }
 
 export interface ConvertedUserStory {
@@ -368,15 +373,12 @@ export class ItemConverter {
    * Get default hierarchy mapping for a platform
    */
   private getDefaultMapping(platform: 'ado' | 'jira' | 'github'): HierarchyMappingConfig {
-    switch (platform) {
-      case 'jira':
-        return DEFAULT_JIRA_HIERARCHY_MAPPING;
-      case 'github':
-        return DEFAULT_GITHUB_HIERARCHY_MAPPING;
-      case 'ado':
-      default:
-        return DEFAULT_ADO_HIERARCHY_MAPPING;
-    }
+    const mappings: Record<string, HierarchyMappingConfig> = {
+      'jira': DEFAULT_JIRA_HIERARCHY_MAPPING,
+      'github': DEFAULT_GITHUB_HIERARCHY_MAPPING,
+      'ado': DEFAULT_ADO_HIERARCHY_MAPPING,
+    };
+    return mappings[platform] || DEFAULT_ADO_HIERARCHY_MAPPING;
   }
 
   /**
@@ -401,20 +403,11 @@ export class ItemConverter {
 
   /**
    * Get user-friendly label for JIRA work item type
-   * Maps internal type (epic, feature) to display label (Epic, Feature)
    */
   private getJiraWorkItemTypeLabel(item: ExternalItem): string | undefined {
     if (item.platform !== 'jira') return undefined;
-
-    // Map internal type to display label
-    switch (item.type) {
-      case 'epic':
-        return 'Epic';
-      case 'feature':
-        return 'Feature';
-      default:
-        return undefined;
-    }
+    const labelMap: Record<string, string> = { 'epic': 'Epic', 'feature': 'Feature' };
+    return labelMap[item.type];
   }
 
   /**
@@ -1178,27 +1171,12 @@ Items land here when:
 
   /**
    * Check if ALL items in a group should be archived
-   * CRITICAL FIX (2025-12-01): Prevents duplicate folder creation
-   *
-   * If ALL items are old (should be archived), the feature folder itself
-   * should be created in _archive/ to avoid having an empty FS-XXX/ folder
-   * in the main location while all content is in _archive/FS-XXX/
-   *
-   * @param items - All items in the feature group
-   * @returns True if ALL items should be archived
    */
   private shouldArchiveEntireGroup(items: ExternalItem[]): boolean {
-    if (items.length === 0) {
-      return false;
-    }
-
-    // Check if auto-archiving is disabled
+    if (items.length === 0) return false;
     const threshold = this.options.autoArchiveAfterDays;
-    if (!threshold || threshold <= 0) {
-      return false;
-    }
+    if (!threshold || threshold <= 0) return false;
 
-    // ALL items must be old enough to archive the entire group
     return items.every(item => this.shouldAutoArchive(item.createdAt));
   }
 
@@ -1415,21 +1393,12 @@ ${isOrphanGroup ? `- **Type**: Orphan (no parent Epic)` : ''}
 
   /**
    * Check if an item should be auto-archived based on creation date
-   *
-   * @param createdAt - Item creation date
-   * @returns True if item is older than autoArchiveAfterDays threshold
    */
   private shouldAutoArchive(createdAt: Date): boolean {
     const threshold = this.options.autoArchiveAfterDays;
+    if (!threshold || threshold <= 0) return false;
 
-    // Disabled if threshold is 0 or undefined
-    if (!threshold || threshold <= 0) {
-      return false;
-    }
-
-    const ageMs = Date.now() - createdAt.getTime();
-    const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
-
+    const ageDays = Math.floor((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
     return ageDays >= threshold;
   }
 

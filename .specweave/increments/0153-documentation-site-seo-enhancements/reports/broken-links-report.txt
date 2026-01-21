@@ -1,0 +1,501 @@
+Exhaustive list of all broken links found:
+- Broken link on source page path = /404.html:
+   -> linking to /docs/api
+- Broken link on source page path = /blog:
+   -> linking to /docs/api
+- Broken link on source page path = /blog/2026/01/04/seo-best-practices:
+   -> linking to /docs/guides/seo-optimization
+   -> linking to /docs/guides/documentation
+   -> linking to /docs/guides/performance
+   -> linking to /blog/schema-org-saas
+   -> linking to /docs/api
+- Broken link on source page path = /blog/archive:
+   -> linking to /docs/api
+- Broken link on source page path = /blog/authors:
+   -> linking to /docs/api
+- Broken link on source page path = /blog/authors/antonabyzov:
+   -> linking to /docs/api
+- Broken link on source page path = /blog/introducing-specweave:
+   -> linking to /docs/api
+- Broken link on source page path = /blog/tags:
+   -> linking to /docs/api
+- Broken link on source page path = /blog/tags/ai-development:
+   -> linking to /docs/api
+- Broken link on source page path = /blog/tags/announcement:
+   -> linking to /docs/api
+- Broken link on source page path = /blog/tags/best-practices:
+   -> linking to /docs/api
+- Broken link on source page path = /blog/tags/claude-code:
+   -> linking to /docs/api
+- Broken link on source page path = /blog/tags/documentation:
+   -> linking to /docs/api
+- Broken link on source page path = /blog/tags/performance:
+   -> linking to /docs/api
+- Broken link on source page path = /blog/tags/seo:
+   -> linking to /docs/api
+- Broken link on source page path = /blog/tags/spec-driven:
+   -> linking to /docs/api
+- Broken link on source page path = /markdown-page:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/:
+   -> linking to ./part-2-first-application/05-specweave-intro/ (resolved as: /docs/academy/part-2-first-application/05-specweave-intro/)
+   -> linking to ./part-2-first-application/06-your-first-feature/ (resolved as: /docs/academy/part-2-first-application/06-your-first-feature/)
+   -> linking to ./part-1-foundations/ (resolved as: /docs/academy/part-1-foundations/)
+   -> linking to ./part-2-first-application/ (resolved as: /docs/academy/part-2-first-application/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/bridges/:
+   -> linking to ./bridge-5-to-6 (resolved as: /docs/academy/bridges/bridge-5-to-6)
+   -> linking to ./bridge-6-to-7 (resolved as: /docs/academy/bridges/bridge-6-to-7)
+   -> linking to ./bridge-7-to-8 (resolved as: /docs/academy/bridges/bridge-7-to-8)
+   -> linking to ./bridge-8-to-9 (resolved as: /docs/academy/bridges/bridge-8-to-9)
+   -> linking to ./bridge-9-to-10 (resolved as: /docs/academy/bridges/bridge-9-to-10)
+   -> linking to ./bridge-10-to-11 (resolved as: /docs/academy/bridges/bridge-10-to-11)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/bridges/bridge-1-to-2:
+   -> linking to /docs/academy/part-2-first-application/
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/bridges/bridge-2-to-3:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/bridges/bridge-3-to-4:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/bridges/bridge-4-to-5:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-1-foundations/engineering-principles/:
+   -> linking to ./01-methodologies (resolved as: /docs/academy/part-1-foundations/engineering-principles/01-methodologies)
+   -> linking to ./02-roles (resolved as: /docs/academy/part-1-foundations/engineering-principles/02-roles)
+   -> linking to ./03-documentation (resolved as: /docs/academy/part-1-foundations/engineering-principles/03-documentation)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-1-foundations/engineering-principles/documentation:
+   -> linking to ../../part-2-first-application/ (resolved as: /docs/academy/part-2-first-application/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-1-foundations/engineering-principles/methodologies:
+   -> linking to ./02-roles (resolved as: /docs/academy/part-1-foundations/engineering-principles/02-roles)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-1-foundations/engineering-principles/roles:
+   -> linking to ./03-documentation (resolved as: /docs/academy/part-1-foundations/engineering-principles/03-documentation)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-1-foundations/version-control/:
+   -> linking to ./01-why-git (resolved as: /docs/academy/part-1-foundations/version-control/01-why-git)
+   -> linking to ./02-git-basics (resolved as: /docs/academy/part-1-foundations/version-control/02-git-basics)
+   -> linking to ./03-branching (resolved as: /docs/academy/part-1-foundations/version-control/03-branching)
+   -> linking to ./04-collaboration (resolved as: /docs/academy/part-1-foundations/version-control/04-collaboration)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-1-foundations/version-control/branching:
+   -> linking to ./04-collaboration (resolved as: /docs/academy/part-1-foundations/version-control/04-collaboration)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-1-foundations/version-control/collaboration:
+   -> linking to ../03-engineering-principles/ (resolved as: /docs/academy/part-1-foundations/03-engineering-principles/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-1-foundations/version-control/git-basics:
+   -> linking to ./03-branching (resolved as: /docs/academy/part-1-foundations/version-control/03-branching)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-1-foundations/version-control/why-git:
+   -> linking to ./02-git-basics (resolved as: /docs/academy/part-1-foundations/version-control/02-git-basics)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-1-foundations/welcome/:
+   -> linking to ./01-what-is-software (resolved as: /docs/academy/part-1-foundations/welcome/01-what-is-software)
+   -> linking to ./02-development-setup (resolved as: /docs/academy/part-1-foundations/welcome/02-development-setup)
+   -> linking to ./03-command-line (resolved as: /docs/academy/part-1-foundations/welcome/03-command-line)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-1-foundations/welcome/command-line:
+   -> linking to ../02-version-control/ (resolved as: /docs/academy/part-1-foundations/02-version-control/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-1-foundations/welcome/development-setup:
+   -> linking to ./03-command-line (resolved as: /docs/academy/part-1-foundations/welcome/03-command-line)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-1-foundations/welcome/what-is-software:
+   -> linking to ./02-development-setup (resolved as: /docs/academy/part-1-foundations/welcome/02-development-setup)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-10-security/:
+   -> linking to ./31-owasp/ (resolved as: /docs/academy/part-10-security/31-owasp/)
+   -> linking to ./32-authentication/ (resolved as: /docs/academy/part-10-security/32-authentication/)
+   -> linking to ./33-secure-coding/ (resolved as: /docs/academy/part-10-security/33-secure-coding/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-11-enterprise/:
+   -> linking to ./34-monorepos/ (resolved as: /docs/academy/part-11-enterprise/34-monorepos/)
+   -> linking to ./35-team-workflows/ (resolved as: /docs/academy/part-11-enterprise/35-team-workflows/)
+   -> linking to ./36-compliance/ (resolved as: /docs/academy/part-11-enterprise/36-compliance/)
+   -> linking to ./37-integrations/ (resolved as: /docs/academy/part-11-enterprise/37-integrations/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-12-enterprise-practices/:
+   -> linking to ./38-ddd/ (resolved as: /docs/academy/part-12-enterprise-practices/38-ddd/)
+   -> linking to ./39-clean-architecture/ (resolved as: /docs/academy/part-12-enterprise-practices/39-clean-architecture/)
+   -> linking to ./40-technical-debt/ (resolved as: /docs/academy/part-12-enterprise-practices/40-technical-debt/)
+   -> linking to ./41-system-docs/ (resolved as: /docs/academy/part-12-enterprise-practices/41-system-docs/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-13-ai-development/:
+   -> linking to ./42-ai-tools/ (resolved as: /docs/academy/part-13-ai-development/42-ai-tools/)
+   -> linking to ./43-prompt-engineering/ (resolved as: /docs/academy/part-13-ai-development/43-prompt-engineering/)
+   -> linking to ./44-specweave-ai/ (resolved as: /docs/academy/part-13-ai-development/44-specweave-ai/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-14-capstones/:
+   -> linking to ./capstone-a-saas/ (resolved as: /docs/academy/part-14-capstones/capstone-a-saas/)
+   -> linking to ./capstone-b-ecommerce/ (resolved as: /docs/academy/part-14-capstones/capstone-b-ecommerce/)
+   -> linking to ./capstone-c-realtime/ (resolved as: /docs/academy/part-14-capstones/capstone-c-realtime/)
+   -> linking to ./capstone-d-api/ (resolved as: /docs/academy/part-14-capstones/capstone-d-api/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/first-project/:
+   -> linking to ./01-project-setup (resolved as: /docs/academy/part-2-first-application/first-project/01-project-setup)
+   -> linking to ./02-core-logic (resolved as: /docs/academy/part-2-first-application/first-project/02-core-logic)
+   -> linking to ./03-cli-interface (resolved as: /docs/academy/part-2-first-application/first-project/03-cli-interface)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/first-project/cli-interface:
+   -> linking to ../06-specweave-intro/ (resolved as: /docs/academy/part-2-first-application/06-specweave-intro/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/first-project/core-logic:
+   -> linking to ./03-cli-interface (resolved as: /docs/academy/part-2-first-application/first-project/03-cli-interface)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/first-project/project-setup:
+   -> linking to ./02-core-logic (resolved as: /docs/academy/part-2-first-application/first-project/02-core-logic)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/javascript-basics/:
+   -> linking to ./01-variables-types (resolved as: /docs/academy/part-2-first-application/javascript-basics/01-variables-types)
+   -> linking to ./02-functions (resolved as: /docs/academy/part-2-first-application/javascript-basics/02-functions)
+   -> linking to ./03-arrays-objects (resolved as: /docs/academy/part-2-first-application/javascript-basics/03-arrays-objects)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/javascript-basics/arrays-objects:
+   -> linking to ../05-first-project/ (resolved as: /docs/academy/part-2-first-application/05-first-project/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/javascript-basics/functions:
+   -> linking to ./03-arrays-objects (resolved as: /docs/academy/part-2-first-application/javascript-basics/03-arrays-objects)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/javascript-basics/variables-types:
+   -> linking to ./02-functions (resolved as: /docs/academy/part-2-first-application/javascript-basics/02-functions)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/specweave-intro/:
+   -> linking to ./01-what-is-specweave (resolved as: /docs/academy/part-2-first-application/specweave-intro/01-what-is-specweave)
+   -> linking to ./02-core-workflow (resolved as: /docs/academy/part-2-first-application/specweave-intro/02-core-workflow)
+   -> linking to ./03-first-increment (resolved as: /docs/academy/part-2-first-application/specweave-intro/03-first-increment)
+   -> linking to ./04-artifacts (resolved as: /docs/academy/part-2-first-application/specweave-intro/04-artifacts)
+   -> linking to ./05-advanced-commands (resolved as: /docs/academy/part-2-first-application/specweave-intro/05-advanced-commands)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/specweave-intro/advanced-commands:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/specweave-intro/artifacts:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/specweave-intro/core-workflow:
+   -> linking to ./03-first-increment (resolved as: /docs/academy/part-2-first-application/specweave-intro/03-first-increment)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/specweave-intro/first-increment:
+   -> linking to ./04-artifacts (resolved as: /docs/academy/part-2-first-application/specweave-intro/04-artifacts)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-2-first-application/specweave-intro/what-is-specweave:
+   -> linking to ./02-core-workflow (resolved as: /docs/academy/part-2-first-application/specweave-intro/02-core-workflow)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/:
+   -> linking to ./07-testing-fundamentals/ (resolved as: /docs/academy/part-3-testing/07-testing-fundamentals/)
+   -> linking to ./08-unit-testing/ (resolved as: /docs/academy/part-3-testing/08-unit-testing/)
+   -> linking to ./09-integration-testing/ (resolved as: /docs/academy/part-3-testing/09-integration-testing/)
+   -> linking to ./10-e2e-testing/ (resolved as: /docs/academy/part-3-testing/10-e2e-testing/)
+   -> linking to ./11-tdd-bdd/ (resolved as: /docs/academy/part-3-testing/11-tdd-bdd/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/e2e-testing/:
+   -> linking to ./01-playwright-setup (resolved as: /docs/academy/part-3-testing/e2e-testing/01-playwright-setup)
+   -> linking to ./02-writing-e2e (resolved as: /docs/academy/part-3-testing/e2e-testing/02-writing-e2e)
+   -> linking to ./03-page-objects (resolved as: /docs/academy/part-3-testing/e2e-testing/03-page-objects)
+   -> linking to ./04-visual-testing (resolved as: /docs/academy/part-3-testing/e2e-testing/04-visual-testing)
+   -> linking to ./05-debugging (resolved as: /docs/academy/part-3-testing/e2e-testing/05-debugging)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/e2e-testing/playwright-setup:
+   -> linking to ./02-browser-automation (resolved as: /docs/academy/part-3-testing/e2e-testing/02-browser-automation)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/integration-testing/:
+   -> linking to ./01-test-databases (resolved as: /docs/academy/part-3-testing/integration-testing/01-test-databases)
+   -> linking to ./02-api-testing (resolved as: /docs/academy/part-3-testing/integration-testing/02-api-testing)
+   -> linking to ./03-service-integration (resolved as: /docs/academy/part-3-testing/integration-testing/03-service-integration)
+   -> linking to ./04-ci-integration (resolved as: /docs/academy/part-3-testing/integration-testing/04-ci-integration)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/integration-testing/api-testing:
+   -> linking to ./02-database-testing (resolved as: /docs/academy/part-3-testing/integration-testing/02-database-testing)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/tdd-bdd/:
+   -> linking to ./01-tdd-fundamentals (resolved as: /docs/academy/part-3-testing/tdd-bdd/01-tdd-fundamentals)
+   -> linking to ./02-tdd-practice (resolved as: /docs/academy/part-3-testing/tdd-bdd/02-tdd-practice)
+   -> linking to ./03-bdd-intro (resolved as: /docs/academy/part-3-testing/tdd-bdd/03-bdd-intro)
+   -> linking to ./04-gherkin (resolved as: /docs/academy/part-3-testing/tdd-bdd/04-gherkin)
+   -> linking to ./05-specweave-tdd (resolved as: /docs/academy/part-3-testing/tdd-bdd/05-specweave-tdd)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/tdd-bdd/bdd-scenarios:
+   -> linking to ./03-specweave-tdd (resolved as: /docs/academy/part-3-testing/tdd-bdd/03-specweave-tdd)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/tdd-bdd/red-green-refactor:
+   -> linking to ./02-bdd-scenarios (resolved as: /docs/academy/part-3-testing/tdd-bdd/02-bdd-scenarios)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/tdd-bdd/specweave-tdd:
+   -> linking to /docs/concepts/quality-gates
+   -> linking to /docs/reference/tasks-format
+   -> linking to /docs/commands/validation
+   -> linking to /docs/academy/part-4-project/
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/testing-fundamentals/:
+   -> linking to ./01-why-testing (resolved as: /docs/academy/part-3-testing/testing-fundamentals/01-why-testing)
+   -> linking to ./02-testing-pyramid (resolved as: /docs/academy/part-3-testing/testing-fundamentals/02-testing-pyramid)
+   -> linking to ./03-test-anatomy (resolved as: /docs/academy/part-3-testing/testing-fundamentals/03-test-anatomy)
+   -> linking to ./04-specweave-testing (resolved as: /docs/academy/part-3-testing/testing-fundamentals/04-specweave-testing)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/testing-fundamentals/specweave-testing:
+   -> linking to ../08-unit-testing/ (resolved as: /docs/academy/part-3-testing/08-unit-testing/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/testing-fundamentals/test-anatomy:
+   -> linking to ./04-specweave-testing (resolved as: /docs/academy/part-3-testing/testing-fundamentals/04-specweave-testing)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/testing-fundamentals/testing-pyramid:
+   -> linking to ./03-test-anatomy (resolved as: /docs/academy/part-3-testing/testing-fundamentals/03-test-anatomy)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/testing-fundamentals/why-testing:
+   -> linking to ./02-testing-pyramid (resolved as: /docs/academy/part-3-testing/testing-fundamentals/02-testing-pyramid)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/unit-testing/:
+   -> linking to ./01-setup (resolved as: /docs/academy/part-3-testing/unit-testing/01-setup)
+   -> linking to ./02-writing-tests (resolved as: /docs/academy/part-3-testing/unit-testing/02-writing-tests)
+   -> linking to ./03-mocking (resolved as: /docs/academy/part-3-testing/unit-testing/03-mocking)
+   -> linking to ./04-async (resolved as: /docs/academy/part-3-testing/unit-testing/04-async)
+   -> linking to ./05-coverage (resolved as: /docs/academy/part-3-testing/unit-testing/05-coverage)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/unit-testing/async:
+   -> linking to ./05-coverage (resolved as: /docs/academy/part-3-testing/unit-testing/05-coverage)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/unit-testing/coverage:
+   -> linking to ../09-integration-testing/ (resolved as: /docs/academy/part-3-testing/09-integration-testing/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/unit-testing/mocking:
+   -> linking to ./04-async (resolved as: /docs/academy/part-3-testing/unit-testing/04-async)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/unit-testing/setup:
+   -> linking to ./02-writing-tests (resolved as: /docs/academy/part-3-testing/unit-testing/02-writing-tests)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-3-testing/unit-testing/writing-tests:
+   -> linking to ./03-mocking (resolved as: /docs/academy/part-3-testing/unit-testing/03-mocking)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-4-quality/:
+   -> linking to ./12-linting-formatting/ (resolved as: /docs/academy/part-4-quality/12-linting-formatting/)
+   -> linking to ./13-typescript/ (resolved as: /docs/academy/part-4-quality/13-typescript/)
+   -> linking to ./14-code-review/ (resolved as: /docs/academy/part-4-quality/14-code-review/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-5-full-stack/:
+   -> linking to ./15-react-basics/ (resolved as: /docs/academy/part-5-full-stack/15-react-basics/)
+   -> linking to ./16-nodejs-backend/ (resolved as: /docs/academy/part-5-full-stack/16-nodejs-backend/)
+   -> linking to ./17-databases/ (resolved as: /docs/academy/part-5-full-stack/17-databases/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-6-devops/:
+   -> linking to ./18-cicd-fundamentals/ (resolved as: /docs/academy/part-6-devops/18-cicd-fundamentals/)
+   -> linking to ./19-github-actions/ (resolved as: /docs/academy/part-6-devops/19-github-actions/)
+   -> linking to ./20-docker/ (resolved as: /docs/academy/part-6-devops/20-docker/)
+   -> linking to ./21-iac/ (resolved as: /docs/academy/part-6-devops/21-iac/)
+   -> linking to ./22-monitoring/ (resolved as: /docs/academy/part-6-devops/22-monitoring/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-7-environments/:
+   -> linking to ./23-env-variables/ (resolved as: /docs/academy/part-7-environments/23-env-variables/)
+   -> linking to ./24-multi-environment/ (resolved as: /docs/academy/part-7-environments/24-multi-environment/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-8-architecture/:
+   -> linking to ./25-design-patterns/ (resolved as: /docs/academy/part-8-architecture/25-design-patterns/)
+   -> linking to ./26-api-design/ (resolved as: /docs/academy/part-8-architecture/26-api-design/)
+   -> linking to ./27-microservices/ (resolved as: /docs/academy/part-8-architecture/27-microservices/)
+   -> linking to ./28-event-driven/ (resolved as: /docs/academy/part-8-architecture/28-event-driven/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/part-9-scale-performance/:
+   -> linking to ./29-performance/ (resolved as: /docs/academy/part-9-scale-performance/29-performance/)
+   -> linking to ./30-scaling/ (resolved as: /docs/academy/part-9-scale-performance/30-scaling/)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/projects/:
+   -> linking to ./01-cli-foundation (resolved as: /docs/academy/projects/01-cli-foundation)
+   -> linking to ./02-testing (resolved as: /docs/academy/projects/02-testing)
+   -> linking to ./03-quality (resolved as: /docs/academy/projects/03-quality)
+   -> linking to ./04-full-stack (resolved as: /docs/academy/projects/04-full-stack)
+   -> linking to ./05-devops (resolved as: /docs/academy/projects/05-devops)
+   -> linking to ./06-environments (resolved as: /docs/academy/projects/06-environments)
+   -> linking to ./07-architecture (resolved as: /docs/academy/projects/07-architecture)
+   -> linking to ./08-scale (resolved as: /docs/academy/projects/08-scale)
+   -> linking to ./09-security (resolved as: /docs/academy/projects/09-security)
+   -> linking to ./10-enterprise (resolved as: /docs/academy/projects/10-enterprise)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/projects/cli-foundation:
+   -> linking to /docs/academy/part-1-foundations/03-terminal
+   -> linking to /docs/academy/part-2-first-application/04-javascript-basics/
+   -> linking to /docs/academy/part-2-first-application/05-first-project/01-project-setup
+   -> linking to /docs/academy/part-2-first-application/05-first-project/02-core-logic
+   -> linking to /docs/academy/part-2-first-application/05-first-project/03-cli-interface
+   -> linking to ./02-testing (resolved as: /docs/academy/projects/02-testing)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/academy/projects/testing:
+   -> linking to ./01-cli-foundation (resolved as: /docs/academy/projects/01-cli-foundation)
+   -> linking to ./03-quality (resolved as: /docs/academy/projects/03-quality)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/commands/abandon:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/commands/auto:
+   -> linking to ./auto-status.md (resolved as: /docs/commands/auto-status.md)
+   -> linking to ./cancel-auto.md (resolved as: /docs/commands/cancel-auto.md)
+   -> linking to ../guides/testing.md (resolved as: /docs/guides/testing.md)
+   -> linking to ../guides/multi-repo.md (resolved as: /docs/guides/multi-repo.md)
+   -> linking to ../guides/hooks.md (resolved as: /docs/guides/hooks.md)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/commands/overview:
+   -> linking to /docs/glossary
+   -> linking to /docs/guides/getting-started
+   -> linking to /docs/guides/workflow
+   -> linking to /docs/guides/quality-gates
+   -> linking to /docs/guides/github-sync
+   -> linking to /docs/api
+- Broken link on source page path = /docs/commands/pause:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/commands/resume:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/commands/save:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/commands/status:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/commands/status-management:
+   -> linking to ./next (resolved as: /docs/commands/next)
+   -> linking to /docs/guides/workflow
+   -> linking to /docs/guides/getting-started
+   -> linking to /docs/api
+- Broken link on source page path = /docs/DOCUMENTATION-AUDIT-2025-11-25:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/enterprise/azure-devops-migration:
+   -> linking to ./cicd-integration.md (resolved as: /docs/enterprise/cicd-integration.md)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/enterprise/case-study-migration:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/enterprise/github-migration:
+   -> linking to ./cicd-integration.md (resolved as: /docs/enterprise/cicd-integration.md)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/enterprise/jira-migration:
+   -> linking to ./sprint-planning.md (resolved as: /docs/enterprise/sprint-planning.md)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/enterprise/knowledge-transfer-migration:
+   -> linking to /docs/getting-started
+   -> linking to /docs/guides/migration-patterns
+   -> linking to /docs/api
+- Broken link on source page path = /docs/enterprise/monolith-to-microservices:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/enterprise/multi-environment-deployment:
+   -> linking to ./cicd-integration.md (resolved as: /docs/enterprise/cicd-integration.md)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/enterprise/release-management:
+   -> linking to ./cicd-integration.md (resolved as: /docs/enterprise/cicd-integration.md)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/examples/:
+   -> linking to /docs/guides/
+   -> linking to /docs/api
+- Broken link on source page path = /docs/faq:
+   -> linking to ./guides/github-sync (resolved as: /docs/guides/github-sync)
+   -> linking to /docs/architecture/adr/0140-code-over-mcp
+   -> linking to /docs/guides/hooks
+   -> linking to ./guides/getting-started (resolved as: /docs/guides/getting-started)
+   -> linking to ./architecture/overview (resolved as: /docs/architecture/overview)
+   -> linking to ./plugins/jira-sync (resolved as: /docs/plugins/jira-sync)
+   -> linking to ./guides/tool-support (resolved as: /docs/guides/tool-support)
+   -> linking to ./guides/increment-lifecycle (resolved as: /docs/guides/increment-lifecycle)
+   -> linking to /docs/api
+- Broken link on source page path = /docs/glossary/categories/architecture-category:
+   -> linking to /docs/glossary/
+   -> linking to /docs/glossary/index-by-category
+   -> linking to /docs/glossary/README
+   -> linking to /docs/api
+- Broken link on source page path = /docs/glossary/categories/backend-category:
+   -> linking to /docs/glossary/terms/nestjs
+   -> linking to /docs/glossary/terms/postgresql
+   -> linking to /docs/glossary/terms/mongodb
+   -> linking to /docs/glossary/terms/redis
+   -> linking to /docs/glossary/terms/event-driven
+   -> linking to /docs/glossary/
+   -> linking to /docs/glossary/index-by-category
+   -> linking to /docs/glossary/README
+   -> linking to /docs/api
+- Broken link on source page path = /docs/glossary/categories/CATEGORY-PAGES-COMPLETE:
+   -> linking to /docs/api
+- Broken link on source page path = /docs/glossary/categories/collaboration-category:
+   -> linking to /docs/glossary/terms/scrum
+   -> linking to /docs/glossary/terms/kanban
+   -> linking to /docs/glossary/terms/user-story
+   -> linking to /docs/glossary/terms/epic
+   -> linking to /docs/glossary/terms/task
+   -> linking to /docs/glossary/terms/spike
+   -> linking to /docs/glossary/terms/story-points
+   -> linking to /docs/glossary/terms/velocity
+   -> linking to /docs/glossary/terms/sprint-planning
+   -> linking to /docs/glossary/terms/backlog
+   -> linking to /docs/glossary/terms/jira
+   -> linking to /docs/glossary/terms/github-issues
+   -> linking to /docs/delivery/guides/development-workflow
+   -> linking to /docs/delivery/guides/increment-lifecycle
+   -> linking to /docs/delivery/branch-strategy
+   -> linking to /docs/glossary/
+   -> linking to /docs/glossary/index-by-category
+   -> linking to /docs/glossary/README
+   -> linking to /docs/api
+- Broken link on source page path = /docs/glossary/categories/devops-category:
+   -> linking to /docs/glossary/terms/npm
+   -> linking to /docs/glossary/terms/yarn
+   -> linking to /docs/glossary/terms/eslint
+   -> linking to /docs/glossary/terms/prettier
+   -> linking to /docs/glossary/categories/security
+   -> linking to /docs/delivery/guides/development-workflow
+   -> linking to /docs/delivery/branch-strategy
+   -> linking to /docs/glossary/
+   -> linking to /docs/glossary/index-by-category
+   -> linking to /docs/glossary/README
+   -> linking to /docs/api
+- Broken link on source page path = /docs/glossary/categories/frontend-category:
+   -> linking to /docs/glossary/terms/redux
+   -> linking to /docs/glossary/terms/context-api
+   -> linking to /docs/glossary/terms/zustand
+   -> linking to /docs/glossary/terms/css-modules
+   -> linking to /docs/glossary/terms/tailwind
+   -> linking to /docs/glossary/terms/styled-components
+   -> linking to /docs/glossary/
+   -> linking to /docs/glossary/index-by-category
+   -> linking to /docs/glossary/README
+   -> linking to /docs/api
+- Broken link on source page path = /docs/glossary/categories/infrastructure-category:
+   -> linking to /docs/glossary/categories/security
+   -> linking to /docs/glossary/
+   -> linking to /docs/glossary/index-by-category
+   -> linking to /docs/glossary/README
+   -> linking to /docs/api
+- Broken link on source page path = /docs/glossary/categories/ml-ai-category:
+   -> linking to /docs/glossary/terms/model-training
+   -> linking to /docs/glossary/terms/inference
+   -> linking to /docs/glossary/terms/llm
+   -> linking to /docs/glossary/terms/prompt-engineering
+   -> linking to /docs/glossary/terms/context-window
+   -> linking to /docs/glossary/terms/token
+   -> linking to /docs/glossary/terms/tensorflow
+   -> linking to /docs/glossary/terms/pytorch
+   -> linking to /docs/glossary/terms/scikit-learn
+   -> linking to /docs/glossary/terms/rag
+   -> linking to /docs/glossary/terms/fine-tuning
+   -> linking to /docs/glossary/terms/vector-database
+   -> linking to /docs/glossary/
+   -> linking to /docs/glossary/index-by-category
+   -> linking to /docs/glossary/README
+   -> linking to /docs/api
+- Broken link on source page path = /docs/glossary/categories/performance-category:
+   -> linking to /docs/glossary/terms/redis
+   -> linking to /docs/glossary/terms/cdn
+   -> linking to /docs/glossary/terms/horizontal-scaling
+   -> linking to /docs/glossary/terms/vertical-scaling
+   -> linking to /docs/glossary/terms/load-balancing
+   -> linking to /docs/glossary/terms/database-indexing
+   -> linking to /docs/glossary/terms/query-optimization
+   -> linking to /docs/glossary/terms/connection-pooling
+   -> linking to /docs/glossary/terms/apm
+   -> linking to /docs/glossary/terms/profiling
+   -> linking to /docs/glossary/terms/metrics
+   -> linking to /docs/operations/performance-tuning
+   -> linking to /docs/glossary/
+   -> linking to /docs/glossary/index-by-category
+   -> linking to /docs/glossary/README
+   -> linking to /docs/api
+- Broken link on source page path = /docs/glossary/categories/testing-category:
+   -> linking to /docs/glossary/terms/jest
+   -> linking to /docs/glossary/terms/pytest
+   -> linking to /docs/delivery/guides/testing-strategy
+   -> linking to /docs/glossary/
+   -> linking to /docs/glossary/index-by-category
+   -> linking to /docs/glossary/README
+   -> linking to /docs/api
+- Broken link on source page path = /docs/glossary/glossary-by-category:
+   -> linking to ./terms/lld (resolved as: /docs/glossary/terms/lld)

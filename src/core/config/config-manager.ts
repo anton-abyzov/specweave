@@ -65,7 +65,13 @@ export class ConfigManager {
 
     try {
       const content = await fs.readFile(this.configPath, 'utf-8');
-      const parsed = JSON.parse(content);
+      let parsed: Record<string, unknown>;
+      try {
+        parsed = JSON.parse(content);
+      } catch (parseError: unknown) {
+        const parseMessage = parseError instanceof SyntaxError ? parseError.message : String(parseError);
+        throw new Error(`Invalid JSON in config.json: ${parseMessage}`);
+      }
 
       // Merge with defaults (for backward compatibility)
       let config = this.mergeWithDefaults(parsed);
@@ -93,13 +99,18 @@ export class ConfigManager {
 
       this.config = config;
       return this.config;
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      if (err.code === 'ENOENT') {
         // Config file doesn't exist, return defaults
         this.config = { ...DEFAULT_CONFIG };
         return this.config;
       }
-      throw new Error(`Failed to read config: ${error.message}`);
+      // Re-throw JSON parse errors directly
+      if (err.message?.includes('Invalid JSON in config.json')) {
+        throw error;
+      }
+      throw new Error(`Failed to read config: ${err.message || String(error)}`);
     }
   }
 
@@ -116,18 +127,29 @@ export class ConfigManager {
     try {
       const { readFileSync } = require('fs');
       const content = readFileSync(this.configPath, 'utf-8');
-      const parsed = JSON.parse(content);
+      let parsed: Record<string, unknown>;
+      try {
+        parsed = JSON.parse(content);
+      } catch (parseError: unknown) {
+        const parseMessage = parseError instanceof SyntaxError ? parseError.message : String(parseError);
+        throw new Error(`Invalid JSON in config.json: ${parseMessage}`);
+      }
 
       // Merge with defaults
       this.config = this.mergeWithDefaults(parsed);
       return this.config;
-    } catch (error: any) {
-      if (error.code === 'ENOENT') {
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      if (err.code === 'ENOENT') {
         // Config file doesn't exist, return defaults
         this.config = { ...DEFAULT_CONFIG };
         return this.config;
       }
-      throw new Error(`Failed to read config: ${error.message}`);
+      // Re-throw JSON parse errors directly
+      if (err.message?.includes('Invalid JSON in config.json')) {
+        throw error;
+      }
+      throw new Error(`Failed to read config: ${err.message || String(error)}`);
     }
   }
 

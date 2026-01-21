@@ -135,7 +135,9 @@ export class ActiveIncrementManager {
      * 3. Max 2 increments (sorted by lastActivity)
      */
     smartUpdate() {
-        const activeIncrements = MetadataManager.getActive();
+        // Use getByStatus directly to avoid caching circular dependency
+        // MetadataManager.getActive() uses this cache, so we can't call it here
+        const activeIncrements = MetadataManager.getByStatus(IncrementStatus.ACTIVE);
         if (activeIncrements.length > 0) {
             // Sort by lastActivity (most recent first)
             const sorted = activeIncrements.sort((a, b) => {
@@ -189,6 +191,57 @@ export class ActiveIncrementManager {
         // Return false if stale found, but DON'T auto-fix (prevents circular dependency)
         // Caller should call smartUpdate() if needed
         return !hasStale;
+    }
+    /**
+     * Validate and auto-repair the active increment state
+     *
+     * This is the recommended method to call on startup to ensure
+     * the active-increment.json is in sync with metadata.json files.
+     *
+     * Part of 0168: Status Single Source of Truth
+     *
+     * @returns Object with validation result and any repairs made
+     */
+    validateAndRepair() {
+        const details = [];
+        const currentActive = this.getActive();
+        // Track what needs repair
+        const staleIds = [];
+        const missingIds = [];
+        // Check each currently "active" increment
+        for (const incrementId of currentActive) {
+            try {
+                const metadata = MetadataManager.read(incrementId, this.rootDir);
+                if (metadata.status !== IncrementStatus.ACTIVE) {
+                    staleIds.push(incrementId);
+                    details.push(`Stale: ${incrementId} is ${metadata.status}, not active`);
+                }
+            }
+            catch {
+                missingIds.push(incrementId);
+                details.push(`Missing: ${incrementId} not found`);
+            }
+        }
+        // Check for active increments NOT in our list (missed additions)
+        // Note: We use getByStatus directly to scan all metadata files
+        // This avoids potential caching issues with getActive()
+        const actuallyActive = MetadataManager.getByStatus(IncrementStatus.ACTIVE);
+        const actuallyActiveIds = actuallyActive.map(m => m.id);
+        const missingFromList = actuallyActiveIds.filter(id => !currentActive.includes(id));
+        for (const id of missingFromList) {
+            details.push(`Missing from list: ${id} is active but not tracked`);
+        }
+        // If anything is wrong, repair by calling smartUpdate
+        const needsRepair = staleIds.length > 0 || missingIds.length > 0 || missingFromList.length > 0;
+        if (needsRepair) {
+            this.smartUpdate();
+            details.push('Auto-repaired: Rebuilt active increment list from metadata');
+        }
+        return {
+            valid: !needsRepair,
+            repaired: needsRepair,
+            details
+        };
     }
     /**
      * Write state file atomically (temp file → rename)

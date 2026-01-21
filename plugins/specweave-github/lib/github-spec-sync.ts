@@ -201,7 +201,7 @@ export class GitHubSpecSync {
       console.log(`   📦 Detected project: ${projectId}`);
 
       // 3. Get GitHub config for this project
-      const githubConfig = await this.getGitHubConfigForProject(projectId);
+      let githubConfig = await this.getGitHubConfigForProject(projectId);
       if (!githubConfig) {
         // Fallback to auto-detect from git remote
         const repoInfo = await this.detectRepo();
@@ -214,10 +214,13 @@ export class GitHubSpecSync {
           };
         }
 
-        // Use fallback config
-        githubConfig.owner = repoInfo.owner;
-        githubConfig.repo = repoInfo.repo;
-        githubConfig.strategy = 'project-per-spec';
+        // Create fallback config
+        githubConfig = {
+          projectId,
+          owner: repoInfo.owner,
+          repo: repoInfo.repo,
+          strategy: 'project-per-spec'
+        };
       }
 
       console.log(`   🎯 Strategy: ${githubConfig.strategy}`);

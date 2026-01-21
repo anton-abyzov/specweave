@@ -186,7 +186,43 @@ export function extractKeywords(vision: string): string[] {
     throw new Error('Vision text cannot be empty');
   }
 
-  // Step 1: Match vision against all domain patterns
+  // Match and deduplicate keywords
+  const matches = matchDomainPatterns(vision);
+  const deduped = deduplicateMatches(matches);
+
+  // Sort by score and take top 10
+  const keywords = Array.from(deduped.values())
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 10)
+    .map(m => m.keyword);
+
+  // Ensure minimum 3 keywords (Zod schema requirement)
+  if (keywords.length < 3) {
+    const fallbackWords = vision
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(w => w.length > 3)
+      .filter((w, i, arr) => arr.indexOf(w) === i);
+
+    for (const word of fallbackWords) {
+      if (keywords.length >= 3) break;
+      if (!keywords.includes(word)) {
+        keywords.push(word);
+      }
+    }
+
+    while (keywords.length < 3) {
+      keywords.push('product');
+    }
+  }
+
+  return keywords;
+}
+
+/**
+ * Match vision against domain patterns and return raw matches
+ */
+function matchDomainPatterns(vision: string): KeywordMatch[] {
   const matches: KeywordMatch[] = [];
 
   for (const domainPattern of DOMAIN_PATTERNS) {
@@ -194,66 +230,36 @@ export function extractKeywords(vision: string): string[] {
     const visionMatches = vision.match(regex);
 
     if (visionMatches && visionMatches.length > 0) {
-      // Found matches for this domain
       const frequency = visionMatches.length;
 
-      // Add each keyword from this domain with calculated score
       for (const keyword of domainPattern.keywords) {
-        const score = frequency * domainPattern.weight;
-
         matches.push({
           keyword,
           domain: domainPattern.domain,
-          score,
+          score: frequency * domainPattern.weight,
           frequency
         });
       }
     }
   }
 
-  // Step 2: Deduplicate keywords (keep highest score)
+  return matches;
+}
+
+/**
+ * Deduplicate matches, keeping highest score for each keyword
+ */
+function deduplicateMatches(matches: KeywordMatch[]): Map<string, KeywordMatch> {
   const deduped = new Map<string, KeywordMatch>();
 
   for (const match of matches) {
     const existing = deduped.get(match.keyword);
-
     if (!existing || match.score > existing.score) {
       deduped.set(match.keyword, match);
     }
   }
 
-  // Step 3: Sort by score (descending) and take top 10
-  const sorted = Array.from(deduped.values())
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 10);
-
-  // Step 4: Extract just the keywords
-  const keywords = sorted.map(m => m.keyword);
-
-  // Step 5: Ensure minimum 3 keywords (Zod schema requirement)
-  if (keywords.length < 3) {
-    // Fallback: extract unique words from vision
-    const words = vision
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(w => w.length > 3) // Only meaningful words
-      .filter((w, i, arr) => arr.indexOf(w) === i); // Unique
-
-    // Add fallback words until we have at least 3
-    for (const word of words) {
-      if (keywords.length >= 3) break;
-      if (!keywords.includes(word)) {
-        keywords.push(word);
-      }
-    }
-
-    // Absolute fallback if still not enough
-    while (keywords.length < 3) {
-      keywords.push('product');
-    }
-  }
-
-  return keywords;
+  return deduped;
 }
 
 /**
@@ -267,39 +273,8 @@ export function analyzeKeywords(vision: string): KeywordMatch[] {
     return [];
   }
 
-  const matches: KeywordMatch[] = [];
+  const matches = matchDomainPatterns(vision);
+  const deduped = deduplicateMatches(matches);
 
-  for (const domainPattern of DOMAIN_PATTERNS) {
-    const regex = new RegExp(domainPattern.pattern);
-    const visionMatches = vision.match(regex);
-
-    if (visionMatches && visionMatches.length > 0) {
-      const frequency = visionMatches.length;
-
-      for (const keyword of domainPattern.keywords) {
-        const score = frequency * domainPattern.weight;
-
-        matches.push({
-          keyword,
-          domain: domainPattern.domain,
-          score,
-          frequency
-        });
-      }
-    }
-  }
-
-  // Deduplicate
-  const deduped = new Map<string, KeywordMatch>();
-
-  for (const match of matches) {
-    const existing = deduped.get(match.keyword);
-
-    if (!existing || match.score > existing.score) {
-      deduped.set(match.keyword, match);
-    }
-  }
-
-  // Sort by score
   return Array.from(deduped.values()).sort((a, b) => b.score - a.score);
 }

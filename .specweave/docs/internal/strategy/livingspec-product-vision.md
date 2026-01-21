@@ -118,25 +118,25 @@ Every external item is clearly marked:
 
 ## Roadmap
 
-### Phase 1: Foundation (Q1 2025) ✓
+### Phase 1: Foundation (Q1 2026) ✓
 - [x] Core specification
 - [x] E-suffix standard
 - [x] Directory structure
 - [x] JSON schemas
 
-### Phase 2: Tooling (Q2 2025)
+### Phase 2: Tooling (Q2 2026)
 - [ ] CLI validator
 - [ ] Docusaurus plugin
 - [ ] VS Code extension
 - [ ] GitHub Action
 
-### Phase 3: Sync (Q3 2025)
+### Phase 3: Sync (Q3 2026)
 - [ ] GitHub sync provider
 - [ ] JIRA sync provider
 - [ ] ADO sync provider
 - [ ] Conflict resolution
 
-### Phase 4: Ecosystem (Q4 2025)
+### Phase 4: Ecosystem (Q4 2026)
 - [ ] MkDocs plugin
 - [ ] Confluence migrator
 - [ ] Notion migrator

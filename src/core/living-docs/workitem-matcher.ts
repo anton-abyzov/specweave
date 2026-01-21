@@ -977,36 +977,6 @@ function smartFuzzyMatch(
 }
 
 /**
- * Normalize team name for matching (legacy, kept for compatibility)
- */
-function normalizeTeamName(team: string): string {
-  return team
-    .toLowerCase()
-    .replace(/[_\s-]+/g, '') // Remove separators
-    .replace(/team$/i, '')   // Remove "team" suffix
-    .trim();
-}
-
-/**
- * Normalize module name for matching (legacy, kept for compatibility)
- */
-function normalizeModuleName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/-fe$/, '')
-    .replace(/-be$/, '')
-    .replace(/-api$/, '')
-    .replace(/-web$/, '')
-    .replace(/-mobile$/, '')
-    .replace(/-backend$/, '')
-    .replace(/-frontend$/, '')
-    .replace(/-service$/, '')
-    .replace(/-srv$/, '')
-    .replace(/-app$/, '')
-    .trim();
-}
-
-/**
  * Calculate priority based on work item count
  */
 function calculatePriority(count: number): 'critical' | 'high' | 'medium' | 'low' {

@@ -9,6 +9,37 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Logger, consoleLogger } from './logger.js';
 
+/**
+ * Check if locks should be disabled (VSCode or CI context)
+ * Inline implementation after environment-detection.ts removal
+ */
+function shouldSkipLocks(): boolean {
+  // Explicit disable always wins
+  if (process.env.SPECWEAVE_DISABLE_LOCKS === '1') {
+    return true;
+  }
+
+  // Explicit enable forces locks
+  if (process.env.SPECWEAVE_FORCE_LOCKS === '1') {
+    return false;
+  }
+
+  // Auto-detect VSCode or CI
+  const isVSCode = !!(
+    process.env.VSCODE_PID ||
+    process.env.TERM_PROGRAM === 'vscode' ||
+    process.env.VSCODE_IPC_HOOK
+  );
+
+  const isCI = !!(
+    process.env.CI === 'true' ||
+    process.env.GITHUB_ACTIONS === 'true' ||
+    process.env.GITLAB_CI === 'true'
+  );
+
+  return isVSCode || isCI;
+}
+
 const DEFAULT_STALE_THRESHOLD_SECONDS = 300; // 5 minutes
 const LOCK_RETRY_DELAY_MS = 100;
 const LOCK_TIMEOUT_MS = 10000; // 10 seconds
@@ -17,6 +48,7 @@ export class LockManager {
   private lockDir: string;
   private staleThresholdSeconds: number;
   private logger: Logger;
+  private skipLocks: boolean;
 
   constructor(
     lockDir: string,
@@ -26,6 +58,11 @@ export class LockManager {
     this.lockDir = lockDir;
     this.staleThresholdSeconds = staleThresholdSeconds;
     this.logger = options.logger ?? consoleLogger;
+    this.skipLocks = shouldSkipLocks();
+
+    if (this.skipLocks) {
+      this.logger.debug('Lock manager disabled (VSCode/CI context)');
+    }
   }
 
   /**
@@ -34,6 +71,11 @@ export class LockManager {
    * @returns true if lock acquired, false if failed
    */
   async acquire(): Promise<boolean> {
+    // Skip locking in VSCode/CI
+    if (this.skipLocks) {
+      return true;
+    }
+
     const startTime = Date.now();
 
     while (Date.now() - startTime < LOCK_TIMEOUT_MS) {
@@ -82,6 +124,11 @@ export class LockManager {
    * Releases the lock
    */
   async release(): Promise<void> {
+    // Skip locking in VSCode/CI
+    if (this.skipLocks) {
+      return;
+    }
+
     try {
       if (!fs.existsSync(this.lockDir)) {
         return;

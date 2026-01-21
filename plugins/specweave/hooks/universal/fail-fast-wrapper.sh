@@ -1,12 +1,13 @@
 #!/bin/bash
 # fail-fast-wrapper.sh - Non-blocking timeout wrapper for hooks
 #
-# v1.0.43+: Improved error logging and user warnings
+# v1.0.102+: Cross-platform support (Linux, macOS, BSD, Windows Git Bash)
 #
 # CRITICAL DESIGN PRINCIPLE:
 #   - NEVER block tool operations
 #   - All errors become warnings shown to user
 #   - Safe JSON output even on catastrophic failures
+#   - Universal timeout support (Perl fallback for all platforms)
 #
 # Usage: bash fail-fast-wrapper.sh <hook-script> [args...]
 #
@@ -19,7 +20,7 @@
 set +e  # CRITICAL: Never exit on error
 
 HOOK_TIMEOUT="${HOOK_TIMEOUT:-5}"
-WRAPPER_VERSION="1.0.43"
+WRAPPER_VERSION="1.0.102"
 
 # ============================================================================
 # PROJECT ROOT DETECTION (for logging) - CRITICAL: must NOT fallback to pwd!
@@ -52,6 +53,22 @@ WARNING_LOG="$LOGS_DIR/hook-warnings.log"
 mkdir -p "$LOGS_DIR" 2>/dev/null || true
 
 # ============================================================================
+# JSON UTILITIES (v1.0.102+)
+# ============================================================================
+
+# Escape string for safe JSON embedding
+escape_json() {
+  local str="$1"
+  # Escape backslash, double quote, newline, carriage return, tab
+  str="${str//\\/\\\\}"  # Backslash
+  str="${str//\"/\\\"}"  # Double quote
+  str="${str//$'\n'/\\n}"  # Newline
+  str="${str//$'\r'/\\r}"  # Carriage return
+  str="${str//$'\t'/\\t}"  # Tab
+  echo "$str"
+}
+
+# ============================================================================
 # LOGGING
 # ============================================================================
 
@@ -63,32 +80,57 @@ log_warning() {
   local script_name
   script_name=$(basename "$script" 2>/dev/null || echo "unknown")
 
-  # Log to file
+  # Log to file only (v1.0.102+: warnings now in JSON response)
   {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARNING [fail-fast-wrapper]: $message"
     echo "  Script: $script_name"
     [[ -n "$details" ]] && echo "  Details: $details"
   } >> "$WARNING_LOG" 2>/dev/null || true
 
-  # Show to user (always - this is important)
-  echo ""
-  echo "  [Hook Warning] $script_name: $message"
-  [[ -n "$details" ]] && echo "  $details"
-  echo "  (Operation continues - hooks are non-blocking)"
-  echo ""
+  # NOTE: No console output - warnings are in JSON response
 }
 
 # ============================================================================
-# SAFE OUTPUT GENERATION
+# SAFE OUTPUT GENERATION (v1.0.102+)
 # ============================================================================
 
-# Safe output based on hook type
+# Safe output with warnings (JSON-escaped)
+get_safe_output_with_warnings() {
+  local script="$1"
+  local severity="$2"
+  local message="$3"
+  local recommendation="$4"
+
+  local script_name
+  script_name=$(basename "$script" 2>/dev/null || echo "unknown")
+
+  # Escape all strings for JSON safety
+  local escaped_name
+  local escaped_message
+  local escaped_recommendation
+  escaped_name=$(escape_json "$script_name")
+  escaped_message=$(escape_json "$message")
+  escaped_recommendation=$(escape_json "$recommendation")
+
+  # Build JSON with warnings array
+  if [[ "$script" == *"guard"* ]] || [[ "$script" == *"validator"* ]]; then
+    cat <<EOF
+{"decision":"allow","warnings":[{"severity":"${severity}","message":"${escaped_name}: ${escaped_message}","recommendation":"${escaped_recommendation}"}]}
+EOF
+  else
+    cat <<EOF
+{"continue":true,"warnings":[{"severity":"${severity}","message":"${escaped_name}: ${escaped_message}","recommendation":"${escaped_recommendation}"}]}
+EOF
+  fi
+}
+
+# Safe output without warnings (success case)
 get_safe_output() {
   local script="$1"
   if [[ "$script" == *"guard"* ]] || [[ "$script" == *"validator"* ]]; then
-    echo '{"decision":"allow"}'
+    echo '{"decision":"allow","warnings":[]}'
   else
-    echo '{"continue":true}'
+    echo '{"continue":true,"warnings":[]}'
   fi
 }
 
@@ -105,37 +147,82 @@ if [[ -z "$script" ]]; then
   exit 0
 fi
 
-# Script doesn't exist = safe default (log warning)
+# Script doesn't exist = safe default with warning
 if [[ ! -f "$script" ]]; then
   log_warning "$script" "Script not found (may be refreshing)" "Path: $script"
-  echo '{"continue":true}'
+  get_safe_output_with_warnings "$script" "WARNING" "Script not found (may be refreshing)" "Run 'specweave refresh-marketplace' to update plugins"
   exit 0
 fi
 
-# Read stdin (with timeout to prevent hangs)
+# Read stdin with non-blocking timeout (v1.0.102+)
+# Uses Perl for universal cross-platform support
 stdin_content=""
-if command -v gtimeout >/dev/null 2>&1; then
+if command -v perl >/dev/null 2>&1; then
+  # Perl-based timeout (works on all Unix systems)
+  stdin_content=$(perl -e '
+    use strict;
+    use warnings;
+
+    eval {
+      local $SIG{ALRM} = sub { die "timeout\n" };
+      alarm(1);
+      local $/;
+      my $input = <STDIN>;
+      alarm(0);
+      print $input;
+    };
+    if ($@) {
+      print "{}";
+    }
+  ' 2>/dev/null || echo '{}')
+elif command -v gtimeout >/dev/null 2>&1; then
   stdin_content=$(gtimeout 1 cat 2>/dev/null || echo '{}')
 elif command -v timeout >/dev/null 2>&1; then
   stdin_content=$(timeout 1 cat 2>/dev/null || echo '{}')
 else
+  # Last resort: try reading without blocking (may hang if stdin has data)
   stdin_content=$(cat 2>/dev/null || echo '{}')
 fi
 
-# Run with timeout
-tmp_out=$(mktemp 2>/dev/null || echo "/tmp/hook-out-$$")
-tmp_err=$(mktemp 2>/dev/null || echo "/tmp/hook-err-$$")
+# Run with timeout (v1.0.102+: Universal cross-platform support)
+tmp_out=$(mktemp -t hook-out.XXXXXX 2>/dev/null || echo "/tmp/hook-out-$$")
+tmp_err=$(mktemp -t hook-err.XXXXXX 2>/dev/null || echo "/tmp/hook-err-$$")
 
+# Try GNU timeout (Linux), then BSD timeout (macOS with coreutils), then Perl fallback
 if command -v gtimeout >/dev/null 2>&1; then
+  # GNU timeout (Linux, coreutils on macOS)
   echo "$stdin_content" | gtimeout --kill-after=2 "$HOOK_TIMEOUT" bash "$script" "$@" > "$tmp_out" 2> "$tmp_err"
   exit_code=$?
 elif command -v timeout >/dev/null 2>&1; then
+  # BSD timeout (some systems)
   echo "$stdin_content" | timeout --kill-after=2 "$HOOK_TIMEOUT" bash "$script" "$@" > "$tmp_out" 2> "$tmp_err"
   exit_code=$?
 else
-  # Fallback: run without timeout (rare - most systems have timeout)
-  echo "$stdin_content" | bash "$script" "$@" > "$tmp_out" 2> "$tmp_err"
-  exit_code=$?
+  # Bash-only fallback (for systems without timeout/gtimeout - e.g., macOS)
+  # Run hook in background
+  echo "$stdin_content" | bash "$script" "$@" > "$tmp_out" 2> "$tmp_err" &
+  script_pid=$!
+
+  # Wait with timeout using simple loop
+  elapsed=0
+  while kill -0 $script_pid 2>/dev/null && [ $elapsed -lt $HOOK_TIMEOUT ]; do
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
+
+  # Check if still running (timeout occurred)
+  if kill -0 $script_pid 2>/dev/null; then
+    # Timeout - kill the process
+    kill -TERM $script_pid 2>/dev/null
+    sleep 2
+    kill -KILL $script_pid 2>/dev/null
+    wait $script_pid 2>/dev/null
+    exit_code=124  # Timeout exit code
+  else
+    # Process finished - get exit code
+    wait $script_pid
+    exit_code=$?
+  fi
 fi
 
 output=$(cat "$tmp_out" 2>/dev/null)
@@ -145,7 +232,7 @@ rm -f "$tmp_out" "$tmp_err" 2>/dev/null
 # Handle different exit scenarios
 case $exit_code in
   0)
-    # Success - return output or safe default
+    # Success - return output or safe default with empty warnings
     if [[ -n "$output" ]]; then
       echo "$output"
     else
@@ -156,22 +243,20 @@ case $exit_code in
   124|137)
     # Timeout (124 = timeout, 137 = SIGKILL)
     log_warning "$script" "Hook timed out after ${HOOK_TIMEOUT}s" "Consider optimizing or increasing HOOK_TIMEOUT"
-    get_safe_output "$script"
+    get_safe_output_with_warnings "$script" "WARNING" "Hook timed out after ${HOOK_TIMEOUT}s" "Consider optimizing or increasing HOOK_TIMEOUT"
     ;;
 
   *)
     # Other error
-    if [[ -n "$errors" ]]; then
-      log_warning "$script" "Hook failed (exit $exit_code)" "$errors"
-    else
-      log_warning "$script" "Hook failed (exit $exit_code)"
-    fi
+    error_msg="Hook failed (exit $exit_code)"
+    recommendation="Run 'specweave check-hooks' to diagnose issues"
 
-    # Still return output if there was any (partial success)
-    if [[ -n "$output" ]]; then
-      echo "$output"
+    if [[ -n "$errors" ]]; then
+      log_warning "$script" "$error_msg" "$errors"
+      get_safe_output_with_warnings "$script" "ERROR" "$error_msg: $errors" "$recommendation"
     else
-      get_safe_output "$script"
+      log_warning "$script" "$error_msg"
+      get_safe_output_with_warnings "$script" "ERROR" "$error_msg" "$recommendation"
     fi
     ;;
 esac

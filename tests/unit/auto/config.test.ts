@@ -12,7 +12,7 @@ import {
   isAutoEnabled,
   getEffectiveMode,
 } from '../../../src/core/auto/config.js';
-import { DEFAULT_AUTO_CONFIG } from '../../../src/core/auto/types.js';
+import { DEFAULT_AUTO_CONFIG, DEFAULT_PARALLEL_AUTO_CONFIG } from '../../../src/core/auto/types.js';
 
 describe('Auto Config', () => {
   let tempDir: string;
@@ -82,8 +82,8 @@ describe('Auto Config', () => {
 
       const result = loadAutoConfig(tempDir);
 
-      expect(result.warnings).toContain('maxIterations must be >= 1, using default (500)');
-      expect(result.config.maxIterations).toBe(500);
+      expect(result.warnings).toContain('maxIterations must be >= 1, using default');
+      expect(result.config.maxIterations).toBe(2500);
     });
 
     it('should cap maxIterations at 5000', () => {
@@ -256,6 +256,291 @@ describe('Auto Config', () => {
       const result = getEffectiveMode(tempDir, {});
 
       expect(result.mode).toBe('manual');
+    });
+  });
+
+  // ========================================================================
+  // PARALLEL CONFIG TESTS
+  // ========================================================================
+
+  describe('Parallel Config', () => {
+    it('should return default parallel config when no parallel section exists', () => {
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({ auto: { enabled: true } }),
+        'utf-8'
+      );
+
+      const result = loadAutoConfig(tempDir);
+
+      // Default AUTO_CONFIG should have parallel section
+      expect(result.config.parallel).toBeDefined();
+      expect(result.config.parallel?.enabled).toBe(false);
+      expect(result.config.parallel?.maxParallel).toBe(3);
+    });
+
+    it('should merge partial parallel config with defaults', () => {
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          auto: {
+            parallel: {
+              enabled: true,
+              maxParallel: 5,
+            },
+          },
+        }),
+        'utf-8'
+      );
+
+      const result = loadAutoConfig(tempDir);
+
+      expect(result.config.parallel?.enabled).toBe(true);
+      expect(result.config.parallel?.maxParallel).toBe(5);
+      expect(result.config.parallel?.defaultMergeStrategy).toBe('auto'); // Default preserved
+      expect(result.config.parallel?.defaultBaseBranch).toBe('main'); // Default preserved
+    });
+
+    it('should parse all parallel config fields', () => {
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          auto: {
+            parallel: {
+              enabled: true,
+              maxParallel: 4,
+              defaultDomains: ['frontend', 'backend'],
+              defaultMergeStrategy: 'pr',
+              defaultBaseBranch: 'develop',
+              createPR: true,
+              draftPR: true,
+            },
+          },
+        }),
+        'utf-8'
+      );
+
+      const result = loadAutoConfig(tempDir);
+
+      expect(result.config.parallel?.enabled).toBe(true);
+      expect(result.config.parallel?.maxParallel).toBe(4);
+      expect(result.config.parallel?.defaultDomains).toEqual(['frontend', 'backend']);
+      expect(result.config.parallel?.defaultMergeStrategy).toBe('pr');
+      expect(result.config.parallel?.defaultBaseBranch).toBe('develop');
+      expect(result.config.parallel?.createPR).toBe(true);
+      expect(result.config.parallel?.draftPR).toBe(true);
+    });
+
+    it('should cap maxParallel at 10', () => {
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          auto: {
+            parallel: {
+              maxParallel: 100,
+            },
+          },
+        }),
+        'utf-8'
+      );
+
+      const result = loadAutoConfig(tempDir);
+
+      expect(result.warnings).toContain('parallel.maxParallel exceeds 10, capping at 10');
+      expect(result.config.parallel?.maxParallel).toBe(10);
+    });
+
+    it('should warn for maxParallel less than 1', () => {
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          auto: {
+            parallel: {
+              maxParallel: 0,
+            },
+          },
+        }),
+        'utf-8'
+      );
+
+      const result = loadAutoConfig(tempDir);
+
+      expect(result.warnings).toContain('parallel.maxParallel must be >= 1, using default');
+      // When maxParallel < 1, clampWithWarning returns undefined, so default from DEFAULT_AUTO_CONFIG is preserved
+      expect(result.config.parallel?.maxParallel).toBe(DEFAULT_PARALLEL_AUTO_CONFIG.maxParallel);
+    });
+
+    it('should filter invalid domains from defaultDomains', () => {
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          auto: {
+            parallel: {
+              defaultDomains: ['frontend', 'invalid-domain', 'backend'],
+            },
+          },
+        }),
+        'utf-8'
+      );
+
+      const result = loadAutoConfig(tempDir);
+
+      // Only valid domains should be kept
+      expect(result.config.parallel?.defaultDomains).toEqual(['frontend', 'backend']);
+    });
+
+    it('should warn when all domains are invalid', () => {
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          auto: {
+            parallel: {
+              defaultDomains: ['invalid', 'also-invalid'],
+            },
+          },
+        }),
+        'utf-8'
+      );
+
+      const result = loadAutoConfig(tempDir);
+
+      expect(result.warnings).toContain('parallel.defaultDomains contains invalid domains, using default');
+      expect(result.config.parallel?.defaultDomains).toEqual([]); // Default empty
+    });
+
+    it('should ignore invalid merge strategy values', () => {
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          auto: {
+            parallel: {
+              defaultMergeStrategy: 'invalid-strategy',
+            },
+          },
+        }),
+        'utf-8'
+      );
+
+      const result = loadAutoConfig(tempDir);
+
+      // Should use default when invalid
+      expect(result.config.parallel?.defaultMergeStrategy).toBe('auto');
+    });
+
+    it('should accept manual merge strategy', () => {
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          auto: {
+            parallel: {
+              defaultMergeStrategy: 'manual',
+            },
+          },
+        }),
+        'utf-8'
+      );
+
+      const result = loadAutoConfig(tempDir);
+
+      expect(result.config.parallel?.defaultMergeStrategy).toBe('manual');
+    });
+
+    it('should trim whitespace from defaultBaseBranch', () => {
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          auto: {
+            parallel: {
+              defaultBaseBranch: '  develop  ',
+            },
+          },
+        }),
+        'utf-8'
+      );
+
+      const result = loadAutoConfig(tempDir);
+
+      expect(result.config.parallel?.defaultBaseBranch).toBe('develop');
+    });
+
+    it('should ignore empty defaultBaseBranch string', () => {
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          auto: {
+            parallel: {
+              defaultBaseBranch: '   ',
+            },
+          },
+        }),
+        'utf-8'
+      );
+
+      const result = loadAutoConfig(tempDir);
+
+      // Should use default when empty
+      expect(result.config.parallel?.defaultBaseBranch).toBe('main');
+    });
+
+    it('should accept all valid domain types', () => {
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      fs.mkdirSync(path.dirname(configPath), { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        JSON.stringify({
+          auto: {
+            parallel: {
+              defaultDomains: ['frontend', 'backend', 'database', 'devops', 'qa', 'general'],
+            },
+          },
+        }),
+        'utf-8'
+      );
+
+      const result = loadAutoConfig(tempDir);
+
+      expect(result.config.parallel?.defaultDomains).toEqual([
+        'frontend', 'backend', 'database', 'devops', 'qa', 'general'
+      ]);
+    });
+
+    it('should save parallel config', () => {
+      saveAutoConfig(tempDir, {
+        parallel: {
+          enabled: true,
+          maxParallel: 6,
+          createPR: true,
+        },
+      });
+
+      const configPath = path.join(tempDir, '.specweave/config.json');
+      const content = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+      expect(content.auto.parallel.enabled).toBe(true);
+      expect(content.auto.parallel.maxParallel).toBe(6);
+      expect(content.auto.parallel.createPR).toBe(true);
     });
   });
 });

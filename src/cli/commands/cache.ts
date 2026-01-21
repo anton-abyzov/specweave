@@ -91,24 +91,7 @@ export async function cacheCommand(options: CacheOptions = {}): Promise<void> {
     const cacheContent = fs.readFileSync(cachePath, 'utf-8');
     const cache = JSON.parse(cacheContent);
     const stats = fs.statSync(cachePath);
-
-    // Calculate age
-    const ageMs = Date.now() - stats.mtimeMs;
-    const ageSeconds = Math.floor(ageMs / 1000);
-    const ageMinutes = Math.floor(ageSeconds / 60);
-    const ageHours = Math.floor(ageMinutes / 60);
-    const ageDays = Math.floor(ageHours / 24);
-
-    let ageStr: string;
-    if (ageDays > 0) {
-      ageStr = `${ageDays}d ${ageHours % 24}h ago`;
-    } else if (ageHours > 0) {
-      ageStr = `${ageHours}h ${ageMinutes % 60}m ago`;
-    } else if (ageMinutes > 0) {
-      ageStr = `${ageMinutes}m ${ageSeconds % 60}s ago`;
-    } else {
-      ageStr = `${ageSeconds}s ago`;
-    }
+    const ageStr = formatTimeAgo(stats.mtimeMs);
 
     console.log(`  Status: ${chalk.green('Valid')}`);
     console.log(`  Version: ${cache.version || 'unknown'}`);
@@ -142,4 +125,17 @@ export async function cacheCommand(options: CacheOptions = {}): Promise<void> {
     console.log(chalk.red('  Status: Corrupted (invalid JSON)'));
     console.log(chalk.gray('  Run: specweave cache --rebuild to fix\n'));
   }
+}
+
+/** Format time elapsed since timestamp */
+function formatTimeAgo(timestampMs: number): string {
+  const seconds = Math.floor((Date.now() - timestampMs) / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days}d ${hours % 24}h ago`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m ago`;
+  if (minutes > 0) return `${minutes}m ${seconds % 60}s ago`;
+  return `${seconds}s ago`;
 }

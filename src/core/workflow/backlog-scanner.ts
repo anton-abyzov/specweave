@@ -70,11 +70,8 @@ export class BacklogScanner {
 
   /**
    * Scan backlog directory
-   *
-   * @returns Array of backlog items
    */
   async scanBacklog(): Promise<BacklogItem[]> {
-    // Check if backlog directory exists
     if (!await fs.pathExists(this.backlogDir)) {
       return [];
     }
@@ -85,23 +82,16 @@ export class BacklogScanner {
     for (const dir of dirs) {
       const dirPath = path.join(this.backlogDir, dir);
       const stat = await fs.stat(dirPath);
+      if (!stat.isDirectory()) continue;
 
-      if (!stat.isDirectory()) {
-        continue;
-      }
-
-      // Check if spec.md exists
       const specPath = path.join(dirPath, 'spec.md');
-      if (!await fs.pathExists(specPath)) {
-        continue;
-      }
+      if (!await fs.pathExists(specPath)) continue;
 
-      // Parse spec.md frontmatter
       try {
         const item = await this.parseBacklogItem(dir, specPath);
         items.push(item);
-      } catch (error) {
-        console.warn(`Failed to parse backlog item ${dir}:`, error);
+      } catch {
+        console.warn(`Failed to parse backlog item ${dir}`);
       }
     }
 
@@ -153,40 +143,25 @@ export class BacklogScanner {
   }
 
   /**
-   * Rank backlog items by priority, dependencies, and project match
-   *
-   * Ranking algorithm:
-   * - Priority: P0=10, P1=7, P2=5, P3=3
-   * - Dependencies met: +5
-   * - Project match: +3
-   * - Recently created: +2
-   *
-   * @param items - Backlog items to rank
-   * @param currentProject - Current project (for filtering)
-   * @param completedIncrements - List of completed increment IDs
-   * @returns Ranked items (sorted by score descending)
+   * Rank backlog items by priority, dependencies, and project match.
+   * Scores: Priority (P0=10, P1=7, P2=5, P3=3), Dependencies met +5, Project match +3, Recent +2
    */
   rankItems(
     items: BacklogItem[],
     currentProject?: string,
     completedIncrements: string[] = []
   ): RankedBacklogItem[] {
-    const ranked: RankedBacklogItem[] = items.map(item => {
+    const PRIORITY_SCORES: Record<string, number> = { P0: 10, P1: 7, P2: 5, P3: 3 };
+    const MS_PER_DAY = 1000 * 60 * 60 * 24;
+
+    const ranked = items.map(item => {
       let score = 0;
       const reasons: string[] = [];
 
-      // Priority score
-      const priorityScores: Record<string, number> = {
-        'P0': 10,
-        'P1': 7,
-        'P2': 5,
-        'P3': 3
-      };
-      const priorityScore = priorityScores[item.priority] || 3;
+      const priorityScore = PRIORITY_SCORES[item.priority] ?? 3;
       score += priorityScore;
       reasons.push(`Priority ${item.priority} (${priorityScore} pts)`);
 
-      // Dependencies met
       const unmetDeps = item.dependencies.filter(dep => !completedIncrements.includes(dep));
       if (unmetDeps.length === 0 && item.dependencies.length > 0) {
         score += 5;
@@ -195,30 +170,22 @@ export class BacklogScanner {
         reasons.push(`Blocked by: ${unmetDeps.join(', ')}`);
       }
 
-      // Project match
       if (currentProject && item.project === currentProject) {
         score += 3;
         reasons.push(`Project match: ${currentProject} (+3 pts)`);
       }
 
-      // Recently created (bonus for new items)
       if (item.created) {
-        const createdDate = new Date(item.created);
-        const daysSinceCreated = (Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
+        const daysSinceCreated = (Date.now() - new Date(item.created).getTime()) / MS_PER_DAY;
         if (daysSinceCreated < 7) {
           score += 2;
           reasons.push('Recently created (+2 pts)');
         }
       }
 
-      return {
-        ...item,
-        score,
-        reason: reasons.join('; ')
-      };
+      return { ...item, score, reason: reasons.join('; ') };
     });
 
-    // Sort by score (descending)
     return ranked.sort((a, b) => b.score - a.score);
   }
 

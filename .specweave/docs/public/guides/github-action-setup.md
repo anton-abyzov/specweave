@@ -286,7 +286,7 @@ github_actions:
 
 # AI Model Configuration
 ai:
-  model: "claude-sonnet-4-5-20250929"
+  model: "sonnet"  # Use alias: opus, sonnet, or haiku
   max_tokens: 16000
 ```
 

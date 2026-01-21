@@ -715,7 +715,7 @@ const About = lazy(() => import('./About'));
 - **SPA Architecture Guide** - Deep dive into SPAs
 - **React Router Tutorial** - Client-side routing
 - **[Next.js Guide](/docs/glossary/terms/nextjs)** - Hybrid approach (SPA + SSR)
-- **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - SPA-specific features
+- **[SpecWeave Frontend Plugin](/docs/overview/introduction)** - SPA-specific features
 
 ---
 

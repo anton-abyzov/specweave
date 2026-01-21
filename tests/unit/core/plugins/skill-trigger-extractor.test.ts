@@ -421,7 +421,7 @@ description: Create production-ready Kubernetes manifests for Deployments, Servi
 name: nodejs-backend
 description: Node.js/TypeScript backend developer. Builds Express.js, Fastify, NestJS APIs with Prisma ORM, TypeORM, Mongoose. Implements REST APIs, GraphQL, authentication (JWT, session, OAuth), authorization, database operations, background jobs, WebSockets, real-time features, API validation, error handling, middleware. Activates for: Node.js, NodeJS, Express, Fastify, NestJS, TypeScript backend, API, REST API, GraphQL, Prisma, TypeORM, Mongoose, MongoDB, PostgreSQL with Node, MySQL with Node, authentication backend, JWT, passport.js, bcrypt, async/await, promises, middleware, error handling, validation, Zod, class-validator, background jobs, Bull, BullMQ, Redis, WebSocket, Socket.io, real-time.
 tools: Read, Write, Edit, Bash
-model: claude-opus-4-5-20251101
+model: opus
 ---
 `;
 

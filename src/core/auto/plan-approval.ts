@@ -385,67 +385,52 @@ export function applyPlanModification(
 ): PlanningResult {
   const increments = [...plan.increments];
 
-  switch (modification.type) {
-    case 'merge': {
-      // Merge multiple increments into one
-      const toMerge = increments.filter((inc) => modification.incrementIds.includes(inc.id));
-      if (toMerge.length < 2) break;
+  if (modification.type === 'merge') {
+    const toMerge = increments.filter((inc) => modification.incrementIds.includes(inc.id));
+    if (toMerge.length < 2) return plan;
 
-      const merged: IncrementPlan = {
-        id: toMerge[0].id,
-        name: modification.newName || toMerge.map((i) => i.name).join(' & '),
-        description: toMerge.map((i) => i.description).join('; '),
-        features: toMerge.flatMap((i) => i.features),
-        estimatedTasks: toMerge.reduce((sum, i) => sum + i.estimatedTasks, 0),
-        dependencies: [...new Set(toMerge.flatMap((i) => i.dependencies))].filter(
-          (d) => !modification.incrementIds.includes(d)
-        ),
-        priority: Math.min(...toMerge.map((i) => i.priority)),
-      };
+    const merged: IncrementPlan = {
+      id: toMerge[0].id,
+      name: modification.newName || toMerge.map((i) => i.name).join(' & '),
+      description: toMerge.map((i) => i.description).join('; '),
+      features: toMerge.flatMap((i) => i.features),
+      estimatedTasks: toMerge.reduce((sum, i) => sum + i.estimatedTasks, 0),
+      dependencies: [...new Set(toMerge.flatMap((i) => i.dependencies))].filter(
+        (d) => !modification.incrementIds.includes(d)
+      ),
+      priority: Math.min(...toMerge.map((i) => i.priority)),
+    };
 
-      // Remove merged increments and add new one
-      const filtered = increments.filter((inc) => !modification.incrementIds.includes(inc.id));
-      filtered.splice(merged.priority - 1, 0, merged);
+    const filtered = increments.filter((inc) => !modification.incrementIds.includes(inc.id));
+    filtered.splice(merged.priority - 1, 0, merged);
 
-      return {
-        ...plan,
-        increments: filtered,
-      };
-    }
+    return { ...plan, increments: filtered };
+  }
 
-    case 'remove': {
-      // Remove increments from plan
-      const filtered = increments.filter((inc) => !modification.incrementIds.includes(inc.id));
-      const totalTasks = filtered.reduce((sum, i) => sum + i.estimatedTasks, 0);
+  if (modification.type === 'remove') {
+    const filtered = increments.filter((inc) => !modification.incrementIds.includes(inc.id));
+    return {
+      ...plan,
+      increments: filtered,
+      totalTasks: filtered.reduce((sum, i) => sum + i.estimatedTasks, 0),
+      totalFeatures: filtered.reduce((sum, i) => sum + i.features.length, 0),
+    };
+  }
 
-      return {
-        ...plan,
-        increments: filtered,
-        totalTasks,
-        totalFeatures: filtered.reduce((sum, i) => sum + i.features.length, 0),
-      };
-    }
+  if (modification.type === 'reorder') {
+    const reordered = modification.incrementIds
+      .map((id) => increments.find((inc) => inc.id === id))
+      .filter((inc): inc is IncrementPlan => inc !== undefined);
 
-    case 'reorder': {
-      // Reorder increments (incrementIds is the new order)
-      const reordered = modification.incrementIds
-        .map((id) => increments.find((inc) => inc.id === id))
-        .filter((inc): inc is IncrementPlan => inc !== undefined);
+    const remaining = increments.filter((inc) => !modification.incrementIds.includes(inc.id));
 
-      // Add any increments not in the reorder list at the end
-      const remaining = increments.filter((inc) => !modification.incrementIds.includes(inc.id));
-
-      return {
-        ...plan,
-        increments: [...reordered, ...remaining].map((inc, idx) => ({
-          ...inc,
-          priority: idx + 1,
-        })),
-      };
-    }
-
-    default:
-      return plan;
+    return {
+      ...plan,
+      increments: [...reordered, ...remaining].map((inc, idx) => ({
+        ...inc,
+        priority: idx + 1,
+      })),
+    };
   }
 
   return plan;

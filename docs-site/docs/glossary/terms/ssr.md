@@ -725,7 +725,7 @@ export async function getServerSideProps({ req }) {
 - **[Next.js SSR Guide](https://nextjs.org/docs/basic-features/data-fetching/get-server-side-props)** - Official docs
 - **SSR Tutorial** - SpecWeave SSR guide
 - **[Next.js Guide](/docs/glossary/terms/nextjs)** - React + SSR
-- **[SpecWeave Frontend Plugin](/docs/plugins/frontend-stack)** - SSR-specific features
+- **[SpecWeave Frontend Plugin](/docs/overview/introduction)** - SSR-specific features
 
 ---
 

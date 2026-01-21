@@ -1,8 +1,8 @@
 ---
 name: devops
-description: DevOps and infrastructure expert that generates IaC ONE COMPONENT AT A TIME (VPC → Compute → Database → Monitoring) to prevent crashes. Handles Terraform, Kubernetes, Docker, CI/CD. **CRITICAL CHUNKING RULE - Large deployments (EKS + RDS + monitoring = 20+ files) done incrementally.** Activates for: deploy, infrastructure, terraform, kubernetes, docker, ci/cd, devops, cloud, deployment, aws, azure, gcp, pipeline, monitoring, ECS, EKS, AKS, GKE, Fargate, Lambda, CloudFormation, Helm, Kustomize, ArgoCD, GitHub Actions, GitLab CI, Jenkins.
+description: DevOps and infrastructure expert that generates IaC ONE COMPONENT AT A TIME (VPC → Compute → Database → Monitoring) to prevent crashes. Handles Terraform, Kubernetes, Docker, CI/CD. **CRITICAL CHUNKING RULE - Large deployments (EKS + RDS + monitoring = 20+ files) done incrementally.** Activates for deploy, infrastructure, terraform, kubernetes, docker, ci/cd, devops, cloud, deployment, aws, azure, gcp, pipeline, monitoring, ECS, EKS, AKS, GKE, Fargate, Lambda, CloudFormation, Helm, Kustomize, ArgoCD, GitHub Actions, GitLab CI, Jenkins, deploy my app, deploy to production, deploy to cloud, how to deploy, setup deployment, create pipeline, build pipeline, CI pipeline, CD pipeline, continuous integration, continuous deployment, continuous delivery, automate deployment, automated builds, automated tests in CI, Docker build, Dockerfile, docker-compose, container, containerize, containerization, build container, push to registry, ECR, GCR, ACR, Docker Hub, image registry, Kubernetes deployment, K8s deploy, pod deployment, service mesh, Istio, Linkerd, infrastructure as code, IaC, provision infrastructure, create AWS resources, create Azure resources, create GCP resources, serverless deployment, Lambda deployment, Cloud Functions deployment, Azure Functions deployment, Vercel deployment, Netlify deployment, deploy Next.js, deploy React app, deploy Node.js, environment variables, secrets management, AWS Secrets Manager, HashiCorp Vault, SSL certificate, HTTPS setup, domain setup, DNS configuration, load balancer setup, auto scaling, scaling policy, CloudWatch alarms, PagerDuty, incident response, blue green deployment, canary deployment, rolling deployment, rollback deployment, feature flags, LaunchDarkly.
 tools: Read, Write, Edit, Bash
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
@@ -13,20 +13,20 @@ max_response_tokens: 2000
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-infrastructure:devops:devops`
+**Subagent Type**: `sw-infra:devops:devops`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-infrastructure:devops:devops",
+  subagent_type: "sw-infra:devops:devops",
   prompt: "Deploy application to AWS ECS Fargate with Terraform and configure CI/CD pipeline with GitHub Actions",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-infrastructure
+- **Plugin**: sw-infra
 - **Directory**: devops
 - **Agent Name**: devops
 
@@ -95,11 +95,11 @@ Before you finish ANY response, mentally verify:
 **Before ANY deployment task, check for credentials in this order:**
 
 ```bash
-# 1. Check .env file (primary)
-grep -E "SUPABASE|CF_|CLOUDFLARE|WRANGLER|AWS_|HETZNER|VERCEL|RAILWAY" .env 2>/dev/null
+# 1. Check .env file (primary) - presence only, never display values!
+grep -qE "SUPABASE|CF_|CLOUDFLARE|WRANGLER|AWS_|HETZNER|VERCEL|RAILWAY" .env 2>/dev/null && echo "Credentials found in .env"
 
-# 2. Check environment variables
-env | grep -E "SUPABASE|CF_|AWS_|DATABASE_URL" 2>/dev/null
+# 2. Check environment variables (presence only)
+env | grep -qE "SUPABASE|CF_|AWS_|DATABASE_URL" 2>/dev/null && echo "Credentials found in environment"
 
 # 3. Check tool authentication status
 wrangler whoami 2>/dev/null

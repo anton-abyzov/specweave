@@ -289,15 +289,9 @@ export class PhaseDetector {
    */
   private getCachedFileStates(incrementDir: string): FileState[] | null {
     const cached = this.fileStateCache.get(incrementDir);
-    if (!cached) {
-      this.cacheMisses++;
-      return null;
-    }
 
-    const now = Date.now();
-    if (now - cached.timestamp > cached.ttl) {
-      // Cache expired
-      this.fileStateCache.delete(incrementDir);
+    if (!cached || Date.now() - cached.timestamp > cached.ttl) {
+      if (cached) this.fileStateCache.delete(incrementDir);
       this.cacheMisses++;
       return null;
     }
@@ -618,47 +612,24 @@ export class PhaseDetector {
    * Analyze increment status to determine likely phase
    */
   private analyzeIncrementStatus(status: string): PhaseEvidence[] {
-    const evidence: PhaseEvidence[] = [];
+    const STATUS_WEIGHTS: Record<string, number> = {
+      planning: 1.3,
+      active: 1.2,
+      paused: 0.8,
+      completed: 1.5
+    };
 
-    switch (status.toLowerCase()) {
-      case 'planning':
-        evidence.push({
-          type: EvidenceType.INCREMENT_STATUS,
-          description: 'Increment status: PLANNING',
-          weight: this.config.contextWeight * 1.3,
-          source: 'status: planning'
-        });
-        break;
+    const normalizedStatus = status.toLowerCase();
+    const weightMultiplier = STATUS_WEIGHTS[normalizedStatus];
 
-      case 'active':
-        evidence.push({
-          type: EvidenceType.INCREMENT_STATUS,
-          description: 'Increment status: ACTIVE',
-          weight: this.config.contextWeight * 1.2,
-          source: 'status: active'
-        });
-        break;
+    if (!weightMultiplier) return [];
 
-      case 'paused':
-        evidence.push({
-          type: EvidenceType.INCREMENT_STATUS,
-          description: 'Increment status: PAUSED',
-          weight: this.config.contextWeight * 0.8,
-          source: 'status: paused'
-        });
-        break;
-
-      case 'completed':
-        evidence.push({
-          type: EvidenceType.INCREMENT_STATUS,
-          description: 'Increment status: COMPLETED',
-          weight: this.config.contextWeight * 1.5,
-          source: 'status: completed'
-        });
-        break;
-    }
-
-    return evidence;
+    return [{
+      type: EvidenceType.INCREMENT_STATUS,
+      description: `Increment status: ${normalizedStatus.toUpperCase()}`,
+      weight: this.config.contextWeight * weightMultiplier,
+      source: `status: ${normalizedStatus}`
+    }];
   }
 
   /**
@@ -709,56 +680,44 @@ export class PhaseDetector {
    * Infer workflow phase from evidence source
    */
   private inferPhaseFromSource(source: string): WorkflowPhase | null {
-    // Source format: "keyword: <keyword>" or "command: <command>" or "file-state: <state>" or "status: <status>"
     const [type, value] = source.split(': ');
 
     if (type === 'keyword') {
-      // Find keyword mapping
-      for (const mapping of KEYWORD_MAPPINGS) {
-        if (mapping.keywords.some(k => k.toLowerCase() === value.toLowerCase())) {
-          return mapping.phase;
-        }
-      }
-    } else if (type === 'command') {
-      // Find command mapping
-      for (const mapping of COMMAND_MAPPINGS) {
-        if (value.includes(mapping.commandPattern)) {
-          return mapping.phase;
-        }
-      }
-    } else if (type === 'hint') {
-      // Hint directly contains phase name
+      const mapping = KEYWORD_MAPPINGS.find(m =>
+        m.keywords.some(k => k.toLowerCase() === value.toLowerCase())
+      );
+      return mapping?.phase ?? null;
+    }
+
+    if (type === 'command') {
+      const mapping = COMMAND_MAPPINGS.find(m => value.includes(m.commandPattern));
+      return mapping?.phase ?? null;
+    }
+
+    if (type === 'hint') {
       return value as WorkflowPhase;
-    } else if (type === 'file-state') {
-      // Map file states to phases
-      switch (value) {
-        case 'spec-empty':
-          return WorkflowPhase.SPEC_WRITING;
-        case 'plan-missing':
-        case 'plan-empty':
-          return WorkflowPhase.PLAN_GENERATION;
-        case 'tasks-missing':
-          return WorkflowPhase.TASK_BREAKDOWN;
-        case 'all-present':
-          return WorkflowPhase.IMPLEMENTATION;
-        default:
-          return null;
-      }
-    } else if (type === 'status') {
-      // Map increment status to phases
-      switch (value) {
-        case 'planning':
-          return WorkflowPhase.PLAN_GENERATION;
-        case 'active':
-          return WorkflowPhase.IMPLEMENTATION;
-        case 'completed':
-          return WorkflowPhase.COMPLETION;
-        case 'paused':
-          // Paused doesn't indicate a specific phase
-          return null;
-        default:
-          return null;
-      }
+    }
+
+    const FILE_STATE_MAP: Record<string, WorkflowPhase> = {
+      'spec-empty': WorkflowPhase.SPEC_WRITING,
+      'plan-missing': WorkflowPhase.PLAN_GENERATION,
+      'plan-empty': WorkflowPhase.PLAN_GENERATION,
+      'tasks-missing': WorkflowPhase.TASK_BREAKDOWN,
+      'all-present': WorkflowPhase.IMPLEMENTATION
+    };
+
+    const STATUS_MAP: Record<string, WorkflowPhase> = {
+      'planning': WorkflowPhase.PLAN_GENERATION,
+      'active': WorkflowPhase.IMPLEMENTATION,
+      'completed': WorkflowPhase.COMPLETION
+    };
+
+    if (type === 'file-state') {
+      return FILE_STATE_MAP[value] ?? null;
+    }
+
+    if (type === 'status') {
+      return STATUS_MAP[value] ?? null;
     }
 
     return null;
@@ -771,62 +730,22 @@ export class PhaseDetector {
     phase: WorkflowPhase,
     confidence: number
   ): { command: string; reason: string } | null {
-    // Only suggest if confidence is above threshold
     if (confidence < this.config.confidenceThreshold) {
       return null;
     }
 
-    switch (phase) {
-      case WorkflowPhase.SPEC_WRITING:
-        return {
-          command: '/sw:increment',
-          reason: 'Create new increment with spec.md template'
-        };
+    const PHASE_SUGGESTIONS: Record<WorkflowPhase, { command: string; reason: string } | null> = {
+      [WorkflowPhase.SPEC_WRITING]: { command: '/sw:increment', reason: 'Create new increment with spec.md template' },
+      [WorkflowPhase.PLAN_GENERATION]: { command: '/sw:plan', reason: 'Generate implementation plan from spec.md' },
+      [WorkflowPhase.TASK_BREAKDOWN]: { command: '/sw:plan', reason: 'Generate tasks.md with embedded test plans' },
+      [WorkflowPhase.IMPLEMENTATION]: { command: '/sw:do', reason: 'Execute tasks from tasks.md' },
+      [WorkflowPhase.TESTING]: { command: '/sw:test', reason: 'Run test suite and validate coverage' },
+      [WorkflowPhase.DOCUMENTATION]: { command: '/sw:sync-docs', reason: 'Sync increment to living documentation' },
+      [WorkflowPhase.REVIEW]: { command: '/sw:qa', reason: 'Run quality assessment on increment' },
+      [WorkflowPhase.COMPLETION]: { command: '/sw:done', reason: 'Close increment and update status' },
+      [WorkflowPhase.UNKNOWN]: null
+    };
 
-      case WorkflowPhase.PLAN_GENERATION:
-        return {
-          command: '/sw:plan',
-          reason: 'Generate implementation plan from spec.md'
-        };
-
-      case WorkflowPhase.TASK_BREAKDOWN:
-        return {
-          command: '/sw:plan',
-          reason: 'Generate tasks.md with embedded test plans'
-        };
-
-      case WorkflowPhase.IMPLEMENTATION:
-        return {
-          command: '/sw:do',
-          reason: 'Execute tasks from tasks.md'
-        };
-
-      case WorkflowPhase.TESTING:
-        return {
-          command: '/sw:test',
-          reason: 'Run test suite and validate coverage'
-        };
-
-      case WorkflowPhase.DOCUMENTATION:
-        return {
-          command: '/sw:sync-docs',
-          reason: 'Sync increment to living documentation'
-        };
-
-      case WorkflowPhase.REVIEW:
-        return {
-          command: '/sw:qa',
-          reason: 'Run quality assessment on increment'
-        };
-
-      case WorkflowPhase.COMPLETION:
-        return {
-          command: '/sw:done',
-          reason: 'Close increment and update status'
-        };
-
-      default:
-        return null;
-    }
+    return PHASE_SUGGESTIONS[phase] ?? null;
   }
 }

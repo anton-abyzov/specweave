@@ -188,42 +188,65 @@ function extractIncrementNumber(name) {
     return match ? match[1].padStart(4, '0') : null;
 }
 /**
+ * Status priority for winner selection (higher = better)
+ */
+const STATUS_PRIORITY = {
+    active: 5,
+    completed: 4,
+    paused: 3,
+    backlog: 2,
+    abandoned: 1,
+    unknown: 0
+};
+/**
+ * Location priority for winner selection (higher = better)
+ */
+const LOCATION_PRIORITY = {
+    active: 3,
+    archive: 2,
+    abandoned: 1
+};
+/**
+ * Get location type from path
+ */
+function getLocationType(loc) {
+    if (loc.path.includes('_abandoned'))
+        return 'abandoned';
+    if (loc.path.includes('_archive'))
+        return 'archive';
+    return 'active';
+}
+/**
+ * Get status priority for a location
+ */
+function getStatusPriority(loc) {
+    return STATUS_PRIORITY[loc.status] ?? 0;
+}
+/**
+ * Get location priority for a location
+ */
+function getLocationPriority(loc) {
+    return LOCATION_PRIORITY[getLocationType(loc)];
+}
+/**
  * Select winning version based on priority rules
  */
 function selectWinner(locations) {
-    // Priority 1: Active status > Completed > Paused > Backlog > Abandoned
-    const statusPriority = {
-        active: 5,
-        completed: 4,
-        paused: 3,
-        backlog: 2,
-        abandoned: 1,
-        unknown: 0
-    };
-    // Sort by priority
     const sorted = [...locations].sort((a, b) => {
         // 1. Status priority
-        const aPriority = statusPriority[a.status] || 0;
-        const bPriority = statusPriority[b.status] || 0;
-        if (bPriority !== aPriority)
-            return bPriority - aPriority;
+        const statusDiff = getStatusPriority(b) - getStatusPriority(a);
+        if (statusDiff !== 0)
+            return statusDiff;
         // 2. Most recent activity
-        const aTime = new Date(a.lastActivity).getTime();
-        const bTime = new Date(b.lastActivity).getTime();
-        if (bTime !== aTime)
-            return bTime - aTime;
+        const timeDiff = new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime();
+        if (timeDiff !== 0)
+            return timeDiff;
         // 3. Most complete (more files)
-        if (b.fileCount !== a.fileCount)
-            return b.fileCount - a.fileCount;
+        const fileDiff = b.fileCount - a.fileCount;
+        if (fileDiff !== 0)
+            return fileDiff;
         // 4. Location preference (active > _archive > _abandoned)
-        const locationScore = (loc) => {
-            if (loc.path.includes('_abandoned'))
-                return 1;
-            if (loc.path.includes('_archive'))
-                return 2;
-            return 3; // active
-        };
-        return locationScore(b) - locationScore(a);
+        return getLocationPriority(b) - getLocationPriority(a);
     });
     return sorted[0];
 }
@@ -232,43 +255,25 @@ function selectWinner(locations) {
  */
 function explainWinner(winner, all) {
     const reasons = [];
-    const statusPriority = {
-        active: 5,
-        completed: 4,
-        paused: 3,
-        backlog: 2,
-        abandoned: 1,
-        unknown: 0
-    };
+    const winnerStatusPriority = getStatusPriority(winner);
+    const winnerTime = new Date(winner.lastActivity).getTime();
+    const winnerLocation = getLocationType(winner);
+    const winnerLocationPriority = getLocationPriority(winner);
     // Check status
-    const winnerStatusPriority = statusPriority[winner.status] || 0;
-    const hasLowerStatus = all.some(loc => loc !== winner && (statusPriority[loc.status] || 0) < winnerStatusPriority);
-    if (hasLowerStatus) {
+    if (all.some(loc => loc !== winner && getStatusPriority(loc) < winnerStatusPriority)) {
         reasons.push(`Higher status (${winner.status})`);
     }
     // Check recency
-    const winnerTime = new Date(winner.lastActivity).getTime();
-    const hasOlderActivity = all.some(loc => loc !== winner && new Date(loc.lastActivity).getTime() < winnerTime);
-    if (hasOlderActivity) {
+    if (all.some(loc => loc !== winner && new Date(loc.lastActivity).getTime() < winnerTime)) {
         const date = new Date(winner.lastActivity).toISOString().split('T')[0];
         reasons.push(`Most recent activity (${date})`);
     }
     // Check completeness
-    const hasFewerFiles = all.some(loc => loc !== winner && loc.fileCount < winner.fileCount);
-    if (hasFewerFiles) {
+    if (all.some(loc => loc !== winner && loc.fileCount < winner.fileCount)) {
         reasons.push(`Most complete (${winner.fileCount} files)`);
     }
     // Check location
-    const winnerLocation = winner.path.includes('_abandoned') ? 'abandoned' :
-        winner.path.includes('_archive') ? 'archive' : 'active';
-    const hasWorseLocation = all.some(loc => {
-        const locLocation = loc.path.includes('_abandoned') ? 'abandoned' :
-            loc.path.includes('_archive') ? 'archive' : 'active';
-        const locationPriority = { active: 3, archive: 2, abandoned: 1 };
-        return locationPriority[locLocation] <
-            locationPriority[winnerLocation];
-    });
-    if (hasWorseLocation) {
+    if (all.some(loc => loc !== winner && getLocationPriority(loc) < winnerLocationPriority)) {
         reasons.push(`In ${winnerLocation} location`);
     }
     return reasons.length > 0 ? reasons.join(', ') : 'Default selection';
