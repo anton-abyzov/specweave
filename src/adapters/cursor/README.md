@@ -107,9 +107,11 @@ User: "create increment for auth"
 
 **Claude Code (automatic)**:
 ```typescript
-Task({ subagent_type: "specweave:pm:pm", prompt: "create spec" })
-→ PM agent invoked with separate context window
+Task({ subagent_type: "sw-frontend:frontend-architect", prompt: "design components" })
+→ Frontend agent invoked with separate context window
 ```
+
+**Note**: In Claude Code, PM/Architect are SKILLS that auto-activate on keywords, not agents you invoke via Task.
 
 **Cursor (manual adoption)**:
 ```typescript
