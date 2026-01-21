@@ -14,6 +14,7 @@
  */
 
 import { execFileNoThrowSync, execFileNoThrow } from './execFileNoThrow.js';
+import { spawnSync } from 'child_process';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from './fs-native.js';
@@ -82,6 +83,129 @@ export interface ClaudeCliStatus {
  * }
  * ```
  */
+/**
+ * Create a clean environment for spawning child processes.
+ *
+ * CRITICAL: Removes debugger and instrumentation env vars that can cause
+ * child processes to fail across different environments:
+ *
+ * - VSCode Debug: NODE_OPTIONS contains --inspect-brk flags
+ * - WebStorm/IntelliJ: NODE_OPTIONS or IDEA-specific vars
+ * - CI/CD (GitHub Actions, etc.): May set NODE_OPTIONS for coverage
+ * - Jest/Vitest: May set NODE_OPTIONS for debugging
+ *
+ * This function is safe to use in ALL environments:
+ * - Windows, macOS, Linux
+ * - Local development, CI/CD pipelines
+ * - Debug mode, run mode, production
+ *
+ * If NODE_OPTIONS is not set, delete is a no-op (safe).
+ */
+function getCleanEnv(): NodeJS.ProcessEnv {
+  const cleanEnv = { ...process.env };
+
+  // Remove Node.js debugger/inspector flags (VSCode, WebStorm, etc.)
+  delete cleanEnv.NODE_OPTIONS;
+  delete cleanEnv.NODE_INSPECT;
+  delete cleanEnv.NODE_INSPECT_RESUME_ON_START;
+
+  // Remove coverage instrumentation that can interfere with spawned processes
+  delete cleanEnv.NODE_V8_COVERAGE;
+
+  // Remove test runner debug vars
+  delete cleanEnv.VSCODE_INSPECTOR_OPTIONS;
+
+  return cleanEnv;
+}
+
+/**
+ * Try multiple methods to verify plugin commands work
+ * ROBUST FALLBACK CHAIN for different environments and shell configs
+ */
+function tryPluginCheck(
+  commandPath: string | undefined,
+  shellWorkaround: boolean | undefined,
+  isDebug: boolean
+): { success: boolean; stdout: string; stderr: string; exitCode: number } {
+  const cleanEnv = getCleanEnv();
+  const methods = [
+    // Method 1: Direct binary via execFileSync (fastest, works in most cases)
+    () => {
+      if (!commandPath || shellWorkaround) return null;
+      if (isDebug) console.error(`\n  [Plugin Check] Method 1: execFileNoThrowSync direct binary`);
+      return execFileNoThrowSync(commandPath, ['plugin', '--help'], { timeout: 10000, env: cleanEnv });
+    },
+
+    // Method 2: spawnSync with explicit env (handles some edge cases)
+    () => {
+      if (!commandPath || shellWorkaround) return null;
+      if (isDebug) console.error(`  [Plugin Check] Method 2: spawnSync with explicit env`);
+      const result = spawnSync(commandPath, ['plugin', '--help'], {
+        encoding: 'utf8',
+        timeout: 10000,
+        maxBuffer: 1024 * 1024,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: { ...cleanEnv, TERM: 'dumb', NO_COLOR: '1' },
+      });
+      return {
+        success: result.status === 0,
+        stdout: result.stdout || '',
+        stderr: result.stderr || '',
+        exitCode: result.status ?? 1,
+      };
+    },
+
+    // Method 3: spawnSync with shell: true (handles PATH issues)
+    () => {
+      if (isDebug) console.error(`  [Plugin Check] Method 3: spawnSync with shell: true`);
+      const cmd = commandPath || 'claude';
+      const result = spawnSync(cmd, ['plugin', '--help'], {
+        encoding: 'utf8',
+        timeout: 10000,
+        maxBuffer: 1024 * 1024,
+        shell: true,
+        env: { ...cleanEnv, TERM: 'dumb', NO_COLOR: '1' },
+      });
+      return {
+        success: result.status === 0,
+        stdout: result.stdout || '',
+        stderr: result.stderr || '',
+        exitCode: result.status ?? 1,
+      };
+    },
+
+    // Method 4: Interactive shell (handles shell functions/aliases)
+    () => {
+      if (process.platform === 'win32') return null;
+      if (isDebug) console.error(`  [Plugin Check] Method 4: Interactive shell`);
+      return runViaInteractiveShell('claude plugin --help', isDebug);
+    },
+  ];
+
+  for (const method of methods) {
+    const result = method();
+    if (result === null) continue; // Method not applicable
+
+    if (result.success) {
+      if (isDebug) console.error(`  [Plugin Check] ✓ Success!`);
+      return result;
+    }
+
+    if (isDebug) {
+      console.error(`  [Plugin Check] ✗ Failed (exit: ${result.exitCode})`);
+    }
+  }
+
+  // All methods failed, return the last result
+  if (isDebug) console.error(`  [Plugin Check] All methods failed!`);
+  return {
+    success: false,
+    stdout: '',
+    stderr: 'All plugin check methods failed',
+    exitCode: 1,
+  };
+}
+
 export function detectClaudeCli(): ClaudeCliStatus {
   const status: ClaudeCliStatus = {
     available: false,
@@ -171,10 +295,37 @@ export function detectClaudeCli(): ClaudeCliStatus {
 
   // Step 2: Verify we can run the command (--version check)
   // If we already got version via shell workaround, skip this
+  //
+  // CRITICAL INSIGHT: If we found the binary via `which`, call it DIRECTLY.
+  // Shell functions (like user's wrapper that adds --dangerously-skip-permissions)
+  // are meant for INTERACTIVE use. For programmatic access, we want the raw binary.
+  // This avoids issues where the wrapper function interferes with our commands.
+  //
+  // Only use interactive shell if:
+  // 1. We DIDN'T find a binary (status.commandPath is undefined)
+  // 2. AND we found claude via shell function/alias (Strategy 3)
   if (!status.version) {
-    const versionResult = status.shellWorkaround
-      ? runViaInteractiveShell('claude --version', isDebug)
-      : execFileNoThrowSync('claude', ['--version'], { timeout: 10000 });
+    let versionResult;
+
+    // Use clean env to avoid debugger flags (NODE_OPTIONS) interfering with child process
+    const cleanEnv = getCleanEnv();
+
+    // If we have a direct path to the binary, use it directly (bypass shell functions)
+    if (status.commandPath && !status.shellWorkaround) {
+      if (isDebug) {
+        console.error(`\n  Using direct binary path: ${status.commandPath}`);
+      }
+      versionResult = execFileNoThrowSync(status.commandPath, ['--version'], { timeout: 10000, env: cleanEnv });
+    } else if (process.platform !== 'win32') {
+      // No binary found, but command exists via shell function - use interactive shell
+      if (isDebug) {
+        console.error(`\n  Using interactive shell (no direct binary found)`);
+      }
+      versionResult = runViaInteractiveShell('claude --version', isDebug);
+    } else {
+      // Windows: use shell for PATH resolution
+      versionResult = execFileNoThrowSync('claude', ['--version'], { timeout: 10000, shell: true, env: cleanEnv });
+    }
 
     if (isDebug) {
       console.error(`\n  Version check (claude --version):`);
@@ -212,9 +363,9 @@ export function detectClaudeCli(): ClaudeCliStatus {
   }
 
   // Step 3: Verify plugin commands are supported
-  const pluginHelpResult = status.shellWorkaround
-    ? runViaInteractiveShell('claude plugin --help', isDebug)
-    : execFileNoThrowSync('claude', ['plugin', '--help'], { timeout: 10000 });
+  // ROBUST FALLBACK CHAIN: Try multiple methods to ensure detection works
+  // across different environments, shell configurations, and Node.js versions
+  let pluginHelpResult = tryPluginCheck(status.commandPath, status.shellWorkaround, isDebug);
 
   if (isDebug) {
     console.error(`\n  Plugin check (claude plugin --help):`);
@@ -260,6 +411,8 @@ function getNpmGlobalPaths(): string[] {
     paths.push('/usr/local/bin');
     paths.push('/opt/homebrew/bin');
     paths.push(path.join(home, '.npm-global', 'bin'));
+    // ~/.local/bin - Claude Code official installer uses this location
+    paths.push(path.join(home, '.local', 'bin'));
     paths.push(path.join(home, '.nvm', 'versions', 'node')); // Will need to search subdirs
     // Check nvm current version
     const nvmDir = path.join(home, '.nvm', 'versions', 'node');
@@ -370,10 +523,12 @@ function runViaInteractiveShell(
   const isZsh = userShell.includes('zsh');
   const shell = isZsh ? 'zsh' : 'bash';
 
+  // Use clean env to avoid debugger flags (NODE_OPTIONS) interfering with child process
+  const cleanEnv = getCleanEnv();
   const result = execFileNoThrowSync(shell, ['-ic', command], {
     timeout: 15000,
     env: {
-      ...process.env,
+      ...cleanEnv,
       BASH_SILENCE_DEPRECATION_WARNING: '1',
     },
   });
