@@ -4,6 +4,27 @@ All notable changes to SpecWeave will be documented in this file.
 
 ---
 
+## [1.0.140] - 2026-01-21
+
+### 🔧 Improvements
+
+- **Lazy loading detection**: Improved Claude CLI detection and plugin auto-loading
+  - Fixed VSCode debug mode child process spawning issues
+  - Added clean environment handling for spawned processes
+  - Better error handling in plugin detection flow
+
+- **Skill documentation**: Updated skill documentation across plugins
+  - ADO mapper, diagrams, infrastructure, payments, JIRA, ML plugins
+  - Improved keyword triggers and descriptions
+
+### 🐛 Bug Fixes
+
+- **Test infrastructure**: Fixed test configuration for lazy loading tests
+  - Renamed e2e-flow.test.ts to cache-manager-flow.test.ts for clarity
+  - Added new integration tests for CLI detection
+
+---
+
 ## [1.0.135] - 2026-01-20
 
 ### ✨ Features
