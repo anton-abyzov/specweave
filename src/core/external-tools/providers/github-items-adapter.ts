@@ -16,6 +16,9 @@ import {
   STALE_THRESHOLD_DAYS,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
+  calculateAgeDays,
+  emptyPaginatedResult,
+  filterByStale,
 } from '../types.js';
 import { Logger, consoleLogger } from '../../../utils/logger.js';
 
@@ -113,10 +116,8 @@ export class GitHubItemsAdapter implements ExternalItemsProvider {
     const offset = filter?.offset || 0;
     const page = Math.floor(offset / limit) + 1;
 
-    // First get total count
     const total = await this.getOpenCount();
 
-    // Then fetch page of items
     const result = await execFileNoThrow('gh', [
       'issue',
       'list',
@@ -128,18 +129,14 @@ export class GitHubItemsAdapter implements ExternalItemsProvider {
 
     if (result.exitCode !== 0) {
       this.logger.error(`GitHub items failed: ${result.stderr}`);
-      return this.emptyResult(page, limit);
+      return emptyPaginatedResult(page, limit);
     }
 
     try {
       const issues: GitHubIssueRaw[] = JSON.parse(result.stdout);
-      const now = Date.now();
 
       const items: ExternalItem[] = issues.map(issue => {
-        const createdDate = new Date(issue.createdAt).getTime();
-        const ageMs = now - createdDate;
-        const ageDays = Math.floor(ageMs / (1000 * 60 * 60 * 24));
-
+        const ageDays = calculateAgeDays(issue.createdAt);
         return {
           id: `#${issue.number}`,
           title: issue.title,
@@ -154,15 +151,10 @@ export class GitHubItemsAdapter implements ExternalItemsProvider {
         };
       });
 
-      // Filter stale if requested
-      const filteredItems = filter?.staleOnly
-        ? items.filter(i => i.isStale)
-        : items;
-
       const totalPages = Math.ceil(total / limit);
 
       return {
-        items: filteredItems,
+        items: filterByStale(items, filter?.staleOnly),
         total,
         page,
         pageSize: limit,
@@ -171,18 +163,7 @@ export class GitHubItemsAdapter implements ExternalItemsProvider {
       };
     } catch (error) {
       this.logger.error(`GitHub parse failed: ${error}`);
-      return this.emptyResult(page, limit);
+      return emptyPaginatedResult(page, limit);
     }
-  }
-
-  private emptyResult(page: number, pageSize: number): PaginatedItemsResult {
-    return {
-      items: [],
-      total: 0,
-      page,
-      pageSize,
-      totalPages: 0,
-      hasMore: false,
-    };
   }
 }

@@ -115,7 +115,7 @@ async function invokeLLMTranslation(prompt, verbose) {
         apiKey
       });
       const message = await anthropic.messages.create({
-        model: "claude-3-haiku-20240307",
+        model: "claude-3-5-haiku-20241022",
         max_tokens: 8e3,
         messages: [
           {
@@ -127,7 +127,7 @@ async function invokeLLMTranslation(prompt, verbose) {
       const translatedContent = message.content[0].type === "text" ? message.content[0].text : contentToTranslate;
       if (verbose) {
         console.log(`\u2705 Translation complete via API`);
-        console.log(`   Model: claude-3-haiku-20240307`);
+        console.log(`   Model: claude-3-5-haiku-20241022`);
         console.log(`   Input tokens: ${message.usage.input_tokens}`);
         console.log(`   Output tokens: ${message.usage.output_tokens}`);
         console.log(`   Cost: ~$${((message.usage.input_tokens * 0.25 + message.usage.output_tokens * 1.25) / 1e6).toFixed(4)}`);

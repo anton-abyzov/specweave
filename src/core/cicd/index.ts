@@ -14,7 +14,7 @@ export { StateManager } from './state-manager.js';
 export { WorkflowMonitor, MonitorConfig, PollResult } from './workflow-monitor.js';
 
 // Notifications
-export { Notifier, NotifierConfig, Notification } from './notifier.js';
+export { Notifier, NotifierConfig, Notification, NotificationType } from './notifier.js';
 
 // Service orchestration
 export { MonitorService, MonitorServiceConfig, ServiceStatus } from './monitor-service.js';

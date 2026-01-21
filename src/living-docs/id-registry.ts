@@ -245,38 +245,29 @@ export class IDRegistry {
    * @param fsId - ID to check (e.g., "FS-042E")
    * @param registry - Current registry
    * @returns Conflicting ID or null if no collision
-   *
-   * @example
-   * // Given registry: {FS-042: {...}}
-   * detectCollision('FS-042E', registry) // Returns: 'FS-042'
-   * detectCollision('FS-043', registry)  // Returns: null
    */
   private detectCollision(fsId: string, registry: RegistryData): string | null {
-    // Exact match
     if (fsId in registry.entries) {
       return fsId;
     }
 
-    // Extract numeric part
     const match = fsId.match(/^FS-(\d{3,})E?$/);
     if (!match) {
       throw new Error(`Invalid FS-ID format: ${fsId}`);
     }
 
-    const number = parseInt(match[1], 10);
-    const internalId = `FS-${String(number).padStart(3, '0')}`;
-    const externalId = `FS-${String(number).padStart(3, '0')}E`;
+    const paddedNum = match[1].padStart(3, '0');
+    const internalId = `FS-${paddedNum}`;
+    const externalId = `FS-${paddedNum}E`;
 
-    // Check variant
     if (internalId !== fsId && internalId in registry.entries) {
       return internalId;
     }
-
     if (externalId !== fsId && externalId in registry.entries) {
       return externalId;
     }
 
-    return null; // No collision
+    return null;
   }
 
   /**

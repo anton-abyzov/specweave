@@ -271,7 +271,16 @@ export class ExternalIssueAutoCreator {
         try {
           featureId = deriveFeatureId(incrementId);
         } catch {
-          featureId = `FS-${incrementId.substring(0, 4)}`;
+          // CRITICAL FIX (v1.0.127): If deriveFeatureId fails, parse manually
+          // Old code: `FS-${incrementId.substring(0, 4)}` created FS-0142 instead of FS-142
+          const numMatch = incrementId.match(/^(\d+)/);
+          if (numMatch) {
+            const num = parseInt(numMatch[1], 10);
+            featureId = `FS-${String(num).padStart(3, '0')}`;
+          } else {
+            // Last resort: use first 3 chars (unlikely to reach here)
+            featureId = `FS-${incrementId.substring(0, 3)}`;
+          }
         }
       }
 

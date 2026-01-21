@@ -71,7 +71,7 @@ description: A test skill for unit testing. Activates for: testing, unit tests.
         `---
 name: test-agent
 description: A test agent for architecture. Activates for: design, architecture.
-model: sonnet
+model: opus
 ---
 
 # Test Agent
@@ -91,7 +91,7 @@ model: sonnet
       const tools = builder.getIndexedTools();
       expect(tools[0].type).toBe('agent');
       expect(tools[0].capabilities).toHaveLength(2);
-      expect(tools[0].modelPreference).toBe('sonnet');
+      expect(tools[0].modelPreference).toBe('opus');
     });
 
     it('should index commands from plugins', async () => {

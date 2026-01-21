@@ -100,10 +100,9 @@ export class RateLimiter {
   /**
    * Check JIRA rate limit (placeholder - JIRA doesn't expose rate limits in headers)
    *
-   * @param headers - HTTP response headers from JIRA API
    * @returns Rate limit information (estimated)
    */
-  checkJiraRateLimit(headers: Record<string, string>): RateLimitInfo {
+  checkJiraRateLimit(): RateLimitInfo {
     // JIRA Cloud rate limits are not exposed in response headers
     // We estimate based on known limits (10 requests/second for Cloud)
     const rateLimitInfo: RateLimitInfo = {
@@ -122,10 +121,9 @@ export class RateLimiter {
   /**
    * Check Azure DevOps rate limit (placeholder - ADO has different rate limit model)
    *
-   * @param headers - HTTP response headers from ADO API
    * @returns Rate limit information (estimated)
    */
-  checkAdoRateLimit(headers: Record<string, string>): RateLimitInfo {
+  checkAdoRateLimit(): RateLimitInfo {
     // Azure DevOps has rate limits but doesn't expose them in headers
     // Default is 200 requests per minute
     const rateLimitInfo: RateLimitInfo = {

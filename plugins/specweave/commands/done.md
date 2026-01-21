@@ -1,6 +1,11 @@
 ---
 name: sw:done
 description: Close increment with PM validation - checks tasks, tests, and docs before closing
+hooks:
+  Stop:
+    - hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/completion-guard.sh
 ---
 
 # Close Increment (PM Validated)
@@ -28,6 +33,45 @@ You are acting as the Product Manager to validate increment completion before cl
 ---
 
 ## Workflow
+
+### Step 0: Self-Awareness Check (v1.0.102+)
+
+**🎯 OPTIONAL BUT INFORMATIVE**: Check if closing a SpecWeave framework increment.
+
+When closing increments in the SpecWeave repository itself, provide additional context about the impact:
+
+```typescript
+import { detectSpecWeaveRepository } from './src/utils/repository-detector.js';
+
+const repoInfo = detectSpecWeaveRepository(process.cwd());
+
+if (repoInfo.isSpecWeaveRepo) {
+  console.log('ℹ️  Closing SpecWeave framework increment');
+  console.log('');
+  console.log('   📋 Post-Closure Checklist:');
+  console.log('      • Update CHANGELOG.md if user-facing change');
+  console.log('      • Update CLAUDE.md if workflow changed');
+  console.log('      • Consider version bump (patch/minor/major)');
+  console.log('      • Run: npm test && npm run rebuild');
+  console.log('      • Check for breaking changes');
+  console.log('');
+}
+```
+
+**When to Show This**:
+- Only when closing increments (not on validation failures)
+- Skip if already shown recently in session
+
+**Why This Helps**:
+Contributors closing SpecWeave features need reminders about:
+- Documentation updates (CHANGELOG, CLAUDE.md)
+- Version implications
+- Testing framework changes
+- Breaking change considerations
+
+**Note**: This is informational only, not blocking. The closure proceeds normally after showing reminders.
+
+---
 
 ### Step 0.5: Status Validation (NEW - v0.28.63+)
 
@@ -57,8 +101,11 @@ status was set to "completed" without ACs being checked or user approval.
 ### Step 1: Load Increment Context
 
 1. **Find increment directory**:
-   - Normalize ID to 4-digit format (e.g., "1" → "0001")
-   - Find `.specweave/increments/0001-name/`
+   - **Normalize increment ID**:
+     - If ID contains dash (e.g., "0153-feature-name"), extract numeric portion before first dash → "0153"
+     - Convert to 4-digit format (e.g., "1" → "0001", "153" → "0153")
+     - Both formats work: `/sw:done 0153` or `/sw:done 0153-feature-name`
+   - Find matching directory: `.specweave/increments/0001-*/` (matches by prefix)
    - Verify increment exists and is `ready_for_review` or `active` (NOT already completed)
 
 2. **Load all documents**:

@@ -30,6 +30,51 @@ import {
 import type { BackgroundJob, ImportJobConfig, SyncJobConfig } from '../../core/background/types.js';
 import * as fs from '../../utils/fs-native.js';
 
+interface JobsCommandOptions {
+  all?: boolean;
+  id?: string;
+  logs?: string;
+  follow?: string;
+  kill?: string;
+  resume?: string;
+}
+
+/**
+ * Execute jobs command logic
+ * Exported for use in bin/specweave.js
+ */
+export async function jobsCommand(options: JobsCommandOptions = {}): Promise<void> {
+  const projectPath = process.cwd();
+
+  // Check if SpecWeave is initialized
+  const specweavePath = path.join(projectPath, '.specweave');
+  if (!fs.existsSync(specweavePath)) {
+    console.log(chalk.yellow('No SpecWeave project found in current directory.'));
+    console.log(chalk.gray('Run `specweave init` to initialize a project.'));
+    return;
+  }
+
+  try {
+    if (options.kill) {
+      await handleKill(projectPath, options.kill);
+    } else if (options.resume) {
+      await handleResume(projectPath, options.resume);
+    } else if (options.logs) {
+      await handleLogs(projectPath, options.logs);
+    } else if (options.follow) {
+      await handleFollow(projectPath, options.follow);
+    } else if (options.id) {
+      await handleJobDetails(projectPath, options.id);
+    } else {
+      await handleListJobs(projectPath, options.all ?? true); // Default: show all jobs
+    }
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error(chalk.red(`Error: ${errorMessage}`));
+    process.exit(1);
+  }
+}
+
 export function createJobsCommand(): Command {
   const cmd = new Command('jobs')
     .description('Monitor and manage background jobs (imports, cloning, sync)')
@@ -40,35 +85,7 @@ export function createJobsCommand(): Command {
     .option('--kill <jobId>', 'Kill running background job')
     .option('--resume <jobId>', 'Resume paused job')
     .action(async (options) => {
-      const projectPath = process.cwd();
-
-      // Check if SpecWeave is initialized
-      const specweavePath = path.join(projectPath, '.specweave');
-      if (!fs.existsSync(specweavePath)) {
-        console.log(chalk.yellow('No SpecWeave project found in current directory.'));
-        console.log(chalk.gray('Run `specweave init` to initialize a project.'));
-        return;
-      }
-
-      try {
-        if (options.kill) {
-          await handleKill(projectPath, options.kill);
-        } else if (options.resume) {
-          await handleResume(projectPath, options.resume);
-        } else if (options.logs) {
-          await handleLogs(projectPath, options.logs);
-        } else if (options.follow) {
-          await handleFollow(projectPath, options.follow);
-        } else if (options.id) {
-          await handleJobDetails(projectPath, options.id);
-        } else {
-          await handleListJobs(projectPath, options.all);
-        }
-      } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error(chalk.red(`Error: ${errorMessage}`));
-        process.exit(1);
-      }
+      await jobsCommand(options);
     });
 
   return cmd;
@@ -369,7 +386,7 @@ async function handleLogs(projectPath: string, jobId: string): Promise<void> {
  */
 async function handleFollow(projectPath: string, jobId: string): Promise<void> {
   const jobManager = getJobManager(projectPath);
-  let job = jobManager.getJob(jobId) || findJobByPrefix(jobManager.getJobs(), jobId);
+  let job: BackgroundJob | null = jobManager.getJob(jobId) ?? findJobByPrefix(jobManager.getJobs(), jobId) ?? null;
 
   if (!job) {
     console.log(chalk.red(`Job not found: ${jobId}`));
@@ -524,43 +541,32 @@ function findJobByPrefix(jobs: BackgroundJob[], prefix: string): BackgroundJob |
 }
 
 function formatStatus(status: string): string {
-  switch (status) {
-    case 'running':
-      return chalk.green('running');
-    case 'paused':
-      return chalk.yellow('paused');
-    case 'completed':
-      return chalk.gray('completed');
-    case 'completed_with_warnings':
-      return chalk.yellow('completed with warnings');
-    case 'failed':
-      return chalk.red('failed');
-    default:
-      return status;
-  }
+  const statusMap: Record<string, string> = {
+    running: chalk.green('running'),
+    paused: chalk.yellow('paused'),
+    completed: chalk.gray('completed'),
+    completed_with_warnings: chalk.yellow('completed with warnings'),
+    failed: chalk.red('failed'),
+  };
+  return statusMap[status] ?? status;
 }
 
 function createProgressBar(percentage: number, width = 20): string {
   const filled = Math.round((percentage / 100) * width);
-  const empty = width - filled;
-  return `[${'█'.repeat(filled)}${'░'.repeat(empty)}]`;
+  return `[${'█'.repeat(filled)}${'░'.repeat(width - filled)}]`;
 }
 
 function formatDuration(seconds: number): string {
   if (seconds <= 0) return 'calculating...';
   if (seconds < 60) return `${seconds}s`;
   const minutes = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  if (minutes < 60) return `${minutes}m ${secs}s`;
+  if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
   const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  return `${hours}h ${mins}m`;
+  return `${hours}h ${minutes % 60}m`;
 }
 
 function getTimeAgo(dateStr: string | Date): string {
-  const date = new Date(dateStr);
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
   if (seconds < 60) return 'just now';
   if (seconds < 3600) return `${Math.floor(seconds / 60)} mins ago`;
   if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;

@@ -281,37 +281,24 @@ function extractUserStories(lines: string[]): UserStory[] {
 
 /**
  * Get all User Story IDs from spec
- *
- * @param specPath - Path to spec.md
- * @returns Array of US-IDs (e.g., ["US-001", "US-002"])
  */
 export function getAllUSIds(specPath: string): string[] {
-  const spec = parseSpecMd(specPath);
-  return spec.userStories.map(us => us.id);
+  return parseSpecMd(specPath).userStories.map(us => us.id);
 }
 
 /**
  * Get all AC-IDs from spec
- *
- * @param specPath - Path to spec.md
- * @returns Array of AC-IDs (e.g., ["AC-US1-01", "AC-US1-02"])
  */
 export function getAllACIds(specPath: string): string[] {
-  const spec = parseSpecMd(specPath);
-  return spec.allACIds;
+  return parseSpecMd(specPath).allACIds;
 }
 
 /**
  * Get AC-IDs for a specific User Story
- *
- * @param specPath - Path to spec.md
- * @param usId - User Story ID (e.g., "US-001")
- * @returns Array of AC-IDs for that US
  */
 export function getACsForUS(specPath: string, usId: string): string[] {
-  const spec = parseSpecMd(specPath);
-  const us = spec.userStories.find(story => story.id === usId);
-  return us ? us.acceptanceCriteria : [];
+  const us = parseSpecMd(specPath).userStories.find(story => story.id === usId);
+  return us?.acceptanceCriteria ?? [];
 }
 
 /**

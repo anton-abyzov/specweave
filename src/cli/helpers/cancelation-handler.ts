@@ -87,7 +87,7 @@ export class CancelationHandler {
    * Register SIGINT (Ctrl+C) handler
    */
   private registerSigintHandler(): void {
-    this.sigintHandler = async (signal: NodeJS.Signals) => {
+    this.sigintHandler = async () => {
       this.ctrlCCount++;
 
       // Double Ctrl+C: force exit immediately (no cleanup)
@@ -104,12 +104,10 @@ export class CancelationHandler {
       if (this.cleanupCallback) {
         try {
           await this.cleanupCallback();
-        } catch (error: any) {
+        } catch (error) {
           this.logger.error('Error during cleanup:', error);
         }
       }
-
-      // Note: Don't exit here - let the main loop detect shouldCancel() and exit cleanly
     };
 
     process.on('SIGINT', this.sigintHandler);
@@ -166,22 +164,21 @@ export class CancelationHandler {
    * @returns Cancelation state or null if not found/expired
    */
   async loadState(): Promise<CancelationState | null> {
-    try {
-      if (!existsSync(this.stateFile)) {
-        return null; // No saved state
-      }
+    if (!existsSync(this.stateFile)) {
+      return null;
+    }
 
+    try {
       const content = await fs.readFile(this.stateFile, 'utf-8');
       const state = JSON.parse(content) as CancelationState;
 
       // Validate TTL (24 hours)
-      const stateTimestamp = new Date(state.timestamp).getTime();
-      const now = Date.now();
-      const ttlMs = 24 * 60 * 60 * 1000; // 24 hours
+      const TTL_MS = 24 * 60 * 60 * 1000;
+      const stateAge = Date.now() - new Date(state.timestamp).getTime();
 
-      if (now - stateTimestamp > ttlMs) {
+      if (stateAge > TTL_MS) {
         this.logger.log(chalk.yellow('⚠️  Saved state expired (> 24 hours old). Starting fresh import.'));
-        await this.clearState(); // Delete expired state
+        await this.clearState();
         return null;
       }
 
@@ -193,9 +190,9 @@ export class CancelationHandler {
       }
 
       return state;
-    } catch (error: any) {
+    } catch (error) {
       this.logger.error('Failed to load state:', error);
-      await this.clearState(); // Corrupted state - delete it
+      await this.clearState();
       return null;
     }
   }
@@ -204,12 +201,14 @@ export class CancelationHandler {
    * Clear saved state (delete file)
    */
   async clearState(): Promise<void> {
+    if (!existsSync(this.stateFile)) {
+      return;
+    }
+
     try {
-      if (existsSync(this.stateFile)) {
-        await fs.unlink(this.stateFile);
-        this.logger.log(chalk.gray('Cleared saved state'));
-      }
-    } catch (error: any) {
+      await fs.unlink(this.stateFile);
+      this.logger.log(chalk.gray('Cleared saved state'));
+    } catch (error) {
       this.logger.error('Failed to clear state:', error);
     }
   }

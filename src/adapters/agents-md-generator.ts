@@ -18,66 +18,9 @@ import { DocGenerator } from './doc-generator.js';
 import * as path from 'path';
 import * as fs from '../utils/fs-native.js';
 import { getDirname } from '../utils/esm-helpers.js';
+import { findTemplateFile } from './template-utils.js';
 
 const __dirname = getDirname(import.meta.url);
-
-/**
- * Find the package root by walking up the directory tree looking for package.json
- * This works reliably on all platforms including Windows with UNC paths
- */
-function findPackageRoot(startDir: string): string | null {
-  let currentDir = startDir;
-  const root = path.parse(currentDir).root;
-
-  while (currentDir !== root) {
-    const packageJsonPath = path.join(currentDir, 'package.json');
-    if (fs.existsSync(packageJsonPath)) {
-      try {
-        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-        // Verify this is the specweave package
-        if (packageJson.name === 'specweave') {
-          return currentDir;
-        }
-      } catch (error) {
-        // Not a valid package.json, continue searching
-      }
-    }
-    const parentDir = path.dirname(currentDir);
-    if (parentDir === currentDir) break; // Reached root
-    currentDir = parentDir;
-  }
-
-  return null;
-}
-
-/**
- * Find template file using package root detection
- */
-function findTemplateFile(filename: string): string | null {
-  const packageRoot = findPackageRoot(__dirname);
-
-  if (packageRoot) {
-    // Try src/templates/ first (for npm installs)
-    const srcPath = path.normalize(path.join(packageRoot, 'src', 'templates', filename));
-    if (fs.existsSync(srcPath)) {
-      return srcPath;
-    }
-
-    // Try dist/templates/ (shouldn't exist but try anyway)
-    const distPath = path.normalize(path.join(packageRoot, 'dist', 'templates', filename));
-    if (fs.existsSync(distPath)) {
-      return distPath;
-    }
-
-    // Try templates/ directly in package root
-    const rootPath = path.normalize(path.join(packageRoot, 'templates', filename));
-    if (fs.existsSync(rootPath)) {
-      return rootPath;
-    }
-  }
-
-  return null;
-}
 
 export interface AgentsMdOptions {
   projectName: string;
@@ -107,15 +50,11 @@ export class AgentsMdGenerator {
     let templatePath = options.templatePath;
 
     if (!templatePath || !await fs.pathExists(templatePath)) {
-      // Fallback: try to find template using package root detection
-      const foundPath = findTemplateFile('AGENTS.md.template');
+      const foundPath = findTemplateFile('AGENTS.md.template', __dirname);
       if (foundPath) {
         templatePath = foundPath;
       } else {
-        const errorMsg = options.templatePath
-          ? `AGENTS.md template not found at: ${options.templatePath}\nAlso tried package root detection but failed.`
-          : `AGENTS.md template not found. Tried:\n  - Package root detection\n  - __dirname: ${__dirname}\n  - Default: ${path.join(__dirname, '../templates/AGENTS.md.template')}`;
-        throw new Error(errorMsg);
+        throw new Error('AGENTS.md template not found');
       }
     }
 

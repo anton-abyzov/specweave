@@ -363,26 +363,20 @@ function validateSchedulerConfig(
   errors: SyncConfigValidationError[]
 ): void {
   if (config.enabled !== undefined && typeof config.enabled !== 'boolean') {
-    errors.push({
-      path: 'scheduler.enabled',
-      message: 'Must be a boolean',
-      value: config.enabled,
-    });
+    errors.push({ path: 'scheduler.enabled', message: 'Must be a boolean', value: config.enabled });
   }
 
-  if (config.jobs) {
-    const jobTypes = ['externalSync', 'discrepancyCheck', 'livingDocsSync', 'notificationCleanup'];
-    for (const jobType of jobTypes) {
-      const job = (config.jobs as Record<string, unknown>)[jobType] as { intervalMinutes?: number } | undefined;
-      if (job?.intervalMinutes !== undefined) {
-        if (typeof job.intervalMinutes !== 'number' || job.intervalMinutes < 1) {
-          errors.push({
-            path: `scheduler.jobs.${jobType}.intervalMinutes`,
-            message: 'Must be a positive number (minutes)',
-            value: job.intervalMinutes,
-          });
-        }
-      }
+  if (!config.jobs) return;
+
+  const jobTypes = ['externalSync', 'discrepancyCheck', 'livingDocsSync', 'notificationCleanup'] as const;
+  for (const jobType of jobTypes) {
+    const job = (config.jobs as Record<string, { intervalMinutes?: number }>)[jobType];
+    if (job?.intervalMinutes !== undefined && (typeof job.intervalMinutes !== 'number' || job.intervalMinutes < 1)) {
+      errors.push({
+        path: `scheduler.jobs.${jobType}.intervalMinutes`,
+        message: 'Must be a positive number (minutes)',
+        value: job.intervalMinutes,
+      });
     }
   }
 }
@@ -399,16 +393,12 @@ function validatePermissionsConfig(
 
   for (const platform of platforms) {
     const platformConfig = config[platform];
-    if (platformConfig) {
-      for (const field of permissionFields) {
-        const value = (platformConfig as unknown as Record<string, unknown>)[field];
-        if (value !== undefined && typeof value !== 'boolean') {
-          errors.push({
-            path: `permissions.${platform}.${field}`,
-            message: 'Must be a boolean',
-            value,
-          });
-        }
+    if (!platformConfig) continue;
+
+    for (const field of permissionFields) {
+      const value = (platformConfig as unknown as Record<string, unknown>)[field];
+      if (value !== undefined && typeof value !== 'boolean') {
+        errors.push({ path: `permissions.${platform}.${field}`, message: 'Must be a boolean', value });
       }
     }
   }
@@ -424,28 +414,22 @@ function validateDiscrepancyConfig(
   const validSeverities = ['trivial', 'minor', 'major', 'breaking'];
   const validCheckTypes = ['api-routes', 'types', 'functions', 'config'];
 
-  if (config.requireReviewFor) {
-    for (const severity of config.requireReviewFor) {
-      if (!validSeverities.includes(severity)) {
-        errors.push({
-          path: 'discrepancy.requireReviewFor',
-          message: `Invalid severity: ${severity}. Valid: ${validSeverities.join(', ')}`,
-          value: severity,
-        });
-      }
-    }
+  const invalidSeverities = config.requireReviewFor?.filter((s) => !validSeverities.includes(s)) ?? [];
+  for (const severity of invalidSeverities) {
+    errors.push({
+      path: 'discrepancy.requireReviewFor',
+      message: `Invalid severity: ${severity}. Valid: ${validSeverities.join(', ')}`,
+      value: severity,
+    });
   }
 
-  if (config.checkTypes) {
-    for (const checkType of config.checkTypes) {
-      if (!validCheckTypes.includes(checkType)) {
-        errors.push({
-          path: 'discrepancy.checkTypes',
-          message: `Invalid check type: ${checkType}. Valid: ${validCheckTypes.join(', ')}`,
-          value: checkType,
-        });
-      }
-    }
+  const invalidCheckTypes = config.checkTypes?.filter((t) => !validCheckTypes.includes(t)) ?? [];
+  for (const checkType of invalidCheckTypes) {
+    errors.push({
+      path: 'discrepancy.checkTypes',
+      message: `Invalid check type: ${checkType}. Valid: ${validCheckTypes.join(', ')}`,
+      value: checkType,
+    });
   }
 }
 

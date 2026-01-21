@@ -177,7 +177,11 @@ export function getGitHubAuth(): GitHubAuth {
   try {
     const ghConfigPath = path.join(os.homedir(), '.config', 'gh', 'hosts.yml');
     if (fs.existsSync(ghConfigPath)) {
-      const config = yaml.load(fs.readFileSync(ghConfigPath, 'utf8')) as any;
+      // Security: Use JSON_SCHEMA to prevent arbitrary code execution via YAML
+      // This only allows JSON-safe types (strings, numbers, booleans, arrays, objects)
+      const config = yaml.load(fs.readFileSync(ghConfigPath, 'utf8'), {
+        schema: yaml.JSON_SCHEMA
+      }) as Record<string, { oauth_token?: string }> | null;
       const token = config?.['github.com']?.oauth_token;
       if (token) {
         return { token, source: 'gh-cli', isOAuthToken: isOAuthToken(token) };

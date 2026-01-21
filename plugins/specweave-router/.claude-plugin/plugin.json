@@ -1,0 +1,27 @@
+{
+  "name": "sw-router",
+  "description": "ACTIVE router that detects development tasks and spawns specialized agents. MANDATORY for: React, Vue, frontend, dashboard, UI - spawn sw-frontend agent. GitHub, API, repository - spawn sw-github agent. TDD, testing, Vitest - spawn sw-testing agent. Kubernetes, Docker, Terraform - spawn sw-infra agent. ML, AI, training - spawn sw-ml agent. Mobile, React Native - spawn sw-mobile agent. Payments, Stripe - spawn sw-payments agent.",
+  "version": "1.0.1",
+  "author": {
+    "name": "SpecWeave Team",
+    "url": "https://spec-weave.com"
+  },
+  "homepage": "https://spec-weave.com",
+  "repository": "https://github.com/anton-abyzov/specweave",
+  "license": "MIT",
+  "keywords": [
+    "router",
+    "active-routing",
+    "agent-spawning",
+    "react",
+    "frontend",
+    "github",
+    "testing",
+    "tdd",
+    "kubernetes",
+    "ml",
+    "mobile",
+    "payments",
+    "specweave"
+  ]
+}

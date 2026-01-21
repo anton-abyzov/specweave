@@ -67,20 +67,14 @@ export class DeletionTransaction {
   private async stagingPhase(validation: ValidationResult, options: DeletionOptions): Promise<void> {
     this.logger.log('Phase 2: Staging - Creating backup and staging deletions');
 
-    // T-008: Create backup
     await this.createBackup(validation.files);
-
-    // T-008: Create checkpoint
     await this.createCheckpoint(validation);
 
-    // T-018: Stage git deletions
-    if (!options.noGit) {
-      await this.gitService.stageGitDeletions(validation.files);
+    // Stage git deletions or just delete files if --no-git
+    if (options.noGit) {
+      await Promise.all(validation.files.map(file => fs.unlink(file)));
     } else {
-      // No git - just delete files
-      for (const file of validation.files) {
-        await fs.unlink(file);
-      }
+      await this.gitService.stageGitDeletions(validation.files);
     }
 
     this.logger.log('Phase 2: Staging - COMPLETE');
@@ -92,14 +86,8 @@ export class DeletionTransaction {
   private async commitPhase(validation: ValidationResult, options: DeletionOptions): Promise<DeletionResult> {
     this.logger.log('Phase 3: Commit - Finalizing deletion');
 
-    let commitSha: string | undefined;
+    const commitSha = options.noGit ? undefined : await this.gitService.commitDeletion(validation.featureId, validation);
 
-    // T-019: Create git commit
-    if (!options.noGit) {
-      commitSha = await this.gitService.commitDeletion(validation.featureId, validation);
-    }
-
-    // T-009: Update orphaned metadata (if force mode)
     if (options.force && validation.orphanedIncrements.length > 0) {
       await this.updateOrphanedMetadata(validation.orphanedIncrements);
     }
@@ -123,19 +111,13 @@ export class DeletionTransaction {
     this.logger.warn('Rolling back transaction...');
 
     try {
-      // Restore files from backup
-      for (const file of files) {
+      // Restore files from backup (continue on individual file failures)
+      await Promise.all(files.map(async file => {
         const backupPath = path.join(this.backupDir, path.relative(this.projectRoot, file));
-        try {
-          await fs.copyFile(backupPath, file);
-        } catch (error) {
-          this.logger.warn(`Failed to restore ${file}: ${error}`);
-        }
-      }
+        await fs.copyFile(backupPath, file).catch(err => this.logger.warn(`Failed to restore ${file}: ${err}`));
+      }));
 
-      // Unstage git deletions
       await this.gitService.unstageGitDeletions(files);
-
       this.logger.log('Rollback complete. Files restored from backup.');
     } catch (error) {
       this.logger.error(`Rollback failed: ${error}`);
@@ -150,14 +132,11 @@ export class DeletionTransaction {
   private async createBackup(files: string[]): Promise<void> {
     this.logger.log(`Creating backup at ${this.backupDir}`);
 
-    for (const file of files) {
-      const relativePath = path.relative(this.projectRoot, file);
-      const backupPath = path.join(this.backupDir, relativePath);
-      const backupDirPath = path.dirname(backupPath);
-
-      await fs.mkdir(backupDirPath, { recursive: true });
+    await Promise.all(files.map(async file => {
+      const backupPath = path.join(this.backupDir, path.relative(this.projectRoot, file));
+      await fs.mkdir(path.dirname(backupPath), { recursive: true });
       await fs.copyFile(file, backupPath);
-    }
+    }));
 
     this.logger.log(`Backed up ${files.length} files`);
   }

@@ -60,7 +60,7 @@ All agents that generate large content MUST set `max_response_tokens`:
 name: my-agent
 description: Agent description
 tools: Read, Write, Edit
-model: claude-sonnet-4-5-20250929
+model: opus
 max_response_tokens: 2000  # ← MANDATORY for large-content agents
 ---
 ```

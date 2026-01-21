@@ -262,6 +262,44 @@ export interface BatchFixResult {
 }
 
 /**
+ * Hook response warning (v1.0.102+)
+ *
+ * Warnings are included in hook responses to surface failures to users
+ * instead of silent {"continue":true} defaults.
+ *
+ * Part of increment 0161: Hook Execution Visibility
+ */
+export interface HookResponseWarning {
+  /** Severity level */
+  severity: 'WARNING' | 'ERROR';
+
+  /** User-facing warning message */
+  message: string;
+
+  /** Actionable recommendation */
+  recommendation: string;
+}
+
+/**
+ * Hook response format (v1.0.102+)
+ *
+ * Replaces silent {"continue":true} with warnings array.
+ * Hooks return this format to surface failures to users.
+ *
+ * Part of increment 0161: Hook Execution Visibility
+ */
+export interface HookResponse {
+  /** Whether to continue workflow */
+  continue: boolean;
+
+  /** Warnings from hook execution (optional for backwards compatibility) */
+  warnings?: HookResponseWarning[];
+
+  /** Optional system message to display */
+  systemMessage?: string;
+}
+
+/**
  * Hook health check configuration
  */
 export interface HealthCheckConfig {

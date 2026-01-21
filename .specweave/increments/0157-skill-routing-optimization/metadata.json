@@ -1,0 +1,15 @@
+{
+  "id": "0157-skill-routing-optimization",
+  "status": "completed",
+  "type": "refactor",
+  "priority": "P1",
+  "created": "2026-01-07T17:00:00.000Z",
+  "lastActivity": "2026-01-07T17:00:00.000Z",
+  "testMode": "test-after",
+  "coverageTarget": 80,
+  "feature_id": null,
+  "featureId": null,
+  "epic_id": null,
+  "externalLinks": {},
+  "planningComplete": false
+}

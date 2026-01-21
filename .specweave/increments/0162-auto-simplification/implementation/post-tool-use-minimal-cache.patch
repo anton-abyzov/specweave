@@ -1,0 +1,32 @@
+# Post-Tool-Use Hook Patch for Minimal Cache
+# Apply to: hooks/v2/dispatchers/post-tool-use.sh
+
+## Change 1: Line 259 (metadata.json changes)
+## BEFORE:
+# safe_run_background "$SCRIPTS_DIR/update-dashboard-cache.sh" "dashboard-cache" "$INC_ID" "metadata"
+
+## AFTER:
+safe_run_background "$SCRIPTS_DIR/update-status-cache.sh" "status-cache" "$INC_ID" "metadata"
+
+## Change 2: Lines 298, 301 (tasks.md/spec.md changes)
+## REMOVE these lines (minimal cache doesn't track tasks/ACs):
+
+## Line 298 - REMOVE:
+# safe_run_background "$SCRIPTS_DIR/update-dashboard-cache.sh" "dashboard-cache" "$INC_ID" "tasks"
+
+## Line 301 - REMOVE:
+# safe_run_background "$SCRIPTS_DIR/update-dashboard-cache.sh" "dashboard-cache" "$INC_ID" "spec"
+
+## Reasoning:
+## - Minimal cache only tracks STATUS (which comes from metadata.json)
+## - Task/AC changes don't affect status grouping
+## - Result: 99% fewer cache updates!
+
+## Performance Impact:
+## OLD: Every task edit = 332 file reads (rebuild full cache)
+## NEW: Every task edit = 0 cache operations!
+##
+## OLD: Every status change = 332 file reads
+## NEW: Every status change = 2 file operations (read + write cache)
+##
+## Result: 99.4% reduction in cache operations! 🚀

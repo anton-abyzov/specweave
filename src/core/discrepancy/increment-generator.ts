@@ -196,18 +196,15 @@ export function getNextIncrementId(projectPath: string): string {
     return '0001';
   }
 
-  const folders = fs.readdirSync(incrementsDir, { withFileTypes: true })
+  const ids = fs.readdirSync(incrementsDir, { withFileTypes: true })
     .filter(d => d.isDirectory() && /^\d{3,4}E?-/.test(d.name))
     .map(d => {
       const match = d.name.match(/^(\d{3,4})E?-/);
       return match ? parseInt(match[1], 10) : 0;
-    });
+    })
+    .filter(id => id > 0);
 
-  if (folders.length === 0) {
-    return '0001';
-  }
-
-  const maxId = Math.max(...folders);
+  const maxId = ids.length > 0 ? Math.max(...ids) : 0;
   return String(maxId + 1).padStart(4, '0');
 }
 

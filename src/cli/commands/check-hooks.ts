@@ -14,6 +14,10 @@ import { HealthReporter } from '../../core/hooks/HealthReporter.js';
 import { HookAutoFixer } from '../../core/hooks/HookAutoFixer.js';
 import { ReportFormat } from '../../core/hooks/types.js';
 import { Logger, consoleLogger } from '../../utils/logger.js';
+import { CacheHealthMonitor } from '../../core/plugin-cache/cache-health-monitor.js';
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
 
 // NOTE: This CLI check-hooks command is primarily user-facing output (console.log/console.error).
 // All console.* calls in this file are legitimate user-facing exceptions
@@ -29,6 +33,8 @@ interface CommandOptions {
   timeout: number;
   failOnWarnings: boolean;
   hookName?: string;
+  includeCache?: boolean;
+  reflect?: boolean;
 }
 
 /**
@@ -69,6 +75,12 @@ function parseArgs(args: string[]): CommandOptions {
       case '--fail-on-warnings':
         options.failOnWarnings = true;
         break;
+      case '--include-cache':
+        options.includeCache = true;
+        break;
+      case '--reflect':
+        options.reflect = true;
+        break;
       default:
         // Assume it's a hook name
         if (!arg.startsWith('--')) {
@@ -78,6 +90,203 @@ function parseArgs(args: string[]): CommandOptions {
   }
 
   return options;
+}
+
+/**
+ * Check reflect hook health (GAP-004 implementation)
+ *
+ * Verifies:
+ * 1. stop-reflect.sh exists and has valid syntax
+ * 2. process-reflect-queue.sh exists and has valid syntax
+ * 3. reflect-config.json exists and is valid
+ * 4. jq is available (required for hook processing)
+ * 5. Memory directories exist and are writable
+ */
+export async function checkReflectHealth(verbose: boolean = false): Promise<{ healthy: boolean; issues: string[] }> {
+  console.log('\n🧠 Checking reflect hook health...\n');
+
+  const { execSync } = await import('child_process');
+  const issues: string[] = [];
+  const projectRoot = process.cwd();
+
+  // 1. Check if running in Claude Code environment
+  const claudeDir = path.join(os.homedir(), '.claude');
+  const marketplacePath = path.join(claudeDir, 'plugins', 'marketplaces', 'specweave');
+  const isClaudeCode = fs.existsSync(marketplacePath);
+
+  if (isClaudeCode) {
+    console.log('   ✅ Claude Code environment detected');
+  } else {
+    console.log('   ⚠️  Non-Claude environment (reflect hooks may be limited)');
+  }
+
+  // 2. Check stop-reflect.sh
+  const hooksDir = isClaudeCode
+    ? path.join(marketplacePath, 'plugins', 'specweave', 'hooks')
+    : path.join(projectRoot, '.specweave', 'plugins', 'specweave', 'hooks');
+
+  const stopReflectPath = path.join(hooksDir, 'stop-reflect.sh');
+  if (fs.existsSync(stopReflectPath)) {
+    console.log('   ✅ stop-reflect.sh found');
+
+    // Check syntax with bash -n
+    try {
+      execSync(`bash -n "${stopReflectPath}"`, { stdio: 'pipe' });
+      console.log('   ✅ stop-reflect.sh syntax valid');
+    } catch {
+      console.log('   ❌ stop-reflect.sh has syntax errors');
+      issues.push('stop-reflect.sh has syntax errors - run: bash -n ' + stopReflectPath);
+    }
+  } else {
+    console.log('   ❌ stop-reflect.sh not found at: ' + stopReflectPath);
+    issues.push('stop-reflect.sh not found');
+  }
+
+  // 3. Check process-reflect-queue.sh
+  const processQueuePath = path.join(hooksDir, 'process-reflect-queue.sh');
+  if (fs.existsSync(processQueuePath)) {
+    console.log('   ✅ process-reflect-queue.sh found');
+  } else {
+    console.log('   ⚠️  process-reflect-queue.sh not found (async processing disabled)');
+  }
+
+  // 4. Check reflect-config.json
+  const reflectConfigPath = path.join(projectRoot, '.specweave', 'state', 'reflect-config.json');
+  if (fs.existsSync(reflectConfigPath)) {
+    try {
+      const config = JSON.parse(fs.readFileSync(reflectConfigPath, 'utf-8'));
+      if (config.autoReflect) {
+        console.log('   ✅ Auto-reflect enabled');
+      } else {
+        console.log('   ⚠️  Auto-reflect disabled (run /sw:reflect-on to enable)');
+      }
+      if (verbose) {
+        console.log('      Confidence threshold: ' + (config.confidenceThreshold || 'medium'));
+        console.log('      Max learnings/session: ' + (config.maxLearningsPerSession || 10));
+      }
+    } catch {
+      console.log('   ❌ reflect-config.json is invalid JSON');
+      issues.push('reflect-config.json is invalid JSON');
+    }
+  } else {
+    console.log('   ⚠️  reflect-config.json not found (run specweave init)');
+  }
+
+  // 5. Check jq availability
+  try {
+    execSync('command -v jq', { stdio: 'pipe' });
+    console.log('   ✅ jq is available');
+  } catch {
+    console.log('   ❌ jq not found (required for reflect hooks)');
+    issues.push('jq not installed - hooks will fail silently');
+  }
+
+  // 6. Check memory directories
+  const memoryDir = path.join(projectRoot, '.specweave', 'memory');
+  if (fs.existsSync(memoryDir)) {
+    console.log('   ✅ Memory directory exists');
+  } else {
+    console.log('   ⚠️  Memory directory not created (run specweave init)');
+  }
+
+  // 7. Check logs directory
+  const logsDir = path.join(projectRoot, '.specweave', 'logs', 'reflect');
+  if (fs.existsSync(logsDir)) {
+    console.log('   ✅ Reflect logs directory exists');
+
+    // Check for recent logs
+    const logFile = path.join(logsDir, 'reflect.log');
+    if (fs.existsSync(logFile)) {
+      const stats = fs.statSync(logFile);
+      const age = Date.now() - stats.mtimeMs;
+      const ageHours = Math.round(age / (1000 * 60 * 60));
+      if (verbose) {
+        console.log(`      Last log: ${ageHours} hours ago`);
+      }
+    }
+  } else {
+    console.log('   ⚠️  Reflect logs directory not created');
+  }
+
+  // Summary
+  console.log('');
+  if (issues.length === 0) {
+    console.log('   ✅ Reflect hooks are healthy\n');
+    return { healthy: true, issues: [] };
+  } else {
+    console.log(`   ❌ ${issues.length} issues found:\n`);
+    for (const issue of issues) {
+      console.log(`      • ${issue}`);
+    }
+    console.log('');
+    return { healthy: false, issues };
+  }
+}
+
+/**
+ * Check plugin cache health
+ */
+export async function checkCacheHealth(verbose: boolean = false): Promise<void> {
+  console.log('\n🔍 Checking plugin cache health...\n');
+
+  const basePath = path.join(os.homedir(), '.claude', 'plugins', 'cache', 'specweave');
+
+  if (!fs.existsSync(basePath)) {
+    console.log('   No plugin cache found.\n');
+    return;
+  }
+
+  const monitor = new CacheHealthMonitor();
+  const pluginNames = fs.readdirSync(basePath).filter(name => {
+    const pluginPath = path.join(basePath, name);
+    return fs.statSync(pluginPath).isDirectory();
+  });
+
+  let healthyCount = 0;
+  let criticalCount = 0;
+
+  for (const pluginName of pluginNames) {
+    const pluginPath = path.join(basePath, pluginName);
+    const versions = fs.readdirSync(pluginPath).filter(v => {
+      const versionPath = path.join(pluginPath, v);
+      return fs.statSync(versionPath).isDirectory();
+    });
+
+    if (versions.length === 0) continue;
+
+    const version = versions.sort().reverse()[0];
+    const versionPath = path.join(pluginPath, version);
+
+    const issues = monitor.checkPluginHealth(versionPath, version);
+    const hasCritical = issues.some(i => i.severity === 'critical');
+
+    if (issues.length === 0) {
+      healthyCount++;
+      console.log(`   ✅ ${pluginName} (${version}): Healthy`);
+    } else if (hasCritical) {
+      criticalCount++;
+      console.log(`   ❌ ${pluginName} (${version}): Critical issues`);
+      if (verbose) {
+        for (const issue of issues.filter(i => i.severity === 'critical')) {
+          console.log(`      - ${issue.message} (${issue.file})`);
+        }
+      }
+    } else {
+      console.log(`   ⚠️  ${pluginName} (${version}): ${issues.length} warnings`);
+      if (verbose) {
+        for (const issue of issues) {
+          console.log(`      - ${issue.message} (${issue.file})`);
+        }
+      }
+    }
+  }
+
+  console.log(`\n   Summary: ${healthyCount} healthy, ${criticalCount} critical\n`);
+
+  if (criticalCount > 0) {
+    console.log('   💡 Run: specweave cache-status for details\n');
+    console.log('   💡 Run: specweave cache-refresh --force to fix\n');
+  }
 }
 
 /**
@@ -154,6 +363,21 @@ async function main() {
       console.log(`\n✅ Report written to: ${options.output}`);
     }
 
+    // Check plugin cache health if requested
+    if (options.includeCache) {
+      await checkCacheHealth(options.verbose);
+    }
+
+    // Check reflect hook health if requested (GAP-004)
+    if (options.reflect) {
+      const reflectResult = await checkReflectHealth(options.verbose);
+      if (!reflectResult.healthy) {
+        // Reflect issues are warnings, not failures
+        console.log('💡 Run: specweave init to fix missing directories');
+        console.log('💡 Run: brew install jq (macOS) or apt install jq (Linux) for jq');
+      }
+    }
+
     // Exit with appropriate code
     process.exit(getExitCode(result, options.failOnWarnings));
   } catch (error) {
@@ -182,7 +406,8 @@ function getExitCode(result: any, failOnWarnings: boolean): number {
 }
 
 // Run if called directly (check if module is main)
-const isMainModule = require.main === module || process.argv[1]?.includes('check-hooks');
+// ES module check: import.meta.url contains this file path
+const isMainModule = process.argv[1]?.includes('check-hooks') || false;
 if (isMainModule) {
   main();
 }

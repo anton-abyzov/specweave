@@ -185,7 +185,7 @@
     "default": "claude"
   },
   "testing": {
-    "defaultTestMode": "test-after",
+    "defaultTestMode": "TDD",
     "defaultCoverageTarget": 80,
     "coverageTargets": {
       "unit": 85,
@@ -275,5 +275,13 @@
     "autoInstall": false,
     "verbose": false,
     "cacheValidation": false
+  },
+  "auto": {
+    "enabled": true,
+    "maxRetries": 20,
+    "requireTests": false,
+    "requireValidation": true,
+    "requireJudgeLLM": false,
+    "skipQualityGates": false
   }
 }

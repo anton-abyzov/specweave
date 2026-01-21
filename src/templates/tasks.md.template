@@ -251,6 +251,15 @@ graph TD
 - Validation enforces 100% AC coverage before increment closure
 - Living docs sync automatically based on task-AC linkage
 
+**File Organization** (CRITICAL):
+- **ONLY 4 files at increment root**: metadata.json, spec.md, plan.md, tasks.md
+- **ALL other files → subfolders**:
+  - Reports/analysis → `reports/`
+  - Scripts → `scripts/`
+  - Logs → `logs/{YYYY-MM-DD}/`
+- **NEVER create files in project root** (README.md, CLAUDE.md excepted)
+- Pre-commit hook #13 blocks root pollution
+
 **See**: `CLAUDE.md` section "Task Format with US-Task Linkage" for detailed guide
 
 ---

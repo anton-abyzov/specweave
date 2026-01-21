@@ -1,6 +1,12 @@
 ---
 name: sw:increment
 description: Plan new Product Increment - PM-led process (market research, spec, plan, auto-generate tasks). Auto-closes previous increment if PM gates pass.
+hooks:
+  PostToolUse:
+    - matcher: Write
+      hooks:
+        - type: command
+          command: bash plugins/specweave/hooks/v2/guards/increment-duplicate-guard.sh
 ---
 
 # Plan Product Increment
@@ -817,11 +823,24 @@ Would you like to enable these plugins? (Y/n)
 
 **DO NOT** manually create files. **DO NOT** skip this step. **DO NOT** write spec.md or plan.md directly.
 
+**⚠️ COMMON MISTAKE - DO NOT CALL `/sw:plan`:**
+- `/sw:plan` is for EXISTING increments (with spec.md already created)
+- `/sw:increment` creates NEW increments from scratch
+- For NEW increments, use `increment-planner` skill (NOT `/sw:plan`)
+
 You MUST invoke the increment-planner skill to orchestrate the full PM-led workflow:
 
 ```
 Use the Skill tool:
 command: "increment-planner"
+```
+
+**Example of correct invocation:**
+```typescript
+Skill({
+  skill: "increment-planner",
+  args: "--id=0157-feature --description=\"...\" --project=my-project"
+});
 ```
 
 The increment-planner skill will:
@@ -848,50 +867,63 @@ The increment-planner skill will:
 **BEFORE PROCEEDING, USE THE SKILL TOOL:**
 
 You must literally call the Skill tool like this:
-```
-Skill(command: "increment-planner")
+```typescript
+// ✅ CORRECT - Use increment-planner skill
+Skill({
+  skill: "increment-planner",
+  args: "--id=XXXX-name --description=\"...\" --project=my-project"
+});
+
+// ❌ WRONG - DO NOT call /sw:plan for new increments
+Skill({ skill: "sw:plan" });  // This is for EXISTING increments only!
 ```
 
 Wait for the skill to complete. Do NOT continue to Step 7 until the increment-planner skill returns.
+
+**Self-Awareness Check (SpecWeave Contributors):**
+If you are working in the SpecWeave repository itself (detected via package.json name === 'specweave'), you should see warnings reminding you that changes affect the framework itself, not a user project.
+
+**Error Handling (v1.0.102+):**
+If errors occur, use standardized error messages for consistent UX:
+```typescript
+import { ERROR_MESSAGES, formatError } from './src/utils/error-formatter.js';
+
+// If user tries to plan existing increment with /sw:increment
+formatError(ERROR_MESSAGES.WRONG_COMMAND_FOR_EXISTING_INCREMENT(incrementId));
+
+// If invalid increment number format
+formatError(ERROR_MESSAGES.INVALID_INCREMENT_NUMBER(provided, expected));
+
+// If duplicate increment
+formatError(ERROR_MESSAGES.DUPLICATE_INCREMENT(incrementId));
+```
 
 ### Step 7: Alternative Approach (ONLY IF SKILL FAILS)
 
 **Only use this if Skill tool is unavailable or fails:**
 
-Manually invoke agents using Task tool:
+PM and Architect are **SKILLS** that auto-activate based on keywords in your prompt - they are NOT agents you invoke via Task tool.
 
-1. **Invoke PM Agent:**
-   ```
-   Task(
-     subagent_type: "specweave:pm:pm",
-     prompt: "Create product strategy for: [user description]
-             Detect tech stack from: [detected tech info]
-             Create living docs in .specweave/docs/internal/strategy/
-             Create increment spec.md that references strategy docs",
-     description: "PM product strategy"
-   )
-   ```
+**To trigger PM skill**, include keywords like "product", "requirements", "user story", "spec":
+```
+"As a product manager, create the specification for: [user description]"
+```
 
-2. **Invoke Architect Agent:**
-   ```
-   Task(
-     subagent_type: "specweave:architect:architect",
-     prompt: "Read PM's strategy docs from .specweave/docs/internal/strategy/
-             Create technical architecture for: [user description]
-             Tech stack: [detected tech stack]
-             Create living docs in .specweave/docs/internal/architecture/
-             Create ADRs for all technical decisions
-             Create increment plan.md that references architecture docs",
-     description: "Architect technical design"
-   )
-   ```
+**To trigger Architect skill**, include keywords like "architecture", "system design", "ADR":
+```
+"Design the architecture for: [user description]"
+```
 
-3. **Auto-generate tasks.md:**
-   ```
-   Skill(command: "task-builder")
-   ```
+**For specialized domain agents** (these ARE agents you invoke via Task):
+```
+Task(
+  subagent_type: "sw-frontend:frontend-architect",
+  prompt: "Design React component architecture for: [description]",
+  description: "Frontend architecture"
+)
+```
 
-**Pass detected tech stack to ALL agents** (CRITICAL!)
+Available agents: `sw-frontend:frontend-architect`, `sw-backend:database-optimizer`, `sw-testing:qa-engineer`, `sw-k8s:kubernetes-architect`, `sw-infra:devops`
 
 ### Step 7: Verify Increment Creation
 

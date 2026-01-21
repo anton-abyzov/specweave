@@ -6,7 +6,7 @@ description: How to recover from crashes, freezes, and common issues in SpecWeav
 
 # Emergency Recovery Guide
 
-This guide covers how to recover from common issues when using SpecWeave with [Claude Code](/glossary/terms/claude-code).
+This guide covers how to recover from common issues when using SpecWeave with Claude Code.
 
 ## Quick Fixes
 
@@ -421,6 +421,6 @@ If these solutions don't work:
 
 ## Related Guides
 
-- [Troubleshooting Lesson](/guides/lessons/09-troubleshooting) - General troubleshooting
-- [External Tool Sync](/guides/external-tool-sync) - GitHub/JIRA/ADO sync issues
-- [Kafka Troubleshooting](/guides/kafka-troubleshooting) - Kafka-specific issues
+- [Troubleshooting Lesson](/docs/academy/specweave-essentials/09-troubleshooting) - General troubleshooting
+- [External Tools](/docs/academy/specweave-essentials/07-external-tools) - GitHub/JIRA/ADO sync
+- [FAQ](/docs/faq) - Common questions answered

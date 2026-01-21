@@ -26,8 +26,13 @@ import { LockManager } from '../../../src/utils/lock-manager.js';
 describe('Concurrent Sync Safety', () => {
   let testDir: string;
   let locksDir: string;
+  let originalForceLocks: string | undefined;
 
   beforeEach(() => {
+    // Force locks to be enabled (override VSCode/CI detection)
+    originalForceLocks = process.env.SPECWEAVE_FORCE_LOCKS;
+    process.env.SPECWEAVE_FORCE_LOCKS = '1';
+
     // Create temp test directory
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'specweave-sync-test-'));
     locksDir = path.join(testDir, '.specweave/state/.locks');
@@ -35,6 +40,13 @@ describe('Concurrent Sync Safety', () => {
   });
 
   afterEach(() => {
+    // Restore original environment
+    if (originalForceLocks !== undefined) {
+      process.env.SPECWEAVE_FORCE_LOCKS = originalForceLocks;
+    } else {
+      delete process.env.SPECWEAVE_FORCE_LOCKS;
+    }
+
     // Cleanup test directory
     if (fs.existsSync(testDir)) {
       fs.rmSync(testDir, { recursive: true, force: true });

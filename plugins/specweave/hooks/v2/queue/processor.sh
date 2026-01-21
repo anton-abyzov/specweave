@@ -8,7 +8,7 @@
 # - increment.created/done/archived/reopened -> living-specs-handler + status-line-handler + project-bridge-handler + github-sync-handler
 # - user-story.completed/reopened -> status-line-handler + project-bridge-handler + github-sync-handler (v1.0.45+: CRITICAL FIX)
 # - spec.updated -> living-docs-handler + ac-validation-handler + github-sync-handler (creates GitHub issues for User Stories)
-# - task.updated -> living-docs-handler + ac-validation-handler (legacy)
+# - task.updated -> living-docs-handler + ac-validation-handler + github-sync-handler (v1.0.127+: syncs to GitHub on task completion!)
 # - metadata.changed -> github-sync-handler
 #
 # CRITICAL FIX (v1.0.45): user-story.completed now triggers github-sync-handler!
@@ -192,12 +192,14 @@ process_event() {
       run_handler "$HANDLER_DIR/github-sync-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       ;;
 
-    # Legacy task.updated event (backward compat)
+    # Task updated event - sync to living docs + validate ACs + sync to GitHub
+    # CRITICAL FIX (v1.0.127): Added github-sync-handler to update GitHub on task completion
+    # Without this, GitHub issues remained active even after all tasks complete!
     task.updated)
-      # Legacy: don't update status line on every task edit
-      # That causes race conditions and flickering
       run_handler "$HANDLER_DIR/living-docs-handler.sh" "" "$EVENT_DATA"
       run_handler "$HANDLER_DIR/ac-validation-handler.sh" "" "$EVENT_DATA"
+      # Sync to GitHub on every task update - throttled handler prevents spam
+      run_handler "$HANDLER_DIR/github-sync-handler.sh" "$EVENT_TYPE" "$EVENT_DATA"
       ;;
 
     metadata.changed)

@@ -1,10 +1,10 @@
-<!-- SW:META template="claude" version="1.0.60" sections="header,start,autodetect,metarule,rules,workflow,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,principles,linking,mcp,autoexecute,auto,docs" -->
+<!-- SW:META template="claude" version="1.0.138" sections="header,start,autodetect,metarule,rules,workflow,reflect,context,lsp,structure,taskformat,secrets,syncing,mapping,testing,api,limits,troubleshooting,lazyloading,principles,linking,mcp,autoexecute,auto,docs" -->
 
-<!-- SW:SECTION:header version="1.0.60" -->
+<!-- SW:SECTION:header version="1.0.138" -->
 **Framework**: SpecWeave | **Truth**: `spec.md` + `tasks.md`
 <!-- SW:END:header -->
 
-<!-- SW:SECTION:start version="1.0.60" -->
+<!-- SW:SECTION:start version="1.0.138" -->
 ## Getting Started
 
 **Initial increment**: `0001-project-setup` (auto-created by `specweave init`)
@@ -14,7 +14,7 @@
 2. **Customize**: Edit spec.md and use for setup tasks
 <!-- SW:END:start -->
 
-<!-- SW:SECTION:autodetect version="1.0.60" -->
+<!-- SW:SECTION:autodetect version="1.0.138" -->
 ## Auto-Detection
 
 SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
@@ -24,7 +24,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Opt-out phrases**: "Just brainstorm first" | "Don't plan yet" | "Quick discussion" | "Let's explore ideas"
 <!-- SW:END:autodetect -->
 
-<!-- SW:SECTION:metarule version="1.0.60" -->
+<!-- SW:SECTION:metarule version="1.0.138" -->
 ## Meta-Rule: Think-Before-Act
 
 **Satisfy dependencies BEFORE dependent operations.**
@@ -35,7 +35,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 ```
 <!-- SW:END:metarule -->
 
-<!-- SW:SECTION:rules version="1.0.60" -->
+<!-- SW:SECTION:rules version="1.0.138" -->
 ## Rules
 
 1. **Files** → `.specweave/increments/####-name/` (spec.md, plan.md, tasks.md at root; reports/, scripts/, logs/ subfolders)
@@ -43,9 +43,12 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 3. **Unique IDs**: Check `ls .specweave/increments/ | grep "^[0-9]" | tail -5`
 4. **Emergency**: "emergency mode" → 1 edit, 50 lines max, no agents
 5. **Root clean**: NEVER create .md/reports/scripts in project root → use increment folders
+6. **⛔ Increment cleanliness**: ONLY 4 files at increment root (metadata.json, spec.md, plan.md, tasks.md). ALL other .md files → `reports/`, logs → `logs/`, scripts → `scripts/`
+7. **⛔ Initialization guard**: `.specweave/` folders MUST ONLY exist where `specweave init` was run. NEVER create `.specweave/` in parent, nested, or unrelated directories. Check `config.json` exists before creating ANY `.specweave/` subfolders.
+8. **⛔ Marketplace refresh**: ALWAYS use `specweave refresh-marketplace` CLI command. NEVER suggest `scripts/refresh-marketplace.sh` - end users don't have the scripts folder (npm global install).
 <!-- SW:END:rules -->
 
-<!-- SW:SECTION:workflow version="1.0.60" -->
+<!-- SW:SECTION:workflow version="1.0.138" -->
 ## Workflow
 
 `/sw:increment "X"` → `/sw:do` → `/sw:progress` → `/sw:done 0001`
@@ -56,7 +59,7 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 | `/sw:do` | Execute tasks |
 | `/sw:auto` | Autonomous execution |
 | `/sw:auto-status` | Check auto session |
-| `/sw:cancel-auto` | Cancel auto session |
+| `/sw:cancel-auto` | ⚠️ EMERGENCY ONLY manual cancel |
 | `/sw:validate` | Quality check |
 | `/sw:done` | Close |
 | `/sw-github:sync` | GitHub sync |
@@ -65,7 +68,51 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 **Natural language**: "Let's build X" → `/sw:increment` | "What's status?" → `/sw:progress` | "We're done" → `/sw:done` | "Ship while sleeping" → `/sw:auto`
 <!-- SW:END:workflow -->
 
-<!-- SW:SECTION:context version="1.0.60" -->
+<!-- SW:SECTION:reflect version="1.0.138" -->
+## Self-Improving Skills (Reflect)
+
+**Learn once, never repeat.** Claude learns from corrections and patterns across sessions.
+
+| Cmd | Action |
+|-----|--------|
+| `/sw:reflect` | Analyze session, extract learnings |
+| `/sw:reflect-on` | Enable auto-reflection on session end |
+| `/sw:reflect-off` | Disable auto-reflection |
+| `/sw:reflect-status` | Show memory status |
+
+**How it works**:
+1. User corrects Claude → Reflect captures learning
+2. Learning saved to centralized memory files (by category)
+3. Future sessions apply learned patterns automatically
+
+**CRITICAL - Memory Loading**: Before starting work, **check centralized memory** for learned patterns:
+```bash
+# Check if memory exists and read relevant categories
+ls .specweave/memory/*.md 2>/dev/null && cat .specweave/memory/*.md
+# Also check global memory
+ls ~/.specweave/memory/*.md 2>/dev/null
+```
+
+**Centralized Memory Files** (no skill copies needed!):
+```
+.specweave/memory/                  # Project learnings
+├── component-usage.md              # UI patterns
+├── api-patterns.md                 # API patterns
+├── testing.md                      # Test patterns
+├── deployment.md                   # Deploy patterns
+└── general.md                      # Misc patterns
+
+~/.specweave/memory/                # Global learnings (all projects)
+```
+
+**Signals detected**:
+- **Corrections** (high confidence): "No, use X instead", "Wrong, always do Y"
+- **Approvals** (medium confidence): "Perfect!", "That's exactly right"
+
+**Enable auto-learning**: `/sw:reflect-on` → Stop hook analyzes sessions automatically
+<!-- SW:END:reflect -->
+
+<!-- SW:SECTION:context version="1.0.138" -->
 ## Living Docs Context
 
 **Before implementing features**: Check existing docs for patterns and decisions.
@@ -85,135 +132,94 @@ grep -ril "keyword" .specweave/docs/internal/
 **Use `/sw:context <topic>`** to load relevant living docs into conversation.
 <!-- SW:END:context -->
 
-<!-- SW:SECTION:lsp version="1.0.61" -->
-## LSP-Enhanced Exploration (ACTIVE - Claude Code 2.0.74+)
+<!-- SW:SECTION:lsp version="1.0.138" -->
+## LSP-Enhanced Exploration
 
-**LSP is POWERFUL - USE IT ACTIVELY** for semantic code understanding. 100x faster and more accurate than grep.
+**USE LSP ACTIVELY** for semantic code understanding (100x faster than grep).
 
-**WHEN to use LSP (PROACTIVE):**
+**Key operations**: `findReferences` (before refactoring) | `goToDefinition` (navigate) | `documentSymbol` (structure) | `hover` (types) | `getDiagnostics` (errors)
 
-| Scenario | LSP Operation | Why Use It |
-|----------|---------------|------------|
-| Before refactoring | `findReferences` | Know ALL usages before changing |
-| Navigate to source | `goToDefinition` | Jump directly to implementation |
-| Understand module | `documentSymbol` | See complete structure/hierarchy |
-| Check types | `hover` | Get accurate signatures, JSDoc |
-| Code quality | `getDiagnostics` | Errors, warnings before commit |
-
-**ACTIVE Usage Examples:**
+**Install**:
 ```bash
-# Before renaming a function - find ALL references
-"Use LSP findReferences to find all usages of calculateTax"
-
-# Navigate to implementation instead of grep
-"Use goToDefinition to find where PaymentService is defined"
-
-# Get accurate type signature
-"Use hover to check the type of processOrder function"
-
-# Check for errors before suggesting changes
-"Use getDiagnostics on this file to check for issues"
-
-# Understand module structure
-"Use documentSymbol to map the API surface of auth.ts"
+npm install -g typescript-language-server typescript  # TS/JS
+pip install python-lsp-server  # Python
+go install golang.org/x/tools/gopls@latest  # Go
 ```
 
-**Smart Integration (ADR-0222):**
-- LSP is EXEMPT from "Code First, Tools Second" rule (ADR-0140)
-- LSP responses are small (~100-5000 bytes), no context bloat
-- Use LSP for precision, code execution for bulk processing
-
-**Install Language Servers** (required):
-```bash
-# TypeScript/JavaScript
-npm install -g typescript-language-server typescript
-
-# Python
-pip install python-lsp-server
-
-# Go
-go install golang.org/x/tools/gopls@latest
-
-# C#
-brew install omnisharp  # or: dotnet tool install -g omnisharp
-```
-
-**Configuration** (optional, `.lsp.json` in project root):
-```json
-{
-  "vtsls": {
-    "command": "typescript-language-server",
-    "args": ["--stdio"],
-    "extensionToLanguage": { ".ts": "typescript", ".tsx": "typescriptreact", ".js": "javascript" }
-  }
-}
-```
-
-**Best Practices**:
-- **ALWAYS use findReferences** before any refactoring
-- **ALWAYS use goToDefinition** instead of grep for navigation
-- **Use documentSymbol** to understand module organization
-- **Use hover** to verify type signatures before changes
-- Combine with Explore agent for comprehensive understanding
+**Best Practices**: ALWAYS use `findReferences` before refactoring | Use `goToDefinition` instead of grep | Combine with Explore agent
 <!-- SW:END:lsp -->
 
-<!-- SW:SECTION:structure version="1.0.60" -->
+<!-- SW:SECTION:structure version="1.0.138" -->
 ## Structure
 
 ```
 .specweave/
 ├── increments/####-name/     # metadata.json, spec.md, tasks.md
-├── docs/internal/
-│   ├── specs/{project}/      # Living docs (check before implementing!)
-│   ├── architecture/adr/     # ADRs (check before design decisions!)
-│   └── operations/           # Runbooks
+├── docs/internal/specs/      # Living docs (check before implementing!)
+│   └── architecture/adr/     # ADRs (check before design decisions!)
 └── config.json
 ```
 
-### ⚠️ CRITICAL: Multi-Repo Project Paths (MANDATORY)
+### ⛔ INCREMENT FOLDER ORGANIZATION (CRITICAL!)
 
-**ALL multi-project repositories MUST be created in `repositories/` folder - NEVER in project root!**
+**Increment folders MUST stay clean. NEVER pollute them with random files!**
 
+**ONLY these 4 files at increment root**:
+- `metadata.json` (required)
+- `spec.md` (required)
+- `plan.md` (optional)
+- `tasks.md` (required)
+
+**EVERYTHING ELSE → subfolders**:
+| File Type | Destination Folder |
+|-----------|-------------------|
+| Reports, analysis, summaries (*.md) | `reports/` |
+| Validation reports, QA reports | `reports/` |
+| Session reports, completion reports | `reports/` |
+| Logs, execution output | `logs/{YYYY-MM-DD}/` |
+| Helper scripts, automation | `scripts/` |
+| Domain-specific docs | `docs/domain/` |
+| Backup files | `backups/` |
+
+**Examples**:
+```bash
+# ✅ CORRECT
+.specweave/increments/0021-feature/
+├── metadata.json
+├── spec.md
+├── tasks.md
+├── reports/
+│   ├── validation-report.md
+│   ├── completion-report.md
+│   └── auto-session-summary.md
+└── logs/
+    └── 2026-01-04/
+        └── execution.log
+
+# ❌ WRONG - polluted increment folder!
+.specweave/increments/0021-feature/
+├── metadata.json
+├── spec.md
+├── tasks.md
+├── completion-report.md      # WRONG! → reports/
+├── auto-session-summary.md   # WRONG! → reports/
+└── analysis.md               # WRONG! → reports/
 ```
-❌ FORBIDDEN (pollutes root):
+
+**Multi-repo projects**: Create in `repositories/` folder (NEVER project root!)
+```
 my-project/
-├── frontend/        ← WRONG!
-├── backend/         ← WRONG!
-├── shared/          ← WRONG!
-└── .specweave/
-
-✅ REQUIRED (clean structure):
-my-project/
-├── repositories/
-│   ├── frontend/    ← CORRECT!
-│   ├── backend/     ← CORRECT!
-│   └── shared/      ← CORRECT!
+├── repositories/     # All repos here: frontend/, backend/, shared/
 └── .specweave/
 ```
 
-**This applies to ALL cases:**
-- GitHub multi-repo → `repositories/`
-- Azure DevOps multi-repo → `repositories/`
-- Bitbucket multi-repo → `repositories/`
-- **Local git multi-repo → `repositories/`** ← Same rule!
-- Monorepo with multiple packages → `repositories/` or `packages/`
-
-**When spec.md has `projects:` array:**
-```yaml
-projects:
-  - id: my-api
-    scope: "Backend API"
-```
-The implementation path is ALWAYS: `repositories/my-api/` (NOT `my-api/` in root!)
-
-**Multi-repo permissions**: In `.claude/settings.json`:
+**Permissions** (`.claude/settings.json`):
 ```json
-{"permissions":{"allow":["Write(//**)","Edit(//**)"],"additionalDirectories":["repositories"],"defaultMode":"bypassPermissions"}}
+{"permissions":{"allow":["Write(//**)","Edit(//**)"],"additionalDirectories":["repositories"]}}
 ```
-**Path syntax**: `//path` = absolute | `/path` = relative to settings file | `**` = recursive | `additionalDirectories` = explicit working dirs
 <!-- SW:END:structure -->
 
-<!-- SW:SECTION:taskformat version="1.0.60" -->
+<!-- SW:SECTION:taskformat version="1.0.138" -->
 ## Task Format
 
 ```markdown
@@ -223,18 +229,21 @@ The implementation path is ALWAYS: `repositories/my-api/` (NOT `my-api/` in root
 ```
 <!-- SW:END:taskformat -->
 
-<!-- SW:SECTION:secrets version="1.0.60" -->
+<!-- SW:SECTION:secrets version="1.0.138" -->
 ## Secrets Check
 
 **BEFORE CLI tools**: Check existing config first!
 ```bash
-grep -E "(GITHUB_TOKEN|JIRA_|ADO_)" .env 2>/dev/null
+# Check if credentials EXIST (never display values!)
+grep -qE "(GITHUB_TOKEN|JIRA_|ADO_)" .env 2>/dev/null && echo "Credentials found in .env"
 cat .specweave/config.json | grep -A5 '"sync"'
 gh auth status
 ```
+
+**SECURITY**: NEVER use `grep TOKEN .env` without `-q` flag - it exposes credentials in terminal!
 <!-- SW:END:secrets -->
 
-<!-- SW:SECTION:syncing version="1.0.60" -->
+<!-- SW:SECTION:syncing version="1.0.138" -->
 ## External Sync (GitHub/JIRA/ADO)
 
 **After increment creation**: Run `/sw-github:sync {id}` to create issues!
@@ -259,10 +268,10 @@ Living docs sync ≠ External sync. They are separate:
 }
 ```
 
-**Verify tokens**: `grep GITHUB_TOKEN .env` | `gh auth status`
+**Verify tokens**: `grep -q GITHUB_TOKEN .env && echo "Token configured"` | `gh auth status`
 <!-- SW:END:syncing -->
 
-<!-- SW:SECTION:mapping version="1.0.60" -->
+<!-- SW:SECTION:mapping version="1.0.138" -->
 ## GitHub Mapping
 
 | SpecWeave | GitHub |
@@ -272,7 +281,7 @@ Living docs sync ≠ External sync. They are separate:
 | Task T-XXX | Checkbox |
 <!-- SW:END:mapping -->
 
-<!-- SW:SECTION:testing version="1.0.60" -->
+<!-- SW:SECTION:testing version="1.0.138" -->
 ## Testing
 
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
@@ -284,111 +293,38 @@ vi.mock('fs', () => ({ readFile: vi.fn() }));
 ```
 <!-- SW:END:testing -->
 
-<!-- SW:SECTION:api version="1.0.60" -->
+<!-- SW:SECTION:api version="1.0.138" -->
 ## API Development (OpenAPI-First)
 
-**For API projects only.** Skip this section if your project has no REST/GraphQL endpoints.
+**For API projects only.** OpenAPI = source of truth → Postman derived from it.
 
-**Use OpenAPI as the source of truth for API documentation.** Postman collections and environments are derived from OpenAPI and .env.
-
-### Configuration (`.specweave/config.json`)
-
+**Config** (`.specweave/config.json`):
 ```json
-{
-  "apiDocs": {
-    "enabled": true,
-    "openApiPath": "openapi.yaml",
-    "generatePostman": true,
-    "postmanPath": "postman-collection.json",
-    "postmanEnvPath": "postman-environment.json",
-    "generateOn": "on-increment-done",
-    "baseUrl": "http://localhost:3000"
-  }
-}
+{"apiDocs":{"enabled":true,"openApiPath":"openapi.yaml","generatePostman":true,"generateOn":"on-increment-done"}}
 ```
 
-### Generated Artifacts
+**Frameworks**: NestJS (`@nestjs/swagger`) | FastAPI (built-in) | Express (`swagger-jsdoc`) | Spring Boot (`springdoc-openapi`)
 
-| File | Purpose | Source |
-|------|---------|--------|
-| `openapi.yaml` | API specification (source of truth) | Framework decorators/annotations |
-| `postman-collection.json` | API requests for testing | Derived from OpenAPI |
-| `postman-environment.json` | Variables (baseUrl, tokens, etc.) | Derived from .env |
+**Commands**: `/sw:api-docs --all` (OpenAPI + Postman) | `--openapi` | `--postman` | `--env` | `--validate`
 
-### OpenAPI Generation by Framework
+**Flow**: Code decorators → `openapi.yaml` → `/sw:done` or `/sw:api-docs` → Postman collection + env
 
-| Framework | Auto-Generation | Setup |
-|-----------|-----------------|-------|
-| **NestJS** | `@nestjs/swagger` | Decorators auto-generate OpenAPI |
-| **FastAPI** | Built-in | Auto-generates at `/openapi.json` |
-| **Express** | `swagger-jsdoc` | JSDoc comments → OpenAPI |
-| **Spring Boot** | `springdoc-openapi` | Annotations auto-generate |
-| **Go/Gin** | `swag` | Comments → OpenAPI |
-
-### Workflow
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ Code (decorators/annotations)                                │
-│         ↓ (auto-generated or manual)                         │
-│ openapi.yaml (SOURCE OF TRUTH - version controlled)         │
-│         ↓ (derived on /sw:done or /sw:api-docs)             │
-│ ├── postman-collection.json (requests with {{baseUrl}})     │
-│ └── postman-environment.json (variables from .env)          │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Commands
-
-```bash
-# Generate all API docs (OpenAPI + Postman collection + environment)
-/sw:api-docs --all
-
-# Generate only OpenAPI
-/sw:api-docs --openapi
-
-# Generate only Postman collection from existing OpenAPI
-/sw:api-docs --postman
-
-# Generate only environment file from .env
-/sw:api-docs --env
-
-# Validate existing OpenAPI spec
-/sw:api-docs --validate
-
-# Generate on increment close (automatic if enabled)
-/sw:done 0001  # → triggers API doc generation
-```
-
-### Postman Import
-
-After generation:
-1. Postman → Import → `postman-collection.json`
-2. Postman → Environments → Import → `postman-environment.json`
-3. Fill in secret values (marked as secret type, values empty)
-4. Select environment from dropdown
-
-### When Docs Update
-
-| `generateOn` Setting | When API Docs Regenerate |
-|---------------------|--------------------------|
-| `on-increment-done` | When closing increment (recommended) |
-| `on-api-change` | When API files change (hook-based) |
-| `manual` | Only via `/sw:api-docs` command |
+**Import**: Postman → Import collection + env → Fill secrets → Select env
 <!-- SW:END:api -->
 
-<!-- SW:SECTION:limits version="1.0.60" -->
+<!-- SW:SECTION:limits version="1.0.138" -->
 ## Limits
 
 **Max 1500 lines/file** — extract before adding
 <!-- SW:END:limits -->
 
-<!-- SW:SECTION:troubleshooting version="1.0.60" -->
+<!-- SW:SECTION:troubleshooting version="1.0.138" -->
 ## Troubleshooting
 
 | Issue | Fix |
 |-------|-----|
 | Skills missing | Restart Claude Code |
+| Plugins outdated | `specweave refresh-marketplace` (NEVER use `scripts/refresh-marketplace.sh` - that's for contributors only!) |
 | Commands gone | `/plugin list --installed` |
 | Out of sync | `/sw:sync-tasks` |
 | Find increment | `/sw:status` |
@@ -400,10 +336,66 @@ After generation:
 | No GITHUB_TOKEN | Check `.env` file or run `gh auth login` |
 | Edits blocked in repositories/ | Add `"additionalDirectories":["repositories"]` + `Write(//**)`, `Edit(//**)` to `.claude/settings.json` |
 | Path patterns not working | `//path` = absolute, `/path` = relative to settings file, `additionalDirectories` for explicit working dirs |
-| **specweave/claude not found after Node upgrade** | **nvm users**: Global packages are lost when switching Node versions! Fix: `nvm reinstall-packages <old-version>` OR `npm install -g specweave @anthropic-ai/claude-code`. See [Node Version Management](/.specweave/docs/internal/operations/runbook-node-version-management.md) |
+| Router not spawning agents | Restart Claude Code; check `/plugin` shows `sw-router` |
+| Need all plugins loaded | `specweave load-plugins all` (~60K tokens) |
 <!-- SW:END:troubleshooting -->
 
-<!-- SW:SECTION:principles version="1.0.60" -->
+<!-- SW:SECTION:lazyloading version="1.0.138" -->
+## Lazy Plugin Loading (Auto-Loading)
+
+**SpecWeave automatically loads plugins** when you need them - no manual action required.
+
+### Three-Layer Auto-Loading
+
+| Layer | When | What Happens |
+|-------|------|--------------|
+| **Session Start** | Claude starts | Detects project type (React, K8s, etc.) → installs matching plugins |
+| **Prompt Detection** | You type | Detects keywords (stripe, terraform, etc.) → installs matching plugins |
+| **Router Spawn** | Implementation | Router spawns specialized agents via Task tool (isolated context) |
+
+**Example flow**:
+1. You open a React project → `sw-frontend` auto-installed
+2. You type "add stripe checkout" → `sw-payments` auto-installed
+3. You run `/sw:do` → Router spawns `frontend-architect` agent
+
+### Keyword → Plugin Mapping
+
+| Keywords | Plugin Installed |
+|----------|------------------|
+| react, vue, angular, nextjs, UI, component | `sw-frontend` |
+| stripe, payment, checkout, billing | `sw-payments` |
+| k8s, kubernetes, docker, terraform | `sw-k8s`, `sw-infrastructure` |
+| github, PR, issue, actions | `sw-github` |
+| jira, epic, story | `sw-jira` |
+| release, changelog, npm publish | `sw-release` |
+| test, tdd, playwright, vitest | `sw-testing` |
+| ml, pytorch, tensorflow, training | `sw-ml` |
+
+### Manual Fallback (Rarely Needed)
+
+If auto-loading misses something, install manually:
+```bash
+specweave load-plugins github    # Load specific plugin
+specweave load-plugins all       # Load all 24 plugins (~60K tokens)
+specweave plugin-status          # Check what's loaded
+```
+
+### Disable Auto-Loading
+
+```bash
+export SPECWEAVE_DISABLE_AUTO_LOAD=1  # Disable auto-loading
+```
+
+### Token Savings
+
+| Mode | Context Usage |
+|------|---------------|
+| Default (core + auto-load) | ~3-5K tokens |
+| All 24 plugins | ~60K tokens |
+| Agent spawn (forked) | 0 tokens in main context |
+<!-- SW:END:lazyloading -->
+
+<!-- SW:SECTION:principles version="1.0.138" -->
 ## Principles
 
 1. **Spec-first**: `/sw:increment` before coding
@@ -413,7 +405,7 @@ After generation:
 5. **Clean**: All files in increment folders
 <!-- SW:END:principles -->
 
-<!-- SW:SECTION:linking version="1.0.60" -->
+<!-- SW:SECTION:linking version="1.0.138" -->
 ## Bidirectional Linking
 
 Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
@@ -421,534 +413,124 @@ Tasks ↔ User Stories auto-linked via AC-IDs: `AC-US1-01` → `US-001`
 Task format: `**AC**: AC-US1-01, AC-US1-02` (CRITICAL for linking)
 <!-- SW:END:linking -->
 
-<!-- SW:SECTION:mcp version="1.0.60" -->
-## External Service Connection (MCP + Smart Fallbacks)
+<!-- SW:SECTION:mcp version="1.0.138" -->
+## External Service Connection
 
-**Core principle: Never fight connection issues. Use the path of least resistance.**
+**Priority**: MCP Server → REST API → CLI → Direct Connection
 
-### Connection Priority (ALWAYS follow this order)
-
-```
-MCP Server → REST API → SDK/Client → CLI → Direct Connection
-     ↑                                              ↓
-   BEST                                          WORST
-```
-
-### Service Connection Matrix
-
-| Service | BEST Method | Fallback | AVOID |
-|---------|-------------|----------|-------|
-| **Supabase** | MCP Server | REST API / JS Client | Direct `psql` (IPv6 issues) |
-| **Cloudflare** | `wrangler` + OAuth | REST API | Manual curl |
-| **PostgreSQL** | MCP / Pooler (6543) | `psql` with pooler | Direct port 5432 |
-| **MongoDB** | Atlas Data API | MCP / Driver | Direct connection |
-| **Redis** | Upstash REST | MCP | `redis-cli` (TCP issues) |
-| **AWS** | CLI with SSO | SDK | Hardcoded keys |
-| **Vercel** | CLI with OAuth | REST API | Manual deploys |
-
-### Quick Setup Commands
-
+**Setup**:
 ```bash
-# MCP Servers (one-time, restart Claude Code after)
+# MCP (restart Claude Code after)
 npx @anthropic-ai/claude-code-mcp add supabase
-npx @anthropic-ai/claude-code-mcp add postgres
 
-# CLI Auth (persistent OAuth sessions)
-wrangler login        # Cloudflare
-vercel login          # Vercel
-aws configure sso     # AWS
-supabase login        # Supabase CLI
-
-# Verify auth status
-wrangler whoami && vercel whoami && aws sts get-caller-identity
+# CLI Auth
+wrangler login && vercel login && supabase login
 ```
 
-### Supabase (Most Common Issues)
+**Supabase**: Use REST API or pooler (port 6543), AVOID direct `psql`
+**Cloudflare**: `wrangler login` once, then `wrangler deploy/secret put/kv:key put`
 
+**Check credentials before ops**:
 ```bash
-# ❌ DON'T: Direct psql or supabase db push (IPv6 fails)
-supabase db push  # Often fails with connection errors
-
-# ✅ DO: Use REST API or MCP
-# REST API works everywhere - no network issues
-curl "${SUPABASE_URL}/rest/v1/table" \
-  -H "apikey: ${SUPABASE_ANON_KEY}"
-
-# For migrations: Use Supabase Dashboard SQL Editor
-# OR use connection pooler (port 6543, NOT 5432)
-DATABASE_URL="postgresql://postgres.[ref]:[pass]@aws-0-region.pooler.supabase.com:6543/postgres"
-```
-
-### Cloudflare Workers
-
-```bash
-# One-time login (saves OAuth session)
-wrangler login
-
-# All operations then work:
-wrangler deploy                          # Deploy worker
-echo "value" | wrangler secret put KEY   # Set secret
-wrangler kv:key put --binding=KV k v     # KV operations
-wrangler d1 execute DB --command "SQL"   # D1 database
-```
-
-### Auto-Detection (Run Before External Ops)
-
-```bash
-# Check configured services
-grep -E "SUPABASE_|DATABASE_URL|MONGODB|UPSTASH|CF_API" .env 2>/dev/null
+# Check presence only (never display values!)
+grep -qE "SUPABASE_|DATABASE_URL|CF_API" .env 2>/dev/null && echo "Credentials found"
 wrangler whoami 2>/dev/null
-aws sts get-caller-identity 2>/dev/null
 ```
-
-**Full reference**: See `/sw:service-connect` skill for complete patterns.
 <!-- SW:END:mcp -->
 
-<!-- SW:SECTION:autoexecute version="1.0.60" -->
-## Auto-Execute Rule (CRITICAL)
+<!-- SW:SECTION:autoexecute version="1.0.138" -->
+## Auto-Execute Rule
 
-**NEVER output "Manual Step Required" or "Next Steps" when credentials are available.**
+**NEVER** output "Manual Step Required" when credentials exist. **EXECUTE DIRECTLY.**
 
-### The Golden Rule
+**Flow**: Check `.env` → If exists, EXECUTE | If missing, ASK for credentials → Save → EXECUTE
 
-```
-❌ FORBIDDEN: "Manual Step Required: Open Supabase SQL Editor..."
-❌ FORBIDDEN: "Next Steps: 1. Run wrangler deploy..."
-❌ FORBIDDEN: "Execute this SQL in your database console..."
-
-✅ REQUIRED: Execute commands directly using available credentials
-```
-
-### Decision Tree
-
-```
-Credentials in .env? ──YES──→ EXECUTE IMMEDIATELY
-         │
-         NO
-         │
-         ▼
-ASK for credentials (don't show manual steps!)
-         │
-         ▼
-Save to .env → EXECUTE IMMEDIATELY → Continue
-```
-
-### Credential Lookup (MANDATORY before any external operation)
-
+**Check before ops**:
 ```bash
-# 1. Check .env
-grep -E "(SUPABASE_|DATABASE_URL|CF_API_|GITHUB_TOKEN)" .env 2>/dev/null
-
-# 2. Check CLI auth
-supabase status 2>/dev/null     # Supabase
-wrangler whoami 2>/dev/null     # Cloudflare
-gh auth status 2>/dev/null      # GitHub
-aws sts get-caller-identity 2>/dev/null  # AWS
-
-# 3. Use MCP server if available
-# MCP servers provide direct API access
-```
-
-### Auto-Execute Examples
-
-```bash
-# Supabase SQL execution
-if [ -n "$DATABASE_URL" ]; then
-  psql "$DATABASE_URL" -f schema.sql  # ✅ Execute directly
-fi
-
-# Wrangler secrets
-if wrangler whoami 2>/dev/null; then
-  echo "$SECRET" | wrangler secret put MY_SECRET  # ✅ Execute directly
-  wrangler deploy  # ✅ Deploy directly
-fi
-```
-
-### If Credentials Missing → ASK, Don't Show Manual Steps
-
-```markdown
-🔐 **Credential Required**
-
-I need your DATABASE_URL to execute the migration.
-
-**Paste your connection string:**
-[I will save to .env and execute automatically]
+# Check presence only (never display credential values!)
+grep -qE "(SUPABASE_|DATABASE_URL|CF_API_|GITHUB_TOKEN)" .env 2>/dev/null && echo "Credentials configured"
+wrangler whoami 2>/dev/null && gh auth status 2>/dev/null
 ```
 <!-- SW:END:autoexecute -->
 
-<!-- SW:SECTION:auto version="1.0.60" -->
+<!-- SW:SECTION:auto version="1.0.138" -->
 ## Auto Mode (Autonomous Execution)
 
-**Auto mode enables continuous autonomous execution** until all tasks are complete.
-
-### 🆕 Intelligent Increment Creation (NEW!)
-
-**Auto mode now auto-creates increments when none exist!**
-
-**Default behavior**: `/sw:auto` with no arguments will:
-1. Check for active/in-progress increments → use if found
-2. If none found → **intelligently create increments** based on user context
-3. Match existing planned/backlog increments OR create new ones
-4. Ask user if ambiguous
-
-**Strict mode**: Use `--no-increment` or `--no-inc` flag to require existing increments (no auto-creation)
-
-**Examples:**
-```bash
-# User says: "Let's build the dashboard feature"
-/sw:auto
-# → Finds 0004-dashboard in backlog OR creates it
-
-# User says: "Work on auth and notifications"
-/sw:auto
-# → Creates queue: [0001-auth, 0002-notifications]
-
-# Strict mode (no auto-creation) - both forms work
-/sw:auto --no-increment
-/sw:auto --no-inc
-# → ERROR if no active increment
-```
-
-**Intelligence patterns:**
-- **Match**: "continue auth" → finds `0002-authentication`
-- **Extend**: "add password reset" → adds tasks to active auth increment
-- **Create**: "build payment system" → creates `0003-payment-integration`
-- **Queue**: "finish all pending" → processes all backlog items
-- **Ask**: If ambiguous → present options to user
-
-### 🚨 CRITICAL: Zero Manual Steps in Auto Mode
-
-**Auto mode MUST be fully autonomous. NEVER ask user to:**
-- Open a web dashboard (Supabase, AWS Console, etc.)
-- Copy/paste SQL into an editor
-- Run commands manually
-- Click buttons in UIs
-
-**If you need external access:**
-1. Check for credentials in `.env`
-2. Use CLI tools (`supabase`, `wrangler`, `gh`, `aws`)
-3. Use MCP servers for direct API access
-4. If credentials missing → ASK for them, save to `.env`, then EXECUTE
-
-### 🧪 Test Execution Loop (MANDATORY)
-
-**After EVERY implementation task, run tests in a self-healing loop:**
-
-```bash
-# 1. Run unit/integration tests
-npm test  # or: npx vitest run
-
-# 2. If UI exists, run E2E tests
-npx playwright test
-
-# 3. If tests fail → FIX → RE-RUN (max 3 attempts)
-```
-
-**Test Loop Pattern (Ralph Loop):**
-```
-┌─────────────────────────────────────────────────────────────┐
-│ IMPLEMENT → TEST → FAIL? → FIX → TEST → PASS → NEXT TASK   │
-│                     ↑________________↓                       │
-│                    (max 3 iterations)                        │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**E2E Test Execution (when UI exists):**
-```bash
-# Install Playwright browsers if needed
-npx playwright install --with-deps chromium
-
-# Run E2E tests with proper reporting
-npx playwright test --reporter=list
-
-# On failure, capture screenshot/trace
-npx playwright test --trace on
-```
-
-**Focus on MVP Critical Paths:**
-1. **Authentication flows** (login, logout, register)
-2. **Core business transactions** (create, update, delete)
-3. **Payment/checkout flows** (if applicable)
-4. **Data integrity scenarios**
-
-### ⚠️ Pragmatic Completion (NOT 100% Blindly!)
-
-**Don't blindly follow 100% completion rules!** Reality:
-- Specs have bugs, ambiguities, conflicts
-- Requirements change mid-implementation
-- Some planned tasks become irrelevant
-- Edge cases may not be worth the effort
-
-**Smart Completion Criteria:**
-```
-┌─────────────────────────────────────────────────────────────┐
-│ MUST COMPLETE (block release):                               │
-│ • MVP critical paths (auth, core CRUD, payments)            │
-│ • Security-sensitive flows                                   │
-│ • Data integrity operations                                  │
-│ • User-facing error handling                                 │
-├─────────────────────────────────────────────────────────────┤
-│ SHOULD COMPLETE (aim for, but pragmatic):                    │
-│ • Edge case handling                                         │
-│ • Performance optimizations                                  │
-│ • Nice-to-have features                                      │
-├─────────────────────────────────────────────────────────────┤
-│ CAN SKIP/DEFER (if blocking progress):                       │
-│ • Conflicting requirements (flag and ask user)              │
-│ • Over-engineered edge cases                                 │
-│ • Tasks made obsolete by other changes                       │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**When to STOP and ask user:**
-- Spec conflicts with another spec
-- Task seems unnecessary given implementation
-- Edge case would require major refactoring
-- Requirement is ambiguous
-
-### 🧑‍🤝‍🧑 Smart Test User Strategy
-
-**Create test users strategically, not blindly:**
-
-```typescript
-// Good: Create users with specific roles/states
-const testUsers = {
-  admin: { email: 'admin@test.com', role: 'admin' },
-  regularUser: { email: 'user@test.com', role: 'user' },
-  premiumUser: { email: 'premium@test.com', plan: 'premium' },
-  blockedUser: { email: 'blocked@test.com', status: 'blocked' },
-};
-
-// When to create multiple test users:
-// ✅ Testing role-based access control
-// ✅ Testing subscription tiers
-// ✅ Testing user states (active, blocked, pending)
-// ✅ Testing multi-user interactions (sharing, permissions)
-
-// When ONE test user is enough:
-// ✅ Basic CRUD operations
-// ✅ Form validation
-// ✅ UI component tests
-// ✅ API endpoint tests (mocked auth)
-```
-
-**E2E Test User Setup:**
-```typescript
-// playwright/fixtures/users.ts
-export const testUsers = {
-  // Seeded in database before tests
-  admin: { id: 'test-admin-001', email: 'admin@test.local' },
-  user: { id: 'test-user-001', email: 'user@test.local' },
-};
-
-// Use fixtures, don't create users per test!
-test.use({ storageState: 'playwright/.auth/user.json' });
-```
-
-### 🔐 E2E Authentication (CRITICAL - Avoid Flaky Tests!)
-
-**Auth is the #1 cause of flaky E2E tests. Be ULTRASMART:**
-
-| Strategy | Speed | Reliability | Use When |
-|----------|-------|-------------|----------|
-| **storageState** | ⚡⚡⚡ | ⭐⭐⭐ | Default - login ONCE, reuse |
-| **API auth** | ⚡⚡ | ⭐⭐⭐ | When UI is unstable |
-| **UI login per test** | ⚡ | ⭐ | Only testing login flow |
-
-**Playwright Auth Setup (MANDATORY):**
-
-```typescript
-// playwright/auth.setup.ts - Global setup
-import { test as setup } from '@playwright/test';
-
-setup('authenticate', async ({ page }) => {
-  await page.goto('/login');
-  await page.fill('[name="email"]', 'test@example.com');
-  await page.fill('[name="password"]', 'testpass123');
-  await page.click('button[type="submit"]');
-  await page.waitForURL('/dashboard');
-  await page.context().storageState({ path: 'playwright/.auth/user.json' });
-});
-```
-
-```typescript
-// playwright.config.ts - Reuse auth state
-projects: [
-  { name: 'setup', testMatch: /.*\.setup\.ts/ },
-  {
-    name: 'chromium',
-    use: { storageState: 'playwright/.auth/user.json' },
-    dependencies: ['setup'],
-  },
-]
-```
-
-**Common Auth Fixes:**
-
-| Problem | Solution |
-|---------|----------|
-| Session expires | Increase TTL for test env |
-| Rate limited | Use API auth, seed users |
-| Captcha blocks | Disable in test env |
-| OAuth fails | Mock provider |
-
-**Auto Mode E2E Checklist:**
-```
-✅ Test users seeded with known passwords
-✅ Auth state files generated
-✅ Tests DON'T login (except login flow tests)
-✅ Captcha/2FA disabled in test env
-```
-
-### 🔄 Continuous Refactoring (Part of Auto Loop)
-
-**As tests grow, REFACTOR proactively:**
-
-```
-After every 3-5 tasks:
-1. Review test organization → Extract shared fixtures
-2. Review code duplication → Extract utilities
-3. Review file sizes → Split if >300 lines
-4. Review imports → Consolidate, remove unused
-```
-
-**Refactoring Triggers:**
-- Test file > 200 lines → Split by feature
-- Duplicate test setup → Extract to fixtures
-- Same assertion pattern 3+ times → Create helper
-- Source file > 300 lines → Extract module
-
-### 📊 Test Status Reporting (MANDATORY in Auto Mode)
-
-**After EVERY task, report test status to user:**
-
-```markdown
-## 🧪 Test Status Report
-
-| Type | Status | Pass/Total | Coverage |
-|------|--------|------------|----------|
-| Unit | ✅ | 42/42 | 87% |
-| Integration | ✅ | 12/12 | - |
-| E2E | ⚠️ | 8/10 | - |
-
-**Failing tests:**
-- `auth.spec.ts:45` - Login redirect not working
-- `checkout.spec.ts:112` - Payment timeout
-
-**Next:** Fixing E2E failures before continuing...
-```
-
-### 🏠 Local-First Development
-
-**If no deployment instructions provided, BUILD AND TEST LOCALLY FIRST:**
-
-```
-1. Implement feature locally
-2. Run ALL tests (unit, integration, E2E)
-3. Verify everything works
-4. THEN ask user about deployment preferences
-```
-
-**Don't assume deployment target!** Ask user:
-```markdown
-🚀 **Deployment Options**
-
-Your scraper is ready and all tests pass locally.
-
-**Where would you like to deploy?**
-- Vercel Cron (serverless, free tier available)
-- Railway (always-on, $5/mo)
-- GitHub Actions (CI-based, free)
-- Local cron (self-hosted)
-- Other?
-```
-
-### 🔧 Infrastructure Decision-Making
-
-**For scrapers, cron jobs, background tasks - ULTRATHINK on best approach:**
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ INFRASTRUCTURE DECISION TREE                                 │
-├─────────────────────────────────────────────────────────────┤
-│ Scraper/Cron Job:                                           │
-│ ├─ Frequency < 1/hour → Vercel Cron, GitHub Actions         │
-│ ├─ Frequency ≥ 1/hour → Railway, Render, dedicated server   │
-│ ├─ Heavy compute → Dedicated VM, Docker container           │
-│ └─ Real-time → Always-on server, WebSocket                  │
-│                                                              │
-│ Data Storage:                                                │
-│ ├─ Simple KV → Upstash Redis, Vercel KV                     │
-│ ├─ Relational → Supabase, PlanetScale, Neon                 │
-│ ├─ Document → MongoDB Atlas, Supabase                       │
-│ └─ Time-series → TimescaleDB, InfluxDB                      │
-│                                                              │
-│ File Storage:                                                │
-│ ├─ Static assets → Cloudflare R2, S3                        │
-│ └─ Large files → S3, GCS, Backblaze B2                      │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**When implementing scrapers/cron jobs:**
-1. **Ultrathink** on best hosting options given requirements
-2. **Research** rate limits, costs, reliability
-3. **Propose** 2-3 options with trade-offs
-4. **Build locally first** with tests
-5. **Deploy** only after user confirms target
-
-### For Claude Code Users
-
-Auto mode uses Claude Code's Stop Hook to create a feedback loop:
-- `/sw:do` continues until all tasks complete
-- `/sw:auto-status` shows session progress
-- `/sw:cancel-auto` stops autonomous execution
-
-Session state stored in `.specweave/state/auto-session.json`.
-
-### For Non-Claude AI Systems
-
-If using SpecWeave with other AI systems (GPT, Gemini, etc.), implement this loop pattern:
-
-```bash
-# Bash loop for autonomous execution
-while true; do
-    # Check if all tasks complete
-    TOTAL=$(grep -c "^### T-" .specweave/increments/*/tasks.md 2>/dev/null || echo "0")
-    DONE=$(grep -c '\[x\].*completed' .specweave/increments/*/tasks.md 2>/dev/null || echo "0")
-
-    if [ "$TOTAL" -gt 0 ] && [ "$DONE" -ge "$TOTAL" ]; then
-        echo "All tasks complete!"
-        break
-    fi
-
-    # Feed prompt to your AI
-    cat PROMPT.md | your-ai-cli
-
-    # Safety: max iterations
-    ITER=$((ITER + 1))
-    if [ "$ITER" -ge 100 ]; then
-        echo "Max iterations reached"
-        break
-    fi
-done
-```
-
-**Key Concepts**:
-- **Completion Detection**: Check tasks.md for `[x] completed` status
-- **Completion Tag**: Output `<auto-complete>DONE</auto-complete>` when finished
-- **Max Iterations**: Always set a limit (default: 100)
-- **Human Gates**: Pause for sensitive ops (deploy, publish, force-push)
-
-**Human-Gated Operations** (require manual approval):
-- `npm publish`, `git push --force`, `rm -rf /`
-- Any `production` deployment
-- API key or credential changes
-- Database migrations (`drop`, `delete from`, `migrate`)
-
-**Circuit Breaker Pattern**: If external API (GitHub, JIRA) fails 3+ times, queue operations and continue.
+**Continuous execution until all tasks complete.**
+
+### Zero Manual Steps
+
+**NEVER ask user to**: Open dashboards | Copy/paste | Run commands manually
+
+**Instead**: Check `.env` → Use CLI (`wrangler`, `gh`, `aws`) → Use MCP → If missing, ASK → Save → EXECUTE
+
+### Test Loop (MANDATORY)
+
+**After EVERY task**: `npm test` → If E2E exists: `npx playwright test` → Fail? FIX → Rerun (max 3x) → Pass → Next
+
+**Pattern**: IMPLEMENT → TEST → FAIL? → FIX → TEST → PASS → NEXT
+
+**MVP paths**: Auth (login/logout) | Core CRUD | Payments | Data integrity
+
+### Pragmatic Completion
+
+**Don't blindly follow 100%!** Specs have bugs, requirements change, some tasks become irrelevant.
+
+**MUST**: MVP paths | Security flows | Data integrity | User-facing errors
+**SHOULD**: Edge cases | Performance | Nice-to-haves
+**CAN SKIP**: Conflicts (ask user) | Over-engineered cases | Obsolete tasks
+
+**STOP & ASK** if: Spec conflicts | Task seems unnecessary | Requirement ambiguous
+
+### Test User Strategy
+
+**Multiple users**: RBAC | Subscription tiers | User states | Multi-user interactions
+**One user**: CRUD | Form validation | Component tests | Mocked auth
+
+**E2E**: Seed DB with known users → Use fixtures → `storageState` (auth once, reuse)
+
+### E2E Authentication
+
+**Auth = #1 flaky test cause.** Use `storageState` (login ONCE, reuse) | API auth (UI unstable) | UI login (only for login tests)
+
+**Setup**: Global auth.setup.ts → Save to `playwright/.auth/user.json` → Reuse in config
+
+**Fixes**: Session expires? Increase TTL | Rate limited? API auth | Captcha? Disable in test env
+
+**Checklist**: Seed users | Gen auth state | Tests DON'T login | Disable captcha/2FA
+
+### Refactoring & Reporting
+
+**Every 3-5 tasks**: Extract fixtures | Remove duplication | Split if >300 lines | Clean imports
+
+**Triggers**: Test >200 lines? Split | Duplicate setup? Extract | Same assertion 3x? Helper
+
+**Report after EVERY task**: Pass/Total | Coverage | Failing tests | Next steps
+
+### Local-First & Infrastructure
+
+**No deploy instructions?** Build locally → Test all → Verify → ASK user about deploy target
+
+**Infra Decision Tree**:
+- **Cron**: <1/hr → Vercel/GitHub Actions | ≥1/hr → Railway/Render
+- **Storage**: KV → Upstash/Vercel KV | SQL → Supabase/Neon | Docs → MongoDB | Files → R2/S3
+
+**Process**: Ultrathink options → Research costs → Propose 2-3 → Build local → User confirms → Deploy
+
+### Implementation
+
+**Claude Code**: `/sw:auto` (autonomous mode) | `/sw:auto-status` (progress)
+
+**To pause**: Just close Claude Code session, resume with `/sw:do`
+
+**Emergency cancel**: `/sw:cancel-auto` (rarely needed - prefer closing session)
+
+**Other AI**: Loop check tasks.md `[x]` status → Max 100 iter → Human gates for: publish, force-push, prod deploy, migrations
+
+**Circuit Breaker**: External API fails 3x? Queue & continue
 <!-- SW:END:auto -->
 
-<!-- SW:SECTION:docs version="1.0.60" -->
+<!-- SW:SECTION:docs version="1.0.138" -->
 ## Docs
 
 [spec-weave.com](https://spec-weave.com) | `.specweave/docs/internal/`
@@ -976,6 +558,18 @@ For **contributors to SpecWeave itself** (not users).
 
 ## Marketplace Installation (CRITICAL)
 
+**⚠️ CRITICAL: NEVER suggest `bash scripts/refresh-marketplace.sh` to end users!**
+
+End users **don't have the `scripts/` folder** - they installed SpecWeave via npm globally.
+
+**Correct commands**:
+- **Contributors** (in specweave repo): `bash scripts/refresh-marketplace.sh`
+- **End Users** (user projects): `specweave refresh-marketplace`
+
+---
+
+### For SpecWeave Contributors (Development)
+
 **ALWAYS use GitHub marketplace mode. NEVER use local symlinks or directory mode.**
 
 ```bash
@@ -994,6 +588,32 @@ bash scripts/refresh-marketplace.sh --github
 **Quick refresh & install all 24 plugins:**
 ```bash
 bash scripts/refresh-marketplace.sh  # Defaults to --github
+```
+
+### For End Users (Production)
+
+**Users install SpecWeave globally and use CLI commands:**
+
+```bash
+# Install SpecWeave globally
+npm install -g specweave
+
+# Initialize project (first time)
+specweave init .
+
+# Update marketplace plugins (gets latest from GitHub)
+specweave refresh-marketplace
+
+# Update instruction files (CLAUDE.md, AGENTS.md)
+specweave update-instructions
+```
+
+**After marketplace updates**: Restart Claude Code for changes to take effect.
+
+**Verify installation**:
+```bash
+specweave --version              # Check SpecWeave version
+/plugin list --installed         # In Claude Code - check plugins loaded
 ```
 
 ---
@@ -1058,7 +678,7 @@ Every User Story SHOULD have `**Project**:` field for proper sync:
 
 **Each User Story = ONE Project** (and ONE Board for 2-level structures)
 
-### 6. File Operations
+### 6. File Operations & Root Folder Protection
 
 **Use Write/Edit tools for file creation. NEVER use Bash heredoc/echo redirects.**
 
@@ -1067,6 +687,35 @@ Every User Story SHOULD have `**Project**:` field for proper sync:
 ❌ FORBIDDEN: Bash("echo '...' > file.md")
 ✅ CORRECT:   Write({ file_path: "...", content: "..." })
 ```
+
+**CRITICAL: NEVER Write files directly to project root!**
+
+```
+❌ FORBIDDEN: Write({ file_path: "ANALYSIS-REPORT.md", content: "..." })
+❌ FORBIDDEN: Write({ file_path: "SESSION-SUMMARY.md", content: "..." })
+❌ FORBIDDEN: Write({ file_path: "AUTO-COMMAND-SPEC.md", content: "..." })
+✅ CORRECT:   Write({ file_path: ".specweave/increments/0158/reports/analysis.md", content: "..." })
+✅ CORRECT:   Write({ file_path: ".specweave/increments/0161/reports/session-summary.md", content: "..." })
+```
+
+**⚠️ CRITICAL: Increment numbers MUST start from 0001, NEVER 0000!**
+- ❌ FORBIDDEN: `.specweave/increments/0000-adhoc/`
+- ❌ FORBIDDEN: `.specweave/increments/0000-anything/`
+- ✅ CORRECT: Use existing active increment or create new one with proper number (0001+)
+
+**Allowed root files ONLY**:
+- `README.md`, `CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`
+- `LICENSE`, `CODE_OF_CONDUCT.md`, `SECURITY.md`
+- `IMPLEMENTATION-SUMMARY.md`, `IMPLEMENTATION-COMPLETE.md` (project docs only)
+- `package.json`, `tsconfig*.json`, config files
+
+**Everything else → increment folders**:
+- Analysis/reports → `.specweave/increments/####/reports/` (where #### is 0001 or higher, NEVER 0000)
+- Session logs → `.specweave/increments/####/logs/`
+- Scripts → `.specweave/increments/####/scripts/`
+- Ad-hoc work → Create proper increment OR use existing active increment
+
+**Enforcement**: Pre-commit hook #13 blocks staging root pollution files
 
 ### 7. Protected Directories
 
@@ -1109,67 +758,142 @@ project-root/
 
 **Path refs in specs**: `repositories/backend/src/...`
 
+### 12. React Native / Expo Module-Level Safety
+
+**⚠️ Module-level code executes at IMPORT time - before React components mount!**
+
+**Known Crash Patterns (DO NOT DO):**
+```typescript
+// ❌ expo-localization at module level
+import * as Localization from 'expo-localization';
+const locale = Localization.getLocales()[0].languageCode; // CRASH!
+
+// ❌ react-i18next at module level (has React dependency)
+import { initReactI18next } from 'react-i18next';
+i18n.use(initReactI18next).init({...}); // CRASH in Expo Go!
+
+// ❌ AsyncStorage at module level
+const theme = await AsyncStorage.getItem('theme'); // CRASH!
+
+// ❌ React hooks at module level
+const theme = useContext(ThemeContext); // CRASH - outside component!
+```
+
+**Safe Alternatives:**
+```typescript
+// ✅ Use Intl instead of expo-localization
+const locale = Intl.DateTimeFormat().resolvedOptions().locale.split('-')[0];
+
+// ✅ Use i18n-js instead of react-i18next (no React dependency)
+import { I18n } from 'i18n-js';
+const i18n = new I18n({ en, es });
+
+// ✅ Lazy require for AsyncStorage
+async function getTheme() {
+  const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+  return await AsyncStorage.getItem('theme');
+}
+```
+
+**Error Signatures:**
+- `"Cannot read property 'getLocales' of null"` → expo-localization at module level
+- `"Invalid hook call"` → Hook outside component
+- `"No QueryClient set"` → TanStack Query outside provider
+- White screen with no error → Module crash before error boundary
+
+**Debugging:** Binary search - start with `<Text>Hello</Text>`, add providers ONE BY ONE until crash.
+
+**See:** `.specweave/docs/public/troubleshooting/react-native-expo-crashes.md`
+
 ---
 
-## Proactive Agent Usage (USE THE EXPERTS!)
+## Skills vs Agents (Automatic vs Explicit)
 
-**SpecWeave has 40+ specialized agents. USE THEM instead of doing domain work directly!**
+**SpecWeave provides expertise through Skills (auto-activate) and Agents (explicit spawn).**
 
-When the user's request involves specialized domains, **spawn the appropriate agent** via Task tool:
+### Skills (Auto-Activate) - YOU DON'T CALL THESE
 
-### Agent Quick Reference
+Skills activate **automatically** when Claude detects keywords in your prompt. **You never invoke skills directly** - they're loaded transparently when relevant.
+
+**How it works:**
+```
+You: "Design the authentication system architecture"
+      ↓
+Claude detects: "architecture" keyword
+      ↓
+Loads: plugins/specweave/skills/architect/SKILL.md
+      ↓
+Response includes architecture expertise automatically
+```
+
+**Activation rate**: ~20-50% with basic descriptions. Use specific keywords for better activation.
+
+| Domain | Keywords That Activate | Example Prompts |
+|--------|----------------------|-----------------|
+| **Architecture** | architecture, system design, ADR, microservices, API design | "Design the auth system architecture" |
+| **Tech Lead** | code review, best practices, refactoring, clean code | "Review my code for best practices" |
+| **QA Lead** | test strategy, QA, quality gates, E2E testing | "Create a test strategy for this feature" |
+| **Security** | security, OWASP, vulnerabilities, auth security | "Review security of this implementation" |
+| **Docs** | documentation, README, API docs, technical writing | "Write documentation for this API" |
+| **Infrastructure** | Terraform, serverless, Lambda, cloud setup, IaC | "Generate Terraform for this deployment" |
+| **Performance** | optimization, profiling, caching, performance | "Optimize this database query" |
+| **TDD** | TDD, test-driven, red-green-refactor, test-first | "Let's use TDD for this feature" |
+| **PM** | product, requirements, user story, MVP, roadmap | "Help me plan this product feature" |
+
+**Pro tip**: If skills aren't activating, add explicit keywords: "Help me **design the architecture** for..." instead of just "Help me with the backend".
+
+### Agents (Task Tool Spawn)
+
+For complex, isolated tasks requiring specialized plugins, spawn via Task tool:
 
 | Domain | Agent (`subagent_type`) | Triggers |
 |--------|-------------------------|----------|
-| **Architecture** | `specweave:architect:architect` | system design, ADR, technical design, patterns |
-| **Frontend** | `specweave-frontend:frontend-architect:frontend-architect` | React, Vue, Next.js, components, UI |
-| **Backend** | `specweave-backend:database-optimizer:database-optimizer` | API, database, microservices, SQL |
-| **Kubernetes** | `specweave-kubernetes:kubernetes-architect:kubernetes-architect` | K8s, EKS, AKS, GKE, pods, helm, GitOps |
-| **Infrastructure** | `specweave-infrastructure:devops:devops` | Terraform, Docker, CI/CD, AWS, Azure, GCP |
-| **Kafka** | `specweave-kafka:kafka-architect:kafka-architect` | Kafka, topics, event streaming, MSK |
-| **Confluent** | `specweave-confluent:confluent-architect:confluent-architect` | Confluent Cloud, Schema Registry, ksqlDB |
-| **Mobile** | `specweave-mobile:mobile-architect:mobile-architect` | React Native, iOS, Android |
-| **ML/AI** | `specweave-ml:ml-engineer:ml-engineer` | ML, model, training, MLOps |
-| **Data Science** | `specweave-ml:data-scientist:data-scientist` | data analysis, notebooks, pandas |
-| **Testing/QA** | `specweave-testing:qa-engineer:qa-engineer` | E2E, Playwright, Vitest, Jest, QA |
-| **Security** | `specweave:security:security` | security review, OWASP, auth, vulnerabilities |
-| **Performance** | `specweave-infrastructure:performance-engineer:performance-engineer` | optimization, profiling, caching |
-| **Observability** | `specweave-infrastructure:observability-engineer:observability-engineer` | monitoring, Prometheus, Grafana, SLOs |
-| **SRE** | `specweave-infrastructure:sre:sre` | incidents, outages, production debugging |
-| **Network** | `specweave-infrastructure:network-engineer:network-engineer` | networking, VPC, DNS, load balancing |
-| **Diagrams** | `specweave-diagrams:diagrams-architect:diagrams-architect` | Mermaid, C4, architecture diagrams |
-| **Payments** | `specweave-payments:payment-integration:payment-integration` | Stripe, PayPal, checkout, PCI |
-| **Docs** | `specweave:docs-writer:docs-writer` | documentation, README, API docs |
-| **Release** | `specweave-release:release-manager:release-manager` | release, version, changelog, npm publish |
-| **GitHub** | `specweave-github:github-manager:github-manager` | GitHub issues, PRs, sync |
-| **JIRA** | `specweave-jira:jira-manager:jira-manager` | JIRA, epics, stories, sync |
-| **ADO** | `specweave-ado:ado-manager:ado-manager` | Azure DevOps, work items |
+| **Frontend** | `sw-frontend:frontend-architect` | React, Vue, Next.js, components, UI |
+| **Backend** | `sw-backend:database-optimizer` | API, database, microservices, SQL |
+| **Kubernetes** | `sw-k8s:kubernetes-architect` | K8s, EKS, AKS, GKE, pods, helm, GitOps |
+| **DevOps** | `sw-infra:devops` | Terraform, Docker, CI/CD, AWS, Azure, GCP |
+| **Kafka** | `sw-kafka:kafka-architect` | Kafka, topics, event streaming, MSK |
+| **Confluent** | `sw-confluent:confluent-architect` | Confluent Cloud, Schema Registry, ksqlDB |
+| **Mobile** | `sw-mobile:mobile-architect` | React Native, iOS, Android |
+| **ML/AI** | `sw-ml:ml-engineer` | ML, model, training, MLOps |
+| **Data Science** | `sw-ml:data-scientist` | data analysis, notebooks, pandas |
+| **Testing/QA** | `sw-testing:qa-engineer` | E2E, Playwright, Vitest, Jest, QA |
+| **Observability** | `sw-infra:observability-engineer` | monitoring, Prometheus, Grafana, SLOs |
+| **SRE** | `sw-infra:sre` | incidents, outages, production debugging |
+| **Network** | `sw-infra:network-engineer` | networking, VPC, DNS, load balancing |
+| **Diagrams** | `sw-diagrams:diagrams-architect` | Mermaid, C4, architecture diagrams |
+| **Payments** | `sw-payments:payment-integration` | Stripe, PayPal, checkout, PCI |
+| **Release** | `sw-release:release-manager` | release, version, changelog, npm publish |
+| **GitHub** | `sw-github:github-manager` | GitHub issues, PRs, sync |
+| **JIRA** | `sw-jira:jira-manager` | JIRA, epics, stories, sync |
+| **ADO** | `sw-ado:ado-manager` | Azure DevOps, work items |
 
 ### Usage Pattern
 
 ```typescript
-// ❌ WRONG: Doing K8s/infra/frontend work directly
-"Let me write the Kubernetes manifests..."
+// Skills auto-activate - just describe what you need (NO explicit call):
+"Design the authentication system architecture"  // → architect skill loads automatically
+"Review my code for security issues"             // → security skill loads automatically
+"Let's use TDD for this feature"                 // → tdd-orchestrator skill loads automatically
 
-// ✅ CORRECT: Spawn the expert agent
+// Agents spawn for isolated complex tasks (explicit Task call):
 Task({
-  subagent_type: "specweave-kubernetes:kubernetes-architect:kubernetes-architect",
+  subagent_type: "sw-k8s:kubernetes-architect:kubernetes-architect",
   prompt: "Create K8s manifests for a 3-tier web app with Ingress",
   description: "K8s manifests design"
 })
 ```
 
-### When to Use Agents
+### When to Use What
 
-- **ANY architecture decisions** → `specweave:architect:architect`
-- **Infrastructure/DevOps code** → `specweave-infrastructure:devops:devops`
-- **K8s manifests/GitOps** → `specweave-kubernetes:kubernetes-architect:kubernetes-architect`
-- **Frontend components** → `specweave-frontend:frontend-architect:frontend-architect`
-- **Test strategy/E2E** → `specweave-testing:qa-engineer:qa-engineer`
-- **Security review** → `specweave:security:security`
-- **Performance tuning** → `specweave-infrastructure:performance-engineer:performance-engineer`
-
-**Rule**: If a plugin/agent exists for the domain, USE IT. Don't reinvent expertise.
+| Scenario | Use | Why |
+|----------|-----|-----|
+| Architecture decisions | Skills (auto) | Keywords trigger automatically |
+| Code review, security | Skills (auto) | Keywords trigger automatically |
+| Complex K8s/infra | Agents (Task) | Needs isolated context |
+| Frontend architecture | Agents (Task) | Specialized plugin |
+| ML pipelines | Agents (Task) | Specialized plugin |
+| External syncs | Commands | Use `/sw-github:sync` etc. |
 
 **Reference**: See `plugins/PLUGINS-INDEX.md` for full plugin catalog with triggers.
 
@@ -1181,8 +905,8 @@ Task({
 
 1. **Check `.env` file** for tokens/credentials:
    ```bash
-   # Look for relevant tokens before running CLI commands
-   grep -E "(GITHUB_TOKEN|JIRA_|AZURE_|ADO_)" .env 2>/dev/null
+   # Look for relevant tokens before running CLI commands (presence only!)
+   grep -qE "(GITHUB_TOKEN|JIRA_|AZURE_|ADO_)" .env 2>/dev/null && echo "Credentials found"
    ```
 
 2. **Check `.specweave/config.json`** for service configuration:
@@ -1201,11 +925,13 @@ Task({
 # GitHub - check if already authenticated
 gh auth status
 
-# JIRA - check configured domain
-grep JIRA .env .specweave/config.json 2>/dev/null
+# JIRA - check configured domain (presence only - never display values!)
+grep -q JIRA .env && echo "JIRA config in .env"
+cat .specweave/config.json | grep -A5 '"jira"'
 
-# Azure DevOps - check org/project
-grep -E "(ADO_|AZURE_DEVOPS)" .env .specweave/config.json 2>/dev/null
+# Azure DevOps - check org/project (presence only!)
+grep -qE "(ADO_|AZURE_DEVOPS)" .env && echo "ADO config in .env"
+cat .specweave/config.json | grep -A5 '"ado"'
 ```
 
 **Rule**: NEVER assume CLI tools are unconfigured. Check first, then use existing credentials.

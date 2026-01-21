@@ -397,31 +397,30 @@ export class EnterpriseDocAnalyzer {
     return mismatches;
   }
 
+  /** Common English stop words to filter from keyword extraction */
+  private static readonly STOP_WORDS = new Set([
+    'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+    'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'dare',
+    'ought', 'used', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by',
+    'from', 'as', 'into', 'through', 'during', 'before', 'after', 'above',
+    'below', 'between', 'under', 'again', 'further', 'then', 'once',
+    'and', 'but', 'or', 'nor', 'so', 'yet', 'both', 'either', 'neither',
+    'not', 'only', 'own', 'same', 'than', 'too', 'very', 'just', 'that',
+    'this', 'these', 'those', 'when', 'where', 'which', 'who', 'whom',
+    'whose', 'why', 'how', 'all', 'each', 'every', 'any', 'some', 'no',
+  ]);
+
   /**
    * Extract keywords from AC description for code search
    */
   private extractKeywords(description: string): string[] {
-    // Remove common words and extract meaningful terms
-    const stopWords = new Set([
-      'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-      'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
-      'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'dare',
-      'ought', 'used', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by',
-      'from', 'as', 'into', 'through', 'during', 'before', 'after', 'above',
-      'below', 'between', 'under', 'again', 'further', 'then', 'once',
-      'and', 'but', 'or', 'nor', 'so', 'yet', 'both', 'either', 'neither',
-      'not', 'only', 'own', 'same', 'than', 'too', 'very', 'just', 'that',
-      'this', 'these', 'those', 'when', 'where', 'which', 'who', 'whom',
-      'whose', 'why', 'how', 'all', 'each', 'every', 'any', 'some', 'no',
-    ]);
-
     const words = description
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, ' ')
       .split(/\s+/)
-      .filter(word => word.length > 3 && !stopWords.has(word));
+      .filter(word => word.length > 3 && !EnterpriseDocAnalyzer.STOP_WORDS.has(word));
 
-    // Deduplicate and limit to 5 keywords
     return [...new Set(words)].slice(0, 5);
   }
 
@@ -903,13 +902,11 @@ export class EnterpriseDocAnalyzer {
       (freshness * 0.2) + (coverage * 0.3) + (accuracy * 0.5)
     );
 
-    // Determine grade
-    let grade: HealthScore['grade'];
-    if (overall >= 90) grade = 'A';
-    else if (overall >= 80) grade = 'B';
-    else if (overall >= 70) grade = 'C';
-    else if (overall >= 60) grade = 'D';
-    else grade = 'F';
+    // Determine grade using thresholds
+    const gradeThresholds: [number, HealthScore['grade']][] = [
+      [90, 'A'], [80, 'B'], [70, 'C'], [60, 'D'],
+    ];
+    const grade = gradeThresholds.find(([threshold]) => overall >= threshold)?.[1] ?? 'F';
 
     return {
       overall,

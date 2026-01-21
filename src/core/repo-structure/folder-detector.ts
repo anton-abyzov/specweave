@@ -7,7 +7,6 @@
 
 import * as fs from '../../utils/fs-native.js';
 import path from 'path';
-import { glob } from 'glob';
 
 export interface RepositoryHints {
   suggestedCount: number;
@@ -50,58 +49,33 @@ export async function detectRepositoryHints(
   const detected: string[] = [];
 
   for (const pattern of COMMON_PATTERNS) {
-    if (pattern.includes('*')) {
-      // Glob pattern
-      try {
-        const matches = await glob(pattern, {
-          cwd: projectPath,
-          absolute: false,
-          nodir: false
-        });
-
-        // Filter to directories only
-        const dirs = matches.filter(m => {
-          const fullPath = path.join(projectPath, m);
-          try {
-            return fs.existsSync(fullPath) && fs.statSync(fullPath).isDirectory();
-          } catch {
-            return false;
-          }
-        });
-
-        detected.push(...dirs);
-      } catch (error) {
-        // Ignore glob errors
+    // Note: COMMON_PATTERNS no longer contains glob patterns (removed nested patterns)
+    // All patterns are now direct folder names
+    const folderPath = path.join(projectPath, pattern);
+    try {
+      if (fs.existsSync(folderPath) && fs.statSync(folderPath).isDirectory()) {
+        detected.push(pattern);
       }
-    } else {
-      // Direct folder check
-      const folderPath = path.join(projectPath, pattern);
-      try {
-        if (fs.existsSync(folderPath) && fs.statSync(folderPath).isDirectory()) {
-          detected.push(pattern);
-        }
-      } catch {
-        // Ignore file system errors
-      }
+    } catch {
+      // Ignore file system errors
     }
   }
 
-  // Deduplicate
   const uniqueFolders = [...new Set(detected)];
+  const folderCount = uniqueFolders.length;
 
-  // Calculate confidence
-  let confidence: 'low' | 'medium' | 'high' = 'low';
-  if (uniqueFolders.length >= 3) {
+  // Calculate confidence based on folder count
+  let confidence: 'low' | 'medium' | 'high';
+  if (folderCount >= 3) {
     confidence = 'high';
-  } else if (uniqueFolders.length >= 2) {
+  } else if (folderCount >= 2) {
     confidence = 'medium';
+  } else {
+    confidence = 'low';
   }
 
-  // Suggest count (at least 2 for multi-repo)
-  const suggestedCount = Math.max(2, uniqueFolders.length);
-
   return {
-    suggestedCount,
+    suggestedCount: Math.max(2, folderCount),
     detectedFolders: uniqueFolders,
     confidence
   };

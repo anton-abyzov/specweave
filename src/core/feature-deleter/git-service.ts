@@ -27,24 +27,18 @@ export class FeatureDeletionGitService {
    * T-018, T-023: Stage git deletions (git rm for tracked, fs.unlink for untracked)
    */
   async stageGitDeletions(files: string[]): Promise<{ tracked: number; untracked: number }> {
-    let tracked = 0;
-    let untracked = 0;
-
-    // Check if git repo exists
-    const isGitRepo = await this.detectGitRepository();
-    if (!isGitRepo) {
+    if (!(await this.detectGitRepository())) {
       throw new Error('Not a git repository. Use --no-git to skip git operations.');
     }
 
-    for (const file of files) {
-      const isTracked = await this.isFileTracked(file);
+    let tracked = 0;
+    let untracked = 0;
 
-      if (isTracked) {
-        // Use git rm for tracked files
+    for (const file of files) {
+      if (await this.isFileTracked(file)) {
         await execFileNoThrow('git', ['rm', file], { cwd: this.projectRoot });
         tracked++;
       } else {
-        // Use fs.unlink for untracked files
         await fs.unlink(file);
         untracked++;
       }
@@ -58,29 +52,23 @@ export class FeatureDeletionGitService {
    * T-019: Create git commit with descriptive message
    */
   async commitDeletion(featureId: string, validation: ValidationResult): Promise<string> {
-    // Get user from git config
     const user = await this.getGitUser();
-    const timestamp = new Date().toISOString();
-    const mode = validation.mode;
+    const orphanedLine = validation.orphanedIncrements.length > 0
+      ? `- Orphaned increments: ${validation.orphanedIncrements.join(', ')} (force mode)\n`
+      : '';
 
-    // Format commit message
-    const message = [
-      `feat: delete feature ${featureId}`,
-      '',
-      `- Deleted ${validation.files.length} files`,
-      `- Living docs: ${validation.livingDocsFiles.length}`,
-      `- User stories: ${validation.userStoryFiles.length}`,
-      validation.orphanedIncrements.length > 0 ? `- Orphaned increments: ${validation.orphanedIncrements.join(', ')} (force mode)` : '',
-      '',
-      `Deleted by: ${user}`,
-      `Timestamp: ${timestamp}`,
-      `Mode: ${mode}`
-    ].filter(Boolean).join('\n');
+    const message = `feat: delete feature ${featureId}
 
-    // Create commit
+- Deleted ${validation.files.length} files
+- Living docs: ${validation.livingDocsFiles.length}
+- User stories: ${validation.userStoryFiles.length}
+${orphanedLine}
+Deleted by: ${user}
+Timestamp: ${new Date().toISOString()}
+Mode: ${validation.mode}`;
+
     await execFileNoThrow('git', ['commit', '-m', message], { cwd: this.projectRoot });
 
-    // Get commit SHA
     const result = await execFileNoThrow('git', ['rev-parse', 'HEAD'], { cwd: this.projectRoot });
     const sha = result.stdout.trim();
 
@@ -92,14 +80,10 @@ export class FeatureDeletionGitService {
    * T-021: Unstage git deletions (rollback)
    */
   async unstageGitDeletions(files: string[]): Promise<void> {
-    for (const file of files) {
-      try {
-        await execFileNoThrow('git', ['reset', 'HEAD', '--', file], { cwd: this.projectRoot });
-      } catch (error) {
-        this.logger.warn(`Failed to unstage ${file}: ${error}`);
-      }
-    }
-
+    await Promise.all(files.map(file =>
+      execFileNoThrow('git', ['reset', 'HEAD', '--', file], { cwd: this.projectRoot })
+        .catch(err => this.logger.warn(`Failed to unstage ${file}: ${err}`))
+    ));
     this.logger.log(`Unstaged ${files.length} files`);
   }
 
@@ -132,11 +116,7 @@ export class FeatureDeletionGitService {
    * Get git user name
    */
   private async getGitUser(): Promise<string> {
-    try {
-      const result = await execFileNoThrow('git', ['config', 'user.name'], { cwd: this.projectRoot });
-      return result.stdout.trim();
-    } catch {
-      return process.env.USER || 'unknown';
-    }
+    const result = await execFileNoThrow('git', ['config', 'user.name'], { cwd: this.projectRoot });
+    return result.stdout.trim() || process.env.USER || 'unknown';
   }
 }

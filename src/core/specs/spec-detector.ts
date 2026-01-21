@@ -53,159 +53,133 @@ export async function detectSpecsInIncrement(
   incrementPath: string,
   config: any = {}
 ): Promise<MultiSpecDetectionResult> {
-  const specs: DetectedSpec[] = [];
+  const emptyResult: MultiSpecDetectionResult = { specs: [], isMultiSpec: false, projects: [] };
 
-  // STEP 1: Read increment metadata to get feature_id
-  const metadataPath = path.join(incrementPath, 'metadata.json');
-
-  if (!fs.existsSync(metadataPath)) {
-    // Fallback: try spec.md frontmatter
-    const specPath = path.join(incrementPath, 'spec.md');
-    if (fs.existsSync(specPath)) {
-      const specContent = fs.readFileSync(specPath, 'utf-8');
-      const { data: frontmatter } = matter(specContent);
-
-      // No feature_id in frontmatter either - return empty
-      if (!frontmatter.feature_id) {
-        return {
-          specs: [],
-          isMultiSpec: false,
-          projects: []
-        };
-      }
-
-      // Use feature_id from spec.md frontmatter
-      return await detectSpecsByFeatureId(frontmatter.feature_id, config);
-    }
-
-    return {
-      specs: [],
-      isMultiSpec: false,
-      projects: []
-    };
-  }
-
-  const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
-  const featureId = metadata.feature_id;
-
+  // Try to get feature_id from metadata.json first, then spec.md frontmatter
+  const featureId = getFeatureIdFromIncrement(incrementPath);
   if (!featureId) {
-    // No feature_id - return empty (increment is standalone)
-    return {
-      specs: [],
-      isMultiSpec: false,
-      projects: []
-    };
+    return emptyResult;
   }
 
-  // STEP 2: Find all user stories for this feature_id
   return await detectSpecsByFeatureId(featureId, config);
 }
 
 /**
+ * Extract feature_id from increment metadata or spec frontmatter
+ */
+function getFeatureIdFromIncrement(incrementPath: string): string | null {
+  const metadataPath = path.join(incrementPath, 'metadata.json');
+
+  if (fs.existsSync(metadataPath)) {
+    const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf-8'));
+    return metadata.feature_id || null;
+  }
+
+  const specPath = path.join(incrementPath, 'spec.md');
+  if (fs.existsSync(specPath)) {
+    const { data: frontmatter } = matter(fs.readFileSync(specPath, 'utf-8'));
+    return frontmatter.feature_id || null;
+  }
+
+  return null;
+}
+
+/**
  * Detect all user stories for a given feature_id
- *
- * ARCHITECTURE:
- * - Scans .specweave/docs/internal/specs/{project}/{feature}/
- * - Finds all user story files with feature: {featureId} in frontmatter
- * - Returns detected specs ready for GitHub sync
  */
 async function detectSpecsByFeatureId(
   featureId: string,
   config: any = {}
 ): Promise<MultiSpecDetectionResult> {
-  const specs: DetectedSpec[] = [];
-
-  // 1. Check for specs in living docs folder
-  const specsFolder = path.join(
-    process.cwd(),
-    '.specweave/docs/internal/specs'
-  );
+  const specsFolder = path.join(process.cwd(), '.specweave/docs/internal/specs');
+  const emptyResult: MultiSpecDetectionResult = { specs: [], isMultiSpec: false, projects: [] };
 
   if (!fs.existsSync(specsFolder)) {
-    return {
-      specs: [],
-      isMultiSpec: false,
-      projects: []
-    };
+    return emptyResult;
   }
 
-  // 2. Scan all project folders
-  const projectFolders = fs.readdirSync(specsFolder);
+  const specs: DetectedSpec[] = [];
+  const projectFolders = fs.readdirSync(specsFolder)
+    .filter(folder => {
+      const folderPath = path.join(specsFolder, folder);
+      return fs.statSync(folderPath).isDirectory() && !folder.startsWith('_');
+    });
 
   for (const projectFolder of projectFolders) {
-    const projectPath = path.join(specsFolder, projectFolder);
-
-    // Skip if not a directory or special folders (v5.0.0: no more _features folder)
-    if (!fs.statSync(projectPath).isDirectory() || projectFolder.startsWith('_')) {
-      continue;
-    }
-
-    // 3. Scan for feature-specific folders (e.g., FS-048/)
-    const featureFolderPath = path.join(projectPath, featureId);
-
+    const featureFolderPath = path.join(specsFolder, projectFolder, featureId);
     if (!fs.existsSync(featureFolderPath) || !fs.statSync(featureFolderPath).isDirectory()) {
       continue;
     }
 
-    // 4. Scan all user story files in this feature folder
-    const specFiles = fs.readdirSync(featureFolderPath).filter(f => f.endsWith('.md') && f.startsWith('us-'));
+    const specFiles = fs.readdirSync(featureFolderPath)
+      .filter(f => f.endsWith('.md') && f.startsWith('us-'));
 
     for (const specFile of specFiles) {
-      const specPath = path.join(featureFolderPath, specFile);
-      const specContent = fs.readFileSync(specPath, 'utf-8');
-      const { data: frontmatter, content } = matter(specContent);
-
-      // 5. Verify this user story belongs to the feature
-      if (frontmatter.feature !== featureId) {
-        continue;
+      const spec = parseUserStorySpec(
+        path.join(featureFolderPath, specFile),
+        projectFolder,
+        featureId,
+        specs.map(s => s.identifier.full),
+        config
+      );
+      if (spec) {
+        specs.push(spec);
       }
-
-      // 6. Detect identifier for this spec
-      const title = frontmatter.title || extractTitle(content);
-      const specContentObj: SpecContent = {
-        content: specContent,
-        frontmatter,
-        title,
-        project: projectFolder,
-        path: specPath
-      };
-
-      const identifier = detectSpecIdentifier(specContentObj, {
-        existingSpecs: specs.map(s => s.identifier.full),
-        preferTitleSlug: config.specs?.preferTitleSlug ?? true,
-        minSlugLength: config.specs?.minSlugLength ?? 5
-      });
-
-      // 7. Check if sync is enabled for this project
-      const projectConfig = config.specs?.projects?.[projectFolder];
-      const syncEnabled = projectConfig?.syncEnabled !== false;
-
-      specs.push({
-        identifier,
-        project: projectFolder,
-        path: specPath,
-        syncEnabled
-      });
     }
   }
 
-  // 8. Determine if multi-spec
-  const isMultiSpec = specs.length > 1;
   const projects = [...new Set(specs.map(s => s.project))];
-
-  // 9. Find primary spec (first non-parent spec)
-  const primary = specs.find(s => s.project !== '_parent') || specs[0];
-
   return {
     specs,
-    primary,
-    isMultiSpec,
+    primary: specs.find(s => s.project !== '_parent') || specs[0],
+    isMultiSpec: specs.length > 1,
     projects
   };
 }
 
 /**
- * Extract increment references from spec content
+ * Parse a single user story spec file
+ */
+function parseUserStorySpec(
+  specPath: string,
+  projectFolder: string,
+  featureId: string,
+  existingSpecs: string[],
+  config: any
+): DetectedSpec | null {
+  const specContent = fs.readFileSync(specPath, 'utf-8');
+  const { data: frontmatter, content } = matter(specContent);
+
+  if (frontmatter.feature !== featureId) {
+    return null;
+  }
+
+  const title = frontmatter.title || extractTitle(content);
+  const specContentObj: SpecContent = {
+    content: specContent,
+    frontmatter,
+    title,
+    project: projectFolder,
+    path: specPath
+  };
+
+  const identifier = detectSpecIdentifier(specContentObj, {
+    existingSpecs,
+    preferTitleSlug: config.specs?.preferTitleSlug ?? true,
+    minSlugLength: config.specs?.minSlugLength ?? 5
+  });
+
+  const projectConfig = config.specs?.projects?.[projectFolder];
+  return {
+    identifier,
+    project: projectFolder,
+    path: specPath,
+    syncEnabled: projectConfig?.syncEnabled !== false
+  };
+}
+
+/**
+ * Extract increment references from spec content (currently unused but kept for potential future use)
  */
 function extractIncrementReferences(
   content: string,
@@ -213,27 +187,19 @@ function extractIncrementReferences(
 ): string[] {
   const references: string[] = [];
 
-  // Check frontmatter
   if (frontmatter.increments && Array.isArray(frontmatter.increments)) {
     references.push(...frontmatter.increments);
   }
 
-  // Check content for increment links
-  const incrementPattern = /\[([^\]]+)\]\(\.\.\/\.\.\/increments\/([^)]+)\)/g;
-  let match;
+  // Extract from markdown links
+  const linkMatches = [...content.matchAll(/\[([^\]]+)\]\(\.\.\/\.\.\/increments\/([^)]+)\)/g)];
+  references.push(...linkMatches.map(m => m[2].split('/')[0]));
 
-  while ((match = incrementPattern.exec(content)) !== null) {
-    references.push(match[2].split('/')[0]); // Extract increment ID
-  }
+  // Extract from "Implemented in" sections
+  const implementedMatches = [...content.matchAll(/Implemented in:?\s*`?([0-9]{4}-[a-z0-9-]+)`?/gi)];
+  references.push(...implementedMatches.map(m => m[1]));
 
-  // Check for "Implemented in" sections
-  const implementedPattern = /Implemented in:?\s*`?([0-9]{4}-[a-z0-9-]+)`?/gi;
-
-  while ((match = implementedPattern.exec(content)) !== null) {
-    references.push(match[1]);
-  }
-
-  return [...new Set(references)]; // Deduplicate
+  return [...new Set(references)];
 }
 
 /**
@@ -262,65 +228,49 @@ export function detectProjectFromIncrementWithConfidence(
   config: any = {}
 ): ProjectDetectionResult {
   const text = `${incrementName} ${description}`.toLowerCase();
-  const projectScores: Map<string, { score: number; keywords: string[] }> = new Map();
+  const projectScores = new Map<string, { score: number; keywords: string[] }>();
 
-  // Check for explicit project keywords
+  // Score configured project keywords
   const projectConfigs = config.specs?.projects || {};
-
   for (const [projectId, projectConfig] of Object.entries(projectConfigs)) {
     const keywords = (projectConfig as any).keywords || [];
-    const matchedKeywords: string[] = [];
-    let score = 0;
-
-    for (const keyword of keywords) {
-      if (text.includes(keyword.toLowerCase())) {
-        matchedKeywords.push(keyword);
-        score += 0.3; // Each keyword match = +30%
-      }
-    }
-
-    if (matchedKeywords.length > 0) {
-      projectScores.set(projectId, { score, keywords: matchedKeywords });
+    const matched = keywords.filter((k: string) => text.includes(k.toLowerCase()));
+    if (matched.length > 0) {
+      projectScores.set(projectId, { score: matched.length * 0.3, keywords: matched });
     }
   }
 
-  // Fallback to common patterns with lower confidence
+  // Score fallback patterns
   const fallbackPatterns = [
-    { project: 'backend', patterns: ['backend', 'api', 'server', 'database'], score: 0.2 },
-    { project: 'frontend', patterns: ['frontend', 'ui', 'web', 'react', 'vue', 'angular'], score: 0.2 },
-    { project: 'mobile', patterns: ['mobile', 'ios', 'android', 'react-native', 'flutter'], score: 0.2 },
-    { project: 'infra', patterns: ['infra', 'devops', 'k8s', 'kubernetes', 'terraform', 'docker'], score: 0.2 },
+    { project: 'backend', patterns: ['backend', 'api', 'server', 'database'] },
+    { project: 'frontend', patterns: ['frontend', 'ui', 'web', 'react', 'vue', 'angular'] },
+    { project: 'mobile', patterns: ['mobile', 'ios', 'android', 'react-native', 'flutter'] },
+    { project: 'infra', patterns: ['infra', 'devops', 'k8s', 'kubernetes', 'terraform', 'docker'] },
   ];
 
-  for (const { project, patterns, score: patternScore } of fallbackPatterns) {
+  for (const { project, patterns } of fallbackPatterns) {
     const matched = patterns.filter(p => text.includes(p));
-
     if (matched.length > 0) {
       const existing = projectScores.get(project) || { score: 0, keywords: [] };
       projectScores.set(project, {
-        score: existing.score + (patternScore * matched.length),
+        score: existing.score + matched.length * 0.2,
         keywords: [...existing.keywords, ...matched]
       });
     }
   }
 
-  // Find highest scoring project
-  let bestProject = 'default';
-  let bestScore = 0;
-  let bestKeywords: string[] = [];
-
-  for (const [project, { score, keywords }] of projectScores.entries()) {
-    if (score > bestScore) {
-      bestScore = score;
-      bestProject = project;
-      bestKeywords = keywords;
+  // Find best match
+  let best = { project: 'default', score: 0, keywords: [] as string[] };
+  for (const [project, data] of projectScores.entries()) {
+    if (data.score > best.score) {
+      best = { project, ...data };
     }
   }
 
   return {
-    project: bestProject,
-    confidence: Math.min(bestScore, 1.0),
-    matchedKeywords: bestKeywords
+    project: best.project,
+    confidence: Math.min(best.score, 1.0),
+    matchedKeywords: best.keywords
   };
 }
 
@@ -339,31 +289,11 @@ export function detectProjectFromIncrement(
 /**
  * Check if spec should be synced to GitHub
  */
-export function shouldSyncSpec(
-  spec: DetectedSpec,
-  config: any = {}
-): boolean {
-  // 1. Check if sync is enabled globally
-  if (config.sync?.enabled === false) {
-    return false;
-  }
+export function shouldSyncSpec(spec: DetectedSpec, config: any = {}): boolean {
+  if (config.sync?.enabled === false) return false;
+  if (!spec.syncEnabled) return false;
+  if (spec.project === '_parent') return false;
 
-  // 2. Check if project sync is enabled
-  if (!spec.syncEnabled) {
-    return false;
-  }
-
-  // 3. Parent specs are NEVER synced
-  if (spec.project === '_parent') {
-    return false;
-  }
-
-  // 4. Check if project has GitHub config
   const projectConfig = config.specs?.projects?.[spec.project];
-
-  if (!projectConfig?.github) {
-    return false;
-  }
-
-  return true;
+  return Boolean(projectConfig?.github);
 }

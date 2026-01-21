@@ -26,22 +26,14 @@ export class ConfirmationManager {
    * T-004, T-015: Get confirmation from user (multi-gate pattern)
    */
   async confirm(validation: ValidationResult, options: DeletionOptions): Promise<boolean> {
-    // Tier 1: Validation Report (already shown by validator)
-
-    // Tier 2: Primary Confirmation
-    if (!options.yes && !options.dryRun) {
-      const primaryConfirmed = await this.primaryConfirmation(validation);
-      if (!primaryConfirmed) {
-        return false;
-      }
+    // Tier 2: Primary Confirmation (skip if --yes or --dry-run)
+    if (!options.yes && !options.dryRun && !(await this.primaryConfirmation(validation))) {
+      return false;
     }
 
-    // Tier 3: Elevated Confirmation (force mode only)
-    if (options.force && !options.dryRun) {
-      const elevatedConfirmed = await this.elevatedConfirmation(validation);
-      if (!elevatedConfirmed) {
-        return false;
-      }
+    // Tier 3: Elevated Confirmation (force mode only, skip if --dry-run)
+    if (options.force && !options.dryRun && !(await this.elevatedConfirmation(validation))) {
+      return false;
     }
 
     return true;
@@ -51,13 +43,8 @@ export class ConfirmationManager {
    * T-026: GitHub confirmation (separate gate)
    */
   async confirmGitHub(issueCount: number, options: DeletionOptions): Promise<boolean> {
-    if (options.noGithub || options.dryRun) {
-      return false;
-    }
-
-    if (options.yes) {
-      return true;
-    }
+    if (options.noGithub || options.dryRun) return false;
+    if (options.yes) return true;
 
     const answer = await this.prompt(`Close ${issueCount} GitHub issue(s)? (y/N): `);
     return answer.toLowerCase() === 'y';

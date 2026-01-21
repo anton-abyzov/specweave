@@ -62,6 +62,9 @@
       "overwriteDirectory": "Directory {{projectName}} already exists. Overwrite?",
       "enablePlugins": "Enable suggested plugins now?"
     },
+    "gitHooks": {
+      "prompt": "Install git hooks for quality enforcement?"
+    },
     "toolDetection": {
       "header": "AI Tool Detection",
       "detected": "Detected: {{tool}}",

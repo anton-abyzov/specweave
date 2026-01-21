@@ -24,17 +24,21 @@ Abandon an increment when:
 
 ## Behavior
 
-1. **Validates** increment exists and is NOT "completed"
-2. **Prompts** for reason if not provided
-3. **Confirmation prompt** ("This is permanent. Continue? [y/N]")
-4. **Updates** metadata.json:
+1. **Normalize increment ID**:
+   - If ID contains dash (e.g., "0153-feature-name"), extract numeric portion before first dash → "0153"
+   - Convert to 4-digit format (e.g., "1" → "0001", "153" → "0153")
+   - Both formats work: `/sw:abandon 0153` or `/sw:abandon 0153-feature-name`
+2. **Validates** increment exists and is NOT "completed"
+3. **Prompts** for reason if not provided
+4. **Confirmation prompt** ("This is permanent. Continue? [y/N]")
+5. **Updates** metadata.json:
    - `status`: → "abandoned"
    - `abandonedReason`: User-provided reason
    - `abandonedAt`: Current timestamp
-5. **Moves folder**:
+6. **Moves folder**:
    - From: `.specweave/increments/{id}/`
    - To: `.specweave/increments/_archive/{id}/`
-6. **Displays** confirmation with preserved location
+7. **Displays** confirmation with preserved location
 
 ---
 

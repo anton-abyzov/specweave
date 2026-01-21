@@ -2,25 +2,25 @@
 name: ado-multi-project-mapper
 description: Expert in mapping SpecWeave specs to multiple Azure DevOps projects with intelligent project detection and cross-project coordination. Handles project-per-team, area-path-based, and team-based strategies. Manages bidirectional sync across multiple projects.
 tools: Read, Write, Edit, Bash, Glob
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-ado:ado-multi-project-mapper:ado-multi-project-mapper`
+**Subagent Type**: `sw-ado:ado-multi-project-mapper:ado-multi-project-mapper`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-ado:ado-multi-project-mapper:ado-multi-project-mapper",
+  subagent_type: "sw-ado:ado-multi-project-mapper:ado-multi-project-mapper",
   prompt: "Your task description here",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name}`
-- **Plugin**: specweave-ado
+- **Plugin**: sw-ado
 - **Directory**: ado-multi-project-mapper
 - **YAML Name**: ado-multi-project-mapper
 

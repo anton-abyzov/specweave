@@ -169,7 +169,7 @@ specweave init .
 /sw:sync-progress
 ```
 
-**[Full GitHub Guide →](./github-integration)**
+**[Full GitHub Guide →](/docs/academy/specweave-essentials/14-github-integration)**
 
 ### JIRA (Enterprise Atlassian)
 
@@ -190,7 +190,7 @@ specweave init .
 # Select: "Yes, JIRA"
 ```
 
-**[Full JIRA Guide →](./jira-integration)**
+**[Full JIRA Guide →](/docs/academy/specweave-essentials/15-jira-integration)**
 
 ### Azure DevOps (Microsoft Ecosystem)
 
@@ -210,7 +210,7 @@ specweave init .
 # Select: "Yes, Azure DevOps Work Items"
 ```
 
-**[Full Azure DevOps Guide →](./ado-integration)**
+**[Full Azure DevOps Guide →](/docs/academy/specweave-essentials/16-ado-integration)**
 
 ---
 
@@ -500,9 +500,9 @@ Regular health checks:
 
 Choose your platform guide:
 
-- **[GitHub Integration Guide](./github-integration)** - Full GitHub setup with Projects integration
-- **[JIRA Integration Guide](./jira-integration)** - 1-level and 2-level board mapping
-- **[Azure DevOps Integration Guide](./ado-integration)** - Area paths and iteration support
+- **[GitHub Integration Guide](/docs/academy/specweave-essentials/14-github-integration)** - Full GitHub setup with Projects integration
+- **[JIRA Integration Guide](/docs/academy/specweave-essentials/15-jira-integration)** - 1-level and 2-level board mapping
+- **[Azure DevOps Integration Guide](/docs/academy/specweave-essentials/16-ado-integration)** - Area paths and iteration support
 
 Or learn about specific workflows:
 

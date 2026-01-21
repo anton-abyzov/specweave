@@ -2,25 +2,25 @@
 name: ado-sync-judge
 description: LLM Judge for verifying Azure DevOps synchronization correctness, conflict resolution, and lifecycle management. Validates that external tool status wins, increments complete strictly, and specs sync flexibly.
 tools: Read, Grep, Bash
-model: claude-opus-4-5-20251101
+model: opus
 ---
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-ado:ado-sync-judge:ado-sync-judge`
+**Subagent Type**: `sw-ado:ado-sync-judge:ado-sync-judge`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-ado:ado-sync-judge:ado-sync-judge",
+  subagent_type: "sw-ado:ado-sync-judge:ado-sync-judge",
   prompt: "Your task description here",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name}`
-- **Plugin**: specweave-ado
+- **Plugin**: sw-ado
 - **Directory**: ado-sync-judge
 - **YAML Name**: ado-sync-judge
 

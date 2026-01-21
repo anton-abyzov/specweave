@@ -1,8 +1,8 @@
 ---
 name: diagrams-architect
-description: Expert in creating Mermaid diagrams following C4 Model conventions. Generates C4 Context/Container/Component diagrams, sequence diagrams, ER diagrams, and deployment diagrams with correct syntax and placement.
+description: Expert in creating Mermaid diagrams following C4 Model conventions. Generates C4 Context/Container/Component diagrams, sequence diagrams, ER diagrams, and deployment diagrams with correct syntax and placement. Activates for Mermaid diagram, create diagram, draw diagram, flowchart, sequence diagram, class diagram, ER diagram, entity relationship, state diagram, C4 diagram, architecture diagram, system diagram, deployment diagram, database schema diagram, API flow, visualize architecture, explain visually, draw flow, show relationship, diagram the system, document architecture, technical diagram, UML, PlantUML alternative.
 tools: Read, Write, Edit
-model: claude-opus-4-5-20251101
+model: opus
 model_preference: auto
 cost_profile: hybrid
 fallback_behavior: auto
@@ -10,20 +10,20 @@ fallback_behavior: auto
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-diagrams:diagrams-architect:diagrams-architect`
+**Subagent Type**: `sw-diagrams:diagrams-architect:diagrams-architect`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-diagrams:diagrams-architect:diagrams-architect",
+  subagent_type: "sw-diagrams:diagrams-architect:diagrams-architect",
   prompt: "Your task description here",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name}`
-- **Plugin**: specweave-diagrams
+- **Plugin**: sw-diagrams
 - **Directory**: diagrams-architect
 - **YAML Name**: diagrams-architect
 
@@ -370,7 +370,7 @@ You will typically be invoked by the `diagrams-generator` skill using the Task t
 
 ```typescript
 await Task({
-  subagent_type: "specweave-diagrams:diagrams-architect:diagrams-architect",
+  subagent_type: "sw-diagrams:diagrams-architect:diagrams-architect",
   prompt: "Create C4 context diagram for authentication system",
   description: "Generate C4 Level 1 diagram"
 });

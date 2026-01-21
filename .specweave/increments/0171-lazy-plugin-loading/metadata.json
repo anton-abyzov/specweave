@@ -1,0 +1,75 @@
+{
+  "id": "0171-lazy-plugin-loading",
+  "increment": "0171-lazy-plugin-loading",
+  "title": "Lazy Plugin Loading - Conditional SpecWeave Activation",
+  "type": "feature",
+  "status": "completed",
+  "priority": "high",
+  "createdAt": "2026-01-18T12:00:00Z",
+  "updatedAt": "2026-01-19T01:22:00Z",
+  "completedAt": "2026-01-19T01:22:00Z",
+  "feature": {
+    "id": "FS-071",
+    "name": "Context Optimization"
+  },
+  "tags": [
+    "performance",
+    "context-optimization",
+    "plugin-architecture",
+    "token-efficiency"
+  ],
+  "estimatedEffort": "large",
+  "dependencies": [],
+  "blockedBy": [],
+  "relatedIncrements": [
+    "0155-native-plugin-skill-architecture"
+  ],
+  "externalRefs": {
+    "claudeCode": {
+      "version": "2.1.0+",
+      "features": [
+        "skill-hot-reload",
+        "context-fork",
+        "setup-hook",
+        "mcp-list-changed"
+      ]
+    }
+  },
+  "planningComplete": true,
+  "planningCompletedAt": "2026-01-18T12:30:00Z",
+  "pmValidation": {
+    "gate1_tasks": "pass",
+    "gate2_tests": "pass",
+    "gate3_docs": "pass",
+    "validatedAt": "2026-01-19T01:22:00Z"
+  },
+  "deliverables": {
+    "coreModules": [
+      "src/core/lazy-loading/keyword-detector.ts",
+      "src/core/lazy-loading/cache-manager.ts",
+      "src/core/lazy-loading/failure-logger.ts",
+      "src/core/lazy-loading/shell-detector.ts",
+      "src/core/lazy-loading/path-utils.ts"
+    ],
+    "scripts": [
+      "scripts/lazy-loading/install-plugins.sh",
+      "scripts/lazy-loading/install-plugins.ps1"
+    ],
+    "plugins": [
+      "plugins/specweave-router"
+    ],
+    "tests": 216,
+    "testFiles": 9
+  },
+  "deferredToFuture": {
+    "phase6_mcp_alternative": [
+      "T-028",
+      "T-029",
+      "T-030",
+      "T-031",
+      "T-032"
+    ],
+    "reason": "MCP Alternative is exploratory stretch goal, not MVP"
+  },
+  "updated": "2026-01-19T07:42:53.905Z"
+}

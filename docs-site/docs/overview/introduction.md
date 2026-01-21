@@ -6,6 +6,45 @@ Every AI coding tool promises productivity. But after the chat ends, your specs 
 
 **SpecWeave is the only framework where AI decisions become permanent, searchable documentation.**
 
+## Stop Repeating Yourself
+
+Every app needs the same things: auth, tests, docs, deployment. Without SpecWeave, you dictate every step:
+
+```
+"Create user authentication"
+"Now add tests for that"
+"Document the architecture"
+"Update JIRA with progress"
+"Create the PR description"
+```
+
+**With SpecWeave:**
+```bash
+/sw:increment "User authentication"
+/sw:auto
+# Done. Tests, docs, sync - all handled.
+```
+
+### One Command = Many Prompts
+
+| What You Used To Dictate | SpecWeave Command |
+|-------------------------|-------------------|
+| "Create spec with user stories..." | `/sw:increment "feature"` |
+| "Implement, test, fix, repeat..." | `/sw:auto` (runs for hours) |
+| "Update GitHub/JIRA..." | `/sw:sync-progress` |
+| "Review for security..." | Auto-activates on keywords |
+| "Commit and create PR..." | `/sw:save` |
+
+### Built-In Expertise
+
+SpecWeave isn't just shortcuts - it's **encapsulated expertise**:
+
+- **15+ AI agents** (PM, Architect, QA, Security) work in parallel
+- **Skills auto-activate** - mention "security" and security expertise loads
+- **Quality gates** enforce what senior devs know: tests before merge, docs before close
+
+**Real result**: 5 production apps built with SpecWeave. Then 10 and 14-year-old daughters learned to do the same - because the expertise is in the framework, not in knowing what to ask.
+
 ## The Problem: Lost Work
 
 Traditional AI-assisted development:

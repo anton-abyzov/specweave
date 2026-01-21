@@ -1,0 +1,90 @@
+sequenceDiagram
+    autonumber
+    title Task Completion Event-Driven Flow
+
+    actor Developer
+    participant Claude as Claude Code
+    participant EditTool as Edit Tool
+    participant TasksFile as tasks.md
+    participant SpecFile as spec.md
+    participant Meta as MetadataManager
+    participant AutoTrans as AutoTransitionManager
+    participant Living as LivingDocsSync
+    participant SyncTrigger as StatusChangeSyncTrigger
+    participant GitHub as GitHub API
+    participant StatusLine as StatusLineManager
+
+    Developer->>Claude: "Mark T-003 as complete"
+    Claude->>EditTool: Edit tasks.md
+
+    EditTool->>TasksFile: Change [  ] to [x] for T-003
+    TasksFile-->>EditTool: Updated
+
+    Note over Claude: Event: Task marked complete
+
+    Claude->>EditTool: Update AC checkboxes in task
+    EditTool->>TasksFile: Mark - [ ] AC-US1-03 to - [x]
+    TasksFile-->>EditTool: ACs updated
+
+    Note over Claude: Propagate to spec.md
+
+    Claude->>EditTool: Update spec.md ACs
+    EditTool->>SpecFile: Mark AC-US1-03 as [x] completed
+    SpecFile-->>EditTool: Spec updated
+
+    Note over Claude: Check if all tasks complete
+
+    Claude->>TasksFile: Read task status
+    TasksFile-->>Claude: 5/5 tasks complete
+
+    alt All tasks completed
+        Claude->>AutoTrans: All tasks done - check transition
+        activate AutoTrans
+
+        AutoTrans->>Meta: Read current status
+        Meta-->>AutoTrans: status: active
+
+        AutoTrans->>Meta: Transition ACTIVE -> READY_FOR_REVIEW
+        activate Meta
+
+        Meta->>Meta: Validate transition allowed
+        Meta->>SpecFile: Update frontmatter status
+        SpecFile-->>Meta: Updated
+
+        Meta->>Meta: Set readyForReviewAt timestamp
+
+        Note over Meta: Trigger living docs sync
+
+        Meta->>Living: Sync increment
+        activate Living
+        Living->>Living: Update FS-XXX status
+        Living-->>Meta: Synced
+        deactivate Living
+
+        Note over Meta: Trigger external sync (non-blocking)
+
+        Meta->>SyncTrigger: Status changed: active -> ready_for_review
+        activate SyncTrigger
+        SyncTrigger->>SyncTrigger: Check if sync needed
+        SyncTrigger->>GitHub: Update issue labels
+        GitHub-->>SyncTrigger: Labels updated
+        SyncTrigger-->>Meta: Sync complete (async)
+        deactivate SyncTrigger
+
+        Meta-->>AutoTrans: Status updated
+        deactivate Meta
+
+        AutoTrans-->>Claude: Transitioned to ready_for_review
+        deactivate AutoTrans
+
+        Claude->>StatusLine: Update status line
+        StatusLine-->>Claude: [0042] 100% REVIEW
+
+    else Tasks remaining
+        Claude->>StatusLine: Update progress
+        StatusLine-->>Claude: [0042] 60% 3/5
+
+        Claude-->>Developer: Task T-003 complete (3/5 tasks done)
+    end
+
+    Note over Developer: If ready_for_review: run /sw:done to complete

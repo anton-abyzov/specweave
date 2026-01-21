@@ -195,7 +195,7 @@ backend:
 ## Related Commands
 
 - [`/sw-release:align`](/docs/enterprise/release-management) - Align versions across repos (for releases)
-- [`/sw:sync-progress`](/docs/commands/overview#monitoring-commands) - Sync task progress to external tools
+- [`/sw:sync-progress`](/docs/commands/overview#3-monitoring) - Sync task progress to external tools
 - [`/sw-github:sync`](/docs/integrations/issue-trackers) - Sync increments to GitHub issues
 
 ## See Also

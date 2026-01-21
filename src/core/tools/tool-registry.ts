@@ -202,17 +202,22 @@ export class ToolRegistry {
     const tool = this.tools.get(id);
     if (!tool) return null;
 
+    const fullPath = path.isAbsolute(tool.relativePath)
+      ? tool.relativePath
+      : path.join(this.projectRoot, tool.relativePath);
+
+    if (!fs.existsSync(fullPath)) {
+      this.logger.warn(`Tool file not found: ${fullPath}`);
+      return null;
+    }
+
     try {
-      const fullPath = tool.relativePath.startsWith('/') 
-        ? tool.relativePath 
-        : path.join(this.projectRoot, tool.relativePath);
-      if (!fs.existsSync(fullPath)) {
-        this.logger.warn(`Tool file not found: ${fullPath}`);
-        return null;
-      }
       const content = fs.readFileSync(fullPath, 'utf-8');
       const loadedTool: LoadedTool = {
-        ...tool, content, systemPrompt: tool.type === 'agent' ? content : undefined, loaded: true,
+        ...tool,
+        content,
+        systemPrompt: tool.type === 'agent' ? content : undefined,
+        loaded: true,
       };
       this.loadedTools.set(id, loadedTool);
       this.eventBus.emit({ type: 'ToolLoaded', toolId: id, tool: loadedTool, timestamp: new Date().toISOString() });
@@ -240,13 +245,24 @@ export class ToolRegistry {
 
   async getStats(): Promise<ToolRegistryStats> {
     await this.ensureInitialized();
-    const tools = Array.from(this.tools.values());
-    const plugins = new Set(tools.map((t) => t.pluginName));
+
+    const plugins = new Set<string>();
+    let skillCount = 0;
+    let agentCount = 0;
+    let commandCount = 0;
+
+    for (const tool of this.tools.values()) {
+      plugins.add(tool.pluginName);
+      if (tool.type === 'skill') skillCount++;
+      else if (tool.type === 'agent') agentCount++;
+      else if (tool.type === 'command') commandCount++;
+    }
+
     return {
-      totalTools: tools.length,
-      skillCount: tools.filter((t) => t.type === 'skill').length,
-      agentCount: tools.filter((t) => t.type === 'agent').length,
-      commandCount: tools.filter((t) => t.type === 'command').length,
+      totalTools: this.tools.size,
+      skillCount,
+      agentCount,
+      commandCount,
       loadedCount: this.loadedTools.size,
       pluginCount: plugins.size,
       keywordCount: this.keywordIndex.size,

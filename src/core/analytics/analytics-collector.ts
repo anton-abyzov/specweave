@@ -196,42 +196,35 @@ export class AnalyticsCollector {
       cutoffDate.setDate(cutoffDate.getDate() - this.config.retentionDays);
       const cutoffTimestamp = cutoffDate.toISOString();
 
-      // Read all events
       const content = fs.readFileSync(this.eventsFile, 'utf-8');
       const lines = content.trim().split('\n').filter(Boolean);
 
-      // Filter to keep only recent events
-      const recentEvents: string[] = [];
+      const recentLines: string[] = [];
+      const oldLines: string[] = [];
+
       for (const line of lines) {
         try {
           const event = JSON.parse(line) as AnalyticsEvent;
-          if (event.timestamp >= cutoffTimestamp) {
-            recentEvents.push(line);
-          }
+          (event.timestamp >= cutoffTimestamp ? recentLines : oldLines).push(line);
         } catch {
           // Skip malformed lines
         }
       }
 
-      // Archive old events
-      const archiveDir = path.join(this.analyticsDir, 'archive');
-      if (!fs.existsSync(archiveDir)) {
-        fs.mkdirSync(archiveDir, { recursive: true });
+      // Archive old events if any
+      if (oldLines.length > 0) {
+        const archiveDir = path.join(this.analyticsDir, 'archive');
+        if (!fs.existsSync(archiveDir)) {
+          fs.mkdirSync(archiveDir, { recursive: true });
+        }
+        const archiveFile = path.join(
+          archiveDir,
+          `events-${new Date().toISOString().split('T')[0]}.jsonl`
+        );
+        fs.appendFileSync(archiveFile, oldLines.join('\n') + '\n', 'utf-8');
       }
 
-      const archiveFile = path.join(
-        archiveDir,
-        `events-${new Date().toISOString().split('T')[0]}.jsonl`
-      );
-
-      // Move old events to archive
-      const oldEvents = lines.filter((line) => !recentEvents.includes(line));
-      if (oldEvents.length > 0) {
-        fs.appendFileSync(archiveFile, oldEvents.join('\n') + '\n', 'utf-8');
-      }
-
-      // Write recent events back
-      fs.writeFileSync(this.eventsFile, recentEvents.join('\n') + '\n', 'utf-8');
+      fs.writeFileSync(this.eventsFile, recentLines.join('\n') + '\n', 'utf-8');
     } catch {
       // Silently fail
     }

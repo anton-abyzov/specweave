@@ -133,36 +133,39 @@ export function detectDefaultProfileId(projectRoot: string): string | null {
     if (config.sync?.defaultProfile && config.sync?.profiles) {
       const defaultProfileId = config.sync.defaultProfile;
 
-      // CRITICAL FIX (2025-11-30): Provider-prefixed profile IDs are NOT folder names
-      // ProfileIds like "ado-myproject", "jira-webapp" are sync connection identifiers
-      // NOT project folders! The actual folder name comes from profile.config.project
-      // Bug: "ado-myproject" was being used as folder name instead of "MyProject"
-      if (defaultProfileId.startsWith('ado-') || defaultProfileId.startsWith('jira-') || defaultProfileId.startsWith('github-')) {
-        // Extract actual project name from profile config
-        const profile = config.sync.profiles[defaultProfileId] as SyncProfile | undefined;
-        if (profile?.config) {
-          const profileConfig = profile.config as Record<string, unknown>;
-          // ADO: use project name from config
-          if (profile.provider === 'ado' && profileConfig.project) {
-            return String(profileConfig.project).toLowerCase().replace(/\s+/g, '-');
-          }
-          // JIRA: use project key from config
-          if (profile.provider === 'jira' && profileConfig.projectKey) {
-            return String(profileConfig.projectKey).toLowerCase();
-          }
-          // GitHub: use repo name from config
-          if (profile.provider === 'github' && profileConfig.repo) {
-            return String(profileConfig.repo).toLowerCase();
-          }
+      // CRITICAL FIX (2025-11-30, 2026-01-04): Profile IDs are NOT folder names!
+      // ProfileIds like "main", "ado-myproject", "jira-webapp" are sync connection identifiers
+      // NOT project folders! The actual folder name comes from profile.config.repo/project
+      // Bug: "main" was being used as folder name instead of actual repo name
+      const profile = config.sync.profiles[defaultProfileId] as SyncProfile | undefined;
+      if (profile?.config) {
+        const profileConfig = profile.config as Record<string, unknown>;
+        // GitHub: use repo name from config (MOST COMMON CASE)
+        if (profile.provider === 'github' && profileConfig.repo) {
+          return String(profileConfig.repo).toLowerCase();
         }
-        // If no valid project name in config, return null (let other detection handle it)
-        return null;
+        // ADO: use project name from config
+        if (profile.provider === 'ado' && profileConfig.project) {
+          return String(profileConfig.project).toLowerCase().replace(/\s+/g, '-');
+        }
+        // JIRA: use project key from config
+        if (profile.provider === 'jira' && profileConfig.projectKey) {
+          return String(profileConfig.projectKey).toLowerCase();
+        }
       }
 
       // Legacy umbrella repos: profile maps to folder (e.g., "be", "fe", "shared")
-      if (config.sync.profiles[defaultProfileId]) {
+      // ONLY use profileId as folder name if it's NOT a generic identifier like "main"
+      // and it doesn't look like a provider prefix (ado-, jira-, github-)
+      const isGenericProfileId = defaultProfileId === 'main' || defaultProfileId === 'default';
+      const isProviderPrefixed = /^(ado|jira|github|gitlab)-/.test(defaultProfileId);
+
+      if (!isGenericProfileId && !isProviderPrefixed && config.sync.profiles[defaultProfileId]) {
         return defaultProfileId.toLowerCase();
       }
+
+      // Profile ID is generic ("main") or provider-prefixed - let git detection handle it
+      return null;
     }
 
     return null;

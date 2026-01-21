@@ -433,9 +433,9 @@ tail -f .specweave/logs/migration.log
 
 ### Resources
 
-- [ADO Multi-Project Architecture](./ado-multi-project-architecture.md)
-- [Project Detection Algorithm](./ado-project-detection.md)
-- [Sync Strategies Comparison](./ado-sync-strategies.md)
+- [ADO Multi-Project Architecture](/docs/guides/multi-project-setup)
+- [Project Detection Algorithm](/docs/guides/multi-project-setup)
+- [Sync Strategies Comparison](/docs/guides/multi-project-setup)
 
 ## Summary
 

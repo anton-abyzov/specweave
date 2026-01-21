@@ -6,11 +6,11 @@
 
 import type {
   IndexedTool,
+  ToolCapability,
   ToolSearchResult,
   ToolSearchOptions,
 } from './types/tool-registry-types.js';
 
-const K1 = 1.2;
 const B = 0.75;
 const KEYWORD_EXACT_WEIGHT = 3.0;
 const KEYWORD_PARTIAL_WEIGHT = 1.5;
@@ -131,45 +131,14 @@ export class ToolSearchEngine {
     const descLower = tool.description.toLowerCase();
 
     for (const term of queryTerms) {
-      if (toolKeywordsLower.includes(term)) {
-        const idf = this.idfCache.get(term) ?? 1;
-        score += KEYWORD_EXACT_WEIGHT * idf;
-        matchedKeywords.push(term);
-        continue;
-      }
-
-      let partialMatch = false;
-      for (const keyword of toolKeywordsLower) {
-        if (keyword.includes(term) || term.includes(keyword)) {
-          score += KEYWORD_PARTIAL_WEIGHT;
-          matchedKeywords.push(keyword);
-          partialMatch = true;
-          break;
-        }
-      }
-      if (partialMatch) continue;
-
-      if (nameLower.includes(term)) {
-        score += NAME_WEIGHT;
-        matchedKeywords.push(term);
-        continue;
-      }
-
-      if (descLower.includes(term)) {
-        score += DESCRIPTION_WEIGHT;
-        continue;
-      }
-
-      if (tool.capabilities) {
-        for (const cap of tool.capabilities) {
-          if (cap.keywords.some((k) => k.toLowerCase().includes(term))) {
-            score += CAPABILITY_WEIGHT;
-            break;
-          }
-        }
+      const termScore = this.scoreTermMatch(term, toolKeywordsLower, nameLower, descLower, tool.capabilities);
+      score += termScore.score;
+      if (termScore.matchedKeyword) {
+        matchedKeywords.push(termScore.matchedKeyword);
       }
     }
 
+    // Apply BM25-style length normalization
     const docLength = tool.keywords.length;
     if (docLength > 0 && this.avgDocLength > 0) {
       const lengthNorm = 1 - B + B * (docLength / this.avgDocLength);
@@ -180,6 +149,48 @@ export class ToolSearchEngine {
     const normalizedScore = maxPossibleScore > 0 ? score / maxPossibleScore : 0;
 
     return { score: normalizedScore, matchedKeywords: [...new Set(matchedKeywords)] };
+  }
+
+  private scoreTermMatch(
+    term: string,
+    toolKeywordsLower: string[],
+    nameLower: string,
+    descLower: string,
+    capabilities?: ToolCapability[]
+  ): { score: number; matchedKeyword: string | null } {
+    // Exact keyword match (highest priority)
+    if (toolKeywordsLower.includes(term)) {
+      const idf = this.idfCache.get(term) ?? 1;
+      return { score: KEYWORD_EXACT_WEIGHT * idf, matchedKeyword: term };
+    }
+
+    // Partial keyword match
+    for (const keyword of toolKeywordsLower) {
+      if (keyword.includes(term) || term.includes(keyword)) {
+        return { score: KEYWORD_PARTIAL_WEIGHT, matchedKeyword: keyword };
+      }
+    }
+
+    // Name match
+    if (nameLower.includes(term)) {
+      return { score: NAME_WEIGHT, matchedKeyword: term };
+    }
+
+    // Description match
+    if (descLower.includes(term)) {
+      return { score: DESCRIPTION_WEIGHT, matchedKeyword: null };
+    }
+
+    // Capability match
+    if (capabilities) {
+      for (const cap of capabilities) {
+        if (cap.keywords.some((k: string) => k.toLowerCase().includes(term))) {
+          return { score: CAPABILITY_WEIGHT, matchedKeyword: null };
+        }
+      }
+    }
+
+    return { score: 0, matchedKeyword: null };
   }
 
   private calculateIDF(term: string): number {

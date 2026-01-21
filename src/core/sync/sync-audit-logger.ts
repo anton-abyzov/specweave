@@ -462,8 +462,6 @@ export class SyncAuditLogger {
 
   /**
    * Get statistics for a time period
-   *
-   * @param since - Start date (defaults to 24 hours ago)
    */
   async getStats(since?: Date): Promise<{
     total: number;
@@ -473,37 +471,26 @@ export class SyncAuditLogger {
     byPlatform: Record<SyncPlatform, number>;
     avgDurationMs: number;
   }> {
-    const sinceDate = since ?? new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const sinceStr = sinceDate.toISOString();
-
+    const sinceStr = (since ?? new Date(Date.now() - 24 * 60 * 60 * 1000)).toISOString();
     const entries = await this.getRecentEntries(10000, (e) => e.timestamp >= sinceStr);
 
     const stats = {
       total: entries.length,
-      success: 0,
-      denied: 0,
-      errors: 0,
+      success: entries.filter((e) => e.result === 'success').length,
+      denied: entries.filter((e) => e.result === 'denied').length,
+      errors: entries.filter((e) => e.result === 'error').length,
       byPlatform: { github: 0, jira: 0, ado: 0 } as Record<SyncPlatform, number>,
       avgDurationMs: 0,
     };
 
-    let totalDuration = 0;
-    let durationCount = 0;
-
     for (const entry of entries) {
-      if (entry.result === 'success') stats.success++;
-      else if (entry.result === 'denied') stats.denied++;
-      else if (entry.result === 'error') stats.errors++;
-
       stats.byPlatform[entry.platform]++;
-
-      if (entry.durationMs) {
-        totalDuration += entry.durationMs;
-        durationCount++;
-      }
     }
 
-    stats.avgDurationMs = durationCount > 0 ? Math.round(totalDuration / durationCount) : 0;
+    const durations = entries.filter((e) => e.durationMs).map((e) => e.durationMs!);
+    stats.avgDurationMs = durations.length > 0
+      ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+      : 0;
 
     return stats;
   }
@@ -566,37 +553,42 @@ export class SyncAuditLogger {
   private async getOrRotateFilePath(): Promise<string> {
     const today = new Date().toISOString().split('T')[0];
 
-    // Check if we need a new file (new day)
     if (today !== this.currentDate) {
       this.currentDate = today;
       this.currentFilePath = this.getLogPath();
     }
 
-    // Check file size for rotation
-    if (this.currentFilePath) {
-      try {
-        const stats = await fs.stat(this.currentFilePath);
-        if (stats.size >= this.maxFileSizeBytes) {
-          // Rotate: add sequence number
-          const basePath = this.currentFilePath.replace('.jsonl', '');
-          let seq = 1;
-          while (true) {
-            const rotatedPath = `${basePath}-${seq}.jsonl`;
-            try {
-              await fs.access(rotatedPath);
-              seq++;
-            } catch {
-              // File doesn't exist, use this name
-              this.currentFilePath = rotatedPath;
-              break;
-            }
-          }
-        }
-      } catch {
-        // File doesn't exist yet, that's fine
+    if (!this.currentFilePath) {
+      return this.currentFilePath;
+    }
+
+    try {
+      const stats = await fs.stat(this.currentFilePath);
+      if (stats.size >= this.maxFileSizeBytes) {
+        this.currentFilePath = await this.findNextRotatedPath();
       }
+    } catch {
+      // File doesn't exist yet
     }
 
     return this.currentFilePath;
+  }
+
+  /**
+   * Find the next available rotated file path
+   */
+  private async findNextRotatedPath(): Promise<string> {
+    const basePath = this.currentFilePath.replace('.jsonl', '');
+    let seq = 1;
+
+    while (true) {
+      const rotatedPath = `${basePath}-${seq}.jsonl`;
+      try {
+        await fs.access(rotatedPath);
+        seq++;
+      } catch {
+        return rotatedPath;
+      }
+    }
   }
 }

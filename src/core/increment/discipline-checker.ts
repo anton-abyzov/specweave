@@ -5,7 +5,8 @@
  * Checks WIP limits, incomplete work, and emergency interrupt rules
  */
 
-import { IncrementStatusDetector, IncrementStatus } from './increment-status.js';
+import fs from 'fs';
+import path from 'path';
 import { ConfigManager } from '../config-manager.js';
 import {
   ValidationResult,
@@ -13,8 +14,8 @@ import {
   DisciplineLimits,
   DisciplineCheckOptions,
 } from './types.js';
-import * as fs from '../../utils/fs-native.js';
-import path from 'path';
+import { MetadataManager } from './metadata-manager.js';
+import { IncrementStatus, IncrementMetadata } from '../types/increment-metadata.js';
 
 /**
  * Checks increment discipline compliance
@@ -22,7 +23,6 @@ import path from 'path';
 export class DisciplineChecker {
   private projectRoot: string;
   private limits: DisciplineLimits;
-  private detector: IncrementStatusDetector;
 
   /**
    * Create a new DisciplineChecker
@@ -32,7 +32,6 @@ export class DisciplineChecker {
    */
   constructor(projectRoot: string = process.cwd(), customLimits?: DisciplineLimits) {
     this.projectRoot = projectRoot;
-    this.detector = new IncrementStatusDetector(projectRoot);
 
     // Load limits from config or use defaults
     if (customLimits) {
@@ -49,8 +48,8 @@ export class DisciplineChecker {
    */
   private getDefaultLimits(): DisciplineLimits {
     return {
-      maxActiveIncrements: 1,
-      hardCap: 3,
+      maxActiveIncrements: 3,  // WIP limit (warning)
+      hardCap: 5,              // Absolute maximum (error)
       allowEmergencyInterrupt: true,
       typeBehaviors: {
         canInterrupt: ['hotfix', 'bug'],
@@ -71,26 +70,36 @@ export class DisciplineChecker {
     const violations: ValidationViolation[] = [];
 
     try {
-      // Phase 1: Detect all increments
-      const allIncrements = await this.getAllIncrements();
+      // SIMPLIFIED APPROACH: Use MetadataManager directly (matches status-commands.ts)
+      const allIncrements = MetadataManager.getAll();
 
-      // Phase 2: Count by status and get status map
-      const { statusCounts, statusMap } = this.countByStatus(allIncrements);
-
-      // Phase 3: Find incomplete increments (active or paused, not backlog/completed/abandoned)
-      const incomplete = allIncrements.filter(
-        (inc) => {
-          const status = statusMap.get(inc.id) || 'active';
-          return inc.exists && (status === 'active' || status === 'paused');
-        }
+      // Count by status (CRITICAL: active = planning + active + ready_for_review)
+      const active = allIncrements.filter(m =>
+        m.status === IncrementStatus.PLANNING ||
+        m.status === IncrementStatus.ACTIVE ||
+        m.status === IncrementStatus.READY_FOR_REVIEW
       );
+      const backlog = allIncrements.filter(m => m.status === IncrementStatus.BACKLOG);
+      const paused = allIncrements.filter(m => m.status === IncrementStatus.PAUSED);
+      const completed = allIncrements.filter(m => m.status === IncrementStatus.COMPLETED);
+      const abandoned = allIncrements.filter(m => m.status === IncrementStatus.ABANDONED);
 
-      // Phase 4: Validate rules
+      const statusCounts = {
+        total: allIncrements.length,
+        active: active.length,
+        backlog: backlog.length,
+        paused: paused.length,
+        completed: completed.length,
+        abandoned: abandoned.length,
+      };
+
+      // Validate rules
       this.validateHardCap(statusCounts.active, violations);
       this.validateWIPLimit(statusCounts.active, violations);
-      // Note: validateIncompleteWork is used during increment creation, not here
-      // Having active increments is OK as long as they're under WIP limits
       this.validateEmergencyRules(allIncrements, statusCounts.active, violations);
+
+      // **NEW (v1.0.103)**: Validate metadata schemas for consistency
+      this.validateMetadataSchemas(allIncrements, violations);
 
       // Build result
       const result: ValidationResult = {
@@ -139,123 +148,6 @@ export class DisciplineChecker {
     }
   }
 
-  /**
-   * Get all increments with status information
-   */
-  private async getAllIncrements(): Promise<IncrementStatus[]> {
-    const incrementsDir = path.join(this.projectRoot, '.specweave', 'increments');
-
-    // Check if increments directory exists
-    if (!fs.existsSync(incrementsDir)) {
-      return [];
-    }
-
-    // Get all increment directories
-    const entries = fs.readdirSync(incrementsDir);
-    const incrementDirs = entries.filter((entry: string) => {
-      const fullPath = path.join(incrementsDir, entry);
-      return fs.statSync(fullPath).isDirectory() && /^\d{4}/.test(entry);
-    });
-
-    // Get status for each increment
-    const statuses: IncrementStatus[] = [];
-    for (const dir of incrementDirs) {
-      try {
-        const status = await this.detector.getStatus(dir);
-        if (status.exists) {
-          statuses.push(status);
-        }
-      } catch (error) {
-        // Skip increments that fail to load
-        continue;
-      }
-    }
-
-    return statuses;
-  }
-
-  /**
-   * Count increments by status
-   */
-  private countByStatus(increments: IncrementStatus[]): {
-    statusCounts: {
-      total: number;
-      active: number;
-      backlog: number;
-      paused: number;
-      completed: number;
-      abandoned: number;
-    };
-    statusMap: Map<string, string>;
-  } {
-    let active = 0;
-    let backlog = 0;
-    let paused = 0;
-    let completed = 0;
-    let abandoned = 0;
-    const statusMap = new Map<string, string>();
-
-    for (const inc of increments) {
-      const metadataPath = path.join(
-        this.projectRoot,
-        '.specweave',
-        'increments',
-        inc.id,
-        'metadata.json'
-      );
-
-      // Try to read metadata.json for status
-      let status = 'active'; // default
-      try {
-        if (fs.existsSync(metadataPath)) {
-          const metadata = fs.readJsonSync(metadataPath);
-          status = metadata.status || 'active';
-        } else {
-          // No metadata, determine by completion
-          status = inc.isComplete ? 'completed' : 'active';
-        }
-      } catch (error) {
-        // Error reading metadata, fall back to completion check
-        status = inc.isComplete ? 'completed' : 'active';
-      }
-
-      // Store status in map
-      statusMap.set(inc.id, status);
-
-      // Count by status
-      switch (status) {
-        case 'active':
-          active++;
-          break;
-        case 'backlog':
-          backlog++;
-          break;
-        case 'paused':
-          paused++;
-          break;
-        case 'completed':
-          completed++;
-          break;
-        case 'abandoned':
-          abandoned++;
-          break;
-        default:
-          active++; // Unknown status, treat as active
-      }
-    }
-
-    return {
-      statusCounts: {
-        total: increments.length,
-        active,
-        backlog,
-        paused,
-        completed,
-        abandoned,
-      },
-      statusMap,
-    };
-  }
 
   /**
    * Validate hard cap rule (never > 2 active)
@@ -300,30 +192,6 @@ export class DisciplineChecker {
     }
   }
 
-  /**
-   * Validate no incomplete work rule
-   */
-  private validateIncompleteWork(
-    incomplete: IncrementStatus[],
-    violations: ValidationViolation[]
-  ): void {
-    if (incomplete.length > 0) {
-      incomplete.forEach((inc) => {
-        violations.push({
-          type: 'incomplete_work',
-          message: `Incomplete increment: ${inc.id} (${inc.percentComplete}% complete, ${inc.pendingTasks.length} tasks remaining)`,
-          suggestion: `Complete increment ${inc.id} before starting new work. Use /sw:done ${inc.id} or /sw:close ${inc.id}`,
-          severity: 'error',
-          incrementId: inc.id,
-          context: {
-            percentComplete: inc.percentComplete,
-            pendingTasks: inc.pendingTasks.length,
-            totalTasks: inc.totalTasks,
-          },
-        });
-      });
-    }
-  }
 
   /**
    * Validate emergency interrupt rules
@@ -331,14 +199,52 @@ export class DisciplineChecker {
    * If 2 active increments, at least one must be hotfix/bug
    */
   private validateEmergencyRules(
-    allIncrements: IncrementStatus[],
+    allIncrements: IncrementMetadata[],
     activeCount: number,
     violations: ValidationViolation[]
   ): void {
     if (activeCount === 2 && this.limits.allowEmergencyInterrupt) {
       // TODO: Check if at least one is hotfix/bug type
-      // This requires reading metadata.json for type field
+      // This requires checking type field in metadata
       // For now, we'll skip this validation
+    }
+  }
+
+  /**
+   * Validate metadata schemas for consistency (NEW - v1.0.103)
+   * Detects legacy schemas with createdAt/updatedAt instead of created/updated/lastActivity
+   */
+  private validateMetadataSchemas(
+    allIncrements: IncrementMetadata[],
+    violations: ValidationViolation[]
+  ): void {
+    for (const increment of allIncrements) {
+      const metadataPath = path.join(
+        this.projectRoot,
+        '.specweave/increments',
+        increment.id,
+        'metadata.json'
+      );
+
+      try {
+        const rawContent = fs.readFileSync(metadataPath, 'utf-8');
+        const rawMetadata = JSON.parse(rawContent);
+
+        // Check for legacy schema fields
+        const hasLegacyFields = !!(rawMetadata.createdAt || rawMetadata.updatedAt);
+        const missingStandardFields = !(rawMetadata.created && rawMetadata.lastActivity);
+
+        if (hasLegacyFields || missingStandardFields) {
+          violations.push({
+            type: 'metadata_inconsistency',
+            message: `Increment ${increment.id} uses non-standard metadata schema`,
+            suggestion: `Normalize metadata: Use 'created', 'updated', 'lastActivity' instead of 'createdAt', 'updatedAt'. Run migration script to fix.`,
+            severity: 'warning',
+          });
+        }
+      } catch (error) {
+        // Silently skip if file doesn't exist (edge case)
+      }
     }
   }
 }

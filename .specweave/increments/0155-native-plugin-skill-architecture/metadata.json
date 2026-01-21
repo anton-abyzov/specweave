@@ -1,0 +1,48 @@
+{
+  "increment": "0155-native-plugin-skill-architecture",
+  "title": "Native Claude Code Plugin/Skill Architecture",
+  "status": "completed",
+  "priority": "P0",
+  "type": "refactor",
+  "created": "2026-01-06",
+  "completedAt": "2026-01-06T20:10:00.000Z",
+  "approvedAt": "2026-01-06T20:10:00.000Z",
+  "tddMode": false,
+  "updated": "2026-01-06T20:10:00.000Z",
+  "acSyncEvents": [
+    {
+      "timestamp": "2026-01-06T20:06:42.745Z",
+      "updated": [
+        "AC-US1-01",
+        "AC-US1-02",
+        "AC-US1-03",
+        "AC-US2-01",
+        "AC-US2-02",
+        "AC-US2-03",
+        "AC-US3-01",
+        "AC-US3-02",
+        "AC-US3-03",
+        "AC-US4-04",
+        "AC-US5-01",
+        "AC-US5-02",
+        "AC-US5-03",
+        "AC-US5-04",
+        "AC-US6-01",
+        "AC-US6-02",
+        "AC-US6-04"
+      ],
+      "conflicts": [],
+      "warnings": [
+        "AC-US1-04: has no tasks mapped",
+        "AC-US2-04: has no tasks mapped",
+        "AC-US3-04: has no tasks mapped",
+        "AC-US4-01: has no tasks mapped",
+        "AC-US4-02: has no tasks mapped",
+        "AC-US4-03: has no tasks mapped",
+        "AC-US6-03: has no tasks mapped"
+      ],
+      "changesCount": 17
+    }
+  ],
+  "lastActivity": "2026-01-06T20:06:42.745Z"
+}

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { ACStatusManager } from "../vendor/core/increment/ac-status-manager.js";
 import { SyncCoordinator } from "../../../../dist/src/sync/sync-coordinator.js";
+import { SpecToLivingDocsSync } from "../../../../dist/src/sync/spec-to-living-docs-sync.js";
 import { consoleLogger } from "../vendor/utils/logger.js";
 import { readFileSync, existsSync } from "fs";
 import * as path from "path";
@@ -29,6 +30,7 @@ async function updateACStatus(incrementId) {
         console.log("\n\u{1F4DD} Changes:");
         result.changes.forEach((change) => console.log(`   ${change}`));
       }
+      await syncACsToLivingDocs(projectRoot, incrementId);
       await syncACsToGitHub(projectRoot, incrementId);
     } else if (result.synced) {
       console.log("\u2705 All ACs already in sync (no changes needed)");
@@ -37,6 +39,28 @@ async function updateACStatus(incrementId) {
     }
   } catch (error) {
     console.error("\u274C Error updating AC status:", error);
+  }
+}
+async function syncACsToLivingDocs(projectRoot, incrementId) {
+  try {
+    console.log("\n\u{1F4C2} Syncing spec.md \u2192 living docs US files...");
+    const syncer = new SpecToLivingDocsSync({
+      projectRoot,
+      incrementId,
+      logger: consoleLogger
+    });
+    const result = await syncer.sync();
+    if (result.success && result.filesUpdated > 0) {
+      console.log(`   \u2705 Updated ${result.filesUpdated} living docs file(s)`);
+      console.log(`   \u{1F4DD} Total ACs synced: ${result.totalACsUpdated}`);
+      console.log(`   \u{1F4DD} Total tasks synced: ${result.totalTasksUpdated}`);
+    } else if (result.success) {
+      console.log("   \u2139\uFE0F  No living docs updates needed");
+    } else {
+      console.log("   \u26A0\uFE0F  Living docs sync had errors (non-blocking)");
+    }
+  } catch (error) {
+    console.log(`   \u26A0\uFE0F  Living docs sync failed: ${error.message}`);
   }
 }
 async function syncACsToGitHub(projectRoot, incrementId) {

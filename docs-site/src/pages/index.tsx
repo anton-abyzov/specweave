@@ -1,85 +1,171 @@
 import type {ReactNode} from 'react';
-import clsx from 'clsx';
 import Link from '@docusaurus/Link';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
 
 import styles from './index.module.css';
 
+// Professional SVG Icons
+const Icons = {
+  // Problem icons
+  contextLoss: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  ),
+  repeat: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 1l4 4-4 4"/>
+      <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+      <path d="M7 23l-4-4 4-4"/>
+      <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+    </svg>
+  ),
+  docsRot: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+      <polyline points="14,2 14,8 20,8"/>
+      <line x1="9" y1="15" x2="15" y2="15"/>
+      <line x1="12" y1="18" x2="12" y2="12"/>
+    </svg>
+  ),
+  // Feature icons
+  agents: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+  ),
+  livingDocs: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      <path d="M8 7h8M8 11h8M8 15h4"/>
+    </svg>
+  ),
+  memory: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2a4 4 0 0 1 4 4v1a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/>
+      <path d="M12 11v6"/>
+      <path d="M9 22h6"/>
+      <path d="M12 17v5"/>
+      <circle cx="12" cy="6" r="1"/>
+    </svg>
+  ),
+  sync: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.5 2v6h-6"/>
+      <path d="M2.5 22v-6h6"/>
+      <path d="M2 11.5a10 10 0 0 1 18.8-4.3"/>
+      <path d="M22 12.5a10 10 0 0 1-18.8 4.2"/>
+    </svg>
+  ),
+  qualityGates: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <path d="M9 12l2 2 4-4"/>
+    </svg>
+  ),
+  setup: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>
+  ),
+  // Integration icons
+  github: (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+    </svg>
+  ),
+  jira: (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.005 1.005 0 0 0 23.013 0z"/>
+    </svg>
+  ),
+  azure: (
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M0 8.877L2.247 5.91l8.405-3.416V.022l7.37 5.393L2.966 8.338v8.225L0 15.707zm24-4.45v14.651l-5.753 4.9-9.303-3.057v3.056l-5.978-7.416 15.057 1.798V5.415z"/>
+    </svg>
+  ),
+  ai: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+      <path d="M2 17l10 5 10-5"/>
+      <path d="M2 12l10 5 10-5"/>
+    </svg>
+  ),
+};
+
 function HomepageHeader() {
-  const {siteConfig} = useDocusaurusContext();
   return (
-    <header className={clsx('hero', styles.heroBanner)}>
+    <header className={styles.heroBanner}>
       <div className="container">
-        <div className={styles.heroContent}>
-          <div className={styles.heroTags}>
-            <div className={styles.heroTag}>
-              100% Free & Open Source
+        <div className={styles.heroGrid}>
+          <div className={styles.heroContent}>
+            <div className={styles.heroTags}>
+              <span className={styles.heroTagPrimary}>Enterprise Ready</span>
+              <span className={styles.heroTagSecondary}>Open Source</span>
             </div>
-            <div className={styles.heroTag}>
-              v1.1 Production Ready
+
+            <Heading as="h1" className={styles.heroTitle}>
+              Ship Features<br/>
+              <span className={styles.heroGradient}>While You Sleep</span>
+            </Heading>
+
+            <p className={styles.heroSubtitle}>
+              Autonomous AI agents with <strong>persistent memory</strong>.
+              Your specifications, architectural decisions, and documentation endure across sessions — enabling continuous, unattended development.
+            </p>
+
+            <div className={styles.heroButtons}>
+              <Link className={styles.btnPrimary} to="/docs/intro">
+                Start Building
+              </Link>
+              <Link className={styles.btnSecondary} to="https://youtube.com/@antonabyzov">
+                See It In Action →
+              </Link>
+            </div>
+
+            <div className={styles.heroBadges}>
+              <a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer">
+                <img src="https://img.shields.io/npm/v/specweave?color=7c3aed&style=for-the-badge" alt="NPM Version" />
+              </a>
+              <a href="https://www.npmjs.com/package/specweave" target="_blank" rel="noopener noreferrer">
+                <img src="https://img.shields.io/npm/dm/specweave?color=22c55e&style=for-the-badge" alt="Downloads" />
+              </a>
+              <a href="https://discord.gg/UYg4BGJ65V" target="_blank" rel="noopener noreferrer">
+                <img src="https://img.shields.io/badge/Discord-Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" />
+              </a>
             </div>
           </div>
-          <Heading as="h1" className={styles.heroTitle}>
-            Finally. A <span className={styles.heroHighlight}>Spec-Driven</span> AI Framework.<br/>
-            Legacy. Startup. Enterprise.
-          </Heading>
-          <p className={styles.heroSubtitle}>
-            Drop it into a <strong>10-year-old codebase</strong> — it understands everything.
-            Use it on your <strong>weekend MVP</strong> — specs write themselves.
-            Scale it to <strong>50 teams</strong> — JIRA, GitHub, Azure DevOps sync automatically.
-          </p>
-          <div className={styles.heroStats}>
-            <div className={styles.stat}>
-              <div className={styles.statNumber}>3</div>
-              <div className={styles.statLabel}>Commands to Ship</div>
-            </div>
-            <div className={styles.stat}>
-              <div className={styles.statNumber}>140+</div>
-              <div className={styles.statLabel}>Self-Built Features</div>
-            </div>
-            <div className={styles.stat}>
-              <div className={styles.statNumber}>60%+</div>
-              <div className={styles.statLabel}>Test Coverage Enforced</div>
-            </div>
-          </div>
-          <div className={styles.buttons}>
-            <Link
-              className="button button--primary button--lg"
-              to="/docs/intro">
-              Get Started Free →
-            </Link>
-            <Link
-              className="button button--outline button--lg"
-              to="#how-it-works">
-              See How It Works
-            </Link>
-          </div>
-        </div>
 
-        <div className={styles.heroCode}>
-          <div className={styles.codeBlock}>
-            <div className={styles.codeHeader}>
-              <span className={styles.codeTitle}>The 3-Command Workflow</span>
-            </div>
-            <pre className={styles.codePre}>
-              <code>{`# 1. Define what you want
-/sw:increment "Add OAuth authentication"
-→ Creates spec.md + plan.md + tasks.md (with embedded tests)
+          <div className={styles.heroVisual}>
+            <div className={styles.codeWindow}>
+              <div className={styles.codeWindowHeader}>
+                <div className={styles.codeWindowDots}>
+                  <span className={styles.dotRed}></span>
+                  <span className={styles.dotYellow}></span>
+                  <span className={styles.dotGreen}></span>
+                </div>
+                <span className={styles.codeWindowTitle}>Enterprise Workflow</span>
+              </div>
+              <pre className={styles.codeContent}>
+                <code>{`# 1. Define requirements
+/sw:increment "OAuth 2.0 with PKCE"
+→ Generates spec.md + plan.md + tasks.md
 
-# 2. Let AI build it
-/sw:do
-→ Autonomous execution: code, tests, docs update automatically
+# 2. Autonomous execution
+/sw:auto
+→ Runs for hours without intervention
 
-# 3. Validate and ship
+# 3. Validate & deploy
 /sw:done 0001
-→ Quality gates: tasks ✓ tests 60%+ ✓ docs synced ✓`}</code>
-            </pre>
-          </div>
-          <div className={styles.codeCaption}>
-            <strong>Every feature = permanent documentation.</strong> Searchable. Traceable. Always in sync.
+→ Quality gates: tasks ✓ tests ✓ docs ✓`}</code>
+              </pre>
+            </div>
           </div>
         </div>
       </div>
@@ -87,48 +173,62 @@ function HomepageHeader() {
   );
 }
 
-function FeatureHighlight({
-  title,
-  description,
-  icon,
-}: {
-  title: string;
-  description: string;
-  icon: string;
-}): ReactNode {
+function ProblemSection(): ReactNode {
   return (
-    <div className={styles.feature}>
-      <div className={styles.featureIcon}>{icon}</div>
-      <h3>{title}</h3>
-      <p>{description}</p>
-    </div>
+    <section className={styles.problemSection}>
+      <div className="container">
+        <div className={styles.problemGrid}>
+          <div className={styles.problemCard}>
+            <div className={styles.problemIconWrapper}>{Icons.contextLoss}</div>
+            <h3>Context Evaporates</h3>
+            <p>Session ends, specifications vanish. Critical decisions lost between conversations.</p>
+          </div>
+          <div className={styles.problemCard}>
+            <div className={styles.problemIconWrapper}>{Icons.repeat}</div>
+            <h3>Repetitive Onboarding</h3>
+            <p>Re-explain architecture, patterns, and constraints every single session.</p>
+          </div>
+          <div className={styles.problemCard}>
+            <div className={styles.problemIconWrapper}>{Icons.docsRot}</div>
+            <h3>Documentation Decay</h3>
+            <p>JIRA stale. README outdated. Technical debt compounds silently.</p>
+          </div>
+        </div>
+
+        <div className={styles.solutionBox}>
+          <h3>SpecWeave Eliminates This</h3>
+          <p>
+            AI with <strong>institutional memory</strong> — your decisions, patterns, and domain knowledge
+            persist and compound across sessions. Documentation updates automatically. Zero knowledge loss.
+          </p>
+        </div>
+      </div>
+    </section>
   );
 }
 
-function DogfoodingBanner(): ReactNode {
+function StatsSection(): ReactNode {
   return (
-    <section className={styles.dogfoodingSection}>
+    <section className={styles.statsSection}>
       <div className="container">
-        <div className={styles.dogfoodingContent}>
-          <div className={styles.dogfoodingBadge}>PROOF: WE USE IT OURSELVES</div>
-          <Heading as="h2">This Framework Builds Itself</Heading>
-          <p>
-            Not a demo. SpecWeave is 100% built using SpecWeave.
-            Every feature, every bug fix, every release — all spec-driven with full traceability.
-          </p>
-          <div className={styles.dogfoodingStats}>
-            <Link to="https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments" className={styles.dogfoodingStat}>
-              <span className={styles.dogfoodingNumber}>140+</span>
-              <span className={styles.dogfoodingLabel}>Features with Full Specs</span>
-            </Link>
-            <Link to="https://spec-weave.com/docs/metrics" className={styles.dogfoodingStat}>
-              <span className={styles.dogfoodingNumber}>Live</span>
-              <span className={styles.dogfoodingLabel}>DORA Metrics</span>
-            </Link>
-            <Link to="https://github.com/anton-abyzov/specweave" className={styles.dogfoodingStat}>
-              <span className={styles.dogfoodingNumber}>0%</span>
-              <span className={styles.dogfoodingLabel}>Change Failure Rate</span>
-            </Link>
+        <div className={styles.statsBadge}>DOGFOODING: BUILT WITH ITSELF</div>
+        <Heading as="h2" className={styles.statsTitle}>Production Proven</Heading>
+        <p className={styles.statsSubtitle}>
+          Not a prototype. SpecWeave is entirely developed using SpecWeave. Every feature, every release.
+        </p>
+
+        <div className={styles.statsGrid}>
+          <Link to="https://github.com/anton-abyzov/specweave/tree/develop/.specweave/increments" className={styles.statCard}>
+            <div className={styles.statNumber}>200+</div>
+            <div className={styles.statLabel}>Increments Delivered</div>
+          </Link>
+          <div className={styles.statCard}>
+            <div className={styles.statNumber}>10k+</div>
+            <div className={styles.statLabel}>Installations</div>
+          </div>
+          <div className={styles.statCard}>
+            <div className={styles.statNumber}>0%</div>
+            <div className={styles.statLabel}>Context Loss</div>
           </div>
         </div>
       </div>
@@ -138,33 +238,42 @@ function DogfoodingBanner(): ReactNode {
 
 function FeaturesSection(): ReactNode {
   return (
-    <section className={styles.featuresSection} id="how-it-works">
+    <section className={styles.featuresSection} id="capabilities">
       <div className="container">
-        <div className={styles.sectionHeader}>
-          <Heading as="h2">Why Not BMAD or SpecKit?</Heading>
-          <p>Great tools for simple projects. But when things get real, they break down.</p>
-        </div>
+        <Heading as="h2" className={styles.sectionTitle}>Enterprise Capabilities</Heading>
+        <p className={styles.sectionSubtitle}>Purpose-built for teams shipping production software at scale.</p>
+
         <div className={styles.featuresGrid}>
-          <FeatureHighlight
-            icon="📂"
-            title="Permanent, Not Ephemeral"
-            description="Other tools generate code into chat history. SpecWeave creates permanent spec.md + plan.md + tasks.md files. Searchable forever."
-          />
-          <FeatureHighlight
-            icon="🔄"
-            title="Full Lifecycle, Not Snapshots"
-            description="BMAD and SpecKit are single-use. SpecWeave manages 140+ increments with pause, resume, abandon, reopen, and quality gates."
-          />
-          <FeatureHighlight
-            icon="🔗"
-            title="External Sync Built-In"
-            description="Bidirectional sync with GitHub Issues, JIRA, Azure DevOps. Other tools require manual updates or custom integrations."
-          />
-          <FeatureHighlight
-            icon="🏢"
-            title="Brownfield-Ready"
-            description="10-year legacy codebase? SpecWeave analyzes it, detects doc gaps, imports from Notion/Confluence. Others assume greenfield only."
-          />
+          <div className={styles.featureCard}>
+            <div className={styles.featureIconWrapper}>{Icons.agents}</div>
+            <h3>Multi-Agent Orchestration</h3>
+            <p>15+ specialized agents — PM, Architect, QA, Security, DevOps — collaborating on your deliverables.</p>
+          </div>
+          <div className={styles.featureCard}>
+            <div className={styles.featureIconWrapper}>{Icons.livingDocs}</div>
+            <h3>Living Documentation</h3>
+            <p>Specifications, ADRs, and runbooks synchronized automatically after every task completion.</p>
+          </div>
+          <div className={styles.featureCard}>
+            <div className={styles.featureIconWrapper}>{Icons.memory}</div>
+            <h3>Persistent Memory</h3>
+            <p>AI learns from corrections and retains context. Fix once — remembered permanently.</p>
+          </div>
+          <div className={styles.featureCard}>
+            <div className={styles.featureIconWrapper}>{Icons.sync}</div>
+            <h3>Bidirectional Sync</h3>
+            <p>GitHub Issues, JIRA, Azure DevOps — real-time synchronization across platforms.</p>
+          </div>
+          <div className={styles.featureCard}>
+            <div className={styles.featureIconWrapper}>{Icons.qualityGates}</div>
+            <h3>Automated Quality Gates</h3>
+            <p>Enforced validation: tests passing, docs current, acceptance criteria satisfied before release.</p>
+          </div>
+          <div className={styles.featureCard}>
+            <div className={styles.featureIconWrapper}>{Icons.setup}</div>
+            <h3>Zero-Config Setup</h3>
+            <p>Single command installation. Framework-agnostic. Production-ready in minutes.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -175,75 +284,36 @@ function IntegrationsSection(): ReactNode {
   return (
     <section className={styles.integrationsSection}>
       <div className="container">
-        <div className={styles.sectionHeader}>
-          <Heading as="h2">Works With Your Stack</Heading>
-          <p>SpecWeave integrates with the tools your team already uses.</p>
-        </div>
+        <Heading as="h2" className={styles.sectionTitle}>Seamless Integration</Heading>
+        <p className={styles.sectionSubtitle}>Native connectivity with enterprise toolchains.</p>
+
         <div className={styles.integrationsGrid}>
           <div className={styles.integrationCard}>
-            <div className={styles.integrationIcon}>🐙</div>
+            <div className={styles.integrationIconWrapper}>{Icons.github}</div>
             <h3>GitHub</h3>
-            <p>Issues, Milestones, Projects. Bidirectional sync keeps everything in sync.</p>
+            <p>Issues, Milestones, Projects. Full bidirectional synchronization.</p>
           </div>
           <div className={styles.integrationCard}>
-            <div className={styles.integrationIcon}>📋</div>
+            <div className={styles.integrationIconWrapper}>{Icons.jira}</div>
             <h3>JIRA</h3>
-            <p>Epics, Stories, Boards. 1-level and 2-level hierarchy mapping.</p>
+            <p>Epics, Stories, Boards. Complete hierarchy mapping.</p>
           </div>
           <div className={styles.integrationCard}>
-            <div className={styles.integrationIcon}>🔷</div>
+            <div className={styles.integrationIconWrapper}>{Icons.azure}</div>
             <h3>Azure DevOps</h3>
-            <p>Work Items, Area Paths, Iterations. Full ADO integration.</p>
+            <p>Work Items, Area Paths, Iterations. Enterprise-grade integration.</p>
           </div>
           <div className={styles.integrationCard}>
-            <div className={styles.integrationIcon}>🤖</div>
-            <h3>Any AI Tool</h3>
-            <p>Claude, Cursor, Copilot, Gemini. Your team picks their favorite.</p>
+            <div className={styles.integrationIconWrapper}>{Icons.ai}</div>
+            <h3>AI Platforms</h3>
+            <p>Claude, Cursor, Copilot, Gemini. Platform-agnostic design.</p>
           </div>
         </div>
-        <div className={styles.integrationsCta}>
-          <Link to="/docs/guides/integrations/external-tools-overview" className="button button--secondary">
-            View Integration Guides →
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
 
-function ComparisonSection(): ReactNode {
-  return (
-    <section className={styles.comparisonSection}>
-      <div className="container">
-        <div className={styles.comparison}>
-          <div className={styles.comparisonColumn}>
-            <h3>The Problem</h3>
-            <ul>
-              <li>Specs disappear into chat history</li>
-              <li>Architecture decisions forgotten</li>
-              <li>Tests? "We'll add them later"</li>
-              <li>JIRA/GitHub manually updated</li>
-              <li>Onboarding: "Ask John, he knows"</li>
-              <li>6 months later: no one knows why</li>
-            </ul>
-            <p className={styles.comparisonResult}>
-              <strong>AI generates code, but code without context is technical debt.</strong>
-            </p>
-          </div>
-          <div className={styles.comparisonColumn}>
-            <h3>The SpecWeave Solution</h3>
-            <ul>
-              <li>Every feature = permanent spec.md</li>
-              <li>Every decision = documented in plan.md</li>
-              <li>Tests embedded in tasks.md (60%+ enforced)</li>
-              <li>Sync to JIRA/GitHub/ADO on command</li>
-              <li>Onboarding: search the living docs</li>
-              <li>6 months later: full traceability</li>
-            </ul>
-            <p className={styles.comparisonResult}>
-              <strong>AI decisions become permanent, searchable documentation.</strong>
-            </p>
-          </div>
+        <div className={styles.integrationsCta}>
+          <Link to="/docs/guides/integrations/external-tools-overview" className={styles.btnOutline}>
+            Integration Documentation →
+          </Link>
         </div>
       </div>
     </section>
@@ -254,21 +324,30 @@ function CTASection(): ReactNode {
   return (
     <section className={styles.ctaSection}>
       <div className="container">
-        <div className={styles.ctaContent}>
-          <Heading as="h2">Start Building With Traceability</Heading>
-          <p>5 minutes to install. Your first spec in 60 seconds. <strong>100% free, open-source, forever.</strong></p>
-          <div className={styles.ctaButtons}>
-            <Link
-              className="button button--primary button--lg"
-              to="/docs/guides/getting-started/quickstart">
-              Get Started →
-            </Link>
-            <Link
-              className="button button--outline button--lg"
-              to="https://github.com/anton-abyzov/specweave">
-              Star on GitHub
-            </Link>
-          </div>
+        <Heading as="h2" className={styles.ctaTitle}>Ready to Transform Your Workflow?</Heading>
+        <p className={styles.ctaSubtitle}>
+          Join engineering teams worldwide delivering production features with AI that maintains institutional knowledge.
+        </p>
+
+        <div className={styles.ctaCode}>
+          <code>npm install -g specweave && specweave init .</code>
+        </div>
+
+        <div className={styles.ctaButtons}>
+          <Link className={styles.btnPrimaryLarge} to="/docs/guides/getting-started/quickstart">
+            Get Started →
+          </Link>
+          <Link className={styles.btnGhost} to="https://github.com/anton-abyzov/specweave">
+            View on GitHub
+          </Link>
+        </div>
+
+        <div className={styles.ctaLinks}>
+          <Link to="https://discord.gg/UYg4BGJ65V">Community</Link>
+          <span>·</span>
+          <Link to="https://youtube.com/@antonabyzov">Tutorials</Link>
+          <span>·</span>
+          <Link to="/docs/commands/overview">Documentation</Link>
         </div>
       </div>
     </section>
@@ -276,17 +355,16 @@ function CTASection(): ReactNode {
 }
 
 export default function Home(): ReactNode {
-  const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title="Autonomous AI Development Framework"
-      description="Build production software with autonomous AI agents that just work. Minimal interaction, maximum productivity. Works with Claude, Cursor, Copilot, Gemini, and any AI tool.">
+      title="Ship Features While You Sleep"
+      description="Autonomous AI agents with persistent memory. Specifications, architectural decisions, and documentation endure across sessions. Enterprise-grade development automation.">
       <HomepageHeader />
       <main>
-        <DogfoodingBanner />
+        <ProblemSection />
+        <StatsSection />
         <FeaturesSection />
         <IntegrationsSection />
-        <ComparisonSection />
         <CTASection />
       </main>
     </Layout>

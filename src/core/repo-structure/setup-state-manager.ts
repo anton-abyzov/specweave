@@ -235,45 +235,28 @@ export class SetupStateManager {
     }
   }
 
-  /**
-   * Validate state structure
-   *
-   * @param state - State to validate
-   * @returns True if valid
-   */
   private validateState(state: any): state is SetupState {
     if (!state || typeof state !== 'object') {
       return false;
     }
 
-    // Check version
     if (state.version !== '1.0') {
       return false;
     }
 
-    // Check required fields
-    if (!state.architecture || !state.repos || !state.currentStep || !state.timestamp) {
+    const validArchitectures = ['single', 'multi-repo', 'parent', 'monorepo'];
+    if (!state.architecture || !validArchitectures.includes(state.architecture)) {
       return false;
     }
 
-    // Check architecture type
-    if (!['single', 'multi-repo', 'parent', 'monorepo'].includes(state.architecture)) {
+    if (!state.currentStep || !state.timestamp) {
       return false;
     }
 
-    // Check repos array
-    if (!Array.isArray(state.repos)) {
+    if (!Array.isArray(state.repos) || !state.repos.every((r: any) => this.validateRepo(r))) {
       return false;
     }
 
-    // Validate each repo
-    for (const repo of state.repos) {
-      if (!this.validateRepo(repo)) {
-        return false;
-      }
-    }
-
-    // Validate parent repo if exists
     if (state.parentRepo && !this.validateParentRepo(state.parentRepo)) {
       return false;
     }
@@ -281,66 +264,30 @@ export class SetupStateManager {
     return true;
   }
 
-  /**
-   * Validate parent repo configuration
-   *
-   * @param parentRepo - Parent repo to validate
-   * @returns True if valid
-   */
   private validateParentRepo(parentRepo: any): parentRepo is ParentRepoConfig {
     if (!parentRepo || typeof parentRepo !== 'object') {
       return false;
     }
 
     const required = ['name', 'owner', 'description', 'visibility', 'createOnGitHub'];
-    for (const field of required) {
-      if (!(field in parentRepo)) {
-        return false;
-      }
-    }
+    const hasAllFields = required.every(field => field in parentRepo);
+    const validVisibility = ['private', 'public'].includes(parentRepo.visibility);
+    const validCreateFlag = typeof parentRepo.createOnGitHub === 'boolean';
 
-    // Check visibility
-    if (!['private', 'public'].includes(parentRepo.visibility)) {
-      return false;
-    }
-
-    // Check createOnGitHub flag
-    if (typeof parentRepo.createOnGitHub !== 'boolean') {
-      return false;
-    }
-
-    return true;
+    return hasAllFields && validVisibility && validCreateFlag;
   }
 
-  /**
-   * Validate repo configuration
-   *
-   * @param repo - Repo to validate
-   * @returns True if valid
-   */
   private validateRepo(repo: any): repo is RepoConfig {
     if (!repo || typeof repo !== 'object') {
       return false;
     }
 
     const required = ['id', 'displayName', 'owner', 'repo', 'visibility', 'created'];
-    for (const field of required) {
-      if (!(field in repo)) {
-        return false;
-      }
-    }
+    const hasAllFields = required.every(field => field in repo);
+    const validVisibility = ['private', 'public'].includes(repo.visibility);
+    const validCreatedFlag = typeof repo.created === 'boolean';
 
-    // Check visibility
-    if (!['private', 'public'].includes(repo.visibility)) {
-      return false;
-    }
-
-    // Check created flag
-    if (typeof repo.created !== 'boolean') {
-      return false;
-    }
-
-    return true;
+    return hasAllFields && validVisibility && validCreatedFlag;
   }
 
   /**

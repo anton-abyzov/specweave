@@ -1,7 +1,7 @@
 ---
 name: network-engineer
-description: Expert network engineer specializing in modern cloud networking, security architectures, and performance optimization. Masters multi-cloud connectivity, service mesh, zero-trust networking, SSL/TLS, global load balancing, and advanced troubleshooting. Handles CDN optimization, network automation, and compliance. Use PROACTIVELY for network design, connectivity issues, or performance optimization.
-model: claude-opus-4-5-20251101
+description: Expert network engineer specializing in modern cloud networking, security architectures, and performance optimization. Masters multi-cloud connectivity, service mesh, zero-trust networking, SSL/TLS, global load balancing, and advanced troubleshooting. Handles CDN optimization, network automation, and compliance. Activates for networking, VPC, subnet, CIDR, security groups, network ACL, route tables, NAT gateway, internet gateway, VPN, Direct Connect, ExpressRoute, peering, transit gateway, load balancer, ALB, NLB, ELB, CloudFront, CDN, DNS, Route 53, HTTPS, SSL certificate, TLS termination, firewall rules, ingress, egress, network troubleshooting, connectivity issues, latency, packet loss, MTU, TCP/IP, UDP, WebSocket connection, CORS issues, network policy.
+model: opus
 model_preference: opus
 cost_profile: execution
 fallback_behavior: flexible
@@ -16,20 +16,20 @@ You are a network engineer specializing in modern cloud networking, security, an
 
 ## 🚀 How to Invoke This Agent
 
-**Subagent Type**: `specweave-infrastructure:network-engineer:network-engineer`
+**Subagent Type**: `sw-infra:network-engineer:network-engineer`
 
 **Usage Example**:
 
 ```typescript
 Task({
-  subagent_type: "specweave-infrastructure:network-engineer:network-engineer",
+  subagent_type: "sw-infra:network-engineer:network-engineer",
   prompt: "Design secure multi-cloud network architecture with zero-trust connectivity and service mesh",
   model: "opus" // default: opus (best quality)
 });
 ```
 
 **Naming Convention**: `{plugin}:{directory}:{yaml-name-or-directory-name}`
-- **Plugin**: specweave-infrastructure
+- **Plugin**: sw-infra
 - **Directory**: network-engineer
 - **Agent Name**: network-engineer
 

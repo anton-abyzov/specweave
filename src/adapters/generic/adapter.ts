@@ -13,8 +13,6 @@ import * as fs from '../../utils/fs-native.js';
 import { AdapterBase } from '../adapter-base.js';
 import { AdapterOptions, AdapterFile } from '../adapter-interface.js';
 import type { Plugin } from '../../core/types/plugin.js';
-import { LanguageManager, getSystemPromptForLanguage } from '../../core/i18n/language-manager.js';
-import type { SupportedLanguage } from '../../core/i18n/types.js';
 
 export class GenericAdapter extends AdapterBase {
   name = 'generic';
@@ -115,49 +113,6 @@ Ready to build with SpecWeave using ANY AI tool!
    */
   supportsPlugins(): boolean {
     return true;
-  }
-
-  /**
-   * Read language configuration from project config
-   *
-   * @returns Language setting from config, defaults to 'en'
-   */
-  private async getLanguageConfig(): Promise<SupportedLanguage> {
-    const projectPath = process.cwd();
-    const configPath = path.join(projectPath, '.specweave', 'config.json');
-
-    if (!(await fs.pathExists(configPath))) {
-      return 'en'; // Default to English if no config
-    }
-
-    try {
-      const config = await fs.readJson(configPath);
-      return (config.language as SupportedLanguage) || 'en';
-    } catch (error) {
-      console.warn('⚠️  Could not read language from config, defaulting to English');
-      return 'en';
-    }
-  }
-
-  /**
-   * Inject system prompt for non-English languages
-   *
-   * Prepends language instruction to markdown content if language !== 'en'
-   *
-   * @param content Original markdown content
-   * @param language Target language
-   * @returns Modified content with system prompt (or unchanged if English)
-   */
-  private injectSystemPrompt(content: string, language: SupportedLanguage): string {
-    if (language === 'en') {
-      return content; // No changes for English - preserve default behavior
-    }
-
-    // Get system prompt for target language
-    const systemPrompt = getSystemPromptForLanguage(language);
-
-    // For AGENTS.md compilation, inject at the beginning of the content
-    return `${systemPrompt}\n\n${content}`;
   }
 
   /**

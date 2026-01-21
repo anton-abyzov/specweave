@@ -11,8 +11,8 @@ import { Logger } from '../../utils/logger.js';
  */
 export declare class MetadataError extends Error {
     incrementId: string;
-    cause?: Error;
-    constructor(message: string, incrementId: string, cause?: Error);
+    cause?: Error | undefined;
+    constructor(message: string, incrementId: string, cause?: Error | undefined);
 }
 /**
  * Metadata Manager

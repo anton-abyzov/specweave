@@ -860,36 +860,38 @@ export class ImportCoordinator {
    * Check if a platform is configured
    */
   isPlatformConfigured(platform: 'github' | 'jira' | 'ado'): boolean {
-    if (platform === 'github') {
-      return this.importers.has(platform) || this.githubRepoImporters.size > 0;
-    }
-    if (platform === 'ado') {
-      return this.importers.has(platform) || this.adoProjectImporters.size > 0;
-    }
-    if (platform === 'jira') {
-      return this.importers.has(platform) || this.jiraProjectImporters.size > 0;
-    }
-    return this.importers.has(platform);
+    if (this.importers.has(platform)) return true;
+
+    const multiImporterMap: Record<string, Map<string, any>> = {
+      'github': this.githubRepoImporters,
+      'ado': this.adoProjectImporters,
+      'jira': this.jiraProjectImporters,
+    };
+    return (multiImporterMap[platform]?.size || 0) > 0;
   }
 
   /**
    * Get list of configured GitHub repositories (for multi-repo support)
    */
   getConfiguredGitHubRepos(): string[] {
-    return Array.from(this.githubRepoImporters.keys()).map(key => key.replace('github:', ''));
+    return this.extractKeysWithPrefix(this.githubRepoImporters, 'github:');
   }
 
   /**
    * Get list of configured ADO projects (for multi-project support)
    */
   getConfiguredAdoProjects(): string[] {
-    return Array.from(this.adoProjectImporters.keys()).map(key => key.replace('ado:', ''));
+    return this.extractKeysWithPrefix(this.adoProjectImporters, 'ado:');
   }
 
   /**
    * Get list of configured JIRA projects (for multi-project support)
    */
   getConfiguredJiraProjects(): string[] {
-    return Array.from(this.jiraProjectImporters.keys()).map(key => key.replace('jira:', ''));
+    return this.extractKeysWithPrefix(this.jiraProjectImporters, 'jira:');
+  }
+
+  private extractKeysWithPrefix(map: Map<string, any>, prefix: string): string[] {
+    return Array.from(map.keys()).map(key => key.replace(prefix, ''));
   }
 }

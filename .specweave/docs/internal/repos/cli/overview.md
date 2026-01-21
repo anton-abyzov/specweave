@@ -36,6 +36,7 @@ SpecWeave is a spec-driven development framework and CLI tool that integrates wi
 - **Interactive CLI Wizard** (structure)
 - **Credential Management Pattern** (security)
 - **Hook System for Event-Driven Actions** (architecture)
+- **Direct Function Invocation Pattern** (architecture) - Avoids Commander.js double-parsing antipattern
 - **Unit Testing with Vitest** (testing)
 - **E2E Testing with Playwright** (testing)
 
@@ -64,3 +65,5 @@ SpecWeave is a spec-driven development framework and CLI tool that integrates wi
 - Multilingual support built into core architecture
 - DORA metrics integration for DevOps performance measurement
 - Docusaurus integration for documentation site preview
+- **Direct Function Invocation Pattern** (v1.0.91+): CLI commands export executable functions that are called directly from `bin/specweave.js`, avoiding Commander.js double-parsing antipattern that caused "too many arguments" errors
+- **Instant Commands**: jobs, status, progress, workflow, costs, analytics use hook-based execution in CLI (<100ms) and command file fallback in VSCode

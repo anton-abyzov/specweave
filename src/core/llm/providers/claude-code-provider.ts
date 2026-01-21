@@ -12,9 +12,8 @@
  * 5. Result: Full Claude capabilities at no extra cost!
  *
  * Cross-platform support:
- * - macOS: Uses `which claude` for detection
- * - Linux: Uses `which claude` or `command -v claude`
- * - Windows: Uses `where claude` for detection
+ * - Uses canonical detectClaudeCli() from utils/claude-cli-detector.ts
+ * - Handles: PATH binaries, shell functions/aliases, nvm versions
  *
  * Best for:
  * - Claude MAX subscribers
@@ -26,6 +25,8 @@ import { execSync, spawn } from 'child_process';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
+// Use canonical Claude CLI detector (handles shell functions, nvm, etc.)
+import { detectClaudeCli } from '../../../utils/claude-cli-detector.js';
 import type {
   LLMProvider,
   LLMProviderType,
@@ -37,11 +38,9 @@ import { Logger, consoleLogger } from '../../../utils/logger.js';
 import { extractJson, extractRequiredFieldsFromSchema } from '../../../utils/llm-json-extractor.js';
 
 /**
- * Detect platform for cross-platform support
+ * Platform detection for cross-platform support
  */
 const IS_WINDOWS = process.platform === 'win32';
-const IS_MACOS = process.platform === 'darwin';
-const IS_LINUX = process.platform === 'linux';
 
 export interface ClaudeCodeProviderConfig {
   /** Model alias: 'opus' (default), 'sonnet', 'haiku' or full model ID */
@@ -230,15 +229,11 @@ export class ClaudeCodeProvider implements LLMProvider {
           throw new Error(`Claude Code returned error: ${output.result}`);
         }
 
-        // Extract actual content from result (may be wrapped in markdown)
-        let content = output.result;
-
-        // Calculate tokens (Claude Code provides this)
         const inputTokens = output.usage?.input_tokens || 0;
         const outputTokens = output.usage?.output_tokens || 0;
 
         return {
-          content,
+          content: output.result,
           usage: {
             inputTokens,
             outputTokens,
@@ -368,25 +363,17 @@ function getClaudeAuthDir(): string {
 
 /**
  * Check if Claude Code CLI is installed (cross-platform)
+ *
+ * REFACTORED: Uses canonical implementation from utils/claude-cli-detector.ts
+ * which handles all edge cases:
+ * - Binary in PATH
+ * - Shell functions in .zshrc/.bashrc
+ * - Shell aliases
+ * - npm global paths (including nvm versions)
  */
 function isClaudeCliInstalled(): boolean {
-  try {
-    if (IS_WINDOWS) {
-      // Windows: use 'where' command
-      execSync('where claude', { stdio: 'pipe' });
-    } else {
-      // Unix (macOS/Linux): use 'which' or 'command -v'
-      try {
-        execSync('which claude', { stdio: 'pipe' });
-      } catch {
-        // Fallback to command -v (more POSIX compliant)
-        execSync('command -v claude', { stdio: 'pipe', shell: '/bin/sh' });
-      }
-    }
-    return true;
-  } catch {
-    return false;
-  }
+  const status = detectClaudeCli();
+  return status.commandExists;
 }
 
 /**
@@ -446,7 +433,7 @@ export async function getClaudeCodeStatus(): Promise<{
   error?: string;
   platform: string;
 }> {
-  const platform = IS_WINDOWS ? 'windows' : IS_MACOS ? 'macos' : IS_LINUX ? 'linux' : 'unknown';
+  const platform = process.platform;
 
   const cliInstalled = isClaudeCliInstalled();
   if (!cliInstalled) {

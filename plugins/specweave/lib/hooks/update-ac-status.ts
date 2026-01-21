@@ -31,6 +31,7 @@
 
 import { ACStatusManager } from '../vendor/core/increment/ac-status-manager.js';
 import { SyncCoordinator } from '../../../../dist/src/sync/sync-coordinator.js';
+import { SpecToLivingDocsSync } from '../../../../dist/src/sync/spec-to-living-docs-sync.js';
 import { consoleLogger } from '../vendor/utils/logger.js';
 import { readFileSync, existsSync } from 'fs';
 import * as path from 'path';
@@ -76,6 +77,9 @@ async function updateACStatus(incrementId: string): Promise<void> {
         result.changes.forEach((change: string) => console.log(`   ${change}`));
       }
 
+      // NEW v1.0.68: Auto-sync AC checkboxes to living docs US files
+      await syncACsToLivingDocs(projectRoot, incrementId);
+
       // NEW v1.0.68: Auto-sync AC checkboxes to GitHub issues
       await syncACsToGitHub(projectRoot, incrementId);
     } else if (result.synced) {
@@ -87,6 +91,48 @@ async function updateACStatus(incrementId: string): Promise<void> {
   } catch (error) {
     console.error('❌ Error updating AC status:', error);
     // Non-blocking: Don't throw, just log
+  }
+}
+
+/**
+ * Sync AC checkboxes to living docs US files (CRITICAL MISSING LINK)
+ *
+ * This is the missing step 2 in the sync chain:
+ * 1. tasks.md → spec.md (via ACStatusManager) ✅
+ * 2. spec.md → living docs (THIS FUNCTION) 🆕
+ * 3. living docs → GitHub (via syncACsToGitHub) ✅
+ *
+ * Without this, GitHub issues show 0% completion because they read
+ * from living docs files that never get updated.
+ *
+ * @param projectRoot - Project root directory
+ * @param incrementId - Increment ID
+ */
+async function syncACsToLivingDocs(projectRoot: string, incrementId: string): Promise<void> {
+  try {
+    console.log('\n📂 Syncing spec.md → living docs US files...');
+
+    const syncer = new SpecToLivingDocsSync({
+      projectRoot,
+      incrementId,
+      logger: consoleLogger,
+    });
+
+    const result = await syncer.sync();
+
+    if (result.success && result.filesUpdated > 0) {
+      console.log(`   ✅ Updated ${result.filesUpdated} living docs file(s)`);
+      console.log(`   📝 Total ACs synced: ${result.totalACsUpdated}`);
+      console.log(`   📝 Total tasks synced: ${result.totalTasksUpdated}`);
+    } else if (result.success) {
+      console.log('   ℹ️  No living docs updates needed');
+    } else {
+      console.log('   ⚠️  Living docs sync had errors (non-blocking)');
+    }
+  } catch (error: any) {
+    // Non-blocking: Log but don't fail the hook
+    console.log(`   ⚠️  Living docs sync failed: ${error.message}`);
+    // Continue - local spec.md sync already succeeded
   }
 }
 

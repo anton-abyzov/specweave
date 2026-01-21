@@ -381,7 +381,7 @@ After greenfield setup:
 
 1. **Add features** → [Implementation Workflow](/docs/workflows/implementation)
 2. **Deploy** → [Deployment Workflow](/docs/workflows/deployment)
-3. **Integrate tools** → [GitHub Sync](/docs/integrations/github)
+3. **Integrate tools** → [External Tools](/docs/academy/specweave-essentials/07-external-tools)
 
 ---
 

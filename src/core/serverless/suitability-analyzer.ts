@@ -160,51 +160,46 @@ function detectWorkloadType(description: string): WorkloadType {
 }
 
 /**
+ * Check if any keyword from a list matches the description
+ */
+function matchesKeyword(description: string, keywords: string[]): boolean {
+  return keywords.some((keyword) => description.includes(keyword));
+}
+
+/**
  * Detect anti-patterns
  */
 function detectAntiPatterns(requirements: WorkloadRequirements): string[] {
-  const detected: string[] = [];
+  const detected = new Set<string>();
   const descLower = requirements.description.toLowerCase();
 
   // Check stateful anti-patterns
-  if (requirements.isStateful || requirements.hasWebSockets || requirements.requiresContinuousConnection) {
-    detected.push('stateful');
-  } else {
-    for (const keyword of ANTI_PATTERNS.stateful) {
-      if (descLower.includes(keyword)) {
-        detected.push('stateful');
-        break;
-      }
-    }
+  const isStateful =
+    requirements.isStateful ||
+    requirements.hasWebSockets ||
+    requirements.requiresContinuousConnection ||
+    matchesKeyword(descLower, ANTI_PATTERNS.stateful);
+  if (isStateful) {
+    detected.add('stateful');
   }
 
-  // Check long-running anti-patterns
-  if (requirements.expectedExecutionTime && requirements.expectedExecutionTime > 900) {
-    // > 15 minutes
-    detected.push('long-running');
-  } else {
-    for (const keyword of ANTI_PATTERNS['long-running']) {
-      if (descLower.includes(keyword)) {
-        detected.push('long-running');
-        break;
-      }
-    }
+  // Check long-running anti-patterns (> 15 minutes)
+  const isLongRunning =
+    (requirements.expectedExecutionTime && requirements.expectedExecutionTime > 900) ||
+    matchesKeyword(descLower, ANTI_PATTERNS['long-running']);
+  if (isLongRunning) {
+    detected.add('long-running');
   }
 
-  // Check high-memory anti-patterns
-  if (requirements.memoryRequirements && requirements.memoryRequirements > 10) {
-    // > 10 GB
-    detected.push('high-memory');
-  } else {
-    for (const keyword of ANTI_PATTERNS['high-memory']) {
-      if (descLower.includes(keyword)) {
-        detected.push('high-memory');
-        break;
-      }
-    }
+  // Check high-memory anti-patterns (> 10 GB)
+  const isHighMemory =
+    (requirements.memoryRequirements && requirements.memoryRequirements > 10) ||
+    matchesKeyword(descLower, ANTI_PATTERNS['high-memory']);
+  if (isHighMemory) {
+    detected.add('high-memory');
   }
 
-  return Array.from(new Set(detected)); // Remove duplicates
+  return Array.from(detected);
 }
 
 /**

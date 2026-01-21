@@ -386,9 +386,9 @@ node dist/cli/commands/sync-spec-commits.js \
 
 ## Related
 
-- [Spec-Task Mapping](./spec-task-mapping.md) - How tasks map to user stories
-- [Living Docs Sync](./living-docs-sync.md) - How specs stay synchronized
-- [External Tool Integration](./external-tool-integration.md) - GitHub, JIRA, ADO setup
+- [Spec-Task Mapping](/docs/guides/multi-project-setup) - How tasks map to user stories
+- [Living Docs Sync](/docs/guides/core-concepts/living-documentation) - How specs stay synchronized
+- [External Tool Integration](/docs/academy/specweave-essentials/07-external-tools) - GitHub, JIRA, ADO setup
 
 ---
 

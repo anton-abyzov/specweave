@@ -51,6 +51,7 @@ import {
   copyTemplates,
   createConfigFile,
   showNextSteps,
+  installGitHooks,
   WIZARD_BACK,
   logGoingBack,
 } from '../helpers/init/index.js';
@@ -59,9 +60,7 @@ import { triggerGitHubRepoCloning } from '../helpers/init/github-repo-cloning.js
 import { triggerBitbucketRepoCloning } from '../helpers/init/bitbucket-repo-cloning.js';
 import {
   collectLivingDocsInputs,
-  displayJobScheduled,
 } from '../helpers/init/living-docs-preflight.js';
-import { launchLivingDocsJob } from '../../core/background/job-launcher.js';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -265,12 +264,18 @@ export async function initCommand(
   projectName?: string,
   options: InitOptions = {}
 ): Promise<void> {
-  // Detect CI/non-interactive environment
-  const isCI = process.env.CI === 'true' ||
+  // Detect CI/non-interactive environment or quick mode
+  const isCI = options.quick ||  // Quick mode acts like CI for skipping prompts
+               process.env.CI === 'true' ||
                process.env.GITHUB_ACTIONS === 'true' ||
                process.env.GITLAB_CI === 'true' ||
                process.env.CIRCLECI === 'true' ||
                !process.stdin.isTTY;
+
+  // In quick mode, show a brief message
+  if (options.quick) {
+    console.log(chalk.cyan('\n⚡ Quick mode: Using sensible defaults (local git, no external tools)'));
+  }
 
   // STEP 1: LANGUAGE SELECTION (FIRST QUESTION!)
   // This must be asked before anything else so all prompts are in user's language
@@ -406,17 +411,22 @@ export async function initCommand(
   }
 
   // Check for nested .specweave/
+  // EXCEPTION: User-level folders are VALID (e.g., ~/.specweave for global memory/state)
   const parentSpecweaveFolders = detectNestedSpecweave(targetDir);
   if (parentSpecweaveFolders && parentSpecweaveFolders.length > 0) {
-    console.log(chalk.red.bold('\n' + locale.t('cli', 'init.errors.nestedNotSupported') + '\n'));
-    const homeDirFolder = parentSpecweaveFolders.find(f => f.isHomeDir);
-    if (homeDirFolder) {
-      console.log(chalk.red.bold('   ⚠️  CRITICAL: Found .specweave/ in HOME DIRECTORY!'));
-      console.log(chalk.yellow('   ' + homeDirFolder.path));
-      console.log(chalk.cyan.bold('\n   💡 Quick fix:'));
-      console.log(chalk.white('   rm -rf "' + homeDirFolder.path + '/.specweave"\n'));
+    // Filter out user-level folders - these are VALID global settings locations
+    const problematicFolders = parentSpecweaveFolders.filter(f => !f.isUserLevel);
+
+    if (problematicFolders.length > 0) {
+      console.log(chalk.red.bold('\n' + locale.t('cli', 'init.errors.nestedNotSupported') + '\n'));
+      for (const folder of problematicFolders) {
+        console.log(chalk.yellow('   Found .specweave/ at: ' + folder.path));
+      }
+      console.log(chalk.cyan.bold('\n   💡 SpecWeave doesn\'t support nested projects.'));
+      console.log(chalk.white('   Initialize in a different directory or remove the parent .specweave/ folder.\n'));
+      process.exit(1);
     }
-    process.exit(1);
+    // User-level folders found but no problematic ones - allow init to proceed
   }
 
   const spinner = ora('Creating SpecWeave project...').start();
@@ -490,8 +500,8 @@ export async function initCommand(
     // No fake success message here - actual registration is done below
 
     // Copy templates
+    const templatesDir = findSourceDir('templates', __dirname);
     if (!continueExisting) {
-      const templatesDir = findSourceDir('templates', __dirname);
       await copyTemplates(templatesDir, targetDir, finalProjectName, language);
       spinner.text = 'Base templates copied...';
     }
@@ -542,7 +552,11 @@ export async function initCommand(
         console.log(chalk.green('   ✓ Keeping existing plugin configuration'));
         autoInstallSucceeded = true;
       } else {
-        const result = await installAllPlugins({ dirname: __dirname, forceRefresh: options.forceRefresh });
+        const result = await installAllPlugins({
+          dirname: __dirname,
+          forceRefresh: options.forceRefresh,
+          lazyMode: !options.fullInstall,  // Lazy mode by default, --full disables it
+        });
         autoInstallSucceeded = result.success;
         marketplaceOnly = result.marketplaceOnly || false;
       }
@@ -620,6 +634,13 @@ export async function initCommand(
       repoResult.gitUrlFormat
     );
 
+    // SMART PLUGIN INSTALL (v1.0.122): Auto-install selected external tool plugin
+    // Based on issue tracker selection, pre-load the appropriate plugin
+    // This saves tokens by NOT loading all 24 plugins - just router + selected tool
+    if (toolName === 'claude' && autoInstallSucceeded) {
+      await autoInstallSelectedExternalPlugin(targetDir);
+    }
+
     // Multi-project folders
     await createMultiProjectFolders(targetDir);
 
@@ -674,18 +695,19 @@ export async function initCommand(
               continue;
             }
 
+            // NEW FLOW (v1.0.103+): Save config but DON'T spawn background job
+            // User will run /sw:living-docs in separate Claude Code window
             if (preflightResult?.shouldLaunch && preflightResult.isBrownfield) {
-              const launchResult = await launchLivingDocsJob({
-                projectPath: targetDir,
-                userInputs: preflightResult.userInputs,
-                dependsOn: pendingJobIds,
-              });
-              displayJobScheduled(launchResult.job.id, preflightResult.estimatedDuration, language);
+              // Save living docs config to state for later use
+              saveLivingDocsConfig(targetDir, preflightResult.userInputs);
+
+              // Display instructions to run /sw:living-docs interactively
+              displayLivingDocsInstructions(preflightResult.estimatedDuration, language);
             }
           } catch (livingDocsError) {
             const errorMsg = livingDocsError instanceof Error ? livingDocsError.message : String(livingDocsError);
             console.log(chalk.yellow(`\n⚠️  Living Docs setup failed: ${errorMsg}`));
-            console.log(chalk.gray('   → You can run /sw:jobs later to check status'));
+            console.log(chalk.gray('   → You can run /sw:living-docs to configure later'));
           }
         }
         wizardStep = 'testing';
@@ -734,6 +756,43 @@ export async function initCommand(
     // Reason: Multi-project scenarios REQUIRE **Project**: field per User Story,
     // which cannot be determined automatically at init time.
     // Users should create increments explicitly via /sw:increment command.
+
+    // FINAL STEP: Git Hooks Installation (optional)
+    // Only prompt if this is a git repository
+    const isGitRepo = fs.existsSync(path.join(targetDir, '.git'));
+    if (isGitRepo && !isCI) {
+      console.log('');
+      console.log(chalk.bold('🪝 Git Hooks'));
+      console.log('');
+      console.log(chalk.gray('  SpecWeave can install pre-commit hooks to enforce best practices:'));
+      console.log(chalk.gray('   • Blocks .md files in project root (keeps it clean)'));
+      console.log(chalk.gray('   • Enforces increment folder organization'));
+      console.log(chalk.gray('   • Prevents duplicate increment IDs'));
+      console.log(chalk.gray('   • Validates YAML in spec.md files'));
+      console.log(chalk.gray('   • Protects against mass deletions'));
+      console.log('');
+
+      const shouldInstallHooks = await confirm({
+        message: locale.t('cli', 'init.gitHooks.prompt', { default: 'Install git hooks for quality enforcement?' }),
+        default: true
+      });
+
+      if (shouldInstallHooks) {
+        console.log('');
+        installGitHooks(targetDir, templatesDir);
+        console.log('');
+        console.log(chalk.gray('  To bypass hooks: git commit --no-verify'));
+        console.log(chalk.gray('  To remove hooks: rm .git/hooks/pre-commit'));
+      } else {
+        console.log('');
+        console.log(chalk.gray('  Skipped. Install later with: specweave install-hooks'));
+      }
+    } else if (!isGitRepo && !usedDotNotation) {
+      // Only show this message if we created a new directory (not using ".")
+      console.log('');
+      console.log(chalk.yellow('  ℹ Not a git repository - git hooks not installed'));
+      console.log(chalk.gray('    Run: git init && specweave install-hooks'));
+    }
 
     showNextSteps(finalProjectName, toolName, language, usedDotNotation, toolName === 'claude' ? { pluginAutoInstalled: autoInstallSucceeded, marketplaceOnly } : undefined);
   } catch (error) {
@@ -860,5 +919,129 @@ async function setupIssueTrackerWrapper(
     });
   } catch {
     console.log(chalk.yellow('\n⚠️  Issue tracker setup skipped (can configure later)'));
+  }
+}
+
+/**
+ * Save living docs configuration to state for later use
+ * (NEW v1.0.103+: No background job spawning during init)
+ */
+function saveLivingDocsConfig(
+  targetDir: string,
+  userInputs: import('../../core/background/types.js').LivingDocsUserInputs
+): void {
+  const stateDir = path.join(targetDir, '.specweave', 'state');
+  fs.ensureDirSync(stateDir);
+
+  const configPath = path.join(stateDir, 'living-docs-config.json');
+  fs.writeFileSync(
+    configPath,
+    JSON.stringify(
+      {
+        userInputs,
+        savedAt: new Date().toISOString(),
+      },
+      null,
+      2
+    )
+  );
+}
+
+/**
+ * Display instructions to run /sw:living-docs interactively
+ * (NEW v1.0.103+: Interactive mode instead of background job)
+ */
+function displayLivingDocsInstructions(
+  estimatedDuration: string,
+  language: SupportedLanguage = 'en'
+): void {
+  console.log('');
+  console.log(chalk.green('  ✓ Living Docs configuration saved'));
+  console.log('');
+  console.log(chalk.cyan('  📚 Next: Build Living Documentation'));
+  console.log(chalk.gray(`     Estimated: ${estimatedDuration}`));
+  console.log('');
+  console.log(chalk.white('  To start the Living Docs builder:'));
+  console.log(chalk.cyan('  1. Open a NEW Claude Code window (separate conversation)'));
+  console.log(chalk.cyan('  2. Run: /sw:living-docs'));
+  console.log('');
+  console.log(chalk.gray('  💡 Why a separate window?'));
+  console.log(chalk.gray('     - You can monitor real-time progress'));
+  console.log(chalk.gray('     - Pause/resume by closing/reopening the window'));
+  console.log(chalk.gray('     - No background processes or orphaned jobs'));
+  console.log('');
+}
+
+/**
+ * Auto-install external tool plugin based on issue tracker selection
+ *
+ * NEW (v1.0.122): Smart plugin installation
+ * Instead of loading all 24 plugins (~60K tokens), we:
+ * 1. Load router skill by default (~500 tokens)
+ * 2. Auto-load ONLY the selected external tool plugin (~5K tokens)
+ * 3. Other plugins load on-demand via keywords
+ *
+ * Result: ~30K max instead of ~60K (50% token savings)
+ */
+async function autoInstallSelectedExternalPlugin(targetDir: string): Promise<void> {
+  const configPath = path.join(targetDir, '.specweave', 'config.json');
+
+  if (!fs.existsSync(configPath)) {
+    return;
+  }
+
+  try {
+    const config = await fs.readJson(configPath);
+    const syncConfig = config.sync as { defaultProfile?: string; profiles?: Record<string, { provider?: string }> } | undefined;
+
+    if (!syncConfig?.defaultProfile || !syncConfig?.profiles) {
+      return;
+    }
+
+    const defaultProfile = syncConfig.profiles[syncConfig.defaultProfile];
+    if (!defaultProfile?.provider) {
+      return;
+    }
+
+    // Map provider to plugin name
+    const providerToPlugin: Record<string, string> = {
+      github: 'specweave-github',
+      jira: 'specweave-jira',
+      ado: 'specweave-ado',
+    };
+
+    const pluginToInstall = providerToPlugin[defaultProfile.provider];
+    if (!pluginToInstall) {
+      return;
+    }
+
+    // Import cache manager and install the selected plugin
+    const { PluginCacheManager } = await import('../../core/lazy-loading/cache-manager.js');
+    const cacheManager = new PluginCacheManager();
+
+    console.log(chalk.cyan(`\n📦 Auto-installing ${defaultProfile.provider.toUpperCase()} plugin...`));
+
+    const installResult = await cacheManager.installPlugins({
+      plugins: [pluginToInstall],
+      force: false,
+    });
+
+    if (installResult.success && installResult.pluginsAffected > 0) {
+      console.log(chalk.green(`   ✓ ${pluginToInstall} installed (ready for sync commands)`));
+    } else {
+      // Fallback to CLI install
+      const cliResult = execFileNoThrowSync('claude', ['plugin', 'install', pluginToInstall]);
+      if (cliResult.success) {
+        console.log(chalk.green(`   ✓ ${pluginToInstall} installed`));
+      } else {
+        console.log(chalk.yellow(`   ⚠ Could not auto-install ${pluginToInstall}`));
+        console.log(chalk.gray(`   → Install manually: /plugin install ${pluginToInstall}`));
+      }
+    }
+  } catch (error) {
+    // Non-blocking - just log and continue
+    if (process.env.DEBUG) {
+      console.log(chalk.gray(`   → Auto-install skipped: ${error instanceof Error ? error.message : String(error)}`));
+    }
   }
 }

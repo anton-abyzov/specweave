@@ -42,6 +42,8 @@ while [[ "$PROJECT_ROOT" != "/" ]] && [[ ! -d "$PROJECT_ROOT/.specweave" ]]; do
 done
 [[ ! -d "$PROJECT_ROOT/.specweave" ]] && exit 0
 
+STATE_DIR="$PROJECT_ROOT/.specweave/state"
+
 # ============================================================================
 # LOGGING INFRASTRUCTURE
 # ============================================================================
@@ -155,6 +157,64 @@ safe_run_sync() {
 }
 
 # ============================================================================
+# TASK COMPLETION SOUND (plays when task marked [x])
+# ============================================================================
+
+play_task_completion_sound() {
+  local tasks_file="$1"
+  local state_file="$STATE_DIR/.last-task-completion"
+  local session_file="$STATE_DIR/auto-session.json"
+
+  # DISABLED: Sound notifications are disabled by default
+  # To re-enable, set SPECWEAVE_SOUND_ENABLED=1 in environment
+  if [[ "${SPECWEAVE_SOUND_ENABLED:-0}" != "1" ]]; then
+    log_debug "Sound disabled (set SPECWEAVE_SOUND_ENABLED=1 to enable)"
+    return 0
+  fi
+
+  # CRITICAL: Skip sound if auto mode is active
+  # Auto mode has its own completion sound via Stop hook (plays once at END)
+  if [[ -f "$session_file" ]]; then
+    local auto_status=$(jq -r '.status // "unknown"' "$session_file" 2>/dev/null || echo "unknown")
+    if [[ "$auto_status" == "active" ]] || [[ "$auto_status" == "running" ]]; then
+      log_debug "Auto mode active - skipping task completion sound (Stop hook will handle it)"
+      return 0
+    fi
+  fi
+
+  # Extract current completion count
+  local current_count=$(grep -c '\*\*Status\*\*:.*\[x\]' "$tasks_file" 2>/dev/null || echo "0")
+
+  # Read previous count
+  local previous_count="0"
+  if [[ -f "$state_file" ]]; then
+    previous_count=$(cat "$state_file" 2>/dev/null || echo "0")
+  fi
+
+  # If count increased, a task was just completed
+  if [[ "$current_count" -gt "$previous_count" ]]; then
+    # Save new count
+    echo "$current_count" > "$state_file" 2>/dev/null
+
+    # Play completion sound (background, never blocks)
+    (
+      if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS - use Glass.aiff for pleasant completion sound
+        afplay /System/Library/Sounds/Glass.aiff 2>/dev/null &
+      elif command -v paplay >/dev/null 2>&1; then
+        # Linux with PulseAudio
+        paplay /usr/share/sounds/freedesktop/stereo/complete.oga 2>/dev/null &
+      elif command -v aplay >/dev/null 2>&1; then
+        # Linux with ALSA
+        aplay /usr/share/sounds/alsa/Front_Center.wav 2>/dev/null &
+      fi
+    ) &
+
+    log_debug "Task completion sound played (count: $previous_count → $current_count)"
+  fi
+}
+
+# ============================================================================
 # INPUT PARSING (with safe fallbacks)
 # ============================================================================
 
@@ -182,8 +242,11 @@ log_debug "Processing: $FILE_PATH (increment: $INC_ID)"
 # SETUP PATHS
 # ============================================================================
 
+# Script is at: hooks/v2/dispatchers/post-tool-use.sh
+# HOOK_DIR should be: hooks/v2 (one level up from dispatchers)
+# PLUGIN_ROOT should be: plugin root (TWO levels up from hooks/v2)
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PLUGIN_ROOT="$(cd "$HOOK_DIR/.." && pwd)"
+PLUGIN_ROOT="$(cd "$HOOK_DIR/../.." && pwd)"
 DETECTOR_DIR="$HOOK_DIR/detectors"
 SCRIPTS_DIR="$PLUGIN_ROOT/scripts"
 
@@ -217,6 +280,20 @@ case "$FILE_PATH" in
         log_debug "Running task-ac-sync guard"
         safe_run_sync "$SYNC_SCRIPT" "task-ac-sync" "$INPUT"
       fi
+
+      # ========================================================================
+      # TDD ENFORCEMENT (v1.0.105+): Warn on TDD discipline violations
+      # ========================================================================
+      # When tasks.md is edited in TDD mode, check for violations
+      # WARNING-ONLY: educates users, never blocks
+      TDD_GUARD="$HOOK_DIR/guards/tdd-enforcement-guard.sh"
+      if [[ -f "$TDD_GUARD" ]]; then
+        log_debug "Running TDD enforcement guard"
+        safe_run_background "$TDD_GUARD" "tdd-enforcement" "$PROJECT_ROOT" "$FILE_PATH" "Edit"
+      fi
+
+      # Play completion sound if task was marked complete (v1.0.77+)
+      play_task_completion_sound "$FILE_PATH"
     fi
 
     # Tasks or spec changed -> check for US completion (background)

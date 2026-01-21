@@ -211,6 +211,8 @@ program
   .option('-f, --force', 'Force fresh start (non-interactive, removes existing .specweave)', false)
   .option('--force-refresh', 'Force marketplace refresh (skip cache, always pull latest)', false)
   .option('--no-living-docs', 'Skip living docs builder setup')
+  .option('--full', 'Install all plugins (skip lazy loading, longer init but all skills available immediately)')
+  .option('-q, --quick', 'Quick mode: skip all prompts, use sensible defaults (local git, no external tools, minimal setup)')
   .action(async (projectName, options) => {
     const { initCommand } = await import('../dist/src/cli/commands/init.js');
     await initCommand(projectName, options);
@@ -275,6 +277,19 @@ program
   .action(async (incrementId, options) => {
     const { abandonCommand } = await import('../dist/src/cli/commands/abandon.js');
     await abandonCommand(incrementId, options);
+  });
+
+// Complete command - Mark increment as complete (triggers external sync)
+program
+  .command('complete <increment-id>')
+  .alias('done')
+  .description('Complete an increment (triggers GitHub/JIRA/ADO sync)')
+  .option('-s, --silent', 'Silent mode (for auto mode stop hook)')
+  .option('-y, --yes', 'Assume yes (silent confirmation)')
+  .option('--skip-validation', 'Skip quality gate validation (DANGEROUS)')
+  .action(async (incrementId, options) => {
+    const { completeCommand } = await import('../dist/src/cli/commands/complete.js');
+    await completeCommand(incrementId, options);
   });
 
 // Archive command - Archive completed increments and sync living docs
@@ -344,6 +359,24 @@ program
     await statusCommand(options);
   });
 
+// Logs command - View hook execution logs
+program
+  .command('logs')
+  .description('View hook execution logs')
+  .option('--tail <number>', 'Number of log entries to show (default: 50)', '50')
+  .option('--hook <name>', 'Filter by hook name')
+  .option('--format <type>', 'Output format: json or table (default: table)', 'table')
+  .option('--follow', 'Follow new log entries (not yet implemented)')
+  .action(async (options) => {
+    const { logsCommand } = await import('../dist/src/cli/commands/logs.js');
+    await logsCommand({
+      tail: parseInt(options.tail, 10),
+      hook: options.hook,
+      format: options.format,
+      follow: options.follow
+    });
+  });
+
 // Status line command - Display current increment progress
 program
   .command('status-line')
@@ -407,6 +440,63 @@ program
     console.log(statusLine);
   });
 
+// Auto mode commands - Autonomous execution with Pure Ralph Wiggum pattern (v3.0)
+// No session files. No complex state. Just: "Are there active increments?"
+program
+  .command('auto [incrementIds...]')
+  .description('Start autonomous execution (Pure Ralph pattern - no session files)')
+  .option('--dry-run', 'Preview without activating')
+  .option('--all-backlog', 'Activate all backlog items')
+  .option('--reset', 'Clean up any stale state files')
+  .action(async (incrementIds, options) => {
+    const path = await import('path');
+    const fs = await import('fs');
+    const projectPath = process.cwd();
+
+    // Check if SpecWeave is initialized
+    const specweavePath = path.join(projectPath, '.specweave');
+    if (!fs.existsSync(specweavePath)) {
+      console.log(chalk.yellow('No SpecWeave project found in current directory.'));
+      console.log(chalk.gray('Run `specweave init` to initialize a project.'));
+      return;
+    }
+
+    try {
+      const { handleAutoCommand } = await import('../dist/src/cli/commands/auto.js');
+      await handleAutoCommand(projectPath, incrementIds, options);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.error(chalk.red(`Error: ${errorMessage}`));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('auto-status')
+  .description('Check auto session status and progress')
+  .option('--verbose', 'Show detailed information')
+  .option('--json', 'Output as JSON')
+  .action(async (options) => {
+    const { createAutoStatusCommand } = await import('../dist/src/cli/commands/auto-status.js');
+    const statusCmd = createAutoStatusCommand();
+    const args = ['node', 'auto-status'];
+    if (options.verbose) args.push('--verbose');
+    if (options.json) args.push('--json');
+    await statusCmd.parseAsync(args, { from: 'user' });
+  });
+
+program
+  .command('cancel-auto')
+  .description('Cancel running auto session')
+  .option('--force', 'Force cancel without confirmation')
+  .action(async (options) => {
+    const { createCancelAutoCommand } = await import('../dist/src/cli/commands/cancel-auto.js');
+    const cancelCmd = createCancelAutoCommand();
+    const args = ['node', 'cancel-auto'];
+    if (options.force) args.push('--force');
+    await cancelCmd.parseAsync(args, { from: 'user' });
+  });
+
 // Update instructions command - Smart merge CLAUDE.md/AGENTS.md
 program
   .command('update-instructions')
@@ -416,6 +506,22 @@ program
   .action(async (options) => {
     const { updateInstructionsCommand } = await import('../dist/src/cli/commands/update-instructions.js');
     await updateInstructionsCommand(options);
+  });
+
+// Unified update command - One-stop update for everything (self-updates CLI AND plugins by default)
+program
+  .command('update')
+  .description('Update SpecWeave: CLI, instructions, config, AND plugins (default)')
+  .option('--no-self', 'Skip CLI self-update via npm')
+  .option('--no-plugins', 'Skip marketplace plugins refresh')
+  .option('--all', 'Install ALL plugins (not just router)')
+  .option('--minimal', 'Clean /plugin output (removes marketplace, no lazy loading)')
+  .option('--check', 'Dry run - show what would change without making changes')
+  .option('-v, --verbose', 'Show detailed output')
+  .option('-f, --force', 'Force refresh even if up to date')
+  .action(async (options) => {
+    const { updateCommand } = await import('../dist/src/cli/commands/update.js');
+    await updateCommand(options);
   });
 
 // Check discipline command - Validate increment discipline
@@ -500,25 +606,8 @@ program
   .option('--kill <jobId>', 'Kill running background job')
   .option('--resume <jobId>', 'Resume paused job')
   .action(async (options) => {
-    const { createJobsCommand } = await import('../dist/src/cli/commands/jobs.js');
-    const jobsCmd = createJobsCommand();
-    // Execute the action directly with options
-    const projectPath = process.cwd();
-    const path = await import('path');
-    const fs = await import('../dist/src/utils/fs-native.js');
-
-    // Check if SpecWeave is initialized
-    const specweavePath = path.join(projectPath, '.specweave');
-    if (!fs.existsSync(specweavePath)) {
-      console.log(chalk.yellow('No SpecWeave project found in current directory.'));
-      console.log(chalk.gray('Run `specweave init` to initialize a project.'));
-      return;
-    }
-
-    // Import and use the handlers
-    const jobsModule = await import('../dist/src/cli/commands/jobs.js');
-    // Re-run the action
-    await jobsCmd.parseAsync(['node', 'jobs', ...process.argv.slice(3)], { from: 'user' });
+    const { jobsCommand } = await import('../dist/src/cli/commands/jobs.js');
+    await jobsCommand(options);
   });
 
 // Living-docs command - Launch or resume Living Docs Builder independently
@@ -722,16 +811,216 @@ program
     });
   });
 
-// Refresh marketplace command - Update marketplace and install all plugins
+// Refresh marketplace command - Update marketplace with lazy loading support
 program
   .command('refresh-marketplace')
-  .description('Refresh SpecWeave marketplace and install all plugins')
+  .description('Refresh SpecWeave marketplace (lazy mode by default - router only)')
   .option('--local', 'Use local development version (ONLY for active dev)')
   .option('--github', 'Pull latest from GitHub (default, recommended)')
+  .option('--all', 'Install ALL plugins (legacy mode, ~60K tokens)')
+  .option('--minimal', 'Remove marketplace, install only core plugins (clean /plugin output, no lazy loading)')
+  .option('-f, --force', 'Force reinstall all plugins (clears cache, ensures fresh copy)')
   .option('-v, --verbose', 'Show detailed error messages')
   .action(async (options) => {
     const { refreshMarketplaceCommand } = await import('../dist/src/cli/commands/refresh-marketplace.js');
     await refreshMarketplaceCommand(options);
+  });
+
+// Cache status command - Display plugin cache health status
+program
+  .command('cache-status')
+  .description('Display plugin cache health status and detect issues')
+  .argument('[plugin]', 'Check specific plugin (optional)')
+  .option('--verbose', 'Show detailed information')
+  .option('--check-github', 'Check GitHub for updates (uses API)')
+  .action(async (pluginName, options) => {
+    const { cacheStatus } = await import('../dist/src/cli/commands/cache-status.js');
+    await cacheStatus({
+      pluginName,
+      verbose: options.verbose,
+      checkGithub: options.checkGithub,
+    });
+  });
+
+// Cache refresh command - Refresh plugin cache with skill memory preservation
+program
+  .command('cache-refresh')
+  .description('Refresh plugin cache with skill memory preservation')
+  .argument('[plugin]', 'Refresh specific plugin (optional)')
+  .option('--force', 'Hard refresh (delete cache)')
+  .option('--all', 'Refresh all plugins (even healthy)')
+  .option('--verify', 'Verify cache health after refresh')
+  .action(async (pluginName, options) => {
+    const { cacheRefresh } = await import('../dist/src/cli/commands/cache-refresh.js');
+    await cacheRefresh({
+      pluginName,
+      force: options.force,
+      all: options.all,
+      verify: options.verify,
+    });
+  });
+
+// Load plugins command - Lazy loading: load plugin groups on-demand
+const loadPluginsCmd = program
+  .command('load-plugins [group]')
+  .description('Load plugin groups for SpecWeave lazy loading')
+  .option('-f, --force', 'Force reinstall even if already loaded')
+  .option('-b, --background', 'Run installation in background')
+  .option('-v, --verbose', 'Show detailed output')
+  .option('-s, --silent', 'Silent mode - no stdout output (for hooks)')
+  .option('--list-groups', 'Show available plugin groups')
+  .action(async (group, options) => {
+    if (options.listGroups) {
+      const { showAvailableGroups } = await import('../dist/src/cli/commands/load-plugins.js');
+      console.log(chalk.bold('\nAvailable Plugin Groups:\n'));
+      showAvailableGroups();
+      console.log('\nUsage: specweave load-plugins <group>');
+      console.log('Example: specweave load-plugins github\n');
+      return;
+    }
+    const { loadPluginsCommand } = await import('../dist/src/cli/commands/load-plugins.js');
+    await loadPluginsCommand(group, options);
+  });
+
+// Add extended help text for load-plugins
+loadPluginsCmd.addHelpText('after', `
+Plugin Groups:
+  core       Core SpecWeave functionality (specweave)
+  github     GitHub integration (specweave-github)
+  jira       JIRA integration (specweave-jira)
+  ado        Azure DevOps integration (specweave-ado)
+  frontend   Frontend development (specweave-frontend)
+  backend    Backend & database (specweave-backend)
+  infra      Infrastructure & K8s (specweave-infrastructure, specweave-k8s)
+  ml         Machine learning (specweave-ml)
+  kafka      Apache Kafka (specweave-kafka)
+  confluent  Confluent Cloud (specweave-confluent)
+  mobile     Mobile development (specweave-mobile)
+  payments   Payment processing (specweave-payments)
+  release    Release management (specweave-release)
+  testing    Testing & QA (specweave-testing)
+  diagrams   Diagrams & visualization (specweave-diagrams)
+  all        Load all available plugins
+
+Examples:
+  $ specweave load-plugins                 # Load all plugins
+  $ specweave load-plugins github          # Load GitHub plugin group
+  $ specweave load-plugins infra --force   # Force reload infra plugins
+  $ specweave load-plugins ml --background # Load ML plugins in background
+`);
+
+// Detect intent command - Hook helper for automatic plugin loading
+program
+  .command('detect-intent <prompt>')
+  .description('Detect SpecWeave intent from a prompt and optionally install plugins')
+  .option('--install', 'Also install detected plugins after detection')
+  .option('--silent', 'Silent mode - no stdout output (for hooks)')
+  .action(async (prompt, options) => {
+    const { detectIntentCommand } = await import('../dist/src/cli/commands/detect-intent.js');
+    const result = await detectIntentCommand(prompt, options);
+    // Exit code: 0 if plugins detected, 1 if none
+    process.exit(result.detected ? 0 : 1);
+  });
+
+// Detect project command - Analyze project files and suggest plugins
+program
+  .command('detect-project [path]')
+  .description('Detect project type from files and suggest plugins to install')
+  .option('--name <name>', 'Increment name for legacy name-based detection')
+  .option('--description <text>', 'Description for legacy name-based detection')
+  .option('--install', 'Also install detected plugins after detection')
+  .option('--silent', 'Silent mode - no stdout output (for hooks)')
+  .action(async (path, options) => {
+    const { detectProjectCommand } = await import('../dist/src/cli/commands/detect-project.js');
+    const result = await detectProjectCommand(path, options);
+    // Exit code: 0 if types detected, 1 if none
+    process.exit(result.types.length > 0 ? 0 : 1);
+  });
+
+// Unload plugins command - Lazy loading: remove plugin groups from active
+const unloadPluginsCmd = program
+  .command('unload-plugins [group]')
+  .description('Unload plugin groups (keeps cache for quick reload)')
+  .option('--no-keep-router', 'Also unload the router skill')
+  .option('-v, --verbose', 'Show detailed output')
+  .option('--dry-run', 'Preview without unloading')
+  .option('--list-groups', 'Show available plugin groups')
+  .action(async (group, options) => {
+    if (options.listGroups) {
+      const { showUnloadGroups } = await import('../dist/src/cli/commands/unload-plugins.js');
+      console.log(chalk.bold('\nAvailable Plugin Groups:\n'));
+      showUnloadGroups();
+      console.log('\nUsage: specweave unload-plugins <group>');
+      console.log('Example: specweave unload-plugins github\n');
+      return;
+    }
+    const { unloadPluginsCommand } = await import('../dist/src/cli/commands/unload-plugins.js');
+    await unloadPluginsCommand(group, options);
+  });
+
+// Add extended help text for unload-plugins
+unloadPluginsCmd.addHelpText('after', `
+Plugin Groups:
+  core       Core SpecWeave functionality
+  github     GitHub integration
+  jira       JIRA integration
+  ado        Azure DevOps integration
+  frontend   Frontend development tools
+  backend    Backend & database tools
+  infra      Infrastructure & Kubernetes
+  ml         Machine learning tools
+  all        Unload all plugins (keeps router by default)
+
+Examples:
+  $ specweave unload-plugins                       # Unload all (keep router)
+  $ specweave unload-plugins github                # Unload GitHub plugin
+  $ specweave unload-plugins all --no-keep-router  # Unload everything
+  $ specweave unload-plugins --dry-run             # Preview what would unload
+`);
+
+// Plugin status command - Show loaded vs cached plugin status
+program
+  .command('plugin-status')
+  .description('Show plugin status: loaded, cached, lazy mode, and cache size')
+  .option('-v, --verbose', 'Show detailed information')
+  .action(async (options) => {
+    const { pluginStatusCommand } = await import('../dist/src/cli/commands/plugin-status.js');
+    await pluginStatusCommand(options);
+  });
+
+// Migrate to lazy loading command
+program
+  .command('migrate-lazy')
+  .description('Migrate to lazy loading mode (router-only, on-demand plugins)')
+  .option('--rollback', 'Rollback to pre-migration full installation')
+  .option('-y, --yes', 'Skip confirmation prompt')
+  .option('-v, --verbose', 'Show detailed output')
+  .option('--dry-run', 'Preview without making changes')
+  .action(async (options) => {
+    const { migrateLazyCommand } = await import('../dist/src/cli/commands/migrate-lazy.js');
+    await migrateLazyCommand(options);
+  });
+
+// Export skills command - Export to Agent Skills open standard
+program
+  .command('export-skills')
+  .description('Export SpecWeave skills to Agent Skills open standard format (agentskills.io)')
+  .option('-o, --output <dir>', 'Output directory (default: .agent-skills)')
+  .option('-p, --plugin <name>', 'Export specific plugin only')
+  .option('-s, --skill <name>', 'Export specific skill only')
+  .option('--dry-run', 'Preview without writing files')
+  .option('--validate', 'Validate output against Agent Skills spec')
+  .option('-v, --verbose', 'Show detailed output')
+  .action(async (options) => {
+    const { exportSkillsCommand } = await import('../dist/src/cli/commands/export-skills.js');
+    await exportSkillsCommand({
+      output: options.output,
+      plugin: options.plugin,
+      skill: options.skill,
+      dryRun: options.dryRun,
+      validate: options.validate,
+      verbose: options.verbose,
+    });
   });
 
 // Set sync target command - Set external tool sync target for increment (ADR-0211)
@@ -752,6 +1041,20 @@ program
     if (options.dryRun) args.push('--dry-run');
     if (options.validateOnly) args.push('--validate-only');
     await cmd.parseAsync(args, { from: 'user' });
+  });
+
+// Migrate memory command - Migrate global memory from legacy location
+program
+  .command('migrate-memory')
+  .description('Migrate global memory files from legacy ~/.claude/specweave/memory/ to correct location')
+  .option('--dry-run', 'Preview what would be migrated without making changes')
+  .option('-y, --yes', 'Skip confirmation prompt')
+  .action(async (options) => {
+    const { migrateMemory } = await import('../dist/src/cli/commands/migrate-memory.js');
+    await migrateMemory({
+      dryRun: options.dryRun,
+      yes: options.yes,
+    });
   });
 
 // Help text
@@ -806,8 +1109,24 @@ program.on('--help', () => {
   console.log('  $ specweave set-sync-target 0008            # Set sync target for increment');
   console.log('  $ specweave set-sync-target 0008 -v         # Show resolution path');
   console.log('  $ specweave set-sync-target 0008 --validate-only  # Validate only');
-  console.log('  $ specweave refresh-marketplace             # Refresh marketplace (GitHub)');
+  console.log('  $ specweave refresh-marketplace             # Lazy mode: router only (~500 tokens)');
+  console.log('  $ specweave refresh-marketplace --all       # Legacy mode: all plugins (~60K tokens)');
+  console.log('  $ specweave refresh-marketplace --force     # Force reinstall (clears cache)');
   console.log('  $ specweave refresh-marketplace --local     # Use local dev version');
+  console.log('  $ specweave migrate-memory                  # Migrate legacy memory files');
+  console.log('  $ specweave migrate-memory --dry-run        # Preview migration');
+  console.log('  $ specweave update                          # Update CLI + instructions + config');
+  console.log('  $ specweave update --plugins                # Also refresh marketplace plugins');
+  console.log('  $ specweave update --no-self                # Skip CLI update, only project files');
+  console.log('  $ specweave update --check                  # Dry run - preview changes');
+  console.log('  $ specweave load-plugins                    # Load all plugins');
+  console.log('  $ specweave load-plugins github             # Load GitHub plugin group');
+  console.log('  $ specweave load-plugins infra --force      # Force reload infra plugins');
+  console.log('  $ specweave unload-plugins                  # Unload all (keep router)');
+  console.log('  $ specweave unload-plugins github           # Unload GitHub plugin');
+  console.log('  $ specweave unload-plugins --dry-run        # Preview what would unload');
+  console.log('  $ specweave plugin-status                   # Show loaded vs cached plugins');
+  console.log('  $ specweave plugin-status --verbose         # Detailed plugin information');
   console.log('');
   console.log('Supported AI Tools:');
   console.log('  - Claude Code (full automation) - Native skills, agents, hooks');

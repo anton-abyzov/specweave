@@ -47,23 +47,13 @@ export function calculateDeploymentFrequency(
   const tier = classifyDeploymentFrequency(deploysPerYear);
 
   // Generate description
-  let description = '';
-  switch (tier) {
-    case 'Elite':
-      description = 'On-demand deployment capability (multiple deploys per day)';
-      break;
-    case 'High':
-      description = 'High deployment frequency (weekly to daily)';
-      break;
-    case 'Medium':
-      description = 'Moderate deployment frequency (monthly to weekly)';
-      break;
-    case 'Low':
-      description = 'Low deployment frequency (less than monthly)';
-      break;
-    default:
-      description = 'No data available';
-  }
+  const tierDescriptions: Record<string, string> = {
+    Elite: 'On-demand deployment capability (multiple deploys per day)',
+    High: 'High deployment frequency (weekly to daily)',
+    Medium: 'Moderate deployment frequency (monthly to weekly)',
+    Low: 'Low deployment frequency (less than monthly)',
+  };
+  const description = tierDescriptions[tier] ?? 'No data available';
 
   return {
     value: deployCount,

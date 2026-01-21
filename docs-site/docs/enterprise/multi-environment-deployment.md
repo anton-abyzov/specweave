@@ -670,11 +670,11 @@ jobs:
 
 ## 📚 Related Guides
 
-- [GitHub Migration Guide](./github-migration.md)
-- [JIRA Migration Guide](./jira-migration.md)
-- [Azure DevOps Migration Guide](./azure-devops-migration.md)
-- [Release Management Guide](./release-management.md)
-- [CI/CD Integration Guide](./cicd-integration.md)
+- [GitHub Migration Guide](./github-migration)
+- [JIRA Migration Guide](./jira-migration)
+- [Azure DevOps Migration Guide](./azure-devops-migration)
+- [Release Management Guide](./release-management)
+- [External Tools Integration](/docs/academy/specweave-essentials/07-external-tools)
 
 ---
 

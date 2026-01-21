@@ -754,8 +754,8 @@ git cherry-pick abc123
 - [GitHub Actions](/docs/glossary/terms/github-actions) - CI/CD automation with Git
 - Pull Request - Code review workflow
 - [CI/CD](/docs/glossary/terms/ci-cd) - Automated pipelines triggered by Git
-- [Branching Strategy](/docs/glossary/terms/branching-strategy) - Git workflow patterns
-- [Version Control](/docs/glossary/terms/version-control) - General VCS concepts
+- Branching Strategy - Git workflow patterns
+- Version Control - General VCS concepts
 
 ## Resources
 
