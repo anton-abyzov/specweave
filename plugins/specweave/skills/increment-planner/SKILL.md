@@ -1,7 +1,7 @@
 ---
 name: increment-planner
 description: Creates comprehensive implementation plans for ANY type of SpecWeave increment (feature, hotfix, bug, change-request, refactor, experiment). Supports all work types from features to bug investigations to POCs. Activates for: increment planning, feature planning, hotfix, bug investigation, root cause analysis, SRE investigation, change request, refactor, POC, prototype, spike work, experiment, implementation plan, create increment, organize work, break down work, new product, build project, MVP, SaaS, app development, tech stack planning, production issue, critical bug, stakeholder request.
-visibility: internal
+visibility: public
 invocableBy:
   - sw:increment
 context: fork
@@ -10,11 +10,11 @@ model: opus
 
 # Increment Planner Skill
 
-**⚠️ INTERNAL SKILL - Only invoked by `/sw:increment` command**
+**Invoked automatically by `/sw:increment` command or via direct Skill tool call**
 
 **Self-contained increment planning that works in ANY user project after `specweave init`.**
 
-**Do not call this skill directly**. Use `/sw:increment` command instead, which invokes this skill automatically.
+**Usage**: Either call `/sw:increment` command (recommended) or invoke this skill directly via `Skill({ skill: "increment-planner" })`.
 
 ---
 

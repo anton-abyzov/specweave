@@ -1045,19 +1045,34 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
     console.log(chalk.yellow('⚙️  Step 3b: Disabling non-core marketplace plugins...'));
 
     const nonCorePlugins = plugins.filter(p => !corePlugins.includes(p));
-    let disabledCount = 0;
+    let actuallyDisabled = 0;
+    let alreadyNotInstalled = 0;
 
     for (const plugin of nonCorePlugins) {
       const disableResult = disablePlugin(plugin);
-      if (disableResult.success || disableResult.output.includes('already disabled') || disableResult.output.includes('not installed')) {
-        disabledCount++;
+      if (disableResult.success) {
+        actuallyDisabled++;
         if (options.verbose) {
           console.log(chalk.gray(`  ✓ Disabled ${plugin}`));
+        }
+      } else if (disableResult.output.includes('not installed') || disableResult.output.includes('already disabled')) {
+        alreadyNotInstalled++;
+        if (options.verbose) {
+          console.log(chalk.gray(`  - ${plugin} (not installed)`));
         }
       }
     }
 
-    console.log(chalk.green(`✓ Disabled ${disabledCount} non-core marketplace plugin(s)\n`));
+    // Show appropriate summary based on what happened
+    if (actuallyDisabled > 0 && alreadyNotInstalled > 0) {
+      console.log(chalk.green(`✓ Disabled ${actuallyDisabled} plugin(s), ${alreadyNotInstalled} already not installed\n`));
+    } else if (actuallyDisabled > 0) {
+      console.log(chalk.green(`✓ Disabled ${actuallyDisabled} non-core marketplace plugin(s)\n`));
+    } else if (alreadyNotInstalled > 0) {
+      console.log(chalk.green(`✓ ${alreadyNotInstalled} non-core plugins not installed (skipped)\n`));
+    } else {
+      console.log(chalk.green(`✓ No non-core plugins to disable\n`));
+    }
 
     // Step 3c: Install router
     console.log(chalk.yellow(`⚙️  Step 3c: Installing router plugin only${forceMode ? ' + force' : ''}...\n`));

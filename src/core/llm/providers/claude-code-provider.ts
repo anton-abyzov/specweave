@@ -12,9 +12,8 @@
  * 5. Result: Full Claude capabilities at no extra cost!
  *
  * Cross-platform support:
- * - macOS: Uses `which claude` for detection
- * - Linux: Uses `which claude` or `command -v claude`
- * - Windows: Uses `where claude` for detection
+ * - Uses canonical detectClaudeCli() from utils/claude-cli-detector.ts
+ * - Handles: PATH binaries, shell functions/aliases, nvm versions
  *
  * Best for:
  * - Claude MAX subscribers
@@ -26,6 +25,8 @@ import { execSync, spawn } from 'child_process';
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
+// Use canonical Claude CLI detector (handles shell functions, nvm, etc.)
+import { detectClaudeCli } from '../../../utils/claude-cli-detector.js';
 import type {
   LLMProvider,
   LLMProviderType,
@@ -362,25 +363,17 @@ function getClaudeAuthDir(): string {
 
 /**
  * Check if Claude Code CLI is installed (cross-platform)
+ *
+ * REFACTORED: Uses canonical implementation from utils/claude-cli-detector.ts
+ * which handles all edge cases:
+ * - Binary in PATH
+ * - Shell functions in .zshrc/.bashrc
+ * - Shell aliases
+ * - npm global paths (including nvm versions)
  */
 function isClaudeCliInstalled(): boolean {
-  try {
-    if (IS_WINDOWS) {
-      // Windows: use 'where' command
-      execSync('where claude', { stdio: 'pipe' });
-    } else {
-      // Unix (macOS/Linux): use 'which' or 'command -v'
-      try {
-        execSync('which claude', { stdio: 'pipe' });
-      } catch {
-        // Fallback to command -v (more POSIX compliant)
-        execSync('command -v claude', { stdio: 'pipe', shell: '/bin/sh' });
-      }
-    }
-    return true;
-  } catch {
-    return false;
-  }
+  const status = detectClaudeCli();
+  return status.commandExists;
 }
 
 /**

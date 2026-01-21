@@ -175,11 +175,11 @@ describe('PluginLoader - Skill Visibility (v1.0.102+)', () => {
     if (await fs.pathExists(specweavePluginPath)) {
       const plugin = await loader.loadFromDirectory(specweavePluginPath);
 
-      // Find increment-planner skill (marked as internal)
+      // Find increment-planner skill (marked as public so it appears in Skill tool's available list)
       const incrementPlannerSkill = plugin.skills.find(s => s.name === 'increment-planner');
 
       if (incrementPlannerSkill) {
-        expect(incrementPlannerSkill.visibility).toBe('internal');
+        expect(incrementPlannerSkill.visibility).toBe('public');
         expect(incrementPlannerSkill.invocableBy).toBeDefined();
         expect(incrementPlannerSkill.invocableBy).toContain('sw:increment');
       } else {
