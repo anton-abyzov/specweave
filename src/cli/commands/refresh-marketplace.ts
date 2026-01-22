@@ -37,7 +37,6 @@ import chalk from 'chalk';
 import * as fs from 'fs';
 import * as path from 'path';
 import os from 'os';
-import { mergeSkillMemoriesOnRefresh } from './merge-skill-memories.js';
 import { CacheHealthMonitor } from '../../core/plugin-cache/cache-health-monitor.js';
 import { CacheInvalidator } from '../../core/plugin-cache/cache-invalidator.js';
 import { CacheMetadataManager } from '../../core/plugin-cache/cache-metadata.js';
@@ -1208,33 +1207,7 @@ export async function refreshMarketplaceCommand(options: RefreshOptions = {}): P
 
   console.log('');
 
-  // Step 4: Merge skill memories (preserves user learnings)
-  console.log(chalk.yellow('🧠 Step 4: Merging skill memories...'));
-
-  try {
-    const memoryResult = await mergeSkillMemoriesOnRefresh(marketplacePath, options.verbose);
-
-    if (memoryResult.skillsProcessed > 0) {
-      console.log(chalk.green(`✓ Merged ${memoryResult.skillsProcessed} skill memories`));
-      if (memoryResult.learningsPreserved > 0) {
-        console.log(chalk.gray(`  Preserved ${memoryResult.learningsPreserved} user learnings`));
-      }
-      if (memoryResult.learningsAdded > 0) {
-        console.log(chalk.gray(`  Added ${memoryResult.learningsAdded} new default learnings`));
-      }
-    } else {
-      console.log(chalk.blue('ℹ No skill memories to merge'));
-    }
-  } catch (error) {
-    console.log(chalk.yellow('⚠ Could not merge skill memories'));
-    if (options.verbose) {
-      console.log(chalk.gray(`  ${error}`));
-    }
-  }
-
-  console.log('');
-
-  // Step 5: Verify marketplace ready for lazy loading
+  // Step 4: Verify marketplace ready for lazy loading
   console.log(chalk.yellow('📦 Step 5: Verifying marketplace for lazy loading...'));
 
   try {

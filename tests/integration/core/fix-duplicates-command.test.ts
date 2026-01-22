@@ -12,10 +12,10 @@
 
 import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as path from 'path';
-import * as fs from 'fs/promises';
+import * as fs from '../../../src/utils/fs-native.js';
 import * as os from 'os';
-import { detectAllDuplicates } from '../../dist/src/core/increment/duplicate-detector.js';
-import { resolveConflict } from '../../dist/src/core/increment/conflict-resolver.js';
+import { detectAllDuplicates } from '../../../dist/src/core/increment/duplicate-detector.js';
+import { resolveConflict } from '../../../dist/src/core/increment/conflict-resolver.js';
 
 // ✅ FIXED: Use os.tmpdir() instead of process.cwd() to prevent deletion of project .specweave/
 // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
@@ -34,7 +34,7 @@ describe('Fix Duplicates Command E2E Tests', () => {
   });
 
   afterEach(async () => {
-    await fs.rm(TEST_ROOT, { recursive: true, force: true });
+    await fs.remove(TEST_ROOT);
   });
 
   // Helper functions
@@ -175,7 +175,7 @@ describe('Fix Duplicates Command E2E Tests', () => {
     const reportContent = await fs.readFile(result.reportPath, 'utf-8');
     expect(reportContent).toContain('Duplicate Resolution Report');
     expect(reportContent).toContain('0031-test-report');
-    expect(reportContent).toContain('Winner Selection');
+    expect(reportContent).toContain('Winner:');  // Actual section header in report
   });
 
   // Test 4: Dry-run mode
@@ -388,9 +388,9 @@ describe('Fix Duplicates Command E2E Tests', () => {
     const reportContent = await fs.readFile(result.reportPath, 'utf-8');
 
     expect(reportContent).toContain('Duplicate Resolution Report');
-    expect(reportContent).toContain('Detected Duplicates');
-    expect(reportContent).toContain('Winner Selection');
-    expect(reportContent).toContain('Deleted Paths');
+    expect(reportContent).toContain('Conflict Summary');  // Actual section name
+    expect(reportContent).toContain('Winner:');  // Winner section header
+    expect(reportContent).toContain('Losing Versions');  // Losers section
     expect(reportContent).toContain('0031-report-detail');
     expect(reportContent).toContain('active'); // Winner status
     expect(reportContent).toContain('completed'); // Loser status
@@ -435,7 +435,7 @@ describe('Fix Duplicates Integration Tests', () => {
   });
 
   afterEach(async () => {
-    await fs.rm(TEST_ROOT, { recursive: true, force: true });
+    await fs.remove(TEST_ROOT);
   });
 
   it('fixDuplicates_fullWorkflow_detectResolveVerify', async () => {

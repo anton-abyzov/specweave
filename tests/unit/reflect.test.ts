@@ -701,9 +701,10 @@ describe('Reflect Integration', () => {
 
         const content = fs.readFileSync(hookPath, 'utf-8');
 
-        // Check key functions exist
-        expect(content).toContain('is_auto_reflect_enabled');
+        // Check key functions exist (v2.0 simplified architecture)
+        expect(content).toContain('is_reflect_enabled');
         expect(content).toContain('maybe_auto_reflect');
-        expect(content).toContain('has_reflection_signals');
+        expect(content).toContain('run_auto_reflection');
+        expect(content).toContain('log_reflect');
     });
 });

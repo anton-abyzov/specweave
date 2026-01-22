@@ -27,6 +27,8 @@ import {
   type AgentDomain,
   type ParallelConfig,
 } from '../../core/auto/parallel/index.js';
+import { extractSuccessCriteria } from '../../core/auto/completion-evaluator.js';
+import { DEFAULT_SUCCESS_CRITERIA, type SuccessCriterion } from '../../core/auto/types.js';
 
 export interface AutoCommandOptions {
   dryRun?: boolean;
@@ -217,7 +219,7 @@ export async function handleAutoCommand(
       activateIncrement(incrementsDir, inc);
     }
 
-    printStartMessage([...activeIncrements, ...backlogIncrements], configPath, projectPath);
+    await printStartMessage([...activeIncrements, ...backlogIncrements], configPath, projectPath, options.prompt);
     return;
   }
 
@@ -275,7 +277,7 @@ export async function handleAutoCommand(
       activateIncrement(incrementsDir, inc);
     }
 
-    printStartMessage(toActivate, configPath, projectPath);
+    await printStartMessage(toActivate, configPath, projectPath, options.prompt);
     return;
   }
 
@@ -301,7 +303,7 @@ export async function handleAutoCommand(
       console.log('');
     }
 
-    printStartMessage(activeIncrements, configPath, projectPath);
+    await printStartMessage(activeIncrements, configPath, projectPath, options.prompt);
   } else if (backlogIncrements.length > 0) {
     console.log(chalk.blue('ℹ️  No active increments, but backlog exists:'));
     console.log('');
@@ -411,8 +413,18 @@ function cleanupStateFiles(stateDir: string): void {
 
 /**
  * Print start message and create session marker file
+ *
+ * @param incrementIds - The increment IDs being activated
+ * @param configPath - Path to config.json
+ * @param projectPath - Path to project root
+ * @param userPrompt - Optional user prompt for success criteria extraction
  */
-function printStartMessage(incrementIds: string[], configPath: string, projectPath?: string): void {
+async function printStartMessage(
+  incrementIds: string[],
+  configPath: string,
+  projectPath?: string,
+  userPrompt?: string
+): Promise<void> {
   // Read config for TDD mode
   let tddMode = false;
   let requireTests = false;
@@ -425,6 +437,33 @@ function printStartMessage(incrementIds: string[], configPath: string, projectPa
     } catch {
       // Ignore
     }
+  }
+
+  // Extract success criteria from user prompt (if provided)
+  let successCriteria: SuccessCriterion[] = [...DEFAULT_SUCCESS_CRITERIA];
+  let successSummary = 'All tasks and acceptance criteria complete';
+
+  if (userPrompt) {
+    console.log(chalk.gray('Analyzing prompt for completion criteria...'));
+    try {
+      const extracted = await extractSuccessCriteria(userPrompt);
+      if (extracted.success && extracted.criteria.length > 0) {
+        successCriteria = extracted.criteria;
+        successSummary = extracted.summary;
+        console.log(chalk.green(`✓ Extracted ${extracted.criteria.length} success criteria (confidence: ${(extracted.confidence * 100).toFixed(0)}%)`));
+      }
+    } catch (err) {
+      console.log(chalk.yellow('⚠️  Could not extract criteria from prompt, using defaults'));
+    }
+  }
+
+  // Add tests_pass criterion if TDD mode or requireTests
+  if ((tddMode || requireTests) && !successCriteria.some(c => c.type === 'tests_pass')) {
+    successCriteria.push({
+      type: 'tests_pass',
+      description: 'All tests must pass',
+      required: true,
+    });
   }
 
   // Create auto-mode.json session marker (CRITICAL for stop hook to fire)
@@ -445,6 +484,9 @@ function printStartMessage(incrementIds: string[], configPath: string, projectPa
       startedAt: new Date().toISOString(),
       tddMode: tddMode,
       requireTests: requireTests,
+      userGoal: userPrompt,
+      successCriteria: successCriteria,
+      successSummary: successSummary,
     };
 
     fs.writeFileSync(autoModeFile, JSON.stringify(sessionMarker, null, 2));
@@ -484,10 +526,25 @@ function printStartMessage(incrementIds: string[], configPath: string, projectPa
   console.log(chalk.gray('  Session marker created at: .specweave/state/auto-mode.json'));
   console.log('');
 
-  console.log('Session ends when:');
-  console.log('  • All tasks marked [x] complete');
-  console.log('  • Run /sw:done <id> to close increment');
-  console.log('  • Or /sw:cancel-auto to stop early');
+  // Display success criteria clearly
+  console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+  console.log(chalk.bold('🎯 COMPLETION CRITERIA'));
+  console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
+  console.log('');
+  console.log(chalk.white(`  ${successSummary}`));
+  console.log('');
+  console.log('  Session will complete when ALL conditions are met:');
+  console.log('');
+  for (const criterion of successCriteria) {
+    const icon = criterion.required ? '✓' : '○';
+    const reqLabel = criterion.required ? chalk.yellow('[REQUIRED]') : chalk.gray('[optional]');
+    console.log(`    ${icon} ${criterion.description} ${reqLabel}`);
+  }
+  console.log('');
+  console.log(chalk.gray('  Then run /sw:done <id> to close increment'));
+  console.log(chalk.gray('  Or /sw:cancel-auto to stop early'));
+  console.log('');
+  console.log(chalk.bold('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━'));
   console.log('');
 
   console.log(chalk.blue('Start working with: ') + chalk.cyan('/sw:do'));

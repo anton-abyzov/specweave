@@ -73,44 +73,32 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 
 **Learn once, never repeat.** Claude learns from corrections and patterns across sessions.
 
-| Cmd | Action |
-|-----|--------|
-| `/sw:reflect` | Analyze session, extract learnings |
-| `/sw:reflect-on` | Enable auto-reflection on session end |
-| `/sw:reflect-off` | Disable auto-reflection |
-| `/sw:reflect-status` | Show memory status |
-
 **How it works**:
-1. User corrects Claude → Reflect captures learning
-2. Learning saved to centralized memory files (by category)
-3. Future sessions apply learned patterns automatically
+1. Session ends → Stop hook runs LLM extraction
+2. Learnings saved to **Skill Memories** section below (organized by skill)
+3. Future sessions see learnings immediately (they're in this file!)
 
-**CRITICAL - Memory Loading**: Before starting work, **check centralized memory** for learned patterns:
-```bash
-# Check if memory exists and read relevant categories
-ls .specweave/memory/*.md 2>/dev/null && cat .specweave/memory/*.md
-# Also check global memory
-ls ~/.specweave/memory/*.md 2>/dev/null
+**What gets captured** (SpecWeave-specific only):
+- Skill behavior preferences: "mobile: Run expo tests on localhost:8081"
+- Workflow preferences: "general: User prefers small increments (max 5 tasks)"
+- Tech stack choices: "frontend: Prefer Vercel over Cloudflare for this project"
+
+**What does NOT get captured**:
+- Generic coding patterns (not SpecWeave's job)
+- One-time fixes that won't recur
+
+**Config** (`.specweave/config.json`):
+```json
+{ "reflect": { "enabled": true, "model": "haiku", "maxLearningsPerSession": 3 } }
 ```
 
-**Centralized Memory Files** (no skill copies needed!):
-```
-.specweave/memory/                  # Project learnings
-├── component-usage.md              # UI patterns
-├── api-patterns.md                 # API patterns
-├── testing.md                      # Test patterns
-├── deployment.md                   # Deploy patterns
-└── general.md                      # Misc patterns
-
-~/.specweave/memory/                # Global learnings (all projects)
-```
-
-**Signals detected**:
-- **Corrections** (high confidence): "No, use X instead", "Wrong, always do Y"
-- **Approvals** (medium confidence): "Perfect!", "That's exactly right"
-
-**Enable auto-learning**: `/sw:reflect-on` → Stop hook analyzes sessions automatically
+**Disable**: Set `"reflect": { "enabled": false }` in config
 <!-- SW:END:reflect -->
+
+## Skill Memories
+
+<!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
+<!-- Learnings are organized by skill name. User edits override SpecWeave defaults. -->
 
 <!-- SW:SECTION:context version="1.0.140" -->
 ## Living Docs Context
@@ -287,9 +275,9 @@ Living docs sync ≠ External sync. They are separate:
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
 
 ```typescript
-// Vitest pattern: vi.fn() not jest.fn(), import not require
-import { vi } from 'vitest';
-vi.mock('fs', () => ({ readFile: vi.fn() }));
+// ESM mocking: vi.hoisted() + vi.mock() (Vitest 4.x+)
+const { mockFn } = vi.hoisted(() => ({ mockFn: vi.fn() }));
+vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- SW:END:testing -->
 
@@ -1040,12 +1028,24 @@ title: "Feature Title"
 ## Commands
 
 ```bash
+# Core workflow
 /sw:increment "feature"    # Plan new increment
 /sw:do                     # Execute tasks
+/sw:auto                   # Autonomous execution
 /sw:done 0002              # Close (validates gates)
 /sw:progress               # Show status
-/sw:sync-progress          # Full sync
+/sw:next                   # Smart transition (auto-close + suggest)
+
+# Quality & validation
 /sw:validate 0001          # Validate increment
+/sw:qa 0001                # Quality assessment
+/sw:judge-llm 0001         # LLM-as-Judge validation
+
+# Status & sync
+/sw:status                 # All increments overview
+/sw:sync-progress          # Full sync
+/sw:context "auth"         # Load living docs context
+/sw:save                   # Smart git commit & push
 ```
 
 ---
@@ -1070,22 +1070,17 @@ pkill -f "cat.*EOF"
 pkill -9 -f "bash.*specweave"
 # 3. Clean locks:
 rm -f .specweave/state/*.lock
-rm -rf .specweave/state/.dedup-cache/*.lock
 # 4. Restart
 ```
 
 ### Disable Hooks
 ```bash
 export SPECWEAVE_DISABLE_HOOKS=1
-# Or bypass specific validations:
-export SPECWEAVE_FORCE_PROJECT=1
-export SPECWEAVE_FORCE_METADATA=1
 ```
 
-### Crash Loop / Prompt Duplication
+### Crash Loop
 ```bash
-rm -f .specweave/state/.hook-*
-rm -rf .specweave/state/.dedup-cache
+rm -f .specweave/state/*.lock
 npm run rebuild
 ```
 
@@ -1095,11 +1090,16 @@ npm run rebuild
 
 | Aspect | Rule |
 |--------|------|
-| File ops | Write/Edit/Read tools ONLY |
-| Source of truth | tasks.md + spec.md |
-| Completion | NEVER edit metadata.json directly |
-| Increment root | ONLY spec.md, plan.md, tasks.md, metadata.json |
-| Stuck session | Kill + pkill zombies + clean locks |
+| File ops | Write/Edit/Read tools ONLY (never Bash heredoc/echo) |
+| Source of truth | tasks.md + spec.md (update immediately) |
+| Completion | `/sw:done` only (NEVER edit metadata.json directly) |
+| Increment root | ONLY 4 files: spec.md, plan.md, tasks.md, metadata.json |
+| Increment IDs | Start from 0001 (NEVER 0000), check uniqueness first |
+| Reports/logs | Always to `reports/`, `logs/` subfolders |
+| Multi-repo | Clone to `repositories/` (never project root) |
+| Secrets | Check `.env` first, never display values (`grep -q`) |
+| Marketplace | `specweave refresh-marketplace` (not `scripts/`) |
+| Stuck session | Kill + `pkill -f "bash.*specweave"` + `rm .specweave/state/*.lock` |
 
 ---
 

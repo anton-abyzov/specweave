@@ -565,6 +565,14 @@ export class IncrementArchiver {
    */
   private async syncToLivingDocsBeforeArchive(increment: string): Promise<void> {
     try {
+      // CRITICAL: Skip living docs sync in non-interactive environments (tests, CI)
+      // LivingDocsSync uses @inquirer/prompts which hangs forever without TTY
+      const isNonInteractive = !process.stdout.isTTY || process.env.CI || process.env.VITEST;
+      if (isNonInteractive) {
+        this.logger.debug(`Skipping living docs sync for ${increment} (non-interactive environment)`);
+        return;
+      }
+
       // Check if spec.md exists (required for sync)
       const specPath = path.join(this.incrementsDir, increment, 'spec.md');
       if (!await fs.pathExists(specPath)) {

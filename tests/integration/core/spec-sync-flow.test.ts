@@ -9,42 +9,38 @@
  * 5. Task completion status preserved
  */
 
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { execSync } from 'child_process';
-import { getCleanEnv } from '../../test-utils/clean-env.js';
 
 // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
 // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
 const TEST_PROJECT_DIR = path.join(os.tmpdir(), `specweave-test-spec-sync-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
 describe('Spec Synchronization E2E Flow', () => {
-  // ✅ FIX: Save original cwd to restore after tests (prevents Claude Code crashes)
-  let originalCwd: string;
-
   beforeAll(() => {
-    // Save original cwd BEFORE changing directory
-    originalCwd = process.cwd();
-
-    // Create test project directory
+    // Create test project directory with minimal SpecWeave structure
+    // NOTE: We manually create the structure instead of running `specweave init`
+    // because detectNestedSpecweave may block init if there's a leftover .specweave/
+    // in the parent temp directory from previous test runs
     if (fs.existsSync(TEST_PROJECT_DIR)) {
       fs.rmSync(TEST_PROJECT_DIR, { recursive: true, force: true });
     }
     fs.mkdirSync(TEST_PROJECT_DIR, { recursive: true });
 
-    // Initialize SpecWeave in test directory
-    process.chdir(TEST_PROJECT_DIR);
-    execSync('npx specweave init --yes', { stdio: 'inherit', env: getCleanEnv() });
+    // Create minimal .specweave structure required for tests
+    const specweaveDir = path.join(TEST_PROJECT_DIR, '.specweave');
+    fs.mkdirSync(path.join(specweaveDir, 'increments'), { recursive: true });
+
+    // Create config.json (required by isSpecWeaveInitialized check)
+    fs.writeFileSync(
+      path.join(specweaveDir, 'config.json'),
+      JSON.stringify({ project: { name: 'test-spec-sync' } }, null, 2)
+    );
   });
 
   afterAll(() => {
-    // ✅ FIX: Restore original cwd BEFORE cleanup (critical!)
-    if (originalCwd) {
-      process.chdir(originalCwd);
-    }
-
     // Clean up test directory
     if (fs.existsSync(TEST_PROJECT_DIR)) {
       fs.rmSync(TEST_PROJECT_DIR, { recursive: true, force: true });
@@ -161,7 +157,7 @@ status: active
     fs.writeFileSync(path.join(incrementDir, 'spec.md'), updatedSpecContent);
 
     // Simulate hook execution by checking spec change manually
-    const { SpecSyncManager } = await import('../../src/core/increment/spec-sync-manager');
+    const { SpecSyncManager } = await import('../../../src/core/increment/spec-sync-manager.js');
     const manager = new SpecSyncManager(TEST_PROJECT_DIR);
 
     // Assert: Detection should find the spec change
@@ -230,7 +226,7 @@ status: active
     // (This would normally be done by the sync logic)
     // For now, we just verify the detection works
 
-    const { SpecSyncManager } = await import('../../src/core/increment/spec-sync-manager');
+    const { SpecSyncManager } = await import('../../../src/core/increment/spec-sync-manager.js');
     const manager = new SpecSyncManager(TEST_PROJECT_DIR);
 
     const detection = manager.detectSpecChange(incrementId);
@@ -265,7 +261,7 @@ status: active
     fs.writeFileSync(path.join(incrementDir, 'spec.md'), '# Spec (Updated)');
 
     // Act: Call syncIncrement with skipSync=true
-    const { SpecSyncManager } = await import('../../src/core/increment/spec-sync-manager');
+    const { SpecSyncManager } = await import('../../../src/core/increment/spec-sync-manager.js');
     const manager = new SpecSyncManager(TEST_PROJECT_DIR);
 
     const result = await manager.syncIncrement(incrementId, true);
@@ -296,7 +292,7 @@ status: active
     fs.writeFileSync(path.join(incrementDir, 'spec.md'), '# Spec (Updated)');
 
     // Act: Trigger sync
-    const { SpecSyncManager } = await import('../../src/core/increment/spec-sync-manager');
+    const { SpecSyncManager } = await import('../../../src/core/increment/spec-sync-manager.js');
     const manager = new SpecSyncManager(TEST_PROJECT_DIR);
 
     await manager.syncIncrement(incrementId);
@@ -325,7 +321,7 @@ status: active
     fs.writeFileSync(path.join(incrementDir, 'plan.md'), '# Plan');
 
     // Act: Check for spec change
-    const { SpecSyncManager } = await import('../../src/core/increment/spec-sync-manager');
+    const { SpecSyncManager } = await import('../../../src/core/increment/spec-sync-manager.js');
     const manager = new SpecSyncManager(TEST_PROJECT_DIR);
 
     const detection = manager.detectSpecChange(incrementId);
@@ -344,7 +340,7 @@ status: active
     fs.writeFileSync(path.join(incrementDir, 'spec.md'), '# Spec');
 
     // Act: Check for spec change
-    const { SpecSyncManager } = await import('../../src/core/increment/spec-sync-manager');
+    const { SpecSyncManager } = await import('../../../src/core/increment/spec-sync-manager.js');
     const manager = new SpecSyncManager(TEST_PROJECT_DIR);
 
     const detection = manager.detectSpecChange(incrementId);
@@ -372,7 +368,7 @@ status: active
     fs.writeFileSync(path.join(incrementDir, 'plan.md'), '# Plan (Updated)');
 
     // Act: Check for spec change
-    const { SpecSyncManager } = await import('../../src/core/increment/spec-sync-manager');
+    const { SpecSyncManager } = await import('../../../src/core/increment/spec-sync-manager.js');
     const manager = new SpecSyncManager(TEST_PROJECT_DIR);
 
     const detection = manager.detectSpecChange(incrementId);

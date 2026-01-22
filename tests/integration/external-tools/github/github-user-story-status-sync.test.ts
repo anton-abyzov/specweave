@@ -24,9 +24,12 @@ import { getCleanEnv } from '../../../test-utils/clean-env.js';
 // ✅ SAFE: Isolated test directory (prevents .specweave deletion)
 // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
 const TEST_ROOT = path.join(os.tmpdir(), `specweave-test-github-status-sync-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-const FEATURE_ID = 'FS-TEST-STATUS';
+const FEATURE_ID = 'FS-999';
 
-describe('GitHub User Story Status Sync', () => {
+// Only run if explicitly enabled (requires real GitHub access)
+const GITHUB_API_TESTS = process.env.GITHUB_API_TESTS === 'true';
+
+describe.skipIf(!GITHUB_API_TESTS)('GitHub User Story Status Sync', () => {
   beforeEach(async () => {
     // Clean up test directory
     if (await fs.stat(TEST_ROOT).catch(() => null)) {
@@ -109,10 +112,10 @@ completed: 2025-11-15
 
     // Execute: Sync to GitHub
     const { GitHubClientV2 } = await import(
-      '../../dist/plugins/specweave-github/lib/github-client-v2.js'
+      '../../../../plugins/specweave-github/lib/github-client-v2.js'
     );
     const { GitHubFeatureSync } = await import(
-      '../../dist/plugins/specweave-github/lib/github-feature-sync.js'
+      '../../../../plugins/specweave-github/lib/github-feature-sync.js'
     );
 
     const repo = await GitHubClientV2.detectRepo(process.cwd());
@@ -187,10 +190,10 @@ created: 2025-11-15
 
     // Execute: Sync to GitHub
     const { GitHubClientV2 } = await import(
-      '../../dist/plugins/specweave-github/lib/github-client-v2.js'
+      '../../../../plugins/specweave-github/lib/github-client-v2.js'
     );
     const { GitHubFeatureSync } = await import(
-      '../../dist/plugins/specweave-github/lib/github-feature-sync.js'
+      '../../../../plugins/specweave-github/lib/github-feature-sync.js'
     );
 
     const repo = await GitHubClientV2.detectRepo(process.cwd());
@@ -256,10 +259,10 @@ created: 2025-11-15
 
     // Execute: First sync (creates OPEN issue)
     const { GitHubClientV2 } = await import(
-      '../../dist/plugins/specweave-github/lib/github-client-v2.js'
+      '../../../../plugins/specweave-github/lib/github-client-v2.js'
     );
     const { GitHubFeatureSync } = await import(
-      '../../dist/plugins/specweave-github/lib/github-feature-sync.js'
+      '../../../../plugins/specweave-github/lib/github-feature-sync.js'
     );
 
     const repo = await GitHubClientV2.detectRepo(process.cwd());

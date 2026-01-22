@@ -73,43 +73,34 @@ SpecWeave auto-detects product descriptions and routes to `/sw:increment`:
 
 **Learn once, never repeat.** Claude learns from corrections and patterns across sessions.
 
-| Cmd | Action |
-|-----|--------|
-| `/sw:reflect` | Analyze session, extract learnings |
-| `/sw:reflect-on` | Enable auto-reflection on session end |
-| `/sw:reflect-off` | Disable auto-reflection |
-| `/sw:reflect-status` | Show memory status |
-
 **How it works**:
-1. User corrects Claude → Reflect captures learning
-2. Learning saved to centralized memory files (by category)
-3. Future sessions apply learned patterns automatically
+1. Session ends → Stop hook runs LLM extraction
+2. Learnings saved to **Skill Memories** section below (organized by skill)
+3. Future sessions see learnings immediately (they're in this file!)
 
-**CRITICAL - Memory Loading**: Before starting work, **check centralized memory** for learned patterns:
-```bash
-# Check if memory exists and read relevant categories
-ls .specweave/memory/*.md 2>/dev/null && cat .specweave/memory/*.md
-# Also check global memory
-ls ~/.specweave/memory/*.md 2>/dev/null
+**What gets captured** (SpecWeave-specific only):
+- Skill behavior preferences: "mobile: Run expo tests on localhost:8081"
+- Workflow preferences: "general: User prefers small increments (max 5 tasks)"
+- Tech stack choices: "frontend: Prefer Vercel over Cloudflare for this project"
+
+**What does NOT get captured**:
+- Generic coding patterns (not SpecWeave's job)
+- One-time fixes that won't recur
+
+**Config** (`.specweave/config.json`):
+```json
+{ "reflect": { "enabled": true, "model": "haiku", "maxLearningsPerSession": 3 } }
 ```
 
-**Centralized Memory Files** (no skill copies needed!):
-```
-.specweave/memory/                  # Project learnings
-├── component-usage.md              # UI patterns
-├── api-patterns.md                 # API patterns
-├── testing.md                      # Test patterns
-├── deployment.md                   # Deploy patterns
-└── general.md                      # Misc patterns
+**Disable**: Set `"reflect": { "enabled": false }` in config
+<!-- /SECTION -->
 
-~/.specweave/memory/                # Global learnings (all projects)
-```
+<!-- SECTION:skillmemories -->
+## Skill Memories
 
-**Signals detected**:
-- **Corrections** (high confidence): "No, use X instead", "Wrong, always do Y"
-- **Approvals** (medium confidence): "Perfect!", "That's exactly right"
+<!-- Auto-captured by SpecWeave reflect. Edit or delete as needed. -->
+<!-- Learnings are organized by skill name. User edits override SpecWeave defaults. -->
 
-**Enable auto-learning**: `/sw:reflect-on` → Stop hook analyzes sessions automatically
 <!-- /SECTION -->
 
 <!-- SECTION:context -->
@@ -287,9 +278,9 @@ Living docs sync ≠ External sync. They are separate:
 BDD in tasks.md | Unit >80% | `.test.ts` (Vitest)
 
 ```typescript
-// Vitest pattern: vi.fn() not jest.fn(), import not require
-import { vi } from 'vitest';
-vi.mock('fs', () => ({ readFile: vi.fn() }));
+// ESM mocking: vi.hoisted() + vi.mock() (Vitest 4.x+)
+const { mockFn } = vi.hoisted(() => ({ mockFn: vi.fn() }));
+vi.mock('./module', () => ({ func: mockFn }));
 ```
 <!-- /SECTION -->
 

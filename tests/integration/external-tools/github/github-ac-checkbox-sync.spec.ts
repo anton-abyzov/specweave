@@ -30,7 +30,7 @@ const TEST_ROOT = path.join(
   os.tmpdir(),
   `specweave-test-ac-sync-${Date.now()}-${Math.random().toString(36).slice(2)}`
 );
-const FEATURE_ID = 'FS-TEST-AC-SYNC';
+const FEATURE_ID = 'FS-997';
 
 // Check if GitHub CLI is available and authenticated
 const isGitHubAvailable = (): boolean => {

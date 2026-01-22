@@ -81,6 +81,37 @@ export interface ClaudeCliStatus {
 }
 
 /**
+ * Increment recommendation action types
+ *
+ * - 'new': User should create a new increment (feature work, multi-file changes)
+ * - 'reopen': User should reopen an existing increment (related fix, continuation)
+ * - 'small_fix': No increment needed (typo, config tweak, single-line fix)
+ * - 'hotfix': Urgent production bug (creates increment with --type=hotfix)
+ * - 'none': No recommendation (question, general chat, unclear intent)
+ */
+export type IncrementAction = 'new' | 'reopen' | 'small_fix' | 'hotfix' | 'none';
+
+/**
+ * Increment recommendation from LLM analysis
+ */
+export interface IncrementRecommendation {
+  /** Recommended action */
+  action: IncrementAction;
+
+  /** Confidence score (0-1) for this recommendation */
+  confidence: number;
+
+  /** Suggested increment name (for 'new' action) */
+  suggestedName?: string;
+
+  /** Related increment ID pattern (for 'reopen' action, e.g., "login", "auth") */
+  relatedKeyword?: string;
+
+  /** Brief explanation of why this action is recommended */
+  reasoning: string;
+}
+
+/**
  * Result of LLM-based plugin detection
  */
 export interface LLMDetectionResult {
@@ -90,6 +121,9 @@ export interface LLMDetectionResult {
   reasoning?: string;
   error?: string;
   durationMs: number;
+
+  /** Increment recommendation (v1.0.141+) */
+  increment?: IncrementRecommendation;
 }
 
 /**
@@ -184,10 +218,20 @@ export function isClaudeCliAvailable(): ClaudeCliStatus {
 }
 
 /**
- * Build the system prompt for plugin detection
+ * Build the system prompt for plugin detection and increment recommendation
+ *
+ * This prompt handles TWO tasks in a single LLM call for efficiency:
+ * 1. Plugin detection - which SpecWeave plugins are needed
+ * 2. Increment recommendation - should work be tracked in an increment
  */
 function buildDetectionPrompt(): string {
-  return `You are a plugin detection system for SpecWeave, a spec-driven development framework.
+  return `You are an intent detection system for SpecWeave, a spec-driven development framework.
+
+You analyze user prompts to determine:
+1. Which plugins should be loaded
+2. Whether work should be tracked in an increment (spec-driven workflow)
+
+=== PLUGIN DETECTION ===
 
 Available plugins (use EXACT names):
 
@@ -215,28 +259,61 @@ SPECIALIZED:
 - specweave-kafka: Apache Kafka, event streaming, topics, consumers, producers, MSK
 - specweave-confluent: Confluent Cloud, Schema Registry, ksqlDB, Kafka Connect
 
-CRITICAL RULES - UNDERSTAND INTENT:
+PLUGIN RULES:
 1. Focus on WHAT THE USER WANTS TO BUILD, not what they mention negatively
-2. When user says "don't use X" or "not X", determine what they WANT instead:
-   - "Don't use React" + no alternative mentioned → Could be: backend-only, CLI tool, mobile app - ASK CONTEXT
-   - "Don't use React, use Vue instead" → Still frontend! Include specweave-frontend
-   - "Don't use React, make it a mobile app" → Include specweave-mobile, NOT frontend
-   - "Don't use React, just a CLI tool" → Include specweave-backend only
-   - "Don't use React, terminal only" → Include specweave-backend only
-3. Negative mentions of technology X do NOT automatically exclude the domain:
-   - "I hate React but need a web dashboard" → Include specweave-frontend (they still need frontend)
-   - "React is bad, let's use Angular" → Include specweave-frontend (Angular is frontend too)
-4. Positive mentions always indicate need:
-   - "Build with Vue" → specweave-frontend
-   - "Build iOS app" → specweave-mobile
-   - "Build Node.js API" → specweave-backend
-5. Only include plugins that are ACTIVELY needed for the task
-6. Empty array is valid if no plugins are needed (e.g., "What is 2+2?")
-7. Maximum 5 plugins per response (focus on core needs)
-8. Do NOT include "specweave" in response - it's always loaded
+2. Negative mentions don't exclude domains ("I hate React but need a dashboard" → specweave-frontend)
+3. Only include plugins ACTIVELY needed for the task
+4. Empty array is valid if no plugins needed (e.g., questions, chat)
+5. Maximum 5 plugins per response
+6. Do NOT include "specweave" - it's always loaded
+
+=== INCREMENT RECOMMENDATION ===
+
+Determine if the user's work should be tracked in a SpecWeave increment.
+
+INCREMENT ACTIONS:
+- "new": Create NEW increment for: new features, multi-file changes, significant functionality, architectural work
+- "reopen": Reopen EXISTING increment for: fixes to recently built features, "X is broken", continuation of previous work
+- "small_fix": NO increment needed for: typos, single-line fixes, config tweaks, minor adjustments, quick changes
+- "hotfix": Urgent production bug, needs increment with --type=hotfix
+- "none": No recommendation for: questions, general chat, unclear intent, already using /sw: commands
+
+SIGNALS FOR "new":
+- "Build X", "Add feature Y", "Implement Z", "Create new..."
+- Multi-component work (frontend + backend + tests)
+- New user stories or acceptance criteria needed
+- "Let's add...", "I want to build...", "We need..."
+
+SIGNALS FOR "reopen":
+- "The X we built is broken", "X feature has a bug"
+- "Fix the login issue" (when login was recently built)
+- References to previous work: "that authentication thing", "the dashboard we made"
+- Regression fixes in existing functionality
+
+SIGNALS FOR "small_fix":
+- "Fix typo", "Update config", "Quick change", "Adjust X", "Rename Y"
+- Single-file changes, documentation tweaks
+- "Just change...", "Simply update...", "Minor fix..."
+
+SIGNALS FOR "none":
+- Questions: "How do I...", "What is...", "Explain..."
+- Already using SpecWeave: "/sw:increment", "/sw:do", etc.
+- General conversation, brainstorming
+- Unclear what user wants to accomplish
 
 Respond with ONLY valid JSON (no markdown, no explanation, no code blocks):
-{"plugins": ["specweave-plugin-name"], "confidence": 0.9, "reasoning": "brief reason"}`;
+{
+  "plugins": ["specweave-plugin-name"],
+  "confidence": 0.9,
+  "reasoning": "brief plugin reason",
+  "increment": {
+    "action": "new|reopen|small_fix|hotfix|none",
+    "confidence": 0.85,
+    "suggestedName": "feature-name-for-new-only",
+    "relatedKeyword": "keyword-for-reopen-only",
+    "reasoning": "brief increment reason"
+  }
+}`;
 }
 
 /**
@@ -499,7 +576,18 @@ Which plugins should be loaded?`;
     }
 
     // Parse JSON
-    let parsed: { plugins?: string[]; confidence?: number; reasoning?: string };
+    let parsed: {
+      plugins?: string[];
+      confidence?: number;
+      reasoning?: string;
+      increment?: {
+        action?: string;
+        confidence?: number;
+        suggestedName?: string;
+        relatedKeyword?: string;
+        reasoning?: string;
+      };
+    };
     try {
       parsed = JSON.parse(jsonMatch[0]);
     } catch (parseError) {
@@ -525,12 +613,33 @@ Which plugins should be loaded?`;
       logger.debug(`Filtered out invalid plugins: ${invalid.join(', ')}`);
     }
 
+    // Parse increment recommendation (v1.0.141+)
+    let incrementRecommendation: IncrementRecommendation | undefined;
+    if (parsed.increment) {
+      const validActions: IncrementAction[] = ['new', 'reopen', 'small_fix', 'hotfix', 'none'];
+      const action = parsed.increment.action as IncrementAction;
+
+      if (validActions.includes(action)) {
+        incrementRecommendation = {
+          action,
+          confidence: typeof parsed.increment.confidence === 'number' ? parsed.increment.confidence : 0.5,
+          suggestedName: parsed.increment.suggestedName,
+          relatedKeyword: parsed.increment.relatedKeyword,
+          reasoning: parsed.increment.reasoning || 'No reasoning provided',
+        };
+        logger.debug(`Increment recommendation: ${action} (confidence: ${incrementRecommendation.confidence})`);
+      } else {
+        logger.debug(`Invalid increment action: ${parsed.increment.action}`);
+      }
+    }
+
     return {
       success: true,
       plugins: validPlugins,
       confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.5,
       reasoning: parsed.reasoning,
       durationMs: performance.now() - startTime,
+      increment: incrementRecommendation,
     };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
