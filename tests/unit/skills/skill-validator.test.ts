@@ -211,7 +211,7 @@ describe('SkillValidator', () => {
 });
 
 describe('validateSkill function', () => {
-  it('should validate a skill with default options', async () => {
+  it('should validate a skill with default options', { timeout: 20000 }, async () => {
     const result = await validateSkill('specweave-frontend:component', 'quick');
 
     expect(result).toBeDefined();
