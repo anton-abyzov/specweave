@@ -13,11 +13,20 @@
  * @module tests/integration/lazy-loading/plugin-auto-load-e2e
  */
 
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
 import { execSync, spawn, ChildProcess } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+
+// Mock Claude CLI detection to always use fallback registry method (fast, no CLI spawn)
+// This prevents timeouts when running tests locally where Claude CLI might be available
+vi.mock('../../../src/utils/claude-cli-detector.js', () => ({
+  detectClaudeCli: vi.fn().mockReturnValue({ available: false }),
+  isClaudeCliAvailable: vi.fn().mockReturnValue(false),
+  clearCliCache: vi.fn(),
+}));
+
 import {
   detectSpecWeaveIntent,
   determinePlugins,

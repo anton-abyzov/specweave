@@ -9,7 +9,7 @@
  * @see .specweave/increments/0006-llm-native-i18n/reports/LIVING-DOCS-TRANSLATION-GAP-ANALYSIS.md
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../../src/utils/fs-native.js';
 import path from 'path';
 import { execSync } from 'child_process';
@@ -121,12 +121,12 @@ async function createMockChineseADR(projectDir: string): Promise<string> {
   return adrPath;
 }
 
-test.describe('Living Docs Translation E2E', () => {
+describe('Living Docs Translation E2E', () => {
   let workerTestDir: string;
 
-  test.beforeAll(async ({ }, testInfo) => {
+  beforeAll(async () => {
     // Create unique directory for this worker to avoid parallel test conflicts
-    workerTestDir = path.join(TEST_DIR, `worker-${testInfo.workerIndex}`);
+    workerTestDir = path.join(TEST_DIR, `worker-${Date.now()}`);
 
     // Cleanup any previous test artifacts with exponential backoff
     let retries = CLEANUP_RETRIES;
@@ -153,7 +153,7 @@ test.describe('Living Docs Translation E2E', () => {
     }
   });
 
-  test.afterAll(async () => {
+  afterAll(async () => {
     // Cleanup test directory with exponential backoff (non-fatal)
     let retries = CLEANUP_RETRIES;
     let delay = CLEANUP_INITIAL_DELAY;
@@ -178,7 +178,7 @@ test.describe('Living Docs Translation E2E', () => {
     }
   });
 
-  test('should detect non-English content correctly', async () => {
+  it('should detect non-English content correctly', async () => {
     // English text
     expect(containsNonEnglish('Hello, world! This is English text.')).toBe(false);
 
@@ -192,7 +192,7 @@ test.describe('Living Docs Translation E2E', () => {
     expect(containsNonEnglish('Hello Привет 你好')).toBe(true);
   });
 
-  test('should translate living docs specs created by PM agent (Russian)', async () => {
+  it('should translate living docs specs created by PM agent (Russian)', async () => {
     const projectDir = path.join(workerTestDir, 'russian-living-docs');
     await fs.ensureDir(projectDir);
 
@@ -264,7 +264,7 @@ test.describe('Living Docs Translation E2E', () => {
     }
   });
 
-  test('should translate ADRs created during implementation (Chinese)', async () => {
+  it('should translate ADRs created during implementation (Chinese)', async () => {
     const projectDir = path.join(workerTestDir, 'chinese-adr');
     await fs.ensureDir(projectDir);
 
@@ -328,7 +328,7 @@ test.describe('Living Docs Translation E2E', () => {
     }
   });
 
-  test('should handle translation errors gracefully (non-blocking)', async () => {
+  it('should handle translation errors gracefully (non-blocking)', async () => {
     const projectDir = path.join(workerTestDir, 'translation-error-handling');
     await fs.ensureDir(projectDir);
 
@@ -385,7 +385,7 @@ test.describe('Living Docs Translation E2E', () => {
     }
   });
 
-  test('should skip translation for files already in English', async () => {
+  it('should skip translation for files already in English', async () => {
     const projectDir = path.join(workerTestDir, 'english-skip-translation');
     await fs.ensureDir(projectDir);
 
@@ -455,7 +455,7 @@ As a user, I want to use the system.
     }
   });
 
-  test('should translate multiple living docs files in batch', async () => {
+  it('should translate multiple living docs files in batch', async () => {
     const projectDir = path.join(workerTestDir, 'batch-translation');
     await fs.ensureDir(projectDir);
 

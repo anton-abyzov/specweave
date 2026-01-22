@@ -5,7 +5,7 @@
  * Part of increment 0039: Ultra-Smart Next Command
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../src/utils/fs-native.js';
 import * as path from 'path';
 import * as os from 'os';
@@ -13,14 +13,14 @@ import { IncrementStatus, IncrementType } from '../../../src/core/types/incremen
 import { MetadataManager } from '../../../src/core/increment/metadata-manager.js';
 import { autoTransitionStatus, migrateLegacyStatuses } from '../../../src/core/increment/status-auto-transition.js';
 
-test.describe('Status Auto-Transition E2E', () => {
+describe('Status Auto-Transition E2E', () => {
   // ✅ SAFE: Use temp directory instead of project root
   const testRootPath = path.join(os.tmpdir(), 'specweave-test-e2e-transition');
   const testIncrementsPath = path.join(testRootPath, '.specweave', 'increments');
 
   let originalCwd: string;
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     originalCwd = process.cwd();
 
     // Clean up test directory
@@ -35,7 +35,7 @@ test.describe('Status Auto-Transition E2E', () => {
     process.chdir(testRootPath);
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     process.chdir(originalCwd);
 
     // Cleanup
@@ -68,7 +68,7 @@ test.describe('Status Auto-Transition E2E', () => {
     fs.writeJsonSync(path.join(incrementPath, 'metadata.json'), metadata, { spaces: 2 });
   }
 
-  test('Real workflow: Planning → Spec created → Tasks created → Auto-transition to ACTIVE', async () => {
+  it('Real workflow: Planning → Spec created → Tasks created → Auto-transition to ACTIVE', async () => {
     const incrementId = '0001-user-authentication';
 
     // Step 1: Create increment (PLANNING)
@@ -132,7 +132,7 @@ status: planning
     expect(metadata.status).toBe(IncrementStatus.ACTIVE);
   });
 
-  test('Real workflow: Backlog → Resume planning → Complete planning → Start work', async () => {
+  it('Real workflow: Backlog → Resume planning → Complete planning → Start work', async () => {
     const incrementId = '0002-payment-integration';
 
     // Step 1: Create increment in BACKLOG (planned but not started)
@@ -164,7 +164,7 @@ status: planning
     expect(metadata.status).toBe(IncrementStatus.ACTIVE);
   });
 
-  test('Real workflow: Task marked in-progress → Force transition to ACTIVE', async () => {
+  it('Real workflow: Task marked in-progress → Force transition to ACTIVE', async () => {
     const incrementId = '0003-dashboard-widgets';
 
     // Create increment in PLANNING with tasks.md
@@ -196,7 +196,7 @@ status: planning
     expect(metadata.status).toBe(IncrementStatus.ACTIVE);
   });
 
-  test('Migration: Legacy "planned" status → "planning"', async () => {
+  it('Migration: Legacy "planned" status → "planning"', async () => {
     // Simulate legacy increment with "planned" status
     const legacyIncrementId = '0004-legacy-increment';
     const incrementPath = path.join(testIncrementsPath, legacyIncrementId);
@@ -221,7 +221,7 @@ status: planning
     expect(metadata.status).toBe(IncrementStatus.PLANNING); // ✅ Valid
   });
 
-  test('WIP Limit: PLANNING increments do NOT count toward WIP limit', async () => {
+  it('WIP Limit: PLANNING increments do NOT count toward WIP limit', async () => {
     // Create 2 ACTIVE increments (should hit WIP limit)
     createIncrementStructure('0005-active-1', IncrementStatus.ACTIVE);
     createIncrementStructure('0006-active-2', IncrementStatus.ACTIVE);
@@ -241,7 +241,7 @@ status: planning
     // PLANNING increments are ignored for WIP calculations
   });
 
-  test('Real-world scenario: Multiple increments with mixed statuses', async () => {
+  it('Real-world scenario: Multiple increments with mixed statuses', async () => {
     // Simulate real project state
     createIncrementStructure('0009-completed-feature', IncrementStatus.COMPLETED);
     createIncrementStructure('0010-active-work', IncrementStatus.ACTIVE);
@@ -270,7 +270,7 @@ status: planning
     expect(wipIncrements.length).toBe(1);
   });
 
-  test('Edge case: Multiple transitions in sequence', async () => {
+  it('Edge case: Multiple transitions in sequence', async () => {
     const incrementId = '0014-multi-transition';
 
     // Start in BACKLOG

@@ -11,7 +11,7 @@
  * 7. Test metadata logging
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -22,10 +22,10 @@ import { ACStatusManager } from '../../../src/core/increment/ac-status-manager.j
 // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
 const TEST_PROJECT_DIR = path.join(os.tmpdir(), `specweave-test-ac-status-flow-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
-test.describe('AC Status Automation E2E Flow', () => {
+describe('AC Status Automation E2E Flow', () => {
   let manager: ACStatusManager;
 
-  test.beforeAll(() => {
+  beforeAll(() => {
     // Create test project directory
     if (fs.existsSync(TEST_PROJECT_DIR)) {
       fs.rmSync(TEST_PROJECT_DIR, { recursive: true, force: true });
@@ -36,15 +36,15 @@ test.describe('AC Status Automation E2E Flow', () => {
     manager = new ACStatusManager(TEST_PROJECT_DIR);
   });
 
-  test.afterAll(() => {
+  afterAll(() => {
     // Clean up test directory
     if (fs.existsSync(TEST_PROJECT_DIR)) {
       fs.rmSync(TEST_PROJECT_DIR, { recursive: true, force: true });
     }
   });
 
-  test.describe('Scenario 1: Normal AC Sync (100% Complete)', () => {
-    test('should update AC from [ ] to [x] when all tasks complete', async () => {
+  describe('Scenario 1: Normal AC Sync (100% Complete)', () => {
+    it('should update AC from [ ] to [x] when all tasks complete', async () => {
       // Arrange: Create test increment
       const incrementId = '0901-ac-sync-normal';
       const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
@@ -119,8 +119,8 @@ increment: ${incrementId}
     });
   });
 
-  test.describe('Scenario 2: Partial Completion (No Update)', () => {
-    test('should NOT update AC when only partial tasks complete', async () => {
+  describe('Scenario 2: Partial Completion (No Update)', () => {
+    it('should NOT update AC when only partial tasks complete', async () => {
       // Arrange
       const incrementId = '0902-ac-sync-partial';
       const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
@@ -170,8 +170,8 @@ increment: ${incrementId}
     });
   });
 
-  test.describe('Scenario 3: Conflict Detection', () => {
-    test('should detect conflict when AC is [x] but tasks incomplete', async () => {
+  describe('Scenario 3: Conflict Detection', () => {
+    it('should detect conflict when AC is [x] but tasks incomplete', async () => {
       // Arrange
       const incrementId = '0903-ac-sync-conflict';
       const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
@@ -220,8 +220,8 @@ increment: ${incrementId}
     });
   });
 
-  test.describe('Scenario 4: Orphaned AC Warnings', () => {
-    test('should warn about ACs with no implementing tasks', async () => {
+  describe('Scenario 4: Orphaned AC Warnings', () => {
+    it('should warn about ACs with no implementing tasks', async () => {
       // Arrange
       const incrementId = '0904-ac-sync-orphaned';
       const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
@@ -262,8 +262,8 @@ increment: ${incrementId}
     });
   });
 
-  test.describe('Scenario 5: Multiple ACs Per Task', () => {
-    test('should handle tasks covering multiple ACs', async () => {
+  describe('Scenario 5: Multiple ACs Per Task', () => {
+    it('should handle tasks covering multiple ACs', async () => {
       // Arrange
       const incrementId = '0905-ac-sync-multiple';
       const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
@@ -309,8 +309,8 @@ increment: ${incrementId}
     });
   });
 
-  test.describe('Scenario 6: Edge Cases', () => {
-    test('should handle missing spec.md gracefully', async () => {
+  describe('Scenario 6: Edge Cases', () => {
+    it('should handle missing spec.md gracefully', async () => {
       const incrementId = '0906-ac-sync-missing-spec';
       const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
@@ -327,7 +327,7 @@ increment: ${incrementId}
       expect(result.warnings).toContain('spec.md does not exist');
     });
 
-    test('should handle missing tasks.md gracefully', async () => {
+    it('should handle missing tasks.md gracefully', async () => {
       const incrementId = '0907-ac-sync-missing-tasks';
       const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
@@ -341,7 +341,7 @@ increment: ${incrementId}
       expect(result.warnings).toContain('tasks.md does not exist');
     });
 
-    test('should handle tasks with no AC tags', async () => {
+    it('should handle tasks with no AC tags', async () => {
       const incrementId = '0908-ac-sync-no-ac-tags';
       const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
@@ -373,7 +373,7 @@ increment: ${incrementId}
       expect(result.updated).toContain('AC-US1-01');
     });
 
-    test('should handle malformed AC patterns gracefully', async () => {
+    it('should handle malformed AC patterns gracefully', async () => {
       const incrementId = '0909-ac-sync-malformed';
       const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
@@ -405,8 +405,8 @@ increment: ${incrementId}
     });
   });
 
-  test.describe('Scenario 7: Metadata Logging', () => {
-    test('should log sync events to metadata.json with rolling 20-event limit', async () => {
+  describe('Scenario 7: Metadata Logging', () => {
+    it('should log sync events to metadata.json with rolling 20-event limit', async () => {
       const incrementId = '0910-ac-sync-metadata-logging';
       const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });
@@ -455,8 +455,8 @@ increment: ${incrementId}
     });
   });
 
-  test.describe('Scenario 8: Performance', () => {
-    test('should sync within 200ms for typical increment (50 ACs, 100 tasks)', async () => {
+  describe('Scenario 8: Performance', () => {
+    it('should sync within 200ms for typical increment (50 ACs, 100 tasks)', async () => {
       const incrementId = '0911-ac-sync-performance';
       const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
       fs.mkdirSync(incrementDir, { recursive: true });

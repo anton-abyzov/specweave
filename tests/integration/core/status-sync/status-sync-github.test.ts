@@ -7,10 +7,10 @@
  * Critical Path Coverage: 100%
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 
-test.describe('Status Sync GitHub Flow', () => {
-  test('should prompt when GitHub issue is closed externally', async ({ page }) => {
+describe('Status Sync GitHub Flow', () => {
+  it('should prompt when GitHub issue is closed externally', async ({ page }) => {
     // TODO: Mock GitHub API
     // TODO: Simulate external GitHub issue close
     // TODO: Run sync-from-external
@@ -18,14 +18,14 @@ test.describe('Status Sync GitHub Flow', () => {
     expect(true).toBe(true); // Placeholder
   });
 
-  test('should update SpecWeave status when user accepts external change', async ({ page }) => {
+  it('should update SpecWeave status when user accepts external change', async ({ page }) => {
     // TODO: External issue closed
     // TODO: User selects "Use external status"
     // TODO: Verify SpecWeave increment status updated
     expect(true).toBe(true); // Placeholder
   });
 
-  test('should keep SpecWeave status when user rejects external change', async ({ page }) => {
+  it('should keep SpecWeave status when user rejects external change', async ({ page }) => {
     // TODO: External issue closed
     // TODO: User selects "Keep SpecWeave status"
     // TODO: Verify SpecWeave status unchanged

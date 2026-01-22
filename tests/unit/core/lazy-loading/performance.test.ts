@@ -14,6 +14,14 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+
+// Mock Claude CLI detection to always use fallback registry method (fast, no CLI spawn)
+vi.mock('../../../../src/utils/claude-cli-detector.js', () => ({
+  detectClaudeCli: vi.fn().mockReturnValue({ available: false }),
+  isClaudeCliAvailable: vi.fn().mockReturnValue(false),
+  clearCliCache: vi.fn(),
+}));
+
 import { PluginCacheManager } from '../../../../src/core/lazy-loading/cache-manager.js';
 
 // Test directories

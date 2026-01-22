@@ -9,7 +9,7 @@
  * 5. Task completion status preserved
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
@@ -20,11 +20,11 @@ import { getCleanEnv } from '../../test-utils/clean-env.js';
 // ✅ SAFE: Isolated test directory with unique ID (prevents race conditions)
 const TEST_PROJECT_DIR = path.join(os.tmpdir(), `specweave-test-spec-sync-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
-test.describe('Spec Synchronization E2E Flow', () => {
+describe('Spec Synchronization E2E Flow', () => {
   // ✅ FIX: Save original cwd to restore after tests (prevents Claude Code crashes)
   let originalCwd: string;
 
-  test.beforeAll(() => {
+  beforeAll(() => {
     // Save original cwd BEFORE changing directory
     originalCwd = process.cwd();
 
@@ -39,7 +39,7 @@ test.describe('Spec Synchronization E2E Flow', () => {
     execSync('npx specweave init --yes', { stdio: 'inherit', env: getCleanEnv() });
   });
 
-  test.afterAll(() => {
+  afterAll(() => {
     // ✅ FIX: Restore original cwd BEFORE cleanup (critical!)
     if (originalCwd) {
       process.chdir(originalCwd);
@@ -51,7 +51,7 @@ test.describe('Spec Synchronization E2E Flow', () => {
     }
   });
 
-  test('should detect spec change and trigger sync warning', async () => {
+  it('should detect spec change and trigger sync warning', async () => {
     // Arrange: Create a test increment
     const incrementId = '0999-test-spec-sync';
     const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
@@ -176,7 +176,7 @@ status: active
     expect(message).toContain('Automatic sync will regenerate');
   });
 
-  test('should preserve task completion status during sync', async () => {
+  it('should preserve task completion status during sync', async () => {
     // Arrange: Create increment with completed tasks
     const incrementId = '0998-task-status-preservation';
     const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
@@ -246,7 +246,7 @@ status: active
     // For now, we verify that detection works correctly
   });
 
-  test('should handle --skip-sync flag', async () => {
+  it('should handle --skip-sync flag', async () => {
     // Arrange: Create increment with spec change
     const incrementId = '0997-skip-sync-test';
     const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
@@ -277,7 +277,7 @@ status: active
     expect(result.tasksRegenerated).toBe(false);
   });
 
-  test('should log sync events to metadata.json', async () => {
+  it('should log sync events to metadata.json', async () => {
     // Arrange: Create increment
     const incrementId = '0996-sync-event-logging';
     const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
@@ -316,7 +316,7 @@ status: active
     expect(event.reason).toContain('spec.md modified');
   });
 
-  test('should handle edge case: spec.md deleted', async () => {
+  it('should handle edge case: spec.md deleted', async () => {
     // Arrange: Create increment with plan.md but no spec.md
     const incrementId = '0995-missing-spec';
     const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
@@ -335,7 +335,7 @@ status: active
     expect(detection.reason).toContain('does not exist');
   });
 
-  test('should handle edge case: plan.md does not exist yet (planning phase)', async () => {
+  it('should handle edge case: plan.md does not exist yet (planning phase)', async () => {
     // Arrange: Create increment with only spec.md
     const incrementId = '0994-planning-phase';
     const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);
@@ -354,7 +354,7 @@ status: active
     expect(detection.reason).toContain('planning phase');
   });
 
-  test('should handle concurrent edits gracefully', async () => {
+  it('should handle concurrent edits gracefully', async () => {
     // Arrange: Create increment
     const incrementId = '0993-concurrent-edits';
     const incrementDir = path.join(TEST_PROJECT_DIR, '.specweave', 'increments', incrementId);

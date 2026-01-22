@@ -5,7 +5,7 @@
  * via user-prompt-submit hook and MetadataManager integration.
  */
 
-import { test, expect } from '@playwright/test';
+import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
 import * as fs from '../../../src/utils/fs-native.js';
 import path from 'path';
 import os from 'os';
@@ -17,12 +17,12 @@ import { getCleanEnv } from '../../../src/utils/clean-env.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-test.describe('Increment Discipline Enforcement (E2E)', () => {
+describe('Increment Discipline Enforcement (E2E)', () => {
   let testDir: string;
   // ✅ FIX: Save original cwd to restore after tests (prevents Claude Code crashes)
   let originalCwd: string;
 
-  test.beforeEach(async () => {
+  beforeEach(async () => {
     // Save original cwd BEFORE changing directory
     originalCwd = process.cwd();
 
@@ -58,7 +58,7 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
     process.chdir(testDir);
   });
 
-  test.afterEach(async () => {
+  afterEach(async () => {
     // ✅ FIX: Restore original cwd BEFORE cleanup (critical!)
     if (originalCwd) {
       process.chdir(originalCwd);
@@ -123,7 +123,7 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
    */
   async function simulateHook(prompt: string): Promise<{ decision: string; reason?: string; systemMessage?: string }> {
     try {
-      const hookPath = path.join(__dirname, '../../plugins/specweave/hooks/user-prompt-submit.sh');
+      const hookPath = path.join(__dirname, '../../../plugins/specweave/hooks/user-prompt-submit.sh');
       const input = JSON.stringify({ prompt });
 
       // Write input to a temp file to avoid shell escaping issues
@@ -150,15 +150,15 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
     }
   }
 
-  test.describe('Scenario 1: No Active Increments (0→1)', () => {
-    test('should allow creating first increment', async () => {
+  describe('Scenario 1: No Active Increments (0→1)', () => {
+    it('should allow creating first increment', async () => {
       const result = await simulateHook('/sw:increment "Add user authentication"');
 
       expect(result.decision).toBe('approve');
       expect(result.reason).toBeUndefined();
     });
 
-    test('should have clean state with no warnings', async () => {
+    it('should have clean state with no warnings', async () => {
       const count = await countActiveIncrements();
       expect(count).toBe(0);
 
@@ -168,12 +168,12 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
     });
   });
 
-  test.describe('Scenario 2: One Active Increment (1→2)', () => {
-    test.beforeEach(async () => {
+  describe('Scenario 2: One Active Increment (1→2)', () => {
+    beforeEach(async () => {
       await createIncrement('0001-user-auth', 'active', 'feature');
     });
 
-    test('should show warning when starting 2nd increment', async () => {
+    it('should show warning when starting 2nd increment', async () => {
       const result = await simulateHook('/sw:increment "Add payment system"');
 
       expect(result.decision).toBe('approve'); // Allows but warns
@@ -182,13 +182,13 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
       expect(result.systemMessage).toContain('ONE active increment = maximum productivity');
     });
 
-    test('should list active increment in warning', async () => {
+    it('should list active increment in warning', async () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.systemMessage).toContain('0001-user-auth [feature]');
     });
 
-    test('should suggest options in warning', async () => {
+    it('should suggest options in warning', async () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.systemMessage).toContain('Complete current work');
@@ -196,7 +196,7 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
       expect(result.systemMessage).toContain('Continue anyway');
     });
 
-    test('should mention emergency bypass option', async () => {
+    it('should mention emergency bypass option', async () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.systemMessage).toContain('hotfix');
@@ -204,13 +204,13 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
     });
   });
 
-  test.describe('Scenario 3: Two Active Increments (Hard Cap)', () => {
-    test.beforeEach(async () => {
+  describe('Scenario 3: Two Active Increments (Hard Cap)', () => {
+    beforeEach(async () => {
       await createIncrement('0001-user-auth', 'active', 'feature');
       await createIncrement('0002-payments', 'active', 'feature');
     });
 
-    test('should BLOCK when trying to start 3rd increment', async () => {
+    it('should BLOCK when trying to start 3rd increment', async () => {
       const result = await simulateHook('/sw:increment "Add notifications"');
 
       expect(result.decision).toBe('block');
@@ -218,14 +218,14 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
       expect(result.reason).toContain('2 active increments');
     });
 
-    test('should list both active increments in error', async () => {
+    it('should list both active increments in error', async () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.reason).toContain('0001-user-auth');
       expect(result.reason).toContain('0002-payments');
     });
 
-    test('should suggest actions to resolve', async () => {
+    it('should suggest actions to resolve', async () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.reason).toContain('/sw:done');
@@ -233,71 +233,71 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
       expect(result.reason).toContain('/sw:status');
     });
 
-    test('should mention combining multiple hotfixes', async () => {
+    it('should mention combining multiple hotfixes', async () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.reason).toContain('Multiple hotfixes? Combine them into ONE increment');
       expect(result.reason).toContain('0009-security-fixes');
     });
 
-    test('should cite productivity research', async () => {
+    it('should cite productivity research', async () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.reason).toContain('3+ concurrent tasks = 40% slower');
     });
   });
 
-  test.describe('Scenario 4: Completed Increments (Should Allow)', () => {
-    test.beforeEach(async () => {
+  describe('Scenario 4: Completed Increments (Should Allow)', () => {
+    beforeEach(async () => {
       await createIncrement('0001-user-auth', 'completed', 'feature');
       await createIncrement('0002-payments', 'completed', 'feature');
     });
 
-    test('should allow new increment when previous ones are completed', async () => {
+    it('should allow new increment when previous ones are completed', async () => {
       const result = await simulateHook('/sw:increment "Add notifications"');
 
       expect(result.decision).toBe('approve');
       expect(result.reason).toBeUndefined();
     });
 
-    test('should have zero active count', async () => {
+    it('should have zero active count', async () => {
       const count = await countActiveIncrements();
       expect(count).toBe(0);
     });
   });
 
-  test.describe('Scenario 5: Paused Increments (Should Allow)', () => {
-    test.beforeEach(async () => {
+  describe('Scenario 5: Paused Increments (Should Allow)', () => {
+    beforeEach(async () => {
       await createIncrement('0001-user-auth', 'paused', 'feature');
       await createIncrement('0002-payments', 'paused', 'feature');
     });
 
-    test('should allow new increment when previous ones are paused', async () => {
+    it('should allow new increment when previous ones are paused', async () => {
       const result = await simulateHook('/sw:increment "Add notifications"');
 
       expect(result.decision).toBe('approve');
       expect(result.reason).toBeUndefined();
     });
 
-    test('should have zero active count', async () => {
+    it('should have zero active count', async () => {
       const count = await countActiveIncrements();
       expect(count).toBe(0);
     });
   });
 
-  test.describe('Scenario 6: Mixed Statuses', () => {
-    test.beforeEach(async () => {
+  describe('Scenario 6: Mixed Statuses', () => {
+    beforeEach(async () => {
       await createIncrement('0001-user-auth', 'completed', 'feature');
       await createIncrement('0002-payments', 'active', 'feature');
       await createIncrement('0003-notifications', 'paused', 'feature');
     });
 
-    test('should count only active increments', async () => {
+    it('should count only active increments', async () => {
       const count = await countActiveIncrements();
       expect(count).toBe(1);
     });
 
-    test('should show warning for 2nd active (not count completed/paused)', async () => {
+    it('should show warning for 2nd active (not count completed/paused)', async () => {
       const result = await simulateHook('/sw:increment "Add messaging"');
 
       expect(result.decision).toBe('approve');
@@ -305,7 +305,7 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
       expect(result.systemMessage).toContain('1 active increment');
     });
 
-    test('should list only active increment in warning', async () => {
+    it('should list only active increment in warning', async () => {
       const result = await simulateHook('/sw:increment "Add feature"');
 
       expect(result.systemMessage).toContain('0002-payments');
@@ -314,30 +314,30 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
     });
   });
 
-  test.describe('Scenario 7: Abandoned Increments (Should Allow)', () => {
-    test.beforeEach(async () => {
+  describe('Scenario 7: Abandoned Increments (Should Allow)', () => {
+    beforeEach(async () => {
       await createIncrement('0001-user-auth', 'abandoned', 'experiment');
       await createIncrement('0002-payments', 'abandoned', 'feature');
     });
 
-    test('should allow new increment when previous ones are abandoned', async () => {
+    it('should allow new increment when previous ones are abandoned', async () => {
       const result = await simulateHook('/sw:increment "Add notifications"');
 
       expect(result.decision).toBe('approve');
     });
 
-    test('should have zero active count', async () => {
+    it('should have zero active count', async () => {
       const count = await countActiveIncrements();
       expect(count).toBe(0);
     });
   });
 
-  test.describe('Scenario 8: Emergency Hotfixes', () => {
-    test.beforeEach(async () => {
+  describe('Scenario 8: Emergency Hotfixes', () => {
+    beforeEach(async () => {
       await createIncrement('0001-user-auth', 'active', 'feature');
     });
 
-    test('should warn when starting 2nd active (even for hotfix)', async () => {
+    it('should warn when starting 2nd active (even for hotfix)', async () => {
       // Note: Hook doesn't currently distinguish hotfix type from prompt
       // It just warns with suggestion to use --type=hotfix
       const result = await simulateHook('/sw:increment "Critical security fix"');
@@ -347,7 +347,7 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
       expect(result.systemMessage).toContain('Emergency hotfix/bug');
     });
 
-    test('should still block 3rd increment even if hotfix', async () => {
+    it('should still block 3rd increment even if hotfix', async () => {
       await createIncrement('0002-security-fix', 'active', 'hotfix');
 
       const result = await simulateHook('/sw:increment "Another hotfix"');
@@ -357,15 +357,15 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
     });
   });
 
-  test.describe('Scenario 9: Fallback Mode (No dist/ Available)', () => {
-    test.beforeEach(async () => {
+  describe('Scenario 9: Fallback Mode (No dist/ Available)', () => {
+    beforeEach(async () => {
       // Simulate environment where dist/cli/index.js doesn't exist
       // The hook will use fallback logic
       await createIncrement('0001-user-auth', 'active', 'feature');
       await createIncrement('0002-payments', 'planning', 'feature');
     });
 
-    test('should use fallback logic to detect incomplete increments', async () => {
+    it('should use fallback logic to detect incomplete increments', async () => {
       const result = await simulateHook('/sw:increment "Add notifications"');
 
       // Fallback logic checks for 'active' or 'planning' status
@@ -376,8 +376,8 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
     });
   });
 
-  test.describe('Scenario 10: Integration with Other Commands', () => {
-    test('should NOT block non-increment commands', async () => {
+  describe('Scenario 10: Integration with Other Commands', () => {
+    it('should NOT block non-increment commands', async () => {
       await createIncrement('0001-user-auth', 'active', 'feature');
       await createIncrement('0002-payments', 'active', 'feature');
 
@@ -396,7 +396,7 @@ test.describe('Increment Discipline Enforcement (E2E)', () => {
       }
     });
 
-    test('should provide context for other commands', async () => {
+    it('should provide context for other commands', async () => {
       await createIncrement('0001-user-auth', 'active', 'feature');
 
       const result = await simulateHook('How do I implement authentication?');
